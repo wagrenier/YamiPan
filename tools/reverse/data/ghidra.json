@@ -1,0 +1,8 @@
+{
+ "project": "C:\\Users\\willi\\YamiPan",
+ "program": null,
+ "ports": "8089:16",
+ "ghidra_dir": "F:\\ghidra_12.1.2_PUBLIC_20260605\\ghidra_12.1.2_PUBLIC",
+ "bridge": "F:\\ghidra_12.1.2_PUBLIC_20260605\\bridge_mcp_ghidra.py",
+ "bridge_python": "F:\\ghidra_12.1.2_PUBLIC_20260605\\.venv\\Scripts\\python.exe"
+}

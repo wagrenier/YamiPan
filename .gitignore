@@ -1,0 +1,28 @@
+# Game executables and data are not distributed; dump them from your own disc.
+SLUS_*
+SLES_*
+SLPS_*
+SLPM_*
+SCUS_*
+SCES_*
+SCPS_*
+*.ISO
+*.iso
+*.ELF
+*.elf
+
+# Regenerated reversing intermediates (Ghidra dumps, features, stages, shots, logs, instance cache)
+tools/reverse/work/
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE state (Visual Studio keeps its index files locked; tus.py finish runs git add -A)
+.vs/
+.idea/
+
+# Build trees
+cmake-build-*/
+build/
+out/

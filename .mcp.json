@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "ghidra": {
+      "type": "stdio",
+      "command": "F:\\ghidra_12.1.2_PUBLIC_20260605\\.venv\\Scripts\\python.exe",
+      "args": ["E:\\Programming\\Git\\Github\\YamiPan\\tools\\reverse\\ghidra_bridge.py"]
+    }
+  }
+}

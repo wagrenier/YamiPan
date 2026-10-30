@@ -1,0 +1,164 @@
+# Hazards -- things that already cost time
+
+Carried from ReiPan (FF3, `../ReiPan/.claude/skills/reipan-port/references/hazards.md`, 1,080 lines)
+and RosePan (RoR, `../RosePan/.claude/skills/rosepan-port/references/hazards.md`, 1,040 lines): the
+ones any PS2 port meets, in short form. Their files keep the full stories with addresses; read the
+matching section there when a symptom here fits. Add this game's own as **symptom / cause / fix**,
+dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
+
+## Decompiler (the most common time sink)
+
+- **A body swallows the function after it.** Code reached only through data (vtable slots, callback,
+  dispatch and step tables, hook lists, code after a tail call) was never made a function, so the body
+  before runs on over it: the decompile stops at the first `jr ra` while the callee list shows calls it
+  never made, and callcheck reports them MISSING. Tells: a size far above the decompile, a callback
+  address inside another function, a Body that starts before its Entry. Fix: `hidden.py <lo> <hi>` over
+  every pinned range before naming (it flags code after `jr ra`, after an assert's spin, a frame setup
+  after a `b`), `ghidra.py refs` the address, `ghidra.py mkfunc`. Before reading a class,
+  `ghidra.py func` every slot `rtti.py` lists; before a dispatcher, every word of its table. Every `LAB_`
+  stored into a table is a function.
+- **Dispatch tables of tiny functions** (RoR's script natives: 512 entries, 471 of them `jr ra; move
+  v0,zero`): read the table from the ELF, classify each target by its first words, mkfunc the real ones,
+  let one host function stand for the identical empty ones, and generate the C++ initializer.
+- **Tail calls are not calls to Ghidra** (`j` at a body's end; "0 callers"): features.py records them
+  and callcheck counts them. A run of tiny tail-call wrappers can decompile one call off: read the asm.
+- **Arguments**: Ghidra drops them for callees it typed `void f(void)`, orders mixed float / int ones
+  wrongly (floats go in f12.. whatever their position), misses a register passed through untouched
+  (a callee reading a2 its caller never set takes the caller's caller's argument), and chains a void
+  callee's v0 into the next call. Read the asm before every `jal` whose arguments matter.
+- **VU0 macro code** decompiles into `extraout_vfN` noise and helpers that pass values in vf1 / vf2
+  show as `void f(float)`: reconstruct from the asm. `vaddz.x` adds only z; `vsqrt` is sqrt(|x|); vf0 is
+  (0,0,0,1); constant registers are set once at start-up (MioPan's skill "VU0 macro-mode idioms").
+- **Switch tables**: on bytes they decompile into goto soup (`mipsemu.py --grid` the ROM over every
+  input, diff the C rewrite); "Too many branches" leaves only the dispatch (read the table from the ELF
+  and the asm case by case).
+- **Variadic unpackers**: 8-byte slots; floats promoted to double (`va_arg(ap, double)`).
+- **ROM quirks to keep, guarded**: loops that reuse their counter, a read of the byte after a copy,
+  a table reader that stops at a null field (end host tables where the row id stops matching).
+- **Twin functions differing only in `ldl` / `sdl`** are overloads on a matrix / vector type.
+
+## Names from a sister game (FF2 -> FF3; any engine shared with a symbolised build)
+
+- **Names are hints.** Wrong ones sat in every subsystem (sound, pad, file load, 2D, C++ runtime,
+  maths); check the body before trusting a name in a new module, fix with `name_ctx.py` (records an
+  override the matcher never restores).
+- **Dropped modules still attract matches** (FF2's scene-test menu, FF2's sister mechanic in FF3): in a
+  module the game cannot have, every match is wrong; name from the body, never keep the file name.
+- **Shifted runs**: families of same-shaped functions (copy / draw, soft-float, effect requests,
+  libpad) match one or more slots off even at high scores; compare constants and call shapes.
+- **Debug-build calls** (`printf`, assert helpers, range checks) are absent from retail: drop them when
+  porting; find counterparts by module and class, not by shape. Identical id wrappers cannot be told
+  apart by shape: name them by what they call.
+- The link-order matcher is greedy: small anchor changes move hundreds of names. Always look at the plan.
+
+## File inference (which TU a function belongs to)
+
+- Inferred extents are guesses where no string anchors them; inferred file *names* from a sister
+  game's slot get taken literally and are often wrong. Decide from strings, classes, names, callers
+  (`tuid.py`), and record the deciding signals in `define --why`.
+- `define` drops the whole inferred extent (a pinned TU is exactly its ranges): list every range,
+  including a neighbour you only extend. Defining a file inside an `unassigned@` run leaves the rest
+  under new keys: fix the pinned queue in the same session.
+- Renaming moves inferred boundaries (export anchors on names): re-brief after a name batch.
+- Satellites (inline getters, templates) go to the TU that calls them most, not always their owner.
+- A stub inside a TU marked done is never picked: grep `stub of <TAG>` and the run log's reached stubs.
+
+## Types and layouts
+
+- **MinGW is not "GCC layout"**: `-mms-bitfields` by default. **`long` is 32-bit on both hosts.** A
+  plain `float[4]` is not a VU0 vector. Tail padding differs between the hosts. (reconstruction.md)
+- **A mid-struct pointer moves every later host offset**: asserts after it become `>=` bounds; data that
+  keeps EE bytes (file images, DMA) never holds host pointers. Files the ROM relocates in place keep
+  their file offsets on the host (RoR's i3m / i3c: resolved through a `Ptr(root, field)` helper).
+- **EE sizes under-allocate host objects**: `operator new(0x28)`, a list sized with the EE record size,
+  an out-buffer sized from what is read back.
+- **Ghidra's `ptr + n` on an `int *` is n words.** `param_1 != -0x240` is a null test of `&obj->member`.
+- **A bss global with "no writer"** may be a member of a global struct, or written gp-relative.
+- **A forwarding wrapper's arity comes from its callers**, not its body.
+- **Giving a POD base a constructor moves its derived classes' fields (MinGW)**: keep layout bases POD.
+- **EE float semantics**: literals not round-to-nearest; division by zero gives +-MAX; 0x7fffffff /
+  0xffffffff stored into floats are the EE's extremes and NaNs on the host.
+- **ROM data the code writes back must not be `const`** on the host.
+
+## Stubs and bookkeeping
+
+- **Stubs return `{}`**: null buffers, zero counts, "not ready". A getter stub's null crashes the first
+  real consumer; a readiness stub returning 0 hangs a loop; a polled loader helper turns a step-per-call
+  loader into a hang; a stub's untouched out-buffer becomes garbage once its consumer is real; a string
+  copy stub makes every texture the last one. After a TU, a new hang or crash: the stubs on that path.
+- **A real function behind a polled stub can stall the boot**: the stub answered "ready" at once.
+- **A file-scope object whose constructor is a stub** runs that stub before main (before the logger).
+- **A stub that tolerated null becomes a member that does not**: guard or fix the caller in the session.
+- **Callers' local prototypes disagree with the real signature**: in C++ they are overloads and keep
+  linking to an old stub; include the real header.
+- **A name you pick may already exist at another address**: stubgen then resolves to the wrong one.
+- **Stale names after renaming**: stubgen, callcheck, stage, tus read cached `work/` data; `refresh.py`
+  (never piped into `head`: the closed pipe kills it). Batch numbers collide: take the highest + 1.
+- **When a run loses ground after a TU**, diff its log against a run of the previous commit.
+
+## callcheck / stubgen
+
+- `// callcheck: A, B (why)`: names first, comma-separated, one parenthesis last, all on that line;
+  a member destructor is `~Class`; ALL-CAPS callees read as macros and are skipped.
+- A goto label in column 0 and a trailing `<TAG> 0x` on a one-line definition break the parser; a
+  constructor with an initializer list parses as the base's name.
+- Your own `static inline` wrappers hide the ROM's calls; constructor / destructor / new / delete calls
+  are invisible: name them in a note. A call the optimiser proves dead gets no stub. Platform
+  substitutions (`srand` -> the host's) show as missing / extra.
+- stubgen: one declaration per line; it copies the first declaration of an overloaded name; places stubs
+  by inference (move them); skips data and missing vtables (stub a new class's virtuals by hand).
+
+## Sessions
+
+- **A session never launches other sessions, agents or scheduled tasks** (the auto-mode classifier
+  blocks it); the user starts each TU's session.
+- **`tus.py finish` commits with `git add -A`**: look at `git status` first. Two sessions in one
+  checkout race (a scheduled run swept another's half-done files): side work goes in a sibling worktree.
+- **Autopilot sessions run on a fixed allow-list**: `.claude/` writes may be denied (reference text
+  goes in `--notes` under "For the references:"), no `rm`, no shell loops. A denied call is final.
+- **No backticks in `--notes` / `--summary`**: the shell runs them.
+- **`last.png` can come out 0 bytes**: check its size after `check`.
+
+## Shell and Python on Windows
+
+- **Heredocs mangle backslashes and apostrophes**, a python heredoc's `\n` became a real newline in a
+  C string, a long heredoc fails with `ENAMETOOLONG`: write files with the Write tool.
+- **Git Bash rewrites arguments that look like paths** (`\\` collapsed in a JSON argument): pass paths
+  through environment variables or files.
+- **A NUL byte makes git treat a file as binary** and flips its line endings; MSVC rejects raw NULs.
+- **Python text mode vs CRLF**: `open(p, encoding='utf-8', newline='')`, keep the file's own endings.
+- **A module-level function named like a stdlib package shadows it** (`def http` after `import
+  http.client`): import the submodule under another name.
+- **`gdbrun.py --help` launches the game**; read its docstring instead.
+- `python -I` drops the script's directory from `sys.path`: run tools as `python tool.py` from their folder.
+
+## Build and run
+
+- **MinGW must be on PATH** or `cc1plus` fails silently: use `build.py`. Shader builds can hit a file
+  lock: rerun.
+- **layoutcheck compiles every header alone**: a header relying on its .c's includes fails there.
+  MSVC runs only in layoutcheck (syntax): MSVC-only errors show up there.
+- **Exit 0x20474343** is an uncaught C++ exception; **3221225477** an access violation: `gdbrun.py`
+  with the same pad for the backtrace (the game runs on its own named thread).
+- **A run without the scripted pad** sits in the first menu: a trace in later code prints nothing.
+- **A smoke run can write the user's ini**: runs pass their own settings.
+
+## Platform layer (MioPan's, through ReiPan and RosePan)
+
+- **SDK shims only answer what the last game asked**: a placeholder answer looks like missing hardware
+  (FF3's pad check stopped every run on `scePadInfoPressMode`). Read the shim against Sony's semantics.
+- **An EE wait on an IOP status never ends when no service answers the RPC**; when adding an IOP
+  command, its payload size must match what the EE sends.
+- **A missing memory-card directory must answer -4** (`sceMcResNoEntry`), or a fresh card reads damaged.
+- **GS colour**: textured vertex colours above 0x80 brighten (MODULATE is `(Ct * Cf) >> 7`); a fragment
+  with alpha 0 is still written on the GS; two GS origins in one game (top-left pixel constants vs
+  centre-relative 2048): derive a host quad from its own packet's constants; decode PRIM from the GIF
+  tag (strip / fan / sprite) before building the quad.
+- **Threads**: SleepThread on the EE main thread needs its own wakeup counter; SuspendThread used as a
+  mutex must be honoured by host threads reading guarded state; the OS main thread pumps events while
+  the game runs on its own thread (Windows' modal move loop froze single-threaded runs).
+- **Movies**: a decode loop that drops its frame on a starved demuxer freezes for good: decode into a
+  spare frame, swap on success.
+- **A host convention on top of a ROM-faithful port** (a vector negated twice; a host shader replacing
+  microcode drops its culling): when a picture is mirrored or misplaced, list every sign / transform
+  between the ROM's value and the shader.
