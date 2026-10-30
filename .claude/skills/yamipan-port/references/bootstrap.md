@@ -7,8 +7,10 @@ map", "Naming sources") and tick it off in `open-items.md` "Next up".
 
 ## 1. The game
 
-- The ELF from the user's disc at the repo root (gitignored), the extracted disc's files somewhere the
-  user picks (the data root; never committed). Serial, region, build date.
+- The ELF from the user's disc and the extracted disc's files, in a folder the user picks (the data
+  root; never committed). Record serial, region and build date. YamiPan: Forbidden Siren 2, Europe,
+  `SCES_538.51` (2006-05-17), all in `E:\Games\Emulator\PS2\Games\Forbidden Siren 2 (Europe)`; the
+  tools default to that folder, so there is no copy at the repo root.
 - What the binary still has, each a naming source:
   - **Symbols**: `.symtab` / `.mdebug` (rare in retail), or a kept **section header table** with
     `.gnu.linkonce.t.<mangled>` sections (RoR: 1,449 inline methods and templates, 284 vtables
@@ -29,7 +31,7 @@ map", "Naming sources") and tick it off in `open-items.md` "Next up".
 ## 2. Ghidra project (its own; ghidra.md)
 
 ```
-"F:\ghidra_12.1.2_PUBLIC_20260605\ghidra_12.1.2_PUBLIC\support\analyzeHeadless.bat" C:\Users\willi YamiPan -import E:\Programming\Git\Github\YamiPan\<ELF>
+"F:\ghidra_12.1.2_PUBLIC_20260605\ghidra_12.1.2_PUBLIC\support\analyzeHeadless.bat" C:\Users\willi YamiPan -import "E:\Games\Emulator\PS2\Games\Forbidden Siren 2 (Europe)\SCES_538.51"
 python ghidra_mcp.py launch
 ```
 

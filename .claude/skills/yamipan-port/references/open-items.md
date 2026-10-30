@@ -5,9 +5,10 @@ questions. Resolve items here when they are settled (move them to "Done" with th
 
 ## Next up (in order)
 
-1. **The game** (the user's call): which PS2 game YamiPan ports, region, serial. The ELF goes at the
-   repo root, the extracted disc where the user keeps game data. Then the annotation tag (`<TAG>`, the
-   game's short name in capitals, like `FF3` / `ROR`), `yamipan.py`'s `ANNOT` and the stub log line.
+1. **The game**: Forbidden Siren 2, Europe, `SCES_538.51` (decided, below). Still to do:
+   - the annotation tag (`<TAG>`, the game's short name in capitals, like `FF3` / `ROR`);
+   - `yamipan.py`'s `ANNOT` and the stub log line;
+   - `yamipan.py`'s ELF and data-root defaults, set to the game folder.
 2. Bootstrap (bootstrap.md, in order): identify the binary -> its own Ghidra project
    (`C:\Users\willi\YamiPan.gpr`, `data/ghidra.json` "program") -> tools from RosePan on
    `ghidra_mcp.py` -> name seeding -> TU map -> platform layer -> first build and run -> the queue.
@@ -18,6 +19,13 @@ questions. Resolve items here when they are settled (move them to "Done" with th
 The user's standing rules, carried from the earlier ports (SKILL.md "The user's rules" says how they
 apply here):
 
+- 2026-10-30 (the user): YamiPan ports **Forbidden Siren 2 (Europe, `SCES_538.51`)**. The game's
+  data and ELF are in `E:\Games\Emulator\PS2\Games\Forbidden Siren 2 (Europe)`:
+  - `SCES_538.51`;
+  - `ROM.000`..`ROM.007` and `SPK.ROM`;
+  - `MODULES\`, `IOPCONF.CNF` and `SYSTEM.CNF`.
+
+  The tools read the ELF and the data from there; nothing is copied into the repo.
 - 2026-10-30 (the user): YamiPan is the next PS2 port; its skill carries ReiPan's and RosePan's
   learning. First step: Ghidra working with several instances (done the same day, ghidra.md).
 - 2026-10-30 (session decision, no answer needed yet): one Ghidra project and process per game.

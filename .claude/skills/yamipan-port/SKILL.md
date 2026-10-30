@@ -13,7 +13,8 @@ counterpart: every function from its own binary). This skill distils what those 
 skills keep the full history. It is the playbook and the project's memory: follow it, and keep it true
 ("Keeping this skill alive").
 
-**State (2026-10-30): before bootstrap.** The game is not named yet (open-items.md "Next up" 1). What
+**State (2026-10-30): before bootstrap.** The game is Forbidden Siren 2 (Europe, `SCES_538.51`; files
+under "Environment"); its annotation tag is still open (open-items.md "Next up" 1). What
 exists: multi-instance Ghidra (`tools/reverse/ghidra_mcp.py`, `ghidra_bridge.py`, `.mcp.json`). Until
 the TU loop runs, work follows `references/bootstrap.md`; afterwards, the protocol below.
 
@@ -28,6 +29,14 @@ Read before working:
 
 ## Environment
 
+- **The game: Forbidden Siren 2, Europe (`SCES_538.51`, ELF dated 2006-05-17).** The ELF and the disc's
+  files are in `E:\Games\Emulator\PS2\Games\Forbidden Siren 2 (Europe)`:
+  - the ELF `SCES_538.51`;
+  - the data archives `ROM.000`..`ROM.007` and `SPK.ROM`;
+  - `MODULES\` (IRX), `IOPCONF.CNF` and `SYSTEM.CNF`.
+
+  This folder is the default ELF path and data root for the tools, so there is no copy at the repo
+  root. Never commit anything from it.
 - **Ghidra 12.1.2** (`F:\ghidra_12.1.2_PUBLIC_20260605\ghidra_12.1.2_PUBLIC`) with GhidraMCP 5.14.2.
   **Several Ghidras run at once, one per game** (ghidra.md): each process serves MCP on the first free
   port of 8089..8104, from its CodeBrowser window. YamiPan's project is `C:\Users\willi\YamiPan.gpr`;
@@ -40,8 +49,8 @@ Read before working:
   - Every request carries `program` in the query string (a POST body's is ignored). Offline (Ghidra
     down): status, export, tus list/check/finish, callcheck and build work from cached `work/`.
 - Tools: `tools/reverse/` (run from there: `python <tool>.py`); every tool is in its README.
-- Build (after bootstrap): `python build.py` (MinGW + ninja, configures on first use). The game ELF at
-  the repo root (gitignored).
+- Build (after bootstrap): `python build.py` (MinGW + ninja, configures on first use). The game ELF in
+  the game folder above.
 - References, read-only: `../RosePan` (newest tools and platform layer, SDK 3.0 + ee-gcc 2.9x library
   names, GCC 2 ABI), `../ReiPan` (GCC 3 ABI, porting from a sister build, SDK 3.0 libraries), `../MioPan`
   (FF2: symbols, the PS2 hardware skill).
