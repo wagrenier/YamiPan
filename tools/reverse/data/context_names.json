@@ -29,6 +29,18 @@
   "was": "FUN_00100310",
   "why": "Heap::alloc(0x329970, n, 16), the second plain-size allocator after operator_new[] 0x1002f0; order inferred from the delete pair"
  },
+ "00101288": {
+  "name": "rxInitDevices",
+  "tag": "lib-context",
+  "was": "FUN_00101288",
+  "why": "rxInit: picks the boot device, prints 'BootDevice = %d', 'Rom Date = %04X/%02X/%02X', 'Device[%s] %s', installs the file callbacks 0x100350..0x1003e0; exact rx name unknown"
+ },
+ "00102138": {
+  "name": "rxParseBootPath",
+  "tag": "lib-context",
+  "was": "FUN_00102138",
+  "why": "rxInit (argv0): splits the boot path into device / directory / name, prints 'BootDev = %s' / 'BootDir = %s' / 'BootName = %s', 'host0:' default; exact rx name unknown"
+ },
  "00103aa0": {
   "name": "Heap::free",
   "tag": "game-inferred",
@@ -119,11 +131,35 @@
   "was": "FUN_00107220",
   "why": "slot 0 of 0x311000; MSL string throws pass it to __throw as the dtor"
  },
+ "001076e8": {
+  "name": "sceGsResetGraph",
+  "tag": "lib-context",
+  "was": "FUN_001076e8",
+  "why": "libgraph (mode, inter, omode, ffmode): mode 0 resets GS_CSR, stores the GParam, GsPutIMR(0xff00), drops the VSync handler, SetGsCrt; mode 1 CSR=0x100; mode 5 SetGsCrt only"
+ },
  "00107878": {
   "name": "sceGsGetGParam",
   "tag": "lib-context",
   "was": "FUN_00107878",
   "why": "libgraph: returns the GS parameter block 0x2f1090 (+0 interlace mode, +8 VSync callback, +0xc its handler id)"
+ },
+ "00107888": {
+  "name": "sceGsResetPath",
+  "tag": "lib-context",
+  "was": "FUN_00107888",
+  "why": "libgraph: VIF1_FBRST / ERR, VU1 reset via ctc2 vi28 | 0x200, two init qwords into the VIF1 FIFO, GIF_CTRL reset"
+ },
+ "00107ea0": {
+  "name": "sceGsSetDefDrawEnv",
+  "tag": "lib-context",
+  "was": "FUN_00107ea0",
+  "why": "libgraph (env, psm, w, h, ztest, zpsm): writes FRAME_1 0x4c, ZBUF_1 0x4e, XYOFFSET_1 0x18 (0x800 - w/2), SCISSOR_1 0x40, PRMODECONT 0x1a, COLCLAMP 0x46, DTHE 0x45, TEST_1"
+ },
+ "00108088": {
+  "name": "sceGsSetDefClear",
+  "tag": "lib-context",
+  "was": "FUN_00108088",
+  "why": "libgraph (clear, ztest, x, y, w, h, r, g, b, a, z): TEST_1 0x47, PRIM 6 sprite, RGBAQ 1, two XYZ2 5 corners scaled by 16, restores TEST; returns 6 qwords"
  },
  "00108278": {
   "name": "sceGsSyncV",
@@ -142,6 +178,48 @@
   "tag": "lib-context",
   "was": "FUN_00109270",
   "why": "libgraph: replaces GParam+8 / +0xc with AddIntcHandler(INTC_VBLANK_S 2, fn), Remove + DisableIntc for 0; returns the previous callback"
+ },
+ "00109468": {
+  "name": "sceDmaGetChan",
+  "tag": "lib-context",
+  "was": "FUN_00109468",
+  "why": "libdma (id): returns the channel register block from the table 0x2f10e0 for id < 10, else NULL"
+ },
+ "00109490": {
+  "name": "sceDmaReset",
+  "tag": "lib-context",
+  "was": "FUN_00109490",
+  "why": "libdma (enable): clears CHCR / MADR / QWC / TADR / ASR of the 10 channels, acks DMAC_STAT, re-arms, sets DMAC_CTRL bit 0 when 1; returns the old enable bit"
+ },
+ "00109798": {
+  "name": "sceDmaSend",
+  "tag": "lib-context",
+  "was": "FUN_00109798",
+  "why": "libdma (chan, tag): waits for the channel, TADR = tag (0x109408 maps scratchpad), QWC 0, CHCR = (CHCR & ~0xc) | 0x105 (from memory, source chain, start)"
+ },
+ "00109a38": {
+  "name": "sceDmaSync",
+  "tag": "lib-context",
+  "was": "FUN_00109a38",
+  "why": "libdma (chan, mode, timeout): mode 1 returns CHCR.STR, else waits through 0x109310"
+ },
+ "0011e290": {
+  "name": "sceCdReadClock",
+  "tag": "lib-context",
+  "was": "FUN_0011e290",
+  "why": "libcdvd (clock*): SIF call fno 1 on the cd clock client 0x2f2f00 into a 0x10-byte buffer copied out as {stat, sec, min, hour, pad, day, month, year} (BCD); getLocalDateTime reads it; likely name, shape matches"
+ },
+ "0011e440": {
+  "name": "scePadInit",
+  "tag": "lib-context",
+  "was": "FUN_0011e440",
+  "why": "libpad: binds SIF RPC 0x80000100 / 0x80000101 (padman), checks the module version and prints 'libpad: Module version mismatch' (0x2ffea8); padSysInit calls it with 0"
+ },
+ "0011e898": {
+  "name": "scePadPortOpen",
+  "tag": "lib-context",
+  "was": "FUN_0011e898",
+  "why": "libpad (port, slot, buffer): 'libpad: buffer addr is not 64 byte align' / 'pad port is already open [%d][%d]' strings, SIF call to padman with the buffer"
  },
  "00121ef0": {
   "name": "abort",
@@ -191,17 +269,59 @@
   "was": "FUN_00128498",
   "why": "R5900 quadword/doubleword zero-byte scan (0x0101.. / 0x8080.. masks), returns end - start"
  },
+ "0012cd20": {
+  "name": "gsEndFrameSync",
+  "tag": "game-inferred",
+  "was": "FUN_0012cd20",
+  "why": "gameMainThread, end of each frame: after a requested reset (gp-0x7ae0) sceGsResetPath + sceGsResetGraph(1,..) + sceDmaReset; then sceGsSyncPath(0,0) and, on a timeout, resets the path and DMA until sceGsSyncPath(1,1) succeeds"
+ },
  "0012d620": {
   "name": "gameInit",
   "tag": "game-inferred",
   "was": "FUN_0012d620",
   "why": "main's first call after __init_cpp, with argv[0]: heap init 0x104600, 0x1527a0(argv0, 0xf, 0x4f, 0x51), sceGsSyncV waits, seeds the RNG from 0x23de20's bytes, constructs the 0x540-byte global object at gp-0x7aec (ctor 0x12d0d0), AddDmacHandler(15, 0x12dc20)"
  },
+ "0012d770": {
+  "name": "gsClearVram",
+  "tag": "game-inferred",
+  "was": "FUN_0012d770",
+  "why": "gameInit: builds a 256x256 sceGsSetDefDrawEnv + sceGsSetDefClear (0x780 / 0x700 offsets) packet and sends it on DMA ch 2 (GIF) repeatedly, stepping FRAME.FBP by 32 pages each pass, so the whole GS memory is cleared before display"
+ },
  "0012d910": {
   "name": "main",
   "tag": "game-inferred",
   "was": "FUN_0012d910",
   "why": "entry 0x100204 calls it with argc (0x31af80) and argv (0x31af84) after FlushCache/EI, then jumps to exit with its result"
+ },
+ "0012e3f0": {
+  "name": "gfxInitRenderTargets",
+  "tag": "game-inferred",
+  "was": "FUN_0012e3f0",
+  "why": "gameInit: sets up two offscreen draw + clear environments (256x256 at 0x4ae7c0, 512x512 at 0x4ae280, both through sceGsSetDefDrawEnv / sceGsSetDefClear and 0x12ec10) and the VRAM managers 0x31ad9c (0x143f50, five page ranges up to 0x3700), 0x31ada0 (0x143270) and 0x31ad98 (0x2e14d0, handed to 0x2d7cf0); name provisional"
+ },
+ "0012f260": {
+  "name": "rcnt1Start",
+  "tag": "game-inferred",
+  "was": "FUN_0012f260",
+  "why": "gameInit: once (gp-0x7ac4), RCNT1_MODE = 0x83 (count on H-blank, counting enabled)"
+ },
+ "0012ffa0": {
+  "name": "padSysUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_0012ffa0",
+  "why": "gameMainThread, per frame: PadPort::read on both port records 0x4aed00 when libpad is up, bumps the input frame counter 0x31adb4 (skipping 0), calls slot +8 of each of the 16 listeners 0x4af000 (vptr at +0x120), returns the counter"
+ },
+ "00130130": {
+  "name": "padSysInit",
+  "tag": "game-inferred",
+  "was": "FUN_00130130",
+  "why": "gameInit: scePadInit(0) once (flag 0x31adb0), scePadPortOpen(port 0..1, slot 0) on the 0x180-byte port records 0x4aed00 (DMA buffer first, +0x158 open, +0x159 ok, +0x15c port), clears the 16 input listener slots 0x4af000 and the input frame counter 0x31adb4"
+ },
+ "00130230": {
+  "name": "PadPort::read",
+  "tag": "game-inferred",
+  "was": "FUN_00130230",
+  "why": "(port record): keeps last frame's 0x20-byte state (+0x100 -> +0x120), clears it (+0x102/+0x103 0xff = no buttons), reads the pad through libpad state / read / mode calls 0x11ed60.. 0x11f440 on port +0x15c; padSysUpdate calls it for ports 0 and 1"
  },
  "00130a30": {
   "name": "threadSetSwitchHook",
@@ -293,6 +413,18 @@
   "was": "FUN_001397c8",
   "why": "libkernl varargs printf formatting through 0x1388c8 with the output fn 0x139638 under DIntr; sceGsSyncPath's timeout messages go through it"
  },
+ "0013a848": {
+  "name": "sceSifBindRpc",
+  "tag": "lib-context",
+  "was": "FUN_0013a848",
+  "why": "libkernl SIF RPC (client, rpc number, mode): CreateSema named 'SceSifrpcBind' (0x301118), packet from the pool 0x4cb380, DMA to the IOP; scePadInit binds 0x80000100 with it"
+ },
+ "0013aa28": {
+  "name": "sceSifCallRpc",
+  "tag": "lib-context",
+  "was": "FUN_0013aa28",
+  "why": "libkernl SIF RPC (client, fno, mode, send, ssize, recv, rsize, end fn, end arg): 72 call sites across libpad / libcdvd, same packet pool 0x4cb380 as sceSifBindRpc"
+ },
  "00140ba0": {
   "name": "DIntr",
   "tag": "lib-context",
@@ -316,5 +448,77 @@
   "tag": "lib-context",
   "was": "FUN_00141258",
   "why": "libkernl Exit(status): library teardown 0x141198 then tail-jump to the _Exit syscall 0x136700; crt0's _exit 0x100218 is j Exit"
+ },
+ "00148500": {
+  "name": "soundUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00148500",
+  "why": "gameMainThread, per frame: under the sound semaphore 0x31a8ac runs 0x162220, 0x159d88 (stream service) and 0x16b698"
+ },
+ "001486e0": {
+  "name": "soundInit",
+  "tag": "game-inferred",
+  "was": "FUN_001486e0",
+  "why": "gameInit (isPal): three sound semaphores 0x31a8ac..0x31a8b4, driver callbacks, the 0x2b0-byte stream state 0x4d08d0, PCM / ADPCM stream setup (0x162178), tick rate 50 or 60 (0x159f20), SDPR2 limits (0x168260), the 0x4c-byte object 0x31addc (0x148130), rx thread callback 0x1488f0"
+ },
+ "001527a0": {
+  "name": "rxInit",
+  "tag": "lib-context",
+  "was": "FUN_001527a0",
+  "why": "gameInit (argv0, 0xf, 0x4f, 0x51): rx runtime init -- thread priorities relative to the caller's (rxThreadSetPrioIndex), boot path from argv0, devices, the four file callbacks 0x100350.., H-sync interval 4, loads SPK.ROM (spkRomLoad), 0x80000-byte buffer; rx's real API name unknown"
+ },
+ "00152870": {
+  "name": "spkRomLoad",
+  "tag": "game-inferred",
+  "was": "FUN_00152870",
+  "why": "rxInit: once (gp-0x7a8c), reads the whole 'SPK.ROM' into the global heap, checks magic 'SLPK' 0x4b504c53, relocates its entry table (count +8, data base +0xc, done flag +0x10), registers callbacks 0x1529d0 / 0x152e20 / 0x152c90"
+ },
+ "001671e0": {
+  "name": "rxThAddCallback",
+  "tag": "lib-context",
+  "was": "FUN_001671e0",
+  "why": "name from the message 'rxthread: rxThAddCallback failed! (%08X)' its caller 0x167220 prints when it fails"
+ },
+ "00167fc0": {
+  "name": "rxThreadSetHSyncInterval",
+  "tag": "lib-context",
+  "was": "FUN_00167fc0",
+  "why": "rx thread module (n): prints 'rxThread: HSync Interval:%d'; rxInit passes 4; exact rx name unknown"
+ },
+ "00168010": {
+  "name": "rxThreadSetPrioIndex",
+  "tag": "lib-context",
+  "was": "FUN_00168010",
+  "why": "rx thread module (p0, p1, p2): stores three priority offsets, prints 'rxThread: PrioIndex %d %d %d'; rxInit calls it; exact rx name unknown"
+ },
+ "0023baf0": {
+  "name": "getGameOptions",
+  "tag": "game-inferred",
+  "was": "FUN_0023baf0",
+  "why": "returns the options record 0x599000 (62 call sites); systemDataInit fills it with GameOptions::setDefaults"
+ },
+ "0023bb50": {
+  "name": "systemDataInit",
+  "tag": "game-inferred",
+  "was": "FUN_0023bb50",
+  "why": "gameInit: inits the persistent game-state block 0x598b30 (0x23b280), 0x598fec (0x23af80) and the options 0x599000 (GameOptions::setDefaults), clears the 0x100-word table 0x599050; name provisional"
+ },
+ "0023be70": {
+  "name": "GameOptions::setDefaults",
+  "tag": "game-inferred",
+  "was": "FUN_0023be70",
+  "why": "(opts): 0x50-byte defaults including an 8-entry table 6,5,4,7,3,1,2,0 (button map?) at +0x24; called on 0x599000 by systemDataInit; class name provisional"
+ },
+ "0023de20": {
+  "name": "getLocalDateTime",
+  "tag": "game-inferred",
+  "was": "FUN_0023de20",
+  "why": "(out[4] halfwords, arg): sceCdReadClock + sceScfGetLocalTimefromRTC, packs BCD {sec<<8|0x10, hour<<8|min, month<<8|day, 0x2000+year} (2000-01-01 12:00 when the clock fails), post-processed by 0x23dfa0; gameInit seeds the RNG from it"
+ },
+ "00264790": {
+  "name": "sceScfGetLocalTimefromRTC",
+  "tag": "lib-context",
+  "was": "FUN_00264790",
+  "why": "libscf (clock*): converts the RTC clock (JST) in place to local time through 0x264298 / 0x264350; getLocalDateTime calls it right after sceCdReadClock; likely name"
  }
 }

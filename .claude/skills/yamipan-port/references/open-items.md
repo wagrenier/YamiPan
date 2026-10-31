@@ -32,10 +32,15 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    vtable slots and initialisers): 0x12db00, 0x12db70, 0x12dab0, 0x131840, 0x12dc20 need functions
    too (with 4(a)); a `rtti.py --missing` / `ghidra.py refs` pass over lui/addiu pairs feeding a0..t1
    before a jal would find the rest. Rename 0x12db00 `gameMainThread` once it exists.
-   **Next batches, in this order**: what `gameMainThread` calls (0x151270, 0x12cdf0, 0x12ffa0,
-   0x148500, 0x12cd20) and `gameInit`'s callees (0x1527a0 with argv[0], 0x130130, 0x12d770,
-   0x12e3f0, 0x1486e0, 0x12f260, 0x23de20, 0x23bb50 / 0x23baf0 / 0x23be70, 0x12d0d0 the global
-   object's ctor, 0x151290, 0x2a9c80); the rest of main's teardown (0x2acec0, 0x148540, 0x12e3a0,
+   **Batch 003 done (2026-10-31, 34 names)**: `gameMainThread`'s and `gameInit`'s callees (pad,
+   sound, rx init, SPK.ROM, GS / DMA / SIF / libpad library calls, options; architecture.md
+   "Program flow"). Left unnamed on purpose: 0x12cdf0 (frame render, a member) and 0x12d0d0 (ctor)
+   until **the global object's class is named** -- next batch: read its members (+4 / +0x17c /
+   +0x2f4 = three 0x178-byte 0x12fcf0 objects, vtable 0x311050; +0x46c 0x12dd30..0x12de00 packet
+   buffer?; +0x4a8 0x133600..0x133620 debug meter; +0x510 0x1352d0) and pick the class name (a
+   frame / render system); 0x151270 / 0x151290 are empty stubs (leave); 0x2a9c80 -> 0x2acf00 ->
+   0x11fb70 (libmc init?).
+   **Next batches, in this order**: the global object's class (above); the rest of main's teardown (0x2acec0, 0x148540, 0x12e3a0,
    0x130070, 0x152750; member dtors 0x135330 / 0x133630 / 0x12de80 / 0x12fa90 once the global
    object's class is named); `_InitSys`'s nine
    callees (0x140c08, 0x140d48, 0x141338, 0x1414b0, 0x1416f0, 0x1378b8, 0x140f80, 0x140470,
@@ -149,6 +154,11 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-10-31: bootstrap 4, part 4 (scheduled run): naming batch 003 (34 names: libpad / libgraph /
+  libdma / SIF, pad and sound systems, rx init and `spkRomLoad`, `gsClearVram`,
+  `gfxInitRenderTargets`, options and system data). Ghidra had unsaved changes (Ctrl+S). Next:
+  bootstrap 4(b) batch 004, the global object's class ("Next up").
 
 - 2026-10-31: bootstrap 4, part 3 (scheduled run): naming batch 002 (26 names: the 8-slot thread
   scheduler and frame pacing, `gameInit`, heap init / teardown, libgraph / libkernl helpers,

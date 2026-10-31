@@ -102,9 +102,24 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
   object (members at +0x510, +0x4a8, +0x46c, +0x2f4, +0x17c, +4; vptr stores above) and calls
   0x12e3a0, 0x130070, 0x152750, `shutdownGlobalHeap` 0x1045a0, `__destroy_global_chain`.
 - **The main loop** is `gameMainThread` 0x12db00 (thread slot 0): starts slot 1 on 0x231bb0, then
-  forever: 0x151270, `frameSyncWait` (returns the vsyncs this frame took), 0x12cdf0(obj, vsyncs)
-  (update?), 0x12ffa0, 0x148500, `threadYield`(1), 0x12cd20(obj) (draw?). The 2 passed to
-  `threadSysInit` is the frame interval: 30 fps unless the frameReady callback 0x12db70 says otherwise.
+  forever: 0x151270 (empty), `frameSyncWait` (returns the vsyncs this frame took), 0x12cdf0(obj,
+  vsyncs) (the frame's render / kick: a debug meter of heap use per 27 MB and frame time when obj+0
+  is set, then the members at +0x46c, +0x4a8, +0x510(vsyncs), FlushCache; batch 003 left it unnamed
+  until the global object's class is), `padSysUpdate` 0x12ffa0, `soundUpdate` 0x148500,
+  `threadYield`(1), `gsEndFrameSync` 0x12cd20 (sceGsSyncPath with a GS / DMA reset on timeout). The
+  2 passed to `threadSysInit` is the frame interval: 30 fps unless the frameReady callback 0x12db70
+  says otherwise.
+- **`gameInit`'s subsystems** (batch 003): `rxInit` 0x1527a0 (SCE's rx runtime: thread priorities
+  relative to the caller, boot path from argv[0], devices, `spkRomLoad` 0x152870 = all of `SPK.ROM`
+  into the heap, magic `SLPK`, its entry table relocated), `padSysInit` 0x130130 (libpad, two
+  0x180-byte port records at 0x4aed00, 16 input listeners at 0x4af000 called through vptr+0x120 slot
+  0 each frame), `gsClearVram` 0x12d770, `gfxInitRenderTargets` 0x12e3f0 (256x256 and 512x512
+  offscreen draw envs, VRAM managers at 0x31ad9c / 0x31ada0 / 0x31ad98), `soundInit` 0x1486e0(isPal)
+  (SDPR2 driver, PCM / ADPCM streams, 50 / 60 Hz tick), `rcnt1Start` 0x12f260 (RCNT1 on H-blank),
+  `getLocalDateTime` 0x23de20 (RTC -> local BCD date, seeds the RNG), `systemDataInit` 0x23bb50
+  (persistent state 0x598b30, options 0x599000 via `getGameOptions` 0x23baf0 / 
+  `GameOptions::setDefaults` 0x23be70), the global object ctor 0x12d0d0, 0x151290 (empty),
+  0x2a9c80 (0x2acf00: a one-time library init, libmc?).
 - Named (batch 001): crt0 `entry` -> `_InitSys` 0x140e58 (libkernl, nine init calls) -> `FlushCache`
   -> `main` 0x12d910 -> `exit` 0x123538 (newlib: `_impure_ptr` 0x2f3398 `->_atexit` +0x148, then
   `__cleanup` +0x3c) -> `_exit` 0x100218 (crt0: `j Exit`) -> `Exit` 0x141258 -> `_Exit` syscall.
@@ -186,7 +201,14 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
 - **SDK** named so far: libkernl `StartThread` 0x137c20, `DIntr` 0x140ba0 / `EIntr` 0x140bf0,
   `DisableIntc` 0x1375c0 / `EnableIntc` 0x137628, `scePrintf` 0x1397c8; libgraph `sceGsGetGParam`
   0x107878 (block 0x2f1090), `sceGsSyncV` 0x108278, `sceGsSyncPath` 0x108310, `sceGsSyncVCallback`
-  0x109270. Heap setup: `initGlobalHeap` 0x104600 (`_malloc_r` 0x124950 a block for 0x104500 to
+  0x109270, `sceGsResetGraph` 0x1076e8, `sceGsResetPath` 0x107888, `sceGsSetDefDrawEnv` 0x107ea0,
+  `sceGsSetDefClear` 0x108088 (0x1079a0 is a DBuff setup, unnamed); libdma `sceDmaGetChan` 0x109468
+  (table 0x2f10e0), `sceDmaReset` 0x109490, `sceDmaSync` 0x109a38, `sceDmaSend` 0x109798; SIF
+  `sceSifBindRpc` 0x13a848 / `sceSifCallRpc` 0x13aa28 (packet pool 0x4cb380); libpad `scePadInit`
+  0x11e440, `scePadPortOpen` 0x11e898 (state / read calls 0x11ed60..0x11f6f8 unnamed); likely
+  `sceCdReadClock` 0x11e290 and `sceScfGetLocalTimefromRTC` 0x264790 (batch 003). rx (names
+  guessed from its messages): `rxThreadSetPrioIndex` 0x168010, `rxThreadSetHSyncInterval` 0x167fc0,
+  `rxThAddCallback` 0x1671e0, `rxParseBootPath` 0x102138, `rxInitDevices` 0x101288. Heap setup: `initGlobalHeap` 0x104600 (`_malloc_r` 0x124950 a block for 0x104500 to
   manage) / `shutdownGlobalHeap` 0x1045a0 (`_free_r` 0x123b18).
 - **libc** (Sony's newlib): `strlen` 0x128498, `strcpy` 0x128380 (R5900 quadword scans), `raise`
   0x127a68 / `_raise_r` 0x1278f8, `_impure_ptr` 0x2f3398.
