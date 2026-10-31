@@ -93,11 +93,18 @@ rena from their messages; game code from its strings and callers.
 
 Entry -> main -> the main loop; the boot sequence the smoke pad walks.
 
-- `entry` 0x100008 -> `main` 0x12d910 (argc, argv) -> exit call 0x123538. `main` stores argc/argv in
-  gp globals (gp-0x7ae8 / -0x7ae4), registers callbacks (0x12db70, 0x12dab0, 0x12db00 through
-  0x130f60 / 0x130a30 / 0x130e00), runs 0x130e50 then 0x2acec0 (thunk) / 0x151280 / 0x148540, then
-  tears down a global object (gp-0x7aec) with three member objects (vptr stores above) and calls
-  0x12e3a0, 0x130070, 0x152750, 0x1045a0, 0x1051f0. Names: bootstrap step 4.
+- `entry` 0x100008 -> `main` 0x12d910 (argc, argv) -> exit call 0x123538. `main` (batch 002):
+  `gameInit` 0x12d620(argv[0]) (heap, sceGsSyncV waits, RNG seed, `new` of the 0x540-byte global
+  object stored at gp-0x7aec, ctor 0x12d0d0, AddDmacHandler(15, 0x12dc20)); argc/argv to gp-0x7ae8 /
+  -0x7ae4; `threadSysInit`(0x12db70 frameReady, 2); `threadSetSwitchHook`(0x12dab0, obj+0x4a8);
+  **`threadRunMain`(`gameMainThread` 0x12db00)**, which blocks until the game ends; then
+  `threadSysShutdown` 0x130e50, 0x2acec0 (thunk) / 0x151280 (empty) / 0x148540, deletes the global
+  object (members at +0x510, +0x4a8, +0x46c, +0x2f4, +0x17c, +4; vptr stores above) and calls
+  0x12e3a0, 0x130070, 0x152750, `shutdownGlobalHeap` 0x1045a0, `__destroy_global_chain`.
+- **The main loop** is `gameMainThread` 0x12db00 (thread slot 0): starts slot 1 on 0x231bb0, then
+  forever: 0x151270, `frameSyncWait` (returns the vsyncs this frame took), 0x12cdf0(obj, vsyncs)
+  (update?), 0x12ffa0, 0x148500, `threadYield`(1), 0x12cd20(obj) (draw?). The 2 passed to
+  `threadSysInit` is the frame interval: 30 fps unless the frameReady callback 0x12db70 says otherwise.
 - Named (batch 001): crt0 `entry` -> `_InitSys` 0x140e58 (libkernl, nine init calls) -> `FlushCache`
   -> `main` 0x12d910 -> `exit` 0x123538 (newlib: `_impure_ptr` 0x2f3398 `->_atexit` +0x148, then
   `__cleanup` +0x3c) -> `_exit` 0x100218 (crt0: `j Exit`) -> `Exit` 0x141258 -> `_Exit` syscall.
@@ -163,6 +170,24 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   `std::logic_error` (0x311010, dtor 0x1070f0, `what` 0x1073d0, message string at +4),
   `std::length_error` (0x310ff0, dtor 0x107180), `std::out_of_range` (0x311000, dtor 0x107220).
   0x104f30 and 0x1073d0 are among the missing function starts.
+- **Thread system** (batch 002, game code 0x130a30..0x131930): a cooperative scheduler over **8
+  thread slots** at 0x4c7840, 0x24 bytes each: `{+0 tid, +4 state (0 free, 1 waiting N ticks, 2 start
+  pending; bit 7 masked), +8 ticks, +0xc arg, +0x10 cleanup fn, +0x14 result, +0x18 stack size?,
+  +0x1c stack base (canary 0x572a8b4c), +0x20 own-stack flag}`; default stacks per slot in the table
+  0x2f38c0 (8 bytes each). gp-0x7fd8 is the current slot. `threadScheduler` 0x131290 (prio 0x40)
+  wakes on the vblank callback 0x131840 (via `sceGsSyncVCallback`) and steps slots round-robin;
+  `threadSlotCreate` 0x130c90, `threadYield` 0x130bc0(ticks) (canary check), `threadRunMain`
+  0x130e00, `threadSetSwitchHook` 0x130a30 (post-switch; gp-0x7aa4 / -0x7a9c is a pre-switch hook
+  nothing set yet). Frame pacing: `frameSyncInit` 0x131870 / `frameSyncThread` 0x131930 (prio 0x10,
+  record 0x4c8160 `{+0 requested, +4 vsync count, +8 interval}`) / `frameSyncWait` 0x131260.
+  `jobWorkerThread` 0x131720 (prio 0x50) runs a linked job list 0x4c8b38..0x4c8b3c (records
+  `{busy, ?, fn, arg, prev, next}`; a job returning non-zero is re-queued). On PC this whole layer is
+  a host replacement candidate (one OS thread or fibers), decided at the platform-layer step.
+- **SDK** named so far: libkernl `StartThread` 0x137c20, `DIntr` 0x140ba0 / `EIntr` 0x140bf0,
+  `DisableIntc` 0x1375c0 / `EnableIntc` 0x137628, `scePrintf` 0x1397c8; libgraph `sceGsGetGParam`
+  0x107878 (block 0x2f1090), `sceGsSyncV` 0x108278, `sceGsSyncPath` 0x108310, `sceGsSyncVCallback`
+  0x109270. Heap setup: `initGlobalHeap` 0x104600 (`_malloc_r` 0x124950 a block for 0x104500 to
+  manage) / `shutdownGlobalHeap` 0x1045a0 (`_free_r` 0x123b18).
 - **libc** (Sony's newlib): `strlen` 0x128498, `strcpy` 0x128380 (R5900 quadword scans), `raise`
   0x127a68 / `_raise_r` 0x1278f8, `_impure_ptr` 0x2f3398.
 

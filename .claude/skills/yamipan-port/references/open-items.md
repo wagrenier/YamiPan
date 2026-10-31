@@ -25,10 +25,19 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    committed; the ledger `data/context_names.json` is). **Batch 001 done (2026-10-31, 27 names)**:
    the entry chain, `main`, `exit` / `Exit` / `_InitSys`, the CodeWarrior + MSL runtime, the
    exception classes' destructors, operator new / delete and the global heap (architecture.md "Key
-   functions and globals"). **Next batches, in this order**: `main`'s callees (0x12d620 with
-   argv[0], 0x130f60 / 0x130a30 / 0x130e00 callback registration, 0x130e50, 0x2acec0, 0x151280,
-   0x148540, the teardown 0x12e3a0 / 0x130070 / 0x152750 / 0x1045a0, the global object at
-   gp-0x7aec and its members' dtors 0x135330 / 0x133630 / 0x12de80 / 0x12fa90); `_InitSys`'s nine
+   functions and globals"). **Batch 002 done (2026-10-31, 26 names)**: `main`'s thread system,
+   `gameInit`, heap init / teardown, libgraph sync and libkernl interrupt helpers (architecture.md
+   "Program flow", "Thread system"). `gameMainThread` 0x12db00 failed: no Ghidra function there.
+   **Code pointers passed as arguments are not in `data/missing_functions.json`** (it only has
+   vtable slots and initialisers): 0x12db00, 0x12db70, 0x12dab0, 0x131840, 0x12dc20 need functions
+   too (with 4(a)); a `rtti.py --missing` / `ghidra.py refs` pass over lui/addiu pairs feeding a0..t1
+   before a jal would find the rest. Rename 0x12db00 `gameMainThread` once it exists.
+   **Next batches, in this order**: what `gameMainThread` calls (0x151270, 0x12cdf0, 0x12ffa0,
+   0x148500, 0x12cd20) and `gameInit`'s callees (0x1527a0 with argv[0], 0x130130, 0x12d770,
+   0x12e3f0, 0x1486e0, 0x12f260, 0x23de20, 0x23bb50 / 0x23baf0 / 0x23be70, 0x12d0d0 the global
+   object's ctor, 0x151290, 0x2a9c80); the rest of main's teardown (0x2acec0, 0x148540, 0x12e3a0,
+   0x130070, 0x152750; member dtors 0x135330 / 0x133630 / 0x12de80 / 0x12fa90 once the global
+   object's class is named); `_InitSys`'s nine
    callees (0x140c08, 0x140d48, 0x141338, 0x1414b0, 0x1416f0, 0x1378b8, 0x140f80, 0x140470,
    0x142b70); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
    string rep); SDK functions from their `PsIIlib` / assert strings; rx (`rxfile.c`); rena
@@ -140,6 +149,11 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-10-31: bootstrap 4, part 3 (scheduled run): naming batch 002 (26 names: the 8-slot thread
+  scheduler and frame pacing, `gameInit`, heap init / teardown, libgraph / libkernl helpers,
+  `_malloc_r` / `_free_r`). 0x12db00 needs a function first. Ghidra had unsaved changes (Ctrl+S).
+  Next: bootstrap 4(b) batch 003 ("Next up").
 
 - 2026-10-31: bootstrap 4, part 2 (scheduled run): naming batch 001 by reading (27 names: crt0 /
   libc / libkernl, CodeWarrior + MSL runtime, `main`, the heap), `data/context_names.json` and

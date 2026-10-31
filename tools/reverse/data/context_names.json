@@ -41,6 +41,18 @@
   "was": "FUN_00103c50",
   "why": "(heap, size, align): same semaphore guard around 0x103cd0; operator new passes align 16"
  },
+ "001045a0": {
+  "name": "shutdownGlobalHeap",
+  "tag": "game-inferred",
+  "was": "FUN_001045a0",
+  "why": "main's teardown: DeleteSema(heap 0x329970 +0), _free_r(_impure_ptr, heap memory +4); undoes initGlobalHeap"
+ },
+ "00104600": {
+  "name": "initGlobalHeap",
+  "tag": "game-inferred",
+  "was": "FUN_00104600",
+  "why": "(size, <= 0 means all but -size): sizes free RAM from 0x31a880..0x31a888 (else 32 MB - end - 0x2000), probes with _malloc_r / _free_r, then _malloc_r's block becomes the heap 0x329970 (0x104500)"
+ },
  "00104c60": {
   "name": "__construct_array",
   "tag": "lib-context",
@@ -107,6 +119,30 @@
   "was": "FUN_00107220",
   "why": "slot 0 of 0x311000; MSL string throws pass it to __throw as the dtor"
  },
+ "00107878": {
+  "name": "sceGsGetGParam",
+  "tag": "lib-context",
+  "was": "FUN_00107878",
+  "why": "libgraph: returns the GS parameter block 0x2f1090 (+0 interlace mode, +8 VSync callback, +0xc its handler id)"
+ },
+ "00108278": {
+  "name": "sceGsSyncV",
+  "tag": "lib-context",
+  "was": "FUN_00108278",
+  "why": "libgraph: waits for vblank and returns the field bit (CSR bit 13) when interlaced; gameInit loops on it"
+ },
+ "00108310": {
+  "name": "sceGsSyncPath",
+  "tag": "lib-context",
+  "was": "FUN_00108310",
+  "why": "libgraph: waits on VIF1 / GIF DMA, VIF1_STAT, VU1 and GIF_STAT; prints 'sceGsSyncPath: DMA Ch.1 does not terminate' (0x2fe730) on timeout; mode != 0 returns the busy mask"
+ },
+ "00109270": {
+  "name": "sceGsSyncVCallback",
+  "tag": "lib-context",
+  "was": "FUN_00109270",
+  "why": "libgraph: replaces GParam+8 / +0xc with AddIntcHandler(INTC_VBLANK_S 2, fn), Remove + DisableIntc for 0; returns the previous callback"
+ },
  "00121ef0": {
   "name": "abort",
   "tag": "lib-context",
@@ -118,6 +154,18 @@
   "tag": "lib-context",
   "was": "FUN_00123538",
   "why": "Sony libc (newlib): runs _impure_ptr->_atexit (+0x148) handlers in reverse, then __cleanup (+0x3c), then _exit; entry jumps here with main's result"
+ },
+ "00123b18": {
+  "name": "_free_r",
+  "tag": "lib-context",
+  "was": "FUN_00123b18",
+  "why": "newlib dlmalloc free (reent, p): chunk header at p-8 with the in-use bit, merges into the top chunk 0x2f33b0, __malloc_lock 0x1254a0 first"
+ },
+ "00124950": {
+  "name": "_malloc_r",
+  "tag": "lib-context",
+  "was": "FUN_00124950",
+  "why": "newlib (reent, size); initGlobalHeap calls it with _impure_ptr 0x2f3398, pairs with _free_r 0x123b18"
  },
  "001278f8": {
   "name": "_raise_r",
@@ -143,11 +191,119 @@
   "was": "FUN_00128498",
   "why": "R5900 quadword/doubleword zero-byte scan (0x0101.. / 0x8080.. masks), returns end - start"
  },
+ "0012d620": {
+  "name": "gameInit",
+  "tag": "game-inferred",
+  "was": "FUN_0012d620",
+  "why": "main's first call after __init_cpp, with argv[0]: heap init 0x104600, 0x1527a0(argv0, 0xf, 0x4f, 0x51), sceGsSyncV waits, seeds the RNG from 0x23de20's bytes, constructs the 0x540-byte global object at gp-0x7aec (ctor 0x12d0d0), AddDmacHandler(15, 0x12dc20)"
+ },
  "0012d910": {
   "name": "main",
   "tag": "game-inferred",
   "was": "FUN_0012d910",
   "why": "entry 0x100204 calls it with argc (0x31af80) and argv (0x31af84) after FlushCache/EI, then jumps to exit with its result"
+ },
+ "00130a30": {
+  "name": "threadSetSwitchHook",
+  "tag": "game-inferred",
+  "was": "FUN_00130a30",
+  "why": "(fn, arg): stores the callback the scheduler 0x131290 calls with (slot, arg) after each switch back (gp-0x7aa0 / -0x7a98); main sets 0x12dab0 with globalObject+0x4a8, later clears it"
+ },
+ "00130bc0": {
+  "name": "threadYield",
+  "tag": "game-inferred",
+  "was": "FUN_00130bc0",
+  "why": "(ticks): FlushCache, checks the current slot's stack canary 0x572a8b4c (hangs in sceGsSyncV if smashed), sets state 1 with the count, wakes the scheduler and sleeps; returns the slot's +0x14 result"
+ },
+ "00130c90": {
+  "name": "threadSlotCreate",
+  "tag": "game-inferred",
+  "was": "FUN_00130c90",
+  "why": "(fn, slot, arg, cleanup, stack, stacksize): tears down what slot (0x4c7840 + slot*0x24) held, CreateThread with the given or the slot's default stack (0x2f38c0 table), state 2 (start pending), writes the canary 0x572a8b4c at the stack base"
+ },
+ "00130e00": {
+  "name": "threadRunMain",
+  "tag": "game-inferred",
+  "was": "FUN_00130e00",
+  "why": "(fn): threadSlotCreate(fn, 0, ...), current slot = -1, StartThread(scheduler), WaitSema(8548) until the scheduler releases main; main passes gameMainThread"
+ },
+ "00130e50": {
+  "name": "threadSysShutdown",
+  "tag": "game-inferred",
+  "was": "FUN_00130e50",
+  "why": "main's teardown of threadSysInit: sceGsSyncVCallback(0), deletes the frame-sync thread and sema, the scheduler thread and semas, then each live slot's thread and calls its cleanup fn (+0x10) with its arg (+0xc)"
+ },
+ "00130f60": {
+  "name": "threadSysInit",
+  "tag": "game-inferred",
+  "was": "FUN_00130f60",
+  "why": "(frameReady fn, interval): clears the 8 x 0x24-byte thread slot table 0x4c7840, CreateSema 8548 / 802c, creates the scheduler thread 0x131290 (prio 0x40, stack 0x4c81b0) and the job worker 0x131720 (prio 0x50), then frameSyncInit; main passes 0x12db70 and 2"
+ },
+ "00131260": {
+  "name": "frameSyncWait",
+  "tag": "game-inferred",
+  "was": "FUN_00131260",
+  "why": "sets the frame request flag 0x4c8160, WaitSema(802c), returns the vsync count of that frame (gp-0x7aac); gameMainThread passes it to 0x12cdf0"
+ },
+ "00131290": {
+  "name": "threadScheduler",
+  "tag": "game-inferred",
+  "was": "FUN_00131290",
+  "why": "scheduler thread body: installs vblank callback 0x131840, steps the current slot 0..7 round-robin (with a push/pop override stack at 0x4c8170), starts state-2 slots (StartThread), wakes state-1 slots whose tick count ran out, SleepThread between, pre/post switch hooks"
+ },
+ "00131720": {
+  "name": "jobWorkerThread",
+  "tag": "game-inferred",
+  "was": "FUN_00131720",
+  "why": "spins on the job list 0x4c8b38, runs job->fn(job->arg) (+8 / +0xc) under DIntr/EIntr bookkeeping, frees the record when it returns 0, re-queues it at the tail 0x4c8b3c otherwise"
+ },
+ "00131870": {
+  "name": "frameSyncInit",
+  "tag": "game-inferred",
+  "was": "FUN_00131870",
+  "why": "(frameReady fn, interval): clears the frame-sync record 0x4c8160 (+8 = interval), CreateSema 8034, creates and starts thread 0x131930 (prio 0x10, stack 0x4c7960)"
+ },
+ "00131930": {
+  "name": "frameSyncThread",
+  "tag": "game-inferred",
+  "was": "FUN_00131930",
+  "why": "loops on WaitSema(8034), counts vsyncs in 0x4c8164; a frame is ready when requested and count >= interval, or when the frameReady callback says so; then stores the count in gp-0x7aac and SignalSema(802c)"
+ },
+ "001375c0": {
+  "name": "DisableIntc",
+  "tag": "lib-context",
+  "was": "FUN_001375c0",
+  "why": "libkernl wrapper: _DisableIntc(cause) + sync between DIntr / EIntr when interrupts were on"
+ },
+ "00137628": {
+  "name": "EnableIntc",
+  "tag": "lib-context",
+  "was": "FUN_00137628",
+  "why": "libkernl wrapper: _EnableIntc(cause) + sync between DIntr / EIntr when interrupts were on"
+ },
+ "00137c20": {
+  "name": "StartThread",
+  "tag": "lib-context",
+  "was": "FUN_00137c20",
+  "why": "libkernl wrapper: ReferThreadStatus, clears the new thread's saved register area on its stack under DIntr, then _StartThread(tid, arg)"
+ },
+ "001397c8": {
+  "name": "scePrintf",
+  "tag": "lib-context",
+  "was": "FUN_001397c8",
+  "why": "libkernl varargs printf formatting through 0x1388c8 with the output fn 0x139638 under DIntr; sceGsSyncPath's timeout messages go through it"
+ },
+ "00140ba0": {
+  "name": "DIntr",
+  "tag": "lib-context",
+  "was": "FUN_00140ba0",
+  "why": "libkernl: if Status.EIE set, DI + sync until it clears; returns whether interrupts were enabled"
+ },
+ "00140bf0": {
+  "name": "EIntr",
+  "tag": "lib-context",
+  "was": "FUN_00140bf0",
+  "why": "libkernl: EI, returns Status.EIE; paired with DIntr everywhere"
  },
  "00140e58": {
   "name": "_InitSys",
