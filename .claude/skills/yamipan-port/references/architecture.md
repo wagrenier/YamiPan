@@ -84,6 +84,8 @@ files from the 4 file-name strings.
 | vtables (classes) | 490 tables, 4 named by RTTI | rtti.py (CodeWarrior) | -- (class map, not names yet) |
 | missing function starts | 910 (904 vtable slots, 6 static initialisers) | rtti.py --missing | create first |
 | by reading, batch 001 (2026-10-31) | 27: crt0 / libc / libkernl, CodeWarrior + MSL runtime, `main`, heap | name_ctx.py | lib-context 24, game-inferred 3 |
+| by reading, batches 002-004 (2026-10-31) | 26 + 34 + 52: threads, gameInit's subsystems, `GameSystem` and its members, rena `Vif1PktManage` | name_ctx.py | ledger 139 |
+| class names | 6 (`data/class_names.json`) | rtti.py | -- |
 
 Expected sources (bootstrap step 4): Sony SDK 3.0 libraries by match (libmatch.py against FF3 / RoR,
 both SDK 3.0); MSL C++ / CodeWarrior runtime only by reading (no reference game built with it); rx and
@@ -102,10 +104,8 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
   object (members at +0x510, +0x4a8, +0x46c, +0x2f4, +0x17c, +4; vptr stores above) and calls
   0x12e3a0, 0x130070, 0x152750, `shutdownGlobalHeap` 0x1045a0, `__destroy_global_chain`.
 - **The main loop** is `gameMainThread` 0x12db00 (thread slot 0): starts slot 1 on 0x231bb0, then
-  forever: 0x151270 (empty), `frameSyncWait` (returns the vsyncs this frame took), 0x12cdf0(obj,
-  vsyncs) (the frame's render / kick: a debug meter of heap use per 27 MB and frame time when obj+0
-  is set, then the members at +0x46c, +0x4a8, +0x510(vsyncs), FlushCache; batch 003 left it unnamed
-  until the global object's class is), `padSysUpdate` 0x12ffa0, `soundUpdate` 0x148500,
+  forever: 0x151270 (empty), `frameSyncWait` (returns the vsyncs this frame took),
+  `GameSystem::flipFrame` 0x12cdf0(obj, vsyncs) ("The global object" below), `padSysUpdate` 0x12ffa0, `soundUpdate` 0x148500,
   `threadYield`(1), `gsEndFrameSync` 0x12cd20 (sceGsSyncPath with a GS / DMA reset on timeout). The
   2 passed to `threadSysInit` is the frame interval: 30 fps unless the frameReady callback 0x12db70
   says otherwise.
@@ -118,7 +118,7 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
   (SDPR2 driver, PCM / ADPCM streams, 50 / 60 Hz tick), `rcnt1Start` 0x12f260 (RCNT1 on H-blank),
   `getLocalDateTime` 0x23de20 (RTC -> local BCD date, seeds the RNG), `systemDataInit` 0x23bb50
   (persistent state 0x598b30, options 0x599000 via `getGameOptions` 0x23baf0 / 
-  `GameOptions::setDefaults` 0x23be70), the global object ctor 0x12d0d0, 0x151290 (empty),
+  `GameOptions::setDefaults` 0x23be70), `GameSystem::GameSystem` 0x12d0d0, 0x151290 (empty),
   0x2a9c80 (0x2acf00: a one-time library init, libmc?).
 - Named (batch 001): crt0 `entry` -> `_InitSys` 0x140e58 (libkernl, nine init calls) -> `FlushCache`
   -> `main` 0x12d910 -> `exit` 0x123538 (newlib: `_impure_ptr` 0x2f3398 `->_atexit` +0x148, then
@@ -129,6 +129,53 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
   0x106930 over an empty range 0x31a830..0x31a830: returns 0) and ends with `__destroy_global_chain`
   0x1051f0 (thunk 0x100270). Before that, 0x1045a0 tears down the global heap 0x329970 (DeleteSema,
   then `_free_r` of its block).
+
+- **The global object: `GameSystem`** (batch 004, 2026-10-31; class name provisional), 0x540 bytes,
+  `new`ed by `gameInit` into gp-0x7aec, ctor 0x12d0d0, deleted by `main` (member dtors in reverse):
+
+  | offset | member | class (vtable) | ctor / dtor |
+  |---|---|---|---|
+  | +0 | debug meter mode (0 off, 1 detail) | int | -- |
+  | +4 | pad, port 0 | `GamePad` (0x311020) | `Pad::Pad` 0x12fcf0 / `Pad::~Pad` 0x12fa90 |
+  | +0x17c | pad, port 1 | `GamePad` (0x311020) | same |
+  | +0x2f4 | pad, port 1 | `MaskedGamePad` (0x311030) | same |
+  | +0x46c | packet manager (2 x 0xc0000 buffers 0x32e280 / 0x3ee280, 14 lists) | `GamePacketManager` (0x311040) : rena `Vif1PktManage` (0x31a808) | 0x12dee0 / 0x12de80 |
+  | +0x4a8 | debug CPU / heap meter (stripped drawing) | `PerfMeter` : `RcntTimer` | 0x1336e0 / 0x133630 |
+  | +0x510 | the root game clock (12 ticks per 2-vsync frame) | `MasterClock` : `Clock` | 0x135390 / 0x135330 |
+
+  - **Pads** (0x178 bytes, vptr at **+0x120**, after the data): `{+0 input frame read, +4 port, +8
+    listening, +0xc terminal mode, +0x10 previous / +0x14 held / +0x18 pressed / +0x1c released
+    (libpad words inverted: L2 0x1, R2 0x2, L1 0x4, R1 0x8, ... select 0x100, R3 0x400), +0x24 analog
+    bytes, +0x28..+0x34 stick floats, +0x38 25 pressure bytes, +0x54 25 x {7, 9, 0}}`; `GamePad` adds
+    normalised sticks / lengths / angles +0x124..+0x150 (`GamePad::computeSticks` 0x12d2c0), a
+    `ButtonMap` +0x154 (`ButtonMap::setDefaults` 0x23bd00) and +0x174 = the options' button map
+    (getGameOptions()+0x24). Each vtable has **one slot, the per-frame update** that `padSysUpdate`
+    calls through the 16 listeners 0x4af000 (`Pad::setListening` 0x12fed0): `Pad` 0x130060 (thunk to
+    `Pad::update` 0x12f300), `GamePad` 0x12dc60 (update + computeSticks), `MaskedGamePad` 0x12dcb0
+    (the same, then `Pad::clear` 0x12f960 while L1+L2 are held). The three slot functions have no Ghidra
+    function yet (4(a)). Standalone `GamePad` ctor / dtor candidates: 0x12d540 / 0x12d5a0 (rtti.py).
+  - **rena `Vif1PktManage`** (0x30 bytes, vptr at +0x2c): `{+0 write ptr, +4 buffer base, +8 chain
+    start, +0xc open list, +0x10 buffer index, +0x14 list vector (count +0x18, data +0x1c), +0x20
+    buffer vector {base, size} (count +0x24, data +0x28)}`; lists are 0x34-byte `Vif1PktList`s
+    (sceVif1Packet at +0, id +0x20, head +0x24, tail +0x28, vptr +0x30). Per frame: `Open`(id) /
+    `Close` while drawing, `Terminate` links the non-empty lists **in id order** into one DMA chain
+    with an end tag, `Kick` sends it on VIF1 (CHCR 0x1c5), `Reset` flips to the other buffer. So the
+    draw layer order is the list id (0..13; `GameSystem::flipFrame` puts a GS FINISH on 13): the port's
+    host draw module keys its layers on it. libvifpk: `sceVif1PkReset` 0x10ac60,
+    `sceVif1PkCloseDmaTag` 0x10ac70, `sceVif1PkNext` 0x10ad20.
+  - **Clocks**: `Clock` (0x1c) `{+0 state (1 paused), +4 time, +8 delta, +0xc time2, +0x10 scale
+    0x100 (8.8), +0x14 parent, +0x18 children PtrList}`, `Clock::advance` 0x1354a0 scales and recurses,
+    `Clock::createChild` 0x135210 (deleted with `Clock::~Clock` 0x1351b0 by many systems: 0x151550,
+    0x18b330, 0x19bbe0, 0x20aba0, 0x25bc70); `MasterClock` (0x30) adds ticks per frame +0x20, vsync
+    total +0x24, interval +0x28, variable-rate flag +0x2c, `MasterClock::update` 0x1352d0(vsyncs).
+    `PtrList` `{u16 capacity, u16 count, void **data}`: `add` 0x135860, `next` 0x1357c0.
+  - **Debug meter**: `RcntTimer` (RCNT1 on H-blank, 64 us per tick at 15625 Hz) 0x12f200 / reset
+    0x12f190; `PerfMeter` beginFrame 0x133620, collectStats 0x133350, dumpGroups 0x132f30; its bar /
+    draw calls 0x133610 (returns 0, also called by 0x198970 / 0x199400), 0x133600, 0x132f20 are empty in
+    this retail build. Heap marks: `Heap::setMark` 0x1037c0, `Heap::markedUsage` 0x103870,
+    `Heap::realloc` 0x1038a0.
+- rx's debug print is `rxPrintf` 0x102328 (1 KB format buffer, hook 0x2f0880, scePrintf or a 4 KB
+  host log 0x31c580); rena's messages are Shift-JIS.
 
 ## Modules
 

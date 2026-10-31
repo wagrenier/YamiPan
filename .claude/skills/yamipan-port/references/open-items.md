@@ -34,15 +34,18 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    before a jal would find the rest. Rename 0x12db00 `gameMainThread` once it exists.
    **Batch 003 done (2026-10-31, 34 names)**: `gameMainThread`'s and `gameInit`'s callees (pad,
    sound, rx init, SPK.ROM, GS / DMA / SIF / libpad library calls, options; architecture.md
-   "Program flow"). Left unnamed on purpose: 0x12cdf0 (frame render, a member) and 0x12d0d0 (ctor)
-   until **the global object's class is named** -- next batch: read its members (+4 / +0x17c /
-   +0x2f4 = three 0x178-byte 0x12fcf0 objects, vtable 0x311050; +0x46c 0x12dd30..0x12de00 packet
-   buffer?; +0x4a8 0x133600..0x133620 debug meter; +0x510 0x1352d0) and pick the class name (a
-   frame / render system); 0x151270 / 0x151290 are empty stubs (leave); 0x2a9c80 -> 0x2acf00 ->
-   0x11fb70 (libmc init?).
-   **Next batches, in this order**: the global object's class (above); the rest of main's teardown (0x2acec0, 0x148540, 0x12e3a0,
-   0x130070, 0x152750; member dtors 0x135330 / 0x133630 / 0x12de80 / 0x12fa90 once the global
-   object's class is named); `_InitSys`'s nine
+   "Program flow").
+   **Batch 004 done (2026-10-31, 52 names + 6 class names in `data/class_names.json`)**: the global
+   object is `GameSystem` (ctor 0x12d0d0, `flipFrame` 0x12cdf0) with three pads (`Pad` / `GamePad` /
+   `MaskedGamePad`), `GamePacketManager` on rena's `Vif1PktManage`, `PerfMeter` / `RcntTimer`,
+   `MasterClock` / `Clock` / `PtrList`, libvifpk, `rxPrintf` (architecture.md "The global object").
+   Need Ghidra functions first (with 4(a)): the pad update slots 0x130060 (thunk), 0x12dc60
+   (`GamePad::update`), 0x12dcb0 (`MaskedGamePad::update`). Left unnamed: 0x133610 (empty, returns
+   0, also called by 0x198970 / 0x199400: a PerfMeter bar? check those callers), 0x133600 /
+   0x132f20 (empty), 0x12f6b0 / 0x12f600 (Pad::update's stick / post steps), 0x119b88 (atan2f?),
+   0x12d540 / 0x12d5a0 (GamePad ctor / dtor candidates, rtti.py).
+   **Next batches, in this order**: the rest of main's teardown (0x2acec0, 0x148540, 0x12e3a0,
+   0x130070, 0x152750; 0x2a9c80 -> 0x2acf00 -> 0x11fb70, libmc init?); `_InitSys`'s nine
    callees (0x140c08, 0x140d48, 0x141338, 0x1414b0, 0x1416f0, 0x1378b8, 0x140f80, 0x140470,
    0x142b70); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
    string rep); SDK functions from their `PsIIlib` / assert strings; rx (`rxfile.c`); rena
@@ -154,6 +157,11 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-10-31: bootstrap 4, part 5 (scheduled run): naming batch 004 (52 names: `GameSystem` and
+  its members, rena `Vif1PktManage`, libvifpk, clocks, debug meter, `rxPrintf`) and
+  `data/class_names.json` (6 vtables). Ghidra had unsaved changes (Ctrl+S). Next: bootstrap 4(b)
+  batch 005, main's teardown ("Next up").
 
 - 2026-10-31: bootstrap 4, part 4 (scheduled run): naming batch 003 (34 names: libpad / libgraph /
   libdma / SIF, pad and sound systems, rx init and `spkRomLoad`, `gsClearVram`,

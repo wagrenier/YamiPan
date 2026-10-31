@@ -41,6 +41,30 @@
   "was": "FUN_00102138",
   "why": "rxInit (argv0): splits the boot path into device / directory / name, prints 'BootDev = %s' / 'BootDir = %s' / 'BootName = %s', 'host0:' default; exact rx name unknown"
  },
+ "00102328": {
+  "name": "rxPrintf",
+  "tag": "lib-context",
+  "was": "FUN_00102328",
+  "why": "rx (fmt, ...): formats into a 1 KB stack buffer (0x12cab8), passes it to the hook 0x2f0880 if set, then scePrintf or appends to the 4 KB host log 0x31c580 flushed to the host file; every rx / rena message goes through it; rx's real name unknown"
+ },
+ "001037c0": {
+  "name": "Heap::setMark",
+  "tag": "game-inferred",
+  "was": "FUN_001037c0",
+  "why": "(heap, i): mark i = the end of the last block (+0x14 tail: addr + size & 0x3fffffff); i = -1 sets all four marks"
+ },
+ "00103870": {
+  "name": "Heap::markedUsage",
+  "tag": "game-inferred",
+  "was": "FUN_00103870",
+  "why": "(heap, i): mark i (+0x1c + 4i) minus the heap base +4, at least 0; GameSystem::flipFrame shows marks 0..2 of the global heap as bars"
+ },
+ "001038a0": {
+  "name": "Heap::realloc",
+  "tag": "game-inferred",
+  "was": "FUN_001038a0",
+  "why": "(heap, ptr, size): under the heap semaphore, keeps the block when its size (header -0x10, +4 & 0x3fffffff) already fits, else moves it to a bigger block (rest of the body not read in detail); PtrList::add uses it"
+ },
  "00103aa0": {
   "name": "Heap::free",
   "tag": "game-inferred",
@@ -203,6 +227,24 @@
   "was": "FUN_00109a38",
   "why": "libdma (chan, mode, timeout): mode 1 returns CHCR.STR, else waits through 0x109310"
  },
+ "0010ac60": {
+  "name": "sceVif1PkReset",
+  "tag": "lib-context",
+  "was": "FUN_0010ac60",
+  "why": "libvifpk (packet): pCurrent = pBase, pDmaTag = 0 (sceVif1Packet {pCurrent, pBase, pDmaTag, ...}); Vif1PktManage::Reset runs it on each list; likely name, shape matches"
+ },
+ "0010ac70": {
+  "name": "sceVif1PkCloseDmaTag",
+  "tag": "lib-context",
+  "was": "FUN_0010ac70",
+  "why": "libvifpk (packet): pads pCurrent to a quadword with zeros, adds the qwords written to the open DMA tag's QWC, pDmaTag = 0; likely name"
+ },
+ "0010ad20": {
+  "name": "sceVif1PkNext",
+  "tag": "lib-context",
+  "was": "FUN_0010ad20",
+  "why": "libvifpk (packet, addr, opt): closes the open tag (sceVif1PkCloseDmaTag), writes a DMA next tag (id 2 | opt, addr & 0x9fffffff) and opens it; likely name"
+ },
  "0011e290": {
   "name": "sceCdReadClock",
   "tag": "lib-context",
@@ -275,6 +317,24 @@
   "was": "FUN_0012cd20",
   "why": "gameMainThread, end of each frame: after a requested reset (gp-0x7ae0) sceGsResetPath + sceGsResetGraph(1,..) + sceDmaReset; then sceGsSyncPath(0,0) and, on a timeout, resets the path and DMA until sceGsSyncPath(1,1) succeeds"
  },
+ "0012cdf0": {
+  "name": "GameSystem::flipFrame",
+  "tag": "game-inferred",
+  "was": "FUN_0012cdf0",
+  "why": "(this, vsyncs), once per frame from gameMainThread: when +0 is set, heap-use and packet-use bars on the PerfMeter (Heap::markedUsage / 27 MB, GetUsedSize / GetBufferSize) and a GS FINISH packet on list 13; then GamePacketManager::endFrame, PerfMeter::beginFrame, MasterClock::update(vsyncs), FlushCache, GamePacketManager::kickAndSwap"
+ },
+ "0012d0d0": {
+  "name": "GameSystem::GameSystem",
+  "tag": "game-inferred",
+  "was": "FUN_0012d0d0",
+  "why": "ctor of the 0x540-byte global object gameInit news (gp-0x7aec): +0 debug meter mode, three pads at +4 / +0x17c / +0x2f4 (Pad ctor, ports 0, 1, 1; vptrs 0x311020, the third 0x311030), GamePacketManager at +0x46c, PerfMeter at +0x4a8, MasterClock at +0x510; points each pad's +0x174 at the options' button map (getGameOptions()+0x24); class name provisional (the frame / system object)"
+ },
+ "0012d2c0": {
+  "name": "GamePad::computeSticks",
+  "tag": "game-inferred",
+  "was": "FUN_0012d2c0",
+  "why": "(this): from the raw stick floats +0x28..+0x34 builds square-to-circle normalised sticks (+0x124..+0x130), their lengths (+0x144..+0x150) and angles through 0x119b88 (atan2?) at +0x134..+0x140; called by the vtable-0x311020 / 0x311030 update slots (0x12dc60, 0x12dcb0) after Pad::update returns new data"
+ },
  "0012d620": {
   "name": "gameInit",
   "tag": "game-inferred",
@@ -293,17 +353,101 @@
   "was": "FUN_0012d910",
   "why": "entry 0x100204 calls it with argc (0x31af80) and argv (0x31af84) after FlushCache/EI, then jumps to exit with its result"
  },
+ "0012dd30": {
+  "name": "GamePacketManager::closeList",
+  "tag": "game-inferred",
+  "was": "FUN_0012dd30",
+  "why": "(this): FlushCache, +0x30 = -1, Vif1PktManage::Close + IsOverflow"
+ },
+ "0012dd70": {
+  "name": "GamePacketManager::kickAndSwap",
+  "tag": "game-inferred",
+  "was": "FUN_0012dd70",
+  "why": "(this): FlushCache, Vif1PktManage::Kick unless +0x34 is set (cleared after), then Vif1PktManage::Reset onto the other buffer; the last call of GameSystem::flipFrame"
+ },
+ "0012ddc0": {
+  "name": "GamePacketManager::endFrame",
+  "tag": "game-inferred",
+  "was": "FUN_0012ddc0",
+  "why": "(this): FlushCache, +0x30 = -1, Vif1PktManage::Terminate (chains the lists and ends the DMA chain); GameSystem::flipFrame calls it before the kick"
+ },
+ "0012de00": {
+  "name": "GamePacketManager::openList",
+  "tag": "game-inferred",
+  "was": "FUN_0012de00",
+  "why": "(this, id): closes the open list if it is another one (Close + IsOverflow), stores +0x30 = id and returns Vif1PktManage::Open(id), the list whose +0 is the write pointer; GameSystem::flipFrame opens list 13 for its GS FINISH packet"
+ },
+ "0012de80": {
+  "name": "GamePacketManager::~GamePacketManager",
+  "tag": "game-inferred",
+  "was": "FUN_0012de80",
+  "why": "(this, short flag): vptr 0x311040 (its only slot), then Vif1PktManage::~Vif1PktManage(this, 0), frees when flag > 0"
+ },
+ "0012dee0": {
+  "name": "GamePacketManager::GamePacketManager",
+  "tag": "game-inferred",
+  "was": "FUN_0012dee0",
+  "why": "(this, buf0, size0, buf1, size1): Vif1PktManage base, vptr 0x311040 at +0x2c, registers the two 0xc0000-byte packet buffers 0x32e280 / 0x3ee280 (double buffer) and 14 lists (ids 0..13), Reset + Terminate, +0x30 open list id = -1, +0x34 skip-kick flag; GameSystem member +0x46c"
+ },
  "0012e3f0": {
   "name": "gfxInitRenderTargets",
   "tag": "game-inferred",
   "was": "FUN_0012e3f0",
   "why": "gameInit: sets up two offscreen draw + clear environments (256x256 at 0x4ae7c0, 512x512 at 0x4ae280, both through sceGsSetDefDrawEnv / sceGsSetDefClear and 0x12ec10) and the VRAM managers 0x31ad9c (0x143f50, five page ranges up to 0x3700), 0x31ada0 (0x143270) and 0x31ad98 (0x2e14d0, handed to 0x2d7cf0); name provisional"
  },
+ "0012f190": {
+  "name": "RcntTimer::reset",
+  "tag": "game-inferred",
+  "was": "FUN_0012f190",
+  "why": "(this): +8 (u64) = 0, +0 = RCNT1_COUNT"
+ },
+ "0012f1b0": {
+  "name": "RcntTimer::~RcntTimer",
+  "tag": "game-inferred",
+  "was": "FUN_0012f1b0",
+  "why": "(this, short flag): frees when flag > 0, nothing else; PerfMeter::~PerfMeter calls it with 0"
+ },
+ "0012f200": {
+  "name": "RcntTimer::RcntTimer",
+  "tag": "game-inferred",
+  "was": "FUN_0012f200",
+  "why": "(hz, fps, this, n): +0x10 = 1e6 / hz (us per tick; 15625 = PAL H-blank), +0x14 fps, +0x18 n, starts RCNT1 on H-blank once (gp-0x7ac4, the flag rcnt1Start uses), +0 = RCNT1_COUNT; PerfMeter's base"
+ },
  "0012f260": {
   "name": "rcnt1Start",
   "tag": "game-inferred",
   "was": "FUN_0012f260",
   "why": "gameInit: once (gp-0x7ac4), RCNT1_MODE = 0x83 (count on H-blank, counting enabled)"
+ },
+ "0012f300": {
+  "name": "Pad::update",
+  "tag": "game-inferred",
+  "was": "FUN_0012f300",
+  "why": "base virtual (slot 0 of vtable 0x311050 through the thunk 0x130060): once per input frame (gp-0x7abc), reads its port record 0x4aed00 + port*0x180: +0xc terminal mode, +0x14 held / +0x10 previous (inverted libpad words), +0x18 pressed, +0x1c released, pressure bytes through the table 0x2f3890, sticks 0x12f6b0; returns 1 on new data, 0 same frame, -1 no pad"
+ },
+ "0012f960": {
+  "name": "Pad::clear",
+  "tag": "game-inferred",
+  "was": "FUN_0012f960",
+  "why": "(this): zeroes the button / stick / pressure state (+0x10..+0x50) and centres the analog bytes +0x24 at 0x80, the same clearing Pad::Pad and Pad::update do; the vtable-0x311030 pad's update calls it while L1+L2 (0x5) are held"
+ },
+ "0012fa90": {
+  "name": "Pad::~Pad",
+  "tag": "game-inferred",
+  "was": "FUN_0012fa90",
+  "why": "(this, short flag): restores vptr 0x311050 at +0x120, Pad::setListening(0) when +8 is set, frees when flag > 0 (CodeWarrior deleting dtor); main's teardown runs it on the three pads of the global object"
+ },
+ "0012fcf0": {
+  "name": "Pad::Pad",
+  "tag": "game-inferred",
+  "was": "FUN_0012fcf0",
+  "why": "(this, port, listen): vptr 0x311050 at +0x120, clears the state (+0x10 20 bytes, +0x24 four analog bytes 0x80 = centred, +0x28 16 bytes, +0x38 25 pressure bytes), +4 port, registers in the 16-slot listener table 0x4af000 when listen (Pad::setListening), 25 {7, 9, 0} entries at +0x54; GameSystem::GameSystem builds three"
+ },
+ "0012fed0": {
+  "name": "Pad::setListening",
+  "tag": "game-inferred",
+  "was": "FUN_0012fed0",
+  "why": "(this, on): on adds this to a free slot of the 16 input listeners 0x4af000 (1 if already there, -1 if full), off removes it (2 if absent); padSysUpdate calls slot 0 of each listener per frame"
  },
  "0012ffa0": {
   "name": "padSysUpdate",
@@ -388,6 +532,90 @@
   "tag": "game-inferred",
   "was": "FUN_00131930",
   "why": "loops on WaitSema(8034), counts vsyncs in 0x4c8164; a frame is ready when requested and count >= interval, or when the frameReady callback says so; then stores the count in gp-0x7aac and SignalSema(802c)"
+ },
+ "00132f30": {
+  "name": "PerfMeter::dumpGroups",
+  "tag": "game-inferred",
+  "was": "FUN_00132f30",
+  "why": "(this): walks the markers for groups 0..7 and does nothing with them (its output stripped in this build); GameSystem::flipFrame calls it while pad 2's +0x18 bit 0x400 (R3 pressed) is set"
+ },
+ "00133350": {
+  "name": "PerfMeter::collectStats",
+  "tag": "game-inferred",
+  "was": "FUN_00133350",
+  "why": "(this, group): when enabled (+0x40) for up to 300 samples, per marker of the group: min / max / sum of the time since the previous marker into +0x44 / +0x48 / +0x4c, every +0x60 frames the next sample; GameSystem::flipFrame passes 4"
+ },
+ "00133620": {
+  "name": "PerfMeter::beginFrame",
+  "tag": "game-inferred",
+  "was": "FUN_00133620",
+  "why": "(this): marker count +0x34 and +0x38 = 0, RcntTimer::reset; GameSystem::flipFrame calls it every frame"
+ },
+ "00133630": {
+  "name": "PerfMeter::~PerfMeter",
+  "tag": "game-inferred",
+  "was": "FUN_00133630",
+  "why": "(this, short flag): frees the marker and stats arrays (+0x3c, +0x44, +0x48, +0x4c), RcntTimer::~RcntTimer(this, 0), frees when flag > 0"
+ },
+ "001336e0": {
+  "name": "PerfMeter::PerfMeter",
+  "tag": "game-inferred",
+  "was": "FUN_001336e0",
+  "why": "(this, entries 0x30, x 0x20, y 0x1d6, w 0xc0, h 0x18): RcntTimer base (15625 Hz, 50 fps), rect +0x20..+0x2c, capacity +0x30, 16-byte marker array +0x3c (operator new[]), stats arrays +0x44 / +0x48 / +0x4c; GameSystem member +0x4a8: the debug CPU / heap meter"
+ },
+ "001351b0": {
+  "name": "Clock::~Clock",
+  "tag": "game-inferred",
+  "was": "FUN_001351b0",
+  "why": "(this, short flag): ClockNode::~ClockNode(this, 0), frees when flag > 0; deletes clocks from Clock::createChild (GameSystem::GameSystem, 0x151550, 0x18b330, 0x19bbe0, 0x20aba0, 0x25bc70, ...)"
+ },
+ "00135210": {
+  "name": "Clock::createChild",
+  "tag": "game-inferred",
+  "was": "FUN_00135210",
+  "why": "(this): new 0x1c-byte Clock {0, 0, 0, 0, scale 0x100, parent this, no children} added to this's children list +0x18 (a PtrList made on first use, grown by 16)"
+ },
+ "001352d0": {
+  "name": "MasterClock::update",
+  "tag": "game-inferred",
+  "was": "FUN_001352d0",
+  "why": "(this, vsyncs): vsync total += vsyncs, then Clock::advance with ticks per frame, scaled by vsyncs / interval when +0x2c is set; GameSystem::flipFrame passes the vsyncs frameSyncWait returned"
+ },
+ "00135330": {
+  "name": "MasterClock::~MasterClock",
+  "tag": "game-inferred",
+  "was": "FUN_00135330",
+  "why": "(this, short flag): same body as Clock::~Clock; main's teardown runs it on GameSystem +0x510"
+ },
+ "00135390": {
+  "name": "MasterClock::MasterClock",
+  "tag": "game-inferred",
+  "was": "FUN_00135390",
+  "why": "(this, rate 12, interval 2, paused, variable): Clock fields {+0 state, +4 time, +8 delta, +0xc time2, +0x10 scale 0x100 (8.8), +0x14 parent, +0x18 children} plus +0x1c, +0x20 ticks per frame, +0x24 vsync total, +0x28 frame interval, +0x2c variable-rate flag; GameSystem member +0x510"
+ },
+ "001354a0": {
+  "name": "Clock::advance",
+  "tag": "game-inferred",
+  "was": "FUN_001354a0",
+  "why": "(this, ticks): d = ticks * scale (+0x10, 8.8) >> 8, 0 while paused (+0 == 1); time +4 and +0xc += d, delta +8 = d; recurses into every child of +0x18 (PtrList::next): a hierarchical game clock (slow motion / pause per subtree)"
+ },
+ "00135550": {
+  "name": "ClockNode::~ClockNode",
+  "tag": "game-inferred",
+  "was": "FUN_00135550",
+  "why": "(this, short flag): detaches every child (clears its parent +0x14), frees the children PtrList, removes this from its parent's list (freeing the list when it empties), frees this when flag > 0; the shared body of Clock::~Clock and MasterClock::~MasterClock; class split provisional"
+ },
+ "001357c0": {
+  "name": "PtrList::next",
+  "tag": "game-inferred",
+  "was": "FUN_001357c0",
+  "why": "(list, after): the first non-null entry after 'after' (from the start when 0), or 0; Clock::advance iterates children with it"
+ },
+ "00135860": {
+  "name": "PtrList::add",
+  "tag": "game-inferred",
+  "was": "FUN_00135860",
+  "why": "(list {u16 capacity, u16 count, void **data}, p, grow): grows the array by grow slots (Heap::alloc / Heap::realloc, zeroed) when full, stores p in the first empty slot, returns the count"
  },
  "001375c0": {
   "name": "DisableIntc",
@@ -503,6 +731,12 @@
   "was": "FUN_0023bb50",
   "why": "gameInit: inits the persistent game-state block 0x598b30 (0x23b280), 0x598fec (0x23af80) and the options 0x599000 (GameOptions::setDefaults), clears the 0x100-word table 0x599050; name provisional"
  },
+ "0023bd00": {
+  "name": "ButtonMap::setDefaults",
+  "tag": "game-inferred",
+  "was": "FUN_0023bd00",
+  "why": "(map): writes the default 8-entry button map 6,5,4,7,3,1,2,0 (the same table GameOptions::setDefaults writes at options+0x24); GameSystem::GameSystem runs it on each pad's +0x154, also 0x12d5a0 and 0x25e260"
+ },
  "0023be70": {
   "name": "GameOptions::setDefaults",
   "tag": "game-inferred",
@@ -520,5 +754,83 @@
   "tag": "lib-context",
   "was": "FUN_00264790",
   "why": "libscf (clock*): converts the RTC clock (JST) in place to local time through 0x264298 / 0x264350; getLocalDateTime calls it right after sceCdReadClock; likely name"
+ },
+ "002eaff0": {
+  "name": "Vif1PktManage::GetUsedSize",
+  "tag": "lib-context",
+  "was": "FUN_002eaff0",
+  "why": "rena: write pointer (the open list's or the manager's) minus the buffer base; GameSystem::flipFrame divides it by GetBufferSize for its packet bar"
+ },
+ "002eb010": {
+  "name": "Vif1PktManage::GetBufferSize",
+  "tag": "lib-context",
+  "was": "FUN_002eb010",
+  "why": "rena: the size of the current buffer (buffer vector +0x28 [index +0x10].size)"
+ },
+ "002eb030": {
+  "name": "Vif1PktManage::IsOverflow",
+  "tag": "lib-context",
+  "was": "FUN_002eb030",
+  "why": "rena: true when the bytes written (Vif1PktManage::GetUsedSize) exceed the current buffer's size"
+ },
+ "002eb070": {
+  "name": "Vif1PktManage::Terminate",
+  "tag": "lib-context",
+  "was": "FUN_002eb070",
+  "why": "rena: closes the open list (sceVif1PkNext + sceVif1PkCloseDmaTag), +8 = buffer start, links each non-empty list's head / tail into one DMA chain and ends it with an end tag 0x70000000; FlushCache"
+ },
+ "002eb170": {
+  "name": "Vif1PktManage::Reset",
+  "tag": "lib-context",
+  "was": "FUN_002eb170",
+  "why": "rena: the message 'rena_pkt_vif1pktmanage.cpp: (Reset) no packet buffer registered' (0x310640, Shift-JIS) names it; steps to the next buffer, resets every list (sceVif1PkReset, head / tail 0), writes a DMA next tag 0x20000000 at the buffer start"
+ },
+ "002eb2a0": {
+  "name": "Vif1PktManage::Kick",
+  "tag": "lib-context",
+  "was": "FUN_002eb2a0",
+  "why": "rena: when a chain is built (+8): DMAC_CTRL = 1, clears the VIF1 channel status under DIntr, VIF1 QWC 0, TADR = +8, CHCR 0x1c5 (source chain, TTE, start)"
+ },
+ "002eb320": {
+  "name": "Vif1PktManage::Close",
+  "tag": "lib-context",
+  "was": "FUN_002eb320",
+  "why": "rena: closes the open list +0xc (sceVif1PkNext(list, 0, 0), sceVif1PkCloseDmaTag, tail = its end) and takes back its write pointer"
+ },
+ "002eb380": {
+  "name": "Vif1PktManage::AddBuffer",
+  "tag": "lib-context",
+  "was": "FUN_002eb380",
+  "why": "rena (this, base, size): appends {base, size} to the buffer vector +0x20 (insert 0x2ebc60), returns its index; GamePacketManager registers two"
+ },
+ "002eb3d0": {
+  "name": "Vif1PktManage::Open",
+  "tag": "lib-context",
+  "was": "FUN_002eb3d0",
+  "why": "rena (this, id): closes the open list if another, finds the list by id (+0x20), starts it at the write pointer (head or appended to the tail) and returns it"
+ },
+ "002eb500": {
+  "name": "Vif1PktManage::AddList",
+  "tag": "lib-context",
+  "was": "FUN_002eb500",
+  "why": "rena (this, id): 'rena_pkt_vif1pktmanage.cpp: this ID(%d) is already registered' (0x310690, Shift-JIS) when the id exists, else a new 0x34-byte list (vptr 0x31a818 at +0x30, id +0x20, head +0x24, tail +0x28) appended to +0x14; rena's own name unknown"
+ },
+ "002eb600": {
+  "name": "Vif1PktManage::~Vif1PktManage",
+  "tag": "lib-context",
+  "was": "FUN_002eb600",
+  "why": "rena (this, short flag): vptr 0x31a808, deletes every list through its slot 0 (flag 1), frees the buffer vector (0x2ec090) and the list array (Heap::free)"
+ },
+ "002eb730": {
+  "name": "Vif1PktList::~Vif1PktList",
+  "tag": "lib-context",
+  "was": "FUN_002eb730",
+  "why": "rena (this, short flag): slot 0 of vtable 0x31a818, the 0x34-byte list object Vif1PktManage::AddList makes; restores the vptr at +0x30, frees when flag > 0; class name provisional"
+ },
+ "002eb780": {
+  "name": "Vif1PktManage::Vif1PktManage",
+  "tag": "lib-context",
+  "was": "FUN_002eb780",
+  "why": "rena (rena_pkt_vif1pktmanage.cpp messages): vptr 0x31a808 at +0x2c, +0 write pointer, +4 buffer base, +8 chain start to kick, +0xc open list, +0x10 buffer index -1, list vector +0x14 (count +0x18, data +0x1c), buffer vector +0x20 (count +0x24, data +0x28, {base, size}); method names PascalCase after the message's (Reset)"
  }
 }
