@@ -10,7 +10,10 @@ map", "Naming sources") and tick it off in `open-items.md` "Next up".
 - The ELF from the user's disc and the extracted disc's files, in a folder the user picks (the data
   root; never committed). Record serial, region and build date. YamiPan: Forbidden Siren 2, Europe,
   `SCES_538.51` (2006-05-17), all in `C:\Users\willi\Documents\Decomp\Forbidden Siren 2`; the tools
-  default to that folder, so there is no copy at the repo root.
+  default to that folder, so there is no copy at the repo root. **Done 2026-10-31**: stripped,
+  **Metrowerks CodeWarrior** (`.comment`; a third compiler family besides GCC 2 / GCC 3), SDK 3.0,
+  SCE's rx runtime and rena renderer, no sister game (architecture.md "Binary and toolchain").
+  `.comment` is the first thing to read: it names the compiler.
 - What the binary still has, each a naming source:
   - **Symbols**: `.symtab` / `.mdebug` (rare in retail), or a kept **section header table** with
     `.gnu.linkonce.t.<mangled>` sections (RoR: 1,449 inline methods and templates, 284 vtables

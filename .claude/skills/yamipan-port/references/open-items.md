@@ -9,7 +9,9 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    Still to do (bootstrap step 3 does them):
    - `yamipan.py`'s `ANNOT` (`FS2`) and the stub log line;
    - `yamipan.py`'s ELF and data-root defaults, set to the game folder.
-2. Bootstrap (bootstrap.md, in order): identify the binary -> its own Ghidra project (done:
+2. Bootstrap (bootstrap.md, in order): identify the binary (done 2026-10-31: architecture.md
+   "Binary and toolchain"; **CodeWarrior, stripped, SDK 3.0, rx + rena middleware, no sister**) ->
+   its own Ghidra project (done:
    `C:\Users\willi\Documents\Ghidra Projects\CLaude Decomp.gpr`, `data/ghidra.json`) -> tools from
    RosePan on `ghidra_mcp.py` plus a 5.14.2 client for what 2.0.0 lacks (Decisions) -> name seeding ->
    TU map -> platform layer -> first build and run -> the queue. The scheduled runs do one step each.
@@ -66,8 +68,21 @@ apply here):
 
 ## Open questions
 
-- Which game (Next up 1). Does it share an engine or middleware with FF2 / FF3 / RoR (then names and
-  code can be ported, bootstrap.md 1)?
+- ~~Which game; engine kinship with FF2 / FF3 / RoR?~~ Settled 2026-10-31 (bootstrap 1): none; SCE's
+  own rx runtime and rena renderer, built with Metrowerks CodeWarrior 2.4.1.01.
+- **CodeWarrior, not GCC** (bootstrap 1, 2026-10-31). Consequences for bootstrap 3-4, to settle there:
+  `sections.py` / `gcc2.py` have nothing to read (stripped, no linkonce sections); `rtti.py` needs a
+  CodeWarrior variant (vtable `{type_info*, offset, fn...}` 4-byte entries, game classes with null
+  type_info, vptr after the data in at least one class: architecture.md); `libmatch.py` can match
+  Sony's prebuilt SDK 3.0 libraries (FF3 / RoR references) but not MSL C++ or CodeWarrior's runtime
+  (no reference built with it); reconstruction.md needs a CodeWarrior ABI section (calling convention
+  is the EABI / o32-like one GCC uses on the EE? 64-bit `long`? struct return and member-pointer
+  layout?) before the first class TU. The host build stays MinGW / MSVC either way.
+- A symbolised sister build? Forbidden Siren 1, the Japanese / US FS2 releases or a demo disc might
+  keep `.mdebug` or a map; none is on this machine. Ask the user before bootstrap 4 if one exists.
+- Two EE code islands outside .text: ~0x2f3a40..~0x2f4d20 (after the VU microcode) and
+  ~0x310a00..~0x310f80 (amid .data, look like static initialisers calling 0x104c60). Find out what
+  they are (CodeWarrior `.init` / `__sinit`, kernel-patch code?) before the TU map (bootstrap 5).
 - **Can 5.14.2 sit beside 2.0.0?** Unchecked: whether bethington's 5.14.2 loads on Ghidra 12.2, and
   whether both install at once (Ghidra keeps extensions in folders named after them, and 2.0.0 already
   has `Extensions\GhidraMCP`; if 5.14.2 uses the same name, one replaces the other). If they cannot
@@ -83,6 +98,9 @@ apply here):
 
 ## Done
 
+- 2026-10-31: bootstrap 1, the binary identified (scheduled run): stripped CodeWarrior 2.4.1.01 ELF,
+  SDK 3.0 libraries, rx / rena middleware, gp 0x322870, `main` 0x12d910, address map with the VU
+  microcode at 0x2ec900 (architecture.md). Next: bootstrap 3 (tools from RosePan).
 - 2026-10-31: scheduled runs -- the work branch `fs2-port` (pushed), `tools/reverse/routine.md`,
   `tools/reverse/preflight.py`, the desktop app's task `yamipan-next-tu` every 20 minutes.
 - 2026-10-31: the Ghidra layer on GhidraMCP 2.0.0 -- `ghidra_mcp.py` (finds the window by its active

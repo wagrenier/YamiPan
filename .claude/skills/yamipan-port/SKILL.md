@@ -14,7 +14,8 @@ skills keep the full history. It is the playbook and the project's memory: follo
 ("Keeping this skill alive").
 
 **State (2026-10-31): before bootstrap.** The game is Forbidden Siren 2 (Europe, `SCES_538.51`; files
-under "Environment"); its annotation tag is still open (open-items.md "Next up" 1). What exists: the
+under "Environment"), annotation tag `FS2`; a stripped **Metrowerks CodeWarrior** build (not GCC:
+open-items.md has what that changes). What exists: the
 Ghidra layer on GhidraMCP 2.0.0 (`tools/reverse/ghidra_mcp.py`, `ghidra_bridge.py`, `.mcp.json`) and a
 Ghidra project with the game imported and auto-analysed. Until the TU loop runs, work follows
 `references/bootstrap.md`; afterwards, the protocol below.
