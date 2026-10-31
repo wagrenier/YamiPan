@@ -60,7 +60,8 @@ Serial, region, build date, entry, gp (`.reginfo`), compiler family and ABI, sym
 | ~0x2f0880..0x2f3a40 | data: library version strings, SDK tables |
 | ~0x2f3a40..~0x2f4d20 | an EE code island (Ghidra functions 0x2f3bd0..0x2f4ce8); what it is: open |
 | ~0x2f4d20..0x31ad80 | .data / .rodata: strings to 0x31aaa4, vtables from ~0x311000, function tables (0x31a000) |
-| ~0x310a00..~0x310f80 | a second code island (Ghidra 0x310ac0, 0x310b60, 0x310f60; looks like static initialisers) |
+| ~0x310a00..~0x310f80 | static initialisers (9; table 0x310fb0..0x310fd4 run by 0x100280: "Static initialisers") |
+| 0x310fe0..~0x31a820 | vtables (490, `rtti.py`: "Classes") |
 | 0x31ad80..0x5a5600 | .bss (cleared by `entry`); gp 0x322870 |
 
 The ELF names none of these (one unnamed section), so `data/layout.json` "image_sections" carries the
@@ -80,6 +81,8 @@ files from the 4 file-name strings.
 |---|---|---|---|
 | ELF symbols | 0 (stripped) | -- | -- |
 | Ghidra auto-analysis | 100 (SDK syscalls, thunks) | emotionengine-reloaded | -- |
+| vtables (classes) | 490 tables, 4 named by RTTI | rtti.py (CodeWarrior) | -- (class map, not names yet) |
+| missing function starts | 910 (904 vtable slots, 6 static initialisers) | rtti.py --missing | create first |
 
 Expected sources (bootstrap step 4): Sony SDK 3.0 libraries by match (libmatch.py against FF3 / RoR,
 both SDK 3.0); MSL C++ / CodeWarrior runtime only by reading (no reference game built with it); rx and
@@ -101,7 +104,33 @@ The game's own source files (from its strings), what each does.
 
 ## Classes
 
-Name, vtable, vptr offset, size, file.
+Name, vtable, vptr offset, size, file. `python rtti.py` (CodeWarrior variant, bootstrap 4, 2026-10-31)
+finds **490 vtables** in .data 0x310fe0..~0x31a820: 475 installed by code (`lui/addiu` + `sw`), 15 only
+by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Names: 4 from RTTI
+(`std::exception` 0x310fe0, `std::length_error` 0x310ff0, `std::out_of_range` 0x311000,
+`std::logic_error` 0x311010: MSL), the rest `Vt_<addr>` until named in `data/class_names.json`.
+
+- Layout confirmed: `{type_info*, this_offset, fn...}`; the vptr points at the table start, slot i at
+  vptr+8+4i (0x131dd4: `lw t9,0x98(s1); lw t9,0x48(t9); jalr` = slot 16 of the table at +0x98).
+  type_info is `{const char *name, bases*}`, bases a list `{type_info*, offset}` ended by 0
+  (0x2fe628 logic_error -> 0x2fe618 `{0x2fe400 exception, 0}`).
+- Tables are often 4-byte aligned, not 8 (0x311314, 0x3133f4), packed with zero padding.
+- **One object, several vptrs**: ctor 0x171a30 installs 0x3112f0 at +0, 0x311314 at +0x1c, 0x31132c
+  at +0xf4, 0x31153c at +0x204; every secondary table has this_offset 0 (embedded member objects with
+  their own vtables, or CodeWarrior records no offset there: open-items.md).
+- **The big hierarchy**: ~40 tables of 130-190 slots, all with the vptr at +0xf4 (0x31132c,
+  0x3115fc, 0x31189c, ... 0x3141ec): the game's main polymorphic family (characters / actors?).
+- Slot 0 looks like the destructor: 0x311060 slot 0 = 0x131d80, which installs 0x311060 at +0x98 and
+  later 0x3110b0 (derived-then-base, a destructor's order).
+
+## Static initialisers
+
+- 0x100280 (crt0 side) runs the table **0x310fb0..0x310fd4**: 9 initialisers 0x310a00, 0x310a20,
+  0x310a70, 0x310ac0, 0x310b10, 0x310b60, 0x310ec0, 0x310f10, 0x310f60 -- the second code island is
+  CodeWarrior's static-initialiser code. Ghidra has functions for 3 of them (the other 6 are in
+  `data/missing_functions.json`).
+- 0x310a00 tail-calls **0x104c60(0x537d80, 0x1772f0, 0, 0x38, 0x87)**: array, ctor, dtor, element
+  size, count -- the shape of MSL's `__construct_array` (name not applied yet).
 
 ## Key functions and globals
 

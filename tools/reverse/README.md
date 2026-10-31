@@ -38,7 +38,7 @@ python fetch.py            # Ghidra -> work/hash_fs2.json, work/fs2_tags.json   
 python features.py         # ELF -> work/feat_fs2.json: calls, tail jumps, strings, data refs (offline)
 python sections.py         # ELF symbols -> work/sections.json (FS2: none, stripped)
 python libmatch.py         # library names from reference ELFs; look at the plan, then --apply (once)
-python rtti.py             # vtables -> work/classes.json (GCC 2 ABI: finds nothing in FS2 yet)
+python rtti.py             # vtables -> work/classes.json (CodeWarrior ABI: 490 tables in FS2)
 python export.py           # file inference -> <repo>/yamipan_functions.txt
 python status.py           # -> .claude/skills/yamipan-port/references/status.md
 python refresh.py          # all of the above that is not a one-time write, in order
@@ -80,7 +80,7 @@ The API, how the plugin behaves, the setup and the traps: the skill's `reference
 | `features.py` | Per-function features decoded from the ELF: call order, tail jumps (`j` out of the body), function pointers, strings, floats, data refs, instruction mix. Bodies are [start, next start), so sizes include code Ghidra has no function for. |
 | `sections.py` | The ELF's own symbols (named linkonce sections, `.ctors` / `.dtors`). GCC 2 only: FS2 has none; kept because export / features / rtti import it. Its CodeWarrior counterpart (static initialisers in the code islands?) is open. |
 | `libmatch.py` | Library / runtime names: each reference library function (FF3's SDK 3.0 libs from ReiPan's `ff3_functions.txt`; FF2's runtime, newlib and SDK 2.8 from MioPan's `symbols.txt`) compared word for word with relocations masked, at FS2's function starts and after every `jr ra`. Unique matches only; identical bodies under several names are settled by their callees. `--list`, `--ranges` (library spans for `layout.json`), `--apply`. Needs the reference ELFs next to their lists (not in the checkouts on this machine). |
-| `rtti.py` | Classes from named vtables, GCC 2 ABI. Finds nothing in FS2 (no named vtables); a CodeWarrior variant (`{type_info*, offset, fn...}` 4-byte entries, null type_info for game classes) is bootstrap 4's. |
+| `rtti.py` | Classes from vtables, CodeWarrior ABI (rewritten at bootstrap 4): tables the code builds with lui/addiu and stores (`sw`), plus same-shaped ones between them (`{type_info* or 0, 0, fn...}`, 4-byte words); names from the type_info, `data/class_names.json` or `Vt_<addr>`; bases from type_info lists or co-stored shorter tables. `--missing` writes slot targets Ghidra has no function for to `data/missing_functions.json` (create them: `ghidra.py mkfunc` on 5.14.2, or F in Ghidra). |
 | `export.py` | `yamipan_functions.txt`: every function with size, name and provenance, grouped into source files: pinned ranges, then string anchors (FS2's own `file.c` / `.cpp` strings), class anchors, then link-order fill. Writes `work/class_files.json`. |
 | `status.py` | The generated status page (seeding state, naming, placement, reconstruction, TUs, frontier). |
 | `refresh.py` | fetch + features (if Ghidra is up), sections, rtti, export, status. |

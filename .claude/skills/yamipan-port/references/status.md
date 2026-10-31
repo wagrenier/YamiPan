@@ -1,12 +1,12 @@
 # YamiPan status (generated)
 
-Generated 2026-10-31 08:31 at commit `c01e3d6` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-10-31 08:49 at commit `6a021ca` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
 - ELF symbols (named linkonce sections): 0; tagged game-symbol in Ghidra: 0
 - library matches planned: 0; tagged lib-match / -low in Ghidra: 0 / 0
-- classes (named vtables): 0
+- classes (named vtables): 490
 
 ## Naming (game code; library ranges excluded)
 

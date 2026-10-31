@@ -12,12 +12,20 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    its own Ghidra project (done:
    `C:\Users\willi\Documents\Ghidra Projects\CLaude Decomp.gpr`, `data/ghidra.json`) -> tools from
    RosePan on `ghidra_mcp.py` plus a 5.14.2 client (done 2026-10-31; `tus.py` / `autopilot.py` held
-   back for step 7: Decisions) -> **name seeding (next: bootstrap 4)** -> TU map -> platform layer ->
+   back for step 7: Decisions) -> **name seeding (bootstrap 4, in progress)** -> TU map -> platform layer ->
    first build and run -> the queue. The scheduled runs do one step each.
-   Bootstrap 4 starts with: `restore_names.py --snapshot`; a CodeWarrior `rtti.py` (vtables
-   `{type_info*, 0, fn...}` from ~0x311000, architecture.md); `libmatch.py` needs the reference ELFs
-   (item 3) -- without them, seed by reading (rx / rena / MSL strings, SDK syscalls) with
-   `name_ctx.py` batches; a look at the two code islands (`sinit.py`).
+   Bootstrap 4 so far (2026-10-31): snapshot `work/snapshots/20261031_084541.json` (6,393 names);
+   `rtti.py` rewritten for CodeWarrior (490 vtables, architecture.md "Classes"); the second code island
+   is the static-initialiser table (architecture.md "Static initialisers"); **910 function starts
+   Ghidra lacks** in `data/missing_functions.json`. **Left for bootstrap 4, in this order:**
+   (a) create those 910 functions: needs 5.14.2 (`ghidra.py mkfunc` in a loop) or the user (F in
+   Ghidra, or a Ghidra script over the JSON in one go), then Ctrl+S and `refresh.py`; while it waits,
+   a run does (b);
+   (b) seed names by reading with `name_ctx.py` batches: MSL (`__construct_array` 0x104c60, the
+   exception classes' slots 0x104ee0 / 0x107220 / ...), SDK functions from their `PsIIlib` / assert
+   strings, rx (`rxfile.c`), rena (`rena_*.cpp`), `main` 0x12d910 and the entry chain (0x100280);
+   (c) the first island ~0x2f3a40..0x2f4d20 (9 Ghidra functions, nothing references 0x2f3a40);
+   (d) `libmatch.py` once the reference ELFs are here (item 3).
 3. **The user: reference ELFs for libmatch.py.** The sibling checkouts on this machine have the
    function lists (`../ReiPan/ff3_functions.txt`, `../RosePan/ror_functions.txt`) but not the ELFs
    (`../ReiPan/SLES_538.25`, `../MioPan/SLES_523.84` with `symbols.txt` / `functions.txt`,
@@ -103,8 +111,11 @@ apply here):
 - A symbolised sister build? Forbidden Siren 1, the Japanese / US FS2 releases or a demo disc might
   keep `.mdebug` or a map; none is on this machine. Ask the user before bootstrap 4 if one exists.
 - Two EE code islands outside .text: ~0x2f3a40..~0x2f4d20 (after the VU microcode) and
-  ~0x310a00..~0x310f80 (amid .data, look like static initialisers calling 0x104c60). Find out what
-  they are (CodeWarrior `.init` / `__sinit`, kernel-patch code?) before the TU map (bootstrap 5).
+  ~0x310a00..~0x310f80. The second is settled (2026-10-31): static initialisers, table 0x310fb0 run by
+  0x100280 (architecture.md). The first is still open (nothing references 0x2f3a40; kernel-patch or
+  IOP-reboot code?).
+- Multiple vptrs in one object, every secondary table with this_offset 0 (architecture.md "Classes"):
+  embedded members or bases? Settle at the first TU of the +0xf4 family (ctor 0x171a30).
 - **Can 5.14.2 sit beside 2.0.0?** Unchecked: whether bethington's 5.14.2 loads on Ghidra 12.2, and
   whether both install at once (Ghidra keeps extensions in folders named after them, and 2.0.0 already
   has `Extensions\GhidraMCP`; if 5.14.2 uses the same name, one replaces the other). If they cannot
@@ -119,6 +130,10 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-10-31: bootstrap 4, part 1 (scheduled run): name snapshot, CodeWarrior `rtti.py` (490
+  vtables, `--missing`), static-initialiser table found, 910 missing function starts listed. Next:
+  bootstrap 4 (a)-(d) in "Next up".
 
 - 2026-10-31: bootstrap 3, the tools (scheduled run): RosePan's tools carried over and renamed
   (`yamipan.py` on `ghidra_mcp.py`, a `Ghidra5` client for 5.14.2, `data/tags.json`, `data/layout.json`

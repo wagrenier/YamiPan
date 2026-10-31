@@ -17,6 +17,13 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   after a `b`), `ghidra.py refs` the address, `ghidra.py mkfunc`. Before reading a class,
   `ghidra.py func` every slot `rtti.py` lists; before a dispatcher, every word of its table. Every `LAB_`
   stored into a table is a function.
+- **FS2: 904 vtable slots are not Ghidra functions** (2026-10-31, bootstrap 4). Symptom: a slot list
+  stops after one entry; a ctor shows up as a slot (0x3112f0 slot 2 = FUN_00171a30, which also stores
+  the vtable). Cause: auto-analysis never followed the untyped vtables, so tiny virtuals and dtors were
+  merged into the function before them (0x131d70 is a 2-word thunk, then nops, then the dtor 0x131d80
+  inside the same body). Fix: `rtti.py` accepts any .text word as a slot and `--missing` lists them in
+  `data/missing_functions.json`; create them all (5.14.2 `ghidra.py mkfunc`, or F in Ghidra) before
+  trusting function sizes, callers or the "ctor/dtor" users of a vtable.
 - **Dispatch tables of tiny functions** (RoR's script natives: 512 entries, 471 of them `jr ra; move
   v0,zero`): read the table from the ELF, classify each target by its first words, mkfunc the real ones,
   let one host function stand for the identical empty ones, and generate the C++ initializer.
