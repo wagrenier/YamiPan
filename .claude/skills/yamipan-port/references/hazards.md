@@ -133,8 +133,10 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   user turns off its App execution alias. Use `py <tool>.py` (the routine does); tools that start
   Python use `sys.executable`, never `python`.
 - **Command-line git had no GitHub credential** (2026-10-31; the user pushes with GitHub Desktop): a
-  push or fetch waited forever on Git Credential Manager's sign-in window. Unattended pushes use
-  `git -c credential.interactive=never push`, which fails at once instead.
+  push or fetch started from Claude's shell waited forever on Git Credential Manager, whose sign-in
+  never showed. Fixed the same day: `git push` typed into the user's Terminal panel opened GCM's
+  browser sign-in, and the credential is stored now. Unattended pushes still use
+  `git -c credential.interactive=never push`, which fails at once if it ever goes missing.
 - **Heredocs mangle backslashes and apostrophes**, a python heredoc's `\n` became a real newline in a
   C string, a long heredoc fails with `ENAMETOOLONG`: write files with the Write tool.
 - **Git Bash rewrites arguments that look like paths** (`\\` collapsed in a JSON argument): pass paths
