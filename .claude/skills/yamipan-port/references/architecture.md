@@ -83,6 +83,7 @@ files from the 4 file-name strings.
 | Ghidra auto-analysis | 100 (SDK syscalls, thunks) | emotionengine-reloaded | -- |
 | vtables (classes) | 490 tables, 4 named by RTTI | rtti.py (CodeWarrior) | -- (class map, not names yet) |
 | missing function starts | 910 (904 vtable slots, 6 static initialisers) | rtti.py --missing | create first |
+| by reading, batch 001 (2026-10-31) | 27: crt0 / libc / libkernl, CodeWarrior + MSL runtime, `main`, heap | name_ctx.py | lib-context 24, game-inferred 3 |
 
 Expected sources (bootstrap step 4): Sony SDK 3.0 libraries by match (libmatch.py against FF3 / RoR,
 both SDK 3.0); MSL C++ / CodeWarrior runtime only by reading (no reference game built with it); rx and
@@ -97,6 +98,15 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
   0x130f60 / 0x130a30 / 0x130e00), runs 0x130e50 then 0x2acec0 (thunk) / 0x151280 / 0x148540, then
   tears down a global object (gp-0x7aec) with three member objects (vptr stores above) and calls
   0x12e3a0, 0x130070, 0x152750, 0x1045a0, 0x1051f0. Names: bootstrap step 4.
+- Named (batch 001): crt0 `entry` -> `_InitSys` 0x140e58 (libkernl, nine init calls) -> `FlushCache`
+  -> `main` 0x12d910 -> `exit` 0x123538 (newlib: `_impure_ptr` 0x2f3398 `->_atexit` +0x148, then
+  `__cleanup` +0x3c) -> `_exit` 0x100218 (crt0: `j Exit`) -> `Exit` 0x141258 -> `_Exit` syscall.
+  0x100220 (`addiu v1,zero,0x23; syscall`, no Ghidra function) is crt0's `_root`, the thread entry
+  SetupThread gets in t0 (ExitThread).
+- `main` opens with `__init_cpp` 0x100280 -> `__call_static_initializers` 0x105280 (the table, then
+  0x106930 over an empty range 0x31a830..0x31a830: returns 0) and ends with `__destroy_global_chain`
+  0x1051f0 (thunk 0x100270). Before that, 0x1045a0 tears down the global heap 0x329970 (DeleteSema,
+  then `_free_r` of its block).
 
 ## Modules
 
@@ -130,9 +140,31 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   CodeWarrior's static-initialiser code. Ghidra has functions for 3 of them (the other 6 are in
   `data/missing_functions.json`).
 - 0x310a00 tail-calls **0x104c60(0x537d80, 0x1772f0, 0, 0x38, 0x87)**: array, ctor, dtor, element
-  size, count -- the shape of MSL's `__construct_array` (name not applied yet).
+  size, count -- MSL's `__construct_array` (named, batch 001).
 
 ## Key functions and globals
+
+- **Allocation**: one global heap object at 0x329970 (`{sema id, block, ..., +0x10 head, +0x14
+  tail, +0x18 count}`; blocks have a 0x10-byte header before the user pointer). `Heap::alloc`
+  0x103c50 (heap, size, align) / `Heap::free` 0x103aa0 wrap 0x103cd0 / 0x103b10 in WaitSema /
+  SignalSema when the sema id >= 0. `operator_new[]` 0x1002f0 and `operator_new` 0x100310 pass align
+  16; `operator_delete[]` 0x1002b0, `operator_delete` 0x1002c0; 0x1002d0 passes a caller's
+  alignment (an aligned overload, unnamed). Which of the two plain-size allocators is `new[]` follows
+  from MSL's string rep 0x106b80 (char buffer -> 0x1002b0, int refcount -> 0x1002c0) and the same
+  order for new: verify at the first TU that allocates. Class name `Heap` is provisional (could be
+  MSL's pool allocator).
+- **CodeWarrior / MSL runtime** (all lib-context): `__construct_array` 0x104c60,
+  `__register_global_object` 0x105250 (obj, dtor, 12-byte entry) and `__destroy_global_chain`
+  0x1051f0 on the chain head 0x329b48 (dtor called with -1), `__throw` 0x106830 (MSL exception-match
+  type string, object, dtor), `std::terminate` 0x1051a0 through the handler word 0x2f1060 (default
+  `dthandler` 0x1051d0 -> `abort` 0x121ef0). Deleting destructors take `(this, short flag)` and free
+  `this` when flag > 0; -1 means destroy only.
+- **MSL exception classes**: `std::exception` (vtable 0x310fe0, dtor 0x104ee0, `what` 0x104f30),
+  `std::logic_error` (0x311010, dtor 0x1070f0, `what` 0x1073d0, message string at +4),
+  `std::length_error` (0x310ff0, dtor 0x107180), `std::out_of_range` (0x311000, dtor 0x107220).
+  0x104f30 and 0x1073d0 are among the missing function starts.
+- **libc** (Sony's newlib): `strlen` 0x128498, `strcpy` 0x128380 (R5900 quadword scans), `raise`
+  0x127a68 / `_raise_r` 0x1278f8, `_impure_ptr` 0x2f3398.
 
 ## Disc and data files
 

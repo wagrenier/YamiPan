@@ -1,0 +1,164 @@
+{
+ "00100280": {
+  "name": "__init_cpp",
+  "tag": "lib-context",
+  "was": "FUN_00100280",
+  "why": "CodeWarrior runtime hook main calls first: __call_static_initializers(0x310fb0, 0x310fd4, 0x31a830, 0x31a830); MW's exact name unknown"
+ },
+ "001002b0": {
+  "name": "operator_delete[]",
+  "tag": "lib-context",
+  "was": "FUN_001002b0",
+  "why": "Heap::free(0x329970, p); the MSL string rep 0x106b80 frees its char buffer with it (and the refcount with 0x1002c0)"
+ },
+ "001002c0": {
+  "name": "operator_delete",
+  "tag": "lib-context",
+  "was": "FUN_001002c0",
+  "why": "Heap::free(0x329970, p); the std exception destructors free this with it, the MSL string rep 0x106b80 frees its int refcount with it"
+ },
+ "001002f0": {
+  "name": "operator_new[]",
+  "tag": "lib-context",
+  "was": "FUN_001002f0",
+  "why": "Heap::alloc(0x329970, n, 16); MSL throw sites allocate strlen+1 chars with it; new[] before new as delete[] before delete (0x1002b0 / 0x1002c0)"
+ },
+ "00100310": {
+  "name": "operator_new",
+  "tag": "lib-context",
+  "was": "FUN_00100310",
+  "why": "Heap::alloc(0x329970, n, 16), the second plain-size allocator after operator_new[] 0x1002f0; order inferred from the delete pair"
+ },
+ "00103aa0": {
+  "name": "Heap::free",
+  "tag": "game-inferred",
+  "was": "FUN_00103aa0",
+  "why": "(heap, p): WaitSema(heap+0) when >= 0, unlink block p-0x10 (0x103b10), SignalSema; heap object 0x329970 serves operator delete; may be MSL's pool allocator, class name provisional"
+ },
+ "00103c50": {
+  "name": "Heap::alloc",
+  "tag": "game-inferred",
+  "was": "FUN_00103c50",
+  "why": "(heap, size, align): same semaphore guard around 0x103cd0; operator new passes align 16"
+ },
+ "00104c60": {
+  "name": "__construct_array",
+  "tag": "lib-context",
+  "was": "FUN_00104c60",
+  "why": "MSL runtime (ptr, ctor, dtor, size, n): ctor(p, 1) per element, destroys constructed ones in reverse on failure; static initialiser 0x310a00 and array members use it"
+ },
+ "00104ee0": {
+  "name": "std::exception::~exception",
+  "tag": "lib-context",
+  "was": "FUN_00104ee0",
+  "why": "slot 0 of std::exception's vtable 0x310fe0: stores the vptr, deletes this when the flag > 0"
+ },
+ "001051a0": {
+  "name": "std::terminate",
+  "tag": "lib-context",
+  "was": "FUN_001051a0",
+  "why": "calls the handler stored at 0x2f1060, which holds 0x1051d0 by default"
+ },
+ "001051d0": {
+  "name": "dthandler",
+  "tag": "lib-context",
+  "was": "FUN_001051d0",
+  "why": "MW's default terminate handler (initial value of 0x2f1060): calls abort 0x121ef0"
+ },
+ "001051f0": {
+  "name": "__destroy_global_chain",
+  "tag": "lib-context",
+  "was": "FUN_001051f0",
+  "why": "MW runtime: pops 0x329b48 entries and calls dtor(obj, -1); main's last call (thunk 0x100270)"
+ },
+ "00105250": {
+  "name": "__register_global_object",
+  "tag": "lib-context",
+  "was": "FUN_00105250",
+  "why": "MW runtime (obj, dtor, entry): links {next, dtor, obj} at the head of the global destructor chain 0x329b48"
+ },
+ "00105280": {
+  "name": "__call_static_initializers",
+  "tag": "lib-context",
+  "was": "FUN_00105280",
+  "why": "calls every function pointer in [a0, a1) (the static-initialiser table 0x310fb0..0x310fd4), then 0x106930(a2, a3) (an empty range, returns 0); descriptive name"
+ },
+ "00106830": {
+  "name": "__throw",
+  "tag": "lib-context",
+  "was": "FUN_00106830",
+  "why": "MW runtime (type string, object, dtor): MSL string code throws out_of_range with 0x2fe540 '!std::out_of_range!...' and dtor 0x107220"
+ },
+ "001070f0": {
+  "name": "std::logic_error::~logic_error",
+  "tag": "lib-context",
+  "was": "FUN_001070f0",
+  "why": "slot 0 of 0x311010: destroys the message string at +4 (0x106b80), then the exception base"
+ },
+ "00107180": {
+  "name": "std::length_error::~length_error",
+  "tag": "lib-context",
+  "was": "FUN_00107180",
+  "why": "slot 0 of 0x310ff0: length_error -> logic_error -> exception vptr chain"
+ },
+ "00107220": {
+  "name": "std::out_of_range::~out_of_range",
+  "tag": "lib-context",
+  "was": "FUN_00107220",
+  "why": "slot 0 of 0x311000; MSL string throws pass it to __throw as the dtor"
+ },
+ "00121ef0": {
+  "name": "abort",
+  "tag": "lib-context",
+  "was": "FUN_00121ef0",
+  "why": "raise(6) then _exit(1); Ghidra's body also swallows the next function (an abs: negate if < 0) after the noreturn call"
+ },
+ "00123538": {
+  "name": "exit",
+  "tag": "lib-context",
+  "was": "FUN_00123538",
+  "why": "Sony libc (newlib): runs _impure_ptr->_atexit (+0x148) handlers in reverse, then __cleanup (+0x3c), then _exit; entry jumps here with main's result"
+ },
+ "001278f8": {
+  "name": "_raise_r",
+  "tag": "lib-context",
+  "was": "FUN_001278f8",
+  "why": "newlib reentrant raise, called by raise 0x127a68 with _impure_ptr"
+ },
+ "00127a68": {
+  "name": "raise",
+  "tag": "lib-context",
+  "was": "FUN_00127a68",
+  "why": "newlib wrapper: _raise_r(_impure_ptr 0x2f3398, sig); abort calls it with 6 (SIGABRT)"
+ },
+ "00128380": {
+  "name": "strcpy",
+  "tag": "lib-context",
+  "was": "FUN_00128380",
+  "why": "same zero-byte scan copying 16/8 bytes per step, then the tail byte by byte; MSL throw sites strcpy the message into a strlen+1 buffer"
+ },
+ "00128498": {
+  "name": "strlen",
+  "tag": "lib-context",
+  "was": "FUN_00128498",
+  "why": "R5900 quadword/doubleword zero-byte scan (0x0101.. / 0x8080.. masks), returns end - start"
+ },
+ "0012d910": {
+  "name": "main",
+  "tag": "game-inferred",
+  "was": "FUN_0012d910",
+  "why": "entry 0x100204 calls it with argc (0x31af80) and argv (0x31af84) after FlushCache/EI, then jumps to exit with its result"
+ },
+ "00140e58": {
+  "name": "_InitSys",
+  "tag": "lib-context",
+  "was": "FUN_00140e58",
+  "why": "libkernl: called once by entry 0x1001e8 after SetupThread/SetupHeap syscalls and before FlushCache; nine library init calls (InitAlarm/InitThread/... unnamed yet)"
+ },
+ "00141258": {
+  "name": "Exit",
+  "tag": "lib-context",
+  "was": "FUN_00141258",
+  "why": "libkernl Exit(status): library teardown 0x141198 then tail-jump to the _Exit syscall 0x136700; crt0's _exit 0x100218 is j Exit"
+ }
+}

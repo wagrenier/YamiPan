@@ -21,9 +21,19 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    (a) create those 910 functions: needs 5.14.2 (`ghidra.py mkfunc` in a loop) or the user (F in
    Ghidra, or a Ghidra script over the JSON in one go), then Ctrl+S and `refresh.py`; while it waits,
    a run does (b);
-   (b) seed names by reading with `name_ctx.py` batches: MSL (`__construct_array` 0x104c60, the
-   exception classes' slots 0x104ee0 / 0x107220 / ...), SDK functions from their `PsIIlib` / assert
-   strings, rx (`rxfile.c`), rena (`rena_*.cpp`), `main` 0x12d910 and the entry chain (0x100280);
+   (b) seed names by reading with `name_ctx.py` batches (`tools/reverse/work/batches/NNN.json`, not
+   committed; the ledger `data/context_names.json` is). **Batch 001 done (2026-10-31, 27 names)**:
+   the entry chain, `main`, `exit` / `Exit` / `_InitSys`, the CodeWarrior + MSL runtime, the
+   exception classes' destructors, operator new / delete and the global heap (architecture.md "Key
+   functions and globals"). **Next batches, in this order**: `main`'s callees (0x12d620 with
+   argv[0], 0x130f60 / 0x130a30 / 0x130e00 callback registration, 0x130e50, 0x2acec0, 0x151280,
+   0x148540, the teardown 0x12e3a0 / 0x130070 / 0x152750 / 0x1045a0, the global object at
+   gp-0x7aec and its members' dtors 0x135330 / 0x133630 / 0x12de80 / 0x12fa90); `_InitSys`'s nine
+   callees (0x140c08, 0x140d48, 0x141338, 0x1414b0, 0x1416f0, 0x1378b8, 0x140f80, 0x140470,
+   0x142b70); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
+   string rep); SDK functions from their `PsIIlib` / assert strings; rx (`rxfile.c`); rena
+   (`rena_*.cpp`). Thunks 0x100218 (`_exit`) and 0x100270 keep Ghidra's thunk names (renaming a
+   thunk may rename its target);
    (c) the first island ~0x2f3a40..0x2f4d20 (9 Ghidra functions, nothing references 0x2f3a40);
    (d) `libmatch.py` once the reference ELFs are here (item 3).
 3. **The user: reference ELFs for libmatch.py.** The sibling checkouts on this machine have the
@@ -130,6 +140,11 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-10-31: bootstrap 4, part 2 (scheduled run): naming batch 001 by reading (27 names: crt0 /
+  libc / libkernl, CodeWarrior + MSL runtime, `main`, the heap), `data/context_names.json` and
+  `data/tags.json` started. 4(a) still waits for 5.14.2. Ghidra had unsaved changes (Ctrl+S).
+  Next: bootstrap 4(b) batch 002 ("Next up").
 
 - 2026-10-31: bootstrap 4, part 1 (scheduled run): name snapshot, CodeWarrior `rtti.py` (490
   vtables, `--missing`), static-initialiser table found, 910 missing function starts listed. Next:
