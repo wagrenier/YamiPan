@@ -317,6 +317,101 @@ class Ghidra:
         return True
 
 
+# ---- GhidraMCP 5.14.2 beside 2.0.0 -----------------------------------------------------------------
+# bethington's 5.14.2 covers what 2.0.0 has no endpoint for (save_program, create_function,
+# disassemble_bytes, function tags, get_bulk_function_hashes; open-items.md "Decisions", 2026-10-31).
+# Restored from the pre-2.0.0 client (git show 8536a1f:tools/reverse/ghidra_mcp.py), cut down: one HTTP
+# server per Ghidra *process* on 8089..8104 (config "ports5"), found by its project (GET
+# mcp/instance_info) with the program open (list_open_programs); `program` always in the query string
+# (in a POST body 5.14.2 ignores it and writes to whichever program is active); answers are text.
+# Untested on this machine: no 5.14.2 is installed yet.
+
+_f5, _, _c5 = str(CONFIG.get('ports5') or '8089:16').partition(':')
+PORTS5 = range(int(_f5), int(_f5) + int(_c5 or 16))
+
+
+def _get5(port, endpoint, timeout=5.0):
+    """GET endpoint on a 5.14.2 server -> parsed JSON (a {data} wrapper unwrapped), or None."""
+    conn = _Connection(HOST, port, timeout=timeout)
+    try:
+        conn.request('GET', '/' + endpoint.lstrip('/'))
+        resp = conn.getresponse()
+        body = resp.read().decode('utf-8', 'replace')
+        if resp.status != 200:
+            return None
+        data = json.loads(body)
+    except (OSError, ValueError, http_client.HTTPException):
+        return None
+    finally:
+        conn.close()
+    if isinstance(data, dict) and set(data) <= {'data', 'success', 'status'} and 'data' in data:
+        return data['data']
+    return data
+
+
+def probe5(port, program=PROGRAM, project=PROJECT):
+    """The port when the 5.14.2 server there has project (if configured) and program open, else None."""
+    info = _get5(port, 'mcp/instance_info')
+    if not isinstance(info, dict) or 'project' not in info:
+        return None
+    if project and info.get('project_path') and \
+            os.path.normcase(_project_path(project)) != os.path.normcase(_project_path(info['project_path'])):
+        return None
+    opened = (_get5(port, 'list_open_programs', timeout=10) or {}).get('programs', [])
+    names = {v.lstrip('/').casefold() for p in opened if isinstance(p, dict)
+             for v in (p.get('name') or '', p.get('path') or '') if v}
+    return port if program and program.casefold() in names else None
+
+
+class Ghidra5:
+    """GhidraMCP 5.14.2 client for one program: Ghidra5('SCES_538.51').http('POST', 'save_program')
+    -> the answer's text. up() is remembered for UP_TTL seconds (a scan costs ~0.4 s)."""
+    UP_TTL = 60.0
+
+    def __init__(self, program=PROGRAM):
+        self.program = program
+        self._port, self._checked = None, 0.0
+
+    def _find(self):
+        if self._port is not None and time.monotonic() - self._checked < self.UP_TTL:
+            return self._port
+        port = _load_cache().get('5.14.2|' + str(self.program))
+        if not (port in PORTS5 and probe5(port, self.program)):
+            ports = list(PORTS5)
+            with concurrent.futures.ThreadPoolExecutor(len(ports)) as ex:
+                hits = [p for p in ex.map(lambda p: probe5(p, self.program), ports) if p]
+            port = hits[0] if len(hits) == 1 else None
+            if port is not None:
+                cache = _load_cache()
+                cache['5.14.2|' + str(self.program)] = port
+                try:
+                    CACHE_JSON.parent.mkdir(parents=True, exist_ok=True)
+                    CACHE_JSON.write_text(json.dumps(cache, indent=1) + '\n', encoding='utf-8')
+                except OSError:
+                    pass
+        self._port, self._checked = port, time.monotonic()
+        return port
+
+    def up(self):
+        return self._find() is not None
+
+    def http(self, method, endpoint, body=None, timeout=300, **query):
+        port = self._find()
+        if port is None:
+            raise GhidraError(f'no GhidraMCP 5.14.2 on {HOST}:{PORTS5[0]}-{PORTS5[-1]} has {self.program} open')
+        path = '/' + endpoint.strip('/') + '?' + urllib.parse.urlencode({'program': self.program, **query})
+        conn = _Connection(HOST, port, timeout=timeout)
+        try:
+            conn.request(method, path, body=json.dumps(body).encode() if body is not None else None,
+                         headers={'Content-Type': 'application/json'})
+            return conn.getresponse().read().decode('utf-8', 'replace')
+        except (OSError, http_client.HTTPException) as e:
+            self._port = None
+            raise GhidraError(f'GhidraMCP 5.14.2 on {HOST}:{port}{path}: {e}') from e
+        finally:
+            conn.close()
+
+
 _default = Ghidra()
 
 

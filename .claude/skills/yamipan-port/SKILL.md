@@ -13,11 +13,12 @@ counterpart: every function from its own binary). This skill distils what those 
 skills keep the full history. It is the playbook and the project's memory: follow it, and keep it true
 ("Keeping this skill alive").
 
-**State (2026-10-31): before bootstrap.** The game is Forbidden Siren 2 (Europe, `SCES_538.51`; files
-under "Environment"), annotation tag `FS2`; a stripped **Metrowerks CodeWarrior** build (not GCC:
-open-items.md has what that changes). What exists: the
-Ghidra layer on GhidraMCP 2.0.0 (`tools/reverse/ghidra_mcp.py`, `ghidra_bridge.py`, `.mcp.json`) and a
-Ghidra project with the game imported and auto-analysed. Until the TU loop runs, work follows
+**State (2026-10-31): bootstrap, step 4 next.** The game is Forbidden Siren 2 (Europe, `SCES_538.51`;
+files under "Environment"), annotation tag `FS2`; a stripped **Metrowerks CodeWarrior** build (not GCC:
+open-items.md has what that changes). What exists: the Ghidra layer on GhidraMCP 2.0.0
+(`tools/reverse/ghidra_mcp.py`, `ghidra_bridge.py`, `.mcp.json`), a Ghidra project with the game
+imported and auto-analysed, and RosePan's tools carried over (bootstrap 3: all but `tus.py` /
+`autopilot.py`, which come with bootstrap 7). Until the TU loop runs, work follows
 `references/bootstrap.md`; afterwards, the protocol below.
 
 Read before working:
@@ -152,7 +153,9 @@ frontmatter; the user's rule: automated runs at xhigh or above). Keep that line.
 
 ## Tools by step
 
-Carried over from RosePan at bootstrap (bootstrap.md 3); until then only the Ghidra layer exists.
+Carried over from RosePan at bootstrap 3 (2026-10-31); `tus.py` arrives with bootstrap 7 (its existence
+switches the scheduled runs to the TU loop). `tools/reverse/README.md` has which helper uses which
+plugin and what degrades without GhidraMCP 5.14.2.
 
 | step | tool |
 |---|---|

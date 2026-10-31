@@ -63,7 +63,7 @@ The API (GhidraMCP 2.0.0, `BackendHttpServer.registerRoutes`):
 
 **Not there** (5.14.2 had them, RosePan's tools use some): save, create function / disassemble bytes,
 function tags, bulk function hashes, creating or applying data types and structs, byte search, scripts,
-batches, program selection. How bootstrap covers them is open (open-items.md).
+batches, program selection. The tools take save / create / disassemble-bytes / tags / hashes from 5.14.2 beside it (`ghidra_mcp.Ghidra5`) and degrade without it (tools README "Ghidra"); byte search reads the ELF (`ghidra.py find`).
 
 Measured 2026-10-31 (FS2, 6,393 functions): `/health` and small reads 2-10 ms, a 2,000-function page
 20-40 ms, a small function's decompile 260-280 ms, a request through `ghidra_mcp.py` (with its check)

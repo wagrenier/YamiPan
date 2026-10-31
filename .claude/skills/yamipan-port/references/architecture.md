@@ -63,9 +63,16 @@ Serial, region, build date, entry, gp (`.reginfo`), compiler family and ABI, sym
 | ~0x310a00..~0x310f80 | a second code island (Ghidra 0x310ac0, 0x310b60, 0x310f60; looks like static initialisers) |
 | 0x31ad80..0x5a5600 | .bss (cleared by `entry`); gp 0x322870 |
 
-crt0, game code, middleware, Sony libraries / kernel stubs / libgcc / newlib (`data/layout.json`
-lib_ranges), linkonce satellites, VU code, `.data`, `.ctors` / `.dtors`, vtables, `.rodata`, `.sbss` /
-`.bss`.
+The ELF names none of these (one unnamed section), so `data/layout.json` "image_sections" carries the
+table above as named regions for the tools (`elf32.Elf` uses them for the game ELF only, 2026-10-31):
+`.text` 0x100000..0x2ec900, `.vutext` ..0x2f0880, `.data` ..0x2f3a40, `.text` (island) ..0x2f4d20,
+`.data` ..0x310a00, `.text` (island) ..0x310f80, `.data` ..0x31ad80, `.bss` ..0x5a5600. The `~`
+bounds are guesses: refine them there when a region is pinned (no `.rodata` / `.sdata` split known
+yet; gp-relative small data straddles 0x31ad80). Library ranges (`lib_ranges`) come with bootstrap 4.
+
+First features pass over it (`refresh.py`, 2026-10-31): 6,393 functions, 25,668 calls, 871 tail
+jumps, 2,446 string references, 3,478 float constants; `export.py` anchors 6 functions to 2 source
+files from the 4 file-name strings.
 
 ## Naming sources
 

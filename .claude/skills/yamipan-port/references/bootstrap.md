@@ -50,6 +50,13 @@ name it. One project per game.
 
 ## 3. Tools (from RosePan, the newest set)
 
+YamiPan: **done 2026-10-31** (scheduled run). Everything but `tus.py`, `autopilot.py` and `routine.md`
+copied and renamed; `yamipan.py` on `ghidra_mcp.py`; a `Ghidra5` client for 5.14.2 in `ghidra_mcp.py`
+(untested: not installed); provenance tags recorded in `data/tags.json` (Ghidra's tags only on 5.14.2);
+`ghidra.py find` searches the ELF; disassembly falls back to `mipsdis.py`; `elf32.py` reads the address
+map's regions for the stripped image. **Hold `tus.py` back until step 7**: the scheduled routine runs
+the TU loop as soon as `tools/reverse/tus.py` exists. `refresh.py` runs green (README "Pipeline").
+
 Copy `../RosePan/tools/reverse/*.py`, `README.md`, `routine.md` and rename: `rosepan` -> `yamipan`
 (module, paths, `ROSEPAN_*` -> `YAMIPAN_*`, exe and target names), the annotation `ROR` -> this game's
 tag (open-items.md), provenance tags `ror-symbol` / `ror-inferred` -> `game-symbol` / `game-inferred`

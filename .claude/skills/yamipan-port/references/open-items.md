@@ -5,21 +5,43 @@ questions. Resolve items here when they are settled (move them to "Done" with th
 
 ## Next up (in order)
 
-1. **The game**: Forbidden Siren 2, Europe, `SCES_538.51`, annotation tag `FS2` (decided, below).
-   Still to do (bootstrap step 3 does them):
-   - `yamipan.py`'s `ANNOT` (`FS2`) and the stub log line;
-   - `yamipan.py`'s ELF and data-root defaults, set to the game folder.
+1. **The game**: Forbidden Siren 2, Europe, `SCES_538.51`, annotation tag `FS2` (decided, below;
+   `yamipan.py` has `ANNOT`, the stub regex and the game-folder defaults since bootstrap 3).
 2. Bootstrap (bootstrap.md, in order): identify the binary (done 2026-10-31: architecture.md
    "Binary and toolchain"; **CodeWarrior, stripped, SDK 3.0, rx + rena middleware, no sister**) ->
    its own Ghidra project (done:
    `C:\Users\willi\Documents\Ghidra Projects\CLaude Decomp.gpr`, `data/ghidra.json`) -> tools from
-   RosePan on `ghidra_mcp.py` plus a 5.14.2 client for what 2.0.0 lacks (Decisions) -> name seeding ->
-   TU map -> platform layer -> first build and run -> the queue. The scheduled runs do one step each.
-3. **The user**: install bethington's GhidraMCP 5.14.2 in Ghidra 12.2 beside 2.0.0 (Decisions). Not on
-   this machine yet; runs that need it say so in their report.
-4. Fill architecture.md as each step learns something.
+   RosePan on `ghidra_mcp.py` plus a 5.14.2 client (done 2026-10-31; `tus.py` / `autopilot.py` held
+   back for step 7: Decisions) -> **name seeding (next: bootstrap 4)** -> TU map -> platform layer ->
+   first build and run -> the queue. The scheduled runs do one step each.
+   Bootstrap 4 starts with: `restore_names.py --snapshot`; a CodeWarrior `rtti.py` (vtables
+   `{type_info*, 0, fn...}` from ~0x311000, architecture.md); `libmatch.py` needs the reference ELFs
+   (item 3) -- without them, seed by reading (rx / rena / MSL strings, SDK syscalls) with
+   `name_ctx.py` batches; a look at the two code islands (`sinit.py`).
+3. **The user: reference ELFs for libmatch.py.** The sibling checkouts on this machine have the
+   function lists (`../ReiPan/ff3_functions.txt`, `../RosePan/ror_functions.txt`) but not the ELFs
+   (`../ReiPan/SLES_538.25`, `../MioPan/SLES_523.84` with `symbols.txt` / `functions.txt`,
+   `../RosePan/SLUS_214.48`); `libmatch.py` skips a reference whose ELF is missing (0 matches,
+   2026-10-31). Copy them next to their lists (never committed) to match FS2's SDK 3.0 libraries.
+4. **The user: a host toolchain.** No MinGW g++, ninja or cmake on this machine (RosePan's paths,
+   CLion's MinGW and Python's ninja, do not exist here; 2026-10-31). `build.py` / `layoutcheck.py` take
+   them from PATH or `YAMIPAN_MINGW_BIN` / `YAMIPAN_NINJA`; bootstrap 6-7 need them.
+5. **The user**: install bethington's GhidraMCP 5.14.2 in Ghidra 12.2 beside 2.0.0 (Decisions). Not on
+   this machine yet; runs that need it say so in their report. Until then the tools degrade (tools
+   README "Ghidra"): no saving (Ctrl+S by hand), no function creation (F in Ghidra), tags only in
+   `data/tags.json`, disassembly offline.
+6. Fill architecture.md as each step learns something.
 
 ## Decisions
+
+- 2026-10-31 (session decision, bootstrap 3; the user may revise): **`tus.py` (and `autopilot.py`,
+  which needs it) are carried over at bootstrap 7, not 3**: the routine switches to the TU loop as soon
+  as `tools/reverse/tus.py` exists, and with no TU map, platform layer or build that loop would claim
+  nothing useful. `status.py` / `tuid.py` import it lazily.
+- 2026-10-31 (session decision, bootstrap 3): **provenance tags live in `data/tags.json`** (address ->
+  tag, committed), mirrored to Ghidra's function tags only while 5.14.2 answers: 2.0.0 has no tags, and
+  the repo record survives a Ghidra crash. `fetch.py` reads it; `name_ctx.py` / `libmatch.py` write it
+  through `yamipan.set_tag`.
 
 The user's standing rules, carried from the earlier ports (SKILL.md "The user's rules" says how they
 apply here):
@@ -97,6 +119,12 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-10-31: bootstrap 3, the tools (scheduled run): RosePan's tools carried over and renamed
+  (`yamipan.py` on `ghidra_mcp.py`, a `Ghidra5` client for 5.14.2, `data/tags.json`, `data/layout.json`
+  image sections for the stripped ELF, `ghidra.py find` over the ELF, `mipsdis.py` fallback for
+  disassembly); `refresh.py` green against Ghidra (6,393 functions, `yamipan_functions.txt`,
+  `status.md`). `tus.py` / `autopilot.py` wait for bootstrap 7. Next: bootstrap 4 (name seeding).
 
 - 2026-10-31: bootstrap 1, the binary identified (scheduled run): stripped CodeWarrior 2.4.1.01 ELF,
   SDK 3.0 libraries, rx / rena middleware, gp 0x322870, `main` 0x12d910, address map with the VU
