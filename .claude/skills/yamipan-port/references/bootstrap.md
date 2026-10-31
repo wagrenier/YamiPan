@@ -55,13 +55,16 @@ tag (open-items.md), provenance tags `ror-symbol` / `ror-inferred` -> `game-symb
 - `yamipan.py` keeps RosePan's shape (paths, address map, tags, annotation and stub regexes, write
   helpers) but its `GHIDRA` constant and `http()` / `ghidra_up()` go through `ghidra_mcp.py`
   (README "Carrying a tool over"). Grep the copied tools for `8089` and `GHIDRA_MCP_URL`: none may remain.
-- **RosePan's Ghidra calls are GhidraMCP 5.14.2's**; YamiPan runs 2.0.0 (ghidra.md has its API).
-  `ghidra_mcp.http()` returns parsed `data`, not text, and takes no `program`. Translate:
-  `list_functions` -> `functions` (paged), `get_function_by_address` -> `function`,
-  `decompile_function` (by address) -> `decompile_function`, `rename_function_by_address` stays. No
-  equivalent: `save_program`, `create_function`, `disassemble_bytes`, the function-tag endpoints,
-  `get_bulk_function_hashes`, `list_open_programs` (used by `rosepan.py`, `name_ctx.py`, `fetch.py`,
-  `mipsemu.py`, `ghidra.py`). Settle open-items.md's question on them before carrying those tools.
+- **RosePan's Ghidra calls are GhidraMCP 5.14.2's**; YamiPan runs 2.0.0 (ghidra.md has its API) and,
+  for what 2.0.0 lacks, 5.14.2 beside it (the user's decision, open-items.md). `ghidra_mcp.http()`
+  returns parsed `data`, not text, and takes no `program`. Translate: `list_functions` -> `functions`
+  (paged), `get_function_by_address` -> `function`, `decompile_function` (by address) ->
+  `decompile_function`, `rename_function_by_address` stays. Keep on 5.14.2: `save_program`,
+  `create_function`, `disassemble_bytes`, the function-tag endpoints, `get_bulk_function_hashes`
+  (used by `rosepan.py`, `name_ctx.py`, `fetch.py`, `mipsemu.py`, `ghidra.py`), through a second client
+  in `ghidra_mcp.py` restored from the pre-2.0.0 one (`git show 8536a1f:tools/reverse/ghidra_mcp.py`:
+  instance by project via `instance_info` on 8089..8104, `program` in the query string). While no
+  5.14.2 backend answers, carry the tools over anyway and say which calls wait for it.
 - Fresh data: `data/tus.json` (no TUs, settings), `data/layout.json` (empty ranges), empty name
   ledgers (`context_names.json`, `overrides.json`, `lib_matches.json`).
 - Per-game tools stay behind or get rewritten: `i3racc.py` (RoR's i3r accessors), `vudis.py`'s image

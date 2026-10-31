@@ -121,12 +121,16 @@ dirty or the build red.
 
 ## Starting sessions
 
-The user starts each session (`/yamipan-port next`, a scheduled task whose prompt is
-`tools/reverse/routine.md`, or `autopilot.py` in a terminal). A session never starts other sessions,
-agents or scheduled tasks, and never edits `autopilot.py` or the routine. Within a session, run the
-protocol without asking at each step; pause only for decisions that are the user's (restructuring the
-tree, non-trivial platform changes, destructive git) -- when no answer can come, decide, record the
-doubt in open-items.md, finish. Pushing finished commits is not approved for YamiPan yet (open-items.md).
+The user starts each session (`/yamipan-port next`, the desktop app's scheduled task `yamipan-next-tu`
+every 20 minutes, whose prompt is `tools/reverse/routine.md`, or `autopilot.py` in a terminal). Work
+is on the branch `fs2-port`. A scheduled run passes `python preflight.py` first (stop switch
+`work/STOP`, run lock `work/run.lock`, clean tree, work branch, Ghidra up), does one step (a bootstrap
+step until `tus.py` exists, then one TU), pushes and releases the lock. A session never starts other
+sessions, agents or scheduled tasks, and never edits `autopilot.py`, `preflight.py` or the routine.
+Within a session, run the protocol without asking at each step; pause only for decisions that are the
+user's (restructuring the tree, non-trivial platform changes, destructive git) -- when no answer can
+come, decide, record the doubt in open-items.md, finish. Pushing each finished commit to
+origin/fs2-port is approved (2026-10-31); never force.
 An empty queue means re-assess, not "follow the frontier": the frontier counts call sites from written
 code that may never run (in ReiPan it led seven sessions into effects nobody could see); refill the
 queue from "Next up" in the order a smoke run reaches the stubs. Porting runs at effort `xhigh` (this

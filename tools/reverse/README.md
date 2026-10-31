@@ -7,6 +7,13 @@ Ghidra layer, written first so that several Ghidras can run side by side (one pe
 
 Run every tool from this directory: `python <tool>.py`.
 
+## Scheduled runs
+
+| file | what it is |
+|---|---|
+| `routine.md` | The prompt of the desktop app's scheduled task `yamipan-next-tu` (every 20 minutes): one step per run (a bootstrap step until `tus.py` exists, then one TU) on the branch `fs2-port`, commit, push, report. Sessions never edit it; the user does (then updates the task's prompt to match). |
+| `preflight.py` | Gates a run: `python preflight.py` checks the stop switch (`work/STOP`), a running autopilot, the run lock (`work/run.lock`: exit 3 while the previous run is still going, exit 1 when older than 6 h), a clean tree, a work branch and Ghidra serving the program, then takes the lock; `--release` drops it. To stop the runs: create `work/STOP`. |
+
 ## Ghidra: GhidraMCP 2.0.0, several instances
 
 | script | what it does |
