@@ -55,7 +55,9 @@ Read before working:
     `.mcp.json` itself is read at session start.
   - **The plugin never saves**: names and comments stay in Ghidra until it saves (Ctrl+S there). Offline
     (Ghidra down): status, export, tus list/check/finish, callcheck and build work from cached `work/`.
-- Tools: `tools/reverse/` (run from there: `python <tool>.py`); every tool is in its README.
+- Tools: `tools/reverse/` (run from there: `python <tool>.py`); every tool is in its README. Python
+  3.14 is installed, but `python` resolves to the Microsoft Store stub until its App execution alias
+  is turned off (Windows Settings): use `py <tool>.py` when `python` says "Python was not found".
 - Build (after bootstrap): `python build.py` (MinGW + ninja, configures on first use). The game ELF in
   the game folder above.
 - References, read-only: `../RosePan` (newest tools and platform layer, SDK 3.0 + ee-gcc 2.9x library

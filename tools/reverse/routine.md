@@ -7,7 +7,9 @@ YamiPan scheduled run: advance the Forbidden Siren 2 (PS2, Europe, SCES_538.51) 
 
 Repository: C:\Users\willi\Documents\git\YamiPan, on the work branch fs2-port. Work only inside it; ../RosePan, ../ReiPan, ../MioPan and ../GhidraMCP are read-only references. Nobody is watching this run: never wait for answers or ask questions -- decide, write doubts into .claude/skills/yamipan-port/references/open-items.md, and carry on.
 
-1. Preflight. From C:\Users\willi\Documents\git\YamiPan\tools\reverse run `python preflight.py`. It checks the user's stop switch (work/STOP), a running autopilot, the run lock, a clean tree, the work branch and Ghidra serving SCES_538.51, then takes the run lock (work/run.lock).
+Python: run every Python command with the launcher `py` (`py preflight.py`, `py tus.py next`), also where the skill writes `python <tool>.py`: on this machine `python` can be the Microsoft Store stub ("Python was not found").
+
+1. Preflight. From C:\Users\willi\Documents\git\YamiPan\tools\reverse run `py preflight.py`. It checks the user's stop switch (work/STOP), a running autopilot, the run lock, a clean tree, the work branch and Ghidra serving SCES_538.51, then takes the run lock (work/run.lock).
    - Exit 3: the previous run is still going. Reply "previous run still going" and stop.
    - Any other non-zero exit: stop, change nothing, and reply with its line. A dirty tree or a stale lock usually means a run crashed: say so, so the user can look.
 
@@ -21,7 +23,7 @@ Repository: C:\Users\willi\Documents\git\YamiPan, on the work branch fs2-port. W
 
 5. Push. After the commit, run `git -c credential.interactive=never push origin HEAD` (pushing each run's commit to origin/fs2-port is approved: open-items.md "Decisions", 2026-10-31). Never force-push, rewrite history, or delete branches or tags. If the push fails, say so in the report and leave the commit local.
 
-6. Release the lock: `python preflight.py --release` from tools/reverse -- always, also when the step failed or was abandoned.
+6. Release the lock: `py preflight.py --release` from tools/reverse -- always, also when the step failed or was abandoned.
 
 7. Report in 3-5 lines: the step or TU, its status, the commit hash and whether it was pushed, what the screenshot shows compared with the reference (once there is one), and the next blocker.
 
