@@ -1,6 +1,6 @@
 ---
 name: yamipan-port
-description: The workflow for reverse-engineering the next PS2 game and porting it into YamiPan (after MioPan / FF2, ReiPan / FF3, RosePan / Rule of Rose), one translation unit per session, as automatically as possible -- Ghidra with several instances (one project and process per game, found by project on GhidraMCP ports 8089..8104 via tools/reverse/ghidra_mcp.py and the instance-aware ghidra MCP bridge), bootstrapping the port (the binary, its Ghidra project, RosePan's tools and platform layer, seeding names), the TU queue and session protocol, naming with provenance tags, reconstructing C/C++ into src/ with compiler-proven layouts, stubbing the frontier, the screenshot test, and keeping docs and this skill current. Use it for any work in the YamiPan repo or on its game -- "continue the port", "next TU", "bootstrap", "decomp X", "reconstruct", an address or class name, which Ghidra / instance / port, naming, stubs, build or run problems -- even when the user does not name the skill.
+description: The workflow for reverse-engineering the next PS2 game and porting it into YamiPan (after MioPan / FF2, ReiPan / FF3, RosePan / Rule of Rose), one translation unit per session, as automatically as possible -- Ghidra with several instances (GhidraMCP 2.0.0, one backend per CodeBrowser window on ports 8080..8095, found by the program active in it via tools/reverse/ghidra_mcp.py and the ghidra MCP bridge), bootstrapping the port (the binary, its Ghidra project, RosePan's tools and platform layer, seeding names), the TU queue and session protocol, naming with provenance tags, reconstructing C/C++ into src/ with compiler-proven layouts, stubbing the frontier, the screenshot test, and keeping docs and this skill current. Use it for any work in the YamiPan repo or on its game -- "continue the port", "next TU", "bootstrap", "decomp X", "reconstruct", an address or class name, which Ghidra / instance / port, naming, stubs, build or run problems -- even when the user does not name the skill.
 effort: xhigh
 ---
 
@@ -13,10 +13,11 @@ counterpart: every function from its own binary). This skill distils what those 
 skills keep the full history. It is the playbook and the project's memory: follow it, and keep it true
 ("Keeping this skill alive").
 
-**State (2026-10-30): before bootstrap.** The game is Forbidden Siren 2 (Europe, `SCES_538.51`; files
-under "Environment"); its annotation tag is still open (open-items.md "Next up" 1). What
-exists: multi-instance Ghidra (`tools/reverse/ghidra_mcp.py`, `ghidra_bridge.py`, `.mcp.json`). Until
-the TU loop runs, work follows `references/bootstrap.md`; afterwards, the protocol below.
+**State (2026-10-31): before bootstrap.** The game is Forbidden Siren 2 (Europe, `SCES_538.51`; files
+under "Environment"); its annotation tag is still open (open-items.md "Next up" 1). What exists: the
+Ghidra layer on GhidraMCP 2.0.0 (`tools/reverse/ghidra_mcp.py`, `ghidra_bridge.py`, `.mcp.json`) and a
+Ghidra project with the game imported and auto-analysed. Until the TU loop runs, work follows
+`references/bootstrap.md`; afterwards, the protocol below.
 
 Read before working:
 - `references/open-items.md` -- the user's priorities ("Next up"), decisions, questions.
@@ -30,38 +31,45 @@ Read before working:
 ## Environment
 
 - **The game: Forbidden Siren 2, Europe (`SCES_538.51`, ELF dated 2006-05-17).** The ELF and the disc's
-  files are in `E:\Games\Emulator\PS2\Games\Forbidden Siren 2 (Europe)`:
+  files are in `C:\Users\willi\Documents\Decomp\Forbidden Siren 2`:
   - the ELF `SCES_538.51`;
-  - the data archives `ROM.000`..`ROM.007` and `SPK.ROM`;
+  - the data archives `ROM.000`..`ROM.007`, `ROMD.008`..`ROMD.010` and `SPK.ROM`;
   - `MODULES\` (IRX), `IOPCONF.CNF` and `SYSTEM.CNF`.
 
   This folder is the default ELF path and data root for the tools, so there is no copy at the repo
   root. Never commit anything from it.
-- **Ghidra 12.1.2** (`F:\ghidra_12.1.2_PUBLIC_20260605\ghidra_12.1.2_PUBLIC`) with GhidraMCP 5.14.2.
-  **Several Ghidras run at once, one per game** (ghidra.md): each process serves MCP on the first free
-  port of 8089..8104, from its CodeBrowser window. YamiPan's project is `C:\Users\willi\YamiPan.gpr`;
-  the shared `C:\Users\willi\Ghidra.gpr` (FF1, FF2, FF3, RoR) is RosePan's and ReiPan's.
-  - Tools find the instance by project: `python ghidra_mcp.py which` (from `tools/reverse/`) says which
-    one and whether the program is open; `list` shows all; `launch` starts YamiPan's. Never hard-code a
-    port; `GHIDRA_MCP_URL` pins one only for debugging.
-  - Claude's `ghidra` MCP tools (`.mcp.json` -> `ghidra_bridge.py`) attach to YamiPan's instance at
-    start; when Ghidra started later, `connect_instance("YamiPan")`. `list_instances` shows every Ghidra.
-  - Every request carries `program` in the query string (a POST body's is ignored). Offline (Ghidra
-    down): status, export, tus list/check/finish, callcheck and build work from cached `work/`.
+- **Ghidra 12.2** (`C:\Users\willi\Documents\ghidra_12.2_PUBLIC_20261016\ghidra_12.2_PUBLIC`) with
+  emotionengine-reloaded and **GhidraMCP 2.0.0** (LaurieWired; source `../GhidraMCP`, release wheel and
+  extension zip in `C:\Users\willi\Documents\GhidraMCP-release-2-0\GhidraMCP-release-2-0`). YamiPan's
+  project is `C:\Users\willi\Documents\Ghidra Projects\CLaude Decomp.gpr`, its program `SCES_538.51`
+  (`tools/reverse/data/ghidra.json`). **Each CodeBrowser window serves the program active in it**, on
+  its own fixed port (Tool Options -> GhidraMCP HTTP Server, 8080; no fallback: another Ghidra gets
+  another port by hand). Several Ghidras can run, one per game (ghidra.md).
+  - Tools find the window by its active program: `python ghidra_mcp.py which` (from `tools/reverse/`)
+    says which; `list` shows every backend on 8080..8095; `launch` starts Ghidra on the project. Each
+    request is checked first (one /health), so a window showing another program is never written to.
+    Never hard-code a port; `GHIDRA_MCP_URL` pins one only for debugging.
+  - Claude's `ghidra` MCP tools (`.mcp.json` -> `ghidra_bridge.py`, run by the venv
+    `C:\Users\willi\Documents\ghidra_12.2_PUBLIC_20261016\.venv`): the wheel's 30 plus `list_instances`
+    and `connect_instance`. They find the window on each call, so Ghidra may start after the session;
+    `.mcp.json` itself is read at session start.
+  - **The plugin never saves**: names and comments stay in Ghidra until it saves (Ctrl+S there). Offline
+    (Ghidra down): status, export, tus list/check/finish, callcheck and build work from cached `work/`.
 - Tools: `tools/reverse/` (run from there: `python <tool>.py`); every tool is in its README.
 - Build (after bootstrap): `python build.py` (MinGW + ninja, configures on first use). The game ELF in
   the game folder above.
 - References, read-only: `../RosePan` (newest tools and platform layer, SDK 3.0 + ee-gcc 2.9x library
   names, GCC 2 ABI), `../ReiPan` (GCC 3 ABI, porting from a sister build, SDK 3.0 libraries), `../MioPan`
-  (FF2: symbols, the PS2 hardware skill).
+  (FF2: symbols, the PS2 hardware skill), `../GhidraMCP` (the plugin's source: what an endpoint really
+  does).
 
 ## Bootstrap (until the loop runs)
 
 `references/bootstrap.md`, in order, each step checkable: the game identified -> its own Ghidra project
--> RosePan's tools carried over on `ghidra_mcp.py` -> names seeded (ELF symbols, libraries, vtables,
-folded functions, a sister game if any) -> the TU map -> the platform layer (host task) -> a green build
-whose run shows a window and reached stubs -> the queue. Record each step's facts in architecture.md and
-tick it in open-items.md. Decisions that shape the tree (layout, platform changes) are the user's: ask,
+-> RosePan's tools carried over on `ghidra_mcp.py` (GhidraMCP 2.0.0's API: open-items.md lists what it
+lacks) -> names seeded (ELF symbols, libraries, vtables, folded functions, a sister game if any) -> the
+TU map -> the platform layer (host task) -> a green build whose run shows a window and reached stubs ->
+the queue. Record each step's facts in architecture.md and tick it in open-items.md. Decisions that shape the tree (layout, platform changes) are the user's: ask,
 and when no answer can come, decide, record it in open-items.md "Decisions", and go on.
 
 ## One TU per session (the protocol)

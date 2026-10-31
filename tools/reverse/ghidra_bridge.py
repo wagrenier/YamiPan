@@ -1,148 +1,120 @@
-"""The `ghidra` MCP server for Claude in YamiPan: GhidraMCP's own bridge (bridge_mcp_ghidra.py),
-pointed at YamiPan's Ghidra when several run. Not run by hand: .mcp.json starts it with the bridge's
-venv python (it needs the `mcp` package); extra arguments go to the bridge (--lazy ...).
+"""The `ghidra` MCP server for Claude in YamiPan: the GhidraMCP 2.0.0 wheel's own server (the
+`ghidra-mcp` command, LaurieWired/GhidraMCP), aimed at the Ghidra window that has YamiPan's program
+active. Not run by hand: .mcp.json starts it with the python of the venv the wheel is installed in.
 
-On Windows the bridge alone auto-connects to whatever answers on 8089, lists only the instance it is
-connected to, and its connect_instance falls back to 8089 when no project of that name answers: with
-two Ghidras it silently drives the wrong one. This wrapper loads the bridge unchanged and replaces four
-of its pieces with ghidra_mcp.py's discovery:
+The wheel alone talks to one URL (--ghidra-server, 127.0.0.1:8080) and to whatever program is active in
+that window: with two Ghidras, or another program's tab in front, it silently reads and writes the
+wrong one. This wrapper builds the wheel's server unchanged around its HTTP client, re-aimed before
+every request by ghidra_mcp.py: the window whose active program is the followed one (data/ghidra.json's
+"program"), checked by one /health, else a scan of the port range; no such window -> the tool fails
+with NO_BACKEND and says what runs. Two tools are added:
 
-- start-up connects to the instance ghidra_mcp.find() resolves (data/ghidra.json's project, else its
-  program), or to none -- never to a port by default;
-- list_instances lists every instance on 8089..8104: project, open programs, which one is YamiPan's;
-- connect_instance(target) takes a project name or path, a program name or a port, and refuses a
-  target that fits several instances;
-- a lost connection resolves the connected project again (Ghidra restarted, maybe on another port).
+- list_instances: every backend on the port range and the program active in each;
+- connect_instance(target): follow another program (a name, or the port whose active program to
+  follow), e.g. FF2 in MioPan's Ghidra, until the next call.
 
-The bridge's Unix-socket discovery is switched off where Python has no AF_UNIX (Windows): the plugin's
-socket files exist there (F:\\tmp\\ghidra-mcp-<user>) but cannot be connected to, and two of them made
-the bridge refuse to auto-connect at all.
+Ghidra may start after the session: every tool is registered anyway and finds it on its first call.
 """
 import importlib.util
 import json
-import socket
+import logging
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import ghidra_mcp as gm  # noqa: E402
+TOOLS = Path(__file__).resolve().parent
+# ghidra_mcp.py here would shadow the wheel's ghidra_mcp package: drop this directory from the path and
+# load the file under another name.
+sys.path[:] = [p for p in sys.path if Path(p or '.').resolve() != TOOLS]
+_spec = importlib.util.spec_from_file_location('yamipan_ghidra', TOOLS / 'ghidra_mcp.py')
+gm = importlib.util.module_from_spec(_spec)
+sys.modules[_spec.name] = gm
+_spec.loader.exec_module(gm)
 
-from mcp.server.fastmcp import Context  # noqa: E402  (the bridge's venv has it)
+from ghidra_mcp.backend import BackendError, GhidraBackend  # noqa: E402  (the wheel)
+from ghidra_mcp.server import create_server  # noqa: E402
 
-
-def _load_bridge():
-    path = Path(gm.CONFIG.get('bridge') or '')
-    if not path.is_file():
-        sys.exit(f'ghidra_bridge: no bridge at "{path}" (data/ghidra.json "bridge" or GHIDRA_MCP_BRIDGE)')
-    spec = importlib.util.spec_from_file_location('bridge_mcp_ghidra', path)
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = mod
-    spec.loader.exec_module(mod)   # registers the static tools; its main() does not run
-    return mod
-
-
-b = _load_bridge()
-log = b.logger
-# What start-up and reconnects look for; connect_instance retargets it to the instance it picked.
-target = {'project': gm.PROJECT, 'program': gm.PROGRAM}
+NOTE = """
+In YamiPan these tools act on one program, data/ghidra.json's (connect_instance follows another), in
+whichever Ghidra window has it as the active tab; a call fails with NO_BACKEND when no window does.
+Changes are not saved: they stay in Ghidra until it saves (Ctrl+S there), and a crash loses them.
+"""
 
 
-def _use(inst):
-    """Point the bridge at inst over TCP and register that Ghidra's tools; returns how many."""
-    b._active_tcp = inst.url.rstrip('/')
-    b._active_socket = None
-    b._transport_mode = 'tcp'
-    b._connected_project = inst.project or None
-    try:
-        return b._fetch_and_register_schema()
-    except Exception:
-        b._active_tcp, b._transport_mode = None, 'none'
-        raise
+class YamiPanBackend(GhidraBackend):
+    """The wheel's HTTP client, re-aimed before every request at the window serving the followed
+    program."""
+
+    def __init__(self, program):
+        super().__init__(f'http://{gm.HOST}:{gm.PORTS[0]}/')
+        self.client = gm.Ghidra(program)
+
+    def request(self, method, endpoint, params=None):
+        try:
+            inst = self.client.instance(self.timeout[1])
+        except gm.GhidraError as e:
+            raise BackendError('NO_BACKEND', str(e)) from e
+        self.base_url = inst.url
+        return super().request(method, endpoint, params)
 
 
-def _auto_connect():
-    try:
-        inst = gm.find(target['project'], target['program'], cache=False)
-    except gm.GhidraError as e:
-        log.info(f"YamiPan's Ghidra is not connected: {e}. Tools register on connect_instance().")
-        return
-    try:
-        log.info(f'Connected to {inst.describe()}: {_use(inst)} tools')
-    except Exception as e:
-        log.warning(f'Schema fetch from {inst.url} failed: {e}')
+backend = YamiPanBackend(gm.PROGRAM)
 
 
-def _try_reconnect():
-    try:
-        inst = gm.find(target['project'], target['program'], cache=False)
-        _use(inst)
-    except Exception as e:
-        log.info(f'Reconnect failed: {e}')
-        return False
-    log.info(f'Reconnected to {inst.describe()}')
-    return True
-
-
-def _yamipan_port(found):
-    """The port of the instance YamiPan's tools use (data/ghidra.json), None when not exactly one."""
-    hits = gm.match(found, gm.PROJECT, gm.PROGRAM)
-    return hits[0].port if len(hits) == 1 else None
-
-
-def _record(inst, connected, mine):
-    return {'url': inst.url, 'port': inst.port, 'pid': inst.pid, 'project': inst.project,
-            'project_path': inst.project_path, 'open_programs': [p['name'] for p in inst.open_programs()],
-            'connected': connected, 'yamipan': inst.port == mine}
+def _record(inst):
+    return {'url': inst.url, 'port': inst.port, 'program': inst.program, 'program_path': inst.program_path,
+            'language': inst.language, 'ghidra': inst.ghidra, 'plugin': inst.version,
+            'followed': inst.serves(backend.client.program), 'yamipan': inst.serves(gm.PROGRAM)}
 
 
 def list_instances() -> str:
-    """List the running Ghidra instances (GhidraMCP on 127.0.0.1:8089..8104, one per Ghidra process):
-    port, pid, project, the programs open in it. `connected` marks the one this bridge talks to,
-    `yamipan` the one YamiPan's tools use (tools/reverse/data/ghidra.json's project / program)."""
+    """List the GhidraMCP backends on 127.0.0.1 (one per Ghidra CodeBrowser window, ports from
+    tools/reverse/data/ghidra.json): the program active in each. `followed` marks the one these tools
+    act on, `yamipan` the one with YamiPan's program."""
     found = gm.scan()
-    mine = _yamipan_port(found)
-    active = b._active_tcp if b._transport_mode == 'tcp' else None
-    out = [_record(i, active == i.url.rstrip('/'), mine) for i in found]
-    note = '' if found else f'No Ghidra is running on ports {gm.PORTS[0]}-{gm.PORTS[-1]}.'
-    return json.dumps({'instances': out, 'note': note} if note else {'instances': out}, indent=2)
+    out = {'followed_program': backend.client.program, 'instances': [_record(i) for i in found]}
+    if not found:
+        out['note'] = f'No GhidraMCP backend answers on ports {gm.PORTS[0]}-{gm.PORTS[-1]}.'
+    return json.dumps(out, indent=2)
 
 
-async def connect_instance(project: str, ctx: Context | None = None) -> str:
-    """Switch the bridge to another Ghidra instance and register its analysis tools.
-
-    project: a project name or path ("YamiPan", "C:\\Users\\willi\\Ghidra"), a program name
-    ("SLUS_214.48"), or a port ("8090"); it must fit exactly one running instance (list_instances()
-    shows them). Until the next connect_instance, reconnects after a lost connection look for the
-    same project again. Clients that cache tools/list must re-list after this call."""
+def connect_instance(target: str) -> str:
+    """Make the Ghidra tools follow another program until the next call: a program name
+    ("SLES_523.84") or a port ("8081") whose active program to follow. It must be the active program of
+    exactly one window (list_instances shows them). connect_instance("SCES_538.51") returns to
+    YamiPan's program."""
+    key = target.strip()
     found = gm.scan()
-    key = project.strip()
+    program = key
     if key.isdigit():
-        hits = [i for i in found if i.port == int(key)]
-    else:
-        hits = [i for i in found if i.is_project(key)] or gm.match(found, None, key)
+        at = [i for i in found if i.port == int(key)]
+        program = at[0].program if at else None
+        if not program:
+            return json.dumps({'error': f'no window with a program open answers on port {key}',
+                               'available': [i.describe() for i in found]})
+    hits = gm.match(found, program)
     if len(hits) != 1:
-        why = 'fits no' if not hits else f'fits {len(hits)}'
-        return json.dumps({'error': f"'{key}' {why} running Ghidra instance (project, program or port)",
-                           'available': [i.describe() for i in found]})
-    inst = hits[0]
-    try:
-        count = _use(inst)
-    except Exception as e:
-        return json.dumps({'error': f'schema fetch from {inst.url} failed: {e}'})
-    target.update(project=inst.project_path or inst.project or None, program=None)
-    await b._notify_tools_changed(ctx)
-    return json.dumps({'connected': True, 'transport': 'tcp', **_record(inst, True, _yamipan_port(found)),
-                       'tools_registered': count, 'tools_total': len(b._full_schema),
-                       'loaded_groups': sorted(b._loaded_groups)})
+        why = 'is active in no' if not hits else f'is active in {len(hits)}'
+        return json.dumps({'error': f"'{program}' {why} Ghidra window", 'available': [i.describe() for i in found]})
+    backend.client = gm.Ghidra(program)
+    return json.dumps({'connected': True, **_record(hits[0])})
 
 
-for _fn in (list_instances, connect_instance):
-    b.mcp.remove_tool(_fn.__name__)
-    b.mcp.tool()(_fn)
-b._auto_connect = _auto_connect
-b._try_reconnect = _try_reconnect
-if not hasattr(socket, 'AF_UNIX'):
-    b.discover_instances = lambda: []
+def main():
+    # stdout carries the MCP stream: logs go to stderr.
+    logging.basicConfig(level=logging.INFO, stream=sys.stderr, format='%(levelname)s:%(name)s:%(message)s')
+    log = logging.getLogger('ghidra_bridge')
+    health = backend.health()
+    if health is None:
+        log.info(f"No window serves {gm.PROGRAM} yet; every tool is registered and finds it when called.")
+    else:
+        log.info(f"Following {gm.PROGRAM} at {backend.base_url} (Ghidra {health.get('ghidra_version')}, "
+                 f"GhidraMCP {health.get('version')})")
+    mcp = create_server(backend, capabilities=set(health.get('capabilities', [])) if health else None)
+    mcp._mcp_server.instructions = (mcp.instructions or '') + NOTE
+    for fn in (list_instances, connect_instance):
+        mcp.tool()(fn)
+    mcp.run(transport='stdio')
+
 
 if __name__ == '__main__':
-    b.main()
+    main()

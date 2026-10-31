@@ -9,8 +9,8 @@ map", "Naming sources") and tick it off in `open-items.md` "Next up".
 
 - The ELF from the user's disc and the extracted disc's files, in a folder the user picks (the data
   root; never committed). Record serial, region and build date. YamiPan: Forbidden Siren 2, Europe,
-  `SCES_538.51` (2006-05-17), all in `E:\Games\Emulator\PS2\Games\Forbidden Siren 2 (Europe)`; the
-  tools default to that folder, so there is no copy at the repo root.
+  `SCES_538.51` (2006-05-17), all in `C:\Users\willi\Documents\Decomp\Forbidden Siren 2`; the tools
+  default to that folder, so there is no copy at the repo root.
 - What the binary still has, each a naming source:
   - **Symbols**: `.symtab` / `.mdebug` (rare in retail), or a kept **section header table** with
     `.gnu.linkonce.t.<mangled>` sections (RoR: 1,449 inline methods and templates, 284 vtables
@@ -30,16 +30,20 @@ map", "Naming sources") and tick it off in `open-items.md` "Next up".
 
 ## 2. Ghidra project (its own; ghidra.md)
 
+YamiPan: **done by the user (2026-10-31)**: `C:\Users\willi\Documents\Ghidra Projects\CLaude Decomp.gpr`
+holds `SCES_538.51`, imported (`r5900:LE:32:default`) and auto-analysed (6,393 functions, 100 named:
+the SDK syscalls emotionengine-reloaded knows, and thunks). For a new project:
+
 ```
-"F:\ghidra_12.1.2_PUBLIC_20260605\ghidra_12.1.2_PUBLIC\support\analyzeHeadless.bat" C:\Users\willi YamiPan -import "E:\Games\Emulator\PS2\Games\Forbidden Siren 2 (Europe)\SCES_538.51"
+"C:\Users\willi\Documents\ghidra_12.2_PUBLIC_20261016\ghidra_12.2_PUBLIC\support\analyzeHeadless.bat" "C:\Users\willi\Documents\Ghidra Projects" <Name> -import "<data root>\<ELF>"
 python ghidra_mcp.py launch
 ```
 
 The import runs auto-analysis (minutes; `-noanalysis` skips it, then analyse in the CodeBrowser).
 `launch` opens the project window only: open the program in the CodeBrowser once (Ghidra reopens it
-with the project from then on, and that window is what serves MCP). Set `data/ghidra.json` "program" to
-the name `list_open_programs` shows; `python ghidra_mcp.py which` must say "open". Never import it into
-the shared project `C:\Users\willi\Ghidra.gpr`.
+with the project from then on, and that window is what serves MCP, the program as its active tab). Set
+`data/ghidra.json` "project" and "program" (the name `/health` shows); `python ghidra_mcp.py which` must
+name it. One project per game.
 
 ## 3. Tools (from RosePan, the newest set)
 
@@ -51,6 +55,13 @@ tag (open-items.md), provenance tags `ror-symbol` / `ror-inferred` -> `game-symb
 - `yamipan.py` keeps RosePan's shape (paths, address map, tags, annotation and stub regexes, write
   helpers) but its `GHIDRA` constant and `http()` / `ghidra_up()` go through `ghidra_mcp.py`
   (README "Carrying a tool over"). Grep the copied tools for `8089` and `GHIDRA_MCP_URL`: none may remain.
+- **RosePan's Ghidra calls are GhidraMCP 5.14.2's**; YamiPan runs 2.0.0 (ghidra.md has its API).
+  `ghidra_mcp.http()` returns parsed `data`, not text, and takes no `program`. Translate:
+  `list_functions` -> `functions` (paged), `get_function_by_address` -> `function`,
+  `decompile_function` (by address) -> `decompile_function`, `rename_function_by_address` stays. No
+  equivalent: `save_program`, `create_function`, `disassemble_bytes`, the function-tag endpoints,
+  `get_bulk_function_hashes`, `list_open_programs` (used by `rosepan.py`, `name_ctx.py`, `fetch.py`,
+  `mipsemu.py`, `ghidra.py`). Settle open-items.md's question on them before carrying those tools.
 - Fresh data: `data/tus.json` (no TUs, settings), `data/layout.json` (empty ranges), empty name
   ledgers (`context_names.json`, `overrides.json`, `lib_matches.json`).
 - Per-game tools stay behind or get rewritten: `i3racc.py` (RoR's i3r accessors), `vudis.py`'s image
