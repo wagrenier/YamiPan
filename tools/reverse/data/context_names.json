@@ -5333,6 +5333,654 @@
   "was": "FUN_00168150",
   "why": "rx library: RosePan names RoR 0x24b188 rxThDmaSync; same size 0x70 and place in a run of matching functions (rxalign.py)"
  },
+ "001681c0": {
+  "name": "sdpr2SetSurround",
+  "tag": "lib-context",
+  "was": "FUN_001681c0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): sets 0x537c40 (0..1, LimitRange messages); sdpr2Init sets 1; when 0 every pan forces both phase signs to +1, so 1 enables phase-inverted (rear) panning"
+ },
+ "00168250": {
+  "name": "sdpr2GetSurround",
+  "tag": "lib-context",
+  "was": "FUN_00168250",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): returns 0x537c40 (sdpr2SetSurround)"
+ },
+ "00168260": {
+  "name": "sdpr2SetPairMode",
+  "tag": "lib-context",
+  "was": "FUN_00168260",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): sets 0x537c44 (0..5); the pair type scales its second voice's pitch by 0x2f5fa0[mode]/4096 (3520..3856) and keeps state 2 below mode 2: meaning of the modes unread"
+ },
+ "001682f0": {
+  "name": "sdpr2GetPairMode",
+  "tag": "lib-context",
+  "was": "FUN_001682f0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): returns 0x537c44 (sdpr2SetPairMode)"
+ },
+ "00168300": {
+  "name": "sdpr2SetDebug",
+  "tag": "lib-context",
+  "was": "FUN_00168300",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): sets 0x537c48 clamped to 0..1; every SDPR2 message prints only while it is 1"
+ },
+ "00168398": {
+  "name": "sdpr2GetDebug",
+  "tag": "lib-context",
+  "was": "FUN_00168398",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): returns 0x537c48, read before every SDPR2 message (364 call sites)"
+ },
+ "001683a8": {
+  "name": "sdpr2Init",
+  "tag": "lib-context",
+  "was": "FUN_001683a8",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): called by soundInit: surround 1, pair mode 0, debug 0, clears the 64 handle slots 0x537140 (x 0x2c, voices -1, pitch 0x1000), installs the driver (sdpr2DrvInit) and the two pan types"
+ },
+ "001684a0": {
+  "name": "sdpr2RegisterType",
+  "tag": "lib-context",
+  "was": "FUN_001684a0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): stores a type's function table in 0x2f5f80[index] (0..7) if free; sdpr2PairInit registers 0, sdpr2SingleInit 1"
+ },
+ "001685d8": {
+  "name": "sdpr2UnregisterType",
+  "tag": "lib-context",
+  "was": "FUN_001685d8",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): clears 0x2f5f80[index] (0..7); called by the two type exits"
+ },
+ "00168708": {
+  "name": "sdpr2PlayPan",
+  "tag": "lib-context",
+  "was": "FUN_00168708",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls type slot +0 (play with volume, angle, spread), clamping each argument (LimitRange / RoundRange); stores the type in the returned handle's slot; caller 0x147240"
+ },
+ "00168d38": {
+  "name": "sdpr2Play",
+  "tag": "lib-context",
+  "was": "FUN_00168d38",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls type slot +4 (play centred: the types pass volume 0x80, angle 0, spread 0x80) with (se 0..0xffff, 0..0x7f, 0..0x1ffff: bit 0x10000 sets the SE attribute); stores the type in the handle's slot"
+ },
+ "00169198": {
+  "name": "sdpr2PlayPanEx",
+  "tag": "lib-context",
+  "was": "FUN_00169198",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls type slot +8 (sdpr2PlayPan plus an index into the SE parameter table 0x2f7a58)"
+ },
+ "00169838": {
+  "name": "sdpr2PlayEx",
+  "tag": "lib-context",
+  "was": "FUN_00169838",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls type slot +0xc (sdpr2Play plus the 0x2f7a58 parameter index)"
+ },
+ "00169d20": {
+  "name": "sdpr2Stop",
+  "tag": "lib-context",
+  "was": "FUN_00169d20",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls handle's type slot +0x10 (stop, with a mode passed to rxSndSeStop); caller 0x147560"
+ },
+ "00169f78": {
+  "name": "sdpr2StopType",
+  "tag": "lib-context",
+  "was": "FUN_00169f78",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls type slot +0x14 (stop every handle of that type)"
+ },
+ "0016a1c0": {
+  "name": "sdpr2StopAll",
+  "tag": "lib-context",
+  "was": "FUN_0016a1c0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls slot +0x14 of every registered type; callers soundShutdown, 0x1475c0, 0x147ee0, 0x148130"
+ },
+ "0016a2b0": {
+  "name": "sdpr2Pause",
+  "tag": "lib-context",
+  "was": "FUN_0016a2b0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls handle's type slot +0x18 (pause; the pair type calls the driver's stop slot instead: open-items)"
+ },
+ "0016a508": {
+  "name": "sdpr2SetPitch",
+  "tag": "lib-context",
+  "was": "FUN_0016a508",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls handle's type slot +0x1c (pitch as an int, 0x1000 = 1.0)"
+ },
+ "0016a770": {
+  "name": "sdpr2SetPitchF",
+  "tag": "lib-context",
+  "was": "FUN_0016a770",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls handle's type slot +0x20 (pitch as a float, LimitRangeF); caller 0x146ee0"
+ },
+ "0016aa08": {
+  "name": "sdpr2SetAngle",
+  "tag": "lib-context",
+  "was": "FUN_0016aa08",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls handle's type slot +0x24 (angle, RoundRange wraps it); caller 0x147050"
+ },
+ "0016acd0": {
+  "name": "sdpr2SetVolume",
+  "tag": "lib-context",
+  "was": "FUN_0016acd0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls handle's type slot +0x28 (volume, slot +0x1c); callers 0x147050, 0x147560"
+ },
+ "0016af38": {
+  "name": "sdpr2SetSpread",
+  "tag": "lib-context",
+  "was": "FUN_0016af38",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls handle's type slot +0x2c (slot +0x24: index into the pair gain tables 0x2f7a50 / 0x2f7a54; the one-voice type ignores it): name unsure; caller 0x147050"
+ },
+ "0016b1a0": {
+  "name": "sdpr2SetAttr",
+  "tag": "lib-context",
+  "was": "FUN_0016b1a0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls handle's type slot +0x30 (rxSndSeSetAttr through the driver); caller 0x147490"
+ },
+ "0016b3f8": {
+  "name": "sdpr2GetLevels",
+  "tag": "lib-context",
+  "was": "FUN_0016b3f8",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls handle's type slot +0x34 (fills 5 words with the voices' computed levels)"
+ },
+ "0016b5f0": {
+  "name": "sdpr2GetStatus",
+  "tag": "lib-context",
+  "was": "FUN_0016b5f0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls handle's type slot +0x38 (0 stopped, else the driver status); caller 0x146ff0"
+ },
+ "0016b698": {
+  "name": "sdpr2Update",
+  "tag": "lib-context",
+  "was": "FUN_0016b698",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls slot +0x3c of every registered type, per frame; callers soundUpdate, 0x144d80"
+ },
+ "0016b718": {
+  "name": "sdpr2TypeExt40",
+  "tag": "lib-context",
+  "was": "FUN_0016b718",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls type slot +0x40 with one argument; both built-in types leave it null (Call Undefine Function)"
+ },
+ "0016b900": {
+  "name": "sdpr2TypeExt44",
+  "tag": "lib-context",
+  "was": "FUN_0016b900",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls type slot +0x44 with two arguments; null in both built-in types"
+ },
+ "0016baf8": {
+  "name": "sdpr2TypeExt48",
+  "tag": "lib-context",
+  "was": "FUN_0016baf8",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): public API: checks the type (0..7, registry 0x2f5f80) or handle (0..63, slots 0x537140 x 0x2c) and calls type slot +0x48 with three arguments; null in both built-in types"
+ },
+ "0016bd00": {
+  "name": "sdpr2GetPitch",
+  "tag": "lib-context",
+  "was": "FUN_0016bd00",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): returns handle slot +0x20 (pitch, 0x1000 = 1.0)"
+ },
+ "0016bf10": {
+  "name": "sdpr2GetPitchF",
+  "tag": "lib-context",
+  "was": "FUN_0016bf10",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): returns handle slot +0x20 / 4096.0"
+ },
+ "0016c138": {
+  "name": "sdpr2GetAngle",
+  "tag": "lib-context",
+  "was": "FUN_0016c138",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): returns handle slot +0x14 (the angle sdpr2SetAngle stored)"
+ },
+ "0016c348": {
+  "name": "sdpr2GetVolume",
+  "tag": "lib-context",
+  "was": "FUN_0016c348",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): returns handle slot +0x1c (volume)"
+ },
+ "0016c558": {
+  "name": "sdpr2GetSpread",
+  "tag": "lib-context",
+  "was": "FUN_0016c558",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): returns handle slot +0x24 (sdpr2SetSpread)"
+ },
+ "0016c768": {
+  "name": "sdpr2FindFreeSlot",
+  "tag": "lib-context",
+  "was": "FUN_0016c768",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): first of the 64 handle slots 0x537140 whose two voices are -1, else -1"
+ },
+ "0016c7c0": {
+  "name": "sdpr2GetSlot",
+  "tag": "lib-context",
+  "was": "FUN_0016c7c0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): handle (0..63, OutOfRange messages) -> 0x537140 + handle * 0x2c, else 0"
+ },
+ "0016c870": {
+  "name": "sdpr2PairTurn",
+  "tag": "lib-context",
+  "was": "FUN_0016c870",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): pair type helper of sdpr2PairSetAngle: wraps the angle change to +-180, past +-90 turns it by 180 and toggles the slot's flip flag, result mod 720"
+ },
+ "0016c908": {
+  "name": "sdpr2PairCalcPan",
+  "tag": "lib-context",
+  "was": "FUN_0016c908",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): pair type: left / right volumes and phase signs of voice 0..3 (1 and 3 add 180 to the angle) via sdpr2CalcPanVolumes, scaled by the spread tables 0x2f7a50 / 0x2f7a54 (>> 11)"
+ },
+ "0016ca40": {
+  "name": "sdpr2PairSetPan",
+  "tag": "lib-context",
+  "was": "FUN_0016ca40",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): pair type: recomputes both voices' pans (sdpr2PairCalcPan, voices 0/1 or 2/3 by the flip flag) and sets them through sdpr2DrvSetVolume"
+ },
+ "0016cc40": {
+  "name": "sdpr2PairPlayPan",
+  "tag": "lib-context",
+  "was": "FUN_0016cc40",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +0: plays two voices (sdpr2DrvPlay) at the angle and angle+180, the second detuned by the pair mode, fills a free handle slot"
+ },
+ "0016ce90": {
+  "name": "sdpr2PairPlay",
+  "tag": "lib-context",
+  "was": "FUN_0016ce90",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +4: sdpr2PairPlayPan with volume 0x80, angle 0, spread 0x80"
+ },
+ "0016ceb0": {
+  "name": "sdpr2PairPlayPanEx",
+  "tag": "lib-context",
+  "was": "FUN_0016ceb0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +8: sdpr2PairPlayPan through sdpr2DrvPlayEx (an extra SE parameter index)"
+ },
+ "0016d108": {
+  "name": "sdpr2PairPlayEx",
+  "tag": "lib-context",
+  "was": "FUN_0016d108",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +0xc: sdpr2PairPlayPanEx with volume 0x80, angle 0, spread 0x80"
+ },
+ "0016d130": {
+  "name": "sdpr2PairStop",
+  "tag": "lib-context",
+  "was": "FUN_0016d130",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +0x10: sdpr2DrvStop on both voices, frees the slot"
+ },
+ "0016d2c0": {
+  "name": "sdpr2PairStopAll",
+  "tag": "lib-context",
+  "was": "FUN_0016d2c0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +0x14: sdpr2PairStop's body for every slot of this type"
+ },
+ "0016d3a8": {
+  "name": "sdpr2PairPause",
+  "tag": "lib-context",
+  "was": "FUN_0016d3a8",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +0x18 (pause), but calls sdpr2DrvStop on both voices and keeps the slot; the one-voice type calls sdpr2DrvPause: a bug or deliberate, read at the TU"
+ },
+ "0016d528": {
+  "name": "sdpr2PairSetPitch",
+  "tag": "lib-context",
+  "was": "FUN_0016d528",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +0x1c: sdpr2DrvSetPitch on voice 0, voice 1 scaled by the pair mode's 0x2f5fa0 factor; stores slot +0x20"
+ },
+ "0016d6e0": {
+  "name": "sdpr2PairSetPitchF",
+  "tag": "lib-context",
+  "was": "FUN_0016d6e0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +0x20: the float twin of sdpr2PairSetPitch (sdpr2DrvSetPitchF)"
+ },
+ "0016d8a8": {
+  "name": "sdpr2PairSetAngle",
+  "tag": "lib-context",
+  "was": "FUN_0016d8a8",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +0x24: turns the angle (sdpr2PairTurn) and re-pans both voices (sdpr2PairSetPan); stores slot +0x14 / +0x18"
+ },
+ "0016daa8": {
+  "name": "sdpr2PairSetVolume",
+  "tag": "lib-context",
+  "was": "FUN_0016daa8",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +0x28: re-pans with the new volume, stores slot +0x1c"
+ },
+ "0016dc58": {
+  "name": "sdpr2PairSetSpread",
+  "tag": "lib-context",
+  "was": "FUN_0016dc58",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +0x2c: re-pans with the new spread index, stores slot +0x24"
+ },
+ "0016de08": {
+  "name": "sdpr2PairSetAttr",
+  "tag": "lib-context",
+  "was": "FUN_0016de08",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +0x30: sdpr2DrvSetAttr on both voices"
+ },
+ "0016df88": {
+  "name": "sdpr2PairGetLevels",
+  "tag": "lib-context",
+  "was": "FUN_0016df88",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +0x34: sdpr2CalcLevels for voices 0 and 1 into a 5-word record"
+ },
+ "0016e120": {
+  "name": "sdpr2PairGetStatus",
+  "tag": "lib-context",
+  "was": "FUN_0016e120",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +0x38: sdpr2DrvGetStatus of both voices, 0 when both stopped"
+ },
+ "0016e1f8": {
+  "name": "sdpr2PairUpdate",
+  "tag": "lib-context",
+  "was": "FUN_0016e1f8",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): two-voice pan type (registry 0, table 0x537c50 filled by sdpr2PairInit): slot +0x3c: per slot of this type, applies a pending voice-1 pitch (state 2 -> 1 -> 0) and frees slots whose voices ended (stopping them when config word 0x537ca0 is 1)"
+ },
+ "0016e328": {
+  "name": "sdpr2PairInit",
+  "tag": "lib-context",
+  "was": "FUN_0016e328",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): fills the pair type's table 0x537c50 (+0..+0x3c, +0x40..+0x48 null), copies the driver config into 0x537ca0 (sdpr2DrvGetConfig), registers as type 0"
+ },
+ "0016e480": {
+  "name": "sdpr2PairExit",
+  "tag": "lib-context",
+  "was": "FUN_0016e480",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): unregisters type 0 (sdpr2UnregisterType(0)); merged into sdpr2PairInit by Ghidra, created 2026-11-02 (batch 011); no reference found"
+ },
+ "0016e498": {
+  "name": "sdpr2SingleSetPan",
+  "tag": "lib-context",
+  "was": "FUN_0016e498",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice type: pans its voice (sdpr2CalcPanVolumes) and sets it through sdpr2DrvSetVolume"
+ },
+ "0016e538": {
+  "name": "sdpr2SinglePlayPan",
+  "tag": "lib-context",
+  "was": "FUN_0016e538",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +0: plays one panned voice (sdpr2DrvPlay), fills a free handle slot (spread 0x80, voice 1 -1)"
+ },
+ "0016e690": {
+  "name": "sdpr2SinglePlay",
+  "tag": "lib-context",
+  "was": "FUN_0016e690",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +4: sdpr2SinglePlayPan with volume 0x80, angle 0, spread 0x80"
+ },
+ "0016e6b0": {
+  "name": "sdpr2SinglePlayPanEx",
+  "tag": "lib-context",
+  "was": "FUN_0016e6b0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +8: sdpr2SinglePlayPan through sdpr2DrvPlayEx"
+ },
+ "0016e820": {
+  "name": "sdpr2SinglePlayEx",
+  "tag": "lib-context",
+  "was": "FUN_0016e820",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +0xc: sdpr2SinglePlayPanEx with volume 0x80, angle 0, spread 0x80"
+ },
+ "0016e848": {
+  "name": "sdpr2SingleStop",
+  "tag": "lib-context",
+  "was": "FUN_0016e848",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +0x10: sdpr2DrvStop, frees the slot"
+ },
+ "0016e9d0": {
+  "name": "sdpr2SingleStopAll",
+  "tag": "lib-context",
+  "was": "FUN_0016e9d0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +0x14: stops every slot of this type"
+ },
+ "0016ea90": {
+  "name": "sdpr2SinglePause",
+  "tag": "lib-context",
+  "was": "FUN_0016ea90",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +0x18: sdpr2DrvPause"
+ },
+ "0016ec10": {
+  "name": "sdpr2SingleSetPitch",
+  "tag": "lib-context",
+  "was": "FUN_0016ec10",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +0x1c: sdpr2DrvSetPitch"
+ },
+ "0016ed90": {
+  "name": "sdpr2SingleSetPitchF",
+  "tag": "lib-context",
+  "was": "FUN_0016ed90",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +0x20: sdpr2DrvSetPitchF"
+ },
+ "0016ef20": {
+  "name": "sdpr2SingleSetAngle",
+  "tag": "lib-context",
+  "was": "FUN_0016ef20",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +0x24: unwraps the angle (sdpr2UnwrapAngle) and re-pans (sdpr2SingleSetPan)"
+ },
+ "0016f0c0": {
+  "name": "sdpr2SingleSetVolume",
+  "tag": "lib-context",
+  "was": "FUN_0016f0c0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +0x28: re-pans with the new volume"
+ },
+ "0016f248": {
+  "name": "sdpr2SingleSetSpread",
+  "tag": "lib-context",
+  "was": "FUN_0016f248",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +0x2c: only stores the value (no driver call)"
+ },
+ "0016f388": {
+  "name": "sdpr2SingleSetAttr",
+  "tag": "lib-context",
+  "was": "FUN_0016f388",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +0x30: sdpr2DrvSetAttr"
+ },
+ "0016f508": {
+  "name": "sdpr2SingleGetLevels",
+  "tag": "lib-context",
+  "was": "FUN_0016f508",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +0x34: sdpr2CalcLevels for its voice"
+ },
+ "0016f678": {
+  "name": "sdpr2SingleGetStatus",
+  "tag": "lib-context",
+  "was": "FUN_0016f678",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +0x38: sdpr2DrvGetStatus"
+ },
+ "0016f710": {
+  "name": "sdpr2SingleUpdate",
+  "tag": "lib-context",
+  "was": "FUN_0016f710",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): one-voice pan type (registry 1, table 0x537cc0 filled by sdpr2SingleInit): slot +0x3c: frees slots whose voice ended (sdpr2SingleStop)"
+ },
+ "0016f808": {
+  "name": "sdpr2SingleInit",
+  "tag": "lib-context",
+  "was": "FUN_0016f808",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): fills the one-voice type's table 0x537cc0, copies the driver config into 0x537d10, registers as type 1"
+ },
+ "0016f960": {
+  "name": "sdpr2SingleExit",
+  "tag": "lib-context",
+  "was": "FUN_0016f960",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): unregisters type 1 (sdpr2UnregisterType(1)); merged into sdpr2SingleInit by Ghidra, created 2026-11-02 (batch 011); no reference found"
+ },
+ "0016f978": {
+  "name": "sdpr2CalcPan",
+  "tag": "lib-context",
+  "was": "FUN_0016f978",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): left / right volumes of an angle at volume 0x80 (sdpr2CalcPanVolumes), multiplied by their phase signs; no caller"
+ },
+ "0016f9e0": {
+  "name": "sdpr2CalcPanDeg",
+  "tag": "lib-context",
+  "was": "FUN_0016f9e0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): sdpr2CalcPan of (angle % 360) unwrapped by sdpr2UnwrapAngle; callers 0x144250 / 0x144400 (game code)"
+ },
+ "0016fa78": {
+  "name": "sdpr2CalcPanVolumes",
+  "tag": "lib-context",
+  "was": "FUN_0016fa78",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): (volume, angle 0..719) -> left / right volumes from the gain tables 0x2f7a48 / 0x2f7a4c (>> 11) and their phase signs (+1 / -1 for negative gains)"
+ },
+ "0016fb68": {
+  "name": "sdpr2UnwrapAngle",
+  "tag": "lib-context",
+  "was": "FUN_0016fb68",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): (a, b): b + (a - b % 360 wrapped to +-180), mod 720; used before every one-voice re-pan"
+ },
+ "0016fbd0": {
+  "name": "sdpr2CalcLevels",
+  "tag": "lib-context",
+  "was": "FUN_0016fbd0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): per-voice level computation for the GetLevels slots (301 instructions, read at the TU)"
+ },
+ "00170088": {
+  "name": "sdpr2DrvInit",
+  "tag": "lib-context",
+  "was": "FUN_00170088",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): installs the default driver (sdpr2SeDrvInstall) with the caller's config; from sdpr2Init"
+ },
+ "00170120": {
+  "name": "sdpr2DrvPlay",
+  "tag": "lib-context",
+  "was": "FUN_00170120",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): driver dispatch: calls slot +0 of the driver table at 0x537d30 (Call Undefine Function when null)"
+ },
+ "00170280": {
+  "name": "sdpr2DrvPlayEx",
+  "tag": "lib-context",
+  "was": "FUN_00170280",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): driver dispatch: calls slot +4"
+ },
+ "001703f0": {
+  "name": "sdpr2DrvStop",
+  "tag": "lib-context",
+  "was": "FUN_001703f0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): driver dispatch: calls slot +8"
+ },
+ "00170508": {
+  "name": "sdpr2DrvPause",
+  "tag": "lib-context",
+  "was": "FUN_00170508",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): driver dispatch: calls slot +0xc"
+ },
+ "00170620": {
+  "name": "sdpr2DrvSetPitch",
+  "tag": "lib-context",
+  "was": "FUN_00170620",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): driver dispatch: calls slot +0x10 (int pitch, 0x1000 = 1.0)"
+ },
+ "00170738": {
+  "name": "sdpr2DrvSetPitchF",
+  "tag": "lib-context",
+  "was": "FUN_00170738",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): driver dispatch: calls slot +0x14 (float pitch)"
+ },
+ "00170850": {
+  "name": "sdpr2DrvSetVolume",
+  "tag": "lib-context",
+  "was": "FUN_00170850",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): driver dispatch: calls slot +0x18 (left, right, left sign, right sign)"
+ },
+ "00170998": {
+  "name": "sdpr2DrvSetAttr",
+  "tag": "lib-context",
+  "was": "FUN_00170998",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): driver dispatch: calls slot +0x1c"
+ },
+ "00170ab0": {
+  "name": "sdpr2DrvSetParam",
+  "tag": "lib-context",
+  "was": "FUN_00170ab0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): driver dispatch: calls slot +0x20 (index into 0x2f7a58, rxSndSeSetParamB); no caller"
+ },
+ "00170bc8": {
+  "name": "sdpr2DrvGetStatus",
+  "tag": "lib-context",
+  "was": "FUN_00170bc8",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): driver dispatch: calls slot +0x24 (no message when null)"
+ },
+ "00170c10": {
+  "name": "sdpr2DrvExt28",
+  "tag": "lib-context",
+  "was": "FUN_00170c10",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): driver dispatch: calls slot +0x28; the SE driver has none; no caller"
+ },
+ "00170d10": {
+  "name": "sdpr2DrvExt2C",
+  "tag": "lib-context",
+  "was": "FUN_00170d10",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): driver dispatch: calls slot +0x2c; the SE driver has none; no caller"
+ },
+ "00170e20": {
+  "name": "sdpr2DrvExt30",
+  "tag": "lib-context",
+  "was": "FUN_00170e20",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): driver dispatch: calls slot +0x30; the SE driver has none; no caller"
+ },
+ "00170f40": {
+  "name": "sdpr2DrvSetConfig",
+  "tag": "lib-context",
+  "was": "FUN_00170f40",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): copies an 8-word driver config into 0x537d38"
+ },
+ "00170f90": {
+  "name": "sdpr2DrvGetConfig",
+  "tag": "lib-context",
+  "was": "FUN_00170f90",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): copies the 8-word driver config 0x537d38 out (-1 for a null pointer); the two types copy it at init"
+ },
+ "00170ff0": {
+  "name": "sdpr2SeDrvPlay",
+  "tag": "lib-context",
+  "was": "FUN_00170ff0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): SE driver (table 0x2f7a68 installed at 0x537d30 by sdpr2SeDrvInstall): slot +0: rxSndSePlay with left * left sign and right * right sign and config word 0 as its last argument, then rxSndSeSetAttr(id, 1) when flag 0x10000 is set; created 2026-11-02 (batch 011)"
+ },
+ "00171068": {
+  "name": "sdpr2SeDrvPlayEx",
+  "tag": "lib-context",
+  "was": "FUN_00171068",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): SE driver (table 0x2f7a68 installed at 0x537d30 by sdpr2SeDrvInstall): slot +4: sdpr2SeDrvPlay plus rxSndSeSetParamB(id, 0x2f7a58[index]); created 2026-11-02 (batch 011)"
+ },
+ "00171100": {
+  "name": "sdpr2SeDrvStop",
+  "tag": "lib-context",
+  "was": "FUN_00171100",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): SE driver (table 0x2f7a68 installed at 0x537d30 by sdpr2SeDrvInstall): slot +8: tail call to rxSndSeStop"
+ },
+ "00171118": {
+  "name": "sdpr2SeDrvPause",
+  "tag": "lib-context",
+  "was": "FUN_00171118",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): SE driver (table 0x2f7a68 installed at 0x537d30 by sdpr2SeDrvInstall): slot +0xc: rxSndSePause with config word 1; created 2026-11-02 (batch 011)"
+ },
+ "00171138": {
+  "name": "sdpr2SeDrvSetPitch",
+  "tag": "lib-context",
+  "was": "FUN_00171138",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): SE driver (table 0x2f7a68 installed at 0x537d30 by sdpr2SeDrvInstall): slot +0x10: rxSndSeSetPitch(id, pitch / 4096.0f); created 2026-11-02 (batch 011)"
+ },
+ "00171160": {
+  "name": "sdpr2SeDrvSetPitchF",
+  "tag": "lib-context",
+  "was": "FUN_00171160",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): SE driver (table 0x2f7a68 installed at 0x537d30 by sdpr2SeDrvInstall): slot +0x14: tail call to rxSndSeSetPitch"
+ },
+ "00171178": {
+  "name": "sdpr2SeDrvSetVolume",
+  "tag": "lib-context",
+  "was": "FUN_00171178",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): SE driver (table 0x2f7a68 installed at 0x537d30 by sdpr2SeDrvInstall): slot +0x18: rxSndSeSetVolume(id, left * sign, right * sign); created 2026-11-02 (batch 011)"
+ },
+ "001711a0": {
+  "name": "sdpr2SeDrvSetAttr",
+  "tag": "lib-context",
+  "was": "FUN_001711a0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): SE driver (table 0x2f7a68 installed at 0x537d30 by sdpr2SeDrvInstall): slot +0x1c: tail call to rxSndSeSetAttr; created 2026-11-02 (batch 011)"
+ },
+ "001711b8": {
+  "name": "sdpr2SeDrvSetParam",
+  "tag": "lib-context",
+  "was": "FUN_001711b8",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): SE driver (table 0x2f7a68 installed at 0x537d30 by sdpr2SeDrvInstall): slot +0x20: rxSndSeSetParamB(id, 0x2f7a58[index]); created 2026-11-02 (batch 011)"
+ },
+ "001711e0": {
+  "name": "sdpr2SeDrvGetStatus",
+  "tag": "lib-context",
+  "was": "FUN_001711e0",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): SE driver (table 0x2f7a68 installed at 0x537d30 by sdpr2SeDrvInstall): slot +0x24: rxSndSeGetStatus bits -> 0 without bit 0, 2 with bit 3, else 1 unless bit 2; created 2026-11-02 (batch 011)"
+ },
+ "00171230": {
+  "name": "sdpr2SeDrvInstall",
+  "tag": "lib-context",
+  "was": "FUN_00171230",
+  "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): sets the driver config 0x537d58 (defaults {1, 1, -1, -1, 0..}), copies it with sdpr2DrvSetConfig and installs the SE driver table 0x2f7a68 at 0x537d30 if none is"
+ },
  "0023baf0": {
   "name": "getGameOptions",
   "tag": "game-inferred",

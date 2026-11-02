@@ -153,9 +153,37 @@ static slot table and init / exit / update called from `rxSndUtInit` 0x162178 / 
 Ghidra merged 33 of its small functions into their predecessors (getters after a `jr ra`, a tail `j`
 then a new prologue); created and named 2026-11-02 (batch 009). Since then `rxalign.py` pairs
 every rx range one to one (0 gaps, 0 starts lacking).
-**Not in RoR's rx, still to name**: 0x1681c0.. is **SDPR2** (strings 0x3027b8..: `LimitRange`, `LimitRangeF`,
-`RoundRange`, `ERR OutOfRange`, `ERR Call Undefine Function`; 0x1681c0 sets a 0..1 mode with
-range messages, 0x168398 its debug-flag getter).
+**SDPR2 0x1681c0..0x171300 (batch 011, 2026-11-02, 108 names by reading, `sdpr2*`)**: FS2-only
+middleware (not in RoR) that plays panned sound effects over rxSndSe. Its message set (`LimitRange`,
+`LimitRangeF`, `RoundRange`, `ERR OutOfRange`, `ERR Call Undefine Function`) exists **four times**
+(0x3027b8, 0x302920, 0x302a88, 0x302bf0): four source files, each with its own copy -- the TU
+boundaries: **A** core + public API 0x1681c0..~0x16c870 (uses 0x3027b8..), **B** the two-voice type
+~0x16c870..0x16e498 (0x302920..), **C** the one-voice type + pan math 0x16e498..0x170088 (0x302a88..),
+**D** the driver 0x170088..0x171300 (0x302bf0..); the exact cuts between A/B and C/D (functions
+without messages) are guesses. Every message prints only while `sdpr2GetDebug` (0x537c48) is 1.
+Layers:
+- **Globals**: surround 0x537c40 (0..1; 0 forces both phase signs to +1), pair mode 0x537c44
+  (0..5: second-voice pitch factor 0x2f5fa0[mode]/4096 = 3520..3856), debug 0x537c48; **64 handle
+  slots** 0x537140 x 0x2c {+0 type table, +4 / +8 voice ids (-1 free), +0xc flip, +0x10 / +0x14 /
+  +0x18 angles, +0x1c volume, +0x20 pitch (0x1000 = 1.0), +0x24 spread, +0x28 state}; type registry
+  0x2f5f80[8].
+- **API** (`sdpr2Play*` / `Stop*` / `Set*` / `Get*` / `Update`): checks the type or handle, then calls
+  the type's function table slot: +0 PlayPan, +4 Play (volume 0x80, angle 0, spread 0x80), +8
+  PlayPanEx, +0xc PlayEx (an index into the SE parameter table 0x2f7a58), +0x10 Stop, +0x14 StopAll,
+  +0x18 Pause, +0x1c SetPitch, +0x20 SetPitchF, +0x24 SetAngle, +0x28 SetVolume, +0x2c SetSpread, +0x30
+  SetAttr, +0x34 GetLevels, +0x38 GetStatus, +0x3c Update, +0x40..+0x48 type extensions (null in both
+  types). `sdpr2Init` 0x1683a8 is called by `soundInit`, `sdpr2Update` 0x16b698 by `soundUpdate`,
+  `sdpr2StopAll` by `soundShutdown`; game callers sit at 0x144250..0x148130.
+- **Types**, tables filled in code: registry 0 = two-voice "pair" (`sdpr2Pair*`, table 0x537c50,
+  config copy 0x537ca0; voices at angle and angle + 180, the second detuned by the pair mode),
+  registry 1 = one-voice (`sdpr2Single*`, 0x537cc0, config 0x537d10). Pan: `sdpr2CalcPanVolumes`
+  0x16fa78 reads gain tables 0x2f7a48 / 0x2f7a4c (720 entries) and gives negative gains as
+  phase sign -1 (SPU2 phase inversion: rear sounds); the pair scales by spread tables 0x2f7a50 /
+  0x2f7a54.
+- **Driver**: `sdpr2Drv*` call the table at 0x537d30 (+0 Play .. +0x24 GetStatus, +0x28..+0x30 unused);
+  the only driver is the SE driver `sdpr2SeDrv*` (table 0x2f7a68, `rxSndSe*`), config 8 words at
+  0x537d38 (defaults from 0x537d58 {1, 1, -1, -1, 0..}). Ghidra had merged 10 starts (the two type
+  exits, eight SE-driver slots); created 2026-11-02.
 The six ranges (FS2 lo hi, RoR lo hi) for `rxalign.py`: `100350 1037b0 23ff80 2433e0`,
 `153108 153518 2433e8 2437f8`, `153518 159928 2437f8 249b88`, `159928 159bc0 24b1f8 24b48c`,
 `159928 162178 237ce8 23ff58` (rxsnd, as batch 007 ran it: its first six FS2 functions are the

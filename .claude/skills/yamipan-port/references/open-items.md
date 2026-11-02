@@ -89,9 +89,14 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    Snapshot before it: `work/snapshots/20261102_135750.json`.
    **Batch 009 done (2026-11-02, 113 names)**: bootstrap 4(a) above.
    **Batch 010 done (2026-11-02, 37 names)**: the code-pointer pass above.
-   **Next batches, in this order**: **SDPR2** 0x1681c0.. (not in RoR: the `SDPR2 ...`
-   messages 0x3027b8..; find its end) and **rxMpeg** (RoR 0x18182c..: find FS2's copy by size
-   runs, as batch 007 found rxsnd); `_InitSys`'s nine
+   **Batch 011 done (2026-11-02, 108 names)**: **SDPR2** 0x1681c0..0x171300 by reading
+   (architecture.md "rx", SDPR2; 10 merged starts created first with `ghidra.py mkfunc`). To settle
+   at its TUs: `sdpr2PairPause` 0x16d3a8 calls the driver's *stop* slot (the one-voice type calls
+   pause): bug or intent; `sdpr2SetSpread` / `sdpr2SetPairMode` / `sdpr2SetSurround` are names from
+   what the values do, not from a string; `sdpr2CalcLevels` 0x16fbd0 unread; the A/B and C/D file cuts.
+   **Next batches, in this order**: **rxMpeg** (RoR 0x18182c..: find FS2's copy by size
+   runs, as batch 007 found rxsnd); the game's sound layer that calls SDPR2 (0x144250..0x148130,
+   `soundInit` / `soundUpdate`'s neighbours); `_InitSys`'s nine
    callees (0x140c08, 0x140d48, 0x141338, 0x1414b0, 0x1416f0, 0x1378b8, 0x140f80, 0x140470,
    0x142b70); the rest of the SDK 3.0 libraries both games link, by `rxalign.py` size runs against
    RoR's `// lib` names as batch 010 did for SIF (libkernl around 0x137000..0x142000, libgraph,
