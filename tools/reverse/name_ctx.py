@@ -13,7 +13,7 @@ The ELF's own symbols (tag game-symbol) are never renamed. Replacing a lib-match
 in data/overrides.json (libmatch.py --apply never restores it). Every name lands in
 data/context_names.json with its evidence. Batch order does not matter: an entry whose name is still
 held by another function the same batch renames is retried after the rest. Afterwards the program is
-saved (through GhidraMCP 5.14.2; without it the
+saved (save_program; with Ghidra down the
 report must say "Ghidra has unsaved changes: Ctrl+S") and refresh.py runs (fetch, features, export, status), so stubgen / callcheck / stage see the new
 names; --no-refresh skips both. Never pipe this into `head`: a closed pipe kills the refresh.
 """

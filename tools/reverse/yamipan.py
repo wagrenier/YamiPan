@@ -6,12 +6,10 @@ ReiPan, MioPan and RosePan are sibling checkouts used only as *library* referenc
 Forbidden Siren 2 shares no game code with Fatal Frame or Rule of Rose, but it links Sony's SDK 3.0
 libraries like FF3 and RoR. It was built with Metrowerks CodeWarrior (architecture.md).
 
-Ghidra goes through ghidra_mcp.py: GhidraMCP 2.0.0 (the window whose active program is SCES_538.51)
-for reads, renames and comments; bethington's GhidraMCP 5.14.2 beside it (ghidra_mcp.Ghidra5) for
-what 2.0.0 has no endpoint for -- saving, creating functions, disassembling bytes, function tags,
-bulk hashes. While no 5.14.2 answers (open-items.md), those helpers degrade: tags live in
-data/tags.json only (the repo copy is the record anyway), save_program() says "save by hand",
-create_function() fails with that reason.
+Ghidra goes through ghidra_mcp.py: bethington's GhidraMCP 7.0.0 (the Ghidra process with SCES_538.51
+open) for reads, renames, saving, creating functions, disassembling bytes, function tags and hashes.
+While Ghidra is down those helpers degrade: tags live in data/tags.json only (the repo copy is the
+record anyway), save_program() says "save by hand", create_function() returns False.
 """
 import json
 import os
@@ -67,7 +65,7 @@ NINJA = os.environ.get('YAMIPAN_NINJA') or shutil.which('ninja') or \
 VCVARS = os.environ.get('YAMIPAN_VCVARS', '')    # vcvars64.bat; empty = find it with vswhere
 EXE_NAME = 'YamiPan'
 
-# Provenance tags on every name the tools write (data/tags.json, and Ghidra function tags on 5.14.2).
+# Provenance tags on every name the tools write (data/tags.json, and Ghidra's function tags).
 SYMBOL_TAGS = ('game-symbol',)                     # the ELF's own symbols (FS2 is stripped: none so far)
 MATCH_TAGS = ('lib-match', 'lib-match-low')        # library code matched to a symbolised reference ELF
 CONTEXT_TAGS = ('lib-context', 'game-inferred')    # named by reading: a library / runtime function, game code
@@ -164,121 +162,120 @@ def src_path_for(inferred_file):
 
 
 # ---- Ghidra ---------------------------------------------------------------------------------------
-# http() is GhidraMCP 2.0.0 (parsed `data`, no program parameter: the window is found by its active
-# program). http5() is 5.14.2 (text, `program` in the query string), for the endpoints 2.0.0 lacks.
+# http() is bethington's GhidraMCP 7.0.0 (ghidra_mcp.py): the parsed JSON answer; `program` is added to
+# the query string, a POST's parameters go in `body`. Every endpoint and its parameters: GET /mcp/schema.
 
 GhidraError = ghidra_mcp.GhidraError
 GhidraRequestError = ghidra_mcp.GhidraRequestError
 _g = ghidra_mcp.Ghidra(PROGRAM)
-_g5 = ghidra_mcp.Ghidra5(PROGRAM)
-UNSAVED = 'Ghidra has unsaved changes: Ctrl+S (no GhidraMCP 5.14.2 answers to save them)'
+UNSAVED = 'Ghidra has unsaved changes: Ctrl+S (no GhidraMCP server answered to save them)'
 
 
-def http(method, endpoint, timeout=300, **params):
-    """GhidraMCP 2.0.0: method endpoint with params -> the answer's parsed `data`."""
-    return _g.http(method, endpoint, timeout=timeout, **params)
-
-
-def http5(method, endpoint, body=None, timeout=300, **query):
-    """GhidraMCP 5.14.2 (the second plugin): -> the answer's text. Raises GhidraError when none answers."""
-    return _g5.http(method, endpoint, body, timeout=timeout, **query)
+def http(method, endpoint, body=None, timeout=300, **query):
+    """GhidraMCP: method endpoint -> the parsed answer (GhidraRequestError on {"error": ...})."""
+    return _g.http(method, endpoint, body, timeout=timeout, **query)
 
 
 def ghidra_up():
-    """True when a GhidraMCP 2.0.0 window has FS2's program active."""
+    """True when a GhidraMCP server has FS2's program open."""
     return _g.up()
 
 
-def ghidra5_up():
-    """True when a GhidraMCP 5.14.2 instance has FS2's program open."""
-    return _g5.up()
-
-
-def paged(endpoint, limit=2000, **params):
-    """Every item of a paged 2.0.0 list endpoint."""
+def paged(endpoint, key, limit=5000, **query):
+    """Every item of a paged list endpoint (`offset` / `limit`; the list under `key`, the count in
+    `total` or `total_matching`)."""
     out, offset = [], 0
     while True:
-        d = http('GET', endpoint, offset=offset, limit=limit, **params)
-        out += d.get('items', [])
-        if not d.get('has_more'):
+        d = http('GET', endpoint, offset=offset, limit=limit, **query)
+        items = d.get(key) or []
+        out += items
+        offset += len(items)
+        total = d.get('total', d.get('total_matching'))
+        if not items or total is None or offset >= total:
             return out
-        offset += len(d.get('items', [])) or limit
 
 
 def function_names():
     """{'0010baf8': 'Name', ...} for every function in the program."""
-    return {f['address'].lower().zfill(8): f['name'] for f in paged('functions')
-            if ':' not in f['address']}
+    return {f['address'].lower().zfill(8): f['name']
+            for f in paged('find_functions', 'functions', sort_by='address') if ':' not in f['address']}
 
 
 def function_at(addr):
-    """2.0.0's `function` for the function containing addr, or None."""
+    """The function containing addr as {'address', 'name', 'body_start', 'body_end', 'signature'}, or None."""
     try:
-        return http('GET', 'function', address=f'0x{addr:x}', timeout=60)
+        d = http('GET', 'get_functions', function=f'0x{addr:x}', fields='entry_point,body_start,body_end,signature',
+                 timeout=60)
     except GhidraRequestError as e:
-        if e.code in ('FUNCTION_NOT_FOUND', 'NOT_FOUND'):
+        if e.code == 'NOT_FOUND':
             return None
         raise
+    return {'address': d.get('entry_point') or d.get('address'), **d}
 
 
 def has_function(addr):
-    """Whether a function *starts* at addr (2.0.0 answers for any address inside a body)."""
+    """Whether a function *starts* at addr (get_functions answers for any address inside a body)."""
     f = function_at(addr)
-    return bool(f) and int(f['address'], 16) == addr
+    return bool(f and f.get('address')) and int(str(f['address']).replace('0x', ''), 16) == addr
 
 
 def rename(addr, name):
-    """Rename the function at addr. Returns '' on success, else the server's answer."""
+    """Rename the function at addr. Returns '' on success, else the server's answer. strict_mode off:
+    the plugin's naming gate wants PascalCase verbs, YamiPan follows the game's own style."""
     try:
-        http('POST', 'rename_function_by_address', function_address=f'0x{addr:x}', new_name=name)
+        http('POST', 'rename_function', {'old_name': f'0x{addr:x}', 'new_name': name, 'strict_mode': 'off'})
     except GhidraRequestError as e:
         return str(e)[:200]
     return ''
 
 
 def decompile(addr):
-    d = http('GET', 'decompile_function', address=f'0x{addr:08x}' if isinstance(addr, int) else addr,
-             timeout=120)
-    return (d.get('code') or '').replace('\r\n', '\n').strip()
+    d = http('GET', 'get_functions', function=f'0x{addr:08x}' if isinstance(addr, int) else addr,
+             fields='decompiled_code', timeout=120)
+    return (d.get('decompiled_code') or '').replace('\r\n', '\n').strip()
 
 
 def disassemble_function(addr):
-    """'addr: instruction' lines of the function containing addr (2.0.0)."""
-    items = paged('disassemble_function', limit=2000, address=f'0x{addr:08x}' if isinstance(addr, int) else addr)
+    """'addr: instruction' lines of the function containing addr."""
+    d = http('GET', 'disassemble_function', address=f'0x{addr:08x}' if isinstance(addr, int) else addr, timeout=120)
     return '\n'.join(f'{i["address"]}: {i["instruction"]}' + (f'  ; {i["comment"]}' if i.get('comment') else '')
-                     for i in items)
+                     for i in d.get('instructions', []))
 
 
 def save_program(tries=6):
-    """Save the program through 5.14.2, retrying while a previous write still holds the transaction
-    lock. Without 5.14.2: UNSAVED (say it in the report; the user saves with Ctrl+S)."""
+    """Save the program, retrying while a previous write still holds the transaction lock. Ghidra down:
+    UNSAVED (say it in the report; the user saves with Ctrl+S)."""
     import time
-    if not ghidra5_up():
+    if not ghidra_up():
         return UNSAVED
     out = ''
     for _ in range(tries):
-        out = http5('POST', 'save_program')
-        if 'Unable to lock' not in out:
-            return out
+        try:
+            return json.dumps(http('GET', 'save_program'))
+        except GhidraRequestError as e:
+            out = str(e)
+            if e.code != 'LOCKED':
+                return out
         time.sleep(3)
     return out
 
 
-# Ghidra writes. Never probe them with dry_run (GhidraMCP 5.14.2 ignores it in a POST body, and
-# create_function ignored it even in the query string). Every writer saves with save_program() when its
-# batch is done.
+# Ghidra writes. Every writer saves with save_program() when its batch is done.
 
 def create_function(addr, name='', tries=4):
-    """Create a function at addr (disassembling first) through 5.14.2; retries while a save holds the
-    lock. True if a function starts there afterwards; False (and nothing written) without 5.14.2."""
+    """Create a function at addr (disassembling first); retries while a save holds the lock. True if a
+    function starts there afterwards; False (and nothing written) while Ghidra is down."""
     import time
-    if not ghidra5_up():
+    if not ghidra_up():
         return False
     for _ in range(tries):
-        out = http5('POST', 'create_function', {'address': f'0x{addr:x}', 'disassemble_first': True,
-                                                **({'name': name} if name else {})})
-        if 'Unable to lock' not in out:
+        try:
+            http('POST', 'create_function', {'address': f'0x{addr:x}', 'disassemble_first': True,
+                                             **({'name': name} if name else {})})
             break
+        except GhidraRequestError as e:
+            if e.code != 'LOCKED':
+                break
         time.sleep(3)
     return has_function(addr)
 
@@ -293,20 +290,22 @@ def get_tag(addr):
 
 
 def set_tag(addr, tag):
-    """Give the function at addr provenance `tag`: data/tags.json, and Ghidra's function tags when
-    5.14.2 answers (removing any other provenance tag there). Returns the previous provenance tags."""
+    """Give the function at addr provenance `tag`: data/tags.json, and Ghidra's function tags when Ghidra
+    answers (removing any other provenance tag there). Returns the previous provenance tags."""
     key = f'{addr:08x}'
     t = tags()
     prev = [t[key]] if key in t else []
     t[key] = tag
     save_json(TAGS_JSON, t)
-    if ghidra5_up():
-        old = json.loads(http5('GET', 'get_function_tags', function=f'0x{addr:x}')).get('tags', [])
-        drop = [x['name'] for x in old if x['name'] in ALL_TAGS and x['name'] != tag]
+    if ghidra_up():
+        old = http('GET', 'get_functions', function=f'0x{addr:x}', fields='tags').get('tags') or []
+        old = [x if isinstance(x, str) else x.get('name') for x in old]
+        drop = [x for x in old if x in ALL_TAGS and x != tag]
         if drop:
-            http5('POST', 'remove_function_tag', {'function': f'0x{addr:x}', 'tags': ','.join(drop)})
-        if not any(x['name'] == tag for x in old):
-            http5('POST', 'add_function_tag', {'function': f'0x{addr:x}', 'tags': tag})
+            http('POST', 'remove_function_tag', {'function': f'0x{addr:x}', 'tags': ','.join(drop)})
+        if tag not in old:
+            http('POST', 'add_function_tag', {'function': f'0x{addr:x}', 'tags': tag,
+                                              'tag_comments': {tag: TAG_COMMENTS.get(tag, '')}})
     return prev
 
 
@@ -321,11 +320,7 @@ TAG_COMMENTS = {
 
 
 def ensure_tags():
-    """Create the provenance tags in Ghidra (5.14.2 only; a no-op without it)."""
-    if not ghidra5_up():
-        return
-    for tag, comment in TAG_COMMENTS.items():
-        http5('POST', 'create_function_tag', {'name': tag, 'comment': comment})
+    """Nothing to do: add_function_tag creates a provenance tag, with its comment, on first use."""
 
 
 # ---- cached state (works offline) ----------------------------------------------------------------

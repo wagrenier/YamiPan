@@ -65,7 +65,8 @@ tag (open-items.md), provenance tags `ror-symbol` / `ror-inferred` -> `game-symb
 - `yamipan.py` keeps RosePan's shape (paths, address map, tags, annotation and stub regexes, write
   helpers) but its `GHIDRA` constant and `http()` / `ghidra_up()` go through `ghidra_mcp.py`
   (README "Carrying a tool over"). Grep the copied tools for `8089` and `GHIDRA_MCP_URL`: none may remain.
-- **RosePan's Ghidra calls are GhidraMCP 5.14.2's**; YamiPan runs 2.0.0 (ghidra.md has its API) and,
+- (2026-11-02: YamiPan now runs bethington's GhidraMCP 7.0.0 only, ghidra.md; this is how step 3 went
+  on 2.0.0.) **RosePan's Ghidra calls are GhidraMCP 5.14.2's**; YamiPan runs 2.0.0 (ghidra.md has its API) and,
   for what 2.0.0 lacks, 5.14.2 beside it (the user's decision, open-items.md). `ghidra_mcp.http()`
   returns parsed `data`, not text, and takes no `program`. Translate: `list_functions` -> `functions`
   (paged), `get_function_by_address` -> `function`, `decompile_function` (by address) ->

@@ -18,9 +18,12 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    `rtti.py` rewritten for CodeWarrior (490 vtables, architecture.md "Classes"); the second code island
    is the static-initialiser table (architecture.md "Static initialisers"); **910 function starts
    Ghidra lacks** in `data/missing_functions.json`. **Left for bootstrap 4, in this order:**
-   (a) create those 910 functions: needs 5.14.2 (`ghidra.py mkfunc` in a loop) or the user (F in
-   Ghidra, or a Ghidra script over the JSON in one go), then Ctrl+S and `refresh.py`; while it waits,
-   a run does (b);
+   (a) create those functions (1,016 in `data/missing_functions.json` by 2026-11-02; 0x1621f0
+   `rxSndUtExit` already created as the 7.0.0 test): **unblocked since 2026-11-02** (GhidraMCP 7.0.0,
+   `yamipan.create_function` / `ghidra.py mkfunc`), once the plugin built for 12.2 is installed (item
+   6). A run creates them in one go (a short loop over the JSON, then `save_program()` and
+   `refresh.py`), then names the ones the JSON names (batches 005-008: "rx from RosePan", "by
+   reading") with a `name_ctx.py` batch, and reruns `rtti.py` / `rxalign.py`; do it before (b);
    (b) seed names by reading with `name_ctx.py` batches (`tools/reverse/work/batches/NNN.json`, not
    committed; the ledger `data/context_names.json` is). **Batch 001 done (2026-10-31, 27 names)**:
    the entry chain, `main`, `exit` / `Exit` / `_InitSys`, the CodeWarrior + MSL runtime, the
@@ -84,7 +87,9 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    (d) `libmatch.py` once the reference ELFs are here (items 3-4).
 3. **The user (2026-11-02, in progress): Rule of Rose in Ghidra.** The user is loading RoR into
    Ghidra so its names can be re-applied there and compared with FS2 (BinDiff crashes on PS2
-   programs, so not that). Once RoR answers (its own CodeBrowser window: `ghidra_mcp.py list`) or its
+   programs, so not that). **2026-11-02: `SLUS_214.48` is in YamiPan's Ghidra project** (closed;
+   `/mcp/instance_info` lists it): with 7.0.0 one server serves both once it is open, and
+   `get_function_hash` gives opcode hashes for both programs (a cheap first compare). Once RoR answers or its
    ELF `SLUS_214.48` sits next to `../RosePan/ror_functions.txt`: **verify batch 005's rx names word
    for word** (libmatch.py's masked compare, RoR as the reference; a mismatch -> back to reading) and
    extend the match to the rest of rx and to the SDK 3.0 libraries both games link.
@@ -96,14 +101,25 @@ questions. Resolve items here when they are settled (move them to "Done" with th
 5. **The user: a host toolchain.** No MinGW g++, ninja or cmake on this machine (RosePan's paths,
    CLion's MinGW and Python's ninja, do not exist here; 2026-10-31). `build.py` / `layoutcheck.py` take
    them from PATH or `YAMIPAN_MINGW_BIN` / `YAMIPAN_NINJA`; bootstrap 6-7 need them.
-6. **The user**: install bethington's GhidraMCP 5.14.2 in Ghidra 12.2 beside 2.0.0 (Decisions). Not on
-   this machine yet; runs that need it say so in their report. Until then the tools degrade (tools
-   README "Ghidra"): no saving (Ctrl+S by hand), no function creation (F in Ghidra), tags only in
-   `data/tags.json`, disassembly offline.
+6. **The user (2026-11-02): install the GhidraMCP 7.0.0 built for Ghidra 12.2.** The installed one
+   (release build 2026-10-21, for 12.1.4) fails every `get_functions` / `force_decompile` with
+   `SleighLanguageDescription` (ghidra.md), so `decompile()`, `function_at()`, `has_function()` and
+   Ghidra's copy of `set_tag()` fail; `name_ctx.py` therefore stops at its first tag. Built from
+   `../ghidra-mcp` (HEAD 61a1fbc8, upstream's 12.2 fix b06c679d) on 2026-11-02:
+   `C:\Users\willi\Documents\git\ghidra-mcp\build\distributions\GhidraMCP-7.0.0.zip`. Install it in
+   Ghidra (File -> Install Extensions, replace GhidraMCP, restart), then start a new Claude session.
+   Until then scheduled naming runs fail at `name_ctx.py`.
 7. Fill architecture.md as each step learns something.
 
 ## Decisions
 
+- 2026-11-02 (the user): **bethington's GhidraMCP 7.0.0 replaces LaurieWired's 2.0.0** (the user
+  installed it; both are `Extensions\GhidraMCP`, so it took 2.0.0's place) and **the tools were ported
+  to it** ("Port tools to 7.0.0"): `ghidra_mcp.py` finds the one server per process by the open program
+  and project on 8089..8104 and passes `program=`; `yamipan.py` / `ghidra.py` / `fetch.py` use its
+  endpoints (ghidra.md); saving and function creation now work from the tools; the `ghidra` MCP server
+  is the plugin's own bridge from `../ghidra-mcp` (`ghidra_bridge.py`). Supersedes the 2026-10-31
+  decisions on 2.0.0 and on 5.14.2 beside it.
 - 2026-10-31 (session decision, bootstrap 3; the user may revise): **`tus.py` (and `autopilot.py`,
   which needs it) are carried over at bootstrap 7, not 3**: the routine switches to the TU loop as soon
   as `tools/reverse/tus.py` exists, and with no TU map, platform layer or build that loop would claim
@@ -179,13 +195,12 @@ apply here):
   IOP-reboot code?).
 - Multiple vptrs in one object, every secondary table with this_offset 0 (architecture.md "Classes"):
   embedded members or bases? Settle at the first TU of the +0xf4 family (ctor 0x171a30).
-- **Can 5.14.2 sit beside 2.0.0?** Unchecked: whether bethington's 5.14.2 loads on Ghidra 12.2, and
-  whether both install at once (Ghidra keeps extensions in folders named after them, and 2.0.0 already
-  has `Extensions\GhidraMCP`; if 5.14.2 uses the same name, one replaces the other). If they cannot
-  coexist, the fallbacks were: extend 2.0.0 in `../GhidraMCP` (a clone of LaurieWired's upstream: a
-  fork, built for 12.2), or do without (hashes and disassembly from the ELF, provenance only in the
-  name ledger, saving and making functions by hand). Until 5.14.2 answers, save by hand (Ctrl+S)
-  after every naming batch.
+- ~~Can 5.14.2 sit beside 2.0.0?~~ Settled 2026-11-02: no (same extension name); bethington's 7.0.0
+  replaced 2.0.0 and the tools moved to it (Decisions).
+- **`tools/reverse/routine.md` step 4** still says "GhidraMCP 2.0.0 never saves ... save through the
+  GhidraMCP 5.14.2 plugin's save_program": the tools now save through 7.0.0 themselves. The routine
+  is the user's to edit (sessions never touch it); a run that saw `name_ctx.py` save need not report
+  "Ctrl+S".
 - RosePan's and ReiPan's own Ghidra tools (`rosepan.py`, `reipan.py`, pinned to 8089 and 5.14.2) do
   not run on this machine: their checkouts are read-only references here (cloned 2026-10-31).
 - Parallel sessions on one game (several worktrees, one Ghidra): reads are fine, naming batches race

@@ -22,7 +22,7 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   the vtable). Cause: auto-analysis never followed the untyped vtables, so tiny virtuals and dtors were
   merged into the function before them (0x131d70 is a 2-word thunk, then nops, then the dtor 0x131d80
   inside the same body). Fix: `rtti.py` accepts any .text word as a slot and `--missing` lists them in
-  `data/missing_functions.json`; create them all (5.14.2 `ghidra.py mkfunc`, or F in Ghidra) before
+  `data/missing_functions.json`; create them all (`ghidra.py mkfunc`, or F in Ghidra) before
   trusting function sizes, callers or the "ctor/dtor" users of a vtable.
 - **Dispatch tables of tiny functions** (RoR's script natives: 512 entries, 471 of them `jr ra; move
   v0,zero`): read the table from the ELF, classify each target by its first words, mkfunc the real ones,

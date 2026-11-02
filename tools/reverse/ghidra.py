@@ -9,12 +9,12 @@ python ghidra.py refs <addr>            every way code could reach addr: Ghidra 
 python ghidra.py find <hex> [mask]      byte-pattern search over the ELF's image (little-endian bytes, e.g.
                                         e29b070c; mask: hex of the same length, 00 bits ignored)
 python ghidra.py segments               memory blocks
-python ghidra.py mkfunc <addr> [name]   create a function at addr (a Ghidra write, GhidraMCP 5.14.2) and save;
+python ghidra.py mkfunc <addr> [name]   create a function at addr (a Ghidra write) and save;
                                         use when a body swallowed the next function (hazards.md)
 
-Addresses are hex (0x optional). Reads go to GhidraMCP 2.0.0 (yamipan.http). `asm` uses 5.14.2's
-disassemble_bytes (dry run) when it answers, else the offline disassembler (mipsdis.py: no `_` on delay
-slots, `li` as addiu); `find` reads the ELF, not Ghidra (2.0.0 has no byte search).
+Addresses are hex (0x optional). Reads go to GhidraMCP 7.0.0 (yamipan.http). `asm` is the offline
+disassembler (mipsdis.py: no `_` on delay slots, `li` as addiu): GhidraMCP 7.0.0's disassemble_bytes has
+no dry run and would write instructions into the program. `find` reads the ELF, not Ghidra.
 """
 import json
 import struct
@@ -58,33 +58,19 @@ def le(word):
     return struct.pack('<I', word).hex()
 
 
-def disasm(lo, hi, chunk=0xc00):
-    """Instructions of [lo, hi) as {'address', 'mnemonic', 'operands'} dicts: GhidraMCP 5.14.2's
-    disassemble_bytes (at most 1000 instructions per call, so in chunks) when it answers, else
-    mipsdis.py over the ELF."""
-    if not yamipan.ghidra5_up():
-        import mipsdis
-        from elf32 import Elf
-        elf = Elf(str(yamipan.ELF))
-        names = yamipan.cached_names()
-        ins = []
-        for pc in range(lo & ~3, hi, 4):
-            w = elf.u32(pc)
-            text = mipsdis.decode(pc, w, names, elf.gp)[0] if w is not None else '.word ?'
-            mnem, _, ops = text.partition(' ')
-            ins.append({'address': f'{pc:08x}', 'mnemonic': mnem, 'operands': ops.strip()})
-        return ins
-    ins, a = [], lo
-    while a < hi:
-        b = min(a + chunk, hi)
-        # dry_run in the query string: in a POST body GhidraMCP ignores it and disassembles for real.
-        out = json.loads(yamipan.http5('POST', 'disassemble_bytes',
-                                       {'start_address': f'0x{a:x}', 'end_address': f'0x{b - 1:x}'},
-                                       timeout=120, dry_run='true'))
-        if not out.get('instructions'):
-            raise SystemExit(json.dumps(out)[:500])
-        ins += out['instructions']
-        a = b
+def disasm(lo, hi):
+    """Instructions of [lo, hi) as {'address', 'mnemonic', 'operands'} dicts, from mipsdis.py over the ELF
+    (read-only; Ghidra's disassemble_bytes writes)."""
+    import mipsdis
+    from elf32 import Elf
+    elf = Elf(str(yamipan.ELF))
+    names = yamipan.cached_names()
+    ins = []
+    for pc in range(lo & ~3, hi, 4):
+        w = elf.u32(pc)
+        text = mipsdis.decode(pc, w, names, elf.gp)[0] if w is not None else '.word ?'
+        mnem, _, ops = text.partition(' ')
+        ins.append({'address': f'{pc:08x}', 'mnemonic': mnem, 'operands': ops.strip()})
     return ins
 
 
@@ -94,23 +80,17 @@ def cmd_asm(lo, hi):
 
 
 def cmd_func(a):
-    print(json.dumps(get('function', address=f'0x{addr(a):x}'), indent=1))
+    print(json.dumps(yamipan.function_at(addr(a)), indent=1))
 
 
 def xrefs(a):
-    out, offset = [], 0
-    while True:
-        d = get('xrefs_to', address=f'0x{a:x}', offset=offset, limit=500)
-        out += d.get('items', [])
-        if not d.get('has_more'):
-            return out
-        offset += 500
+    return yamipan.paged('get_xrefs_to', 'references', limit=500, address=f'0x{a:x}')
 
 
 def show_xrefs(a, indent=''):
     for x in xrefs(a):
-        fn = x.get('from_function') or {}
-        print(f'{indent}{x["from"]} {x.get("type", "")}' + (f'  in {fn["name"]} {fn["address"]}' if fn else ''))
+        fn = x.get('from_function')
+        print(f'{indent}{x["from_address"]} {x.get("type", "")}' + (f'  in {fn}' if fn else ''))
 
 
 def cmd_xrefs(a):
@@ -137,14 +117,12 @@ def cmd_find(pattern, mask=''):
 
 
 def cmd_segments():
-    for s in get('segments', limit=100).get('items', []):
-        print(f'{s["start"]}..{s["end"]}  {s["permissions"]}  {s["name"]}')
+    for s in get('list_program_items', kind='segments', limit=0).get('items', []):
+        perms = ''.join(c if s.get(k) else '-' for c, k in (('r', 'readable'), ('w', 'writable'), ('x', 'executable')))
+        print(f'{s["start"]}..{s["end"]}  {perms}  {s["name"]}')
 
 
 def cmd_mkfunc(a, name=''):
-    if not yamipan.ghidra5_up():
-        raise SystemExit('creating a function needs GhidraMCP 5.14.2 (not answering): press F in Ghidra at '
-                         f'0x{addr(a):x}, then Ctrl+S')
     ok = yamipan.create_function(addr(a), name)
     print(f'{addr(a):08x}: {"created" if ok else "FAILED"}')
     print(yamipan.save_program()[:120])

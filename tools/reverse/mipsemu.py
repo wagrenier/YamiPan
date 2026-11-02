@@ -6,7 +6,7 @@ python mipsemu.py <lo> <hi> <entry> [arg ...]          run once: a0.. = args, pr
 python mipsemu.py <lo> <hi> <entry> --grid N M [--out F] v0 for every (a0 < N, a1 < M) as JSON
                                                         (rows a0, columns a1); default work/emu_<entry>.json
 
-<lo> <hi> is the byte range to disassemble (ghidra.disasm: GhidraMCP 5.14.2 or mipsdis.py); it must hold the entry
+<lo> <hi> is the byte range to disassemble (ghidra.disasm: mipsdis.py over the ELF); it must hold the entry
 and everything it branches to. Loads read the ELF (yamipan.ELF); stores go to a scratch dict.
 Calls (jal / jalr / tail j) and loads the ELF cannot answer go to hooks: from Python, build
 Emu(listing_lines, mem_hook, call_hook) yourself. The CLI's hooks make every unknown load / call
@@ -61,10 +61,9 @@ class Elf:
 
 
 def listing(lo, hi):
-    """'addr: [_]op args' lines of the range, as ghidra.py asm prints them (GhidraMCP 5.14.2's
-    disassemble_bytes, dry run, or mipsdis.py offline when 5.14.2 does not answer)."""
+    """'addr: [_]op args' lines of the range, as ghidra.py asm prints them (mipsdis.py over the ELF)."""
     from ghidra import disasm
-    return [f'{i["address"]}: {i["mnemonic"]} {i["operands"]}' for i in disasm(lo, hi, chunk=0xf00)]
+    return [f'{i["address"]}: {i["mnemonic"]} {i["operands"]}' for i in disasm(lo, hi)]
 
 
 class Emu:

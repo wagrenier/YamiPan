@@ -4,7 +4,7 @@ python rtti.py [--quiet]       summary table; writes work/classes.json (refresh.
 python rtti.py --class NAME    one class in detail (substring match)
 python rtti.py --vtable ADDR   which class owns a vtable (its start or any slot target)
 python rtti.py --missing       slot targets Ghidra has no function for -> data/missing_functions.json
-                               (merged; create them with `ghidra.py mkfunc` on 5.14.2, or F in Ghidra)
+                               (merged; create them with `ghidra.py mkfunc`, or F in Ghidra)
 
 The ELF is stripped, so vtables are found from the code that installs them (rewritten for CodeWarrior at
 bootstrap 4, 2026-10-31; RosePan's GCC 2 version read named linkonce sections FS2 does not have):

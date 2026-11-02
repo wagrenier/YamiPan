@@ -15,7 +15,7 @@ skills keep the full history. It is the playbook and the project's memory: follo
 
 **State (2026-11-02): bootstrap, step 4 in progress (names: batches 001-008 applied; rxsys / rxfile / rxthread / rxsnd named from RosePan, rxsndut / rxsndstr by reading)** (open-items.md "Next up" has what is left). The game is Forbidden Siren 2 (Europe, `SCES_538.51`;
 files under "Environment"), annotation tag `FS2`; a stripped **Metrowerks CodeWarrior** build (not GCC:
-open-items.md has what that changes). What exists: the Ghidra layer on GhidraMCP 2.0.0
+open-items.md has what that changes). What exists: the Ghidra layer on bethington's GhidraMCP 7.0.0
 (`tools/reverse/ghidra_mcp.py`, `ghidra_bridge.py`, `.mcp.json`), a Ghidra project with the game
 imported and auto-analysed, and RosePan's tools carried over (bootstrap 3: all but `tus.py` /
 `autopilot.py`, which come with bootstrap 7). Until the TU loop runs, work follows
@@ -41,22 +41,21 @@ Read before working:
   This folder is the default ELF path and data root for the tools, so there is no copy at the repo
   root. Never commit anything from it.
 - **Ghidra 12.2** (`C:\Users\willi\Documents\ghidra_12.2_PUBLIC_20261016\ghidra_12.2_PUBLIC`) with
-  emotionengine-reloaded and **GhidraMCP 2.0.0** (LaurieWired; source `../GhidraMCP`, release wheel and
-  extension zip in `C:\Users\willi\Documents\GhidraMCP-release-2-0\GhidraMCP-release-2-0`). YamiPan's
+  emotionengine-reloaded and **bethington's GhidraMCP 7.0.0** (since 2026-11-02; source and MCP bridge
+  in `C:\Users\willi\Documents\git\ghidra-mcp`, built there for 12.2: ghidra.md). YamiPan's
   project is `C:\Users\willi\Documents\Ghidra Projects\CLaude Decomp.gpr`, its program `SCES_538.51`
-  (`tools/reverse/data/ghidra.json`). **Each CodeBrowser window serves the program active in it**, on
-  its own fixed port (Tool Options -> GhidraMCP HTTP Server, 8080; no fallback: another Ghidra gets
-  another port by hand). Several Ghidras can run, one per game (ghidra.md).
-  - Tools find the window by its active program: `python ghidra_mcp.py which` (from `tools/reverse/`)
-    says which; `list` shows every backend on 8080..8095; `launch` starts Ghidra on the project. Each
-    request is checked first (one /health), so a window showing another program is never written to.
+  (`tools/reverse/data/ghidra.json`). **One server per Ghidra process** (8089 by default), serving every
+  program open in it; each request names its program. Several Ghidras can run, one per game (ghidra.md).
+  - Tools find the server by the open program: `python ghidra_mcp.py which` (from `tools/reverse/`)
+    says which; `list` shows every server on 8089..8104; `launch` starts Ghidra on the project.
     Never hard-code a port; `GHIDRA_MCP_URL` pins one only for debugging.
-  - Claude's `ghidra` MCP tools (`.mcp.json` -> `ghidra_bridge.py`, run by the venv
-    `C:\Users\willi\Documents\ghidra_12.2_PUBLIC_20261016\.venv`): the wheel's 30 plus `list_instances`
-    and `connect_instance`. They find the window on each call, so Ghidra may start after the session;
-    `.mcp.json` itself is read at session start.
-  - **The plugin never saves**: names and comments stay in Ghidra until it saves (Ctrl+S there). Offline
-    (Ghidra down): status, export, tus list/check/finish, callcheck and build work from cached `work/`.
+  - Claude's `ghidra` MCP tools (`.mcp.json` -> `ghidra_bridge.py` -> the plugin's own bridge, run by
+    the venv `C:\Users\willi\Documents\ghidra_12.2_PUBLIC_20261016\.venv`): 67 tools on connect
+    (`search_tools` / `load_tool_group` for more); pass `program="SCES_538.51"` and, for renames,
+    `strict_mode="off"`. `.mcp.json` is read at session start.
+  - **The tools save their writes** (`save_program()`: `name_ctx.py`, `ghidra.py mkfunc`); after a raw
+    MCP write, call `save_program`. Offline (Ghidra down): status, export, tus list/check/finish,
+    callcheck and build work from cached `work/`.
 - Tools: `tools/reverse/` (run from there: `python <tool>.py`); every tool is in its README. Python
   3.14 is installed, but `python` resolves to the Microsoft Store stub until its App execution alias
   is turned off (Windows Settings): use `py <tool>.py` when `python` says "Python was not found".
@@ -154,8 +153,8 @@ frontmatter; the user's rule: automated runs at xhigh or above). Keep that line.
 ## Tools by step
 
 Carried over from RosePan at bootstrap 3 (2026-10-31); `tus.py` arrives with bootstrap 7 (its existence
-switches the scheduled runs to the TU loop). `tools/reverse/README.md` has which helper uses which
-plugin and what degrades without GhidraMCP 5.14.2.
+switches the scheduled runs to the TU loop). `tools/reverse/README.md` has the Ghidra helpers and
+what degrades while Ghidra is down.
 
 | step | tool |
 |---|---|

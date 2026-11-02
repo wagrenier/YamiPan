@@ -5,7 +5,8 @@ RosePan: Rule of Rose); its game is Forbidden Siren 2 (Europe, `SCES_538.51`, 20
 stripped (one unnamed section for the whole image, no symbols) and was built with Metrowerks
 CodeWarrior, not GCC; its Sony libraries are the SDK 3.0 objects FF3 and RoR link. These tools turn the
 binary into names, files and translation units and drive the one-TU-per-session port. They were carried
-over from RosePan, the newest set, on 2026-10-31 (bootstrap 3) and moved onto GhidraMCP 2.0.0.
+over from RosePan, the newest set, on 2026-10-31 (bootstrap 3), moved onto GhidraMCP 2.0.0 and, on
+2026-11-02, onto bethington's GhidraMCP 7.0.0.
 
 Run every tool from this directory: `python <tool>.py` (`py <tool>.py` where `python` is the Microsoft
 Store stub). Paths come from `yamipan.py` and can be overridden with environment variables:
@@ -47,25 +48,26 @@ python refresh.py          # all of the above that is not a one-time write, in o
 `libmatch.py --apply` is the one-time Ghidra seeding (bootstrap 4, host task `setup/ghidra_seed.cpp`);
 take `python restore_names.py --snapshot` first.
 
-## Ghidra: GhidraMCP 2.0.0, several instances, 5.14.2 beside it
+## Ghidra: bethington's GhidraMCP 7.0.0, several instances
 
 | script | what it does |
 |---|---|
-| `ghidra_mcp.py` | Finds the GhidraMCP 2.0.0 backend serving YamiPan's program (one backend per CodeBrowser window, on 127.0.0.1:8080..8095; each serves the program active in it) and talks to it, checking before every request that the program is still the active one. Library: `Ghidra(program).http(method, endpoint, **params)` -> the answer's parsed `data` (raises `GhidraError` when no backend serves the program, `GhidraRequestError` with `.code` when the backend reports an error), `.up()`, `find()`, `scan()`, module-level `http()` / `up()` for the configured program. `Ghidra5(program)`: the GhidraMCP 5.14.2 client for what 2.0.0 lacks (one server per Ghidra process on 8089..8104, config `ports5`, found by project + open program; `program` in the query string; text answers; untested until 5.14.2 is installed). CLI: `list` (every backend, `*` = YamiPan's), `which` (what the tools resolve to, or why none), `launch` (start Ghidra on the project unless a window serves the program). |
-| `ghidra_bridge.py` | The `ghidra` MCP server of `.mcp.json`: the GhidraMCP 2.0.0 wheel's own server, its HTTP client re-aimed before every request by `ghidra_mcp.py`'s check, plus `list_instances` and `connect_instance`. Run by the venv that has the wheel (`.mcp.json`), never by hand. |
+| `ghidra_mcp.py` | Finds the GhidraMCP 7.0.0 server with YamiPan's program open (one server per Ghidra process, on 127.0.0.1:8089..8104; each serves every program open in its process, named per request) and talks to it. Library: `Ghidra(program).http(method, endpoint, body=None, **query)` -> the parsed JSON answer (`program` added to the query string; a POST's parameters in `body`, sent as JSON; raises `GhidraError` when no server has the program open, `GhidraRequestError` with `.code` on an `{"error": ...}` answer), `.up()`, `find()`, `scan()`, module-level `http()` / `up()` for the configured program. CLI: `list` (every server, `*` = YamiPan's), `which` (what the tools resolve to, or why none), `launch` (start Ghidra on the project unless a server has the program open). |
+| `ghidra_bridge.py` | The `ghidra` MCP server of `.mcp.json`: bethington's own bridge (`bridge_mcp_ghidra` from the plugin checkout, `data/ghidra.json` "bridge"), auto-connected to YamiPan's project, with a note to pass `program=` and `strict_mode="off"`. Run by the venv that has `mcp` < 2 (`.mcp.json`), never by hand. |
 
-Configuration: `data/ghidra.json` (`project` = the Ghidra project's path without `.gpr`, for `launch`;
-`program` = the game's program as Ghidra names it; `ports` = "8080:16"; `ports5` = "8089:16" for
-5.14.2; `ghidra_dir`). Environment variables override it: `GHIDRA_MCP_PROJECT`, `GHIDRA_MCP_PROGRAM`,
-`GHIDRA_MCP_PORTS`, `GHIDRA_DIR`; `GHIDRA_MCP_URL` pins one 2.0.0 backend's port and skips the scan (its
-program is still checked). The resolved ports are cached in `work/ghidra_instance.json`.
+Configuration: `data/ghidra.json` (`project` = the Ghidra project's path without `.gpr`, for `launch`
+and to match the server; `program` = the game's program as Ghidra names it; `ports` = "8089:16";
+`ghidra_dir`; `bridge` = the plugin checkout). Environment variables override it: `GHIDRA_MCP_PROJECT`,
+`GHIDRA_MCP_PROGRAM`, `GHIDRA_MCP_PORTS`, `GHIDRA_DIR`, `GHIDRA_MCP_BRIDGE`; `GHIDRA_MCP_URL` pins one
+server's port and skips the scan (the program is still checked). The resolved port is cached in
+`work/ghidra_instance.json`.
 
-Every other tool reaches Ghidra only through `yamipan.py`:
-
-| helper | plugin | without 5.14.2 |
-|---|---|---|
-| `http()`, `paged()`, `function_names()`, `function_at()`, `has_function()`, `rename()`, `decompile()`, `disassemble_function()` | 2.0.0 | -- |
-| `http5()`, `save_program()`, `create_function()`, `ensure_tags()`, Ghidra's copy of `set_tag()`, `ghidra.disasm()` (`disassemble_bytes`), fetch's bulk hashes | 5.14.2 | save: returns "Ghidra has unsaved changes: Ctrl+S"; create: False (press F in Ghidra); tags: `data/tags.json` only; disassembly: `mipsdis.py` offline; hashes: empty |
+Every other tool reaches Ghidra only through `yamipan.py`: `http()`, `paged(endpoint, key)`,
+`function_names()`, `function_at()`, `has_function()`, `rename()` (naming gate off), `decompile()`,
+`disassemble_function()`, `save_program()` (lock retry; Ghidra down: returns "Ghidra has unsaved
+changes: Ctrl+S"), `create_function()` (lock retry; Ghidra down: False), `set_tag()` (`data/tags.json`,
+and Ghidra's function tags while it answers). `ghidra.py asm` / `ghidra.disasm()` are offline
+(`mipsdis.py`): 7.0.0's `disassemble_bytes` has no dry run.
 
 The API, how the plugin behaves, the setup and the traps: the skill's `references/ghidra.md`.
 
@@ -76,22 +78,22 @@ The API, how the plugin behaves, the setup and the traps: the skill's `reference
 | `yamipan.py` | Paths, the address map (`data/layout.json`), the Ghidra helpers above (create with lock retry, rename, tag, save with retry), the provenance record `data/tags.json`, cached state. Import it; not a CLI. |
 | `elf32.py` | Minimal ELF32 reader: sections (with names), segments, VA->bytes, `_gp` from `.reginfo`. FS2's ELF has one unnamed section for the image: the game ELF gets `layout.json` "image_sections" (the address map's regions: `.text`, `.vutext`, `.data`, the two code islands, `.bss`) instead. |
 | `gcc2.py` | GCC 2.x name mangling: `demangle()` / `ghidra_name()` / `mangle()`. FS2 keeps no mangled names; used for reference names and `display()`. CodeWarrior's mangling is ARM-style like GCC 2's (unchecked). |
-| `fetch.py` | Function starts and names (2.0.0's paged `functions`; hashes only from 5.14.2), and every function's provenance tag (`data/tags.json`). |
+| `fetch.py` | Function starts, names, opcode hashes and instruction counts (paged `get_function_hash`), and every function's provenance tag (`data/tags.json`). |
 | `features.py` | Per-function features decoded from the ELF: call order, tail jumps (`j` out of the body), function pointers, strings, floats, data refs, instruction mix. Bodies are [start, next start), so sizes include code Ghidra has no function for. |
 | `sections.py` | The ELF's own symbols (named linkonce sections, `.ctors` / `.dtors`). GCC 2 only: FS2 has none; kept because export / features / rtti import it. Its CodeWarrior counterpart (static initialisers in the code islands?) is open. |
 | `libmatch.py` | Library / runtime names: each reference library function (FF3's SDK 3.0 libs from ReiPan's `ff3_functions.txt`; FF2's runtime, newlib and SDK 2.8 from MioPan's `symbols.txt`) compared word for word with relocations masked, at FS2's function starts and after every `jr ra`. Unique matches only; identical bodies under several names are settled by their callees. `--list`, `--ranges` (library spans for `layout.json`), `--apply`. Needs the reference ELFs next to their lists (not in the checkouts on this machine). |
 | `rxalign.py` | `python rxalign.py <lo> <hi> <ror_lo> <ror_hi> [--min-run N] [--batch out.json] [--missing]` -- SCE's rx middleware is the library Rule of Rose links: aligns FS2's function sizes in address order with `../RosePan/ror_functions.txt` (longest common subsequence, fewest breaks among the longest), keeps pairs in runs of >= N (3) ('='), fills the gaps between them by partitioning address spans ('~': Ghidra merged small functions; the merged ones print '+' and `--missing` adds them to `data/missing_functions.json`; a lone pair left by changed code prints '^', read it) and writes RosePan's names as a `name_ctx.py` batch (lib-context). Rerun over a named range: 0 entries means nothing to rename. Offline. Unverified word for word until RoR's ELF or Ghidra program is here. |
-| `rtti.py` | Classes from vtables, CodeWarrior ABI (rewritten at bootstrap 4): tables the code builds with lui/addiu and stores (`sw`), plus same-shaped ones between them (`{type_info* or 0, 0, fn...}`, 4-byte words); names from the type_info, `data/class_names.json` or `Vt_<addr>`; bases from type_info lists or co-stored shorter tables. `--missing` writes slot targets Ghidra has no function for to `data/missing_functions.json` (create them: `ghidra.py mkfunc` on 5.14.2, or F in Ghidra). |
+| `rtti.py` | Classes from vtables, CodeWarrior ABI (rewritten at bootstrap 4): tables the code builds with lui/addiu and stores (`sw`), plus same-shaped ones between them (`{type_info* or 0, 0, fn...}`, 4-byte words); names from the type_info, `data/class_names.json` or `Vt_<addr>`; bases from type_info lists or co-stored shorter tables. `--missing` writes slot targets Ghidra has no function for to `data/missing_functions.json` (create them: `ghidra.py mkfunc`, or F in Ghidra). |
 | `export.py` | `yamipan_functions.txt`: every function with size, name and provenance, grouped into source files: pinned ranges, then string anchors (FS2's own `file.c` / `.cpp` strings), class anchors, then link-order fill. Writes `work/class_files.json`. |
 | `status.py` | The generated status page (seeding state, naming, placement, reconstruction, TUs, frontier). |
 | `refresh.py` | fetch + features (if Ghidra is up), sections, rtti, export, status. |
 | `tuid.py` | Is the TU the file its key says? Source-path strings, other strings, classes, name prefixes, caller / callee TUs. Needs `tus.py` (bootstrap 7). |
 | `stage.py` | `python stage.py <names\|addrs\|file:x.cpp\|class:Name\|range:lo-hi> [--asm]` -- per-function bundle in `work/stage/`: class role and vptr offset, callers, callees, tail jumps, strings, floats, decompilation (and disassembly). |
 | `ctxcard.py` | `--top N` most-called unnamed game functions (or given addresses): callers, callees, tail jumps, strings, floats, class role, named neighbours with files, decompilation. |
-| `name_ctx.py` | `python name_ctx.py <batch.json>` -- apply hand names (`game-inferred` / `lib-context`) with evidence to Ghidra, `data/tags.json` and `data/context_names.json`; refuses whitespace and duplicates, never renames a `game-symbol`; replacing a library match records `data/overrides.json`; saves (5.14.2), then refresh.py. |
+| `name_ctx.py` | `python name_ctx.py <batch.json>` -- apply hand names (`game-inferred` / `lib-context`) with evidence to Ghidra, `data/tags.json` and `data/context_names.json`; refuses whitespace and duplicates, never renames a `game-symbol`; replacing a library match records `data/overrides.json`; saves (save_program), then refresh.py. |
 | `modview.py` | `range <lo> <hi>` / `tree <func> [depth]` -- one line per function: name, provenance, size, call sites, callees, strings. Offline. |
 | `dec.py` | `python dec.py <addr\|name> ...` -- decompile. |
-| `ghidra.py` | `asm` (read-only disassembly of any range), `func`, `xrefs`, `refs` (xrefs + `jal`/`j` encodings + data words + low halves: "is it really unreferenced"), `find` (over the ELF's bytes, with an optional bit mask), `segments`, `mkfunc` (5.14.2: create + save). |
+| `ghidra.py` | `asm` (read-only disassembly of any range), `func`, `xrefs`, `refs` (xrefs + `jal`/`j` encodings + data words + low halves: "is it really unreferenced"), `find` (over the ELF's bytes, with an optional bit mask), `segments`, `mkfunc` (create + save). |
 | `mipsdis.py` | Offline R5900 disassembler over the ELF, annotated with cached names; for code Ghidra has no function for. |
 | `mipsemu.py` | A tiny EE integer interpreter: run a leaf function over every input to check a C rewrite of a switch-table function; `Emu` with load / call hooks for non-leaf ones. |
 | `sinit.py` | Run a static initializer's straight-line stores symbolically and dump the table it fills. |
@@ -107,7 +109,7 @@ The API, how the plugin behaves, the setup and the traps: the skill's `reference
 ## Provenance tags
 
 Kept in `data/tags.json` (address -> tag; the record, committed) and mirrored to Ghidra's function tags
-while 5.14.2 answers (2.0.0 has no tags).
+while Ghidra answers.
 
 | tag | meaning |
 |---|---|
@@ -125,8 +127,8 @@ library names).
 ## Ghidra naming convention
 
 Ghidra names are C++ names as written in source: `Class::method`, `Class::~Class`; free functions
-plain (`main`). GhidraMCP 2.0.0 keeps `::` literally in a flat name (no namespaces), accepts templates
-and `$`, and rejects whitespace (`operator new` -> `operator_new`). Two functions with the same
+plain (`main`). GhidraMCP 2.0.0 kept `::` literally in a flat name (no namespaces), accepted templates
+and `$`, and rejected whitespace (7.0.0 with `strict_mode` off: `rx*` and `Class::method` names checked) (`operator new` -> `operator_new`). Two functions with the same
 qualified name carry their parameters without spaces. `yamipan_functions.txt`, briefs and callcheck
 read these names.
 
@@ -146,13 +148,12 @@ Bootstrap 6 copies RosePan's platform layer; these hooks must survive the rename
 
 ## Things that bit (FS2-specific ones in the skill's hazards.md, Ghidra ones in ghidra.md)
 
-- **2.0.0 serves the active tab**: `ghidra_mcp.py` checks it before every request; nothing else may
-  talk to the port directly.
-- **Nothing is saved without 5.14.2**: after a naming batch, save in Ghidra (Ctrl+S) and say so in
-  the report.
-- **5.14.2: `program` must be in the query string** (`Ghidra5` puts it there); `dry_run` in a POST
-  body is not honoured: never probe writes. Writes collide with saves ("Unable to lock due to active
-  transaction"): `create_function` and `save_program` retry.
+- **7.0.0 answers errors with HTTP 200 `{"error": ...}`** and serves every open program: always go
+  through `ghidra_mcp.py` (it adds `program=` and raises on errors), never the port directly.
+- **`disassemble_bytes` writes** (no dry run): never probe writes. Writes collide with saves ("Unable
+  to lock due to active transaction"): `create_function` and `save_program` retry.
+- **A plugin built for another Ghidra half works**: `get_functions` (decompile, function at an
+  address) fails with `SleighLanguageDescription`; build it for the Ghidra in use (ghidra.md).
 - **Never pipe `name_ctx.py` / `refresh.py` into `head`**: the closed pipe kills the refresh and leaves
   stale names behind (stubs at address 0, callcheck "missing" calls).
 - `python -I` drops the script directory from `sys.path`; run the tools as `python tool.py` from here.

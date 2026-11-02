@@ -1,6 +1,7 @@
 {
  "project": "C:\\Users\\willi\\Documents\\Ghidra Projects\\CLaude Decomp",
  "program": "SCES_538.51",
- "ports": "8080:16",
- "ghidra_dir": "C:\\Users\\willi\\Documents\\ghidra_12.2_PUBLIC_20261016\\ghidra_12.2_PUBLIC"
+ "ports": "8089:16",
+ "ghidra_dir": "C:\\Users\\willi\\Documents\\ghidra_12.2_PUBLIC_20261016\\ghidra_12.2_PUBLIC",
+ "bridge": "C:\\Users\\willi\\Documents\\git\\ghidra-mcp"
 }

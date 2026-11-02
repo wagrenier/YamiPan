@@ -11,7 +11,7 @@ One markdown file per function plus index.md:
   - the class it belongs to (vtable slot / ctor / Class::), with the vptr offset
   - callers, callees in call order (tail jumps marked), strings (asserts give field names), floats
   - the decompilation (Ghidra), optionally the disassembly
-Needs Ghidra (GhidraMCP 2.0.0) with the FS2 program active.
+Needs Ghidra (GhidraMCP 7.0.0) with the FS2 program open.
 """
 import json
 import re
