@@ -77,9 +77,11 @@
 /* 00101fe8 00000088 */ rxSysIsCdromPath(){}  // lib-ctx
 /* 00102070 000000c4 */ rxSysPathSkipDevice(){}  // lib-ctx
 /* 00102138 0000019c */ rxSysSetBootPath(){}  // lib-ctx
-/* 001022d8 00000020 */ rxSysSetPrintHook(){}  // lib-ctx
+/* 001022d8 00000014 */ rxSysSetPrintHook(){}  // lib-ctx
+/* 001022f0 00000008 */ rxSysPrintWait(){}  // lib-ctx
 /* 001022f8 0000002c */ rxSysIsTtyOpen(){}  // lib-ctx
-/* 00102328 000001fc */ rxSysPrintf(){}  // lib-ctx
+/* 00102328 000001f8 */ rxSysPrintf(){}  // lib-ctx
+/* 00102520 00000004 */ rxSysInitEnd(){}  // lib-ctx
 /* 00102528 00000004 */ rxSysTermEnd(){}  // lib-ctx
 /* 00102530 00000024 */ rxSysCreateSema(){}  // lib-ctx
 /* 00102558 000000dc */ rxSysBindRpc(){}  // lib-ctx
@@ -89,7 +91,8 @@
 /* 00102760 0000003c */ rxSysInitSema(){}  // lib-ctx
 /* 001027a0 0000002c */ rxSysTermSema(){}  // lib-ctx
 /* 001027d0 0000005c */ rxSysLockPrint(){}  // lib-ctx
-/* 00102830 0000007c */ rxSysUnlockPrint(){}  // lib-ctx
+/* 00102830 0000001c */ rxSysUnlockPrint(){}  // lib-ctx
+/* 00102850 0000005c */ rxSysLockSema1(){}  // lib-ctx
 /* 001028b0 0000001c */ rxSysUnlockSema1(){}  // lib-ctx
 /* 001028d0 00000028 */ rxSysCheckCdPath(){}  // lib-ctx
 /* 001028f8 00000050 */ rxSysOpen(){}  // lib-ctx
@@ -98,7 +101,9 @@
 /* 001029d8 00000058 */ rxSysWrite(){}  // lib-ctx
 /* 00102a30 00000058 */ rxSysLseek(){}  // lib-ctx
 /* 00102a88 00000058 */ rxSysIoctl(){}  // lib-ctx
-/* 00102ae0 00000250 */ rxSysLockConsole(){}  // lib-ctx
+/* 00102ae0 00000014 */ rxSysLockConsole(){}  // lib-ctx
+/* 00102af8 00000014 */ rxSysUnlockConsole(){}  // lib-ctx
+/* 00102b10 00000220 */ rxSysExceptionHandler(){}  // lib-ctx
 /* 00102d30 000000b0 */ rxSysSetDebugHandlers(){}  // lib-ctx
 /* 00102de0 00000098 */ rxSysRestoreDebugHandlers(){}  // lib-ctx
 /* 00102e78 00000168 */ rxSysHexDump(){}  // lib-ctx
@@ -111,7 +116,12 @@
 /* 001032f8 00000094 */ rxSysConsoleNewline(){}  // lib-ctx
 /* 00103390 0000008c */ rxSysConsolePutc(){}  // lib-ctx
 /* 00103420 00000050 */ rxSysConsolePrintHook(){}  // lib-ctx
-/* 00103470 00000234 */ rxSysConsoleSetDisplay(){}  // lib-ctx
+/* 00103470 0000003c */ rxSysConsoleSetDisplay(){}  // lib-ctx
+/* 001034b0 00000068 */ rxSysConsoleClear(){}  // lib-ctx
+/* 00103518 00000014 */ rxSysConsoleSetWaits(){}  // lib-ctx
+/* 00103530 00000014 */ rxSysConsoleSetColor(){}  // lib-ctx
+/* 00103548 00000040 */ rxSysExitHook(){}  // lib-ctx
+/* 00103590 00000114 */ rxSysInitExceptionScreen(){}  // lib-ctx
 /* 001036a8 000000fc */ rxSysTermExceptionScreen(){}  // lib-ctx
 /* 001037a8 00000004 */ rxSysInitUser(){}  // lib-ctx
 /* 001037b0 00000004 */ rxSysTermUser(){}  // lib-ctx
@@ -136,7 +146,8 @@
 /* 00104be0 00000074 */ FUN_00104be0(){}
 /* 00104c60 00000124 */ __construct_array(){}  // lib-ctx
 /* 00104d90 00000144 */ FUN_00104d90(){}
-/* 00104ee0 0000005c */ std::exception::~exception(){}  // lib-ctx
+/* 00104ee0 0000004c */ std::exception::~exception(){}  // lib-ctx
+/* 00104f30 0000000c */ FUN_00104f30(){}
 /* 00104f40 0000025c */ FUN_00104f40(){}
 /* 001051a0 00000024 */ std::terminate(){}  // lib-ctx
 /* 001051d0 0000001c */ dthandler(){}  // lib-ctx
@@ -166,7 +177,8 @@
 /* 00107180 00000098 */ std::length_error::~length_error(){}  // lib-ctx
 /* 00107220 00000098 */ std::out_of_range::~out_of_range(){}  // lib-ctx
 /* 001072c0 00000070 */ FUN_001072c0(){}
-/* 00107330 000000a8 */ FUN_00107330(){}
+/* 00107330 00000094 */ FUN_00107330(){}
+/* 001073d0 00000008 */ FUN_001073d0(){}
 /* 001073e0 0000004c */ FUN_001073e0(){}
 /* 00107430 000002b4 */ FUN_00107430(){}
 /* 001076e8 00000190 */ sceGsResetGraph(){}  // lib-ctx
@@ -645,9 +657,13 @@
 /* 0012d5a0 00000074 */ FUN_0012d5a0(){}
 /* 0012d620 00000144 */ gameInit(){}  // game
 /* 0012d770 000001a0 */ gsClearVram(){}  // game
-/* 0012d910 00000344 */ main(){}  // game
-/* 0012dc60 00000050 */ FUN_0012dc60(){}
-/* 0012dcb0 00000078 */ FUN_0012dcb0(){}
+/* 0012d910 0000019c */ main(){}  // game
+/* 0012dab0 00000044 */ gameThreadSwitchHook(){}  // game
+/* 0012db00 00000068 */ gameMainThread(){}  // game
+/* 0012db70 000000ac */ gameFrameReady(){}  // game
+/* 0012dc20 00000034 */ dmacBusErrorHandler(){}  // game
+/* 0012dc60 00000050 */ GamePad::update(){}  // game
+/* 0012dcb0 00000078 */ MaskedGamePad::update(){}  // game
 /* 0012dd30 00000040 */ GamePacketManager::closeList(){}  // game
 /* 0012dd70 00000048 */ GamePacketManager::kickAndSwap(){}  // game
 /* 0012ddc0 00000038 */ GamePacketManager::endFrame(){}  // game
@@ -661,7 +677,8 @@
 /* 0012e0b0 0000002c */ FUN_0012e0b0(){}
 /* 0012e0e0 000002c0 */ FUN_0012e0e0(){}
 /* 0012e3a0 00000048 */ gfxReleaseRenderTargets(){}  // game
-/* 0012e3f0 00000674 */ gfxInitRenderTargets(){}  // game
+/* 0012e3f0 00000664 */ gfxInitRenderTargets(){}  // game
+/* 0012ea60 00000004 */ thunk_FUN_001438c0(){}
 /* 0012ea70 00000008 */ FUN_0012ea70(){}
 /* 0012ea80 00000050 */ FUN_0012ea80(){}
 /* 0012ead0 0000013c */ FUN_0012ead0(){}
@@ -682,7 +699,8 @@
 /* 0012fb10 000001d8 */ FUN_0012fb10(){}
 /* 0012fcf0 000001d8 */ Pad::Pad(){}  // game
 /* 0012fed0 000000cc */ Pad::setListening(){}  // game
-/* 0012ffa0 000000c4 */ padSysUpdate(){}  // game
+/* 0012ffa0 000000c0 */ padSysUpdate(){}  // game
+/* 00130060 00000004 */ Pad::update(){}  // native
 /* 00130070 000000bc */ padSysShutdown(){}  // game
 /* 00130130 000000f8 */ padSysInit(){}  // game
 /* 00130230 000007ec */ PadPort::read(){}  // game
@@ -701,23 +719,47 @@
 /* 00131290 000001e4 */ threadScheduler(){}  // game
 /* 00131480 00000198 */ FUN_00131480(){}
 /* 00131620 000000f4 */ FUN_00131620(){}
-/* 00131720 00000150 */ jobWorkerThread(){}  // game
+/* 00131720 0000011c */ jobWorkerThread(){}  // game
+/* 00131840 00000030 */ threadVSyncHandler(){}  // game
 /* 00131870 000000bc */ frameSyncInit(){}  // game
-/* 00131930 000000f8 */ frameSyncThread(){}  // game
-/* 00131a30 0000029c */ FUN_00131a30(){}
-/* 00131cd0 00000098 */ FUN_00131cd0(){}
-/* 00131d70 00000134 */ FUN_00131d70(){}
+/* 00131930 000000b0 */ frameSyncThread(){}  // game
+/* 001319f0 00000008 */ FUN_001319f0(){}
+/* 00131a00 00000008 */ FUN_00131a00(){}
+/* 00131a10 00000008 */ FUN_00131a10(){}
+/* 00131a20 00000008 */ FUN_00131a20(){}
+/* 00131a30 00000214 */ FUN_00131a30(){}
+/* 00131c50 0000001c */ FUN_00131c50(){}
+/* 00131c70 00000004 */ FUN_00131c70(){}
+/* 00131c80 00000004 */ FUN_00131c80(){}
+/* 00131c90 00000008 */ FUN_00131c90(){}
+/* 00131ca0 0000002c */ FUN_00131ca0(){}
+/* 00131cd0 0000002c */ FUN_00131cd0(){}
+/* 00131d00 00000008 */ FUN_00131d00(){}
+/* 00131d10 00000008 */ FUN_00131d10(){}
+/* 00131d20 00000008 */ FUN_00131d20(){}
+/* 00131d30 00000008 */ FUN_00131d30(){}
+/* 00131d40 00000008 */ FUN_00131d40(){}
+/* 00131d50 00000008 */ FUN_00131d50(){}
+/* 00131d60 00000008 */ FUN_00131d60(){}
+/* 00131d70 00000008 */ FUN_00131d70(){}
+/* 00131d80 0000011c */ FUN_00131d80(){}
+/* 00131ea0 00000004 */ thunk_FUN_00132000(){}
 /* 00131eb0 00000048 */ FUN_00131eb0(){}
 /* 00131f00 000000f4 */ FUN_00131f00(){}
 /* 00132000 000000ec */ FUN_00132000(){}
-/* 001320f0 000000f8 */ FUN_001320f0(){}
+/* 001320f0 0000007c */ FUN_001320f0(){}
+/* 00132170 00000078 */ FUN_00132170(){}
 /* 001321f0 00000084 */ FUN_001321f0(){}
-/* 00132280 00000090 */ FUN_00132280(){}
+/* 00132280 00000050 */ FUN_00132280(){}
+/* 001322d0 00000040 */ FUN_001322d0(){}
 /* 00132320 00000088 */ FUN_00132320(){}
 /* 001323b0 000000b8 */ FUN_001323b0(){}
-/* 00132470 000000d0 */ FUN_00132470(){}
-/* 00132550 000000d0 */ FUN_00132550(){}
-/* 00132630 000000d0 */ FUN_00132630(){}
+/* 00132470 00000084 */ FUN_00132470(){}
+/* 00132500 00000040 */ FUN_00132500(){}
+/* 00132550 00000088 */ FUN_00132550(){}
+/* 001325e0 00000040 */ FUN_001325e0(){}
+/* 00132630 00000088 */ FUN_00132630(){}
+/* 001326c0 00000040 */ FUN_001326c0(){}
 /* 00132710 00000088 */ FUN_00132710(){}
 /* 001327a0 00000108 */ FUN_001327a0(){}
 /* 001328b0 00000068 */ FUN_001328b0(){}
@@ -730,7 +772,10 @@
 /* 00132d40 000000a8 */ FUN_00132d40(){}
 /* 00132df0 0000002c */ FUN_00132df0(){}
 /* 00132e20 0000007c */ FUN_00132e20(){}
-/* 00132ea0 00000074 */ FUN_00132ea0(){}
+/* 00132ea0 00000050 */ FUN_00132ea0(){}
+/* 00132ef0 00000008 */ FUN_00132ef0(){}
+/* 00132f00 00000008 */ FUN_00132f00(){}
+/* 00132f10 00000004 */ FUN_00132f10(){}
 /* 00132f20 00000004 */ FUN_00132f20(){}
 /* 00132f30 0000005c */ PerfMeter::dumpGroups(){}  // game
 /* 00132f90 000003b4 */ FUN_00132f90(){}
@@ -1138,7 +1183,8 @@
 /* 00143f00 0000004c */ FUN_00143f00(){}
 /* 00143f50 00000080 */ FUN_00143f50(){}
 /* 00143fd0 0000006c */ FUN_00143fd0(){}
-/* 00144040 00000044 */ FUN_00144040(){}
+/* 00144040 0000003c */ FUN_00144040(){}
+/* 00144080 00000004 */ FUN_00144080(){}
 /* 00144090 00000104 */ FUN_00144090(){}
 /* 001441a0 00000050 */ FUN_001441a0(){}
 /* 001441f0 0000005c */ FUN_001441f0(){}
@@ -1164,7 +1210,12 @@
 /* 00145a50 00000184 */ FUN_00145a50(){}
 /* 00145be0 00000190 */ FUN_00145be0(){}
 /* 00145d70 00000070 */ FUN_00145d70(){}
-/* 00145de0 00000428 */ FUN_00145de0(){}
+/* 00145de0 000003d4 */ FUN_00145de0(){}
+/* 001461c0 00000008 */ FUN_001461c0(){}
+/* 001461d0 00000008 */ FUN_001461d0(){}
+/* 001461e0 00000008 */ FUN_001461e0(){}
+/* 001461f0 00000008 */ FUN_001461f0(){}
+/* 00146200 00000008 */ FUN_00146200(){}
 /* 00146210 000000d4 */ FUN_00146210(){}
 /* 001462f0 00000010 */ FUN_001462f0(){}
 /* 00146300 00000010 */ FUN_00146300(){}
@@ -1342,7 +1393,9 @@
 /* 001512e0 00000038 */ FUN_001512e0(){}
 /* 00151320 00000010 */ FUN_00151320(){}
 /* 00151330 00000050 */ FUN_00151330(){}
-/* 00151380 000001cc */ FUN_00151380(){}
+/* 00151380 00000010 */ FUN_00151380(){}
+/* 00151390 00000004 */ thunk_FUN_001513a0(){}
+/* 001513a0 000001ac */ FUN_001513a0(){}
 /* 00151550 000000b0 */ FUN_00151550(){}
 /* 00151600 000000e8 */ FUN_00151600(){}
 /* 001516f0 0000004c */ FUN_001516f0(){}
@@ -1352,11 +1405,15 @@
 /* 00151de0 00000028 */ FUN_00151de0(){}
 /* 00151e10 00000078 */ FUN_00151e10(){}
 /* 00151e90 00000090 */ FUN_00151e90(){}
-/* 00151f20 00000044 */ FUN_00151f20(){}
+/* 00151f20 00000040 */ FUN_00151f20(){}
+/* 00151f60 00000004 */ FUN_00151f60(){}
 /* 00151f70 00000004 */ rxThEnableDispatch(){}  // native
 /* 00151f80 00000004 */ rxThDisableDispatch(){}  // native
-/* 00151f90 00000044 */ FUN_00151f90(){}
-/* 00151fe0 00000068 */ FUN_00151fe0(){}
+/* 00151f90 00000038 */ FUN_00151f90(){}
+/* 00151fd0 00000004 */ FUN_00151fd0(){}
+/* 00151fe0 00000044 */ FUN_00151fe0(){}
+/* 00152030 00000008 */ FUN_00152030(){}
+/* 00152040 00000008 */ FUN_00152040(){}
 /* 00152050 00000054 */ FUN_00152050(){}
 /* 001520b0 0000007c */ FUN_001520b0(){}
 /* 00152130 00000030 */ FUN_00152130(){}
@@ -1376,16 +1433,22 @@
 /* 00152870 0000015c */ spkRomLoad(){}  // game
 /* 001529d0 000002bc */ spkLocateFile(){}  // game
 /* 00152c90 00000184 */ spkGetFileSize(){}  // game
-/* 00152e20 000002e8 */ spkLoadFile(){}  // game
+/* 00152e20 000002a8 */ spkLoadFile(){}  // game
+/* 001530d0 00000008 */ FUN_001530d0(){}
+/* 001530e0 00000008 */ FUN_001530e0(){}
+/* 001530f0 00000004 */ FUN_001530f0(){}
+/* 00153100 00000008 */ FUN_00153100(){}
 /* 00153108 00000014 */ rxSysThreadCallback(){}  // lib-ctx
 /* 00153120 000000f0 */ rxSysInitModules(){}  // lib-ctx
 /* 00153210 0000006c */ rxSysTermModules(){}  // lib-ctx
-/* 00153280 00000064 */ rxSysSetFileContext(){}  // lib-ctx
+/* 00153280 00000014 */ rxSysSetFileContext(){}  // lib-ctx
+/* 00153298 0000004c */ rxSysDeviceControl(){}  // lib-ctx
 /* 001532e8 0000003c */ rxSysDeviceStatus(){}  // lib-ctx
 /* 00153328 00000014 */ rxSysInitFileDevice(){}  // lib-ctx
 /* 00153340 00000014 */ rxSysGetFileDevice(){}  // lib-ctx
 /* 00153358 00000014 */ rxSysSetFileDevice(){}  // lib-ctx
-/* 00153370 00000050 */ rxSysSetFileDir(){}  // lib-ctx
+/* 00153370 0000002c */ rxSysSetFileDir(){}  // lib-ctx
+/* 001533a0 00000020 */ rxSysGetFileDir(){}  // lib-ctx
 /* 001533c0 0000002c */ rxSysSetFileSearchDir(){}  // lib-ctx
 /* 001533f0 00000020 */ rxSysGetFileSearchDir(){}  // lib-ctx
 /* 00153410 00000020 */ rxSysPushSearchDir(){}  // lib-ctx
@@ -1402,14 +1465,17 @@
 /* 00153818 00000144 */ rxFileWrite(){}  // lib-ctx
 /* 00153960 00000094 */ rxFileSeek(){}  // lib-ctx
 /* 001539f8 000000cc */ rxFileSync(){}  // lib-ctx
-/* 00153ac8 000000b4 */ rxFileSetMarkers(){}  // lib-ctx
+/* 00153ac8 00000060 */ rxFileSetMarkers(){}  // lib-ctx
+/* 00153b28 00000054 */ rxFileEnableMarker(){}  // lib-ctx
 /* 00153b80 00000074 */ rxFilePause(){}  // lib-ctx
 /* 00153bf8 00000050 */ rxFileGetRingData(){}  // lib-ctx
 /* 00153c48 00000048 */ rxFileGetRingReadPos(){}  // lib-ctx
 /* 00153c90 00000048 */ rxFileGetRingSize(){}  // lib-ctx
 /* 00153cd8 00000070 */ rxFileGetRingFilled(){}  // lib-ctx
-/* 00153d48 000001a8 */ rxFileRingConsume(){}  // lib-ctx
-/* 00153ef0 000000b4 */ rxFileSetTags(){}  // lib-ctx
+/* 00153d48 00000150 */ rxFileRingConsume(){}  // lib-ctx
+/* 00153e98 00000058 */ rxFileGetRingFilePos(){}  // lib-ctx
+/* 00153ef0 00000060 */ rxFileSetTags(){}  // lib-ctx
+/* 00153f50 00000054 */ rxFileEnableTag(){}  // lib-ctx
 /* 00153fa8 00000060 */ rxFileGetRingTags(){}  // lib-ctx
 /* 00154008 00000128 */ rxFileOpenEx(){}  // lib-ctx
 /* 00154130 000003e4 */ rxFileOpenSlot(){}  // lib-ctx
@@ -1433,12 +1499,14 @@
 /* 00154ab8 000001b0 */ rxFileSlotRequestChunked(){}  // lib-ctx
 /* 00154c68 000000e0 */ rxFileSlotPost(){}  // lib-ctx
 /* 00154d48 00000078 */ rxFileOnTransfer(){}  // lib-ctx
-/* 00154dc0 00000200 */ rxFileSlotSetMarkers(){}  // lib-ctx
+/* 00154dc0 000001c8 */ rxFileSlotSetMarkers(){}  // lib-ctx
+/* 00154f88 00000038 */ rxFileSlotEnableMarker(){}  // lib-ctx
 /* 00154fc8 000000c8 */ rxFileSlotAddSegment(){}  // lib-ctx
 /* 00155090 0000011c */ rxFileSlotDropSegments(){}  // lib-ctx
 /* 001551b0 000000b8 */ rxFileSlotFreeSegments(){}  // lib-ctx
 /* 00155268 000000dc */ rxFileSlotSegmentPos(){}  // lib-ctx
-/* 00155348 000001e0 */ rxFileSlotSetTags(){}  // lib-ctx
+/* 00155348 000001a8 */ rxFileSlotSetTags(){}  // lib-ctx
+/* 001554f0 00000038 */ rxFileSlotEnableTag(){}  // lib-ctx
 /* 00155530 000000c4 */ rxFileSlotGetTags(){}  // lib-ctx
 /* 001555f8 00000050 */ rxFileCallDevice(){}  // lib-ctx
 /* 00155648 00000048 */ rxFileGetDeviceRoot(){}  // lib-ctx
@@ -1460,7 +1528,9 @@
 /* 00156020 00000040 */ rxFileGetDriver(){}  // lib-ctx
 /* 00156060 00000088 */ rxFileHostInit(){}  // lib-ctx
 /* 001560e8 00000004 */ rxFileHostTerm(){}  // lib-ctx
-/* 001560f0 00000048 */ rxFileHostMakePath(){}  // lib-ctx
+/* 001560f0 00000014 */ rxFileHostMakePath(){}  // lib-ctx
+/* 00156108 00000008 */ rxFileHostControl(){}  // lib-ctx
+/* 00156110 00000028 */ rxFileHostGetStatus(){}  // lib-ctx
 
 // *****************************************************************************
 // FILE -- filehost.c
@@ -1475,7 +1545,8 @@
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 00156528 00000054 */ rxFileHostJoinRoot(){}  // lib-ctx
+/* 00156528 00000048 */ rxFileHostJoinRoot(){}  // lib-ctx
+/* 00156570 0000000c */ rxFileHostGetRoot(){}  // lib-ctx
 /* 00156580 00000044 */ rxFileHostSetRoot(){}  // lib-ctx
 /* 001565c8 0000004c */ rxFileCdWait(){}  // lib-ctx
 /* 00156618 00000030 */ rxFileCdSyncWait(){}  // lib-ctx
@@ -1485,9 +1556,12 @@
 /* 00156710 0000001c */ rxFileCdTray(){}  // lib-ctx
 /* 00156730 000002c4 */ rxFileCdProcess(){}  // lib-ctx
 /* 001569f8 00000048 */ rxFileCdMakePath(){}  // lib-ctx
-/* 00156a40 00000144 */ rxFileCdControl(){}  // lib-ctx
-/* 00156b88 00000080 */ rxFileCdGetSize(){}  // lib-ctx
-/* 00156c08 000000f0 */ rxFileCdRead(){}  // lib-ctx
+/* 00156a40 000000c8 */ rxFileCdControl(){}  // lib-ctx
+/* 00156b08 0000007c */ rxFileCdGetStatus(){}  // lib-ctx
+/* 00156b88 00000078 */ rxFileCdGetSize(){}  // lib-ctx
+/* 00156c00 00000008 */ rxFileCdCreate(){}  // lib-ctx
+/* 00156c08 000000e8 */ rxFileCdRead(){}  // lib-ctx
+/* 00156cf0 00000008 */ rxFileCdWrite(){}  // lib-ctx
 /* 00156cf8 000000d8 */ rxFileCdIsoName(){}  // lib-ctx
 /* 00156dd0 00000034 */ rxFileCdMapSector(){}  // lib-ctx
 /* 00156e08 00000288 */ rxFileCdReadBytes(){}  // lib-ctx
@@ -1500,20 +1574,27 @@
 /* 00157780 000001cc */ rxFileCdFindInDir(){}  // lib-ctx
 /* 00157950 0000005c */ rxFileCdPathElem(){}  // lib-ctx
 /* 001579b0 0000004c */ rxFileCdIsLastElem(){}  // lib-ctx
-/* 00157a00 00000234 */ rxFileCdReadCached(){}  // lib-ctx
+/* 00157a00 00000228 */ rxFileCdReadCached(){}  // lib-ctx
+/* 00157c28 0000000c */ rxFileCdGetRoot(){}  // lib-ctx
 /* 00157c38 00000004 */ rxFileCdSetRoot(){}  // lib-ctx
-/* 00157c40 0000006c */ rxFileCdSetFindFunc(){}  // lib-ctx
+/* 00157c40 00000014 */ rxFileCdSetFindFunc(){}  // lib-ctx
+/* 00157c58 00000044 */ rxFileCdSetClockRead(){}  // lib-ctx
+/* 00157ca0 0000000c */ rxFileCdGetClockRead(){}  // lib-ctx
 /* 00157cb0 000000bc */ rxFileCdGetClock(){}  // lib-ctx
 /* 00157d70 00000034 */ rxFileCdSetLayerMode(){}  // lib-ctx
 /* 00157da8 0000000c */ rxFileCdGetLayerMode(){}  // lib-ctx
-/* 00157db8 0000008c */ rxFileHddInit(){}  // lib-ctx
+/* 00157db8 00000088 */ rxFileHddInit(){}  // lib-ctx
+/* 00157e40 00000004 */ rxFileHddTerm(){}  // lib-ctx
 /* 00157e48 000000ac */ rxFileHddOnError(){}  // lib-ctx
-/* 00157ef8 00000048 */ rxFileHddMakePath(){}  // lib-ctx
+/* 00157ef8 00000014 */ rxFileHddMakePath(){}  // lib-ctx
+/* 00157f10 00000008 */ rxFileHddControl(){}  // lib-ctx
+/* 00157f18 00000028 */ rxFileHddGetStatus(){}  // lib-ctx
 /* 00157f40 000000d0 */ rxFileHddGetSize(){}  // lib-ctx
 /* 00158010 000000cc */ rxFileHddCreate(){}  // lib-ctx
 /* 001580e0 00000140 */ rxFileHddRead(){}  // lib-ctx
 /* 00158220 00000140 */ rxFileHddWrite(){}  // lib-ctx
-/* 00158360 00000054 */ rxFileHddJoinRoot(){}  // lib-ctx
+/* 00158360 00000048 */ rxFileHddJoinRoot(){}  // lib-ctx
+/* 001583a8 0000000c */ rxFileHddGetRoot(){}  // lib-ctx
 /* 001583b8 00000044 */ rxFileHddSetRoot(){}  // lib-ctx
 /* 00158400 000000a0 */ rxFileInitSlots(){}  // lib-ctx
 /* 001584a8 00000004 */ rxFileUpdate(){}  // lib-ctx
@@ -1545,7 +1626,11 @@
 /* 00158da0 00000094 */ rxFileStopThread(){}  // lib-ctx
 /* 00158e38 00000048 */ rxFilePostRequest(){}  // lib-ctx
 /* 00158e80 000000dc */ rxFileCancelRequests(){}  // lib-ctx
-/* 00158f60 00000444 */ rxFileCreateThread(){}  // lib-ctx
+/* 00158f60 000000ec */ rxFileCreateThread(){}  // lib-ctx
+/* 00159050 0000032c */ rxFileThreadMain(){}  // lib-ctx
+/* 00159380 00000014 */ rxFileThreadProc(){}  // lib-ctx
+/* 00159398 00000004 */ rxFileNop0(){}  // lib-ctx
+/* 001593a0 00000004 */ rxFileNop1(){}  // lib-ctx
 /* 001593a8 0000000c */ rxFileQueueInit(){}  // lib-ctx
 /* 001593b8 0000015c */ rxFileQueuePush(){}  // lib-ctx
 /* 00159518 00000048 */ rxFileQueueFront(){}  // lib-ctx
@@ -1554,8 +1639,10 @@
 /* 001595d8 0000002c */ rxFileQueueSpace(){}  // lib-ctx
 /* 00159608 0000014c */ rxFileQueueCancel(){}  // lib-ctx
 /* 00159758 000000b0 */ rxFileSetDeviceMap(){}  // lib-ctx
-/* 00159808 0000007c */ rxFileGetDeviceMap(){}  // lib-ctx
-/* 00159888 00000024 */ rxFileGetFallbackDevice(){}  // lib-ctx
+/* 00159808 00000068 */ rxFileGetDeviceMap(){}  // lib-ctx
+/* 00159870 00000014 */ rxFileSetFallbackDevice(){}  // lib-ctx
+/* 00159888 00000014 */ rxFileGetFallbackDevice(){}  // lib-ctx
+/* 001598a0 0000000c */ rxFileSetErrorHook(){}  // lib-ctx
 /* 001598b0 0000000c */ rxFileGetErrorHook(){}  // lib-ctx
 /* 001598c0 00000058 */ rxFileSetThreadPriority(){}  // lib-ctx
 /* 00159918 00000010 */ rxFileGetThreadPriority(){}  // lib-ctx
@@ -1563,9 +1650,11 @@
 /* 001599a8 00000088 */ rxThVBlankInit(){}  // lib-ctx
 /* 00159a30 0000005c */ rxThVBlankExit(){}  // lib-ctx
 /* 00159a90 00000038 */ rxThReadHSync(){}  // lib-ctx
-/* 00159ac8 0000005c */ rxThWaitVBlank(){}  // lib-ctx
+/* 00159ac8 0000004c */ rxThWaitVBlank(){}  // lib-ctx
+/* 00159b18 0000000c */ rxThGetField(){}  // lib-ctx
 /* 00159b28 00000094 */ rxThSync(){}  // lib-ctx
-/* 00159bc0 00000098 */ rxSndThreadCallback(){}  // lib-ctx
+/* 00159bc0 00000014 */ rxSndThreadCallback(){}  // lib-ctx
+/* 00159bd8 00000080 */ rxSndCheckBgCall(){}  // lib-ctx
 /* 00159c58 00000030 */ rxSndInit(){}  // lib-ctx
 /* 00159c88 00000020 */ rxSndTerm(){}  // lib-ctx
 /* 00159ca8 0000005c */ rxSndInitModules(){}  // lib-ctx
@@ -1580,8 +1669,10 @@
 /* 0015a060 000000e0 */ rxSndSetMasterVolume(){}  // lib-ctx
 /* 0015a140 00000034 */ rxSndSetBufferBank(){}  // lib-ctx
 /* 0015a178 00000060 */ rxSndGetVoiceTable(){}  // lib-ctx
-/* 0015a1d8 000000a4 */ rxSndGetVoiceTableEx(){}  // lib-ctx
-/* 0015a280 000000cc */ rxSndGetVoiceTable2(){}  // lib-ctx
+/* 0015a1d8 00000060 */ rxSndGetVoiceTableEx(){}  // lib-ctx
+/* 0015a238 00000044 */ rxSndSetVoiceEntry(){}  // lib-ctx
+/* 0015a280 00000060 */ rxSndGetVoiceTable2(){}  // lib-ctx
+/* 0015a2e0 0000006c */ rxSndCentToPitch(){}  // lib-ctx
 /* 0015a350 00000030 */ rxSndInitConfig(){}  // lib-ctx
 /* 0015a380 0000000c */ rxSndTermConfig(){}  // lib-ctx
 /* 0015a390 0000000c */ rxSndGetBufferBank(){}  // lib-ctx
@@ -1628,7 +1719,9 @@
 /* 0015b088 00000044 */ rxSndSpuTransferType1(){}  // lib-ctx
 /* 0015b0d0 00000048 */ rxSndSpuTransferType2(){}  // lib-ctx
 /* 0015b118 00000048 */ rxSndSpuTransferType5(){}  // lib-ctx
-/* 0015b160 000000f4 */ rxSndXvabPoll(){}  // lib-ctx
+/* 0015b160 00000098 */ rxSndXvabPoll(){}  // lib-ctx
+/* 0015b1f8 0000000c */ rxSndSpuHeapGetFreeSize(){}  // lib-ctx
+/* 0015b208 0000004c */ rxSndSpuHeapGetMaxFreeBlock(){}  // lib-ctx
 /* 0015b258 0000011c */ rxSndSpuHeapInit(){}  // lib-ctx
 /* 0015b378 00000004 */ rxSndSpuHeapTerm(){}  // lib-ctx
 /* 0015b380 00000034 */ rxSndSpuHeapGetSlot(){}  // lib-ctx
@@ -1641,10 +1734,14 @@
 /* 0015bd30 0000009c */ rxSndSetEffectModeCore(){}  // lib-ctx
 /* 0015bdd0 00000088 */ rxSndSetEffectDepthCore(){}  // lib-ctx
 /* 0015be58 0000007c */ rxSndSetEffectDelayCore(){}  // lib-ctx
-/* 0015bed8 00000100 */ rxSndSetEffectFeedbackCore(){}  // lib-ctx
-/* 0015bfd8 0000006c */ rxSndSetEffectDelay(){}  // lib-ctx
+/* 0015bed8 0000007c */ rxSndSetEffectFeedbackCore(){}  // lib-ctx
+/* 0015bf58 00000034 */ rxSndSetEffectMode(){}  // lib-ctx
+/* 0015bf90 00000048 */ rxSndSetEffectDepth(){}  // lib-ctx
+/* 0015bfd8 00000034 */ rxSndSetEffectDelay(){}  // lib-ctx
+/* 0015c010 00000034 */ rxSndSetEffectFeedback(){}  // lib-ctx
 /* 0015c048 00000004 */ rxSndXvabInit(){}  // lib-ctx
-/* 0015c050 00000040 */ rxSndXvabTerm(){}  // lib-ctx
+/* 0015c050 00000004 */ rxSndXvabTerm(){}  // lib-ctx
+/* 0015c058 00000038 */ rxSndReadVarLen(){}  // lib-ctx
 /* 0015c090 000003ec */ rxSndXvabLoad(){}  // lib-ctx
 /* 0015c480 00000178 */ rxSndXvabFree(){}  // lib-ctx
 /* 0015c5f8 000000cc */ rxSndXvabCheck(){}  // lib-ctx
@@ -1673,7 +1770,12 @@
 /* 0015d320 00000098 */ rxSndBgmSetMasterVolume(){}  // lib-ctx
 /* 0015d3b8 000000e4 */ rxSndBgmPlay(){}  // lib-ctx
 /* 0015d4a0 000000dc */ rxSndBgmStop(){}  // lib-ctx
-/* 0015d580 0000030c */ rxSndBgmStopAll(){}  // lib-ctx
+/* 0015d580 0000004c */ rxSndBgmStopAll(){}  // lib-ctx
+/* 0015d5d0 000000c8 */ rxSndBgmPause(){}  // lib-ctx
+/* 0015d698 00000034 */ rxSndBgmGetStatus(){}  // lib-ctx
+/* 0015d6d0 00000040 */ rxSndBgmGetValue(){}  // lib-ctx
+/* 0015d710 000000bc */ rxSndBgmSetChannelVolume(){}  // lib-ctx
+/* 0015d7d0 000000bc */ rxSndBgmSetChannelVolume74(){}  // lib-ctx
 /* 0015d890 00000094 */ rxSndBgmSetAttr(){}  // lib-ctx
 /* 0015d928 00000150 */ rxSndBgmSetVolume(){}  // lib-ctx
 /* 0015da78 000000a4 */ rxSndBgmSetPitch(){}  // lib-ctx
@@ -1684,17 +1786,25 @@
 /* 0015dd08 00000174 */ rxSndBgmUpdate(){}  // lib-ctx
 /* 0015de80 0000000c */ rxSndBgmGetMasterVolumeL(){}  // lib-ctx
 /* 0015de90 0000000c */ rxSndBgmGetMasterVolumeR(){}  // lib-ctx
-/* 0015dea0 000000f8 */ rxSndSeSetMasterVolume(){}  // lib-ctx
+/* 0015dea0 00000098 */ rxSndSeSetMasterVolume(){}  // lib-ctx
+/* 0015df38 00000030 */ rxSndSeSetDefaultParamB(){}  // lib-ctx
+/* 0015df68 00000030 */ rxSndSeSetDefaultParamC(){}  // lib-ctx
 /* 0015df98 00000148 */ rxSndSePlay(){}  // lib-ctx
 /* 0015e0e0 00000148 */ rxSndSePlayEx(){}  // lib-ctx
 /* 0015e228 000000dc */ rxSndSeStop(){}  // lib-ctx
 /* 0015e308 0000004c */ rxSndSeStopAll(){}  // lib-ctx
-/* 0015e358 00000100 */ rxSndSeGetStatus(){}  // lib-ctx
+/* 0015e358 00000034 */ rxSndSeGetStatus(){}  // lib-ctx
+/* 0015e390 000000c8 */ rxSndSePause(){}  // lib-ctx
 /* 0015e458 00000094 */ rxSndSeSetAttr(){}  // lib-ctx
 /* 0015e4f0 00000150 */ rxSndSeSetVolume(){}  // lib-ctx
 /* 0015e640 000000a4 */ rxSndSeSetPitch(){}  // lib-ctx
 /* 0015e6e8 000000a4 */ rxSndSeSetParam5(){}  // lib-ctx
-/* 0015e790 000001fc */ rxSndSeSetParam(){}  // lib-ctx
+/* 0015e790 000000a0 */ rxSndSeSetParam(){}  // lib-ctx
+/* 0015e830 00000040 */ rxSndSeSetParam6(){}  // lib-ctx
+/* 0015e870 00000040 */ rxSndSeSetParam7(){}  // lib-ctx
+/* 0015e8b0 00000040 */ rxSndSeSetParam8(){}  // lib-ctx
+/* 0015e8f0 00000040 */ rxSndSeSetParam9(){}  // lib-ctx
+/* 0015e930 0000005c */ rxSndSeSetPan(){}  // lib-ctx
 /* 0015e990 00000054 */ rxSndSeSetParamB(){}  // lib-ctx
 /* 0015e9e8 0000009c */ rxSndSeSetParamC(){}  // lib-ctx
 /* 0015ea88 0000005c */ rxSndSeInit(){}  // lib-ctx
@@ -1704,7 +1814,8 @@
 /* 0015ec70 0000000c */ rxSndSeGetMasterVolumeR(){}  // lib-ctx
 /* 0015ec80 00000098 */ rxSndPcmSetMasterVolume(){}  // lib-ctx
 /* 0015ed18 00000058 */ rxSndSetSysMix(){}  // lib-ctx
-/* 0015ed70 000000ac */ rxSndSetSysMute(){}  // lib-ctx
+/* 0015ed70 0000006c */ rxSndSetSysMute(){}  // lib-ctx
+/* 0015ede0 0000003c */ rxSndPcmSetParamB4(){}  // lib-ctx
 /* 0015ee20 000001ec */ rxSndPcmOpen(){}  // lib-ctx
 /* 0015f010 000000f4 */ rxSndPcmClose(){}  // lib-ctx
 /* 0015f108 0000003c */ rxSndPcmCloseAll(){}  // lib-ctx
@@ -1723,7 +1834,9 @@
 /* 0015fb60 0000020c */ rxSndPcmUpdate(){}  // lib-ctx
 /* 0015fd70 0000000c */ rxSndPcmGetMasterVolumeL(){}  // lib-ctx
 /* 0015fd80 0000000c */ rxSndPcmGetMasterVolumeR(){}  // lib-ctx
-/* 0015fd90 000000f8 */ rxSndAdpcmSetMasterVolume(){}  // lib-ctx
+/* 0015fd90 00000098 */ rxSndAdpcmSetMasterVolume(){}  // lib-ctx
+/* 0015fe28 00000030 */ rxSndAdpcmSetDefaultParam6(){}  // lib-ctx
+/* 0015fe58 00000030 */ rxSndAdpcmSetDefaultParam7(){}  // lib-ctx
 /* 0015fe88 00000020 */ rxSndAdpcmOpen(){}  // lib-ctx
 /* 0015fea8 0000001c */ rxSndAdpcmOpenEx(){}  // lib-ctx
 /* 0015fec8 00000314 */ rxSndAdpcmOpenBytes(){}  // lib-ctx
@@ -1742,7 +1855,8 @@
 /* 00161158 0000009c */ rxSndAdpcmSetAttr(){}  // lib-ctx
 /* 001611f8 000001a0 */ rxSndAdpcmSetVolume(){}  // lib-ctx
 /* 00161398 00000134 */ rxSndAdpcmSetChannelVolume(){}  // lib-ctx
-/* 001614d0 00000160 */ rxSndAdpcmSetPitch(){}  // lib-ctx
+/* 001614d0 000000ac */ rxSndAdpcmSetPitch(){}  // lib-ctx
+/* 00161580 000000b0 */ rxSndAdpcmSetChannelParam5(){}  // lib-ctx
 /* 00161630 000000c4 */ rxSndAdpcmSetParam6(){}  // lib-ctx
 /* 001616f8 000000c4 */ rxSndAdpcmSetParam7(){}  // lib-ctx
 /* 001617c0 000000a4 */ rxSndAdpcmGetPosition(){}  // lib-ctx
@@ -1753,7 +1867,8 @@
 /* 00161b70 0000000c */ rxSndAdpcmGetMasterVolumeR(){}  // lib-ctx
 /* 00161b80 0000004c */ rxSndCreateSema(){}  // lib-ctx
 /* 00161bd0 000000f4 */ rxSndBindRpc(){}  // lib-ctx
-/* 00161cc8 0000004c */ rxSndUnbindRpc(){}  // lib-ctx
+/* 00161cc8 0000001c */ rxSndUnbindRpc(){}  // lib-ctx
+/* 00161ce8 0000002c */ rxSndRpcEndFunc(){}  // lib-ctx
 /* 00161d18 000000c8 */ rxSndCallRpc(){}  // lib-ctx
 /* 00161de0 00000038 */ rxSndRpcInit(){}  // lib-ctx
 /* 00161e18 0000001c */ rxSndRpcTerm(){}  // lib-ctx
@@ -1763,7 +1878,8 @@
 /* 00162078 00000018 */ rxSndQueueGetData(){}  // lib-ctx
 /* 00162090 00000044 */ rxSndQueueEnd(){}  // lib-ctx
 /* 001620d8 0000009c */ rxSndQueueFlush(){}  // lib-ctx
-/* 00162178 000000a4 */ rxSndUtInit(){}  // lib-ctx
+/* 00162178 00000074 */ rxSndUtInit(){}  // lib-ctx
+/* 001621f0 0000002c */ rxSndUtExit(){}  // lib-ctx
 /* 00162220 0000002c */ rxSndUtUpdate(){}  // lib-ctx
 /* 00162250 00000014 */ rxSndUtSetDebugFlags(){}  // lib-ctx
 /* 00162268 0000000c */ rxSndUtGetDebugFlags(){}  // lib-ctx
@@ -1772,18 +1888,25 @@
 /* 001624d8 00000058 */ rxSndStrBankClose(){}  // lib-ctx
 /* 00162530 00000094 */ rxSndStrBankAttachBodyFile(){}  // lib-ctx
 /* 001625c8 00000044 */ rxSndStrBankAttachBodyMemory(){}  // lib-ctx
-/* 00162610 000001ac */ rxSndStrBankAttachBodyIop(){}  // lib-ctx
+/* 00162610 00000044 */ rxSndStrBankAttachBodyIop(){}  // lib-ctx
+/* 00162658 00000048 */ rxSndStrBankGetData(){}  // lib-ctx
+/* 001626a0 00000048 */ rxSndStrBankGetBodyType(){}  // lib-ctx
+/* 001626e8 00000048 */ rxSndStrBankGetBodyAddr(){}  // lib-ctx
+/* 00162730 0000008c */ rxSndStrBankGetBodyFile(){}  // lib-ctx
 /* 001627c0 00000014 */ rxSndStrBankGetRequestCount(){}  // lib-ctx
-/* 001627d8 00000044 */ rxSndStrBankGetRequestName(){}  // lib-ctx
+/* 001627d8 00000014 */ rxSndStrBankGetRequestName(){}  // lib-ctx
+/* 001627f0 0000002c */ rxSndStrBankGetRequestFormat(){}  // lib-ctx
 /* 00162820 0000002c */ rxSndStrBankGetRequestRate(){}  // lib-ctx
 /* 00162850 0000002c */ rxSndStrBankGetRequestChannels(){}  // lib-ctx
 /* 00162880 0000002c */ rxSndStrBankGetRequestOffset(){}  // lib-ctx
 /* 001628b0 0000002c */ rxSndStrBankGetRequestSize(){}  // lib-ctx
 /* 001628e0 0000002c */ rxSndStrBankGetRequestLoopOffset(){}  // lib-ctx
-/* 00162910 00000048 */ rxSndStrBankGetMarkCount(){}  // lib-ctx
+/* 00162910 00000014 */ rxSndStrBankGetMarkCount(){}  // lib-ctx
+/* 00162928 00000030 */ rxSndStrBankGetMarkName(){}  // lib-ctx
 /* 00162958 0000002c */ rxSndStrBankGetMarkOffset(){}  // lib-ctx
 /* 00162988 0000002c */ rxSndStrBankGetMarkParam(){}  // lib-ctx
-/* 001629b8 00000048 */ rxSndStrBankGetBranchCount(){}  // lib-ctx
+/* 001629b8 00000014 */ rxSndStrBankGetBranchCount(){}  // lib-ctx
+/* 001629d0 00000030 */ rxSndStrBankGetBranchName(){}  // lib-ctx
 /* 00162a00 000000bc */ rxSndStrBankFindRequest(){}  // lib-ctx
 /* 00162ac0 0000003c */ rxSndStrBankGetSlot(){}  // lib-ctx
 /* 00162b00 00000070 */ rxSndStrBankGetTrackTable(){}  // lib-ctx
@@ -1793,7 +1916,8 @@
 /* 00162c70 0000002c */ rxSndStrBankGetTrackName(){}  // lib-ctx
 /* 00162ca0 000000c0 */ rxSndStrBankFindTrack(){}  // lib-ctx
 /* 00162d60 00000074 */ rxSndStrBankGetTrackVolume(){}  // lib-ctx
-/* 00162dd8 00000044 */ rxSndStrBankInit(){}  // lib-ctx
+/* 00162dd8 00000038 */ rxSndStrBankInit(){}  // lib-ctx
+/* 00162e18 00000004 */ rxSndStrBankExit(){}  // lib-ctx
 /* 00162e20 00000004 */ rxSndStrBankUpdate(){}  // lib-ctx
 /* 00162e28 000001ac */ rxSndStrBankOpenBody(){}  // lib-ctx
 /* 00162fd8 00000094 */ rxSndStrBankGetRequest(){}  // lib-ctx
@@ -1801,7 +1925,8 @@
 /* 00163088 00000014 */ rxSndStrBankGetBranch(){}  // lib-ctx
 /* 001630a0 00000044 */ rxSndStrXwsFindChunk(){}  // lib-ctx
 /* 001630e8 0000002c */ rxSndStrXwsGetChunkData(){}  // lib-ctx
-/* 00163118 000000e4 */ rxSndStrFormGetCount(){}  // lib-ctx
+/* 00163118 00000050 */ rxSndStrFormGetCount(){}  // lib-ctx
+/* 00163168 00000094 */ rxSndStrFormGet(){}  // lib-ctx
 /* 00163200 00000078 */ rxSndStrTextGet(){}  // lib-ctx
 /* 00163278 0000007c */ rxSndStrMarkGetCount(){}  // lib-ctx
 /* 001632f8 000000a0 */ rxSndStrMarkGet(){}  // lib-ctx
@@ -1817,13 +1942,26 @@
 /* 00163878 00000060 */ rxSndStrStopAll(){}  // lib-ctx
 /* 001638d8 00000034 */ rxSndStrSuspend(){}  // lib-ctx
 /* 00163910 00000050 */ rxSndStrGetStatus(){}  // lib-ctx
-/* 00163960 000000bc */ rxSndStrSetAttr(){}  // lib-ctx
-/* 00163a20 000000c0 */ rxSndStrSetVolume(){}  // lib-ctx
-/* 00163ae8 000002e0 */ rxSndStrSetPitch(){}  // lib-ctx
+/* 00163960 00000050 */ rxSndStrSetAttr(){}  // lib-ctx
+/* 001639b8 00000040 */ rxSndStrSetMasterVolume(){}  // lib-ctx
+/* 00163a00 0000000c */ rxSndStrGetMasterVolumeL(){}  // lib-ctx
+/* 00163a10 0000000c */ rxSndStrGetMasterVolumeR(){}  // lib-ctx
+/* 00163a20 00000054 */ rxSndStrSetVolume(){}  // lib-ctx
+/* 00163a78 00000068 */ rxSndStrSetTrackVolume(){}  // lib-ctx
+/* 00163ae8 00000050 */ rxSndStrSetPitch(){}  // lib-ctx
+/* 00163b40 00000050 */ rxSndStrSetFloatParam(){}  // lib-ctx
+/* 00163b98 00000050 */ rxSndStrGetFilled(){}  // lib-ctx
+/* 00163be8 00000050 */ rxSndStrSetUserData(){}  // lib-ctx
+/* 00163c38 00000050 */ rxSndStrGetUserData(){}  // lib-ctx
+/* 00163c88 00000050 */ rxSndStrSetMarkCallback(){}  // lib-ctx
+/* 00163cd8 00000050 */ rxSndStrSetBranchCallback(){}  // lib-ctx
+/* 00163d28 00000050 */ rxSndStrGetBank(){}  // lib-ctx
+/* 00163d78 00000050 */ rxSndStrGetRequest(){}  // lib-ctx
 /* 00163dc8 00000074 */ rxSndStrGetHandle(){}  // lib-ctx
 /* 00163e40 00000068 */ rxSndStrPauseRead(){}  // lib-ctx
 /* 00163ea8 00000074 */ rxSndStrSyncRead(){}  // lib-ctx
-/* 00163f20 00000094 */ rxSndStrGetDataWritten(){}  // lib-ctx
+/* 00163f20 00000050 */ rxSndStrGetDataWritten(){}  // lib-ctx
+/* 00163f70 00000044 */ rxSndStrGetActiveIds(){}  // lib-ctx
 /* 00163fb8 00000080 */ rxSndStrInit(){}  // lib-ctx
 /* 00164040 00000048 */ rxSndStrExit(){}  // lib-ctx
 /* 00164088 0000009c */ rxSndStrUpdate(){}  // lib-ctx
@@ -1831,19 +1969,27 @@
 /* 00164228 0000000c */ rxSndStrFmtGetMasterVolumeL(){}  // lib-ctx
 /* 00164238 0000000c */ rxSndStrFmtGetMasterVolumeR(){}  // lib-ctx
 /* 00164248 000000a0 */ rxSndStrFmtCallMarkCallback(){}  // lib-ctx
-/* 001642e8 000000f4 */ rxSndStrFmtCallBranchCallback(){}  // lib-ctx
+/* 001642e8 000000b0 */ rxSndStrFmtCallBranchCallback(){}  // lib-ctx
+/* 00164398 00000044 */ rxSndStrPcmInit(){}  // lib-ctx
 /* 001643e0 0000004c */ rxSndStrPcmExit(){}  // lib-ctx
-/* 00164430 00000048 */ rxSndStrPcmMarkCallback(){}  // lib-ctx
+/* 00164430 0000002c */ rxSndStrPcmMarkCallback(){}  // lib-ctx
+/* 00164460 00000018 */ rxSndStrPcmBranchCallback(){}  // lib-ctx
 /* 00164478 00000240 */ rxSndStrPcmUpdate(){}  // lib-ctx
 /* 001646b8 00000478 */ rxSndStrPcmOpen(){}  // lib-ctx
-/* 00164b30 000000a4 */ rxSndStrPcmClose(){}  // lib-ctx
-/* 00164bd8 000000a4 */ rxSndStrPcmPauseRead(){}  // lib-ctx
+/* 00164b30 00000088 */ rxSndStrPcmClose(){}  // lib-ctx
+/* 00164bb8 0000001c */ rxSndStrPcmGetHandle(){}  // lib-ctx
+/* 00164bd8 0000002c */ rxSndStrPcmPauseRead(){}  // lib-ctx
+/* 00164c08 0000002c */ rxSndStrPcmSyncRead(){}  // lib-ctx
+/* 00164c38 00000044 */ rxSndStrAdpcmInit(){}  // lib-ctx
 /* 00164c80 0000004c */ rxSndStrAdpcmExit(){}  // lib-ctx
-/* 00164cd0 00000048 */ rxSndStrAdpcmMarkCallback(){}  // lib-ctx
+/* 00164cd0 0000002c */ rxSndStrAdpcmMarkCallback(){}  // lib-ctx
+/* 00164d00 00000018 */ rxSndStrAdpcmBranchCallback(){}  // lib-ctx
 /* 00164d18 000003e0 */ rxSndStrAdpcmUpdate(){}  // lib-ctx
 /* 001650f8 00000500 */ rxSndStrAdpcmOpen(){}  // lib-ctx
-/* 001655f8 0000009c */ rxSndStrAdpcmClose(){}  // lib-ctx
-/* 00165698 0000004c */ rxSndStrAdpcmPauseRead(){}  // lib-ctx
+/* 001655f8 00000088 */ rxSndStrAdpcmClose(){}  // lib-ctx
+/* 00165680 00000014 */ rxSndStrAdpcmGetHandle(){}  // lib-ctx
+/* 00165698 00000024 */ rxSndStrAdpcmPauseRead(){}  // lib-ctx
+/* 001656c0 00000024 */ rxSndStrAdpcmSyncRead(){}  // lib-ctx
 /* 001656e8 00000048 */ rxSndStrStreamInit(){}  // lib-ctx
 /* 00165738 0000004c */ rxSndStrStreamExit(){}  // lib-ctx
 /* 00165788 00000004 */ rxSndStrStreamUpdate(){}  // lib-ctx
@@ -1872,14 +2018,17 @@
 /* 00166418 0000019c */ rxSndStrMemConsume(){}  // lib-ctx
 /* 001665b8 00000094 */ rxSndStrMemGetData(){}  // lib-ctx
 /* 00166650 00000038 */ rxSndStrMemIsEnd(){}  // lib-ctx
-/* 00166688 00000200 */ rxSndStrMemSetMarkers(){}  // lib-ctx
-/* 00166890 000001e0 */ rxSndStrMemSetTags(){}  // lib-ctx
+/* 00166688 000001a0 */ rxSndStrMemSetMarkers(){}  // lib-ctx
+/* 00166828 00000060 */ rxSndStrMemSetMarkerEnable(){}  // lib-ctx
+/* 00166890 00000180 */ rxSndStrMemSetTags(){}  // lib-ctx
+/* 00166a10 00000060 */ rxSndStrMemSetTagEnable(){}  // lib-ctx
 /* 00166a78 0000009c */ rxSndStrMemGetTags(){}  // lib-ctx
 /* 00166b18 00000038 */ rxSndStrMemGetSize(){}  // lib-ctx
 /* 00166b50 00000024 */ rxThCreateSema(){}  // lib-ctx
 /* 00166b78 00000054 */ rxThStartThread(){}  // lib-ctx
 /* 00166bd0 00000028 */ rxThKillThread(){}  // lib-ctx
-/* 00166bf8 00000110 */ rxThWorkerMain(){}  // lib-ctx
+/* 00166bf8 000000bc */ rxThWorkerMain(){}  // lib-ctx
+/* 00166cb8 00000050 */ rxThIdleMain(){}  // lib-ctx
 /* 00166d10 00000094 */ rxThIsDispatchDisabled(){}  // lib-ctx
 /* 00166da8 00000024 */ rxThGetCallCount(){}  // lib-ctx
 /* 00166dd0 00000098 */ rxThPostCall(){}  // lib-ctx
@@ -1898,18 +2047,26 @@
 /* 00167890 0000008c */ rxThDisableDispatch(){}  // lib-ctx
 /* 00167920 00000184 */ rxThEnableDispatch(){}  // lib-ctx
 /* 00167aa8 0000005c */ rxThGetIndex(){}  // lib-ctx
-/* 00167b08 000000e4 */ rxThDelete(){}  // lib-ctx
-/* 00167bf0 0000003c */ rxThSetPriority(){}  // lib-ctx
-/* 00167c30 0000005c */ rxThGetParam(){}  // lib-ctx
+/* 00167b08 000000d4 */ rxThDelete(){}  // lib-ctx
+/* 00167be0 0000000c */ rxThGetCount(){}  // lib-ctx
+/* 00167bf0 00000018 */ rxThSetPriority(){}  // lib-ctx
+/* 00167c10 0000001c */ rxThGetPriority(){}  // lib-ctx
+/* 00167c30 0000001c */ rxThGetParam(){}  // lib-ctx
+/* 00167c50 00000018 */ rxThSetParam(){}  // lib-ctx
+/* 00167c70 0000001c */ rxThGetState(){}  // lib-ctx
 /* 00167c90 00000018 */ rxThSetState(){}  // lib-ctx
 /* 00167cb0 00000174 */ rxThCreate(){}  // lib-ctx
-/* 00167e28 00000104 */ rxThRequest(){}  // lib-ctx
+/* 00167e28 000000f4 */ rxThRequest(){}  // lib-ctx
+/* 00167f20 00000004 */ rxThDummy0(){}  // lib-ctx
+/* 00167f28 00000004 */ rxThDummy1(){}  // lib-ctx
 /* 00167f30 00000034 */ rxThVSyncRequest(){}  // lib-ctx
-/* 00167f68 00000054 */ rxThVSync(){}  // lib-ctx
+/* 00167f68 00000044 */ rxThVSync(){}  // lib-ctx
+/* 00167fb0 0000000c */ rxThGetInterval(){}  // lib-ctx
 /* 00167fc0 00000050 */ rxThSetInterval(){}  // lib-ctx
 /* 00168010 00000064 */ rxThSetPrioIndex(){}  // lib-ctx
 /* 00168078 00000014 */ rxThInitOnce(){}  // lib-ctx
-/* 00168090 0000003c */ rxThExitOnce(){}  // lib-ctx
+/* 00168090 00000014 */ rxThExitOnce(){}  // lib-ctx
+/* 001680a8 00000024 */ rxThGsSyncRequest(){}  // lib-ctx
 /* 001680d0 00000050 */ rxThGsSyncPath(){}  // lib-ctx
 /* 00168120 00000030 */ rxThDmaSyncRequest(){}  // lib-ctx
 /* 00168150 00000070 */ rxThDmaSync(){}  // lib-ctx
@@ -2028,10 +2185,59 @@
 /* 00171970 0000002c */ FUN_00171970(){}
 /* 001719a0 0000006c */ FUN_001719a0(){}
 /* 00171a10 00000014 */ FUN_00171a10(){}
-/* 00171a30 00000288 */ FUN_00171a30(){}
-/* 00171cc0 000000c0 */ FUN_00171cc0(){}
-/* 00171d80 000000b0 */ FUN_00171d80(){}
-/* 00171e30 00000050 */ FUN_00171e30(){}
+/* 00171a30 00000084 */ FUN_00171a30(){}
+/* 00171ac0 00000008 */ FUN_00171ac0(){}
+/* 00171ad0 00000008 */ FUN_00171ad0(){}
+/* 00171ae0 00000008 */ FUN_00171ae0(){}
+/* 00171af0 00000014 */ FUN_00171af0(){}
+/* 00171b10 00000008 */ FUN_00171b10(){}
+/* 00171b20 00000008 */ FUN_00171b20(){}
+/* 00171b30 00000004 */ FUN_00171b30(){}
+/* 00171b40 00000004 */ FUN_00171b40(){}
+/* 00171b50 00000008 */ FUN_00171b50(){}
+/* 00171b60 00000008 */ FUN_00171b60(){}
+/* 00171b70 00000004 */ FUN_00171b70(){}
+/* 00171b80 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171b90 00000004 */ FUN_00171b90(){}
+/* 00171ba0 00000004 */ FUN_00171ba0(){}
+/* 00171bb0 00000004 */ FUN_00171bb0(){}
+/* 00171bc0 00000004 */ FUN_00171bc0(){}
+/* 00171bd0 00000004 */ FUN_00171bd0(){}
+/* 00171be0 00000004 */ FUN_00171be0(){}
+/* 00171bf0 00000004 */ FUN_00171bf0(){}
+/* 00171c00 00000004 */ FUN_00171c00(){}
+/* 00171c10 00000004 */ FUN_00171c10(){}
+/* 00171c20 00000004 */ FUN_00171c20(){}
+/* 00171c30 00000004 */ FUN_00171c30(){}
+/* 00171c40 00000004 */ FUN_00171c40(){}
+/* 00171c50 00000004 */ FUN_00171c50(){}
+/* 00171c60 00000004 */ FUN_00171c60(){}
+/* 00171c70 00000004 */ FUN_00171c70(){}
+/* 00171c80 00000004 */ FUN_00171c80(){}
+/* 00171c90 00000004 */ FUN_00171c90(){}
+/* 00171ca0 00000004 */ FUN_00171ca0(){}
+/* 00171cb0 00000008 */ FUN_00171cb0(){}
+/* 00171cc0 00000020 */ FUN_00171cc0(){}
+/* 00171ce0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171cf0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171d00 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171d10 00000020 */ FUN_00171d10(){}
+/* 00171d30 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171d40 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171d50 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171d60 00000020 */ FUN_00171d60(){}
+/* 00171d80 00000020 */ FUN_00171d80(){}
+/* 00171da0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171db0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171dc0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171dd0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171de0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171df0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171e00 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171e10 00000020 */ FUN_00171e10(){}
+/* 00171e30 00000020 */ FUN_00171e30(){}
+/* 00171e50 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171e60 00000020 */ FUN_00171e60(){}
 /* 00171e80 00000020 */ FUN_00171e80(){}
 /* 00171ea0 00000020 */ FUN_00171ea0(){}
 /* 00171ec0 00000020 */ FUN_00171ec0(){}
@@ -2040,7 +2246,19 @@
 /* 00171f20 00000020 */ FUN_00171f20(){}
 /* 00171f40 00000020 */ FUN_00171f40(){}
 /* 00171f60 00000020 */ FUN_00171f60(){}
-/* 00171f80 000000d8 */ FUN_00171f80(){}
+/* 00171f80 00000020 */ FUN_00171f80(){}
+/* 00171fa0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171fb0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171fc0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171fd0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171fe0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00171ff0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00172000 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00172010 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00172020 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00172030 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00172040 00000004 */ thunk_FUN_001cf1e0(){}
+/* 00172050 00000008 */ FUN_00172050(){}
 /* 00172060 00000020 */ FUN_00172060(){}
 /* 00172080 00000020 */ FUN_00172080(){}
 /* 001720a0 00000020 */ FUN_001720a0(){}
@@ -2056,7 +2274,21 @@
 /* 001721e0 00000020 */ FUN_001721e0(){}
 /* 00172200 00000020 */ FUN_00172200(){}
 /* 00172220 00000020 */ FUN_00172220(){}
-/* 00172240 00000128 */ FUN_00172240(){}
+/* 00172240 00000020 */ FUN_00172240(){}
+/* 00172260 00000008 */ FUN_00172260(){}
+/* 00172270 00000004 */ thunk_FUN_0018b2d0(){}
+/* 00172280 00000004 */ thunk_FUN_0018b290(){}
+/* 00172290 00000014 */ FUN_00172290(){}
+/* 001722b0 00000010 */ FUN_001722b0(){}
+/* 001722d0 00000008 */ FUN_001722d0(){}
+/* 001722e0 00000008 */ FUN_001722e0(){}
+/* 001722f0 00000008 */ FUN_001722f0(){}
+/* 00172300 00000014 */ FUN_00172300(){}
+/* 00172320 00000008 */ FUN_00172320(){}
+/* 00172330 00000008 */ FUN_00172330(){}
+/* 00172340 00000008 */ FUN_00172340(){}
+/* 00172350 00000008 */ FUN_00172350(){}
+/* 00172360 00000008 */ FUN_00172360(){}
 /* 00172370 0000000c */ FUN_00172370(){}
 /* 00172380 0000000c */ FUN_00172380(){}
 /* 00172390 0000000c */ FUN_00172390(){}
@@ -2079,7 +2311,8 @@
 /* 00173b30 000000f8 */ FUN_00173b30(){}
 /* 00173c30 0000007c */ FUN_00173c30(){}
 /* 00173cb0 00000300 */ FUN_00173cb0(){}
-/* 00173fb0 00000208 */ FUN_00173fb0(){}
+/* 00173fb0 000001c8 */ FUN_00173fb0(){}
+/* 00174180 00000038 */ FUN_00174180(){}
 /* 001741c0 000001b4 */ FUN_001741c0(){}
 /* 00174380 00000008 */ FUN_00174380(){}
 /* 00174390 00000414 */ FUN_00174390(){}
@@ -2088,11 +2321,16 @@
 /* 00174a10 00000030 */ FUN_00174a10(){}
 /* 00174a40 00000054 */ FUN_00174a40(){}
 /* 00174aa0 00000054 */ FUN_00174aa0(){}
-/* 00174b00 000008e8 */ FUN_00174b00(){}
-/* 001753f0 000001f4 */ FUN_001753f0(){}
+/* 00174b00 000008c4 */ FUN_00174b00(){}
+/* 001753d0 00000008 */ FUN_001753d0(){}
+/* 001753e0 00000008 */ FUN_001753e0(){}
+/* 001753f0 000001d8 */ FUN_001753f0(){}
+/* 001755d0 00000004 */ FUN_001755d0(){}
+/* 001755e0 00000004 */ FUN_001755e0(){}
 /* 001755f0 000000b8 */ FUN_001755f0(){}
 /* 001756b0 00000044 */ FUN_001756b0(){}
-/* 00175700 000001f8 */ FUN_00175700(){}
+/* 00175700 000001e4 */ FUN_00175700(){}
+/* 001758f0 00000008 */ FUN_001758f0(){}
 /* 00175900 00000300 */ FUN_00175900(){}
 /* 00175c00 00000038 */ FUN_00175c00(){}
 /* 00175c40 000000f8 */ FUN_00175c40(){}
@@ -2107,11 +2345,58 @@
 /* 00176b30 0000008c */ FUN_00176b30(){}
 /* 00176bc0 00000594 */ FUN_00176bc0(){}
 /* 00177160 00000020 */ FUN_00177160(){}
-/* 00177180 00000024 */ FUN_00177180(){}
-/* 001771b0 000000b4 */ FUN_001771b0(){}
+/* 00177180 00000020 */ FUN_00177180(){}
+/* 001771a0 00000004 */ FUN_001771a0(){}
+/* 001771b0 000000b0 */ FUN_001771b0(){}
+/* 00177260 00000004 */ FUN_00177260(){}
 /* 00177270 0000007c */ FUN_00177270(){}
-/* 001772f0 000002c8 */ FUN_001772f0(){}
-/* 001775c0 00000068 */ FUN_001775c0(){}
+/* 001772f0 00000050 */ FUN_001772f0(){}
+/* 00177340 00000008 */ FUN_00177340(){}
+/* 00177350 00000008 */ FUN_00177350(){}
+/* 00177360 00000008 */ FUN_00177360(){}
+/* 00177370 00000008 */ FUN_00177370(){}
+/* 00177380 00000008 */ FUN_00177380(){}
+/* 00177390 00000008 */ FUN_00177390(){}
+/* 001773a0 00000008 */ FUN_001773a0(){}
+/* 001773b0 00000008 */ FUN_001773b0(){}
+/* 001773c0 00000008 */ FUN_001773c0(){}
+/* 001773d0 00000008 */ FUN_001773d0(){}
+/* 001773e0 00000008 */ FUN_001773e0(){}
+/* 001773f0 00000008 */ FUN_001773f0(){}
+/* 00177400 00000008 */ FUN_00177400(){}
+/* 00177410 00000008 */ FUN_00177410(){}
+/* 00177420 00000008 */ FUN_00177420(){}
+/* 00177430 00000008 */ FUN_00177430(){}
+/* 00177440 00000008 */ FUN_00177440(){}
+/* 00177450 00000008 */ FUN_00177450(){}
+/* 00177460 00000008 */ FUN_00177460(){}
+/* 00177470 00000008 */ FUN_00177470(){}
+/* 00177480 00000008 */ FUN_00177480(){}
+/* 00177490 00000008 */ FUN_00177490(){}
+/* 001774a0 00000008 */ FUN_001774a0(){}
+/* 001774b0 00000008 */ FUN_001774b0(){}
+/* 001774c0 00000008 */ FUN_001774c0(){}
+/* 001774d0 00000008 */ FUN_001774d0(){}
+/* 001774e0 00000008 */ FUN_001774e0(){}
+/* 001774f0 00000008 */ FUN_001774f0(){}
+/* 00177500 00000008 */ FUN_00177500(){}
+/* 00177510 00000008 */ FUN_00177510(){}
+/* 00177520 00000008 */ FUN_00177520(){}
+/* 00177530 00000008 */ FUN_00177530(){}
+/* 00177540 00000008 */ FUN_00177540(){}
+/* 00177550 00000008 */ FUN_00177550(){}
+/* 00177560 00000008 */ FUN_00177560(){}
+/* 00177570 00000008 */ FUN_00177570(){}
+/* 00177580 00000008 */ FUN_00177580(){}
+/* 00177590 00000008 */ FUN_00177590(){}
+/* 001775a0 00000008 */ FUN_001775a0(){}
+/* 001775b0 00000008 */ FUN_001775b0(){}
+/* 001775c0 00000020 */ FUN_001775c0(){}
+/* 001775e0 00000004 */ FUN_001775e0(){}
+/* 001775f0 00000004 */ FUN_001775f0(){}
+/* 00177600 00000004 */ FUN_00177600(){}
+/* 00177610 00000004 */ FUN_00177610(){}
+/* 00177620 00000008 */ FUN_00177620(){}
 /* 00177630 00000008 */ FUN_00177630(){}
 /* 00177640 00000008 */ FUN_00177640(){}
 /* 00177650 00000078 */ FUN_00177650(){}
@@ -2124,18 +2409,51 @@
 /* 00177be0 00000114 */ FUN_00177be0(){}
 /* 00177d00 00000014 */ FUN_00177d00(){}
 /* 00177d20 00000034 */ FUN_00177d20(){}
-/* 00177d60 000001d8 */ FUN_00177d60(){}
-/* 00177f40 000000e4 */ FUN_00177f40(){}
-/* 00178030 00000124 */ FUN_00178030(){}
+/* 00177d60 00000144 */ FUN_00177d60(){}
+/* 00177eb0 00000008 */ FUN_00177eb0(){}
+/* 00177ec0 00000008 */ FUN_00177ec0(){}
+/* 00177ed0 00000008 */ FUN_00177ed0(){}
+/* 00177ee0 00000008 */ FUN_00177ee0(){}
+/* 00177ef0 00000008 */ FUN_00177ef0(){}
+/* 00177f00 00000008 */ FUN_00177f00(){}
+/* 00177f10 00000008 */ FUN_00177f10(){}
+/* 00177f20 00000008 */ FUN_00177f20(){}
+/* 00177f30 00000008 */ FUN_00177f30(){}
+/* 00177f40 000000c8 */ FUN_00177f40(){}
+/* 00178010 00000008 */ FUN_00178010(){}
+/* 00178020 00000004 */ FUN_00178020(){}
+/* 00178030 000000e4 */ FUN_00178030(){}
+/* 00178120 00000008 */ FUN_00178120(){}
+/* 00178130 00000008 */ FUN_00178130(){}
+/* 00178140 00000004 */ FUN_00178140(){}
+/* 00178150 00000004 */ FUN_00178150(){}
 /* 00178160 00001324 */ FUN_00178160(){}
 /* 00179490 000001ec */ FUN_00179490(){}
 /* 00179680 00000078 */ FUN_00179680(){}
 /* 00179700 0000013c */ FUN_00179700(){}
-/* 00179840 000000a8 */ FUN_00179840(){}
-/* 001798f0 00000198 */ FUN_001798f0(){}
-/* 00179a90 00000054 */ FUN_00179a90(){}
+/* 00179840 000000a0 */ FUN_00179840(){}
+/* 001798e0 00000008 */ FUN_001798e0(){}
+/* 001798f0 000000d4 */ FUN_001798f0(){}
+/* 001799d0 00000008 */ FUN_001799d0(){}
+/* 001799e0 00000008 */ FUN_001799e0(){}
+/* 001799f0 00000008 */ FUN_001799f0(){}
+/* 00179a00 00000008 */ FUN_00179a00(){}
+/* 00179a10 00000008 */ FUN_00179a10(){}
+/* 00179a20 00000008 */ FUN_00179a20(){}
+/* 00179a30 00000008 */ FUN_00179a30(){}
+/* 00179a40 00000008 */ FUN_00179a40(){}
+/* 00179a50 00000008 */ FUN_00179a50(){}
+/* 00179a60 00000008 */ FUN_00179a60(){}
+/* 00179a70 00000008 */ FUN_00179a70(){}
+/* 00179a80 00000008 */ FUN_00179a80(){}
+/* 00179a90 00000038 */ FUN_00179a90(){}
+/* 00179ad0 00000008 */ FUN_00179ad0(){}
+/* 00179ae0 00000004 */ FUN_00179ae0(){}
 /* 00179af0 000000b4 */ FUN_00179af0(){}
-/* 00179bb0 00000178 */ FUN_00179bb0(){}
+/* 00179bb0 00000148 */ FUN_00179bb0(){}
+/* 00179d00 00000008 */ FUN_00179d00(){}
+/* 00179d10 00000008 */ FUN_00179d10(){}
+/* 00179d20 00000008 */ FUN_00179d20(){}
 /* 00179d30 00000754 */ FUN_00179d30(){}
 /* 0017a490 00000374 */ FUN_0017a490(){}
 /* 0017a810 00000044 */ FUN_0017a810(){}
@@ -2168,8 +2486,76 @@
 /* 0017e320 00000090 */ FUN_0017e320(){}
 /* 0017e3b0 0000002c */ FUN_0017e3b0(){}
 /* 0017e3e0 00000014 */ FUN_0017e3e0(){}
-/* 0017e400 00000458 */ FUN_0017e400(){}
-/* 0017e860 000000e4 */ FUN_0017e860(){}
+/* 0017e400 0000006c */ FUN_0017e400(){}
+/* 0017e470 00000008 */ FUN_0017e470(){}
+/* 0017e480 00000008 */ FUN_0017e480(){}
+/* 0017e490 00000008 */ FUN_0017e490(){}
+/* 0017e4a0 00000008 */ FUN_0017e4a0(){}
+/* 0017e4b0 00000008 */ FUN_0017e4b0(){}
+/* 0017e4c0 00000008 */ FUN_0017e4c0(){}
+/* 0017e4d0 00000008 */ FUN_0017e4d0(){}
+/* 0017e4e0 00000008 */ FUN_0017e4e0(){}
+/* 0017e4f0 00000008 */ FUN_0017e4f0(){}
+/* 0017e500 00000008 */ FUN_0017e500(){}
+/* 0017e510 00000008 */ FUN_0017e510(){}
+/* 0017e520 00000008 */ FUN_0017e520(){}
+/* 0017e530 00000008 */ FUN_0017e530(){}
+/* 0017e540 00000008 */ FUN_0017e540(){}
+/* 0017e550 00000008 */ FUN_0017e550(){}
+/* 0017e560 00000008 */ FUN_0017e560(){}
+/* 0017e570 00000008 */ FUN_0017e570(){}
+/* 0017e580 00000008 */ FUN_0017e580(){}
+/* 0017e590 00000008 */ FUN_0017e590(){}
+/* 0017e5a0 00000008 */ FUN_0017e5a0(){}
+/* 0017e5b0 00000008 */ FUN_0017e5b0(){}
+/* 0017e5c0 00000008 */ FUN_0017e5c0(){}
+/* 0017e5d0 00000008 */ FUN_0017e5d0(){}
+/* 0017e5e0 00000008 */ FUN_0017e5e0(){}
+/* 0017e5f0 00000008 */ FUN_0017e5f0(){}
+/* 0017e600 00000008 */ FUN_0017e600(){}
+/* 0017e610 00000008 */ FUN_0017e610(){}
+/* 0017e620 00000008 */ FUN_0017e620(){}
+/* 0017e630 00000008 */ FUN_0017e630(){}
+/* 0017e640 00000008 */ FUN_0017e640(){}
+/* 0017e650 00000008 */ FUN_0017e650(){}
+/* 0017e660 00000008 */ FUN_0017e660(){}
+/* 0017e670 00000008 */ FUN_0017e670(){}
+/* 0017e680 00000008 */ FUN_0017e680(){}
+/* 0017e690 00000008 */ FUN_0017e690(){}
+/* 0017e6a0 00000008 */ FUN_0017e6a0(){}
+/* 0017e6b0 00000008 */ FUN_0017e6b0(){}
+/* 0017e6c0 00000008 */ FUN_0017e6c0(){}
+/* 0017e6d0 00000008 */ FUN_0017e6d0(){}
+/* 0017e6e0 00000008 */ FUN_0017e6e0(){}
+/* 0017e6f0 00000008 */ FUN_0017e6f0(){}
+/* 0017e700 00000008 */ FUN_0017e700(){}
+/* 0017e710 00000008 */ FUN_0017e710(){}
+/* 0017e720 00000008 */ FUN_0017e720(){}
+/* 0017e730 00000008 */ FUN_0017e730(){}
+/* 0017e740 00000008 */ FUN_0017e740(){}
+/* 0017e750 00000008 */ FUN_0017e750(){}
+/* 0017e760 00000008 */ FUN_0017e760(){}
+/* 0017e770 00000008 */ FUN_0017e770(){}
+/* 0017e780 00000008 */ FUN_0017e780(){}
+/* 0017e790 00000008 */ FUN_0017e790(){}
+/* 0017e7a0 00000008 */ FUN_0017e7a0(){}
+/* 0017e7b0 00000008 */ FUN_0017e7b0(){}
+/* 0017e7c0 00000008 */ FUN_0017e7c0(){}
+/* 0017e7d0 00000008 */ FUN_0017e7d0(){}
+/* 0017e7e0 00000008 */ FUN_0017e7e0(){}
+/* 0017e7f0 00000008 */ FUN_0017e7f0(){}
+/* 0017e800 00000008 */ FUN_0017e800(){}
+/* 0017e810 00000008 */ FUN_0017e810(){}
+/* 0017e820 00000008 */ FUN_0017e820(){}
+/* 0017e830 00000008 */ FUN_0017e830(){}
+/* 0017e840 00000008 */ FUN_0017e840(){}
+/* 0017e850 00000008 */ FUN_0017e850(){}
+/* 0017e860 000000a0 */ FUN_0017e860(){}
+/* 0017e900 00000008 */ FUN_0017e900(){}
+/* 0017e910 00000004 */ FUN_0017e910(){}
+/* 0017e920 00000004 */ FUN_0017e920(){}
+/* 0017e930 00000004 */ FUN_0017e930(){}
+/* 0017e940 00000004 */ FUN_0017e940(){}
 /* 0017e950 00000044 */ FUN_0017e950(){}
 /* 0017e9a0 000000b0 */ FUN_0017e9a0(){}
 /* 0017ea50 0000003c */ FUN_0017ea50(){}
@@ -2182,19 +2568,45 @@
 /* 0017ed30 000000fc */ FUN_0017ed30(){}
 /* 0017ee30 0000007c */ FUN_0017ee30(){}
 /* 0017eeb0 00000054 */ FUN_0017eeb0(){}
-/* 0017ef10 00000088 */ FUN_0017ef10(){}
-/* 0017efa0 000001a8 */ FUN_0017efa0(){}
+/* 0017ef10 00000074 */ FUN_0017ef10(){}
+/* 0017ef90 00000008 */ FUN_0017ef90(){}
+/* 0017efa0 000000a0 */ FUN_0017efa0(){}
+/* 0017f040 00000008 */ FUN_0017f040(){}
+/* 0017f050 00000004 */ FUN_0017f050(){}
+/* 0017f060 00000004 */ FUN_0017f060(){}
+/* 0017f070 00000004 */ FUN_0017f070(){}
+/* 0017f080 00000004 */ FUN_0017f080(){}
+/* 0017f090 00000008 */ FUN_0017f090(){}
+/* 0017f0a0 00000008 */ FUN_0017f0a0(){}
+/* 0017f0b0 00000008 */ FUN_0017f0b0(){}
+/* 0017f0c0 00000008 */ FUN_0017f0c0(){}
+/* 0017f0d0 00000008 */ FUN_0017f0d0(){}
+/* 0017f0e0 00000008 */ FUN_0017f0e0(){}
+/* 0017f0f0 00000008 */ FUN_0017f0f0(){}
+/* 0017f100 00000008 */ FUN_0017f100(){}
+/* 0017f110 00000008 */ FUN_0017f110(){}
+/* 0017f120 00000008 */ FUN_0017f120(){}
+/* 0017f130 00000008 */ FUN_0017f130(){}
+/* 0017f140 00000008 */ FUN_0017f140(){}
 /* 0017f150 00000008 */ FUN_0017f150(){}
-/* 0017f160 00000658 */ FUN_0017f160(){}
+/* 0017f160 00000648 */ FUN_0017f160(){}
+/* 0017f7b0 00000008 */ FUN_0017f7b0(){}
 /* 0017f7c0 000000d0 */ FUN_0017f7c0(){}
 /* 0017f890 000000dc */ FUN_0017f890(){}
 /* 0017f970 00000100 */ FUN_0017f970(){}
 /* 0017fa70 00000120 */ FUN_0017fa70(){}
 /* 0017fb90 000000fc */ FUN_0017fb90(){}
-/* 0017fc90 000000a8 */ FUN_0017fc90(){}
+/* 0017fc90 00000048 */ FUN_0017fc90(){}
+/* 0017fce0 00000008 */ FUN_0017fce0(){}
+/* 0017fcf0 00000004 */ FUN_0017fcf0(){}
+/* 0017fd00 00000004 */ FUN_0017fd00(){}
+/* 0017fd10 00000004 */ FUN_0017fd10(){}
+/* 0017fd20 00000008 */ FUN_0017fd20(){}
+/* 0017fd30 00000008 */ FUN_0017fd30(){}
 /* 0017fd40 000000b0 */ FUN_0017fd40(){}
 /* 0017fdf0 000000b0 */ FUN_0017fdf0(){}
-/* 0017fea0 00000188 */ FUN_0017fea0(){}
+/* 0017fea0 00000178 */ FUN_0017fea0(){}
+/* 00180020 00000008 */ FUN_00180020(){}
 /* 00180030 00000140 */ FUN_00180030(){}
 /* 00180170 0000004c */ FUN_00180170(){}
 /* 001801c0 000000a0 */ FUN_001801c0(){}
@@ -2208,9 +2620,13 @@
 /* 001808b0 0000003c */ FUN_001808b0(){}
 /* 001808f0 0000034c */ FUN_001808f0(){}
 /* 00180c40 000000f0 */ FUN_00180c40(){}
-/* 00180d30 00000104 */ FUN_00180d30(){}
+/* 00180d30 000000e0 */ FUN_00180d30(){}
+/* 00180e10 00000008 */ FUN_00180e10(){}
+/* 00180e20 00000008 */ FUN_00180e20(){}
+/* 00180e30 00000004 */ FUN_00180e30(){}
 /* 00180e40 00000024 */ FUN_00180e40(){}
-/* 00180e70 000000e0 */ FUN_00180e70(){}
+/* 00180e70 000000c4 */ FUN_00180e70(){}
+/* 00180f40 00000010 */ FUN_00180f40(){}
 /* 00180f50 00000038 */ FUN_00180f50(){}
 /* 00180f90 00000010 */ FUN_00180f90(){}
 /* 00180fa0 00000034 */ FUN_00180fa0(){}
@@ -2240,24 +2656,38 @@
 /* 00182b80 00000014 */ FUN_00182b80(){}
 /* 00182ba0 00000014 */ FUN_00182ba0(){}
 /* 00182bc0 000002f0 */ FUN_00182bc0(){}
-/* 00182eb0 00000024 */ FUN_00182eb0(){}
+/* 00182eb0 0000000c */ FUN_00182eb0(){}
+/* 00182ec0 00000014 */ FUN_00182ec0(){}
 /* 00182ee0 00000058 */ FUN_00182ee0(){}
 /* 00182f40 00000840 */ FUN_00182f40(){}
 /* 00183780 00000004 */ thunk_FUN_001838d0(){}
 /* 00183790 00000138 */ FUN_00183790(){}
 /* 001838d0 00000168 */ FUN_001838d0(){}
 /* 00183a40 0000004c */ FUN_00183a40(){}
-/* 00183a90 000000ec */ FUN_00183a90(){}
+/* 00183a90 0000005c */ FUN_00183a90(){}
+/* 00183af0 0000008c */ FUN_00183af0(){}
 /* 00183b80 00000068 */ FUN_00183b80(){}
 /* 00183bf0 000002b0 */ FUN_00183bf0(){}
 /* 00183ea0 00000018 */ FUN_00183ea0(){}
 /* 00183ec0 00000078 */ FUN_00183ec0(){}
-/* 00183f40 00000098 */ FUN_00183f40(){}
-/* 00183fe0 00000128 */ FUN_00183fe0(){}
-/* 00184110 000000e8 */ FUN_00184110(){}
+/* 00183f40 00000084 */ FUN_00183f40(){}
+/* 00183fd0 00000008 */ FUN_00183fd0(){}
+/* 00183fe0 000000c0 */ FUN_00183fe0(){}
+/* 001840a0 00000008 */ FUN_001840a0(){}
+/* 001840b0 00000008 */ FUN_001840b0(){}
+/* 001840c0 00000004 */ FUN_001840c0(){}
+/* 001840d0 00000004 */ FUN_001840d0(){}
+/* 001840e0 00000008 */ FUN_001840e0(){}
+/* 001840f0 00000008 */ FUN_001840f0(){}
+/* 00184100 00000008 */ FUN_00184100(){}
+/* 00184110 000000c0 */ FUN_00184110(){}
+/* 001841d0 00000008 */ FUN_001841d0(){}
+/* 001841e0 00000008 */ FUN_001841e0(){}
+/* 001841f0 00000008 */ FUN_001841f0(){}
 /* 00184200 00000010 */ FUN_00184200(){}
 /* 00184210 00000014 */ FUN_00184210(){}
-/* 00184230 00000028 */ FUN_00184230(){}
+/* 00184230 00000018 */ FUN_00184230(){}
+/* 00184250 00000008 */ FUN_00184250(){}
 /* 00184260 00000054 */ FUN_00184260(){}
 /* 001842c0 000000a4 */ FUN_001842c0(){}
 /* 00184370 0000004c */ FUN_00184370(){}
@@ -2267,10 +2697,68 @@
 /* 00184530 0000002c */ FUN_00184530(){}
 /* 00184560 00000014 */ FUN_00184560(){}
 /* 00184580 0000006c */ FUN_00184580(){}
-/* 001845f0 00000458 */ FUN_001845f0(){}
+/* 001845f0 0000001c */ FUN_001845f0(){}
+/* 00184610 00000008 */ FUN_00184610(){}
+/* 00184620 00000008 */ FUN_00184620(){}
+/* 00184630 00000008 */ FUN_00184630(){}
+/* 00184640 00000008 */ FUN_00184640(){}
+/* 00184650 00000008 */ FUN_00184650(){}
+/* 00184660 00000008 */ FUN_00184660(){}
+/* 00184670 00000008 */ FUN_00184670(){}
+/* 00184680 00000008 */ FUN_00184680(){}
+/* 00184690 00000008 */ FUN_00184690(){}
+/* 001846a0 00000008 */ FUN_001846a0(){}
+/* 001846b0 00000008 */ FUN_001846b0(){}
+/* 001846c0 00000008 */ FUN_001846c0(){}
+/* 001846d0 00000008 */ FUN_001846d0(){}
+/* 001846e0 00000008 */ FUN_001846e0(){}
+/* 001846f0 00000008 */ FUN_001846f0(){}
+/* 00184700 00000008 */ FUN_00184700(){}
+/* 00184710 00000008 */ FUN_00184710(){}
+/* 00184720 00000008 */ FUN_00184720(){}
+/* 00184730 00000008 */ FUN_00184730(){}
+/* 00184740 00000008 */ FUN_00184740(){}
+/* 00184750 00000008 */ FUN_00184750(){}
+/* 00184760 00000008 */ FUN_00184760(){}
+/* 00184770 00000008 */ FUN_00184770(){}
+/* 00184780 00000008 */ FUN_00184780(){}
+/* 00184790 00000008 */ FUN_00184790(){}
+/* 001847a0 00000008 */ FUN_001847a0(){}
+/* 001847b0 00000008 */ FUN_001847b0(){}
+/* 001847c0 00000008 */ FUN_001847c0(){}
+/* 001847d0 00000008 */ FUN_001847d0(){}
+/* 001847e0 00000008 */ FUN_001847e0(){}
+/* 001847f0 00000008 */ FUN_001847f0(){}
+/* 00184800 00000008 */ FUN_00184800(){}
+/* 00184810 00000008 */ FUN_00184810(){}
+/* 00184820 00000008 */ FUN_00184820(){}
+/* 00184830 00000008 */ FUN_00184830(){}
+/* 00184840 00000008 */ FUN_00184840(){}
+/* 00184850 00000008 */ FUN_00184850(){}
+/* 00184860 00000084 */ FUN_00184860(){}
+/* 001848f0 00000008 */ FUN_001848f0(){}
+/* 00184900 00000004 */ FUN_00184900(){}
+/* 00184910 00000004 */ FUN_00184910(){}
+/* 00184920 0000005c */ FUN_00184920(){}
+/* 00184980 00000010 */ FUN_00184980(){}
+/* 00184990 0000000c */ FUN_00184990(){}
+/* 001849a0 0000000c */ FUN_001849a0(){}
+/* 001849b0 0000000c */ FUN_001849b0(){}
+/* 001849c0 0000000c */ FUN_001849c0(){}
+/* 001849d0 00000008 */ FUN_001849d0(){}
+/* 001849e0 0000000c */ FUN_001849e0(){}
+/* 001849f0 00000008 */ FUN_001849f0(){}
+/* 00184a00 0000000c */ FUN_00184a00(){}
+/* 00184a10 0000000c */ FUN_00184a10(){}
+/* 00184a20 0000000c */ FUN_00184a20(){}
+/* 00184a30 0000000c */ FUN_00184a30(){}
+/* 00184a40 00000008 */ FUN_00184a40(){}
 /* 00184a50 00000048 */ FUN_00184a50(){}
-/* 00184aa0 0000009c */ FUN_00184aa0(){}
-/* 00184b40 00000088 */ FUN_00184b40(){}
+/* 00184aa0 00000090 */ FUN_00184aa0(){}
+/* 00184b30 0000000c */ FUN_00184b30(){}
+/* 00184b40 0000006c */ FUN_00184b40(){}
+/* 00184bb0 0000000c */ FUN_00184bb0(){}
+/* 00184bc0 00000008 */ FUN_00184bc0(){}
 /* 00184bd0 0000017c */ FUN_00184bd0(){}
 /* 00184d50 000001ac */ FUN_00184d50(){}
 /* 00184f00 00000110 */ FUN_00184f00(){}
@@ -2281,7 +2769,9 @@
 /* 00185430 000000d8 */ FUN_00185430(){}
 /* 00185510 00000194 */ FUN_00185510(){}
 /* 001856b0 00000058 */ FUN_001856b0(){}
-/* 00185710 000000c4 */ FUN_00185710(){}
+/* 00185710 000000b0 */ FUN_00185710(){}
+/* 001857c0 00000008 */ FUN_001857c0(){}
+/* 001857d0 00000004 */ FUN_001857d0(){}
 /* 001857e0 0000004c */ FUN_001857e0(){}
 /* 00185830 00000220 */ FUN_00185830(){}
 /* 00185a50 00000010 */ FUN_00185a50(){}
@@ -2290,7 +2780,8 @@
 /* 00185af0 000000b4 */ FUN_00185af0(){}
 /* 00185bb0 00000090 */ FUN_00185bb0(){}
 /* 00185c40 00000018 */ FUN_00185c40(){}
-/* 00185c60 00000348 */ FUN_00185c60(){}
+/* 00185c60 00000340 */ FUN_00185c60(){}
+/* 00185fa0 00000008 */ FUN_00185fa0(){}
 /* 00185fb0 0000000c */ FUN_00185fb0(){}
 /* 00185fc0 00000008 */ FUN_00185fc0(){}
 /* 00185fd0 00000054 */ FUN_00185fd0(){}
@@ -2302,13 +2793,55 @@
 /* 001865c0 00000128 */ FUN_001865c0(){}
 /* 001866f0 000001e0 */ FUN_001866f0(){}
 /* 001868d0 0000004c */ FUN_001868d0(){}
-/* 00186920 00000118 */ FUN_00186920(){}
-/* 00186a40 000000c4 */ FUN_00186a40(){}
+/* 00186920 000000e0 */ FUN_00186920(){}
+/* 00186a00 00000008 */ FUN_00186a00(){}
+/* 00186a10 00000010 */ FUN_00186a10(){}
+/* 00186a20 00000008 */ FUN_00186a20(){}
+/* 00186a30 00000008 */ FUN_00186a30(){}
+/* 00186a40 00000084 */ FUN_00186a40(){}
+/* 00186ad0 00000008 */ FUN_00186ad0(){}
+/* 00186ae0 00000004 */ FUN_00186ae0(){}
+/* 00186af0 00000004 */ FUN_00186af0(){}
+/* 00186b00 00000004 */ FUN_00186b00(){}
 /* 00186b10 00000010 */ FUN_00186b10(){}
 /* 00186b20 00000054 */ FUN_00186b20(){}
 /* 00186b80 00000054 */ FUN_00186b80(){}
 /* 00186be0 00000070 */ FUN_00186be0(){}
-/* 00186c50 00000288 */ FUN_00186c50(){}
+/* 00186c50 00000070 */ FUN_00186c50(){}
+/* 00186cc0 00000008 */ FUN_00186cc0(){}
+/* 00186cd0 00000008 */ FUN_00186cd0(){}
+/* 00186ce0 00000008 */ FUN_00186ce0(){}
+/* 00186cf0 00000008 */ FUN_00186cf0(){}
+/* 00186d00 00000008 */ FUN_00186d00(){}
+/* 00186d10 00000008 */ FUN_00186d10(){}
+/* 00186d20 00000008 */ FUN_00186d20(){}
+/* 00186d30 00000008 */ FUN_00186d30(){}
+/* 00186d40 00000008 */ FUN_00186d40(){}
+/* 00186d50 00000008 */ FUN_00186d50(){}
+/* 00186d60 00000008 */ FUN_00186d60(){}
+/* 00186d70 00000008 */ FUN_00186d70(){}
+/* 00186d80 00000008 */ FUN_00186d80(){}
+/* 00186d90 00000008 */ FUN_00186d90(){}
+/* 00186da0 00000008 */ FUN_00186da0(){}
+/* 00186db0 00000008 */ FUN_00186db0(){}
+/* 00186dc0 00000008 */ FUN_00186dc0(){}
+/* 00186dd0 00000008 */ FUN_00186dd0(){}
+/* 00186de0 00000008 */ FUN_00186de0(){}
+/* 00186df0 00000008 */ FUN_00186df0(){}
+/* 00186e00 00000008 */ FUN_00186e00(){}
+/* 00186e10 00000008 */ FUN_00186e10(){}
+/* 00186e20 00000008 */ FUN_00186e20(){}
+/* 00186e30 00000008 */ FUN_00186e30(){}
+/* 00186e40 00000008 */ FUN_00186e40(){}
+/* 00186e50 00000008 */ FUN_00186e50(){}
+/* 00186e60 00000008 */ FUN_00186e60(){}
+/* 00186e70 00000008 */ FUN_00186e70(){}
+/* 00186e80 00000008 */ FUN_00186e80(){}
+/* 00186e90 00000008 */ FUN_00186e90(){}
+/* 00186ea0 00000008 */ FUN_00186ea0(){}
+/* 00186eb0 00000008 */ FUN_00186eb0(){}
+/* 00186ec0 00000008 */ FUN_00186ec0(){}
+/* 00186ed0 00000008 */ FUN_00186ed0(){}
 /* 00186ee0 00000094 */ FUN_00186ee0(){}
 /* 00186f80 00000054 */ FUN_00186f80(){}
 /* 00186fe0 0000007c */ FUN_00186fe0(){}
@@ -2326,7 +2859,8 @@
 /* 00187a30 00000054 */ FUN_00187a30(){}
 /* 00187a90 000000b0 */ FUN_00187a90(){}
 /* 00187b40 00000028 */ FUN_00187b40(){}
-/* 00187b70 00000198 */ FUN_00187b70(){}
+/* 00187b70 00000190 */ FUN_00187b70(){}
+/* 00187d00 00000008 */ FUN_00187d00(){}
 /* 00187d10 00000430 */ FUN_00187d10(){}
 /* 00188140 00000548 */ FUN_00188140(){}
 /* 00188690 000001fc */ FUN_00188690(){}
@@ -2351,7 +2885,11 @@
 /* 00189ad0 00000204 */ FUN_00189ad0(){}
 /* 00189ce0 00000258 */ FUN_00189ce0(){}
 /* 00189f40 0000066c */ FUN_00189f40(){}
-/* 0018a5b0 00000958 */ FUN_0018a5b0(){}
+/* 0018a5b0 000008b4 */ FUN_0018a5b0(){}
+/* 0018ae70 00000004 */ FUN_0018ae70(){}
+/* 0018ae80 00000014 */ FUN_0018ae80(){}
+/* 0018aea0 00000060 */ FUN_0018aea0(){}
+/* 0018af00 00000008 */ FUN_0018af00(){}
 /* 0018af10 00000058 */ FUN_0018af10(){}
 /* 0018af70 00000050 */ FUN_0018af70(){}
 /* 0018afc0 00000110 */ FUN_0018afc0(){}
@@ -2361,7 +2899,8 @@
 /* 0018b180 0000000c */ FUN_0018b180(){}
 /* 0018b190 00000078 */ FUN_0018b190(){}
 /* 0018b210 00000078 */ FUN_0018b210(){}
-/* 0018b290 00000084 */ FUN_0018b290(){}
+/* 0018b290 00000030 */ FUN_0018b290(){}
+/* 0018b2d0 00000044 */ FUN_0018b2d0(){}
 /* 0018b320 0000000c */ FUN_0018b320(){}
 /* 0018b330 00000048 */ FUN_0018b330(){}
 /* 0018b380 0000014c */ FUN_0018b380(){}
@@ -2382,7 +2921,15 @@
 /* 0018bf40 00000018 */ FUN_0018bf40(){}
 /* 0018bf60 00000010 */ FUN_0018bf60(){}
 /* 0018bf70 00000054 */ FUN_0018bf70(){}
-/* 0018bfd0 000000f0 */ FUN_0018bfd0(){}
+/* 0018bfd0 00000070 */ FUN_0018bfd0(){}
+/* 0018c040 00000008 */ FUN_0018c040(){}
+/* 0018c050 00000008 */ FUN_0018c050(){}
+/* 0018c060 00000004 */ FUN_0018c060(){}
+/* 0018c070 00000004 */ FUN_0018c070(){}
+/* 0018c080 00000004 */ FUN_0018c080(){}
+/* 0018c090 00000004 */ FUN_0018c090(){}
+/* 0018c0a0 0000000c */ FUN_0018c0a0(){}
+/* 0018c0b0 00000010 */ FUN_0018c0b0(){}
 /* 0018c0c0 000000b0 */ FUN_0018c0c0(){}
 /* 0018c170 000000b0 */ FUN_0018c170(){}
 /* 0018c220 000000b0 */ FUN_0018c220(){}
@@ -2398,7 +2945,14 @@
 /* 00190220 000001a0 */ FUN_00190220(){}
 /* 001903c0 00000084 */ FUN_001903c0(){}
 /* 00190450 000000a4 */ FUN_00190450(){}
-/* 00190500 00000148 */ FUN_00190500(){}
+/* 00190500 000000d4 */ FUN_00190500(){}
+/* 001905e0 00000008 */ FUN_001905e0(){}
+/* 001905f0 00000008 */ FUN_001905f0(){}
+/* 00190600 00000008 */ FUN_00190600(){}
+/* 00190610 00000008 */ FUN_00190610(){}
+/* 00190620 00000008 */ FUN_00190620(){}
+/* 00190630 00000008 */ FUN_00190630(){}
+/* 00190640 00000008 */ FUN_00190640(){}
 /* 00190650 00000100 */ FUN_00190650(){}
 /* 00190750 000000c0 */ FUN_00190750(){}
 /* 00190810 00000070 */ FUN_00190810(){}
@@ -2600,11 +3154,25 @@
 /* 0019c960 000001ec */ FUN_0019c960(){}
 /* 0019cb50 0000012c */ FUN_0019cb50(){}
 /* 0019cc80 0000013c */ FUN_0019cc80(){}
-/* 0019cdc0 000001f4 */ FUN_0019cdc0(){}
+/* 0019cdc0 00000180 */ FUN_0019cdc0(){}
+/* 0019cf40 0000000c */ FUN_0019cf40(){}
+/* 0019cf50 00000008 */ FUN_0019cf50(){}
+/* 0019cf60 00000008 */ FUN_0019cf60(){}
+/* 0019cf70 00000008 */ FUN_0019cf70(){}
+/* 0019cf80 00000004 */ FUN_0019cf80(){}
+/* 0019cf90 00000004 */ FUN_0019cf90(){}
+/* 0019cfa0 00000004 */ FUN_0019cfa0(){}
+/* 0019cfb0 00000004 */ FUN_0019cfb0(){}
 /* 0019cfc0 00000020 */ FUN_0019cfc0(){}
 /* 0019cfe0 00000024 */ FUN_0019cfe0(){}
-/* 0019d010 00000064 */ FUN_0019d010(){}
-/* 0019d080 00000034 */ FUN_0019d080(){}
+/* 0019d010 00000024 */ FUN_0019d010(){}
+/* 0019d040 00000004 */ thunk_FUN_001cf1e0(){}
+/* 0019d050 00000004 */ thunk_FUN_001cf1e0(){}
+/* 0019d060 00000004 */ thunk_FUN_001cf1e0(){}
+/* 0019d070 00000004 */ FUN_0019d070(){}
+/* 0019d080 00000020 */ FUN_0019d080(){}
+/* 0019d0a0 00000004 */ thunk_FUN_001cf1e0(){}
+/* 0019d0b0 00000004 */ thunk_FUN_001cf1e0(){}
 /* 0019d0c0 000003f8 */ FUN_0019d0c0(){}
 /* 0019d4c0 00000020 */ FUN_0019d4c0(){}
 /* 0019d4e0 000004dc */ FUN_0019d4e0(){}
@@ -2641,12 +3209,19 @@
 /* 001a4270 000000fc */ FUN_001a4270(){}
 /* 001a4370 00000104 */ FUN_001a4370(){}
 /* 001a4480 000000c8 */ FUN_001a4480(){}
-/* 001a4550 00000088 */ FUN_001a4550(){}
+/* 001a4550 00000078 */ FUN_001a4550(){}
+/* 001a45d0 00000008 */ FUN_001a45d0(){}
 /* 001a45e0 00000070 */ FUN_001a45e0(){}
 /* 001a4650 00000138 */ FUN_001a4650(){}
 /* 001a4790 00000070 */ FUN_001a4790(){}
-/* 001a4800 000000c4 */ FUN_001a4800(){}
-/* 001a48d0 00000088 */ FUN_001a48d0(){}
+/* 001a4800 00000078 */ FUN_001a4800(){}
+/* 001a4880 00000008 */ FUN_001a4880(){}
+/* 001a4890 00000004 */ FUN_001a4890(){}
+/* 001a48a0 00000004 */ FUN_001a48a0(){}
+/* 001a48b0 00000004 */ FUN_001a48b0(){}
+/* 001a48c0 00000004 */ FUN_001a48c0(){}
+/* 001a48d0 00000078 */ FUN_001a48d0(){}
+/* 001a4950 00000008 */ FUN_001a4950(){}
 /* 001a4960 00000018 */ FUN_001a4960(){}
 /* 001a4980 00000084 */ FUN_001a4980(){}
 /* 001a4a10 000000b0 */ FUN_001a4a10(){}
@@ -2705,7 +3280,23 @@
 /* 001a6730 00000014 */ FUN_001a6730(){}
 /* 001a6750 00000014 */ FUN_001a6750(){}
 /* 001a6770 00000014 */ FUN_001a6770(){}
-/* 001a6790 0000018c */ FUN_001a6790(){}
+/* 001a6790 0000002c */ FUN_001a6790(){}
+/* 001a67c0 00000008 */ FUN_001a67c0(){}
+/* 001a67d0 00000008 */ FUN_001a67d0(){}
+/* 001a67e0 00000008 */ FUN_001a67e0(){}
+/* 001a67f0 00000008 */ FUN_001a67f0(){}
+/* 001a6800 00000008 */ FUN_001a6800(){}
+/* 001a6810 00000008 */ FUN_001a6810(){}
+/* 001a6820 00000008 */ FUN_001a6820(){}
+/* 001a6830 00000008 */ FUN_001a6830(){}
+/* 001a6840 00000008 */ FUN_001a6840(){}
+/* 001a6850 00000008 */ FUN_001a6850(){}
+/* 001a6860 00000008 */ FUN_001a6860(){}
+/* 001a6870 00000008 */ FUN_001a6870(){}
+/* 001a6880 00000008 */ FUN_001a6880(){}
+/* 001a6890 00000008 */ FUN_001a6890(){}
+/* 001a68a0 00000008 */ FUN_001a68a0(){}
+/* 001a68b0 0000006c */ FUN_001a68b0(){}
 /* 001a6920 00000034 */ FUN_001a6920(){}
 /* 001a6960 00000034 */ FUN_001a6960(){}
 /* 001a69a0 00000028 */ FUN_001a69a0(){}
@@ -2770,7 +3361,8 @@
 /* 001a7910 00000040 */ FUN_001a7910(){}
 /* 001a7950 00000034 */ FUN_001a7950(){}
 /* 001a7990 00000034 */ FUN_001a7990(){}
-/* 001a79d0 00000048 */ FUN_001a79d0(){}
+/* 001a79d0 00000040 */ FUN_001a79d0(){}
+/* 001a7a10 00000008 */ FUN_001a7a10(){}
 /* 001a7a20 0000005c */ FUN_001a7a20(){}
 /* 001a7a80 000000b8 */ FUN_001a7a80(){}
 /* 001a7b40 000000e0 */ FUN_001a7b40(){}
@@ -3362,7 +3954,8 @@
 /* 001ced10 00000170 */ FUN_001ced10(){}
 /* 001cee90 00000120 */ FUN_001cee90(){}
 /* 001cefc0 000000d8 */ FUN_001cefc0(){}
-/* 001cf0a0 00000088 */ FUN_001cf0a0(){}
+/* 001cf0a0 0000000c */ FUN_001cf0a0(){}
+/* 001cf0b0 00000078 */ FUN_001cf0b0(){}
 /* 001cf130 00000074 */ FUN_001cf130(){}
 /* 001cf1b0 00000028 */ FUN_001cf1b0(){}
 /* 001cf1e0 00000010 */ FUN_001cf1e0(){}
@@ -3374,7 +3967,8 @@
 /* 001d0b50 000005fc */ FUN_001d0b50(){}
 /* 001d1150 0000010c */ FUN_001d1150(){}
 /* 001d1260 00000014 */ FUN_001d1260(){}
-/* 001d1280 000000b8 */ FUN_001d1280(){}
+/* 001d1280 000000ac */ FUN_001d1280(){}
+/* 001d1330 00000008 */ FUN_001d1330(){}
 /* 001d1340 00000138 */ FUN_001d1340(){}
 /* 001d1480 000000c4 */ FUN_001d1480(){}
 /* 001d1550 000000dc */ FUN_001d1550(){}
@@ -3459,7 +4053,10 @@
 /* 001d76b0 00000098 */ FUN_001d76b0(){}
 /* 001d7750 00000264 */ FUN_001d7750(){}
 /* 001d79c0 00000068 */ FUN_001d79c0(){}
-/* 001d7a30 00000244 */ FUN_001d7a30(){}
+/* 001d7a30 00000218 */ FUN_001d7a30(){}
+/* 001d7c50 00000004 */ FUN_001d7c50(){}
+/* 001d7c60 00000008 */ FUN_001d7c60(){}
+/* 001d7c70 00000004 */ FUN_001d7c70(){}
 /* 001d7c80 00000060 */ FUN_001d7c80(){}
 /* 001d7ce0 0000006c */ FUN_001d7ce0(){}
 /* 001d7d50 00000148 */ FUN_001d7d50(){}
@@ -3467,7 +4064,10 @@
 /* 001d7ec0 00000018 */ FUN_001d7ec0(){}
 /* 001d7ee0 0000001c */ FUN_001d7ee0(){}
 /* 001d7f00 00000018 */ FUN_001d7f00(){}
-/* 001d7f20 00000094 */ FUN_001d7f20(){}
+/* 001d7f20 00000068 */ FUN_001d7f20(){}
+/* 001d7f90 00000004 */ FUN_001d7f90(){}
+/* 001d7fa0 00000004 */ FUN_001d7fa0(){}
+/* 001d7fb0 00000004 */ FUN_001d7fb0(){}
 /* 001d7fc0 000001f8 */ FUN_001d7fc0(){}
 /* 001d81c0 00000008 */ FUN_001d81c0(){}
 /* 001d81d0 00000008 */ FUN_001d81d0(){}
@@ -3477,8 +4077,11 @@
 /* 001d8410 0000000c */ FUN_001d8410(){}
 /* 001d8420 0000005c */ FUN_001d8420(){}
 /* 001d8480 000000b8 */ FUN_001d8480(){}
-/* 001d8540 00000058 */ FUN_001d8540(){}
-/* 001d85a0 00000028 */ FUN_001d85a0(){}
+/* 001d8540 00000050 */ FUN_001d8540(){}
+/* 001d8590 00000008 */ FUN_001d8590(){}
+/* 001d85a0 00000010 */ FUN_001d85a0(){}
+/* 001d85b0 00000008 */ FUN_001d85b0(){}
+/* 001d85c0 00000008 */ FUN_001d85c0(){}
 /* 001d85d0 0000005c */ FUN_001d85d0(){}
 /* 001d8630 00001864 */ FUN_001d8630(){}
 /* 001d9ea0 00000020 */ FUN_001d9ea0(){}
@@ -3487,19 +4090,32 @@
 /* 001d9f50 00000034 */ FUN_001d9f50(){}
 /* 001d9f90 00000030 */ FUN_001d9f90(){}
 /* 001d9fc0 00000060 */ FUN_001d9fc0(){}
-/* 001da020 000000ec */ FUN_001da020(){}
+/* 001da020 00000030 */ FUN_001da020(){}
+/* 001da050 0000000c */ FUN_001da050(){}
+/* 001da060 00000050 */ FUN_001da060(){}
+/* 001da0b0 0000000c */ FUN_001da0b0(){}
+/* 001da0c0 0000004c */ FUN_001da0c0(){}
 /* 001da110 00000054 */ FUN_001da110(){}
 /* 001da170 0000003c */ FUN_001da170(){}
 /* 001da1b0 00000114 */ FUN_001da1b0(){}
 /* 001da2d0 0000009c */ FUN_001da2d0(){}
 /* 001da370 0000004c */ FUN_001da370(){}
-/* 001da3c0 00000128 */ FUN_001da3c0(){}
-/* 001da4f0 000002a8 */ FUN_001da4f0(){}
+/* 001da3c0 0000004c */ FUN_001da3c0(){}
+/* 001da410 0000001c */ FUN_001da410(){}
+/* 001da430 000000a4 */ FUN_001da430(){}
+/* 001da4e0 00000008 */ FUN_001da4e0(){}
+/* 001da4f0 000000d4 */ FUN_001da4f0(){}
+/* 001da5d0 00000008 */ FUN_001da5d0(){}
+/* 001da5e0 00000070 */ FUN_001da5e0(){}
+/* 001da650 00000008 */ FUN_001da650(){}
+/* 001da660 00000138 */ FUN_001da660(){}
 /* 001da7a0 0000014c */ FUN_001da7a0(){}
 /* 001da8f0 00000020 */ FUN_001da8f0(){}
 /* 001da910 00000044 */ FUN_001da910(){}
 /* 001da960 00000044 */ FUN_001da960(){}
-/* 001da9b0 00000054 */ FUN_001da9b0(){}
+/* 001da9b0 00000020 */ FUN_001da9b0(){}
+/* 001da9d0 00000014 */ FUN_001da9d0(){}
+/* 001da9f0 00000014 */ FUN_001da9f0(){}
 /* 001daa10 0000005c */ FUN_001daa10(){}
 /* 001daa70 0000003c */ FUN_001daa70(){}
 /* 001daab0 00000008 */ FUN_001daab0(){}
@@ -3543,7 +4159,8 @@
 /* 001dd330 000000b0 */ FUN_001dd330(){}
 /* 001dd3e0 00000008 */ FUN_001dd3e0(){}
 /* 001dd3f0 00000008 */ FUN_001dd3f0(){}
-/* 001dd400 0000005c */ FUN_001dd400(){}
+/* 001dd400 0000004c */ FUN_001dd400(){}
+/* 001dd450 0000000c */ FUN_001dd450(){}
 /* 001dd460 000000b0 */ FUN_001dd460(){}
 /* 001dd510 000000f4 */ FUN_001dd510(){}
 /* 001dd610 0000006c */ FUN_001dd610(){}
@@ -3555,7 +4172,9 @@
 /* 001ddb70 000003ac */ FUN_001ddb70(){}
 /* 001ddf20 00000124 */ FUN_001ddf20(){}
 /* 001de050 0000023c */ FUN_001de050(){}
-/* 001de290 00000058 */ FUN_001de290(){}
+/* 001de290 00000034 */ FUN_001de290(){}
+/* 001de2d0 00000008 */ FUN_001de2d0(){}
+/* 001de2e0 00000008 */ FUN_001de2e0(){}
 /* 001de2f0 00000230 */ FUN_001de2f0(){}
 /* 001de520 0000013c */ FUN_001de520(){}
 /* 001de660 00000268 */ FUN_001de660(){}
@@ -3572,8 +4191,10 @@
 /* 001deed0 00000088 */ FUN_001deed0(){}
 /* 001def60 00000024 */ FUN_001def60(){}
 /* 001def90 0000003c */ FUN_001def90(){}
-/* 001defd0 00000068 */ FUN_001defd0(){}
-/* 001df040 00000068 */ FUN_001df040(){}
+/* 001defd0 00000058 */ FUN_001defd0(){}
+/* 001df030 00000008 */ FUN_001df030(){}
+/* 001df040 00000058 */ FUN_001df040(){}
+/* 001df0a0 00000008 */ FUN_001df0a0(){}
 /* 001df0b0 00000cd8 */ FUN_001df0b0(){}
 /* 001dfd90 000001a4 */ FUN_001dfd90(){}
 /* 001dff40 00000414 */ FUN_001dff40(){}
@@ -3582,7 +4203,8 @@
 /* 001e06f0 00000730 */ FUN_001e06f0(){}
 /* 001e0e20 00000aa0 */ FUN_001e0e20(){}
 /* 001e18c0 000025c0 */ FUN_001e18c0(){}
-/* 001e3e80 00001ed4 */ FUN_001e3e80(){}
+/* 001e3e80 00001ed0 */ FUN_001e3e80(){}
+/* 001e5d50 00000004 */ FUN_001e5d50(){}
 /* 001e5d60 00000024 */ FUN_001e5d60(){}
 /* 001e5d90 000001e0 */ FUN_001e5d90(){}
 /* 001e5f70 0000013c */ FUN_001e5f70(){}
@@ -3598,7 +4220,9 @@
 /* 001e8320 00000540 */ FUN_001e8320(){}
 /* 001e8870 000001c0 */ FUN_001e8870(){}
 /* 001e8a30 00001394 */ FUN_001e8a30(){}
-/* 001e9dd0 00000de4 */ FUN_001e9dd0(){}
+/* 001e9dd0 00000dc4 */ FUN_001e9dd0(){}
+/* 001eaba0 00000004 */ FUN_001eaba0(){}
+/* 001eabb0 00000004 */ FUN_001eabb0(){}
 /* 001eabc0 00000048 */ FUN_001eabc0(){}
 /* 001eac10 00000054 */ FUN_001eac10(){}
 /* 001eac70 00000084 */ FUN_001eac70(){}
@@ -3612,15 +4236,19 @@
 /* 001eb550 00000104 */ FUN_001eb550(){}
 /* 001eb660 00000a20 */ FUN_001eb660(){}
 /* 001ec080 00000018 */ FUN_001ec080(){}
-/* 001ec0a0 00000354 */ FUN_001ec0a0(){}
-/* 001ec400 00000244 */ FUN_001ec400(){}
+/* 001ec0a0 0000034c */ FUN_001ec0a0(){}
+/* 001ec3f0 00000004 */ FUN_001ec3f0(){}
+/* 001ec400 00000234 */ FUN_001ec400(){}
+/* 001ec640 00000004 */ FUN_001ec640(){}
 /* 001ec650 00000148 */ FUN_001ec650(){}
 /* 001ec7a0 00000038 */ FUN_001ec7a0(){}
 /* 001ec7e0 000005bc */ FUN_001ec7e0(){}
 /* 001ecda0 000004fc */ FUN_001ecda0(){}
 /* 001ed2a0 00000170 */ FUN_001ed2a0(){}
 /* 001ed410 00001998 */ FUN_001ed410(){}
-/* 001eedb0 00000074 */ FUN_001eedb0(){}
+/* 001eedb0 00000060 */ FUN_001eedb0(){}
+/* 001eee10 00000004 */ FUN_001eee10(){}
+/* 001eee20 00000004 */ FUN_001eee20(){}
 /* 001eee30 00000018 */ FUN_001eee30(){}
 /* 001eee50 00000084 */ FUN_001eee50(){}
 /* 001eeee0 00000018 */ FUN_001eeee0(){}
@@ -3641,7 +4269,8 @@
 /* 001ef850 00000138 */ FUN_001ef850(){}
 /* 001ef990 00000138 */ FUN_001ef990(){}
 /* 001efad0 00000204 */ FUN_001efad0(){}
-/* 001efce0 00000218 */ FUN_001efce0(){}
+/* 001efce0 00000204 */ FUN_001efce0(){}
+/* 001efef0 00000008 */ FUN_001efef0(){}
 /* 001eff00 00000080 */ FUN_001eff00(){}
 /* 001eff80 0000011c */ FUN_001eff80(){}
 /* 001f00a0 000000cc */ FUN_001f00a0(){}
@@ -3697,7 +4326,15 @@
 /* 001f71d0 000001b0 */ FUN_001f71d0(){}
 /* 001f7380 0000003c */ FUN_001f7380(){}
 /* 001f73c0 000011c4 */ FUN_001f73c0(){}
-/* 001f8590 00000088 */ FUN_001f8590(){}
+/* 001f8590 0000000c */ FUN_001f8590(){}
+/* 001f85a0 00000008 */ FUN_001f85a0(){}
+/* 001f85b0 00000008 */ FUN_001f85b0(){}
+/* 001f85c0 00000008 */ FUN_001f85c0(){}
+/* 001f85d0 00000008 */ FUN_001f85d0(){}
+/* 001f85e0 00000008 */ FUN_001f85e0(){}
+/* 001f85f0 00000008 */ FUN_001f85f0(){}
+/* 001f8600 00000008 */ FUN_001f8600(){}
+/* 001f8610 00000008 */ FUN_001f8610(){}
 /* 001f8620 00000e6c */ FUN_001f8620(){}
 /* 001f9490 0000002c */ FUN_001f9490(){}
 /* 001f94c0 000007a8 */ FUN_001f94c0(){}
@@ -3736,16 +4373,27 @@
 /* 001fc4e0 00000078 */ FUN_001fc4e0(){}
 /* 001fc560 000001b8 */ FUN_001fc560(){}
 /* 001fc720 00000090 */ FUN_001fc720(){}
-/* 001fc7b0 00000118 */ FUN_001fc7b0(){}
-/* 001fc8d0 00000080 */ FUN_001fc8d0(){}
+/* 001fc7b0 000000f8 */ FUN_001fc7b0(){}
+/* 001fc8b0 00000008 */ FUN_001fc8b0(){}
+/* 001fc8c0 00000008 */ FUN_001fc8c0(){}
+/* 001fc8d0 00000060 */ FUN_001fc8d0(){}
+/* 001fc930 00000008 */ FUN_001fc930(){}
+/* 001fc940 00000010 */ FUN_001fc940(){}
 /* 001fc950 000000e0 */ FUN_001fc950(){}
 /* 001fca30 00000044 */ FUN_001fca30(){}
-/* 001fca80 00000048 */ FUN_001fca80(){}
+/* 001fca80 00000038 */ FUN_001fca80(){}
+/* 001fcac0 00000008 */ FUN_001fcac0(){}
 /* 001fcad0 00000068 */ FUN_001fcad0(){}
 /* 001fcb40 0000004c */ FUN_001fcb40(){}
-/* 001fcb90 00000058 */ FUN_001fcb90(){}
+/* 001fcb90 00000020 */ FUN_001fcb90(){}
+/* 001fcbb0 00000008 */ FUN_001fcbb0(){}
+/* 001fcbc0 00000008 */ FUN_001fcbc0(){}
+/* 001fcbd0 00000008 */ FUN_001fcbd0(){}
+/* 001fcbe0 00000008 */ FUN_001fcbe0(){}
 /* 001fcbf0 00000248 */ FUN_001fcbf0(){}
-/* 001fce40 00000258 */ FUN_001fce40(){}
+/* 001fce40 00000214 */ FUN_001fce40(){}
+/* 001fd060 00000018 */ FUN_001fd060(){}
+/* 001fd080 00000018 */ FUN_001fd080(){}
 /* 001fd0a0 00000030 */ FUN_001fd0a0(){}
 /* 001fd0d0 00000088 */ FUN_001fd0d0(){}
 /* 001fd160 000000b0 */ FUN_001fd160(){}
@@ -3754,7 +4402,9 @@
 /* 001fd2c0 000000b0 */ FUN_001fd2c0(){}
 /* 001fd370 0000037c */ FUN_001fd370(){}
 /* 001fd6f0 00000338 */ FUN_001fd6f0(){}
-/* 001fda30 000005bc */ FUN_001fda30(){}
+/* 001fda30 000002a8 */ FUN_001fda30(){}
+/* 001fdce0 0000000c */ FUN_001fdce0(){}
+/* 001fdcf0 000002fc */ FUN_001fdcf0(){}
 /* 001fdff0 00000030 */ FUN_001fdff0(){}
 /* 001fe020 00000098 */ FUN_001fe020(){}
 /* 001fe0c0 00000088 */ FUN_001fe0c0(){}
@@ -3860,7 +4510,8 @@
 /* 00208330 0000004c */ FUN_00208330(){}
 /* 00208380 00000108 */ FUN_00208380(){}
 /* 00208490 000006d8 */ FUN_00208490(){}
-/* 00208b70 00000034 */ FUN_00208b70(){}
+/* 00208b70 00000028 */ FUN_00208b70(){}
+/* 00208ba0 00000004 */ thunk_FUN_002d4060(){}
 /* 00208bb0 00000020 */ FUN_00208bb0(){}
 /* 00208be0 00000018 */ FUN_00208be0(){}
 /* 00208c00 00000070 */ FUN_00208c00(){}
@@ -4016,7 +4667,8 @@
 /* 002182c0 00000104 */ FUN_002182c0(){}
 /* 002183d0 00000074 */ FUN_002183d0(){}
 /* 00218450 00000020 */ FUN_00218450(){}
-/* 00218470 00000024 */ FUN_00218470(){}
+/* 00218470 00000020 */ FUN_00218470(){}
+/* 00218490 00000004 */ FUN_00218490(){}
 /* 002184a0 00000008 */ FUN_002184a0(){}
 /* 002184b0 00000044 */ FUN_002184b0(){}
 /* 00218500 000000a0 */ FUN_00218500(){}
@@ -4100,7 +4752,8 @@
 /* 0021bb90 0000034c */ FUN_0021bb90(){}
 /* 0021bee0 00000020 */ FUN_0021bee0(){}
 /* 0021bf00 00000034 */ FUN_0021bf00(){}
-/* 0021bf40 00000048 */ FUN_0021bf40(){}
+/* 0021bf40 00000038 */ FUN_0021bf40(){}
+/* 0021bf80 00000008 */ FUN_0021bf80(){}
 /* 0021bf90 0000003c */ FUN_0021bf90(){}
 /* 0021bfd0 00000038 */ FUN_0021bfd0(){}
 /* 0021c010 0000011c */ FUN_0021c010(){}
@@ -4127,13 +4780,17 @@
 /* 0021e700 000002a0 */ FUN_0021e700(){}
 /* 0021e9b0 000000a8 */ FUN_0021e9b0(){}
 /* 0021ea60 00000068 */ FUN_0021ea60(){}
-/* 0021ead0 00000078 */ FUN_0021ead0(){}
-/* 0021eb50 000000d8 */ FUN_0021eb50(){}
+/* 0021ead0 00000018 */ FUN_0021ead0(){}
+/* 0021eaf0 00000058 */ FUN_0021eaf0(){}
+/* 0021eb50 00000074 */ FUN_0021eb50(){}
+/* 0021ebd0 00000058 */ FUN_0021ebd0(){}
 /* 0021ec30 00000068 */ FUN_0021ec30(){}
 /* 0021eca0 00000074 */ FUN_0021eca0(){}
 /* 0021ed20 00000098 */ FUN_0021ed20(){}
-/* 0021edc0 00000078 */ FUN_0021edc0(){}
-/* 0021ee40 000000d8 */ FUN_0021ee40(){}
+/* 0021edc0 00000018 */ FUN_0021edc0(){}
+/* 0021ede0 00000058 */ FUN_0021ede0(){}
+/* 0021ee40 00000074 */ FUN_0021ee40(){}
+/* 0021eec0 00000058 */ FUN_0021eec0(){}
 /* 0021ef20 00000074 */ FUN_0021ef20(){}
 /* 0021efa0 000001fc */ FUN_0021efa0(){}
 /* 0021f1a0 00000194 */ FUN_0021f1a0(){}
@@ -4157,7 +4814,9 @@
 /* 00221880 00000070 */ FUN_00221880(){}
 /* 002218f0 00000070 */ FUN_002218f0(){}
 /* 00221960 00000064 */ FUN_00221960(){}
-/* 002219d0 00000548 */ FUN_002219d0(){}
+/* 002219d0 00000498 */ FUN_002219d0(){}
+/* 00221e70 00000010 */ FUN_00221e70(){}
+/* 00221e90 00000088 */ FUN_00221e90(){}
 /* 00221f20 0000004c */ FUN_00221f20(){}
 /* 00221f70 000000cc */ FUN_00221f70(){}
 /* 00222040 000002d0 */ FUN_00222040(){}
@@ -4176,19 +4835,23 @@
 /* 00224fe0 0000004c */ FUN_00224fe0(){}
 /* 00225030 000000f4 */ FUN_00225030(){}
 /* 00225130 000000bc */ FUN_00225130(){}
-/* 002251f0 00000dcc */ FUN_002251f0(){}
+/* 002251f0 000005c0 */ FUN_002251f0(){}
+/* 002257b0 0000000c */ FUN_002257b0(){}
+/* 002257c0 000007fc */ FUN_002257c0(){}
 /* 00225fc0 0000012c */ FUN_00225fc0(){}
 /* 002260f0 0000017c */ FUN_002260f0(){}
 /* 00226270 000009e4 */ FUN_00226270(){}
 /* 00226c60 000000dc */ FUN_00226c60(){}
 /* 00226d40 00000060 */ FUN_00226d40(){}
-/* 00226da0 00000248 */ FUN_00226da0(){}
+/* 00226da0 00000228 */ FUN_00226da0(){}
+/* 00226fd0 00000018 */ FUN_00226fd0(){}
 /* 00226ff0 00000054 */ FUN_00226ff0(){}
 /* 00227050 0000011c */ FUN_00227050(){}
 /* 00227170 00000174 */ FUN_00227170(){}
 /* 002272f0 0000009c */ FUN_002272f0(){}
 /* 00227390 0000005c */ FUN_00227390(){}
-/* 002273f0 00000074 */ FUN_002273f0(){}
+/* 002273f0 00000054 */ FUN_002273f0(){}
+/* 00227450 00000014 */ FUN_00227450(){}
 /* 00227470 0000009c */ FUN_00227470(){}
 /* 00227510 0000027c */ FUN_00227510(){}
 /* 00227790 0000008c */ FUN_00227790(){}
@@ -4261,18 +4924,43 @@
 /* 0022f3e0 00000060 */ FUN_0022f3e0(){}
 /* 0022f440 00000060 */ FUN_0022f440(){}
 /* 0022f4a0 00000060 */ FUN_0022f4a0(){}
-/* 0022f500 000000a4 */ FUN_0022f500(){}
-/* 0022f5b0 000000b8 */ FUN_0022f5b0(){}
-/* 0022f670 00000068 */ FUN_0022f670(){}
-/* 0022f6e0 00000068 */ FUN_0022f6e0(){}
-/* 0022f750 00000078 */ FUN_0022f750(){}
-/* 0022f7d0 000000c8 */ FUN_0022f7d0(){}
-/* 0022f8a0 000000b8 */ FUN_0022f8a0(){}
-/* 0022f960 000000b8 */ FUN_0022f960(){}
-/* 0022fa20 000000d8 */ FUN_0022fa20(){}
-/* 0022fb00 00000068 */ FUN_0022fb00(){}
-/* 0022fb70 00000068 */ FUN_0022fb70(){}
-/* 0022fbe0 00000068 */ FUN_0022fbe0(){}
+/* 0022f500 00000080 */ FUN_0022f500(){}
+/* 0022f580 00000008 */ FUN_0022f580(){}
+/* 0022f590 00000008 */ FUN_0022f590(){}
+/* 0022f5a0 00000004 */ FUN_0022f5a0(){}
+/* 0022f5b0 00000060 */ FUN_0022f5b0(){}
+/* 0022f610 00000008 */ FUN_0022f610(){}
+/* 0022f620 00000004 */ FUN_0022f620(){}
+/* 0022f630 00000008 */ FUN_0022f630(){}
+/* 0022f640 0000000c */ FUN_0022f640(){}
+/* 0022f650 00000008 */ FUN_0022f650(){}
+/* 0022f660 00000008 */ FUN_0022f660(){}
+/* 0022f670 00000060 */ FUN_0022f670(){}
+/* 0022f6d0 00000008 */ FUN_0022f6d0(){}
+/* 0022f6e0 00000060 */ FUN_0022f6e0(){}
+/* 0022f740 00000008 */ FUN_0022f740(){}
+/* 0022f750 00000060 */ FUN_0022f750(){}
+/* 0022f7b0 00000008 */ FUN_0022f7b0(){}
+/* 0022f7c0 00000008 */ FUN_0022f7c0(){}
+/* 0022f7d0 000000ac */ FUN_0022f7d0(){}
+/* 0022f880 00000008 */ FUN_0022f880(){}
+/* 0022f890 00000008 */ FUN_0022f890(){}
+/* 0022f8a0 000000ac */ FUN_0022f8a0(){}
+/* 0022f950 00000008 */ FUN_0022f950(){}
+/* 0022f960 0000009c */ FUN_0022f960(){}
+/* 0022fa00 00000008 */ FUN_0022fa00(){}
+/* 0022fa10 00000008 */ FUN_0022fa10(){}
+/* 0022fa20 0000009c */ FUN_0022fa20(){}
+/* 0022fac0 00000008 */ FUN_0022fac0(){}
+/* 0022fad0 00000008 */ FUN_0022fad0(){}
+/* 0022fae0 00000008 */ FUN_0022fae0(){}
+/* 0022faf0 00000008 */ FUN_0022faf0(){}
+/* 0022fb00 00000060 */ FUN_0022fb00(){}
+/* 0022fb60 00000008 */ FUN_0022fb60(){}
+/* 0022fb70 00000060 */ FUN_0022fb70(){}
+/* 0022fbd0 00000008 */ FUN_0022fbd0(){}
+/* 0022fbe0 00000060 */ FUN_0022fbe0(){}
+/* 0022fc40 00000008 */ FUN_0022fc40(){}
 /* 0022fc50 0000000c */ FUN_0022fc50(){}
 /* 0022fc60 0000013c */ FUN_0022fc60(){}
 /* 0022fda0 00000068 */ FUN_0022fda0(){}
@@ -4284,7 +4972,8 @@
 /* 002303c0 00000034 */ FUN_002303c0(){}
 /* 00230400 000003f4 */ FUN_00230400(){}
 /* 00230800 00000008 */ FUN_00230800(){}
-/* 00230810 00000088 */ FUN_00230810(){}
+/* 00230810 00000008 */ FUN_00230810(){}
+/* 00230820 00000078 */ FUN_00230820(){}
 /* 002308a0 00000084 */ FUN_002308a0(){}
 /* 00230930 0000004c */ FUN_00230930(){}
 /* 00230980 0000012c */ FUN_00230980(){}
@@ -4412,8 +5101,10 @@
 /* 0023bef0 00000004 */ GameOptions::setDefaults(){}  // native
 /* 0023bf00 00000070 */ FUN_0023bf00(){}
 /* 0023bf80 0000006c */ FUN_0023bf80(){}
-/* 0023bff0 00000028 */ FUN_0023bff0(){}
-/* 0023c020 000002d4 */ FUN_0023c020(){}
+/* 0023bff0 00000018 */ FUN_0023bff0(){}
+/* 0023c010 00000008 */ FUN_0023c010(){}
+/* 0023c020 000002cc */ FUN_0023c020(){}
+/* 0023c2f0 00000004 */ FUN_0023c2f0(){}
 /* 0023c300 000004e8 */ FUN_0023c300(){}
 /* 0023c7f0 00000114 */ FUN_0023c7f0(){}
 /* 0023c910 00000138 */ FUN_0023c910(){}
@@ -4436,7 +5127,8 @@
 /* 0023ef40 0000006c */ FUN_0023ef40(){}
 /* 0023efb0 00000034 */ FUN_0023efb0(){}
 /* 0023eff0 00000038 */ FUN_0023eff0(){}
-/* 0023f030 00000074 */ FUN_0023f030(){}
+/* 0023f030 00000008 */ FUN_0023f030(){}
+/* 0023f040 00000064 */ FUN_0023f040(){}
 /* 0023f0b0 000001dc */ FUN_0023f0b0(){}
 /* 0023f290 00000008 */ FUN_0023f290(){}
 /* 0023f2a0 0000000c */ FUN_0023f2a0(){}
@@ -4480,7 +5172,9 @@
 /* 00243100 00000044 */ FUN_00243100(){}
 /* 00243150 00000090 */ FUN_00243150(){}
 /* 002431e0 000000bc */ FUN_002431e0(){}
-/* 002432a0 000000c8 */ FUN_002432a0(){}
+/* 002432a0 000000a4 */ FUN_002432a0(){}
+/* 00243350 00000004 */ FUN_00243350(){}
+/* 00243360 00000008 */ FUN_00243360(){}
 /* 00243370 00000008 */ FUN_00243370(){}
 /* 00243380 00000008 */ FUN_00243380(){}
 /* 00243390 00000128 */ FUN_00243390(){}
@@ -4507,8 +5201,10 @@
 /* 00246160 000000cc */ FUN_00246160(){}
 /* 00246230 0000010c */ FUN_00246230(){}
 /* 00246340 000000b0 */ FUN_00246340(){}
-/* 00246400 000009a4 */ FUN_00246400(){}
-/* 00246db0 000002b4 */ FUN_00246db0(){}
+/* 00246400 00000998 */ FUN_00246400(){}
+/* 00246da0 00000004 */ FUN_00246da0(){}
+/* 00246db0 000002b0 */ FUN_00246db0(){}
+/* 00247060 00000004 */ FUN_00247060(){}
 /* 00247070 00000160 */ FUN_00247070(){}
 /* 002471d0 00000160 */ FUN_002471d0(){}
 /* 00247330 000002b4 */ FUN_00247330(){}
@@ -4530,12 +5226,34 @@
 /* 00248e80 000002a4 */ FUN_00248e80(){}
 /* 00249130 00000090 */ FUN_00249130(){}
 /* 002491c0 00000094 */ FUN_002491c0(){}
-/* 00249260 000002e4 */ FUN_00249260(){}
-/* 00249550 00001240 */ FUN_00249550(){}
+/* 00249260 000002e0 */ FUN_00249260(){}
+/* 00249540 00000004 */ FUN_00249540(){}
+/* 00249550 000011c8 */ FUN_00249550(){}
+/* 0024a720 00000010 */ FUN_0024a720(){}
+/* 0024a730 00000060 */ FUN_0024a730(){}
 /* 0024a790 0000003c */ FUN_0024a790(){}
-/* 0024a7d0 000003ec */ FUN_0024a7d0(){}
-/* 0024abc0 00000080 */ FUN_0024abc0(){}
-/* 0024ac40 00000080 */ FUN_0024ac40(){}
+/* 0024a7d0 00000060 */ FUN_0024a7d0(){}
+/* 0024a830 0000000c */ FUN_0024a830(){}
+/* 0024a840 00000060 */ FUN_0024a840(){}
+/* 0024a8a0 0000000c */ FUN_0024a8a0(){}
+/* 0024a8b0 00000060 */ FUN_0024a8b0(){}
+/* 0024a910 0000000c */ FUN_0024a910(){}
+/* 0024a920 00000060 */ FUN_0024a920(){}
+/* 0024a980 0000000c */ FUN_0024a980(){}
+/* 0024a990 00000060 */ FUN_0024a990(){}
+/* 0024a9f0 0000000c */ FUN_0024a9f0(){}
+/* 0024aa00 00000060 */ FUN_0024aa00(){}
+/* 0024aa60 0000000c */ FUN_0024aa60(){}
+/* 0024aa70 00000060 */ FUN_0024aa70(){}
+/* 0024aad0 0000000c */ FUN_0024aad0(){}
+/* 0024aae0 00000060 */ FUN_0024aae0(){}
+/* 0024ab40 0000000c */ FUN_0024ab40(){}
+/* 0024ab50 00000060 */ FUN_0024ab50(){}
+/* 0024abb0 0000000c */ FUN_0024abb0(){}
+/* 0024abc0 00000060 */ FUN_0024abc0(){}
+/* 0024ac20 00000020 */ FUN_0024ac20(){}
+/* 0024ac40 00000060 */ FUN_0024ac40(){}
+/* 0024aca0 00000020 */ FUN_0024aca0(){}
 /* 0024acc0 00000060 */ FUN_0024acc0(){}
 /* 0024ad20 00000124 */ FUN_0024ad20(){}
 /* 0024ae50 00000060 */ FUN_0024ae50(){}
@@ -4544,12 +5262,16 @@
 /* 0024b030 00000118 */ FUN_0024b030(){}
 /* 0024b150 00000060 */ FUN_0024b150(){}
 /* 0024b1b0 000000e4 */ FUN_0024b1b0(){}
-/* 0024b2a0 000001bc */ FUN_0024b2a0(){}
-/* 0024b460 000001bc */ FUN_0024b460(){}
+/* 0024b2a0 00000060 */ FUN_0024b2a0(){}
+/* 0024b300 0000015c */ FUN_0024b300(){}
+/* 0024b460 00000060 */ FUN_0024b460(){}
+/* 0024b4c0 0000015c */ FUN_0024b4c0(){}
 /* 0024b620 00000060 */ FUN_0024b620(){}
 /* 0024b680 00000138 */ FUN_0024b680(){}
-/* 0024b7c0 000000d8 */ FUN_0024b7c0(){}
-/* 0024b8a0 000000d8 */ FUN_0024b8a0(){}
+/* 0024b7c0 00000060 */ FUN_0024b7c0(){}
+/* 0024b820 00000078 */ FUN_0024b820(){}
+/* 0024b8a0 00000060 */ FUN_0024b8a0(){}
+/* 0024b900 00000078 */ FUN_0024b900(){}
 /* 0024b980 00000060 */ FUN_0024b980(){}
 /* 0024b9e0 0000005c */ FUN_0024b9e0(){}
 /* 0024ba40 00000060 */ FUN_0024ba40(){}
@@ -4595,7 +5317,26 @@
 /* 0024d1a0 00000050 */ FUN_0024d1a0(){}
 /* 0024d200 000000b8 */ FUN_0024d200(){}
 /* 0024d2c0 00000098 */ FUN_0024d2c0(){}
-/* 0024d360 000001cc */ FUN_0024d360(){}
+/* 0024d360 00000094 */ FUN_0024d360(){}
+/* 0024d400 00000004 */ FUN_0024d400(){}
+/* 0024d410 00000008 */ FUN_0024d410(){}
+/* 0024d420 0000000c */ FUN_0024d420(){}
+/* 0024d430 0000000c */ FUN_0024d430(){}
+/* 0024d440 0000000c */ FUN_0024d440(){}
+/* 0024d450 0000000c */ FUN_0024d450(){}
+/* 0024d460 0000000c */ FUN_0024d460(){}
+/* 0024d470 0000000c */ FUN_0024d470(){}
+/* 0024d480 0000000c */ FUN_0024d480(){}
+/* 0024d490 0000000c */ FUN_0024d490(){}
+/* 0024d4a0 0000000c */ FUN_0024d4a0(){}
+/* 0024d4b0 0000000c */ FUN_0024d4b0(){}
+/* 0024d4c0 0000000c */ FUN_0024d4c0(){}
+/* 0024d4d0 0000000c */ FUN_0024d4d0(){}
+/* 0024d4e0 0000000c */ FUN_0024d4e0(){}
+/* 0024d4f0 0000000c */ FUN_0024d4f0(){}
+/* 0024d500 0000000c */ FUN_0024d500(){}
+/* 0024d510 0000000c */ FUN_0024d510(){}
+/* 0024d520 0000000c */ FUN_0024d520(){}
 /* 0024d530 00000030 */ FUN_0024d530(){}
 /* 0024d570 00000024 */ FUN_0024d570(){}
 /* 0024d5a0 00000098 */ FUN_0024d5a0(){}
@@ -4756,7 +5497,8 @@
 /* 0025b7c0 00000088 */ FUN_0025b7c0(){}
 /* 0025b850 00000088 */ FUN_0025b850(){}
 /* 0025b8e0 00000130 */ FUN_0025b8e0(){}
-/* 0025ba10 000000e4 */ FUN_0025ba10(){}
+/* 0025ba10 000000c4 */ FUN_0025ba10(){}
+/* 0025bae0 00000014 */ FUN_0025bae0(){}
 /* 0025bb00 000000c0 */ FUN_0025bb00(){}
 /* 0025bbc0 000000a4 */ FUN_0025bbc0(){}
 /* 0025bc70 000000b4 */ FUN_0025bc70(){}
@@ -4774,12 +5516,16 @@
 /* 0025c390 000000cc */ FUN_0025c390(){}
 /* 0025c460 00000320 */ FUN_0025c460(){}
 /* 0025c780 00000070 */ FUN_0025c780(){}
-/* 0025c7f0 00000258 */ FUN_0025c7f0(){}
+/* 0025c7f0 000001d8 */ FUN_0025c7f0(){}
+/* 0025c9d0 00000010 */ FUN_0025c9d0(){}
+/* 0025c9e0 00000060 */ FUN_0025c9e0(){}
+/* 0025ca40 00000008 */ FUN_0025ca40(){}
 /* 0025ca50 00000060 */ FUN_0025ca50(){}
 /* 0025cab0 00000160 */ FUN_0025cab0(){}
 /* 0025cc10 000000ac */ FUN_0025cc10(){}
 /* 0025ccc0 0000009c */ FUN_0025ccc0(){}
-/* 0025cd60 00000068 */ FUN_0025cd60(){}
+/* 0025cd60 00000060 */ FUN_0025cd60(){}
+/* 0025cdc0 00000008 */ FUN_0025cdc0(){}
 /* 0025cdd0 00000060 */ FUN_0025cdd0(){}
 /* 0025ce30 00000330 */ FUN_0025ce30(){}
 /* 0025d160 000001c8 */ FUN_0025d160(){}
@@ -4792,7 +5538,8 @@
 /* 0025d580 0000031c */ FUN_0025d580(){}
 /* 0025d8a0 0000044c */ FUN_0025d8a0(){}
 /* 0025dcf0 0000024c */ FUN_0025dcf0(){}
-/* 0025df40 000000d4 */ FUN_0025df40(){}
+/* 0025df40 000000b0 */ FUN_0025df40(){}
+/* 0025dff0 00000024 */ FUN_0025dff0(){}
 /* 0025e020 00000060 */ FUN_0025e020(){}
 /* 0025e080 000001dc */ FUN_0025e080(){}
 /* 0025e260 00001344 */ FUN_0025e260(){}
@@ -4919,13 +5666,18 @@
 /* 002689a0 00000080 */ FUN_002689a0(){}
 /* 00268a20 00000064 */ FUN_00268a20(){}
 /* 00268a90 00000050 */ FUN_00268a90(){}
-/* 00268ae0 00000678 */ FUN_00268ae0(){}
-/* 00269160 00000884 */ FUN_00269160(){}
-/* 002699f0 00000094 */ FUN_002699f0(){}
+/* 00268ae0 0000066c */ FUN_00268ae0(){}
+/* 00269150 00000008 */ FUN_00269150(){}
+/* 00269160 00000880 */ FUN_00269160(){}
+/* 002699e0 00000004 */ FUN_002699e0(){}
+/* 002699f0 00000080 */ FUN_002699f0(){}
+/* 00269a70 00000004 */ FUN_00269a70(){}
+/* 00269a80 00000004 */ FUN_00269a80(){}
 /* 00269a90 00000134 */ FUN_00269a90(){}
 /* 00269bd0 0000005c */ FUN_00269bd0(){}
 /* 00269c30 000000c4 */ FUN_00269c30(){}
-/* 00269d00 000000a8 */ FUN_00269d00(){}
+/* 00269d00 0000009c */ FUN_00269d00(){}
+/* 00269da0 00000008 */ FUN_00269da0(){}
 /* 00269db0 00000254 */ FUN_00269db0(){}
 /* 0026a010 00000234 */ FUN_0026a010(){}
 /* 0026a250 0000013c */ FUN_0026a250(){}
@@ -4947,20 +5699,31 @@
 /* 0026c7c0 000000b4 */ FUN_0026c7c0(){}
 /* 0026c880 0000002c */ FUN_0026c880(){}
 /* 0026c8b0 0000000c */ FUN_0026c8b0(){}
-/* 0026c8c0 00000058 */ FUN_0026c8c0(){}
+/* 0026c8c0 00000048 */ FUN_0026c8c0(){}
+/* 0026c910 00000008 */ FUN_0026c910(){}
 /* 0026c920 00000114 */ FUN_0026c920(){}
 /* 0026ca40 00000064 */ FUN_0026ca40(){}
-/* 0026cab0 0000027c */ FUN_0026cab0(){}
+/* 0026cab0 000000bc */ FUN_0026cab0(){}
+/* 0026cb70 00000018 */ FUN_0026cb70(){}
+/* 0026cb90 0000019c */ FUN_0026cb90(){}
 /* 0026cd30 000000f0 */ FUN_0026cd30(){}
 /* 0026ce20 00000118 */ FUN_0026ce20(){}
-/* 0026cf40 00000150 */ FUN_0026cf40(){}
-/* 0026d090 00000600 */ FUN_0026d090(){}
+/* 0026cf40 000000a0 */ FUN_0026cf40(){}
+/* 0026cfe0 00000008 */ FUN_0026cfe0(){}
+/* 0026cff0 00000008 */ FUN_0026cff0(){}
+/* 0026d000 00000008 */ FUN_0026d000(){}
+/* 0026d010 00000008 */ FUN_0026d010(){}
+/* 0026d020 00000070 */ FUN_0026d020(){}
+/* 0026d090 000005d4 */ FUN_0026d090(){}
+/* 0026d670 00000020 */ FUN_0026d670(){}
 /* 0026d6a0 00000148 */ FUN_0026d6a0(){}
 /* 0026d7f0 0000015c */ FUN_0026d7f0(){}
 /* 0026d950 0000058c */ FUN_0026d950(){}
 /* 0026dee0 0000007c */ FUN_0026dee0(){}
-/* 0026df60 00000318 */ FUN_0026df60(){}
-/* 0026e280 00000278 */ FUN_0026e280(){}
+/* 0026df60 000002fc */ FUN_0026df60(){}
+/* 0026e260 00000018 */ FUN_0026e260(){}
+/* 0026e280 00000260 */ FUN_0026e280(){}
+/* 0026e4e0 00000018 */ FUN_0026e4e0(){}
 /* 0026e500 000004d4 */ FUN_0026e500(){}
 /* 0026e9e0 000001f8 */ FUN_0026e9e0(){}
 /* 0026ebe0 0000034c */ FUN_0026ebe0(){}
@@ -4970,16 +5733,19 @@
 /* 0026f780 0000014c */ FUN_0026f780(){}
 /* 0026f8d0 00000008 */ FUN_0026f8d0(){}
 /* 0026f8e0 00000084 */ FUN_0026f8e0(){}
-/* 0026f970 000001e8 */ FUN_0026f970(){}
+/* 0026f970 000001b0 */ FUN_0026f970(){}
+/* 0026fb20 00000038 */ FUN_0026fb20(){}
 /* 0026fb60 0000005c */ FUN_0026fb60(){}
 /* 0026fbc0 00000170 */ FUN_0026fbc0(){}
 /* 0026fd30 000003f0 */ FUN_0026fd30(){}
 /* 00270120 00000094 */ FUN_00270120(){}
 /* 002701c0 0000009c */ FUN_002701c0(){}
-/* 00270260 0000007c */ FUN_00270260(){}
+/* 00270260 00000040 */ FUN_00270260(){}
+/* 002702a0 0000003c */ FUN_002702a0(){}
 /* 002702e0 000001d8 */ FUN_002702e0(){}
 /* 002704c0 000001c4 */ FUN_002704c0(){}
-/* 00270690 0000007c */ FUN_00270690(){}
+/* 00270690 0000005c */ FUN_00270690(){}
+/* 002706f0 0000001c */ FUN_002706f0(){}
 /* 00270710 00000064 */ FUN_00270710(){}
 /* 00270780 0000013c */ FUN_00270780(){}
 /* 002708c0 000000bc */ FUN_002708c0(){}
@@ -4988,7 +5754,8 @@
 /* 00270a70 000001d4 */ FUN_00270a70(){}
 /* 00270c50 00000238 */ FUN_00270c50(){}
 /* 00270e90 00000184 */ FUN_00270e90(){}
-/* 00271020 0000007c */ FUN_00271020(){}
+/* 00271020 0000004c */ FUN_00271020(){}
+/* 00271070 0000002c */ FUN_00271070(){}
 /* 002710a0 00000584 */ FUN_002710a0(){}
 /* 00271630 00000158 */ FUN_00271630(){}
 /* 00271790 000000c0 */ FUN_00271790(){}
@@ -5000,11 +5767,14 @@
 /* 002721a0 000001bc */ FUN_002721a0(){}
 /* 00272360 000002c8 */ FUN_00272360(){}
 /* 00272630 0000071c */ FUN_00272630(){}
-/* 00272d50 000011b8 */ FUN_00272d50(){}
-/* 00273f10 000002b8 */ FUN_00273f10(){}
+/* 00272d50 00001044 */ FUN_00272d50(){}
+/* 00273da0 00000168 */ FUN_00273da0(){}
+/* 00273f10 00000090 */ FUN_00273f10(){}
+/* 00273fa0 00000228 */ FUN_00273fa0(){}
 /* 002741d0 000001b8 */ FUN_002741d0(){}
 /* 00274390 000002b4 */ FUN_00274390(){}
-/* 00274650 00000338 */ FUN_00274650(){}
+/* 00274650 000001b8 */ FUN_00274650(){}
+/* 00274810 00000178 */ FUN_00274810(){}
 /* 00274990 00000760 */ FUN_00274990(){}
 /* 002750f0 0000006c */ FUN_002750f0(){}
 /* 00275160 000009f4 */ FUN_00275160(){}
@@ -5039,18 +5809,29 @@
 /* 00277060 00000070 */ FUN_00277060(){}
 /* 002770d0 00000070 */ FUN_002770d0(){}
 /* 00277140 00000070 */ FUN_00277140(){}
-/* 002771b0 00000098 */ FUN_002771b0(){}
-/* 00277250 00000178 */ FUN_00277250(){}
-/* 002773d0 000001f4 */ FUN_002773d0(){}
-/* 002775d0 00000094 */ FUN_002775d0(){}
-/* 00277670 000006e4 */ FUN_00277670(){}
+/* 002771b0 0000007c */ FUN_002771b0(){}
+/* 00277230 00000018 */ FUN_00277230(){}
+/* 00277250 00000154 */ FUN_00277250(){}
+/* 002773b0 00000018 */ FUN_002773b0(){}
+/* 002773d0 000001ec */ FUN_002773d0(){}
+/* 002775c0 00000004 */ FUN_002775c0(){}
+/* 002775d0 0000008c */ FUN_002775d0(){}
+/* 00277660 00000004 */ FUN_00277660(){}
+/* 00277670 00000650 */ FUN_00277670(){}
+/* 00277cc0 00000024 */ FUN_00277cc0(){}
+/* 00277cf0 00000064 */ FUN_00277cf0(){}
 /* 00277d60 00000068 */ FUN_00277d60(){}
 /* 00277dd0 0000068c */ FUN_00277dd0(){}
 /* 00278460 000001d4 */ FUN_00278460(){}
-/* 00278640 0000076c */ FUN_00278640(){}
+/* 00278640 00000724 */ FUN_00278640(){}
+/* 00278d70 00000018 */ FUN_00278d70(){}
+/* 00278d90 0000001c */ FUN_00278d90(){}
 /* 00278db0 00000090 */ FUN_00278db0(){}
-/* 00278e40 00000084 */ FUN_00278e40(){}
-/* 00278ed0 000002b8 */ FUN_00278ed0(){}
+/* 00278e40 00000058 */ FUN_00278e40(){}
+/* 00278ea0 00000024 */ FUN_00278ea0(){}
+/* 00278ed0 00000098 */ FUN_00278ed0(){}
+/* 00278f70 0000000c */ FUN_00278f70(){}
+/* 00278f80 00000208 */ FUN_00278f80(){}
 /* 00279190 00000074 */ FUN_00279190(){}
 /* 00279210 000000ac */ FUN_00279210(){}
 /* 002792c0 0000021c */ FUN_002792c0(){}
@@ -5065,9 +5846,11 @@
 /* 0027a140 00000440 */ FUN_0027a140(){}
 /* 0027a580 000000d0 */ FUN_0027a580(){}
 /* 0027a650 000001e4 */ FUN_0027a650(){}
-/* 0027a840 000000c8 */ FUN_0027a840(){}
+/* 0027a840 00000074 */ FUN_0027a840(){}
+/* 0027a8c0 00000048 */ FUN_0027a8c0(){}
 /* 0027a910 000000c8 */ FUN_0027a910(){}
-/* 0027a9e0 000000a8 */ FUN_0027a9e0(){}
+/* 0027a9e0 0000008c */ FUN_0027a9e0(){}
+/* 0027aa70 00000018 */ FUN_0027aa70(){}
 /* 0027aa90 00000108 */ FUN_0027aa90(){}
 /* 0027aba0 000000b8 */ FUN_0027aba0(){}
 /* 0027ac60 0000018c */ FUN_0027ac60(){}
@@ -5077,15 +5860,20 @@
 /* 0027b000 000000e8 */ FUN_0027b000(){}
 /* 0027b0f0 00000044 */ FUN_0027b0f0(){}
 /* 0027b140 0000028c */ FUN_0027b140(){}
-/* 0027b3d0 000001c0 */ FUN_0027b3d0(){}
+/* 0027b3d0 00000194 */ FUN_0027b3d0(){}
+/* 0027b570 00000020 */ FUN_0027b570(){}
 /* 0027b590 000000b0 */ FUN_0027b590(){}
 /* 0027b640 00000094 */ FUN_0027b640(){}
 /* 0027b6e0 00000048 */ FUN_0027b6e0(){}
 /* 0027b730 000000a8 */ FUN_0027b730(){}
 /* 0027b7e0 00000078 */ FUN_0027b7e0(){}
 /* 0027b860 00000438 */ FUN_0027b860(){}
-/* 0027bca0 00000250 */ FUN_0027bca0(){}
-/* 0027bef0 0000024c */ FUN_0027bef0(){}
+/* 0027bca0 00000108 */ FUN_0027bca0(){}
+/* 0027bdb0 000000b8 */ FUN_0027bdb0(){}
+/* 0027be70 00000080 */ FUN_0027be70(){}
+/* 0027bef0 000001e8 */ FUN_0027bef0(){}
+/* 0027c0e0 0000001c */ FUN_0027c0e0(){}
+/* 0027c100 0000003c */ FUN_0027c100(){}
 /* 0027c140 00000098 */ FUN_0027c140(){}
 /* 0027c1e0 000000e0 */ FUN_0027c1e0(){}
 /* 0027c2c0 00000040 */ FUN_0027c2c0(){}
@@ -5148,9 +5936,12 @@
 /* 0027fac0 00000174 */ FUN_0027fac0(){}
 /* 0027fc40 00000178 */ FUN_0027fc40(){}
 /* 0027fdc0 0000014c */ FUN_0027fdc0(){}
-/* 0027ff10 000000a0 */ FUN_0027ff10(){}
+/* 0027ff10 00000024 */ FUN_0027ff10(){}
+/* 0027ff40 00000004 */ thunk_FUN_0014ff90(){}
+/* 0027ff50 00000060 */ FUN_0027ff50(){}
 /* 0027ffb0 0000005c */ FUN_0027ffb0(){}
-/* 00280010 0000007c */ FUN_00280010(){}
+/* 00280010 00000070 */ FUN_00280010(){}
+/* 00280080 0000000c */ FUN_00280080(){}
 /* 00280090 000001a0 */ FUN_00280090(){}
 /* 00280230 000001d0 */ FUN_00280230(){}
 /* 00280400 00000008 */ FUN_00280400(){}
@@ -5165,15 +5956,19 @@
 /* 00280ea0 0000003c */ FUN_00280ea0(){}
 /* 00280ee0 00000070 */ FUN_00280ee0(){}
 /* 00280f50 00000078 */ FUN_00280f50(){}
-/* 00280fd0 000001fc */ FUN_00280fd0(){}
-/* 002811d0 0000010c */ FUN_002811d0(){}
+/* 00280fd0 000001ec */ FUN_00280fd0(){}
+/* 002811c0 0000000c */ FUN_002811c0(){}
+/* 002811d0 000000e8 */ FUN_002811d0(){}
+/* 002812c0 0000001c */ FUN_002812c0(){}
 /* 002812e0 00000090 */ FUN_002812e0(){}
 /* 00281370 00000070 */ FUN_00281370(){}
 /* 002813e0 00000074 */ FUN_002813e0(){}
 /* 00281460 0000003c */ FUN_00281460(){}
-/* 002814a0 000000ac */ FUN_002814a0(){}
+/* 002814a0 000000a0 */ FUN_002814a0(){}
+/* 00281540 0000000c */ FUN_00281540(){}
 /* 00281550 00000060 */ FUN_00281550(){}
-/* 002815b0 0000008c */ FUN_002815b0(){}
+/* 002815b0 00000080 */ FUN_002815b0(){}
+/* 00281630 0000000c */ FUN_00281630(){}
 /* 00281640 00000070 */ FUN_00281640(){}
 /* 002816b0 00000080 */ FUN_002816b0(){}
 /* 00281730 000000b0 */ FUN_00281730(){}
@@ -5192,7 +5987,8 @@
 /* 002822d0 00000044 */ FUN_002822d0(){}
 /* 00282320 00000060 */ FUN_00282320(){}
 /* 00282380 000000d4 */ FUN_00282380(){}
-/* 00282460 00000108 */ FUN_00282460(){}
+/* 00282460 000000f8 */ FUN_00282460(){}
+/* 00282560 00000008 */ FUN_00282560(){}
 /* 00282570 00000080 */ FUN_00282570(){}
 /* 002825f0 00000038 */ FUN_002825f0(){}
 /* 00282630 000000a8 */ FUN_00282630(){}
@@ -5202,10 +5998,18 @@
 /* 00282a50 000000d8 */ FUN_00282a50(){}
 /* 00282b30 0000003c */ FUN_00282b30(){}
 /* 00282b70 00000114 */ FUN_00282b70(){}
-/* 00282c90 00000108 */ FUN_00282c90(){}
+/* 00282c90 00000060 */ FUN_00282c90(){}
+/* 00282cf0 00000010 */ FUN_00282cf0(){}
+/* 00282d10 00000048 */ FUN_00282d10(){}
+/* 00282d60 00000014 */ FUN_00282d60(){}
+/* 00282d80 00000018 */ FUN_00282d80(){}
 /* 00282da0 00000084 */ FUN_00282da0(){}
 /* 00282e30 0000016c */ FUN_00282e30(){}
-/* 00282fa0 00000558 */ FUN_00282fa0(){}
+/* 00282fa0 00000084 */ FUN_00282fa0(){}
+/* 00283030 00000024 */ FUN_00283030(){}
+/* 00283060 00000430 */ FUN_00283060(){}
+/* 00283490 00000028 */ FUN_00283490(){}
+/* 002834c0 00000038 */ FUN_002834c0(){}
 /* 00283500 00000054 */ FUN_00283500(){}
 /* 00283560 00000040 */ FUN_00283560(){}
 /* 002835a0 00000060 */ FUN_002835a0(){}
@@ -5273,7 +6077,9 @@
 /* 002870f0 00000598 */ FUN_002870f0(){}
 /* 00287690 00000184 */ FUN_00287690(){}
 /* 00287820 000000e0 */ FUN_00287820(){}
-/* 00287900 000001e8 */ FUN_00287900(){}
+/* 00287900 000001cc */ FUN_00287900(){}
+/* 00287ad0 00000008 */ FUN_00287ad0(){}
+/* 00287ae0 00000008 */ FUN_00287ae0(){}
 /* 00287af0 00000080 */ FUN_00287af0(){}
 /* 00287b70 00000040 */ FUN_00287b70(){}
 /* 00287bb0 00000048 */ FUN_00287bb0(){}
@@ -5285,7 +6091,8 @@
 /* 00288340 0000045c */ FUN_00288340(){}
 /* 002887a0 000000a4 */ FUN_002887a0(){}
 /* 00288850 00000050 */ FUN_00288850(){}
-/* 002888a0 00000088 */ FUN_002888a0(){}
+/* 002888a0 0000007c */ FUN_002888a0(){}
+/* 00288920 00000008 */ FUN_00288920(){}
 /* 00288930 00000160 */ FUN_00288930(){}
 /* 00288a90 000000e4 */ FUN_00288a90(){}
 /* 00288b80 00000034 */ FUN_00288b80(){}
@@ -5300,7 +6107,9 @@
 /* 00289b20 0000002c */ FUN_00289b20(){}
 /* 00289b50 00000008 */ FUN_00289b50(){}
 /* 00289b60 00000080 */ FUN_00289b60(){}
-/* 00289be0 000000f4 */ FUN_00289be0(){}
+/* 00289be0 000000dc */ FUN_00289be0(){}
+/* 00289cc0 00000008 */ FUN_00289cc0(){}
+/* 00289cd0 00000004 */ FUN_00289cd0(){}
 /* 00289ce0 00000054 */ FUN_00289ce0(){}
 /* 00289d40 0000008c */ FUN_00289d40(){}
 /* 00289dd0 00000030 */ FUN_00289dd0(){}
@@ -5347,7 +6156,17 @@
 /* 0028ed60 00000104 */ FUN_0028ed60(){}
 /* 0028ee70 000009a4 */ FUN_0028ee70(){}
 /* 0028f820 00000064 */ FUN_0028f820(){}
-/* 0028f890 000001f8 */ FUN_0028f890(){}
+/* 0028f890 00000158 */ FUN_0028f890(){}
+/* 0028f9f0 00000008 */ FUN_0028f9f0(){}
+/* 0028fa00 00000008 */ FUN_0028fa00(){}
+/* 0028fa10 00000008 */ FUN_0028fa10(){}
+/* 0028fa20 00000008 */ FUN_0028fa20(){}
+/* 0028fa30 00000008 */ FUN_0028fa30(){}
+/* 0028fa40 00000008 */ FUN_0028fa40(){}
+/* 0028fa50 00000008 */ FUN_0028fa50(){}
+/* 0028fa60 00000008 */ FUN_0028fa60(){}
+/* 0028fa70 00000008 */ FUN_0028fa70(){}
+/* 0028fa80 00000008 */ FUN_0028fa80(){}
 /* 0028fa90 000000e8 */ FUN_0028fa90(){}
 /* 0028fb80 000000fc */ FUN_0028fb80(){}
 /* 0028fc80 000000ac */ FUN_0028fc80(){}
@@ -5402,7 +6221,10 @@
 /* 002931b0 0000028c */ FUN_002931b0(){}
 /* 00293440 00000398 */ FUN_00293440(){}
 /* 002937e0 000000e4 */ FUN_002937e0(){}
-/* 002938d0 00000104 */ FUN_002938d0(){}
+/* 002938d0 000000d4 */ FUN_002938d0(){}
+/* 002939b0 00000008 */ FUN_002939b0(){}
+/* 002939c0 00000004 */ FUN_002939c0(){}
+/* 002939d0 00000004 */ FUN_002939d0(){}
 /* 002939e0 00000274 */ FUN_002939e0(){}
 /* 00293c60 00000370 */ FUN_00293c60(){}
 /* 00293fd0 0000016c */ FUN_00293fd0(){}
@@ -5421,7 +6243,12 @@
 /* 00294f90 00000078 */ FUN_00294f90(){}
 /* 00295010 00000298 */ FUN_00295010(){}
 /* 002952b0 000000b0 */ FUN_002952b0(){}
-/* 00295360 00000108 */ FUN_00295360(){}
+/* 00295360 000000b8 */ FUN_00295360(){}
+/* 00295420 00000008 */ FUN_00295420(){}
+/* 00295430 00000008 */ FUN_00295430(){}
+/* 00295440 00000008 */ FUN_00295440(){}
+/* 00295450 00000008 */ FUN_00295450(){}
+/* 00295460 00000008 */ FUN_00295460(){}
 /* 00295470 00000078 */ FUN_00295470(){}
 /* 002954f0 000000e0 */ FUN_002954f0(){}
 /* 002955d0 00000008 */ FUN_002955d0(){}
@@ -5517,11 +6344,14 @@
 /* 0029a5b0 00000120 */ FUN_0029a5b0(){}
 /* 0029a6e0 0000001c */ FUN_0029a6e0(){}
 /* 0029a700 00000024 */ FUN_0029a700(){}
-/* 0029a730 00000108 */ FUN_0029a730(){}
+/* 0029a730 000000f8 */ FUN_0029a730(){}
+/* 0029a830 00000008 */ FUN_0029a830(){}
 /* 0029a840 00000078 */ FUN_0029a840(){}
 /* 0029a8c0 000000f8 */ FUN_0029a8c0(){}
 /* 0029a9c0 00000118 */ FUN_0029a9c0(){}
-/* 0029aae0 000001c8 */ FUN_0029aae0(){}
+/* 0029aae0 000001a8 */ FUN_0029aae0(){}
+/* 0029ac90 00000008 */ FUN_0029ac90(){}
+/* 0029aca0 00000008 */ FUN_0029aca0(){}
 /* 0029acb0 00000088 */ FUN_0029acb0(){}
 /* 0029ad40 00000060 */ FUN_0029ad40(){}
 /* 0029ada0 00000030 */ FUN_0029ada0(){}
@@ -5573,7 +6403,8 @@
 /* 002a1040 000000a8 */ FUN_002a1040(){}
 /* 002a10f0 000000c8 */ FUN_002a10f0(){}
 /* 002a11c0 00000008 */ FUN_002a11c0(){}
-/* 002a11d0 00000070 */ FUN_002a11d0(){}
+/* 002a11d0 00000008 */ FUN_002a11d0(){}
+/* 002a11e0 00000060 */ FUN_002a11e0(){}
 /* 002a1240 00000304 */ FUN_002a1240(){}
 /* 002a1550 0000007c */ FUN_002a1550(){}
 /* 002a15d0 000000a0 */ FUN_002a15d0(){}
@@ -5634,7 +6465,10 @@
 /* 002a6830 000000e0 */ FUN_002a6830(){}
 /* 002a6910 00000068 */ FUN_002a6910(){}
 /* 002a6980 00000128 */ FUN_002a6980(){}
-/* 002a6ab0 000000b4 */ FUN_002a6ab0(){}
+/* 002a6ab0 00000084 */ FUN_002a6ab0(){}
+/* 002a6b40 00000008 */ FUN_002a6b40(){}
+/* 002a6b50 00000004 */ FUN_002a6b50(){}
+/* 002a6b60 00000004 */ FUN_002a6b60(){}
 /* 002a6b70 000000c4 */ FUN_002a6b70(){}
 /* 002a6c40 00000090 */ FUN_002a6c40(){}
 /* 002a6cd0 0000015c */ FUN_002a6cd0(){}
@@ -5644,9 +6478,15 @@
 /* 002a6f00 0000005c */ FUN_002a6f00(){}
 /* 002a6f60 0000005c */ FUN_002a6f60(){}
 /* 002a6fc0 000000a8 */ FUN_002a6fc0(){}
-/* 002a7070 00000154 */ FUN_002a7070(){}
+/* 002a7070 00000144 */ FUN_002a7070(){}
+/* 002a71c0 00000004 */ FUN_002a71c0(){}
 /* 002a71d0 00000170 */ FUN_002a71d0(){}
-/* 002a7340 00000288 */ FUN_002a7340(){}
+/* 002a7340 000000a0 */ FUN_002a7340(){}
+/* 002a73e0 00000008 */ FUN_002a73e0(){}
+/* 002a73f0 00000008 */ FUN_002a73f0(){}
+/* 002a7400 00000008 */ FUN_002a7400(){}
+/* 002a7410 00000008 */ FUN_002a7410(){}
+/* 002a7420 000001a8 */ FUN_002a7420(){}
 /* 002a75d0 00000230 */ FUN_002a75d0(){}
 /* 002a7800 00000018 */ FUN_002a7800(){}
 /* 002a7820 00000018 */ FUN_002a7820(){}
@@ -5654,8 +6494,12 @@
 /* 002a7890 00000160 */ FUN_002a7890(){}
 /* 002a79f0 00000060 */ FUN_002a79f0(){}
 /* 002a7a50 000000c0 */ FUN_002a7a50(){}
-/* 002a7b10 00000078 */ FUN_002a7b10(){}
-/* 002a7b90 00000060 */ FUN_002a7b90(){}
+/* 002a7b10 00000060 */ FUN_002a7b10(){}
+/* 002a7b70 0000000c */ FUN_002a7b70(){}
+/* 002a7b80 00000008 */ FUN_002a7b80(){}
+/* 002a7b90 0000003c */ FUN_002a7b90(){}
+/* 002a7bd0 00000008 */ FUN_002a7bd0(){}
+/* 002a7be0 00000010 */ FUN_002a7be0(){}
 /* 002a7bf0 000000a0 */ FUN_002a7bf0(){}
 /* 002a7c90 0000004c */ FUN_002a7c90(){}
 /* 002a7ce0 00000370 */ FUN_002a7ce0(){}
@@ -5668,14 +6512,17 @@
 /* 002a8920 0000000c */ FUN_002a8920(){}
 /* 002a8930 0000000c */ FUN_002a8930(){}
 /* 002a8940 00000064 */ FUN_002a8940(){}
-/* 002a89b0 00000074 */ FUN_002a89b0(){}
+/* 002a89b0 00000070 */ FUN_002a89b0(){}
+/* 002a8a20 00000004 */ FUN_002a8a20(){}
 /* 002a8a30 00000124 */ FUN_002a8a30(){}
 /* 002a8b60 00000198 */ FUN_002a8b60(){}
 /* 002a8d00 00000278 */ FUN_002a8d00(){}
 /* 002a8f80 000000cc */ FUN_002a8f80(){}
 /* 002a9050 00000238 */ FUN_002a9050(){}
 /* 002a9290 00000068 */ FUN_002a9290(){}
-/* 002a9300 000000c0 */ FUN_002a9300(){}
+/* 002a9300 00000074 */ FUN_002a9300(){}
+/* 002a9380 0000001c */ FUN_002a9380(){}
+/* 002a93a0 00000020 */ FUN_002a93a0(){}
 /* 002a93d0 000000f0 */ FUN_002a93d0(){}
 /* 002a94c0 000000b0 */ FUN_002a94c0(){}
 /* 002a9570 000000a0 */ FUN_002a9570(){}
@@ -5683,7 +6530,22 @@
 /* 002a9700 00000110 */ FUN_002a9700(){}
 /* 002a9810 000000a8 */ FUN_002a9810(){}
 /* 002a98c0 0000007c */ FUN_002a98c0(){}
-/* 002a9940 00000290 */ FUN_002a9940(){}
+/* 002a9940 000000b4 */ FUN_002a9940(){}
+/* 002a9a00 00000010 */ FUN_002a9a00(){}
+/* 002a9a20 00000010 */ FUN_002a9a20(){}
+/* 002a9a40 00000010 */ FUN_002a9a40(){}
+/* 002a9a60 00000010 */ FUN_002a9a60(){}
+/* 002a9a80 00000010 */ FUN_002a9a80(){}
+/* 002a9aa0 00000010 */ FUN_002a9aa0(){}
+/* 002a9ac0 00000010 */ FUN_002a9ac0(){}
+/* 002a9ae0 00000010 */ FUN_002a9ae0(){}
+/* 002a9b00 00000010 */ FUN_002a9b00(){}
+/* 002a9b20 00000010 */ FUN_002a9b20(){}
+/* 002a9b40 00000010 */ FUN_002a9b40(){}
+/* 002a9b60 00000010 */ FUN_002a9b60(){}
+/* 002a9b80 00000010 */ FUN_002a9b80(){}
+/* 002a9ba0 00000010 */ FUN_002a9ba0(){}
+/* 002a9bc0 00000010 */ FUN_002a9bc0(){}
 /* 002a9be0 00000088 */ FUN_002a9be0(){}
 /* 002a9c70 00000004 */ memcardLibEnd(){}  // native
 /* 002a9c80 0000002c */ memcardInit(){}  // game
@@ -5816,28 +6678,42 @@
 /* 002b1940 00000310 */ FUN_002b1940(){}
 /* 002b1c50 00000058 */ FUN_002b1c50(){}
 /* 002b1cb0 00000024 */ FUN_002b1cb0(){}
-/* 002b1ce0 000000d8 */ FUN_002b1ce0(){}
+/* 002b1ce0 000000c8 */ FUN_002b1ce0(){}
+/* 002b1db0 00000008 */ FUN_002b1db0(){}
 /* 002b1dc0 00000188 */ FUN_002b1dc0(){}
-/* 002b1f50 0000008c */ FUN_002b1f50(){}
-/* 002b1fe0 000000b8 */ FUN_002b1fe0(){}
+/* 002b1f50 00000080 */ FUN_002b1f50(){}
+/* 002b1fd0 0000000c */ FUN_002b1fd0(){}
+/* 002b1fe0 000000a0 */ FUN_002b1fe0(){}
+/* 002b2080 00000008 */ FUN_002b2080(){}
+/* 002b2090 00000008 */ FUN_002b2090(){}
 /* 002b20a0 000001b0 */ FUN_002b20a0(){}
 /* 002b2250 00000014 */ FUN_002b2250(){}
 /* 002b2270 0000000c */ FUN_002b2270(){}
 /* 002b2280 00000044 */ FUN_002b2280(){}
 /* 002b22d0 0000001c */ FUN_002b22d0(){}
-/* 002b22f0 000000b4 */ FUN_002b22f0(){}
+/* 002b22f0 00000084 */ FUN_002b22f0(){}
+/* 002b2380 00000008 */ FUN_002b2380(){}
+/* 002b2390 00000004 */ FUN_002b2390(){}
+/* 002b23a0 00000004 */ FUN_002b23a0(){}
 /* 002b23b0 00000028 */ FUN_002b23b0(){}
 /* 002b23e0 00000034 */ FUN_002b23e0(){}
 /* 002b2420 00000080 */ FUN_002b2420(){}
 /* 002b24a0 000000b4 */ FUN_002b24a0(){}
 /* 002b2560 000000b4 */ FUN_002b2560(){}
 /* 002b2620 0000019c */ FUN_002b2620(){}
-/* 002b27c0 00000154 */ FUN_002b27c0(){}
+/* 002b27c0 00000144 */ FUN_002b27c0(){}
+/* 002b2910 00000004 */ FUN_002b2910(){}
 /* 002b2920 00000134 */ FUN_002b2920(){}
-/* 002b2a60 00000110 */ FUN_002b2a60(){}
+/* 002b2a60 00000070 */ FUN_002b2a60(){}
+/* 002b2ad0 00000008 */ FUN_002b2ad0(){}
+/* 002b2ae0 00000008 */ FUN_002b2ae0(){}
+/* 002b2af0 00000008 */ FUN_002b2af0(){}
+/* 002b2b00 00000008 */ FUN_002b2b00(){}
+/* 002b2b10 00000060 */ FUN_002b2b10(){}
 /* 002b2b70 0000009c */ FUN_002b2b70(){}
 /* 002b2c10 00000064 */ FUN_002b2c10(){}
-/* 002b2c80 00000074 */ FUN_002b2c80(){}
+/* 002b2c80 00000070 */ FUN_002b2c80(){}
+/* 002b2cf0 00000004 */ FUN_002b2cf0(){}
 /* 002b2d00 000000c4 */ FUN_002b2d00(){}
 /* 002b2dd0 000001b4 */ FUN_002b2dd0(){}
 /* 002b2f90 0000025c */ FUN_002b2f90(){}
@@ -5849,14 +6725,24 @@
 /* 002b3680 00000028 */ FUN_002b3680(){}
 /* 002b36b0 000000c0 */ FUN_002b36b0(){}
 /* 002b3770 00000060 */ FUN_002b3770(){}
-/* 002b37d0 000000d4 */ FUN_002b37d0(){}
+/* 002b37d0 0000008c */ FUN_002b37d0(){}
+/* 002b3860 00000008 */ FUN_002b3860(){}
+/* 002b3870 00000004 */ FUN_002b3870(){}
+/* 002b3880 00000004 */ FUN_002b3880(){}
+/* 002b3890 00000004 */ FUN_002b3890(){}
+/* 002b38a0 00000004 */ FUN_002b38a0(){}
 /* 002b38b0 00000130 */ FUN_002b38b0(){}
 /* 002b39e0 000003dc */ FUN_002b39e0(){}
 /* 002b3dc0 00000128 */ FUN_002b3dc0(){}
 /* 002b3ef0 00000180 */ FUN_002b3ef0(){}
 /* 002b4070 000008d8 */ FUN_002b4070(){}
 /* 002b4950 00000970 */ FUN_002b4950(){}
-/* 002b52c0 000004a4 */ FUN_002b52c0(){}
+/* 002b52c0 0000042c */ FUN_002b52c0(){}
+/* 002b56f0 00000008 */ FUN_002b56f0(){}
+/* 002b5700 00000008 */ FUN_002b5700(){}
+/* 002b5710 00000008 */ FUN_002b5710(){}
+/* 002b5720 00000008 */ FUN_002b5720(){}
+/* 002b5730 00000034 */ FUN_002b5730(){}
 /* 002b5770 0000032c */ FUN_002b5770(){}
 /* 002b5aa0 00000008 */ FUN_002b5aa0(){}
 /* 002b5ab0 0000030c */ FUN_002b5ab0(){}
@@ -5876,7 +6762,8 @@
 /* 002b72b0 00000334 */ FUN_002b72b0(){}
 /* 002b75f0 00000504 */ FUN_002b75f0(){}
 /* 002b7b00 00000488 */ FUN_002b7b00(){}
-/* 002b7f90 00000614 */ FUN_002b7f90(){}
+/* 002b7f90 00000608 */ FUN_002b7f90(){}
+/* 002b85a0 00000004 */ FUN_002b85a0(){}
 /* 002b85b0 00000128 */ FUN_002b85b0(){}
 /* 002b86e0 00001030 */ FUN_002b86e0(){}
 /* 002b9710 00000094 */ FUN_002b9710(){}
@@ -5893,7 +6780,11 @@
 /* 002bb2b0 0000012c */ FUN_002bb2b0(){}
 /* 002bb3e0 000000f4 */ FUN_002bb3e0(){}
 /* 002bb4e0 00000024 */ FUN_002bb4e0(){}
-/* 002bb510 00000164 */ FUN_002bb510(){}
+/* 002bb510 000000f0 */ FUN_002bb510(){}
+/* 002bb600 00000008 */ FUN_002bb600(){}
+/* 002bb610 0000000c */ FUN_002bb610(){}
+/* 002bb620 00000008 */ FUN_002bb620(){}
+/* 002bb630 00000044 */ FUN_002bb630(){}
 /* 002bb680 00000058 */ FUN_002bb680(){}
 /* 002bb6e0 000000b4 */ FUN_002bb6e0(){}
 /* 002bb7a0 00000070 */ FUN_002bb7a0(){}
@@ -5901,14 +6792,24 @@
 /* 002bb840 00000030 */ FUN_002bb840(){}
 /* 002bb870 000001ac */ FUN_002bb870(){}
 /* 002bba20 00000088 */ FUN_002bba20(){}
-/* 002bbab0 00000158 */ FUN_002bbab0(){}
+/* 002bbab0 00000050 */ FUN_002bbab0(){}
+/* 002bbb00 00000008 */ FUN_002bbb00(){}
+/* 002bbb10 000000ec */ FUN_002bbb10(){}
+/* 002bbc00 00000008 */ FUN_002bbc00(){}
 /* 002bbc10 000000dc */ FUN_002bbc10(){}
 /* 002bbcf0 000000c0 */ FUN_002bbcf0(){}
 /* 002bbdb0 00000078 */ FUN_002bbdb0(){}
 /* 002bbe30 000000a0 */ FUN_002bbe30(){}
 /* 002bbed0 000000dc */ FUN_002bbed0(){}
 /* 002bbfb0 00000088 */ FUN_002bbfb0(){}
-/* 002bc040 000000b8 */ FUN_002bc040(){}
+/* 002bc040 00000050 */ FUN_002bc040(){}
+/* 002bc090 00000008 */ FUN_002bc090(){}
+/* 002bc0a0 00000008 */ FUN_002bc0a0(){}
+/* 002bc0b0 00000008 */ FUN_002bc0b0(){}
+/* 002bc0c0 00000008 */ FUN_002bc0c0(){}
+/* 002bc0d0 00000008 */ FUN_002bc0d0(){}
+/* 002bc0e0 00000008 */ FUN_002bc0e0(){}
+/* 002bc0f0 00000008 */ FUN_002bc0f0(){}
 /* 002bc100 000002b4 */ FUN_002bc100(){}
 /* 002bc3c0 00000128 */ FUN_002bc3c0(){}
 /* 002bc4f0 000000e0 */ FUN_002bc4f0(){}
@@ -5989,7 +6890,9 @@
 /* 002c5780 000002f0 */ FUN_002c5780(){}
 /* 002c5a70 00000428 */ FUN_002c5a70(){}
 /* 002c5ea0 00000624 */ FUN_002c5ea0(){}
-/* 002c64d0 000016a0 */ FUN_002c64d0(){}
+/* 002c64d0 0000155c */ FUN_002c64d0(){}
+/* 002c7a30 00000004 */ thunk_FUN_002cc220(){}
+/* 002c7a40 00000130 */ FUN_002c7a40(){}
 /* 002c7b70 0000004c */ FUN_002c7b70(){}
 /* 002c7bc0 0000004c */ FUN_002c7bc0(){}
 /* 002c7c10 00000198 */ FUN_002c7c10(){}
@@ -6015,7 +6918,8 @@
 /* 002c9de0 00000550 */ FUN_002c9de0(){}
 /* 002ca330 00000460 */ FUN_002ca330(){}
 /* 002ca790 000000dc */ FUN_002ca790(){}
-/* 002ca870 000002e4 */ FUN_002ca870(){}
+/* 002ca870 000002e0 */ FUN_002ca870(){}
+/* 002cab50 00000004 */ FUN_002cab50(){}
 /* 002cab60 00000158 */ FUN_002cab60(){}
 /* 002cacc0 00000178 */ FUN_002cacc0(){}
 /* 002cae40 000000cc */ FUN_002cae40(){}
@@ -6036,9 +6940,11 @@
 /* 002cbc90 00000588 */ FUN_002cbc90(){}
 /* 002cc220 00000228 */ FUN_002cc220(){}
 /* 002cc450 000001ac */ FUN_002cc450(){}
-/* 002cc600 0000022c */ FUN_002cc600(){}
+/* 002cc600 00000138 */ FUN_002cc600(){}
+/* 002cc740 000000ec */ FUN_002cc740(){}
 /* 002cc830 00000090 */ FUN_002cc830(){}
-/* 002cc8c0 00000108 */ FUN_002cc8c0(){}
+/* 002cc8c0 000000f4 */ FUN_002cc8c0(){}
+/* 002cc9c0 00000008 */ FUN_002cc9c0(){}
 /* 002cc9d0 00000070 */ FUN_002cc9d0(){}
 /* 002cca40 000006dc */ FUN_002cca40(){}
 /* 002cd120 00000154 */ FUN_002cd120(){}
@@ -6049,8 +6955,15 @@
 /* 002cd730 000001e8 */ FUN_002cd730(){}
 /* 002cd920 00000078 */ FUN_002cd920(){}
 /* 002cd9a0 00000178 */ FUN_002cd9a0(){}
-/* 002cdb20 00000234 */ FUN_002cdb20(){}
-/* 002cdd60 000000ec */ FUN_002cdd60(){}
+/* 002cdb20 00000098 */ FUN_002cdb20(){}
+/* 002cdbc0 00000004 */ thunk_FUN_002cc8c0(){}
+/* 002cdbd0 00000004 */ FUN_002cdbd0(){}
+/* 002cdbe0 00000008 */ FUN_002cdbe0(){}
+/* 002cdbf0 00000004 */ FUN_002cdbf0(){}
+/* 002cdc00 0000008c */ FUN_002cdc00(){}
+/* 002cdc90 000000c4 */ FUN_002cdc90(){}
+/* 002cdd60 00000060 */ FUN_002cdd60(){}
+/* 002cddc0 0000008c */ FUN_002cddc0(){}
 /* 002cde50 00000010 */ FUN_002cde50(){}
 /* 002cde60 00000054 */ FUN_002cde60(){}
 /* 002cdec0 000000a4 */ FUN_002cdec0(){}
@@ -6180,16 +7093,108 @@
 /* 002d9760 0000033c */ FUN_002d9760(){}
 /* 002d9aa0 00000008 */ FUN_002d9aa0(){}
 /* 002d9ab0 00000008 */ FUN_002d9ab0(){}
-/* 002d9ac0 000001a0 */ FUN_002d9ac0(){}
-/* 002d9c70 000000e8 */ FUN_002d9c70(){}
+/* 002d9ac0 000000dc */ FUN_002d9ac0(){}
+/* 002d9ba0 00000008 */ FUN_002d9ba0(){}
+/* 002d9bb0 00000008 */ FUN_002d9bb0(){}
+/* 002d9bc0 00000008 */ FUN_002d9bc0(){}
+/* 002d9bd0 00000008 */ FUN_002d9bd0(){}
+/* 002d9be0 00000048 */ FUN_002d9be0(){}
+/* 002d9c30 00000030 */ FUN_002d9c30(){}
+/* 002d9c70 000000c4 */ FUN_002d9c70(){}
+/* 002d9d40 00000008 */ FUN_002d9d40(){}
+/* 002d9d50 00000008 */ FUN_002d9d50(){}
 /* 002d9d60 000000a0 */ FUN_002d9d60(){}
-/* 002d9e00 0000012c */ FUN_002d9e00(){}
-/* 002d9f30 00000198 */ FUN_002d9f30(){}
-/* 002da0d0 00000148 */ FUN_002da0d0(){}
+/* 002d9e00 000000b8 */ FUN_002d9e00(){}
+/* 002d9ec0 00000008 */ FUN_002d9ec0(){}
+/* 002d9ed0 0000000c */ FUN_002d9ed0(){}
+/* 002d9ee0 00000010 */ FUN_002d9ee0(){}
+/* 002d9ef0 00000014 */ FUN_002d9ef0(){}
+/* 002d9f10 00000008 */ FUN_002d9f10(){}
+/* 002d9f20 0000000c */ FUN_002d9f20(){}
+/* 002d9f30 0000008c */ FUN_002d9f30(){}
+/* 002d9fc0 00000008 */ FUN_002d9fc0(){}
+/* 002d9fd0 00000008 */ FUN_002d9fd0(){}
+/* 002d9fe0 00000008 */ FUN_002d9fe0(){}
+/* 002d9ff0 00000068 */ FUN_002d9ff0(){}
+/* 002da060 00000068 */ FUN_002da060(){}
+/* 002da0d0 0000008c */ FUN_002da0d0(){}
+/* 002da160 00000008 */ FUN_002da160(){}
+/* 002da170 0000000c */ FUN_002da170(){}
+/* 002da180 00000010 */ FUN_002da180(){}
+/* 002da190 00000014 */ FUN_002da190(){}
+/* 002da1b0 00000008 */ FUN_002da1b0(){}
+/* 002da1c0 0000000c */ FUN_002da1c0(){}
+/* 002da1d0 00000008 */ FUN_002da1d0(){}
+/* 002da1e0 00000008 */ FUN_002da1e0(){}
+/* 002da1f0 00000008 */ FUN_002da1f0(){}
+/* 002da200 00000008 */ FUN_002da200(){}
+/* 002da210 00000008 */ FUN_002da210(){}
 /* 002da220 000000c0 */ FUN_002da220(){}
 /* 002da2e0 00000408 */ FUN_002da2e0(){}
 /* 002da6f0 000000f4 */ FUN_002da6f0(){}
-/* 002da7f0 00000478 */ FUN_002da7f0(){}
+/* 002da7f0 00000094 */ FUN_002da7f0(){}
+/* 002da890 00000008 */ FUN_002da890(){}
+/* 002da8a0 00000008 */ FUN_002da8a0(){}
+/* 002da8b0 00000008 */ FUN_002da8b0(){}
+/* 002da8c0 00000008 */ FUN_002da8c0(){}
+/* 002da8d0 00000008 */ FUN_002da8d0(){}
+/* 002da8e0 00000008 */ FUN_002da8e0(){}
+/* 002da8f0 00000008 */ FUN_002da8f0(){}
+/* 002da900 00000008 */ FUN_002da900(){}
+/* 002da910 00000008 */ FUN_002da910(){}
+/* 002da920 00000008 */ FUN_002da920(){}
+/* 002da930 00000008 */ FUN_002da930(){}
+/* 002da940 00000008 */ FUN_002da940(){}
+/* 002da950 00000008 */ FUN_002da950(){}
+/* 002da960 00000008 */ FUN_002da960(){}
+/* 002da970 00000008 */ FUN_002da970(){}
+/* 002da980 00000008 */ FUN_002da980(){}
+/* 002da990 00000008 */ FUN_002da990(){}
+/* 002da9a0 00000008 */ FUN_002da9a0(){}
+/* 002da9b0 00000008 */ FUN_002da9b0(){}
+/* 002da9c0 00000008 */ FUN_002da9c0(){}
+/* 002da9d0 00000008 */ FUN_002da9d0(){}
+/* 002da9e0 00000008 */ FUN_002da9e0(){}
+/* 002da9f0 00000008 */ FUN_002da9f0(){}
+/* 002daa00 00000008 */ FUN_002daa00(){}
+/* 002daa10 00000008 */ FUN_002daa10(){}
+/* 002daa20 00000008 */ FUN_002daa20(){}
+/* 002daa30 00000008 */ FUN_002daa30(){}
+/* 002daa40 00000008 */ FUN_002daa40(){}
+/* 002daa50 00000008 */ FUN_002daa50(){}
+/* 002daa60 00000008 */ FUN_002daa60(){}
+/* 002daa70 00000008 */ FUN_002daa70(){}
+/* 002daa80 00000008 */ FUN_002daa80(){}
+/* 002daa90 00000008 */ FUN_002daa90(){}
+/* 002daaa0 00000008 */ FUN_002daaa0(){}
+/* 002daab0 00000008 */ FUN_002daab0(){}
+/* 002daac0 00000008 */ FUN_002daac0(){}
+/* 002daad0 00000008 */ FUN_002daad0(){}
+/* 002daae0 00000008 */ FUN_002daae0(){}
+/* 002daaf0 00000008 */ FUN_002daaf0(){}
+/* 002dab00 00000008 */ FUN_002dab00(){}
+/* 002dab10 00000008 */ FUN_002dab10(){}
+/* 002dab20 00000008 */ FUN_002dab20(){}
+/* 002dab30 00000008 */ FUN_002dab30(){}
+/* 002dab40 00000008 */ FUN_002dab40(){}
+/* 002dab50 00000008 */ FUN_002dab50(){}
+/* 002dab60 00000008 */ FUN_002dab60(){}
+/* 002dab70 00000008 */ FUN_002dab70(){}
+/* 002dab80 00000008 */ FUN_002dab80(){}
+/* 002dab90 00000008 */ FUN_002dab90(){}
+/* 002daba0 00000008 */ FUN_002daba0(){}
+/* 002dabb0 00000008 */ FUN_002dabb0(){}
+/* 002dabc0 00000008 */ FUN_002dabc0(){}
+/* 002dabd0 00000008 */ FUN_002dabd0(){}
+/* 002dabe0 00000008 */ FUN_002dabe0(){}
+/* 002dabf0 00000008 */ FUN_002dabf0(){}
+/* 002dac00 00000008 */ FUN_002dac00(){}
+/* 002dac10 00000008 */ FUN_002dac10(){}
+/* 002dac20 00000008 */ FUN_002dac20(){}
+/* 002dac30 00000008 */ FUN_002dac30(){}
+/* 002dac40 00000008 */ FUN_002dac40(){}
+/* 002dac50 00000008 */ FUN_002dac50(){}
+/* 002dac60 00000008 */ FUN_002dac60(){}
 /* 002dac70 00000050 */ FUN_002dac70(){}
 /* 002dacc0 00000368 */ FUN_002dacc0(){}
 /* 002db030 0000004c */ FUN_002db030(){}
@@ -6203,7 +7208,8 @@
 /* 002dccf0 000001b8 */ FUN_002dccf0(){}
 /* 002dceb0 00000134 */ FUN_002dceb0(){}
 /* 002dcff0 00000060 */ FUN_002dcff0(){}
-/* 002dd050 00000068 */ FUN_002dd050(){}
+/* 002dd050 00000058 */ FUN_002dd050(){}
+/* 002dd0b0 00000008 */ FUN_002dd0b0(){}
 /* 002dd0c0 00000074 */ FUN_002dd0c0(){}
 /* 002dd140 00000114 */ FUN_002dd140(){}
 /* 002dd260 00000098 */ FUN_002dd260(){}
@@ -6247,15 +7253,23 @@
 /* 002dfd30 00000338 */ FUN_002dfd30(){}
 /* 002e0070 00000008 */ FUN_002e0070(){}
 /* 002e0080 00000008 */ FUN_002e0080(){}
-/* 002e0090 00000058 */ FUN_002e0090(){}
+/* 002e0090 00000028 */ FUN_002e0090(){}
+/* 002e00c0 00000008 */ FUN_002e00c0(){}
+/* 002e00d0 00000008 */ FUN_002e00d0(){}
+/* 002e00e0 00000008 */ FUN_002e00e0(){}
 /* 002e00f0 000003e8 */ FUN_002e00f0(){}
 /* 002e04e0 0000009c */ FUN_002e04e0(){}
 /* 002e0580 00000070 */ FUN_002e0580(){}
-/* 002e05f0 00000138 */ FUN_002e05f0(){}
+/* 002e05f0 0000012c */ FUN_002e05f0(){}
+/* 002e0720 00000008 */ FUN_002e0720(){}
 /* 002e0730 0000007c */ FUN_002e0730(){}
 /* 002e07b0 0000000c */ FUN_002e07b0(){}
-/* 002e07c0 0000004c */ FUN_002e07c0(){}
-/* 002e0810 0000002c */ FUN_002e0810(){}
+/* 002e07c0 0000000c */ FUN_002e07c0(){}
+/* 002e07d0 0000001c */ FUN_002e07d0(){}
+/* 002e07f0 0000001c */ FUN_002e07f0(){}
+/* 002e0810 00000008 */ FUN_002e0810(){}
+/* 002e0820 00000008 */ FUN_002e0820(){}
+/* 002e0830 0000000c */ FUN_002e0830(){}
 /* 002e0840 00000010 */ FUN_002e0840(){}
 /* 002e0850 0000015c */ FUN_002e0850(){}
 /* 002e09b0 0000005c */ FUN_002e09b0(){}
@@ -6287,11 +7301,16 @@
 /* 002e3640 00000190 */ FUN_002e3640(){}
 /* 002e37d0 0000012c */ FUN_002e37d0(){}
 /* 002e3900 00000104 */ FUN_002e3900(){}
-/* 002e3a10 0000018c */ FUN_002e3a10(){}
+/* 002e3a10 00000134 */ FUN_002e3a10(){}
+/* 002e3b50 00000008 */ FUN_002e3b50(){}
+/* 002e3b60 00000008 */ FUN_002e3b60(){}
+/* 002e3b70 0000002c */ FUN_002e3b70(){}
 /* 002e3ba0 00000048 */ FUN_002e3ba0(){}
 /* 002e3bf0 00000198 */ FUN_002e3bf0(){}
 /* 002e3d90 00000074 */ FUN_002e3d90(){}
-/* 002e3e10 000002e8 */ FUN_002e3e10(){}
+/* 002e3e10 000002d0 */ FUN_002e3e10(){}
+/* 002e40e0 00000008 */ FUN_002e40e0(){}
+/* 002e40f0 00000008 */ FUN_002e40f0(){}
 /* 002e4100 00000090 */ FUN_002e4100(){}
 /* 002e41a0 0000023c */ FUN_002e41a0(){}
 /* 002e43e0 000000f4 */ FUN_002e43e0(){}
@@ -6419,6 +7438,12 @@
 /* 002f4b00 000001a0 */ FUN_002f4b00(){}
 /* 002f4ca0 00000044 */ FUN_002f4ca0(){}
 /* 002f4ce8 00000034 */ FUN_002f4ce8(){}
-/* 00310ac0 0000009c */ FUN_00310ac0(){}
-/* 00310b60 000003fc */ FUN_00310b60(){}
+/* 00310a00 00000020 */ FUN_00310a00(){}
+/* 00310a20 0000004c */ FUN_00310a20(){}
+/* 00310a70 0000004c */ FUN_00310a70(){}
+/* 00310ac0 00000044 */ FUN_00310ac0(){}
+/* 00310b10 0000004c */ FUN_00310b10(){}
+/* 00310b60 00000360 */ FUN_00310b60(){}
+/* 00310ec0 0000004c */ FUN_00310ec0(){}
+/* 00310f10 0000004c */ FUN_00310f10(){}
 /* 00310f60 00000020 */ FUN_00310f60(){}

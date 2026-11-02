@@ -84,7 +84,7 @@ files from the 4 file-name strings.
 | ELF symbols | 0 (stripped) | -- | -- |
 | Ghidra auto-analysis | 100 (SDK syscalls, thunks) | emotionengine-reloaded | -- |
 | vtables (classes) | 490 tables, 4 named by RTTI | rtti.py (CodeWarrior) | -- (class map, not names yet) |
-| missing function starts | 910 (904 vtable slots, 6 static initialisers) | rtti.py --missing | create first |
+| missing function starts | 910 (904 vtable slots, 6 static initialisers) | rtti.py --missing | **created 2026-11-02** (bootstrap 4a) |
 | by reading, batch 001 (2026-10-31) | 27: crt0 / libc / libkernl, CodeWarrior + MSL runtime, `main`, heap | name_ctx.py | lib-context 24, game-inferred 3 |
 | by reading, batches 002-004 (2026-10-31) | 26 + 34 + 52: threads, gameInit's subsystems, `GameSystem` and its members, rena `Vif1PktManage` | name_ctx.py | ledger 139 |
 | class names | 6 (`data/class_names.json`) | rtti.py | -- |
@@ -92,7 +92,8 @@ files from the 4 file-name strings.
 | batch 006 (2026-11-02) | 61 rx names: the gaps (span partition), rxfile's tail (thread, queue, device map), 7 by reading, 5 fixes of batch 005 | rxalign.py + name_ctx.py | lib-context; ledger 443 |
 | batch 007 (2026-11-02) | 204 rx names: rxsnd 0x159bc0..0x162178 (190 aligned, 5 by reading, 3 FS2-only RPC wrappers) + rxthread's VBlank tail 0x159928..0x159bc0 (6) | rxalign.py + name_ctx.py | lib-context; ledger 647 |
 | batch 008 (2026-11-02) | 114: rxsndut + rxsndstr 0x162178..0x166b50 by reading (113, every Ghidra function there) + `strcmp` 0x128238 | name_ctx.py | lib-context; ledger 761 |
-| rx starts Ghidra merged | 45 + 28 (batch 007) in `data/missing_functions.json` ("rx from RosePan"), + 33 rxsndstr (batch 008, "by reading") | rxalign.py --missing; batch 008 by a jr-ra / tail-j scan | create first |
+| rx starts Ghidra merged | 45 + 28 (batch 007) ("rx from RosePan"), + 33 rxsndstr (batch 008, "by reading") | rxalign.py --missing; batch 008 by a jr-ra / tail-j scan | created 2026-11-02 |
+| bootstrap 4(a), batch 009 (2026-11-02) | **1,023 function starts created** (all 1,016 of `data/missing_functions.json` + 7 code pointers passed as arguments; Ghidra 6,395 -> 7,418 functions); 113 names: the 106 merged rx starts with their batch 005-008 names, `gameMainThread`, `gameFrameReady`, `gameThreadSwitchHook`, `threadVSyncHandler`, `dmacBusErrorHandler`, `GamePad::update`, `MaskedGamePad::update` | ghidra create_function loop + name_ctx.py | lib-context 106, game-inferred 7; ledger 874 |
 
 Expected sources (bootstrap step 4): Sony SDK 3.0 libraries by match (libmatch.py against FF3 / RoR,
 both SDK 3.0); MSL C++ / CodeWarrior runtime only by reading (no reference game built with it); rx and
@@ -108,7 +109,7 @@ Differences: **FS2's rx is a slightly newer build** whose error messages carry `
 `rxFileOnCreate` / `rxFileOnGetSize`, the host driver (`rxFileHostGetSize`..`Write`, each +0x10) and
 `rxFileCdFindDir` (+0x18) are longer than RoR's; `rxSysPrintf` is the same size. Ghidra had merged
 45 small rx functions (setters reached only by pointer or not at all, thread entry points) into
-their predecessors; they wait in `data/missing_functions.json`. After rxthread's `rxThDmaSync`
+their predecessors; created 2026-11-02 (bootstrap 4a, named in batch 009). After rxthread's `rxThDmaSync`
 0x168150 FS2 diverges from RoR (RoR's `rxThVBlank*` / `rxThSync`; FS2's 0x1681c0.. differ in size,
 not rxsnd: the `SDPR2` messages, below).
 **Batch 007 (2026-11-02): rxsnd and rxthread's tail.** FS2 links rx in another order than RoR
@@ -149,7 +150,8 @@ static slot table and init / exit / update called from `rxSndUtInit` 0x162178 / 
   over memory, sorted branch markers and tags in node pools 0x524200 / 0x525a04; IOP bodies are read
   through `rxSndIopRead` into 0x522a00 at most 0x1000 at a time.
 Ghidra merged 33 of its small functions into their predecessors (getters after a `jr ra`, a tail `j`
-then a new prologue); they wait in `data/missing_functions.json` with their names.
+then a new prologue); created and named 2026-11-02 (batch 009). Since then `rxalign.py` pairs
+every rx range one to one (0 gaps, 0 starts lacking).
 **Not in RoR's rx, still to name**: 0x1681c0.. is **SDPR2** (strings 0x3027b8..: `LimitRange`, `LimitRangeF`,
 `RoundRange`, `ERR OutOfRange`, `ERR Call Undefine Function`; 0x1681c0 sets a 0..1 mode with
 range messages, 0x168398 its debug-flag getter).
@@ -164,8 +166,10 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
 
 - `entry` 0x100008 -> `main` 0x12d910 (argc, argv) -> exit call 0x123538. `main` (batch 002):
   `gameInit` 0x12d620(argv[0]) (heap, sceGsSyncV waits, RNG seed, `new` of the 0x540-byte global
-  object stored at gp-0x7aec, ctor 0x12d0d0, AddDmacHandler(15, 0x12dc20)); argc/argv to gp-0x7ae8 /
-  -0x7ae4; `threadSysInit`(0x12db70 frameReady, 2); `threadSetSwitchHook`(0x12dab0, obj+0x4a8);
+  object stored at gp-0x7aec, ctor 0x12d0d0, AddDmacHandler(15, `dmacBusErrorHandler` 0x12dc20: BEIS, write-1-clears D_STAT bit 15, sets
+  gp-0x7ae0)); argc/argv to gp-0x7ae8 /
+  -0x7ae4; `threadSysInit`(`gameFrameReady` 0x12db70, 2); `threadSetSwitchHook`(`gameThreadSwitchHook` 0x12dab0, obj+0x4a8: a perf-meter mark
+  per thread through 0x133610, names 0x2f3810 `Th_Ctrl`.., colours 0x2f3830 by slot % 6);
   **`threadRunMain`(`gameMainThread` 0x12db00)**, which blocks until the game ends; then
   `threadSysShutdown` 0x130e50, then the teardown (batch 005): `memcardLibEnd` 0x2acec0 (thunk;
   `sceMcEnd` 0x11fe08), 0x151280 (empty), `soundShutdown` 0x148540, deletes the global object
@@ -177,8 +181,9 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
   forever: 0x151270 (empty), `frameSyncWait` (returns the vsyncs this frame took),
   `GameSystem::flipFrame` 0x12cdf0(obj, vsyncs) ("The global object" below), `padSysUpdate` 0x12ffa0, `soundUpdate` 0x148500,
   `threadYield`(1), `gsEndFrameSync` 0x12cd20 (sceGsSyncPath with a GS / DMA reset on timeout). The
-  2 passed to `threadSysInit` is the frame interval: 30 fps unless the frameReady callback 0x12db70
-  says otherwise.
+  2 passed to `threadSysInit` is the frame interval: 30 fps unless the frameReady callback `gameFrameReady`
+  0x12db70 says otherwise (on the frameSync record: ready when requested and count >= interval;
+  calls 0x12e0e0(ready, ...) either way).
 - **`gameInit`'s subsystems** (batch 003): `rxInit` 0x1527a0 (SCE's rx runtime: thread priorities
   relative to the caller, boot path from argv[0], devices, `spkRomLoad` 0x152870 = all of `SPK.ROM`
   into the heap, magic `SLPK`, its entry table relocated), `padSysInit` 0x130130 (libpad, two
@@ -237,8 +242,8 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
     (getGameOptions()+0x24). Each vtable has **one slot, the per-frame update** that `padSysUpdate`
     calls through the 16 listeners 0x4af000 (`Pad::setListening` 0x12fed0): `Pad` 0x130060 (thunk to
     `Pad::update` 0x12f300), `GamePad` 0x12dc60 (update + computeSticks), `MaskedGamePad` 0x12dcb0
-    (the same, then `Pad::clear` 0x12f960 while L1+L2 are held). The three slot functions have no Ghidra
-    function yet (4(a)). Standalone `GamePad` ctor / dtor candidates: 0x12d540 / 0x12d5a0 (rtti.py).
+    (the same, then `Pad::clear` 0x12f960 while L1+L2 are held). The slot functions were created and named at
+    bootstrap 4a (batch 009; 0x130060 stays a thunk). Standalone `GamePad` ctor / dtor candidates: 0x12d540 / 0x12d5a0 (rtti.py).
   - **rena `Vif1PktManage`** (0x30 bytes, vptr at +0x2c): `{+0 write ptr, +4 buffer base, +8 chain
     start, +0xc open list, +0x10 buffer index, +0x14 list vector (count +0x18, data +0x1c), +0x20
     buffer vector {base, size} (count +0x24, data +0x28)}`; lists are 0x34-byte `Vif1PktList`s
@@ -296,8 +301,7 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
 
 - 0x100280 (crt0 side) runs the table **0x310fb0..0x310fd4**: 9 initialisers 0x310a00, 0x310a20,
   0x310a70, 0x310ac0, 0x310b10, 0x310b60, 0x310ec0, 0x310f10, 0x310f60 -- the second code island is
-  CodeWarrior's static-initialiser code. Ghidra has functions for 3 of them (the other 6 are in
-  `data/missing_functions.json`).
+  CodeWarrior's static-initialiser code. Ghidra has functions for all 9 since 2026-11-02 (6 created at bootstrap 4a).
 - 0x310a00 tail-calls **0x104c60(0x537d80, 0x1772f0, 0, 0x38, 0x87)**: array, ctor, dtor, element
   size, count -- MSL's `__construct_array` (named, batch 001).
 
@@ -327,7 +331,7 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   pending; bit 7 masked), +8 ticks, +0xc arg, +0x10 cleanup fn, +0x14 result, +0x18 stack size?,
   +0x1c stack base (canary 0x572a8b4c), +0x20 own-stack flag}`; default stacks per slot in the table
   0x2f38c0 (8 bytes each). gp-0x7fd8 is the current slot. `threadScheduler` 0x131290 (prio 0x40)
-  wakes on the vblank callback 0x131840 (via `sceGsSyncVCallback`) and steps slots round-robin;
+  wakes on the vblank callback `threadVSyncHandler` 0x131840 (signals semaphore gp-0x7fcc) (via `sceGsSyncVCallback`) and steps slots round-robin;
   `threadSlotCreate` 0x130c90, `threadYield` 0x130bc0(ticks) (canary check), `threadRunMain`
   0x130e00, `threadSetSwitchHook` 0x130a30 (post-switch; gp-0x7aa4 / -0x7a9c is a pre-switch hook
   nothing set yet). Frame pacing: `frameSyncInit` 0x131870 / `frameSyncThread` 0x131930 (prio 0x10,

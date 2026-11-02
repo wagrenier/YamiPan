@@ -263,7 +263,8 @@ def save_program(tries=6):
 # Ghidra writes. Every writer saves with save_program() when its batch is done.
 
 def create_function(addr, name='', tries=4):
-    """Create a function at addr (disassembling first); retries while a save holds the lock. True if a
+    """Create a function at addr (disassembling first); retries while a save holds the lock or the call
+    answered without creating it. True if a
     function starts there afterwards; False (and nothing written) while Ghidra is down."""
     import time
     if not ghidra_up():
@@ -272,11 +273,12 @@ def create_function(addr, name='', tries=4):
         try:
             http('POST', 'create_function', {'address': f'0x{addr:x}', 'disassemble_first': True,
                                              **({'name': name} if name else {})})
-            break
+            if has_function(addr):      # it can answer success and create nothing: a second call does
+                return True
         except GhidraRequestError as e:
             if e.code != 'LOCKED':
                 break
-        time.sleep(3)
+            time.sleep(3)
     return has_function(addr)
 
 

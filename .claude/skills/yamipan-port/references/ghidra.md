@@ -111,6 +111,9 @@ groups (67 tools) on connect; `search_tools` / `load_tool_group` add the rest; `
   `GhidraRequestError`; anything talking to the port directly must check.
 - **Save after writing**: `name_ctx.py` and `ghidra.py mkfunc` call `save_program()`; a crash before
   it loses the batch.
+- **`create_function` can answer success and create nothing** (2026-11-02, bootstrap 4a: 21 of
+  1,016 starts, mostly vtable slots in bytes auto-analysis never disassembled): a second call creates
+  it. `yamipan.create_function` now retries until `has_function` says yes.
 - **"At or containing"**: `get_functions` and `disassemble_function` take any address inside a body.
   "Is there a function at X" means `entry_point` == X (`yamipan.has_function`).
 - **The EE loader's RAM mirrors**: emotionengine-reloaded maps `RAM(uncached)` at 0x20000000 and

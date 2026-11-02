@@ -18,11 +18,11 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    `rtti.py` rewritten for CodeWarrior (490 vtables, architecture.md "Classes"); the second code island
    is the static-initialiser table (architecture.md "Static initialisers"); **910 function starts
    Ghidra lacks** in `data/missing_functions.json`. **Left for bootstrap 4, in this order:**
-   (a) create those functions (1,016 in `data/missing_functions.json` by 2026-11-02; 0x1621f0
-   `rxSndUtExit` already created as the 7.0.0 test): **unblocked since 2026-11-02** (GhidraMCP 7.0.0,
-   `yamipan.create_function` / `ghidra.py mkfunc`; item 6 done). A run creates them in one go (a short loop over the JSON, then `save_program()` and
-   `refresh.py`), then names the ones the JSON names (batches 005-008: "rx from RosePan", "by
-   reading") with a `name_ctx.py` batch, and reruns `rtti.py` / `rxalign.py`; do it before (b);
+   ~~(a) create those functions~~ **done 2026-11-02 (batch 009)**: all 1,016 starts of
+   `data/missing_functions.json` + 7 code pointers (`gameMainThread` and the six below) created and
+   saved (Ghidra 6,395 -> 7,418 functions; 21 needed a second `create_function` call: ghidra.md),
+   the 106 merged rx starts named with their batch 005-008 names, `rtti.py --missing` now finds 0
+   (the JSON is `{}`) and `rxalign.py` pairs all six rx ranges one to one (0 entries);
    (b) seed names by reading with `name_ctx.py` batches (`tools/reverse/work/batches/NNN.json`, not
    committed; the ledger `data/context_names.json` is). **Batch 001 done (2026-10-31, 27 names)**:
    the entry chain, `main`, `exit` / `Exit` / `_InitSys`, the CodeWarrior + MSL runtime, the
@@ -31,9 +31,10 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    `gameInit`, heap init / teardown, libgraph sync and libkernl interrupt helpers (architecture.md
    "Program flow", "Thread system"). `gameMainThread` 0x12db00 failed: no Ghidra function there.
    **Code pointers passed as arguments are not in `data/missing_functions.json`** (it only has
-   vtable slots and initialisers): 0x12db00, 0x12db70, 0x12dab0, 0x131840, 0x12dc20 need functions
-   too (with 4(a)); a `rtti.py --missing` / `ghidra.py refs` pass over lui/addiu pairs feeding a0..t1
-   before a jal would find the rest. Rename 0x12db00 `gameMainThread` once it exists.
+   vtable slots and initialisers): 0x12db00, 0x12db70, 0x12dab0, 0x131840, 0x12dc20 were created
+   and named in batch 009 (architecture.md "Program flow"); **still to do with (b)**: a pass over
+   lui/addiu pairs feeding a0..t1 before a jal (thread entries, callbacks, handlers) to find the
+   rest -- worth a `rtti.py`-style `--missing` option or a small `codeptrs.py`.
    **Batch 003 done (2026-10-31, 34 names)**: `gameMainThread`'s and `gameInit`'s callees (pad,
    sound, rx init, SPK.ROM, GS / DMA / SIF / libpad library calls, options; architecture.md
    "Program flow").
@@ -41,8 +42,8 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    object is `GameSystem` (ctor 0x12d0d0, `flipFrame` 0x12cdf0) with three pads (`Pad` / `GamePad` /
    `MaskedGamePad`), `GamePacketManager` on rena's `Vif1PktManage`, `PerfMeter` / `RcntTimer`,
    `MasterClock` / `Clock` / `PtrList`, libvifpk, `rxPrintf` (architecture.md "The global object").
-   Need Ghidra functions first (with 4(a)): the pad update slots 0x130060 (thunk), 0x12dc60
-   (`GamePad::update`), 0x12dcb0 (`MaskedGamePad::update`). Left unnamed: 0x133610 (empty, returns
+   The pad update slots 0x12dc60 `GamePad::update` / 0x12dcb0 `MaskedGamePad::update` were created
+   and named in batch 009 (0x130060 stays a thunk). Left unnamed: 0x133610 (empty, returns
    0, also called by 0x198970 / 0x199400: a PerfMeter bar? check those callers), 0x133600 /
    0x132f20 (empty), 0x12f6b0 / 0x12f600 (Pad::update's stick / post steps), 0x119b88 (atan2f?),
    0x12d540 / 0x12d5a0 (GamePad ctor / dtor candidates, rtti.py).
@@ -74,7 +75,8 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    (MARK +4), `rxSndStrSetFloatParam` (0x163b40, +0x28, dirty bit 0x10 nobody reads),
    `rxSndStrPlayAt` 0x163738 (a bare tail call to `rxSndStrPlayEx`: why does it exist?).
    Snapshot before it: `work/snapshots/20261102_135750.json`.
-   **Next batches, in this order**: **SDPR2** 0x1681c0.. (not in RoR: the `SDPR2 ...`
+   **Batch 009 done (2026-11-02, 113 names)**: bootstrap 4(a) above.
+   **Next batches, in this order**: the code-pointer pass above; **SDPR2** 0x1681c0.. (not in RoR: the `SDPR2 ...`
    messages 0x3027b8..; find its end) and **rxMpeg** (RoR 0x18182c..: find FS2's copy by size
    runs, as batch 007 found rxsnd); `_InitSys`'s nine
    callees (0x140c08, 0x140d48, 0x141338, 0x1414b0, 0x1416f0, 0x1378b8, 0x140f80, 0x140470,
@@ -203,6 +205,11 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-11-02: bootstrap 4, part 10 (scheduled run): 4(a), 1,023 missing function starts created in
+  Ghidra (saved by the tools: no Ctrl+S needed) and naming batch 009 (113 names: the merged rx
+  starts, the main loop's callbacks, the pad update slots); `yamipan.create_function` retries a
+  call that answered without creating. Next: the code-pointer pass, then SDPR2, rxMpeg.
 
 - 2026-11-02: bootstrap 4, part 9 (scheduled run): naming batch 008 (114 names: rxsndut +
   rxsndstr by reading, `strcmp`; 33 merged starts listed). Ghidra had unsaved changes (Ctrl+S).

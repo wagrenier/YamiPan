@@ -377,6 +377,12 @@
   "was": "FUN_001022d8",
   "why": "rx library: RosePan names RoR 0x241f08 rxSysSetPrintHook; between matched neighbours its span 0x20 is RoR's rxSysSetPrintHook, rxSysPrintWait (rxalign.py span partition)"
  },
+ "001022f0": {
+  "name": "rxSysPrintWait",
+  "tag": "lib-context",
+  "was": "FUN_001022f0",
+  "why": "rx library: RosePan names RoR 0x241f20 rxSysPrintWait (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "001022f8": {
   "name": "rxSysIsTtyOpen",
   "tag": "lib-context",
@@ -388,6 +394,12 @@
   "tag": "lib-context",
   "was": "FUN_00102328",
   "why": "rx library (was rxPrintf, batch 004): RosePan's rxSysPrintf (RoR 0x241f58, 0x1f8 bytes; here 0x1fc) in the same place, between rxSysIsTtyOpen and rxSysTermEnd; formats into a 1 KB buffer, print hook or scePrintf / the host log"
+ },
+ "00102520": {
+  "name": "rxSysInitEnd",
+  "tag": "lib-context",
+  "was": "FUN_00102520",
+  "why": "rx library: RosePan names RoR 0x242150 rxSysInitEnd (rxalign.py size run; start created at bootstrap 4a)"
  },
  "00102528": {
   "name": "rxSysTermEnd",
@@ -449,6 +461,12 @@
   "was": "FUN_00102830",
   "why": "rx library: RosePan names RoR 0x242460 rxSysUnlockPrint; between matched neighbours its span 0x80 is RoR's rxSysUnlockPrint, rxSysLockSema1 (rxalign.py span partition)"
  },
+ "00102850": {
+  "name": "rxSysLockSema1",
+  "tag": "lib-context",
+  "was": "FUN_00102850",
+  "why": "rx library: RosePan names RoR 0x242480 rxSysLockSema1 (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "001028b0": {
   "name": "rxSysUnlockSema1",
   "tag": "lib-context",
@@ -502,6 +520,18 @@
   "tag": "lib-context",
   "was": "FUN_00102ae0",
   "why": "rx library: RosePan names RoR 0x242710 rxSysLockConsole; between matched neighbours its span 0x250 is RoR's rxSysLockConsole, rxSysUnlockConsole, rxSysExceptionHandler (rxalign.py span partition)"
+ },
+ "00102af8": {
+  "name": "rxSysUnlockConsole",
+  "tag": "lib-context",
+  "was": "FUN_00102af8",
+  "why": "rx library: RosePan names RoR 0x242728 rxSysUnlockConsole (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "00102b10": {
+  "name": "rxSysExceptionHandler",
+  "tag": "lib-context",
+  "was": "FUN_00102b10",
+  "why": "rx library: RosePan names RoR 0x242740 rxSysExceptionHandler (rxalign.py size run; start created at bootstrap 4a)"
  },
  "00102d30": {
   "name": "rxSysSetDebugHandlers",
@@ -580,6 +610,36 @@
   "tag": "lib-context",
   "was": "FUN_00103470",
   "why": "rx library: RosePan names RoR 0x2430a0 rxSysConsoleSetDisplay; between matched neighbours its span 0x238 is RoR's rxSysConsoleSetDisplay, rxSysConsoleClear, rxSysConsoleSetWaits, rxSysConsoleSetColor, rxSysExitHook, rxSysInitExceptionScreen (rxalign.py span partition)"
+ },
+ "001034b0": {
+  "name": "rxSysConsoleClear",
+  "tag": "lib-context",
+  "was": "FUN_001034b0",
+  "why": "rx library: RosePan names RoR 0x2430e0 rxSysConsoleClear (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "00103518": {
+  "name": "rxSysConsoleSetWaits",
+  "tag": "lib-context",
+  "was": "FUN_00103518",
+  "why": "rx library: RosePan names RoR 0x243148 rxSysConsoleSetWaits (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "00103530": {
+  "name": "rxSysConsoleSetColor",
+  "tag": "lib-context",
+  "was": "FUN_00103530",
+  "why": "rx library: RosePan names RoR 0x243160 rxSysConsoleSetColor (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "00103548": {
+  "name": "rxSysExitHook",
+  "tag": "lib-context",
+  "was": "FUN_00103548",
+  "why": "rx library: RosePan names RoR 0x243178 rxSysExitHook (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "00103590": {
+  "name": "rxSysInitExceptionScreen",
+  "tag": "lib-context",
+  "was": "FUN_00103590",
+  "why": "rx library: RosePan names RoR 0x2431c0 rxSysInitExceptionScreen (rxalign.py size run; start created at bootstrap 4a)"
  },
  "001036a8": {
   "name": "rxSysTermExceptionScreen",
@@ -941,6 +1001,42 @@
   "was": "FUN_0012d910",
   "why": "entry 0x100204 calls it with argc (0x31af80) and argv (0x31af84) after FlushCache/EI, then jumps to exit with its result"
  },
+ "0012dab0": {
+  "name": "gameThreadSwitchHook",
+  "tag": "game-inferred",
+  "was": "FUN_0012dab0",
+  "why": "main passes it to threadSetSwitchHook with obj+0x4a8: calls 0x133610(0, arg, colour table 0x2f3830[slot % 6], 0, thread name table 0x2f3810 starting Th_Ctrl[slot]): a per-thread perf-meter mark"
+ },
+ "0012db00": {
+  "name": "gameMainThread",
+  "tag": "game-inferred",
+  "was": "FUN_0012db00",
+  "why": "passed by main to threadRunMain; starts thread slot 1 on 0x231bb0, then forever frameSyncWait, GameSystem::flipFrame, padSysUpdate, soundUpdate, threadYield(1), gsEndFrameSync"
+ },
+ "0012db70": {
+  "name": "gameFrameReady",
+  "tag": "game-inferred",
+  "was": "FUN_0012db70",
+  "why": "frameReady callback main passes to threadSysInit: on the frameSync record {+0 requested, +4 vsync count, +8 interval} returns 1 when requested and count >= interval, calling 0x12e0e0(ready, ...) both ways"
+ },
+ "0012dc20": {
+  "name": "dmacBusErrorHandler",
+  "tag": "game-inferred",
+  "was": "FUN_0012dc20",
+  "why": "gameInit AddDmacHandler(15, it): cause 15 is BEIS; sets bit 15 of D_STAT (byte 0x1000e011 bit 7, write-1-to-clear) and the flag gp-0x7ae0 = 1"
+ },
+ "0012dc60": {
+  "name": "GamePad::update",
+  "tag": "game-inferred",
+  "was": "FUN_0012dc60",
+  "why": "GamePad vtable update slot (listener slot vptr+0x120): Pad::update then GamePad::computeSticks when it returns nonzero"
+ },
+ "0012dcb0": {
+  "name": "MaskedGamePad::update",
+  "tag": "game-inferred",
+  "was": "FUN_0012dcb0",
+  "why": "MaskedGamePad vtable update slot: as GamePad::update, then Pad::clear when bits 0 and 2 of +0x14 are both set"
+ },
  "0012dd30": {
   "name": "GamePacketManager::closeList",
   "tag": "game-inferred",
@@ -1120,6 +1216,12 @@
   "tag": "game-inferred",
   "was": "FUN_00131720",
   "why": "spins on the job list 0x4c8b38, runs job->fn(job->arg) (+8 / +0xc) under DIntr/EIntr bookkeeping, frees the record when it returns 0, re-queues it at the tail 0x4c8b3c otherwise"
+ },
+ "00131840": {
+  "name": "threadVSyncHandler",
+  "tag": "game-inferred",
+  "was": "FUN_00131840",
+  "why": "thread system: the interrupt callback registered via sceGsSyncVCallback; iPollSema + iSignalSema on gp-0x7fcc, the semaphore threadScheduler waits on"
  },
  "00131870": {
   "name": "frameSyncInit",
@@ -1361,6 +1463,12 @@
   "was": "FUN_00153280",
   "why": "rx library: RosePan names RoR 0x243560 rxSysSetFileContext; between matched neighbours its span 0x68 is RoR's rxSysSetFileContext, rxSysDeviceControl (rxalign.py span partition)"
  },
+ "00153298": {
+  "name": "rxSysDeviceControl",
+  "tag": "lib-context",
+  "was": "FUN_00153298",
+  "why": "rx library: RosePan names RoR 0x243578 rxSysDeviceControl (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "001532e8": {
   "name": "rxSysDeviceStatus",
   "tag": "lib-context",
@@ -1390,6 +1498,12 @@
   "tag": "lib-context",
   "was": "FUN_00153370",
   "why": "rx library: RosePan names RoR 0x243650 rxSysSetFileDir; between matched neighbours its span 0x50 is RoR's rxSysSetFileDir, rxSysGetFileDir (rxalign.py span partition)"
+ },
+ "001533a0": {
+  "name": "rxSysGetFileDir",
+  "tag": "lib-context",
+  "was": "FUN_001533a0",
+  "why": "rx library: RosePan names RoR 0x243680 rxSysGetFileDir (rxalign.py size run; start created at bootstrap 4a)"
  },
  "001533c0": {
   "name": "rxSysSetFileSearchDir",
@@ -1493,6 +1607,12 @@
   "was": "FUN_00153ac8",
   "why": "rx library: RosePan names RoR 0x243da8 rxFileSetMarkers; between matched neighbours its span 0xb8 is RoR's rxFileSetMarkers, rxFileEnableMarker (rxalign.py span partition)"
  },
+ "00153b28": {
+  "name": "rxFileEnableMarker",
+  "tag": "lib-context",
+  "was": "FUN_00153b28",
+  "why": "rx library: RosePan names RoR 0x243e08 rxFileEnableMarker (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00153b80": {
   "name": "rxFilePause",
   "tag": "lib-context",
@@ -1529,11 +1649,23 @@
   "was": "FUN_00153d48",
   "why": "rx library: RosePan names RoR 0x244028 rxFileRingConsume; between matched neighbours its span 0x1a8 is RoR's rxFileRingConsume, rxFileGetRingFilePos (rxalign.py span partition)"
  },
+ "00153e98": {
+  "name": "rxFileGetRingFilePos",
+  "tag": "lib-context",
+  "was": "FUN_00153e98",
+  "why": "rx library: RosePan names RoR 0x244178 rxFileGetRingFilePos (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00153ef0": {
   "name": "rxFileSetTags",
   "tag": "lib-context",
   "was": "FUN_00153ef0",
   "why": "rx library: RosePan names RoR 0x2441d0 rxFileSetTags; between matched neighbours its span 0xb8 is RoR's rxFileSetTags, rxFileEnableTag (rxalign.py span partition)"
+ },
+ "00153f50": {
+  "name": "rxFileEnableTag",
+  "tag": "lib-context",
+  "was": "FUN_00153f50",
+  "why": "rx library: RosePan names RoR 0x244230 rxFileEnableTag (rxalign.py size run; start created at bootstrap 4a)"
  },
  "00153fa8": {
   "name": "rxFileGetRingTags",
@@ -1619,6 +1751,12 @@
   "was": "FUN_00154dc0",
   "why": "rx library: RosePan names RoR 0x245078 rxFileSlotSetMarkers; between matched neighbours its span 0x208 is RoR's rxFileSlotSetMarkers, rxFileSlotEnableMarker (rxalign.py span partition)"
  },
+ "00154f88": {
+  "name": "rxFileSlotEnableMarker",
+  "tag": "lib-context",
+  "was": "FUN_00154f88",
+  "why": "rx library: RosePan names RoR 0x245240 rxFileSlotEnableMarker (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00154fc8": {
   "name": "rxFileSlotAddSegment",
   "tag": "lib-context",
@@ -1648,6 +1786,12 @@
   "tag": "lib-context",
   "was": "FUN_00155348",
   "why": "rx library: RosePan names RoR 0x245600 rxFileSlotSetTags; between matched neighbours its span 0x1e8 is RoR's rxFileSlotSetTags, rxFileSlotEnableTag (rxalign.py span partition)"
+ },
+ "001554f0": {
+  "name": "rxFileSlotEnableTag",
+  "tag": "lib-context",
+  "was": "FUN_001554f0",
+  "why": "rx library: RosePan names RoR 0x2457a8 rxFileSlotEnableTag (rxalign.py size run; start created at bootstrap 4a)"
  },
  "00155530": {
   "name": "rxFileSlotGetTags",
@@ -1781,6 +1925,18 @@
   "was": "FUN_001560f0",
   "why": "rx library: RosePan names RoR 0x2463a8 rxFileHostMakePath; between matched neighbours its span 0x48 is RoR's rxFileHostMakePath, rxFileHostControl, rxFileHostGetStatus (rxalign.py span partition)"
  },
+ "00156108": {
+  "name": "rxFileHostControl",
+  "tag": "lib-context",
+  "was": "FUN_00156108",
+  "why": "rx library: RosePan names RoR 0x2463c0 rxFileHostControl (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "00156110": {
+  "name": "rxFileHostGetStatus",
+  "tag": "lib-context",
+  "was": "FUN_00156110",
+  "why": "rx library: RosePan names RoR 0x2463c8 rxFileHostGetStatus (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00156138": {
   "name": "rxFileHostGetSize",
   "tag": "lib-context",
@@ -1810,6 +1966,12 @@
   "tag": "lib-context",
   "was": "FUN_00156528",
   "why": "rx library: RosePan names RoR 0x2467a0 rxFileHostJoinRoot; between matched neighbours its span 0x58 is RoR's rxFileHostJoinRoot, rxFileHostGetRoot (rxalign.py span partition)"
+ },
+ "00156570": {
+  "name": "rxFileHostGetRoot",
+  "tag": "lib-context",
+  "was": "FUN_00156570",
+  "why": "rx library: RosePan names RoR 0x2467e8 rxFileHostGetRoot (rxalign.py size run; start created at bootstrap 4a)"
  },
  "00156580": {
   "name": "rxFileHostSetRoot",
@@ -1871,17 +2033,35 @@
   "was": "FUN_00156a40",
   "why": "rx library: RosePan names RoR 0x246cb8 rxFileCdControl; between matched neighbours its span 0x148 is RoR's rxFileCdControl, rxFileCdGetStatus (rxalign.py span partition)"
  },
+ "00156b08": {
+  "name": "rxFileCdGetStatus",
+  "tag": "lib-context",
+  "was": "FUN_00156b08",
+  "why": "rx library: RosePan names RoR 0x246d80 rxFileCdGetStatus (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00156b88": {
   "name": "rxFileCdGetSize",
   "tag": "lib-context",
   "was": "FUN_00156b88",
   "why": "rx library: RosePan names RoR 0x246e00 rxFileCdGetSize; between matched neighbours its span 0x80 is RoR's rxFileCdGetSize, rxFileCdCreate (rxalign.py span partition)"
  },
+ "00156c00": {
+  "name": "rxFileCdCreate",
+  "tag": "lib-context",
+  "was": "FUN_00156c00",
+  "why": "rx library: RosePan names RoR 0x246e78 rxFileCdCreate (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00156c08": {
   "name": "rxFileCdRead",
   "tag": "lib-context",
   "was": "FUN_00156c08",
   "why": "rx library: RosePan names RoR 0x246e80 rxFileCdRead; between matched neighbours its span 0xf0 is RoR's rxFileCdRead, rxFileCdWrite (rxalign.py span partition)"
+ },
+ "00156cf0": {
+  "name": "rxFileCdWrite",
+  "tag": "lib-context",
+  "was": "FUN_00156cf0",
+  "why": "rx library: RosePan names RoR 0x246f68 rxFileCdWrite (rxalign.py size run; start created at bootstrap 4a)"
  },
  "00156cf8": {
   "name": "rxFileCdIsoName",
@@ -1961,6 +2141,12 @@
   "was": "FUN_00157a00",
   "why": "rx library: RosePan names RoR 0x247c60 rxFileCdReadCached; between matched neighbours its span 0x238 is RoR's rxFileCdReadCached, rxFileCdGetRoot (rxalign.py span partition)"
  },
+ "00157c28": {
+  "name": "rxFileCdGetRoot",
+  "tag": "lib-context",
+  "was": "FUN_00157c28",
+  "why": "rx library: RosePan names RoR 0x247e88 rxFileCdGetRoot (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00157c38": {
   "name": "rxFileCdSetRoot",
   "tag": "lib-context",
@@ -1972,6 +2158,18 @@
   "tag": "lib-context",
   "was": "FUN_00157c40",
   "why": "rx library: RosePan names RoR 0x247ea0 rxFileCdSetFindFunc; between matched neighbours its span 0x70 is RoR's rxFileCdSetFindFunc, rxFileCdSetClockRead, rxFileCdGetClockRead (rxalign.py span partition); batch 005 read it as rxFileCdSetLocateHook (not in RoR's rx) but it is RoR's rxFileCdSetFindFunc word for word (stores the CD find hook 0x2f5acc, returns the old)"
+ },
+ "00157c58": {
+  "name": "rxFileCdSetClockRead",
+  "tag": "lib-context",
+  "was": "FUN_00157c58",
+  "why": "rx library: RosePan names RoR 0x247eb8 rxFileCdSetClockRead (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "00157ca0": {
+  "name": "rxFileCdGetClockRead",
+  "tag": "lib-context",
+  "was": "FUN_00157ca0",
+  "why": "rx library: RosePan names RoR 0x247f00 rxFileCdGetClockRead (rxalign.py size run; start created at bootstrap 4a)"
  },
  "00157cb0": {
   "name": "rxFileCdGetClock",
@@ -1997,6 +2195,12 @@
   "was": "FUN_00157db8",
   "why": "rx library: RosePan names RoR 0x248018 rxFileHddInit; between matched neighbours its span 0x90 is RoR's rxFileHddInit, rxFileHddTerm (rxalign.py span partition)"
  },
+ "00157e40": {
+  "name": "rxFileHddTerm",
+  "tag": "lib-context",
+  "was": "FUN_00157e40",
+  "why": "rx library: RosePan names RoR 0x2480a0 rxFileHddTerm (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00157e48": {
   "name": "rxFileHddOnError",
   "tag": "lib-context",
@@ -2008,6 +2212,18 @@
   "tag": "lib-context",
   "was": "FUN_00157ef8",
   "why": "rx library: RosePan names RoR 0x248158 rxFileHddMakePath; between matched neighbours its span 0x48 is RoR's rxFileHddMakePath, rxFileHddControl, rxFileHddGetStatus (rxalign.py span partition)"
+ },
+ "00157f10": {
+  "name": "rxFileHddControl",
+  "tag": "lib-context",
+  "was": "FUN_00157f10",
+  "why": "rx library: RosePan names RoR 0x248170 rxFileHddControl (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "00157f18": {
+  "name": "rxFileHddGetStatus",
+  "tag": "lib-context",
+  "was": "FUN_00157f18",
+  "why": "rx library: RosePan names RoR 0x248178 rxFileHddGetStatus (rxalign.py size run; start created at bootstrap 4a)"
  },
  "00157f40": {
   "name": "rxFileHddGetSize",
@@ -2038,6 +2254,12 @@
   "tag": "lib-context",
   "was": "FUN_00158360",
   "why": "rx library: RosePan names RoR 0x2485c0 rxFileHddJoinRoot; between matched neighbours its span 0x58 is RoR's rxFileHddJoinRoot, rxFileHddGetRoot (rxalign.py span partition)"
+ },
+ "001583a8": {
+  "name": "rxFileHddGetRoot",
+  "tag": "lib-context",
+  "was": "FUN_001583a8",
+  "why": "rx library: RosePan names RoR 0x248608 rxFileHddGetRoot (rxalign.py size run; start created at bootstrap 4a)"
  },
  "001583b8": {
   "name": "rxFileHddSetRoot",
@@ -2231,6 +2453,30 @@
   "was": "FUN_00158f60",
   "why": "rx library: RosePan names RoR 0x2491c0 rxFileCreateThread; between matched neighbours its span 0x448 is RoR's rxFileCreateThread, rxFileThreadMain, rxFileThreadProc, rxFileNop0, rxFileNop1 (rxalign.py span partition)"
  },
+ "00159050": {
+  "name": "rxFileThreadMain",
+  "tag": "lib-context",
+  "was": "FUN_00159050",
+  "why": "rx library: RosePan names RoR 0x2492b0 rxFileThreadMain (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "00159380": {
+  "name": "rxFileThreadProc",
+  "tag": "lib-context",
+  "was": "FUN_00159380",
+  "why": "rx library: RosePan names RoR 0x2495e0 rxFileThreadProc (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "00159398": {
+  "name": "rxFileNop0",
+  "tag": "lib-context",
+  "was": "FUN_00159398",
+  "why": "rx library: RosePan names RoR 0x2495f8 rxFileNop0 (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "001593a0": {
+  "name": "rxFileNop1",
+  "tag": "lib-context",
+  "was": "FUN_001593a0",
+  "why": "rx library: RosePan names RoR 0x249600 rxFileNop1 (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "001593a8": {
   "name": "rxFileQueueInit",
   "tag": "lib-context",
@@ -2285,11 +2531,23 @@
   "was": "FUN_00159808",
   "why": "rx library: RosePan names RoR 0x249a68 rxFileGetDeviceMap; between matched neighbours its span 0x80 is RoR's rxFileGetDeviceMap, rxFileSetFallbackDevice (rxalign.py span partition)"
  },
+ "00159870": {
+  "name": "rxFileSetFallbackDevice",
+  "tag": "lib-context",
+  "was": "FUN_00159870",
+  "why": "rx library: RosePan names RoR 0x249ad0 rxFileSetFallbackDevice (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00159888": {
   "name": "rxFileGetFallbackDevice",
   "tag": "lib-context",
   "was": "FUN_00159888",
   "why": "rx library: RosePan names RoR 0x249ae8 rxFileGetFallbackDevice; between matched neighbours its span 0x28 is RoR's rxFileGetFallbackDevice, rxFileSetErrorHook (rxalign.py span partition)"
+ },
+ "001598a0": {
+  "name": "rxFileSetErrorHook",
+  "tag": "lib-context",
+  "was": "FUN_001598a0",
+  "why": "rx library: RosePan names RoR 0x249b00 rxFileSetErrorHook (rxalign.py size run; start created at bootstrap 4a)"
  },
  "001598b0": {
   "name": "rxFileGetErrorHook",
@@ -2339,6 +2597,12 @@
   "was": "FUN_00159ac8",
   "why": "rx library: RosePan names RoR 0x24b398 rxThWaitVBlank; between matched neighbours its span 0x60 is RoR's rxThWaitVBlank, rxThGetField (rxalign.py span partition); FS2 links rxthread's VBlank tail (RoR 0x24b1f8..0x24b48c) between rxfile and rxsnd, same sizes: INTC 2 handler counting fields, RCNT0 HSync counter"
  },
+ "00159b18": {
+  "name": "rxThGetField",
+  "tag": "lib-context",
+  "was": "FUN_00159b18",
+  "why": "rx library: RosePan names RoR 0x24b3e8 rxThGetField (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00159b28": {
   "name": "rxThSync",
   "tag": "lib-context",
@@ -2350,6 +2614,12 @@
   "tag": "lib-context",
   "was": "FUN_00159bc0",
   "why": "rx library: RosePan names RoR 0x237ce8 rxSndThreadCallback; between matched neighbours its span 0x98 is RoR's rxSndThreadCallback, rxSndCheckBgCall (rxalign.py span partition)"
+ },
+ "00159bd8": {
+  "name": "rxSndCheckBgCall",
+  "tag": "lib-context",
+  "was": "FUN_00159bd8",
+  "why": "rx library: RosePan names RoR 0x237d00 rxSndCheckBgCall (rxalign.py size run; start created at bootstrap 4a)"
  },
  "00159c58": {
   "name": "rxSndInit",
@@ -2441,11 +2711,23 @@
   "was": "FUN_0015a1d8",
   "why": "rx library: RosePan names RoR 0x238300 rxSndGetVoiceTableEx; between matched neighbours its span 0xa8 is RoR's rxSndGetVoiceTableEx, rxSndSetVoiceEntry (rxalign.py span partition)"
  },
+ "0015a238": {
+  "name": "rxSndSetVoiceEntry",
+  "tag": "lib-context",
+  "was": "FUN_0015a238",
+  "why": "rx library: RosePan names RoR 0x238360 rxSndSetVoiceEntry (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "0015a280": {
   "name": "rxSndGetVoiceTable2",
   "tag": "lib-context",
   "was": "FUN_0015a280",
   "why": "rx library: RosePan names RoR 0x2383a8 rxSndGetVoiceTable2; between matched neighbours its span 0xd0 is RoR's rxSndGetVoiceTable2, rxSndCentToPitch (rxalign.py span partition)"
+ },
+ "0015a2e0": {
+  "name": "rxSndCentToPitch",
+  "tag": "lib-context",
+  "was": "FUN_0015a2e0",
+  "why": "rx library: RosePan names RoR 0x238408 rxSndCentToPitch (rxalign.py size run; start created at bootstrap 4a)"
  },
  "0015a350": {
   "name": "rxSndInitConfig",
@@ -2729,6 +3011,18 @@
   "was": "FUN_0015b160",
   "why": "rx library: RosePan names RoR 0x239288 rxSndXvabPoll; between matched neighbours its span 0xf8 is RoR's rxSndXvabPoll, rxSndSpuHeapGetFreeSize, rxSndSpuHeapGetMaxFreeBlock (rxalign.py span partition)"
  },
+ "0015b1f8": {
+  "name": "rxSndSpuHeapGetFreeSize",
+  "tag": "lib-context",
+  "was": "FUN_0015b1f8",
+  "why": "rx library: RosePan names RoR 0x239320 rxSndSpuHeapGetFreeSize (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "0015b208": {
+  "name": "rxSndSpuHeapGetMaxFreeBlock",
+  "tag": "lib-context",
+  "was": "FUN_0015b208",
+  "why": "rx library: RosePan names RoR 0x239330 rxSndSpuHeapGetMaxFreeBlock (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "0015b258": {
   "name": "rxSndSpuHeapInit",
   "tag": "lib-context",
@@ -2807,11 +3101,29 @@
   "was": "FUN_0015bed8",
   "why": "rx library: RosePan names RoR 0x23a000 rxSndSetEffectFeedbackCore; between matched neighbours its span 0x100 is RoR's rxSndSetEffectFeedbackCore, rxSndSetEffectMode, rxSndSetEffectDepth (rxalign.py span partition)"
  },
+ "0015bf58": {
+  "name": "rxSndSetEffectMode",
+  "tag": "lib-context",
+  "was": "FUN_0015bf58",
+  "why": "rx library: RosePan names RoR 0x23a080 rxSndSetEffectMode (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "0015bf90": {
+  "name": "rxSndSetEffectDepth",
+  "tag": "lib-context",
+  "was": "FUN_0015bf90",
+  "why": "rx library: RosePan names RoR 0x23a0b8 rxSndSetEffectDepth (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "0015bfd8": {
   "name": "rxSndSetEffectDelay",
   "tag": "lib-context",
   "was": "FUN_0015bfd8",
   "why": "rx library: RosePan names RoR 0x23a100 rxSndSetEffectDelay; between matched neighbours its span 0x70 is RoR's rxSndSetEffectDelay, rxSndSetEffectFeedback (rxalign.py span partition)"
+ },
+ "0015c010": {
+  "name": "rxSndSetEffectFeedback",
+  "tag": "lib-context",
+  "was": "FUN_0015c010",
+  "why": "rx library: RosePan names RoR 0x23a138 rxSndSetEffectFeedback (rxalign.py size run; start created at bootstrap 4a)"
  },
  "0015c048": {
   "name": "rxSndXvabInit",
@@ -2824,6 +3136,12 @@
   "tag": "lib-context",
   "was": "FUN_0015c050",
   "why": "rx library: RosePan names RoR 0x23a178 rxSndXvabTerm; between matched neighbours its span 0x40 is RoR's rxSndXvabTerm, rxSndReadVarLen (rxalign.py span partition)"
+ },
+ "0015c058": {
+  "name": "rxSndReadVarLen",
+  "tag": "lib-context",
+  "was": "FUN_0015c058",
+  "why": "rx library: RosePan names RoR 0x23a180 rxSndReadVarLen (rxalign.py size run; start created at bootstrap 4a)"
  },
  "0015c090": {
   "name": "rxSndXvabLoad",
@@ -2999,6 +3317,36 @@
   "was": "FUN_0015d580",
   "why": "rx library: RosePan names RoR 0x23b498 rxSndBgmStopAll; between matched neighbours its span 0x310 is RoR's rxSndBgmStopAll, rxSndBgmPause, rxSndBgmGetStatus, rxSndBgmGetValue, rxSndBgmSetChannelVolume, rxSndBgmSetChannelVolume74 (rxalign.py span partition)"
  },
+ "0015d5d0": {
+  "name": "rxSndBgmPause",
+  "tag": "lib-context",
+  "was": "FUN_0015d5d0",
+  "why": "rx library: RosePan names RoR 0x23b4e8 rxSndBgmPause (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "0015d698": {
+  "name": "rxSndBgmGetStatus",
+  "tag": "lib-context",
+  "was": "FUN_0015d698",
+  "why": "rx library: RosePan names RoR 0x23b5b0 rxSndBgmGetStatus (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "0015d6d0": {
+  "name": "rxSndBgmGetValue",
+  "tag": "lib-context",
+  "was": "FUN_0015d6d0",
+  "why": "rx library: RosePan names RoR 0x23b5e8 rxSndBgmGetValue (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "0015d710": {
+  "name": "rxSndBgmSetChannelVolume",
+  "tag": "lib-context",
+  "was": "FUN_0015d710",
+  "why": "rx library: RosePan names RoR 0x23b628 rxSndBgmSetChannelVolume (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "0015d7d0": {
+  "name": "rxSndBgmSetChannelVolume74",
+  "tag": "lib-context",
+  "was": "FUN_0015d7d0",
+  "why": "rx library: RosePan names RoR 0x23b6e8 rxSndBgmSetChannelVolume74 (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "0015d890": {
   "name": "rxSndBgmSetAttr",
   "tag": "lib-context",
@@ -3065,6 +3413,18 @@
   "was": "FUN_0015dea0",
   "why": "rx library: RosePan names RoR 0x23bd70 rxSndSeSetMasterVolume; between matched neighbours its span 0xf8 is RoR's rxSndSeSetMasterVolume, rxSndSeSetDefaultParamB, rxSndSeSetDefaultParamC (rxalign.py span partition)"
  },
+ "0015df38": {
+  "name": "rxSndSeSetDefaultParamB",
+  "tag": "lib-context",
+  "was": "FUN_0015df38",
+  "why": "rx library: RosePan names RoR 0x23be08 rxSndSeSetDefaultParamB (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "0015df68": {
+  "name": "rxSndSeSetDefaultParamC",
+  "tag": "lib-context",
+  "was": "FUN_0015df68",
+  "why": "rx library: RosePan names RoR 0x23be38 rxSndSeSetDefaultParamC (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "0015df98": {
   "name": "rxSndSePlay",
   "tag": "lib-context",
@@ -3095,6 +3455,12 @@
   "was": "FUN_0015e358",
   "why": "rx library: RosePan names RoR 0x23c228 rxSndSeGetStatus; between matched neighbours its span 0x100 is RoR's rxSndSeGetStatus, rxSndSePause (rxalign.py span partition)"
  },
+ "0015e390": {
+  "name": "rxSndSePause",
+  "tag": "lib-context",
+  "was": "FUN_0015e390",
+  "why": "rx library: RosePan names RoR 0x23c260 rxSndSePause (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "0015e458": {
   "name": "rxSndSeSetAttr",
   "tag": "lib-context",
@@ -3124,6 +3490,36 @@
   "tag": "lib-context",
   "was": "FUN_0015e790",
   "why": "rx library: RosePan names RoR 0x23c660 rxSndSeSetParam; between matched neighbours its span 0x200 is RoR's rxSndSeSetParam, rxSndSeSetParam6, rxSndSeSetParam7, rxSndSeSetParam8, rxSndSeSetParam9, rxSndSeSetPan (rxalign.py span partition)"
+ },
+ "0015e830": {
+  "name": "rxSndSeSetParam6",
+  "tag": "lib-context",
+  "was": "FUN_0015e830",
+  "why": "rx library: RosePan names RoR 0x23c700 rxSndSeSetParam6 (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "0015e870": {
+  "name": "rxSndSeSetParam7",
+  "tag": "lib-context",
+  "was": "FUN_0015e870",
+  "why": "rx library: RosePan names RoR 0x23c740 rxSndSeSetParam7 (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "0015e8b0": {
+  "name": "rxSndSeSetParam8",
+  "tag": "lib-context",
+  "was": "FUN_0015e8b0",
+  "why": "rx library: RosePan names RoR 0x23c780 rxSndSeSetParam8 (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "0015e8f0": {
+  "name": "rxSndSeSetParam9",
+  "tag": "lib-context",
+  "was": "FUN_0015e8f0",
+  "why": "rx library: RosePan names RoR 0x23c7c0 rxSndSeSetParam9 (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "0015e930": {
+  "name": "rxSndSeSetPan",
+  "tag": "lib-context",
+  "was": "FUN_0015e930",
+  "why": "rx library: RosePan names RoR 0x23c800 rxSndSeSetPan (rxalign.py size run; start created at bootstrap 4a)"
  },
  "0015e990": {
   "name": "rxSndSeSetParamB",
@@ -3184,6 +3580,12 @@
   "tag": "lib-context",
   "was": "FUN_0015ed70",
   "why": "rx library: RosePan names RoR 0x23cbf8 rxSndSetSysMute; between matched neighbours its span 0xb0 is RoR's rxSndSetSysMute, rxSndPcmSetParamB4 (rxalign.py span partition)"
+ },
+ "0015ede0": {
+  "name": "rxSndPcmSetParamB4",
+  "tag": "lib-context",
+  "was": "FUN_0015ede0",
+  "why": "rx library: RosePan names RoR 0x23cc68 rxSndPcmSetParamB4 (rxalign.py size run; start created at bootstrap 4a)"
  },
  "0015ee20": {
   "name": "rxSndPcmOpen",
@@ -3299,6 +3701,18 @@
   "was": "FUN_0015fd90",
   "why": "rx library: RosePan names RoR 0x23dbd0 rxSndAdpcmSetMasterVolume; between matched neighbours its span 0xf8 is RoR's rxSndAdpcmSetMasterVolume, rxSndAdpcmSetDefaultParam6, rxSndAdpcmSetDefaultParam7 (rxalign.py span partition)"
  },
+ "0015fe28": {
+  "name": "rxSndAdpcmSetDefaultParam6",
+  "tag": "lib-context",
+  "was": "FUN_0015fe28",
+  "why": "rx library: RosePan names RoR 0x23dc68 rxSndAdpcmSetDefaultParam6 (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "0015fe58": {
+  "name": "rxSndAdpcmSetDefaultParam7",
+  "tag": "lib-context",
+  "was": "FUN_0015fe58",
+  "why": "rx library: RosePan names RoR 0x23dc98 rxSndAdpcmSetDefaultParam7 (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "0015fe88": {
   "name": "rxSndAdpcmOpen",
   "tag": "lib-context",
@@ -3413,6 +3827,12 @@
   "was": "FUN_001614d0",
   "why": "rx library: RosePan names RoR 0x23f310 rxSndAdpcmSetPitch; between matched neighbours its span 0x160 is RoR's rxSndAdpcmSetPitch, rxSndAdpcmSetChannelParam5 (rxalign.py span partition)"
  },
+ "00161580": {
+  "name": "rxSndAdpcmSetChannelParam5",
+  "tag": "lib-context",
+  "was": "FUN_00161580",
+  "why": "rx library: RosePan names RoR 0x23f3c0 rxSndAdpcmSetChannelParam5 (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00161630": {
   "name": "rxSndAdpcmSetParam6",
   "tag": "lib-context",
@@ -3479,6 +3899,12 @@
   "was": "FUN_00161cc8",
   "why": "rx library: RosePan names RoR 0x23faa8 rxSndUnbindRpc; between matched neighbours its span 0x50 is RoR's rxSndUnbindRpc, rxSndRpcEndFunc (rxalign.py span partition)"
  },
+ "00161ce8": {
+  "name": "rxSndRpcEndFunc",
+  "tag": "lib-context",
+  "was": "FUN_00161ce8",
+  "why": "rx library: RosePan names RoR 0x23fac8 rxSndRpcEndFunc (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00161d18": {
   "name": "rxSndCallRpc",
   "tag": "lib-context",
@@ -3539,6 +3965,12 @@
   "was": "FUN_00162178",
   "why": "rxsndut (FS2-only, not in RoR): inits the stream source, memory stream, bank and stream core, clears rxSnd debug flag 4, registers formats 1 PCM stream and 0 ADPCM stream via rxSndStrRegisterFormat"
  },
+ "001621f0": {
+  "name": "rxSndUtExit",
+  "tag": "lib-context",
+  "was": "rxSndUtExit",
+  "why": "rxsndut (FS2-only, not in RoR): source / bank / stream core / memory exits (read in batch 008; start created at bootstrap 4a)"
+ },
  "00162220": {
   "name": "rxSndUtUpdate",
   "tag": "lib-context",
@@ -3593,6 +4025,30 @@
   "was": "FUN_00162610",
   "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): body type 2: address / size like the memory body; opened as a memory stream with the IOP flag (rxSndStrMemGetData reads it with rxSndIopRead)"
  },
+ "00162658": {
+  "name": "rxSndStrBankGetData",
+  "tag": "lib-context",
+  "was": "FUN_00162658",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): slot +4: the XWS file (read in batch 008; start created at bootstrap 4a)"
+ },
+ "001626a0": {
+  "name": "rxSndStrBankGetBodyType",
+  "tag": "lib-context",
+  "was": "FUN_001626a0",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): slot +2, -1 when unused (read in batch 008; start created at bootstrap 4a)"
+ },
+ "001626e8": {
+  "name": "rxSndStrBankGetBodyAddr",
+  "tag": "lib-context",
+  "was": "FUN_001626e8",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): slot +0x1c (read in batch 008; start created at bootstrap 4a)"
+ },
+ "00162730": {
+  "name": "rxSndStrBankGetBodyFile",
+  "tag": "lib-context",
+  "was": "FUN_00162730",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): device / dir / name of a file body (read in batch 008; start created at bootstrap 4a)"
+ },
  "001627c0": {
   "name": "rxSndStrBankGetRequestCount",
   "tag": "lib-context",
@@ -3604,6 +4060,12 @@
   "tag": "lib-context",
   "was": "FUN_001627d8",
   "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): FTXT string of request i (rxSndStrTextGet); rxSndStrBankFindRequest strcmps these"
+ },
+ "001627f0": {
+  "name": "rxSndStrBankGetRequestFormat",
+  "tag": "lib-context",
+  "was": "FUN_001627f0",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): byte +0 of the FORM record, -1 (read in batch 008; start created at bootstrap 4a)"
  },
  "00162820": {
   "name": "rxSndStrBankGetRequestRate",
@@ -3641,6 +4103,12 @@
   "was": "FUN_00162910",
   "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): MARK entries of a request (rxSndStrMarkGetCount)"
  },
+ "00162928": {
+  "name": "rxSndStrBankGetMarkName",
+  "tag": "lib-context",
+  "was": "FUN_00162928",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): MARK record +0xc or empty string (read in batch 008; start created at bootstrap 4a)"
+ },
  "00162958": {
   "name": "rxSndStrBankGetMarkOffset",
   "tag": "lib-context",
@@ -3658,6 +4126,12 @@
   "tag": "lib-context",
   "was": "FUN_001629b8",
   "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): BRCH entries of a request (rxSndStrBranchGetCount)"
+ },
+ "001629d0": {
+  "name": "rxSndStrBankGetBranchName",
+  "tag": "lib-context",
+  "was": "FUN_001629d0",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): BRCH record +0xc or empty string (read in batch 008; start created at bootstrap 4a)"
  },
  "00162a00": {
   "name": "rxSndStrBankFindRequest",
@@ -3719,6 +4193,12 @@
   "was": "FUN_00162dd8",
   "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): clears the used byte of all 256 slots"
  },
+ "00162e18": {
+  "name": "rxSndStrBankExit",
+  "tag": "lib-context",
+  "was": "FUN_00162e18",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): empty, called by rxSndUtExit (read in batch 008; start created at bootstrap 4a)"
+ },
  "00162e20": {
   "name": "rxSndStrBankUpdate",
   "tag": "lib-context",
@@ -3766,6 +4246,12 @@
   "tag": "lib-context",
   "was": "FUN_00163118",
   "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): count word of the FORM chunk of a bank slot"
+ },
+ "00163168": {
+  "name": "rxSndStrFormGet",
+  "tag": "lib-context",
+  "was": "FUN_00163168",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): copy of rxSndStrBankGetRequest (read in batch 008; start created at bootstrap 4a)"
  },
  "00163200": {
   "name": "rxSndStrTextGet",
@@ -3863,17 +4349,89 @@
   "was": "FUN_00163960",
   "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): byte +0x1d and dirty bit 2 (rxSndStrAdpcmUpdate calls rxSndAdpcmSetAttr)"
  },
+ "001639b8": {
+  "name": "rxSndStrSetMasterVolume",
+  "tag": "lib-context",
+  "was": "FUN_001639b8",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): 0x521688 / 0x52168a and dirty bit 4 on every active stream (read in batch 008; start created at bootstrap 4a)"
+ },
+ "00163a00": {
+  "name": "rxSndStrGetMasterVolumeL",
+  "tag": "lib-context",
+  "was": "FUN_00163a00",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): inside rxSndStrSetAttr (read in batch 008; start created at bootstrap 4a)"
+ },
+ "00163a10": {
+  "name": "rxSndStrGetMasterVolumeR",
+  "tag": "lib-context",
+  "was": "FUN_00163a10",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): inside rxSndStrSetAttr (read in batch 008; start created at bootstrap 4a)"
+ },
  "00163a20": {
   "name": "rxSndStrSetVolume",
   "tag": "lib-context",
   "was": "FUN_00163a20",
   "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): s16 left / right at +0x20 / +0x22 and dirty bit 4 (scaled by the stream and master volumes in the format update)"
  },
+ "00163a78": {
+  "name": "rxSndStrSetTrackVolume",
+  "tag": "lib-context",
+  "was": "FUN_00163a78",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): track < 16 left / right at +0x5c / +0x7c, dirty bit 0x20 (read in batch 008; start created at bootstrap 4a)"
+ },
  "00163ae8": {
   "name": "rxSndStrSetPitch",
   "tag": "lib-context",
   "was": "FUN_00163ae8",
   "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): float +0x24 and dirty bit 8 (rxSndStrAdpcmUpdate calls rxSndAdpcmSetPitch)"
+ },
+ "00163b40": {
+  "name": "rxSndStrSetFloatParam",
+  "tag": "lib-context",
+  "was": "FUN_00163b40",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): float +0x28, dirty bit 0x10 (no format update reads it in FS2) (read in batch 008; start created at bootstrap 4a)"
+ },
+ "00163b98": {
+  "name": "rxSndStrGetFilled",
+  "tag": "lib-context",
+  "was": "FUN_00163b98",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): +0x30, the source fill the format update stores (read in batch 008; start created at bootstrap 4a)"
+ },
+ "00163be8": {
+  "name": "rxSndStrSetUserData",
+  "tag": "lib-context",
+  "was": "FUN_00163be8",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): swaps +0x50 (read in batch 008; start created at bootstrap 4a)"
+ },
+ "00163c38": {
+  "name": "rxSndStrGetUserData",
+  "tag": "lib-context",
+  "was": "FUN_00163c38",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): +0x50 (read in batch 008; start created at bootstrap 4a)"
+ },
+ "00163c88": {
+  "name": "rxSndStrSetMarkCallback",
+  "tag": "lib-context",
+  "was": "FUN_00163c88",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): swaps +0x54 (read in batch 008; start created at bootstrap 4a)"
+ },
+ "00163cd8": {
+  "name": "rxSndStrSetBranchCallback",
+  "tag": "lib-context",
+  "was": "FUN_00163cd8",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): swaps +0x58 (read in batch 008; start created at bootstrap 4a)"
+ },
+ "00163d28": {
+  "name": "rxSndStrGetBank",
+  "tag": "lib-context",
+  "was": "FUN_00163d28",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): +8 (read in batch 008; start created at bootstrap 4a)"
+ },
+ "00163d78": {
+  "name": "rxSndStrGetRequest",
+  "tag": "lib-context",
+  "was": "FUN_00163d78",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): +0xc (read in batch 008; start created at bootstrap 4a)"
  },
  "00163dc8": {
   "name": "rxSndStrGetHandle",
@@ -3898,6 +4456,12 @@
   "tag": "lib-context",
   "was": "FUN_00163f20",
   "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): byte +0x1f, set by the format update once data went to rxSnd"
+ },
+ "00163f70": {
+  "name": "rxSndStrGetActiveIds",
+  "tag": "lib-context",
+  "was": "FUN_00163f70",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): writes the active stream ids, returns the count (read in batch 008; start created at bootstrap 4a)"
  },
  "00163fb8": {
   "name": "rxSndStrInit",
@@ -3947,6 +4511,12 @@
   "was": "FUN_001642e8",
   "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): calls the stream branch callback +0x58 (id, a1) with interrupts disabled; returns its answer, 1 without one (take the branch)"
  },
+ "00164398": {
+  "name": "rxSndStrPcmInit",
+  "tag": "lib-context",
+  "was": "FUN_00164398",
+  "why": "rxsndstr PCM stream format (table 0x2f5f18 {init, exit, update, open, close, getHandle, pauseRead, syncRead}, slots 0x5217d0 64 x 0x1c): free list of the 64 slots; table entry 0 (read in batch 008; start created at bootstrap 4a)"
+ },
  "001643e0": {
   "name": "rxSndStrPcmExit",
   "tag": "lib-context",
@@ -3958,6 +4528,12 @@
   "tag": "lib-context",
   "was": "FUN_00164430",
   "why": "rxsndstr PCM stream format (table 0x2f5f18 {init, exit, update, open, close, getHandle, pauseRead, syncRead}, slots 0x5217d0 64 x 0x1c): rxSndPcmAddCallback target: rxSndStrFmtCallMarkCallback on the stream from rxSndPcmGetUserData"
+ },
+ "00164460": {
+  "name": "rxSndStrPcmBranchCallback",
+  "tag": "lib-context",
+  "was": "FUN_00164460",
+  "why": "rxsndstr PCM stream format (table 0x2f5f18 {init, exit, update, open, close, getHandle, pauseRead, syncRead}, slots 0x5217d0 64 x 0x1c): marker callback in the branch records: rxSndStrFmtCallBranchCallback(a0, a1->index) (read in batch 008; start created at bootstrap 4a)"
  },
  "00164478": {
   "name": "rxSndStrPcmUpdate",
@@ -3977,11 +4553,29 @@
   "was": "FUN_00164b30",
   "why": "rxsndstr PCM stream format (table 0x2f5f18 {init, exit, update, open, close, getHandle, pauseRead, syncRead}, slots 0x5217d0 64 x 0x1c): unlinks the PCM slot, closes its source and rxSndPcmClose"
  },
+ "00164bb8": {
+  "name": "rxSndStrPcmGetHandle",
+  "tag": "lib-context",
+  "was": "FUN_00164bb8",
+  "why": "rxsndstr PCM stream format (table 0x2f5f18 {init, exit, update, open, close, getHandle, pauseRead, syncRead}, slots 0x5217d0 64 x 0x1c): slot +0x10; table entry 5 (read in batch 008; start created at bootstrap 4a)"
+ },
  "00164bd8": {
   "name": "rxSndStrPcmPauseRead",
   "tag": "lib-context",
   "was": "FUN_00164bd8",
   "why": "rxsndstr PCM stream format (table 0x2f5f18 {init, exit, update, open, close, getHandle, pauseRead, syncRead}, slots 0x5217d0 64 x 0x1c): rxSndStrStreamPause on the slot source"
+ },
+ "00164c08": {
+  "name": "rxSndStrPcmSyncRead",
+  "tag": "lib-context",
+  "was": "FUN_00164c08",
+  "why": "rxsndstr PCM stream format (table 0x2f5f18 {init, exit, update, open, close, getHandle, pauseRead, syncRead}, slots 0x5217d0 64 x 0x1c): rxSndStrStreamSync; table entry 7 (read in batch 008; start created at bootstrap 4a)"
+ },
+ "00164c38": {
+  "name": "rxSndStrAdpcmInit",
+  "tag": "lib-context",
+  "was": "FUN_00164c38",
+  "why": "rxsndstr ADPCM stream format (table 0x2f5f38, slots 0x521ed8 64 x 0x20): free list of the 64 slots; table entry 0 (read in batch 008; start created at bootstrap 4a)"
  },
  "00164c80": {
   "name": "rxSndStrAdpcmExit",
@@ -3994,6 +4588,12 @@
   "tag": "lib-context",
   "was": "FUN_00164cd0",
   "why": "rxsndstr ADPCM stream format (table 0x2f5f38, slots 0x521ed8 64 x 0x20): rxSndAdpcmAddCallback target: rxSndStrFmtCallMarkCallback on the stream from rxSndAdpcmGetUserData"
+ },
+ "00164d00": {
+  "name": "rxSndStrAdpcmBranchCallback",
+  "tag": "lib-context",
+  "was": "FUN_00164d00",
+  "why": "rxsndstr ADPCM stream format (table 0x2f5f38, slots 0x521ed8 64 x 0x20): as rxSndStrPcmBranchCallback (read in batch 008; start created at bootstrap 4a)"
  },
  "00164d18": {
   "name": "rxSndStrAdpcmUpdate",
@@ -4013,11 +4613,23 @@
   "was": "FUN_001655f8",
   "why": "rxsndstr ADPCM stream format (table 0x2f5f38, slots 0x521ed8 64 x 0x20): unlinks the ADPCM slot, closes its source and rxSndAdpcmClose"
  },
+ "00165680": {
+  "name": "rxSndStrAdpcmGetHandle",
+  "tag": "lib-context",
+  "was": "FUN_00165680",
+  "why": "rxsndstr ADPCM stream format (table 0x2f5f38, slots 0x521ed8 64 x 0x20): slot +0x10; table entry 5 (read in batch 008; start created at bootstrap 4a)"
+ },
  "00165698": {
   "name": "rxSndStrAdpcmPauseRead",
   "tag": "lib-context",
   "was": "FUN_00165698",
   "why": "rxsndstr ADPCM stream format (table 0x2f5f38, slots 0x521ed8 64 x 0x20): rxSndStrStreamPause on the slot source"
+ },
+ "001656c0": {
+  "name": "rxSndStrAdpcmSyncRead",
+  "tag": "lib-context",
+  "was": "FUN_001656c0",
+  "why": "rxsndstr ADPCM stream format (table 0x2f5f38, slots 0x521ed8 64 x 0x20): rxSndStrStreamSync; table entry 7 (read in batch 008; start created at bootstrap 4a)"
  },
  "001656e8": {
   "name": "rxSndStrStreamInit",
@@ -4193,11 +4805,23 @@
   "was": "FUN_00166688",
   "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): replaces the sorted branch-marker list +0x18 with a2 records of 0x14 bytes; a3 is the callback argument +0x1c"
  },
+ "00166828": {
+  "name": "rxSndStrMemSetMarkerEnable",
+  "tag": "lib-context",
+  "was": "FUN_00166828",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): sets byte +8 of the branch markers whose byte +9 is a1 (read in batch 008; start created at bootstrap 4a)"
+ },
  "00166890": {
   "name": "rxSndStrMemSetTags",
   "tag": "lib-context",
   "was": "FUN_00166890",
   "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): replaces the sorted tag list +0x14 with a2 records of 0xc bytes"
+ },
+ "00166a10": {
+  "name": "rxSndStrMemSetTagEnable",
+  "tag": "lib-context",
+  "was": "FUN_00166a10",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): sets byte +8 of the tags whose byte +9 is a1 (read in batch 008; start created at bootstrap 4a)"
  },
  "00166a78": {
   "name": "rxSndStrMemGetTags",
@@ -4234,6 +4858,12 @@
   "tag": "lib-context",
   "was": "FUN_00166bf8",
   "why": "rx library: RosePan names RoR 0x249c30 rxThWorkerMain; between matched neighbours its span 0x118 is RoR's rxThWorkerMain, rxThIdleMain (rxalign.py span partition)"
+ },
+ "00166cb8": {
+  "name": "rxThIdleMain",
+  "tag": "lib-context",
+  "was": "FUN_00166cb8",
+  "why": "rx library: RosePan names RoR 0x249cf0 rxThIdleMain (rxalign.py size run; start created at bootstrap 4a)"
  },
  "00166d10": {
   "name": "rxThIsDispatchDisabled",
@@ -4349,17 +4979,41 @@
   "was": "FUN_00167b08",
   "why": "rx library: RosePan names RoR 0x24ab40 rxThDelete; between matched neighbours its span 0xe8 is RoR's rxThDelete, rxThGetCount (rxalign.py span partition)"
  },
+ "00167be0": {
+  "name": "rxThGetCount",
+  "tag": "lib-context",
+  "was": "FUN_00167be0",
+  "why": "rx library: RosePan names RoR 0x24ac18 rxThGetCount (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00167bf0": {
   "name": "rxThSetPriority",
   "tag": "lib-context",
   "was": "FUN_00167bf0",
   "why": "rx library: RosePan names RoR 0x24ac28 rxThSetPriority; between matched neighbours its span 0x40 is RoR's rxThSetPriority, rxThGetPriority (rxalign.py span partition)"
  },
+ "00167c10": {
+  "name": "rxThGetPriority",
+  "tag": "lib-context",
+  "was": "FUN_00167c10",
+  "why": "rx library: RosePan names RoR 0x24ac48 rxThGetPriority (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00167c30": {
   "name": "rxThGetParam",
   "tag": "lib-context",
   "was": "FUN_00167c30",
   "why": "rx library: RosePan names RoR 0x24ac68 rxThGetParam; between matched neighbours its span 0x60 is RoR's rxThGetParam, rxThSetParam, rxThGetState (rxalign.py span partition)"
+ },
+ "00167c50": {
+  "name": "rxThSetParam",
+  "tag": "lib-context",
+  "was": "FUN_00167c50",
+  "why": "rx library: RosePan names RoR 0x24ac88 rxThSetParam (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "00167c70": {
+  "name": "rxThGetState",
+  "tag": "lib-context",
+  "was": "FUN_00167c70",
+  "why": "rx library: RosePan names RoR 0x24aca8 rxThGetState (rxalign.py size run; start created at bootstrap 4a)"
  },
  "00167c90": {
   "name": "rxThSetState",
@@ -4379,6 +5033,18 @@
   "was": "FUN_00167e28",
   "why": "rx library: RosePan names RoR 0x24ae60 rxThRequest; between matched neighbours its span 0x108 is RoR's rxThRequest, rxThDummy0, rxThDummy1 (rxalign.py span partition)"
  },
+ "00167f20": {
+  "name": "rxThDummy0",
+  "tag": "lib-context",
+  "was": "FUN_00167f20",
+  "why": "rx library: RosePan names RoR 0x24af58 rxThDummy0 (rxalign.py size run; start created at bootstrap 4a)"
+ },
+ "00167f28": {
+  "name": "rxThDummy1",
+  "tag": "lib-context",
+  "was": "FUN_00167f28",
+  "why": "rx library: RosePan names RoR 0x24af60 rxThDummy1 (rxalign.py size run; start created at bootstrap 4a)"
+ },
  "00167f30": {
   "name": "rxThVSyncRequest",
   "tag": "lib-context",
@@ -4390,6 +5056,12 @@
   "tag": "lib-context",
   "was": "FUN_00167f68",
   "why": "rx library: RosePan names RoR 0x24afa0 rxThVSync; between matched neighbours its span 0x58 is RoR's rxThVSync, rxThGetInterval (rxalign.py span partition)"
+ },
+ "00167fb0": {
+  "name": "rxThGetInterval",
+  "tag": "lib-context",
+  "was": "FUN_00167fb0",
+  "why": "rx library: RosePan names RoR 0x24afe8 rxThGetInterval (rxalign.py size run; start created at bootstrap 4a)"
  },
  "00167fc0": {
   "name": "rxThSetInterval",
@@ -4414,6 +5086,12 @@
   "tag": "lib-context",
   "was": "FUN_00168090",
   "why": "rx library: rxSysTerm's sixth call as in RoR's rxSysTerm (rxThExitOnce, RoR 0x24b0c8); here sceGsSyncPath then rxThExit (0x3c bytes, RoR's 0x14)"
+ },
+ "001680a8": {
+  "name": "rxThGsSyncRequest",
+  "tag": "lib-context",
+  "was": "FUN_001680a8",
+  "why": "rx library: RosePan names RoR 0x24b0e0 rxThGsSyncRequest (rxalign.py size run; start created at bootstrap 4a)"
  },
  "001680d0": {
   "name": "rxThGsSyncPath",
