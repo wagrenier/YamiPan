@@ -108,15 +108,27 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    the TU: the parameter order of `SoundSeBank::setPanPitchF` / `setPitch` (a float in f12 beside the
    object), output mode 0 = mono?, `SoundStream::freeBuffer`'s owned test (decompiles inverted), the
    class at 0x142e70..0x144040 (vptr +0x808, vtables 0x311100 / 0x311120) before it.
-   **Next batches, in this order**: `_InitSys`'s nine
-   callees (0x140c08, 0x140d48, 0x141338, 0x1414b0, 0x1416f0, 0x1378b8, 0x140f80, 0x140470,
-   0x142b70); the rest of the SDK 3.0 libraries both games link, by `rxalign.py` size runs against
-   RoR's `// lib` names as batch 010 did for SIF (libkernl around 0x137000..0x142000, libgraph,
+   **Batches 014-015 done (2026-11-02, 111 names, 14 merged starts created)**: `_InitSys`'s nine
+   callees and the whole libkernl tail 0x13ef80..0x142dd0 from RoR (`rxalign.py 13ef80 142dd0
+   2658c8 269710`, one to one), RoR's 14 placeholders there from FF3's list (FF2 symbols), the
+   per-file `Copy` / `kCopy` pairs and TLB syscall stubs by reading (architecture.md "Key functions
+   and globals", SDK). Doubts: the TLB stub names 0x140538..0x1405e8 follow ps2sdk's syscall
+   numbers 0x55..0x59 (`ExpandScratchPad` 0x59 least sure); 0x141198 (`j InitTLB`, called by
+   every exit.c entry) keeps Ghidra's thunk name; 0x142dd0 / 0x142df0 after the reboot-notify run
+   are unread.
+   **Next batches, in this order**: libkernl's front, `rxalign.py` from ~0x137000 to 0x139bc0
+   against RoR from ~0x25d000 to 0x260508 (libthread around `InitThread` 0x1378b8 / RoR
+   0x25e438, intc, dma helpers; anchor `StartThread` 0x137c20); then the rest of the SDK 3.0
+   libraries both games link, by `rxalign.py` size runs against
+   RoR's `// lib` names as batch 010 did for SIF (libgraph,
    libdma, libpad, libmc, libcdvd: find each by a named anchor); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
    string rep); SDK functions from their `PsIIlib` / assert strings; rx (`rxfile.c`); rena
    (`rena_*.cpp`). Thunks 0x100218 (`_exit`) and 0x100270 keep Ghidra's thunk names (renaming a
    thunk may rename its target);
-   (c) the first island ~0x2f3a40..0x2f4d20 (9 Ghidra functions, nothing references 0x2f3a40);
+   (c) the first island ~0x2f3a40..0x2f4d20 (9 Ghidra functions, nothing references 0x2f3a40):
+   **kernel patches the SDK installs** (batch 014: `InitAlarm` copies 0x2f4860 + 0x740 to kernel
+   0x80076000; `InitExecPS2` / `InitTLBFunctions` / `InitSystemCallTableAddress` likely copy the
+   rest): library code never run on the EE side, name it after those installers;
    (d) `libmatch.py` once the reference ELFs are here (items 3-4).
 3. **The user (2026-11-02, in progress): Rule of Rose in Ghidra.** The user is loading RoR into
    Ghidra so its names can be re-applied there and compared with FS2 (BinDiff crashes on PS2

@@ -877,7 +877,8 @@
 /* 00136690 0000004c */ FUN_00136690(){}
 /* 001366e0 0000001c */ SetGsCrt(){}  // native
 /* 00136700 0000001c */ _Exit(){}  // native
-/* 00136720 0000006c */ _LoadExecPS2(){}  // native
+/* 00136720 0000000c */ _LoadExecPS2(){}  // native
+/* 00136730 0000005c */ _ExecPS2(){}  // native
 /* 00136790 0000000c */ SetVTLBRefillHandler(){}  // native
 /* 001367a0 0000001c */ SetVCommonHandler(){}  // native
 /* 001367c0 0000000c */ AddIntcHandler(){}  // native
@@ -968,8 +969,8 @@
 /* 00137780 00000020 */ FUN_00137780(){}
 /* 001377a0 00000020 */ FUN_001377a0(){}
 /* 001377c0 00000020 */ FUN_001377c0(){}
-/* 001377e0 000000d4 */ FUN_001377e0(){}
-/* 001378b8 000000ec */ FUN_001378b8(){}
+/* 001377e0 000000d4 */ topThread(){}  // lib-ctx
+/* 001378b8 000000ec */ InitThread(){}  // lib-ctx
 /* 001379a8 00000094 */ FUN_001379a8(){}
 /* 00137a40 0000007c */ FUN_00137a40(){}
 /* 00137ac0 00000098 */ FUN_00137ac0(){}
@@ -1093,116 +1094,130 @@
 /* 0013ee18 00000070 */ sceSifAllocIopHeap(){}  // lib-ctx
 /* 0013ee88 00000080 */ sceSifAllocSysMemory(){}  // lib-ctx
 /* 0013ef08 00000078 */ sceSifFreeSysMemory(){}  // lib-ctx
-/* 0013ef80 0000001c */ FUN_0013ef80(){}
-/* 0013efa0 000000f0 */ FUN_0013efa0(){}
-/* 0013f090 00000070 */ FUN_0013f090(){}
-/* 0013f100 00000070 */ FUN_0013f100(){}
-/* 0013f170 00000070 */ FUN_0013f170(){}
-/* 0013f1e0 0000007c */ FUN_0013f1e0(){}
-/* 0013f260 0000007c */ FUN_0013f260(){}
-/* 0013f2e0 00000100 */ FUN_0013f2e0(){}
-/* 0013f3e0 0000008c */ FUN_0013f3e0(){}
-/* 0013f470 00000038 */ FUN_0013f470(){}
-/* 0013f4a8 00000208 */ FUN_0013f4a8(){}
-/* 0013f6b0 00000208 */ FUN_0013f6b0(){}
-/* 0013f8b8 00000090 */ FUN_0013f8b8(){}
-/* 0013f948 000000a0 */ FUN_0013f948(){}
-/* 0013f9e8 00000090 */ FUN_0013f9e8(){}
-/* 0013fa78 0000001c */ FUN_0013fa78(){}
-/* 0013fa98 0000001c */ FUN_0013fa98(){}
-/* 0013fab8 00000224 */ FUN_0013fab8(){}
-/* 0013fce0 00000020 */ FUN_0013fce0(){}
-/* 0013fd00 0000001c */ FUN_0013fd00(){}
-/* 0013fd20 00000104 */ FUN_0013fd20(){}
-/* 0013fe28 00000048 */ FUN_0013fe28(){}
-/* 0013fe70 000000ec */ FUN_0013fe70(){}
-/* 0013ff60 000000dc */ FUN_0013ff60(){}
-/* 00140040 00000154 */ FUN_00140040(){}
-/* 00140198 00000028 */ FUN_00140198(){}
-/* 001401c0 00000050 */ FUN_001401c0(){}
-/* 00140210 00000110 */ FUN_00140210(){}
-/* 00140320 00000060 */ FUN_00140320(){}
-/* 00140380 00000084 */ FUN_00140380(){}
+/* 0013ef80 0000001c */ sceSifFreeIopHeap(){}  // lib-ctx
+/* 0013efa0 000000f0 */ sceSifLoadIopHeap(){}  // lib-ctx
+/* 0013f090 00000070 */ sceSifQueryMemSize(){}  // lib-ctx
+/* 0013f100 00000070 */ sceSifQueryMaxFreeMemSize(){}  // lib-ctx
+/* 0013f170 00000070 */ sceSifQueryTotalFreeMemSize(){}  // lib-ctx
+/* 0013f1e0 0000007c */ sceSifQueryBlockTopAddress(){}  // lib-ctx
+/* 0013f260 0000007c */ sceSifQueryBlockSize(){}  // lib-ctx
+/* 0013f2e0 00000100 */ _lf_bind(){}  // lib-ctx
+/* 0013f3e0 0000008c */ _lf_version(){}  // lib-ctx
+/* 0013f470 00000038 */ sceSifLoadFileReset(){}  // lib-ctx
+/* 0013f4a8 00000208 */ _sceSifLoadModuleBuffer(){}  // lib-ctx
+/* 0013f6b0 00000208 */ sceSifStopModule(){}  // lib-ctx
+/* 0013f8b8 00000090 */ sceSifUnloadModule(){}  // lib-ctx
+/* 0013f948 000000a0 */ sceSifSearchModuleByName(){}  // lib-ctx
+/* 0013f9e8 00000090 */ sceSifSearchModuleByAddress(){}  // lib-ctx
+/* 0013fa78 0000001c */ sceSifLoadModuleBuffer(){}  // lib-ctx
+/* 0013fa98 0000001c */ sceSifLoadStartModuleBuffer(){}  // lib-ctx
+/* 0013fab8 00000224 */ _sceSifLoadModule(){}  // lib-ctx
+/* 0013fce0 00000020 */ sceSifLoadModule(){}  // lib-ctx
+/* 0013fd00 0000001c */ sceSifLoadStartModule(){}  // lib-ctx
+/* 0013fd20 00000104 */ _sceSifLoadElfPart(){}  // lib-ctx
+/* 0013fe28 0000001c */ sceSifLoadElfPart(){}  // lib-ctx
+/* 0013fe48 00000028 */ sceSifLoadElf(){}  // lib-ctx
+/* 0013fe70 000000ec */ sceSifGetIopAddr(){}  // lib-ctx
+/* 0013ff60 000000dc */ sceSifSetIopAddr(){}  // lib-ctx
+/* 00140040 00000154 */ sceSifResetIop(){}  // lib-ctx
+/* 00140198 00000028 */ sceSifIsAliveIop(){}  // lib-ctx
+/* 001401c0 00000050 */ sceSifSyncIop(){}  // lib-ctx
+/* 00140210 00000110 */ sceSifRebootIop(){}  // lib-ctx
+/* 00140320 00000060 */ SetTLBHandler(){}  // lib-ctx
+/* 00140380 00000084 */ SetDebugHandler(){}  // lib-ctx
 /* 00140408 00000048 */ FUN_00140408(){}
 /* 00140450 0000000c */ RFU091(){}  // native
 /* 00140460 0000000c */ RFU116_SetSyscall(){}  // native
-/* 00140470 000000e4 */ FUN_00140470(){}
+/* 00140470 000000c4 */ InitTLBFunctions(){}  // lib-ctx
+/* 00140538 0000000c */ PutTLBEntry(){}  // lib-ctx
+/* 00140548 0000000c */ iPutTLBEntry(){}  // lib-ctx
 /* 00140558 0000000c */ RFU086_WaitEvnetFlag(){}  // native
-/* 00140568 0000008c */ FUN_00140568(){}
-/* 001405f8 00000040 */ FUN_001405f8(){}
-/* 00140638 000001f4 */ FUN_00140638(){}
-/* 00140840 0000035c */ FUN_00140840(){}
+/* 00140568 00000030 */ SetTLBEntry(){}  // lib-ctx
+/* 00140598 0000000c */ iSetTLBEntry(){}  // lib-ctx
+/* 001405a8 0000000c */ GetTLBEntry(){}  // lib-ctx
+/* 001405b8 0000000c */ iGetTLBEntry(){}  // lib-ctx
+/* 001405c8 0000000c */ ProbeTLBEntry(){}  // lib-ctx
+/* 001405d8 0000000c */ iProbeTLBEntry(){}  // lib-ctx
+/* 001405e8 0000000c */ ExpandScratchPad(){}  // lib-ctx
+/* 001405f8 00000040 */ InitTLB(){}  // lib-ctx
+/* 00140638 000001f4 */ InitTLB32MB(){}  // lib-ctx
+/* 00140840 0000035c */ _kTLBException(){}  // lib-ctx
 /* 00140ba0 00000050 */ DIntr(){}  // lib-ctx
 /* 00140bf0 00000018 */ EIntr(){}  // lib-ctx
-/* 00140c08 0000006c */ FUN_00140c08(){}
-/* 00140c78 0000000c */ FUN_00140c78(){}
-/* 00140c88 00000038 */ FUN_00140c88(){}
-/* 00140cc0 00000040 */ FUN_00140cc0(){}
-/* 00140d00 0000000c */ FUN_00140d00(){}
-/* 00140d10 00000034 */ FUN_00140d10(){}
-/* 00140d48 000000fc */ FUN_00140d48(){}
+/* 00140c08 0000006c */ supplement_crt0(){}  // lib-ctx
+/* 00140c78 0000000c */ Copy_initsys(){}  // lib-ctx
+/* 00140c88 00000038 */ kCopy_initsys(){}  // lib-ctx
+/* 00140cc0 00000040 */ kFindAddress(){}  // lib-ctx
+/* 00140d00 0000000c */ FindAddress(){}  // lib-ctx
+/* 00140d10 00000034 */ GetSystemCallEntry(){}  // lib-ctx
+/* 00140d48 000000fc */ InitSystemCallTableAddress(){}  // lib-ctx
 /* 00140e48 0000000c */ RFU116_SetSyscall(){}  // native
 /* 00140e58 00000054 */ _InitSys(){}  // lib-ctx
 /* 00140eb0 0000000c */ RFU116_SetSyscall(){}  // native
-/* 00140ec0 00000048 */ FUN_00140ec0(){}
+/* 00140ec0 0000000c */ Copy_libosd(){}  // lib-ctx
+/* 00140ed0 00000038 */ kCopy_libosd(){}  // lib-ctx
 /* 00140f08 0000000c */ RFU091(){}  // native
-/* 00140f18 00000068 */ FUN_00140f18(){}
-/* 00140f80 000000ac */ FUN_00140f80(){}
-/* 00141030 00000040 */ FUN_00141030(){}
+/* 00140f18 00000068 */ PatchIsNeeded(){}  // lib-ctx
+/* 00140f80 000000ac */ InitExecPS2(){}  // lib-ctx
+/* 00141030 0000000c */ Copy_exit(){}  // lib-ctx
+/* 00141040 00000030 */ kCopy_exit(){}  // lib-ctx
 /* 00141070 0000000c */ RFU116_SetSyscall(){}  // native
-/* 00141080 00000118 */ FUN_00141080(){}
-/* 00141198 00000078 */ thunk_FUN_001405f8(){}
-/* 00141210 00000048 */ FUN_00141210(){}
+/* 00141080 00000118 */ SetArg(){}  // lib-ctx
+/* 00141198 00000004 */ InitTLB(){}  // native
+/* 001411a0 00000070 */ ExecPS2(){}  // lib-ctx
+/* 00141210 00000048 */ LoadExecPS2(){}  // lib-ctx
 /* 00141258 00000028 */ Exit(){}  // lib-ctx
-/* 00141280 0000004c */ FUN_00141280(){}
+/* 00141280 0000004c */ ExecOSD(){}  // lib-ctx
 /* 001412d0 0000000c */ RFU116_SetSyscall(){}  // native
-/* 001412e0 0000000c */ FUN_001412e0(){}
-/* 001412f0 00000038 */ FUN_001412f0(){}
+/* 001412e0 0000000c */ Copy_alarm(){}  // lib-ctx
+/* 001412f0 00000038 */ kCopy_alarm(){}  // lib-ctx
 /* 00141328 0000000c */ RFU091(){}  // native
-/* 00141338 000000d4 */ FUN_00141338(){}
-/* 00141410 0000006c */ FUN_00141410(){}
-/* 00141480 00000010 */ FUN_00141480(){}
-/* 00141490 00000010 */ FUN_00141490(){}
-/* 001414a0 00000010 */ FUN_001414a0(){}
-/* 001414b0 00000154 */ FUN_001414b0(){}
-/* 00141608 000000e4 */ FUN_00141608(){}
-/* 001416f0 00000090 */ FUN_001416f0(){}
-/* 00141780 0000007c */ FUN_00141780(){}
-/* 00141800 00000190 */ FUN_00141800(){}
-/* 00141990 00000084 */ FUN_00141990(){}
-/* 00141a18 00000038 */ FUN_00141a18(){}
-/* 00141a50 000002a4 */ FUN_00141a50(){}
-/* 00141cf8 00000048 */ FUN_00141cf8(){}
-/* 00141d48 0000007c */ FUN_00141d48(){}
-/* 00141dc8 00000070 */ FUN_00141dc8(){}
-/* 00141e38 00000048 */ FUN_00141e38(){}
-/* 00141e80 000000a0 */ FUN_00141e80(){}
-/* 00141f20 0000004c */ FUN_00141f20(){}
-/* 00141f70 00000050 */ FUN_00141f70(){}
-/* 00141fc0 0000005c */ FUN_00141fc0(){}
-/* 00142020 000000ac */ FUN_00142020(){}
-/* 001420d0 0000004c */ FUN_001420d0(){}
-/* 00142120 000000c4 */ FUN_00142120(){}
-/* 001421e8 0000004c */ FUN_001421e8(){}
-/* 00142238 000000cc */ FUN_00142238(){}
-/* 00142308 00000048 */ FUN_00142308(){}
-/* 00142350 0000004c */ FUN_00142350(){}
-/* 001423a0 0000006c */ FUN_001423a0(){}
-/* 00142410 0000004c */ FUN_00142410(){}
-/* 00142460 000000f4 */ FUN_00142460(){}
-/* 00142558 0000007c */ FUN_00142558(){}
-/* 001425d8 000000a8 */ FUN_001425d8(){}
-/* 00142680 00000070 */ FUN_00142680(){}
-/* 001426f0 0000008c */ FUN_001426f0(){}
-/* 00142780 0000004c */ FUN_00142780(){}
-/* 001427d0 0000005c */ FUN_001427d0(){}
-/* 00142830 0000012c */ FUN_00142830(){}
-/* 00142960 000000f0 */ FUN_00142960(){}
-/* 00142a50 000000a8 */ FUN_00142a50(){}
-/* 00142af8 00000078 */ FUN_00142af8(){}
-/* 00142b70 000000a4 */ FUN_00142b70(){}
-/* 00142c18 0000010c */ FUN_00142c18(){}
-/* 00142d28 000000a8 */ FUN_00142d28(){}
+/* 00141338 000000d4 */ InitAlarm(){}  // lib-ctx
+/* 00141410 0000006c */ SetT2(){}  // lib-ctx
+/* 00141480 00000010 */ SetT2_COUNT(){}  // lib-ctx
+/* 00141490 00000010 */ SetT2_MODE(){}  // lib-ctx
+/* 001414a0 00000010 */ SetT2_COMP(){}  // lib-ctx
+/* 001414b0 00000154 */ InitTimer(){}  // lib-ctx
+/* 00141608 000000b8 */ EndTimer(){}  // lib-ctx
+/* 001416c0 0000002c */ GetTimerPreScaleFactor(){}  // lib-ctx
+/* 001416f0 00000090 */ StartTimerSystemTime(){}  // lib-ctx
+/* 00141780 0000007c */ StopTimerSystemTime(){}  // lib-ctx
+/* 00141800 00000190 */ SetNextComp(){}  // lib-ctx
+/* 00141990 00000084 */ InsertAlarm(){}  // lib-ctx
+/* 00141a18 00000038 */ UnlinkAlarm(){}  // lib-ctx
+/* 00141a50 000002a4 */ cbTimerHandler(){}  // lib-ctx
+/* 00141cf8 00000048 */ iGetTimerSystemTime(){}  // lib-ctx
+/* 00141d48 0000007c */ GetTimerSystemTime(){}  // lib-ctx
+/* 00141dc8 00000070 */ iAllocTimerCounter(){}  // lib-ctx
+/* 00141e38 00000048 */ AllocTimerCounter(){}  // lib-ctx
+/* 00141e80 000000a0 */ iFreeTimerCounter(){}  // lib-ctx
+/* 00141f20 0000004c */ FreeTimerCounter(){}  // lib-ctx
+/* 00141f70 00000050 */ iGetTimerUsedUnusedCounters(){}  // lib-ctx
+/* 00141fc0 0000005c */ GetTimerUsedUnusedCounters(){}  // lib-ctx
+/* 00142020 000000ac */ iStartTimerCounter(){}  // lib-ctx
+/* 001420d0 0000004c */ StartTimerCounter(){}  // lib-ctx
+/* 00142120 000000c4 */ iStopTimerCounter(){}  // lib-ctx
+/* 001421e8 0000004c */ StopTimerCounter(){}  // lib-ctx
+/* 00142238 000000cc */ SetTimerCount(){}  // lib-ctx
+/* 00142308 00000048 */ iGetTimerBaseTime(){}  // lib-ctx
+/* 00142350 0000004c */ GetTimerBaseTime(){}  // lib-ctx
+/* 001423a0 0000006c */ iGetTimerCount(){}  // lib-ctx
+/* 00142410 0000004c */ GetTimerCount(){}  // lib-ctx
+/* 00142460 000000f4 */ iSetTimerHandler(){}  // lib-ctx
+/* 00142558 0000007c */ SetTimerHandler(){}  // lib-ctx
+/* 001425d8 000000a8 */ TimerBusClock2USec(){}  // lib-ctx
+/* 00142680 00000070 */ TimerUSec2BusClock(){}  // lib-ctx
+/* 001426f0 00000054 */ TimerBusClock2Freq(){}  // lib-ctx
+/* 00142748 00000034 */ TimerFreq2BusClock(){}  // lib-ctx
+/* 00142780 0000004c */ _InitAlarm(){}  // lib-ctx
+/* 001427d0 0000005c */ AlarmHandler(){}  // lib-ctx
+/* 00142830 0000012c */ SetTimerAlarm(){}  // lib-ctx
+/* 00142960 000000f0 */ iSetTimerAlarm(){}  // lib-ctx
+/* 00142a50 000000a8 */ ReleaseTimerAlarm(){}  // lib-ctx
+/* 00142af8 00000078 */ iReleaseTimerAlarm(){}  // lib-ctx
+/* 00142b70 000000a4 */ sceSifSetRebootNotifyBuffer(){}  // lib-ctx
+/* 00142c18 0000010c */ sceSifAddRebootNotifyHandler(){}  // lib-ctx
+/* 00142d28 000000a8 */ sceSifExecNotifyHandler(){}  // lib-ctx
 /* 00142dd0 00000014 */ FUN_00142dd0(){}
 /* 00142df0 0000007c */ FUN_00142df0(){}
 /* 00142e70 00000130 */ FUN_00142e70(){}

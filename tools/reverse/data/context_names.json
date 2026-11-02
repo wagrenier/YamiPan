@@ -1619,6 +1619,18 @@
   "was": "FUN_00137628",
   "why": "libkernl wrapper: _EnableIntc(cause) + sync between DIntr / EIntr when interrupts were on"
  },
+ "001377e0": {
+  "name": "topThread",
+  "tag": "lib-context",
+  "was": "FUN_001377e0",
+  "why": "SDK 3.0 libkernl: the thread InitThread creates; RoR 0x25e360 topThread and FF3 0x277310 (FF2's symbol), same size 0xd4 just before InitThread"
+ },
+ "001378b8": {
+  "name": "InitThread",
+  "tag": "lib-context",
+  "was": "FUN_001378b8",
+  "why": "SDK 3.0 libkernl: _InitSys's sixth call; creates the SceKerneltopThread semaphore and a 0x400-byte-stack thread on 0x1377e0, starts it, drops the caller to priority 1; RoR 0x25e438 InitThread and FF3 0x2773e8 (FF2's symbol), same size 0xec after topThread"
+ },
  "00137c20": {
   "name": "StartThread",
   "tag": "lib-context",
@@ -1859,6 +1871,270 @@
   "was": "FUN_0013ef08",
   "why": "SDK 3.0 iopheap.c, linked as in RoR: RosePan names RoR 0x265850 sceSifFreeSysMemory; same size 0x78, a run of four equal sizes (0x88 / 0x70 / 0x80 / 0x78); sceSifCallRpc to the client 0x4ccc00"
  },
+ "0013ef80": {
+  "name": "sceSifFreeIopHeap",
+  "tag": "lib-context",
+  "was": "FUN_0013ef80",
+  "why": "SDK 3.0 libkernl: RoR leaves this slot unnamed; ReiPan ff3_functions.txt names FF3 0x27e330 sceSifFreeIopHeap (from FF2's symbols), same size 0x1c and place in the same run"
+ },
+ "0013efa0": {
+  "name": "sceSifLoadIopHeap",
+  "tag": "lib-context",
+  "was": "FUN_0013efa0",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x2658e8 sceSifLoadIopHeap; same size 0xf0 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013f090": {
+  "name": "sceSifQueryMemSize",
+  "tag": "lib-context",
+  "was": "FUN_0013f090",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x2659d8 sceSifQueryMemSize; same size 0x70 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013f100": {
+  "name": "sceSifQueryMaxFreeMemSize",
+  "tag": "lib-context",
+  "was": "FUN_0013f100",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x265a48 sceSifQueryMaxFreeMemSize; same size 0x70 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013f170": {
+  "name": "sceSifQueryTotalFreeMemSize",
+  "tag": "lib-context",
+  "was": "FUN_0013f170",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x265ab8 sceSifQueryTotalFreeMemSize; same size 0x70 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013f1e0": {
+  "name": "sceSifQueryBlockTopAddress",
+  "tag": "lib-context",
+  "was": "FUN_0013f1e0",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x265b28 sceSifQueryBlockTopAddress; same size 0x7c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013f260": {
+  "name": "sceSifQueryBlockSize",
+  "tag": "lib-context",
+  "was": "FUN_0013f260",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x265ba8 sceSifQueryBlockSize; same size 0x7c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013f2e0": {
+  "name": "_lf_bind",
+  "tag": "lib-context",
+  "was": "FUN_0013f2e0",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x265c28 _lf_bind; same size 0x100 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013f3e0": {
+  "name": "_lf_version",
+  "tag": "lib-context",
+  "was": "FUN_0013f3e0",
+  "why": "SDK 3.0 libkernl: RoR leaves this slot unnamed; ReiPan ff3_functions.txt names FF3 0x27e790 _lf_version (from FF2's symbols), same size 0x8c and place in the same run"
+ },
+ "0013f470": {
+  "name": "sceSifLoadFileReset",
+  "tag": "lib-context",
+  "was": "FUN_0013f470",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x265db8 sceSifLoadFileReset; same size 0x38 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013f4a8": {
+  "name": "_sceSifLoadModuleBuffer",
+  "tag": "lib-context",
+  "was": "FUN_0013f4a8",
+  "why": "SDK 3.0 libkernl: RoR leaves this slot unnamed; ReiPan ff3_functions.txt names FF3 0x27e858 _sceSifLoadModuleBuffer (from FF2's symbols), same size 0x208 and place in the same run"
+ },
+ "0013f6b0": {
+  "name": "sceSifStopModule",
+  "tag": "lib-context",
+  "was": "FUN_0013f6b0",
+  "why": "SDK 3.0 libkernl: RoR leaves this slot unnamed; ReiPan ff3_functions.txt names FF3 0x27ea60 sceSifStopModule (from FF2's symbols), same size 0x208 and place in the same run"
+ },
+ "0013f8b8": {
+  "name": "sceSifUnloadModule",
+  "tag": "lib-context",
+  "was": "FUN_0013f8b8",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266200 sceSifUnloadModule; same size 0x90 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013f948": {
+  "name": "sceSifSearchModuleByName",
+  "tag": "lib-context",
+  "was": "FUN_0013f948",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266290 sceSifSearchModuleByName; same size 0xa0 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013f9e8": {
+  "name": "sceSifSearchModuleByAddress",
+  "tag": "lib-context",
+  "was": "FUN_0013f9e8",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266330 sceSifSearchModuleByAddress; same size 0x90 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013fa78": {
+  "name": "sceSifLoadModuleBuffer",
+  "tag": "lib-context",
+  "was": "FUN_0013fa78",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x2663c0 sceSifLoadModuleBuffer; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013fa98": {
+  "name": "sceSifLoadStartModuleBuffer",
+  "tag": "lib-context",
+  "was": "FUN_0013fa98",
+  "why": "SDK 3.0 libkernl: RoR leaves this slot unnamed; ReiPan ff3_functions.txt names FF3 0x27ee48 sceSifLoadStartModuleBuffer (from FF2's symbols), same size 0x1c and place in the same run"
+ },
+ "0013fab8": {
+  "name": "_sceSifLoadModule",
+  "tag": "lib-context",
+  "was": "FUN_0013fab8",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266400 _sceSifLoadModule; same size 0x224 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013fce0": {
+  "name": "sceSifLoadModule",
+  "tag": "lib-context",
+  "was": "FUN_0013fce0",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266628 sceSifLoadModule; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013fd00": {
+  "name": "sceSifLoadStartModule",
+  "tag": "lib-context",
+  "was": "FUN_0013fd00",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266648 sceSifLoadStartModule; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013fd20": {
+  "name": "_sceSifLoadElfPart",
+  "tag": "lib-context",
+  "was": "FUN_0013fd20",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266668 _sceSifLoadElfPart; same size 0x104 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013fe28": {
+  "name": "sceSifLoadElfPart",
+  "tag": "lib-context",
+  "was": "FUN_0013fe28",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266770 sceSifLoadElfPart; between matched neighbours its span 0x48 is RoR's sceSifLoadElfPart, sceSifLoadElf (rxalign.py span partition)"
+ },
+ "0013fe48": {
+  "name": "sceSifLoadElf",
+  "tag": "lib-context",
+  "was": "FUN_0013fe48",
+  "why": "SDK 3.0 libkernl: created this run (merged into sceSifLoadElfPart); RoR 0x266790 sceSifLoadElf: _sceSifLoadElfPart(name, \"all\"-style string at 0x3013f8, data, 1)"
+ },
+ "0013fe70": {
+  "name": "sceSifGetIopAddr",
+  "tag": "lib-context",
+  "was": "FUN_0013fe70",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x2667b8 sceSifGetIopAddr; same size 0xec and place in a run of matching functions (rxalign.py)"
+ },
+ "0013ff60": {
+  "name": "sceSifSetIopAddr",
+  "tag": "lib-context",
+  "was": "FUN_0013ff60",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x2668a8 sceSifSetIopAddr; same size 0xdc and place in a run of matching functions (rxalign.py)"
+ },
+ "00140040": {
+  "name": "sceSifResetIop",
+  "tag": "lib-context",
+  "was": "FUN_00140040",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266988 sceSifResetIop; same size 0x154 and place in a run of matching functions (rxalign.py)"
+ },
+ "00140198": {
+  "name": "sceSifIsAliveIop",
+  "tag": "lib-context",
+  "was": "FUN_00140198",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266ae0 sceSifIsAliveIop; same size 0x28 and place in a run of matching functions (rxalign.py)"
+ },
+ "001401c0": {
+  "name": "sceSifSyncIop",
+  "tag": "lib-context",
+  "was": "FUN_001401c0",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266b08 sceSifSyncIop; same size 0x50 and place in a run of matching functions (rxalign.py)"
+ },
+ "00140210": {
+  "name": "sceSifRebootIop",
+  "tag": "lib-context",
+  "was": "FUN_00140210",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266b58 sceSifRebootIop; same size 0x110 and place in a run of matching functions (rxalign.py)"
+ },
+ "00140320": {
+  "name": "SetTLBHandler",
+  "tag": "lib-context",
+  "was": "FUN_00140320",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266c68 SetTLBHandler; same size 0x60 and place in a run of matching functions (rxalign.py)"
+ },
+ "00140380": {
+  "name": "SetDebugHandler",
+  "tag": "lib-context",
+  "was": "FUN_00140380",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266cc8 SetDebugHandler; same size 0x84 and place in a run of matching functions (rxalign.py)"
+ },
+ "00140470": {
+  "name": "InitTLBFunctions",
+  "tag": "lib-context",
+  "was": "FUN_00140470",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266db8 InitTLBFunctions; between matched neighbours its span 0xe8 is RoR's InitTLBFunctions, PutTLBEntry (rxalign.py span partition)"
+ },
+ "00140538": {
+  "name": "PutTLBEntry",
+  "tag": "lib-context",
+  "was": "FUN_00140538",
+  "why": "SDK 3.0 libkernl: created this run; syscall 0x55 stub after InitTLBFunctions (RoR 0x266e80 PutTLBEntry); ps2sdk numbering"
+ },
+ "00140548": {
+  "name": "iPutTLBEntry",
+  "tag": "lib-context",
+  "was": "RFU085_iClearEventFlag",
+  "why": "SDK 3.0 libkernl: created this run; syscall -0x55 stub (interrupt-context PutTLBEntry)"
+ },
+ "00140568": {
+  "name": "SetTLBEntry",
+  "tag": "lib-context",
+  "was": "FUN_00140568",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266eb0 SetTLBEntry; between matched neighbours its span 0x90 is RoR's SetTLBEntry, iSetTLBEntry, iGetTLBEntry, ProbeTLBEntry (rxalign.py span partition)"
+ },
+ "00140598": {
+  "name": "iSetTLBEntry",
+  "tag": "lib-context",
+  "was": "FUN_00140598",
+  "why": "SDK 3.0 libkernl: created this run; syscall -0x56 stub after SetTLBEntry (RoR 0x266ee0 iSetTLBEntry); 0x140558 is the 0x56 stub SetTLBEntry calls, keeps the plugin name RFU086_WaitEvnetFlag"
+ },
+ "001405a8": {
+  "name": "GetTLBEntry",
+  "tag": "lib-context",
+  "was": "RFU087_PollEvnetFlag",
+  "why": "SDK 3.0 libkernl: created this run; syscall 0x57 stub"
+ },
+ "001405b8": {
+  "name": "iGetTLBEntry",
+  "tag": "lib-context",
+  "was": "FUN_001405b8",
+  "why": "SDK 3.0 libkernl: created this run; syscall -0x57 stub (RoR 0x266f00 iGetTLBEntry)"
+ },
+ "001405c8": {
+  "name": "ProbeTLBEntry",
+  "tag": "lib-context",
+  "was": "FUN_001405c8",
+  "why": "SDK 3.0 libkernl: created this run; syscall 0x58 stub (RoR 0x266f10 ProbeTLBEntry)"
+ },
+ "001405d8": {
+  "name": "iProbeTLBEntry",
+  "tag": "lib-context",
+  "was": "RFU088_iPollEvnetFlag",
+  "why": "SDK 3.0 libkernl: created this run; syscall -0x58 stub"
+ },
+ "001405e8": {
+  "name": "ExpandScratchPad",
+  "tag": "lib-context",
+  "was": "RFU089_ReferEventFlagStatus",
+  "why": "SDK 3.0 libkernl: created this run; syscall 0x59 stub, last of tlbfunc.c before InitTLB (ps2sdk syscall numbering: check)"
+ },
+ "001405f8": {
+  "name": "InitTLB",
+  "tag": "lib-context",
+  "was": "FUN_001405f8",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266f40 InitTLB; same size 0x40 and place in a run of matching functions (rxalign.py)"
+ },
+ "00140638": {
+  "name": "InitTLB32MB",
+  "tag": "lib-context",
+  "was": "FUN_00140638",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x266f80 InitTLB32MB; same size 0x1f4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00140840": {
+  "name": "_kTLBException",
+  "tag": "lib-context",
+  "was": "FUN_00140840",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x267180 _kTLBException; same size 0x35c and place in a run of matching functions (rxalign.py)"
+ },
  "00140ba0": {
   "name": "DIntr",
   "tag": "lib-context",
@@ -1871,17 +2147,407 @@
   "was": "FUN_00140bf0",
   "why": "libkernl: EI, returns Status.EIE; paired with DIntr everywhere"
  },
+ "00140c08": {
+  "name": "supplement_crt0",
+  "tag": "lib-context",
+  "was": "FUN_00140c08",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x267548 supplement_crt0; same size 0x6c and place in a run of matching functions (rxalign.py)"
+ },
+ "00140c78": {
+  "name": "Copy_initsys",
+  "tag": "lib-context",
+  "was": "FUN_00140c78",
+  "why": "SDK 3.0 libkernl: syscall 0x5a (Copy) stub, initsys.c copy (RoR names the exit.c one Copy_exit)"
+ },
+ "00140c88": {
+  "name": "kCopy_initsys",
+  "tag": "lib-context",
+  "was": "FUN_00140c88",
+  "why": "SDK 3.0 libkernl: word copy (a0 dst, a1 src, a2 bytes) in initsys.c; RoR 0x2675b8 kCopy_initsys spans the Copy stub before it; InitSystemCallTableAddress also searches kernel memory for this code"
+ },
+ "00140cc0": {
+  "name": "kFindAddress",
+  "tag": "lib-context",
+  "was": "FUN_00140cc0",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x267600 kFindAddress; same size 0x40 and place in a run of matching functions (rxalign.py)"
+ },
+ "00140d00": {
+  "name": "FindAddress",
+  "tag": "lib-context",
+  "was": "FUN_00140d00",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x267640 FindAddress; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "00140d10": {
+  "name": "GetSystemCallEntry",
+  "tag": "lib-context",
+  "was": "FUN_00140d10",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x267650 GetSystemCallEntry; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "00140d48": {
+  "name": "InitSystemCallTableAddress",
+  "tag": "lib-context",
+  "was": "FUN_00140d48",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x267688 InitSystemCallTableAddress; same size 0xfc and place in a run of matching functions (rxalign.py)"
+ },
  "00140e58": {
   "name": "_InitSys",
   "tag": "lib-context",
   "was": "FUN_00140e58",
   "why": "libkernl: called once by entry 0x1001e8 after SetupThread/SetupHeap syscalls and before FlushCache; nine library init calls (InitAlarm/InitThread/... unnamed yet)"
  },
+ "00140ec0": {
+  "name": "Copy_libosd",
+  "tag": "lib-context",
+  "was": "FUN_00140ec0",
+  "why": "SDK 3.0 libkernl: syscall 0x5a (Copy) stub, libosd.c copy (RoR FUN_00267800 spans it and the copy)"
+ },
+ "00140ed0": {
+  "name": "kCopy_libosd",
+  "tag": "lib-context",
+  "was": "FUN_00140ed0",
+  "why": "SDK 3.0 libkernl: created this run; word copy (a0 dst, a1 src, a2 bytes) in libosd.c, as kCopy_initsys"
+ },
+ "00140f18": {
+  "name": "PatchIsNeeded",
+  "tag": "lib-context",
+  "was": "FUN_00140f18",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x267858 PatchIsNeeded; same size 0x68 and place in a run of matching functions (rxalign.py)"
+ },
+ "00140f80": {
+  "name": "InitExecPS2",
+  "tag": "lib-context",
+  "was": "FUN_00140f80",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x2678c0 InitExecPS2; same size 0xac and place in a run of matching functions (rxalign.py)"
+ },
+ "00141030": {
+  "name": "Copy_exit",
+  "tag": "lib-context",
+  "was": "FUN_00141030",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x267970 Copy_exit; between matched neighbours its span 0x40 is RoR's Copy_exit, kCopy_exit (rxalign.py span partition)"
+ },
+ "00141040": {
+  "name": "kCopy_exit",
+  "tag": "lib-context",
+  "was": "FUN_00141040",
+  "why": "SDK 3.0 libkernl: created this run; byte copy (a0 dst, a1 src, a2 bytes), RoR 0x267980 kCopy_exit"
+ },
+ "00141080": {
+  "name": "SetArg",
+  "tag": "lib-context",
+  "was": "FUN_00141080",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x2679c0 SetArg; same size 0x118 and place in a run of matching functions (rxalign.py)"
+ },
+ "001411a0": {
+  "name": "ExecPS2",
+  "tag": "lib-context",
+  "was": "FUN_001411a0",
+  "why": "SDK 3.0 libkernl: created this run; RoR 0x267ad8 ExecPS2 (0x78) begins at the 8-byte stub 0x141198 (j InitTLB, kept as Ghidra thunk) that every exit.c entry calls; SetArg then the exec syscall wrapper 0x136730"
+ },
+ "00141210": {
+  "name": "LoadExecPS2",
+  "tag": "lib-context",
+  "was": "FUN_00141210",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x267b50 LoadExecPS2; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
  "00141258": {
   "name": "Exit",
   "tag": "lib-context",
   "was": "FUN_00141258",
   "why": "libkernl Exit(status): library teardown 0x141198 then tail-jump to the _Exit syscall 0x136700; crt0's _exit 0x100218 is j Exit"
+ },
+ "00141280": {
+  "name": "ExecOSD",
+  "tag": "lib-context",
+  "was": "FUN_00141280",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x267bc0 ExecOSD; same size 0x4c and place in a run of matching functions (rxalign.py)"
+ },
+ "001412e0": {
+  "name": "Copy_alarm",
+  "tag": "lib-context",
+  "was": "FUN_001412e0",
+  "why": "SDK 3.0 libkernl: syscall 0x5a (Copy) stub, alarm.c copy (RoR FUN_00267c20 spans it and the copy)"
+ },
+ "001412f0": {
+  "name": "kCopy_alarm",
+  "tag": "lib-context",
+  "was": "FUN_001412f0",
+  "why": "SDK 3.0 libkernl: word copy in alarm.c; InitAlarm copies 0x740 bytes of 0x2f4860 to kernel 0x80076000 and 0x28 bytes of 0x2f4fa0 to 0x82000 with it"
+ },
+ "00141338": {
+  "name": "InitAlarm",
+  "tag": "lib-context",
+  "was": "FUN_00141338",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x267c78 InitAlarm; same size 0xd4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00141410": {
+  "name": "SetT2",
+  "tag": "lib-context",
+  "was": "FUN_00141410",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x267d50 SetT2; same size 0x6c and place in a run of matching functions (rxalign.py)"
+ },
+ "00141480": {
+  "name": "SetT2_COUNT",
+  "tag": "lib-context",
+  "was": "FUN_00141480",
+  "why": "SDK 3.0 libkernl: RoR leaves this slot unnamed; ReiPan ff3_functions.txt names FF3 0x27ffb0 SetT2_COUNT (from FF2's symbols), same size 0x10 and place in the same run; InitTimer passes 0"
+ },
+ "00141490": {
+  "name": "SetT2_MODE",
+  "tag": "lib-context",
+  "was": "FUN_00141490",
+  "why": "SDK 3.0 libkernl: RoR leaves this slot unnamed; ReiPan ff3_functions.txt names FF3 0x27ffc0 SetT2_MODE (from FF2's symbols), same size 0x10 and place in the same run; InitTimer passes the mode built from RCNT2_MODE"
+ },
+ "001414a0": {
+  "name": "SetT2_COMP",
+  "tag": "lib-context",
+  "was": "FUN_001414a0",
+  "why": "SDK 3.0 libkernl: RoR leaves this slot unnamed; ReiPan ff3_functions.txt names FF3 0x27ffd0 SetT2_COMP (from FF2's symbols), same size 0x10 and place in the same run; InitTimer passes 0xffff"
+ },
+ "001414b0": {
+  "name": "InitTimer",
+  "tag": "lib-context",
+  "was": "FUN_001414b0",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x267df0 InitTimer; same size 0x154 and place in a run of matching functions (rxalign.py)"
+ },
+ "00141608": {
+  "name": "EndTimer",
+  "tag": "lib-context",
+  "was": "FUN_00141608",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x267f48 EndTimer; between matched neighbours its span 0xe8 is RoR's EndTimer, GetTimerPreScaleFactor (rxalign.py span partition)"
+ },
+ "001416c0": {
+  "name": "GetTimerPreScaleFactor",
+  "tag": "lib-context",
+  "was": "FUN_001416c0",
+  "why": "SDK 3.0 libkernl: created this run (merged into EndTimer); RoR 0x268000: T2_MODE & 3, or 0x80008001 before InitTimer"
+ },
+ "001416f0": {
+  "name": "StartTimerSystemTime",
+  "tag": "lib-context",
+  "was": "FUN_001416f0",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268030 StartTimerSystemTime; same size 0x90 and place in a run of matching functions (rxalign.py)"
+ },
+ "00141780": {
+  "name": "StopTimerSystemTime",
+  "tag": "lib-context",
+  "was": "FUN_00141780",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x2680c0 StopTimerSystemTime; same size 0x7c and place in a run of matching functions (rxalign.py)"
+ },
+ "00141800": {
+  "name": "SetNextComp",
+  "tag": "lib-context",
+  "was": "FUN_00141800",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268140 SetNextComp; same size 0x190 and place in a run of matching functions (rxalign.py)"
+ },
+ "00141990": {
+  "name": "InsertAlarm",
+  "tag": "lib-context",
+  "was": "FUN_00141990",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x2682d0 InsertAlarm; same size 0x84 and place in a run of matching functions (rxalign.py)"
+ },
+ "00141a18": {
+  "name": "UnlinkAlarm",
+  "tag": "lib-context",
+  "was": "FUN_00141a18",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268358 UnlinkAlarm; same size 0x38 and place in a run of matching functions (rxalign.py)"
+ },
+ "00141a50": {
+  "name": "cbTimerHandler",
+  "tag": "lib-context",
+  "was": "FUN_00141a50",
+  "why": "SDK 3.0 libkernl: RoR leaves this slot unnamed; ReiPan ff3_functions.txt names FF3 0x280580 cbTimerHandler (from FF2's symbols), same size 0x2a4 and place in the same run; InitTimer installs it with AddIntcHandler(11 = INTC_TIM2)"
+ },
+ "00141cf8": {
+  "name": "iGetTimerSystemTime",
+  "tag": "lib-context",
+  "was": "FUN_00141cf8",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268638 iGetTimerSystemTime; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00141d48": {
+  "name": "GetTimerSystemTime",
+  "tag": "lib-context",
+  "was": "FUN_00141d48",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268688 GetTimerSystemTime; same size 0x7c and place in a run of matching functions (rxalign.py)"
+ },
+ "00141dc8": {
+  "name": "iAllocTimerCounter",
+  "tag": "lib-context",
+  "was": "FUN_00141dc8",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268708 iAllocTimerCounter; same size 0x70 and place in a run of matching functions (rxalign.py)"
+ },
+ "00141e38": {
+  "name": "AllocTimerCounter",
+  "tag": "lib-context",
+  "was": "FUN_00141e38",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268778 AllocTimerCounter; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00141e80": {
+  "name": "iFreeTimerCounter",
+  "tag": "lib-context",
+  "was": "FUN_00141e80",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x2687c0 iFreeTimerCounter; same size 0xa0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00141f20": {
+  "name": "FreeTimerCounter",
+  "tag": "lib-context",
+  "was": "FUN_00141f20",
+  "why": "SDK 3.0 libkernl: RoR leaves this slot unnamed; ReiPan ff3_functions.txt names FF3 0x280a50 FreeTimerCounter (from FF2's symbols), same size 0x4c and place in the same run"
+ },
+ "00141f70": {
+  "name": "iGetTimerUsedUnusedCounters",
+  "tag": "lib-context",
+  "was": "FUN_00141f70",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x2688b0 iGetTimerUsedUnusedCounters; same size 0x50 and place in a run of matching functions (rxalign.py)"
+ },
+ "00141fc0": {
+  "name": "GetTimerUsedUnusedCounters",
+  "tag": "lib-context",
+  "was": "FUN_00141fc0",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268900 GetTimerUsedUnusedCounters; same size 0x5c and place in a run of matching functions (rxalign.py)"
+ },
+ "00142020": {
+  "name": "iStartTimerCounter",
+  "tag": "lib-context",
+  "was": "FUN_00142020",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268960 iStartTimerCounter; same size 0xac and place in a run of matching functions (rxalign.py)"
+ },
+ "001420d0": {
+  "name": "StartTimerCounter",
+  "tag": "lib-context",
+  "was": "FUN_001420d0",
+  "why": "SDK 3.0 libkernl: RoR leaves this slot unnamed; ReiPan ff3_functions.txt names FF3 0x280c00 StartTimerCounter (from FF2's symbols), same size 0x4c and place in the same run"
+ },
+ "00142120": {
+  "name": "iStopTimerCounter",
+  "tag": "lib-context",
+  "was": "FUN_00142120",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268a60 iStopTimerCounter; same size 0xc4 and place in a run of matching functions (rxalign.py)"
+ },
+ "001421e8": {
+  "name": "StopTimerCounter",
+  "tag": "lib-context",
+  "was": "FUN_001421e8",
+  "why": "SDK 3.0 libkernl: RoR leaves this slot unnamed; ReiPan ff3_functions.txt names FF3 0x280d18 StopTimerCounter (from FF2's symbols), same size 0x4c and place in the same run"
+ },
+ "00142238": {
+  "name": "SetTimerCount",
+  "tag": "lib-context",
+  "was": "FUN_00142238",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268b78 SetTimerCount; same size 0xcc and place in a run of matching functions (rxalign.py)"
+ },
+ "00142308": {
+  "name": "iGetTimerBaseTime",
+  "tag": "lib-context",
+  "was": "FUN_00142308",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268c48 iGetTimerBaseTime; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00142350": {
+  "name": "GetTimerBaseTime",
+  "tag": "lib-context",
+  "was": "FUN_00142350",
+  "why": "SDK 3.0 libkernl: RoR leaves this slot unnamed; ReiPan ff3_functions.txt names FF3 0x280e80 GetTimerBaseTime (from FF2's symbols), same size 0x4c and place in the same run"
+ },
+ "001423a0": {
+  "name": "iGetTimerCount",
+  "tag": "lib-context",
+  "was": "FUN_001423a0",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268ce0 iGetTimerCount; same size 0x6c and place in a run of matching functions (rxalign.py)"
+ },
+ "00142410": {
+  "name": "GetTimerCount",
+  "tag": "lib-context",
+  "was": "FUN_00142410",
+  "why": "SDK 3.0 libkernl: RoR leaves this slot unnamed; ReiPan ff3_functions.txt names FF3 0x280f40 GetTimerCount (from FF2's symbols), same size 0x4c and place in the same run"
+ },
+ "00142460": {
+  "name": "iSetTimerHandler",
+  "tag": "lib-context",
+  "was": "FUN_00142460",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268da0 iSetTimerHandler; same size 0xf4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00142558": {
+  "name": "SetTimerHandler",
+  "tag": "lib-context",
+  "was": "FUN_00142558",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268e98 SetTimerHandler; same size 0x7c and place in a run of matching functions (rxalign.py)"
+ },
+ "001425d8": {
+  "name": "TimerBusClock2USec",
+  "tag": "lib-context",
+  "was": "FUN_001425d8",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268f18 TimerBusClock2USec; same size 0xa8 and place in a run of matching functions (rxalign.py)"
+ },
+ "00142680": {
+  "name": "TimerUSec2BusClock",
+  "tag": "lib-context",
+  "was": "FUN_00142680",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x268fc0 TimerUSec2BusClock; same size 0x70 and place in a run of matching functions (rxalign.py)"
+ },
+ "001426f0": {
+  "name": "TimerBusClock2Freq",
+  "tag": "lib-context",
+  "was": "FUN_001426f0",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x269030 TimerBusClock2Freq; between matched neighbours its span 0x90 is RoR's TimerBusClock2Freq, TimerFreq2BusClock (rxalign.py span partition)"
+ },
+ "00142748": {
+  "name": "TimerFreq2BusClock",
+  "tag": "lib-context",
+  "was": "FUN_00142748",
+  "why": "SDK 3.0 libkernl: created this run (merged into TimerBusClock2Freq); RoR 0x269088: 147456000.0f / f12, then the float-to-int helper"
+ },
+ "00142780": {
+  "name": "_InitAlarm",
+  "tag": "lib-context",
+  "was": "FUN_00142780",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x2690c0 _InitAlarm; same size 0x4c and place in a run of matching functions (rxalign.py)"
+ },
+ "001427d0": {
+  "name": "AlarmHandler",
+  "tag": "lib-context",
+  "was": "FUN_001427d0",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x269110 AlarmHandler; same size 0x5c and place in a run of matching functions (rxalign.py)"
+ },
+ "00142830": {
+  "name": "SetTimerAlarm",
+  "tag": "lib-context",
+  "was": "FUN_00142830",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x269170 SetTimerAlarm; same size 0x12c and place in a run of matching functions (rxalign.py)"
+ },
+ "00142960": {
+  "name": "iSetTimerAlarm",
+  "tag": "lib-context",
+  "was": "FUN_00142960",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x2692a0 iSetTimerAlarm; same size 0xf0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00142a50": {
+  "name": "ReleaseTimerAlarm",
+  "tag": "lib-context",
+  "was": "FUN_00142a50",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x269390 ReleaseTimerAlarm; same size 0xa8 and place in a run of matching functions (rxalign.py)"
+ },
+ "00142af8": {
+  "name": "iReleaseTimerAlarm",
+  "tag": "lib-context",
+  "was": "FUN_00142af8",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x269438 iReleaseTimerAlarm; same size 0x78 and place in a run of matching functions (rxalign.py)"
+ },
+ "00142b70": {
+  "name": "sceSifSetRebootNotifyBuffer",
+  "tag": "lib-context",
+  "was": "FUN_00142b70",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x2694b0 sceSifSetRebootNotifyBuffer; same size 0xa4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00142c18": {
+  "name": "sceSifAddRebootNotifyHandler",
+  "tag": "lib-context",
+  "was": "FUN_00142c18",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x269558 sceSifAddRebootNotifyHandler; same size 0x10c and place in a run of matching functions (rxalign.py)"
+ },
+ "00142d28": {
+  "name": "sceSifExecNotifyHandler",
+  "tag": "lib-context",
+  "was": "FUN_00142d28",
+  "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x269668 sceSifExecNotifyHandler; same size 0xa8 and place in a run of matching functions (rxalign.py)"
  },
  "00144080": {
   "name": "SoundPcmSink::setAttr",
