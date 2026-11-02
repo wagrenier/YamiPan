@@ -20,8 +20,7 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    Ghidra lacks** in `data/missing_functions.json`. **Left for bootstrap 4, in this order:**
    (a) create those functions (1,016 in `data/missing_functions.json` by 2026-11-02; 0x1621f0
    `rxSndUtExit` already created as the 7.0.0 test): **unblocked since 2026-11-02** (GhidraMCP 7.0.0,
-   `yamipan.create_function` / `ghidra.py mkfunc`), once the plugin built for 12.2 is installed (item
-   6). A run creates them in one go (a short loop over the JSON, then `save_program()` and
+   `yamipan.create_function` / `ghidra.py mkfunc`; item 6 done). A run creates them in one go (a short loop over the JSON, then `save_program()` and
    `refresh.py`), then names the ones the JSON names (batches 005-008: "rx from RosePan", "by
    reading") with a `name_ctx.py` batch, and reruns `rtti.py` / `rxalign.py`; do it before (b);
    (b) seed names by reading with `name_ctx.py` batches (`tools/reverse/work/batches/NNN.json`, not
@@ -101,14 +100,10 @@ questions. Resolve items here when they are settled (move them to "Done" with th
 5. **The user: a host toolchain.** No MinGW g++, ninja or cmake on this machine (RosePan's paths,
    CLion's MinGW and Python's ninja, do not exist here; 2026-10-31). `build.py` / `layoutcheck.py` take
    them from PATH or `YAMIPAN_MINGW_BIN` / `YAMIPAN_NINJA`; bootstrap 6-7 need them.
-6. **The user (2026-11-02): install the GhidraMCP 7.0.0 built for Ghidra 12.2.** The installed one
-   (release build 2026-10-21, for 12.1.4) fails every `get_functions` / `force_decompile` with
-   `SleighLanguageDescription` (ghidra.md), so `decompile()`, `function_at()`, `has_function()` and
-   Ghidra's copy of `set_tag()` fail; `name_ctx.py` therefore stops at its first tag. Built from
-   `../ghidra-mcp` (HEAD 61a1fbc8, upstream's 12.2 fix b06c679d) on 2026-11-02:
-   `C:\Users\willi\Documents\git\ghidra-mcp\build\distributions\GhidraMCP-7.0.0.zip`. Install it in
-   Ghidra (File -> Install Extensions, replace GhidraMCP, restart), then start a new Claude session.
-   Until then scheduled naming runs fail at `name_ctx.py`.
+6. ~~Install the GhidraMCP 7.0.0 built for Ghidra 12.2~~ **Done 2026-11-02** (the user installed
+   the build from `../ghidra-mcp`, build 20261102): decompile, function at an address, tags and save
+   all answer. Ghidra's function tags hold only 0x162250's provenance tag so far; the other 760 in
+   `data/tags.json` are mirrored when a batch next tags them (or by a one-off loop over the file).
 7. Fill architecture.md as each step learns something.
 
 ## Decisions
