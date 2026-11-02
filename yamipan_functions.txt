@@ -1559,210 +1559,210 @@
 /* 001598b0 0000000c */ rxFileGetErrorHook(){}  // lib-ctx
 /* 001598c0 00000058 */ rxFileSetThreadPriority(){}  // lib-ctx
 /* 00159918 00000010 */ rxFileGetThreadPriority(){}  // lib-ctx
-/* 00159928 00000080 */ FUN_00159928(){}
-/* 001599a8 00000088 */ FUN_001599a8(){}
-/* 00159a30 0000005c */ FUN_00159a30(){}
-/* 00159a90 00000038 */ FUN_00159a90(){}
-/* 00159ac8 0000005c */ FUN_00159ac8(){}
-/* 00159b28 00000094 */ FUN_00159b28(){}
-/* 00159bc0 00000098 */ FUN_00159bc0(){}
-/* 00159c58 00000030 */ FUN_00159c58(){}
-/* 00159c88 00000020 */ FUN_00159c88(){}
-/* 00159ca8 0000005c */ FUN_00159ca8(){}
-/* 00159d08 00000080 */ FUN_00159d08(){}
-/* 00159d88 000000e0 */ FUN_00159d88(){}
-/* 00159e68 0000004c */ FUN_00159e68(){}
-/* 00159eb8 00000054 */ FUN_00159eb8(){}
-/* 00159f10 0000000c */ FUN_00159f10(){}
-/* 00159f20 00000054 */ FUN_00159f20(){}
-/* 00159f78 00000080 */ FUN_00159f78(){}
-/* 00159ff8 00000064 */ FUN_00159ff8(){}
-/* 0015a060 000000e0 */ FUN_0015a060(){}
-/* 0015a140 00000034 */ FUN_0015a140(){}
-/* 0015a178 00000060 */ FUN_0015a178(){}
-/* 0015a1d8 000000a4 */ FUN_0015a1d8(){}
-/* 0015a280 000000cc */ FUN_0015a280(){}
-/* 0015a350 00000030 */ FUN_0015a350(){}
-/* 0015a380 0000000c */ FUN_0015a380(){}
-/* 0015a390 0000000c */ FUN_0015a390(){}
-/* 0015a3a0 0000000c */ FUN_0015a3a0(){}
-/* 0015a3b0 0000000c */ FUN_0015a3b0(){}
-/* 0015a3c0 0000000c */ FUN_0015a3c0(){}
-/* 0015a3d0 00000004 */ FUN_0015a3d0(){}
-/* 0015a3d8 0000000c */ FUN_0015a3d8(){}
-/* 0015a3e8 00000028 */ FUN_0015a3e8(){}
-/* 0015a410 00000078 */ FUN_0015a410(){}
-/* 0015a490 00000078 */ FUN_0015a490(){}
-/* 0015a508 0000007c */ FUN_0015a508(){}
-/* 0015a588 00000030 */ FUN_0015a588(){}
-/* 0015a5b8 0000001c */ FUN_0015a5b8(){}
-/* 0015a5d8 0000001c */ FUN_0015a5d8(){}
-/* 0015a5f8 0000001c */ FUN_0015a5f8(){}
-/* 0015a618 00000024 */ FUN_0015a618(){}
-/* 0015a640 00000024 */ FUN_0015a640(){}
-/* 0015a668 00000024 */ FUN_0015a668(){}
-/* 0015a690 00000210 */ FUN_0015a690(){}
-/* 0015a8a0 000001e8 */ FUN_0015a8a0(){}
-/* 0015aa88 00000078 */ FUN_0015aa88(){}
-/* 0015ab00 00000058 */ FUN_0015ab00(){}
-/* 0015ab58 00000034 */ FUN_0015ab58(){}
-/* 0015ab90 00000034 */ FUN_0015ab90(){}
-/* 0015abc8 00000038 */ FUN_0015abc8(){}
-/* 0015ac00 0000004c */ FUN_0015ac00(){}
-/* 0015ac50 0000004c */ FUN_0015ac50(){}
-/* 0015aca0 00000138 */ FUN_0015aca0(){}
-/* 0015add8 00000058 */ FUN_0015add8(){}
-/* 0015ae30 00000060 */ FUN_0015ae30(){}
-/* 0015ae90 00000034 */ FUN_0015ae90(){}
-/* 0015aec8 00000020 */ FUN_0015aec8(){}
-/* 0015aee8 00000020 */ FUN_0015aee8(){}
-/* 0015af08 00000014 */ FUN_0015af08(){}
-/* 0015af20 0000001c */ FUN_0015af20(){}
-/* 0015af40 0000001c */ FUN_0015af40(){}
-/* 0015af60 0000001c */ FUN_0015af60(){}
-/* 0015af80 00000024 */ FUN_0015af80(){}
-/* 0015afa8 00000024 */ FUN_0015afa8(){}
-/* 0015afd0 00000024 */ FUN_0015afd0(){}
-/* 0015aff8 00000048 */ FUN_0015aff8(){}
-/* 0015b040 00000048 */ FUN_0015b040(){}
-/* 0015b088 00000044 */ FUN_0015b088(){}
-/* 0015b0d0 00000048 */ FUN_0015b0d0(){}
-/* 0015b118 00000048 */ FUN_0015b118(){}
-/* 0015b160 000000f4 */ FUN_0015b160(){}
-/* 0015b258 0000011c */ FUN_0015b258(){}
-/* 0015b378 00000004 */ FUN_0015b378(){}
-/* 0015b380 00000034 */ FUN_0015b380(){}
-/* 0015b3b8 00000418 */ FUN_0015b3b8(){}
-/* 0015b7d0 000001fc */ FUN_0015b7d0(){}
-/* 0015b9d0 000000ec */ FUN_0015b9d0(){}
-/* 0015bac0 00000028 */ FUN_0015bac0(){}
-/* 0015bae8 0000001c */ FUN_0015bae8(){}
-/* 0015bb08 00000228 */ FUN_0015bb08(){}
-/* 0015bd30 0000009c */ FUN_0015bd30(){}
-/* 0015bdd0 00000088 */ FUN_0015bdd0(){}
-/* 0015be58 0000007c */ FUN_0015be58(){}
-/* 0015bed8 00000100 */ FUN_0015bed8(){}
-/* 0015bfd8 0000006c */ FUN_0015bfd8(){}
-/* 0015c048 00000004 */ FUN_0015c048(){}
-/* 0015c050 00000040 */ FUN_0015c050(){}
-/* 0015c090 000003ec */ FUN_0015c090(){}
-/* 0015c480 00000178 */ FUN_0015c480(){}
-/* 0015c5f8 000000cc */ FUN_0015c5f8(){}
-/* 0015c6c8 00000090 */ FUN_0015c6c8(){}
-/* 0015c758 00000090 */ FUN_0015c758(){}
-/* 0015c7e8 000000a8 */ FUN_0015c7e8(){}
-/* 0015c890 000000c8 */ FUN_0015c890(){}
-/* 0015c958 00000014 */ FUN_0015c958(){}
-/* 0015c970 000000d8 */ FUN_0015c970(){}
-/* 0015ca48 00000030 */ FUN_0015ca48(){}
-/* 0015ca78 00000030 */ FUN_0015ca78(){}
-/* 0015caa8 000002f8 */ FUN_0015caa8(){}
-/* 0015cda0 00000150 */ FUN_0015cda0(){}
-/* 0015cef0 000000c0 */ FUN_0015cef0(){}
-/* 0015cfb0 00000090 */ FUN_0015cfb0(){}
-/* 0015d040 000000a8 */ FUN_0015d040(){}
-/* 0015d0e8 00000014 */ FUN_0015d0e8(){}
-/* 0015d100 00000004 */ FUN_0015d100(){}
-/* 0015d108 00000004 */ FUN_0015d108(){}
-/* 0015d110 00000008 */ FUN_0015d110(){}
-/* 0015d118 00000008 */ FUN_0015d118(){}
-/* 0015d120 0000003c */ FUN_0015d120(){}
-/* 0015d160 00000150 */ FUN_0015d160(){}
-/* 0015d2b0 00000034 */ FUN_0015d2b0(){}
-/* 0015d2e8 00000034 */ FUN_0015d2e8(){}
-/* 0015d320 00000098 */ FUN_0015d320(){}
-/* 0015d3b8 000000e4 */ FUN_0015d3b8(){}
-/* 0015d4a0 000000dc */ FUN_0015d4a0(){}
-/* 0015d580 0000030c */ FUN_0015d580(){}
-/* 0015d890 00000094 */ FUN_0015d890(){}
-/* 0015d928 00000150 */ FUN_0015d928(){}
-/* 0015da78 000000a4 */ FUN_0015da78(){}
-/* 0015db20 000000a4 */ FUN_0015db20(){}
-/* 0015dbc8 000000dc */ FUN_0015dbc8(){}
-/* 0015dca8 00000054 */ FUN_0015dca8(){}
-/* 0015dd00 00000004 */ FUN_0015dd00(){}
-/* 0015dd08 00000174 */ FUN_0015dd08(){}
-/* 0015de80 0000000c */ FUN_0015de80(){}
-/* 0015de90 0000000c */ FUN_0015de90(){}
-/* 0015dea0 000000f8 */ FUN_0015dea0(){}
-/* 0015df98 00000148 */ FUN_0015df98(){}
-/* 0015e0e0 00000148 */ FUN_0015e0e0(){}
-/* 0015e228 000000dc */ FUN_0015e228(){}
-/* 0015e308 0000004c */ FUN_0015e308(){}
-/* 0015e358 00000100 */ FUN_0015e358(){}
-/* 0015e458 00000094 */ FUN_0015e458(){}
-/* 0015e4f0 00000150 */ FUN_0015e4f0(){}
-/* 0015e640 000000a4 */ FUN_0015e640(){}
-/* 0015e6e8 000000a4 */ FUN_0015e6e8(){}
-/* 0015e790 000001fc */ FUN_0015e790(){}
-/* 0015e990 00000054 */ FUN_0015e990(){}
-/* 0015e9e8 0000009c */ FUN_0015e9e8(){}
-/* 0015ea88 0000005c */ FUN_0015ea88(){}
-/* 0015eae8 00000004 */ FUN_0015eae8(){}
-/* 0015eaf0 0000016c */ FUN_0015eaf0(){}
-/* 0015ec60 0000000c */ FUN_0015ec60(){}
-/* 0015ec70 0000000c */ FUN_0015ec70(){}
-/* 0015ec80 00000098 */ FUN_0015ec80(){}
-/* 0015ed18 00000058 */ FUN_0015ed18(){}
-/* 0015ed70 000000ac */ FUN_0015ed70(){}
-/* 0015ee20 000001ec */ FUN_0015ee20(){}
-/* 0015f010 000000f4 */ FUN_0015f010(){}
-/* 0015f108 0000003c */ FUN_0015f108(){}
-/* 0015f148 00000048 */ FUN_0015f148(){}
-/* 0015f190 0000005c */ FUN_0015f190(){}
-/* 0015f1f0 000002e4 */ FUN_0015f1f0(){}
-/* 0015f4d8 00000158 */ FUN_0015f4d8(){}
-/* 0015f630 00000158 */ FUN_0015f630(){}
-/* 0015f788 00000048 */ FUN_0015f788(){}
-/* 0015f7d0 00000048 */ FUN_0015f7d0(){}
-/* 0015f818 0000009c */ FUN_0015f818(){}
-/* 0015f8b8 0000009c */ FUN_0015f8b8(){}
-/* 0015f958 0000016c */ FUN_0015f958(){}
-/* 0015fac8 00000088 */ FUN_0015fac8(){}
-/* 0015fb58 00000004 */ FUN_0015fb58(){}
-/* 0015fb60 0000020c */ FUN_0015fb60(){}
-/* 0015fd70 0000000c */ FUN_0015fd70(){}
-/* 0015fd80 0000000c */ FUN_0015fd80(){}
-/* 0015fd90 000000f8 */ FUN_0015fd90(){}
-/* 0015fe88 00000020 */ FUN_0015fe88(){}
-/* 0015fea8 0000001c */ FUN_0015fea8(){}
-/* 0015fec8 00000314 */ FUN_0015fec8(){}
-/* 001601e0 000000f4 */ FUN_001601e0(){}
-/* 001602d8 0000003c */ FUN_001602d8(){}
-/* 00160318 00000048 */ FUN_00160318(){}
-/* 00160360 000000a0 */ FUN_00160360(){}
-/* 00160400 00000018 */ FUN_00160400(){}
-/* 00160418 000008b8 */ FUN_00160418(){}
-/* 00160cd0 00000018 */ FUN_00160cd0(){}
-/* 00160ce8 000001e8 */ FUN_00160ce8(){}
-/* 00160ed0 00000154 */ FUN_00160ed0(){}
-/* 00161028 00000048 */ FUN_00161028(){}
-/* 00161070 00000048 */ FUN_00161070(){}
-/* 001610b8 0000009c */ FUN_001610b8(){}
-/* 00161158 0000009c */ FUN_00161158(){}
-/* 001611f8 000001a0 */ FUN_001611f8(){}
-/* 00161398 00000134 */ FUN_00161398(){}
-/* 001614d0 00000160 */ FUN_001614d0(){}
-/* 00161630 000000c4 */ FUN_00161630(){}
-/* 001616f8 000000c4 */ FUN_001616f8(){}
-/* 001617c0 000000a4 */ FUN_001617c0(){}
-/* 00161868 00000094 */ FUN_00161868(){}
-/* 00161900 00000004 */ FUN_00161900(){}
-/* 00161908 00000254 */ FUN_00161908(){}
-/* 00161b60 0000000c */ FUN_00161b60(){}
-/* 00161b70 0000000c */ FUN_00161b70(){}
-/* 00161b80 0000004c */ FUN_00161b80(){}
-/* 00161bd0 000000f4 */ FUN_00161bd0(){}
-/* 00161cc8 0000004c */ FUN_00161cc8(){}
-/* 00161d18 000000c8 */ FUN_00161d18(){}
-/* 00161de0 00000038 */ FUN_00161de0(){}
-/* 00161e18 0000001c */ FUN_00161e18(){}
-/* 00161e38 00000190 */ FUN_00161e38(){}
-/* 00161fc8 00000098 */ FUN_00161fc8(){}
-/* 00162060 00000018 */ FUN_00162060(){}
-/* 00162078 00000018 */ FUN_00162078(){}
-/* 00162090 00000044 */ FUN_00162090(){}
-/* 001620d8 0000009c */ FUN_001620d8(){}
+/* 00159928 00000080 */ rxThVBlankHandler(){}  // lib-ctx
+/* 001599a8 00000088 */ rxThVBlankInit(){}  // lib-ctx
+/* 00159a30 0000005c */ rxThVBlankExit(){}  // lib-ctx
+/* 00159a90 00000038 */ rxThReadHSync(){}  // lib-ctx
+/* 00159ac8 0000005c */ rxThWaitVBlank(){}  // lib-ctx
+/* 00159b28 00000094 */ rxThSync(){}  // lib-ctx
+/* 00159bc0 00000098 */ rxSndThreadCallback(){}  // lib-ctx
+/* 00159c58 00000030 */ rxSndInit(){}  // lib-ctx
+/* 00159c88 00000020 */ rxSndTerm(){}  // lib-ctx
+/* 00159ca8 0000005c */ rxSndInitModules(){}  // lib-ctx
+/* 00159d08 00000080 */ rxSndTermModules(){}  // lib-ctx
+/* 00159d88 000000e0 */ rxSndUpdate(){}  // lib-ctx
+/* 00159e68 0000004c */ rxSndSetOutputMode(){}  // lib-ctx
+/* 00159eb8 00000054 */ rxSndSetDebugFlags(){}  // lib-ctx
+/* 00159f10 0000000c */ rxSndGetDebugFlags(){}  // lib-ctx
+/* 00159f20 00000054 */ rxSndSetFrameRate(){}  // lib-ctx
+/* 00159f78 00000080 */ rxSndSetSysParam(){}  // lib-ctx
+/* 00159ff8 00000064 */ rxSndSetSysVolume(){}  // lib-ctx
+/* 0015a060 000000e0 */ rxSndSetMasterVolume(){}  // lib-ctx
+/* 0015a140 00000034 */ rxSndSetBufferBank(){}  // lib-ctx
+/* 0015a178 00000060 */ rxSndGetVoiceTable(){}  // lib-ctx
+/* 0015a1d8 000000a4 */ rxSndGetVoiceTableEx(){}  // lib-ctx
+/* 0015a280 000000cc */ rxSndGetVoiceTable2(){}  // lib-ctx
+/* 0015a350 00000030 */ rxSndInitConfig(){}  // lib-ctx
+/* 0015a380 0000000c */ rxSndTermConfig(){}  // lib-ctx
+/* 0015a390 0000000c */ rxSndGetBufferBank(){}  // lib-ctx
+/* 0015a3a0 0000000c */ rxSndGetMasterVolumeL(){}  // lib-ctx
+/* 0015a3b0 0000000c */ rxSndGetMasterVolumeR(){}  // lib-ctx
+/* 0015a3c0 0000000c */ rxSndGetWorkBuffer(){}  // lib-ctx
+/* 0015a3d0 00000004 */ rxSndWait(){}  // lib-ctx
+/* 0015a3d8 0000000c */ rxSndSetBgCallHook(){}  // lib-ctx
+/* 0015a3e8 00000028 */ rxSndCallBgCallHook(){}  // lib-ctx
+/* 0015a410 00000078 */ rxSndMemMove(){}  // lib-ctx
+/* 0015a490 00000078 */ rxSndDefIopAlloc(){}  // lib-ctx
+/* 0015a508 0000007c */ rxSndDefIopAllocMode1(){}  // lib-ctx
+/* 0015a588 00000030 */ rxSndDefIopFree(){}  // lib-ctx
+/* 0015a5b8 0000001c */ rxSndSetIopAllocHook(){}  // lib-ctx
+/* 0015a5d8 0000001c */ rxSndSetIopAllocMode1Hook(){}  // lib-ctx
+/* 0015a5f8 0000001c */ rxSndSetIopFreeHook(){}  // lib-ctx
+/* 0015a618 00000024 */ rxSndIopAlloc(){}  // lib-ctx
+/* 0015a640 00000024 */ rxSndIopAllocMode1(){}  // lib-ctx
+/* 0015a668 00000024 */ rxSndIopFree(){}  // lib-ctx
+/* 0015a690 00000210 */ rxSndIopWrite(){}  // lib-ctx
+/* 0015a8a0 000001e8 */ rxSndIopRead(){}  // lib-ctx
+/* 0015aa88 00000078 */ rxSndIopWriteWorkBuffer(){}  // lib-ctx
+/* 0015ab00 00000058 */ rxSndIopAllocWrite(){}  // lib-ctx
+/* 0015ab58 00000034 */ rxSndIopHeapCmd1(){}  // lib-ctx
+/* 0015ab90 00000034 */ rxSndIopHeapCmd2(){}  // lib-ctx
+/* 0015abc8 00000038 */ rxSndIopCopy(){}  // lib-ctx
+/* 0015ac00 0000004c */ rxSndIopBufInit(){}  // lib-ctx
+/* 0015ac50 0000004c */ rxSndIopBufTerm(){}  // lib-ctx
+/* 0015aca0 00000138 */ rxSndSpuHeapSetSlot(){}  // lib-ctx
+/* 0015add8 00000058 */ rxSndSpuHeapReleaseSlot(){}  // lib-ctx
+/* 0015ae30 00000060 */ rxSndSpuHeapSetBankSlot(){}  // lib-ctx
+/* 0015ae90 00000034 */ rxSndSpuHeapGetBankSlot(){}  // lib-ctx
+/* 0015aec8 00000020 */ rxSndDefSpuAlloc(){}  // lib-ctx
+/* 0015aee8 00000020 */ rxSndDefSpuAllocMode1(){}  // lib-ctx
+/* 0015af08 00000014 */ rxSndDefSpuFree(){}  // lib-ctx
+/* 0015af20 0000001c */ rxSndSetSpuAllocHook(){}  // lib-ctx
+/* 0015af40 0000001c */ rxSndSetSpuAllocMode1Hook(){}  // lib-ctx
+/* 0015af60 0000001c */ rxSndSetSpuFreeHook(){}  // lib-ctx
+/* 0015af80 00000024 */ rxSndSpuAlloc(){}  // lib-ctx
+/* 0015afa8 00000024 */ rxSndSpuAllocMode1(){}  // lib-ctx
+/* 0015afd0 00000024 */ rxSndSpuFree(){}  // lib-ctx
+/* 0015aff8 00000048 */ rxSndSpuTransfer(){}  // lib-ctx
+/* 0015b040 00000048 */ rxSndSpuTransferType4(){}  // lib-ctx
+/* 0015b088 00000044 */ rxSndSpuTransferType1(){}  // lib-ctx
+/* 0015b0d0 00000048 */ rxSndSpuTransferType2(){}  // lib-ctx
+/* 0015b118 00000048 */ rxSndSpuTransferType5(){}  // lib-ctx
+/* 0015b160 000000f4 */ rxSndXvabPoll(){}  // lib-ctx
+/* 0015b258 0000011c */ rxSndSpuHeapInit(){}  // lib-ctx
+/* 0015b378 00000004 */ rxSndSpuHeapTerm(){}  // lib-ctx
+/* 0015b380 00000034 */ rxSndSpuHeapGetSlot(){}  // lib-ctx
+/* 0015b3b8 00000418 */ rxSndSpuHeapAlloc(){}  // lib-ctx
+/* 0015b7d0 000001fc */ rxSndSpuHeapFree(){}  // lib-ctx
+/* 0015b9d0 000000ec */ rxSndSpuHeapFreeSlot(){}  // lib-ctx
+/* 0015bac0 00000028 */ rxSndSpuHeapNewNode(){}  // lib-ctx
+/* 0015bae8 0000001c */ rxSndSpuHeapFreeNode(){}  // lib-ctx
+/* 0015bb08 00000228 */ rxSndSpuHeapPrintStatus(){}  // lib-ctx
+/* 0015bd30 0000009c */ rxSndSetEffectModeCore(){}  // lib-ctx
+/* 0015bdd0 00000088 */ rxSndSetEffectDepthCore(){}  // lib-ctx
+/* 0015be58 0000007c */ rxSndSetEffectDelayCore(){}  // lib-ctx
+/* 0015bed8 00000100 */ rxSndSetEffectFeedbackCore(){}  // lib-ctx
+/* 0015bfd8 0000006c */ rxSndSetEffectDelay(){}  // lib-ctx
+/* 0015c048 00000004 */ rxSndXvabInit(){}  // lib-ctx
+/* 0015c050 00000040 */ rxSndXvabTerm(){}  // lib-ctx
+/* 0015c090 000003ec */ rxSndXvabLoad(){}  // lib-ctx
+/* 0015c480 00000178 */ rxSndXvabFree(){}  // lib-ctx
+/* 0015c5f8 000000cc */ rxSndXvabCheck(){}  // lib-ctx
+/* 0015c6c8 00000090 */ rxSndXvabGetIopAddr(){}  // lib-ctx
+/* 0015c758 00000090 */ rxSndXvabGetSpuAddr(){}  // lib-ctx
+/* 0015c7e8 000000a8 */ rxSndXvabRpc52(){}  // lib-ctx
+/* 0015c890 000000c8 */ rxSndXvabSetParam(){}  // lib-ctx
+/* 0015c958 00000014 */ rxSndXvabGetFileSize(){}  // lib-ctx
+/* 0015c970 000000d8 */ rxSndXvabGetSampleData(){}  // lib-ctx
+/* 0015ca48 00000030 */ rxSndXvabGetSampleAddr(){}  // lib-ctx
+/* 0015ca78 00000030 */ rxSndXvabGetSampleSize(){}  // lib-ctx
+/* 0015caa8 000002f8 */ rxSndXseqLoad(){}  // lib-ctx
+/* 0015cda0 00000150 */ rxSndXseqFree(){}  // lib-ctx
+/* 0015cef0 000000c0 */ rxSndXseqSetParam(){}  // lib-ctx
+/* 0015cfb0 00000090 */ rxSndXseqGetIopAddr(){}  // lib-ctx
+/* 0015d040 000000a8 */ rxSndXseqRpc62(){}  // lib-ctx
+/* 0015d0e8 00000014 */ rxSndXseqGetFileSize(){}  // lib-ctx
+/* 0015d100 00000004 */ rxSndXseqInit(){}  // lib-ctx
+/* 0015d108 00000004 */ rxSndXseqTerm(){}  // lib-ctx
+/* 0015d110 00000008 */ rxSndReadU32(){}  // lib-ctx
+/* 0015d118 00000008 */ rxSndChunkGetVersion(){}  // lib-ctx
+/* 0015d120 0000003c */ rxSndChunkGetFileSize(){}  // lib-ctx
+/* 0015d160 00000150 */ rxSndChunkFind(){}  // lib-ctx
+/* 0015d2b0 00000034 */ rxSndChunkFindData(){}  // lib-ctx
+/* 0015d2e8 00000034 */ rxSndChunkGetSize(){}  // lib-ctx
+/* 0015d320 00000098 */ rxSndBgmSetMasterVolume(){}  // lib-ctx
+/* 0015d3b8 000000e4 */ rxSndBgmPlay(){}  // lib-ctx
+/* 0015d4a0 000000dc */ rxSndBgmStop(){}  // lib-ctx
+/* 0015d580 0000030c */ rxSndBgmStopAll(){}  // lib-ctx
+/* 0015d890 00000094 */ rxSndBgmSetAttr(){}  // lib-ctx
+/* 0015d928 00000150 */ rxSndBgmSetVolume(){}  // lib-ctx
+/* 0015da78 000000a4 */ rxSndBgmSetPitch(){}  // lib-ctx
+/* 0015db20 000000a4 */ rxSndBgmSetParam5(){}  // lib-ctx
+/* 0015dbc8 000000dc */ rxSndBgmSetParam6(){}  // lib-ctx
+/* 0015dca8 00000054 */ rxSndBgmInit(){}  // lib-ctx
+/* 0015dd00 00000004 */ rxSndBgmTerm(){}  // lib-ctx
+/* 0015dd08 00000174 */ rxSndBgmUpdate(){}  // lib-ctx
+/* 0015de80 0000000c */ rxSndBgmGetMasterVolumeL(){}  // lib-ctx
+/* 0015de90 0000000c */ rxSndBgmGetMasterVolumeR(){}  // lib-ctx
+/* 0015dea0 000000f8 */ rxSndSeSetMasterVolume(){}  // lib-ctx
+/* 0015df98 00000148 */ rxSndSePlay(){}  // lib-ctx
+/* 0015e0e0 00000148 */ rxSndSePlayEx(){}  // lib-ctx
+/* 0015e228 000000dc */ rxSndSeStop(){}  // lib-ctx
+/* 0015e308 0000004c */ rxSndSeStopAll(){}  // lib-ctx
+/* 0015e358 00000100 */ rxSndSeGetStatus(){}  // lib-ctx
+/* 0015e458 00000094 */ rxSndSeSetAttr(){}  // lib-ctx
+/* 0015e4f0 00000150 */ rxSndSeSetVolume(){}  // lib-ctx
+/* 0015e640 000000a4 */ rxSndSeSetPitch(){}  // lib-ctx
+/* 0015e6e8 000000a4 */ rxSndSeSetParam5(){}  // lib-ctx
+/* 0015e790 000001fc */ rxSndSeSetParam(){}  // lib-ctx
+/* 0015e990 00000054 */ rxSndSeSetParamB(){}  // lib-ctx
+/* 0015e9e8 0000009c */ rxSndSeSetParamC(){}  // lib-ctx
+/* 0015ea88 0000005c */ rxSndSeInit(){}  // lib-ctx
+/* 0015eae8 00000004 */ rxSndSeTerm(){}  // lib-ctx
+/* 0015eaf0 0000016c */ rxSndSeUpdate(){}  // lib-ctx
+/* 0015ec60 0000000c */ rxSndSeGetMasterVolumeL(){}  // lib-ctx
+/* 0015ec70 0000000c */ rxSndSeGetMasterVolumeR(){}  // lib-ctx
+/* 0015ec80 00000098 */ rxSndPcmSetMasterVolume(){}  // lib-ctx
+/* 0015ed18 00000058 */ rxSndSetSysMix(){}  // lib-ctx
+/* 0015ed70 000000ac */ rxSndSetSysMute(){}  // lib-ctx
+/* 0015ee20 000001ec */ rxSndPcmOpen(){}  // lib-ctx
+/* 0015f010 000000f4 */ rxSndPcmClose(){}  // lib-ctx
+/* 0015f108 0000003c */ rxSndPcmCloseAll(){}  // lib-ctx
+/* 0015f148 00000048 */ rxSndPcmGetStatus(){}  // lib-ctx
+/* 0015f190 0000005c */ rxSndPcmGetFree(){}  // lib-ctx
+/* 0015f1f0 000002e4 */ rxSndPcmWrite(){}  // lib-ctx
+/* 0015f4d8 00000158 */ rxSndPcmEnd(){}  // lib-ctx
+/* 0015f630 00000158 */ rxSndPcmAddCallback(){}  // lib-ctx
+/* 0015f788 00000048 */ rxSndPcmSetUserData(){}  // lib-ctx
+/* 0015f7d0 00000048 */ rxSndPcmGetUserData(){}  // lib-ctx
+/* 0015f818 0000009c */ rxSndPcmSetAttr(){}  // lib-ctx
+/* 0015f8b8 0000009c */ rxSndPcmPause(){}  // lib-ctx
+/* 0015f958 0000016c */ rxSndPcmSetVolume(){}  // lib-ctx
+/* 0015fac8 00000088 */ rxSndPcmInit(){}  // lib-ctx
+/* 0015fb58 00000004 */ rxSndPcmTerm(){}  // lib-ctx
+/* 0015fb60 0000020c */ rxSndPcmUpdate(){}  // lib-ctx
+/* 0015fd70 0000000c */ rxSndPcmGetMasterVolumeL(){}  // lib-ctx
+/* 0015fd80 0000000c */ rxSndPcmGetMasterVolumeR(){}  // lib-ctx
+/* 0015fd90 000000f8 */ rxSndAdpcmSetMasterVolume(){}  // lib-ctx
+/* 0015fe88 00000020 */ rxSndAdpcmOpen(){}  // lib-ctx
+/* 0015fea8 0000001c */ rxSndAdpcmOpenEx(){}  // lib-ctx
+/* 0015fec8 00000314 */ rxSndAdpcmOpenBytes(){}  // lib-ctx
+/* 001601e0 000000f4 */ rxSndAdpcmClose(){}  // lib-ctx
+/* 001602d8 0000003c */ rxSndAdpcmCloseAll(){}  // lib-ctx
+/* 00160318 00000048 */ rxSndAdpcmGetStatus(){}  // lib-ctx
+/* 00160360 000000a0 */ rxSndAdpcmGetFreeSize(){}  // lib-ctx
+/* 00160400 00000018 */ rxSndAdpcmGetFree(){}  // lib-ctx
+/* 00160418 000008b8 */ rxSndAdpcmWriteEx(){}  // lib-ctx
+/* 00160cd0 00000018 */ rxSndAdpcmWrite(){}  // lib-ctx
+/* 00160ce8 000001e8 */ rxSndAdpcmEnd(){}  // lib-ctx
+/* 00160ed0 00000154 */ rxSndAdpcmAddCallback(){}  // lib-ctx
+/* 00161028 00000048 */ rxSndAdpcmSetUserData(){}  // lib-ctx
+/* 00161070 00000048 */ rxSndAdpcmGetUserData(){}  // lib-ctx
+/* 001610b8 0000009c */ rxSndAdpcmPause(){}  // lib-ctx
+/* 00161158 0000009c */ rxSndAdpcmSetAttr(){}  // lib-ctx
+/* 001611f8 000001a0 */ rxSndAdpcmSetVolume(){}  // lib-ctx
+/* 00161398 00000134 */ rxSndAdpcmSetChannelVolume(){}  // lib-ctx
+/* 001614d0 00000160 */ rxSndAdpcmSetPitch(){}  // lib-ctx
+/* 00161630 000000c4 */ rxSndAdpcmSetParam6(){}  // lib-ctx
+/* 001616f8 000000c4 */ rxSndAdpcmSetParam7(){}  // lib-ctx
+/* 001617c0 000000a4 */ rxSndAdpcmGetPosition(){}  // lib-ctx
+/* 00161868 00000094 */ rxSndAdpcmInit(){}  // lib-ctx
+/* 00161900 00000004 */ rxSndAdpcmTerm(){}  // lib-ctx
+/* 00161908 00000254 */ rxSndAdpcmUpdate(){}  // lib-ctx
+/* 00161b60 0000000c */ rxSndAdpcmGetMasterVolumeL(){}  // lib-ctx
+/* 00161b70 0000000c */ rxSndAdpcmGetMasterVolumeR(){}  // lib-ctx
+/* 00161b80 0000004c */ rxSndCreateSema(){}  // lib-ctx
+/* 00161bd0 000000f4 */ rxSndBindRpc(){}  // lib-ctx
+/* 00161cc8 0000004c */ rxSndUnbindRpc(){}  // lib-ctx
+/* 00161d18 000000c8 */ rxSndCallRpc(){}  // lib-ctx
+/* 00161de0 00000038 */ rxSndRpcInit(){}  // lib-ctx
+/* 00161e18 0000001c */ rxSndRpcTerm(){}  // lib-ctx
+/* 00161e38 00000190 */ rxSndRpcCommand(){}  // lib-ctx
+/* 00161fc8 00000098 */ rxSndQueueBegin(){}  // lib-ctx
+/* 00162060 00000018 */ rxSndQueueGetReply(){}  // lib-ctx
+/* 00162078 00000018 */ rxSndQueueGetData(){}  // lib-ctx
+/* 00162090 00000044 */ rxSndQueueEnd(){}  // lib-ctx
+/* 001620d8 0000009c */ rxSndQueueFlush(){}  // lib-ctx
 /* 00162178 000000a4 */ FUN_00162178(){}
 /* 00162220 0000002c */ FUN_00162220(){}
 /* 00162250 00000014 */ FUN_00162250(){}

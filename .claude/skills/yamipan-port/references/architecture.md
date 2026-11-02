@@ -90,7 +90,8 @@ files from the 4 file-name strings.
 | class names | 6 (`data/class_names.json`) | rtti.py | -- |
 | batch 005 (2026-11-02) | 253: main's teardown (22 by reading) + **231 rx names from RosePan** (rxsys 89, rxthread 29, rxfile 113) | rxalign.py + name_ctx.py | lib-context; ledger 386 |
 | batch 006 (2026-11-02) | 61 rx names: the gaps (span partition), rxfile's tail (thread, queue, device map), 7 by reading, 5 fixes of batch 005 | rxalign.py + name_ctx.py | lib-context; ledger 443 |
-| rx starts Ghidra merged | 45 (`data/missing_functions.json`, "rx from RosePan") | rxalign.py --missing | create first |
+| batch 007 (2026-11-02) | 204 rx names: rxsnd 0x159bc0..0x162178 (190 aligned, 5 by reading, 3 FS2-only RPC wrappers) + rxthread's VBlank tail 0x159928..0x159bc0 (6) | rxalign.py + name_ctx.py | lib-context; ledger 647 |
+| rx starts Ghidra merged | 45 + 28 (batch 007) in `data/missing_functions.json` ("rx from RosePan") | rxalign.py --missing | create first |
 
 Expected sources (bootstrap step 4): Sony SDK 3.0 libraries by match (libmatch.py against FF3 / RoR,
 both SDK 3.0); MSL C++ / CodeWarrior runtime only by reading (no reference game built with it); rx and
@@ -108,9 +109,28 @@ Differences: **FS2's rx is a slightly newer build** whose error messages carry `
 45 small rx functions (setters reached only by pointer or not at all, thread entry points) into
 their predecessors; they wait in `data/missing_functions.json`. After rxthread's `rxThDmaSync`
 0x168150 FS2 diverges from RoR (RoR's `rxThVBlank*` / `rxThSync`; FS2's 0x1681c0.. differ in size,
-possibly rxsnd: the `SDPR2` messages).
-The four ranges (FS2 lo hi, RoR lo hi) for `rxalign.py`: `100350 1037b0 23ff80 2433e0`,
-`153108 153518 2433e8 2437f8`, `153518 159928 2437f8 249b88`, `166b50 1681c0 249b88 24b1f8`.
+not rxsnd: the `SDPR2` messages, below).
+**Batch 007 (2026-11-02): rxsnd and rxthread's tail.** FS2 links rx in another order than RoR
+(RoR: rxsnd, rxsys, rxfile, rxthread; FS2: rxsys 0x100350.., ..., rxsys tail + rxfile
+0x153108..0x159928, **rxthread's VBlank tail 0x159928..0x159bc0** (RoR 0x24b1f8..0x24b48c:
+`rxThVBlankHandler` on INTC 2 counting fields, `rxThVBlankInit` / `Exit`, `rxThReadHSync` (RCNT0),
+`rxThWaitVBlank`, `rxThGetField` merged into it, `rxThSync`), **rxsnd 0x159bc0..0x162178** (RoR
+0x237ce8..0x23ff58, 222 functions: 190 aligned, 27 merged starts), then FS2-only code, rxthread
+0x166b50..0x1681c0). rxsnd's differences: three FS2-only RPC wrappers nothing calls
+(`rxSndXvabRpc52` 0x15c7e8, `rxSndXvabSetParam` 0x15c890 = command 0x53 {id, a, b}, the XVAB twin of
+`rxSndXseqSetParam`'s 0x63; `rxSndXseqRpc62` 0x15d040), and `rxSndAdpcmGetPosition` 0x1617c0
+converts the position through 0x119be8 where RoR returns it; `rxSndBgmSetParam6` /
+`rxSndSeSetParamC` / `rxSndPcmSetVolume` differ in size only (read: same code).
+**Not in RoR's rx, name by reading**: 0x162178..~0x166b50 is **rxsndut + rxsndstr** (0x162178
+inits four sub-systems and registers the formats "PCM stream" / "ADPCM stream" via 0x164128;
+strings 0x3022e0..0x302738: XWS stream files, file / memory stream slots, `rxSndStrStop`,
+`rxSndStrStopAll`), and 0x1681c0.. is **SDPR2** (strings 0x3027b8..: `LimitRange`, `LimitRangeF`,
+`RoundRange`, `ERR OutOfRange`, `ERR Call Undefine Function`; 0x1681c0 sets a 0..1 mode with
+range messages, 0x168398 its debug-flag getter).
+The six ranges (FS2 lo hi, RoR lo hi) for `rxalign.py`: `100350 1037b0 23ff80 2433e0`,
+`153108 153518 2433e8 2437f8`, `153518 159928 2437f8 249b88`, `159928 159bc0 24b1f8 24b48c`,
+`159928 162178 237ce8 23ff58` (rxsnd, as batch 007 ran it: its first six FS2 functions are the
+VBlank tail and stay unpaired), `166b50 1681c0 249b88 24b1f8`.
 
 ## Program flow
 

@@ -60,10 +60,15 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    `rxFileCdSetFindFunc`, not a FS2-only locate hook. **45 more rx starts Ghidra lacks** went into
    `data/missing_functions.json` ("rx from RosePan"; with 4(a); rerun the four `rxalign.py`
    ranges of architecture.md "rx" with `--batch` afterwards to name them).
-   **Next batches, in this order**: **rxsnd** (RoR's `rxSnd*` 0x237ce8.., `rx/rxsnd.cpp`; FS2's
-   rxsnd / rxsndstr / rxsndut: find the range by the `SDPR2` messages ~0x1681c0 -- FS2's code right
-   after `rxThDmaSync` 0x168150 no longer aligns with RoR's `rxThVBlank*`, read 0x1681c0..0x16849c
-   first) and **rxMpeg** (RoR 0x18182c..); `_InitSys`'s nine
+   **Batch 007 done (2026-11-02, 204 names)**: rxsnd 0x159bc0..0x162178 from RoR (190 aligned,
+   5 by reading, 3 FS2-only RPC wrappers) and rxthread's VBlank tail, which FS2 links at
+   0x159928..0x159bc0 (architecture.md "rx"); 28 more merged rx starts in
+   `data/missing_functions.json`. Snapshot before it: `work/snapshots/20261102_134502.json`.
+   **Next batches, in this order**: **rxsndut + rxsndstr** 0x162178..~0x166b50 (not in RoR: by
+   reading, from the `rxsndut` / `rxsndstr` messages 0x3022e0..0x302738; `rxSndStrStop` /
+   `rxSndStrStopAll` are in its strings), **SDPR2** 0x1681c0.. (not in RoR: the `SDPR2 ...`
+   messages 0x3027b8..; find its end) and **rxMpeg** (RoR 0x18182c..: find FS2's copy by size
+   runs, as batch 007 found rxsnd); `_InitSys`'s nine
    callees (0x140c08, 0x140d48, 0x141338, 0x1414b0, 0x1416f0, 0x1378b8, 0x140f80, 0x140470,
    0x142b70); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
    string rep); SDK functions from their `PsIIlib` / assert strings; rx (`rxfile.c`); rena
@@ -182,6 +187,10 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-11-02: bootstrap 4, part 8 (scheduled run): naming batch 007 (204 rx names: rxsnd from
+  RosePan and rxthread's VBlank tail, which FS2 links before rxsnd; 28 merged starts listed).
+  Ghidra had unsaved changes (Ctrl+S). Next: rxsndut + rxsndstr, SDPR2 (by reading).
 
 - 2026-11-02: bootstrap 4, part 7 (scheduled run): naming batch 006 (61 rx names: the gaps and
   rxfile's tail from RosePan, 7 by reading, 5 fixes of batch 005), `rxalign.py` span partition and

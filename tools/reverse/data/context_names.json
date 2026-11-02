@@ -2303,6 +2303,1230 @@
   "was": "FUN_00159918",
   "why": "rx library: RosePan names RoR 0x249b78 rxFileGetThreadPriority; between matched neighbours its span 0x10 is RoR's rxFileGetThreadPriority (rxalign.py span partition)"
  },
+ "00159928": {
+  "name": "rxThVBlankHandler",
+  "tag": "lib-context",
+  "was": "FUN_00159928",
+  "why": "rx library: RosePan names RoR 0x24b1f8 rxThVBlankHandler; same size 0x80 and place in a run of matching functions (rxalign.py); FS2 links rxthread's VBlank tail (RoR 0x24b1f8..0x24b48c) between rxfile and rxsnd, same sizes: INTC 2 handler counting fields, RCNT0 HSync counter"
+ },
+ "001599a8": {
+  "name": "rxThVBlankInit",
+  "tag": "lib-context",
+  "was": "FUN_001599a8",
+  "why": "rx library: RosePan names RoR 0x24b278 rxThVBlankInit; same size 0x88 and place in a run of matching functions (rxalign.py); FS2 links rxthread's VBlank tail (RoR 0x24b1f8..0x24b48c) between rxfile and rxsnd, same sizes: INTC 2 handler counting fields, RCNT0 HSync counter"
+ },
+ "00159a30": {
+  "name": "rxThVBlankExit",
+  "tag": "lib-context",
+  "was": "FUN_00159a30",
+  "why": "rx library: RosePan names RoR 0x24b300 rxThVBlankExit; same size 0x5c and place in a run of matching functions (rxalign.py); FS2 links rxthread's VBlank tail (RoR 0x24b1f8..0x24b48c) between rxfile and rxsnd, same sizes: INTC 2 handler counting fields, RCNT0 HSync counter"
+ },
+ "00159a90": {
+  "name": "rxThReadHSync",
+  "tag": "lib-context",
+  "was": "FUN_00159a90",
+  "why": "rx library: RosePan names RoR 0x24b360 rxThReadHSync; same size 0x38 and place in a run of matching functions (rxalign.py); FS2 links rxthread's VBlank tail (RoR 0x24b1f8..0x24b48c) between rxfile and rxsnd, same sizes: INTC 2 handler counting fields, RCNT0 HSync counter"
+ },
+ "00159ac8": {
+  "name": "rxThWaitVBlank",
+  "tag": "lib-context",
+  "was": "FUN_00159ac8",
+  "why": "rx library: RosePan names RoR 0x24b398 rxThWaitVBlank; between matched neighbours its span 0x60 is RoR's rxThWaitVBlank, rxThGetField (rxalign.py span partition); FS2 links rxthread's VBlank tail (RoR 0x24b1f8..0x24b48c) between rxfile and rxsnd, same sizes: INTC 2 handler counting fields, RCNT0 HSync counter"
+ },
+ "00159b28": {
+  "name": "rxThSync",
+  "tag": "lib-context",
+  "was": "FUN_00159b28",
+  "why": "rx library: RosePan names RoR 0x24b3f8 rxThSync; between matched neighbours its span 0x98 is RoR's rxThSync (rxalign.py span partition); FS2 links rxthread's VBlank tail (RoR 0x24b1f8..0x24b48c) between rxfile and rxsnd, same sizes: INTC 2 handler counting fields, RCNT0 HSync counter"
+ },
+ "00159bc0": {
+  "name": "rxSndThreadCallback",
+  "tag": "lib-context",
+  "was": "FUN_00159bc0",
+  "why": "rx library: RosePan names RoR 0x237ce8 rxSndThreadCallback; between matched neighbours its span 0x98 is RoR's rxSndThreadCallback, rxSndCheckBgCall (rxalign.py span partition)"
+ },
+ "00159c58": {
+  "name": "rxSndInit",
+  "tag": "lib-context",
+  "was": "FUN_00159c58",
+  "why": "rx library: RosePan names RoR 0x237d80 rxSndInit; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "00159c88": {
+  "name": "rxSndTerm",
+  "tag": "lib-context",
+  "was": "FUN_00159c88",
+  "why": "rx library: RosePan names RoR 0x237db0 rxSndTerm; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "00159ca8": {
+  "name": "rxSndInitModules",
+  "tag": "lib-context",
+  "was": "FUN_00159ca8",
+  "why": "rx library: RosePan names RoR 0x237dd0 rxSndInitModules; same size 0x5c and place in a run of matching functions (rxalign.py)"
+ },
+ "00159d08": {
+  "name": "rxSndTermModules",
+  "tag": "lib-context",
+  "was": "FUN_00159d08",
+  "why": "rx library: RosePan names RoR 0x237e30 rxSndTermModules; same size 0x80 and place in a run of matching functions (rxalign.py)"
+ },
+ "00159d88": {
+  "name": "rxSndUpdate",
+  "tag": "lib-context",
+  "was": "FUN_00159d88",
+  "why": "rx library: RosePan names RoR 0x237eb0 rxSndUpdate; same size 0xe0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00159e68": {
+  "name": "rxSndSetOutputMode",
+  "tag": "lib-context",
+  "was": "FUN_00159e68",
+  "why": "rx library: RosePan names RoR 0x237f90 rxSndSetOutputMode; same size 0x4c and place in a run of matching functions (rxalign.py)"
+ },
+ "00159eb8": {
+  "name": "rxSndSetDebugFlags",
+  "tag": "lib-context",
+  "was": "FUN_00159eb8",
+  "why": "rx library: RosePan names RoR 0x237fe0 rxSndSetDebugFlags; same size 0x54 and place in a run of matching functions (rxalign.py)"
+ },
+ "00159f10": {
+  "name": "rxSndGetDebugFlags",
+  "tag": "lib-context",
+  "was": "FUN_00159f10",
+  "why": "rx library: RosePan names RoR 0x238038 rxSndGetDebugFlags; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "00159f20": {
+  "name": "rxSndSetFrameRate",
+  "tag": "lib-context",
+  "was": "FUN_00159f20",
+  "why": "rx library: RosePan names RoR 0x238048 rxSndSetFrameRate; same size 0x54 and place in a run of matching functions (rxalign.py)"
+ },
+ "00159f78": {
+  "name": "rxSndSetSysParam",
+  "tag": "lib-context",
+  "was": "FUN_00159f78",
+  "why": "rx library: RosePan names RoR 0x2380a0 rxSndSetSysParam; same size 0x80 and place in a run of matching functions (rxalign.py)"
+ },
+ "00159ff8": {
+  "name": "rxSndSetSysVolume",
+  "tag": "lib-context",
+  "was": "FUN_00159ff8",
+  "why": "rx library: RosePan names RoR 0x238120 rxSndSetSysVolume; same size 0x64 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a060": {
+  "name": "rxSndSetMasterVolume",
+  "tag": "lib-context",
+  "was": "FUN_0015a060",
+  "why": "rx library: RosePan names RoR 0x238188 rxSndSetMasterVolume; same size 0xe0 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a140": {
+  "name": "rxSndSetBufferBank",
+  "tag": "lib-context",
+  "was": "FUN_0015a140",
+  "why": "rx library: RosePan names RoR 0x238268 rxSndSetBufferBank; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a178": {
+  "name": "rxSndGetVoiceTable",
+  "tag": "lib-context",
+  "was": "FUN_0015a178",
+  "why": "rx library: RosePan names RoR 0x2382a0 rxSndGetVoiceTable; same size 0x60 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a1d8": {
+  "name": "rxSndGetVoiceTableEx",
+  "tag": "lib-context",
+  "was": "FUN_0015a1d8",
+  "why": "rx library: RosePan names RoR 0x238300 rxSndGetVoiceTableEx; between matched neighbours its span 0xa8 is RoR's rxSndGetVoiceTableEx, rxSndSetVoiceEntry (rxalign.py span partition)"
+ },
+ "0015a280": {
+  "name": "rxSndGetVoiceTable2",
+  "tag": "lib-context",
+  "was": "FUN_0015a280",
+  "why": "rx library: RosePan names RoR 0x2383a8 rxSndGetVoiceTable2; between matched neighbours its span 0xd0 is RoR's rxSndGetVoiceTable2, rxSndCentToPitch (rxalign.py span partition)"
+ },
+ "0015a350": {
+  "name": "rxSndInitConfig",
+  "tag": "lib-context",
+  "was": "FUN_0015a350",
+  "why": "rx library: RosePan names RoR 0x238478 rxSndInitConfig; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a380": {
+  "name": "rxSndTermConfig",
+  "tag": "lib-context",
+  "was": "FUN_0015a380",
+  "why": "rx library: RosePan names RoR 0x2384a8 rxSndTermConfig; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a390": {
+  "name": "rxSndGetBufferBank",
+  "tag": "lib-context",
+  "was": "FUN_0015a390",
+  "why": "rx library: RosePan names RoR 0x2384b8 rxSndGetBufferBank; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a3a0": {
+  "name": "rxSndGetMasterVolumeL",
+  "tag": "lib-context",
+  "was": "FUN_0015a3a0",
+  "why": "rx library: RosePan names RoR 0x2384c8 rxSndGetMasterVolumeL; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a3b0": {
+  "name": "rxSndGetMasterVolumeR",
+  "tag": "lib-context",
+  "was": "FUN_0015a3b0",
+  "why": "rx library: RosePan names RoR 0x2384d8 rxSndGetMasterVolumeR; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a3c0": {
+  "name": "rxSndGetWorkBuffer",
+  "tag": "lib-context",
+  "was": "FUN_0015a3c0",
+  "why": "rx library: RosePan names RoR 0x2384e8 rxSndGetWorkBuffer; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a3d0": {
+  "name": "rxSndWait",
+  "tag": "lib-context",
+  "was": "FUN_0015a3d0",
+  "why": "rx library: RosePan names RoR 0x2384f8 rxSndWait; same size 0x4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a3d8": {
+  "name": "rxSndSetBgCallHook",
+  "tag": "lib-context",
+  "was": "FUN_0015a3d8",
+  "why": "rx library: RosePan names RoR 0x238500 rxSndSetBgCallHook; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a3e8": {
+  "name": "rxSndCallBgCallHook",
+  "tag": "lib-context",
+  "was": "FUN_0015a3e8",
+  "why": "rx library: RosePan names RoR 0x238510 rxSndCallBgCallHook; same size 0x28 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a410": {
+  "name": "rxSndMemMove",
+  "tag": "lib-context",
+  "was": "FUN_0015a410",
+  "why": "rx library: RosePan names RoR 0x238538 rxSndMemMove; same size 0x78 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a490": {
+  "name": "rxSndDefIopAlloc",
+  "tag": "lib-context",
+  "was": "FUN_0015a490",
+  "why": "rx library: RosePan names RoR 0x2385b8 rxSndDefIopAlloc; same size 0x78 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a508": {
+  "name": "rxSndDefIopAllocMode1",
+  "tag": "lib-context",
+  "was": "FUN_0015a508",
+  "why": "rx library: RosePan names RoR 0x238630 rxSndDefIopAllocMode1; same size 0x7c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a588": {
+  "name": "rxSndDefIopFree",
+  "tag": "lib-context",
+  "was": "FUN_0015a588",
+  "why": "rx library: RosePan names RoR 0x2386b0 rxSndDefIopFree; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a5b8": {
+  "name": "rxSndSetIopAllocHook",
+  "tag": "lib-context",
+  "was": "FUN_0015a5b8",
+  "why": "rx library: RosePan names RoR 0x2386e0 rxSndSetIopAllocHook; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a5d8": {
+  "name": "rxSndSetIopAllocMode1Hook",
+  "tag": "lib-context",
+  "was": "FUN_0015a5d8",
+  "why": "rx library: RosePan names RoR 0x238700 rxSndSetIopAllocMode1Hook; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a5f8": {
+  "name": "rxSndSetIopFreeHook",
+  "tag": "lib-context",
+  "was": "FUN_0015a5f8",
+  "why": "rx library: RosePan names RoR 0x238720 rxSndSetIopFreeHook; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a618": {
+  "name": "rxSndIopAlloc",
+  "tag": "lib-context",
+  "was": "FUN_0015a618",
+  "why": "rx library: RosePan names RoR 0x238740 rxSndIopAlloc; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a640": {
+  "name": "rxSndIopAllocMode1",
+  "tag": "lib-context",
+  "was": "FUN_0015a640",
+  "why": "rx library: RosePan names RoR 0x238768 rxSndIopAllocMode1; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a668": {
+  "name": "rxSndIopFree",
+  "tag": "lib-context",
+  "was": "FUN_0015a668",
+  "why": "rx library: RosePan names RoR 0x238790 rxSndIopFree; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a690": {
+  "name": "rxSndIopWrite",
+  "tag": "lib-context",
+  "was": "FUN_0015a690",
+  "why": "rx library: RosePan names RoR 0x2387b8 rxSndIopWrite; same size 0x210 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015a8a0": {
+  "name": "rxSndIopRead",
+  "tag": "lib-context",
+  "was": "FUN_0015a8a0",
+  "why": "rx library: RosePan names RoR 0x2389c8 rxSndIopRead; same size 0x1e8 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015aa88": {
+  "name": "rxSndIopWriteWorkBuffer",
+  "tag": "lib-context",
+  "was": "FUN_0015aa88",
+  "why": "rx library: RosePan names RoR 0x238bb0 rxSndIopWriteWorkBuffer; same size 0x78 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015ab00": {
+  "name": "rxSndIopAllocWrite",
+  "tag": "lib-context",
+  "was": "FUN_0015ab00",
+  "why": "rx library: RosePan names RoR 0x238c28 rxSndIopAllocWrite; same size 0x58 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015ab58": {
+  "name": "rxSndIopHeapCmd1",
+  "tag": "lib-context",
+  "was": "FUN_0015ab58",
+  "why": "rx library: RosePan names RoR 0x238c80 rxSndIopHeapCmd1; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015ab90": {
+  "name": "rxSndIopHeapCmd2",
+  "tag": "lib-context",
+  "was": "FUN_0015ab90",
+  "why": "rx library: RosePan names RoR 0x238cb8 rxSndIopHeapCmd2; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015abc8": {
+  "name": "rxSndIopCopy",
+  "tag": "lib-context",
+  "was": "FUN_0015abc8",
+  "why": "rx library: RosePan names RoR 0x238cf0 rxSndIopCopy; same size 0x38 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015ac00": {
+  "name": "rxSndIopBufInit",
+  "tag": "lib-context",
+  "was": "FUN_0015ac00",
+  "why": "rx library: RosePan names RoR 0x238d28 rxSndIopBufInit; same size 0x4c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015ac50": {
+  "name": "rxSndIopBufTerm",
+  "tag": "lib-context",
+  "was": "FUN_0015ac50",
+  "why": "rx library: RosePan names RoR 0x238d78 rxSndIopBufTerm; same size 0x4c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015aca0": {
+  "name": "rxSndSpuHeapSetSlot",
+  "tag": "lib-context",
+  "was": "FUN_0015aca0",
+  "why": "rx library: RosePan names RoR 0x238dc8 rxSndSpuHeapSetSlot; same size 0x138 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015add8": {
+  "name": "rxSndSpuHeapReleaseSlot",
+  "tag": "lib-context",
+  "was": "FUN_0015add8",
+  "why": "rx library: RosePan names RoR 0x238f00 rxSndSpuHeapReleaseSlot; same size 0x58 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015ae30": {
+  "name": "rxSndSpuHeapSetBankSlot",
+  "tag": "lib-context",
+  "was": "FUN_0015ae30",
+  "why": "rx library: RosePan names RoR 0x238f58 rxSndSpuHeapSetBankSlot; same size 0x60 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015ae90": {
+  "name": "rxSndSpuHeapGetBankSlot",
+  "tag": "lib-context",
+  "was": "FUN_0015ae90",
+  "why": "rx library: RosePan names RoR 0x238fb8 rxSndSpuHeapGetBankSlot; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015aec8": {
+  "name": "rxSndDefSpuAlloc",
+  "tag": "lib-context",
+  "was": "FUN_0015aec8",
+  "why": "rx library: RosePan names RoR 0x238ff0 rxSndDefSpuAlloc; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015aee8": {
+  "name": "rxSndDefSpuAllocMode1",
+  "tag": "lib-context",
+  "was": "FUN_0015aee8",
+  "why": "rx library: RosePan names RoR 0x239010 rxSndDefSpuAllocMode1; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015af08": {
+  "name": "rxSndDefSpuFree",
+  "tag": "lib-context",
+  "was": "FUN_0015af08",
+  "why": "rx library: RosePan names RoR 0x239030 rxSndDefSpuFree; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015af20": {
+  "name": "rxSndSetSpuAllocHook",
+  "tag": "lib-context",
+  "was": "FUN_0015af20",
+  "why": "rx library: RosePan names RoR 0x239048 rxSndSetSpuAllocHook; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015af40": {
+  "name": "rxSndSetSpuAllocMode1Hook",
+  "tag": "lib-context",
+  "was": "FUN_0015af40",
+  "why": "rx library: RosePan names RoR 0x239068 rxSndSetSpuAllocMode1Hook; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015af60": {
+  "name": "rxSndSetSpuFreeHook",
+  "tag": "lib-context",
+  "was": "FUN_0015af60",
+  "why": "rx library: RosePan names RoR 0x239088 rxSndSetSpuFreeHook; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015af80": {
+  "name": "rxSndSpuAlloc",
+  "tag": "lib-context",
+  "was": "FUN_0015af80",
+  "why": "rx library: RosePan names RoR 0x2390a8 rxSndSpuAlloc; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015afa8": {
+  "name": "rxSndSpuAllocMode1",
+  "tag": "lib-context",
+  "was": "FUN_0015afa8",
+  "why": "rx library: RosePan names RoR 0x2390d0 rxSndSpuAllocMode1; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015afd0": {
+  "name": "rxSndSpuFree",
+  "tag": "lib-context",
+  "was": "FUN_0015afd0",
+  "why": "rx library: RosePan names RoR 0x2390f8 rxSndSpuFree; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015aff8": {
+  "name": "rxSndSpuTransfer",
+  "tag": "lib-context",
+  "was": "FUN_0015aff8",
+  "why": "rx library: RosePan names RoR 0x239120 rxSndSpuTransfer; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015b040": {
+  "name": "rxSndSpuTransferType4",
+  "tag": "lib-context",
+  "was": "FUN_0015b040",
+  "why": "rx library: RosePan names RoR 0x239168 rxSndSpuTransferType4; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015b088": {
+  "name": "rxSndSpuTransferType1",
+  "tag": "lib-context",
+  "was": "FUN_0015b088",
+  "why": "rx library: RosePan names RoR 0x2391b0 rxSndSpuTransferType1; same size 0x44 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015b0d0": {
+  "name": "rxSndSpuTransferType2",
+  "tag": "lib-context",
+  "was": "FUN_0015b0d0",
+  "why": "rx library: RosePan names RoR 0x2391f8 rxSndSpuTransferType2; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015b118": {
+  "name": "rxSndSpuTransferType5",
+  "tag": "lib-context",
+  "was": "FUN_0015b118",
+  "why": "rx library: RosePan names RoR 0x239240 rxSndSpuTransferType5; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015b160": {
+  "name": "rxSndXvabPoll",
+  "tag": "lib-context",
+  "was": "FUN_0015b160",
+  "why": "rx library: RosePan names RoR 0x239288 rxSndXvabPoll; between matched neighbours its span 0xf8 is RoR's rxSndXvabPoll, rxSndSpuHeapGetFreeSize, rxSndSpuHeapGetMaxFreeBlock (rxalign.py span partition)"
+ },
+ "0015b258": {
+  "name": "rxSndSpuHeapInit",
+  "tag": "lib-context",
+  "was": "FUN_0015b258",
+  "why": "rx library: RosePan names RoR 0x239380 rxSndSpuHeapInit; same size 0x11c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015b378": {
+  "name": "rxSndSpuHeapTerm",
+  "tag": "lib-context",
+  "was": "FUN_0015b378",
+  "why": "rx library: RosePan names RoR 0x2394a0 rxSndSpuHeapTerm; same size 0x4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015b380": {
+  "name": "rxSndSpuHeapGetSlot",
+  "tag": "lib-context",
+  "was": "FUN_0015b380",
+  "why": "rx library: RosePan names RoR 0x2394a8 rxSndSpuHeapGetSlot; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015b3b8": {
+  "name": "rxSndSpuHeapAlloc",
+  "tag": "lib-context",
+  "was": "FUN_0015b3b8",
+  "why": "rx library: RosePan names RoR 0x2394e0 rxSndSpuHeapAlloc; same size 0x418 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015b7d0": {
+  "name": "rxSndSpuHeapFree",
+  "tag": "lib-context",
+  "was": "FUN_0015b7d0",
+  "why": "rx library: RosePan names RoR 0x2398f8 rxSndSpuHeapFree; same size 0x1fc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015b9d0": {
+  "name": "rxSndSpuHeapFreeSlot",
+  "tag": "lib-context",
+  "was": "FUN_0015b9d0",
+  "why": "rx library: RosePan names RoR 0x239af8 rxSndSpuHeapFreeSlot; same size 0xec and place in a run of matching functions (rxalign.py)"
+ },
+ "0015bac0": {
+  "name": "rxSndSpuHeapNewNode",
+  "tag": "lib-context",
+  "was": "FUN_0015bac0",
+  "why": "rx library: RosePan names RoR 0x239be8 rxSndSpuHeapNewNode; same size 0x28 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015bae8": {
+  "name": "rxSndSpuHeapFreeNode",
+  "tag": "lib-context",
+  "was": "FUN_0015bae8",
+  "why": "rx library: RosePan names RoR 0x239c10 rxSndSpuHeapFreeNode; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015bb08": {
+  "name": "rxSndSpuHeapPrintStatus",
+  "tag": "lib-context",
+  "was": "FUN_0015bb08",
+  "why": "rx library: RosePan names RoR 0x239c30 rxSndSpuHeapPrintStatus; same size 0x228 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015bd30": {
+  "name": "rxSndSetEffectModeCore",
+  "tag": "lib-context",
+  "was": "FUN_0015bd30",
+  "why": "rx library: RosePan names RoR 0x239e58 rxSndSetEffectModeCore; same size 0x9c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015bdd0": {
+  "name": "rxSndSetEffectDepthCore",
+  "tag": "lib-context",
+  "was": "FUN_0015bdd0",
+  "why": "rx library: RosePan names RoR 0x239ef8 rxSndSetEffectDepthCore; same size 0x88 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015be58": {
+  "name": "rxSndSetEffectDelayCore",
+  "tag": "lib-context",
+  "was": "FUN_0015be58",
+  "why": "rx library: RosePan names RoR 0x239f80 rxSndSetEffectDelayCore; same size 0x7c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015bed8": {
+  "name": "rxSndSetEffectFeedbackCore",
+  "tag": "lib-context",
+  "was": "FUN_0015bed8",
+  "why": "rx library: RosePan names RoR 0x23a000 rxSndSetEffectFeedbackCore; between matched neighbours its span 0x100 is RoR's rxSndSetEffectFeedbackCore, rxSndSetEffectMode, rxSndSetEffectDepth (rxalign.py span partition)"
+ },
+ "0015bfd8": {
+  "name": "rxSndSetEffectDelay",
+  "tag": "lib-context",
+  "was": "FUN_0015bfd8",
+  "why": "rx library: RosePan names RoR 0x23a100 rxSndSetEffectDelay; between matched neighbours its span 0x70 is RoR's rxSndSetEffectDelay, rxSndSetEffectFeedback (rxalign.py span partition)"
+ },
+ "0015c048": {
+  "name": "rxSndXvabInit",
+  "tag": "lib-context",
+  "was": "FUN_0015c048",
+  "why": "rx library: RosePan names RoR 0x23a170 rxSndXvabInit; between matched neighbours its span 0x8 is RoR's rxSndXvabInit (rxalign.py span partition)"
+ },
+ "0015c050": {
+  "name": "rxSndXvabTerm",
+  "tag": "lib-context",
+  "was": "FUN_0015c050",
+  "why": "rx library: RosePan names RoR 0x23a178 rxSndXvabTerm; between matched neighbours its span 0x40 is RoR's rxSndXvabTerm, rxSndReadVarLen (rxalign.py span partition)"
+ },
+ "0015c090": {
+  "name": "rxSndXvabLoad",
+  "tag": "lib-context",
+  "was": "FUN_0015c090",
+  "why": "rx library: RosePan names RoR 0x23a1b8 rxSndXvabLoad; same size 0x3ec and place in a run of matching functions (rxalign.py)"
+ },
+ "0015c480": {
+  "name": "rxSndXvabFree",
+  "tag": "lib-context",
+  "was": "FUN_0015c480",
+  "why": "rx library: RosePan names RoR 0x23a5a8 rxSndXvabFree; same size 0x178 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015c5f8": {
+  "name": "rxSndXvabCheck",
+  "tag": "lib-context",
+  "was": "FUN_0015c5f8",
+  "why": "rx library: RosePan names RoR 0x23a720 rxSndXvabCheck; same size 0xcc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015c6c8": {
+  "name": "rxSndXvabGetIopAddr",
+  "tag": "lib-context",
+  "was": "FUN_0015c6c8",
+  "why": "rx library: RosePan names RoR 0x23a7f0 rxSndXvabGetIopAddr; same size 0x90 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015c758": {
+  "name": "rxSndXvabGetSpuAddr",
+  "tag": "lib-context",
+  "was": "FUN_0015c758",
+  "why": "rx library: RosePan names RoR RoR 0x23a880 rxSndXvabGetSpuAddr; rxalign left it unpaired (0x90 here, 0x98 in RoR); reads it: XVAB id < 0x100, used bit, returns slot +0xc (RoR's m_spuBuf), the same 'out of range' / 'is unused' messages as rxSndXvabGetIopAddr before it"
+ },
+ "0015c7e8": {
+  "name": "rxSndXvabRpc52",
+  "tag": "lib-context",
+  "was": "FUN_0015c7e8",
+  "why": "FS2's rx only (not in RoR, no callers): XVAB id < 0x100, used bit, then rxSndRpcCommand(0x52, id) and returns its reply; RoR's XVAB commands are 0x50 load / 0x51 free, so 0x52 is a newer driver command, meaning unknown"
+ },
+ "0015c890": {
+  "name": "rxSndXvabSetParam",
+  "tag": "lib-context",
+  "was": "FUN_0015c890",
+  "why": "FS2's rx only (not in RoR, no callers): XVAB id < 0x100, used bit, rxSndRpcCommand(0x53, {id, a, b}): the XVAB twin of rxSndXseqSetParam (0x63, {id, a, b})"
+ },
+ "0015c958": {
+  "name": "rxSndXvabGetFileSize",
+  "tag": "lib-context",
+  "was": "FUN_0015c958",
+  "why": "rx library: RosePan names RoR 0x23a918 rxSndXvabGetFileSize; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015c970": {
+  "name": "rxSndXvabGetSampleData",
+  "tag": "lib-context",
+  "was": "FUN_0015c970",
+  "why": "rx library: RosePan names RoR 0x23a930 rxSndXvabGetSampleData; same size 0xd8 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015ca48": {
+  "name": "rxSndXvabGetSampleAddr",
+  "tag": "lib-context",
+  "was": "FUN_0015ca48",
+  "why": "rx library: RosePan names RoR 0x23aa08 rxSndXvabGetSampleAddr; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015ca78": {
+  "name": "rxSndXvabGetSampleSize",
+  "tag": "lib-context",
+  "was": "FUN_0015ca78",
+  "why": "rx library: RosePan names RoR 0x23aa38 rxSndXvabGetSampleSize; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015caa8": {
+  "name": "rxSndXseqLoad",
+  "tag": "lib-context",
+  "was": "FUN_0015caa8",
+  "why": "rx library: RosePan names RoR 0x23aa68 rxSndXseqLoad; same size 0x2f8 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015cda0": {
+  "name": "rxSndXseqFree",
+  "tag": "lib-context",
+  "was": "FUN_0015cda0",
+  "why": "rx library: RosePan names RoR 0x23ad60 rxSndXseqFree; same size 0x150 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015cef0": {
+  "name": "rxSndXseqSetParam",
+  "tag": "lib-context",
+  "was": "FUN_0015cef0",
+  "why": "rx library: RosePan names RoR 0x23aeb0 rxSndXseqSetParam; same size 0xc0 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015cfb0": {
+  "name": "rxSndXseqGetIopAddr",
+  "tag": "lib-context",
+  "was": "FUN_0015cfb0",
+  "why": "rx library: RosePan names RoR 0x23af70 rxSndXseqGetIopAddr; same size 0x90 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015d040": {
+  "name": "rxSndXseqRpc62",
+  "tag": "lib-context",
+  "was": "FUN_0015d040",
+  "why": "FS2's rx only (not in RoR, no callers): XSEQ id < 0x100, used bit, rxSndRpcCommand(0x62, id); RoR's XSEQ commands are 0x60 load / 0x61 free / 0x63 set param, so 0x62 is unused there, meaning unknown"
+ },
+ "0015d0e8": {
+  "name": "rxSndXseqGetFileSize",
+  "tag": "lib-context",
+  "was": "FUN_0015d0e8",
+  "why": "rx library: RosePan names RoR 0x23b000 rxSndXseqGetFileSize; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015d100": {
+  "name": "rxSndXseqInit",
+  "tag": "lib-context",
+  "was": "FUN_0015d100",
+  "why": "rx library: RosePan names RoR 0x23b018 rxSndXseqInit; same size 0x4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015d108": {
+  "name": "rxSndXseqTerm",
+  "tag": "lib-context",
+  "was": "FUN_0015d108",
+  "why": "rx library: RosePan names RoR 0x23b020 rxSndXseqTerm; same size 0x4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015d110": {
+  "name": "rxSndReadU32",
+  "tag": "lib-context",
+  "was": "FUN_0015d110",
+  "why": "rx library: RosePan names RoR 0x23b028 rxSndReadU32; same size 0x8 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015d118": {
+  "name": "rxSndChunkGetVersion",
+  "tag": "lib-context",
+  "was": "FUN_0015d118",
+  "why": "rx library: RosePan names RoR 0x23b030 rxSndChunkGetVersion; same size 0x8 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015d120": {
+  "name": "rxSndChunkGetFileSize",
+  "tag": "lib-context",
+  "was": "FUN_0015d120",
+  "why": "rx library: RosePan names RoR 0x23b038 rxSndChunkGetFileSize; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015d160": {
+  "name": "rxSndChunkFind",
+  "tag": "lib-context",
+  "was": "FUN_0015d160",
+  "why": "rx library: RosePan names RoR 0x23b078 rxSndChunkFind; same size 0x150 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015d2b0": {
+  "name": "rxSndChunkFindData",
+  "tag": "lib-context",
+  "was": "FUN_0015d2b0",
+  "why": "rx library: RosePan names RoR 0x23b1c8 rxSndChunkFindData; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015d2e8": {
+  "name": "rxSndChunkGetSize",
+  "tag": "lib-context",
+  "was": "FUN_0015d2e8",
+  "why": "rx library: RosePan names RoR 0x23b200 rxSndChunkGetSize; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015d320": {
+  "name": "rxSndBgmSetMasterVolume",
+  "tag": "lib-context",
+  "was": "FUN_0015d320",
+  "why": "rx library: RosePan names RoR 0x23b238 rxSndBgmSetMasterVolume; same size 0x98 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015d3b8": {
+  "name": "rxSndBgmPlay",
+  "tag": "lib-context",
+  "was": "FUN_0015d3b8",
+  "why": "rx library: RosePan names RoR 0x23b2d0 rxSndBgmPlay; same size 0xe4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015d4a0": {
+  "name": "rxSndBgmStop",
+  "tag": "lib-context",
+  "was": "FUN_0015d4a0",
+  "why": "rx library: RosePan names RoR 0x23b3b8 rxSndBgmStop; same size 0xdc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015d580": {
+  "name": "rxSndBgmStopAll",
+  "tag": "lib-context",
+  "was": "FUN_0015d580",
+  "why": "rx library: RosePan names RoR 0x23b498 rxSndBgmStopAll; between matched neighbours its span 0x310 is RoR's rxSndBgmStopAll, rxSndBgmPause, rxSndBgmGetStatus, rxSndBgmGetValue, rxSndBgmSetChannelVolume, rxSndBgmSetChannelVolume74 (rxalign.py span partition)"
+ },
+ "0015d890": {
+  "name": "rxSndBgmSetAttr",
+  "tag": "lib-context",
+  "was": "FUN_0015d890",
+  "why": "rx library: RosePan names RoR 0x23b7a8 rxSndBgmSetAttr; same size 0x94 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015d928": {
+  "name": "rxSndBgmSetVolume",
+  "tag": "lib-context",
+  "was": "FUN_0015d928",
+  "why": "rx library: RosePan names RoR 0x23b840 rxSndBgmSetVolume; same size 0x150 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015da78": {
+  "name": "rxSndBgmSetPitch",
+  "tag": "lib-context",
+  "was": "FUN_0015da78",
+  "why": "rx library: RosePan names RoR 0x23b990 rxSndBgmSetPitch; same size 0xa4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015db20": {
+  "name": "rxSndBgmSetParam5",
+  "tag": "lib-context",
+  "was": "FUN_0015db20",
+  "why": "rx library: RosePan names RoR 0x23ba38 rxSndBgmSetParam5; same size 0xa4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015dbc8": {
+  "name": "rxSndBgmSetParam6",
+  "tag": "lib-context",
+  "was": "FUN_0015dbc8",
+  "why": "rx library: RosePan names RoR RoR 0x23bae0 rxSndBgmSetParam6; rxalign '^' (0xdc vs 0x94, by place); reads it: bgm id < 0x20, used bit, queue command 0x71 with param 6 and the value (RoR's rxSndBgmQueueSet(id, 6, value), inlined here)"
+ },
+ "0015dca8": {
+  "name": "rxSndBgmInit",
+  "tag": "lib-context",
+  "was": "FUN_0015dca8",
+  "why": "rx library: RosePan names RoR 0x23bb78 rxSndBgmInit; same size 0x54 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015dd00": {
+  "name": "rxSndBgmTerm",
+  "tag": "lib-context",
+  "was": "FUN_0015dd00",
+  "why": "rx library: RosePan names RoR 0x23bbd0 rxSndBgmTerm; same size 0x4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015dd08": {
+  "name": "rxSndBgmUpdate",
+  "tag": "lib-context",
+  "was": "FUN_0015dd08",
+  "why": "rx library: RosePan names RoR 0x23bbd8 rxSndBgmUpdate; same size 0x174 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015de80": {
+  "name": "rxSndBgmGetMasterVolumeL",
+  "tag": "lib-context",
+  "was": "FUN_0015de80",
+  "why": "rx library: RosePan names RoR 0x23bd50 rxSndBgmGetMasterVolumeL; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015de90": {
+  "name": "rxSndBgmGetMasterVolumeR",
+  "tag": "lib-context",
+  "was": "FUN_0015de90",
+  "why": "rx library: RosePan names RoR 0x23bd60 rxSndBgmGetMasterVolumeR; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015dea0": {
+  "name": "rxSndSeSetMasterVolume",
+  "tag": "lib-context",
+  "was": "FUN_0015dea0",
+  "why": "rx library: RosePan names RoR 0x23bd70 rxSndSeSetMasterVolume; between matched neighbours its span 0xf8 is RoR's rxSndSeSetMasterVolume, rxSndSeSetDefaultParamB, rxSndSeSetDefaultParamC (rxalign.py span partition)"
+ },
+ "0015df98": {
+  "name": "rxSndSePlay",
+  "tag": "lib-context",
+  "was": "FUN_0015df98",
+  "why": "rx library: RosePan names RoR 0x23be68 rxSndSePlay; same size 0x148 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015e0e0": {
+  "name": "rxSndSePlayEx",
+  "tag": "lib-context",
+  "was": "FUN_0015e0e0",
+  "why": "rx library: RosePan names RoR 0x23bfb0 rxSndSePlayEx; same size 0x148 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015e228": {
+  "name": "rxSndSeStop",
+  "tag": "lib-context",
+  "was": "FUN_0015e228",
+  "why": "rx library: RosePan names RoR 0x23c0f8 rxSndSeStop; same size 0xdc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015e308": {
+  "name": "rxSndSeStopAll",
+  "tag": "lib-context",
+  "was": "FUN_0015e308",
+  "why": "rx library: RosePan names RoR 0x23c1d8 rxSndSeStopAll; same size 0x4c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015e358": {
+  "name": "rxSndSeGetStatus",
+  "tag": "lib-context",
+  "was": "FUN_0015e358",
+  "why": "rx library: RosePan names RoR 0x23c228 rxSndSeGetStatus; between matched neighbours its span 0x100 is RoR's rxSndSeGetStatus, rxSndSePause (rxalign.py span partition)"
+ },
+ "0015e458": {
+  "name": "rxSndSeSetAttr",
+  "tag": "lib-context",
+  "was": "FUN_0015e458",
+  "why": "rx library: RosePan names RoR 0x23c328 rxSndSeSetAttr; same size 0x94 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015e4f0": {
+  "name": "rxSndSeSetVolume",
+  "tag": "lib-context",
+  "was": "FUN_0015e4f0",
+  "why": "rx library: RosePan names RoR 0x23c3c0 rxSndSeSetVolume; same size 0x150 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015e640": {
+  "name": "rxSndSeSetPitch",
+  "tag": "lib-context",
+  "was": "FUN_0015e640",
+  "why": "rx library: RosePan names RoR 0x23c510 rxSndSeSetPitch; same size 0xa4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015e6e8": {
+  "name": "rxSndSeSetParam5",
+  "tag": "lib-context",
+  "was": "FUN_0015e6e8",
+  "why": "rx library: RosePan names RoR 0x23c5b8 rxSndSeSetParam5; same size 0xa4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015e790": {
+  "name": "rxSndSeSetParam",
+  "tag": "lib-context",
+  "was": "FUN_0015e790",
+  "why": "rx library: RosePan names RoR 0x23c660 rxSndSeSetParam; between matched neighbours its span 0x200 is RoR's rxSndSeSetParam, rxSndSeSetParam6, rxSndSeSetParam7, rxSndSeSetParam8, rxSndSeSetParam9, rxSndSeSetPan (rxalign.py span partition)"
+ },
+ "0015e990": {
+  "name": "rxSndSeSetParamB",
+  "tag": "lib-context",
+  "was": "FUN_0015e990",
+  "why": "rx library: RosePan names RoR 0x23c860 rxSndSeSetParamB; between matched neighbours its span 0x58 is RoR's rxSndSeSetParamB (rxalign.py span partition)"
+ },
+ "0015e9e8": {
+  "name": "rxSndSeSetParamC",
+  "tag": "lib-context",
+  "was": "FUN_0015e9e8",
+  "why": "rx library: RosePan names RoR RoR 0x23c8b8 rxSndSeSetParamC; rxalign '^' (by place); reads it: value < 0 returns, clamps to -1..0x7e, rxSndSeSetParam(id, 0xc, value) word for word"
+ },
+ "0015ea88": {
+  "name": "rxSndSeInit",
+  "tag": "lib-context",
+  "was": "FUN_0015ea88",
+  "why": "rx library: RosePan names RoR 0x23c910 rxSndSeInit; same size 0x5c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015eae8": {
+  "name": "rxSndSeTerm",
+  "tag": "lib-context",
+  "was": "FUN_0015eae8",
+  "why": "rx library: RosePan names RoR 0x23c970 rxSndSeTerm; same size 0x4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015eaf0": {
+  "name": "rxSndSeUpdate",
+  "tag": "lib-context",
+  "was": "FUN_0015eaf0",
+  "why": "rx library: RosePan names RoR 0x23c978 rxSndSeUpdate; same size 0x16c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015ec60": {
+  "name": "rxSndSeGetMasterVolumeL",
+  "tag": "lib-context",
+  "was": "FUN_0015ec60",
+  "why": "rx library: RosePan names RoR 0x23cae8 rxSndSeGetMasterVolumeL; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015ec70": {
+  "name": "rxSndSeGetMasterVolumeR",
+  "tag": "lib-context",
+  "was": "FUN_0015ec70",
+  "why": "rx library: RosePan names RoR 0x23caf8 rxSndSeGetMasterVolumeR; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015ec80": {
+  "name": "rxSndPcmSetMasterVolume",
+  "tag": "lib-context",
+  "was": "FUN_0015ec80",
+  "why": "rx library: RosePan names RoR 0x23cb08 rxSndPcmSetMasterVolume; same size 0x98 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015ed18": {
+  "name": "rxSndSetSysMix",
+  "tag": "lib-context",
+  "was": "FUN_0015ed18",
+  "why": "rx library: RosePan names RoR 0x23cba0 rxSndSetSysMix; same size 0x58 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015ed70": {
+  "name": "rxSndSetSysMute",
+  "tag": "lib-context",
+  "was": "FUN_0015ed70",
+  "why": "rx library: RosePan names RoR 0x23cbf8 rxSndSetSysMute; between matched neighbours its span 0xb0 is RoR's rxSndSetSysMute, rxSndPcmSetParamB4 (rxalign.py span partition)"
+ },
+ "0015ee20": {
+  "name": "rxSndPcmOpen",
+  "tag": "lib-context",
+  "was": "FUN_0015ee20",
+  "why": "rx library: RosePan names RoR 0x23cca8 rxSndPcmOpen; same size 0x1ec and place in a run of matching functions (rxalign.py)"
+ },
+ "0015f010": {
+  "name": "rxSndPcmClose",
+  "tag": "lib-context",
+  "was": "FUN_0015f010",
+  "why": "rx library: RosePan names RoR 0x23ce98 rxSndPcmClose; same size 0xf4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015f108": {
+  "name": "rxSndPcmCloseAll",
+  "tag": "lib-context",
+  "was": "FUN_0015f108",
+  "why": "rx library: RosePan names RoR 0x23cf90 rxSndPcmCloseAll; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015f148": {
+  "name": "rxSndPcmGetStatus",
+  "tag": "lib-context",
+  "was": "FUN_0015f148",
+  "why": "rx library: RosePan names RoR 0x23cfd0 rxSndPcmGetStatus; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015f190": {
+  "name": "rxSndPcmGetFree",
+  "tag": "lib-context",
+  "was": "FUN_0015f190",
+  "why": "rx library: RosePan names RoR 0x23d018 rxSndPcmGetFree; same size 0x5c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015f1f0": {
+  "name": "rxSndPcmWrite",
+  "tag": "lib-context",
+  "was": "FUN_0015f1f0",
+  "why": "rx library: RosePan names RoR 0x23d078 rxSndPcmWrite; same size 0x2e4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015f4d8": {
+  "name": "rxSndPcmEnd",
+  "tag": "lib-context",
+  "was": "FUN_0015f4d8",
+  "why": "rx library: RosePan names RoR 0x23d360 rxSndPcmEnd; same size 0x158 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015f630": {
+  "name": "rxSndPcmAddCallback",
+  "tag": "lib-context",
+  "was": "FUN_0015f630",
+  "why": "rx library: RosePan names RoR 0x23d4b8 rxSndPcmAddCallback; same size 0x158 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015f788": {
+  "name": "rxSndPcmSetUserData",
+  "tag": "lib-context",
+  "was": "FUN_0015f788",
+  "why": "rx library: RosePan names RoR 0x23d610 rxSndPcmSetUserData; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015f7d0": {
+  "name": "rxSndPcmGetUserData",
+  "tag": "lib-context",
+  "was": "FUN_0015f7d0",
+  "why": "rx library: RosePan names RoR 0x23d658 rxSndPcmGetUserData; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015f818": {
+  "name": "rxSndPcmSetAttr",
+  "tag": "lib-context",
+  "was": "FUN_0015f818",
+  "why": "rx library: RosePan names RoR 0x23d6a0 rxSndPcmSetAttr; same size 0x9c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015f8b8": {
+  "name": "rxSndPcmPause",
+  "tag": "lib-context",
+  "was": "FUN_0015f8b8",
+  "why": "rx library: RosePan names RoR 0x23d740 rxSndPcmPause; same size 0x9c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015f958": {
+  "name": "rxSndPcmSetVolume",
+  "tag": "lib-context",
+  "was": "FUN_0015f958",
+  "why": "rx library: RosePan names RoR RoR 0x23d7e0 rxSndPcmSetVolume; rxalign '^' (by place); reads it: pcm id <= 0x1f, used bit, clamps L/R to -0x80..0x80, master * family * volume >> 14, queue command 0xb2 param 4: RoR's code"
+ },
+ "0015fac8": {
+  "name": "rxSndPcmInit",
+  "tag": "lib-context",
+  "was": "FUN_0015fac8",
+  "why": "rx library: RosePan names RoR 0x23d908 rxSndPcmInit; same size 0x88 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015fb58": {
+  "name": "rxSndPcmTerm",
+  "tag": "lib-context",
+  "was": "FUN_0015fb58",
+  "why": "rx library: RosePan names RoR 0x23d998 rxSndPcmTerm; same size 0x4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015fb60": {
+  "name": "rxSndPcmUpdate",
+  "tag": "lib-context",
+  "was": "FUN_0015fb60",
+  "why": "rx library: RosePan names RoR 0x23d9a0 rxSndPcmUpdate; same size 0x20c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015fd70": {
+  "name": "rxSndPcmGetMasterVolumeL",
+  "tag": "lib-context",
+  "was": "FUN_0015fd70",
+  "why": "rx library: RosePan names RoR 0x23dbb0 rxSndPcmGetMasterVolumeL; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015fd80": {
+  "name": "rxSndPcmGetMasterVolumeR",
+  "tag": "lib-context",
+  "was": "FUN_0015fd80",
+  "why": "rx library: RosePan names RoR 0x23dbc0 rxSndPcmGetMasterVolumeR; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "0015fd90": {
+  "name": "rxSndAdpcmSetMasterVolume",
+  "tag": "lib-context",
+  "was": "FUN_0015fd90",
+  "why": "rx library: RosePan names RoR 0x23dbd0 rxSndAdpcmSetMasterVolume; between matched neighbours its span 0xf8 is RoR's rxSndAdpcmSetMasterVolume, rxSndAdpcmSetDefaultParam6, rxSndAdpcmSetDefaultParam7 (rxalign.py span partition)"
+ },
+ "0015fe88": {
+  "name": "rxSndAdpcmOpen",
+  "tag": "lib-context",
+  "was": "FUN_0015fe88",
+  "why": "rx library: RosePan names RoR 0x23dcc8 rxSndAdpcmOpen; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "0015fea8": {
+  "name": "rxSndAdpcmOpenEx",
+  "tag": "lib-context",
+  "was": "FUN_0015fea8",
+  "why": "rx library: RosePan names RoR 0x23dce8 rxSndAdpcmOpenEx; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0015fec8": {
+  "name": "rxSndAdpcmOpenBytes",
+  "tag": "lib-context",
+  "was": "FUN_0015fec8",
+  "why": "rx library: RosePan names RoR 0x23dd08 rxSndAdpcmOpenBytes; same size 0x314 and place in a run of matching functions (rxalign.py)"
+ },
+ "001601e0": {
+  "name": "rxSndAdpcmClose",
+  "tag": "lib-context",
+  "was": "FUN_001601e0",
+  "why": "rx library: RosePan names RoR 0x23e020 rxSndAdpcmClose; same size 0xf4 and place in a run of matching functions (rxalign.py)"
+ },
+ "001602d8": {
+  "name": "rxSndAdpcmCloseAll",
+  "tag": "lib-context",
+  "was": "FUN_001602d8",
+  "why": "rx library: RosePan names RoR 0x23e118 rxSndAdpcmCloseAll; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "00160318": {
+  "name": "rxSndAdpcmGetStatus",
+  "tag": "lib-context",
+  "was": "FUN_00160318",
+  "why": "rx library: RosePan names RoR 0x23e158 rxSndAdpcmGetStatus; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00160360": {
+  "name": "rxSndAdpcmGetFreeSize",
+  "tag": "lib-context",
+  "was": "FUN_00160360",
+  "why": "rx library: RosePan names RoR 0x23e1a0 rxSndAdpcmGetFreeSize; same size 0xa0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00160400": {
+  "name": "rxSndAdpcmGetFree",
+  "tag": "lib-context",
+  "was": "FUN_00160400",
+  "why": "rx library: RosePan names RoR 0x23e240 rxSndAdpcmGetFree; same size 0x18 and place in a run of matching functions (rxalign.py)"
+ },
+ "00160418": {
+  "name": "rxSndAdpcmWriteEx",
+  "tag": "lib-context",
+  "was": "FUN_00160418",
+  "why": "rx library: RosePan names RoR 0x23e258 rxSndAdpcmWriteEx; same size 0x8b8 and place in a run of matching functions (rxalign.py)"
+ },
+ "00160cd0": {
+  "name": "rxSndAdpcmWrite",
+  "tag": "lib-context",
+  "was": "FUN_00160cd0",
+  "why": "rx library: RosePan names RoR 0x23eb10 rxSndAdpcmWrite; same size 0x18 and place in a run of matching functions (rxalign.py)"
+ },
+ "00160ce8": {
+  "name": "rxSndAdpcmEnd",
+  "tag": "lib-context",
+  "was": "FUN_00160ce8",
+  "why": "rx library: RosePan names RoR 0x23eb28 rxSndAdpcmEnd; same size 0x1e8 and place in a run of matching functions (rxalign.py)"
+ },
+ "00160ed0": {
+  "name": "rxSndAdpcmAddCallback",
+  "tag": "lib-context",
+  "was": "FUN_00160ed0",
+  "why": "rx library: RosePan names RoR 0x23ed10 rxSndAdpcmAddCallback; same size 0x154 and place in a run of matching functions (rxalign.py)"
+ },
+ "00161028": {
+  "name": "rxSndAdpcmSetUserData",
+  "tag": "lib-context",
+  "was": "FUN_00161028",
+  "why": "rx library: RosePan names RoR 0x23ee68 rxSndAdpcmSetUserData; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00161070": {
+  "name": "rxSndAdpcmGetUserData",
+  "tag": "lib-context",
+  "was": "FUN_00161070",
+  "why": "rx library: RosePan names RoR 0x23eeb0 rxSndAdpcmGetUserData; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "001610b8": {
+  "name": "rxSndAdpcmPause",
+  "tag": "lib-context",
+  "was": "FUN_001610b8",
+  "why": "rx library: RosePan names RoR 0x23eef8 rxSndAdpcmPause; same size 0x9c and place in a run of matching functions (rxalign.py)"
+ },
+ "00161158": {
+  "name": "rxSndAdpcmSetAttr",
+  "tag": "lib-context",
+  "was": "FUN_00161158",
+  "why": "rx library: RosePan names RoR 0x23ef98 rxSndAdpcmSetAttr; same size 0x9c and place in a run of matching functions (rxalign.py)"
+ },
+ "001611f8": {
+  "name": "rxSndAdpcmSetVolume",
+  "tag": "lib-context",
+  "was": "FUN_001611f8",
+  "why": "rx library: RosePan names RoR 0x23f038 rxSndAdpcmSetVolume; same size 0x1a0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00161398": {
+  "name": "rxSndAdpcmSetChannelVolume",
+  "tag": "lib-context",
+  "was": "FUN_00161398",
+  "why": "rx library: RosePan names RoR 0x23f1d8 rxSndAdpcmSetChannelVolume; same size 0x134 and place in a run of matching functions (rxalign.py)"
+ },
+ "001614d0": {
+  "name": "rxSndAdpcmSetPitch",
+  "tag": "lib-context",
+  "was": "FUN_001614d0",
+  "why": "rx library: RosePan names RoR 0x23f310 rxSndAdpcmSetPitch; between matched neighbours its span 0x160 is RoR's rxSndAdpcmSetPitch, rxSndAdpcmSetChannelParam5 (rxalign.py span partition)"
+ },
+ "00161630": {
+  "name": "rxSndAdpcmSetParam6",
+  "tag": "lib-context",
+  "was": "FUN_00161630",
+  "why": "rx library: RosePan names RoR 0x23f470 rxSndAdpcmSetParam6; between matched neighbours its span 0xc8 is RoR's rxSndAdpcmSetParam6 (rxalign.py span partition)"
+ },
+ "001616f8": {
+  "name": "rxSndAdpcmSetParam7",
+  "tag": "lib-context",
+  "was": "FUN_001616f8",
+  "why": "rx library: RosePan names RoR 0x23f538 rxSndAdpcmSetParam7; between matched neighbours its span 0xc8 is RoR's rxSndAdpcmSetParam7 (rxalign.py span partition)"
+ },
+ "001617c0": {
+  "name": "rxSndAdpcmGetPosition",
+  "tag": "lib-context",
+  "was": "FUN_001617c0",
+  "why": "rx library: RosePan names RoR RoR 0x23f600 rxSndAdpcmGetPosition; rxalign '^' (0xa4 vs 0x48, by place); reads it: stream id < 0x30, used bit, else 0, as RoR; FS2 converts the position through 0x119be8 with a byte of the stream (+0x14) where RoR returns it as is"
+ },
+ "00161868": {
+  "name": "rxSndAdpcmInit",
+  "tag": "lib-context",
+  "was": "FUN_00161868",
+  "why": "rx library: RosePan names RoR 0x23f648 rxSndAdpcmInit; same size 0x94 and place in a run of matching functions (rxalign.py)"
+ },
+ "00161900": {
+  "name": "rxSndAdpcmTerm",
+  "tag": "lib-context",
+  "was": "FUN_00161900",
+  "why": "rx library: RosePan names RoR 0x23f6e0 rxSndAdpcmTerm; same size 0x4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00161908": {
+  "name": "rxSndAdpcmUpdate",
+  "tag": "lib-context",
+  "was": "FUN_00161908",
+  "why": "rx library: RosePan names RoR 0x23f6e8 rxSndAdpcmUpdate; same size 0x254 and place in a run of matching functions (rxalign.py)"
+ },
+ "00161b60": {
+  "name": "rxSndAdpcmGetMasterVolumeL",
+  "tag": "lib-context",
+  "was": "FUN_00161b60",
+  "why": "rx library: RosePan names RoR 0x23f940 rxSndAdpcmGetMasterVolumeL; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "00161b70": {
+  "name": "rxSndAdpcmGetMasterVolumeR",
+  "tag": "lib-context",
+  "was": "FUN_00161b70",
+  "why": "rx library: RosePan names RoR 0x23f950 rxSndAdpcmGetMasterVolumeR; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "00161b80": {
+  "name": "rxSndCreateSema",
+  "tag": "lib-context",
+  "was": "FUN_00161b80",
+  "why": "rx library: RosePan names RoR 0x23f960 rxSndCreateSema; same size 0x4c and place in a run of matching functions (rxalign.py)"
+ },
+ "00161bd0": {
+  "name": "rxSndBindRpc",
+  "tag": "lib-context",
+  "was": "FUN_00161bd0",
+  "why": "rx library: RosePan names RoR 0x23f9b0 rxSndBindRpc; same size 0xf4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00161cc8": {
+  "name": "rxSndUnbindRpc",
+  "tag": "lib-context",
+  "was": "FUN_00161cc8",
+  "why": "rx library: RosePan names RoR 0x23faa8 rxSndUnbindRpc; between matched neighbours its span 0x50 is RoR's rxSndUnbindRpc, rxSndRpcEndFunc (rxalign.py span partition)"
+ },
+ "00161d18": {
+  "name": "rxSndCallRpc",
+  "tag": "lib-context",
+  "was": "FUN_00161d18",
+  "why": "rx library: RosePan names RoR 0x23faf8 rxSndCallRpc; same size 0xc8 and place in a run of matching functions (rxalign.py)"
+ },
+ "00161de0": {
+  "name": "rxSndRpcInit",
+  "tag": "lib-context",
+  "was": "FUN_00161de0",
+  "why": "rx library: RosePan names RoR 0x23fbc0 rxSndRpcInit; same size 0x38 and place in a run of matching functions (rxalign.py)"
+ },
+ "00161e18": {
+  "name": "rxSndRpcTerm",
+  "tag": "lib-context",
+  "was": "FUN_00161e18",
+  "why": "rx library: RosePan names RoR 0x23fbf8 rxSndRpcTerm; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "00161e38": {
+  "name": "rxSndRpcCommand",
+  "tag": "lib-context",
+  "was": "FUN_00161e38",
+  "why": "rx library: RosePan names RoR 0x23fc18 rxSndRpcCommand; same size 0x190 and place in a run of matching functions (rxalign.py)"
+ },
+ "00161fc8": {
+  "name": "rxSndQueueBegin",
+  "tag": "lib-context",
+  "was": "FUN_00161fc8",
+  "why": "rx library: RosePan names RoR 0x23fda8 rxSndQueueBegin; between matched neighbours its span 0x98 is RoR's rxSndQueueBegin (rxalign.py span partition)"
+ },
+ "00162060": {
+  "name": "rxSndQueueGetReply",
+  "tag": "lib-context",
+  "was": "FUN_00162060",
+  "why": "rx library: RosePan names RoR 0x23fe40 rxSndQueueGetReply; same size 0x18 and place in a run of matching functions (rxalign.py)"
+ },
+ "00162078": {
+  "name": "rxSndQueueGetData",
+  "tag": "lib-context",
+  "was": "FUN_00162078",
+  "why": "rx library: RosePan names RoR 0x23fe58 rxSndQueueGetData; same size 0x18 and place in a run of matching functions (rxalign.py)"
+ },
+ "00162090": {
+  "name": "rxSndQueueEnd",
+  "tag": "lib-context",
+  "was": "FUN_00162090",
+  "why": "rx library: RosePan names RoR 0x23fe70 rxSndQueueEnd; same size 0x44 and place in a run of matching functions (rxalign.py)"
+ },
+ "001620d8": {
+  "name": "rxSndQueueFlush",
+  "tag": "lib-context",
+  "was": "FUN_001620d8",
+  "why": "rx library: RosePan names RoR 0x23feb8 rxSndQueueFlush; same size 0x9c and place in a run of matching functions (rxalign.py)"
+ },
  "00166b50": {
   "name": "rxThCreateSema",
   "tag": "lib-context",
