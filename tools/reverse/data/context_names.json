@@ -1835,6 +1835,30 @@
   "was": "FUN_0013b430",
   "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261d78 _sceFs_Rcv_Intr; same size 0x3b4 and place in a run of matching functions (rxalign.py)"
  },
+ "0013ed90": {
+  "name": "sceSifInitIopHeap",
+  "tag": "lib-context",
+  "was": "FUN_0013ed90",
+  "why": "SDK 3.0 iopheap.c, linked as in RoR: RosePan names RoR 0x2656d8 sceSifInitIopHeap; same size 0x88, a run of four equal sizes (0x88 / 0x70 / 0x80 / 0x78); sceSifCallRpc to the client 0x4ccc00"
+ },
+ "0013ee18": {
+  "name": "sceSifAllocIopHeap",
+  "tag": "lib-context",
+  "was": "FUN_0013ee18",
+  "why": "SDK 3.0 iopheap.c, linked as in RoR: RosePan names RoR 0x265760 sceSifAllocIopHeap; same size 0x70, a run of four equal sizes (0x88 / 0x70 / 0x80 / 0x78); sceSifCallRpc to the client 0x4ccc00"
+ },
+ "0013ee88": {
+  "name": "sceSifAllocSysMemory",
+  "tag": "lib-context",
+  "was": "FUN_0013ee88",
+  "why": "SDK 3.0 iopheap.c, linked as in RoR: RosePan names RoR 0x2657d0 sceSifAllocSysMemory; same size 0x80, a run of four equal sizes (0x88 / 0x70 / 0x80 / 0x78); sceSifCallRpc to the client 0x4ccc00"
+ },
+ "0013ef08": {
+  "name": "sceSifFreeSysMemory",
+  "tag": "lib-context",
+  "was": "FUN_0013ef08",
+  "why": "SDK 3.0 iopheap.c, linked as in RoR: RosePan names RoR 0x265850 sceSifFreeSysMemory; same size 0x78, a run of four equal sizes (0x88 / 0x70 / 0x80 / 0x78); sceSifCallRpc to the client 0x4ccc00"
+ },
  "00140ba0": {
   "name": "DIntr",
   "tag": "lib-context",
@@ -1859,6 +1883,492 @@
   "was": "FUN_00141258",
   "why": "libkernl Exit(status): library teardown 0x141198 then tail-jump to the _Exit syscall 0x136700; crt0's _exit 0x100218 is j Exit"
  },
+ "00144080": {
+  "name": "SoundPcmSink::setAttr",
+  "tag": "game-inferred",
+  "was": "FUN_00144080",
+  "why": "vtable 0x311140 slot +0x34: empty (the ADPCM sink calls rxSndAdpcmSetAttr there; rxSndPcm has no attribute call); linked apart from the class, before SoundStream"
+ },
+ "00144090": {
+  "name": "SoundStream::copyBodyToIop",
+  "tag": "game-inferred",
+  "was": "FUN_00144090",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): rxSndIopAlloc(size), copies the body in 1 MB rxSndIopWrite chunks, keeps it at +0 / +4 (owned: +8 = 0); called by openBankMemory"
+ },
+ "001441a0": {
+  "name": "SoundStream::getDataWritten",
+  "tag": "game-inferred",
+  "was": "FUN_001441a0",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): rxSndStrGetDataWritten(+0x24) under the sound semaphore, -1 with no stream"
+ },
+ "001441f0": {
+  "name": "SoundStream::setPitch",
+  "tag": "game-inferred",
+  "was": "FUN_001441f0",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): rxSndStrSetPitch on +0x24 under the sound semaphore, -1 with no stream"
+ },
+ "00144250": {
+  "name": "SoundStream::setPan",
+  "tag": "game-inferred",
+  "was": "FUN_00144250",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): angle (radians, negated, wrapped to 0..2pi) -> degrees -> sdpr2CalcPanDeg gives L/R gains, scaled by the volume argument /128 into +0x38/+0x3c, then rxSndStrSetVolume(L*fade, R*fade)"
+ },
+ "00144400": {
+  "name": "SoundStream::playPan",
+  "tag": "game-inferred",
+  "was": "FUN_00144400",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): play (0x145240) then the same pan as setPan"
+ },
+ "001445d0": {
+  "name": "SoundStream::getRequestRate",
+  "tag": "game-inferred",
+  "was": "FUN_001445d0",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): rxSndStrBankGetRequestRate(bank, request; -1 = the playing one +0x28)"
+ },
+ "00144650": {
+  "name": "SoundStream::updateFade",
+  "tag": "game-inferred",
+  "was": "FUN_00144650",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): steps the fade +0x44 -> +0x48 over +0x4c frames into +0x40; at the end action +0x54: 2 pauses, 1 stops; then reapplies the volume. Called by update"
+ },
+ "001447c0": {
+  "name": "SoundStream::startFade",
+  "tag": "game-inferred",
+  "was": "FUN_001447c0",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): stores frames +0x4c, counter +0x50 = 0, from +0x44, to +0x48, end action +0x54 (0 none, 1 stop, 2 pause)"
+ },
+ "001447e0": {
+  "name": "SoundStream::setVolume",
+  "tag": "game-inferred",
+  "was": "FUN_001447e0",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): stores L/R in +0x38/+0x3c and applies rxSndStrSetVolume(L*fade>>7, R*fade>>7)"
+ },
+ "00144880": {
+  "name": "SoundStream::setAttr",
+  "tag": "game-inferred",
+  "was": "FUN_00144880",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): rxSndStrSetAttr(+0x24, attr)"
+ },
+ "001448d0": {
+  "name": "SoundStream::getRequestChannels",
+  "tag": "game-inferred",
+  "was": "FUN_001448d0",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): rxSndStrBankGetRequestChannels(+0x20, request)"
+ },
+ "00144930": {
+  "name": "SoundStream::getRequestSize",
+  "tag": "game-inferred",
+  "was": "FUN_00144930",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): rxSndStrBankGetRequestSize(+0x20, request)"
+ },
+ "00144990": {
+  "name": "SoundStream::getPosition",
+  "tag": "game-inferred",
+  "was": "FUN_00144990",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): while playing or paused: start offset +0x30 + rxSndAdpcmGetPosition(rxSndStrGetHandle(+0x24)), else -1"
+ },
+ "00144a10": {
+  "name": "SoundStream::update",
+  "tag": "game-inferred",
+  "was": "FUN_00144a10",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): per frame: finishes a pending stop (state 3, rxSndStrSyncRead done), drops an ended stream (status bit 4) and frees its SPU ring, runs updateFade"
+ },
+ "00144d10": {
+  "name": "SoundStream::pause",
+  "tag": "game-inferred",
+  "was": "FUN_00144d10",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): rxSndStrPause(+0x24, on); state +0x10 = 2 paused / 1 playing"
+ },
+ "00144d80": {
+  "name": "SoundStream::stop",
+  "tag": "game-inferred",
+  "was": "FUN_00144d80",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): returns the position, resets fade / request / volume, rxSndStrSuspend + SyncRead; arg 0 leaves the stop pending (state 3, finished in update), else waits it out running the sound updates; frees the SPU ring +0x34"
+ },
+ "00145100": {
+  "name": "SoundStream::closeBank",
+  "tag": "game-inferred",
+  "was": "FUN_00145100",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): stop, rxSndStrBankClose(+0x20), frees the SPU ring and an owned IOP body (rxSndIopFree), +0x20 = -1"
+ },
+ "00145240": {
+  "name": "SoundStream::play",
+  "tag": "game-inferred",
+  "was": "FUN_00145240",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): (request, start) stop, allocate a 0x4000 SPU ring (spuMemAlloc from the top), rxSndStrPlayAt(bank, request, start, buffer +0x18, size +0x14, ...); state 1, request +0x28, track count +0x2c, start +0x30, channels +0x58"
+ },
+ "00145420": {
+  "name": "SoundStream::playVolume",
+  "tag": "game-inferred",
+  "was": "FUN_00145420",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): (request, start, L, R) sets the volume then play"
+ },
+ "00145530": {
+  "name": "SoundStream::openBankMemory",
+  "tag": "game-inferred",
+  "was": "FUN_00145530",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): closeBank, rxSndStrBankOpen(0, header); body kind +0xc 2 = rxSndStrBankAttachBodyMemory(body, size) or 3 = copyBodyToIop + rxSndStrBankAttachBodyIop"
+ },
+ "00145750": {
+  "name": "SoundStream::openBankFile",
+  "tag": "game-inferred",
+  "was": "FUN_00145750",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): closeBank, rxSndStrBankOpen(0, header), rxSndStrBankAttachBodyFile(path); body kind +0xc = 1"
+ },
+ "001458f0": {
+  "name": "SoundStream::freeBuffer",
+  "tag": "game-inferred",
+  "was": "FUN_001458f0",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): closeBank, then Heap::free of the stream buffer +0x18 when owned (+0x1c)"
+ },
+ "00145a50": {
+  "name": "SoundStream::setBuffer",
+  "tag": "game-inferred",
+  "was": "FUN_00145a50",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): (size, buffer) closeBank, stream buffer +0x14 size / +0x18 address; buffer 0 = Heap::alloc(size, 16) owned (+0x1c = 1)"
+ },
+ "00145be0": {
+  "name": "SoundStream::~SoundStream",
+  "tag": "game-inferred",
+  "was": "FUN_00145be0",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): CodeWarrior dtor (this, short delete flag): stop, closeBank, freeBuffer, rxSndIopFree, operator delete when flag > 0"
+ },
+ "00145d70": {
+  "name": "SoundStream::SoundStream",
+  "tag": "game-inferred",
+  "was": "FUN_00145d70",
+  "why": "SoundStream (0x60 bytes, ctor 0x145d70: +0x20 rxSndStr bank, +0x24 stream, +0x10 state, +0x38/+0x3c volume L/R, +0x40 fade level): ctor: bank / stream / request / tracks = -1, fade level +0x40 = 0x80, +0x58 = 1; game callers 0x25b8e0, 0x25e260, 0x290ca0, 0x292090, 0x2b1490"
+ },
+ "00145de0": {
+  "name": "SoundFeeder::update",
+  "tag": "game-inferred",
+  "was": "FUN_00145de0",
+  "why": "SoundFeeder {+0 state, +4 source (vptr +0x10), +8 sink (SoundSink, vptr +0xc), +0xc fed bytes, +0x10/+0x14 volume L/R (0x80)}: per frame moves data from the source into the sink (sink getFree / write / end, source slots +0x10/+0x1c/+0x24/+0x28/+0x2c), state 4 when the sink ends; callers are the movie player 0x1fb0b0 / 0x1fb630"
+ },
+ "00146210": {
+  "name": "SoundFeeder::start",
+  "tag": "game-inferred",
+  "was": "FUN_00146210",
+  "why": "SoundFeeder: state 0 -> 1 (-2 without source, -3 without sink), mutes the sink and runs update; 2 -> 1 resumes; called by the movie player 0x1faa90"
+ },
+ "001462f0": {
+  "name": "SoundFeeder::setSink",
+  "tag": "game-inferred",
+  "was": "FUN_001462f0",
+  "why": "SoundFeeder: +8 = sink, +0xc = 0; movie player 0x1fb0b0"
+ },
+ "00146300": {
+  "name": "SoundFeeder::setSource",
+  "tag": "game-inferred",
+  "was": "FUN_00146300",
+  "why": "SoundFeeder: +4 = source, +0xc = 0; movie player 0x1fb0b0"
+ },
+ "00146310": {
+  "name": "SoundFeeder::~SoundFeeder",
+  "tag": "game-inferred",
+  "was": "FUN_00146310",
+  "why": "SoundFeeder CodeWarrior dtor: in state 1..2 mutes the sink, state 2; operator delete when flag > 0"
+ },
+ "001463a0": {
+  "name": "SoundFeeder::SoundFeeder",
+  "tag": "game-inferred",
+  "was": "FUN_001463a0",
+  "why": "SoundFeeder ctor: zeroes +0..+0xc, volume +0x10 / +0x14 = 0x80; movie player 0x1fb9d0"
+ },
+ "001463d0": {
+  "name": "SoundPcmSink::muteIfEnded",
+  "tag": "game-inferred",
+  "was": "FUN_001463d0",
+  "why": "vtable 0x311140 slot +0x38: handle valid and getStatus bit 4 (ended) -> setVolume(0, 0)"
+ },
+ "00146440": {
+  "name": "SoundPcmSink::addCallback",
+  "tag": "game-inferred",
+  "was": "FUN_00146440",
+  "why": "vtable 0x311140 slot +0x30: rxSndPcmAddCallback"
+ },
+ "001464c0": {
+  "name": "SoundPcmSink::getUserData",
+  "tag": "game-inferred",
+  "was": "FUN_001464c0",
+  "why": "vtable 0x311140 slot +0x2c: rxSndPcmGetUserData"
+ },
+ "00146510": {
+  "name": "SoundPcmSink::setUserData",
+  "tag": "game-inferred",
+  "was": "FUN_00146510",
+  "why": "vtable 0x311140 slot +0x28: rxSndPcmSetUserData"
+ },
+ "00146570": {
+  "name": "SoundPcmSink::end",
+  "tag": "game-inferred",
+  "was": "FUN_00146570",
+  "why": "vtable 0x311140 slot +0x24: rxSndPcmEnd"
+ },
+ "001465b0": {
+  "name": "SoundPcmSink::write",
+  "tag": "game-inferred",
+  "was": "FUN_001465b0",
+  "why": "vtable 0x311140 slot +0x20: rxSndPcmWrite"
+ },
+ "00146630": {
+  "name": "SoundPcmSink::getFree",
+  "tag": "game-inferred",
+  "was": "FUN_00146630",
+  "why": "vtable 0x311140 slot +0x1c: rxSndPcmGetFree"
+ },
+ "00146680": {
+  "name": "SoundPcmSink::getStatus",
+  "tag": "game-inferred",
+  "was": "FUN_00146680",
+  "why": "vtable 0x311140 slot +0x18: rxSndPcmGetStatus"
+ },
+ "001466d0": {
+  "name": "SoundPcmSink::close",
+  "tag": "game-inferred",
+  "was": "FUN_001466d0",
+  "why": "vtable 0x311140 slot +0x14: mutes (slot +0xc), rxSndPcmClose, handle = -1"
+ },
+ "00146740": {
+  "name": "SoundPcmSink::open",
+  "tag": "game-inferred",
+  "was": "FUN_00146740",
+  "why": "vtable 0x311140 slot +0x10: close, then rxSndPcmOpen(...) into the handle"
+ },
+ "001467d0": {
+  "name": "SoundPcmSink::setVolume",
+  "tag": "game-inferred",
+  "was": "FUN_001467d0",
+  "why": "vtable 0x311140 slot +0xc: rxSndPcmSetVolume(handle, L, R)"
+ },
+ "00146830": {
+  "name": "SoundPcmSink::~SoundPcmSink",
+  "tag": "game-inferred",
+  "was": "FUN_00146830",
+  "why": "vtable 0x311140 slot +8: calls close (slot +0x14), then the base vptr, operator delete when flag > 0"
+ },
+ "001468b0": {
+  "name": "SoundPcmSink::SoundPcmSink",
+  "tag": "game-inferred",
+  "was": "FUN_001468b0",
+  "why": "ctor, vtable 0x311140 (base 0x311180): handle +0 = -1, +4 = -1, +8 = 0; slots wrap rxSndPcm*"
+ },
+ "001468e0": {
+  "name": "SoundSink::~SoundSink",
+  "tag": "game-inferred",
+  "was": "FUN_001468e0",
+  "why": "base of the rxSndPcm / rxSndAdpcm output classes, vtable 0x311180, vptr +0xc (layout {+0 handle, +4, +8, +0xc vptr}): dtor resets the vptr, operator delete when flag > 0"
+ },
+ "00146930": {
+  "name": "SoundAdpcmSink::muteIfEnded",
+  "tag": "game-inferred",
+  "was": "FUN_00146930",
+  "why": "vtable 0x3111c0 slot +0x38: handle valid and getStatus bit 4 (ended) -> setVolume(0, 0)"
+ },
+ "001469a0": {
+  "name": "SoundAdpcmSink::setAttr",
+  "tag": "game-inferred",
+  "was": "FUN_001469a0",
+  "why": "vtable 0x3111c0 slot +0x34: rxSndAdpcmSetAttr"
+ },
+ "001469f0": {
+  "name": "SoundAdpcmSink::addCallback",
+  "tag": "game-inferred",
+  "was": "FUN_001469f0",
+  "why": "vtable 0x3111c0 slot +0x30: rxSndAdpcmAddCallback"
+ },
+ "00146a70": {
+  "name": "SoundAdpcmSink::getUserData",
+  "tag": "game-inferred",
+  "was": "FUN_00146a70",
+  "why": "vtable 0x3111c0 slot +0x2c: rxSndAdpcmGetUserData"
+ },
+ "00146ac0": {
+  "name": "SoundAdpcmSink::setUserData",
+  "tag": "game-inferred",
+  "was": "FUN_00146ac0",
+  "why": "vtable 0x3111c0 slot +0x28: rxSndAdpcmSetUserData"
+ },
+ "00146b20": {
+  "name": "SoundAdpcmSink::end",
+  "tag": "game-inferred",
+  "was": "FUN_00146b20",
+  "why": "vtable 0x3111c0 slot +0x24: rxSndAdpcmEnd"
+ },
+ "00146b60": {
+  "name": "SoundAdpcmSink::write",
+  "tag": "game-inferred",
+  "was": "FUN_00146b60",
+  "why": "vtable 0x3111c0 slot +0x20: rxSndAdpcmWrite"
+ },
+ "00146be0": {
+  "name": "SoundAdpcmSink::getFree",
+  "tag": "game-inferred",
+  "was": "FUN_00146be0",
+  "why": "vtable 0x3111c0 slot +0x1c: rxSndAdpcmGetFree"
+ },
+ "00146c30": {
+  "name": "SoundAdpcmSink::getStatus",
+  "tag": "game-inferred",
+  "was": "FUN_00146c30",
+  "why": "vtable 0x3111c0 slot +0x18: rxSndAdpcmGetStatus"
+ },
+ "00146c80": {
+  "name": "SoundAdpcmSink::close",
+  "tag": "game-inferred",
+  "was": "FUN_00146c80",
+  "why": "vtable 0x3111c0 slot +0x14: mutes (slot +0xc), rxSndAdpcmClose, handle = -1"
+ },
+ "00146cf0": {
+  "name": "SoundAdpcmSink::open",
+  "tag": "game-inferred",
+  "was": "FUN_00146cf0",
+  "why": "vtable 0x3111c0 slot +0x10: close, then rxSndAdpcmOpen(...) into the handle, mutes"
+ },
+ "00146dd0": {
+  "name": "SoundAdpcmSink::setVolume",
+  "tag": "game-inferred",
+  "was": "FUN_00146dd0",
+  "why": "vtable 0x3111c0 slot +0xc: rxSndAdpcmSetVolume(handle, L, R)"
+ },
+ "00146e30": {
+  "name": "SoundAdpcmSink::~SoundAdpcmSink",
+  "tag": "game-inferred",
+  "was": "FUN_00146e30",
+  "why": "vtable 0x3111c0 slot +8: calls close (slot +0x14), then the base vptr, operator delete when flag > 0"
+ },
+ "00146eb0": {
+  "name": "SoundAdpcmSink::SoundAdpcmSink",
+  "tag": "game-inferred",
+  "was": "FUN_00146eb0",
+  "why": "ctor, vtable 0x3111c0 (base 0x311180): handle +0 = -1, +4 = -1, +8 = 0; slots wrap rxSndAdpcm*; movie player 0x1fb0b0"
+ },
+ "00146ee0": {
+  "name": "SoundSeBank::setPanPitchF",
+  "tag": "game-inferred",
+  "was": "FUN_00146ee0",
+  "why": "SoundSeBank {+0 state 0 none / 1 loading / 2 loaded / 3 freeing, +4 rxSndXvab id, +8 IOP addr, +0xc SPU addr}: sdpr2SetPitchF on a panned voice, 1 for a negative pitch"
+ },
+ "00146f40": {
+  "name": "SoundSeBank::setPitch",
+  "tag": "game-inferred",
+  "was": "FUN_00146f40",
+  "why": "SoundSeBank: rxSndSeSetPitch on a plain SE voice when pitch >= 0"
+ },
+ "00146fa0": {
+  "name": "SoundSeBank::isPlaying",
+  "tag": "game-inferred",
+  "was": "FUN_00146fa0",
+  "why": "SoundSeBank: rxSndSeGetStatus(voice) & 10"
+ },
+ "00146ff0": {
+  "name": "SoundSeBank::isPanPlaying",
+  "tag": "game-inferred",
+  "was": "FUN_00146ff0",
+  "why": "SoundSeBank: sdpr2GetStatus(handle) is 1 or 2"
+ },
+ "00147050": {
+  "name": "SoundSeBank::setPan",
+  "tag": "game-inferred",
+  "was": "FUN_00147050",
+  "why": "SoundSeBank: (angle radians, spread 0..1, ..., handle, volume) sdpr2SetVolume, sdpr2SetSpread(spread*128), sdpr2SetAngle(degrees of -angle)"
+ },
+ "001471b0": {
+  "name": "SoundSeBank::play",
+  "tag": "game-inferred",
+  "was": "FUN_001471b0",
+  "why": "SoundSeBank: rxSndSePlay(xvab +4, ...)"
+ },
+ "00147240": {
+  "name": "SoundSeBank::playPan",
+  "tag": "game-inferred",
+  "was": "FUN_00147240",
+  "why": "SoundSeBank: (angle, spread <= 1, ...) sdpr2PlayPan with type 1 (one voice) or 0 (pair) on xvab +4, angle in degrees, spread*128; -2 when spread > 1"
+ },
+ "001473e0": {
+  "name": "SoundSeBank::setVolume",
+  "tag": "game-inferred",
+  "was": "FUN_001473e0",
+  "why": "SoundSeBank: rxSndSeSetVolume(voice, L, R)"
+ },
+ "00147440": {
+  "name": "SoundSeBank::setAttr",
+  "tag": "game-inferred",
+  "was": "FUN_00147440",
+  "why": "SoundSeBank: rxSndSeSetAttr(voice, attr)"
+ },
+ "00147490": {
+  "name": "SoundSeBank::setPanAttr",
+  "tag": "game-inferred",
+  "was": "FUN_00147490",
+  "why": "SoundSeBank: sdpr2SetAttr(handle, flag != 0)"
+ },
+ "00147500": {
+  "name": "SoundSeBank::stop",
+  "tag": "game-inferred",
+  "was": "FUN_00147500",
+  "why": "SoundSeBank: rxSndSeSetVolume(voice, 0, 0) then rxSndSeStop"
+ },
+ "00147560": {
+  "name": "SoundSeBank::stopPan",
+  "tag": "game-inferred",
+  "was": "FUN_00147560",
+  "why": "SoundSeBank: sdpr2SetVolume(handle, 0) then sdpr2Stop"
+ },
+ "001475c0": {
+  "name": "SoundSeBank::~SoundSeBank",
+  "tag": "game-inferred",
+  "was": "FUN_001475c0",
+  "why": "SoundSeBank CodeWarrior dtor: sdpr2StopAll, rxSndSeStopAll, unload, waits for the free printing \"\u7d42\u4e86\u5f85\u3061\u3002\u3002\u3002%d\" (waiting for the end), operator delete when flag > 0"
+ },
+ "001476b0": {
+  "name": "SoundSeBank::SoundSeBank",
+  "tag": "game-inferred",
+  "was": "FUN_001476b0",
+  "why": "SoundSeBank ctor: state 0, xvab -1, then load (0x147a80); game caller 0x292140"
+ },
+ "001476f0": {
+  "name": "SoundSeBank::poll",
+  "tag": "game-inferred",
+  "was": "FUN_001476f0",
+  "why": "SoundSeBank: state 3 retries rxSndXvabFree, state 1 -> 2 once rxSndXvabCheck says loaded"
+ },
+ "00147790": {
+  "name": "SoundSeBank::getState",
+  "tag": "game-inferred",
+  "was": "FUN_00147790",
+  "why": "SoundSeBank: same step as poll (non-blocking free / check), returns the state"
+ },
+ "00147840": {
+  "name": "SoundSeBank::unload",
+  "tag": "game-inferred",
+  "was": "FUN_00147840",
+  "why": "SoundSeBank: (wait) rxSndXvabFree; waiting retries 30 times with threadYield, then frees the IOP copy (sceSifFreeSysMemory) and the SPU block itself"
+ },
+ "00147a80": {
+  "name": "SoundSeBank::load",
+  "tag": "game-inferred",
+  "was": "FUN_00147a80",
+  "why": "SoundSeBank: (data, sync, ...) unloads what is there, rxSndXvabLoad, waits on rxSndXvabCheck when sync, stores rxSndXvabGetIopAddr / GetSpuAddr; state 1 / 2"
+ },
+ "00147be0": {
+  "name": "SoundConfig::setEffect",
+  "tag": "game-inferred",
+  "was": "FUN_00147be0",
+  "why": "SoundConfig (0x4c bytes at 0x31addc, ctor 0x148130): (core 0 / 1 / 2 both, mode, depth L, depth R, feedback, delay) rxSndSetEffectMode / Depth / Feedback / DelayCore, kept at +0x18..+0x2c (core 0) / +0x30..+0x44 (core 1); caller 0x2921d0"
+ },
+ "00147ee0": {
+  "name": "SoundConfig::setOutputMode",
+  "tag": "game-inferred",
+  "was": "FUN_00147ee0",
+  "why": "SoundConfig: +0x14 = mode; 0 = rxSndSetOutputMode(0), surround off; 1 = output 1, surround off; 2 = output 1 + sdpr2SetSurround(1) (+0x48 / +0x49 flags, sdpr2StopAll on a change); the options code 0x23bc50 calls it"
+ },
+ "00148130": {
+  "name": "SoundConfig::SoundConfig",
+  "tag": "game-inferred",
+  "was": "FUN_00148130",
+  "why": "ctor called by soundInit on new(0x4c): master / BGM / SE / PCM / ADPCM volumes 0x80 (+0..+0x10), output mode 1 (setOutputMode), both cores effect off"
+ },
  "00148500": {
   "name": "soundUpdate",
   "tag": "game-inferred",
@@ -1877,11 +2387,59 @@
   "was": "FUN_001486e0",
   "why": "gameInit (isPal): three sound semaphores 0x31a8ac..0x31a8b4, driver callbacks, the 0x2b0-byte stream state 0x4d08d0, PCM / ADPCM stream setup (0x162178), tick rate 50 or 60 (0x159f20), SDPR2 limits (0x168260), the 0x4c-byte object 0x31addc (0x148130), rx thread callback 0x1488f0"
  },
+ "001488f0": {
+  "name": "soundThreadLock",
+  "tag": "game-inferred",
+  "was": "FUN_001488f0",
+  "why": "rx thread callback added by soundInit (removed by soundShutdown): arg != 0 WaitSema / 0 SignalSema on the sound semaphore 0x31a8ac"
+ },
+ "00148920": {
+  "name": "spuMemFree",
+  "tag": "game-inferred",
+  "was": "FUN_00148920",
+  "why": "rxSndSetSpuFreeHook target (soundInit): unlinks the block with that address from the 32-node SPU2 allocator 0x4d08d0 under semaphore 0x31a8b4"
+ },
+ "001489d0": {
+  "name": "spuMemAllocHigh",
+  "tag": "game-inferred",
+  "was": "FUN_001489d0",
+  "why": "rxSndSetSpuAllocMode1Hook target (soundInit): spuMemAlloc(size, 1) under semaphore 0x31a8b4"
+ },
+ "00148a20": {
+  "name": "spuMemAllocLow",
+  "tag": "game-inferred",
+  "was": "FUN_00148a20",
+  "why": "rxSndSetSpuAllocHook target (soundInit): spuMemAlloc(size, 0) under semaphore 0x31a8b4"
+ },
  "00148a70": {
   "name": "spuMemReserve",
   "tag": "game-inferred",
   "was": "FUN_00148a70",
   "why": "(size, addr): takes a 64-byte-aligned block at a fixed SPU2 address from the 32-entry allocator 0x4d08d0 (free span 0x5040..0x1f9000, 20-byte nodes in a list); soundInit and soundShutdown reserve 0x7000 at 0x1d9000; returns addr"
+ },
+ "00148b60": {
+  "name": "spuMemAlloc",
+  "tag": "game-inferred",
+  "was": "FUN_00148b60",
+  "why": "(size, fromTop) first fit in the SPU2 allocator 0x4d08d0 (32 nodes x 0x14 {size, addr, end, prev, next}), size rounded up to 64; from the bottom or the top; returns the SPU address or 0"
+ },
+ "00148cd0": {
+  "name": "soundIopFree",
+  "tag": "game-inferred",
+  "was": "FUN_00148cd0",
+  "why": "rxSndSetIopFreeHook target (soundInit): sceSifFreeSysMemory under semaphore 0x31a8b0"
+ },
+ "00148d10": {
+  "name": "soundIopAllocHigh",
+  "tag": "game-inferred",
+  "was": "FUN_00148d10",
+  "why": "rxSndSetIopAllocMode1Hook target (soundInit): sceSifAllocSysMemory(1, size, 0) under semaphore 0x31a8b0"
+ },
+ "00148d60": {
+  "name": "soundIopAllocLow",
+  "tag": "game-inferred",
+  "was": "FUN_00148d60",
+  "why": "rxSndSetIopAllocHook target (soundInit): sceSifAllocSysMemory(0, size, 0) under semaphore 0x31a8b0"
  },
  "00152750": {
   "name": "rxTerm",

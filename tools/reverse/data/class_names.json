@@ -3,6 +3,9 @@
  "0x311030": "MaskedGamePad",
  "0x311040": "GamePacketManager",
  "0x311050": "Pad",
+ "0x311140": "SoundPcmSink",
+ "0x311180": "SoundSink",
+ "0x3111c0": "SoundAdpcmSink",
  "0x31a808": "Vif1PktManage",
  "0x31a818": "Vif1PktList"
 }

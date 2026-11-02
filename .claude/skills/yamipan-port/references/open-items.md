@@ -101,8 +101,14 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    linked before mpeg.c, RoR after). Left unnamed there: 0x10c218, 0x111228, the accessors
    0x1123a0..0x112400 (DispWidth / Height / CenterOff?), RoR's own `FUN_` pairs (read at the TU).
    `rxalign.py` now skips RoR placeholders in `--batch` and takes `--lib`.
-   **Next batches, in this order**: the game's sound layer that calls SDPR2 (0x144250..0x148130,
-   `soundInit` / `soundUpdate`'s neighbours); `_InitSys`'s nine
+   **Batch 013 done (2026-11-02, 93 names + 3 class names)**: the game's sound layer
+   0x144080..0x148d60 by reading (`SoundStream`, `SoundSink` / `SoundPcmSink` / `SoundAdpcmSink`,
+   `SoundFeeder`, `SoundSeBank`, `SoundConfig`, the rx IOP / SPU memory hooks, `soundThreadLock`;
+   architecture.md "The game's sound layer") + SDK iopheap 0x13ed90..0x13ef08 from RoR. To settle at
+   the TU: the parameter order of `SoundSeBank::setPanPitchF` / `setPitch` (a float in f12 beside the
+   object), output mode 0 = mono?, `SoundStream::freeBuffer`'s owned test (decompiles inverted), the
+   class at 0x142e70..0x144040 (vptr +0x808, vtables 0x311100 / 0x311120) before it.
+   **Next batches, in this order**: `_InitSys`'s nine
    callees (0x140c08, 0x140d48, 0x141338, 0x1414b0, 0x1416f0, 0x1378b8, 0x140f80, 0x140470,
    0x142b70); the rest of the SDK 3.0 libraries both games link, by `rxalign.py` size runs against
    RoR's `// lib` names as batch 010 did for SIF (libkernl around 0x137000..0x142000, libgraph,
@@ -231,6 +237,10 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-11-02: bootstrap 4, part 14 (scheduled run): naming batch 013 (93 names: the game's sound
+  layer by reading, SDK iopheap from RoR; 3 sink classes in `data/class_names.json`), saved by the
+  tools. Next: `_InitSys`'s nine callees, then the SDK libraries by `rxalign.py`.
 
 - 2026-11-02: bootstrap 4, part 11 (scheduled run): the code-pointer pass, new `codeptrs.py`
   (39 starts created, saved by the tools) and naming batch 010 (37 names: SIF cmd / rpc + fileio
