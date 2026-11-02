@@ -869,6 +869,282 @@
   "was": "FUN_0010ad20",
   "why": "libvifpk (packet, addr, opt): closes the open tag (sceVif1PkCloseDmaTag), writes a DMA next tag (id 2 | opt, addr & 0x9fffffff) and opens it; likely name"
  },
+ "0010ccf0": {
+  "name": "_motionComp0",
+  "tag": "lib-context",
+  "was": "FUN_0010ccf0",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x254a40 _motionComp0; same size 0x250 and place in a run of matching functions (rxalign.py)"
+ },
+ "0010cf40": {
+  "name": "_getRef0",
+  "tag": "lib-context",
+  "was": "FUN_0010cf40",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x254c90 _getRef0; same size 0x488 and place in a run of matching functions (rxalign.py)"
+ },
+ "0010d3c8": {
+  "name": "_doMC",
+  "tag": "lib-context",
+  "was": "FUN_0010d3c8",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x255118 _doMC; same size 0x21c and place in a run of matching functions (rxalign.py)"
+ },
+ "0010d5e8": {
+  "name": "_pictureData0",
+  "tag": "lib-context",
+  "was": "FUN_0010d5e8",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x255338 _pictureData0; same size 0x240 and place in a run of matching functions (rxalign.py)"
+ },
+ "0010d828": {
+  "name": "_slice0",
+  "tag": "lib-context",
+  "was": "FUN_0010d828",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x255578 _slice0; same size 0x32c and place in a run of matching functions (rxalign.py)"
+ },
+ "0010df80": {
+  "name": "_motionVectors",
+  "tag": "lib-context",
+  "was": "FUN_0010df80",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x255cd0 _motionVectors; same size 0x19c and place in a run of matching functions (rxalign.py)"
+ },
+ "0010e7f0": {
+  "name": "_flushBuf",
+  "tag": "lib-context",
+  "was": "FUN_0010e7f0",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x256540 _flushBuf; same size 0x168 and place in a run of matching functions (rxalign.py)"
+ },
+ "0010ead8": {
+  "name": "_nextBit",
+  "tag": "lib-context",
+  "was": "FUN_0010ead8",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x256828 _nextBit; same size 0xe8 and place in a run of matching functions (rxalign.py)"
+ },
+ "0010fea8": {
+  "name": "_sceMpegSliceA0",
+  "tag": "lib-context",
+  "was": "FUN_0010fea8",
+  "why": "SDK 3.0 libmpeg: by its own message '_sceMpegSliceA0(): error happens' 0x2fee38; RoR 0x257bf8 (same size 0x1a0, unnamed there)"
+ },
+ "00110610": {
+  "name": "_groupOfPicturesHeader",
+  "tag": "lib-context",
+  "was": "FUN_00110610",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x258360 _groupOfPicturesHeader; same size 0xa0 and place in a run of matching functions (rxalign.py)"
+ },
+ "001107f8": {
+  "name": "_sequenceExtension",
+  "tag": "lib-context",
+  "was": "FUN_001107f8",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x258548 _sequenceExtension; same size 0x140 and place in a run of matching functions (rxalign.py)"
+ },
+ "00110938": {
+  "name": "_quantMatrixExtension",
+  "tag": "lib-context",
+  "was": "FUN_00110938",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x258688 _quantMatrixExtension; same size 0x30c and place in a run of matching functions (rxalign.py)"
+ },
+ "00111130": {
+  "name": "_pictureDisplayExtension",
+  "tag": "lib-context",
+  "was": "FUN_00111130",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x258e80 _pictureDisplayExtension; same size 0xf4 and place in a run of matching functions (rxalign.py)"
+ },
+ "001112f8": {
+  "name": "sceMpegCreate",
+  "tag": "lib-context",
+  "was": "FUN_001112f8",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x24eb28 sceMpegCreate; same size 0x238 and place in a run of matching functions (rxalign.py)"
+ },
+ "001116f8": {
+  "name": "_getpic",
+  "tag": "lib-context",
+  "was": "FUN_001116f8",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x24ef28 _getpic; same size 0x1b4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00111b68": {
+  "name": "_decodeOrSkipFrame",
+  "tag": "lib-context",
+  "was": "FUN_00111b68",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x24f398 _decodeOrSkipFrame; same size 0x170 and place in a run of matching functions (rxalign.py)"
+ },
+ "00111ea0": {
+  "name": "sceMpegInit",
+  "tag": "lib-context",
+  "was": "FUN_00111ea0",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x24f6d0 sceMpegInit; between matched neighbours its span 0xf8 is RoR's sceMpegInit, sceMpegDelete, sceMpegAddBs (rxalign.py span partition)"
+ },
+ "00111f50": {
+  "name": "sceMpegDelete",
+  "tag": "lib-context",
+  "was": "FUN_00111f50",
+  "why": "SDK 3.0 libmpeg: Ghidra merged it into sceMpegInit; created 2026-11-02; jr ra / li v0,1, RoR 0x24f780 sceMpegDelete (8 bytes)"
+ },
+ "00111f58": {
+  "name": "sceMpegAddBs",
+  "tag": "lib-context",
+  "was": "FUN_00111f58",
+  "why": "SDK 3.0 libmpeg: merged into sceMpegInit, created; size 0x3c as RoR 0x24f788 sceMpegAddBs, next in place"
+ },
+ "00111f98": {
+  "name": "sceMpegGetPicture",
+  "tag": "lib-context",
+  "was": "FUN_00111f98",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x24f7c8 sceMpegGetPicture; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00112038": {
+  "name": "sceMpegReset",
+  "tag": "lib-context",
+  "was": "FUN_00112038",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x24f868 sceMpegReset; same size 0x7c and place in a run of matching functions (rxalign.py)"
+ },
+ "001120b8": {
+  "name": "sceMpegIsEnd",
+  "tag": "lib-context",
+  "was": "FUN_001120b8",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x24f8e8 sceMpegIsEnd; between matched neighbours its span 0x58 is RoR's sceMpegIsEnd, sceMpegIsRefBuffEmpty (rxalign.py span partition)"
+ },
+ "001120c8": {
+  "name": "sceMpegIsRefBuffEmpty",
+  "tag": "lib-context",
+  "was": "FUN_001120c8",
+  "why": "SDK 3.0 libmpeg: merged into sceMpegIsEnd, created; RoR 0x24f8f8 (lib?, merged there too): returns !(mp->sys->+4), after sceMpegIsEnd (returns mp->sys->+0)"
+ },
+ "001120d8": {
+  "name": "sceMpegSetDecodeMode",
+  "tag": "lib-context",
+  "was": "FUN_001120d8",
+  "why": "SDK 3.0 libmpeg: by reading: stores (ni, np, nb) a1..a3 into mp->sys +0xa8/+0xac/+0xb0, the SDK's sceMpegSetDecodeMode(mp, ni, np, nb); merged in RoR into 0x24f8f8 as well; created"
+ },
+ "001120f0": {
+  "name": "sceMpegGetDecodeMode",
+  "tag": "lib-context",
+  "was": "FUN_001120f0",
+  "why": "SDK 3.0 libmpeg: by reading: loads +0xa8/+0xac/+0xb0 into *a1..*a3, the twin of sceMpegSetDecodeMode (SDK sceMpegGetDecodeMode(mp, &ni, &np, &nb)); created"
+ },
+ "00112110": {
+  "name": "sceMpegAddCallback",
+  "tag": "lib-context",
+  "was": "FUN_00112110",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x24f940 sceMpegAddCallback; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "00112280": {
+  "name": "_decodeOrSkip",
+  "tag": "lib-context",
+  "was": "FUN_00112280",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x24fab0 _decodeOrSkip; same size 0x44 and place in a run of matching functions (rxalign.py)"
+ },
+ "00112370": {
+  "name": "sceMpegSetDefaultPtsGap",
+  "tag": "lib-context",
+  "was": "FUN_00112370",
+  "why": "SDK 3.0 libmpeg: merged into 0x112320, created; RoR 0x24fba0 sceMpegSetDefaultPtsGap (0x18, same size): sd a1 into +0x90, flag +0x8c = 1"
+ },
+ "00112388": {
+  "name": "sceMpegResetDefaultPtsGap",
+  "tag": "lib-context",
+  "was": "FUN_00112388",
+  "why": "SDK 3.0 libmpeg: merged, created; RoR 0x24fbb8 (lib?): clears +0x90 and the flag +0x8c, the reset of sceMpegSetDefaultPtsGap"
+ },
+ "00112418": {
+  "name": "_decPicture",
+  "tag": "lib-context",
+  "was": "FUN_00112418",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x24fc48 _decPicture; same size 0xcc and place in a run of matching functions (rxalign.py)"
+ },
+ "001124e8": {
+  "name": "_alalcInit",
+  "tag": "lib-context",
+  "was": "FUN_001124e8",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x24fd18 _alalcInit; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
+ "00112500": {
+  "name": "_alalcSetDynamic",
+  "tag": "lib-context",
+  "was": "FUN_00112500",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x24fd30 _alalcSetDynamic; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "00112520": {
+  "name": "_alalcAlloc",
+  "tag": "lib-context",
+  "was": "FUN_00112520",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x24fd50 _alalcAlloc; between matched neighbours its span 0x88 is RoR's _alalcAlloc, _alalcRest (rxalign.py span partition)"
+ },
+ "00112590": {
+  "name": "_alalcRest",
+  "tag": "lib-context",
+  "was": "FUN_00112590",
+  "why": "SDK 3.0 libmpeg: merged into _alalcAlloc, created; RoR 0x24fdc0 _alalcRest (0x18, same size): base + size - used"
+ },
+ "00112f68": {
+  "name": "_lastFrame",
+  "tag": "lib-context",
+  "was": "FUN_00112f68",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x250798 _lastFrame; same size 0xc0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00113750": {
+  "name": "_ch3dmaCSC",
+  "tag": "lib-context",
+  "was": "FUN_00113750",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x250f80 _ch3dmaCSC; same size 0x148 and place in a run of matching functions (rxalign.py)"
+ },
+ "00113898": {
+  "name": "_ch4dma",
+  "tag": "lib-context",
+  "was": "FUN_00113898",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x2510c8 _ch4dma; same size 0xd4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00113970": {
+  "name": "_id2type",
+  "tag": "lib-context",
+  "was": "FUN_00113970",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x2511a0 _id2type; same size 0x1fc and place in a run of matching functions (rxalign.py)"
+ },
+ "00116570": {
+  "name": "sceMpegDemuxPss",
+  "tag": "lib-context",
+  "was": "FUN_00116570",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x253da0 sceMpegDemuxPss; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "00116590": {
+  "name": "sceMpegAddStrCallback",
+  "tag": "lib-context",
+  "was": "FUN_00116590",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x253dc0 sceMpegAddStrCallback; same size 0x1d4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00116768": {
+  "name": "_ErrMessage",
+  "tag": "lib-context",
+  "was": "FUN_00116768",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x253f98 _ErrMessage; same size 0x10 and place in a run of matching functions (rxalign.py)"
+ },
+ "001168e0": {
+  "name": "_Error",
+  "tag": "lib-context",
+  "was": "FUN_001168e0",
+  "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x254110 _Error; same size 0x54 and place in a run of matching functions (rxalign.py)"
+ },
+ "00116a68": {
+  "name": "sceIpuStopDMA",
+  "tag": "lib-context",
+  "was": "FUN_00116a68",
+  "why": "SDK 3.0 libipu, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x269a38 sceIpuStopDMA; same size 0xe4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00116b50": {
+  "name": "sceIpuRestartDMA",
+  "tag": "lib-context",
+  "was": "FUN_00116b50",
+  "why": "SDK 3.0 libipu, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x269b20 sceIpuRestartDMA; same size 0x150 and place in a run of matching functions (rxalign.py)"
+ },
+ "00116ca0": {
+  "name": "sceIpuSync",
+  "tag": "lib-context",
+  "was": "FUN_00116ca0",
+  "why": "SDK 3.0 libipu, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x269c70 sceIpuSync; same size 0x64 and place in a run of matching functions (rxalign.py)"
+ },
+ "00116d80": {
+  "name": "sceIpuInit",
+  "tag": "lib-context",
+  "was": "FUN_00116d80",
+  "why": "SDK 3.0 libipu, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x269d50 sceIpuInit; same size 0x238 and place in a run of matching functions (rxalign.py)"
+ },
  "0011e290": {
   "name": "sceCdReadClock",
   "tag": "lib-context",

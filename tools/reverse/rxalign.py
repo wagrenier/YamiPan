@@ -21,7 +21,8 @@ lone FS2 / RoR pair left in the middle prints '^' (by place only: read it, not i
 rest '-'.
 
 --batch writes the '=' and '~' pairs as a name_ctx.py batch (tag lib-context) for every FS2
-function not yet named that way; review it, then apply it with name_ctx.py. --missing adds the '+'
+function not yet named that way, skipping RoR's own placeholders (FUN_...); --lib names the library
+in the why (default 'rx library'); review it, then apply it with name_ctx.py. --missing adds the '+'
 starts to data/missing_functions.json (bootstrap 4(a) creates them; a rerun then names them).
 Offline: reads yamipan_functions.txt.
 """
@@ -148,12 +149,17 @@ def fill_gaps(a, b, keep):
     return groups, by_place
 
 
+# RoR functions RosePan left unnamed (Ghidra's placeholders) give no name to copy
+PLACEHOLDER = re.compile(r'(FUN|thunk_FUN|LAB)_[0-9a-f]{8}$')
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('range', nargs=4)
     ap.add_argument('--min-run', type=int, default=3)
     ap.add_argument('--batch')
     ap.add_argument('--missing', action='store_true')
+    ap.add_argument('--lib', default='rx library', help='what the why calls the library')
     opt = ap.parse_args()
     lo, hi, rlo, rhi = (int(x, 16) for x in opt.range)
     a = load(yamipan.FUNCTIONS_TXT, lo, hi)
@@ -177,10 +183,10 @@ def main():
                 x = addr + b[j][0] - ror[0]
                 print(f'{x:08x}       {"  (inside " + name + ")":32s} + {b[j][2]}  (RoR {b[j][0]:08x})')
                 merged[f'{x:08x}'] = f'{b[j][2]} (rx from RosePan, RoR {b[j][0]:#x}; inside {name})'
-            if name != ror[2]:
+            if name != ror[2] and not PLACEHOLDER.match(ror[2]):
                 names = ', '.join(b[j][2] for j in grp)
                 batch.append({'addr': f'0x{addr:x}', 'name': ror[2], 'tag': 'lib-context',
-                              'why': f'rx library: RosePan names RoR 0x{ror[0]:x} {ror[2]}; between matched '
+                              'why': f'{opt.lib}: RosePan names RoR 0x{ror[0]:x} {ror[2]}; between matched '
                                      f'neighbours its span 0x{span:x} is RoR\'s {names} (rxalign.py span '
                                      f'partition)'})
             continue
@@ -191,9 +197,9 @@ def main():
         ror = b[j]
         mark = '=' if (i, j) in keep else '?'
         print(f'{addr:08x} {size:5x} {name:32s} {mark} {ror[2]}  (RoR {ror[0]:08x})')
-        if mark == '=' and name != ror[2]:
+        if mark == '=' and name != ror[2] and not PLACEHOLDER.match(ror[2]):
             batch.append({'addr': f'0x{addr:x}', 'name': ror[2], 'tag': 'lib-context',
-                          'why': f'rx library: RosePan names RoR 0x{ror[0]:x} {ror[2]}; same size 0x{size:x} '
+                          'why': f'{opt.lib}: RosePan names RoR 0x{ror[0]:x} {ror[2]}; same size 0x{size:x} '
                                  f'and place in a run of matching functions (rxalign.py)'})
     print(f'{len(keep)} kept of {len(pairs)} size matches, {len(groups)} by span partition '
           f'({len(merged)} starts Ghidra lacks); {len(a)} FS2 / {len(b)} RoR functions')

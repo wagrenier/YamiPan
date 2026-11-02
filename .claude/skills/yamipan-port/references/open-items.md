@@ -39,7 +39,7 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    the zero-and-return-this constructors 0x1716c0, 0x18bf20, 0x194910, 0x235390, 0x25f990,
    0x2cd970 (passed in a1 to the array-construct helper: name them with their class),
    0x1398c8 / 0x1398e8 (stored by 0x139848, before the SIF library), 0x140c88 / 0x1412f0 (word
-   copy) and 0x140cc0 (word search) near `_InitSys`, 0x127c80 (returns 0), 0x113750 / 0x113898,
+   copy) and 0x140cc0 (word search) near `_InitSys`, 0x127c80 (returns 0), 0x113750 / 0x113898 (`_ch3dmaCSC` / `_ch4dma`, batch 012),
    0x11c928, 0x11feb8 / 0x120348 / 0x120750 (libmc callbacks), 0x1395e0, 0x140840, 0x180018 (a lone
    nop in a table at 0x2f0e5c: check), 0x1b56f0, 0x1f22a0, 0x1fbe40..0x1fbf30 (six callbacks of
    0x1fbe20's family), 0x20ad20, 0x20b010, 0x2b5740, 0x2cd8a0. Its 29 `interior` hits are mostly
@@ -94,8 +94,14 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    at its TUs: `sdpr2PairPause` 0x16d3a8 calls the driver's *stop* slot (the one-voice type calls
    pause): bug or intent; `sdpr2SetSpread` / `sdpr2SetPairMode` / `sdpr2SetSurround` are names from
    what the values do, not from a string; `sdpr2CalcLevels` 0x16fbd0 unread; the A/B and C/D file cuts.
-   **Next batches, in this order**: **rxMpeg** (RoR 0x18182c..: find FS2's copy by size
-   runs, as batch 007 found rxsnd); the game's sound layer that calls SDPR2 (0x144250..0x148130,
+   **Batch 012 done (2026-11-02, 46 names, 15 merged starts created)**: rxMpeg was looked for
+   and **is not linked** (RoR's `RxMpeg` is RoR game code; FS2's movie player is its own class at
+   ~0x1fa880..~0x1fcbf0, named at its TU: architecture.md "Key functions and globals"); on the way
+   **SDK 3.0 libmpeg 0x10c218..0x116978 and libipu 0x116978..0x116fb8 from RoR** (decoder members
+   linked before mpeg.c, RoR after). Left unnamed there: 0x10c218, 0x111228, the accessors
+   0x1123a0..0x112400 (DispWidth / Height / CenterOff?), RoR's own `FUN_` pairs (read at the TU).
+   `rxalign.py` now skips RoR placeholders in `--batch` and takes `--lib`.
+   **Next batches, in this order**: the game's sound layer that calls SDPR2 (0x144250..0x148130,
    `soundInit` / `soundUpdate`'s neighbours); `_InitSys`'s nine
    callees (0x140c08, 0x140d48, 0x141338, 0x1414b0, 0x1416f0, 0x1378b8, 0x140f80, 0x140470,
    0x142b70); the rest of the SDK 3.0 libraries both games link, by `rxalign.py` size runs against
