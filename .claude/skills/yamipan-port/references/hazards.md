@@ -57,6 +57,14 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   porting; find counterparts by module and class, not by shape. Identical id wrappers cannot be told
   apart by shape: name them by what they call.
 - The link-order matcher is greedy: small anchor changes move hundreds of names. Always look at the plan.
+- **Size alignment against a sister library shifts runs of equal sizes** (2026-11-02, FS2 rx from
+  RoR): a plain LCS of function sizes paired four 0x20-byte `rxSys*` wrappers one slot off
+  (batch 005: `rxSysGetFileSearchDir` on what calls `rxFilePushSearchDir`); both pairings were
+  equally long. Fix: `rxalign.py` now prefers the alignment with the fewest breaks and warns ('!')
+  about one-size runs; still check such runs by what they tail-call.
+- **Ghidra merges small functions it never saw called** (setters, thread entries passed by pointer)
+  into the function before them, so sizes stop matching the sister's: compare spans (next start -
+  start) between anchors (`rxalign.py` '~' / '+'), and list the merged starts for creation.
 
 ## File inference (which TU a function belongs to)
 

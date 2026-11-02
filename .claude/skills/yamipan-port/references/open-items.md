@@ -52,12 +52,18 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    0x166b50..0x168150 and rxfile 0x153108..0x158e80; batch 003's rx guesses were renamed to RoR's
    (`rxThSetPrioIndex`, `rxThSetInterval`, `rxSysInit`, `rxSysSetBootPath`, `rxSysPrintf`,
    `rxThFindCallback`). Snapshot before it: `work/snapshots/20261102_132500.json`.
-   **Next batches, in this order**: **rx, the rest** with `rxalign.py`: rxfile past 0x158e80
-   (RoR to 0x249b88), the unmatched gaps (`rxalign.py` prints them with "-" / "?": 0x166bf8,
-   0x167b08..0x167c90, 0x167e28, 0x167f68, 0x1022d8, 0x102830, 0x102ae0, 0x103470, 0x153280, 0x153370,
-   0x157db8..) by reading against RosePan's `src/rx/*.cpp`, then **rxsnd** (RoR's `rxSnd*`
-   0x237ce8.., `rx/rxsnd.cpp`; FS2's rxsnd / rxsndstr / rxsndut, find the range by the `SDPR2`
-   messages ~0x1681c0) and **rxMpeg** (RoR 0x18182c..); `_InitSys`'s nine
+   **Batch 006 done (2026-11-02, 61 names)**: rx finished where it matches RoR -- rxsys
+   0x100350..0x1037b0 + 0x153108..0x153518, rxfile to 0x159928, rxthread to 0x1681c0 (`rxalign.py`
+   now fills gaps by span partition and breaks LCS ties by fewest breaks; reruns give 0 entries).
+   Fixed batch 005: 0x1533f0..0x153450 were one slot off (now `rxSysGetFileSearchDir`,
+   `rxSysPushSearchDir`, `rxSysPopSearchDir`, `rxSysGetLastName`) and 0x157c40 is RoR's
+   `rxFileCdSetFindFunc`, not a FS2-only locate hook. **45 more rx starts Ghidra lacks** went into
+   `data/missing_functions.json` ("rx from RosePan"; with 4(a); rerun the four `rxalign.py`
+   ranges of architecture.md "rx" with `--batch` afterwards to name them).
+   **Next batches, in this order**: **rxsnd** (RoR's `rxSnd*` 0x237ce8.., `rx/rxsnd.cpp`; FS2's
+   rxsnd / rxsndstr / rxsndut: find the range by the `SDPR2` messages ~0x1681c0 -- FS2's code right
+   after `rxThDmaSync` 0x168150 no longer aligns with RoR's `rxThVBlank*`, read 0x1681c0..0x16849c
+   first) and **rxMpeg** (RoR 0x18182c..); `_InitSys`'s nine
    callees (0x140c08, 0x140d48, 0x141338, 0x1414b0, 0x1416f0, 0x1378b8, 0x140f80, 0x140470,
    0x142b70); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
    string rep); SDK functions from their `PsIIlib` / assert strings; rx (`rxfile.c`); rena
@@ -176,6 +182,10 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-11-02: bootstrap 4, part 7 (scheduled run): naming batch 006 (61 rx names: the gaps and
+  rxfile's tail from RosePan, 7 by reading, 5 fixes of batch 005), `rxalign.py` span partition and
+  tie-breaking, 45 merged rx starts listed. Ghidra had unsaved changes (Ctrl+S). Next: rxsnd.
 
 - 2026-11-02: bootstrap 4, part 6 (scheduled run): naming batch 005 (253 names: main's teardown,
   libmc / libpad / MSL bits, the SPK.ROM hooks, and 231 rx names from RosePan via the new

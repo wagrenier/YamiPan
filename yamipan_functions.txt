@@ -77,7 +77,7 @@
 /* 00101fe8 00000088 */ rxSysIsCdromPath(){}  // lib-ctx
 /* 00102070 000000c4 */ rxSysPathSkipDevice(){}  // lib-ctx
 /* 00102138 0000019c */ rxSysSetBootPath(){}  // lib-ctx
-/* 001022d8 00000020 */ FUN_001022d8(){}
+/* 001022d8 00000020 */ rxSysSetPrintHook(){}  // lib-ctx
 /* 001022f8 0000002c */ rxSysIsTtyOpen(){}  // lib-ctx
 /* 00102328 000001fc */ rxSysPrintf(){}  // lib-ctx
 /* 00102528 00000004 */ rxSysTermEnd(){}  // lib-ctx
@@ -89,8 +89,8 @@
 /* 00102760 0000003c */ rxSysInitSema(){}  // lib-ctx
 /* 001027a0 0000002c */ rxSysTermSema(){}  // lib-ctx
 /* 001027d0 0000005c */ rxSysLockPrint(){}  // lib-ctx
-/* 00102830 0000007c */ FUN_00102830(){}
-/* 001028b0 0000001c */ FUN_001028b0(){}
+/* 00102830 0000007c */ rxSysUnlockPrint(){}  // lib-ctx
+/* 001028b0 0000001c */ rxSysUnlockSema1(){}  // lib-ctx
 /* 001028d0 00000028 */ rxSysCheckCdPath(){}  // lib-ctx
 /* 001028f8 00000050 */ rxSysOpen(){}  // lib-ctx
 /* 00102948 00000038 */ rxSysClose(){}  // lib-ctx
@@ -98,7 +98,7 @@
 /* 001029d8 00000058 */ rxSysWrite(){}  // lib-ctx
 /* 00102a30 00000058 */ rxSysLseek(){}  // lib-ctx
 /* 00102a88 00000058 */ rxSysIoctl(){}  // lib-ctx
-/* 00102ae0 00000250 */ FUN_00102ae0(){}
+/* 00102ae0 00000250 */ rxSysLockConsole(){}  // lib-ctx
 /* 00102d30 000000b0 */ rxSysSetDebugHandlers(){}  // lib-ctx
 /* 00102de0 00000098 */ rxSysRestoreDebugHandlers(){}  // lib-ctx
 /* 00102e78 00000168 */ rxSysHexDump(){}  // lib-ctx
@@ -111,7 +111,7 @@
 /* 001032f8 00000094 */ rxSysConsoleNewline(){}  // lib-ctx
 /* 00103390 0000008c */ rxSysConsolePutc(){}  // lib-ctx
 /* 00103420 00000050 */ rxSysConsolePrintHook(){}  // lib-ctx
-/* 00103470 00000234 */ FUN_00103470(){}
+/* 00103470 00000234 */ rxSysConsoleSetDisplay(){}  // lib-ctx
 /* 001036a8 000000fc */ rxSysTermExceptionScreen(){}  // lib-ctx
 /* 001037a8 00000004 */ rxSysInitUser(){}  // lib-ctx
 /* 001037b0 00000004 */ rxSysTermUser(){}  // lib-ctx
@@ -1380,17 +1380,17 @@
 /* 00153108 00000014 */ rxSysThreadCallback(){}  // lib-ctx
 /* 00153120 000000f0 */ rxSysInitModules(){}  // lib-ctx
 /* 00153210 0000006c */ rxSysTermModules(){}  // lib-ctx
-/* 00153280 00000064 */ FUN_00153280(){}
+/* 00153280 00000064 */ rxSysSetFileContext(){}  // lib-ctx
 /* 001532e8 0000003c */ rxSysDeviceStatus(){}  // lib-ctx
 /* 00153328 00000014 */ rxSysInitFileDevice(){}  // lib-ctx
 /* 00153340 00000014 */ rxSysGetFileDevice(){}  // lib-ctx
 /* 00153358 00000014 */ rxSysSetFileDevice(){}  // lib-ctx
-/* 00153370 00000050 */ FUN_00153370(){}
-/* 001533c0 0000002c */ FUN_001533c0(){}
-/* 001533f0 00000020 */ FUN_001533f0(){}
-/* 00153410 00000020 */ rxSysGetFileSearchDir(){}  // lib-ctx
-/* 00153430 00000020 */ rxSysPushSearchDir(){}  // lib-ctx
-/* 00153450 00000020 */ rxSysPopSearchDir(){}  // lib-ctx
+/* 00153370 00000050 */ rxSysSetFileDir(){}  // lib-ctx
+/* 001533c0 0000002c */ rxSysSetFileSearchDir(){}  // lib-ctx
+/* 001533f0 00000020 */ rxSysGetFileSearchDir(){}  // lib-ctx
+/* 00153410 00000020 */ rxSysPushSearchDir(){}  // lib-ctx
+/* 00153430 00000020 */ rxSysPopSearchDir(){}  // lib-ctx
+/* 00153450 00000020 */ rxSysGetLastName(){}  // lib-ctx
 /* 00153470 00000034 */ rxSysSetDeviceParam(){}  // lib-ctx
 /* 001534a8 00000020 */ rxSysStreamOpen(){}  // lib-ctx
 /* 001534c8 00000030 */ rxSysStreamOpenRing(){}  // lib-ctx
@@ -1402,24 +1402,24 @@
 /* 00153818 00000144 */ rxFileWrite(){}  // lib-ctx
 /* 00153960 00000094 */ rxFileSeek(){}  // lib-ctx
 /* 001539f8 000000cc */ rxFileSync(){}  // lib-ctx
-/* 00153ac8 000000b4 */ FUN_00153ac8(){}
+/* 00153ac8 000000b4 */ rxFileSetMarkers(){}  // lib-ctx
 /* 00153b80 00000074 */ rxFilePause(){}  // lib-ctx
 /* 00153bf8 00000050 */ rxFileGetRingData(){}  // lib-ctx
 /* 00153c48 00000048 */ rxFileGetRingReadPos(){}  // lib-ctx
 /* 00153c90 00000048 */ rxFileGetRingSize(){}  // lib-ctx
 /* 00153cd8 00000070 */ rxFileGetRingFilled(){}  // lib-ctx
-/* 00153d48 000001a8 */ FUN_00153d48(){}
-/* 00153ef0 000000b4 */ FUN_00153ef0(){}
-/* 00153fa8 00000060 */ FUN_00153fa8(){}
-/* 00154008 00000128 */ FUN_00154008(){}
-/* 00154130 000003e4 */ FUN_00154130(){}
+/* 00153d48 000001a8 */ rxFileRingConsume(){}  // lib-ctx
+/* 00153ef0 000000b4 */ rxFileSetTags(){}  // lib-ctx
+/* 00153fa8 00000060 */ rxFileGetRingTags(){}  // lib-ctx
+/* 00154008 00000128 */ rxFileOpenEx(){}  // lib-ctx
+/* 00154130 000003e4 */ rxFileOpenSlot(){}  // lib-ctx
 
 // *****************************************************************************
 // FILE -- rxfile.c
 // *****************************************************************************
 
-/* 00154518 00000084 */ FUN_00154518(){}
-/* 001545a0 0000009c */ FUN_001545a0(){}
+/* 00154518 00000084 */ rxFileOnCreate(){}  // lib-ctx
+/* 001545a0 0000009c */ rxFileOnGetSize(){}  // lib-ctx
 
 // *****************************************************************************
 // FILE -- (unassigned)
@@ -1433,12 +1433,12 @@
 /* 00154ab8 000001b0 */ rxFileSlotRequestChunked(){}  // lib-ctx
 /* 00154c68 000000e0 */ rxFileSlotPost(){}  // lib-ctx
 /* 00154d48 00000078 */ rxFileOnTransfer(){}  // lib-ctx
-/* 00154dc0 00000200 */ FUN_00154dc0(){}
+/* 00154dc0 00000200 */ rxFileSlotSetMarkers(){}  // lib-ctx
 /* 00154fc8 000000c8 */ rxFileSlotAddSegment(){}  // lib-ctx
 /* 00155090 0000011c */ rxFileSlotDropSegments(){}  // lib-ctx
 /* 001551b0 000000b8 */ rxFileSlotFreeSegments(){}  // lib-ctx
 /* 00155268 000000dc */ rxFileSlotSegmentPos(){}  // lib-ctx
-/* 00155348 000001e0 */ FUN_00155348(){}
+/* 00155348 000001e0 */ rxFileSlotSetTags(){}  // lib-ctx
 /* 00155530 000000c4 */ rxFileSlotGetTags(){}  // lib-ctx
 /* 001555f8 00000050 */ rxFileCallDevice(){}  // lib-ctx
 /* 00155648 00000048 */ rxFileGetDeviceRoot(){}  // lib-ctx
@@ -1460,22 +1460,22 @@
 /* 00156020 00000040 */ rxFileGetDriver(){}  // lib-ctx
 /* 00156060 00000088 */ rxFileHostInit(){}  // lib-ctx
 /* 001560e8 00000004 */ rxFileHostTerm(){}  // lib-ctx
-/* 001560f0 00000048 */ FUN_001560f0(){}
+/* 001560f0 00000048 */ rxFileHostMakePath(){}  // lib-ctx
 
 // *****************************************************************************
 // FILE -- filehost.c
 // *****************************************************************************
 
-/* 00156138 000000d0 */ FUN_00156138(){}
-/* 00156208 000000c0 */ FUN_00156208(){}
-/* 001562c8 0000012c */ FUN_001562c8(){}
-/* 001563f8 0000012c */ FUN_001563f8(){}
+/* 00156138 000000d0 */ rxFileHostGetSize(){}  // lib-ctx
+/* 00156208 000000c0 */ rxFileHostCreate(){}  // lib-ctx
+/* 001562c8 0000012c */ rxFileHostRead(){}  // lib-ctx
+/* 001563f8 0000012c */ rxFileHostWrite(){}  // lib-ctx
 
 // *****************************************************************************
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 00156528 00000054 */ FUN_00156528(){}
+/* 00156528 00000054 */ rxFileHostJoinRoot(){}  // lib-ctx
 /* 00156580 00000044 */ rxFileHostSetRoot(){}  // lib-ctx
 /* 001565c8 0000004c */ rxFileCdWait(){}  // lib-ctx
 /* 00156618 00000030 */ rxFileCdSyncWait(){}  // lib-ctx
@@ -1485,9 +1485,9 @@
 /* 00156710 0000001c */ rxFileCdTray(){}  // lib-ctx
 /* 00156730 000002c4 */ rxFileCdProcess(){}  // lib-ctx
 /* 001569f8 00000048 */ rxFileCdMakePath(){}  // lib-ctx
-/* 00156a40 00000144 */ FUN_00156a40(){}
-/* 00156b88 00000080 */ FUN_00156b88(){}
-/* 00156c08 000000f0 */ FUN_00156c08(){}
+/* 00156a40 00000144 */ rxFileCdControl(){}  // lib-ctx
+/* 00156b88 00000080 */ rxFileCdGetSize(){}  // lib-ctx
+/* 00156c08 000000f0 */ rxFileCdRead(){}  // lib-ctx
 /* 00156cf8 000000d8 */ rxFileCdIsoName(){}  // lib-ctx
 /* 00156dd0 00000034 */ rxFileCdMapSector(){}  // lib-ctx
 /* 00156e08 00000288 */ rxFileCdReadBytes(){}  // lib-ctx
@@ -1496,24 +1496,24 @@
 /* 00157390 00000060 */ rxFileCdInitCache(){}  // lib-ctx
 /* 001573f0 00000064 */ rxFileCdFlushCache(){}  // lib-ctx
 /* 00157458 0000013c */ rxFileCdFind(){}  // lib-ctx
-/* 00157598 000001e8 */ FUN_00157598(){}
+/* 00157598 000001e8 */ rxFileCdFindDir(){}  // lib-ctx
 /* 00157780 000001cc */ rxFileCdFindInDir(){}  // lib-ctx
 /* 00157950 0000005c */ rxFileCdPathElem(){}  // lib-ctx
 /* 001579b0 0000004c */ rxFileCdIsLastElem(){}  // lib-ctx
-/* 00157a00 00000234 */ FUN_00157a00(){}
-/* 00157c38 00000004 */ FUN_00157c38(){}
-/* 00157c40 0000006c */ rxFileCdSetLocateHook(){}  // lib-ctx
+/* 00157a00 00000234 */ rxFileCdReadCached(){}  // lib-ctx
+/* 00157c38 00000004 */ rxFileCdSetRoot(){}  // lib-ctx
+/* 00157c40 0000006c */ rxFileCdSetFindFunc(){}  // lib-ctx
 /* 00157cb0 000000bc */ rxFileCdGetClock(){}  // lib-ctx
 /* 00157d70 00000034 */ rxFileCdSetLayerMode(){}  // lib-ctx
 /* 00157da8 0000000c */ rxFileCdGetLayerMode(){}  // lib-ctx
-/* 00157db8 0000008c */ FUN_00157db8(){}
-/* 00157e48 000000ac */ FUN_00157e48(){}
-/* 00157ef8 00000048 */ FUN_00157ef8(){}
+/* 00157db8 0000008c */ rxFileHddInit(){}  // lib-ctx
+/* 00157e48 000000ac */ rxFileHddOnError(){}  // lib-ctx
+/* 00157ef8 00000048 */ rxFileHddMakePath(){}  // lib-ctx
 /* 00157f40 000000d0 */ rxFileHddGetSize(){}  // lib-ctx
 /* 00158010 000000cc */ rxFileHddCreate(){}  // lib-ctx
 /* 001580e0 00000140 */ rxFileHddRead(){}  // lib-ctx
 /* 00158220 00000140 */ rxFileHddWrite(){}  // lib-ctx
-/* 00158360 00000054 */ FUN_00158360(){}
+/* 00158360 00000054 */ rxFileHddJoinRoot(){}  // lib-ctx
 /* 001583b8 00000044 */ rxFileHddSetRoot(){}  // lib-ctx
 /* 00158400 000000a0 */ rxFileInitSlots(){}  // lib-ctx
 /* 001584a8 00000004 */ rxFileUpdate(){}  // lib-ctx
@@ -1545,20 +1545,20 @@
 /* 00158da0 00000094 */ rxFileStopThread(){}  // lib-ctx
 /* 00158e38 00000048 */ rxFilePostRequest(){}  // lib-ctx
 /* 00158e80 000000dc */ rxFileCancelRequests(){}  // lib-ctx
-/* 00158f60 00000444 */ FUN_00158f60(){}
-/* 001593a8 0000000c */ FUN_001593a8(){}
-/* 001593b8 0000015c */ FUN_001593b8(){}
-/* 00159518 00000048 */ FUN_00159518(){}
-/* 00159560 00000054 */ FUN_00159560(){}
-/* 001595b8 0000001c */ FUN_001595b8(){}
-/* 001595d8 0000002c */ FUN_001595d8(){}
-/* 00159608 0000014c */ FUN_00159608(){}
-/* 00159758 000000b0 */ FUN_00159758(){}
-/* 00159808 0000007c */ FUN_00159808(){}
-/* 00159888 00000024 */ FUN_00159888(){}
-/* 001598b0 0000000c */ FUN_001598b0(){}
-/* 001598c0 00000058 */ FUN_001598c0(){}
-/* 00159918 00000010 */ FUN_00159918(){}
+/* 00158f60 00000444 */ rxFileCreateThread(){}  // lib-ctx
+/* 001593a8 0000000c */ rxFileQueueInit(){}  // lib-ctx
+/* 001593b8 0000015c */ rxFileQueuePush(){}  // lib-ctx
+/* 00159518 00000048 */ rxFileQueueFront(){}  // lib-ctx
+/* 00159560 00000054 */ rxFileQueuePop(){}  // lib-ctx
+/* 001595b8 0000001c */ rxFileQueueCount(){}  // lib-ctx
+/* 001595d8 0000002c */ rxFileQueueSpace(){}  // lib-ctx
+/* 00159608 0000014c */ rxFileQueueCancel(){}  // lib-ctx
+/* 00159758 000000b0 */ rxFileSetDeviceMap(){}  // lib-ctx
+/* 00159808 0000007c */ rxFileGetDeviceMap(){}  // lib-ctx
+/* 00159888 00000024 */ rxFileGetFallbackDevice(){}  // lib-ctx
+/* 001598b0 0000000c */ rxFileGetErrorHook(){}  // lib-ctx
+/* 001598c0 00000058 */ rxFileSetThreadPriority(){}  // lib-ctx
+/* 00159918 00000010 */ rxFileGetThreadPriority(){}  // lib-ctx
 /* 00159928 00000080 */ FUN_00159928(){}
 /* 001599a8 00000088 */ FUN_001599a8(){}
 /* 00159a30 0000005c */ FUN_00159a30(){}
@@ -1879,7 +1879,7 @@
 /* 00166b50 00000024 */ rxThCreateSema(){}  // lib-ctx
 /* 00166b78 00000054 */ rxThStartThread(){}  // lib-ctx
 /* 00166bd0 00000028 */ rxThKillThread(){}  // lib-ctx
-/* 00166bf8 00000110 */ FUN_00166bf8(){}
+/* 00166bf8 00000110 */ rxThWorkerMain(){}  // lib-ctx
 /* 00166d10 00000094 */ rxThIsDispatchDisabled(){}  // lib-ctx
 /* 00166da8 00000024 */ rxThGetCallCount(){}  // lib-ctx
 /* 00166dd0 00000098 */ rxThPostCall(){}  // lib-ctx
@@ -1898,14 +1898,14 @@
 /* 00167890 0000008c */ rxThDisableDispatch(){}  // lib-ctx
 /* 00167920 00000184 */ rxThEnableDispatch(){}  // lib-ctx
 /* 00167aa8 0000005c */ rxThGetIndex(){}  // lib-ctx
-/* 00167b08 000000e4 */ FUN_00167b08(){}
-/* 00167bf0 0000003c */ FUN_00167bf0(){}
-/* 00167c30 0000005c */ FUN_00167c30(){}
-/* 00167c90 00000018 */ FUN_00167c90(){}
+/* 00167b08 000000e4 */ rxThDelete(){}  // lib-ctx
+/* 00167bf0 0000003c */ rxThSetPriority(){}  // lib-ctx
+/* 00167c30 0000005c */ rxThGetParam(){}  // lib-ctx
+/* 00167c90 00000018 */ rxThSetState(){}  // lib-ctx
 /* 00167cb0 00000174 */ rxThCreate(){}  // lib-ctx
-/* 00167e28 00000104 */ FUN_00167e28(){}
-/* 00167f30 00000034 */ FUN_00167f30(){}
-/* 00167f68 00000054 */ FUN_00167f68(){}
+/* 00167e28 00000104 */ rxThRequest(){}  // lib-ctx
+/* 00167f30 00000034 */ rxThVSyncRequest(){}  // lib-ctx
+/* 00167f68 00000054 */ rxThVSync(){}  // lib-ctx
 /* 00167fc0 00000050 */ rxThSetInterval(){}  // lib-ctx
 /* 00168010 00000064 */ rxThSetPrioIndex(){}  // lib-ctx
 /* 00168078 00000014 */ rxThInitOnce(){}  // lib-ctx

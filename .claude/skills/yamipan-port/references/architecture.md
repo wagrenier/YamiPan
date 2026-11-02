@@ -89,6 +89,8 @@ files from the 4 file-name strings.
 | by reading, batches 002-004 (2026-10-31) | 26 + 34 + 52: threads, gameInit's subsystems, `GameSystem` and its members, rena `Vif1PktManage` | name_ctx.py | ledger 139 |
 | class names | 6 (`data/class_names.json`) | rtti.py | -- |
 | batch 005 (2026-11-02) | 253: main's teardown (22 by reading) + **231 rx names from RosePan** (rxsys 89, rxthread 29, rxfile 113) | rxalign.py + name_ctx.py | lib-context; ledger 386 |
+| batch 006 (2026-11-02) | 61 rx names: the gaps (span partition), rxfile's tail (thread, queue, device map), 7 by reading, 5 fixes of batch 005 | rxalign.py + name_ctx.py | lib-context; ledger 443 |
+| rx starts Ghidra merged | 45 (`data/missing_functions.json`, "rx from RosePan") | rxalign.py --missing | create first |
 
 Expected sources (bootstrap step 4): Sony SDK 3.0 libraries by match (libmatch.py against FF3 / RoR,
 both SDK 3.0); MSL C++ / CodeWarrior runtime only by reading (no reference game built with it); rx and
@@ -97,6 +99,18 @@ links the same prebuilt rx library as Rule of Rose -- same functions, same order
 `rxThFindCallback`'s delay-slot bug (always -1) -- so `rxalign.py` aligns size sequences against
 `../RosePan/ror_functions.txt` and RosePan's `src/rx/*.cpp` is the reference (likely reusable) for
 the rx TUs. Not yet verified word for word (RoR's ELF / Ghidra program is not on this machine).
+Batch 006 (2026-11-02) finished rxsys 0x100350..0x1037b0 + 0x153108..0x153518, rxfile
+0x153518..0x159928 and rxthread 0x166b50..0x1681c0: every Ghidra function there has RoR's name.
+Differences: **FS2's rx is a slightly newer build** whose error messages carry `__FILE__` /
+`__LINE__` (`"rxfile(%s,%d) : failed to open file '%s' %d %d %X,%d %d"` 0x301680, `rxfile.c`), so
+`rxFileOnCreate` / `rxFileOnGetSize`, the host driver (`rxFileHostGetSize`..`Write`, each +0x10) and
+`rxFileCdFindDir` (+0x18) are longer than RoR's; `rxSysPrintf` is the same size. Ghidra had merged
+45 small rx functions (setters reached only by pointer or not at all, thread entry points) into
+their predecessors; they wait in `data/missing_functions.json`. After rxthread's `rxThDmaSync`
+0x168150 FS2 diverges from RoR (RoR's `rxThVBlank*` / `rxThSync`; FS2's 0x1681c0.. differ in size,
+possibly rxsnd: the `SDPR2` messages).
+The four ranges (FS2 lo hi, RoR lo hi) for `rxalign.py`: `100350 1037b0 23ff80 2433e0`,
+`153108 153518 2433e8 2437f8`, `153518 159928 2437f8 249b88`, `166b50 1681c0 249b88 24b1f8`.
 
 ## Program flow
 
@@ -138,7 +152,8 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
   `rxFileSeek` / `rxFileRead` / `rxFileClose`), relocates its 16-byte entries `{name, archive name,
   offset, size | bit 31 = DVD layer 1}` (header `SLPK`, +8 count, +0xc string base, +0x10 relocated
   flag) and installs three hooks: `spkLocateFile` 0x1529d0 as the CD locate hook
-  (`rxFileCdSetLocateHook` 0x157c40, not in RoR's rx; the previous hook is kept in gp-0x7a88 for
+  (`rxFileCdSetFindFunc` 0x157c40, RoR's rx word for word; batch 005 read it as a FS2-only
+  `rxFileCdSetLocateHook`; the previous hook is kept in gp-0x7a88 for
   `ROM.*` / `ROMD.*` themselves), `spkLoadFile` 0x152e20 (`rxFileSetLoadHook` 0x155700) and
   `spkGetFileSize` 0x152c90 (`rxFileSetSizeHook` 0x155748). A name is binary-searched case-folded
   (`toupper` 0x12a010) and resolved to its archive's lsn + offset >> 11, switching the DVD layer
