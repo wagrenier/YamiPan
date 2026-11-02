@@ -44,28 +44,46 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    0, also called by 0x198970 / 0x199400: a PerfMeter bar? check those callers), 0x133600 /
    0x132f20 (empty), 0x12f6b0 / 0x12f600 (Pad::update's stick / post steps), 0x119b88 (atan2f?),
    0x12d540 / 0x12d5a0 (GamePad ctor / dtor candidates, rtti.py).
-   **Next batches, in this order**: the rest of main's teardown (0x2acec0, 0x148540, 0x12e3a0,
-   0x130070, 0x152750; 0x2a9c80 -> 0x2acf00 -> 0x11fb70, libmc init?); `_InitSys`'s nine
+   **Batch 005 done (2026-11-02, 253 names)**: main's teardown (memcard / sound / gfx / pad / rx;
+   architecture.md "Program flow") and, on the user's tip (2026-11-02: "Rule of Rose had similar
+   rx* names"), **the rx library from RosePan**: FS2 links RoR's rx (same functions, order and sizes,
+   even `rxThFindCallback`'s bug), so the new `rxalign.py` aligned size sequences against
+   `../RosePan/ror_functions.txt` (runs of >= 3) for rxsys 0x100350..0x1037b0, rxthread
+   0x166b50..0x168150 and rxfile 0x153108..0x158e80; batch 003's rx guesses were renamed to RoR's
+   (`rxThSetPrioIndex`, `rxThSetInterval`, `rxSysInit`, `rxSysSetBootPath`, `rxSysPrintf`,
+   `rxThFindCallback`). Snapshot before it: `work/snapshots/20261102_132500.json`.
+   **Next batches, in this order**: **rx, the rest** with `rxalign.py`: rxfile past 0x158e80
+   (RoR to 0x249b88), the unmatched gaps (`rxalign.py` prints them with "-" / "?": 0x166bf8,
+   0x167b08..0x167c90, 0x167e28, 0x167f68, 0x1022d8, 0x102830, 0x102ae0, 0x103470, 0x153280, 0x153370,
+   0x157db8..) by reading against RosePan's `src/rx/*.cpp`, then **rxsnd** (RoR's `rxSnd*`
+   0x237ce8.., `rx/rxsnd.cpp`; FS2's rxsnd / rxsndstr / rxsndut, find the range by the `SDPR2`
+   messages ~0x1681c0) and **rxMpeg** (RoR 0x18182c..); `_InitSys`'s nine
    callees (0x140c08, 0x140d48, 0x141338, 0x1414b0, 0x1416f0, 0x1378b8, 0x140f80, 0x140470,
    0x142b70); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
    string rep); SDK functions from their `PsIIlib` / assert strings; rx (`rxfile.c`); rena
    (`rena_*.cpp`). Thunks 0x100218 (`_exit`) and 0x100270 keep Ghidra's thunk names (renaming a
    thunk may rename its target);
    (c) the first island ~0x2f3a40..0x2f4d20 (9 Ghidra functions, nothing references 0x2f3a40);
-   (d) `libmatch.py` once the reference ELFs are here (item 3).
-3. **The user: reference ELFs for libmatch.py.** The sibling checkouts on this machine have the
+   (d) `libmatch.py` once the reference ELFs are here (items 3-4).
+3. **The user (2026-11-02, in progress): Rule of Rose in Ghidra.** The user is loading RoR into
+   Ghidra so its names can be re-applied there and compared with FS2 (BinDiff crashes on PS2
+   programs, so not that). Once RoR answers (its own CodeBrowser window: `ghidra_mcp.py list`) or its
+   ELF `SLUS_214.48` sits next to `../RosePan/ror_functions.txt`: **verify batch 005's rx names word
+   for word** (libmatch.py's masked compare, RoR as the reference; a mismatch -> back to reading) and
+   extend the match to the rest of rx and to the SDK 3.0 libraries both games link.
+4. **The user: reference ELFs for libmatch.py.** The sibling checkouts on this machine have the
    function lists (`../ReiPan/ff3_functions.txt`, `../RosePan/ror_functions.txt`) but not the ELFs
    (`../ReiPan/SLES_538.25`, `../MioPan/SLES_523.84` with `symbols.txt` / `functions.txt`,
    `../RosePan/SLUS_214.48`); `libmatch.py` skips a reference whose ELF is missing (0 matches,
    2026-10-31). Copy them next to their lists (never committed) to match FS2's SDK 3.0 libraries.
-4. **The user: a host toolchain.** No MinGW g++, ninja or cmake on this machine (RosePan's paths,
+5. **The user: a host toolchain.** No MinGW g++, ninja or cmake on this machine (RosePan's paths,
    CLion's MinGW and Python's ninja, do not exist here; 2026-10-31). `build.py` / `layoutcheck.py` take
    them from PATH or `YAMIPAN_MINGW_BIN` / `YAMIPAN_NINJA`; bootstrap 6-7 need them.
-5. **The user**: install bethington's GhidraMCP 5.14.2 in Ghidra 12.2 beside 2.0.0 (Decisions). Not on
+6. **The user**: install bethington's GhidraMCP 5.14.2 in Ghidra 12.2 beside 2.0.0 (Decisions). Not on
    this machine yet; runs that need it say so in their report. Until then the tools degrade (tools
    README "Ghidra"): no saving (Ctrl+S by hand), no function creation (F in Ghidra), tags only in
    `data/tags.json`, disassembly offline.
-6. Fill architecture.md as each step learns something.
+7. Fill architecture.md as each step learns something.
 
 ## Decisions
 
@@ -125,7 +143,8 @@ apply here):
 
 ## Open questions
 
-- ~~Which game; engine kinship with FF2 / FF3 / RoR?~~ Settled 2026-10-31 (bootstrap 1): none; SCE's
+- ~~Which game; engine kinship with FF2 / FF3 / RoR?~~ Settled 2026-10-31 (bootstrap 1): none (but the
+  rx library is RoR's: 2026-11-02, batch 005); SCE's
   own rx runtime and rena renderer, built with Metrowerks CodeWarrior 2.4.1.01.
 - **CodeWarrior, not GCC** (bootstrap 1, 2026-10-31). Consequences for bootstrap 3-4, to settle there:
   `sections.py` / `gcc2.py` have nothing to read (stripped, no linkonce sections); `rtti.py` needs a
@@ -157,6 +176,10 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-11-02: bootstrap 4, part 6 (scheduled run): naming batch 005 (253 names: main's teardown,
+  libmc / libpad / MSL bits, the SPK.ROM hooks, and 231 rx names from RosePan via the new
+  `rxalign.py`). Ghidra had unsaved changes (Ctrl+S). Next: the rest of rx ("Next up").
 
 - 2026-10-31: bootstrap 4, part 5 (scheduled run): naming batch 004 (52 names: `GameSystem` and
   its members, rena `Vif1PktManage`, libvifpk, clocks, debug meter, `rxPrintf`) and

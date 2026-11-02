@@ -13,7 +13,7 @@ counterpart: every function from its own binary). This skill distils what those 
 skills keep the full history. It is the playbook and the project's memory: follow it, and keep it true
 ("Keeping this skill alive").
 
-**State (2026-10-31): bootstrap, step 4 in progress (names: batches 001-004 applied)** (open-items.md "Next up" has what is left). The game is Forbidden Siren 2 (Europe, `SCES_538.51`;
+**State (2026-11-02): bootstrap, step 4 in progress (names: batches 001-005 applied; rx named from RosePan)** (open-items.md "Next up" has what is left). The game is Forbidden Siren 2 (Europe, `SCES_538.51`;
 files under "Environment"), annotation tag `FS2`; a stripped **Metrowerks CodeWarrior** build (not GCC:
 open-items.md has what that changes). What exists: the Ghidra layer on GhidraMCP 2.0.0
 (`tools/reverse/ghidra_mcp.py`, `ghidra_bridge.py`, `.mcp.json`), a Ghidra project with the game
@@ -163,7 +163,7 @@ plugin and what degrades without GhidraMCP 5.14.2.
 | queue, claim, brief, boundaries, check, finish | `tus.py list / next / claim / brief / define / queue / check / finish` |
 | regenerate derived files | `refresh.py` (fetch + features when Ghidra is up, then the offline ones, status) |
 | map code | `modview.py range\|tree`, `yamipan_functions.txt`, `stage.py class:Name` |
-| name | `ctxcard.py`, `name_ctx.py`; seeding `sections.py --apply`, `libmatch.py --apply` |
+| name | `ctxcard.py`, `name_ctx.py`; seeding `sections.py --apply`, `libmatch.py --apply`, `rxalign.py` (rx from RosePan) |
 | read code | `stage.py`, `dec.py`, `ghidra.py` (asm, refs, mkfunc), `hidden.py`, `mipsdis.py`, `vudis.py`, `mipsemu.py`, `sinit.py` |
 | classes | `rtti.py --class / --vtable` |
 | TU identity | `tuid.py <TU>` (in the brief) |

@@ -29,23 +29,545 @@
   "was": "FUN_00100310",
   "why": "Heap::alloc(0x329970, n, 16), the second plain-size allocator after operator_new[] 0x1002f0; order inferred from the delete pair"
  },
+ "00100350": {
+  "name": "rxSysSetMemFunc0",
+  "tag": "lib-context",
+  "was": "FUN_00100350",
+  "why": "rx library: RosePan names RoR 0x23ff80 rxSysSetMemFunc0; same size 0x2c and place in a run of matching functions (rxalign.py)"
+ },
+ "00100380": {
+  "name": "rxSysSetMemFunc1",
+  "tag": "lib-context",
+  "was": "FUN_00100380",
+  "why": "rx library: RosePan names RoR 0x23ffb0 rxSysSetMemFunc1; same size 0x2c and place in a run of matching functions (rxalign.py)"
+ },
+ "001003b0": {
+  "name": "rxSysSetMemFunc2",
+  "tag": "lib-context",
+  "was": "FUN_001003b0",
+  "why": "rx library: RosePan names RoR 0x23ffe0 rxSysSetMemFunc2; same size 0x2c and place in a run of matching functions (rxalign.py)"
+ },
+ "001003e0": {
+  "name": "rxSysSetMemFunc3",
+  "tag": "lib-context",
+  "was": "FUN_001003e0",
+  "why": "rx library: RosePan names RoR 0x240010 rxSysSetMemFunc3; same size 0x2c and place in a run of matching functions (rxalign.py)"
+ },
+ "00100410": {
+  "name": "rxSysStrLenToEol",
+  "tag": "lib-context",
+  "was": "FUN_00100410",
+  "why": "rx library: RosePan names RoR 0x240040 rxSysStrLenToEol; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "00100450": {
+  "name": "rxSysStrLenToSpace",
+  "tag": "lib-context",
+  "was": "FUN_00100450",
+  "why": "rx library: RosePan names RoR 0x240080 rxSysStrLenToSpace; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "00100490": {
+  "name": "rxSysSkipEol",
+  "tag": "lib-context",
+  "was": "FUN_00100490",
+  "why": "rx library: RosePan names RoR 0x2400c0 rxSysSkipEol; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "001004d0": {
+  "name": "rxSysSkipSpace",
+  "tag": "lib-context",
+  "was": "FUN_001004d0",
+  "why": "rx library: RosePan names RoR 0x240100 rxSysSkipSpace; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "00100510": {
+  "name": "rxSysStrCopyN",
+  "tag": "lib-context",
+  "was": "FUN_00100510",
+  "why": "rx library: RosePan names RoR 0x240140 rxSysStrCopyN; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "00100550": {
+  "name": "rxSysPathCopy",
+  "tag": "lib-context",
+  "was": "FUN_00100550",
+  "why": "rx library: RosePan names RoR 0x240180 rxSysPathCopy; same size 0x68 and place in a run of matching functions (rxalign.py)"
+ },
+ "001005b8": {
+  "name": "rxSysIsModuleLoaded",
+  "tag": "lib-context",
+  "was": "FUN_001005b8",
+  "why": "rx library: RosePan names RoR 0x2401e8 rxSysIsModuleLoaded; same size 0x94 and place in a run of matching functions (rxalign.py)"
+ },
+ "00100650": {
+  "name": "rxSysPathFileName",
+  "tag": "lib-context",
+  "was": "FUN_00100650",
+  "why": "rx library: RosePan names RoR 0x240280 rxSysPathFileName; same size 0xb8 and place in a run of matching functions (rxalign.py)"
+ },
+ "00100708": {
+  "name": "rxSysPathExt",
+  "tag": "lib-context",
+  "was": "FUN_00100708",
+  "why": "rx library: RosePan names RoR 0x240338 rxSysPathExt; same size 0x88 and place in a run of matching functions (rxalign.py)"
+ },
+ "00100790": {
+  "name": "rxSysIsCommentLine",
+  "tag": "lib-context",
+  "was": "FUN_00100790",
+  "why": "rx library: RosePan names RoR 0x2403c0 rxSysIsCommentLine; same size 0x28 and place in a run of matching functions (rxalign.py)"
+ },
+ "001007c0": {
+  "name": "rxSysSkipModule",
+  "tag": "lib-context",
+  "was": "FUN_001007c0",
+  "why": "rx library: RosePan names RoR 0x2403f0 rxSysSkipModule; same size 0x4c and place in a run of matching functions (rxalign.py)"
+ },
+ "00100810": {
+  "name": "rxSysAddModule",
+  "tag": "lib-context",
+  "was": "FUN_00100810",
+  "why": "rx library: RosePan names RoR 0x240440 rxSysAddModule; same size 0x50 and place in a run of matching functions (rxalign.py)"
+ },
+ "00100860": {
+  "name": "rxSysAddModuleList",
+  "tag": "lib-context",
+  "was": "FUN_00100860",
+  "why": "rx library: RosePan names RoR 0x240490 rxSysAddModuleList; same size 0x44 and place in a run of matching functions (rxalign.py)"
+ },
+ "001008a8": {
+  "name": "rxSysSetCdMode",
+  "tag": "lib-context",
+  "was": "FUN_001008a8",
+  "why": "rx library: RosePan names RoR 0x2404d8 rxSysSetCdMode; same size 0x44 and place in a run of matching functions (rxalign.py)"
+ },
+ "001008f0": {
+  "name": "rxSysRebootIop",
+  "tag": "lib-context",
+  "was": "FUN_001008f0",
+  "why": "rx library: RosePan names RoR 0x240520 rxSysRebootIop; same size 0xb4 and place in a run of matching functions (rxalign.py)"
+ },
+ "001009a8": {
+  "name": "rxSysLoadModuleList",
+  "tag": "lib-context",
+  "was": "FUN_001009a8",
+  "why": "rx library: RosePan names RoR 0x2405d8 rxSysLoadModuleList; same size 0x1d8 and place in a run of matching functions (rxalign.py)"
+ },
+ "00100b80": {
+  "name": "rxSysReadIopConf",
+  "tag": "lib-context",
+  "was": "FUN_00100b80",
+  "why": "rx library: RosePan names RoR 0x2407b0 rxSysReadIopConf; same size 0x88 and place in a run of matching functions (rxalign.py)"
+ },
+ "00100c08": {
+  "name": "rxSysCdInit",
+  "tag": "lib-context",
+  "was": "FUN_00100c08",
+  "why": "rx library: RosePan names RoR 0x240838 rxSysCdInit; same size 0x58 and place in a run of matching functions (rxalign.py)"
+ },
+ "00100c60": {
+  "name": "rxSysLoadIopModules",
+  "tag": "lib-context",
+  "was": "FUN_00100c60",
+  "why": "rx library: RosePan names RoR 0x240890 rxSysLoadIopModules; same size 0x1f4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00100e58": {
+  "name": "rxSysIsDeviceReady",
+  "tag": "lib-context",
+  "was": "FUN_00100e58",
+  "why": "rx library: RosePan names RoR 0x240a88 rxSysIsDeviceReady; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "00100e80": {
+  "name": "rxSysGetBootDevice",
+  "tag": "lib-context",
+  "was": "FUN_00100e80",
+  "why": "rx library: RosePan names RoR 0x240ab0 rxSysGetBootDevice; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "00100e90": {
+  "name": "rxSysDetectDevice",
+  "tag": "lib-context",
+  "was": "FUN_00100e90",
+  "why": "rx library: RosePan names RoR 0x240ac0 rxSysDetectDevice; same size 0x80 and place in a run of matching functions (rxalign.py)"
+ },
+ "00100f10": {
+  "name": "rxSysFindString",
+  "tag": "lib-context",
+  "was": "FUN_00100f10",
+  "why": "rx library: RosePan names RoR 0x240b40 rxSysFindString; same size 0x6c and place in a run of matching functions (rxalign.py)"
+ },
+ "00100f80": {
+  "name": "rxSysReadSystemIni",
+  "tag": "lib-context",
+  "was": "FUN_00100f80",
+  "why": "rx library: RosePan names RoR 0x240bb0 rxSysReadSystemIni; same size 0x240 and place in a run of matching functions (rxalign.py)"
+ },
+ "001011c0": {
+  "name": "rxSysResetHardware",
+  "tag": "lib-context",
+  "was": "FUN_001011c0",
+  "why": "rx library: RosePan names RoR 0x240df0 rxSysResetHardware; same size 0x70 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101230": {
+  "name": "rxSysReadRomDate",
+  "tag": "lib-context",
+  "was": "FUN_00101230",
+  "why": "rx library: RosePan names RoR 0x240e60 rxSysReadRomDate; same size 0x54 and place in a run of matching functions (rxalign.py)"
+ },
  "00101288": {
-  "name": "rxInitDevices",
+  "name": "rxSysInit",
   "tag": "lib-context",
   "was": "FUN_00101288",
-  "why": "rxInit: picks the boot device, prints 'BootDevice = %d', 'Rom Date = %04X/%02X/%02X', 'Device[%s] %s', installs the file callbacks 0x100350..0x1003e0; exact rx name unknown"
+  "why": "rx library: RosePan names RoR 0x240eb8 rxSysInit; same size 0x1fc and place in a run of matching functions (rxalign.py)"
+ },
+ "00101488": {
+  "name": "rxSysIniFindSection",
+  "tag": "lib-context",
+  "was": "FUN_00101488",
+  "why": "rx library: RosePan names RoR 0x2410b8 rxSysIniFindSection; same size 0x118 and place in a run of matching functions (rxalign.py)"
+ },
+ "001015a0": {
+  "name": "rxSysIniReadKey",
+  "tag": "lib-context",
+  "was": "FUN_001015a0",
+  "why": "rx library: RosePan names RoR 0x2411d0 rxSysIniReadKey; same size 0xc4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101668": {
+  "name": "rxSysIniFindKey",
+  "tag": "lib-context",
+  "was": "FUN_00101668",
+  "why": "rx library: RosePan names RoR 0x241298 rxSysIniFindKey; same size 0x13c and place in a run of matching functions (rxalign.py)"
+ },
+ "001017a8": {
+  "name": "rxSysIniFind",
+  "tag": "lib-context",
+  "was": "FUN_001017a8",
+  "why": "rx library: RosePan names RoR 0x2413d8 rxSysIniFind; same size 0x180 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101928": {
+  "name": "rxSysIniCountKeys",
+  "tag": "lib-context",
+  "was": "FUN_00101928",
+  "why": "rx library: RosePan names RoR 0x241558 rxSysIniCountKeys; same size 0xc4 and place in a run of matching functions (rxalign.py)"
+ },
+ "001019f0": {
+  "name": "rxSysIniKeyAt",
+  "tag": "lib-context",
+  "was": "FUN_001019f0",
+  "why": "rx library: RosePan names RoR 0x241620 rxSysIniKeyAt; same size 0x100 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101af0": {
+  "name": "rxSysIniFindKeyCount",
+  "tag": "lib-context",
+  "was": "FUN_00101af0",
+  "why": "rx library: RosePan names RoR 0x241720 rxSysIniFindKeyCount; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101b28": {
+  "name": "rxSysIniFindKeyAt",
+  "tag": "lib-context",
+  "was": "FUN_00101b28",
+  "why": "rx library: RosePan names RoR 0x241758 rxSysIniFindKeyAt; same size 0x64 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101b90": {
+  "name": "rxSysIniGetString",
+  "tag": "lib-context",
+  "was": "FUN_00101b90",
+  "why": "rx library: RosePan names RoR 0x2417c0 rxSysIniGetString; same size 0x44 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101bd8": {
+  "name": "rxSysIniGetKeyCount",
+  "tag": "lib-context",
+  "was": "FUN_00101bd8",
+  "why": "rx library: RosePan names RoR 0x241808 rxSysIniGetKeyCount; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "00101c18": {
+  "name": "rxSysIniGetKeyAt",
+  "tag": "lib-context",
+  "was": "FUN_00101c18",
+  "why": "rx library: RosePan names RoR 0x241848 rxSysIniGetKeyAt; same size 0x44 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101c60": {
+  "name": "rxSysBindTtyRpc",
+  "tag": "lib-context",
+  "was": "FUN_00101c60",
+  "why": "rx library: RosePan names RoR 0x241890 rxSysBindTtyRpc; same size 0xd4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101d38": {
+  "name": "rxSysBindTty",
+  "tag": "lib-context",
+  "was": "FUN_00101d38",
+  "why": "rx library: RosePan names RoR 0x241968 rxSysBindTty; same size 0x40 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101d78": {
+  "name": "rxSysTtyWrite",
+  "tag": "lib-context",
+  "was": "FUN_00101d78",
+  "why": "rx library: RosePan names RoR 0x2419a8 rxSysTtyWrite; same size 0x54 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101dd0": {
+  "name": "rxSysOpenTty",
+  "tag": "lib-context",
+  "was": "FUN_00101dd0",
+  "why": "rx library: RosePan names RoR 0x241a00 rxSysOpenTty; same size 0x80 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101e50": {
+  "name": "rxSysCloseTty",
+  "tag": "lib-context",
+  "was": "FUN_00101e50",
+  "why": "rx library: RosePan names RoR 0x241a80 rxSysCloseTty; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101e98": {
+  "name": "rxSysTerm",
+  "tag": "lib-context",
+  "was": "FUN_00101e98",
+  "why": "rx library: RosePan names RoR 0x241ac8 rxSysTerm; same size 0x54 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101ef0": {
+  "name": "rxSysSetIopImage",
+  "tag": "lib-context",
+  "was": "FUN_00101ef0",
+  "why": "rx library: RosePan names RoR 0x241b20 rxSysSetIopImage; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101f20": {
+  "name": "rxSysGetVMode",
+  "tag": "lib-context",
+  "was": "FUN_00101f20",
+  "why": "rx library: RosePan names RoR 0x241b50 rxSysGetVMode; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "00101f30": {
+  "name": "rxSysGetFrameRate",
+  "tag": "lib-context",
+  "was": "FUN_00101f30",
+  "why": "rx library: RosePan names RoR 0x241b60 rxSysGetFrameRate; same size 0x2c and place in a run of matching functions (rxalign.py)"
+ },
+ "00101f60": {
+  "name": "rxSysGetProductNumber",
+  "tag": "lib-context",
+  "was": "FUN_00101f60",
+  "why": "rx library: RosePan names RoR 0x241b90 rxSysGetProductNumber; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "00101f80": {
+  "name": "rxSysGetCountry",
+  "tag": "lib-context",
+  "was": "FUN_00101f80",
+  "why": "rx library: RosePan names RoR 0x241bb0 rxSysGetCountry; same size 0x4c and place in a run of matching functions (rxalign.py)"
+ },
+ "00101fd0": {
+  "name": "rxSysGetMemorySize",
+  "tag": "lib-context",
+  "was": "FUN_00101fd0",
+  "why": "rx library: RosePan names RoR 0x241c00 rxSysGetMemorySize; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
+ "00101fe8": {
+  "name": "rxSysIsCdromPath",
+  "tag": "lib-context",
+  "was": "FUN_00101fe8",
+  "why": "rx library: RosePan names RoR 0x241c18 rxSysIsCdromPath; same size 0x88 and place in a run of matching functions (rxalign.py)"
+ },
+ "00102070": {
+  "name": "rxSysPathSkipDevice",
+  "tag": "lib-context",
+  "was": "FUN_00102070",
+  "why": "rx library: RosePan names RoR 0x241ca0 rxSysPathSkipDevice; same size 0xc4 and place in a run of matching functions (rxalign.py)"
  },
  "00102138": {
-  "name": "rxParseBootPath",
+  "name": "rxSysSetBootPath",
   "tag": "lib-context",
   "was": "FUN_00102138",
-  "why": "rxInit (argv0): splits the boot path into device / directory / name, prints 'BootDev = %s' / 'BootDir = %s' / 'BootName = %s', 'host0:' default; exact rx name unknown"
+  "why": "rx library: RosePan names RoR 0x241d68 rxSysSetBootPath; same size 0x19c and place in a run of matching functions (rxalign.py)"
+ },
+ "001022f8": {
+  "name": "rxSysIsTtyOpen",
+  "tag": "lib-context",
+  "was": "FUN_001022f8",
+  "why": "rx library: RosePan's rxSysIsTtyOpen (RoR 0x241f28, same size 0x2c), just before rxSysPrintf, which calls it"
  },
  "00102328": {
-  "name": "rxPrintf",
+  "name": "rxSysPrintf",
   "tag": "lib-context",
   "was": "FUN_00102328",
-  "why": "rx (fmt, ...): formats into a 1 KB stack buffer (0x12cab8), passes it to the hook 0x2f0880 if set, then scePrintf or appends to the 4 KB host log 0x31c580 flushed to the host file; every rx / rena message goes through it; rx's real name unknown"
+  "why": "rx library (was rxPrintf, batch 004): RosePan's rxSysPrintf (RoR 0x241f58, 0x1f8 bytes; here 0x1fc) in the same place, between rxSysIsTtyOpen and rxSysTermEnd; formats into a 1 KB buffer, print hook or scePrintf / the host log"
+ },
+ "00102528": {
+  "name": "rxSysTermEnd",
+  "tag": "lib-context",
+  "was": "FUN_00102528",
+  "why": "rx library: empty, the second call of rxSysTerm as RoR's rxSysTermEnd (0x242158, 4 bytes); FS2 has one 4-byte function where RoR has rxSysInitEnd + rxSysTermEnd"
+ },
+ "00102530": {
+  "name": "rxSysCreateSema",
+  "tag": "lib-context",
+  "was": "FUN_00102530",
+  "why": "rx library: RosePan names RoR 0x242160 rxSysCreateSema; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "00102558": {
+  "name": "rxSysBindRpc",
+  "tag": "lib-context",
+  "was": "FUN_00102558",
+  "why": "rx library: RosePan names RoR 0x242188 rxSysBindRpc; same size 0xdc and place in a run of matching functions (rxalign.py)"
+ },
+ "00102638": {
+  "name": "rxSysUnbindRpc",
+  "tag": "lib-context",
+  "was": "FUN_00102638",
+  "why": "rx library: RosePan names RoR 0x242268 rxSysUnbindRpc; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "00102678": {
+  "name": "rxSysCallRpc",
+  "tag": "lib-context",
+  "was": "FUN_00102678",
+  "why": "rx library: RosePan names RoR 0x2422a8 rxSysCallRpc; same size 0xc0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00102738": {
+  "name": "rxSysRpcDone",
+  "tag": "lib-context",
+  "was": "FUN_00102738",
+  "why": "rx library: RosePan names RoR 0x242368 rxSysRpcDone; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "00102760": {
+  "name": "rxSysInitSema",
+  "tag": "lib-context",
+  "was": "FUN_00102760",
+  "why": "rx library: RosePan names RoR 0x242390 rxSysInitSema; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "001027a0": {
+  "name": "rxSysTermSema",
+  "tag": "lib-context",
+  "was": "FUN_001027a0",
+  "why": "rx library: RosePan names RoR 0x2423d0 rxSysTermSema; same size 0x2c and place in a run of matching functions (rxalign.py)"
+ },
+ "001027d0": {
+  "name": "rxSysLockPrint",
+  "tag": "lib-context",
+  "was": "FUN_001027d0",
+  "why": "rx library: RosePan names RoR 0x242400 rxSysLockPrint; same size 0x5c and place in a run of matching functions (rxalign.py)"
+ },
+ "001028d0": {
+  "name": "rxSysCheckCdPath",
+  "tag": "lib-context",
+  "was": "FUN_001028d0",
+  "why": "rx library: RosePan names RoR 0x242500 rxSysCheckCdPath; same size 0x28 and place in a run of matching functions (rxalign.py)"
+ },
+ "001028f8": {
+  "name": "rxSysOpen",
+  "tag": "lib-context",
+  "was": "FUN_001028f8",
+  "why": "rx library: RosePan names RoR 0x242528 rxSysOpen; same size 0x50 and place in a run of matching functions (rxalign.py)"
+ },
+ "00102948": {
+  "name": "rxSysClose",
+  "tag": "lib-context",
+  "was": "FUN_00102948",
+  "why": "rx library: RosePan names RoR 0x242578 rxSysClose; same size 0x38 and place in a run of matching functions (rxalign.py)"
+ },
+ "00102980": {
+  "name": "rxSysRead",
+  "tag": "lib-context",
+  "was": "FUN_00102980",
+  "why": "rx library: RosePan names RoR 0x2425b0 rxSysRead; same size 0x58 and place in a run of matching functions (rxalign.py)"
+ },
+ "001029d8": {
+  "name": "rxSysWrite",
+  "tag": "lib-context",
+  "was": "FUN_001029d8",
+  "why": "rx library: RosePan names RoR 0x242608 rxSysWrite; same size 0x58 and place in a run of matching functions (rxalign.py)"
+ },
+ "00102a30": {
+  "name": "rxSysLseek",
+  "tag": "lib-context",
+  "was": "FUN_00102a30",
+  "why": "rx library: RosePan names RoR 0x242660 rxSysLseek; same size 0x58 and place in a run of matching functions (rxalign.py)"
+ },
+ "00102a88": {
+  "name": "rxSysIoctl",
+  "tag": "lib-context",
+  "was": "FUN_00102a88",
+  "why": "rx library: RosePan names RoR 0x2426b8 rxSysIoctl; same size 0x58 and place in a run of matching functions (rxalign.py)"
+ },
+ "00102d30": {
+  "name": "rxSysSetDebugHandlers",
+  "tag": "lib-context",
+  "was": "FUN_00102d30",
+  "why": "rx library: RosePan names RoR 0x242960 rxSysSetDebugHandlers; same size 0xb0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00102de0": {
+  "name": "rxSysRestoreDebugHandlers",
+  "tag": "lib-context",
+  "was": "FUN_00102de0",
+  "why": "rx library: RosePan names RoR 0x242a10 rxSysRestoreDebugHandlers; same size 0x98 and place in a run of matching functions (rxalign.py)"
+ },
+ "00102e78": {
+  "name": "rxSysHexDump",
+  "tag": "lib-context",
+  "was": "FUN_00102e78",
+  "why": "rx library: RosePan names RoR 0x242aa8 rxSysHexDump; same size 0x168 and place in a run of matching functions (rxalign.py)"
+ },
+ "00102fe0": {
+  "name": "rxSysConsoleWait",
+  "tag": "lib-context",
+  "was": "FUN_00102fe0",
+  "why": "rx library: RosePan names RoR 0x242c10 rxSysConsoleWait; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
+ "00102ff8": {
+  "name": "rxSysConsoleClearRow",
+  "tag": "lib-context",
+  "was": "FUN_00102ff8",
+  "why": "rx library: RosePan names RoR 0x242c28 rxSysConsoleClearRow; same size 0x40 and place in a run of matching functions (rxalign.py)"
+ },
+ "00103040": {
+  "name": "rxSysConsoleScroll",
+  "tag": "lib-context",
+  "was": "FUN_00103040",
+  "why": "rx library: RosePan names RoR 0x242c70 rxSysConsoleScroll; same size 0x50 and place in a run of matching functions (rxalign.py)"
+ },
+ "00103098": {
+  "name": "rxSysConsoleLoadImage",
+  "tag": "lib-context",
+  "was": "FUN_00103098",
+  "why": "rx library: RosePan names RoR 0x242cc8 rxSysConsoleLoadImage; same size 0x74 and place in a run of matching functions (rxalign.py)"
+ },
+ "00103110": {
+  "name": "rxSysConsoleDrawRow",
+  "tag": "lib-context",
+  "was": "FUN_00103110",
+  "why": "rx library: RosePan names RoR 0x242d40 rxSysConsoleDrawRow; same size 0x194 and place in a run of matching functions (rxalign.py)"
+ },
+ "001032a8": {
+  "name": "rxSysConsoleRedraw",
+  "tag": "lib-context",
+  "was": "FUN_001032a8",
+  "why": "rx library: RosePan names RoR 0x242ed8 rxSysConsoleRedraw; same size 0x4c and place in a run of matching functions (rxalign.py)"
+ },
+ "001032f8": {
+  "name": "rxSysConsoleNewline",
+  "tag": "lib-context",
+  "was": "FUN_001032f8",
+  "why": "rx library: RosePan names RoR 0x242f28 rxSysConsoleNewline; same size 0x94 and place in a run of matching functions (rxalign.py)"
+ },
+ "00103390": {
+  "name": "rxSysConsolePutc",
+  "tag": "lib-context",
+  "was": "FUN_00103390",
+  "why": "rx library: RosePan names RoR 0x242fc0 rxSysConsolePutc; same size 0x8c and place in a run of matching functions (rxalign.py)"
+ },
+ "00103420": {
+  "name": "rxSysConsolePrintHook",
+  "tag": "lib-context",
+  "was": "FUN_00103420",
+  "why": "rx library: RosePan names RoR 0x243050 rxSysConsolePrintHook; same size 0x50 and place in a run of matching functions (rxalign.py)"
+ },
+ "001036a8": {
+  "name": "rxSysTermExceptionScreen",
+  "tag": "lib-context",
+  "was": "FUN_001036a8",
+  "why": "rx library: RosePan names RoR 0x2432d8 rxSysTermExceptionScreen; same size 0xfc and place in a run of matching functions (rxalign.py)"
+ },
+ "001037a8": {
+  "name": "rxSysInitUser",
+  "tag": "lib-context",
+  "was": "FUN_001037a8",
+  "why": "rx library: RosePan names RoR 0x2433d8 rxSysInitUser; same size 0x4 and place in a run of matching functions (rxalign.py)"
+ },
+ "001037b0": {
+  "name": "rxSysTermUser",
+  "tag": "lib-context",
+  "was": "FUN_001037b0",
+  "why": "rx library: RosePan names RoR 0x2433e0 rxSysTermUser; same size 0x4 and place in a run of matching functions (rxalign.py)"
  },
  "001037c0": {
   "name": "Heap::setMark",
@@ -263,6 +785,24 @@
   "was": "FUN_0011e898",
   "why": "libpad (port, slot, buffer): 'libpad: buffer addr is not 64 byte align' / 'pad port is already open [%d][%d]' strings, SIF call to padman with the buffer"
  },
+ "0011ea80": {
+  "name": "scePadPortClose",
+  "tag": "lib-context",
+  "was": "FUN_0011ea80",
+  "why": "libpad (port, slot): RPC command 0xe on the padman client 0x32a040 for an open port record (0x32a0a0 + port*0x70 + slot*0x1c), clears it; padSysShutdown calls it"
+ },
+ "0011fb70": {
+  "name": "sceMcInit",
+  "tag": "lib-context",
+  "was": "FUN_0011fb70",
+  "why": "libmc: messages 'bind error libmc', 'libmc: too old release of mcserv.irx / mcman.irx', semaphores 'sceMc_sema_regs' / 'sceMc_sema_timer', binds the mcserv RPC 0x80000400 and checks the IOP module versions (0x20a / 0x20e)"
+ },
+ "0011fe08": {
+  "name": "sceMcEnd",
+  "tag": "lib-context",
+  "was": "FUN_0011fe08",
+  "why": "libmc: undoes sceMcInit (terminates and deletes its thread, deletes the two semaphores); returns 1"
+ },
  "00121ef0": {
   "name": "abort",
   "tag": "lib-context",
@@ -310,6 +850,18 @@
   "tag": "lib-context",
   "was": "FUN_00128498",
   "why": "R5900 quadword/doubleword zero-byte scan (0x0101.. / 0x8080.. masks), returns end - start"
+ },
+ "00128a70": {
+  "name": "strstr",
+  "tag": "lib-context",
+  "was": "FUN_00128a70",
+  "why": "MSL C: first occurrence of s2 in s1 (s1 when s2 is empty, 0 when none); spkLocateFile uses it for 'ROM.' / 'ROMD.'"
+ },
+ "0012a010": {
+  "name": "toupper",
+  "tag": "lib-context",
+  "was": "FUN_0012a010",
+  "why": "MSL C: subtracts 0x20 when the ctype table 0x3000c1 marks a lower-case letter (bit 2); the SPK.ROM index search folds case with it"
  },
  "0012cd20": {
   "name": "gsEndFrameSync",
@@ -389,6 +941,12 @@
   "was": "FUN_0012dee0",
   "why": "(this, buf0, size0, buf1, size1): Vif1PktManage base, vptr 0x311040 at +0x2c, registers the two 0xc0000-byte packet buffers 0x32e280 / 0x3ee280 (double buffer) and 14 lists (ids 0..13), Reset + Terminate, +0x30 open list id = -1, +0x34 skip-kick flag; GameSystem member +0x46c"
  },
+ "0012e3a0": {
+  "name": "gfxReleaseRenderTargets",
+  "tag": "game-inferred",
+  "was": "FUN_0012e3a0",
+  "why": "main's teardown, gfxInitRenderTargets' inverse: deletes the 0x1838-byte object 0x31ad98 (deleting dtor through its vptr at +0x1834) and the 0x80c-byte VRAM range object 0x31ad9c (0x143f00), sceGsSyncPath"
+ },
  "0012e3f0": {
   "name": "gfxInitRenderTargets",
   "tag": "game-inferred",
@@ -454,6 +1012,12 @@
   "tag": "game-inferred",
   "was": "FUN_0012ffa0",
   "why": "gameMainThread, per frame: PadPort::read on both port records 0x4aed00 when libpad is up, bumps the input frame counter 0x31adb4 (skipping 0), calls slot +8 of each of the 16 listeners 0x4af000 (vptr at +0x120), returns the counter"
+ },
+ "00130070": {
+  "name": "padSysShutdown",
+  "tag": "game-inferred",
+  "was": "FUN_00130070",
+  "why": "padSysInit's inverse: when libpad is up (0x31adb0), scePadPortClose on each open port (record 0x4aed00 + port*0x180, +0x159 open, +0x15c port) and clears the 0x180-byte record"
  },
  "00130130": {
   "name": "padSysInit",
@@ -683,11 +1247,29 @@
   "was": "FUN_00148500",
   "why": "gameMainThread, per frame: under the sound semaphore 0x31a8ac runs 0x162220, 0x159d88 (stream service) and 0x16b698"
  },
+ "00148540": {
+  "name": "soundShutdown",
+  "tag": "game-inferred",
+  "was": "FUN_00148540",
+  "why": "main's teardown, soundInit's inverse: rxThRemoveCallback(0x1488f0), deletes the 0x4c-byte sound settings object (0x31addc) under the sound semaphore, 0x159ca8 (sound driver term), resets the SPU2 allocator 0x4d08d0 as soundInit does and re-reserves 0x7000 at 0x1d9000, deletes the three semaphores"
+ },
  "001486e0": {
   "name": "soundInit",
   "tag": "game-inferred",
   "was": "FUN_001486e0",
   "why": "gameInit (isPal): three sound semaphores 0x31a8ac..0x31a8b4, driver callbacks, the 0x2b0-byte stream state 0x4d08d0, PCM / ADPCM stream setup (0x162178), tick rate 50 or 60 (0x159f20), SDPR2 limits (0x168260), the 0x4c-byte object 0x31addc (0x148130), rx thread callback 0x1488f0"
+ },
+ "00148a70": {
+  "name": "spuMemReserve",
+  "tag": "game-inferred",
+  "was": "FUN_00148a70",
+  "why": "(size, addr): takes a 64-byte-aligned block at a fixed SPU2 address from the 32-entry allocator 0x4d08d0 (free span 0x5040..0x1f9000, 20-byte nodes in a list); soundInit and soundShutdown reserve 0x7000 at 0x1d9000; returns addr"
+ },
+ "00152750": {
+  "name": "rxTerm",
+  "tag": "lib-context",
+  "was": "FUN_00152750",
+  "why": "the rx user layer's teardown (between rxSysTermUser and rxSysThreadCallback, no RoR counterpart), main's last subsystem call before shutdownGlobalHeap: resets the file locate / load / size hooks spkRomLoad set, frees the SPK.ROM index (Heap 0x329970), rxSysTerm; counterpart of rxInit"
  },
  "001527a0": {
   "name": "rxInit",
@@ -701,23 +1283,905 @@
   "was": "FUN_00152870",
   "why": "rxInit: once (gp-0x7a8c), reads the whole 'SPK.ROM' into the global heap, checks magic 'SLPK' 0x4b504c53, relocates its entry table (count +8, data base +0xc, done flag +0x10), registers callbacks 0x1529d0 / 0x152e20 / 0x152c90"
  },
+ "001529d0": {
+  "name": "spkLocateFile",
+  "tag": "game-inferred",
+  "was": "FUN_001529d0",
+  "why": "(name, *lsn, *size): the CD locate hook spkRomLoad installs (rxFileCdSetLocateHook): 'ROM.' / 'ROMD.' names go to the previous hook on DVD layer 0 / 1, others are binary-searched (case-folded) in the SPK.ROM index ('SLPK', 16-byte entries {name, archive, offset, size | layer bit 31}) and resolved inside their archive (lsn + offset >> 11); -3 when absent"
+ },
+ "00152c90": {
+  "name": "spkGetFileSize",
+  "tag": "game-inferred",
+  "was": "FUN_00152c90",
+  "why": "(name): the size hook spkRomLoad installs (rxFileSetSizeHook): binary search of the SPK.ROM index, entry size & 0x7fffffff, -2 when absent"
+ },
+ "00152e20": {
+  "name": "spkLoadFile",
+  "tag": "game-inferred",
+  "was": "FUN_00152e20",
+  "why": "(name, buf): the load hook spkRomLoad installs (rxFileSetLoadHook): same SPK.ROM index search as spkGetFileSize, then reads the entry; body not read in full"
+ },
+ "00153108": {
+  "name": "rxSysThreadCallback",
+  "tag": "lib-context",
+  "was": "FUN_00153108",
+  "why": "rx library: RosePan names RoR 0x2433e8 rxSysThreadCallback; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
+ "00153120": {
+  "name": "rxSysInitModules",
+  "tag": "lib-context",
+  "was": "FUN_00153120",
+  "why": "rx library: RosePan names RoR 0x243400 rxSysInitModules; same size 0xf0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00153210": {
+  "name": "rxSysTermModules",
+  "tag": "lib-context",
+  "was": "FUN_00153210",
+  "why": "rx library: RosePan names RoR 0x2434f0 rxSysTermModules; same size 0x6c and place in a run of matching functions (rxalign.py)"
+ },
+ "001532e8": {
+  "name": "rxSysDeviceStatus",
+  "tag": "lib-context",
+  "was": "FUN_001532e8",
+  "why": "rx library: RosePan names RoR 0x2435c8 rxSysDeviceStatus; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "00153328": {
+  "name": "rxSysInitFileDevice",
+  "tag": "lib-context",
+  "was": "FUN_00153328",
+  "why": "rx library: RosePan names RoR 0x243608 rxSysInitFileDevice; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
+ "00153340": {
+  "name": "rxSysGetFileDevice",
+  "tag": "lib-context",
+  "was": "FUN_00153340",
+  "why": "rx library: RosePan names RoR 0x243620 rxSysGetFileDevice; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
+ "00153358": {
+  "name": "rxSysSetFileDevice",
+  "tag": "lib-context",
+  "was": "FUN_00153358",
+  "why": "rx library: RosePan names RoR 0x243638 rxSysSetFileDevice; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
+ "00153410": {
+  "name": "rxSysGetFileSearchDir",
+  "tag": "lib-context",
+  "was": "FUN_00153410",
+  "why": "rx library: RosePan names RoR 0x2436d0 rxSysGetFileSearchDir; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "00153430": {
+  "name": "rxSysPushSearchDir",
+  "tag": "lib-context",
+  "was": "FUN_00153430",
+  "why": "rx library: RosePan names RoR 0x2436f0 rxSysPushSearchDir; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "00153450": {
+  "name": "rxSysPopSearchDir",
+  "tag": "lib-context",
+  "was": "FUN_00153450",
+  "why": "rx library: RosePan names RoR 0x243710 rxSysPopSearchDir; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "00153470": {
+  "name": "rxSysSetDeviceParam",
+  "tag": "lib-context",
+  "was": "FUN_00153470",
+  "why": "rx library: RosePan names RoR 0x243750 rxSysSetDeviceParam; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "001534a8": {
+  "name": "rxSysStreamOpen",
+  "tag": "lib-context",
+  "was": "FUN_001534a8",
+  "why": "rx library: RosePan names RoR 0x243788 rxSysStreamOpen; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "001534c8": {
+  "name": "rxSysStreamOpenRing",
+  "tag": "lib-context",
+  "was": "FUN_001534c8",
+  "why": "rx library: RosePan names RoR 0x2437a8 rxSysStreamOpenRing; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "001534f8": {
+  "name": "rxSysStreamOpenPath",
+  "tag": "lib-context",
+  "was": "FUN_001534f8",
+  "why": "rx library: RosePan names RoR 0x2437d8 rxSysStreamOpenPath; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "00153518": {
+  "name": "rxFileClose",
+  "tag": "lib-context",
+  "was": "FUN_00153518",
+  "why": "rx library: RosePan names RoR 0x2437f8 rxFileClose; same size 0x5c and place in a run of matching functions (rxalign.py)"
+ },
+ "00153578": {
+  "name": "rxFileAbort",
+  "tag": "lib-context",
+  "was": "FUN_00153578",
+  "why": "rx library: RosePan names RoR 0x243858 rxFileAbort; same size 0x5c and place in a run of matching functions (rxalign.py)"
+ },
+ "001535d8": {
+  "name": "rxFileGetState",
+  "tag": "lib-context",
+  "was": "FUN_001535d8",
+  "why": "rx library: RosePan names RoR 0x2438b8 rxFileGetState; same size 0x7c and place in a run of matching functions (rxalign.py)"
+ },
+ "00153658": {
+  "name": "rxFileRead",
+  "tag": "lib-context",
+  "was": "FUN_00153658",
+  "why": "rx library: RosePan names RoR 0x243938 rxFileRead; same size 0x1bc and place in a run of matching functions (rxalign.py)"
+ },
+ "00153818": {
+  "name": "rxFileWrite",
+  "tag": "lib-context",
+  "was": "FUN_00153818",
+  "why": "rx library: RosePan names RoR 0x243af8 rxFileWrite; same size 0x144 and place in a run of matching functions (rxalign.py)"
+ },
+ "00153960": {
+  "name": "rxFileSeek",
+  "tag": "lib-context",
+  "was": "FUN_00153960",
+  "why": "rx library: RosePan names RoR 0x243c40 rxFileSeek; same size 0x94 and place in a run of matching functions (rxalign.py)"
+ },
+ "001539f8": {
+  "name": "rxFileSync",
+  "tag": "lib-context",
+  "was": "FUN_001539f8",
+  "why": "rx library: RosePan names RoR 0x243cd8 rxFileSync; same size 0xcc and place in a run of matching functions (rxalign.py)"
+ },
+ "00153b80": {
+  "name": "rxFilePause",
+  "tag": "lib-context",
+  "was": "FUN_00153b80",
+  "why": "rx library: RosePan names RoR 0x243e60 rxFilePause; same size 0x74 and place in a run of matching functions (rxalign.py)"
+ },
+ "00153bf8": {
+  "name": "rxFileGetRingData",
+  "tag": "lib-context",
+  "was": "FUN_00153bf8",
+  "why": "rx library: RosePan names RoR 0x243ed8 rxFileGetRingData; same size 0x50 and place in a run of matching functions (rxalign.py)"
+ },
+ "00153c48": {
+  "name": "rxFileGetRingReadPos",
+  "tag": "lib-context",
+  "was": "FUN_00153c48",
+  "why": "rx library: RosePan names RoR 0x243f28 rxFileGetRingReadPos; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00153c90": {
+  "name": "rxFileGetRingSize",
+  "tag": "lib-context",
+  "was": "FUN_00153c90",
+  "why": "rx library: RosePan names RoR 0x243f70 rxFileGetRingSize; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00153cd8": {
+  "name": "rxFileGetRingFilled",
+  "tag": "lib-context",
+  "was": "FUN_00153cd8",
+  "why": "rx library: RosePan names RoR 0x243fb8 rxFileGetRingFilled; same size 0x70 and place in a run of matching functions (rxalign.py)"
+ },
+ "00154640": {
+  "name": "rxFileSlotClose",
+  "tag": "lib-context",
+  "was": "FUN_00154640",
+  "why": "rx library: RosePan names RoR 0x2448f8 rxFileSlotClose; same size 0xc4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00154708": {
+  "name": "rxFileSlotKick",
+  "tag": "lib-context",
+  "was": "FUN_00154708",
+  "why": "rx library: RosePan names RoR 0x2449c0 rxFileSlotKick; same size 0x78 and place in a run of matching functions (rxalign.py)"
+ },
+ "00154780": {
+  "name": "rxFileSlotTransfer",
+  "tag": "lib-context",
+  "was": "FUN_00154780",
+  "why": "rx library: RosePan names RoR 0x244a38 rxFileSlotTransfer; same size 0x2c and place in a run of matching functions (rxalign.py)"
+ },
+ "001547b0": {
+  "name": "rxFileSlotRefill",
+  "tag": "lib-context",
+  "was": "FUN_001547b0",
+  "why": "rx library: RosePan names RoR 0x244a68 rxFileSlotRefill; same size 0xd8 and place in a run of matching functions (rxalign.py)"
+ },
+ "00154888": {
+  "name": "rxFileSlotRequest",
+  "tag": "lib-context",
+  "was": "FUN_00154888",
+  "why": "rx library: RosePan names RoR 0x244b40 rxFileSlotRequest; same size 0x230 and place in a run of matching functions (rxalign.py)"
+ },
+ "00154ab8": {
+  "name": "rxFileSlotRequestChunked",
+  "tag": "lib-context",
+  "was": "FUN_00154ab8",
+  "why": "rx library: RosePan names RoR 0x244d70 rxFileSlotRequestChunked; same size 0x1b0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00154c68": {
+  "name": "rxFileSlotPost",
+  "tag": "lib-context",
+  "was": "FUN_00154c68",
+  "why": "rx library: RosePan names RoR 0x244f20 rxFileSlotPost; same size 0xe0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00154d48": {
+  "name": "rxFileOnTransfer",
+  "tag": "lib-context",
+  "was": "FUN_00154d48",
+  "why": "rx library: RosePan names RoR 0x245000 rxFileOnTransfer; same size 0x78 and place in a run of matching functions (rxalign.py)"
+ },
+ "00154fc8": {
+  "name": "rxFileSlotAddSegment",
+  "tag": "lib-context",
+  "was": "FUN_00154fc8",
+  "why": "rx library: RosePan names RoR 0x245280 rxFileSlotAddSegment; same size 0xc8 and place in a run of matching functions (rxalign.py)"
+ },
+ "00155090": {
+  "name": "rxFileSlotDropSegments",
+  "tag": "lib-context",
+  "was": "FUN_00155090",
+  "why": "rx library: RosePan names RoR 0x245348 rxFileSlotDropSegments; same size 0x11c and place in a run of matching functions (rxalign.py)"
+ },
+ "001551b0": {
+  "name": "rxFileSlotFreeSegments",
+  "tag": "lib-context",
+  "was": "FUN_001551b0",
+  "why": "rx library: RosePan names RoR 0x245468 rxFileSlotFreeSegments; same size 0xb8 and place in a run of matching functions (rxalign.py)"
+ },
+ "00155268": {
+  "name": "rxFileSlotSegmentPos",
+  "tag": "lib-context",
+  "was": "FUN_00155268",
+  "why": "rx library: RosePan names RoR 0x245520 rxFileSlotSegmentPos; same size 0xdc and place in a run of matching functions (rxalign.py)"
+ },
+ "00155530": {
+  "name": "rxFileSlotGetTags",
+  "tag": "lib-context",
+  "was": "FUN_00155530",
+  "why": "rx library: RosePan names RoR 0x2457e8 rxFileSlotGetTags; same size 0xc4 and place in a run of matching functions (rxalign.py)"
+ },
+ "001555f8": {
+  "name": "rxFileCallDevice",
+  "tag": "lib-context",
+  "was": "FUN_001555f8",
+  "why": "rx library: RosePan names RoR 0x2458b0 rxFileCallDevice; same size 0x50 and place in a run of matching functions (rxalign.py)"
+ },
+ "00155648": {
+  "name": "rxFileGetDeviceRoot",
+  "tag": "lib-context",
+  "was": "FUN_00155648",
+  "why": "rx library: RosePan names RoR 0x245900 rxFileGetDeviceRoot; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00155690": {
+  "name": "rxFileCallLoadHook",
+  "tag": "lib-context",
+  "was": "FUN_00155690",
+  "why": "rx library: RosePan names RoR 0x245948 rxFileCallLoadHook; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "001556d0": {
+  "name": "rxFileCallSizeHook",
+  "tag": "lib-context",
+  "was": "FUN_001556d0",
+  "why": "rx library: RosePan names RoR 0x245988 rxFileCallSizeHook; same size 0x2c and place in a run of matching functions (rxalign.py)"
+ },
+ "00155700": {
+  "name": "rxFileSetLoadHook",
+  "tag": "lib-context",
+  "was": "FUN_00155700",
+  "why": "rx library: RosePan names RoR 0x2459b8 rxFileSetLoadHook; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00155748": {
+  "name": "rxFileSetSizeHook",
+  "tag": "lib-context",
+  "was": "FUN_00155748",
+  "why": "rx library: RosePan names RoR 0x245a00 rxFileSetSizeHook; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00155790": {
+  "name": "rxFileDefaultSizeHook",
+  "tag": "lib-context",
+  "was": "FUN_00155790",
+  "why": "rx library: RosePan names RoR 0x245a48 rxFileDefaultSizeHook; same size 0xa0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00155830": {
+  "name": "rxFileDefaultLoadHook",
+  "tag": "lib-context",
+  "was": "FUN_00155830",
+  "why": "rx library: RosePan names RoR 0x245ae8 rxFileDefaultLoadHook; same size 0xf4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00155928": {
+  "name": "rxFileDefaultSaveHook",
+  "tag": "lib-context",
+  "was": "FUN_00155928",
+  "why": "rx library: RosePan names RoR 0x245be0 rxFileDefaultSaveHook; same size 0xcc and place in a run of matching functions (rxalign.py)"
+ },
+ "001559f8": {
+  "name": "rxFileMakePath",
+  "tag": "lib-context",
+  "was": "FUN_001559f8",
+  "why": "rx library: RosePan names RoR 0x245cb0 rxFileMakePath; same size 0x108 and place in a run of matching functions (rxalign.py)"
+ },
+ "00155b00": {
+  "name": "rxFileLoadExec",
+  "tag": "lib-context",
+  "was": "FUN_00155b00",
+  "why": "rx library: RosePan names RoR 0x245db8 rxFileLoadExec; same size 0x11c and place in a run of matching functions (rxalign.py)"
+ },
+ "00155c20": {
+  "name": "rxFileLoad",
+  "tag": "lib-context",
+  "was": "FUN_00155c20",
+  "why": "rx library: RosePan names RoR 0x245ed8 rxFileLoad; same size 0x158 and place in a run of matching functions (rxalign.py)"
+ },
+ "00155d78": {
+  "name": "rxFileLoadModule",
+  "tag": "lib-context",
+  "was": "FUN_00155d78",
+  "why": "rx library: RosePan names RoR 0x246030 rxFileLoadModule; same size 0x148 and place in a run of matching functions (rxalign.py)"
+ },
+ "00155ec0": {
+  "name": "rxFileLoadModuleList",
+  "tag": "lib-context",
+  "was": "FUN_00155ec0",
+  "why": "rx library: RosePan names RoR 0x246178 rxFileLoadModuleList; same size 0x74 and place in a run of matching functions (rxalign.py)"
+ },
+ "00155f38": {
+  "name": "rxFileRebootIop",
+  "tag": "lib-context",
+  "was": "FUN_00155f38",
+  "why": "rx library: RosePan names RoR 0x2461f0 rxFileRebootIop; same size 0x88 and place in a run of matching functions (rxalign.py)"
+ },
+ "00155fc0": {
+  "name": "rxFileInit",
+  "tag": "lib-context",
+  "was": "FUN_00155fc0",
+  "why": "rx library: RosePan names RoR 0x246278 rxFileInit; same size 0x38 and place in a run of matching functions (rxalign.py)"
+ },
+ "00155ff8": {
+  "name": "rxFileTerm",
+  "tag": "lib-context",
+  "was": "FUN_00155ff8",
+  "why": "rx library: RosePan names RoR 0x2462b0 rxFileTerm; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "00156020": {
+  "name": "rxFileGetDriver",
+  "tag": "lib-context",
+  "was": "FUN_00156020",
+  "why": "rx library: RosePan names RoR 0x2462d8 rxFileGetDriver; same size 0x40 and place in a run of matching functions (rxalign.py)"
+ },
+ "00156060": {
+  "name": "rxFileHostInit",
+  "tag": "lib-context",
+  "was": "FUN_00156060",
+  "why": "rx library: RosePan names RoR 0x246318 rxFileHostInit; same size 0x88 and place in a run of matching functions (rxalign.py)"
+ },
+ "001560e8": {
+  "name": "rxFileHostTerm",
+  "tag": "lib-context",
+  "was": "FUN_001560e8",
+  "why": "rx library: RosePan names RoR 0x2463a0 rxFileHostTerm; same size 0x4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00156580": {
+  "name": "rxFileHostSetRoot",
+  "tag": "lib-context",
+  "was": "FUN_00156580",
+  "why": "rx library: RosePan names RoR 0x2467f8 rxFileHostSetRoot; same size 0x44 and place in a run of matching functions (rxalign.py)"
+ },
+ "001565c8": {
+  "name": "rxFileCdWait",
+  "tag": "lib-context",
+  "was": "FUN_001565c8",
+  "why": "rx library: RosePan names RoR 0x246840 rxFileCdWait; same size 0x4c and place in a run of matching functions (rxalign.py)"
+ },
+ "00156618": {
+  "name": "rxFileCdSyncWait",
+  "tag": "lib-context",
+  "was": "FUN_00156618",
+  "why": "rx library: RosePan names RoR 0x246890 rxFileCdSyncWait; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "00156648": {
+  "name": "rxFileCdInit",
+  "tag": "lib-context",
+  "was": "FUN_00156648",
+  "why": "rx library: RosePan names RoR 0x2468c0 rxFileCdInit; same size 0x8c and place in a run of matching functions (rxalign.py)"
+ },
+ "001566d8": {
+  "name": "rxFileCdTerm",
+  "tag": "lib-context",
+  "was": "FUN_001566d8",
+  "why": "rx library: RosePan names RoR 0x246950 rxFileCdTerm; same size 0x4 and place in a run of matching functions (rxalign.py)"
+ },
+ "001566e0": {
+  "name": "rxFileCdStatusWait",
+  "tag": "lib-context",
+  "was": "FUN_001566e0",
+  "why": "rx library: RosePan names RoR 0x246958 rxFileCdStatusWait; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "00156710": {
+  "name": "rxFileCdTray",
+  "tag": "lib-context",
+  "was": "FUN_00156710",
+  "why": "rx library: RosePan names RoR 0x246988 rxFileCdTray; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "00156730": {
+  "name": "rxFileCdProcess",
+  "tag": "lib-context",
+  "was": "FUN_00156730",
+  "why": "rx library: RosePan names RoR 0x2469a8 rxFileCdProcess; same size 0x2c4 and place in a run of matching functions (rxalign.py)"
+ },
+ "001569f8": {
+  "name": "rxFileCdMakePath",
+  "tag": "lib-context",
+  "was": "FUN_001569f8",
+  "why": "rx library: RosePan names RoR 0x246c70 rxFileCdMakePath; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00156cf8": {
+  "name": "rxFileCdIsoName",
+  "tag": "lib-context",
+  "was": "FUN_00156cf8",
+  "why": "rx library: RosePan names RoR 0x246f70 rxFileCdIsoName; same size 0xd8 and place in a run of matching functions (rxalign.py)"
+ },
+ "00156dd0": {
+  "name": "rxFileCdMapSector",
+  "tag": "lib-context",
+  "was": "FUN_00156dd0",
+  "why": "rx library: RosePan names RoR 0x247048 rxFileCdMapSector; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "00156e08": {
+  "name": "rxFileCdReadBytes",
+  "tag": "lib-context",
+  "was": "FUN_00156e08",
+  "why": "rx library: RosePan names RoR 0x247080 rxFileCdReadBytes; same size 0x288 and place in a run of matching functions (rxalign.py)"
+ },
+ "00157090": {
+  "name": "rxFileCdReadAt",
+  "tag": "lib-context",
+  "was": "FUN_00157090",
+  "why": "rx library: RosePan names RoR 0x247308 rxFileCdReadAt; same size 0xc0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00157150": {
+  "name": "rxFileCdReadSectors",
+  "tag": "lib-context",
+  "was": "FUN_00157150",
+  "why": "rx library: RosePan names RoR 0x2473c8 rxFileCdReadSectors; same size 0x240 and place in a run of matching functions (rxalign.py)"
+ },
+ "00157390": {
+  "name": "rxFileCdInitCache",
+  "tag": "lib-context",
+  "was": "FUN_00157390",
+  "why": "rx library: RosePan names RoR 0x247608 rxFileCdInitCache; same size 0x60 and place in a run of matching functions (rxalign.py)"
+ },
+ "001573f0": {
+  "name": "rxFileCdFlushCache",
+  "tag": "lib-context",
+  "was": "FUN_001573f0",
+  "why": "rx library: RosePan names RoR 0x247668 rxFileCdFlushCache; same size 0x64 and place in a run of matching functions (rxalign.py)"
+ },
+ "00157458": {
+  "name": "rxFileCdFind",
+  "tag": "lib-context",
+  "was": "FUN_00157458",
+  "why": "rx library: RosePan names RoR 0x2476d0 rxFileCdFind; same size 0x13c and place in a run of matching functions (rxalign.py)"
+ },
+ "00157780": {
+  "name": "rxFileCdFindInDir",
+  "tag": "lib-context",
+  "was": "FUN_00157780",
+  "why": "rx library: RosePan names RoR 0x2479e0 rxFileCdFindInDir; same size 0x1cc and place in a run of matching functions (rxalign.py)"
+ },
+ "00157950": {
+  "name": "rxFileCdPathElem",
+  "tag": "lib-context",
+  "was": "FUN_00157950",
+  "why": "rx library: RosePan names RoR 0x247bb0 rxFileCdPathElem; same size 0x5c and place in a run of matching functions (rxalign.py)"
+ },
+ "001579b0": {
+  "name": "rxFileCdIsLastElem",
+  "tag": "lib-context",
+  "was": "FUN_001579b0",
+  "why": "rx library: RosePan names RoR 0x247c10 rxFileCdIsLastElem; same size 0x4c and place in a run of matching functions (rxalign.py)"
+ },
+ "00157c40": {
+  "name": "rxFileCdSetLocateHook",
+  "tag": "lib-context",
+  "was": "FUN_00157c40",
+  "why": "rx library (rxfile CD driver, between rxFileCdSetRoot and rxFileCdGetClock; not in RoR's rx): stores the CD name-to-lsn hook 0x2f5acc and returns the old one; spkRomLoad chains spkLocateFile in front of it, rxTerm passes 0"
+ },
+ "00157cb0": {
+  "name": "rxFileCdGetClock",
+  "tag": "lib-context",
+  "was": "FUN_00157cb0",
+  "why": "rx library: RosePan names RoR 0x247f10 rxFileCdGetClock; same size 0xbc and place in a run of matching functions (rxalign.py)"
+ },
+ "00157d70": {
+  "name": "rxFileCdSetLayerMode",
+  "tag": "lib-context",
+  "was": "FUN_00157d70",
+  "why": "rx library: RosePan names RoR 0x247fd0 rxFileCdSetLayerMode; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "00157da8": {
+  "name": "rxFileCdGetLayerMode",
+  "tag": "lib-context",
+  "was": "FUN_00157da8",
+  "why": "rx library: RosePan names RoR 0x248008 rxFileCdGetLayerMode; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "00157f40": {
+  "name": "rxFileHddGetSize",
+  "tag": "lib-context",
+  "was": "FUN_00157f40",
+  "why": "rx library: RosePan names RoR 0x2481a0 rxFileHddGetSize; same size 0xd0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158010": {
+  "name": "rxFileHddCreate",
+  "tag": "lib-context",
+  "was": "FUN_00158010",
+  "why": "rx library: RosePan names RoR 0x248270 rxFileHddCreate; same size 0xcc and place in a run of matching functions (rxalign.py)"
+ },
+ "001580e0": {
+  "name": "rxFileHddRead",
+  "tag": "lib-context",
+  "was": "FUN_001580e0",
+  "why": "rx library: RosePan names RoR 0x248340 rxFileHddRead; same size 0x140 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158220": {
+  "name": "rxFileHddWrite",
+  "tag": "lib-context",
+  "was": "FUN_00158220",
+  "why": "rx library: RosePan names RoR 0x248480 rxFileHddWrite; same size 0x140 and place in a run of matching functions (rxalign.py)"
+ },
+ "001583b8": {
+  "name": "rxFileHddSetRoot",
+  "tag": "lib-context",
+  "was": "FUN_001583b8",
+  "why": "rx library: RosePan names RoR 0x248618 rxFileHddSetRoot; same size 0x44 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158400": {
+  "name": "rxFileInitSlots",
+  "tag": "lib-context",
+  "was": "FUN_00158400",
+  "why": "rx library: RosePan names RoR 0x248660 rxFileInitSlots; same size 0xa0 and place in a run of matching functions (rxalign.py)"
+ },
+ "001584a8": {
+  "name": "rxFileUpdate",
+  "tag": "lib-context",
+  "was": "FUN_001584a8",
+  "why": "rx library: RosePan names RoR 0x248708 rxFileUpdate; same size 0x4 and place in a run of matching functions (rxalign.py)"
+ },
+ "001584b0": {
+  "name": "rxFileSetContext",
+  "tag": "lib-context",
+  "was": "FUN_001584b0",
+  "why": "rx library: RosePan names RoR 0x248710 rxFileSetContext; same size 0x68 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158518": {
+  "name": "rxFileSetCurrent",
+  "tag": "lib-context",
+  "was": "FUN_00158518",
+  "why": "rx library: RosePan names RoR 0x248778 rxFileSetCurrent; same size 0xf4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158610": {
+  "name": "rxFileGetCurrent",
+  "tag": "lib-context",
+  "was": "FUN_00158610",
+  "why": "rx library: RosePan names RoR 0x248870 rxFileGetCurrent; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158630": {
+  "name": "rxFileSetDevice",
+  "tag": "lib-context",
+  "was": "FUN_00158630",
+  "why": "rx library: RosePan names RoR 0x248890 rxFileSetDevice; same size 0x104 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158738": {
+  "name": "rxFileSetDir",
+  "tag": "lib-context",
+  "was": "FUN_00158738",
+  "why": "rx library: RosePan names RoR 0x248998 rxFileSetDir; same size 0xc4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158800": {
+  "name": "rxFileGetDir",
+  "tag": "lib-context",
+  "was": "FUN_00158800",
+  "why": "rx library: RosePan names RoR 0x248a60 rxFileGetDir; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158820": {
+  "name": "rxFileSetSearchDir",
+  "tag": "lib-context",
+  "was": "FUN_00158820",
+  "why": "rx library: RosePan names RoR 0x248a80 rxFileSetSearchDir; same size 0x12c and place in a run of matching functions (rxalign.py)"
+ },
+ "00158950": {
+  "name": "rxFileGetSearchDir",
+  "tag": "lib-context",
+  "was": "FUN_00158950",
+  "why": "rx library: RosePan names RoR 0x248bb0 rxFileGetSearchDir; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158968": {
+  "name": "rxFilePushSearchDir",
+  "tag": "lib-context",
+  "was": "FUN_00158968",
+  "why": "rx library: RosePan names RoR 0x248bc8 rxFilePushSearchDir; same size 0x88 and place in a run of matching functions (rxalign.py)"
+ },
+ "001589f0": {
+  "name": "rxFilePopSearchDir",
+  "tag": "lib-context",
+  "was": "FUN_001589f0",
+  "why": "rx library: RosePan names RoR 0x248c50 rxFilePopSearchDir; same size 0x68 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158a58": {
+  "name": "rxFileSetLastName",
+  "tag": "lib-context",
+  "was": "FUN_00158a58",
+  "why": "rx library: RosePan names RoR 0x248cb8 rxFileSetLastName; same size 0x2c and place in a run of matching functions (rxalign.py)"
+ },
+ "00158a88": {
+  "name": "rxFileGetLastName",
+  "tag": "lib-context",
+  "was": "FUN_00158a88",
+  "why": "rx library: RosePan names RoR 0x248ce8 rxFileGetLastName; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158aa8": {
+  "name": "rxFileSetDeviceParam",
+  "tag": "lib-context",
+  "was": "FUN_00158aa8",
+  "why": "rx library: RosePan names RoR 0x248d08 rxFileSetDeviceParam; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158ad8": {
+  "name": "rxFileGetDeviceParam",
+  "tag": "lib-context",
+  "was": "FUN_00158ad8",
+  "why": "rx library: RosePan names RoR 0x248d38 rxFileGetDeviceParam; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158af8": {
+  "name": "rxFileGetLoadHook",
+  "tag": "lib-context",
+  "was": "FUN_00158af8",
+  "why": "rx library: RosePan names RoR 0x248d58 rxFileGetLoadHook; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158b18": {
+  "name": "rxFileSwapLoadHook",
+  "tag": "lib-context",
+  "was": "FUN_00158b18",
+  "why": "rx library: RosePan names RoR 0x248d78 rxFileSwapLoadHook; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158b48": {
+  "name": "rxFileGetSizeHook",
+  "tag": "lib-context",
+  "was": "FUN_00158b48",
+  "why": "rx library: RosePan names RoR 0x248da8 rxFileGetSizeHook; same size 0x20 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158b68": {
+  "name": "rxFileSwapSizeHook",
+  "tag": "lib-context",
+  "was": "FUN_00158b68",
+  "why": "rx library: RosePan names RoR 0x248dc8 rxFileSwapSizeHook; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158b98": {
+  "name": "rxFileGetDeviceInfo",
+  "tag": "lib-context",
+  "was": "FUN_00158b98",
+  "why": "rx library: RosePan names RoR 0x248df8 rxFileGetDeviceInfo; same size 0x38 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158bd0": {
+  "name": "rxFileGetDirInfo",
+  "tag": "lib-context",
+  "was": "FUN_00158bd0",
+  "why": "rx library: RosePan names RoR 0x248e30 rxFileGetDirInfo; same size 0x40 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158c10": {
+  "name": "rxFileGetContext",
+  "tag": "lib-context",
+  "was": "FUN_00158c10",
+  "why": "rx library: RosePan names RoR 0x248e70 rxFileGetContext; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158c38": {
+  "name": "rxFilePathNextElem",
+  "tag": "lib-context",
+  "was": "FUN_00158c38",
+  "why": "rx library: RosePan names RoR 0x248e98 rxFilePathNextElem; same size 0x68 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158ca0": {
+  "name": "rxFilePathUp",
+  "tag": "lib-context",
+  "was": "FUN_00158ca0",
+  "why": "rx library: RosePan names RoR 0x248f00 rxFilePathUp; same size 0x84 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158d28": {
+  "name": "rxFilePathCountDots",
+  "tag": "lib-context",
+  "was": "FUN_00158d28",
+  "why": "rx library: RosePan names RoR 0x248f88 rxFilePathCountDots; same size 0x50 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158d78": {
+  "name": "rxFileStartThread",
+  "tag": "lib-context",
+  "was": "FUN_00158d78",
+  "why": "rx library: RosePan names RoR 0x248fd8 rxFileStartThread; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158da0": {
+  "name": "rxFileStopThread",
+  "tag": "lib-context",
+  "was": "FUN_00158da0",
+  "why": "rx library: RosePan names RoR 0x249000 rxFileStopThread; same size 0x94 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158e38": {
+  "name": "rxFilePostRequest",
+  "tag": "lib-context",
+  "was": "FUN_00158e38",
+  "why": "rx library: RosePan names RoR 0x249098 rxFilePostRequest; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00158e80": {
+  "name": "rxFileCancelRequests",
+  "tag": "lib-context",
+  "was": "FUN_00158e80",
+  "why": "rx library: RosePan names RoR 0x2490e0 rxFileCancelRequests; same size 0xdc and place in a run of matching functions (rxalign.py)"
+ },
+ "00166b50": {
+  "name": "rxThCreateSema",
+  "tag": "lib-context",
+  "was": "FUN_00166b50",
+  "why": "rx library: RosePan names RoR 0x249b88 rxThCreateSema; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "00166b78": {
+  "name": "rxThStartThread",
+  "tag": "lib-context",
+  "was": "FUN_00166b78",
+  "why": "rx library: RosePan names RoR 0x249bb0 rxThStartThread; same size 0x54 and place in a run of matching functions (rxalign.py)"
+ },
+ "00166bd0": {
+  "name": "rxThKillThread",
+  "tag": "lib-context",
+  "was": "FUN_00166bd0",
+  "why": "rx library: RosePan names RoR 0x249c08 rxThKillThread; same size 0x28 and place in a run of matching functions (rxalign.py)"
+ },
+ "00166d10": {
+  "name": "rxThIsDispatchDisabled",
+  "tag": "lib-context",
+  "was": "FUN_00166d10",
+  "why": "rx library: RosePan names RoR 0x249d48 rxThIsDispatchDisabled; same size 0x94 and place in a run of matching functions (rxalign.py)"
+ },
+ "00166da8": {
+  "name": "rxThGetCallCount",
+  "tag": "lib-context",
+  "was": "FUN_00166da8",
+  "why": "rx library: RosePan names RoR 0x249de0 rxThGetCallCount; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "00166dd0": {
+  "name": "rxThPostCall",
+  "tag": "lib-context",
+  "was": "FUN_00166dd0",
+  "why": "rx library: RosePan names RoR 0x249e08 rxThPostCall; same size 0x98 and place in a run of matching functions (rxalign.py)"
+ },
+ "00166e68": {
+  "name": "rxThInit",
+  "tag": "lib-context",
+  "was": "FUN_00166e68",
+  "why": "rx library: RosePan names RoR 0x249ea0 rxThInit; same size 0x1b4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00167020": {
+  "name": "rxThExit",
+  "tag": "lib-context",
+  "was": "FUN_00167020",
+  "why": "rx library: RosePan names RoR 0x24a058 rxThExit; same size 0x15c and place in a run of matching functions (rxalign.py)"
+ },
+ "00167180": {
+  "name": "rxThRunCallbacks",
+  "tag": "lib-context",
+  "was": "FUN_00167180",
+  "why": "rx library: RosePan names RoR 0x24a1b8 rxThRunCallbacks; same size 0x5c and place in a run of matching functions (rxalign.py)"
+ },
  "001671e0": {
-  "name": "rxThAddCallback",
+  "name": "rxThFindCallback",
   "tag": "lib-context",
   "was": "FUN_001671e0",
-  "why": "name from the message 'rxthread: rxThAddCallback failed! (%08X)' its caller 0x167220 prints when it fails"
+  "why": "rx library: RosePan names RoR 0x24a218 rxThFindCallback; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "00167220": {
+  "name": "rxThAddCallback",
+  "tag": "lib-context",
+  "was": "FUN_00167220",
+  "why": "rx library: RosePan names RoR 0x24a258 rxThAddCallback; same size 0x84 and place in a run of matching functions (rxalign.py)"
+ },
+ "001672a8": {
+  "name": "rxThRemoveCallback",
+  "tag": "lib-context",
+  "was": "FUN_001672a8",
+  "why": "rx library: RosePan names RoR 0x24a2e0 rxThRemoveCallback; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "001672d8": {
+  "name": "rxThIsYielding",
+  "tag": "lib-context",
+  "was": "FUN_001672d8",
+  "why": "rx library: RosePan names RoR 0x24a310 rxThIsYielding; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "001672e8": {
+  "name": "rxThLockRequest",
+  "tag": "lib-context",
+  "was": "FUN_001672e8",
+  "why": "rx library: RosePan names RoR 0x24a320 rxThLockRequest; same size 0xa8 and place in a run of matching functions (rxalign.py)"
+ },
+ "00167390": {
+  "name": "rxThUnlockRequest",
+  "tag": "lib-context",
+  "was": "FUN_00167390",
+  "why": "rx library: RosePan names RoR 0x24a3c8 rxThUnlockRequest; same size 0xa8 and place in a run of matching functions (rxalign.py)"
+ },
+ "00167438": {
+  "name": "rxThIsRequestLocked",
+  "tag": "lib-context",
+  "was": "FUN_00167438",
+  "why": "rx library: RosePan names RoR 0x24a470 rxThIsRequestLocked; same size 0x94 and place in a run of matching functions (rxalign.py)"
+ },
+ "001674d0": {
+  "name": "rxThYield",
+  "tag": "lib-context",
+  "was": "FUN_001674d0",
+  "why": "rx library: RosePan names RoR 0x24a508 rxThYield; same size 0x16c and place in a run of matching functions (rxalign.py)"
+ },
+ "00167640": {
+  "name": "rxThDispatchAlarm",
+  "tag": "lib-context",
+  "was": "FUN_00167640",
+  "why": "rx library: RosePan names RoR 0x24a678 rxThDispatchAlarm; same size 0x250 and place in a run of matching functions (rxalign.py)"
+ },
+ "00167890": {
+  "name": "rxThDisableDispatch",
+  "tag": "lib-context",
+  "was": "FUN_00167890",
+  "why": "rx library: RosePan names RoR 0x24a8c8 rxThDisableDispatch; same size 0x8c and place in a run of matching functions (rxalign.py)"
+ },
+ "00167920": {
+  "name": "rxThEnableDispatch",
+  "tag": "lib-context",
+  "was": "FUN_00167920",
+  "why": "rx library: RosePan names RoR 0x24a958 rxThEnableDispatch; same size 0x184 and place in a run of matching functions (rxalign.py)"
+ },
+ "00167aa8": {
+  "name": "rxThGetIndex",
+  "tag": "lib-context",
+  "was": "FUN_00167aa8",
+  "why": "rx library: RosePan names RoR 0x24aae0 rxThGetIndex; same size 0x5c and place in a run of matching functions (rxalign.py)"
+ },
+ "00167cb0": {
+  "name": "rxThCreate",
+  "tag": "lib-context",
+  "was": "FUN_00167cb0",
+  "why": "rx library: RosePan's rxThCreate (RoR 0x24ace8, same size 0x174): up to 8 rx threads (count 0x526a64), rxThStartThread, a 16-byte record in 0x526a70"
  },
  "00167fc0": {
-  "name": "rxThreadSetHSyncInterval",
+  "name": "rxThSetInterval",
   "tag": "lib-context",
   "was": "FUN_00167fc0",
-  "why": "rx thread module (n): prints 'rxThread: HSync Interval:%d'; rxInit passes 4; exact rx name unknown"
+  "why": "rx library: RosePan names RoR 0x24aff8 rxThSetInterval; same size 0x50 and place in a run of matching functions (rxalign.py)"
  },
  "00168010": {
-  "name": "rxThreadSetPrioIndex",
+  "name": "rxThSetPrioIndex",
   "tag": "lib-context",
   "was": "FUN_00168010",
-  "why": "rx thread module (p0, p1, p2): stores three priority offsets, prints 'rxThread: PrioIndex %d %d %d'; rxInit calls it; exact rx name unknown"
+  "why": "rx library: RosePan names RoR 0x24b048 rxThSetPrioIndex; same size 0x64 and place in a run of matching functions (rxalign.py)"
+ },
+ "00168078": {
+  "name": "rxThInitOnce",
+  "tag": "lib-context",
+  "was": "FUN_00168078",
+  "why": "rx library: RosePan names RoR 0x24b0b0 rxThInitOnce; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
+ "00168090": {
+  "name": "rxThExitOnce",
+  "tag": "lib-context",
+  "was": "FUN_00168090",
+  "why": "rx library: rxSysTerm's sixth call as in RoR's rxSysTerm (rxThExitOnce, RoR 0x24b0c8); here sceGsSyncPath then rxThExit (0x3c bytes, RoR's 0x14)"
+ },
+ "001680d0": {
+  "name": "rxThGsSyncPath",
+  "tag": "lib-context",
+  "was": "FUN_001680d0",
+  "why": "rx library: RosePan names RoR 0x24b108 rxThGsSyncPath; same size 0x50 and place in a run of matching functions (rxalign.py)"
+ },
+ "00168120": {
+  "name": "rxThDmaSyncRequest",
+  "tag": "lib-context",
+  "was": "FUN_00168120",
+  "why": "rx library: RosePan names RoR 0x24b158 rxThDmaSyncRequest; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "00168150": {
+  "name": "rxThDmaSync",
+  "tag": "lib-context",
+  "was": "FUN_00168150",
+  "why": "rx library: RosePan names RoR 0x24b188 rxThDmaSync; same size 0x70 and place in a run of matching functions (rxalign.py)"
  },
  "0023baf0": {
   "name": "getGameOptions",
@@ -754,6 +2218,24 @@
   "tag": "lib-context",
   "was": "FUN_00264790",
   "why": "libscf (clock*): converts the RTC clock (JST) in place to local time through 0x264298 / 0x264350; getLocalDateTime calls it right after sceCdReadClock; likely name"
+ },
+ "002a9c80": {
+  "name": "memcardInit",
+  "tag": "game-inferred",
+  "was": "FUN_002a9c80",
+  "why": "gameInit's memory card setup: memcardLibInit, then gp-0x79e8 (u64) = -1 and gp-0x79ec = 1 (state of the save system, not read yet)"
+ },
+ "002acec0": {
+  "name": "memcardLibEnd",
+  "tag": "game-inferred",
+  "was": "FUN_002acec0",
+  "why": "sceMcEnd when memcardLibInit's flag gp-0x79e0 is set, clears it; main's first teardown call (through the thunk 0x100270)"
+ },
+ "002acf00": {
+  "name": "memcardLibInit",
+  "tag": "game-inferred",
+  "was": "FUN_002acf00",
+  "why": "sceMcInit once (flag gp-0x79e0 set when it returns 0); memcardInit calls it from gameInit"
  },
  "002eaff0": {
   "name": "Vif1PktManage::GetUsedSize",

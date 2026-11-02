@@ -38,9 +38,11 @@ Serial, region, build date, entry, gp (`.reginfo`), compiler family and ABI, sym
 - **Middleware: "rx"** (SCE's in-house runtime; `$RX_SCE_LIBRARY_VERSION:4` at 0x2f088d): rxsys
   (IOP module binding), rxfile (`rxfile.c` 0x3016c0, `filehost.c` 0x301908; disc / host / HDD devices,
   a request-queue thread), rxsnd / rxsndstr / rxsndut (XVAB banks, XSEQ, BGM / SE / PCM / ADPCM
-  streams, `RXWS` / XWS stream files), rxthread. **Renderer "rena"**, C++: `rena_2d_texture_tim2.cpp`
-  0x30fdd0, `rena_pkt_vif1pktmanage.cpp` 0x310640, `rena draw` 0x303bd8. No engine kinship with FF2,
-  FF3 or RoR (other developer, other compiler): names and code come from this binary only.
+  streams, `RXWS` / XWS stream files), rxthread -- **the rx Rule of Rose links** (batch 005, "Naming
+  sources"). **Renderer "rena"**, C++: `rena_2d_texture_tim2.cpp`
+  0x30fdd0, `rena_pkt_vif1pktmanage.cpp` 0x310640, `rena draw` 0x303bd8. No game-engine kinship with FF2,
+  FF3 or RoR (other developer, other compiler), but the rx library is RoR's (RosePan names and
+  reconstructs it); the rest comes from this binary only.
 - Strings are few (7,813 printable runs of 4+, dense only in 0x2f0000..0x31aaa4); only 2 `.c` and
   2 `.cpp` file names. Game-side strings are mostly action / event names (`GettingOnCar`,
   `NumLockOpen`, `GunAttack`, `QuickTurn`, `DemoExecuter` 0x303d30, ...).
@@ -86,10 +88,15 @@ files from the 4 file-name strings.
 | by reading, batch 001 (2026-10-31) | 27: crt0 / libc / libkernl, CodeWarrior + MSL runtime, `main`, heap | name_ctx.py | lib-context 24, game-inferred 3 |
 | by reading, batches 002-004 (2026-10-31) | 26 + 34 + 52: threads, gameInit's subsystems, `GameSystem` and its members, rena `Vif1PktManage` | name_ctx.py | ledger 139 |
 | class names | 6 (`data/class_names.json`) | rtti.py | -- |
+| batch 005 (2026-11-02) | 253: main's teardown (22 by reading) + **231 rx names from RosePan** (rxsys 89, rxthread 29, rxfile 113) | rxalign.py + name_ctx.py | lib-context; ledger 386 |
 
 Expected sources (bootstrap step 4): Sony SDK 3.0 libraries by match (libmatch.py against FF3 / RoR,
 both SDK 3.0); MSL C++ / CodeWarrior runtime only by reading (no reference game built with it); rx and
-rena from their messages; game code from its strings and callers.
+rena from their messages; game code from its strings and callers. **rx from RosePan** (batch 005): FS2
+links the same prebuilt rx library as Rule of Rose -- same functions, same order, same sizes, down to
+`rxThFindCallback`'s delay-slot bug (always -1) -- so `rxalign.py` aligns size sequences against
+`../RosePan/ror_functions.txt` and RosePan's `src/rx/*.cpp` is the reference (likely reusable) for
+the rx TUs. Not yet verified word for word (RoR's ELF / Ghidra program is not on this machine).
 
 ## Program flow
 
@@ -100,9 +107,12 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
   object stored at gp-0x7aec, ctor 0x12d0d0, AddDmacHandler(15, 0x12dc20)); argc/argv to gp-0x7ae8 /
   -0x7ae4; `threadSysInit`(0x12db70 frameReady, 2); `threadSetSwitchHook`(0x12dab0, obj+0x4a8);
   **`threadRunMain`(`gameMainThread` 0x12db00)**, which blocks until the game ends; then
-  `threadSysShutdown` 0x130e50, 0x2acec0 (thunk) / 0x151280 (empty) / 0x148540, deletes the global
-  object (members at +0x510, +0x4a8, +0x46c, +0x2f4, +0x17c, +4; vptr stores above) and calls
-  0x12e3a0, 0x130070, 0x152750, `shutdownGlobalHeap` 0x1045a0, `__destroy_global_chain`.
+  `threadSysShutdown` 0x130e50, then the teardown (batch 005): `memcardLibEnd` 0x2acec0 (thunk;
+  `sceMcEnd` 0x11fe08), 0x151280 (empty), `soundShutdown` 0x148540, deletes the global object
+  (members at +0x510, +0x4a8, +0x46c, +0x2f4, +0x17c, +4; vptr stores above), then
+  `gfxReleaseRenderTargets` 0x12e3a0, `padSysShutdown` 0x130070 (`scePadPortClose` 0x11ea80 per open
+  port), `rxTerm` 0x152750 (unhooks SPK.ROM, frees its index, `rxSysTerm` 0x101e98),
+  `shutdownGlobalHeap` 0x1045a0, `__destroy_global_chain`.
 - **The main loop** is `gameMainThread` 0x12db00 (thread slot 0): starts slot 1 on 0x231bb0, then
   forever: 0x151270 (empty), `frameSyncWait` (returns the vsyncs this frame took),
   `GameSystem::flipFrame` 0x12cdf0(obj, vsyncs) ("The global object" below), `padSysUpdate` 0x12ffa0, `soundUpdate` 0x148500,
@@ -119,7 +129,21 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
   `getLocalDateTime` 0x23de20 (RTC -> local BCD date, seeds the RNG), `systemDataInit` 0x23bb50
   (persistent state 0x598b30, options 0x599000 via `getGameOptions` 0x23baf0 / 
   `GameOptions::setDefaults` 0x23be70), `GameSystem::GameSystem` 0x12d0d0, 0x151290 (empty),
-  0x2a9c80 (0x2acf00: a one-time library init, libmc?).
+  `memcardInit` 0x2a9c80 (`memcardLibInit` 0x2acf00: `sceMcInit` 0x11fb70 once, flag gp-0x79e0).
+- **rx boot** (batch 005, names from RosePan): `rxInit` 0x1527a0 is the game's rx user layer (not in
+  RoR's rx; it sits between `rxSysTermUser` and `rxSysThreadCallback`): `rxThSetPrioIndex`,
+  `rxSysSetBootPath` 0x102138, `rxSysInit` 0x101288, `rxSysSetMemFunc0..3` 0x100350.., `rxThSetInterval`(4),
+  `rxFileCdSetLayerMode`(0) 0x157d70, `rxSysInitFileDevice`(1), `spkRomLoad`, `rxSysSetDeviceParam`.
+  **SPK.ROM** is a name index over the ROM archives: `spkRomLoad` reads it whole (`rxSysStreamOpen`,
+  `rxFileSeek` / `rxFileRead` / `rxFileClose`), relocates its 16-byte entries `{name, archive name,
+  offset, size | bit 31 = DVD layer 1}` (header `SLPK`, +8 count, +0xc string base, +0x10 relocated
+  flag) and installs three hooks: `spkLocateFile` 0x1529d0 as the CD locate hook
+  (`rxFileCdSetLocateHook` 0x157c40, not in RoR's rx; the previous hook is kept in gp-0x7a88 for
+  `ROM.*` / `ROMD.*` themselves), `spkLoadFile` 0x152e20 (`rxFileSetLoadHook` 0x155700) and
+  `spkGetFileSize` 0x152c90 (`rxFileSetSizeHook` 0x155748). A name is binary-searched case-folded
+  (`toupper` 0x12a010) and resolved to its archive's lsn + offset >> 11, switching the DVD layer
+  (`ROMD.008`..`010` are on layer 1). The host port's file layer can do the same lookup over the
+  disc files.
 - Named (batch 001): crt0 `entry` -> `_InitSys` 0x140e58 (libkernl, nine init calls) -> `FlushCache`
   -> `main` 0x12d910 -> `exit` 0x123538 (newlib: `_impure_ptr` 0x2f3398 `->_atexit` +0x148, then
   `__cleanup` +0x3c) -> `_exit` 0x100218 (crt0: `j Exit`) -> `Exit` 0x141258 -> `_Exit` syscall.
@@ -174,8 +198,13 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
     draw calls 0x133610 (returns 0, also called by 0x198970 / 0x199400), 0x133600, 0x132f20 are empty in
     this retail build. Heap marks: `Heap::setMark` 0x1037c0, `Heap::markedUsage` 0x103870,
     `Heap::realloc` 0x1038a0.
-- rx's debug print is `rxPrintf` 0x102328 (1 KB format buffer, hook 0x2f0880, scePrintf or a 4 KB
-  host log 0x31c580); rena's messages are Shift-JIS.
+- rx's debug print is `rxSysPrintf` 0x102328 (was `rxPrintf`; 1 KB format buffer, hook 0x2f0880,
+  scePrintf or a 4 KB host log 0x31c580); rena's messages are Shift-JIS.
+- **Sound teardown** (batch 005): `soundShutdown` 0x148540 undoes `soundInit` (removes the rx thread
+  callback 0x1488f0, deletes the 0x4c-byte sound settings object 0x31addc built by 0x148130, 0x159ca8
+  driver term, resets the SPU2 allocator); `spuMemReserve` 0x148a70(size, addr) takes a fixed block
+  from the 32-node SPU2 allocator 0x4d08d0 (free span 0x5040..0x1f9000; 0x7000 at 0x1d9000 is
+  reserved at init).
 
 ## Modules
 
@@ -254,8 +283,10 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   `sceSifBindRpc` 0x13a848 / `sceSifCallRpc` 0x13aa28 (packet pool 0x4cb380); libpad `scePadInit`
   0x11e440, `scePadPortOpen` 0x11e898 (state / read calls 0x11ed60..0x11f6f8 unnamed); likely
   `sceCdReadClock` 0x11e290 and `sceScfGetLocalTimefromRTC` 0x264790 (batch 003). rx (names
-  guessed from its messages): `rxThreadSetPrioIndex` 0x168010, `rxThreadSetHSyncInterval` 0x167fc0,
-  `rxThAddCallback` 0x1671e0, `rxParseBootPath` 0x102138, `rxInitDevices` 0x101288. Heap setup: `initGlobalHeap` 0x104600 (`_malloc_r` 0x124950 a block for 0x104500 to
+  from RosePan since batch 005, which renamed batch 003's guesses): `rxThSetPrioIndex` 0x168010,
+  `rxThSetInterval` 0x167fc0, `rxThFindCallback` 0x1671e0 / `rxThAddCallback` 0x167220 /
+  `rxThRemoveCallback` 0x1672a8, `rxSysSetBootPath` 0x102138, `rxSysInit` 0x101288. libmc
+  `sceMcInit` 0x11fb70 / `sceMcEnd` 0x11fe08; MSL `strstr` 0x128a70, `toupper` 0x12a010. Heap setup: `initGlobalHeap` 0x104600 (`_malloc_r` 0x124950 a block for 0x104500 to
   manage) / `shutdownGlobalHeap` 0x1045a0 (`_free_r` 0x123b18).
 - **libc** (Sony's newlib): `strlen` 0x128498, `strcpy` 0x128380 (R5900 quadword scans), `raise`
   0x127a68 / `_raise_r` 0x1278f8, `_impure_ptr` 0x2f3398.
