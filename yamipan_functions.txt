@@ -874,13 +874,23 @@
 /* 001365d0 0000001c */ FUN_001365d0(){}
 /* 001365f0 0000004c */ FUN_001365f0(){}
 /* 00136640 0000004c */ FUN_00136640(){}
-/* 00136690 0000004c */ FUN_00136690(){}
-/* 001366e0 0000001c */ SetGsCrt(){}  // native
-/* 00136700 0000001c */ _Exit(){}  // native
+/* 00136690 0000002c */ FUN_00136690(){}
+/* 001366c0 0000000c */ RFU000_FullReset(){}  // lib-ctx
+/* 001366d0 0000000c */ ResetEE(){}  // lib-ctx
+/* 001366e0 0000000c */ SetGsCrt(){}  // native
+/* 001366f0 0000000c */ RFU003(){}  // lib-ctx
+/* 00136700 0000000c */ _Exit(){}  // native
+/* 00136710 0000000c */ RFU005(){}  // lib-ctx
 /* 00136720 0000000c */ _LoadExecPS2(){}  // native
-/* 00136730 0000005c */ _ExecPS2(){}  // native
+/* 00136730 0000000c */ _ExecPS2(){}  // native
+/* 00136740 0000000c */ RFU008(){}  // lib-ctx
+/* 00136750 0000000c */ RFU009(){}  // lib-ctx
+/* 00136760 0000000c */ AddSbusIntcHandler(){}  // lib-ctx
+/* 00136770 0000000c */ RemoveSbusIntcHandler(){}  // lib-ctx
+/* 00136780 0000000c */ Interrupt2Iop(){}  // lib-ctx
 /* 00136790 0000000c */ SetVTLBRefillHandler(){}  // native
-/* 001367a0 0000001c */ SetVCommonHandler(){}  // native
+/* 001367a0 0000000c */ SetVCommonHandler(){}  // native
+/* 001367b0 0000000c */ SetVInterruptHandler(){}  // lib-ctx
 /* 001367c0 0000000c */ AddIntcHandler(){}  // native
 /* 001367d0 0000000c */ AddIntcHandler(){}  // native
 /* 001367e0 0000000c */ RemoveIntcHandler(){}  // native
@@ -897,41 +907,100 @@
 /* 00136890 0000000c */ _iDisableIntc(){}  // native
 /* 001368a0 0000000c */ _iEnableDmac(){}  // native
 /* 001368b0 0000000c */ _iDisableDmac(){}  // native
-/* 001368c0 0000001c */ iSetAlarm(){}  // native
+/* 001368c0 0000000c */ iSetAlarm(){}  // native
+/* 001368d0 0000000c */ iReleaseAlarm(){}  // lib-ctx
 /* 001368e0 0000000c */ CreateThread(){}  // native
 /* 001368f0 0000000c */ DeleteThread(){}  // native
-/* 00136900 0000001c */ _StartThread(){}  // native
+/* 00136900 0000000c */ _StartThread(){}  // native
+/* 00136910 0000000c */ ExitThread(){}  // lib-ctx
 /* 00136920 0000000c */ ExitDeleteThread(){}  // native
-/* 00136930 0000003c */ TerminateThread(){}  // native
+/* 00136930 0000000c */ TerminateThread(){}  // native
+/* 00136940 0000000c */ iTerminateThread(){}  // lib-ctx
+/* 00136950 0000000c */ DisableDispatchThread(){}  // lib-ctx
+/* 00136960 0000000c */ EnableDispatchThread(){}  // lib-ctx
 /* 00136970 0000000c */ ChangeThreadPriority(){}  // native
 /* 00136980 0000000c */ iChangeThreadPriority(){}  // native
-/* 00136990 0000003c */ RotateThreadReadyQueue(){}  // native
+/* 00136990 0000000c */ RotateThreadReadyQueue(){}  // native
+/* 001369a0 0000000c */ _iRotateThreadReadyQueue(){}  // lib-ctx
+/* 001369b0 0000000c */ ReleaseWaitThread(){}  // lib-ctx
+/* 001369c0 0000000c */ iReleaseWaitThread(){}  // lib-ctx
 /* 001369d0 0000000c */ GetThreadId(){}  // native
-/* 001369e0 0000001c */ ReferThreadStatus(){}  // native
+/* 001369e0 0000000c */ ReferThreadStatus(){}  // native
+/* 001369f0 0000000c */ iReferThreadStatus(){}  // lib-ctx
 /* 00136a00 0000000c */ SleepThread(){}  // native
 /* 00136a10 0000000c */ WakeupThread(){}  // native
-/* 00136a20 0000002c */ _iWakeupThread(){}  // native
+/* 00136a20 0000000c */ _iWakeupThread(){}  // native
+/* 00136a30 0000000c */ CancelWakeupThread(){}  // lib-ctx
+/* 00136a40 0000000c */ iCancelWakeupThread(){}  // lib-ctx
 /* 00136a50 0000000c */ SuspendThread(){}  // native
 /* 00136a60 0000000c */ _iSuspendThread(){}  // native
-/* 00136a70 0000004c */ ResumeThread(){}  // native
-/* 00136ac0 0000001c */ EndOfHeap(){}  // native
+/* 00136a70 0000000c */ ResumeThread(){}  // native
+/* 00136a80 0000000c */ iResumeThread(){}  // lib-ctx
+/* 00136a90 0000000c */ JoinThread(){}  // lib-ctx
+/* 00136aa0 0000000c */ RFU060(){}  // lib-ctx
+/* 00136ab0 0000000c */ RFU061(){}  // lib-ctx
+/* 00136ac0 0000000c */ EndOfHeap(){}  // native
+/* 00136ad0 0000000c */ RFU063(){}  // lib-ctx
 /* 00136ae0 0000000c */ CreateSema(){}  // native
 /* 00136af0 0000000c */ DeleteSema(){}  // native
 /* 00136b00 0000000c */ SignalSema(){}  // native
 /* 00136b10 0000000c */ iSignalSema(){}  // native
 /* 00136b20 0000000c */ WaitSema(){}  // native
 /* 00136b30 0000000c */ PollSema(){}  // native
-/* 00136b40 0000001c */ iPollSema(){}  // native
-/* 00136b60 0000001c */ iReferSemaStatus(){}  // native
+/* 00136b40 0000000c */ iPollSema(){}  // native
+/* 00136b50 0000000c */ ReferSemaStatus(){}  // lib-ctx
+/* 00136b60 0000000c */ iReferSemaStatus(){}  // native
+/* 00136b70 0000000c */ RFU073(){}  // lib-ctx
 /* 00136b80 0000000c */ SetOsdConfigParam(){}  // native
-/* 00136b90 000001cc */ GetOsdConfigParam(){}  // native
-/* 00136d60 0000004c */ FlushCache(){}  // native
-/* 00136db0 0000003c */ sceSifStopDma(){}  // native
+/* 00136b90 0000000c */ GetOsdConfigParam(){}  // native
+/* 00136ba0 0000000c */ GetGsHParam(){}  // lib-ctx
+/* 00136bb0 0000000c */ GetGsVParam(){}  // lib-ctx
+/* 00136bc0 0000000c */ SetGsHParam(){}  // lib-ctx
+/* 00136bd0 0000000c */ SetGsVParam(){}  // lib-ctx
+/* 00136be0 0000000c */ RFU080_CreateEventFlag(){}  // lib-ctx
+/* 00136bf0 0000000c */ RFU081_DeleteEventFlag(){}  // lib-ctx
+/* 00136c00 0000000c */ RFU082_SetEventFlag(){}  // lib-ctx
+/* 00136c10 0000000c */ RFU083_iSetEventFlag(){}  // lib-ctx
+/* 00136c20 0000000c */ RFU084_ClearEventFlag(){}  // lib-ctx
+/* 00136c30 0000000c */ RFU085_iClearEventFlag(){}  // lib-ctx
+/* 00136c40 0000000c */ RFU086_WaitEventFlag(){}  // lib-ctx
+/* 00136c50 0000000c */ RFU087_PollEventFlag(){}  // lib-ctx
+/* 00136c60 0000000c */ RFU088_iPollEventFlag(){}  // lib-ctx
+/* 00136c70 0000000c */ RFU089_ReferEventFlagStatus(){}  // lib-ctx
+/* 00136c80 0000000c */ RFU090_iReferEventFlagStatus(){}  // lib-ctx
+/* 00136c90 0000000c */ RFU091_GetEntryAddress(){}  // lib-ctx
+/* 00136ca0 0000000c */ EnableIntcHandler(){}  // lib-ctx
+/* 00136cb0 0000000c */ iEnableIntcHandler(){}  // lib-ctx
+/* 00136cc0 0000000c */ DisableIntcHandler(){}  // lib-ctx
+/* 00136cd0 0000000c */ iDisableIntcHandler(){}  // lib-ctx
+/* 00136ce0 0000000c */ EnableDmacHandler(){}  // lib-ctx
+/* 00136cf0 0000000c */ iEnableDmacHandler(){}  // lib-ctx
+/* 00136d00 0000000c */ DisableDmacHandler(){}  // lib-ctx
+/* 00136d10 0000000c */ iDisableDmacHandler(){}  // lib-ctx
+/* 00136d20 0000000c */ KSeg0(){}  // lib-ctx
+/* 00136d30 0000000c */ EnableCache(){}  // lib-ctx
+/* 00136d40 0000000c */ DisableCache(){}  // lib-ctx
+/* 00136d50 0000000c */ GetCop0(){}  // lib-ctx
+/* 00136d60 0000000c */ FlushCache(){}  // native
+/* 00136d70 0000000c */ CpuConfig(){}  // lib-ctx
+/* 00136d80 0000000c */ iGetCop0(){}  // lib-ctx
+/* 00136d90 0000000c */ iFlushCache(){}  // lib-ctx
+/* 00136da0 0000000c */ iCpuConfig(){}  // lib-ctx
+/* 00136db0 0000000c */ sceSifStopDma(){}  // native
+/* 00136dc0 0000000c */ SetCPUTimerHandler(){}  // lib-ctx
+/* 00136dd0 0000000c */ SetCPUTimer(){}  // lib-ctx
+/* 00136de0 0000000c */ SetOsdConfigParam2(){}  // lib-ctx
 /* 00136df0 0000000c */ GetOsdConfigParam2(){}  // native
-/* 00136e00 0000001c */ GsGetIMR(){}  // native
-/* 00136e20 0000002c */ GsPutIMR(){}  // native
-/* 00136e50 0000002c */ SetVSyncFlag(){}  // native
-/* 00136e80 0000001c */ sceSifDmaStat(){}  // native
+/* 00136e00 0000000c */ GsGetIMR(){}  // native
+/* 00136e10 0000000c */ iGsGetIMR(){}  // lib-ctx
+/* 00136e20 0000000c */ GsPutIMR(){}  // native
+/* 00136e30 0000000c */ iGsPutIMR(){}  // lib-ctx
+/* 00136e40 0000000c */ SetPgifHandler(){}  // lib-ctx
+/* 00136e50 0000000c */ SetVSyncFlag(){}  // native
+/* 00136e60 0000000c */ SetSyscall(){}  // lib-ctx
+/* 00136e70 0000000c */ _print(){}  // lib-ctx
+/* 00136e80 0000000c */ sceSifDmaStat(){}  // native
+/* 00136e90 0000000c */ isceSifDmaStat(){}  // lib-ctx
 /* 00136ea0 0000000c */ sceSifSetDma(){}  // native
 /* 00136eb0 0000000c */ isceSifSetDma(){}  // native
 /* 00136ec0 0000000c */ sceSifSetDChain(){}  // native
@@ -939,81 +1008,87 @@
 /* 00136ee0 0000000c */ sceSifSetReg(){}  // native
 /* 00136ef0 0000000c */ sceSifGetReg(){}  // native
 /* 00136f00 0000000c */ _ExecOSD(){}  // native
-/* 00136f10 0000002c */ Deci2Call(){}  // native
+/* 00136f10 0000000c */ Deci2Call(){}  // native
+/* 00136f20 0000000c */ PSMode(){}  // lib-ctx
+/* 00136f30 0000000c */ MachineType(){}  // lib-ctx
 /* 00136f40 0000000c */ GetMemorySize(){}  // native
 /* 00136f50 0000000c */ _InitTLB(){}  // native
-/* 00136f60 0000000c */ FUN_00136f60(){}
-/* 00136f70 00000090 */ FUN_00136f70(){}
-/* 00137000 000000a4 */ FUN_00137000(){}
-/* 001370a8 0000007c */ FUN_001370a8(){}
-/* 00137128 00000074 */ FUN_00137128(){}
-/* 001371a0 00000028 */ FUN_001371a0(){}
-/* 001371c8 00000010 */ FUN_001371c8(){}
-/* 001371d8 00000008 */ FUN_001371d8(){}
-/* 001371e0 000000ac */ FUN_001371e0(){}
-/* 00137290 00000008 */ FUN_00137290(){}
-/* 00137298 00000020 */ FUN_00137298(){}
-/* 001372b8 00000028 */ FUN_001372b8(){}
-/* 001372e0 00000028 */ FUN_001372e0(){}
-/* 00137308 00000028 */ FUN_00137308(){}
-/* 00137330 000000a0 */ FUN_00137330(){}
-/* 001373d8 00000094 */ FUN_001373d8(){}
-/* 00137470 000000a0 */ FUN_00137470(){}
-/* 00137518 00000094 */ FUN_00137518(){}
-/* 001375b0 00000010 */ FUN_001375b0(){}
+/* 00136f60 0000000c */ sceResetttyinit(){}  // lib-ctx
+/* 00136f70 00000090 */ VSync(){}  // lib-ctx
+/* 00137000 000000a4 */ VSync2(){}  // lib-ctx
+/* 001370a8 0000007c */ write(){}  // lib-ctx
+/* 00137128 00000074 */ read(){}  // lib-ctx
+/* 001371a0 00000028 */ open(){}  // lib-ctx
+/* 001371c8 00000008 */ FUN_001371c8(){}
+/* 001371d0 00000008 */ FUN_001371d0(){}
+/* 001371d8 00000008 */ lseek(){}  // lib-ctx
+/* 001371e0 000000ac */ sbrk(){}  // lib-ctx
+/* 00137290 00000008 */ isatty(){}  // lib-ctx
+/* 00137298 00000014 */ fstat(){}  // lib-ctx
+/* 001372b0 00000008 */ getpid(){}  // lib-ctx
+/* 001372b8 00000028 */ kill(){}  // lib-ctx
+/* 001372e0 00000028 */ stat(){}  // lib-ctx
+/* 00137308 00000028 */ unlink(){}  // lib-ctx
+/* 00137330 000000a0 */ _SyncDCache(){}  // lib-ctx
+/* 001373d8 00000094 */ SyncDCache(){}  // lib-ctx
+/* 00137470 000000a0 */ _InvalidDCache(){}  // lib-ctx
+/* 00137518 00000094 */ InvalidDCache(){}  // lib-ctx
+/* 001375b0 00000010 */ QueryIntrContext(){}  // lib-ctx
 /* 001375c0 00000068 */ DisableIntc(){}  // lib-ctx
 /* 00137628 00000068 */ EnableIntc(){}  // lib-ctx
-/* 00137690 00000068 */ FUN_00137690(){}
-/* 001376f8 00000068 */ FUN_001376f8(){}
-/* 00137760 00000020 */ FUN_00137760(){}
-/* 00137780 00000020 */ FUN_00137780(){}
-/* 001377a0 00000020 */ FUN_001377a0(){}
-/* 001377c0 00000020 */ FUN_001377c0(){}
+/* 00137690 00000068 */ DisableDmac(){}  // lib-ctx
+/* 001376f8 00000068 */ EnableDmac(){}  // lib-ctx
+/* 00137760 00000020 */ iEnableIntc(){}  // lib-ctx
+/* 00137780 00000020 */ iDisableIntc(){}  // lib-ctx
+/* 001377a0 00000020 */ iEnableDmac(){}  // lib-ctx
+/* 001377c0 00000020 */ iDisableDmac(){}  // lib-ctx
 /* 001377e0 000000d4 */ topThread(){}  // lib-ctx
 /* 001378b8 000000ec */ InitThread(){}  // lib-ctx
-/* 001379a8 00000094 */ FUN_001379a8(){}
-/* 00137a40 0000007c */ FUN_00137a40(){}
-/* 00137ac0 00000098 */ FUN_00137ac0(){}
-/* 00137b58 000000c8 */ FUN_00137b58(){}
+/* 001379a8 00000094 */ iWakeupThread(){}  // lib-ctx
+/* 00137a40 0000007c */ iRotateThreadReadyQueue(){}  // lib-ctx
+/* 00137ac0 00000098 */ iSuspendThread(){}  // lib-ctx
+/* 00137b58 000000c8 */ DelayThread(){}  // lib-ctx
 /* 00137c20 00000178 */ StartThread(){}  // lib-ctx
-/* 00137d98 00000028 */ FUN_00137d98(){}
-/* 00137dc0 00000044 */ FUN_00137dc0(){}
-/* 00137e08 00000024 */ FUN_00137e08(){}
-/* 00137e30 00000030 */ FUN_00137e30(){}
-/* 00137e60 00000024 */ FUN_00137e60(){}
-/* 00137e88 00000030 */ FUN_00137e88(){}
-/* 00137eb8 00000024 */ FUN_00137eb8(){}
-/* 00137ee0 00000034 */ FUN_00137ee0(){}
-/* 00137f18 00000068 */ FUN_00137f18(){}
-/* 00137f80 00000024 */ FUN_00137f80(){}
-/* 00137fa8 00000024 */ FUN_00137fa8(){}
-/* 00137fd0 00000024 */ FUN_00137fd0(){}
-/* 00137ff8 00000024 */ FUN_00137ff8(){}
-/* 00138020 00000038 */ FUN_00138020(){}
-/* 00138060 00000038 */ FUN_00138060(){}
-/* 001380a0 00000194 */ FUN_001380a0(){}
-/* 00138238 00000174 */ FUN_00138238(){}
-/* 001383b0 000000d0 */ FUN_001383b0(){}
-/* 00138480 000000bc */ FUN_00138480(){}
-/* 00138540 00000038 */ FUN_00138540(){}
-/* 00138578 000000b0 */ FUN_00138578(){}
-/* 00138628 00000034 */ FUN_00138628(){}
-/* 00138660 00000090 */ FUN_00138660(){}
-/* 001386f0 000001d8 */ FUN_001386f0(){}
-/* 001388c8 00000d14 */ FUN_001388c8(){}
-/* 001395e0 00000058 */ FUN_001395e0(){}
-/* 00139638 00000028 */ FUN_00139638(){}
-/* 00139660 00000028 */ FUN_00139660(){}
-/* 00139688 0000004c */ FUN_00139688(){}
-/* 001396d8 00000038 */ FUN_001396d8(){}
-/* 00139710 00000048 */ FUN_00139710(){}
-/* 00139758 00000070 */ FUN_00139758(){}
+/* 00137d98 00000028 */ _DelayThreadHandler(){}  // lib-ctx
+/* 00137dc0 00000044 */ sceDeci2Open(){}  // lib-ctx
+/* 00137e08 00000024 */ sceDeci2Close(){}  // lib-ctx
+/* 00137e30 00000030 */ sceDeci2ReqSend(){}  // lib-ctx
+/* 00137e60 00000024 */ sceDeci2Poll(){}  // lib-ctx
+/* 00137e88 00000030 */ sceDeci2GrpOpen(){}  // lib-ctx
+/* 00137eb8 00000024 */ sceDeci2GrpClose(){}  // lib-ctx
+/* 00137ee0 00000034 */ sceDeci2ExRecv(){}  // lib-ctx
+/* 00137f18 00000068 */ sceDeci2ExSend(){}  // lib-ctx
+/* 00137f80 00000024 */ sceDeci2ExLock(){}  // lib-ctx
+/* 00137fa8 00000024 */ sceDeci2ExUnLock(){}  // lib-ctx
+/* 00137fd0 00000024 */ kputs(){}  // lib-ctx
+/* 00137ff8 00000024 */ QueueInit(){}  // lib-ctx
+/* 00138020 00000038 */ QueuePeekWriteDone(){}  // lib-ctx
+/* 00138060 00000038 */ QueuePeekReadDone(){}  // lib-ctx
+/* 001380a0 00000194 */ sceTtyHandler(){}  // lib-ctx
+/* 00138238 00000174 */ sceTtyWrite(){}  // lib-ctx
+/* 001383b0 000000d0 */ sceTtyRead(){}  // lib-ctx
+/* 00138480 000000bc */ sceTtyInit(){}  // lib-ctx
+/* 00138540 00000038 */ kputchar(){}  // lib-ctx
+/* 00138578 000000b0 */ deci2Putchar(){}  // lib-ctx
+/* 00138628 00000034 */ serialPutchar(){}  // lib-ctx
+/* 00138660 00000090 */ ftoi(){}  // lib-ctx
+/* 001386f0 000001d8 */ printfloat(){}  // lib-ctx
+/* 001388c8 00000d14 */ _kvprintf(){}  // lib-ctx
+/* 001395e0 00000058 */ bufferPutchar(){}  // lib-ctx
+/* 00139638 00000028 */ deci2Output(){}  // lib-ctx
+/* 00139660 00000028 */ serialOutput(){}  // lib-ctx
+/* 00139688 0000004c */ kprintfSub(){}  // lib-ctx
+/* 001396d8 00000038 */ sceVsnprintf(){}  // lib-ctx
+/* 00139710 00000048 */ sceSnprintf(){}  // lib-ctx
+/* 00139758 00000070 */ deci2Vprintf(){}  // lib-ctx
 /* 001397c8 00000080 */ scePrintf(){}  // lib-ctx
-/* 00139848 00000080 */ FUN_00139848(){}
-/* 001398c8 0000001c */ FUN_001398c8(){}
-/* 001398e8 0000000c */ FUN_001398e8(){}
-/* 001398f8 00000044 */ FUN_001398f8(){}
-/* 00139940 00000280 */ FUN_00139940(){}
+/* 00139848 00000080 */ kprintf(){}  // lib-ctx
+/* 001398c8 0000001c */ _set_sreg(){}  // lib-ctx
+/* 001398e8 0000000c */ _change_addr(){}  // lib-ctx
+/* 001398f8 00000018 */ sceSifGetSreg(){}  // lib-ctx
+/* 00139910 0000001c */ sceSifSetSreg(){}  // lib-ctx
+/* 00139930 0000000c */ sceSifGetDataTable(){}  // lib-ctx
+/* 00139940 00000280 */ sceSifInitCmd(){}  // lib-ctx
 /* 00139bc0 00000034 */ sceSifExitCmd(){}  // lib-ctx
 /* 00139bf8 00000030 */ sceSifSetSysCmdBuffer(){}  // lib-ctx
 /* 00139c28 00000078 */ sceSifAddCmdHandler(){}  // lib-ctx

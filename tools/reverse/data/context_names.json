@@ -1607,6 +1607,546 @@
   "was": "FUN_00135860",
   "why": "(list {u16 capacity, u16 count, void **data}, p, grow): grows the array by grow slots (Heap::alloc / Heap::realloc, zeroed) when full, stores p in the first empty slot, returns the count"
  },
+ "001366c0": {
+  "name": "RFU000_FullReset",
+  "tag": "lib-context",
+  "was": "RFU000_FullReset",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x0; syscall); RoR 0x25d4c0 RFU000_FullReset at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "001366d0": {
+  "name": "ResetEE",
+  "tag": "lib-context",
+  "was": "ResetEE",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x1; syscall); RoR 0x25d4d0 ResetEE at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "001366f0": {
+  "name": "RFU003",
+  "tag": "lib-context",
+  "was": "RFU003",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x3; syscall); RoR 0x25d4f0 RFU003 at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136710": {
+  "name": "RFU005",
+  "tag": "lib-context",
+  "was": "RFU005_ResumeIntrDispatch",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x5; syscall); RoR 0x25d510 RFU005 at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136740": {
+  "name": "RFU008",
+  "tag": "lib-context",
+  "was": "RFU008_ResumeT3IntrDispatch",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x8; syscall); RoR 0x25d540 RFU008 at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136750": {
+  "name": "RFU009",
+  "tag": "lib-context",
+  "was": "RFU009",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x9; syscall); RoR 0x25d550 RFU009 at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136760": {
+  "name": "AddSbusIntcHandler",
+  "tag": "lib-context",
+  "was": "AddSbusIntcHandler",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0xa; syscall); RoR 0x25d560 AddSbusIntcHandler at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136770": {
+  "name": "RemoveSbusIntcHandler",
+  "tag": "lib-context",
+  "was": "RemoveSbusIntcHandler",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0xb; syscall); RoR 0x25d570 RemoveSbusIntcHandler at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136780": {
+  "name": "Interrupt2Iop",
+  "tag": "lib-context",
+  "was": "Interrupt2Iop",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0xc; syscall); RoR 0x25d580 Interrupt2Iop at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "001367b0": {
+  "name": "SetVInterruptHandler",
+  "tag": "lib-context",
+  "was": "SetVInterruptHandler",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0xf; syscall); RoR 0x25d5b0 SetVInterruptHandler at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "001368d0": {
+  "name": "iReleaseAlarm",
+  "tag": "lib-context",
+  "was": "iReleaseAlarm",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0xff; syscall); RoR 0x25d6d0 iReleaseAlarm at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136910": {
+  "name": "ExitThread",
+  "tag": "lib-context",
+  "was": "ExitThread",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x23; syscall); RoR 0x25d710 ExitThread at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136940": {
+  "name": "iTerminateThread",
+  "tag": "lib-context",
+  "was": "iTerminateThread",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x26; syscall); RoR 0x25d740 iTerminateThread at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136950": {
+  "name": "DisableDispatchThread",
+  "tag": "lib-context",
+  "was": "DisableDispatchThread",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x27; syscall); RoR 0x25d750 DisableDispatchThread at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136960": {
+  "name": "EnableDispatchThread",
+  "tag": "lib-context",
+  "was": "EnableDispatchThread",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x28; syscall); RoR 0x25d760 EnableDispatchThread at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "001369a0": {
+  "name": "_iRotateThreadReadyQueue",
+  "tag": "lib-context",
+  "was": "_iRotateThreadReadyQueue",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x2c; syscall); RoR 0x25d7a0 _iRotateThreadReadyQueue at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "001369b0": {
+  "name": "ReleaseWaitThread",
+  "tag": "lib-context",
+  "was": "ReleaseWaitThread",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x2d; syscall); RoR 0x25d7b0 ReleaseWaitThread at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "001369c0": {
+  "name": "iReleaseWaitThread",
+  "tag": "lib-context",
+  "was": "iReleaseWaitThread",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x2e; syscall); RoR 0x25d7c0 iReleaseWaitThread at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "001369f0": {
+  "name": "iReferThreadStatus",
+  "tag": "lib-context",
+  "was": "iReferThreadStatus",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x31; syscall); RoR 0x25d7f0 iReferThreadStatus at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136a30": {
+  "name": "CancelWakeupThread",
+  "tag": "lib-context",
+  "was": "CancelWakeupThread",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x35; syscall); RoR 0x25d830 CancelWakeupThread at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136a40": {
+  "name": "iCancelWakeupThread",
+  "tag": "lib-context",
+  "was": "iCancelWakeupThread",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x36; syscall); RoR 0x25d840 iCancelWakeupThread at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136a80": {
+  "name": "iResumeThread",
+  "tag": "lib-context",
+  "was": "iResumeThread",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x3a; syscall); RoR 0x25d880 iResumeThread at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136a90": {
+  "name": "JoinThread",
+  "tag": "lib-context",
+  "was": "JoinThread",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x3b; syscall); RoR 0x25d890 JoinThread at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136aa0": {
+  "name": "RFU060",
+  "tag": "lib-context",
+  "was": "RFU060_SetupThread",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x3c; syscall); RoR 0x25d8a0 RFU060 at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136ab0": {
+  "name": "RFU061",
+  "tag": "lib-context",
+  "was": "RFU061_SetupHeap",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x3d; syscall); RoR 0x25d8b0 RFU061 at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136ad0": {
+  "name": "RFU063",
+  "tag": "lib-context",
+  "was": "RFU063",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x3f; syscall); RoR 0x25d8d0 RFU063 at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136b50": {
+  "name": "ReferSemaStatus",
+  "tag": "lib-context",
+  "was": "ReferSemaStatus",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x47; syscall); RoR 0x25d950 ReferSemaStatus at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136b70": {
+  "name": "RFU073",
+  "tag": "lib-context",
+  "was": "RFU073",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x49; syscall); RoR 0x25d970 RFU073 at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136ba0": {
+  "name": "GetGsHParam",
+  "tag": "lib-context",
+  "was": "GetGsHParam",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x4c; syscall); RoR 0x25d9a0 GetGsHParam at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136bb0": {
+  "name": "GetGsVParam",
+  "tag": "lib-context",
+  "was": "GetGsVParam",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x4d; syscall); RoR 0x25d9b0 GetGsVParam at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136bc0": {
+  "name": "SetGsHParam",
+  "tag": "lib-context",
+  "was": "SetGsHParam",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x4e; syscall); RoR 0x25d9c0 SetGsHParam at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136bd0": {
+  "name": "SetGsVParam",
+  "tag": "lib-context",
+  "was": "SetGsVParam",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x4f; syscall); RoR 0x25d9d0 SetGsVParam at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136be0": {
+  "name": "RFU080_CreateEventFlag",
+  "tag": "lib-context",
+  "was": "RFU080_CreateEventFlag",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x50; syscall); RoR 0x25d9e0 RFU080_CreateEventFlag at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136bf0": {
+  "name": "RFU081_DeleteEventFlag",
+  "tag": "lib-context",
+  "was": "RFU081_DeleteEventFlag",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x51; syscall); RoR 0x25d9f0 RFU081_DeleteEventFlag at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136c00": {
+  "name": "RFU082_SetEventFlag",
+  "tag": "lib-context",
+  "was": "RFU082_SetEventFlag",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x52; syscall); RoR 0x25da00 RFU082_SetEventFlag at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136c10": {
+  "name": "RFU083_iSetEventFlag",
+  "tag": "lib-context",
+  "was": "RFU083_iSetEventFlag",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x53; syscall); RoR 0x25da10 RFU083_iSetEventFlag at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136c20": {
+  "name": "RFU084_ClearEventFlag",
+  "tag": "lib-context",
+  "was": "RFU084_ClearEventFlag",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x54; syscall); RoR 0x25da20 RFU084_ClearEventFlag at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136c30": {
+  "name": "RFU085_iClearEventFlag",
+  "tag": "lib-context",
+  "was": "RFU085_iClearEventFlag",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x55; syscall), merged in RoR; named after ps2sdk syscall 85; Sony name unconfirmed"
+ },
+ "00136c40": {
+  "name": "RFU086_WaitEventFlag",
+  "tag": "lib-context",
+  "was": "RFU086_WaitEvnetFlag",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x56; syscall), merged in RoR; named after ps2sdk syscall 86; Sony name unconfirmed"
+ },
+ "00136c50": {
+  "name": "RFU087_PollEventFlag",
+  "tag": "lib-context",
+  "was": "RFU087_PollEvnetFlag",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x57; syscall), merged in RoR; named after ps2sdk syscall 87; Sony name unconfirmed"
+ },
+ "00136c60": {
+  "name": "RFU088_iPollEventFlag",
+  "tag": "lib-context",
+  "was": "RFU088_iPollEvnetFlag",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x58; syscall), merged in RoR; named after ps2sdk syscall 88; Sony name unconfirmed"
+ },
+ "00136c70": {
+  "name": "RFU089_ReferEventFlagStatus",
+  "tag": "lib-context",
+  "was": "RFU089_ReferEventFlagStatus",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x59; syscall), merged in RoR; named after ps2sdk syscall 89; Sony name unconfirmed"
+ },
+ "00136c80": {
+  "name": "RFU090_iReferEventFlagStatus",
+  "tag": "lib-context",
+  "was": "RFU090_iReferEventFlagStatus",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x5a; syscall); RoR 0x25da80 RFU090_iReferEventFlagStatus at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136c90": {
+  "name": "RFU091_GetEntryAddress",
+  "tag": "lib-context",
+  "was": "RFU091",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x5b; syscall), merged in RoR; named after ps2sdk syscall 91; Sony name unconfirmed"
+ },
+ "00136ca0": {
+  "name": "EnableIntcHandler",
+  "tag": "lib-context",
+  "was": "EnableIntcHandler",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x5c; syscall); RoR 0x25daa0 EnableIntcHandler at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136cb0": {
+  "name": "iEnableIntcHandler",
+  "tag": "lib-context",
+  "was": "iEnableIntcHandler",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x5c; syscall); RoR 0x25dab0 iEnableIntcHandler at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136cc0": {
+  "name": "DisableIntcHandler",
+  "tag": "lib-context",
+  "was": "DisableIntcHandler",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x5d; syscall); RoR 0x25dac0 DisableIntcHandler at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136cd0": {
+  "name": "iDisableIntcHandler",
+  "tag": "lib-context",
+  "was": "iDisableIntcHandler",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x5d; syscall); RoR 0x25dad0 iDisableIntcHandler at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136ce0": {
+  "name": "EnableDmacHandler",
+  "tag": "lib-context",
+  "was": "EnableDmacHandler",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x5e; syscall); RoR 0x25dae0 EnableDmacHandler at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136cf0": {
+  "name": "iEnableDmacHandler",
+  "tag": "lib-context",
+  "was": "iEnableDmacHandler",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x5e; syscall); RoR 0x25daf0 iEnableDmacHandler at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136d00": {
+  "name": "DisableDmacHandler",
+  "tag": "lib-context",
+  "was": "DisableDmacHandler",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x5f; syscall); RoR 0x25db00 DisableDmacHandler at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136d10": {
+  "name": "iDisableDmacHandler",
+  "tag": "lib-context",
+  "was": "iDisableDmacHandler",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x5f; syscall); RoR 0x25db10 iDisableDmacHandler at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136d20": {
+  "name": "KSeg0",
+  "tag": "lib-context",
+  "was": "KSeg0",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x60; syscall); RoR 0x25db20 KSeg0 at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136d30": {
+  "name": "EnableCache",
+  "tag": "lib-context",
+  "was": "EnableCache",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x61; syscall); RoR 0x25db30 EnableCache at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136d40": {
+  "name": "DisableCache",
+  "tag": "lib-context",
+  "was": "DisableCache",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x62; syscall); RoR 0x25db40 DisableCache at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136d50": {
+  "name": "GetCop0",
+  "tag": "lib-context",
+  "was": "GetCop0",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x63; syscall); RoR 0x25db50 GetCop0 at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136d70": {
+  "name": "CpuConfig",
+  "tag": "lib-context",
+  "was": "CpuConfig",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x66; syscall); RoR 0x25db70 CpuConfig at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136d80": {
+  "name": "iGetCop0",
+  "tag": "lib-context",
+  "was": "iGetCop0",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x67; syscall); RoR 0x25db80 iGetCop0 at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136d90": {
+  "name": "iFlushCache",
+  "tag": "lib-context",
+  "was": "iFlushCache",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x68; syscall); RoR 0x25db90 iFlushCache at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136da0": {
+  "name": "iCpuConfig",
+  "tag": "lib-context",
+  "was": "iCpuConfig",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x6a; syscall); RoR 0x25dba0 iCpuConfig at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136dc0": {
+  "name": "SetCPUTimerHandler",
+  "tag": "lib-context",
+  "was": "SetCPUTimerHandler",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x6c; syscall); RoR 0x25dbc0 SetCPUTimerHandler at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136dd0": {
+  "name": "SetCPUTimer",
+  "tag": "lib-context",
+  "was": "SetCPUTimer",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x6d; syscall); RoR 0x25dbd0 SetCPUTimer at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136de0": {
+  "name": "SetOsdConfigParam2",
+  "tag": "lib-context",
+  "was": "SetOsdConfigParam2",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x6e; syscall); RoR 0x25dbe0 SetOsdConfigParam2 at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136e10": {
+  "name": "iGsGetIMR",
+  "tag": "lib-context",
+  "was": "iGsGetIMR",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x70; syscall); RoR 0x25dc10 iGsGetIMR at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136e30": {
+  "name": "iGsPutIMR",
+  "tag": "lib-context",
+  "was": "iGsPutIMR",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x71; syscall); RoR 0x25dc30 iGsPutIMR at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136e40": {
+  "name": "SetPgifHandler",
+  "tag": "lib-context",
+  "was": "SetPgifHandler",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x72; syscall); RoR 0x25dc40 SetPgifHandler at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136e60": {
+  "name": "SetSyscall",
+  "tag": "lib-context",
+  "was": "RFU116_SetSyscall",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x74; syscall), merged in RoR; named after ps2sdk syscall 116; Sony name unconfirmed"
+ },
+ "00136e70": {
+  "name": "_print",
+  "tag": "lib-context",
+  "was": "_print",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x75; syscall); RoR 0x25dc70 _print at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136e90": {
+  "name": "isceSifDmaStat",
+  "tag": "lib-context",
+  "was": "isceSifDmaStat",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,-0x76; syscall); RoR 0x25dc90 isceSifDmaStat at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136f20": {
+  "name": "PSMode",
+  "tag": "lib-context",
+  "was": "PSMode",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x7d; syscall); RoR 0x25dd20 PSMode at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136f30": {
+  "name": "MachineType",
+  "tag": "lib-context",
+  "was": "MachineType",
+  "why": "SDK 3.0 libkernl klib.s: syscall stub (addiu v1,0x7e; syscall); RoR 0x25dd30 MachineType at the same slot of the same 138-stub table (every slot named in both agrees)"
+ },
+ "00136f60": {
+  "name": "sceResetttyinit",
+  "tag": "lib-context",
+  "was": "FUN_00136f60",
+  "why": "SDK 3.0 libkernl glue.c: clears the tty-init flag 0x2f3950; FF3 0x281900 (FF2 symbol), same size 0xc and slot"
+ },
+ "00136f70": {
+  "name": "VSync",
+  "tag": "lib-context",
+  "was": "FUN_00136f70",
+  "why": "SDK 3.0 libkernl glue.c; RoR 0x25dd70 and FF3 0x281910 (FF2 symbol), same size 0x90"
+ },
+ "00137000": {
+  "name": "VSync2",
+  "tag": "lib-context",
+  "was": "FUN_00137000",
+  "why": "SDK 3.0 libkernl glue.c: calls SetVSyncFlag; RoR 0x25de00 and FF3 0x2819a0 (FF2 symbol), same size 0xa4"
+ },
+ "001370a8": {
+  "name": "write",
+  "tag": "lib-context",
+  "was": "FUN_001370a8",
+  "why": "SDK 3.0 libkernl glue.c: sceTtyInit + sceTtyWrite; RoR 0x25dea8 and FF3 0x281a48 (FF2 symbol), same size 0x7c"
+ },
+ "00137128": {
+  "name": "read",
+  "tag": "lib-context",
+  "was": "FUN_00137128",
+  "why": "SDK 3.0 libkernl glue.c: sceTtyInit + sceTtyRead; RoR 0x25df28 and FF3 0x281ac8 (FF2 symbol), same size 0x74"
+ },
+ "001371a0": {
+  "name": "open",
+  "tag": "lib-context",
+  "was": "FUN_001371a0",
+  "why": "SDK 3.0 libkernl glue.c (RoR 0x25dfa0 unnamed, same size); FF3 0x281b40 (FF2 symbol), same size 0x28 and slot"
+ },
+ "001371d8": {
+  "name": "lseek",
+  "tag": "lib-context",
+  "was": "FUN_001371d8",
+  "why": "SDK 3.0 libkernl glue.c: returns -1 (FF3 name low confidence); FF3 0x281b78 (FF2 symbol), same size 0x8 and slot"
+ },
+ "001371e0": {
+  "name": "sbrk",
+  "tag": "lib-context",
+  "was": "FUN_001371e0",
+  "why": "SDK 3.0 libkernl glue.c: grows to EndOfHeap; RoR 0x25dfe0 and FF3 0x281b80 (FF2 symbol), same size 0xac"
+ },
+ "00137290": {
+  "name": "isatty",
+  "tag": "lib-context",
+  "was": "FUN_00137290",
+  "why": "SDK 3.0 libkernl glue.c: returns 1; FF3 0x281c30 (FF2 symbol), same size 0x8 and slot"
+ },
+ "00137298": {
+  "name": "fstat",
+  "tag": "lib-context",
+  "was": "FUN_00137298",
+  "why": "SDK 3.0 libkernl glue.c: st_mode = 0x2000 (S_IFCHR), returns 0; RoR 0x25e098 fstat (0x14) and FF3 0x281c38 (FF3 merged the next stub)"
+ },
+ "001372b0": {
+  "name": "getpid",
+  "tag": "lib-context",
+  "was": "FUN_001372b0",
+  "why": "SDK 3.0 libkernl glue.c: returns 1 like newlib's stub getpid, between fstat and kill; RoR 0x25e0b0 unnamed at the same slot; name by reading"
+ },
+ "001372b8": {
+  "name": "kill",
+  "tag": "lib-context",
+  "was": "FUN_001372b8",
+  "why": "SDK 3.0 libkernl glue.c: calls Exit; RoR 0x25e0b8 and FF3 0x281c58 (FF2 symbol), same size 0x28"
+ },
+ "001372e0": {
+  "name": "stat",
+  "tag": "lib-context",
+  "was": "FUN_001372e0",
+  "why": "SDK 3.0 libkernl glue.c (RoR 0x25e0e0 unnamed, same size); FF3 0x281c80 (FF2 symbol), same size 0x28 and slot"
+ },
+ "00137308": {
+  "name": "unlink",
+  "tag": "lib-context",
+  "was": "FUN_00137308",
+  "why": "SDK 3.0 libkernl glue.c (RoR 0x25e108 unnamed, same size); FF3 0x281ca8 (FF2 symbol), same size 0x28 and slot"
+ },
+ "00137330": {
+  "name": "_SyncDCache",
+  "tag": "lib-context",
+  "was": "FUN_00137330",
+  "why": "SDK 3.0 libkernl cache: walks the 4 KB D-cache by index (cache 0x10 index load tag), write-back-invalidates (cache 0x14) the lines whose tag lies in [a0, a1]; not linked by RoR or FF3; ps2sdk name"
+ },
+ "001373d8": {
+  "name": "SyncDCache",
+  "tag": "lib-context",
+  "was": "FUN_001373d8",
+  "why": "SDK 3.0 libkernl cache: DI if Status.EIE, _SyncDCache(start & ~0x3f, end & ~0x3f), EI; ps2sdk name"
+ },
+ "00137470": {
+  "name": "_InvalidDCache",
+  "tag": "lib-context",
+  "was": "FUN_00137470",
+  "why": "SDK 3.0 libkernl cache: as _SyncDCache with cache 0x16 (index invalidate, no write-back); ps2sdk name"
+ },
+ "00137518": {
+  "name": "InvalidDCache",
+  "tag": "lib-context",
+  "was": "FUN_00137518",
+  "why": "SDK 3.0 libkernl cache: DI if Status.EIE, _InvalidDCache(start & ~0x3f, end & ~0x3f), EI; ps2sdk name"
+ },
+ "001375b0": {
+  "name": "QueryIntrContext",
+  "tag": "lib-context",
+  "was": "FUN_001375b0",
+  "why": "SDK 3.0 libkernl intr.c; RoR 0x25e130 and FF3 0x2770e0 (FF2 symbol), same size 0x10"
+ },
  "001375c0": {
   "name": "DisableIntc",
   "tag": "lib-context",
@@ -1618,6 +2158,42 @@
   "tag": "lib-context",
   "was": "FUN_00137628",
   "why": "libkernl wrapper: _EnableIntc(cause) + sync between DIntr / EIntr when interrupts were on"
+ },
+ "00137690": {
+  "name": "DisableDmac",
+  "tag": "lib-context",
+  "was": "FUN_00137690",
+  "why": "SDK 3.0 libkernl intr.c: DI, _DisableDmac, EI (RoR 0x25e210 unnamed); FF3 0x2771c0 (FF2 symbol), same size 0x68 and slot"
+ },
+ "001376f8": {
+  "name": "EnableDmac",
+  "tag": "lib-context",
+  "was": "FUN_001376f8",
+  "why": "SDK 3.0 libkernl intr.c: DI, _EnableDmac, EI (RoR 0x25e278 unnamed); FF3 0x277228 (FF2 symbol), same size 0x68 and slot"
+ },
+ "00137760": {
+  "name": "iEnableIntc",
+  "tag": "lib-context",
+  "was": "FUN_00137760",
+  "why": "SDK 3.0 libkernl intr.c: _iEnableIntc (RoR 0x25e2e0 unnamed); FF3 0x277290 (FF2 symbol), same size 0x20 and slot"
+ },
+ "00137780": {
+  "name": "iDisableIntc",
+  "tag": "lib-context",
+  "was": "FUN_00137780",
+  "why": "SDK 3.0 libkernl intr.c: _iDisableIntc; RoR 0x25e300 and FF3 0x2772b0 (FF2 symbol), same size 0x20"
+ },
+ "001377a0": {
+  "name": "iEnableDmac",
+  "tag": "lib-context",
+  "was": "FUN_001377a0",
+  "why": "SDK 3.0 libkernl intr.c: _iEnableDmac (RoR 0x25e320 unnamed); FF3 0x2772d0 (FF2 symbol), same size 0x20 and slot"
+ },
+ "001377c0": {
+  "name": "iDisableDmac",
+  "tag": "lib-context",
+  "was": "FUN_001377c0",
+  "why": "SDK 3.0 libkernl intr.c: _iDisableDmac (RoR 0x25e340 unnamed); FF3 0x2772f0 (FF2 symbol), same size 0x20 and slot"
  },
  "001377e0": {
   "name": "topThread",
@@ -1631,17 +2207,275 @@
   "was": "FUN_001378b8",
   "why": "SDK 3.0 libkernl: _InitSys's sixth call; creates the SceKerneltopThread semaphore and a 0x400-byte-stack thread on 0x1377e0, starts it, drops the caller to priority 1; RoR 0x25e438 InitThread and FF3 0x2773e8 (FF2's symbol), same size 0xec after topThread"
  },
+ "001379a8": {
+  "name": "iWakeupThread",
+  "tag": "lib-context",
+  "was": "FUN_001379a8",
+  "why": "SDK 3.0 libkernl thread.c; RoR 0x25e528 and FF3 0x2774d8 (FF2 symbol), same size 0x94"
+ },
+ "00137a40": {
+  "name": "iRotateThreadReadyQueue",
+  "tag": "lib-context",
+  "was": "FUN_00137a40",
+  "why": "SDK 3.0 libkernl thread.c; RoR 0x25e5c0 and FF3 0x277570 (FF2 symbol), same size 0x7c"
+ },
+ "00137ac0": {
+  "name": "iSuspendThread",
+  "tag": "lib-context",
+  "was": "FUN_00137ac0",
+  "why": "SDK 3.0 libkernl thread.c; RoR 0x25e640 and FF3 0x2775f0 (FF2 symbol), same size 0x98"
+ },
+ "00137b58": {
+  "name": "DelayThread",
+  "tag": "lib-context",
+  "was": "FUN_00137b58",
+  "why": "SDK 3.0 libkernl thread.c: SetTimerAlarm + WaitSema; RoR 0x25e6d8 and FF3 0x277688 (FF2 symbol), same size 0xc8"
+ },
  "00137c20": {
   "name": "StartThread",
   "tag": "lib-context",
   "was": "FUN_00137c20",
   "why": "libkernl wrapper: ReferThreadStatus, clears the new thread's saved register area on its stack under DIntr, then _StartThread(tid, arg)"
  },
+ "00137d98": {
+  "name": "_DelayThreadHandler",
+  "tag": "lib-context",
+  "was": "FUN_00137d98",
+  "why": "SDK 3.0 libkernl thread.c: the alarm handler, iSignalSema; RoR 0x25e918 and FF3 0x2778c8 (FF2 symbol), same size 0x28"
+ },
+ "00137dc0": {
+  "name": "sceDeci2Open",
+  "tag": "lib-context",
+  "was": "FUN_00137dc0",
+  "why": "SDK 3.0 libkernl deci2.c: a Deci2Call wrapper (RoR links deci2.c elsewhere, 0x269710); FF3 0x281cd0 (FF2 symbol), same size 0x44 and slot"
+ },
+ "00137e08": {
+  "name": "sceDeci2Close",
+  "tag": "lib-context",
+  "was": "FUN_00137e08",
+  "why": "SDK 3.0 libkernl deci2.c: a Deci2Call wrapper (RoR links deci2.c elsewhere, 0x269710); FF3 0x281d18 (FF2 symbol), same size 0x24 and slot"
+ },
+ "00137e30": {
+  "name": "sceDeci2ReqSend",
+  "tag": "lib-context",
+  "was": "FUN_00137e30",
+  "why": "SDK 3.0 libkernl deci2.c: a Deci2Call wrapper (RoR links deci2.c elsewhere, 0x269710); FF3 0x281d40 (FF2 symbol), same size 0x30 and slot"
+ },
+ "00137e60": {
+  "name": "sceDeci2Poll",
+  "tag": "lib-context",
+  "was": "FUN_00137e60",
+  "why": "SDK 3.0 libkernl deci2.c: a Deci2Call wrapper (RoR links deci2.c elsewhere, 0x269710); FF3 0x281d70 (FF2 symbol), same size 0x24 and slot"
+ },
+ "00137e88": {
+  "name": "sceDeci2GrpOpen",
+  "tag": "lib-context",
+  "was": "FUN_00137e88",
+  "why": "SDK 3.0 libkernl deci2.c: a Deci2Call wrapper (RoR links deci2.c elsewhere, 0x269710); FF3 0x281d98 (FF2 symbol), same size 0x30 and slot"
+ },
+ "00137eb8": {
+  "name": "sceDeci2GrpClose",
+  "tag": "lib-context",
+  "was": "FUN_00137eb8",
+  "why": "SDK 3.0 libkernl deci2.c: a Deci2Call wrapper (RoR links deci2.c elsewhere, 0x269710); FF3 0x281dc8 (FF2 symbol), same size 0x24 and slot"
+ },
+ "00137ee0": {
+  "name": "sceDeci2ExRecv",
+  "tag": "lib-context",
+  "was": "FUN_00137ee0",
+  "why": "SDK 3.0 libkernl deci2.c: a Deci2Call wrapper (RoR links deci2.c elsewhere, 0x269710); FF3 0x281df0 (FF2 symbol), same size 0x34 and slot"
+ },
+ "00137f18": {
+  "name": "sceDeci2ExSend",
+  "tag": "lib-context",
+  "was": "FUN_00137f18",
+  "why": "SDK 3.0 libkernl deci2.c: a Deci2Call wrapper (RoR links deci2.c elsewhere, 0x269710); FF3 0x281e28 (FF2 symbol), same size 0x68 and slot"
+ },
+ "00137f80": {
+  "name": "sceDeci2ExLock",
+  "tag": "lib-context",
+  "was": "FUN_00137f80",
+  "why": "SDK 3.0 libkernl deci2.c: a Deci2Call wrapper (RoR links deci2.c elsewhere, 0x269710); FF3 0x281e90 (FF2 symbol), same size 0x24 and slot"
+ },
+ "00137fa8": {
+  "name": "sceDeci2ExUnLock",
+  "tag": "lib-context",
+  "was": "FUN_00137fa8",
+  "why": "SDK 3.0 libkernl deci2.c: a Deci2Call wrapper (RoR links deci2.c elsewhere, 0x269710); FF3 0x281eb8 (FF2 symbol), same size 0x24 and slot"
+ },
+ "00137fd0": {
+  "name": "kputs",
+  "tag": "lib-context",
+  "was": "FUN_00137fd0",
+  "why": "SDK 3.0 libkernl deci2.c: a Deci2Call wrapper (RoR links deci2.c elsewhere, 0x269710); FF3 0x281ee0 (FF2 symbol), same size 0x24 and slot"
+ },
+ "00137ff8": {
+  "name": "QueueInit",
+  "tag": "lib-context",
+  "was": "FUN_00137ff8",
+  "why": "SDK 3.0 libkernl tty.c; RoR 0x25e940 and FF3 0x281f08 (FF2 symbol), same size 0x24"
+ },
+ "00138020": {
+  "name": "QueuePeekWriteDone",
+  "tag": "lib-context",
+  "was": "FUN_00138020",
+  "why": "SDK 3.0 libkernl tty.c; RoR 0x25e968 and FF3 0x281f30 (FF2 symbol), same size 0x38"
+ },
+ "00138060": {
+  "name": "QueuePeekReadDone",
+  "tag": "lib-context",
+  "was": "FUN_00138060",
+  "why": "SDK 3.0 libkernl tty.c; RoR 0x25e9a8 and FF3 0x281f70 (FF2 symbol), same size 0x38"
+ },
+ "001380a0": {
+  "name": "sceTtyHandler",
+  "tag": "lib-context",
+  "was": "FUN_001380a0",
+  "why": "SDK 3.0 libkernl tty.c: the TTY: error strings; RoR 0x25e9e8 and FF3 0x281fb0 (FF2 symbol), same size 0x194"
+ },
+ "00138238": {
+  "name": "sceTtyWrite",
+  "tag": "lib-context",
+  "was": "FUN_00138238",
+  "why": "SDK 3.0 libkernl tty.c (RoR 0x25eb80 unnamed, same size); write's callee; FF3 0x282148 (FF2 symbol), same size 0x174 and slot"
+ },
+ "001383b0": {
+  "name": "sceTtyRead",
+  "tag": "lib-context",
+  "was": "FUN_001383b0",
+  "why": "SDK 3.0 libkernl tty.c; RoR 0x25ecf8 and FF3 0x2822c0 (FF2 symbol), same size 0xd0"
+ },
+ "00138480": {
+  "name": "sceTtyInit",
+  "tag": "lib-context",
+  "was": "FUN_00138480",
+  "why": "SDK 3.0 libkernl tty.c: sceDeci2Open + QueueInit; RoR 0x25edc8 and FF3 0x282390 (FF2 symbol), same size 0xbc"
+ },
+ "00138540": {
+  "name": "kputchar",
+  "tag": "lib-context",
+  "was": "FUN_00138540",
+  "why": "SDK 3.0 libkernl kprintf.c; RoR 0x25ee88 and FF3 0x2778f0 (FF2 symbol), same size 0x38"
+ },
+ "00138578": {
+  "name": "deci2Putchar",
+  "tag": "lib-context",
+  "was": "FUN_00138578",
+  "why": "SDK 3.0 libkernl kprintf.c (RoR 0x25eec0 unnamed, same size); calls kputs; FF3 0x277928 (FF2 symbol), same size 0xb0 and slot"
+ },
+ "00138628": {
+  "name": "serialPutchar",
+  "tag": "lib-context",
+  "was": "FUN_00138628",
+  "why": "SDK 3.0 libkernl kprintf.c: calls kputchar; RoR 0x25ef70 and FF3 0x2779d8 (FF2 symbol), same size 0x34"
+ },
+ "00138660": {
+  "name": "ftoi",
+  "tag": "lib-context",
+  "was": "FUN_00138660",
+  "why": "SDK 3.0 libkernl kprintf.c; RoR 0x25efa8 and FF3 0x277a10 (FF2 symbol), same size 0x90"
+ },
+ "001386f0": {
+  "name": "printfloat",
+  "tag": "lib-context",
+  "was": "FUN_001386f0",
+  "why": "SDK 3.0 libkernl kprintf.c: the 0.%d / e+%d strings; RoR 0x25f038 and FF3 0x277aa0 (FF2 symbol), same size 0x1d8"
+ },
+ "001388c8": {
+  "name": "_kvprintf",
+  "tag": "lib-context",
+  "was": "FUN_001388c8",
+  "why": "SDK 3.0 libkernl kprintf.c: the formatter every printf here calls, (putc fn, its context, max length, fmt, va_list), 0123456789abcdef tables, printfloat for floats; RoR 0x25f210 / FF3 0x277c78 unnamed (0xd70; FS2 0xd14); BSD-style name by reading"
+ },
+ "001395e0": {
+  "name": "bufferPutchar",
+  "tag": "lib-context",
+  "was": "FUN_001395e0",
+  "why": "SDK 3.0 libkernl kprintf.c: _kvprintf output callback of sceSnprintf / sceVsnprintf, stores a byte at *buf while the count lasts, NUL at the end; FS2-only slot (a code pointer); name by reading"
+ },
+ "00139638": {
+  "name": "deci2Output",
+  "tag": "lib-context",
+  "was": "FUN_00139638",
+  "why": "SDK 3.0 libkernl kprintf.c: _kvprintf output callback, deci2Putchar for a non-zero char, returns 1; RoR 0x25ff80 / FF3 0x2789e8 unnamed; name by reading"
+ },
+ "00139660": {
+  "name": "serialOutput",
+  "tag": "lib-context",
+  "was": "FUN_00139660",
+  "why": "SDK 3.0 libkernl kprintf.c: _kvprintf output callback, serialPutchar for a non-zero char, returns 1; RoR 0x25ffa8 / FF3 0x278a10 unnamed; name by reading"
+ },
+ "00139688": {
+  "name": "kprintfSub",
+  "tag": "lib-context",
+  "was": "FUN_00139688",
+  "why": "SDK 3.0 libkernl kprintf.c: variadic (putc, ctx, int *left, fmt, ...) into _kvprintf, subtracts what it printed from *left; printfloat's printer; RoR 0x25ffd0 / FF3 0x278a38 unnamed; name by reading"
+ },
+ "001396d8": {
+  "name": "sceVsnprintf",
+  "tag": "lib-context",
+  "was": "FUN_001396d8",
+  "why": "SDK 3.0 libkernl kprintf.c: (buf, n, fmt, va) via _kvprintf + bufferPutchar; RoR 0x260020 / FF3 0x278a88 unnamed; SDK name by its shape"
+ },
+ "00139710": {
+  "name": "sceSnprintf",
+  "tag": "lib-context",
+  "was": "FUN_00139710",
+  "why": "SDK 3.0 libkernl kprintf.c: (buf, n, fmt, ...) via _kvprintf + bufferPutchar; RoR 0x260058 / FF3 0x278ac0 unnamed; SDK name by its shape"
+ },
+ "00139758": {
+  "name": "deci2Vprintf",
+  "tag": "lib-context",
+  "was": "FUN_00139758",
+  "why": "SDK 3.0 libkernl kprintf.c: (fmt, va) with interrupts off via _kvprintf + deci2Output, scePrintf's va_list twin, no callers; RoR 0x2600a0 / FF3 0x278b08 unnamed; Sony name unknown (sceVprintf?)"
+ },
  "001397c8": {
   "name": "scePrintf",
   "tag": "lib-context",
   "was": "FUN_001397c8",
   "why": "libkernl varargs printf formatting through 0x1388c8 with the output fn 0x139638 under DIntr; sceGsSyncPath's timeout messages go through it"
+ },
+ "00139848": {
+  "name": "kprintf",
+  "tag": "lib-context",
+  "was": "FUN_00139848",
+  "why": "SDK 3.0 libkernl kprintf.c: variadic, interrupts off, _kvprintf + serialOutput; called by topThread (## internel error in libkernl.), sceTtyHandler (TTY: errors) and InitTLB32MB; RoR 0x260190 unnamed (same size 0x80); name by reading"
+ },
+ "001398c8": {
+  "name": "_set_sreg",
+  "tag": "lib-context",
+  "was": "FUN_001398c8",
+  "why": "SDK 3.0 libkernl sifcmd.c: the system command handler storing sreg[data->no] = data->value; RoR 0x260210 _set_sreg, same size 0x1c (a code pointer stored by sceSifInitCmd)"
+ },
+ "001398e8": {
+  "name": "_change_addr",
+  "tag": "lib-context",
+  "was": "FUN_001398e8",
+  "why": "SDK 3.0 libkernl sifcmd.c: the system command handler storing the IOP buffer address; RoR 0x260230 _change_addr, same size 0xc (a code pointer stored by sceSifInitCmd)"
+ },
+ "001398f8": {
+  "name": "sceSifGetSreg",
+  "tag": "lib-context",
+  "was": "FUN_001398f8",
+  "why": "SDK 3.0 libkernl sifcmd.c: returns sreg[a0] (table 0x4c9b00); RoR 0x260240 sceSifGetSreg, same size 0x18"
+ },
+ "00139910": {
+  "name": "sceSifSetSreg",
+  "tag": "lib-context",
+  "was": "FUN_00139910",
+  "why": "SDK 3.0 libkernl sifcmd.c: sreg[a0] = a1, returns a1; RoR 0x260258 sceSifSetSreg (0x2c with the next stub)"
+ },
+ "00139930": {
+  "name": "sceSifGetDataTable",
+  "tag": "lib-context",
+  "was": "FUN_00139930",
+  "why": "SDK 3.0 libkernl sifcmd.c: returns the SIF cmd data block 0x4c9958; merged into sceSifSetSreg by RoR and FF3; ps2sdk SifGetDataTable, Sony name unconfirmed"
+ },
+ "00139940": {
+  "name": "sceSifInitCmd",
+  "tag": "lib-context",
+  "was": "FUN_00139940",
+  "why": "SDK 3.0 libkernl sifcmd.c: once-only init of the cmd data at 0x4c9958, installs _change_addr / _set_sreg, the SIF0 DMAC handler, handshake through the SIF regs; FF3 0x278cf0 sceSifInitCmd (FF2 symbol) and RoR 0x260288, same size 0x280"
  },
  "00139bc0": {
   "name": "sceSifExitCmd",

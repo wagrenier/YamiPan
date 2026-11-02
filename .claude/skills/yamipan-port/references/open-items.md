@@ -116,9 +116,17 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    numbers 0x55..0x59 (`ExpandScratchPad` 0x59 least sure); 0x141198 (`j InitTLB`, called by
    every exit.c entry) keeps Ghidra's thunk name; 0x142dd0 / 0x142df0 after the reboot-notify run
    are unread.
-   **Next batches, in this order**: libkernl's front, `rxalign.py` from ~0x137000 to 0x139bc0
-   against RoR from ~0x25d000 to 0x260508 (libthread around `InitThread` 0x1378b8 / RoR
-   0x25e438, intc, dma helpers; anchor `StartThread` 0x137c20); then the rest of the SDK 3.0
+   **Batch 016 done (2026-11-02, 139 names, 75 starts created)**: libkernl's front 0x1366c0..
+   0x139bc0 (klib.s by slot from RoR, glue / cache / intr / thread / deci2 / tty / kprintf /
+   sifcmd head from RoR + FF3; architecture.md "Key functions and globals", SDK). Doubts: the
+   seven klib.s slots RoR merged (0x55..0x59, 0x5b, 0x74) carry ps2sdk names; 0x1371c8 /
+   0x1371d0 (glue, return -1) unnamed; `lseek` is FF3's low-confidence name; the kprintf.c
+   helpers (`_kvprintf`, `bufferPutchar`, `deci2Output`, `serialOutput`, `kprintfSub`,
+   `deci2Vprintf`, `kprintf`) and `getpid` / `sceSifGetDataTable` are names by reading, Sony's
+   own unknown (RoR and FF3 have them unnamed); 0x123528 (glue's errno setter?) and the VU0
+   math run 0x135a90..0x1366bc before klib.s are unread.
+   **Next batches, in this order**: libkernl's fileio run 0x13b7e4..0x13ed90 (37 functions, all
+   unnamed, after `_sceFs_Rcv_Intr`; RoR's fileio after 0x262300); then the rest of the SDK 3.0
    libraries both games link, by `rxalign.py` size runs against
    RoR's `// lib` names as batch 010 did for SIF (libgraph,
    libdma, libpad, libmc, libcdvd: find each by a named anchor); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
@@ -249,6 +257,11 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-11-02: bootstrap 4, part 16 (scheduled run): naming batch 016 (139 names: libkernl's front,
+  klib.s by slot from RoR, glue / cache / intr / thread / deci2 / tty / kprintf / sifcmd head from
+  RoR + FF3), 75 function starts created, saved by the tools. Next: the other SDK 3.0 libraries
+  (libgraph, libdma, libpad, libmc, libcdvd) by `rxalign.py`.
 
 - 2026-11-02: bootstrap 4, part 14 (scheduled run): naming batch 013 (93 names: the game's sound
   layer by reading, SDK iopheap from RoR; 3 sink classes in `data/class_names.json`), saved by the
