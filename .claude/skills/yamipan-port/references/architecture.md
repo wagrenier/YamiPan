@@ -91,7 +91,8 @@ files from the 4 file-name strings.
 | batch 005 (2026-11-02) | 253: main's teardown (22 by reading) + **231 rx names from RosePan** (rxsys 89, rxthread 29, rxfile 113) | rxalign.py + name_ctx.py | lib-context; ledger 386 |
 | batch 006 (2026-11-02) | 61 rx names: the gaps (span partition), rxfile's tail (thread, queue, device map), 7 by reading, 5 fixes of batch 005 | rxalign.py + name_ctx.py | lib-context; ledger 443 |
 | batch 007 (2026-11-02) | 204 rx names: rxsnd 0x159bc0..0x162178 (190 aligned, 5 by reading, 3 FS2-only RPC wrappers) + rxthread's VBlank tail 0x159928..0x159bc0 (6) | rxalign.py + name_ctx.py | lib-context; ledger 647 |
-| rx starts Ghidra merged | 45 + 28 (batch 007) in `data/missing_functions.json` ("rx from RosePan") | rxalign.py --missing | create first |
+| batch 008 (2026-11-02) | 114: rxsndut + rxsndstr 0x162178..0x166b50 by reading (113, every Ghidra function there) + `strcmp` 0x128238 | name_ctx.py | lib-context; ledger 761 |
+| rx starts Ghidra merged | 45 + 28 (batch 007) in `data/missing_functions.json` ("rx from RosePan"), + 33 rxsndstr (batch 008, "by reading") | rxalign.py --missing; batch 008 by a jr-ra / tail-j scan | create first |
 
 Expected sources (bootstrap step 4): Sony SDK 3.0 libraries by match (libmatch.py against FF3 / RoR,
 both SDK 3.0); MSL C++ / CodeWarrior runtime only by reading (no reference game built with it); rx and
@@ -121,10 +122,35 @@ not rxsnd: the `SDPR2` messages, below).
 `rxSndXseqSetParam`'s 0x63; `rxSndXseqRpc62` 0x15d040), and `rxSndAdpcmGetPosition` 0x1617c0
 converts the position through 0x119be8 where RoR returns it; `rxSndBgmSetParam6` /
 `rxSndSeSetParamC` / `rxSndPcmSetVolume` differ in size only (read: same code).
-**Not in RoR's rx, name by reading**: 0x162178..~0x166b50 is **rxsndut + rxsndstr** (0x162178
-inits four sub-systems and registers the formats "PCM stream" / "ADPCM stream" via 0x164128;
-strings 0x3022e0..0x302738: XWS stream files, file / memory stream slots, `rxSndStrStop`,
-`rxSndStrStopAll`), and 0x1681c0.. is **SDPR2** (strings 0x3027b8..: `LimitRange`, `LimitRangeF`,
+**Batch 008 (2026-11-02): rxsndut + rxsndstr 0x162178..0x166b50** (not in RoR; named by reading
+in rx style, `rxSndUt*` / `rxSndStr*`; messages 0x3022e0..0x302738). Five layers, each with its own
+static slot table and init / exit / update called from `rxSndUtInit` 0x162178 / `rxSndUtExit`
+0x1621f0 / `rxSndUtUpdate` 0x162220 (debug flags 0x2f5f10: bit 1 error prints, 2 BG-thread warning,
+4 registration print):
+- **XWS bank** 0x1622f8..0x1634b8 (`rxSndStrBank*`, 256 slots x 0xa8 at 0x514780): an `RXWS` file
+  (version >= 0x200) of 0x10-byte-header chunks `FORM` (variable-length request records: +0 format id,
+  +1 length, +2 flags (bit 0 loop), +4 / +5 volume, +9 channels 1 / 2, +10 rate?, +0x10 offset,
+  +0x14 size, +0x18 loop offset), `FTXT` (request names), `MARK` / `BRCH` (per-request marks and
+  branches: +0 position, +4, +8 type, +0xa / +0xb loop count, +0xc name), `TRCK` (per-request tracks:
+  +1 channels, +4 / +6 volume, +8 name), `BODY`; the body is in the file (type 0), a separate file
+  (1, with the device and search dir remembered) or IOP memory (2).
+- **Stream core** 0x1634b8..0x164398 (64 streams x 0x9c at 0x51ef80): `rxSndStrPlayEx` picks the
+  request's registered format (8 slots x 0x28 at 0x52168c, `rxSndStrRegisterFormat`; function table
+  {init, exit, update, open, close, getHandle, pauseRead, syncRead}), setters mark dirty bits +0x1c
+  (1 pause, 2 attr, 4 volume, 8 pitch, 0x10 a float nobody reads, 0x20 track volumes) that the format
+  update applies; mark / branch callbacks +0x54 / +0x58 run with interrupts off; master volume
+  0x521688. `rxSndStrStop` / `rxSndStrStopAsync` / `rxSndStrStopAll` are the names its own checks print.
+- **PCM format** 0x164398..0x164c38 (table 0x2f5f18, format 1 "PCM stream") and **ADPCM format**
+  0x164c38..0x1656e8 (0x2f5f38, format 0 "ADPCM stream", multi-track interleave): feed rxsnd's
+  `rxSndPcm*` / `rxSndAdpcm*` from a source.
+- **Stream source** 0x1656e8..0x1660e0 (`rxSndStrStream*`, 64 x 0xc at 0x5226e0): type 0 an rxFile
+  ring (`rxSysStreamOpenRing`), type 1 a memory stream.
+- **Memory stream** 0x1660e0..0x166b50 (`rxSndStrMem*`, 64 x 0x20 at 0x523a00): the rxFile ring API
+  over memory, sorted branch markers and tags in node pools 0x524200 / 0x525a04; IOP bodies are read
+  through `rxSndIopRead` into 0x522a00 at most 0x1000 at a time.
+Ghidra merged 33 of its small functions into their predecessors (getters after a `jr ra`, a tail `j`
+then a new prologue); they wait in `data/missing_functions.json` with their names.
+**Not in RoR's rx, still to name**: 0x1681c0.. is **SDPR2** (strings 0x3027b8..: `LimitRange`, `LimitRangeF`,
 `RoundRange`, `ERR OutOfRange`, `ERR Call Undefine Function`; 0x1681c0 sets a 0..1 mode with
 range messages, 0x168398 its debug-flag getter).
 The six ranges (FS2 lo hi, RoR lo hi) for `rxalign.py`: `100350 1037b0 23ff80 2433e0`,

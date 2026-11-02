@@ -869,6 +869,12 @@
   "was": "FUN_00127a68",
   "why": "newlib wrapper: _raise_r(_impure_ptr 0x2f3398, sig); abort calls it with 6 (SIGABRT)"
  },
+ "00128238": {
+  "name": "strcmp",
+  "tag": "lib-context",
+  "was": "FUN_00128238",
+  "why": "libc: word-at-a-time compare with the 0x0101../0x8080.. masks, next to strcpy 0x128380; rxsndstr compares XWS request / track names and search dirs with it"
+ },
  "00128380": {
   "name": "strcpy",
   "tag": "lib-context",
@@ -3526,6 +3532,684 @@
   "tag": "lib-context",
   "was": "FUN_001620d8",
   "why": "rx library: RosePan names RoR 0x23feb8 rxSndQueueFlush; same size 0x9c and place in a run of matching functions (rxalign.py)"
+ },
+ "00162178": {
+  "name": "rxSndUtInit",
+  "tag": "lib-context",
+  "was": "FUN_00162178",
+  "why": "rxsndut (FS2-only, not in RoR): inits the stream source, memory stream, bank and stream core, clears rxSnd debug flag 4, registers formats 1 PCM stream and 0 ADPCM stream via rxSndStrRegisterFormat"
+ },
+ "00162220": {
+  "name": "rxSndUtUpdate",
+  "tag": "lib-context",
+  "was": "FUN_00162220",
+  "why": "rxsndut (FS2-only, not in RoR): per-frame: memory / source / bank updates (empty) then rxSndStrUpdate"
+ },
+ "00162250": {
+  "name": "rxSndUtSetDebugFlags",
+  "tag": "lib-context",
+  "was": "FUN_00162250",
+  "why": "rxsndut (FS2-only, not in RoR): swaps the debug flag word 0x2f5f10 (returns the old one), twin of rxSndSetDebugFlags"
+ },
+ "00162268": {
+  "name": "rxSndUtGetDebugFlags",
+  "tag": "lib-context",
+  "was": "FUN_00162268",
+  "why": "rxsndut (FS2-only, not in RoR): returns 0x2f5f10; bit 1 gates every rxsndstr error print, bit 2 the BG-thread warning, bit 4 the format registration print"
+ },
+ "00162278": {
+  "name": "rxSndUtCheckBgCall",
+  "tag": "lib-context",
+  "was": "FUN_00162278",
+  "why": "rxsndut (FS2-only, not in RoR): \"*** rxsndut : BG thread called! %s\" when called from a yielding thread with dispatch and requests unlocked (flag 2); twin of rxsnd rxSndCheckBgCall"
+ },
+ "001622f8": {
+  "name": "rxSndStrBankOpen",
+  "tag": "lib-context",
+  "was": "FUN_001622f8",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): checks the RXWS magic and version >= 0x200 (messages 0x302320 / 0x302360), takes a free slot, stores the FORM / FTXT / MARK / BRCH / TRCK chunk pointers at +8..+0x18 and attaches an in-file BODY chunk as memory; returns the bank id"
+ },
+ "001624d8": {
+  "name": "rxSndStrBankClose",
+  "tag": "lib-context",
+  "was": "FUN_001624d8",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): clears the used byte of slot a0 under rxThDisableDispatch"
+ },
+ "00162530": {
+  "name": "rxSndStrBankAttachBodyFile",
+  "tag": "lib-context",
+  "was": "FUN_00162530",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): body type 1: remembers the current file device (+0x24), search dir (+0x28) and the body file name (+0x68)"
+ },
+ "001625c8": {
+  "name": "rxSndStrBankAttachBodyMemory",
+  "tag": "lib-context",
+  "was": "FUN_001625c8",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): body type 0: body address +0x1c and size +0x20 (called by rxSndStrBankOpen for an in-file BODY chunk)"
+ },
+ "00162610": {
+  "name": "rxSndStrBankAttachBodyIop",
+  "tag": "lib-context",
+  "was": "FUN_00162610",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): body type 2: address / size like the memory body; opened as a memory stream with the IOP flag (rxSndStrMemGetData reads it with rxSndIopRead)"
+ },
+ "001627c0": {
+  "name": "rxSndStrBankGetRequestCount",
+  "tag": "lib-context",
+  "was": "FUN_001627c0",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): count word of the FORM chunk (rxSndStrFormGetCount)"
+ },
+ "001627d8": {
+  "name": "rxSndStrBankGetRequestName",
+  "tag": "lib-context",
+  "was": "FUN_001627d8",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): FTXT string of request i (rxSndStrTextGet); rxSndStrBankFindRequest strcmps these"
+ },
+ "00162820": {
+  "name": "rxSndStrBankGetRequestRate",
+  "tag": "lib-context",
+  "was": "FUN_00162820",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): u16 at FORM record +10, passed as rxSndAdpcmOpenEx second argument (sample rate / pitch: not settled)"
+ },
+ "00162850": {
+  "name": "rxSndStrBankGetRequestChannels",
+  "tag": "lib-context",
+  "was": "FUN_00162850",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): byte at FORM record +9: the PCM / ADPCM opens accept 1 or 2 (unsupported channel number message)"
+ },
+ "00162880": {
+  "name": "rxSndStrBankGetRequestOffset",
+  "tag": "lib-context",
+  "was": "FUN_00162880",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): FORM record +0x10: offset of the request data in the body (the opens add it to every mark / branch position)"
+ },
+ "001628b0": {
+  "name": "rxSndStrBankGetRequestSize",
+  "tag": "lib-context",
+  "was": "FUN_001628b0",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): FORM record +0x14: data size (the opens clamp the start position to it and put the end marker there)"
+ },
+ "001628e0": {
+  "name": "rxSndStrBankGetRequestLoopOffset",
+  "tag": "lib-context",
+  "was": "FUN_001628e0",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): FORM record +0x18: the loop target the opens use when record flag +2 bit 0 (loop) is set"
+ },
+ "00162910": {
+  "name": "rxSndStrBankGetMarkCount",
+  "tag": "lib-context",
+  "was": "FUN_00162910",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): MARK entries of a request (rxSndStrMarkGetCount)"
+ },
+ "00162958": {
+  "name": "rxSndStrBankGetMarkOffset",
+  "tag": "lib-context",
+  "was": "FUN_00162958",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): word +0 of a MARK record (rxSndStrMarkGet): position relative to the request data"
+ },
+ "00162988": {
+  "name": "rxSndStrBankGetMarkParam",
+  "tag": "lib-context",
+  "was": "FUN_00162988",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): word +4 of a MARK record (meaning not settled)"
+ },
+ "001629b8": {
+  "name": "rxSndStrBankGetBranchCount",
+  "tag": "lib-context",
+  "was": "FUN_001629b8",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): BRCH entries of a request (rxSndStrBranchGetCount)"
+ },
+ "00162a00": {
+  "name": "rxSndStrBankFindRequest",
+  "tag": "lib-context",
+  "was": "FUN_00162a00",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): index of the request whose FTXT name strcmps equal to a1, else -1"
+ },
+ "00162ac0": {
+  "name": "rxSndStrBankGetSlot",
+  "tag": "lib-context",
+  "was": "FUN_00162ac0",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): slot pointer of bank a0, or null when out of range / unused"
+ },
+ "00162b00": {
+  "name": "rxSndStrBankGetTrackTable",
+  "tag": "lib-context",
+  "was": "FUN_00162b00",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): per-request entry of the TRCK chunk (slot +0x18): {count, offsets...}"
+ },
+ "00162b70": {
+  "name": "rxSndStrBankGetTrack",
+  "tag": "lib-context",
+  "was": "FUN_00162b70",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): track record i of a request (TRCK chunk relative offsets)"
+ },
+ "00162c20": {
+  "name": "rxSndStrBankGetTrackCount",
+  "tag": "lib-context",
+  "was": "FUN_00162c20",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): word +4 of the request track table; the ADPCM open uses it to pick multi-track mode"
+ },
+ "00162c48": {
+  "name": "rxSndStrBankGetTrackChannels",
+  "tag": "lib-context",
+  "was": "FUN_00162c48",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): byte +1 of a track record: 1 or 2 (rxSndStrAdpcmUpdate sets one or two channel volumes)"
+ },
+ "00162c70": {
+  "name": "rxSndStrBankGetTrackName",
+  "tag": "lib-context",
+  "was": "FUN_00162c70",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): track record +8 (a C string)"
+ },
+ "00162ca0": {
+  "name": "rxSndStrBankFindTrack",
+  "tag": "lib-context",
+  "was": "FUN_00162ca0",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): index of the track whose name strcmps equal to a2, else -1"
+ },
+ "00162d60": {
+  "name": "rxSndStrBankGetTrackVolume",
+  "tag": "lib-context",
+  "was": "FUN_00162d60",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): writes the track record s16 +4 / +6 (default 0x80) to *a3 / *t0: left / right volume"
+ },
+ "00162dd8": {
+  "name": "rxSndStrBankInit",
+  "tag": "lib-context",
+  "was": "FUN_00162dd8",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): clears the used byte of all 256 slots"
+ },
+ "00162e20": {
+  "name": "rxSndStrBankUpdate",
+  "tag": "lib-context",
+  "was": "FUN_00162e20",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): empty; called by rxSndUtUpdate"
+ },
+ "00162e28": {
+  "name": "rxSndStrBankOpenBody",
+  "tag": "lib-context",
+  "was": "FUN_00162e28",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): opens the body by its type: 1 file (restores the remembered file device and search dir around rxSndStrStreamOpenFile), 0 / 2 memory (rxSndStrStreamOpenMemory, IOP flag for 2); returns the stream id"
+ },
+ "00162fd8": {
+  "name": "rxSndStrBankGetRequest",
+  "tag": "lib-context",
+  "was": "FUN_00162fd8",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): FORM record of request a1: walks the variable-length records by their length byte +1"
+ },
+ "00163070": {
+  "name": "rxSndStrBankGetMark",
+  "tag": "lib-context",
+  "was": "FUN_00163070",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): MARK record (rxSndStrMarkGet)"
+ },
+ "00163088": {
+  "name": "rxSndStrBankGetBranch",
+  "tag": "lib-context",
+  "was": "FUN_00163088",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): BRCH record (rxSndStrBranchGet)"
+ },
+ "001630a0": {
+  "name": "rxSndStrXwsFindChunk",
+  "tag": "lib-context",
+  "was": "FUN_001630a0",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): walks the XWS chunks from +0x10 ({tag, size, ...} headers of 0x10 bytes) for tag a1"
+ },
+ "001630e8": {
+  "name": "rxSndStrXwsGetChunkData",
+  "tag": "lib-context",
+  "was": "FUN_001630e8",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): chunk data (header + 0x10) of tag a1, or null"
+ },
+ "00163118": {
+  "name": "rxSndStrFormGetCount",
+  "tag": "lib-context",
+  "was": "FUN_00163118",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): count word of the FORM chunk of a bank slot"
+ },
+ "00163200": {
+  "name": "rxSndStrTextGet",
+  "tag": "lib-context",
+  "was": "FUN_00163200",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): FTXT chunk: string i through its offset table"
+ },
+ "00163278": {
+  "name": "rxSndStrMarkGetCount",
+  "tag": "lib-context",
+  "was": "FUN_00163278",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): MARK chunk: entry count of request a1"
+ },
+ "001632f8": {
+  "name": "rxSndStrMarkGet",
+  "tag": "lib-context",
+  "was": "FUN_001632f8",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): MARK chunk: record a2 of request a1"
+ },
+ "00163398": {
+  "name": "rxSndStrBranchGetCount",
+  "tag": "lib-context",
+  "was": "FUN_00163398",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): BRCH chunk: entry count of request a1"
+ },
+ "00163418": {
+  "name": "rxSndStrBranchGet",
+  "tag": "lib-context",
+  "was": "FUN_00163418",
+  "why": "rxsndstr XWS bank (slots 0x514780, 256 x 0xa8; FS2-only, by reading): BRCH chunk: record a2 of request a1"
+ },
+ "001634b8": {
+  "name": "rxSndStrPlayEx",
+  "tag": "lib-context",
+  "was": "FUN_001634b8",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): takes a free stream slot, fills it (bank, request, start position +0x2c, volumes 0x80, pitch 1.0, keep flag +0x1b) and calls the request format open (table +0xc); messages unknow format bank or request / empty stream slot / failed to open stream; returns the stream id"
+ },
+ "001636e8": {
+  "name": "rxSndStrPlay",
+  "tag": "lib-context",
+  "was": "FUN_001636e8",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): rxSndStrPlayEx with start position 0 (shifts the arguments up by one)"
+ },
+ "00163738": {
+  "name": "rxSndStrPlayAt",
+  "tag": "lib-context",
+  "was": "FUN_00163738",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): plain tail call to rxSndStrPlayEx with every argument (start position given)"
+ },
+ "00163750": {
+  "name": "rxSndStrPause",
+  "tag": "lib-context",
+  "was": "FUN_00163750",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): sets the pause byte +0x1e and dirty bit 1 (the format update calls rxSndPcmPause / rxSndAdpcmPause)"
+ },
+ "001637a8": {
+  "name": "rxSndStrStopImpl",
+  "tag": "lib-context",
+  "was": "FUN_001637a8",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): checks \"rxSndStrStop or rxSndStrStopAsync\", unlinks the stream from the active list and calls its format close (table +0x10) with a2"
+ },
+ "00163848": {
+  "name": "rxSndStrStop",
+  "tag": "lib-context",
+  "was": "FUN_00163848",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): rxSndStrStopImpl(id, a1, 0)"
+ },
+ "00163860": {
+  "name": "rxSndStrStopAsync",
+  "tag": "lib-context",
+  "was": "FUN_00163860",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): rxSndStrStopImpl(id, a1, 1)"
+ },
+ "00163878": {
+  "name": "rxSndStrStopAll",
+  "tag": "lib-context",
+  "was": "FUN_00163878",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): checks \"rxSndStrStopAll\" and stops every active stream"
+ },
+ "001638d8": {
+  "name": "rxSndStrSuspend",
+  "tag": "lib-context",
+  "was": "FUN_001638d8",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): rxSndStrPause(id, 1) then rxSndStrPauseRead(id, 1)"
+ },
+ "00163910": {
+  "name": "rxSndStrGetStatus",
+  "tag": "lib-context",
+  "was": "FUN_00163910",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): status byte +0x19 (bit 0 active, 1 paused, 2 ended, 3 from the format status)"
+ },
+ "00163960": {
+  "name": "rxSndStrSetAttr",
+  "tag": "lib-context",
+  "was": "FUN_00163960",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): byte +0x1d and dirty bit 2 (rxSndStrAdpcmUpdate calls rxSndAdpcmSetAttr)"
+ },
+ "00163a20": {
+  "name": "rxSndStrSetVolume",
+  "tag": "lib-context",
+  "was": "FUN_00163a20",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): s16 left / right at +0x20 / +0x22 and dirty bit 4 (scaled by the stream and master volumes in the format update)"
+ },
+ "00163ae8": {
+  "name": "rxSndStrSetPitch",
+  "tag": "lib-context",
+  "was": "FUN_00163ae8",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): float +0x24 and dirty bit 8 (rxSndStrAdpcmUpdate calls rxSndAdpcmSetPitch)"
+ },
+ "00163dc8": {
+  "name": "rxSndStrGetHandle",
+  "tag": "lib-context",
+  "was": "FUN_00163dc8",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): the format getHandle (table +0x14): the rxSnd PCM / ADPCM handle, else -1"
+ },
+ "00163e40": {
+  "name": "rxSndStrPauseRead",
+  "tag": "lib-context",
+  "was": "FUN_00163e40",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): the format pauseRead (table +0x18): rxFilePause on the stream source"
+ },
+ "00163ea8": {
+  "name": "rxSndStrSyncRead",
+  "tag": "lib-context",
+  "was": "FUN_00163ea8",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): the format syncRead (table +0x1c): rxFileSync on the stream source"
+ },
+ "00163f20": {
+  "name": "rxSndStrGetDataWritten",
+  "tag": "lib-context",
+  "was": "FUN_00163f20",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): byte +0x1f, set by the format update once data went to rxSnd"
+ },
+ "00163fb8": {
+  "name": "rxSndStrInit",
+  "tag": "lib-context",
+  "was": "FUN_00163fb8",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): builds the free list of the 64 slots, master volume 0x80 / 0x80 (0x521688), clears the 8 format registrations"
+ },
+ "00164040": {
+  "name": "rxSndStrExit",
+  "tag": "lib-context",
+  "was": "FUN_00164040",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): calls every registered format exit (table +4), then rxSndStrStopAll(0)"
+ },
+ "00164088": {
+  "name": "rxSndStrUpdate",
+  "tag": "lib-context",
+  "was": "FUN_00164088",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): calls every registered format update (table +8), then stops ended streams whose keep flag +0x1b is 0"
+ },
+ "00164128": {
+  "name": "rxSndStrRegisterFormat",
+  "tag": "lib-context",
+  "was": "FUN_00164128",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): format a0 < 8 (0x52168c, 0x28 each): copies the 8-entry function table, calls its init, links it; prints \"rxsndstr : registed format %s : %d\" with debug flag 4"
+ },
+ "00164228": {
+  "name": "rxSndStrFmtGetMasterVolumeL",
+  "tag": "lib-context",
+  "was": "FUN_00164228",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): returns s16 0x521688 (the formats scale the left volume by it); 0x163a00 reads the same word"
+ },
+ "00164238": {
+  "name": "rxSndStrFmtGetMasterVolumeR",
+  "tag": "lib-context",
+  "was": "FUN_00164238",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): returns s16 0x52168a; 0x163a10 reads the same word"
+ },
+ "00164248": {
+  "name": "rxSndStrFmtCallMarkCallback",
+  "tag": "lib-context",
+  "was": "FUN_00164248",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): calls the stream mark callback +0x54 (id, a1) with interrupts disabled (DIntr / EIntr)"
+ },
+ "001642e8": {
+  "name": "rxSndStrFmtCallBranchCallback",
+  "tag": "lib-context",
+  "was": "FUN_001642e8",
+  "why": "rxsndstr stream core (slots 0x51ef80, 64 x 0x9c, active list 0x521680, free 0x521684): calls the stream branch callback +0x58 (id, a1) with interrupts disabled; returns its answer, 1 without one (take the branch)"
+ },
+ "001643e0": {
+  "name": "rxSndStrPcmExit",
+  "tag": "lib-context",
+  "was": "FUN_001643e0",
+  "why": "rxsndstr PCM stream format (table 0x2f5f18 {init, exit, update, open, close, getHandle, pauseRead, syncRead}, slots 0x5217d0 64 x 0x1c): closes every active PCM stream"
+ },
+ "00164430": {
+  "name": "rxSndStrPcmMarkCallback",
+  "tag": "lib-context",
+  "was": "FUN_00164430",
+  "why": "rxsndstr PCM stream format (table 0x2f5f18 {init, exit, update, open, close, getHandle, pauseRead, syncRead}, slots 0x5217d0 64 x 0x1c): rxSndPcmAddCallback target: rxSndStrFmtCallMarkCallback on the stream from rxSndPcmGetUserData"
+ },
+ "00164478": {
+  "name": "rxSndStrPcmUpdate",
+  "tag": "lib-context",
+  "was": "FUN_00164478",
+  "why": "rxsndstr PCM stream format (table 0x2f5f18 {init, exit, update, open, close, getHandle, pauseRead, syncRead}, slots 0x5217d0 64 x 0x1c): applies pause / volume dirty bits, mirrors rxSndPcmGetStatus into the status byte, feeds rxSndPcmWrite from the source ring with the ring tags as callbacks, ends at the source end"
+ },
+ "001646b8": {
+  "name": "rxSndStrPcmOpen",
+  "tag": "lib-context",
+  "was": "FUN_001646b8",
+  "why": "rxsndstr PCM stream format (table 0x2f5f18 {init, exit, update, open, close, getHandle, pauseRead, syncRead}, slots 0x5217d0 64 x 0x1c): opens the request body (rxSndStrBankOpenBody), turns MARK / BRCH records into source tags / markers plus the end or loop marker, seeks to the start, rxSndPcmOpen; messages empty PCM slot, unsupported channel number, failed to open file (memory) stream, failed to open stream (rxsnd)"
+ },
+ "00164b30": {
+  "name": "rxSndStrPcmClose",
+  "tag": "lib-context",
+  "was": "FUN_00164b30",
+  "why": "rxsndstr PCM stream format (table 0x2f5f18 {init, exit, update, open, close, getHandle, pauseRead, syncRead}, slots 0x5217d0 64 x 0x1c): unlinks the PCM slot, closes its source and rxSndPcmClose"
+ },
+ "00164bd8": {
+  "name": "rxSndStrPcmPauseRead",
+  "tag": "lib-context",
+  "was": "FUN_00164bd8",
+  "why": "rxsndstr PCM stream format (table 0x2f5f18 {init, exit, update, open, close, getHandle, pauseRead, syncRead}, slots 0x5217d0 64 x 0x1c): rxSndStrStreamPause on the slot source"
+ },
+ "00164c80": {
+  "name": "rxSndStrAdpcmExit",
+  "tag": "lib-context",
+  "was": "FUN_00164c80",
+  "why": "rxsndstr ADPCM stream format (table 0x2f5f38, slots 0x521ed8 64 x 0x20): closes every active ADPCM stream"
+ },
+ "00164cd0": {
+  "name": "rxSndStrAdpcmMarkCallback",
+  "tag": "lib-context",
+  "was": "FUN_00164cd0",
+  "why": "rxsndstr ADPCM stream format (table 0x2f5f38, slots 0x521ed8 64 x 0x20): rxSndAdpcmAddCallback target: rxSndStrFmtCallMarkCallback on the stream from rxSndAdpcmGetUserData"
+ },
+ "00164d18": {
+  "name": "rxSndStrAdpcmUpdate",
+  "tag": "lib-context",
+  "was": "FUN_00164d18",
+  "why": "rxsndstr ADPCM stream format (table 0x2f5f38, slots 0x521ed8 64 x 0x20): the PCM update plus attr, pitch and per-track channel volumes (dirty bit 0x20), writes in whole interleave blocks"
+ },
+ "001650f8": {
+  "name": "rxSndStrAdpcmOpen",
+  "tag": "lib-context",
+  "was": "FUN_001650f8",
+  "why": "rxsndstr ADPCM stream format (table 0x2f5f38, slots 0x521ed8 64 x 0x20): like rxSndStrPcmOpen with multi-track interleave (channels x 0x10 blocks) and rxSndAdpcmOpenEx; messages empty ADPCM slot etc."
+ },
+ "001655f8": {
+  "name": "rxSndStrAdpcmClose",
+  "tag": "lib-context",
+  "was": "FUN_001655f8",
+  "why": "rxsndstr ADPCM stream format (table 0x2f5f38, slots 0x521ed8 64 x 0x20): unlinks the ADPCM slot, closes its source and rxSndAdpcmClose"
+ },
+ "00165698": {
+  "name": "rxSndStrAdpcmPauseRead",
+  "tag": "lib-context",
+  "was": "FUN_00165698",
+  "why": "rxsndstr ADPCM stream format (table 0x2f5f38, slots 0x521ed8 64 x 0x20): rxSndStrStreamPause on the slot source"
+ },
+ "001656e8": {
+  "name": "rxSndStrStreamInit",
+  "tag": "lib-context",
+  "was": "FUN_001656e8",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): builds the free list of the 64 source slots"
+ },
+ "00165738": {
+  "name": "rxSndStrStreamExit",
+  "tag": "lib-context",
+  "was": "FUN_00165738",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): closes every open source"
+ },
+ "00165788": {
+  "name": "rxSndStrStreamUpdate",
+  "tag": "lib-context",
+  "was": "FUN_00165788",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): empty; called by rxSndUtUpdate"
+ },
+ "00165790": {
+  "name": "rxSndStrStreamOpenFile",
+  "tag": "lib-context",
+  "was": "FUN_00165790",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): rxSndStrStreamOpen(0, name, offset, size, 0)"
+ },
+ "001657c0": {
+  "name": "rxSndStrStreamOpenMemory",
+  "tag": "lib-context",
+  "was": "FUN_001657c0",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): rxSndStrStreamOpen(1, 0, addr, size, iop)"
+ },
+ "001657f0": {
+  "name": "rxSndStrStreamOpen",
+  "tag": "lib-context",
+  "was": "FUN_001657f0",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): type 0: rxSysStreamOpenRing (ring = size / 2 & ~0xf); type 1: rxSndStrMemOpen; message empty file stream slot"
+ },
+ "00165938": {
+  "name": "rxSndStrStreamClose",
+  "tag": "lib-context",
+  "was": "FUN_00165938",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): unlinks the source; type 0 rxFileClose (a1 = 0) or rxFileAbort, type 1 rxSndStrMemClose"
+ },
+ "00165a38": {
+  "name": "rxSndStrStreamSeek",
+  "tag": "lib-context",
+  "was": "FUN_00165a38",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): type 0 rxFileSeek + rxFilePause(0), type 1 rxSndStrMemSeek"
+ },
+ "00165ac8": {
+  "name": "rxSndStrStreamSetMarkers",
+  "tag": "lib-context",
+  "was": "FUN_00165ac8",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): rxFileSetMarkers / rxSndStrMemSetMarkers (branch records of 0x14 bytes)"
+ },
+ "00165b38": {
+  "name": "rxSndStrStreamSetTags",
+  "tag": "lib-context",
+  "was": "FUN_00165b38",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): rxFileSetTags / rxSndStrMemSetTags (mark records of 0xc bytes)"
+ },
+ "00165ba8": {
+  "name": "rxSndStrStreamGetRingTags",
+  "tag": "lib-context",
+  "was": "FUN_00165ba8",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): rxFileGetRingTags / rxSndStrMemGetTags"
+ },
+ "00165c20": {
+  "name": "rxSndStrStreamGetReadable",
+  "tag": "lib-context",
+  "was": "FUN_00165c20",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): bytes readable in one piece, at most a1: ring filled and up to the ring end, or rxSndStrMemGetReadable"
+ },
+ "00165df8": {
+  "name": "rxSndStrStreamGetFilled",
+  "tag": "lib-context",
+  "was": "FUN_00165df8",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): rxFileGetRingFilled / rxSndStrMemGetSize"
+ },
+ "00165e70": {
+  "name": "rxSndStrStreamConsume",
+  "tag": "lib-context",
+  "was": "FUN_00165e70",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): rxFileRingConsume / rxSndStrMemConsume"
+ },
+ "00165ee0": {
+  "name": "rxSndStrStreamGetData",
+  "tag": "lib-context",
+  "was": "FUN_00165ee0",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): rxFileGetRingData / rxSndStrMemGetData"
+ },
+ "00165f58": {
+  "name": "rxSndStrStreamIsEnd",
+  "tag": "lib-context",
+  "was": "FUN_00165f58",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): ring empty and rxFileGetState bit 3 (end), or rxSndStrMemIsEnd"
+ },
+ "00166008": {
+  "name": "rxSndStrStreamPause",
+  "tag": "lib-context",
+  "was": "FUN_00166008",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): rxFilePause for a file source (nothing for memory)"
+ },
+ "00166068": {
+  "name": "rxSndStrStreamSync",
+  "tag": "lib-context",
+  "was": "FUN_00166068",
+  "why": "rxsndstr stream source (slots 0x5226e0, 64 x 0xc; type 0 = rxFile ring, 1 = memory): rxFileSync(a1 == 0) for a file source"
+ },
+ "001660e0": {
+  "name": "rxSndStrMemInit",
+  "tag": "lib-context",
+  "was": "FUN_001660e0",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): clears the 64 slots, builds the free lists of 256 branch nodes (0x18) and 256 tag nodes (0x10)"
+ },
+ "00166178": {
+  "name": "rxSndStrMemExit",
+  "tag": "lib-context",
+  "was": "FUN_00166178",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): rxSndStrMemClose on all 64 slots"
+ },
+ "001661b8": {
+  "name": "rxSndStrMemUpdate",
+  "tag": "lib-context",
+  "was": "FUN_001661b8",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): empty; called by rxSndUtUpdate"
+ },
+ "001661c0": {
+  "name": "rxSndStrMemOpen",
+  "tag": "lib-context",
+  "was": "FUN_001661c0",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): takes a slot (from 1): address +8, size +0x10, IOP flag +6; message empty memory stream slot"
+ },
+ "001662b0": {
+  "name": "rxSndStrMemClose",
+  "tag": "lib-context",
+  "was": "FUN_001662b0",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): frees its markers and tags, clears the used byte"
+ },
+ "00166320": {
+  "name": "rxSndStrMemSeek",
+  "tag": "lib-context",
+  "was": "FUN_00166320",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): read position +0xc = min(a1, size); end flag +5 at the end"
+ },
+ "00166370": {
+  "name": "rxSndStrMemGetReadable",
+  "tag": "lib-context",
+  "was": "FUN_00166370",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): bytes to the next branch marker or the end (at most 0x1000 for an IOP body)"
+ },
+ "00166418": {
+  "name": "rxSndStrMemConsume",
+  "tag": "lib-context",
+  "was": "FUN_00166418",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): advances the read position and takes a branch at its marker (loop count +0xa / +0xb, branch callback answering 1)"
+ },
+ "001665b8": {
+  "name": "rxSndStrMemGetData",
+  "tag": "lib-context",
+  "was": "FUN_001665b8",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): EE pointer to the read position, or for an IOP body rxSndIopRead into 0x522a00"
+ },
+ "00166650": {
+  "name": "rxSndStrMemIsEnd",
+  "tag": "lib-context",
+  "was": "FUN_00166650",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): end flag +5"
+ },
+ "00166688": {
+  "name": "rxSndStrMemSetMarkers",
+  "tag": "lib-context",
+  "was": "FUN_00166688",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): replaces the sorted branch-marker list +0x18 with a2 records of 0x14 bytes; a3 is the callback argument +0x1c"
+ },
+ "00166890": {
+  "name": "rxSndStrMemSetTags",
+  "tag": "lib-context",
+  "was": "FUN_00166890",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): replaces the sorted tag list +0x14 with a2 records of 0xc bytes"
+ },
+ "00166a78": {
+  "name": "rxSndStrMemGetTags",
+  "tag": "lib-context",
+  "was": "FUN_00166a78",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): tags of type 1 within [pos, pos + a3): {offset, value} pairs, returns the count"
+ },
+ "00166b18": {
+  "name": "rxSndStrMemGetSize",
+  "tag": "lib-context",
+  "was": "FUN_00166b18",
+  "why": "rxsndstr memory stream (slots 0x523a00, 64 x 0x20; branch nodes 0x524200, tag nodes 0x525a04): size +0x10"
  },
  "00166b50": {
   "name": "rxThCreateSema",

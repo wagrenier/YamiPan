@@ -64,9 +64,15 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    5 by reading, 3 FS2-only RPC wrappers) and rxthread's VBlank tail, which FS2 links at
    0x159928..0x159bc0 (architecture.md "rx"); 28 more merged rx starts in
    `data/missing_functions.json`. Snapshot before it: `work/snapshots/20261102_134502.json`.
-   **Next batches, in this order**: **rxsndut + rxsndstr** 0x162178..~0x166b50 (not in RoR: by
-   reading, from the `rxsndut` / `rxsndstr` messages 0x3022e0..0x302738; `rxSndStrStop` /
-   `rxSndStrStopAll` are in its strings), **SDPR2** 0x1681c0.. (not in RoR: the `SDPR2 ...`
+   **Batch 008 done (2026-11-02, 114 names)**: rxsndut + rxsndstr 0x162178..0x166b50 by reading
+   (all 113 Ghidra functions: XWS bank, stream core, PCM / ADPCM formats, stream source, memory
+   stream; architecture.md "rx") + `strcmp` 0x128238; 33 merged starts with their names in
+   `data/missing_functions.json` ("by reading, batch 008"; with 4(a)). Doubtful names, settle at
+   the TU: `rxSndStrBankGetRequestRate` (FORM +10, rate or pitch?), `rxSndStrBankGetMarkParam`
+   (MARK +4), `rxSndStrSetFloatParam` (0x163b40, +0x28, dirty bit 0x10 nobody reads),
+   `rxSndStrPlayAt` 0x163738 (a bare tail call to `rxSndStrPlayEx`: why does it exist?).
+   Snapshot before it: `work/snapshots/20261102_135750.json`.
+   **Next batches, in this order**: **SDPR2** 0x1681c0.. (not in RoR: the `SDPR2 ...`
    messages 0x3027b8..; find its end) and **rxMpeg** (RoR 0x18182c..: find FS2's copy by size
    runs, as batch 007 found rxsnd); `_InitSys`'s nine
    callees (0x140c08, 0x140d48, 0x141338, 0x1414b0, 0x1416f0, 0x1378b8, 0x140f80, 0x140470,
@@ -187,6 +193,10 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-11-02: bootstrap 4, part 9 (scheduled run): naming batch 008 (114 names: rxsndut +
+  rxsndstr by reading, `strcmp`; 33 merged starts listed). Ghidra had unsaved changes (Ctrl+S).
+  Next: SDPR2, then rxMpeg.
 
 - 2026-11-02: bootstrap 4, part 8 (scheduled run): naming batch 007 (204 rx names: rxsnd from
   RosePan and rxthread's VBlank tail, which FS2 links before rxsnd; 28 merged starts listed).

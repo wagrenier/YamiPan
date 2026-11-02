@@ -605,7 +605,7 @@
 /* 00127ea0 000000d8 */ FUN_00127ea0(){}
 /* 00127f78 0000012c */ FUN_00127f78(){}
 /* 001280a8 00000190 */ FUN_001280a8(){}
-/* 00128238 00000144 */ FUN_00128238(){}
+/* 00128238 00000144 */ strcmp(){}  // lib-ctx
 /* 00128380 00000114 */ strcpy(){}  // lib-ctx
 /* 00128498 00000138 */ strlen(){}  // lib-ctx
 /* 001285d0 000000d4 */ FUN_001285d0(){}
@@ -1763,119 +1763,119 @@
 /* 00162078 00000018 */ rxSndQueueGetData(){}  // lib-ctx
 /* 00162090 00000044 */ rxSndQueueEnd(){}  // lib-ctx
 /* 001620d8 0000009c */ rxSndQueueFlush(){}  // lib-ctx
-/* 00162178 000000a4 */ FUN_00162178(){}
-/* 00162220 0000002c */ FUN_00162220(){}
-/* 00162250 00000014 */ FUN_00162250(){}
-/* 00162268 0000000c */ FUN_00162268(){}
-/* 00162278 00000080 */ FUN_00162278(){}
-/* 001622f8 000001dc */ FUN_001622f8(){}
-/* 001624d8 00000058 */ FUN_001624d8(){}
-/* 00162530 00000094 */ FUN_00162530(){}
-/* 001625c8 00000044 */ FUN_001625c8(){}
-/* 00162610 000001ac */ FUN_00162610(){}
-/* 001627c0 00000014 */ FUN_001627c0(){}
-/* 001627d8 00000044 */ FUN_001627d8(){}
-/* 00162820 0000002c */ FUN_00162820(){}
-/* 00162850 0000002c */ FUN_00162850(){}
-/* 00162880 0000002c */ FUN_00162880(){}
-/* 001628b0 0000002c */ FUN_001628b0(){}
-/* 001628e0 0000002c */ FUN_001628e0(){}
-/* 00162910 00000048 */ FUN_00162910(){}
-/* 00162958 0000002c */ FUN_00162958(){}
-/* 00162988 0000002c */ FUN_00162988(){}
-/* 001629b8 00000048 */ FUN_001629b8(){}
-/* 00162a00 000000bc */ FUN_00162a00(){}
-/* 00162ac0 0000003c */ FUN_00162ac0(){}
-/* 00162b00 00000070 */ FUN_00162b00(){}
-/* 00162b70 000000ac */ FUN_00162b70(){}
-/* 00162c20 00000028 */ FUN_00162c20(){}
-/* 00162c48 00000028 */ FUN_00162c48(){}
-/* 00162c70 0000002c */ FUN_00162c70(){}
-/* 00162ca0 000000c0 */ FUN_00162ca0(){}
-/* 00162d60 00000074 */ FUN_00162d60(){}
-/* 00162dd8 00000044 */ FUN_00162dd8(){}
-/* 00162e20 00000004 */ FUN_00162e20(){}
-/* 00162e28 000001ac */ FUN_00162e28(){}
-/* 00162fd8 00000094 */ FUN_00162fd8(){}
-/* 00163070 00000014 */ FUN_00163070(){}
-/* 00163088 00000014 */ FUN_00163088(){}
-/* 001630a0 00000044 */ FUN_001630a0(){}
-/* 001630e8 0000002c */ FUN_001630e8(){}
-/* 00163118 000000e4 */ FUN_00163118(){}
-/* 00163200 00000078 */ FUN_00163200(){}
-/* 00163278 0000007c */ FUN_00163278(){}
-/* 001632f8 000000a0 */ FUN_001632f8(){}
-/* 00163398 0000007c */ FUN_00163398(){}
-/* 00163418 000000a0 */ FUN_00163418(){}
-/* 001634b8 0000022c */ FUN_001634b8(){}
-/* 001636e8 0000004c */ FUN_001636e8(){}
-/* 00163738 00000014 */ FUN_00163738(){}
-/* 00163750 00000050 */ FUN_00163750(){}
-/* 001637a8 000000a0 */ FUN_001637a8(){}
-/* 00163848 00000018 */ FUN_00163848(){}
-/* 00163860 00000018 */ FUN_00163860(){}
-/* 00163878 00000060 */ FUN_00163878(){}
-/* 001638d8 00000034 */ FUN_001638d8(){}
-/* 00163910 00000050 */ FUN_00163910(){}
-/* 00163960 000000bc */ FUN_00163960(){}
-/* 00163a20 000000c0 */ FUN_00163a20(){}
-/* 00163ae8 000002e0 */ FUN_00163ae8(){}
-/* 00163dc8 00000074 */ FUN_00163dc8(){}
-/* 00163e40 00000068 */ FUN_00163e40(){}
-/* 00163ea8 00000074 */ FUN_00163ea8(){}
-/* 00163f20 00000094 */ FUN_00163f20(){}
-/* 00163fb8 00000080 */ FUN_00163fb8(){}
-/* 00164040 00000048 */ FUN_00164040(){}
-/* 00164088 0000009c */ FUN_00164088(){}
-/* 00164128 000000fc */ FUN_00164128(){}
-/* 00164228 0000000c */ FUN_00164228(){}
-/* 00164238 0000000c */ FUN_00164238(){}
-/* 00164248 000000a0 */ FUN_00164248(){}
-/* 001642e8 000000f4 */ FUN_001642e8(){}
-/* 001643e0 0000004c */ FUN_001643e0(){}
-/* 00164430 00000048 */ FUN_00164430(){}
-/* 00164478 00000240 */ FUN_00164478(){}
-/* 001646b8 00000478 */ FUN_001646b8(){}
-/* 00164b30 000000a4 */ FUN_00164b30(){}
-/* 00164bd8 000000a4 */ FUN_00164bd8(){}
-/* 00164c80 0000004c */ FUN_00164c80(){}
-/* 00164cd0 00000048 */ FUN_00164cd0(){}
-/* 00164d18 000003e0 */ FUN_00164d18(){}
-/* 001650f8 00000500 */ FUN_001650f8(){}
-/* 001655f8 0000009c */ FUN_001655f8(){}
-/* 00165698 0000004c */ FUN_00165698(){}
-/* 001656e8 00000048 */ FUN_001656e8(){}
-/* 00165738 0000004c */ FUN_00165738(){}
-/* 00165788 00000004 */ FUN_00165788(){}
-/* 00165790 00000030 */ FUN_00165790(){}
-/* 001657c0 0000002c */ FUN_001657c0(){}
-/* 001657f0 00000148 */ FUN_001657f0(){}
-/* 00165938 000000fc */ FUN_00165938(){}
-/* 00165a38 00000090 */ FUN_00165a38(){}
-/* 00165ac8 0000006c */ FUN_00165ac8(){}
-/* 00165b38 0000006c */ FUN_00165b38(){}
-/* 00165ba8 00000074 */ FUN_00165ba8(){}
-/* 00165c20 000001d4 */ FUN_00165c20(){}
-/* 00165df8 00000074 */ FUN_00165df8(){}
-/* 00165e70 0000006c */ FUN_00165e70(){}
-/* 00165ee0 00000074 */ FUN_00165ee0(){}
-/* 00165f58 000000ac */ FUN_00165f58(){}
-/* 00166008 0000005c */ FUN_00166008(){}
-/* 00166068 00000074 */ FUN_00166068(){}
-/* 001660e0 00000090 */ FUN_001660e0(){}
-/* 00166178 0000003c */ FUN_00166178(){}
-/* 001661b8 00000004 */ FUN_001661b8(){}
-/* 001661c0 000000f0 */ FUN_001661c0(){}
-/* 001662b0 0000006c */ FUN_001662b0(){}
-/* 00166320 00000048 */ FUN_00166320(){}
-/* 00166370 000000a4 */ FUN_00166370(){}
-/* 00166418 0000019c */ FUN_00166418(){}
-/* 001665b8 00000094 */ FUN_001665b8(){}
-/* 00166650 00000038 */ FUN_00166650(){}
-/* 00166688 00000200 */ FUN_00166688(){}
-/* 00166890 000001e0 */ FUN_00166890(){}
-/* 00166a78 0000009c */ FUN_00166a78(){}
-/* 00166b18 00000038 */ FUN_00166b18(){}
+/* 00162178 000000a4 */ rxSndUtInit(){}  // lib-ctx
+/* 00162220 0000002c */ rxSndUtUpdate(){}  // lib-ctx
+/* 00162250 00000014 */ rxSndUtSetDebugFlags(){}  // lib-ctx
+/* 00162268 0000000c */ rxSndUtGetDebugFlags(){}  // lib-ctx
+/* 00162278 00000080 */ rxSndUtCheckBgCall(){}  // lib-ctx
+/* 001622f8 000001dc */ rxSndStrBankOpen(){}  // lib-ctx
+/* 001624d8 00000058 */ rxSndStrBankClose(){}  // lib-ctx
+/* 00162530 00000094 */ rxSndStrBankAttachBodyFile(){}  // lib-ctx
+/* 001625c8 00000044 */ rxSndStrBankAttachBodyMemory(){}  // lib-ctx
+/* 00162610 000001ac */ rxSndStrBankAttachBodyIop(){}  // lib-ctx
+/* 001627c0 00000014 */ rxSndStrBankGetRequestCount(){}  // lib-ctx
+/* 001627d8 00000044 */ rxSndStrBankGetRequestName(){}  // lib-ctx
+/* 00162820 0000002c */ rxSndStrBankGetRequestRate(){}  // lib-ctx
+/* 00162850 0000002c */ rxSndStrBankGetRequestChannels(){}  // lib-ctx
+/* 00162880 0000002c */ rxSndStrBankGetRequestOffset(){}  // lib-ctx
+/* 001628b0 0000002c */ rxSndStrBankGetRequestSize(){}  // lib-ctx
+/* 001628e0 0000002c */ rxSndStrBankGetRequestLoopOffset(){}  // lib-ctx
+/* 00162910 00000048 */ rxSndStrBankGetMarkCount(){}  // lib-ctx
+/* 00162958 0000002c */ rxSndStrBankGetMarkOffset(){}  // lib-ctx
+/* 00162988 0000002c */ rxSndStrBankGetMarkParam(){}  // lib-ctx
+/* 001629b8 00000048 */ rxSndStrBankGetBranchCount(){}  // lib-ctx
+/* 00162a00 000000bc */ rxSndStrBankFindRequest(){}  // lib-ctx
+/* 00162ac0 0000003c */ rxSndStrBankGetSlot(){}  // lib-ctx
+/* 00162b00 00000070 */ rxSndStrBankGetTrackTable(){}  // lib-ctx
+/* 00162b70 000000ac */ rxSndStrBankGetTrack(){}  // lib-ctx
+/* 00162c20 00000028 */ rxSndStrBankGetTrackCount(){}  // lib-ctx
+/* 00162c48 00000028 */ rxSndStrBankGetTrackChannels(){}  // lib-ctx
+/* 00162c70 0000002c */ rxSndStrBankGetTrackName(){}  // lib-ctx
+/* 00162ca0 000000c0 */ rxSndStrBankFindTrack(){}  // lib-ctx
+/* 00162d60 00000074 */ rxSndStrBankGetTrackVolume(){}  // lib-ctx
+/* 00162dd8 00000044 */ rxSndStrBankInit(){}  // lib-ctx
+/* 00162e20 00000004 */ rxSndStrBankUpdate(){}  // lib-ctx
+/* 00162e28 000001ac */ rxSndStrBankOpenBody(){}  // lib-ctx
+/* 00162fd8 00000094 */ rxSndStrBankGetRequest(){}  // lib-ctx
+/* 00163070 00000014 */ rxSndStrBankGetMark(){}  // lib-ctx
+/* 00163088 00000014 */ rxSndStrBankGetBranch(){}  // lib-ctx
+/* 001630a0 00000044 */ rxSndStrXwsFindChunk(){}  // lib-ctx
+/* 001630e8 0000002c */ rxSndStrXwsGetChunkData(){}  // lib-ctx
+/* 00163118 000000e4 */ rxSndStrFormGetCount(){}  // lib-ctx
+/* 00163200 00000078 */ rxSndStrTextGet(){}  // lib-ctx
+/* 00163278 0000007c */ rxSndStrMarkGetCount(){}  // lib-ctx
+/* 001632f8 000000a0 */ rxSndStrMarkGet(){}  // lib-ctx
+/* 00163398 0000007c */ rxSndStrBranchGetCount(){}  // lib-ctx
+/* 00163418 000000a0 */ rxSndStrBranchGet(){}  // lib-ctx
+/* 001634b8 0000022c */ rxSndStrPlayEx(){}  // lib-ctx
+/* 001636e8 0000004c */ rxSndStrPlay(){}  // lib-ctx
+/* 00163738 00000014 */ rxSndStrPlayAt(){}  // lib-ctx
+/* 00163750 00000050 */ rxSndStrPause(){}  // lib-ctx
+/* 001637a8 000000a0 */ rxSndStrStopImpl(){}  // lib-ctx
+/* 00163848 00000018 */ rxSndStrStop(){}  // lib-ctx
+/* 00163860 00000018 */ rxSndStrStopAsync(){}  // lib-ctx
+/* 00163878 00000060 */ rxSndStrStopAll(){}  // lib-ctx
+/* 001638d8 00000034 */ rxSndStrSuspend(){}  // lib-ctx
+/* 00163910 00000050 */ rxSndStrGetStatus(){}  // lib-ctx
+/* 00163960 000000bc */ rxSndStrSetAttr(){}  // lib-ctx
+/* 00163a20 000000c0 */ rxSndStrSetVolume(){}  // lib-ctx
+/* 00163ae8 000002e0 */ rxSndStrSetPitch(){}  // lib-ctx
+/* 00163dc8 00000074 */ rxSndStrGetHandle(){}  // lib-ctx
+/* 00163e40 00000068 */ rxSndStrPauseRead(){}  // lib-ctx
+/* 00163ea8 00000074 */ rxSndStrSyncRead(){}  // lib-ctx
+/* 00163f20 00000094 */ rxSndStrGetDataWritten(){}  // lib-ctx
+/* 00163fb8 00000080 */ rxSndStrInit(){}  // lib-ctx
+/* 00164040 00000048 */ rxSndStrExit(){}  // lib-ctx
+/* 00164088 0000009c */ rxSndStrUpdate(){}  // lib-ctx
+/* 00164128 000000fc */ rxSndStrRegisterFormat(){}  // lib-ctx
+/* 00164228 0000000c */ rxSndStrFmtGetMasterVolumeL(){}  // lib-ctx
+/* 00164238 0000000c */ rxSndStrFmtGetMasterVolumeR(){}  // lib-ctx
+/* 00164248 000000a0 */ rxSndStrFmtCallMarkCallback(){}  // lib-ctx
+/* 001642e8 000000f4 */ rxSndStrFmtCallBranchCallback(){}  // lib-ctx
+/* 001643e0 0000004c */ rxSndStrPcmExit(){}  // lib-ctx
+/* 00164430 00000048 */ rxSndStrPcmMarkCallback(){}  // lib-ctx
+/* 00164478 00000240 */ rxSndStrPcmUpdate(){}  // lib-ctx
+/* 001646b8 00000478 */ rxSndStrPcmOpen(){}  // lib-ctx
+/* 00164b30 000000a4 */ rxSndStrPcmClose(){}  // lib-ctx
+/* 00164bd8 000000a4 */ rxSndStrPcmPauseRead(){}  // lib-ctx
+/* 00164c80 0000004c */ rxSndStrAdpcmExit(){}  // lib-ctx
+/* 00164cd0 00000048 */ rxSndStrAdpcmMarkCallback(){}  // lib-ctx
+/* 00164d18 000003e0 */ rxSndStrAdpcmUpdate(){}  // lib-ctx
+/* 001650f8 00000500 */ rxSndStrAdpcmOpen(){}  // lib-ctx
+/* 001655f8 0000009c */ rxSndStrAdpcmClose(){}  // lib-ctx
+/* 00165698 0000004c */ rxSndStrAdpcmPauseRead(){}  // lib-ctx
+/* 001656e8 00000048 */ rxSndStrStreamInit(){}  // lib-ctx
+/* 00165738 0000004c */ rxSndStrStreamExit(){}  // lib-ctx
+/* 00165788 00000004 */ rxSndStrStreamUpdate(){}  // lib-ctx
+/* 00165790 00000030 */ rxSndStrStreamOpenFile(){}  // lib-ctx
+/* 001657c0 0000002c */ rxSndStrStreamOpenMemory(){}  // lib-ctx
+/* 001657f0 00000148 */ rxSndStrStreamOpen(){}  // lib-ctx
+/* 00165938 000000fc */ rxSndStrStreamClose(){}  // lib-ctx
+/* 00165a38 00000090 */ rxSndStrStreamSeek(){}  // lib-ctx
+/* 00165ac8 0000006c */ rxSndStrStreamSetMarkers(){}  // lib-ctx
+/* 00165b38 0000006c */ rxSndStrStreamSetTags(){}  // lib-ctx
+/* 00165ba8 00000074 */ rxSndStrStreamGetRingTags(){}  // lib-ctx
+/* 00165c20 000001d4 */ rxSndStrStreamGetReadable(){}  // lib-ctx
+/* 00165df8 00000074 */ rxSndStrStreamGetFilled(){}  // lib-ctx
+/* 00165e70 0000006c */ rxSndStrStreamConsume(){}  // lib-ctx
+/* 00165ee0 00000074 */ rxSndStrStreamGetData(){}  // lib-ctx
+/* 00165f58 000000ac */ rxSndStrStreamIsEnd(){}  // lib-ctx
+/* 00166008 0000005c */ rxSndStrStreamPause(){}  // lib-ctx
+/* 00166068 00000074 */ rxSndStrStreamSync(){}  // lib-ctx
+/* 001660e0 00000090 */ rxSndStrMemInit(){}  // lib-ctx
+/* 00166178 0000003c */ rxSndStrMemExit(){}  // lib-ctx
+/* 001661b8 00000004 */ rxSndStrMemUpdate(){}  // lib-ctx
+/* 001661c0 000000f0 */ rxSndStrMemOpen(){}  // lib-ctx
+/* 001662b0 0000006c */ rxSndStrMemClose(){}  // lib-ctx
+/* 00166320 00000048 */ rxSndStrMemSeek(){}  // lib-ctx
+/* 00166370 000000a4 */ rxSndStrMemGetReadable(){}  // lib-ctx
+/* 00166418 0000019c */ rxSndStrMemConsume(){}  // lib-ctx
+/* 001665b8 00000094 */ rxSndStrMemGetData(){}  // lib-ctx
+/* 00166650 00000038 */ rxSndStrMemIsEnd(){}  // lib-ctx
+/* 00166688 00000200 */ rxSndStrMemSetMarkers(){}  // lib-ctx
+/* 00166890 000001e0 */ rxSndStrMemSetTags(){}  // lib-ctx
+/* 00166a78 0000009c */ rxSndStrMemGetTags(){}  // lib-ctx
+/* 00166b18 00000038 */ rxSndStrMemGetSize(){}  // lib-ctx
 /* 00166b50 00000024 */ rxThCreateSema(){}  // lib-ctx
 /* 00166b78 00000054 */ rxThStartThread(){}  // lib-ctx
 /* 00166bd0 00000028 */ rxThKillThread(){}  // lib-ctx
