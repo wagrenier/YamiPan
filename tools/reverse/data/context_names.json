@@ -1,4 +1,10 @@
 {
+ "00100220": {
+  "name": "_root",
+  "tag": "lib-context",
+  "was": "FUN_00100220",
+  "why": "crt0's thread root: ExitThread (syscall 0x23), passed to SetupThread in t0 by the entry code (SDK crt0.s _root; codeptrs.py)"
+ },
  "00100280": {
   "name": "__init_cpp",
   "tag": "lib-context",
@@ -28,6 +34,12 @@
   "tag": "lib-context",
   "was": "FUN_00100310",
   "why": "Heap::alloc(0x329970, n, 16), the second plain-size allocator after operator_new[] 0x1002f0; order inferred from the delete pair"
+ },
+ "00100328": {
+  "name": "rxSysNoMemFunc",
+  "tag": "lib-context",
+  "was": "FUN_00100328",
+  "why": "rx: prints 'rxSys:No Memory Allocate Func !' and returns 0; rxSysSetMemFunc0..3 install it when given 0; RoR 0x23ff58 rxSysNoMemFunc, same size 0x24 (codeptrs.py)"
  },
  "00100350": {
   "name": "rxSysSetMemFunc0",
@@ -1343,17 +1355,209 @@
   "was": "FUN_001397c8",
   "why": "libkernl varargs printf formatting through 0x1388c8 with the output fn 0x139638 under DIntr; sceGsSyncPath's timeout messages go through it"
  },
+ "00139bc0": {
+  "name": "sceSifExitCmd",
+  "tag": "lib-context",
+  "was": "FUN_00139bc0",
+  "why": "SDK 3.0 libkernl SIF cmd, linked as in RoR: RosePan names RoR 0x260508 sceSifExitCmd (0x34); Ghidra merged it with sceSifSetSysCmdBuffer, split at 0x139bf8 (rxalign.py span partition)"
+ },
+ "00139bf8": {
+  "name": "sceSifSetSysCmdBuffer",
+  "tag": "lib-context",
+  "was": "FUN_00139bf8",
+  "why": "SDK 3.0 libkernl SIF cmd, linked as in RoR: RosePan names RoR 0x260540 sceSifSetSysCmdBuffer (0x30); start split from sceSifExitCmd (rxalign.py span partition)"
+ },
+ "00139c28": {
+  "name": "sceSifAddCmdHandler",
+  "tag": "lib-context",
+  "was": "FUN_00139c28",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x260570 sceSifAddCmdHandler; same size 0x78 and place in a run of matching functions (rxalign.py)"
+ },
+ "00139ca0": {
+  "name": "sceSifRemoveCmdHandler",
+  "tag": "lib-context",
+  "was": "FUN_00139ca0",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x2605e8 sceSifRemoveCmdHandler; same size 0x4c and place in a run of matching functions (rxalign.py)"
+ },
+ "00139cf0": {
+  "name": "_sceSifSendCmd",
+  "tag": "lib-context",
+  "was": "FUN_00139cf0",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x260638 _sceSifSendCmd; same size 0x134 and place in a run of matching functions (rxalign.py)"
+ },
+ "00139e28": {
+  "name": "sceSifSendCmd",
+  "tag": "lib-context",
+  "was": "FUN_00139e28",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x260770 sceSifSendCmd; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "00139e68": {
+  "name": "isceSifSendCmd",
+  "tag": "lib-context",
+  "was": "FUN_00139e68",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x2607b0 isceSifSendCmd; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "00139ea8": {
+  "name": "_sceSifCmdIntrHdlr",
+  "tag": "lib-context",
+  "was": "FUN_00139ea8",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x2607f0 _sceSifCmdIntrHdlr; same size 0x148 and place in a run of matching functions (rxalign.py)"
+ },
+ "00139ff0": {
+  "name": "sceSifWriteBackDCache",
+  "tag": "lib-context",
+  "was": "FUN_00139ff0",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x260938 sceSifWriteBackDCache; same size 0xb0 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013a0a0": {
+  "name": "sceSifInitRpc",
+  "tag": "lib-context",
+  "was": "FUN_0013a0a0",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x2609e8 sceSifInitRpc; same size 0x19c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013a240": {
+  "name": "sceSifExitRpc",
+  "tag": "lib-context",
+  "was": "FUN_0013a240",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x260b88 sceSifExitRpc; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013a268": {
+  "name": "_sceRpcGetPacket",
+  "tag": "lib-context",
+  "was": "FUN_0013a268",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x260bb0 _sceRpcGetPacket; same size 0xa8 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013a310": {
+  "name": "_sceRpcFreePacket",
+  "tag": "lib-context",
+  "was": "FUN_0013a310",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x260c58 _sceRpcFreePacket; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013a330": {
+  "name": "_sceRpcGetFPacket",
+  "tag": "lib-context",
+  "was": "FUN_0013a330",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x260c78 _sceRpcGetFPacket; same size 0x30 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013a360": {
+  "name": "_sceRpcGetFPacket2",
+  "tag": "lib-context",
+  "was": "FUN_0013a360",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x260ca8 _sceRpcGetFPacket2; same size 0x40 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013a3a0": {
+  "name": "_request_end",
+  "tag": "lib-context",
+  "was": "FUN_0013a3a0",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x260ce8 _request_end; same size 0xcc and place in a run of matching functions (rxalign.py)"
+ },
+ "0013a470": {
+  "name": "_alarm_rdata",
+  "tag": "lib-context",
+  "was": "FUN_0013a470",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x260db8 _alarm_rdata; same size 0x40 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013a4b0": {
+  "name": "_request_rdata",
+  "tag": "lib-context",
+  "was": "FUN_0013a4b0",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x260df8 _request_rdata; same size 0xd0 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013a580": {
+  "name": "sceSifGetOtherData",
+  "tag": "lib-context",
+  "was": "FUN_0013a580",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x260ec8 sceSifGetOtherData; same size 0x164 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013a6e8": {
+  "name": "_search_svdata",
+  "tag": "lib-context",
+  "was": "FUN_0013a6e8",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261030 _search_svdata; same size 0x4c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013a738": {
+  "name": "_alarm_bind",
+  "tag": "lib-context",
+  "was": "FUN_0013a738",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261080 _alarm_bind; same size 0x40 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013a778": {
+  "name": "_request_bind",
+  "tag": "lib-context",
+  "was": "FUN_0013a778",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x2610c0 _request_bind; same size 0xcc and place in a run of matching functions (rxalign.py)"
+ },
  "0013a848": {
   "name": "sceSifBindRpc",
   "tag": "lib-context",
   "was": "FUN_0013a848",
   "why": "libkernl SIF RPC (client, rpc number, mode): CreateSema named 'SceSifrpcBind' (0x301118), packet from the pool 0x4cb380, DMA to the IOP; scePadInit binds 0x80000100 with it"
  },
+ "0013a998": {
+  "name": "_request_call",
+  "tag": "lib-context",
+  "was": "FUN_0013a998",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x2612e0 _request_call; same size 0x88 and place in a run of matching functions (rxalign.py); also found by codeptrs.py: sceSifInitRpc registers it for SIF cmd 0x8000000a"
+ },
  "0013aa28": {
   "name": "sceSifCallRpc",
   "tag": "lib-context",
   "was": "FUN_0013aa28",
   "why": "libkernl SIF RPC (client, fno, mode, send, ssize, recv, rsize, end fn, end arg): 72 call sites across libpad / libcdvd, same packet pool 0x4cb380 as sceSifBindRpc"
+ },
+ "0013ac28": {
+  "name": "sceSifCheckStatRpc",
+  "tag": "lib-context",
+  "was": "FUN_0013ac28",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261570 sceSifCheckStatRpc; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013add0": {
+  "name": "sceSifRemoveRpc",
+  "tag": "lib-context",
+  "was": "FUN_0013add0",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261718 sceSifRemoveRpc; same size 0x94 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013ae68": {
+  "name": "sceSifRemoveRpcQueue",
+  "tag": "lib-context",
+  "was": "FUN_0013ae68",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x2617b0 sceSifRemoveRpcQueue; same size 0x90 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013aef8": {
+  "name": "sceSifGetNextRequest",
+  "tag": "lib-context",
+  "was": "FUN_0013aef8",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261840 sceSifGetNextRequest; same size 0x58 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013af50": {
+  "name": "sceSifExecRequest",
+  "tag": "lib-context",
+  "was": "FUN_0013af50",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261898 sceSifExecRequest; same size 0x1c4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013b118": {
+  "name": "sceSifRpcLoop",
+  "tag": "lib-context",
+  "was": "FUN_0013b118",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261a60 sceSifRpcLoop; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013b158": {
+  "name": "_sceFsIobSemaMK",
+  "tag": "lib-context",
+  "was": "FUN_0013b158",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261aa0 _sceFsIobSemaMK; same size 0x70 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013b248": {
+  "name": "new_iob",
+  "tag": "lib-context",
+  "was": "FUN_0013b248",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261b90 new_iob; same size 0x88 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013b430": {
+  "name": "_sceFs_Rcv_Intr",
+  "tag": "lib-context",
+  "was": "FUN_0013b430",
+  "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261d78 _sceFs_Rcv_Intr; same size 0x3b4 and place in a run of matching functions (rxalign.py)"
  },
  "00140ba0": {
   "name": "DIntr",
@@ -1438,6 +1642,24 @@
   "tag": "game-inferred",
   "was": "FUN_00152e20",
   "why": "(name, buf): the load hook spkRomLoad installs (rxFileSetLoadHook): same SPK.ROM index search as spkGetFileSize, then reads the entry; body not read in full"
+ },
+ "00153080": {
+  "name": "gameRxMemFree",
+  "tag": "game-inferred",
+  "was": "FUN_00153080",
+  "why": "rx memory hook 3 (rxSysSetMemFunc3): Heap::free(globalHeap, p) (codeptrs.py)"
+ },
+ "00153090": {
+  "name": "gameRxMemRealloc",
+  "tag": "game-inferred",
+  "was": "FUN_00153090",
+  "why": "rx memory hook 2 (rxSysSetMemFunc2): Heap::realloc(globalHeap, p, size), caller's ra in v0 (codeptrs.py)"
+ },
+ "001530b0": {
+  "name": "gameRxMemAlloc",
+  "tag": "game-inferred",
+  "was": "FUN_001530b0",
+  "why": "rx memory hook 0 and 1 (rxSysSetMemFunc0/1 after rxSysInit at 0x1527f4): Heap::alloc on the global heap, 0x40 aligned, caller's ra in v0 (codeptrs.py)"
  },
  "00153108": {
   "name": "rxSysThreadCallback",

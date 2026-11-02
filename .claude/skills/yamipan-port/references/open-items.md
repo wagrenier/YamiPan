@@ -32,9 +32,21 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    "Program flow", "Thread system"). `gameMainThread` 0x12db00 failed: no Ghidra function there.
    **Code pointers passed as arguments are not in `data/missing_functions.json`** (it only has
    vtable slots and initialisers): 0x12db00, 0x12db70, 0x12dab0, 0x131840, 0x12dc20 were created
-   and named in batch 009 (architecture.md "Program flow"); **still to do with (b)**: a pass over
-   lui/addiu pairs feeding a0..t1 before a jal (thread entries, callbacks, handlers) to find the
-   rest -- worth a `rtti.py`-style `--missing` option or a small `codeptrs.py`.
+   and named in batch 009 (architecture.md "Program flow"). ~~A pass over lui/addiu pairs feeding
+   a0..t1~~ **done 2026-11-02 (batch 010)**: `codeptrs.py` found 39 more starts (callbacks,
+   rx memory hooks, SIF cmd handlers, array-element constructors passed to CodeWarrior's array
+   new, function tables), all created; rerun gives 0. Left unnamed among them (read at their TU):
+   the zero-and-return-this constructors 0x1716c0, 0x18bf20, 0x194910, 0x235390, 0x25f990,
+   0x2cd970 (passed in a1 to the array-construct helper: name them with their class),
+   0x1398c8 / 0x1398e8 (stored by 0x139848, before the SIF library), 0x140c88 / 0x1412f0 (word
+   copy) and 0x140cc0 (word search) near `_InitSys`, 0x127c80 (returns 0), 0x113750 / 0x113898,
+   0x11c928, 0x11feb8 / 0x120348 / 0x120750 (libmc callbacks), 0x1395e0, 0x140840, 0x180018 (a lone
+   nop in a table at 0x2f0e5c: check), 0x1b56f0, 0x1f22a0, 0x1fbe40..0x1fbf30 (six callbacks of
+   0x1fbe20's family), 0x20ad20, 0x20b010, 0x2b5740, 0x2cd8a0. Its 29 `interior` hits are mostly
+   constants that look like code addresses, plus **the first island's entry points** 0x2f3d60..
+   0x2f4860, passed by `_InitSys`'s callees 0x140330..0x141390 (item (c)).
+   **Batch 010 also named the SIF cmd / rpc library and the fileio head from RoR** by size
+   alignment (architecture.md "Key functions and globals"; 0x13ac68 / 0x13ad00 still to read).
    **Batch 003 done (2026-10-31, 34 names)**: `gameMainThread`'s and `gameInit`'s callees (pad,
    sound, rx init, SPK.ROM, GS / DMA / SIF / libpad library calls, options; architecture.md
    "Program flow").
@@ -76,11 +88,14 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    `rxSndStrPlayAt` 0x163738 (a bare tail call to `rxSndStrPlayEx`: why does it exist?).
    Snapshot before it: `work/snapshots/20261102_135750.json`.
    **Batch 009 done (2026-11-02, 113 names)**: bootstrap 4(a) above.
-   **Next batches, in this order**: the code-pointer pass above; **SDPR2** 0x1681c0.. (not in RoR: the `SDPR2 ...`
+   **Batch 010 done (2026-11-02, 37 names)**: the code-pointer pass above.
+   **Next batches, in this order**: **SDPR2** 0x1681c0.. (not in RoR: the `SDPR2 ...`
    messages 0x3027b8..; find its end) and **rxMpeg** (RoR 0x18182c..: find FS2's copy by size
    runs, as batch 007 found rxsnd); `_InitSys`'s nine
    callees (0x140c08, 0x140d48, 0x141338, 0x1414b0, 0x1416f0, 0x1378b8, 0x140f80, 0x140470,
-   0x142b70); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
+   0x142b70); the rest of the SDK 3.0 libraries both games link, by `rxalign.py` size runs against
+   RoR's `// lib` names as batch 010 did for SIF (libkernl around 0x137000..0x142000, libgraph,
+   libdma, libpad, libmc, libcdvd: find each by a named anchor); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
    string rep); SDK functions from their `PsIIlib` / assert strings; rx (`rxfile.c`); rena
    (`rena_*.cpp`). Thunks 0x100218 (`_exit`) and 0x100270 keep Ghidra's thunk names (renaming a
    thunk may rename its target);
@@ -205,6 +220,11 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-11-02: bootstrap 4, part 11 (scheduled run): the code-pointer pass, new `codeptrs.py`
+  (39 starts created, saved by the tools) and naming batch 010 (37 names: SIF cmd / rpc + fileio
+  head from RoR by size alignment, `_root`, `rxSysNoMemFunc`, the rx memory hooks). Next: SDPR2,
+  then rxMpeg.
 
 - 2026-11-02: bootstrap 4, part 10 (scheduled run): 4(a), 1,023 missing function starts created in
   Ghidra (saved by the tools: no Ctrl+S needed) and naming batch 009 (113 names: the merged rx
