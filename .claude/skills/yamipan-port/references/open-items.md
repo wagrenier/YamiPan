@@ -313,6 +313,19 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    0x260bc0 / 0x2612c0, `testGameState` 0x2604a0, `getGameValue` / `setGameValue`,
    `getStagePackData` and 0x2625c0..0x264070. Left in `unassigned@00252840` (156): the widget
    classes 0x25b8e0..0x25fa50 (`UiWidget::create`) and the MSL vector / tree user 0x252840..0x25b8e0.
+   **Second run (2026-11-03, batch 050, 13 names): 24 of 40 written, still `partial`**:
+   `testGameState` (41 named states: architecture.md "Modules"), `findSprite`, `scanItems` /
+   `scanWeapons`, `getDoorState`, `getStagePackData`, `getButtonMapDraft`. GameOptions +0x20 / +0x44
+   / +0x48 named wideScreen / mapMode (MapMode) / hints. Stand-ins: `StageObject` (getKind is a
+   virtual, slot 123, declared plain), `StageObjectList::find`, `StageScene::getFloor`,
+   `StageFiles` / `getStageFiles`, `ItemDef` / `gItemDefs` (gamehooks.h), `getNaviTable`
+   (progress.h), `UiScrollWidget` (uisequence.h). Doubts: rF* read as the player's floor; the
+   scroll widget's class (only its position after Vt_00316ab0's methods); `gItemDefs` (bss
+   0x574c10) has no definition yet -- whoever loads it (stage data) defines it, else stubgen must;
+   PC guards where the ROM reads near null (no item def, no navi table, a sheet without weapons).
+   **Next run (the same TU)**: the text variables 0x260bc0 / 0x2612c0 (with 0x261cf0, table 0x2fb120
+   rItem00_C / rItem00_I), `getGameValue` 0x2633f0 / `setGameValue` 0x262e70, 0x262840 (steps the
+   weapon preview), 0x263b90 (empty, called by 0x287f20) and 0x2625c0..0x264070.
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

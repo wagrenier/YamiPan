@@ -80,6 +80,14 @@ struct ButtonMap
 };
 static_assert(sizeof(ButtonMap) == 0x20, "ButtonMap: EE 0x20");
 
+// GameOptions::mapMode: whether the map shows where the player is.
+enum MapMode
+{
+    MapMode_Never  = 0,
+    MapMode_Always = 1,
+    // Any other value: when the player's map holder says so (UiLayout's rMapP).
+};
+
 // The game options at 0x599000 (SystemData +0x4d0). The fields without a
 // name are only set to their defaults and compared here.
 struct GameOptions
@@ -101,19 +109,19 @@ struct GameOptions
     u_char    _15;              // FS2 +0x15: default 0
     int       brightness;       // FS2 +0x18: index into the 19-step table 0x2fac20 (guess: brightness), default 9
     u_char    _1c;              // FS2 +0x1c: default 1
-    int       _20;              // FS2 +0x20: default 0
+    int       wideScreen;       // FS2 +0x20: 1 the 16:9 screen (the S2D's r16_9), default 0
     ButtonMap buttonMap;        // FS2 +0x24
-    int       _44;              // FS2 +0x44: default 1
-    int       _48;              // FS2 +0x48: default 1
+    int       mapMode;          // FS2 +0x44: MapMode (the S2D's rMapP), default always
+    int       hints;            // FS2 +0x48: 1 hints on (the S2D's rHint), default 1
     u_char    _4c;              // FS2 +0x4c: default 1
     u_char    _4d;              // FS2 +0x4d: compared, never set by setDefaults
 };
 static_assert(offsetof(GameOptions, screenX) == 0x0a, "GameOptions::screenX");
 static_assert(offsetof(GameOptions, _10) == 0x10, "GameOptions::_10");
 static_assert(offsetof(GameOptions, brightness) == 0x18, "GameOptions::brightness");
-static_assert(offsetof(GameOptions, _20) == 0x20, "GameOptions::_20");
+static_assert(offsetof(GameOptions, wideScreen) == 0x20, "GameOptions::wideScreen");
 static_assert(offsetof(GameOptions, buttonMap) == 0x24, "GameOptions::buttonMap");
-static_assert(offsetof(GameOptions, _44) == 0x44, "GameOptions::_44");
+static_assert(offsetof(GameOptions, mapMode) == 0x44, "GameOptions::mapMode");
 static_assert(offsetof(GameOptions, _4d) == 0x4d, "GameOptions::_4d");
 static_assert(sizeof(GameOptions) == 0x50, "GameOptions: EE 0x50");
 

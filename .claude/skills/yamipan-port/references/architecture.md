@@ -821,7 +821,7 @@ group. On the host the presets go to `YamiPan_DrawUiReg`; the draw module must s
 of the named target when a GsTexture has m_isTarget (no GS memory).
 
 **`game/uigame.cpp` 0x25fa50..0x2640e8 (TU 21, 2026-11-03, batch 049; cut out of
-`unassigned@00252840`; the file name is the port's; 14 of 40 written, `partial`)**: the S2D UI's
+`unassigned@00252840`; the file name is the port's; 24 of 40 written, `partial`)**: the S2D UI's
 **game side**. Below it 0x252840..0x25fa50 are the widget classes (vtables 0x316a90..0x316c10,
 `UiWidget::create` 0x25e260) with a tween record helper set 0x25f5b0..0x25fa10 (0x25f860 has 64
 callers); above it libscf. In it: **`UiFont`** (0x14: glyphs, owned GsTexture, text, spacing 2 / 0);
@@ -844,11 +844,31 @@ effect table: +0xc count, sorted name index +0x428 / +0x42c, entries 0x30 at +0x
 the save's stage flags inline. The tracks' target **"rCharactorPostion"** is the stage's player
 (`gStageScene` +0x78: +0x150 / +0x154 x / z, +0x168 yaw): rotate-to takes `normalizeAngle`
 0x1339c0 (pi - yaw), pin-rot (x, -z) / 10 too; outside a stage 6000 / 5000 and ~pi / 2.
-Unwritten: `testGameState` 0x2604a0, the text variables 0x260bc0 / 0x2612c0 ("%s%s%s",
-"--:--:--"), `UiSheetSpriteTrack::findSprite` 0x261d00 (item names: tables 0x2faed0 "rItem00.." /
-0x2fafc0 of 5 words, item defs 0x574c10 160 x 0x20 {name, +0x10 kind, +0x19, +0x1e}; the player's
-items +0x22c (a list), +0x238 / +0x23c), the inventory scans 0x2628a0 / 0x262a90, the game values
-and the small hooks 0x262df0..0x264070.
+**Game states** (`UiLayout::testGameState` 0x2604a0, second run, batch 050): 41 names in a bss
+table 0x599490 (count 0x31abe8) that the TU's static initializer **0x310b60** fills from sdata string
+pointers 0x31aae8..: r16_9 (`GameOptions` +0x20 **wideScreen**), rF01..rF09 / rFDF (the player's
+floor, `StageScene::getFloor` 0x19aea0, 0 while the map hides the player), rI00..rI07 (inventory
+kinds > n), rW00 / rW01 (player +0x238 / +0x23c weapons), rDunknown / rDunlock / rDblocked / rDlock /
+rDNone (`getDoorState` 0x2626f0: stage object by name through `StageObjectList::find` 0x193ce0 on
+gStageScene +0x10, kind (vtable +0x1f4) 2, +0x2a8 4 / 3 / 1-2 / 0), rCheckPoint
+(`StageResult::hasAttemptFlag`), rHint (options +0x48 **hints**), rMapP (options +0x44 **mapMode**: 1
+always, 0 never, else player +0x234 -> +0x240 -> ** -> +0x214), rMsgUpLimit / rMsgDownLimit /
+rMsgUseScroll (a scroll widget's +0x28 / +0x34: 0x25c310..0x25c360), rInGame, rProgramStatusNone /
+00..03 (the widget's getStatus + 1), rMapKey0 / 1 (`NaviTable::getTriggerState` of the play record's
+stage / variant vs the argument k0 / k1 / k2; `getNaviTable` 0x2955d0 = init pack item 1),
+rConnectedPad (pad 0 connected and terminal mode 8). **Sheet sprites** (`findSprite`): key-config
+sprites 0x2fafc0 (16 x 0x14 {name, slot, prefix, suffix, _}: rKcDecide..rKcJack -> the options'
+ButtonMap, rKcLDecide..rKcLJack -> the menu's draft 0x599470, `getButtonMapDraft` 0x263a70, loaded /
+applied by 0x263b10 / 0x263a80) name button icons 0x2fb100 (AI_L2 AI_R2 AI_L1 AI_R1 AI_A AI_O AI_X
+AI_H); item sprites 0x2faed0 (12: rItem00..07 slots 0..7, rWeaponL00 / 01 "_W" and rWeaponS00 / 01
+slots 8 / 9) print "<prefix><held name><suffix>" from **`scanItems`** 0x2628a0 (player +0x22c list
+of {handle, next}; objects of kind 0x15 skipped; merged by name +0x20, count +0x20c) /
+**`scanWeapons`** 0x262a90 (firearm = item def kind 2..6, ammo +0x458 / +0x454). Item defs
+`gItemDefs` 0x574c10 (160 x 0x20: name[16], +0x10 kind (>= 7 items, below weapons), +0x19 > 1 shows
+the count, +0x1e max). Outside a stage the sprites preview the sheet: item slot n = the sheet's
+(n + 1)-th item, weapon slots cycle by the counter 0x31ae44 that 0x262840 steps.
+Unwritten: the text variables 0x260bc0 / 0x2612c0 ("%s%s%s", "--:--:--"; table 0x2fb120 rItem00_C /
+rItem00_I), `getGameValue` / `setGameValue`, 0x261cf0, 0x262840, 0x263b90 and the rest to 0x264070.
 
 ## Classes
 

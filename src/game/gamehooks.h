@@ -216,9 +216,83 @@ public:
     void stopNamed(const char *name);                                    // FS2 0x001d6a90
 };
 
+// StageObject::getKind: the ones game/uigame.cpp tests.
+enum StageObjectKind
+{
+    StageObject_Door   = 2,     // StageObject::m_doorState is read
+    StageObject_Kind21 = 0x15,  // left out of the inventory (unidentified)
+};
+
+// StageObject::m_doorState (a door's +0x2a8). The S2D asks for it as
+// rDunknown / rDunlock / rDblocked / rDlock / rDNone (UiDoorState).
+enum StageDoorState
+{
+    StageDoor_Unknown  = 0,
+    StageDoor_Open1    = 1,     // both read as "unlock"
+    StageDoor_Open2    = 2,
+    StageDoor_Locked   = 3,
+    StageDoor_Blocked  = 4,
+};
+
+// An object of the stage: doors, the player's items and weapons (one
+// family: getKind is the same vtable slot in all). Only what
+// game/uigame.cpp reads.
+// layout: host -- EE: vptr at +0 (getKind is slot 123, vtable +0x1f4).
+class StageObject
+{
+public:
+    // A virtual in the ROM (slot 123); a plain stub until its TU.
+    int getKind();                                                       // FS2 vtable +0x1f4
+
+    u_char _000[0x20];
+    char   m_name[0x1e0];       // FS2 +0x020: an item's / weapon's name (an ItemDef name)
+    int    m_itemDef;           // FS2 +0x200: gItemDefs index
+    u_char _204[0x8];
+    int    m_count;             // FS2 +0x20c: an item's count
+    u_char _210[0x98];
+    int    m_doorState;         // FS2 +0x2a8: a door's StageDoorState
+    u_char _2ac[0x1a8];
+    int    m_ammoB;             // FS2 +0x454: a firearm's (findSprite's second number)
+    int    m_ammoA;             // FS2 +0x458: a firearm's (the first)
+};
+
+// The stage's objects (the stage object's +0x10).
+// layout: host -- no fields declared yet.
+class StageObjectList
+{
+public:
+    // The object called name; null none (arg: 0 from game/uigame.cpp).
+    StageObject *find(const char *name, int arg);                        // FS2 0x00193ce0
+};
+
+// A node of the player's item list (the player's +0x22c): the item through
+// a handle.
+// layout: host -- EE 8 bytes.
+struct StageItemNode
+{
+    StageObject  **item;        // FS2 +0x0
+    StageItemNode *next;        // FS2 +0x4
+};
+
+// The map's holder in the player's equipment: +0x240 -> ** -> +0x214
+// (whether the map shows the player; the S2D's rMapP). Names are guesses.
+// layout: host -- EE: +0x214 the flag.
+struct StageMapState
+{
+    u_char _000[0x214];
+    u_char showsPlayer;         // FS2 +0x214
+};
+// layout: host -- EE: +0x240 the state's handle.
+struct StageMapHolder
+{
+    u_char          _000[0x240];
+    StageMapState **state;      // FS2 +0x240
+};
+
 // The player character of a stage (the stage object's +0x78). Only what
 // game/uigame.cpp reads.
-// layout: host -- EE: +0x150 / +0x154 position x / z, +0x168 yaw.
+// layout: host -- EE: +0x150 / +0x154 position x / z, +0x168 yaw, +0x22c
+// the items, +0x234 the map's holder, +0x238 / +0x23c the two weapons.
 struct StagePlayer
 {
     u_char _000[0x150];
@@ -226,20 +300,64 @@ struct StagePlayer
     float  posZ;                // FS2 +0x154
     u_char _158[0x10];
     float  yaw;                 // FS2 +0x168
+    u_char _16c[0xc0];
+    StageItemNode  *items;      // FS2 +0x22c
+    u_char _230[0x4];
+    StageMapHolder *map;        // FS2 +0x234
+    StageObject    *weapon[2];  // FS2 +0x238: long (rW00), short (rW01); null none
 };
 
 // The current stage object (0x130 bytes, built by the stage loop 0x17f160:
 // 0x19c180). Only what game/stageresult.cpp and game/uigame.cpp read.
-// layout: host -- EE: +0x1c the box-grid owner (game/boxgrid.h), +0x24 the
-// sound, +0x78 the player.
+// layout: host -- EE: +0x10 the objects, +0x1c the box-grid owner
+// (game/boxgrid.h), +0x24 the sound, +0x78 the player.
 struct StageScene
 {
-    u_char       _00[0x24];
-    StageSound  *sound;         // FS2 +0x24
-    u_char       _28[0x50];
-    StagePlayer *player;        // FS2 +0x78
+    // The floor the player is on (the S2D's rF01..rFDF: 0..9); negative
+    // none.
+    int getFloor(StagePlayer *player);                                   // FS2 0x0019aea0
+
+    u_char           _00[0x10];
+    StageObjectList *objects;   // FS2 +0x10
+    u_char           _14[0x10];
+    StageSound      *sound;     // FS2 +0x24
+    u_char           _28[0x50];
+    StagePlayer     *player;    // FS2 +0x78
 };
 extern StageScene *gStageScene;     /* sbss 0x31adf4 (gp-0x7a7c) */
+
+// The stage's files (sbss 0x31adfc, set by the stage loop): +0 its loader.
+// layout: host
+struct StageFiles
+{
+    FileLoader *loader;         // FS2 +0x0
+};
+StageFiles *getStageFiles();                                             // FS2 0x0017f150
+
+// The item definitions (bss 0x574c10, 160 x 0x20; loaded with the stage
+// data, not read here). Names are guesses from findSprite and the
+// inventory scans.
+constexpr int kItemDefCount = 160;
+struct ItemDef
+{
+    char   name[0x10];          // FS2 +0x00: the TimM sprite names use it
+    int    kind;                // FS2 +0x10: ItemKind
+    u_char _14[0x5];
+    u_char stackKind;           // FS2 +0x19: > 1 shows the count (UiItemSlot::showsCount)
+    u_char _1a[0x4];
+    short  maxCount;            // FS2 +0x1e: UiItemSlot::max (guess: the most one can carry)
+};
+static_assert(sizeof(ItemDef) == 0x20, "ItemDef: EE 0x20");
+extern ItemDef gItemDefs[kItemDefCount];  /* bss 0x574c10 */
+
+// ItemDef::kind: 2..6 are firearms (they show ammo), 7 and up items the
+// inventory lists; below 7 the weapons' sprite set.
+enum ItemKind
+{
+    ItemKind_FirearmFirst = 2,
+    ItemKind_FirearmLast  = 6,
+    ItemKind_ItemFirst    = 7,
+};
 
 // An angle wrapped into -pi..pi by one turn at most.
 float normalizeAngle(float angle);                                       // FS2 0x001339c0

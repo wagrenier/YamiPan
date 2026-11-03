@@ -476,11 +476,11 @@ int GameOptions::equals(const GameOptions *other) const
         return 0;
     if (_1c != other->_1c)
         return 0;
-    if (_20 != other->_20)
+    if (wideScreen != other->wideScreen)
         return 0;
-    if (_44 != other->_44)
+    if (mapMode != other->mapMode)
         return 0;
-    if (_48 != other->_48)
+    if (hints != other->hints)
         return 0;
     if (_4c != other->_4c)
         return 0;
@@ -512,10 +512,10 @@ void GameOptions::setDefaults()
     _15 = 0;
     brightness = 9;
     _1c = 1;
-    _20 = 0;
+    wideScreen = 0;
     buttonMap.setDefaults();
-    _44 = 1;
-    _48 = 1;
+    mapMode = MapMode_Always;
+    hints = 1;
     _4c = 1;
 }
 
@@ -540,7 +540,7 @@ int ButtonMap::defaultButton(int action)
 // ──────────────────────────────────────────────────────────────────────
 // Gives an action a button; the action that had it gets the old one.
 // PC: for action -1 the ROM still reads button[-1] (in the options' map the
-// word before it, GameOptions::_20) and hands that to the holder; the port
+// word before it, GameOptions::wideScreen) and hands that to the holder; the port
 // leaves the holder's button as it is.
 // FS2 0x0023bf80
 

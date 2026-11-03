@@ -10097,6 +10097,24 @@
   "was": "FUN_00171230",
   "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): sets the driver config 0x537d58 (defaults {1, 1, -1, -1, 0..}), copies it with sdpr2DrvSetConfig and installs the SE driver table 0x2f7a68 at 0x537d30 if none is"
  },
+ "0017f150": {
+  "name": "getStageFiles",
+  "tag": "game-inferred",
+  "was": "FUN_0017f150",
+  "why": "answers sbss 0x31adfc: a struct whose +0 is the stage's FileLoader (getStagePackData calls its getData, vtable +0x1c, on it); next to the stage loop 0x17f160"
+ },
+ "00193ce0": {
+  "name": "StageObjectList::find",
+  "tag": "game-inferred",
+  "was": "FUN_00193ce0",
+  "why": "a0 gStageScene +0x10, a1 a name, a2 0: answers the stage object of that name (getDoorState then reads its kind, vtable +0x1f4, and +0x2a8)"
+ },
+ "0019aea0": {
+  "name": "StageScene::getFloor",
+  "tag": "game-inferred",
+  "was": "FUN_0019aea0",
+  "why": "a0 gStageScene, a1 its player (+0x78): an int compared with the rF01..rF09 / rFDF index - 1 in UiLayout::testGameState (negative clamped to 0, 0 while the map does not show the player); guess: the floor the player is on"
+ },
  "001d6a70": {
   "name": "StageSound::playNamedAlways",
   "tag": "game-inferred",
@@ -11777,6 +11795,24 @@
   "was": "FUN_00252680",
   "why": "(drawer, verts xy, count, 0): untextured vertices in one colour (after setPrimColor)"
  },
+ "0025c310": {
+  "name": "UiScrollWidget::canScroll",
+  "tag": "game-inferred",
+  "was": "FUN_0025c310",
+  "why": "a0 a widget: +0x34 != 0.0; UiLayout::testGameState's rMsgUseScroll on the widget the argument names"
+ },
+ "0025c340": {
+  "name": "UiScrollWidget::atBottom",
+  "tag": "game-inferred",
+  "was": "FUN_0025c340",
+  "why": "a0 a widget: +0x34 <= +0x28; rMsgDownLimit"
+ },
+ "0025c360": {
+  "name": "UiScrollWidget::atTop",
+  "tag": "game-inferred",
+  "was": "FUN_0025c360",
+  "why": "a0 a widget: +0x28 <= 0.0; rMsgUpLimit"
+ },
  "0025e260": {
   "name": "UiWidget::create",
   "tag": "game-inferred",
@@ -11873,6 +11909,24 @@
   "was": "FUN_00261d00",
   "why": "(track): the TimM sheet sprite named by the record's +0x14 (big lookup through table 0x2fafc0 with the layout hooks); its +2 short indexes the sheet's +0x24 images; null: nothing drawn"
  },
+ "002626f0": {
+  "name": "getDoorState",
+  "tag": "game-inferred",
+  "was": "FUN_002626f0",
+  "why": "a0 a name: outside a stage name[10] % 5, else the stage object of that name (0x193ce0 on gStageScene +0x10); not kind 2 or none -> 4, else its +0x2a8 mapped 4->2, 3->3, 1/2->1, 0->0, other 4. Compared with the rDunknown..rDNone index in UiLayout::testGameState"
+ },
+ "002628a0": {
+  "name": "scanItems",
+  "tag": "game-inferred",
+  "was": "FUN_002628a0",
+  "why": "a0 an 8 x 0x14 buffer, cleared; walks the player's item list (gStageScene +0x78 -> +0x22c, nodes {handle, next}), skips objects whose kind (vtable +0x1f4) is 0x15, merges by name (+0x20) into the first free or same-named slot {used, name, count += +0x20c, item def +0x1e, def +0x19 > 1}; answers the kinds found. rI00..rI07 and the rItem sprites"
+ },
+ "00262a90": {
+  "name": "scanWeapons",
+  "tag": "game-inferred",
+  "was": "FUN_00262a90",
+  "why": "a0 a 2 x 0x14 buffer: the player's weapons +0x238 / +0x23c -> {used, name +0x20, firearm (item def kind 2..6), +0x458, +0x454}; answers 2. findSprite's rWeapon sprites, the text variables"
+ },
  "00262df0": {
   "name": "getStagePackData",
   "tag": "game-inferred",
@@ -11896,6 +11950,24 @@
   "tag": "game-inferred",
   "was": "FUN_002633f0",
   "why": "(kind, a, b, c): a switch over the S2D game-value kinds reading the save data, options (brightness, language), flag table, navigator and stage results; UiLayout::readGameValue stores its answer in a script variable, testGameValue compares it with its first argument"
+ },
+ "00263a70": {
+  "name": "getButtonMapDraft",
+  "tag": "game-inferred",
+  "was": "FUN_00263a70",
+  "why": "answers 0x599470, the 8-int key configuration the options menu edits (0x263b10 copies SystemData +0x4f4 into it, 0x263a80 copies it back and sets the pad's map); findSprite's rKcL* sprites read it; UiWidget::create"
+ },
+ "00263a80": {
+  "name": "applyButtonMapDraft",
+  "tag": "game-inferred",
+  "was": "FUN_00263a80",
+  "why": "copies the 8 ints at 0x599470 (getButtonMapDraft) into the options' button map (getSaveData +0x4f4 = SystemData options +0x24) and hands that to GamePad::setButtonMap on gGameSystem's pad 0"
+ },
+ "00263b10": {
+  "name": "loadButtonMapDraft",
+  "tag": "game-inferred",
+  "was": "FUN_00263b10",
+  "why": "copies the options' button map (getSaveData +0x4f4..+0x510) into the 8 ints at 0x599470: the draft the key-configuration screen edits"
  },
  "002640e8": {
   "name": "_scfReadRomVer",
@@ -12340,6 +12412,12 @@
   "tag": "game-inferred",
   "was": "FUN_00292db0",
   "why": "a0 the player, a1 a handle from SePlayer::play (>= 0): its bank byte (bits 48..55) picks a SE bank or a stream and stops that voice; UiLayout::stopSound outside a stage, StageSound::stopNamed"
+ },
+ "002955d0": {
+  "name": "getNaviTable",
+  "tag": "game-inferred",
+  "was": "FUN_002955d0",
+  "why": "while the init pack is loaded (sbss 0x31ae64) its vtable slot 6 (+0x20) with 1 -- getInitPackItem(1) inline; else 0. Its caller calls NaviTable::getTriggerState on the answer; sits just before NaviTable::getGridPos"
  },
  "002955e0": {
   "name": "NaviTable::getGridPos",

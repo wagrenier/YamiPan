@@ -213,6 +213,11 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   Put `/c/msys64/ucrt64/bin` first on PATH (`export PATH=/c/msys64/ucrt64/bin:$PATH`) before a
   `-fsyntax-only` check; test it on a bad file first. Until bootstrap 6 the SDK headers are stubs in
   the scratchpad, so only errors in the TU's own files count.
+  Quicker (2026-11-03, TU 21 second run): `-Isrc -I../RosePan/src -I<scratch>` takes RosePan's SDK
+  headers; only `sdk/libvifpk.h` (sceVif1Packet) needs a scratch stub. Known misses that are not
+  the TU's: gamesystem.cpp (eestruct.h), perfmeter.cpp (3-argument sceOpen), thread.cpp.
+- **No GCC case ranges** (`case 1 ... 10:`, 2026-11-03): MSVC (layoutcheck) rejects them; write the
+  numbered groups as range tests before the switch.
 
 ## Build and run
 

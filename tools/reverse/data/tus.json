@@ -364,7 +364,7 @@
    "why": "UiMatrix (0x24dfa0..0x24e8a0) and UiDrawer (0x24e8a0..0x252840): the 2D draw helper of the layouts, every function a UiMatrix / UiDrawer member or its out-of-line helpers (uiTransformPoint, the strip meshes, uiPkAddGsData); after game/s2ddata.cpp, before the widget classes 0x252840.. (vtables 0x316a78..); name the port's (no source string), as uidrawer.h already had it"
   },
   "game/uigame.cpp": {
-   "notes": "Cut out of unassigned@00252840 and pinned 0x25fa50-0x2640e8 (batch 049: timSheetFind, strcasecmp, normalizeAngle, StageSound::playNamedAlways / stopNamed, getSePlayer, SePlayer::play / stop, getGameValue, setGameValue; Ghidra saved). New src/game/uigame.h: UiFont, FMsgFile and TimSheet moved from uitrack.h and made EE layouts with S2dRef (asserted): fMsg +0x10 count, name and text tables +0x14..+0x28, entries {name, text} at +0x30; TimM +0x10 sprites, names as fMsg, pictures {name, TIM2} +0x20..+0x2c, sprites of 0x10 {name, picture, u, v, w, h} at +0x30. A host harness relocated all 241 TimM and 2,620 fMsg files in ROM.000..ROMD.010 with every pointer inside its file. gamehooks.h gained StagePlayer (gStageScene +0x78: x / z +0x150 / +0x154, yaw +0x168), SeTable / SePlayer / getSePlayer and normalizeAngle; inStage / getStagePackData moved from uilayout.h to uigame.h. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on uigame and its users. Doubts: file name and the join by position; player for +0x78; readGameValue with argument 0 not a variable stores through null in the ROM (the port drops it). Next run, same TU: findSprite 0x261d00 with the inventory scans 0x2628a0 / 0x262a90 (item tables 0x2faed0 / 0x2fafc0, item defs 0x574c10 160 x 0x20, the player's items +0x22c / +0x238 / +0x23c), the text variables 0x260bc0 / 0x2612c0, testGameState 0x2604a0, getGameValue 0x2633f0 / setGameValue 0x262e70, getStagePackData 0x262df0 and 0x2625c0..0x264070.",
+   "notes": "Batch 050 (13 names, Ghidra saved). Written: UiLayout::testGameState 0x2604a0 over the 41-name table (0x599490, filled by the static initializer 0x310b60; constant in the port, enum UiGameState), UiSheetSpriteTrack::findSprite 0x261d00 with its tables (key-config sprites 0x2fafc0 -> button icons 0x2fb100 via the options ButtonMap or the menu draft 0x599470; item sprites 0x2faed0), scanItems 0x2628a0, scanWeapons 0x262a90, getDoorState 0x2626f0, getStagePackData 0x262df0, getButtonMapDraft 0x263a70. GameOptions +0x20 / +0x44 / +0x48 renamed wideScreen / mapMode / hints. New stand-ins: StageObject (getKind is virtual slot 123 in the ROM, declared plain), StageObjectList::find, StageScene::getFloor, StageFiles / getStageFiles, ItemDef / gItemDefs (gamehooks.h), getNaviTable (progress.h), UiScrollWidget (uisequence.h). Doubts: rF01..rFDF read as the player floor; the scroll widget class; gItemDefs bss 0x574c10 has no definition yet; PC guards where the ROM reads near null (no item def, no navi table, sheet without weapons). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on uigame and its users (RosePan SDK headers). Next run, same TU: the text variables 0x260bc0 / 0x2612c0 with 0x261cf0 and table 0x2fb120, getGameValue 0x2633f0 / setGameValue 0x262e70, 0x262840 (steps the weapon preview counter 0x31ae44), 0x263b90 and the rest to 0x264070.",
    "ranges": [
     [
      "0025fa50",
@@ -377,6 +377,12 @@
      "date": "2026-11-03 04:35",
      "status": "partial",
      "summary": "The S2D UI game side cut out of unassigned@00252840: UiFont, fMsg and TimM find / relocate, the layout sound and game-value hooks, both target binds, inStage: 14 of 40 written, source-only, not built"
+    },
+    {
+     "build": "not built",
+     "date": "2026-11-03 04:57",
+     "status": "partial",
+     "summary": "Second run: testGameState (41 named states), findSprite (key-config and item / weapon sprites), scanItems / scanWeapons, getDoorState, getStagePackData, getButtonMapDraft: 24 of 40 written, source-only, not built"
     }
    ],
    "status": "partial",

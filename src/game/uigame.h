@@ -25,6 +25,7 @@
 #include "sdk/scetypes.h"
 
 class GsTexture;                // game/gsutil.h
+struct ButtonMap;               // game/sysdata.h
 
 // ──────────────────────────────────────────────────────────────────────
 // The font.
@@ -178,6 +179,83 @@ inline const TimSheetSprite *timSheetSprite(TimSheet *sheet, int index)
 
 // In a stage (gStageScene set).
 bool  inStage();                                                         // FS2 0x00262e60
+
+// The game states a layout can test by name (S2dCond_GameState:
+// UiLayout::testGameState): the index into the name table (0x599490,
+// filled by the TU's static initializer 0x310b60), as the names say.
+enum UiGameState
+{
+    UiState_WideScreen = 0,         // r16_9: GameOptions::wideScreen
+    UiState_FloorFirst = 1,         // rF01..rF09, rFDF: the player's floor is n (0..9)
+    UiState_FloorLast = 10,
+    UiState_ItemFirst = 11,         // rI00..rI07: the inventory has more than n kinds
+    UiState_ItemLast = 18,
+    UiState_WeaponLong = 19,        // rW00: a long weapon carried
+    UiState_WeaponShort = 20,       // rW01: a short weapon carried
+    UiState_DoorFirst = 21,         // rDunknown..rDNone: the door named by the argument is UiDoorState n
+    UiState_DoorLast = 25,
+    UiState_CheckPoint = 26,        // rCheckPoint: StageResult::hasAttemptFlag
+    UiState_Hint = 27,              // rHint: GameOptions::hints
+    UiState_MapShowsPlayer = 28,    // rMapP
+    UiState_MsgUpLimit = 29,        // the argument's scroll widget at its top
+    UiState_MsgDownLimit = 30,      // at its bottom
+    UiState_MsgUseScroll = 31,      // it scrolls at all
+    UiState_InGame = 32,            // rInGame: in a stage
+    UiState_ProgramStatusNone = 33, // rProgramStatusNone, 00..03: the argument widget's status is n - 1
+    UiState_ProgramStatusLast = 37,
+    UiState_MapKey0 = 38,           // rMapKey0 / rMapKey1: the stage's navi trigger 0 / 1 is the argument (k0 / k1 / k2)
+    UiState_MapKey1 = 39,
+    UiState_ConnectedPad = 40,      // rConnectedPad: pad 0 is a DualShock 2 in pressure mode
+    UiState_Count = 41,             // 0x31abe8
+};
+
+// What the door state names stand for (getDoorState).
+enum UiDoorState
+{
+    UiDoor_Unknown = 0,             // rDunknown
+    UiDoor_Unlocked = 1,            // rDunlock
+    UiDoor_Blocked = 2,             // rDblocked
+    UiDoor_Locked = 3,              // rDlock
+    UiDoor_None = 4,                // rDNone: no such door, or not a door
+};
+
+// The state of the door called name (in a stage: the stage object's;
+// outside one a preview from its 11th character).
+int getDoorState(const char *name);                                      // FS2 0x002626f0
+
+// The inventory as the S2D shows it: up to eight kinds of item, the
+// player's items merged by name in list order.
+constexpr int kUiItemSlots = 8;
+// layout: host -- EE 0x14.
+struct UiItemSlot
+{
+    u_char      used;           // FS2 +0x00
+    const char *name;           // FS2 +0x04: StageObject::m_name
+    int         count;          // FS2 +0x08: summed over the merged items
+    int         max;            // FS2 +0x0c: ItemDef::maxCount
+    u_char      showsCount;     // FS2 +0x10: ItemDef::stackKind > 1
+};
+// Fills slots (all cleared first) from the player's items; the kinds.
+int scanItems(UiItemSlot slots[kUiItemSlots]);                           // FS2 0x002628a0
+
+// The two weapons as the S2D shows them (long, short).
+constexpr int kUiWeaponSlots = 2;
+// layout: host -- EE 0x14.
+struct UiWeaponSlot
+{
+    u_char      used;           // FS2 +0x00: always set
+    const char *name;           // FS2 +0x04: null none
+    u_char      isFirearm;      // FS2 +0x08: ItemKind_FirearmFirst..Last
+    int         ammoA;          // FS2 +0x0c: StageObject::m_ammoA
+    int         ammoB;          // FS2 +0x10: StageObject::m_ammoB
+};
+// Fills both slots from the player's weapons; answers 2.
+int scanWeapons(UiWeaponSlot slots[kUiWeaponSlots]);                     // FS2 0x00262a90
+
+// The options menu's working copy of the key configuration (bss
+// 0x599470): what the S2D's rKcL* sprites show while it is edited.
+extern ButtonMap gUiButtonMapDraft;
+ButtonMap *getButtonMapDraft();                                          // FS2 0x00263a70
 // The stage pack's data by name (null outside a stage).
 void *getStagePackData(const char *name);                                // FS2 0x00262df0
 
