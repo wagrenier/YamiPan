@@ -64,13 +64,23 @@
    "why": "Pad (update, clear, ctor, dtor, setListening), padSysInit / Update / Shutdown, PadPort::read (batches 003-004); file name a guess."
   },
   "game/perfmeter.cpp": {
+   "notes": "Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, sprintf 0x127bf0, __extendsfdf2 0x11ba00. In retail addBar is empty and nothing allocates the stat tables, so the meter records nothing; it is kept for fidelity. RcntTimer ctor parameter order (tickRate, fieldRate, fieldsPerFrame) is a guess (CodeWarrior passes floats in f12/f13, the int in a1). Bar struct order colour/label is a guess. Bootstrap 6 needs a 3-argument sceOpen in sdk/fileio.h. callcheck.py now accepts brackets in callcheck comments (operator_new[], operator_delete[]). Next: game/rcnttimer.cpp (4 functions) or game/thread.cpp per tus.py next.",
    "ranges": [
     [
-     "00132f30",
+     "00132f20",
      "00133800"
     ]
    ],
-   "why": "PerfMeter (dumpGroups, collectStats, beginFrame, ctor, dtor) and its empty helpers 0x133600 / 0x133610 (batch 004); both ends are guesses."
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-02 21:25",
+     "status": "verify",
+     "summary": "PerfMeter, all 10 functions: ctor, dtor, beginFrame, collectStats, resetStats, writeCsv, dumpGroups and the empty addBar / drawBars / drawDetail; RcntTimer prototypes in game/rcnttimer.h"
+    }
+   ],
+   "status": "verify",
+   "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/rcnttimer.cpp": {
    "ranges": [

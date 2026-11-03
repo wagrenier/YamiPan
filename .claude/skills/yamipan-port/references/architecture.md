@@ -363,10 +363,16 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
     0x18b330, 0x19bbe0, 0x20aba0, 0x25bc70); `MasterClock` (0x30) adds ticks per frame +0x20, vsync
     total +0x24, interval +0x28, variable-rate flag +0x2c, `MasterClock::update` 0x1352d0(vsyncs).
     `PtrList` `{u16 capacity, u16 count, void **data}`: `add` 0x135860, `next` 0x1357c0.
-  - **Debug meter**: `RcntTimer` (RCNT1 on H-blank, 64 us per tick at 15625 Hz) 0x12f200 / reset
-    0x12f190; `PerfMeter` beginFrame 0x133620, collectStats 0x133350, dumpGroups 0x132f30; its bar /
-    draw calls 0x133610 (returns 0, also called by 0x198970 / 0x199400), 0x133600, 0x132f20 are empty in
-    this retail build. Heap marks: `Heap::setMark` 0x1037c0, `Heap::markedUsage` 0x103870,
+  - **Debug meter** (`src/game/perfmeter.cpp`, 0x132f20..0x133800, written 2026-11-02):
+    `RcntTimer(tickRate 15625, fieldRate 50, fieldsPerFrame 2)` 0x12f200 (usPerTick = 1e6 / tickRate at
+    +0x10; the first one sets T1_MODE 0x83, a gp byte -0x7ac4 remembers it) / reset 0x12f190;
+    `PerfMeter` beginFrame 0x133620, collectStats 0x133350, resetStats 0x133590, writeCsv 0x132f90
+    (`host:la_%d_%d.csv`, min / max / mean x100 per cell), dumpGroups 0x132f30 (its print compiled out);
+    its bar / draw calls `addBar` 0x133610 (returns 0, also called by 0x198970 / 0x199400 with group 4,
+    the game loop's stage marks, labels 0x303bd8..0x303cb0), `drawBars` 0x133600, `drawDetail` 0x132f20
+    are empty in this retail build, so the bar list stays empty; nothing allocates the stat tables
+    (+0x5c cells = 0); `m_recording` +0x40 is cleared by 0x17f7c0 / 0x17f890 before writeCsv, no
+    setter found yet: in retail the meter records nothing. Heap marks: `Heap::setMark` 0x1037c0, `Heap::markedUsage` 0x103870,
     `Heap::realloc` 0x1038a0.
 - rx's debug print is `rxSysPrintf` 0x102328 (was `rxPrintf`; 1 KB format buffer, hook 0x2f0880,
   scePrintf or a 4 KB host log 0x31c580); rena's messages are Shift-JIS.

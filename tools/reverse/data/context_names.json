@@ -1415,6 +1415,12 @@
   "was": "FUN_00119b88",
   "why": "wrapper that tail-jumps to __ieee754_atan2f 0x1173e0 (y in f12, x in f13); GamePad::computeSticks calls it for stick angles"
  },
+ "0011ba00": {
+  "name": "__extendsfdf2",
+  "tag": "lib-context",
+  "was": "FUN_0011ba00",
+  "why": "soft-float float -> double: unpacks f12 with 0x11b970 and repacks it as a double with 0x11c588, result in a0 (64-bit); the compiler emits it to promote float varargs for printf (%.2f in PerfMeter::writeCsv)"
+ },
  "0011c6b0": {
   "name": "sceCdCallback",
   "tag": "lib-context",
@@ -2003,6 +2009,12 @@
   "was": "FUN_00127a68",
   "why": "newlib wrapper: _raise_r(_impure_ptr 0x2f3398, sig); abort calls it with 6 (SIGABRT)"
  },
+ "00127bf0": {
+  "name": "sprintf",
+  "tag": "lib-context",
+  "was": "FUN_00127bf0",
+  "why": "builds a string FILE (flags 0x208, size 0x7fffffff) on the stack over a0, calls the vfprintf core 0x12a3a0 with a1 and the spilled varargs, NUL-terminates: the MSL / newlib sprintf; callers pass a 1 KB buffer and a format"
+ },
  "00128238": {
   "name": "strcmp",
   "tag": "lib-context",
@@ -2381,11 +2393,23 @@
   "was": "FUN_00132f30",
   "why": "(this): walks the markers for groups 0..7 and does nothing with them (its output stripped in this build); GameSystem::flipFrame calls it while pad 2's +0x18 bit 0x400 (R3 pressed) is set"
  },
+ "00132f90": {
+  "name": "PerfMeter::writeCsv",
+  "tag": "game-inferred",
+  "was": "FUN_00132f90",
+  "why": "if samples (+0x58) were taken: sprintf host:la_%d_%d.csv with a1 / a2, sceOpen(O_WRONLY|O_CREAT|O_TRUNC), per sample one %.2f,%.2f,%.2f, triple (min, max, sum / frames-per-sample, x100) for every group-4 bar, then the frame-total and group-2 columns; closes, then the same reset as 0x133590. Callers 0x17f7c0 / 0x17f890 clear the recording byte +0x40 first and pass two ids from 0x23bb10"
+ },
  "00133350": {
   "name": "PerfMeter::collectStats",
   "tag": "game-inferred",
   "was": "FUN_00133350",
   "why": "(this, group): when enabled (+0x40) for up to 300 samples, per marker of the group: min / max / sum of the time since the previous marker into +0x44 / +0x48 / +0x4c, every +0x60 frames the next sample; GameSystem::flipFrame passes 4"
+ },
+ "00133590": {
+  "name": "PerfMeter::resetStats",
+  "tag": "game-inferred",
+  "was": "FUN_00133590",
+  "why": "zeroes the sample counters +0x50 / +0x54 / +0x58 and refills the +0x5c stat cells: min (+0x44) FLT_MAX, max (+0x48) and sum (+0x4c) 0; the constructor and writeCsv inline the same block; caller 0x12cce0 (after Heap::setMark 1)"
  },
  "00133600": {
   "name": "PerfMeter::drawBars",

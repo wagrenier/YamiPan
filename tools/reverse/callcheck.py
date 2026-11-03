@@ -78,7 +78,7 @@ problems = checked = 0
 for path in files:
     text = path.read_text(encoding='utf-8', errors='replace')
     for m, block, addr, body in definitions(text):
-        explained = [n for e in re.findall(r'callcheck:\s*([\w, ~]+)', block + body)
+        explained = [n for e in re.findall(r'callcheck:\s*([\w, ~\[\]]+)', block + body)
                      for n in re.split(r'[,\s]+', e) if n]
         body = re.sub(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\])*"', '', body, flags=re.S)
         src_calls = Counter(c.split('::')[-1] for c in re.findall(r'((?:(?<=[>.:])~)?\b[A-Za-z_][\w:]*)\s*\(', body)

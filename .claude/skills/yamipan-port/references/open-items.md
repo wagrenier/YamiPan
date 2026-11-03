@@ -25,7 +25,10 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    batch 022); TU 2 `game/pad.cpp` written (all 14 + the slot thunk, `verify`, batch 023; `pad.h`
    complete, `padSys*` now return int). Bootstrap 6 must give the host libpad a DualShock 2 in
    pressure mode (terminal mode 8 is the only one `Pad::update` reads: architecture.md "The pad
-   layer") and the SCE_PAD* button bits in `sdk/libpad.h` (RosePan's lacks them).** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
+   layer") and the SCE_PAD* button bits in `sdk/libpad.h` (RosePan's lacks them). TU 3
+   `game/perfmeter.cpp` written (all 10, `verify`, batch 024; RcntTimer moved to `game/rcnttimer.h`).
+   Bootstrap 6 must give `sdk/fileio.h` the SDK 3.0 `sceOpen(const char *, int, ...)` (FS2 passes a
+   mode, 0666; RosePan's takes two arguments) and the CRT `sprintf` / `strlen`.** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
    `game/perfmeter.cpp`, `game/thread.cpp`, `game/gfxtarget.cpp`, the clocks, the heap, sound,
    `rxInit` / SPK.ROM, system data. Choices made there, for the user to overrule:
    - **Headers for TUs not written yet are minimal** (`src/game/pad.h`, `clock.h`, `heap.h`,
