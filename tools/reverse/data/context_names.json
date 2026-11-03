@@ -11009,6 +11009,36 @@
   "was": "FUN_0024c680",
   "why": "deleting dtor (slot 0 of Vt_00316980); kind 4: record +8 ? setScissor(record +0xc rect) : resetScissor"
  },
+ "0024c6e0": {
+  "name": "UiTextTrack::getText",
+  "tag": "game-inferred",
+  "was": "FUN_0024c6e0",
+  "why": "(track): font (+0x14) ? font->text (+8) : 0; caller 0x25ce30"
+ },
+ "0024c700": {
+  "name": "UiTextTrack::setText",
+  "tag": "game-inferred",
+  "was": "FUN_0024c700",
+  "why": "(track, text, copy): frees an owned copy (+0x38 / +0x34), copy ? new[] (wstrlen + 1) * 2 and wstrcpy : borrow; font->text = it; answers 0"
+ },
+ "0024c7c0": {
+  "name": "UiTextTrack::setTextAt",
+  "tag": "game-inferred",
+  "was": "FUN_0024c7c0",
+  "why": "(track, f12 x, f13 y, text): +0x1c / +0x20 = x, y, then setText copying, message +0x18 = 10000 (a literal text); 12 callers (the widget classes, UiWidget::create)"
+ },
+ "0024c870": {
+  "name": "UiTextTrack::setMessage",
+  "tag": "game-inferred",
+  "was": "FUN_0024c870",
+  "why": "(track, index, msgFile): file null: text cleared, message -1; an fMsg (fMsgRelocate 0x25fbd0, magic fMsg): message = index, text = entry +0x30 + 8 index, +4 (borrowed); answers the message or -1"
+ },
+ "0024ca00": {
+  "name": "UiTextTrack::setMessageByName",
+  "tag": "game-inferred",
+  "was": "FUN_0024ca00",
+  "why": "(track, f12 x, f13 y, name, msgFile, offset): x, y, message = fMsgFind(file, name) + offset, text as setMessage; -1 when not an fMsg or the name is missing"
+ },
  "0024cb80": {
   "name": "UiTextTrack::draw",
   "tag": "game-inferred",
@@ -11279,11 +11309,41 @@
   "was": "FUN_0024dfa0",
   "why": "(out, t f12, from, to): decomposes both (atan2) and blends; UiMatrixKeysTrack"
  },
+ "0024e360": {
+  "name": "UiMatrix::angle",
+  "tag": "game-inferred",
+  "was": "FUN_0024e360",
+  "why": "(m): transforms (0,0) and (1,0), atan2f(dy, dx) = atan2f(c, a); used by the rotate / pin applies 0x24ad20.. and 0x24e3d0"
+ },
+ "0024e3d0": {
+  "name": "UiMatrix::setScaleRotTrans",
+  "tag": "game-inferred",
+  "was": "FUN_0024e3d0",
+  "why": "(this, m, scale xy): this = identity, concat scale(sx, sy), rotate(m.angle), += m's origin (tx, ty); m's scale / shear dropped; UiPinTrack / UiPinRotTrack::apply"
+ },
+ "0024e4f0": {
+  "name": "uiTransformPoint",
+  "tag": "game-inferred",
+  "was": "FUN_0024e4f0",
+  "why": "(out xy, m, in xy, fixed): out = m * in (a x + b y + tx, c x + d y + ty), times 16 when fixed (GS 12.4 coordinates); the sheet draws 0x250750 pass the drawer's +0xc4 matrix"
+ },
  "0024e580": {
   "name": "UiMatrix::translate",
   "tag": "game-inferred",
   "was": "FUN_0024e580",
   "why": "adds a float pair to the 2D affine matrix's tx (+8) and ty (+0x14)"
+ },
+ "0024e5b0": {
+  "name": "UiMatrix::setScale",
+  "tag": "game-inferred",
+  "was": "FUN_0024e5b0",
+  "why": "(this, f12 sx, f13 sy): {sx 0 0, 0 sy 0}; UiPinTrack::apply mode 0"
+ },
+ "0024e5d0": {
+  "name": "UiMatrix::rotate",
+  "tag": "game-inferred",
+  "was": "FUN_0024e5d0",
+  "why": "(this, f12 angle): rows = (cos r0 - sin r1, sin r0 + cos r1) through cosf 0x119770 / sinf 0x119a10: this = R(angle) * this"
  },
  "0024e6d0": {
   "name": "UiMatrix::copy",
@@ -11296,6 +11356,12 @@
   "tag": "game-inferred",
   "was": "FUN_0024e710",
   "why": "(this, m): this = m * this for 2D affine matrices (rows a b tx / c d ty)"
+ },
+ "0024e7c0": {
+  "name": "UiMatrix::multiply",
+  "tag": "game-inferred",
+  "was": "FUN_0024e7c0",
+  "why": "(this, a, b): this = a * b (a applied after b), the 2x3 affine product; the applies pass (parent, xform)"
  },
  "0024e880": {
   "name": "UiMatrix::identity",
@@ -11332,6 +11398,18 @@
   "tag": "game-inferred",
   "was": "FUN_0024ea30",
   "why": "builds +0xc4 from the stack top (+0x1c + top +0x7c * 0x18), the screen matrix of mode +0xc0 (0x2fac90 / 0x2facc0) and the translation +0xb8 per pixel mode +0xdc"
+ },
+ "0024eba0": {
+  "name": "UiDrawer::drawText",
+  "tag": "game-inferred",
+  "was": "FUN_0024eba0",
+  "why": "(drawer, font, message, block, f12 x, f13 y): UiTextTrack::draw's text draw; block = the text record from +0x1c (rgba, the anchor at +0x10, more at +0x28); x, y the track's +0x1c / +0x20 (setTextAt)"
+ },
+ "0024f580": {
+  "name": "UiDrawer::setImage",
+  "tag": "game-inferred",
+  "was": "FUN_0024f580",
+  "why": "(drawer, image): flushes the GIF run, binds a temporary new GsTexture(image) (0x60) for the next draw, null keeps the current; the sheet-sprite draws pass a TimM sheet's image"
  },
  "0024f7a0": {
   "name": "UiDrawer::setTexture",
@@ -11417,6 +11495,18 @@
   "was": "FUN_002506c0",
   "why": "(drawer): SCISSOR_1 of the current draw env"
  },
+ "00250750": {
+  "name": "UiDrawer::drawSheetFlat",
+  "tag": "game-inferred",
+  "was": "FUN_00250750",
+  "why": "(drawer, verts {uv, xy} 0x10, count, sprite, arg): UV = sprite (u +4, v +6) + (w +8, h +0xa) * uv, xy through the drawer matrix (uiTransformPoint fixed), clamped +-32752; kind 0x22"
+ },
+ "002509b0": {
+  "name": "UiDrawer::drawSheetGouraud",
+  "tag": "game-inferred",
+  "was": "FUN_002509b0",
+  "why": "as drawSheetFlat with {rgba, uv, xy} vertices (kind 6, after setPrim 0x15e)"
+ },
  "00251350": {
   "name": "uiDrawTexStripFlat",
   "tag": "game-inferred",
@@ -11471,6 +11561,18 @@
   "was": "FUN_0025fac0",
   "why": "(font 0x14, glyphs, image): +0 glyphs, +4 new GsTexture(image) (0x60, 0x231360), +8 text 0, +0xc 2.0f, +0x10 0; built by UiAnim::init for UiTextTrack (kind 3)"
  },
+ "0025fb30": {
+  "name": "fMsgFind",
+  "tag": "game-inferred",
+  "was": "FUN_0025fb30",
+  "why": "(file, name): fMsgRelocate, then the entry (+0x30, 8 bytes each, +0x10 count) whose name (+0) strcmp-matches (0x127ea0); -1 none"
+ },
+ "0025fbd0": {
+  "name": "fMsgRelocate",
+  "tag": "game-inferred",
+  "was": "FUN_0025fbd0",
+  "why": "(file): once (+4 flag), for magic fMsg: the +0x18 / +0x24 tables made pointers from their bases; true when fMsg; as timSheetRelocate 0x25fe10"
+ },
  "0025fe10": {
   "name": "timSheetRelocate",
   "tag": "game-inferred",
@@ -11524,6 +11626,12 @@
   "tag": "game-inferred",
   "was": "FUN_00260ab0",
   "why": "(track, name): name == rCharactorPostion -> +0x14 / +0x18 = camera x, -z (+0x150 / +0x154) * 0.1 (5000 default), +0x1c the yaw as bindTarget of kind 0x1a; else 0, 0, 0; UiAnim::init kinds 0x16 / 0x18"
+ },
+ "00261d00": {
+  "name": "UiSheetSpriteTrack::findSprite",
+  "tag": "game-inferred",
+  "was": "FUN_00261d00",
+  "why": "(track): the TimM sheet sprite named by the record's +0x14 (big lookup through table 0x2fafc0 with the layout hooks); its +2 short indexes the sheet's +0x24 images; null: nothing drawn"
  },
  "00262df0": {
   "name": "getStagePackData",
@@ -12676,6 +12784,18 @@
   "tag": "game-inferred",
   "was": "FUN_002c3e10",
   "why": "unless the byte 0x31ae9c is 1: deletes the pack at 0x31ae98, builds and loads 'dataEU/packmenuEU.pak' (0x30bca0) the same way as loadInitPack, keeps it at 0x31ae98, sets 0x31ae9c, then 0x2c3eb0; called before every scene by gameSceneThread and by the menu flow 0x2b5770"
+ },
+ "002d4510": {
+  "name": "wstrcpy",
+  "tag": "game-inferred",
+  "was": "FUN_002d4510",
+  "why": "(dst, src): 16-bit copy with the 0; null / odd dst -> null, null src -> dst untouched, dst == src through a new[] temporary; answers dst"
+ },
+ "002d4650": {
+  "name": "wstrlen",
+  "tag": "game-inferred",
+  "was": "FUN_002d4650",
+  "why": "(s): 16-bit characters up to the 0; 0 for null or an odd address; beside the char version 0x2d4440"
  },
  "002eaff0": {
   "name": "Vif1PktManage::GetUsedSize",

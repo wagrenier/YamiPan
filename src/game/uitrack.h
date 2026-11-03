@@ -161,19 +161,34 @@ struct S2dTexSpriteFlatRec      // UiTrackKind_TexSpriteFlat
 static_assert(offsetof(S2dTexSpriteFlatRec, verts) == 0x24, "S2dTexSpriteFlatRec::verts");
 
 // Kinds 6 / 0x22: a sprite cut from a TimM sheet image, picked by name
-// (+0x14) through 0x261d00. Their draws are not written yet; only the
-// image index and the anchor are used here.
+// (+0x14) through UiSheetSpriteTrack::findSprite.
 // layout: host -- EE: +0xc image, +0x10 TEX1, +0x14 name (an offset in
 // the file), vertices at +0x28 (kind 6, UiTexColorVertex) or the colour at
 // +0x28 and vertices at +0x38 (kind 0x22, UiTexVertex); anchor +0x40 both.
-struct S2dSheetSpriteRec
+struct S2dSheetSpriteRec        // UiTrackKind_SheetSprite
+{
+    int              kind;      // FS2 +0x00
+    int              count;     // FS2 +0x04
+    int              _08;
+    int              image;     // FS2 +0x0c: S2dData::images index (a TimM sheet)
+    u_int            tex1;      // FS2 +0x10: the GS TEX1_1 value
+    const char      *name;      // FS2 +0x14: the sprite's name in the sheet
+    u_char           _18[0x10];
+    UiTexColorVertex verts[1];  // FS2 +0x28
+};
+// layout: host (see S2dSheetSpriteRec)
+struct S2dSheetSpriteFlatRec    // UiTrackKind_SheetSpriteFlat
 {
     int         kind;           // FS2 +0x00
     int         count;          // FS2 +0x04
     int         _08;
-    int         image;          // FS2 +0x0c: S2dData::images index (a TimM sheet)
+    int         image;          // FS2 +0x0c
+    u_int       tex1;           // FS2 +0x10
+    const char *name;           // FS2 +0x14
+    u_char      _18[0x10];
+    UiVec4      rgba;           // FS2 +0x28
+    UiTexVertex verts[1];       // FS2 +0x38
 };
-constexpr size_t kS2dSheetSpriteAnchor = 0x40;
 
 struct S2dTexTrianglesRec       // UiTrackKind_TexTriangles, _TexTrianglesNoTest
 {
@@ -269,10 +284,11 @@ struct S2dColorKeysRec          // UiTrackKind_KeyedB2, _KeyedC2
 };
 static_assert(offsetof(S2dColorKeysRec, keys) == 0xc, "S2dColorKeysRec::keys");
 
-// Kinds 0x15..0x1a (their applies are not written yet).
+// Kinds 0x15..0x1a.
 // layout: host -- EE: +8 the rotation (0x19 / 0x1a) or the pin mode
-// (0x15..0x18), +0xc the target name of 0x1a, +0x14 that of 0x16 / 0x18
-// (offsets in the file: "rCharactorPostion" binds to the game camera).
+// (0x15..0x18), +0xc the target name of 0x1a, +0xc the pin's scale and
+// +0x14 the target name of 0x16 / 0x18 (offsets in the file:
+// "rCharactorPostion" binds to the game camera).
 struct S2dRotateRec
 {
     int         kind;           // FS2 +0x00
@@ -285,9 +301,17 @@ struct S2dPinRec
 {
     int         kind;           // FS2 +0x00
     int         count;          // FS2 +0x04
-    int         mode;           // FS2 +0x08
-    float       _0c[2];         // FS2 +0x0c
+    int         mode;           // FS2 +0x08: UiPinMode
+    float       scale[2];       // FS2 +0x0c: the pinned matrix's scale
     const char *target;         // FS2 +0x14: kinds 0x16 / 0x18
+};
+
+// S2dPinRec::mode: what the pin keeps of the combined matrix besides its
+// origin (the scale is always the record's).
+enum UiPinMode
+{
+    UiPinMode_Upright = 0,      // no rotation
+    UiPinMode_Turned = 1,       // any other value: the combined angle
 };
 
 // ──────────────────────────────────────────────────────────────────────
@@ -311,6 +335,89 @@ public:
 // Relocates a TimM sheet image in place (once; "TimM" magic). False when
 // it is not one. With the layout hooks (0x25fe10).
 bool timSheetRelocate(void *sheet);                                      // FS2 0x0025fe10
+
+// A sprite of a TimM sheet: which of the sheet's images, and its rect in
+// it (texels).
+struct TimSheetSprite
+{
+    short _00;
+    short image;                // FS2 +0x2: TimSheet::images index
+    short u, v;                 // FS2 +0x4
+    short w, h;                 // FS2 +0x8
+};
+static_assert(offsetof(TimSheetSprite, w) == 0x8, "TimSheetSprite::w");
+
+// layout: host -- EE: +0 "TimM", +4 relocated, +0x14 / +0x18 the sprites,
+// +0x20 / +0x24 the images {?, image} (8 bytes each); pointers after
+// timSheetRelocate.
+struct TimSheetImage
+{
+    int         _00;
+    const void *image;          // FS2 +0x4: what UiDrawer::setImage binds
+};
+// layout: host (see TimSheetImage)
+struct TimSheet
+{
+    char            magic[4];   // FS2 +0x00: "TimM"
+    u_char          relocated;  // FS2 +0x04
+    u_char          _05[0xf];
+    int             spriteCount; // FS2 +0x14
+    TimSheetSprite *sprites;    // FS2 +0x18
+    int             imageCount; // FS2 +0x20
+    TimSheetImage  *images;     // FS2 +0x24
+};
+
+// An fMsg message file (with the fonts, 0x25fa50..): named wide-string
+// messages.
+// layout: host -- EE: +0 "fMsg", +4 relocated, +0x10 count, +0x30 the
+// entries {name, text} (8 bytes each); pointers after fMsgRelocate.
+struct FMsgEntry
+{
+    const char    *name;        // FS2 +0x0
+    const u_short *text;        // FS2 +0x4
+};
+// layout: host (see FMsgEntry)
+struct FMsgFile
+{
+    char      magic[4];         // FS2 +0x00: "fMsg"
+    u_char    relocated;        // FS2 +0x04
+    u_char    _05[0xb];
+    int       count;            // FS2 +0x10
+    u_char    _14[0x1c];
+    FMsgEntry entries[1];       // FS2 +0x30
+};
+
+// Relocates an fMsg file in place (once). False when it is not one.
+bool fMsgRelocate(void *file);                                           // FS2 0x0025fbd0
+// The index of the message called name; -1 none.
+int  fMsgFind(void *file, const char *name);                             // FS2 0x0025fb30
+
+// Inline in the ROM (UiTextTrack's setters): file when it is an fMsg.
+inline FMsgFile *fMsgCheck(void *file)
+{
+    if (file == nullptr)
+        return nullptr;
+    fMsgRelocate(file);
+    const char *magic = (const char *)file;
+    if (!(magic[0] == 'f' && magic[1] == 'M' && magic[2] == 's' && magic[3] == 'g'))
+        return nullptr;
+    return (FMsgFile *)file;
+}
+// Inline in the ROM: entry index of an fMsg, null out of range.
+inline const FMsgEntry *fMsgEntry(FMsgFile *file, int index)
+{
+    if (!fMsgRelocate(file))
+        return nullptr;
+    if (index < 0)
+        return nullptr;
+    if (index < file->count)
+        return &file->entries[index];
+    return nullptr;
+}
+
+// The game's 16-bit strings (0x2d4440.. beside the char versions).
+int      wstrlen(const u_short *s);                                      // FS2 0x002d4650: 0 for null
+u_short *wstrcpy(u_short *dst, const u_short *src);                      // FS2 0x002d4510: null src copies nothing
 
 // ──────────────────────────────────────────────────────────────────────
 // The track classes, in vtable order (0x316540..0x316a60).
@@ -402,7 +509,7 @@ public:
 };
 
 // Kind 0x1a: turns the actor to the combined matrix's angle plus its own
-// and a target's (EE 0x1c). apply not written yet.
+// and a target's, in pixel coordinates (EE 0x1c).
 // layout: host (vptr; EE fields at the offsets noted)
 class UiRotateToTrack : public UiTrack
 {
@@ -420,8 +527,7 @@ public:
     float m_targetAngle;        // FS2 +0x18
 };
 
-// Kind 0x19: as UiRotateToTrack without a target (EE 0x18). apply not
-// written yet.
+// Kind 0x19: as UiRotateToTrack without a target (EE 0x18).
 // layout: host (vptr; EE fields at the offsets noted)
 class UiRotateTrack : public UiTrack
 {
@@ -433,8 +539,8 @@ public:
     float m_angle;              // FS2 +0x14
 };
 
-// Kinds 0x16 / 0x18: UiPinTrack with a target position and angle (EE
-// 0x20). apply not written yet.
+// Kinds 0x16 / 0x18: UiPinTrack after moving by a target's position and
+// angle (EE 0x20).
 // layout: host (vptr; EE fields at the offsets noted)
 class UiPinRotTrack : public UiTrack
 {
@@ -450,8 +556,9 @@ public:
     float m_angle;              // FS2 +0x1c
 };
 
-// Kinds 0x15 / 0x17: moves the combined matrix's translation (record
-// mode, +0xc). apply not written yet.
+// Kinds 0x15 / 0x17: pins the actor at the combined matrix's origin: the
+// origin goes to the parent, the actor keeps the record's scale and
+// (UiPinMode) the combined angle.
 // layout: host (vptr; EE fields at the offsets noted)
 class UiPinTrack : public UiTrack
 {
@@ -589,7 +696,6 @@ public:
 };
 
 // Kind 6: a sprite cut from a TimM sheet of the S2D (not owned; EE 0x1c).
-// draw not written yet.
 // layout: host (vptr; EE fields at the offsets noted)
 class UiSheetSpriteTrack : public UiTrack
 {
@@ -598,12 +704,15 @@ public:
     ~UiSheetSpriteTrack();                                               // FS2 0x0024c380
     void draw(UiDrawer *drawer);                                         // FS2 0x0024c2d0
     const float *getAnchor();                                            // FS2 0x0024d480
+    // The sheet's sprite named by the record (with the layout hooks);
+    // null: nothing drawn.
+    const TimSheetSprite *findSprite();                                  // FS2 0x00261d00
 
-    void *m_sheet;              // FS2 +0x14: S2dImage::data, relocated
+    TimSheet *m_sheet;          // FS2 +0x14: S2dImage::data, relocated
     int   m_imageId;            // FS2 +0x18
 };
 
-// Kind 0x22: kind 6 in one colour. draw not written yet.
+// Kind 0x22: kind 6 in one colour.
 // layout: host (vptr; EE fields at the offsets noted)
 class UiSheetSpriteFlatTrack : public UiSheetSpriteTrack
 {
@@ -650,15 +759,18 @@ public:
     const float *getAnchor();                                            // FS2 0x0024d4b0
 };
 
+// UiTextTrack::m_message of a text set as a string (setTextAt).
+constexpr int kUiTextLiteral = 10000;
+
 // Kind 3: a text in a font: a message of an fMsg file or a wide string
-// (EE 0x3c). Its draw and the four text setters 0x24c6e0..0x24ca00 are not
-// written yet.
+// (EE 0x3c). The widgets set it (UiWidget::create and the classes of
+// 0x25b8e0..0x25ce30).
 // layout: host (vptr; EE fields at the offsets noted)
 class UiTextTrack : public UiTrack
 {
 public:
     UiTextTrack(S2dTrackRec *rec, const void *glyphs, const void *fontImage)
-        : UiTrack(rec), m_font(new UiFont(glyphs, fontImage)), m_message(-1), m_1c(0), m_20(0),
+        : UiTrack(rec), m_font(new UiFont(glyphs, fontImage)), m_message(-1), m_x(0.0f), m_y(0.0f),
           m_visible(1), m_fontKey(0), m_glyphKey(0), m_30(0), m_text(nullptr), m_ownsText(0)
     {
         const S2dTextRec *text = (const S2dTextRec *)rec;
@@ -669,10 +781,20 @@ public:
     void draw(UiDrawer *drawer);                                         // FS2 0x0024cb80
     const float *getAnchor();                                            // FS2 0x0024d4c0
 
+    const u_short *getText();                                            // FS2 0x0024c6e0
+    // A wide string, copied or borrowed; the message is left as it was.
+    int setText(const u_short *text, bool copy);                         // FS2 0x0024c700
+    // A copied wide string at (x, y); the message becomes kUiTextLiteral.
+    int setTextAt(float x, float y, const u_short *text);                // FS2 0x0024c7c0
+    // Message index of an fMsg file (null: none). Answers it, or -1.
+    int setMessage(int index, void *msgFile);                            // FS2 0x0024c870
+    // The message called name, plus offset, at (x, y). Answers it, or -1.
+    int setMessageByName(float x, float y, const char *name, void *msgFile, int offset); // FS2 0x0024ca00
+
     UiFont         *m_font;     // FS2 +0x14
-    int             m_message;  // FS2 +0x18: fMsg index; -1 none (nothing drawn)
-    int             m_1c;       // FS2 +0x1c
-    int             m_20;       // FS2 +0x20
+    int             m_message;  // FS2 +0x18: fMsg index, kUiTextLiteral; -1 none (nothing drawn)
+    float           m_x;        // FS2 +0x1c: UiDrawer::drawText's position
+    float           m_y;        // FS2 +0x20
     u_char          m_visible;  // FS2 +0x24
     // The images' ids, or (negative record index) the init-pack name the
     // image came by: the ROM keeps whichever it had in hand.

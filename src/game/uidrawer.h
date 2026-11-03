@@ -36,12 +36,23 @@ struct UiMatrix
     void identity();                                                     // FS2 0x0024e880
     void copy(const UiMatrix &m);                                        // FS2 0x0024e6d0
     void concat(const UiMatrix &m);                                      // FS2 0x0024e710: this = m * this
+    void multiply(const UiMatrix &a, const UiMatrix &b);                 // FS2 0x0024e7c0: this = a * b
     void translate(const float *xy);                                     // FS2 0x0024e580
+    void setScale(float sx, float sy);                                   // FS2 0x0024e5b0
+    void rotate(float angle);                                            // FS2 0x0024e5d0: this = R(angle) * this
+    // The angle of the x axis: atan2 of (1, 0)'s image minus the origin's.
+    float angle() const;                                                 // FS2 0x0024e360
+    // this = scale(scale) turned to m's angle and moved to m's origin
+    // (m's own scale and shear dropped).
+    void setScaleRotTrans(const UiMatrix &m, const float *scale);        // FS2 0x0024e3d0
     // this = from blended towards to by t (both decomposed, the angles
     // through atan2).
     void interpolate(const UiMatrix &from, const UiMatrix &to, float t); // FS2 0x0024dfa0
 };
 static_assert(sizeof(UiMatrix) == 0x18, "UiMatrix: EE 0x18");
+
+// out = m * in; times 16 (GS 12.4 fixed point) when toFixed.
+void uiTransformPoint(float *out, const UiMatrix *m, const float *in, int toFixed); // FS2 0x0024e4f0
 
 // The GS PRIM values the tracks hand UiDrawer::setPrim / setPrimColor:
 // a primitive type and the flag bits (the add pass forces UiPrim_Blend).
@@ -72,6 +83,8 @@ enum UiBlend
 constexpr int kGsRegTex1_1 = 0x14;
 
 class GsTexture;                // game/gfxtarget.h
+class UiFont;                   // game/uitrack.h
+struct TimSheetSprite;          // game/uitrack.h
 
 // The drawer's matrix stack depth (+0x1c..+0x7c).
 constexpr int kUiDrawerStackDepth = 4;
@@ -98,6 +111,8 @@ public:
     // The track classes' state calls (game/uitrack.cpp). Each flushes the
     // open GIF run first; -1 without a packet.
     int setTexture(GsTexture *tex);                                      // FS2 0x0024f7a0: null keeps the current one
+    // A raw image through a temporary GsTexture (the TimM sheet sprites).
+    int setImage(const void *image);                                     // FS2 0x0024f580: null keeps the current one
     int setGsReg(int reg, u_long value);                                 // FS2 0x0024fcb0
     int setPrim(u_long prim);                                            // FS2 0x0024fe60: UiPrim; vertex colours follow
     // PRIM and one RGBAQ: rgba times m_color.
@@ -119,6 +134,13 @@ public:
     void drawGouraud(const void *verts, int count, int arg);             // FS2 0x002524a0: {rgba, xy}
     void drawTexFlat(const void *verts, int count, int arg);             // FS2 0x00252040: {uv, xy}
     void drawTexGouraud(const void *verts, int count, int arg);          // FS2 0x00252260: {rgba, uv, xy}
+    // Sprites cut from a TimM sheet: uv 0..1 within the sprite's rect.
+    int  drawSheetFlat(const void *verts, int count, const TimSheetSprite *sprite, int arg);    // FS2 0x00250750: {uv, xy}
+    int  drawSheetGouraud(const void *verts, int count, const TimSheetSprite *sprite, int arg); // FS2 0x002509b0: {rgba, uv, xy}
+    // A text track's text: its font, message (fMsg index, or
+    // kUiTextLiteral for the font's own text), the record from +0x1c and
+    // the track's position.
+    int  drawText(UiFont *font, int message, const void *block, float x, float y); // FS2 0x0024eba0
 
     u_char   _00[0x1c];
     UiMatrix m_stack[kUiDrawerStackDepth]; // FS2 +0x1c

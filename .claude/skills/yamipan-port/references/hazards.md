@@ -149,7 +149,9 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - `// callcheck: A, B (why)`: names first, comma-separated, one parenthesis last, all on that line;
   a member destructor is `~Class`; ALL-CAPS callees read as macros and are skipped. The name list ends
   at the first `(`: a name after it is not read (2026-11-02). `operator_new[]` / `operator_delete[]`
-  are accepted since 2026-11-02 (callcheck's pattern took no brackets before).
+  are accepted since 2026-11-02 (callcheck's pattern took no brackets before). Calls are counted:
+  a callee the ROM calls twice from code an inline helper hides (`delete[]` in two branches) is
+  listed twice in the note, or it stays MISSING (2026-11-03, TU 17).
 - A goto label in column 0 and a trailing `<TAG> 0x` on a one-line definition break the parser; a
   constructor with an initializer list parses as the base's name.
 - Your own `static inline` wrappers hide the ROM's calls; constructor / destructor / new / delete calls

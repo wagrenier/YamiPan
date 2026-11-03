@@ -5755,11 +5755,11 @@
 /* 0024c5a0 00000090 */ UiTexSpriteTrack::~UiTexSpriteTrack(){}  // game
 /* 0024c630 00000044 */ UiScissorTrack::draw(){}  // game
 /* 0024c680 00000060 */ UiScissorTrack::~UiScissorTrack(){}  // game
-/* 0024c6e0 00000014 */ FUN_0024c6e0(){}
-/* 0024c700 000000b4 */ FUN_0024c700(){}
-/* 0024c7c0 000000a4 */ FUN_0024c7c0(){}
-/* 0024c870 00000188 */ FUN_0024c870(){}
-/* 0024ca00 00000180 */ FUN_0024ca00(){}
+/* 0024c6e0 00000014 */ UiTextTrack::getText(){}  // game
+/* 0024c700 000000b4 */ UiTextTrack::setText(){}  // game
+/* 0024c7c0 000000a4 */ UiTextTrack::setTextAt(){}  // game
+/* 0024c870 00000188 */ UiTextTrack::setMessage(){}  // game
+/* 0024ca00 00000180 */ UiTextTrack::setMessageByName(){}  // game
 /* 0024cb80 00000050 */ UiTextTrack::draw(){}  // game
 /* 0024cbd0 000000a0 */ UiTextTrack::~UiTextTrack(){}  // game
 /* 0024cc70 000000a0 */ UiTrianglesFlatTrack::draw(){}  // game
@@ -5812,28 +5812,28 @@
 /* 0024d820 00000740 */ S2dData::relocate(){}  // game
 /* 0024df60 00000030 */ S2dData::getString(){}  // game
 /* 0024dfa0 000003bc */ UiMatrix::interpolate(){}  // game
-/* 0024e360 0000006c */ FUN_0024e360(){}
-/* 0024e3d0 0000011c */ FUN_0024e3d0(){}
-/* 0024e4f0 00000080 */ FUN_0024e4f0(){}
+/* 0024e360 0000006c */ UiMatrix::angle(){}  // game
+/* 0024e3d0 0000011c */ UiMatrix::setScaleRotTrans(){}  // game
+/* 0024e4f0 00000080 */ uiTransformPoint(){}  // game
 /* 0024e580 00000024 */ UiMatrix::translate(){}  // game
-/* 0024e5b0 0000001c */ FUN_0024e5b0(){}
-/* 0024e5d0 00000100 */ FUN_0024e5d0(){}
+/* 0024e5b0 0000001c */ UiMatrix::setScale(){}  // game
+/* 0024e5d0 00000100 */ UiMatrix::rotate(){}  // game
 /* 0024e6d0 00000034 */ UiMatrix::copy(){}  // game
 /* 0024e710 000000a4 */ UiMatrix::concat(){}  // game
-/* 0024e7c0 000000bc */ FUN_0024e7c0(){}
+/* 0024e7c0 000000bc */ UiMatrix::multiply(){}  // game
 /* 0024e880 00000020 */ UiMatrix::identity(){}  // game
 /* 0024e8a0 000000f0 */ UiDrawer::setTargetRegs(){}  // game
 /* 0024e990 0000003c */ UiDrawer::setMode(){}  // game
 /* 0024e9d0 00000040 */ UiDrawer::setPixelMode(){}  // game
 /* 0024ea10 00000014 */ UiDrawer::setTranslate(){}  // game
 /* 0024ea30 0000016c */ UiDrawer::updateMatrix(){}  // game
-/* 0024eba0 00000714 */ FUN_0024eba0(){}
+/* 0024eba0 00000714 */ UiDrawer::drawText(){}  // game
 /* 0024f2c0 00000044 */ FUN_0024f2c0(){}
 /* 0024f310 00000028 */ FUN_0024f310(){}
 /* 0024f340 00000008 */ FUN_0024f340(){}
 /* 0024f350 00000218 */ FUN_0024f350(){}
 /* 0024f570 00000008 */ FUN_0024f570(){}
-/* 0024f580 00000214 */ FUN_0024f580(){}
+/* 0024f580 00000214 */ UiDrawer::setImage(){}  // game
 /* 0024f7a0 000001c0 */ UiDrawer::setTexture(){}  // game
 /* 0024f960 00000078 */ FUN_0024f960(){}
 /* 0024f9e0 000000e4 */ UiDrawer::end(){}  // game
@@ -5851,8 +5851,8 @@
 /* 002503c0 0000015c */ FUN_002503c0(){}
 /* 00250520 00000198 */ UiDrawer::setScissor(){}  // game
 /* 002506c0 00000088 */ UiDrawer::resetScissor(){}  // game
-/* 00250750 0000025c */ FUN_00250750(){}
-/* 002509b0 0000027c */ FUN_002509b0(){}
+/* 00250750 0000025c */ UiDrawer::drawSheetFlat(){}  // game
+/* 002509b0 0000027c */ UiDrawer::drawSheetGouraud(){}  // game
 /* 00250c30 00000004 */ thunk_FUN_0010b328(){}
 /* 00250c40 00000710 */ FUN_00250c40(){}
 /* 00251350 00000650 */ uiDrawTexStripFlat(){}  // game
@@ -6019,8 +6019,8 @@
 /* 0025fa10 00000034 */ FUN_0025fa10(){}
 /* 0025fa50 00000068 */ UiFont::~UiFont(){}  // game
 /* 0025fac0 00000064 */ UiFont::UiFont(){}  // game
-/* 0025fb30 0000009c */ FUN_0025fb30(){}
-/* 0025fbd0 0000018c */ FUN_0025fbd0(){}
+/* 0025fb30 0000009c */ fMsgFind(){}  // game
+/* 0025fbd0 0000018c */ fMsgRelocate(){}  // game
 /* 0025fd60 000000ac */ FUN_0025fd60(){}
 /* 0025fe10 0000012c */ timSheetRelocate(){}  // game
 /* 0025ff40 000001c0 */ UiLayout::playSound(){}  // game
@@ -6034,7 +6034,7 @@
 /* 00260bc0 000006f8 */ FUN_00260bc0(){}
 /* 002612c0 00000a30 */ FUN_002612c0(){}
 /* 00261cf0 0000000c */ FUN_00261cf0(){}
-/* 00261d00 000008b8 */ FUN_00261d00(){}
+/* 00261d00 000008b8 */ UiSheetSpriteTrack::findSprite(){}  // game
 /* 002625c0 0000007c */ FUN_002625c0(){}
 /* 00262640 000000a4 */ FUN_00262640(){}
 /* 002626f0 000000e8 */ FUN_002626f0(){}
@@ -7558,8 +7558,8 @@
 /* 002d4150 00000140 */ FUN_002d4150(){}
 /* 002d42a0 00000194 */ FUN_002d42a0(){}
 /* 002d4440 000000cc */ FUN_002d4440(){}
-/* 002d4510 00000134 */ FUN_002d4510(){}
-/* 002d4650 00000048 */ FUN_002d4650(){}
+/* 002d4510 00000134 */ wstrcpy(){}  // game
+/* 002d4650 00000048 */ wstrlen(){}  // game
 /* 002d46a0 000000d0 */ FUN_002d46a0(){}
 /* 002d4780 00000008 */ FUN_002d4780(){}
 /* 002d4790 0000000c */ FUN_002d4790(){}

@@ -701,9 +701,22 @@ value} interpolated (matrices through `UiMatrix::interpolate` 0x24dfa0), 0x1c / 
 0x26 the drawer flag, 0x2b offset translate (+0x14, set by widgets), 0x15..0x1a pin / rotate to
 the combined matrix (0x16 / 0x18 / 0x1a bind "rCharactorPostion": the stage camera, gStageScene
 +0x78). S2dData +0x48 / +0x4c: image count and entries {data, id} (`getImage` 0x24d530 /
-`getImageEntry` 0x24d570, the S2D file's first functions). Not written yet: the applies of
-0x15..0x1a (0x24ad20..0x24b1b0, need the UiMatrix helpers 0x24e360..0x24e7c0), the draws of 3 and
-6 / 0x22 (0x24cb80, 0x24c1a0, 0x24c2d0) and the text setters.
+`getImageEntry` 0x24d570, the S2D file's first functions). **Rotate / pin** (0x24ad20..0x24b1b0):
+world = parent * xform (`UiMatrix::multiply` 0x24e7c0); 0x19 / 0x1a: xform = R(wrap(world angle
+(`angle` 0x24e360, atan2 of the x axis) + own (+ target))), parent identity, `coordMode` Pixel;
+0x15..0x18 (0x16 / 0x18 first move by the target's position / turn by its angle): record +8 mode 0
+xform = scale(record +0xc) and parent = translate(world origin), else xform = `setScaleRotTrans`
+0x24e3d0 (scale, world angle, origin) with the origin moved to the parent. UiMatrix also: `rotate`
+0x24e5d0 (R * this), `setScale` 0x24e5b0, `uiTransformPoint` 0x24e4f0 (x16 for GS fixed point).
+**Sheet sprites** 6 / 0x22: `findSprite` 0x261d00 (the record's +0x14 name, layout hooks) answers a
+`TimSheetSprite` {+2 image, +4 u v, +8 w h}; `UiDrawer::setImage` 0x24f580 binds the sheet's
+image (+0x24 table, 8-byte {?, image}) through a temporary GsTexture, then PRIM 0x15e and
+`drawSheetFlat` 0x250750 / `drawSheetGouraud` 0x2509b0 (uv 0..1 in the sprite rect). **Text** 3:
+`UiDrawer::drawText` 0x24eba0 (font, message, record +0x1c, the track's x / y) when the message is
+>= 0 and +0x24 visible; setters 0x24c6e0..0x24ca00 (widgets 0x25b8e0..0x25ce30, `UiWidget::create`):
+a borrowed or new[] copy of a 16-bit string (`wstrlen` 0x2d4650 / `wstrcpy` 0x2d4510, message
+10000), or an **fMsg** file's message by index or name (`fMsgRelocate` 0x25fbd0 like
+`timSheetRelocate`, `fMsgFind` 0x25fb30: entries {name, text} at +0x30, count +0x10).
 
 ## Classes
 

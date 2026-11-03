@@ -129,6 +129,54 @@ static inline const void *textImage(S2dData *data, int index, intptr_t *key)
     return image;
 }
 
+// The rotate tracks' angle brought into [-pi, pi] (compared as doubles in
+// the ROM: __extendsfdf2 and the soft-float compares 0x100250 / 0x100230).
+static inline float wrapAngle(float angle)
+{
+    if (angle < -3.141592653589793)
+        angle += 6.2831855f;
+    if (angle > 3.141592653589793)
+        angle -= 6.2831855f;
+    return angle;
+}
+
+// A pinned matrix's origin moved from the actor to its parent (the pin
+// applies; the parent was reset to identity before).
+static inline void moveOriginToParent(UiMatrix *xform, UiMatrix *parent)
+{
+    parent->tx = xform->tx;
+    parent->ty = xform->ty;
+    xform->ty = 0.0f;
+    xform->tx = 0.0f;
+}
+
+// The sprite's sheet image (both sheet-sprite draws, inline in the ROM).
+static inline const void *sheetImage(const TimSheet *sheet, const TimSheetSprite *sprite)
+{
+    if (sprite == nullptr)
+        return nullptr;
+    return sheet->images[sprite->image].image;
+}
+
+// Frees the text track's own copy (each setter and the destructor, inline
+// in the ROM).
+static inline void freeOwnedText(UiTextTrack *track)
+{
+    if (track->m_ownsText && track->m_text != nullptr) {
+        delete[] track->m_text;
+        track->m_text = nullptr;
+        track->m_ownsText = 0;
+    }
+}
+
+// A wide-string copy on the heap (setText / setTextAt).
+static inline u_short *copyText(const u_short *text)
+{
+    u_short *copy = new u_short[wstrlen(text) + 1];
+    wstrcpy(copy, text);
+    return copy;
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // The track factory: one track per record of the object, by its kind.
 // PC: a kind without a class (0x20, past 0x2b) leaves its slot unwritten
@@ -181,7 +229,7 @@ void UiAnim::init(S2dData *data, S2dObject *obj, int objIndex)
         }
         case UiTrackKind_SheetSprite: {
             UiSheetSpriteTrack *sheet = new UiSheetSpriteTrack(rec);
-            sheet->m_sheet = (void *)data->getImage(recImage(rec));
+            sheet->m_sheet = (TimSheet *)data->getImage(recImage(rec));
             timSheetRelocate(sheet->m_sheet);
             sheet->m_imageId = data->getImageEntry(recImage(rec))->id;
             track = sheet;
@@ -278,7 +326,7 @@ void UiAnim::init(S2dData *data, S2dObject *obj, int objIndex)
         }
         case UiTrackKind_SheetSpriteFlat: {
             UiSheetSpriteFlatTrack *sheet = new UiSheetSpriteFlatTrack(rec);
-            sheet->m_sheet = (void *)data->getImage(recImage(rec));
+            sheet->m_sheet = (TimSheet *)data->getImage(recImage(rec));
             timSheetRelocate(sheet->m_sheet);
             sheet->m_imageId = data->getImageEntry(recImage(rec))->id;
             track = sheet;
@@ -476,13 +524,44 @@ UiBaseColorTrack::~UiBaseColorTrack()
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Kinds 0x1a, 0x19, 0x16 / 0x18, 0x15 / 0x17: their applies (0x24ad20,
-// 0x24aeb0, 0x24b030, 0x24b1b0) are not written yet.
+// Kind 0x1a: the actor is drawn in pixel coordinates turned to the
+// combined matrix's angle plus its own and the target's; its own and the
+// parent's matrices are dropped.
+// FS2 0x0024ad20
+// callcheck: __extendsfdf2, FUN_00100250, FUN_00100230 (wrapAngle)
+
+void UiRotateToTrack::apply(UiMatrix *xform, UiMatrix *parent, UiVec4 *color, UiDrawState *state)
+{
+    UiMatrix world;
+    world.multiply(*parent, *xform);
+    float angle = wrapAngle(world.angle() + (m_angle + m_targetAngle));
+    xform->identity();
+    xform->rotate(angle);
+    parent->identity();
+    state->coordMode = UiCoord_Pixel;
+}
+
 // FS2 0x0024ae50
 // callcheck: operator_delete (the deleting destructor)
 
 UiRotateToTrack::~UiRotateToTrack()
 {
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Kind 0x19.
+// FS2 0x0024aeb0
+// callcheck: __extendsfdf2, FUN_00100250, FUN_00100230 (wrapAngle)
+
+void UiRotateTrack::apply(UiMatrix *xform, UiMatrix *parent, UiVec4 *color, UiDrawState *state)
+{
+    UiMatrix world;
+    world.multiply(*parent, *xform);
+    float angle = wrapAngle(world.angle() + m_angle);
+    xform->identity();
+    xform->rotate(angle);
+    parent->identity();
+    state->coordMode = UiCoord_Pixel;
 }
 
 // FS2 0x0024afd0
@@ -492,11 +571,68 @@ UiRotateTrack::~UiRotateTrack()
 {
 }
 
+// ──────────────────────────────────────────────────────────────────────
+// Kinds 0x16 / 0x18: the pin of kinds 0x15 / 0x17 after the target's
+// move and turn.
+// FS2 0x0024b030
+
+void UiPinRotTrack::apply(UiMatrix *xform, UiMatrix *parent, UiVec4 *color, UiDrawState *state)
+{
+    const S2dPinRec *rec = (const S2dPinRec *)m_rec;
+    UiMatrix world;
+    world.multiply(*parent, *xform);
+    if (rec->mode == UiPinMode_Upright) {
+        float origin[2];
+        uiTransformPoint(origin, &world, m_pos, 0);
+        xform->setScale(rec->scale[0], rec->scale[1]);
+        parent->identity();
+        parent->translate(origin);
+    } else {
+        UiMatrix target;
+        target.identity();
+        target.rotate(m_angle);
+        target.translate(m_pos);
+        world.multiply(*parent, target);
+        UiMatrix pinned;
+        pinned.copy(world);
+        world.setScaleRotTrans(pinned, rec->scale);
+        xform->copy(world);
+        parent->identity();
+        moveOriginToParent(xform, parent);
+    }
+}
+
 // FS2 0x0024b150
 // callcheck: operator_delete (the deleting destructor)
 
 UiPinRotTrack::~UiPinRotTrack()
 {
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Kinds 0x15 / 0x17.
+// FS2 0x0024b1b0
+
+void UiPinTrack::apply(UiMatrix *xform, UiMatrix *parent, UiVec4 *color, UiDrawState *state)
+{
+    const S2dPinRec *rec = (const S2dPinRec *)m_rec;
+    UiMatrix world;
+    world.multiply(*parent, *xform);
+    if (rec->mode == UiPinMode_Upright) {
+        float zero[2] = { 0.0f, 0.0f };
+        float origin[2];
+        uiTransformPoint(origin, &world, zero, 0);
+        xform->setScale(rec->scale[0], rec->scale[1]);
+        parent->identity();
+        parent->translate(origin);
+    } else {
+        parent->identity();
+        UiMatrix pinned;
+        pinned.copy(world);
+        world.setScaleRotTrans(pinned, rec->scale);
+        xform->copy(world);
+        moveOriginToParent(xform, parent);
+    }
 }
 
 // FS2 0x0024b2a0
@@ -756,13 +892,42 @@ UiTexTrianglesTrack::~UiTexTrianglesTrack()
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Kinds 0x22 / 6: the sheet is the S2D's (not deleted); their draws
-// (0x24c1a0 / 0x24c2d0) are not written yet.
+// Kind 0x22: the sheet is the S2D's (not deleted).
+// FS2 0x0024c1a0
+
+void UiSheetSpriteFlatTrack::draw(UiDrawer *drawer)
+{
+    const S2dSheetSpriteFlatRec *rec = (const S2dSheetSpriteFlatRec *)m_rec;
+    const TimSheetSprite *sprite = findSprite();
+    if (sprite == nullptr)
+        return;
+    drawer->setImage(sheetImage(m_sheet, sprite));
+    drawer->setGsReg(kGsRegTex1_1, rec->tex1);
+    drawer->setPrimColor(kUiPrimTexShape | UiPrim_Sprite, &rec->rgba);
+    drawer->drawSheetFlat(rec->verts, rec->count, sprite, 0);
+}
+
 // FS2 0x0024c260
 // callcheck: operator_delete (the deleting destructor)
 
 UiSheetSpriteFlatTrack::~UiSheetSpriteFlatTrack()
 {
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Kind 6.
+// FS2 0x0024c2d0
+
+void UiSheetSpriteTrack::draw(UiDrawer *drawer)
+{
+    const S2dSheetSpriteRec *rec = (const S2dSheetSpriteRec *)m_rec;
+    const TimSheetSprite *sprite = findSprite();
+    if (sprite == nullptr)
+        return;
+    drawer->setImage(sheetImage(m_sheet, sprite));
+    drawer->setGsReg(kGsRegTex1_1, rec->tex1);
+    drawer->setPrim(kUiPrimTexShape | UiPrim_Sprite);
+    drawer->drawSheetGouraud(rec->verts, rec->count, sprite, 0);
 }
 
 // FS2 0x0024c380
@@ -842,18 +1007,124 @@ UiScissorTrack::~UiScissorTrack()
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Kind 3: its draw 0x24cb80 and the text setters 0x24c6e0..0x24ca00 are
-// not written yet.
+// Kind 3: the text setters the widgets call, then the slots.
+// FS2 0x0024c6e0
+
+const u_short *UiTextTrack::getText()
+{
+    if (m_font == nullptr)
+        return nullptr;
+    return m_font->m_text;
+}
+
+// FS2 0x0024c700
+// callcheck: operator_delete[], wstrlen, operator_new[], wstrcpy
+
+int UiTextTrack::setText(const u_short *text, bool copy)
+{
+    freeOwnedText(this);
+    if (!copy) {
+        m_text = text;
+        m_ownsText = 0;
+    } else if (text == nullptr) {
+        m_ownsText = 0;
+    } else {
+        m_text = copyText(text);
+        m_ownsText = 1;
+    }
+    m_font->m_text = m_text;
+    return 0;
+}
+
+// FS2 0x0024c7c0
+// callcheck: operator_delete[], wstrlen, operator_new[], wstrcpy
+
+int UiTextTrack::setTextAt(float x, float y, const u_short *text)
+{
+    m_x = x;
+    m_y = y;
+    freeOwnedText(this);
+    if (text == nullptr) {
+        m_ownsText = 0;
+    } else {
+        m_text = copyText(text);
+        m_ownsText = 1;
+    }
+    m_font->m_text = m_text;
+    m_message = kUiTextLiteral;
+    return 0;
+}
+
+// FS2 0x0024c870
+// callcheck: operator_delete[], operator_delete[], fMsgRelocate, fMsgRelocate (freeOwnedText, fMsgCheck, fMsgEntry)
+
+int UiTextTrack::setMessage(int index, void *msgFile)
+{
+    if (msgFile == nullptr) {
+        freeOwnedText(this);
+        m_text = nullptr;
+        m_ownsText = 0;
+        m_font->m_text = m_text;
+        m_message = -1;
+        return -1;
+    }
+    FMsgFile *file = fMsgCheck(msgFile);
+    if (file == nullptr) {
+        m_message = -1;
+        return -1;
+    }
+    m_message = index;
+    const FMsgEntry *entry = fMsgEntry(file, m_message);
+    const u_short *text = entry != nullptr ? entry->text : nullptr;
+    freeOwnedText(this);
+    m_text = text;
+    m_ownsText = 0;
+    m_font->m_text = m_text;
+    return m_message;
+}
+
+// FS2 0x0024ca00
+// callcheck: fMsgRelocate, fMsgFind, fMsgRelocate, operator_delete[] (fMsgCheck, fMsgEntry, freeOwnedText)
+
+int UiTextTrack::setMessageByName(float x, float y, const char *name, void *msgFile, int offset)
+{
+    m_x = x;
+    m_y = y;
+    FMsgFile *file = fMsgCheck(msgFile);
+    if (file == nullptr) {
+        m_message = -1;
+        return -1;
+    }
+    m_message = fMsgFind(file, name);
+    if (m_message < 0)
+        return -1;
+    m_message += offset;
+    const FMsgEntry *entry = fMsgEntry(file, m_message);
+    const u_short *text = entry != nullptr ? entry->text : nullptr;
+    freeOwnedText(this);
+    m_text = text;
+    m_ownsText = 0;
+    m_font->m_text = m_text;
+    return m_message;
+}
+
+// FS2 0x0024cb80
+
+void UiTextTrack::draw(UiDrawer *drawer)
+{
+    if (m_message < 0)
+        return;
+    if (!m_visible)
+        return;
+    drawer->drawText(m_font, m_message, &((const S2dTextRec *)m_rec)->_1c, m_x, m_y);
+}
+
 // FS2 0x0024cbd0
 // callcheck: operator_delete[], ~UiFont, operator_delete (the deleting destructor)
 
 UiTextTrack::~UiTextTrack()
 {
-    if (m_ownsText && m_text != nullptr) {
-        delete[] m_text;
-        m_text = nullptr;
-        m_ownsText = 0;
-    }
+    freeOwnedText(this);
     delete m_font;
 }
 
@@ -1113,14 +1384,14 @@ const float *UiTexTrianglesTrack::getAnchor()
 
 const float *UiSheetSpriteFlatTrack::getAnchor()
 {
-    return (const float *)((const char *)m_rec + kS2dSheetSpriteAnchor);
+    return ((const S2dSheetSpriteFlatRec *)m_rec)->verts[0].xy;
 }
 
 // FS2 0x0024d480
 
 const float *UiSheetSpriteTrack::getAnchor()
 {
-    return (const float *)((const char *)m_rec + kS2dSheetSpriteAnchor);
+    return ((const S2dSheetSpriteRec *)m_rec)->verts[0].xy;
 }
 
 // FS2 0x0024d490
