@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 12:49 at commit `ee99b22` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 13:09 at commit `f781617` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **1642**; stubs: **0**
+- reconstructed FS2 functions: **1648**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -72,6 +72,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/rx/rxsnd.c` | 229 | 0 |
 | `src/rx/rxsndstr.c` | 38 | 0 |
 | `src/rx/rxsndstrbank.c` | 48 | 0 |
+| `src/rx/rxsndut.c` | 6 | 0 |
 | `src/rx/rxsys.c` | 126 | 0 |
 | `src/rx/rxthread.c` | 53 | 0 |
 | `src/sdpr2/sdpr2.c` | 36 | 0 |
@@ -79,8 +80,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 78 TUs: todo 47, verify 44
-- next: **rx/rxsndut.c** (frontier score 13)
+- 78 TUs: todo 46, verify 45
+- next: **unassigned@00133800** (frontier score 13)
 - pinned queue: (empty)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
@@ -120,6 +121,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `rx/rxsnd.c` 229/229 -- All 229 of 0x159bc0..0x162178 in src/rx/rxsnd.c (C), with new src/rx/rxsnd.h (C and C++) and src/rx/rxthread.h (the seven rxTh calls). 215 functions are RoR's w
 - verify: `rx/rxsndstr.c` 38/38 -- All 38 of 0x1634b8..0x164398 written, no Ghidra change. rxsndstr.h now has RxSndStrSlot (EE 0x9c, layout host), RxSndStrFormat (the 8-entry format table), RxSnd
 - verify: `rx/rxsndstrbank.c` 48/48 -- Complete in source-only mode (no build yet, so not compiled: check it compiles once bootstrap 7 lands). Bank slot is layout host (pointers); RXWS file records (
+- verify: `rx/rxsndut.c` 6/6 -- All 6 written in src/rx/rxsndut.c. Data: debug flags 0x2f5f10 (boot value 7 = error / BG-call / register prints) and the format tables 0x2f5f18 PCM (id 1) / 0x2
 - verify: `rx/rxsys.c` 126/126 -- rxsys is RoR's prebuilt rx: rxcmp.py '^rxSys' finds 126 of 126 identical (jumps, lui and gp offsets masked) and the data words and console font equal RoR's at +
 - verify: `rx/rxthread.c` 53/53 -- Every rxTh function is RoR's word for word, so the file is RosePan's rxthread.cpp in C with FS2 addresses (architecture.md rx has the data and bss map). rxthrea
 - verify: `sdk/mcerror.cpp` 0/1 -- Pinned 0x121b80..0x121ef0 as sdk/mcerror.cpp (read as libmc's: between the read-fast tail and libc abort, maps commands FS2 never issues). McCmd and McErrno in 
@@ -129,6 +131,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 13:09 `rx/rxsndut.c` verify: rx sound utility layer: all 6 functions (init / exit / update of the rxsndstr layers, the PCM and ADPCM format tables, debug flags, BG-call check)
 - 2026-11-03 12:49 `rx/rxsndstrbank.c` verify: XWS banks: 48 functions, the RXWS chunk walkers, request / mark / branch / track getters and OpenBody, file records in rxsndstrbank.h
 - 2026-11-03 12:30 `rx/rxsndstr.c` verify: rx/rxsndstr.c: all 38 stream-core functions written (slot and format tables, play / stop / setters, format callbacks)
 - 2026-11-03 12:13 `game/streamring.cpp` verify: StreamRing / FileStreamRing cut out of unassigned@00148db0 as game/streamring.cpp 0x151f70..0x152750: all 17 written, the 4 rx jump thunks mapped to the rx call
@@ -136,21 +139,20 @@ Recent sessions:
 - 2026-11-03 11:31 `rx/rxthread.c` verify: all 53 functions written: RosePan's rxthread carried to C, all 53 identical to RoR (rxcmp.py), VBlank tail 0x159928 and core 0x166b50 with FS2 data and bss addr
 - 2026-11-03 11:14 `rx/rxfile.c` verify: all 108 functions written: RosePan's rxfile core carried to C, 106 identical to RoR (rxcmp.py), rxFileOnCreate / rxFileOnGetSize with FS2's longer failure messa
 - 2026-11-03 10:55 `rx/rxsys.c` verify: all 126 functions written: RosePan's rxsys carried to C, every function RoR's word for word (new rxcmp.py), FS2 addresses
-- 2026-11-03 10:34 `rx/rxsnd.c` verify: rx/rxsnd.c: all 229 functions written (RosePan's rxsnd carried to C, FS2's differences and four hidden GetActiveList functions)
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `rx/rxsndut.c` | todo | 0/0/6 | 0.4 | 13 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 13 | 0 |
-| `unassigned@00171300` | todo | 0/0/829 | 131.7 | 10 | 0 |
 | `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 10 | 0 |
-| `unassigned@00299d90` | todo | 0/0/215 | 62.3 | 9 | 0 |
+| `unassigned@00171300` | todo | 0/0/829 | 131.7 | 10 | 0 |
 | `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 9 | 0 |
-| `unassigned@00252840` | todo | 0/0/100 | 35.5 | 7 | 0 |
+| `unassigned@00299d90` | todo | 0/0/215 | 62.3 | 9 | 0 |
 | `unassigned@001953f0` | todo | 0/0/1313 | 395.4 | 7 | 0 |
 | `unassigned@00231c90` | todo | 0/0/61 | 36.3 | 7 | 0 |
+| `unassigned@00252840` | todo | 0/0/100 | 35.5 | 7 | 0 |
 | `unassigned@0012c9b8` | todo | 0/0/6 | 0.8 | 6 | 0 |
 | `unassigned@002908d0` | todo | 0/0/67 | 18.8 | 6 | 0 |
+| `rx/rxsndstrstream.c` | todo | 0/0/18 | 2.4 | 5 | 0 |
 | `sdpr2/sdpr2single.c` | todo | 0/0/24 | 7.0 | 4 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
@@ -158,7 +160,6 @@ Recent sessions:
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
-| `00162268` | rxSndUtGetDebugFlags | 7 | lib-ctx | missing | rx/rxsndut.c |
 | `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
 | `0029efe0` | getNaviMenu | 5 | game | missing | - |
 | `001937f0` | FUN_001937f0 | 4 | - | missing | - |
@@ -181,20 +182,21 @@ Recent sessions:
 | `00170088` | sdpr2DrvInit | 2 | lib-ctx | missing | sdpr2/sdpr2drv.c |
 | `0016e328` | sdpr2PairInit | 2 | lib-ctx | missing | sdpr2/sdpr2pair.c |
 | `0016f808` | sdpr2SingleInit | 2 | lib-ctx | missing | sdpr2/sdpr2single.c |
-| `00162220` | rxSndUtUpdate | 2 | lib-ctx | missing | rx/rxsndut.c |
 | `00152740` | rxFileCallSizeHook | 2 | native | missing | game/streamring.cpp |
 | `001351b0` | Clock::~Clock | 2 | game | missing | - |
 | `002e2920` | Tim2Texture::Tim2Texture | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `002e1b70` | Tim2Texture::putTex0 | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
-| `00162278` | rxSndUtCheckBgCall | 2 | lib-ctx | missing | rx/rxsndut.c |
 | `002c3d70` | getSaveResource | 2 | game | missing | - |
 | `00193880` | FUN_00193880 | 2 | - | missing | - |
 | `002ec660` | optionLayoutPath | 1 | game | missing | - |
 | `001d6a90` | StageSound::stopNamed | 1 | game | missing | - |
 | `00292db0` | SePlayer::stop | 1 | game | missing | - |
+| `001660e0` | rxSndStrMemInit | 1 | lib-ctx | missing | rx/rxsndstrmem.c |
+| `001656e8` | rxSndStrStreamInit | 1 | lib-ctx | missing | rx/rxsndstrstream.c |
+| `00165738` | rxSndStrStreamExit | 1 | lib-ctx | missing | rx/rxsndstrstream.c |
+| `00166178` | rxSndStrMemExit | 1 | lib-ctx | missing | rx/rxsndstrmem.c |
+| `001661b8` | rxSndStrMemUpdate | 1 | lib-ctx | missing | rx/rxsndstrmem.c |
+| `00165788` | rxSndStrStreamUpdate | 1 | lib-ctx | missing | rx/rxsndstrstream.c |
 | `0029e4f0` | PrgScaleNavi::PrgScaleNavi | 1 | game | missing | - |
 | `0029ae30` | PrgScaleNaviScroll::PrgScaleNaviScroll | 1 | game | missing | - |
-| `002b9d60` | PrgMcCard::PrgMcCard | 1 | game | missing | - |
-| `002e14d0` | GsRegionAlloc::GsRegionAlloc | 1 | game | missing | - |
-| `002d7cf0` | drawSysInit | 1 | game | missing | - |
 

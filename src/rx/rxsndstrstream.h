@@ -16,6 +16,9 @@
 extern "C" {
 #endif
 
+void rxSndStrStreamInit(void);                                          /* FS2 0x001656e8 */
+void rxSndStrStreamExit(void);                                          /* FS2 0x00165738 */
+void rxSndStrStreamUpdate(void);                                        /* FS2 0x00165788 */
 /* A ring on the file name read through buf. The source id, -1 failed. */
 int rxSndStrStreamOpenFile(const char *name, void *buf, int bufSize);   /* FS2 0x00165790 */
 /* A memory stream on size bytes at addr: an EE pointer, or an IOP address

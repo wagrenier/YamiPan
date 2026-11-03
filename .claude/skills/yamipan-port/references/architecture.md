@@ -207,7 +207,13 @@ same Ghidra names (MoviePlayer::receiveAudio calls 0x151f70), like the rxFile ho
 in rx style, `rxSndUt*` / `rxSndStr*`; messages 0x3022e0..0x302738). Five layers, each with its own
 static slot table and init / exit / update called from `rxSndUtInit` 0x162178 / `rxSndUtExit`
 0x1621f0 / `rxSndUtUpdate` 0x162220 (debug flags 0x2f5f10: bit 1 error prints, 2 BG-thread warning,
-4 registration print):
+4 registration print; all three set at boot, the value 7; `sound.cpp` clears them). **`src/rx/rxsndut.c`
+written 2026-11-03** (all 6, `verify`): the file's data are the flags and the two format tables
+0x2f5f18 (PCM, id 1) / 0x2f5f38 (ADPCM, id 0), 0x20 each, registered in that order after the layers'
+inits (memory, stream, bank, core); `rxSndUtInit` also clears **rxsnd's** debug bit 4 (the SPU heap
+alloc / free trace, `RXSND_DEBUG_SPUHEAP`); exit runs stream, bank, core, memory; update memory,
+stream, bank, core. `rxSndUtSetDebugFlags` answers the old flags. Its BG-call check is the same code as
+rxsnd's `rxSndCheckBgCall` (same message, "rxsndut") on its own flags. The layers:
 - **XWS bank** 0x1622f8..0x1634b8 (`rxSndStrBank*`, 256 slots x 0xa8 at 0x514780): an `RXWS` file
   (version >= 0x200) of 0x10-byte-header chunks `FORM` (variable-length request records: +0 format id,
   +1 length, +2 flags (bit 0 loop), +4 / +5 volume, +9 channels 1 / 2, +10 rate?, +0x10 offset,

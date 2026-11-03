@@ -864,12 +864,22 @@
    "why": "stream source rxSndStrStream* (slot table 0x5226e0; batch 008); file cut a guess."
   },
   "rx/rxsndut.c": {
+   "notes": "All 6 written in src/rx/rxsndut.c. Data: debug flags 0x2f5f10 (boot value 7 = error / BG-call / register prints) and the format tables 0x2f5f18 PCM (id 1) / 0x2f5f38 ADPCM (id 0) as static const RxSndStrFormat, registered after the layer inits. rxSndUtInit also clears rxsnd debug bit 4 (SPU heap trace, new RXSND_DEBUG_SPUHEAP in rxsnd.h). rxSndUtSetDebugFlags now returns the old flags (u_int). New minimal headers for unwritten TUs: rx/rxsndstrmem.h, rx/rxsndstrpcm.h, rx/rxsndstradpcm.h (table entry prototypes typed after RxSndStrFormat); rxsndstrstream.h gained Init / Exit / Update. Checked: callcheck clean, layout lint OK, MSYS2 gcc -std=gnu11 and g++ -fsyntax-only -Wall -Wextra clean on rxsndut.c (rxsndstr.c / rxsndstrbank.c still clean). No Ghidra change. Next pick: tus.py next (rxsndstrpcm / adpcm / stream / mem are the neighbours).",
    "ranges": [
     [
      "00162178",
      "001622f8"
     ]
    ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 13:09",
+     "status": "verify",
+     "summary": "rx sound utility layer: all 6 functions (init / exit / update of the rxsndstr layers, the PCM and ADPCM format tables, debug flags, BG-call check)"
+    }
+   ],
+   "status": "verify",
    "why": "rxsndut init / exit / update of the five stream layers (not in RoR; batch 008); file cut a guess."
   },
   "rx/rxsys.c": {

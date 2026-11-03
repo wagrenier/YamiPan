@@ -502,6 +502,8 @@ void  rxSndTermModules(void);                                            /* FS2 
 void  rxSndUpdate(void);                                                 /* FS2 0x00159d88 */
 /* Command 0x30 {2, mode != 0} (stereo / mono output: not known). */
 void  rxSndSetOutputMode(int mode);                                      /* FS2 0x00159e68 */
+/* rxSndSetDebugFlags bits (only the one named whose prints were read). */
+#define RXSND_DEBUG_SPUHEAP     0x4     /* trace SPU heap alloc / free */
 /* Stores the flags (command 0x30 {0, flags} tells the IOP); the old ones back. */
 u_char rxSndSetDebugFlags(int flags);                                   /* FS2 0x00159eb8 */
 u_char rxSndGetDebugFlags(void);                                         /* FS2 0x00159f10 */
