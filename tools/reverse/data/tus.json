@@ -82,6 +82,25 @@
    ],
    "why": "gfxInitRenderTargets / gfxReleaseRenderTargets and the frame callback 0x12e0e0 gameFrameReady calls (batch 003); 0x12dfa0..0x12e0b0 unread, the cut a guess."
   },
+  "game/gsutil.cpp": {
+   "notes": "Cut out of unassigned@00171300 and pinned 0x230980-0x231410 (batch 048: GsTexture::readTarget 0x231290, rena base Tim2Texture ctor 0x2e2920 / dtor 0x2e2810 / load 0x2e26c0 / putTex0 0x2e1b70, and 0x2e1c50 GsTexture::upload renamed Tim2Texture::upload; Ghidra saved). New src/game/gsutil.h holds the presets (moved from gamehooks.h), GsTexture (moved from gfxtarget.h, now with its EE fields +0x48 TEX0, +0x50 isTarget, +0x54 / +0x58 size) and a Tim2Texture stand-in (layout host, rena_2d_texture_tim2.cpp). The presets write their tables 0x3071a0..0x3072f0 through YamiPan_DrawUiReg, then FRAME_1 with the preset FBMSK and ZBUF_1 with ZMSK from the current draw env (DrawEnv: the env as is plus SCISSOR_1). An image whose TIM2 reserved word +0xc is Zbuf / Draw / View is a 512x512 render target (TEX0 block 0x1800 CT32 / 0x800 CT32 / 0 CT16). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on gsutil and its users, and a host harness matched every preset register word, the three target TEX0 and the putTex0 packet against the ROM. Bootstrap 6: the host draw module samples its own render-target copy for a GsTexture with m_isTarget; the TIM2 decode belongs to the Tim2Texture TU (rena 0x2e1b70..0x2e2970). Doubts: file name and the presets / GsTexture join are guesses by position; View as CT16 at block 0 not cross-checked with gfxInitRenderTargets. Next in the run: FontData 0x1fe020..0x1fe5b0, boxgrid callees 0x193780..0x1938f8, the pak parser 0x231410..0x231bb0.",
+   "ranges": [
+    [
+     "00230980",
+     "00231410"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 04:13",
+     "status": "verify",
+     "summary": "The UI draw presets gfxUiPreset* and GsTexture (ctor, dtor, getSize, putTex0, readTarget): all 12 written, source-only, not built"
+    }
+   ],
+   "status": "verify",
+   "why": "Cut out of unassigned@00171300 (the frontier pick, 2851 functions): the UI draw-state presets gfxUiPreset* 0x230980..0x2311c0 (uidrawer setDrawPreset) and GsTexture 0x2311c0..0x231410 (vtable 0x3164e8, on rena's Tim2Texture). Bounded by another class before (0x230820..0x230980, vtables 0x3164b0 / 0x3164d0) and the pak parser / tree helpers after (0x231410.., strstr). No strings: the file name and joining the presets to GsTexture are guesses by position (both GS helpers)."
+  },
   "game/heap.cpp": {
    "notes": "Game code, not MSL: heap and RNG share one object (sdata 0x31a880..0x31a88c, bss 0x329970 then 0x3299c0, sbss 0x31ad80). All 17 functions written; batch 031 named the 6 internal heap functions, randNext2 and the two MSL array destroyers (lib_range MSL now 0x104b40..0x1076e8). Heap layout (EE 0x44) is layout: host with EE offsets in comments; block header and gap record hold pointers, so headerRoom / blockOf use sizeof(HeapBlock) (0x20 on the host, 0x10 on the EE) - marked PC. The mode byte +0x34 (m_tailFirst) is public: callers 0x298e1c / 0x299190 flip it around one alloc. Heap +0x30 is read by 0x2945cc..0x294ee8 (unread). rndInit takes a count of draws to discard, not a seed. randUnit moved from gamehooks.h to heap.h (sysdata.cpp includes heap.h). Needs from bootstrap 6: sdk/eekernel.h from RosePan (SemaParam, CreateSema, DeleteSema, WaitSema, SignalSema). Not compiled: no compiler on PATH in source-only mode.",
    "ranges": [

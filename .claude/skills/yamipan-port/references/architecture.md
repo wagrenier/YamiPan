@@ -758,7 +758,7 @@ PRIM and draws the add colour, blend 2 (Cs * Ad + Cd). **Screen matrices** (setM
 `updateMatrix` draws through scale(1/k, 1) (layout x is in display-square units, narrowed to the
 frame), pixel mode keeps only the translation, or with a rotation turns in the widened space and
 narrows a / b by 1/k after. **Textures** (`setTexture` 0x24f7a0): `TexAreaList::place` 0x143510
-(a GS block per texture id per packet list; 1 = newly placed), `GsTexture::upload` 0x2e1c50 then
+(a GS block per texture id per packet list; 1 = newly placed), `Tim2Texture::upload` 0x2e1c50 then
 `putTex0` 0x231200 (TEX0_1), `getSize` 0x2311c0. **Presets** (`setDrawPreset`, gfx functions
 0x230980..0x231090 named `gfxUiPreset*`): 0 colour + alpha written, 1 / 2 alpha only (FBMSK
 0x00ffffff), 3..5 RGB only (FBMSK 0xff000000), 6 back to the draw env's FRAME / ZBUF / SCISSOR
@@ -795,6 +795,30 @@ spacingY; control chars skipped. Answers the glyphs drawn. **`UiFont`** +0xc / +
 +0x10 entries of 0x10 sorted by u16 code, glyph rect u v w h at +8 (1/16 texel), the entry after
 the last = the missing-character glyph; `nextGlyph` 0x1fe4d0 (binary search), `countLines` 0x1fe150,
 `lineWidth` 0x1fe2b0 (spacing + sum (w / 16 - spacing)).
+
+**`game/gsutil.cpp` 0x230980..0x231410 (TU 20, 2026-11-03, batch 048, all 12 written, `verify`;
+cut out of `unassigned@00171300`; the file name is the port's)**: the UI **draw presets** and
+**`GsTexture`**. Presets: an A+D run from a table, then FRAME_1 (FBMSK replaced) and ZBUF_1 (ZMSK
+set) from the current draw env, each in its own GIF tag (tag 0x307190). Tables 0x3071a0..0x3072f0
+of {u_int reg, pad, u_long value}: **Normal** (6) TEST_1 0x30000 (ZTE, ZTST always, no alpha
+test), ALPHA_1 0x44 (Cs - Cd) * As + Cd, CLAMP_1 0 (repeat), TEX1_1 0x61 (LCM 1, bilinear),
+COLCLAMP 1, CLAMP_1 5 again (clamp: the second write wins), FBMSK 0; **AlphaOnly1** TEST 0x30003
+(alpha test always), **AlphaOnly2** TEST 0x3080b (alpha >= 0x80), both FBMSK 0x00ffffff;
+**RgbOnly3** TEST 0x37001 (ATST never, AFAIL RGB_ONLY, DATE on DATM 0: where the frame's alpha bit
+is 0), **RgbOnly4** 0x3f001 (DATM 1: where it is 1), **RgbOnly5** TEST 0x30000 with ALPHA_1
+0x8000000054 ((Cs - Cd) * Ad + Cd), all three FBMSK 0xff000000; **DrawEnv** the Normal run, then the
+env's own FRAME_1 / ZBUF_1 / SCISSOR_1. **GsTexture** (0x60, vtable 0x3164e8 at +0x44) derives from
+rena's **`Tim2Texture`** (rena_2d_texture_tim2.cpp 0x2e1b70..0x2e2970, EE 0x48, vtable 0x31a7c0 at
++0x44; ctor 0x2e2920, deleting dtor 0x2e2810, `load` 0x2e26c0 ('T' check, one Tim2Texture per TIM2
+picture), `putTex0` 0x2e1b70, `upload` 0x2e1c50; +0 TEX0 template, +0x1c / +0x1e size, +0x20 CLUT
+block offset). Its ctor then `readTarget` 0x231290: an image whose **TIM2 header reserved word
+(+0xc) is `Zbuf` / `Draw` / `View`** stands for a 512x512 render target: +0x50 = 1, +0x48 TEX0
+(TBW 8, TW / TH 9, TCC 1) at block **0x1800 PSMCT32 / 0x800 PSMCT32 / 0 PSMCT16**, +0x54 / +0x58 =
+512. `getSize` 0x2311c0 answers the target's 512 or the base's shorts; `putTex0` 0x231200 (cursor,
+block, reg) writes CNT 2 / FLUSH + DIRECT 2 / A+D tag / the target's TEX0 (block ignored) or calls
+the base's. Callers: UiDrawer, the textured tracks, UiFont, FUN_00288c00 and the 0x2c5550..0x2cc600
+group. On the host the presets go to `YamiPan_DrawUiReg`; the draw module must sample its own copy
+of the named target when a GsTexture has m_isTarget (no GS memory).
 
 ## Classes
 

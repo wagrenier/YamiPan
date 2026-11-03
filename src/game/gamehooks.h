@@ -220,15 +220,4 @@ struct StageScene
 };
 extern StageScene *gStageScene;     /* sbss 0x31adf4 (gp-0x7a7c) */
 
-// The 2D layouts' gfx state set-ups (UiDrawer::setDrawPreset, UiPreset;
-// unassigned@00171300 0x230980..0x231200): A+D runs of fixed registers,
-// then FRAME_1 / ZBUF_1 from the current draw env with the masks noted.
-void gfxUiPresetNormal(sceVif1Packet *packet);                           // FS2 0x00231090: FBMSK 0, ZMSK
-void gfxUiPresetAlphaOnly1(sceVif1Packet *packet);                       // FS2 0x00230e40: FBMSK 0x00ffffff
-void gfxUiPresetAlphaOnly2(sceVif1Packet *packet);                       // FS2 0x00230d10
-void gfxUiPresetRgbOnly3(sceVif1Packet *packet);                         // FS2 0x00230be0: FBMSK 0xff000000
-void gfxUiPresetRgbOnly4(sceVif1Packet *packet);                         // FS2 0x00230ab0
-void gfxUiPresetRgbOnly5(sceVif1Packet *packet);                         // FS2 0x00230980
-void gfxUiPresetDrawEnv(sceVif1Packet *packet);                          // FS2 0x00230f70: FRAME / ZBUF / SCISSOR as the env
-
 #endif /* _GAME_GAMEHOOKS_H */

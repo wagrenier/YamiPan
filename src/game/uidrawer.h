@@ -148,7 +148,7 @@ enum UiVertexFormat
 // GS register numbers the tracks write through UiDrawer::setGsReg.
 constexpr int kGsRegTex1_1 = 0x14;
 
-class GsTexture;                // game/gfxtarget.h
+class GsTexture;                // game/gsutil.h
 class UiFont;                   // game/uitrack.h
 struct TimSheetSprite;          // game/uitrack.h
 

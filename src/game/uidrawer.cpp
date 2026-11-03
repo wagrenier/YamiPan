@@ -15,6 +15,7 @@
 #include "game/fontdata.h"
 #include "game/gamehooks.h"
 #include "game/gfxtarget.h"
+#include "game/gsutil.h"
 #include "game/uitrack.h"
 #include "sdk/libgraph.h"
 #include "sdk/libvifpk.h"

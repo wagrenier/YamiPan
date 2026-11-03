@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 03:55 at commit `b028d35` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 04:14 at commit `8cffaea` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-03 03:55 at commit `b028d35` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6595**, named **1547** (23%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1487, game-inferred 696
-- context-name ledger: 2183 entries; overrides of wrong library matches: 0
-- placed in a source file: 1467/6595 in 44 files
+- game functions: **6595**, named **1552** (24%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1492, game-inferred 696
+- context-name ledger: 2188 entries; overrides of wrong library matches: 0
+- placed in a source file: 1483/6595 in 45 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,13 +30,14 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **484**; stubs: **0**
+- reconstructed FS2 functions: **496**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
 | `src/game/boxgrid.cpp` | 29 | 0 |
 | `src/game/datetime.cpp` | 2 | 0 |
 | `src/game/gamesystem.cpp` | 17 | 0 |
+| `src/game/gsutil.cpp` | 12 | 0 |
 | `src/game/heap.cpp` | 17 | 0 |
 | `src/game/memcard.cpp` | 55 | 0 |
 | `src/game/pad.cpp` | 14 | 0 |
@@ -55,12 +56,13 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 63 TUs: todo 52, verify 20
-- next: **unassigned@00171300** (frontier score 34)
+- 65 TUs: todo 53, verify 21
+- next: **unassigned@00252840** (frontier score 26)
 - pinned queue: (empty)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
 - verify: `game/gamesystem.cpp` 17/17 -- All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). N
+- verify: `game/gsutil.cpp` 12/12 -- Cut out of unassigned@00171300 and pinned 0x230980-0x231410 (batch 048: GsTexture::readTarget 0x231290, rena base Tim2Texture ctor 0x2e2920 / dtor 0x2e2810 / lo
 - verify: `game/heap.cpp` 17/17 -- Game code, not MSL: heap and RNG share one object (sdata 0x31a880..0x31a88c, bss 0x329970 then 0x3299c0, sbss 0x31ad80). All 17 functions written; batch 031 nam
 - verify: `game/memcard.cpp` 55/55 -- All 55 functions written (source only, not built). New this run: Memcard::stepSave (mkdir, then data / icon1.ico / icon.sys each open, write, flush, close; Save
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
@@ -81,6 +83,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 04:13 `game/gsutil.cpp` verify: The UI draw presets gfxUiPreset* and GsTexture (ctor, dtor, getSize, putTex0, readTarget): all 12 written, source-only, not built
 - 2026-11-03 03:55 `game/uidrawer.cpp` verify: UiMatrix and UiDrawer complete: interpolate, drawText, setScissor and setScissorPixels, the sheet draws and the strip ribbons as UiDrawer members, with a FontDa
 - 2026-11-03 03:43 `game/uidrawer.cpp` partial: UiMatrix and UiDrawer: 42 of 50 written (matrix helpers, ctor dtor begin end, matrix and add pass, every state call, the four vertex-list draws) through a new h
 - 2026-11-03 03:16 `game/s2ddata.cpp` verify: S2D file code cut from unassigned@0024d530: all 9 written (getImage, getImageEntry, findSequence, findObject, findVarIndex, findVar, getVar, relocate, getString
@@ -88,29 +91,28 @@ Recent sessions:
 - 2026-11-03 02:44 `game/uitrack.cpp` partial: game/uitrack.cpp 0x249550..0x24d530 cut out: the track factory UiAnim::init, 41 track classes, UiTrack step / isDone / setPlay; 97 of 109 written
 - 2026-11-03 02:22 `game/uisequence.cpp` verify: reconstruct 29 functions (verify)
 - 2026-11-03 02:03 `game/uilayout.cpp` verify: UiLayout, the S2D 2D layout player: script interpreter (30 opcodes, 17 condition kinds), sequence management, nested layout base UiSubLayout; all 22 functions w
-- 2026-11-03 01:36 `game/screen.cpp` verify: The 2D screens: overlay thread (BG movie screen, loading indicator), modal runLayout / runLayoutFile, stage e/h, archive and option screens, game-over and notic
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@00171300` | todo | 0/0/2851 | 749.7 | 34 | 0 |
 | `unassigned@00252840` | todo | 0/0/196 | 69.0 | 26 | 0 |
 | `unassigned@002681e0` | todo | 0/0/595 | 177.6 | 19 | 0 |
-| `unassigned@002b0d50` | todo | 0/0/632 | 194.3 | 12 | 0 |
+| `game/gfxtarget.cpp` | todo | 0/0/8 | 2.6 | 17 | 0 |
+| `unassigned@00171300` | todo | 0/0/2822 | 745.4 | 13 | 0 |
 | `unassigned@001319f0` | todo | 0/0/53 | 4.9 | 12 | 0 |
 | `game/gamepacket.cpp` | todo | 0/0/6 | 0.6 | 12 | 0 |
-| `game/gfxtarget.cpp` | todo | 0/0/8 | 2.6 | 9 | 0 |
+| `unassigned@002b0d50` | todo | 0/0/628 | 191.5 | 10 | 0 |
 | `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
-| `unassigned@00142dd0` | todo | 0/0/14 | 4.6 | 5 | 0 |
 | `unassigned@00296d60` | todo | 0/0/267 | 74.1 | 5 | 0 |
-| `unassigned@0012ea60` | todo | 0/0/7 | 1.7 | 5 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 5 | 0 |
+| `unassigned@00142dd0` | todo | 0/0/14 | 4.6 | 5 | 0 |
+| `unassigned@0012ea60` | todo | 0/0/7 | 1.7 | 5 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
-| `00231360` | GsTexture::GsTexture | 8 | game | missing | - |
+| `0012e080` | gfxGetCurrentDrawEnv | 10 | game | missing | game/gfxtarget.cpp |
 | `00290630` | getLangPackItem | 7 | game | missing | - |
 | `002907c0` | getInitPackItem | 6 | game | missing | - |
 | `00260100` | UiLayout::stopSound | 5 | game | missing | - |
@@ -119,7 +121,6 @@ Recent sessions:
 | `0025fbd0` | fMsgRelocate | 4 | game | missing | - |
 | `001937f0` | FUN_001937f0 | 4 | - | missing | - |
 | `0012e0e0` | gfxFlipDisplay | 4 | game | missing | game/gfxtarget.cpp |
-| `00231200` | GsTexture::putTex0 | 4 | game | missing | - |
 | `00132c10` | FileJob::~FileJob | 3 | game | missing | - |
 | `0012f160` | gfxGetTexArea | 3 | game | missing | - |
 | `00142dd0` | TexArea::getList | 3 | game | missing | - |
@@ -132,12 +133,10 @@ Recent sessions:
 | `00261d00` | UiSheetSpriteTrack::findSprite | 2 | game | missing | - |
 | `00132cc0` | FileJob::FileJob | 2 | game | missing | - |
 | `00132bc0` | FileJob::start | 2 | game | missing | - |
-| `0012e080` | gfxGetCurrentDrawEnv | 2 | game | missing | game/gfxtarget.cpp |
 | `00132280` | FileLoader::startLoad | 2 | game | missing | - |
 | `002c3d70` | getSaveResource | 2 | game | missing | - |
 | `0025fe10` | timSheetRelocate | 2 | game | missing | - |
-| `002e1c50` | GsTexture::upload | 2 | game | missing | - |
-| `002311c0` | GsTexture::getSize | 2 | game | missing | - |
+| `002e1c50` | Tim2Texture::upload | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `00143510` | TexAreaList::place | 2 | game | missing | - |
 | `002d4650` | wstrlen | 2 | game | missing | - |
 | `002d4510` | wstrcpy | 2 | game | missing | - |
@@ -149,4 +148,7 @@ Recent sessions:
 | `00135210` | Clock::createChild | 1 | game | missing | - |
 | `001351b0` | Clock::~Clock | 1 | game | missing | - |
 | `00151280` | debugSysShutdown | 1 | game | missing | - |
+| `00148540` | soundShutdown | 1 | game | missing | sound/sound.cpp |
+| `00135330` | MasterClock::~MasterClock | 1 | game | missing | - |
+| `0012de80` | GamePacketManager::~GamePacketManager | 1 | game | missing | game/gamepacket.cpp |
 

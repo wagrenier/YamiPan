@@ -27,6 +27,7 @@
 #include <stdint.h>
 
 #include "game/gfxtarget.h"
+#include "game/gsutil.h"
 #include "game/s2ddata.h"
 #include "game/uidrawer.h"
 #include "game/uisequence.h"

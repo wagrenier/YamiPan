@@ -10163,6 +10163,12 @@
   "was": "FUN_00231200",
   "why": "(this, pkt, tbp, reg): image textures through 0x2e1b70, render targets an A+D of +0x48 to reg; the drawer passes 6 (TEX0_1)"
  },
+ "00231290": {
+  "name": "GsTexture::readTarget",
+  "tag": "game-inferred",
+  "was": "FUN_00231290",
+  "why": "a0 the GsTexture, a1 the image record: its +0xc tag Zbuf / Draw / View (the TIM2 header's reserved word) makes the texture a 512x512 render target (+0x50 = 1, TEX0 +0x48 at GS block 0x1800 / 0x800 / 0 (View PSMCT16), size +0x54 / +0x58 = 512); any other tag clears +0x50 and answers 0; only caller the ctor"
+ },
  "00231360": {
   "name": "GsTexture::GsTexture",
   "tag": "game-inferred",
@@ -13001,11 +13007,35 @@
   "was": "FUN_002d4650",
   "why": "(s): 16-bit characters up to the 0; 0 for null or an odd address; beside the char version 0x2d4440"
  },
+ "002e1b70": {
+  "name": "Tim2Texture::putTex0",
+  "tag": "lib-context",
+  "was": "FUN_002e1b70",
+  "why": "(tex, u_long **cursor, int block, u_int reg): writes CNT 2 / FLUSH DIRECT 2 / A+D tag and TEX0 = the template +0 with TBP0 = block, CBP = block + the CLUT offset (+0x20 short) to reg; GsTexture::putTex0's non-target path"
+ },
  "002e1c50": {
-  "name": "GsTexture::upload",
-  "tag": "game-inferred",
+  "name": "Tim2Texture::upload",
+  "tag": "lib-context",
   "was": "FUN_002e1c50",
-  "why": "(this, pkt, tbp): the image transfer into GS memory at the TexArea block; setTexture calls it when TexAreaList::place answers newly placed"
+  "why": "was GsTexture::upload: it sits in rena's TIM2 texture code (0x2e1b70..0x2e2970) and every GsTexture is a Tim2Texture (base at +0), so it is the base's image transfer; UiDrawer::setTexture's upload when newly placed"
+ },
+ "002e26c0": {
+  "name": "Tim2Texture::load",
+  "tag": "lib-context",
+  "was": "FUN_002e26c0",
+  "why": "a1 the image: 'T' (TIM2) else prints rena_2d_texture_tim2.cpp: tim2 and answers 0; picture count from the header +0x11, one Tim2Texture per picture (this for the first, operator_new 0x48 for the rest) filled by 0x2e22d0"
+ },
+ "002e2810": {
+  "name": "Tim2Texture::~Tim2Texture",
+  "tag": "lib-context",
+  "was": "FUN_002e2810",
+  "why": "deleting dtor (obj, flag) of vtable 0x31a7c0: releases +8, deletes the per-picture textures +0xc[1..count) through their slot 0 and the array, frees +0x3c from the global heap 0x329970; GsTexture's dtor calls it with 0"
+ },
+ "002e2920": {
+  "name": "Tim2Texture::Tim2Texture",
+  "tag": "lib-context",
+  "was": "FUN_002e2920",
+  "why": "rena's TIM2 texture (rena_2d_texture_tim2.cpp, message 0x30fdd0 in its load 0x2e26c0): stores vtable 0x31a7c0 at +0x44, clears +8 / +0xc / +0x10 / +0x3c / +0x40, loads the image; GsTexture's base (called first by its ctor, 21 callers)"
  },
  "002eaff0": {
   "name": "Vif1PktManage::GetUsedSize",

@@ -269,6 +269,27 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    drawText's line / alignment / spacing maths, colour bytes, the ribbon offsets and the scissor
    word by hand. Next: the widget classes 0x252840.. (vtables 0x316a78..0x316c10), or what the
    queue pins.
+   TU 20 (the frontier's `unassigned@00171300`, 2,851 functions 0x171300..0x231bb0, for
+   `GsTexture` / the presets / FontData / boxgrid's 0x193780 callees): **`game/gsutil.cpp`
+   0x230980..0x231410** cut out (12 functions, batch 048, all written, `verify`; architecture.md
+   "Modules"): the seven `gfxUiPreset*` draw presets and `GsTexture` with its render-target tags
+   `Zbuf` / `Draw` / `View` (new `readTarget` 0x231290). New `game/gsutil.h` holds them and rena's
+   base **`Tim2Texture`** (stand-in, `layout: host`; 0x2e1c50 renamed `GsTexture::upload` ->
+   `Tim2Texture::upload`); `gfxtarget.h` lost its GsTexture stand-in, `gamehooks.h` the preset
+   prototypes; `uitrack.h` / `uidrawer.cpp` include gsutil.h. Checked: callcheck clean, layout lint
+   OK, g++ -fsyntax-only -Wall -Wextra clean on gsutil / uidrawer / uitrack / uisequence / uilayout
+   (RosePan's SDK headers + a libvifpk stub), and a host harness: every preset's register words
+   equal the ROM tables 0x3071a0..0x3072f0 with FRAME / ZBUF masked as the ROM does, the three
+   target TEX0 (0x664021800 / 0x664020800 / 0x664220000) and putTex0's six words. Doubts for the
+   user: the file name and joining presets and GsTexture (no string, by position); "View" being
+   PSMCT16 at block 0 (the display buffer?) is read from the TEX0, not checked against
+   gfxInitRenderTargets; RgbOnly3 / 4 test the frame's alpha bit (DATE) -- what the layouts use
+   them for is unread. **Bootstrap 6**: the host draw module must handle a GsTexture with
+   `m_isTarget` by sampling its own copy of that render target (TBP0 0x1800 / 0x800 / 0), not by
+   decoding an image; the `Tim2Texture` TU (rena, 0x2e1b70..0x2e2970) is where the TIM2 decode at
+   the source belongs. Still in the run for later picks: `FontData` 0x1fe020..0x1fe5b0 (frontier),
+   boxgrid's callees 0x193780..0x1938f8, `StageSound::playNamed` 0x1d6a80, the class 0x230820..
+   0x230980 (vtables 0x3164b0 / 0x3164d0) and the pak parser 0x231410..0x231bb0.
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
