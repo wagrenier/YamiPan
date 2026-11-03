@@ -6,8 +6,6 @@
  *  best records and medals per stage), the play record (which stage, record
  *  kind and variant is being played), the options with their button map,
  *  and a 64-int flag table; plus the language and the region strings.
- *  getLocalDateTime (0x23de20) lives in the next file but one; its
- *  prototype stays here until that TU is written.
  * ======================================================================== */
 #ifndef _GAME_SYSDATA_H
 #define _GAME_SYSDATA_H
@@ -206,20 +204,6 @@ static_assert(sizeof(SystemData) == 0x620, "SystemData: EE 0x620");
 
 extern SystemData gSystemData;      /* bss 0x598b30 */
 
-// The RTC as getLocalDateTime leaves it, every field BCD; on a clock error
-// it is 2000-01-01 12:00:00 with flags 0x11.
-struct DateTime
-{
-    u_char  flags;              // FS2 +0: 0x10 read, 0x11 clock error
-    u_char  second;             // FS2 +1
-    u_char  minute;             // FS2 +2
-    u_char  hour;               // FS2 +3
-    u_char  day;                // FS2 +4
-    u_char  month;              // FS2 +5
-    u_short year;               // FS2 +6: 0x2000 + yy
-};
-static_assert(sizeof(DateTime) == 0x8, "DateTime: EE 0x8");
-
 void         systemDataInit();                                           // FS2 0x0023bb50
 SystemData  *getSystemData();                                            // FS2 0x0023bb30
 SaveData    *getSaveData();                                              // FS2 0x0023bb40
@@ -232,7 +216,5 @@ const char  *getLanguageCode(int language);                              // FS2 
 const char  *getFileSuffix(int alternate);                               // FS2 0x0023bbf0
 const char  *getRegionCode();                                            // FS2 0x0023bc20
 int          sysDataReturnZero();                                        // FS2 0x0023c010
-
-void getLocalDateTime(DateTime *out, int arg);                           // FS2 0x0023de20
 
 #endif /* _GAME_SYSDATA_H */

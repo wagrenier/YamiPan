@@ -79,8 +79,9 @@ MSL C++ runtime 0x104c60..0x1076e8, libgraph / libdma / libdev 0x1076e8..0x10ac6
 0x10ac60..0x10c218 (its leaf run after 0x10acc8 unread: libvu0?), libmpeg 0x10c218..0x116978, libipu
 ..0x116fb8, newlib libm (float) 0x116fb8..0x119be8, libgcc (libgcc2 + fp-bit soft-float) ..0x11c6b0,
 libcdvd 0x11c6b0..0x11e440, libpad ..0x11fb70, libmc ..0x121b80, libc (newlib)
-0x121ef0..0x12c9b8, libkernl 0x1366c0..0x142dd0 (front, sifcmd / sifrpc, fileio, iopheap, tail) and
-the kernel-patch island 0x2f3a40..0x2f4d20: 912 functions. **Unread runs between them stay game code
+0x121ef0..0x12c9b8, libkernl 0x1366c0..0x142dd0 (front, sifcmd / sifrpc, fileio, iopheap, tail),
+**libscf 0x2640e8..0x2647d8** (batch 027: linked between game objects, in the middle of the game's
+0x171300.. run) and the kernel-patch island 0x2f3a40..0x2f4d20: 931 functions. **Unread runs between them stay game code
 until read** (not library by default): `Heap` + its neighbours 0x1037c0..0x104c60 (MSL pool or the
 game's?), 0x121b80 (libmc error mapper?), 0x12c9b8..0x12cd20, the VU0 math
 0x135a90..0x1366c0, 0x142dd0..0x144080.
@@ -453,6 +454,21 @@ the 19-step table 0x2fac20 (28..176, default 9: brightness?), `ButtonMap` +0x24)
 0x31aad0 (default 5 = EN), codes J US KR CN Ct EN DE FR ES IT (0x2fac40); `getRegionCode` "EU",
 `getFileSuffix` "" / "_e". `randUnit` 0x104720 is the game's float RNG (97-entry shuffle over an
 LCG).
+
+**`game/datetime.cpp` 0x23de20..0x23e740 (TU 6, 2026-11-02, batch 027)**: `getLocalDateTime`
+reads `sceCdReadClock` (sceCdCLOCK, BCD, Japan time), shifts it with libscf's
+`sceScfGetLocalTimefromRTC` (`_scfAdjustMinutes` by timezone + 60 * summer time - 540, wrapping hours /
+days / months / years) and hands an 8-byte `DateTime` (byte +0: status bits 0-3, 1 = clock error;
+format bits 4-7, 1 = BCD; then second, minute, hour, day, month, u_short four-digit year) to
+`DateTime::setFormat` 0x23dfa0 (BCD <-> binary, unrolled: 0x798 bytes). Both callers (`gameInit`
+for the srand / rndInit seed, the memcard code 0x2ac3f0) ask for binary (format 0). A failed read
+gives 2000-01-01 hour 0x0c (not BCD 0x12; decodes to 12 anyway). The 1900 century branch tests
+the BCD year against decimal 99 (0x63) and is dead. **libscf** 0x2640e8..0x2647d8: the
+`sceScfGet*` readers (Language, Aspect, Spdif, TimeZone, DateFormat, SummerTime, TimeNotation) of
+GetOsdConfigParam (bit 0 spdif, 1-2 aspect, 4 old Japanese / English, 13-15 config version, 16-20
+language, 21-31 timezone minutes) and GetOsdConfigParam2 byte 0 (bit 4 summer time, 5 time
+notation, 6-7 date format), each returning a static default 0x2fb380..0x2fb387 on a DTL-T10000
+(`_scfIsT10K`: rom0:ROMVER [4] == 'T', buffer 0x2fb388); month lengths at 0x308840.
 
 ## Classes
 

@@ -136,6 +136,11 @@
    "libkernl tail: loadfile, TLB, initsys, libosd, exit, timer, alarm, reboot notify, aligned with RoR (batches 014-015)"
   ],
   [
+   "002640e8",
+   "002647d8",
+   "libscf: SDK system configuration (sceScfGet* from the OSD config, ROMVER T10K check, RTC to local time), linked between game objects (batch 027)"
+  ],
+  [
    "002f3a40",
    "002f4d20",
    "libkernl kernel patches: code InitAlarm and kin copy into the kernel (0x2f4860 + 0x740 to 0x80076000), never run on the EE side"

@@ -39,9 +39,17 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    its frontier callees from `gamesystem.cpp` are scattered, so the run cut one real file out of it,
    **`game/sysdata.cpp` 0x23af30..0x23c020** (all 37, `verify`, batch 026: SaveData / StageSelect /
    GameOptions / FlagTable in one `SystemData` block, architecture.md "Modules"). The same cut is
-   left for the others the boot calls in that run: `gameSceneThread` 0x231bb0, `getLocalDateTime`
-   0x23de20 (its own file: 0x23c020..0x23dfa0 is VU0 / other code), the memcard group 0x2a9c70..
-   0x2acf00. Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
+   left for the others the boot calls in that run: `gameSceneThread` 0x231bb0, the memcard group
+   0x2a9c70..0x2acf00 (`memcardInit` / `memcardLibInit` / `memcardLibEnd` / `memcardGetState`),
+   `stageDefaultRecord` 0x296d00, `StageResult::getPerfectBits` 0x2b00d0 / `getStageResult`
+   0x2b0580. TU 6 (the frontier's `unassigned@0023c020`, the same run's tail): **`game/datetime.cpp`
+   0x23de20..0x23e740** cut out (`getLocalDateTime` + `DateTime::setFormat`, `verify`, batch 027;
+   `DateTime` moved from `sysdata.h` to `datetime.h` as status / format bitfields: the old comment
+   "every field BCD" was wrong, both callers ask for binary) and **libscf 0x2640e8..0x2647d8** made a
+   `lib_ranges` entry (19 functions; bootstrap 6 must give `sdk/libscf.h` and `sdk/libcdvd.h` from
+   RosePan, which already have `sceScfGetLocalTimefromRTC` / `sceCdCLOCK`; the host
+   `sceScfGetLocalTimefromRTC` can use the PC's local clock). 0x23c020..0x23de20 (the slice's other
+   13, Vt_00316510 ctors at 0x23db00 / 0x23db50) is still unread. Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
    `game/perfmeter.cpp`, `game/thread.cpp`, `game/gfxtarget.cpp`, the clocks, the heap, sound,

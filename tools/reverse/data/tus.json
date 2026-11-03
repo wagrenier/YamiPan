@@ -7,6 +7,25 @@
   "smoke_pad": ""
  },
  "tus": {
+  "game/datetime.cpp": {
+   "notes": "Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts with sceScfGetLocalTimefromRTC (libscf, now lib_ranges 0x2640e8..0x2647d8, 19 functions named lib-context in batch 027) and returns a DateTime in the format asked for; both callers ask for binary. DateTime moved from sysdata.h to datetime.h with byte +0 as bitfields status (bits 0-3, 1 = clock error) and format (bits 4-7, 1 = BCD). Kept as in the ROM: the fallback hour 0x0c (not BCD), and the dead 1900 branch that compares the BCD year with decimal 99. Needs from bootstrap 6: sdk/libcdvd.h (sceCdCLOCK, sceCdReadClock) and sdk/libscf.h from RosePan. Still unread in the run: 0x23c020..0x23de20 (13 functions, Vt_00316510 ctors at 0x23db00 / 0x23db50); boot callees left there: gameSceneThread 0x231bb0, memcard 0x2a9c70..0x2acf00, stageDefaultRecord 0x296d00, getStageResult 0x2b0580, StageResult::getPerfectBits 0x2b00d0.",
+   "ranges": [
+    [
+     "0023de20",
+     "0023e740"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-02 22:11",
+     "status": "verify",
+     "summary": "RTC date module: getLocalDateTime and DateTime::setFormat cut out of unassigned@0023c020; libscf 0x2640e8..0x2647d8 named and made a library range"
+    }
+   ],
+   "status": "verify",
+   "why": "the RTC date module: getLocalDateTime reads sceCdReadClock, converts to local time with libscf and hands the DateTime to DateTime::setFormat, its only callee and caller pair; 0x23e740 starts unrelated code (a two-int validity test, a 0x208xxx wrapper), 0x23db50 before it is a Vt_00316510 ctor"
+  },
   "game/gamepacket.cpp": {
    "ranges": [
     [
@@ -323,6 +342,7 @@
    ],
    "status": "verify"
   },
-  "unassigned@00171300": {}
+  "unassigned@00171300": {},
+  "unassigned@0023c020": {}
  }
 }

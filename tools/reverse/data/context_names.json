@@ -10019,6 +10019,120 @@
   "was": "FUN_0023de20",
   "why": "(out[4] halfwords, arg): sceCdReadClock + sceScfGetLocalTimefromRTC, packs BCD {sec<<8|0x10, hour<<8|min, month<<8|day, 0x2000+year} (2000-01-01 12:00 when the clock fails), post-processed by 0x23dfa0; gameInit seeds the RNG from it"
  },
+ "0023dfa0": {
+  "name": "DateTime::setFormat",
+  "tag": "game-inferred",
+  "was": "FUN_0023dfa0",
+  "why": "a0 = the 8-byte DateTime getLocalDateTime fills; the flags byte's high nibble is the format (1 BCD, 0 binary): nothing when it already equals a1, a1 == 0 decodes second..month and the 4-digit year from BCD and clears the nibble, else encodes them to BCD and sets it to 1; only caller getLocalDateTime"
+ },
+ "002640e8": {
+  "name": "_scfReadRomVer",
+  "tag": "lib-context",
+  "was": "FUN_002640e8",
+  "why": "libscf (SDK scf): reads 14 bytes of rom0:ROMVER into the static buffer 0x2fb388 once (sceOpen / sceRead / sceClose) and returns it; static, real name unknown"
+ },
+ "00264158": {
+  "name": "_scfIsT10K",
+  "tag": "lib-context",
+  "was": "FUN_00264158",
+  "why": "libscf: ROMVER[4] == 'T' (a DTL-T10000 tool); every sceScfGet* then returns its static default (0x2fb380..0x2fb387) instead of the OSD config; ps2sdk calls it IsT10K"
+ },
+ "00264198": {
+  "name": "sceScfGetLanguage",
+  "tag": "lib-context",
+  "was": "FUN_00264198",
+  "why": "libscf: OSD config bits 16-20 (language), or bit 4 (Japanese / English) when the config version bits 13-15 are 0; T10K default byte 0x2fb384"
+ },
+ "00264218": {
+  "name": "sceScfGetAspect",
+  "tag": "lib-context",
+  "was": "FUN_00264218",
+  "why": "libscf: OSD config bits 1-2 (screen type 4:3 / full / 16:9); T10K default byte 0x2fb382"
+ },
+ "00264258": {
+  "name": "sceScfGetSpdif",
+  "tag": "lib-context",
+  "was": "FUN_00264258",
+  "why": "libscf: OSD config bit 0 (digital out); T10K default byte 0x2fb385"
+ },
+ "00264298": {
+  "name": "sceScfGetTimeZone",
+  "tag": "lib-context",
+  "was": "FUN_00264298",
+  "why": "libscf: OSD config bits 21-31 (minutes from GMT), 540 (Japan) when the config version is 0; T10K default short 0x2fb380; sceScfGetLocalTimefromRTC subtracts 540"
+ },
+ "002642e8": {
+  "name": "sceScfGetDateFormat",
+  "tag": "lib-context",
+  "was": "FUN_002642e8",
+  "why": "libscf: GetOsdConfigParam2 byte 0 bits 6-7, 0 when the config version is 0; T10K default byte 0x2fb383"
+ },
+ "00264350": {
+  "name": "sceScfGetSummerTime",
+  "tag": "lib-context",
+  "was": "FUN_00264350",
+  "why": "libscf: GetOsdConfigParam2 byte 0 bit 4 (daylight saving), 0 when the config version is 0; T10K default byte 0x2fb386; sceScfGetLocalTimefromRTC adds 60 minutes for it"
+ },
+ "002643b8": {
+  "name": "sceScfGetTimeNotation",
+  "tag": "lib-context",
+  "was": "FUN_002643b8",
+  "why": "libscf: GetOsdConfigParam2 byte 0 bit 5 (12 / 24 hour), 0 when the config version is 0; T10K default byte 0x2fb387"
+ },
+ "00264420": {
+  "name": "_scfToBcd",
+  "tag": "lib-context",
+  "was": "FUN_00264420",
+  "why": "libscf: v + (v / 10) * 6, binary byte to BCD"
+ },
+ "00264450": {
+  "name": "_scfFromBcd",
+  "tag": "lib-context",
+  "was": "FUN_00264450",
+  "why": "libscf: v - (v >> 4) * 6, BCD byte to binary"
+ },
+ "00264470": {
+  "name": "_scfClockFromBcd",
+  "tag": "lib-context",
+  "was": "FUN_00264470",
+  "why": "libscf: _scfFromBcd on the sceCdCLOCK bytes year +7, month +6, day +5, hour +3, minute +2, second +1"
+ },
+ "002644d8": {
+  "name": "_scfClockToBcd",
+  "tag": "lib-context",
+  "was": "FUN_002644d8",
+  "why": "libscf: _scfToBcd on the same six sceCdCLOCK bytes"
+ },
+ "00264540": {
+  "name": "_scfNextDay",
+  "tag": "lib-context",
+  "was": "FUN_00264540",
+  "why": "libscf: day + 1 against the month-length table 0x308840 (February 29 in years divisible by 4), wraps month 12 -> 1 and year 99 -> 0"
+ },
+ "002645f8": {
+  "name": "_scfPrevDay",
+  "tag": "lib-context",
+  "was": "FUN_002645f8",
+  "why": "libscf: day - 1, wrapping to the previous month's length (same table), month 1 -> 12 and year 0 -> 99"
+ },
+ "002646a0": {
+  "name": "_scfNextHour",
+  "tag": "lib-context",
+  "was": "FUN_002646a0",
+  "why": "libscf: hour + 1, at 24 -> 0 and _scfNextDay"
+ },
+ "002646d0": {
+  "name": "_scfPrevHour",
+  "tag": "lib-context",
+  "was": "FUN_002646d0",
+  "why": "libscf: hour 0 -> 23 and _scfPrevDay, else hour - 1"
+ },
+ "002646f8": {
+  "name": "_scfAdjustMinutes",
+  "tag": "lib-context",
+  "was": "FUN_002646f8",
+  "why": "libscf: _scfClockFromBcd, adds a1 minutes carrying through _scfNextHour / _scfPrevHour, _scfClockToBcd; sceScfGetLocalTimefromRTC passes timezone + 60 * summer time - 540 (the RTC keeps Japan time)"
+ },
  "00264790": {
   "name": "sceScfGetLocalTimefromRTC",
   "tag": "lib-context",
