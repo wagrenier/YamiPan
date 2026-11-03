@@ -929,6 +929,33 @@ hay (caller 0x25ce30). Before it a FontData-derived class (ctor 0x2d4110, vtable
 dtor 0x2d40a0; 0x2d3e20 / 0x2d4060 use FontData::nextGlyph); after it 0x2d46a0 (a lookup through
 +0xc / +0x40 tables) and the flag pair 0x2d4780 / 0x2d4790 (sbss 0x31af14 = 0 / 1).
 
+**`game/gamepaths.cpp` 0x28ff60..0x2908d0 (TU 23, 2026-11-03, batches 054-055, all 14 written, `verify`;
+cut out of `unassigned@002681e0`; the file name is the port's)**: the **stage's file paths** and the
+**resident init / language packs**. Paths from a `StageSelect` (stage, kind, variant): the digit is
+**1, or 2 for any variant but 0** (not variant + 1), the letter **e / n / h for kind 0 / 1 / else**
+(`StageKind` Easy / Normal / Hard in sysdata.h, read from the letters). `stageMoviePath` 0x28ff60:
+event 0 `movieEU/mv<stage><lang>.d2b`, else the **event movie table 0x2fb520** (13 x {stage,
+variant, branch 0 = any, path function}, count sdata 0x31ac2c) whose entries are
+`eventMoviePath<id>` 0x2ec160..0x2ec520 (`movieEU/ev<id><lang>.d2b`, buffer 0x5a5460; the ids are
+the stage's own: ev1404 / ev1405 are stage 14 variant 1 branches 1 / 2); `findStageMovie` 0x290080
+the same search (caller 0x17f7c0 passes `StageResult::attempt[15]` and opens the notice dialog on
+-1). `stageScriptPath` 0x290100 `script/s<stage>/c<n><k>/export/s<stage>c<n><k>.slt`,
+`stagePackPath` 0x2901e0 `data<region>/pks<stage>c<n><region><getFileSuffix(GameOptions::_04)>.enc`
+(both write the caller's buffer, answer 0 / 1). Screen layouts in static 0x20-byte buffers
+0x599540..0x5995e0: `stageScreenPathH` / `E` (none for stage 1 variant 0), `stageScreenPath`
+0x290460 (`...m<n><lang>.d2b`, or `...m<n>b<lang>.d2b` with alt on stages 22 / 27; caller
+0x20ad70), `stageScreenPathMp` 0x290590 (`...m<n>mp<lang>.d2b`; callers 0x1a3a60, 0x20b010). The
+packs: `loadInitPack` 0x290840 (dataEU/packinitEU.pak, sbss 0x31ae60 + loaded byte 0x31ae64) and
+`loadLangPack` 0x290670 (dataEU/packinit<DE|FR|ES|IT|EN>.pak by `getLanguage` 6..9, else EN; 0x31ae68
+/ 0x31ae6c; caller the menu flow 0x2b5770); getters `getInitPackData` (slot 5, by name),
+`getInitPackItem` / `getLangPackItem` (slot 6, by id), `getInitPackItemSize` 0x290780 (slot 8).
+**PackFile's slots 5..8 are thunks** 0x131d30 / 0x131d20 / 0x131d10 / 0x131d00 into the parsed pack
+at +0xc4 (0x2314a0 / 0x231480 / 0x231450 / 0x231430 -> 0x231770 by name (strstr over the entries'
+names, recursing into nested packs at +0x28) / 0x231860 by id (the id's high half walks nested
+packs)); an item entry is 0x10 at +0x20: data +8, size +0xc. Around it: sound-table code
+0x28fa90..0x28ff54 (called from 0x290930..0x290b10) and the SoundStream / SePlayer wrappers from
+0x2908d0, so this may be the middle of one larger file.
+
 ## Classes
 
 Name, vtable, vptr offset, size, file. `python rtti.py` (CodeWarrior variant, bootstrap 4, 2026-10-31)

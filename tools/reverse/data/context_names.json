@@ -2903,6 +2903,30 @@
   "was": "FUN_00131930",
   "why": "loops on WaitSema(8034), counts vsyncs in 0x4c8164; a frame is ready when requested and count >= interval, or when the frameReady callback says so; then stores the count in gp-0x7aac and SignalSema(802c)"
  },
+ "00131d00": {
+  "name": "PackFile::getItemSize",
+  "tag": "game-inferred",
+  "was": "FUN_00131d00",
+  "why": "slot 8: j 0x231430 with a0 += 0xc4: the item's size (+0xc) by id, -1 without one. getInitPackItemSize calls it"
+ },
+ "00131d10": {
+  "name": "PackFile::getSize",
+  "tag": "game-inferred",
+  "was": "FUN_00131d10",
+  "why": "slot 7: j 0x231450 with a0 += 0xc4: the size (+0xc) of the first item whose name contains the argument, -1 without one (FileLoader::getSize's override)"
+ },
+ "00131d20": {
+  "name": "PackFile::getItem",
+  "tag": "game-inferred",
+  "was": "FUN_00131d20",
+  "why": "slot 6: j 0x231480 with a0 += 0xc4: the item by id (0x231860; the high half walks nested packs at +0x28), its data (+8); null without one. getInitPackItem / getLangPackItem call it"
+ },
+ "00131d30": {
+  "name": "PackFile::getData",
+  "tag": "game-inferred",
+  "was": "FUN_00131d30",
+  "why": "slot 5 of Vt_00311060 (PackFile): j 0x2314a0 with a0 += 0xc4 (the parsed pack): the first item whose name contains the argument (0x231770, strstr, nested packs), its data (+8); null without one. getInitPackData calls it"
+ },
  "00131d70": {
   "name": "PackFile::load",
   "tag": "game-inferred",
@@ -12419,6 +12443,30 @@
   "was": "FUN_00268050",
   "why": "(arg): copies GameOptions (0x50) and the play record's kind (+0x4c0), runLayoutFile(optionLayoutPath(), arg, 0, 0, 1), memcardClearStamp when options +0x4d is 0, applySound when the sound mode changed; answers 1 when the options or the kind changed"
  },
+ "0028ff60": {
+  "name": "stageMoviePath",
+  "tag": "game-inferred",
+  "was": "FUN_0028ff60",
+  "why": "(const StageSelect *select, int event, int branch): event 0: movieEU/mv<stage %02d><lang>.d2b in the static buffer 0x5995c0 (null when select->stage is 0); else the event movie of the 13-entry table 0x2fb520 {stage, variant, branch (0 any), path function} matching the record, its path function's buffer, null without one. Callers 0x2b5dc0, 0x2b6a00 (loads it with a FileLoader)"
+ },
+ "00290080": {
+  "name": "findStageMovie",
+  "tag": "game-inferred",
+  "was": "FUN_00290080",
+  "why": "(const StageSelect *select, int branch): the index of the table 0x2fb520 entry stageMoviePath would pick (stage, variant, branch 0 or equal), -1 without one. Caller 0x17f7c0 passes StageResult::attempt[15] and opens the notice dialog on -1"
+ },
+ "00290100": {
+  "name": "stageScriptPath",
+  "tag": "game-inferred",
+  "was": "FUN_00290100",
+  "why": "(const StageSelect *select, char *out): writes script/s<stage>/c<variant+1><e|n|h>/export/s<stage>c<variant+1><e|n|h>.slt (letter from select->kind 0 e, 1 n, else h); 0 for a null out (else clears it), a null or invalid select. Caller 0x2b60b0"
+ },
+ "002901e0": {
+  "name": "stagePackPath",
+  "tag": "game-inferred",
+  "was": "FUN_002901e0",
+  "why": "(const StageSelect *select, char *out): writes data<region>/pks<stage>c<variant+1><region><getFileSuffix(GameOptions::_04)>.enc; 0 for a null out / select or an invalid select. Callers 0x2b5dc0, 0x2b60b0"
+ },
  "002902d0": {
   "name": "stageScreenPathH",
   "tag": "game-inferred",
@@ -12431,11 +12479,35 @@
   "was": "FUN_002903b0",
   "why": "(StageSelect *): 0 when invalid or stage 1 variant 0; else sprintf into 0x599580 '%ss%02dm%1de%s.d2b' (2dEU/, stage, variant + 1, language code)"
  },
+ "00290460": {
+  "name": "stageScreenPath",
+  "tag": "game-inferred",
+  "was": "FUN_00290460",
+  "why": "(const StageSelect *select, bool alt): 2dEU/s<stage>m<variant+1><lang>.d2b in the static buffer 0x599560, or the ...m<n>b<lang>.d2b screen when alt and the stage is 22 or 27; null for an invalid select. Caller 0x20ad70 (runLayoutFile). Beside stageScreenPathH / E"
+ },
+ "00290590": {
+  "name": "stageScreenPathMp",
+  "tag": "game-inferred",
+  "was": "FUN_00290590",
+  "why": "(const StageSelect *select): 2dEU/s<stage>m<variant+1>mp<lang>.d2b in the static buffer 0x599540, null for an invalid select. Callers 0x1a3a60, 0x20b010 (runLayout). Beside stageScreenPath"
+ },
  "00290630": {
   "name": "getLangPackItem",
   "tag": "game-inferred",
   "was": "FUN_00290630",
   "why": "(index): as getInitPackItem on the pack 0x31ae68 / flag 0x31ae6c, which 0x290670 loads from dataEU/packinit<lang>.pak (DE / FR / ...)"
+ },
+ "00290670": {
+  "name": "loadLangPack",
+  "tag": "game-inferred",
+  "was": "FUN_00290670",
+  "why": "Deletes the resident language pack (sbss 0x31ae68) and loads dataEU/packinit<DE|FR|ES|IT|EN>.pak for getLanguage() (6..9, else EN) into a new PackFile (0xf8), setting the loaded flag 0x31ae6c. Caller 0x2b5770 (the menu flow). The language twin of loadInitPack"
+ },
+ "00290780": {
+  "name": "getInitPackItemSize",
+  "tag": "game-inferred",
+  "was": "FUN_00290780",
+  "why": "(int index): the init pack's (0x31ae60) item size by index, pack vtable slot 8 (PackFile 0x131d00 -> 0x231430: the entry's +0xc, -1 when none); 0 while not loaded. Caller 0x1a3a60. Beside getInitPackItem (slot 6)"
  },
  "002907c0": {
   "name": "getInitPackItem",
@@ -13330,6 +13402,84 @@
   "tag": "lib-context",
   "was": "FUN_002eb780",
   "why": "rena (rena_pkt_vif1pktmanage.cpp messages): vptr 0x31a808 at +0x2c, +0 write pointer, +4 buffer base, +8 chain start to kick, +0xc open list, +0x10 buffer index -1, list vector +0x14 (count +0x18, data +0x1c), buffer vector +0x20 (count +0x24, data +0x28, {base, size}); method names PascalCase after the message's (Reset)"
+ },
+ "002ec160": {
+  "name": "eventMoviePath2506",
+  "tag": "game-inferred",
+  "was": "FUN_002ec160",
+  "why": "(): movieEU/ev2506<lang>.d2b in the static buffer 0x5a5460; an entry of stageMoviePath's table 0x2fb520 (no direct caller)"
+ },
+ "002ec1b0": {
+  "name": "eventMoviePath2502",
+  "tag": "game-inferred",
+  "was": "FUN_002ec1b0",
+  "why": "(): movieEU/ev2502<lang>.d2b in the static buffer 0x5a5460; an entry of stageMoviePath's table 0x2fb520 (no direct caller)"
+ },
+ "002ec200": {
+  "name": "eventMoviePath2301",
+  "tag": "game-inferred",
+  "was": "FUN_002ec200",
+  "why": "(): movieEU/ev2301<lang>.d2b in the static buffer 0x5a5460; an entry of stageMoviePath's table 0x2fb520 (no direct caller)"
+ },
+ "002ec250": {
+  "name": "eventMoviePath2205",
+  "tag": "game-inferred",
+  "was": "FUN_002ec250",
+  "why": "(): movieEU/ev2205<lang>.d2b in the static buffer 0x5a5460; an entry of stageMoviePath's table 0x2fb520 (no direct caller)"
+ },
+ "002ec2a0": {
+  "name": "eventMoviePath2103",
+  "tag": "game-inferred",
+  "was": "FUN_002ec2a0",
+  "why": "(): movieEU/ev2103<lang>.d2b in the static buffer 0x5a5460; an entry of stageMoviePath's table 0x2fb520 (no direct caller)"
+ },
+ "002ec2f0": {
+  "name": "eventMoviePath1608",
+  "tag": "game-inferred",
+  "was": "FUN_002ec2f0",
+  "why": "(): movieEU/ev1608<lang>.d2b in the static buffer 0x5a5460; an entry of stageMoviePath's table 0x2fb520 (no direct caller)"
+ },
+ "002ec340": {
+  "name": "eventMoviePath1506",
+  "tag": "game-inferred",
+  "was": "FUN_002ec340",
+  "why": "(): movieEU/ev1506<lang>.d2b in the static buffer 0x5a5460; an entry of stageMoviePath's table 0x2fb520 (no direct caller)"
+ },
+ "002ec390": {
+  "name": "eventMoviePath1505",
+  "tag": "game-inferred",
+  "was": "FUN_002ec390",
+  "why": "(): movieEU/ev1505<lang>.d2b in the static buffer 0x5a5460; an entry of stageMoviePath's table 0x2fb520 (no direct caller)"
+ },
+ "002ec3e0": {
+  "name": "eventMoviePath1405",
+  "tag": "game-inferred",
+  "was": "FUN_002ec3e0",
+  "why": "(): movieEU/ev1405<lang>.d2b in the static buffer 0x5a5460; an entry of stageMoviePath's table 0x2fb520 (no direct caller)"
+ },
+ "002ec430": {
+  "name": "eventMoviePath1404",
+  "tag": "game-inferred",
+  "was": "FUN_002ec430",
+  "why": "(): movieEU/ev1404<lang>.d2b in the static buffer 0x5a5460; an entry of stageMoviePath's table 0x2fb520 (no direct caller)"
+ },
+ "002ec480": {
+  "name": "eventMoviePath1206",
+  "tag": "game-inferred",
+  "was": "FUN_002ec480",
+  "why": "(): movieEU/ev1206<lang>.d2b in the static buffer 0x5a5460; an entry of stageMoviePath's table 0x2fb520 (no direct caller)"
+ },
+ "002ec4d0": {
+  "name": "eventMoviePath0202",
+  "tag": "game-inferred",
+  "was": "FUN_002ec4d0",
+  "why": "(): movieEU/ev0202<lang>.d2b in the static buffer 0x5a5460; an entry of stageMoviePath's table 0x2fb520 (no direct caller)"
+ },
+ "002ec520": {
+  "name": "eventMoviePath0102",
+  "tag": "game-inferred",
+  "was": "FUN_002ec520",
+  "why": "(): movieEU/ev0102<lang>.d2b in the static buffer 0x5a5460; an entry of stageMoviePath's table 0x2fb520 (no direct caller)"
  },
  "002ec660": {
   "name": "optionLayoutPath",

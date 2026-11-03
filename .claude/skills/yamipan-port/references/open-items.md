@@ -372,6 +372,24 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    0x2c3d30..0x2c4148 looks like one resource-loader group), `PackTables::PackTables` 0x2c0dc0
    (stageresult), and the SoundStream user 0x2b0d50..0x2b3890 (classes on vtables 0x311860..0x319260,
    called from unassigned@00171300).
+   TU 23 (the frontier's `unassigned@002681e0`, 595 functions 0x2681e0..0x2955e0, for
+   `getLangPackItem` / `getInitPackItem` / `getInitPackData` / the stage screen paths /
+   `loadInitPack`): **`game/gamepaths.cpp` 0x28ff60..0x2908d0** cut out (14 functions, all written,
+   `verify`, batches 054-055 with 25 names: the 8 unnamed path / pack functions, the 13 event movie
+   path functions 0x2ec160..0x2ec520 and the PackFile slot thunks 0x131d00..0x131d30;
+   architecture.md "Modules"). New `game/gamepaths.h` takes the
+   pack / path prototypes from `gamehooks.h` (which includes it); `gamehooks.h`'s `PackFile` gained
+   its slots 5..8 (`getData` / `getItem` / `getSize` / `getItemSize`, thunks 0x131d30..0x131d00) and
+   the `eventMoviePath*` prototypes; `sysdata.h` gained `StageKind`. Checked: callcheck clean, layout
+   lint OK, g++ -fsyntax-only -Wall -Wextra clean on gamepaths / screen / stageresult / uitrack /
+   scene / uigame (RosePan's SDK headers + a libvifpk stub); no harness. Doubts for the user: the
+   file name and its boundaries (sound-table code on both sides may make it one larger file);
+   `StageKind` Easy / Normal / Hard is read from the e / n / h letters; "branch" for the event
+   table's third field and for `StageResult::attempt[15]`. **Next picks in the run**: the LCG 0x2681e0..0x268310
+   (its own small file; callers 0x195d40 / 0x199f00 / 0x19c180), `SePlayer::play` / `stop`
+   0x292ac0 / 0x292db0 with the SoundStream / SeBank wrappers 0x2908d0..0x2931b0, `getNaviTable`
+   0x2955d0, and 0x268310.. (vtables 0x315ab0 / 0x316c30, the stage-unlock checks 0x268ae0 /
+   0x269160).
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

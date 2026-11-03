@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "game/gamepaths.h"
 #include "game/uilayout.h"
 #include "sdk/libvifpk.h"
 #include "sdk/scetypes.h"
@@ -51,10 +52,8 @@ void debugSysShutdown();                                                 // FS2 
 bool boxContainsPoint(const float m[4][4], const float p[4]);            // FS2 0x002362a0
 
 // What game/scene.cpp calls.
-// The resident packs: delete the one held and load the file again
-// (dataEU/packinitEU.pak at 0x31ae60; dataEU/packmenuEU.pak at 0x31ae98,
-// only while not loaded).
-void loadInitPack();                                                     // FS2 0x00290840
+// The resident menu pack: dataEU/packmenuEU.pak at 0x31ae98, loaded only
+// while not loaded (loadInitPack: game/gamepaths.h).
 void loadMenuPack();                                                     // FS2 0x002c3e10
 // The scene table's only scene, "Menu (Pack File)": the menu flow 0x2b5770(1).
 void menuSceneThread(void *arg);                                         // FS2 0x002b5740
@@ -115,34 +114,39 @@ public:
 };
 
 // A pack file (dataEU/pack*.pak; unassigned@001319f0, 0x1319f0..).
-// layout: host -- EE 0xf8, vptr at +0x98 (Vt_00311060, 18 slots; slot 6 the
-// item lookup getInitPackItem calls), the path in new[] at +0xa0.
+// layout: host -- EE 0xf8, vptr at +0x98 (Vt_00311060, 18 slots), the path
+// in new[] at +0xa0, the parsed pack at +0xc4 (the parser 0x231410..: each
+// item slot is a thunk into it; an id's high half picks a nested pack).
 class PackFile : public FileLoader
 {
 public:
     PackFile(const char *path, int arg);                                 // FS2 0x00131f00
     virtual ~PackFile();                                                 // FS2 0x00131d80: slot 0, deleting
+    virtual void *getData(const char *name);                             // FS2 0x00131d30: slot 5, the first item whose name contains it
+    virtual void *getItem(int id);                                       // FS2 0x00131d20: slot 6, null without one
+    virtual int   getSize(const char *name);                             // FS2 0x00131d10: slot 7, -1 without one
+    virtual int   getItemSize(int id);                                   // FS2 0x00131d00: slot 8, -1 without one
     void load(int a, int b);                                             // FS2 0x00131d70: every loader passes (0, 0)
 };
 
-// The resident packs' items (pack vtable slot 6; null while not loaded):
-// dataEU/packinitEU.pak (loadInitPack) and the language's packinit<lang>.pak
-// (0x290670).
-void *getInitPackItem(int index);                                        // FS2 0x002907c0
-void *getLangPackItem(int index);                                        // FS2 0x00290630
-// The init pack's file data by name (FileLoader::getData; null while not
-// loaded).
-void *getInitPackData(const char *name);                                 // FS2 0x00290800
-
-// The stage screens' layout files for a play record (null when it is not
-// valid, and for stage 1 variant 0), formatted into static buffers:
-// 2dEU/s<stage>m<variant + 1>e<lang>.d2b and, per difficulty (the kind:
-// e / n / h), 2dEU/s<stage>m<variant + 1>h<e|n|h><lang>.d2b.
-const char *stageScreenPathE(const StageSelect *select);                 // FS2 0x002903b0
-const char *stageScreenPathH(const StageSelect *select);                 // FS2 0x002902d0
 // 2dEU/archive<lang>.d2b and 2dEU/option<lang>.d2b (static buffers).
 const char *archiveLayoutPath();                                         // FS2 0x002ec7f0
 const char *optionLayoutPath();                                          // FS2 0x002ec660
+// The event movies stageMoviePath's table names (game/gamepaths.cpp):
+// movieEU/ev<id><lang>.d2b in the static buffer 0x5a5460.
+const char *eventMoviePath0102();                                        // FS2 0x002ec520
+const char *eventMoviePath0202();                                        // FS2 0x002ec4d0
+const char *eventMoviePath1206();                                        // FS2 0x002ec480
+const char *eventMoviePath1404();                                        // FS2 0x002ec430
+const char *eventMoviePath1405();                                        // FS2 0x002ec3e0
+const char *eventMoviePath1505();                                        // FS2 0x002ec390
+const char *eventMoviePath1506();                                        // FS2 0x002ec340
+const char *eventMoviePath1608();                                        // FS2 0x002ec2f0
+const char *eventMoviePath2103();                                        // FS2 0x002ec2a0
+const char *eventMoviePath2205();                                        // FS2 0x002ec250
+const char *eventMoviePath2301();                                        // FS2 0x002ec200
+const char *eventMoviePath2502();                                        // FS2 0x002ec1b0
+const char *eventMoviePath2506();                                        // FS2 0x002ec160
 
 // getInitPackItem indices game/stageresult.cpp asks for (their content is
 // not read yet).

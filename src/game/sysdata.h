@@ -173,13 +173,22 @@ static_assert(sizeof(SaveData) == 0x4bc, "SaveData: EE 0x4bc");
 
 // The play record at 0x598fec (SystemData +0x4bc): the stage being played
 // and which of its records it plays for.
+// StageSelect::kind, read as the difficulty from the letters the path
+// builders give it (game/gamepaths.cpp: e / n / h).
+enum StageKind
+{
+    StageKind_Easy   = 0,
+    StageKind_Normal = 1,       // the default
+    StageKind_Hard   = 2,       // and anything above
+};
+
 struct StageSelect
 {
     void setDefaults();                                                  // FS2 0x0023af80
     bool isValid() const;                                                // FS2 0x0023af30
 
     int    stage;               // FS2 +0x00: default 1
-    int    kind;                // FS2 +0x04: record kind 0..2, default 1
+    int    kind;                // FS2 +0x04: StageKind, record kind 0..2, default 1
     int    variant;             // FS2 +0x08: record variant 0..1, default 0
     int    _0c;                 // FS2 +0x0c: default -1
     u_char _10;                 // FS2 +0x10: default 0

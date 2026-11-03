@@ -54,6 +54,25 @@
    ],
    "why": "GamePacketManager on rena's Vif1PktManage (batch 004); file name a guess."
   },
+  "game/gamepaths.cpp": {
+   "notes": "All 14 functions of 0x28ff60..0x2908d0 written (batches 054-055, 25 names, Ghidra saved). Path builders from a StageSelect: digit 1 or 2 (variant 0 or not), letter e / n / h (StageKind, new in sysdata.h); stageMoviePath picks event movies from the 13-entry table 0x2fb520 (eventMoviePath0102..2506 at 0x2ec160..0x2ec520, declared in gamehooks.h, not written: they live in the 0x2ec... run). Packs: loadInitPack / loadLangPack, getters through PackFile slots 5..8 (thunks 0x131d00..0x131d30 into the parsed pack at +0xc4, now declared on PackFile). gamepaths.h took the pack / path prototypes from gamehooks.h, which includes it. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on gamepaths / screen / stageresult / uitrack / scene / uigame. Doubts: file name and boundaries (sound-table code on both sides), StageKind names, branch for the table's third field. Next in unassigned@002681e0: the LCG 0x2681e0..0x268310, SePlayer::play / stop with the sound wrappers 0x2908d0..0x2931b0, getNaviTable 0x2955d0.",
+   "ranges": [
+    [
+     "0028ff60",
+     "002908d0"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 06:16",
+     "status": "verify",
+     "summary": "the stage path builders and the resident init / language packs, cut out of unassigned@002681e0 (all 14 written)"
+    }
+   ],
+   "status": "verify",
+   "why": "The path builders (stage movie / script / pack / screen paths, strings 0x309598..0x309750) and the resident init / language packs 0x31ae60..0x31ae6c between the sound-table code 0x28fa90..0x28ff54 and the SoundStream wrappers from 0x2908d0; file name the port's (no source string)"
+  },
   "game/gamesystem.cpp": {
    "notes": "All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). Naming batch 022: gsEndFrameSync became GameSystem::endFrameSync (member that ignores this), GamePad ctor / dtor / read / setButtonMap, Pad::Pad(bool), atan2f, srand, rndInit, PerfMeter::addBar / drawBars / drawDetail, debugSys hooks, gfxFlipDisplay, gameSceneThread. Callee headers are minimal stand-ins (pad.h, clock.h, heap.h, perfmeter.h, gamepacket.h, gfxtarget.h, sysdata.h, thread.h, gamehooks.h for rx / sound / memcard / debug hooks / scene thread): their TUs complete them. SDK includes assume bootstrap 6 provides sdk/eestruct.h, sdk/libvifpk.h (pCurrent first) and ExitHandler. gsClearVram is kept as the game wrote it with a PC note (no GS emulator: the host drops the GIF packet). computeSticks has a PC guard for 0/0 at rest. Open: why GamePad::read and the slot GamePad::update are twins; heap mark and meter group names are guesses. Picture: nothing to see until bootstrap 6-7.",
    "ranges": [
@@ -717,6 +736,7 @@
   "unassigned@00252840": {},
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
+  "unassigned@002681e0": {},
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {}
  }
