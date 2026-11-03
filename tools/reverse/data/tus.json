@@ -729,6 +729,7 @@
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. the host device driver rxFileHostInit .. rxFileHostSetRoot; rxFileHostGetSize / Create / Read / Write reference the string filehost.c."
   },
   "rx/rxfile.c": {
+   "notes": "rxfile core is RoR's prebuilt rx: rxcmp.py over both ranges finds 106 of 108 identical (jumps, lui, gp masked); rxFileOnCreate 0x154518 / rxFileOnGetSize 0x1545a0 print FS2's message with file, line 1018 / 1041, device, flags, ring, ring size, result (marked FS2:). src/rx/rxfile.c is RosePan's rxfile.cpp without the host / cd / hdd drivers, FS2 data (+0x198f0) and bss (-0x30a030 / -0x30a040) addresses. rxfile.h is the full C header; new rx/filehost.h, filecd.h, filehdd.h carry the driver prototypes for their TUs; rxthread.h gained six rxTh calls; gamehooks.h now includes rx/rxfile.h instead of declaring the hooks (the game's 0x152730 / 0x152740 are j thunks to 0x155690 / 0x1556d0 with the same Ghidra names). Checked: callcheck clean, layout lint OK, g++ -x c++ -fsyntax-only -Wall -Wextra clean on rxfile.c, rxsys.c, fileloader.cpp, gamepaths.cpp (RosePan src + pc_prefix.h, stub yamipan_memory.h / libvifpk.h). Doubts (open-items TU 38): the second range 0x158400.. is likely its own object (its data and bss follow the drivers'); data word 0x2f5aa4 unread; the thunks share names with the rx functions. Next: tus.py next (rx/filehost.c, filecd.c, filehdd.c, rx/rxthread.c are RosePan carry-overs too: run rxcmp.py first).",
    "ranges": [
     [
      "00153518",
@@ -739,6 +740,15 @@
      "00159928"
     ]
    ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 11:14",
+     "status": "verify",
+     "summary": "all 108 functions written: RosePan's rxfile core carried to C, 106 identical to RoR (rxcmp.py), rxFileOnCreate / rxFileOnGetSize with FS2's longer failure message"
+    }
+   ],
+   "status": "verify",
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. rxfile core: rxFileClose .. rxFileGetDriver and rxFileInitSlots .. rxFileGetThreadPriority; rxFileOnCreate / rxFileOnGetSize reference the string rxfile.c; the three device drivers between them are their own files (filehost.c string)."
   },
   "rx/rxsnd.c": {

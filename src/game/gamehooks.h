@@ -22,6 +22,7 @@
 #include "game/gamepaths.h"
 #include "game/stageobjlist.h"
 #include "game/uilayout.h"
+#include "rx/rxfile.h"
 #include "sdk/libvifpk.h"
 #include "sdk/scetypes.h"
 #include "sound/sound.h"
@@ -31,10 +32,10 @@ struct StageSelect;             // game/sysdata.h
 // rx boot: thread priorities given absolute, made relative to the caller.
 void rxInit(const char *bootPath, int prio0, int prio1, int prio2);      // FS2 0x001527a0
 void rxTerm();                                                           // FS2 0x00152750
-// The rx file hooks of the game's rx layer: a file's size (0 empty, < 0
-// missing) and reading it whole into buf (game/fileloader.cpp).
-int  rxFileCallSizeHook(const char *name);                               // FS2 0x00152740
-int  rxFileCallLoadHook(const char *name, void *buf);                    // FS2 0x00152730
+// The rx file hooks (a file's size: 0 empty, < 0 missing; reading it whole
+// into buf) are rx/rxfile.h's rxFileCallSizeHook 0x1556d0 /
+// rxFileCallLoadHook 0x155690; the game reaches them through jump thunks of
+// the same names beside rxTerm (0x152740 / 0x152730).
 
 // Unpacks an "SLDI" block (LZ copies and literal runs) into dst; the
 // unpacked size, -1 for another magic or a length that does not add up

@@ -176,6 +176,19 @@ spkRomLoad, rxSysSetDeviceParam(0x80000)) and `rxTerm` 0x152750 (rxSysTerm). Not
 g_rxSysMemFunc besides its setters, and rxSysSetDebugHandlers / rxSysSetIopImage / rxSysBindRpc /
 rxSysHexDump have no caller in FS2. newlib `atoi` 0x121f38 -> `strtol` 0x129d80 -> `_strtol_r`
 0x129b48 (batch 070).
+**TU `rx/rxfile.c` (2026-11-03, all 108 written, `verify`)**: 106 of 108 rxfile core functions are
+RoR's word for word; `rxFileOnCreate` 0x154518 / `rxFileOnGetSize` 0x1545a0 print
+"rxfile(%s,%d) : failed to open file '%s' %d %d %X,%d %d" (fmt 0x301680, "rxfile.c" 0x3016c0,
+lines 1018 / 1041, then device, flags, ring, ring size, result) where RoR prints the path only.
+Data: s_verbose 0x2f5aa0 (= 1; RoR +0x198f0), an unread zero word 0x2f5aa4, filehost's data
+0x2f5aa8.., filecd 0x2f5ab0.., filehdd 0x2f5b10 / 14, then the core's second part: device map
+0x2f5b18 {0,1,2,3}, fallback devices 0x2f5b28 {0,1,2,-1}, error hook 0x2f5b38, device threads
+0x2f5b40. Bss: drivers 0x4d5990 (HOST / CDROM 0x4d59b4 / HDD 0x4d59fc), host root 0x4d5a20, CD
+cache 0x4d5b40.. (RoR -0x30a040 from here), HDD root 0x4e7d80, s_contextIndex 0x4e7e80, contexts
+0x4e7e84, device info 0x4e7e9c (0x128c each), file thread 0x4ec8d0, its queues 0x4fc8e0. The
+three drivers sit between the two ranges in text, data and bss alike. The game's own
+`rxFileCallLoadHook` 0x152730 / `rxFileCallSizeHook` 0x152740 are `j` thunks to 0x155690 /
+0x1556d0 (FileJob::run calls them).
 **Batch 008 (2026-11-02): rxsndut + rxsndstr 0x162178..0x166b50** (not in RoR; named by reading
 in rx style, `rxSndUt*` / `rxSndStr*`; messages 0x3022e0..0x302738). Five layers, each with its own
 static slot table and init / exit / update called from `rxSndUtInit` 0x162178 / `rxSndUtExit`

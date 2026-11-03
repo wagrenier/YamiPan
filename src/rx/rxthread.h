@@ -27,6 +27,13 @@ int  rxThIsRequestLocked(void);                                         /* FS2 0
 void rxThYield(void);                                                   /* FS2 0x001674d0 */
 void rxThDisableDispatch(void);                                         /* FS2 0x00167890 */
 void rxThEnableDispatch(void);                                          /* FS2 0x00167920 */
+int  rxThGetIndex(void);                                                /* FS2 0x00167aa8 */
+void rxThDelete(int index);                                             /* FS2 0x00167b08 */
+void rxThSetPriority(int index, int priority);                          /* FS2 0x00167bf0 */
+void *rxThGetParam(int index);                                          /* FS2 0x00167c30 */
+void rxThSetState(int index, short state);                              /* FS2 0x00167c90 */
+int  rxThCreate(void (*entry)(void), void *stack, int stackSize,
+                int priority, void *param);                             /* FS2 0x00167cb0 */
 void rxThRequest(RxThRequestFunc func, intptr_t a, intptr_t b, intptr_t c); /* FS2 0x00167e28 */
 void rxThInitOnce(void);                                                /* FS2 0x00168078 */
 void rxThExitOnce(void);                                                /* FS2 0x00168090 */

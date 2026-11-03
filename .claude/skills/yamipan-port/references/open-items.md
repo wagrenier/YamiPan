@@ -669,6 +669,28 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    ROM date, the exception screen is log-only. Doubt: FS2's disc has no system.ini, so the
    save-data name rxSysInit builds stays "BISCPS-00000" (nothing in rxsys reads it again). Next
    pick: `tus.py next` (rx/rxfile.c, rx/rxthread.c are the neighbours; RosePan has both).
+   TU 38 (the frontier's pinned `rx/rxfile.c` 0x153518..0x156060 + 0x158400..0x159928,
+   2026-11-03): **all 108 written, `verify`** (no new names, no Ghidra change; architecture.md
+   "rx"). `rxcmp.py '^rxFile' --lo/--hi` over both ranges: **106 identical to RoR**, the other two
+   (`rxFileOnCreate` / `rxFileOnGetSize`) print FS2's longer message (file, line 1018 / 1041, device,
+   flags, ring, ring size, result; marked `FS2:`), so `src/rx/rxfile.c` is RosePan's `rxfile.cpp`
+   without the three drivers, in C with FS2 addresses. `src/rx/rxfile.h` is the full header now
+   (every core type + prototype, typedefs for C); new **`rx/filehost.h` / `filecd.h` / `filehdd.h`**
+   hold the driver prototypes (and filecd's cache node / find hook) for their own TUs;
+   `rxthread.h` gained rxThGetIndex / Delete / SetPriority / GetParam / SetState / Create.
+   `gamehooks.h` lost its `rxFileCallSizeHook` / `rxFileCallLoadHook` prototypes (it includes
+   `rx/rxfile.h`): **the game's 0x152730 / 0x152740 are jump thunks to the rx functions
+   0x155690 / 0x1556d0 with the same Ghidra names** (callcheck matches by name, so fileloader.cpp
+   keeps calling the rx ones). Checked: callcheck clean, layout lint OK, g++ -x c++ -fsyntax-only
+   -Wall -Wextra clean on rxfile.c, rxsys.c, fileloader.cpp, gamepaths.cpp (RosePan's src +
+   pc_prefix.h, two stub headers for yamipan_memory.h / libvifpk.h). Doubts for the user: (1) the
+   second range 0x158400.. is very likely **its own object file** (text, data 0x2f5b18.. and bss
+   0x4e7e80.. all come after the three drivers', and it has no rxfile.c string): kept in rxfile.c
+   as pinned; (2) the zero word at data 0x2f5aa4 between s_verbose and filehost's data is unread
+   (RoR has none there); (3) whether to give the thunks their own Ghidra names (a game rx-glue
+   file with rxInit / rxTerm). Bootstrap 6: the host drivers come with filehost.c / filecd.c /
+   filehdd.c (RosePan's, with FS2's longer host messages: rxcmp shows rxFileHost* and
+   rxFileCdFindDir 0x10..0x18 longer). Next pick: `tus.py next`.
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
