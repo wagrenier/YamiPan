@@ -1217,6 +1217,23 @@ questions. Resolve items here when they are settled (move them to "Done" with th
 
 ## Decisions
 
+- 2026-11-03 (the user): **"Instead of using C style CPP, I want everything now to be C++, which
+  means object oriented and more modern pragmatism. The basis should be the same like the window and
+  ui and so on, but adapt it to FS2 and make it C++"**, then, the same day, **"I want the equivalent of
+  the pan layer to be in C++ not necessarily the game layer, that should stay authentic."** Bootstrap
+  6 starts now, on the user's word, after the scheduled task (`yamipan-next-tu`, disabled by the user)
+  finished its last run (01b665f). `references/cpp-port.md` has what this means; it supersedes rule
+  (4) of 2026-11-02 ("renamed, not rewritten") for the Pan layer. **The game layer is not touched**:
+  `src/game`, `rena`, `sound`, `rx`, `sdpr2` keep their code, shapes and the game's file names
+  (`rx/rxfile.c`, built as C++ like every TU in RosePan). Session choices inside that, for the user to
+  overrule: SCE's public names stay (`src/sdk/` is the game's API; only what sits behind it is
+  classes); the SDK carried over is what FS2 calls (about 100 `sce*` functions and 35 kernel services,
+  against RosePan's 14 K lines); the game-facing seams game code already includes
+  (`yamipan_drawui.h`, `yamipan_time.h`, `yamipan_memory.h`) keep their `YamiPan_*` functions as thin
+  forwarders, so no game file changes; **EE threads run one at a time by priority** (settles the
+  2026-11-02 question (b) on game/thread.cpp); **a render thread owns the GPU** (RosePan renders on the
+  game thread): FS2 flips from its frame-sync thread, and this keeps the overlay alive through loads.
+
 - 2026-11-03 (scheduled run, rena/rena_pkt_vif1pktmanage.cpp; for the user to overrule): **the
   frame's DMA chain stays built, with buffer offsets.** The packet buffers keep the ROM's tags (so
   used size, overflow and the layout of what other code writes stay the ROM's), but a tag's ADDR

@@ -159,9 +159,12 @@ frontmatter; the user's rule: automated runs at xhigh or above). Keep that line.
   becomes an `enum` or a `#define`d / `constexpr` name, bit tests on flags become named flag bits
   (`if (m_flags & ActorFlag_Visible)`, not `& 0x10`) -- as the code is decompiled, not later.
   reconstruction.md "Types and constants".
-- **Reuse the earlier ports' abstractions** (2026-11-02): the platform layer, SDK-on-host, rendering,
-  io, config, stub and test plumbing come from RosePan / ReiPan / MioPan (newest first) and are
-  renamed, not rewritten; write new host code only where FS2 needs something they lack.
+- **The Pan layer is modern, object-oriented C++; the game layer stays authentic** (2026-11-03;
+  supersedes "renamed, not rewritten" of 2026-11-02 for the Pan layer only). `src/yamipan/` keeps what
+  RosePan / ReiPan / MioPan offer (window, UI, settings, aspect, plumbing, newest first) and rewrites
+  it as classes, adapted to FS2. Game code is untouched by this: `src/game`, `rena`, `sound`, `rx`,
+  `sdpr2` go on as reconstruction.md says, with the game's own file names (`rxfile.c`) and shapes.
+  `references/cpp-port.md` has the scope, the style and the map: read it before writing host code.
 - **Methods, not free functions**: a function taking the object in a0 is a member.
 - **Automated work at xhigh or above; sessions never start sessions.**
 
@@ -227,6 +230,7 @@ finishing any session:
 | `references/ghidra.md` | instances, ports, discovery, MCP bridge, GhidraMCP traps | Ghidra not found, or odd |
 | `references/bootstrap.md` | a new port from an empty repo to the loop | until the loop runs |
 | `references/architecture.md` | the game: binary, address map, modules, classes, data, platform | understanding a TU |
+| `references/cpp-port.md` | the C++ rule: scope, style, the host layer's map and threads | writing host or SDK code |
 | `references/reconstruction.md` | placement, annotations, GCC 2 / GCC 3 ABI, types, stubs, verification | writing code |
 | `references/hazards.md` | decompiler, naming, inference, layout, stub, session, shell, build, platform traps | something behaves oddly |
 | `tools/reverse/README.md` | every tool | running tools |
