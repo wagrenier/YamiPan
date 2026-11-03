@@ -1,7 +1,8 @@
 {
  "queue": [
   "game/menuscene.cpp",
-  "rena/rena_2d_texture_tim2.cpp"
+  "rena/rena_2d_texture_tim2.cpp",
+  "yamipan/rendering/texture_store.cpp"
  ],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
@@ -1229,6 +1230,9 @@
   "unassigned@002908d0": {},
   "unassigned@00296d60": {},
   "unassigned@002acff0": {},
-  "unassigned@002b0d50": {}
+  "unassigned@002b0d50": {},
+  "yamipan/rendering/texture_store.cpp": {
+   "task": "Write rendering::TextureStore, the Pan side of textures, and get the menu's textures on screen. Prerequisite: rena/rena_2d_texture_tim2.cpp is written (it is queued ahead of this task); if it is not, finish blocked and say so.\n\nWhy: YamiPan_DrawUiTexture in src/yamipan/seams.cpp does nothing yet, so UiCanvas never gets an image and every textured draw comes out as a plain shape.\n\nRules: src/yamipan is the Pan layer, so read references/cpp-port.md first (modern C++, classes, RAII). Do not restyle game code. Keep the seam: game code goes on calling YamiPan_DrawUiTexture(list, owner), and the forwarder in seams.cpp asks the store for the image and calls UiCanvas::bindImage. No GS memory, no swizzle, no upload replay: decode the TIM2 picture the owner points at straight to RGBA8 (SKILL.md, the user's rules).\n\nWhat it must do:\n- Decode at the source. The owner is a GsTexture (game/gsutil.h) and m_image its TIM2 copy. Formats: 4 and 8 bit indexed with 16 and 32 bit CLUTs, 16, 24 and 32 bit direct. 8-bit CLUTs in CSM1 order have their entries swapped. tools/reverse/tm2png.py does all of this correctly: read it, then write it as a class.\n- Alpha must arrive doubled. ui.frag.hlsl multiplies the sampled texel by the vertex colour times 255/128, which is right for RGB, but a TIM2 alpha of 0x80 means opaque and the blender needs that to reach 1.0. Store min(a * 2, 0xff), or the whole UI blends at half strength. TCC 0 means opaque. This is untested: no textured frame has ever been drawn.\n- Lifetime. UiDrawer::setImage deletes its temporary GsTexture right after the bind, so decode during the call and hand back a std::shared_ptr of rendering::Image. Renderer::uploadImages does the GPU side on the render thread, and each Frame holds the image until it has been shown.\n- Cache so a picture is not decoded every frame, but entries must not go stale when the game frees memory and reuses the address: key on the content of the TIM2 header as well as the address, or drop an entry when its owner is destroyed. Decide which and say why in a comment.\n- Render targets are out of scope: a GsTexture with m_isTarget names the Zbuf / Draw / View buffers (game/gsutil.h). Log it once, bind nothing, and record it in open-items.md \"Next up\" item 8.\n\nDone means the picture, not the log. Run tus.py check with --run 15, open work/shots/last.png, and compare with the assets as tm2png.py renders them into work/ref. UiCanvas has never drawn a real game frame, so expect bugs in it (UV scale, blend modes, scissor, the 512x512 frame mapping): fixing those is part of this task. Finish done only when the screen matches the references; otherwise partial, with the difference in the notes."
+  }
  }
 }

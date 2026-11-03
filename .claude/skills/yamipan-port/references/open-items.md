@@ -1230,10 +1230,10 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    **Pinned 2026-11-03 by the user: `game/menuscene.cpp` 0x2b5740..0x2b6b90** (14 functions, first in the
    queue, before the partial stagescene): the reached stub on the way to a first picture. **Then
    `rena/rena_2d_texture_tim2.cpp` 0x2e1b70..0x2e2970** (7 functions, pinned the same day: nothing
-   textured draws without it). Queue order is the user's: once both are `verify` the loop goes back to
-   stagescene unless more is pinned.
-   (b) `rena/rena_2d_texture_tim2.cpp`, then `TextureStore` behind `YamiPan_DrawUiTexture` (TIM2 decoded
-       at the source): nothing textured draws until then;
+   textured draws without it), **then the host task `yamipan/rendering/texture_store.cpp`** (the Pan
+   side, its brief has the whole job: `tus.py brief` on that key). Queue order is the user's: once all
+   three are through, the loop goes back to stagescene unless more is pinned.
+   (b) textures: queued, see above;
    (c) any aspect: the renderer hands k to the game's UI matrices (`kUiScreenMatrix`, see TU 19), the one
        place a game file needs a `PC:` touch;
    (d) placeholders to replace: `sdk/libmc.cpp` (the empty slot: a real card under `memcard/`),
