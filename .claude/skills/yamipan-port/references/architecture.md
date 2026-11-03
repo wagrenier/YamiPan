@@ -215,6 +215,16 @@ static slot table and init / exit / update called from `rxSndUtInit` 0x162178 / 
   branches: +0 position, +4, +8 type, +0xa / +0xb loop count, +0xc name), `TRCK` (per-request tracks:
   +1 channels, +4 / +6 volume, +8 name), `BODY`; the body is in the file (type 0), a separate file
   (1, with the device and search dir remembered) or IOP memory (2).
+  Written 2026-11-03 (src/rx/rxsndstrbank.c, file records in rxsndstrbank.h): slot +0 used, +1 the
+  open's first argument (unread), +2 body type (0xff never attached), +4 header, +8..+0x18 the
+  FORM / FTXT / MARK / BRCH / TRCK chunk data, +0x1c body addr, +0x20 size, +0x24 device, +0x28 dir
+  [0x40], +0x68 name [0x40]. Tags are compared as little-endian words of the strings. Indexes are
+  {count, offsets from the chunk data}: FTXT one; MARK / BRCH one at +4 of per-request ones (the
+  records); TRCK one of per-request lists whose own index is at +4. Request rate +0xa is a u_short.
+  `rxSndStrBankFindTrack` returns 0 (not -1) for an unknown bank or request; `rxSndStrFormGet` is a
+  twin of `rxSndStrBankGetRequest` nobody calls; OpenBody's "never attached" print is dead (it
+  compares the u_char type with -1). On the host the body address is a `uintptr_t` (EE pointer or
+  IOP address), which `rxSndStrStreamOpenMemory` takes with its iop flag.
 - **Stream core** 0x1634b8..0x164398 (64 streams x 0x9c at 0x51ef80): `rxSndStrPlayEx` picks the
   request's registered format (8 slots x 0x28 at 0x52168c, `rxSndStrRegisterFormat`; function table
   {init, exit, update, open, close, getHandle, pauseRead, syncRead}), setters mark dirty bits +0x1c

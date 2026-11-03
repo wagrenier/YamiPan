@@ -2,8 +2,8 @@
  *  rx/rxsndstr.h
  *
  *  FS2's rx sound streams (rx/rxsndstr*.c; not in RoR, so RosePan has no
- *  counterpart): XWS banks (rxSndStrBank*, rxsndstrbank.c, not written yet)
- *  and the stream core (rxSndStr*, rxsndstr.c): 64 stream slots, each played
+ *  counterpart): XWS banks (rxSndStrBank*, rxsndstrbank.h / .c) and the
+ *  stream core (rxSndStr*, rxsndstr.c): 64 stream slots, each played
  *  by one of 8 registered formats (PCM, ADPCM: rxsndstrpcm.c /
  *  rxsndstradpcm.c) that apply the slot's dirty settings in their update.
  *  architecture.md "Batch 008" has the layers.
@@ -11,6 +11,7 @@
 #ifndef _RX_RXSNDSTR_H
 #define _RX_RXSNDSTR_H
 
+#include "rx/rxsndstrbank.h"
 #include "sdk/scetypes.h"
 
 #include <assert.h>     /* static_assert in C11 */
@@ -50,7 +51,6 @@ enum RxSndStrDirty
 
 typedef struct RxSndStrSlot    RxSndStrSlot;
 typedef struct RxSndStrFormat  RxSndStrFormat;
-typedef struct RxSndStrRequest RxSndStrRequest;
 
 /* Called with the stream id and the mark / branch record; run with
  * interrupts off. The branch callback's result: non-zero takes the branch
@@ -110,31 +110,6 @@ struct RxSndStrSlot
     short                  trackVolL[RXSNDSTR_TRACK_MAX];   // FS2 +0x5c
     short                  trackVolR[RXSNDSTR_TRACK_MAX];   // FS2 +0x7c
 };
-
-/* A bank's request record (rxsndstrbank.c owns it; only its head is used
- * here): architecture.md "Batch 008" has the rest. layout: EE (file bytes). */
-struct RxSndStrRequest
-{
-    u_char format;                      // FS2 +0x0: RxSndStrFormatId
-    u_char length;                      // FS2 +0x1
-    u_char flags;                       // FS2 +0x2: bit 0 loop
-};
-static_assert(offsetof(RxSndStrRequest, length) == 0x1, "RxSndStrRequest::length");
-static_assert(offsetof(RxSndStrRequest, flags) == 0x2, "RxSndStrRequest::flags");
-
-/* XWS banks: a bank from its RXWS header, its body attached from a file,
- * EE memory or IOP memory. -1 failed. */
-int  rxSndStrBankOpen(int slot, const void *header);                    /* FS2 0x001622f8 */
-void rxSndStrBankClose(int bank);                                       /* FS2 0x001624d8 */
-void rxSndStrBankAttachBodyFile(int bank, const char *name);            /* FS2 0x00162530 */
-void rxSndStrBankAttachBodyMemory(int bank, const void *body, int size); /* FS2 0x001625c8 */
-void rxSndStrBankAttachBodyIop(int bank, u_int iopAddr, int size);      /* FS2 0x00162610 */
-int  rxSndStrBankGetRequestRate(int bank, int request);                 /* FS2 0x00162820 */
-int  rxSndStrBankGetRequestChannels(int bank, int request);             /* FS2 0x00162850 */
-int  rxSndStrBankGetRequestSize(int bank, int request);                 /* FS2 0x001628b0 */
-int  rxSndStrBankGetTrackCount(int bank, int request);                  /* FS2 0x00162c20 */
-/* The request's record, null when the bank or request is unknown. */
-const RxSndStrRequest *rxSndStrBankGetRequest(int bank, int request);   /* FS2 0x00162fd8 */
 
 /* Streams: request of bank from start, read through buf (file bodies;
  * null for memory / IOP ones). The stream id, -1 failed. */

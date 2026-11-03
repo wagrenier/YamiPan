@@ -818,12 +818,22 @@
    "why": "ADPCM stream format (table 0x2f5f38; batch 008); file cut a guess."
   },
   "rx/rxsndstrbank.c": {
+   "notes": "Complete in source-only mode (no build yet, so not compiled: check it compiles once bootstrap 7 lands). Bank slot is layout host (pointers); RXWS file records (header, chunk, index, request, mark, track) are EE layout with static_asserts. The internal readers rxSndStrBankGetSlot, GetTrackTable, rxSndStrXws*, rxSndStrForm*, rxSndStrText*, rxSndStrMark*, rxSndStrBranch* are file-static: nothing outside calls them. rxSndStrBankOpenBody calls rxsndstrstream.c (new header rxsndstrstream.h, not written yet: OpenFile name/buf/bufSize, OpenMemory uintptr_t addr/size/iop flag). The bank API moved from rxsndstr.h into rxsndstrbank.h (rxsndstr.h includes it). Quirks kept: FindTrack returns 0 for an unknown bank or request; the never-attached print is dead in the ROM and left out.",
    "ranges": [
     [
      "001622f8",
      "001634b8"
     ]
    ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 12:49",
+     "status": "verify",
+     "summary": "XWS banks: 48 functions, the RXWS chunk walkers, request / mark / branch / track getters and OpenBody, file records in rxsndstrbank.h"
+    }
+   ],
+   "status": "verify",
    "why": "XWS bank layer rxSndStrBank* (own slot table 0x514780; batch 008); one file per layer is a guess."
   },
   "rx/rxsndstrmem.c": {
