@@ -742,12 +742,22 @@
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. rxfile core: rxFileClose .. rxFileGetDriver and rxFileInitSlots .. rxFileGetThreadPriority; rxFileOnCreate / rxFileOnGetSize reference the string rxfile.c; the three device drivers between them are their own files (filehost.c string)."
   },
   "rx/rxsnd.c": {
+   "notes": "All 229 of 0x159bc0..0x162178 in src/rx/rxsnd.c (C), with new src/rx/rxsnd.h (C and C++) and src/rx/rxthread.h (the seven rxTh calls). 215 functions are RoR's word for word (both ELFs compared, addresses masked), so the code is RosePan's rxsnd.cpp carried over; the 14 others were read in FS2: commands 0x52 / 0x53 / 0x62 wrappers, four FS2-only rxSnd*GetActiveList found merged in the tails of BgmSetParam6 / SeSetParamC / PcmSetVolume / AdpcmGetPosition (created in Ghidra, batch 069), AdpcmGetPosition = position x channels, AdpcmUpdate 64-bit hi:lo position, QueueBegin keeps room for the end marker (s_queue back to 0x1000). bss is RoR's minus 0x2b7bc0, data words listed in architecture.md. callcheck clean, layout lint OK, gcc -std=c11 -fsyntax-only -Wall -Wextra clean with RosePan's src/sdk on the include path (a MinGW exists at C:/msys64/ucrt64/bin). Bootstrap 6 must give YamiPan_RxSndNoteEeAddress with RosePan's IOP driver src/iop/rxsnddrv and the sdk sif / kernel headers. Kept RosePan's literal command numbers and flag bits. open-items.md TU 36 has the rest.",
    "ranges": [
     [
      "00159bc0",
      "00162178"
     ]
    ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 10:34",
+     "status": "verify",
+     "summary": "rx/rxsnd.c: all 229 functions written (RosePan's rxsnd carried to C, FS2's differences and four hidden GetActiveList functions)"
+    }
+   ],
+   "status": "verify",
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. rxsnd: RoR's rx/rxsnd.cpp 0x237ce8..0x23ff58 (190 aligned, three FS2-only RPC wrappers)."
   },
   "rx/rxsndstr.c": {

@@ -2100,7 +2100,8 @@
 /* 0015d928 00000150 */ rxSndBgmSetVolume(){}  // lib-ctx
 /* 0015da78 000000a4 */ rxSndBgmSetPitch(){}  // lib-ctx
 /* 0015db20 000000a4 */ rxSndBgmSetParam5(){}  // lib-ctx
-/* 0015dbc8 000000dc */ rxSndBgmSetParam6(){}  // lib-ctx
+/* 0015dbc8 00000094 */ rxSndBgmSetParam6(){}  // lib-ctx
+/* 0015dc60 00000044 */ rxSndBgmGetActiveList(){}  // lib-ctx
 /* 0015dca8 00000054 */ rxSndBgmInit(){}  // lib-ctx
 /* 0015dd00 00000004 */ rxSndBgmTerm(){}  // lib-ctx
 /* 0015dd08 00000174 */ rxSndBgmUpdate(){}  // lib-ctx
@@ -2126,7 +2127,8 @@
 /* 0015e8f0 00000040 */ rxSndSeSetParam9(){}  // lib-ctx
 /* 0015e930 0000005c */ rxSndSeSetPan(){}  // lib-ctx
 /* 0015e990 00000054 */ rxSndSeSetParamB(){}  // lib-ctx
-/* 0015e9e8 0000009c */ rxSndSeSetParamC(){}  // lib-ctx
+/* 0015e9e8 00000054 */ rxSndSeSetParamC(){}  // lib-ctx
+/* 0015ea40 00000044 */ rxSndSeGetActiveList(){}  // lib-ctx
 /* 0015ea88 0000005c */ rxSndSeInit(){}  // lib-ctx
 /* 0015eae8 00000004 */ rxSndSeTerm(){}  // lib-ctx
 /* 0015eaf0 0000016c */ rxSndSeUpdate(){}  // lib-ctx
@@ -2148,7 +2150,8 @@
 /* 0015f7d0 00000048 */ rxSndPcmGetUserData(){}  // lib-ctx
 /* 0015f818 0000009c */ rxSndPcmSetAttr(){}  // lib-ctx
 /* 0015f8b8 0000009c */ rxSndPcmPause(){}  // lib-ctx
-/* 0015f958 0000016c */ rxSndPcmSetVolume(){}  // lib-ctx
+/* 0015f958 00000128 */ rxSndPcmSetVolume(){}  // lib-ctx
+/* 0015fa80 00000044 */ rxSndPcmGetActiveList(){}  // lib-ctx
 /* 0015fac8 00000088 */ rxSndPcmInit(){}  // lib-ctx
 /* 0015fb58 00000004 */ rxSndPcmTerm(){}  // lib-ctx
 /* 0015fb60 0000020c */ rxSndPcmUpdate(){}  // lib-ctx
@@ -2179,7 +2182,8 @@
 /* 00161580 000000b0 */ rxSndAdpcmSetChannelParam5(){}  // lib-ctx
 /* 00161630 000000c4 */ rxSndAdpcmSetParam6(){}  // lib-ctx
 /* 001616f8 000000c4 */ rxSndAdpcmSetParam7(){}  // lib-ctx
-/* 001617c0 000000a4 */ rxSndAdpcmGetPosition(){}  // lib-ctx
+/* 001617c0 0000005c */ rxSndAdpcmGetPosition(){}  // lib-ctx
+/* 00161820 00000044 */ rxSndAdpcmGetActiveList(){}  // lib-ctx
 /* 00161868 00000094 */ rxSndAdpcmInit(){}  // lib-ctx
 /* 00161900 00000004 */ rxSndAdpcmTerm(){}  // lib-ctx
 /* 00161908 00000254 */ rxSndAdpcmUpdate(){}  // lib-ctx

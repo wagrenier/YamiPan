@@ -8273,6 +8273,12 @@
   "was": "FUN_0015dbc8",
   "why": "rx library: RosePan names RoR RoR 0x23bae0 rxSndBgmSetParam6; rxalign '^' (0xdc vs 0x94, by place); reads it: bgm id < 0x20, used bit, queue command 0x71 with param 6 and the value (RoR's rxSndBgmQueueSet(id, 6, value), inlined here)"
  },
+ "0015dc60": {
+  "name": "rxSndBgmGetActiveList",
+  "tag": "lib-context",
+  "was": "FUN_0015dc60",
+  "why": "FS2-only, hidden after rxSndBgmSetParam6 (RoR has none): walks the active BGM list (bss 0x504300), writes each slot's m_id (+4) into a0[] when a0 is not null, returns the count"
+ },
  "0015dca8": {
   "name": "rxSndBgmInit",
   "tag": "lib-context",
@@ -8429,6 +8435,12 @@
   "was": "FUN_0015e9e8",
   "why": "rx library: RosePan names RoR RoR 0x23c8b8 rxSndSeSetParamC; rxalign '^' (by place); reads it: value < 0 returns, clamps to -1..0x7e, rxSndSeSetParam(id, 0xc, value) word for word"
  },
+ "0015ea40": {
+  "name": "rxSndSeGetActiveList",
+  "tag": "lib-context",
+  "was": "FUN_0015ea40",
+  "why": "FS2-only, hidden after rxSndSeSetParamC: the same walk over the active SE voices (bss 0x504810), m_id +4"
+ },
  "0015ea88": {
   "name": "rxSndSeInit",
   "tag": "lib-context",
@@ -8560,6 +8572,12 @@
   "tag": "lib-context",
   "was": "FUN_0015f958",
   "why": "rx library: RosePan names RoR RoR 0x23d7e0 rxSndPcmSetVolume; rxalign '^' (by place); reads it: pcm id <= 0x1f, used bit, clamps L/R to -0x80..0x80, master * family * volume >> 14, queue command 0xb2 param 4: RoR's code"
+ },
+ "0015fa80": {
+  "name": "rxSndPcmGetActiveList",
+  "tag": "lib-context",
+  "was": "FUN_0015fa80",
+  "why": "FS2-only, hidden after rxSndPcmSetVolume: the same walk over the active PCM streams (bss 0x5063c4), m_id +4"
  },
  "0015fac8": {
   "name": "rxSndPcmInit",
@@ -8746,6 +8764,12 @@
   "tag": "lib-context",
   "was": "FUN_001617c0",
   "why": "rx library: RosePan names RoR RoR 0x23f600 rxSndAdpcmGetPosition; rxalign '^' (0xa4 vs 0x48, by place); reads it: stream id < 0x30, used bit, else 0, as RoR; FS2 converts the position through 0x119be8 with a byte of the stream (+0x14) where RoR returns it as is"
+ },
+ "00161820": {
+  "name": "rxSndAdpcmGetActiveList",
+  "tag": "lib-context",
+  "was": "FUN_00161820",
+  "why": "FS2-only, hidden after rxSndAdpcmGetPosition: the same walk over the active ADPCM streams (bss 0x509708), the u_char m_id +8"
  },
  "00161868": {
   "name": "rxSndAdpcmInit",

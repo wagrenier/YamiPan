@@ -629,6 +629,23 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    "ended") for rxsndstr / rxsndut / SDPR2. **Next picks**: the sound users 0x2908d0..0x2931b0
    (`SePlayer`, the SoundStream / SeBank wrappers; unassigned@002681e0), the ring classes TU
    `unassigned@00148db0` (StreamRing / FileStreamRing 0x151f90..0x153110, right after this file).
+   TU 36 (the queue's `rx/rxsnd.c` 0x159bc0..0x162178, 2026-11-03): **all 229 written, `verify`**
+   (225 + four FS2-only `rxSnd*GetActiveList` found hidden in the tails of resized functions,
+   created in Ghidra and named, batch 069; architecture.md "rx" has the differences and the data
+   addresses). New `src/rx/rxsnd.h` (C and C++: typedefs, `extern "C"`) and `src/rx/rxthread.h`
+   (the seven rxTh* calls rxsnd makes). The file is RosePan's `rxsnd.cpp` carried to C: 215
+   functions compared word for word in the two ELFs, the 14 others read in FS2. Checked: callcheck
+   clean, layout lint OK, **gcc -std=c11 -fsyntax-only -Wall -Wextra clean** and the header from
+   g++ (sound.cpp's only errors are the known DelayThread / sceSifFreeSysMemory) with RosePan's
+   `src/sdk` on the include path. **For the user: a MinGW exists at `C:\msys64\ucrt64\bin`** (gcc /
+   g++; TU 35 found none): point `YAMIPAN_MINGW_BIN` / `yamipan.MINGW_BIN` there. Doubts / choices:
+   kept RosePan's literal command numbers and flag bits (the file is a carry-over; naming them as
+   enums is a later pass over rxsnd.h, for the user to order); `s_queue` back to 0x1000 (FS2's
+   margin makes RosePan's 0x1040 unneeded); `RosePan_RxSndNoteEeAddress` renamed
+   `YamiPan_RxSndNoteEeAddress`, which **bootstrap 6 must give** in `iop/rxsnddrv/rxsnddrv.h` with
+   RosePan's IOP driver (`src/iop/rxsnddrv/`), plus `sdk/sifman.h` / `sdk/sifrpc.h` / `sdk/eekernel.h`
+   (`SemaParam`, `DeleteSema`, `SignalSema`, `sceSifGetOtherData`, `sceSifReceiveData`). The meaning
+   of commands 0x52 / 0x53 / 0x62 is unread (the IOP module would tell). Next pick: `tus.py next`.
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

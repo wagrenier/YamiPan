@@ -141,6 +141,22 @@ not rxsnd: the `SDPR2` messages, below).
 `rxSndXseqSetParam`'s 0x63; `rxSndXseqRpc62` 0x15d040), and `rxSndAdpcmGetPosition` 0x1617c0
 converts the position through 0x119be8 where RoR returns it; `rxSndBgmSetParam6` /
 `rxSndSeSetParamC` / `rxSndPcmSetVolume` differ in size only (read: same code).
+**TU `rx/rxsnd.c` (2026-11-03, all 229 written, `verify`)** corrects and completes that: the three
+size differences (and `rxSndAdpcmGetPosition`'s) were **four FS2-only functions hidden in their
+tails**, created and named (batch 069): `rxSndBgmGetActiveList` 0x15dc60, `rxSndSeGetActiveList`
+0x15ea40, `rxSndPcmGetActiveList` 0x15fa80, `rxSndAdpcmGetActiveList` 0x161820 (walk the family's
+active list, write each id into an optional int array, return the count; no callers). The other
+**215 shared functions are RoR's word for word** (both ELFs compared, immediates of jumps, `lui`
+and gp-relative words masked; loads / stores off other bases were not compared), so `src/rx/rxsnd.c`
+is RosePan's `rxsnd.cpp` carried over to C. FS2's real code differences: `rxSndAdpcmGetPosition`
+returns position x channels (`__muldi3` 0x119be8); `rxSndAdpcmUpdate` builds the 64-bit position
+as hi:lo (`lwu`/`lwu`/`dsll32`/`or`; RoR ORs the two words); `rxSndQueueBegin` flushes at
++0x58 / +0x40 of margin (RoR +0xc / +0: its end marker ran past the 0x1000 queue). Data: **bss is
+RoR's moved by -0x2b7bc0** (s_config 0x4fdf00 .. s_queueReply 0x513780; s_xvab 0x501c00, s_xseq
+0x503400, s_bgm 0x504000, s_adpcm 0x508808, RPC client 0x512740); the data words one by one:
+s_bufferBank 0x2f5b60, pitch tables 0x2f5b68 / 0x2f5cf0, BG-call hook 0x2f5e80, IOP hooks
+0x2f5e88 / 8c / 90, SPU hooks 0x2f5e98 / 9c / a0 (0x2f5e94 unused), ADPCM end block 0x2f5ec0,
+s_rpcSema / s_queuePos / s_queueReplyPos 0x2f5f00 / 04 / 08.
 **Batch 008 (2026-11-02): rxsndut + rxsndstr 0x162178..0x166b50** (not in RoR; named by reading
 in rx style, `rxSndUt*` / `rxSndStr*`; messages 0x3022e0..0x302738). Five layers, each with its own
 static slot table and init / exit / update called from `rxSndUtInit` 0x162178 / `rxSndUtExit`

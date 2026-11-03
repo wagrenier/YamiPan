@@ -85,6 +85,13 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   `apply(this, xform, parent, colour, state)` slots show `in_a3_lo` / `in_t0_lo` and lose their
   parameters when Ghidra's prototype is shorter; read them from the asm (`ghidra.py asm`), or fix the
   prototype first.
+- **A shared-library function longer than its sister's hides a function in its tail** (2026-11-03,
+  TU `rx/rxsnd.c`): batch 007 read `rxSndBgmSetParam6` / `SeSetParamC` / `PcmSetVolume` /
+  `AdpcmGetPosition` as "same code, other size"; each had a whole FS2-only function (0x44 bytes,
+  no callers) merged after its `jr ra`. For a carried-over library: compare sizes with the sister's
+  list, disassemble every extra tail (`ghidra.py asm`), `ghidra.py mkfunc` what starts there; then
+  compare the same-size ones word for word with jump targets, `lui` and gp offsets masked (a short
+  script over both ELFs) instead of reading them.
 
 ## File inference (which TU a function belongs to)
 

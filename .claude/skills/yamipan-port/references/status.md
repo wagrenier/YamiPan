@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 10:23 at commit `8acdebd` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 10:34 at commit `2a86e57` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-03 10:23 at commit `8acdebd` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6595**, named **1945** (29%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1512, game-inferred 1078
-- context-name ledger: 2590 entries; overrides of wrong library matches: 0
-- placed in a source file: 1862/6595 in 57 files
+- game functions: **6599**, named **1949** (30%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1516, game-inferred 1078
+- context-name ledger: 2594 entries; overrides of wrong library matches: 0
+- placed in a source file: 1866/6599 in 57 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **987**; stubs: **0**
+- reconstructed FS2 functions: **1216**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -67,12 +67,13 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
+| `src/rx/rxsnd.c` | 229 | 0 |
 | `src/sound/sound.cpp` | 97 | 0 |
 
 ## Translation units (one session each: `tus.py`)
 
-- 77 TUs: todo 54, verify 36
-- next: **rx/rxsnd.c** (frontier score 98)
+- 77 TUs: todo 53, verify 37
+- next: **rx/rxsys.c** (frontier score 52)
 - pinned queue: (empty)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
@@ -107,12 +108,14 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/vcmtable.cpp` 52/52 -- Cut out of unassigned@00296d60 (the frontier pick) as 0x296d60..0x299d90, batches 063-065 (59 names, incl. the binary's std::string instances 0x297fb0.. and new
 - verify: `game/wstring.cpp` 5/5 -- Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds 
 - verify: `rena/rena_pkt_vif1pktmanage.cpp` 13/17 -- Pinned 0x2eaff0-0x2ec110 under the new src/rena/ with the game's own file name (strings in Reset / AddList); the stale inferred key rena_pkt_vif1pktmanage.cpp r
+- verify: `rx/rxsnd.c` 229/229 -- All 229 of 0x159bc0..0x162178 in src/rx/rxsnd.c (C), with new src/rx/rxsnd.h (C and C++) and src/rx/rxthread.h (the seven rxTh calls). 215 functions are RoR's w
 - verify: `sdk/mcerror.cpp` 0/1 -- Pinned 0x121b80..0x121ef0 as sdk/mcerror.cpp (read as libmc's: between the read-fast tail and libc abort, maps commands FS2 never issues). McCmd and McErrno in 
 - verify: `sound/sound.cpp` 97/98 -- All 98 of 0x144080..0x148db0 written, one file, no Ghidra change (batch 013 names held). New src/sound/sound.h takes the sound stand-ins out of game/gamehooks.h
 - verify: `unassigned@00116fb8` 0/0 -- This key is empty now: its whole run is two lib_ranges (architecture.md Address map, naming table row batch 025). Game code calling __extendsfdf2 / __cmpdf2 / _
 
 Recent sessions:
 
+- 2026-11-03 10:34 `rx/rxsnd.c` verify: rx/rxsnd.c: all 229 functions written (RosePan's rxsnd carried to C, FS2's differences and four hidden GetActiveList functions)
 - 2026-11-03 10:22 `sound/sound.cpp` verify: sound/sound.cpp: all 98 functions written (SoundStream, sinks, SoundFeeder, SoundSeBank, SoundConfig, soundInit/Update/Shutdown, SPU2 and IOP hooks)
 - 2026-11-03 10:05 `game/movieplayer.cpp` verify: MoviePlayer, the prgMovie widget's PSS player: file ring, libmpeg demux into video / audio / data rings, IPU feed, audio sinks and feeders, one RGB32 picture pe
 - 2026-11-03 09:48 `game/uiwidget.cpp` verify: The S2D script widgets: UiWidget::create and the 13 prg widget classes (map rotate / zoom / pan, text scroll, messages, movie and sound stream with fsm subtitle
@@ -120,30 +123,28 @@ Recent sessions:
 - 2026-11-03 08:53 `game/gsblockmap.cpp` verify: GsBlockMap and TexArea: the GS block bitmap (alloc, free, findFree, setRange) and the per-packet-list texture page lists (place, insert, clip), all 14 functions
 - 2026-11-03 08:35 `rena/rena_pkt_vif1pktmanage.cpp` verify: rena Vif1PktManage / Vif1PktList: all 13 written, the 4 MSL vector instances mapped to the host vector; source-only, not built
 - 2026-11-03 08:08 `game/gamepacket.cpp` verify: GamePacketManager: ctor, deleting dtor, openList, closeList, endFrame, kickAndSwap on rena Vif1PktManage
-- 2026-11-03 07:52 `game/pakarchive.cpp` verify: PakArchive and the pak parser: PakHeader / PakEntry / PakId, relocate with the variant pack, lookups by id and by name, all 17 functions written
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `rx/rxsnd.c` | todo | 0/0/225 | 32.9 | 98 | 0 |
+| `rx/rxsys.c` | todo | 0/0/126 | 13.8 | 52 | 0 |
 | `sdpr2/sdpr2.c` | todo | 0/0/36 | 17.6 | 30 | 0 |
 | `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 25 | 0 |
 | `rx/rxsndstr.c` | todo | 0/0/38 | 3.6 | 24 | 0 |
 | `rx/rxsndstrbank.c` | todo | 0/0/48 | 4.3 | 18 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 13 | 0 |
-| `unassigned@00171300` | todo | 0/0/829 | 131.7 | 10 | 0 |
 | `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 10 | 0 |
-| `unassigned@00299d90` | todo | 0/0/215 | 62.3 | 9 | 0 |
+| `unassigned@00171300` | todo | 0/0/829 | 131.7 | 10 | 0 |
 | `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 9 | 0 |
+| `unassigned@00299d90` | todo | 0/0/215 | 62.3 | 9 | 0 |
+| `rx/rxthread.c` | todo | 0/0/53 | 6.1 | 9 | 0 |
 | `unassigned@00252840` | todo | 0/0/100 | 35.5 | 7 | 0 |
-| `unassigned@00231c90` | todo | 0/0/61 | 36.3 | 7 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
+| `00102328` | rxSysPrintf | 52 | lib-ctx | missing | rx/rxsys.c |
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
-| `0015a668` | rxSndIopFree | 8 | lib-ctx | missing | rx/rxsnd.c |
-| `00159e68` | rxSndSetOutputMode | 8 | lib-ctx | missing | rx/rxsnd.c |
 | `001681c0` | sdpr2SetSurround | 8 | lib-ctx | missing | sdpr2/sdpr2.c |
 | `00152580` | StreamRing::size | 6 | game | missing | - |
 | `001624d8` | rxSndStrBankClose | 6 | lib-ctx | missing | rx/rxsndstrbank.c |
@@ -152,26 +153,18 @@ Recent sessions:
 | `0012cab8` | vsprintf | 5 | lib-ctx | missing | - |
 | `0029efe0` | getNaviMenu | 5 | game | missing | - |
 | `001937f0` | FUN_001937f0 | 4 | - | missing | - |
-| `0015bd30` | rxSndSetEffectModeCore | 4 | lib-ctx | missing | rx/rxsnd.c |
-| `0015bdd0` | rxSndSetEffectDepthCore | 4 | lib-ctx | missing | rx/rxsnd.c |
-| `0015bed8` | rxSndSetEffectFeedbackCore | 4 | lib-ctx | missing | rx/rxsnd.c |
-| `0015be58` | rxSndSetEffectDelayCore | 4 | lib-ctx | missing | rx/rxsnd.c |
 | `00163848` | rxSndStrStop | 4 | lib-ctx | missing | rx/rxsndstr.c |
 | `0025a850` | mslTreeIncrement | 4 | lib-ctx | missing | - |
 | `002955d0` | getNaviTable | 4 | game | missing | - |
-| `0015c480` | rxSndXvabFree | 4 | lib-ctx | missing | rx/rxsnd.c |
-| `00162850` | rxSndStrBankGetRequestChannels | 3 | lib-ctx | missing | rx/rxsndstrbank.c |
 | `00231d30` | overlayShowLoading | 3 | native | missing | - |
 | `00231d20` | overlayShowLoading | 3 | native | missing | - |
-| `00102328` | rxSysPrintf | 3 | lib-ctx | missing | rx/rxsys.c |
 | `00152620` | StreamRing::StreamRing | 3 | game | missing | - |
 | `00163ea8` | rxSndStrSyncRead | 3 | lib-ctx | missing | rx/rxsndstr.c |
 | `001339c0` | normalizeAngle | 3 | game | missing | - |
+| `00162850` | rxSndStrBankGetRequestChannels | 3 | lib-ctx | missing | rx/rxsndstrbank.c |
 | `0025b590` | FUN_0025b590 | 3 | - | missing | - |
-| `0015c5f8` | rxSndXvabCheck | 3 | lib-ctx | missing | rx/rxsnd.c |
 | `002e1c50` | Tim2Texture::upload | 3 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `001622f8` | rxSndStrBankOpen | 3 | lib-ctx | missing | rx/rxsndstrbank.c |
-| `00159f78` | rxSndSetSysParam | 3 | lib-ctx | missing | rx/rxsnd.c |
 | `0028fb80` | fsmFindText | 2 | game | missing | - |
 | `0016acd0` | sdpr2SetVolume | 2 | lib-ctx | missing | sdpr2/sdpr2.c |
 | `0029efd0` | getSaveExtra | 2 | game | missing | - |
@@ -181,4 +174,13 @@ Recent sessions:
 | `002c4140` | getSePlayer | 2 | game | missing | - |
 | `0028fd30` | fsmRelocate | 2 | game | missing | - |
 | `002e2920` | Tim2Texture::Tim2Texture | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
+| `00193880` | FUN_00193880 | 2 | - | missing | - |
+| `00163dc8` | rxSndStrGetHandle | 2 | lib-ctx | missing | rx/rxsndstr.c |
+| `001d6a80` | StageSound::playNamed | 2 | game | missing | - |
+| `002e1b70` | Tim2Texture::putTex0 | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
+| `00152740` | rxFileCallSizeHook | 2 | native | missing | - |
+| `00168708` | sdpr2PlayPan | 2 | lib-ctx | missing | sdpr2/sdpr2.c |
+| `0016f9e0` | sdpr2CalcPanDeg | 2 | lib-ctx | missing | sdpr2/sdpr2single.c |
+| `00243380` | getUiWorkArea | 2 | game | missing | - |
+| `00152530` | StreamRing::release | 2 | game | missing | - |
 
