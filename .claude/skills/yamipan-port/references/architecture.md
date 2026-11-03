@@ -821,7 +821,7 @@ group. On the host the presets go to `YamiPan_DrawUiReg`; the draw module must s
 of the named target when a GsTexture has m_isTarget (no GS memory).
 
 **`game/uigame.cpp` 0x25fa50..0x2640e8 (TU 21, 2026-11-03, batch 049; cut out of
-`unassigned@00252840`; the file name is the port's; 21 of 40 written, `partial`)**: the S2D UI's
+`unassigned@00252840`; the file name is the port's; 30 of 40 written, `partial`)**: the S2D UI's
 **game side**. Below it 0x252840..0x25fa50 are the widget classes (vtables 0x316a90..0x316c10,
 `UiWidget::create` 0x25e260) with a tween record helper set 0x25f5b0..0x25fa10 (0x25f860 has 64
 callers); above it libscf. In it: **`UiFont`** (0x14: glyphs, owned GsTexture, text, spacing 2 / 0);
@@ -867,8 +867,32 @@ of {handle, next}; objects of kind 0x15 skipped; merged by name +0x20, count +0x
 `gItemDefs` 0x574c10 (160 x 0x20: name[16], +0x10 kind (>= 7 items, below weapons), +0x19 > 1 shows
 the count, +0x1e max). Outside a stage the sprites preview the sheet: item slot n = the sheet's
 (n + 1)-th item, weapon slots cycle by the counter 0x31ae44 that 0x262840 steps.
-Unwritten: the text variables 0x260bc0 / 0x2612c0 ("%s%s%s", "--:--:--"; table 0x2fb120 rItem00_C /
-rItem00_I), `getGameValue` / `setGameValue`, 0x261cf0, 0x262840, 0x263b90 and the rest to 0x264070.
+**Game values** (third run, batch 051): `setGameValue(kind, value, i, j)` / `getGameValue(kind, i,
+j, expected)`, 40 kinds through jump tables 0x3086e0 / 0x308780 (Ghidra does not recover them: read
+the asm; `GameValueKind` in uigame.h names all 40). Nearly all are SystemData fields reached through
+`getSaveData` 0x23bb40 (options +0x4d0 sound / screen offset / brightness / language / wideScreen /
+mapMode / hints and the unnamed bytes as bools, archives, stage flags, variant3ac, the flag table,
+medals[1] / [2], the play record, unlock468, both button maps); writing the screen offset calls
+`gfxSetDisplayOffset(gfxGetCurrentDisplay(), x, y)`. The flag table is reached with a **null-checked
++0x520 adjust**, the code shape of a base-class conversion: SystemData may derive from FlagTable (the
+other parts are plain members). Archive ids >= 150 read stage (id - 150)'s flags (2 unless set, or
+always 2 with unlock468); writes to archive 64 also draw variant3ac. Kinds 21 / 22 / 30 / 31 read the
+navi menu (`getNaviMenu` 0x29efe0, sbss gp-0x79f8: +0x2a8 ints, +0x584 bits, +0x5e0 / +0x5f0 bytes).
+Kind 25 answers 3 / 0x11 / 0xff by index, else 0xfe (unread). Kinds 36 / 37 are **pending clock
+amounts**: `StageResult` clock2 (stage 29's score: amounts 0x2fae60, 0..100000, 9) / clock (0x2fae90,
+0..4500, 7; counts in sdata 0x31abd8 / 0x31abdc): an index arms (state 1, target = amount), 253
+cancels (|= 2), 254 adds (|= 8, value += target, target 0, |= 0x10), 255 marks (|= 4); read with one of
+those as the expected value it answers it when the bit is set, else the armed amount's index
+(`StageClockState` in stageresult.h). Kind 29 is the play record's +0x10 (count-up clock), 1 on stage
+29. The player hooks the tracks inline exist out of line for the map widgets 0x25d8a0 / 0x25e080:
+`getPlayerMapPos` 0x2625c0, `mapShowsPlayer` 0x262640, `getPlayerHeading` 0x2627e0;
+`stepWeaponPreview` 0x262840 (UiWidget::create) steps the preview counter outside a stage, in one
+calls `PlayerMotion::refresh` 0x1e66c0 on the player's +0x224 (guess: the motion set by weapon);
+`isHighestWinsStage` 0x261cf0. Unwritten: the text variables 0x260bc0 / 0x2612c0 ("%s%s%s",
+"--:--:--"; table 0x2fb120 rItem00_C / rItem00_I), the empty 0x263b90 (called by 0x287f20 with
+gStageScene +0xf4) and the small class 0x263ba0..0x264070 (members at +0xc / +0x10 / +0x14; +0x14 a
+0x3c-byte object from 0x151600(0x700, 0x700, 0x200, 0x200, 0); callers in stage code 0x198970..
+0x1dbca0: possibly its own TU).
 
 ## Classes
 

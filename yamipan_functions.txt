@@ -4617,7 +4617,7 @@
 /* 001e6160 0000029c */ FUN_001e6160(){}
 /* 001e6400 00000090 */ FUN_001e6400(){}
 /* 001e6490 00000228 */ FUN_001e6490(){}
-/* 001e66c0 0000063c */ FUN_001e66c0(){}
+/* 001e66c0 0000063c */ PlayerMotion::refresh(){}  // game
 /* 001e6d00 00000028 */ FUN_001e6d00(){}
 /* 001e6d30 00000024 */ FUN_001e6d30(){}
 /* 001e6d60 00001488 */ FUN_001e6d60(){}
@@ -6058,13 +6058,13 @@
 /* 00260ab0 00000108 */ UiPinRotTrack::bindTarget(){}  // game
 /* 00260bc0 000006f8 */ FUN_00260bc0(){}
 /* 002612c0 00000a30 */ FUN_002612c0(){}
-/* 00261cf0 0000000c */ FUN_00261cf0(){}
+/* 00261cf0 0000000c */ isHighestWinsStage(){}  // game
 /* 00261d00 000008b8 */ UiSheetSpriteTrack::findSprite(){}  // game
-/* 002625c0 0000007c */ FUN_002625c0(){}
-/* 00262640 000000a4 */ FUN_00262640(){}
+/* 002625c0 0000007c */ getPlayerMapPos(){}  // game
+/* 00262640 000000a4 */ mapShowsPlayer(){}  // game
 /* 002626f0 000000e8 */ getDoorState(){}  // game
-/* 002627e0 00000060 */ FUN_002627e0(){}
-/* 00262840 00000060 */ FUN_00262840(){}
+/* 002627e0 00000060 */ getPlayerHeading(){}  // game
+/* 00262840 00000060 */ stepWeaponPreview(){}  // game
 /* 002628a0 000001e8 */ scanItems(){}  // game
 /* 00262a90 00000354 */ scanWeapons(){}  // game
 /* 00262df0 0000006c */ getStagePackData(){}  // game
@@ -6910,7 +6910,7 @@
 /* 0029e4f0 00000a7c */ FUN_0029e4f0(){}
 /* 0029ef70 0000005c */ FUN_0029ef70(){}
 /* 0029efd0 0000000c */ getSaveExtra(){}  // game
-/* 0029efe0 00000008 */ FUN_0029efe0(){}
+/* 0029efe0 00000008 */ getNaviMenu(){}  // game
 /* 0029eff0 0000005c */ FUN_0029eff0(){}
 /* 0029f050 000001b0 */ FUN_0029f050(){}
 /* 0029f200 000000a0 */ FUN_0029f200(){}

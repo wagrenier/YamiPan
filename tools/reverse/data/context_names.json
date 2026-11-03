@@ -10133,6 +10133,12 @@
   "was": "FUN_001d6a90",
   "why": "a0 the stage sound, a1 a name: over the 64 play slots (+0x100, 8 bytes {kind, record}) stops every record of kind 2 / 1 whose entry name equals a1 and is not stopped yet (SePlayer::stop on +8 when its handle >= 0) and marks it stopped; UiLayout::stopSound inside a stage"
  },
+ "001e66c0": {
+  "name": "PlayerMotion::refresh",
+  "tag": "game-inferred",
+  "was": "FUN_001e66c0",
+  "why": "a0 the player's +0x224 object (its +0 the player): picks names from the 0x210-byte records 0x577b20 (index +0x40, slot +0x6c; '*'-prefixed alternates when the long weapon +0x238's item def kind is 5 or 6) and hands them to 0x216400; guess: the motion set for the weapon carried. stepWeaponPreview in a stage"
+ },
  "001fe150": {
   "name": "FontData::countLines",
   "tag": "game-inferred",
@@ -11903,17 +11909,47 @@
   "was": "FUN_00260ab0",
   "why": "(track, name): name == rCharactorPostion -> +0x14 / +0x18 = camera x, -z (+0x150 / +0x154) * 0.1 (5000 default), +0x1c the yaw as bindTarget of kind 0x1a; else 0, 0, 0; UiAnim::init kinds 0x16 / 0x18"
  },
+ "00261cf0": {
+  "name": "isHighestWinsStage",
+  "tag": "game-inferred",
+  "was": "FUN_00261cf0",
+  "why": "answers a0 == 29 (kStageHighestWins, the stage whose clock2 keeps the highest score); called by the text variables 0x2612c0"
+ },
  "00261d00": {
   "name": "UiSheetSpriteTrack::findSprite",
   "tag": "game-inferred",
   "was": "FUN_00261d00",
   "why": "(track): the TimM sheet sprite named by the record's +0x14 (big lookup through table 0x2fafc0 with the layout hooks); its +2 short indexes the sheet's +0x24 images; null: nothing drawn"
  },
+ "002625c0": {
+  "name": "getPlayerMapPos",
+  "tag": "game-inferred",
+  "was": "FUN_002625c0",
+  "why": "a0 a float[2]: the player's (gStageScene +0x78) +0x150 / -+0x154 times 0.1, or (6000, -5000) * 0.1 outside a stage; the out-of-line copy of what UiPinRotTrack::bindTarget inlines; called by the widgets 0x25d8a0 / 0x25e080"
+ },
+ "00262640": {
+  "name": "mapShowsPlayer",
+  "tag": "game-inferred",
+  "was": "FUN_00262640",
+  "why": "GameOptions::mapMode 1 -> 1, 0 -> 0, else the player's map holder (+0x234 -> +0x240 -> +0x214); the out-of-line copy of what UiLayout::testGameState inlines for rMapP; the map widgets 0x25d8a0 / 0x25e080"
+ },
  "002626f0": {
   "name": "getDoorState",
   "tag": "game-inferred",
   "was": "FUN_002626f0",
   "why": "a0 a name: outside a stage name[10] % 5, else the stage object of that name (0x193ce0 on gStageScene +0x10); not kind 2 or none -> 4, else its +0x2a8 mapped 4->2, 3->3, 1/2->1, 0->0, other 4. Compared with the rDunknown..rDNone index in UiLayout::testGameState"
+ },
+ "002627e0": {
+  "name": "getPlayerHeading",
+  "tag": "game-inferred",
+  "was": "FUN_002627e0",
+  "why": "normalizeAngle(pi - player +0x168) or 0x3fc90e56 outside a stage; the out-of-line copy of UiRotateToTrack::bindTarget's inline; the map widgets"
+ },
+ "00262840": {
+  "name": "stepWeaponPreview",
+  "tag": "game-inferred",
+  "was": "FUN_00262840",
+  "why": "outside a stage counts sbss 0x31ae44 up (the weapon findSprite shows from the sheet) and answers 1; in a stage calls 0x1e66c0 on the player's +0x224 and answers 0 (1 when there is none); UiWidget::create"
  },
  "002628a0": {
   "name": "scanItems",
@@ -12568,6 +12604,12 @@
   "tag": "game-inferred",
   "was": "FUN_0029efd0",
   "why": "returns 0x5995e0, a 0x104-byte block (int + 0x20 doublewords) that SaveFile::capture copies into a save at +0x920 and SaveFile::apply copies back; its own module (0x29e..) is unread, so what it holds is open"
+ },
+ "0029efe0": {
+  "name": "getNaviMenu",
+  "tag": "game-inferred",
+  "was": "FUN_0029efe0",
+  "why": "answers sbss gp-0x79f8, the navi menu object (0x29a700..); getGameValue kinds 21 / 22 / 30 / 31 read its +0x2a8 ints and +0x584 / +0x5e0 / +0x5f0 bytes after a null check"
  },
  "002a9c70": {
   "name": "memcardEnd",

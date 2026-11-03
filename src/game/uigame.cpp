@@ -10,6 +10,7 @@
 
 #include "game/gamehooks.h"
 #include "game/gamesystem.h"
+#include "game/gfxtarget.h"
 #include "game/gsutil.h"
 #include "game/progress.h"
 #include "game/stageresult.h"
@@ -88,14 +89,6 @@ static inline void relocateIndex(S2dRef<T> &ref, S2dRef<T> *table)
 static inline StagePlayer *stagePlayer()
 {
     return gStageScene != nullptr ? gStageScene->player : nullptr;
-}
-
-// The angle the S2D draws the player's heading at: pi - yaw, wrapped.
-static inline float playerHeading()
-{
-    if (gStageScene == nullptr)
-        return kUiTargetDefaultYaw;
-    return normalizeAngle(-stagePlayer()->yaw + kPi);
 }
 
 // The game-state names (UiGameState order). In the ROM a table in bss
@@ -228,26 +221,6 @@ static inline const TimSheetSprite *sheetFindSprite(TimSheet *sheet, const char 
 {
     int index = timSheetFind(sheet, name);
     return timSheetSprite(sheet, index);
-}
-
-// Whether the map shows where the player is (GameOptions::mapMode; in
-// between, the player's map holder). Inline in the ROM (testGameState,
-// twice).
-static inline u_char mapShowsPlayer()
-{
-    GameOptions *options = getGameOptions();
-    if (options->mapMode == MapMode_Always)
-        return 1;
-    if (options->mapMode == MapMode_Never)
-        return 0;
-    if (gStageScene == nullptr)
-        return 0;
-    StagePlayer *player = stagePlayer();
-    if (player == nullptr)
-        return 0;
-    if (player->map == nullptr)
-        return 0;
-    return (*player->map->state)->showsPlayer;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -512,6 +485,7 @@ bool UiLayout::testGameValue(int kind, u_int packed)
 // would show them (items all there, weapons carried).
 // FS2 0x002604a0
 // callcheck: getGameOptions, getSaveData (mapShowsPlayer and the SystemData casts, inline)
+// (mapShowsPlayer is inline in the ROM: the port calls the out-of-line copy)
 
 bool UiLayout::testGameState(const char *name, const char *arg, UiSequence *seq)
 {
@@ -649,19 +623,19 @@ bool UiLayout::testGameState(const char *name, const char *arg, UiSequence *seq)
 // The tracks' game targets.
 
 // FS2 0x00260a20
-// callcheck: normalizeAngle (playerHeading, inline)
+// callcheck: normalizeAngle (getPlayerHeading, inline)
 
 void UiRotateToTrack::bindTarget(const char *name)
 {
     if (strcmp(name, kUiTargetPlayer) == 0)
-        m_targetAngle = playerHeading();
+        m_targetAngle = getPlayerHeading();
     else
         m_targetAngle = 0.0f;
 }
 
 // The player's map position (x, -z) / 10 and heading.
 // FS2 0x00260ab0
-// callcheck: normalizeAngle (playerHeading, inline)
+// callcheck: normalizeAngle (getPlayerMapPos and getPlayerHeading, inline)
 
 void UiPinRotTrack::bindTarget(const char *name)
 {
@@ -671,23 +645,19 @@ void UiPinRotTrack::bindTarget(const char *name)
         m_angle = 0.0f;
         return;
     }
-    float z;
-    if (gStageScene == nullptr) {
-        z = kUiTargetDefaultZ;
-        m_pos[0] = kUiTargetDefaultX;
-    } else {
-        StagePlayer *player = stagePlayer();
-        z = player->posZ;
-        m_pos[0] = player->posX;
-    }
-    m_pos[1] = -z;
-    m_pos[0] = m_pos[0] * kUiTargetPosScale;
-    m_pos[1] = m_pos[1] * kUiTargetPosScale;
-    m_angle = playerHeading();
+    getPlayerMapPos(m_pos);
+    m_angle = getPlayerHeading();
 }
 
 // ──────────────────────────────────────────────────────────────────────
 // The sheet sprites.
+
+// FS2 0x00261cf0
+
+bool isHighestWinsStage(int stage)
+{
+    return stage == kStageHighestWins;
+}
 
 // The sprite the record names: a key-configuration icon (the button an
 // action has), the held item or weapon in a slot ("<prefix><item
@@ -812,6 +782,44 @@ const TimSheetSprite *UiSheetSpriteTrack::findSprite()
 // ──────────────────────────────────────────────────────────────────────
 // The game hooks.
 
+// FS2 0x002625c0
+
+void getPlayerMapPos(float pos[2])
+{
+    float z;
+    if (gStageScene == nullptr) {
+        z = kUiTargetDefaultZ;
+        pos[0] = kUiTargetDefaultX;
+    } else {
+        StagePlayer *player = stagePlayer();
+        z = player->posZ;
+        pos[0] = player->posX;
+    }
+    pos[1] = -z;
+    pos[0] = pos[0] * kUiTargetPosScale;
+    pos[1] = pos[1] * kUiTargetPosScale;
+}
+
+// GameOptions::mapMode; in between, the player's map holder says.
+// FS2 0x00262640
+
+u_char mapShowsPlayer()
+{
+    GameOptions *options = getGameOptions();
+    if (options->mapMode == MapMode_Always)
+        return 1;
+    if (options->mapMode == MapMode_Never)
+        return 0;
+    if (gStageScene == nullptr)
+        return 0;
+    StagePlayer *player = stagePlayer();
+    if (player == nullptr)
+        return 0;
+    if (player->map == nullptr)
+        return 0;
+    return (*player->map->state)->showsPlayer;
+}
+
 // FS2 0x002626f0
 
 int getDoorState(const char *name)
@@ -836,6 +844,33 @@ int getDoorState(const char *name)
     default:
         return UiDoor_None;
     }
+}
+
+// The angle the S2D draws the player's heading at: pi - yaw, wrapped.
+// FS2 0x002627e0
+
+float getPlayerHeading()
+{
+    if (gStageScene == nullptr)
+        return kUiTargetDefaultYaw;
+    return normalizeAngle(-stagePlayer()->yaw + kPi);
+}
+
+// FS2 0x00262840
+
+int stepWeaponPreview()
+{
+    if (gStageScene == nullptr) {
+        sUiWeaponCycle++;
+        return 1;
+    }
+    StagePlayer *player = stagePlayer();
+    if (player == nullptr)
+        return 1;
+    if (player->motion == nullptr)
+        return 1;
+    player->motion->refresh();
+    return 0;
 }
 
 // The player's items in list order, merged by name into at most eight
@@ -936,6 +971,327 @@ bool inStage()
     return gStageScene != nullptr;
 }
 
+// The pending amounts the clock kinds arm (data 0x2fae60 / 0x2fae90;
+// their counts in sdata 0x31abd8 / 0x31abdc): the score clock2 keeps on
+// stage 29, and the time the clock keeps elsewhere (its ticks).
+static const u_int sClock2Amounts[] = { 0, 1000, 2000, 5000, 8000, 10000, 30000, 50000, 100000 };
+static int sClock2AmountCount = sizeof(sClock2Amounts) / sizeof(sClock2Amounts[0]);  /* 9 */
+static const u_int sClockAmounts[] = { 0, 750, 1500, 2250, 3000, 3750, 4500 };
+static int sClockAmountCount = sizeof(sClockAmounts) / sizeof(sClockAmounts[0]);     /* 7 */
+
+// GameValue_Fixed by index (what the numbers are is unread).
+static const int sGameValueFixed[] = { 3, 0x11, 0xff };
+constexpr int kGameValueFixedCount = sizeof(sGameValueFixed) / sizeof(sGameValueFixed[0]);
+constexpr int kGameValueFixedOther = 0xfe;
+
+// The clock kinds' write, inline in the ROM (twice): value an amount index
+// or a GameValueClock action.
+static inline void setClockAmount(StageClock *clock, int value, const u_int *amounts, int count)
+{
+    switch (value) {
+    case GameValueClock_Cancel:
+        clock->state |= StageClockState_Cancelled;
+        break;
+    case GameValueClock_Add:
+        clock->state |= StageClockState_Added;
+        clock->value += clock->target;
+        clock->target = 0;
+        clock->state |= StageClockState_Settled;
+        break;
+    case GameValueClock_Mark:
+        clock->state |= StageClockState_Marked;
+        break;
+    default:
+        // PC: the ROM reads past the table for an index it does not
+        // hold; the port arms an amount of 0.
+        clock->state = StageClockState_Armed;
+        clock->target = value >= 0 && value < count ? amounts[value] : 0;
+        break;
+    }
+}
+
+// The clock kinds' read, inline in the ROM (twice): with an action as the
+// expected value, the action when it was done (else 0); otherwise the
+// index of the armed amount (0 when none is armed, it was cancelled or the
+// table has no such amount).
+static inline int getClockAmount(const StageClock *clock, int expected, const u_int *amounts, int count)
+{
+    switch (expected) {
+    case GameValueClock_Cancel:
+        return (clock->state & StageClockState_Cancelled) ? expected : 0;
+    case GameValueClock_Add:
+        return (clock->state & StageClockState_Added) ? expected : 0;
+    case GameValueClock_Mark:
+        return (clock->state & StageClockState_Marked) ? expected : 0;
+    }
+    u_int state = clock->state;
+    int amount;
+    if (state == 0 || !(state & StageClockState_Armed) || (state & StageClockState_Cancelled))
+        amount = 0;
+    else
+        amount = clock->target;
+    for (int i = 0; i < count; i++) {
+        if ((u_int)amount == amounts[i])
+            return i;
+    }
+    return 0;
+}
+
+// Writes a game value (GameValueKind; the read-only kinds do nothing).
+// The ROM calls getSaveData once per case; the port once.
+// FS2 0x00262e70
+// callcheck: getSaveData, getStageResult (the per-case calls and setClockAmount, inline)
+
+void setGameValue(int kind, int value, int i, int j)
+{
+    if ((u_int)kind >= GameValue_Count)
+        return;
+    SystemData *data = reinterpret_cast<SystemData *>(getSaveData());
+    GameOptions *options = &data->options;
+    SaveData *save = &data->save;
+    switch (kind) {
+    case GameValue_SoundMode:
+        options->soundMode = value;
+        break;
+    case GameValue_Option04:
+        options->_04 = value;
+        break;
+    case GameValue_Option08:
+        (&options->_08)[i] = value != 0;
+        break;
+    case GameValue_ScreenX:
+    case GameValue_ScreenY:
+        if (kind == GameValue_ScreenX)
+            options->screenX = (short)value;
+        else
+            options->screenY = (short)value;
+        gfxSetDisplayOffset(gfxGetCurrentDisplay(), options->screenX, options->screenY);
+        break;
+    case GameValue_Option10:
+        options->_10 = value;
+        break;
+    case GameValue_Brightness:
+        options->brightness = value;
+        break;
+    case GameValue_Language:
+        setLanguage(value);
+        break;
+    case GameValue_WideScreen:
+        options->wideScreen = value;
+        break;
+    case GameValue_MapMode:
+        options->mapMode = value;
+        break;
+    case GameValue_Hints:
+        options->hints = value;
+        break;
+    case GameValue_Option4c:
+        options->_4c = value != 0;
+        break;
+    case GameValue_Archive: {
+        if (i >= kGameValueArchiveStage)
+            return;
+        if (i == kGameValueArchiveVariant) {
+            if (value == 1)
+                save->pickVariant3ac(-1);
+            else if (value == 2 && save->archive[i] != 2 && save->variant3ac == 0)
+                save->_3b0 = 1;
+        }
+        // Past the archives this is SaveData::stageFlags[i - 101].
+        u_char *bytes = save->archive;
+        bytes[i] = (u_char)value;
+        break;
+    }
+    case GameValue_StageFlags: {
+        // As UiLayout::writeGameValue does it (value the bits, i the stage).
+        u_char flags = save->stageFlags[i];
+        if (((u_int)value & ~(u_int)flags) == 0)
+            return;
+        save->stageFlags[i] = flags | (u_char)value;
+        if (save->stageFlags[kStageFlagUnlockA] != 0 && save->stageFlags[kStageFlagUnlockB] != 0)
+            save->markUnlock468();
+        break;
+    }
+    case GameValue_Variant3ac:
+        save->pickVariant3ac(value);
+        break;
+    case GameValue_Flag:
+        data->flags.set(i, value);
+        break;
+    case GameValue_Medals1:
+    case GameValue_Medals2:
+        if (j >= kStageCount)
+            return;
+        save->medals[kind == GameValue_Medals1 ? 1 : 2][i][j] |= (u_char)value;
+        break;
+    case GameValue_SelectStage:
+        data->select.stage = value;
+        break;
+    case GameValue_SelectKind:
+        data->select.kind = value;
+        break;
+    case GameValue_SelectVariant:
+        data->select.variant = value;
+        break;
+    case GameValue_Option4d:
+        options->_4d = value != 0;
+        break;
+    case GameValue_Unlock468:
+        save->unlock468 = value != 0;
+        break;
+    case GameValue_ButtonMap:
+        options->buttonMap.assign(i, value);
+        break;
+    case GameValue_ButtonMapDraft:
+        gUiButtonMapDraft.assign(i, value);
+        break;
+    case GameValue_StageClock:
+        data->select._10 = value != 0;
+        break;
+    case GameValue_Option14:
+        options->_14 = value != 0;
+        break;
+    case GameValue_Option15:
+        options->_15 = value != 0;
+        break;
+    case GameValue_Option1c:
+        options->_1c = value != 0;
+        break;
+    case GameValue_Clock2Amount:
+        setClockAmount(&getStageResult()->clock2, value, sClock2Amounts, sClock2AmountCount);
+        break;
+    case GameValue_ClockAmount:
+        setClockAmount(&getStageResult()->clock, value, sClockAmounts, sClockAmountCount);
+        break;
+    default:
+        break;
+    }
+}
+
+// Reads a game value (GameValueKind); 0 for an unknown kind.
+// FS2 0x002633f0
+// callcheck: getSaveData, getStageResult (the per-case calls and getClockAmount, inline)
+
+int getGameValue(int kind, int i, int j, int expected)
+{
+    if ((u_int)kind >= GameValue_Count)
+        return 0;
+    switch (kind) {
+    case GameValue_None:
+        return 0;
+    case GameValue_BrightnessValue:
+        return reinterpret_cast<SystemData *>(getSaveData())->options.getBrightnessValue();
+    case GameValue_Language:
+        return getLanguage();
+    case GameValue_Archive:
+        if (i >= kGameValueArchiveStage) {
+            if (getSaveData()->unlock468 != 0)
+                return 2;
+            if (getSaveData()->stageFlags[i - kGameValueArchiveStage] != 0)
+                return 0;
+            return 2;
+        }
+        if (i <= 0 || i > kArchiveCount)
+            return 0;
+        return getSaveData()->archive[i];
+    case GameValue_NaviValue: {
+        NaviMenu *menu = getNaviMenu();
+        return menu != nullptr ? menu->values[i] : 0;
+    }
+    case GameValue_NaviBits: {
+        NaviMenu *menu = getNaviMenu();
+        return menu != nullptr ? (menu->bits[i] & j) != 0 : 0;
+    }
+    case GameValue_NaviFlagF0: {
+        NaviMenu *menu = getNaviMenu();
+        return menu != nullptr ? menu->flagsF0[i] != 0 : 0;
+    }
+    case GameValue_NaviFlagE0: {
+        NaviMenu *menu = getNaviMenu();
+        return menu != nullptr ? menu->flagsE0[i] != 0 : 0;
+    }
+    case GameValue_Fixed:
+        if (i >= 0 && i < kGameValueFixedCount)
+            return sGameValueFixed[i];
+        return kGameValueFixedOther;
+    case GameValue_ButtonMapDraft:
+        return gUiButtonMapDraft.button[i];
+    case GameValue_PerfectBits:
+        return getStageResult()->getPerfectBits();
+    case GameValue_BeatsRecord:
+        return (u_char)getStageResult()->beatsRecord();
+    case GameValue_Clock2Amount:
+        return getClockAmount(&getStageResult()->clock2, expected, sClock2Amounts, sClock2AmountCount);
+    case GameValue_ClockAmount:
+        return getClockAmount(&getStageResult()->clock, expected, sClockAmounts, sClockAmountCount);
+    default:
+        break;
+    }
+
+    // The system data's own fields.
+    SystemData *data = reinterpret_cast<SystemData *>(getSaveData());
+    GameOptions *options = &data->options;
+    SaveData *save = &data->save;
+    switch (kind) {
+    case GameValue_SoundMode:
+        return options->soundMode;
+    case GameValue_Option04:
+        return options->_04;
+    case GameValue_Option08:
+        return (&options->_08)[i];
+    case GameValue_ScreenX:
+        return options->screenX;
+    case GameValue_ScreenY:
+        return options->screenY;
+    case GameValue_Option10:
+        return options->_10;
+    case GameValue_Brightness:
+        return options->brightness;
+    case GameValue_WideScreen:
+        return options->wideScreen;
+    case GameValue_MapMode:
+        return options->mapMode;
+    case GameValue_Hints:
+        return options->hints;
+    case GameValue_Option4c:
+        return options->_4c;
+    case GameValue_StageFlags:
+        return save->stageFlags[i];
+    case GameValue_Variant3ac:
+        return save->variant3ac;
+    case GameValue_Flag:
+        return data->flags.get(i);
+    case GameValue_Medals1:
+        return save->medals[1][i][j];
+    case GameValue_Medals2:
+        return save->medals[2][i][j];
+    case GameValue_SelectStage:
+        return data->select.stage;
+    case GameValue_SelectKind:
+        return data->select.kind;
+    case GameValue_SelectVariant:
+        return data->select.variant;
+    case GameValue_Option4d:
+        return options->_4d;
+    case GameValue_Unlock468:
+        return save->unlock468;
+    case GameValue_ButtonMap:
+        return options->buttonMap.button[i];
+    case GameValue_StageClock:
+        if (data->select.stage == kStageHighestWins)
+            return 1;
+        return data->select._10;
+    case GameValue_Option14:
+        return options->_14;
+    case GameValue_Option15:
+        return options->_15;
+    case GameValue_Option1c:
+        return options->_1c;
+    default:
+        return 0;
+    }
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // The key-configuration draft.
 
@@ -944,4 +1300,21 @@ bool inStage()
 ButtonMap *getButtonMapDraft()
 {
     return &gUiButtonMapDraft;
+}
+
+// Into the options' map, which pad 0 then uses.
+// FS2 0x00263a80
+
+void applyButtonMapDraft()
+{
+    GameOptions *options = &reinterpret_cast<SystemData *>(getSaveData())->options;
+    options->buttonMap = gUiButtonMapDraft;
+    gGameSystem->m_pad0.setButtonMap(&options->buttonMap);
+}
+
+// FS2 0x00263b10
+
+void loadButtonMapDraft()
+{
+    gUiButtonMapDraft = reinterpret_cast<SystemData *>(getSaveData())->options.buttonMap;
 }

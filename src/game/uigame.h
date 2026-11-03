@@ -260,14 +260,91 @@ ButtonMap *getButtonMapDraft();                                          // FS2 
 void *getStagePackData(const char *name);                                // FS2 0x00262df0
 
 // The game values the scripts read, write and test (S2dOp_ReadGameValue /
-// WriteGameValue, S2dCond_GameValue): kind and up to three arguments.
-// The kinds are getGameValue's switch (unread); the one the layout hooks
-// handle themselves:
+// WriteGameValue, S2dCond_GameValue). setGameValue takes (kind, value, i,
+// j), getGameValue (kind, i, j, expected): the tested value, which only the
+// clock kinds look at. Most are the system data's fields (game/sysdata.h);
+// the names say which. Kinds 5, 6, 21, 22, 25, 28, 30, 31 and 34 are
+// read only.
 enum GameValueKind
 {
-    GameValue_StageFlags = 13,  // SaveData::stageFlags: (set, stage, bits) / (expected, stage, mask)
+    GameValue_SoundMode = 0,        // GameOptions::soundMode
+    GameValue_Option08 = 1,         // GameOptions::_08 byte i (1: the pad byte after it); written as a bool
+    GameValue_ScreenX = 2,          // GameOptions::screenX; writing moves the display
+    GameValue_ScreenY = 3,          // GameOptions::screenY
+    GameValue_Option10 = 4,         // GameOptions::_10
+    GameValue_None = 5,             // reads 0
+    GameValue_BrightnessValue = 6,  // GameOptions::getBrightnessValue
+    GameValue_Language = 7,         // getLanguage / setLanguage
+    GameValue_WideScreen = 8,       // GameOptions::wideScreen
+    GameValue_MapMode = 9,          // GameOptions::mapMode
+    GameValue_Hints = 10,           // GameOptions::hints
+    GameValue_Option4c = 11,        // GameOptions::_4c (bool)
+    GameValue_Archive = 12,         // SaveData::archive[i]; from kGameValueArchiveStage, a stage's flags
+    GameValue_StageFlags = 13,      // SaveData::stageFlags: (bits, stage) / (stage)
+    GameValue_Variant3ac = 14,      // SaveData::variant3ac (written through pickVariant3ac)
+    GameValue_Flag = 15,            // FlagTable entry: (value, index) / (index)
+    GameValue_Medals1 = 16,         // SaveData::medals[1][i][j]: written ORed in
+    GameValue_Medals2 = 17,         // SaveData::medals[2][i][j]
+    GameValue_SelectStage = 18,     // StageSelect::stage
+    GameValue_SelectKind = 19,      // StageSelect::kind
+    GameValue_SelectVariant = 20,   // StageSelect::variant
+    GameValue_NaviValue = 21,       // NaviMenu::values[i]; 0 without the menu
+    GameValue_NaviBits = 22,        // NaviMenu::bits[i] & j
+    GameValue_Option4d = 23,        // GameOptions::_4d (bool)
+    GameValue_Unlock468 = 24,       // SaveData::unlock468 (bool)
+    GameValue_Fixed = 25,           // kGameValueFixed[i], else 0xfe (unread what for)
+    GameValue_ButtonMap = 26,       // GameOptions::buttonMap: (button, action) / (action)
+    GameValue_ButtonMapDraft = 27,  // gUiButtonMapDraft
+    GameValue_PerfectBits = 28,     // StageResult::getPerfectBits
+    GameValue_StageClock = 29,      // StageSelect::_10 (the count-up clock); stage 29 reads 1
+    GameValue_NaviFlagF0 = 30,      // NaviMenu::flagsF0[i] != 0
+    GameValue_NaviFlagE0 = 31,      // NaviMenu::flagsE0[i] != 0
+    GameValue_Option14 = 32,        // GameOptions::_14 (bool)
+    GameValue_Option15 = 33,        // GameOptions::_15 (bool)
+    GameValue_BeatsRecord = 34,     // StageResult::beatsRecord
+    GameValue_Option1c = 35,        // GameOptions::_1c (bool)
+    GameValue_Clock2Amount = 36,    // StageResult::clock2's pending amount (kGameValueClock*)
+    GameValue_ClockAmount = 37,     // StageResult::clock's
+    GameValue_Brightness = 38,      // GameOptions::brightness
+    GameValue_Option04 = 39,        // GameOptions::_04
+    GameValue_Count = 40,
 };
-int  getGameValue(int kind, int a, int b, int c);                       // FS2 0x002633f0
-void  setGameValue(int kind, int a, int b, int c);                       // FS2 0x00262e70
+
+// GameValue_Archive: ids from here read stage (id - 150)'s flags; writes
+// below it index the save from SaveData::archive on (101..149 land in
+// SaveData::stageFlags, as in the ROM).
+constexpr int kGameValueArchiveStage = 150;
+// The archive whose writes also draw SaveData::variant3ac.
+constexpr int kGameValueArchiveVariant = 64;
+
+// The clock kinds' values: an amount index arms the clock (StageClock::
+// state 1, target the amount); these three act on the armed amount and,
+// as getGameValue's expected value, test for what they did.
+enum GameValueClock
+{
+    GameValueClock_Cancel = 253,    // state |= StageClockState_Cancelled
+    GameValueClock_Add = 254,       // value += target, target 0; Added | Settled
+    GameValueClock_Mark = 255,      // state |= StageClockState_Marked
+};
+
+int  getGameValue(int kind, int i, int j, int expected);                // FS2 0x002633f0
+void setGameValue(int kind, int value, int i, int j);                    // FS2 0x00262e70
+
+// Stage 29, the one whose clock2 keeps the highest score.
+bool isHighestWinsStage(int stage);                                      // FS2 0x00261cf0
+
+// The player as the map widgets show it: map position (x, -z) / 10,
+// heading pi - yaw, and whether the map shows the player at all (inline in
+// the tracks' binds and UiLayout::testGameState).
+void   getPlayerMapPos(float pos[2]);                                    // FS2 0x002625c0
+u_char mapShowsPlayer();                                                 // FS2 0x00262640
+float  getPlayerHeading();                                               // FS2 0x002627e0
+// The weapon preview's next step: outside a stage the weapon sprites'
+// cycle (1), in one the player's motion set (0; 1 without a player).
+int    stepWeaponPreview();                                              // FS2 0x00262840
+
+// The key-configuration draft from / back into the options (and the pad).
+void applyButtonMapDraft();                                              // FS2 0x00263a80
+void loadButtonMapDraft();                                               // FS2 0x00263b10
 
 #endif /* _GAME_UIGAME_H */

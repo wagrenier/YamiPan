@@ -50,6 +50,18 @@ enum PerfectBits
     PerfectBit_NoContinue = 0x08,   // counter[0] (StageResult::addContinue) == 0
 };
 
+// StageClock::state bits as setGameValue's clock kinds set them (the
+// stage scripts 0x1a8ca0.. set and test them too: their meaning there is
+// unread, the names say what the game values do).
+enum StageClockState
+{
+    StageClockState_Armed     = 0x01,   // target holds an amount
+    StageClockState_Cancelled = 0x02,   // the amount counts as none
+    StageClockState_Marked    = 0x04,
+    StageClockState_Added     = 0x08,   // the amount went into value
+    StageClockState_Settled   = 0x10,   // set with Added
+};
+
 // One clock, EE 0x10. The stage scripts (0x1a8ca0..0x1a9000) set value,
 // state and target, add to value, and test state for 0 or both bits 0x14.
 struct StageClock

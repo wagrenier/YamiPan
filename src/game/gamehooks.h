@@ -289,6 +289,14 @@ struct StageMapHolder
     StageMapState **state;      // FS2 +0x240
 };
 
+// The player's +0x224 object (its +0 the player). Guess: the motion set,
+// picked by the weapon carried.
+// layout: host -- contents unread.
+struct PlayerMotion
+{
+    void refresh();                                                      // FS2 0x001e66c0
+};
+
 // The player character of a stage (the stage object's +0x78). Only what
 // game/uigame.cpp reads.
 // layout: host -- EE: +0x150 / +0x154 position x / z, +0x168 yaw, +0x22c
@@ -300,7 +308,9 @@ struct StagePlayer
     float  posZ;                // FS2 +0x154
     u_char _158[0x10];
     float  yaw;                 // FS2 +0x168
-    u_char _16c[0xc0];
+    u_char _16c[0xb8];
+    PlayerMotion   *motion;     // FS2 +0x224
+    u_char _228[0x4];
     StageItemNode  *items;      // FS2 +0x22c
     u_char _230[0x4];
     StageMapHolder *map;        // FS2 +0x234
@@ -325,6 +335,23 @@ struct StageScene
     StagePlayer     *player;    // FS2 +0x78
 };
 extern StageScene *gStageScene;     /* sbss 0x31adf4 (gp-0x7a7c) */
+
+// The navi menu (0x29a700..; sbss gp-0x79f8, null while there is none).
+// Only what getGameValue reads; the extents are guesses (each array ends
+// where the next one starts).
+struct NaviMenu
+{
+    u_char _000[0x2a8];
+    int    values[0xb7];        // FS2 +0x2a8: GameValue_NaviValue
+    u_char bits[0x5c];          // FS2 +0x584: GameValue_NaviBits
+    u_char flagsE0[0x10];       // FS2 +0x5e0: GameValue_NaviFlagE0
+    u_char flagsF0[0x10];       // FS2 +0x5f0: GameValue_NaviFlagF0
+};
+static_assert(offsetof(NaviMenu, values) == 0x2a8, "NaviMenu::values");
+static_assert(offsetof(NaviMenu, bits) == 0x584, "NaviMenu::bits");
+static_assert(offsetof(NaviMenu, flagsE0) == 0x5e0, "NaviMenu::flagsE0");
+static_assert(offsetof(NaviMenu, flagsF0) == 0x5f0, "NaviMenu::flagsF0");
+NaviMenu *getNaviMenu();                                                 // FS2 0x0029efe0
 
 // The stage's files (sbss 0x31adfc, set by the stage loop): +0 its loader.
 // layout: host

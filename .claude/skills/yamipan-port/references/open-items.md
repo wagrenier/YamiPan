@@ -326,6 +326,23 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    **Next run (the same TU)**: the text variables 0x260bc0 / 0x2612c0 (with 0x261cf0, table 0x2fb120
    rItem00_C / rItem00_I), `getGameValue` 0x2633f0 / `setGameValue` 0x262e70, 0x262840 (steps the
    weapon preview), 0x263b90 (empty, called by 0x287f20) and 0x2625c0..0x264070.
+   **Third run (2026-11-03, batch 051, 7 names): 30 of 40 written, still `partial`**: `setGameValue`
+   / `getGameValue` (all 40 kinds from the jump tables: `GameValueKind`, `GameValueClock`,
+   `StageClockState`; architecture.md "Modules"), `getPlayerMapPos` / `mapShowsPlayer` /
+   `getPlayerHeading` (the out-of-line copies: the static inlines are gone, the binds and
+   testGameState call them), `stepWeaponPreview`, `isHighestWinsStage`, `applyButtonMapDraft` /
+   `loadButtonMapDraft`. Stand-ins in gamehooks.h: `PlayerMotion` (player +0x224, `refresh`
+   0x1e66c0), `NaviMenu` / `getNaviMenu` 0x29efe0 (array extents guessed). Doubts: the clock
+   state names say what the game values do, not what the scripts mean by them; kind 25's
+   3 / 0x11 / 0xff are unread; the unnamed option bytes keep their offsets as names
+   (GameValue_Option08 ..); SystemData may derive from FlagTable (the null-checked adjust), not
+   restructured. PC: an amount index past its table arms 0 (the ROM reads the next table). Checked:
+   callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on uigame and its users;
+   no harness for the game values. **Next run (the same TU)**: the text variables 0x260bc0 /
+   0x2612c0 (0x2612c0 is 0xa30 bytes: scanItems / scanWeapons, "%d/%d", "999/999", the clock
+   "%02d:%02d:%02d", table 0x2fb120), then decide the tail 0x263b90..0x264070 (the class with a
+   0x3c-byte member from 0x151600, called only from stage code: likely its own TU -- re-pin
+   game/uigame.cpp to end at 0x263b90 or 0x263ba0 and give the rest a file).
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

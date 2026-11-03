@@ -364,7 +364,7 @@
    "why": "UiMatrix (0x24dfa0..0x24e8a0) and UiDrawer (0x24e8a0..0x252840): the 2D draw helper of the layouts, every function a UiMatrix / UiDrawer member or its out-of-line helpers (uiTransformPoint, the strip meshes, uiPkAddGsData); after game/s2ddata.cpp, before the widget classes 0x252840.. (vtables 0x316a78..); name the port's (no source string), as uidrawer.h already had it"
   },
   "game/uigame.cpp": {
-   "notes": "Batch 050 (13 names, Ghidra saved). Written: UiLayout::testGameState 0x2604a0 over the 41-name table (0x599490, filled by the static initializer 0x310b60; constant in the port, enum UiGameState), UiSheetSpriteTrack::findSprite 0x261d00 with its tables (key-config sprites 0x2fafc0 -> button icons 0x2fb100 via the options ButtonMap or the menu draft 0x599470; item sprites 0x2faed0), scanItems 0x2628a0, scanWeapons 0x262a90, getDoorState 0x2626f0, getStagePackData 0x262df0, getButtonMapDraft 0x263a70. GameOptions +0x20 / +0x44 / +0x48 renamed wideScreen / mapMode / hints. New stand-ins: StageObject (getKind is virtual slot 123 in the ROM, declared plain), StageObjectList::find, StageScene::getFloor, StageFiles / getStageFiles, ItemDef / gItemDefs (gamehooks.h), getNaviTable (progress.h), UiScrollWidget (uisequence.h). Doubts: rF01..rFDF read as the player floor; the scroll widget class; gItemDefs bss 0x574c10 has no definition yet; PC guards where the ROM reads near null (no item def, no navi table, sheet without weapons). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on uigame and its users (RosePan SDK headers). Next run, same TU: the text variables 0x260bc0 / 0x2612c0 with 0x261cf0 and table 0x2fb120, getGameValue 0x2633f0 / setGameValue 0x262e70, 0x262840 (steps the weapon preview counter 0x31ae44), 0x263b90 and the rest to 0x264070.",
+   "notes": "Batch 051 (7 names, Ghidra saved). Written: setGameValue 0x262e70 / getGameValue 0x2633f0 read case by case from the asm (jump tables 0x3086e0 / 0x308780; enum GameValueKind names all 40 kinds, GameValueClock 253 / 254 / 255, StageClockState in stageresult.h), getPlayerMapPos 0x2625c0, mapShowsPlayer 0x262640, getPlayerHeading 0x2627e0 (the static inlines replaced by these; bindTarget and testGameState call them), stepWeaponPreview 0x262840, isHighestWinsStage 0x261cf0, applyButtonMapDraft 0x263a80, loadButtonMapDraft 0x263b10. Stand-ins in gamehooks.h: PlayerMotion (player +0x224, refresh 0x1e66c0), NaviMenu / getNaviMenu 0x29efe0 (arrays at +0x2a8 / +0x584 / +0x5e0 / +0x5f0, extents guessed). Doubts: the clock state names describe the game values only; kind 25 constants 3 / 0x11 / 0xff unread; SystemData may derive from FlagTable (null-checked +0x520 adjust), not restructured; PC guard: an amount index past its table arms 0. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on uigame and its users. Next run, same TU: the text variables 0x260bc0 / 0x2612c0 (table 0x2fb120), then decide the tail 0x263b90..0x264070 (a small class with a 0x3c-byte member from 0x151600, called only from stage code: likely its own TU; re-pin uigame.cpp to end at 0x263ba0 and give the rest a file).",
    "ranges": [
     [
      "0025fa50",
@@ -383,6 +383,12 @@
      "date": "2026-11-03 04:57",
      "status": "partial",
      "summary": "Second run: testGameState (41 named states), findSprite (key-config and item / weapon sprites), scanItems / scanWeapons, getDoorState, getStagePackData, getButtonMapDraft: 21 of 40 written, source-only, not built"
+    },
+    {
+     "build": "not built",
+     "date": "2026-11-03 05:15",
+     "status": "partial",
+     "summary": "Third run: setGameValue / getGameValue (all 40 kinds from the jump tables, the clock amounts), the out-of-line player hooks, stepWeaponPreview, isHighestWinsStage, the button-map draft load / apply: 30 of 40 written, source-only, not built"
     }
    ],
    "status": "partial",
