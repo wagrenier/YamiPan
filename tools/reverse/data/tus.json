@@ -26,6 +26,25 @@
    "status": "verify",
    "why": "BoxGrid: a 2D n x n grid over a BoxSet's oriented boxes (cell lists built with VU0 box/cell overlap tests, point lookup through boxContainsPoint) and its MSL vector<vector<vector<const Box*>>> template instances, which end at 0x2676e0; 0x2676e0 starts unrelated scene / thread code (getStageSelect, BGMOVIE). No source-path strings: file name descriptive."
   },
+  "game/clock.cpp": {
+   "notes": "Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode whose destructor 0x135550 is the real body (Clock::~Clock 0x1351b0 and MasterClock::~MasterClock 0x135330 only call it and free: Metrowerks one-dtor-with-flags). ROM bugs kept: the destructor detaches only its FIRST child (clearing the slot makes next(child) end the walk), the others keep a dangling parent (harmless while children die first; on the host a later child delete would read freed memory, watch at bootstrap 7); when that child was the last the ROM walks a null list (EE address 4), the port stops. PtrList slots are pointer-sized on the host (EE 4 bytes). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean, host harness (advance with scale 0x80, pause, getSeconds / getDeltaSeconds, delete detaching from the parent and freeing an emptied list). Next: the VU0 run unassigned@00135990 (20 functions; decode the COP2 words from the asm, open-items.md TU 42).",
+   "ranges": [
+    [
+     "001350d0",
+     "00135990"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 13:41",
+     "status": "verify",
+     "summary": "Cut out of unassigned@00133800 and pinned 0x1350d0-0x135990; all 14 written: Clock (create, setPaused, createChild, getDeltaSeconds, getSeconds, advance, resetTime, the destructors), MasterClock (ctor, update, dtor) and PtrList (next, add). Also game/mathutil.cpp 0x133800-0x1350d0 (18, verify) in the same commit; batches 071-072, 23 names."
+    }
+   ],
+   "status": "verify",
+   "why": "Cut out of unassigned@00133800: Clock (create, setPaused, dtor, createChild, getDeltaSeconds, getSeconds, advance, resetTime), MasterClock (update, ctor, dtor) and PtrList (next, add), whose only users are the clocks. Starts at Clock::create 0x1350d0 (same body as createChild); ends where the VU0 math 0x135990 begins. clock.h already existed."
+  },
   "game/datetime.cpp": {
    "notes": "Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts with sceScfGetLocalTimefromRTC (libscf, now lib_ranges 0x2640e8..0x2647d8, 19 functions named lib-context in batch 027) and returns a DateTime in the format asked for; both callers ask for binary. DateTime moved from sysdata.h to datetime.h with byte +0 as bitfields status (bits 0-3, 1 = clock error) and format (bits 4-7, 1 = BCD). Kept as in the ROM: the fallback hour 0x0c (not BCD), and the dead 1900 branch that compares the BCD year with decimal 99. Needs from bootstrap 6: sdk/libcdvd.h (sceCdCLOCK, sceCdReadClock) and sdk/libscf.h from RosePan. Still unread in the run: 0x23c020..0x23de20 (13 functions, Vt_00316510 ctors at 0x23db00 / 0x23db50); boot callees left there: gameSceneThread 0x231bb0, memcard 0x2a9c70..0x2acf00, stageDefaultRecord 0x296d00, getStageResult 0x2b0580, StageResult::getPerfectBits 0x2b00d0.",
    "ranges": [
@@ -215,6 +234,25 @@
    ],
    "status": "verify",
    "why": "One object file: the global heap allocator (Heap 0x1037c0..0x1046b0) and the game RNG (0x1046b0..0x104b40). Their data sit together too: sdata 0x31a880..0x31a88c (the image-end / stack / heap-size words only initGlobalHeap reads, then the LCG state), bss 0x329970 (gGlobalHeap, 0x44) then 0x3299c0 (the 97-word RNG table), sbss 0x31ad80 (the RNG index). 0x104b40 / 0x104be0 are MSL __destroy_new_array / __destroy_arr: the MSL lib_range now starts at 0x104b40 (batch 031)."
+  },
+  "game/mathutil.cpp": {
+   "notes": "Source only. New mathutil.h (normalizeAngle moved there from gamehooks.h; uigame.cpp includes it; pi constants are kMath* to avoid uigame / uiwidget locals) and stand-in vu0math.h for the next TU (0x135990-0x1366c0). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean, and a host harness: sinCos / asinAcos / atan2Cw / atan2Octant within 3.2e-7 of libm over 200,000 arguments, both Euler extractors round-trip (0.3, -1.1, 2). Float exponents / mantissas are read by hand (floatBits) so the branches match the ROM; the huge-x sin / cos reduction is in double as the ROM (soft-float calls). ROM quirks kept: getBounds starts the maximum at FLT_MIN (not -FLT_MAX); matrixToRotYXZ's pole case reads m[2][2]; approachVec3's step is rate times the SQUARED distance. Doubts: file name and every name are the port's (no strings); the Euler order names follow sce's m[i] = image of axis i.",
+   "ranges": [
+    [
+     "00133800",
+     "001350d0"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 13:40",
+     "status": "verify",
+     "summary": "Cut out of unassigned@00133800 and pinned 0x133800-0x1350d0; all 18 written: copyVec4, matrixToRotYXZ / matrixToRotZYX, normalizeAngle / wrapAngle, colorToFloat / colorToFloatGs, approachAnglesXZ, lerpVec4, approachVec3, getBounds, subAngles / addAngles / addAngle and the game's own Cody-Waite asinAcos, atan2Cw, atan2Octant, sinCos (batch 071; batch 072 names the VU0 callees setVecLength 0x135fe0 and scaleVec4 0x136490)."
+    }
+   ],
+   "status": "verify",
+   "why": "Cut out of unassigned@00133800 (after perfmeter.cpp 0x133800, before the clocks 0x1350d0): the game's scalar / vector math helpers (copyVec4, matrixToRot*, colour scaling, approach / lerp, bounds, angle wrap / sum) and its own Cody-Waite asinAcos / atan2Cw / atan2Octant / sinCos (errno, not newlib's). No source string; the file name is the port's."
   },
   "game/memcard.cpp": {
    "notes": "All 55 functions written (source only, not built). New this run: Memcard::stepSave (mkdir, then data / icon1.ico / icon.sys each open, write, flush, close; SaveStep enum + kSavePhase ints), stepLoad and stepCheckAll (read a complete save and judge it: SaveFile::judge, inline in the ROM), stepScan (room to save = 80 free clusters, kSaveRequiredKB, or an own save; then GetDir with no table over the first game's ten save directories, table 0x2fb760; an entry sets sMcSaveFound = memcardGetState), buildIconSys (PS2D, template lighting from getSaveResource(1), SJIS titles 0x2fb7e0 as escapes, OffsLF 0x12). The four operator= 0x2ac170..0x2ac3f0 are the implicit copy assignments: annotated in a comment block, nothing to write; SaveData::_0ae corrected to 0x27 bytes from the memberwise copy. Kept the ROM's slip in stepCheckAll (opens a later save but returns the starting file's step: open-items.md). Bootstrap 6 needs: sdk/fileio.h SCE_RDONLY / SCE_WRONLY / SCE_CREAT, a host sceMcGetDir accepting a null table with maxent -1 and returning the entry count. No Ghidra changes this run.",
@@ -1027,6 +1065,7 @@
   },
   "unassigned@00121b80": {},
   "unassigned@001319f0": {},
+  "unassigned@00133800": {},
   "unassigned@00142dd0": {},
   "unassigned@00148db0": {},
   "unassigned@00171300": {},

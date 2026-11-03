@@ -54,6 +54,13 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   null; every caller does. Porting the call as `height(node->right)` crashed a host harness on the
   first leaf. Keep each guard (a null-safe wrapper at the call sites), and say whose test it is.
   A host harness over the containers found it in seconds: write one for any tree / list code.
+- **A float argument passed straight through is invisible** (2026-11-03, TU 42): `lerpVec4` 0x133be0
+  shows as `(out, from, to)` calling `FUN_00136490(tmp, tmp)`, because its own f12 (t) is never
+  touched before the `jal` and the callee scales by f12. Read the f12 / f13 uses in the asm of any
+  function whose callee takes a float. Also: Ghidra prints VU0 macro ops with the broadcast field and
+  dest mask lost (`_vmulbc`, `_vmaddabc`, `.word 0x4b...` in the listing): decode the word (dest bits
+  24..21 = xyzw, ft 20..16, fs 15..11, fd 10..6, funct 5..0; funct 0x3c..0x3f is special2, opcode =
+  (bits 10..6 << 2) | bits 1..0) before writing lanes (`vadd.xyz` keeps the destination's w).
 
 ## Names from a sister game (FF2 -> FF3; any engine shared with a symbolised build)
 
@@ -177,7 +184,8 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   `max`). Name template instances in the overload style, `std::max(const_float&,const_float&)`, whose
   last component is `max`.
 - `// callcheck: A, B (why)`: names first, comma-separated, one parenthesis last, all on that line;
-  a member destructor is `~Class`; ALL-CAPS callees read as macros and are skipped. The name list ends
+  a member destructor is `~Class`, and a member call is its last component (`free`, not
+  `Heap::free`: the qualified form stays MISSING, 2026-11-03, TU 42); ALL-CAPS callees read as macros and are skipped. The name list ends
   at the first `(`: a name after it is not read (2026-11-02). `operator_new[]` / `operator_delete[]`
   are accepted since 2026-11-02 (callcheck's pattern took no brackets before). Calls are counted:
   a callee the ROM calls twice from code an inline helper hides (`delete[]` in two branches) is

@@ -12,6 +12,7 @@
 #include "game/gamesystem.h"
 #include "game/gfxtarget.h"
 #include "game/gsutil.h"
+#include "game/mathutil.h"
 #include "game/memcard.h"
 #include "game/progress.h"
 #include "game/stageresult.h"

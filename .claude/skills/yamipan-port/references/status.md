@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 13:09 at commit `f781617` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 13:41 at commit `aa6681c` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-03 13:09 at commit `f781617` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **1949** (30%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1519, game-inferred 1078
-- context-name ledger: 2597 entries; overrides of wrong library matches: 0
-- placed in a source file: 1887/6599 in 58 files
+- game functions: **6599**, named **1971** (30%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1520, game-inferred 1100
+- context-name ledger: 2620 entries; overrides of wrong library matches: 0
+- placed in a source file: 1919/6599 in 60 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,11 +30,12 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **1648**; stubs: **0**
+- reconstructed FS2 functions: **1680**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
 | `src/game/boxgrid.cpp` | 29 | 0 |
+| `src/game/clock.cpp` | 14 | 0 |
 | `src/game/datetime.cpp` | 2 | 0 |
 | `src/game/fileloader.cpp` | 53 | 0 |
 | `src/game/fontdata.cpp` | 31 | 0 |
@@ -45,6 +46,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/gsblockmap.cpp` | 14 | 0 |
 | `src/game/gsutil.cpp` | 12 | 0 |
 | `src/game/heap.cpp` | 17 | 0 |
+| `src/game/mathutil.cpp` | 18 | 0 |
 | `src/game/memcard.cpp` | 55 | 0 |
 | `src/game/movieplayer.cpp` | 41 | 0 |
 | `src/game/pad.cpp` | 14 | 0 |
@@ -80,10 +82,11 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 78 TUs: todo 46, verify 45
-- next: **unassigned@00133800** (frontier score 13)
+- 80 TUs: todo 47, verify 47
+- next: **unassigned@00171300** (frontier score 10)
 - pinned queue: (empty)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
+- verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
 - verify: `game/fileloader.cpp` 53/53 -- All 53 functions of 0x1319f0..0x132f20 are in src/game/fileloader.cpp with game/fileloader.h; FileJob / FileLoader / PackFile left gamehooks.h (which includes f
 - verify: `game/fontdata.cpp` 31/31 -- Cut out of unassigned@00171300 and pinned 0x1fcb40-0x1fe6b0 (batch 056, 31 names: the FontData byte variants countLinesMb / lineWidthFixed / lineWidthFixedMb / 
@@ -94,6 +97,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/gsblockmap.cpp` 14/14 -- All 14 functions of 0x142dd0..0x144080 are in src/game/gsblockmap.cpp with the new game/gsblockmap.h (GsBlockMap, TexArea, TexAreaList, TexAreaSlot moved out of
 - verify: `game/gsutil.cpp` 12/12 -- Cut out of unassigned@00171300 and pinned 0x230980-0x231410 (batch 048: GsTexture::readTarget 0x231290, rena base Tim2Texture ctor 0x2e2920 / dtor 0x2e2810 / lo
 - verify: `game/heap.cpp` 17/17 -- Game code, not MSL: heap and RNG share one object (sdata 0x31a880..0x31a88c, bss 0x329970 then 0x3299c0, sbss 0x31ad80). All 17 functions written; batch 031 nam
+- verify: `game/mathutil.cpp` 18/18 -- Source only. New mathutil.h (normalizeAngle moved there from gamehooks.h; uigame.cpp includes it; pi constants are kMath* to avoid uigame / uiwidget locals) and
 - verify: `game/memcard.cpp` 55/55 -- All 55 functions written (source only, not built). New this run: Memcard::stepSave (mkdir, then data / icon1.ico / icon.sys each open, write, flush, close; Save
 - verify: `game/movieplayer.cpp` 41/41 -- Cut out of unassigned@001953f0 (its tail 0x1faa30..0x1fcb40; the rest of that run is still unassigned). New game/movieplayer.h; gamehooks.h lost MoviePlayer and
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
@@ -131,29 +135,29 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 13:41 `game/clock.cpp` verify: Cut out of unassigned@00133800 and pinned 0x1350d0-0x135990; all 14 written: Clock (create, setPaused, createChild, getDeltaSeconds, getSeconds, advance, resetT
+- 2026-11-03 13:40 `game/mathutil.cpp` verify: Cut out of unassigned@00133800 and pinned 0x133800-0x1350d0; all 18 written: copyVec4, matrixToRotYXZ / matrixToRotZYX, normalizeAngle / wrapAngle, colorToFloat
 - 2026-11-03 13:09 `rx/rxsndut.c` verify: rx sound utility layer: all 6 functions (init / exit / update of the rxsndstr layers, the PCM and ADPCM format tables, debug flags, BG-call check)
 - 2026-11-03 12:49 `rx/rxsndstrbank.c` verify: XWS banks: 48 functions, the RXWS chunk walkers, request / mark / branch / track getters and OpenBody, file records in rxsndstrbank.h
 - 2026-11-03 12:30 `rx/rxsndstr.c` verify: rx/rxsndstr.c: all 38 stream-core functions written (slot and format tables, play / stop / setters, format callbacks)
 - 2026-11-03 12:13 `game/streamring.cpp` verify: StreamRing / FileStreamRing cut out of unassigned@00148db0 as game/streamring.cpp 0x151f70..0x152750: all 17 written, the 4 rx jump thunks mapped to the rx call
 - 2026-11-03 11:53 `sdpr2/sdpr2.c` verify: all 36 written: the SDPR2 core and public API, type registry, 64 handle slots, inline checks in sdpr2check.h
 - 2026-11-03 11:31 `rx/rxthread.c` verify: all 53 functions written: RosePan's rxthread carried to C, all 53 identical to RoR (rxcmp.py), VBlank tail 0x159928 and core 0x166b50 with FS2 data and bss addr
-- 2026-11-03 11:14 `rx/rxfile.c` verify: all 108 functions written: RosePan's rxfile core carried to C, 106 identical to RoR (rxcmp.py), rxFileOnCreate / rxFileOnGetSize with FS2's longer failure messa
-- 2026-11-03 10:55 `rx/rxsys.c` verify: all 126 functions written: RosePan's rxsys carried to C, every function RoR's word for word (new rxcmp.py), FS2 addresses
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@00133800` | todo | 0/0/65 | 11.2 | 13 | 0 |
 | `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 10 | 0 |
 | `unassigned@00171300` | todo | 0/0/829 | 131.7 | 10 | 0 |
 | `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 9 | 0 |
 | `unassigned@00299d90` | todo | 0/0/215 | 62.3 | 9 | 0 |
-| `unassigned@001953f0` | todo | 0/0/1313 | 395.4 | 7 | 0 |
 | `unassigned@00231c90` | todo | 0/0/61 | 36.3 | 7 | 0 |
 | `unassigned@00252840` | todo | 0/0/100 | 35.5 | 7 | 0 |
+| `unassigned@001953f0` | todo | 0/0/1313 | 395.4 | 7 | 0 |
 | `unassigned@0012c9b8` | todo | 0/0/6 | 0.8 | 6 | 0 |
 | `unassigned@002908d0` | todo | 0/0/67 | 18.8 | 6 | 0 |
 | `rx/rxsndstrstream.c` | todo | 0/0/18 | 2.4 | 5 | 0 |
-| `sdpr2/sdpr2single.c` | todo | 0/0/24 | 7.0 | 4 | 0 |
+| `game/rcnttimer.cpp` | todo | 0/0/4 | 0.2 | 4 | 0 |
+| `unassigned@002681e0` | todo | 0/0/514 | 156.6 | 4 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -167,7 +171,6 @@ Recent sessions:
 | `0025a850` | mslTreeIncrement | 4 | lib-ctx | missing | - |
 | `00231d30` | overlayShowLoading | 3 | native | missing | - |
 | `00231d20` | overlayShowLoading | 3 | native | missing | - |
-| `001339c0` | normalizeAngle | 3 | game | missing | - |
 | `002e1c50` | Tim2Texture::upload | 3 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `0025b590` | FUN_0025b590 | 3 | - | missing | - |
 | `0028fb80` | fsmFindText | 2 | game | missing | - |
@@ -177,13 +180,10 @@ Recent sessions:
 | `001d6a80` | StageSound::playNamed | 2 | game | missing | - |
 | `0016f9e0` | sdpr2CalcPanDeg | 2 | lib-ctx | missing | sdpr2/sdpr2single.c |
 | `00243380` | getUiWorkArea | 2 | game | missing | - |
-| `00135210` | Clock::createChild | 2 | game | missing | - |
-| `001357b0` | Clock::resetTime | 2 | game | missing | - |
 | `00170088` | sdpr2DrvInit | 2 | lib-ctx | missing | sdpr2/sdpr2drv.c |
 | `0016e328` | sdpr2PairInit | 2 | lib-ctx | missing | sdpr2/sdpr2pair.c |
 | `0016f808` | sdpr2SingleInit | 2 | lib-ctx | missing | sdpr2/sdpr2single.c |
 | `00152740` | rxFileCallSizeHook | 2 | native | missing | game/streamring.cpp |
-| `001351b0` | Clock::~Clock | 2 | game | missing | - |
 | `002e2920` | Tim2Texture::Tim2Texture | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `002e1b70` | Tim2Texture::putTex0 | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `002c3d70` | getSaveResource | 2 | game | missing | - |
@@ -199,4 +199,8 @@ Recent sessions:
 | `00165788` | rxSndStrStreamUpdate | 1 | lib-ctx | missing | rx/rxsndstrstream.c |
 | `0029e4f0` | PrgScaleNavi::PrgScaleNavi | 1 | game | missing | - |
 | `0029ae30` | PrgScaleNaviScroll::PrgScaleNaviScroll | 1 | game | missing | - |
+| `002b9d60` | PrgMcCard::PrgMcCard | 1 | game | missing | - |
+| `002e14d0` | GsRegionAlloc::GsRegionAlloc | 1 | game | missing | - |
+| `002d7cf0` | drawSysInit | 1 | game | missing | - |
+| `0019aea0` | StageScene::getFloor | 1 | game | missing | - |
 

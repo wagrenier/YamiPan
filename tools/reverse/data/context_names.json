@@ -2417,6 +2417,12 @@
   "was": "FUN_00121f38",
   "why": "newlib atoi: returns strtol(s, NULL, 10) (0x129d80); rxSysReadSystemIni calls it on system.ini's VERSION value, as RoR's rxsys calls atoi there"
  },
+ "00123528": {
+  "name": "__errno",
+  "tag": "lib-context",
+  "was": "FUN_00123528",
+  "why": "newlib __errno (0xc bytes): answers &errno; the game's asin / atan2 / sin store EDOM (0x21) through it"
+ },
  "00123538": {
   "name": "exit",
   "tag": "lib-context",
@@ -3395,11 +3401,125 @@
   "was": "FUN_001336e0",
   "why": "(this, entries 0x30, x 0x20, y 0x1d6, w 0xc0, h 0x18): RcntTimer base (15625 Hz, 50 fps), rect +0x20..+0x2c, capacity +0x30, 16-byte marker array +0x3c (operator new[]), stats arrays +0x44 / +0x48 / +0x4c; GameSystem member +0x4a8: the debug CPU / heap meter"
  },
+ "00133800": {
+  "name": "copyVec4",
+  "tag": "game-inferred",
+  "was": "FUN_00133800",
+  "why": "(dst, src): four word copies of a 16-byte vector, no VU0 (the caller 0x1dfd90 may hand unaligned data)"
+ },
+ "00133830": {
+  "name": "matrixToRotYXZ",
+  "tag": "game-inferred",
+  "was": "FUN_00133830",
+  "why": "(out rot, m): x = asin(m[1][2]), y = atan2(-m[0][2], m[2][2]), z = atan2(-m[1][0], m[1][1]): the Euler angles of Rz*Rx*Ry (Y applied first); within 1e-4 of x = +-pi/2 y = 0 and z = atan2(m[0][1], m[2][2]) (as the ROM reads it)"
+ },
+ "001338f0": {
+  "name": "matrixToRotZYX",
+  "tag": "game-inferred",
+  "was": "FUN_001338f0",
+  "why": "(out rot, m): y = asin(m[2][0]), x = atan2(-m[2][1], m[2][2]), z = atan2(-m[1][0], m[0][0]): the Euler angles of Rx*Ry*Rz (sceVu0RotMatrix's Z, Y, X order); gimbal case x = asin(-m[0][1]), z = 0"
+ },
  "001339c0": {
   "name": "normalizeAngle",
   "tag": "game-inferred",
   "was": "FUN_001339c0",
   "why": "f12 an angle: below -pi adds 2pi, above pi takes 2pi off, answers it (one step, not a loop); the S2D rotate-to / pin-rot targets wrap pi - the player's yaw with it"
+ },
+ "00133a30": {
+  "name": "colorToFloat",
+  "tag": "game-inferred",
+  "was": "FUN_00133a30",
+  "why": "(out float[4], int[4]): each channel / 255"
+ },
+ "00133a90": {
+  "name": "colorToFloatGs",
+  "tag": "game-inferred",
+  "was": "FUN_00133a90",
+  "why": "(out float[4], int[4]): each channel / 127.5, so 0x80 is about 1 (the GS colour scale)"
+ },
+ "00133af0": {
+  "name": "approachAnglesXZ",
+  "tag": "game-inferred",
+  "was": "FUN_00133af0",
+  "why": "(rate f12, maxStep f13, out, from, to): x and z each step from 'from' toward 'to' by rate * the wrapped difference, clamped to +-maxStep, wrapped (wrapAngle); out y = 0, w = 1"
+ },
+ "00133be0": {
+  "name": "lerpVec4",
+  "tag": "game-inferred",
+  "was": "FUN_00133be0",
+  "why": "(t f12, out, from, to): out = from + (to - from) * t on VU0 (vsub, scaleVec 0x136490, vadd), all four lanes"
+ },
+ "00133c40": {
+  "name": "approachVec3",
+  "tag": "game-inferred",
+  "was": "FUN_00133c40",
+  "why": "(rate f12, maxStep f13, out, from, to): d = to - from; unless a squared lane is inf / NaN, step = min(rate * |d|^2, maxStep) and out.xyz = from + d resized to step (setVecLength 0x135fe0), out.w = from.w"
+ },
+ "00133d20": {
+  "name": "getBounds",
+  "tag": "game-inferred",
+  "was": "FUN_00133d20",
+  "why": "(points vec4[], count, out min, out max): per-lane xyz min / max; starts from FLT_MAX and FLT_MIN (0x2f3910 / 0x2f3920: the max starts at +1.2e-38, not -FLT_MAX), w 0"
+ },
+ "00133e30": {
+  "name": "subAngles",
+  "tag": "game-inferred",
+  "was": "FUN_00133e30",
+  "why": "(out, a, b): xyz of a - b each wrapped into -pi..pi with fmodf(v, 2pi) and one more turn"
+ },
+ "001340f0": {
+  "name": "addAngles",
+  "tag": "game-inferred",
+  "was": "FUN_001340f0",
+  "why": "(out, a, b): xyz of a + b each wrapped into -pi..pi with fmodf(v, 2pi) and one more turn"
+ },
+ "001343b0": {
+  "name": "addAngle",
+  "tag": "game-inferred",
+  "was": "FUN_001343b0",
+  "why": "(a, b): a + b wrapped into -pi..pi with fmodf(v, 2pi) and one more turn; 76 callers"
+ },
+ "001344a0": {
+  "name": "asinAcos",
+  "tag": "game-inferred",
+  "was": "FUN_001344a0",
+  "why": "(x f12, acos a0): Cody & Waite ASIN/ACOS (rational P/Q 0x300b90.., a / b tables 0x300ba0 / 0x300ba8, the (1-|x|)/2 reduction past 0.5), |x| > 1 stores EDOM and answers 0"
+ },
+ "001346a0": {
+  "name": "atan2Cw",
+  "tag": "game-inferred",
+  "was": "FUN_001346a0",
+  "why": "(y f12, x f13): Cody & Waite ATAN2 (exponent-difference shortcuts, 1/f past 1, the 2-sqrt(3) reduction, tables 0x300bb0 / 0x300bc0); x and y both zero-exponent store EDOM and answer 0"
+ },
+ "00134940": {
+  "name": "atan2Octant",
+  "tag": "game-inferred",
+  "was": "FUN_00134940",
+  "why": "(y f12, x f13): atan2 by quadrant (base -pi, -pi/2, 0, pi/2) and octant (pi/2 - atan2Cw(x, y) when the ratio passes 1), atan2Cw only ever sees 0 <= y <= x; 66 callers"
+ },
+ "00134a20": {
+  "name": "wrapAngle",
+  "tag": "game-inferred",
+  "was": "FUN_00134a20",
+  "why": "f12 below -pi gets 2pi added, above pi 2pi taken off (one step): the same code as normalizeAngle 0x1339c0"
+ },
+ "00134a90": {
+  "name": "sinCos",
+  "tag": "game-inferred",
+  "was": "FUN_00134a90",
+  "why": "(x f12, quadrant a0): sin(x) with 0, cos(x) with 1: Cody & Waite range reduction by pi/2 (split constants 0x300c10 / 0x300c20, double precision past 4096), minimax sin / cos polynomials 0x300bd0 / 0x300bf0; past 2^35 EDOM and 0"
+ },
+ "001350d0": {
+  "name": "Clock::create",
+  "tag": "game-inferred",
+  "was": "FUN_001350d0",
+  "why": "(parent): the same body as Clock::createChild with the parent an argument: new 0x1c Clock under parent; one caller 0x18b330"
+ },
+ "00135190": {
+  "name": "Clock::setPaused",
+  "tag": "game-inferred",
+  "was": "FUN_00135190",
+  "why": "(this, paused): state +0 = paused ? 1 : 0 (Clock::advance stops while 1)"
  },
  "001351b0": {
   "name": "Clock::~Clock",
@@ -3430,6 +3550,12 @@
   "tag": "game-inferred",
   "was": "FUN_00135390",
   "why": "(this, rate 12, interval 2, paused, variable): Clock fields {+0 state, +4 time, +8 delta, +0xc time2, +0x10 scale 0x100 (8.8), +0x14 parent, +0x18 children} plus +0x1c, +0x20 ticks per frame, +0x24 vsync total, +0x28 frame interval, +0x2c variable-rate flag; GameSystem member +0x510"
+ },
+ "001353d0": {
+  "name": "Clock::getDeltaSeconds",
+  "tag": "game-inferred",
+  "was": "FUN_001353d0",
+  "why": "float(unsigned m_delta +8) / 300.0 (a literal, where getSeconds reads the int 0x300e48): 61 callers"
  },
  "00135420": {
   "name": "Clock::getSeconds",
@@ -3466,6 +3592,18 @@
   "tag": "game-inferred",
   "was": "FUN_00135860",
   "why": "(list {u16 capacity, u16 count, void **data}, p, grow): grows the array by grow slots (Heap::alloc / Heap::realloc, zeroed) when full, stores p in the first empty slot, returns the count"
+ },
+ "00135fe0": {
+  "name": "setVecLength",
+  "tag": "game-inferred",
+  "was": "FUN_00135fe0",
+  "why": "(len f12, out, in): vrsqrt of x2+y2+z2 (vaddAy / vmaddz), out.xyz = in.xyz * len * Q, out.w = in.w: in resized to len; approachVec3 and the 0x149xxx camera code call it"
+ },
+ "00136490": {
+  "name": "scaleVec4",
+  "tag": "game-inferred",
+  "was": "FUN_00136490",
+  "why": "(s f12, out, in): VU0 vmulx with s in vf5.x, dest xyzw: out = in * s; lerpVec4 scales the difference with it; 66 callers"
  },
  "001366c0": {
   "name": "RFU000_FullReset",

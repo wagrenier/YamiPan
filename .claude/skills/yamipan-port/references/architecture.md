@@ -83,7 +83,7 @@ libcdvd 0x11c6b0..0x11e440, libpad ..0x11fb70, libmc ..0x121b80, libc (newlib)
 **libscf 0x2640e8..0x2647d8** (batch 027: linked between game objects, in the middle of the game's
 0x171300.. run) and the kernel-patch island 0x2f3a40..0x2f4d20: 931 functions. **Unread runs between them stay game code
 until read** (not library by default): 0x121b80 (libmc error mapper?), 0x12c9b8..0x12cd20, the VU0 math
-0x135a90..0x1366c0, 0x142dd0..0x144080.
+0x135990..0x1366c0 (game code, TU 42: before it `game/mathutil.cpp` / `game/clock.cpp`), 0x142dd0..0x144080.
 
 First features pass over it (`refresh.py`, 2026-10-31): 6,393 functions, 25,668 calls, 871 tail
 jumps, 2,446 string references, 3,478 float constants; `export.py` anchors 6 functions to 2 source
@@ -492,12 +492,20 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
     `IsOverflow` 0x2eb030 = buffer size < (open list's cursor or the write ptr) - base. No load or
     store of GameSystem +0x4a0 (= +0x34) exists in the ELF: whoever sets the skip does it through a
     pointer, if at all.
-  - **Clocks**: `Clock` (0x1c) `{+0 state (1 paused), +4 time, +8 delta, +0xc time2, +0x10 scale
-    0x100 (8.8), +0x14 parent, +0x18 children PtrList}`, `Clock::advance` 0x1354a0 scales and recurses,
-    `Clock::createChild` 0x135210 (deleted with `Clock::~Clock` 0x1351b0 by many systems: 0x151550,
-    0x18b330, 0x19bbe0, 0x20aba0, 0x25bc70); `MasterClock` (0x30) adds ticks per frame +0x20, vsync
-    total +0x24, interval +0x28, variable-rate flag +0x2c, `MasterClock::update` 0x1352d0(vsyncs).
-    `PtrList` `{u16 capacity, u16 count, void **data}`: `add` 0x135860, `next` 0x1357c0.
+  - **Clocks** (`src/game/clock.cpp`, 0x1350d0..0x135990, written 2026-11-03, TU 42): `ClockNode` /
+    `Clock` (EE 0x1c) `{+0 state (ClockState: 1 paused), +4 time, +8 delta, +0xc time2, +0x10 scale
+    0x100 (8.8), +0x14 parent, +0x18 PtrList *children (made on the first child, grown by 16)}`;
+    `Clock::advance` 0x1354a0 adds ticks * scale >> 8 (0 paused) and recurses, `Clock::create(parent)`
+    0x1350d0 / `createChild` 0x135210 (the same body), `setPaused` 0x135190, `getSeconds` 0x135420 /
+    `getDeltaSeconds` 0x1353d0 (/ 300). Destructors: `ClockNode::~ClockNode` 0x135550 is the body
+    (detach children, free the list, leave the parent's list), `Clock::~Clock` 0x1351b0 and
+    `MasterClock::~MasterClock` 0x135330 only call it (Metrowerks: one dtor per class, (this, short
+    flags), deleting when flags > 0) -- the ROM's detach stops after the first child.
+    `MasterClock` (EE 0x30) adds +0x1c byte (last ctor arg, unread), ticks per frame +0x20, vsync
+    total +0x24, interval +0x28, variable-rate flag +0x2c; `update` 0x1352d0(vsyncs) advances by
+    ticks per frame, or ticks * vsyncs / interval (unsigned) with the flag.
+    `PtrList` `{u16 capacity, u16 count, void **data}` (null = free slot): `add` 0x135860 (gGlobalHeap
+    alloc align 0x10 / realloc), `next` 0x1357c0 (null also when `after` is no longer in the list).
   - **Debug meter** (`src/game/perfmeter.cpp`, 0x132f20..0x133800, written 2026-11-02):
     `RcntTimer(tickRate 15625, fieldRate 50, fieldsPerFrame 2)` 0x12f200 (usPerTick = 1e6 / tickRate at
     +0x10; the first one sets T1_MODE 0x83, a gp byte -0x7ac4 remembers it) / reset 0x12f190;
@@ -568,6 +576,19 @@ define`. `export.py` now also takes a source path that leads a message (`name.cp
 anchors put `Vif1PktManage`'s members under `rena_pkt_vif1pktmanage.cpp` (0x2eaff0..; rena sits at
 the end of .text, ~0x2e2000..0x2ec8e0). Result: 1,031 of 6,670 game functions in 29 files, the rest
 `(unassigned)` (0x171300.. onward is almost all unread game code).
+
+**`game/mathutil.cpp` 0x133800..0x1350d0 (TU 42, 2026-11-03, batch 071)**: the game's math
+helpers, all free functions: `copyVec4`, `matrixToRotYXZ` 0x133830 (Euler of Rz Rx Ry) /
+`matrixToRotZYX` 0x1338f0 (of Rx Ry Rz: inverts sceVu0RotMatrix), `normalizeAngle` 0x1339c0 and its
+twin `wrapAngle` 0x134a20 (one turn), `colorToFloat` (/ 255) / `colorToFloatGs` (/ 127.5),
+`approachAnglesXZ` 0x133af0, `lerpVec4` 0x133be0, `approachVec3` 0x133c40 (step = rate * squared
+distance, capped), `getBounds` 0x133d20, `subAngles` / `addAngles` / `addAngle` (fmodf wrap; 76
+callers), and **the game's own Cody & Waite libm**: `asinAcos(x, mode)` 0x1344a0, `atan2Cw(y, x)`
+0x1346a0, `atan2Octant(y, x)` 0x134940 (the usual atan2: 66 callers), `sinCos(x, mode)` 0x134a90
+(sin 0 / cos 1; 38 callers), tables 0x300b90..0x300e48, errno EDOM through newlib's `__errno`
+0x123528. Newlib's float libm 0x116fb8 is linked beside it. The VU0 helpers after the clocks
+(0x135990..0x1366c0: `setVecLength` 0x135fe0, `scaleVec4` 0x136490, matrices, distances) are the
+next TU; `game/vu0math.h` is their stand-in header.
 
 **`game/sysdata.cpp` 0x23af30..0x23c020 (TU 5, 2026-11-02, batch 026)**: one 0x920-byte block
 `gSystemData` at 0x598b30 = `SaveData` (+0, 0x4bc: 69 stage flag bytes +0x69 holding clear bits

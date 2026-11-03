@@ -330,9 +330,6 @@ enum ItemKind
     ItemKind_ItemFirst    = 7,
 };
 
-// An angle wrapped into -pi..pi by one turn at most.
-float normalizeAngle(float angle);                                       // FS2 0x001339c0
-
 // ──────────────────────────────────────────────────────────────────────
 // The sound-effect player outside a stage (0x292ac0.., in the run
 // unassigned@002681e0, not cut yet). Only what game/uigame.cpp calls.

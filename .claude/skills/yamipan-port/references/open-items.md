@@ -749,6 +749,33 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    0x151330..0x151840, a texture class 0x1518a0 with Tim2Texture / sceVif1Pk calls) and
    `debugSysInit` / `Update` / `Shutdown` 0x151270..0x151290 (empty; frontier from gamesystem.cpp).
    Next pick: `tus.py next`.
+   TU 42 (the frontier's `unassigned@00133800`, 65 functions 0x133800..0x1366bc, 2026-11-03): cut
+   into **`game/mathutil.cpp` 0x133800..0x1350d0** (18) and **`game/clock.cpp` 0x1350d0..0x135990**
+   (14), **all 32 written, `verify`** (batches 071-072, 23 names: the math helpers, `__errno`
+   0x123528, `Clock::create` / `setPaused` / `getDeltaSeconds`, and `setVecLength` 0x135fe0 /
+   `scaleVec4` 0x136490 in the VU0 run; architecture.md "Modules"). New `game/mathutil.h` (took
+   `normalizeAngle` from `gamehooks.h`; uigame.cpp includes it) and stand-in `game/vu0math.h`;
+   **`clock.h` corrected: Clock +0x18 is a `PtrList *`** (made on the first child), not an inline
+   {u16, u16}; the fields moved to a base **`ClockNode`** (its destructor 0x135550 is the real one,
+   `~Clock` / `~MasterClock` only call it: the Ghidra name kept). Checked: callcheck clean, layout
+   lint OK, g++ -fsyntax-only -Wall -Wextra clean on mathutil / clock (uigame / uiwidget /
+   gamesystem: the same pre-existing stub-header errors as before), and a host harness: sinCos /
+   asinAcos / atan2Cw / atan2Octant within 3.2e-7 of libm over 200,000 arguments (up to 1e5 for
+   sin / cos), both Euler extractors round-trip angles (0.3, -1.1, 2), the clock tree's advance /
+   pause / scale / detach. Doubts for the user: the file names (no strings) and the names
+   ClockNode / matrixToRotYXZ / ZYX (the order read from the matrix entries, sce layout m[i] =
+   image of axis i); **ROM bugs kept**: `ClockNode::~ClockNode` detaches only its FIRST child
+   (removing it clears its slot, so `next(child)` ends the walk) -- the others keep a dangling
+   parent, harmless while children die before parents (on the host a later child delete would
+   touch freed memory: watch for it at bootstrap 7); when that child was the last, the ROM walks a
+   null list (EE address 4), the port stops; `getBounds` starts its maximum at FLT_MIN, not
+   -FLT_MAX; `matrixToRotYXZ`'s pole case reads m[2][2] (0 there). **Next: the VU0 run
+   `unassigned@00135990` 0x135990..0x1366c0** (20 functions, all game code, asm needed: the
+   decompiler loses the COP2 broadcast fields; decode the `.word 0x4b...` with dest bits 24..21,
+   ft 20..16, fs 15..11, fd 10..6, funct 5..0 -- special2 opcode = (bits 10..6 << 2) | bits 1..0):
+   rotation matrices 0x1359f0 / 0x135b90 from a sin / cos table 0x135c30, angle wrap 0x135e20 /
+   0x135ec0, distances 0x135f20 / 0x135f70, normalize 0x136020, project 0x136090, identity / copy
+   matrix 0x136400 / 0x136430; vu0math.h takes the rest of its prototypes then.
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
