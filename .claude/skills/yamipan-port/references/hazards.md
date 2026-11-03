@@ -152,6 +152,10 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **Stale names after renaming**: stubgen, callcheck, stage, tus read cached `work/` data; `refresh.py`
   (never piped into `head`: the closed pipe kills it). Batch numbers collide: take the highest + 1.
 - **When a run loses ground after a TU**, diff its log against a run of the previous commit.
+- **A host harness's `jobAdd` stub must queue, not run** (2026-11-03, TU 27): `startLoad` /
+  `FileJob::start` set "queued" *after* jobAdd answers, so a job run inside jobAdd ends "done" and is
+  then marked "queued" again: `waitLoaded` spins forever. Queue the jobs and run them in the
+  `threadYield` stub, as the job thread would. The host thread layer must keep jobAdd asynchronous too.
 
 ## callcheck / stubgen
 

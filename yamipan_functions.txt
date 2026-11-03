@@ -863,62 +863,62 @@
 /* 00131930 000000b0 */ frameSyncThread(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/fileloader.cpp
 // *****************************************************************************
 
-/* 001319f0 00000008 */ FUN_001319f0(){}
-/* 00131a00 00000008 */ FUN_00131a00(){}
-/* 00131a10 00000008 */ FUN_00131a10(){}
-/* 00131a20 00000008 */ FUN_00131a20(){}
-/* 00131a30 00000214 */ FUN_00131a30(){}
-/* 00131c50 0000001c */ FUN_00131c50(){}
-/* 00131c70 00000004 */ FUN_00131c70(){}
-/* 00131c80 00000004 */ FUN_00131c80(){}
-/* 00131c90 00000008 */ FUN_00131c90(){}
-/* 00131ca0 0000002c */ FUN_00131ca0(){}
-/* 00131cd0 0000002c */ FUN_00131cd0(){}
+/* 001319f0 00000008 */ PackFile::isPack(){}  // game
+/* 00131a00 00000008 */ PackFile::isLoaded(){}  // game
+/* 00131a10 00000008 */ PackFile::unload(){}  // game
+/* 00131a20 00000008 */ PackFile::unloadItem(){}  // game
+/* 00131a30 00000214 */ PackJob::load(){}  // game
+/* 00131c50 0000001c */ PackFile::compact(){}  // game
+/* 00131c70 00000004 */ PackFile::clear(){}  // game
+/* 00131c80 00000004 */ PackFile::waitLoaded(){}  // game
+/* 00131c90 00000008 */ PackFile::getCount(){}  // game
+/* 00131ca0 0000002c */ PackFile::getItemState(){}  // game
+/* 00131cd0 0000002c */ PackFile::getState(){}  // game
 /* 00131d00 00000008 */ PackFile::getItemSize(){}  // game
 /* 00131d10 00000008 */ PackFile::getSize(){}  // game
 /* 00131d20 00000008 */ PackFile::getItem(){}  // game
 /* 00131d30 00000008 */ PackFile::getData(){}  // game
-/* 00131d40 00000008 */ FUN_00131d40(){}
-/* 00131d50 00000008 */ FUN_00131d50(){}
-/* 00131d60 00000008 */ FUN_00131d60(){}
+/* 00131d40 00000008 */ PackFile::getName(){}  // game
+/* 00131d50 00000008 */ PackFile::findIndex(){}  // game
+/* 00131d60 00000008 */ PackFile::addFile(){}  // game
 /* 00131d70 00000008 */ PackFile::load(){}  // game
 /* 00131d80 0000011c */ PackFile::~PackFile(){}  // game
-/* 00131ea0 00000004 */ thunk_FUN_00132000(){}
-/* 00131eb0 00000048 */ FUN_00131eb0(){}
+/* 00131ea0 00000004 */ FileLoader::clear(){}  // game
+/* 00131eb0 00000048 */ PackFile::setBuffer(){}  // game
 /* 00131f00 000000f4 */ PackFile::PackFile(){}  // game
-/* 00132000 000000ec */ FUN_00132000(){}
+/* 00132000 000000ec */ FileLoader::clearFiles(){}  // game
 /* 001320f0 0000007c */ FileLoader::waitLoaded(){}  // game
-/* 00132170 00000078 */ FUN_00132170(){}
+/* 00132170 00000078 */ FileLoader::isLoaded(){}  // game
 /* 001321f0 00000084 */ FileLoader::loadJob(){}  // game
 /* 00132280 00000050 */ FileLoader::startLoad(){}  // game
-/* 001322d0 00000040 */ FUN_001322d0(){}
-/* 00132320 00000088 */ FUN_00132320(){}
-/* 001323b0 000000b8 */ FUN_001323b0(){}
-/* 00132470 00000084 */ FUN_00132470(){}
-/* 00132500 00000040 */ FUN_00132500(){}
+/* 001322d0 00000040 */ FileLoader::getItemState(){}  // game
+/* 00132320 00000088 */ FileLoader::getState(){}  // game
+/* 001323b0 000000b8 */ FileLoader::unload(){}  // game
+/* 00132470 00000084 */ FileLoader::unloadItem(){}  // game
+/* 00132500 00000040 */ FileLoader::getItemSize(){}  // game
 /* 00132550 00000088 */ FileLoader::getSize(){}  // game
-/* 001325e0 00000040 */ FUN_001325e0(){}
+/* 001325e0 00000040 */ FileLoader::getItem(){}  // game
 /* 00132630 00000088 */ FileLoader::getData(){}  // game
-/* 001326c0 00000040 */ FUN_001326c0(){}
-/* 00132710 00000088 */ FUN_00132710(){}
+/* 001326c0 00000040 */ FileLoader::getName(){}  // game
+/* 00132710 00000088 */ FileLoader::findIndex(){}  // game
 /* 001327a0 00000108 */ FileLoader::addFile(){}  // game
 /* 001328b0 00000068 */ FileLoader::~FileLoader(){}  // game
 /* 00132920 00000030 */ FileLoader::FileLoader(){}  // game
-/* 00132950 000000e8 */ FUN_00132950(){}
+/* 00132950 000000e8 */ FileJob::wait(){}  // game
 /* 00132a40 00000178 */ FileJob::run(){}  // game
 /* 00132bc0 00000050 */ FileJob::start(){}  // game
 /* 00132c10 000000a4 */ FileJob::~FileJob(){}  // game
 /* 00132cc0 00000080 */ FileJob::FileJob(){}  // game
-/* 00132d40 000000a8 */ FUN_00132d40(){}
-/* 00132df0 0000002c */ FUN_00132df0(){}
-/* 00132e20 0000007c */ FUN_00132e20(){}
-/* 00132ea0 00000050 */ FUN_00132ea0(){}
-/* 00132ef0 00000008 */ FUN_00132ef0(){}
-/* 00132f00 00000008 */ FUN_00132f00(){}
-/* 00132f10 00000004 */ FUN_00132f10(){}
+/* 00132d40 000000a8 */ TextTokenizer::next(){}  // game
+/* 00132df0 0000002c */ TextTokenizer::setText(){}  // game
+/* 00132e20 0000007c */ TextTokenizer::~TextTokenizer(){}  // game
+/* 00132ea0 00000050 */ TextTokenizer::TextTokenizer(){}  // game
+/* 00132ef0 00000008 */ FileLoader::isPack(){}  // game
+/* 00132f00 00000008 */ FileLoader::getCount(){}  // game
+/* 00132f10 00000004 */ FileLoader::compact(){}  // game
 
 // *****************************************************************************
 // FILE -- game/perfmeter.cpp
@@ -5427,16 +5427,16 @@
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 00231410 00000014 */ FUN_00231410(){}
-/* 00231430 0000001c */ FUN_00231430(){}
-/* 00231450 00000028 */ FUN_00231450(){}
-/* 00231480 0000001c */ FUN_00231480(){}
-/* 002314a0 00000028 */ FUN_002314a0(){}
-/* 002314d0 0000001c */ FUN_002314d0(){}
-/* 002314f0 00000030 */ FUN_002314f0(){}
-/* 00231520 00000044 */ FUN_00231520(){}
-/* 00231570 00000044 */ FUN_00231570(){}
-/* 002315c0 0000000c */ FUN_002315c0(){}
+/* 00231410 00000014 */ PakArchive::getCount(){}  // game
+/* 00231430 0000001c */ PakArchive::getItemSize(){}  // game
+/* 00231450 00000028 */ PakArchive::getSize(){}  // game
+/* 00231480 0000001c */ PakArchive::getItem(){}  // game
+/* 002314a0 00000028 */ PakArchive::getData(){}  // game
+/* 002314d0 0000001c */ PakArchive::getName(){}  // game
+/* 002314f0 00000030 */ PakArchive::findIndex(){}  // game
+/* 00231520 00000044 */ PakArchive::open(){}  // game
+/* 00231570 00000044 */ PakArchive::~PakArchive(){}  // game
+/* 002315c0 0000000c */ PakArchive::PakArchive(){}  // game
 /* 002315d0 00000028 */ FUN_002315d0(){}
 /* 00231600 00000028 */ FUN_00231600(){}
 /* 00231630 00000028 */ FUN_00231630(){}
@@ -7585,7 +7585,7 @@
 /* 002d0550 00000200 */ FUN_002d0550(){}
 /* 002d0750 0000004c */ FUN_002d0750(){}
 /* 002d07a0 00000268 */ FUN_002d07a0(){}
-/* 002d0a10 00000300 */ FUN_002d0a10(){}
+/* 002d0a10 00000300 */ sldiDecompress(){}  // game
 /* 002d0d10 000000fc */ FUN_002d0d10(){}
 /* 002d0e10 00000120 */ FUN_002d0e10(){}
 /* 002d0f30 00000064 */ FUN_002d0f30(){}

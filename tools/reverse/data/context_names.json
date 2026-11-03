@@ -2957,6 +2957,72 @@
   "was": "FUN_00131930",
   "why": "loops on WaitSema(8034), counts vsyncs in 0x4c8164; a frame is ready when requested and count >= interval, or when the frameReady callback says so; then stores the count in gp-0x7aac and SignalSema(802c)"
  },
+ "001319f0": {
+  "name": "PackFile::isPack",
+  "tag": "game-inferred",
+  "was": "FUN_001319f0",
+  "why": "Vt_00311060 slot 1: answers 1 (FileLoader's slot 1 0x132ef0 answers 0)"
+ },
+ "00131a00": {
+  "name": "PackFile::isLoaded",
+  "tag": "game-inferred",
+  "was": "FUN_00131a00",
+  "why": "slot 14: answers 1 (FileLoader's 0x132170 tests its job state); a pack is loaded by load before use"
+ },
+ "00131a10": {
+  "name": "PackFile::unload",
+  "tag": "game-inferred",
+  "was": "FUN_00131a10",
+  "why": "slot 10 (name): answers 0, does nothing (FileLoader's 0x1323b0 frees the named file)"
+ },
+ "00131a20": {
+  "name": "PackFile::unloadItem",
+  "tag": "game-inferred",
+  "was": "FUN_00131a20",
+  "why": "slot 9 (index): answers 0, does nothing (FileLoader's 0x132470 frees the entry)"
+ },
+ "00131a30": {
+  "name": "PackJob::load",
+  "tag": "game-inferred",
+  "was": "FUN_00131a30",
+  "why": "this = PackFile+0x9c (PackFile::load is j here with a0+0x9c): starts the FileJob when idle, waits with overlayShowLoading, SLDI-decompresses into the buffer, PakArchive::open, answers count != 0"
+ },
+ "00131c50": {
+  "name": "PackFile::compact",
+  "tag": "game-inferred",
+  "was": "FUN_00131c50",
+  "why": "slot 17: Heap::realloc(gGlobalHeap, pak data, its header +0x1c): shrinks the pack's block (FileLoader's slot 17 is empty)"
+ },
+ "00131c70": {
+  "name": "PackFile::clear",
+  "tag": "game-inferred",
+  "was": "FUN_00131c70",
+  "why": "slot 16: empty (FileLoader's slot 16 frees every listed file)"
+ },
+ "00131c80": {
+  "name": "PackFile::waitLoaded",
+  "tag": "game-inferred",
+  "was": "FUN_00131c80",
+  "why": "slot 15: empty (FileLoader's 0x1320f0 waits on isLoaded)"
+ },
+ "00131c90": {
+  "name": "PackFile::getCount",
+  "tag": "game-inferred",
+  "was": "FUN_00131c90",
+  "why": "slot 13: PakArchive::getCount (FileLoader's 0x132f00 answers its list count +0xc)"
+ },
+ "00131ca0": {
+  "name": "PackFile::getItemState",
+  "tag": "game-inferred",
+  "was": "FUN_00131ca0",
+  "why": "slot 12 (index): 3 (done) when the item size is non-zero, else 0x80 (failed): FileJobState like FileLoader's 0x1322d0"
+ },
+ "00131cd0": {
+  "name": "PackFile::getState",
+  "tag": "game-inferred",
+  "was": "FUN_00131cd0",
+  "why": "slot 11 (name): 3 when PakArchive::getSize is non-zero, else 0x80 (FileLoader's 0x132320)"
+ },
  "00131d00": {
   "name": "PackFile::getItemSize",
   "tag": "game-inferred",
@@ -2981,6 +3047,24 @@
   "was": "FUN_00131d30",
   "why": "slot 5 of Vt_00311060 (PackFile): j 0x2314a0 with a0 += 0xc4 (the parsed pack): the first item whose name contains the argument (0x231770, strstr, nested packs), its data (+8); null without one. getInitPackData calls it"
  },
+ "00131d40": {
+  "name": "PackFile::getName",
+  "tag": "game-inferred",
+  "was": "FUN_00131d40",
+  "why": "slot 4 (index): PakArchive::getName (FileLoader's 0x1326c0 answers the entry path)"
+ },
+ "00131d50": {
+  "name": "PackFile::findIndex",
+  "tag": "game-inferred",
+  "was": "FUN_00131d50",
+  "why": "slot 3 (name): PakArchive::findIndex (FileLoader's 0x132710: index of the first path containing name, -1)"
+ },
+ "00131d60": {
+  "name": "PackFile::addFile",
+  "tag": "game-inferred",
+  "was": "FUN_00131d60",
+  "why": "slot 2 (name): PakArchive::findIndex, nothing added (FileLoader's addFile 0x1327a0 appends an entry)"
+ },
  "00131d70": {
   "name": "PackFile::load",
   "tag": "game-inferred",
@@ -2993,17 +3077,41 @@
   "was": "FUN_00131d80",
   "why": "slot 0 of Vt_00311060 (vptr +0x98): the loaders delete a pack through it with flag 1"
  },
+ "00131ea0": {
+  "name": "FileLoader::clear",
+  "tag": "game-inferred",
+  "was": "thunk_FUN_00132000",
+  "why": "FileLoader slot 16 (called by both destructors after the vptr reset): j 0x132000 clearFiles"
+ },
+ "00131eb0": {
+  "name": "PackFile::setBuffer",
+  "tag": "game-inferred",
+  "was": "FUN_00131eb0",
+  "why": "(buffer, size, variant): +0xe8 owns, +0xec/+0xf0/+0xf4 kept; the job loads at the buffer's end (offset -size), load decompresses to its start; variant = PakArchive::open's item mask bit (callers 0x2b5dc0 / 0x2b60b0 pass a 0x1800000 buffer)"
+ },
  "00131f00": {
   "name": "PackFile::PackFile",
   "tag": "game-inferred",
   "was": "FUN_00131f00",
   "why": "(path, arg): vptr at +0x98 (Vt_003110b0 then Vt_00311060), copies the path into new[] at +0xa0, arg into +0xd0/+0xd4/+0xe0/+0xe4; every 'dataEU/pack*.pak' loader builds a 0xf8-byte one"
  },
+ "00132000": {
+  "name": "FileLoader::clearFiles",
+  "tag": "game-inferred",
+  "was": "FUN_00132000",
+  "why": "cancels the loader job, deletes every 0x2c-byte entry (the inline FileJob destructor + next at +0x28), zeroes state / head / tail / count / job"
+ },
  "001320f0": {
   "name": "FileLoader::waitLoaded",
   "tag": "game-inferred",
   "was": "FUN_001320f0",
   "why": "slot 15 (?, showLoading): yields until slot 14 (done) answers true, calling overlayShowLoading each frame when showLoading"
+ },
+ "00132170": {
+  "name": "FileLoader::isLoaded",
+  "tag": "game-inferred",
+  "was": "FUN_00132170",
+  "why": "slot 14: 0 while the state is 1 / 2 (queued / loading), 1 for 0, 3, 0x80..0x83; waitLoaded loops on it"
  },
  "001321f0": {
   "name": "FileLoader::loadJob",
@@ -3017,17 +3125,65 @@
   "was": "FUN_00132280",
   "why": "jobAdd(FileLoader::loadJob, this) into +0x10, state 1 when queued; answers the job (0 = no free job slot: runLayoutFile retries each frame)"
  },
+ "001322d0": {
+  "name": "FileLoader::getItemState",
+  "tag": "game-inferred",
+  "was": "FUN_001322d0",
+  "why": "slot 12 (index): the entry's FileJob state, 0x83 without an entry"
+ },
+ "00132320": {
+  "name": "FileLoader::getState",
+  "tag": "game-inferred",
+  "was": "FUN_00132320",
+  "why": "slot 11 (name): the state of the first entry whose path contains name (strstr), 0x83 without one"
+ },
+ "001323b0": {
+  "name": "FileLoader::unload",
+  "tag": "game-inferred",
+  "was": "FUN_001323b0",
+  "why": "slot 10 (name): frees the entry's data (unless not owned), zeroes data / size / state; 0, or -1 without one"
+ },
+ "00132470": {
+  "name": "FileLoader::unloadItem",
+  "tag": "game-inferred",
+  "was": "FUN_00132470",
+  "why": "slot 9 (index): as unload, by the entry index"
+ },
+ "00132500": {
+  "name": "FileLoader::getItemSize",
+  "tag": "game-inferred",
+  "was": "FUN_00132500",
+  "why": "slot 8 (index): the entry's size +0xc, 0 without one (PackFile's slot 8 is getItemSize)"
+ },
  "00132550": {
   "name": "FileLoader::getSize",
   "tag": "game-inferred",
   "was": "FUN_00132550",
   "why": "slot 7: as getData, the entry's size +0xc"
  },
+ "001325e0": {
+  "name": "FileLoader::getItem",
+  "tag": "game-inferred",
+  "was": "FUN_001325e0",
+  "why": "slot 6 (index): the entry's data +0x14, null without one (PackFile's slot 6 is getItem)"
+ },
  "00132630": {
   "name": "FileLoader::getData",
   "tag": "game-inferred",
   "was": "FUN_00132630",
   "why": "slot 5: the first entry whose path contains the name (strstr): its data +0x14, else 0"
+ },
+ "001326c0": {
+  "name": "FileLoader::getName",
+  "tag": "game-inferred",
+  "was": "FUN_001326c0",
+  "why": "slot 4 (index): the entry's path +4 (prefix + name), null without one"
+ },
+ "00132710": {
+  "name": "FileLoader::findIndex",
+  "tag": "game-inferred",
+  "was": "FUN_00132710",
+  "why": "slot 3 (name): the index (+8) of the first entry whose path contains name, -1; addFile calls it first"
  },
  "001327a0": {
   "name": "FileLoader::addFile",
@@ -3046,6 +3202,12 @@
   "tag": "game-inferred",
   "was": "FUN_00132920",
   "why": "base class of PackFile (vtable 0x3110b0, vptr +0x98, 0x9c bytes): state, file list head / tail / count, job, +0x14 the argument, +0x18 an empty path prefix"
+ },
+ "00132950": {
+  "name": "FileJob::wait",
+  "tag": "game-inferred",
+  "was": "FUN_00132950",
+  "why": "(job, unused, showLoading): threadYield(1) until the state settles, overlayShowLoading each frame (twice the first); caller 0x295470 after FileJob::start"
  },
  "00132a40": {
   "name": "FileJob::run",
@@ -3070,6 +3232,48 @@
   "tag": "game-inferred",
   "was": "FUN_00132cc0",
   "why": "(this, path, arg): 0x28-byte one-file load job: path copied to new[] at +4, arg +8, state / size / data / job / dir / buffer cleared"
+ },
+ "00132d40": {
+  "name": "TextTokenizer::next",
+  "tag": "game-inferred",
+  "was": "FUN_00132d40",
+  "why": "skips whitespace (MSL ctype bit 8) from the cursor +8 to the end +0xc, copies the word into the buffer +0x10 (capacity +0x14 - 1); the buffer, or null at the end; only caller 0x1a3a60"
+ },
+ "00132df0": {
+  "name": "TextTokenizer::setText",
+  "tag": "game-inferred",
+  "was": "FUN_00132df0",
+  "why": "(text, size): +0 text, +4 size, cursor = text, end = text + size"
+ },
+ "00132e20": {
+  "name": "TextTokenizer::~TextTokenizer",
+  "tag": "game-inferred",
+  "was": "FUN_00132e20",
+  "why": "deleting (obj, short): zeroes the text fields, delete[] the word buffer +0x10"
+ },
+ "00132ea0": {
+  "name": "TextTokenizer::TextTokenizer",
+  "tag": "game-inferred",
+  "was": "FUN_00132ea0",
+  "why": "(capacity): word buffer new[capacity] at +0x10, emptied"
+ },
+ "00132ef0": {
+  "name": "FileLoader::isPack",
+  "tag": "game-inferred",
+  "was": "FUN_00132ef0",
+  "why": "FileLoader slot 1: answers 0 (PackFile's 1)"
+ },
+ "00132f00": {
+  "name": "FileLoader::getCount",
+  "tag": "game-inferred",
+  "was": "FUN_00132f00",
+  "why": "slot 13: the entry count +0xc"
+ },
+ "00132f10": {
+  "name": "FileLoader::compact",
+  "tag": "game-inferred",
+  "was": "FUN_00132f10",
+  "why": "slot 17: empty (PackFile's 0x131c50 shrinks its block)"
  },
  "00132f20": {
   "name": "PerfMeter::drawDetail",
@@ -10769,6 +10973,66 @@
   "was": "FUN_002313b0",
   "why": "deleting dtor, slot 0 of Vt_003164e8"
  },
+ "00231410": {
+  "name": "PakArchive::getCount",
+  "tag": "game-inferred",
+  "was": "FUN_00231410",
+  "why": "the pak header's item count +0x10, 0 without data (PackFile +0xc4 is this 0xc-byte reader: data, 0, open's result)"
+ },
+ "00231430": {
+  "name": "PakArchive::getItemSize",
+  "tag": "game-inferred",
+  "was": "FUN_00231430",
+  "why": "(id): 0x2315d0(data, id); PackFile::getItemSize"
+ },
+ "00231450": {
+  "name": "PakArchive::getSize",
+  "tag": "game-inferred",
+  "was": "FUN_00231450",
+  "why": "(name): the entry 0x231770 finds, its +0xc, -1 without one; PackFile::getSize"
+ },
+ "00231480": {
+  "name": "PakArchive::getItem",
+  "tag": "game-inferred",
+  "was": "FUN_00231480",
+  "why": "(id): 0x231600(data, id); PackFile::getItem"
+ },
+ "002314a0": {
+  "name": "PakArchive::getData",
+  "tag": "game-inferred",
+  "was": "FUN_002314a0",
+  "why": "(name): the entry's +8, null without one; PackFile::getData"
+ },
+ "002314d0": {
+  "name": "PakArchive::getName",
+  "tag": "game-inferred",
+  "was": "FUN_002314d0",
+  "why": "(index): 0x231630(data, index); PackFile::getName"
+ },
+ "002314f0": {
+  "name": "PakArchive::findIndex",
+  "tag": "game-inferred",
+  "was": "FUN_002314f0",
+  "why": "(name): -1 without data, else 0x231660 writes the index; PackFile::findIndex / addFile"
+ },
+ "00231520": {
+  "name": "PakArchive::open",
+  "tag": "game-inferred",
+  "was": "FUN_00231520",
+  "why": "(data, variant): +0 data, +4 0, +8 = 0x231980 (checks the pak magic, relocates the entries, keeps items whose mask has bit variant); true when +8 >= 0"
+ },
+ "00231570": {
+  "name": "PakArchive::~PakArchive",
+  "tag": "game-inferred",
+  "was": "FUN_00231570",
+  "why": "deleting (obj, short): nothing to free (the data is the owner's); PackFile's destructor calls it with 0"
+ },
+ "002315c0": {
+  "name": "PakArchive::PakArchive",
+  "tag": "game-inferred",
+  "was": "FUN_002315c0",
+  "why": "data = 0; called by PackFile::PackFile on +0xc4"
+ },
  "00231bb0": {
   "name": "gameSceneThread",
   "tag": "game-inferred",
@@ -13774,6 +14038,12 @@
   "tag": "game-inferred",
   "was": "FUN_002c4140",
   "why": "answers the sbss pointer 0x31aea0: the sound-effect player whose +0 is the effect table (count +0xc, sorted name index +0x428 / +0x42c, entries 0x30 each at +0x430) that UiLayout::playSound looks up by name and hands to SePlayer::play / stop"
+ },
+ "002d0a10": {
+  "name": "sldiDecompress",
+  "tag": "game-inferred",
+  "was": "FUN_002d0a10",
+  "why": "(src, dst): SLDI magic (0x30f9d8), unpacked size +0xc, LZ copies / literal runs from +0x10; answers the size, -1 on a bad magic or length; PackJob::load decompresses a pack into its buffer"
  },
  "002d4150": {
   "name": "wstrcmp",

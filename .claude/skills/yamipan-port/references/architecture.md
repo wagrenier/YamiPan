@@ -1039,6 +1039,31 @@ until the top is within one). `StageNameNode::find` 0x194ae0 is also called dire
 0x1bac20 / 0x1c18b0 / 0x1d1150. The teardown deletes each listed object through its deleting dtor
 (vtable +0x10, `StageObject::destroy` on the host).
 
+**`game/fileloader.cpp` 0x1319f0..0x132f20 (TU 27, 2026-11-03, batch 059 with 45 names, all 53
+written, `verify`)**: the game's file loading, every load on the job thread (`jobAdd`, game/thread.cpp).
+**`FileJob`** (0x28): one file; `run` 0x132a40 asks `rxFileCallSizeHook` 0x152740 for m_dir + m_path
+("%s%s", the static path 0x4c8b50), then m_path alone when that is missing; size 0 = done with no data,
+< 0 = 0x80 failed; the data goes to gGlobalHeap (64-aligned) or into a caller's buffer at
+m_bufferOffset (**negative: the file ends that far in, 16-aligned**; too small = 0x81), then
+`rxFileCallLoadHook` 0x152730(path, data). States `FileJobState` 0 idle / 1 queued / 2 loading / 3 done /
+0x80 / 0x81 / 0x82 (never set here) / 0x83 (the loaders' "nothing listed"); settled = anything but 1 / 2.
+**`FileLoader`** (0x9c, vptr +0x98, vtable 0x3110b0, **18 slots**: dtor, isPack, addFile, findIndex,
+getName, getData, getItem, getSize, getItemSize, unloadItem, unload, getState, getItemState, getCount,
+isLoaded, waitLoaded, clear, compact): a linked list of 0x2c-byte entries (a FileJob + next) under the
+path prefix +0x18 (0x80 chars, set outside this file); by-name lookups take **the first path containing
+the name** (strstr). `startLoad` queues `loadJob` 0x1321f0, which runs every entry still idle / queued.
+**`PackFile`** (0xf8, Vt_00311060, same 18 slots) **derives from FileLoader and `PackJob`** (+0x9c: a
+FileJob, the `PakArchive` reader +0xc4 and the unpack buffer / variant); `PackFile::load` 0x131d70 is a
+jump to `PackJob::load` 0x131a30 with a0 + 0x9c. The slots answer from the archive (addFile only finds;
+isLoaded always; unload / waitLoaded / clear do nothing; compact reallocs the pack's block to its header
++0x1c). `setBuffer` 0x131eb0 (callers 0x2b5dc0 / 0x2b60b0: a 0x1800000 block and a variant 0 / 3 / 6 /
+9 + a save field) makes the job read the packed file into the buffer's end; load then **SLDI-unpacks**
+it to the start (`sldiDecompress` 0x2d0a10: "SLDI", unpacked size +0xc, LZ runs from +0x10) and
+`PakArchive::open` 0x231520 keeps only the items whose u_short mask (entry +2) has bit `variant`.
+The pak format ("pak ", count +0x10, 0x10-byte entries from +0x20) belongs to the parser TU
+0x231410..0x231bb0 (`game/pakarchive.h` is its stand-in). **`TextTokenizer`** (0x18, only user
+0x1a3a60): whitespace-separated words into a buffer of fixed capacity.
+
 ## Classes
 
 Name, vtable, vptr offset, size, file. `python rtti.py` (CodeWarrior variant, bootstrap 4, 2026-10-31)

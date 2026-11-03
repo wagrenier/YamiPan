@@ -5,7 +5,7 @@
  *  (game/gamepaths.cpp, 0x28ff60..0x2908d0). The path builders format the
  *  play record (StageSelect: stage, kind, variant) into a static buffer or
  *  the caller's; the pack getters reach the packs loadInitPack /
- *  loadLangPack keep (PackFile, game/gamehooks.h), answering null / 0
+ *  loadLangPack keep (PackFile, game/fileloader.h), answering null / 0
  *  while one is not loaded.
  * ======================================================================== */
 #ifndef _GAME_GAMEPATHS_H

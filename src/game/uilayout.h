@@ -32,7 +32,7 @@
 #include "sdk/libvifpk.h"
 #include "sdk/scetypes.h"
 
-class FileJob;                  // game/gamehooks.h
+class FileJob;                  // game/fileloader.h
 
 // ──────────────────────────────────────────────────────────────────────
 // The layout.

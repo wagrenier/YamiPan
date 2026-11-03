@@ -45,6 +45,25 @@
    "status": "verify",
    "why": "the RTC date module: getLocalDateTime reads sceCdReadClock, converts to local time with libscf and hands the DateTime to DateTime::setFormat, its only callee and caller pair; 0x23e740 starts unrelated code (a two-int validity test, a 0x208xxx wrapper), 0x23db50 before it is a Vt_00316510 ctor"
   },
+  "game/fileloader.cpp": {
+   "notes": "All 53 functions of 0x1319f0..0x132f20 are in src/game/fileloader.cpp with game/fileloader.h; FileJob / FileLoader / PackFile left gamehooks.h (which includes fileloader.h). PackFile derives from FileLoader and PackJob (+0x9c: FileJob + PakArchive + unpack buffer / variant); PackFile::load(arg, showLoading) jumps to PackJob::load. FileJob::m_arg is now m_index. Stand-ins: game/pakarchive.h (PakArchive / PakHeader, the parser TU 0x231410..0x231bb0), rxFileCallSizeHook / rxFileCallLoadHook and sldiDecompress in gamehooks.h. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean on fileloader and its users (only the known gfxtarget.h sceGsTexEnv miss), host harness passed (loader list, buffers, pack unpack, tokenizer). Doubts: file name and TextTokenizer's place are by position; PackJob +0x34 / +0x44 / +0x48 unread; a missing pack item answers done from getState (kept). Next: the pak parser 0x231410..0x231bb0, sldiDecompress, setBuffer's users 0x2b5dc0 / 0x2b60b0. Picture: nothing to see until bootstrap 6-7.",
+   "ranges": [
+    [
+     "001319f0",
+     "00132f20"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 07:43",
+     "status": "verify",
+     "summary": "FileJob, FileLoader (18 slots), PackFile with its PackJob base and TextTokenizer: all 53 written (batch 059, 45 names)"
+    }
+   ],
+   "status": "verify",
+   "why": "the whole unassigned run between game/thread.cpp (frameSyncThread ends before 0x1319f0) and game/perfmeter.cpp (0x132f20): PackFile (Vt_00311060) with its PackJob base at +0x9c, FileLoader (vtable 0x3110b0), FileJob and the TextTokenizer at its tail; no source string, file name a guess"
+  },
   "game/fontdata.cpp": {
    "notes": "Cut out of unassigned@00171300 and pinned 0x1fcb40-0x1fe6b0 (batch 056, 31 names: the FontData byte variants countLinesMb / lineWidthFixed / lineWidthFixedMb / nextGlyphMb, TextPrinter / FontPrinter and their slots, SpritePrinter for the never-stored vtable 0x315fc0, newlib vsprintf 0x12cab8 / strncmp 0x1286a8, gfxGetVramBlock 0x12f170; Ghidra saved). fontdata.h: FontData gained m_magic (knj) and m_cellWidth (+0xc); the printers are layout host with EE offsets (vptr at +0x10 after the data, FontPrinter EE 0x40). Byte text: a byte below 0x20 signed (control or 0x80..0xff) leads a two-byte code b0 << 8 | b1, other bytes are b << 8. PC: sprites go to yamipan_drawui.h (Prim + Begin UV + two vertices per glyph keyed by the printer packet), the texture is bound by its Tim2Texture owner in setDrawState, uploadTexture only flushes; print and printScaled share a private drawText (print is scale 1, exact); SpritePrinter glyph fetch answers null (its ROM call lands on its own printScaled; never constructed). Kept from the ROM: SpritePrinter second corner x + (x + w), TEX1_1 shifting the whole bilinear byte; measureLines guards the zeroing the ROM does before its null test. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on fontdata / uidrawer / gsutil (RosePan SDK headers + a libvifpk stub); no harness. Doubts: file name; printer and query2..6 names; FontData +4 unread. Next in the run: the wide printer 0x2d3700..0x2d4150 (unassigned@002b0d50, FontPrinter subclass made by 0x2b1010), boxgrid callees 0x193780..0x1938f8, StageSound::playNamed 0x1d6a80, the class 0x230820..0x230980, the pak parser 0x231410..0x231bb0.",
    "ranges": [
@@ -774,6 +793,7 @@
    "status": "verify"
   },
   "unassigned@00121b80": {},
+  "unassigned@001319f0": {},
   "unassigned@00171300": {},
   "unassigned@0023c020": {},
   "unassigned@0023e740": {},

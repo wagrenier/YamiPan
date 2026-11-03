@@ -454,6 +454,28 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    `StageSound::playNamed` 0x1d6a80 / `stopNamed` 0x1d6a90, `StageScene::getFloor` 0x19aea0, the
    stage scene itself (ctor 0x19c180 / teardown 0x19bbe0 / load 0x17fb90: who owns +0x10), the
    class 0x230820..0x230980 and the pak parser 0x231410..0x231bb0.
+   TU 27 (the frontier's `unassigned@001319f0`, the whole run between thread.cpp and perfmeter.cpp):
+   **`game/fileloader.cpp` 0x1319f0..0x132f20** pinned (53 functions, batch 059 with 45 names, **all
+   written, `verify`**; architecture.md "Modules"): `FileJob`, `FileLoader` (18 slots, all named),
+   `PackFile` = FileLoader + a **`PackJob`** base at +0x9c (the old stand-in's `load(int, int)` is
+   `load(int arg, bool showLoading)`), `TextTokenizer`. The three classes left `gamehooks.h` for the new
+   `game/fileloader.h` (gamehooks.h includes it); `FileJob::m_arg` is **`m_index`** (the loader's entry
+   index); `FileJobState` gained 0x82 / 0x83. New stand-ins: `game/pakarchive.h` (`PakArchive`,
+   `PakHeader`: the parser TU 0x231410..0x231bb0 completes it), `rxFileCallSizeHook` /
+   `rxFileCallLoadHook` (0x152740 / 0x152730, RosePan's signatures) and `sldiDecompress` 0x2d0a10 in
+   gamehooks.h. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on
+   fileloader / gamepaths / stageresult / uilayout (screen / scene / uigame only fail on gfxtarget.h's
+   `sceGsTexEnv`, as before), and a host harness (loader list, prefix, duplicate add, empty / missing
+   files, unload, a dir-prefixed job, end-of-buffer placement and its no-memory case, a pack read into
+   its buffer's end and unpacked, the tokenizer's word cut) passed. Doubts for the user: the file name
+   (no strings) and keeping TextTokenizer in it (by position); `isPack` / `compact` / the
+   PackJob fields +0x34 / +0x44 / +0x48 (the constructor's argument, unread) are names from the code;
+   a pack item of size -1 (missing) answers "done" from getState (kept); TextTokenizer reads MSL's
+   ctype table with a signed char in the ROM (the port tests the byte as unsigned). Bootstrap 6: the
+   host rx file hooks answer 0 for an empty file and < 0 for a missing one, and jobAdd must stay
+   asynchronous (hazards.md "Stubs and bookkeeping"). **Next picks**: the pak parser 0x231410..0x231bb0
+   (`PakArchive`: now on the frontier from three TUs), `sldiDecompress` with the wide printer in
+   unassigned@002b0d50, the loader's users 0x2b5dc0 / 0x2b60b0 (the stage data loads with setBuffer).
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

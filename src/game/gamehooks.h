@@ -5,7 +5,7 @@
  *  the rx runtime's game layer and SPK.ROM (game/spkrom.cpp), sound
  *  (sound/sound.cpp), the empty debug hooks
  *  0x151270..0x151290, the scene controller's callees (game/scene.cpp), and
- *  the pack files, UI layout and stage object game/stageresult.cpp calls.
+ *  the UI layout and stage object game/stageresult.cpp calls.
  *  Each moves to its TU's header when that TU is written. Minimal.
  * ======================================================================== */
 #ifndef _GAME_GAMEHOOKS_H
@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "game/fileloader.h"
 #include "game/gamepaths.h"
 #include "game/stageobjlist.h"
 #include "game/uilayout.h"
@@ -29,6 +30,15 @@ struct StageSelect;             // game/sysdata.h
 // rx boot: thread priorities given absolute, made relative to the caller.
 void rxInit(const char *bootPath, int prio0, int prio1, int prio2);      // FS2 0x001527a0
 void rxTerm();                                                           // FS2 0x00152750
+// The rx file hooks of the game's rx layer: a file's size (0 empty, < 0
+// missing) and reading it whole into buf (game/fileloader.cpp).
+int  rxFileCallSizeHook(const char *name);                               // FS2 0x00152740
+int  rxFileCallLoadHook(const char *name, void *buf);                    // FS2 0x00152730
+
+// Unpacks an "SLDI" block (LZ copies and literal runs) into dst; the
+// unpacked size, -1 for another magic or a length that does not add up
+// (unassigned@002b0d50; PackJob::load).
+int sldiDecompress(const void *src, void *dst);                          // FS2 0x002d0a10
 
 void soundInit(int isPal);                                               // FS2 0x001486e0
 void soundUpdate();                                                      // FS2 0x00148500
@@ -58,77 +68,6 @@ bool boxContainsPoint(const float m[4][4], const float p[4]);            // FS2 
 void loadMenuPack();                                                     // FS2 0x002c3e10
 // The scene table's only scene, "Menu (Pack File)": the menu flow 0x2b5770(1).
 void menuSceneThread(void *arg);                                         // FS2 0x002b5740
-
-// A list of files loaded together by a job (unassigned@001319f0, 0x1320f0..):
-// addFile each, startLoad, waitLoaded, then getData / getSize by name (the
-// first listed path containing it). PackFile's base.
-// layout: host -- EE 0x9c, vptr at +0x98 (vtable 0x3110b0, 18 slots): +0
-// state, +4 / +8 / +0xc the file list head / tail / count (0x2c-byte
-// entries: +0xc size, +0x14 data, +0x28 next), +0x10 the job, +0x14 the
-// constructor's argument, +0x18 the path prefix.
-class FileLoader
-{
-public:
-    explicit FileLoader(int arg);                                        // FS2 0x00132920
-    virtual ~FileLoader();                                               // FS2 0x001328b0: slot 0, deleting
-    virtual int   addFile(const char *name);                             // FS2 0x001327a0: slot 2, answers the index
-    virtual void *getData(const char *name);                             // FS2 0x00132630: slot 5
-    virtual int   getSize(const char *name);                             // FS2 0x00132550: slot 7
-    virtual void  waitLoaded(int arg, bool showLoading);                 // FS2 0x001320f0: slot 15 (arg unused)
-    // Queues the load job; 0 while no job slot is free.
-    int startLoad();                                                     // FS2 0x00132280
-};
-
-// FileJob::m_state.
-enum FileJobState
-{
-    FileJob_Idle = 0,
-    FileJob_Queued = 1,
-    FileJob_Loading = 2,
-    FileJob_Done = 3,           // m_data holds the file (null when it is empty)
-    FileJob_Failed = 0x80,      // bit: 0x80 not found, 0x81 no memory
-    FileJob_NoMemory = 0x81,
-};
-
-// One file loaded by a job (unassigned@001319f0, 0x132a40..0x132cf0):
-// m_dir + m_path first, then m_path, through the rx file hooks.
-// layout: host -- EE 0x28.
-class FileJob
-{
-public:
-    FileJob(const char *path, int arg);                                  // FS2 0x00132cc0: path copied to new[]
-    ~FileJob();                                                          // FS2 0x00132c10: deleting (obj, 1)
-    // jobAdd(run, this); queued (state 1) when it answers non-zero.
-    int start();                                                         // FS2 0x00132bc0
-    static int run(void *job);                                           // FS2 0x00132a40
-
-    int         m_state;        // FS2 +0x00: FileJobState
-    char       *m_path;         // FS2 +0x04
-    int         m_arg;          // FS2 +0x08
-    int         m_size;         // FS2 +0x0c
-    u_char      m_notOwned;     // FS2 +0x10: the destructor leaves m_data alone
-    void       *m_data;         // FS2 +0x14: gGlobalHeap unless m_buffer is given
-    int         m_jobId;        // FS2 +0x18
-    const char *m_dir;          // FS2 +0x1c: tried first as a prefix
-    void       *m_buffer;       // FS2 +0x20: the caller's buffer, if any
-    int         m_bufferOffset; // FS2 +0x24: negative: from the end
-};
-
-// A pack file (dataEU/pack*.pak; unassigned@001319f0, 0x1319f0..).
-// layout: host -- EE 0xf8, vptr at +0x98 (Vt_00311060, 18 slots), the path
-// in new[] at +0xa0, the parsed pack at +0xc4 (the parser 0x231410..: each
-// item slot is a thunk into it; an id's high half picks a nested pack).
-class PackFile : public FileLoader
-{
-public:
-    PackFile(const char *path, int arg);                                 // FS2 0x00131f00
-    virtual ~PackFile();                                                 // FS2 0x00131d80: slot 0, deleting
-    virtual void *getData(const char *name);                             // FS2 0x00131d30: slot 5, the first item whose name contains it
-    virtual void *getItem(int id);                                       // FS2 0x00131d20: slot 6, null without one
-    virtual int   getSize(const char *name);                             // FS2 0x00131d10: slot 7, -1 without one
-    virtual int   getItemSize(int id);                                   // FS2 0x00131d00: slot 8, -1 without one
-    void load(int a, int b);                                             // FS2 0x00131d70: every loader passes (0, 0)
-};
 
 // 2dEU/archive<lang>.d2b and 2dEU/option<lang>.d2b (static buffers).
 const char *archiveLayoutPath();                                         // FS2 0x002ec7f0
