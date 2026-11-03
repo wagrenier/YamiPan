@@ -10259,6 +10259,144 @@
   "was": "FUN_00264790",
   "why": "libscf (clock*): converts the RTC clock (JST) in place to local time through 0x264298 / 0x264350; getLocalDateTime calls it right after sceCdReadClock; likely name"
  },
+ "002955e0": {
+  "name": "NaviTable::getGridPos",
+  "tag": "game-inferred",
+  "was": "FUN_002955e0",
+  "why": "(table, node, int *x, int *y): node record table+0x10+node*0x70, its floats +0x08 / +0x0c converted to int into x / y, returns 1; the navi menu 0x29b430..0x29e4f0 calls it 7 times (the table is loaded from 2dEU/navi%s.d2b, string used at 0x29f804)"
+ },
+ "00295630": {
+  "name": "NaviTable::hasSecondGoal",
+  "tag": "game-inferred",
+  "was": "FUN_00295630",
+  "why": "(table, node): false when the node's kind short +0 is 1, or when its condition set 2 (+0x20, 4 x {type, arg}) holds a type 6 (never) condition; true otherwise"
+ },
+ "00295690": {
+  "name": "NaviTable::findNodeAt",
+  "tag": "game-inferred",
+  "was": "FUN_00295690",
+  "why": "(table, x, y): the first of the table's count (+8) node records whose float grid position +0x08 / +0x0c equals (x, y), as a pointer; 0 when none"
+ },
+ "00295730": {
+  "name": "NaviTable::hasPart",
+  "tag": "game-inferred",
+  "was": "FUN_00295730",
+  "why": "(table, node, part): a kind-1 node answers its short +0x04, others the short +0x04 + part*2; nonzero means true"
+ },
+ "00295780": {
+  "name": "NaviTable::getLink",
+  "tag": "game-inferred",
+  "was": "FUN_00295780",
+  "why": "(table, node, second): the node's link short +0x68 when second is 0, else +0x6a, unfiltered (getLinkOrNone answers -1 for < 1)"
+ },
+ "002957b0": {
+  "name": "NaviTable::getTriggerState",
+  "tag": "game-inferred",
+  "was": "FUN_002957b0",
+  "why": "(table, node, part, n): getTrigger's flag; < 0 -> 0, already set in the flag table -> 2, else 1 when the trigger's target node has the flag as its next pending one (isNextFlag) and its goal (mode 0: sets 0+1, else 0+2, skipping type-5 conditions) is met, else 0"
+ },
+ "002958f0": {
+  "name": "NaviTable::getTrigger",
+  "tag": "game-inferred",
+  "was": "FUN_002958f0",
+  "why": "(table, node, part, n, int *target, int *mode): the 4-byte trigger +0x28+n*4 {s8 flag, u8 part1Only, s8 target, u8 mode}; a negative flag, or part1Only with part != 1, gives -1 / target -2 / mode -1, else returns the flag with target and mode (0/1)"
+ },
+ "00295980": {
+  "name": "NaviTable::getLinkOrNone",
+  "tag": "game-inferred",
+  "was": "FUN_00295980",
+  "why": "(table, node, dir): the node's link short +0x68+dir*2, -1 when below 1"
+ },
+ "002959b0": {
+  "name": "NaviTable::isLink3Open",
+  "tag": "game-inferred",
+  "was": "FUN_002959b0",
+  "why": "(table, node): link short +0x6e; false when negative, else testConditions(link, set 0, all types)"
+ },
+ "00295a00": {
+  "name": "NaviTable::isLink2Open",
+  "tag": "game-inferred",
+  "was": "FUN_00295a00",
+  "why": "(table, node): link short +0x6c; false when negative, else testConditions(link, set 0, all types)"
+ },
+ "00295a50": {
+  "name": "NaviTable::isLink1Open",
+  "tag": "game-inferred",
+  "was": "FUN_00295a50",
+  "why": "(table, node): link short +0x6a; false when negative, else testConditions(link, set 0, all types)"
+ },
+ "00295aa0": {
+  "name": "NaviTable::isLink0Open",
+  "tag": "game-inferred",
+  "was": "FUN_00295aa0",
+  "why": "(table, node): link short +0x68; false when negative, else testConditions(link, set 0, all types)"
+ },
+ "00295af0": {
+  "name": "NaviTable::findPendingLink",
+  "tag": "game-inferred",
+  "was": "FUN_00295af0",
+  "why": "(table, node, group, int *target, int *mode): in the node's pending-link group +0x30+group*0x10 (4 x {s8 flag, s8 target, u8 mode}) the first link whose flag is not set yet decides: true with target and mode when the target's goal is open (mode 0: sets 0+1; else set 0, no pending flags, set 2), false otherwise"
+ },
+ "00295d50": {
+  "name": "NaviTable::canFireLink",
+  "tag": "game-inferred",
+  "was": "FUN_00295d50",
+  "why": "(table, node): for each listed pending link of the node: the node's own goal must be done (hasSecondGoal ? sets 0+2 : 0+1, type 5 skipped) else false; the first link whose flag is unset answers whether its target's goal is open"
+ },
+ "00296060": {
+  "name": "NaviTable::isNextFlag",
+  "tag": "game-inferred",
+  "was": "FUN_00296060",
+  "why": "(table, node, flag): true when, in one of the node's 3 pending-link groups, the first link whose flag is unset carries this flag"
+ },
+ "00296140": {
+  "name": "NaviTable::hasPendingFlag",
+  "tag": "game-inferred",
+  "was": "FUN_00296140",
+  "why": "(table, node): true when any listed pending link of the node (flag >= 0) has its flag unset in the flag table (SystemData +0x520)"
+ },
+ "00296200": {
+  "name": "NaviTable::isSecondGoalDone",
+  "tag": "game-inferred",
+  "was": "FUN_00296200",
+  "why": "(table, node): testConditions sets 0 and 2 with type-5 conditions skipped"
+ },
+ "00296260": {
+  "name": "NaviTable::isSecondGoalOpen",
+  "tag": "game-inferred",
+  "was": "FUN_00296260",
+  "why": "(table, node): set 0 holds, no pending flag (hasPendingFlag inlined), then set 2; all condition types"
+ },
+ "00296380": {
+  "name": "NaviTable::isFirstGoalOpen",
+  "tag": "game-inferred",
+  "was": "FUN_00296380",
+  "why": "(table, node): testConditions sets 0 and 1, all condition types"
+ },
+ "002963e0": {
+  "name": "NaviTable::isOpen",
+  "tag": "game-inferred",
+  "was": "FUN_002963e0",
+  "why": "(table, node): testConditions set 0, all condition types"
+ },
+ "00296410": {
+  "name": "NaviTable::isSinglePart",
+  "tag": "game-inferred",
+  "was": "FUN_00296410",
+  "why": "(table, node): the node's kind short +0 is 1"
+ },
+ "00296430": {
+  "name": "NaviTable::testConditions",
+  "tag": "game-inferred",
+  "was": "FUN_00296430",
+  "why": "(table, node, set, skipLinkCheck): the 4 {type, arg} conditions of set +0x10+set*8 must all hold; 15 types read the save data (stage clear flags 0x15 / 0x2a, archives, all records, the node's own pending links, other nodes recursively, the selected kind, every stage cleared by kind 2); type 5 is skipped when skipLinkCheck"
+ },
+ "00296a00": {
+  "name": "SaveData::hasArchive",
+  "tag": "game-inferred",
+  "was": "FUN_00296a00",
+  "why": "(save, id): the byte save+4+id != 0; id 0 means every one of 1..100 (recursive, inlined five levels by CodeWarrior); only testConditions calls it; 100 entries match the archive file 2dEU/archive%s.d2b"
+ },
  "00296d00": {
   "name": "stageDefaultRecord",
   "tag": "game-inferred",

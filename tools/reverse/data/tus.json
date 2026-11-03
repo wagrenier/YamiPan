@@ -145,6 +145,29 @@
    "status": "verify",
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
+  "game/progress.cpp": {
+   "notes": "All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (0x70) / NaviCond / NaviTrigger / NaviPendingLink with EE static_asserts and NaviCondType 0..14. stageDefaultRecord moved from gamehooks.h to progress.h (sysdata.cpp includes it); SaveData +4 is now archive[101]. Guesses: the file name, stageDefaultRecord's placement in this file, and the navigator vocabulary (goals, triggers, pending links). Left out on purpose: 0x2955d0 (thunk, file before) and 0x296c10..0x296d00 (out-of-line inline copies of other classes). getSaveExtra 0x29efd0 belongs to the navi menu 0x29a700..~0x2a0000 (uses 0x5995e0, init 0x29ef70, getter 0x29efe0) and is still a frontier call from memcard.cpp: write it with that menu's file. NaviCond_KindSelected reads SystemData +0x4c0 (select.kind) as the ROM does; its meaning is unread.",
+   "ranges": [
+    [
+     "002955e0",
+     "00296c10"
+    ],
+    [
+     "00296d00",
+     "00296d60"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 00:16",
+     "status": "verify",
+     "summary": "Save-progress queries cut out of unassigned@002647e0: the navigator table's unlock conditions (NaviTable, 22 methods), SaveData::hasArchive and stageDefaultRecord"
+    }
+   ],
+   "status": "verify",
+   "why": "Save-progress queries: the navigator table's unlock conditions (NaviTable, loaded from 2dEU/navi%s.d2b by the navi menu 0x29a700..0x2a0000, which calls every one) and stageDefaultRecord (the fresh-save record per kind, variant and stage). 0x2955d0 (a thunk on gp-0x7a10's vtable) is left with the file before. 0x296c10..0x296d00 (a vector lerp step, two 16-byte copies, a 14-word clear; 15-18 callers each, none here) are out-of-line copies of other classes' inlines and stay out. Putting stageDefaultRecord here is a guess: it reads the save's record tables and sits right after those copies."
+  },
   "game/rcnttimer.cpp": {
    "ranges": [
     [
@@ -419,6 +442,9 @@
   "unassigned@00121b80": {},
   "unassigned@00171300": {},
   "unassigned@0023c020": {},
-  "unassigned@002647e0": {}
+  "unassigned@002647e0": {
+   "claimed": "2026-11-03 00:04",
+   "status": "active"
+  }
  }
 }

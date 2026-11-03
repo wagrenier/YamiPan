@@ -30,6 +30,9 @@ constexpr int kRecordVariants = 2;
 // (stage).
 constexpr u_int kNoRecord = 123456;
 
+// The archives (2dEU/archive%s.d2b) the save counts, numbered 1..100.
+constexpr int kArchiveCount = 100;
+
 // SaveData's stage flag bytes (the stage number indexes them).
 constexpr int kStageFlagCount = 69;
 // Two flags past the stages; with both set, clearing a stage marks the
@@ -126,6 +129,7 @@ struct SaveData
     int  clearBit(int kind, int variant) const;                          // FS2 0x0023b510
     bool testStageFlags(int stage, u_int mask) const;                    // FS2 0x0023b530
     int  pickVariant3ac(int variant);                                    // FS2 0x0023b580
+    bool hasArchive(int id) const;                                       // FS2 0x00296a00 (game/progress.cpp)
 
     // Inline in the ROM (allRecordsSet, isRecordSet, recordStageResult).
     u_int getRecord(int kind, int variant, int stage) const
@@ -136,7 +140,7 @@ struct SaveData
     }
 
     int    _000;                // FS2 +0x000: cleared by setDefaults
-    u_char _004[0x65];
+    u_char archive[kArchiveCount + 1];                     // FS2 +0x004: nonzero when collected, [0] unused (hasArchive)
     u_char stageFlags[kStageFlagCount];                    // FS2 +0x069: clearBit bits per stage
     u_char _0ae[0x27];          // FS2 +0x0ae: then 3 bytes padding (the implicit operator= copies 0x27)
     u_int  record[kRecordKinds][kRecordVariants][kStageCount];  // FS2 +0x0d8: best per stage, stageDefaultRecord when fresh
@@ -148,6 +152,7 @@ struct SaveData
     int    _46c[16];            // FS2 +0x46c
     u_char _4ac[16];            // FS2 +0x4ac
 };
+static_assert(offsetof(SaveData, archive) == 0x004, "SaveData::archive");
 static_assert(offsetof(SaveData, stageFlags) == 0x069, "SaveData::stageFlags");
 static_assert(offsetof(SaveData, record) == 0x0d8, "SaveData::record");
 static_assert(offsetof(SaveData, _3a8) == 0x3a8, "SaveData::_3a8");

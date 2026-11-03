@@ -78,6 +78,19 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    name is unknown; the `McCmd` sceMcFuncNo* values are from the SDK's numbering as remembered
    (0x20 unidentified). Bootstrap 6: move `McCmd` into `sdk/libmc.h`; the host libmc keeps calling
    this encoder unchanged (pure code).
+   TU 11 (the frontier's `unassigned@002647e0` again, for `stageDefaultRecord` / `getSaveExtra`):
+   **`game/progress.cpp` 0x2955e0..0x296c10 + 0x296d00..0x296d60** cut out (24 functions, all
+   written, `verify`, batch 033): `NaviTable` (the navigator file 2dEU/navi%s.d2b: nodes, unlock
+   conditions, triggers, pending links), `SaveData::hasArchive` (SaveData +4 is now
+   `archive[101]`) and `stageDefaultRecord` (moved from `gamehooks.h` to `progress.h`;
+   architecture.md "Modules"). Doubts for the user: the file name and putting
+   `stageDefaultRecord` in it are guesses (no strings; it sits after the out-of-line vector
+   inlines 0x296c10..0x296d00, which were left out of every TU); the names NaviTable / goals /
+   pending links are read from the code, not from the game. `getSaveExtra` was **not** written:
+   it belongs to the navi menu 0x29a700..~0x2a0000 (the user of 0x5995e0, with its init 0x29ef70
+   and the gp-0x79f8 getter 0x29efe0), a large class file (vtables 0x3185b0.., 0x318820,
+   0x318840) for a later run; it stays on the frontier. Still in the unassigned run:
+   `getStageResult` 0x2b0580 / `StageResult::getPerfectBits` 0x2b00d0, `gameSceneThread` 0x231bb0.
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

@@ -4,9 +4,8 @@
  *  Subsystems main and its loop call that have no TU of their own yet:
  *  the rx runtime's game layer and SPK.ROM (game/spkrom.cpp), sound
  *  (sound/sound.cpp), the empty debug hooks
- *  0x151270..0x151290, the scene controller thread (0x231bb0), the stage
- *  records' defaults (0x296d00) and the stage result
- *  (0x2b0580). Each moves to its TU's header when that TU is written.
+ *  0x151270..0x151290, the scene controller thread (0x231bb0) and the
+ *  stage result (0x2b0580). Each moves to its TU's header when that TU is written.
  *  Minimal.
  * ======================================================================== */
 #ifndef _GAME_GAMEHOOKS_H
@@ -32,9 +31,6 @@ struct SoundConfig
     void setOutputMode(int mode);                                        // FS2 0x00147ee0: SoundOutput
 };
 extern SoundConfig *gSoundConfig;   /* sbss 0x31addc (gp-0x7a94) */
-
-// The record a fresh save holds for (kind, variant, stage).
-u_int stageDefaultRecord(int kind, int variant, int stage);              // FS2 0x00296d00
 
 // The stage just played, at 0x599700 (only what game/sysdata.cpp reads).
 struct StageResult

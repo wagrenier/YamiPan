@@ -511,6 +511,25 @@ first-game save bonus**. `buildIconSys` 0x2ab7c0: "PS2D", icon1.ico for all thre
 copy assignments of FlagTable / GameOptions / StageSelect / SaveData (memberwise: `SaveData +0xae`
 is 0x27 bytes, then padding).
 
+**`game/progress.cpp` 0x2955e0..0x296c10 + 0x296d00..0x296d60 (TU 11, 2026-11-03, batch 033, all
+24 written, `verify`)**: the **navigator table**'s unlock logic and `stageDefaultRecord`. The navi
+menu (0x29a700..~0x2a0000, unread; it uses "2dEU/navi%s.d2b" at 0x29f804 and owns `getSaveExtra`
+0x29efd0 -> 0x5995e0, its state saved with the system data; 0x29ef70 sets that block's three ints
+and gp-0x79f4) passes a `NaviTable`: a 0x10-byte header (count +8), then 0x70-byte `NaviNode`s:
+kind +0 (1 = single part), part[2] +4, grid x / y floats +8 / +0xc, `cond[3][4]` {type, arg} +0x10
+(set 0 open, 1 first goal, 2 second goal), `trigger[2]` +0x28 {flag, part1Only, target,
+secondGoal}, pending links `[3][4]` +0x30 {flag, target, secondGoal, -}, 8 unread bytes +0x60,
+neighbour `link[4]` shorts +0x68. Condition types 0..14 (`NaviCondType` in `progress.h`): stage
+cleared in variant 0 / 1 (stage flags & 0x15 / 0x2a), archive n (0 = all), all archives but 98, all
+records, own pending links all fired (skippable), never, other nodes' open / goal states
+(recursive), `SystemData +0x4c0` (`select.kind`) != 0, stages 1..29 cleared by kind 2 in each
+variant; anything else (unused slots are -1) holds. Flags are `FlagTable` (SystemData +0x520)
+indices: a node's goal is "done" ignoring its own pending links and "open" only when they all
+fired. **SaveData +0x4..+0x68 is `archive[101]`** (index 0 unused; `SaveData::hasArchive` 0x296a00,
+id 0 = all 100, the archive file is "2dEU/archive%s.d2b"). 0x296c10..0x296d00 (a VU0 lerp step,
+two 16-byte copies, a 14-word clear; 12-18 callers each, none in this file) are out-of-line inline
+copies of other classes, not in this TU.
+
 ## Classes
 
 Name, vtable, vptr offset, size, file. `python rtti.py` (CodeWarrior variant, bootstrap 4, 2026-10-31)

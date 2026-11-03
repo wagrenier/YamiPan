@@ -10,6 +10,7 @@
 #include "game/gfxtarget.h"
 #include "game/heap.h"
 #include "game/memcard.h"
+#include "game/progress.h"
 #include "sdk/scetypes.h"
 
 // ButtonMap's default button per action (setDefaults stores them, the

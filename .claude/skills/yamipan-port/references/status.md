@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-02 23:53 at commit `07c365c` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 00:16 at commit `f89ac12` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-02 23:53 at commit `07c365c` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6595**, named **1155** (18%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1478, game-inferred 306
-- context-name ledger: 1784 entries; overrides of wrong library matches: 0
-- placed in a source file: 1144/6595 in 34 files
+- game functions: **6595**, named **1178** (18%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1478, game-inferred 329
+- context-name ledger: 1807 entries; overrides of wrong library matches: 0
+- placed in a source file: 1168/6595 in 35 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **171**; stubs: **0**
+- reconstructed FS2 functions: **195**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -40,20 +40,23 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/memcard.cpp` | 55 | 0 |
 | `src/game/pad.cpp` | 14 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
+| `src/game/progress.cpp` | 24 | 0 |
 | `src/game/sysdata.cpp` | 37 | 0 |
 | `src/game/thread.cpp` | 19 | 0 |
 
 ## Translation units (one session each: `tus.py`)
 
-- 48 TUs: todo 41, verify 10
-- next: **unassigned@002647e0** (frontier score 8)
+- 51 TUs: todo 42, active 1, verify 11
+- next: **unassigned@002647e0** (resuming an unfinished session)
 - pinned queue: (empty)
+- active: `unassigned@002647e0` 0/642
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
 - verify: `game/gamesystem.cpp` 17/17 -- All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). N
 - verify: `game/heap.cpp` 17/17 -- Game code, not MSL: heap and RNG share one object (sdata 0x31a880..0x31a88c, bss 0x329970 then 0x3299c0, sbss 0x31ad80). All 17 functions written; batch 031 nam
 - verify: `game/memcard.cpp` 55/55 -- All 55 functions written (source only, not built). New this run: Memcard::stepSave (mkdir, then data / icon1.ico / icon.sys each open, write, flush, close; Save
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
+- verify: `game/progress.cpp` 24/24 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/sysdata.cpp` 37/37 -- Cut out of unassigned@00171300 (the frontier pick, 5138 functions) and pinned 0x23af30-0x23c020. One SystemData block of 0x620 bytes at 0x598b30: SaveData +0 (0
 - verify: `game/thread.cpp` 19/19 -- All 19 functions written; thread.h has ThreadSlotRecord, ThreadStackDef, ThreadDetourStack, FrameSync, JobRecord with ThreadState / ThreadDetourState / JobCance
 - verify: `sdk/mcerror.cpp` 0/1 -- Pinned 0x121b80..0x121ef0 as sdk/mcerror.cpp (read as libmc's: between the read-fast tail and libc abort, maps commands FS2 never issues). McCmd and McErrno in 
@@ -61,6 +64,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 00:16 `game/progress.cpp` verify: Save-progress queries cut out of unassigned@002647e0: the navigator table's unlock conditions (NaviTable, 22 methods), SaveData::hasArchive and stageDefaultReco
 - 2026-11-02 23:53 `game/thread.cpp` verify: thread system, frame sync and job worker: all 19 functions of 0x130a20..0x1319f0 reconstructed
 - 2026-11-02 23:30 `sdk/mcerror.cpp` verify: mcErrorCode, libmc's error encoder: libmc command and result to SCE_ERROR_ENCODE(0x01080000, errno or Sony code)
 - 2026-11-02 23:12 `game/heap.cpp` verify: heap allocator and RNG cut out of unassigned@001037c0 and pinned 0x1037c0-0x104b40: Heap (alloc, free, realloc, marks, gap list), initGlobalHeap / shutdownGloba
@@ -68,20 +72,19 @@ Recent sessions:
 - 2026-11-02 22:39 `game/memcard.cpp` partial: memory card module cut out of unassigned@002647e0 and pinned 0x2a9c70-0x2acff0: McDevice libmc wrapper, SaveFile save image and module state written, Memcard ma
 - 2026-11-02 22:11 `game/datetime.cpp` verify: RTC date module: getLocalDateTime and DateTime::setFormat cut out of unassigned@0023c020; libscf 0x2640e8..0x2647d8 named and made a library range
 - 2026-11-02 21:55 `game/sysdata.cpp` verify: system data block: SaveData, StageSelect, GameOptions, FlagTable in SystemData 0x598b30; language and region strings; all 37 functions
-- 2026-11-02 21:33 `unassigned@00116fb8` verify: Resolved as library, not game code: newlib float libm 0x116fb8..0x119be8 and libgcc (libgcc2 64-bit helpers + fp-bit soft-float) 0x119be8..0x11c6b0, 51 names by
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@002acff0` | todo | 0/0/688 | 209.3 | 8 | 0 |
-| `unassigned@002647e0` | todo | 0/0/937 | 271.6 | 8 | 0 |
 | `game/gfxtarget.cpp` | todo | 0/0/8 | 2.6 | 7 | 0 |
 | `game/gamepacket.cpp` | todo | 0/0/6 | 0.6 | 6 | 0 |
 | `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 5 | 0 |
 | `game/rcnttimer.cpp` | todo | 0/0/4 | 0.2 | 4 | 0 |
 | `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 3 | 0 |
-| `game/spkrom.cpp` | todo | 0/0/13 | 2.4 | 2 | 0 |
+| `unassigned@00296d60` | todo | 0/0/267 | 74.1 | 2 | 0 |
 | `rena_pkt_vif1pktmanage.cpp` | todo | 0/0/13 | 1.9 | 2 | 0 |
+| `game/spkrom.cpp` | todo | 0/0/13 | 2.4 | 2 | 0 |
 | `unassigned@0012ea60` | todo | 0/0/7 | 1.7 | 1 | 0 |
 | `unassigned@00171300` | todo | 0/0/2913 | 786.2 | 1 | 0 |
 
@@ -90,7 +93,6 @@ Recent sessions:
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
-| `00296d00` | stageDefaultRecord | 6 | game | missing | - |
 | `002b0580` | getStageResult | 4 | game | missing | - |
 | `0012e0e0` | gfxFlipDisplay | 4 | game | missing | game/gfxtarget.cpp |
 | `00147ee0` | SoundConfig::setOutputMode | 3 | game | missing | sound/sound.cpp |
