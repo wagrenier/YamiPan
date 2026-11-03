@@ -1214,6 +1214,26 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    all answer. Ghidra's function tags hold only 0x162250's provenance tag so far; the other 760 in
    `data/tags.json` are mirrored when a batch next tags them (or by a one-off loop over the file).
 7. Fill architecture.md as each step learns something.
+8. **The Pan layer (bootstrap 6-7), started 2026-11-03 by the user; first milestone reached the same
+   day**: `CMakeLists.txt` exists, so `tus.py check` and `finish` are in full mode from here on. `build.py
+   --run` is green: the window opens on D3D12, `gameInit` runs through, the frame loop and the job worker
+   turn, stubs are reported. Written: `core/` (Application, Logger, Paths, Config, IniFile, Window,
+   EventQueue), `os/Thread`, `ee/` (Kernel, InterruptController), `gpu/Device`, `rendering/`
+   (DisplayGeometry, UiCanvas, Renderer, PresentPass, Screenshotter), `io/` (InputSystem, HostFiles),
+   `ui/` (Overlay, four panels, the Siren theme), `src/sdk/` (eekernel, libgraph, libdma, libvifpk, libpad,
+   libcdvd, fileio, sif). **Left, in this order** (each ends in a picture or a sound):
+   (a) the game-layer boot the run stops at: `rxInit` / `spkRomLoad` (`game/spkrom.cpp`) and
+       `rx/filehost.c` / `filecd.c` / `filehdd.c` (RosePan has them in `rxfile.cpp`): the job worker
+       crashes on the null file hooks until then;
+   (b) `rena/rena_2d_texture_tim2.cpp`, then `TextureStore` behind `YamiPan_DrawUiTexture` (TIM2 decoded
+       at the source): nothing textured draws until then;
+   (c) any aspect: the renderer hands k to the game's UI matrices (`kUiScreenMatrix`, see TU 19), the one
+       place a game file needs a `PC:` touch;
+   (d) placeholders to replace: `sdk/libmc.cpp` (the empty slot: a real card under `memcard/`),
+       `sdk/libmpeg.cpp` (a movie reads as ended: PSS demux + FFmpeg), `sdk/sif.cpp` (no IOP: the audio
+       milestone brings RosePan's IOP host and `iop/rxsnddrv`);
+   (e) HDR in `PresentPass` (settings are there, the swapchain stays SDR), MSAA, anisotropy;
+   (f) re-enable the scheduled task: the user's decision.
 
 ## Decisions
 

@@ -11,7 +11,7 @@ python build.py [--config relwithdebinfo|debug|release] [--run SECONDS [--shot-e
 - --run N starts the exe for N seconds and prints stub hits, warnings and the log tail; the full output
   goes to work/run_<config>.log (tus.py ranks reached stubs first). The platform layer saves a screenshot
   every --shot-every presented frames (default 60) to work/shots/shot_<frame>.png + last.png
-  (YAMIPAN_SHOT_DIR / YAMIPAN_SHOT_EVERY); $YAMIPAN_DATA is passed on as YAMIPAN_DATA_DIR.
+  (YAMIPAN_SHOT_DIR / YAMIPAN_SHOT_EVERY); yamipan.GAME_DATA is passed on as YAMIPAN_DATA_DIR.
 - --pad SCRIPT scripts pad 0 for the run ("<read>:<BUTTON>[*<reads>],...": hold BUTTON 3 pad reads, or
   <reads>, from the given pad read, about one per game frame; LSUP/LSDOWN/LSLEFT/LSRIGHT push the left
   stick) and masks the host's pads and keyboard (YAMIPAN_AUTOPAD, src/sdk/libpad.cpp). Without --pad,
@@ -99,8 +99,7 @@ if '--run' in sys.argv:
         old.unlink()
     every = sys.argv[sys.argv.index('--shot-every') + 1] if '--shot-every' in sys.argv else '60'
     run_env = dict(env, YAMIPAN_SHOT_DIR=str(shots), YAMIPAN_SHOT_EVERY=every)
-    if 'YAMIPAN_DATA_DIR' not in run_env and os.environ.get('YAMIPAN_DATA'):
-        run_env['YAMIPAN_DATA_DIR'] = os.environ['YAMIPAN_DATA']
+    run_env.setdefault('YAMIPAN_DATA_DIR', str(yamipan.GAME_DATA))
     if '--pad' in sys.argv:
         pad = sys.argv[sys.argv.index('--pad') + 1]
         if pad == 'none':

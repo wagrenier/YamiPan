@@ -31,6 +31,7 @@ include(ffmpeg)
 file(GLOB_RECURSE YAMIPAN_GAME_SOURCES CONFIGURE_DEPENDS
     src/game/*.c src/game/*.cpp
     src/iop/*.c src/iop/*.cpp
+    src/lib/*.c src/lib/*.cpp
     src/rena/*.c src/rena/*.cpp
     src/rx/*.c src/rx/*.cpp
     src/sdk/*.c src/sdk/*.cpp

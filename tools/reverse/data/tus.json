@@ -845,6 +845,15 @@
    "status": "verify",
    "why": "Cut out of unassigned@002b0d50 (the frontier pick, 628 functions 0x2b0d50..0x2e1b70): the game's 16-bit string helpers wstrcmp 0x2d4150, wstrstr 0x2d42a0, wstrFromAscii 0x2d4440, wstrcpy 0x2d4510, wstrlen 0x2d4650 (the run's most-called functions, 22x for wstrFromAscii). Bounded by a FontData-derived class before (ctor 0x2d4110, vtable 0x319ff0) and a scene lookup reading +0x40 tables after (0x2d46a0). No strings: the file name is a guess."
   },
+  "rena/rena_2d_texture_tim2.cpp": {
+   "ranges": [
+    [
+     "002e1b70",
+     "002e2970"
+    ]
+   ],
+   "why": "The game's own file name from its strings (rena_2d_texture_tim2.cpp: ...); pinned at bootstrap 6 so the stubs land in src/rena/."
+  },
   "rena/rena_pkt_vif1pktmanage.cpp": {
    "notes": "Pinned 0x2eaff0-0x2ec110 under the new src/rena/ with the game's own file name (strings in Reset / AddList); the stale inferred key rena_pkt_vif1pktmanage.cpp removed from tus.json. Batch 061 named the vector instances (Vif1PktListVector::insert, Vif1PktBufferVector::insert / dtor / clear); Ghidra saved by name_ctx. Vif1PktManage moved from game/gamepacket.h to rena/rena_pkt_vif1pktmanage.h (gamepacket.h includes it); AddBuffer / AddList return the ROM's int. New src/rx/rxsys.h (rxSysPrintf) and YamiPan_DrawUiKick(lists, count) in yamipan_drawui.h. PC decision (open-items Decisions 2026-11-03): tags keep the ROM words but ADDR is the byte offset in the frame buffer; Kick hands the lists with draws, in chain order, to YamiPan_DrawUiKick instead of the DMAC. Checked: callcheck clean, layout lint OK, g++ -Wall -Wextra clean on the TU and gamepacket.cpp, both SJIS messages byte-equal to the ROM, host harness (libvifpk mirrored from asm, 3 frames, 2 buffers, a list opened twice) walked start tag, list 0, list 2 segments in order, list 3, end tag. ROM kept: Open of an unknown id writes through null; AddList message prints the found list address in the ROM (PC prints the id). Next: rena Tim2Texture 0x2e1b70..0x2e2970; bootstrap 6 host libvifpk as in the harness.",
    "ranges": [

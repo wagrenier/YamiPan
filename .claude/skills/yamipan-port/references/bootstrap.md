@@ -113,6 +113,10 @@ batches' findings is the map; link-order fill adds almost nothing.
 
 ## 6. Platform layer (host task `setup/platform_bootstrap.cpp`)
 
+YamiPan: **the Pan layer stands, 2026-11-03**, not as described below: the user asked for it as modern
+C++ (`cpp-port.md`), so it was written fresh from RosePan's behaviour, not renamed. What this step still
+says about the contract holds. Left over: open-items.md "Next up" item 8.
+
 From RosePan (it is ReiPan's, which is MioPan's, renamed and grown): `src/sdk/` (the PS2 SDK on the
 host), `src/rosepan/` -> `src/yamipan/` (os, io, rendering, UI, config, memory; **not** `gs/`: no GS
 emulator, not even for textures, SKILL.md "The user's rules"; take only its pure helpers, e.g. the

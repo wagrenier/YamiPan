@@ -137,17 +137,18 @@ read these names.
 
 ## Platform contract (what the tools need from the PC project)
 
-Bootstrap 6 copies RosePan's platform layer; these hooks must survive the rename:
+The Pan layer (`src/yamipan/`, bootstrap 6, written as classes: skill `references/cpp-port.md`) keeps
+these hooks:
 
 | hook | where (RosePan) | used by |
 |---|---|---|
 | `cmake-build-<config>/YamiPan/YamiPan.exe`, target `YamiPan`, `compile_commands.json` | CMakeLists.txt | build.py, layoutcheck.py, gdbrun.py |
-| `YAMIPAN_SHOT_DIR` / `YAMIPAN_SHOT_EVERY`: save every Nth presented frame as `shot_<frame>.png` + `last.png` | the renderer | build.py --run, tus.py finish (progress/) |
-| `YAMIPAN_AUTOPAD`: scripted pad 0, `<read>:<BUTTON>[*<reads>],...`, host input masked | sdk/libpad.cpp | build.py --pad, settings.smoke_pad |
-| `YAMIPAN_DATA_DIR`: the game's data folder | io paths | build.py ($YAMIPAN_DATA) |
-| `YAMIPAN_GDB_DIR`, the game thread named `YamiPanGame` | os host | gdbrun.py / gdbdrive.py |
+| `YAMIPAN_SHOT_DIR` / `YAMIPAN_SHOT_EVERY`: save every Nth presented frame as `shot_<frame>.png` + `last.png` | `rendering::Screenshotter` | build.py --run, tus.py finish (progress/) |
+| `YAMIPAN_AUTOPAD`: scripted pad 0, `<read>:<BUTTON>[*<reads>],...`, host input masked | `io::InputSystem` | build.py --pad, settings.smoke_pad |
+| `YAMIPAN_DATA_DIR`: the game's data folder | `Paths` | build.py (`yamipan.GAME_DATA`) |
+| the EE main thread named `YamiPanGame` | `ee::Kernel` | gdbrun.py / gdbdrive.py |
 | `[stub] <name> (FS2 0x%08x) reached` from `YAMIPAN_STUB` / `YAMIPAN_BRIDGE` | common/yamipan_stub.h | tus.py (reached stubs rank first), status.py, stubgen.py |
-| log lines `[W]` / `[E]` for warnings and errors on stdout | io log | build.py --run summary |
+| log lines `[W]` / `[E]` for warnings and errors on stdout | `log::` | build.py --run summary |
 
 ## Things that bit (FS2-specific ones in the skill's hazards.md, Ghidra ones in ghidra.md)
 

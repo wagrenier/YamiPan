@@ -1771,11 +1771,30 @@ Archive formats, file tables, where the data root starts.
 
 ## PC platform layer
 
-What was taken from RosePan, what was dropped, the host draw modules and their users, the platform
-contract hooks.
+The Pan layer, `src/yamipan/`, written fresh as classes on 2026-11-03 (`cpp-port.md` has the rule, the
+map and the threads). What it keeps from RosePan is behaviour, not code. From RosePan's 32 K lines the
+GS emulation (`rosepan_gs`), the replay half of the renderer and the i3d meshes are gone by the user's
+rules or by being RoR's. From its 14 K line SDK only what FS2 calls came over.
 
-- **`src/yamipan/rendering/yamipan_drawui.h`** (TU 19, 2026-11-03; declarations only until bootstrap
-  6): the 2D layouts' draw module, user `game/uidrawer.cpp`. Keyed by the packet the game drew into
+- **Boot** (2026-11-03): `main` -> `Application::run`: SDL, `Window`, `gpu::Device`, `InputSystem`,
+  `Overlay`, `Renderer`; the render thread starts, then `ee::Kernel::startMainThread` runs `gameMain` (the
+  game's `main`: `gamesystem.cpp` builds with `main=gameMain`, so the file stays as the ROM has it) on the
+  thread `YamiPanGame`. No data folder: the Game Data window opens and the game starts when one is
+  chosen.
+- **EE threads** (`ee::Kernel`): one runs at a time by priority; EE priorities are 0 (most urgent) to 127.
+  `iChangeThreadPriority` from an alarm is how rx round-robins, so every priority change re-dispatches.
+  A terminated thread unwinds with a C++ exception from its next kernel call. The EE main thread starts
+  at priority 1 (a guess: rx's priorities are relative to it).
+- **Interrupts** (`ee::InterruptController`): the field clock (50 / 59.94 Hz by `sceGsResetGraph`, running
+  from boot), alarms, `DelayThread`, the timers. Handlers run only while the running thread is outside
+  DIntr; a DIntr waits for a running handler.
+- **Frame**: game threads fill `UiCanvas` layers keyed by packet list; `Vif1PktManage::Kick` ->
+  `YamiPan_DrawUiKick` joins them into a `Frame` for the render thread's mailbox. The frame always fills
+  the scene target, so the 512x512 frame's shape is `DisplayGeometry`'s alone.
+- **Screenshots** are the scene before the overlay, 512 high at the composed aspect.
+
+- **`src/yamipan/rendering/yamipan_drawui.h`** (TU 19, 2026-11-03): the seam of the 2D layouts' draw
+  module, `rendering::UiCanvas` behind it (`src/yamipan/seams.cpp`), user `game/uidrawer.cpp`. Keyed by the packet the game drew into
   (= the packet list = the layer); `YamiPan_DrawUiReg` (A+D: ALPHA_1, CLAMP_1, TEX1_1, SCISSOR_1,
   the BITBLTBUF..TRXDIR set of a local copy, done on TRXDIR between host render targets),
   `YamiPan_DrawUiPrim` (PRIM, optional shared RGBAQ), `YamiPan_DrawUiTexture` (a GsTexture owner,

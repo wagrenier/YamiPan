@@ -82,6 +82,15 @@ def find_member_decl(cls, meth):
     return None
 
 
+def find_class_header(cls):
+    short = cls.split('::')[-1]
+    pat = re.compile(r'\b(?:class|struct)\s+' + re.escape(short) + r'\b[^;{()]*\{')
+    for p in sources:
+        if p.suffix in ('.h', '.hpp') and pat.search(texts[p]):
+            return p
+    return None
+
+
 def owner_file(addr):
     return yamipan.src_path_for(funcs.get(addr, {}).get('file')) if addr else None
 
@@ -89,14 +98,24 @@ def owner_file(addr):
 plan = defaultdict(list)
 skipped = []
 for sym in wanted:
-    if '(' not in sym:
+    if '(' not in sym and not find_decl(sym):     # a function under extern "C" links without its parameters
         skipped.append((sym, 'data symbol (a vtable or a global): define it by hand'))
         continue
     name = sym.split('(', 1)[0]
     if '::' in name:
         cls, meth = name.rsplit('::', 1)
-        if '<' in name or meth == cls.split('::')[-1] or meth.startswith('~'):
-            skipped.append((sym, 'template, constructor or destructor: write by hand'))
+        if '<' in name:
+            skipped.append((sym, 'template: write by hand'))
+            continue
+        if meth == cls.split('::')[-1] or meth.startswith('~'):     # the link error spells the parameters
+            header = find_class_header(cls)
+            if not header:
+                skipped.append((sym, f'no declaration of class {cls} in src/'))
+                continue
+            addrs = sorted(set(by_name.get(name, [])))
+            addr = addrs[0] if len(addrs) == 1 else 0
+            target = owner_file(addr) or yamipan.SRC / 'lib' / 'unassigned_stubs.cpp'
+            plan[target].append((name, '', sym.split('(', 1)[1].rsplit(')', 1)[0], addr, header, len(addrs), ''))
             continue
         decl = find_member_decl(cls, meth)
         if not decl:
@@ -134,8 +153,9 @@ for target, items in sorted(plan.items()):
         if re.search(r'\b' + re.escape(name) + r'\s*\((?:[^;(){}]|\([^;(){}]*\))*\)\s*(?:const\s*)?\{', code):
             continue                                            # already defined here
         note = f'FS2 0x{addr:08x}' if addr else f'FS2 address unknown ({n} candidates)'
-        ret_stmt = '' if ret.strip() == 'void' else '\n    return {};'
-        add.append(f'\n// stub of {note}\n{ret} {name}({params}){suffix}\n{{\n'
+        ret_stmt = '' if ret.strip() in ('void', '') else '\n    return {};'
+        signature = f'{ret} {name}' if ret else name
+        add.append(f'\n// stub of {note}\n{signature}({params}){suffix}\n{{\n'
                    f'    YAMIPAN_STUB("{name}", 0x{addr:08x});{ret_stmt}\n}}\n')
     if not add:
         continue

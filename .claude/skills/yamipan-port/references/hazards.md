@@ -254,6 +254,12 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   default CLion path no longer exists. Until the build, a syntax check needs `-I src -I <copy of
   RosePan's src/sdk/*.h>` plus stub `sdk/libvifpk.h` / `sdk/eestruct.h` in a scratch folder.
 
+- **A long shell command with several heredocs can fail before it runs** (2026-11-03): "unexpected
+  EOF while looking for matching" from bash, on quoted heredocs holding an odd number of apostrophes,
+  and backslashes inside a heredoc can reach the file halved. Bash parses the whole command first, so
+  nothing in it ran. Fix: write source files with the Write tool, and patch with a script file, not an
+  inline heredoc with escapes.
+
 ## Build and run
 
 - **MinGW must be on PATH** or `cc1plus` fails silently: use `build.py`. Shader builds can hit a file
@@ -266,6 +272,11 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **A smoke run can write the user's ini**: runs pass their own settings.
 
 ## Platform layer (MioPan's, through ReiPan and RosePan)
+
+- **`sceGsSyncV` hung at boot** (2026-11-03): `gameInit` waits two vblanks before anything starts the
+  clock. Fix: the field clock runs from `Kernel::startMainThread`, as the console's does from power-on.
+- **A null call in the job worker** (2026-11-03, `FileJob::run`): `rxInit` is a stub, so the rx file hooks
+  are null. Not a kernel bug: the boot reached the file layer (open-items.md "Next up" 8a).
 
 - **SDK shims only answer what the last game asked**: a placeholder answer looks like missing hardware
   (FF3's pad check stopped every run on `scePadInfoPressMode`). Read the shim against Sony's semantics.

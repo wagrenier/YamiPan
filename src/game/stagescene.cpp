@@ -1,5 +1,6 @@
 // game/stagescene.cpp -- the stage scene and the stage's files
 // (game/stagescene.h).
+#include "common/yamipan_stub.h"
 
 #include "game/stagescene.h"
 
@@ -1900,3 +1901,90 @@ bool StageFiles::applyBgTarget()
 //   FS2 0x001a6750  StageList::Node::Node
 //   FS2 0x001a6770  StageList::Node::Node
 //   FS2 0x001a6790  StageList::pushBack (the tail search)
+
+// ---- stubs (tools/reverse/stubgen.py) ----
+
+// stub of FS2 0x0019f230
+bool StageFiles::applyBgMotionTarget()
+{
+    YAMIPAN_STUB("StageFiles::applyBgMotionTarget", 0x0019f230);
+    return {};
+}
+
+// stub of FS2 0x0019f020
+bool StageFiles::applyItemTarget()
+{
+    YAMIPAN_STUB("StageFiles::applyItemTarget", 0x0019f020);
+    return {};
+}
+
+// stub of FS2 0x0019ddf0
+bool StageFiles::applyMapTarget()
+{
+    YAMIPAN_STUB("StageFiles::applyMapTarget", 0x0019ddf0);
+    return {};
+}
+
+// stub of FS2 0x0019d9e0
+bool StageFiles::applySoundTarget()
+{
+    YAMIPAN_STUB("StageFiles::applySoundTarget", 0x0019d9e0);
+    return {};
+}
+
+// stub of FS2 0x001a38e0
+void StageFiles::loadCommon()
+{
+    YAMIPAN_STUB("StageFiles::loadCommon", 0x001a38e0);
+}
+
+// stub of FS2 0x001a3a60
+void StageFiles::loadList()
+{
+    YAMIPAN_STUB("StageFiles::loadList", 0x001a3a60);
+}
+
+// stub of FS2 0x00198970
+void StageScene::draw(StageObject *active)
+{
+    YAMIPAN_STUB("StageScene::draw", 0x00198970);
+}
+
+// stub of FS2 0x00195e10
+void StageScene::enterSubScene(void *data)
+{
+    YAMIPAN_STUB("StageScene::enterSubScene", 0x00195e10);
+}
+
+// stub of FS2 0x0019aea0
+int StageScene::getFloor(StagePlayer *player)
+{
+    YAMIPAN_STUB("StageScene::getFloor", 0x0019aea0);
+    return {};
+}
+
+// stub of FS2 0x00199f00
+void StageScene::setupCameras()
+{
+    YAMIPAN_STUB("StageScene::setupCameras", 0x00199f00);
+}
+
+// stub of FS2 0x00199400
+void StageScene::update()
+{
+    YAMIPAN_STUB("StageScene::update", 0x00199400);
+}
+
+// stub of FS2 0x001958b0
+bool StageScene::wantsMapMenu()
+{
+    YAMIPAN_STUB("StageScene::wantsMapMenu", 0x001958b0);
+    return {};
+}
+
+// stub of FS2 0x00195a50
+bool StageScene::wantsPauseMenu()
+{
+    YAMIPAN_STUB("StageScene::wantsPauseMenu", 0x00195a50);
+    return {};
+}

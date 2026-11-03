@@ -17,9 +17,10 @@ skills keep the full history. It is the playbook and the project's memory: follo
 files under "Environment"), annotation tag `FS2`; a stripped **Metrowerks CodeWarrior** build (not GCC:
 open-items.md has what that changes). What exists: the Ghidra layer on bethington's GhidraMCP 7.0.0
 (`tools/reverse/ghidra_mcp.py`, `ghidra_bridge.py`, `.mcp.json`), a Ghidra project with the game
-imported and auto-analysed, and RosePan's tools carried over (bootstrap 3; `tus.py` on 2026-11-02 in source-only mode,
-`autopilot.py` with bootstrap 7). The TU loop runs: the protocol below; the bootstrap steps left
-(platform layer, first build) are `references/bootstrap.md` 6-7.
+imported and auto-analysed, RosePan's tools carried over (`autopilot.py` with bootstrap 7) and, since
+2026-11-03, **a green build**: the Pan layer in `src/yamipan/` (`references/cpp-port.md`), so `tus.py`
+runs in full mode. The TU loop: the protocol below; what is left of the Pan layer is open-items.md "Next
+up" item 8.
 
 Read before working:
 - `references/open-items.md` -- the user's priorities ("Next up"), decisions, questions.
