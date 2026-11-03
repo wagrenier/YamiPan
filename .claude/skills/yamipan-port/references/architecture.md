@@ -75,15 +75,14 @@ yet; gp-relative small data straddles 0x31ad80).
 
 **Library ranges** (`data/layout.json` `lib_ranges`, bootstrap 5, 2026-11-02; replaced on PC, never a
 TU; `export.py` lists each under its label's library): crt0 + CodeWarrior entry 0x100000..0x100328,
-MSL C++ runtime 0x104c60..0x1076e8, libgraph / libdma / libdev 0x1076e8..0x10ac60, libvifpk
+MSL C++ runtime 0x104b40..0x1076e8 (from `__destroy_new_array`, batch 031), libgraph / libdma / libdev 0x1076e8..0x10ac60, libvifpk
 0x10ac60..0x10c218 (its leaf run after 0x10acc8 unread: libvu0?), libmpeg 0x10c218..0x116978, libipu
 ..0x116fb8, newlib libm (float) 0x116fb8..0x119be8, libgcc (libgcc2 + fp-bit soft-float) ..0x11c6b0,
 libcdvd 0x11c6b0..0x11e440, libpad ..0x11fb70, libmc ..0x121b80, libc (newlib)
 0x121ef0..0x12c9b8, libkernl 0x1366c0..0x142dd0 (front, sifcmd / sifrpc, fileio, iopheap, tail),
 **libscf 0x2640e8..0x2647d8** (batch 027: linked between game objects, in the middle of the game's
 0x171300.. run) and the kernel-patch island 0x2f3a40..0x2f4d20: 931 functions. **Unread runs between them stay game code
-until read** (not library by default): `Heap` + its neighbours 0x1037c0..0x104c60 (MSL pool or the
-game's?), 0x121b80 (libmc error mapper?), 0x12c9b8..0x12cd20, the VU0 math
+until read** (not library by default): 0x121b80 (libmc error mapper?), 0x12c9b8..0x12cd20, the VU0 math
 0x135a90..0x1366c0, 0x142dd0..0x144080.
 
 First features pass over it (`refresh.py`, 2026-10-31): 6,393 functions, 25,668 calls, 871 tail
@@ -543,15 +542,31 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
 
 ## Key functions and globals
 
-- **Allocation**: one global heap object at 0x329970 (`{sema id, block, ..., +0x10 head, +0x14
-  tail, +0x18 count}`; blocks have a 0x10-byte header before the user pointer). `Heap::alloc`
-  0x103c50 (heap, size, align) / `Heap::free` 0x103aa0 wrap 0x103cd0 / 0x103b10 in WaitSema /
-  SignalSema when the sema id >= 0. `operator_new[]` 0x1002f0 and `operator_new` 0x100310 pass align
-  16; `operator_delete[]` 0x1002b0, `operator_delete` 0x1002c0; 0x1002d0 passes a caller's
-  alignment (an aligned overload, unnamed). Which of the two plain-size allocators is `new[]` follows
-  from MSL's string rep 0x106b80 (char buffer -> 0x1002b0, int refcount -> 0x1002c0) and the same
-  order for new: verify at the first TU that allocates. Class name `Heap` is provisional (could be
-  MSL's pool allocator).
+- **Allocation: `game/heap.cpp` 0x1037c0..0x104b40** (TU 8, batch 031; game code, not MSL: one
+  object with the RNG, its data together in sdata 0x31a880..0x31a88c, bss 0x329970 / 0x3299c0, sbss
+  0x31ad80). `Heap` (EE 0x44): `{+0 sema id (<0: no locking), +4 base, +8 end, +0xc size, +0x10 head
+  / +0x14 tail block (address order), +0x18 count, +0x1c four usage marks (highest data end since
+  setMark), +0x2c peak count, +0x30 unread, +0x34 u8 mode, +0x38 / +0x3c gap list, +0x40 min gap
+  0x40}`. Block header 0x10 right below the user pointer `{data, size | bit 31 gap-recorded, prev,
+  next}`; the data starts `align * ((align + 0xf) / align)` past the aligned end of the block before.
+  Free space after a block >= 0x40 gets a record `{0x7381a9bc, block, prev, next}` written into it
+  (at the data end rounded to 16) and joins the gap list. Mode 0 (default): a recorded gap, then the
+  space before the head, then the blocks from the tail down; mode 1 (callers flip +0x34 around one
+  alloc, 0x298e1c / 0x299190): after the tail, then a gap. `Heap::alloc` / `free` / `realloc` lock
+  and call `allocBlock` 0x103cd0 / `freeBlock` 0x103b10; realloc grows in place up to the next block,
+  else moves with align 0x10. `initGlobalHeap(0)` takes 0x2000000 - (image end 0x5a5600 + stack
+  0x10000 + 0x2000) - 0x20 from newlib's malloc (sdata words 0x31a880 / 884 / 888; a fixed heap
+  size when 888 >= 0). On the host the headers hold 8-byte pointers: `headerRoom` and `blockOf` use
+  `sizeof(HeapBlock)` (0x20) where the ROM has 0x10. `operator_new[]` 0x1002f0 and `operator_new`
+  0x100310 pass align 16; `operator_delete[]` 0x1002b0, `operator_delete` 0x1002c0; 0x1002d0 passes a
+  caller's alignment (an aligned overload, unnamed). Which of the two plain-size allocators is
+  `new[]` follows from MSL's string rep 0x106b80 (char buffer -> 0x1002b0, int refcount -> 0x1002c0)
+  and the same order for new: verify at the first TU that allocates.
+- **RNG** (same file): 97-word table 0x3299c0 filled from the LCG `x * 0x5d588b65 + 1` (state sdata
+  0x31a88c, starts at 1); a draw returns `table[i] >> 1` for the index i = previous entry % 97
+  (unsigned) and refills that entry. `randNext` 0x1046b0 and `randNext2` 0x1047f0 are byte-identical;
+  `randUnit` 0x104720 divides by 2^31 and draws again at 1.0; `rndInit(skip)` 0x104860 refills the
+  table and throws away `skip` draws (gameInit's clock sum: the argument is not a seed).
 - **CodeWarrior / MSL runtime** (all lib-context): `__construct_array` 0x104c60,
   `__register_global_object` 0x105250 (obj, dtor, 12-byte entry) and `__destroy_global_chain`
   0x1051f0 on the chain head 0x329b48 (dtor called with -1), `__throw` 0x106830 (MSL exception-match

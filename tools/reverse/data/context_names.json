@@ -695,11 +695,47 @@
   "was": "FUN_00103aa0",
   "why": "(heap, p): WaitSema(heap+0) when >= 0, unlink block p-0x10 (0x103b10), SignalSema; heap object 0x329970 serves operator delete; may be MSL's pool allocator, class name provisional"
  },
+ "00103b10": {
+  "name": "Heap::freeBlock",
+  "tag": "game-inferred",
+  "was": "FUN_00103b10",
+  "why": "the unlocked body of Heap::free and Heap::realloc's move path: header at ptr - 0x10, drops its gap record, unlinks it from the address-ordered list (+0x10 head / +0x14 tail), drops the new tail's gap record or records the grown gap after the previous block, count +0x18 down (0 clears head and tail)"
+ },
  "00103c50": {
   "name": "Heap::alloc",
   "tag": "game-inferred",
   "was": "FUN_00103c50",
   "why": "(heap, size, align): same semaphore guard around 0x103cd0; operator new passes align 16"
+ },
+ "00103cd0": {
+  "name": "Heap::allocBlock",
+  "tag": "game-inferred",
+  "was": "FUN_00103cd0",
+  "why": "the unlocked body of Heap::alloc (heap, size, align) and Heap::realloc's move path: room = header (align * ((align + 0xf) / align)) + size rounded to align; empty heap -> after nothing; mode byte +0x34 clear: the gap list +0x38, then the space before the head, then the blocks from the tail back; mode set: after the tail, then the gap list; sets the size, records the new gap, raises the four marks +0x1c; returns the user pointer"
+ },
+ "00104150": {
+  "name": "Heap::unlinkGap",
+  "tag": "game-inferred",
+  "was": "FUN_00104150",
+  "why": "(heap, block): when the block's size word has bit 31, the record at its data end rounded to 16 with magic 0x7381a9bc is unlinked from the gap list +0x38 / +0x3c and the bit cleared; returns 1 when one was"
+ },
+ "00104230": {
+  "name": "Heap::linkGap",
+  "tag": "game-inferred",
+  "was": "FUN_00104230",
+  "why": "(heap, block): when the space between the block's data end (rounded to 16) and the next block is at least +0x40 (0x40), writes a record {0x7381a9bc, block, prev, next} at that end, appends it to the gap list +0x38 / +0x3c and sets bit 31 of the size word; the tail and already-recorded blocks are skipped"
+ },
+ "001043a0": {
+  "name": "Heap::insertBlock",
+  "tag": "game-inferred",
+  "was": "FUN_001043a0",
+  "why": "(heap, prev, align): places a block header right after prev's data (the heap base when prev is null) with the user pointer aligned and at least 0x10 past it, links it after prev (or as the head), count +0x18 up and the peak +0x2c; returns the header"
+ },
+ "00104500": {
+  "name": "Heap::init",
+  "tag": "game-inferred",
+  "was": "FUN_00104500",
+  "why": "(heap, base, size), from initGlobalHeap on 0x329970: CreateSema (init 1, max 1) into +0, base +4, end +8, size +0xc, every list / mark / count zero, mode byte +0x34 0, minimum recorded gap +0x40 = 0x40"
  },
  "001045a0": {
   "name": "shutdownGlobalHeap",
@@ -725,11 +761,29 @@
   "was": "FUN_00104720",
   "why": "97-entry shuffle table 0x3299c0 over an LCG (x * 0x5d588b65 + 1, sdata 0x31a88c), redrawn until (u >> 1) / 2^31 < 1.0: a float in [0, 1)"
  },
+ "001047f0": {
+  "name": "randNext2",
+  "tag": "game-inferred",
+  "was": "FUN_001047f0",
+  "why": "byte for byte randNext 0x1046b0 (the same table 0x3299c0, index gp-0x7af0, LCG gp-0x7fe4), a second source function; 8 callers (0x1518a0 six times, 0x2103d0, 0x29f810, ...) and a thunk"
+ },
  "00104860": {
   "name": "rndInit",
   "tag": "game-inferred",
   "was": "FUN_00104860",
   "why": "seeds the game's own RNG: fills the 97-word table 0x3299c0 from an LCG (x * 0x5d588b65 + 1, state gp-0x7fe4) and stirs it seed times (index gp-0x7af0); gameInit passes the RTC sum & 0xff"
+ },
+ "00104b40": {
+  "name": "__destroy_new_array",
+  "tag": "lib-context",
+  "was": "FUN_00104b40",
+  "why": "MSL runtime (NMWException.cp): (block, dtor): reads the element size at block - 0x10 and the count at - 0xc, calls dtor(element, -1) from the last element down, then operator delete[] (block - 0x10); right before __construct_array 0x104c60"
+ },
+ "00104be0": {
+  "name": "__destroy_arr",
+  "tag": "lib-context",
+  "was": "FUN_00104be0",
+  "why": "MSL runtime (NMWException.cp): (block, dtor, size, count): dtor(element, -1) from the last element down, no delete; right before __construct_array 0x104c60"
  },
  "00104c60": {
   "name": "__construct_array",

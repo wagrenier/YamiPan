@@ -56,9 +56,9 @@
    "crt0 + CodeWarrior runtime entry: entry, _root, __init_cpp, operator new / delete (batch 001)"
   ],
   [
-   "00104c60",
+   "00104b40",
    "001076e8",
-   "MSL C++ runtime: __construct_array, the global destructor chain, __throw, std::terminate, std::exception family, string rep (batch 001)"
+   "MSL C++ runtime: __destroy_new_array / __destroy_arr (batch 031), __construct_array, the global destructor chain, __throw, std::terminate, std::exception family, string rep (batch 001)"
   ],
   [
    "001076e8",

@@ -63,6 +63,25 @@
    ],
    "why": "gfxInitRenderTargets / gfxReleaseRenderTargets and the frame callback 0x12e0e0 gameFrameReady calls (batch 003); 0x12dfa0..0x12e0b0 unread, the cut a guess."
   },
+  "game/heap.cpp": {
+   "notes": "Game code, not MSL: heap and RNG share one object (sdata 0x31a880..0x31a88c, bss 0x329970 then 0x3299c0, sbss 0x31ad80). All 17 functions written; batch 031 named the 6 internal heap functions, randNext2 and the two MSL array destroyers (lib_range MSL now 0x104b40..0x1076e8). Heap layout (EE 0x44) is layout: host with EE offsets in comments; block header and gap record hold pointers, so headerRoom / blockOf use sizeof(HeapBlock) (0x20 on the host, 0x10 on the EE) - marked PC. The mode byte +0x34 (m_tailFirst) is public: callers 0x298e1c / 0x299190 flip it around one alloc. Heap +0x30 is read by 0x2945cc..0x294ee8 (unread). rndInit takes a count of draws to discard, not a seed. randUnit moved from gamehooks.h to heap.h (sysdata.cpp includes heap.h). Needs from bootstrap 6: sdk/eekernel.h from RosePan (SemaParam, CreateSema, DeleteSema, WaitSema, SignalSema). Not compiled: no compiler on PATH in source-only mode.",
+   "ranges": [
+    [
+     "001037c0",
+     "00104b40"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-02 23:12",
+     "status": "verify",
+     "summary": "heap allocator and RNG cut out of unassigned@001037c0 and pinned 0x1037c0-0x104b40: Heap (alloc, free, realloc, marks, gap list), initGlobalHeap / shutdownGlobalHeap, randNext / randNext2 / randUnit / rndInit; MSL __destroy_new_array / __destroy_arr moved into the MSL lib_range"
+    }
+   ],
+   "status": "verify",
+   "why": "One object file: the global heap allocator (Heap 0x1037c0..0x1046b0) and the game RNG (0x1046b0..0x104b40). Their data sit together too: sdata 0x31a880..0x31a88c (the image-end / stack / heap-size words only initGlobalHeap reads, then the LCG state), bss 0x329970 (gGlobalHeap, 0x44) then 0x3299c0 (the 97-word RNG table), sbss 0x31ad80 (the RNG index). 0x104b40 / 0x104be0 are MSL __destroy_new_array / __destroy_arr: the MSL lib_range now starts at 0x104b40 (batch 031)."
+  },
   "game/memcard.cpp": {
    "notes": "All 55 functions written (source only, not built). New this run: Memcard::stepSave (mkdir, then data / icon1.ico / icon.sys each open, write, flush, close; SaveStep enum + kSavePhase ints), stepLoad and stepCheckAll (read a complete save and judge it: SaveFile::judge, inline in the ROM), stepScan (room to save = 80 free clusters, kSaveRequiredKB, or an own save; then GetDir with no table over the first game's ten save directories, table 0x2fb760; an entry sets sMcSaveFound = memcardGetState), buildIconSys (PS2D, template lighting from getSaveResource(1), SJIS titles 0x2fb7e0 as escapes, OffsLF 0x12). The four operator= 0x2ac170..0x2ac3f0 are the implicit copy assignments: annotated in a comment block, nothing to write; SaveData::_0ae corrected to 0x27 bytes from the memberwise copy. Kept the ROM's slip in stepCheckAll (opens a later save but returns the starting file's step: open-items.md). Bootstrap 6 needs: sdk/fileio.h SCE_RDONLY / SCE_WRONLY / SCE_CREAT, a host sceMcGetDir accepting a null table with maxent -1 and returning the entry count. No Ghidra changes this run.",
    "ranges": [
@@ -355,6 +374,7 @@
    ],
    "why": "the game's sound layer: SoundStream, SoundSink / SoundPcmSink / SoundAdpcmSink, SoundFeeder, SoundSeBank, SoundConfig, soundInit / Update / Shutdown, the IOP / SPU memory hooks (batch 013); probably several files: split at the TU."
   },
+  "unassigned@001037c0": {},
   "unassigned@00116fb8": {
    "notes": "This key is empty now: its whole run is two lib_ranges (architecture.md Address map, naming table row batch 025). Game code calling __extendsfdf2 / __cmpdf2 / __divdi3 and kin is plain C double or 64-bit arithmetic (reconstruction.md, soft-float note). Next unread runs to classify the same way before writing: 0x1037c0..0x104c60, 0x121b80, 0x12c9b8..0x12cd20, 0x135a90..0x1366c0, 0x142dd0..0x144080 (open-items.md Next up 0c).",
    "sessions": [

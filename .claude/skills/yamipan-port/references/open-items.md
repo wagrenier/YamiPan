@@ -32,7 +32,7 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    `unassigned@00116fb8`, was **library, not game code** (batch 025, 51 names): newlib float libm
    0x116fb8..0x119be8 and libgcc (libgcc2 + fp-bit soft-float) ..0x11c6b0, now two `lib_ranges`
    (architecture.md "Address map"); the host libm / compiler replace them, nothing to write. The
-   other unread runs the frontier may pick next (0x1037c0..0x104c60 `Heap` and kin, 0x121b80,
+   other unread runs the frontier may pick next (0x121b80,
    0x12c9b8..0x12cd20, the VU0 math 0x135a90..0x1366c0, 0x142dd0..0x144080) get the same first
    look: library -> name + `lib_ranges`, game code -> `tus.py define` a real file.
    TU 5: the frontier picked the 5,138-function run `unassigned@00171300` (all of 0x171300..0x2e26b4);
@@ -62,7 +62,14 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    whose `sceMcGetDir` takes a null table with maxent -1 and answers the entry count (stepScan),
    and `sdk/fileio.h` with SCE_RDONLY / SCE_WRONLY / SCE_CREAT (memcard opens with them).
    Still in the unassigned run for later picks: `stageDefaultRecord` 0x296d00, `getStageResult`
-   0x2b0580 / `StageResult::getPerfectBits` 0x2b00d0, `gameSceneThread` 0x231bb0. Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
+   0x2b0580 / `StageResult::getPerfectBits` 0x2b00d0, `gameSceneThread` 0x231bb0.
+   TU 8 (the frontier's `unassigned@001037c0`): **game code, `game/heap.cpp` 0x1037c0..0x104b40**
+   (all 17, `verify`, batch 031): the heap allocator, `initGlobalHeap` / `shutdownGlobalHeap` and
+   the RNG; 0x104b40 / 0x104be0 are MSL `__destroy_new_array` / `__destroy_arr` (the MSL lib_range
+   now starts there). `randUnit` moved from `gamehooks.h` to `heap.h`. Bootstrap 6 must give
+   `sdk/eekernel.h` from RosePan (SemaParam, CreateSema / DeleteSema / WaitSema / SignalSema).
+   Decision to overrule: the host heap keeps the EE size (~26 MB) with 0x20-byte headers; if host
+   allocations (8-byte pointers inside structs sized with sizeof) run it out, raise `sHeapSize`. Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
    `game/perfmeter.cpp`, `game/thread.cpp`, `game/gfxtarget.cpp`, the clocks, the heap, sound,
@@ -373,7 +380,7 @@ apply here):
   `rx/rxsndstr*.c` layers as six files, SDPR2's A/B and C/D cuts, every `game/*.cpp` name and both
   ends of `game/thread.cpp`, `game/perfmeter.cpp`, `game/gfxtarget.cpp`; `sound/sound.cpp`
   0x144080..0x148db0 is likely several files. Unread runs left as game code, not library:
-  architecture.md "Address map" (`Heap` 0x1037c0..0x104c60 above all: MSL or game?).
+  architecture.md "Address map" (`Heap` 0x1037c0..0x104b40: game code, settled 2026-11-02, TU 8).
 
 - ~~Which game; engine kinship with FF2 / FF3 / RoR?~~ Settled 2026-10-31 (bootstrap 1): none (but the
   rx library is RoR's: 2026-11-02, batch 005); SCE's
