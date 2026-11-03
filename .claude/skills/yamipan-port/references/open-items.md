@@ -854,6 +854,38 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    PC guards: setSeTable skips names of 32 characters or more (the ROM's stack buffer). Next for
    the sound: the callers 0x2a6380..0x2a6830 (the stage objects' sound commands) and the node
    family 0x17fce0.. / 0x1d7c50.. when the frontier reaches them.
+   TU 45 (the frontier's `unassigned@002908d0`, 67 functions 0x2908d0..0x2955d8, for StageSound's
+   callees, 2026-11-03): cut into **`game/seplayer.cpp` 0x2908d0..0x2937e0** (35 functions, all
+   written, `verify`: SoundTrack 17, SePlayer 18) and `getNaviTable` 0x2955d0 moved into
+   `game/progress.cpp` (now 0x2955d0..0x296c10; written there). 0x2937e0..0x2955d0 stays
+   `unassigned@002937e0`: an **ELEVATOR2 stage object** (bone lookups "bn_bx_ib1" / "bn_b1_dl",
+   vtables 0x318310 / 0x318334 / 0x31834c / 0x31855c, ctor 0x295010?, dtor 0x2952b0) and a menu
+   overlay at 0x295470 / 0x2954f0. Batch 078 (7 names): `fsmFindTrack` 0x28fc80, `fsmTrackHasText`
+   0x28fa90, `seDistanceVolume` 0x283df0, `stdtIsRelocated` 0x1a0570, `stdtEntryCount` 0x1a0560,
+   `SePlayer::openStreamBank` 0x292090, `SePlayer::loadBank` 0x292140. **Choices (unattended, the
+   user may move them): new header `game/seplayer.h`** takes SeEntry / SeName / SeTable /
+   StreamTable / SePlayer / SoundTrack and `SeHandle` out of gamehooks.h / stagesound.h
+   (stagesound.h includes it); **SEDT and StDT are now EE-layout file images with `S2dRef`
+   pointers** (asserted, relocated in place like S2D; their `layout: host` is gone) and the
+   handle's bits have helpers (`seHandleBank` ..., `seMakeHandle`). Fixed readings: the voice
+   records are 3 x 0x40 `SeVoice` {scale -1 free / 0 unscaled / 1 under the master volume,
+   level, pan, ratio, bank, placed} (voice banks by voice, pan voices by handle, stream banks by
+   bank); `resume` does pass left / right on to `play` (the old comment said not read);
+   `SePlayer::playPlaced`'s last argument is the SoundSeBank pan pair flag; SoundTrack's
+   `flag` is **secondHalf** (play the request's second half: StageSound's player flag picks the
+   alternate take). Doubts, kept as the ROM: SePlayer::pause / resume of a **stream bank** refuse
+   while the stream plays (the test looks inverted); `SePlayer::setVolume` on a voice bank only
+   rewrites the record (the level lands at the next master fade, when `update` re-levels);
+   `setPlacement`'s stream-bank pan is not under the master volume. Unread: who fills an StDT
+   bank's header (+0xc, not relocated by setTable; the stage loader 0x19d9e0 is the guess).
+   PC guards: record writes only for voices 0..0x3f, `pause(-1)` answers -2 (the ROM reads bank
+   -1), SoundTrack's freed body path is cleared (the ROM frees it twice when a bank has no file),
+   no StDT table plays nothing. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall
+   clean on seplayer / stagesound / progress / stageresult (msys g++ with PATH set, RosePan's SDK
+   headers + a libvifpk stub; uigame / scene / stageloop / uilayout still fail in gfxtarget.h /
+   rena headers against RosePan's libgraph, not this TU). Next: the ELEVATOR2 object run when the
+   frontier reaches it; the seplayer frontier is fsm (0x28fa90 / 0x28fc80 / 0x28fb80 / 0x28fd30)
+   and seDistanceVolume in unassigned@002681e0, the StDT getters in unassigned@001953f0.
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

@@ -11321,6 +11321,18 @@
   "was": "FUN_0019c180",
   "why": "ctor of the 0x130 stage scene (gp-0x7a7c): (isSubScene, sound); stageLoad passes false and the StageSound, the sub-scene branch true and 0; string streamEU/demo/"
  },
+ "001a0560": {
+  "name": "stdtEntryCount",
+  "tag": "game-inferred",
+  "was": "FUN_001a0560",
+  "why": "answers +0x10 of an StDT stream table, its entry count (the name-relocation loops of SoundTrack::setTable / 0x1a0040)"
+ },
+ "001a0570": {
+  "name": "stdtIsRelocated",
+  "tag": "game-inferred",
+  "was": "FUN_001a0570",
+  "why": "answers the byte at +4 of an StDT stream table (set to 1 by SoundTrack::setTable / 0x1a0040 once relocated)"
+ },
  "001a37e0": {
   "name": "StageFiles::load",
   "tag": "game-inferred",
@@ -14807,11 +14819,29 @@
   "was": "FUN_00268050",
   "why": "(arg): copies GameOptions (0x50) and the play record's kind (+0x4c0), runLayoutFile(optionLayoutPath(), arg, 0, 0, 1), memcardClearStamp when options +0x4d is 0, applySound when the sound mode changed; answers 1 when the options or the kind changed"
  },
+ "00283df0": {
+  "name": "seDistanceVolume",
+  "tag": "game-inferred",
+  "was": "FUN_00283df0",
+  "why": "f12 ratio (0 beyond 1, clamped at 0), a1 the curve (SeEntry +0x29: 2 = 1 - sin(r pi/2), 1 = cos(r pi/2), else 1 - r), a2 a volume byte (SeEntry +0x28): the volume scaled by the curve; SePlayer::playPlaced / setPlacement, SoundTrack::playPlaced / setPlacement"
+ },
+ "0028fa90": {
+  "name": "fsmTrackHasText",
+  "tag": "game-inferred",
+  "was": "FUN_0028fa90",
+  "why": "a0 an fsm file, a1 a track: 1 when the track's cue list (+8, +4 count, 0xc each) has a cue whose text (+8) is non-null and non-empty; SoundTrack::hasSubtitles"
+ },
  "0028fb80": {
   "name": "fsmFindText",
   "tag": "game-inferred",
   "was": "FUN_0028fb80",
   "why": "(seconds, file, track): the text of the fsm subtitle file's track whose [start, end) holds the time, null none (relocates first)"
+ },
+ "0028fc80": {
+  "name": "fsmFindTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0028fc80",
+  "why": "a0 an fsm file, a1 a key: fsmRelocate, then the index of the 0xc track record (+0x40) whose name (+0) strcasecmp-equals the key, -1 none / null key / not an fsm; SoundTrack::hasSubtitles / playEntry keep it as the subtitle track"
  },
  "0028fd30": {
   "name": "fsmRelocate",
@@ -15028,6 +15058,18 @@
   "tag": "game-inferred",
   "was": "FUN_00291e50",
   "why": "(handle, l, r): scales by the entry's volume +0x28 / 128 and stores the voice's master-volume record (0 off); -2 not playing, -3 bad handle"
+ },
+ "00292090": {
+  "name": "SePlayer::openStreamBank",
+  "tag": "game-inferred",
+  "was": "FUN_00292090",
+  "why": "a0 the SePlayer (needs its table +0), a1 a bank: when streams[bank] (+0x44) is empty, new SoundStream (0x60) and openBankMemory(a2 header, a3 body, t0 size, toIop 1); 1 made, 0 no table / there already"
+ },
+ "00292140": {
+  "name": "SePlayer::loadBank",
+  "tag": "game-inferred",
+  "was": "FUN_00292140",
+  "why": "a0 the SePlayer (needs its table +0), a1 a bank: when banks[bank] (+4) is empty, new SoundSeBank (0x10) on a2 the xvab image, wait 1, iop / spu 0; 1 made, 0 no table / there already"
  },
  "002921d0": {
   "name": "SePlayer::setTable",

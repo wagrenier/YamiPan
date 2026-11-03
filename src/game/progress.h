@@ -1,7 +1,7 @@
 /* ==========================================================================
  *  game/progress.h
  *
- *  Save-progress queries (game/progress.cpp, 0x2955e0..0x296c10 and
+ *  Save-progress queries (game/progress.cpp, 0x2955d0..0x296c10 and
  *  0x296d00..0x296d60): the navigator table's unlock conditions and the
  *  records a fresh save holds.
  *

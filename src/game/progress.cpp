@@ -3,6 +3,7 @@
 
 #include "game/progress.h"
 
+#include "game/gamepaths.h" /* getInitPackItem */
 #include "game/sysdata.h"
 #include "sdk/scetypes.h"
 
@@ -17,6 +18,9 @@ constexpr int kArchiveNotRequired = 98;
 // The record kind whose clears NaviCond_AllStagesKind2 asks for.
 constexpr int kAllStagesKind = 2;
 
+// The init pack's item holding the navi table (getNaviTable).
+constexpr int kInitItemNaviTable = 1;
+
 // A fresh kind-0 record: 3599 = 59:59, the slowest time.
 constexpr u_int kDefaultRecordTime = 3599;
 
@@ -26,6 +30,14 @@ static FlagTable *saveFlags()
 {
     SystemData *data = reinterpret_cast<SystemData *>(getSaveData());
     return data != 0 ? &data->flags : 0;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The navi table: the init pack's item 1 (a tail jump to getInitPackItem).
+// FS2 0x002955d0
+NaviTable *getNaviTable()
+{
+    return static_cast<NaviTable *>(getInitPackItem(kInitItemNaviTable));
 }
 
 // ──────────────────────────────────────────────────────────────────────

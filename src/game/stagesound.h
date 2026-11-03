@@ -29,20 +29,13 @@
 #ifndef _GAME_STAGESOUND_H
 #define _GAME_STAGESOUND_H
 
+#include "game/seplayer.h"   /* SePlayer, SeEntry, SeHandle, SoundTrack */
 #include "game/stagenode.h"   /* StageNode */
 #include "sdk/libvu0.h"     /* sceVu0FVECTOR */
 #include "sdk/scetypes.h"
 
-class SePlayer;                 // game/gamehooks.h
-struct SeEntry;                 // game/gamehooks.h
-struct SeTable;                 // game/gamehooks.h
-class SoundTrack;               // game/gamehooks.h
 class StageObject;              // game/gamehooks.h
 class StageSound;
-
-// The handle SePlayer::play answers: -1 none; bit 60 set while paused
-// (SePlayer::pause).
-typedef long long SeHandle;
 
 // StageSound::m_state: the master volume's turn-down.
 enum StageSoundState

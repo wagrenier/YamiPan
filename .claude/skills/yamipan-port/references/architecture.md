@@ -1318,8 +1318,7 @@ dtor 0x1d3e90; +0x100 handle, +0x108 entry, +0x115 stopped)), +0x300 the free-sl
 **resumable** effects (`SeEntry` +0x1d) through `setEffectsPaused(true)`, 3 turning up: master to
 0x80 over 12 frames, effects resumed, the update then goes 0) and **+0x310 why** (1 paused, 2 muted).
 While turned down `playNamed` plays only resumable effects, started paused; `playNamedAlways`
-(UiLayout::playSound) always plays, unscaled. `SoundTrack` (0x90, the player's run 0x2908d0.., not
-cut) is a `SoundStream` with a name (default "snd" 0x309778), an fsm subtitle file (+0x7c) and an
+(UiLayout::playSound) always plays, unscaled. `SoundTrack` (0x90, `game/seplayer.cpp`) is a `SoundStream` with a name (default "snd" 0x309778), an fsm subtitle file (+0x7c) and an
 **StDT** stream table (+0x60, relocated once by `setTable` 0x290d60); 0x19d9e0 hands the four
 streams the stage's files (`setSubtitles` / `setStreamName` / `setStreamTable`). **The update**
 `StageSound::update` 0x1d5580 (StageScene::update / drawPaused, 0x287f20 while settling; a1 the
@@ -1374,6 +1373,43 @@ version >= 1.2, relocated once) and pairs each X_J / X_D entry with X through `a
 eight callers elsewhere) is unplaced; 0x1d7c50.. after it is the node family's (inline virtuals
 of vtables 0x315a50 / 0x315a80, the transform 0x1d7ee0 / 0x1d7f20, the node base ctor 0x1d8540,
 math helpers to ~0x1d85c0).
+
+**`game/seplayer.cpp` 0x2908d0..0x2937e0 (TU 45, 2026-11-03, batch 078, all 35 written, `verify`;
+header `game/seplayer.h`)**: the two sound players over sound/sound.cpp. **SEDT** (the effect
+table, `SePlayer::setTable` 0x2921d0): "SEDT", +4 float version (>= 1.2), +0xc entry count,
++0x10 16 bank records of 0x40 (+0x30 byte: a stream bank), +0x410 / +0x418 the two reverb cores
+{mode, float depth} handed to `SoundConfig::setEffect` (core 0 / 1, depth both sides), +0x420
+relocated, +0x424 the string base, +0x428 / +0x42c the sorted name index {index, name}, entries
+(0x30 `SeEntry`) from +0x430. **StDT** (a SoundTrack's stream table, `SoundTrack::setTable`
+0x290d60): "StDT", +4 relocated (`stdtIsRelocated` 0x1a0570), +0x10 entries (`stdtEntryCount`
+0x1a0560), +0x14 / +0x18 banks of 0x10 {name, body file (both from string base +0x1c), _, the
+XWS header (+0xc, not relocated here)}, +0x20 / +0x24 / +0x28 a string table (an entry's +8 is
+its index, relocated to the string: its fsm subtitle key), +0x2c the names' base, +0x30 / +0x34
+a name index, entries from +0x40. Both relocate once in place (host: `S2dRef`). **SePlayer**
+(0x1298): +0 table, +4 16 `SoundSeBank *` (`loadBank` 0x292140: new on an XVAB, waited), +0x44 16
+`SoundStream *` (`openStreamBank` 0x292090: a bank body in EE memory copied to the IOP), +0x84
+master volume 0..0x80, +0x88..+0x94 its fade {from, to, frames (-1 idle), frame}, then three
+arrays of 0x40 `SeVoice` (0x18: {scale -1 free / 0 unscaled / 1 under the master, level, pan,
+ratio, bank, placed}) at +0x98 (voice-bank voices by voice), +0x698 (pan voices by sdpr2 handle),
++0xc98 (stream banks by bank). **The handle** (64-bit): bits 0..31 the voice / pan handle /
+stream request, 32..47 the entry index (`SeEntry::id`), 48..55 the bank, 56..59 placed, 60..63
+paused (`pause` stops a voice and answers the handle with 0x1000000000000000; `resume` plays the
+entry again, placed ones at pan 0, ratio 0). `play` 0x292ac0 / `playUnscaled` 0x292830: left /
+right x entry volume / 0x80, x master / 0x80 unless unscaled, random pitch 1 +- spread
+(`randUnit`); a stream bank plays its request = the entry's note from 0. `playPlaced` 0x292520:
+volume from `seDistanceVolume` 0x283df0 (ratio, the entry's falloff: 0 linear 1 - r, 1 cos(r pi/2),
+2 1 - sin(r pi/2); 0 beyond 1) x volume, `SoundSeBank::playPan` (ratio as spread). `update`
+0x293440 steps the master fade and, only while one runs, re-levels every record (freeing ended
+voices), then updates the 16 stream banks. **SoundTrack** (0x90 over SoundStream's 0x60): +0x60
+StDT table, +0x64 the playing entry, +0x68 placed, +0x6c / +0x70 the request's channels / rate,
++0x74 **second half** (the request holds two takes; StageSound's player flag picks the second:
+start offset + half the size rounded to channels x 16, the very start of it + 2 blocks; positions
+reported minus the half), +0x78 the request size, +0x7c the fsm file (`setSubtitles` 0x290b10,
+magic "fsm\0"), +0x80 its track (`fsmFindTrack` 0x28fc80 by the entry's key, strcasecmp; -1
+none), +0x84 the name ("snd" by default: the body files' path prefix, "%s%s" name + file into
++0x88), +0x8c started (the position passed 0, so 0 again reads as ended). Seconds played =
+position x 28 / 16 / channels / rate (ADPCM blocks); `getSubtitle` 0x290980 answers
+`fsmFindText` at that time.
 
 **`game/stageobjlist.cpp` 0x193900..0x1953f0 (TU 26, 2026-11-03, batch 058 with 45 names, all
 written, `verify`)**: the **stage's object registry** `StageObjectList` (0xdc, `gStageScene` +0x10,

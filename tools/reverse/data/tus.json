@@ -359,7 +359,7 @@
    "notes": "All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (0x70) / NaviCond / NaviTrigger / NaviPendingLink with EE static_asserts and NaviCondType 0..14. stageDefaultRecord moved from gamehooks.h to progress.h (sysdata.cpp includes it); SaveData +4 is now archive[101]. Guesses: the file name, stageDefaultRecord's placement in this file, and the navigator vocabulary (goals, triggers, pending links). Left out on purpose: 0x2955d0 (thunk, file before) and 0x296c10..0x296d00 (out-of-line inline copies of other classes). getSaveExtra 0x29efd0 belongs to the navi menu 0x29a700..~0x2a0000 (uses 0x5995e0, init 0x29ef70, getter 0x29efe0) and is still a frontier call from memcard.cpp: write it with that menu's file. NaviCond_KindSelected reads SystemData +0x4c0 (select.kind) as the ROM does; its meaning is unread.",
    "ranges": [
     [
-     "002955e0",
+     "002955d0",
      "00296c10"
     ],
     [
@@ -376,7 +376,7 @@
     }
    ],
    "status": "verify",
-   "why": "Save-progress queries: the navigator table's unlock conditions (NaviTable, loaded from 2dEU/navi%s.d2b by the navi menu 0x29a700..0x2a0000, which calls every one) and stageDefaultRecord (the fresh-save record per kind, variant and stage). 0x2955d0 (a thunk on gp-0x7a10's vtable) is left with the file before. 0x296c10..0x296d00 (a vector lerp step, two 16-byte copies, a 14-word clear; 15-18 callers each, none here) are out-of-line copies of other classes' inlines and stay out. Putting stageDefaultRecord here is a guess: it reads the save's record tables and sits right after those copies."
+   "why": "getNaviTable 0x2955d0 (the NaviTable from the init pack) heads the NaviTable run; progress.h already declares it"
   },
   "game/rcnttimer.cpp": {
    "ranges": [
@@ -443,6 +443,25 @@
    ],
    "status": "verify",
    "why": "18 functions around the overlay thread (slot 6) and the modal UiLayout runner 0x267ae0 / 0x267c00 and their users (stage screens, archive / option screens, game-over and notice dialogs); 0x2681e0.. is a 48-bit LCG (0x5deece66d), another file. Name is the port's (no source string)"
+  },
+  "game/seplayer.cpp": {
+   "notes": "Cut from unassigned@002908d0: game/seplayer.cpp is 0x2908d0..0x2937e0 (SoundTrack 17, SePlayer 18, batch 078: fsmFindTrack, fsmTrackHasText, seDistanceVolume, stdtIsRelocated, stdtEntryCount, SePlayer::openStreamBank, SePlayer::loadBank); getNaviTable 0x2955d0 went to game/progress.cpp; 0x2937e0..0x2955d0 (an ELEVATOR2 stage object and a menu overlay) stays unassigned. New header game/seplayer.h takes SeEntry, SeName, SeTable, StreamTable, SePlayer, SoundTrack and SeHandle out of gamehooks.h and stagesound.h. Kept as the ROM (doubts in open-items.md TU 45): stream-bank pause and resume refuse while the stream plays; SePlayer::setVolume on a voice bank only rewrites the record until the next master fade; who fills an StDT bank header (+0xc) is unread. Not built (source-only); g++ -fsyntax-only -Wall clean on seplayer, stagesound, progress with RosePan SDK headers.",
+   "ranges": [
+    [
+     "002908d0",
+     "002937e0"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 15:23",
+     "status": "verify",
+     "summary": "SoundTrack and SePlayer complete: StDT / SEDT tables as EE-layout S2dRef images, the SeHandle bits, the voice records and master fade, placed play, subtitles by stream position (35 of 35 written); getNaviTable into game/progress.cpp"
+    }
+   ],
+   "status": "verify",
+   "why": "SoundTrack (fsm subtitles + StDT stream table over SoundStream) and SePlayer (the SEDT effect player): one class pair from SoundTrack::setAttr to SePlayer::update; after it 0x2937e0 starts an ELEVATOR2 stage object"
   },
   "game/spkrom.cpp": {
    "ranges": [
@@ -1131,6 +1150,7 @@
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
   "unassigned@002681e0": {},
+  "unassigned@002908d0": {},
   "unassigned@00296d60": {},
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {}
