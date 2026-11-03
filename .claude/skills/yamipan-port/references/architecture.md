@@ -644,9 +644,9 @@ file hooks, states 1 queued / 2 loading / 3 done / 0x80 not found / 0x81 no memo
 0x262df0); it updates and draws on top, its result goes to +4 when it closes. Sounds: four slots,
 names +0x64, 64-bit handles +0x78 (`playSound` 0x25ff40: the stage's StageSound by name in a stage,
 else the menu bank; **`stopSound(-1)` does nothing**: its all-slots branch is dead). The sequence
-side is `game/uisequence.cpp` (next entry); still in unassigned@00246230: the **track factory
-`UiAnim::init` 0x249550** with its 40 track classes (vtables 0x316540..0x316a60, vptr +0x10), the
-S2D file 0x24d2c0.., `UiDrawer` 0x24e580..0x250c30, the widget classes 0x25b..0x25e (vptr +0x1c,
+side is `game/uisequence.cpp` (next entry); the track factory and its classes are
+`game/uitrack.cpp` (after it); still unassigned: the
+S2D file 0x24d530.., `UiDrawer` 0x24e580..0x250c30, the widget classes 0x25b..0x25e (vptr +0x1c,
 `UiWidget::create` 0x25e260, its type table 0x2facf0: 0x2a names) and the game hooks
 0x25ff40..0x2640e8 (sounds, game values / state names 0x599490).
 
@@ -663,7 +663,8 @@ sequence, data, id, priority, def, layout, arg, vptr +0x1c; slots dtor / draw / 
 refresh(arg changed) / getStatus); an actor plays one **`UiAnim`** (0x10: object, object index,
 tracks) per def entry; an anim's **tracks** (`UiTrack` Vt_00316560, 0x14: record, play state 0
 stopped / 1 fwd / 2 back / 3 paused, frame, loop byte, vptr +0x10; slots dtor / draw(drawer) /
-apply(xform, parent, colour, state) / getText). **Keyed kinds 9..14** have a frame length (the
+apply(xform, parent, colour, state) / **getAnchor**: the first vertex xy of a shape record, where
+`UiWidget::create` places widgets; read as getText in TU 16, renamed in TU 17). **Keyed kinds 9..14** have a frame length (the
 only ones `UiTrack::step` 0x24d200 moves and `isDone` waits on); selectors in anim set entries /
 script ops: an object index, or -2 every keyed anim, -3 kinds 9/12, -4 10/13, -5 11/14 (kinds
 11/14 apply to the **offset colour**), -1 (startAnim: every unkeyed anim forward, or all stopped).
@@ -677,6 +678,32 @@ applies the screen matrix of mode +0xc0 from 0x2fac90 / 0x2facc0 unless **pixel 
 and no rotation), colour +0x80, flag +0xb4, then each playing track draws; a **non-zero offset
 colour redraws the actor in the additive pass** (`setAddPass` 0x24fc20: blend 2, colour +0x98).
 **Advance** 0x246db0: the same merged walk (widgets sorted only), tracks stepped, widgets advanced.
+
+**`game/uitrack.cpp` 0x249550..0x24d530 (TU 17, 2026-11-03, batches 041-042; 97 of 109 written,
+`partial`; names the port's)**: the **track factory** `UiAnim::init` and one class per S2D record
+kind (`UiTrackKind` in uisequence.h, classes and records in `game/uitrack.h`), vtables
+0x316540..0x316a60 in file order, then `UiAnim::findTrack` 0x24d1a0, `UiTrack::step` / `isDone` /
+`setPlay`, and the inline virtuals emitted last (`UiWidget::refresh` / `getStatus` 0x24d400 /
+0x24d410, the shapes' `getAnchor` 0x24d420..0x24d520). Kinds: **shapes** 0 line strip / 1 sprite /
+2 triangles (record mode 0 list / 1 fan / 2 strip) with vertex colours, 0x1d / 0x1e / 0x1f the same
+in one record colour (PRIM 0x4a / 0x4e / 0x4b..0x4d = gouraud + ABE, line AA1 from flag bit 0);
+**textured** 5 sprite / 7 triangles / 8 strip mesh, 0x21 / 0x23 / 0x24 one-colour, 0x27 triangles
+without alpha test (PRIM 0x15b..0x15e: + TME + FST; each owns a **`GsTexture`** 0x231360 (0x60,
+vptr +0x44; "Zbuf" / "Draw" / "View" image magics are render targets) of S2D image `+0xc`, TEX1_1
+from `+0x10`); **6 / 0x22** a sprite of a **TimM sheet** (`timSheetRelocate` 0x25fe10, picked by
+name through 0x261d00); **3 text** (`UiFont` 0x25fac0: glyph table + font texture, scale; text from
+fMsg message files or a copied wide string, setters 0x24c6e0..0x24ca00); **4 scissor**; drawer
+state **0xf..0x14** `setDrawPreset(0..5)` (0x250130: gfx calls 0x230980..0x231090), **0x1b** additive
+blend, **0x2a** dest-alpha blend (`setBlend` 0x24ffa0: ALPHA_1 0x44 / 0x48 / 0x58 / 0x54), **0x28 /
+0x29** `setTargetRegs` (four GS registers from 0x3076f0 / 0x307730); **apply** kinds 9 / 0xa / 0xb
+a matrix / colour multiply / offset add **per frame**, 0xc / 0xd / 0xe the same **by keys** {frame,
+value} interpolated (matrices through `UiMatrix::interpolate` 0x24dfa0), 0x1c / 0x25 colour reset,
+0x26 the drawer flag, 0x2b offset translate (+0x14, set by widgets), 0x15..0x1a pin / rotate to
+the combined matrix (0x16 / 0x18 / 0x1a bind "rCharactorPostion": the stage camera, gStageScene
++0x78). S2dData +0x48 / +0x4c: image count and entries {data, id} (`getImage` 0x24d530 /
+`getImageEntry` 0x24d570, the S2D file's first functions). Not written yet: the applies of
+0x15..0x1a (0x24ad20..0x24b1b0, need the UiMatrix helpers 0x24e360..0x24e7c0), the draws of 3 and
+6 / 0x22 (0x24cb80, 0x24c1a0, 0x24c2d0) and the text setters.
 
 ## Classes
 

@@ -5400,8 +5400,8 @@
 /* 002311c0 00000030 */ FUN_002311c0(){}
 /* 00231200 00000090 */ FUN_00231200(){}
 /* 00231290 000000c0 */ FUN_00231290(){}
-/* 00231360 00000050 */ FUN_00231360(){}
-/* 002313b0 00000060 */ FUN_002313b0(){}
+/* 00231360 00000050 */ GsTexture::GsTexture(){}  // game
+/* 002313b0 00000060 */ GsTexture::~GsTexture(){}  // game
 /* 00231410 00000014 */ FUN_00231410(){}
 /* 00231430 0000001c */ FUN_00231430(){}
 /* 00231450 00000028 */ FUN_00231450(){}
@@ -5619,7 +5619,7 @@
 /* 002431e0 000000bc */ FUN_002431e0(){}
 /* 002432a0 000000a4 */ FUN_002432a0(){}
 /* 00243350 00000004 */ UiTrack::draw(){}  // game
-/* 00243360 00000008 */ UiTrack::getText(){}  // game
+/* 00243360 00000008 */ UiTrack::getAnchor(){}  // game
 /* 00243370 00000008 */ FUN_00243370(){}
 /* 00243380 00000008 */ FUN_00243380(){}
 
@@ -5679,126 +5679,131 @@
 /* 00248410 00000504 */ UiActor::setAnimPlay(){}  // game
 /* 00248920 00000554 */ UiActor::startAnim(){}  // game
 /* 00248e80 000002a4 */ UiActor::init(){}  // game
-/* 00249130 00000090 */ UiAnim::getText(){}  // game
+/* 00249130 00000090 */ UiAnim::getAnchor(){}  // game
 /* 002491c0 00000094 */ UiAnim::setFrame(){}  // game
 /* 00249260 000002e0 */ UiAnim::apply(){}  // game
 /* 00249540 00000004 */ UiTrack::apply(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/uitrack.cpp
 // *****************************************************************************
 
 /* 00249550 000011c8 */ UiAnim::init(){}  // game
-/* 0024a720 00000010 */ FUN_0024a720(){}
-/* 0024a730 00000060 */ FUN_0024a730(){}
-/* 0024a790 0000003c */ FUN_0024a790(){}
-/* 0024a7d0 00000060 */ FUN_0024a7d0(){}
-/* 0024a830 0000000c */ FUN_0024a830(){}
-/* 0024a840 00000060 */ FUN_0024a840(){}
-/* 0024a8a0 0000000c */ FUN_0024a8a0(){}
-/* 0024a8b0 00000060 */ FUN_0024a8b0(){}
-/* 0024a910 0000000c */ FUN_0024a910(){}
-/* 0024a920 00000060 */ FUN_0024a920(){}
-/* 0024a980 0000000c */ FUN_0024a980(){}
-/* 0024a990 00000060 */ FUN_0024a990(){}
-/* 0024a9f0 0000000c */ FUN_0024a9f0(){}
-/* 0024aa00 00000060 */ FUN_0024aa00(){}
-/* 0024aa60 0000000c */ FUN_0024aa60(){}
-/* 0024aa70 00000060 */ FUN_0024aa70(){}
-/* 0024aad0 0000000c */ FUN_0024aad0(){}
-/* 0024aae0 00000060 */ FUN_0024aae0(){}
-/* 0024ab40 0000000c */ FUN_0024ab40(){}
-/* 0024ab50 00000060 */ FUN_0024ab50(){}
-/* 0024abb0 0000000c */ FUN_0024abb0(){}
-/* 0024abc0 00000060 */ FUN_0024abc0(){}
-/* 0024ac20 00000020 */ FUN_0024ac20(){}
-/* 0024ac40 00000060 */ FUN_0024ac40(){}
-/* 0024aca0 00000020 */ FUN_0024aca0(){}
-/* 0024acc0 00000060 */ FUN_0024acc0(){}
-/* 0024ad20 00000124 */ FUN_0024ad20(){}
-/* 0024ae50 00000060 */ FUN_0024ae50(){}
-/* 0024aeb0 0000011c */ FUN_0024aeb0(){}
-/* 0024afd0 00000060 */ FUN_0024afd0(){}
-/* 0024b030 00000118 */ FUN_0024b030(){}
-/* 0024b150 00000060 */ FUN_0024b150(){}
-/* 0024b1b0 000000e4 */ FUN_0024b1b0(){}
-/* 0024b2a0 00000060 */ FUN_0024b2a0(){}
-/* 0024b300 0000015c */ FUN_0024b300(){}
-/* 0024b460 00000060 */ FUN_0024b460(){}
-/* 0024b4c0 0000015c */ FUN_0024b4c0(){}
-/* 0024b620 00000060 */ FUN_0024b620(){}
-/* 0024b680 00000138 */ FUN_0024b680(){}
-/* 0024b7c0 00000060 */ FUN_0024b7c0(){}
-/* 0024b820 00000078 */ FUN_0024b820(){}
-/* 0024b8a0 00000060 */ FUN_0024b8a0(){}
-/* 0024b900 00000078 */ FUN_0024b900(){}
-/* 0024b980 00000060 */ FUN_0024b980(){}
-/* 0024b9e0 0000005c */ FUN_0024b9e0(){}
-/* 0024ba40 00000060 */ FUN_0024ba40(){}
-/* 0024baa0 00000098 */ FUN_0024baa0(){}
-/* 0024bb40 000000c8 */ FUN_0024bb40(){}
-/* 0024bc10 00000094 */ FUN_0024bc10(){}
-/* 0024bcb0 00000090 */ FUN_0024bcb0(){}
-/* 0024bd40 000000dc */ FUN_0024bd40(){}
-/* 0024be20 00000090 */ FUN_0024be20(){}
-/* 0024beb0 000000c4 */ FUN_0024beb0(){}
-/* 0024bf80 000000c8 */ FUN_0024bf80(){}
-/* 0024c050 000000b8 */ FUN_0024c050(){}
-/* 0024c110 00000090 */ FUN_0024c110(){}
-/* 0024c1a0 000000b4 */ FUN_0024c1a0(){}
-/* 0024c260 00000070 */ FUN_0024c260(){}
-/* 0024c2d0 000000b0 */ FUN_0024c2d0(){}
-/* 0024c380 00000060 */ FUN_0024c380(){}
-/* 0024c3e0 00000074 */ FUN_0024c3e0(){}
-/* 0024c460 000000c8 */ FUN_0024c460(){}
-/* 0024c530 00000070 */ FUN_0024c530(){}
-/* 0024c5a0 00000090 */ FUN_0024c5a0(){}
-/* 0024c630 00000044 */ FUN_0024c630(){}
-/* 0024c680 00000060 */ FUN_0024c680(){}
+/* 0024a720 00000010 */ UiOffsetTrack::apply(){}  // game
+/* 0024a730 00000060 */ UiOffsetTrack::~UiOffsetTrack(){}  // game
+/* 0024a790 0000003c */ UiTargetTrack::draw(){}  // game
+/* 0024a7d0 00000060 */ UiTargetTrack::~UiTargetTrack(){}  // game
+/* 0024a830 0000000c */ UiDestAlphaBlendTrack::draw(){}  // game
+/* 0024a840 00000060 */ UiDestAlphaBlendTrack::~UiDestAlphaBlendTrack(){}  // game
+/* 0024a8a0 0000000c */ UiAddBlendTrack::draw(){}  // game
+/* 0024a8b0 00000060 */ UiAddBlendTrack::~UiAddBlendTrack(){}  // game
+/* 0024a910 0000000c */ UiPresetTrack<5>::draw(){}  // game
+/* 0024a920 00000060 */ UiPresetTrack<5>::~UiPresetTrack(){}  // game
+/* 0024a980 0000000c */ UiPresetTrack<4>::draw(){}  // game
+/* 0024a990 00000060 */ UiPresetTrack<4>::~UiPresetTrack(){}  // game
+/* 0024a9f0 0000000c */ UiPresetTrack<3>::draw(){}  // game
+/* 0024aa00 00000060 */ UiPresetTrack<3>::~UiPresetTrack(){}  // game
+/* 0024aa60 0000000c */ UiPresetTrack<2>::draw(){}  // game
+/* 0024aa70 00000060 */ UiPresetTrack<2>::~UiPresetTrack(){}  // game
+/* 0024aad0 0000000c */ UiPresetTrack<1>::draw(){}  // game
+/* 0024aae0 00000060 */ UiPresetTrack<1>::~UiPresetTrack(){}  // game
+/* 0024ab40 0000000c */ UiPresetTrack<0>::draw(){}  // game
+/* 0024ab50 00000060 */ UiPresetTrack<0>::~UiPresetTrack(){}  // game
+/* 0024abb0 0000000c */ UiDrawerFlagTrack::apply(){}  // game
+/* 0024abc0 00000060 */ UiDrawerFlagTrack::~UiDrawerFlagTrack(){}  // game
+/* 0024ac20 00000020 */ UiLayoutColorTrack::apply(){}  // game
+/* 0024ac40 00000060 */ UiLayoutColorTrack::~UiLayoutColorTrack(){}  // game
+/* 0024aca0 00000020 */ UiBaseColorTrack::apply(){}  // game
+/* 0024acc0 00000060 */ UiBaseColorTrack::~UiBaseColorTrack(){}  // game
+/* 0024ad20 00000124 */ UiRotateToTrack::apply(){}  // game
+/* 0024ae50 00000060 */ UiRotateToTrack::~UiRotateToTrack(){}  // game
+/* 0024aeb0 0000011c */ UiRotateTrack::apply(){}  // game
+/* 0024afd0 00000060 */ UiRotateTrack::~UiRotateTrack(){}  // game
+/* 0024b030 00000118 */ UiPinRotTrack::apply(){}  // game
+/* 0024b150 00000060 */ UiPinRotTrack::~UiPinRotTrack(){}  // game
+/* 0024b1b0 000000e4 */ UiPinTrack::apply(){}  // game
+/* 0024b2a0 00000060 */ UiPinTrack::~UiPinTrack(){}  // game
+/* 0024b300 0000015c */ UiOffsetKeysTrack::apply(){}  // game
+/* 0024b460 00000060 */ UiOffsetKeysTrack::~UiOffsetKeysTrack(){}  // game
+/* 0024b4c0 0000015c */ UiColorKeysTrack::apply(){}  // game
+/* 0024b620 00000060 */ UiColorKeysTrack::~UiColorKeysTrack(){}  // game
+/* 0024b680 00000138 */ UiMatrixKeysTrack::apply(){}  // game
+/* 0024b7c0 00000060 */ UiMatrixKeysTrack::~UiMatrixKeysTrack(){}  // game
+/* 0024b820 00000078 */ UiOffsetFramesTrack::apply(){}  // game
+/* 0024b8a0 00000060 */ UiOffsetFramesTrack::~UiOffsetFramesTrack(){}  // game
+/* 0024b900 00000078 */ UiColorFramesTrack::apply(){}  // game
+/* 0024b980 00000060 */ UiColorFramesTrack::~UiColorFramesTrack(){}  // game
+/* 0024b9e0 0000005c */ UiMatrixFramesTrack::apply(){}  // game
+/* 0024ba40 00000060 */ UiMatrixFramesTrack::~UiMatrixFramesTrack(){}  // game
+/* 0024baa0 00000098 */ UiTexStripFlatTrack::draw(){}  // game
+/* 0024bb40 000000c8 */ UiTexStripFlatTrack::~UiTexStripFlatTrack(){}  // game
+/* 0024bc10 00000094 */ UiTexStripTrack::draw(){}  // game
+/* 0024bcb0 00000090 */ UiTexStripTrack::~UiTexStripTrack(){}  // game
+/* 0024bd40 000000dc */ UiTexTrianglesNoTestTrack::draw(){}  // game
+/* 0024be20 00000090 */ UiTexTrianglesNoTestTrack::~UiTexTrianglesNoTestTrack(){}  // game
+/* 0024beb0 000000c4 */ UiTexTrianglesFlatTrack::draw(){}  // game
+/* 0024bf80 000000c8 */ UiTexTrianglesFlatTrack::~UiTexTrianglesFlatTrack(){}  // game
+/* 0024c050 000000b8 */ UiTexTrianglesTrack::draw(){}  // game
+/* 0024c110 00000090 */ UiTexTrianglesTrack::~UiTexTrianglesTrack(){}  // game
+/* 0024c1a0 000000b4 */ UiSheetSpriteFlatTrack::draw(){}  // game
+/* 0024c260 00000070 */ UiSheetSpriteFlatTrack::~UiSheetSpriteFlatTrack(){}  // game
+/* 0024c2d0 000000b0 */ UiSheetSpriteTrack::draw(){}  // game
+/* 0024c380 00000060 */ UiSheetSpriteTrack::~UiSheetSpriteTrack(){}  // game
+/* 0024c3e0 00000074 */ UiTexSpriteFlatTrack::draw(){}  // game
+/* 0024c460 000000c8 */ UiTexSpriteFlatTrack::~UiTexSpriteFlatTrack(){}  // game
+/* 0024c530 00000070 */ UiTexSpriteTrack::draw(){}  // game
+/* 0024c5a0 00000090 */ UiTexSpriteTrack::~UiTexSpriteTrack(){}  // game
+/* 0024c630 00000044 */ UiScissorTrack::draw(){}  // game
+/* 0024c680 00000060 */ UiScissorTrack::~UiScissorTrack(){}  // game
 /* 0024c6e0 00000014 */ FUN_0024c6e0(){}
 /* 0024c700 000000b4 */ FUN_0024c700(){}
 /* 0024c7c0 000000a4 */ FUN_0024c7c0(){}
 /* 0024c870 00000188 */ FUN_0024c870(){}
 /* 0024ca00 00000180 */ FUN_0024ca00(){}
-/* 0024cb80 00000050 */ FUN_0024cb80(){}
-/* 0024cbd0 000000a0 */ FUN_0024cbd0(){}
-/* 0024cc70 000000a0 */ FUN_0024cc70(){}
-/* 0024cd10 00000070 */ FUN_0024cd10(){}
-/* 0024cd80 00000094 */ FUN_0024cd80(){}
-/* 0024ce20 00000060 */ FUN_0024ce20(){}
-/* 0024ce80 00000050 */ FUN_0024ce80(){}
-/* 0024ced0 00000070 */ FUN_0024ced0(){}
-/* 0024cf40 00000050 */ FUN_0024cf40(){}
-/* 0024cf90 00000060 */ FUN_0024cf90(){}
-/* 0024cff0 00000070 */ FUN_0024cff0(){}
-/* 0024d060 00000070 */ FUN_0024d060(){}
-/* 0024d0d0 0000006c */ FUN_0024d0d0(){}
-/* 0024d140 00000060 */ FUN_0024d140(){}
-/* 0024d1a0 00000050 */ FUN_0024d1a0(){}
+/* 0024cb80 00000050 */ UiTextTrack::draw(){}  // game
+/* 0024cbd0 000000a0 */ UiTextTrack::~UiTextTrack(){}  // game
+/* 0024cc70 000000a0 */ UiTrianglesFlatTrack::draw(){}  // game
+/* 0024cd10 00000070 */ UiTrianglesFlatTrack::~UiTrianglesFlatTrack(){}  // game
+/* 0024cd80 00000094 */ UiTrianglesTrack::draw(){}  // game
+/* 0024ce20 00000060 */ UiTrianglesTrack::~UiTrianglesTrack(){}  // game
+/* 0024ce80 00000050 */ UiSpriteFlatTrack::draw(){}  // game
+/* 0024ced0 00000070 */ UiSpriteFlatTrack::~UiSpriteFlatTrack(){}  // game
+/* 0024cf40 00000050 */ UiSpriteTrack::draw(){}  // game
+/* 0024cf90 00000060 */ UiSpriteTrack::~UiSpriteTrack(){}  // game
+/* 0024cff0 00000070 */ UiLineStripFlatTrack::draw(){}  // game
+/* 0024d060 00000070 */ UiLineStripFlatTrack::~UiLineStripFlatTrack(){}  // game
+/* 0024d0d0 0000006c */ UiLineStripTrack::draw(){}  // game
+/* 0024d140 00000060 */ UiLineStripTrack::~UiLineStripTrack(){}  // game
+/* 0024d1a0 00000050 */ UiAnim::findTrack(){}  // game
 /* 0024d200 000000b8 */ UiTrack::step(){}  // game
 /* 0024d2c0 00000098 */ UiTrack::isDone(){}  // game
 /* 0024d360 00000094 */ UiTrack::setPlay(){}  // game
 /* 0024d400 00000004 */ UiWidget::refresh(){}  // game
 /* 0024d410 00000008 */ UiWidget::getStatus(){}  // game
-/* 0024d420 0000000c */ FUN_0024d420(){}
-/* 0024d430 0000000c */ FUN_0024d430(){}
-/* 0024d440 0000000c */ FUN_0024d440(){}
-/* 0024d450 0000000c */ FUN_0024d450(){}
-/* 0024d460 0000000c */ FUN_0024d460(){}
-/* 0024d470 0000000c */ FUN_0024d470(){}
-/* 0024d480 0000000c */ FUN_0024d480(){}
-/* 0024d490 0000000c */ FUN_0024d490(){}
-/* 0024d4a0 0000000c */ FUN_0024d4a0(){}
-/* 0024d4b0 0000000c */ FUN_0024d4b0(){}
-/* 0024d4c0 0000000c */ FUN_0024d4c0(){}
-/* 0024d4d0 0000000c */ FUN_0024d4d0(){}
-/* 0024d4e0 0000000c */ FUN_0024d4e0(){}
-/* 0024d4f0 0000000c */ FUN_0024d4f0(){}
-/* 0024d500 0000000c */ FUN_0024d500(){}
-/* 0024d510 0000000c */ FUN_0024d510(){}
-/* 0024d520 0000000c */ FUN_0024d520(){}
-/* 0024d530 00000030 */ FUN_0024d530(){}
-/* 0024d570 00000024 */ FUN_0024d570(){}
+/* 0024d420 0000000c */ UiTexStripFlatTrack::getAnchor(){}  // game
+/* 0024d430 0000000c */ UiTexStripTrack::getAnchor(){}  // game
+/* 0024d440 0000000c */ UiTexTrianglesNoTestTrack::getAnchor(){}  // game
+/* 0024d450 0000000c */ UiTexTrianglesFlatTrack::getAnchor(){}  // game
+/* 0024d460 0000000c */ UiTexTrianglesTrack::getAnchor(){}  // game
+/* 0024d470 0000000c */ UiSheetSpriteFlatTrack::getAnchor(){}  // game
+/* 0024d480 0000000c */ UiSheetSpriteTrack::getAnchor(){}  // game
+/* 0024d490 0000000c */ UiTexSpriteFlatTrack::getAnchor(){}  // game
+/* 0024d4a0 0000000c */ UiTexSpriteTrack::getAnchor(){}  // game
+/* 0024d4b0 0000000c */ UiScissorTrack::getAnchor(){}  // game
+/* 0024d4c0 0000000c */ UiTextTrack::getAnchor(){}  // game
+/* 0024d4d0 0000000c */ UiTrianglesFlatTrack::getAnchor(){}  // game
+/* 0024d4e0 0000000c */ UiTrianglesTrack::getAnchor(){}  // game
+/* 0024d4f0 0000000c */ UiSpriteFlatTrack::getAnchor(){}  // game
+/* 0024d500 0000000c */ UiSpriteTrack::getAnchor(){}  // game
+/* 0024d510 0000000c */ UiLineStripFlatTrack::getAnchor(){}  // game
+/* 0024d520 0000000c */ UiLineStripTrack::getAnchor(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
+/* 0024d530 00000030 */ S2dData::getImage(){}  // game
+/* 0024d570 00000024 */ S2dData::getImageEntry(){}  // game
 /* 0024d5a0 00000098 */ FUN_0024d5a0(){}
 /* 0024d640 00000098 */ S2dData::findObject(){}  // game
 /* 0024d6e0 00000090 */ FUN_0024d6e0(){}
@@ -5806,7 +5811,7 @@
 /* 0024d810 00000010 */ S2dData::getVar(){}  // game
 /* 0024d820 00000740 */ S2dData::relocate(){}  // game
 /* 0024df60 00000030 */ S2dData::getString(){}  // game
-/* 0024dfa0 000003bc */ FUN_0024dfa0(){}
+/* 0024dfa0 000003bc */ UiMatrix::interpolate(){}  // game
 /* 0024e360 0000006c */ FUN_0024e360(){}
 /* 0024e3d0 0000011c */ FUN_0024e3d0(){}
 /* 0024e4f0 00000080 */ FUN_0024e4f0(){}
@@ -5817,7 +5822,7 @@
 /* 0024e710 000000a4 */ UiMatrix::concat(){}  // game
 /* 0024e7c0 000000bc */ FUN_0024e7c0(){}
 /* 0024e880 00000020 */ UiMatrix::identity(){}  // game
-/* 0024e8a0 000000f0 */ FUN_0024e8a0(){}
+/* 0024e8a0 000000f0 */ UiDrawer::setTargetRegs(){}  // game
 /* 0024e990 0000003c */ UiDrawer::setMode(){}  // game
 /* 0024e9d0 00000040 */ UiDrawer::setPixelMode(){}  // game
 /* 0024ea10 00000014 */ UiDrawer::setTranslate(){}  // game
@@ -5829,33 +5834,33 @@
 /* 0024f350 00000218 */ FUN_0024f350(){}
 /* 0024f570 00000008 */ FUN_0024f570(){}
 /* 0024f580 00000214 */ FUN_0024f580(){}
-/* 0024f7a0 000001c0 */ FUN_0024f7a0(){}
+/* 0024f7a0 000001c0 */ UiDrawer::setTexture(){}  // game
 /* 0024f960 00000078 */ FUN_0024f960(){}
 /* 0024f9e0 000000e4 */ UiDrawer::end(){}  // game
 /* 0024fad0 00000010 */ UiDrawer::begin(){}  // game
 /* 0024fae0 00000044 */ UiDrawer::~UiDrawer(){}  // game
 /* 0024fb30 000000f0 */ UiDrawer::UiDrawer(){}  // game
 /* 0024fc20 0000008c */ UiDrawer::setAddPass(){}  // game
-/* 0024fcb0 00000084 */ FUN_0024fcb0(){}
-/* 0024fd40 00000114 */ FUN_0024fd40(){}
-/* 0024fe60 00000090 */ FUN_0024fe60(){}
-/* 0024fef0 000000ac */ FUN_0024fef0(){}
-/* 0024ffa0 00000184 */ FUN_0024ffa0(){}
-/* 00250130 00000104 */ FUN_00250130(){}
+/* 0024fcb0 00000084 */ UiDrawer::setGsReg(){}  // game
+/* 0024fd40 00000114 */ UiDrawer::setPrimColor(){}  // game
+/* 0024fe60 00000090 */ UiDrawer::setPrim(){}  // game
+/* 0024fef0 000000ac */ UiDrawer::setNoAlphaTest(){}  // game
+/* 0024ffa0 00000184 */ UiDrawer::setBlend(){}  // game
+/* 00250130 00000104 */ UiDrawer::setDrawPreset(){}  // game
 /* 00250240 0000017c */ FUN_00250240(){}
 /* 002503c0 0000015c */ FUN_002503c0(){}
-/* 00250520 00000198 */ FUN_00250520(){}
-/* 002506c0 00000088 */ FUN_002506c0(){}
+/* 00250520 00000198 */ UiDrawer::setScissor(){}  // game
+/* 002506c0 00000088 */ UiDrawer::resetScissor(){}  // game
 /* 00250750 0000025c */ FUN_00250750(){}
 /* 002509b0 0000027c */ FUN_002509b0(){}
 /* 00250c30 00000004 */ thunk_FUN_0010b328(){}
 /* 00250c40 00000710 */ FUN_00250c40(){}
-/* 00251350 00000650 */ FUN_00251350(){}
-/* 002519a0 000006a0 */ FUN_002519a0(){}
-/* 00252040 00000220 */ FUN_00252040(){}
-/* 00252260 00000238 */ FUN_00252260(){}
-/* 002524a0 000001d8 */ FUN_002524a0(){}
-/* 00252680 000001b8 */ FUN_00252680(){}
+/* 00251350 00000650 */ uiDrawTexStripFlat(){}  // game
+/* 002519a0 000006a0 */ uiDrawTexStripGouraud(){}  // game
+/* 00252040 00000220 */ UiDrawer::drawTexFlat(){}  // game
+/* 00252260 00000238 */ UiDrawer::drawTexGouraud(){}  // game
+/* 002524a0 000001d8 */ UiDrawer::drawGouraud(){}  // game
+/* 00252680 000001b8 */ UiDrawer::drawFlat(){}  // game
 /* 00252840 00000150 */ FUN_00252840(){}
 /* 002529a0 0000011c */ FUN_002529a0(){}
 /* 00252ac0 00000044 */ FUN_00252ac0(){}
@@ -6012,20 +6017,20 @@
 /* 0025f990 00000024 */ FUN_0025f990(){}
 /* 0025f9c0 00000050 */ FUN_0025f9c0(){}
 /* 0025fa10 00000034 */ FUN_0025fa10(){}
-/* 0025fa50 00000068 */ FUN_0025fa50(){}
-/* 0025fac0 00000064 */ FUN_0025fac0(){}
+/* 0025fa50 00000068 */ UiFont::~UiFont(){}  // game
+/* 0025fac0 00000064 */ UiFont::UiFont(){}  // game
 /* 0025fb30 0000009c */ FUN_0025fb30(){}
 /* 0025fbd0 0000018c */ FUN_0025fbd0(){}
 /* 0025fd60 000000ac */ FUN_0025fd60(){}
-/* 0025fe10 0000012c */ FUN_0025fe10(){}
+/* 0025fe10 0000012c */ timSheetRelocate(){}  // game
 /* 0025ff40 000001c0 */ UiLayout::playSound(){}  // game
 /* 00260100 000000e4 */ UiLayout::stopSound(){}  // game
 /* 002601f0 000000a8 */ UiLayout::readGameValue(){}  // game
 /* 002602a0 00000130 */ UiLayout::writeGameValue(){}  // game
 /* 002603d0 000000c4 */ UiLayout::testGameValue(){}  // game
 /* 002604a0 00000580 */ UiLayout::testGameState(){}  // game
-/* 00260a20 0000008c */ FUN_00260a20(){}
-/* 00260ab0 00000108 */ FUN_00260ab0(){}
+/* 00260a20 0000008c */ UiRotateToTrack::bindTarget(){}  // game
+/* 00260ab0 00000108 */ UiPinRotTrack::bindTarget(){}  // game
 /* 00260bc0 000006f8 */ FUN_00260bc0(){}
 /* 002612c0 00000a30 */ FUN_002612c0(){}
 /* 00261cf0 0000000c */ FUN_00261cf0(){}

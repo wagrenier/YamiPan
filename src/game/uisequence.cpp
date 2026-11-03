@@ -685,15 +685,16 @@ void UiActor::init(S2dActorDef *def, int id, int priority)
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// The first text a track of the anim has, or null.
+// The first anchor a track of the anim has (the first vertex of its first
+// shape), or null.
 // FS2 0x00249130
 
-const char *UiAnim::getText()
+const float *UiAnim::getAnchor()
 {
     for (u_int i = 0; i < m_trackCount; i++) {
-        const char *text = m_tracks[i]->getText();
-        if (text != nullptr)
-            return text;
+        const float *anchor = m_tracks[i]->getAnchor();
+        if (anchor != nullptr)
+            return anchor;
     }
     return nullptr;
 }

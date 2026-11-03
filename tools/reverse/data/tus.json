@@ -338,6 +338,25 @@
    "status": "verify",
    "why": "Cut from unassigned@00246230 (the rest of unassigned@0023e740): the UiSequence / UiActor / UiAnim / UiWidget-base code between game/uilayout.cpp (ends 0x246230) and the anim factory 0x249550 that starts the track classes (Vt_00316560 subclasses 0x24a720..). No source string; the file name is the port's."
   },
+  "game/uitrack.cpp": {
+   "notes": "Cut from unassigned@00249550 as game/uitrack.cpp 0x249550..0x24d530 (0x24d530 S2dData::getImage starts the S2D file). Batches 041-042 named 126 (every track class dtor / draw / apply / getAnchor, UiDrawer state and vertex calls, UiMatrix::interpolate, S2dData::getImage / getImageEntry, GsTexture, UiFont, timSheetRelocate, the two bindTarget). UiTrack slot 3 is getAnchor (first vertex xy, UiWidget::create places widgets there), not getText: renamed in Ghidra and uisequence.h / .cpp. Header game/uitrack.h: per-kind records with EE offsets, vertex layouts, the classes in vtable order (Flat classes derive from their vertex-coloured siblings as the vtables chain them). UiTrackKind in uisequence.h names every kind. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall clean on uitrack / uisequence with stub SDK headers. Left (12): applies of kinds 0x15..0x1a at 0x24ad20 / 0x24aeb0 / 0x24b030 / 0x24b1b0 (read the asm: Ghidra drops the a3 / t0 args; they need the UiMatrix helpers 0x24e360..0x24e7c0), the text draw 0x24cb80 and its setters 0x24c6e0..0x24ca00, the sheet-sprite draws 0x24c1a0 / 0x24c2d0. Doubts: all names read from the code; kind 0x20 / past 0x2b leave the slot unwritten in the ROM (port: null); the text track stores an image id or the init-pack name pointer in one field (intptr_t). open-items.md TU 17 has the details.",
+   "ranges": [
+    [
+     "00249550",
+     "0024d530"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 02:44",
+     "status": "partial",
+     "summary": "game/uitrack.cpp 0x249550..0x24d530 cut out: the track factory UiAnim::init, 41 track classes, UiTrack step / isDone / setPlay; 97 of 109 written"
+    }
+   ],
+   "status": "partial",
+   "why": "UiAnim::init (the track factory) right after uisequence.cpp's last function, then the 41 track classes' dtors / draw / apply (vtables 0x316540..0x316a60 in this order), the UiTrack base members step / isDone / setPlay with UiAnim::findTrack, and the classes' inline virtuals (UiWidget::refresh / getStatus, the getAnchor slots) at the end; 0x24d530 S2dData::getImage starts the S2D file"
+  },
   "rx/filecd.c": {
    "ranges": [
     [
@@ -558,6 +577,7 @@
   "unassigned@0023c020": {},
   "unassigned@0023e740": {},
   "unassigned@00246230": {},
+  "unassigned@00249550": {},
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
   "unassigned@002acff0": {}

@@ -15,7 +15,7 @@
  *  additive pass.
  *
  *  The track classes (the 40 Vt_00316560 subclasses the factory
- *  UiAnim::init builds, 0x249550..) and the widget classes (Vt_00316580
+ *  UiAnim::init builds: game/uitrack.cpp) and the widget classes (Vt_00316580
  *  subclasses, UiWidget::create 0x25e260) are other TUs; their base classes
  *  and what this file calls of them are declared here. The names are the
  *  port's (no source string in the range).
@@ -33,22 +33,56 @@
 class UiLayout;                 // game/uilayout.h
 class UiSequence;
 
-// S2dTrackRec::kind: the ones this file tells apart. 9..14 are the keyed
-// kinds (a length in frames that UiTrack::step plays through); what each
-// draws or changes is the track TU's.
+// S2dTrackRec::kind: the record kinds UiAnim::init builds a track class for
+// (game/uitrack.h has the classes and their records). 9..14 are the keyed
+// kinds (a length in frames that UiTrack::step plays through). Kind 0x20
+// and kinds past 0x2b get no track in the ROM.
 enum UiTrackKind
 {
-    UiTrackKind_KeyedFirst = 9,
-    UiTrackKind_KeyedA = 9,     // UiAnimSelect_KeyedA
-    UiTrackKind_KeyedB = 10,    // UiAnimSelect_KeyedB
-    UiTrackKind_KeyedC = 11,    // UiAnimSelect_KeyedC; applies to the offset colour
-    UiTrackKind_KeyedA2 = 12,
-    UiTrackKind_KeyedB2 = 13,
-    UiTrackKind_KeyedC2 = 14,   // applies to the offset colour
-    UiTrackKind_KeyedLast = 14,
-    UiTrackKind_BaseColor = 0x1c,   // playing: the actor's colour / offset restart at 1 / 0
-                                    // and become the base of the sequence's next actors
-    UiTrackKind_LayoutColor = 0x25, // playing: as BaseColor, and they become the layout's
+    UiTrackKind_LineStrip = 0x00,           // UiLineStripTrack: vertex colours
+    UiTrackKind_Sprite = 0x01,              // UiSpriteTrack
+    UiTrackKind_Triangles = 0x02,           // UiTrianglesTrack
+    UiTrackKind_Text = 0x03,                // UiTextTrack
+    UiTrackKind_Scissor = 0x04,             // UiScissorTrack
+    UiTrackKind_TexSprite = 0x05,           // UiTexSpriteTrack
+    UiTrackKind_SheetSprite = 0x06,         // UiSheetSpriteTrack
+    UiTrackKind_TexTriangles = 0x07,        // UiTexTrianglesTrack
+    UiTrackKind_TexStrip = 0x08,            // UiTexStripTrack
+    UiTrackKind_KeyedFirst = 0x09,
+    UiTrackKind_KeyedA = 0x09,              // UiMatrixFramesTrack; UiAnimSelect_KeyedA
+    UiTrackKind_KeyedB = 0x0a,              // UiColorFramesTrack; UiAnimSelect_KeyedB
+    UiTrackKind_KeyedC = 0x0b,              // UiOffsetFramesTrack; UiAnimSelect_KeyedC; applies to the offset colour
+    UiTrackKind_KeyedA2 = 0x0c,             // UiMatrixKeysTrack
+    UiTrackKind_KeyedB2 = 0x0d,             // UiColorKeysTrack
+    UiTrackKind_KeyedC2 = 0x0e,             // UiOffsetKeysTrack; applies to the offset colour
+    UiTrackKind_KeyedLast = 0x0e,
+    UiTrackKind_Preset0 = 0x0f,             // UiPresetTrack<0> .. 0x14 UiPresetTrack<5>
+    UiTrackKind_Preset5 = 0x14,
+    UiTrackKind_Pin = 0x15,                 // UiPinTrack (also 0x17)
+    UiTrackKind_PinRot = 0x16,              // UiPinRotTrack (also 0x18)
+    UiTrackKind_Pin2 = 0x17,
+    UiTrackKind_PinRot2 = 0x18,
+    UiTrackKind_Rotate = 0x19,              // UiRotateTrack
+    UiTrackKind_RotateTo = 0x1a,            // UiRotateToTrack
+    UiTrackKind_AddBlend = 0x1b,            // UiAddBlendTrack
+    UiTrackKind_BaseColor = 0x1c,           // UiBaseColorTrack. Playing: the actor's colour / offset
+                                            // restart at 1 / 0 and become the base of the sequence's
+                                            // next actors
+    UiTrackKind_LineStripFlat = 0x1d,       // UiLineStripFlatTrack: one colour
+    UiTrackKind_SpriteFlat = 0x1e,          // UiSpriteFlatTrack
+    UiTrackKind_TrianglesFlat = 0x1f,       // UiTrianglesFlatTrack
+    UiTrackKind_TexSpriteFlat = 0x21,       // UiTexSpriteFlatTrack
+    UiTrackKind_SheetSpriteFlat = 0x22,     // UiSheetSpriteFlatTrack
+    UiTrackKind_TexTrianglesFlat = 0x23,    // UiTexTrianglesFlatTrack
+    UiTrackKind_TexStripFlat = 0x24,        // UiTexStripFlatTrack
+    UiTrackKind_LayoutColor = 0x25,         // UiLayoutColorTrack. Playing: as BaseColor, and they
+                                            // become the layout's
+    UiTrackKind_DrawerFlag = 0x26,          // UiDrawerFlagTrack
+    UiTrackKind_TexTrianglesNoTest = 0x27,  // UiTexTrianglesNoTestTrack
+    UiTrackKind_Target = 0x28,              // UiTargetTrack (alt 0)
+    UiTrackKind_Target2 = 0x29,             // UiTargetTrack (alt 1)
+    UiTrackKind_DestAlphaBlend = 0x2a,      // UiDestAlphaBlendTrack
+    UiTrackKind_Offset = 0x2b,              // UiOffsetTrack
 };
 
 // The anim an anim set entry (S2dAnimSetEntry::anim) or a script command
@@ -98,15 +132,21 @@ static_assert(offsetof(UiDrawState, setBase) == 0x4, "UiDrawState::setBase");
 class UiTrack
 {
 public:
+    // Inline in the ROM (UiAnim::init, each class).
+    UiTrack(S2dTrackRec *rec)
+        : m_rec(rec), m_play(UiTrackPlay_Stopped), m_frame(0), m_loop(0)
+    {
+    }
     virtual ~UiTrack();                                                  // FS2 0x00247d10: deleting (obj, 1)
     virtual void draw(UiDrawer *drawer);                                 // FS2 0x00243350
     // Changes the actor's matrices and colour (or offset colour) for the
     // frame.
     virtual void apply(UiMatrix *xform, UiMatrix *parent, UiVec4 *color, UiDrawState *state); // FS2 0x00249540
-    // A string of the record (the text kinds), or null.
-    virtual const char *getText();                                       // FS2 0x00243360
+    // The first vertex (x, y) of the record (the shape kinds), or null.
+    // UiWidget::create places widgets there.
+    virtual const float *getAnchor();                                    // FS2 0x00243360
 
-    bool isDone();                                                       // FS2 0x0024d2c0
+    bool isDone();                                                       // FS2 0x0024d2c0 (game/uitrack.cpp)
     void setPlay(u_int flags);                                           // FS2 0x0024d360: UiPlayFlag
     void step();                                                         // FS2 0x0024d200
 
@@ -133,8 +173,9 @@ public:
     }
 
     // Builds a track per record of obj (the track factory).
-    void init(S2dData *data, S2dObject *obj, int objIndex);              // FS2 0x00249550
-    const char *getText();                                               // FS2 0x00249130
+    void init(S2dData *data, S2dObject *obj, int objIndex);              // FS2 0x00249550 (game/uitrack.cpp)
+    const float *getAnchor();                                            // FS2 0x00249130
+    UiTrack *findTrack(int kind);                                        // FS2 0x0024d1a0 (game/uitrack.cpp): null none
     void setFrame(int frame);                                            // FS2 0x002491c0
     void apply(UiMatrix *xform, UiMatrix *parent, UiVec4 *color, UiVec4 *offset, UiDrawState *state); // FS2 0x00249260
 

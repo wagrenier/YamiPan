@@ -54,4 +54,16 @@ public:
 // gfxSetDisplayOffset.
 TexArea *gfxGetTexArea();                                                // FS2 0x0012f160
 
+// A GS texture built from an image record (EE 0x60 bytes, vptr 0x3164e8
+// at +0x44; unassigned@00171300). The UI tracks own one per textured
+// shape. layout: host -- not declared.
+// PC: the host draw module decodes the image at its source to a GPU
+// texture keyed by this object (no GS upload).
+class GsTexture
+{
+public:
+    GsTexture(const void *image);                                        // FS2 0x00231360
+    virtual ~GsTexture();                                                // FS2 0x002313b0: deleting (obj, 1)
+};
+
 #endif /* _GAME_GFXTARGET_H */

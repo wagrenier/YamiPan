@@ -37,8 +37,41 @@ struct UiMatrix
     void copy(const UiMatrix &m);                                        // FS2 0x0024e6d0
     void concat(const UiMatrix &m);                                      // FS2 0x0024e710: this = m * this
     void translate(const float *xy);                                     // FS2 0x0024e580
+    // this = from blended towards to by t (both decomposed, the angles
+    // through atan2).
+    void interpolate(const UiMatrix &from, const UiMatrix &to, float t); // FS2 0x0024dfa0
 };
 static_assert(sizeof(UiMatrix) == 0x18, "UiMatrix: EE 0x18");
+
+// The GS PRIM values the tracks hand UiDrawer::setPrim / setPrimColor:
+// a primitive type and the flag bits (the add pass forces UiPrim_Blend).
+enum UiPrim
+{
+    UiPrim_LineStrip = 0x002,
+    UiPrim_Triangle = 0x003,
+    UiPrim_TriStrip = 0x004,
+    UiPrim_TriFan = 0x005,
+    UiPrim_Sprite = 0x006,
+    UiPrim_Gouraud = 0x008,     // IIP
+    UiPrim_Textured = 0x010,    // TME
+    UiPrim_Blend = 0x040,       // ABE
+    UiPrim_Antialias = 0x080,   // AA1
+    UiPrim_UV = 0x100,          // FST: texel coordinates
+};
+
+// UiDrawer::setBlend: the ALPHA_1 equation.
+enum UiBlend
+{
+    UiBlend_Normal = 0,         // (Cs - Cd) * As + Cd
+    UiBlend_Add = 1,            // Cs * As + Cd
+    UiBlend_AddDestAlpha = 2,   // Cs * Ad + Cd
+    UiBlend_NormalDestAlpha = 3, // (Cs - Cd) * Ad + Cd
+};
+
+// GS register numbers the tracks write through UiDrawer::setGsReg.
+constexpr int kGsRegTex1_1 = 0x14;
+
+class GsTexture;                // game/gfxtarget.h
 
 // The drawer's matrix stack depth (+0x1c..+0x7c).
 constexpr int kUiDrawerStackDepth = 4;
@@ -62,6 +95,31 @@ public:
     // The additive pass the offset colours draw in. Answers the old one.
     u_char setAddPass(u_char on);                                        // FS2 0x0024fc20
 
+    // The track classes' state calls (game/uitrack.cpp). Each flushes the
+    // open GIF run first; -1 without a packet.
+    int setTexture(GsTexture *tex);                                      // FS2 0x0024f7a0: null keeps the current one
+    int setGsReg(int reg, u_long value);                                 // FS2 0x0024fcb0
+    int setPrim(u_long prim);                                            // FS2 0x0024fe60: UiPrim; vertex colours follow
+    // PRIM and one RGBAQ: rgba times m_color.
+    int setPrimColor(u_long prim, const UiVec4 *rgba);                   // FS2 0x0024fd40
+    int setNoAlphaTest(u_char on);                                       // FS2 0x0024fef0: TEST_1 0, else 5
+    int setBlend(int mode);                                              // FS2 0x0024ffa0: UiBlend
+    // One of seven gfx state set-ups (0x230980..0x231090, meaning unread);
+    // resets the blend.
+    int setDrawPreset(int preset);                                       // FS2 0x00250130
+    // Four GS registers from table 0x3076f0 (on) or 0x307730 (meaning
+    // unread).
+    int setTargetRegs(u_char on);                                        // FS2 0x0024e8a0
+    int setScissor(const float *rect);                                   // FS2 0x00250520: x0 y0 x1 y1, through m_matrix
+    int resetScissor();                                                  // FS2 0x002506c0: the draw env's
+
+    // Vertex lists, drawn with the prim set before (count vertices; the
+    // last argument is always 0 here).
+    void drawFlat(const void *verts, int count, int arg);                // FS2 0x00252680: {xy}
+    void drawGouraud(const void *verts, int count, int arg);             // FS2 0x002524a0: {rgba, xy}
+    void drawTexFlat(const void *verts, int count, int arg);             // FS2 0x00252040: {uv, xy}
+    void drawTexGouraud(const void *verts, int count, int arg);          // FS2 0x00252260: {rgba, uv, xy}
+
     u_char   _00[0x1c];
     UiMatrix m_stack[kUiDrawerStackDepth]; // FS2 +0x1c
     int      m_top;             // FS2 +0x7c: m_stack index
@@ -76,5 +134,10 @@ public:
     UiMatrix m_matrix;          // FS2 +0xc4: the matrix the tracks draw with
     u_char   m_pixelMode;       // FS2 +0xdc
 };
+
+// The textured strip meshes of track kinds 8 / 0x24 (record mode first,
+// the drawer second; uvRect the constant { 0.5, 0, 0.5, 1 }).
+void uiDrawTexStripFlat(int mode, UiDrawer *drawer, const void *verts, int count, const UiVec4 *uvRect);    // FS2 0x00251350
+void uiDrawTexStripGouraud(int mode, UiDrawer *drawer, const void *verts, int count, const UiVec4 *uvRect); // FS2 0x002519a0
 
 #endif /* _GAME_UIDRAWER_H */

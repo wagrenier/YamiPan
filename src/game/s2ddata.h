@@ -262,7 +262,15 @@ struct S2dWidgetDef
     u_char      _10[0x20];      // FS2 +0x10: the type's parameters (floats)
 };
 
-// layout: host -- see above; EE header 0x48.
+// An image of the S2D (S2dData::images[i], EE 8 bytes).
+// layout: host -- EE: +0 the image (a pointer), +4 id.
+struct S2dImage
+{
+    const void *data;           // FS2 +0x0: the image record (GsTexture's input, or a TimM sheet)
+    int         id;             // FS2 +0x4: kept by the textured tracks (UiTexSpriteTrack::m_imageId)
+};
+
+// layout: host -- see above; EE header 0x50 (the images at +0x48 / +0x4c).
 struct S2dData
 {
     char          magic[4];     // FS2 +0x00: "S2D\0"
@@ -283,12 +291,17 @@ struct S2dData
     S2dSeqDef   **seqs;         // FS2 +0x3c
     int           stringCount;  // FS2 +0x40
     const char  **strings;      // FS2 +0x44
+    int           imageCount;   // FS2 +0x48
+    S2dImage     *images;       // FS2 +0x4c
 
     bool        relocate();                                              // FS2 0x0024d820
     const char *getString(int index);                                    // FS2 0x0024df60
     S2dVar     *findVar(const char *name);                               // FS2 0x0024d770
     S2dVar     *getVar(int index);                                       // FS2 0x0024d810
     int         findObject(const char *name);                            // FS2 0x0024d640: -1 none
+    // Past the end (no lower bound check, as the ROM): null.
+    const void *getImage(int index);                                     // FS2 0x0024d530
+    S2dImage   *getImageEntry(int index);                                // FS2 0x0024d570
 };
 
 #endif /* _GAME_S2DDATA_H */

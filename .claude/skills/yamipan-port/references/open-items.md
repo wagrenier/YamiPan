@@ -174,6 +174,31 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    frontier's `UiTrack::isDone` / `setPlay` / `step` are at 0x24d200..0x24d400 right after), then
    the S2D file 0x24d640.. and the drawer 0x24e580.. (`UiDrawer::begin` / `end` / ctor are on the
    frontier).
+   TU 17 (the frontier's `unassigned@00249550`): **`game/uitrack.cpp` 0x249550..0x24d530** cut out
+   (109 functions, batches 041-042 with 126 names, **97 written, `partial`**; architecture.md
+   "Modules"): the track factory `UiAnim::init`, the 41 track classes (`game/uitrack.h`, records
+   per kind), `UiAnim::findTrack`, `UiTrack::step` / `isDone` / `setPlay`, the inline virtuals.
+   **UiTrack slot 3 is `getAnchor`, not `getText`** (the first vertex xy; renamed in Ghidra and in
+   uisequence.h / .cpp). `UiTrackKind` in uisequence.h now names every kind; `uidrawer.h` gained
+   the drawer state / vertex calls (`UiPrim`, `UiBlend`, `kGsRegTex1_1`), `UiMatrix::interpolate`
+   and the strip meshes; `gfxtarget.h` the `GsTexture` stand-in; `s2ddata.h` `S2dImage`,
+   `imageCount` / `images` (+0x48 / +0x4c) and `getImage` / `getImageEntry`. Checked: callcheck
+   clean, layout lint OK, g++ -fsyntax-only -Wall clean on uitrack / uisequence (stub SDK headers).
+   **Left in the file (a later run: `tus.py claim game/uitrack.cpp`)**: the applies of kinds
+   0x15..0x1a (0x24ad20 / 0x24aeb0 / 0x24b030 / 0x24b1b0: read their asm, Ghidra drops the
+   register args; they need UiMatrix helpers 0x24e360 angle, 0x24e3d0, 0x24e4f0 transform point,
+   0x24e5b0, 0x24e5d0 rotate, 0x24e7c0 multiply, from the drawer file), the text draw 0x24cb80
+   (calls 0x24eba0 with the track's +0x1c / +0x20 first) and its four setters 0x24c6e0..0x24ca00
+   (wide strings: 0x2d4650 / 0x2d4510 read as wcslen / wcscpy; "fMsg" message files via
+   0x25fbd0 / 0x25fb30), the sheet-sprite draws 0x24c1a0 / 0x24c2d0 (0x261d00 picks a frame by
+   name from table 0x2fafc0, `UiDrawer` 0x24f580 binds a temporary GsTexture). Doubts for the
+   user: every class / kind name is read from the code; `setDrawPreset` / `setTargetRegs` /
+   `setNoAlphaTest` say what they write, not what for; a record kind without a class (0x20, past
+   0x2b) leaves its slot unwritten in the ROM (the port stores null, which UiAnim::isKind would
+   then dereference, as the ROM would garbage); the text track keeps an image id **or the
+   init-pack name pointer** in the same field (kept as `intptr_t`). Bootstrap 6: the host draw
+   module must take the `UiPrim` / `UiBlend` / TEX1 / scissor state and the four vertex layouts of
+   `uitrack.h`, and `GsTexture` decodes its image at the source (no GS upload).
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

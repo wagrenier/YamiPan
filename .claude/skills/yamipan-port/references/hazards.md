@@ -70,6 +70,15 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   into the function before them, so sizes stop matching the sister's: compare spans (next start -
   start) between anchors (`rxalign.py` '~' / '+'), and list the merged starts for creation.
 
+- **A virtual slot named from its first caller's guess** (2026-11-03, TU 17): UiTrack slot 3 was
+  named `getText` in TU 16 (base answers null, UiAnim::getText walks the tracks); the overrides at
+  0x24d420..0x24d520 return the record's first vertex and `UiWidget::create` reads two floats from
+  it. Before naming a slot, read one override and one consumer of its value, not only the base.
+- **Register-passed arguments past a3 vanish from the decompile** (2026-11-03, TU 17): the track
+  `apply(this, xform, parent, colour, state)` slots show `in_a3_lo` / `in_t0_lo` and lose their
+  parameters when Ghidra's prototype is shorter; read them from the asm (`ghidra.py asm`), or fix the
+  prototype first.
+
 ## File inference (which TU a function belongs to)
 
 - Inferred extents are guesses where no string anchors them; inferred file *names* from a sister

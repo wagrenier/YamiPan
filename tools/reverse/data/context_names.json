@@ -10031,6 +10031,18 @@
   "was": "FUN_001d6a80",
   "why": "(sound, name, volume f12): tail to 0x1d66e0; StageResult::tick passes the stage object's +0x24 (gp-0x7a7c), 'SYS_COUNT1' / 'SYS_COUNT2' and 1.0"
  },
+ "00231360": {
+  "name": "GsTexture::GsTexture",
+  "tag": "game-inferred",
+  "was": "FUN_00231360",
+  "why": "(tex 0x60, image): vptr 0x3164e8 at +0x44, FUN_00231290 reads the image (Zbuf / Draw / View render-target magics)"
+ },
+ "002313b0": {
+  "name": "GsTexture::~GsTexture",
+  "tag": "game-inferred",
+  "was": "FUN_002313b0",
+  "why": "deleting dtor, slot 0 of Vt_003164e8"
+ },
  "00231bb0": {
   "name": "gameSceneThread",
   "tag": "game-inferred",
@@ -10284,10 +10296,10 @@
   "why": "Vt_00316560 slot 1 (+0xc), empty base; UiSequence::draw calls slot +0xc of each playing track with the drawer"
  },
  "00243360": {
-  "name": "UiTrack::getText",
+  "name": "UiTrack::getAnchor",
   "tag": "game-inferred",
   "was": "FUN_00243360",
-  "why": "Vt_00316560 slot 3 (+0x14), base answers 0; overrides answer a pointer into the track record (0x24d420: +0x28, 0x24d4c0: +0x2c); UiAnim::getText asks each track"
+  "why": "base slot 3 of Vt_00316560: null; the shape kinds answer their first vertex xy (was read as getText)"
  },
  "00243390": {
   "name": "UiSubLayout::load",
@@ -10572,10 +10584,10 @@
   "why": "(actor, def, id, priority): clears the old anims, then one UiAnim per def entry {object, loop} (UiAnim::init 0x249550 on data->objects[object]) and sets each track's loop byte +0xc; only caller addAnimSet with data+0x24[actorId]"
  },
  "00249130": {
-  "name": "UiAnim::getText",
+  "name": "UiAnim::getAnchor",
   "tag": "game-inferred",
   "was": "FUN_00249130",
-  "why": "the first non-null answer of the tracks' slot 3 (+0x14; base 0x243360 answers 0, overrides answer a pointer into the record, e.g. +0x28 that 0x24baa0 draws through 0x251350); create uses it"
+  "why": "the first non-null track getAnchor: a float xy UiWidget::create offsets widgets by (was read as getText)"
  },
  "002491c0": {
   "name": "UiAnim::setFrame",
@@ -10600,6 +10612,492 @@
   "tag": "game-inferred",
   "was": "FUN_00249550",
   "why": "(anim, data, object, object index): clears the old tracks (virtual deleting dtors, heap free), keeps object at +0 and its index at +4, allocates trackCount (object +0) slots and builds one track per record (object +8 + i*4) by the record's kind (switch: 0x14-byte Vt_00316560 subclasses, 40 vtables 0x316540..0x316a60); only caller UiActor::init"
+ },
+ "0024a720": {
+  "name": "UiOffsetTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0024a720",
+  "why": "Vt_00316540 apply slot; kind 0x2b: apply translates the actor matrix by its +0x14 vec2 (set by widgets)"
+ },
+ "0024a730": {
+  "name": "UiOffsetTrack::~UiOffsetTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024a730",
+  "why": "deleting dtor (slot 0 of Vt_00316540); kind 0x2b: apply translates the actor matrix by its +0x14 vec2 (set by widgets)"
+ },
+ "0024a790": {
+  "name": "UiTargetTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024a790",
+  "why": "Vt_003165a0 draw slot; kinds 0x28/0x29 (+0x14 = 0/1): draw calls UiDrawer::setTargetRegs(+0x14 == 0)"
+ },
+ "0024a7d0": {
+  "name": "UiTargetTrack::~UiTargetTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024a7d0",
+  "why": "deleting dtor (slot 0 of Vt_003165a0); kinds 0x28/0x29 (+0x14 = 0/1): draw calls UiDrawer::setTargetRegs(+0x14 == 0)"
+ },
+ "0024a830": {
+  "name": "UiDestAlphaBlendTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024a830",
+  "why": "Vt_003165c0 draw slot; kind 0x2a: draw = UiDrawer::setBlend(2)"
+ },
+ "0024a840": {
+  "name": "UiDestAlphaBlendTrack::~UiDestAlphaBlendTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024a840",
+  "why": "deleting dtor (slot 0 of Vt_003165c0); kind 0x2a: draw = UiDrawer::setBlend(2)"
+ },
+ "0024a8a0": {
+  "name": "UiAddBlendTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024a8a0",
+  "why": "Vt_003165e0 draw slot; kind 0x1b: draw = UiDrawer::setBlend(1)"
+ },
+ "0024a8b0": {
+  "name": "UiAddBlendTrack::~UiAddBlendTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024a8b0",
+  "why": "deleting dtor (slot 0 of Vt_003165e0); kind 0x1b: draw = UiDrawer::setBlend(1)"
+ },
+ "0024a910": {
+  "name": "UiPresetTrack<5>::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024a910",
+  "why": "Vt_00316600 draw slot; kind 0x14: draw = UiDrawer::setDrawPreset(5)"
+ },
+ "0024a920": {
+  "name": "UiPresetTrack<5>::~UiPresetTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024a920",
+  "why": "deleting dtor (slot 0 of Vt_00316600); kind 0x14: draw = UiDrawer::setDrawPreset(5)"
+ },
+ "0024a980": {
+  "name": "UiPresetTrack<4>::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024a980",
+  "why": "Vt_00316620 draw slot; kind 0x13: setDrawPreset(4)"
+ },
+ "0024a990": {
+  "name": "UiPresetTrack<4>::~UiPresetTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024a990",
+  "why": "deleting dtor (slot 0 of Vt_00316620); kind 0x13: setDrawPreset(4)"
+ },
+ "0024a9f0": {
+  "name": "UiPresetTrack<3>::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024a9f0",
+  "why": "Vt_00316640 draw slot; kind 0x12: setDrawPreset(3)"
+ },
+ "0024aa00": {
+  "name": "UiPresetTrack<3>::~UiPresetTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024aa00",
+  "why": "deleting dtor (slot 0 of Vt_00316640); kind 0x12: setDrawPreset(3)"
+ },
+ "0024aa60": {
+  "name": "UiPresetTrack<2>::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024aa60",
+  "why": "Vt_00316660 draw slot; kind 0x11: setDrawPreset(2)"
+ },
+ "0024aa70": {
+  "name": "UiPresetTrack<2>::~UiPresetTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024aa70",
+  "why": "deleting dtor (slot 0 of Vt_00316660); kind 0x11: setDrawPreset(2)"
+ },
+ "0024aad0": {
+  "name": "UiPresetTrack<1>::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024aad0",
+  "why": "Vt_00316680 draw slot; kind 0x10: setDrawPreset(1)"
+ },
+ "0024aae0": {
+  "name": "UiPresetTrack<1>::~UiPresetTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024aae0",
+  "why": "deleting dtor (slot 0 of Vt_00316680); kind 0x10: setDrawPreset(1)"
+ },
+ "0024ab40": {
+  "name": "UiPresetTrack<0>::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024ab40",
+  "why": "Vt_003166a0 draw slot; kind 0xf: setDrawPreset(0)"
+ },
+ "0024ab50": {
+  "name": "UiPresetTrack<0>::~UiPresetTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024ab50",
+  "why": "deleting dtor (slot 0 of Vt_003166a0); kind 0xf: setDrawPreset(0)"
+ },
+ "0024abb0": {
+  "name": "UiDrawerFlagTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0024abb0",
+  "why": "Vt_003166c0 apply slot; kind 0x26: apply sets UiDrawState +6 (UiDrawer::m_b4)"
+ },
+ "0024abc0": {
+  "name": "UiDrawerFlagTrack::~UiDrawerFlagTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024abc0",
+  "why": "deleting dtor (slot 0 of Vt_003166c0); kind 0x26: apply sets UiDrawState +6 (UiDrawer::m_b4)"
+ },
+ "0024ac20": {
+  "name": "UiLayoutColorTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0024ac20",
+  "why": "Vt_003166e0 apply slot; kind 0x25: apply sets colour 1,1,1,1 and UiDrawState +5"
+ },
+ "0024ac40": {
+  "name": "UiLayoutColorTrack::~UiLayoutColorTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024ac40",
+  "why": "deleting dtor (slot 0 of Vt_003166e0); kind 0x25: apply sets colour 1,1,1,1 and UiDrawState +5"
+ },
+ "0024aca0": {
+  "name": "UiBaseColorTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0024aca0",
+  "why": "Vt_00316700 apply slot; kind 0x1c: apply sets colour 1,1,1,1 and UiDrawState +4"
+ },
+ "0024acc0": {
+  "name": "UiBaseColorTrack::~UiBaseColorTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024acc0",
+  "why": "deleting dtor (slot 0 of Vt_00316700); kind 0x1c: apply sets colour 1,1,1,1 and UiDrawState +4"
+ },
+ "0024ad20": {
+  "name": "UiRotateToTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0024ad20",
+  "why": "Vt_00316720 apply slot; kind 0x1a: apply: angle of the combined matrix + +0x14 + +0x18 (rCharactorPostion camera yaw), wrapped to -pi..pi, rotation, pixel coords"
+ },
+ "0024ae50": {
+  "name": "UiRotateToTrack::~UiRotateToTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024ae50",
+  "why": "deleting dtor (slot 0 of Vt_00316720); kind 0x1a: apply: angle of the combined matrix + +0x14 + +0x18 (rCharactorPostion camera yaw), wrapped to -pi..pi, rotation, pixel coords"
+ },
+ "0024aeb0": {
+  "name": "UiRotateTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0024aeb0",
+  "why": "Vt_00316740 apply slot; kind 0x19: apply: angle of the combined matrix + +0x14 (record +8), wrapped, rotation, pixel coords"
+ },
+ "0024afd0": {
+  "name": "UiRotateTrack::~UiRotateTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024afd0",
+  "why": "deleting dtor (slot 0 of Vt_00316740); kind 0x19: apply: angle of the combined matrix + +0x14 (record +8), wrapped, rotation, pixel coords"
+ },
+ "0024b030": {
+  "name": "UiPinRotTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0024b030",
+  "why": "Vt_00316760 apply slot; kinds 0x16/0x18: as UiPinTrack with a rotation / offset from FUN_00260ab0 (rCharactorPostion)"
+ },
+ "0024b150": {
+  "name": "UiPinRotTrack::~UiPinRotTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024b150",
+  "why": "deleting dtor (slot 0 of Vt_00316760); kinds 0x16/0x18: as UiPinTrack with a rotation / offset from FUN_00260ab0 (rCharactorPostion)"
+ },
+ "0024b1b0": {
+  "name": "UiPinTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0024b1b0",
+  "why": "Vt_00316780 apply slot; kinds 0x15/0x17: apply moves the combined matrix translation (record +8 mode, +0xc/+0x10)"
+ },
+ "0024b2a0": {
+  "name": "UiPinTrack::~UiPinTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024b2a0",
+  "why": "deleting dtor (slot 0 of Vt_00316780); kinds 0x15/0x17: apply moves the combined matrix translation (record +8 mode, +0xc/+0x10)"
+ },
+ "0024b300": {
+  "name": "UiOffsetKeysTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0024b300",
+  "why": "Vt_003167a0 apply slot; kind 0xe: apply adds the key-interpolated rgba (keys {frame, 4 floats}) to the offset colour"
+ },
+ "0024b460": {
+  "name": "UiOffsetKeysTrack::~UiOffsetKeysTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024b460",
+  "why": "deleting dtor (slot 0 of Vt_003167a0); kind 0xe: apply adds the key-interpolated rgba (keys {frame, 4 floats}) to the offset colour"
+ },
+ "0024b4c0": {
+  "name": "UiColorKeysTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0024b4c0",
+  "why": "Vt_003167c0 apply slot; kind 0xd: apply multiplies the colour by the key-interpolated rgba"
+ },
+ "0024b620": {
+  "name": "UiColorKeysTrack::~UiColorKeysTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024b620",
+  "why": "deleting dtor (slot 0 of Vt_003167c0); kind 0xd: apply multiplies the colour by the key-interpolated rgba"
+ },
+ "0024b680": {
+  "name": "UiMatrixKeysTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0024b680",
+  "why": "Vt_003167e0 apply slot; kind 0xc: apply concatenates the key-interpolated matrix (keys {frame, UiMatrix})"
+ },
+ "0024b7c0": {
+  "name": "UiMatrixKeysTrack::~UiMatrixKeysTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024b7c0",
+  "why": "deleting dtor (slot 0 of Vt_003167e0); kind 0xc: apply concatenates the key-interpolated matrix (keys {frame, UiMatrix})"
+ },
+ "0024b820": {
+  "name": "UiOffsetFramesTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0024b820",
+  "why": "Vt_00316800 apply slot; kind 0xb: apply adds the frame rgba (record +8 + frame*0x10) to the offset colour"
+ },
+ "0024b8a0": {
+  "name": "UiOffsetFramesTrack::~UiOffsetFramesTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024b8a0",
+  "why": "deleting dtor (slot 0 of Vt_00316800); kind 0xb: apply adds the frame rgba (record +8 + frame*0x10) to the offset colour"
+ },
+ "0024b900": {
+  "name": "UiColorFramesTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0024b900",
+  "why": "Vt_00316820 apply slot; kind 0xa: apply multiplies the colour by the frame rgba"
+ },
+ "0024b980": {
+  "name": "UiColorFramesTrack::~UiColorFramesTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024b980",
+  "why": "deleting dtor (slot 0 of Vt_00316820); kind 0xa: apply multiplies the colour by the frame rgba"
+ },
+ "0024b9e0": {
+  "name": "UiMatrixFramesTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0024b9e0",
+  "why": "Vt_00316840 apply slot; kind 9: apply concatenates the frame matrix (record +8 + frame*0x18)"
+ },
+ "0024ba40": {
+  "name": "UiMatrixFramesTrack::~UiMatrixFramesTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024ba40",
+  "why": "deleting dtor (slot 0 of Vt_00316840); kind 9: apply concatenates the frame matrix (record +8 + frame*0x18)"
+ },
+ "0024baa0": {
+  "name": "UiTexStripFlatTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024baa0",
+  "why": "Vt_00316860 draw slot; kind 0x24 (: UiTexStripTrack): texture, prim 0x15c with the record colour +0x18, uiDrawTexStripFlat"
+ },
+ "0024bb40": {
+  "name": "UiTexStripFlatTrack::~UiTexStripFlatTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024bb40",
+  "why": "deleting dtor (slot 0 of Vt_00316860); kind 0x24 (: UiTexStripTrack): texture, prim 0x15c with the record colour +0x18, uiDrawTexStripFlat"
+ },
+ "0024bc10": {
+  "name": "UiTexStripTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024bc10",
+  "why": "Vt_00316880 draw slot; kind 8: texture, prim 0x15c (textured gouraud strip), uiDrawTexStripGouraud"
+ },
+ "0024bcb0": {
+  "name": "UiTexStripTrack::~UiTexStripTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024bcb0",
+  "why": "deleting dtor (slot 0 of Vt_00316880); kind 8: texture, prim 0x15c (textured gouraud strip), uiDrawTexStripGouraud"
+ },
+ "0024bd40": {
+  "name": "UiTexTrianglesNoTestTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024bd40",
+  "why": "Vt_003168a0 draw slot; kind 0x27: as UiTexTrianglesTrack between setNoAlphaTest(1) / (0)"
+ },
+ "0024be20": {
+  "name": "UiTexTrianglesNoTestTrack::~UiTexTrianglesNoTestTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024be20",
+  "why": "deleting dtor (slot 0 of Vt_003168a0); kind 0x27: as UiTexTrianglesTrack between setNoAlphaTest(1) / (0)"
+ },
+ "0024beb0": {
+  "name": "UiTexTrianglesFlatTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024beb0",
+  "why": "Vt_003168c0 draw slot; kind 0x23 (: UiTexTrianglesTrack): texture, TEX1, textured tri/fan/strip with the record colour, drawTexFlat"
+ },
+ "0024bf80": {
+  "name": "UiTexTrianglesFlatTrack::~UiTexTrianglesFlatTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024bf80",
+  "why": "deleting dtor (slot 0 of Vt_003168c0); kind 0x23 (: UiTexTrianglesTrack): texture, TEX1, textured tri/fan/strip with the record colour, drawTexFlat"
+ },
+ "0024c050": {
+  "name": "UiTexTrianglesTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024c050",
+  "why": "Vt_003168e0 draw slot; kind 7: texture, TEX1 (record +0x10), textured gouraud tri/fan/strip (record +0x14), drawTexGouraud"
+ },
+ "0024c110": {
+  "name": "UiTexTrianglesTrack::~UiTexTrianglesTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024c110",
+  "why": "deleting dtor (slot 0 of Vt_003168e0); kind 7: texture, TEX1 (record +0x10), textured gouraud tri/fan/strip (record +0x14), drawTexGouraud"
+ },
+ "0024c1a0": {
+  "name": "UiSheetSpriteFlatTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024c1a0",
+  "why": "Vt_00316900 draw slot; kind 0x22 (: UiSheetSpriteTrack): a TimM image of the S2D, frame from FUN_00261d00, flat textured sprite"
+ },
+ "0024c260": {
+  "name": "UiSheetSpriteFlatTrack::~UiSheetSpriteFlatTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024c260",
+  "why": "deleting dtor (slot 0 of Vt_00316900); kind 0x22 (: UiSheetSpriteTrack): a TimM image of the S2D, frame from FUN_00261d00, flat textured sprite"
+ },
+ "0024c2d0": {
+  "name": "UiSheetSpriteTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024c2d0",
+  "why": "Vt_00316920 draw slot; kind 6: TimM image (FUN_0025fe10 relocates it), gouraud textured sprite"
+ },
+ "0024c380": {
+  "name": "UiSheetSpriteTrack::~UiSheetSpriteTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024c380",
+  "why": "deleting dtor (slot 0 of Vt_00316920); kind 6: TimM image (FUN_0025fe10 relocates it), gouraud textured sprite"
+ },
+ "0024c3e0": {
+  "name": "UiTexSpriteFlatTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024c3e0",
+  "why": "Vt_00316940 draw slot; kind 0x21 (: UiTexSpriteTrack): texture, TEX1, textured sprite with the record colour"
+ },
+ "0024c460": {
+  "name": "UiTexSpriteFlatTrack::~UiTexSpriteFlatTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024c460",
+  "why": "deleting dtor (slot 0 of Vt_00316940); kind 0x21 (: UiTexSpriteTrack): texture, TEX1, textured sprite with the record colour"
+ },
+ "0024c530": {
+  "name": "UiTexSpriteTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024c530",
+  "why": "Vt_00316960 draw slot; kind 5: GsTexture of S2D image (record +0xc), TEX1, gouraud textured sprite"
+ },
+ "0024c5a0": {
+  "name": "UiTexSpriteTrack::~UiTexSpriteTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024c5a0",
+  "why": "deleting dtor (slot 0 of Vt_00316960); kind 5: GsTexture of S2D image (record +0xc), TEX1, gouraud textured sprite"
+ },
+ "0024c630": {
+  "name": "UiScissorTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024c630",
+  "why": "Vt_00316980 draw slot; kind 4: record +8 ? setScissor(record +0xc rect) : resetScissor"
+ },
+ "0024c680": {
+  "name": "UiScissorTrack::~UiScissorTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024c680",
+  "why": "deleting dtor (slot 0 of Vt_00316980); kind 4: record +8 ? setScissor(record +0xc rect) : resetScissor"
+ },
+ "0024cb80": {
+  "name": "UiTextTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024cb80",
+  "why": "Vt_003169a0 draw slot; kind 3: a font (0x25fac0) and a wide-char text (fMsg message files), drawn by 0x24eba0"
+ },
+ "0024cbd0": {
+  "name": "UiTextTrack::~UiTextTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024cbd0",
+  "why": "deleting dtor (slot 0 of Vt_003169a0); kind 3: a font (0x25fac0) and a wide-char text (fMsg message files), drawn by 0x24eba0"
+ },
+ "0024cc70": {
+  "name": "UiTrianglesFlatTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024cc70",
+  "why": "Vt_003169c0 draw slot; kind 0x1f: tri/fan/strip (record +8) with the record colour +0xc, drawFlat"
+ },
+ "0024cd10": {
+  "name": "UiTrianglesFlatTrack::~UiTrianglesFlatTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024cd10",
+  "why": "deleting dtor (slot 0 of Vt_003169c0); kind 0x1f: tri/fan/strip (record +8) with the record colour +0xc, drawFlat"
+ },
+ "0024cd80": {
+  "name": "UiTrianglesTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024cd80",
+  "why": "Vt_003169e0 draw slot; kind 2: gouraud tri/fan/strip, drawGouraud"
+ },
+ "0024ce20": {
+  "name": "UiTrianglesTrack::~UiTrianglesTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024ce20",
+  "why": "deleting dtor (slot 0 of Vt_003169e0); kind 2: gouraud tri/fan/strip, drawGouraud"
+ },
+ "0024ce80": {
+  "name": "UiSpriteFlatTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024ce80",
+  "why": "Vt_00316a00 draw slot; kind 0x1e: sprite prim 0x4e with the record colour +8, drawFlat"
+ },
+ "0024ced0": {
+  "name": "UiSpriteFlatTrack::~UiSpriteFlatTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024ced0",
+  "why": "deleting dtor (slot 0 of Vt_00316a00); kind 0x1e: sprite prim 0x4e with the record colour +8, drawFlat"
+ },
+ "0024cf40": {
+  "name": "UiSpriteTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024cf40",
+  "why": "Vt_00316a20 draw slot; kind 1: gouraud sprite prim 0x4e, drawGouraud"
+ },
+ "0024cf90": {
+  "name": "UiSpriteTrack::~UiSpriteTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024cf90",
+  "why": "deleting dtor (slot 0 of Vt_00316a20); kind 1: gouraud sprite prim 0x4e, drawGouraud"
+ },
+ "0024cff0": {
+  "name": "UiLineStripFlatTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024cff0",
+  "why": "Vt_00316a40 draw slot; kind 0x1d: line strip 0x4a (|0x80 antialiased when record +8 bit 0) with the record colour, drawFlat"
+ },
+ "0024d060": {
+  "name": "UiLineStripFlatTrack::~UiLineStripFlatTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024d060",
+  "why": "deleting dtor (slot 0 of Vt_00316a40); kind 0x1d: line strip 0x4a (|0x80 antialiased when record +8 bit 0) with the record colour, drawFlat"
+ },
+ "0024d0d0": {
+  "name": "UiLineStripTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0024d0d0",
+  "why": "Vt_00316a60 draw slot; kind 0: gouraud line strip, drawGouraud"
+ },
+ "0024d140": {
+  "name": "UiLineStripTrack::~UiLineStripTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024d140",
+  "why": "deleting dtor (slot 0 of Vt_00316a60); kind 0: gouraud line strip, drawGouraud"
+ },
+ "0024d1a0": {
+  "name": "UiAnim::findTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0024d1a0",
+  "why": "(anim, kind): the first track whose record kind matches, or null; 7 callers (widgets)"
  },
  "0024d200": {
   "name": "UiTrack::step",
@@ -10631,6 +11129,120 @@
   "was": "FUN_0024d410",
   "why": "Vt_00316580 slot 4 (+0x18), base answers 0; 0x25bae0 answers 1 while its +0x20 object exists, else -1"
  },
+ "0024d420": {
+  "name": "UiTexStripFlatTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d420",
+  "why": "Vt_00316860 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d430": {
+  "name": "UiTexStripTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d430",
+  "why": "Vt_00316880 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d440": {
+  "name": "UiTexTrianglesNoTestTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d440",
+  "why": "Vt_003168a0 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d450": {
+  "name": "UiTexTrianglesFlatTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d450",
+  "why": "Vt_003168c0 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d460": {
+  "name": "UiTexTrianglesTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d460",
+  "why": "Vt_003168e0 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d470": {
+  "name": "UiSheetSpriteFlatTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d470",
+  "why": "Vt_00316900 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d480": {
+  "name": "UiSheetSpriteTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d480",
+  "why": "Vt_00316920 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d490": {
+  "name": "UiTexSpriteFlatTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d490",
+  "why": "Vt_00316940 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d4a0": {
+  "name": "UiTexSpriteTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d4a0",
+  "why": "Vt_00316960 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d4b0": {
+  "name": "UiScissorTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d4b0",
+  "why": "Vt_00316980 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d4c0": {
+  "name": "UiTextTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d4c0",
+  "why": "Vt_003169a0 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d4d0": {
+  "name": "UiTrianglesFlatTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d4d0",
+  "why": "Vt_003169c0 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d4e0": {
+  "name": "UiTrianglesTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d4e0",
+  "why": "Vt_003169e0 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d4f0": {
+  "name": "UiSpriteFlatTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d4f0",
+  "why": "Vt_00316a00 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d500": {
+  "name": "UiSpriteTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d500",
+  "why": "Vt_00316a20 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d510": {
+  "name": "UiLineStripFlatTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d510",
+  "why": "Vt_00316a40 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d520": {
+  "name": "UiLineStripTrack::getAnchor",
+  "tag": "game-inferred",
+  "was": "FUN_0024d520",
+  "why": "Vt_00316a60 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
+ },
+ "0024d530": {
+  "name": "S2dData::getImage",
+  "tag": "game-inferred",
+  "was": "FUN_0024d530",
+  "why": "(data, i): i < +0x48 ? images[i].data (+0x4c, 8-byte entries) : 0"
+ },
+ "0024d570": {
+  "name": "S2dData::getImageEntry",
+  "tag": "game-inferred",
+  "was": "FUN_0024d570",
+  "why": "(data, i): i < +0x48 ? &images[i] : 0"
+ },
  "0024d640": {
   "name": "S2dData::findObject",
   "tag": "game-inferred",
@@ -10661,6 +11273,12 @@
   "was": "FUN_0024df60",
   "why": "(index): the S2D file's string table (+0x40 count, +0x44 pointers), null out of range"
  },
+ "0024dfa0": {
+  "name": "UiMatrix::interpolate",
+  "tag": "game-inferred",
+  "was": "FUN_0024dfa0",
+  "why": "(out, t f12, from, to): decomposes both (atan2) and blends; UiMatrixKeysTrack"
+ },
  "0024e580": {
   "name": "UiMatrix::translate",
   "tag": "game-inferred",
@@ -10685,6 +11303,12 @@
   "was": "FUN_0024e880",
   "why": "1 0 0 / 0 1 0"
  },
+ "0024e8a0": {
+  "name": "UiDrawer::setTargetRegs",
+  "tag": "game-inferred",
+  "was": "FUN_0024e8a0",
+  "why": "(drawer, flag): writes four GS registers from table 0x3076f0 (flag) or 0x307730"
+ },
  "0024e990": {
   "name": "UiDrawer::setMode",
   "tag": "game-inferred",
@@ -10708,6 +11332,12 @@
   "tag": "game-inferred",
   "was": "FUN_0024ea30",
   "why": "builds +0xc4 from the stack top (+0x1c + top +0x7c * 0x18), the screen matrix of mode +0xc0 (0x2fac90 / 0x2facc0) and the translation +0xb8 per pixel mode +0xdc"
+ },
+ "0024f7a0": {
+  "name": "UiDrawer::setTexture",
+  "tag": "game-inferred",
+  "was": "FUN_0024f7a0",
+  "why": "(drawer, tex): flushes, binds the GsTexture (0 = keep), 1; -1 without packet"
  },
  "0024f9e0": {
   "name": "UiDrawer::end",
@@ -10739,11 +11369,113 @@
   "was": "FUN_0024fc20",
   "why": "(drawer, on): byte +0xa8; on saves +0x90 / +0x94 and sets blend 2 (0x24ffa0), off restores them; answers the old byte; UiSequence::draw redraws an actor with it when its offset colour is not zero"
  },
+ "0024fcb0": {
+  "name": "UiDrawer::setGsReg",
+  "tag": "game-inferred",
+  "was": "FUN_0024fcb0",
+  "why": "(drawer, reg, value): A+D write of one GS register (UiTrack kinds pass 0x14 TEX1_1)"
+ },
+ "0024fd40": {
+  "name": "UiDrawer::setPrimColor",
+  "tag": "game-inferred",
+  "was": "FUN_0024fd40",
+  "why": "(drawer, prim, rgba): PRIM (ABE forced by the add pass) and RGBAQ from the rgba times the drawer colour"
+ },
+ "0024fe60": {
+  "name": "UiDrawer::setPrim",
+  "tag": "game-inferred",
+  "was": "FUN_0024fe60",
+  "why": "(drawer, prim): PRIM only (vertex colours follow)"
+ },
+ "0024fef0": {
+  "name": "UiDrawer::setNoAlphaTest",
+  "tag": "game-inferred",
+  "was": "FUN_0024fef0",
+  "why": "(drawer, on): TEST_1 = on ? 0 : 5"
+ },
+ "0024ffa0": {
+  "name": "UiDrawer::setBlend",
+  "tag": "game-inferred",
+  "was": "FUN_0024ffa0",
+  "why": "(drawer, mode +0x94): ALPHA_1 0x44 normal / 0x48 add / 0x58 add by dest alpha / 0x54 blend by dest alpha"
+ },
+ "00250130": {
+  "name": "UiDrawer::setDrawPreset",
+  "tag": "game-inferred",
+  "was": "FUN_00250130",
+  "why": "(drawer, preset +0x90 0..6): one of the gfx state calls 0x230980..0x231090 (meaning unread), resets the blend"
+ },
+ "00250520": {
+  "name": "UiDrawer::setScissor",
+  "tag": "game-inferred",
+  "was": "FUN_00250520",
+  "why": "(drawer, rect): SCISSOR_1 from two transformed corners, clamped -256..255 around 0x100"
+ },
+ "002506c0": {
+  "name": "UiDrawer::resetScissor",
+  "tag": "game-inferred",
+  "was": "FUN_002506c0",
+  "why": "(drawer): SCISSOR_1 of the current draw env"
+ },
+ "00251350": {
+  "name": "uiDrawTexStripFlat",
+  "tag": "game-inferred",
+  "was": "FUN_00251350",
+  "why": "(mode, drawer, verts, count, const 0x2fac80): kind 0x24 textured strip mesh, one colour"
+ },
+ "002519a0": {
+  "name": "uiDrawTexStripGouraud",
+  "tag": "game-inferred",
+  "was": "FUN_002519a0",
+  "why": "(mode, drawer, verts, count, const 0x2fac70): kind 8 textured strip mesh, vertex colours"
+ },
+ "00252040": {
+  "name": "UiDrawer::drawTexFlat",
+  "tag": "game-inferred",
+  "was": "FUN_00252040",
+  "why": "(drawer, verts {uv, xy}, count, 0): textured, one colour"
+ },
+ "00252260": {
+  "name": "UiDrawer::drawTexGouraud",
+  "tag": "game-inferred",
+  "was": "FUN_00252260",
+  "why": "(drawer, verts {rgba, uv, xy}, count, 0): textured, vertex-coloured"
+ },
+ "002524a0": {
+  "name": "UiDrawer::drawGouraud",
+  "tag": "game-inferred",
+  "was": "FUN_002524a0",
+  "why": "(drawer, verts {rgba, xy}, count, 0): untextured vertex-coloured"
+ },
+ "00252680": {
+  "name": "UiDrawer::drawFlat",
+  "tag": "game-inferred",
+  "was": "FUN_00252680",
+  "why": "(drawer, verts xy, count, 0): untextured vertices in one colour (after setPrimColor)"
+ },
  "0025e260": {
   "name": "UiWidget::create",
   "tag": "game-inferred",
   "was": "FUN_0025e260",
   "why": "(seq, def, layout, arg): builds a widget from a 0x30-byte S2D widget def into the sequence (the Vt_00316a90.. classes' factory, after their constructors); runCommands op 9"
+ },
+ "0025fa50": {
+  "name": "UiFont::~UiFont",
+  "tag": "game-inferred",
+  "was": "FUN_0025fa50",
+  "why": "deleting dtor (font, 1), called by UiTextTrack::~UiTextTrack 0x24cbd0"
+ },
+ "0025fac0": {
+  "name": "UiFont::UiFont",
+  "tag": "game-inferred",
+  "was": "FUN_0025fac0",
+  "why": "(font 0x14, glyphs, image): +0 glyphs, +4 new GsTexture(image) (0x60, 0x231360), +8 text 0, +0xc 2.0f, +0x10 0; built by UiAnim::init for UiTextTrack (kind 3)"
+ },
+ "0025fe10": {
+  "name": "timSheetRelocate",
+  "tag": "game-inferred",
+  "was": "FUN_0025fe10",
+  "why": "(image): once (+4 flag), for magic TimM: +0x18 table (+0x14 entries) and +0x24 pairs (+0x20) made pointers from bases +0x1c / +0x28 / +0x2c; true when TimM; UiAnim::init kinds 6 / 0x22"
  },
  "0025ff40": {
   "name": "UiLayout::playSound",
@@ -10780,6 +11512,18 @@
   "tag": "game-inferred",
   "was": "FUN_002604a0",
   "why": "(name, arg, seq): looks name up in a table of state names (0x599490, gp count) and tests options, stage state, stage result; condition kind 6"
+ },
+ "00260a20": {
+  "name": "UiRotateToTrack::bindTarget",
+  "tag": "game-inferred",
+  "was": "FUN_00260a20",
+  "why": "(track, name): name == rCharactorPostion -> +0x18 = FUN_001339c0(pi - camera yaw (gp-0x7a7c obj +0x78 +0x168)), pi/2 without the object; else 0; UiAnim::init kind 0x1a"
+ },
+ "00260ab0": {
+  "name": "UiPinRotTrack::bindTarget",
+  "tag": "game-inferred",
+  "was": "FUN_00260ab0",
+  "why": "(track, name): name == rCharactorPostion -> +0x14 / +0x18 = camera x, -z (+0x150 / +0x154) * 0.1 (5000 default), +0x1c the yaw as bindTarget of kind 0x1a; else 0, 0, 0; UiAnim::init kinds 0x16 / 0x18"
  },
  "00262df0": {
   "name": "getStagePackData",
