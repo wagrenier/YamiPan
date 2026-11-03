@@ -818,10 +818,25 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    only from where the update sets them; `isStopped` also accepts a SoundStream state 5 no code sets
    (kept); `setEffectsPaused(true)` gives a paused handle `setAttr`, which the player ignores for
    paused handles (kept); a source's +0x100 / +0x108 / +0x115 are all that is declared of its class.
-   **Next run (the same TU)**: the update 0x1d5580 with 0x1d56a0 (channels) and 0x1d5e40 (slots) --
-   the frontier's StageScene::update / drawPaused call it --, then the cue queries 0x1d46e0..0x1d5510
-   (the stream def / owner types: name them first), the source class 0x1d6bd0 / 0x1d6d10 / 0x1d3e90,
-   0x1d70e0, 0x1d73b0, 0x1d79c0 / 0x1d7a30. Decide 0x1d3d20 (before) and 0x1d7c50..0x1d85c0 (after).
+   2026-11-03 run 2 (batch 076, 19 names): **27 written**, still `partial`: the update 0x1d5580 with
+   `updateSlots` 0x1d5e40 and `updateChannels` 0x1d56a0, `stageSoundLocateFacing` 0x1d7a30 /
+   `stageSoundLocate` 0x1d79c0; SoundTrack / SePlayer got their placed play / placement / update /
+   pause / attr methods, StageScene `raycast` / `getSoundAttr` / `fade` (+0xfc), new stand-ins
+   `BoneNode`, `StageModel`, `StageNode`, `StageFade`, `StageCollisionFace`, `StageObjRecord`
+   (`gStageObjRecords`, bss 0x539b10). Doubts for the user: **`StageObject::m_name` shrunk from
+   0x1e0 to 0x10** (a character's model pointer is at +0x30, the raycast reads +0x34 / +0x37 of
+   scene objects; item names are ItemDef's 0x10) -- if some object's name is longer, the stand-in
+   has to split by family; `StageFade::isFullInMode2` (0x1512a0) and the class are guesses (mode 2,
+   level 1.0); the update's a2 / a3 are called playerFlag (StagePlayer 0x214f60: a motion state
+   0x11 / 0x2a, or 0x1fe800 of the party for the scene's player) and sceneFlag (StageScene
+   0x19b900) -- what they mean in the game (sightjack?) is unread; listener kinds 9 / 0xb and record
+   kind 0xf are unidentified; `getSoundAttr` (0x284190's area grid) passed as the sound attr is
+   probably reverb. PC guards: updateChannels returns on a null listener (the ROM dereferences it),
+   stageSoundLocateFacing skips an out-of-range record index (the ROM reads address 0x10).
+   **Next run (the same TU)**: the cue queries 0x1d46e0..0x1d5510 (0x1d4c10 / 0x1d4d30 set a cue:
+   def = the SeEntry run, source = the owner's bn_head bone value, variant cycled by def +0x2f or
+   random by +0x24), the source class 0x1d6bd0 / 0x1d6d10 / 0x1d3e90, 0x1d70e0, 0x1d73b0. Decide
+   0x1d3d20 (before) and 0x1d7c50..0x1d85c0 (after).
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

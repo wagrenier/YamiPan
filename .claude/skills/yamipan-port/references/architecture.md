@@ -1322,12 +1322,29 @@ While turned down `playNamed` plays only resumable effects, started paused; `pla
 (UiLayout::playSound) always plays, unscaled. `SoundTrack` (0x90, the player's run 0x2908d0.., not
 cut) is a `SoundStream` with a name (default "snd" 0x309778), an fsm subtitle file (+0x7c) and an
 **StDT** stream table (+0x60, relocated once by `setTable` 0x290d60); 0x19d9e0 hands the four
-streams the stage's files (`setSubtitles` / `setStreamName` / `setStreamTable`). Not written: the
-update 0x1d5580 (StageScene::update / drawPaused, 0x287f20: a1 / a2 to +0xc / +0xd) with its two
-halves 0x1d56a0 (channels: the music angle from the listener, `atan2Octant`, the stream def's range
-+0x10, scene raycasts 0x198170 with masks 0x200 / 0x600 in 0x1d4e70) and 0x1d5e40 (slots), the cue
+streams the stage's files (`setSubtitles` / `setStreamName` / `setStreamTable`). **The update**
+`StageSound::update` 0x1d5580 (StageScene::update / drawPaused, 0x287f20 while settling; a1 the
+listener = the active character, a2 playerFlag from StagePlayer 0x214f60, a3 sceneFlag from
+StageScene 0x19b900, kept in +0xc / +0xd; +0xe the sound attr `StageScene::getSoundAttr` 0x19ae10 at
+the listener, a Kind9 listener's from its +0x300 object's "bn_head" bone via `BoneNode::find`
+0x177270) runs `updateSlots` 0x1d5e40 (SePlayer::update, frees ended slots, +0x300 / +0x304
+recomputed, the turn-down settles when the master fade (+0x90 -1) is done, then every positional
+source: pan / distance from `stageSoundLocateFacing` 0x1d7a30, ratio = distance / `SeEntry::range`
++0x10, beyond 1 stopped unless resumable (then clamped), `SeEntry::placed` +0x1c sounds through
+`SePlayer::playPlaced` 0x292520 / `setPlacement` 0x2931b0, the alternate variant `+0x2e` entries on
+when the flag the source follows (+0x114: scene, else player) is set, a change restarts it) and
+`updateChannels` 0x1d56a0 (channel state follows the SoundTrack; music starts the next cue with
+`playEntry` 0x291370 and a fade of fadeFrames * 25 / 30; cue streams 2 / 3 are placed at their source
+bone with `playPlaced` 0x290fd0 / `setPlacement` 0x291770, occluded by `StageScene::raycast` 0x198170
+(mask 0xe42600f, flags 0x200, a face without flag 0x400 blocks: ratio 1.1, a thin one doubles the
+distance unless a second ray, flags 0x600, hits too); a player-flag change stops a cue and restarts it
+from the position stopped at; playing / paused channels pause (fade 12, SoundFadeEnd_Pause) when
+turned down -- music only when muted -- and resume unless `StageFade::isFullInMode2` 0x1512a0 of scene
++0xfc). Pan = -(angle to the sound - listener facing), facing = atan2Octant(matrix row 1 x, y); a
+Kind11 listener whose +0x300 object's record (bss 0x539b10 [difficulty][m_itemDef], 0xfc each) has
+kind 0xf divides the distance by clamp(1 - (pi/4)/|pan|, 0.4, 1) * 2.5. Not written: the cue
 queries 0x1d46e0..0x1d5510, the sources 0x1d6bd0 / 0x1d6d10 / 0x1d3e90, 0x1d70e0 (0x19d9e0: an SE
-table swap), 0x1d73b0, 0x1d79c0 / 0x1d7a30 (angle helpers, getStageSelect). 0x1d3d20 before the file
+table swap), 0x1d73b0. 0x1d3d20 before the file
 (a {records of 0x1c, short count} name lookup, eight callers elsewhere) and 0x1d7c50.. after it
 (inline virtuals of vtables 0x315a50 / 0x315a80, math helpers to ~0x1d85c0) are unplaced.
 

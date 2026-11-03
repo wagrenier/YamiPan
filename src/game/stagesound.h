@@ -14,19 +14,26 @@
  *  done the update pauses the resumable effects (StageSoundState_Down) and
  *  turning it back up resumes them. The music channels fade to half.
  *
- *  The file name is the port's (no source string). The update
- *  (0x1d5580 / 0x1d56a0 / 0x1d5e40), the stream cues 0x1d46e0..0x1d5510,
- *  the positional sources (0x1d6bd0 / 0x1d6d10, dtor 0x1d3e90) and
- *  0x1d70e0 / 0x1d73b0 / 0x1d79c0 / 0x1d7a30 are not written yet.
+ *  The update (once a frame, from StageScene) places every positional
+ *  sound around the listener (the active character): pan from its facing,
+ *  volume from the distance over the entry's range; a cue stream behind a
+ *  wall counts as out of range, behind a thin one at twice the distance.
+ *
+ *  The file name is the port's (no source string). The stream cues
+ *  0x1d46e0..0x1d5510, the positional sources (0x1d6bd0 / 0x1d6d10, dtor
+ *  0x1d3e90) and 0x1d70e0 / 0x1d73b0 are not written yet.
  * ======================================================================== */
 #ifndef _GAME_STAGESOUND_H
 #define _GAME_STAGESOUND_H
 
+#include "sdk/libvu0.h"     /* sceVu0FVECTOR */
 #include "sdk/scetypes.h"
 
 class SePlayer;                 // game/gamehooks.h
 struct SeEntry;                 // game/gamehooks.h
 class SoundTrack;               // game/gamehooks.h
+class StageNode;                // game/gamehooks.h
+class StageObject;              // game/gamehooks.h
 class StageSound;
 
 // The handle SePlayer::play answers: -1 none; bit 60 set while paused
@@ -90,15 +97,25 @@ struct StageEffect
 // 0x315a20 over the base 0x315a80, whose dtor is 0x1865c0) and deleted
 // through its virtual slot 2. Stand-in: only what is read here; its slots
 // 0 / 1 / 3..6 (0x186a00 / 0x186a10 / 0x186a20 / 0x186a30 / 0x1d7ce0 /
-// 0x1d8420) are not declared.
-// layout: host -- EE: vptr +0, +0x100 handle, +0x108 entry, +0x115 stopped.
+// 0x1d8420) are not declared as virtuals: the two the update calls are
+// plain stubs until their TU (the same slots as the StageNode stand-in).
+// layout: host -- EE: vptr +0, +0x4, +0x100 handle, +0x108 entry, +0x110
+// variant, +0x114 bySceneFlag, +0x115 stopped.
 class StageSoundSource
 {
 public:
     virtual ~StageSoundSource();                                         // FS2 0x001d3e90: slot 2 (+0x10), deleting
+    // Slot 4 (vtable +0x18, 0x186a30): its matrix (this +0xc0), row 3 the
+    // position.
+    const sceVu0FVECTOR *getWorldMatrix();                               // FS2 vtable +0x18
+    // Slot 6 (vtable +0x20, 0x1d8420): rebuilds the matrix.
+    void updateMatrix();                                                 // FS2 vtable +0x20
 
-    SeHandle       m_handle;    // FS2 +0x100
-    const SeEntry *m_entry;     // FS2 +0x108
+    int            _04;         // FS2 +0x004: 0 until its matrix is built (the update calls updateMatrix)
+    SeHandle       m_handle;    // FS2 +0x100: -1 not playing (yet)
+    const SeEntry *m_entry;     // FS2 +0x108: the first of its variants
+    int            m_variant;   // FS2 +0x110: the entry played (m_entry[m_variant])
+    u_char         m_bySceneFlag; // FS2 +0x114: its alternate follows the scene flag, else the player flag
     bool           m_stopped;   // FS2 +0x115
 };
 
@@ -120,16 +137,14 @@ struct StageSoundSlot
 
 // What a stream channel plays or will play next: set by the stage objects'
 // cues (0x1d4c10 / 0x1d4d30), started by the update. EE 0x18.
-// layout: host -- EE six words; what source / def / owner are is unread
-// (def has a priority short at +0x2c and a range float at +0x10, owner a
-// position through its virtual slot +0x14).
+// layout: host -- EE six words.
 struct StageStreamCue
 {
-    void       *source;         // FS2 +0x00: from 0x177270(owner +0x30 +0x14, 0x303178)
-    const void *def;            // FS2 +0x04
-    void       *owner;          // FS2 +0x08
-    int         variant;        // FS2 +0x0c: the def's request index (cycled or random)
-    int         _10;            // FS2 +0x10
+    StageNode  *source;         // FS2 +0x00: the owner's head bone (BoneNode::find(owner model, "bn_head"))
+    SeEntry    *def;            // FS2 +0x04: the first of its variants (range +0x10)
+    StageObject *owner;         // FS2 +0x08
+    int         variant;        // FS2 +0x0c: def[variant] plays (cycled or random)
+    int         resumeAt;       // FS2 +0x10: the start position (a stream stopped for a restart)
     int         fadeFrames;     // FS2 +0x14: fade-in, 30 fps frames (scaled by 25 / 30)
 
     void clear();                                                        // FS2 0x001d7690
@@ -181,6 +196,14 @@ public:
     // (0x287f20 polls it).
     bool isSettled();                                                    // FS2 0x001d4130
 
+    // Once a frame (StageScene::update / drawPaused, 0x287f20): frees the
+    // ended effects, settles the turn-down, places the sources and the cue
+    // streams around listener (null: the sources are not placed),
+    // starts / pauses / resumes the channels. playerFlag (StagePlayer
+    // 0x214f60) and sceneFlag (StageScene 0x19b900) pick the alternate
+    // entries; a change restarts what follows it.
+    void update(StageObject *listener, u_char playerFlag, u_char sceneFlag); // FS2 0x001d5580
+
     // Plays the effect called name at a volume 0..1; while the sound is
     // turned down only resumable effects play, started paused.
     void playNamed(const char *name, float volume);                      // FS2 0x001d6a80
@@ -201,6 +224,9 @@ public:
 
 private:
     StageEffect *playEffect(float left, float right, const char *name, bool always); // FS2 0x001d66e0
+    // The update's halves.
+    void updateSlots(StageObject *listener, u_char playerFlag, u_char sceneFlag, u_char attr); // FS2 0x001d5e40
+    void updateChannels(StageObject *listener, u_char playerFlag, u_char attr);                // FS2 0x001d56a0
 
     // Inline in the ROM.
     bool isTurnedDown() const
@@ -215,9 +241,9 @@ public:
     int                _00 = 0;         // FS2 +0x000: unread
     int                _04 = 0;         // FS2 +0x004: unread
     SePlayer          *m_player;        // FS2 +0x008: new / delete (0x1298)
-    u_char             m_b0c;           // FS2 +0x00c: set by the update 0x1d5580 (a1), unread
-    u_char             m_b0d;           // FS2 +0x00d: set by the update 0x1d5580 (a2), unread
-    u_char             m_effectAttr;    // FS2 +0x00e: the attr setEffectsPaused(true) gives a paused source
+    u_char             m_playerFlag;    // FS2 +0x00c: the update's playerFlag, last frame
+    u_char             m_sceneFlag;     // FS2 +0x00d: the update's sceneFlag, last frame
+    u_char             m_effectAttr;    // FS2 +0x00e: the sound attr at the listener (StageScene::getSoundAttr), last frame
     StageStreamChannel m_channels[kStageSoundChannels];     // FS2 +0x010
     StageSoundSlot     m_slots[kStageSoundSlots];           // FS2 +0x100
     int                m_freeHint;      // FS2 +0x300: where the free-slot search starts
@@ -226,5 +252,15 @@ public:
     int                m_state;         // FS2 +0x30c: StageSoundState
     int                m_downReason;    // FS2 +0x310: StageSoundDownReason
 };
+
+// The distance from listener to pos (its matrix's position), and in pan
+// the angle to pos from the listener's facing (radians, the sign
+// flipped). A Kind11 listener whose m_linked record muffles hears a sound
+// to its side closer, ahead farther (the distance over
+// clamp(1 - (pi/4) / |pan|, 0.4, 1) * 2.5).
+float stageSoundLocateFacing(float facing, float *pan, const sceVu0FVECTOR pos,
+                             StageObject *listener);                     // FS2 0x001d7a30
+// stageSoundLocateFacing with the listener's own facing.
+float stageSoundLocate(float *pan, const sceVu0FVECTOR pos, StageObject *listener); // FS2 0x001d79c0
 
 #endif /* _GAME_STAGESOUND_H */

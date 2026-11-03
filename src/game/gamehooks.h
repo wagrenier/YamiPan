@@ -27,6 +27,7 @@
 #include "game/uilayout.h"
 #include "rx/rxfile.h"
 #include "sdk/libvifpk.h"
+#include "sdk/libvu0.h"     /* sceVu0FVECTOR */
 #include "sdk/scetypes.h"
 #include "sound/sound.h"
 
@@ -140,11 +141,52 @@ public:
 
 // StageSound moved to game/stagesound.h (game/stagesound.cpp).
 
-// StageObject::getKind: the ones game/uigame.cpp tests.
+// StageObject::getKind: the ones game/uigame.cpp and StageSound test.
 enum StageObjectKind
 {
     StageObject_Door   = 2,     // StageObject::m_doorState is read
+    StageObject_Kind9  = 9,     // a listener that hears from its m_linked's head (unidentified)
+    StageObject_Kind11 = 0xb,   // a listener whose m_linked record may muffle (unidentified)
     StageObject_Kind21 = 0x15,  // left out of the inventory (unidentified)
+};
+
+// A model's bone map node (0x177270's tree: {value, key, left, right},
+// sorted by strcmp; the same shape as StageNameNode). Only find is used.
+// layout: host -- EE 0x10 (four words).
+class StageNode;
+struct BoneNode
+{
+    // The node for key under node (null: empty); a node without a value
+    // counts as missing.
+    static BoneNode *find(BoneNode *node, const char *key);              // FS2 0x00177270
+
+    StageNode  *value;          // FS2 +0x0: the bone
+    const char *key;            // FS2 +0x4
+    BoneNode   *left;           // FS2 +0x8
+    BoneNode   *right;          // FS2 +0xc
+};
+
+// A character's model (the object's +0x30). Only the bone map's root.
+// layout: host -- EE: +0x14 the root.
+struct StageModel
+{
+    u_char    _00[0x14];
+    BoneNode *bones;            // FS2 +0x14: StageSound finds "bn_head" in it
+};
+
+// The scene-node family of the run 0x17fce0.. (base vtable 0x315a80, dtor
+// 0x1865c0): bones, StageSound's positional sources. Stand-in: what
+// StageSound calls; the virtuals are plain stubs until their TU.
+// layout: host -- EE: vptr at +0, a matrix at +0xc0 (0x186a20 / 0x186a30).
+class StageNode
+{
+public:
+    // Slot 3 / 4 (vtable +0x14 / +0x18): the node's matrix, rows 0..2 the
+    // axes, row 3 the position (both this +0xc0 in 0x315a80).
+    const sceVu0FVECTOR *getMatrix();                                    // FS2 vtable +0x14
+    const sceVu0FVECTOR *getWorldMatrix();                               // FS2 vtable +0x18
+    // Slot 6 (vtable +0x20): rebuilds the matrix (0x1d8420 in 0x315a20).
+    void updateMatrix();                                                 // FS2 vtable +0x20
 };
 
 // StageObject::m_doorState (a door's +0x2a8). The S2D asks for it as
@@ -170,16 +212,25 @@ public:
     // The deleting dtor (slot 2, flag 1: StageObjectList's teardown); a
     // plain stub until its TU.
     void destroy();                                                      // FS2 vtable +0x10
+    // Slot 3 (vtable +0x14): the object's matrix, row 1 its facing axis,
+    // row 3 its position (StageSound's listener); a plain stub until its TU.
+    const sceVu0FVECTOR *getMatrix();                                    // FS2 vtable +0x14
 
     u_char _000[0x20];
-    char   m_name[0x1e0];       // FS2 +0x020: an item's / weapon's name (an ItemDef name)
-    int    m_itemDef;           // FS2 +0x200: gItemDefs index
+    // The name ends before +0x30 (a character's model there): 0x10 like an
+    // ItemDef name. Was sized to +0x200 before (open-items.md TU 44).
+    char   m_name[0x10];        // FS2 +0x020: an item's / weapon's name (an ItemDef name), the object's map key
+    StageModel *m_model;        // FS2 +0x030: a character's model (StageSound: its bone map)
+    u_char _034[0x1cc];
+    int    m_itemDef;           // FS2 +0x200: gItemDefs index; gStageObjRecords too (StageSound)
     u_char _204[0x4];
     int    m_id;                // FS2 +0x208: a character's number (StageObjectList::addCharacter)
     int    m_count;             // FS2 +0x20c: an item's count
     u_char _210[0x98];
     int    m_doorState;         // FS2 +0x2a8: a door's StageDoorState
-    u_char _2ac[0x1a8];
+    u_char _2ac[0x54];
+    StageObject *m_linked;      // FS2 +0x300: the object a Kind9 / Kind11 listener hears through (StageSound)
+    u_char _304[0x150];
     int    m_ammoB;             // FS2 +0x454: a firearm's (findSprite's second number)
     int    m_ammoA;             // FS2 +0x458: a firearm's (the first)
 };
@@ -270,6 +321,29 @@ public:
 class Clock;                    // game/clock.h
 class StageFiles;
 
+// What StageScene::raycast answers (from 0x233810). Only the flag
+// StageSound tests.
+// layout: host -- EE: +0x40 flags.
+enum StageCollisionFlag
+{
+    StageCollision_Thin = 0x400,    // sound passes once (StageSound: twice the distance)
+};
+struct StageCollisionFace
+{
+    u_char _00[0x40];
+    u_int  flags;               // FS2 +0x40: StageCollisionFlag
+};
+
+// The scene's fade (StageScene +0xfc; 0x1512a0 / 0x1512e0 in the run
+// unassigned@00148db0). Class and mode meaning are guesses.
+// layout: host -- EE: +0x24 level, +0x34 mode.
+class StageFade
+{
+public:
+    // Mode 2 at level 1.0 (StageSound does not resume a cue stream then).
+    bool isFullInMode2();                                                // FS2 0x001512a0
+};
+
 // The current stage object (0x130 bytes): built by stageLoad 0x17fb90 for
 // the stage and by stageThread for a sub-scene (game/stageloop.cpp).
 // layout: host -- EE offsets in the comments.
@@ -303,6 +377,16 @@ struct StageScene
     // none.
     int getFloor(StagePlayer *player);                                   // FS2 0x0019aea0
 
+    // The nearest collision face on the segment from..to (hit: where);
+    // null none. mask / flags select what counts (StageSound's values in
+    // game/stagesound.cpp), skip an object left out.
+    StageCollisionFace *raycast(sceVu0FVECTOR hit, const sceVu0FVECTOR from,
+                                const sceVu0FVECTOR to, int arg, u_int mask,
+                                u_int flags, void *skip);                // FS2 0x00198170
+    // The sound attr at pos: inside the area grid of +0xb8 (0x284190).
+    // StageSound hands it to every placed sound (setAttr); reverb likely.
+    bool getSoundAttr(const sceVu0FVECTOR pos);                          // FS2 0x0019ae10
+
     u_char           isSubScene;      // FS2 +0x00: the constructor's first argument
     u_char           _01[0x3];
     int              subSceneRequest; // FS2 +0x04: set: stageThread builds a sub-scene
@@ -321,7 +405,9 @@ struct StageScene
     StageParty      *party;           // FS2 +0x88
     u_char           _8c[0x60];
     StageEvent      *event;           // FS2 +0xec
-    u_char           _f0[0x1c];
+    u_char           _f0[0xc];
+    StageFade       *fade;            // FS2 +0xfc
+    u_char           _100[0xc];
     StageScene      *parent;          // FS2 +0x10c: a sub-scene's (stageThread)
     StageFiles      *files;           // FS2 +0x110: a sub-scene's (stageThread)
 };
@@ -414,6 +500,21 @@ struct ItemDef
 static_assert(sizeof(ItemDef) == 0x20, "ItemDef: EE 0x20");
 extern ItemDef gItemDefs[kItemDefCount];  /* bss 0x574c10 */
 
+// A record table per StageKind (bss 0x539b10: 3 x 0x140 x 0xfc), indexed
+// by an object's m_itemDef; only kind is read (StageSound: 0xf muffles a
+// Kind11 listener). What it describes is unread.
+constexpr int kStageObjRecordSets  = 3;
+constexpr int kStageObjRecordCount = 0x140;
+constexpr int kStageObjRecordMuffles = 0xf;
+struct StageObjRecord
+{
+    u_char _00[0x10];
+    int    kind;                // FS2 +0x10
+    u_char _14[0xe8];
+};
+static_assert(sizeof(StageObjRecord) == 0xfc, "StageObjRecord: EE 0xfc");
+extern StageObjRecord gStageObjRecords[kStageObjRecordSets][kStageObjRecordCount]; /* bss 0x539b10 */
+
 // ItemDef::kind: 2..6 are firearms (they show ammo), 7 and up items the
 // inventory lists; below 7 the weapons' sprite set.
 enum ItemKind
@@ -430,23 +531,32 @@ enum ItemKind
 // An effect (0x30 bytes): SePlayer::play reads its bank (+4), program /
 // note (+0x14 / +0x18), pitch spread (+0x20), id (+0x26), volume (+0x28).
 // +0x1d: resumable (StageSound pauses it while turned down and plays it
-// then; the others do not play while turned down).
+// then; the others do not play while turned down); a placed one also
+// keeps playing at the range's edge beyond it (StageSound::updateSlots).
+// An entry can head a run of variants (the next entries): a stream cue
+// picks one by variants (+0x24), and altOffset (+0x2e) leads a variant to
+// its alternate (StageSound's player / scene flags).
 // layout: host -- EE 0x30 (+0 a 32-bit name pointer).
 struct SeEntry
 {
     const char *name;           // FS2 +0x00: StageSound::stopNamed compares it
     int         bank;           // FS2 +0x04
-    u_char      _08[0xc];       // FS2 +0x08
+    u_char      _08[0x8];       // FS2 +0x08
+    float       range;          // FS2 +0x10: a placed sound's reach; 0 everywhere
     int         program;        // FS2 +0x14
     int         note;           // FS2 +0x18
-    u_char      _1c;            // FS2 +0x1c
+    u_char      placed;         // FS2 +0x1c: positional (pan and distance volume)
     u_char      resumable;      // FS2 +0x1d
     u_char      _1e[2];         // FS2 +0x1e
     float       pitchSpread;    // FS2 +0x20
-    u_char      _24[2];         // FS2 +0x24
+    signed char variants;       // FS2 +0x24: a cue's variant count; < 0 picked at random
+    u_char      _25;            // FS2 +0x25
     short       id;             // FS2 +0x26
     u_char      volume;         // FS2 +0x28: 0..0x80, scales left / right
-    u_char      _29[7];         // FS2 +0x29
+    u_char      falloff;        // FS2 +0x29: the distance curve (0x283df0)
+    u_char      _2a[4];         // FS2 +0x2a
+    signed char altOffset;      // FS2 +0x2e: entries to the alternate, 0 none
+    u_char      cycle;          // FS2 +0x2f: a cue's next variant when cycled
 };
 
 // The effect table's name index, sorted by name.
@@ -530,9 +640,20 @@ public:
     int      setAttr(SeHandle handle, int attr);                         // FS2 0x00291ac0
     // Fades the master volume from from to to over frames (0: at once).
     void     fadeMaster(int frames, int from, int to);                   // FS2 0x00292360
+    // Once a frame: steps the master fade, frees the ended voices.
+    void     update();                                                   // FS2 0x00293440
+    // Plays an entry placed at pan (radians from ahead) and ratio (the
+    // distance over its range, 0..1): -2 beyond 1, -1 no entry.
+    SeHandle playPlaced(float pan, float ratio, const SeEntry *se, int volume, int flag); // FS2 0x00292520
+    // Moves a playing handle to pan / ratio.
+    int      setPlacement(float pan, float ratio, SeHandle handle, int volume);         // FS2 0x002931b0
 
     SeTable *m_table;           // FS2 +0x00
     int      m_masterVolume;    // FS2 +0x84: 0..0x80
+    int      m_masterFadeFrom;  // FS2 +0x88
+    int      m_masterFadeTo;    // FS2 +0x8c
+    int      m_masterFadeFrames; // FS2 +0x90: -1 not fading
+    int      m_masterFadeFrame; // FS2 +0x94
 };
 
 // A SoundStream with a name, an fsm subtitle file and an StDT stream table
@@ -550,6 +671,21 @@ public:
     bool isActive();                                                     // FS2 0x002916c0
     // Stops it; the position it stopped at, -1 not playing.
     int  stop();                                                         // FS2 0x002916f0
+    // Once a frame: notes the start, then SoundStream::update.
+    void update();                                                       // FS2 0x002918c0
+    // The SoundStream state Paused.
+    bool isPaused();                                                     // FS2 0x002916b0
+    // Plays an entry's request (its bank in the StDT table) at left /
+    // right from start; flag is StageSound's player flag. Already playing:
+    // stops instead, -1.
+    int  playEntry(const SeEntry *se, int left, int right, int start, int flag); // FS2 0x00291370
+    // playEntry placed at pan / ratio (an unplaced entry: playEntry); -2
+    // beyond ratio 1.
+    int  playPlaced(float pan, float ratio, const SeEntry *se, int volume, int start, int flag); // FS2 0x00290fd0
+    // Moves a placed stream to pan / ratio.
+    int  setPlacement(float pan, float ratio, int volume);               // FS2 0x00291770
+    int  setAttr(int attr);                                              // FS2 0x002908d0
+    int  pause(bool on);                                                 // FS2 0x00291a00: answers on
     // false: not an fsm / StDT file.
     bool setSubtitles(void *file);                                       // FS2 0x00290b10
     void setName(const char *name);                                      // FS2 0x00290bb0: a copy; null none

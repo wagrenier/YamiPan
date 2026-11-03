@@ -6317,6 +6317,12 @@
   "was": "FUN_00151290",
   "why": "empty in retail; gameInit calls it right after GameSystem::GameSystem (see debugSysUpdate 0x151270): name a guess"
  },
+ "001512a0": {
+  "name": "StageFade::isFullInMode2",
+  "tag": "game-inferred",
+  "was": "FUN_001512a0",
+  "why": "a0 gStageScene +0xfc: mode +0x34 == 2 and level +0x24 == 1.0 (0x1512e0 the same for mode 1; StageScene 0x195850 ors them); StageSound does not resume a cue stream then. Class and mode meaning are guesses (a screen fade)"
+ },
  "00151f90": {
   "name": "StreamRing::isPrimed",
   "tag": "game-inferred",
@@ -10841,6 +10847,12 @@
   "was": "FUN_00171230",
   "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): sets the driver config 0x537d58 (defaults {1, 1, -1, -1, 0..}), copies it with sdpr2DrvSetConfig and installs the SE driver table 0x2f7a68 at 0x537d30 if none is"
  },
+ "00177270": {
+  "name": "BoneNode::find",
+  "tag": "game-inferred",
+  "was": "FUN_00177270",
+  "why": "a0 a node {object +0, name +4, left +8, right +0xc}, a1 a name: binary search by strcmp; the node whose object is set, null none. StageSound::update finds bn_head (0x303178) under model +0x14"
+ },
  "0017f150": {
   "name": "getStageFiles",
   "tag": "game-inferred",
@@ -11225,6 +11237,12 @@
   "was": "FUN_001963a0",
   "why": "0x2870c0(0x196960(scene)); called once by stageThread between the screens and the first frame"
  },
+ "00198170": {
+  "name": "StageScene::raycast",
+  "tag": "game-inferred",
+  "was": "FUN_00198170",
+  "why": "a0 the scene (gStageScene): a1 hit point out, a2 from, a3 to, t0 0, t1 mask 0xe42600f, t2 flags (0x200 / 0x600), t3 an object to skip; walks the objects (+0x10 list) for the nearest hit (start 3.4e38), returns the hit object (its +0x40 bit 0x400 tested by StageSound)"
+ },
  "00198970": {
   "name": "StageScene::draw",
   "tag": "game-inferred",
@@ -11248,6 +11266,12 @@
   "tag": "game-inferred",
   "was": "FUN_00199f00",
   "why": "strings camera / camview / camview_zoom / camview_snipe / cam_dive / flash / camera_demo; stageLoad and enterSubScene"
+ },
+ "0019ae10": {
+  "name": "StageScene::getSoundAttr",
+  "tag": "game-inferred",
+  "was": "FUN_0019ae10",
+  "why": "a0 the scene, a1 a position: 0x284190(scene +0xb8, pos) != 0 (a point-in-area grid test: min +0x210, max +0x220, cell +0x230); StageSound::update passes it to SePlayer::setAttr / SoundTrack::setAttr for every placed sound (what the area is: unread, reverb likely)"
  },
  "0019aea0": {
   "name": "StageScene::getFloor",
@@ -11363,6 +11387,24 @@
   "was": "FUN_001d44c0",
   "why": "(paused): over the 0x40 slots, the resumable effects (entry +0x1d) still playing: SePlayer pause 0x291d80 or resume 0x291c00 (+ setVolume 0x80 for named ones); a failed call stops it; setMuted / resume / reset pass 0, the update 0x1d5e40 1 when the turn-down finishes"
  },
+ "001d5580": {
+  "name": "StageSound::update",
+  "tag": "game-inferred",
+  "was": "FUN_001d5580",
+  "why": "a0 the StageSound (StageScene::update / drawPaused pass scene +0x24; 0x287f20 polls it with isSettled): a1 the listener object (the active character), a2 / a3 two bytes (StagePlayer 0x214f60, StageScene 0x19b900); the sound attr from gStageScene 0x19ae10 at the listener position (kind 9 with +0x300: that object's bn_head bone), then 0x1d5e40 (slots) and 0x1d56a0 (channels), stores a2 / a3 / attr to +0xc / +0xd / +0xe"
+ },
+ "001d56a0": {
+  "name": "StageSound::updateChannels",
+  "tag": "game-inferred",
+  "was": "FUN_001d56a0",
+  "why": "the update's channel half: per 0x3c channel at +0x10 the SoundTrack update, state +0x38 follows the stream (idle / playing / paused / stopping), starts the next cue (+0x1c), places cue streams 2 / 3 by distance and raycast occlusion (gStageScene 0x198170 masks 0x200 / 0x600), pauses / resumes with the turn-down reason +0x310"
+ },
+ "001d5e40": {
+  "name": "StageSound::updateSlots",
+  "tag": "game-inferred",
+  "was": "FUN_001d5e40",
+  "why": "the update's slot half: SePlayer update 0x293440, frees finished effects / sources, recomputes +0x300 / +0x304, settles the turn-down (state 1 -> 2 pauses the effects; 3 -> 0), then plays / places each positional source (slot kind 1) by distance over the SeEntry range +0x10, the alternate entry (+0x2e) when a2 / a3 asks"
+ },
  "001d66e0": {
   "name": "StageSound::playEffect",
   "tag": "game-inferred",
@@ -11440,6 +11482,18 @@
   "tag": "game-inferred",
   "was": "FUN_001d7750",
   "why": "ctor of the 0x314 object stageThread keeps in gp-0x7a6c and hands StageScene's ctor (the scene +0x24 sound): new 0x1298 SE player at +8, four 0x3c streams from +0x10, state +0x30c"
+ },
+ "001d79c0": {
+  "name": "stageSoundLocate",
+  "tag": "game-inferred",
+  "was": "FUN_001d79c0",
+  "why": "stageSoundLocateFacing with the facing taken from the listener's matrix (atan2Octant(m[1][0], m[1][1])); a0 pan out, a1 position, a2 listener; caller 0x1d4e70"
+ },
+ "001d7a30": {
+  "name": "stageSoundLocateFacing",
+  "tag": "game-inferred",
+  "was": "FUN_001d7a30",
+  "why": "f12 the listener facing, a0 float* pan out, a1 a position vec4, a2 the listener object: distance from the listener matrix (vslot +0x14, +0x30) to the point, pan = -addAngle(atan2Octant(dx, dy), -facing); a listener of kind 0xb whose +0x300 object has record kind 0xf (table 0x539b10) divides the distance by clamp(1 - (pi/4)/|pan|, 0.4, 1) * 2.5"
  },
  "001e66c0": {
   "name": "PlayerMotion::refresh",
@@ -14699,6 +14753,12 @@
   "was": "FUN_00290840",
   "why": "deletes the pack object at 0x31ae60 through its vtable (+0x98 slot 2, flag 1), builds a new 0xf8-byte pack 0x131f00 on 'dataEU/packinitEU.pak' (0x309750), loads it 0x131d70(pack, 0, 0), keeps it at 0x31ae60 and sets 0x31ae64; first call of gameSceneThread"
  },
+ "002908d0": {
+  "name": "SoundTrack::setAttr",
+  "tag": "game-inferred",
+  "was": "FUN_002908d0",
+  "why": "SoundStream::setAttr(a1) while playing / paused with an entry (+0x64); 1 otherwise"
+ },
  "00290b10": {
   "name": "SoundTrack::setSubtitles",
   "tag": "game-inferred",
@@ -14729,6 +14789,24 @@
   "was": "FUN_00290d60",
   "why": "(file): magic StDT -> +0x60 = file, relocates its tables once (+4 set after); false otherwise"
  },
+ "00290fd0": {
+  "name": "SoundTrack::playPlaced",
+  "tag": "game-inferred",
+  "was": "FUN_00290fd0",
+  "why": "f12 pan, f13 distance ratio, a1 SeEntry, a2 volume, a3 start, t0 a byte (StageSound passes the update's a2): an entry without +0x1c plays through playEntry(entry, volume, volume, start, byte); else -2 beyond ratio 1, volume from 0x283df0(ratio, entry +0x29, +0x28) -- the positional twin of playEntry"
+ },
+ "00291370": {
+  "name": "SoundTrack::playEntry",
+  "tag": "game-inferred",
+  "was": "FUN_00291370",
+  "why": "a1 an SeEntry (0x30) whose bank +4 indexes the StDT table +0x60, a2 / a3 left / right scaled by the entry volume +0x28, t0 start position, t1 a byte: stops instead when already playing (-1); the music start of StageSound::updateChannels"
+ },
+ "002916b0": {
+  "name": "SoundTrack::isPaused",
+  "tag": "game-inferred",
+  "was": "FUN_002916b0",
+  "why": "returns SoundStream state +0x10 == 2 (Paused)"
+ },
  "002916c0": {
   "name": "SoundTrack::isActive",
   "tag": "game-inferred",
@@ -14740,6 +14818,24 @@
   "tag": "game-inferred",
   "was": "FUN_002916f0",
   "why": "+0x8c = 0, getPosition, SoundStream::stop(false); answers the position (less half of +0x78 when +0x74), -1 not playing"
+ },
+ "00291770": {
+  "name": "SoundTrack::setPlacement",
+  "tag": "game-inferred",
+  "was": "FUN_00291770",
+  "why": "f12 pan, f13 distance ratio, a1 volume: re-pans a placed stream (SoundStream::setPan with the 0x283df0 distance volume), an unplaced entry gets a plain volume; -1 / -2 not placed / not playing"
+ },
+ "002918c0": {
+  "name": "SoundTrack::update",
+  "tag": "game-inferred",
+  "was": "FUN_002918c0",
+  "why": "a0 the SoundTrack (StageSound channel +0): while playing / paused marks +0x8c once the position (less the +0x78 offset) passes 0, then SoundStream::update"
+ },
+ "00291a00": {
+  "name": "SoundTrack::pause",
+  "tag": "game-inferred",
+  "was": "FUN_00291a00",
+  "why": "SoundStream::pause(a1) and returns a1; StageSound::updateChannels resumes with 0"
  },
  "00291ac0": {
   "name": "SePlayer::setAttr",
@@ -14783,6 +14879,12 @@
   "was": "FUN_00292450",
   "why": "ctor of the 0x1298 effect player: table +0 null, 16 banks +4 / streams +0x44 null, 3 x 0x40 voice records of 0x18 (-1), master volume +0x84 = 0x80, fade +0x88..+0x94"
  },
+ "00292520": {
+  "name": "SePlayer::playPlaced",
+  "tag": "game-inferred",
+  "was": "FUN_00292520",
+  "why": "f12 pan, f13 distance ratio, a1 SeEntry, a2 volume, a3 a flag: -1 no entry, -2 beyond ratio 1, volume 0x283df0(ratio, entry +0x29, +0x28) * a2, random pitch from +0x20 -- the positional play of StageSound::updateSlots"
+ },
  "00292830": {
   "name": "SePlayer::playUnscaled",
   "tag": "game-inferred",
@@ -14806,6 +14908,18 @@
   "tag": "game-inferred",
   "was": "FUN_00292f60",
   "why": "(handle): a paused handle (top nibble set) is true; else the bank's isPlaying / isPanPlaying or the stream's state 1 / 2"
+ },
+ "002931b0": {
+  "name": "SePlayer::setPlacement",
+  "tag": "game-inferred",
+  "was": "FUN_002931b0",
+  "why": "f12 pan, f13 distance ratio, a1 a 64-bit handle, a2 volume: re-pans a playing (unpaused) handle with the 0x283df0 distance volume of its entry"
+ },
+ "00293440": {
+  "name": "SePlayer::update",
+  "tag": "game-inferred",
+  "was": "FUN_00293440",
+  "why": "a0 the SePlayer: steps the master fade (+0x88 from, +0x8c to, +0x90 frames -1 none, +0x94 frame) into +0x84, then frees the voice records (+0x98 / +0x698 / +0xc98) whose bank voice ended"
  },
  "002955d0": {
   "name": "getNaviTable",

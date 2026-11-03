@@ -3,16 +3,50 @@
 
 #include "game/stagesound.h"
 
+#include <math.h>
 #include <string.h>
 
 #include <algorithm>
 
 #include "game/gamehooks.h"
+#include "game/mathutil.h"
+#include "game/stageloop.h"
+#include "game/sysdata.h"
 #include "sound/sound.h"
 
 // isStopped also counts a stream state 5 as stopped; SoundStream never
 // sets it (sound/sound.h's SoundStreamState ends at 4). Kept as the ROM.
 constexpr int kSoundStreamState5 = 5;
+
+// The bone a character hears and is heard from (sdata 0x303178).
+static const char kHeadBone[] = "bn_head";
+
+// A cue's fade-in is given in 30 fps frames; the PAL game runs 25.
+constexpr int kCueFadeFps = 30;
+constexpr int kGameFps    = 25;
+
+// StageScene::raycast's arguments for the cue streams' occlusion: the
+// first ray, then one past a thin wall (meaning of the bits unread).
+constexpr u_int kSoundRayMask       = 0x0e42600f;
+constexpr u_int kSoundRayFlags      = 0x200;
+constexpr u_int kSoundRayFlagsAgain = 0x600;
+
+// A cue stream behind a wall: past its range (the update stops it).
+constexpr float kSoundRatioBlocked = 1.1f;
+
+// The muffled listener's distance scale (stageSoundLocateFacing; the ROM's
+// 0x304df0 / 0x304df8 and an immediate 2.5).
+constexpr float kMuffleMin   = 0.4f;
+constexpr float kMuffleMax   = 1.0f;
+constexpr float kMuffleScale = 2.5f;
+
+// What the channel update finds between the listener and a cue stream.
+enum SoundOcclusion
+{
+    SoundOcclusion_None    = 0,
+    SoundOcclusion_Thin    = 1,     // one thin wall: twice the distance
+    SoundOcclusion_Blocked = 2,     // out of range
+};
 
 // ──────────────────────────────────────────────────────────────────────
 // Slots, cues and channels
@@ -44,7 +78,7 @@ void StageStreamCue::clear()
     def        = nullptr;
     owner      = nullptr;
     variant    = 0;
-    _10        = 0;
+    resumeAt   = 0;
     fadeFrames = 0;
 }
 
@@ -66,7 +100,7 @@ void StageStreamChannel::reset()
 StageSound::StageSound()
 {
     m_player     = new SePlayer();
-    m_b0c        = 0;
+    m_playerFlag = 0;
     m_effectAttr = 0;
     // m_channels / m_slots: their initialisers (the ROM's array loops).
     m_state      = StageSoundState_Normal;
@@ -118,8 +152,8 @@ void StageSound::reset()
     // setMuted(false), inline in the ROM: the state is Normal by now, so
     // only m_downReason changes.
     setMuted(false);
-    m_b0c        = 0;
-    m_b0d        = 0;
+    m_playerFlag = 0;
+    m_sceneFlag  = 0;
     m_effectAttr = 0;
 }
 
@@ -415,4 +449,409 @@ void StageSound::setStreamTable(void *file)
     resetChannels();
     for (int i = 0; i < kStageSoundChannels; i++)
         m_channels[i].stream->setTable(file);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Placing sounds around the listener
+
+// The listener's facing: the angle of its matrix's row 1. Inline in the
+// ROM (stageSoundLocate, the update's halves; they call getMatrix twice).
+static float listenerFacing(StageObject *listener)
+{
+    const sceVu0FVECTOR *m = listener->getMatrix();
+    return atan2Octant(m[1][0], m[1][1]);
+}
+
+// callcheck: getStageSelect, getKind, getMatrix (the listener's virtuals)
+// FS2 0x001d7a30
+float stageSoundLocateFacing(float facing, float *pan, const sceVu0FVECTOR pos,
+                             StageObject *listener)
+{
+    const sceVu0FVECTOR *m = listener->getMatrix();
+    sceVu0FVECTOR d;
+    for (int i = 0; i < 4; i++)
+        d[i] = pos[i] - m[3][i];        // vsub
+    float dist = sqrtf(d[1] * d[1] + d[0] * d[0] + d[2] * d[2]);
+    *pan = -addAngle(atan2Octant(d[0], d[1]), -facing);
+
+    bool muffled = false;
+    if (listener->getKind() == StageObject_Kind11) {
+        StageObject *linked = listener->m_linked;
+        if (linked != nullptr) {
+            int set;
+            switch (getStageSelect()->kind) {
+            case StageKind_Hard:   set = 2; break;
+            case StageKind_Normal: set = 1; break;
+            case StageKind_Easy:   set = 0; break;
+            default:               set = 1; break;
+            }
+            int index = linked->m_itemDef;
+            // PC: the ROM reads the kind at address 0x10 for an index out
+            // of range; none muffles here.
+            if (index >= 0 && index < kStageObjRecordCount)
+                muffled = gStageObjRecords[set][index].kind == kStageObjRecordMuffles;
+        }
+    }
+    if (muffled) {
+        float scale = 1.0f - (kMathPi / 4) / fabsf(*pan);
+        scale = std::min(std::max(scale, kMuffleMin), kMuffleMax);
+        dist /= scale * kMuffleScale;
+    }
+    return dist;
+}
+
+// callcheck: atan2Octant (the inline listenerFacing)
+// FS2 0x001d79c0
+float stageSoundLocate(float *pan, const sceVu0FVECTOR pos, StageObject *listener)
+{
+    return stageSoundLocateFacing(listenerFacing(listener), pan, pos, listener);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The update
+
+// callcheck: getKind, getMatrix, find, getSoundAttr (the listener's virtuals, the bone's)
+// FS2 0x001d5580
+void StageSound::update(StageObject *listener, u_char playerFlag, u_char sceneFlag)
+{
+    u_char attr;
+    if (listener == nullptr) {
+        attr = 0;
+    } else {
+        const sceVu0FVECTOR *m;
+        if (listener->getKind() == StageObject_Kind9 && listener->m_linked != nullptr) {
+            // Hears from the linked object's head. The ROM does not test
+            // the find for null.
+            BoneNode *head = BoneNode::find(listener->m_linked->m_model->bones, kHeadBone);
+            m = head->value->getMatrix();
+        } else {
+            m = listener->getMatrix();
+        }
+        attr = gStageScene->getSoundAttr(m[3]);
+    }
+    updateSlots(listener, playerFlag, sceneFlag, attr);
+    updateChannels(listener, playerFlag, attr);
+    m_playerFlag = playerFlag;
+    m_sceneFlag  = sceneFlag;
+    m_effectAttr = attr;
+}
+
+// The variant a source plays, or its alternate when the flag it follows
+// is set. Inline in the ROM (four copies in updateSlots).
+static const SeEntry *sourceEntry(const StageSoundSource *s, u_char flag)
+{
+    const SeEntry *e = &s->m_entry[s->m_variant];
+    if (flag != 0)
+        e += e->altOffset;
+    return e;
+}
+
+// callcheck: atan2Octant, update, isPlaying, operator_delete, setEffectsPaused, play, playPlaced, setPlacement, setVolume, setAttr, stop, getWorldMatrix, updateMatrix (the inline stopSource / listenerFacing)
+// FS2 0x001d5e40
+void StageSound::updateSlots(StageObject *listener, u_char playerFlag, u_char sceneFlag,
+                             u_char attr)
+{
+    if (m_player->m_table == nullptr)
+        return;
+    m_player->update();
+
+    // Free what ended; the free-slot search starts again at the first free
+    // one.
+    int firstFree = kStageSoundSlots;
+    int last      = -1;
+    for (int i = 0; i < kStageSoundSlots; i++) {
+        StageSoundSlot &slot = m_slots[i];
+        if (slot.kind != StageSoundSlot_Free) {
+            if (slot.kind == StageSoundSlot_Effect) {
+                // An effect without a handle stays (kept as the ROM).
+                StageEffect *e = slot.effect;
+                bool ended = e != nullptr && e->handle >= 0 && !m_player->isPlaying(e->handle);
+                if (ended) {
+                    delete e;
+                    slot.kind = StageSoundSlot_Free;
+                    slot.ptr  = nullptr;
+                }
+            } else {
+                StageSoundSource *s = slot.source;
+                bool ended = s->m_handle < 0 ? s->m_stopped : !m_player->isPlaying(s->m_handle);
+                if (ended) {
+                    if (s != nullptr)
+                        delete s;       // virtual slot 2, deleting
+                    slot.kind = StageSoundSlot_Free;
+                    slot.ptr  = nullptr;
+                }
+            }
+        }
+        if (slot.kind == StageSoundSlot_Free)
+            firstFree = std::min(firstFree, i);
+        else
+            last = std::max(last, i);
+    }
+    m_freeHint = firstFree;
+    m_lastSlot = last;
+
+    // The master fade is done: turned down (the resumable effects pause)
+    // or back up.
+    if (m_player->m_masterFadeFrames < 0) {
+        if (m_player->m_masterVolume == 0) {
+            if (m_state != StageSoundState_Down && m_state == StageSoundState_TurningDown) {
+                m_state = StageSoundState_Down;
+                setEffectsPaused(true);
+            }
+        } else if (m_state == StageSoundState_TurningUp) {
+            m_state = StageSoundState_Normal;
+        }
+    }
+
+    if (listener == nullptr)
+        return;
+
+    // The positional sources.
+    bool sceneFlagChanged  = sceneFlag != m_sceneFlag;
+    bool playerFlagChanged = playerFlag != m_playerFlag;
+    float facing = listenerFacing(listener);
+    int count = m_lastSlot + 1;
+    for (int i = 0; i < count; i++) {
+        if (m_slots[i].kind != StageSoundSlot_Source)
+            continue;
+        StageSoundSource *s = m_slots[i].source;
+        if (s->m_stopped) {
+            m_player->setAttr(s->m_handle, attr);
+            continue;
+        }
+        if (s->_04 == 0)
+            s->updateMatrix();
+        float pan;
+        float dist = stageSoundLocateFacing(facing, &pan, s->getWorldMatrix()[3], listener);
+        const SeEntry *entry = s->m_entry;
+        float ratio = 0.0f;
+        if (entry->range != 0.0f) {
+            ratio = dist / entry->range;
+            if (ratio > 1.0f) {
+                // Out of range: a resumable one plays on at the edge.
+                if (!entry->resumable) {
+                    stopSource(s);
+                    continue;
+                }
+                ratio = 1.0f;
+            }
+        }
+
+        if (!entry->placed) {
+            // Not positional: full volume wherever the listener is.
+            if (s->m_handle < 0) {
+                if (!isTurnedDown()) {
+                    SeHandle handle = m_player->play(&entry[s->m_variant], kSoundVolumeFull,
+                                                     kSoundVolumeFull);
+                    if (handle < 0)
+                        stopSource(s);
+                    else
+                        s->m_handle = handle;
+                }
+            } else {
+                m_player->setVolume(s->m_handle, kSoundVolumeFull, kSoundVolumeFull);
+            }
+        } else if (s->m_handle < 0) {
+            // Not started yet (turned down: waits).
+            if (!isTurnedDown()) {
+                u_char flag = s->m_bySceneFlag ? sceneFlag : playerFlag;
+                SeHandle handle = m_player->playPlaced(pan, ratio, sourceEntry(s, flag),
+                                                       kSoundVolumeFull, 0);
+                if (handle < 0)
+                    stopSource(s);
+                else
+                    s->m_handle = handle;
+            }
+        } else {
+            // Playing: a change of the flag it follows restarts it on the
+            // other entry (a resumable one with an alternate, not while
+            // turned down); else it moves.
+            bool restart = false;
+            if ((playerFlagChanged || sceneFlagChanged) && entry->altOffset != 0 &&
+                entry->resumable && !isTurnedDown())
+                restart = true;
+            bool changed = s->m_bySceneFlag ? sceneFlagChanged : playerFlagChanged;
+            if (restart && changed) {
+                m_player->stop(s->m_handle);
+                u_char flag = s->m_bySceneFlag ? sceneFlag : playerFlag;
+                SeHandle handle = m_player->playPlaced(pan, ratio, sourceEntry(s, flag),
+                                                       kSoundVolumeFull, 0);
+                if (handle < 0)
+                    stopSource(s);      // stops the old handle again: kept as the ROM
+                else
+                    s->m_handle = handle;
+            } else {
+                m_player->setPlacement(pan, std::min(ratio, 1.0f), s->m_handle, kSoundVolumeFull);
+            }
+        }
+        if (s->m_handle >= 0)
+            m_player->setAttr(s->m_handle, attr);
+    }
+}
+
+// callcheck: atan2Octant, update, isPaused, isActive, stop, playEntry, playPlaced, setPlacement, setAttr, pause, startFade, raycast, isFullInMode2, getMatrix, getWorldMatrix (the inline listenerFacing)
+// FS2 0x001d56a0
+void StageSound::updateChannels(StageObject *listener, u_char playerFlag, u_char attr)
+{
+    // PC: the ROM reads the listener's matrix without a null test (a
+    // stage always has its active character here).
+    if (listener == nullptr)
+        return;
+    u_char lastPlayerFlag = m_playerFlag;
+    float facing = listenerFacing(listener);
+
+    for (u_int i = 0; i < kStageSoundChannels; i++) {
+        StageStreamChannel &ch = m_channels[i];
+        SoundTrack *stream = ch.stream;
+        if (stream == nullptr)
+            continue;
+        stream->update();
+        bool isCue = i >= kStageSoundMusicChannels;
+
+        // The channel follows its stream.
+        int streamState = stream->m_state;
+        bool busy = streamState == SoundStream_Playing || streamState == SoundStream_Paused ||
+                    streamState == SoundStream_StopPending;
+        if (!busy) {
+            if (ch.state != StageStreamChannel_Idle)
+                ch.state = StageStreamChannel_Idle;
+        } else if (ch.state == StageStreamChannel_Idle) {
+            // Playing without the channel having started it: a cue stream
+            // only with its cue.
+            bool adopt = true;
+            if (isCue)
+                adopt = ch.cue.source != nullptr && ch.cue.def != nullptr;
+            if (adopt)
+                ch.state = StageStreamChannel_Playing;
+        } else if (!stream->isPaused()) {
+            if (ch.state != StageStreamChannel_Playing &&
+                (ch.state == StageStreamChannel_Paused || ch.state == StageStreamChannel_Starting))
+                ch.state = StageStreamChannel_Playing;
+        } else {
+            switch (ch.state) {
+            case StageStreamChannel_Paused:
+                break;
+            case StageStreamChannel_Stopping:
+                // The fade-out paused it: stop it now.
+                stream->stop();
+                break;
+            default:
+                ch.state = StageStreamChannel_Paused;
+                break;
+            }
+        }
+
+        bool active    = ch.state != StageStreamChannel_Idle;
+        bool startNext = m_downReason == StageSoundDown_None && !active && ch.next.def != nullptr;
+        if (active || startNext) {
+            if (!isCue) {
+                // Music: the next cue starts, fading in.
+                if (startNext) {
+                    int id = stream->playEntry(&ch.next.def[ch.next.variant], kSoundVolumeFull,
+                                               kSoundVolumeFull, 0, 0);
+                    if (id >= 0) {
+                        int fade = ch.next.fadeFrames < 1 ? 0
+                                 : ch.next.fadeFrames * kGameFps / kCueFadeFps;
+                        stream->startFade(fade, 0, kSoundVolumeFull, SoundFadeEnd_None);
+                        ch.state = StageStreamChannel_Starting;
+                        ch.cue   = ch.next;
+                    }
+                    ch.next.clear();
+                }
+            } else {
+                // A cue stream: placed at its source's head.
+                if (startNext)
+                    ch.cue = ch.next;
+                float pan;
+                float dist = stageSoundLocateFacing(facing, &pan,
+                                                    ch.cue.source->getWorldMatrix()[3], listener);
+                float ratio = 0.0f;
+                if (ch.cue.def->range != 0.0f) {
+                    const sceVu0FVECTOR *from = listener->getMatrix();
+                    const sceVu0FVECTOR *to   = ch.cue.source->getWorldMatrix();
+                    int occlusion = SoundOcclusion_None;
+                    sceVu0FVECTOR hit;
+                    StageCollisionFace *face = gStageScene->raycast(hit, from[3], to[3], 0,
+                                                                    kSoundRayMask, kSoundRayFlags,
+                                                                    nullptr);
+                    if (face != nullptr) {
+                        if (!(face->flags & StageCollision_Thin)) {
+                            occlusion = SoundOcclusion_Blocked;
+                        } else {
+                            occlusion = SoundOcclusion_Thin;
+                            sceVu0FVECTOR past;
+                            for (int k = 0; k < 4; k++)
+                                past[k] = hit[k];
+                            if (gStageScene->raycast(hit, past, to[3], 0, kSoundRayMask,
+                                                     kSoundRayFlagsAgain, nullptr) != nullptr)
+                                occlusion = SoundOcclusion_Blocked;
+                        }
+                    }
+                    if (occlusion == SoundOcclusion_Blocked)
+                        ratio = kSoundRatioBlocked;
+                    else if (occlusion == SoundOcclusion_Thin)
+                        ratio = dist * 2.0f / ch.cue.def->range;
+                    else if (occlusion == SoundOcclusion_None)
+                        ratio = dist / ch.cue.def->range;
+                }
+
+                if (startNext) {
+                    // In range: starts where it stopped (resumeAt).
+                    if (ratio <= 1.0f) {
+                        int id = stream->playPlaced(pan, ratio, &ch.next.def[ch.next.variant],
+                                                    kSoundVolumeFull, ch.next.resumeAt,
+                                                    playerFlag);
+                        stream->startFade(0, 0, kSoundVolumeFull, SoundFadeEnd_None);
+                        if (id >= 0) {
+                            ch.state = StageStreamChannel_Starting;
+                            ch.cue   = ch.next;
+                        }
+                    }
+                    ch.next.clear();
+                } else if (lastPlayerFlag == playerFlag || ch.state == StageStreamChannel_Idle ||
+                           ch.state == StageStreamChannel_Stopping) {
+                    if (ratio <= 1.0f) {
+                        stream->setPlacement(pan, ratio, kSoundVolumeFull);
+                    } else {
+                        stream->stop();
+                        ch.state = StageStreamChannel_Stopping;
+                    }
+                } else {
+                    // The player flag changed: stop, and start it again
+                    // from there next frame (playPlaced takes the flag).
+                    int pos = stream->stop();
+                    ch.state = StageStreamChannel_Stopping;
+                    if (pos >= 0) {
+                        ch.next          = ch.cue;
+                        ch.next.resumeAt = pos;
+                    }
+                }
+                if (stream->isActive())
+                    stream->setAttr(attr);
+            }
+        }
+
+        // Playing or paused: follow the turn-down. Music pauses only when
+        // muted (pause fades it to half), the cue streams for any reason.
+        int state = ch.state;
+        if (state != StageStreamChannel_Idle && state != StageStreamChannel_Pausing &&
+            state != StageStreamChannel_Stopping && state != StageStreamChannel_Starting) {
+            bool wantDown = isCue ? m_downReason != StageSoundDown_None
+                                  : m_downReason == StageSoundDown_Muted;
+            if ((state == StageStreamChannel_Paused) != wantDown) {
+                if (!wantDown) {
+                    if (!gStageScene->fade->isFullInMode2()) {
+                        stream->pause(false);
+                        stream->startFade(kStageSoundFadeFrames, 0, kSoundVolumeFull,
+                                          SoundFadeEnd_None);
+                        ch.state = StageStreamChannel_Starting;
+                    }
+                } else {
+                    stream->startFade(kStageSoundFadeFrames, kSoundVolumeFull, 0,
+                                      SoundFadeEnd_Pause);
+                    ch.state = StageStreamChannel_Pausing;
+                }
+            }
+        }
+    }
 }
