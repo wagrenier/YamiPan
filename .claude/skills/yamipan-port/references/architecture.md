@@ -645,8 +645,8 @@ file hooks, states 1 queued / 2 loading / 3 done / 0x80 not found / 0x81 no memo
 names +0x64, 64-bit handles +0x78 (`playSound` 0x25ff40: the stage's StageSound by name in a stage,
 else the menu bank; **`stopSound(-1)` does nothing**: its all-slots branch is dead). The sequence
 side is `game/uisequence.cpp` (next entry); the track factory and its classes are
-`game/uitrack.cpp` (after it); still unassigned: the
-S2D file 0x24d530.., `UiDrawer` 0x24e580..0x250c30, the widget classes 0x25b..0x25e (vptr +0x1c,
+`game/uitrack.cpp` (after it), the S2D file's code `game/s2ddata.cpp`; still unassigned:
+`UiMatrix` / `UiDrawer` 0x24dfa0..0x252840, the widget classes 0x25b..0x25e (vptr +0x1c,
 `UiWidget::create` 0x25e260, its type table 0x2facf0: 0x2a names) and the game hooks
 0x25ff40..0x2640e8 (sounds, game values / state names 0x599490).
 
@@ -700,8 +700,8 @@ a matrix / colour multiply / offset add **per frame**, 0xc / 0xd / 0xe the same 
 value} interpolated (matrices through `UiMatrix::interpolate` 0x24dfa0), 0x1c / 0x25 colour reset,
 0x26 the drawer flag, 0x2b offset translate (+0x14, set by widgets), 0x15..0x1a pin / rotate to
 the combined matrix (0x16 / 0x18 / 0x1a bind "rCharactorPostion": the stage camera, gStageScene
-+0x78). S2dData +0x48 / +0x4c: image count and entries {data, id} (`getImage` 0x24d530 /
-`getImageEntry` 0x24d570, the S2D file's first functions). **Rotate / pin** (0x24ad20..0x24b1b0):
++0x78). S2dData +0x48 / +0x4c: image count and entries {data, name} (`getImage` 0x24d530 /
+`getImageEntry` 0x24d570, game/s2ddata.cpp); the tracks keep the image's **name** as its key. **Rotate / pin** (0x24ad20..0x24b1b0):
 world = parent * xform (`UiMatrix::multiply` 0x24e7c0); 0x19 / 0x1a: xform = R(wrap(world angle
 (`angle` 0x24e360, atan2 of the x axis) + own (+ target))), parent identity, `coordMode` Pixel;
 0x15..0x18 (0x16 / 0x18 first move by the target's position / turn by its angle): record +8 mode 0
@@ -717,6 +717,28 @@ image (+0x24 table, 8-byte {?, image}) through a temporary GsTexture, then PRIM 
 a borrowed or new[] copy of a 16-bit string (`wstrlen` 0x2d4650 / `wstrcpy` 0x2d4510, message
 10000), or an **fMsg** file's message by index or name (`fMsgRelocate` 0x25fbd0 like
 `timSheetRelocate`, `fMsgFind` 0x25fb30: entries {name, text} at +0x30, count +0x10).
+
+**`game/s2ddata.cpp` 0x24d530..0x24dfa0 (TU 18, 2026-11-03, batch 044, all 9 written, `verify`;
+names the port's)**: the **S2D file's own code**: `getImage` / `getImageEntry` (no lower bound
+check), `findSequence` 0x24d5a0 / `findObject` 0x24d640 / `findVarIndex` 0x24d6e0 (-1 none) /
+`findVar` 0x24d770 (null none) by `strcmp`, `getVar` 0x24d810 (unchecked), `getString` 0x24df60
+(null out of range) and **`relocate` 0x24d820**. The **header (0x50)**: "S2D\0", +4 a version-like
+word (785 / 800 / 817 seen), +8 relocated, +0xc start sequence, then **{count, table} pairs** at
++0x10 vars, +0x18 objects, +0x20 actor defs, +0x28 anim sets, +0x30 widget defs, +0x38 sequence
+defs, +0x40 strings, +0x48 images. In the file **a table field is an offset from the file's start,
+a table entry an offset from its own table's start** (the track records' offsets are from the
+**objects** table), and **every name is a strings index**, relocated to a pointer (null out of
+range): object +4, actor def +4, anim set +4, sequence def +8, widget def +0 / +4, image +4, the
+textured track kinds' +8 (5..8, 0x21..0x24, 0x27), kind 6's sprite name +0x14 (**not** kind 0x22's:
+the ROM leaves it an index; no S2D on the disc has a 0x22 record), 0x16 / 0x18 target +0x14, 0x1a
+target +0xc. Vars and widget defs are arrays in place, images 8-byte {data, name}. On the host every
+relocated pointer is an **`S2dRef<T>`** (s2ddata.h): a 32-bit offset from the field itself, so the
+file keeps its EE layout (all records asserted) and relocates in place. Checked on the disc: 1,764
+S2D files found uncompressed in ROM.000..ROMD.010 relocate with every pointer inside the file;
+names read like `pMASKOFF` / `APS44D1EN` (objects), `sFADEIN` / `slanguage_sel` (sequences),
+`prgDebug` (a widget type), `language_sel_1.tm2` (TIM2 images; image 0 is often
+`_dmy.file.name_`, magic "YNAM"), sheet sprites `rItem00` / `rWeaponL00`, pin target
+`rCharactorPostion`.
 
 ## Classes
 

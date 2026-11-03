@@ -4,22 +4,47 @@
  *  The S2D file a UiLayout plays (the .d2b files under 2dEU/ and the pack
  *  items, magic "S2D\0"): variables, objects (an anim's tracks), actors
  *  (lists of objects), anim sets, widget definitions, sequences with their
- *  script commands, and strings. Its code (relocate, the lookups) sits at
- *  0x24d640..0x24df90 in the rest of unassigned@00246230; what game/
- *  uilayout.cpp and game/uisequence.cpp need of it is declared here until
- *  that TU is cut. The names are the port's (no source string).
+ *  script commands, images and strings. Its code (relocate, the lookups)
+ *  is game/s2ddata.cpp, 0x24d530..0x24dfa0. The names are the port's (no
+ *  source string).
  *
- *  Offsets become pointers in place on the first S2dData::relocate.
- *  layout: host -- EE offsets in the comments; the pointer fields are
- *  32-bit offsets in the file and pointers after relocate (the S2D TU must
- *  widen them on the host: side tables, or offsets resolved on access).
+ *  Offsets and string indices become pointers in place on the first
+ *  S2dData::relocate. Every pointer the ROM writes into the file is an
+ *  S2dRef here, so the file keeps its EE layout on the host (asserted).
  * ======================================================================== */
 #ifndef _GAME_S2DDATA_H
 #define _GAME_S2DDATA_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "sdk/scetypes.h"
+
+// A pointer S2dData::relocate writes into the file in place. EE: an
+// absolute 32-bit address. PC: a 32-bit offset from the field itself (a
+// pointer cannot fit in the file's 4 bytes on a 64-bit host); 0 is null.
+// Before relocate, rel holds the file's own value (an offset or a string
+// index). Never copied: a copy would point elsewhere.
+template <class T>
+struct S2dRef
+{
+    int32_t rel;
+
+    S2dRef(const S2dRef &) = delete;
+    S2dRef &operator=(const S2dRef &) = delete;
+
+    T *get() const
+    {
+        return rel != 0 ? (T *)((const char *)this + rel) : nullptr;
+    }
+    operator T *() const { return get(); }
+    T *operator->() const { return get(); }
+    void set(const void *p)
+    {
+        rel = p != nullptr ? (int32_t)((const char *)p - (const char *)this) : 0;
+    }
+};
+static_assert(sizeof(S2dRef<char>) == 4, "S2dRef: EE 4 (a pointer)");
 
 // A script variable (0x20 bytes).
 struct S2dVar
@@ -178,9 +203,10 @@ struct S2dSeqDef
 {
     int    priority;            // FS2 +0x0: draw and update order, lowest first
     int    cmdCount;            // FS2 +0x4
-    int    _08;
+    S2dRef<const char> name;    // FS2 +0x8: S2dData::findSequence
     S2dCmd cmds[1];             // FS2 +0xc: cmdCount
 };
+static_assert(offsetof(S2dSeqDef, name) == 0x8, "S2dSeqDef::name");
 static_assert(offsetof(S2dSeqDef, cmds) == 0xc, "S2dSeqDef::cmds");
 
 // UiTrack::setPlay's flags (also an anim set entry's flags, which
@@ -211,9 +237,10 @@ static_assert(offsetof(S2dAnimSetEntry, anim) == 0x8, "S2dAnimSetEntry::anim");
 struct S2dAnimSet
 {
     u_int           count;      // FS2 +0x0
-    int             _04;
+    S2dRef<const char> name;    // FS2 +0x4
     S2dAnimSetEntry entries[1]; // FS2 +0x8: count
 };
+static_assert(offsetof(S2dAnimSet, name) == 0x4, "S2dAnimSet::name");
 static_assert(offsetof(S2dAnimSet, entries) == 0x8, "S2dAnimSet::entries");
 
 // A track record (S2dObject::tracks[i]): what a UiTrack plays. Its kind
@@ -227,14 +254,16 @@ struct S2dTrackRec
 static_assert(offsetof(S2dTrackRec, length) == 0x4, "S2dTrackRec::length");
 
 // An object (S2dData::objects[i]): a named list of tracks, played as one
-// UiAnim.
-// layout: host -- EE: +0 count, +4 name, +8 the track records (offsets).
+// UiAnim. The track records follow in the file (offsets from the objects
+// table in it).
 struct S2dObject
 {
-    u_int        trackCount;    // FS2 +0x0
-    const char  *name;          // FS2 +0x4
-    S2dTrackRec *tracks[1];     // FS2 +0x8: trackCount
+    u_int               trackCount; // FS2 +0x0
+    S2dRef<const char>  name;       // FS2 +0x4: S2dData::findObject
+    S2dRef<S2dTrackRec> tracks[1];  // FS2 +0x8: trackCount
 };
+static_assert(offsetof(S2dObject, name) == 0x4, "S2dObject::name");
+static_assert(offsetof(S2dObject, tracks) == 0x8, "S2dObject::tracks");
 
 // An actor definition (S2dData::actorDefs[i]): the objects an actor plays.
 struct S2dActorAnim
@@ -246,62 +275,87 @@ static_assert(sizeof(S2dActorAnim) == 0x8, "S2dActorAnim: EE 0x8");
 struct S2dActorDef
 {
     u_int        animCount;     // FS2 +0x0
-    int          _04;
+    S2dRef<const char> name;    // FS2 +0x4
     S2dActorAnim anims[1];      // FS2 +0x8: animCount
 };
+static_assert(offsetof(S2dActorDef, name) == 0x4, "S2dActorDef::name");
 static_assert(offsetof(S2dActorDef, anims) == 0x8, "S2dActorDef::anims");
 
-// A widget definition (S2dData::widgetDefs[i], EE 0x30 bytes).
-// layout: host -- EE: +0 name, +4 type name (offsets in the file).
+// A widget definition (S2dData::widgetDefs[i]).
 struct S2dWidgetDef
 {
-    const char *name;           // FS2 +0x00: UiSequence::findWidgetByName
-    const char *type;           // FS2 +0x04: UiWidget::create looks it up in its class table (0x2facf0)
+    S2dRef<const char> name;    // FS2 +0x00: UiSequence::findWidgetByName
+    S2dRef<const char> type;    // FS2 +0x04: UiWidget::create looks it up in its class table (0x2facf0)
     int         id;             // FS2 +0x08: the widget's id in its sequence
     int         priority;       // FS2 +0x0c: draw order among the sequence's actors, lowest first
     u_char      _10[0x20];      // FS2 +0x10: the type's parameters (floats)
 };
+static_assert(sizeof(S2dWidgetDef) == 0x30, "S2dWidgetDef: EE 0x30");
+static_assert(offsetof(S2dWidgetDef, type) == 0x4, "S2dWidgetDef::type");
+static_assert(offsetof(S2dWidgetDef, id) == 0x8, "S2dWidgetDef::id");
+static_assert(offsetof(S2dWidgetDef, _10) == 0x10, "S2dWidgetDef::_10");
 
-// An image of the S2D (S2dData::images[i], EE 8 bytes).
-// layout: host -- EE: +0 the image (a pointer), +4 id.
+// An image of the S2D (S2dData::images[i]). Its name is the key the
+// textured tracks keep (UiTexSpriteTrack::m_imageName), as the text track
+// keeps an init-pack item's name.
 struct S2dImage
 {
-    const void *data;           // FS2 +0x0: the image record (GsTexture's input, or a TimM sheet)
-    int         id;             // FS2 +0x4: kept by the textured tracks (UiTexSpriteTrack::m_imageId)
+    S2dRef<const void> data;    // FS2 +0x0: the image record (GsTexture's input, or a TimM sheet);
+                                // in the file an offset from the images table
+    S2dRef<const char> name;    // FS2 +0x4
 };
+static_assert(sizeof(S2dImage) == 0x8, "S2dImage: EE 0x8");
+static_assert(offsetof(S2dImage, name) == 0x4, "S2dImage::name");
 
-// layout: host -- see above; EE header 0x50 (the images at +0x48 / +0x4c).
+// The file's header (EE 0x50). In the file every table field is an offset
+// from the file's start, every table entry an offset from its table's
+// start, and every name a strings index; relocate turns them all into
+// pointers (S2dRef), an index out of range into null.
 struct S2dData
 {
     char          magic[4];     // FS2 +0x00: "S2D\0"
     int           _04;
-    int           relocated;    // FS2 +0x08
+    int           relocated;    // FS2 +0x08: set by relocate
     int           startSeq;     // FS2 +0x0c: started by setData; -1 none
     int           varCount;     // FS2 +0x10
-    S2dVar       *vars;         // FS2 +0x14
+    S2dRef<S2dVar>               vars;      // FS2 +0x14
     int           objectCount;  // FS2 +0x18
-    S2dObject   **objects;      // FS2 +0x1c
-    int           _20;
-    S2dActorDef **actorDefs;    // FS2 +0x24
-    int           _28;
-    S2dAnimSet  **animSets;     // FS2 +0x2c
-    int           _30;
-    S2dWidgetDef *widgetDefs;   // FS2 +0x34
-    int           _38;
-    S2dSeqDef   **seqs;         // FS2 +0x3c
+    S2dRef<S2dRef<S2dObject>>    objects;   // FS2 +0x1c: the track records' offsets are from this table too
+    int           actorDefCount; // FS2 +0x20
+    S2dRef<S2dRef<S2dActorDef>>  actorDefs; // FS2 +0x24
+    int           animSetCount; // FS2 +0x28
+    S2dRef<S2dRef<S2dAnimSet>>   animSets;  // FS2 +0x2c
+    int           widgetDefCount; // FS2 +0x30
+    S2dRef<S2dWidgetDef>         widgetDefs; // FS2 +0x34
+    int           seqCount;     // FS2 +0x38
+    S2dRef<S2dRef<S2dSeqDef>>    seqs;      // FS2 +0x3c
     int           stringCount;  // FS2 +0x40
-    const char  **strings;      // FS2 +0x44
+    S2dRef<S2dRef<const char>>   strings;   // FS2 +0x44
     int           imageCount;   // FS2 +0x48
-    S2dImage     *images;       // FS2 +0x4c
+    S2dRef<S2dImage>             images;    // FS2 +0x4c
 
+    // False when it is not an S2D file; true when relocated, now or before.
     bool        relocate();                                              // FS2 0x0024d820
+    // Out of range (either end): null.
     const char *getString(int index);                                    // FS2 0x0024df60
-    S2dVar     *findVar(const char *name);                               // FS2 0x0024d770
-    S2dVar     *getVar(int index);                                       // FS2 0x0024d810
+    S2dVar     *findVar(const char *name);                               // FS2 0x0024d770: null none
+    int         findVarIndex(const char *name);                          // FS2 0x0024d6e0: -1 none
+    S2dVar     *getVar(int index);                                       // FS2 0x0024d810: unchecked
     int         findObject(const char *name);                            // FS2 0x0024d640: -1 none
+    int         findSequence(const char *name);                          // FS2 0x0024d5a0: -1 none
     // Past the end (no lower bound check, as the ROM): null.
     const void *getImage(int index);                                     // FS2 0x0024d530
     S2dImage   *getImageEntry(int index);                                // FS2 0x0024d570
 };
+static_assert(sizeof(S2dData) == 0x50, "S2dData: EE 0x50");
+static_assert(offsetof(S2dData, relocated) == 0x08, "S2dData::relocated");
+static_assert(offsetof(S2dData, vars) == 0x14, "S2dData::vars");
+static_assert(offsetof(S2dData, objects) == 0x1c, "S2dData::objects");
+static_assert(offsetof(S2dData, actorDefs) == 0x24, "S2dData::actorDefs");
+static_assert(offsetof(S2dData, animSets) == 0x2c, "S2dData::animSets");
+static_assert(offsetof(S2dData, widgetDefs) == 0x34, "S2dData::widgetDefs");
+static_assert(offsetof(S2dData, seqs) == 0x3c, "S2dData::seqs");
+static_assert(offsetof(S2dData, strings) == 0x44, "S2dData::strings");
+static_assert(offsetof(S2dData, images) == 0x4c, "S2dData::images");
 
 #endif /* _GAME_S2DDATA_H */

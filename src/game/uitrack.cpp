@@ -111,21 +111,21 @@ static inline void loadTexture(Track *track, S2dData *data, int image)
 {
     const void *src = data->getImage(image);
     track->m_texture = new GsTexture(src);
-    track->m_imageId = data->getImageEntry(image)->id;
+    track->m_imageName = data->getImageEntry(image)->name;
 }
 
 // The image of a text record: by S2D index, or (negative) by the name of
-// an init-pack item in string -1 - index. key: the image's id, or the
-// name.
-static inline const void *textImage(S2dData *data, int index, intptr_t *key)
+// an init-pack item in string -1 - index. key: the image's name, or the
+// item's.
+static inline const void *textImage(S2dData *data, int index, const char **key)
 {
     if (index < 0) {
         const char *name = data->getString(-1 - index);
-        *key = (intptr_t)name;
+        *key = name;
         return getInitPackData(name);
     }
     const void *image = data->getImage(index);
-    *key = data->getImageEntry(index)->id;
+    *key = data->getImageEntry(index)->name;
     return image;
 }
 
@@ -208,8 +208,8 @@ void UiAnim::init(S2dData *data, S2dObject *obj, int objIndex)
             break;
         case UiTrackKind_Text: {
             const S2dTextRec *textRec = (const S2dTextRec *)rec;
-            intptr_t fontKey;
-            intptr_t glyphKey;
+            const char *fontKey;
+            const char *glyphKey;
             const void *fontImage = textImage(data, textRec->fontImage, &fontKey);
             const void *glyphs = textImage(data, textRec->glyphImage, &glyphKey);
             UiTextTrack *text = new UiTextTrack(rec, glyphs, fontImage);
@@ -231,7 +231,7 @@ void UiAnim::init(S2dData *data, S2dObject *obj, int objIndex)
             UiSheetSpriteTrack *sheet = new UiSheetSpriteTrack(rec);
             sheet->m_sheet = (TimSheet *)data->getImage(recImage(rec));
             timSheetRelocate(sheet->m_sheet);
-            sheet->m_imageId = data->getImageEntry(recImage(rec))->id;
+            sheet->m_imageName = data->getImageEntry(recImage(rec))->name;
             track = sheet;
             break;
         }
@@ -328,7 +328,7 @@ void UiAnim::init(S2dData *data, S2dObject *obj, int objIndex)
             UiSheetSpriteFlatTrack *sheet = new UiSheetSpriteFlatTrack(rec);
             sheet->m_sheet = (TimSheet *)data->getImage(recImage(rec));
             timSheetRelocate(sheet->m_sheet);
-            sheet->m_imageId = data->getImageEntry(recImage(rec))->id;
+            sheet->m_imageName = data->getImageEntry(recImage(rec))->name;
             track = sheet;
             break;
         }

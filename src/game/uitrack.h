@@ -142,7 +142,7 @@ struct S2dTexSpriteRec          // UiTrackKind_TexSprite
 {
     int              kind;      // FS2 +0x00
     int              count;     // FS2 +0x04
-    int              _08;
+    S2dRef<const char> label;  // FS2 +0x08: a name (unread)
     int              image;     // FS2 +0x0c: S2dData::images index
     u_int            tex1;      // FS2 +0x10: the GS TEX1_1 value
     UiTexColorVertex verts[1];  // FS2 +0x14
@@ -152,7 +152,7 @@ struct S2dTexSpriteFlatRec      // UiTrackKind_TexSpriteFlat
 {
     int         kind;           // FS2 +0x00
     int         count;          // FS2 +0x04
-    int         _08;
+    S2dRef<const char> label;  // FS2 +0x08: a name (unread)
     int         image;          // FS2 +0x0c
     u_int       tex1;           // FS2 +0x10
     UiVec4      rgba;           // FS2 +0x14
@@ -161,40 +161,43 @@ struct S2dTexSpriteFlatRec      // UiTrackKind_TexSpriteFlat
 static_assert(offsetof(S2dTexSpriteFlatRec, verts) == 0x24, "S2dTexSpriteFlatRec::verts");
 
 // Kinds 6 / 0x22: a sprite cut from a TimM sheet image, picked by name
-// (+0x14) through UiSheetSpriteTrack::findSprite.
-// layout: host -- EE: +0xc image, +0x10 TEX1, +0x14 name (an offset in
-// the file), vertices at +0x28 (kind 6, UiTexColorVertex) or the colour at
-// +0x28 and vertices at +0x38 (kind 0x22, UiTexVertex); anchor +0x40 both.
+// (+0x14) through UiSheetSpriteTrack::findSprite: vertices at +0x28
+// (kind 6, UiTexColorVertex) or the colour at +0x28 and vertices at +0x38
+// (kind 0x22, UiTexVertex); anchor +0x40 both. S2dData::relocate resolves
+// the name of kind 6 only: kind 0x22's stays a strings index in the ROM.
 struct S2dSheetSpriteRec        // UiTrackKind_SheetSprite
 {
     int              kind;      // FS2 +0x00
     int              count;     // FS2 +0x04
-    int              _08;
+    S2dRef<const char> label;  // FS2 +0x08: a name (unread)
     int              image;     // FS2 +0x0c: S2dData::images index (a TimM sheet)
     u_int            tex1;      // FS2 +0x10: the GS TEX1_1 value
-    const char      *name;      // FS2 +0x14: the sprite's name in the sheet
+    S2dRef<const char> name;    // FS2 +0x14: the sprite's name in the sheet
     u_char           _18[0x10];
     UiTexColorVertex verts[1];  // FS2 +0x28
 };
-// layout: host (see S2dSheetSpriteRec)
+static_assert(offsetof(S2dSheetSpriteRec, name) == 0x14, "S2dSheetSpriteRec::name");
+static_assert(offsetof(S2dSheetSpriteRec, verts) == 0x28, "S2dSheetSpriteRec::verts");
 struct S2dSheetSpriteFlatRec    // UiTrackKind_SheetSpriteFlat
 {
     int         kind;           // FS2 +0x00
     int         count;          // FS2 +0x04
-    int         _08;
+    S2dRef<const char> label;  // FS2 +0x08: a name (unread)
     int         image;          // FS2 +0x0c
     u_int       tex1;           // FS2 +0x10
-    const char *name;           // FS2 +0x14
+    S2dRef<const char> name;    // FS2 +0x14: not relocated (see above)
     u_char      _18[0x10];
     UiVec4      rgba;           // FS2 +0x28
     UiTexVertex verts[1];       // FS2 +0x38
 };
+static_assert(offsetof(S2dSheetSpriteFlatRec, name) == 0x14, "S2dSheetSpriteFlatRec::name");
+static_assert(offsetof(S2dSheetSpriteFlatRec, verts) == 0x38, "S2dSheetSpriteFlatRec::verts");
 
 struct S2dTexTrianglesRec       // UiTrackKind_TexTriangles, _TexTrianglesNoTest
 {
     int              kind;      // FS2 +0x00
     int              count;     // FS2 +0x04
-    int              _08;
+    S2dRef<const char> label;  // FS2 +0x08: a name (unread)
     int              image;     // FS2 +0x0c
     u_int            tex1;      // FS2 +0x10
     int              mode;      // FS2 +0x14: UiTriMode
@@ -205,7 +208,7 @@ struct S2dTexTrianglesFlatRec   // UiTrackKind_TexTrianglesFlat
 {
     int         kind;           // FS2 +0x00
     int         count;          // FS2 +0x04
-    int         _08;
+    S2dRef<const char> label;  // FS2 +0x08: a name (unread)
     int         image;          // FS2 +0x0c
     u_int       tex1;           // FS2 +0x10
     int         mode;           // FS2 +0x14: UiTriMode
@@ -218,7 +221,7 @@ struct S2dTexStripRec           // UiTrackKind_TexStrip
 {
     int                kind;    // FS2 +0x00
     int                count;   // FS2 +0x04
-    int                _08;
+    S2dRef<const char> label;  // FS2 +0x08: a name (unread)
     int                image;   // FS2 +0x0c
     int                _10;
     int                mode;    // FS2 +0x14: the mesh's first argument
@@ -229,7 +232,7 @@ struct S2dTexStripFlatRec       // UiTrackKind_TexStripFlat
 {
     int           kind;         // FS2 +0x00
     int           count;        // FS2 +0x04
-    int           _08;
+    S2dRef<const char> label;  // FS2 +0x08: a name (unread)
     int           image;        // FS2 +0x0c
     int           _10;
     int           mode;         // FS2 +0x14
@@ -284,27 +287,28 @@ struct S2dColorKeysRec          // UiTrackKind_KeyedB2, _KeyedC2
 };
 static_assert(offsetof(S2dColorKeysRec, keys) == 0xc, "S2dColorKeysRec::keys");
 
-// Kinds 0x15..0x1a.
-// layout: host -- EE: +8 the rotation (0x19 / 0x1a) or the pin mode
-// (0x15..0x18), +0xc the target name of 0x1a, +0xc the pin's scale and
-// +0x14 the target name of 0x16 / 0x18 (offsets in the file:
+// Kinds 0x15..0x1a: the rotation (0x19 / 0x1a) or the pin mode
+// (0x15..0x18) at +8; the target names (strings indices in the file,
+// resolved by S2dData::relocate for 0x1a and 0x16 / 0x18 only;
 // "rCharactorPostion" binds to the game camera).
 struct S2dRotateRec
 {
     int         kind;           // FS2 +0x00
     int         count;          // FS2 +0x04
     float       angle;          // FS2 +0x08: radians
-    const char *target;         // FS2 +0x0c: kind 0x1a
+    S2dRef<const char> target;  // FS2 +0x0c: kind 0x1a
 };
-// layout: host (see S2dRotateRec)
+static_assert(offsetof(S2dRotateRec, target) == 0x0c, "S2dRotateRec::target");
 struct S2dPinRec
 {
     int         kind;           // FS2 +0x00
     int         count;          // FS2 +0x04
     int         mode;           // FS2 +0x08: UiPinMode
     float       scale[2];       // FS2 +0x0c: the pinned matrix's scale
-    const char *target;         // FS2 +0x14: kinds 0x16 / 0x18
+    S2dRef<const char> target;  // FS2 +0x14: kinds 0x16 / 0x18
 };
+static_assert(offsetof(S2dPinRec, scale) == 0x0c, "S2dPinRec::scale");
+static_assert(offsetof(S2dPinRec, target) == 0x14, "S2dPinRec::target");
 
 // S2dPinRec::mode: what the pin keeps of the combined matrix besides its
 // origin (the scale is always the record's).
@@ -642,7 +646,7 @@ public:
     const float *getAnchor();                                            // FS2 0x0024d430
 
     GsTexture *m_texture;       // FS2 +0x14
-    int        m_imageId;       // FS2 +0x18: S2dImage::id
+    const char *m_imageName; // FS2 +0x18: S2dImage::name, the texture\'s key
 };
 
 // Kind 0x24: kind 8 in one colour.
@@ -667,7 +671,7 @@ public:
     const float *getAnchor();                                            // FS2 0x0024d440
 
     GsTexture *m_texture;       // FS2 +0x14
-    int        m_imageId;       // FS2 +0x18
+    const char *m_imageName; // FS2 +0x18
 };
 
 // Kind 7: textured triangles (list / fan / strip), vertex colours.
@@ -681,7 +685,7 @@ public:
     const float *getAnchor();                                            // FS2 0x0024d460
 
     GsTexture *m_texture;       // FS2 +0x14
-    int        m_imageId;       // FS2 +0x18
+    const char *m_imageName; // FS2 +0x18
 };
 
 // Kind 0x23: kind 7 in one colour.
@@ -709,7 +713,7 @@ public:
     const TimSheetSprite *findSprite();                                  // FS2 0x00261d00
 
     TimSheet *m_sheet;          // FS2 +0x14: S2dImage::data, relocated
-    int   m_imageId;            // FS2 +0x18
+    const char *m_imageName; // FS2 +0x18
 };
 
 // Kind 0x22: kind 6 in one colour.
@@ -728,13 +732,13 @@ public:
 class UiTexSpriteTrack : public UiTrack
 {
 public:
-    UiTexSpriteTrack(S2dTrackRec *rec) : UiTrack(rec), m_texture(nullptr), m_imageId(0) {}
+    UiTexSpriteTrack(S2dTrackRec *rec) : UiTrack(rec), m_texture(nullptr), m_imageName(nullptr) {}
     ~UiTexSpriteTrack();                                                 // FS2 0x0024c5a0
     void draw(UiDrawer *drawer);                                         // FS2 0x0024c530
     const float *getAnchor();                                            // FS2 0x0024d4a0
 
     GsTexture *m_texture;       // FS2 +0x14
-    int        m_imageId;       // FS2 +0x18
+    const char *m_imageName; // FS2 +0x18
 };
 
 // Kind 0x21: kind 5 in one colour.
@@ -771,7 +775,7 @@ class UiTextTrack : public UiTrack
 public:
     UiTextTrack(S2dTrackRec *rec, const void *glyphs, const void *fontImage)
         : UiTrack(rec), m_font(new UiFont(glyphs, fontImage)), m_message(-1), m_x(0.0f), m_y(0.0f),
-          m_visible(1), m_fontKey(0), m_glyphKey(0), m_30(0), m_text(nullptr), m_ownsText(0)
+          m_visible(1), m_fontKey(nullptr), m_glyphKey(nullptr), m_30(0), m_text(nullptr), m_ownsText(0)
     {
         const S2dTextRec *text = (const S2dTextRec *)rec;
         m_font->m_scale[0] = text->scale[0];
@@ -796,10 +800,10 @@ public:
     float           m_x;        // FS2 +0x1c: UiDrawer::drawText's position
     float           m_y;        // FS2 +0x20
     u_char          m_visible;  // FS2 +0x24
-    // The images' ids, or (negative record index) the init-pack name the
-    // image came by: the ROM keeps whichever it had in hand.
-    intptr_t        m_fontKey;  // FS2 +0x28
-    intptr_t        m_glyphKey; // FS2 +0x2c
+    // The images' names: S2dImage::name, or (negative record index) the
+    // init-pack item's name the image came by.
+    const char     *m_fontKey;  // FS2 +0x28
+    const char     *m_glyphKey; // FS2 +0x2c
     int             m_30;       // FS2 +0x30
     const u_short  *m_text;     // FS2 +0x34: also UiFont::m_text
     u_char          m_ownsText; // FS2 +0x38: m_text is a new[] copy

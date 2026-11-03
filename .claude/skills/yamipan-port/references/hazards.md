@@ -108,6 +108,13 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **A mid-struct pointer moves every later host offset**: asserts after it become `>=` bounds; data that
   keeps EE bytes (file images, DMA) never holds host pointers. Files the ROM relocates in place keep
   their file offsets on the host (RoR's i3m / i3c: resolved through a `Ptr(root, field)` helper).
+  When written code already indexes the relocated pointers (`data->animSets[i]`, `rec->name`), a
+  **self-relative 32-bit ref** keeps both the EE layout and the call sites (2026-11-03, TU 18:
+  `S2dRef<T>` in `game/s2ddata.h`: `rel` = target minus the field's own address, 0 null, implicit
+  `T *` conversion, copy deleted so a moved copy cannot dangle). Relocate stays in place, as the ROM.
+- **Tool input can lose a backslash** (2026-11-03, TU 18): a `\0` typed into a heredoc or `py -c`
+  reached the file as a NUL byte (grep then says "Binary file matches"). Check edited docs for NULs;
+  write such bytes as `bytes([92, 48])`.
 - **EE sizes under-allocate host objects**: `operator new(0x28)`, a list sized with the EE record size,
   an out-buffer sized from what is read back.
 - **Ghidra's `ptr + n` on an `int *` is n words.** `param_1 != -0x240` is a null test of `&obj->member`.

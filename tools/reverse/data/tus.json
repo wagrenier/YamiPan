@@ -196,6 +196,25 @@
    ],
    "why": "RcntTimer (reset, ctor, dtor) and rcnt1Start (batches 003-004); file name a guess."
   },
+  "game/s2ddata.cpp": {
+   "notes": "Host: S2dRef<T> (s2ddata.h) is a 32-bit offset from the field itself, 0 null, implicit T* conversion, copy deleted; S2dData, S2dObject, S2dWidgetDef, S2dImage and the uitrack.h records with names (textured +8 label, sheet +0x14, pin +0x14, rotate +0xc) are EE layout and asserted. S2dImage +4 is the image name (was read as an id): UiTex*Track m_imageId is now m_imageName, the text track keys are const char pointers. Header counts at +0x20/+0x28/+0x30/+0x38 named. The ROM never relocates kind 0x22's +0x14 name (only kind 6's); no disc S2D has a 0x22 record. Checked: g++ -fsyntax-only -Wall clean on s2ddata/uitrack/uisequence/uilayout/scene/stageresult with RosePan SDK headers + stubs; a scratch harness relocated 1,764 S2D files from ROM.000..ROMD.010, all pointers in range, names readable. Next in the run: UiMatrix / UiDrawer 0x24dfa0..0x252840 (frontier top), then the widget classes from 0x252840.",
+   "ranges": [
+    [
+     "0024d530",
+     "0024dfa0"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 03:16",
+     "status": "verify",
+     "summary": "S2D file code cut from unassigned@0024d530: all 9 written (getImage, getImageEntry, findSequence, findObject, findVarIndex, findVar, getVar, relocate, getString); every relocated pointer is a self-relative S2dRef so the file keeps its EE layout on the host; relocate checked on 1,764 S2D files from the disc"
+    }
+   ],
+   "status": "verify",
+   "why": "S2dData's own code: getImage / getImageEntry / findSequence / findObject / findVarIndex / findVar / getVar / relocate / getString, 0x24d530..0x24df90; uitrack.cpp ends at 0x24d530 and UiMatrix::interpolate starts the matrix / drawer code at 0x24dfa0 (no source string: name by class)"
+  },
   "game/scene.cpp": {
    "notes": "gameSceneThread written in full: loadInitPack, runStartupSequence, overlayThreadStart, then forever loadMenuPack, the scene from sScenes (one retail entry, Menu (Pack File) = menuSceneThread 0x2b5740, index gp-0x7a34 never written) in slot 2, yield until free, overlayReleaseScreen, gfxSetDrawEnvClear(gfxGetCurrentDrawEnv(), 1, 0,0,0,0). The table base is 0x2fabd0 (Ghidra showed 0x2fabd4: hazards.md). Callee prototypes in gamehooks.h (pack / overlay / startup / menu scene) and gfxtarget.h (GfxDrawEnv, gfxGetCurrentDrawEnv, gfxSetDrawEnvClear). Next useful TUs on this path: the menu flow 0x2b5770 (unassigned@002acff0), the pack object 0x131f00 / 0x131d70 (unassigned@00131xxx) and the pak parser 0x231660..0x231bb0 (unassigned@00231c90 neighbour run). Not built: source-only mode.",
    "ranges": [
@@ -584,6 +603,7 @@
   "unassigned@0023e740": {},
   "unassigned@00246230": {},
   "unassigned@00249550": {},
+  "unassigned@0024d530": {},
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
   "unassigned@002acff0": {}

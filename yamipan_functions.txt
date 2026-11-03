@@ -5799,18 +5799,23 @@
 /* 0024d520 0000000c */ UiLineStripTrack::getAnchor(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/s2ddata.cpp
 // *****************************************************************************
 
 /* 0024d530 00000030 */ S2dData::getImage(){}  // game
 /* 0024d570 00000024 */ S2dData::getImageEntry(){}  // game
-/* 0024d5a0 00000098 */ FUN_0024d5a0(){}
+/* 0024d5a0 00000098 */ S2dData::findSequence(){}  // game
 /* 0024d640 00000098 */ S2dData::findObject(){}  // game
-/* 0024d6e0 00000090 */ FUN_0024d6e0(){}
+/* 0024d6e0 00000090 */ S2dData::findVarIndex(){}  // game
 /* 0024d770 00000098 */ S2dData::findVar(){}  // game
 /* 0024d810 00000010 */ S2dData::getVar(){}  // game
 /* 0024d820 00000740 */ S2dData::relocate(){}  // game
 /* 0024df60 00000030 */ S2dData::getString(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 0024dfa0 000003bc */ UiMatrix::interpolate(){}  // game
 /* 0024e360 0000006c */ UiMatrix::angle(){}  // game
 /* 0024e3d0 0000011c */ UiMatrix::setScaleRotTrans(){}  // game

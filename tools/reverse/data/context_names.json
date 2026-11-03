@@ -11273,11 +11273,23 @@
   "was": "FUN_0024d570",
   "why": "(data, i): i < +0x48 ? &images[i] : 0"
  },
+ "0024d5a0": {
+  "name": "S2dData::findSequence",
+  "tag": "game-inferred",
+  "was": "FUN_0024d5a0",
+  "why": "(this, name): index of the seqs entry whose name (+8, a string after relocate) strcmp-matches, -1 none; same shape as findObject / findVarIndex; called twice by UiWidget::create"
+ },
  "0024d640": {
   "name": "S2dData::findObject",
   "tag": "game-inferred",
   "was": "FUN_0024d640",
   "why": "(data, name): the index of the object (+0x1c table, count +0x18) whose name (+4) strcmps equal, -1 none"
+ },
+ "0024d6e0": {
+  "name": "S2dData::findVarIndex",
+  "tag": "game-inferred",
+  "was": "FUN_0024d6e0",
+  "why": "(this, name): index of the 0x20-byte vars entry whose name (+0) strcmp-matches, -1 none; findVar 0x24d770 answers the entry instead"
  },
  "0024d770": {
   "name": "S2dData::findVar",

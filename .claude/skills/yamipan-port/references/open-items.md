@@ -203,6 +203,25 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    init-pack name pointer** in the same field (kept as `intptr_t`). Bootstrap 6: the host draw
    module must take the `UiPrim` / `UiBlend` / TEX1 / scissor state and the four vertex layouts of
    `uitrack.h`, and `GsTexture` decodes its image at the source (no GS upload).
+   TU 18 (the frontier's `unassigned@0024d530`, 255 functions 0x24d530..0x2640e8): **`game/
+   s2ddata.cpp` 0x24d530..0x24dfa0** cut out (all 9, batch 044: `findSequence` 0x24d5a0 /
+   `findVarIndex` 0x24d6e0 named, `verify`; architecture.md "Modules"): the S2D file's lookups and
+   `relocate`. **Host choice, for the user to overrule: every pointer relocate writes is an
+   `S2dRef<T>`** (a 32-bit offset from the field itself), so the S2D file keeps its EE layout and
+   relocates in place; `s2ddata.h` and the `uitrack.h` records lost their `layout: host` and are
+   asserted. Fixed readings: S2dImage +4 is the image's **name** (was `id`): the textured tracks'
+   `m_imageId` became `m_imageName`, and the text track's keys are names (`const char *`, no more
+   `intptr_t`); the header's `_20` / `_28` / `_30` / `_38` are the actor def / anim set / widget def
+   / sequence counts; actor defs and anim sets have a name at +4, sequence defs at +8; the textured
+   records' +8 is a name (`label`, unread). Checked: callcheck clean, layout lint OK, g++
+   -fsyntax-only -Wall clean on s2ddata / uitrack / uisequence / uilayout / scene / stageresult
+   (RosePan's SDK headers + stubs for libvifpk / eestruct), and a host harness relocated **1,764
+   S2D files** found in ROM.000..ROMD.010 with every pointer inside its file and every name
+   readable. Doubt: the ROM never relocates kind 0x22's sprite name (+0x14; kind 6's it does): a
+   0x22 record would hand findSprite an index; no file on the disc has one, so the port keeps the
+   ROM's behaviour. Next in the run: **`UiMatrix` / `UiDrawer` 0x24dfa0..0x252840** (the
+   frontier's top: `setPrim`, `setTexture`, `setPrimColor`, the matrix helpers; 58 functions,
+   ~18 KB: two runs), then 0x252840.. (the widget classes, vtables 0x316a78..0x316c10).
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
