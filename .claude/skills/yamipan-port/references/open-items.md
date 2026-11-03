@@ -5,6 +5,25 @@ questions. Resolve items here when they are settled (move them to "Done" with th
 
 ## Next up (in order)
 
+0. **The user (2026-11-02): "start reversing actual code and try to match names as you go, my #1
+   priority is getting source code back."** Library name seeding stops here (batch 021 was the last
+   seeding batch; the "Next batches" list under item 2 is dropped -- library and game names now come
+   at the TU that needs them). The runs go to source reconstruction as fast as possible, in this
+   order, one per run:
+   (a) **bootstrap 5, the TU map**: `data/layout.json` with the library ranges named so far
+       (architecture.md), game code split by `__FILE__` anchors, classes and link order;
+       `export.py` / `status.py` regenerated.
+   (b) **carry `tus.py` over from RosePan now** (supersedes the 2026-10-31 decision to wait for
+       bootstrap 7), with a **source-only mode while there is no host toolchain** (item 5):
+       `tus.py check` skips build / smoke run and runs only what works without a compiler, `finish`
+       accepts `--status verify` without a build and says "not built" in the record. The routine then
+       switches to one TU per run by itself.
+   (c) the queue: game code first (not library code), starting from `main` / `gameMainThread` /
+       `GameSystem` and down what boot reaches (architecture.md "Program flow"), each TU written into
+       `src/` with its header and names made at that TU.
+   The platform layer (bootstrap 6) and first build (7) follow once the user has a toolchain; until
+   then reconstructed TUs are `verify` (written, not compiled or seen on screen).
+
 1. **The game**: Forbidden Siren 2, Europe, `SCES_538.51`, annotation tag `FS2` (decided, below;
    `yamipan.py` has `ANNOT`, the stub regex and the game-folder defaults since bootstrap 3).
 2. Bootstrap (bootstrap.md, in order): identify the binary (done 2026-10-31: architecture.md
@@ -189,6 +208,10 @@ questions. Resolve items here when they are settled (move them to "Done" with th
 7. Fill architecture.md as each step learns something.
 
 ## Decisions
+
+- 2026-11-02 (the user): **source code first.** Stop seeding library names; reconstruct game code
+  and name as each TU needs it ("Next up" item 0). `tus.py` comes over before the build exists, in a
+  source-only mode; supersedes the 2026-10-31 decision to hold it for bootstrap 7.
 
 - 2026-11-02 (the user): **bethington's GhidraMCP 7.0.0 replaces LaurieWired's 2.0.0** (the user
   installed it; both are `Extensions\GhidraMCP`, so it took 2.0.0's place) and **the tools were ported
