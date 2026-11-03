@@ -189,6 +189,20 @@ cache 0x4d5b40.. (RoR -0x30a040 from here), HDD root 0x4e7d80, s_contextIndex 0x
 three drivers sit between the two ranges in text, data and bss alike. The game's own
 `rxFileCallLoadHook` 0x152730 / `rxFileCallSizeHook` 0x152740 are `j` thunks to 0x155690 /
 0x1556d0 (FileJob::run calls them).
+**TU `rx/rxthread.c` (2026-11-03, all 53 written, `verify`)**: `rxcmp.py '^rxTh'` finds all 53
+RoR's word for word (`rxThWorkerMain`'s one flagged word is an unmasked `addiu` of a data address),
+so `src/rx/rxthread.c` is RosePan's `rxthread.cpp` carried to C in two pieces: the VBlank tail
+0x159928..0x159bc0 and the core 0x166b50..0x1681c0. Data (RoR +0x19cf8 for the core, +0x198cc for
+the tail): s_initCount 0x2f5f58, s_basePriority 0x2f5f5c, call queue write / read 0x2f5f60 / 64,
+s_request 0x2f5f68, s_interval 0x2f5f6c (= 4), s_prioIndex 0x2f5f70 {0,2,4}; vblank handler id
+0x2f5b50 (= -1), field 0x2f5b54, users 0x2f5b58, vblank count 0x2f5b5c. Bss (RoR -0x2e1500 for the
+core): semaphores yield / dispatch / request 0x526a40 / 44 / 48, main / worker / idle thread ids
+0x526a4c / 50 / 54, alarm 0x526a58, yield tick 0x526a5c, yielding 0x526a60, thread count 0x526a64,
+current slot 0x526a68, slots 0x526a70 (8 x 0x10), call queue 0x526af0 (32 x 0x10), request args
+0x526cf0, callbacks 0x526d00, worker stack 0x526d40 (0x10000), idle stack 0x536d40 (0x400); the
+tail's last-vblank / HSYNC carry 0x4fdef0 / f4 (just before rxsnd's s_config 0x4fdf00). The game's
+**0x151f70 / 0x151f80 are `j` thunks to `rxThEnableDispatch` / `rxThDisableDispatch`** with the
+same Ghidra names (MoviePlayer::receiveAudio calls 0x151f70), like the rxFile hook thunks.
 **Batch 008 (2026-11-02): rxsndut + rxsndstr 0x162178..0x166b50** (not in RoR; named by reading
 in rx style, `rxSndUt*` / `rxSndStr*`; messages 0x3022e0..0x302738). Five layers, each with its own
 static slot table and init / exit / update called from `rxSndUtInit` 0x162178 / `rxSndUtExit`

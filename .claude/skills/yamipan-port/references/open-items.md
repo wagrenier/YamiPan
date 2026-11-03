@@ -691,6 +691,23 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    file with rxInit / rxTerm). Bootstrap 6: the host drivers come with filehost.c / filecd.c /
    filehdd.c (RosePan's, with FS2's longer host messages: rxcmp shows rxFileHost* and
    rxFileCdFindDir 0x10..0x18 longer). Next pick: `tus.py next`.
+   TU 39 (the frontier's pinned `rx/rxthread.c` 0x159928..0x159bc0 + 0x166b50..0x1681c0,
+   2026-11-03): **all 53 written, `verify`** (no new names, no Ghidra change; architecture.md
+   "rx"). `rxcmp.py '^rxTh'`: all 53 RoR's word for word, so `src/rx/rxthread.c` is RosePan's
+   `rxthread.cpp` in C with FS2 addresses; `src/rx/rxthread.h` is the full header now (slots, call
+   queue, every prototype, C and C++). Named as written: `RX_TH_SYNC_COUNT / NEXT / NOWAIT`
+   (rxThSync's modes), the INTC vblank cause and RCNT0 mode bits (file-local). Host names renamed
+   as before: `RosePan_Sleep` / `RosePan_SleepNs` -> **`YamiPan_Sleep` / `YamiPan_SleepNs`**
+   (`yamipan/os/yamipan_time.h`). Checked: callcheck clean, layout lint OK, **g++ -x c++
+   -fsyntax-only -Wall -Wextra clean** (RosePan's src, pc_prefix.h, a shim for yamipan_time.h; one
+   C++20 warning on `++` of the volatile vblank count, harmless in C). **Bootstrap 6 must give**,
+   beside the C-clean `sce_gs.h` / `libgraph.h` TU 37 asked for: **a C spelling of
+   `REG_RCNT0_COUNT`** (RosePan's `sdk/eeregs.h` defines it only under `__cplusplus`, a C++ proxy
+   over `RosePan_Rcnt0Read` / `Write`; rxThVBlankInit / rxThReadHSync read and assign it), and
+   `yamipan/os/yamipan_time.h` from `rosepan_time.h`. Doubt: the thunks 0x151f70 / 0x151f80 (game
+   code calling rxThEnableDispatch / rxThDisableDispatch) sit with StreamRing's run
+   0x151f90..0x153110; their TU should call the rx functions, as fileloader does. Next pick:
+   `tus.py next`.
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

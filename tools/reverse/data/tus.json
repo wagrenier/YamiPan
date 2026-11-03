@@ -857,6 +857,7 @@
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. rxsys: RoR's rx/rxsys.cpp 0x23ff58..0x2437f8 split in two by FS2's link order (0x100328 rxSysNoMemFunc .. rxSysTermUser, rxSysThreadCallback .. rxSysStreamOpenPath); .c after FS2's own rxfile.c string."
   },
   "rx/rxthread.c": {
+   "notes": "Every rxTh function is RoR's word for word, so the file is RosePan's rxthread.cpp in C with FS2 addresses (architecture.md rx has the data and bss map). rxthread.h is the full header (RxThSlot, RxThCall, every prototype, C and C++). Named: RX_TH_SYNC_COUNT/NEXT/NOWAIT, INTC vblank cause, RCNT0 mode bits. Host names: YamiPan_Sleep / YamiPan_SleepNs in yamipan/os/yamipan_time.h (RosePan's rosepan_time renamed). Checked: callcheck clean, layout lint OK, g++ -x c++ -fsyntax-only -Wall -Wextra clean against RosePan's src. C compile needs from bootstrap 6: a C spelling of REG_RCNT0_COUNT (RosePan's is a C++ proxy) and C-clean sce_gs.h / libgraph.h. The game's 0x151f70 / 0x151f80 are j thunks to rxThEnableDispatch / rxThDisableDispatch with the same names (MoviePlayer::receiveAudio); their TU should call the rx functions. Next: tus.py next.",
    "ranges": [
     [
      "00159928",
@@ -867,6 +868,15 @@
      "001681c0"
     ]
    ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 11:31",
+     "status": "verify",
+     "summary": "all 53 functions written: RosePan's rxthread carried to C, all 53 identical to RoR (rxcmp.py), VBlank tail 0x159928 and core 0x166b50 with FS2 data and bss addresses"
+    }
+   ],
+   "status": "verify",
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. rxthread: RoR's rx/rxthread.cpp 0x249b88..0x24b490; FS2 links its VBlank tail (rxThVBlankHandler .. rxThSync) before rxsnd."
   },
   "sdk/mcerror.cpp": {
