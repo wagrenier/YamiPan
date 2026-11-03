@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 06:16 at commit `8678705` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 06:37 at commit `0a587d5` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-03 06:16 at commit `8678705` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6595**, named **1612** (24%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1493, game-inferred 756
-- context-name ledger: 2249 entries; overrides of wrong library matches: 0
-- placed in a source file: 1542/6595 in 49 files
+- game functions: **6595**, named **1642** (25%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1495, game-inferred 785
+- context-name ledger: 2280 entries; overrides of wrong library matches: 0
+- placed in a source file: 1573/6595 in 50 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,12 +30,13 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **547**; stubs: **0**
+- reconstructed FS2 functions: **578**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
 | `src/game/boxgrid.cpp` | 29 | 0 |
 | `src/game/datetime.cpp` | 2 | 0 |
+| `src/game/fontdata.cpp` | 31 | 0 |
 | `src/game/gamepaths.cpp` | 14 | 0 |
 | `src/game/gamesystem.cpp` | 17 | 0 |
 | `src/game/gsutil.cpp` | 12 | 0 |
@@ -59,11 +60,12 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 71 TUs: todo 56, verify 24
-- next: **unassigned@00171300** (frontier score 20)
+- 73 TUs: todo 57, verify 25
+- next: **game/gfxtarget.cpp** (frontier score 19)
 - pinned queue: (empty)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
+- verify: `game/fontdata.cpp` 31/31 -- Cut out of unassigned@00171300 and pinned 0x1fcb40-0x1fe6b0 (batch 056, 31 names: the FontData byte variants countLinesMb / lineWidthFixed / lineWidthFixedMb / 
 - verify: `game/gamepaths.cpp` 14/14 -- All 14 functions of 0x28ff60..0x2908d0 written (batches 054-055, 25 names, Ghidra saved). Path builders from a StageSelect: digit 1 or 2 (variant 0 or not), let
 - verify: `game/gamesystem.cpp` 17/17 -- All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). N
 - verify: `game/gsutil.cpp` 12/12 -- Cut out of unassigned@00171300 and pinned 0x230980-0x231410 (batch 048: GsTexture::readTarget 0x231290, rena base Tim2Texture ctor 0x2e2920 / dtor 0x2e2810 / lo
@@ -89,6 +91,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 06:37 `game/fontdata.cpp` verify: fonts: the knj glyph table FontData and the printers TextPrinter / FontPrinter, cut out of unassigned@00171300 (all 31 written)
 - 2026-11-03 06:16 `game/gamepaths.cpp` verify: the stage path builders and the resident init / language packs, cut out of unassigned@002681e0 (all 14 written)
 - 2026-11-03 05:50 `game/wstring.cpp` verify: The 16-bit string helpers wstrcmp, wstrstr, wstrFromAscii, wstrcpy, wstrlen: all 5 written, source-only, not built
 - 2026-11-03 05:34 `game/uigame.cpp` verify: Fourth run: the text variables (UiWidget::expandTextVariable over the held-item message table, formatTextValue with 28 value names: counts, ammo, objective, rec
@@ -96,21 +99,20 @@ Recent sessions:
 - 2026-11-03 04:57 `game/uigame.cpp` partial: Second run: testGameState (41 named states), findSprite (key-config and item / weapon sprites), scanItems / scanWeapons, getDoorState, getStagePackData, getButt
 - 2026-11-03 04:35 `game/uigame.cpp` partial: The S2D UI game side cut out of unassigned@00252840: UiFont, fMsg and TimM find / relocate, the layout sound and game-value hooks, both target binds, inStage: 1
 - 2026-11-03 04:13 `game/gsutil.cpp` verify: The UI draw presets gfxUiPreset* and GsTexture (ctor, dtor, getSize, putTex0, readTarget): all 12 written, source-only, not built
-- 2026-11-03 03:55 `game/uidrawer.cpp` verify: UiMatrix and UiDrawer complete: interpolate, drawText, setScissor and setScissorPixels, the sheet draws and the strip ribbons as UiDrawer members, with a FontDa
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@00171300` | todo | 0/0/2822 | 745.4 | 20 | 0 |
 | `game/gfxtarget.cpp` | todo | 0/0/8 | 2.6 | 19 | 0 |
+| `unassigned@00171300` | todo | 0/0/2228 | 541.5 | 17 | 0 |
 | `unassigned@001319f0` | todo | 0/0/53 | 4.9 | 16 | 0 |
 | `game/gamepacket.cpp` | todo | 0/0/6 | 0.6 | 12 | 0 |
 | `unassigned@00296d60` | todo | 0/0/267 | 74.1 | 10 | 0 |
-| `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 8 | 0 |
+| `unassigned@0012ea60` | todo | 0/0/7 | 1.7 | 9 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 8 | 0 |
-| `unassigned@0012ea60` | todo | 0/0/7 | 1.7 | 7 | 0 |
+| `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 8 | 0 |
+| `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 8 | 0 |
 | `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
 | `unassigned@002908d0` | todo | 0/0/67 | 18.8 | 6 | 0 |
-| `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 5 | 0 |
 | `unassigned@00142dd0` | todo | 0/0/14 | 4.6 | 5 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
@@ -119,6 +121,7 @@ Recent sessions:
 |---|---|---|---|---|---|
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `0012e080` | gfxGetCurrentDrawEnv | 10 | game | missing | game/gfxtarget.cpp |
+| `0012cab8` | vsprintf | 5 | lib-ctx | missing | - |
 | `0029efe0` | getNaviMenu | 5 | game | missing | - |
 | `0012de00` | GamePacketManager::openList | 4 | game | missing | game/gamepacket.cpp |
 | `0012dd30` | GamePacketManager::closeList | 4 | game | missing | game/gamepacket.cpp |
@@ -132,18 +135,21 @@ Recent sessions:
 | `00131d70` | PackFile::load | 3 | game | missing | - |
 | `00297fb0` | FUN_00297fb0 | 3 | - | missing | - |
 | `001339c0` | normalizeAngle | 3 | game | missing | - |
+| `002e1c50` | Tim2Texture::upload | 3 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `00147ee0` | SoundConfig::setOutputMode | 3 | game | missing | sound/sound.cpp |
 | `0012e050` | gfxGetCurrentDisplay | 3 | game | missing | game/gfxtarget.cpp |
 | `0012ead0` | gfxSetDisplayOffset | 3 | game | missing | - |
 | `0029efd0` | getSaveExtra | 2 | game | missing | - |
+| `0012f170` | gfxGetVramBlock | 2 | game | missing | - |
 | `002c4140` | getSePlayer | 2 | game | missing | - |
+| `002e2920` | Tim2Texture::Tim2Texture | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `00193880` | FUN_00193880 | 2 | - | missing | - |
 | `001d6a80` | StageSound::playNamed | 2 | game | missing | - |
+| `002e1b70` | Tim2Texture::putTex0 | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `00132cc0` | FileJob::FileJob | 2 | game | missing | - |
 | `00132bc0` | FileJob::start | 2 | game | missing | - |
 | `00132280` | FileLoader::startLoad | 2 | game | missing | - |
 | `002c3d70` | getSaveResource | 2 | game | missing | - |
-| `002e1c50` | Tim2Texture::upload | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `00143510` | TexAreaList::place | 2 | game | missing | - |
 | `001e66c0` | PlayerMotion::refresh | 1 | game | missing | - |
 | `002ec660` | optionLayoutPath | 1 | game | missing | - |
@@ -153,8 +159,4 @@ Recent sessions:
 | `001351b0` | Clock::~Clock | 1 | game | missing | - |
 | `001d6a90` | StageSound::stopNamed | 1 | game | missing | - |
 | `00292db0` | SePlayer::stop | 1 | game | missing | - |
-| `00151280` | debugSysShutdown | 1 | game | missing | - |
-| `00148540` | soundShutdown | 1 | game | missing | sound/sound.cpp |
-| `00135330` | MasterClock::~MasterClock | 1 | game | missing | - |
-| `0012de80` | GamePacketManager::~GamePacketManager | 1 | game | missing | game/gamepacket.cpp |
 

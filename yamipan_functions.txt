@@ -724,7 +724,7 @@
 /* 00128380 00000114 */ strcpy(){}  // lib-ctx
 /* 00128498 00000138 */ strlen(){}  // lib-ctx
 /* 001285d0 000000d4 */ FUN_001285d0(){}
-/* 001286a8 000001b8 */ FUN_001286a8(){}
+/* 001286a8 000001b8 */ strncmp(){}  // lib-ctx
 /* 00128860 000001bc */ strncpy(){}  // lib-ctx
 /* 00128a20 00000050 */ FUN_00128a20(){}
 /* 00128a70 00000084 */ strstr(){}  // lib-ctx
@@ -750,7 +750,7 @@
 // *****************************************************************************
 
 /* 0012c9b8 000000fc */ FUN_0012c9b8(){}
-/* 0012cab8 00000054 */ FUN_0012cab8(){}
+/* 0012cab8 00000054 */ vsprintf(){}  // lib-ctx
 /* 0012cb10 00000054 */ FUN_0012cb10(){}
 /* 0012cb68 00000060 */ FUN_0012cb68(){}
 /* 0012cbc8 0000010c */ FUN_0012cbc8(){}
@@ -812,7 +812,7 @@
 /* 0012ead0 0000013c */ gfxSetDisplayOffset(){}  // game
 /* 0012ec10 00000544 */ FUN_0012ec10(){}
 /* 0012f160 00000008 */ gfxGetTexArea(){}  // game
-/* 0012f170 00000018 */ FUN_0012f170(){}
+/* 0012f170 00000018 */ gfxGetVramBlock(){}  // game
 
 // *****************************************************************************
 // FILE -- game/rcnttimer.cpp
@@ -4796,37 +4796,47 @@
 /* 001fca80 00000038 */ FUN_001fca80(){}
 /* 001fcac0 00000008 */ FUN_001fcac0(){}
 /* 001fcad0 00000068 */ FUN_001fcad0(){}
-/* 001fcb40 0000004c */ FUN_001fcb40(){}
-/* 001fcb90 00000020 */ FUN_001fcb90(){}
-/* 001fcbb0 00000008 */ FUN_001fcbb0(){}
-/* 001fcbc0 00000008 */ FUN_001fcbc0(){}
-/* 001fcbd0 00000008 */ FUN_001fcbd0(){}
-/* 001fcbe0 00000008 */ FUN_001fcbe0(){}
-/* 001fcbf0 00000248 */ FUN_001fcbf0(){}
-/* 001fce40 00000214 */ FUN_001fce40(){}
-/* 001fd060 00000018 */ FUN_001fd060(){}
-/* 001fd080 00000018 */ FUN_001fd080(){}
-/* 001fd0a0 00000030 */ FUN_001fd0a0(){}
-/* 001fd0d0 00000088 */ FUN_001fd0d0(){}
-/* 001fd160 000000b0 */ FUN_001fd160(){}
-/* 001fd210 0000004c */ FUN_001fd210(){}
-/* 001fd260 00000060 */ FUN_001fd260(){}
-/* 001fd2c0 000000b0 */ FUN_001fd2c0(){}
-/* 001fd370 0000037c */ FUN_001fd370(){}
-/* 001fd6f0 00000338 */ FUN_001fd6f0(){}
-/* 001fda30 000002a8 */ FUN_001fda30(){}
-/* 001fdce0 0000000c */ FUN_001fdce0(){}
-/* 001fdcf0 000002fc */ FUN_001fdcf0(){}
-/* 001fdff0 00000030 */ FUN_001fdff0(){}
-/* 001fe020 00000098 */ FUN_001fe020(){}
-/* 001fe0c0 00000088 */ FUN_001fe0c0(){}
+
+// *****************************************************************************
+// FILE -- game/fontdata.cpp
+// *****************************************************************************
+
+/* 001fcb40 0000004c */ TextPrinter::~TextPrinter(){}  // game
+/* 001fcb90 00000020 */ SpritePrinter::query2(){}  // game
+/* 001fcbb0 00000008 */ SpritePrinter::query3(){}  // game
+/* 001fcbc0 00000008 */ SpritePrinter::query4(){}  // game
+/* 001fcbd0 00000008 */ SpritePrinter::query5(){}  // game
+/* 001fcbe0 00000008 */ SpritePrinter::query6(){}  // game
+/* 001fcbf0 00000248 */ SpritePrinter::printScaled(){}  // game
+/* 001fce40 00000214 */ SpritePrinter::print(){}  // game
+/* 001fd060 00000018 */ FontPrinter::cellWidth(){}  // game
+/* 001fd080 00000018 */ FontPrinter::lineHeight(){}  // game
+/* 001fd0a0 00000030 */ FontPrinter::countLines(){}  // game
+/* 001fd0d0 00000088 */ FontPrinter::setTexture(){}  // game
+/* 001fd160 000000b0 */ FontPrinter::setImage(){}  // game
+/* 001fd210 0000004c */ FontPrinter::releaseTexture(){}  // game
+/* 001fd260 00000060 */ FontPrinter::setFont(){}  // game
+/* 001fd2c0 000000b0 */ FontPrinter::uploadTexture(){}  // game
+/* 001fd370 0000037c */ FontPrinter::printScaled(){}  // game
+/* 001fd6f0 00000338 */ FontPrinter::print(){}  // game
+/* 001fda30 000002a8 */ FontPrinter::measureLines(){}  // game
+/* 001fdce0 0000000c */ FontPrinter::textWidth(){}  // game
+/* 001fdcf0 000002fc */ FontPrinter::setDrawState(){}  // game
+/* 001fdff0 00000030 */ FontPrinter::nextGlyph(){}  // game
+/* 001fe020 00000098 */ FontPrinter::~FontPrinter(){}  // game
+/* 001fe0c0 00000088 */ FontPrinter::FontPrinter(){}  // game
 /* 001fe150 00000088 */ FontData::countLines(){}  // game
-/* 001fe1e0 000000c8 */ FUN_001fe1e0(){}
+/* 001fe1e0 000000c8 */ FontData::countLinesMb(){}  // game
 /* 001fe2b0 000000c0 */ FontData::lineWidth(){}  // game
-/* 001fe370 000000a0 */ FUN_001fe370(){}
-/* 001fe410 000000b8 */ FUN_001fe410(){}
+/* 001fe370 000000a0 */ FontData::lineWidthFixed(){}  // game
+/* 001fe410 000000b8 */ FontData::lineWidthFixedMb(){}  // game
 /* 001fe4d0 000000d0 */ FontData::nextGlyph(){}  // game
-/* 001fe5b0 000000f8 */ FUN_001fe5b0(){}
+/* 001fe5b0 000000f8 */ FontData::nextGlyphMb(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 001fe6b0 00000010 */ FUN_001fe6b0(){}
 /* 001fe6c0 00000008 */ FUN_001fe6c0(){}
 /* 001fe6d0 00000044 */ FUN_001fe6d0(){}

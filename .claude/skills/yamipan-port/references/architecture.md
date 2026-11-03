@@ -956,6 +956,35 @@ packs)); an item entry is 0x10 at +0x20: data +8, size +0xc. Around it: sound-ta
 0x28fa90..0x28ff54 (called from 0x290930..0x290b10) and the SoundStream / SePlayer wrappers from
 0x2908d0, so this may be the middle of one larger file.
 
+**`game/fontdata.cpp` 0x1fcb40..0x1fe6b0 (TU 24, 2026-11-03, batch 056, all 31 written, `verify`;
+cut out of `unassigned@00171300` between the movie player (last dtor 0x1fcad0) and an unread small
+run at 0x1fe6b0; the file name is the port's)**: **fonts**. A font file starts with the magic
+**"knj\0"** (0x305b38); `FontData` +8 glyph count, **+0xc cell width**, +0xe line height (both 1/16
+px), 0x10-byte entries from +0x10 sorted by code (+0) with the glyph rect {u, v, w, h} at +8 (1/16
+texel), the entry after the last the fallback (binary search, a do-while). Wide text (u_short) looks
+codes up as they are; **byte text** (`*Mb`: `countLinesMb` 0x1fe1e0, `lineWidthFixedMb` 0x1fe410,
+`nextGlyphMb` 0x1fe5b0) takes a byte < 0x20 signed (control or >= 0x80) and the next as **b0 << 8 |
+b1**, any other byte as **b << 8** (ASCII 'A' is code 0x4100). `lineWidthFixed` 0x1fe370 is
+lineWidth in int 1/16 px. **Printers**: base `TextPrinter` (vtable 0x315fb0, dtor only; EE fields
++0 RGBA 0x80808080, +4 the sceVif1Packet, +8 / +0xa origin in pixels, +0xc flags 1 centre x on each
+line / 2 centre y on half the first line, **vptr at +0x10**) and **`FontPrinter`** (vtable 0x315ff0,
+EE 0x40; ctor 0x1fe0c0 (x, y), deleting dtor 0x1fe020): +0x14 font, +0x18 image (set = texture
+owned), +0x1c `Tim2Texture`, +0x20 GS block (negative: **`gfxGetVramBlock(3)`** 0x12f170, the
+table 0x2f3850 {0, 0x800, 0x1800, 0x2800, 0x2800, 0x3700}), +0x24 glyph count, +0x28 / +0x2c the
+last print's start, +0x30 / +0x34 its end (1/16 px), +0x38 spacing 0x20, +0x3c line spacing.
+Slots: 0 dtor, 1 `nextGlyph` (byte), 2 `setDrawState` (packet, bilinear: ALPHA_1 0x44, TEXA
+0x8000008000, TEX1_1, TEST_1 0x3000d, TEX0_1 via putTex0, TEXFLUSH), 3 `uploadTexture`, 4 `print`
+(x, y, fmt, ...: newlib **`vsprintf`** 0x12cab8 into 520 bytes, then one sprite per glyph as REGLIST
+words PRIM 0x156 / RGBAQ (Q 1.0) / UV / XYZ2 (Z 0xff0fffff) / UV / XYZ2 (Z 0xffffffff) into a run the
+caller opened), 5 `printScaled`, 6 `measureLines`, 7 `textWidth`, 8 / 9 `cellWidth` / `lineHeight`,
+10 `countLines`. `setFont` 0x1fd260 (**`strncmp`** 0x1286a8 on the magic), `setTexture` 0x1fd0d0
+(unowned), `setImage` 0x1fd160 (owns a new Tim2Texture), `releaseTexture` 0x1fd210. Users: the
+**wide printer** 0x2d3700..0x2d4150 (vtable 0x319ff0, subclass: ctor 0x2d4110 calls FontPrinter's
+at (0x700, 0x700); shares slots 2 / 3 / 8 / 9) made by 0x2b1010 (setFont + setImage), and 0x19fcd0
+(setFont + setTexture on gp-0x7a7c +0xbc's printer). **Vtable 0x315fc0** (`SpritePrinter`, 7 slots:
+print / printScaled and five constant answers) has no RTTI and no store: never constructed, and its
+prints fetch glyphs through their own slot 1 (= printScaled), so they only fit a FontPrinter object.
+
 ## Classes
 
 Name, vtable, vptr offset, size, file. `python rtti.py` (CodeWarrior variant, bootstrap 4, 2026-10-31)

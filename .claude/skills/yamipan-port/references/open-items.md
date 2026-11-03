@@ -390,6 +390,25 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    0x292ac0 / 0x292db0 with the SoundStream / SeBank wrappers 0x2908d0..0x2931b0, `getNaviTable`
    0x2955d0, and 0x268310.. (vtables 0x315ab0 / 0x316c30, the stage-unlock checks 0x268ae0 /
    0x269160).
+   TU 24 (the frontier's `unassigned@00171300`, for `FontData` / boxgrid's callees / StageSound):
+   **`game/fontdata.cpp` 0x1fcb40..0x1fe6b0** cut out (31 functions, all written, `verify`, batch
+   056 with 31 names incl. newlib `vsprintf` 0x12cab8 / `strncmp` 0x1286a8 and `gfxGetVramBlock`
+   0x12f170; architecture.md "Modules"): `FontData` (the "knj" glyph table, wide and byte lookups),
+   the printer base `TextPrinter` and `FontPrinter` (printf text as one GS sprite per glyph), the
+   never-constructed vtable 0x315fc0 (`SpritePrinter`). `fontdata.h` grew from the stand-in
+   (`m_magic`, `m_cellWidth`); `gfxtarget.h` gained `GfxVramArea` / `gfxGetVramBlock`. Host choices,
+   for the user to overrule: the sprites go to `yamipan_drawui.h` (Prim + Begin(UV) + two vertices
+   per glyph, keyed by the printer's packet; the texture bound by its Tim2Texture owner in
+   setDrawState, uploadTexture only flushes); print / printScaled share a private `drawText`
+   (print = scale 1, exact); SpritePrinter's glyph fetch answers null (its ROM call lands on its own
+   printScaled). Kept from the ROM: SpritePrinter's second corner x + (x + w); measureLines zeroes
+   before its null test (the port guards it); TEX1_1 shifts the whole bilinear byte. Checked:
+   callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on fontdata / uidrawer /
+   gsutil (RosePan's SDK headers + a libvifpk stub); no harness (no "knj" file located yet). Doubts:
+   the file name; the printer / slot names (query2..6 say nothing); FontData +4 unread. **Next picks
+   in the run**: the wide printer 0x2d3700..0x2d4150 (in unassigned@002b0d50, FontPrinter's
+   subclass, made by 0x2b1010), boxgrid's callees 0x193780..0x1938f8, `StageSound::playNamed`
+   0x1d6a80, the class 0x230820..0x230980 and the pak parser 0x231410..0x231bb0.
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

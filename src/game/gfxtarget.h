@@ -50,6 +50,20 @@ GfxDrawEnv *gfxGetCurrentDrawEnv();                                      // FS2 
 void gfxSetDrawEnvClear(GfxDrawEnv *env, int enable, u_char r, u_char g,
                         u_char b, u_char a);                             // FS2 0x0012ea80
 
+// The VRAM areas of gfxGetVramBlock (table 0x2f3850: blocks 0, 0x800,
+// 0x1800, 0x2800, 0x2800, 0x3700). 0..2 hold the View / Draw / Zbuf
+// targets (game/gsutil.h GsTargetTag); 4 and 5 are unread.
+enum GfxVramArea
+{
+    GfxVram_View    = 0,
+    GfxVram_Draw    = 1,
+    GfxVram_Zbuf    = 2,
+    GfxVram_Texture = 3,        // the font printer's default texture block
+};
+// The GS block (64-word unit) where a VRAM area starts. In the same
+// unassigned run as gfxGetTexArea.
+int gfxGetVramBlock(int area);                                           // FS2 0x0012f170
+
 // GS texture pages 0x3700..0x3fbe handed out per packet list (EE 0x814,
 // gfxInitRenderTargets builds it: unassigned@00142dd0). Layout draws take
 // the list of the packet list they draw into. layout: host -- not declared.

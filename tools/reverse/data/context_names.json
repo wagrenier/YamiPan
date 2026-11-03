@@ -2477,6 +2477,12 @@
   "was": "FUN_00128498",
   "why": "R5900 quadword/doubleword zero-byte scan (0x0101.. / 0x8080.. masks), returns end - start"
  },
+ "001286a8": {
+  "name": "strncmp",
+  "tag": "lib-context",
+  "was": "FUN_001286a8",
+  "why": "newlib strncmp (a, b, n), the EE quadword fast path: 0 at n or at a common NUL; 25 callers. FontPrinter::setFont 0x1fd260 compares the font's magic with \"knj\" (0x305b38) for 4"
+ },
  "00128860": {
   "name": "strncpy",
   "tag": "lib-context",
@@ -2494,6 +2500,12 @@
   "tag": "lib-context",
   "was": "FUN_0012a010",
   "why": "MSL C: subtracts 0x20 when the ctype table 0x3000c1 marks a lower-case letter (bit 2); the SPK.ROM index search folds case with it"
+ },
+ "0012cab8": {
+  "name": "vsprintf",
+  "tag": "lib-context",
+  "was": "FUN_0012cab8",
+  "why": "newlib vsprintf (buf, fmt, va): a string FILE (flags 0x208, size 0x7fffffff, _impure_ptr 0x2f3398) through _vfprintf_r 0x12a3a0, then NUL; beside the reentrant variant 0x12cb10. The printers' print / printScaled / measureLines format into a 520-byte stack buffer with it"
  },
  "0012cd20": {
   "name": "GameSystem::endFrameSync",
@@ -2680,6 +2692,12 @@
   "tag": "game-inferred",
   "was": "FUN_0012f160",
   "why": "returns gp-0x7ad0, the 0x814-byte object gfxInitRenderTargets builds with 0x143270(obj, 0x3700, 0x3fbe, 14, 0x20): GS texture pages per packet list; UiLayout::draw takes one list of it"
+ },
+ "0012f170": {
+  "name": "gfxGetVramBlock",
+  "tag": "game-inferred",
+  "was": "FUN_0012f170",
+  "why": "(int area): the GS block of a VRAM area from the table 0x2f3850 {0, 0x800, 0x1800, 0x2800, 0x2800, 0x3700}: 0 / 0x800 / 0x1800 are the View / Draw / Zbuf targets (gsutil.h), 3 the texture area the font printer defaults to. Beside gfxGetTexArea 0x12f160; 12 callers"
  },
  "0012f190": {
   "name": "RcntTimer::reset",
@@ -10169,11 +10187,161 @@
   "was": "FUN_001e66c0",
   "why": "a0 the player's +0x224 object (its +0 the player): picks names from the 0x210-byte records 0x577b20 (index +0x40, slot +0x6c; '*'-prefixed alternates when the long weapon +0x238's item def kind is 5 or 6) and hands them to 0x216400; guess: the motion set for the weapon carried. stepWeaponPreview in a stage"
  },
+ "001fcb40": {
+  "name": "TextPrinter::~TextPrinter",
+  "tag": "game-inferred",
+  "was": "FUN_001fcb40",
+  "why": "Deleting dtor of the printer base (vtable 0x315fb0, one slot, vptr at +0x10 after the data): stores its vtable, deletes when flag > 0. FontPrinter's dtor 0x1fe020 ends in the same base step"
+ },
+ "001fcb90": {
+  "name": "SpritePrinter::query2",
+  "tag": "game-inferred",
+  "was": "FUN_001fcb90",
+  "why": "Slot 2 of vtable 0x315fc0 (no RTTI, no code stores it: the class is never constructed); answers 0. Meaning unknown"
+ },
+ "001fcbb0": {
+  "name": "SpritePrinter::query3",
+  "tag": "game-inferred",
+  "was": "FUN_001fcbb0",
+  "why": "Slot 3 of the never-stored vtable 0x315fc0; answers 0. Meaning unknown"
+ },
+ "001fcbc0": {
+  "name": "SpritePrinter::query4",
+  "tag": "game-inferred",
+  "was": "FUN_001fcbc0",
+  "why": "Slot 4 of the never-stored vtable 0x315fc0; answers 0. Meaning unknown"
+ },
+ "001fcbd0": {
+  "name": "SpritePrinter::query5",
+  "tag": "game-inferred",
+  "was": "FUN_001fcbd0",
+  "why": "Slot 5 of the never-stored vtable 0x315fc0; answers 0. Meaning unknown"
+ },
+ "001fcbe0": {
+  "name": "SpritePrinter::query6",
+  "tag": "game-inferred",
+  "was": "FUN_001fcbe0",
+  "why": "Slot 6 of the never-stored vtable 0x315fc0; answers 1. Meaning unknown"
+ },
+ "001fcbf0": {
+  "name": "SpritePrinter::printScaled",
+  "tag": "game-inferred",
+  "was": "FUN_001fcbf0",
+  "why": "Slot 1 of the never-stored vtable 0x315fc0: (float scale, x, y, fmt, ...) vsprintf, then one GS sprite per glyph (PRIM 0x156, RGBAQ from +0, UV, XYZ2) at pixel x, y without origin or 12.4 shift, glyph through vtable +0xc (FontPrinter's nextGlyph slot); -1 without a packet (+4). The second corner is x + (x + w * scale): the origin twice"
+ },
+ "001fce40": {
+  "name": "SpritePrinter::print",
+  "tag": "game-inferred",
+  "was": "FUN_001fce40",
+  "why": "Slot 0 of the never-stored vtable 0x315fc0: printScaled 0x1fcbf0 at scale 1 (the same doubled origin in the second corner)"
+ },
+ "001fd060": {
+  "name": "FontPrinter::cellWidth",
+  "tag": "game-inferred",
+  "was": "FUN_001fd060",
+  "why": "FontPrinter slot 8 (vtable 0x315ff0, also the wide printer's 0x319ff0): the font's +0xc >> 4 (pixels), 0 without a font (+0x14)"
+ },
+ "001fd080": {
+  "name": "FontPrinter::lineHeight",
+  "tag": "game-inferred",
+  "was": "FUN_001fd080",
+  "why": "FontPrinter slot 9: the font's +0xe line height >> 4 (pixels), 0 without a font"
+ },
+ "001fd0a0": {
+  "name": "FontPrinter::countLines",
+  "tag": "game-inferred",
+  "was": "FUN_001fd0a0",
+  "why": "FontPrinter slot 10: FontData::countLinesMb 0x1fe1e0 on the font, 0 without one"
+ },
+ "001fd0d0": {
+  "name": "FontPrinter::setTexture",
+  "tag": "game-inferred",
+  "was": "FUN_001fd0d0",
+  "why": "(Tim2Texture *tex, int block): drops an owned texture (+0x18 image set: delete +0x1c), takes tex unowned and the GS block (+0x20; negative: gfxGetVramBlock(3)). Caller 0x19fcd0 after setFont"
+ },
+ "001fd160": {
+  "name": "FontPrinter::setImage",
+  "tag": "game-inferred",
+  "was": "FUN_001fd160",
+  "why": "(const void *tim2, int block): drops an owned texture, keeps the image (+0x18) and owns new Tim2Texture(image) (+0x1c), block as setTexture. Caller 0x2b1010 after setFont"
+ },
+ "001fd210": {
+  "name": "FontPrinter::releaseTexture",
+  "tag": "game-inferred",
+  "was": "FUN_001fd210",
+  "why": "Deletes the texture when owned (+0x18 image set), clears +0x18 / +0x1c"
+ },
+ "001fd260": {
+  "name": "FontPrinter::setFont",
+  "tag": "game-inferred",
+  "was": "FUN_001fd260",
+  "why": "(const FontData *font): keeps it (+0x14) when its magic is \"knj\" (strncmp 4) and copies its glyph count (+8 -> +0x24), answers 1; else clears it and answers 0. Callers 0x19fcd0, 0x2b1010"
+ },
+ "001fd2c0": {
+  "name": "FontPrinter::uploadTexture",
+  "tag": "game-inferred",
+  "was": "FUN_001fd2c0",
+  "why": "FontPrinter slot 3: Tim2Texture::upload of the texture at the block, then TEXFLUSH"
+ },
+ "001fd370": {
+  "name": "FontPrinter::printScaled",
+  "tag": "game-inferred",
+  "was": "FUN_001fd370",
+  "why": "FontPrinter slot 5: (float scale, x, y, fmt, ...) as print 0x1fd6f0 with the glyph quads, the advance and the line height times scale (UV unscaled; the centring widths are not scaled)"
+ },
+ "001fd6f0": {
+  "name": "FontPrinter::print",
+  "tag": "game-inferred",
+  "was": "FUN_001fd6f0",
+  "why": "FontPrinter slot 4: (x, y, fmt, ...) vsprintf into 520 bytes, start (origin + x, y) * 16 (+0x28 / +0x2c), centred by flags +0xc (1 x on each line's textWidth, 2 y on half a line), one GS sprite per glyph (PRIM 0x156, RGBAQ +0 with Q 1.0, UV / XYZ2 twice), advance w - spacing (+0x38), line step lineHeight - lineSpacing (+0x3c); stores the end (+0x30 / +0x34), answers the sprite count"
+ },
+ "001fda30": {
+  "name": "FontPrinter::measureLines",
+  "tag": "game-inferred",
+  "was": "FUN_001fda30",
+  "why": "FontPrinter slot 6: (int *widths, int count, fmt, ...) zeroes widths[count], formats, stores each line's textWidth >> 4 (pixels) for the first count lines, answers the line count (spaces and control bytes skipped)"
+ },
+ "001fdce0": {
+  "name": "FontPrinter::textWidth",
+  "tag": "game-inferred",
+  "was": "FUN_001fdce0",
+  "why": "FontPrinter slot 7: FontData::lineWidthFixedMb 0x1fe410 of the text with the spacing (+0x38), 1/16 pixel"
+ },
+ "001fdcf0": {
+  "name": "FontPrinter::setDrawState",
+  "tag": "game-inferred",
+  "was": "FUN_001fdcf0",
+  "why": "FontPrinter slot 2 (also 0x319ff0's): (packet, bilinear) A+D ALPHA_1 0x44, TEXA 0x8000008000, TEX1_1 LCM with MMAG / MMIN from the flag, TEST_1 0x3000d (alpha > 0, depth always), Tim2Texture::putTex0 to TEX0_1 at the block, TEXFLUSH"
+ },
+ "001fdff0": {
+  "name": "FontPrinter::nextGlyph",
+  "tag": "game-inferred",
+  "was": "FUN_001fdff0",
+  "why": "FontPrinter slot 1: null at the terminator, else FontData::nextGlyphMb 0x1fe5b0 on the font"
+ },
+ "001fe020": {
+  "name": "FontPrinter::~FontPrinter",
+  "tag": "game-inferred",
+  "was": "FUN_001fe020",
+  "why": "FontPrinter slot 0, deleting dtor (vtable 0x315ff0, base 0x315fb0, vptr at +0x10): releaseTexture inlined, base vtable, delete when flag > 0. Caller 0x2d40a0 (the wide printer's dtor)"
+ },
+ "001fe0c0": {
+  "name": "FontPrinter::FontPrinter",
+  "tag": "game-inferred",
+  "was": "FUN_001fe0c0",
+  "why": "(short x, short y): base fields (rgba 0x80808080, no packet, origin x / y at +8 / +0xa, flags 0), no font / image / texture, block -1, start and end x * 16, y * 16, spacing 0x20, line spacing 0. Caller 0x2d4110 (the wide printer's ctor, 0x700, 0x700)"
+ },
  "001fe150": {
   "name": "FontData::countLines",
   "tag": "game-inferred",
   "was": "FUN_001fe150",
   "why": "a0 the glyph table, a1 a wide string: 1 + the newlines (0 for null), control chars skipped, glyphs through nextGlyph; UiDrawer::drawText's vertical alignment"
+ },
+ "001fe1e0": {
+  "name": "FontData::countLinesMb",
+  "tag": "game-inferred",
+  "was": "FUN_001fe1e0",
+  "why": "countLines 0x1fe150 for byte text (SJIS-style: a byte < 0x20 signed starts a 2-byte code): 1 + newlines, 0 for null; spaces and control bytes skipped, the rest walked with nextGlyphMb"
  },
  "001fe2b0": {
   "name": "FontData::lineWidth",
@@ -10181,11 +10349,29 @@
   "was": "FUN_001fe2b0",
   "why": "f12 the letter spacing, a0 the glyph table, a1 a wide string: the width up to the newline or the end, spacing + sum of (glyph w/16 - spacing); UiDrawer::drawText's horizontal alignment"
  },
+ "001fe370": {
+  "name": "FontData::lineWidthFixed",
+  "tag": "game-inferred",
+  "was": "FUN_001fe370",
+  "why": "lineWidth 0x1fe2b0 in int 1/16 pixel: (text, spacing) spacing + each glyph's (w - spacing) up to the newline or the end; 7 callers"
+ },
+ "001fe410": {
+  "name": "FontData::lineWidthFixedMb",
+  "tag": "game-inferred",
+  "was": "FUN_001fe410",
+  "why": "lineWidthFixed 0x1fe370 for byte text (nextGlyphMb); positive control bytes skipped. FontPrinter::textWidth's"
+ },
  "001fe4d0": {
   "name": "FontData::nextGlyph",
   "tag": "game-inferred",
   "was": "FUN_001fe4d0",
   "why": "a0 the font's glyph table (+8 count, +0x10 sorted 0x10-byte entries: u16 code, +8 u v w h shorts in 1/16 texel): binary search of the wide char at a1, copies the glyph's u v w h to a2 (the entry after the last when missing); answers the next char pointer, null at the terminator; UiDrawer::drawText's glyph walk"
+ },
+ "001fe5b0": {
+  "name": "FontData::nextGlyphMb",
+  "tag": "game-inferred",
+  "was": "FUN_001fe5b0",
+  "why": "nextGlyph 0x1fe4d0 for byte text: a byte < 0x20 (signed: also >= 0x80) and the next make code b0 << 8 | b1, any other byte code b << 8; binary search of the sorted entries, the fallback entry when missing; answers the next character, null at the terminator"
  },
  "00230980": {
   "name": "gfxUiPresetRgbOnly5",

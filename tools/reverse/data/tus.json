@@ -45,6 +45,25 @@
    "status": "verify",
    "why": "the RTC date module: getLocalDateTime reads sceCdReadClock, converts to local time with libscf and hands the DateTime to DateTime::setFormat, its only callee and caller pair; 0x23e740 starts unrelated code (a two-int validity test, a 0x208xxx wrapper), 0x23db50 before it is a Vt_00316510 ctor"
   },
+  "game/fontdata.cpp": {
+   "notes": "Cut out of unassigned@00171300 and pinned 0x1fcb40-0x1fe6b0 (batch 056, 31 names: the FontData byte variants countLinesMb / lineWidthFixed / lineWidthFixedMb / nextGlyphMb, TextPrinter / FontPrinter and their slots, SpritePrinter for the never-stored vtable 0x315fc0, newlib vsprintf 0x12cab8 / strncmp 0x1286a8, gfxGetVramBlock 0x12f170; Ghidra saved). fontdata.h: FontData gained m_magic (knj) and m_cellWidth (+0xc); the printers are layout host with EE offsets (vptr at +0x10 after the data, FontPrinter EE 0x40). Byte text: a byte below 0x20 signed (control or 0x80..0xff) leads a two-byte code b0 << 8 | b1, other bytes are b << 8. PC: sprites go to yamipan_drawui.h (Prim + Begin UV + two vertices per glyph keyed by the printer packet), the texture is bound by its Tim2Texture owner in setDrawState, uploadTexture only flushes; print and printScaled share a private drawText (print is scale 1, exact); SpritePrinter glyph fetch answers null (its ROM call lands on its own printScaled; never constructed). Kept from the ROM: SpritePrinter second corner x + (x + w), TEX1_1 shifting the whole bilinear byte; measureLines guards the zeroing the ROM does before its null test. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on fontdata / uidrawer / gsutil (RosePan SDK headers + a libvifpk stub); no harness. Doubts: file name; printer and query2..6 names; FontData +4 unread. Next in the run: the wide printer 0x2d3700..0x2d4150 (unassigned@002b0d50, FontPrinter subclass made by 0x2b1010), boxgrid callees 0x193780..0x1938f8, StageSound::playNamed 0x1d6a80, the class 0x230820..0x230980, the pak parser 0x231410..0x231bb0.",
+   "ranges": [
+    [
+     "001fcb40",
+     "001fe6b0"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 06:37",
+     "status": "verify",
+     "summary": "fonts: the knj glyph table FontData and the printers TextPrinter / FontPrinter, cut out of unassigned@00171300 (all 31 written)"
+    }
+   ],
+   "status": "verify",
+   "why": "Cut out of unassigned@00171300 (frontier pick, 0x171300..0x230820): the font class on vtables 0x315fb0 / 0x315ff0 (ctor/dtor 0x1fcb40 / 0x1fe020 / 0x1fe0c0), its glyph table FontData (countLines 0x1fe150 / lineWidth 0x1fe2b0 / nextGlyph 0x1fe4d0: uidrawer.cpp's callees) and its draws (Tim2Texture, the knj font). Bounded by the movie player's last dtor 0x1fcad0 below and the unrelated small run at 0x1fe6b0 above."
+  },
   "game/gamepacket.cpp": {
    "ranges": [
     [
