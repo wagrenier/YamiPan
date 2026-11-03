@@ -224,6 +224,25 @@
    ],
    "why": "the game's rx user layer: rxTerm, rxInit, spkRomLoad, spkLocateFile, spkGetFileSize, spkLoadFile (SPK.ROM index) and gameRxMemAlloc / Realloc / Free (batches 003, 005); file name a guess."
   },
+  "game/stageresult.cpp": {
+   "notes": "All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (addContinue), getPerfectBits one bit per zero counter, clocks at +0x94/+0xa4 {state, value, step, target}, mode +0xbc (0 none, 1 count-up, 2 countdown 7500 with SYS_COUNT1/2 cues), layout +0xb8 from getLangPackItem(4/5). runStartupSequence renamed loadGamePack: it parses packgameEU.pak into PackTables (0x2bcf10, columns label/ctype/SEtype) and frees it, no screens. StageResult moved from gamehooks.h to stageresult.h; sysdata.cpp now reads clock.value/clock2.value/mode; SaveData::_000 is playTime (StageResult::tick counts it). New stand-ins in gamehooks.h: PackFile, PackTables, UiLayout, StageSound, StageScene/gStageScene (gp-0x7a7c, data the build must define), getInitPackItem/getLangPackItem. Guesses: the file name; 0x2afc20/0x2afcd0 joined by position; counters 1..3, attempt/stage blocks, clock state bits 0x14 and PackTables element types read from shapes only. Not compiled (no toolchain here); callcheck clean, layout lint OK. Next in the run: 0x2acff0..0x2afc20 (drawing cluster around 0x2adc70).",
+   "ranges": [
+    [
+     "002afc20",
+     "002b0d50"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 01:19",
+     "status": "verify",
+     "summary": "StageResult (0x599700: counters, two stage clocks, clock layout, mode) and the game-pack loader written; MSL map instances mapped to the host"
+    }
+   ],
+   "status": "verify",
+   "why": "StageResult (0x599700, static init 0x310f60: begin(0) + __register_global_object with the destructor 0x2b0cf0) and the game-pack loader 0x2afd00..0x2aff80: the MSL map instances 0x2b0590..0x2b0cf0 serve the loader's tables and sit between getStageResult and StageResult's static destructor, so one object file; 0x2afc20/0x2afcd0 (init-pack items by language) joined by position (guess); 0x2af9a0 before is the 0x2adc70 drawing cluster, 0x2b0d50 after is a SoundStream thunk"
+  },
   "game/sysdata.cpp": {
    "notes": "Cut out of unassigned@00171300 (the frontier pick, 5138 functions) and pinned 0x23af30-0x23c020. One SystemData block of 0x620 bytes at 0x598b30: SaveData +0 (0x4bc: stage flags +0x69, records [3][2][30] +0xd8, medals [3][2][30] +0x3b4), StageSelect +0x4bc (the play record, 153 callers of getStageSelect), GameOptions +0x4d0 (0x50), FlagTable +0x520 (64 ints). Outgoing prototypes in gamehooks.h (SoundConfig and gSoundConfig, memcardGetState, randUnit, stageDefaultRecord, StageResult and getStageResult) and gfxtarget.h (GfxDisplay, gfxGetCurrentDisplay, gfxSetDisplayOffset). Data the build must define: gSoundConfig (sbss 0x31addc) and gSystemData lives here. ButtonMap::assign with action -1 reads button[-1] in the ROM: the port keeps the holder unchanged (PC note). Unknown: SaveData +0x468 / +0x3ac roles, record kinds, brightness guess for options +0x18, which of 0x23bb30 / 0x23bb40 is the save getter. Next in the same unassigned run: gameSceneThread 0x231bb0, getLocalDateTime 0x23de20, memcard 0x2a9c70..0x2acf00, each its own file via tus.py define.",
    "ranges": [
@@ -480,6 +499,7 @@
   "unassigned@00121b80": {},
   "unassigned@00171300": {},
   "unassigned@0023c020": {},
-  "unassigned@002647e0": {}
+  "unassigned@002647e0": {},
+  "unassigned@002acff0": {}
  }
 }

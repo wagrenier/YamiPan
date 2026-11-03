@@ -5,6 +5,7 @@
 #include "game/gamehooks.h"
 #include "game/gfxtarget.h"
 #include "game/heap.h"
+#include "game/stageresult.h"
 #include "game/thread.h"
 #include "sdk/scetypes.h"
 
@@ -18,7 +19,7 @@ static SceneDef sScenes[] = {
 static int sSceneIndex;                         /* sbss 0x31ae3c (gp-0x7a34): read only */
 
 // ──────────────────────────────────────────────────────────────────────
-// Loads the resident packs, runs the startup sequence and starts the
+// Loads the resident packs and the game pack's tables, starts the
 // overlay thread, then runs the current scene in slot 2 until it exits,
 // over and over. After each scene the overlay's screen object goes and the
 // next frame's draw env clears to black.
@@ -28,7 +29,7 @@ void gameSceneThread(void *arg)
 {
     (void)arg;
     loadInitPack();
-    runStartupSequence();
+    loadGamePack();
     overlayThreadStart();
     for (;;) {
         loadMenuPack();

@@ -11,6 +11,7 @@
 #include "game/heap.h"
 #include "game/memcard.h"
 #include "game/progress.h"
+#include "game/stageresult.h"
 #include "sdk/scetypes.h"
 
 // ButtonMap's default button per action (setDefaults stores them, the
@@ -168,7 +169,7 @@ void SaveData::setDefaults()
     for (int i = 0; i < kStageFlagCount; i++)
         stageFlags[i] = 0;
 
-    _000 = 0;
+    playTime = 0;
     _3a8 = 0;
     variant3ac = 0;
     _3b0 = 0;
@@ -252,16 +253,16 @@ void SystemData::recordStageResult()
             save.markUnlock468();
     }
 
-    if (getStageResult()->recorded == 0)
+    if (getStageResult()->mode == StageClock_None)
         return;
     if (select.stage >= kStageCount)
         return;
 
     u_int value;
     if (select.stage == kStageHighestWins)
-        value = getStageResult()->resultHighest;
+        value = getStageResult()->clock2.value;
     else
-        value = getStageResult()->result;
+        value = getStageResult()->clock.value;
 
     int stage = select.stage;
     int kind = select.kind;

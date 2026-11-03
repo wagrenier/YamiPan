@@ -2837,6 +2837,24 @@
   "was": "FUN_00131930",
   "why": "loops on WaitSema(8034), counts vsyncs in 0x4c8164; a frame is ready when requested and count >= interval, or when the frameReady callback says so; then stores the count in gp-0x7aac and SignalSema(802c)"
  },
+ "00131d70": {
+  "name": "PackFile::load",
+  "tag": "game-inferred",
+  "was": "FUN_00131d70",
+  "why": "(pack, 0, 0) right after PackFile::PackFile in every pack loader; tail-calls 0x131a30"
+ },
+ "00131d80": {
+  "name": "PackFile::~PackFile",
+  "tag": "game-inferred",
+  "was": "FUN_00131d80",
+  "why": "slot 0 of Vt_00311060 (vptr +0x98): the loaders delete a pack through it with flag 1"
+ },
+ "00131f00": {
+  "name": "PackFile::PackFile",
+  "tag": "game-inferred",
+  "was": "FUN_00131f00",
+  "why": "(path, arg): vptr at +0x98 (Vt_003110b0 then Vt_00311060), copies the path into new[] at +0xa0, arg into +0xd0/+0xd4/+0xe0/+0xe4; every 'dataEU/pack*.pak' loader builds a 0xf8-byte one"
+ },
  "00132f20": {
   "name": "PerfMeter::drawDetail",
   "tag": "game-inferred",
@@ -9917,6 +9935,12 @@
   "was": "FUN_00171230",
   "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): sets the driver config 0x537d58 (defaults {1, 1, -1, -1, 0..}), copies it with sdpr2DrvSetConfig and installs the SE driver table 0x2f7a68 at 0x537d30 if none is"
  },
+ "001d6a80": {
+  "name": "StageSound::playNamed",
+  "tag": "game-inferred",
+  "was": "FUN_001d6a80",
+  "why": "(sound, name, volume f12): tail to 0x1d66e0; StageResult::tick passes the stage object's +0x24 (gp-0x7a7c), 'SYS_COUNT1' / 'SYS_COUNT2' and 1.0"
+ },
  "00231bb0": {
   "name": "gameSceneThread",
   "tag": "game-inferred",
@@ -10162,6 +10186,42 @@
   "tag": "game-inferred",
   "was": "FUN_0023dfa0",
   "why": "a0 = the 8-byte DateTime getLocalDateTime fills; the flags byte's high nibble is the format (1 BCD, 0 binary): nothing when it already equals a1, a1 == 0 decodes second..month and the 4-digit year from BCD and clears the nibble, else encodes them to BCD and sets it to 1; only caller getLocalDateTime"
+ },
+ "002439f0": {
+  "name": "UiLayout::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002439f0",
+  "why": "(layout, packet, ctx): sets up the child +0x20 (0x24fad0, 0x24e990 with the byte +0x30), sorts the parts by +8 and draws each (0x246400); StageResult::update's last call"
+ },
+ "00243b90": {
+  "name": "UiLayout::advance",
+  "tag": "game-inferred",
+  "was": "FUN_00243b90",
+  "why": "steps each of the +0x28 parts in the array +0x2c (0x246db0), then 0x243520; first of the three calls StageResult::update makes"
+ },
+ "00243c10": {
+  "name": "UiLayout::update",
+  "tag": "game-inferred",
+  "was": "FUN_00243c10",
+  "why": "sorts the parts by their +8 (priority), marks each, then runs 0x243f40 on the marked ones until none asks again, then 0x2434c0"
+ },
+ "00245e80": {
+  "name": "UiLayout::setData",
+  "tag": "game-inferred",
+  "was": "FUN_00245e80",
+  "why": "(layout, item, arg): resets (0x245c80), stores arg +0x34 and the pack item +0x1c, validates it (0x24d820; 0 drops it) and when its +0xc >= 0 builds the parts (0x244d90); StageResult::begin passes getLangPackItem(4 / 5), -1"
+ },
+ "00246010": {
+  "name": "UiLayout::~UiLayout",
+  "tag": "game-inferred",
+  "was": "FUN_00246010",
+  "why": "deleting destructor (obj, 1) of the 0x98-byte layout: StageResult::releaseLayout, overlayReleaseScreen"
+ },
+ "00246160": {
+  "name": "UiLayout::UiLayout",
+  "tag": "game-inferred",
+  "was": "FUN_00246160",
+  "why": "the 0x98-byte object StageResult::begin and the overlay (gp-0x7a28) use: +4 = -1, a 0xe0-byte child (0x24fb30) at +0x20, colour scale 1.0 x4 at +0x40, the -1 pairs +0x78..+0x90"
  },
  "002640e8": {
   "name": "_scfReadRomVer",
@@ -10462,6 +10522,18 @@
   "tag": "game-inferred",
   "was": "FUN_00267a00",
   "why": "deletes the overlay object at gp-0x7a28 (0x246010(obj, 1)) and clears its show byte gp-0x7a24: the first of the two objects overlayThreadStart's slot-6 thread draws; called after each scene by gameSceneThread and by the menu flow 0x2b5770"
+ },
+ "00290630": {
+  "name": "getLangPackItem",
+  "tag": "game-inferred",
+  "was": "FUN_00290630",
+  "why": "(index): as getInitPackItem on the pack 0x31ae68 / flag 0x31ae6c, which 0x290670 loads from dataEU/packinit<lang>.pak (DE / FR / ...)"
+ },
+ "002907c0": {
+  "name": "getInitPackItem",
+  "tag": "game-inferred",
+  "was": "FUN_002907c0",
+  "why": "(index): 0 unless the byte 0x31ae64 is set, else the resident pack 0x31ae60 (packinitEU.pak, loadInitPack) vtable slot 6 (+0x20) with the index"
  },
  "00290840": {
   "name": "loadInitPack",
@@ -10949,11 +11021,53 @@
   "was": "FUN_002acf90",
   "why": "port +0 = a1, slot +4 = a2, +0x10 and +8 = 0, then memcardLibInit inlined (sceMcInit once)"
  },
+ "002afc20": {
+  "name": "getInitItemForLanguage",
+  "tag": "game-inferred",
+  "was": "FUN_002afc20",
+  "why": "returns getInitPackItem(0x16 DE / 0x19 FR / 0x18 ES / 0x1a IT, else 0x17) by getLanguage (after a dropped getGameOptions); callers 0x195e10 / 0x1a20f0 (what the item is: unread)"
+ },
+ "002afcd0": {
+  "name": "getInitItem21",
+  "tag": "game-inferred",
+  "was": "FUN_002afcd0",
+  "why": "returns getInitPackItem(0x15) after getGameOptions / getLanguage whose results it drops: the language-independent sibling of getInitItemForLanguage (same callers)"
+ },
  "002afd00": {
-  "name": "runStartupSequence",
+  "name": "loadGamePack",
   "tag": "game-inferred",
   "was": "FUN_002afd00",
-  "why": "starts 0x2afd50 in thread slot 3 and yields until the slot is free; 0x2afd50 runs 0x2afd80 (loads 'dataEU/packgameEU.pak', builds a 0x80-byte object 0x2c0dc0 from it, runs it 0x2bcf10, frees both) then exits; called once before the scene loop, so likely the boot logo / notice screens (guess)"
+  "why": "was runStartupSequence (guess): starts loadGamePackThread in thread slot 3 and yields until the slot is free; the thread loads dataEU/packgameEU.pak and parses its tables (0x2bcf10 reads the columns labelled \u30e9\u30d9\u30eb / ctype / SEtype), no screens of its own"
+ },
+ "002afd50": {
+  "name": "loadGamePackThread",
+  "tag": "game-inferred",
+  "was": "FUN_002afd50",
+  "why": "slot-3 thread of loadGamePack: loadGamePackTables then threadExit"
+ },
+ "002afd80": {
+  "name": "loadGamePackTables",
+  "tag": "game-inferred",
+  "was": "FUN_002afd80",
+  "why": "new PackFile(0xf8) on 'dataEU/packgameEU.pak' (0x30b340), load(0, 0), new 0x80-byte PackTables, parse(tables, pack), then destroys the tables' eight maps inline (+0x70..+0, NameMap / ListMap alternating) and deletes the pack through its vtable slot 0"
+ },
+ "002afea0": {
+  "name": "ListMap::~ListMap",
+  "tag": "game-inferred",
+  "was": "FUN_002afea0",
+  "why": "MSL map destructor instance (deleting when the short flag > 0): erases the tree at +4 with ListMap::eraseTree; PackTables +0x00/+0x20/+0x40/+0x60 (ctor 0x2c16b0)"
+ },
+ "002aff10": {
+  "name": "NameMap::~NameMap",
+  "tag": "game-inferred",
+  "was": "FUN_002aff10",
+  "why": "MSL map destructor instance like ListMap's, tree erase NameMap::eraseTree; PackTables +0x10/+0x30/+0x50/+0x70 (ctor 0x2c1710)"
+ },
+ "002aff80": {
+  "name": "StageResult::beatsRecord",
+  "tag": "game-inferred",
+  "was": "FUN_002aff80",
+  "why": "compares the stage clock (+0x98, or the second clock +0xa8 on stage 29) with SaveData::getRecord(kind, variant, stage) of the play record at SystemData +0x4bc: higher wins on stage 29, lower elsewhere, as SystemData::recordStageResult keeps it; caller 0x2637b4"
  },
  "002b00d0": {
   "name": "StageResult::getPerfectBits",
@@ -10961,17 +11075,161 @@
   "was": "FUN_002b00d0",
   "why": "8 when +0 == 0, | 1 when +4 == 0, | 4 when +8 == 0, | 2 when +0xc == 0: one bit per zero counter, ORed into the save's medal byte"
  },
+ "002b0120": {
+  "name": "StageResult::update",
+  "tag": "game-inferred",
+  "was": "FUN_002b0120",
+  "why": "(packet, ctx): tick, then unless paused (+0xb4) advances, updates and draws the clock layout at +0xb8 (0x243b90 / 0x243c10 / 0x2439f0) into the packet; the stage loop 0x17f160 calls it every frame with packet list 10"
+ },
+ "002b01a0": {
+  "name": "StageResult::tick",
+  "tag": "game-inferred",
+  "was": "FUN_002b01a0",
+  "why": "counts SaveData +0 up (stops at -1: play time), then unless paused (or held in countdown mode) steps both clocks (+0x94 / +0xa4: value += step, a rising one stops at -1, a falling one at 0) and in countdown mode plays SYS_COUNT1 every 25 ticks from 250 down, SYS_COUNT2 at 0"
+ },
+ "002b0310": {
+  "name": "StageResult::addContinue",
+  "tag": "game-inferred",
+  "was": "FUN_002b0310",
+  "why": "++ +0: the game-over menu 0x17f890 (answer 2) and the pause menu 0x17f970 (answer 2) call it where they resume from a checkpoint; getPerfectBits gives bit 8 only while it is 0"
+ },
+ "002b0320": {
+  "name": "StageResult::restart",
+  "tag": "game-inferred",
+  "was": "FUN_002b0320",
+  "why": "clears both clocks (the countdown mode sets 7500 / -1, count-up step 1), the pause / hold bytes, the four counters and +0x10..+0x50; keeps +0x50..+0x94, the mode and the layout; the menus call it where they restart the stage (answers 0 / 1)"
+ },
+ "002b03b0": {
+  "name": "StageResult::hasAttemptFlag",
+  "tag": "game-inferred",
+  "was": "FUN_002b03b0",
+  "why": "+0x10 != 0: the first int of the block restart clears; 0x17fa70 skips the overlay reload 0x2676e0 when set, 0x2604a0 / 0x267de0 read it too (meaning unread)"
+ },
+ "002b03c0": {
+  "name": "StageResult::releaseLayout",
+  "tag": "game-inferred",
+  "was": "FUN_002b03c0",
+  "why": "deletes the clock layout +0xb8 (UiLayout deleting dtor 0x246010(obj, 1)) and clears it; end of the stage loop 0x17f160"
+ },
+ "002b0400": {
+  "name": "StageResult::begin",
+  "tag": "game-inferred",
+  "was": "FUN_002b0400",
+  "why": "(mode): stores the mode +0xbc, the restart clears plus +0x10..+0x94, releases the old layout and for mode 1 / 2 builds a new UiLayout on getLangPackItem(4 / 5); 0x17f160 picks 2 on stage 29, else 1 when StageSelect +0x10 is set, else 0; the static init 0x310f60 calls begin(0)"
+ },
  "002b0580": {
   "name": "getStageResult",
   "tag": "game-inferred",
   "was": "FUN_002b0580",
   "why": "returns 0x599700, the record of the stage just played (+0x98 / +0xa8 the results SystemData::recordStageResult keeps, +0xbc set when it counts)"
  },
+ "002b0590": {
+  "name": "ListMap::eraseTree",
+  "tag": "game-inferred",
+  "was": "FUN_002b0590",
+  "why": "MSL red-black tree erase instance, recursive, two levels unrolled: destroys each node's value (+0xc: 4-byte key, then an EntryList) and frees the node into the global heap"
+ },
+ "002b07f0": {
+  "name": "ListMap::Value::~Value",
+  "tag": "game-inferred",
+  "was": "FUN_002b07f0",
+  "why": "pair destructor instance: the EntryList at +4 (EntryList::~EntryList(\u2026, 0)), deleting when the flag > 0"
+ },
+ "002b0860": {
+  "name": "ListMap::freeNode",
+  "tag": "game-inferred",
+  "was": "FUN_002b0860",
+  "why": "node allocator deallocate instance: Heap::free(gGlobalHeap, p)"
+ },
+ "002b0870": {
+  "name": "ListMap::getNodeAllocator",
+  "tag": "game-inferred",
+  "was": "FUN_002b0870",
+  "why": "returns this + 4 (the tree's node allocator)"
+ },
+ "002b0880": {
+  "name": "ListMap::destroyValue",
+  "tag": "game-inferred",
+  "was": "FUN_002b0880",
+  "why": "allocator destroy instance: the EntryList at value + 4"
+ },
+ "002b08c0": {
+  "name": "ListMap::getValueAllocator",
+  "tag": "game-inferred",
+  "was": "FUN_002b08c0",
+  "why": "returns its argument (the value allocator)"
+ },
+ "002b08d0": {
+  "name": "NameMap::eraseTree",
+  "tag": "game-inferred",
+  "was": "FUN_002b08d0",
+  "why": "MSL tree erase instance like ListMap's; each node's value (+0xc) starts with an MSL string (0x297fb0: heap buffer when bit 0 of its first word is set)"
+ },
+ "002b0b20": {
+  "name": "NameMap::Value::~Value",
+  "tag": "game-inferred",
+  "was": "FUN_002b0b20",
+  "why": "pair destructor instance: the string key at +0 (0x297fb0), deleting when the flag > 0"
+ },
+ "002b0b80": {
+  "name": "NameMap::freeNode",
+  "tag": "game-inferred",
+  "was": "FUN_002b0b80",
+  "why": "node allocator deallocate instance: Heap::free(gGlobalHeap, p)"
+ },
+ "002b0b90": {
+  "name": "NameMap::getNodeAllocator",
+  "tag": "game-inferred",
+  "was": "FUN_002b0b90",
+  "why": "returns this + 4, as ListMap::getNodeAllocator"
+ },
+ "002b0ba0": {
+  "name": "NameMap::destroyValue",
+  "tag": "game-inferred",
+  "was": "FUN_002b0ba0",
+  "why": "allocator destroy instance: the string at the value"
+ },
+ "002b0bd0": {
+  "name": "NameMap::getValueAllocator",
+  "tag": "game-inferred",
+  "was": "FUN_002b0bd0",
+  "why": "returns its argument"
+ },
+ "002b0be0": {
+  "name": "EntryList::~EntryList",
+  "tag": "game-inferred",
+  "was": "FUN_002b0be0",
+  "why": "MSL vector destructor instance: clear, frees the buffer +8 into the global heap, deleting when the flag > 0; ListMap's value"
+ },
+ "002b0c50": {
+  "name": "EntryList::clear",
+  "tag": "game-inferred",
+  "was": "FUN_002b0c50",
+  "why": "destroys the 0x10-byte elements from the back (+4 an MSL string: frees +0xc when bit 0 of +4 is set), size +4 = 0"
+ },
+ "002b0cf0": {
+  "name": "StageResult::~StageResult",
+  "tag": "game-inferred",
+  "was": "FUN_002b0cf0",
+  "why": "registered by the static init 0x310f60 (__register_global_object(0x599700, 0x2b0cf0, 0x5996e8)): releases the clock layout +0xb8, deleting when the flag > 0"
+ },
  "002b5740": {
   "name": "menuSceneThread",
   "tag": "game-inferred",
   "was": "FUN_002b5740",
   "why": "the scene table's only entry (0x2fabd0: name 'Menu (Pack File)', arg 1): runs the menu flow 0x2b5770(1) then threadExit"
+ },
+ "002bcf10": {
+  "name": "PackTables::parse",
+  "tag": "game-inferred",
+  "was": "FUN_002bcf10",
+  "why": "(tables, pack): 3962 instructions reading the pack's tables, with the column names \u30e9\u30d9\u30eb (label), ctype and SEtype; called once by loadGamePackTables"
+ },
+ "002c0dc0": {
+  "name": "PackTables::PackTables",
+  "tag": "game-inferred",
+  "was": "FUN_002c0dc0",
+  "why": "builds eight MSL maps at +0x00..+0x70, 0x2c16b0 (ListMap) / 0x2c1710 (NameMap) alternating; the 0x80-byte object loadGamePackTables fills from packgameEU.pak"
  },
  "002c3d30": {
   "name": "getSaveResourceAux",

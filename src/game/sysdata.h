@@ -139,7 +139,7 @@ struct SaveData
         return record[kind][variant][stage];
     }
 
-    int    _000;                // FS2 +0x000: cleared by setDefaults
+    u_int  playTime;            // FS2 +0x000: ticks played, stops at -1 (StageResult::tick); cleared by setDefaults
     u_char archive[kArchiveCount + 1];                     // FS2 +0x004: nonzero when collected, [0] unused (hasArchive)
     u_char stageFlags[kStageFlagCount];                    // FS2 +0x069: clearBit bits per stage
     u_char _0ae[0x27];          // FS2 +0x0ae: then 3 bytes padding (the implicit operator= copies 0x27)

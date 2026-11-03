@@ -340,8 +340,8 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
     GS path / graph / DMA.
   - **Scene controller** (`src/game/scene.cpp`, `gameSceneThread` 0x231bb0, thread slot 1, written
     2026-11-03): `loadInitPack` 0x290840 (`dataEU/packinitEU.pak`, pack object at 0x31ae60),
-    `runStartupSequence` 0x2afd00 (0x2afd50 in slot 3: `packgameEU.pak` + a 0x80-byte object
-    0x2c0dc0 run by 0x2bcf10; boot screens, guess), `overlayThreadStart` 0x267780 (slot 6, 0x267830:
+    `loadGamePack` 0x2afd00 (was `runStartupSequence`; 0x2afd50 in slot 3: `packgameEU.pak` parsed
+    into `PackTables` by 0x2bcf10, no screens: `game/stageresult.cpp` in "Modules"), `overlayThreadStart` 0x267780 (slot 6, 0x267830:
     draws the 0x98-byte overlay objects gp-0x7a28 / gp-0x7a20 into packet list 0xb; the second is the
     loading indicator kept alive by 0x267950, called from the pack loader's wait loop), then forever
     `loadMenuPack` 0x2c3e10 (`packmenuEU.pak` at 0x31ae98 unless loaded), the scene from the
@@ -555,6 +555,36 @@ not read yet. **MSL vector layout: {capacity +0, size +4, data +8}**, 0xc bytes;
 each instance (insert, resize, erase, assign, range init, copy ctor, begin / end, placement new
 0x2673f0) out of line after the file's code, plus linkonce `std::max` / `min` / `fabs` / `swap`
 0x2651e0..0x265250 (also called from 0x2db540).
+
+**`game/stageresult.cpp` 0x2afc20..0x2b0d50 (TU 13, 2026-11-03, batch 036, all 32 written or mapped
+to the host `<map>` / `<vector>`, `verify`)**: **`StageResult`** at bss **0x599700** (`getStageResult`
+0x2b0580; static init 0x310f60 = the inline ctor (layout +0xb8 / mode +0xbc cleared) + `begin(0)` +
+`__register_global_object(.., ~StageResult 0x2b0cf0, 0x5996e8)`; it is the **last** of the nine
+initialisers, so this object file links after every other file-scope object). EE 0xc0: four counters
++0 (`[0]` continues: `addContinue` from the game-over / pause menus' checkpoint answer; the medal bits
+of `getPerfectBits` are one per counter at 0: [0] 8, [1] 1, [2] 4, [3] 2), an "attempt" block of 16
+ints +0x10 (`restart` clears it; 0x17f7c0 reads +0x4c), a "stage" block +0x50..+0x90 and +0x90
+(`begin` only), **two clocks `StageClock` {state, value, step, target} at +0x94 / +0xa4** (step
+added each tick; a rising clock stops at -1, a falling one at 0; the stage scripts 0x1a8ca0..0x1a9000
+set and test them, state 0 or bits 0x14), paused +0xb4 (the stage loop sets it around its menus),
+hold +0xb5 (stops a countdown), the clock's `UiLayout` +0xb8, **mode +0xbc** (0 none: no record;
+1 count-up from 0; 2 countdown from 7500, cues `SYS_COUNT1` every 25 ticks from 250 and `SYS_COUNT2`
+at 0 through the stage object's sound, `*(gp-0x7a7c)+0x24` 0x1d6a80). The stage loop **0x17f160**
+picks mode 2 on stage 29, else 1 when `StageSelect` +0x10 is set, else 0, then calls `update` each
+frame with packet list 10 (tick, then the layout's advance / update / draw unless paused). `tick` also
+counts **`SaveData` +0 = play time** (stops at -1). `beatsRecord` 0x2aff80 is `recordStageResult`'s
+comparison (clock2 higher on stage 29, clock lower elsewhere). The clock faces are **language-pack
+items 4 (count-up) / 5 (countdown)** (`getLangPackItem` 0x290630: the pack 0x31ae68 that 0x290670
+loads from `dataEU/packinit<lang>.pak`; `getInitPackItem` 0x2907c0 is the same on packinitEU.pak at
+0x31ae60; items are pack vtable slot 6). The same file: **`loadGamePack`** 0x2afd00 (was
+`runStartupSequence`: no screens, it runs `loadGamePackTables` 0x2afd80 in slot 3: `PackFile`
+0xf8 on `dataEU/packgameEU.pak`, `PackTables` 0x80 = eight MSL maps (ListMap int -> vector of 0x10
+{4 bytes, string} / NameMap string -> 4 bytes, alternating), `PackTables::parse` 0x2bcf10 reads
+columns ラベル / ctype / SEtype, then both are freed: where the parsed data goes is not read yet) and
+`getInitItemForLanguage` 0x2afc20 / `getInitItem21` 0x2afcd0 (init items 0x15..0x1a by language).
+**MSL map: {tree root +4, ...} 0x10 bytes; nodes {left +0, right +4, .., value +0xc}; MSL string
+0xc {bit 0 of +0: heap buffer at +8}** (0x297fb0); CodeWarrior emits the map / vector instances
+between the file's last function and its static destructor.
 
 ## Classes
 

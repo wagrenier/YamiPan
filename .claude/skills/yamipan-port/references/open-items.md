@@ -103,6 +103,22 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    give `sdk/libvu0.h` from RosePan (`sceVu0FVECTOR` / `sceVu0FMATRIX`, 16-aligned); game code
    includes it from here on. Next in the run: 0x2676e0.. (scene / movie threads: getStageSelect,
    2dEU/BGMOVIEEU.d2b, the stage-unlock checks at 0x268ae0 / 0x269160).
+   TU 13 (the frontier's `unassigned@002acff0`, 688 functions 0x2acff0..0x2e26b4, for
+   `getStageResult` / `StageResult::getPerfectBits` / `runStartupSequence`): **`game/stageresult.cpp`
+   0x2afc20..0x2b0d50** cut out (32 functions, batch 036, all written or mapped to the host
+   `<map>` / `<vector>`, `verify`; architecture.md "Modules"). `runStartupSequence` renamed
+   **`loadGamePack`** (it parses packgameEU.pak's tables, no screens); `StageResult` moved from
+   `gamehooks.h` to `stageresult.h` (fields now `clock.value` / `clock2.value` / `mode`;
+   `sysdata.cpp` follows) and `SaveData::_000` is `playTime`. New stand-ins in `gamehooks.h`:
+   `PackFile`, `PackTables` (+ `ListMap` / `NameMap` / `EntryList`), `UiLayout`, `StageSound`,
+   `StageScene` / `gStageScene` (gp-0x7a7c: data the build must define), `getInitPackItem` /
+   `getLangPackItem` with the `InitPackItem` / `LangPackItem` ids. Doubts for the user: the file
+   name and joining 0x2afc20 / 0x2afcd0 to it are guesses (by position); counters [1..3], the
+   attempt / stage blocks, clock state bits 0x14 and the `PackTables` element types are read from
+   their users' shapes only; the `UiLayout`, `StageScene` and `PackTables` names are the port's.
+   Left in the unassigned run's head 0x2acff0..0x2afc20: a drawing cluster around 0x2adc70
+   (getStageSelect, packet lists, 0x2e1c50 / 0x2e1b70) and `getSaveResource` 0x2c3d70 /
+   `getSaveResourceAux` 0x2c3d30 / `loadMenuPack` 0x2c3e10 further on (memcard / scene callers).
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
