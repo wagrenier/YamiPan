@@ -1222,9 +1222,11 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    (DisplayGeometry, UiCanvas, Renderer, PresentPass, Screenshotter), `io/` (InputSystem, HostFiles),
    `ui/` (Overlay, four panels, the Siren theme), `src/sdk/` (eekernel, libgraph, libdma, libvifpk, libpad,
    libcdvd, fileio, sif). **Left, in this order** (each ends in a picture or a sound):
-   (a) the game-layer boot the run stops at: `rxInit` / `spkRomLoad` (`game/spkrom.cpp`) and
-       `rx/filehost.c` / `filecd.c` / `filehdd.c` (RosePan has them in `rxfile.cpp`): the job worker
-       crashes on the null file hooks until then;
+   ~~(a) the game-layer boot~~ **done 2026-11-03**: `game/spkrom.cpp` and `rx/filecd.c` written (`verify`)
+       and `io::Disc` serves the data folder as the disc (architecture.md "PC platform layer"). A smoke
+       run reads SPK.ROM through rx's own ISO code and walks `loadGamePack` -> `PackTables` ->
+       `loadMenuPack` -> `menuSceneThread`: **the frontier is now the reached stubs, the TU loop's job**
+       (`rx/filehost.c` and `filehdd.c` stay stubs: FS2 never opens those devices);
    (b) `rena/rena_2d_texture_tim2.cpp`, then `TextureStore` behind `YamiPan_DrawUiTexture` (TIM2 decoded
        at the source): nothing textured draws until then;
    (c) any aspect: the renderer hands k to the game's UI matrices (`kUiScreenMatrix`, see TU 19), the one

@@ -194,7 +194,7 @@ void UiAnim::init(S2dData *data, S2dObject *obj, int objIndex)
     m_tracks = (UiTrack **)gGlobalHeap.alloc(m_trackCount * sizeof(UiTrack *), 16);
 
     for (u_int i = 0; i < m_trackCount; i++) {
-        S2dTrackRec *rec = i < m_obj->trackCount ? m_obj->tracks[i] : nullptr;
+        S2dTrackRec *rec = i < m_obj->trackCount ? (S2dTrackRec *)m_obj->tracks[i] : nullptr;
         UiTrack *track = nullptr;
 
         switch (rec->kind) {

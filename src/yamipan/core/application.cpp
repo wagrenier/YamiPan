@@ -13,6 +13,7 @@
 
 #include "yamipan/core/logger.h"
 #include "yamipan/ee/kernel.h"
+#include "yamipan/io/disc.h"
 
 // The game's own main (game/gamesystem.cpp, built with main=gameMain).
 int gameMain(int argc, char **argv);
@@ -95,8 +96,12 @@ void Application::startGame()
         return;
 
     log::info("Starting the game");
+    io::Disc::instance().mount(m_paths.dataFolder());
     ee::Kernel::instance().startMainThread([this] {
+        // argv[0] is what the console's loader gave: rx takes its boot device from it (SYSTEM.CNF's BOOT2).
+        static char bootPath[] = "cdrom0:\\SCES_538.51;1";
         std::vector<char *> arguments(m_arguments.begin(), m_arguments.end());
+        arguments.at(0) = bootPath;
         const int result = gameMain(static_cast<int>(arguments.size()), arguments.data());
         log::info("The game's main returned {}", result);
     });

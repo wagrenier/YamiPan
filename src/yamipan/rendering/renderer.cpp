@@ -506,7 +506,7 @@ void Renderer::renderOnce()
         }
     }
 
-    const bool shotDue = m_screenshots->recordIfDue(commands, m_scene.get(), layout);
+    const bool shotDue = m_screenshots->recordIfDue(commands, m_scene.get(), m_output.get(), layout);
 
     SDL_GPUTexture *swapchain = nullptr;
     Uint32 swapchainWidth = 0;

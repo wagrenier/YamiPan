@@ -37,8 +37,6 @@
 struct StageSelect;             // game/sysdata.h
 
 // rx boot: thread priorities given absolute, made relative to the caller.
-void rxInit(const char *bootPath, int prio0, int prio1, int prio2);      // FS2 0x001527a0
-void rxTerm();                                                           // FS2 0x00152750
 // The rx file hooks (a file's size: 0 empty, < 0 missing; reading it whole
 // into buf) are rx/rxfile.h's rxFileCallSizeHook 0x1556d0 /
 // rxFileCallLoadHook 0x155690; the game reaches them through jump thunks of

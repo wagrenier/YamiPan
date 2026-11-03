@@ -27,16 +27,19 @@ Screenshotter::Screenshotter(gpu::Device &device) : m_device(device)
         m_directory = pathFromUtf8(directory);
     if (const char *const every = std::getenv("YAMIPAN_SHOT_EVERY"); every != nullptr && std::atoi(every) > 0)
         m_every = static_cast<unsigned>(std::atoi(every));
+    m_wholeWindow = std::getenv("YAMIPAN_SHOT_WINDOW") != nullptr;
 }
 
-bool Screenshotter::recordIfDue(SDL_GPUCommandBuffer *commands, SDL_GPUTexture *scene, const PictureLayout &layout)
+bool Screenshotter::recordIfDue(SDL_GPUCommandBuffer *commands, SDL_GPUTexture *scene, SDL_GPUTexture *window,
+                                const PictureLayout &layout)
 {
     if (!m_directory || ++m_presented % m_every != 0)
         return false;
 
     // At the frame's own height, the composed shape: a size the tools can look at, whatever the window.
-    const auto height = static_cast<unsigned>(kFrameHeight);
-    const auto width = static_cast<unsigned>(std::lround(kFrameHeight * layout.aspect));
+    const auto height = static_cast<unsigned>(m_wholeWindow ? layout.windowHeight : static_cast<int>(kFrameHeight));
+    const auto width = m_wholeWindow ? static_cast<unsigned>(layout.windowWidth)
+                                     : static_cast<unsigned>(std::lround(kFrameHeight * layout.aspect));
     if (!m_texture || m_width != width || m_height != height)
     {
         m_texture = m_device.createTexture(width, height, kShotFormat,
@@ -46,9 +49,9 @@ bool Screenshotter::recordIfDue(SDL_GPUCommandBuffer *commands, SDL_GPUTexture *
     }
 
     SDL_GPUBlitInfo blit{};
-    blit.source.texture = scene;
-    blit.source.w = static_cast<Uint32>(layout.renderWidth);
-    blit.source.h = static_cast<Uint32>(layout.renderHeight);
+    blit.source.texture = m_wholeWindow ? window : scene;
+    blit.source.w = static_cast<Uint32>(m_wholeWindow ? layout.windowWidth : layout.renderWidth);
+    blit.source.h = static_cast<Uint32>(m_wholeWindow ? layout.windowHeight : layout.renderHeight);
     blit.destination.texture = m_texture.get();
     blit.destination.w = width;
     blit.destination.h = height;

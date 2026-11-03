@@ -37,6 +37,9 @@ extern "C" {
 #endif
 
 typedef struct RxFileDriver          RxFileDriver;
+/* The driver files share rxfile.c's message switch (data 0x2f5aa0). */
+extern int rxFileVerbose;
+
 typedef struct RxFileContext         RxFileContext;
 typedef struct RxFileDirInfo         RxFileDirInfo;
 typedef struct RxFileDevInfo         RxFileDevInfo;

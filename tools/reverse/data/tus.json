@@ -464,12 +464,21 @@
    "why": "SoundTrack (fsm subtitles + StDT stream table over SoundStream) and SePlayer (the SEDT effect player): one class pair from SoundTrack::setAttr to SePlayer::update; after it 0x2937e0 starts an ELEVATOR2 stage object"
   },
   "game/spkrom.cpp": {
+   "notes": "All 13 of 0x152730..0x153108 written. The entries keep offsets on the host (the ROM relocates them to pointers in place), strings through spkString. Host: argv[0] is SYSTEM.CNF's BOOT2, so rx takes cdrom0: as the boot device; io::Disc serves the data folder as an ISO image with two volumes, so rx/filecd.c runs unchanged. Reached in a smoke run: SPK.ROM read through rx's ISO code at its exact 243425 bytes. Also here: layoutcheck.py learnt that nothing is force-included and takes C++23, stubgen.py stubs constructors and extern C functions, explicit casts in uisequence.cpp and uitrack.cpp for MSVC's ternary.",
    "ranges": [
     [
      "00152750",
      "00153108"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-03 17:39",
+     "status": "verify",
+     "summary": "game/spkrom.cpp: rxInit, rxTerm, the SPK.ROM index (load, locate, size, load file), the rx memory hooks; with the Pan layer's virtual disc behind sceCdRead"
+    }
+   ],
+   "status": "verify",
    "why": "the game's rx user layer: rxTerm, rxInit, spkRomLoad, spkLocateFile, spkGetFileSize, spkLoadFile (SPK.ROM index) and gameRxMemAlloc / Realloc / Free (batches 003, 005); file name a guess."
   },
   "game/stagealert.cpp": {
@@ -874,12 +883,14 @@
    "why": "rena's VIF1 packet manager: the source string rena_pkt_vif1pktmanage.cpp in Reset 0x2eb170 and AddList 0x2eb500, classes Vif1PktManage (vtable 0x31a808) / Vif1PktList (0x31a818); 0x2eb7d0..0x2ec110 are its MSL vector instances (insert of the list / buffer vectors, the buffer vector dtor and clear), called only from this file. Before: unassigned@002e2970 code; after: 0x2ec110 a lazy static init of another file (drawSysInit's caller set). Key under rena/ with the game's own file name."
   },
   "rx/filecd.c": {
+   "claimed": "2026-11-03 17:33",
    "ranges": [
     [
      "001565c8",
      "00157db8"
     ]
    ],
+   "status": "active",
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. the CD driver rxFileCdWait .. rxFileCdGetLayerMode; its own file by analogy with filehost.c (same driver shape, no string of its own): a guess."
   },
   "rx/filehdd.c": {
