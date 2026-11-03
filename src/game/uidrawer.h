@@ -149,8 +149,8 @@ enum UiVertexFormat
 constexpr int kGsRegTex1_1 = 0x14;
 
 class GsTexture;                // game/gsutil.h
-class UiFont;                   // game/uitrack.h
-struct TimSheetSprite;          // game/uitrack.h
+class UiFont;                   // game/uigame.h
+struct TimSheetSprite;          // game/uigame.h
 
 // The drawer's matrix stack depth (+0x1c..+0x7c).
 constexpr int kUiDrawerStackDepth = 4;

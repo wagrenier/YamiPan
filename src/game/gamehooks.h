@@ -12,6 +12,7 @@
 #define _GAME_GAMEHOOKS_H
 
 #include <stddef.h>
+#include <string.h>
 
 #include <map>
 #include <string>
@@ -207,17 +208,115 @@ class StageSound
 {
 public:
     void playNamed(const char *name, float volume);                      // FS2 0x001d6a80
+    // playNamed, not muted while the stage is paused (state 1 / 2) and
+    // through the player's other entry (0x292830): the play record, null
+    // when it did not play.
+    void *playNamedAlways(const char *name, float volume);               // FS2 0x001d6a70
+    // Stops every playing effect called name.
+    void stopNamed(const char *name);                                    // FS2 0x001d6a90
+};
+
+// The player character of a stage (the stage object's +0x78). Only what
+// game/uigame.cpp reads.
+// layout: host -- EE: +0x150 / +0x154 position x / z, +0x168 yaw.
+struct StagePlayer
+{
+    u_char _000[0x150];
+    float  posX;                // FS2 +0x150
+    float  posZ;                // FS2 +0x154
+    u_char _158[0x10];
+    float  yaw;                 // FS2 +0x168
 };
 
 // The current stage object (0x130 bytes, built by the stage loop 0x17f160:
-// 0x19c180). Only what game/stageresult.cpp reads.
+// 0x19c180). Only what game/stageresult.cpp and game/uigame.cpp read.
 // layout: host -- EE: +0x1c the box-grid owner (game/boxgrid.h), +0x24 the
-// sound.
+// sound, +0x78 the player.
 struct StageScene
 {
-    u_char      _00[0x24];
-    StageSound *sound;          // FS2 +0x24
+    u_char       _00[0x24];
+    StageSound  *sound;         // FS2 +0x24
+    u_char       _28[0x50];
+    StagePlayer *player;        // FS2 +0x78
 };
 extern StageScene *gStageScene;     /* sbss 0x31adf4 (gp-0x7a7c) */
+
+// An angle wrapped into -pi..pi by one turn at most.
+float normalizeAngle(float angle);                                       // FS2 0x001339c0
+
+// ──────────────────────────────────────────────────────────────────────
+// The sound-effect player outside a stage (0x292ac0.., in the run
+// unassigned@002681e0, not cut yet). Only what game/uigame.cpp calls.
+
+// An effect (0x30 bytes): SePlayer::play reads its bank (+4), program /
+// note (+0x14 / +0x18), pitch spread (+0x20), id (+0x26), volume (+0x28).
+// layout: host -- no fields declared yet.
+struct SeEntry
+{
+    u_char _00[0x30];
+};
+
+// The effect table's name index, sorted by name.
+// layout: host -- EE 8 bytes.
+struct SeName
+{
+    int         index;          // FS2 +0x0: SeTable::entries index
+    const char *name;           // FS2 +0x4
+};
+
+// The effect table (the player's +0).
+// layout: host -- EE: +0xc count, +0x428 name count, +0x42c the names,
+// +0x430 the entries.
+struct SeTable
+{
+    u_char  _000[0xc];
+    int     count;              // FS2 +0x00c
+    u_char  _010[0x418];
+    int     nameCount;          // FS2 +0x428
+    SeName *names;              // FS2 +0x42c
+    SeEntry entries[1];         // FS2 +0x430: count
+
+    // The effect called name; null none. A binary search over names,
+    // inline in the ROM (UiLayout::playSound, StageSound's play 0x1d66e0);
+    // like the ROM it reads names[0] even when there are none.
+    const SeEntry *find(const char *name)
+    {
+        int hi = nameCount;
+        int lo = 0;
+        int index = -1;
+        do {
+            int mid = (hi + lo) >> 1;
+            int cmp = strcmp(names[mid].name, name);
+            if (cmp == 0) {
+                index = names[mid].index;
+                break;
+            }
+            if (cmp < 1)
+                lo = mid + 1;
+            else
+                hi = mid;
+        } while (hi != lo);
+        if (index < 0)
+            return nullptr;
+        if (index < count)
+            return &entries[index];
+        return nullptr;
+    }
+};
+
+// The handle SePlayer::play answers: -1 none.
+typedef long long SeHandle;
+
+// layout: host -- EE: +0 the effect table, then the banks and streams.
+class SePlayer
+{
+public:
+    // Plays an effect at a left / right volume 0..0x80 (random pitch).
+    SeHandle play(const SeEntry *se, int left, int right);              // FS2 0x00292ac0
+    void     stop(SeHandle handle);                                      // FS2 0x00292db0: -1 nothing
+
+    SeTable *m_table;           // FS2 +0x0
+};
+SePlayer *getSePlayer();                                                 // FS2 0x002c4140: sbss 0x31aea0
 
 #endif /* _GAME_GAMEHOOKS_H */

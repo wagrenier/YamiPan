@@ -820,6 +820,36 @@ the base's. Callers: UiDrawer, the textured tracks, UiFont, FUN_00288c00 and the
 group. On the host the presets go to `YamiPan_DrawUiReg`; the draw module must sample its own copy
 of the named target when a GsTexture has m_isTarget (no GS memory).
 
+**`game/uigame.cpp` 0x25fa50..0x2640e8 (TU 21, 2026-11-03, batch 049; cut out of
+`unassigned@00252840`; the file name is the port's; 14 of 40 written, `partial`)**: the S2D UI's
+**game side**. Below it 0x252840..0x25fa50 are the widget classes (vtables 0x316a90..0x316c10,
+`UiWidget::create` 0x25e260) with a tween record helper set 0x25f5b0..0x25fa10 (0x25f860 has 64
+callers); above it libscf. In it: **`UiFont`** (0x14: glyphs, owned GsTexture, text, spacing 2 / 0);
+the two resource files the S2D images can be besides a TIM2, both relocated in place once (magic,
++4 relocated byte, then name / text / picture tables whose entries are offsets from a header base):
+**fMsg** message files (+0x10 count, +0x14 / +0x18 / +0x1c name count / table / base, +0x20 / +0x24
+/ +0x28 the same for the 16-bit texts, +0x30 entries {name index, text index}, negative none;
+`fMsgFind` 0x25fb30, `fMsgRelocate` 0x25fbd0) and **TimM** sprite sheets (+0x10 sprite count, names
+as fMsg, +0x20 / +0x24 pictures {name rel +0x28, TIM2 rel +0x2c}, +0x30 sprites of 0x10 {name,
+picture, u, v, w, h}; `timSheetFind` 0x25fd60, `timSheetRelocate` 0x25fe10): the item / action
+icons ("LW_NIGHTSTICK" on S_OBJ_011.TM2). Names compare with libc **`strcasecmp`** 0x127ea0. On the
+disc: 241 TimM and 2,620 fMsg files in ROM.000..ROMD.010 (raw), all relocated by the port's
+S2dRef code with every pointer inside the file. The **layout hooks**: `playSound` / `stopSound`
+(4 slots: outside a stage the effect player **`getSePlayer`** 0x2c4140 (sbss 0x31aea0; +0 the
+effect table: +0xc count, sorted name index +0x428 / +0x42c, entries 0x30 at +0x430) with
+`SePlayer::play` 0x292ac0 (volume 0x80 / 0x80, 64-bit handle {voice, id, bank byte}) / `stop`
+0x292db0; inside one the stage's `StageSound::playNamedAlways` 0x1d6a70 / `stopNamed` 0x1d6a90);
+`readGameValue` / `writeGameValue` / `testGameValue` (packed argument: byte 0 says which of bytes
+1..3 are variable indices) over **`getGameValue`** 0x2633f0 / **`setGameValue`** 0x262e70, kind 13
+the save's stage flags inline. The tracks' target **"rCharactorPostion"** is the stage's player
+(`gStageScene` +0x78: +0x150 / +0x154 x / z, +0x168 yaw): rotate-to takes `normalizeAngle`
+0x1339c0 (pi - yaw), pin-rot (x, -z) / 10 too; outside a stage 6000 / 5000 and ~pi / 2.
+Unwritten: `testGameState` 0x2604a0, the text variables 0x260bc0 / 0x2612c0 ("%s%s%s",
+"--:--:--"), `UiSheetSpriteTrack::findSprite` 0x261d00 (item names: tables 0x2faed0 "rItem00.." /
+0x2fafc0 of 5 words, item defs 0x574c10 160 x 0x20 {name, +0x10 kind, +0x19, +0x1e}; the player's
+items +0x22c (a list), +0x238 / +0x23c), the inventory scans 0x2628a0 / 0x262a90, the game values
+and the small hooks 0x262df0..0x264070.
+
 ## Classes
 
 Name, vtable, vptr offset, size, file. `python rtti.py` (CodeWarrior variant, bootstrap 4, 2026-10-31)

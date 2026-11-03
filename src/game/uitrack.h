@@ -30,6 +30,7 @@
 #include "game/gsutil.h"
 #include "game/s2ddata.h"
 #include "game/uidrawer.h"
+#include "game/uigame.h"
 #include "game/uisequence.h"
 #include "sdk/scetypes.h"
 
@@ -309,105 +310,8 @@ enum UiPinMode
 // ──────────────────────────────────────────────────────────────────────
 // Stand-ins for the classes the tracks hold, from later TUs.
 
-// A font: its glyph table and texture, the text it draws and its scale
-// (EE 0x14 bytes; 0x25fa50..0x25fbd0, with the fMsg message files).
-// layout: host
-class UiFont
-{
-public:
-    UiFont(const void *glyphs, const void *image);                       // FS2 0x0025fac0: spacing 2, 0
-    ~UiFont();                                                           // FS2 0x0025fa50: deleting (obj, 1)
-
-    const void     *m_glyphs;   // FS2 +0x00: a FontData (game/fontdata.h)
-    GsTexture      *m_texture;  // FS2 +0x04
-    const u_short  *m_text;     // FS2 +0x08: UiTextTrack::m_text
-    // Pixels taken off each glyph's advance and each line's height
-    // (UiDrawer::drawText): the record's.
-    float           m_spacing[2]; // FS2 +0x0c
-};
-
-// Relocates a TimM sheet image in place (once; "TimM" magic). False when
-// it is not one. With the layout hooks (0x25fe10).
-bool timSheetRelocate(void *sheet);                                      // FS2 0x0025fe10
-
-// A sprite of a TimM sheet: which of the sheet's images, and its rect in
-// it (texels).
-struct TimSheetSprite
-{
-    short _00;
-    short image;                // FS2 +0x2: TimSheet::images index
-    short u, v;                 // FS2 +0x4
-    short w, h;                 // FS2 +0x8
-};
-static_assert(offsetof(TimSheetSprite, w) == 0x8, "TimSheetSprite::w");
-
-// layout: host -- EE: +0 "TimM", +4 relocated, +0x14 / +0x18 the sprites,
-// +0x20 / +0x24 the images {?, image} (8 bytes each); pointers after
-// timSheetRelocate.
-struct TimSheetImage
-{
-    int         _00;
-    const void *image;          // FS2 +0x4: what UiDrawer::setImage binds
-};
-// layout: host (see TimSheetImage)
-struct TimSheet
-{
-    char            magic[4];   // FS2 +0x00: "TimM"
-    u_char          relocated;  // FS2 +0x04
-    u_char          _05[0xf];
-    int             spriteCount; // FS2 +0x14
-    TimSheetSprite *sprites;    // FS2 +0x18
-    int             imageCount; // FS2 +0x20
-    TimSheetImage  *images;     // FS2 +0x24
-};
-
-// An fMsg message file (with the fonts, 0x25fa50..): named wide-string
-// messages.
-// layout: host -- EE: +0 "fMsg", +4 relocated, +0x10 count, +0x30 the
-// entries {name, text} (8 bytes each); pointers after fMsgRelocate.
-struct FMsgEntry
-{
-    const char    *name;        // FS2 +0x0
-    const u_short *text;        // FS2 +0x4
-};
-// layout: host (see FMsgEntry)
-struct FMsgFile
-{
-    char      magic[4];         // FS2 +0x00: "fMsg"
-    u_char    relocated;        // FS2 +0x04
-    u_char    _05[0xb];
-    int       count;            // FS2 +0x10
-    u_char    _14[0x1c];
-    FMsgEntry entries[1];       // FS2 +0x30
-};
-
-// Relocates an fMsg file in place (once). False when it is not one.
-bool fMsgRelocate(void *file);                                           // FS2 0x0025fbd0
-// The index of the message called name; -1 none.
-int  fMsgFind(void *file, const char *name);                             // FS2 0x0025fb30
-
-// Inline in the ROM (UiTextTrack's setters): file when it is an fMsg.
-inline FMsgFile *fMsgCheck(void *file)
-{
-    if (file == nullptr)
-        return nullptr;
-    fMsgRelocate(file);
-    const char *magic = (const char *)file;
-    if (!(magic[0] == 'f' && magic[1] == 'M' && magic[2] == 's' && magic[3] == 'g'))
-        return nullptr;
-    return (FMsgFile *)file;
-}
-// Inline in the ROM: entry index of an fMsg, null out of range.
-inline const FMsgEntry *fMsgEntry(FMsgFile *file, int index)
-{
-    if (!fMsgRelocate(file))
-        return nullptr;
-    if (index < 0)
-        return nullptr;
-    if (index < file->count)
-        return &file->entries[index];
-    return nullptr;
-}
+// UiFont, the fMsg message files and the TimM sprite sheets are
+// game/uigame.h.
 
 // The game's 16-bit strings (0x2d4440.. beside the char versions).
 int      wstrlen(const u_short *s);                                      // FS2 0x002d4650: 0 for null
@@ -514,7 +418,7 @@ public:
     }
     ~UiRotateToTrack();                                                  // FS2 0x0024ae50
     void apply(UiMatrix *xform, UiMatrix *parent, UiVec4 *color, UiDrawState *state); // FS2 0x0024ad20
-    // "rCharactorPostion": the camera's yaw, else 0 (with the layout hooks).
+    // "rCharactorPostion": the player's heading, else 0 (game/uigame.cpp).
     void bindTarget(const char *name);                                   // FS2 0x00260a20
 
     float m_angle;              // FS2 +0x14: the record's
@@ -542,8 +446,8 @@ public:
     UiPinRotTrack(S2dTrackRec *rec) : UiTrack(rec) {}
     ~UiPinRotTrack();                                                    // FS2 0x0024b150
     void apply(UiMatrix *xform, UiMatrix *parent, UiVec4 *color, UiDrawState *state); // FS2 0x0024b030
-    // "rCharactorPostion": the camera's position / 10 and yaw, else 0
-    // (with the layout hooks).
+    // "rCharactorPostion": the player's map position / 10 and heading,
+    // else 0 (game/uigame.cpp).
     void bindTarget(const char *name);                                   // FS2 0x00260ab0
 
     float m_pos[2];             // FS2 +0x14
@@ -698,7 +602,7 @@ public:
     ~UiSheetSpriteTrack();                                               // FS2 0x0024c380
     void draw(UiDrawer *drawer);                                         // FS2 0x0024c2d0
     const float *getAnchor();                                            // FS2 0x0024d480
-    // The sheet's sprite named by the record (with the layout hooks);
+    // The sheet's sprite named by the record (game/uigame.cpp);
     // null: nothing drawn.
     const TimSheetSprite *findSprite();                                  // FS2 0x00261d00
 

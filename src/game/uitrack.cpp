@@ -155,7 +155,7 @@ static inline const void *sheetImage(const TimSheet *sheet, const TimSheetSprite
 {
     if (sprite == nullptr)
         return nullptr;
-    return sheet->images[sprite->image].image;
+    return sheet->images.get()[sprite->image].image.get();
 }
 
 // Frees the text track's own copy (each setter and the destructor, inline
@@ -1075,7 +1075,7 @@ int UiTextTrack::setMessage(int index, void *msgFile)
     }
     m_message = index;
     const FMsgEntry *entry = fMsgEntry(file, m_message);
-    const u_short *text = entry != nullptr ? entry->text : nullptr;
+    const u_short *text = entry != nullptr ? entry->text.get() : nullptr;
     freeOwnedText(this);
     m_text = text;
     m_ownsText = 0;
@@ -1100,7 +1100,7 @@ int UiTextTrack::setMessageByName(float x, float y, const char *name, void *msgF
         return -1;
     m_message += offset;
     const FMsgEntry *entry = fMsgEntry(file, m_message);
-    const u_short *text = entry != nullptr ? entry->text : nullptr;
+    const u_short *text = entry != nullptr ? entry->text.get() : nullptr;
     freeOwnedText(this);
     m_text = text;
     m_ownsText = 0;

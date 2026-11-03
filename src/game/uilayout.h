@@ -17,7 +17,7 @@
  *
  *  The S2D file is game/s2ddata.h, the sequences and their actors / anims /
  *  widgets game/uisequence.h, the drawer game/uidrawer.h; the layout's game
- *  hooks at 0x25ff40.. are declared here until their TU is cut. The file
+ *  hooks (members declared here) are written in game/uigame.cpp. The file
  *  and class names are the port's (no source string in the range).
  * ======================================================================== */
 #ifndef _GAME_UILAYOUT_H
@@ -27,6 +27,7 @@
 
 #include "game/s2ddata.h"
 #include "game/uidrawer.h"
+#include "game/uigame.h"
 #include "game/uisequence.h"
 #include "sdk/libvifpk.h"
 #include "sdk/scetypes.h"
@@ -102,7 +103,7 @@ public:
     bool        testCondition(UiSequence *seq, const S2dCond *cond);     // FS2 0x00245060
     bool        compare(int a, int b, const S2dCond *cond);              // FS2 0x00245c00
 
-    // The game hooks (0x25ff40.., not cut yet).
+    // The game hooks (game/uigame.cpp).
     void playSound(int slot, const char *name);                          // FS2 0x0025ff40
     void stopSound(int slot);                                            // FS2 0x00260100: -1 does nothing
     void readGameValue(int kind, u_int packed);                          // FS2 0x002601f0
@@ -144,10 +145,5 @@ private:
         }
     }
 };
-
-// In a stage (gStageScene set).
-bool  inStage();                                                         // FS2 0x00262e60
-// The stage pack's data by name (null outside a stage).
-void *getStagePackData(const char *name);                                // FS2 0x00262df0
 
 #endif /* _GAME_UILAYOUT_H */

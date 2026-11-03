@@ -363,6 +363,25 @@
    "status": "verify",
    "why": "UiMatrix (0x24dfa0..0x24e8a0) and UiDrawer (0x24e8a0..0x252840): the 2D draw helper of the layouts, every function a UiMatrix / UiDrawer member or its out-of-line helpers (uiTransformPoint, the strip meshes, uiPkAddGsData); after game/s2ddata.cpp, before the widget classes 0x252840.. (vtables 0x316a78..); name the port's (no source string), as uidrawer.h already had it"
   },
+  "game/uigame.cpp": {
+   "notes": "Cut out of unassigned@00252840 and pinned 0x25fa50-0x2640e8 (batch 049: timSheetFind, strcasecmp, normalizeAngle, StageSound::playNamedAlways / stopNamed, getSePlayer, SePlayer::play / stop, getGameValue, setGameValue; Ghidra saved). New src/game/uigame.h: UiFont, FMsgFile and TimSheet moved from uitrack.h and made EE layouts with S2dRef (asserted): fMsg +0x10 count, name and text tables +0x14..+0x28, entries {name, text} at +0x30; TimM +0x10 sprites, names as fMsg, pictures {name, TIM2} +0x20..+0x2c, sprites of 0x10 {name, picture, u, v, w, h} at +0x30. A host harness relocated all 241 TimM and 2,620 fMsg files in ROM.000..ROMD.010 with every pointer inside its file. gamehooks.h gained StagePlayer (gStageScene +0x78: x / z +0x150 / +0x154, yaw +0x168), SeTable / SePlayer / getSePlayer and normalizeAngle; inStage / getStagePackData moved from uilayout.h to uigame.h. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on uigame and its users. Doubts: file name and the join by position; player for +0x78; readGameValue with argument 0 not a variable stores through null in the ROM (the port drops it). Next run, same TU: findSprite 0x261d00 with the inventory scans 0x2628a0 / 0x262a90 (item tables 0x2faed0 / 0x2fafc0, item defs 0x574c10 160 x 0x20, the player's items +0x22c / +0x238 / +0x23c), the text variables 0x260bc0 / 0x2612c0, testGameState 0x2604a0, getGameValue 0x2633f0 / setGameValue 0x262e70, getStagePackData 0x262df0 and 0x2625c0..0x264070.",
+   "ranges": [
+    [
+     "0025fa50",
+     "002640e8"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 04:35",
+     "status": "partial",
+     "summary": "The S2D UI game side cut out of unassigned@00252840: UiFont, fMsg and TimM find / relocate, the layout sound and game-value hooks, both target binds, inStage: 14 of 40 written, source-only, not built"
+    }
+   ],
+   "status": "partial",
+   "why": "Cut out of unassigned@00252840 (the frontier pick, 196 functions): the S2D UI's game side, between the widget classes and their tween helpers (..0x25fa50, vtables 0x316a90..0x316c10) and libscf (0x2640e8). UiFont 0x25fa50, the fMsg message files and TimM sprite sheets (find / relocate, magic checked against ROM.001), the layout's sound / game-value / game-state hooks 0x25ff40.., the tracks' game targets (bindTarget, findSprite over the item tables), the text variables 0x260bc0 / 0x2612c0, the game values 0x262e70 / 0x2633f0 and small hooks to 0x264070. No source string: the file name and joining the font / message / sheet helpers to the hooks are guesses by position."
+  },
   "game/uilayout.cpp": {
    "notes": "Cut from unassigned@0023e740 (473 functions) as game/uilayout.cpp 0x243390..0x246230; batch 038 named these 22 and 28 callees (UiSequence / UiActor / UiAnim / UiTrack, S2dData, UiDrawer, UiWidget::create, the layout game hooks 0x25ff40.., FileJob 0x132a40..). UiLayout moved from gamehooks.h to uilayout.h (gamehooks.h includes it); gamehooks.h gained FileJob. Stand-ins for the rest of the run live in uilayout.h until their TUs are cut. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean with stub SDK headers (screen / stageresult / scene unchanged). Host trap for the S2D TU: S2dData pointer fields are 32-bit offsets relocated in place, they cannot hold host pointers. Doubts: every name is read from the code; op 7 / 8 read as yield / restart; condition kind 16 with a < 0 reads an uninitialised register in the ROM (port: no sequence, true); UiSubLayout +0x14 is never set in this file. Next: the sequence classes 0x246230..0x249550 (UiSequence::draw / advance), then the S2D file and UiDrawer. Ghidra saved by name_ctx.",
    "ranges": [
@@ -649,6 +668,7 @@
   "unassigned@00249550": {},
   "unassigned@0024d530": {},
   "unassigned@0024dfa0": {},
+  "unassigned@00252840": {},
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
   "unassigned@002acff0": {}

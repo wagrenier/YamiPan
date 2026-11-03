@@ -290,6 +290,29 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    the source belongs. Still in the run for later picks: `FontData` 0x1fe020..0x1fe5b0 (frontier),
    boxgrid's callees 0x193780..0x1938f8, `StageSound::playNamed` 0x1d6a80, the class 0x230820..
    0x230980 (vtables 0x3164b0 / 0x3164d0) and the pak parser 0x231410..0x231bb0.
+   TU 21 (the frontier's `unassigned@00252840`, 196 functions 0x252840..0x2640e8, for
+   `UiLayout::stopSound` / `fMsgRelocate` / `timSheetRelocate` / `findSprite`): **`game/uigame.cpp`
+   0x25fa50..0x2640e8** cut out (40 functions, batch 049 with 10 names; architecture.md
+   "Modules"); **14 written, `partial`**: UiFont, fMsg find / relocate, TimM find / relocate,
+   playSound / stopSound, the three game-value hooks, both bindTarget, inStage. New
+   `game/uigame.h`: UiFont / FMsgFile / TimSheet moved out of uitrack.h, now **EE layouts with
+   S2dRef** (asserted; TimSheetSprite is 0x10 with a name index, TimSheetImage {name, TIM2}),
+   `getGameValue` / `setGameValue`, `GameValue_StageFlags` 13, inStage / getStagePackData (moved
+   from uilayout.h, which includes uigame.h). `gamehooks.h` gained `StagePlayer` (gStageScene
+   +0x78), `StageSound::playNamedAlways` / `stopNamed`, `normalizeAngle`, `SeTable` (inline name
+   search) / `SePlayer` / `getSePlayer`. Checked: callcheck clean, layout lint OK, g++
+   -fsyntax-only -Wall -Wextra clean on uigame and its users, and a host harness relocated all 241
+   TimM and 2,620 fMsg files on the disc (ROM.000..ROMD.010) with every pointer inside its file and
+   every name found again. Doubts for the user: the file name and joining UiFont / fMsg / TimM to
+   the hooks (by position); "player" for gStageScene +0x78 (the target's spelling
+   "rCharactorPostion" says character; earlier comments said camera); the default yaw 0x3fc90e56 is
+   a little under pi / 2 (kept); readGameValue with argument 0 not a variable stores through null
+   in the ROM (the port drops it). **Next run (the same TU)**: `findSprite` 0x261d00 with the
+   inventory scans 0x2628a0 / 0x262a90 (item tables 0x2faed0 / 0x2fafc0, item defs 0x574c10, the
+   player's items +0x22c / +0x238 / +0x23c: name the item structs first), then the text variables
+   0x260bc0 / 0x2612c0, `testGameState` 0x2604a0, `getGameValue` / `setGameValue`,
+   `getStagePackData` and 0x2625c0..0x264070. Left in `unassigned@00252840` (156): the widget
+   classes 0x25b8e0..0x25fa50 (`UiWidget::create`) and the MSL vector / tree user 0x252840..0x25b8e0.
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

@@ -2453,6 +2453,12 @@
   "was": "FUN_00127bf0",
   "why": "builds a string FILE (flags 0x208, size 0x7fffffff) on the stack over a0, calls the vfprintf core 0x12a3a0 with a1 and the spilled varargs, NUL-terminates: the MSL / newlib sprintf; callers pass a 1 KB buffer and a format"
  },
+ "00127ea0": {
+  "name": "strcasecmp",
+  "tag": "lib-context",
+  "was": "FUN_00127ea0",
+  "why": "in Sony's newlib libc range (0x121ef0..0x12c9b8): compares two strings, each char folded with _ctype_ (0x3000c1, upper bit 1 -> +0x20), answers the difference of the first unequal folded chars; fMsgFind / timSheetFind"
+ },
  "00128238": {
   "name": "strcmp",
   "tag": "lib-context",
@@ -3046,6 +3052,12 @@
   "tag": "game-inferred",
   "was": "FUN_001336e0",
   "why": "(this, entries 0x30, x 0x20, y 0x1d6, w 0xc0, h 0x18): RcntTimer base (15625 Hz, 50 fps), rect +0x20..+0x2c, capacity +0x30, 16-byte marker array +0x3c (operator new[]), stats arrays +0x44 / +0x48 / +0x4c; GameSystem member +0x4a8: the debug CPU / heap meter"
+ },
+ "001339c0": {
+  "name": "normalizeAngle",
+  "tag": "game-inferred",
+  "was": "FUN_001339c0",
+  "why": "f12 an angle: below -pi adds 2pi, above pi takes 2pi off, answers it (one step, not a loop); the S2D rotate-to / pin-rot targets wrap pi - the player's yaw with it"
  },
  "001351b0": {
   "name": "Clock::~Clock",
@@ -10085,11 +10097,23 @@
   "was": "FUN_00171230",
   "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): sets the driver config 0x537d58 (defaults {1, 1, -1, -1, 0..}), copies it with sdpr2DrvSetConfig and installs the SE driver table 0x2f7a68 at 0x537d30 if none is"
  },
+ "001d6a70": {
+  "name": "StageSound::playNamedAlways",
+  "tag": "game-inferred",
+  "was": "FUN_001d6a70",
+  "why": "StageSound::playNamed's twin (0x1d6a80) with the worker 0x1d66e0's last argument 1: no mute while the stage state (+0x30c) is 1 / 2, and it plays through 0x292830 instead of SePlayer::play; answers the 0x18-byte play record or 0. UiLayout::playSound inside a stage, volume 1.0"
+ },
  "001d6a80": {
   "name": "StageSound::playNamed",
   "tag": "game-inferred",
   "was": "FUN_001d6a80",
   "why": "(sound, name, volume f12): tail to 0x1d66e0; StageResult::tick passes the stage object's +0x24 (gp-0x7a7c), 'SYS_COUNT1' / 'SYS_COUNT2' and 1.0"
+ },
+ "001d6a90": {
+  "name": "StageSound::stopNamed",
+  "tag": "game-inferred",
+  "was": "FUN_001d6a90",
+  "why": "a0 the stage sound, a1 a name: over the 64 play slots (+0x100, 8 bytes {kind, record}) stops every record of kind 2 / 1 whose entry name equals a1 and is not stopped yet (SePlayer::stop on +8 when its handle >= 0) and marks it stopped; UiLayout::stopSound inside a stage"
  },
  "001fe150": {
   "name": "FontData::countLines",
@@ -11783,6 +11807,12 @@
   "was": "FUN_0025fbd0",
   "why": "(file): once (+4 flag), for magic fMsg: the +0x18 / +0x24 tables made pointers from their bases; true when fMsg; as timSheetRelocate 0x25fe10"
  },
+ "0025fd60": {
+  "name": "timSheetFind",
+  "tag": "game-inferred",
+  "was": "FUN_0025fd60",
+  "why": "a0 a TimM sheet, a1 a name: timSheetRelocate, then the index of the first sprite (+0x30, 0x10 each, +0x10 count) whose name (the +0x18 table at its short +0) equals a1 ignoring case (strcasecmp); -1 none. The fMsgFind of the sprite sheets (UiSheetSpriteTrack::findSprite, 3 calls)"
+ },
  "0025fe10": {
   "name": "timSheetRelocate",
   "tag": "game-inferred",
@@ -11854,6 +11884,18 @@
   "tag": "game-inferred",
   "was": "FUN_00262e60",
   "why": "answers gStageScene (gp-0x7a7c) != 0"
+ },
+ "00262e70": {
+  "name": "setGameValue",
+  "tag": "game-inferred",
+  "was": "FUN_00262e70",
+  "why": "(kind, a, b, c): the writing twin of getGameValue (save data, display offset, language, unlock marks); UiLayout::writeGameValue for every kind but 13 (the stage flags, written inline)"
+ },
+ "002633f0": {
+  "name": "getGameValue",
+  "tag": "game-inferred",
+  "was": "FUN_002633f0",
+  "why": "(kind, a, b, c): a switch over the S2D game-value kinds reading the save data, options (brightness, language), flag table, navigator and stage results; UiLayout::readGameValue stores its answer in a script variable, testGameValue compares it with its first argument"
  },
  "002640e8": {
   "name": "_scfReadRomVer",
@@ -12286,6 +12328,18 @@
   "tag": "game-inferred",
   "was": "FUN_00290840",
   "why": "deletes the pack object at 0x31ae60 through its vtable (+0x98 slot 2, flag 1), builds a new 0xf8-byte pack 0x131f00 on 'dataEU/packinitEU.pak' (0x309750), loads it 0x131d70(pack, 0, 0), keeps it at 0x31ae60 and sets 0x31ae64; first call of gameSceneThread"
+ },
+ "00292ac0": {
+  "name": "SePlayer::play",
+  "tag": "game-inferred",
+  "was": "FUN_00292ac0",
+  "why": "a0 the player, a1 an effect entry (+4 bank, +0x14 / +0x18 program / note, +0x20 pitch spread, +0x26 id, +0x28 volume), a2 / a3 left / right volume 0..0x80: plays it through SoundSeBank::play or, for a streamed bank, SoundStream::playVolume, random pitch, and answers the 64-bit handle {voice, id, bank}; -1 none"
+ },
+ "00292db0": {
+  "name": "SePlayer::stop",
+  "tag": "game-inferred",
+  "was": "FUN_00292db0",
+  "why": "a0 the player, a1 a handle from SePlayer::play (>= 0): its bank byte (bits 48..55) picks a SE bank or a stream and stops that voice; UiLayout::stopSound outside a stage, StageSound::stopNamed"
  },
  "002955e0": {
   "name": "NaviTable::getGridPos",
@@ -12994,6 +13048,12 @@
   "tag": "game-inferred",
   "was": "FUN_002c3e10",
   "why": "unless the byte 0x31ae9c is 1: deletes the pack at 0x31ae98, builds and loads 'dataEU/packmenuEU.pak' (0x30bca0) the same way as loadInitPack, keeps it at 0x31ae98, sets 0x31ae9c, then 0x2c3eb0; called before every scene by gameSceneThread and by the menu flow 0x2b5770"
+ },
+ "002c4140": {
+  "name": "getSePlayer",
+  "tag": "game-inferred",
+  "was": "FUN_002c4140",
+  "why": "answers the sbss pointer 0x31aea0: the sound-effect player whose +0 is the effect table (count +0xc, sorted name index +0x428 / +0x42c, entries 0x30 each at +0x430) that UiLayout::playSound looks up by name and hands to SePlayer::play / stop"
  },
  "002d4510": {
   "name": "wstrcpy",
