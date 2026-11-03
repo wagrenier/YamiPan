@@ -124,6 +124,11 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **EE float semantics**: literals not round-to-nearest; division by zero gives +-MAX; 0x7fffffff /
   0xffffffff stored into floats are the EE's extremes and NaNs on the host.
 - **ROM data the code writes back must not be `const`** on the host.
+- **A GS register number read from memory, not checked against `SCE_GS_*`** (2026-11-03, TU 19):
+  TU 17 named `UiDrawer::setNoAlphaTest` from its values 0 / 5, but the A+D register is 8, CLAMP_1
+  (TEST_1 is 0x47): it is the texture wrap (`setTexRepeat`), and kind 0x27 was "no alpha test" for
+  two TUs. Fix: decode every A+D register number and GIF tag (NREG / FLG / REGS nibbles) with
+  RosePan's `sdk/libgraph.h` before naming what a function writes.
 
 ## Stubs and bookkeeping
 
@@ -194,6 +199,10 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **Git Bash rewrites arguments that look like paths** (`\\` collapsed in a JSON argument): pass paths
   through environment variables or files.
 - **A NUL byte makes git treat a file as binary** and flips its line endings; MSVC rejects raw NULs.
+- **`sed -i` over `src/game/*` rewrites every file's CRLF as LF** (2026-11-03, TU 19): with
+  core.autocrlf the untouched files show as modified with an empty diff. Restore those with
+  `git checkout -- <file>` (no content lost), or limit the sed to files that contain the match
+  (`grep -l`).
 - **Python text mode vs CRLF**: `open(p, encoding='utf-8', newline='')`, keep the file's own endings.
 - **A module-level function named like a stdlib package shadows it** (`def http` after `import
   http.client`): import the submodule under another name.

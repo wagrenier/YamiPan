@@ -35,20 +35,8 @@
 // ──────────────────────────────────────────────────────────────────────
 // Records
 
-// The vertex layouts the drawer reads (UiDrawer::draw*; xy in layout
-// pixels, uv in texels, rgba 0..1 scaled by the drawer's colour).
-struct UiVertex             { float xy[2]; };
-struct UiColorVertex        { UiVec4 rgba; float xy[2]; };
-struct UiTexVertex          { float uv[2]; float xy[2]; };
-struct UiTexColorVertex     { UiVec4 rgba; float uv[2]; float xy[2]; };
-struct UiStripVertex        { float xy[2]; float uv[2]; };
-struct UiColorStripVertex   { UiVec4 rgba; float xy[2]; float uv[2]; };
-static_assert(sizeof(UiVertex) == 0x8, "UiVertex: EE 0x8");
-static_assert(sizeof(UiColorVertex) == 0x18, "UiColorVertex: EE 0x18");
-static_assert(sizeof(UiTexVertex) == 0x10, "UiTexVertex: EE 0x10");
-static_assert(sizeof(UiStripVertex) == 0x10, "UiStripVertex: EE 0x10");
-static_assert(offsetof(UiTexColorVertex, xy) == 0x18, "UiTexColorVertex::xy");
-static_assert(offsetof(UiColorStripVertex, xy) == 0x10, "UiColorStripVertex::xy");
+// The vertex layouts (UiVertex .. UiColorStripVertex) are the drawer's:
+// game/uidrawer.h.
 
 // S2dTrianglesRec::mode and its kin: how the vertex list is joined.
 enum UiTriMode
@@ -193,7 +181,7 @@ struct S2dSheetSpriteFlatRec    // UiTrackKind_SheetSpriteFlat
 static_assert(offsetof(S2dSheetSpriteFlatRec, name) == 0x14, "S2dSheetSpriteFlatRec::name");
 static_assert(offsetof(S2dSheetSpriteFlatRec, verts) == 0x38, "S2dSheetSpriteFlatRec::verts");
 
-struct S2dTexTrianglesRec       // UiTrackKind_TexTriangles, _TexTrianglesNoTest
+struct S2dTexTrianglesRec       // UiTrackKind_TexTriangles, _TexTrianglesRepeat
 {
     int              kind;      // FS2 +0x00
     int              count;     // FS2 +0x04
@@ -438,7 +426,7 @@ public:
     float m_offset[2];          // FS2 +0x14
 };
 
-// Kinds 0x28 / 0x29: UiDrawer::setTargetRegs (EE 0x18).
+// Kinds 0x28 / 0x29: UiDrawer::copyTarget (EE 0x18).
 // layout: host (vptr; EE fields at the offsets noted)
 class UiTargetTrack : public UiTrack
 {
@@ -660,13 +648,13 @@ public:
     const float *getAnchor();                                            // FS2 0x0024d420
 };
 
-// Kind 0x27: kind 7 with the alpha test off (EE 0x1c).
+// Kind 0x27: kind 7 drawn with the texture repeating (CLAMP_1 REPEAT; EE 0x1c).
 // layout: host (vptr; EE fields at the offsets noted)
-class UiTexTrianglesNoTestTrack : public UiTrack
+class UiTexTrianglesRepeatTrack : public UiTrack
 {
 public:
-    UiTexTrianglesNoTestTrack(S2dTrackRec *rec) : UiTrack(rec), m_texture(nullptr) {}
-    ~UiTexTrianglesNoTestTrack();                                        // FS2 0x0024be20
+    UiTexTrianglesRepeatTrack(S2dTrackRec *rec) : UiTrack(rec), m_texture(nullptr) {}
+    ~UiTexTrianglesRepeatTrack();                                        // FS2 0x0024be20
     void draw(UiDrawer *drawer);                                         // FS2 0x0024bd40
     const float *getAnchor();                                            // FS2 0x0024d440
 

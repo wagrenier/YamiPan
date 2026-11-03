@@ -197,7 +197,8 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    +0x28 of it: more record than the struct declares); `UiPinMode` is 0 vs anything else; the
    rotate kinds force `UiCoord_Pixel`. Doubts for the
    user: every class / kind name is read from the code; `setDrawPreset` / `setTargetRegs` /
-   `setNoAlphaTest` say what they write, not what for; a record kind without a class (0x20, past
+   `setNoAlphaTest` say what they write, not what for (TU 19: now `copyTarget` / `setTexRepeat`,
+   the latter a misread register); a record kind without a class (0x20, past
    0x2b) leaves its slot unwritten in the ROM (the port stores null, which UiAnim::isKind would
    then dereference, as the ROM would garbage); the text track keeps an image id **or the
    init-pack name pointer** in the same field (kept as `intptr_t`). Bootstrap 6: the host draw
@@ -222,6 +223,34 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    ROM's behaviour. Next in the run: **`UiMatrix` / `UiDrawer` 0x24dfa0..0x252840** (the
    frontier's top: `setPrim`, `setTexture`, `setPrimColor`, the matrix helpers; 58 functions,
    ~18 KB: two runs), then 0x252840.. (the widget classes, vtables 0x316a78..0x316c10).
+   TU 19 (the frontier's `unassigned@0024dfa0`): **`game/uidrawer.cpp` 0x24dfa0..0x252840** pinned
+   (50 functions, batches 045-046; architecture.md "Modules"); **42 written, `partial`**: the
+   matrix helpers, the drawer's ctor / dtor / begin / end, matrix, add pass, every state call and
+   the four vertex-list draws. **Next run (the same TU): `interpolate` 0x24dfa0, `drawText`
+   0x24eba0 (453 insns), 0x2503c0, `setScissor` 0x250520, `drawSheetFlat` / `drawSheetGouraud`
+   0x250750 / 0x2509b0, `uiDrawTexStripFlat` / `Gouraud` 0x251350 / 0x2519a0** (each a draw* shape
+   with UV from the sprite rect or the uvRect: the helpers putXyz / putUv / vertexColor are there).
+   Fixed readings: `setNoAlphaTest` is **`setTexRepeat`** (CLAMP_1, hazards.md), kind 0x27
+   `UiTexTrianglesRepeatTrack`; `setTargetRegs` is **`copyTarget`** (a 512x512 GS local copy);
+   `UiDrawer::m_b4` is **`m_fixedColor`**; the vertex structs moved from uitrack.h to uidrawer.h and
+   the draw* take them typed. **Host choices, for the user to overrule:** (1) the drawer calls a new
+   host module **`src/yamipan/rendering/yamipan_drawui.h`** (declared only; bootstrap 6 implements
+   it) with the GS register values the ROM would pack, keyed by the packet list (= layer), textures
+   by their GsTexture owner (no TexArea, upload or TEX0: the user's no-GS-memory rule); RosePan's
+   draw2d module only draws sprites, so this is new host code. (2) **Any aspect ratio**: the game
+   itself has 4:3 / 16:9 UI modes (setMode, matrices scale(k, 1) / scale(1/k, 1), k = 4/3 / 16/9;
+   architecture.md); the plan is that the renderer hands k from the display aspect (the host frame
+   stays the game's frame stretched across the window, as the PS2's anamorphic 16:9 is), replacing
+   `kUiScreenMatrix` -- not done yet, decide at bootstrap 6. Doubts: whether block 0x800 or 0x1800
+   is the frame in `copyTarget` (the parameter name `toBackup` is a guess); the preset tables
+   0x3071a0 / 0x307200..0x3072c0 are unread (names give only the FRAME masks); `setImage` deletes
+   its temporary GsTexture right after the bind, so the host must decode during the call. Checked:
+   callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on uidrawer / uitrack /
+   uisequence / uilayout / s2ddata / scene / stageresult (RosePan's SDK headers + a libvifpk stub),
+   and a host harness over the drawer reproduced the ROM's vertex words, UV, RGBAQ bytes, add-pass
+   PRIM (0x15e -> 0x14e) and the copy's BITBLTBUF / TRXREG values. Bootstrap 6: `sdk/libgraph.h`
+   (SCE_GS_SET_ALPHA / CLAMP / TRXPOS / TRXREG / BITBLTBUF / TRXDIR, sceGsDrawEnv1 with scissor1 at
+   +0x30) is RosePan's; implement yamipan_drawui.
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

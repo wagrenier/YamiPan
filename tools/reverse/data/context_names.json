@@ -1187,11 +1187,65 @@
   "was": "FUN_0010ac70",
   "why": "libvifpk (packet): pads pCurrent to a quadword with zeros, adds the qwords written to the open DMA tag's QWC, pDmaTag = 0; likely name"
  },
+ "0010acc8": {
+  "name": "sceVif1PkCnt",
+  "tag": "lib-context",
+  "was": "FUN_0010acc8",
+  "why": "(pkt, flag): closes the open DMA tag (sceVif1PkCloseDmaTag) and opens a CNT tag 0x10000000|flag; libvifpk's run after sceVif1PkNext"
+ },
  "0010ad20": {
   "name": "sceVif1PkNext",
   "tag": "lib-context",
   "was": "FUN_0010ad20",
   "why": "libvifpk (packet, addr, opt): closes the open tag (sceVif1PkCloseDmaTag), writes a DMA next tag (id 2 | opt, addr & 0x9fffffff) and opens it; likely name"
+ },
+ "0010b058": {
+  "name": "sceVif1PkOpenGifTag",
+  "tag": "lib-context",
+  "was": "FUN_0010b058",
+  "why": "(pkt, u_long128 tag): writes the GIF tag, remembers it at +0x14 for the close"
+ },
+ "0010b070": {
+  "name": "sceVif1PkCloseGifTag",
+  "tag": "lib-context",
+  "was": "FUN_0010b070",
+  "why": "(pkt): NLOOP from the data written since the open tag (PACKED / REGLIST / IMAGE by FLG, NREG 0 = 16), pads to a qword"
+ },
+ "0010b130": {
+  "name": "sceVif1PkAlign",
+  "tag": "lib-context",
+  "was": "FUN_0010b130",
+  "why": "(pkt, bit, pos): called by sceVif1PkOpenDirectCode as (2, 3) before the DIRECT code"
+ },
+ "0010b1b0": {
+  "name": "sceVif1PkAddCode",
+  "tag": "lib-context",
+  "was": "FUN_0010b1b0",
+  "why": "(pkt, code): one 32-bit VIF code"
+ },
+ "0010b328": {
+  "name": "sceVif1PkAddGsData",
+  "tag": "lib-context",
+  "was": "FUN_0010b328",
+  "why": "(pkt, u_long): one 64-bit word (REGLIST data)"
+ },
+ "0010b350": {
+  "name": "sceVif1PkAddGsAD",
+  "tag": "lib-context",
+  "was": "FUN_0010b350",
+  "why": "(pkt, reg, u_long data): one A+D qword {data, reg}"
+ },
+ "0010b568": {
+  "name": "sceVif1PkOpenDirectCode",
+  "tag": "lib-context",
+  "was": "FUN_0010b568",
+  "why": "(pkt, irq): aligns, writes DIRECT 0x51000000 (0xd1000000 with irq), remembers it at +0xc"
+ },
+ "0010b5c0": {
+  "name": "sceVif1PkCloseDirectCode",
+  "tag": "lib-context",
+  "was": "FUN_0010b5c0",
+  "why": "(pkt): fills the open DIRECT code's qword count"
  },
  "0010ccf0": {
   "name": "_motionComp0",
@@ -5074,6 +5128,12 @@
   "tag": "game-inferred",
   "was": "FUN_00143270",
   "why": "(first page 0x3700, last 0x3fbe, 14 lists, 0x20): built once by gfxInitRenderTargets into gp-0x7ad0 (fields unread)"
+ },
+ "00143510": {
+  "name": "TexAreaList::place",
+  "tag": "game-inferred",
+  "was": "FUN_00143510",
+  "why": "(list, int *tbp, GsTexture *): finds the texture's id (+0x40) among the list's entries, else allocates (size 0x2e1c30 in 0x20-block units, wrapping to the start) through 0x143450; answers 1 when newly placed (upload needed); the drawer's texList (+4)"
  },
  "00144080": {
   "name": "SoundPcmSink::setAttr",
@@ -10031,6 +10091,60 @@
   "was": "FUN_001d6a80",
   "why": "(sound, name, volume f12): tail to 0x1d66e0; StageResult::tick passes the stage object's +0x24 (gp-0x7a7c), 'SYS_COUNT1' / 'SYS_COUNT2' and 1.0"
  },
+ "00230980": {
+  "name": "gfxUiPresetRgbOnly5",
+  "tag": "game-inferred",
+  "was": "FUN_00230980",
+  "why": "setDrawPreset 5: three A+D from 0x3072c0, FRAME_1 FBMSK 0xff000000, ZBUF_1 ZMSK"
+ },
+ "00230ab0": {
+  "name": "gfxUiPresetRgbOnly4",
+  "tag": "game-inferred",
+  "was": "FUN_00230ab0",
+  "why": "setDrawPreset 4: three A+D from 0x307290, FRAME_1 FBMSK 0xff000000, ZBUF_1 ZMSK"
+ },
+ "00230be0": {
+  "name": "gfxUiPresetRgbOnly3",
+  "tag": "game-inferred",
+  "was": "FUN_00230be0",
+  "why": "setDrawPreset 3: three A+D from 0x307260, FRAME_1 FBMSK 0xff000000 (alpha kept), ZBUF_1 ZMSK"
+ },
+ "00230d10": {
+  "name": "gfxUiPresetAlphaOnly2",
+  "tag": "game-inferred",
+  "was": "FUN_00230d10",
+  "why": "setDrawPreset 2: three A+D from 0x307230, FRAME_1 FBMSK 0x00ffffff (only alpha written), ZBUF_1 ZMSK"
+ },
+ "00230e40": {
+  "name": "gfxUiPresetAlphaOnly1",
+  "tag": "game-inferred",
+  "was": "FUN_00230e40",
+  "why": "setDrawPreset 1: three A+D from 0x307200, FRAME_1 FBMSK 0x00ffffff (only alpha written), ZBUF_1 ZMSK; the tables' meaning unread"
+ },
+ "00230f70": {
+  "name": "gfxUiPresetDrawEnv",
+  "tag": "game-inferred",
+  "was": "FUN_00230f70",
+  "why": "setDrawPreset 6 (UiDrawer::end): six A+D from 0x3071a0, then FRAME_1, ZBUF_1 and SCISSOR_1 as the current draw env has them"
+ },
+ "00231090": {
+  "name": "gfxUiPresetNormal",
+  "tag": "game-inferred",
+  "was": "FUN_00231090",
+  "why": "setDrawPreset 0: six A+D from 0x3071a0, FRAME_1 from the draw env with FBMSK 0, ZBUF_1 with ZMSK set"
+ },
+ "002311c0": {
+  "name": "GsTexture::getSize",
+  "tag": "game-inferred",
+  "was": "FUN_002311c0",
+  "why": "(this, int *w, int *h): render target (+0x50) its +0x54 / +0x58, else the image's shorts +0x1c / +0x1e; setTexture keeps them at drawer +0x14 / +0x18 for the UV scale"
+ },
+ "00231200": {
+  "name": "GsTexture::putTex0",
+  "tag": "game-inferred",
+  "was": "FUN_00231200",
+  "why": "(this, pkt, tbp, reg): image textures through 0x2e1b70, render targets an A+D of +0x48 to reg; the drawer passes 6 (TEX0_1)"
+ },
  "00231360": {
   "name": "GsTexture::GsTexture",
   "tag": "game-inferred",
@@ -10914,16 +11028,16 @@
   "why": "deleting dtor (slot 0 of Vt_00316880); kind 8: texture, prim 0x15c (textured gouraud strip), uiDrawTexStripGouraud"
  },
  "0024bd40": {
-  "name": "UiTexTrianglesNoTestTrack::draw",
+  "name": "UiTexTrianglesRepeatTrack::draw",
   "tag": "game-inferred",
   "was": "FUN_0024bd40",
-  "why": "Vt_003168a0 draw slot; kind 0x27: as UiTexTrianglesTrack between setNoAlphaTest(1) / (0)"
+  "why": "Vt_003168a0 draw slot; kind 0x27: as UiTexTrianglesTrack between setTexRepeat(1) / (0) (CLAMP_1 REPEAT, then CLAMP); was NoTest from a misread register"
  },
  "0024be20": {
-  "name": "UiTexTrianglesNoTestTrack::~UiTexTrianglesNoTestTrack",
+  "name": "UiTexTrianglesRepeatTrack::~UiTexTrianglesRepeatTrack",
   "tag": "game-inferred",
   "was": "FUN_0024be20",
-  "why": "deleting dtor (slot 0 of Vt_003168a0); kind 0x27: as UiTexTrianglesTrack between setNoAlphaTest(1) / (0)"
+  "why": "deleting dtor (slot 0 of Vt_003168a0); kind 0x27: textured triangles drawn with the texture repeating"
  },
  "0024beb0": {
   "name": "UiTexTrianglesFlatTrack::draw",
@@ -11172,7 +11286,7 @@
   "why": "Vt_00316880 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
  },
  "0024d440": {
-  "name": "UiTexTrianglesNoTestTrack::getAnchor",
+  "name": "UiTexTrianglesRepeatTrack::getAnchor",
   "tag": "game-inferred",
   "was": "FUN_0024d440",
   "why": "Vt_003168a0 slot 3: the first vertex xy of the record (UiWidget::create places widgets there)"
@@ -11382,10 +11496,10 @@
   "why": "1 0 0 / 0 1 0"
  },
  "0024e8a0": {
-  "name": "UiDrawer::setTargetRegs",
+  "name": "UiDrawer::copyTarget",
   "tag": "game-inferred",
   "was": "FUN_0024e8a0",
-  "why": "(drawer, flag): writes four GS registers from table 0x3076f0 (flag) or 0x307730"
+  "why": "was setTargetRegs: the four A+D tables 0x3076f0 / 0x307730 are TRXPOS 0, TRXREG 512x512, BITBLTBUF, TRXDIR 2: a GS local-to-local copy of a 512x512 PSMCT32 buffer, block 0x800 -> 0x1800 (arg 1) or 0x1800 -> 0x800 (arg 0); track kinds 0x28 / 0x29"
  },
  "0024e990": {
   "name": "UiDrawer::setMode",
@@ -11417,6 +11531,36 @@
   "was": "FUN_0024eba0",
   "why": "(drawer, font, message, block, f12 x, f13 y): UiTextTrack::draw's text draw; block = the text record from +0x1c (rgba, the anchor at +0x10, more at +0x28); x, y the track's +0x1c / +0x20 (setTextAt)"
  },
+ "0024f2c0": {
+  "name": "UiVec4::multiply",
+  "tag": "game-inferred",
+  "was": "FUN_0024f2c0",
+  "why": "(this, v): component-wise this *= v; setPrimColor / drawText multiply the track colour by the drawer's"
+ },
+ "0024f310": {
+  "name": "UiVec4::UiVec4",
+  "tag": "game-inferred",
+  "was": "FUN_0024f310",
+  "why": "copy constructor (this, src): four words, answers this; out-of-line before setPrimColor's multiply"
+ },
+ "0024f340": {
+  "name": "UiDrawer::isFixedColor",
+  "tag": "game-inferred",
+  "was": "FUN_0024f340",
+  "why": "answers byte +0xb4 (UiDrawState::drawerFlag): set, setPrimColor and the gouraud vertices use the drawer colour +0x80 alone, ignoring the track's"
+ },
+ "0024f350": {
+  "name": "UiVec4::toRgbaq",
+  "tag": "game-inferred",
+  "was": "FUN_0024f350",
+  "why": "(this, u_char out[4]): r g b x256 clamped 0..255 (>= 0.998 -> 255), a x128 (>= 1.996 -> 255): the GS RGBAQ bytes"
+ },
+ "0024f570": {
+  "name": "UiDrawer::isAddPass",
+  "tag": "game-inferred",
+  "was": "FUN_0024f570",
+  "why": "answers byte +0xa8 (setAddPass); setPrimColor then packs the add colour +0x98"
+ },
  "0024f580": {
   "name": "UiDrawer::setImage",
   "tag": "game-inferred",
@@ -11428,6 +11572,12 @@
   "tag": "game-inferred",
   "was": "FUN_0024f7a0",
   "why": "(drawer, tex): flushes, binds the GsTexture (0 = keep), 1; -1 without packet"
+ },
+ "0024f960": {
+  "name": "UiDrawer::closeDirect",
+  "tag": "game-inferred",
+  "was": "FUN_0024f960",
+  "why": "closes an open GIF run (+9), the DIRECT code and the DMA tag (+8 open); answers 1 if one was open; same sequence inline in setTexture / end"
  },
  "0024f9e0": {
   "name": "UiDrawer::end",
@@ -11478,10 +11628,10 @@
   "why": "(drawer, prim): PRIM only (vertex colours follow)"
  },
  "0024fef0": {
-  "name": "UiDrawer::setNoAlphaTest",
+  "name": "UiDrawer::setTexRepeat",
   "tag": "game-inferred",
   "was": "FUN_0024fef0",
-  "why": "(drawer, on): TEST_1 = on ? 0 : 5"
+  "why": "was setNoAlphaTest: the A+D register is 8, CLAMP_1, not TEST_1 (0x47): on -> 0 (REPEAT both axes), off -> 5 (CLAMP both); kind 0x27 draws between (1) and (0)"
  },
  "0024ffa0": {
   "name": "UiDrawer::setBlend",
@@ -11494,6 +11644,12 @@
   "tag": "game-inferred",
   "was": "FUN_00250130",
   "why": "(drawer, preset +0x90 0..6): one of the gfx state calls 0x230980..0x231090 (meaning unread), resets the blend"
+ },
+ "00250240": {
+  "name": "UiDrawer::openVertices",
+  "tag": "game-inferred",
+  "was": "FUN_00250240",
+  "why": "(this, format 0..7): keeps the open REGLIST run if +0xc is the same format, else opens the tag 0x307660 + format*0x10 (bit0 RGBAQ, bit1 UV, bit2 groups of three with XYZF3 XYZF3 XYZ2); the draw* functions' first call"
  },
  "00250520": {
   "name": "UiDrawer::setScissor",
@@ -11518,6 +11674,18 @@
   "tag": "game-inferred",
   "was": "FUN_002509b0",
   "why": "as drawSheetFlat with {rgba, uv, xy} vertices (kind 6, after setPrim 0x15e)"
+ },
+ "00250c30": {
+  "name": "uiPkAddGsData",
+  "tag": "game-inferred",
+  "was": "thunk_FUN_0010b328",
+  "why": "out-of-line jump to sceVif1PkAddGsData in the drawer's code; the gouraud draws write each vertex's RGBAQ through it"
+ },
+ "00250c40": {
+  "name": "UiDrawer::vertexColor",
+  "tag": "game-inferred",
+  "was": "FUN_00250c40",
+  "why": "(this, const UiVec4 *rgba): packed RGBAQ of a gouraud vertex: the add colour +0x98 in the add pass, the drawer colour +0x80 when isFixedColor, else rgba * drawer colour (toRgbaq's scaling)"
  },
  "00251350": {
   "name": "uiDrawTexStripFlat",
@@ -12808,6 +12976,12 @@
   "tag": "game-inferred",
   "was": "FUN_002d4650",
   "why": "(s): 16-bit characters up to the 0; 0 for null or an odd address; beside the char version 0x2d4440"
+ },
+ "002e1c50": {
+  "name": "GsTexture::upload",
+  "tag": "game-inferred",
+  "was": "FUN_002e1c50",
+  "why": "(this, pkt, tbp): the image transfer into GS memory at the TexArea block; setTexture calls it when TexAreaList::place answers newly placed"
  },
  "002eaff0": {
   "name": "Vif1PktManage::GetUsedSize",

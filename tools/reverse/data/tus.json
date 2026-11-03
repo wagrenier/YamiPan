@@ -319,6 +319,25 @@
    "status": "verify",
    "why": "the cooperative thread system: threadSetSwitchHook .. threadSysInit, threadScheduler, jobWorkerThread, frameSync* (batch 002, architecture.md Thread system); 0x130a20 and the end after frameSyncThread are guesses."
   },
+  "game/uidrawer.cpp": {
+   "notes": "game/uidrawer.cpp 0x24dfa0..0x252840 pinned (batches 045-046). Written: all UiMatrix members but interpolate, uiTransformPoint, UiVec4 multiply / toRgbaq, the drawer's ctor / dtor / begin / end / setMode / setPixelMode / setTranslate / updateMatrix / setAddPass / setTexture / setImage / setGsReg / setPrim / setPrimColor / setTexRepeat / setBlend / setDrawPreset / copyTarget / resetScissor / closeDirect / openVertices / vertexColor and drawFlat / drawGouraud / drawTexFlat / drawTexGouraud. Next run, same TU: interpolate 0x24dfa0, drawText 0x24eba0, 0x2503c0, setScissor 0x250520, drawSheetFlat / drawSheetGouraud 0x250750 / 0x2509b0, uiDrawTexStripFlat / Gouraud 0x251350 / 0x2519a0 (reuse putXyz / putUv / vertexColor). PC: the drawer keeps its decisions and calls src/yamipan/rendering/yamipan_drawui.h (declared only; bootstrap 6 implements it) with the GS register values the ROM packs, keyed by the packet list; textures by their GsTexture owner, no TexArea / upload / TEX0. Fixed readings: setNoAlphaTest is setTexRepeat (A+D reg 8 is CLAMP_1), kind 0x27 UiTexTrianglesRepeatTrack; setTargetRegs is copyTarget (a 512x512 GS local copy 0x800 to 0x1800 or back); m_b4 is m_fixedColor; vertex structs moved to uidrawer.h, draw* typed. setMode's two screen matrices are the game's 4:3 / 16:9 UI modes: the any-aspect plan is in open-items.md. Checked: callcheck clean, lint OK, g++ -fsyntax-only -Wall -Wextra clean on the UI files, a host harness reproduced the ROM's vertex words, UV, RGBAQ, add-pass PRIM and copy registers. Not built (source-only), nothing on screen yet.",
+   "ranges": [
+    [
+     "0024dfa0",
+     "00252840"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 03:43",
+     "status": "partial",
+     "summary": "UiMatrix and UiDrawer: 42 of 50 written (matrix helpers, ctor dtor begin end, matrix and add pass, every state call, the four vertex-list draws) through a new host UI draw module interface"
+    }
+   ],
+   "status": "partial",
+   "why": "UiMatrix (0x24dfa0..0x24e8a0) and UiDrawer (0x24e8a0..0x252840): the 2D draw helper of the layouts, every function a UiMatrix / UiDrawer member or its out-of-line helpers (uiTransformPoint, the strip meshes, uiPkAddGsData); after game/s2ddata.cpp, before the widget classes 0x252840.. (vtables 0x316a78..); name the port's (no source string), as uidrawer.h already had it"
+  },
   "game/uilayout.cpp": {
    "notes": "Cut from unassigned@0023e740 (473 functions) as game/uilayout.cpp 0x243390..0x246230; batch 038 named these 22 and 28 callees (UiSequence / UiActor / UiAnim / UiTrack, S2dData, UiDrawer, UiWidget::create, the layout game hooks 0x25ff40.., FileJob 0x132a40..). UiLayout moved from gamehooks.h to uilayout.h (gamehooks.h includes it); gamehooks.h gained FileJob. Stand-ins for the rest of the run live in uilayout.h until their TUs are cut. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean with stub SDK headers (screen / stageresult / scene unchanged). Host trap for the S2D TU: S2dData pointer fields are 32-bit offsets relocated in place, they cannot hold host pointers. Doubts: every name is read from the code; op 7 / 8 read as yield / restart; condition kind 16 with a < 0 reads an uninitialised register in the ROM (port: no sequence, true); UiSubLayout +0x14 is never set in this file. Next: the sequence classes 0x246230..0x249550 (UiSequence::draw / advance), then the S2D file and UiDrawer. Ghidra saved by name_ctx.",
    "ranges": [
@@ -604,6 +623,7 @@
   "unassigned@00246230": {},
   "unassigned@00249550": {},
   "unassigned@0024d530": {},
+  "unassigned@0024dfa0": {},
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
   "unassigned@002acff0": {}

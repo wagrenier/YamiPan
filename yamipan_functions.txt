@@ -282,7 +282,7 @@
 
 /* 0010ac60 00000010 */ sceVif1PkReset(){}  // lib-ctx
 /* 0010ac70 00000058 */ sceVif1PkCloseDmaTag(){}  // lib-ctx
-/* 0010acc8 00000058 */ FUN_0010acc8(){}
+/* 0010acc8 00000058 */ sceVif1PkCnt(){}  // lib-ctx
 /* 0010ad20 00000070 */ sceVif1PkNext(){}  // lib-ctx
 /* 0010ad90 00000098 */ FUN_0010ad90(){}
 /* 0010ae28 00000070 */ FUN_0010ae28(){}
@@ -291,22 +291,22 @@
 /* 0010af80 00000050 */ FUN_0010af80(){}
 /* 0010afd0 00000058 */ FUN_0010afd0(){}
 /* 0010b028 0000002c */ FUN_0010b028(){}
-/* 0010b058 00000018 */ FUN_0010b058(){}
-/* 0010b070 000000a4 */ FUN_0010b070(){}
+/* 0010b058 00000018 */ sceVif1PkOpenGifTag(){}  // lib-ctx
+/* 0010b070 000000a4 */ sceVif1PkCloseGifTag(){}  // lib-ctx
 /* 0010b118 00000014 */ FUN_0010b118(){}
-/* 0010b130 00000078 */ FUN_0010b130(){}
-/* 0010b1b0 00000014 */ FUN_0010b1b0(){}
+/* 0010b130 00000078 */ sceVif1PkAlign(){}  // lib-ctx
+/* 0010b1b0 00000014 */ sceVif1PkAddCode(){}  // lib-ctx
 /* 0010b1c8 0000003c */ FUN_0010b1c8(){}
 /* 0010b208 00000014 */ FUN_0010b208(){}
 /* 0010b220 0000003c */ FUN_0010b220(){}
 /* 0010b260 00000028 */ FUN_0010b260(){}
 /* 0010b288 00000050 */ FUN_0010b288(){}
 /* 0010b2d8 00000050 */ FUN_0010b2d8(){}
-/* 0010b328 00000028 */ FUN_0010b328(){}
-/* 0010b350 00000030 */ FUN_0010b350(){}
+/* 0010b328 00000028 */ sceVif1PkAddGsData(){}  // lib-ctx
+/* 0010b350 00000030 */ sceVif1PkAddGsAD(){}  // lib-ctx
 /* 0010b380 000001e8 */ FUN_0010b380(){}
-/* 0010b568 00000058 */ FUN_0010b568(){}
-/* 0010b5c0 0000002c */ FUN_0010b5c0(){}
+/* 0010b568 00000058 */ sceVif1PkOpenDirectCode(){}  // lib-ctx
+/* 0010b5c0 0000002c */ sceVif1PkCloseDirectCode(){}  // lib-ctx
 /* 0010b5f0 00000070 */ FUN_0010b5f0(){}
 /* 0010b668 00000070 */ FUN_0010b668(){}
 /* 0010b6e0 0000003c */ FUN_0010b6e0(){}
@@ -1464,7 +1464,7 @@
 /* 001430f0 00000178 */ FUN_001430f0(){}
 /* 00143270 000001d8 */ TexArea::TexArea(){}  // game
 /* 00143450 000000b4 */ FUN_00143450(){}
-/* 00143510 00000130 */ FUN_00143510(){}
+/* 00143510 00000130 */ TexAreaList::place(){}  // game
 /* 00143640 00000278 */ FUN_00143640(){}
 /* 001438c0 00000640 */ FUN_001438c0(){}
 /* 00143f00 0000004c */ FUN_00143f00(){}
@@ -5390,15 +5390,15 @@
 /* 00230820 00000078 */ FUN_00230820(){}
 /* 002308a0 00000084 */ FUN_002308a0(){}
 /* 00230930 0000004c */ FUN_00230930(){}
-/* 00230980 0000012c */ FUN_00230980(){}
-/* 00230ab0 0000012c */ FUN_00230ab0(){}
-/* 00230be0 0000012c */ FUN_00230be0(){}
-/* 00230d10 0000012c */ FUN_00230d10(){}
-/* 00230e40 0000012c */ FUN_00230e40(){}
-/* 00230f70 00000120 */ FUN_00230f70(){}
-/* 00231090 00000124 */ FUN_00231090(){}
-/* 002311c0 00000030 */ FUN_002311c0(){}
-/* 00231200 00000090 */ FUN_00231200(){}
+/* 00230980 0000012c */ gfxUiPresetRgbOnly5(){}  // game
+/* 00230ab0 0000012c */ gfxUiPresetRgbOnly4(){}  // game
+/* 00230be0 0000012c */ gfxUiPresetRgbOnly3(){}  // game
+/* 00230d10 0000012c */ gfxUiPresetAlphaOnly2(){}  // game
+/* 00230e40 0000012c */ gfxUiPresetAlphaOnly1(){}  // game
+/* 00230f70 00000120 */ gfxUiPresetDrawEnv(){}  // game
+/* 00231090 00000124 */ gfxUiPresetNormal(){}  // game
+/* 002311c0 00000030 */ GsTexture::getSize(){}  // game
+/* 00231200 00000090 */ GsTexture::putTex0(){}  // game
 /* 00231290 000000c0 */ FUN_00231290(){}
 /* 00231360 00000050 */ GsTexture::GsTexture(){}  // game
 /* 002313b0 00000060 */ GsTexture::~GsTexture(){}  // game
@@ -5739,8 +5739,8 @@
 /* 0024bb40 000000c8 */ UiTexStripFlatTrack::~UiTexStripFlatTrack(){}  // game
 /* 0024bc10 00000094 */ UiTexStripTrack::draw(){}  // game
 /* 0024bcb0 00000090 */ UiTexStripTrack::~UiTexStripTrack(){}  // game
-/* 0024bd40 000000dc */ UiTexTrianglesNoTestTrack::draw(){}  // game
-/* 0024be20 00000090 */ UiTexTrianglesNoTestTrack::~UiTexTrianglesNoTestTrack(){}  // game
+/* 0024bd40 000000dc */ UiTexTrianglesRepeatTrack::draw(){}  // game
+/* 0024be20 00000090 */ UiTexTrianglesRepeatTrack::~UiTexTrianglesRepeatTrack(){}  // game
 /* 0024beb0 000000c4 */ UiTexTrianglesFlatTrack::draw(){}  // game
 /* 0024bf80 000000c8 */ UiTexTrianglesFlatTrack::~UiTexTrianglesFlatTrack(){}  // game
 /* 0024c050 000000b8 */ UiTexTrianglesTrack::draw(){}  // game
@@ -5782,7 +5782,7 @@
 /* 0024d410 00000008 */ UiWidget::getStatus(){}  // game
 /* 0024d420 0000000c */ UiTexStripFlatTrack::getAnchor(){}  // game
 /* 0024d430 0000000c */ UiTexStripTrack::getAnchor(){}  // game
-/* 0024d440 0000000c */ UiTexTrianglesNoTestTrack::getAnchor(){}  // game
+/* 0024d440 0000000c */ UiTexTrianglesRepeatTrack::getAnchor(){}  // game
 /* 0024d450 0000000c */ UiTexTrianglesFlatTrack::getAnchor(){}  // game
 /* 0024d460 0000000c */ UiTexTrianglesTrack::getAnchor(){}  // game
 /* 0024d470 0000000c */ UiSheetSpriteFlatTrack::getAnchor(){}  // game
@@ -5813,7 +5813,7 @@
 /* 0024df60 00000030 */ S2dData::getString(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/uidrawer.cpp
 // *****************************************************************************
 
 /* 0024dfa0 000003bc */ UiMatrix::interpolate(){}  // game
@@ -5827,20 +5827,20 @@
 /* 0024e710 000000a4 */ UiMatrix::concat(){}  // game
 /* 0024e7c0 000000bc */ UiMatrix::multiply(){}  // game
 /* 0024e880 00000020 */ UiMatrix::identity(){}  // game
-/* 0024e8a0 000000f0 */ UiDrawer::setTargetRegs(){}  // game
+/* 0024e8a0 000000f0 */ UiDrawer::copyTarget(){}  // game
 /* 0024e990 0000003c */ UiDrawer::setMode(){}  // game
 /* 0024e9d0 00000040 */ UiDrawer::setPixelMode(){}  // game
 /* 0024ea10 00000014 */ UiDrawer::setTranslate(){}  // game
 /* 0024ea30 0000016c */ UiDrawer::updateMatrix(){}  // game
 /* 0024eba0 00000714 */ UiDrawer::drawText(){}  // game
-/* 0024f2c0 00000044 */ FUN_0024f2c0(){}
-/* 0024f310 00000028 */ FUN_0024f310(){}
-/* 0024f340 00000008 */ FUN_0024f340(){}
-/* 0024f350 00000218 */ FUN_0024f350(){}
-/* 0024f570 00000008 */ FUN_0024f570(){}
+/* 0024f2c0 00000044 */ UiVec4::multiply(){}  // game
+/* 0024f310 00000028 */ UiVec4::UiVec4(){}  // game
+/* 0024f340 00000008 */ UiDrawer::isFixedColor(){}  // game
+/* 0024f350 00000218 */ UiVec4::toRgbaq(){}  // game
+/* 0024f570 00000008 */ UiDrawer::isAddPass(){}  // game
 /* 0024f580 00000214 */ UiDrawer::setImage(){}  // game
 /* 0024f7a0 000001c0 */ UiDrawer::setTexture(){}  // game
-/* 0024f960 00000078 */ FUN_0024f960(){}
+/* 0024f960 00000078 */ UiDrawer::closeDirect(){}  // game
 /* 0024f9e0 000000e4 */ UiDrawer::end(){}  // game
 /* 0024fad0 00000010 */ UiDrawer::begin(){}  // game
 /* 0024fae0 00000044 */ UiDrawer::~UiDrawer(){}  // game
@@ -5849,23 +5849,28 @@
 /* 0024fcb0 00000084 */ UiDrawer::setGsReg(){}  // game
 /* 0024fd40 00000114 */ UiDrawer::setPrimColor(){}  // game
 /* 0024fe60 00000090 */ UiDrawer::setPrim(){}  // game
-/* 0024fef0 000000ac */ UiDrawer::setNoAlphaTest(){}  // game
+/* 0024fef0 000000ac */ UiDrawer::setTexRepeat(){}  // game
 /* 0024ffa0 00000184 */ UiDrawer::setBlend(){}  // game
 /* 00250130 00000104 */ UiDrawer::setDrawPreset(){}  // game
-/* 00250240 0000017c */ FUN_00250240(){}
+/* 00250240 0000017c */ UiDrawer::openVertices(){}  // game
 /* 002503c0 0000015c */ FUN_002503c0(){}
 /* 00250520 00000198 */ UiDrawer::setScissor(){}  // game
 /* 002506c0 00000088 */ UiDrawer::resetScissor(){}  // game
 /* 00250750 0000025c */ UiDrawer::drawSheetFlat(){}  // game
 /* 002509b0 0000027c */ UiDrawer::drawSheetGouraud(){}  // game
-/* 00250c30 00000004 */ thunk_FUN_0010b328(){}
-/* 00250c40 00000710 */ FUN_00250c40(){}
+/* 00250c30 00000004 */ uiPkAddGsData(){}  // game
+/* 00250c40 00000710 */ UiDrawer::vertexColor(){}  // game
 /* 00251350 00000650 */ uiDrawTexStripFlat(){}  // game
 /* 002519a0 000006a0 */ uiDrawTexStripGouraud(){}  // game
 /* 00252040 00000220 */ UiDrawer::drawTexFlat(){}  // game
 /* 00252260 00000238 */ UiDrawer::drawTexGouraud(){}  // game
 /* 002524a0 000001d8 */ UiDrawer::drawGouraud(){}  // game
 /* 00252680 000001b8 */ UiDrawer::drawFlat(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 00252840 00000150 */ FUN_00252840(){}
 /* 002529a0 0000011c */ FUN_002529a0(){}
 /* 00252ac0 00000044 */ FUN_00252ac0(){}
@@ -7819,7 +7824,7 @@
 /* 002e1b10 00000060 */ FUN_002e1b10(){}
 /* 002e1b70 000000c0 */ FUN_002e1b70(){}
 /* 002e1c30 0000001c */ FUN_002e1c30(){}
-/* 002e1c50 00000680 */ FUN_002e1c50(){}
+/* 002e1c50 00000680 */ GsTexture::upload(){}  // game
 /* 002e22d0 000003e4 */ FUN_002e22d0(){}
 
 // *****************************************************************************

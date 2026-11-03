@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 03:16 at commit `866881c` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 03:43 at commit `e1c993a` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-03 03:16 at commit `866881c` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6595**, named **1523** (23%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1478, game-inferred 672
-- context-name ledger: 2150 entries; overrides of wrong library matches: 0
-- placed in a source file: 1417/6595 in 43 files
+- game functions: **6595**, named **1543** (23%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1487, game-inferred 692
+- context-name ledger: 2179 entries; overrides of wrong library matches: 0
+- placed in a source file: 1467/6595 in 44 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **434**; stubs: **0**
+- reconstructed FS2 functions: **476**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -48,15 +48,17 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stageresult.cpp` | 32 | 0 |
 | `src/game/sysdata.cpp` | 37 | 0 |
 | `src/game/thread.cpp` | 19 | 0 |
+| `src/game/uidrawer.cpp` | 42 | 0 |
 | `src/game/uilayout.cpp` | 22 | 0 |
 | `src/game/uisequence.cpp` | 29 | 0 |
 | `src/game/uitrack.cpp` | 99 | 0 |
 
 ## Translation units (one session each: `tus.py`)
 
-- 62 TUs: todo 51, verify 19
-- next: **unassigned@0024dfa0** (frontier score 153)
+- 63 TUs: todo 52, partial 1, verify 19
+- next: **game/uidrawer.cpp** (continuing a partial TU)
 - pinned queue: (empty)
+- partial: `game/uidrawer.cpp` 42/50 -- game/uidrawer.cpp 0x24dfa0..0x252840 pinned (batches 045-046). Written: all UiMatrix members but interpolate, uiTransformPoint, UiVec4 multiply / toRgbaq, the d
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
 - verify: `game/gamesystem.cpp` 17/17 -- All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). N
@@ -79,6 +81,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 03:43 `game/uidrawer.cpp` partial: UiMatrix and UiDrawer: 42 of 50 written (matrix helpers, ctor dtor begin end, matrix and add pass, every state call, the four vertex-list draws) through a new h
 - 2026-11-03 03:16 `game/s2ddata.cpp` verify: S2D file code cut from unassigned@0024d530: all 9 written (getImage, getImageEntry, findSequence, findObject, findVarIndex, findVar, getVar, relocate, getString
 - 2026-11-03 02:56 `game/uitrack.cpp` verify: finish the rotate / pin applies, sheet-sprite draws, text draw and setters (all 109 written)
 - 2026-11-03 02:44 `game/uitrack.cpp` partial: game/uitrack.cpp 0x249550..0x24d530 cut out: the track factory UiAnim::init, 41 track classes, UiTrack step / isDone / setPlay; 97 of 109 written
@@ -86,65 +89,64 @@ Recent sessions:
 - 2026-11-03 02:03 `game/uilayout.cpp` verify: UiLayout, the S2D 2D layout player: script interpreter (30 opcodes, 17 condition kinds), sequence management, nested layout base UiSubLayout; all 22 functions w
 - 2026-11-03 01:36 `game/screen.cpp` verify: The 2D screens: overlay thread (BG movie screen, loading indicator), modal runLayout / runLayoutFile, stage e/h, archive and option screens, game-over and notic
 - 2026-11-03 01:19 `game/stageresult.cpp` verify: StageResult (0x599700: counters, two stage clocks, clock layout, mode) and the game-pack loader written; MSL map instances mapped to the host
-- 2026-11-03 00:50 `game/scene.cpp` verify: Scene controller gameSceneThread (thread slot 1) and its SceneDef table at 0x2fabd0; callees named (packs, startup sequence, overlay thread, draw env clear)
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@0024dfa0` | todo | 0/0/246 | 86.8 | 153 | 0 |
+| `unassigned@00171300` | todo | 0/0/2851 | 749.7 | 31 | 0 |
+| `unassigned@00252840` | todo | 0/0/196 | 69.0 | 26 | 0 |
 | `unassigned@002681e0` | todo | 0/0/595 | 177.6 | 19 | 0 |
-| `unassigned@00171300` | todo | 0/0/2851 | 749.7 | 17 | 0 |
-| `game/gamepacket.cpp` | todo | 0/0/6 | 0.6 | 12 | 0 |
 | `unassigned@001319f0` | todo | 0/0/53 | 4.9 | 12 | 0 |
-| `unassigned@002b0d50` | todo | 0/0/632 | 194.3 | 10 | 0 |
-| `game/gfxtarget.cpp` | todo | 0/0/8 | 2.6 | 8 | 0 |
+| `unassigned@002b0d50` | todo | 0/0/632 | 194.3 | 12 | 0 |
+| `game/gamepacket.cpp` | todo | 0/0/6 | 0.6 | 12 | 0 |
+| `game/gfxtarget.cpp` | todo | 0/0/8 | 2.6 | 9 | 0 |
+| `game/uidrawer.cpp` | partial | 42/0/50 | 17.8 | 7 | 0 |
 | `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
-| `unassigned@00296d60` | todo | 0/0/267 | 74.1 | 5 | 0 |
+| `unassigned@00142dd0` | todo | 0/0/14 | 4.6 | 5 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 5 | 0 |
 | `unassigned@0012ea60` | todo | 0/0/7 | 1.7 | 5 | 0 |
-| `game/rcnttimer.cpp` | todo | 0/0/4 | 0.2 | 4 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
-| `0024fe60` | UiDrawer::setPrim | 14 | game | missing | - |
-| `0024e880` | UiMatrix::identity | 11 | game | missing | - |
-| `0024fd40` | UiDrawer::setPrimColor | 11 | game | missing | - |
-| `0024e6d0` | UiMatrix::copy | 8 | game | missing | - |
-| `0024f7a0` | UiDrawer::setTexture | 7 | game | missing | - |
-| `0024fcb0` | UiDrawer::setGsReg | 7 | game | missing | - |
+| `00231360` | GsTexture::GsTexture | 8 | game | missing | - |
 | `00290630` | getLangPackItem | 7 | game | missing | - |
-| `00231360` | GsTexture::GsTexture | 7 | game | missing | - |
 | `002907c0` | getInitPackItem | 6 | game | missing | - |
 | `00260100` | UiLayout::stopSound | 5 | game | missing | - |
-| `0024e7c0` | UiMatrix::multiply | 5 | game | missing | - |
-| `0024fae0` | UiDrawer::~UiDrawer | 4 | game | missing | - |
 | `0012de00` | GamePacketManager::openList | 4 | game | missing | game/gamepacket.cpp |
 | `0012dd30` | GamePacketManager::closeList | 4 | game | missing | game/gamepacket.cpp |
-| `0024e580` | UiMatrix::translate | 4 | game | missing | - |
 | `0025fbd0` | fMsgRelocate | 4 | game | missing | - |
 | `001937f0` | FUN_001937f0 | 4 | - | missing | - |
 | `0012e0e0` | gfxFlipDisplay | 4 | game | missing | game/gfxtarget.cpp |
+| `00231200` | GsTexture::putTex0 | 4 | game | missing | - |
 | `00132c10` | FileJob::~FileJob | 3 | game | missing | - |
 | `0012f160` | gfxGetTexArea | 3 | game | missing | - |
 | `00142dd0` | TexArea::getList | 3 | game | missing | - |
-| `0024e5d0` | UiMatrix::rotate | 3 | game | missing | - |
-| `00252260` | UiDrawer::drawTexGouraud | 3 | game | missing | - |
 | `00297fb0` | FUN_00297fb0 | 3 | - | missing | - |
-| `002524a0` | UiDrawer::drawGouraud | 3 | game | missing | - |
-| `0024e710` | UiMatrix::concat | 3 | game | missing | - |
 | `00290800` | getInitPackData | 3 | game | missing | - |
-| `0024e9d0` | UiDrawer::setPixelMode | 3 | game | missing | - |
-| `0024ea10` | UiDrawer::setTranslate | 3 | game | missing | - |
 | `00147ee0` | SoundConfig::setOutputMode | 3 | game | missing | sound/sound.cpp |
-| `00252680` | UiDrawer::drawFlat | 3 | game | missing | - |
-| `0024ffa0` | UiDrawer::setBlend | 2 | game | missing | - |
-| `0024e4f0` | uiTransformPoint | 2 | game | missing | - |
-| `0024e5b0` | UiMatrix::setScale | 2 | game | missing | - |
-| `0024e3d0` | UiMatrix::setScaleRotTrans | 2 | game | missing | - |
 | `0029efd0` | getSaveExtra | 2 | game | missing | - |
 | `00193880` | FUN_00193880 | 2 | - | missing | - |
 | `001d6a80` | StageSound::playNamed | 2 | game | missing | - |
 | `00261d00` | UiSheetSpriteTrack::findSprite | 2 | game | missing | - |
+| `00132cc0` | FileJob::FileJob | 2 | game | missing | - |
+| `00132bc0` | FileJob::start | 2 | game | missing | - |
+| `0012e080` | gfxGetCurrentDrawEnv | 2 | game | missing | game/gfxtarget.cpp |
+| `00132280` | FileLoader::startLoad | 2 | game | missing | - |
+| `002c3d70` | getSaveResource | 2 | game | missing | - |
+| `0025fe10` | timSheetRelocate | 2 | game | missing | - |
+| `002e1c50` | GsTexture::upload | 2 | game | missing | - |
+| `002311c0` | GsTexture::getSize | 2 | game | missing | - |
+| `00143510` | TexAreaList::place | 2 | game | missing | - |
+| `002d4650` | wstrlen | 2 | game | missing | - |
+| `002d4510` | wstrcpy | 2 | game | missing | - |
+| `002ec660` | optionLayoutPath | 1 | game | missing | - |
+| `002604a0` | UiLayout::testGameState | 1 | game | missing | - |
+| `002603d0` | UiLayout::testGameValue | 1 | game | missing | - |
+| `0012dee0` | GamePacketManager::GamePacketManager | 1 | game | missing | game/gamepacket.cpp |
+| `00135390` | MasterClock::MasterClock | 1 | game | missing | - |
+| `00135210` | Clock::createChild | 1 | game | missing | - |
+| `001351b0` | Clock::~Clock | 1 | game | missing | - |
+| `00151280` | debugSysShutdown | 1 | game | missing | - |
 

@@ -78,7 +78,7 @@ enum UiTrackKind
     UiTrackKind_LayoutColor = 0x25,         // UiLayoutColorTrack. Playing: as BaseColor, and they
                                             // become the layout's
     UiTrackKind_DrawerFlag = 0x26,          // UiDrawerFlagTrack
-    UiTrackKind_TexTrianglesNoTest = 0x27,  // UiTexTrianglesNoTestTrack
+    UiTrackKind_TexTrianglesRepeat = 0x27,  // UiTexTrianglesRepeatTrack
     UiTrackKind_Target = 0x28,              // UiTargetTrack (alt 0)
     UiTrackKind_Target2 = 0x29,             // UiTargetTrack (alt 1)
     UiTrackKind_DestAlphaBlend = 0x2a,      // UiDestAlphaBlendTrack
@@ -121,7 +121,7 @@ struct UiDrawState
     int    coordMode;           // +0: UiCoordMode
     u_char setBase;             // +4: UiTrackKind_BaseColor played
     u_char setLayout;           // +5: UiTrackKind_LayoutColor played
-    u_char drawerFlag;          // +6: UiDrawer::m_b4 (set by some track kind; meaning unread)
+    u_char drawerFlag;          // +6: UiDrawer::m_fixedColor (kind 0x26): the drawer colour alone
 };
 static_assert(sizeof(UiDrawState) == 0x8, "UiDrawState: EE 0x8");
 static_assert(offsetof(UiDrawState, setBase) == 0x4, "UiDrawState::setBase");

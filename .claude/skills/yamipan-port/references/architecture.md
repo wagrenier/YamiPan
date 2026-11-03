@@ -645,8 +645,8 @@ file hooks, states 1 queued / 2 loading / 3 done / 0x80 not found / 0x81 no memo
 names +0x64, 64-bit handles +0x78 (`playSound` 0x25ff40: the stage's StageSound by name in a stage,
 else the menu bank; **`stopSound(-1)` does nothing**: its all-slots branch is dead). The sequence
 side is `game/uisequence.cpp` (next entry); the track factory and its classes are
-`game/uitrack.cpp` (after it), the S2D file's code `game/s2ddata.cpp`; still unassigned:
-`UiMatrix` / `UiDrawer` 0x24dfa0..0x252840, the widget classes 0x25b..0x25e (vptr +0x1c,
+`game/uitrack.cpp` (after it), the S2D file's code `game/s2ddata.cpp`; the matrix and drawer
+`game/uidrawer.cpp` 0x24dfa0..0x252840; still unassigned: the widget classes 0x25b..0x25e (vptr +0x1c,
 `UiWidget::create` 0x25e260, its type table 0x2facf0: 0x2a names) and the game hooks
 0x25ff40..0x2640e8 (sounds, game values / state names 0x599490).
 
@@ -688,14 +688,14 @@ kind (`UiTrackKind` in uisequence.h, classes and records in `game/uitrack.h`), v
 2 triangles (record mode 0 list / 1 fan / 2 strip) with vertex colours, 0x1d / 0x1e / 0x1f the same
 in one record colour (PRIM 0x4a / 0x4e / 0x4b..0x4d = gouraud + ABE, line AA1 from flag bit 0);
 **textured** 5 sprite / 7 triangles / 8 strip mesh, 0x21 / 0x23 / 0x24 one-colour, 0x27 triangles
-without alpha test (PRIM 0x15b..0x15e: + TME + FST; each owns a **`GsTexture`** 0x231360 (0x60,
+with the texture repeating (`setTexRepeat`: CLAMP_1; PRIM 0x15b..0x15e: + TME + FST; each owns a **`GsTexture`** 0x231360 (0x60,
 vptr +0x44; "Zbuf" / "Draw" / "View" image magics are render targets) of S2D image `+0xc`, TEX1_1
 from `+0x10`); **6 / 0x22** a sprite of a **TimM sheet** (`timSheetRelocate` 0x25fe10, picked by
 name through 0x261d00); **3 text** (`UiFont` 0x25fac0: glyph table + font texture, scale; text from
 fMsg message files or a copied wide string, setters 0x24c6e0..0x24ca00); **4 scissor**; drawer
 state **0xf..0x14** `setDrawPreset(0..5)` (0x250130: gfx calls 0x230980..0x231090), **0x1b** additive
 blend, **0x2a** dest-alpha blend (`setBlend` 0x24ffa0: ALPHA_1 0x44 / 0x48 / 0x58 / 0x54), **0x28 /
-0x29** `setTargetRegs` (four GS registers from 0x3076f0 / 0x307730); **apply** kinds 9 / 0xa / 0xb
+0x29** `copyTarget` (a GS local copy of a 512x512 buffer, block 0x800 -> 0x1800 / back: game/uidrawer.cpp); **apply** kinds 9 / 0xa / 0xb
 a matrix / colour multiply / offset add **per frame**, 0xc / 0xd / 0xe the same **by keys** {frame,
 value} interpolated (matrices through `UiMatrix::interpolate` 0x24dfa0), 0x1c / 0x25 colour reset,
 0x26 the drawer flag, 0x2b offset translate (+0x14, set by widgets), 0x15..0x1a pin / rotate to
@@ -739,6 +739,38 @@ names read like `pMASKOFF` / `APS44D1EN` (objects), `sFADEIN` / `slanguage_sel` 
 `prgDebug` (a widget type), `language_sel_1.tm2` (TIM2 images; image 0 is often
 `_dmy.file.name_`, magic "YNAM"), sheet sprites `rItem00` / `rWeaponL00`, pin target
 `rCharactorPostion`.
+
+**`game/uidrawer.cpp` 0x24dfa0..0x252840 (TU 19, 2026-11-03, batches 045-046; 42 of 50 written,
+`partial`; names the port's)**: `UiMatrix` (2D affine rows (a b tx) (c d ty); `concat` = m * this,
+`rotate` = R * this) and **`UiDrawer`** (0xe0), the layouts' **GIF packet writer**. Fields: +0 packet
+(the packet list drawn into), +4 the TexArea list, +8 DIRECT open, +9 vertex run open, +0xc its
+format, +0x10 texture TBP, +0x14 / +0x18 texture size (the UV scale), +0x1c matrix stack [4], +0x7c
+top, +0x80 colour, +0x90 preset, +0x94 blend, +0x98 add colour, +0xa8 add pass, +0xac / +0xb0 the
+preset / blend saved by it, **+0xb4 fixed colour** (UiDrawState::drawerFlag, kind 0x26: the drawer
+colour alone, the tracks' own colours ignored), +0xb8 translate, +0xc0 mode, +0xc4 the draw matrix,
++0xdc pixel mode. Packets: state is an **A+D run** (tag 0x3076e0), PRIM a REGLIST {PRIM} (0x307640)
+or {PRIM, RGBAQ} (0x307650), vertices a REGLIST of **format** 0..7 (0x307660 + 0x10 f: bit 0 RGBAQ,
+bit 1 UV, bit 2 in threes XYZF3 XYZF3 XYZ2); each vertex XYZ2 = (m_matrix * xy) x16 clamped
++-32752, + 0x8000 (the GS centre), Z 0xff0fffff; UV = uv x size x16 (FST); RGBAQ bytes x256 (alpha
+x128), clamped (`UiVec4::toRgbaq` 0x24f350). **The add pass** clears TME and forces ABE in every
+PRIM and draws the add colour, blend 2 (Cs * Ad + Cd). **Screen matrices** (setMode 0 / 1, 0x2fac90
+/ 0x2facc0): **4:3 and 16:9**: pairs {scale(k, 1), scale(1/k, 1)} with k = 4/3 / 16/9;
+`updateMatrix` draws through scale(1/k, 1) (layout x is in display-square units, narrowed to the
+frame), pixel mode keeps only the translation, or with a rotation turns in the widened space and
+narrows a / b by 1/k after. **Textures** (`setTexture` 0x24f7a0): `TexAreaList::place` 0x143510
+(a GS block per texture id per packet list; 1 = newly placed), `GsTexture::upload` 0x2e1c50 then
+`putTex0` 0x231200 (TEX0_1), `getSize` 0x2311c0. **Presets** (`setDrawPreset`, gfx functions
+0x230980..0x231090 named `gfxUiPreset*`): 0 colour + alpha written, 1 / 2 alpha only (FBMSK
+0x00ffffff), 3..5 RGB only (FBMSK 0xff000000), 6 back to the draw env's FRAME / ZBUF / SCISSOR
+(`end`); each resets the blend to 0. **`setTexRepeat`** 0x24fef0 writes CLAMP_1 (reg 8; read as
+TEST_1 before, hazards.md), **`copyTarget`** 0x24e8a0 TRXPOS / TRXREG 512x512 / BITBLTBUF / TRXDIR
+2 (a local copy 0x800 -> 0x1800, or back). The draw env packet (`GfxDrawEnv`, gfxtarget.h): GIF tag,
+then sceGsDrawEnv1 at +0x10. libvifpk named here: `sceVif1PkCnt` 0x10acc8, `OpenGifTag` 0x10b058,
+`CloseGifTag` 0x10b070, `Align` 0x10b130, `AddCode` 0x10b1b0, `AddGsData` 0x10b328, `AddGsAD`
+0x10b350, `OpenDirectCode` 0x10b568, `CloseDirectCode` 0x10b5c0. On the host the drawer keeps its
+decisions and calls **`yamipan/rendering/yamipan_drawui.h`** ("PC platform layer"). Left: `interpolate`
+0x24dfa0, `drawText` 0x24eba0, 0x2503c0, `setScissor` 0x250520, the sheet draws 0x250750 /
+0x2509b0, the strip meshes 0x251350 / 0x2519a0.
 
 ## Classes
 
@@ -985,3 +1017,12 @@ Archive formats, file tables, where the data root starts.
 
 What was taken from RosePan, what was dropped, the host draw modules and their users, the platform
 contract hooks.
+
+- **`src/yamipan/rendering/yamipan_drawui.h`** (TU 19, 2026-11-03; declarations only until bootstrap
+  6): the 2D layouts' draw module, user `game/uidrawer.cpp`. Keyed by the packet the game drew into
+  (= the packet list = the layer); `YamiPan_DrawUiReg` (A+D: ALPHA_1, CLAMP_1, TEX1_1, SCISSOR_1,
+  the BITBLTBUF..TRXDIR set of a local copy, done on TRXDIR between host render targets),
+  `YamiPan_DrawUiPrim` (PRIM, optional shared RGBAQ), `YamiPan_DrawUiTexture` (a GsTexture owner,
+  decoded at its source; `setImage`'s owner is deleted right after the call), `YamiPan_DrawUiBegin`
+  (vertex format) / `YamiPan_DrawUiVertex` (RGBAQ bytes, UV / XY 12.4, Z). The gfx presets
+  (`gfxUiPreset*`) still write their own packets until their TU is written.

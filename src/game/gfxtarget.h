@@ -10,13 +10,24 @@
 #ifndef _GAME_GFXTARGET_H
 #define _GAME_GFXTARGET_H
 
+#include <stddef.h>
+
+#include "sdk/libgraph.h"
 #include "sdk/scetypes.h"
 
 // A display record (0x540 bytes at 0x4ae280; layout not written yet).
 struct GfxDisplay;
-// The draw env packet at +0x80 of a display record (layout not written yet:
-// a GIF tag at +0, the clear colour RGBA at +0xb0).
-struct GfxDrawEnv;
+// The draw env packet at +0x80 of a display record: a GIF tag, then the
+// context 1 registers in sceGsDrawEnv1's order (the UI presets and
+// UiDrawer::resetScissor read FRAME_1 / ZBUF_1 / SCISSOR_1 from it). The
+// rest (the clear colour RGBA at +0xb0) is not written yet.
+struct GfxDrawEnv
+{
+    u_long128     tag;          // FS2 +0x00
+    sceGsDrawEnv1 env;          // FS2 +0x10
+};
+static_assert(offsetof(GfxDrawEnv, env) == 0x10, "GfxDrawEnv::env");
+static_assert(offsetof(GfxDrawEnv, env.scissor1) == 0x40, "GfxDrawEnv::env.scissor1");
 
 void gfxInitRenderTargets();                                             // FS2 0x0012e3f0
 void gfxReleaseRenderTargets();                                          // FS2 0x0012e3a0
@@ -64,6 +75,12 @@ class GsTexture
 public:
     GsTexture(const void *image);                                        // FS2 0x00231360
     virtual ~GsTexture();                                                // FS2 0x002313b0: deleting (obj, 1)
+
+    // The image's size (a render target's own, +0x54 / +0x58).
+    void getSize(int *width, int *height);                               // FS2 0x002311c0
+    // PC: the GS side -- TEX0 into a register (0x231200) and the image
+    // transfer (upload 0x2e1c50) -- is not declared: the host draw module
+    // binds the texture by its owner.
 };
 
 #endif /* _GAME_GFXTARGET_H */

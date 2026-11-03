@@ -1,0 +1,62 @@
+/* ==========================================================================
+ *  yamipan_drawui.h
+ *
+ *  The native draw module of the 2D layouts (architecture.md "PC platform
+ *  layer"). game/uidrawer.cpp keeps every decision FS2's UiDrawer makes --
+ *  primitive, colours, texture, blend, wrap, scissor, presets, order -- and
+ *  hands them here as the GS register values it would have packed, instead
+ *  of writing GIF packets. No GS emulator: the module turns the values into
+ *  host draws; textures arrive as their owner (the game's GsTexture) and
+ *  are decoded at their source to GPU textures, never through GS memory.
+ *
+ *  `list` is the packet the game drew into (one per packet list): the list
+ *  id is the layer, drawn in id order (game/gamepacket.h). Coordinates are
+ *  the GS window's (12.4 fixed point, 0x8000 = 2048.0, the draw env's
+ *  centre): the module maps them to its frame from the renderer-owned
+ *  display size and aspect, never a fixed 4:3.
+ *
+ *  Declarations only until bootstrap 6 (the platform layer) implements them.
+ * ======================================================================== */
+#ifndef YAMIPAN_DRAWUI_H
+#define YAMIPAN_DRAWUI_H
+
+#include <stdint.h>
+
+/* One vertex as the GS would get it: RGBAQ bytes (alpha 0x80 opaque), UV
+ * in texels times 16, XY in window coordinates times 16, Z the register's
+ * 32 bits (FS2 always 0xff0fffff). Only what the open format names is
+ * meaningful. */
+struct YamiPanUiVertex
+{
+    uint8_t  rgba[4];
+    uint16_t u, v;
+    uint16_t x, y;
+    uint32_t z;
+};
+
+/* The vertex formats (UiVertexFormat): bit 0 RGBAQ, bit 1 UV, bit 2 in
+ * groups of three (only every third vertex kicks). */
+enum
+{
+    YAMIPAN_UIV_RGBAQ   = 1,
+    YAMIPAN_UIV_UV      = 2,
+    YAMIPAN_UIV_GROUPED = 4,
+};
+
+/* One A+D register write (ALPHA_1, CLAMP_1, TEX1_1, SCISSOR_1, FRAME_1,
+ * ZBUF_1, and the BITBLTBUF / TRXPOS / TRXREG / TRXDIR set of a local copy,
+ * which the module performs between its render targets on TRXDIR). */
+void YamiPan_DrawUiReg(const void *list, int reg, uint64_t value);
+
+/* PRIM, and with `rgbaq` non-null the colour every following vertex
+ * shares (the flat draws). */
+void YamiPan_DrawUiPrim(const void *list, uint64_t prim, const uint8_t *rgbaq);
+
+/* Binds the texture of `owner` (a GsTexture; null keeps the bound one). */
+void YamiPan_DrawUiTexture(const void *list, const void *owner);
+
+/* Starts a vertex run of `format`; YamiPan_DrawUiVertex adds to it. */
+void YamiPan_DrawUiBegin(const void *list, int format);
+void YamiPan_DrawUiVertex(const void *list, const YamiPanUiVertex *vertex);
+
+#endif /* YAMIPAN_DRAWUI_H */

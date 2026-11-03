@@ -115,7 +115,7 @@ static inline bool isTexturedKind(int kind)
         || kind == UiTrackKind_TexTriangles || kind == UiTrackKind_TexStrip
         || kind == UiTrackKind_TexSpriteFlat || kind == UiTrackKind_SheetSpriteFlat
         || kind == UiTrackKind_TexTrianglesFlat || kind == UiTrackKind_TexStripFlat
-        || kind == UiTrackKind_TexTrianglesNoTest;
+        || kind == UiTrackKind_TexTrianglesRepeat;
 }
 
 // The names in a track record.

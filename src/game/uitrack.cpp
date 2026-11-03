@@ -350,8 +350,8 @@ void UiAnim::init(S2dData *data, S2dObject *obj, int objIndex)
         case UiTrackKind_DrawerFlag:
             track = new UiDrawerFlagTrack(rec);
             break;
-        case UiTrackKind_TexTrianglesNoTest: {
-            UiTexTrianglesNoTestTrack *tex = new UiTexTrianglesNoTestTrack(rec);
+        case UiTrackKind_TexTrianglesRepeat: {
+            UiTexTrianglesRepeatTrack *tex = new UiTexTrianglesRepeatTrack(rec);
             loadTexture(tex, data, recImage(rec));
             track = tex;
             break;
@@ -396,9 +396,9 @@ UiOffsetTrack::~UiOffsetTrack()
 void UiTargetTrack::draw(UiDrawer *drawer)
 {
     if (m_alt == 0)
-        drawer->setTargetRegs(1);
+        drawer->copyTarget(1);
     else
-        drawer->setTargetRegs(0);
+        drawer->copyTarget(0);
 }
 
 // FS2 0x0024a7d0
@@ -817,24 +817,24 @@ UiTexStripTrack::~UiTexStripTrack()
 // Kind 0x27.
 // FS2 0x0024bd40
 
-void UiTexTrianglesNoTestTrack::draw(UiDrawer *drawer)
+void UiTexTrianglesRepeatTrack::draw(UiDrawer *drawer)
 {
     if (m_texture == nullptr)
         return;
-    drawer->setNoAlphaTest(1);
+    drawer->setTexRepeat(1);
     drawer->setTexture(m_texture);
     const S2dTexTrianglesRec *rec = (const S2dTexTrianglesRec *)m_rec;
     drawer->setGsReg(kGsRegTex1_1, rec->tex1);
     if (u_long prim = triPrim(rec->mode, kUiPrimTexShape))
         drawer->setPrim(prim);
     drawer->drawTexGouraud(rec->verts, rec->count, 0);
-    drawer->setNoAlphaTest(0);
+    drawer->setTexRepeat(0);
 }
 
 // FS2 0x0024be20
 // callcheck: operator_delete (the deleting destructor)
 
-UiTexTrianglesNoTestTrack::~UiTexTrianglesNoTestTrack()
+UiTexTrianglesRepeatTrack::~UiTexTrianglesRepeatTrack()
 {
     if (m_texture != nullptr)
         delete m_texture;
@@ -1361,7 +1361,7 @@ const float *UiTexStripTrack::getAnchor()
 
 // FS2 0x0024d440
 
-const float *UiTexTrianglesNoTestTrack::getAnchor()
+const float *UiTexTrianglesRepeatTrack::getAnchor()
 {
     return ((const S2dTexTrianglesRec *)m_rec)->verts[0].xy;
 }

@@ -182,7 +182,7 @@ void UiSequence::draw(UiDrawer *drawer)
         drawer->m_stack[drawer->m_top].copy(xform);
         drawer->updateMatrix();
         drawer->m_color = color;
-        drawer->m_b4 = state.drawerFlag;
+        drawer->m_fixedColor = state.drawerFlag;
         m_actors[i]->drawTracks(drawer);
 
         if (offset.x != 0.0f || offset.y != 0.0f || offset.z != 0.0f || offset.w != 0.0f) {
