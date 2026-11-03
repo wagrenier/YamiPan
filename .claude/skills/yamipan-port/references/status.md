@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-02 17:25 at commit `151382e` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-02 17:28 at commit `86600cb` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -34,7 +34,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- TU summary failed: ModuleNotFoundError("No module named 'tus'")
+- 42 TUs: todo 42
+- next: **game/gamesystem.cpp** (frontier empty: start from main)
+- pinned queue: (empty)
 
 ## Frontier (called by reconstructed code, not written yet)
 

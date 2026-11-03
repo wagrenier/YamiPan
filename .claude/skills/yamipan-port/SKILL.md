@@ -13,13 +13,13 @@ counterpart: every function from its own binary). This skill distils what those 
 skills keep the full history. It is the playbook and the project's memory: follow it, and keep it true
 ("Keeping this skill alive").
 
-**State (2026-11-02): bootstrap 4 closed by the user (source code first: open-items.md "Next up" item 0); bootstrap 5 done (the TU map: 16 library ranges, 27 pinned TUs in `data/tus.json`), next `tus.py` in source-only mode; seeded names: batches 001-021 applied; rxsys / rxfile / rxthread / rxsnd, SIF cmd / rpc, iopheap and libmpeg / libipu and all of libkernl (klib.s, glue, thread, tty, kprintf, fileio, loadfile, TLB, initsys, exit, timer, alarm), libgraph / libdma / libdev, libcdvd and libmc named from RosePan, libpad from FF3's list, rxsndut / rxsndstr / SDPR2 and the game's sound layer by reading; 4(a) and the code-pointer pass done: every known missing function start created, 7,582 functions)** (open-items.md "Next up" has what is left). The game is Forbidden Siren 2 (Europe, `SCES_538.51`;
+**State (2026-11-02): bootstrap 4 closed by the user (source code first: open-items.md "Next up" item 0); bootstrap 5 done (the TU map: 16 library ranges, 27 pinned TUs in `data/tus.json`); `tus.py` carried over in source-only mode (no build yet: TUs end `verify`), so the runs are one TU each, from `main`'s `game/gamesystem.cpp` down; seeded names: batches 001-021 applied; rxsys / rxfile / rxthread / rxsnd, SIF cmd / rpc, iopheap and libmpeg / libipu and all of libkernl (klib.s, glue, thread, tty, kprintf, fileio, loadfile, TLB, initsys, exit, timer, alarm), libgraph / libdma / libdev, libcdvd and libmc named from RosePan, libpad from FF3's list, rxsndut / rxsndstr / SDPR2 and the game's sound layer by reading; 4(a) and the code-pointer pass done: every known missing function start created, 7,582 functions)** (open-items.md "Next up" has what is left). The game is Forbidden Siren 2 (Europe, `SCES_538.51`;
 files under "Environment"), annotation tag `FS2`; a stripped **Metrowerks CodeWarrior** build (not GCC:
 open-items.md has what that changes). What exists: the Ghidra layer on bethington's GhidraMCP 7.0.0
 (`tools/reverse/ghidra_mcp.py`, `ghidra_bridge.py`, `.mcp.json`), a Ghidra project with the game
-imported and auto-analysed, and RosePan's tools carried over (bootstrap 3: all but `tus.py` /
-`autopilot.py`, which come with bootstrap 7). Until the TU loop runs, work follows
-`references/bootstrap.md`; afterwards, the protocol below.
+imported and auto-analysed, and RosePan's tools carried over (bootstrap 3; `tus.py` on 2026-11-02 in source-only mode,
+`autopilot.py` with bootstrap 7). The TU loop runs: the protocol below; the bootstrap steps left
+(platform layer, first build) are `references/bootstrap.md` 6-7.
 
 Read before working:
 - `references/open-items.md` -- the user's priorities ("Next up"), decisions, questions.
@@ -110,6 +110,8 @@ still ends in a commit.
    when the screen shows what the game's own assets show (`tm2png.py` -> `work/ref/`); a wrong picture is
    `partial` with the difference in the notes; complete code nothing on screen shows yet is `verify`.
    When a run needs more than the boot, extend the smoke pad and say how far it gets in open-items.md.
+   **Source-only mode** (no `CMakeLists.txt` yet): `check` runs only callcheck and the layout lint;
+   finish with `verify` (code complete) or `partial`; `done` waits for a build and a picture.
 7. **Record.** Facts -> architecture.md; traps -> hazards.md (symptom / cause / fix, dated); cross-TU
    questions and decisions -> open-items.md; better ways of working -> this file, reconstruction.md, the
    tools README. If `.claude/` writes are denied (autopilot), put the text in `--notes` after "For the
@@ -165,8 +167,8 @@ frontmatter; the user's rule: automated runs at xhigh or above). Keep that line.
 
 ## Tools by step
 
-Carried over from RosePan at bootstrap 3 (2026-10-31); `tus.py` arrives with bootstrap 7 (its existence
-switches the scheduled runs to the TU loop). `tools/reverse/README.md` has the Ghidra helpers and
+Carried over from RosePan at bootstrap 3 (2026-10-31); `tus.py` on 2026-11-02 (source-only until the
+build; its existence switched the scheduled runs to the TU loop), `autopilot.py` with bootstrap 7. `tools/reverse/README.md` has the Ghidra helpers and
 what degrades while Ghidra is down.
 
 | step | tool |

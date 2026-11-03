@@ -27,10 +27,11 @@ Store stub). Paths come from `yamipan.py` and can be overridden with environment
 | `routine.md` | The prompt of the desktop app's scheduled task `yamipan-next-tu` (every 20 minutes): one step per run (a bootstrap step until `tus.py` exists, then one TU) on the branch `fs2-port`, commit, push, report. Sessions never edit it; the user does (then updates the task's prompt to match). |
 | `preflight.py` | Gates a run: `python preflight.py` checks the stop switch (`work/STOP`), a running autopilot, the run lock (`work/run.lock`: exit 3 while the previous run is still going, exit 1 when older than 6 h), a clean tree, a work branch and Ghidra serving the program, then takes the lock; `--release` drops it. To stop the runs: create `work/STOP`. |
 
-**`tus.py` and `autopilot.py` are not carried over yet**: the routine switches from bootstrap steps to
-the TU loop as soon as `tus.py` exists, so it arrives with bootstrap 7 (first build, first TU), and
-`autopilot.py` (which needs it, and which sessions never edit) with it. `status.py` and `tuid.py`
-import `tus` lazily and skip the TU section until then.
+**`tus.py` arrived 2026-11-02, ahead of the build** (open-items.md "Next up" 0(b)): the routine now
+runs one TU per run. Until `CMakeLists.txt` exists it works in **source-only mode**: `check` runs
+callcheck on the TU's file and layoutcheck's lint (no compiler, no smoke run), `finish` skips the
+build, refuses `--status done` and records the session as "not built". `autopilot.py` (which sessions
+never edit) is still not carried over; it comes with the first build (bootstrap 7).
 
 ## Pipeline
 
@@ -88,7 +89,7 @@ The API, how the plugin behaves, the setup and the traps: the skill's `reference
 | `export.py` | `yamipan_functions.txt`: every function with size, name and provenance, grouped into source files: pinned ranges, then string anchors (FS2's own `file.c` / `.cpp` strings), class anchors, then link-order fill. Writes `work/class_files.json`. |
 | `status.py` | The generated status page (seeding state, naming, placement, reconstruction, TUs, frontier). |
 | `refresh.py` | fetch + features (if Ghidra is up), sections, rtti, export, status. |
-| `tuid.py` | Is the TU the file its key says? Source-path strings, other strings, classes, name prefixes, caller / callee TUs. Needs `tus.py` (bootstrap 7). |
+| `tuid.py` | Is the TU the file its key says? Source-path strings, other strings, classes, name prefixes, caller / callee TUs (also in `tus.py brief`). |
 | `stage.py` | `python stage.py <names\|addrs\|file:x.cpp\|class:Name\|range:lo-hi> [--asm]` -- per-function bundle in `work/stage/`: class role and vptr offset, callers, callees, tail jumps, strings, floats, decompilation (and disassembly). |
 | `ctxcard.py` | `--top N` most-called unnamed game functions (or given addresses): callers, callees, tail jumps, strings, floats, class role, named neighbours with files, decompilation. |
 | `name_ctx.py` | `python name_ctx.py <batch.json>` -- apply hand names (`game-inferred` / `lib-context`) with evidence to Ghidra, `data/tags.json` and `data/context_names.json`; refuses whitespace and duplicates, never renames a `game-symbol`; replacing a library match records `data/overrides.json`; saves (save_program), then refresh.py. |

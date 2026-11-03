@@ -14,13 +14,15 @@ questions. Resolve items here when they are settled (move them to "Done" with th
        `data/layout.json`, 27 pinned TUs in `data/tus.json` (rx, rxsndstr, SDPR2, the boot's game
        code), `export.py` / `status.py` regenerated (architecture.md "Address map", "Modules").
        `tus.json` "queue" is left empty for (c); its settings carry the data root, slice 10240 and
-       an empty smoke pad. **Next: (b).**
-   (b) **carry `tus.py` over from RosePan now** (supersedes the 2026-10-31 decision to wait for
-       bootstrap 7), with a **source-only mode while there is no host toolchain** (item 5):
-       `tus.py check` skips build / smoke run and runs only what works without a compiler, `finish`
-       accepts `--status verify` without a build and says "not built" in the record. The routine then
-       switches to one TU per run by itself.
-   (c) the queue: game code first (not library code), starting from `main` / `gameMainThread` /
+       an empty smoke pad.
+   ~~(b) **carry `tus.py` over from RosePan now**~~ **done 2026-11-02**: `tools/reverse/tus.py`
+       with a **source-only mode while there is no `CMakeLists.txt`** (item 5): `check` runs
+       callcheck on the TU's file and layoutcheck's lint only (no build, stubgen or smoke run),
+       `finish` skips the build, refuses `--status done`, records `"build": "not built"` in the
+       session and says so in the commit. `list` / `next` / `check` / `brief --no-stage` tried on
+       the pinned TUs. The routine now runs one TU per run. **Next: (c).**
+   (c) the queue (`tus.py next` already picks `game/gamesystem.cpp`, `main`'s TU, with the queue
+       empty: "frontier empty: start from main"; a written TU's callees then raise the frontier): game code first (not library code), starting from `main` / `gameMainThread` /
        `GameSystem` and down what boot reaches (architecture.md "Program flow"), each TU written into
        `src/` with its header and names made at that TU.
    The platform layer (bootstrap 6) and first build (7) follow once the user has a toolchain; until
@@ -232,7 +234,8 @@ questions. Resolve items here when they are settled (move them to "Done" with th
   endpoints (ghidra.md); saving and function creation now work from the tools; the `ghidra` MCP server
   is the plugin's own bridge from `../ghidra-mcp` (`ghidra_bridge.py`). Supersedes the 2026-10-31
   decisions on 2.0.0 and on 5.14.2 beside it.
-- 2026-10-31 (session decision, bootstrap 3; the user may revise): **`tus.py` (and `autopilot.py`,
+- 2026-10-31 (session decision, bootstrap 3; **superseded 2026-11-02 for `tus.py`**, which came over
+  in source-only mode; `autopilot.py` still waits): **`tus.py` (and `autopilot.py`,
   which needs it) are carried over at bootstrap 7, not 3**: the routine switches to the TU loop as soon
   as `tools/reverse/tus.py` exists, and with no TU map, platform layer or build that loop would claim
   nothing useful. `status.py` / `tuid.py` import it lazily.
@@ -329,6 +332,11 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-11-02: "Next up" 0(b) (scheduled run): `tus.py` carried over from RosePan with a source-only
+  mode (no build: `check` = callcheck + layout lint, `finish` refuses `done`, records "not built");
+  README, SKILL.md, bootstrap.md updated, status.md regenerated. Next: 0(c), the first TU
+  (`game/gamesystem.cpp`).
 
 - 2026-11-02: bootstrap 4, part 16 (scheduled run): naming batch 016 (139 names: libkernl's front,
   klib.s by slot from RoR, glue / cache / intr / thread / deci2 / tty / kprintf / sifcmd head from
