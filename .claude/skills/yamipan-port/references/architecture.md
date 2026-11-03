@@ -954,9 +954,16 @@ is 0), **RgbOnly4** 0x3f001 (DATM 1: where it is 1), **RgbOnly5** TEST 0x30000 w
 0x8000000054 ((Cs - Cd) * Ad + Cd), all three FBMSK 0xff000000; **DrawEnv** the Normal run, then the
 env's own FRAME_1 / ZBUF_1 / SCISSOR_1. **GsTexture** (0x60, vtable 0x3164e8 at +0x44) derives from
 rena's **`Tim2Texture`** (rena_2d_texture_tim2.cpp 0x2e1b70..0x2e2970, EE 0x48, vtable 0x31a7c0 at
-+0x44; ctor 0x2e2920, deleting dtor 0x2e2810, `load` 0x2e26c0 ('T' check, one Tim2Texture per TIM2
-picture), `putTex0` 0x2e1b70, `upload` 0x2e1c50; +0 TEX0 template, +0x1c / +0x1e size, +0x20 CLUT
-block offset). Its ctor then `readTarget` 0x231290: an image whose **TIM2 header reserved word
++0x44; ctor 0x2e2920, deleting dtor 0x2e2810, `load` 0x2e26c0 ('T' check, **one Tim2Texture per mip
+level of the file's first picture**, the top level owns the rest; all FS2's TIM2s seen have one level),
+`setupMip` 0x2e22d0, `putTex0` 0x2e1b70, `upload` 0x2e1c50; written 2026-11-03,
+`src/rena/rena_2d_texture_tim2.h` has the fields). It reads the file in place and does not own it: +0x40
+is the **TIM2 file itself, not a copy** (+0x28 pixels, +0x38 CLUT point into it); +0x3c, a second CLUT
+on the global heap sent 4 blocks after the first, has no writer in anything read so far. PC: `upload` is
+empty on purpose. **Sony's sample TIM2 library** is `rena/tim2.cpp` 0x2e97a8..~0x2e9d90 (four of its nine
+written: `Tim2GetPictureHeader`, `Tim2GetMipMapPictureSize`, `Tim2GetImage`, `Tim2GetClut`). Disc
+samples (ROM.000 / 001, about 5,500 headers): 4-bit with RGB32 CLUT (most), 4-bit with RGB16, 8-bit with
+RGB32, direct 32-bit; none with a linear-order CLUT or a second mip level. Its ctor then `readTarget` 0x231290: an image whose **TIM2 header reserved word
 (+0xc) is `Zbuf` / `Draw` / `View`** stands for a 512x512 render target: +0x50 = 1, +0x48 TEX0
 (TBW 8, TW / TH 9, TCC 1) at block **0x1800 PSMCT32 / 0x800 PSMCT32 / 0 PSMCT16**, +0x54 / +0x58 =
 512. `getSize` 0x2311c0 answers the target's 512 or the base's shorts; `putTex0` 0x231200 (cursor,
