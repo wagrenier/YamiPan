@@ -21,6 +21,27 @@ questions. Resolve items here when they are settled (move them to "Done" with th
        `finish` skips the build, refuses `--status done`, records `"build": "not built"` in the
        session and says so in the commit. `list` / `next` / `check` / `brief --no-stage` tried on
        the pinned TUs. The routine now runs one TU per run. **Next: (c).**
+   **(c) started 2026-11-02: TU 1 `game/gamesystem.cpp` written (all 17 functions, `verify`,
+   batch 022).** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
+   `game/perfmeter.cpp`, `game/thread.cpp`, `game/gfxtarget.cpp`, the clocks, the heap, sound,
+   `rxInit` / SPK.ROM, system data. Choices made there, for the user to overrule:
+   - **Headers for TUs not written yet are minimal** (`src/game/pad.h`, `clock.h`, `heap.h`,
+     `perfmeter.h` (+ `RcntTimer`, `rcnt1Start`), `gamepacket.h` (+ rena's `Vif1PktManage`),
+     `gfxtarget.h`, `sysdata.h` (options, ButtonMap, DateTime), `thread.h`); rx / sound / memcard /
+     debug hooks / `gameSceneThread` share `src/game/gamehooks.h` until their TUs exist (move each
+     prototype to its TU's header then).
+   - **The SDK headers the game code includes are RosePan's names** (`sdk/eekernel.h`, `eeregs.h`,
+     `libgraph.h`, `libdma.h`, `libpad.h`, `scetypes.h`) plus Sony's `sdk/eestruct.h` (`tD_STAT`) and
+     `sdk/libvifpk.h` (`sceVif1Packet` with **`pCurrent` first**, as FS2's packet lists use it:
+     RosePan's own `libvif.h` puts `pBase` first) and `ExitHandler()`: bootstrap 6 must provide them.
+   - **`gsClearVram` is kept as the game wrote it** (packet + sceDmaSend on GIF) with a `PC:` note:
+     with no GS emulator the host GIF channel drops it; host targets start cleared. The GS FINISH
+     `GameSystem::flipFrame` writes into packet list 13 stays too (draws nothing).
+   - **`main` keeps its name**; the platform layer's entry must call it (rename at bootstrap 6 if
+     the host entry needs `main`).
+   - Open: why `GamePad::read` 0x12d4f0 and the slot `GamePad::update` 0x12dc60 both exist; the
+     names of heap marks 0 / 1 and the meter groups (guesses in `heap.h` / `perfmeter.h`);
+     `Clock`'s byte +0x1c (MasterClock's last ctor argument); the empty `debugSys*` hooks' real role.
    (c) the queue (`tus.py next` already picks `game/gamesystem.cpp`, `main`'s TU, with the queue
        empty: "frontier empty: start from main"; a written TU's callees then raise the frontier): game code first (not library code), starting from `main` / `gameMainThread` /
        `GameSystem` and down what boot reaches (architecture.md "Program flow"), each TU written into
@@ -332,6 +353,11 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- 2026-11-02: TU 1 `game/gamesystem.cpp` (scheduled run): all 17 functions reconstructed into
+  `src/game/gamesystem.cpp` / `.h` with minimal headers for the callee TUs, naming batch 022 (18
+  names, saved by the tools), source-only check green (callcheck clean, layout lint OK); status
+  `verify` (not built). Next: the next TU `tus.py next` picks.
 
 - 2026-11-02: "Next up" 0(b) (scheduled run): `tus.py` carried over from RosePan with a source-only
   mode (no build: `check` = callcheck + layout lint, `finish` refuses `done`, records "not built");

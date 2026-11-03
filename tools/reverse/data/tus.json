@@ -17,12 +17,22 @@
    "why": "GamePacketManager on rena's Vif1PktManage (batch 004); file name a guess."
   },
   "game/gamesystem.cpp": {
+   "notes": "All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). Naming batch 022: gsEndFrameSync became GameSystem::endFrameSync (member that ignores this), GamePad ctor / dtor / read / setButtonMap, Pad::Pad(bool), atan2f, srand, rndInit, PerfMeter::addBar / drawBars / drawDetail, debugSys hooks, gfxFlipDisplay, gameSceneThread. Callee headers are minimal stand-ins (pad.h, clock.h, heap.h, perfmeter.h, gamepacket.h, gfxtarget.h, sysdata.h, thread.h, gamehooks.h for rx / sound / memcard / debug hooks / scene thread): their TUs complete them. SDK includes assume bootstrap 6 provides sdk/eestruct.h, sdk/libvifpk.h (pCurrent first) and ExitHandler. gsClearVram is kept as the game wrote it with a PC note (no GS emulator: the host drops the GIF packet). computeSticks has a PC guard for 0/0 at rest. Open: why GamePad::read and the slot GamePad::update are twins; heap mark and meter group names are guesses. Picture: nothing to see until bootstrap 6-7.",
    "ranges": [
     [
      "0012cd20",
      "0012dd30"
     ]
    ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-02 17:59",
+     "status": "verify",
+     "summary": "main, gameInit, the main loop, GameSystem (ctor, flipFrame, endFrameSync), GamePad / MaskedGamePad, gsClearVram, the frame-ready and DMAC handlers: all 17 functions written (source-only, not built)"
+    }
+   ],
+   "status": "verify",
    "why": "gsEndFrameSync, GameSystem (ctor, flipFrame), GamePad helpers, gameInit, gsClearVram, main, gameMainThread, gameFrameReady, the DMAC handler, GamePad::update / MaskedGamePad::update (batches 001-004, 009); the file name and the GamePad split are guesses."
   },
   "game/gfxtarget.cpp": {

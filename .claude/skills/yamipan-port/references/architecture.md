@@ -296,7 +296,37 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
     calls through the 16 listeners 0x4af000 (`Pad::setListening` 0x12fed0): `Pad` 0x130060 (thunk to
     `Pad::update` 0x12f300), `GamePad` 0x12dc60 (update + computeSticks), `MaskedGamePad` 0x12dcb0
     (the same, then `Pad::clear` 0x12f960 while L1+L2 are held). The slot functions were created and named at
-    bootstrap 4a (batch 009; 0x130060 stays a thunk). Standalone `GamePad` ctor / dtor candidates: 0x12d540 / 0x12d5a0 (rtti.py).
+    bootstrap 4a (batch 009; 0x130060 stays a thunk). **Reconstructed 2026-11-02 in
+    `src/game/gamesystem.cpp` (TU 1, batch 022)**: the hierarchy is `MaskedGamePad : GamePad : Pad`
+    (the destructors store 0x311030, then 0x311020, then call `Pad::~Pad`); Pad's own vtable is
+    0x311050, its EE size 0x124 (data to +0x11c, vptr +0x120: ctor clears +0x10..+0x23, sets the
+    analog bytes +0x24..+0x27 to 0x80, `{7, 9, 0}` x 25 at +0x54). `GamePad` (0x178) is
+    `{+0x124 dir[4] (sticks squared to a circle, y up), +0x134 angle[4] (atan2(y, x), atan2(-x, y)
+    per stick), +0x144 length[4] (each stick's twice), +0x154 ButtonMap (8 ints, defaults 6 5 4 7 3 1 2
+    0), +0x174 options map}`; its constructor is inline (three copies in `GameSystem::GameSystem`), and
+    0x12d5a0 / 0x12d540 are the out-of-line default ctor (`Pad::Pad(bool)` 0x12fb10 = port 0) and
+    destructor. `GamePad::read` 0x12d4f0 has the slot's body word for word (non-virtual caller
+    0x239d50). GameSystem: port 0, port 1, port 1 masked; R3 pressed on port 1 dumps the meter groups.
+  - **Frame flip and GS recovery** (batch 022): the frame-ready callback `gameFrameReady` calls
+    `gfxFlipDisplay` 0x12e0e0(ready, kickPacket, putDrawEnv) every vsync: on a ready frame it writes
+    PMODE / SMODE2 / DISPFB1/2 / DISPLAY1/2 / BGCOLOR from the 0x540-byte display record 0x4ae280[gp-0x7acc]
+    (resetting the GS on a mode change), sends the record's 0x3a-qword packet (+0x180) and puts its
+    draw env (+0x80) as the flags allow: `gGfxKickDisplayPacket` 0x31a894 (sdata 1; 0 for one frame
+    after a GS timeout reset in `GameSystem::endFrameSync`, the renamed `gsEndFrameSync`, a member
+    that ignores `this`), `gGfxPutDrawEnv` 0x31a890 (sdata 1), `gGfxFlipNoPackets` 0x31ad94 (both off).
+    `gDmacBusError` 0x31ad90 is set by `dmacBusErrorHandler` and makes the next end of frame reset
+    GS path / graph / DMA.
+  - **Scene controller** `gameSceneThread` 0x231bb0 (thread slot 1): three init calls, then forever
+    a scene from the 0x18-byte table 0x2fabd4 (index gp-0x7a34; Heap::alloc'ed stack) in slot 2,
+    yields until it exits. Thread slot names 0x2f3810: `Th Ctrl`, `Th Main`, `Th 02`, `Th Game`,
+    `Th 04`, `Th Extra`, `Th 06`, `Th Effect`.
+  - **RNG and date** (batch 022): `gameInit` seeds newlib `srand` 0x126f78 and the game's
+    `rndInit` 0x104860 (97-word table 0x3299c0, LCG x * 0x5d588b65 + 1) with second + minute + hour +
+    day + month of `getLocalDateTime`'s 8-byte BCD date `{flags 0x10 (0x11 clock error), second,
+    minute, hour, day, month, u16 year 0x20yy}`. `atan2f` 0x119b88 -> fdlibm `__ieee754_atan2f`
+    0x1173e0 (MSL math in the run after libipu). Empty hooks `debugSysInit` / `Update` / `Shutdown`
+    0x151290 / 0x151270 / 0x151280 and the meter's `PerfMeter::addBar` 0x133610 (value, ABGR colour,
+    group, label), `drawBars` 0x133600, `drawDetail` 0x132f20 are retail-stripped.
   - **rena `Vif1PktManage`** (0x30 bytes, vptr at +0x2c): `{+0 write ptr, +4 buffer base, +8 chain
     start, +0xc open list, +0x10 buffer index, +0x14 list vector (count +0x18, data +0x1c), +0x20
     buffer vector {base, size} (count +0x24, data +0x28)}`; lists are 0x34-byte `Vif1PktList`s

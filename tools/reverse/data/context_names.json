@@ -713,6 +713,12 @@
   "was": "FUN_00104600",
   "why": "(size, <= 0 means all but -size): sizes free RAM from 0x31a880..0x31a888 (else 32 MB - end - 0x2000), probes with _malloc_r / _free_r, then _malloc_r's block becomes the heap 0x329970 (0x104500)"
  },
+ "00104860": {
+  "name": "rndInit",
+  "tag": "game-inferred",
+  "was": "FUN_00104860",
+  "why": "seeds the game's own RNG: fills the 97-word table 0x3299c0 from an LCG (x * 0x5d588b65 + 1, state gp-0x7fe4) and stirs it seed times (index gp-0x7af0); gameInit passes the RTC sum & 0xff"
+ },
  "00104c60": {
   "name": "__construct_array",
   "tag": "lib-context",
@@ -1397,6 +1403,18 @@
   "was": "FUN_00116d80",
   "why": "SDK 3.0 libipu, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x269d50 sceIpuInit; same size 0x238 and place in a run of matching functions (rxalign.py)"
  },
+ "001173e0": {
+  "name": "__ieee754_atan2f",
+  "tag": "lib-context",
+  "was": "FUN_001173e0",
+  "why": "fdlibm e_atan2f: x == 1 -> atanf, sign quadrant word (y >> 31 | x >> 30 & 2), returns +-pi 0x40490fda / +-pi/2 0x3fc90fda, pi_lo 1.5099579e-07 correction"
+ },
+ "00119b88": {
+  "name": "atan2f",
+  "tag": "lib-context",
+  "was": "FUN_00119b88",
+  "why": "wrapper that tail-jumps to __ieee754_atan2f 0x1173e0 (y in f12, x in f13); GamePad::computeSticks calls it for stick angles"
+ },
  "0011c6b0": {
   "name": "sceCdCallback",
   "tag": "lib-context",
@@ -1967,6 +1985,12 @@
   "was": "FUN_00125228",
   "why": "libc: (dst, src, n) returning dst, 16-byte-aligned 32-byte block path then bytes; libmc and the game copy with it; memmove follows at 0x1252d8"
  },
+ "00126f78": {
+  "name": "srand",
+  "tag": "lib-context",
+  "was": "FUN_00126f78",
+  "why": "newlib srand: stores the seed as a 64-bit word at _impure_ptr (0x2f3398) + 0xa8 (_rand_next); gameInit seeds it from the RTC"
+ },
  "001278f8": {
   "name": "_raise_r",
   "tag": "lib-context",
@@ -2010,10 +2034,10 @@
   "why": "MSL C: subtracts 0x20 when the ctype table 0x3000c1 marks a lower-case letter (bit 2); the SPK.ROM index search folds case with it"
  },
  "0012cd20": {
-  "name": "gsEndFrameSync",
+  "name": "GameSystem::endFrameSync",
   "tag": "game-inferred",
   "was": "FUN_0012cd20",
-  "why": "gameMainThread, end of each frame: after a requested reset (gp-0x7ae0) sceGsResetPath + sceGsResetGraph(1,..) + sceDmaReset; then sceGsSyncPath(0,0) and, on a timeout, resets the path and DMA until sceGsSyncPath(1,1) succeeds"
+  "why": "was gsEndFrameSync: gameMainThread loads gGameSystem (gp-0x7aec) into a0 for it, so it is a GameSystem member that never reads this; end-of-frame sceGsSyncPath with GS / DMA reset on a DMAC bus error or a timeout"
  },
  "0012cdf0": {
   "name": "GameSystem::flipFrame",
@@ -2027,11 +2051,35 @@
   "was": "FUN_0012d0d0",
   "why": "ctor of the 0x540-byte global object gameInit news (gp-0x7aec): +0 debug meter mode, three pads at +4 / +0x17c / +0x2f4 (Pad ctor, ports 0, 1, 1; vptrs 0x311020, the third 0x311030), GamePacketManager at +0x46c, PerfMeter at +0x4a8, MasterClock at +0x510; points each pad's +0x174 at the options' button map (getGameOptions()+0x24); class name provisional (the frame / system object)"
  },
+ "0012d2b0": {
+  "name": "GamePad::setButtonMap",
+  "tag": "game-inferred",
+  "was": "FUN_0012d2b0",
+  "why": "stores a1 at GamePad+0x174, the pointer GameSystem::GameSystem sets to getGameOptions()+0x24 (the options' ButtonMap); callers 0x239c60, 0x23bcb0, 0x263a80"
+ },
  "0012d2c0": {
   "name": "GamePad::computeSticks",
   "tag": "game-inferred",
   "was": "FUN_0012d2c0",
   "why": "(this): from the raw stick floats +0x28..+0x34 builds square-to-circle normalised sticks (+0x124..+0x130), their lengths (+0x144..+0x150) and angles through 0x119b88 (atan2?) at +0x134..+0x140; called by the vtable-0x311020 / 0x311030 update slots (0x12dc60, 0x12dcb0) after Pad::update returns new data"
+ },
+ "0012d4f0": {
+  "name": "GamePad::read",
+  "tag": "game-inferred",
+  "was": "FUN_0012d4f0",
+  "why": "Pad::update then GamePad::computeSticks when it read, returns Pad::update's result: the same body as the vtable slot GamePad::update 0x12dc60, called non-virtually by 0x239d50 (why two copies exist is open)"
+ },
+ "0012d540": {
+  "name": "GamePad::~GamePad",
+  "tag": "game-inferred",
+  "was": "FUN_0012d540",
+  "why": "CodeWarrior destructor (this, short flags): null check, stores GamePad's vtable 0x311020 at +0x120, Pad::~Pad(this, 0), operator delete when flags > 0; caller 0x239be0"
+ },
+ "0012d5a0": {
+  "name": "GamePad::GamePad",
+  "tag": "game-inferred",
+  "was": "FUN_0012d5a0",
+  "why": "default constructor: Pad::Pad(bool) 0x12fb10 with false, vtable 0x311020 at +0x120, ButtonMap::setDefaults(+0x154), zeroes +0x174 and the stick / angle / length floats +0x124..+0x150 (the inlined GamePad ctor in GameSystem::GameSystem does the same); caller 0x239c60"
  },
  "0012d620": {
   "name": "gameInit",
@@ -2123,6 +2171,12 @@
   "was": "FUN_0012dee0",
   "why": "(this, buf0, size0, buf1, size1): Vif1PktManage base, vptr 0x311040 at +0x2c, registers the two 0xc0000-byte packet buffers 0x32e280 / 0x3ee280 (double buffer) and 14 lists (ids 0..13), Reset + Terminate, +0x30 open list id = -1, +0x34 skip-kick flag; GameSystem member +0x46c"
  },
+ "0012e0e0": {
+  "name": "gfxFlipDisplay",
+  "tag": "game-inferred",
+  "was": "FUN_0012e0e0",
+  "why": "the frame-ready callback's display flip: when ready, FlushCache, resets the GS on a mode change, writes PMODE / SMODE2 / DISPFB / DISPLAY / BGCOLOR from the 0x540-byte display record 0x4ae280[cur], optionally sends its 0x3a-qword GIF packet (a1) and puts its draw env (a2)"
+ },
  "0012e3a0": {
   "name": "gfxReleaseRenderTargets",
   "tag": "game-inferred",
@@ -2176,6 +2230,12 @@
   "tag": "game-inferred",
   "was": "FUN_0012fa90",
   "why": "(this, short flag): restores vptr 0x311050 at +0x120, Pad::setListening(0) when +8 is set, frees when flag > 0 (CodeWarrior deleting dtor); main's teardown runs it on the three pads of the global object"
+ },
+ "0012fb10": {
+  "name": "Pad::Pad(bool)",
+  "tag": "game-inferred",
+  "was": "FUN_0012fb10",
+  "why": "Pad::Pad 0x12fcf0 word for word except port = 0: the constructor overload without a port; only caller GamePad::GamePad 0x12d5a0"
  },
  "0012fcf0": {
   "name": "Pad::Pad",
@@ -2285,6 +2345,12 @@
   "was": "FUN_00131930",
   "why": "loops on WaitSema(8034), counts vsyncs in 0x4c8164; a frame is ready when requested and count >= interval, or when the frameReady callback says so; then stores the count in gp-0x7aac and SignalSema(802c)"
  },
+ "00132f20": {
+  "name": "PerfMeter::drawDetail",
+  "tag": "game-inferred",
+  "was": "FUN_00132f20",
+  "why": "empty in retail; GameSystem::flipFrame calls it (meter, packet list 13, 4) only when the meter mode is 1 (detail): name a guess"
+ },
  "00132f30": {
   "name": "PerfMeter::dumpGroups",
   "tag": "game-inferred",
@@ -2296,6 +2362,18 @@
   "tag": "game-inferred",
   "was": "FUN_00133350",
   "why": "(this, group): when enabled (+0x40) for up to 300 samples, per marker of the group: min / max / sum of the time since the previous marker into +0x44 / +0x48 / +0x4c, every +0x60 frames the next sample; GameSystem::flipFrame passes 4"
+ },
+ "00133600": {
+  "name": "PerfMeter::drawBars",
+  "tag": "game-inferred",
+  "was": "FUN_00133600",
+  "why": "empty in retail; GameSystem::flipFrame calls it with the meter and the packet list 13 it just opened (draw call of the stripped meter: name a guess)"
+ },
+ "00133610": {
+  "name": "PerfMeter::addBar",
+  "tag": "game-inferred",
+  "was": "FUN_00133610",
+  "why": "empty in retail (returns 0); called (f12 value, a0 meter, a1 ABGR colour, a2 group, a3 label) by GameSystem::flipFrame for heap / packet usage and by gameThreadSwitchHook per thread with the thread name"
  },
  "00133620": {
   "name": "PerfMeter::beginFrame",
@@ -4942,6 +5020,24 @@
   "tag": "game-inferred",
   "was": "FUN_00148d60",
   "why": "rxSndSetIopAllocHook target (soundInit): sceSifAllocSysMemory(0, size, 0) under semaphore 0x31a8b0"
+ },
+ "00151270": {
+  "name": "debugSysUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00151270",
+  "why": "empty in retail; gameMainThread calls it first every frame. With 0x151280 / 0x151290 (teardown / init) a stripped per-frame system: name a guess"
+ },
+ "00151280": {
+  "name": "debugSysShutdown",
+  "tag": "game-inferred",
+  "was": "FUN_00151280",
+  "why": "empty in retail; main calls it after memcardLibEnd in the teardown (see debugSysUpdate 0x151270): name a guess"
+ },
+ "00151290": {
+  "name": "debugSysInit",
+  "tag": "game-inferred",
+  "was": "FUN_00151290",
+  "why": "empty in retail; gameInit calls it right after GameSystem::GameSystem (see debugSysUpdate 0x151270): name a guess"
  },
  "00152750": {
   "name": "rxTerm",
@@ -9316,6 +9412,12 @@
   "tag": "lib-context",
   "was": "FUN_00171230",
   "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): sets the driver config 0x537d58 (defaults {1, 1, -1, -1, 0..}), copies it with sdpr2DrvSetConfig and installs the SE driver table 0x2f7a68 at 0x537d30 if none is"
+ },
+ "00231bb0": {
+  "name": "gameSceneThread",
+  "tag": "game-inferred",
+  "was": "FUN_00231bb0",
+  "why": "thread slot 1 started by gameMainThread: init calls, then forever runs the scene table 0x2fabd4 (0x18-byte entries, index gp-0x7a34) in thread slot 2 (stack from Heap::alloc), yields until it exits, then the next"
  },
  "0023baf0": {
   "name": "getGameOptions",
