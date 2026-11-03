@@ -207,12 +207,12 @@ static inline float stickCircleScale(float x, float y)
 
 void GamePad::computeSticks()
 {
-    float rightScale = stickCircleScale(m_stick[2], m_stick[3]);
-    float leftScale = stickCircleScale(m_stick[0], m_stick[1]);
-    m_dir[2] = m_stick[2] / rightScale;
-    m_dir[3] = -m_stick[3] / rightScale;
-    m_dir[0] = m_stick[0] / leftScale;
-    m_dir[1] = -m_stick[1] / leftScale;
+    float leftScale = stickCircleScale(m_stick[2], m_stick[3]);
+    float rightScale = stickCircleScale(m_stick[0], m_stick[1]);
+    m_dir[2] = m_stick[2] / leftScale;
+    m_dir[3] = -m_stick[3] / leftScale;
+    m_dir[0] = m_stick[0] / rightScale;
+    m_dir[1] = -m_stick[1] / rightScale;
 
     m_length[3] = m_length[2] = sqrtf(m_dir[2] * m_dir[2] + m_dir[3] * m_dir[3]);
     m_length[1] = m_length[0] = sqrtf(m_dir[0] * m_dir[0] + m_dir[1] * m_dir[1]);

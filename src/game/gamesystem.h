@@ -63,9 +63,9 @@ public:
         }
     }
 
-    float      m_dir[4];        // FS2 +0x124: left x, left y, right x, right y, squared to a circle, y up
-    float      m_angle[4];      // FS2 +0x134: left atan2(y, x), left atan2(-x, y), right the same
-    float      m_length[4];     // FS2 +0x144: left length twice, right length twice
+    float      m_dir[4];        // FS2 +0x124: right x, right y, left x, left y (Pad::m_stick's order), squared to a circle, y up
+    float      m_angle[4];      // FS2 +0x134: right atan2(y, x), right atan2(-x, y), left the same
+    float      m_length[4];     // FS2 +0x144: right length twice, left length twice
     ButtonMap  m_buttonMap;     // FS2 +0x154
     ButtonMap *m_optionsMap;    // FS2 +0x174: the options' map (GameOptions::buttonMap)
 };

@@ -293,7 +293,7 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
     normalised sticks / lengths / angles +0x124..+0x150 (`GamePad::computeSticks` 0x12d2c0), a
     `ButtonMap` +0x154 (`ButtonMap::setDefaults` 0x23bd00) and +0x174 = the options' button map
     (getGameOptions()+0x24). Each vtable has **one slot, the per-frame update** that `padSysUpdate`
-    calls through the 16 listeners 0x4af000 (`Pad::setListening` 0x12fed0): `Pad` 0x130060 (thunk to
+    calls through the 16 listeners 0x4af000 (`Pad::registerListener` 0x12fed0): `Pad` 0x130060 (thunk to
     `Pad::update` 0x12f300), `GamePad` 0x12dc60 (update + computeSticks), `MaskedGamePad` 0x12dcb0
     (the same, then `Pad::clear` 0x12f960 while L1+L2 are held). The slot functions were created and named at
     bootstrap 4a (batch 009; 0x130060 stays a thunk). **Reconstructed 2026-11-02 in
@@ -307,6 +307,27 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
     0x12d5a0 / 0x12d540 are the out-of-line default ctor (`Pad::Pad(bool)` 0x12fb10 = port 0) and
     destructor. `GamePad::read` 0x12d4f0 has the slot's body word for word (non-virtual caller
     0x239d50). GameSystem: port 0, port 1, port 1 masked; R3 pressed on port 1 dumps the meter groups.
+  - **The pad layer, `src/game/pad.cpp` (TU 2, batch 023, 2026-11-02; 0x12f290..0x130a20)**:
+    `PadPort` x2 at bss 0x4aed00 (0x180 each: +0 scePadPortOpen's 256-byte DMA buffer, +0x100 this
+    frame's report, +0x120 last frame's, +0x140 terminal mode, +0x144 detection phase, +0x148 act
+    align[6], +0x150 act direct[6], +0x156 motor requests[2], +0x158 one-shot flag, +0x159 opened,
+    +0x15c port, +0x17f read ok), the 16 listeners at bss 0x4af000 (`Pad::registerListener`
+    0x12fed0; the member that tracks +8 is `Pad::setListening` 0x12fa30, inline in the ctors / dtor),
+    `gPadSysOpen` 0x31adb0 and the pad frame `gPadFrame` 0x31adb4 (gp-0x7ac0 / -0x7abc; nothing
+    outside the TU touches any of them). `PadPort::read` 0x130230 is a detection state machine on
+    libpad (phases 0/1 detect, 0x28..0x2a digital -> analog, 0x46..0x51 lock analog, pressure mode,
+    act align, 99 read): a DualShock 2 ends as **terminal mode 8** (the game's code, pressure mode
+    entered), a DualShock 1 as 7, no motors 9. **`Pad::update` reads buttons, sticks and pressure
+    only for mode 8**: any other pad is "connected" with nothing held (the host libpad must report
+    a DualShock 2 with pressure mode). Stick bytes are libpad's order **right x, right y, left x,
+    left y** (`m_stick[0..1]` = right: GamePad's dir / angle / length comments were swapped and are
+    fixed); dead zone 0x58..0xa7, (b - edge) / 88; each direction is a virtual button bit
+    (`Pad::readSticks` 0x12f6b0, table 0x2f3870: 16..19 left stick up / right / down / left, 20..23
+    right stick) with pressure |v| * 255; libpad's 12 pressure bytes go to their buttons through
+    table 0x2f3890; held buttons without one read pressure 1. `Pad::updateRepeat` 0x12f600 fills
+    +0x20 (pressed, or held for 7 frames then every 2). `Pad::setVibration` 0x12f290(motor, value)
+    (mode 8 only; small motor 0 on / off, large 1 0..255) is cleared after each send (one-shot), so
+    callers (0x199130) must repeat it every frame.
   - **Frame flip and GS recovery** (batch 022): the frame-ready callback `gameFrameReady` calls
     `gfxFlipDisplay` 0x12e0e0(ready, kickPacket, putDrawEnv) every vsync: on a ready frame it writes
     PMODE / SMODE2 / DISPFB1/2 / DISPLAY1/2 / BGCOLOR from the 0x540-byte display record 0x4ae280[gp-0x7acc]

@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-02 18:00 at commit `8915c46` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-02 18:09 at commit `c0cbd24` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-02 18:00 at commit `8915c46` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6670**, named **1042** (16%); library functions: 912
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1403, game-inferred 189
-- context-name ledger: 1592 entries; overrides of wrong library matches: 0
+- game functions: **6670**, named **1046** (16%); library functions: 912
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1403, game-inferred 193
+- context-name ledger: 1596 entries; overrides of wrong library matches: 0
 - placed in a source file: 1031/6670 in 29 files
 
 Least-named game-code regions (64 KB blocks):
@@ -30,26 +30,28 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **17**; stubs: **0**
+- reconstructed FS2 functions: **31**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
 | `src/game/gamesystem.cpp` | 17 | 0 |
+| `src/game/pad.cpp` | 14 | 0 |
 
 ## Translation units (one session each: `tus.py`)
 
-- 42 TUs: todo 41, verify 1
-- next: **game/pad.cpp** (frontier score 15)
+- 42 TUs: todo 40, verify 2
+- next: **game/perfmeter.cpp** (frontier score 12)
 - pinned queue: (empty)
 - verify: `game/gamesystem.cpp` 17/17 -- All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). N
+- verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
 
 Recent sessions:
 
+- 2026-11-02 18:09 `game/pad.cpp` verify: Pad layer written: PadPort detection state machine, Pad ctors/dtor, update, readSticks, updateRepeat, setVibration, listener table, padSysInit/Update/Shutdown (
 - 2026-11-02 17:59 `game/gamesystem.cpp` verify: main, gameInit, the main loop, GameSystem (ctor, flipFrame, endFrameSync), GamePad / MaskedGamePad, gsClearVram, the frame-ready and DMAC handlers: all 17 funct
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `game/pad.cpp` | todo | 0/0/15 | 5.8 | 15 | 0 |
 | `game/perfmeter.cpp` | todo | 0/0/9 | 2.1 | 12 | 0 |
 | `unassigned@00171300` | todo | 0/0/5138 | 1442.7 | 12 | 0 |
 | `game/thread.cpp` | todo | 0/0/19 | 3.8 | 8 | 0 |
@@ -58,28 +60,41 @@ Recent sessions:
 | `game/gfxtarget.cpp` | todo | 0/0/8 | 2.6 | 6 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 5 | 0 |
 | `unassigned@00116fb8` | todo | 0/0/54 | 21.6 | 4 | 0 |
-| `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 3 | 0 |
 | `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 3 | 0 |
+| `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 3 | 0 |
 | `rena_pkt_vif1pktmanage.cpp` | todo | 0/0/13 | 1.9 | 2 | 0 |
+| `game/spkrom.cpp` | todo | 0/0/13 | 2.4 | 2 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
 | `00133610` | PerfMeter::addBar | 6 | game | missing | game/perfmeter.cpp |
-| `00119b88` | atan2f | 4 | lib-ctx | missing | - |
-| `0012fa90` | Pad::~Pad | 4 | game | missing | game/pad.cpp |
 | `0023bd00` | ButtonMap::setDefaults | 4 | game | missing | - |
+| `00119b88` | atan2f | 4 | lib-ctx | missing | - |
 | `0012e0e0` | gfxFlipDisplay | 4 | game | missing | game/gfxtarget.cpp |
-| `0012f300` | Pad::update | 3 | game | missing | game/pad.cpp |
 | `00103870` | Heap::markedUsage | 3 | game | missing | - |
-| `0012fcf0` | Pad::Pad | 3 | game | missing | game/pad.cpp |
-| `0023baf0` | getGameOptions | 2 | game | missing | - |
 | `00130a30` | threadSetSwitchHook | 2 | game | missing | game/thread.cpp |
-| `0012fb10` | Pad::Pad(bool) | 1 | game | missing | game/pad.cpp |
+| `0023baf0` | getGameOptions | 2 | game | missing | - |
+| `00130c90` | threadSlotCreate | 1 | game | missing | game/thread.cpp |
+| `00151270` | debugSysUpdate | 1 | game | missing | - |
+| `00131260` | frameSyncWait | 1 | game | missing | game/thread.cpp |
+| `00148500` | soundUpdate | 1 | game | missing | sound/sound.cpp |
+| `00130bc0` | threadYield | 1 | game | missing | game/thread.cpp |
+| `00130f60` | threadSysInit | 1 | game | missing | game/thread.cpp |
+| `00130e00` | threadRunMain | 1 | game | missing | game/thread.cpp |
+| `00130e50` | threadSysShutdown | 1 | game | missing | game/thread.cpp |
+| `002a9c70` | memcardLibEnd | 1 | native | missing | - |
+| `00151280` | debugSysShutdown | 1 | game | missing | - |
+| `00148540` | soundShutdown | 1 | game | missing | sound/sound.cpp |
+| `00135330` | MasterClock::~MasterClock | 1 | game | missing | - |
+| `00133630` | PerfMeter::~PerfMeter | 1 | game | missing | game/perfmeter.cpp |
+| `0012de80` | GamePacketManager::~GamePacketManager | 1 | game | missing | game/gamepacket.cpp |
+| `0012e3a0` | gfxReleaseRenderTargets | 1 | game | missing | game/gfxtarget.cpp |
+| `00152750` | rxTerm | 1 | lib-ctx | missing | game/spkrom.cpp |
+| `001045a0` | shutdownGlobalHeap | 1 | game | missing | - |
 | `00104600` | initGlobalHeap | 1 | game | missing | - |
 | `001527a0` | rxInit | 1 | lib-ctx | missing | game/spkrom.cpp |
-| `00130130` | padSysInit | 1 | game | missing | game/pad.cpp |
 | `0012e3f0` | gfxInitRenderTargets | 1 | game | missing | game/gfxtarget.cpp |
 | `001486e0` | soundInit | 1 | game | missing | sound/sound.cpp |
 | `0012f260` | rcnt1Start | 1 | game | missing | game/rcnttimer.cpp |
@@ -89,21 +104,9 @@ Recent sessions:
 | `0023be70` | GameOptions::setDefaults | 1 | game | missing | - |
 | `00151290` | debugSysInit | 1 | game | missing | - |
 | `002a9c80` | memcardInit | 1 | game | missing | - |
-| `00130c90` | threadSlotCreate | 1 | game | missing | game/thread.cpp |
-| `00151270` | debugSysUpdate | 1 | game | missing | - |
-| `00131260` | frameSyncWait | 1 | game | missing | game/thread.cpp |
-| `0012ffa0` | padSysUpdate | 1 | game | missing | game/pad.cpp |
-| `00148500` | soundUpdate | 1 | game | missing | sound/sound.cpp |
-| `00130bc0` | threadYield | 1 | game | missing | game/thread.cpp |
-| `001037c0` | Heap::setMark | 1 | game | missing | - |
-| `002eaff0` | Vif1PktManage::GetUsedSize | 1 | lib-ctx | missing | rena_pkt_vif1pktmanage.cpp |
-| `002eb010` | Vif1PktManage::GetBufferSize | 1 | lib-ctx | missing | rena_pkt_vif1pktmanage.cpp |
-| `0012de00` | GamePacketManager::openList | 1 | game | missing | game/gamepacket.cpp |
-| `00133600` | PerfMeter::drawBars | 1 | game | missing | game/perfmeter.cpp |
-| `00132f20` | PerfMeter::drawDetail | 1 | game | missing | - |
-| `0012dd30` | GamePacketManager::closeList | 1 | game | missing | game/gamepacket.cpp |
-| `00133350` | PerfMeter::collectStats | 1 | game | missing | game/perfmeter.cpp |
-| `0012ddc0` | GamePacketManager::endFrame | 1 | game | missing | game/gamepacket.cpp |
-| `00133620` | PerfMeter::beginFrame | 1 | game | missing | game/perfmeter.cpp |
-| `001352d0` | MasterClock::update | 1 | game | missing | - |
+| `0012dee0` | GamePacketManager::GamePacketManager | 1 | game | missing | game/gamepacket.cpp |
+| `001336e0` | PerfMeter::PerfMeter | 1 | game | missing | game/perfmeter.cpp |
+| `00135390` | MasterClock::MasterClock | 1 | game | missing | - |
+| `00135210` | Clock::createChild | 1 | game | missing | - |
+| `001351b0` | Clock::~Clock | 1 | game | missing | - |
 

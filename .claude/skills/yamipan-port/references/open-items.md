@@ -22,7 +22,10 @@ questions. Resolve items here when they are settled (move them to "Done" with th
        session and says so in the commit. `list` / `next` / `check` / `brief --no-stage` tried on
        the pinned TUs. The routine now runs one TU per run. **Next: (c).**
    **(c) started 2026-11-02: TU 1 `game/gamesystem.cpp` written (all 17 functions, `verify`,
-   batch 022).** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
+   batch 022); TU 2 `game/pad.cpp` written (all 14 + the slot thunk, `verify`, batch 023; `pad.h`
+   complete, `padSys*` now return int). Bootstrap 6 must give the host libpad a DualShock 2 in
+   pressure mode (terminal mode 8 is the only one `Pad::update` reads: architecture.md "The pad
+   layer") and the SCE_PAD* button bits in `sdk/libpad.h` (RosePan's lacks them).** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
    `game/perfmeter.cpp`, `game/thread.cpp`, `game/gfxtarget.cpp`, the clocks, the heap, sound,
    `rxInit` / SPK.ROM, system data. Choices made there, for the user to overrule:
    - **Headers for TUs not written yet are minimal** (`src/game/pad.h`, `clock.h`, `heap.h`,
@@ -101,7 +104,7 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    The pad update slots 0x12dc60 `GamePad::update` / 0x12dcb0 `MaskedGamePad::update` were created
    and named in batch 009 (0x130060 stays a thunk). Left unnamed: 0x133610 (empty, returns
    0, also called by 0x198970 / 0x199400: a PerfMeter bar? check those callers), 0x133600 /
-   0x132f20 (empty), 0x12f6b0 / 0x12f600 (Pad::update's stick / post steps), 0x119b88 (atan2f?),
+   0x132f20 (empty), ~~0x12f6b0 / 0x12f600 (Pad::update's stick / post steps)~~ (batch 023: `Pad::readSticks` / `Pad::updateRepeat`), 0x119b88 (atan2f?),
    0x12d540 / 0x12d5a0 (GamePad ctor / dtor candidates, rtti.py).
    **Batch 005 done (2026-11-02, 253 names)**: main's teardown (memcard / sound / gfx / pad / rx;
    architecture.md "Program flow") and, on the user's tip (2026-11-02: "Rule of Rose had similar

@@ -2213,17 +2213,41 @@
   "was": "FUN_0012f260",
   "why": "gameInit: once (gp-0x7ac4), RCNT1_MODE = 0x83 (count on H-blank, counting enabled)"
  },
+ "0012f290": {
+  "name": "Pad::setVibration",
+  "tag": "game-inferred",
+  "was": "FUN_0012f290",
+  "why": "only when the pad's terminal mode (+0xc) is 8 (DualShock 2): motor a1 == 1 stores a2 at the port's actuator request +0x157 (big motor), a1 == 0 stores a2 & 1 at +0x156 (small motor, on / off); PadPort::read sends them with scePadSetActDirect; caller 0x199130"
+ },
  "0012f300": {
   "name": "Pad::update",
   "tag": "game-inferred",
   "was": "FUN_0012f300",
   "why": "base virtual (slot 0 of vtable 0x311050 through the thunk 0x130060): once per input frame (gp-0x7abc), reads its port record 0x4aed00 + port*0x180: +0xc terminal mode, +0x14 held / +0x10 previous (inverted libpad words), +0x18 pressed, +0x1c released, pressure bytes through the table 0x2f3890, sticks 0x12f6b0; returns 1 on new data, 0 same frame, -1 no pad"
  },
+ "0012f600": {
+  "name": "Pad::updateRepeat",
+  "tag": "game-inferred",
+  "was": "FUN_0012f600",
+  "why": "per button bit (25): pressed -> count 0 and repeat; held -> count++, repeat when count >= first and (count - first) % (next - first) == 0; else count 0; result to +0x20. The {first 7, next 9, count} records at +0x54 are what the constructors fill; called by Pad::update"
+ },
+ "0012f6b0": {
+  "name": "Pad::readSticks",
+  "tag": "game-inferred",
+  "was": "FUN_0012f6b0",
+  "why": "Pad::update passes the port's current and previous reports: copies the 4 stick bytes (rdata[4..7]) to +0x24, maps each to -1..1 with a dead zone 0x58..0xa7 (/ 88) into +0x28, and turns each direction into a virtual button bit (table 0x2f3870: 16..19 left stick, 20..23 right) with pressure |v| * 255, ORed into held / previous / pressed / released"
+ },
  "0012f960": {
   "name": "Pad::clear",
   "tag": "game-inferred",
   "was": "FUN_0012f960",
   "why": "(this): zeroes the button / stick / pressure state (+0x10..+0x50) and centres the analog bytes +0x24 at 0x80, the same clearing Pad::Pad and Pad::update do; the vtable-0x311030 pad's update calls it while L1+L2 (0x5) are held"
+ },
+ "0012fa30": {
+  "name": "Pad::setListening",
+  "tag": "game-inferred",
+  "was": "FUN_0012fa30",
+  "why": "if Pad+0x8 differs from a1: Pad::registerListener(this, a1) and store a1 at +0x8; the Pad constructors inline the same block; caller 0x239bb0"
  },
  "0012fa90": {
   "name": "Pad::~Pad",
@@ -2244,10 +2268,10 @@
   "why": "(this, port, listen): vptr 0x311050 at +0x120, clears the state (+0x10 20 bytes, +0x24 four analog bytes 0x80 = centred, +0x28 16 bytes, +0x38 25 pressure bytes), +4 port, registers in the 16-slot listener table 0x4af000 when listen (Pad::setListening), 25 {7, 9, 0} entries at +0x54; GameSystem::GameSystem builds three"
  },
  "0012fed0": {
-  "name": "Pad::setListening",
+  "name": "Pad::registerListener",
   "tag": "game-inferred",
   "was": "FUN_0012fed0",
-  "why": "(this, on): on adds this to a free slot of the 16 input listeners 0x4af000 (1 if already there, -1 if full), off removes it (2 if absent); padSysUpdate calls slot 0 of each listener per frame"
+  "why": "was Pad::setListening: adds (a1 != 0) or removes this in the 16-slot listener table 0x4af000 padSysUpdate walks; returns 1 already in, 0 done, -1 table full, 2 not found. The member that tracks Pad+0x8 and calls it is 0x12fa30"
  },
  "0012ffa0": {
   "name": "padSysUpdate",

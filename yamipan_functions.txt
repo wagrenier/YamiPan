@@ -822,16 +822,16 @@
 // FILE -- game/pad.cpp
 // *****************************************************************************
 
-/* 0012f290 00000060 */ FUN_0012f290(){}
+/* 0012f290 00000060 */ Pad::setVibration(){}  // game
 /* 0012f300 000002f8 */ Pad::update(){}  // game
-/* 0012f600 000000ac */ FUN_0012f600(){}
-/* 0012f6b0 000002a8 */ FUN_0012f6b0(){}
+/* 0012f600 000000ac */ Pad::updateRepeat(){}  // game
+/* 0012f6b0 000002a8 */ Pad::readSticks(){}  // game
 /* 0012f960 000000c4 */ Pad::clear(){}  // game
-/* 0012fa30 00000060 */ FUN_0012fa30(){}
+/* 0012fa30 00000060 */ Pad::setListening(){}  // game
 /* 0012fa90 00000078 */ Pad::~Pad(){}  // game
 /* 0012fb10 000001d8 */ Pad::Pad(bool)(){}  // game
 /* 0012fcf0 000001d8 */ Pad::Pad(){}  // game
-/* 0012fed0 000000cc */ Pad::setListening(){}  // game
+/* 0012fed0 000000cc */ Pad::registerListener(){}  // game
 /* 0012ffa0 000000c0 */ padSysUpdate(){}  // game
 /* 00130060 00000004 */ Pad::update(){}  // native
 /* 00130070 000000bc */ padSysShutdown(){}  // game

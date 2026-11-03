@@ -45,12 +45,22 @@
    "why": "gfxInitRenderTargets / gfxReleaseRenderTargets and the frame callback 0x12e0e0 gameFrameReady calls (batch 003); 0x12dfa0..0x12e0b0 unread, the cut a guess."
   },
   "game/pad.cpp": {
+   "notes": "All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout (asserts). Source-only: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean against RosePan sdk headers. Pad::update only reads input for terminal mode 8 (DualShock 2 in pressure mode): bootstrap 6's host libpad must report that. Stick order is libpad's right x, right y, left x, left y; GamePad's comments and computeSticks locals in gamesystem were swapped and are fixed. 0x12fed0 renamed Pad::registerListener (it was Pad::setListening); 0x12fa30 is Pad::setListening. Ghidra saved by name_ctx.",
    "ranges": [
     [
      "0012f290",
      "00130a20"
     ]
    ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-02 18:09",
+     "status": "verify",
+     "summary": "Pad layer written: PadPort detection state machine, Pad ctors/dtor, update, readSticks, updateRepeat, setVibration, listener table, padSysInit/Update/Shutdown (batch 023)"
+    }
+   ],
+   "status": "verify",
    "why": "Pad (update, clear, ctor, dtor, setListening), padSysInit / Update / Shutdown, PadPort::read (batches 003-004); file name a guess."
   },
   "game/perfmeter.cpp": {
