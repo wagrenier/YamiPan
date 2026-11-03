@@ -1297,6 +1297,40 @@ cleared), written through `getSaveData()` + 0x4c8. The thread ends deleting file
 of the handler tables 0x318038 / 0x318058 (the 0x2887a0.. classes). 0x17fce0 (answers 25) is slot
 108 of the bullet class vtable 0x312cdc, so the next file starts there.
 
+**`game/stagesound.cpp` 0x1d3dc0..0x1d7c50 (TU 44, 2026-11-03, batches 074-075 with 30 names;
+22 of 45 written, `partial`; the file name is the port's)**: the **stage's sound**, `StageSound`
+(0x314, `game/stagesound.h`, `layout: host`): +8 an **`SePlayer`** (0x1298: +0 the SE table, +4 16
+`SoundSeBank`, +0x44 16 `SoundStream`, **+0x84 the master volume** 0..0x80 with its fade
++0x88..+0x94 = `fadeMaster(frames, from, to)` 0x292360; handles with the **top nibble set are
+paused**: `pause` 0x291d80 stops the voice and answers handle | 1 << 60, `resume` 0x291c00 plays the
+entry again, `isPlaying` 0x292f60 counts a paused handle as playing; `playUnscaled` 0x292830 =
+`play` with the voice record's +0x26 flag 0, not under the master volume), bytes +0xc / +0xd (set
+by the update 0x1d5580, unread) and **+0xe the attr** a paused source gets, **four 0x3c stream
+channels** from +0x10 (`StageStreamChannel` {`SoundTrack` *, cue +4, next cue +0x1c (6 words:
+source, def, owner, variant, +0x10, fade-in frames at 30 fps scaled 25 / 30), volume float +0x34,
+state +0x38: 0 idle, 1 starting, 2 playing, 3 pausing, 4 paused, 5 stopping}; **0 / 1 the music**
+(pause / resume fade them 128 <-> 64 x volume over 10 frames), 2 / 3 the cue streams the stage
+objects start through 0x1d4c10 / 0x1d4d30 (0x2a6380.. callers)), **0x40 effect slots** from +0x100
+({kind, pointer}: 2 = `StageEffect` 0x18 {entry, 64-bit handle +8, stopped +0x10} from
+`playNamed`, 1 = a positional `StageSoundSource` (vtable 0x315a20 over 0x315a80, ctor 0x1d6d10,
+dtor 0x1d3e90; +0x100 handle, +0x108 entry, +0x115 stopped)), +0x300 the free-slot search start
+(does not wrap; the update resets it), +0x304 the highest slot used, **+0x30c the turn-down state**
+(0 normal, 1 turning down: master to 0 over 12 frames, 2 down: the update 0x1d5e40 then pauses the
+**resumable** effects (`SeEntry` +0x1d) through `setEffectsPaused(true)`, 3 turning up: master to
+0x80 over 12 frames, effects resumed, the update then goes 0) and **+0x310 why** (1 paused, 2 muted).
+While turned down `playNamed` plays only resumable effects, started paused; `playNamedAlways`
+(UiLayout::playSound) always plays, unscaled. `SoundTrack` (0x90, the player's run 0x2908d0.., not
+cut) is a `SoundStream` with a name (default "snd" 0x309778), an fsm subtitle file (+0x7c) and an
+**StDT** stream table (+0x60, relocated once by `setTable` 0x290d60); 0x19d9e0 hands the four
+streams the stage's files (`setSubtitles` / `setStreamName` / `setStreamTable`). Not written: the
+update 0x1d5580 (StageScene::update / drawPaused, 0x287f20: a1 / a2 to +0xc / +0xd) with its two
+halves 0x1d56a0 (channels: the music angle from the listener, `atan2Octant`, the stream def's range
++0x10, scene raycasts 0x198170 with masks 0x200 / 0x600 in 0x1d4e70) and 0x1d5e40 (slots), the cue
+queries 0x1d46e0..0x1d5510, the sources 0x1d6bd0 / 0x1d6d10 / 0x1d3e90, 0x1d70e0 (0x19d9e0: an SE
+table swap), 0x1d73b0, 0x1d79c0 / 0x1d7a30 (angle helpers, getStageSelect). 0x1d3d20 before the file
+(a {records of 0x1c, short count} name lookup, eight callers elsewhere) and 0x1d7c50.. after it
+(inline virtuals of vtables 0x315a50 / 0x315a80, math helpers to ~0x1d85c0) are unplaced.
+
 **`game/stageobjlist.cpp` 0x193900..0x1953f0 (TU 26, 2026-11-03, batch 058 with 45 names, all
 written, `verify`)**: the **stage's object registry** `StageObjectList` (0xdc, `gStageScene` +0x10,
 new in the stage scene ctor 0x19c180, deleted by its teardown 0x19bbe0). **Nine groups**, each a

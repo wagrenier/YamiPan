@@ -11309,6 +11309,18 @@
   "was": "FUN_001a4270",
   "why": "ctor of the 0x160 object getStageFiles answers (gp-0x7a74): +0 the stage loader, +4 = 1, 22 containers from +0xc; stageLoad"
  },
+ "001d3dc0": {
+  "name": "StageSoundSlot::release",
+  "tag": "game-inferred",
+  "was": "FUN_001d3dc0",
+  "why": "a0 is the 8-byte slot {kind, pointer} of StageSound +0x100 (a1 the sound, for its +8 player): kind 2 = a named effect record (stop its handle +8, delete), kind 1 = a source object (stop its handle +0x100, deleting virtual slot +0x10); clears kind and pointer. Was StageSound::releaseSlot (batch 074): the object in a0 is the slot"
+ },
+ "001d3f00": {
+  "name": "StageStreamChannel::reset",
+  "tag": "game-inferred",
+  "was": "FUN_001d3f00",
+  "why": "a0 is a 0x3c-byte stream channel of StageSound +0x10: stops its SoundTrack when active (0x2916c0 / 0x2916f0), state +0x38 = 0, clears the two cues +4..+0x30. Was StageSound::resetChannel (batch 074): the object in a0 is the channel"
+ },
  "001d3f80": {
   "name": "StageSound::isStopped",
   "tag": "game-inferred",
@@ -11320,6 +11332,12 @@
   "tag": "game-inferred",
   "was": "FUN_001d4020",
   "why": "stops the 0x40 effect slots (+0x100), clears +0x300 / +0x304, volume 0x80, state 0, stops and clears the four streams; stageRestart then waits isStopped"
+ },
+ "001d4130": {
+  "name": "StageSound::isSettled",
+  "tag": "game-inferred",
+  "was": "FUN_001d4130",
+  "why": "state 1 (turning down) -> 0; state 2 (down) -> 1 once channel states +0x48 are all 0 / 4; states 0 / 3 -> 1; 0x287f20 polls it"
  },
  "001d41d0": {
   "name": "StageSound::resume",
@@ -11339,6 +11357,18 @@
   "was": "FUN_001d43f0",
   "why": "(on): on and state 0 / 3 -> volume 0, state 1; off and state 1 / 2 -> volume 0x80, state 3; +0x310 = on ? 2 : 0; on at the clear / game over, off back from a sub-scene"
  },
+ "001d44c0": {
+  "name": "StageSound::setEffectsPaused",
+  "tag": "game-inferred",
+  "was": "FUN_001d44c0",
+  "why": "(paused): over the 0x40 slots, the resumable effects (entry +0x1d) still playing: SePlayer pause 0x291d80 or resume 0x291c00 (+ setVolume 0x80 for named ones); a failed call stops it; setMuted / resume / reset pass 0, the update 0x1d5e40 1 when the turn-down finishes"
+ },
+ "001d66e0": {
+  "name": "StageSound::playEffect",
+  "tag": "game-inferred",
+  "was": "FUN_001d66e0",
+  "why": "(left, right, name, always): the SE table's binary search by name, a free slot from +0x300, volumes * 128 clamped 0..0x80, SePlayer::play or (always) 0x292830, a 0x18 record {entry, handle, stopped} in slot kind 2; while turned down only resumable effects play, started paused; playNamed / playNamedAlways"
+ },
  "001d6a70": {
   "name": "StageSound::playNamedAlways",
   "tag": "game-inferred",
@@ -11356,6 +11386,48 @@
   "tag": "game-inferred",
   "was": "FUN_001d6a90",
   "why": "a0 the stage sound, a1 a name: over the 64 play slots (+0x100, 8 bytes {kind, record}) stops every record of kind 2 / 1 whose entry name equals a1 and is not stopped yet (SePlayer::stop on +8 when its handle >= 0) and marks it stopped; UiLayout::stopSound inside a stage"
+ },
+ "001d6fc0": {
+  "name": "StageSound::setSubtitles",
+  "tag": "game-inferred",
+  "was": "FUN_001d6fc0",
+  "why": "(file): 0x290b10 on each of the four channel streams (the fsm subtitle file); 0x19d9e0"
+ },
+ "001d7020": {
+  "name": "StageSound::setStreamName",
+  "tag": "game-inferred",
+  "was": "FUN_001d7020",
+  "why": "(name): 0x290bb0 on each of the four channel streams (copies the name, default snd); 0x19d9e0"
+ },
+ "001d7080": {
+  "name": "StageSound::setStreamTable",
+  "tag": "game-inferred",
+  "was": "FUN_001d7080",
+  "why": "(file): resetChannels, then 0x290d60 on each of the four streams (an StDT stream table); 0x19d9e0"
+ },
+ "001d74b0": {
+  "name": "StageSound::stopSource",
+  "tag": "game-inferred",
+  "was": "FUN_001d74b0",
+  "why": "(source): a kind-1 source not stopped yet (+0x115): SePlayer::stop its handle +0x100 and mark it stopped; 0x18b130 and the 0x2a6380.. stream cues"
+ },
+ "001d7510": {
+  "name": "StageSound::reset",
+  "tag": "game-inferred",
+  "was": "FUN_001d7510",
+  "why": "releases every effect slot, +0x300 = 0, +0x304 = -1, master volume 0x80, state 0, resetChannels, then (dead: state is 0) the resume branch; +0x310 = 0, bytes +0xc..+0xe = 0; ctor, dtor and StageScene::~StageScene"
+ },
+ "001d7620": {
+  "name": "StageSound::resetChannels",
+  "tag": "game-inferred",
+  "was": "FUN_001d7620",
+  "why": "for the four channels with a stream: resetChannel, clear both cues (0x1d7690), volume +0x44 = 1.0"
+ },
+ "001d7690": {
+  "name": "StageStreamCue::clear",
+  "tag": "game-inferred",
+  "was": "FUN_001d7690",
+  "why": "zeroes six words: the 0x18-byte cue {source, def, owner, variant, +0x10, fade frames} of a stream channel (+4 / +0x1c)"
  },
  "001d76b0": {
   "name": "StageSound::~StageSound",
@@ -14627,6 +14699,96 @@
   "was": "FUN_00290840",
   "why": "deletes the pack object at 0x31ae60 through its vtable (+0x98 slot 2, flag 1), builds a new 0xf8-byte pack 0x131f00 on 'dataEU/packinitEU.pak' (0x309750), loads it 0x131d70(pack, 0, 0), keeps it at 0x31ae60 and sets 0x31ae64; first call of gameSceneThread"
  },
+ "00290b10": {
+  "name": "SoundTrack::setSubtitles",
+  "tag": "game-inferred",
+  "was": "FUN_00290b10",
+  "why": "(file): magic fsm\\0 -> fsmRelocate and +0x7c = file; false otherwise"
+ },
+ "00290bb0": {
+  "name": "SoundTrack::setName",
+  "tag": "game-inferred",
+  "was": "FUN_00290bb0",
+  "why": "(name): delete[] +0x84, a copy of name (null leaves none)"
+ },
+ "00290c20": {
+  "name": "SoundTrack::~SoundTrack",
+  "tag": "game-inferred",
+  "was": "FUN_00290c20",
+  "why": "deleting dtor: delete[] the names +0x84 / +0x88, ~SoundStream"
+ },
+ "00290ca0": {
+  "name": "SoundTrack::SoundTrack",
+  "tag": "game-inferred",
+  "was": "FUN_00290ca0",
+  "why": "ctor of the 0x90 SoundStream subclass StageSound keeps four of: SoundStream ctor, +0x60 table, +0x7c subtitles, +0x80 -1, name +0x84 = copy of snd (0x309778), setBuffer(0x10000, 0)"
+ },
+ "00290d60": {
+  "name": "SoundTrack::setTable",
+  "tag": "game-inferred",
+  "was": "FUN_00290d60",
+  "why": "(file): magic StDT -> +0x60 = file, relocates its tables once (+4 set after); false otherwise"
+ },
+ "002916c0": {
+  "name": "SoundTrack::isActive",
+  "tag": "game-inferred",
+  "was": "FUN_002916c0",
+  "why": "SoundStream state +0x10 is 1 (playing) or 2 (paused)"
+ },
+ "002916f0": {
+  "name": "SoundTrack::stop",
+  "tag": "game-inferred",
+  "was": "FUN_002916f0",
+  "why": "+0x8c = 0, getPosition, SoundStream::stop(false); answers the position (less half of +0x78 when +0x74), -1 not playing"
+ },
+ "00291ac0": {
+  "name": "SePlayer::setAttr",
+  "tag": "game-inferred",
+  "was": "FUN_00291ac0",
+  "why": "(handle, attr): the bank's setAttr / setPanAttr or the stream's setAttr; a paused handle does nothing"
+ },
+ "00291c00": {
+  "name": "SePlayer::resume",
+  "tag": "game-inferred",
+  "was": "FUN_00291c00",
+  "why": "(handle, l, r): a paused handle (top nibble) plays its entry again (SePlayer::play / pan play): the new handle; an unpaused one answers -2 when it no longer plays; streams unpause"
+ },
+ "00291d80": {
+  "name": "SePlayer::pause",
+  "tag": "game-inferred",
+  "was": "FUN_00291d80",
+  "why": "(handle): stops it and answers the handle with bit 60 set (paused), -2 failed; a stream pauses"
+ },
+ "00291e50": {
+  "name": "SePlayer::setVolume",
+  "tag": "game-inferred",
+  "was": "FUN_00291e50",
+  "why": "(handle, l, r): scales by the entry's volume +0x28 / 128 and stores the voice's master-volume record (0 off); -2 not playing, -3 bad handle"
+ },
+ "00292360": {
+  "name": "SePlayer::fadeMaster",
+  "tag": "game-inferred",
+  "was": "FUN_00292360",
+  "why": "(frames, from, to): stores the fade +0x88..+0x94; frames 0 sets the master volume +0x84 = to at once; StageSound's pause / mute (12 frames to 0) and resume (0 frames to 0x80)"
+ },
+ "002923a0": {
+  "name": "SePlayer::~SePlayer",
+  "tag": "game-inferred",
+  "was": "FUN_002923a0",
+  "why": "deleting dtor: deletes the 16 SoundSeBank +4 and SoundStream +0x44"
+ },
+ "00292450": {
+  "name": "SePlayer::SePlayer",
+  "tag": "game-inferred",
+  "was": "FUN_00292450",
+  "why": "ctor of the 0x1298 effect player: table +0 null, 16 banks +4 / streams +0x44 null, 3 x 0x40 voice records of 0x18 (-1), master volume +0x84 = 0x80, fade +0x88..+0x94"
+ },
+ "00292830": {
+  "name": "SePlayer::playUnscaled",
+  "tag": "game-inferred",
+  "was": "FUN_00292830",
+  "why": "(entry, l, r): plays like SePlayer::play (random pitch) but stores the voice record's +0x26 flag 0 (setVolume sets 1): not under the master volume; StageSound::playNamedAlways"
+ },
  "00292ac0": {
   "name": "SePlayer::play",
   "tag": "game-inferred",
@@ -14638,6 +14800,12 @@
   "tag": "game-inferred",
   "was": "FUN_00292db0",
   "why": "a0 the player, a1 a handle from SePlayer::play (>= 0): its bank byte (bits 48..55) picks a SE bank or a stream and stops that voice; UiLayout::stopSound outside a stage, StageSound::stopNamed"
+ },
+ "00292f60": {
+  "name": "SePlayer::isPlaying",
+  "tag": "game-inferred",
+  "was": "FUN_00292f60",
+  "why": "(handle): a paused handle (top nibble set) is true; else the bank's isPlaying / isPanPlaying or the stream's state 1 / 2"
  },
  "002955d0": {
   "name": "getNaviTable",

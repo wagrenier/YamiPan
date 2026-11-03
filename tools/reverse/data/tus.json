@@ -519,6 +519,25 @@
    "status": "verify",
    "why": "StageResult (0x599700, static init 0x310f60: begin(0) + __register_global_object with the destructor 0x2b0cf0) and the game-pack loader 0x2afd00..0x2aff80: the MSL map instances 0x2b0590..0x2b0cf0 serve the loader's tables and sit between getStageResult and StageResult's static destructor, so one object file; 0x2afc20/0x2afcd0 (init-pack items by language) joined by position (guess); 0x2af9a0 before is the 0x2adc70 drawing cluster, 0x2b0d50 after is a SoundStream thunk"
   },
+  "game/stagesound.cpp": {
+   "notes": "Batches 074-075 (30 names: StageSound helpers, SePlayer fadeMaster / pause / resume / isPlaying / setVolume / setAttr / playUnscaled, SoundTrack 0x290ca0..0x2916f0). New game/stagesound.h holds StageSound (moved from gamehooks.h), StageEffect, StageSoundSource stand-in, StageSoundSlot, StageStreamCue, StageStreamChannel, SeHandle and the state enums; gamehooks.h gained SeEntry fields (resumable +0x1d), SePlayer methods and m_masterVolume +0x84, SoundTrack. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on stagesound / stageresult with RosePan SDK headers plus a scratch libvifpk stub. Next run, same TU: the update 0x1d5580 with its halves 0x1d56a0 (channels) and 0x1d5e40 (slots), then the cue queries 0x1d46e0..0x1d5510, the source class 0x1d6bd0 / 0x1d6d10 / 0x1d3e90, 0x1d70e0, 0x1d73b0, 0x1d79c0 / 0x1d7a30; decide 0x1d3d20 and 0x1d7c50..0x1d85c0. Doubts in open-items.md TU 44.",
+   "ranges": [
+    [
+     "001d3dc0",
+     "001d7c50"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 14:16",
+     "status": "partial",
+     "summary": "StageSound cut out of unassigned@001953f0 (0x1d3dc0..0x1d7c50, 45 functions): 22 written -- life, reset, slots, channels, turn-down / up, effect play / stop, stream-file setters"
+    }
+   ],
+   "status": "partial",
+   "why": "StageSound, the stage's sound (sbss 0x31ae04, StageScene +0x24): every function between the slot release 0x1d3dc0 and the stream angle helper 0x1d7a30 takes the StageSound in a0 (or is its source class's ctor / dtor 0x1d6d10 / 0x1d3e90); 0x1d3d20 before it is a table lookup with callers elsewhere; 0x1d7c50.. are inline virtuals of vtables 0x315a50 / 0x315a80 and math helpers (may belong here: unread)"
+  },
   "game/streamring.cpp": {
    "notes": "All 21 functions accounted for: the 17 ring functions written, the thunks 0x151f70 / 0x151f80 / 0x152730 / 0x152740 call the rx functions directly. The classes moved from gamehooks.h to the new game/streamring.h (gamehooks.h includes it). No new names, no Ghidra change. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean, host harness passed (thresholds, zeroing, -1 before open, missing file, contiguous cut, consume total, delete through the base). Kept as the ROM: the destructor frees an owned ring before rxFileClose; the open-stream count rises even when the 8-place table is full. StreamRing base slots 0x1530d0..0x153100 stay in game/spkrom.cpp. Left in unassigned@00148db0: 125 functions 0x148db0..0x151f70 (classes on vtables 0x311200..0x311280, debugSysInit / Update / Shutdown). Doubt: the file name (no strings).",
    "ranges": [

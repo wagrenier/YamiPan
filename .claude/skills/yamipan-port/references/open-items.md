@@ -801,6 +801,27 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    scene class itself (`StageScene` 0x195640..0x19c6a0 in unassigned@001953f0: ctor / dtor /
    update / draw are every stage's first stubs), `StageFiles` 0x1a37e0..0x1a4370, the menus
    0x20acb0..0x20b100, `StageSound` 0x1d3f80..0x1d79c0.
+   TU 44 (the frontier's `unassigned@001953f0`, for StageSound's frontier callees): **`game/
+   stagesound.cpp` 0x1d3dc0..0x1d7c50** cut out (45 functions, batches 074-075 with 30 names incl.
+   the SE player's `fadeMaster` / `pause` / `resume` / `isPlaying` / `setVolume` / `setAttr` /
+   `playUnscaled` and the `SoundTrack` stream class 0x290ca0..0x2916f0; architecture.md "Modules");
+   **22 written, `partial`**: ctor / dtor / reset, the slot release and channel reset, stopAll,
+   isStopped, isSettled, pause / resume / setMuted, setEffectsPaused, the effect play (playNamed /
+   playNamedAlways), stopNamed / stopSource, the three stream-file setters. New `game/stagesound.h`
+   (StageSound moved out of `gamehooks.h`, which includes it; `SeHandle` moved there too);
+   `gamehooks.h`'s `SeEntry` got its fields (name, bank, program / note, **resumable +0x1d**, pitch
+   spread, id, volume), `SePlayer` its methods and `m_masterVolume` (+0x84), new stand-in
+   `SoundTrack : SoundStream`; `SePlayer::stop` answers int. Checked: callcheck clean, layout lint OK,
+   g++ -fsyntax-only -Wall -Wextra clean on stagesound / stageresult (RosePan's SDK headers + a scratch
+   libvifpk stub; stageloop / uigame / scene only show the known gfxtarget / rena SDK gaps); no harness.
+   Doubts for the user: the file name; the channel state names 1 / 3 (Starting / Pausing) are read
+   only from where the update sets them; `isStopped` also accepts a SoundStream state 5 no code sets
+   (kept); `setEffectsPaused(true)` gives a paused handle `setAttr`, which the player ignores for
+   paused handles (kept); a source's +0x100 / +0x108 / +0x115 are all that is declared of its class.
+   **Next run (the same TU)**: the update 0x1d5580 with 0x1d56a0 (channels) and 0x1d5e40 (slots) --
+   the frontier's StageScene::update / drawPaused call it --, then the cue queries 0x1d46e0..0x1d5510
+   (the stream def / owner types: name them first), the source class 0x1d6bd0 / 0x1d6d10 / 0x1d3e90,
+   0x1d70e0, 0x1d73b0, 0x1d79c0 / 0x1d7a30. Decide 0x1d3d20 (before) and 0x1d7c50..0x1d85c0 (after).
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

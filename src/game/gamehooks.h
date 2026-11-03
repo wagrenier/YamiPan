@@ -22,6 +22,7 @@
 #include "game/gamepaths.h"
 #include "game/stageloop.h"
 #include "game/stageobjlist.h"
+#include "game/stagesound.h"
 #include "game/streamring.h"
 #include "game/uilayout.h"
 #include "rx/rxfile.h"
@@ -137,39 +138,7 @@ public:
     NameMap names3;             // FS2 +0x70
 };
 
-// The current stage's sound (the stage object's +0x24): an SE player, four
-// streams and 0x40 effect slots. Built once per stage by stageThread
-// (game/stageloop.cpp, sbss 0x31ae04) and handed to every StageScene it
-// builds; a sub-scene gets none.
-// layout: host -- EE 0x314: +0x8 the SE player (0x1298), four 0x3c streams
-// from +0x10, 0x40 effect slots of 8 from +0x100, +0x30c the state (0 idle,
-// 1 / 2 turned down, 3 playing), +0x310 why it is down (1 paused, 2 muted).
-class StageSound
-{
-public:
-    StageSound();                                                        // FS2 0x001d7750
-    ~StageSound();                                                       // FS2 0x001d76b0: deleting
-
-    // Turns the music down and fades the playing streams to half (the
-    // pause and map menus); resume undoes it.
-    void pause();                                                        // FS2 0x001d42e0
-    void resume();                                                       // FS2 0x001d41d0
-    // Turns the music down (muted) or back up (the clear, game over and a
-    // sub-scene's end).
-    void setMuted(bool muted);                                           // FS2 0x001d43f0
-    // Stops every effect and stream (before a reload).
-    void stopAll();                                                      // FS2 0x001d4020
-    // No stream still playing or stopping.
-    bool isStopped();                                                    // FS2 0x001d3f80
-
-    void playNamed(const char *name, float volume);                      // FS2 0x001d6a80
-    // playNamed, not muted while the stage is paused (state 1 / 2) and
-    // through the player's other entry (0x292830): the play record, null
-    // when it did not play.
-    void *playNamedAlways(const char *name, float volume);               // FS2 0x001d6a70
-    // Stops every playing effect called name.
-    void stopNamed(const char *name);                                    // FS2 0x001d6a90
-};
+// StageSound moved to game/stagesound.h (game/stagesound.cpp).
 
 // StageObject::getKind: the ones game/uigame.cpp tests.
 enum StageObjectKind
@@ -460,10 +429,24 @@ enum ItemKind
 
 // An effect (0x30 bytes): SePlayer::play reads its bank (+4), program /
 // note (+0x14 / +0x18), pitch spread (+0x20), id (+0x26), volume (+0x28).
-// layout: host -- no fields declared yet.
+// +0x1d: resumable (StageSound pauses it while turned down and plays it
+// then; the others do not play while turned down).
+// layout: host -- EE 0x30 (+0 a 32-bit name pointer).
 struct SeEntry
 {
-    u_char _00[0x30];
+    const char *name;           // FS2 +0x00: StageSound::stopNamed compares it
+    int         bank;           // FS2 +0x04
+    u_char      _08[0xc];       // FS2 +0x08
+    int         program;        // FS2 +0x14
+    int         note;           // FS2 +0x18
+    u_char      _1c;            // FS2 +0x1c
+    u_char      resumable;      // FS2 +0x1d
+    u_char      _1e[2];         // FS2 +0x1e
+    float       pitchSpread;    // FS2 +0x20
+    u_char      _24[2];         // FS2 +0x24
+    short       id;             // FS2 +0x26
+    u_char      volume;         // FS2 +0x28: 0..0x80, scales left / right
+    u_char      _29[7];         // FS2 +0x29
 };
 
 // The effect table's name index, sorted by name.
@@ -514,18 +497,63 @@ struct SeTable
     }
 };
 
-// The handle SePlayer::play answers: -1 none.
-typedef long long SeHandle;
+// SeHandle: game/stagesound.h.
 
-// layout: host -- EE: +0 the effect table, then the banks and streams.
+// The effect player (0x1298 bytes): StageSound owns one, getSePlayer is the
+// one outside a stage. A handle names a bank voice or a stream; its top
+// nibble set marks it paused (pause / resume).
+// layout: host -- EE: +0 the effect table, +4 16 SoundSeBank, +0x44 16
+// SoundStream, +0x84 the master volume, +0x88..+0x94 its fade, then 3 x 0x40
+// voice records of 0x18 from +0x98.
 class SePlayer
 {
 public:
+    SePlayer();                                                          // FS2 0x00292450
+    ~SePlayer();                                                         // FS2 0x002923a0: deleting
+
     // Plays an effect at a left / right volume 0..0x80 (random pitch).
     SeHandle play(const SeEntry *se, int left, int right);              // FS2 0x00292ac0
-    void     stop(SeHandle handle);                                      // FS2 0x00292db0: -1 nothing
+    // play, not under the master volume (the voice record's +0x26 flag 0).
+    SeHandle playUnscaled(const SeEntry *se, int left, int right);      // FS2 0x00292830
+    // 0 stopped (or -1 nothing); non-zero failed.
+    int      stop(SeHandle handle);                                      // FS2 0x00292db0
+    // A paused handle (top nibble) counts as playing.
+    bool     isPlaying(SeHandle handle);                                 // FS2 0x00292f60
+    // Stops a voice and answers its paused handle; -2 failed.
+    SeHandle pause(SeHandle handle);                                     // FS2 0x00291d80
+    // Plays a paused handle's entry again: the new handle; -2 an unpaused
+    // one that no longer plays, -3 none. left / right are not read.
+    SeHandle resume(SeHandle handle, int left, int right);               // FS2 0x00291c00
+    // 0 done, -2 not playing, -3 none.
+    int      setVolume(SeHandle handle, int left, int right);            // FS2 0x00291e50
+    // A paused handle does nothing; 0 done, 1 not playing.
+    int      setAttr(SeHandle handle, int attr);                         // FS2 0x00291ac0
+    // Fades the master volume from from to to over frames (0: at once).
+    void     fadeMaster(int frames, int from, int to);                   // FS2 0x00292360
 
-    SeTable *m_table;           // FS2 +0x0
+    SeTable *m_table;           // FS2 +0x00
+    int      m_masterVolume;    // FS2 +0x84: 0..0x80
+};
+
+// A SoundStream with a name, an fsm subtitle file and an StDT stream table
+// (the requests it plays), the effect player's 0x2908d0.. run (not cut yet):
+// StageSound's four channels.
+// layout: host -- EE 0x90: +0x60 the StDT table, +0x74 / +0x78 a position
+// offset, +0x7c the subtitles, +0x80 -1, +0x84 / +0x88 names, +0x8c a flag.
+class SoundTrack : public SoundStream
+{
+public:
+    SoundTrack();                                                        // FS2 0x00290ca0: name "snd", 0x10000 buffer
+    ~SoundTrack();                                                       // FS2 0x00290c20: deleting
+
+    // Playing or paused (the SoundStream state 1 / 2).
+    bool isActive();                                                     // FS2 0x002916c0
+    // Stops it; the position it stopped at, -1 not playing.
+    int  stop();                                                         // FS2 0x002916f0
+    // false: not an fsm / StDT file.
+    bool setSubtitles(void *file);                                       // FS2 0x00290b10
+    void setName(const char *name);                                      // FS2 0x00290bb0: a copy; null none
+    bool setTable(void *file);                                           // FS2 0x00290d60: relocates it once
 };
 SePlayer *getSePlayer();                                                 // FS2 0x002c4140: sbss 0x31aea0
 
