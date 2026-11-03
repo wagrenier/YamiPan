@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 17:39 at commit `cbd8dec` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 17:42 at commit `4463937` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -101,10 +101,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 86 TUs: todo 49, active 1, partial 1, verify 51
-- next: **rx/filecd.c** (resuming an unfinished session)
+- 86 TUs: todo 49, partial 1, verify 52
+- next: **game/stagescene.cpp** (continuing a partial TU)
 - pinned queue: (empty)
-- active: `rx/filecd.c` 35/35
 - partial: `game/stagescene.cpp` 112/258 -- Written this run (batch 082, 35 names): parseTexture, parseModel, parseMotion with readMotionList 0x1a1df0, parseMap, parseSndseh with fileWithSuffix 0x1a4370, 
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
@@ -146,6 +145,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/vcmtable.cpp` 52/52 -- Cut out of unassigned@00296d60 (the frontier pick) as 0x296d60..0x299d90, batches 063-065 (59 names, incl. the binary's std::string instances 0x297fb0.. and new
 - verify: `game/wstring.cpp` 5/5 -- Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds 
 - verify: `rena/rena_pkt_vif1pktmanage.cpp` 13/17 -- Pinned 0x2eaff0-0x2ec110 under the new src/rena/ with the game's own file name (strings in Reset / AddList); the stale inferred key rena_pkt_vif1pktmanage.cpp r
+- verify: `rx/filecd.c` 35/35 -- All 35 of 0x1565c8..0x157db8 written. rxcmp.py: 34 of 35 identical to RoR with jump targets and data masked; the one difference is rxFileCdFindDir, 0x18 longer 
 - verify: `rx/rxfile.c` 108/108 -- rxfile core is RoR's prebuilt rx: rxcmp.py over both ranges finds 106 of 108 identical (jumps, lui, gp masked); rxFileOnCreate 0x154518 / rxFileOnGetSize 0x1545
 - verify: `rx/rxsnd.c` 229/229 -- All 229 of 0x159bc0..0x162178 in src/rx/rxsnd.c (C), with new src/rx/rxsnd.h (C and C++) and src/rx/rxthread.h (the seven rxTh calls). 215 functions are RoR's w
 - verify: `rx/rxsndstr.c` 38/38 -- All 38 of 0x1634b8..0x164398 written, no Ghidra change. rxsndstr.h now has RxSndStrSlot (EE 0x9c, layout host), RxSndStrFormat (the 8-entry format table), RxSnd
@@ -160,6 +160,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 17:41 `rx/filecd.c` verify: rx/filecd.c: the cdrom0: driver carried over from RosePan with FS2's rxFileCdFindDir
 - 2026-11-03 17:39 `game/spkrom.cpp` verify: game/spkrom.cpp: rxInit, rxTerm, the SPK.ROM index (load, locate, size, load file), the rx memory hooks; with the Pan layer's virtual disc behind sceCdRead
 - 2026-11-03 16:37 `game/stagescene.cpp` partial: stage script keyword handlers, bg and particle targets, small scene members; StreamTable::relocate shared; DrawLayerList is AreaClip
 - 2026-11-03 16:19 `game/stagescene.cpp` partial: stage script reader: parseScript, splitLines, reset, target / end blocks, script and character targets, StageFiles ctor / dtor; StageList and StringMap template
@@ -167,7 +168,6 @@ Recent sessions:
 - 2026-11-03 15:41 `game/stagescene.cpp` partial: StageScene / StageFiles run cut (0x1953f0..0x1a68b0); drawPaused, raycast, getMission, getPurposeText, StageFiles::load and dataDir written (11 of 258); stagesc
 - 2026-11-03 15:23 `game/seplayer.cpp` verify: SoundTrack and SePlayer complete: StDT / SEDT tables as EE-layout S2dRef images, the SeHandle bits, the voice records and master fade, placed play, subtitles by
 - 2026-11-03 14:58 `game/stagesound.cpp` verify: StageSound complete: cue queries and channel pick, music play / stop / volume, positional sources (addSource on the scene-node base, findSource, setSourcePitch,
-- 2026-11-03 14:39 `game/stagesound.cpp` partial: StageSound update: update 0x1d5580 with updateSlots 0x1d5e40 and updateChannels 0x1d56a0, stageSoundLocateFacing 0x1d7a30 / stageSoundLocate 0x1d79c0 (27 of 45 
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
@@ -177,11 +177,11 @@ Recent sessions:
 | `unassigned@0017fce0` | todo | 0/11/399 | 76.4 | 24 | 0 |
 | `unassigned@001fe6b0` | todo | 0/16/563 | 197.2 | 16 | 0 |
 | `game/stagescene.cpp` | partial | 112/13/258 | 67.6 | 15 | 0 |
-| `rena/rena_2d_texture_tim2.cpp` | todo | 0/4/7 | 3.5 | 12 | 0 |
 | `unassigned@00231c90` | todo | 0/5/61 | 36.3 | 12 | 0 |
+| `rena/rena_2d_texture_tim2.cpp` | todo | 0/4/7 | 3.5 | 12 | 0 |
 | `unassigned@00299d90` | todo | 0/5/215 | 62.3 | 10 | 0 |
-| `unassigned@00252840` | todo | 0/2/100 | 35.5 | 9 | 0 |
 | `unassigned@00171300` | todo | 0/6/421 | 52.5 | 9 | 0 |
+| `unassigned@00252840` | todo | 0/2/100 | 35.5 | 9 | 0 |
 | `unassigned@001d7c50` | todo | 0/8/296 | 137.5 | 8 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)

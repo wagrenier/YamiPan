@@ -883,14 +883,21 @@
    "why": "rena's VIF1 packet manager: the source string rena_pkt_vif1pktmanage.cpp in Reset 0x2eb170 and AddList 0x2eb500, classes Vif1PktManage (vtable 0x31a808) / Vif1PktList (0x31a818); 0x2eb7d0..0x2ec110 are its MSL vector instances (insert of the list / buffer vectors, the buffer vector dtor and clear), called only from this file. Before: unassigned@002e2970 code; after: 0x2ec110 a lazy static init of another file (drawSysInit's caller set). Key under rena/ with the game's own file name."
   },
   "rx/filecd.c": {
-   "claimed": "2026-11-03 17:33",
+   "notes": "All 35 of 0x1565c8..0x157db8 written. rxcmp.py: 34 of 35 identical to RoR with jump targets and data masked; the one difference is rxFileCdFindDir, 0x18 longer in FS2: it also looks in the root when the path table holds nothing else, which the host's one-directory disc relies on. rxFileVerbose is rxfile.c's s_verbose, shared now the driver is its own file. Runs on io::Disc: a smoke run reads sectors 16, 18, 19 and finds SPK.ROM.",
    "ranges": [
     [
      "001565c8",
      "00157db8"
     ]
    ],
-   "status": "active",
+   "sessions": [
+    {
+     "date": "2026-11-03 17:41",
+     "status": "verify",
+     "summary": "rx/filecd.c: the cdrom0: driver carried over from RosePan with FS2's rxFileCdFindDir"
+    }
+   ],
+   "status": "verify",
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. the CD driver rxFileCdWait .. rxFileCdGetLayerMode; its own file by analogy with filehost.c (same driver shape, no string of its own): a guess."
   },
   "rx/filehdd.c": {
