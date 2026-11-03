@@ -19,6 +19,7 @@
 #include "game/uilayout.h"
 #include "game/uisequence.h"
 #include "game/uitrack.h"
+#include "game/uiwidget.h"
 #include "game/wstring.h"
 #include "sdk/scetypes.h"
 
@@ -648,8 +649,8 @@ bool UiLayout::testGameState(const char *name, const char *arg, UiSequence *seq)
     case UiState_MsgDownLimit: {
         if (arg == nullptr)
             return false;
-        // The ROM takes the widget to be a scroll widget.
-        UiScrollWidget *widget = static_cast<UiScrollWidget *>(seq->findWidgetByName(arg));
+        // The ROM takes the widget to be a prgTransMsg.
+        PrgTransMsg *widget = static_cast<PrgTransMsg *>(seq->findWidgetByName(arg));
         if (widget == nullptr)
             return false;
         if (state == UiState_MsgUpLimit)
@@ -660,7 +661,7 @@ bool UiLayout::testGameState(const char *name, const char *arg, UiSequence *seq)
     case UiState_MsgUseScroll: {
         if (arg == nullptr)
             return false;
-        UiScrollWidget *widget = static_cast<UiScrollWidget *>(seq->findWidgetByName(arg));
+        PrgTransMsg *widget = static_cast<PrgTransMsg *>(seq->findWidgetByName(arg));
         if (widget == nullptr)
             return false;
         return widget->canScroll();

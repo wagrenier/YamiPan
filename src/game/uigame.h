@@ -38,6 +38,8 @@ class UiFont
 public:
     UiFont(const void *glyphs, const void *image);                       // FS2 0x0025fac0: spacing 2, 0
     ~UiFont();                                                           // FS2 0x0025fa50: deleting (obj, 1)
+    // The lines of the text: -1 without glyphs, 0 without text.
+    int countLines();                                                    // FS2 0x0025fa10 (game/uiwidget.cpp)
 
     const void     *m_glyphs;   // FS2 +0x00: a FontData (game/fontdata.h)
     GsTexture      *m_texture;  // FS2 +0x04: owned

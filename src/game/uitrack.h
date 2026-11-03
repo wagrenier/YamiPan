@@ -665,7 +665,7 @@ class UiTextTrack : public UiTrack
 public:
     UiTextTrack(S2dTrackRec *rec, const void *glyphs, const void *fontImage)
         : UiTrack(rec), m_font(new UiFont(glyphs, fontImage)), m_message(-1), m_x(0.0f), m_y(0.0f),
-          m_visible(1), m_fontKey(nullptr), m_glyphKey(nullptr), m_30(0), m_text(nullptr), m_ownsText(0)
+          m_visible(1), m_fontKey(nullptr), m_glyphKey(nullptr), m_msgKey(nullptr), m_text(nullptr), m_ownsText(0)
     {
         const S2dTextRec *text = (const S2dTextRec *)rec;
         m_font->m_spacing[0] = text->spacing[0];
@@ -696,7 +696,9 @@ public:
     // init-pack item's name the image came by.
     const char     *m_fontKey;  // FS2 +0x28
     const char     *m_glyphKey; // FS2 +0x2c
-    int             m_30;       // FS2 +0x30
+    // The name of the fMsg image the message came from (S2dImage::name):
+    // set by the message widgets (game/uiwidget.cpp), not read here.
+    const char     *m_msgKey;   // FS2 +0x30
     const u_short  *m_text;     // FS2 +0x34: also UiFont::m_text
     u_char          m_ownsText; // FS2 +0x38: m_text is a new[] copy
 };

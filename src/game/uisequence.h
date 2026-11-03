@@ -16,7 +16,7 @@
  *
  *  The track classes (the 40 Vt_00316560 subclasses the factory
  *  UiAnim::init builds: game/uitrack.cpp) and the widget classes (Vt_00316580
- *  subclasses, UiWidget::create 0x25e260) are other TUs; their base classes
+ *  subclasses, UiWidget::create 0x25e260: game/uiwidget.h) are other TUs; their base classes
  *  and what this file calls of them are declared here. The names are the
  *  port's (no source string in the range).
  * ======================================================================== */
@@ -336,24 +336,6 @@ public:
     S2dWidgetDef *m_def;        // FS2 +0x10
     UiLayout     *m_layout;     // FS2 +0x14
     int           m_arg;        // FS2 +0x18: create's arg
-};
-
-// A widget that scrolls its text (the S2D's rMsgUpLimit / rMsgDownLimit /
-// rMsgUseScroll). Which widget class this is is a guess: these members
-// (0x25c310..0x25c360) follow Vt_00316ab0's methods. Only what
-// game/uigame.cpp calls.
-// layout: host -- EE: +0x28 the scroll position, +0x34 its end.
-class UiScrollWidget : public UiWidget
-{
-public:
-    bool canScroll();                                                    // FS2 0x0025c310: end != 0
-    bool atBottom();                                                     // FS2 0x0025c340: end <= position
-    bool atTop();                                                        // FS2 0x0025c360: position <= 0
-
-    u_char _20[0x8];
-    float  m_scroll;            // FS2 +0x28
-    u_char _2c[0x8];
-    float  m_scrollEnd;         // FS2 +0x34
 };
 
 // A running sequence (0x70 bytes).

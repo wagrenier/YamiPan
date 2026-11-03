@@ -673,7 +673,7 @@
 /* 001250b0 000000e0 */ FUN_001250b0(){}
 /* 00125190 00000094 */ memcmp(){}  // lib-ctx
 /* 00125228 000000b0 */ memcpy(){}  // lib-ctx
-/* 001252d8 00000104 */ FUN_001252d8(){}
+/* 001252d8 00000104 */ memmove(){}  // lib-ctx
 /* 001253e0 000000c0 */ memset(){}  // lib-ctx
 /* 001254a0 0000007c */ FUN_001254a0(){}
 /* 00125520 0000004c */ FUN_00125520(){}
@@ -965,10 +965,10 @@
 /* 00135330 00000054 */ MasterClock::~MasterClock(){}  // game
 /* 00135390 00000040 */ MasterClock::MasterClock(){}  // game
 /* 001353d0 0000004c */ FUN_001353d0(){}
-/* 00135420 0000007c */ FUN_00135420(){}
+/* 00135420 0000007c */ Clock::getSeconds(){}  // game
 /* 001354a0 000000a8 */ Clock::advance(){}  // game
 /* 00135550 00000258 */ ClockNode::~ClockNode(){}  // game
-/* 001357b0 00000008 */ FUN_001357b0(){}
+/* 001357b0 00000008 */ Clock::resetTime(){}  // game
 /* 001357c0 00000090 */ PtrList::next(){}  // game
 /* 00135860 0000012c */ PtrList::add(){}  // game
 /* 00135990 00000060 */ FUN_00135990(){}
@@ -4760,22 +4760,22 @@
 /* 001fa900 00000080 */ FUN_001fa900(){}
 /* 001fa980 0000004c */ FUN_001fa980(){}
 /* 001fa9d0 00000060 */ FUN_001fa9d0(){}
-/* 001faa30 00000030 */ FUN_001faa30(){}
-/* 001faa70 00000018 */ FUN_001faa70(){}
-/* 001faa90 000000a0 */ FUN_001faa90(){}
-/* 001fab30 00000010 */ FUN_001fab30(){}
-/* 001fab40 00000010 */ FUN_001fab40(){}
+/* 001faa30 00000030 */ MoviePlayer::setVolume(){}  // game
+/* 001faa70 00000018 */ MoviePlayer::getFrame(){}  // game
+/* 001faa90 000000a0 */ MoviePlayer::startAudio(){}  // game
+/* 001fab30 00000010 */ MoviePlayer::isPlaying(){}  // game
+/* 001fab40 00000010 */ MoviePlayer::isReady(){}  // game
 /* 001fab50 00000268 */ FUN_001fab50(){}
 /* 001fadc0 000000fc */ FUN_001fadc0(){}
 /* 001faec0 000001f0 */ FUN_001faec0(){}
 /* 001fb0b0 0000021c */ FUN_001fb0b0(){}
-/* 001fb2d0 000000ac */ FUN_001fb2d0(){}
-/* 001fb380 000000d0 */ FUN_001fb380(){}
+/* 001fb2d0 000000ac */ MoviePlayer::drawFrame(){}  // game
+/* 001fb380 000000d0 */ MoviePlayer::prime(){}  // game
 /* 001fb450 000001d8 */ FUN_001fb450(){}
 /* 001fb630 000002e8 */ FUN_001fb630(){}
-/* 001fb920 00000024 */ FUN_001fb920(){}
+/* 001fb920 00000024 */ MoviePlayer::testState(){}  // game
 /* 001fb950 00000074 */ FUN_001fb950(){}
-/* 001fb9d0 00000430 */ FUN_001fb9d0(){}
+/* 001fb9d0 00000430 */ MoviePlayer::open(){}  // game
 /* 001fbe00 00000020 */ FUN_001fbe00(){}
 /* 001fbe20 00000020 */ FUN_001fbe20(){}
 /* 001fbe40 00000008 */ FUN_001fbe40(){}
@@ -4784,13 +4784,13 @@
 /* 001fbe80 00000084 */ FUN_001fbe80(){}
 /* 001fbf10 00000018 */ FUN_001fbf10(){}
 /* 001fbf30 00000098 */ FUN_001fbf30(){}
-/* 001fbfd0 0000010c */ FUN_001fbfd0(){}
+/* 001fbfd0 0000010c */ MoviePlayer::workSize(){}  // game
 /* 001fc0e0 000002bc */ FUN_001fc0e0(){}
 /* 001fc3a0 00000134 */ FUN_001fc3a0(){}
 /* 001fc4e0 00000078 */ FUN_001fc4e0(){}
-/* 001fc560 000001b8 */ FUN_001fc560(){}
-/* 001fc720 00000090 */ FUN_001fc720(){}
-/* 001fc7b0 000000f8 */ FUN_001fc7b0(){}
+/* 001fc560 000001b8 */ MoviePlayer::setWorkArea(){}  // game
+/* 001fc720 00000090 */ MoviePlayer::~MoviePlayer(){}  // game
+/* 001fc7b0 000000f8 */ MoviePlayer::MoviePlayer(){}  // game
 /* 001fc8b0 00000008 */ FUN_001fc8b0(){}
 /* 001fc8c0 00000008 */ FUN_001fc8c0(){}
 /* 001fc8d0 00000060 */ FUN_001fc8d0(){}
@@ -5646,7 +5646,7 @@
 /* 00243350 00000004 */ UiTrack::draw(){}  // game
 /* 00243360 00000008 */ UiTrack::getAnchor(){}  // game
 /* 00243370 00000008 */ FUN_00243370(){}
-/* 00243380 00000008 */ FUN_00243380(){}
+/* 00243380 00000008 */ getUiWorkArea(){}  // game
 
 // *****************************************************************************
 // FILE -- game/uilayout.cpp
@@ -5996,62 +5996,67 @@
 /* 0025b590 00000230 */ FUN_0025b590(){}
 /* 0025b7c0 00000088 */ FUN_0025b7c0(){}
 /* 0025b850 00000088 */ FUN_0025b850(){}
-/* 0025b8e0 00000130 */ FUN_0025b8e0(){}
-/* 0025ba10 000000c4 */ FUN_0025ba10(){}
-/* 0025bae0 00000014 */ FUN_0025bae0(){}
-/* 0025bb00 000000c0 */ FUN_0025bb00(){}
-/* 0025bbc0 000000a4 */ FUN_0025bbc0(){}
-/* 0025bc70 000000b4 */ FUN_0025bc70(){}
-/* 0025bd30 00000180 */ FUN_0025bd30(){}
-/* 0025beb0 00000050 */ FUN_0025beb0(){}
-/* 0025bf00 0000013c */ FUN_0025bf00(){}
-/* 0025c040 000000d0 */ FUN_0025c040(){}
-/* 0025c110 000000c4 */ FUN_0025c110(){}
-/* 0025c1e0 000000a0 */ FUN_0025c1e0(){}
-/* 0025c280 00000028 */ FUN_0025c280(){}
-/* 0025c2b0 00000060 */ FUN_0025c2b0(){}
-/* 0025c310 00000020 */ UiScrollWidget::canScroll(){}  // game
-/* 0025c340 0000001c */ UiScrollWidget::atBottom(){}  // game
-/* 0025c360 00000020 */ UiScrollWidget::atTop(){}  // game
-/* 0025c390 000000cc */ FUN_0025c390(){}
-/* 0025c460 00000320 */ FUN_0025c460(){}
-/* 0025c780 00000070 */ FUN_0025c780(){}
-/* 0025c7f0 000001d8 */ FUN_0025c7f0(){}
-/* 0025c9d0 00000010 */ FUN_0025c9d0(){}
-/* 0025c9e0 00000060 */ FUN_0025c9e0(){}
-/* 0025ca40 00000008 */ FUN_0025ca40(){}
-/* 0025ca50 00000060 */ FUN_0025ca50(){}
-/* 0025cab0 00000160 */ FUN_0025cab0(){}
-/* 0025cc10 000000ac */ FUN_0025cc10(){}
-/* 0025ccc0 0000009c */ FUN_0025ccc0(){}
-/* 0025cd60 00000060 */ FUN_0025cd60(){}
-/* 0025cdc0 00000008 */ FUN_0025cdc0(){}
-/* 0025cdd0 00000060 */ FUN_0025cdd0(){}
-/* 0025ce30 00000330 */ FUN_0025ce30(){}
-/* 0025d160 000001c8 */ FUN_0025d160(){}
-/* 0025d330 00000060 */ FUN_0025d330(){}
-/* 0025d390 00000060 */ FUN_0025d390(){}
-/* 0025d3f0 0000006c */ FUN_0025d3f0(){}
-/* 0025d460 00000060 */ FUN_0025d460(){}
-/* 0025d4c0 00000054 */ FUN_0025d4c0(){}
-/* 0025d520 00000060 */ FUN_0025d520(){}
-/* 0025d580 0000031c */ FUN_0025d580(){}
-/* 0025d8a0 0000044c */ FUN_0025d8a0(){}
-/* 0025dcf0 0000024c */ FUN_0025dcf0(){}
-/* 0025df40 000000b0 */ FUN_0025df40(){}
-/* 0025dff0 00000024 */ FUN_0025dff0(){}
-/* 0025e020 00000060 */ FUN_0025e020(){}
-/* 0025e080 000001dc */ FUN_0025e080(){}
+
+// *****************************************************************************
+// FILE -- game/uiwidget.cpp
+// *****************************************************************************
+
+/* 0025b8e0 00000130 */ PrgSndStream::refresh(){}  // game
+/* 0025ba10 000000c4 */ PrgSndStream::findSubtitleTrack(){}  // game
+/* 0025bae0 00000014 */ PrgSndStream::getStatus(){}  // game
+/* 0025bb00 000000c0 */ PrgSndStream::draw(){}  // game
+/* 0025bbc0 000000a4 */ PrgSndStream::advance(){}  // game
+/* 0025bc70 000000b4 */ PrgSndStream::~PrgSndStream(){}  // game
+/* 0025bd30 00000180 */ PrgMovie::refresh(){}  // game
+/* 0025beb0 00000050 */ PrgMovie::getStatus(){}  // game
+/* 0025bf00 0000013c */ PrgMovie::draw(){}  // game
+/* 0025c040 000000d0 */ PrgMovie::advance(){}  // game
+/* 0025c110 000000c4 */ PrgMovie::findSubtitleTrack(){}  // game
+/* 0025c1e0 000000a0 */ PrgMovie::~PrgMovie(){}  // game
+/* 0025c280 00000028 */ PrgTransEnd::draw(){}  // game
+/* 0025c2b0 00000060 */ PrgTransEnd::~PrgTransEnd(){}  // game
+/* 0025c310 00000020 */ PrgTransMsg::canScroll(){}  // game
+/* 0025c340 0000001c */ PrgTransMsg::atBottom(){}  // game
+/* 0025c360 00000020 */ PrgTransMsg::atTop(){}  // game
+/* 0025c390 000000cc */ PrgTransMsg::refresh(){}  // game
+/* 0025c460 00000320 */ PrgTransMsg::advance(){}  // game
+/* 0025c780 00000070 */ PrgTransMsg::~PrgTransMsg(){}  // game
+/* 0025c7f0 000001d8 */ PrgTransMsg::PrgTransMsg(){}  // game
+/* 0025c9d0 00000010 */ PrgTrans::draw(){}  // game
+/* 0025c9e0 00000060 */ PrgTrans::~PrgTrans(){}  // game
+/* 0025ca40 00000008 */ PrgMsgReference::advance(){}  // game
+/* 0025ca50 00000060 */ PrgMsgReference::~PrgMsgReference(){}  // game
+/* 0025cab0 00000160 */ PrgMsgReference::setText(){}  // game
+/* 0025cc10 000000ac */ PrgMsgAniX::advance(){}  // game
+/* 0025ccc0 0000009c */ PrgMsgAniX::setTextX(){}  // game
+/* 0025cd60 00000060 */ PrgMsgAniX::~PrgMsgAniX(){}  // game
+/* 0025cdc0 00000008 */ PrgMsg::advance(){}  // game
+/* 0025cdd0 00000060 */ PrgMsg::~PrgMsg(){}  // game
+/* 0025ce30 00000330 */ PrgMsg::setText(){}  // game
+/* 0025d160 000001c8 */ prgMsgCardToken(){}  // game
+/* 0025d330 00000060 */ PrgReturnValue::~PrgReturnValue(){}  // game
+/* 0025d390 00000060 */ PrgReturnFlag::~PrgReturnFlag(){}  // game
+/* 0025d3f0 0000006c */ PrgRotEnd::draw(){}  // game
+/* 0025d460 00000060 */ PrgRotEnd::~PrgRotEnd(){}  // game
+/* 0025d4c0 00000054 */ PrgRotCall::draw(){}  // game
+/* 0025d520 00000060 */ PrgRotCall::~PrgRotCall(){}  // game
+/* 0025d580 0000031c */ PrgRot::startTween(){}  // game
+/* 0025d8a0 0000044c */ PrgRot::advance(){}  // game
+/* 0025dcf0 0000024c */ PrgRot::stepTweens(){}  // game
+/* 0025df40 000000b0 */ PrgRot::draw(){}  // game
+/* 0025dff0 00000024 */ PrgRot::refresh(){}  // game
+/* 0025e020 00000060 */ PrgRot::~PrgRot(){}  // game
+/* 0025e080 000001dc */ PrgRot::PrgRot(){}  // game
 /* 0025e260 00001344 */ UiWidget::create(){}  // game
-/* 0025f5b0 00000124 */ FUN_0025f5b0(){}
-/* 0025f6e0 0000006c */ FUN_0025f6e0(){}
-/* 0025f750 00000104 */ FUN_0025f750(){}
-/* 0025f860 00000070 */ FUN_0025f860(){}
-/* 0025f8e0 00000050 */ FUN_0025f8e0(){}
-/* 0025f940 00000044 */ FUN_0025f940(){}
-/* 0025f990 00000024 */ FUN_0025f990(){}
-/* 0025f9c0 00000050 */ FUN_0025f9c0(){}
-/* 0025fa10 00000034 */ FUN_0025fa10(){}
+/* 0025f5b0 00000124 */ UiTween::progress(){}  // game
+/* 0025f6e0 0000006c */ UiTween::step(){}  // game
+/* 0025f750 00000104 */ UiTween::value(){}  // game
+/* 0025f860 00000070 */ UiTween::start(){}  // game
+/* 0025f8e0 00000050 */ UiTween::isDone(){}  // game
+/* 0025f940 00000044 */ UiTween::~UiTween(){}  // game
+/* 0025f990 00000024 */ UiTween::UiTween(){}  // game
+/* 0025f9c0 00000050 */ UiShowFlags::UiShowFlags(){}  // game
+/* 0025fa10 00000034 */ UiFont::countLines(){}  // game
 
 // *****************************************************************************
 // FILE -- game/uigame.cpp
@@ -6699,9 +6704,9 @@
 /* 0028fa70 00000008 */ FUN_0028fa70(){}
 /* 0028fa80 00000008 */ FUN_0028fa80(){}
 /* 0028fa90 000000e8 */ FUN_0028fa90(){}
-/* 0028fb80 000000fc */ FUN_0028fb80(){}
+/* 0028fb80 000000fc */ fsmFindText(){}  // game
 /* 0028fc80 000000ac */ FUN_0028fc80(){}
-/* 0028fd30 00000224 */ FUN_0028fd30(){}
+/* 0028fd30 00000224 */ fsmRelocate(){}  // game
 
 // *****************************************************************************
 // FILE -- game/gamepaths.cpp
@@ -6922,7 +6927,7 @@
 /* 0029ad40 00000060 */ FUN_0029ad40(){}
 /* 0029ada0 00000030 */ FUN_0029ada0(){}
 /* 0029add0 00000060 */ FUN_0029add0(){}
-/* 0029ae30 000000c0 */ FUN_0029ae30(){}
+/* 0029ae30 000000c0 */ PrgScaleNaviScroll::PrgScaleNaviScroll(){}  // game
 /* 0029aef0 000002a4 */ FUN_0029aef0(){}
 /* 0029b1a0 00000134 */ FUN_0029b1a0(){}
 /* 0029b2e0 0000014c */ FUN_0029b2e0(){}
@@ -6942,7 +6947,7 @@
 /* 0029dbc0 0000008c */ FUN_0029dbc0(){}
 /* 0029dc50 00000778 */ FUN_0029dc50(){}
 /* 0029e3d0 0000011c */ FUN_0029e3d0(){}
-/* 0029e4f0 00000a7c */ FUN_0029e4f0(){}
+/* 0029e4f0 00000a7c */ PrgScaleNavi::PrgScaleNavi(){}  // game
 /* 0029ef70 0000005c */ FUN_0029ef70(){}
 /* 0029efd0 0000000c */ getSaveExtra(){}  // game
 /* 0029efe0 00000008 */ getNaviMenu(){}  // game
@@ -7356,7 +7361,7 @@
 /* 002b9710 00000094 */ FUN_002b9710(){}
 /* 002b97b0 0000052c */ FUN_002b97b0(){}
 /* 002b9ce0 00000078 */ FUN_002b9ce0(){}
-/* 002b9d60 00000188 */ FUN_002b9d60(){}
+/* 002b9d60 00000188 */ PrgMcCard::PrgMcCard(){}  // game
 /* 002b9ef0 0000041c */ FUN_002b9ef0(){}
 /* 002ba310 000002b4 */ FUN_002ba310(){}
 /* 002ba5d0 000002fc */ FUN_002ba5d0(){}

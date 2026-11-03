@@ -526,6 +526,29 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    the file / class names (no strings); `Tim2Texture` +0x30 (read as the CLUT's blocks) is unread.
    **Next picks**: the region allocator 0x2e1440..0x2e1b70 (`GsRegionAlloc`), `drawSysInit`
    0x2d7cf0, the rena `Tim2Texture` TU 0x2e1b70..0x2e2970.
+   TU 33 (the frontier's `unassigned@00252840`, 156 functions): **`game/uiwidget.cpp`
+   0x25b8e0..0x25fa50** cut out of its tail (56 functions, batch 066 with 74 names incl. FS2's
+   `MoviePlayer` API, `fsmRelocate` / `fsmFindText`, `Clock::getSeconds` / `resetTime`, newlib
+   `memmove` 0x1252d8; all written, `verify`; architecture.md "Modules"): `UiWidget::create` and the
+   13 prg* widget classes, `UiTween`, `UiFont::countLines`. New `game/uiwidget.h`;
+   `UiScrollWidget` (uisequence.h) is now `PrgTransMsg`; `S2dWidgetDef::_10` became `param[8]`;
+   `UiTextTrack::m_30` became `m_msgKey` (the message image's name); `UiDrawer::closeDirect` made
+   public (the movie widget calls it); stand-ins in `gamehooks.h`: `SoundStream`, `MoviePlayer`,
+   `getUiWorkArea`, fsm. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean (only
+   the known gfxtarget.h / stageresult.cpp misses). Kept as the ROM, for the user to overrule:
+   PrgRot::draw concatenates the scale twice (the map zoom is squared); an angle set at once or
+   from a move is wrapped by pi, not 2 pi; prgMsg / prgMsgReference reserve a slot they leave
+   empty; prgMsg's token replacement works in place (values are shorter than the tokens).
+   PC: null checks where the ROM calls `findTrack` / `getAnchor` on whatever it found; the movie /
+   stream widgets' text position starts at 0. Doubts: `GameOptions::_04` picks the movie's audio
+   channel (0 mutes channel 1, else channel 0: a voice language?); the arguments the stream widget
+   passes as constants (setBuffer, play, stop); `getUiWorkArea` (sbss 0x31ae40) is set by whom;
+   `UiShowFlags`' meaning. **The movie draw path must go to a host movie module** (decode the
+   movie file to a GPU texture, no GS upload) when bootstrap 6 / the movie TU comes:
+   `MoviePlayer::drawFrame` / `prime` are the game's GS uploads. **Next in the run**:
+   0x252840..0x25b8e0 (still unassigned: its frontier is `mslTreeIncrement` / 0x25b590, MSL
+   instances already mapped to the host STL by vcmtable.cpp, and 0x252840 / 0x252ac0 called from
+   unassigned@0023e740).
    TU 32 (the frontier's `unassigned@00296d60`, 267 functions 0x296d60..0x2a9c70, for
    `getNaviMenu` / `getSaveExtra` / the string dtor 0x297fb0): **`game/vcmtable.cpp`
    0x296d60..0x299d90** cut out of the run's head (52 functions, batches 063-065 with 59 names:

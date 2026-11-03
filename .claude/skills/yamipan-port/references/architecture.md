@@ -848,11 +848,45 @@ the base's. Callers: UiDrawer, the textured tracks, UiFont, FUN_00288c00 and the
 group. On the host the presets go to `YamiPan_DrawUiReg`; the draw module must sample its own copy
 of the named target when a GsTexture has m_isTarget (no GS memory).
 
+**`game/uiwidget.cpp` 0x25b8e0..0x25fa50 (TU 33, 2026-11-03, batch 066; cut out of
+`unassigned@00252840`; all 56 written, `verify`; class names follow the type strings, the file
+name is the port's)**: the S2D **script widgets**. `UiWidget::create` 0x25e260 looks
+`S2dWidgetDef::type` up in the **class table 0x2facf0** (42 {id, name}: `prgRot` .. `prgDebug`,
+`PrgType` in uiwidget.h) and either builds a widget into the sequence's next slot (counted) or acts
+once (slot left empty). `S2dWidgetDef::param[8]` (+0x10) are floats, also where they hold strings /
+objects / images indices. Classes (each a `UiWidget`, vptr +0x1c, vtable {dtor, draw, advance,
+refresh, getStatus}): **PrgRot** Vt_00316c10 (0x84; prgRot / prgRotRev start angle 0 / pi) rotates /
+zooms / pans the sequence's parent matrix (+0x50) -- the map: L1 / R1 or right stick sides turn
+pi/64 a frame, right stick up / down zooms 0.6..1.8 (0.02 x tilt), left stick pans 8 px, L1+R1
+recentre (on the player when the map shows them), Triangle faces the player's heading; four axis
+**UiTween**s (+0x38: angle / scale / x / y) for the scripts' ordered moves (prgRotOrder* on this
+sequence's widget, prgRotCallOrder* on another sequence's; *Spd: frames = distance / speed);
+draw concatenates the scale **twice** (sic) and keeps matrix / centre for **PrgRotCall**
+Vt_00316bf0 (0x24); **PrgRotEnd** Vt_00316bd0 resets to pixel mode. **PrgTrans** Vt_00316b10 (0x28,
+translate +0x20) / **PrgTransMsg** Vt_00316af0 (0x44) scrolls a text track by whole lines with pad
+Up / Down (the S2D's rMsgUpLimit / rMsgDownLimit / rMsgUseScroll ask it; was `UiScrollWidget`) /
+**PrgTransEnd** Vt_00316ad0. Messages: **PrgMsg** Vt_00316b70 and **PrgMsgReference** Vt_00316b30
+are built, run once and **deleted in create**; prgMsg replaces `<MC0nC>` / `<MC0nK>` (table
+0x2fae40) by memory-card save n's cleared stages (`testStageFlags` 0x15 / 0x2a: any kind, variant
+0 / 1) / listed flags; **PrgMsgAniX** Vt_00316b50 slides a text's x alignment; prgMsgOnOff sets a
+text track's visible byte. **PrgReturnFlag** / **PrgReturnValue** Vt_00316bb0 / Vt_00316b90 set the
+layout's result (+0x38) and done (+0x3c). **PrgMovie** Vt_00316ab0 (0x34) drives FS2's
+**MoviePlayer** 0x1fa..0x1fc (now named: ctor 0x1fc7b0 (512, 512, 2), state +0x48 bits 4 ready / 8
+playing / 0x80 over, `drawFrame` uploads at tbp 0x800 and draws at 256 + p1 / p2; audio channel by
+`GameOptions::_04`); **PrgSndStream** Vt_00316a90 (0x38) a `SoundStream` with its own child clock;
+both show **fsm subtitle files** (`fsmRelocate` 0x28fd30: magic "fsm\0", tracks of 0xc at +0x40
+{name, count, ranges {start, end, text}}; `fsmFindText` 0x28fb80 by seconds: movie frame / 25, or
+`Clock::getSeconds` 0x135420 = m_time / 300). prgScaleNavi / prgScaleNaviScroll / prgMcCard are other
+TUs' classes (ctors 0x29e4f0 / 0x29ae30 / 0x2b9d60). After the code: **UiTween** 0x25f5b0..0x25f990
+({from, to, length, frame, delay, hold, curve} 0x1c, curve 1 = t squared; start 64 callers, value 29),
+`UiShowFlags` 0x25f9c0 (17 bytes, one caller 0x19c180), `UiFont::countLines` 0x25fa10. Before it,
+0x252840..0x25b8e0 is another file (vector / tree heavy, 0x253420 has 'そんな馬鹿な', its MSL
+instances incl. `mslTreeIncrement` 0x25a850 after it), still `unassigned@00252840`.
+
 **`game/uigame.cpp` 0x25fa50..0x263b90 (TU 21, 2026-11-03, batches 049-052; cut out of
 `unassigned@00252840`; the file name is the port's; all 32 written, `verify`)**: the S2D UI's
-**game side**. Below it 0x252840..0x25fa50 are the widget classes (vtables 0x316a90..0x316c10,
-`UiWidget::create` 0x25e260) with a tween record helper set 0x25f5b0..0x25fa10 (0x25f860 has 64
-callers); above it libscf. In it: **`UiFont`** (0x14: glyphs, owned GsTexture, text, spacing 2 / 0);
+**game side**. Below it `game/uiwidget.cpp` 0x25b8e0..0x25fa50 (the widget classes and
+`UiTween`: previous entry); above it libscf. In it: **`UiFont`** (0x14: glyphs, owned GsTexture, text, spacing 2 / 0);
 the two resource files the S2D images can be besides a TIM2, both relocated in place once (magic,
 +4 relocated byte, then name / text / picture tables whose entries are offsets from a header base):
 **fMsg** message files (+0x10 count, +0x14 / +0x18 / +0x1c name count / table / base, +0x20 / +0x24

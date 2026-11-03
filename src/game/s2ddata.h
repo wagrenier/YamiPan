@@ -288,12 +288,14 @@ struct S2dWidgetDef
     S2dRef<const char> type;    // FS2 +0x04: UiWidget::create looks it up in its class table (0x2facf0)
     int         id;             // FS2 +0x08: the widget's id in its sequence
     int         priority;       // FS2 +0x0c: draw order among the sequence's actors, lowest first
-    u_char      _10[0x20];      // FS2 +0x10: the type's parameters (floats)
+    // The type's parameters (game/uiwidget.h has what each type reads):
+    // floats, also where they hold a strings / objects / images index.
+    float       param[8];       // FS2 +0x10
 };
 static_assert(sizeof(S2dWidgetDef) == 0x30, "S2dWidgetDef: EE 0x30");
 static_assert(offsetof(S2dWidgetDef, type) == 0x4, "S2dWidgetDef::type");
 static_assert(offsetof(S2dWidgetDef, id) == 0x8, "S2dWidgetDef::id");
-static_assert(offsetof(S2dWidgetDef, _10) == 0x10, "S2dWidgetDef::_10");
+static_assert(offsetof(S2dWidgetDef, param) == 0x10, "S2dWidgetDef::param");
 
 // An image of the S2D (S2dData::images[i]). Its name is the key the
 // textured tracks keep (UiTexSpriteTrack::m_imageName), as the text track

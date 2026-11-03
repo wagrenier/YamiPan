@@ -11,12 +11,19 @@
 
 #include "sdk/scetypes.h"
 
+// Clock::m_time's units per second (the int at 0x300e48; the play-time
+// ticks game/uigame.cpp shows run at 25).
+constexpr int kClockTimePerSecond = 300;
+
 // layout: host -- holds the parent and child pointers; EE 0x20.
 class Clock
 {
 public:
     ~Clock();                                                            // FS2 0x001351b0
     Clock *createChild();                                                // FS2 0x00135210
+    // m_time in seconds (kClockTimePerSecond).
+    float  getSeconds();                                                 // FS2 0x00135420
+    void   resetTime();                                                  // FS2 0x001357b0: m_time = 0
 
     int     m_state;            // FS2 +0x00: 1 paused
     int     m_time;             // FS2 +0x04

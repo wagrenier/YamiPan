@@ -492,4 +492,71 @@ public:
     bool m_active;              // FS2 +0x34
 };
 
+// What the S2D widgets (game/uiwidget.cpp) call of systems without a TU.
+
+// A streamed sound (sound/sound.cpp, 0x144090..0x145de0; only what the
+// prgSndStream widget calls). The meaning of the arguments the widget
+// passes as constants is unread.
+// layout: host -- EE 0x60: the state at +0x10.
+class SoundStream
+{
+public:
+    SoundStream();                                                       // FS2 0x00145d70
+    ~SoundStream();                                                      // FS2 0x00145be0: deleting (obj, 1)
+    void setBuffer(int size, void *buffer);                              // FS2 0x00145a50: (0x10000, null)
+    // The stream name of a bank image (an S2D image).
+    void openBankFile(const void *bank, const char *name);               // FS2 0x00145750
+    void play(int a1, int a2);                                           // FS2 0x00145240: (0, 0)
+    void setVolume(int left, int right);                                 // FS2 0x001447e0: 0x80 full
+    void stop(int a1);                                                   // FS2 0x00144d80: (0)
+    void update();                                                       // FS2 0x00144a10
+
+    int m_state;                // FS2 +0x10: 1..3 while it streams
+};
+
+// The MPEG movie player (unassigned@001953f0, 0x1fa..0x1fc; only what the
+// prgMovie widget calls). It decodes into its work area and uploads each
+// frame to the GS frame buffer itself: the port's movie module replaces
+// it (no GS upload; open-items.md).
+enum MovieState
+{
+    MovieState_Ready = 0x4,     // a frame is decoded
+    MovieState_Playing = 0x8,   // startAudio ran
+    MovieState_Over = 0x80,     // ended or failed
+};
+// layout: host -- EE 0x110: the state bits (MovieState) at +0x48.
+class MoviePlayer
+{
+public:
+    MoviePlayer(int width, int height, int buffers);                     // FS2 0x001fc7b0: CreateSema, sceMpegInit once
+    ~MoviePlayer();                                                      // FS2 0x001fc720: deleting (obj, 1)
+    // Mutes / sets one of the four audio channels.
+    void setVolume(int channel, int left, int right);                    // FS2 0x001faa30
+    int  workSize();                                                     // FS2 0x001fbfd0
+    // null allocates workSize itself.
+    void setWorkArea(void *mem, int size);                               // FS2 0x001fc560
+    int  open(const char *name);                                         // FS2 0x001fb9d0: < 0 failed
+    // state & mask (mask 0: state == 0): MovieState.
+    bool testState(u_int mask);                                          // FS2 0x001fb920
+    bool isReady();                                                      // FS2 0x001fab40: MovieState_Ready
+    bool isPlaying();                                                    // FS2 0x001fab30: MovieState_Playing
+    int  startAudio();                                                   // FS2 0x001faa90
+    // Feeds the reader and decodes; draws the first frame (guess).
+    bool prime();                                                        // FS2 0x001fb380
+    // The decoded frame into packet: uploaded at tbp, drawn width x height
+    // at (x, y).
+    bool drawFrame(sceVif1Packet *packet, int tbp, int width, int height, int x, int y); // FS2 0x001fb2d0
+    int  getFrame();                                                     // FS2 0x001faa70: -1 not playing
+};
+
+// The word at sbss 0x31ae40 (gp-0x7a30; unassigned@0023e740): a work area
+// the movie widget lends its player. Who sets it is unread.
+void *getUiWorkArea();                                                   // FS2 0x00243380
+
+// fsm subtitle files (unassigned@002681e0): tracks of timed 16-bit texts,
+// relocated in place once.
+bool           fsmRelocate(void *file);                                  // FS2 0x0028fd30: false not an fsm
+// The text of track whose time range holds seconds, null none.
+const u_short *fsmFindText(float seconds, const void *file, int track);  // FS2 0x0028fb80
+
 #endif /* _GAME_GAMEHOOKS_H */

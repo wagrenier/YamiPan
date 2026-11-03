@@ -606,6 +606,25 @@
    "status": "verify",
    "why": "UiAnim::init (the track factory) right after uisequence.cpp's last function, then the 41 track classes' dtors / draw / apply (vtables 0x316540..0x316a60 in this order), the UiTrack base members step / isDone / setPlay with UiAnim::findTrack, and the classes' inline virtuals (UiWidget::refresh / getStatus, the getAnchor slots) at the end; 0x24d530 S2dData::getImage starts the S2D file"
   },
+  "game/uiwidget.cpp": {
+   "notes": "Cut out of unassigned@00252840 (the frontier pick) as 0x25b8e0..0x25fa50, batch 066 (74 names: the widget classes by their type strings from the class table 0x2facf0, FS2's MoviePlayer API 0x1fa..0x1fc, fsmRelocate / fsmFindText, Clock::getSeconds / resetTime, newlib memmove 0x1252d8). New game/uiwidget.h; UiScrollWidget became PrgTransMsg (uigame.cpp updated); S2dWidgetDef::_10 is now param[8]; UiTextTrack::m_30 is m_msgKey; UiDrawer::closeDirect public; stand-ins SoundStream, MoviePlayer, getUiWorkArea, fsm in gamehooks.h; kClockTimePerSecond 300 in clock.h. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean (only the known gfxtarget.h / stageresult.cpp misses). Kept as the ROM: PrgRot::draw concatenates the scale twice; angles set at once or from a move wrap by pi, not 2 pi; prgMsg / prgMsgReference run once, are deleted in create and leave their reserved slot empty. PC: null checks where the ROM calls findTrack / getAnchor on a missing anim; the movie / stream text position starts at 0. Doubts: GameOptions::_04 picks the movie audio channel; the stream widget's constant arguments; who sets getUiWorkArea (0x31ae40); UiShowFlags. The movie draw path (MoviePlayer::drawFrame / prime) is the game's GS upload: a host movie module must replace it. Next in the run: 0x252840..0x25b8e0, still unassigned (a vector / tree heavy file; its MSL instances are already host STL).",
+   "ranges": [
+    [
+     "0025b8e0",
+     "0025fa50"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 09:48",
+     "status": "verify",
+     "summary": "The S2D script widgets: UiWidget::create and the 13 prg widget classes (map rotate / zoom / pan, text scroll, messages, movie and sound stream with fsm subtitles, the layout answer), UiTween, UiFont::countLines; all 56 written, source-only, not built"
+    }
+   ],
+   "status": "verify",
+   "why": "The S2D script widgets (prg*, the class table 0x2facf0 of 42 type names UiWidget::create looks S2dWidgetDef::type up in): the 13 widget classes (vtables 0x316a90..0x316c10, each a UiWidget subclass, vptr +0x1c), create 0x25e260 and the out-of-line inlines CodeWarrior emitted after them (UiTween 0x25f5b0..0x25f990, used from 30+ sites; UiFont::countLines 0x25fa10). Before: 0x252840..0x25b8e0 a vector / tree heavy subsystem with its MSL instances (another file, still unassigned); after: game/uigame.cpp from UiFont::~UiFont 0x25fa50. No source-path string: the file name is the port's."
+  },
   "game/vcmtable.cpp": {
    "notes": "Cut out of unassigned@00296d60 (the frontier pick) as 0x296d60..0x299d90, batches 063-065 (59 names, incl. the binary's std::string instances 0x297fb0.. and newlib strchr / strncasecmp / fprintf / memcmp, mslTreeIncrement 0x25a850, RenaModel::findGroup 0x2e4100, VcmController::getWeight 0x185af0). New game/vcmtable.h; stand-ins RenaModel (+ ModelHeader / ModelPart / ModelGeometry / ModelMaterial / ModelPartRec) and VcmController in gamehooks.h. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean, a host harness over 5 parts (own VCM__ name, group VCM__ name, material tag, untagged, bare VCM__ fallback; attach by name; weights 0.5 / 0 / 1) passed. Kept as the ROM: each token is one byte longer than its run (middle tokens keep a trailing underscore; harmless for the one-token tags on the disc, vcm__ENV_SL etc.); bare VCM__ yields an empty token; fade / off bits are compact bytes; a token-less state keeps the previous alpha. PC: token names delete[]d, states zeroed. Doubts: file / class names, geometry / material for the part +8 chain, what the renderer does with record bytes +0xa..+0xc. Not this TU: stageresult.cpp:144 passes void * to UiLayout::draw (TexAreaList * since TU 31). Next in the run: the navi menu 0x29acb0..0x29eff0 (getNaviMenu / getSaveExtra), the VU0 helpers 0x299d90..0x29a700, the stage object class 0x29a700..0x29acb0.",
    "ranges": [

@@ -218,9 +218,11 @@ public:
 
     u_char isAddPass() const;                                            // FS2 0x0024f570
     u_char isFixedColor() const;                                         // FS2 0x0024f340
+    // Closes the open DIRECT run (the movie widget, game/uiwidget.cpp,
+    // before the player adds its own packets).
+    int  closeDirect();                                                  // FS2 0x0024f960: 1 if a run was open
 
 private:
-    int  closeDirect();                                                  // FS2 0x0024f960: 1 if a run was open
     int  openVertices(int format);                                       // FS2 0x00250240: UiVertexFormat
     u_int vertexColor(const UiVec4 *rgba) const;                         // FS2 0x00250c40: packed RGBAQ
     void closeGifRun();         // inline: the open REGLIST / A+D run

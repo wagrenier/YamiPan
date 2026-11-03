@@ -2435,6 +2435,12 @@
   "was": "FUN_00125228",
   "why": "libc: (dst, src, n) returning dst, 16-byte-aligned 32-byte block path then bytes; libmc and the game copy with it; memmove follows at 0x1252d8"
  },
+ "001252d8": {
+  "name": "memmove",
+  "tag": "lib-context",
+  "was": "FUN_001252d8",
+  "why": "newlib memmove: backwards byte copy when dst overlaps after src, else quad / double / byte forward copy; between memcpy 0x125228 and memset 0x1253e0"
+ },
  "001253e0": {
   "name": "memset",
   "tag": "lib-context",
@@ -3395,6 +3401,12 @@
   "was": "FUN_00135390",
   "why": "(this, rate 12, interval 2, paused, variable): Clock fields {+0 state, +4 time, +8 delta, +0xc time2, +0x10 scale 0x100 (8.8), +0x14 parent, +0x18 children} plus +0x1c, +0x20 ticks per frame, +0x24 vsync total, +0x28 frame interval, +0x2c variable-rate flag; GameSystem member +0x510"
  },
+ "00135420": {
+  "name": "Clock::getSeconds",
+  "tag": "game-inferred",
+  "was": "FUN_00135420",
+  "why": "float(m_time) / 300 (the int at 0x300e48): 62 callers"
+ },
  "001354a0": {
   "name": "Clock::advance",
   "tag": "game-inferred",
@@ -3406,6 +3418,12 @@
   "tag": "game-inferred",
   "was": "FUN_00135550",
   "why": "(this, short flag): detaches every child (clears its parent +0x14), frees the children PtrList, removes this from its parent's list (freeing the list when it empties), frees this when flag > 0; the shared body of Clock::~Clock and MasterClock::~MasterClock; class split provisional"
+ },
+ "001357b0": {
+  "name": "Clock::resetTime",
+  "tag": "game-inferred",
+  "was": "FUN_001357b0",
+  "why": "m_time (+4) = 0"
  },
  "001357c0": {
   "name": "PtrList::next",
@@ -10787,6 +10805,84 @@
   "was": "FUN_001e66c0",
   "why": "a0 the player's +0x224 object (its +0 the player): picks names from the 0x210-byte records 0x577b20 (index +0x40, slot +0x6c; '*'-prefixed alternates when the long weapon +0x238's item def kind is 5 or 6) and hands them to 0x216400; guess: the motion set for the weapon carried. stepWeaponPreview in a stage"
  },
+ "001faa30": {
+  "name": "MoviePlayer::setVolume",
+  "tag": "game-inferred",
+  "was": "FUN_001faa30",
+  "why": "(this, channel, l, r): channel's volume, also on its feeder (+0x100 + 4 * channel)"
+ },
+ "001faa70": {
+  "name": "MoviePlayer::getFrame",
+  "tag": "game-inferred",
+  "was": "FUN_001faa70",
+  "why": "the frame counter (+8) while playing (state 8), else -1; PrgMovie divides it by 25"
+ },
+ "001faa90": {
+  "name": "MoviePlayer::startAudio",
+  "tag": "game-inferred",
+  "was": "FUN_001faa90",
+  "why": "state 0: -1, not ready (4): -2, else sets playing (8) and starts the four SoundFeeders: 1, or 0 when already playing"
+ },
+ "001fab30": {
+  "name": "MoviePlayer::isPlaying",
+  "tag": "game-inferred",
+  "was": "FUN_001fab30",
+  "why": "state (+0x48) & 8"
+ },
+ "001fab40": {
+  "name": "MoviePlayer::isReady",
+  "tag": "game-inferred",
+  "was": "FUN_001fab40",
+  "why": "state (+0x48) & 4: a frame is decoded"
+ },
+ "001fb2d0": {
+  "name": "MoviePlayer::drawFrame",
+  "tag": "game-inferred",
+  "was": "FUN_001fb2d0",
+  "why": "(this, packet, fbp, fbw, w, h, x, y): when a frame decodes (0x1fb630), its upload packet (0x1fb450); true then"
+ },
+ "001fb380": {
+  "name": "MoviePlayer::prime",
+  "tag": "game-inferred",
+  "was": "FUN_001fb380",
+  "why": "feeds the stream reader (+0x98) and, when it has data, decodes and draws the first frame at fbp 0x700 through GameSystem's packet list 0xd; guess at the role"
+ },
+ "001fb920": {
+  "name": "MoviePlayer::testState",
+  "tag": "game-inferred",
+  "was": "FUN_001fb920",
+  "why": "(this, mask): state & mask, or state == 0 for mask 0; 0x80 the movie ended or failed"
+ },
+ "001fb9d0": {
+  "name": "MoviePlayer::open",
+  "tag": "game-inferred",
+  "was": "FUN_001fb9d0",
+  "why": "(this, name): opens the movie file; < 0 failure (PrgMovie deletes the player)"
+ },
+ "001fbfd0": {
+  "name": "MoviePlayer::workSize",
+  "tag": "game-inferred",
+  "was": "FUN_001fbfd0",
+  "why": "the work area the frame size and buffer count need (16-aligned w x h x 4, + 0x30000, + w*h*4.5 + 0x2800, + buffers * 0x20000, 0x80 rounded)"
+ },
+ "001fc560": {
+  "name": "MoviePlayer::setWorkArea",
+  "tag": "game-inferred",
+  "was": "FUN_001fc560",
+  "why": "(this, mem, size): the decoder's work area; null allocates workSize from Heap 0x329970"
+ },
+ "001fc720": {
+  "name": "MoviePlayer::~MoviePlayer",
+  "tag": "game-inferred",
+  "was": "FUN_001fc720",
+  "why": "deleting dtor: DeleteSema, close, frees its own work area (Heap 0x329970)"
+ },
+ "001fc7b0": {
+  "name": "MoviePlayer::MoviePlayer",
+  "tag": "game-inferred",
+  "was": "FUN_001fc7b0",
+  "why": "(this, w, h, buffers): 0x110 object, CreateSema, sceMpegInit once, four audio channels at volume 0x80; PrgMovie's movie"
+ },
  "001fcb40": {
   "name": "TextPrinter::~TextPrinter",
   "tag": "game-inferred",
@@ -11404,6 +11500,12 @@
   "tag": "game-inferred",
   "was": "FUN_00243360",
   "why": "base slot 3 of Vt_00316560: null; the shape kinds answer their first vertex xy (was read as getText)"
+ },
+ "00243380": {
+  "name": "getUiWorkArea",
+  "tag": "game-inferred",
+  "was": "FUN_00243380",
+  "why": "returns the sbss word 0x31ae40 (gp-0x7a30); the movie widgets give it to MoviePlayer::setWorkArea; who sets it is unread: the name is a guess"
  },
  "00243390": {
   "name": "UiSubLayout::load",
@@ -12725,29 +12827,341 @@
   "was": "FUN_0025a850",
   "why": "MSL red-black tree iterator ++ (node: left +0, right +4, parent +8 with the colour in bit 0): leftmost of the right subtree, else up while a right child; every set / map walk in the game calls it"
  },
+ "0025b8e0": {
+  "name": "PrgSndStream::refresh",
+  "tag": "game-inferred",
+  "was": "FUN_0025b8e0",
+  "why": "Vt_00316a90 slot refresh (+0x14) of the prgSndStream widget (type 0x1a, 0x2facf0): arg 0 restarts the stream (new SoundStream 0x60, buffer 0x10000, openBankFile(image p0, name p1), play, volume 0x80, clock reset), else stops it and clears the subtitle text"
+ },
+ "0025ba10": {
+  "name": "PrgSndStream::findSubtitleTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0025ba10",
+  "why": "(this): when def p2 names an anim, its text track (kind 3) cleared; with p3 the fsm subtitle image (fsmRelocate) and the text position p4 / p5; called from create case 0x1a"
+ },
+ "0025bae0": {
+  "name": "PrgSndStream::getStatus",
+  "tag": "game-inferred",
+  "was": "FUN_0025bae0",
+  "why": "Vt_00316a90 slot getStatus: 1 while a stream exists, -1 when not"
+ },
+ "0025bb00": {
+  "name": "PrgSndStream::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0025bb00",
+  "why": "Vt_00316a90 slot draw: deletes the stream once its state (+0x10) is none of 1..3, else SoundStream::update"
+ },
+ "0025bbc0": {
+  "name": "PrgSndStream::advance",
+  "tag": "game-inferred",
+  "was": "FUN_0025bbc0",
+  "why": "Vt_00316a90 slot advance: the subtitle of the stream clock's seconds (fsmFindText) shown on the text track at (+0x30, +0x34)"
+ },
+ "0025bc70": {
+  "name": "PrgSndStream::~PrgSndStream",
+  "tag": "game-inferred",
+  "was": "FUN_0025bc70",
+  "why": "deleting dtor storing Vt_00316a90 then the base Vt_00316580: deletes the stream, clears the text, deletes the clock"
+ },
+ "0025bd30": {
+  "name": "PrgMovie::refresh",
+  "tag": "game-inferred",
+  "was": "FUN_0025bd30",
+  "why": "Vt_00316ab0 slot refresh of the prgMovie widget (type 0x19): arg 0 opens the movie (MoviePlayer 512x512x2, audio channel by GameOptions +4, work area, open(name p0), deleted on failure), else deletes it"
+ },
+ "0025beb0": {
+  "name": "PrgMovie::getStatus",
+  "tag": "game-inferred",
+  "was": "FUN_0025beb0",
+  "why": "Vt_00316ab0 slot getStatus: -1 without a movie or once its state has 0x80, else isPlaying"
+ },
+ "0025bf00": {
+  "name": "PrgMovie::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0025bf00",
+  "why": "Vt_00316ab0 slot draw: primes the decoder until a frame is ready, then starts the audio and draws the frame (closeDirect, sceGsSyncPath, FlushCache, drawFrame at 256 + def p1 / p2); state 0x80: deletes the movie"
+ },
+ "0025c040": {
+  "name": "PrgMovie::advance",
+  "tag": "game-inferred",
+  "was": "FUN_0025c040",
+  "why": "Vt_00316ab0 slot advance: the subtitle at the movie's frame / 25 seconds (fsmFindText) on the text track at (+0x2c, +0x30)"
+ },
+ "0025c110": {
+  "name": "PrgMovie::findSubtitleTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0025c110",
+  "why": "as PrgSndStream::findSubtitleTrack one def parameter later (p3 anim, p4 fsm image, p5 / p6 position); called from create case 0x19"
+ },
+ "0025c1e0": {
+  "name": "PrgMovie::~PrgMovie",
+  "tag": "game-inferred",
+  "was": "FUN_0025c1e0",
+  "why": "deleting dtor storing Vt_00316ab0: deletes the movie player, clears the text"
+ },
+ "0025c280": {
+  "name": "PrgTransEnd::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0025c280",
+  "why": "Vt_00316ad0 slot draw of prgTransEnd (type 0x18): the drawer translation back to (0, 0)"
+ },
+ "0025c2b0": {
+  "name": "PrgTransEnd::~PrgTransEnd",
+  "tag": "game-inferred",
+  "was": "FUN_0025c2b0",
+  "why": "deleting dtor storing Vt_00316ad0"
+ },
  "0025c310": {
-  "name": "UiScrollWidget::canScroll",
+  "name": "PrgTransMsg::canScroll",
   "tag": "game-inferred",
   "was": "FUN_0025c310",
-  "why": "a0 a widget: +0x34 != 0.0; UiLayout::testGameState's rMsgUseScroll on the widget the argument names"
+  "why": "scroll end (+0x34) != 0; the prgTransMsg widget (Vt_00316af0, 0x44 bytes: +0x28 scroll, +0x34 end); was UiScrollWidget::canScroll"
  },
  "0025c340": {
-  "name": "UiScrollWidget::atBottom",
+  "name": "PrgTransMsg::atBottom",
   "tag": "game-inferred",
   "was": "FUN_0025c340",
-  "why": "a0 a widget: +0x34 <= +0x28; rMsgDownLimit"
+  "why": "end <= scroll; was UiScrollWidget::atBottom"
  },
  "0025c360": {
-  "name": "UiScrollWidget::atTop",
+  "name": "PrgTransMsg::atTop",
   "tag": "game-inferred",
   "was": "FUN_0025c360",
-  "why": "a0 a widget: +0x28 <= 0.0; rMsgUpLimit"
+  "why": "scroll <= 0; was UiScrollWidget::atTop"
+ },
+ "0025c390": {
+  "name": "PrgTransMsg::refresh",
+  "tag": "game-inferred",
+  "was": "FUN_0025c390",
+  "why": "Vt_00316af0 slot refresh: scroll and target to 0, end recomputed from the text's line count"
+ },
+ "0025c460": {
+  "name": "PrgTransMsg::advance",
+  "tag": "game-inferred",
+  "was": "FUN_0025c460",
+  "why": "Vt_00316af0 slot advance: pad Down / Up held scroll the text by the speed, snapping the target to whole lines, else it eases to the target; the translation is (0, -scroll)"
+ },
+ "0025c780": {
+  "name": "PrgTransMsg::~PrgTransMsg",
+  "tag": "game-inferred",
+  "was": "FUN_0025c780",
+  "why": "deleting dtor storing Vt_00316af0 then Vt_00316b10 (PrgTrans) then Vt_00316580"
+ },
+ "0025c7f0": {
+  "name": "PrgTransMsg::PrgTransMsg",
+  "tag": "game-inferred",
+  "was": "FUN_0025c7f0",
+  "why": "ctor (create case 0x17, 0x44 bytes): PrgTrans base (Vt_00316b10, translation 0), speed p3 (4 when <= 0), line height p2, lines shown p1, the text track of the anim named p0"
+ },
+ "0025c9d0": {
+  "name": "PrgTrans::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0025c9d0",
+  "why": "Vt_00316b10 slot draw: the drawer translation from +0x20; PrgTransMsg's base"
+ },
+ "0025c9e0": {
+  "name": "PrgTrans::~PrgTrans",
+  "tag": "game-inferred",
+  "was": "FUN_0025c9e0",
+  "why": "deleting dtor storing Vt_00316b10"
+ },
+ "0025ca40": {
+  "name": "PrgMsgReference::advance",
+  "tag": "game-inferred",
+  "was": "FUN_0025ca40",
+  "why": "Vt_00316b30 slot advance of prgMsgReference (type 8): setText(m_def)"
+ },
+ "0025ca50": {
+  "name": "PrgMsgReference::~PrgMsgReference",
+  "tag": "game-inferred",
+  "was": "FUN_0025ca50",
+  "why": "deleting dtor storing Vt_00316b30"
+ },
+ "0025cab0": {
+  "name": "PrgMsgReference::setText",
+  "tag": "game-inferred",
+  "was": "FUN_0025cab0",
+  "why": "(this, def): the text track of the anim named p0 shows the text variable p2 (expandTextVariable) at (p3, p4): as text, or as the message of that name in the fMsg image p1"
+ },
+ "0025cc10": {
+  "name": "PrgMsgAniX::advance",
+  "tag": "game-inferred",
+  "was": "FUN_0025cc10",
+  "why": "Vt_00316b50 slot advance of prgMsgAniX (type 7): a frame counter up (arg 0) or down to [0, length], the text track's x alignment lerped from p1 to p2"
+ },
+ "0025ccc0": {
+  "name": "PrgMsgAniX::setTextX",
+  "tag": "game-inferred",
+  "was": "FUN_0025ccc0",
+  "why": "(x, this, def): the x alignment (+0x1c) of the text track of the anim named p0"
+ },
+ "0025cd60": {
+  "name": "PrgMsgAniX::~PrgMsgAniX",
+  "tag": "game-inferred",
+  "was": "FUN_0025cd60",
+  "why": "deleting dtor storing Vt_00316b50"
+ },
+ "0025cdc0": {
+  "name": "PrgMsg::advance",
+  "tag": "game-inferred",
+  "was": "FUN_0025cdc0",
+  "why": "Vt_00316b70 slot advance of prgMsg (type 5): setText(m_def)"
+ },
+ "0025cdd0": {
+  "name": "PrgMsg::~PrgMsg",
+  "tag": "game-inferred",
+  "was": "FUN_0025cdd0",
+  "why": "deleting dtor storing Vt_00316b70"
+ },
+ "0025ce30": {
+  "name": "PrgMsg::setText",
+  "tag": "game-inferred",
+  "was": "FUN_0025ce30",
+  "why": "(this, def): the text track of the anim named p0 shows message p2 of the fMsg image p1 at (p3, p4) plus the S2D variable p5; with a non-zero arg the <MC0nC> / <MC0nK> tokens become the memory-card saves' counts"
+ },
+ "0025d160": {
+  "name": "prgMsgCardToken",
+  "tag": "game-inferred",
+  "was": "FUN_0025d160",
+  "why": "(i, &token, &value): token i of the table 0x2fae40 (<MC00C>..<MC03C>, <MC00K>..<MC03K>) and its value text: save i's cleared stages (C) or listed flags (K), 0 without a save; static buffers 0x599450 / 0x599460"
+ },
+ "0025d330": {
+  "name": "PrgReturnValue::~PrgReturnValue",
+  "tag": "game-inferred",
+  "was": "FUN_0025d330",
+  "why": "deleting dtor storing Vt_00316b90 (prgReturnValue, type 4)"
+ },
+ "0025d390": {
+  "name": "PrgReturnFlag::~PrgReturnFlag",
+  "tag": "game-inferred",
+  "was": "FUN_0025d390",
+  "why": "deleting dtor storing Vt_00316bb0 (prgReturnFlag, type 3)"
+ },
+ "0025d3f0": {
+  "name": "PrgRotEnd::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0025d3f0",
+  "why": "Vt_00316bd0 slot draw of prgRotEnd (type 2): the sequence's parent matrix identity, pixel mode, translation (0, 0)"
+ },
+ "0025d460": {
+  "name": "PrgRotEnd::~PrgRotEnd",
+  "tag": "game-inferred",
+  "was": "FUN_0025d460",
+  "why": "deleting dtor storing Vt_00316bd0"
+ },
+ "0025d4c0": {
+  "name": "PrgRotCall::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0025d4c0",
+  "why": "Vt_00316bf0 slot draw of prgRotCall (type 0x10): the parent matrix and translation another sequence's PrgRot (+0x20) last drew with"
+ },
+ "0025d520": {
+  "name": "PrgRotCall::~PrgRotCall",
+  "tag": "game-inferred",
+  "was": "FUN_0025d520",
+  "why": "deleting dtor storing Vt_00316bf0"
+ },
+ "0025d580": {
+  "name": "PrgRot::startTween",
+  "tag": "game-inferred",
+  "was": "FUN_0025d580",
+  "why": "(to, this, axis, frames): axis 0 angle (shortest way round), 1 scale, 2 x, 3 y: set at once (frames < 1) or a UiTween (+0x38 + 4 * axis, new 0x1c) from the current value; create's order types"
+ },
+ "0025d8a0": {
+  "name": "PrgRot::advance",
+  "tag": "game-inferred",
+  "was": "FUN_0025d8a0",
+  "why": "Vt_00316c10 slot advance of prgRot / prgRotRev (the map): unless tweening, pad L1 / R1 / right stick rotate, right stick up / down zoom 0.6..1.8, left stick pans, L1 + R1 recentres on the player, Triangle faces the player's heading; position clamped to the bounds"
+ },
+ "0025dcf0": {
+  "name": "PrgRot::stepTweens",
+  "tag": "game-inferred",
+  "was": "FUN_0025dcf0",
+  "why": "(this): steps the four axis tweens, writes their values, deletes finished ones; true while any ran"
+ },
+ "0025df40": {
+  "name": "PrgRot::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0025df40",
+  "why": "Vt_00316c10 slot draw: the sequence's parent matrix translated by the position, rotated by the angle, scaled (concatenated twice), screen mode, translation the centre; both kept for PrgRotCall"
+ },
+ "0025dff0": {
+  "name": "PrgRot::refresh",
+  "tag": "game-inferred",
+  "was": "FUN_0025dff0",
+  "why": "Vt_00316c10 slot refresh: input off (+0x7c) while arg < 0"
+ },
+ "0025e020": {
+  "name": "PrgRot::~PrgRot",
+  "tag": "game-inferred",
+  "was": "FUN_0025e020",
+  "why": "deleting dtor storing Vt_00316c10"
+ },
+ "0025e080": {
+  "name": "PrgRot::PrgRot",
+  "tag": "game-inferred",
+  "was": "FUN_0025e080",
+  "why": "ctor (f12 start angle: 0 prgRot, pi prgRotRev; 0x84 bytes): scale 0.8, position -p0 / -p1 or the player's, centre p2 / p3, bounds from p4..p7 (all 0: +-2047), input off while arg < 0"
  },
  "0025e260": {
   "name": "UiWidget::create",
   "tag": "game-inferred",
   "was": "FUN_0025e260",
   "why": "(seq, def, layout, arg): builds a widget from a 0x30-byte S2D widget def into the sequence (the Vt_00316a90.. classes' factory, after their constructors); runCommands op 9"
+ },
+ "0025f5b0": {
+  "name": "UiTween::progress",
+  "tag": "game-inferred",
+  "was": "FUN_0025f5b0",
+  "why": "0..1 of a tween {from, to, length, frame, delay, hold, curve} (0x1c), 1 once done; out-of-line inline, 1 caller (0x29db00)"
+ },
+ "0025f6e0": {
+  "name": "UiTween::step",
+  "tag": "game-inferred",
+  "was": "FUN_0025f6e0",
+  "why": "frame + 1 unless done; answers done (length 0 once frame >= delay + length + hold)"
+ },
+ "0025f750": {
+  "name": "UiTween::value",
+  "tag": "game-inferred",
+  "was": "FUN_0025f750",
+  "why": "from + (to - from) * t, t squared for curve 1; to once done; 29 callers"
+ },
+ "0025f860": {
+  "name": "UiTween::start",
+  "tag": "game-inferred",
+  "was": "FUN_0025f860",
+  "why": "(from, to, this, length, delay, hold, curve): frame 0; answers done; 64 callers"
+ },
+ "0025f8e0": {
+  "name": "UiTween::isDone",
+  "tag": "game-inferred",
+  "was": "FUN_0025f8e0",
+  "why": "length 0, or frame past delay + length + hold (then length := 0)"
+ },
+ "0025f940": {
+  "name": "UiTween::~UiTween",
+  "tag": "game-inferred",
+  "was": "FUN_0025f940",
+  "why": "deleting dtor of the 0x1c tween (no callers: emitted with the class)"
+ },
+ "0025f990": {
+  "name": "UiTween::UiTween",
+  "tag": "game-inferred",
+  "was": "FUN_0025f990",
+  "why": "zeroes the seven words"
+ },
+ "0025f9c0": {
+  "name": "UiShowFlags::UiShowFlags",
+  "tag": "game-inferred",
+  "was": "FUN_0025f9c0",
+  "why": "17 bytes set to 1 except [10] = 0; one caller 0x19c180 (another TU), what the bytes gate is unread: the name is a guess"
+ },
+ "0025fa10": {
+  "name": "UiFont::countLines",
+  "tag": "game-inferred",
+  "was": "FUN_0025fa10",
+  "why": "FontData::countLines of the font's text: -1 without glyphs, 0 without text; PrgTransMsg's line count"
  },
  "0025fa50": {
   "name": "UiFont::~UiFont",
@@ -13337,6 +13751,18 @@
   "was": "FUN_00268050",
   "why": "(arg): copies GameOptions (0x50) and the play record's kind (+0x4c0), runLayoutFile(optionLayoutPath(), arg, 0, 0, 1), memcardClearStamp when options +0x4d is 0, applySound when the sound mode changed; answers 1 when the options or the kind changed"
  },
+ "0028fb80": {
+  "name": "fsmFindText",
+  "tag": "game-inferred",
+  "was": "FUN_0028fb80",
+  "why": "(seconds, file, track): the text of the fsm subtitle file's track whose [start, end) holds the time, null none (relocates first)"
+ },
+ "0028fd30": {
+  "name": "fsmRelocate",
+  "tag": "game-inferred",
+  "was": "FUN_0028fd30",
+  "why": "relocates an 'fsm' subtitle file in place once (+4 flag): three string tables, tracks of 0xc at +0x40 {name, count, ranges {start, end, text}}; false when not one"
+ },
  "0028ff60": {
   "name": "stageMoviePath",
   "tag": "game-inferred",
@@ -13895,6 +14321,18 @@
   "was": "FUN_00299d40",
   "why": "MSL basic_string::assign(first, last) instance: replace(0, size, first, last); only caller replace_range (aliasing path)"
  },
+ "0029ae30": {
+  "name": "PrgScaleNaviScroll::PrgScaleNaviScroll",
+  "tag": "game-inferred",
+  "was": "FUN_0029ae30",
+  "why": "create case 0x1c (prgScaleNaviScroll, 0x28 bytes); unread"
+ },
+ "0029e4f0": {
+  "name": "PrgScaleNavi::PrgScaleNavi",
+  "tag": "game-inferred",
+  "was": "FUN_0029e4f0",
+  "why": "create case 0x1b (prgScaleNavi, 0x628 bytes) builds it with (seq, layout, data, def, arg); unread"
+ },
  "0029efd0": {
   "name": "getSaveExtra",
   "tag": "game-inferred",
@@ -14434,6 +14872,12 @@
   "tag": "game-inferred",
   "was": "FUN_002b5740",
   "why": "the scene table's only entry (0x2fabd0: name 'Menu (Pack File)', arg 1): runs the menu flow 0x2b5770(1) then threadExit"
+ },
+ "002b9d60": {
+  "name": "PrgMcCard::PrgMcCard",
+  "tag": "game-inferred",
+  "was": "FUN_002b9d60",
+  "why": "create case 0x1d (prgMcCard, 0x94 bytes); unread"
  },
  "002bcf10": {
   "name": "PackTables::parse",
