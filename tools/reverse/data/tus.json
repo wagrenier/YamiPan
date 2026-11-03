@@ -84,12 +84,22 @@
    "why": "Cut out of unassigned@00171300 (frontier pick, 0x171300..0x230820): the font class on vtables 0x315fb0 / 0x315ff0 (ctor/dtor 0x1fcb40 / 0x1fe020 / 0x1fe0c0), its glyph table FontData (countLines 0x1fe150 / lineWidth 0x1fe2b0 / nextGlyph 0x1fe4d0: uidrawer.cpp's callees) and its draws (Tim2Texture, the knj font). Bounded by the movie player's last dtor 0x1fcad0 below and the unrelated small run at 0x1fe6b0 above."
   },
   "game/gamepacket.cpp": {
+   "notes": "All 6 functions written; source-only, callcheck clean. Header now declares the rena Vif1PktManage members the TU calls (ctor, virtual dtor, AddBuffer, AddList, Open, Close, IsOverflow, Terminate, Kick, Reset) with their FS2 addresses, so stubgen can stub rena_pkt_vif1pktmanage.cpp until that TU is written. +0x30 is the open list id (PacketList_None = -1); openList closes whatever is open unless it is the same id, also when none is open. +0x34 m_skipKick drops one frame's Kick; no writer found in the ELF (open-items.md question). closeList's IsOverflow result is discarded; not every caller was checked for reading v0. PC: Kick should hand the terminated chain (lists in id order = layers) to the host draw module in the rena TU.",
    "ranges": [
     [
      "0012dd30",
      "0012dfa0"
     ]
    ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 08:08",
+     "status": "verify",
+     "summary": "GamePacketManager: ctor, deleting dtor, openList, closeList, endFrame, kickAndSwap on rena Vif1PktManage"
+    }
+   ],
+   "status": "verify",
    "why": "GamePacketManager on rena's Vif1PktManage (batch 004); file name a guess."
   },
   "game/gamepaths.cpp": {

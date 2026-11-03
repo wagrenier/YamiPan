@@ -783,6 +783,12 @@ apply here):
   other sessions, agents or scheduled tasks, and never edit `autopilot.py` or the routine.
 
 ## Open questions
+- 2026-11-03 (scheduled run, game/gamepacket.cpp): `GamePacketManager` +0x34 (skip the next
+  `Kick`) is only cleared in the ELF (ctor, `kickAndSwap`); no `lbu`/`sb` at GameSystem +0x4a0. Who
+  sets it (a pointer to `gGameSystem->m_packets`, e.g. a loading or movie path)? Until found, the
+  port never skips a frame's chain. Also: `closeList` leaves `IsOverflow`'s bool in v0; the 26
+  callers were not all checked for reading it (screen.cpp and gamesystem.cpp ignore it).
+
 - 2026-11-03 (scheduled run, game/scene.cpp): `tus.py next` picked unassigned@00171300 (0xc48d8
   bytes, 2913 functions: the big actor-class run) for its frontier, but four of its six frontier
   entries (0x193780 / 0x1937f0 / 0x193880 / 0x1938f0, called from game/boxgrid.cpp) are MSL

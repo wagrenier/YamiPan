@@ -369,6 +369,16 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
     draw layer order is the list id (0..13; `GameSystem::flipFrame` puts a GS FINISH on 13): the port's
     host draw module keys its layers on it. libvifpk: `sceVif1PkReset` 0x10ac60,
     `sceVif1PkCloseDmaTag` 0x10ac70, `sceVif1PkNext` 0x10ad20.
+  - **`GamePacketManager`** (`src/game/gamepacket.cpp`, 0x12dd30..0x12dfa0, written 2026-11-03; EE
+    0x3c, vtable 0x311040 with only the destructor): `Vif1PktManage` + `{+0x30 open list id (-1 none),
+    +0x34 skip-next-kick byte}`. Every call writes the D-cache back first (`FlushCache(0)`).
+    `openList`(id) 0x12de00 closes the open list unless it is `id` -- also when none is open, so rena's
+    `Close` must tolerate a closed list -- and returns `Open`'s packet; `closeList` 0x12dd30 is `Close`
+    + `IsOverflow` (result unread); `endFrame` 0x12ddc0 = `Terminate`; `kickAndSwap` 0x12dd70 = `Kick`
+    unless +0x34, then `Reset`. The ctor adds both buffers, lists 0..13, `Reset`, `Terminate`.
+    `IsOverflow` 0x2eb030 = buffer size < (open list's cursor or the write ptr) - base. No load or
+    store of GameSystem +0x4a0 (= +0x34) exists in the ELF: whoever sets the skip does it through a
+    pointer, if at all.
   - **Clocks**: `Clock` (0x1c) `{+0 state (1 paused), +4 time, +8 delta, +0xc time2, +0x10 scale
     0x100 (8.8), +0x14 parent, +0x18 children PtrList}`, `Clock::advance` 0x1354a0 scales and recurses,
     `Clock::createChild` 0x135210 (deleted with `Clock::~Clock` 0x1351b0 by many systems: 0x151550,

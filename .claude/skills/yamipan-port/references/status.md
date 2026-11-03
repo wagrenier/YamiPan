@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 07:52 at commit `a47f4bd` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 08:08 at commit `66b8500` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **708**; stubs: **0**
+- reconstructed FS2 functions: **714**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -38,6 +38,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/datetime.cpp` | 2 | 0 |
 | `src/game/fileloader.cpp` | 53 | 0 |
 | `src/game/fontdata.cpp` | 31 | 0 |
+| `src/game/gamepacket.cpp` | 6 | 0 |
 | `src/game/gamepaths.cpp` | 14 | 0 |
 | `src/game/gamesystem.cpp` | 17 | 0 |
 | `src/game/gfxtarget.cpp` | 15 | 0 |
@@ -64,13 +65,14 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 74 TUs: todo 56, verify 29
-- next: **game/gamepacket.cpp** (frontier score 12)
+- 74 TUs: todo 55, verify 30
+- next: **rena_pkt_vif1pktmanage.cpp** (frontier score 17)
 - pinned queue: (empty)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
 - verify: `game/fileloader.cpp` 53/53 -- All 53 functions of 0x1319f0..0x132f20 are in src/game/fileloader.cpp with game/fileloader.h; FileJob / FileLoader / PackFile left gamehooks.h (which includes f
 - verify: `game/fontdata.cpp` 31/31 -- Cut out of unassigned@00171300 and pinned 0x1fcb40-0x1fe6b0 (batch 056, 31 names: the FontData byte variants countLinesMb / lineWidthFixed / lineWidthFixedMb / 
+- verify: `game/gamepacket.cpp` 6/6 -- All 6 functions written; source-only, callcheck clean. Header now declares the rena Vif1PktManage members the TU calls (ctor, virtual dtor, AddBuffer, AddList, 
 - verify: `game/gamepaths.cpp` 14/14 -- All 14 functions of 0x28ff60..0x2908d0 written (batches 054-055, 25 names, Ghidra saved). Path builders from a StageSelect: digit 1 or 2 (variant 0 or not), let
 - verify: `game/gamesystem.cpp` 17/17 -- All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). N
 - verify: `game/gfxtarget.cpp` 15/15 -- Re-pinned to 0x12dfa0..0x12f190: the display records 0x4ae280 and gp-0x7ad8..-0x7ac8 are used only there; RcntTimer starts at 0x12f190. Two GfxDisplay records (
@@ -99,6 +101,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 08:08 `game/gamepacket.cpp` verify: GamePacketManager: ctor, deleting dtor, openList, closeList, endFrame, kickAndSwap on rena Vif1PktManage
 - 2026-11-03 07:52 `game/pakarchive.cpp` verify: PakArchive and the pak parser: PakHeader / PakEntry / PakId, relocate with the variant pack, lookups by id and by name, all 17 functions written
 - 2026-11-03 07:43 `game/fileloader.cpp` verify: FileJob, FileLoader (18 slots), PackFile with its PackJob base and TextTokenizer: all 53 written (batch 059, 45 names)
 - 2026-11-03 07:18 `game/stageobjlist.cpp` verify: the stage object registry: nine groups of name map and list, its tree and array containers; all 45 written (batch 058)
@@ -106,22 +109,21 @@ Recent sessions:
 - 2026-11-03 06:37 `game/fontdata.cpp` verify: fonts: the knj glyph table FontData and the printers TextPrinter / FontPrinter, cut out of unassigned@00171300 (all 31 written)
 - 2026-11-03 06:16 `game/gamepaths.cpp` verify: the stage path builders and the resident init / language packs, cut out of unassigned@002681e0 (all 14 written)
 - 2026-11-03 05:50 `game/wstring.cpp` verify: The 16-bit string helpers wstrcmp, wstrstr, wstrFromAscii, wstrcpy, wstrlen: all 5 written, source-only, not built
-- 2026-11-03 05:34 `game/uigame.cpp` verify: Fourth run: the text variables (UiWidget::expandTextVariable over the held-item message table, formatTextValue with 28 value names: counts, ammo, objective, rec
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `game/gamepacket.cpp` | todo | 0/0/6 | 0.6 | 12 | 0 |
-| `unassigned@00142dd0` | todo | 0/0/14 | 4.6 | 10 | 0 |
+| `rena_pkt_vif1pktmanage.cpp` | todo | 0/0/13 | 1.9 | 17 | 0 |
 | `unassigned@00296d60` | todo | 0/0/267 | 74.1 | 10 | 0 |
-| `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 9 | 0 |
+| `unassigned@00142dd0` | todo | 0/0/14 | 4.6 | 10 | 0 |
 | `unassigned@00171300` | todo | 0/0/829 | 131.7 | 9 | 0 |
+| `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 9 | 0 |
 | `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 8 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 8 | 0 |
 | `unassigned@001953f0` | todo | 0/0/1354 | 403.4 | 7 | 0 |
 | `unassigned@00231c90` | todo | 0/0/61 | 36.3 | 7 | 0 |
-| `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
 | `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 6 | 0 |
 | `unassigned@002908d0` | todo | 0/0/67 | 18.8 | 6 | 0 |
+| `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -130,8 +132,6 @@ Recent sessions:
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `0012cab8` | vsprintf | 5 | lib-ctx | missing | - |
 | `0029efe0` | getNaviMenu | 5 | game | missing | - |
-| `0012de00` | GamePacketManager::openList | 4 | game | missing | game/gamepacket.cpp |
-| `0012dd30` | GamePacketManager::closeList | 4 | game | missing | game/gamepacket.cpp |
 | `001937f0` | FUN_001937f0 | 4 | - | missing | - |
 | `002955d0` | getNaviTable | 4 | game | missing | - |
 | `00142dd0` | TexArea::getList | 3 | game | missing | - |
@@ -149,10 +149,14 @@ Recent sessions:
 | `002e1b70` | Tim2Texture::putTex0 | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `00152740` | rxFileCallSizeHook | 2 | native | missing | - |
 | `002c3d70` | getSaveResource | 2 | game | missing | - |
+| `002eb320` | Vif1PktManage::Close | 2 | lib-ctx | missing | rena_pkt_vif1pktmanage.cpp |
+| `002eb030` | Vif1PktManage::IsOverflow | 2 | lib-ctx | missing | rena_pkt_vif1pktmanage.cpp |
+| `002eb170` | Vif1PktManage::Reset | 2 | lib-ctx | missing | rena_pkt_vif1pktmanage.cpp |
 | `00143510` | TexAreaList::place | 2 | game | missing | - |
+| `002eb070` | Vif1PktManage::Terminate | 2 | lib-ctx | missing | rena_pkt_vif1pktmanage.cpp |
+| `002eb380` | Vif1PktManage::AddBuffer | 2 | lib-ctx | missing | rena_pkt_vif1pktmanage.cpp |
 | `001e66c0` | PlayerMotion::refresh | 1 | game | missing | - |
 | `002ec660` | optionLayoutPath | 1 | game | missing | - |
-| `0012dee0` | GamePacketManager::GamePacketManager | 1 | game | missing | game/gamepacket.cpp |
 | `00135390` | MasterClock::MasterClock | 1 | game | missing | - |
 | `00135210` | Clock::createChild | 1 | game | missing | - |
 | `001351b0` | Clock::~Clock | 1 | game | missing | - |
@@ -162,9 +166,7 @@ Recent sessions:
 | `00151280` | debugSysShutdown | 1 | game | missing | - |
 | `00148540` | soundShutdown | 1 | game | missing | sound/sound.cpp |
 | `00135330` | MasterClock::~MasterClock | 1 | game | missing | - |
-| `0012de80` | GamePacketManager::~GamePacketManager | 1 | game | missing | game/gamepacket.cpp |
 | `00152750` | rxTerm | 1 | lib-ctx | missing | game/spkrom.cpp |
 | `002d0a10` | sldiDecompress | 1 | game | missing | - |
 | `00152730` | rxFileCallLoadHook | 1 | native | missing | - |
-| `001438c0` | GsBlockMap::setRange | 1 | game | missing | - |
 
