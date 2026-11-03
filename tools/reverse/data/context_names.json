@@ -9911,6 +9911,12 @@
   "was": "FUN_00231bb0",
   "why": "thread slot 1 started by gameMainThread: init calls, then forever runs the scene table 0x2fabd4 (0x18-byte entries, index gp-0x7a34) in thread slot 2 (stack from Heap::alloc), yields until it exits, then the next"
  },
+ "002362a0": {
+  "name": "boxContainsPoint",
+  "tag": "game-inferred",
+  "was": "FUN_002362a0",
+  "why": "(const float m[4][4], const float p[4]): VU0 m * p then vclip against w; true when no clip flag of the six is set (p inside the box's unit cube); BoxGrid::find's test"
+ },
  "0023af30": {
   "name": "StageSelect::isValid",
   "tag": "game-inferred",
@@ -10258,6 +10264,180 @@
   "tag": "lib-context",
   "was": "FUN_00264790",
   "why": "libscf (clock*): converts the RTC clock (JST) in place to local time through 0x264298 / 0x264350; getLocalDateTime calls it right after sceCdReadClock; likely name"
+ },
+ "002647e0": {
+  "name": "BoxGrid::cellTouchesBox",
+  "tag": "game-inferred",
+  "was": "FUN_002647e0",
+  "why": "(grid, box matrix, ix, iy): false outside the n x n grid; inverts the box's world-to-unit-cube matrix with VU0 (cross products / det), takes the 8 unit-cube corners to world, then true when a corner's xy falls in the cell's rectangle (set bounds +0x20/+0x30 split n ways), a cell corner lies in one of the 6 face quads (quadContainsPoint), or a cell edge crosses a face quad (quadCrossesSegment); called only by the BoxGrid ctor"
+ },
+ "00264d40": {
+  "name": "quadCrossesSegment",
+  "tag": "game-inferred",
+  "was": "FUN_00264d40",
+  "why": "(const float *quad[4], a, b): 2D line tests of segment ab against each quad edge in slope-intercept form, eps 0.0001 (0x38d1b717) for vertical and parallel lines; true on the first crossing; uses the std::min / max / fabs / swap instances that follow"
+ },
+ "002651e0": {
+  "name": "std::max(const_float&,const_float&)",
+  "tag": "game-inferred",
+  "was": "FUN_002651e0",
+  "why": "linkonce template instance: (const float &a, const float &b) returns b when a < b else a; also called by 0x2db540"
+ },
+ "00265200": {
+  "name": "std::min(const_float&,const_float&)",
+  "tag": "game-inferred",
+  "was": "FUN_00265200",
+  "why": "linkonce template instance: returns b when b < a else a; also called by 0x2db540"
+ },
+ "00265220": {
+  "name": "std::fabs",
+  "tag": "game-inferred",
+  "was": "FUN_00265220",
+  "why": "linkonce inline: abs.s of the float argument"
+ },
+ "00265230": {
+  "name": "std::swap(const_float*&,const_float*&)",
+  "tag": "game-inferred",
+  "was": "FUN_00265230",
+  "why": "linkonce template instance: swaps two pointer words; quadCrossesSegment orders its point pointers by x with it; also called by 0x2db540"
+ },
+ "00265250": {
+  "name": "quadContainsPoint",
+  "tag": "game-inferred",
+  "was": "FUN_00265250",
+  "why": "(x, y, const float *quad[4]): the sign of cross(q[i+1]-q[i], p-q[i]) for the four edges in turn, true when all four agree"
+ },
+ "00265570": {
+  "name": "BoxGrid::find",
+  "tag": "game-inferred",
+  "was": "FUN_00265570",
+  "why": "(grid, point): cell = (int scale +0x10/+0x14) * (p.xy - set min), unsigned; outside -> 0; else the first box of the cell's list for which boxContainsPoint (0x2362a0, VU0 vclip) holds, as a pointer"
+ },
+ "00265720": {
+  "name": "BoxGrid::contains",
+  "tag": "game-inferred",
+  "was": "FUN_00265720",
+  "why": "find(point) != 0 as a bool; its one caller 0x1908d0 null-tests the grid pointer at +0x3c first"
+ },
+ "00265740": {
+  "name": "BoxGrid::BoxGrid",
+  "tag": "game-inferred",
+  "was": "FUN_00265740",
+  "why": "(this, const BoxSet *set, n): stores set, resizes the cell vector n x n (MSL vector {capacity, size, data}), appends every box of set (+4 count, matrices from +0x40, 0x40 each) to each cell cellTouchesBox says it touches, then the int scales n / (max - min) per axis at +0x10 / +0x14; built with n = 8 by 0x190900 (operator new 0x18)"
+ },
+ "00265970": {
+  "name": "BoxList::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00265970",
+  "why": "MSL vector<const Box *>::insert(pos, n, value) instance ('vector::insert length error'); the ctor's push_back"
+ },
+ "00265d90": {
+  "name": "BoxColumn::resize",
+  "tag": "game-inferred",
+  "was": "FUN_00265d90",
+  "why": "MSL vector<BoxList>::resize(n): insert of default lists at end (0x266080) or erase of the tail (0x265ef0); the temporary list destroyed by 0x193880"
+ },
+ "00265e40": {
+  "name": "BoxCells::resize",
+  "tag": "game-inferred",
+  "was": "FUN_00265e40",
+  "why": "MSL vector<BoxColumn>::resize(n): insert (0x266770) or erase (0x2665e0); the temporary column destroyed by 0x193780"
+ },
+ "00265ef0": {
+  "name": "BoxColumn::erase",
+  "tag": "game-inferred",
+  "was": "FUN_00265ef0",
+  "why": "MSL vector<BoxList>::erase(first, last): assigns the tail down (BoxList::assign), destroys the rest (0x1938f0 + operator delete)"
+ },
+ "00266080": {
+  "name": "BoxColumn::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00266080",
+  "why": "MSL vector<BoxList>::insert(pos, n, value) instance ('vector::insert length error')"
+ },
+ "002665e0": {
+  "name": "BoxCells::erase",
+  "tag": "game-inferred",
+  "was": "FUN_002665e0",
+  "why": "MSL vector<BoxColumn>::erase(first, last): assigns the tail down (BoxColumn::assign), destroys the rest (0x1937f0 + operator delete)"
+ },
+ "00266770": {
+  "name": "BoxCells::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00266770",
+  "why": "MSL vector<BoxColumn>::insert(pos, n, value) instance ('vector::insert length error')"
+ },
+ "00266d90": {
+  "name": "BoxCells::insertIdentity0",
+  "tag": "game-inferred",
+  "was": "FUN_00266d90",
+  "why": "returns its argument; called only by BoxCells::insert (an inlined iterator / allocator conversion left out of line; exact MSL helper unknown)"
+ },
+ "00266da0": {
+  "name": "BoxCells::insertIdentity1",
+  "tag": "game-inferred",
+  "was": "FUN_00266da0",
+  "why": "returns its argument; called only by BoxCells::insert, as 0x266d90"
+ },
+ "00266db0": {
+  "name": "BoxList::initRange",
+  "tag": "game-inferred",
+  "was": "FUN_00266db0",
+  "why": "MSL vector<const Box *> range init (first, last) into an empty vector ('vector length error'): allocate, copy words, count size; the copy ctor's body"
+ },
+ "00266ef0": {
+  "name": "BoxList::assign",
+  "tag": "game-inferred",
+  "was": "FUN_00266ef0",
+  "why": "MSL vector<const Box *>::assign(first, last) ('vector::assign length error'): reallocate when it exceeds capacity, else copy over (unrolled by 8) and fix the size"
+ },
+ "002671c0": {
+  "name": "BoxColumn::initRange",
+  "tag": "game-inferred",
+  "was": "FUN_002671c0",
+  "why": "MSL vector<BoxList> range init (first, last): allocate n * 0xc, copy-construct each list (BoxList copy ctor 0x267320) through placement new"
+ },
+ "00267320": {
+  "name": "BoxList::BoxList",
+  "tag": "game-inferred",
+  "was": "FUN_00267320",
+  "why": "MSL vector<const Box *> copy constructor: empty base (0x2673c0), then initRange(other.begin, other.end)"
+ },
+ "00267390": {
+  "name": "BoxList::end",
+  "tag": "game-inferred",
+  "was": "FUN_00267390",
+  "why": "data +8 + size +4 * 4"
+ },
+ "002673b0": {
+  "name": "BoxList::begin",
+  "tag": "game-inferred",
+  "was": "FUN_002673b0",
+  "why": "data +8"
+ },
+ "002673c0": {
+  "name": "BoxList::initEmpty",
+  "tag": "game-inferred",
+  "was": "FUN_002673c0",
+  "why": "zeroes capacity, size and data and returns this: the vector base's constructor"
+ },
+ "002673e0": {
+  "name": "BoxList::getAllocator",
+  "tag": "game-inferred",
+  "was": "FUN_002673e0",
+  "why": "returns its argument; the copy ctor passes the other vector through it before the base ctor (the allocator copy, guess)"
+ },
+ "002673f0": {
+  "name": "operator_new_placement",
+  "tag": "game-inferred",
+  "was": "FUN_002673f0",
+  "why": "(size, ptr) returns ptr: placement operator new, linkonce; also called by 0x2c3a20, 0x2dfb80, 0x2dfd30"
+ },
+ "00267400": {
+  "name": "BoxColumn::assign",
+  "tag": "game-inferred",
+  "was": "FUN_00267400",
+  "why": "MSL vector<BoxList>::assign(first, last) ('vector::assign length error'): reallocate + copy-construct, or assign over (BoxList::assign) and destroy / construct the difference"
  },
  "002955e0": {
   "name": "NaviTable::getGridPos",

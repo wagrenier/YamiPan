@@ -530,6 +530,22 @@ id 0 = all 100, the archive file is "2dEU/archive%s.d2b"). 0x296c10..0x296d00 (a
 two 16-byte copies, a 14-word clear; 12-18 callers each, none in this file) are out-of-line inline
 copies of other classes, not in this TU.
 
+**`game/boxgrid.cpp` 0x2647e0..0x2676e0 (TU 12, 2026-11-03, batch 034, all 29 written or mapped
+to the host `<vector>`, `verify`)**: a **2D lookup grid over oriented boxes**. A `BoxSet` is loaded
+data: count +4, bounding rectangle min / max vec4 +0x20 / +0x30 (xy used), then `count` boxes of
+0x40 from +0x40, each the matrix taking world points into the box's unit cube (`boxContainsPoint`
+0x2362a0: VU0 transform + vclip against w). `BoxGrid` (0x18 on the EE: set +0, MSL
+`vector<vector<vector<const Box*>>>` +4, float cells-per-unit x / y +0x10 / +0x14) lists per cell
+the boxes whose xy footprint touches it (`cellTouchesBox` inverts the matrix, tests the 8 corners,
+cell corners in the 6 face quads, cell edges against the face edges, eps 0.0001); `find` tests only
+the point's cell. The stage loader 0x19fcd0 builds one with size 8 through 0x190900 (deleting the
+old one) at +0x3c of the object behind `*(gp-0x7a7c) +0x1c`; 0x1908d0 asks `contains` (callers
+0x179d30, 0x18e280, 0x1e3e80, 0x2d0550, 0x2d0750). What the boxes mean (areas, no-go volumes) is
+not read yet. **MSL vector layout: {capacity +0, size +4, data +8}**, 0xc bytes; CodeWarrior emits
+each instance (insert, resize, erase, assign, range init, copy ctor, begin / end, placement new
+0x2673f0) out of line after the file's code, plus linkonce `std::max` / `min` / `fabs` / `swap`
+0x2651e0..0x265250 (also called from 0x2db540).
+
 ## Classes
 
 Name, vtable, vptr offset, size, file. `python rtti.py` (CodeWarrior variant, bootstrap 4, 2026-10-31)

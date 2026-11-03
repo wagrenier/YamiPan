@@ -91,6 +91,18 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    and the gp-0x79f8 getter 0x29efe0), a large class file (vtables 0x3185b0.., 0x318820,
    0x318840) for a later run; it stays on the frontier. Still in the unassigned run:
    `getStageResult` 0x2b0580 / `StageResult::getPerfectBits` 0x2b00d0, `gameSceneThread` 0x231bb0.
+   TU 12 (the frontier's `unassigned@002647e0` once more, its head): **`game/boxgrid.cpp`
+   0x2647e0..0x2676e0** cut out (29 functions, batch 034, `verify`; architecture.md "Modules"):
+   `BoxGrid` / `BoxSet` / `Box`, the 2D segment / quad tests and the MSL vector instances (mapped to
+   the host `<vector>` in a comment list; no code). Checked: callcheck clean, layout lint OK,
+   g++ -fsyntax-only clean with stub headers, and a scratch test (one rotated box, size 8, 20,000
+   random points) agrees with the brute-force box test. Doubts for the user: the names (BoxGrid,
+   BoxSet, the BoxList / BoxColumn / BoxCells instance names, insertIdentity0/1 and getAllocator
+   for three identity helpers) are read from the code, not the game; two vertical edges count as
+   crossing whenever their x match, whatever their y (kept as the ROM does it). Bootstrap 6 must
+   give `sdk/libvu0.h` from RosePan (`sceVu0FVECTOR` / `sceVu0FMATRIX`, 16-aligned); game code
+   includes it from here on. Next in the run: 0x2676e0.. (scene / movie threads: getStageSelect,
+   2dEU/BGMOVIEEU.d2b, the stage-unlock checks at 0x268ae0 / 0x269160).
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

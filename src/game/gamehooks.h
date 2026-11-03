@@ -56,6 +56,10 @@ void debugSysInit();                                                     // FS2 
 void debugSysUpdate();                                                   // FS2 0x00151270
 void debugSysShutdown();                                                 // FS2 0x00151280
 
+// True when the point (16-aligned xyzw) lies in the box whose world-to-unit-
+// cube matrix is m (VU0 transform + vclip against w; game/boxgrid.cpp).
+bool boxContainsPoint(const float m[4][4], const float p[4]);            // FS2 0x002362a0
+
 // Thread slot 1: runs the scene table 0x2fabd4 in slot 2, one scene after another.
 void gameSceneThread(void *arg);                                         // FS2 0x00231bb0
 

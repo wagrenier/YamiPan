@@ -43,6 +43,10 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **ROM quirks to keep, guarded**: loops that reuse their counter, a read of the byte after a copy,
   a table reader that stops at a null field (end host tables where the row id stops matching).
 - **Twin functions differing only in `ldl` / `sdl`** are overloads on a matrix / vector type.
+- **An int-typed `this` turns float fields into int conversions** (2026-11-03, TU 12): Ghidra showed
+  `BoxGrid`'s +0x10 / +0x14 as `piVar[4] = (int)(n / w)` and `(float)param_1[4]`, but the asm is
+  `swc1` / `lwc1` (no `cvt.w.s` before the store, no `cvt.s.w` after the load): float fields. Read
+  the store / load opcode whenever a decompiled int field is converted to or from float.
 
 ## Names from a sister game (FF2 -> FF3; any engine shared with a symbolised build)
 
@@ -129,6 +133,10 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   since TU 7). Likewise a base constructor in an initialiser list and a deleting destructor's
   `operator_delete`.
 
+- **Template arguments in a Ghidra name defeat callcheck** (2026-11-03, TU 12): `std::max<float>`
+  never matches a `std::max(...)` call nor a `// callcheck: max<float>` note (the note is read as
+  `max`). Name template instances in the overload style, `std::max(const_float&,const_float&)`, whose
+  last component is `max`.
 - `// callcheck: A, B (why)`: names first, comma-separated, one parenthesis last, all on that line;
   a member destructor is `~Class`; ALL-CAPS callees read as macros and are skipped. The name list ends
   at the first `(`: a name after it is not read (2026-11-02). `operator_new[]` / `operator_delete[]`
