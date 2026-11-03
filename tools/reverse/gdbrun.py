@@ -22,7 +22,7 @@ import yamipan
 
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-GDB = os.environ.get('YAMIPAN_GDB', str(Path(yamipan.MINGW_BIN).parents[1] / 'gdb' / 'win' / 'x64' / 'bin' / 'gdb.exe'))
+GDB = os.environ.get('YAMIPAN_GDB', str(Path(yamipan.MINGW_BIN) / 'gdb.exe'))
 DIR = yamipan.WORK / 'gdb'
 
 

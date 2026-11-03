@@ -56,12 +56,11 @@ def _which_dir(exe):
 
 
 # Host toolchains: MinGW GCC builds (build.py); MSVC only syntax-checks game code (layoutcheck.py).
-# RosePan's machine had MinGW in CLion and ninja in Python's Scripts; this one has neither yet
-# (open-items.md): the defaults fall back to what is on PATH.
-MINGW_BIN = os.environ.get('YAMIPAN_MINGW_BIN') or _which_dir('g++') or \
-    r'C:\Users\willi\AppData\Local\Programs\CLion 2\bin\mingw\bin'
-NINJA = os.environ.get('YAMIPAN_NINJA') or shutil.which('ninja') or \
-    r'C:\Users\willi\AppData\Local\Programs\Python\Python314\Scripts\ninja.exe'
+# MSYS2's ucrt64 holds g++, ninja, cmake and gdb here and is not on PATH, so a scheduled run finds them
+# only through this default.
+MINGW_BIN = os.environ.get('YAMIPAN_MINGW_BIN') or _which_dir('g++') or r'C:\msys64\ucrt64\bin'
+NINJA = os.environ.get('YAMIPAN_NINJA') or shutil.which('ninja') or str(Path(MINGW_BIN) / 'ninja.exe')
+CMAKE = shutil.which('cmake') or str(Path(MINGW_BIN) / 'cmake.exe')
 VCVARS = os.environ.get('YAMIPAN_VCVARS', '')    # vcvars64.bat; empty = find it with vswhere
 EXE_NAME = 'YamiPan'
 

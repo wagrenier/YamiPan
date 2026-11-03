@@ -43,7 +43,7 @@ if not (yamipan.REPO / 'CMakeLists.txt').exists():
     raise SystemExit('no CMakeLists.txt: the PC project is not bootstrapped yet (host task in tus.json)')
 
 if not (bdir / 'build.ninja').exists():
-    cmd = ['cmake', '-S', str(yamipan.REPO), '-B', str(bdir), '-G', 'Ninja', f'-DCMAKE_BUILD_TYPE={build_type}',
+    cmd = [yamipan.CMAKE, '-S', str(yamipan.REPO), '-B', str(bdir), '-G', 'Ninja', f'-DCMAKE_BUILD_TYPE={build_type}',
            f'-DCMAKE_CXX_COMPILER={MINGW}\\g++.exe', f'-DCMAKE_C_COMPILER={MINGW}\\gcc.exe',
            f'-DCMAKE_MAKE_PROGRAM={NINJA}']
     for sibling in (yamipan.ROSEPAN, yamipan.REIPAN, yamipan.MIOPAN):
@@ -63,7 +63,7 @@ if not (bdir / 'build.ninja').exists():
         raise SystemExit('configure failed')
 else:
     # pick up added/removed source files (the CMake globs are CONFIGURE_DEPENDS, but be explicit)
-    subprocess.run(['cmake', str(bdir)], env=env, capture_output=True)
+    subprocess.run([yamipan.CMAKE, str(bdir)], env=env, capture_output=True)
 
 
 def build():
