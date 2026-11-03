@@ -899,12 +899,22 @@
    "why": "mcErrorCode alone, between libmc's read-fast tail (mce*, 0x121470..0x121b80) and libc's abort 0x121ef0: it maps every libmc command number, the read/write-fast rpcs 0x16 / 0x1b included, so it is read as libmc's own error encoder, not game code"
   },
   "sdpr2/sdpr2.c": {
+   "notes": "All 36 functions written (0x1681c0..0x16c870), no new names, no Ghidra change. sdpr2.h is the full header: Sdpr2Type (19-slot function table, layout host), Sdpr2Slot (handle, layout host), every prototype, SDPR2_* limits. sdpr2check.h holds the inline Limit / Round / Check helpers with this file's message copy and SDPR2_TRY, which evaluates twice like the ROM's macro (failed checks print twice, a failed init runs twice: kept). New minimal headers sdpr2drv.h, sdpr2pair.h, sdpr2single.h (sdpr2CalcPanDeg moved there; sound.cpp includes it). Checked: callcheck clean, layout lint OK, gcc c11 and g++ syntax clean, host harness with a fake pair type. Doubts: slot +0x10 / +0x18 / flip / state are written only by the types; ext40..48 and the getLevels out type unread; SetSurround / SetPairMode store unlimited values as the ROM does. Slots are static: if sdpr2pair.c / sdpr2single.c touch 0x537140 directly, make them extern. Next: the neighbouring SDPR2 files.",
    "ranges": [
     [
      "001681c0",
      "0016c870"
     ]
    ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 11:53",
+     "status": "verify",
+     "summary": "all 36 written: the SDPR2 core and public API, type registry, 64 handle slots, inline checks in sdpr2check.h"
+    }
+   ],
+   "status": "verify",
    "why": "SDPR2 core + public API: uses the first of four copies of its message set (0x3027b8); the cut at sdpr2PairTurn 0x16c870 is a guess (batch 011)."
   },
   "sdpr2/sdpr2drv.c": {

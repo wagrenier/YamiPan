@@ -263,6 +263,18 @@ Layers:
   the only driver is the SE driver `sdpr2SeDrv*` (table 0x2f7a68, `rxSndSe*`), config 8 words at
   0x537d38 (defaults from 0x537d58 {1, 1, -1, -1, 0..}). Ghidra had merged 10 starts (the two type
   exits, eight SE-driver slots); created 2026-11-02.
+- **sdpr2.c as written (TU 40, 2026-11-03)**: every API call is the same shape -- check the type
+  (0..7) or handle (0..63), limit / wrap the arguments (xvab 0..0xffff, prog 0..0x7f, note
+  0..0x1ffff, volume / spread 0..0x80, angle wrapped into 0..359, pitch 0..0x2000 or 0.0..2.0f,
+  mode / on / attr 0..1, preset 0..3), check the table and its slot, call it. The play calls get
+  the slot index back from the type and store the type in `slot.type`; the getters
+  (`sdpr2GetPitch` / `PitchF` / `Angle` / `Volume` / `Spread`) read slot +0x20 / +0x20 / +0x14 /
+  +0x1c / +0x24, but only when the type has the matching **setter** slot. `sdpr2GetStatus` and
+  `sdpr2Update` / `sdpr2StopAll` check quietly (no messages). `sdpr2SetSurround` /
+  `sdpr2SetPairMode` report out-of-range values but store them unlimited; `sdpr2SetDebug` limits.
+  The checks are a macro evaluated twice (`if (CHECK(x) == -1) return CHECK(x);`): failed checks
+  print twice and a failed `sdpr2DrvInit` / `PairInit` / `SingleInit` runs a second time
+  (`src/sdpr2/sdpr2check.h`). `sdpr2PairInit` / `sdpr2SingleInit` take no argument.
 The six ranges (FS2 lo hi, RoR lo hi) for `rxalign.py`: `100350 1037b0 23ff80 2433e0`,
 `153108 153518 2433e8 2437f8`, `153518 159928 2437f8 249b88`, `159928 159bc0 24b1f8 24b48c`,
 `159928 162178 237ce8 23ff58` (rxsnd, as batch 007 ran it: its first six FS2 functions are the

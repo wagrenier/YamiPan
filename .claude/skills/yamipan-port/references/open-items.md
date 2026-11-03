@@ -708,6 +708,27 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    code calling rxThEnableDispatch / rxThDisableDispatch) sit with StreamRing's run
    0x151f90..0x153110; their TU should call the rx functions, as fileloader does. Next pick:
    `tus.py next`.
+   TU 40 (the frontier's pinned `sdpr2/sdpr2.c` 0x1681c0..0x16c870, 2026-11-03): **all 36
+   written, `verify`** (no new names, no Ghidra change; architecture.md "SDPR2"). `src/sdpr2/
+   sdpr2.h` is the full header now: `Sdpr2Type` (the 19-slot function table, `layout: host`),
+   `Sdpr2Slot` (the handle, `layout: host`), every API prototype, the limits as `SDPR2_*` names;
+   the inline checks with this file's message copy are **`src/sdpr2/sdpr2check.h`** (static
+   inline: each SDPR2 file gets its own strings, as the ROM's four copies) with **`SDPR2_TRY`**,
+   which evaluates its expression twice as the ROM's macro does (a failed check prints twice, a
+   failed init runs twice: kept). New minimal headers for the other three files: `sdpr2drv.h`
+   (`sdpr2DrvInit(config)`), `sdpr2pair.h` (`sdpr2PairInit(void)`), `sdpr2single.h`
+   (`sdpr2SingleInit(void)`, and `sdpr2CalcPanDeg` moved there from sdpr2.h; sound.cpp includes
+   it). The API now returns int everywhere (Stop / StopAll / SetAngle / SetVolume / SetSpread were
+   void in the old stand-in). Checked: callcheck clean (only the inline helpers as extra), layout
+   lint OK, gcc -std=c11 and g++ -x c++ -fsyntax-only -Wall -Wextra clean, and a host harness
+   (fake pair type): limits, the round of -360 to 360, the slot getting its type, the getters'
+   setter check, double prints. Doubts for the user: the slot's +0x10 / +0x18 (angles?) and
+   +0x0c flip / +0x28 state are set only by the types (unread here); the `ext40..48` slots and the
+   `getLevels` out type are unread (null / not called on the disc); `sdpr2SetSurround` /
+   `sdpr2SetPairMode` store the unlimited value (the ROM drops the limit's result; kept). Slots
+   stay `static` in sdpr2.c: if sdpr2pair.c / sdpr2single.c read 0x537140 directly instead of
+   through `sdpr2GetSlot`, make it extern there. Next pick: `tus.py next` (the other SDPR2 files
+   are the neighbours).
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

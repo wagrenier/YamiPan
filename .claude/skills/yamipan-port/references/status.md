@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 11:31 at commit `9fa4b7a` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 11:54 at commit `11db747` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **1503**; stubs: **0**
+- reconstructed FS2 functions: **1539**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -71,12 +71,13 @@ Least-named game-code regions (64 KB blocks):
 | `src/rx/rxsnd.c` | 229 | 0 |
 | `src/rx/rxsys.c` | 126 | 0 |
 | `src/rx/rxthread.c` | 53 | 0 |
+| `src/sdpr2/sdpr2.c` | 36 | 0 |
 | `src/sound/sound.cpp` | 97 | 0 |
 
 ## Translation units (one session each: `tus.py`)
 
-- 77 TUs: todo 50, verify 40
-- next: **sdpr2/sdpr2.c** (frontier score 30)
+- 77 TUs: todo 49, verify 41
+- next: **unassigned@00148db0** (frontier score 25)
 - pinned queue: (empty)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
@@ -116,11 +117,13 @@ Least-named game-code regions (64 KB blocks):
 - verify: `rx/rxsys.c` 126/126 -- rxsys is RoR's prebuilt rx: rxcmp.py '^rxSys' finds 126 of 126 identical (jumps, lui and gp offsets masked) and the data words and console font equal RoR's at +
 - verify: `rx/rxthread.c` 53/53 -- Every rxTh function is RoR's word for word, so the file is RosePan's rxthread.cpp in C with FS2 addresses (architecture.md rx has the data and bss map). rxthrea
 - verify: `sdk/mcerror.cpp` 0/1 -- Pinned 0x121b80..0x121ef0 as sdk/mcerror.cpp (read as libmc's: between the read-fast tail and libc abort, maps commands FS2 never issues). McCmd and McErrno in 
+- verify: `sdpr2/sdpr2.c` 36/36 -- All 36 functions written (0x1681c0..0x16c870), no new names, no Ghidra change. sdpr2.h is the full header: Sdpr2Type (19-slot function table, layout host), Sdpr
 - verify: `sound/sound.cpp` 97/98 -- All 98 of 0x144080..0x148db0 written, one file, no Ghidra change (batch 013 names held). New src/sound/sound.h takes the sound stand-ins out of game/gamehooks.h
 - verify: `unassigned@00116fb8` 0/0 -- This key is empty now: its whole run is two lib_ranges (architecture.md Address map, naming table row batch 025). Game code calling __extendsfdf2 / __cmpdf2 / _
 
 Recent sessions:
 
+- 2026-11-03 11:53 `sdpr2/sdpr2.c` verify: all 36 written: the SDPR2 core and public API, type registry, 64 handle slots, inline checks in sdpr2check.h
 - 2026-11-03 11:31 `rx/rxthread.c` verify: all 53 functions written: RosePan's rxthread carried to C, all 53 identical to RoR (rxcmp.py), VBlank tail 0x159928 and core 0x166b50 with FS2 data and bss addr
 - 2026-11-03 11:14 `rx/rxfile.c` verify: all 108 functions written: RosePan's rxfile core carried to C, 106 identical to RoR (rxcmp.py), rxFileOnCreate / rxFileOnGetSize with FS2's longer failure messa
 - 2026-11-03 10:55 `rx/rxsys.c` verify: all 126 functions written: RosePan's rxsys carried to C, every function RoR's word for word (new rxcmp.py), FS2 addresses
@@ -128,30 +131,27 @@ Recent sessions:
 - 2026-11-03 10:22 `sound/sound.cpp` verify: sound/sound.cpp: all 98 functions written (SoundStream, sinks, SoundFeeder, SoundSeBank, SoundConfig, soundInit/Update/Shutdown, SPU2 and IOP hooks)
 - 2026-11-03 10:05 `game/movieplayer.cpp` verify: MoviePlayer, the prgMovie widget's PSS player: file ring, libmpeg demux into video / audio / data rings, IPU feed, audio sinks and feeders, one RGB32 picture pe
 - 2026-11-03 09:48 `game/uiwidget.cpp` verify: The S2D script widgets: UiWidget::create and the 13 prg widget classes (map rotate / zoom / pan, text scroll, messages, movie and sound stream with fsm subtitle
-- 2026-11-03 09:24 `game/vcmtable.cpp` verify: VcmTable, the VCM__ part fades of a rena model: all 9 game functions written, the 43 MSL string / set / map instances mapped to the host STL; source-only, not b
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `sdpr2/sdpr2.c` | todo | 0/0/36 | 17.6 | 30 | 0 |
 | `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 25 | 0 |
 | `rx/rxsndstr.c` | todo | 0/0/38 | 3.6 | 24 | 0 |
 | `rx/rxsndstrbank.c` | todo | 0/0/48 | 4.3 | 18 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 13 | 0 |
 | `unassigned@00171300` | todo | 0/0/829 | 131.7 | 10 | 0 |
 | `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 10 | 0 |
-| `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 9 | 0 |
 | `unassigned@00299d90` | todo | 0/0/215 | 62.3 | 9 | 0 |
-| `unassigned@001953f0` | todo | 0/0/1313 | 395.4 | 7 | 0 |
+| `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 9 | 0 |
 | `unassigned@00231c90` | todo | 0/0/61 | 36.3 | 7 | 0 |
+| `unassigned@001953f0` | todo | 0/0/1313 | 395.4 | 7 | 0 |
 | `unassigned@00252840` | todo | 0/0/100 | 35.5 | 7 | 0 |
+| `unassigned@0012c9b8` | todo | 0/0/6 | 0.8 | 6 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
-| `001681c0` | sdpr2SetSurround | 8 | lib-ctx | missing | sdpr2/sdpr2.c |
-| `0016a1c0` | sdpr2StopAll | 6 | lib-ctx | missing | sdpr2/sdpr2.c |
 | `00163a20` | rxSndStrSetVolume | 6 | lib-ctx | missing | rx/rxsndstr.c |
 | `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
 | `00152580` | StreamRing::size | 6 | game | missing | - |
@@ -179,14 +179,16 @@ Recent sessions:
 | `00243380` | getUiWorkArea | 2 | game | missing | - |
 | `00135210` | Clock::createChild | 2 | game | missing | - |
 | `001357b0` | Clock::resetTime | 2 | game | missing | - |
+| `00170088` | sdpr2DrvInit | 2 | lib-ctx | missing | sdpr2/sdpr2drv.c |
+| `0016e328` | sdpr2PairInit | 2 | lib-ctx | missing | sdpr2/sdpr2pair.c |
+| `0016f808` | sdpr2SingleInit | 2 | lib-ctx | missing | sdpr2/sdpr2single.c |
 | `00152530` | StreamRing::release | 2 | game | missing | - |
 | `00152590` | StreamRing::~StreamRing | 2 | game | missing | - |
 | `00162220` | rxSndUtUpdate | 2 | lib-ctx | missing | rx/rxsndut.c |
-| `0016b698` | sdpr2Update | 2 | lib-ctx | missing | sdpr2/sdpr2.c |
 | `00163750` | rxSndStrPause | 2 | lib-ctx | missing | rx/rxsndstr.c |
-| `00168260` | sdpr2SetPairMode | 2 | lib-ctx | missing | sdpr2/sdpr2.c |
 | `00163dc8` | rxSndStrGetHandle | 2 | lib-ctx | missing | rx/rxsndstr.c |
 | `00152740` | rxFileCallSizeHook | 2 | native | missing | - |
 | `001638d8` | rxSndStrSuspend | 2 | lib-ctx | missing | rx/rxsndstr.c |
-| `0016acd0` | sdpr2SetVolume | 2 | lib-ctx | missing | sdpr2/sdpr2.c |
+| `001351b0` | Clock::~Clock | 2 | game | missing | - |
+| `002e2920` | Tim2Texture::Tim2Texture | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 

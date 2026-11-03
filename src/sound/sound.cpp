@@ -24,6 +24,7 @@
 #include "sdk/eekernel.h"
 #include "sdk/sif.h"
 #include "sdpr2/sdpr2.h"
+#include "sdpr2/sdpr2single.h"
 
 SoundConfig *gSoundConfig;      /* sbss 0x31addc (gp-0x7a94) */
 
