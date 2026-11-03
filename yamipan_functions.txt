@@ -475,36 +475,37 @@
 /* 0011c588 0000002c */ FUN_0011c588(){}
 /* 0011c5b8 00000054 */ FUN_0011c5b8(){}
 /* 0011c610 000000a0 */ FUN_0011c610(){}
-/* 0011c6b0 00000068 */ FUN_0011c6b0(){}
-/* 0011c718 000000a0 */ FUN_0011c718(){}
-/* 0011c7b8 0000016c */ FUN_0011c7b8(){}
-/* 0011c928 000000b8 */ FUN_0011c928(){}
-/* 0011c9e0 000000e4 */ FUN_0011c9e0(){}
-/* 0011cac8 000000a0 */ FUN_0011cac8(){}
-/* 0011cb68 00000080 */ FUN_0011cb68(){}
-/* 0011cbe8 00000054 */ FUN_0011cbe8(){}
-/* 0011cc40 00000078 */ FUN_0011cc40(){}
-/* 0011ccb8 000002fc */ FUN_0011ccb8(){}
-/* 0011cfb8 0000001c */ FUN_0011cfb8(){}
-/* 0011cfd8 00000158 */ FUN_0011cfd8(){}
-/* 0011d130 00000098 */ FUN_0011d130(){}
-/* 0011d1c8 000000a0 */ FUN_0011d1c8(){}
-/* 0011d268 0000006c */ FUN_0011d268(){}
-/* 0011d2d8 00000208 */ FUN_0011d2d8(){}
-/* 0011d4e0 000002e8 */ FUN_0011d4e0(){}
-/* 0011d7c8 00000218 */ FUN_0011d7c8(){}
-/* 0011d9e0 00000220 */ FUN_0011d9e0(){}
-/* 0011dc00 000001e0 */ FUN_0011dc00(){}
-/* 0011dde0 00000098 */ FUN_0011dde0(){}
-/* 0011de78 00000024 */ FUN_0011de78(){}
-/* 0011dea0 00000098 */ FUN_0011dea0(){}
-/* 0011df38 000000b8 */ FUN_0011df38(){}
+/* 0011c6b0 00000068 */ sceCdCallback(){}  // lib-ctx
+/* 0011c718 000000a0 */ _sceCd_cd_callback(){}  // lib-ctx
+/* 0011c7b8 0000016c */ _Cdvd_cbLoop(){}  // lib-ctx
+/* 0011c928 000000b8 */ _sceCd_cd_read_intr(){}  // lib-ctx
+/* 0011c9e0 000000e4 */ cmd_sem_init(){}  // lib-ctx
+/* 0011cac8 000000a0 */ cdvd_exit(){}  // lib-ctx
+/* 0011cb68 00000080 */ sceCdPOffCallback(){}  // lib-ctx
+/* 0011cbe8 00000054 */ _sceCd_Poff_Intr(){}  // lib-ctx
+/* 0011cc40 00000078 */ PowerOffCB(){}  // lib-ctx
+/* 0011ccb8 000002fc */ sceCdLayerSearchFile(){}  // lib-ctx
+/* 0011cfb8 0000001c */ sceCdSearchFile(){}  // lib-ctx
+/* 0011cfd8 00000158 */ _sceCd_ncmd_prechk(){}  // lib-ctx
+/* 0011d130 00000098 */ sceCdNcmdDiskReady(){}  // lib-ctx
+/* 0011d1c8 000000a0 */ sceCdSync(){}  // lib-ctx
+/* 0011d268 0000006c */ sceCdSyncS(){}  // lib-ctx
+/* 0011d2d8 00000158 */ _sceCd_scmd_prechk(){}  // lib-ctx
+/* 0011d430 000000b0 */ _sceCdSC(){}  // lib-ctx
+/* 0011d4e0 000002e8 */ sceCdInit(){}  // lib-ctx
+/* 0011d7c8 00000218 */ sceCdDiskReady_old(){}  // lib-ctx
+/* 0011d9e0 00000220 */ sceCdDiskReady(){}  // lib-ctx
+/* 0011dc00 000001e0 */ sceCdRead(){}  // lib-ctx
+/* 0011dde0 00000098 */ _sceCdGetDiskType(){}  // lib-ctx
+/* 0011de78 00000024 */ sceCdGetDiskType(){}  // lib-ctx
+/* 0011dea0 00000098 */ sceCdGetError(){}  // lib-ctx
+/* 0011df38 000000b8 */ sceCdStatus(){}  // lib-ctx
 /* 0011dff0 000000d4 */ FUN_0011dff0(){}
-/* 0011e0c8 000000d0 */ FUN_0011e0c8(){}
-/* 0011e198 000000d0 */ FUN_0011e198(){}
-/* 0011e268 00000024 */ FUN_0011e268(){}
+/* 0011e0c8 000000d0 */ sceCdReadDvdDualInfo(){}  // lib-ctx
+/* 0011e198 000000d0 */ sceCdMmode(){}  // lib-ctx
+/* 0011e268 00000024 */ sceCdChgSys(){}  // lib-ctx
 /* 0011e290 000000bc */ sceCdReadClock(){}  // lib-ctx
-/* 0011e350 000000ec */ FUN_0011e350(){}
+/* 0011e350 000000ec */ sceCdTrayReq(){}  // lib-ctx
 /* 0011e440 0000014c */ scePadInit(){}  // lib-ctx
 /* 0011e590 00000048 */ FUN_0011e590(){}
 /* 0011e5d8 000000f4 */ FUN_0011e5d8(){}

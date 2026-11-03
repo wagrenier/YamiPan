@@ -1397,11 +1397,185 @@
   "was": "FUN_00116d80",
   "why": "SDK 3.0 libipu, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x269d50 sceIpuInit; same size 0x238 and place in a run of matching functions (rxalign.py)"
  },
+ "0011c6b0": {
+  "name": "sceCdCallback",
+  "tag": "lib-context",
+  "was": "FUN_0011c6b0",
+  "why": "SDK libcdvd: RosePan names RoR 0x24b490 sceCdCallback; same size 0x68 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011c718": {
+  "name": "_sceCd_cd_callback",
+  "tag": "lib-context",
+  "was": "FUN_0011c718",
+  "why": "SDK libcdvd: RosePan names RoR 0x24b4f8 _sceCd_cd_callback; same size 0xa0 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011c7b8": {
+  "name": "_Cdvd_cbLoop",
+  "tag": "lib-context",
+  "was": "FUN_0011c7b8",
+  "why": "SDK libcdvd: RosePan names RoR 0x24b598 _Cdvd_cbLoop; same size 0x16c and place in a run of matching functions (rxalign.py)"
+ },
+ "0011c928": {
+  "name": "_sceCd_cd_read_intr",
+  "tag": "lib-context",
+  "was": "FUN_0011c928",
+  "why": "SDK libcdvd: RosePan names RoR 0x24b708 _sceCd_cd_read_intr; same size 0xb8 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011c9e0": {
+  "name": "cmd_sem_init",
+  "tag": "lib-context",
+  "was": "FUN_0011c9e0",
+  "why": "SDK libcdvd: RosePan names RoR 0x24b7c0 cmd_sem_init; same size 0xe4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011cac8": {
+  "name": "cdvd_exit",
+  "tag": "lib-context",
+  "was": "FUN_0011cac8",
+  "why": "SDK libcdvd: RosePan names RoR 0x24b8a8 cdvd_exit; same size 0xa0 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011cb68": {
+  "name": "sceCdPOffCallback",
+  "tag": "lib-context",
+  "was": "FUN_0011cb68",
+  "why": "SDK libcdvd: RosePan names RoR 0x24b948 sceCdPOffCallback; same size 0x80 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011cbe8": {
+  "name": "_sceCd_Poff_Intr",
+  "tag": "lib-context",
+  "was": "FUN_0011cbe8",
+  "why": "SDK libcdvd: RosePan names RoR 0x24b9c8 _sceCd_Poff_Intr; same size 0x54 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011cc40": {
+  "name": "PowerOffCB",
+  "tag": "lib-context",
+  "was": "FUN_0011cc40",
+  "why": "SDK libcdvd: RosePan names RoR 0x24ba20 PowerOffCB; same size 0x78 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011ccb8": {
+  "name": "sceCdLayerSearchFile",
+  "tag": "lib-context",
+  "was": "FUN_0011ccb8",
+  "why": "SDK libcdvd: RosePan names RoR 0x24ba98 sceCdLayerSearchFile; same size 0x2fc and place in a run of matching functions (rxalign.py)"
+ },
+ "0011cfb8": {
+  "name": "sceCdSearchFile",
+  "tag": "lib-context",
+  "was": "FUN_0011cfb8",
+  "why": "SDK libcdvd: RosePan names RoR 0x24bd98 sceCdSearchFile; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0011cfd8": {
+  "name": "_sceCd_ncmd_prechk",
+  "tag": "lib-context",
+  "was": "FUN_0011cfd8",
+  "why": "SDK libcdvd: RoR leaves it FUN_0024bdb8; FF3's list names the same-size 0x158 slot after sceCdSearchFile _sceCd_ncmd_prechk from FF2's symbols (FF2 0x27bc28); called by sceCdNcmdDiskReady and twice by sceCdRead (an N-command check)"
+ },
+ "0011d130": {
+  "name": "sceCdNcmdDiskReady",
+  "tag": "lib-context",
+  "was": "FUN_0011d130",
+  "why": "SDK libcdvd: RoR leaves it FUN_0024bf10; FF3's list names the same-size 0x98 slot after _sceCd_ncmd_prechk sceCdNcmdDiskReady from FF2's symbols (FF2 0x27bd98)"
+ },
+ "0011d1c8": {
+  "name": "sceCdSync",
+  "tag": "lib-context",
+  "was": "FUN_0011d1c8",
+  "why": "SDK libcdvd: RosePan names RoR 0x24bfa8 sceCdSync; same size 0xa0 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011d268": {
+  "name": "sceCdSyncS",
+  "tag": "lib-context",
+  "was": "FUN_0011d268",
+  "why": "SDK libcdvd: RosePan names RoR 0x24c048 sceCdSyncS; same size 0x6c and place in a run of matching functions (rxalign.py)"
+ },
+ "0011d2d8": {
+  "name": "_sceCd_scmd_prechk",
+  "tag": "lib-context",
+  "was": "FUN_0011d2d8",
+  "why": "SDK libcdvd: RosePan names RoR 0x24c0b8 _sceCd_scmd_prechk; same size 0x158 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011d430": {
+  "name": "_sceCdSC",
+  "tag": "lib-context",
+  "was": "FUN_0011d430",
+  "why": "SDK libcdvd: RosePan names RoR 0x24c210 _sceCdSC; same size 0xb0 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011d4e0": {
+  "name": "sceCdInit",
+  "tag": "lib-context",
+  "was": "FUN_0011d4e0",
+  "why": "SDK libcdvd: RosePan names RoR 0x24c2c0 sceCdInit; same size 0x2e8 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011d7c8": {
+  "name": "sceCdDiskReady_old",
+  "tag": "lib-context",
+  "was": "FUN_0011d7c8",
+  "why": "SDK libcdvd: RosePan names RoR 0x24c5a8 sceCdDiskReady_old; same size 0x218 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011d9e0": {
+  "name": "sceCdDiskReady",
+  "tag": "lib-context",
+  "was": "FUN_0011d9e0",
+  "why": "SDK libcdvd: RosePan names RoR 0x24c7c0 sceCdDiskReady; same size 0x220 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011dc00": {
+  "name": "sceCdRead",
+  "tag": "lib-context",
+  "was": "FUN_0011dc00",
+  "why": "SDK libcdvd: RosePan names RoR 0x24c9e0 sceCdRead; same size 0x1e0 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011dde0": {
+  "name": "_sceCdGetDiskType",
+  "tag": "lib-context",
+  "was": "FUN_0011dde0",
+  "why": "SDK libcdvd, named by reading (Sony's own name unknown, RoR leaves FUN_0024cbc0): _sceCd_scmd_prechk(1), S-command RPC 3 (GETDISKTYPE in ps2sdk's numbering) into the 4-byte receive buffer, returns that word or -1; its only caller sceCdGetDiskType maps -1 to 0"
+ },
+ "0011de78": {
+  "name": "sceCdGetDiskType",
+  "tag": "lib-context",
+  "was": "FUN_0011de78",
+  "why": "SDK libcdvd: RosePan names RoR 0x24cc58 sceCdGetDiskType; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011dea0": {
+  "name": "sceCdGetError",
+  "tag": "lib-context",
+  "was": "FUN_0011dea0",
+  "why": "SDK libcdvd: RosePan names RoR 0x24cc80 sceCdGetError; same size 0x98 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011df38": {
+  "name": "sceCdStatus",
+  "tag": "lib-context",
+  "was": "FUN_0011df38",
+  "why": "SDK libcdvd: RosePan names RoR 0x24cd18 sceCdStatus; same size 0xb8 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011e0c8": {
+  "name": "sceCdReadDvdDualInfo",
+  "tag": "lib-context",
+  "was": "FUN_0011e0c8",
+  "why": "SDK libcdvd: RosePan names RoR 0x24cea8 sceCdReadDvdDualInfo; same size 0xd0 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011e198": {
+  "name": "sceCdMmode",
+  "tag": "lib-context",
+  "was": "FUN_0011e198",
+  "why": "SDK libcdvd: RosePan names RoR 0x24cf78 sceCdMmode; same size 0xd0 and place in a run of matching functions (rxalign.py)"
+ },
+ "0011e268": {
+  "name": "sceCdChgSys",
+  "tag": "lib-context",
+  "was": "FUN_0011e268",
+  "why": "SDK libcdvd: prints 'sceCdChgSys: Illegal_function_call' (0x2ffe80) and returns 2; RoR / FF3 leave it unnamed"
+ },
  "0011e290": {
   "name": "sceCdReadClock",
   "tag": "lib-context",
   "was": "FUN_0011e290",
   "why": "libcdvd (clock*): SIF call fno 1 on the cd clock client 0x2f2f00 into a 0x10-byte buffer copied out as {stat, sec, min, hour, pad, day, month, year} (BCD); getLocalDateTime reads it; likely name, shape matches"
+ },
+ "0011e350": {
+  "name": "sceCdTrayReq",
+  "tag": "lib-context",
+  "was": "FUN_0011e350",
+  "why": "SDK libcdvd: RosePan names RoR 0x24d130 sceCdTrayReq; same size 0xec and place in a run of matching functions (rxalign.py)"
  },
  "0011e440": {
   "name": "scePadInit",

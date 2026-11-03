@@ -134,9 +134,14 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    0x1076e8..0x10ac60 from RoR (38 aligned, 4 by reading: `sceGszbufaddr`, `sceGsPutDrawEnv`,
    `sceGsSetDefTexEnv`, `sceDevVif1GetCnd`; architecture.md "Key functions and globals", SDK).
    Doubts: 0x109570 (RoR's unnamed 0x224) and RoR's unnamed libdev slots stay `FUN_`.
-   **Next batches, in this order**: **libcdvd** (`rxalign.py 11b800 11e440 24b400 24d220`: 29 of
-   29 size matches, 1 merged start; dry run 2026-11-02, apply with `--missing`, `ghidra.py mkfunc`,
-   reset the JSON to `{}`, `refresh.py`, `--batch`), **libmc** (`rxalign.py 11fb70 120900 24d220
+   **Batch 019 done (2026-11-02, 29 names, 1 merged start created)**: libcdvd 0x11c6b0..0x11e440
+   from RoR (25 aligned, `_sceCdSC` 0x11d430 split off; `_sceCd_ncmd_prechk` / `sceCdNcmdDiskReady`
+   from FF3's FF2-symbol list, `sceCdChgSys` from its string, `_sceCdGetDiskType` by reading;
+   architecture.md "Key functions and globals", SDK). Doubts: `_sceCdGetDiskType` is a made-up
+   internal name; 0x11dff0 (S-command RPC 0x25, two words, no callers) left unnamed; 0x11b800..
+   0x11c6b0 before libcdvd is an unread cluster (not libcdvd). Snapshot before it:
+   `work/snapshots/20261102_164802.json`.
+   **Next batches, in this order**: **libmc** (`rxalign.py 11fb70 120900 24d220
    24eb28`: only 9 matches, FS2's `sceMcInit` 0x298 / `sceMcEnd` 0xac differ from RoR's 0x228 /
    0x124: another libmc version, read the rest from its RPC numbers), libpad (RoR links libpad2,
    no reference: name by reading from `scePadInit` 0x11e440 / `scePadPortOpen` 0x11e898 and ps2sdk's
