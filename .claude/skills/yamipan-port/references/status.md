@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 09:48 at commit `9fc4400` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 10:06 at commit `e2416ea` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-03 09:48 at commit `9fc4400` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6595**, named **1891** (29%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1510, game-inferred 1024
-- context-name ledger: 2534 entries; overrides of wrong library matches: 0
-- placed in a source file: 1821/6595 in 56 files
+- game functions: **6595**, named **1945** (29%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1512, game-inferred 1078
+- context-name ledger: 2590 entries; overrides of wrong library matches: 0
+- placed in a source file: 1862/6595 in 57 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **849**; stubs: **0**
+- reconstructed FS2 functions: **890**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -46,6 +46,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/gsutil.cpp` | 12 | 0 |
 | `src/game/heap.cpp` | 17 | 0 |
 | `src/game/memcard.cpp` | 55 | 0 |
+| `src/game/movieplayer.cpp` | 41 | 0 |
 | `src/game/pad.cpp` | 14 | 0 |
 | `src/game/pakarchive.cpp` | 17 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
@@ -69,8 +70,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 76 TUs: todo 55, verify 34
-- next: **unassigned@001953f0** (frontier score 35)
+- 77 TUs: todo 55, verify 35
+- next: **sound/sound.cpp** (frontier score 35)
 - pinned queue: (empty)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
@@ -84,6 +85,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/gsutil.cpp` 12/12 -- Cut out of unassigned@00171300 and pinned 0x230980-0x231410 (batch 048: GsTexture::readTarget 0x231290, rena base Tim2Texture ctor 0x2e2920 / dtor 0x2e2810 / lo
 - verify: `game/heap.cpp` 17/17 -- Game code, not MSL: heap and RNG share one object (sdata 0x31a880..0x31a88c, bss 0x329970 then 0x3299c0, sbss 0x31ad80). All 17 functions written; batch 031 nam
 - verify: `game/memcard.cpp` 55/55 -- All 55 functions written (source only, not built). New this run: Memcard::stepSave (mkdir, then data / icon1.ico / icon.sys each open, write, flush, close; Save
+- verify: `game/movieplayer.cpp` 41/41 -- Cut out of unassigned@001953f0 (its tail 0x1faa30..0x1fcb40; the rest of that run is still unassigned). New game/movieplayer.h; gamehooks.h lost MoviePlayer and
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
@@ -109,6 +111,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 10:05 `game/movieplayer.cpp` verify: MoviePlayer, the prgMovie widget's PSS player: file ring, libmpeg demux into video / audio / data rings, IPU feed, audio sinks and feeders, one RGB32 picture pe
 - 2026-11-03 09:48 `game/uiwidget.cpp` verify: The S2D script widgets: UiWidget::create and the 13 prg widget classes (map rotate / zoom / pan, text scroll, messages, movie and sound stream with fsm subtitle
 - 2026-11-03 09:24 `game/vcmtable.cpp` verify: VcmTable, the VCM__ part fades of a rena model: all 9 game functions written, the 43 MSL string / set / map instances mapped to the host STL; source-only, not b
 - 2026-11-03 08:53 `game/gsblockmap.cpp` verify: GsBlockMap and TexArea: the GS block bitmap (alloc, free, findFree, setRange) and the per-packet-list texture page lists (place, insert, clip), all 14 functions
@@ -116,20 +119,19 @@ Recent sessions:
 - 2026-11-03 08:08 `game/gamepacket.cpp` verify: GamePacketManager: ctor, deleting dtor, openList, closeList, endFrame, kickAndSwap on rena Vif1PktManage
 - 2026-11-03 07:52 `game/pakarchive.cpp` verify: PakArchive and the pak parser: PakHeader / PakEntry / PakId, relocate with the variant pack, lookups by id and by name, all 17 functions written
 - 2026-11-03 07:43 `game/fileloader.cpp` verify: FileJob, FileLoader (18 slots), PackFile with its PackJob base and TextTokenizer: all 53 written (batch 059, 45 names)
-- 2026-11-03 07:18 `game/stageobjlist.cpp` verify: the stage object registry: nine groups of name map and list, its tree and array containers; all 45 written (batch 058)
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@001953f0` | todo | 0/0/1354 | 403.4 | 35 | 0 |
-| `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 22 | 0 |
+| `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 35 | 0 |
+| `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 25 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 13 | 0 |
-| `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 10 | 0 |
 | `unassigned@00171300` | todo | 0/0/829 | 131.7 | 10 | 0 |
-| `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 9 | 0 |
+| `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 10 | 0 |
 | `unassigned@00299d90` | todo | 0/0/215 | 62.3 | 9 | 0 |
+| `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 9 | 0 |
 | `unassigned@00231c90` | todo | 0/0/61 | 36.3 | 7 | 0 |
+| `unassigned@001953f0` | todo | 0/0/1313 | 395.4 | 7 | 0 |
 | `unassigned@00252840` | todo | 0/0/100 | 35.5 | 7 | 0 |
-| `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 6 | 0 |
 | `unassigned@002908d0` | todo | 0/0/67 | 18.8 | 6 | 0 |
 | `unassigned@0012c9b8` | todo | 0/0/6 | 0.8 | 5 | 0 |
 
@@ -138,18 +140,19 @@ Recent sessions:
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
-| `001fc720` | MoviePlayer::~MoviePlayer | 7 | game | missing | - |
+| `00145de0` | SoundFeeder::update | 6 | game | missing | sound/sound.cpp |
+| `00152580` | StreamRing::size | 6 | game | missing | - |
 | `0012cab8` | vsprintf | 5 | lib-ctx | missing | - |
 | `0029efe0` | getNaviMenu | 5 | game | missing | - |
 | `001937f0` | FUN_001937f0 | 4 | - | missing | - |
 | `00145be0` | SoundStream::~SoundStream | 4 | game | missing | sound/sound.cpp |
-| `001faa30` | MoviePlayer::setVolume | 4 | game | missing | - |
 | `0025a850` | mslTreeIncrement | 4 | lib-ctx | missing | - |
 | `002955d0` | getNaviTable | 4 | game | missing | - |
 | `00231d30` | overlayShowLoading | 3 | native | missing | - |
 | `00231d20` | overlayShowLoading | 3 | native | missing | - |
-| `0025b590` | FUN_0025b590 | 3 | - | missing | - |
+| `00152620` | StreamRing::StreamRing | 3 | game | missing | - |
 | `001339c0` | normalizeAngle | 3 | game | missing | - |
+| `0025b590` | FUN_0025b590 | 3 | - | missing | - |
 | `002e1c50` | Tim2Texture::upload | 3 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `00147ee0` | SoundConfig::setOutputMode | 3 | game | missing | sound/sound.cpp |
 | `0028fb80` | fsmFindText | 2 | game | missing | - |
@@ -170,11 +173,10 @@ Recent sessions:
 | `001d6a80` | StageSound::playNamed | 2 | game | missing | - |
 | `002e1b70` | Tim2Texture::putTex0 | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `00152740` | rxFileCallSizeHook | 2 | native | missing | - |
-| `001fc7b0` | MoviePlayer::MoviePlayer | 2 | game | missing | - |
 | `00243380` | getUiWorkArea | 2 | game | missing | - |
-| `001fbfd0` | MoviePlayer::workSize | 2 | game | missing | - |
-| `001fc560` | MoviePlayer::setWorkArea | 2 | game | missing | - |
-| `001fb9d0` | MoviePlayer::open | 2 | game | missing | - |
+| `00152530` | StreamRing::release | 2 | game | missing | - |
+| `00152590` | StreamRing::~StreamRing | 2 | game | missing | - |
+| `00151f90` | StreamRing::isPrimed | 2 | game | missing | - |
 | `002c3d70` | getSaveResource | 2 | game | missing | - |
-| `001fb920` | MoviePlayer::testState | 2 | game | missing | - |
+| `001e66c0` | PlayerMotion::refresh | 1 | game | missing | - |
 

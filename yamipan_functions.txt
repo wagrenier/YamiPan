@@ -304,7 +304,7 @@
 /* 0010b2d8 00000050 */ FUN_0010b2d8(){}
 /* 0010b328 00000028 */ sceVif1PkAddGsData(){}  // lib-ctx
 /* 0010b350 00000030 */ sceVif1PkAddGsAD(){}  // lib-ctx
-/* 0010b380 000001e8 */ FUN_0010b380(){}
+/* 0010b380 000001e8 */ sceVif1PkRefLoadImage(){}  // lib-ctx
 /* 0010b568 00000058 */ sceVif1PkOpenDirectCode(){}  // lib-ctx
 /* 0010b5c0 0000002c */ sceVif1PkCloseDirectCode(){}  // lib-ctx
 /* 0010b5f0 00000070 */ FUN_0010b5f0(){}
@@ -436,7 +436,7 @@
 /* 00113b70 000001d0 */ FUN_00113b70(){}
 /* 00113d40 000006a8 */ FUN_00113d40(){}
 /* 001143e8 00001da8 */ FUN_001143e8(){}
-/* 00116190 000003e0 */ FUN_00116190(){}
+/* 00116190 000003e0 */ sceMpegDemuxPssRing(){}  // lib-ctx
 /* 00116570 00000020 */ sceMpegDemuxPss(){}  // lib-ctx
 /* 00116590 000001d4 */ sceMpegAddStrCallback(){}  // lib-ctx
 /* 00116768 00000010 */ _ErrMessage(){}  // lib-ctx
@@ -1498,11 +1498,11 @@
 /* 00145be0 00000190 */ SoundStream::~SoundStream(){}  // game
 /* 00145d70 00000070 */ SoundStream::SoundStream(){}  // game
 /* 00145de0 000003d4 */ SoundFeeder::update(){}  // game
-/* 001461c0 00000008 */ FUN_001461c0(){}
-/* 001461d0 00000008 */ FUN_001461d0(){}
-/* 001461e0 00000008 */ FUN_001461e0(){}
-/* 001461f0 00000008 */ FUN_001461f0(){}
-/* 00146200 00000008 */ FUN_00146200(){}
+/* 001461c0 00000008 */ StreamRing::endPos(){}  // game
+/* 001461d0 00000008 */ StreamRing::consume(){}  // game
+/* 001461e0 00000008 */ StreamRing::readPtr(){}  // game
+/* 001461f0 00000008 */ StreamRing::contiguous(){}  // game
+/* 00146200 00000008 */ StreamRing::poll(){}  // game
 /* 00146210 000000d4 */ SoundFeeder::start(){}  // game
 /* 001462f0 00000010 */ SoundFeeder::setSink(){}  // game
 /* 00146300 00000010 */ SoundFeeder::setSource(){}  // game
@@ -1701,23 +1701,23 @@
 /* 00151f60 00000004 */ FUN_00151f60(){}
 /* 00151f70 00000004 */ rxThEnableDispatch(){}  // native
 /* 00151f80 00000004 */ rxThDisableDispatch(){}  // native
-/* 00151f90 00000038 */ FUN_00151f90(){}
-/* 00151fd0 00000004 */ FUN_00151fd0(){}
-/* 00151fe0 00000044 */ FUN_00151fe0(){}
-/* 00152030 00000008 */ FUN_00152030(){}
-/* 00152040 00000008 */ FUN_00152040(){}
-/* 00152050 00000054 */ FUN_00152050(){}
-/* 001520b0 0000007c */ FUN_001520b0(){}
-/* 00152130 00000030 */ FUN_00152130(){}
-/* 00152160 00000030 */ FUN_00152160(){}
-/* 00152190 00000030 */ FUN_00152190(){}
-/* 001521c0 000000dc */ FUN_001521c0(){}
-/* 001522a0 0000015c */ FUN_001522a0(){}
-/* 00152400 00000128 */ FUN_00152400(){}
-/* 00152530 00000050 */ FUN_00152530(){}
-/* 00152580 00000008 */ FUN_00152580(){}
-/* 00152590 00000088 */ FUN_00152590(){}
-/* 00152620 00000104 */ FUN_00152620(){}
+/* 00151f90 00000038 */ StreamRing::isPrimed(){}  // game
+/* 00151fd0 00000004 */ FileStreamRing::write(){}  // game
+/* 00151fe0 00000044 */ FileStreamRing::freeSpace(){}  // game
+/* 00152030 00000008 */ FileStreamRing::endPos(){}  // game
+/* 00152040 00000008 */ FileStreamRing::poll(){}  // game
+/* 00152050 00000054 */ FileStreamRing::consume(){}  // game
+/* 001520b0 0000007c */ FileStreamRing::contiguous(){}  // game
+/* 00152130 00000030 */ FileStreamRing::filled(){}  // game
+/* 00152160 00000030 */ FileStreamRing::readPos(){}  // game
+/* 00152190 00000030 */ FileStreamRing::readPtr(){}  // game
+/* 001521c0 000000dc */ FileStreamRing::open(){}  // game
+/* 001522a0 0000015c */ FileStreamRing::~FileStreamRing(){}  // game
+/* 00152400 00000128 */ FileStreamRing::FileStreamRing(){}  // game
+/* 00152530 00000050 */ StreamRing::release(){}  // game
+/* 00152580 00000008 */ StreamRing::size(){}  // game
+/* 00152590 00000088 */ StreamRing::~StreamRing(){}  // game
+/* 00152620 00000104 */ StreamRing::StreamRing(){}  // game
 /* 00152730 00000004 */ rxFileCallLoadHook(){}  // native
 /* 00152740 00000004 */ rxFileCallSizeHook(){}  // native
 
@@ -1734,10 +1734,10 @@
 /* 00153080 00000010 */ gameRxMemFree(){}  // game
 /* 00153090 00000018 */ gameRxMemRealloc(){}  // game
 /* 001530b0 00000018 */ gameRxMemAlloc(){}  // game
-/* 001530d0 00000008 */ FUN_001530d0(){}
-/* 001530e0 00000008 */ FUN_001530e0(){}
-/* 001530f0 00000004 */ FUN_001530f0(){}
-/* 00153100 00000008 */ FUN_00153100(){}
+/* 001530d0 00000008 */ StreamRing::filled(){}  // game
+/* 001530e0 00000008 */ StreamRing::freeSpace(){}  // game
+/* 001530f0 00000004 */ StreamRing::write(){}  // game
+/* 00153100 00000008 */ StreamRing::readPos(){}  // game
 
 // *****************************************************************************
 // FILE -- rx/rxsys.c
@@ -4760,47 +4760,52 @@
 /* 001fa900 00000080 */ FUN_001fa900(){}
 /* 001fa980 0000004c */ FUN_001fa980(){}
 /* 001fa9d0 00000060 */ FUN_001fa9d0(){}
+
+// *****************************************************************************
+// FILE -- game/movieplayer.cpp
+// *****************************************************************************
+
 /* 001faa30 00000030 */ MoviePlayer::setVolume(){}  // game
 /* 001faa70 00000018 */ MoviePlayer::getFrame(){}  // game
 /* 001faa90 000000a0 */ MoviePlayer::startAudio(){}  // game
 /* 001fab30 00000010 */ MoviePlayer::isPlaying(){}  // game
 /* 001fab40 00000010 */ MoviePlayer::isReady(){}  // game
-/* 001fab50 00000268 */ FUN_001fab50(){}
-/* 001fadc0 000000fc */ FUN_001fadc0(){}
-/* 001faec0 000001f0 */ FUN_001faec0(){}
-/* 001fb0b0 0000021c */ FUN_001fb0b0(){}
+/* 001fab50 00000268 */ MoviePlayer::feedIpu(){}  // game
+/* 001fadc0 000000fc */ MoviePlayer::isDrained(){}  // game
+/* 001faec0 000001f0 */ MoviePlayer::demux(){}  // game
+/* 001fb0b0 0000021c */ MoviePlayer::receiveAudio(){}  // game
 /* 001fb2d0 000000ac */ MoviePlayer::drawFrame(){}  // game
 /* 001fb380 000000d0 */ MoviePlayer::prime(){}  // game
-/* 001fb450 000001d8 */ FUN_001fb450(){}
-/* 001fb630 000002e8 */ FUN_001fb630(){}
+/* 001fb450 000001d8 */ MoviePlayer::uploadFrame(){}  // game
+/* 001fb630 000002e8 */ MoviePlayer::decodeFrame(){}  // game
 /* 001fb920 00000024 */ MoviePlayer::testState(){}  // game
-/* 001fb950 00000074 */ FUN_001fb950(){}
+/* 001fb950 00000074 */ MoviePlayer::close(){}  // game
 /* 001fb9d0 00000430 */ MoviePlayer::open(){}  // game
-/* 001fbe00 00000020 */ FUN_001fbe00(){}
-/* 001fbe20 00000020 */ FUN_001fbe20(){}
-/* 001fbe40 00000008 */ FUN_001fbe40(){}
-/* 001fbe50 00000008 */ FUN_001fbe50(){}
-/* 001fbe60 00000018 */ FUN_001fbe60(){}
-/* 001fbe80 00000084 */ FUN_001fbe80(){}
-/* 001fbf10 00000018 */ FUN_001fbf10(){}
-/* 001fbf30 00000098 */ FUN_001fbf30(){}
+/* 001fbe00 00000020 */ movieRestartDmaCallback(){}  // game
+/* 001fbe20 00000020 */ movieStopDmaCallback(){}  // game
+/* 001fbe40 00000008 */ movieBackgroundCallback(){}  // game
+/* 001fbe50 00000008 */ movieErrorCallback(){}  // game
+/* 001fbe60 00000018 */ movieNodataCallback(){}  // game
+/* 001fbe80 00000084 */ movieDataCallback(){}  // game
+/* 001fbf10 00000018 */ movieAudioCallback(){}  // game
+/* 001fbf30 00000098 */ movieVideoCallback(){}  // game
 /* 001fbfd0 0000010c */ MoviePlayer::workSize(){}  // game
-/* 001fc0e0 000002bc */ FUN_001fc0e0(){}
-/* 001fc3a0 00000134 */ FUN_001fc3a0(){}
-/* 001fc4e0 00000078 */ FUN_001fc4e0(){}
+/* 001fc0e0 000002bc */ MoviePlayer::carveWorkArea(){}  // game
+/* 001fc3a0 00000134 */ MoviePlayer::freeStreams(){}  // game
+/* 001fc4e0 00000078 */ MovieAudioRing::~MovieAudioRing(){}  // game
 /* 001fc560 000001b8 */ MoviePlayer::setWorkArea(){}  // game
 /* 001fc720 00000090 */ MoviePlayer::~MoviePlayer(){}  // game
 /* 001fc7b0 000000f8 */ MoviePlayer::MoviePlayer(){}  // game
-/* 001fc8b0 00000008 */ FUN_001fc8b0(){}
-/* 001fc8c0 00000008 */ FUN_001fc8c0(){}
-/* 001fc8d0 00000060 */ FUN_001fc8d0(){}
-/* 001fc930 00000008 */ FUN_001fc930(){}
-/* 001fc940 00000010 */ FUN_001fc940(){}
-/* 001fc950 000000e0 */ FUN_001fc950(){}
-/* 001fca30 00000044 */ FUN_001fca30(){}
-/* 001fca80 00000038 */ FUN_001fca80(){}
-/* 001fcac0 00000008 */ FUN_001fcac0(){}
-/* 001fcad0 00000068 */ FUN_001fcad0(){}
+/* 001fc8b0 00000008 */ MovieRing::endPos(){}  // game
+/* 001fc8c0 00000008 */ MovieRing::poll(){}  // game
+/* 001fc8d0 00000060 */ MovieRing::consume(){}  // game
+/* 001fc930 00000008 */ MovieRing::readPos(){}  // game
+/* 001fc940 00000010 */ MovieRing::readPtr(){}  // game
+/* 001fc950 000000e0 */ MovieRing::write(){}  // game
+/* 001fca30 00000044 */ MovieRing::freeSpace(){}  // game
+/* 001fca80 00000038 */ MovieRing::contiguous(){}  // game
+/* 001fcac0 00000008 */ MovieRing::filled(){}  // game
+/* 001fcad0 00000068 */ MovieRing::~MovieRing(){}  // game
 
 // *****************************************************************************
 // FILE -- game/fontdata.cpp

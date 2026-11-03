@@ -1235,6 +1235,12 @@
   "was": "FUN_0010b350",
   "why": "(pkt, reg, u_long data): one A+D qword {data, reg}"
  },
+ "0010b380": {
+  "name": "sceVif1PkRefLoadImage",
+  "tag": "lib-context",
+  "was": "FUN_0010b380",
+  "why": "libvifpk: (packet, bp, psm, bw, image, qwc, x, y, w, h) BITBLTBUF / TRXPOS / TRXREG / TRXDIR by A+D, then the image by reference in IMAGE GIF tags of up to 0x7fff qw; caller MoviePlayer::uploadFrame"
+ },
  "0010b568": {
   "name": "sceVif1PkOpenDirectCode",
   "tag": "lib-context",
@@ -1474,6 +1480,12 @@
   "tag": "lib-context",
   "was": "FUN_00113970",
   "why": "SDK 3.0 libmpeg, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x2511a0 _id2type; same size 0x1fc and place in a run of matching functions (rxalign.py)"
+ },
+ "00116190": {
+  "name": "sceMpegDemuxPssRing",
+  "tag": "lib-context",
+  "was": "FUN_00116190",
+  "why": "libmpeg (SDK 3.0 range 0x10c218..0x116978): (mp, buff, size, ringStart, ringSize) the PSS demuxer over a ring buffer; MoviePlayer::demux passes the file ring's read pointer / filled / data / size"
  },
  "00116570": {
   "name": "sceMpegDemuxPss",
@@ -5699,6 +5711,36 @@
   "was": "FUN_00145de0",
   "why": "SoundFeeder {+0 state, +4 source (vptr +0x10), +8 sink (SoundSink, vptr +0xc), +0xc fed bytes, +0x10/+0x14 volume L/R (0x80)}: per frame moves data from the source into the sink (sink getFree / write / end, source slots +0x10/+0x1c/+0x24/+0x28/+0x2c), state 4 when the sink ends; callers are the movie player 0x1fb0b0 / 0x1fb630"
  },
+ "001461c0": {
+  "name": "StreamRing::endPos",
+  "tag": "game-inferred",
+  "was": "FUN_001461c0",
+  "why": "slot 9 (+0x2c) of Vt_003112c0: returns 0 (MovieRing::endPos 0x1fc8b0 overrides)"
+ },
+ "001461d0": {
+  "name": "StreamRing::consume",
+  "tag": "game-inferred",
+  "was": "FUN_001461d0",
+  "why": "slot 7 (+0x24) of Vt_003112c0: returns 0 (MovieRing::consume 0x1fc8d0 overrides)"
+ },
+ "001461e0": {
+  "name": "StreamRing::readPtr",
+  "tag": "game-inferred",
+  "was": "FUN_001461e0",
+  "why": "slot 5 (+0x1c) of Vt_003112c0: returns 0 (MovieRing::readPtr 0x1fc940 overrides)"
+ },
+ "001461f0": {
+  "name": "StreamRing::contiguous",
+  "tag": "game-inferred",
+  "was": "FUN_001461f0",
+  "why": "slot 2 (+0x10) of Vt_003112c0: returns 0 (MovieRing::contiguous 0x1fca80 overrides)"
+ },
+ "00146200": {
+  "name": "StreamRing::poll",
+  "tag": "game-inferred",
+  "was": "FUN_00146200",
+  "why": "slot 8 (+0x28) of Vt_003112c0: returns 0 (MovieRing::poll 0x1fc8c0)"
+ },
  "00146210": {
   "name": "SoundFeeder::start",
   "tag": "game-inferred",
@@ -6113,6 +6155,108 @@
   "was": "FUN_00151290",
   "why": "empty in retail; gameInit calls it right after GameSystem::GameSystem (see debugSysUpdate 0x151270): name a guess"
  },
+ "00151f90": {
+  "name": "StreamRing::isPrimed",
+  "tag": "game-inferred",
+  "was": "FUN_00151f90",
+  "why": "filled() (slot +0xc) >= threshold (+4); MoviePlayer::prime / decodeFrame wait on it before the first picture"
+ },
+ "00151fd0": {
+  "name": "FileStreamRing::write",
+  "tag": "game-inferred",
+  "was": "FUN_00151fd0",
+  "why": "slot 4 of Vt_00311290: empty (the rx stream fills the ring)"
+ },
+ "00151fe0": {
+  "name": "FileStreamRing::freeSpace",
+  "tag": "game-inferred",
+  "was": "FUN_00151fe0",
+  "why": "slot 3 of Vt_00311290: size - rxFileGetRingFilled"
+ },
+ "00152030": {
+  "name": "FileStreamRing::endPos",
+  "tag": "game-inferred",
+  "was": "FUN_00152030",
+  "why": "slot 9 of Vt_00311290: the file size (+0x1c)"
+ },
+ "00152040": {
+  "name": "FileStreamRing::poll",
+  "tag": "game-inferred",
+  "was": "FUN_00152040",
+  "why": "slot 8 of Vt_00311290: returns 0 (the rx stream fills on its own)"
+ },
+ "00152050": {
+  "name": "FileStreamRing::consume",
+  "tag": "game-inferred",
+  "was": "FUN_00152050",
+  "why": "slot 7 of Vt_00311290: rxFileRingConsume, consumed (+0x20) += n"
+ },
+ "001520b0": {
+  "name": "FileStreamRing::contiguous",
+  "tag": "game-inferred",
+  "was": "FUN_001520b0",
+  "why": "slot 2 of Vt_00311290: min(filled, size - rxFileGetRingReadPos), 0 at least"
+ },
+ "00152130": {
+  "name": "FileStreamRing::filled",
+  "tag": "game-inferred",
+  "was": "FUN_00152130",
+  "why": "slot 1 of Vt_00311290: rxFileGetRingFilled of the stream, -1 without one"
+ },
+ "00152160": {
+  "name": "FileStreamRing::readPos",
+  "tag": "game-inferred",
+  "was": "FUN_00152160",
+  "why": "slot 6 of Vt_00311290: rxFileGetRingReadPos"
+ },
+ "00152190": {
+  "name": "FileStreamRing::readPtr",
+  "tag": "game-inferred",
+  "was": "FUN_00152190",
+  "why": "slot 5 of Vt_00311290: rxFileGetRingData, null without a stream"
+ },
+ "001521c0": {
+  "name": "FileStreamRing::open",
+  "tag": "game-inferred",
+  "was": "FUN_001521c0",
+  "why": "(this, name): file size by rxFileCallSizeHook (+0x1c), rxSysStreamOpenRing over the ring's data / size / threshold (+0x14), unpaused (rxFilePause 0), recorded in the open-stream table 0x2f5a80[8]; the stream id, < 0 failed"
+ },
+ "001522a0": {
+  "name": "FileStreamRing::~FileStreamRing",
+  "tag": "game-inferred",
+  "was": "FUN_001522a0",
+  "why": "deleting dtor storing Vt_00311290: releases the data, rxFileClose of the stream (+0x14) and drops it from the open-stream table 0x2f5a80, then the StreamRing dtor inline; slot 0 of Vt_00311290"
+ },
+ "00152400": {
+  "name": "FileStreamRing::FileStreamRing",
+  "tag": "game-inferred",
+  "was": "FUN_00152400",
+  "why": "StreamRing ctor inline then Vt_00311290: +0x14 rx stream -1, +0x18 paused 1, +0x1c file size, +0x20 consumed; MoviePlayer::open's file reader (0x24 bytes)"
+ },
+ "00152530": {
+  "name": "StreamRing::release",
+  "tag": "game-inferred",
+  "was": "FUN_00152530",
+  "why": "frees the data when owned, zeroes size / threshold / data / owned; MovieRing / MovieAudioRing dtors"
+ },
+ "00152580": {
+  "name": "StreamRing::size",
+  "tag": "game-inferred",
+  "was": "FUN_00152580",
+  "why": "returns +0, the ring size; MovieRing slots and MoviePlayer::demux"
+ },
+ "00152590": {
+  "name": "StreamRing::~StreamRing",
+  "tag": "game-inferred",
+  "was": "FUN_00152590",
+  "why": "deleting dtor storing Vt_003112c0 and releasing the data; slot 0 of Vt_003112c0"
+ },
+ "00152620": {
+  "name": "StreamRing::StreamRing",
+  "tag": "game-inferred",
+  "was": "FUN_00152620",
+  "why": "ctor storing Vt_003112c0 (vptr +0x10): (size, mem, threshold) {+0 size, +4 threshold (size * 7 / 8 when < 0), +8 data (Heap::alloc 0x40-aligned when mem is null, +0xc owned)}; the base of MovieRing (MoviePlayer::open) and FileStreamRing"
+ },
  "00152750": {
   "name": "rxTerm",
   "tag": "lib-context",
@@ -6166,6 +6310,30 @@
   "tag": "game-inferred",
   "was": "FUN_001530b0",
   "why": "rx memory hook 0 and 1 (rxSysSetMemFunc0/1 after rxSysInit at 0x1527f4): Heap::alloc on the global heap, 0x40 aligned, caller's ra in v0 (codeptrs.py)"
+ },
+ "001530d0": {
+  "name": "StreamRing::filled",
+  "tag": "game-inferred",
+  "was": "FUN_001530d0",
+  "why": "slot 1 (+0xc) of Vt_003112c0 (StreamRing, vptr +0x10): returns 0; MovieRing 0x1fcac0 / FileStreamRing 0x152130 override it"
+ },
+ "001530e0": {
+  "name": "StreamRing::freeSpace",
+  "tag": "game-inferred",
+  "was": "FUN_001530e0",
+  "why": "slot 3 (+0x14) of Vt_003112c0: returns 0 (MovieRing::freeSpace 0x1fca30 overrides)"
+ },
+ "001530f0": {
+  "name": "StreamRing::write",
+  "tag": "game-inferred",
+  "was": "FUN_001530f0",
+  "why": "slot 4 (+0x18) of Vt_003112c0: empty (MovieRing::write 0x1fc950 overrides)"
+ },
+ "00153100": {
+  "name": "StreamRing::readPos",
+  "tag": "game-inferred",
+  "was": "FUN_00153100",
+  "why": "slot 6 (+0x20) of Vt_003112c0: returns 0 (MovieRing::readPos 0x1fc930 overrides)"
  },
  "00153108": {
   "name": "rxSysThreadCallback",
@@ -10835,6 +11003,30 @@
   "was": "FUN_001fab40",
   "why": "state (+0x48) & 4: a frame is decoded"
  },
+ "001fab50": {
+  "name": "MoviePlayer::feedIpu",
+  "tag": "game-inferred",
+  "was": "FUN_001fab50",
+  "why": "the sceMpegCbNodata handler (via 0x1fbe60, arg = the player): under the sema waits for D4 (toIPU) to stop, retires the video ring's DMAed bytes (+0x2c), demuxes 0x4000 until 0x1000 video bytes or file end, then DMAs up to 0x1000 contiguous bytes (QWC/MADR/CHCR 0x101), or the end code 0x2fa440 once the reader is within 5 bytes of its end"
+ },
+ "001fadc0": {
+  "name": "MoviePlayer::isDrained",
+  "tag": "game-inferred",
+  "was": "FUN_001fadc0",
+  "why": "1 when every audio ring (+0xec[i], with a feeder) and the data ring (+0xfc) have consumed up to their endPos and the video ring holds under 0x1000 bytes; sets state 0x40 in its callers"
+ },
+ "001faec0": {
+  "name": "MoviePlayer::demux",
+  "tag": "game-inferred",
+  "was": "FUN_001faec0",
+  "why": "(this, want 0x4000): waits for want bytes in the file ring (+0x98) or its end, sceMpegDemuxPssRing over the ring's read position / filled / data / size, consumes what it took (total at 0x31ae2c), state 0x20 when the file has under 0x10 bytes left; with 0x20 set only checks isDrained (-> 0x40)"
+ },
+ "001fb0b0": {
+  "name": "MoviePlayer::receiveAudio",
+  "tag": "game-inferred",
+  "was": "FUN_001fb0b0",
+  "why": "(this, cbdata, ring): an audio PES (data + 4, len - 4) for MovieAudioRing ring: the first 0x28 bytes are the SShd/SSbd header (type < 0x10 PCM sink else ADPCM, rate, channels, interleave, body size - 0x4000 = the ring's endPos), which opens the sink and wires the channel's SoundFeeder; the rest written into the ring under rxThDisableDispatch, 0 when it does not fit"
+ },
  "001fb2d0": {
   "name": "MoviePlayer::drawFrame",
   "tag": "game-inferred",
@@ -10847,11 +11039,29 @@
   "was": "FUN_001fb380",
   "why": "feeds the stream reader (+0x98) and, when it has data, decodes and draws the first frame at fbp 0x700 through GameSystem's packet list 0xd; guess at the role"
  },
+ "001fb450": {
+  "name": "MoviePlayer::uploadFrame",
+  "tag": "game-inferred",
+  "was": "FUN_001fb450",
+  "why": "(this, packet, tbp, width, height, x, y): the decoded RGB32 picture (+0xd4) one 16x16 macroblock (0x400 bytes) at a time, columns outer, by sceVif1PkRefLoadImage(tbp, PSMCT32, width / 64, 0x40 qw, 16 x 16), clipped to the movie's and the target's macroblocks, then a TEXFLUSH; callers drawFrame / prime"
+ },
+ "001fb630": {
+  "name": "MoviePlayer::decodeFrame",
+  "tag": "game-inferred",
+  "was": "FUN_001fb630",
+  "why": "per frame: demux, poll the rings, update the feeders; open -> primed when the file ring isPrimed, primed -> the first picture (sceMpegGetPicture, state 4), playing -> the next picture; once drained or over it waits for the feeders to end and sets state 0x80; true when a picture is there to draw"
+ },
  "001fb920": {
   "name": "MoviePlayer::testState",
   "tag": "game-inferred",
   "was": "FUN_001fb920",
   "why": "(this, mask): state & mask, or state == 0 for mask 0; 0x80 the movie ended or failed"
+ },
+ "001fb950": {
+  "name": "MoviePlayer::close",
+  "tag": "game-inferred",
+  "was": "FUN_001fb950",
+  "why": "marks a running movie stopping (0x10), state 0, deletes the file ring (+0x98) through its vtable; called from the dtor (open repeats its first half inline)"
  },
  "001fb9d0": {
   "name": "MoviePlayer::open",
@@ -10859,11 +11069,77 @@
   "was": "FUN_001fb9d0",
   "why": "(this, name): opens the movie file; < 0 failure (PrgMovie deletes the player)"
  },
+ "001fbe00": {
+  "name": "movieRestartDmaCallback",
+  "tag": "game-inferred",
+  "was": "FUN_001fbe00",
+  "why": "sceMpegCbRestartDMA callback registered by MoviePlayer::open: sceIpuRestartDMA(player + 0x74), 1"
+ },
+ "001fbe20": {
+  "name": "movieStopDmaCallback",
+  "tag": "game-inferred",
+  "was": "FUN_001fbe20",
+  "why": "sceMpegCbStopDMA callback registered by MoviePlayer::open: sceIpuStopDMA(player + 0x74), 1"
+ },
+ "001fbe40": {
+  "name": "movieBackgroundCallback",
+  "tag": "game-inferred",
+  "was": "FUN_001fbe40",
+  "why": "sceMpegCbBackground callback registered by MoviePlayer::open: returns 1"
+ },
+ "001fbe50": {
+  "name": "movieErrorCallback",
+  "tag": "game-inferred",
+  "was": "FUN_001fbe50",
+  "why": "sceMpegCbError callback registered by MoviePlayer::open: returns 1"
+ },
+ "001fbe60": {
+  "name": "movieNodataCallback",
+  "tag": "game-inferred",
+  "was": "FUN_001fbe60",
+  "why": "sceMpegCbNodata callback registered by MoviePlayer::open: arg->feedIpu(mp, cbdata)"
+ },
+ "001fbe80": {
+  "name": "movieDataCallback",
+  "tag": "game-inferred",
+  "was": "FUN_001fbe80",
+  "why": "sceMpegStrDATA stream callback (registered when +0x68 is set): the payload into the data ring +0xfc when it has room, else 0"
+ },
+ "001fbf10": {
+  "name": "movieAudioCallback",
+  "tag": "game-inferred",
+  "was": "FUN_001fbf10",
+  "why": "sceMpegStrPCM / ADPCM stream callback per audio channel, arg = the channel's MovieAudioRing: ring->player (+0x38)->receiveAudio"
+ },
+ "001fbf30": {
+  "name": "movieVideoCallback",
+  "tag": "game-inferred",
+  "was": "FUN_001fbf30",
+  "why": "sceMpegStrM2V stream callback: under the player's sema the payload into the video ring +0xe8 when it has room; true when written"
+ },
  "001fbfd0": {
   "name": "MoviePlayer::workSize",
   "tag": "game-inferred",
   "was": "FUN_001fbfd0",
   "why": "the work area the frame size and buffer count need (16-aligned w x h x 4, + 0x30000, + w*h*4.5 + 0x2800, + buffers * 0x20000, 0x80 rounded)"
+ },
+ "001fc0e0": {
+  "name": "MoviePlayer::carveWorkArea",
+  "tag": "game-inferred",
+  "was": "FUN_001fc0e0",
+  "why": "after freeStreams, cuts the work area (+0x5c, size +0x58, cursor +0xbc) into 128-byte aligned blocks: file ring w*h*4 rounded to macroblocks (+0xc0/+0xc4), video ring 0x30000 (+0xc8/+0xcc), RGB32 picture (+0xd0/+0xd4), sceMpeg work w*h*9/2 + 0x2800 (+0xd8/+0xdc), audio 0x20000 per channel (+0xe0/+0xe4); -1 without a work area"
+ },
+ "001fc3a0": {
+  "name": "MoviePlayer::freeStreams",
+  "tag": "game-inferred",
+  "was": "FUN_001fc3a0",
+  "why": "resets the work-area carve (+0xbc..+0xe4) and deletes the video ring, the four feeders (and their sinks) and audio rings, and the data ring; ctor / dtor / setWorkArea / carveWorkArea"
+ },
+ "001fc4e0": {
+  "name": "MovieAudioRing::~MovieAudioRing",
+  "tag": "game-inferred",
+  "was": "FUN_001fc4e0",
+  "why": "deleting dtor storing Vt_00315f80 then Vt_00315f50 (MovieRing) then StreamRing::release / ~StreamRing; slot 0 of Vt_00315f80"
  },
  "001fc560": {
   "name": "MoviePlayer::setWorkArea",
@@ -10882,6 +11158,66 @@
   "tag": "game-inferred",
   "was": "FUN_001fc7b0",
   "why": "(this, w, h, buffers): 0x110 object, CreateSema, sceMpegInit once, four audio channels at volume 0x80; PrgMovie's movie"
+ },
+ "001fc8b0": {
+  "name": "MovieRing::endPos",
+  "tag": "game-inferred",
+  "was": "FUN_001fc8b0",
+  "why": "slot 9 (+0x2c) of Vt_00315f50: +0x30, the consumed total at which the stream ends (set for audio rings from the SSbd size)"
+ },
+ "001fc8c0": {
+  "name": "MovieRing::poll",
+  "tag": "game-inferred",
+  "was": "FUN_001fc8c0",
+  "why": "slot 8 (+0x28) of Vt_00315f50: returns 0 (a memory ring has nothing to fetch; FileStreamRing's twin 0x152040)"
+ },
+ "001fc8d0": {
+  "name": "MovieRing::consume",
+  "tag": "game-inferred",
+  "was": "FUN_001fc8d0",
+  "why": "slot 7 (+0x24) of Vt_00315f50: filled -= n, read position += n mod size, consumed total (+0x28) += n, returns that total"
+ },
+ "001fc930": {
+  "name": "MovieRing::readPos",
+  "tag": "game-inferred",
+  "was": "FUN_001fc930",
+  "why": "slot 6 (+0x20) of Vt_00315f50: the read position +0x18"
+ },
+ "001fc940": {
+  "name": "MovieRing::readPtr",
+  "tag": "game-inferred",
+  "was": "FUN_001fc940",
+  "why": "slot 5 (+0x1c) of Vt_00315f50: data + read position"
+ },
+ "001fc950": {
+  "name": "MovieRing::write",
+  "tag": "game-inferred",
+  "was": "FUN_001fc950",
+  "why": "slot 4 (+0x18) of Vt_00315f50: (src, n) memcpy in pieces up to the wrap, write position +0x14 mod size, filled +0x1c, written total +0x24"
+ },
+ "001fca30": {
+  "name": "MovieRing::freeSpace",
+  "tag": "game-inferred",
+  "was": "FUN_001fca30",
+  "why": "slot 3 (+0x14) of Vt_00315f50: size - filled()"
+ },
+ "001fca80": {
+  "name": "MovieRing::contiguous",
+  "tag": "game-inferred",
+  "was": "FUN_001fca80",
+  "why": "slot 2 (+0x10) of Vt_00315f50: the filled bytes before the wrap, min(size - read position, filled)"
+ },
+ "001fcac0": {
+  "name": "MovieRing::filled",
+  "tag": "game-inferred",
+  "was": "FUN_001fcac0",
+  "why": "slot 1 (+0xc) of Vt_00315f50: +0x1c"
+ },
+ "001fcad0": {
+  "name": "MovieRing::~MovieRing",
+  "tag": "game-inferred",
+  "was": "FUN_001fcad0",
+  "why": "deleting dtor storing Vt_00315f50 then StreamRing::release / ~StreamRing; slot 0 of Vt_00315f50"
  },
  "001fcb40": {
   "name": "TextPrinter::~TextPrinter",

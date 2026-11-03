@@ -514,39 +514,128 @@ public:
     int m_state;                // FS2 +0x10: 1..3 while it streams
 };
 
-// The MPEG movie player (unassigned@001953f0, 0x1fa..0x1fc; only what the
-// prgMovie widget calls). It decodes into its work area and uploads each
-// frame to the GS frame buffer itself: the port's movie module replaces
-// it (no GS upload; open-items.md).
-enum MovieState
-{
-    MovieState_Ready = 0x4,     // a frame is decoded
-    MovieState_Playing = 0x8,   // startAudio ran
-    MovieState_Over = 0x80,     // ended or failed
-};
-// layout: host -- EE 0x110: the state bits (MovieState) at +0x48.
-class MoviePlayer
+// The byte rings the movie player streams through (unassigned@00148db0,
+// 0x151f90..0x153110, not cut yet; only what game/movieplayer.cpp uses).
+// StreamRing is the interface: the data, its size and the threshold at
+// which a reader counts as primed; the slots say how much is there and
+// move it. FileStreamRing fills itself from an rx file stream; MovieRing
+// (game/movieplayer.h) is filled by hand.
+// layout: host -- EE 0x14, vtable 0x3112c0 (10 slots) at +0x10, after the
+// data (CodeWarrior).
+class StreamRing
 {
 public:
-    MoviePlayer(int width, int height, int buffers);                     // FS2 0x001fc7b0: CreateSema, sceMpegInit once
-    ~MoviePlayer();                                                      // FS2 0x001fc720: deleting (obj, 1)
-    // Mutes / sets one of the four audio channels.
-    void setVolume(int channel, int left, int right);                    // FS2 0x001faa30
-    int  workSize();                                                     // FS2 0x001fbfd0
-    // null allocates workSize itself.
-    void setWorkArea(void *mem, int size);                               // FS2 0x001fc560
-    int  open(const char *name);                                         // FS2 0x001fb9d0: < 0 failed
-    // state & mask (mask 0: state == 0): MovieState.
-    bool testState(u_int mask);                                          // FS2 0x001fb920
-    bool isReady();                                                      // FS2 0x001fab40: MovieState_Ready
-    bool isPlaying();                                                    // FS2 0x001fab30: MovieState_Playing
-    int  startAudio();                                                   // FS2 0x001faa90
-    // Feeds the reader and decodes; draws the first frame (guess).
-    bool prime();                                                        // FS2 0x001fb380
-    // The decoded frame into packet: uploaded at tbp, drawn width x height
-    // at (x, y).
-    bool drawFrame(sceVif1Packet *packet, int tbp, int width, int height, int x, int y); // FS2 0x001fb2d0
-    int  getFrame();                                                     // FS2 0x001faa70: -1 not playing
+    StreamRing(int size, void *mem, int threshold);                      // FS2 0x00152620: mem null allocates; threshold < 0 = size * 7 / 8
+    virtual ~StreamRing();                                               // FS2 0x00152590: deleting (obj, flag)
+    // The base slots return 0 / do nothing.
+    virtual int     filled();                                            // FS2 0x001530d0: bytes to read
+    virtual int     contiguous();                                        // FS2 0x001461f0: of those, before the wrap
+    virtual int     freeSpace();                                         // FS2 0x001530e0
+    virtual void    write(const void *src, int size);                    // FS2 0x001530f0
+    virtual u_char *readPtr();                                           // FS2 0x001461e0
+    virtual int     readPos();                                           // FS2 0x00153100
+    virtual int     consume(int size);                                   // FS2 0x001461d0: the consumed total
+    virtual int     poll();                                              // FS2 0x00146200: fetch more (file rings)
+    virtual int     endPos();                                            // FS2 0x001461c0: the consumed total at the end
+
+    // filled() reached the threshold.
+    bool isPrimed();                                                     // FS2 0x00151f90
+    // Frees the data if owned and zeroes the ring.
+    void release();                                                      // FS2 0x00152530
+    int  size();                                                         // FS2 0x00152580
+
+    int     m_size;             // FS2 +0x0
+    int     m_threshold;        // FS2 +0x4
+    u_char *m_data;             // FS2 +0x8
+    u_char  m_owned;            // FS2 +0xc: m_data from Heap::alloc
+};
+
+// layout: host -- EE 0x24, vtable 0x311290.
+class FileStreamRing : public StreamRing
+{
+public:
+    FileStreamRing(int size, void *mem, int threshold);                  // FS2 0x00152400
+    virtual ~FileStreamRing();                                           // FS2 0x001522a0: deleting (obj, flag); rxFileClose
+    virtual int     filled();                                            // FS2 0x00152130: rxFileGetRingFilled
+    virtual int     contiguous();                                        // FS2 0x001520b0
+    virtual int     freeSpace();                                         // FS2 0x00151fe0
+    virtual void    write(const void *src, int size);                    // FS2 0x00151fd0: empty
+    virtual u_char *readPtr();                                           // FS2 0x00152190: rxFileGetRingData
+    virtual int     readPos();                                           // FS2 0x00152160
+    virtual int     consume(int size);                                   // FS2 0x00152050: rxFileRingConsume
+    virtual int     poll();                                              // FS2 0x00152040: 0
+    virtual int     endPos();                                            // FS2 0x00152030: m_fileSize
+    // The rx ring stream of name (rxSysStreamOpenRing); < 0 failed.
+    int open(const char *name);                                          // FS2 0x001521c0
+
+    int    m_stream;            // FS2 +0x14: rx stream id, -1 none
+    u_char m_paused;            // FS2 +0x18
+    int    m_fileSize;          // FS2 +0x1c: endPos()
+    int    m_consumed;          // FS2 +0x20
+};
+
+// The game's sound layer (sound/sound.cpp; only what the movie player
+// uses): a SoundFeeder moves a StreamRing's bytes into a SoundSink (an rx
+// PCM or ADPCM stream) each frame.
+// layout: host -- EE 0x10, vtable 0x311180 at +0xc.
+class SoundSink
+{
+public:
+    virtual ~SoundSink();                                                // FS2 0x001468e0
+    virtual void setVolume(int left, int right) = 0;                     // slot +0xc
+    // mode 0 mono, 1 stereo, 2 stereo interleaved by 16 bytes.
+    virtual int  open(int mode, int rate, int a3, int a4, int a5, int a6, int interleave) = 0; // slot +0x10
+
+    int m_handle;               // FS2 +0x0
+    int m_mode;                 // FS2 +0x4
+    int m_interleave;           // FS2 +0x8
+};
+// layout: host -- EE 0x10, vtable 0x311140.
+class SoundPcmSink : public SoundSink
+{
+public:
+    SoundPcmSink();                                                      // FS2 0x001468b0
+    virtual ~SoundPcmSink();                                             // FS2 0x00146830
+    virtual void setVolume(int left, int right);                         // FS2 0x001467d0
+    virtual int  open(int mode, int rate, int a3, int a4, int a5, int a6, int interleave); // FS2 0x00146740: rxSndPcmOpen
+};
+// layout: host -- EE 0x10, vtable 0x3111c0.
+class SoundAdpcmSink : public SoundSink
+{
+public:
+    SoundAdpcmSink();                                                    // FS2 0x00146eb0
+    virtual ~SoundAdpcmSink();                                           // FS2 0x00146e30
+    virtual void setVolume(int left, int right);                         // FS2 0x00146dd0
+    virtual int  open(int mode, int rate, int a3, int a4, int a5, int a6, int interleave); // FS2 0x00146cf0: rxSndAdpcmOpen
+};
+
+// The feeder's states (+0): 0 idle, 1 feeding, 2 paused, 3 stopping, 4
+// ended.
+enum SoundFeederState
+{
+    SoundFeeder_Idle     = 0,
+    SoundFeeder_Feeding  = 1,
+    SoundFeeder_Paused   = 2,
+    SoundFeeder_Stopping = 3,
+    SoundFeeder_Ended    = 4,
+};
+// layout: host -- EE 0x18 (the two pointers widen on the host).
+class SoundFeeder
+{
+public:
+    SoundFeeder();                                                       // FS2 0x001463a0: volume 0x80
+    ~SoundFeeder();                                                      // FS2 0x00146310: deleting (obj, 1)
+    int  start();                                                        // FS2 0x00146210
+    void update();                                                       // FS2 0x00145de0
+    void setSource(StreamRing *source);                                  // FS2 0x00146300
+    void setSink(SoundSink *sink);                                       // FS2 0x001462f0
+
+    int         m_state;        // FS2 +0x0: SoundFeederState
+    StreamRing *m_source;       // FS2 +0x4
+    SoundSink  *m_sink;         // FS2 +0x8
+    int         m_fed;          // FS2 +0xc
+    int         m_volumeL;      // FS2 +0x10
+    int         m_volumeR;      // FS2 +0x14
 };
 
 // The word at sbss 0x31ae40 (gp-0x7a30; unassigned@0023e740): a work area

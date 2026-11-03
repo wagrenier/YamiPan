@@ -59,6 +59,17 @@ void YamiPan_DrawUiTexture(const void *list, const void *owner);
 void YamiPan_DrawUiBegin(const void *list, int format);
 void YamiPan_DrawUiVertex(const void *list, const YamiPanUiVertex *vertex);
 
+/* A movie picture (game/movieplayer.cpp): `macroblocks` are the decoded
+ * 16 x 16 RGBA32 blocks (0x400 bytes each, alpha 0x80 opaque), `columns`
+ * x `rows` of them in column-major order, as the game would have sent
+ * them by image transfer into the buffer at `tbp` (`tbw` pages of 64
+ * wide) at (x, y) in pixels. The module keeps them as the texture of
+ * `owner` (the MoviePlayer), updated each call, and draws them where the
+ * transfer would have put them: decoded at the source, never through GS
+ * memory. */
+void YamiPan_DrawUiMovie(const void *list, const void *owner, const void *macroblocks,
+                         int columns, int rows, int tbp, int tbw, int x, int y);
+
 /* The end of a frame: the packet lists that hold draws, in chain order
  * (= the layer order), as Vif1PktManage::Kick would send them on VIF1.
  * The module draws those layers in this order. */

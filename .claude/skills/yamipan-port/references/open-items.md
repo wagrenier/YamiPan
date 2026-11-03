@@ -526,6 +526,34 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    the file / class names (no strings); `Tim2Texture` +0x30 (read as the CLUT's blocks) is unread.
    **Next picks**: the region allocator 0x2e1440..0x2e1b70 (`GsRegionAlloc`), `drawSysInit`
    0x2d7cf0, the rena `Tim2Texture` TU 0x2e1b70..0x2e2970.
+   TU 34 (the frontier's `unassigned@001953f0`, 1,354 functions 0x1953f0..0x1fcb40, whose slice was
+   mostly the movie player): **`game/movieplayer.cpp` 0x1faa30..0x1fcb40** cut out of its tail (41
+   functions, batches 067-068 with 56 names: the player's helpers and libmpeg callbacks, `MovieRing` /
+   `MovieAudioRing`, the base `StreamRing` / `FileStreamRing` 0x151f90..0x153110 (their TU
+   `unassigned@00148db0` not cut), libvifpk `sceVif1PkRefLoadImage` 0x10b380, libmpeg
+   `sceMpegDemuxPssRing` 0x116190; 4 class names; all 41 written, `verify`; architecture.md
+   "Modules"). New `game/movieplayer.h` (MoviePlayer at its EE offsets, `MovieState` with all nine
+   bits); `gamehooks.h` lost MoviePlayer and gained `StreamRing` / `FileStreamRing` and the sound
+   layer the player uses (`SoundSink` / `SoundPcmSink` / `SoundAdpcmSink`, `SoundFeeder` +
+   `SoundFeederState`); uiwidget's `kMovieBuffers` is `kMovieAudioChannels` (the third ctor argument
+   is the audio stream count). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall
+   -Wextra clean (RosePan's SDK headers + scratch stubs). PC (marked): the reader starts null (the ROM
+   leaves it uninitialised until open); feedIpu limits each IPU block to what the host decoder has
+   parsed (`YamiPanMpegVideoPending`, RosePan's rxMpegNodataCallback pacing); the Stop / RestartDMA
+   callbacks do nothing; `uploadFrame` hands the decoded macroblocks to the new host call
+   `YamiPan_DrawUiMovie` (yamipan_drawui.h: the player's own texture drawn where the transfer would
+   land, decoded at the source, no GS memory) instead of the per-macroblock image transfers.
+   **Bootstrap 6 must give**: RosePan's `sdk/libmpeg.h` + `sceMpegDemuxPssRing(mp, buff, size,
+   ringStart, ringSize)` (RosePan's host libmpeg has only `sceMpegDemuxPss`; the ring variant wraps
+   at ringStart + ringSize), `sdk/libmpeg_video.h` with `RosePanMpegVideoPending` renamed
+   `YamiPanMpegVideoPending`, RosePan's `sdk/eeregs.h` (REG_DMAC_4_IPU_TO_*, write-only), and the
+   draw module's `YamiPan_DrawUiMovie`. Kept as the ROM, for the user to overrule: open never deletes
+   an earlier file ring (a reopen leaks it), `close` does not clear the pointer. Doubts: what the
+   0x4000 cut off an audio ring's end means (`kMovieAudioTail`, read as the SPU stream's tail); who
+   sets the data ring (+0x64 / +0x68) and `MovieState_Abort` (0x8000), none here; `SoundSink::open`'s
+   four middle arguments (0, 4, 0, 4) are passed to `rxSndPcmOpen` / `rxSndAdpcmOpen` unread.
+   **Next in the run**: the rest of `unassigned@001953f0` (0x1953f0..0x1faa30: StageSound, StageScene,
+   PlayerMotion, the 0x1fa230 texture class) and `unassigned@00148db0` for the ring classes.
    TU 33 (the frontier's `unassigned@00252840`, 156 functions): **`game/uiwidget.cpp`
    0x25b8e0..0x25fa50** cut out of its tail (56 functions, batch 066 with 74 names incl. FS2's
    `MoviePlayer` API, `fsmRelocate` / `fsmFindText`, `Clock::getSeconds` / `resetTime`, newlib

@@ -871,9 +871,8 @@ are built, run once and **deleted in create**; prgMsg replaces `<MC0nC>` / `<MC0
 0 / 1) / listed flags; **PrgMsgAniX** Vt_00316b50 slides a text's x alignment; prgMsgOnOff sets a
 text track's visible byte. **PrgReturnFlag** / **PrgReturnValue** Vt_00316bb0 / Vt_00316b90 set the
 layout's result (+0x38) and done (+0x3c). **PrgMovie** Vt_00316ab0 (0x34) drives FS2's
-**MoviePlayer** 0x1fa..0x1fc (now named: ctor 0x1fc7b0 (512, 512, 2), state +0x48 bits 4 ready / 8
-playing / 0x80 over, `drawFrame` uploads at tbp 0x800 and draws at 256 + p1 / p2; audio channel by
-`GameOptions::_04`); **PrgSndStream** Vt_00316a90 (0x38) a `SoundStream` with its own child clock;
+**MoviePlayer** (`game/movieplayer.cpp`, below; ctor (512, 512, 2 audio channels), `drawFrame`
+uploads at tbp 0x800 at 256 + p1 / p2; the audio channel by `GameOptions::_04`); **PrgSndStream** Vt_00316a90 (0x38) a `SoundStream` with its own child clock;
 both show **fsm subtitle files** (`fsmRelocate` 0x28fd30: magic "fsm\0", tracks of 0xc at +0x40
 {name, count, ranges {start, end, text}}; `fsmFindText` 0x28fb80 by seconds: movie frame / 25, or
 `Clock::getSeconds` 0x135420 = m_time / 300). prgScaleNavi / prgScaleNaviScroll / prgMcCard are other
@@ -882,6 +881,33 @@ TUs' classes (ctors 0x29e4f0 / 0x29ae30 / 0x2b9d60). After the code: **UiTween**
 `UiShowFlags` 0x25f9c0 (17 bytes, one caller 0x19c180), `UiFont::countLines` 0x25fa10. Before it,
 0x252840..0x25b8e0 is another file (vector / tree heavy, 0x253420 has 'そんな馬鹿な', its MSL
 instances incl. `mslTreeIncrement` 0x25a850 after it), still `unassigned@00252840`.
+
+**`game/movieplayer.cpp` 0x1faa30..0x1fcb40** (TU 34, batches 067-068): **MoviePlayer** (EE 0x110, no
+vtable): the `sceMpeg` at +0 (getFrame = its frameCount), state +0x48 (`MovieState`: 1 open, 2 primed,
+4 ready, 8 playing, 0x10 closing, 0x20 file end, 0x40 drained, 0x80 over, 0x8000 abort -- no writer
+here), width / height / audio channels +0x4c..+0x54, work area +0x58 size / +0x5c / +0x60 owned, a data
+ring's size / memory +0x64 / +0x68 (no writer in this file: the DATA stream is registered only when
+set), sema +0x70, `sceIpuDmaEnv` +0x74, file ring +0x98, volumes [4][2] +0x9c, the carve +0xbc..+0xe4
+(file ring w*h*4 in whole macroblocks, video ring 0x30000, RGB32 picture, sceMpegCreate work w*h*9/2 +
+0x2800, 0x20000 audio per channel, each 128-aligned; `workSize` = their sum + 0x80), video ring +0xe8,
+audio rings +0xec[4], data ring +0xfc, SoundFeeders +0x100[4]. One file ring (`FileStreamRing`, primed
+at 3/4) feeds `sceMpegDemuxPssRing` 0x116190 (libmpeg) in 0x4000 steps; callbacks: M2V -> video ring
+(under the sema), PCM and ADPCM per channel -> that channel's `MovieAudioRing` (the first 0x28 bytes are
+the SDK's SShd / SSbd header: type < 0x10 PCM sink else ADPCM, mono / stereo / stereo-16-interleaved,
+the ring ends at body size - 0x4000), DATA -> data ring, Nodata -> `feedIpu` (toIPU DMA by hand,
+<= 0x1000 bytes, the end code 4 x 000001b7 at 0x2fa440 when the file is spent), Stop / RestartDMA ->
+sceIpuStop / RestartDMA, Error / Background -> 1. `decodeFrame` steps open -> primed -> ready (first
+`sceMpegGetPicture`) and, once `startAudio` set playing, one picture per call; drained -> waits for the
+feeders (states 0 / 3 / 4 count as done) -> over. `uploadFrame` sends each 16x16 macroblock by
+`sceVif1PkRefLoadImage` 0x10b380 (libvifpk), **columns outer**, then a TEXFLUSH; `prime` draws the
+first one into tbp 0x700 through packet list 13. The rings: **StreamRing** (vtable 0x3112c0, vptr
++0x10 after {size, threshold (7/8 by default), data, owned}; 0x151f90..0x153110, still
+`unassigned@00148db0`; slots filled / contiguous / freeSpace / write / readPtr / readPos / consume /
+poll / endPos, the base ones return 0), **FileStreamRing** (0x311290, +0x14 rx stream ring, +0x1c file
+size = endPos, +0x20 consumed; open 0x1521c0 = rxFileCallSizeHook + rxSysStreamOpenRing, table
+0x2f5a80[8]), **MovieRing** (0x315f50, 0x34: write / read positions, filled, totals, +0x2c the video
+bytes in flight to the IPU, +0x30 endPos) and **MovieAudioRing** (0x315f80, 0x68: channel, player,
+header). The movie widget passes 2 audio channels and mutes one of them by `GameOptions::_04`.
 
 **`game/uigame.cpp` 0x25fa50..0x263b90 (TU 21, 2026-11-03, batches 049-052; cut out of
 `unassigned@00252840`; the file name is the port's; all 32 written, `verify`)**: the S2D UI's
@@ -1424,7 +1450,7 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   (batch 020; 0x1252d8 after it likely memmove); MSL `strstr` 0x128a70, `toupper` 0x12a010. Heap setup: `initGlobalHeap` 0x104600 (`_malloc_r` 0x124950 a block for 0x104500 to
   manage) / `shutdownGlobalHeap` 0x1045a0 (`_free_r` 0x123b18).
 - **libmpeg / libipu (batch 012, RoR's SDK 3.0 libraries, same sizes; `rxalign.py` with `--lib`)**: FS2 links the archive members in another order than RoR: the MPEG-2 decoder members first, 0x10c218..0x1112f8 (`_motionComp0` 0x10ccf0, `_getRef0`, `_doMC`, `_pictureData0`, `_slice0` 0x10d828, `_motionVectors`, `_flushBuf` 0x10e7f0, `_nextBit` 0x10ead8 (83 callers), `_sceMpegSliceA0` 0x10fea8, the header parsers `_groupOfPicturesHeader` .. `_pictureDisplayExtension` 0x111130; RoR 0x2541b0..0x258f78, after mpeg.c), then mpeg.c / csc / pack / init 0x1112f8..0x116978 (`sceMpegCreate` 0x1112f8, `_getpic`, `sceMpegInit` 0x111ea0 (calls `sceIpuInit`), `sceMpegDelete` .. `sceMpegGetDecodeMode`, `sceMpegSetDefaultPtsGap` 0x112370, `_decPicture`, `_alalc*`, `_lastFrame`, `_ch3dmaCSC` 0x113750 / `_ch4dma` (two code pointers of batch 010), `_id2type`, the PSS demuxer 0x113d40 / 0x1143e8, `sceMpegDemuxPss` 0x116570, `sceMpegAddStrCallback` 0x116590, `_ErrMessage` 0x116768 ('[MPEG ERROR]%s'), `_Error` 0x1168e0; RoR 0x24eb28..0x2541b0), then libipu 0x116978..0x116fb8 (`sceIpuStopDMA` 0x116a68, `sceIpuRestartDMA`, `sceIpuSync`, `sceIpuInit` 0x116d80; RoR 0x269948). Unnamed in RoR too: 0x10c218 (0x244, no RoR pair: before `FUN_002541b0`'s counterpart 0x10c460), 0x111228 (RoR 0x24ea58), the tiny accessors 0x1123a0..0x112400 (mp->sys +0xec, +0xe0, +0xe4, +0xc8 twice, +0xfc swap, +0x100: likely `sceMpegDispWidth` / `Height` / `CenterOff*` and kin; read them at the TU) and the other `FUN_` pairs of the alignment.
-- **The game's movie player is FS2's own, not RoR's rxMpeg** (batch 012): RoR's `RxMpeg` / `rxMpeg*` (snd/rxmpeg.cpp, RoR game code) has no counterpart by size (`rxalign.py 1fa800 1fd000 1810f4 1830fc`: 3 chance pairs). FS2's player is a C++ class at ~0x1fa880..~0x1fcbf0 (vtables 0x315f50 / 0x315f80 without type_info): 0x1fc7b0 initialises it (CreateSema, `sceMpegInit` once behind the flag 0x31ae28, 4 x volume 0x80), 0x1fb9d0 opens a stream (rx stream ring 0x152400, `sceMpegCreate`, `sceMpegAddStrCallback` x4, `sceMpegAddCallback`), 0x1fb630 gets pictures (`sceMpegGetPicture`), 0x1fab50 is the decode thread side (WaitSema, `sceMpegIsEnd`); 0x1fbe00 / 0x1fbe20 wrap `sceIpuRestartDMA` / `sceIpuStopDMA` (the libmpeg stop / restart DMA callbacks). Callers: 0x25bd30, 0x25e260 (the movie scenes: `movieEU/ev*.d2b`). Name it at its TU.
+- **The game's movie player is FS2's own, not RoR's rxMpeg** (batch 012; written at TU 34, `game/movieplayer.cpp` in "Modules" supersedes the guesses here): RoR's `RxMpeg` / `rxMpeg*` (snd/rxmpeg.cpp, RoR game code) has no counterpart by size (`rxalign.py 1fa800 1fd000 1810f4 1830fc`: 3 chance pairs). FS2's player is a C++ class at ~0x1fa880..~0x1fcbf0 (vtables 0x315f50 / 0x315f80 without type_info): 0x1fc7b0 initialises it (CreateSema, `sceMpegInit` once behind the flag 0x31ae28, 4 x volume 0x80), 0x1fb9d0 opens a stream (rx stream ring 0x152400, `sceMpegCreate`, `sceMpegAddStrCallback` x4, `sceMpegAddCallback`), 0x1fb630 gets pictures (`sceMpegGetPicture`), 0x1fab50 is the decode thread side (WaitSema, `sceMpegIsEnd`); 0x1fbe00 / 0x1fbe20 wrap `sceIpuRestartDMA` / `sceIpuStopDMA` (the libmpeg stop / restart DMA callbacks). Callers: 0x25bd30, 0x25e260 (the movie scenes: `movieEU/ev*.d2b`). Name it at its TU.
 - **libc** (Sony's newlib): `strlen` 0x128498, `strcpy` 0x128380 (R5900 quadword scans), `raise`
   0x127a68 / `_raise_r` 0x1278f8, `_impure_ptr` 0x2f3398.
 

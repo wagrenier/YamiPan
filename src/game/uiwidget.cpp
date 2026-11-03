@@ -14,6 +14,7 @@
 #include "game/gamehooks.h"
 #include "game/gamesystem.h"
 #include "game/memcard.h"
+#include "game/movieplayer.h"
 #include "game/sysdata.h"
 #include "game/uigame.h"
 #include "game/uilayout.h"
@@ -103,11 +104,11 @@ constexpr float kPrgRotBound = 2047.0f;
 constexpr float kPrgTransMsgSpeed = 4.0f;
 constexpr float kPrgTransMsgNoEnd = 1000.0f;
 
-// PrgMovie: the frame size and buffers it asks of the player, the texture
+// PrgMovie: the frame size and audio channels it asks of the player, the texture
 // base it draws from, where on the 512 x 512 frame its origin is, the
 // movies' frame rate.
 constexpr int kMovieSize = 0x200;
-constexpr int kMovieBuffers = 2;
+constexpr int kMovieAudioChannels = 2;    // MoviePlayer: the two language tracks (setVolume mutes one)
 constexpr int kMovieDrawTbp = 0x800;
 constexpr float kMovieOrigin = 256.0f;
 constexpr int kMovieFramesPerSecond = 25;
@@ -310,7 +311,7 @@ inline void PrgMovie::close()
 inline void PrgMovie::open()
 {
     close();
-    m_movie = new MoviePlayer(kMovieSize, kMovieSize, kMovieBuffers);
+    m_movie = new MoviePlayer(kMovieSize, kMovieSize, kMovieAudioChannels);
     if (getGameOptions()->_04 == 0)
         m_movie->setVolume(1, 0, 0);
     else

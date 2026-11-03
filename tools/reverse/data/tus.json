@@ -241,6 +241,25 @@
    "status": "verify",
    "why": "the memory card module: the libmc device wrapper McDevice (0x2ac630..0x2acff0, ctor 0x2acf90), the save manager Memcard (state machines 0x2a9cc0..0x2ab9f0, requests, update) and the SaveFile image (0x2aa720, 0x2abc20..0x2ac540); its sbss bytes 0x31ae80..0x31ae90 are one block (gp-0x79f0..-0x79e0: saveFound, flag, stamp, lib inited). 0x2a9be0 before it is a Vt_00318ca0 ctor; 0x2acff0 after it starts unrelated code (a 0x2ec840 / 0x267c00 call, then a 0x1cc0 object and lens-flare-like float code)"
   },
+  "game/movieplayer.cpp": {
+   "notes": "Cut out of unassigned@001953f0 (its tail 0x1faa30..0x1fcb40; the rest of that run is still unassigned). New game/movieplayer.h; gamehooks.h lost MoviePlayer and gained StreamRing / FileStreamRing (unassigned@00148db0, not cut) and SoundSink / SoundPcmSink / SoundAdpcmSink / SoundFeeder (sound/sound.cpp). PC: uploadFrame calls the new host YamiPan_DrawUiMovie (decoded macroblocks as the player's texture, no GS upload); feedIpu paces by YamiPanMpegVideoPending as RosePan did; Stop/RestartDMA callbacks are no-ops; the reader starts null. Bootstrap 6 must add sceMpegDemuxPssRing to the host libmpeg, rename RosePanMpegVideoPending, bring eeregs.h, and implement YamiPan_DrawUiMovie. Doubts in open-items.md TU 34: kMovieAudioTail 0x4000, the data ring and MovieState_Abort have no writer here. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean with RosePan SDK headers plus stubs.",
+   "ranges": [
+    [
+     "001faa30",
+     "001fcb40"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 10:05",
+     "status": "verify",
+     "summary": "MoviePlayer, the prgMovie widget's PSS player: file ring, libmpeg demux into video / audio / data rings, IPU feed, audio sinks and feeders, one RGB32 picture per frame; MovieRing / MovieAudioRing; all 41 written, source-only, not built"
+    }
+   ],
+   "status": "verify",
+   "why": "MoviePlayer (uiwidget's prgMovie player) and its MPEG / IPU callbacks and sound sinks: starts after the 0x1fa230 texture class (vtables 0x315f00/0x315f20, its dtors end 0x1fa9d0), ends at fontdata.cpp's TextPrinter::~TextPrinter 0x1fcb40; vtables 0x315f50 / 0x315f80 (ctors 0x1fc4e0 / 0x1fcad0) are inside"
+  },
   "game/pad.cpp": {
    "notes": "All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout (asserts). Source-only: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean against RosePan sdk headers. Pad::update only reads input for terminal mode 8 (DualShock 2 in pressure mode): bootstrap 6's host libpad must report that. Stick order is libpad's right x, right y, left x, left y; GamePad's comments and computeSticks locals in gamesystem were swapped and are fixed. 0x12fed0 renamed Pad::registerListener (it was Pad::setListening); 0x12fa30 is Pad::setListening. Ghidra saved by name_ctx.",
    "ranges": [
@@ -901,6 +920,7 @@
   "unassigned@001319f0": {},
   "unassigned@00142dd0": {},
   "unassigned@00171300": {},
+  "unassigned@001953f0": {},
   "unassigned@00231410": {},
   "unassigned@0023c020": {},
   "unassigned@0023e740": {},

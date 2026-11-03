@@ -29,7 +29,7 @@
 #include "sdk/scetypes.h"
 
 class Clock;                    // game/clock.h
-class MoviePlayer;              // game/gamehooks.h
+class MoviePlayer;              // game/movieplayer.h
 class SoundStream;              // game/gamehooks.h
 class UiTextTrack;              // game/uitrack.h
 
