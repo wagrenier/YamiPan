@@ -138,13 +138,13 @@ struct SaveData
     int    _000;                // FS2 +0x000: cleared by setDefaults
     u_char _004[0x65];
     u_char stageFlags[kStageFlagCount];                    // FS2 +0x069: clearBit bits per stage
-    u_char _0ae[0x2a];
+    u_char _0ae[0x27];          // FS2 +0x0ae: then 3 bytes padding (the implicit operator= copies 0x27)
     u_int  record[kRecordKinds][kRecordVariants][kStageCount];  // FS2 +0x0d8: best per stage, stageDefaultRecord when fresh
     int    _3a8;                // FS2 +0x3a8
     int    variant3ac;          // FS2 +0x3ac: 0..3, pickVariant3ac
     int    _3b0;                // FS2 +0x3b0
     u_char medals[kRecordKinds][kRecordVariants][kStageCount];  // FS2 +0x3b4: StageResult::getPerfectBits ORed in
-    u_char unlock468;           // FS2 +0x468: seeded from memcardGetState, set once by markUnlock468
+    u_char unlock468;           // FS2 +0x468: seeded from memcardGetState (a first-game save on the card), set once by markUnlock468
     int    _46c[16];            // FS2 +0x46c
     u_char _4ac[16];            // FS2 +0x4ac
 };

@@ -191,6 +191,7 @@ struct SaveFile
     void exportTo(SystemData *dst) const;                                // FS2 0x002ac110
     void capture(int index);                                             // FS2 0x002ac3f0
     void importFrom(const SystemData *src);                              // FS2 0x002ac540
+    void judge();               // inline in the ROM (stepLoad, stepCheckAll): sets status
 
     SaveData    save;           // FS2 +0x000
     StageSelect select;         // FS2 +0x4bc
@@ -220,6 +221,10 @@ static_assert(offsetof(SaveFile, index) == 0xe08, "SaveFile::index");
 // sceMcTblGetDir's 64-byte alignment pads it to what Heap::alloc reserves.
 static_assert(sizeof(SaveFile) == 0xe40, "SaveFile: EE 0xe40");
 
+// The free space a save needs, in sceMcGetInfo's 1 KB clusters
+// (memcardRequiredKB, stepScan).
+constexpr int kSaveRequiredKB = 80;
+
 // Heap::alloc's alignment for the manager's buffers.
 constexpr u_int kMemcardAlign = 0x40;
 
@@ -232,7 +237,7 @@ enum MemcardRequest
     MemcardRequest_None     = 0,
     MemcardRequest_CardInfo = 1,    // stepCardInfo
     MemcardRequest_ReadDirs = 2,    // stepReadDirs
-    MemcardRequest_Scan     = 3,    // stepScan
+    MemcardRequest_Scan     = 3,    // stepScan: room to save, the first game's saves
     MemcardRequest_CheckAll = 4,    // stepCheckAll
     MemcardRequest_Load     = 5,    // stepLoad
     MemcardRequest_Save     = 6,    // stepSave
@@ -310,6 +315,10 @@ private:
     void resetFiles();          // inline in the ROM
     bool begin(int request);    // inline in the ROM
     void clearInfo();           // inline in the ROM
+    void advanceProgress();     // inline in the ROM: m_progress += 0.05, up to 1
+    int  failSave();            // inline in the ROM
+    int  failRead();            // inline in the ROM
+    void setCheckOutcome();     // inline in the ROM
 };
 static_assert(offsetof(Memcard, m_info) == 0x3c, "Memcard::m_info");
 static_assert(offsetof(Memcard, m_request) == 0x48, "Memcard::m_request");
@@ -326,8 +335,10 @@ void memcardInit();                                                      // FS2 
 void memcardEnd();                                                       // FS2 0x002a9c70
 int  memcardRequiredKB();                                                // FS2 0x002a9cb0
 
-// Set by stepScan when a save directory lists any entry; SaveData::setDefaults
-// seeds SaveData::unlock468 from it (the byte 0x31ae80).
+// Set by stepScan when the card holds a save of the first game (any of its
+// ten releases' directories lists an entry); SaveData::setDefaults seeds
+// SaveData::unlock468 from it: the first game's save bonus (the byte
+// 0x31ae80).
 u_char memcardGetState();                                                // FS2 0x002ac610
 
 void memcardClearStamp();                                                // FS2 0x002ac5a0

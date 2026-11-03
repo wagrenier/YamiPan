@@ -470,7 +470,7 @@ language, 21-31 timezone minutes) and GetOsdConfigParam2 byte 0 (bit 4 summer ti
 notation, 6-7 date format), each returning a static default 0x2fb380..0x2fb387 on a DTL-T10000
 (`_scfIsT10K`: rom0:ROMVER [4] == 'T', buffer 0x2fb388); month lengths at 0x308840.
 
-**`game/memcard.cpp` 0x2a9c70..0x2acff0 (TU 7, 2026-11-02, batches 028-030, `partial`)**: three
+**`game/memcard.cpp` 0x2a9c70..0x2acff0 (TU 7, 2026-11-02, batches 028-030, all 55 written, `verify`)**: three
 layers in one file (its sbss bytes 0x31ae80 / 84 / 88 / 90 = gp-0x79f0..-0x79e0 are one block).
 `McDevice` (0x14: port, slot, result, sync result, last libmc function) wraps one sceMc request
 per call and syncs it inline (`wait` 0 polls: sceMcSync mode 1); a rejected request or a negative
@@ -491,6 +491,26 @@ all, 5 load, 6 / 7 save, 8 none, 9 format) when idle, `update` polls and runs it
 last), the outcome +0x68 (1 ok, 2 unusable, 3 no PS2 card, 4 failed, 5 unformatted) and progress
 +0x6c are for the menus 0x2b5770 / 0x2b6810 / 0x2b85b0 / 0x2b86e0. Save resources (icon1.ico, an
 icon.sys template) come from `getSaveResource` 0x2c3d70 (an object at 0x31ae98, unread).
+The requests: **save** (6 / 7) = card info (no PS2 card -> 3, unformatted -> 5), a blocking
+`mkdir` of BESCES-53851n (its error never reaches the step: update's next sync sees nothing
+running), then data / icon1.ico / icon.sys each open (SCE_CREAT | SCE_WRONLY) -> write -> flush ->
+close at steps 20.. / 30.. / 40.. with fixed progress marks (0.2 / 0.25, 0.5 / 0.55, 0.8 / 0.85,
++0.05 per flush / close); a failed close only sets outcome 4 and the next file goes on (50 then
+overwrites it with 1). **load** (5) and **check all** (4) read the directories, then read a
+complete save's 0xc00 bytes (SCE_RDONLY) and judge it (`SaveFile::judge`, inline: all three files
++ magic + sum -> 0, else 3; none of the files -> 4); check all's outcome is 1 when any save
+directory exists, else 2, its progress `0.3f + 0.2 * file` in double. Check all's open loop
+returns the starting file's step even when it opened a later file, so that later save is read
+into the earlier SaveFile (the ROM's slip). **scan** (3, at the title): room to save = 80 free
+clusters (`memcardRequiredKB`) or a complete own save, else outcome 2; then GetDir (no table,
+maxent -1) over the **first game's ten save directories** (0x2fb760: BISCPS-15053, BASCUS-97355,
+BESCES-51920 / 52327..52330, BKSCKA-20019, BCSCCS-40013, BISCAJ-30003, each `*`); the first that
+lists an entry sets gp-0x79f0 (`memcardGetState`), which seeds `SaveData::unlock468`: **the
+first-game save bonus**. `buildIconSys` 0x2ab7c0: "PS2D", icon1.ico for all three views, TransRate
+/ BgColor / lights / ambient (+0xc..+0xc0) from the template, title from 0x2fb7e0 with OffsLF 0x12
+(line 1 "Forbidden", 9 SJIS letters). The four `operator=` at 0x2ac170..0x2ac3f0 are the implicit
+copy assignments of FlagTable / GameOptions / StageSelect / SaveData (memberwise: `SaveData +0xae`
+is 0x27 bytes, then padding).
 
 ## Classes
 

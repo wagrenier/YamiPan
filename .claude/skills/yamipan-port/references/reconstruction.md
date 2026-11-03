@@ -114,6 +114,9 @@ Callcheck: name such calls in `// callcheck: ...` comments where the operator hi
   still a guess says so (`State_Unk3`, comment with the evidence) rather than staying a bare number.
   Enum names the binary carries are real names; file numbers get their table's names. Bare hex in
   finished code is for one-off addresses and hardware register values only.
+  Step machines whose steps are base + phase (memcard's `SaveStep_Data + kSavePhaseWrite`): make one
+  of the two `constexpr int`, not both enums (enum + enum arithmetic is deprecated in C++20, an error
+  later), and write the dispatch as a `switch` with fall-through where the ROM falls through.
 - Singletons keep the ROM's shape: a getter returning a function-local static whose constructor is the
   ROM's init.
 - EE addresses in game code (load targets, packet buffers, scratchpad 0x70000000) go through the

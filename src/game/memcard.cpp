@@ -8,6 +8,7 @@
 #include "game/datetime.h"
 #include "game/heap.h"
 #include "game/sysdata.h"
+#include "sdk/fileio.h"
 #include "sdk/libmc.h"
 #include "sdk/scetypes.h"
 
@@ -40,6 +41,29 @@ static const char *const sIconPaths[kSaveFiles] = {         /* data 0x2fb7d0 */
     "/BESCES-5385100/icon1.ico", "/BESCES-5385101/icon1.ico",
     "/BESCES-5385102/icon1.ico", "/BESCES-5385103/icon1.ico",
 };
+// icon.sys titles, SJIS full-width "Forbidden" / "Siren 2 File01".."04",
+// the line break after "Forbidden" (kIconSysTitleBreak) (data 0x2fb7e0,
+// strings 0x30a9d0..0x30aa60).
+#define FS2_ICON_TITLE(n)                                                   \
+    "\x82\x65\x82\x8f\x82\x92\x82\x82\x82\x89\x82\x84\x82\x84\x82\x85\x82\x8e" \
+    "\x82\x72\x82\x89\x82\x92\x82\x85\x82\x8e\x81\x40\x82\x51\x81\x40"        \
+    "\x82\x65\x82\x89\x82\x8c\x82\x85\x82\x4f" n
+static const char *const sIconSysTitles[kSaveFiles] = {     /* data 0x2fb7e0 */
+    FS2_ICON_TITLE("\x82\x50"), FS2_ICON_TITLE("\x82\x51"),
+    FS2_ICON_TITLE("\x82\x52"), FS2_ICON_TITLE("\x82\x53"),
+};
+#undef FS2_ICON_TITLE
+constexpr u_short kIconSysTitleBreak = 0x12;    // bytes: the nine SJIS letters of "Forbidden"
+
+// The first game's (Siren / Forbidden Siren) save directories in all its
+// releases, which stepScan looks for (data 0x2fb760, strings
+// 0x30a6e8..0x30a778).
+constexpr int kFirstGameSaves = 10;
+static const char *const sFirstGameSaveGlobs[kFirstGameSaves] = {   /* data 0x2fb760 */
+    "BISCPS-15053*", "BASCUS-97355*", "BESCES-51920*", "BESCES-52328*", "BESCES-52327*",
+    "BESCES-52330*", "BESCES-52329*", "BKSCKA-20019*", "BCSCCS-40013*", "BISCAJ-30003*",
+};
+
 // A SaveFile's name when its index is -1 (string 0x30aa90).
 static const char kSaveNameAny[] = "BESCES-53851*";
 // The entry names SaveFile::hasAllFiles looks for (strings 0x30aad8 / 0x30aae8).
@@ -74,6 +98,32 @@ static inline int fileOfStep(int step)
     return (step - kStepFirstFile) / kStepPerFile;
 }
 
+// stepSave's steps: the directory, then each file's five phases.
+enum SaveStep
+{
+    SaveStep_Mkdir   = kStepFirstFile,                      // 10, 11: mkdir, its result
+    SaveStep_Data    = kStepFirstFile + kStepPerFile,       // 20: BESCES-53851xx
+    SaveStep_Icon    = kStepFirstFile + 2 * kStepPerFile,   // 30: icon1.ico
+    SaveStep_IconSys = kStepFirstFile + 3 * kStepPerFile,   // 40: icon.sys
+    SaveStep_Done    = kStepFilesEnd,                       // 50
+};
+// What the step SaveStep_x + phase does with the last result (ints: the
+// case labels add them to a SaveStep). Phase 0 is the file's open.
+constexpr int kSavePhaseWrite = 1;
+constexpr int kSavePhaseFlush = 2;
+constexpr int kSavePhaseClose = 3;
+constexpr int kSavePhaseNext  = 4;      // on to the next file's open
+
+// stepScan lists sFirstGameSaveGlobs[(step - 20) / 10] at the phase-0
+// steps 20..120 (120 ends the scan) and reads the count at 21..121.
+constexpr int kScanStepFirst = kStepFirstFile + kStepPerFile;
+
+static inline bool isScanStep(int step, int phase)
+{
+    return step >= kScanStepFirst && step <= kScanStepFirst + kFirstGameSaves * kStepPerFile + phase
+        && (step - kScanStepFirst) % kStepPerFile == phase;
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // The module's exported end: a tail jump to memcardLibEnd.
 // FS2 0x002a9c70
@@ -94,12 +144,13 @@ void memcardInit()
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// The free space the save menu asks for (the save is ~73 KB; unit a guess).
+// The free space the save menu asks for (the save is ~73 KB; stepScan
+// compares it with sceMcGetInfo's free clusters, 1 KB each).
 // FS2 0x002a9cb0
 
 int memcardRequiredKB()
 {
-    return 80;
+    return kSaveRequiredKB;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -141,6 +192,206 @@ int Memcard::stepFormat(int step, int result)
 }
 
 // ──────────────────────────────────────────────────────────────────────
+// Requests 6 and 7: card info, the save's directory, then its three files,
+// each opened, written, flushed and closed. m_progress drives the save bar.
+// A failed write, flush or open ends the request; a failed close is noted
+// and the next file still written (the last file's close decides).
+// FS2 0x002a9dd0
+
+int Memcard::stepSave(int step, int result)
+{
+    int fileIndex = m_fileIndex;
+
+    switch (step) {
+    case SaveStep_Done:
+        m_outcome = MemcardOutcome_Ok;
+        m_progress = 1.0f;
+        return kStepDone;
+
+    case SaveStep_Data + kSavePhaseNext:
+    case SaveStep_Icon + kSavePhaseNext:
+    case SaveStep_IconSys + kSavePhaseNext:
+        step += kStepPerFile - kSavePhaseNext;
+        if (result == McResult_Done) {
+            advanceProgress();
+        } else {
+            m_outcome = MemcardOutcome_Failed;
+            m_progress = 1.0f;
+        }
+        return step;
+
+    case SaveStep_Data + kSavePhaseClose:
+    case SaveStep_Icon + kSavePhaseClose:
+    case SaveStep_IconSys + kSavePhaseClose:
+        if (result != McResult_Done)
+            return failSave();
+        close(m_fd, 0);
+        advanceProgress();
+        return step + 1;
+
+    case SaveStep_Data + kSavePhaseFlush:
+    case SaveStep_Icon + kSavePhaseFlush:
+    case SaveStep_IconSys + kSavePhaseFlush:
+        if (result != McResult_Done)
+            return failSave();
+        flush(m_fd, 0);
+        advanceProgress();
+        return step + 1;
+
+    case SaveStep_IconSys + kSavePhaseWrite:
+        if (result != McResult_Done)
+            return failSave();
+        m_fd = m_syncResult;
+        write(m_fd, m_iconSys, kIconSysSize, 0);
+        m_progress = 0.85f;
+        return step + 1;
+
+    case SaveStep_Icon + kSavePhaseWrite:
+        if (result != McResult_Done)
+            return failSave();
+        m_fd = m_syncResult;
+        write(m_fd, m_iconData, kIconSize, 0);
+        m_progress = 0.55f;
+        return step + 1;
+
+    case SaveStep_Data + kSavePhaseWrite:
+        if (result != McResult_Done)
+            return failSave();
+        m_fd = m_syncResult;
+        write(m_fd, m_image, kSaveDataSize, 0);
+        m_progress = 0.25f;
+        return step + 1;
+
+    case SaveStep_IconSys:
+        open(sIconSysPaths[fileIndex], SCE_CREAT | SCE_WRONLY, 0);
+        m_progress = 0.8f;
+        return step + 1;
+
+    case SaveStep_Icon:
+        open(sIconPaths[fileIndex], SCE_CREAT | SCE_WRONLY, 0);
+        m_progress = 0.5f;
+        return step + 1;
+
+    case 0:
+        m_infoStep = 0;
+        m_progress = 0.0f;
+        // fall through
+    case 1:
+        m_infoStep = stepCardInfo(m_infoStep, result);
+        if (m_infoStep >= 0)
+            return 1;
+        m_progress = 0.1f;
+        // fall through
+    case 2:
+        if (m_info.type != sceMcTypePS2) {
+            m_outcome = MemcardOutcome_NoCard;
+            m_progress = 1.0f;
+            return kStepDone;
+        }
+        if ((u_char)m_info.format == 0) {
+            m_outcome = MemcardOutcome_Unformatted;
+            m_progress = 1.0f;
+            return kStepDone;
+        }
+        step = SaveStep_Mkdir;
+        // fall through
+    case SaveStep_Mkdir:
+        // Blocking: update()'s next sync finds nothing running and passes
+        // McResult_Done, so an existing directory is no failure.
+        mkdir(saveName(fileIndex), 1);
+        return step + 1;
+
+    case SaveStep_Mkdir + 1:
+        if (result != McResult_Done) {
+            clearInfo();
+            m_progress = 1.0f;
+            return kStepDone;
+        }
+        step = SaveStep_Data;
+        // fall through
+    case SaveStep_Data:
+        open(sSaveDataPaths[fileIndex], SCE_CREAT | SCE_WRONLY, 0);
+        m_progress = 0.2f;
+        return step + 1;
+
+    case kStepDone:
+        return kStepDone;
+
+    default:
+        return step;
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Request 5: the directories, then save m_fileIndex's data file read into
+// its SaveFile and judged. Outcome Ok once read (whatever the judgement:
+// the caller reads SaveFile::status); Unusable when the save lacks a file.
+// FS2 0x002aa2f0
+// callcheck: alloc, init, hasAllFiles (resetFiles and SaveFile::judge inline in the ROM)
+
+int Memcard::stepLoad(int step, int result)
+{
+    int fileIndex = m_fileIndex;
+
+    switch (step) {
+    case kStepFilesEnd:
+        break;
+
+    case kStepFirstFile + 3:
+        if (result != McResult_Done)
+            return failRead();
+        m_files[fileIndex]->judge();
+        break;
+
+    case kStepFirstFile + 2:
+        if (result != McResult_Done)
+            return failRead();
+        close(m_fd, 0);
+        return kStepFirstFile + 3;
+
+    case kStepFirstFile + 1:
+        if (result != McResult_Done)
+            return failRead();
+        m_fd = m_syncResult;
+        read(m_fd, m_files[fileIndex], kSaveDataSize, 0);
+        return kStepFirstFile + 2;
+
+    case 0:
+        m_dirStep = 0;
+        // fall through
+    case 1:
+        m_dirStep = stepReadDirs(m_dirStep, result);
+        if (m_dirStep >= 0)
+            return 1;
+        // fall through
+    case 2:
+        if (m_info.type != sceMcTypePS2) {
+            m_outcome = MemcardOutcome_NoCard;
+            return kStepDone;
+        }
+        if ((u_char)m_info.format == 0) {
+            m_outcome = MemcardOutcome_Unusable;
+            return kStepDone;
+        }
+        step = kStepFirstFile;
+        // fall through
+    case kStepFirstFile:
+        if (m_files[fileIndex]->hasAllFiles() == true) {
+            open(sSaveDataPaths[fileIndex], SCE_RDONLY, 0);
+            return step + 1;
+        }
+        m_outcome = MemcardOutcome_Unusable;
+        return kStepDone;
+
+    default:
+        return step;
+    }
+
+    m_outcome = MemcardOutcome_Ok;
+    return kStepDone;
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // FS2 0x002aa720
 // callcheck: memset, setDefaults, init, clear (SaveFile::clear inline in the ROM)
 
@@ -152,6 +403,172 @@ void SaveFile::init(int fileIndex)
     found = 0;
     for (int i = 0; i < kSaveDirEntries; i++)
         clearDirEntry(&dir[i]);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Request 4: the directories, then every complete save's data file read
+// and judged, for the load / save menus' file list. Outcome Ok when any
+// save directory exists (SaveFile::status not Unknown / NoDir), else
+// Unusable.
+// FS2 0x002aa7e0
+// callcheck: alloc, init, hasAllFiles, __floatsidf, __muldf3, __adddf3, __truncdfsf2 (resetFiles and SaveFile::judge inline in the ROM; the progress formula in double)
+
+int Memcard::stepCheckAll(int step, int result)
+{
+    if (step == kStepFilesEnd) {
+        setCheckOutcome();
+        m_progress = 1.0f;
+        return kStepDone;
+    }
+
+    if (isFileStep(step, 3)) {
+        if (result != McResult_Done) {
+            failRead();
+            m_progress = 1.0f;
+            return kStepDone;
+        }
+        m_files[fileOfStep(step)]->judge();
+        return step + kStepPerFile - 3;
+    }
+
+    if (isFileStep(step, 2)) {
+        if (result != McResult_Done)
+            return failRead();
+        close(m_fd, 0);
+        return step + 1;
+    }
+
+    if (isFileStep(step, 1)) {
+        if (result != McResult_Done) {
+            failRead();
+            m_progress = 1.0f;
+            return kStepDone;
+        }
+        m_fd = m_syncResult;
+        read(m_fd, m_files[fileOfStep(step)], kSaveDataSize, 0);
+        return step + 1;
+    }
+
+    if (!isFileStep(step, 0)) {
+        if (step != 2) {
+            if (step != 1) {
+                if (step != 0) {
+                    if (step == kStepDone) {
+                        m_progress = 1.0f;
+                        return kStepDone;
+                    }
+                    return step;
+                }
+                m_dirStep = 0;
+            }
+            m_dirStep = stepReadDirs(m_dirStep, result);
+            if (m_dirStep >= 0)
+                return 1;
+        }
+        if (m_info.type != sceMcTypePS2) {
+            m_outcome = MemcardOutcome_NoCard;
+            m_progress = 1.0f;
+            return kStepDone;
+        }
+        if ((u_char)m_info.format == 0) {
+            m_outcome = MemcardOutcome_Unusable;
+            m_progress = 1.0f;
+            return kStepDone;
+        }
+        step = kStepFirstFile;
+        m_progress = 0.1f;
+    }
+
+    // The next complete save from this step's file on. The step returned is
+    // this file's read step even when a later file was opened, so a later
+    // save's data lands in this file's SaveFile (the ROM's own slip; the
+    // later file is then looked at again on its own turn).
+    int first = fileOfStep(step);
+    for (int i = first; i < kSaveFiles; i++) {
+        if (m_files[i]->hasAllFiles() == true) {
+            open(sSaveDataPaths[i], SCE_RDONLY, 0);
+            m_progress = (float)(0.3f + 0.2 * i);   // in double, as the ROM
+            return first * kStepPerFile + kStepFirstFile + 1;
+        }
+    }
+    setCheckOutcome();
+    m_progress = 1.0f;
+    return kStepDone;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Request 3, at the title: is there room to save (kSaveRequiredKB free, or
+// a save of this game to overwrite)? Then the first game's save
+// directories (sFirstGameSaveGlobs) are listed one by one; any with an
+// entry sets sMcSaveFound (memcardGetState), the first game's save bonus.
+// An unformatted card counts as Ok.
+// FS2 0x002aaee0
+
+int Memcard::stepScan(int step, int result)
+{
+    if (isScanStep(step, 1)) {
+        if (result == McError_NoEntry || result == McError_DirDenied)
+            return step + kStepPerFile - 1;
+        if (result != McResult_Done)
+            return kStepDone;
+        if (m_syncResult > 0) {
+            sMcSaveFound = 1;
+            return kStepDone;
+        }
+        return step + kStepPerFile - 1;
+    }
+
+    if (!isScanStep(step, 0)) {
+        if (step != kStepFirstFile) {
+            if (step != 2) {
+                if (step != 1) {
+                    if (step != 0) {
+                        if (step == kStepDone)
+                            return kStepDone;
+                        m_outcome = MemcardOutcome_Ok;
+                        return kStepDone;
+                    }
+                    m_dirStep = 0;
+                }
+                m_dirStep = stepReadDirs(m_dirStep, result);
+                if (m_dirStep >= 0)
+                    return 1;
+            }
+            if (m_info.type != sceMcTypePS2) {
+                m_outcome = MemcardOutcome_NoCard;
+                return kStepDone;
+            }
+            if ((u_char)m_info.format == 0) {
+                m_outcome = MemcardOutcome_Ok;
+                return kStepDone;
+            }
+        }
+        if (m_info.free < kSaveRequiredKB) {
+            bool any = false;
+            for (int i = 0; i < kSaveFiles; i++) {
+                if (m_files[i]->hasAllFiles()) {
+                    any = true;
+                    m_outcome = MemcardOutcome_Ok;
+                    break;
+                }
+            }
+            if (!any) {
+                m_outcome = MemcardOutcome_Unusable;
+                return kStepDone;
+            }
+        } else {
+            m_outcome = MemcardOutcome_Ok;
+        }
+        step = kScanStepFirst;
+    }
+
+    int dir = (step - kScanStepFirst) / kStepPerFile;
+    if (dir < kFirstGameSaves) {
+        // Only the entry count is wanted: no table.
+        getDir(sFirstGameSaveGlobs[dir], 0, -1, 0, 0);
+        return step + 1;
+    }
+    return kStepDone;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -359,6 +776,105 @@ inline void Memcard::clearInfo()
     m_info.format = 0;
 }
 
+// The save bar's step per finished call (inline in the ROM).
+inline void Memcard::advanceProgress()
+{
+    m_progress += 0.05f;
+    if (m_progress > 1.0f)
+        m_progress = 1.0f;
+}
+
+// stepSave's failure (inline in the ROM).
+inline int Memcard::failSave()
+{
+    clearInfo();
+    m_outcome = MemcardOutcome_Failed;
+    m_progress = 1.0f;
+    return kStepDone;
+}
+
+// stepLoad's and stepCheckAll's failure: forget what was read (inline in
+// the ROM).
+inline int Memcard::failRead()
+{
+    resetFiles();
+    clearInfo();
+    m_outcome = MemcardOutcome_Failed;
+    return kStepDone;
+}
+
+// stepCheckAll's outcome: Ok when any save directory is there (inline in
+// the ROM).
+inline void Memcard::setCheckOutcome()
+{
+    m_outcome = MemcardOutcome_Unusable;
+    for (int i = 0; i < kSaveFiles; i++) {
+        int status = m_files[i]->status;
+        if (!(status == SaveStatus_Unknown || status == SaveStatus_NoDir)) {
+            m_outcome = MemcardOutcome_Ok;
+            break;
+        }
+    }
+}
+
+// A read data file's verdict (inline in the ROM, stepLoad / stepCheckAll):
+// all three files with a good magic and sum, a broken save, or none of its
+// files. A save already judged NoDir / Denied / Broken keeps its status.
+inline void SaveFile::judge()
+{
+    if (hasAllFiles()) {
+        if (magic == kSaveMagic && sum == saveByteSum(this))
+            status = SaveStatus_Ok;
+        else
+            status = SaveStatus_Broken;
+    } else if (status == SaveStatus_Unknown || status == SaveStatus_Ok) {
+        status = found == 0 ? SaveStatus_Empty : SaveStatus_Broken;
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// icon.sys for save `index` into m_iconSys: the lighting and background
+// from the template getSaveResource(1), the title, icon1.ico for all
+// three views.
+// FS2 0x002ab7c0
+
+void Memcard::buildIconSys(int index)
+{
+    if (m_iconSys == 0)
+        m_iconSys = static_cast<sceMcIconSys *>(gGlobalHeap.alloc(kIconSysSize, kMemcardAlign));
+    const sceMcIconSys *tmpl = static_cast<const sceMcIconSys *>(getSaveResource(1));
+
+    sceMcIconSys *sys = m_iconSys;
+    memset(sys, 0, kIconSysSize);
+    sys->Head[0] = 'P';
+    sys->Head[1] = 'S';
+    sys->Head[2] = '2';
+    sys->Head[3] = 'D';
+    strcpy(reinterpret_cast<char *>(sys->FnameView), kIconName);
+    strcpy(reinterpret_cast<char *>(sys->FnameCopy), kIconName);
+    strcpy(reinterpret_cast<char *>(sys->FnameDel), kIconName);
+    if (tmpl != 0) {
+        sys->TransRate = tmpl->TransRate;
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 4; j++)
+                sys->BgColor[i][j] = tmpl->BgColor[i][j];
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 4; j++)
+                sys->LightDir[i][j] = tmpl->LightDir[i][j];
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 4; j++)
+                sys->LightColor[i][j] = tmpl->LightColor[i][j];
+        for (int j = 0; j < 4; j++)
+            sys->Ambient[j] = tmpl->Ambient[j];
+    }
+
+    sys = m_iconSys;
+    const char *title = sIconSysTitles[index];
+    memset(sys->TitleName, 0, sizeof(sys->TitleName));
+    strncpy(reinterpret_cast<char *>(sys->TitleName), title, sizeof(sys->TitleName) - 2);
+    sys->OffsLF = kIconSysTitleBreak;
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x002ab9f0
 
@@ -516,6 +1032,18 @@ void SaveFile::exportTo(SystemData *dst) const
         dst->flags = flags;
     }
 }
+
+// ──────────────────────────────────────────────────────────────────────
+// The implicit copy assignments of the system data's parts, which
+// CodeWarrior emitted out of line here for exportTo / importFrom (0x2b9710
+// calls them too). Each copies member by member, which bears out the
+// layouts in sysdata.h (SaveData::_0ae is 0x27 bytes, then padding; the
+// record table and FlagTable go as doublewords, the medals as byte
+// pairs). Nothing to write: the C++ compiler makes them.
+// FS2 0x002ac170 FlagTable::operator= (implicit)
+// FS2 0x002ac1a0 GameOptions::operator= (implicit)
+// FS2 0x002ac260 StageSelect::operator= (implicit)
+// FS2 0x002ac290 SaveData::operator= (implicit)
 
 // ──────────────────────────────────────────────────────────────────────
 // The game's state into a save image, stamped with `fileIndex`, the local
