@@ -212,6 +212,13 @@ questions. Resolve items here when they are settled (move them to "Done" with th
 
 ## Decisions
 
+- 2026-11-02 (the user): **four rules for all code** (SKILL.md "The user's rules"): (1) no GS
+  emulator, not even for textures (MioPan's `miopan_gs.cpp` reimplements the GS for textures: do not
+  repeat it; decode assets at their source so the GS path is not needed); (2) name repeated values and
+  state / flag bits as enums, `#define`s or `constexpr` while decompiling; (3) **arbitrary aspect ratio
+  is the port's #1 feature**; (4) reuse MioPan / ReiPan / RosePan abstractions instead of
+  reimplementing the basics.
+
 - 2026-11-02 (the user): **source code first.** Stop seeding library names; reconstruct game code
   and name as each TU needs it ("Next up" item 0). `tus.py` comes over before the build exists, in a
   source-only mode; supersedes the 2026-10-31 decision to hold it for bootstrap 7.

@@ -142,11 +142,24 @@ frontmatter; the user's rule: automated runs at xhigh or above). Keep that line.
 ## The user's rules (from the earlier ports; open-items.md "Decisions" has the dates)
 
 - **The picture is the test.** Logs, stub hits and callcheck show the code ran, not that it is right.
-- **Drawing never goes through the emulated GS.** Keep the game's draw decisions (what, where, colour,
-  blend, order, textures), replace its output: the packet-writing step calls a native host draw module
-  per subsystem under `src/yamipan/rendering/`, batched, layers in the game's order, textures on the GPU
-  keyed by their owner record (RosePan architecture.md "PC platform layer").
-- **Any aspect ratio**: from one renderer-owned source, never a fixed 4:3 / 640x448 in host draw code.
+- **Any aspect ratio is the port's #1 feature** (2026-11-02): one renderer-owned source for the
+  display size and aspect, never a fixed 4:3 / 640x448 in host draw code; 2D layout (HUD, menus,
+  movies, fades) anchored and scaled from it, 3D projection widened from it, never stretched. Every
+  drawing TU is judged on it as well as on the picture.
+- **No GS emulator, not even for textures** (2026-11-02). Keep the game's draw decisions (what, where,
+  colour, blend, order, textures), replace its output: the packet-writing step calls a native host draw
+  module per subsystem under `src/yamipan/rendering/`, batched, layers in the game's order. **Textures
+  never pass through emulated GS memory** (no `miopan_gs.cpp` / `rosepan_gs.cpp`-style local-memory
+  model, swizzle or CLUT upload replay): when a TU loads or uploads an image, decode the asset at its
+  source (the file record the game reads: format, size, palette) straight to a GPU texture keyed by its
+  owner record, and make the upload path the game uses (GS packets, VRAM addresses) unnecessary.
+- **Name the patterns** (2026-11-02): a value that repeats or behaves like a state / mode / kind
+  becomes an `enum` or a `#define`d / `constexpr` name, bit tests on flags become named flag bits
+  (`if (m_flags & ActorFlag_Visible)`, not `& 0x10`) -- as the code is decompiled, not later.
+  reconstruction.md "Types and constants".
+- **Reuse the earlier ports' abstractions** (2026-11-02): the platform layer, SDK-on-host, rendering,
+  io, config, stub and test plumbing come from RosePan / ReiPan / MioPan (newest first) and are
+  renamed, not rewritten; write new host code only where FS2 needs something they lack.
 - **Methods, not free functions**: a function taking the object in a0 is a member.
 - **Automated work at xhigh or above; sessions never start sessions.**
 

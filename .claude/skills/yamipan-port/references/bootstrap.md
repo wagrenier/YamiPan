@@ -107,7 +107,9 @@ sessions pin real extents (`tus.py define`).
 ## 6. Platform layer (host task `setup/platform_bootstrap.cpp`)
 
 From RosePan (it is ReiPan's, which is MioPan's, renamed and grown): `src/sdk/` (the PS2 SDK on the
-host), `src/rosepan/` -> `src/yamipan/` (os, io, gs, rendering, UI, config, memory), `src/common/`
+host), `src/rosepan/` -> `src/yamipan/` (os, io, rendering, UI, config, memory; **not** `gs/`: no GS
+emulator, not even for textures, SKILL.md "The user's rules"; take only its pure helpers, e.g. the
+PSM enum and TIM2 / CLUT decoding, into the asset decoders), `src/common/`
 (the stub macros), `CMakeLists.txt`, `CMakePresets.json`, `cmake/`, the fetched dependencies. Rename
 `RosePan` -> `YamiPan` throughout (identifiers, env variables, files, shader macros; config in
 `%APPDATA%/Mikompilation/YamiPan/`). Drop RoR's game-specific modules (`rosepan_i3d*` and the i3d mesh
@@ -117,7 +119,9 @@ platform contract the tools rely on (RosePan's tools README "Platform contract")
 (`YAMIPAN_AUTOPAD`), the data root (`YAMIPAN_DATA_DIR`), the stub log line
 (`[stub] <name> (<TAG> 0x%08x) reached`), the game thread's name for gdb, `[W]` / `[E]` log lines, a
 skip-intro switch that smoke runs turn off. `src/main.cpp` runs the game's `main` on the game thread.
-The draw path is native from the start (SKILL.md "The user's rules").
+The draw path is native from the start (SKILL.md "The user's rules"). Reuse, do not rewrite: take each abstraction
+from RosePan, else ReiPan, else MioPan, and write new host code only for what none of them has.
+The display size / aspect source comes first: arbitrary aspect ratio is the port's #1 feature.
 
 ## 7. First build, first TU, the loop
 

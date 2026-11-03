@@ -97,8 +97,14 @@ real, not a stub.
   of `if`s; callees typed `void f(void)` lose their arguments; tail calls (`j`) are calls; switch tables
   on bytes decompile into goto soup (check the rewrite with `mipsemu.py --grid` over every input); VU0
   macro code is `extraout_vfN` noise (hazards.md "Decompiler").
-- Constants stay constants with a comment (sound ids, frame counts, states); enums once their meaning is
-  certain; enum names the binary carries are real names. File numbers get their table's names.
+- **Types and constants (the user, 2026-11-02): name the patterns while decompiling.** A value that is
+  compared against, switched on or stored as a state / mode / kind / id gets an `enum` (in the owning
+  class's header); flag words get named bits (`enum ActorFlags { ActorFlag_Visible = 0x10, ... }` or
+  `constexpr` masks) and every `& 0x10` / `|= 0x10` uses the name; a number repeated across functions
+  (sizes, limits, frame counts, file ids) gets a `#define` / `constexpr` once. A name whose meaning is
+  still a guess says so (`State_Unk3`, comment with the evidence) rather than staying a bare number.
+  Enum names the binary carries are real names; file numbers get their table's names. Bare hex in
+  finished code is for one-off addresses and hardware register values only.
 - Singletons keep the ROM's shape: a getter returning a function-local static whose constructor is the
   ROM's init.
 - EE addresses in game code (load targets, packet buffers, scratchpad 0x70000000) go through the
