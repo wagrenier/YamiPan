@@ -60,12 +60,46 @@ bool boxContainsPoint(const float m[4][4], const float p[4]);            // FS2 
 // The resident menu pack: dataEU/packmenuEU.pak at 0x31ae98, loaded only
 // while not loaded (loadInitPack: game/gamepaths.h).
 void loadMenuPack();                                                     // FS2 0x002c3e10
-// The scene table's only scene, "Menu (Pack File)": the menu flow 0x2b5770(1).
-void menuSceneThread(void *arg);                                         // FS2 0x002b5740
+// Deletes what loadMenuPack made (the pack, its SePlayer); a stage needs
+// the memory.
+void unloadMenuPack();                                                   // FS2 0x002c3db0
 
-// 2dEU/archive<lang>.d2b and 2dEU/option<lang>.d2b (static buffers).
+// What game/menuscene.cpp calls.
+// title<lang>.d2b, without its intro unless withIntro: TitleAnswer.
+int  runTitleScreen(bool withIntro);                                     // FS2 0x00231c90
+// help<lang>.d2b at a page; always 0.
+int  runHelpScreen(int page);                                            // FS2 0x002acff0
+// The mode behind the top menu's answer 10, in slot 3 (0x2c4320; 16 scored
+// entries of the save, unread): true when it changed the save.
+int  runExtraMode(int arg);                                              // FS2 0x002c42c0
+
+// The navi screen's answer: a node (stage in the low byte, these bits) or
+// one of the two below alone.
+constexpr int kNaviAnswerStageMask = 0xff;
+enum NaviAnswer
+{
+    NaviAnswer_Variant1 = 0x100,    // StageSelect::variant
+    NaviAnswer_Flag200  = 0x200,    // StageSelect::_10
+    NaviAnswer_Help     = 0x400,    // runHelpScreen
+    NaviAnswer_Leave    = 0x800,    // back to the top menu (also a thread message)
+};
+// navi<lang>.d2b from the current node, blocking.
+int  runNaviFile();                                                      // FS2 0x00295470
+// The record as a node (negated after a clear) / a node into the record.
+int  currentNaviAnswer();                                                // FS2 0x0029ad40
+int  applyNaviAnswer(int answer);                                        // FS2 0x0029acb0
+// The new game's getSaveExtra block (unread).
+void saveExtraInit();                                                    // FS2 0x0029ef70
+
+// The layouts' paths (static buffers): 2dEU/<name><lang>.d2b.
 const char *archiveLayoutPath();                                         // FS2 0x002ec7f0
 const char *optionLayoutPath();                                          // FS2 0x002ec660
+const char *naviTuLayoutPath();                                          // FS2 0x002ec5c0
+const char *mcBaseLayoutPath();                                          // FS2 0x002ec610
+const char *memAltLayoutPath();                                          // FS2 0x002ec6b0
+const char *newGameLayoutPath();                                         // FS2 0x002ec700
+const char *sceLogoLayoutPath();                                         // FS2 0x002ec750
+const char *topMenuLayoutPath();                                         // FS2 0x002ec7a0
 // The event movies stageMoviePath's table names (game/gamepaths.cpp):
 // movieEU/ev<id><lang>.d2b in the static buffer 0x5a5460.
 const char *eventMoviePath0102();                                        // FS2 0x002ec520
@@ -991,8 +1025,10 @@ public:
 // What the S2D widgets (game/uiwidget.cpp) call of systems without a TU.
 
 // The word at sbss 0x31ae40 (gp-0x7a30; unassigned@0023e740): a work area
-// the movie widget lends its player. Who sets it is unread.
+// the movie widget lends its player; menuPlayMovie sets it to the stage
+// pack's buffer around a stage's opening movie.
 void *getUiWorkArea();                                                   // FS2 0x00243380
+void  setUiWorkArea(void *area);                                         // FS2 0x00243370
 
 // fsm subtitle files (unassigned@002681e0): tracks of timed 16-bit texts,
 // relocated in place once.

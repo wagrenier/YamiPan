@@ -42,6 +42,10 @@ constexpr int kStageFlagUnlockB = 67;
 // SaveData::testStageFlags: with this bit in the mask, every other mask bit
 // must be set (without it, any).
 constexpr u_int kStageFlagTestAll = 0x40;
+// The stage clear bits of every kind in one variant (SaveData::clearBit:
+// kind 0..2 variant 0 = 0x01 / 0x04 / 0x10, variant 1 = 0x02 / 0x08 / 0x20).
+constexpr u_int kClearedVariant0 = 0x15;
+constexpr u_int kClearedVariant1 = 0x2a;
 
 // GameOptions::soundMode, as SoundConfig::setOutputMode takes it.
 enum SoundOutput

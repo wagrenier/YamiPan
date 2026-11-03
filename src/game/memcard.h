@@ -343,7 +343,9 @@ void memcardClearStamp();                                                // FS2 
 void memcardSetStamp(u_long stamp);                                      // FS2 0x002ac5b0
 void memcardGetStamp(u_long *out);                                       // FS2 0x002ac5c0
 
-// The byte 0x31ae84: memcardInit sets it; meaning unknown.
+// The byte 0x31ae84: set = no save to offer. memcardInit and a started game
+// set it, menuSaveDialog clears it and sets it again when the dialog
+// answers 0, and menuPlayLoop offers a save only while it is clear.
 u_char memcardGetFlag();                                                 // FS2 0x002ac5d0
 void   memcardSetFlag();                                                 // FS2 0x002ac5e0
 void   memcardClearFlag();                                               // FS2 0x002ac5f0

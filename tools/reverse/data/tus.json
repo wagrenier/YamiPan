@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/menuscene.cpp",
   "rena/rena_2d_texture_tim2.cpp",
   "yamipan/rendering/texture_store.cpp"
  ],
@@ -284,12 +283,21 @@
    "why": "the memory card module: the libmc device wrapper McDevice (0x2ac630..0x2acff0, ctor 0x2acf90), the save manager Memcard (state machines 0x2a9cc0..0x2ab9f0, requests, update) and the SaveFile image (0x2aa720, 0x2abc20..0x2ac540); its sbss bytes 0x31ae80..0x31ae90 are one block (gp-0x79f0..-0x79e0: saveFound, flag, stamp, lib inited). 0x2a9be0 before it is a Vt_00318ca0 ctor; 0x2acff0 after it starts unrelated code (a 0x2ec840 / 0x267c00 call, then a 0x1cc0 object and lens-flare-like float code)"
   },
   "game/menuscene.cpp": {
+   "notes": "All 14 functions of 0x2b5740..0x2b6b90 written (batch 083, 32 names, saved in Ghidra): the whole menu flow, architecture.md Modules has the map. Build, callcheck and layoutcheck green. Smoke, no pad: the language screen runs, black for about 3000 presented frames, then one white band across the screen (y 224..288 of 683x512) with no text or images: untextured, because Tim2Texture::Tim2Texture and UiTrack::draw are stubs; no reference picture was extracted, work/ref is empty. With a scripted CROSS the flow passes the language screen, the card check and the logo (both on null path stubs, so no layout shows) and then spins in menuFlow on the stub runTitleScreen (hazards.md Stubs). CIRCLE does nothing on the language screen. Next in the queue: rena/rena_2d_texture_tim2.cpp and the texture store, judged on this language screen. The stubs that block the menu after that are listed in open-items.md Next up item 8: layout paths 0x2ec110.., runTitleScreen 0x231c90, loadMenuPack / unloadMenuPack, the navi block. Doubts: the file name, the screen names, SaveDialogReason, runAttractDemo, the 0x40 size of the script path buffer. One PC: mark: menuPlayMovie guards the ROM double delete of an empty movie loader.",
    "ranges": [
     [
      "002b5740",
      "002b6b90"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-03 18:13",
+     "status": "verify",
+     "summary": "reconstruct the menu flow, 14 functions (verify)"
+    }
+   ],
+   "status": "verify",
    "why": "Cut out of unassigned@002b0d50 at bootstrap 6, on the user's word, to pin the menu scene: menuSceneThread 0x2b5740 and everything only its tree calls (0x2b5770 -> 0x2b5aa0, 0x2b5ab0, 0x2b62d0, 0x2b65e0, 0x2b66e0, 0x2b67d0, 0x2b6410, 0x2b5dc0, 0x2b60b0, 0x2b6770, 0x2b6810, 0x2b6a00); refs show no caller from outside, and 0x2b6b90 is called from 0x1ff184. The file name is the port's."
   },
   "game/movieplayer.cpp": {

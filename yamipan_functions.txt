@@ -5504,7 +5504,7 @@
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 00231c90 00000084 */ FUN_00231c90(){}
+/* 00231c90 00000084 */ runTitleScreen(){}  // game
 /* 00231d20 00000004 */ overlayShowLoading(){}  // native
 /* 00231d30 00000004 */ overlayShowLoading(){}  // native
 /* 00231d40 0000003c */ FUN_00231d40(){}
@@ -5694,7 +5694,7 @@
 /* 002432a0 000000a4 */ FUN_002432a0(){}
 /* 00243350 00000004 */ UiTrack::draw(){}  // game
 /* 00243360 00000008 */ UiTrack::getAnchor(){}  // game
-/* 00243370 00000008 */ FUN_00243370(){}
+/* 00243370 00000008 */ setUiWorkArea(){}  // game
 /* 00243380 00000008 */ getUiWorkArea(){}  // game
 
 // *****************************************************************************
@@ -6849,8 +6849,8 @@
 /* 00295440 00000008 */ FUN_00295440(){}
 /* 00295450 00000008 */ FUN_00295450(){}
 /* 00295460 00000008 */ FUN_00295460(){}
-/* 00295470 00000078 */ FUN_00295470(){}
-/* 002954f0 000000e0 */ FUN_002954f0(){}
+/* 00295470 00000078 */ runNaviFile(){}  // game
+/* 002954f0 000000e0 */ runNaviLayout(){}  // game
 
 // *****************************************************************************
 // FILE -- game/progress.cpp
@@ -6977,8 +6977,8 @@
 /* 0029aae0 000001a8 */ FUN_0029aae0(){}
 /* 0029ac90 00000008 */ FUN_0029ac90(){}
 /* 0029aca0 00000008 */ FUN_0029aca0(){}
-/* 0029acb0 00000088 */ FUN_0029acb0(){}
-/* 0029ad40 00000060 */ FUN_0029ad40(){}
+/* 0029acb0 00000088 */ applyNaviAnswer(){}  // game
+/* 0029ad40 00000060 */ currentNaviAnswer(){}  // game
 /* 0029ada0 00000030 */ FUN_0029ada0(){}
 /* 0029add0 00000060 */ FUN_0029add0(){}
 /* 0029ae30 000000c0 */ PrgScaleNaviScroll::PrgScaleNaviScroll(){}  // game
@@ -7002,7 +7002,7 @@
 /* 0029dc50 00000778 */ FUN_0029dc50(){}
 /* 0029e3d0 0000011c */ FUN_0029e3d0(){}
 /* 0029e4f0 00000a7c */ PrgScaleNavi::PrgScaleNavi(){}  // game
-/* 0029ef70 0000005c */ FUN_0029ef70(){}
+/* 0029ef70 0000005c */ saveExtraInit(){}  // game
 /* 0029efd0 0000000c */ getSaveExtra(){}  // game
 /* 0029efe0 00000008 */ getNaviMenu(){}  // game
 /* 0029eff0 0000005c */ FUN_0029eff0(){}
@@ -7237,7 +7237,7 @@
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 002acff0 00000040 */ FUN_002acff0(){}
+/* 002acff0 00000040 */ runHelpScreen(){}  // game
 /* 002ad030 0000003c */ FUN_002ad030(){}
 /* 002ad070 00000084 */ MenuProgHolder::~MenuProgHolder(){}  // game
 /* 002ad100 00000060 */ FUN_002ad100(){}
@@ -7394,19 +7394,19 @@
 // *****************************************************************************
 
 /* 002b5740 00000024 */ menuSceneThread(){}  // game
-/* 002b5770 0000032c */ FUN_002b5770(){}
-/* 002b5aa0 00000008 */ FUN_002b5aa0(){}
-/* 002b5ab0 0000030c */ FUN_002b5ab0(){}
-/* 002b5dc0 000002e4 */ FUN_002b5dc0(){}
-/* 002b60b0 00000218 */ FUN_002b60b0(){}
-/* 002b62d0 00000140 */ FUN_002b62d0(){}
-/* 002b6410 000001d0 */ FUN_002b6410(){}
-/* 002b65e0 000000f4 */ FUN_002b65e0(){}
-/* 002b66e0 00000088 */ FUN_002b66e0(){}
-/* 002b6770 00000060 */ FUN_002b6770(){}
-/* 002b67d0 0000003c */ FUN_002b67d0(){}
-/* 002b6810 000001f0 */ FUN_002b6810(){}
-/* 002b6a00 00000190 */ FUN_002b6a00(){}
+/* 002b5770 0000032c */ menuFlow(){}  // game
+/* 002b5aa0 00000008 */ runAttractDemo(){}  // game
+/* 002b5ab0 0000030c */ menuPlayLoop(){}  // game
+/* 002b5dc0 000002e4 */ menuPlayStage(){}  // game
+/* 002b60b0 00000218 */ menuRunStage(){}  // game
+/* 002b62d0 00000140 */ menuTopMenu(){}  // game
+/* 002b6410 000001d0 */ runMenuLayoutFile(){}  // game
+/* 002b65e0 000000f4 */ menuChooseKind(){}  // game
+/* 002b66e0 00000088 */ menuLoadGame(){}  // game
+/* 002b6770 00000060 */ menuSaveDialog(){}  // game
+/* 002b67d0 0000003c */ menuBootScreens(){}  // game
+/* 002b6810 000001f0 */ menuCheckCard(){}  // game
+/* 002b6a00 00000190 */ menuPlayMovie(){}  // game
 
 // *****************************************************************************
 // FILE -- (unassigned)
@@ -7529,7 +7529,7 @@
 /* 002c3c00 00000130 */ FUN_002c3c00(){}
 /* 002c3d30 0000003c */ getSaveResourceAux(){}  // game
 /* 002c3d70 0000003c */ getSaveResource(){}  // game
-/* 002c3db0 00000058 */ FUN_002c3db0(){}
+/* 002c3db0 00000058 */ unloadMenuPack(){}  // game
 /* 002c3e10 0000009c */ loadMenuPack(){}  // game
 /* 002c3eb0 00000288 */ FUN_002c3eb0(){}
 /* 002c4140 00000008 */ getSePlayer(){}  // game
@@ -7537,7 +7537,7 @@
 /* 002c41f0 00000094 */ FUN_002c41f0(){}
 /* 002c4290 0000000c */ FUN_002c4290(){}
 /* 002c42a0 00000020 */ FUN_002c42a0(){}
-/* 002c42c0 00000054 */ FUN_002c42c0(){}
+/* 002c42c0 00000054 */ runExtraMode(){}  // game
 /* 002c4320 00000b30 */ FUN_002c4320(){}
 /* 002c4e50 00000090 */ FUN_002c4e50(){}
 /* 002c4ee0 000004dc */ FUN_002c4ee0(){}
@@ -8106,17 +8106,17 @@
 /* 002ec480 0000004c */ eventMoviePath1206(){}  // game
 /* 002ec4d0 0000004c */ eventMoviePath0202(){}  // game
 /* 002ec520 0000004c */ eventMoviePath0102(){}  // game
-/* 002ec570 0000004c */ FUN_002ec570(){}
-/* 002ec5c0 0000004c */ FUN_002ec5c0(){}
-/* 002ec610 0000004c */ FUN_002ec610(){}
+/* 002ec570 0000004c */ naviLayoutPath(){}  // game
+/* 002ec5c0 0000004c */ naviTuLayoutPath(){}  // game
+/* 002ec610 0000004c */ mcBaseLayoutPath(){}  // game
 /* 002ec660 0000004c */ optionLayoutPath(){}  // game
-/* 002ec6b0 0000004c */ FUN_002ec6b0(){}
-/* 002ec700 0000004c */ FUN_002ec700(){}
-/* 002ec750 0000004c */ FUN_002ec750(){}
-/* 002ec7a0 0000004c */ FUN_002ec7a0(){}
+/* 002ec6b0 0000004c */ memAltLayoutPath(){}  // game
+/* 002ec700 0000004c */ newGameLayoutPath(){}  // game
+/* 002ec750 0000004c */ sceLogoLayoutPath(){}  // game
+/* 002ec7a0 0000004c */ topMenuLayoutPath(){}  // game
 /* 002ec7f0 0000004c */ archiveLayoutPath(){}  // game
-/* 002ec840 0000004c */ FUN_002ec840(){}
-/* 002ec890 0000004c */ FUN_002ec890(){}
+/* 002ec840 0000004c */ helpLayoutPath(){}  // game
+/* 002ec890 0000004c */ titleLayoutPath(){}  // game
 
 // *****************************************************************************
 // FILE -- (library) libkernl kernel patches

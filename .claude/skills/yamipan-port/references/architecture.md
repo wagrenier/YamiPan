@@ -1528,6 +1528,31 @@ layer" (Program flow) lists, read in full. Details the reading added:
 - SDPR2's config 0x2f5030 is 8 words {0, 0, -1, -1, 0, 0, 0, 0} (sdpr2Init copies it to the driver
   and both types).
 
+**`game/menuscene.cpp` 0x2b5740..0x2b6b90 (2026-11-03, batch 083 with 32 names, all 14 written,
+`verify`).** The scene table's only scene and the player's whole way outside a stage. `menuSceneThread`
+-> `menuFlow(true)`, which never returns: `menuBootScreens` (2dEU/languageEU.d2b, then `menuCheckCard`:
+memAlt%s.d2b over `Memcard::startScan`, arg 0 no card / 1 no room, until the scan is Ok or the layout
+answers 1), scelogo%s.d2b, then forever: `loadMenuPack`, title (`runTitleScreen` 0x231c90, `TitleAnswer`;
+unanswered: `runAttractDemo` 0x2b5aa0, which retail leaves as `return 1`, and the title again);
+new game (a card scan for `SaveData::unlock468` in any good save, defaults, stage 1, first options,
+`menuChooseKind` on newGame%s.d2b) or load (`menuLoadGame`, mcBase%s.d2b arg 0 over fresh defaults).
+Then `menuTopMenu` (topMenu%s.d2b through `runMenuLayoutFile`: `TopMenuAnswer`) and
+`menuPlayLoop`: navi screen (`runNaviFile` 0x295470: its answer is the node, `NaviAnswer` bits),
+`menuPlayStage`, save dialogs. `menuPlayStage`: a single-part node only plays its movie and counts as
+cleared; otherwise `unloadMenuPack`, the opening movie with the stage pack starting behind it on the
+pack's own 24 MB buffer (lent to the movie widget by `setUiWorkArea`), `menuRunStage` (`stageThread`
+in slot 3 on the script path at bss 0x5997c0; a message to slot 2 is passed on), the ending movie
+(event 1, branch `StageResult::attempt[15]`), the notice when one played, `recordStageResult`,
+`loadMenuPack`. The scene's "(Pack File)" is `menuFlow`'s argument, always 1: 0 would run the stage on a
+bare FileLoader (loose files, no opening pack), retail code that never runs. Pack variants: 3 per
+language (EN 0, DE 3, ES 6, FR 9, IT 12) + the record's kind. The memcard flag 0x31ae84 reads as "no save
+to offer" (memcard.h). ROM oddities kept or marked: `menuPlayMovie` deletes its loader twice when the
+movie file is empty (`PC:` guard); `menuPlayStage` copies the record over itself; `menuTopMenu`'s
+archive save dialog passes no reason, a0 still holds the 3 of the compare. Doubts: the file name, all
+screen names except the d2b files', `runAttractDemo`, `SaveDialogReason` (read from the callers only),
+the size of the script path buffer (0x40 assumed), `runExtraMode` (0x2c4320, 16 scored entries of the
+save, unread).
+
 ## Classes
 
 Name, vtable, vptr offset, size, file. `python rtti.py` (CodeWarrior variant, bootstrap 4, 2026-10-31)

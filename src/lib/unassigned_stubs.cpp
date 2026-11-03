@@ -1019,12 +1019,6 @@ void mapMenuStart()
     YAMIPAN_STUB("mapMenuStart", 0x0020afe0);
 }
 
-// stub of FS2 0x002b5740
-void menuSceneThread(void *arg)
-{
-    YAMIPAN_STUB("menuSceneThread", 0x002b5740);
-}
-
 // stub of FS2 0x002ec660
 const char * optionLayoutPath()
 {
@@ -1088,4 +1082,106 @@ float vecDistance(const sceVu0FVECTOR a, const sceVu0FVECTOR b)
 GsRegionAlloc::~GsRegionAlloc()
 {
     YAMIPAN_STUB("GsRegionAlloc::~GsRegionAlloc", 0x002e1440);
+}
+
+// stub of FS2 0x0029acb0
+int applyNaviAnswer(int answer)
+{
+    YAMIPAN_STUB("applyNaviAnswer", 0x0029acb0);
+    return {};
+}
+
+// stub of FS2 0x0029ad40
+int currentNaviAnswer()
+{
+    YAMIPAN_STUB("currentNaviAnswer", 0x0029ad40);
+    return {};
+}
+
+// stub of FS2 0x002ec610
+const char * mcBaseLayoutPath()
+{
+    YAMIPAN_STUB("mcBaseLayoutPath", 0x002ec610);
+    return {};
+}
+
+// stub of FS2 0x002ec6b0
+const char * memAltLayoutPath()
+{
+    YAMIPAN_STUB("memAltLayoutPath", 0x002ec6b0);
+    return {};
+}
+
+// stub of FS2 0x002ec5c0
+const char * naviTuLayoutPath()
+{
+    YAMIPAN_STUB("naviTuLayoutPath", 0x002ec5c0);
+    return {};
+}
+
+// stub of FS2 0x002ec700
+const char * newGameLayoutPath()
+{
+    YAMIPAN_STUB("newGameLayoutPath", 0x002ec700);
+    return {};
+}
+
+// stub of FS2 0x002c42c0
+int runExtraMode(int arg)
+{
+    YAMIPAN_STUB("runExtraMode", 0x002c42c0);
+    return {};
+}
+
+// stub of FS2 0x002acff0
+int runHelpScreen(int page)
+{
+    YAMIPAN_STUB("runHelpScreen", 0x002acff0);
+    return {};
+}
+
+// stub of FS2 0x00295470
+int runNaviFile()
+{
+    YAMIPAN_STUB("runNaviFile", 0x00295470);
+    return {};
+}
+
+// stub of FS2 0x00231c90
+int runTitleScreen(bool withIntro)
+{
+    YAMIPAN_STUB("runTitleScreen", 0x00231c90);
+    return {};
+}
+
+// stub of FS2 0x0029ef70
+void saveExtraInit()
+{
+    YAMIPAN_STUB("saveExtraInit", 0x0029ef70);
+}
+
+// stub of FS2 0x002ec750
+const char * sceLogoLayoutPath()
+{
+    YAMIPAN_STUB("sceLogoLayoutPath", 0x002ec750);
+    return {};
+}
+
+// stub of FS2 0x00243370
+void setUiWorkArea(void *area)
+{
+    YAMIPAN_STUB("setUiWorkArea", 0x00243370);
+}
+
+// stub of FS2 0x002ec7a0
+const char * topMenuLayoutPath()
+{
+    YAMIPAN_STUB("topMenuLayoutPath", 0x002ec7a0);
+    return {};
+}
+
+// stub of FS2 0x002c3db0
+void unloadMenuPack()
+{
+    YAMIPAN_STUB("unloadMenuPack", 0x002c3db0);
 }

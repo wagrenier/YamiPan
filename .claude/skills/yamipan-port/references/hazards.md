@@ -165,6 +165,10 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **A name you pick may already exist at another address**: stubgen then resolves to the wrong one.
 - **Stale names after renaming**: stubgen, callcheck, stage, tus read cached `work/` data; `refresh.py`
   (never piped into `head`: the closed pipe kills it). Batch numbers collide: take the highest + 1.
+- **A stubbed modal screen inside a retry loop spins for ever** (2026-11-03, game/menuscene.cpp):
+  `runTitleScreen` stubbed answers 0, `menuFlow` then asks again with no `threadYield` in between (the
+  real screen yields), so the cooperative game thread never gives way. A log that stops at a modal's
+  stub with no crash is this.
 - **When a run loses ground after a TU**, diff its log against a run of the previous commit.
 - **A host harness's `jobAdd` stub must queue, not run** (2026-11-03, TU 27): `startLoad` /
   `FileJob::start` set "queued" *after* jobAdd answers, so a job run inside jobAdd ends "done" and is
