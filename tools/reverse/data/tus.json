@@ -196,6 +196,25 @@
    ],
    "why": "RcntTimer (reset, ctor, dtor) and rcnt1Start (batches 003-004); file name a guess."
   },
+  "game/scene.cpp": {
+   "notes": "gameSceneThread written in full: loadInitPack, runStartupSequence, overlayThreadStart, then forever loadMenuPack, the scene from sScenes (one retail entry, Menu (Pack File) = menuSceneThread 0x2b5740, index gp-0x7a34 never written) in slot 2, yield until free, overlayReleaseScreen, gfxSetDrawEnvClear(gfxGetCurrentDrawEnv(), 1, 0,0,0,0). The table base is 0x2fabd0 (Ghidra showed 0x2fabd4: hazards.md). Callee prototypes in gamehooks.h (pack / overlay / startup / menu scene) and gfxtarget.h (GfxDrawEnv, gfxGetCurrentDrawEnv, gfxSetDrawEnvClear). Next useful TUs on this path: the menu flow 0x2b5770 (unassigned@002acff0), the pack object 0x131f00 / 0x131d70 (unassigned@00131xxx) and the pak parser 0x231660..0x231bb0 (unassigned@00231c90 neighbour run). Not built: source-only mode.",
+   "ranges": [
+    [
+     "00231bb0",
+     "00231c90"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 00:50",
+     "status": "verify",
+     "summary": "Scene controller gameSceneThread (thread slot 1) and its SceneDef table at 0x2fabd0; callees named (packs, startup sequence, overlay thread, draw env clear)"
+    }
+   ],
+   "status": "verify",
+   "why": "gameSceneThread alone: the next function 0x231c90 (menu step helper over 0x267c00, called by the menu flow 0x2b5770) and the pak parser 0x231660..0x231bb0 before it share no data or callers with it; the scene table 0x2fabd0 is read only here. A one-function file until a source string or link order says otherwise"
+  },
   "game/spkrom.cpp": {
    "ranges": [
     [

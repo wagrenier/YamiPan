@@ -212,3 +212,9 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **A host convention on top of a ROM-faithful port** (a vector negated twice; a host shader replacing
   microcode drops its culling): when a picture is mirrored or misplaced, list every sign / transform
   between the ROM's value and the shader.
+
+- 2026-11-03 (game/scene.cpp): **a table's unread first field moves Ghidra's base.** Symptom: the
+  decompiler showed gameSceneThread's scene table at 0x2fabd4 (`PTR_FUN_002fabd4[i * 6]`), and the
+  words there did not fit threadSlotCreate's arguments. Cause: field +0 (a name string) is never
+  read, so Ghidra folds the +4 into the base address. Fix: read the `lui` / `addiu` pair in the asm
+  (`ghidra.py asm`): the base was 0x2fabd0, the entry `{name, func, cleanup, arg, stackSize, stack}`.

@@ -338,9 +338,19 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
     that ignores `this`), `gGfxPutDrawEnv` 0x31a890 (sdata 1), `gGfxFlipNoPackets` 0x31ad94 (both off).
     `gDmacBusError` 0x31ad90 is set by `dmacBusErrorHandler` and makes the next end of frame reset
     GS path / graph / DMA.
-  - **Scene controller** `gameSceneThread` 0x231bb0 (thread slot 1): three init calls, then forever
-    a scene from the 0x18-byte table 0x2fabd4 (index gp-0x7a34; Heap::alloc'ed stack) in slot 2,
-    yields until it exits. Thread slot names 0x2f3810: `Th Ctrl`, `Th Main`, `Th 02`, `Th Game`,
+  - **Scene controller** (`src/game/scene.cpp`, `gameSceneThread` 0x231bb0, thread slot 1, written
+    2026-11-03): `loadInitPack` 0x290840 (`dataEU/packinitEU.pak`, pack object at 0x31ae60),
+    `runStartupSequence` 0x2afd00 (0x2afd50 in slot 3: `packgameEU.pak` + a 0x80-byte object
+    0x2c0dc0 run by 0x2bcf10; boot screens, guess), `overlayThreadStart` 0x267780 (slot 6, 0x267830:
+    draws the 0x98-byte overlay objects gp-0x7a28 / gp-0x7a20 into packet list 0xb; the second is the
+    loading indicator kept alive by 0x267950, called from the pack loader's wait loop), then forever
+    `loadMenuPack` 0x2c3e10 (`packmenuEU.pak` at 0x31ae98 unless loaded), the scene from the
+    0x18-byte `SceneDef` table **0x2fabd0** `{name, func, cleanup, arg, stackSize, stack}` (index
+    gp-0x7a34, never written) in slot 2 until it exits, `overlayReleaseScreen` 0x267a00,
+    `gfxSetDrawEnvClear` 0x12ea80(`gfxGetCurrentDrawEnv` 0x12e080 = display record +0x80, 1, 0,0,0,0).
+    Retail's one scene: "Menu (Pack File)" `menuSceneThread` 0x2b5740 -> the menu flow 0x2b5770(1).
+    Pack objects (0xf8): ctor 0x131f00(name, ?), load-and-wait 0x131d70 (job 0x132a40), deleting dtor
+    vtable slot 2 at +0x98; 0x231660..0x231bb0 parse the `pak` image. Thread slot names 0x2f3810: `Th Ctrl`, `Th Main`, `Th 02`, `Th Game`,
     `Th 04`, `Th Extra`, `Th 06`, `Th Effect`.
   - **RNG and date** (batch 022): `gameInit` seeds newlib `srand` 0x126f78 and the game's
     `rndInit` 0x104860 (97-word table 0x3299c0, LCG x * 0x5d588b65 + 1) with second + minute + hour +

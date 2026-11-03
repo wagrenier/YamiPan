@@ -394,6 +394,14 @@ apply here):
   other sessions, agents or scheduled tasks, and never edit `autopilot.py` or the routine.
 
 ## Open questions
+- 2026-11-03 (scheduled run, game/scene.cpp): `tus.py next` picked unassigned@00171300 (0xc48d8
+  bytes, 2913 functions: the big actor-class run) for its frontier, but four of its six frontier
+  entries (0x193780 / 0x1937f0 / 0x193880 / 0x1938f0, called from game/boxgrid.cpp) are MSL
+  `vector<vector<BoxList>>` destructor instances that boxgrid.cpp already gets from the host
+  `<vector>`: they need no code (callcheck should ignore them, or they should be marked as
+  host-provided). The session cut out game/scene.cpp (gameSceneThread) instead; boxContainsPoint
+  0x2362a0 (a VU0 helper) is still in that run. Open: how `tus.py` should mark linkonce MSL
+  instances so they leave the frontier.
 
 - **(2026-11-02, game/thread.cpp) the thread system on the host.** (a) `RotateThreadReadyQueue` is not in
   RosePan's `sdk/eekernel.h`: bootstrap 6 must add it (g++ -fsyntax-only fails only on it). (b) The

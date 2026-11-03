@@ -4,7 +4,7 @@
  *  Subsystems main and its loop call that have no TU of their own yet:
  *  the rx runtime's game layer and SPK.ROM (game/spkrom.cpp), sound
  *  (sound/sound.cpp), the empty debug hooks
- *  0x151270..0x151290, the scene controller thread (0x231bb0) and the
+ *  0x151270..0x151290, the scene controller's callees (game/scene.cpp) and the
  *  stage result (0x2b0580). Each moves to its TU's header when that TU is written.
  *  Minimal.
  * ======================================================================== */
@@ -60,7 +60,21 @@ void debugSysShutdown();                                                 // FS2 
 // cube matrix is m (VU0 transform + vclip against w; game/boxgrid.cpp).
 bool boxContainsPoint(const float m[4][4], const float p[4]);            // FS2 0x002362a0
 
-// Thread slot 1: runs the scene table 0x2fabd4 in slot 2, one scene after another.
-void gameSceneThread(void *arg);                                         // FS2 0x00231bb0
+// What game/scene.cpp calls.
+// The resident packs: delete the one held and load the file again
+// (dataEU/packinitEU.pak at 0x31ae60; dataEU/packmenuEU.pak at 0x31ae98,
+// only while not loaded).
+void loadInitPack();                                                     // FS2 0x00290840
+void loadMenuPack();                                                     // FS2 0x002c3e10
+// Runs 0x2afd50 in thread slot 3 and waits for it: packgameEU.pak and an
+// object built from it, likely the boot screens (guess).
+void runStartupSequence();                                               // FS2 0x002afd00
+// Thread slot 6 (when free): draws the overlay objects gp-0x7a28 / -0x7a20
+// into packet list 0xb every frame.
+void overlayThreadStart();                                               // FS2 0x00267780
+// Deletes the overlay object gp-0x7a28 and clears its show flag.
+void overlayReleaseScreen();                                             // FS2 0x00267a00
+// The scene table's only scene, "Menu (Pack File)": the menu flow 0x2b5770(1).
+void menuSceneThread(void *arg);                                         // FS2 0x002b5740
 
 #endif /* _GAME_GAMEHOOKS_H */
