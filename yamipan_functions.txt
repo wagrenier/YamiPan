@@ -638,7 +638,7 @@
 // *****************************************************************************
 
 /* 00121ef0 00000018 */ abort(){}  // lib-ctx
-/* 00121f08 00000010 */ FUN_00121f08(){}
+/* 00121f08 00000010 */ abs(){}  // lib-ctx
 /* 00121f20 00000018 */ FUN_00121f20(){}
 /* 00121f38 00000028 */ atoi(){}  // lib-ctx
 /* 00121f60 0000001c */ FUN_00121f60(){}
@@ -3115,8 +3115,8 @@
 /* 00184230 00000018 */ FUN_00184230(){}
 /* 00184250 00000008 */ FUN_00184250(){}
 /* 00184260 00000054 */ FUN_00184260(){}
-/* 001842c0 000000a4 */ FUN_001842c0(){}
-/* 00184370 0000004c */ FUN_00184370(){}
+/* 001842c0 000000a4 */ StageNodeList::pushBack(){}  // game
+/* 00184370 0000004c */ StageNodeList::erase(){}  // game
 /* 001843c0 00000070 */ FUN_001843c0(){}
 /* 00184430 00000064 */ FUN_00184430(){}
 /* 001844a0 00000090 */ FUN_001844a0(){}
@@ -3216,7 +3216,7 @@
 /* 001861b0 000001c4 */ FUN_001861b0(){}
 /* 00186380 000001c4 */ FUN_00186380(){}
 /* 00186550 00000070 */ FUN_00186550(){}
-/* 001865c0 00000128 */ FUN_001865c0(){}
+/* 001865c0 00000128 */ StageNodeBase::~StageNodeBase(){}  // game
 /* 001866f0 000001e0 */ FUN_001866f0(){}
 /* 001868d0 0000004c */ FUN_001868d0(){}
 /* 00186920 000000e0 */ FUN_00186920(){}
@@ -4454,7 +4454,7 @@
 // *****************************************************************************
 
 /* 001d3dc0 000000c4 */ StageSoundSlot::release(){}  // game
-/* 001d3e90 00000070 */ FUN_001d3e90(){}
+/* 001d3e90 00000070 */ StageSoundSource::~StageSoundSource(){}  // game
 /* 001d3f00 00000078 */ StageStreamChannel::reset(){}  // game
 /* 001d3f80 0000009c */ StageSound::isStopped(){}  // game
 /* 001d4020 00000110 */ StageSound::stopAll(){}  // game
@@ -4463,19 +4463,19 @@
 /* 001d42e0 0000010c */ StageSound::pause(){}  // game
 /* 001d43f0 000000c4 */ StageSound::setMuted(){}  // game
 /* 001d44c0 0000021c */ StageSound::setEffectsPaused(){}  // game
-/* 001d46e0 000000f8 */ FUN_001d46e0(){}
-/* 001d47e0 0000013c */ FUN_001d47e0(){}
-/* 001d4920 00000110 */ FUN_001d4920(){}
-/* 001d4a30 0000006c */ FUN_001d4a30(){}
-/* 001d4aa0 00000170 */ FUN_001d4aa0(){}
-/* 001d4c10 00000114 */ FUN_001d4c10(){}
-/* 001d4d30 0000013c */ FUN_001d4d30(){}
-/* 001d4e70 000002c4 */ FUN_001d4e70(){}
-/* 001d5140 000000c8 */ FUN_001d5140(){}
-/* 001d5210 000000b8 */ FUN_001d5210(){}
-/* 001d52d0 000000bc */ FUN_001d52d0(){}
-/* 001d5390 00000180 */ FUN_001d5390(){}
-/* 001d5510 00000068 */ FUN_001d5510(){}
+/* 001d46e0 000000f8 */ StageSound::getCueSubtitle(){}  // game
+/* 001d47e0 0000013c */ StageSound::stopCue(){}  // game
+/* 001d4920 00000110 */ StageSound::stopCuesOf(){}  // game
+/* 001d4a30 0000006c */ StageSound::hasCue(){}  // game
+/* 001d4aa0 00000170 */ StageSound::isCuePlaying(){}  // game
+/* 001d4c10 00000114 */ StageSound::setCue(){}  // game
+/* 001d4d30 0000013c */ StageSound::playCue(){}  // game
+/* 001d4e70 000002c4 */ StageSound::pickCueChannel(){}  // game
+/* 001d5140 000000c8 */ StageSound::findCue(){}  // game
+/* 001d5210 000000b8 */ StageSound::setMusicVolume(){}  // game
+/* 001d52d0 000000bc */ StageSound::stopMusic(){}  // game
+/* 001d5390 00000180 */ StageSound::playMusic(){}  // game
+/* 001d5510 00000068 */ StageSound::findSource(){}  // game
 /* 001d5580 0000011c */ StageSound::update(){}  // game
 /* 001d56a0 0000079c */ StageSound::updateChannels(){}  // game
 /* 001d5e40 00000898 */ StageSound::updateSlots(){}  // game
@@ -4483,13 +4483,13 @@
 /* 001d6a70 0000000c */ StageSound::playNamedAlways(){}  // game
 /* 001d6a80 0000000c */ StageSound::playNamed(){}  // game
 /* 001d6a90 00000140 */ StageSound::stopNamed(){}  // game
-/* 001d6bd0 00000138 */ FUN_001d6bd0(){}
-/* 001d6d10 000002a4 */ FUN_001d6d10(){}
+/* 001d6bd0 00000138 */ StageSound::addSourceNamed(){}  // game
+/* 001d6d10 000002a4 */ StageSound::addSource(){}  // game
 /* 001d6fc0 00000054 */ StageSound::setSubtitles(){}  // game
 /* 001d7020 00000054 */ StageSound::setStreamName(){}  // game
 /* 001d7080 00000058 */ StageSound::setStreamTable(){}  // game
-/* 001d70e0 000002d0 */ FUN_001d70e0(){}
-/* 001d73b0 000000f8 */ FUN_001d73b0(){}
+/* 001d70e0 000002d0 */ StageSound::setSeTable(){}  // game
+/* 001d73b0 000000f8 */ StageSound::setSourcePitch(){}  // game
 /* 001d74b0 00000060 */ StageSound::stopSource(){}  // game
 /* 001d7510 00000108 */ StageSound::reset(){}  // game
 /* 001d7620 00000070 */ StageSound::resetChannels(){}  // game
@@ -4511,9 +4511,9 @@
 /* 001d7d50 00000148 */ FUN_001d7d50(){}
 /* 001d7ea0 0000001c */ FUN_001d7ea0(){}
 /* 001d7ec0 00000018 */ FUN_001d7ec0(){}
-/* 001d7ee0 0000001c */ FUN_001d7ee0(){}
+/* 001d7ee0 0000001c */ NodeTransform::setPosition(){}  // game
 /* 001d7f00 00000018 */ FUN_001d7f00(){}
-/* 001d7f20 00000068 */ FUN_001d7f20(){}
+/* 001d7f20 00000068 */ NodeTransform::NodeTransform(){}  // game
 /* 001d7f90 00000004 */ FUN_001d7f90(){}
 /* 001d7fa0 00000004 */ FUN_001d7fa0(){}
 /* 001d7fb0 00000004 */ FUN_001d7fb0(){}
@@ -4526,7 +4526,7 @@
 /* 001d8410 0000000c */ FUN_001d8410(){}
 /* 001d8420 0000005c */ FUN_001d8420(){}
 /* 001d8480 000000b8 */ FUN_001d8480(){}
-/* 001d8540 00000050 */ FUN_001d8540(){}
+/* 001d8540 00000050 */ StageNodeBase::StageNodeBase(){}  // game
 /* 001d8590 00000008 */ FUN_001d8590(){}
 /* 001d85a0 00000010 */ FUN_001d85a0(){}
 /* 001d85b0 00000008 */ FUN_001d85b0(){}
@@ -6776,8 +6776,8 @@
 // *****************************************************************************
 
 /* 002908d0 0000005c */ SoundTrack::setAttr(){}  // game
-/* 00290930 0000004c */ FUN_00290930(){}
-/* 00290980 00000184 */ FUN_00290980(){}
+/* 00290930 0000004c */ SoundTrack::hasSubtitles(){}  // game
+/* 00290980 00000184 */ SoundTrack::getSubtitle(){}  // game
 /* 00290b10 00000094 */ SoundTrack::setSubtitles(){}  // game
 /* 00290bb0 00000064 */ SoundTrack::setName(){}  // game
 /* 00290c20 00000080 */ SoundTrack::~SoundTrack(){}  // game
@@ -6791,14 +6791,14 @@
 /* 00291770 00000144 */ SoundTrack::setPlacement(){}  // game
 /* 002918c0 00000138 */ SoundTrack::update(){}  // game
 /* 00291a00 00000028 */ SoundTrack::pause(){}  // game
-/* 00291a30 00000090 */ FUN_00291a30(){}
+/* 00291a30 00000090 */ SoundTrack::setVolume(){}  // game
 /* 00291ac0 00000140 */ SePlayer::setAttr(){}  // game
 /* 00291c00 00000174 */ SePlayer::resume(){}  // game
 /* 00291d80 000000d0 */ SePlayer::pause(){}  // game
 /* 00291e50 00000238 */ SePlayer::setVolume(){}  // game
 /* 00292090 000000a8 */ FUN_00292090(){}
 /* 00292140 00000088 */ FUN_00292140(){}
-/* 002921d0 00000190 */ FUN_002921d0(){}
+/* 002921d0 00000190 */ SePlayer::setTable(){}  // game
 /* 00292360 00000034 */ SePlayer::fadeMaster(){}  // game
 /* 002923a0 000000a8 */ SePlayer::~SePlayer(){}  // game
 /* 00292450 000000c8 */ SePlayer::SePlayer(){}  // game
@@ -6807,7 +6807,7 @@
 /* 00292ac0 000002ec */ SePlayer::play(){}  // game
 /* 00292db0 000001a4 */ SePlayer::stop(){}  // game
 /* 00292f60 00000108 */ SePlayer::isPlaying(){}  // game
-/* 00293070 0000013c */ FUN_00293070(){}
+/* 00293070 0000013c */ SePlayer::setPitch(){}  // game
 /* 002931b0 0000028c */ SePlayer::setPlacement(){}  // game
 /* 00293440 00000398 */ SePlayer::update(){}  // game
 /* 002937e0 000000e4 */ FUN_002937e0(){}

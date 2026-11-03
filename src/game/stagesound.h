@@ -19,20 +19,24 @@
  *  volume from the distance over the entry's range; a cue stream behind a
  *  wall counts as out of range, behind a thin one at twice the distance.
  *
- *  The file name is the port's (no source string). The stream cues
- *  0x1d46e0..0x1d5510, the positional sources (0x1d6bd0 / 0x1d6d10, dtor
- *  0x1d3e90) and 0x1d70e0 / 0x1d73b0 are not written yet.
+ *  The stage objects start the cue streams (playCue / setCue: the owner's
+ *  head bone, a variant of the entry; a channel goes to the cue that
+ *  matters most, and only when it can be heard), the music through
+ *  playMusic / stopMusic, the positional sources through addSource.
+ *
+ *  The file name is the port's (no source string).
  * ======================================================================== */
 #ifndef _GAME_STAGESOUND_H
 #define _GAME_STAGESOUND_H
 
+#include "game/stagenode.h"   /* StageNode */
 #include "sdk/libvu0.h"     /* sceVu0FVECTOR */
 #include "sdk/scetypes.h"
 
 class SePlayer;                 // game/gamehooks.h
 struct SeEntry;                 // game/gamehooks.h
+struct SeTable;                 // game/gamehooks.h
 class SoundTrack;               // game/gamehooks.h
-class StageNode;                // game/gamehooks.h
 class StageObject;              // game/gamehooks.h
 class StageSound;
 
@@ -55,6 +59,15 @@ enum StageSoundDownReason
     StageSoundDown_None   = 0,
     StageSoundDown_Paused = 1,          // pause (the pause / map menus)
     StageSoundDown_Muted  = 2,          // setMuted(true) (the clear, game over)
+};
+
+// What StageSound::pickCueChannel answers instead of a channel.
+enum StageCueReject
+{
+    StageCueReject_NoTable    = -0x8000,    // the streams have no StDT table
+    StageCueReject_OutOfRange = -0x7ffd,    // farther than the entry's range
+    StageCueReject_NoChannel  = -0x7ffc,    // both channels busy with cues that matter more
+    StageCueReject_Occluded   = -0x7ffb,    // behind a wall (a thin one: past half the range)
 };
 
 // StageSoundSlot::kind.
@@ -93,27 +106,25 @@ struct StageEffect
     bool           stopped;     // FS2 +0x10: stopped by stopNamed / a failed pause
 };
 
-// A positional sound source (slot kind 1), built by 0x1d6d10 (vtable
-// 0x315a20 over the base 0x315a80, whose dtor is 0x1865c0) and deleted
-// through its virtual slot 2. Stand-in: only what is read here; its slots
-// 0 / 1 / 3..6 (0x186a00 / 0x186a10 / 0x186a20 / 0x186a30 / 0x1d7ce0 /
-// 0x1d8420) are not declared as virtuals: the two the update calls are
-// plain stubs until their TU (the same slots as the StageNode stand-in).
-// layout: host -- EE: vptr +0, +0x4, +0x100 handle, +0x108 entry, +0x110
-// variant, +0x114 bySceneFlag, +0x115 stopped.
-class StageSoundSource
+// A positional sound source (slot kind 1): a scene node (vtable 0x315a20
+// over StageNode's 0x315a80, game/stagenode.h), new'd by
+// StageSound::addSource (0x140 bytes) and deleted through its virtual slot
+// 2. Its slots 0 / 1 / 3..6 (0x186a00 / 0x186a10 / 0x186a20 / 0x186a30 /
+// 0x1d7ce0 / 0x1d8420) are StageNode's stand-ins. Without a parent node
+// the update rebuilds its matrix (updateMatrix); under one, the parent's
+// does.
+// layout: host -- EE: StageNode, +0x100 handle, +0x108 entry, +0x10c
+// 1.0f, +0x110 variant, +0x114 bySceneFlag, +0x115 stopped.
+class StageSoundSource : public StageNode
 {
 public:
-    virtual ~StageSoundSource();                                         // FS2 0x001d3e90: slot 2 (+0x10), deleting
-    // Slot 4 (vtable +0x18, 0x186a30): its matrix (this +0xc0), row 3 the
-    // position.
-    const sceVu0FVECTOR *getWorldMatrix();                               // FS2 vtable +0x18
-    // Slot 6 (vtable +0x20, 0x1d8420): rebuilds the matrix.
-    void updateMatrix();                                                 // FS2 vtable +0x20
+    // Inline in the ROM (StageSound::addSource).
+    StageSoundSource(const SeEntry *entry, int variant);
+    ~StageSoundSource() override;                                        // FS2 0x001d3e90: slot 2 (+0x10), deleting
 
-    int            _04;         // FS2 +0x004: 0 until its matrix is built (the update calls updateMatrix)
     SeHandle       m_handle;    // FS2 +0x100: -1 not playing (yet)
     const SeEntry *m_entry;     // FS2 +0x108: the first of its variants
+    float          _10c;        // FS2 +0x10c: 1.0f, unread here
     int            m_variant;   // FS2 +0x110: the entry played (m_entry[m_variant])
     u_char         m_bySceneFlag; // FS2 +0x114: its alternate follows the scene flag, else the player flag
     bool           m_stopped;   // FS2 +0x115
@@ -221,6 +232,53 @@ public:
     void setSubtitles(void *file);                                       // FS2 0x001d6fc0
     void setStreamName(const char *name);                                // FS2 0x001d7020
     void setStreamTable(void *file);                                     // FS2 0x001d7080
+    // Takes the stage's SEDT file (0x19d9e0): every effect released, the
+    // master volume full; an entry called X_J / X_D becomes the alternate
+    // of X (SeEntry::altOffset both ways).
+    void setSeTable(SeTable *table);                                     // FS2 0x001d70e0
+
+    // Positional sources: the entry placed at pos (x, y, z) under parent
+    // (null: none), a variant picked; null none (no table, no entry, no
+    // free slot).
+    StageSoundSource *addSource(const SeEntry *entry, const float *pos,
+                                StageNodeBase *parent);                  // FS2 0x001d6d10
+    StageSoundSource *addSourceNamed(const char *name, const float *pos,
+                                     StageNodeBase *parent);             // FS2 0x001d6bd0
+    // source when a slot holds it, else null.
+    StageSoundSource *findSource(StageSoundSource *source);              // FS2 0x001d5510
+    // Sets a playing source's pitch: true done.
+    bool setSourcePitch(StageSoundSource *source, float pitch);          // FS2 0x001d73b0
+
+    // The cue streams (channels 2 / 3). The entry called name in their
+    // stream table; null none.
+    SeEntry *findCue(const char *name);                                  // FS2 0x001d5140
+    // The cue channel (0 / 1) a cue of owner would get, heard by listener,
+    // or a StageCueReject (< 0).
+    int  pickCueChannel(SeEntry *def, StageObject *owner, StageObject *listener); // FS2 0x001d4e70
+    // Queues def for owner on the channel pickCueChannel picks (fading out
+    // what plays there): false none.
+    bool playCue(SeEntry *def, StageObject *owner, StageObject *listener); // FS2 0x001d4d30
+    // Queues def for owner on cue channel 0 / 1 (fading out what plays).
+    bool setCue(SeEntry *def, StageObject *owner, int channel);          // FS2 0x001d4c10
+    // Fades out (10 frames) owner's cue def, queued or playing.
+    void stopCue(StageObject *owner, const SeEntry *def);                // FS2 0x001d47e0
+    // Fades out (4 frames) every cue of owner.
+    void stopCuesOf(StageObject *owner);                                 // FS2 0x001d4920
+    // owner has a cue queued or playing.
+    bool hasCue(StageObject *owner);                                     // FS2 0x001d4a30
+    // owner's cue called name is queued or playing.
+    bool isCuePlaying(const char *name, StageObject *owner);             // FS2 0x001d4aa0
+    // The subtitle of the cue playing with subtitles (channel 3 before 2);
+    // null none.
+    const u_short *getCueSubtitle();                                     // FS2 0x001d46e0
+
+    // The music (channels 0 / 1): queues the entry called name on channel,
+    // fading in over fadeFrames (30 fps) once what plays has faded out.
+    void playMusic(int channel, const char *name, int fadeFrames);       // FS2 0x001d5390
+    // Fades channel's music out over fadeFrames (30 fps) to stop.
+    void stopMusic(int channel, int fadeFrames);                         // FS2 0x001d52d0
+    // Channel 0's volume in percent (its stream and its fade scale).
+    void setMusicVolume(int percent);                                    // FS2 0x001d5210
 
 private:
     StageEffect *playEffect(float left, float right, const char *name, bool always); // FS2 0x001d66e0
@@ -234,11 +292,20 @@ private:
         return m_state == StageSoundState_TurningDown || m_state == StageSoundState_Down;
     }
     int  findFreeSlot();
+    // The variant of a run to play: random (variants < 0) or the next in
+    // turn. Inline in the ROM (setCue, playCue).
+    static int pickCueVariant(SeEntry *def);
+    // Queues a cue on ch and fades out what plays. Inline in the ROM
+    // (setCue, playCue).
+    void queueCue(StageStreamChannel &ch, SeEntry *def, StageObject *owner, int variant);
+    // Fades a channel out to stop (StageStreamChannel_Stopping) unless idle
+    // or stopping already. Inline in the ROM (the cue / music setters).
+    static void fadeOutChannel(StageStreamChannel &ch, int frames);
     void releaseSlots();
     void stopEffect(StageEffect *effect);
 
 public:
-    int                _00 = 0;         // FS2 +0x000: unread
+    SeTable           *m_seTable = nullptr; // FS2 +0x000: the stage's SEDT file (setSeTable; the player takes it too)
     int                _04 = 0;         // FS2 +0x004: unread
     SePlayer          *m_player;        // FS2 +0x008: new / delete (0x1298)
     u_char             m_playerFlag;    // FS2 +0x00c: the update's playerFlag, last frame

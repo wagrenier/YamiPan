@@ -4,11 +4,13 @@
 #include "game/stagesound.h"
 
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <algorithm>
 
 #include "game/gamehooks.h"
+#include "game/heap.h"      /* randNext */
 #include "game/mathutil.h"
 #include "game/stageloop.h"
 #include "game/sysdata.h"
@@ -48,6 +50,27 @@ enum SoundOcclusion
     SoundOcclusion_Blocked = 2,     // out of range
 };
 
+// A cue stops faded out over 10 frames (stopCuesOf: 4).
+constexpr int kCueStopFrames     = 10;
+constexpr int kCueStopFastFrames = 4;
+
+// pickCueChannel's scores: the cue channel taken is the best one, a tie
+// the first. A busy channel scores only for a cue that matters at least as
+// much (SeEntry::priority, lower first).
+constexpr u_int kCueScoreNone      = 0;
+constexpr u_int kCueScoreSameOwner = 200;   // replaces the owner's own cue
+constexpr u_int kCueScoreFree      = 100;
+constexpr u_int kCueScoreOther     = 50;    // replaces another owner's cue
+// A cue behind a thin wall is heard to half its range.
+constexpr float kCueThinWallRatio = 0.5f;
+
+// getCueSubtitle skips a cue entry with this priority; a short never has
+// it (kept as the ROM).
+constexpr int kCuePriorityNoSubtitle = 0x7fffffff;
+
+// The longest SE name setSeTable can pair (its stack buffer).
+constexpr int kSeNameMax = 32;
+
 // ──────────────────────────────────────────────────────────────────────
 // Slots, cues and channels
 
@@ -69,6 +92,21 @@ void StageSoundSlot::release(StageSound *sound)
     }
     kind = StageSoundSlot_Free;
     ptr  = nullptr;
+}
+
+// A source follows the scene flag when its entry's name starts "CAR_"
+// (the ROM compares the four characters).
+StageSoundSource::StageSoundSource(const SeEntry *entry, int variant)
+    : m_handle(-1), m_entry(entry), _10c(1.0f), m_variant(variant), m_stopped(false)
+{
+    const char *name = entry->name;
+    m_bySceneFlag = name[0] == 'C' && name[1] == 'A' && name[2] == 'R' && name[3] == '_';
+}
+
+// callcheck: ~StageNodeBase, operator_delete (the base dtor, deleting)
+// FS2 0x001d3e90
+StageSoundSource::~StageSoundSource()
+{
 }
 
 // FS2 0x001d7690
@@ -427,6 +465,76 @@ void StageSound::stopSource(StageSoundSource *source)
 }
 
 // ──────────────────────────────────────────────────────────────────────
+// Positional sources
+
+// callcheck: strcmp (the inline SeTable::find)
+// FS2 0x001d6bd0
+StageSoundSource *StageSound::addSourceNamed(const char *name, const float *pos,
+                                             StageNodeBase *parent)
+{
+    SeTable *table = m_player->m_table;
+    if (table == nullptr)
+        return nullptr;
+    const SeEntry *entry = table->find(name);
+    if (entry == nullptr)
+        return nullptr;
+    return addSource(entry, pos, parent);
+}
+
+// callcheck: operator_new, StageNodeBase, NodeTransform, erase, pushBack (new StageSoundSource with its bases, the inline setParent)
+// FS2 0x001d6d10
+StageSoundSource *StageSound::addSource(const SeEntry *entry, const float *pos,
+                                        StageNodeBase *parent)
+{
+    if (m_player->m_table == nullptr || entry == nullptr)
+        return nullptr;
+    int slot = findFreeSlot();
+    if (slot < 0)
+        return nullptr;
+
+    // Unlike a cue, the cycle keeps the variant played.
+    int variant = 0;
+    if (entry->variants < 0) {
+        variant = (int)randNext() % abs(entry->variants);
+    } else if (entry->variants > 0) {
+        variant = (entry->cycle + 1) % entry->variants;
+        entry->cycle = (u_char)variant;
+    }
+
+    // PC: the ROM goes on with a null source when operator new fails.
+    StageSoundSource *source = new StageSoundSource(entry, variant);
+    if (parent != nullptr)
+        source->setParent(parent);
+    source->m_xform.setPosition(pos);
+    m_slots[slot].kind   = StageSoundSlot_Source;
+    m_slots[slot].source = source;
+    if (m_lastSlot < slot)
+        m_lastSlot = slot;
+    return source;
+}
+
+// FS2 0x001d5510
+StageSoundSource *StageSound::findSource(StageSoundSource *source)
+{
+    if (source == nullptr)
+        return nullptr;
+    for (int i = 0; i <= m_lastSlot; i++) {
+        if (m_slots[i].kind == StageSoundSlot_Source && m_slots[i].source == source)
+            return source;
+    }
+    return nullptr;
+}
+
+// FS2 0x001d73b0
+bool StageSound::setSourcePitch(StageSoundSource *source, float pitch)
+{
+    StageSoundSource *found = findSource(source);   // inline in the ROM
+    if (found == nullptr || found->m_handle < 0 || !m_player->isPlaying(found->m_handle))
+        return false;
+    return m_player->setPitch(pitch, source->m_handle) == 0;
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // The streams' stage files
 
 // FS2 0x001d6fc0
@@ -449,6 +557,45 @@ void StageSound::setStreamTable(void *file)
     resetChannels();
     for (int i = 0; i < kStageSoundChannels; i++)
         m_channels[i].stream->setTable(file);
+}
+
+// callcheck: release, strcmp (the inline releaseSlots and SeTable::find)
+// FS2 0x001d70e0
+void StageSound::setSeTable(SeTable *table)
+{
+    releaseSlots();
+    m_player->fadeMaster(0, m_player->m_masterVolume, kSoundVolumeFull);
+    m_state   = StageSoundState_Normal;
+    m_seTable = table;
+    m_player->setTable(m_seTable);
+    SeTable *se = m_player->m_table;
+    if (se == nullptr)
+        return;
+
+    // An entry X_J / X_D is X's alternate: they point at each other. An
+    // entry is reset when its turn comes, so a base after its alternate in
+    // the table loses the link again (kept as the ROM).
+    int count = m_seTable->count;
+    for (int i = 0; i < count; i++) {
+        SeEntry *entry = &se->entries[i];
+        const char *name = entry->name;
+        size_t len = strlen(name);
+        entry->altOffset = 0;
+        if (len < 2 || name[len - 2] != '_' || (name[len - 1] != 'J' && name[len - 1] != 'D'))
+            continue;
+        // PC: the ROM copies into its 32-byte buffer whatever the length.
+        if (len >= (size_t)kSeNameMax)
+            continue;
+        char baseName[kSeNameMax];
+        strcpy(baseName, name);
+        baseName[len - 2] = '\0';
+        SeEntry *base = const_cast<SeEntry *>(se->find(baseName));
+        if (base != nullptr) {
+            signed char offset = (signed char)(entry - base);
+            base->altOffset  = offset;
+            entry->altOffset = -offset;
+        }
+    }
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -509,6 +656,26 @@ float stageSoundLocate(float *pan, const sceVu0FVECTOR pos, StageObject *listene
 
 // ──────────────────────────────────────────────────────────────────────
 // The update
+
+// What lies between from and to for a sound: a first ray, and past a thin
+// wall a second one. Inline in the ROM (updateChannels, pickCueChannel).
+static int soundOcclusion(const sceVu0FVECTOR from, const sceVu0FVECTOR to)
+{
+    sceVu0FVECTOR hit;
+    StageCollisionFace *face = gStageScene->raycast(hit, from, to, 0, kSoundRayMask,
+                                                    kSoundRayFlags, nullptr);
+    if (face == nullptr)
+        return SoundOcclusion_None;
+    if (!(face->flags & StageCollision_Thin))
+        return SoundOcclusion_Blocked;
+    sceVu0FVECTOR past;
+    for (int k = 0; k < 4; k++)
+        past[k] = hit[k];
+    if (gStageScene->raycast(hit, past, to, 0, kSoundRayMask, kSoundRayFlagsAgain,
+                             nullptr) != nullptr)
+        return SoundOcclusion_Blocked;
+    return SoundOcclusion_Thin;
+}
 
 // callcheck: getKind, getMatrix, find, getSoundAttr (the listener's virtuals, the bone's)
 // FS2 0x001d5580
@@ -619,7 +786,7 @@ void StageSound::updateSlots(StageObject *listener, u_char playerFlag, u_char sc
             m_player->setAttr(s->m_handle, attr);
             continue;
         }
-        if (s->_04 == 0)
+        if (s->m_parent == nullptr)
             s->updateMatrix();
         float pan;
         float dist = stageSoundLocateFacing(facing, &pan, s->getWorldMatrix()[3], listener);
@@ -689,7 +856,7 @@ void StageSound::updateSlots(StageObject *listener, u_char playerFlag, u_char sc
     }
 }
 
-// callcheck: atan2Octant, update, isPaused, isActive, stop, playEntry, playPlaced, setPlacement, setAttr, pause, startFade, raycast, isFullInMode2, getMatrix, getWorldMatrix (the inline listenerFacing)
+// callcheck: atan2Octant, update, isPaused, isActive, stop, playEntry, playPlaced, setPlacement, setAttr, pause, startFade, raycast, isFullInMode2, getMatrix, getWorldMatrix (the inline listenerFacing / soundOcclusion)
 // FS2 0x001d56a0
 void StageSound::updateChannels(StageObject *listener, u_char playerFlag, u_char attr)
 {
@@ -769,24 +936,7 @@ void StageSound::updateChannels(StageObject *listener, u_char playerFlag, u_char
                 if (ch.cue.def->range != 0.0f) {
                     const sceVu0FVECTOR *from = listener->getMatrix();
                     const sceVu0FVECTOR *to   = ch.cue.source->getWorldMatrix();
-                    int occlusion = SoundOcclusion_None;
-                    sceVu0FVECTOR hit;
-                    StageCollisionFace *face = gStageScene->raycast(hit, from[3], to[3], 0,
-                                                                    kSoundRayMask, kSoundRayFlags,
-                                                                    nullptr);
-                    if (face != nullptr) {
-                        if (!(face->flags & StageCollision_Thin)) {
-                            occlusion = SoundOcclusion_Blocked;
-                        } else {
-                            occlusion = SoundOcclusion_Thin;
-                            sceVu0FVECTOR past;
-                            for (int k = 0; k < 4; k++)
-                                past[k] = hit[k];
-                            if (gStageScene->raycast(hit, past, to[3], 0, kSoundRayMask,
-                                                     kSoundRayFlagsAgain, nullptr) != nullptr)
-                                occlusion = SoundOcclusion_Blocked;
-                        }
-                    }
+                    int occlusion = soundOcclusion(from[3], to[3]);
                     if (occlusion == SoundOcclusion_Blocked)
                         ratio = kSoundRatioBlocked;
                     else if (occlusion == SoundOcclusion_Thin)
@@ -854,4 +1004,236 @@ void StageSound::updateChannels(StageObject *listener, u_char playerFlag, u_char
             }
         }
     }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The cue streams and the music
+
+// The cue that counts on a channel: the queued one, else the one playing;
+// null none.
+static const StageStreamCue *liveCue(const StageStreamChannel &ch)
+{
+    if (ch.next.def != nullptr)
+        return &ch.next;
+    if (ch.state != StageStreamChannel_Idle)
+        return &ch.cue;
+    return nullptr;
+}
+
+void StageSound::fadeOutChannel(StageStreamChannel &ch, int frames)
+{
+    if (ch.state == StageStreamChannel_Stopping || ch.state == StageStreamChannel_Idle)
+        return;
+    ch.stream->startFade(frames, kSoundVolumeFull, 0, SoundFadeEnd_Stop);
+    ch.state = StageStreamChannel_Stopping;
+}
+
+int StageSound::pickCueVariant(SeEntry *def)
+{
+    if (def->variants == 0)
+        return 0;
+    if (def->variants < 0)
+        return (int)randNext() % abs(def->variants);
+    return def->cycle++ % def->variants;
+}
+
+// callcheck: find (BoneNode::find, the owner's head)
+void StageSound::queueCue(StageStreamChannel &ch, SeEntry *def, StageObject *owner, int variant)
+{
+    ch.next.source     = BoneNode::find(owner->m_model->bones, kHeadBone)->value;
+    ch.next.def        = def;
+    ch.next.owner      = owner;
+    ch.next.variant    = variant;
+    ch.next.resumeAt   = 0;
+    ch.next.fadeFrames = 0;
+    fadeOutChannel(ch, kCueStopFrames);
+}
+
+// FS2 0x001d46e0
+const u_short *StageSound::getCueSubtitle()
+{
+    int found = -1;
+    for (int i = 0; i < kStageSoundChannels - kStageSoundMusicChannels; i++) {
+        StageStreamChannel &ch = m_channels[kStageSoundMusicChannels + i];
+        if (ch.state == StageStreamChannel_Idle)
+            continue;
+        if (!ch.stream->hasSubtitles(&ch.cue.def[ch.cue.variant]))
+            continue;
+        int priority = ch.cue.def->priority;
+        if (priority != kCuePriorityNoSubtitle)
+            found = i;
+    }
+    if (found < 0)
+        return nullptr;
+    return m_channels[kStageSoundMusicChannels + found].stream->getSubtitle();
+}
+
+// callcheck: startFade (the inline fadeOutChannel)
+// FS2 0x001d47e0
+void StageSound::stopCue(StageObject *owner, const SeEntry *def)
+{
+    for (int i = kStageSoundMusicChannels; i < kStageSoundChannels; i++) {
+        StageStreamChannel &ch = m_channels[i];
+        const StageStreamCue *cue = liveCue(ch);
+        if (cue != nullptr && cue->owner == owner && cue->def == def)
+            fadeOutChannel(ch, kCueStopFrames);
+    }
+}
+
+// callcheck: startFade (the inline fadeOutChannel)
+// FS2 0x001d4920
+void StageSound::stopCuesOf(StageObject *owner)
+{
+    for (int i = kStageSoundMusicChannels; i < kStageSoundChannels; i++) {
+        StageStreamChannel &ch = m_channels[i];
+        const StageStreamCue *cue = liveCue(ch);
+        if (cue != nullptr && cue->owner == owner)
+            fadeOutChannel(ch, kCueStopFastFrames);
+    }
+}
+
+// FS2 0x001d4a30
+bool StageSound::hasCue(StageObject *owner)
+{
+    for (int i = kStageSoundMusicChannels; i < kStageSoundChannels; i++) {
+        const StageStreamChannel &ch = m_channels[i];
+        if (ch.next.def != nullptr && ch.next.owner == owner)
+            return true;
+        if (ch.state != StageStreamChannel_Idle && ch.cue.owner == owner)
+            return true;
+    }
+    return false;
+}
+
+// callcheck: strcmp (the inline StreamTable::find)
+// FS2 0x001d4aa0
+bool StageSound::isCuePlaying(const char *name, StageObject *owner)
+{
+    if (m_channels[0].stream->m_table == nullptr)
+        return false;
+    StreamTable *table = m_channels[kStageSoundMusicChannels].stream->m_table;
+    SeEntry *entry = table != nullptr ? table->find(name) : nullptr;
+    if (entry == nullptr)
+        return false;
+    for (int i = kStageSoundMusicChannels; i < kStageSoundChannels; i++) {
+        const StageStreamChannel &ch = m_channels[i];
+        if (ch.next.def != nullptr && ch.next.def == entry && ch.next.owner == owner)
+            return true;
+        if (ch.state != StageStreamChannel_Idle && ch.cue.def == entry && ch.cue.owner == owner)
+            return true;
+    }
+    return false;
+}
+
+// callcheck: abs, randNext, find, startFade (the inline pickCueVariant / queueCue)
+// FS2 0x001d4c10
+bool StageSound::setCue(SeEntry *def, StageObject *owner, int channel)
+{
+    StageStreamChannel &ch = m_channels[kStageSoundMusicChannels + channel];
+    queueCue(ch, def, owner, pickCueVariant(def));
+    return true;
+}
+
+// callcheck: abs, randNext, find, startFade (the inline pickCueVariant / queueCue)
+// FS2 0x001d4d30
+bool StageSound::playCue(SeEntry *def, StageObject *owner, StageObject *listener)
+{
+    if (m_channels[0].stream->m_table == nullptr)
+        return false;
+    int channel = pickCueChannel(def, owner, listener);
+    if (channel < 0)
+        return false;
+    StageStreamChannel &ch = m_channels[kStageSoundMusicChannels + channel];
+    queueCue(ch, def, owner, pickCueVariant(def));
+    return true;
+}
+
+// callcheck: find, getMatrix, raycast (the owner's head bone and its virtual, the inline soundOcclusion)
+// FS2 0x001d4e70
+int StageSound::pickCueChannel(SeEntry *def, StageObject *owner, StageObject *listener)
+{
+    if (m_channels[0].stream->m_table == nullptr)
+        return StageCueReject_NoTable;
+
+    const u_int cueChannels = kStageSoundChannels - kStageSoundMusicChannels;
+    u_int best      = cueChannels;
+    u_int bestScore = kCueScoreNone;
+    for (u_int i = 0; i < cueChannels; i++) {
+        const StageStreamCue *cue = liveCue(m_channels[kStageSoundMusicChannels + i]);
+        u_int score;
+        if (cue == nullptr)
+            score = kCueScoreFree;
+        else if (def->priority <= cue->def->priority)
+            score = cue->owner == owner ? kCueScoreSameOwner : kCueScoreOther;
+        else
+            score = kCueScoreNone;
+        if (bestScore < score) {
+            bestScore = score;
+            best      = i;
+        }
+    }
+    if (best >= cueChannels)
+        return StageCueReject_NoChannel;
+
+    // Heard from the owner's head: within range and not behind a wall.
+    StageNode *head = BoneNode::find(owner->m_model->bones, kHeadBone)->value;
+    float pan;
+    float dist  = stageSoundLocate(&pan, head->getMatrix()[3], listener);
+    float ratio = 0.0f;
+    if (def->range != 0.0f) {
+        ratio = dist / def->range;
+        if (ratio > 1.0f)
+            return StageCueReject_OutOfRange;
+    }
+    const sceVu0FVECTOR *from = listener->getMatrix();
+    const sceVu0FVECTOR *to   = head->getMatrix();
+    int occlusion = soundOcclusion(from[3], to[3]);
+    if (occlusion == SoundOcclusion_Blocked ||
+        (occlusion == SoundOcclusion_Thin && ratio > kCueThinWallRatio))
+        return StageCueReject_Occluded;
+    return (int)best;
+}
+
+// callcheck: strcmp (the inline StreamTable::find)
+// FS2 0x001d5140
+SeEntry *StageSound::findCue(const char *name)
+{
+    StreamTable *table = m_channels[kStageSoundMusicChannels].stream->m_table;
+    return table != nullptr ? table->find(name) : nullptr;
+}
+
+// FS2 0x001d5210
+void StageSound::setMusicVolume(int percent)
+{
+    // The ROM clamps through 0 (sdata 0x31a9b4) and 0x80 (0x304de0).
+    int volume = std::min(std::max((int)(percent / 100.0f * 128.0f), 0), kSoundVolumeFull);
+    m_channels[0].stream->setVolume(volume, volume);
+    m_channels[0].volume = percent / 100.0f;
+}
+
+// callcheck: startFade (the inline fadeOutChannel)
+// FS2 0x001d52d0
+void StageSound::stopMusic(int channel, int fadeFrames)
+{
+    if (m_channels[0].stream->m_table == nullptr)
+        return;
+    fadeOutChannel(m_channels[channel], fadeFrames * kGameFps / kCueFadeFps);
+}
+
+// callcheck: strcmp, startFade (the inline StreamTable::find / fadeOutChannel)
+// FS2 0x001d5390
+void StageSound::playMusic(int channel, const char *name, int fadeFrames)
+{
+    if (m_channels[0].stream->m_table == nullptr)
+        return;
+    StageStreamChannel &ch = m_channels[channel];
+    StreamTable *table = ch.stream->m_table;
+    SeEntry *entry = table != nullptr ? table->find(name) : nullptr;
+    if (entry == nullptr)
+        return;
+    // Queued; the update starts it once what plays has faded out.
+    ch.next.clear();
+    ch.next.def = entry;
+    fadeOutChannel(ch, kCueStopFrames);
+    ch.next.fadeFrames = fadeFrames;
 }

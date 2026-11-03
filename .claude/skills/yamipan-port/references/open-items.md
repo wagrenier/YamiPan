@@ -833,10 +833,27 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    kind 0xf are unidentified; `getSoundAttr` (0x284190's area grid) passed as the sound attr is
    probably reverb. PC guards: updateChannels returns on a null listener (the ROM dereferences it),
    stageSoundLocateFacing skips an out-of-range record index (the ROM reads address 0x10).
-   **Next run (the same TU)**: the cue queries 0x1d46e0..0x1d5510 (0x1d4c10 / 0x1d4d30 set a cue:
-   def = the SeEntry run, source = the owner's bn_head bone value, variant cycled by def +0x2f or
-   random by +0x24), the source class 0x1d6bd0 / 0x1d6d10 / 0x1d3e90, 0x1d70e0, 0x1d73b0. Decide
-   0x1d3d20 (before) and 0x1d7c50..0x1d85c0 (after).
+   2026-11-03 run 3 (batch 077, 31 names): **all 45 written, `verify`**: the cue queries
+   (getCueSubtitle, stopCue / stopCuesOf, hasCue, isCuePlaying, setCue / playCue, pickCueChannel,
+   findCue), the music (playMusic / stopMusic / setMusicVolume), the positional sources (addSource /
+   addSourceNamed, findSource, setSourcePitch, the source dtor), setSeTable (pairs X_J / X_D
+   entries with X through altOffset). **Decision (taken unattended, the user may move it): new
+   header `game/stagenode.h`** for the stand-ins of the uncut scene-node run unassigned@0017fce0
+   (`StageNodeBase` 0x1d8540 / 0x1865c0, `StageNodeList` 0x1842c0 / 0x184370, `NodeTransform`
+   0x1d7f20 / 0x1d7ee0, `StageNode` moved out of gamehooks.h): StageSoundSource now derives from
+   StageNode, and gamehooks.h includes stagesound.h, so the base could not stay in gamehooks.h.
+   The source's +0x4 is its parent node (was `_04`). `SeEntry` got `subtitleKey` +0x8 and
+   `priority` +0x2c (a cue's: an equal or lower value takes a busy channel), `cycle` is `mutable`;
+   `SoundTrack` got `m_table` +0x60 (`StreamTable`: count +0x10, entries from +0x40), hasSubtitles /
+   getSubtitle / setVolume; `SePlayer` setTable / setPitch. Boundaries decided: 0x1d7c50.. is the
+   node family's (its transform 0x1d7ee0 / 0x1d7f20 and node base ctor 0x1d8540 are there), not
+   StageSound's; 0x1d3d20 (a lookup with eight callers elsewhere) stays outside. Doubts for the
+   user: the subtitle text type (`const u_short *`, from 0x28fa90 testing a short); setSeTable
+   resets each entry's altOffset on its own turn, so a base after its alternate loses the link
+   (kept as the ROM); getCueSubtitle's priority test against 0x7fffffff is always true (kept).
+   PC guards: setSeTable skips names of 32 characters or more (the ROM's stack buffer). Next for
+   the sound: the callers 0x2a6380..0x2a6830 (the stage objects' sound commands) and the node
+   family 0x17fce0.. / 0x1d7c50.. when the frontier reaches them.
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

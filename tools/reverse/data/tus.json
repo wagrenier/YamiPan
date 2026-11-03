@@ -520,7 +520,7 @@
    "why": "StageResult (0x599700, static init 0x310f60: begin(0) + __register_global_object with the destructor 0x2b0cf0) and the game-pack loader 0x2afd00..0x2aff80: the MSL map instances 0x2b0590..0x2b0cf0 serve the loader's tables and sit between getStageResult and StageResult's static destructor, so one object file; 0x2afc20/0x2afcd0 (init-pack items by language) joined by position (guess); 0x2af9a0 before is the 0x2adc70 drawing cluster, 0x2b0d50 after is a SoundStream thunk"
   },
   "game/stagesound.cpp": {
-   "notes": "Batch 076 (19 names: StageSound update halves, the locate helpers, SoundTrack update / isPaused / playEntry / playPlaced / setPlacement / setAttr / pause, SePlayer update / playPlaced / setPlacement, StageScene raycast / getSoundAttr, BoneNode::find 0x177270, StageFade::isFullInMode2 0x1512a0). gamehooks.h: SeEntry range +0x10 / placed +0x1c / variants +0x24 / falloff +0x29 / altOffset +0x2e / cycle +0x2f, SePlayer master fade fields, StageObject getMatrix (vtable +0x14), m_model +0x30, m_linked +0x300 and m_name shrunk to 0x10 (doubt in open-items TU 44), stand-ins BoneNode, StageModel, StageNode, StageFade, StageCollisionFace, StageObjRecord gStageObjRecords bss 0x539b10; StageScene fade +0xfc. stagesound.h: StageStreamCue typed (source StageNode, def SeEntry run, owner StageObject, resumeAt), StageSoundSource +0x4 / variant +0x110 / bySceneFlag +0x114 and stand-in getWorldMatrix / updateMatrix; m_b0c / m_b0d are m_playerFlag / m_sceneFlag. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on stagesound / stageobjlist / vcmtable / stageresult / scene (RosePan SDK headers + scratch libvifpk stub; uigame / stageloop only show the known gfxtarget / rena gaps). Next run, same TU: the cue queries 0x1d46e0..0x1d5510 (0x1d4c10 / 0x1d4d30 set a cue, 0x1d4e70 uses stageSoundLocate and raycasts), the source class 0x1d6bd0 / 0x1d6d10 / 0x1d3e90, 0x1d70e0, 0x1d73b0; decide 0x1d3d20 and 0x1d7c50..0x1d85c0.",
+   "notes": "Batch 077 (31 names: the 18 slice functions, abs 0x121f08, SoundTrack hasSubtitles / getSubtitle / setVolume, SePlayer setTable / setPitch, StageNodeBase ctor 0x1d8540 / dtor 0x1865c0, NodeTransform ctor 0x1d7f20 / setPosition 0x1d7ee0, StageNodeList pushBack 0x1842c0 / erase 0x184370). New header src/game/stagenode.h (decision taken unattended, open-items TU 44): stand-ins for the uncut scene-node run unassigned@0017fce0; StageNode moved there from gamehooks.h because StageSoundSource now derives from it and gamehooks.h includes stagesound.h. gamehooks.h: SeEntry subtitleKey +0x8, priority +0x2c, cycle mutable; StreamTable (StDT: count +0x10, entries +0x40) as SoundTrack m_table +0x60. stagesound.h: StageCueReject codes, the source's parent +0x4 (was _04) and _10c, 18 new members. The occlusion raycasts are one static helper (soundOcclusion) shared by updateChannels and pickCueChannel. Checked: callcheck clean (45 annotated), layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on stagesound / stageobjlist / vcmtable / stageresult (RosePan SDK headers + scratch libvifpk stub); scene / uigame / stageloop show only the known gfxtarget / rena gaps. Boundaries: 0x1d7c50.. belongs to the node family (transform, node base ctor), 0x1d3d20 stays outside. Nothing on screen can show this yet (no build). Next for sound: the stage objects' sound commands 0x2a6380..0x2a6830.",
    "ranges": [
     [
      "001d3dc0",
@@ -539,9 +539,15 @@
      "date": "2026-11-03 14:39",
      "status": "partial",
      "summary": "StageSound update: update 0x1d5580 with updateSlots 0x1d5e40 and updateChannels 0x1d56a0, stageSoundLocateFacing 0x1d7a30 / stageSoundLocate 0x1d79c0 (27 of 45 written)"
+    },
+    {
+     "build": "not built",
+     "date": "2026-11-03 14:58",
+     "status": "verify",
+     "summary": "StageSound complete: cue queries and channel pick, music play / stop / volume, positional sources (addSource on the scene-node base, findSource, setSourcePitch, dtor), setSeTable pairing X_J / X_D alternates (45 of 45 written)"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "why": "StageSound, the stage's sound (sbss 0x31ae04, StageScene +0x24): every function between the slot release 0x1d3dc0 and the stream angle helper 0x1d7a30 takes the StageSound in a0 (or is its source class's ctor / dtor 0x1d6d10 / 0x1d3e90); 0x1d3d20 before it is a table lookup with callers elsewhere; 0x1d7c50.. are inline virtuals of vtables 0x315a50 / 0x315a80 and math helpers (may belong here: unread)"
   },
   "game/streamring.cpp": {

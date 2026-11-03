@@ -1297,8 +1297,7 @@ cleared), written through `getSaveData()` + 0x4c8. The thread ends deleting file
 of the handler tables 0x318038 / 0x318058 (the 0x2887a0.. classes). 0x17fce0 (answers 25) is slot
 108 of the bullet class vtable 0x312cdc, so the next file starts there.
 
-**`game/stagesound.cpp` 0x1d3dc0..0x1d7c50 (TU 44, 2026-11-03, batches 074-075 with 30 names;
-22 of 45 written, `partial`; the file name is the port's)**: the **stage's sound**, `StageSound`
+**`game/stagesound.cpp` 0x1d3dc0..0x1d7c50 (TU 44, 2026-11-03, batches 074-077, all 45 written, `verify`; the file name is the port's)**: the **stage's sound**, `StageSound`
 (0x314, `game/stagesound.h`, `layout: host`): +8 an **`SePlayer`** (0x1298: +0 the SE table, +4 16
 `SoundSeBank`, +0x44 16 `SoundStream`, **+0x84 the master volume** 0..0x80 with its fade
 +0x88..+0x94 = `fadeMaster(frames, from, to)` 0x292360; handles with the **top nibble set are
@@ -1342,11 +1341,39 @@ from the position stopped at; playing / paused channels pause (fade 12, SoundFad
 turned down -- music only when muted -- and resume unless `StageFade::isFullInMode2` 0x1512a0 of scene
 +0xfc). Pan = -(angle to the sound - listener facing), facing = atan2Octant(matrix row 1 x, y); a
 Kind11 listener whose +0x300 object's record (bss 0x539b10 [difficulty][m_itemDef], 0xfc each) has
-kind 0xf divides the distance by clamp(1 - (pi/4)/|pan|, 0.4, 1) * 2.5. Not written: the cue
-queries 0x1d46e0..0x1d5510, the sources 0x1d6bd0 / 0x1d6d10 / 0x1d3e90, 0x1d70e0 (0x19d9e0: an SE
-table swap), 0x1d73b0. 0x1d3d20 before the file
-(a {records of 0x1c, short count} name lookup, eight callers elsewhere) and 0x1d7c50.. after it
-(inline virtuals of vtables 0x315a50 / 0x315a80, math helpers to ~0x1d85c0) are unplaced.
+kind 0xf divides the distance by clamp(1 - (pi/4)/|pan|, 0.4, 1) * 2.5. **The cues** (batch 077,
+all 45 written, `verify`): the stage objects (0x2a6380..0x2a6830) queue a cue on channel 2 / 3 with
+`playCue` 0x1d4d30 (the channel from `pickCueChannel` 0x1d4e70: a free channel scores 100, a busy
+one whose cue's `SeEntry::priority` +0x2c is >= the new one's 200 for the same owner / 50 for
+another, else 0; then rejected -0x7ffd beyond range from the owner's bn_head, -0x7ffb behind a
+wall or a thin wall past half the range, -0x7ffc no channel, -0x8000 no StDT table) or `setCue`
+0x1d4c10 (a given channel): next cue = {head bone, entry, owner, variant (< 0 random abs/randNext,
+> 0 `cycle++ % variants`), 0, 0}, what plays fades out over 10 frames to stop (state 5) and the
+update starts the queued cue. `stopCue` 0x1d47e0 / `stopCuesOf` 0x1d4920 (4 frames) / `hasCue`
+0x1d4a30 / `isCuePlaying` 0x1d4aa0 test the queued cue, else the playing one; `findCue` 0x1d5140
+searches channel 2's StDT table (`SoundTrack` +0x60 `StreamTable`: count +0x10, 0x30 SeEntry
+records from +0x40, linear strcmp). `getCueSubtitle` 0x1d46e0 (StageScene::update) answers the
+fsm text (`SoundTrack::getSubtitle` 0x290980, keyed by `SeEntry` +0x8 via `hasSubtitles`
+0x290930) of the last cue channel playing a subtitled entry. **Music**: `playMusic` 0x1d5390
+(channel, name, fade-in frames at 30 fps) queues the entry from that channel's table,
+`stopMusic` 0x1d52d0 fades out (frames * 25 / 30), `setMusicVolume` 0x1d5210 sets channel 0's
+stream volume (percent * 128 / 100, `SoundTrack::setVolume` 0x291a30 scales by the entry volume)
+and its fade scale +0x34. **Positional sources**: `addSource` 0x1d6d10 (`addSourceNamed` 0x1d6bd0
+by SE-table name) new's a 0x140 `StageSoundSource` -- a **scene node** (`game/stagenode.h`: node
+base vtable 0x315ae0 over 0x314150 / 0x314120, ctor 0x1d8540, deleting dtor 0x1865c0; +4 parent,
++8 child list {head, count} of 0xc links {item cell, next, prev} via `StageNodeList::pushBack`
+0x1842c0 / `erase` 0x184370; vtable 0x315a80 adds a `NodeTransform` +0x40 (ctor 0x1d7f20: dirty
+byte, position +0x10, rotation +0x20, matrices +0x40 / +0x80 = the node's +0xc0),
+`setPosition` 0x1d7ee0) with handle -1, entry, 1.0f +0x10c, variant (`(cycle + 1) % variants`,
+stored), +0x114 = the name starts "CAR_" (follows the scene flag), hung under the given parent
+node (without one the update rebuilds its matrix); `findSource` 0x1d5510, `setSourcePitch`
+0x1d73b0 (`SePlayer::setPitch` 0x293070(f12 pitch, handle)). `setSeTable` 0x1d70e0 (0x19d9e0)
+releases every slot, takes the stage's SEDT file (+0, `SePlayer::setTable` 0x2921d0: magic SEDT,
+version >= 1.2, relocated once) and pairs each X_J / X_D entry with X through `altOffset` +0x2e
+(base +d, alternate -d). 0x1d3d20 before the file (a {records of 0x1c, short count} name lookup,
+eight callers elsewhere) is unplaced; 0x1d7c50.. after it is the node family's (inline virtuals
+of vtables 0x315a50 / 0x315a80, the transform 0x1d7ee0 / 0x1d7f20, the node base ctor 0x1d8540,
+math helpers to ~0x1d85c0).
 
 **`game/stageobjlist.cpp` 0x193900..0x1953f0 (TU 26, 2026-11-03, batch 058 with 45 names, all
 written, `verify`)**: the **stage's object registry** `StageObjectList` (0xdc, `gStageScene` +0x10,

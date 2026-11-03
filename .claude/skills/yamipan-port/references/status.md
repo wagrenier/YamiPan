@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 14:40 at commit `cdb0d93` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 14:58 at commit `471c979` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-03 14:40 at commit `cdb0d93` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **2063** (31%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1520, game-inferred 1192
-- context-name ledger: 2712 entries; overrides of wrong library matches: 0
+- game functions: **6599**, named **2092** (32%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1521, game-inferred 1221
+- context-name ledger: 2742 entries; overrides of wrong library matches: 0
 - placed in a source file: 1973/6599 in 62 files
 
 Least-named game-code regions (64 KB blocks):
@@ -25,12 +25,12 @@ Least-named game-code regions (64 KB blocks):
 | `00220000` | 0/167 (0%) | - |
 | `00270000` | 0/202 (0%) | - |
 | `00310000` | 0/9 (0%) | - |
-| `00180000` | 1/336 (0%) | - |
+| `00180000` | 4/336 (1%) | - |
 | `00280000` | 3/232 (1%) | game/gamepaths.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **1716**; stubs: **0**
+- reconstructed FS2 functions: **1734**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -59,7 +59,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stageloop.cpp` | 9 | 0 |
 | `src/game/stageobjlist.cpp` | 45 | 0 |
 | `src/game/stageresult.cpp` | 32 | 0 |
-| `src/game/stagesound.cpp` | 27 | 0 |
+| `src/game/stagesound.cpp` | 45 | 0 |
 | `src/game/streamring.cpp` | 17 | 0 |
 | `src/game/sysdata.cpp` | 37 | 0 |
 | `src/game/thread.cpp` | 19 | 0 |
@@ -84,10 +84,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 84 TUs: todo 49, partial 1, verify 48
-- next: **game/stagesound.cpp** (continuing a partial TU)
+- 84 TUs: todo 49, verify 49
+- next: **unassigned@002908d0** (frontier score 82)
 - pinned queue: (empty)
-- partial: `game/stagesound.cpp` 27/45 -- Batch 076 (19 names: StageSound update halves, the locate helpers, SoundTrack update / isPaused / playEntry / playPlaced / setPlacement / setAttr / pause, SePla
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
@@ -113,6 +112,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stageloop.cpp` 9/9 -- Cut out of unassigned@00171300 and pinned 0x17f150-0x17fce0 (batch 073, 45 names; Ghidra saved by name_ctx). New src/game/stageloop.h defines gStageScene (exter
 - verify: `game/stageobjlist.cpp` 45/45 -- Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector in
 - verify: `game/stageresult.cpp` 32/32 -- All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (add
+- verify: `game/stagesound.cpp` 45/45 -- Batch 077 (31 names: the 18 slice functions, abs 0x121f08, SoundTrack hasSubtitles / getSubtitle / setVolume, SePlayer setTable / setPitch, StageNodeBase ctor 0
 - verify: `game/streamring.cpp` 17/21 -- All 21 functions accounted for: the 17 ring functions written, the thunks 0x151f70 / 0x151f80 / 0x152730 / 0x152740 call the rx functions directly. The classes 
 - verify: `game/sysdata.cpp` 37/37 -- Cut out of unassigned@00171300 (the frontier pick, 5138 functions) and pinned 0x23af30-0x23c020. One SystemData block of 0x620 bytes at 0x598b30: SaveData +0 (0
 - verify: `game/thread.cpp` 19/19 -- All 19 functions written; thread.h has ThreadSlotRecord, ThreadStackDef, ThreadDetourStack, FrameSync, JobRecord with ThreadState / ThreadDetourState / JobCance
@@ -139,6 +139,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 14:58 `game/stagesound.cpp` verify: StageSound complete: cue queries and channel pick, music play / stop / volume, positional sources (addSource on the scene-node base, findSource, setSourcePitch,
 - 2026-11-03 14:39 `game/stagesound.cpp` partial: StageSound update: update 0x1d5580 with updateSlots 0x1d5e40 and updateChannels 0x1d56a0, stageSoundLocateFacing 0x1d7a30 / stageSoundLocate 0x1d79c0 (27 of 45 
 - 2026-11-03 14:16 `game/stagesound.cpp` partial: StageSound cut out of unassigned@001953f0 (0x1d3dc0..0x1d7c50, 45 functions): 22 written -- life, reset, slots, channels, turn-down / up, effect play / stop, st
 - 2026-11-03 14:02 `game/stageloop.cpp` verify: The stage loop: stageThread (slot 3) with its clear, game-over, pause and restart helpers, stageLoad and setStageLoader; all 9 written, source-only, not built
@@ -146,22 +147,21 @@ Recent sessions:
 - 2026-11-03 13:40 `game/mathutil.cpp` verify: Cut out of unassigned@00133800 and pinned 0x133800-0x1350d0; all 18 written: copyVec4, matrixToRotYXZ / matrixToRotZYX, normalizeAngle / wrapAngle, colorToFloat
 - 2026-11-03 13:09 `rx/rxsndut.c` verify: rx sound utility layer: all 6 functions (init / exit / update of the rxsndstr layers, the PCM and ADPCM format tables, debug flags, BG-call check)
 - 2026-11-03 12:49 `rx/rxsndstrbank.c` verify: XWS banks: 48 functions, the RXWS chunk walkers, request / mark / branch / track getters and OpenBody, file records in rxsndstrbank.h
-- 2026-11-03 12:30 `rx/rxsndstr.c` verify: rx/rxsndstr.c: all 38 stream-core functions written (slot and format tables, play / stop / setters, format callbacks)
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002908d0` | todo | 0/0/67 | 18.8 | 75 | 0 |
-| `unassigned@001953f0` | todo | 0/0/972 | 242.5 | 37 | 0 |
+| `unassigned@002908d0` | todo | 0/0/67 | 18.8 | 82 | 0 |
+| `unassigned@001953f0` | todo | 0/0/972 | 242.5 | 39 | 0 |
 | `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 14 | 0 |
-| `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 9 | 0 |
+| `unassigned@0017fce0` | todo | 0/0/399 | 76.4 | 13 | 0 |
 | `unassigned@00299d90` | todo | 0/0/215 | 62.3 | 9 | 0 |
-| `unassigned@0017fce0` | todo | 0/0/399 | 76.4 | 9 | 0 |
-| `unassigned@00231c90` | todo | 0/0/61 | 36.3 | 7 | 0 |
+| `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 9 | 0 |
 | `unassigned@00252840` | todo | 0/0/100 | 35.5 | 7 | 0 |
 | `unassigned@001fe6b0` | todo | 0/0/563 | 197.2 | 7 | 0 |
 | `unassigned@0012c9b8` | todo | 0/0/6 | 0.8 | 7 | 0 |
+| `unassigned@00231c90` | todo | 0/0/61 | 36.3 | 7 | 0 |
 | `rx/rxsndstrstream.c` | todo | 0/0/18 | 2.4 | 5 | 0 |
-| `game/rcnttimer.cpp` | todo | 0/0/4 | 0.2 | 4 | 0 |
+| `unassigned@002681e0` | todo | 0/0/514 | 156.6 | 4 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -169,13 +169,16 @@ Recent sessions:
 |---|---|---|---|---|---|
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `00292db0` | SePlayer::stop | 17 | game | missing | - |
-| `00292360` | SePlayer::fadeMaster | 7 | game | missing | - |
+| `00292360` | SePlayer::fadeMaster | 8 | game | missing | - |
 | `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
 | `002916f0` | SoundTrack::stop | 5 | game | missing | - |
 | `00198fc0` | StageScene::drawPaused | 5 | game | missing | - |
 | `0029efe0` | getNaviMenu | 5 | game | missing | - |
 | `001937f0` | FUN_001937f0 | 4 | - | missing | - |
 | `002955d0` | getNaviTable | 4 | game | missing | - |
+| `00292f60` | SePlayer::isPlaying | 4 | game | missing | - |
+| `00177270` | BoneNode::find | 4 | game | missing | - |
+| `00198170` | StageScene::raycast | 4 | game | missing | - |
 | `002bc5d0` | KeepList::removeUnkept | 4 | game | missing | - |
 | `0025a850` | mslTreeIncrement | 4 | lib-ctx | missing | - |
 | `00292520` | SePlayer::playPlaced | 4 | game | missing | - |
@@ -183,7 +186,6 @@ Recent sessions:
 | `00231d30` | overlayShowLoading | 3 | native | missing | - |
 | `00231d20` | overlayShowLoading | 3 | native | missing | - |
 | `00291d80` | SePlayer::pause | 3 | game | missing | - |
-| `00292f60` | SePlayer::isPlaying | 3 | game | missing | - |
 | `00291ac0` | SePlayer::setAttr | 3 | game | missing | - |
 | `00292ac0` | SePlayer::play | 3 | game | missing | - |
 | `0019bbe0` | StageScene::~StageScene | 3 | game | missing | - |
@@ -202,9 +204,7 @@ Recent sessions:
 | `00291c00` | SePlayer::resume | 2 | game | missing | - |
 | `00291e50` | SePlayer::setVolume | 2 | game | missing | - |
 | `00152740` | rxFileCallSizeHook | 2 | native | missing | game/streamring.cpp |
+| `00184370` | StageNodeList::erase | 2 | game | missing | - |
 | `002e2920` | Tim2Texture::Tim2Texture | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `001a3f90` | StageFiles::~StageFiles | 2 | game | missing | - |
-| `0019c180` | StageScene::StageScene | 2 | game | missing | - |
-| `001a3db0` | StageFiles::loadSubSceneList | 2 | game | missing | - |
-| `001a38e0` | StageFiles::loadCommon | 2 | game | missing | - |
 

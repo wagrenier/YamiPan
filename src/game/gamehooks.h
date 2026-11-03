@@ -22,6 +22,7 @@
 #include "game/gamepaths.h"
 #include "game/stageloop.h"
 #include "game/stageobjlist.h"
+#include "game/stagenode.h"
 #include "game/stagesound.h"
 #include "game/streamring.h"
 #include "game/uilayout.h"
@@ -174,20 +175,7 @@ struct StageModel
     BoneNode *bones;            // FS2 +0x14: StageSound finds "bn_head" in it
 };
 
-// The scene-node family of the run 0x17fce0.. (base vtable 0x315a80, dtor
-// 0x1865c0): bones, StageSound's positional sources. Stand-in: what
-// StageSound calls; the virtuals are plain stubs until their TU.
-// layout: host -- EE: vptr at +0, a matrix at +0xc0 (0x186a20 / 0x186a30).
-class StageNode
-{
-public:
-    // Slot 3 / 4 (vtable +0x14 / +0x18): the node's matrix, rows 0..2 the
-    // axes, row 3 the position (both this +0xc0 in 0x315a80).
-    const sceVu0FVECTOR *getMatrix();                                    // FS2 vtable +0x14
-    const sceVu0FVECTOR *getWorldMatrix();                               // FS2 vtable +0x18
-    // Slot 6 (vtable +0x20): rebuilds the matrix (0x1d8420 in 0x315a20).
-    void updateMatrix();                                                 // FS2 vtable +0x20
-};
+// StageNode: game/stagenode.h (the scene-node family's stand-ins).
 
 // StageObject::m_doorState (a door's +0x2a8). The S2D asks for it as
 // rDunknown / rDunlock / rDblocked / rDlock / rDNone (UiDoorState).
@@ -541,7 +529,8 @@ struct SeEntry
 {
     const char *name;           // FS2 +0x00: StageSound::stopNamed compares it
     int         bank;           // FS2 +0x04
-    u_char      _08[0x8];       // FS2 +0x08
+    const char *subtitleKey;    // FS2 +0x08: its subtitles in the fsm file (SoundTrack::hasSubtitles)
+    u_char      _0c[4];         // FS2 +0x0c
     float       range;          // FS2 +0x10: a placed sound's reach; 0 everywhere
     int         program;        // FS2 +0x14
     int         note;           // FS2 +0x18
@@ -554,9 +543,10 @@ struct SeEntry
     short       id;             // FS2 +0x26
     u_char      volume;         // FS2 +0x28: 0..0x80, scales left / right
     u_char      falloff;        // FS2 +0x29: the distance curve (0x283df0)
-    u_char      _2a[4];         // FS2 +0x2a
+    u_char      _2a[2];         // FS2 +0x2a
+    short       priority;       // FS2 +0x2c: a cue's; an equal or lower one takes a busy channel (StageSound::pickCueChannel)
     signed char altOffset;      // FS2 +0x2e: entries to the alternate, 0 none
-    u_char      cycle;          // FS2 +0x2f: a cue's next variant when cycled
+    mutable u_char cycle;       // FS2 +0x2f: the variant turn (cues, sources: run-time state)
 };
 
 // The effect table's name index, sorted by name.
@@ -647,6 +637,11 @@ public:
     SeHandle playPlaced(float pan, float ratio, const SeEntry *se, int volume, int flag); // FS2 0x00292520
     // Moves a playing handle to pan / ratio.
     int      setPlacement(float pan, float ratio, SeHandle handle, int volume);         // FS2 0x002931b0
+    // Takes an SEDT file (magic "SEDT", version >= 1.2) as its table,
+    // relocated once; false not one.
+    bool     setTable(SeTable *table);                                   // FS2 0x002921d0
+    // 0 done, -1 not playing, -3 none.
+    int      setPitch(float pitch, SeHandle handle);                     // FS2 0x00293070
 
     SeTable *m_table;           // FS2 +0x00
     int      m_masterVolume;    // FS2 +0x84: 0..0x80
@@ -654,6 +649,27 @@ public:
     int      m_masterFadeTo;    // FS2 +0x8c
     int      m_masterFadeFrames; // FS2 +0x90: -1 not fading
     int      m_masterFadeFrame; // FS2 +0x94
+};
+
+// A SoundTrack's StDT stream table: its requests, as SeEntry records.
+// layout: host -- EE: +0x10 count, the entries (0x30) from +0x40.
+struct StreamTable
+{
+    u_char  _00[0x10];
+    int     count;              // FS2 +0x10
+    u_char  _14[0x2c];
+    SeEntry entries[1];         // FS2 +0x40: count
+
+    // The entry called name; null none. A linear search, inline in the ROM
+    // (StageSound::isCuePlaying / findCue / playMusic).
+    SeEntry *find(const char *name)
+    {
+        for (int i = 0; i < count; i++) {
+            if (strcmp(entries[i].name, name) == 0)
+                return &entries[i];
+        }
+        return nullptr;
+    }
 };
 
 // A SoundStream with a name, an fsm subtitle file and an StDT stream table
@@ -690,6 +706,16 @@ public:
     bool setSubtitles(void *file);                                       // FS2 0x00290b10
     void setName(const char *name);                                      // FS2 0x00290bb0: a copy; null none
     bool setTable(void *file);                                           // FS2 0x00290d60: relocates it once
+    // The fsm file has text for se's subtitle key.
+    bool hasSubtitles(const SeEntry *se);                                // FS2 0x00290930
+    // Playing or paused: the subtitle text at the stream's position (16-bit
+    // characters; format unread); null none.
+    const u_short *getSubtitle();                                        // FS2 0x00290980
+    // SoundStream::setVolume scaled by the entry's volume: 0 done, -1 / -2
+    // not now.
+    int  setVolume(int left, int right);                                 // FS2 0x00291a30
+
+    StreamTable *m_table = nullptr;     // FS2 +0x60: the StDT table (setTable)
 };
 SePlayer *getSePlayer();                                                 // FS2 0x002c4140: sbss 0x31aea0
 
