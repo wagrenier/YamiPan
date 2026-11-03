@@ -404,7 +404,7 @@ UiWidget *UiSequence::findWidgetByName(const char *name)
         UiWidget *widget = m_widgets[i];
         if (widget == nullptr)
             continue;
-        const char *own = widget->m_def != nullptr ? widget->m_def->name : nullptr;
+        const char *own = widget->m_def != nullptr ? (const char *)widget->m_def->name : nullptr;
         // PC: the ROM hands a null name to strcmp; the host skips it.
         if (own != nullptr && strcmp(own, name) == 0)
             return m_widgets[i];

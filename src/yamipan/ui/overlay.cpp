@@ -1,5 +1,7 @@
 #include "yamipan/ui/overlay.h"
 
+#include <cstdlib>
+
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlgpu3.h>
@@ -48,6 +50,7 @@ bool Overlay::initializeOnRenderThread(SDL_GPUTextureFormat targetFormat)
     }
 
     m_panels = createPanels(m_application);
+    m_menuVisible = std::getenv("YAMIPAN_SHOW_MENU") != nullptr;
     m_initialized = true;
     return true;
 }

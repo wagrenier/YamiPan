@@ -42,7 +42,8 @@
 
 /* ---- data ------------------------------------------------------------- */
 
-static int s_verbose = 1;                       /* data 0x2f5aa0: print rxfile messages */
+int rxFileVerbose = 1;
+#define s_verbose rxFileVerbose                 /* data 0x2f5aa0: print rxfile messages */
 /* data 0x2f5aa4: a zero word nothing in rxfile reads (FS2 only: RoR's
  * filehost data follows s_verbose directly). */
 static int s_deviceMap[RX_SYS_DEVICE_NUM] = { 0, 1, 2, 3 };             /* data 0x2f5b18 */

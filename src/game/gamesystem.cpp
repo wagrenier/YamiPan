@@ -11,6 +11,7 @@
 #include "game/heap.h"
 #include "game/memcard.h"
 #include "game/scene.h"
+#include "game/spkrom.h"
 #include "game/thread.h"
 #include "sdk/eekernel.h"
 #include "sdk/eeregs.h"

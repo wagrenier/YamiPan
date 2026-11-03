@@ -316,7 +316,6 @@ SceneModel::~SceneModel()
 void SceneOwnedObject::destroy()
 {
     YAMIPAN_STUB("SceneOwnedObject::destroy", 0x00000000);
-    return {};
 }
 
 // stub of FS2 0x00171680
@@ -734,7 +733,6 @@ void SubSceneMapObject::setup(const char *name, ModelInstance *instance,
 void SubSceneObject::destroy()
 {
     YAMIPAN_STUB("SubSceneObject::destroy", 0x00000000);
-    return {};
 }
 
 // stub of FS2 0x0023f0b0

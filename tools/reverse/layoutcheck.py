@@ -113,8 +113,8 @@ def build_flags():
         raise SystemExit('no game file in compile_commands.json')
     defines = re.findall(r'(?:^|\s)-D(\S+)', cmd)
     incs = re.findall(r'(?:^|\s)-I(\S+)', cmd) + re.findall(r'-isystem\s+(\S+)', cmd)
-    prefix = re.search(r'-include\s+(\S+)', cmd).group(1)
-    return defines, incs, prefix
+    prefix = re.search(r'-include\s+(\S+)', cmd)      # YamiPan force-includes nothing (cpp-port.md)
+    return defines, incs, prefix.group(1) if prefix else None
 
 
 def header_tus(headers):
@@ -140,7 +140,9 @@ def errors_of(output):
 
 def run_gcc(tus, defines, incs, prefix):
     gxx = str(yamipan.MINGW_BIN + '\\g++.exe')
-    args = [gxx, '-fsyntax-only', '-x', 'c++', '-std=gnu++20', '-fpermissive', '-w', '-include', prefix]
+    args = [gxx, '-fsyntax-only', '-x', 'c++', '-std=gnu++23', '-fpermissive', '-w']
+    if prefix:
+        args += ['-include', prefix]
     args += ['-D' + d for d in defines] + ['-I' + i for i in incs] + [str(t) for t in tus]
     env = dict(__import__('os').environ)
     env['PATH'] = yamipan.MINGW_BIN + ';' + env.get('PATH', '')
@@ -168,8 +170,8 @@ def run_msvc(files, defines, incs, prefix):
     if not bat:
         return None, 'MSVC not found (set YAMIPAN_VCVARS to vcvars64.bat)'
     rsp = OUT / 'msvc.rsp'
-    opts = ['/nologo', '/Zs', '/TP', '/std:c++20', '/permissive', '/Zc:preprocessor', '/W1', '/wd4996',
-            '/D_CRT_SECURE_NO_WARNINGS', '/EHsc', f'/FI"{prefix}"']
+    opts = ['/nologo', '/Zs', '/TP', '/std:c++latest', '/permissive', '/Zc:preprocessor', '/W1', '/wd4996',
+            '/D_CRT_SECURE_NO_WARNINGS', '/EHsc'] + ([f'/FI"{prefix}"'] if prefix else [])
     opts += [f'/D{d}' for d in defines] + [f'/I"{i}"' for i in incs] + [f'"{f}"' for f in files]
     rsp.write_text('\n'.join(opts) + '\n', encoding='utf-8')
     bat_cmd = OUT / 'msvc.bat'

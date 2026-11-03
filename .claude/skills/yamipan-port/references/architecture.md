@@ -1791,7 +1791,15 @@ rules or by being RoR's. From its 14 K line SDK only what FS2 calls came over.
 - **Frame**: game threads fill `UiCanvas` layers keyed by packet list; `Vif1PktManage::Kick` ->
   `YamiPan_DrawUiKick` joins them into a `Frame` for the render thread's mailbox. The frame always fills
   the scene target, so the 512x512 frame's shape is `DisplayGeometry`'s alone.
-- **Screenshots** are the scene before the overlay, 512 high at the composed aspect.
+- **Screenshots** are the scene before the overlay, 512 high at the composed aspect;
+  `YAMIPAN_SHOT_WINDOW=1` takes the whole window with the overlay, `YAMIPAN_SHOW_MENU=1` opens the menu bar.
+- **The disc** (`io::Disc`, 2026-11-03): FS2 boots from cdrom0: (`rxInit` -> device 1) and rx's driver reads
+  ISO 9660 from raw sectors, which the game layer keeps as it is. So `sceCdRead` serves the data folder as
+  a synthesized image: a descriptor at sector 16, a root-only path table at 18, the root directory at 19
+  and the files from 27, sorted. `ROMD.*` are a second volume at `layer1Start` (the sum of layer 0's
+  sectors), which `sceCdReadDvdDualInfo` reports, as on the dual-layer DVD. A file's sector is its offset
+  on that image, so SPK.ROM's sector arithmetic holds. MODULES\ is not on the image: nothing reads it
+  (`sceSifLoadModule` only counts). argv[0] is SYSTEM.CNF's BOOT2, `cdrom0:\SCES_538.51;1`.
 
 - **`src/yamipan/rendering/yamipan_drawui.h`** (TU 19, 2026-11-03): the seam of the 2D layouts' draw
   module, `rendering::UiCanvas` behind it (`src/yamipan/seams.cpp`), user `game/uidrawer.cpp`. Keyed by the packet the game drew into
