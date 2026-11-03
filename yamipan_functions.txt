@@ -847,12 +847,12 @@
 // FILE -- game/thread.cpp
 // *****************************************************************************
 
-/* 00130a20 0000000c */ FUN_00130a20(){}
+/* 00130a20 0000000c */ bitMask(){}  // game
 /* 00130a30 0000000c */ threadSetSwitchHook(){}  // game
-/* 00130a40 0000002c */ FUN_00130a40(){}
-/* 00130a70 00000020 */ FUN_00130a70(){}
-/* 00130a90 000000a0 */ FUN_00130a90(){}
-/* 00130b30 00000088 */ FUN_00130b30(){}
+/* 00130a40 0000002c */ threadSwapMessage(){}  // game
+/* 00130a70 00000020 */ threadSlotState(){}  // game
+/* 00130a90 000000a0 */ threadExit(){}  // game
+/* 00130b30 00000088 */ threadSlotKill(){}  // game
 /* 00130bc0 000000d0 */ threadYield(){}  // game
 /* 00130c90 00000170 */ threadSlotCreate(){}  // game
 /* 00130e00 00000048 */ threadRunMain(){}  // game
@@ -860,8 +860,8 @@
 /* 00130f60 000002f4 */ threadSysInit(){}  // game
 /* 00131260 0000002c */ frameSyncWait(){}  // game
 /* 00131290 000001e4 */ threadScheduler(){}  // game
-/* 00131480 00000198 */ FUN_00131480(){}
-/* 00131620 000000f4 */ FUN_00131620(){}
+/* 00131480 00000198 */ jobCancel(){}  // game
+/* 00131620 000000f4 */ jobAdd(){}  // game
 /* 00131720 0000011c */ jobWorkerThread(){}  // game
 /* 00131840 00000030 */ threadVSyncHandler(){}  // game
 /* 00131870 000000bc */ frameSyncInit(){}  // game

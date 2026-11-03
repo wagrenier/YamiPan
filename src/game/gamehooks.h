@@ -61,6 +61,6 @@ void debugSysUpdate();                                                   // FS2 
 void debugSysShutdown();                                                 // FS2 0x00151280
 
 // Thread slot 1: runs the scene table 0x2fabd4 in slot 2, one scene after another.
-void gameSceneThread();                                                  // FS2 0x00231bb0
+void gameSceneThread(void *arg);                                         // FS2 0x00231bb0
 
 #endif /* _GAME_GAMEHOOKS_H */

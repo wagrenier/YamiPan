@@ -370,6 +370,16 @@ apply here):
 
 ## Open questions
 
+- **(2026-11-02, game/thread.cpp) the thread system on the host.** (a) `RotateThreadReadyQueue` is not in
+  RosePan's `sdk/eekernel.h`: bootstrap 6 must add it (g++ -fsyntax-only fails only on it). (b) The
+  slots are cooperative only because the EE runs one thread at a time by priority (slots 0x30 above
+  the scheduler 0x40; frame sync 0x10; job worker 0x50 spinning on an empty list): host threads run in
+  parallel, so the platform layer needs a priority-run model (one runnable game thread at a time) or
+  fibers, and the worker's spin must not burn a core. Decide at bootstrap 6. (c) Nothing in the ELF
+  sets the quit byte 0x31adbc, so `threadRunMain` never returns on the console (main's teardown is dead
+  code there); the port can set it for a clean exit. (d) Nothing pushes the scheduler detour stack
+  0x4c8170 or sets the pre-switch hook 0x31adcc (gp offsets and lui pairs scanned): debug leftovers?
+  (e) `bitMask` 0x130a20 is a generic helper, not thread code: it may end `game/pad.cpp` instead.
 - **(2026-11-02, TU 7) memcard semantics guessed.** `memcardRequiredKB` (returns 80, settled: stepScan
   compares it with sceMcGetInfo's free clusters, 1 KB each; now `kSaveRequiredKB`);
   the byte 0x31ae84 (`memcardGetFlag` and kin, set by memcardInit: meaning unknown); `SaveStatus_Denied`

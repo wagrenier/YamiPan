@@ -577,19 +577,31 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   `std::logic_error` (0x311010, dtor 0x1070f0, `what` 0x1073d0, message string at +4),
   `std::length_error` (0x310ff0, dtor 0x107180), `std::out_of_range` (0x311000, dtor 0x107220).
   0x104f30 and 0x1073d0 are among the missing function starts.
-- **Thread system** (batch 002, game code 0x130a30..0x131930): a cooperative scheduler over **8
-  thread slots** at 0x4c7840, 0x24 bytes each: `{+0 tid, +4 state (0 free, 1 waiting N ticks, 2 start
-  pending; bit 7 masked), +8 ticks, +0xc arg, +0x10 cleanup fn, +0x14 result, +0x18 stack size?,
-  +0x1c stack base (canary 0x572a8b4c), +0x20 own-stack flag}`; default stacks per slot in the table
-  0x2f38c0 (8 bytes each). gp-0x7fd8 is the current slot. `threadScheduler` 0x131290 (prio 0x40)
-  wakes on the vblank callback `threadVSyncHandler` 0x131840 (signals semaphore gp-0x7fcc) (via `sceGsSyncVCallback`) and steps slots round-robin;
-  `threadSlotCreate` 0x130c90, `threadYield` 0x130bc0(ticks) (canary check), `threadRunMain`
-  0x130e00, `threadSetSwitchHook` 0x130a30 (post-switch; gp-0x7aa4 / -0x7a9c is a pre-switch hook
-  nothing set yet). Frame pacing: `frameSyncInit` 0x131870 / `frameSyncThread` 0x131930 (prio 0x10,
-  record 0x4c8160 `{+0 requested, +4 vsync count, +8 interval}`) / `frameSyncWait` 0x131260.
-  `jobWorkerThread` 0x131720 (prio 0x50) runs a linked job list 0x4c8b38..0x4c8b3c (records
-  `{busy, ?, fn, arg, prev, next}`; a job returning non-zero is re-queued). On PC this whole layer is
-  a host replacement candidate (one OS thread or fibers), decided at the platform-layer step.
+- **Thread system** (`game/thread.cpp` 0x130a20..0x1319f0, reconstructed 2026-11-02; batches 002, 032):
+  a cooperative scheduler over **8 slots** at 0x4c7840 (`ThreadSlotRecord`, EE 0x24: `{+0 tid, +4 state
+  (0 free, 1 waiting, 2 start pending; bit 7 masked), +8 ticks, +0xc arg, +0x10 cleanup(arg), +0x14
+  message (threadYield's result, `threadSwapMessage`), +0x18 stack size, +0x1c stack (canary 0x572a8b4c
+  at the bottom; a mismatch hangs in sceGsSyncV), +0x20 own-stack byte}`); default stacks in the table
+  0x2f38c0 (`{size, base}`, nine rows: slots 0..7 and the job worker, all inside bss 0x4af040..0x4c7840).
+  Slot threads run at prio 0x30, the scheduler `threadScheduler` 0x131290 (stack 0x4c81b0, 0x800) at
+  0x40: it does **not** wait for the vblank; it loops over the slots (current slot sdata 0x31a898),
+  StartThread on a pending slot, a waiting slot's ticks counted down once per visit, WakeupThread at 0,
+  then sleeps until the slot yields (`threadYield` 0x130bc0) or ends (`threadExit` 0x130a90). A detour
+  stack 0x4c8170 (`{count, 4 x {resume, target, state}}`) and a pre-switch hook 0x31adcc are read but
+  never set; `threadSetSwitchHook` 0x130a30 sets the post-switch one (0x31add0 / arg 0x31add8). Wrapping
+  past slot 7 signals `threadRunMain`'s semaphore 0x31adb8 only when the byte 0x31adbc is set (never in
+  the ELF). `threadSlotCreate` 0x130c90 (func, slot, arg, cleanup, stackSize, stack), `threadSlotKill`
+  0x130b30, `threadSlotState` 0x130a70. **Frame sync**: `frameSyncInit` 0x131870 / `frameSyncThread`
+  0x131930 (prio 0x10, stack 0x4c7960) waits on the vsync semaphore 0x31a8a4 that `threadVSyncHandler`
+  0x131840 (the sceGsSyncVCallback, installed by the scheduler) keeps at one count, then asks the
+  frame-ready callback with `FrameSync` 0x4c8160 `{+0 requested, +4 vsync count, +8 interval}`; a ready
+  frame signals 0x31a89c for `frameSyncWait` 0x131260 (returns the count). **Jobs**: `jobAdd` 0x131620
+  (fn, arg) -> id (counter 0x31a8a8, 1..0x6fffffff) takes one of 16 `JobRecord`s 0x4c89b0 (0x18: `{busy,
+  id, fn, arg, prev, next}`, list head 0x4c8b38 / tail 0x4c8b3c); `jobWorkerThread` 0x131720 (prio 0x50,
+  thread id 0x4c8b30) spins while the list is empty, runs the head, re-queues it at the tail when it
+  returns nonzero; `jobCancel` 0x131480 (0 not found, 1 waiting, 2 running: the worker is recreated).
+  Callers of the jobs: the next module (unassigned@001319f0: 0x131a30, 0x131d80, 0x132000, ..).
+  On PC this layer needs a host run model (open-items.md "Open questions", thread system).
 - **SDK** named so far: libkernl `StartThread` 0x137c20, `DIntr` 0x140ba0 / `EIntr` 0x140bf0,
   `DisableIntc` 0x1375c0 / `EnableIntc` 0x137628, `scePrintf` 0x1397c8; libgraph `sceGsGetGParam`
   0x107878 (block 0x2f1090), `sceGsSyncV` 0x108278, `sceGsSyncPath` 0x108310, `sceGsSyncVCallback`

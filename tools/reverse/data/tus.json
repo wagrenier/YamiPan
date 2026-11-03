@@ -183,12 +183,22 @@
    "why": "system data module: every function between 0x23af30 and 0x23c020 works on the save data 0x598b30 (0x4bc bytes), the record 0x598fec, the options 0x599000 with their ButtonMap or the table 0x599050, or returns one of them; 0x23ae40 before it builds a string table of another struct, 0x23c020 after it is VU0 vector code"
   },
   "game/thread.cpp": {
+   "notes": "All 19 functions written; thread.h has ThreadSlotRecord, ThreadStackDef, ThreadDetourStack, FrameSync, JobRecord with ThreadState / ThreadDetourState / JobCancelResult enums. Batch 032 named bitMask, threadSwapMessage, threadSlotState, threadExit, threadSlotKill, jobCancel, jobAdd (saved by name_ctx). ThreadFunc now takes void *arg (StartThread passes the slot arg): gameMainThread and gameSceneThread prototypes changed to match. threadYield returns the slot message. Source-only: callcheck clean (inline helpers explained in callcheck notes), layout lint OK; g++ -fsyntax-only -Wall -Wextra against RosePan sdk headers fails only on RotateThreadReadyQueue, which bootstrap 6 must add. The scheduler does not wait on vblank: it spins over the slots; the slots stay cooperative only by EE priorities, so the host needs a one-runnable-thread model or fibers (open-items.md Open questions, thread system). Nothing in the ELF sets the quit byte 0x31adbc, pushes the detour stack 0x4c8170 or sets the pre-switch hook. Job users are the next module unassigned@001319f0.",
    "ranges": [
     [
      "00130a20",
      "001319f0"
     ]
    ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-02 23:53",
+     "status": "verify",
+     "summary": "thread system, frame sync and job worker: all 19 functions of 0x130a20..0x1319f0 reconstructed"
+    }
+   ],
+   "status": "verify",
    "why": "the cooperative thread system: threadSetSwitchHook .. threadSysInit, threadScheduler, jobWorkerThread, frameSync* (batch 002, architecture.md Thread system); 0x130a20 and the end after frameSyncThread are guesses."
   },
   "rx/filecd.c": {

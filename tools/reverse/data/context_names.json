@@ -2711,11 +2711,41 @@
   "was": "FUN_00130230",
   "why": "(port record): keeps last frame's 0x20-byte state (+0x100 -> +0x120), clears it (+0x102/+0x103 0xff = no buttons), reads the pad through libpad state / read / mode calls 0x11ed60.. 0x11f440 on port +0x15c; padSysUpdate calls it for ports 0 and 1"
  },
+ "00130a20": {
+  "name": "bitMask",
+  "tag": "game-inferred",
+  "was": "FUN_00130a20",
+  "why": "returns 1 << (n & 31); a non-inlined helper called by 19 unrelated game functions to test flag words (0x199400: flags +0x1c & bitMask(i)); placed before threadSetSwitchHook, so kept in game/thread.cpp"
+ },
  "00130a30": {
   "name": "threadSetSwitchHook",
   "tag": "game-inferred",
   "was": "FUN_00130a30",
   "why": "(fn, arg): stores the callback the scheduler 0x131290 calls with (slot, arg) after each switch back (gp-0x7aa0 / -0x7a98); main sets 0x12dab0 with globalObject+0x4a8, later clears it"
+ },
+ "00130a40": {
+  "name": "threadSwapMessage",
+  "tag": "game-inferred",
+  "was": "FUN_00130a40",
+  "why": "(slot, value): slot < 0 means the current slot (gp-0x7fd8); swaps the slot record's +0x14 word (what threadYield returns to that thread) and returns the old value"
+ },
+ "00130a70": {
+  "name": "threadSlotState",
+  "tag": "game-inferred",
+  "was": "FUN_00130a70",
+  "why": "returns the slot record's +4 state word (0 free, 1 waiting, 2 start pending) for slot n; callers poll it to see whether a slot thread has ended"
+ },
+ "00130a90": {
+  "name": "threadExit",
+  "tag": "game-inferred",
+  "was": "FUN_00130a90",
+  "why": "the current slot ends itself: stack canary 0x572a8b4c check (hangs in sceGsSyncV on failure, as threadYield), state 0, scheduler back to prio 0x40 and woken, the slot's cleanup fn +0x10 called with its arg +0xc, ExitDeleteThread"
+ },
+ "00130b30": {
+  "name": "threadSlotKill",
+  "tag": "game-inferred",
+  "was": "FUN_00130b30",
+  "why": "(slot): the body threadSlotCreate inlines first: a live slot gets state 0, TerminateThread unless it was still start-pending (2), DeleteThread; then the cleanup fn +0x10 (arg +0xc) runs, live or not"
  },
  "00130bc0": {
   "name": "threadYield",
@@ -2758,6 +2788,18 @@
   "tag": "game-inferred",
   "was": "FUN_00131290",
   "why": "scheduler thread body: installs vblank callback 0x131840, steps the current slot 0..7 round-robin (with a push/pop override stack at 0x4c8170), starts state-2 slots (StartThread), wakes state-1 slots whose tick count ran out, SleepThread between, pre/post switch hooks"
+ },
+ "00131480": {
+  "name": "jobCancel",
+  "tag": "game-inferred",
+  "was": "FUN_00131480",
+  "why": "(id): finds the job record with +4 id in the list 0x4c8b38; 0 not found, 1 waiting (unlinked and cleared), 2 running (+0 busy: the worker thread 0x4c8b30 is terminated, deleted and recreated, prio 0x50, stack table 0x2f3900, then the record unlinked)"
+ },
+ "00131620": {
+  "name": "jobAdd",
+  "tag": "game-inferred",
+  "was": "FUN_00131620",
+  "why": "(fn, arg): takes the first of the 16 job records 0x4c89b0 (0x18 bytes) whose id +4 is 0, appends it to the list head 0x4c8b38 / tail 0x4c8b3c, fn +8, arg +0xc, id from the counter gp-0x7fc8 (1.. wrapping past 0x6fffffff); returns the id, 0 when all 16 are used; jobWorkerThread runs it"
  },
  "00131720": {
   "name": "jobWorkerThread",

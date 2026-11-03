@@ -74,7 +74,7 @@ struct GsClearPacket
 static void gameInit(const char *bootPath);
 static void gsClearVram();
 static void gameThreadSwitchHook(u_int slot, void *arg);
-static void gameMainThread();
+static void gameMainThread(void *arg);
 static int  gameFrameReady(FrameSync *sync);
 static int  dmacBusErrorHandler(int cause);
 
@@ -385,8 +385,9 @@ static void gameThreadSwitchHook(u_int slot, void *arg)
 // sound, lets the other slots run and waits for the GS.
 // FS2 0x0012db00
 
-static void gameMainThread()
+static void gameMainThread(void *arg)
 {
+    (void)arg;
     threadSlotCreate(gameSceneThread, ThreadSlot_Main, 0, 0, 0, 0);
     for (;;) {
         debugSysUpdate();
