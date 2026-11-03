@@ -1268,7 +1268,28 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    second CLUT +0x3c has no writer yet: when one turns up, TextureStore must decode with it.
    For TextureStore: `m_image` is the file itself, not a copy; `m_clutKind` / `m_clutCount` say a 4-bit
    image can hold several 16-entry rows, the first being TEX0's unless a caller moves CBP.
-   (b) textures: queued, see above;
+   ~~(b) textures~~ **done 2026-11-03**: `rendering::TextureStore` (architecture.md "PC platform layer").
+   The language screen is the first textured picture: at rest it equals the assets, offset (0, 0) in a
+   search of +-2 frame units, peak 192 as in the file, mean difference 2.66 over the row (the 4:3 stretch).
+   The decoder equals tm2png.py byte for byte on 20 disc TIM2s (4-bit CLUT32 and CLUT16, 8-bit CSM1, 32-bit)
+   and 7 synthetic ones for what the disc lacks (16 and 24-bit direct, linear and 16-bit 8-bit CLUTs),
+   through the real `Tim2Texture`. Proven on screen so far: UV scale, the 512x512 mapping, alpha blend,
+   bilinear, 4-bit only. **Not yet seen on screen**: the font's path (`FontPrinter::setDrawState`, TEXA,
+   its alpha test), additive and the other blend modes, scissor, repeat. Expect the next text screen to
+   test them. Left for later:
+   - **Render targets**: a `GsTexture` with `m_isTarget` (tags Zbuf / Draw / View, TBP0 0x1800 / 0x800 / 0)
+     is logged once and binds nothing, and `UiCanvas::emit` drops a textured draw with no image rather
+     than draw a white sheet. They need `copyTarget` and a host copy of the scene to sample. Choice for
+     the user to overrule: dropping (the effect is missing) over the plain shape.
+   - **Repeat on a non-power-of-two image**: the GS wraps at 2^TW, the host sampler at the image's own
+     width. Nothing seen uses it.
+   - **TEXA is not applied**: 16-bit and 24-bit alpha is fixed at decode as tm2png.py does it, while the
+     game sets TEXA per draw (the font: TA0 0, AEM 1, TA1 0x80). Only two CLUT16 files exist on the disc,
+     so this is unlikely to matter, but check them if one draws wrongly.
+   - **`m_altClut`** (the second CLUT) has no writer yet; the store ignores it.
+   - Getting a screen's references: nothing maps a d2b to its TIM2s offline yet, so this run patched
+     `imageOf` for one smoke run to write each new file to work/dump and ran tm2png.py on those (not
+     committed). The same manual step twice should become a `YAMIPAN_*` dump hook.
    (c) any aspect: the renderer hands k to the game's UI matrices (`kUiScreenMatrix`, see TU 19), the one
        place a game file needs a `PC:` touch;
    (d) placeholders to replace: `sdk/libmc.cpp` (the empty slot: a real card under `memcard/`),

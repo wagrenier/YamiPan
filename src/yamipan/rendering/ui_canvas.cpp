@@ -210,6 +210,10 @@ DrawCall UiCanvas::stateOf(const Layer &source)
 
 void UiCanvas::emit(Layer &target, std::initializer_list<Vertex> triangleVertices)
 {
+    // No picture for a textured primitive (a render target, for now): drawing nothing beats a white sheet.
+    if (target.textured && target.image == nullptr)
+        return;
+
     DrawCall state = stateOf(target);
 
     const bool continues =

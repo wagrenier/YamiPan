@@ -8,7 +8,7 @@
  *  file stays the loader's.
  *
  *  PC: nothing reaches GS memory. The host draw module decodes the picture
- *  at its source (m_image) to a GPU texture keyed by the owner; the block
+ *  at its source (m_image) to a GPU texture (TextureStore); the block
  *  numbers still matter to the game's own VRAM bookkeeping (TexAreaList).
  * ======================================================================== */
 #ifndef _RENA_RENA_2D_TEXTURE_TIM2_H

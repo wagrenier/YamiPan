@@ -275,6 +275,11 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 ## Build and run
 
+- **`work/shots/last.png` can be cut short** (2026-11-03). Symptom: a PNG reader fails with "incomplete or
+  truncated stream" on last.png. Likely cause, seen once and not proven: the smoke run is killed when its
+  time is up, during the write. Fix: use the newest complete `shot_*.png` for pixel work; the numbered
+  shots of a screen at rest are the same picture.
+
 - **MinGW must be on PATH** or `cc1plus` fails silently: use `build.py`. Shader builds can hit a file
   lock: rerun.
 - **layoutcheck compiles every header alone**: a header relying on its .c's includes fails there.

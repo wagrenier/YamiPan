@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 18:31 at commit `b9bc1a2` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 18:46 at commit `66fa5c1` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -103,9 +103,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 90 TUs: todo 51, partial 2, verify 54
-- next: **yamipan/rendering/texture_store.cpp** (pinned in the queue)
-- pinned queue: yamipan/rendering/texture_store.cpp
+- 90 TUs: todo 50, partial 2, verify 54, done 1
+- next: **game/stagescene.cpp** (continuing a partial TU)
+- pinned queue: (empty)
 - partial: `game/stagescene.cpp` 112/258 -- Written this run (batch 082, 35 names): parseTexture, parseModel, parseMotion with readMotionList 0x1a1df0, parseMap, parseSndseh with fileWithSuffix 0x1a4370, 
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
@@ -164,6 +164,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 18:46 `yamipan/rendering/texture_store.cpp` done: rendering::TextureStore written and bound through the seam: the language screen is the first textured picture and equals its assets
 - 2026-11-03 18:31 `rena/rena_2d_texture_tim2.cpp` verify: reconstruct Tim2Texture, all 7 functions (verify)
 - 2026-11-03 18:13 `game/menuscene.cpp` verify: reconstruct the menu flow, 14 functions (verify)
 - 2026-11-03 17:41 `rx/filecd.c` verify: rx/filecd.c: the cdrom0: driver carried over from RosePan with FS2's rxFileCdFindDir
@@ -171,7 +172,6 @@ Recent sessions:
 - 2026-11-03 16:37 `game/stagescene.cpp` partial: stage script keyword handlers, bg and particle targets, small scene members; StreamTable::relocate shared; DrawLayerList is AreaClip
 - 2026-11-03 16:19 `game/stagescene.cpp` partial: stage script reader: parseScript, splitLines, reset, target / end blocks, script and character targets, StageFiles ctor / dtor; StageList and StringMap template
 - 2026-11-03 15:55 `game/stagescene.cpp` partial: StageScene ctor / dtor and 17 small members written (30 of 258); batch 080 names every scene member class (54 names)
-- 2026-11-03 15:41 `game/stagescene.cpp` partial: StageScene / StageFiles run cut (0x1953f0..0x1a68b0); drawPaused, raycast, getMission, getPurposeText, StageFiles::load and dataDir written (11 of 258); stagesc
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
@@ -182,11 +182,11 @@ Recent sessions:
 | `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
 | `unassigned@002d46a0` | todo | 0/8/252 | 51.5 | 17 | 2 |
 | `unassigned@001fe6b0` | todo | 0/16/563 | 197.2 | 16 | 0 |
-| `game/stagescene.cpp` | partial | 112/13/258 | 67.6 | 15 | 0 |
 | `rx/rxsndstrstream.c` | todo | 0/5/18 | 2.4 | 15 | 2 |
-| `rx/rxsndstrmem.c` | todo | 0/3/16 | 2.6 | 13 | 2 |
+| `game/stagescene.cpp` | partial | 112/13/258 | 67.6 | 15 | 0 |
 | `unassigned@00231c90` | todo | 0/6/61 | 36.3 | 13 | 0 |
 | `unassigned@00299d90` | todo | 0/8/215 | 62.3 | 13 | 0 |
+| `rx/rxsndstrmem.c` | todo | 0/3/16 | 2.6 | 13 | 2 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
