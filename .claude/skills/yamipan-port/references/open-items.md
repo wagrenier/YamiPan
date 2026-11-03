@@ -1251,6 +1251,23 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    `saveExtraInit` 0x29ef70, then `setUiWorkArea` 0x243370 with `getUiWorkArea`.
    Doubt for the user: the path getters were left as stubs to keep the run to one TU, though the menu
    cannot pass the language screen properly without them.
+   **`rena/rena_2d_texture_tim2.cpp` written 2026-11-03 (all 7, `verify`, batch 084; architecture.md
+   "Modules").** The class moved from `gsutil.h` to `rena/rena_2d_texture_tim2.h`, the setTex0 packet
+   constants with it. The picture is unchanged (the one white band): nothing binds a texture until the
+   texture-store host task, which is next. Tested with a scratch program on real TIM2s carved from
+   ROM.000 / 001: sizes, PSM, CPSM, the pixel and CLUT offsets agree with the files' headers (the files'
+   own TEX0 words differ only in TBW, TCC and CLD, which the game works out). `upload` is empty on
+   purpose (no GS memory; its comment says what the ROM sends) and `putTex0` still writes its packet.
+   Doubts for the user: (1) four callees of `setupMip` / `load` lie outside the TU, in Sony's sample
+   library, and stubs would have left the class useless, so **`rena/tim2.cpp` 0x2e97a8..0x2e9d90 was
+   defined and four of its nine functions written in the same run** (one TU a run bent for that); its
+   file name is Sony's sample's and the end of the range a guess. (2) The ROM indexes its tables with
+   ClutType's whole byte, so a linear-order CLUT (bit 7) would read past them; the host masks the type
+   bits. No disc file has one. (3) `GsRegion` (+8, `release` 0x2e0840, still a stub, unreachable until
+   something gives a region) is a stand-in in `gfxtarget.h` for the unread TU at 0x2d46a0... (4) The
+   second CLUT +0x3c has no writer yet: when one turns up, TextureStore must decode with it.
+   For TextureStore: `m_image` is the file itself, not a copy; `m_clutKind` / `m_clutCount` say a 4-bit
+   image can hold several 16-entry rows, the first being TEX0's unless a caller moves CBP.
    (b) textures: queued, see above;
    (c) any aspect: the renderer hands k to the game's UI matrices (`kUiScreenMatrix`, see TU 19), the one
        place a game file needs a `PC:` touch;

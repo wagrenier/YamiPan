@@ -202,6 +202,11 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - stubgen: one declaration per line; it copies the first declaration of an overloaded name; places stubs
   by inference (move them); skips data and missing vtables (stub a new class's virtuals by hand).
 
+- **stubgen on a member declared under `public:`** (2026-11-03, `GsRegion::release`): a prototype on
+  the line after `public:` came out as `public:\n    void GsRegion::release()` with `return {};`, and
+  the build broke on the stub. Cause: it takes the access label as part of the declaration. Fix by hand
+  in `unassigned_stubs.cpp`: drop the label and the return.
+
 ## Sessions
 
 - **A session never launches other sessions, agents or scheduled tasks** (the auto-mode classifier
@@ -214,6 +219,10 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **`last.png` can come out 0 bytes**: check its size after `check`.
 
 ## Shell and Python on Windows
+
+- **A long heredoc in one Bash call** (2026-11-03): one holding C++ with apostrophes in comments failed
+  with "unexpected EOF while looking for matching" even with a quoted delimiter, and only the part
+  before it had run. Write big files with the Write tool, small edits with a script in the scratchpad.
 
 - **`python` is the Microsoft Store stub** (2026-10-31): `C:\Users\willi\AppData\Local\Microsoft\WindowsApps`
   comes before Python 3.14 on PATH, so `python` prints "Python was not found" (exit 9009) until the
