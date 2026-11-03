@@ -1607,6 +1607,198 @@
   "was": "FUN_0011fe08",
   "why": "libmc: undoes sceMcInit (terminates and deletes its thread, deletes the two semaphores); returns 1"
  },
+ "0011feb8": {
+  "name": "mceSignalSema",
+  "tag": "lib-context",
+  "was": "FUN_0011feb8",
+  "why": "SDK libmc: the end callback every libmc rpc passes to sceSifCallRpc (16 callers): iSignalSema of libmc's call semaphore 0x2f2fa0; Sony's name unknown, mce prefix as RoR's mceGetInfoApdx"
+ },
+ "0011ff88": {
+  "name": "sceMcGetSlotMax",
+  "tag": "lib-context",
+  "was": "FUN_0011ff88",
+  "why": "SDK libmc: RosePan names RoR 0x24d570 sceMcGetSlotMax; same size 0xc0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00120048": {
+  "name": "sceMcOpen",
+  "tag": "lib-context",
+  "was": "FUN_00120048",
+  "why": "SDK libmc: RosePan names RoR 0x24d630 sceMcOpen; same size 0x128 and place in a run of matching functions (rxalign.py)"
+ },
+ "00120170": {
+  "name": "sceMcMkdir",
+  "tag": "lib-context",
+  "was": "FUN_00120170",
+  "why": "SDK libmc: RosePan names RoR 0x24d758 sceMcMkdir; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "001201a8": {
+  "name": "sceMcClose",
+  "tag": "lib-context",
+  "was": "FUN_001201a8",
+  "why": "SDK libmc: RosePan names RoR 0x24d790 sceMcClose; same size 0xbc and place in a run of matching functions (rxalign.py)"
+ },
+ "00120268": {
+  "name": "sceMcSeek",
+  "tag": "lib-context",
+  "was": "FUN_00120268",
+  "why": "SDK libmc: rpc 4 with (fd, offset, mode) and the semaphore end callback; FF3's FF2-symbol list has sceMcSeek 0x190 between sceMcClose and sceMcRead, which is this 0xe0 plus the read callback 0x120348 (0xb0) merged there"
+ },
+ "00120348": {
+  "name": "mceReadFixAlign",
+  "tag": "lib-context",
+  "was": "FUN_00120348",
+  "why": "SDK libmc: sceMcRead's rpc end callback (its only ref, 0x1204a8): copies the unaligned head (+0x10) and tail (+0x50) bytes of the IOP reply into the caller's buffer, cached and uncached, then iSignalSema; Sony's name unknown (merged into sceMcSeek in FF2 / FF3 / RoR), mce prefix as RoR's mceStorePwd"
+ },
+ "001203f8": {
+  "name": "sceMcRead",
+  "tag": "lib-context",
+  "was": "FUN_001203f8",
+  "why": "SDK libmc: RosePan names RoR 0x24d9e0 sceMcRead; same size 0x114 and place in a run of matching functions (rxalign.py)"
+ },
+ "00120510": {
+  "name": "sceMcWrite",
+  "tag": "lib-context",
+  "was": "FUN_00120510",
+  "why": "SDK libmc: RosePan names RoR 0x24daf8 sceMcWrite; same size 0x178 and place in a run of matching functions (rxalign.py)"
+ },
+ "00120688": {
+  "name": "sceMcSync",
+  "tag": "lib-context",
+  "was": "FUN_00120688",
+  "why": "SDK libmc: RosePan names RoR 0x24dc70 sceMcSync; same size 0xc4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00120750": {
+  "name": "mceGetInfoApdx",
+  "tag": "lib-context",
+  "was": "FUN_00120750",
+  "why": "SDK libmc: RosePan names RoR 0x24dd38 mceGetInfoApdx; same size 0x58 and place in a run of matching functions (rxalign.py)"
+ },
+ "001207a8": {
+  "name": "sceMcGetInfo",
+  "tag": "lib-context",
+  "was": "FUN_001207a8",
+  "why": "SDK libmc: RosePan names RoR 0x24dd90 sceMcGetInfo; same size 0x17c and place in a run of matching functions (rxalign.py)"
+ },
+ "00120928": {
+  "name": "sceMcUdCheckNewCard",
+  "tag": "lib-context",
+  "was": "FUN_00120928",
+  "why": "SDK libmc: RosePan names RoR 0x24df10 sceMcUdCheckNewCard; same size 0x70 and place in a run of matching functions (rxalign.py)"
+ },
+ "00120998": {
+  "name": "sceMcGetDir",
+  "tag": "lib-context",
+  "was": "FUN_00120998",
+  "why": "SDK libmc: RosePan names RoR 0x24df80 sceMcGetDir; same size 0x14c and place in a run of matching functions (rxalign.py)"
+ },
+ "00120ae8": {
+  "name": "mceStorePwd",
+  "tag": "lib-context",
+  "was": "FUN_00120ae8",
+  "why": "SDK libmc: RosePan names RoR 0x24e0d0 mceStorePwd; between matched neighbours its span 0x1d0 is RoR's mceStorePwd, sceMcChdir (rxalign.py span partition)"
+ },
+ "00120b78": {
+  "name": "sceMcChdir",
+  "tag": "lib-context",
+  "was": "FUN_00120b78",
+  "why": "SDK libmc: RosePan names RoR 0x24e160 sceMcChdir (0x140); FS2 0x120ae8 held mceStorePwd + sceMcChdir merged, split at 0x120b78 (rxalign.py span partition, ghidra.py mkfunc), sizes 0x8c / 0x140 as in RoR"
+ },
+ "00120cb8": {
+  "name": "sceMcFormat",
+  "tag": "lib-context",
+  "was": "FUN_00120cb8",
+  "why": "SDK libmc: RosePan names RoR 0x24e2a0 sceMcFormat; same size 0xcc and place in a run of matching functions (rxalign.py)"
+ },
+ "00120d88": {
+  "name": "sceMcDelete",
+  "tag": "lib-context",
+  "was": "FUN_00120d88",
+  "why": "SDK libmc: RosePan names RoR 0x24e370 sceMcDelete; same size 0x11c and place in a run of matching functions (rxalign.py)"
+ },
+ "00120ea8": {
+  "name": "sceMcFlush",
+  "tag": "lib-context",
+  "was": "FUN_00120ea8",
+  "why": "SDK libmc: RosePan names RoR 0x24e490 sceMcFlush; same size 0xbc and place in a run of matching functions (rxalign.py)"
+ },
+ "00120f68": {
+  "name": "sceMcSetFileInfo",
+  "tag": "lib-context",
+  "was": "FUN_00120f68",
+  "why": "SDK libmc: RosePan names RoR 0x24e550 sceMcSetFileInfo; same size 0x1cc and place in a run of matching functions (rxalign.py)"
+ },
+ "00121138": {
+  "name": "sceMcRename",
+  "tag": "lib-context",
+  "was": "FUN_00121138",
+  "why": "SDK libmc: RosePan names RoR 0x24e720 sceMcRename; same size 0x158 and place in a run of matching functions (rxalign.py)"
+ },
+ "00121290": {
+  "name": "sceMcUnformat",
+  "tag": "lib-context",
+  "was": "FUN_00121290",
+  "why": "SDK libmc: RosePan names RoR 0x24e878 sceMcUnformat; same size 0xcc and place in a run of matching functions (rxalign.py)"
+ },
+ "00121360": {
+  "name": "sceMcGetEntSpace",
+  "tag": "lib-context",
+  "was": "FUN_00121360",
+  "why": "SDK libmc: RosePan names RoR 0x24e948 sceMcGetEntSpace; same size 0x10c and place in a run of matching functions (rxalign.py)"
+ },
+ "00121470": {
+  "name": "mceReadFastThread",
+  "tag": "lib-context",
+  "was": "FUN_00121470",
+  "why": "SDK libmc (FS2's newer libmc, not in RoR): thread body, sceSifSetRpcQueue + sceSifRegisterRpc(server 0x80000400, mceReadFastRpcServer) + sceSifRpcLoop; started by mceStartReadFastThread as 'sceMc_read_fast_thread'"
+ },
+ "001214d8": {
+  "name": "mceStartReadFastThread",
+  "tag": "lib-context",
+  "was": "FUN_001214d8",
+  "why": "SDK libmc: CreateThread(mceReadFastThread, stack 0x32da50 size 0x800, prio 0x68, name 'sceMc_read_fast_thread' 0x3000a8) + StartThread; called by sceMcInit 0x11fca0"
+ },
+ "00121560": {
+  "name": "mceCalcEcc",
+  "tag": "lib-context",
+  "was": "FUN_00121560",
+  "why": "SDK libmc: 3-byte ECC (column parity, line parity and its complement) of a 128-byte block through the table 0x2f2fa8, as the memory card's page ECC; Sony's name unknown"
+ },
+ "001215e0": {
+  "name": "mceCorrectEcc",
+  "tag": "lib-context",
+  "was": "FUN_001215e0",
+  "why": "SDK libmc: recomputes mceCalcEcc for a 128-byte block, compares with the stored 3 bytes, flips the single bad bit (-1) or reports an uncorrectable error (-2 / -3), 0 when clean"
+ },
+ "001216f8": {
+  "name": "mceCorrectPage",
+  "tag": "lib-context",
+  "was": "FUN_001216f8",
+  "why": "SDK libmc: mceCorrectEcc over each 128-byte block of a page (size / 128), ECC bytes following the data, stops at the first negative result"
+ },
+ "00121780": {
+  "name": "mceReadFastCopy",
+  "tag": "lib-context",
+  "was": "FUN_00121780",
+  "why": "SDK libmc: read-fast server command 1: gathers the IOP's pages from 0x32ba44, ECC-corrects each (mceCorrectPage) and copies the data to the caller's buffer 0x32da40 (cached and uncached)"
+ },
+ "001218b0": {
+  "name": "mceReadFastRpcServer",
+  "tag": "lib-context",
+  "was": "FUN_001218b0",
+  "why": "SDK libmc: rpc server function registered by mceReadFastThread (sid 0x80000400): command 1 -> mceReadFastCopy, command 2 copies the raw buffer, result in +4"
+ },
+ "00121970": {
+  "name": "sceMcReadFast",
+  "tag": "lib-context",
+  "was": "FUN_00121970",
+  "why": "SDK libmc: rpc 0x16 (fd, buffer, size) with the reply buffer 0x32ba40 served by mceReadFastRpcServer, same frame as sceMcRead; Sony's libmc read-fast API, named from the thread string 'sceMc_read_fast_thread' (exact Sony spelling unverified)"
+ },
+ "00121a80": {
+  "name": "sceMcWriteFast",
+  "tag": "lib-context",
+  "was": "FUN_00121a80",
+  "why": "SDK libmc: rpc 0x1b (fd, buffer, size), writes the buffer back from the D-cache for the IOP to fetch, beside sceMcReadFast; name by analogy (doubt: open-items.md)"
+ },
  "00121ef0": {
   "name": "abort",
   "tag": "lib-context",
@@ -1630,6 +1822,12 @@
   "tag": "lib-context",
   "was": "FUN_00124950",
   "why": "newlib (reent, size); initGlobalHeap calls it with _impure_ptr 0x2f3398, pairs with _free_r 0x123b18"
+ },
+ "00125228": {
+  "name": "memcpy",
+  "tag": "lib-context",
+  "was": "FUN_00125228",
+  "why": "libc: (dst, src, n) returning dst, 16-byte-aligned 32-byte block path then bytes; libmc and the game copy with it; memmove follows at 0x1252d8"
  },
  "001278f8": {
   "name": "_raise_r",
@@ -3058,6 +3256,18 @@
   "tag": "lib-context",
   "was": "FUN_0013ac28",
   "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261570 sceSifCheckStatRpc; same size 0x3c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013ac68": {
+  "name": "sceSifSetRpcQueue",
+  "tag": "lib-context",
+  "was": "FUN_0013ac68",
+  "why": "SDK sifrpc: (queue, thread id) under DIntr / EIntr, clears the queue and appends it to the global queue list 0x4cb3a8, as ps2sdk's SifSetRpcQueue; called by mceReadFastThread before sceSifRegisterRpc"
+ },
+ "0013ad00": {
+  "name": "sceSifRegisterRpc",
+  "tag": "lib-context",
+  "was": "FUN_0013ad00",
+  "why": "SDK sifrpc: (server data, sid, func, buf, cfunc, cbuf, queue) under DIntr / EIntr, appends to the queue's server list (+8, link +0x38), as ps2sdk's SifRegisterRpc"
  },
  "0013add0": {
   "name": "sceSifRemoveRpc",

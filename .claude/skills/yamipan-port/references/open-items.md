@@ -40,13 +40,13 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    0x2cd970 (passed in a1 to the array-construct helper: name them with their class),
    0x1398c8 / 0x1398e8 (stored by 0x139848, before the SIF library), 0x140c88 / 0x1412f0 (word
    copy) and 0x140cc0 (word search) near `_InitSys`, 0x127c80 (returns 0), 0x113750 / 0x113898 (`_ch3dmaCSC` / `_ch4dma`, batch 012),
-   0x11c928, 0x11feb8 / 0x120348 / 0x120750 (libmc callbacks), 0x1395e0, 0x140840, 0x180018 (a lone
+   0x11c928, ~~0x11feb8 / 0x120348 / 0x120750 (libmc callbacks)~~ (batch 020), 0x1395e0, 0x140840, 0x180018 (a lone
    nop in a table at 0x2f0e5c: check), 0x1b56f0, 0x1f22a0, 0x1fbe40..0x1fbf30 (six callbacks of
    0x1fbe20's family), 0x20ad20, 0x20b010, 0x2b5740, 0x2cd8a0. Its 29 `interior` hits are mostly
    constants that look like code addresses, plus **the first island's entry points** 0x2f3d60..
    0x2f4860, passed by `_InitSys`'s callees 0x140330..0x141390 (item (c)).
    **Batch 010 also named the SIF cmd / rpc library and the fileio head from RoR** by size
-   alignment (architecture.md "Key functions and globals"; 0x13ac68 / 0x13ad00 still to read).
+   alignment (architecture.md "Key functions and globals"; 0x13ac68 / 0x13ad00 named in batch 020).
    **Batch 003 done (2026-10-31, 34 names)**: `gameMainThread`'s and `gameInit`'s callees (pad,
    sound, rx init, SPK.ROM, GS / DMA / SIF / libpad library calls, options; architecture.md
    "Program flow").
@@ -141,9 +141,16 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    internal name; 0x11dff0 (S-command RPC 0x25, two words, no callers) left unnamed; 0x11b800..
    0x11c6b0 before libcdvd is an unread cluster (not libcdvd). Snapshot before it:
    `work/snapshots/20261102_164802.json`.
-   **Next batches, in this order**: **libmc** (`rxalign.py 11fb70 120900 24d220
-   24eb28`: only 9 matches, FS2's `sceMcInit` 0x298 / `sceMcEnd` 0xac differ from RoR's 0x228 /
-   0x124: another libmc version, read the rest from its RPC numbers), libpad (RoR links libpad2,
+   **Batch 020 done (2026-11-02, 35 names, 1 merged start created)**: libmc 0x11fb70..0x121b80
+   (`rxalign.py 11fb70 121470 24d220 24eb28`: 19 aligned once the range ran to `sceMcGetEntSpace`
+   0x121360, `sceMcChdir` 0x120b78 split off `mceStorePwd`; `sceMcSeek` / `mceReadFixAlign` /
+   `mceSignalSema` and FS2's read-fast part 0x121470..0x121b80 by reading) + `sceSifSetRpcQueue`
+   0x13ac68 / `sceSifRegisterRpc` 0x13ad00 (batch 010's open pair) + `memcpy` 0x125228
+   (architecture.md "Key functions and globals", SDK). Doubts: the `mce*` internals are names by
+   reading (Sony's own unknown); `sceMcReadFast` comes from the thread string, `sceMcWriteFast`
+   (rpc 0x1b) by analogy only; 0x121b80 (error-code mapper, called only by the game's memory-card
+   layer 0x2ac710..) left unnamed: libmc or game code?
+   **Next batches, in this order**: libpad (RoR links libpad2,
    no reference: name by reading from `scePadInit` 0x11e440 / `scePadPortOpen` 0x11e898 and ps2sdk's
    order); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
    string rep); SDK functions from their `PsIIlib` / assert strings; rx (`rxfile.c`); rena
