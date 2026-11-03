@@ -236,6 +236,11 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   (FF3's pad check stopped every run on `scePadInfoPressMode`). Read the shim against Sony's semantics.
 - **An EE wait on an IOP status never ends when no service answers the RPC**; when adding an IOP
   command, its payload size must match what the EE sends.
+- **RosePan's `sdk/libgraph.h` swaps `SCE_GS_INTERLACE` / `SCE_GS_NOINTERLACE`** (2026-11-03, TU 25):
+  it defines INTERLACE 0 / NOINTERLACE 1; the SDK has NOINTERLACE 0 / INTERLACE 1 (sceGsResetGraph's
+  `inter`). Symptom: a host that honours the mode runs FS2's 512x512 field-mode screen progressive
+  and the 256x256 one interlaced. Fix: correct the values when bootstrap 6 copies the header (and
+  tell RosePan).
 - **A missing memory-card directory must answer -4** (`sceMcResNoEntry`), or a fresh card reads damaged.
 - **GS colour**: textured vertex colours above 0x80 brighten (MODULATE is `(Ct * Cf) >> 7`); a fragment
   with alpha 0 is still written on the GS; two GS origins in one game (top-left pixel constants vs

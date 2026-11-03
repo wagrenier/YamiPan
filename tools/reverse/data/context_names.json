@@ -2645,6 +2645,18 @@
   "was": "FUN_0012dee0",
   "why": "(this, buf0, size0, buf1, size1): Vif1PktManage base, vptr 0x311040 at +0x2c, registers the two 0xc0000-byte packet buffers 0x32e280 / 0x3ee280 (double buffer) and 14 lists (ids 0..13), Reset + Terminate, +0x30 open list id = -1, +0x34 skip-kick flag; GameSystem member +0x46c"
  },
+ "0012dfa0": {
+  "name": "gfxSetClearColor",
+  "tag": "game-inferred",
+  "was": "FUN_0012dfa0",
+  "why": "(bool enable, r, g, b, a): gfxSetDrawEnvClear on the current display record's draw env (inlined): GIF tag NLOOP 0xe (draw env + clear) or 8 (draw env only), the clear's RGBAQ bytes +0x130"
+ },
+ "0012e020": {
+  "name": "gfxGetCurrentCopyPacket",
+  "tag": "game-inferred",
+  "was": "FUN_0012e020",
+  "why": "(): the current display record (gp-0x7acc, 0x540 each at 0x4ae280) + 0x180: the 0x3a-qword GIF packet gfxFlipDisplay sends on DMA channel 2 (built by gfxBuildCopyPacket 0x12ec10: copies the draw buffer to the display buffer in 64-texel strips)"
+ },
  "0012e050": {
   "name": "gfxGetCurrentDisplay",
   "tag": "game-inferred",
@@ -2656,6 +2668,12 @@
   "tag": "game-inferred",
   "was": "FUN_0012e080",
   "why": "returns 0x4ae300 + gp-0x7acc * 0x540: the draw env at +0x80 of the current display record (gfxGetCurrentDisplay 0x12e050 returns its base 0x4ae280 + i * 0x540)"
+ },
+ "0012e0b0": {
+  "name": "gfxGetDrawEnv",
+  "tag": "game-inferred",
+  "was": "FUN_0012e0b0",
+  "why": "(): same body as gfxGetCurrentDrawEnv 0x12e080 (current display record + 0x80, the draw env packet), a separate function in the ROM; its 17 callers (3D / scene code) add 0x10 for the sceGsDrawEnv1"
  },
  "0012e0e0": {
   "name": "gfxFlipDisplay",
@@ -2675,6 +2693,18 @@
   "was": "FUN_0012e3f0",
   "why": "gameInit: sets up two offscreen draw + clear environments (256x256 at 0x4ae7c0, 512x512 at 0x4ae280, both through sceGsSetDefDrawEnv / sceGsSetDefClear and 0x12ec10) and the VRAM managers 0x31ad9c (0x143f50, five page ranges up to 0x3700), 0x31ada0 (0x143270) and 0x31ad98 (0x2e14d0, handed to 0x2d7cf0); name provisional"
  },
+ "0012ea60": {
+  "name": "GsBlockMap::mark",
+  "tag": "game-inferred",
+  "was": "thunk_FUN_001438c0",
+  "why": "(lo, hi, used): slot 0 of Vt_00311120 (data word 0x311128), a tail jump to GsBlockMap::setRange 0x1438c0: an inline virtual emitted out of line in gfxtarget.cpp; the ctor calls it with used 0, gfxInitRenderTargets with 1 for each render area"
+ },
+ "0012ea70": {
+  "name": "gfxSelectDisplay",
+  "tag": "game-inferred",
+  "was": "FUN_0012ea70",
+  "why": "(int index): stores the requested display record index gp-0x7ac8; gfxFlipDisplay switches to it on the next ready frame (sceGsResetGraph for 1 = 256x256 progressive, else 512x512 interlaced); 0x2c4320 selects 1 on entry and 0 on exit"
+ },
  "0012ea80": {
   "name": "gfxSetDrawEnvClear",
   "tag": "game-inferred",
@@ -2686,6 +2716,12 @@
   "tag": "game-inferred",
   "was": "FUN_0012ead0",
   "why": "stores x / y at record +0x3c / +0x40 and rewrites the DISPLAY1 / DISPLAY2 DX / DY fields at +0x18 / +0x30 (DX = x * (2560 / +0x38) + 0x290 or 0x27c by sceGsGetGParam mode, DY = y + 0x48 or 0x32)"
+ },
+ "0012ec10": {
+  "name": "gfxBuildCopyPacket",
+  "tag": "game-inferred",
+  "was": "FUN_0012ec10",
+  "why": "(packet, display, drawEnv, lineAdjust): zeroes 0x3a0 bytes and builds a PACKED A+D GIF packet of 57 writes: a draw env on the display buffer (DISPFB FBP / PSM, the display size, dither on), a tex env on the draw buffer (FRAME_1 FBP / FBW / PSM, TW / TH from SCISSOR_1, TCC off), DIMX, TEXA, PRIM sprite, RGBAQ 0x80808080, ALPHA copy, then up to 10 strips of 64 texels (UV / XYZ2 pairs), the rest NOP (0x7f)"
  },
  "0012f160": {
   "name": "gfxGetTexArea",
@@ -5177,6 +5213,12 @@
   "was": "FUN_00142dd0",
   "why": "returns the list pointer table +0x810 [id]; id is the packet list (0xb overlay, 0xc screens); 0x142df0 resets each list's 0xc-byte slots to {0, -1, -1}"
  },
+ "00142df0": {
+  "name": "TexArea::resetLists",
+  "tag": "game-inferred",
+  "was": "FUN_00142df0",
+  "why": "(): for each of the m_listCount (+0x80c) lists in +0x810, every 0xc-byte slot back to {0, -1, -1}, as TexArea::TexArea initialises them; gfxFlipDisplay calls it on gp-0x7ad0 every ready frame"
+ },
  "00143270": {
   "name": "TexArea::TexArea",
   "tag": "game-inferred",
@@ -5188,6 +5230,24 @@
   "tag": "game-inferred",
   "was": "FUN_00143510",
   "why": "(list, int *tbp, GsTexture *): finds the texture's id (+0x40) among the list's entries, else allocates (size 0x2e1c30 in 0x20-block units, wrapping to the start) through 0x143450; answers 1 when newly placed (upload needed); the drawer's texList (+4)"
+ },
+ "001438c0": {
+  "name": "GsBlockMap::setRange",
+  "tag": "game-inferred",
+  "was": "FUN_001438c0",
+  "why": "(lo, hi, used): sets (used) or clears the bits lo..hi-1 of the block bitmap at +8 (one bit per GS block, 0x4000 bits), word-wise for runs of 0x200 or more; called through GsBlockMap::mark"
+ },
+ "00143f00": {
+  "name": "GsBlockMap::~GsBlockMap",
+  "tag": "game-inferred",
+  "was": "FUN_00143f00",
+  "why": "(this, short flags): restores the vptr 0x311120, operator_delete when flags > 0; gfxReleaseRenderTargets calls it with 1 on gp-0x7ad4"
+ },
+ "00143f50": {
+  "name": "GsBlockMap::GsBlockMap",
+  "tag": "game-inferred",
+  "was": "FUN_00143f50",
+  "why": "(first, last): vptr +0x808 = 0x311120, range +0 / +4, the 0x800-byte bitmap +8 set to 0xff (all used), then mark(first, last, 0); gfxInitRenderTargets news 0x80c bytes for (0, 0x4000) and keeps it in gp-0x7ad4; TexArea::TexArea runs the same base code inline"
  },
  "00144080": {
   "name": "SoundPcmSink::setAttr",
@@ -13480,6 +13540,24 @@
   "tag": "game-inferred",
   "was": "FUN_002d4650",
   "why": "(s): 16-bit characters up to the 0; 0 for null or an odd address; beside the char version 0x2d4440"
+ },
+ "002d7cf0": {
+  "name": "drawSysInit",
+  "tag": "game-inferred",
+  "was": "FUN_002d7cf0",
+  "why": "(originX, originY, width, height, GsRegionAlloc *): called once, last in gfxInitRenderTargets with (0x700, 0x700, 0x200, 0x200) and the region allocator; news about nine draw-system objects (vtables 0x31a6b0 / 0x31a680, lists of 200 via 0x241da0), floats 2048 / 512 / 2^24; what the system draws is unread, the name says only where it starts"
+ },
+ "002e1440": {
+  "name": "GsRegionAlloc::~GsRegionAlloc",
+  "tag": "game-inferred",
+  "was": "FUN_002e1440",
+  "why": "slot 0 of Vt_0031a7b0 (the deleting destructor: operator_delete); gfxReleaseRenderTargets calls slot 0 with 1 on gp-0x7ad8"
+ },
+ "002e14d0": {
+  "name": "GsRegionAlloc::GsRegionAlloc",
+  "tag": "game-inferred",
+  "was": "FUN_002e14d0",
+  "why": "(base, size): vptr +0x1834 = 0x31a7b0, base / size +0 / +4, two pools of 0x80 list nodes and 0x80 region records, one free region {base, size}; gfxInitRenderTargets news 0x1838 bytes for (0x2800, 0xf00): GS blocks 0x2800..0x3700, VRAM areas 3..4; kept in gp-0x7ad8"
  },
  "002e1b70": {
   "name": "Tim2Texture::putTex0",

@@ -409,6 +409,30 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    in the run**: the wide printer 0x2d3700..0x2d4150 (in unassigned@002b0d50, FontPrinter's
    subclass, made by 0x2b1010), boxgrid's callees 0x193780..0x1938f8, `StageSound::playNamed`
    0x1d6a80, the class 0x230820..0x230980 and the pak parser 0x231410..0x231bb0.
+   TU 25 (the frontier's `game/gfxtarget.cpp`, pinned since TU 1): **re-pinned to 0x12dfa0..0x12f190**
+   (the display records and gp-0x7ad8..-0x7ac8 are used only there; `RcntTimer` starts at 0x12f190)
+   and **all 15 written, `verify`** (batch 057, 13 names; architecture.md "Modules"): the two display
+   records (`GfxDisplay` 0x540: 0 = 512x512 interlaced with the DISPFB1 / DISPLAY1 flicker filter, 1 =
+   256x256 progressive), the flip, the draw env clear, the display offset, the copy packet builder
+   `gfxBuildCopyPacket` and the GS allocators' set-up. The old header comment "256x256 and 512x512
+   offscreen draw envs" was wrong: they are display modes. `gfxtarget.h` now defines `GfxDisplay`,
+   `GfxDrawEnv` (+ the clear), `GfxCopyPacket`, `GfxDisplayIndex`, and stand-ins `GsBlockMap` (TexArea
+   derives from it), `GsRegionAlloc`; `gamehooks.h` gained `drawSysInit` 0x2d7cf0. Checked: callcheck
+   clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on gfxtarget and its users gsutil /
+   uidrawer / scene / fontdata / uigame / screen / sysdata (RosePan's SDK headers + stubs); no harness.
+   Doubts for the user: what 0x2c4320 (the 256x256 user) is; why the 256 record's copy reads 32 lines
+   fewer; `drawSysInit` is named only from its arguments; GsBlockMap slots 1 / 2 unread; on the host
+   GsBlockMap's dtor is virtual (EE: not in the vtable) so delete is defined. **Bootstrap 6** must give
+   `sdk/libgraph.h`: `sceGsTexEnv` (0x40: texflush, tex1, tex0, clamp with addrs), `sceGsSetDefDispEnv`
+   / `sceGsSetDefDrawEnv` / `sceGsSetDefClear` (11 args) / **`sceGsSetDefTexEnv` (12 args: ..., tfx,
+   cbp, cpsm, cld, filter: the ROM passes 1 last)**, `SCE_GS_ZNOUSE` / `ZALWAYS` / `ZGEQUAL` /
+   `ZGREATER` (0..3); `sdk/libdma.h` `sceDmaSendN`; `sdk/eekernel.h` `WRITEBACK_DCACHE`; and **fix
+   RosePan's swapped `SCE_GS_INTERLACE` 0 / `SCE_GS_NOINTERLACE` 1** (the SDK has NOINTERLACE 0,
+   INTERLACE 1; FS2 passes 1 for the 512x512 field-mode record). Host: GS register writes go to
+   eeregs' variables and the copy packet to the GIF channel, which drops it; the host renderer
+   presents (any aspect: it ignores DISPLAY DX / DY; offsetX / offsetY are there for a nudge).
+   **Next picks**: the GS allocators' TU 0x142dd0..0x144080 (`TexArea`, `GsBlockMap`, TexAreaList:
+   many UI callers), the region allocator 0x2e1440..0x2e1b70, `drawSysInit` 0x2d7cf0.
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

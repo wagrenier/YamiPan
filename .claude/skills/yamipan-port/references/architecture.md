@@ -234,8 +234,9 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
   relative to the caller, boot path from argv[0], devices, `spkRomLoad` 0x152870 = all of `SPK.ROM`
   into the heap, magic `SLPK`, its entry table relocated), `padSysInit` 0x130130 (libpad, two
   0x180-byte port records at 0x4aed00, 16 input listeners at 0x4af000 called through vptr+0x120 slot
-  0 each frame), `gsClearVram` 0x12d770, `gfxInitRenderTargets` 0x12e3f0 (256x256 and 512x512
-  offscreen draw envs, VRAM managers at 0x31ad9c / 0x31ada0 / 0x31ad98), `soundInit` 0x1486e0(isPal)
+  0 each frame), `gsClearVram` 0x12d770, `gfxInitRenderTargets` 0x12e3f0 (the two display
+  records, 256x256 progressive and 512x512 interlaced, not offscreen targets; the GS allocators at
+  0x31ad9c / 0x31ada0 / 0x31ad98: `game/gfxtarget.cpp` in "Modules"), `soundInit` 0x1486e0(isPal)
   (SDPR2 driver, PCM / ADPCM streams, 50 / 60 Hz tick), `rcnt1Start` 0x12f260 (RCNT1 on H-blank),
   `getLocalDateTime` 0x23de20 (RTC -> local BCD date, seeds the RNG), `systemDataInit` 0x23bb50
   (persistent state 0x598b30, options 0x599000 via `getGameOptions` 0x23baf0 / 
@@ -984,6 +985,38 @@ at (0x700, 0x700); shares slots 2 / 3 / 8 / 9) made by 0x2b1010 (setFont + setIm
 (setFont + setTexture on gp-0x7a7c +0xbc's printer). **Vtable 0x315fc0** (`SpritePrinter`, 7 slots:
 print / printScaled and five constant answers) has no RTTI and no store: never constructed, and its
 prints fetch glyphs through their own slot 1 (= printScaled), so they only fit a FontPrinter object.
+
+**`game/gfxtarget.cpp` 0x12dfa0..0x12f190 (TU 25, 2026-11-03, batch 057 with 13 names, all 15
+written, `verify`; re-pinned from 0x12dfa0..0x12ea60: the display records and gp-0x7ad8..-0x7ac8 are
+used only up to `gfxGetVramBlock`, `RcntTimer` starts at 0x12f190)**: the **display**. Two **display
+records** `GfxDisplay` (0x540, bss 0x4ae280): **0 = 512x512 interlaced field mode, 1 = 256x256
+progressive frame mode** (`gfxSelectDisplay` 0x12ea70 stores the request gp-0x7ac8; 0x2c4320 selects
+1 on entry and 0 on exit; `gfxFlipDisplay` switches gp-0x7acc on the next ready frame with
+sceGsResetGraph (0, inter, PAL, ff) inside a cleared vsync callback). Record layout: +0
+`sceGsDispEnv` (display buffer PSMCT16 at block 0, FBP forced 0), +0x28 DISPFB1 = DISPFB2 with DBY 1,
++0x30 DISPLAY1 = DISPLAY2 with DH - 1 (with PMODE 0x8023 = EN1 + EN2 blended at ALP 0x80: **the
+interlace flicker filter**; record 1 PMODE 0x62, circuit 2 only), +0x38 / +0x3a size, +0x3c / +0x40
+`gfxSetDisplayOffset`'s x / y (DX = x * (0xa00 / width) + 0x290 PAL / 0x27c NTSC, DY = y + 0x48 /
+0x32), **+0x80 `GfxDrawEnv`** (0xf0: GIF tag NLOOP 14 / 8, `sceGsDrawEnv1` PSMCT32 size x size, ZTEST
+GEQUAL, Z32, FRAME_1 FBP 0x40 = block 0x800, ZBUF_1 ZBP 0xc0 = block 0x1800, then `sceGsClear` from
+0x700 (record 1: 0x780); clear RGBA at +0x130), **+0x180 `GfxCopyPacket`** (0x3a0, built by
+`gfxBuildCopyPacket` 0x12ec10): 57 A+D writes that draw the draw buffer as a PSMCT32 texture (FBP /
+FBW / PSM from the draw env's FRAME_1, TW / TH from its scissor, TCC 0, bilinear) into the display
+buffer (dithered: DIMX 0x5150626247407373, TEXA 0x80/0x80, PRIM 0x156, RGBAQ 0x80808080, ALPHA Cs *
+FIX 0x80) as **64-texel sprites** (UV half-texel inset; record 1 reads 32 lines fewer: 224), unused
+of the 10 strip slots NOP (reg 0x7f). gfxFlipDisplay sends it on DMA channel 2 (`sceDmaSendN`, 0x3a
+qwords), puts the draw env, calls **`TexArea::resetLists`** 0x142df0 and turns the clear back on
+black. Getters: `gfxGetCurrentDisplay` 0x12e050, `gfxGetCurrentDrawEnv` 0x12e080 and **its twin
+`gfxGetDrawEnv` 0x12e0b0** (same body, 17 3D callers), `gfxGetCurrentCopyPacket` 0x12e020,
+`gfxSetClearColor` 0x12dfa0 (gfxSetDrawEnvClear on the current env). **GS allocators**:
+`GsBlockMap` (0x80c, vtable 0x311120: {first, last, 0x4000-bit map (1 = in use), vptr +0x808}; slot
+0 `mark` 0x12ea60 is an inline virtual emitted here, a tail jump to `setRange` 0x1438c0; ctor
+0x143f50 / non-virtual dtor 0x143f00) at gp-0x7ad4 with View / Draw / Zbuf / 0x2800..0x3700 marked;
+**`TexArea` derives from it** (vtable 0x311100 overrides all three slots) at gp-0x7ad0, blocks
+0x3700..0x3fbe, 14 lists x 0x20 slots; `GsRegionAlloc` (0x1838, vtable 0x31a7b0, ctor 0x2e14d0(base
+0x2800, size 0xf00), deleting dtor slot 0 0x2e1440) at gp-0x7ad8, handed to **`drawSysInit`**
+0x2d7cf0(0x700, 0x700, 512, 512, alloc) (unread: about nine draw-system objects). Release deletes the
+region allocator and the block map, never the TexArea.
 
 ## Classes
 

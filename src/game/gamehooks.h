@@ -483,4 +483,12 @@ public:
 };
 SePlayer *getSePlayer();                                                 // FS2 0x002c4140: sbss 0x31aea0
 
+// What game/gfxtarget.cpp calls.
+class GsRegionAlloc;            // game/gfxtarget.h
+// Builds the draw system (about nine objects) on the screen origin and size
+// with the texture region allocator: gfxInitRenderTargets calls it once,
+// last. What it draws is unread.
+void drawSysInit(int originX, int originY, int width, int height,
+                 GsRegionAlloc *alloc);                                  // FS2 0x002d7cf0
+
 #endif /* _GAME_GAMEHOOKS_H */
