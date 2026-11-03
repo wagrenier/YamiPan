@@ -71,7 +71,19 @@ table above as named regions for the tools (`elf32.Elf` uses them for the game E
 `.text` 0x100000..0x2ec900, `.vutext` ..0x2f0880, `.data` ..0x2f3a40, `.text` (island) ..0x2f4d20,
 `.data` ..0x310a00, `.text` (island) ..0x310f80, `.data` ..0x31ad80, `.bss` ..0x5a5600. The `~`
 bounds are guesses: refine them there when a region is pinned (no `.rodata` / `.sdata` split known
-yet; gp-relative small data straddles 0x31ad80). Library ranges (`lib_ranges`) come with bootstrap 4.
+yet; gp-relative small data straddles 0x31ad80).
+
+**Library ranges** (`data/layout.json` `lib_ranges`, bootstrap 5, 2026-11-02; replaced on PC, never a
+TU; `export.py` lists each under its label's library): crt0 + CodeWarrior entry 0x100000..0x100328,
+MSL C++ runtime 0x104c60..0x1076e8, libgraph / libdma / libdev 0x1076e8..0x10ac60, libvifpk
+0x10ac60..0x10c218 (its leaf run after 0x10acc8 unread: libvu0?), libmpeg 0x10c218..0x116978, libipu
+..0x116fb8, libcdvd 0x11c6b0..0x11e440, libpad ..0x11fb70, libmc ..0x121b80, libc (newlib)
+0x121ef0..0x12c9b8, libkernl 0x1366c0..0x142dd0 (front, sifcmd / sifrpc, fileio, iopheap, tail) and
+the kernel-patch island 0x2f3a40..0x2f4d20: 912 functions. **Unread runs between them stay game code
+until read** (not library by default): `Heap` + its neighbours 0x1037c0..0x104c60 (MSL pool or the
+game's?), 0x116fb8..0x11c6b0 (soft-float / math runtime shapes 0x119b70..0x11af08, then the
+~40-caller cluster 0x11b800..), 0x121b80 (libmc error mapper?), 0x12c9b8..0x12cd20, the VU0 math
+0x135a90..0x1366c0, 0x142dd0..0x144080.
 
 First features pass over it (`refresh.py`, 2026-10-31): 6,393 functions, 25,668 calls, 871 tail
 jumps, 2,446 string references, 3,478 float constants; `export.py` anchors 6 functions to 2 source
@@ -348,6 +360,22 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
 ## Modules
 
 The game's own source files (from its strings), what each does.
+
+**The TU map (bootstrap 5, 2026-11-02)**: FS2 names only four of its files (`rxfile.c`,
+`filehost.c`, `rena_2d_texture_tim2.cpp` in a message, `rena_pkt_vif1pktmanage.cpp`), so the map is
+mostly **pinned ranges** in `data/tus.json` (27 TUs, each with its `why`), from what the naming batches
+proved: rx in FS2's link order (`rx/rxsys.c` in two ranges, `rx/rxfile.c` in two around the three
+device drivers `rx/filehost.c` (its string) / `rx/filecd.c` / `rx/filehdd.c` (by analogy),
+`rx/rxthread.c` in two, `rx/rxsnd.c`, and FS2's own `rx/rxsndut.c` + six `rx/rxsndstr*.c` layers),
+SDPR2's four files by its four message copies (`sdpr2/sdpr2.c`, `sdpr2pair.c`, `sdpr2single.c`,
+`sdpr2drv.c`), and the boot's game code (`game/gamesystem.cpp`, `gamepacket.cpp`, `gfxtarget.cpp`,
+`rcnttimer.cpp`, `pad.cpp`, `thread.cpp`, `perfmeter.cpp`, `spkrom.cpp`, `sound/sound.cpp`). rx and
+SDPR2 keys end in `.c` after FS2's own `rxfile.c` / `filehost.c`; game code is C++ (`.cpp`, like
+rena's). Every game file name is a guess (no strings): sessions rename or re-cut with `tus.py
+define`. `export.py` now also takes a source path that leads a message (`name.cpp: ...`) and class
+anchors put `Vif1PktManage`'s members under `rena_pkt_vif1pktmanage.cpp` (0x2eaff0..; rena sits at
+the end of .text, ~0x2e2000..0x2ec8e0). Result: 1,031 of 6,670 game functions in 29 files, the rest
+`(unassigned)` (0x171300.. onward is almost all unread game code).
 
 ## Classes
 

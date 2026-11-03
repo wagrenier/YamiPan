@@ -104,6 +104,12 @@ anchors, then link-order fill. `status.py` -> `references/status.md`. The addres
 satellite ranges) goes into `data/layout.json` and architecture.md. Expect guesses between anchors:
 sessions pin real extents (`tus.py define`).
 
+YamiPan: **done 2026-11-02** (scheduled run): 16 library ranges in `layout.json`, 27 pinned TUs in a
+fresh `data/tus.json` (RosePan's format: `{queue, settings, tus: {key: {ranges, why}}}`, written by
+hand before `tus.py` exists), `export.py` taught message-leading paths and range labels
+(architecture.md "Address map", "Modules"). With only four file strings, pinning from the naming
+batches' findings is the map; link-order fill adds almost nothing.
+
 ## 6. Platform layer (host task `setup/platform_bootstrap.cpp`)
 
 From RosePan (it is ReiPan's, which is MioPan's, renamed and grown): `src/sdk/` (the PS2 SDK on the

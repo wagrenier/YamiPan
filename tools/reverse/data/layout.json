@@ -1,14 +1,135 @@
 {
  "image_sections": [
-  ["00100000", "002ec900", ".text", 6],
-  ["002ec900", "002f0880", ".vutext", 6],
-  ["002f0880", "002f3a40", ".data", 3],
-  ["002f3a40", "002f4d20", ".text", 6],
-  ["002f4d20", "00310a00", ".data", 3],
-  ["00310a00", "00310f80", ".text", 6],
-  ["00310f80", "0031ad80", ".data", 3],
-  ["0031ad80", "005a5600", ".bss", 3]
+  [
+   "00100000",
+   "002ec900",
+   ".text",
+   6
+  ],
+  [
+   "002ec900",
+   "002f0880",
+   ".vutext",
+   6
+  ],
+  [
+   "002f0880",
+   "002f3a40",
+   ".data",
+   3
+  ],
+  [
+   "002f3a40",
+   "002f4d20",
+   ".text",
+   6
+  ],
+  [
+   "002f4d20",
+   "00310a00",
+   ".data",
+   3
+  ],
+  [
+   "00310a00",
+   "00310f80",
+   ".text",
+   6
+  ],
+  [
+   "00310f80",
+   "0031ad80",
+   ".data",
+   3
+  ],
+  [
+   "0031ad80",
+   "005a5600",
+   ".bss",
+   3
+  ]
  ],
- "lib_ranges": [],
+ "lib_ranges": [
+  [
+   "00100000",
+   "00100328",
+   "crt0 + CodeWarrior runtime entry: entry, _root, __init_cpp, operator new / delete (batch 001)"
+  ],
+  [
+   "00104c60",
+   "001076e8",
+   "MSL C++ runtime: __construct_array, the global destructor chain, __throw, std::terminate, std::exception family, string rep (batch 001)"
+  ],
+  [
+   "001076e8",
+   "0010ac60",
+   "libgraph / libdma / libdev: SDK 3.0, aligned with RoR (batch 018)"
+  ],
+  [
+   "0010ac60",
+   "0010c218",
+   "libvifpk: SDK 3.0 sceVif1Pk* head named (batch 004); the leaf run after it is unread (libvu0?)"
+  ],
+  [
+   "0010c218",
+   "00116978",
+   "libmpeg: SDK 3.0, aligned with RoR (batch 012)"
+  ],
+  [
+   "00116978",
+   "00116fb8",
+   "libipu: SDK 3.0, aligned with RoR (batch 012)"
+  ],
+  [
+   "0011c6b0",
+   "0011e440",
+   "libcdvd: SDK 3.0 eecdvd.c, aligned with RoR (batch 019)"
+  ],
+  [
+   "0011e440",
+   "0011fb70",
+   "libpad: SDK 3.0, one to one with FF3 (batch 021)"
+  ],
+  [
+   "0011fb70",
+   "00121b80",
+   "libmc: SDK 3.0 + FS2's read-fast part, aligned with RoR (batch 020)"
+  ],
+  [
+   "00121ef0",
+   "0012c9b8",
+   "libc: Sony's newlib (abort, exit, malloc_r / free_r, mem* / str*, raise, the printf / dtoa formatters 0x12a3a0 / 0x12bd28)"
+  ],
+  [
+   "001366c0",
+   "00139bc0",
+   "libkernl front: klib.s, glue, cache, intr, thread, deci2, tty, kprintf, sifcmd head (batch 016)"
+  ],
+  [
+   "00139bc0",
+   "0013b7e8",
+   "libkernl sifcmd / sifrpc: + fileio head, aligned with RoR (batches 010, 020)"
+  ],
+  [
+   "0013b7e8",
+   "0013ed90",
+   "libkernl fileio: filestub.c, aligned with RoR (batch 017)"
+  ],
+  [
+   "0013ed90",
+   "0013ef80",
+   "iopheap: SDK 3.0, from RoR (batch 013)"
+  ],
+  [
+   "0013ef80",
+   "00142dd0",
+   "libkernl tail: loadfile, TLB, initsys, libosd, exit, timer, alarm, reboot notify, aligned with RoR (batches 014-015)"
+  ],
+  [
+   "002f3a40",
+   "002f4d20",
+   "libkernl kernel patches: code InitAlarm and kin copy into the kernel (0x2f4860 + 0x740 to 0x80076000), never run on the EE side"
+  ]
+ ],
  "satellite_ranges": []
 }

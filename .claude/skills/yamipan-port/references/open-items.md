@@ -10,9 +10,11 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    seeding batch; the "Next batches" list under item 2 is dropped -- library and game names now come
    at the TU that needs them). The runs go to source reconstruction as fast as possible, in this
    order, one per run:
-   (a) **bootstrap 5, the TU map**: `data/layout.json` with the library ranges named so far
-       (architecture.md), game code split by `__FILE__` anchors, classes and link order;
-       `export.py` / `status.py` regenerated.
+   ~~(a) **bootstrap 5, the TU map**~~ **done 2026-11-02**: 16 library ranges in
+       `data/layout.json`, 27 pinned TUs in `data/tus.json` (rx, rxsndstr, SDPR2, the boot's game
+       code), `export.py` / `status.py` regenerated (architecture.md "Address map", "Modules").
+       `tus.json` "queue" is left empty for (c); its settings carry the data root, slice 10240 and
+       an empty smoke pad. **Next: (b).**
    (b) **carry `tus.py` over from RosePan now** (supersedes the 2026-10-31 decision to wait for
        bootstrap 7), with a **source-only mode while there is no host toolchain** (item 5):
        `tus.py check` skips build / smoke run and runs only what works without a compiler, `finish`
@@ -285,6 +287,15 @@ apply here):
   other sessions, agents or scheduled tasks, and never edit `autopilot.py` or the routine.
 
 ## Open questions
+
+- **(2026-11-02, bootstrap 5) TU keys and guessed cuts.** rx / SDPR2 keys end in `.c` because FS2's
+  own strings say `rxfile.c` / `filehost.c`; RosePan reconstructed the same rx as `rx/*.cpp`. If the
+  reconstruction reuses RosePan's C++ as is, rename the key with `tus.py define` (the extent stays).
+  Guessed cuts to settle at their TUs: `rx/filecd.c` / `rx/filehdd.c` as own files, the six
+  `rx/rxsndstr*.c` layers as six files, SDPR2's A/B and C/D cuts, every `game/*.cpp` name and both
+  ends of `game/thread.cpp`, `game/perfmeter.cpp`, `game/gfxtarget.cpp`; `sound/sound.cpp`
+  0x144080..0x148db0 is likely several files. Unread runs left as game code, not library:
+  architecture.md "Address map" (`Heap` 0x1037c0..0x104c60 above all: MSL or game?).
 
 - ~~Which game; engine kinship with FF2 / FF3 / RoR?~~ Settled 2026-10-31 (bootstrap 1): none (but the
   rx library is RoR's: 2026-11-02, batch 005); SCE's

@@ -1,0 +1,266 @@
+{
+ "queue": [],
+ "settings": {
+  "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
+  "frontier_ignore": [],
+  "slice_bytes": 10240,
+  "smoke_pad": ""
+ },
+ "tus": {
+  "game/gamepacket.cpp": {
+   "ranges": [
+    [
+     "0012dd30",
+     "0012dfa0"
+    ]
+   ],
+   "why": "GamePacketManager on rena's Vif1PktManage (batch 004); file name a guess."
+  },
+  "game/gamesystem.cpp": {
+   "ranges": [
+    [
+     "0012cd20",
+     "0012dd30"
+    ]
+   ],
+   "why": "gsEndFrameSync, GameSystem (ctor, flipFrame), GamePad helpers, gameInit, gsClearVram, main, gameMainThread, gameFrameReady, the DMAC handler, GamePad::update / MaskedGamePad::update (batches 001-004, 009); the file name and the GamePad split are guesses."
+  },
+  "game/gfxtarget.cpp": {
+   "ranges": [
+    [
+     "0012dfa0",
+     "0012ea60"
+    ]
+   ],
+   "why": "gfxInitRenderTargets / gfxReleaseRenderTargets and the frame callback 0x12e0e0 gameFrameReady calls (batch 003); 0x12dfa0..0x12e0b0 unread, the cut a guess."
+  },
+  "game/pad.cpp": {
+   "ranges": [
+    [
+     "0012f290",
+     "00130a20"
+    ]
+   ],
+   "why": "Pad (update, clear, ctor, dtor, setListening), padSysInit / Update / Shutdown, PadPort::read (batches 003-004); file name a guess."
+  },
+  "game/perfmeter.cpp": {
+   "ranges": [
+    [
+     "00132f30",
+     "00133800"
+    ]
+   ],
+   "why": "PerfMeter (dumpGroups, collectStats, beginFrame, ctor, dtor) and its empty helpers 0x133600 / 0x133610 (batch 004); both ends are guesses."
+  },
+  "game/rcnttimer.cpp": {
+   "ranges": [
+    [
+     "0012f190",
+     "0012f290"
+    ]
+   ],
+   "why": "RcntTimer (reset, ctor, dtor) and rcnt1Start (batches 003-004); file name a guess."
+  },
+  "game/spkrom.cpp": {
+   "ranges": [
+    [
+     "00152750",
+     "00153108"
+    ]
+   ],
+   "why": "the game's rx user layer: rxTerm, rxInit, spkRomLoad, spkLocateFile, spkGetFileSize, spkLoadFile (SPK.ROM index) and gameRxMemAlloc / Realloc / Free (batches 003, 005); file name a guess."
+  },
+  "game/thread.cpp": {
+   "ranges": [
+    [
+     "00130a20",
+     "001319f0"
+    ]
+   ],
+   "why": "the cooperative thread system: threadSetSwitchHook .. threadSysInit, threadScheduler, jobWorkerThread, frameSync* (batch 002, architecture.md Thread system); 0x130a20 and the end after frameSyncThread are guesses."
+  },
+  "rx/filecd.c": {
+   "ranges": [
+    [
+     "001565c8",
+     "00157db8"
+    ]
+   ],
+   "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. the CD driver rxFileCdWait .. rxFileCdGetLayerMode; its own file by analogy with filehost.c (same driver shape, no string of its own): a guess."
+  },
+  "rx/filehdd.c": {
+   "ranges": [
+    [
+     "00157db8",
+     "00158400"
+    ]
+   ],
+   "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. the HDD driver rxFileHddInit .. rxFileHddSetRoot; its own file by analogy with filehost.c: a guess."
+  },
+  "rx/filehost.c": {
+   "ranges": [
+    [
+     "00156060",
+     "001565c8"
+    ]
+   ],
+   "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. the host device driver rxFileHostInit .. rxFileHostSetRoot; rxFileHostGetSize / Create / Read / Write reference the string filehost.c."
+  },
+  "rx/rxfile.c": {
+   "ranges": [
+    [
+     "00153518",
+     "00156060"
+    ],
+    [
+     "00158400",
+     "00159928"
+    ]
+   ],
+   "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. rxfile core: rxFileClose .. rxFileGetDriver and rxFileInitSlots .. rxFileGetThreadPriority; rxFileOnCreate / rxFileOnGetSize reference the string rxfile.c; the three device drivers between them are their own files (filehost.c string)."
+  },
+  "rx/rxsnd.c": {
+   "ranges": [
+    [
+     "00159bc0",
+     "00162178"
+    ]
+   ],
+   "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. rxsnd: RoR's rx/rxsnd.cpp 0x237ce8..0x23ff58 (190 aligned, three FS2-only RPC wrappers)."
+  },
+  "rx/rxsndstr.c": {
+   "ranges": [
+    [
+     "001634b8",
+     "00164398"
+    ]
+   ],
+   "why": "stream core rxSndStr* (own slot table 0x51ef80; batch 008); file cut a guess."
+  },
+  "rx/rxsndstradpcm.c": {
+   "ranges": [
+    [
+     "00164c38",
+     "001656e8"
+    ]
+   ],
+   "why": "ADPCM stream format (table 0x2f5f38; batch 008); file cut a guess."
+  },
+  "rx/rxsndstrbank.c": {
+   "ranges": [
+    [
+     "001622f8",
+     "001634b8"
+    ]
+   ],
+   "why": "XWS bank layer rxSndStrBank* (own slot table 0x514780; batch 008); one file per layer is a guess."
+  },
+  "rx/rxsndstrmem.c": {
+   "ranges": [
+    [
+     "001660e0",
+     "00166b50"
+    ]
+   ],
+   "why": "memory stream rxSndStrMem* (slot table 0x523a00; batch 008); file cut a guess."
+  },
+  "rx/rxsndstrpcm.c": {
+   "ranges": [
+    [
+     "00164398",
+     "00164c38"
+    ]
+   ],
+   "why": "PCM stream format (table 0x2f5f18; batch 008); file cut a guess."
+  },
+  "rx/rxsndstrstream.c": {
+   "ranges": [
+    [
+     "001656e8",
+     "001660e0"
+    ]
+   ],
+   "why": "stream source rxSndStrStream* (slot table 0x5226e0; batch 008); file cut a guess."
+  },
+  "rx/rxsndut.c": {
+   "ranges": [
+    [
+     "00162178",
+     "001622f8"
+    ]
+   ],
+   "why": "rxsndut init / exit / update of the five stream layers (not in RoR; batch 008); file cut a guess."
+  },
+  "rx/rxsys.c": {
+   "ranges": [
+    [
+     "00100328",
+     "001037c0"
+    ],
+    [
+     "00153108",
+     "00153518"
+    ]
+   ],
+   "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. rxsys: RoR's rx/rxsys.cpp 0x23ff58..0x2437f8 split in two by FS2's link order (0x100328 rxSysNoMemFunc .. rxSysTermUser, rxSysThreadCallback .. rxSysStreamOpenPath); .c after FS2's own rxfile.c string."
+  },
+  "rx/rxthread.c": {
+   "ranges": [
+    [
+     "00159928",
+     "00159bc0"
+    ],
+    [
+     "00166b50",
+     "001681c0"
+    ]
+   ],
+   "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. rxthread: RoR's rx/rxthread.cpp 0x249b88..0x24b490; FS2 links its VBlank tail (rxThVBlankHandler .. rxThSync) before rxsnd."
+  },
+  "sdpr2/sdpr2.c": {
+   "ranges": [
+    [
+     "001681c0",
+     "0016c870"
+    ]
+   ],
+   "why": "SDPR2 core + public API: uses the first of four copies of its message set (0x3027b8); the cut at sdpr2PairTurn 0x16c870 is a guess (batch 011)."
+  },
+  "sdpr2/sdpr2drv.c": {
+   "ranges": [
+    [
+     "00170088",
+     "00171300"
+    ]
+   ],
+   "why": "SDPR2 driver sdpr2Drv* + the SE driver sdpr2SeDrv*: the fourth message copy (0x302bf0); the cut after sdpr2SeDrvInstall a guess (batch 011)."
+  },
+  "sdpr2/sdpr2pair.c": {
+   "ranges": [
+    [
+     "0016c870",
+     "0016e498"
+    ]
+   ],
+   "why": "SDPR2 two-voice type sdpr2Pair*: the second message copy (0x302920); batch 011."
+  },
+  "sdpr2/sdpr2single.c": {
+   "ranges": [
+    [
+     "0016e498",
+     "00170088"
+    ]
+   ],
+   "why": "SDPR2 one-voice type sdpr2Single* + pan math: the third message copy (0x302a88); batch 011."
+  },
+  "sound/sound.cpp": {
+   "ranges": [
+    [
+     "00144080",
+     "00148db0"
+    ]
+   ],
+   "why": "the game's sound layer: SoundStream, SoundSink / SoundPcmSink / SoundAdpcmSink, SoundFeeder, SoundSeBank, SoundConfig, soundInit / Update / Shutdown, the IOP / SPU memory hooks (batch 013); probably several files: split at the TU."
+  }
+ }
+}

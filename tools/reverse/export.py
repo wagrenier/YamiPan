@@ -24,7 +24,8 @@ import yamipan
 import sections
 
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-SRC_STRING = re.compile(r'^[\w./-]*\w\.(?:cpp|cc|c)$')
+# a source path alone ("rxfile.c", an assert's __FILE__) or leading a message ("rena_2d_texture_tim2.cpp: ...")
+SRC_STRING = re.compile(r'^([\w./-]*\w\.(?:cpp|cc|c))(?:$|[:,(\s])')
 SHORT = {'game-symbol': 'sym', 'lib-match': 'lib', 'lib-match-low': 'lib?', 'lib-context': 'lib-ctx',
          'game-inferred': 'game'}
 
@@ -44,6 +45,9 @@ def build():
     for a in size:
         names.setdefault(a, f'FUN_{a:08x}')
     lib_file = {int(a, 16): m.get('file') for a, m in yamipan.load_json(yamipan.DATA / 'lib_matches.json', {}).items()}
+    # without a libmatch.py file, a library function is listed under its layout.json range's library
+    lib_label = [(int(lo, 16), int(hi, 16), what.split(':')[0].strip())
+                 for lo, hi, what in yamipan.load_json(yamipan.LAYOUT_JSON, {}).get('lib_ranges', [])]
     addrs = sorted(size)
 
     # 2. string anchors
@@ -52,8 +56,9 @@ def build():
         if yamipan.in_lib(a):
             continue
         for s in feat.get(a, {}).get('strings', []):
-            if SRC_STRING.match(s):
-                anchor[a] = s.removeprefix('./')
+            m = SRC_STRING.match(s)
+            if m:
+                anchor[a] = m.group(1).removeprefix('./')
                 break
     # 3. class anchors
     classes = yamipan.load_json(yamipan.WORK / 'classes.json', [])
@@ -106,7 +111,7 @@ def build():
             file_of[a] = key
     for a in addrs:
         if yamipan.in_lib(a):
-            file_of[a] = f'(library) {lib_file.get(a) or "sdk"}'
+            file_of[a] = '(library) ' + (lib_file.get(a) or next((w for lo, hi, w in lib_label if lo <= a < hi), 'sdk'))
         elif yamipan.is_satellite(a):
             cls = names[a].split('::')[0] if '::' in names[a] else None
             file_of[a] = class_file.get(cls) or f'(satellite) {cls or "?"}'
