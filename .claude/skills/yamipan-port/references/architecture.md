@@ -436,7 +436,7 @@ anchors put `Vif1PktManage`'s members under `rena_pkt_vif1pktmanage.cpp` (0x2eaf
 the end of .text, ~0x2e2000..0x2ec8e0). Result: 1,031 of 6,670 game functions in 29 files, the rest
 `(unassigned)` (0x171300.. onward is almost all unread game code).
 
-**`game/sysdata.cpp` 0x23af30..0x23c020 (TU 5, 2026-11-02, batch 026)**: one 0x620-byte block
+**`game/sysdata.cpp` 0x23af30..0x23c020 (TU 5, 2026-11-02, batch 026)**: one 0x920-byte block
 `gSystemData` at 0x598b30 = `SaveData` (+0, 0x4bc: 69 stage flag bytes +0x69 holding clear bits
 1 / 2 / 4 / 8 / 16 / 32 per (kind 0..2, variant 0..1) from table 0x307350, best records
 `record[3][2][30]` +0xd8 (u_int; fresh = `stageDefaultRecord` 0x296d00: kind 0 = 3599, kinds 1 / 2
@@ -449,7 +449,7 @@ callers) + `GameOptions` (+0x4d0 = 0x599000, 0x50 bytes: +0 sound output 0 mono 
 surround (`SoundConfig::setOutputMode` 0x147ee0 on `gSoundConfig` gp-0x7a94), +0xa / +0xc screen
 offset (`gfxSetDisplayOffset` 0x12ead0 on `gfxGetCurrentDisplay` 0x12e050), +0x18 an index into
 the 19-step table 0x2fac20 (28..176, default 9: brightness?), `ButtonMap` +0x24) + `FlagTable`
-(+0x520 = 0x599050, 64 ints; `countListed` counts 29 listed entries, byte list 0x2fac00).
+(+0x520 = 0x599050, 256 ints, corrected by TU 7: `clear`'s loop counts ints to 0x100 and the save copies 0x400 bytes; `countListed` counts 29 listed entries, byte list 0x2fac00).
 `SystemData::recordStageResult` 0x23b630 is the after-stage update. The **language** is sdata
 0x31aad0 (default 5 = EN), codes J US KR CN Ct EN DE FR ES IT (0x2fac40); `getRegionCode` "EU",
 `getFileSuffix` "" / "_e". `randUnit` 0x104720 is the game's float RNG (97-entry shuffle over an
@@ -469,6 +469,28 @@ GetOsdConfigParam (bit 0 spdif, 1-2 aspect, 4 old Japanese / English, 13-15 conf
 language, 21-31 timezone minutes) and GetOsdConfigParam2 byte 0 (bit 4 summer time, 5 time
 notation, 6-7 date format), each returning a static default 0x2fb380..0x2fb387 on a DTL-T10000
 (`_scfIsT10K`: rom0:ROMVER [4] == 'T', buffer 0x2fb388); month lengths at 0x308840.
+
+**`game/memcard.cpp` 0x2a9c70..0x2acff0 (TU 7, 2026-11-02, batches 028-030, `partial`)**: three
+layers in one file (its sbss bytes 0x31ae80 / 84 / 88 / 90 = gp-0x79f0..-0x79e0 are one block).
+`McDevice` (0x14: port, slot, result, sync result, last libmc function) wraps one sceMc request
+per call and syncs it inline (`wait` 0 polls: sceMcSync mode 1); a rejected request or a negative
+sync result becomes `mcErrorCode(func, result) & 0xffff` (0x121b80, alone between libmc and libc:
+0x8108xxxx codes; GetInfo -1 -> 0x9003, -2 -> 0x2f; GetDir -4 -> 2, -6 -> 5). Read records
+function 0x16, write 6. `SaveFile` (0xe40, the sceMcTblGetDir alignment pads 0xe0c) is one save:
+the 0xc00 data file = `SystemData` (0x920) + `SaveExtra` 0x104 (`getSaveExtra` 0x29efd0 ->
+0x5995e0, unread) + `SaveStamp` +0xa28 (file index, second..month, `randNext` u16; the module keeps
+the loaded one at 0x31ae88, -1 none, only when GameOptions +0x4d is set) + 0x1c8 zero + magic
+0x20060126 +0xbf8 + byte sum of +0..+0xa30 at +0xbfc; then the 8-entry directory listing +0xc00,
+status +0xe00 (-1 unknown, 0 ok, 1 no dir, 2 GetDir error 5, 3 broken, 4 empty), found bits +0xe04
+(icon.sys 0x3c4, icon1.ico 0x10eb8, data 0xc00) and the index. Four saves:
+/BESCES-5385100..03/{BESCES-53851xx, icon.sys, icon1.ico}, title "Forbidden Siren 2 File0n" in
+full-width SJIS (0x30a9d0..), wildcard BESCES-53851* for index -1. `Memcard : McDevice` (0x90,
+port 0 slot 0) is the menus' manager: `start*` set a request (1 card info, 2 dirs, 3 scan, 4 check
+all, 5 load, 6 / 7 save, 8 none, 9 format) when idle, `update` polls and runs its step function
+(step < 0 ends; 0..2 the card-info sub-step, 10 / 20 / 30 / 40 + phase per file, 50 after the
+last), the outcome +0x68 (1 ok, 2 unusable, 3 no PS2 card, 4 failed, 5 unformatted) and progress
++0x6c are for the menus 0x2b5770 / 0x2b6810 / 0x2b85b0 / 0x2b86e0. Save resources (icon1.ico, an
+icon.sys template) come from `getSaveResource` 0x2c3d70 (an object at 0x31ae98, unread).
 
 ## Classes
 

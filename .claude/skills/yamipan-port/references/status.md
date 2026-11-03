@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-02 22:11 at commit `1318a38` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-02 22:40 at commit `1a51e11` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-02 22:11 at commit `1318a38` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6597**, named **1085** (16%); library functions: 985
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1474, game-inferred 236
-- context-name ledger: 1710 entries; overrides of wrong library matches: 0
-- placed in a source file: 1071/6597 in 31 files
+- game functions: **6597**, named **1140** (17%); library functions: 985
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1476, game-inferred 292
+- context-name ledger: 1768 entries; overrides of wrong library matches: 0
+- placed in a source file: 1126/6597 in 32 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,21 +30,23 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **80**; stubs: **0**
+- reconstructed FS2 functions: **126**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
 | `src/game/datetime.cpp` | 2 | 0 |
 | `src/game/gamesystem.cpp` | 17 | 0 |
+| `src/game/memcard.cpp` | 46 | 0 |
 | `src/game/pad.cpp` | 14 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
 | `src/game/sysdata.cpp` | 37 | 0 |
 
 ## Translation units (one session each: `tus.py`)
 
-- 46 TUs: todo 41, verify 6
-- next: **unassigned@002647e0** (frontier score 14)
+- 48 TUs: todo 42, partial 1, verify 6
+- next: **game/memcard.cpp** (continuing a partial TU)
 - pinned queue: (empty)
+- partial: `game/memcard.cpp` 46/55 -- 46 of 55 functions written. Left in this TU: Memcard::stepSave 0x2a9dd0, stepLoad 0x2aa2f0, stepCheckAll 0x2aa7e0, stepScan 0x2aaee0 (sets sMcSaveFound, the byt
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
 - verify: `game/gamesystem.cpp` 17/17 -- All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). N
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
@@ -54,6 +56,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-02 22:39 `game/memcard.cpp` partial: memory card module cut out of unassigned@002647e0 and pinned 0x2a9c70-0x2acff0: McDevice libmc wrapper, SaveFile save image and module state written, Memcard ma
 - 2026-11-02 22:11 `game/datetime.cpp` verify: RTC date module: getLocalDateTime and DateTime::setFormat cut out of unassigned@0023c020; libscf 0x2640e8..0x2647d8 named and made a library range
 - 2026-11-02 21:55 `game/sysdata.cpp` verify: system data block: SaveData, StageSelect, GameOptions, FlagTable in SystemData 0x598b30; language and region strings; all 37 functions
 - 2026-11-02 21:33 `unassigned@00116fb8` verify: Resolved as library, not game code: newlib float libm 0x116fb8..0x119be8 and libgcc (libgcc2 64-bit helpers + fp-bit soft-float) 0x119be8..0x11c6b0, 51 names by
@@ -63,29 +66,38 @@ Recent sessions:
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002647e0` | todo | 0/0/1680 | 493.4 | 14 | 0 |
-| `unassigned@001037c0` | todo | 0/0/19 | 5.0 | 8 | 0 |
+| `unassigned@00121b80` | todo | 0/0/1 | 0.9 | 19 | 0 |
+| `unassigned@001037c0` | todo | 0/0/19 | 5.0 | 17 | 0 |
+| `game/memcard.cpp` | partial | 46/0/55 | 12.6 | 14 | 0 |
+| `unassigned@002647e0` | todo | 0/0/937 | 271.6 | 8 | 0 |
 | `game/thread.cpp` | todo | 0/0/19 | 3.8 | 8 | 0 |
 | `game/gfxtarget.cpp` | todo | 0/0/8 | 2.6 | 7 | 0 |
-| `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
+| `unassigned@002acff0` | todo | 0/0/688 | 209.3 | 7 | 0 |
 | `game/gamepacket.cpp` | todo | 0/0/6 | 0.6 | 6 | 0 |
+| `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 5 | 0 |
 | `game/rcnttimer.cpp` | todo | 0/0/4 | 0.2 | 4 | 0 |
 | `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 3 | 0 |
-| `game/spkrom.cpp` | todo | 0/0/13 | 2.4 | 2 | 0 |
-| `rena_pkt_vif1pktmanage.cpp` | todo | 0/0/13 | 1.9 | 2 | 0 |
-| `unassigned@0012ea60` | todo | 0/0/7 | 1.7 | 1 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
+| `00121b80` | mcErrorCode | 19 | game | missing | - |
 | `00296d00` | stageDefaultRecord | 6 | game | missing | - |
+| `00103c50` | Heap::alloc | 5 | game | missing | - |
 | `002b0580` | getStageResult | 4 | game | missing | - |
 | `0012e0e0` | gfxFlipDisplay | 4 | game | missing | game/gfxtarget.cpp |
 | `00147ee0` | SoundConfig::setOutputMode | 3 | game | missing | sound/sound.cpp |
+| `00103aa0` | Heap::free | 3 | game | missing | - |
 | `00103870` | Heap::markedUsage | 3 | game | missing | - |
+| `0029efd0` | getSaveExtra | 2 | game | missing | - |
+| `002a9dd0` | Memcard::stepSave | 2 | game | missing | game/memcard.cpp |
 | `00130a30` | threadSetSwitchHook | 2 | game | missing | game/thread.cpp |
+| `002ac290` | SaveData::operator= | 2 | game | missing | game/memcard.cpp |
+| `002ac260` | StageSelect::operator= | 2 | game | missing | game/memcard.cpp |
+| `002ac1a0` | GameOptions::operator= | 2 | game | missing | game/memcard.cpp |
+| `002ac170` | FlagTable::operator= | 2 | game | missing | game/memcard.cpp |
 | `00104600` | initGlobalHeap | 1 | game | missing | - |
 | `001527a0` | rxInit | 1 | lib-ctx | missing | game/spkrom.cpp |
 | `0012e3f0` | gfxInitRenderTargets | 1 | game | missing | game/gfxtarget.cpp |
@@ -93,11 +105,12 @@ Recent sessions:
 | `0012f260` | rcnt1Start | 1 | game | missing | game/rcnttimer.cpp |
 | `00104860` | rndInit | 1 | game | missing | - |
 | `00151290` | debugSysInit | 1 | game | missing | - |
-| `002a9c80` | memcardInit | 1 | game | missing | - |
 | `0012f190` | RcntTimer::reset | 1 | game | missing | game/rcnttimer.cpp |
-| `002b00d0` | StageResult::getPerfectBits | 1 | game | missing | - |
 | `0012f1b0` | RcntTimer::~RcntTimer | 1 | game | missing | game/rcnttimer.cpp |
-| `002ac610` | memcardGetState | 1 | game | missing | - |
+| `002b00d0` | StageResult::getPerfectBits | 1 | game | missing | - |
+| `002ab7c0` | Memcard::buildIconSys | 1 | game | missing | game/memcard.cpp |
+| `002c3d30` | getSaveResourceAux | 1 | game | missing | - |
+| `002c3d70` | getSaveResource | 1 | game | missing | - |
 | `0012e050` | gfxGetCurrentDisplay | 1 | game | missing | game/gfxtarget.cpp |
 | `0012ead0` | gfxSetDisplayOffset | 1 | game | missing | - |
 | `0012dee0` | GamePacketManager::GamePacketManager | 1 | game | missing | game/gamepacket.cpp |
@@ -110,14 +123,4 @@ Recent sessions:
 | `00131260` | frameSyncWait | 1 | game | missing | game/thread.cpp |
 | `00148500` | soundUpdate | 1 | game | missing | sound/sound.cpp |
 | `00130bc0` | threadYield | 1 | game | missing | game/thread.cpp |
-| `00130f60` | threadSysInit | 1 | game | missing | game/thread.cpp |
-| `00130e00` | threadRunMain | 1 | game | missing | game/thread.cpp |
-| `00130e50` | threadSysShutdown | 1 | game | missing | game/thread.cpp |
-| `002a9c70` | memcardLibEnd | 1 | native | missing | - |
-| `00151280` | debugSysShutdown | 1 | game | missing | - |
-| `00148540` | soundShutdown | 1 | game | missing | sound/sound.cpp |
-| `00135330` | MasterClock::~MasterClock | 1 | game | missing | - |
-| `0012de80` | GamePacketManager::~GamePacketManager | 1 | game | missing | game/gamepacket.cpp |
-| `0012e3a0` | gfxReleaseRenderTargets | 1 | game | missing | game/gfxtarget.cpp |
-| `00152750` | rxTerm | 1 | lib-ctx | missing | game/spkrom.cpp |
 

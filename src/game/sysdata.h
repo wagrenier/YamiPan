@@ -2,7 +2,7 @@
  *  game/sysdata.h
  *
  *  The game's system data (game/sysdata.cpp, 0x23af30..0x23c020): one
- *  0x620-byte block at 0x598b30 holding the save data (stage flags, the
+ *  0x920-byte block at 0x598b30 holding the save data (stage flags, the
  *  best records and medals per stage), the play record (which stage, record
  *  kind and variant is being played), the options with their button map,
  *  and a 64-int flag table; plus the language and the region strings.
@@ -173,9 +173,9 @@ struct StageSelect
 };
 static_assert(sizeof(StageSelect) == 0x14, "StageSelect: EE 0x14");
 
-// 64 ints at 0x599050 (SystemData +0x520), cleared at boot and on a new
+// 256 ints at 0x599050 (SystemData +0x520), cleared at boot and on a new
 // game.
-constexpr int kFlagTableSize = 64;
+constexpr int kFlagTableSize = 256;   // clear counts ints to 0x100; the save copies 0x400 bytes
 struct FlagTable
 {
     void clear();                                                        // FS2 0x0023ba90
@@ -185,7 +185,7 @@ struct FlagTable
 
     int value[kFlagTableSize];  // FS2 +0x00
 };
-static_assert(sizeof(FlagTable) == 0x100, "FlagTable: EE 0x100");
+static_assert(sizeof(FlagTable) == 0x400, "FlagTable: EE 0x400");
 
 // The whole block at 0x598b30; every getter returns a part of it.
 struct SystemData
@@ -200,7 +200,7 @@ struct SystemData
 static_assert(offsetof(SystemData, select) == 0x4bc, "SystemData::select");
 static_assert(offsetof(SystemData, options) == 0x4d0, "SystemData::options");
 static_assert(offsetof(SystemData, flags) == 0x520, "SystemData::flags");
-static_assert(sizeof(SystemData) == 0x620, "SystemData: EE 0x620");
+static_assert(sizeof(SystemData) == 0x920, "SystemData: EE 0x920");
 
 extern SystemData gSystemData;      /* bss 0x598b30 */
 

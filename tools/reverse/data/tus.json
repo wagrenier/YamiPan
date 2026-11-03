@@ -63,6 +63,25 @@
    ],
    "why": "gfxInitRenderTargets / gfxReleaseRenderTargets and the frame callback 0x12e0e0 gameFrameReady calls (batch 003); 0x12dfa0..0x12e0b0 unread, the cut a guess."
   },
+  "game/memcard.cpp": {
+   "notes": "46 of 55 functions written. Left in this TU: Memcard::stepSave 0x2a9dd0, stepLoad 0x2aa2f0, stepCheckAll 0x2aa7e0, stepScan 0x2aaee0 (sets sMcSaveFound, the byte memcardGetState returns; its getDir loop runs to step 0x79, past four files, so read which path table it indexes), buildIconSys 0x2ab7c0 (SJIS titles at data 0x2fb7e0 still to add as escaped strings; lighting block copied from getSaveResource(1) +0xc into sceMcIconSys +0xc..+0xc0). The step functions share one shape: steps 0..2 run stepCardInfo as a sub-step (m_infoStep), 10/20/30/40 + phase work per file (isFileStep / fileOfStep helpers in memcard.cpp), 50 (kStepFilesEnd) follows the last file; the repeated reset loop is Memcard::resetFiles and the info clear Memcard::clearInfo, both inline in the ROM. sysdata.h: FlagTable is 256 ints (0x400) and SystemData 0x920 (FlagTable::clear counts ints; the save copies 0x400). gamehooks.h lost the memcard prototypes; main now calls memcardEnd (0x2a9c70, a thunk to memcardLibEnd). heap.h gained Heap::alloc / Heap::free and randNext. callcheck.py now accepts = in callcheck: names (operator=). Bootstrap 6 needs RosePan sdk/libmc.h. Doubts in open-items.md Open questions (TU 7).",
+   "ranges": [
+    [
+     "002a9c70",
+     "002acff0"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-02 22:39",
+     "status": "partial",
+     "summary": "memory card module cut out of unassigned@002647e0 and pinned 0x2a9c70-0x2acff0: McDevice libmc wrapper, SaveFile save image and module state written, Memcard manager core (ctor, dtor, update, starters, stepFormat, stepReadDirs, stepCardInfo); 55 names in batches 028-030; FlagTable corrected to 256 ints"
+    }
+   ],
+   "status": "partial",
+   "why": "the memory card module: the libmc device wrapper McDevice (0x2ac630..0x2acff0, ctor 0x2acf90), the save manager Memcard (state machines 0x2a9cc0..0x2ab9f0, requests, update) and the SaveFile image (0x2aa720, 0x2abc20..0x2ac540); its sbss bytes 0x31ae80..0x31ae90 are one block (gp-0x79f0..-0x79e0: saveFound, flag, stamp, lib inited). 0x2a9be0 before it is a Vt_00318ca0 ctor; 0x2acff0 after it starts unrelated code (a 0x2ec840 / 0x267c00 call, then a 0x1cc0 object and lens-flare-like float code)"
+  },
   "game/pad.cpp": {
    "notes": "All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout (asserts). Source-only: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean against RosePan sdk headers. Pad::update only reads input for terminal mode 8 (DualShock 2 in pressure mode): bootstrap 6's host libpad must report that. Stick order is libpad's right x, right y, left x, left y; GamePad's comments and computeSticks locals in gamesystem were swapped and are fixed. 0x12fed0 renamed Pad::registerListener (it was Pad::setListening); 0x12fa30 is Pad::setListening. Ghidra saved by name_ctx.",
    "ranges": [
@@ -343,6 +362,7 @@
    "status": "verify"
   },
   "unassigned@00171300": {},
-  "unassigned@0023c020": {}
+  "unassigned@0023c020": {},
+  "unassigned@002647e0": {}
  }
 }

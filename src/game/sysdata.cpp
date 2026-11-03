@@ -8,6 +8,7 @@
 #include "game/gamehooks.h"
 #include "game/gamesystem.h"
 #include "game/gfxtarget.h"
+#include "game/memcard.h"
 #include "sdk/scetypes.h"
 
 // ButtonMap's default button per action (setDefaults stores them, the

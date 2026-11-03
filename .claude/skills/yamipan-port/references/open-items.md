@@ -49,7 +49,21 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    `lib_ranges` entry (19 functions; bootstrap 6 must give `sdk/libscf.h` and `sdk/libcdvd.h` from
    RosePan, which already have `sceScfGetLocalTimefromRTC` / `sceCdCLOCK`; the host
    `sceScfGetLocalTimefromRTC` can use the PC's local clock). 0x23c020..0x23de20 (the slice's other
-   13, Vt_00316510 ctors at 0x23db00 / 0x23db50) is still unread. Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
+   13, Vt_00316510 ctors at 0x23db00 / 0x23db50) is still unread. TU 7 (the frontier's
+   `unassigned@002647e0`, 1,680 functions 0x2647e0..0x2e26b4): **`game/memcard.cpp`
+   0x2a9c70..0x2acff0** cut out (55 functions, batches 028-030; `partial`: 46 written -- McDevice,
+   SaveFile, the module state, Memcard's ctor / dtor / update / starters / stepFormat /
+   stepReadDirs / stepCardInfo). **Left for the next memcard run** (same TU, `tus.py tu
+   game/memcard.cpp`): `stepSave` 0x2a9dd0, `stepLoad` 0x2aa2f0, `stepCheckAll` 0x2aa7e0,
+   `stepScan` 0x2aaee0 (it sets the byte memcardGetState returns; its getDir loop runs past four
+   files, step 0x79: read which table it indexes), `buildIconSys` 0x2ab7c0 (title strings 0x2fb7e0,
+   SJIS: encode them as escapes; the icon.sys template's lighting block at getSaveResource(1) +0xc).
+   `sysdata.h` corrected: `FlagTable` is 256 ints (0x400), `SystemData` 0x920 (hazards.md "Types and
+   layouts"). `gamehooks.h` lost the memcard prototypes (now `memcard.h`; main calls `memcardEnd`
+   0x2a9c70, the thunk). Bootstrap 6 must give `sdk/libmc.h` from RosePan (has every sceMc call used,
+   sceMcTblGetDir alignas(64) and sceMcIconSys) and a host libmc whose missing directory answers -4.
+   Still in the unassigned run for later picks: `stageDefaultRecord` 0x296d00, `getStageResult`
+   0x2b0580 / `StageResult::getPerfectBits` 0x2b00d0, `gameSceneThread` 0x231bb0. Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
    `game/perfmeter.cpp`, `game/thread.cpp`, `game/gfxtarget.cpp`, the clocks, the heap, sound,
@@ -340,6 +354,13 @@ apply here):
   other sessions, agents or scheduled tasks, and never edit `autopilot.py` or the routine.
 
 ## Open questions
+
+- **(2026-11-02, TU 7) memcard semantics guessed.** `memcardRequiredKB` (returns 80: KB is a guess);
+  the byte 0x31ae84 (`memcardGetFlag` and kin, set by memcardInit: meaning unknown); `SaveStatus_Denied`
+  (GetDir mapped result 5, from libmc -6); `Memcard::m_iconAux` (getSaveResourceAux(0), never written
+  by stepSave: a size?); `MemcardRequest_Save7` (no starter in the file: who sets request 7?);
+  `mcErrorCode` 0x121b80 may be library code (it sits between libmc and libc). The SaveFile byte at
+  GameOptions +0x4d decides whether a load keeps its stamp: name it when the options menu is read.
 
 - **(2026-11-02, bootstrap 5) TU keys and guessed cuts.** rx / SDPR2 keys end in `.c` because FS2's
   own strings say `rxfile.c` / `filehost.c`; RosePan reconstructed the same rx as `rx/*.cpp`. If the

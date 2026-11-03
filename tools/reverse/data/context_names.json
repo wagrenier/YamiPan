@@ -713,6 +713,12 @@
   "was": "FUN_00104600",
   "why": "(size, <= 0 means all but -size): sizes free RAM from 0x31a880..0x31a888 (else 32 MB - end - 0x2000), probes with _malloc_r / _free_r, then _malloc_r's block becomes the heap 0x329970 (0x104500)"
  },
+ "001046b0": {
+  "name": "randNext",
+  "tag": "game-inferred",
+  "was": "FUN_001046b0",
+  "why": "the RNG step: picks the shuffle slot 0x3299c0[prev % 97], refills it from the LCG 0x31a88c * 0x5d588b65 + 1 and returns the old value >> 1; randUnit 0x104720 is its float form"
+ },
  "00104720": {
   "name": "randUnit",
   "tag": "game-inferred",
@@ -2273,6 +2279,12 @@
   "was": "FUN_00121a80",
   "why": "SDK libmc: rpc 0x1b (fd, buffer, size), writes the buffer back from the D-cache for the IOP to fetch, beside sceMcReadFast; name by analogy (doubt: open-items.md)"
  },
+ "00121b80": {
+  "name": "mcErrorCode",
+  "tag": "game-inferred",
+  "was": "FUN_00121b80",
+  "why": "maps (libmc function number, negative sceMcSync / request result) to a 0x8108xxxx code (0 for function 0x20); the McDevice wrappers keep its low 16 bits; sits alone between libmc and libc, may be library"
+ },
  "00121ef0": {
   "name": "abort",
   "tag": "lib-context",
@@ -2302,6 +2314,12 @@
   "tag": "lib-context",
   "was": "FUN_00125228",
   "why": "libc: (dst, src, n) returning dst, 16-byte-aligned 32-byte block path then bytes; libmc and the game copy with it; memmove follows at 0x1252d8"
+ },
+ "001253e0": {
+  "name": "memset",
+  "tag": "lib-context",
+  "was": "FUN_001253e0",
+  "why": "newlib memset: pcpyh / pcpyld fill of 32 and 8 bytes when 16-aligned, then bytes; returns a0"
  },
  "00126f78": {
   "name": "srand",
@@ -2344,6 +2362,12 @@
   "tag": "lib-context",
   "was": "FUN_00128498",
   "why": "R5900 quadword/doubleword zero-byte scan (0x0101.. / 0x8080.. masks), returns end - start"
+ },
+ "00128860": {
+  "name": "strncpy",
+  "tag": "lib-context",
+  "was": "FUN_00128860",
+  "why": "newlib strncpy (EE): 16 / 8-byte copies while no NUL, then bytes and zero fill; after strlen"
  },
  "00128a70": {
   "name": "strstr",
@@ -10145,17 +10169,317 @@
   "was": "FUN_00296d00",
   "why": "kind 0 -> 3599 (0xe0f), kind 1 -> int table 0x309ab0 [stage][variant], kind 2 -> 0x309ba0 [stage][variant]: the record a fresh save holds (SaveData::setDefaults)"
  },
+ "0029efd0": {
+  "name": "getSaveExtra",
+  "tag": "game-inferred",
+  "was": "FUN_0029efd0",
+  "why": "returns 0x5995e0, a 0x104-byte block (int + 0x20 doublewords) that SaveFile::capture copies into a save at +0x920 and SaveFile::apply copies back; its own module (0x29e..) is unread, so what it holds is open"
+ },
+ "002a9c70": {
+  "name": "memcardEnd",
+  "tag": "game-inferred",
+  "was": "memcardLibEnd",
+  "why": "a lone j memcardLibEnd (0x2acec0) with its delay slot: the memcard module's exported end, main calls it at teardown; was a duplicate memcardLibEnd"
+ },
  "002a9c80": {
   "name": "memcardInit",
   "tag": "game-inferred",
   "was": "FUN_002a9c80",
   "why": "gameInit's memory card setup: memcardLibInit, then gp-0x79e8 (u64) = -1 and gp-0x79ec = 1 (state of the save system, not read yet)"
  },
+ "002a9cb0": {
+  "name": "memcardRequiredKB",
+  "tag": "game-inferred",
+  "was": "FUN_002a9cb0",
+  "why": "returns 80; the save is a 0xc00 data file + 0x3c4 icon.sys + 0x10eb8 icon1.ico in its own directory (~73 KB plus directory clusters); one caller, the save menu 0x2b86e0; the unit is a guess"
+ },
+ "002a9cc0": {
+  "name": "Memcard::stepFormat",
+  "tag": "game-inferred",
+  "was": "FUN_002a9cc0",
+  "why": "request 9 of Memcard::update: card info, then McDevice::format, outcome +0x68 1 / 3 (no PS2 card) / 2 (already formatted) / 4 (error)"
+ },
+ "002a9dd0": {
+  "name": "Memcard::stepSave",
+  "tag": "game-inferred",
+  "was": "FUN_002a9dd0",
+  "why": "requests 6 and 7 of Memcard::update: card info, mkdir BESCES-53851xx, then open / write / close of the data file (0xc00), icon.sys (0x3c4) and icon1.ico (0x10eb8) with the progress float +0x6c"
+ },
+ "002aa2f0": {
+  "name": "Memcard::stepLoad",
+  "tag": "game-inferred",
+  "was": "FUN_002aa2f0",
+  "why": "request 5 of Memcard::update: reads the directories, opens /BESCES-53851xx/BESCES-53851xx, reads 0xc00 into that SaveFile and checks its magic 0x20060126 and byte sum"
+ },
+ "002aa720": {
+  "name": "SaveFile::init",
+  "tag": "game-inferred",
+  "was": "FUN_002aa720",
+  "why": "a0 = a 0xe40 SaveFile from Heap::alloc: SaveFile::clear inlined (system data defaults, stamp -1, magic 0x20060126, sum 0), +0xe08 = a1 the file index, status +0xe00 = -1, found bits 0, the 8 directory entries at +0xc00 cleared"
+ },
+ "002aa7e0": {
+  "name": "Memcard::stepCheckAll",
+  "tag": "game-inferred",
+  "was": "FUN_002aa7e0",
+  "why": "request 4 of Memcard::update: reads the directories, then for each of the four files with all three entries reads the data and checks magic and sum, setting each SaveFile status"
+ },
+ "002aaee0": {
+  "name": "Memcard::stepScan",
+  "tag": "game-inferred",
+  "was": "FUN_002aaee0",
+  "why": "request 3 of Memcard::update: getDir over the save directories; any entry found sets the module byte 0x31ae80 that memcardGetState returns"
+ },
+ "002ab1f0": {
+  "name": "Memcard::stepReadDirs",
+  "tag": "game-inferred",
+  "was": "FUN_002ab1f0",
+  "why": "request 2 and the sub-step +0x50 of load / check / scan: card info, then McDevice::getDir /BESCES-53851xx/* into each SaveFile 8 entries +0xc00, status 1 / 2 on the mapped results 2 / 5"
+ },
+ "002ab460": {
+  "name": "Memcard::stepCardInfo",
+  "tag": "game-inferred",
+  "was": "FUN_002ab460",
+  "why": "request 1 and the sub-step +0x54 of the others: McDevice::getInfo into type / free / format +0x3c..+0x44; result 0x9003 or 0x2f sets the byte +0x60, another error clears the info"
+ },
+ "002ab500": {
+  "name": "Memcard::update",
+  "tag": "game-inferred",
+  "was": "FUN_002ab500",
+  "why": "McDevice::sync (polling), then dispatches the request +0x48 (1..9) to its step function with the step +0x4c; returns true when the step went negative (done); called each frame by the menus 0x2b5770 / 0x2b6810 / 0x2b85b0"
+ },
+ "002ab660": {
+  "name": "Memcard::~Memcard",
+  "tag": "game-inferred",
+  "was": "FUN_002ab660",
+  "why": "CodeWarrior deleting dtor (a1 > 0 deletes): frees the icon.sys buffer +0x70, the image +0x7c and the four SaveFiles +0x80 from the global heap, then ~McDevice 0x2acf40"
+ },
+ "002ab740": {
+  "name": "Memcard::Memcard",
+  "tag": "game-inferred",
+  "was": "FUN_002ab740",
+  "why": "McDevice(0, 0) then zeroes the buffers +0x70..+0x7c, request, info and SaveFile pointers, step +0x4c = -1 (idle)"
+ },
+ "002ab7c0": {
+  "name": "Memcard::buildIconSys",
+  "tag": "game-inferred",
+  "was": "FUN_002ab7c0",
+  "why": "allocates 0x3c4 at +0x70, writes an sceMcIconSys: PS2D, three icon names icon1.ico (0x30aac8), the lighting block from 0x2c3d70(1) +0xc, the SJIS title Forbidden Siren 2 File0n of a1 with the line break at 0x12"
+ },
+ "002ab9f0": {
+  "name": "Memcard::startFormat",
+  "tag": "game-inferred",
+  "was": "FUN_002ab9f0",
+  "why": "when idle (step < 0): request 9 (stepFormat), steps and outcome reset; returns whether it started"
+ },
+ "002aba30": {
+  "name": "Memcard::startCardInfo",
+  "tag": "game-inferred",
+  "was": "FUN_002aba30",
+  "why": "when idle: request 1 (stepCardInfo), steps and outcome reset; returns whether it started"
+ },
+ "002aba70": {
+  "name": "Memcard::startLoad",
+  "tag": "game-inferred",
+  "was": "FUN_002aba70",
+  "why": "re-inits the four SaveFiles, file index +0x58 = a1, then when idle request 5 (stepLoad)"
+ },
+ "002abb50": {
+  "name": "Memcard::startCheckAll",
+  "tag": "game-inferred",
+  "was": "FUN_002abb50",
+  "why": "re-inits the four SaveFiles, then when idle request 4 (stepCheckAll)"
+ },
+ "002abc20": {
+  "name": "SaveFile::clear",
+  "tag": "game-inferred",
+  "was": "FUN_002abc20",
+  "why": "the 0xc00 card image part of a SaveFile: 0x1c8 reserved bytes at +0xa30 zeroed, SaveData / StageSelect / GameOptions / FlagTable defaults, +0x920 0, stamp +0xa28 = -1, magic +0xbf8 = 0x20060126, sum +0xbfc = 0"
+ },
+ "002abca0": {
+  "name": "Memcard::startSave",
+  "tag": "game-inferred",
+  "was": "FUN_002abca0",
+  "why": "allocates the 0xc00 image +0x7c, SaveFile::clear + SaveFile::capture(a1), buildIconSys(a1), the icon data from 0x2c3d70(0) / 0x2c3d30(0) into +0x74 / +0x78, file index = a1, then when idle request 6 (stepSave)"
+ },
+ "002abd70": {
+  "name": "Memcard::startScan",
+  "tag": "game-inferred",
+  "was": "FUN_002abd70",
+  "why": "re-inits the four SaveFiles, then when idle request 3 (stepScan)"
+ },
+ "002abe40": {
+  "name": "SaveFile::isValid",
+  "tag": "game-inferred",
+  "was": "FUN_002abe40",
+  "why": "hasAllFiles and magic +0xbf8 == 0x20060126 and the byte sum of +0..+0xa30 equals +0xbfc"
+ },
+ "002abf00": {
+  "name": "SaveFile::hasAllFiles",
+  "tag": "game-inferred",
+  "was": "FUN_002abf00",
+  "why": "status -1 or 0: scans the 8 directory entries +0xc00 (name +0x20, size +0x10) for icon.sys 0x3c4 (bit 1), icon1.ico 0x10eb8 (bit 2) and the data file 0xc00 named after the file index (bit 4) into +0xe04; true when all three"
+ },
+ "002ac070": {
+  "name": "SaveFile::apply",
+  "tag": "game-inferred",
+  "was": "FUN_002ac070",
+  "why": "a loaded file into the game: exportTo(getSaveData()), the 0x104 block +0x920 to the block 0x29efd0 returns, and the loaded stamp 0x31ae88 = +0xa28 when GameOptions +0x4d is set, else -1"
+ },
+ "002ac110": {
+  "name": "SaveFile::exportTo",
+  "tag": "game-inferred",
+  "was": "FUN_002ac110",
+  "why": "copies SaveData / StageSelect / GameOptions / FlagTable of the file (a0) into the system data a1 with their operator= (0x2ac290 / 0x2ac260 / 0x2ac1a0 / 0x2ac170)"
+ },
+ "002ac170": {
+  "name": "FlagTable::operator=",
+  "tag": "game-inferred",
+  "was": "FUN_002ac170",
+  "why": "implicit copy assignment, 0x80 doubleword copies = 0x400 bytes (FlagTable::clear only clears 0x100: open-items)"
+ },
+ "002ac1a0": {
+  "name": "GameOptions::operator=",
+  "tag": "game-inferred",
+  "was": "FUN_002ac1a0",
+  "why": "implicit memberwise copy assignment of the 0x50 GameOptions (byte / short / int fields at sysdata.h offsets)"
+ },
+ "002ac260": {
+  "name": "StageSelect::operator=",
+  "tag": "game-inferred",
+  "was": "FUN_002ac260",
+  "why": "implicit copy assignment: four ints and the byte +0x10"
+ },
+ "002ac290": {
+  "name": "SaveData::operator=",
+  "tag": "game-inferred",
+  "was": "FUN_002ac290",
+  "why": "implicit memberwise copy assignment of the 0x4bc SaveData: byte loops of 0x65 / 0x45 / 0x27, the record table, medals"
+ },
+ "002ac3f0": {
+  "name": "SaveFile::capture",
+  "tag": "game-inferred",
+  "was": "FUN_002ac3f0",
+  "why": "the game into a file image: importFrom(getSaveData()), the 0x104 block from 0x29efd0, stamp +0xa28 = a1 index + second..month of getLocalDateTime(binary) + randNext(), then the byte sum of +0..+0xa30 into +0xbfc"
+ },
+ "002ac540": {
+  "name": "SaveFile::importFrom",
+  "tag": "game-inferred",
+  "was": "FUN_002ac540",
+  "why": "copies SaveData / StageSelect / GameOptions / FlagTable from the system data a1 into the file a0 with their operator="
+ },
+ "002ac5a0": {
+  "name": "memcardClearStamp",
+  "tag": "game-inferred",
+  "was": "FUN_002ac5a0",
+  "why": "the loaded-save stamp 0x31ae88 = -1; caller 0x2b5770"
+ },
+ "002ac5b0": {
+  "name": "memcardSetStamp",
+  "tag": "game-inferred",
+  "was": "FUN_002ac5b0",
+  "why": "the loaded-save stamp 0x31ae88 = a1 (64-bit); caller 0x2b86e0"
+ },
+ "002ac5c0": {
+  "name": "memcardGetStamp",
+  "tag": "game-inferred",
+  "was": "FUN_002ac5c0",
+  "why": "*a0 = the loaded-save stamp 0x31ae88; callers in the save menu 0x2b86e0"
+ },
+ "002ac5d0": {
+  "name": "memcardGetFlag",
+  "tag": "game-inferred",
+  "was": "FUN_002ac5d0",
+  "why": "returns the module byte 0x31ae84 (memcardInit sets it 1); meaning unknown, caller 0x2b5ab0"
+ },
+ "002ac5e0": {
+  "name": "memcardSetFlag",
+  "tag": "game-inferred",
+  "was": "FUN_002ac5e0",
+  "why": "module byte 0x31ae84 = 1; caller 0x2b6770"
+ },
+ "002ac5f0": {
+  "name": "memcardClearFlag",
+  "tag": "game-inferred",
+  "was": "FUN_002ac5f0",
+  "why": "module byte 0x31ae84 = 0"
+ },
+ "002ac600": {
+  "name": "memcardSetFlagAgain",
+  "tag": "game-inferred",
+  "was": "FUN_002ac600",
+  "why": "module byte 0x31ae84 = 1, a second copy of memcardSetFlag"
+ },
  "002ac610": {
   "name": "memcardGetState",
   "tag": "game-inferred",
   "was": "FUN_002ac610",
   "why": "returns the memcard module's sbss byte gp-0x79f0 (0x31ae80); SaveData::setDefaults seeds +0x468 from it; meaning unknown"
+ },
+ "002ac620": {
+  "name": "clearDirEntry",
+  "tag": "game-inferred",
+  "was": "FUN_002ac620",
+  "why": "memset of one 0x40 sceMcTblGetDir entry; SaveFile::init calls it for the 8 at +0xc00"
+ },
+ "002ac630": {
+  "name": "McDevice::read",
+  "tag": "game-inferred",
+  "was": "FUN_002ac630",
+  "why": "sceMcRead(fd, buf, size), last function +0x10 = 0x16, then the common sync tail: result +8 = mcErrorCode & 0xffff, -1 running, 0 done"
+ },
+ "002ac710": {
+  "name": "McDevice::write",
+  "tag": "game-inferred",
+  "was": "FUN_002ac710",
+  "why": "sceMcWrite(fd, buf, size), last function 6, common sync tail"
+ },
+ "002ac7f0": {
+  "name": "McDevice::open",
+  "tag": "game-inferred",
+  "was": "FUN_002ac7f0",
+  "why": "sceMcOpen(port +0, slot +4, path, mode), last function 2, common sync tail"
+ },
+ "002ac8d0": {
+  "name": "McDevice::mkdir",
+  "tag": "game-inferred",
+  "was": "FUN_002ac8d0",
+  "why": "sceMcMkdir(port, slot, path), last function 0xb, common sync tail"
+ },
+ "002ac9b0": {
+  "name": "McDevice::getInfo",
+  "tag": "game-inferred",
+  "was": "FUN_002ac9b0",
+  "why": "sceMcGetInfo(port, slot, type / free / format of a1 picked by the mask bits 1 / 2 / 4), last function 1, common sync tail"
+ },
+ "002acac0": {
+  "name": "McDevice::getDir",
+  "tag": "game-inferred",
+  "was": "FUN_002acac0",
+  "why": "sceMcGetDir(port, slot, path, mode, maxent, table), last function 0xd, common sync tail"
+ },
+ "002acbb0": {
+  "name": "McDevice::format",
+  "tag": "game-inferred",
+  "was": "FUN_002acbb0",
+  "why": "sceMcFormat(port, slot), last function 0x10, common sync tail"
+ },
+ "002acc90": {
+  "name": "McDevice::flush",
+  "tag": "game-inferred",
+  "was": "FUN_002acc90",
+  "why": "sceMcFlush(fd), last function 10, common sync tail"
+ },
+ "002acd60": {
+  "name": "McDevice::close",
+  "tag": "game-inferred",
+  "was": "FUN_002acd60",
+  "why": "sceMcClose(fd), last function 3, common sync tail"
+ },
+ "002ace30": {
+  "name": "McDevice::sync",
+  "tag": "game-inferred",
+  "was": "FUN_002ace30",
+  "why": "the common tail alone: sceMcSync(a1 == 0 polls), finished -> +0xc result and +8 = 0 or mcErrorCode(cmd, result) & 0xffff; running -> +8 = -1; Memcard::update polls with it"
  },
  "002acec0": {
   "name": "memcardLibEnd",
@@ -10169,6 +10493,18 @@
   "was": "FUN_002acf00",
   "why": "sceMcInit once (flag gp-0x79e0 set when it returns 0); memcardInit calls it from gameInit"
  },
+ "002acf40": {
+  "name": "McDevice::~McDevice",
+  "tag": "game-inferred",
+  "was": "FUN_002acf40",
+  "why": "CodeWarrior deleting dtor with an empty body; Memcard::~Memcard calls it with 0"
+ },
+ "002acf90": {
+  "name": "McDevice::McDevice",
+  "tag": "game-inferred",
+  "was": "FUN_002acf90",
+  "why": "port +0 = a1, slot +4 = a2, +0x10 and +8 = 0, then memcardLibInit inlined (sceMcInit once)"
+ },
  "002b00d0": {
   "name": "StageResult::getPerfectBits",
   "tag": "game-inferred",
@@ -10180,6 +10516,18 @@
   "tag": "game-inferred",
   "was": "FUN_002b0580",
   "why": "returns 0x599700, the record of the stage just played (+0x98 / +0xa8 the results SystemData::recordStageResult keeps, +0xbc set when it counts)"
+ },
+ "002c3d30": {
+  "name": "getSaveResourceAux",
+  "tag": "game-inferred",
+  "was": "FUN_002c3d30",
+  "why": "the twin of getSaveResource through vtable slot +0x28; Memcard::startSave keeps its id 0 answer at +0x78, which stepSave does not write; size or second resource, open"
+ },
+ "002c3d70": {
+  "name": "getSaveResource",
+  "tag": "game-inferred",
+  "was": "FUN_002c3d70",
+  "why": "0 when the byte 0x31ae9c is clear, else the object 0x31ae98's vtable (+0x98) slot +0x20 with a1; Memcard::startSave takes id 0 as the icon1.ico it writes (0x10eb8 bytes), buildIconSys id 1 as an icon.sys template (lighting block at +0xc); the module is unread"
  },
  "002eaff0": {
   "name": "Vif1PktManage::GetUsedSize",

@@ -85,6 +85,11 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 ## Types and layouts
 
+- **A clear loop's bound is not a byte count** (2026-11-02, TU 7): `FlagTable::clear` writes 8 ints per
+  pass with a counter `+= 8` up to 0x100 -- 256 ints, 0x400 bytes, not the 64 ints TU 5 read into it
+  (`sysdata.h` had `sizeof(SystemData)` 0x620 instead of 0x920). Check the counter's unit, and look
+  for a copy of the same type elsewhere (here the save's implicit `operator=`, 0x80 doubleword moves).
+
 - **MinGW is not "GCC layout"**: `-mms-bitfields` by default. **`long` is 32-bit on both hosts.** A
   plain `float[4]` is not a VU0 vector. Tail padding differs between the hosts. (reconstruction.md)
 - **A mid-struct pointer moves every later host offset**: asserts after it become `>=` bounds; data that
@@ -117,6 +122,12 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **When a run loses ground after a TU**, diff its log against a run of the previous commit.
 
 ## callcheck / stubgen
+
+- **Implicit copy assignments are calls in the ROM** (2026-11-02, TU 7): CodeWarrior emits
+  `SaveData::operator=` and kin as out-of-line functions, so a struct assignment shows as a missing
+  `operator=`; explain it with `// callcheck: operator= (...)` (callcheck.py accepts `=` in the names
+  since TU 7). Likewise a base constructor in an initialiser list and a deleting destructor's
+  `operator_delete`.
 
 - `// callcheck: A, B (why)`: names first, comma-separated, one parenthesis last, all on that line;
   a member destructor is `~Class`; ALL-CAPS callees read as macros and are skipped. The name list ends

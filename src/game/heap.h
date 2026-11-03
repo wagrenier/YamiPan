@@ -8,6 +8,8 @@
 #ifndef _GAME_HEAP_H
 #define _GAME_HEAP_H
 
+#include "sdk/scetypes.h"
+
 // Usage marks GameSystem::flipFrame reports; mark 2 is reset every frame.
 // The meaning of marks 0 and 1 is a guess until their setters are read.
 enum HeapMark
@@ -24,6 +26,8 @@ class Heap
 public:
     void setMark(int mark);                                              // FS2 0x001037c0
     int  markedUsage(int mark);                                          // FS2 0x00103870
+    void free(void *block);                                              // FS2 0x00103aa0
+    void *alloc(u_int size, u_int align);                                // FS2 0x00103c50
 };
 
 extern Heap gGlobalHeap;        /* bss 0x329970 */
@@ -31,5 +35,7 @@ extern Heap gGlobalHeap;        /* bss 0x329970 */
 void initGlobalHeap(int arg);                                            // FS2 0x00104600
 void shutdownGlobalHeap();                                               // FS2 0x001045a0
 void rndInit(int seed);                                                  // FS2 0x00104860
+// The next draw of the RNG (a shuffle table over an LCG), 31 bits.
+u_int randNext();                                                        // FS2 0x001046b0
 
 #endif /* _GAME_HEAP_H */

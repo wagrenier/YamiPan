@@ -9,6 +9,7 @@
 #include "game/gamehooks.h"
 #include "game/gfxtarget.h"
 #include "game/heap.h"
+#include "game/memcard.h"
 #include "game/thread.h"
 #include "sdk/eekernel.h"
 #include "sdk/eeregs.h"
@@ -357,7 +358,7 @@ int main(int argc, char **argv)
     threadSetSwitchHook(0, 0);
     threadSysShutdown();
 
-    memcardLibEnd();
+    memcardEnd();
     debugSysShutdown();
     soundShutdown();
     delete gGameSystem;

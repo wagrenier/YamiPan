@@ -150,7 +150,7 @@
 /* 00104500 0000009c */ FUN_00104500(){}
 /* 001045a0 00000058 */ shutdownGlobalHeap(){}  // game
 /* 00104600 000000ac */ initGlobalHeap(){}  // game
-/* 001046b0 00000070 */ FUN_001046b0(){}
+/* 001046b0 00000070 */ randNext(){}  // game
 /* 00104720 000000c4 */ randUnit(){}  // game
 /* 001047f0 00000068 */ FUN_001047f0(){}
 /* 00104860 000002dc */ rndInit(){}  // game
@@ -631,7 +631,7 @@
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 00121b80 00000370 */ FUN_00121b80(){}
+/* 00121b80 00000370 */ mcErrorCode(){}  // game
 
 // *****************************************************************************
 // FILE -- (library) libc
@@ -674,7 +674,7 @@
 /* 00125190 00000094 */ FUN_00125190(){}
 /* 00125228 000000b0 */ memcpy(){}  // lib-ctx
 /* 001252d8 00000104 */ FUN_001252d8(){}
-/* 001253e0 000000c0 */ FUN_001253e0(){}
+/* 001253e0 000000c0 */ memset(){}  // lib-ctx
 /* 001254a0 0000007c */ FUN_001254a0(){}
 /* 00125520 0000004c */ FUN_00125520(){}
 /* 00125570 000000a4 */ FUN_00125570(){}
@@ -725,7 +725,7 @@
 /* 00128498 00000138 */ strlen(){}  // lib-ctx
 /* 001285d0 000000d4 */ FUN_001285d0(){}
 /* 001286a8 000001b8 */ FUN_001286a8(){}
-/* 00128860 000001bc */ FUN_00128860(){}
+/* 00128860 000001bc */ strncpy(){}  // lib-ctx
 /* 00128a20 00000050 */ FUN_00128a20(){}
 /* 00128a70 00000084 */ strstr(){}  // lib-ctx
 /* 00128af8 00000f14 */ FUN_00128af8(){}
@@ -6824,7 +6824,7 @@
 /* 0029e3d0 0000011c */ FUN_0029e3d0(){}
 /* 0029e4f0 00000a7c */ FUN_0029e4f0(){}
 /* 0029ef70 0000005c */ FUN_0029ef70(){}
-/* 0029efd0 0000000c */ FUN_0029efd0(){}
+/* 0029efd0 0000000c */ getSaveExtra(){}  // game
 /* 0029efe0 00000008 */ FUN_0029efe0(){}
 /* 0029eff0 0000005c */ FUN_0029eff0(){}
 /* 0029f050 000001b0 */ FUN_0029f050(){}
@@ -6993,61 +6993,71 @@
 /* 002a9ba0 00000010 */ FUN_002a9ba0(){}
 /* 002a9bc0 00000010 */ FUN_002a9bc0(){}
 /* 002a9be0 00000088 */ FUN_002a9be0(){}
-/* 002a9c70 00000004 */ memcardLibEnd(){}  // native
+
+// *****************************************************************************
+// FILE -- game/memcard.cpp
+// *****************************************************************************
+
+/* 002a9c70 00000004 */ memcardEnd(){}  // game
 /* 002a9c80 0000002c */ memcardInit(){}  // game
-/* 002a9cb0 00000008 */ FUN_002a9cb0(){}
-/* 002a9cc0 0000010c */ FUN_002a9cc0(){}
-/* 002a9dd0 00000514 */ FUN_002a9dd0(){}
-/* 002aa2f0 00000428 */ FUN_002aa2f0(){}
-/* 002aa720 000000bc */ FUN_002aa720(){}
-/* 002aa7e0 000006f4 */ FUN_002aa7e0(){}
-/* 002aaee0 0000030c */ FUN_002aaee0(){}
-/* 002ab1f0 00000270 */ FUN_002ab1f0(){}
-/* 002ab460 00000094 */ FUN_002ab460(){}
-/* 002ab500 00000154 */ FUN_002ab500(){}
-/* 002ab660 000000dc */ FUN_002ab660(){}
-/* 002ab740 00000078 */ FUN_002ab740(){}
-/* 002ab7c0 00000230 */ FUN_002ab7c0(){}
-/* 002ab9f0 0000003c */ FUN_002ab9f0(){}
-/* 002aba30 0000003c */ FUN_002aba30(){}
-/* 002aba70 000000d4 */ FUN_002aba70(){}
-/* 002abb50 000000c8 */ FUN_002abb50(){}
-/* 002abc20 0000007c */ FUN_002abc20(){}
-/* 002abca0 000000cc */ FUN_002abca0(){}
-/* 002abd70 000000c8 */ FUN_002abd70(){}
-/* 002abe40 000000b8 */ FUN_002abe40(){}
-/* 002abf00 00000168 */ FUN_002abf00(){}
-/* 002ac070 000000a0 */ FUN_002ac070(){}
-/* 002ac110 00000060 */ FUN_002ac110(){}
-/* 002ac170 00000030 */ FUN_002ac170(){}
-/* 002ac1a0 000000c0 */ FUN_002ac1a0(){}
-/* 002ac260 00000030 */ FUN_002ac260(){}
-/* 002ac290 00000158 */ FUN_002ac290(){}
-/* 002ac3f0 0000014c */ FUN_002ac3f0(){}
-/* 002ac540 0000005c */ FUN_002ac540(){}
-/* 002ac5a0 0000000c */ FUN_002ac5a0(){}
-/* 002ac5b0 00000008 */ FUN_002ac5b0(){}
-/* 002ac5c0 0000000c */ FUN_002ac5c0(){}
-/* 002ac5d0 00000008 */ FUN_002ac5d0(){}
-/* 002ac5e0 0000000c */ FUN_002ac5e0(){}
-/* 002ac5f0 00000008 */ FUN_002ac5f0(){}
-/* 002ac600 0000000c */ FUN_002ac600(){}
+/* 002a9cb0 00000008 */ memcardRequiredKB(){}  // game
+/* 002a9cc0 0000010c */ Memcard::stepFormat(){}  // game
+/* 002a9dd0 00000514 */ Memcard::stepSave(){}  // game
+/* 002aa2f0 00000428 */ Memcard::stepLoad(){}  // game
+/* 002aa720 000000bc */ SaveFile::init(){}  // game
+/* 002aa7e0 000006f4 */ Memcard::stepCheckAll(){}  // game
+/* 002aaee0 0000030c */ Memcard::stepScan(){}  // game
+/* 002ab1f0 00000270 */ Memcard::stepReadDirs(){}  // game
+/* 002ab460 00000094 */ Memcard::stepCardInfo(){}  // game
+/* 002ab500 00000154 */ Memcard::update(){}  // game
+/* 002ab660 000000dc */ Memcard::~Memcard(){}  // game
+/* 002ab740 00000078 */ Memcard::Memcard(){}  // game
+/* 002ab7c0 00000230 */ Memcard::buildIconSys(){}  // game
+/* 002ab9f0 0000003c */ Memcard::startFormat(){}  // game
+/* 002aba30 0000003c */ Memcard::startCardInfo(){}  // game
+/* 002aba70 000000d4 */ Memcard::startLoad(){}  // game
+/* 002abb50 000000c8 */ Memcard::startCheckAll(){}  // game
+/* 002abc20 0000007c */ SaveFile::clear(){}  // game
+/* 002abca0 000000cc */ Memcard::startSave(){}  // game
+/* 002abd70 000000c8 */ Memcard::startScan(){}  // game
+/* 002abe40 000000b8 */ SaveFile::isValid(){}  // game
+/* 002abf00 00000168 */ SaveFile::hasAllFiles(){}  // game
+/* 002ac070 000000a0 */ SaveFile::apply(){}  // game
+/* 002ac110 00000060 */ SaveFile::exportTo(){}  // game
+/* 002ac170 00000030 */ FlagTable::operator=(){}  // game
+/* 002ac1a0 000000c0 */ GameOptions::operator=(){}  // game
+/* 002ac260 00000030 */ StageSelect::operator=(){}  // game
+/* 002ac290 00000158 */ SaveData::operator=(){}  // game
+/* 002ac3f0 0000014c */ SaveFile::capture(){}  // game
+/* 002ac540 0000005c */ SaveFile::importFrom(){}  // game
+/* 002ac5a0 0000000c */ memcardClearStamp(){}  // game
+/* 002ac5b0 00000008 */ memcardSetStamp(){}  // game
+/* 002ac5c0 0000000c */ memcardGetStamp(){}  // game
+/* 002ac5d0 00000008 */ memcardGetFlag(){}  // game
+/* 002ac5e0 0000000c */ memcardSetFlag(){}  // game
+/* 002ac5f0 00000008 */ memcardClearFlag(){}  // game
+/* 002ac600 0000000c */ memcardSetFlagAgain(){}  // game
 /* 002ac610 00000008 */ memcardGetState(){}  // game
-/* 002ac620 0000000c */ FUN_002ac620(){}
-/* 002ac630 000000d8 */ FUN_002ac630(){}
-/* 002ac710 000000d8 */ FUN_002ac710(){}
-/* 002ac7f0 000000e0 */ FUN_002ac7f0(){}
-/* 002ac8d0 000000d8 */ FUN_002ac8d0(){}
-/* 002ac9b0 0000010c */ FUN_002ac9b0(){}
-/* 002acac0 000000f0 */ FUN_002acac0(){}
-/* 002acbb0 000000d4 */ FUN_002acbb0(){}
-/* 002acc90 000000d0 */ FUN_002acc90(){}
-/* 002acd60 000000d0 */ FUN_002acd60(){}
-/* 002ace30 00000090 */ FUN_002ace30(){}
+/* 002ac620 0000000c */ clearDirEntry(){}  // game
+/* 002ac630 000000d8 */ McDevice::read(){}  // game
+/* 002ac710 000000d8 */ McDevice::write(){}  // game
+/* 002ac7f0 000000e0 */ McDevice::open(){}  // game
+/* 002ac8d0 000000d8 */ McDevice::mkdir(){}  // game
+/* 002ac9b0 0000010c */ McDevice::getInfo(){}  // game
+/* 002acac0 000000f0 */ McDevice::getDir(){}  // game
+/* 002acbb0 000000d4 */ McDevice::format(){}  // game
+/* 002acc90 000000d0 */ McDevice::flush(){}  // game
+/* 002acd60 000000d0 */ McDevice::close(){}  // game
+/* 002ace30 00000090 */ McDevice::sync(){}  // game
 /* 002acec0 00000034 */ memcardLibEnd(){}  // game
 /* 002acf00 00000038 */ memcardLibInit(){}  // game
-/* 002acf40 00000044 */ FUN_002acf40(){}
-/* 002acf90 0000005c */ FUN_002acf90(){}
+/* 002acf40 00000044 */ McDevice::~McDevice(){}  // game
+/* 002acf90 0000005c */ McDevice::McDevice(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 002acff0 00000040 */ FUN_002acff0(){}
 /* 002ad030 0000003c */ FUN_002ad030(){}
 /* 002ad070 00000084 */ FUN_002ad070(){}
@@ -7318,8 +7328,8 @@
 /* 002c3b70 00000038 */ FUN_002c3b70(){}
 /* 002c3bb0 0000004c */ FUN_002c3bb0(){}
 /* 002c3c00 00000130 */ FUN_002c3c00(){}
-/* 002c3d30 0000003c */ FUN_002c3d30(){}
-/* 002c3d70 0000003c */ FUN_002c3d70(){}
+/* 002c3d30 0000003c */ getSaveResourceAux(){}  // game
+/* 002c3d70 0000003c */ getSaveResource(){}  // game
 /* 002c3db0 00000058 */ FUN_002c3db0(){}
 /* 002c3e10 0000009c */ FUN_002c3e10(){}
 /* 002c3eb0 00000288 */ FUN_002c3eb0(){}
