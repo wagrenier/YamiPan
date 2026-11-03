@@ -1060,9 +1060,24 @@ isLoaded always; unload / waitLoaded / clear do nothing; compact reallocs the pa
 9 + a save field) makes the job read the packed file into the buffer's end; load then **SLDI-unpacks**
 it to the start (`sldiDecompress` 0x2d0a10: "SLDI", unpacked size +0xc, LZ runs from +0x10) and
 `PakArchive::open` 0x231520 keeps only the items whose u_short mask (entry +2) has bit `variant`.
-The pak format ("pak ", count +0x10, 0x10-byte entries from +0x20) belongs to the parser TU
-0x231410..0x231bb0 (`game/pakarchive.h` is its stand-in). **`TextTokenizer`** (0x18, only user
+The pak format is game/pakarchive.cpp (below). **`TextTokenizer`** (0x18, only user
 0x1a3a60): whitespace-separated words into a buffer of fixed capacity.
+
+**`game/pakarchive.cpp` 0x231410..0x231bb0 (2026-11-03, batch 060 with 7 names, all 17 written,
+`verify`)**: the "pak\0" reader. `PakHeader` (0x20): +4 relocated flag, +8 name base, +0xc data
+base, +0x10 count, +0x18 sub-pak count (the first entries whose data is a nested pak), +0x1c size
+(after a variant pack: data base + kept bytes; PackFile::compact keeps it); then `PakEntry`s (0x10:
++0 u16 kind, read on entry 0 only, 4 = variant masks; +2 u16 variant mask, 0 kept in place; +4 name;
++8 data; +0xc size). `relocate` 0x231980 turns the offsets into pointers once (host: S2dRef), then
+with a variant >= 0 and entry 0 of kind 4 drops the items lacking the variant bit (data null) and
+packs the rest from the data start (an item's size is the gap to the next one's data, the last
+one's its size field); it answers the variant, -1 for a bad magic, so **`PakArchive::open` with
+variant -1 answers false** for a good pak (PackJob::load tests the count). Item ids are two u16
+halves (`PakId`: index, level): `getEntry` 0x231860 answers entry[index] at level 0 and for any
+other level descends into sub-pak 0 with the same id, ending null; `findIndex` 0x231660 (struct
+returned by pointer) answers a sub-pak hit as that sub-pak's own index at level 0, so by id only
+the top pak's items are reachable (by name, `findEntry` 0x231770, all are). Lookups by name are
+strstr (the first entry whose name contains the key, own entries before the sub-paks').
 
 ## Classes
 

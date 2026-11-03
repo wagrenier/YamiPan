@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 07:43 at commit `19732e6` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 07:52 at commit `a47f4bd` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-03 07:43 at commit `19732e6` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6595**, named **1744** (26%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1495, game-inferred 887
-- context-name ledger: 2382 entries; overrides of wrong library matches: 0
-- placed in a source file: 1678/6595 in 52 files
+- game functions: **6595**, named **1751** (27%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1495, game-inferred 894
+- context-name ledger: 2389 entries; overrides of wrong library matches: 0
+- placed in a source file: 1695/6595 in 53 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **691**; stubs: **0**
+- reconstructed FS2 functions: **708**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -45,6 +45,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/heap.cpp` | 17 | 0 |
 | `src/game/memcard.cpp` | 55 | 0 |
 | `src/game/pad.cpp` | 14 | 0 |
+| `src/game/pakarchive.cpp` | 17 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
 | `src/game/progress.cpp` | 24 | 0 |
 | `src/game/s2ddata.cpp` | 9 | 0 |
@@ -63,8 +64,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 74 TUs: todo 56, verify 28
-- next: **unassigned@00231410** (frontier score 14)
+- 74 TUs: todo 56, verify 29
+- next: **game/gamepacket.cpp** (frontier score 12)
 - pinned queue: (empty)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
@@ -77,6 +78,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/heap.cpp` 17/17 -- Game code, not MSL: heap and RNG share one object (sdata 0x31a880..0x31a88c, bss 0x329970 then 0x3299c0, sbss 0x31ad80). All 17 functions written; batch 031 nam
 - verify: `game/memcard.cpp` 55/55 -- All 55 functions written (source only, not built). New this run: Memcard::stepSave (mkdir, then data / icon1.ico / icon.sys each open, write, flush, close; Save
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
+- verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
 - verify: `game/progress.cpp` 24/24 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/s2ddata.cpp` 9/9 -- Host: S2dRef<T> (s2ddata.h) is a 32-bit offset from the field itself, 0 null, implicit T* conversion, copy deleted; S2dData, S2dObject, S2dWidgetDef, S2dImage a
@@ -97,6 +99,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 07:52 `game/pakarchive.cpp` verify: PakArchive and the pak parser: PakHeader / PakEntry / PakId, relocate with the variant pack, lookups by id and by name, all 17 functions written
 - 2026-11-03 07:43 `game/fileloader.cpp` verify: FileJob, FileLoader (18 slots), PackFile with its PackJob base and TextTokenizer: all 53 written (batch 059, 45 names)
 - 2026-11-03 07:18 `game/stageobjlist.cpp` verify: the stage object registry: nine groups of name map and list, its tree and array containers; all 45 written (batch 058)
 - 2026-11-03 06:59 `game/gfxtarget.cpp` verify: display records, flip, copy packet and GS allocator set-up: all 15 written (re-pinned 0x12dfa0..0x12f190, batch 057)
@@ -104,22 +107,21 @@ Recent sessions:
 - 2026-11-03 06:16 `game/gamepaths.cpp` verify: the stage path builders and the resident init / language packs, cut out of unassigned@002681e0 (all 14 written)
 - 2026-11-03 05:50 `game/wstring.cpp` verify: The 16-bit string helpers wstrcmp, wstrstr, wstrFromAscii, wstrcpy, wstrlen: all 5 written, source-only, not built
 - 2026-11-03 05:34 `game/uigame.cpp` verify: Fourth run: the text variables (UiWidget::expandTextVariable over the held-item message table, formatTextValue with 28 value names: counts, ammo, objective, rec
-- 2026-11-03 05:15 `game/uigame.cpp` partial: Third run: setGameValue / getGameValue (all 40 kinds from the jump tables, the clock amounts), the out-of-line player hooks, stepWeaponPreview, isHighestWinsSta
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@00231410` | todo | 0/0/17 | 1.8 | 14 | 0 |
 | `game/gamepacket.cpp` | todo | 0/0/6 | 0.6 | 12 | 0 |
-| `unassigned@00296d60` | todo | 0/0/267 | 74.1 | 10 | 0 |
 | `unassigned@00142dd0` | todo | 0/0/14 | 4.6 | 10 | 0 |
+| `unassigned@00296d60` | todo | 0/0/267 | 74.1 | 10 | 0 |
 | `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 9 | 0 |
 | `unassigned@00171300` | todo | 0/0/829 | 131.7 | 9 | 0 |
-| `unassigned@00133800` | todo | 0/0/65 | 11.2 | 8 | 0 |
 | `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 8 | 0 |
+| `unassigned@00133800` | todo | 0/0/65 | 11.2 | 8 | 0 |
 | `unassigned@001953f0` | todo | 0/0/1354 | 403.4 | 7 | 0 |
 | `unassigned@00231c90` | todo | 0/0/61 | 36.3 | 7 | 0 |
-| `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 6 | 0 |
 | `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
+| `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 6 | 0 |
+| `unassigned@002908d0` | todo | 0/0/67 | 18.8 | 6 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -145,12 +147,8 @@ Recent sessions:
 | `00193880` | FUN_00193880 | 2 | - | missing | - |
 | `001d6a80` | StageSound::playNamed | 2 | game | missing | - |
 | `002e1b70` | Tim2Texture::putTex0 | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
-| `00231410` | PakArchive::getCount | 2 | game | missing | - |
 | `00152740` | rxFileCallSizeHook | 2 | native | missing | - |
-| `00231430` | PakArchive::getItemSize | 2 | game | missing | - |
 | `002c3d70` | getSaveResource | 2 | game | missing | - |
-| `00231450` | PakArchive::getSize | 2 | game | missing | - |
-| `002314f0` | PakArchive::findIndex | 2 | game | missing | - |
 | `00143510` | TexAreaList::place | 2 | game | missing | - |
 | `001e66c0` | PlayerMotion::refresh | 1 | game | missing | - |
 | `002ec660` | optionLayoutPath | 1 | game | missing | - |
@@ -165,4 +163,8 @@ Recent sessions:
 | `00148540` | soundShutdown | 1 | game | missing | sound/sound.cpp |
 | `00135330` | MasterClock::~MasterClock | 1 | game | missing | - |
 | `0012de80` | GamePacketManager::~GamePacketManager | 1 | game | missing | game/gamepacket.cpp |
+| `00152750` | rxTerm | 1 | lib-ctx | missing | game/spkrom.cpp |
+| `002d0a10` | sldiDecompress | 1 | game | missing | - |
+| `00152730` | rxFileCallLoadHook | 1 | native | missing | - |
+| `001438c0` | GsBlockMap::setRange | 1 | game | missing | - |
 

@@ -476,6 +476,22 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    asynchronous (hazards.md "Stubs and bookkeeping"). **Next picks**: the pak parser 0x231410..0x231bb0
    (`PakArchive`: now on the frontier from three TUs), `sldiDecompress` with the wide printer in
    unassigned@002b0d50, the loader's users 0x2b5dc0 / 0x2b60b0 (the stage data loads with setBuffer).
+   TU 28 (the frontier's `unassigned@00231410`, between gsutil.cpp and scene.cpp):
+   **`game/pakarchive.cpp` 0x231410..0x231bb0** pinned (17 functions, batch 060 with 7 names, **all
+   written, `verify`**; architecture.md "Modules"): `PakArchive` (the stand-in completed) and the
+   file's own `PakHeader` / `PakEntry` / `PakId`; the in-place pointers are `S2dRef`s (reused from
+   game/s2ddata.h; a shared file-ref header would be cleaner: the user's call). Checked: callcheck
+   clean, layout lint OK, g++ -Wall -Wextra clean on pakarchive / fileloader, and a host harness
+   (plain pak, variant pack with mask 0 / dropped / packed items and the kept size, bad magic, a
+   sub-pak found by name) passed. Kept as the ROM, for the user to overrule: `open(data, -1)`
+   answers false for a good pak (relocate answers the variant); ids with a non-zero high half
+   always answer null and a sub-pak hit from findIndex is its own index at level 0, so an item of
+   a sub-pak is reachable by name only; the variant pack copies over mask-0 items placed after
+   the pack point (memmove on the host). Host guards (null pak data in getItemSize / getSize /
+   getItem / getData / getName, a dropped sub-pak in relocate) stand for the ROM's reads of low EE
+   memory. The file name is the port's (no strings). **Next picks**: `sldiDecompress` with the wide
+   printer in unassigned@002b0d50, the loader's users 0x2b5dc0 / 0x2b60b0, and the other PakArchive
+   users 0x1a0ae0 / 0x1a0e70 / 0x1a1df0 (unassigned@001953f0).
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

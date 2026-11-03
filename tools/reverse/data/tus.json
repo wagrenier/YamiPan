@@ -231,6 +231,25 @@
    "status": "verify",
    "why": "Pad (update, clear, ctor, dtor, setListening), padSysInit / Update / Shutdown, PadPort::read (batches 003-004); file name a guess."
   },
+  "game/pakarchive.cpp": {
+   "notes": "All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout on the host: entry name / data are S2dRef (from game/s2ddata.h), asserted. Kept as the ROM: open with variant -1 answers false for a good pak (relocate answers the variant; PackJob::load tests the count); ids are two u16 halves (index, level) and any non-zero level answers null, findIndex answers a sub-pak hit as its own index at level 0, so sub-pak items are reachable by name only; the variant pack copies over mask-0 items after the pack point (memmove on the host). Host guards: null pak data in getItemSize / getSize / getItem / getData / getName, a null (dropped) sub-pak in relocate answers -1. Checked: callcheck clean, layout lint OK, g++ -Wall -Wextra clean on pakarchive and fileloader, scratch host harness (plain, variant, bad magic, sub-pak) passed. Not built (source-only). Next: sldiDecompress in unassigned@002b0d50, the loader users 0x2b5dc0 / 0x2b60b0, the other PakArchive users 0x1a0ae0 / 0x1a0e70 / 0x1a1df0.",
+   "ranges": [
+    [
+     "00231410",
+     "00231bb0"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 07:52",
+     "status": "verify",
+     "summary": "PakArchive and the pak parser: PakHeader / PakEntry / PakId, relocate with the variant pack, lookups by id and by name, all 17 functions written"
+    }
+   ],
+   "status": "verify",
+   "why": "the PakArchive / PakHeader run between gsutil.cpp (GsTexture ends 0x231410) and scene.cpp (gameSceneThread 0x231bb0); no source strings, named by its class"
+  },
   "game/perfmeter.cpp": {
    "notes": "Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, sprintf 0x127bf0, __extendsfdf2 0x11ba00. In retail addBar is empty and nothing allocates the stat tables, so the meter records nothing; it is kept for fidelity. RcntTimer ctor parameter order (tickRate, fieldRate, fieldsPerFrame) is a guess (CodeWarrior passes floats in f12/f13, the int in a1). Bar struct order colour/label is a guess. Bootstrap 6 needs a 3-argument sceOpen in sdk/fileio.h. callcheck.py now accepts brackets in callcheck comments (operator_new[], operator_delete[]). Next: game/rcnttimer.cpp (4 functions) or game/thread.cpp per tus.py next.",
    "ranges": [
@@ -795,6 +814,7 @@
   "unassigned@00121b80": {},
   "unassigned@001319f0": {},
   "unassigned@00171300": {},
+  "unassigned@00231410": {},
   "unassigned@0023c020": {},
   "unassigned@0023e740": {},
   "unassigned@00246230": {},

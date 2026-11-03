@@ -11033,6 +11033,48 @@
   "was": "FUN_002315c0",
   "why": "data = 0; called by PackFile::PackFile on +0xc4"
  },
+ "002315d0": {
+  "name": "PakHeader::getItemSize",
+  "tag": "game-inferred",
+  "was": "FUN_002315d0",
+  "why": "(header, id): getEntry(id)->size +0xc, -1 without an entry; only caller PakArchive::getItemSize passes its data"
+ },
+ "00231600": {
+  "name": "PakHeader::getItem",
+  "tag": "game-inferred",
+  "was": "FUN_00231600",
+  "why": "(header, id): getEntry(id)->data +8, null without an entry; only caller PakArchive::getItem"
+ },
+ "00231630": {
+  "name": "PakHeader::getName",
+  "tag": "game-inferred",
+  "was": "FUN_00231630",
+  "why": "(header, id): getEntry(id)->name +4, null without an entry; only caller PakArchive::getName"
+ },
+ "00231660": {
+  "name": "PakHeader::findIndex",
+  "tag": "game-inferred",
+  "was": "FUN_00231660",
+  "why": "(ret, header, name): id {index, 0} of the first entry whose name contains name (strstr), else the first hit in the sub-paks (entry data of the first +0x18 entries, recursive), else -1; 4-byte struct returned by pointer"
+ },
+ "00231770": {
+  "name": "PakHeader::findEntry",
+  "tag": "game-inferred",
+  "was": "FUN_00231770",
+  "why": "(header, name): the 0x10-byte entry (+0x20 + i*0x10) whose name contains name (strstr), else the sub-paks' (recursive), else null; PakArchive::getSize / getData read +0xc / +8"
+ },
+ "00231860": {
+  "name": "PakHeader::getEntry",
+  "tag": "game-inferred",
+  "was": "FUN_00231860",
+  "why": "(header, id): id low half = entry index when the high half is 0; otherwise descends into entry 0's sub-pak with the same id (recursion unrolled 3x) until one has no sub-paks: null"
+ },
+ "00231980": {
+  "name": "PakHeader::relocate",
+  "tag": "game-inferred",
+  "was": "FUN_00231980",
+  "why": "(header, variant): magic pak\\0 else -1; once (+4 flag): entry name +4 / data +8 offsets made pointers (bases +8 / +0xc), and with variant >= 0 and entry 0 kind 4 the items outside mask bit variant dropped and the rest packed (+0x1c = kept size); then each sub-pak; answers variant; PakArchive::open's"
+ },
  "00231bb0": {
   "name": "gameSceneThread",
   "tag": "game-inferred",
