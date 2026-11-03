@@ -34,7 +34,16 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    (architecture.md "Address map"); the host libm / compiler replace them, nothing to write. The
    other unread runs the frontier may pick next (0x1037c0..0x104c60 `Heap` and kin, 0x121b80,
    0x12c9b8..0x12cd20, the VU0 math 0x135a90..0x1366c0, 0x142dd0..0x144080) get the same first
-   look: library -> name + `lib_ranges`, game code -> `tus.py define` a real file.** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
+   look: library -> name + `lib_ranges`, game code -> `tus.py define` a real file.
+   TU 5: the frontier picked the 5,138-function run `unassigned@00171300` (all of 0x171300..0x2e26b4);
+   its frontier callees from `gamesystem.cpp` are scattered, so the run cut one real file out of it,
+   **`game/sysdata.cpp` 0x23af30..0x23c020** (all 37, `verify`, batch 026: SaveData / StageSelect /
+   GameOptions / FlagTable in one `SystemData` block, architecture.md "Modules"). The same cut is
+   left for the others the boot calls in that run: `gameSceneThread` 0x231bb0, `getLocalDateTime`
+   0x23de20 (its own file: 0x23c020..0x23dfa0 is VU0 / other code), the memcard group 0x2a9c70..
+   0x2acf00. Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
+   need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
+   record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
    `game/perfmeter.cpp`, `game/thread.cpp`, `game/gfxtarget.cpp`, the clocks, the heap, sound,
    `rxInit` / SPK.ROM, system data. Choices made there, for the user to overrule:
    - **Headers for TUs not written yet are minimal** (`src/game/pad.h`, `clock.h`, `heap.h`,

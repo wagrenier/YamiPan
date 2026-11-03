@@ -435,6 +435,25 @@ anchors put `Vif1PktManage`'s members under `rena_pkt_vif1pktmanage.cpp` (0x2eaf
 the end of .text, ~0x2e2000..0x2ec8e0). Result: 1,031 of 6,670 game functions in 29 files, the rest
 `(unassigned)` (0x171300.. onward is almost all unread game code).
 
+**`game/sysdata.cpp` 0x23af30..0x23c020 (TU 5, 2026-11-02, batch 026)**: one 0x620-byte block
+`gSystemData` at 0x598b30 = `SaveData` (+0, 0x4bc: 69 stage flag bytes +0x69 holding clear bits
+1 / 2 / 4 / 8 / 16 / 32 per (kind 0..2, variant 0..1) from table 0x307350, best records
+`record[3][2][30]` +0xd8 (u_int; fresh = `stageDefaultRecord` 0x296d00: kind 0 = 3599, kinds 1 / 2
+from tables 0x309ab0 / 0x309ba0 [stage][variant]; 123456 = "no record" for index -1 / -2; stage 29
+keeps the highest, every other stage the lowest), medal bytes `medals[3][2][30]` +0x3b4
+(`StageResult::getPerfectBits` 0x2b00d0: one bit per zero counter of the result 0x599700), a
+once-only byte +0x468 seeded from the memcard module's gp-0x79f0) + `StageSelect` (+0x4bc =
+0x598fec, the play record: stage 1..29 / 80..94, kind, variant; `getStageSelect` 0x23bb10 has 153
+callers) + `GameOptions` (+0x4d0 = 0x599000, 0x50 bytes: +0 sound output 0 mono / 1 stereo / 2
+surround (`SoundConfig::setOutputMode` 0x147ee0 on `gSoundConfig` gp-0x7a94), +0xa / +0xc screen
+offset (`gfxSetDisplayOffset` 0x12ead0 on `gfxGetCurrentDisplay` 0x12e050), +0x18 an index into
+the 19-step table 0x2fac20 (28..176, default 9: brightness?), `ButtonMap` +0x24) + `FlagTable`
+(+0x520 = 0x599050, 64 ints; `countListed` counts 29 listed entries, byte list 0x2fac00).
+`SystemData::recordStageResult` 0x23b630 is the after-stage update. The **language** is sdata
+0x31aad0 (default 5 = EN), codes J US KR CN Ct EN DE FR ES IT (0x2fac40); `getRegionCode` "EU",
+`getFileSuffix` "" / "_e". `randUnit` 0x104720 is the game's float RNG (97-entry shuffle over an
+LCG).
+
 ## Classes
 
 Name, vtable, vptr offset, size, file. `python rtti.py` (CodeWarrior variant, bootstrap 4, 2026-10-31)

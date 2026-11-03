@@ -100,6 +100,25 @@
    ],
    "why": "the game's rx user layer: rxTerm, rxInit, spkRomLoad, spkLocateFile, spkGetFileSize, spkLoadFile (SPK.ROM index) and gameRxMemAlloc / Realloc / Free (batches 003, 005); file name a guess."
   },
+  "game/sysdata.cpp": {
+   "notes": "Cut out of unassigned@00171300 (the frontier pick, 5138 functions) and pinned 0x23af30-0x23c020. One SystemData block of 0x620 bytes at 0x598b30: SaveData +0 (0x4bc: stage flags +0x69, records [3][2][30] +0xd8, medals [3][2][30] +0x3b4), StageSelect +0x4bc (the play record, 153 callers of getStageSelect), GameOptions +0x4d0 (0x50), FlagTable +0x520 (64 ints). Outgoing prototypes in gamehooks.h (SoundConfig and gSoundConfig, memcardGetState, randUnit, stageDefaultRecord, StageResult and getStageResult) and gfxtarget.h (GfxDisplay, gfxGetCurrentDisplay, gfxSetDisplayOffset). Data the build must define: gSoundConfig (sbss 0x31addc) and gSystemData lives here. ButtonMap::assign with action -1 reads button[-1] in the ROM: the port keeps the holder unchanged (PC note). Unknown: SaveData +0x468 / +0x3ac roles, record kinds, brightness guess for options +0x18, which of 0x23bb30 / 0x23bb40 is the save getter. Next in the same unassigned run: gameSceneThread 0x231bb0, getLocalDateTime 0x23de20, memcard 0x2a9c70..0x2acf00, each its own file via tus.py define.",
+   "ranges": [
+    [
+     "0023af30",
+     "0023c020"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-02 21:55",
+     "status": "verify",
+     "summary": "system data block: SaveData, StageSelect, GameOptions, FlagTable in SystemData 0x598b30; language and region strings; all 37 functions"
+    }
+   ],
+   "status": "verify",
+   "why": "system data module: every function between 0x23af30 and 0x23c020 works on the save data 0x598b30 (0x4bc bytes), the record 0x598fec, the options 0x599000 with their ButtonMap or the table 0x599050, or returns one of them; 0x23ae40 before it builds a string table of another struct, 0x23c020 after it is VU0 vector code"
+  },
   "game/thread.cpp": {
    "ranges": [
     [
@@ -303,6 +322,7 @@
     }
    ],
    "status": "verify"
-  }
+  },
+  "unassigned@00171300": {}
  }
 }

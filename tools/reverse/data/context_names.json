@@ -713,6 +713,12 @@
   "was": "FUN_00104600",
   "why": "(size, <= 0 means all but -size): sizes free RAM from 0x31a880..0x31a888 (else 32 MB - end - 0x2000), probes with _malloc_r / _free_r, then _malloc_r's block becomes the heap 0x329970 (0x104500)"
  },
+ "00104720": {
+  "name": "randUnit",
+  "tag": "game-inferred",
+  "was": "FUN_00104720",
+  "why": "97-entry shuffle table 0x3299c0 over an LCG (x * 0x5d588b65 + 1, sdata 0x31a88c), redrawn until (u >> 1) / 2^31 < 1.0: a float in [0, 1)"
+ },
  "00104860": {
   "name": "rndInit",
   "tag": "game-inferred",
@@ -2489,6 +2495,12 @@
   "was": "FUN_0012dee0",
   "why": "(this, buf0, size0, buf1, size1): Vif1PktManage base, vptr 0x311040 at +0x2c, registers the two 0xc0000-byte packet buffers 0x32e280 / 0x3ee280 (double buffer) and 14 lists (ids 0..13), Reset + Terminate, +0x30 open list id = -1, +0x34 skip-kick flag; GameSystem member +0x46c"
  },
+ "0012e050": {
+  "name": "gfxGetCurrentDisplay",
+  "tag": "game-inferred",
+  "was": "FUN_0012e050",
+  "why": "returns the display record 0x4ae280 + index (gp-0x7acc) * 0x540: the records gfxFlipDisplay writes"
+ },
  "0012e0e0": {
   "name": "gfxFlipDisplay",
   "tag": "game-inferred",
@@ -2506,6 +2518,12 @@
   "tag": "game-inferred",
   "was": "FUN_0012e3f0",
   "why": "gameInit: sets up two offscreen draw + clear environments (256x256 at 0x4ae7c0, 512x512 at 0x4ae280, both through sceGsSetDefDrawEnv / sceGsSetDefClear and 0x12ec10) and the VRAM managers 0x31ad9c (0x143f50, five page ranges up to 0x3700), 0x31ada0 (0x143270) and 0x31ad98 (0x2e14d0, handed to 0x2d7cf0); name provisional"
+ },
+ "0012ead0": {
+  "name": "gfxSetDisplayOffset",
+  "tag": "game-inferred",
+  "was": "FUN_0012ead0",
+  "why": "stores x / y at record +0x3c / +0x40 and rewrites the DISPLAY1 / DISPLAY2 DX / DY fields at +0x18 / +0x30 (DX = x * (2560 / +0x38) + 0x290 or 0x27c by sceGsGetGParam mode, DY = y + 0x48 or 0x32)"
  },
  "0012f190": {
   "name": "RcntTimer::reset",
@@ -9773,11 +9791,131 @@
   "was": "FUN_00231bb0",
   "why": "thread slot 1 started by gameMainThread: init calls, then forever runs the scene table 0x2fabd4 (0x18-byte entries, index gp-0x7a34) in thread slot 2 (stack from Heap::alloc), yields until it exits, then the next"
  },
+ "0023af30": {
+  "name": "StageSelect::isValid",
+  "tag": "game-inferred",
+  "was": "FUN_0023af30",
+  "why": "true when +0 (the stage) is 0..29 or 80..94 and +4 (the record kind) is 0..2; seven callers in the 0x290100..0x290590 family and 0x2604a0 pass the play record 0x598fec"
+ },
+ "0023af80": {
+  "name": "StageSelect::setDefaults",
+  "tag": "game-inferred",
+  "was": "FUN_0023af80",
+  "why": "stage 1, kind 1, variant 0, +0xc -1, byte +0x10 0; systemDataInit and the four load / new-game routines 0x2aa720 / 0x2abc20 / 0x2b5770 / 0x2b66e0 call it on 0x598fec next to SaveData::setDefaults and GameOptions::init"
+ },
+ "0023afa0": {
+  "name": "SaveData::equals",
+  "tag": "game-inferred",
+  "was": "FUN_0023afa0",
+  "why": "byte compare of two 0x4bc-byte blocks (SaveData's size, the memset in SaveData::setDefaults), 1 when equal; caller 0x267f80 compares against 0x23bb30's block"
+ },
+ "0023afe0": {
+  "name": "SaveData::markUnlock468",
+  "tag": "game-inferred",
+  "was": "FUN_0023afe0",
+  "why": "test-and-set of the byte +0x468 (seeded from memcardGetState by SaveData::setDefaults): returns true and sets it when it was 0; SystemData::recordStageResult calls it when stage flags 66 and 67 are both set; role of the byte unknown"
+ },
+ "0023b000": {
+  "name": "SaveData::stageHasVariant1",
+  "tag": "game-inferred",
+  "was": "FUN_0023b000",
+  "why": "this unused; true for stages 1..28 except 27 (0, 27, 29 and >= 30 false); SaveData::allRecordsSet uses it to decide whether the variant-1 records of a stage count"
+ },
+ "0023b040": {
+  "name": "SaveData::allRecordsSet",
+  "tag": "game-inferred",
+  "was": "FUN_0023b040",
+  "why": "for stages 1..29: returns 0 when the kind-1 and kind-2 records of variant 0 (and, where stageHasVariant1, of variant 1) both still equal stageDefaultRecord; 1 when every stage has one changed; caller 0x296430"
+ },
+ "0023b1b0": {
+  "name": "SaveData::isRecordSet",
+  "tag": "game-inferred",
+  "was": "FUN_0023b1b0",
+  "why": "getRecord(kind, variant, stage) != stageDefaultRecord(kind, variant, stage); getRecord inline: 123456 when kind or variant is -1 or stage -2, else the int at +0xd8 [kind][variant][stage] (stride 0xf0 / 0x78 / 4)"
+ },
+ "0023b280": {
+  "name": "SaveData::setDefaults",
+  "tag": "game-inferred",
+  "was": "FUN_0023b280",
+  "why": "memset 0x4bc bytes, the record table +0xd8 [3][2][30] from stageDefaultRecord, 69 stage flag bytes at +0x69 cleared, +0 / +0x3a8 / +0x3ac / +0x3b0 0, the medal bytes +0x3b4 [3][2][30] 0, +0x468 = memcardGetState(), 16 ints +0x46c and 16 bytes +0x4ac 0; called on 0x598b30 by systemDataInit and the four load / new-game routines"
+ },
+ "0023b510": {
+  "name": "SaveData::clearBit",
+  "tag": "game-inferred",
+  "was": "FUN_0023b510",
+  "why": "this unused; returns the int table 0x307350 [kind][variant] = 1, 2, 4, 8, 16, 32: the bit a cleared (kind, variant) sets in a stage's flag byte (SystemData::recordStageResult ORs it into +0x69 [stage])"
+ },
+ "0023b530": {
+  "name": "SaveData::testStageFlags",
+  "tag": "game-inferred",
+  "was": "FUN_0023b530",
+  "why": "flags = byte +0x69 [stage]; for stage < 30: mask bit 0x40 set -> all the other mask bits set, else any of them; stages >= 30 -> flags != 0; 14 callers"
+ },
+ "0023b580": {
+  "name": "SaveData::pickVariant3ac",
+  "tag": "game-inferred",
+  "was": "FUN_0023b580",
+  "why": "stores a1 into +0x3ac when 0..3, else draws randUnit() against the weights 0.2, 0.25, 0.25, 0.3 (data 0x2fabf0) and stores that index; returns it; six stage-clear style callers (with SaveData::clearBit and markUnlock468)"
+ },
+ "0023b630": {
+  "name": "SystemData::recordStageResult",
+  "tag": "game-inferred",
+  "was": "FUN_0023b630",
+  "why": "this = 0x598b30 with the play record at +0x4bc: ORs SaveData::clearBit(kind, variant) into the stage's flag byte (markUnlock468 when newly set and flags 66 and 67 are set), when the result 0x599700 +0xbc is set and stage <= 29 keeps the better of the result's +0x98 (stage 29: +0xa8; higher wins there, lower elsewhere) in the record table, ORs StageResult::getPerfectBits into the medal byte +0x3b4 [kind][variant][stage]; caller 0x2b5dc0"
+ },
+ "0023ba20": {
+  "name": "FlagTable::countListed",
+  "tag": "game-inferred",
+  "was": "FUN_0023ba20",
+  "why": "counts the nonzero ints among the 29 (sdata 0x31aacc) indices of the byte list 0x2fac00 (0..11, 13..19, 23..32); caller 0x25d160"
+ },
+ "0023ba70": {
+  "name": "FlagTable::set",
+  "tag": "game-inferred",
+  "was": "FUN_0023ba70",
+  "why": "value[a1] = a2; on the 64-int table 0x599050 (getFlagTable)"
+ },
+ "0023ba80": {
+  "name": "FlagTable::get",
+  "tag": "game-inferred",
+  "was": "FUN_0023ba80",
+  "why": "returns value[a1]; nine callers"
+ },
+ "0023ba90": {
+  "name": "FlagTable::clear",
+  "tag": "game-inferred",
+  "was": "FUN_0023ba90",
+  "why": "zeroes 64 ints (0x100 bytes); systemDataInit inlines it for 0x599050, the load / new-game routines call it"
+ },
+ "0023bad0": {
+  "name": "getFlagTable",
+  "tag": "game-inferred",
+  "was": "FUN_0023bad0",
+  "why": "returns 0x599050, the 64-int table right after the options (systemDataInit clears it)"
+ },
  "0023baf0": {
   "name": "getGameOptions",
   "tag": "game-inferred",
   "was": "FUN_0023baf0",
   "why": "returns the options record 0x599000 (62 call sites); systemDataInit fills it with GameOptions::setDefaults"
+ },
+ "0023bb10": {
+  "name": "getStageSelect",
+  "tag": "game-inferred",
+  "was": "FUN_0023bb10",
+  "why": "returns 0x598fec, the 0x14-byte play record (stage, kind, variant) after the save data; 153 callers"
+ },
+ "0023bb30": {
+  "name": "getSystemData",
+  "tag": "game-inferred",
+  "was": "FUN_0023bb30",
+  "why": "returns 0x598b30 like 0x23bb40; nine callers (0x267f80 compares it with SaveData::equals, 0x2b01a0 / 0x2c4320 the save code); which of the two getters is the save data's own is a guess"
+ },
+ "0023bb40": {
+  "name": "getSaveData",
+  "tag": "game-inferred",
+  "was": "FUN_0023bb40",
+  "why": "returns 0x598b30 like 0x23bb30; 83 callers, the stage-clear code with SaveData::clearBit / testStageFlags"
  },
  "0023bb50": {
   "name": "systemDataInit",
@@ -9785,17 +9923,95 @@
   "was": "FUN_0023bb50",
   "why": "gameInit: inits the persistent game-state block 0x598b30 (0x23b280), 0x598fec (0x23af80) and the options 0x599000 (GameOptions::setDefaults), clears the 0x100-word table 0x599050; name provisional"
  },
+ "0023bbd0": {
+  "name": "setLanguage",
+  "tag": "game-inferred",
+  "was": "FUN_0023bbd0",
+  "why": "stores a0 in sdata 0x31aad0 (gp-0x7da0), initially 5 = EN in the code table getLanguageCode reads (J, US, KR, CN, Ct, EN, DE, FR, ES, IT); caller 0x262e70"
+ },
+ "0023bbe0": {
+  "name": "getLanguage",
+  "tag": "game-inferred",
+  "was": "FUN_0023bbe0",
+  "why": "returns sdata 0x31aad0; 42 callers, most next to getLanguageCode"
+ },
+ "0023bbf0": {
+  "name": "getFileSuffix",
+  "tag": "game-inferred",
+  "was": "FUN_0023bbf0",
+  "why": "a0 == 0 -> empty string 0x3073b8, else \"_e\" 0x3073c0"
+ },
+ "0023bc20": {
+  "name": "getRegionCode",
+  "tag": "game-inferred",
+  "was": "FUN_0023bc20",
+  "why": "returns \"EU\" 0x3073c8; caller 0x2901e0"
+ },
+ "0023bc30": {
+  "name": "getLanguageCode",
+  "tag": "game-inferred",
+  "was": "FUN_0023bc30",
+  "why": "returns the string table 0x2fac40 [a0]: J, US, KR, CN, Ct, EN, DE, FR, ES, IT; 33 callers"
+ },
+ "0023bc50": {
+  "name": "GameOptions::applySound",
+  "tag": "game-inferred",
+  "was": "FUN_0023bc50",
+  "why": "SoundConfig::setOutputMode(gSoundConfig gp-0x7a94, +0 when 1 or 2, else 0): +0 is the output mode (0 mono, 1 stereo, 2 surround: setOutputMode switches sdpr2SetSurround at 2)"
+ },
+ "0023bcb0": {
+  "name": "GameOptions::applyPadAndScreen",
+  "tag": "game-inferred",
+  "was": "FUN_0023bcb0",
+  "why": "GamePad::setButtonMap(&gGameSystem->m_pad0, &buttonMap) and gfxSetDisplayOffset(gfxGetCurrentDisplay(), +0xa, +0xc): the screen position shorts"
+ },
  "0023bd00": {
   "name": "ButtonMap::setDefaults",
   "tag": "game-inferred",
   "was": "FUN_0023bd00",
   "why": "(map): writes the default 8-entry button map 6,5,4,7,3,1,2,0 (the same table GameOptions::setDefaults writes at options+0x24); GameSystem::GameSystem runs it on each pad's +0x154, also 0x12d5a0 and 0x25e260"
  },
+ "0023bd40": {
+  "name": "GameOptions::equals",
+  "tag": "game-inferred",
+  "was": "FUN_0023bd40",
+  "why": "field by field compare (+0, +8, +0xa, +0xc, +0x10, +0x14, +0x15, +0x18, +0x1c, +0x20, +0x44, +0x48, +0x4c, +0x4d, +4, then the 8 ButtonMap ints), 1 when equal; caller 0x268050 (options menu: also calls applySound)"
+ },
  "0023be70": {
   "name": "GameOptions::setDefaults",
   "tag": "game-inferred",
   "was": "FUN_0023be70",
-  "why": "(opts): 0x50-byte defaults including an 8-entry table 6,5,4,7,3,1,2,0 (button map?) at +0x24; called on 0x599000 by systemDataInit; class name provisional"
+  "why": "kept (batch 003): every option's default, ButtonMap::setDefaults inline at +0x24; +0x4d is not set"
+ },
+ "0023bef0": {
+  "name": "GameOptions::init",
+  "tag": "game-inferred",
+  "was": "GameOptions::setDefaults",
+  "why": "a lone j GameOptions::setDefaults: an out-of-line wrapper; systemDataInit and the load / new-game routines call it, gameInit calls setDefaults itself"
+ },
+ "0023bf00": {
+  "name": "ButtonMap::defaultButton",
+  "tag": "game-inferred",
+  "was": "FUN_0023bf00",
+  "why": "switch on a0 (jump table 0x3073d0): 6, 5, 4, 7, 3, 1, 2, 0 for actions 0..7 (ButtonMap::setDefaults' values), 6 otherwise; static: no this"
+ },
+ "0023bf80": {
+  "name": "ButtonMap::assign",
+  "tag": "game-inferred",
+  "was": "FUN_0023bf80",
+  "why": "finds the action already holding button a2, gives action a1 (unless -1) the button a2 and the found action a1's old button: a swap; caller 0x262e70"
+ },
+ "0023bff0": {
+  "name": "GameOptions::getBrightnessValue",
+  "tag": "game-inferred",
+  "was": "FUN_0023bff0",
+  "why": "returns the byte table 0x2fac20 [+0x18]: 19 steps 28..176 (default index 9 -> 104); brightness is a guess; callers 0x17f160 / 0x2633f0"
+ },
+ "0023c010": {
+  "name": "sysDataReturnZero",
+  "tag": "game-inferred",
+  "was": "FUN_0023c010",
+  "why": "returns 0; no callers or data references found"
  },
  "0023de20": {
   "name": "getLocalDateTime",
@@ -9809,11 +10025,23 @@
   "was": "FUN_00264790",
   "why": "libscf (clock*): converts the RTC clock (JST) in place to local time through 0x264298 / 0x264350; getLocalDateTime calls it right after sceCdReadClock; likely name"
  },
+ "00296d00": {
+  "name": "stageDefaultRecord",
+  "tag": "game-inferred",
+  "was": "FUN_00296d00",
+  "why": "kind 0 -> 3599 (0xe0f), kind 1 -> int table 0x309ab0 [stage][variant], kind 2 -> 0x309ba0 [stage][variant]: the record a fresh save holds (SaveData::setDefaults)"
+ },
  "002a9c80": {
   "name": "memcardInit",
   "tag": "game-inferred",
   "was": "FUN_002a9c80",
   "why": "gameInit's memory card setup: memcardLibInit, then gp-0x79e8 (u64) = -1 and gp-0x79ec = 1 (state of the save system, not read yet)"
+ },
+ "002ac610": {
+  "name": "memcardGetState",
+  "tag": "game-inferred",
+  "was": "FUN_002ac610",
+  "why": "returns the memcard module's sbss byte gp-0x79f0 (0x31ae80); SaveData::setDefaults seeds +0x468 from it; meaning unknown"
  },
  "002acec0": {
   "name": "memcardLibEnd",
@@ -9826,6 +10054,18 @@
   "tag": "game-inferred",
   "was": "FUN_002acf00",
   "why": "sceMcInit once (flag gp-0x79e0 set when it returns 0); memcardInit calls it from gameInit"
+ },
+ "002b00d0": {
+  "name": "StageResult::getPerfectBits",
+  "tag": "game-inferred",
+  "was": "FUN_002b00d0",
+  "why": "8 when +0 == 0, | 1 when +4 == 0, | 4 when +8 == 0, | 2 when +0xc == 0: one bit per zero counter, ORed into the save's medal byte"
+ },
+ "002b0580": {
+  "name": "getStageResult",
+  "tag": "game-inferred",
+  "was": "FUN_002b0580",
+  "why": "returns 0x599700, the record of the stage just played (+0x98 / +0xa8 the results SystemData::recordStageResult keeps, +0xbc set when it counts)"
  },
  "002eaff0": {
   "name": "Vif1PktManage::GetUsedSize",
