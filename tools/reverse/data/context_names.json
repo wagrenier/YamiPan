@@ -13193,6 +13193,18 @@
   "was": "FUN_002c4140",
   "why": "answers the sbss pointer 0x31aea0: the sound-effect player whose +0 is the effect table (count +0xc, sorted name index +0x428 / +0x42c, entries 0x30 each at +0x430) that UiLayout::playSound looks up by name and hands to SePlayer::play / stop"
  },
+ "002d4150": {
+  "name": "wstrcmp",
+  "tag": "game-inferred",
+  "was": "FUN_002d4150",
+  "why": "(const u_short *a, const u_short *b): 0 for a null or odd pointer; compares only the first wstrlen(a) units (b's length is counted and dropped), so b starting with a answers 0; 1 / -1 for the first larger / smaller unit of a. Callers 0x209d90, 0x1cb3e0 test == 0. Beside wstrstr 0x2d42a0 / wstrFromAscii 0x2d4440"
+ },
+ "002d42a0": {
+  "name": "wstrstr",
+  "tag": "game-inferred",
+  "was": "FUN_002d42a0",
+  "why": "(const u_short *hay, const u_short *needle): the first position in hay where needle's wstrlen units match, null for a null / odd pointer or a needle longer than hay; an empty needle answers hay. Caller 0x25ce30 twice. Beside wstrcmp 0x2d4150"
+ },
  "002d4440": {
   "name": "wstrFromAscii",
   "tag": "game-inferred",

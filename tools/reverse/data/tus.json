@@ -472,6 +472,25 @@
    "status": "verify",
    "why": "UiAnim::init (the track factory) right after uisequence.cpp's last function, then the 41 track classes' dtors / draw / apply (vtables 0x316540..0x316a60 in this order), the UiTrack base members step / isDone / setPlay with UiAnim::findTrack, and the classes' inline virtuals (UiWidget::refresh / getStatus, the getAnchor slots) at the end; 0x24d530 S2dData::getImage starts the S2D file"
   },
+  "game/wstring.cpp": {
+   "notes": "Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds all five; the three prototypes left uitrack.h, uitrack.cpp and uigame.cpp include wstring.h. Semantics from the asm: null or odd pointers answer 0 or null, a null source answers dst untouched, the copies answer the end of the copy (the 0 unit), dst == src copies through new[] first; wstrcmp compares only wstrlen(a) units (a prefix of b answers 0; callers test == 0); wstrstr answers hay for an empty needle. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on wstring, uitrack, uigame (RosePan SDK headers + a libvifpk stub), host harness passed. Doubt: the file name (no strings). Next in the run: getSaveResource 0x2c3d70 / getSaveResourceAux 0x2c3d30 / loadMenuPack 0x2c3e10 / getSePlayer 0x2c4140, PackTables::PackTables 0x2c0dc0, the SoundStream user 0x2b0d50..0x2b3890.",
+   "ranges": [
+    [
+     "002d4150",
+     "002d46a0"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 05:50",
+     "status": "verify",
+     "summary": "The 16-bit string helpers wstrcmp, wstrstr, wstrFromAscii, wstrcpy, wstrlen: all 5 written, source-only, not built"
+    }
+   ],
+   "status": "verify",
+   "why": "Cut out of unassigned@002b0d50 (the frontier pick, 628 functions 0x2b0d50..0x2e1b70): the game's 16-bit string helpers wstrcmp 0x2d4150, wstrstr 0x2d42a0, wstrFromAscii 0x2d4440, wstrcpy 0x2d4510, wstrlen 0x2d4650 (the run's most-called functions, 22x for wstrFromAscii). Bounded by a FontData-derived class before (ctor 0x2d4110, vtable 0x319ff0) and a scene lookup reading +0x40 tables after (0x2d46a0). No strings: the file name is a guess."
+  },
   "rx/filecd.c": {
    "ranges": [
     [
@@ -698,6 +717,7 @@
   "unassigned@00252840": {},
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
-  "unassigned@002acff0": {}
+  "unassigned@002acff0": {},
+  "unassigned@002b0d50": {}
  }
 }

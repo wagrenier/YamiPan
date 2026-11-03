@@ -10,6 +10,7 @@
 #include "game/s2ddata.h"
 #include "game/uidrawer.h"
 #include "game/uisequence.h"
+#include "game/wstring.h"
 #include "sdk/scetypes.h"
 
 // The PRIM values the shapes draw with: every one gouraud and blended,

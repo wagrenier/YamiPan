@@ -350,7 +350,7 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    `formatTextValue` 0x2612c0 (28 names, `UiTextValue`; architecture.md "Modules"). Stand-ins:
    `getPurposeText` 0x195d50 and `gMenuMemcard` (sbss 0x31ae94, data the build must define) in
    gamehooks.h, `NaviMenu::stage()` (values[113], +0x46c: the values extent is a guess),
-   `wstrFromAscii` 0x2d4440 in uitrack.h. Doubts: L / S in rWeaponL00 / rWeaponS00 read as the large
+   `wstrFromAscii` 0x2d4440 in uitrack.h (since TU 22 in `game/wstring.h`). Doubts: L / S in rWeaponL00 / rWeaponS00 read as the large
    / small layouts (both slot 8); "_C" read as caption; the table's +0x10 column is unread. Kept from
    the ROM: the navi sample "12:34:56" is not widened (16-bit garbage on screen when there is no navi
    menu). PC: no weapon message in the preview file answers nothing (the ROM divides by zero).
@@ -358,6 +358,20 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    uigame / uitrack / uisequence / uilayout / memcard (RosePan's SDK headers + a libvifpk stub); no
    harness. Next in this region: `game/stagealert.cpp`, the widget classes 0x25b8e0..0x25fa50 (the
    text widget 0x25cab0 calls expandTextVariable) and the MSL vector / tree user 0x252840..0x25b8e0.
+   TU 22 (the frontier's `unassigned@002b0d50`, 628 functions 0x2b0d50..0x2e1b70, for
+   `wstrFromAscii` x17 / `wstrcpy` / `wstrlen`): **`game/wstring.cpp` 0x2d4150..0x2d46a0** cut out
+   (5 functions, all written, `verify`, batch 053: `wstrcmp` 0x2d4150 / `wstrstr` 0x2d42a0 named;
+   architecture.md "Modules"). New `game/wstring.h`; the three prototypes left `uitrack.h`
+   (uitrack.cpp / uigame.cpp include wstring.h). The old comment "null for a null or odd dst" was
+   half the story: the copies answer the end of the copy (no caller uses it yet). Checked: callcheck
+   clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on wstring / uitrack / uigame
+   (RosePan's SDK headers + a libvifpk stub), and a host harness (prefix compare, in-place widen,
+   aliasing copy, null / odd pointers) passed. Doubt: the file name (no strings). **Next picks in the
+   run** (the brief's other frontier callees): `getSaveResource` 0x2c3d70 / `getSaveResourceAux`
+   0x2c3d30 / `loadMenuPack` 0x2c3e10 / `getSePlayer` 0x2c4140 (memcard / scene / uigame call them;
+   0x2c3d30..0x2c4148 looks like one resource-loader group), `PackTables::PackTables` 0x2c0dc0
+   (stageresult), and the SoundStream user 0x2b0d50..0x2b3890 (classes on vtables 0x311860..0x319260,
+   called from unassigned@00171300).
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

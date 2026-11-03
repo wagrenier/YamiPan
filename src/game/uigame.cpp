@@ -19,6 +19,7 @@
 #include "game/uilayout.h"
 #include "game/uisequence.h"
 #include "game/uitrack.h"
+#include "game/wstring.h"
 #include "sdk/scetypes.h"
 
 // The target the rotate-to and pin-rot tracks follow (S2dRotateRec /

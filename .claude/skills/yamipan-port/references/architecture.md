@@ -916,6 +916,19 @@ gStageScene +0xf4; ctor 0x264070 (members +0xc / +0x10 / +0x14, +0x14 a 0x3c-byt
 +0x60, 0x263f10), 0x263ed0 / 0x263f10 call 0x151330(0.01, 0.25, 0.25, obj), 0x263f80 tests
 GameOptions +0x10; 0x263b90 is empty (0x287f20).
 
+**`game/wstring.cpp` 0x2d4150..0x2d46a0 (TU 22, 2026-11-03, batch 053, all 5 written, `verify`; cut
+out of `unassigned@002b0d50`; the file name is the port's)**: the game's **16-bit strings** (the UI
+text is u_short units ending in 0). `wstrcmp` 0x2d4150, `wstrstr` 0x2d42a0, `wstrFromAscii`
+0x2d4440 (each byte widened), `wstrcpy` 0x2d4510, `wstrlen` 0x2d4650; wstrlen is inlined into
+wstrcmp / wstrstr. Every one answers 0 / null for a null or **odd** pointer, except that a null
+source leaves the copies' dst untouched and answers dst. **The copies answer the end of what they
+wrote (the 0 unit), not dst**; dst == src goes through a new[] copy. **`wstrcmp` compares only
+wstrlen(a) units** (b's length is counted and dropped): b starting with a answers 0 (callers
+0x209d90 / 0x1cb3e0 test == 0, so a prefix matches). `wstrstr`: first match, an empty needle answers
+hay (caller 0x25ce30). Before it a FontData-derived class (ctor 0x2d4110, vtable 0x319ff0 at +0x10,
+dtor 0x2d40a0; 0x2d3e20 / 0x2d4060 use FontData::nextGlyph); after it 0x2d46a0 (a lookup through
++0xc / +0x40 tables) and the flag pair 0x2d4780 / 0x2d4790 (sbss 0x31af14 = 0 / 1).
+
 ## Classes
 
 Name, vtable, vptr offset, size, file. `python rtti.py` (CodeWarrior variant, bootstrap 4, 2026-10-31)

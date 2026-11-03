@@ -311,14 +311,7 @@ enum UiPinMode
 // Stand-ins for the classes the tracks hold, from later TUs.
 
 // UiFont, the fMsg message files and the TimM sprite sheets are
-// game/uigame.h.
-
-// The game's 16-bit strings (0x2d4440.. beside the char versions).
-int      wstrlen(const u_short *s);                                      // FS2 0x002d4650: 0 for null
-u_short *wstrcpy(u_short *dst, const u_short *src);                      // FS2 0x002d4510: null src copies nothing
-// Widens a char string into dst (null for a null or odd dst); dst may be
-// src itself (copied first).
-u_short *wstrFromAscii(u_short *dst, const char *src);                   // FS2 0x002d4440
+// game/uigame.h; the 16-bit string helpers game/wstring.h.
 
 // ──────────────────────────────────────────────────────────────────────
 // The track classes, in vtable order (0x316540..0x316a60).
