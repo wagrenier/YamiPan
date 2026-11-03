@@ -23,6 +23,12 @@
   "was": "FUN_001002c0",
   "why": "Heap::free(0x329970, p); the std exception destructors free this with it, the MSL string rep 0x106b80 frees its int refcount with it"
  },
+ "001002d0": {
+  "name": "heapAllocAligned",
+  "tag": "game-inferred",
+  "was": "FUN_001002d0",
+  "why": "gGlobalHeap.alloc(size, align): the aligned operator new of the 0x40-aligned objects"
+ },
  "001002f0": {
   "name": "operator_new[]",
   "tag": "lib-context",
@@ -850,6 +856,12 @@
   "tag": "lib-context",
   "was": "FUN_00107220",
   "why": "slot 0 of 0x311000; MSL string throws pass it to __throw as the dtor"
+ },
+ "001072c0": {
+  "name": "msl_string::~string",
+  "tag": "lib-context",
+  "was": "FUN_001072c0",
+  "why": "MSL std::string deleting dtor: frees the long form"
  },
  "001076e8": {
   "name": "sceGsResetGraph",
@@ -2500,6 +2512,12 @@
   "tag": "lib-context",
   "was": "FUN_00127bf0",
   "why": "builds a string FILE (flags 0x208, size 0x7fffffff) on the stack over a0, calls the vfprintf core 0x12a3a0 with a1 and the spilled varargs, NUL-terminates: the MSL / newlib sprintf; callers pass a 1 KB buffer and a format"
+ },
+ "00127c88": {
+  "name": "sscanf",
+  "tag": "lib-context",
+  "was": "FUN_00127c88",
+  "why": "libc: called with Stream_s%02d_SE and an int pointer, answers the count"
  },
  "00127ea0": {
   "name": "strcasecmp",
@@ -10979,6 +10997,24 @@
   "was": "FUN_00171680",
   "why": "StageScene ctor new(0x2c) for +0x14: __construct_array of 5 elements of 8 bytes ({0, 0}, 0x1716c0); class name a guess, contents unread"
  },
+ "001760c0": {
+  "name": "StageObject::setupMapObject",
+  "tag": "game-inferred",
+  "was": "FUN_001760c0",
+  "why": "adds the object to the scene's lists and takes its model instance, textures and collision"
+ },
+ "001766c0": {
+  "name": "createMapObject",
+  "tag": "game-inferred",
+  "was": "FUN_001766c0",
+  "why": "picks the class of a map node by its name (o..., _dp, _ds, oGK99_01, oDC99_01)"
+ },
+ "001769e0": {
+  "name": "isGateModelName",
+  "tag": "game-inferred",
+  "was": "FUN_001769e0",
+  "why": "strcmp with oGK99_01 and oDC99_01; gate is a guess"
+ },
  "00177270": {
   "name": "BoneNode::find",
   "tag": "game-inferred",
@@ -11063,11 +11099,35 @@
   "was": "FUN_001865c0",
   "why": "deleting dtor of the vtable 0x315ae0 node base (over 0x314150 / 0x314120): frees +0x10 / +0x14 (heap 0x329970), unlinks from the parent (+0x4, its child list +0x8), orphans its children, clears its list; StageSoundSource's dtor calls it"
  },
+ "00186ee0": {
+  "name": "StageMapFile::relocate",
+  "tag": "game-inferred",
+  "was": "FUN_00186ee0",
+  "why": "parseMap's: sets the map file's six section pointers +0..+0x14 from the counts at +0x18.."
+ },
  "00190900": {
   "name": "StageNodeTree::setBoxes",
   "tag": "game-inferred",
   "was": "FUN_00190900",
   "why": "a0 StageScene +0x1c: replaces the inner object's +0x3c with a new BoxGrid over the bbx file (size 8)"
+ },
+ "00190aa0": {
+  "name": "StageNodeTree::addParticleTexture",
+  "tag": "game-inferred",
+  "was": "FUN_00190aa0",
+  "why": "pushes onto the inner object's vector; applyParticleTarget gives it the 16 textures from common01"
+ },
+ "00190ae0": {
+  "name": "StageNodeTree::setParticleFileB",
+  "tag": "game-inferred",
+  "was": "FUN_00190ae0",
+  "why": "takes the second particle file into inner +0x18 / +0x1c"
+ },
+ "00190b50": {
+  "name": "StageNodeTree::setParticleFileA",
+  "tag": "game-inferred",
+  "was": "FUN_00190b50",
+  "why": "takes the first particle file (kind 0xf at +4) into inner +0x10 / +0x14"
  },
  "00190bc0": {
   "name": "StageNodeTree::~StageNodeTree",
@@ -11435,6 +11495,12 @@
   "was": "FUN_001963d0",
   "why": "a0 a StageScene: its +0xd0 (StageMenu, 0x2308a0) when that object's first word is 2, else null; reading 2 as open is a guess"
  },
+ "00196840": {
+  "name": "StageScene::setMessages",
+  "tag": "game-inferred",
+  "was": "FUN_00196840",
+  "why": "hands the message keyword's file to the current mission"
+ },
  "00196870": {
   "name": "StageScene::getMission",
   "tag": "game-inferred",
@@ -11518,6 +11584,30 @@
   "tag": "game-inferred",
   "was": "FUN_0019aea0",
   "why": "a0 gStageScene, a1 its player (+0x78): an int compared with the rF01..rF09 / rFDF index - 1 in UiLayout::testGameState (negative clamped to 0, 0 while the map does not show the player); guess: the floor the player is on"
+ },
+ "0019af30": {
+  "name": "StageScene::addArea0",
+  "tag": "game-inferred",
+  "was": "FUN_0019af30",
+  "why": "AreaGrid::addId on +0xac, the same as its neighbours for +0xb0..+0xb8"
+ },
+ "0019b540": {
+  "name": "StageScene::setFlag84",
+  "tag": "game-inferred",
+  "was": "FUN_0019b540",
+  "why": "+0x84 = 1; the flag's meaning is unread (caller 0x236b90)"
+ },
+ "0019b740": {
+  "name": "StageScene::setBgName",
+  "tag": "game-inferred",
+  "was": "FUN_0019b740",
+  "why": "strncpy 0xf into +0x68, from the bg target's model name"
+ },
+ "0019b750": {
+  "name": "StageScene::setAreaClip",
+  "tag": "game-inferred",
+  "was": "FUN_0019b750",
+  "why": "new 0x34 object over the areaclip file into +0x58"
  },
  "0019b7a0": {
   "name": "StageScene::setScripts",
@@ -11663,6 +11753,12 @@
   "was": "FUN_001a1ca0",
   "why": "a0 StageFiles, a1 a script path: ../data/debug/ or ../data/proof/ for four prefixes (by the flags +0x124..+0x127), else ../data/; StageFiles::load and every script keyword set the loader's directory from it"
  },
+ "001a1df0": {
+  "name": "StageFiles::readMotionList",
+  "tag": "game-inferred",
+  "was": "FUN_001a1df0",
+  "why": "parseMotion's reader: splits the .mot text at line ends, each line's last backslash word is an item of the .mpk; a # line stands for a null entry"
+ },
  "001a20f0": {
   "name": "StageFiles::parseScript",
   "tag": "game-inferred",
@@ -11716,6 +11812,48 @@
   "tag": "game-inferred",
   "was": "FUN_001a4270",
   "why": "ctor of the 0x160 object getStageFiles answers (gp-0x7a74): +0 the stage loader, +4 = 1, 22 containers from +0xc; stageLoad"
+ },
+ "001a4370": {
+  "name": "fileWithSuffix",
+  "tag": "game-inferred",
+  "was": "FUN_001a4370",
+  "why": "puts getFileSuffix's text before path's extension (%s%s%s), used for the sndseh path"
+ },
+ "001a4480": {
+  "name": "pathDir",
+  "tag": "game-inferred",
+  "was": "FUN_001a4480",
+  "why": "std::string up to the last slash; empty for an empty path; used to build the directory of a model, motion or sndseh"
+ },
+ "001a5a70": {
+  "name": "msl_string::operator_plus_cstr",
+  "tag": "lib-context",
+  "was": "FUN_001a5a70",
+  "why": "MSL operator+(const char *, const string &) instance"
+ },
+ "001a5b70": {
+  "name": "msl_string::operator_plus_str",
+  "tag": "lib-context",
+  "was": "FUN_001a5b70",
+  "why": "MSL operator+(const string &, const char *) instance"
+ },
+ "001a5c70": {
+  "name": "msl_string::string_range",
+  "tag": "lib-context",
+  "was": "FUN_001a5c70",
+  "why": "MSL std::string(first, last) instance"
+ },
+ "001a6280": {
+  "name": "msl_string::rfind_char",
+  "tag": "lib-context",
+  "was": "FUN_001a6280",
+  "why": "MSL std::string::rfind(char, pos) instance, called by pathDir with '/' and -1"
+ },
+ "001a6310": {
+  "name": "msl_string::string_cstr",
+  "tag": "lib-context",
+  "was": "FUN_001a6310",
+  "why": "MSL std::string(const char *) instance"
  },
  "001d3a40": {
   "name": "StageScript::relocate",
@@ -15359,6 +15497,12 @@
   "was": "FUN_00284640",
   "why": "StageScene ctor new(0x240) four times (+0xac..+0xb8): a list at +0, 0x40 pairs at +8, +0x238 = 1; contains 0x284190 tests a point against +0x210; name a guess"
  },
+ "00286c30": {
+  "name": "StageMission::setMessages",
+  "tag": "game-inferred",
+  "was": "FUN_00286c30",
+  "why": "forwards the file to the object in its first field (0x2c41f0)"
+ },
  "002870c0": {
   "name": "StageMission::markStart",
   "tag": "game-inferred",
@@ -16799,6 +16943,30 @@
   "was": "FUN_002bb3e0",
   "why": "deleting dtor of StageScene +0xa8: deletes the objects at +4.. through their vptr +0x44 (beside PrgMcCard 0x2b9d60); name a guess"
  },
+ "002bbc10": {
+  "name": "SubSceneGateObject::setup",
+  "tag": "game-inferred",
+  "was": "FUN_002bbc10",
+  "why": "same code as SubSceneMapObject::setup, the gate class's copy"
+ },
+ "002bbdb0": {
+  "name": "SubSceneGateObject::SubSceneGateObject",
+  "tag": "game-inferred",
+  "was": "FUN_002bbdb0",
+  "why": "vtable 0x319a20, 0x2c0 bytes, for the isGateModelName nodes in a sub-scene"
+ },
+ "002bbed0": {
+  "name": "SubSceneMapObject::setup",
+  "tag": "game-inferred",
+  "was": "FUN_002bbed0",
+  "why": "the bg target's call after the ctor; finds the node called Root"
+ },
+ "002bc040": {
+  "name": "SubSceneMapObject::SubSceneMapObject",
+  "tag": "game-inferred",
+  "was": "FUN_002bc040",
+  "why": "vtable 0x319c90, 0x280 bytes, made by the bg target in a sub-scene"
+ },
  "002bc5d0": {
   "name": "KeepList::removeUnkept",
   "tag": "game-inferred",
@@ -16932,10 +17100,16 @@
   "why": "(originX, originY, width, height, GsRegionAlloc *): called once, last in gfxInitRenderTargets with (0x700, 0x700, 0x200, 0x200) and the region allocator; news about nine draw-system objects (vtables 0x31a6b0 / 0x31a680, lists of 200 via 0x241da0), floats 2048 / 512 / 2^24; what the system draws is unread, the name says only where it starts"
  },
  "002dcab0": {
-  "name": "DrawLayerList::~DrawLayerList",
+  "name": "AreaClip::~AreaClip",
   "tag": "game-inferred",
   "was": "FUN_002dcab0",
-  "why": "deleting dtor of StageScene +0x58: deletes every object of the pointer array +0x30 (count +0x2c) through vptr slot 2; beside drawSysInit; name a guess"
+  "why": "the deleting dtor StageScene's dtor calls for +0x58"
+ },
+ "002dccf0": {
+  "name": "AreaClip::AreaClip",
+  "tag": "game-inferred",
+  "was": "FUN_002dccf0",
+  "why": "built over the areaclip keyword's file: an 8 x 8 grid of index lists; was the guess DrawLayerList"
  },
  "002e1440": {
   "name": "GsRegionAlloc::~GsRegionAlloc",
@@ -16985,11 +17159,41 @@
   "was": "FUN_002e2920",
   "why": "rena's TIM2 texture (rena_2d_texture_tim2.cpp, message 0x30fdd0 in its load 0x2e26c0): stores vtable 0x31a7c0 at +0x44, clears +8 / +0xc / +0x10 / +0x3c / +0x40, loads the image; GsTexture's base (called first by its ctor, 21 callers)"
  },
+ "002e2cf0": {
+  "name": "ModelFile::isValid",
+  "tag": "game-inferred",
+  "was": "FUN_002e2cf0",
+  "why": "memcmp of the first 4 bytes with the magic at gp-0x7b48"
+ },
+ "002e2d20": {
+  "name": "ModelFile::relocate",
+  "tag": "game-inferred",
+  "was": "FUN_002e2d20",
+  "why": "relocates when the self pointer at +0x30 differs"
+ },
+ "002e2d80": {
+  "name": "ModelFile::relocateFrom",
+  "tag": "game-inferred",
+  "was": "FUN_002e2d80",
+  "why": "turns every offset of the file into a pointer against the old base"
+ },
  "002e4100": {
   "name": "RenaModel::findGroup",
   "tag": "game-inferred",
   "was": "FUN_002e4100",
   "why": "(model, rec): the part record (model +0x1c, 0x10 each) whose children range [+4, +4 + +8) (u16s, +8 non-zero) holds rec's index, null when none; walks the header's +0x2a part count; caller vcmPartTag (the group chain up from a part)"
+ },
+ "002e5200": {
+  "name": "ModelFile::getNodeCount",
+  "tag": "game-inferred",
+  "was": "FUN_002e5200",
+  "why": "answers the short at +0x1a, the count of the 0x30-byte records at +0x34"
+ },
+ "002e5210": {
+  "name": "ModelFile::createInstance",
+  "tag": "game-inferred",
+  "was": "FUN_002e5210",
+  "why": "new 0x100 object (vtable 0x31a7f0) over record index, or over the record called name"
  },
  "002eaff0": {
   "name": "Vif1PktManage::GetUsedSize",

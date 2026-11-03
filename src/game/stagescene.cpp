@@ -5,7 +5,10 @@
 
 #include <ctype.h>
 #include <float.h>
+#include <stdio.h>
 #include <string.h>
+
+#include <string>
 
 #include "game/clock.h"
 #include "game/fileloader.h"
@@ -13,6 +16,7 @@
 #include "game/gamehooks.h"
 #include "game/gamesystem.h"
 #include "game/gsutil.h"        /* Tim2Texture */
+#include "game/pakarchive.h"
 #include "game/seplayer.h"      /* StreamTable */
 #include "game/stageobjlist.h"
 #include "game/stageresult.h"   /* getInitItemForLanguage */
@@ -382,7 +386,7 @@ StageObject *StageScene::getActiveCharacter()
 // The ROM's +0x124 second array is freed from 0x10 bytes before it
 // (CodeWarrior's array header); the host frees what it allocated.
 // FS2 0x0019bbe0
-// callcheck: ~StageObjectList, ~ScenePairTable, ~SceneRecordBuckets, ~StageNodeTree, ~StageSound, ~DemoStream, ~SceneRender, ~KeepList, ~Clock, ~MenuProgHolder, ~MenuProgSet, ~AreaGrid, ~SceneBufferSet, ~StageParty, ~ScenePool, ~PauseMenuState, ~SceneBoxList, ~SceneUiState, ~StageAlert, ~DrawLayerList, ~StageMission, ~SceneDirector, ~SceneModel, operator_delete, operator_delete[] (the delete-expressions; the printer through its virtual dtor)
+// callcheck: ~StageObjectList, ~ScenePairTable, ~SceneRecordBuckets, ~StageNodeTree, ~StageSound, ~DemoStream, ~SceneRender, ~KeepList, ~Clock, ~MenuProgHolder, ~MenuProgSet, ~AreaGrid, ~SceneBufferSet, ~StageParty, ~ScenePool, ~PauseMenuState, ~SceneBoxList, ~SceneUiState, ~StageAlert, ~AreaClip, ~StageMission, ~SceneDirector, ~SceneModel, operator_delete, operator_delete[] (the delete-expressions; the printer through its virtual dtor)
 
 StageScene::~StageScene()
 {
@@ -446,7 +450,7 @@ StageScene::~StageScene()
     if (routePlayer != nullptr)
         routePlayer->destroy();
     delete[] array54;
-    delete drawLayers;
+    delete areaClip;
 
     if (isSubScene) {
         if (subScene != nullptr)
@@ -543,10 +547,10 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
     routePlayer = nullptr;
     _50        = 0;
     array54    = nullptr;
-    drawLayers = nullptr;
-    _5c        = 0;
+    areaClip = nullptr;
+    lpt      = nullptr;
     player = nullptr;
-    _7c = _80 = _84 = 0;
+    _7c = _80 = flag84 = 0;
     owned[0] = owned[1] = owned[2] = nullptr;
     block98 = nullptr;
     buffers = nullptr;
@@ -588,7 +592,7 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
         party = nullptr;
     }
 
-    _38             = 0;
+    bgScript        = nullptr;
     subSceneRequest = 0;
     subScene        = nullptr;
     subSceneBlock   = nullptr;
@@ -1167,3 +1171,732 @@ void StageScene::addArea1(int id)
 {
     areas[StageArea_1]->addId(id);
 }
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x0019af30
+// callcheck: addId
+
+void StageScene::addArea0(int id)
+{
+    areas[StageArea_0]->addId(id);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x0019b540
+
+void StageScene::setFlag84()
+{
+    flag84 = 1;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x0019b740
+
+void StageScene::setBgName(const char *name)
+{
+    strncpy(bgName, name, sizeof(bgName) - 1);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x0019b750
+// callcheck: operator_new
+
+void StageScene::setAreaClip(void *file)
+{
+    areaClip = new AreaClip(file);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x00196840
+
+void StageScene::setMessages(void *file)
+{
+    currentMission()->setMessages(file);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The keyword handlers: what they cut a path with, and the names they make.
+
+static const char kPathSlash[]        = "/";            /* data 0x3040e8 */
+static const char kPathDot[]          = ".";            /* data 0x3040f0 */
+static const char kExtMotionPack[]    = ".mpk";         /* data 0x3040f8 */
+static const char kExtTexturePack[]   = ".tpk";         /* data 0x304108 */
+static const char kExtTexture[]       = ".tm2";         /* data 0x304110 */
+static const char kModelNothing[]     = "nothing";      /* data 0x304100 */
+static const char kMotionLineEnds[]   = "\r\n";         /* data 0x303d48 */
+static const char kMotionPathSep[]    = "\\";           /* data 0x304198 */
+static const char kLanguageSep[]      = "_";            /* data 0x304010 */
+static const char kLanguageNone[]     = "";             /* data 0x304008 */
+static const char kLanguageCodeCt[]   = "Ct";           /* data 0x304000 */
+static const char kStreamDir[]        = "streamEU/";    /* data 0x303ef0 */
+static const char kFsmDir[]           = "../data/sound/msg/"; /* data 0x304060 */
+static const char kStreamName[]       = "Stream_s%02d_SE";    /* data 0x304050 */
+static const char kStreamFile[]       = "Stream_s%02d_SE%s.sth"; /* data 0x3040a0 */
+static const char kFsmFile[]          = "SC%02d.fsm";   /* data 0x304088 */
+static const char kFsmFileLanguage[]  = "SC%02d_%s.fsm"; /* data 0x304078 */
+// The targets' names: the particle textures' first; a door's parts.
+static const char kParticleFirstTexture[] = "common01"; /* data 0x303fa8 */
+static const char kDoorPartA[]        = "_dp";          /* data 0x303ff0 */
+static const char kDoorPartB[]        = "_ds";          /* data 0x303ff8 */
+
+// A path's stack buffers in the handlers (0x100 or 0x108 in the ROM,
+// unchecked).
+constexpr int kScriptPathSize = 0x100;
+// The textures the particle target takes from common01 on.
+constexpr int kParticleTextures = 0x10;
+// The particle files the target needs.
+constexpr int kParticleFiles = 2;
+
+// The current language's code for a file name, empty for none. Inline in
+// the ROM (parseTexture, parseMessage, parseSndsth, the font keyword).
+static const char *languageCode()
+{
+    int language = getLanguage();
+    if (language == Language_Ct)
+        return kLanguageCodeCt;
+    if (language < 0 || language >= Language_Count)
+        return kLanguageNone;
+    return getLanguageCode(language);
+}
+
+// The index of the last dot after the last slash; -1 none. text is copied
+// to out with its 0 (inline in the callers).
+static int copyFindExtension(char *out, const char *text)
+{
+    int dot = -1;
+    for (int i = 0;; i++) {
+        char c = out[i] = text[i];
+        if (c == '/')
+            dot = -1;
+        else if (c == '.')
+            dot = i;
+        else if (c == '\0')
+            break;
+    }
+    return dot;
+}
+
+// path with _<language> before its extension (in out), path itself with no
+// language code. Inline in the ROM, see languageCode.
+static const char *languageFile(char *out, const char *path)
+{
+    const char *code = languageCode();
+    if (code == nullptr || code[0] == '\0')
+        return path;
+    int dot = copyFindExtension(out, path);
+    if (dot >= 0)
+        out[dot] = '\0';
+    strcat(out, kLanguageSep);
+    strcat(out, code);
+    if (dot >= 0)
+        strcat(out, path + dot);
+    return out;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// path with the options' file suffix before its extension (in out), path
+// itself with an empty suffix.
+// FS2 0x001a4370
+// callcheck: getGameOptions, getFileSuffix
+
+static const char *fileWithSuffix(char *out, const char *path)
+{
+    const char *suffix = getFileSuffix(getGameOptions()->_04);
+    if (suffix[0] == '\0')
+        return path;
+    char name[kScriptPathSize];
+    int dot = copyFindExtension(name, path);
+    if (dot < 0) {
+        sprintf(out, "%s%s", name, suffix);     /* data 0x304220 */
+    }
+    else {
+        name[dot] = '\0';
+        sprintf(out, "%s%s%s", name, suffix, path + dot); /* data 0x304218 */
+    }
+    return out;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// path up to its last slash. PC: with no slash the ROM builds a range ending
+// before its start; here it is empty.
+// FS2 0x001a4480
+// callcheck: rfind_char, string_cstr, string_range (std::string)
+
+static std::string pathDir(const std::string &path)
+{
+    size_t slash = path.rfind('/');
+    if (path.empty() || slash == std::string::npos)
+        return std::string();
+    return path.substr(0, slash);
+}
+
+// The name of a path: its last word, up to the first dot. It lives in parts
+// (inline in every handler that names what it loaded).
+static const char *cutFileStem(StringList &parts, const char *path)
+{
+    parts.split(path, kPathSlash);
+    parts.splitString(*parts.tail()->value, kPathDot);
+    return parts.head->value->m_text;
+}
+
+// A new[]'d copy (inline in the handlers).
+static char *copyText(const char *text)
+{
+    char *copy = new char[strlen(text) + 1];
+    strcpy(copy, text);
+    return copy;
+}
+
+// The m_dir this leaves is the temporary's, as in the ROM: nothing reads it
+// before the next setDir.
+void StageFiles::enterDirOf(const char *path)
+{
+    std::string dir = loader->m_dir + pathDir(path) + kPathSlash;
+    loader->setDir(dir.c_str());
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// A script/ path in the second pass is a texture of the init pack, named
+// after the path plus the language. Any other path the first pass lists,
+// and the second makes a Tim2Texture of, once per name.
+// FS2 0x001a1430
+// callcheck: strtok, strstr, getGameOptions, getLanguage, getLanguageCode, strcat, FUN_001a5a60, split, tail, splitString, operator_new, FUN_001a4cd0, ~StringList, FUN_00189840, strcpy (languageFile, the lists' ctor, new and insert, StringMap::find, setDir)
+
+bool StageFiles::parseTexture()
+{
+    const char *path = strtok(nullptr, kScriptSeparators);
+    if (path == nullptr)
+        return false;
+
+    if (strstr(path, kScriptPrefix) == path && !listPass) {
+        char file[kScriptPathSize];
+        StringList parts;
+        const char *name = cutFileStem(parts, languageFile(file, path));
+        Tim2Texture *texture = new Tim2Texture(getInitItem21());
+        if (textures.insert(name, texture) == nullptr)
+            delete texture;
+        return true;
+    }
+
+    if (listPass) {
+        loader->setDir(dataDir(path));
+        loader->addFile(path);
+        return true;
+    }
+
+    void *image = loader->getItem(loader->findIndex(path));
+    if (image == nullptr)
+        return false;
+    StringList parts;
+    const char *name = cutFileStem(parts, path);
+    if (textures.find(name) == nullptr)
+        textures.insert(name, new Tim2Texture(image));
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// model PATH [NAME [NAME2]]: a model and its .tpk beside it, whose .tm2 go
+// into textures under the names the model lists; "nothing" keeps its place
+// in the list with a null. One name is the model's; with two the first is
+// the alternate name and the second the model's.
+// FS2 0x001a0e70
+// callcheck: strtok, strcmp, FUN_001a5db0, FUN_001a5a60, split, strcpy, strcat, ~StringList, operator_new, FUN_001a4cd0, FUN_00189840, FUN_001a5ed0, tail, splitString, strlen, operator_new[], pathDir, string_cstr, operator_plus_cstr, operator_plus_str, ~string, operator_delete[], PakArchive, ~PakArchive, String (the lists, new and insert, enterDirOf, copyText, String's inline dtor)
+
+bool StageFiles::parseModel()
+{
+    const char *path = strtok(nullptr, kScriptSeparators);
+    if (path == nullptr)
+        return false;
+    const char *name = strtok(nullptr, kScriptSeparators);
+    const char *name2 = name != nullptr ? strtok(nullptr, kScriptSeparators) : nullptr;
+
+    if (strcmp(path, kModelNothing) == 0) {
+        if (!listPass)
+            models.pushBack(nullptr);
+    }
+    else {
+        char packPath[kScriptPathSize];
+        {
+            StringList parts;
+            parts.split(path, kPathDot);
+            strcpy(packPath, parts.head->value->m_text);
+            strcat(packPath, kExtTexturePack);
+        }
+        loader->setDir(dataDir(path));
+        if (listPass) {
+            loader->addFile(path);
+            loader->addFile(packPath);
+            return true;
+        }
+
+        void *item = loader->getItem(loader->findIndex(path));
+        if (item == nullptr)
+            return false;
+        models.pushBack(item);
+        void *pack = loader->getItem(loader->findIndex(packPath));
+        if (pack == nullptr)
+            return false;
+        ModelFile *model = (ModelFile *)item;
+        if (!model->isValid())
+            return false;
+        model->relocate();
+
+        enterDirOf(path);
+        PakArchive archive;
+        archive.open(pack, 0);
+        for (int i = 0; i < model->textureCount; i++) {
+            const char *textureName = model->textureNames[i];
+            String file(textureName);
+            file.append(kExtTexture);
+            void *image = archive.getItem(archive.findIndex(file.m_text));
+            if (image == nullptr)
+                return false;
+            if (textures.find(textureName) == nullptr)
+                textures.insert(textureName, new Tim2Texture(image));
+        }
+    }
+
+    if (!listPass) {
+        char *modelName;
+        char *altName = nullptr;
+        if (name == nullptr) {
+            StringList parts;
+            modelName = copyText(cutFileStem(parts, path));
+        }
+        else if (name2 == nullptr) {
+            modelName = copyText(name);
+        }
+        else {
+            altName = copyText(name);
+            modelName = copyText(name2);
+        }
+        modelAltNames.pushBack(altName);
+        modelNames.pushBack(modelName);
+    }
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// motion PATH: a text listing motions and the .mpk beside it that holds
+// them.
+// FS2 0x001a0ae0
+// callcheck: strtok, FUN_001a5a60, split, strcpy, strcat, ~StringList, pathDir, string_cstr, operator_plus_cstr, operator_plus_str, ~string, operator_new, FUN_001a59f0, FUN_001a5a00, FUN_001a5ff0, FUN_001a5ed0, tail, splitString, strlen, operator_new[], PakArchive, ~PakArchive (the lists, enterDirOf, cutFileStem, copyText)
+
+bool StageFiles::parseMotion()
+{
+    const char *path = strtok(nullptr, kScriptSeparators);
+    if (path == nullptr)
+        return false;
+
+    char packPath[kScriptPathSize];
+    {
+        StringList parts;
+        parts.split(path, kPathDot);
+        strcpy(packPath, parts.head->value->m_text);
+        strcat(packPath, kExtMotionPack);
+    }
+    loader->setDir(dataDir(path));
+    if (listPass) {
+        loader->addFile(path);
+        loader->addFile(packPath);
+        return true;
+    }
+
+    int index = loader->findIndex(path);
+    void *text = loader->getItem(index);
+    if (text == nullptr)
+        return false;
+    void *pack = loader->getItem(loader->findIndex(packPath));
+    if (pack == nullptr)
+        return false;
+
+    enterDirOf(path);
+    StageList<void *> *list = new StageList<void *>;
+    PakArchive archive;
+    archive.open(pack, 0);
+    if (!readMotionList((const char *)text, &archive, loader->getItemSize(index), list)) {
+        delete list;
+        return false;
+    }
+    motionLists.pushBack(list);
+
+    StringList parts;
+    motionNames.pushBack(copyText(cutFileStem(parts, path)));
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x001a1df0
+// callcheck: operator_new[], memset, strncpy, FUN_001a5a60, split, operator_delete[], FUN_001a5db0, tail, ~StringList (the text copy, the lists)
+
+bool StageFiles::readMotionList(const char *text, PakArchive *pack, int size,
+                                StageList<void *> *list)
+{
+    // A 0-terminated copy of the item.
+    char *copy = new char[size + 1];
+    memset(copy, 0, size + 1);
+    strncpy(copy, text, size);
+    StringList lines;
+    lines.split(copy, kMotionLineEnds);
+    delete[] copy;
+
+    for (StringList::Node *node = lines.head; node != nullptr; node = node->next) {
+        const char *line = node->value->m_text;
+        if (line[0] == kScriptComment) {
+            if (!listPass)
+                list->pushBack(nullptr);
+            continue;
+        }
+        StringList parts;
+        parts.split(line, kMotionPathSep);
+        const char *name = parts.tail()->value->m_text;
+        if (listPass) {
+            if (pack == nullptr)
+                loader->addFile(name);
+            continue;
+        }
+        void *item = pack != nullptr ? pack->getItem(pack->findIndex(name))
+                                     : loader->getItem(loader->findIndex(name));
+        if (item == nullptr)
+            return false;
+        list->pushBack(item);
+    }
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x001a0950
+// callcheck: strtok, strcpy, FUN_001a5db0, FUN_001a5a60, split, tail, splitString, strlen, operator_new[], FUN_001a5ed0, ~StringList (setDir, the lists, cutFileStem, copyText)
+
+bool StageFiles::parseMap()
+{
+    const char *path = strtok(nullptr, kScriptSeparators);
+    if (path == nullptr)
+        return false;
+    loader->setDir(dataDir(path));
+    if (listPass) {
+        loader->addFile(path);
+        return true;
+    }
+
+    void *map = loader->getItem(loader->findIndex(path));
+    if (map == nullptr)
+        return false;
+    maps.pushBack(map);
+    {
+        StringList parts;
+        mapNames.pushBack(copyText(cutFileStem(parts, path)));
+    }
+    ((StageMapFile *)map)->relocate();
+    return true;
+}
+
+// A table the sound layer takes (the same test as SePlayer::setTable).
+static bool isSeTable(const SeTable *table)
+{
+    return memcmp(table->magic, "SEDT", sizeof(table->magic)) == 0
+        && !(table->version < kSeTableVersion);
+}
+
+// Lists the file of a bank in the first pass; adds its item to list in the
+// second, when it loaded. Inline in the ROM.
+void StageFiles::takeBankFile(const char *file, StageList<void *> *list)
+{
+    const char *name = file[0] != '\0' ? file : nullptr;
+    if (listPass) {
+        loader->addFile(name);
+        return;
+    }
+    void *item = loader->getItem(loader->findIndex(name));
+    if (item != nullptr)
+        list->pushBack(item);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// sndseh PATH: an effect table and its banks' files. The first pass needs
+// the table to list them, so it loads the table here.
+// FS2 0x001a0580
+// callcheck: strtok, fileWithSuffix, strcpy, startLoad, FUN_001a5db0, pathDir, string_cstr, operator_plus_cstr, operator_plus_str, ~string, operator_new, FUN_001a59f0, FUN_001a5ff0 (setDir, the lists, enterDirOf)
+
+bool StageFiles::parseSndseh()
+{
+    const char *path = strtok(nullptr, kScriptSeparators);
+    if (path == nullptr)
+        return false;
+    char buffer[kScriptPathSize];
+    const char *file = fileWithSuffix(buffer, path);
+
+    loader->setDir(dataDir(file));
+    int index;
+    if (listPass) {
+        index = loader->addFile(file);
+        loader->startLoad();
+        loader->waitLoaded(kWaitArg, kWaitShowLoading);
+    }
+    else {
+        index = loader->findIndex(file);
+    }
+    SeTable *table = (SeTable *)loader->getItem(index);
+    if (table == nullptr)
+        return false;
+    sndsehs.pushBack(table);
+
+    enterDirOf(file);
+    StageList<void *> *bankFiles = new StageList<void *>;
+    if (isSeTable(table)) {
+        int bankCount = 0;
+        for (int i = 0; i < kSeBanks; i++) {
+            if (table->banks[i].file[0] != '\0')
+                bankCount++;
+        }
+        for (int i = 0; i < bankCount; i++) {
+            const SeBankInfo &bank = table->banks[i];
+            takeBankFile(bank.file, bankFiles);
+            if (bank.isStream)
+                takeBankFile(bank.streamFile, bankFiles);
+        }
+    }
+    sndsehLists.pushBack(bankFiles);
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// sndsth Stream_sNN_SE: the stage's stream table and its .fsm. The first
+// pass also loads the table and lists its banks' files. (The ROM copies each
+// path onto itself after building it, nothing else.)
+// FS2 0x001a0040
+// callcheck: strtok, sscanf, getGameOptions, getFileSuffix, sprintf, strcpy, startLoad, stdtIsRelocated, stdtEntryCount, getLanguage, getLanguageCode (setDir, StreamTable::relocate and languageCode inline)
+
+bool StageFiles::parseSndsth()
+{
+    const char *name = strtok(nullptr, kScriptSeparators);
+    if (name == nullptr)
+        return false;
+    int stage;
+    if (sscanf(name, kStreamName, &stage) != 1)
+        return false;
+    sprintf(streamTablePath, kStreamFile, stage, getFileSuffix(getGameOptions()->_04));
+    loader->setDir(kStreamDir);
+
+    if (listPass) {
+        loader->addFile(streamTablePath);
+        loader->startLoad();
+        loader->waitLoaded(kWaitArg, kWaitShowLoading);
+        StreamTable *table = (StreamTable *)loader->getData(streamTablePath);
+        if (table == nullptr || memcmp(table->magic, "StDT", sizeof(table->magic)) != 0)
+            return false;
+        table->relocate();
+        for (int i = 0; i < table->bankCount; i++)
+            loader->addFile(table->banks[i].name);
+    }
+
+    // The second sscanf reads the stage back out of the name just built.
+    if (sscanf(streamTablePath, kStreamName, &stage) != 1)
+        return false;
+    const char *code = languageCode();
+    if (code == nullptr || code[0] == '\0')
+        sprintf(fsmPath, kFsmFile, stage);
+    else
+        sprintf(fsmPath, kFsmFileLanguage, stage, code);
+    loader->setDir(kFsmDir);
+    if (listPass)
+        loader->addFile(fsmPath);
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// A stage's only: a sub-scene lists the file and takes nothing.
+// FS2 0x0019fdf0
+// callcheck: strtok, getGameOptions, getLanguage, getLanguageCode, strcat, strcpy (languageFile, setDir)
+
+bool StageFiles::parseMessage()
+{
+    const char *path = strtok(nullptr, kScriptSeparators);
+    if (path == nullptr)
+        return false;
+    char buffer[kScriptPathSize];
+    const char *file = languageFile(buffer, path);
+
+    loader->setDir(dataDir(file));
+    if (listPass) {
+        loader->addFile(file);
+    }
+    else if (!gStageScene->isSubScene) {
+        void *messages = loader->getItem(loader->findIndex(file));
+        if (messages == nullptr)
+            return false;
+        gStageScene->setMessages(messages);
+    }
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The node tree takes kParticleTextures textures, in the order they were
+// added, from common01 on, then the first two particle files. PC: the ROM
+// reads through a null node when fewer than that follow common01.
+// FS2 0x0019f140
+// callcheck: strcmp
+
+bool StageFiles::applyParticleTarget()
+{
+    StageNodeTree *tree = gStageScene->nodeTree;
+    StringMap<Tim2Texture *>::Node *node = textures.first;
+    while (node != nullptr && strcmp(node->key, kParticleFirstTexture) != 0)
+        node = node->next;
+    if (node == nullptr)
+        return false;
+    for (int i = 0; i < kParticleTextures && node != nullptr; i++, node = node->next)
+        tree->addParticleTexture(node->value);
+    if (particles.count < kParticleFiles)
+        return false;
+    StageList<void *>::Node *file = particles.head;
+    tree->setParticleFileA(file->value);
+    tree->setParticleFileB(file->next->value);
+    return true;
+}
+
+// The record of the door called name; -1 none (inline in applyBgTarget).
+static int findDoorRecord(const char *name)
+{
+    for (int i = 0; i < kDoorRecords; i++) {
+        if (strcmp(gDoorRecords[i].name, name) == 0)
+            return i;
+    }
+    return -1;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Every model of the block: its nodes, last first, become the stage's map
+// objects (a sub-scene's own, lighter classes), then the scene takes the
+// model's name, the script and the areaclip beside it; last the first lpt.
+// A collision file per model is required (the ROM reads through a null node
+// otherwise; kept).
+// FS2 0x0019f680
+// callcheck: strcmp, strstr, heapAllocAligned (the door search, the objects' aligned operator new)
+
+bool StageFiles::applyBgTarget()
+{
+    StageScene *scene = gStageScene;
+    StageList<void *>::Node *model = models.head;
+    StageList<char *>::Node *name = modelNames.head;
+    StageList<void *>::Node *collision = collisions.head;
+    StageList<StageScript *>::Node *script = scripts.head;
+    StageList<void *>::Node *clip = areaclips.head;
+
+    for (; model != nullptr; model = model->next, collision = collision->next, name = name->next) {
+        ModelFile *file = (ModelFile *)model->value;
+        void *collisionFile = collision->value;
+
+        for (int i = file->getNodeCount() - 1; i >= 0; i--) {
+            ModelInstance *instance = file->createInstance(i, nullptr);
+            const char *objectName = instance->node->name;
+
+            if (!scene->isSubScene) {
+                StageObject *object = createMapObject(objectName, collisionFile);
+                if (object == nullptr)
+                    continue;
+                if (object->getKind() == StageObject_Door) {
+                    int record = findDoorRecord(objectName);
+                    object->m_doorRecord = record < 0 ? 0 : record;
+                }
+                object->setupMapObject(objectName, instance, &textures, collisionFile);
+            }
+            else if (strstr(objectName, kDoorPartA) != nullptr
+                     || strstr(objectName, kDoorPartB) != nullptr) {
+                SubSceneDoorObject *object = new SubSceneDoorObject(1);
+                object->setup(objectName, instance, &textures, collisionFile);
+                int record = findDoorRecord(objectName);
+                if (record >= 0)
+                    object->m_recordValue = gDoorRecords[record].value;
+            }
+            else if (isGateModelName(objectName)) {
+                SubSceneGateObject *object = new SubSceneGateObject(1);
+                object->setup(objectName, instance, &textures, collisionFile);
+            }
+            else {
+                SubSceneMapObject *object = new SubSceneMapObject(1);
+                object->setup(objectName, instance, &textures, collisionFile);
+            }
+        }
+
+        scene->setBgName(name->value);
+        if (script != nullptr) {
+            scene->bgScript = script->value;
+            script = script->next;
+        }
+        if (clip != nullptr) {
+            scene->setAreaClip(clip->value);
+            clip = clip->next;
+        }
+    }
+
+    if (lpts.count > 0) {
+        LptFile *lpt = (LptFile *)lpts.head->value;
+        if (lpt->magic == kLptMagic) {
+            lpt->magic = kLptRelocated;
+            lpt->data.set((char *)lpt + lpt->data.rel);
+        }
+        scene->lpt = lpt;
+    }
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Template instances of this file, one source in game/stagelist.h (a few
+// more use the host's <string>):
+//   FS2 0x001a4960  StringMap::StringMap
+//   FS2 0x001a4980  StringMap::~StringMap
+//   FS2 0x001a4ac0  StringMap::StringMap
+//   FS2 0x001a4ae0  StringMap::~StringMap
+//   FS2 0x001a4b70  StringMap::insert
+//   FS2 0x001a4c20  StringMap::StringMap
+//   FS2 0x001a4c40  StringMap::~StringMap
+//   FS2 0x001a4cd0  StringMap::insert
+//   FS2 0x001a4d80  StringMap::at
+//   FS2 0x001a4e20  StringMap::Node::~Node
+//   FS2 0x001a4e80  StringMap::find
+//   FS2 0x001a5180  StringMap::insert
+//   FS2 0x001a51f0  StringMap::Node::~Node
+//   FS2 0x001a5250  StringMap::find
+//   FS2 0x001a52d0  StringMap::insert (the search)
+//   FS2 0x001a5550  StringMap::insert
+//   FS2 0x001a55c0  StringMap::Node::~Node
+//   FS2 0x001a5620  StringMap::insert (the search)
+//   FS2 0x001a58a0  StageList::StageList
+//   FS2 0x001a58b0  StageList::~StageList
+//   FS2 0x001a5910  StageList::StageList
+//   FS2 0x001a5920  StageList::~StageList
+//   FS2 0x001a5980  StageList::StageList
+//   FS2 0x001a5990  StageList::~StageList
+//   FS2 0x001a59f0  StageList::StageList
+//   FS2 0x001a5a00  StageList::~StageList
+//   FS2 0x001a5a60  StringList's base constructor (StringList::StringList)
+//   FS2 0x001a5a70  operator + (const char *, const std::string &)
+//   FS2 0x001a5b70  operator + (const std::string &, const char *)
+//   FS2 0x001a5c70  std::string (first, last)
+//   FS2 0x001a5d00  StageList::pushBack
+//   FS2 0x001a5db0  StageList::pushBack
+//   FS2 0x001a5e60  StageList::clear
+//   FS2 0x001a5ed0  StageList::pushBack
+//   FS2 0x001a5f80  StageList::clear
+//   FS2 0x001a5ff0  StageList::pushBack
+//   FS2 0x001a60a0  StageList::clear
+//   FS2 0x001a6110  StageList::pushBack (the tail search)
+//   FS2 0x001a6140  StageList::pushBack
+//   FS2 0x001a6210  StageList::clear
+//   FS2 0x001a6280  std::string::rfind (char, position)
+//   FS2 0x001a6310  std::string (const char *)
+//   FS2 0x001a6390  StageList::pushBack (the first node)
+//   FS2 0x001a6420  StageList::pushBack (the first node)
+//   FS2 0x001a64b0  StageList::pushBack (the tail search)
+//   FS2 0x001a64e0  StageList::pushBack (the first node)
+//   FS2 0x001a6570  StageList::pushBack (the tail search)
+//   FS2 0x001a65a0  StageList::pushBack (the first node)
+//   FS2 0x001a6630  StageList::pushBack (the tail search)
+//   FS2 0x001a6660  StageList::pushBack (the first node)
+//   FS2 0x001a66f0  StageList::Node::Node
+//   FS2 0x001a6710  StageList::Node::Node
+//   FS2 0x001a6730  StageList::Node::Node
+//   FS2 0x001a6750  StageList::Node::Node
+//   FS2 0x001a6770  StageList::Node::Node
+//   FS2 0x001a6790  StageList::pushBack (the tail search)

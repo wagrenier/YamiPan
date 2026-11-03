@@ -140,46 +140,52 @@ SoundTrack::SoundTrack()
     setBuffer(kSoundTrackBuffer, nullptr);
 }
 
+// One body for the two inlined copies of the ROM.
+void StreamTable::relocate()
+{
+    if (stdtIsRelocated(this))
+        return;
+    StreamTable *t = this;
+    char *base = (char *)t;
+    t->banks.set(base + t->banks.rel);
+    for (int i = 0; i < t->bankCount; i++) {
+        StBank &b = t->banks[i];
+        b.name.set(base + t->bankStringBase + b.name.rel);
+        b.file.set(base + t->bankStringBase + b.file.rel);
+    }
+    t->strings.set(base + t->strings.rel);
+    for (int i = 0; i < t->stringCount; i++) {
+        S2dRef<const char> &str = t->strings[i];
+        str.set(base + t->stringBase + str.rel);
+    }
+    // An entry's subtitle key is a strings index, < 0 none.
+    for (int i = 0; i < t->count; i++) {
+        SeEntry &e = t->entries[i];
+        if (e.subtitleKey.rel < 0)
+            e.subtitleKey.set(nullptr);
+        else
+            e.subtitleKey.set(t->strings[e.subtitleKey.rel].get());
+    }
+    char *names = base + t->nameBase;
+    t->names.set(base + t->names.rel);
+    for (int i = 0; i < stdtEntryCount(t); i++) {
+        SeEntry &e = t->entries[i];
+        e.name.set(names + e.name.rel);
+    }
+    for (int i = 0; i < t->nameCount; i++) {
+        SeName &n = t->names[i];
+        n.name.set(names + n.name.rel);
+    }
+    t->relocated = 1;
+}
+
 // FS2 0x00290d60
 bool SoundTrack::setTable(void *file)
 {
     if (!isMagic((const char *)file, 'S', 't', 'D', 'T'))
         return false;
     m_table = (StreamTable *)file;
-    StreamTable *t = m_table;
-    char *base = (char *)t;
-    if (!stdtIsRelocated(t)) {
-        t->banks.set(base + t->banks.rel);
-        for (int i = 0; i < t->bankCount; i++) {
-            StBank &b = t->banks[i];
-            b.name.set(base + t->bankStringBase + b.name.rel);
-            b.file.set(base + t->bankStringBase + b.file.rel);
-        }
-        t->strings.set(base + t->strings.rel);
-        for (int i = 0; i < t->stringCount; i++) {
-            S2dRef<const char> &str = t->strings[i];
-            str.set(base + t->stringBase + str.rel);
-        }
-        // An entry's subtitle key is a strings index, < 0 none.
-        for (int i = 0; i < t->count; i++) {
-            SeEntry &e = t->entries[i];
-            if (e.subtitleKey.rel < 0)
-                e.subtitleKey.set(nullptr);
-            else
-                e.subtitleKey.set(t->strings[e.subtitleKey.rel].get());
-        }
-        char *names = base + t->nameBase;
-        t->names.set(base + t->names.rel);
-        for (int i = 0; i < stdtEntryCount(t); i++) {
-            SeEntry &e = t->entries[i];
-            e.name.set(names + e.name.rel);
-        }
-        for (int i = 0; i < t->nameCount; i++) {
-            SeName &n = t->names[i];
-            n.name.set(names + n.name.rel);
-        }
-        t->relocated = 1;
-    }
+    m_table->relocate();
     return true;
 }
 

@@ -135,10 +135,12 @@ static_assert(offsetof(SeName, name) == 4, "SeName::name");
 constexpr int   kSeBanks         = 16;
 constexpr float kSeTableVersion  = 1.2f;   // the oldest one setTable takes
 
-// A bank's record (0x40): only the stream flag is read.
+// A bank's record (0x40). Banks are counted by their non-empty names
+// (StageFiles::parseSndseh).
 struct SeBankInfo
 {
-    u_char _00[0x30];
+    char   file[0x18];          // FS2 +0x00: the bank's file (StageFiles::parseSndseh loads it)
+    char   streamFile[0x18];    // FS2 +0x18: a stream bank's second file
     u_char isStream;            // FS2 +0x30: a stream bank (SePlayer::m_streams), else a voice bank
     u_char _31[0xf];
 };
@@ -240,6 +242,10 @@ struct StreamTable
     S2dRef<SeName> names;       // FS2 +0x34
     u_char  _38[8];
     SeEntry entries[1];         // FS2 +0x40: count
+
+    // The file's offsets become pointers, once (inline in the ROM:
+    // SoundTrack::setTable, StageFiles::parseSndsth).
+    void relocate();
 
     // The entry called name; null none. A linear search, inline in the ROM
     // (StageSound::isCuePlaying / findCue / playMusic).

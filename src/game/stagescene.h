@@ -65,7 +65,7 @@ class RoutePlayer;
 class Tim2Texture;              // game/gsutil.h
 struct AreaGrid;
 struct ClearSequence;
-struct DrawLayerList;
+struct AreaClip;
 struct GameOverSequence;
 struct MenuProgHolder;
 struct MenuProgSet;
@@ -87,11 +87,13 @@ struct UiShowFlags;             // game/uiwidget.h
 class FileLoader;               // game/fileloader.h
 class StageEvent;               // game/gamehooks.h
 class StageFade;                // game/gamehooks.h
+class PakArchive;               // game/pakarchive.h
 class StageFiles;
 class StageObject;              // game/gamehooks.h
 class StageObjectList;          // game/stageobjlist.h
 class StageSound;               // game/stagesound.h
 struct KeepList;                // game/gamehooks.h
+struct LptFile;                 // game/gamehooks.h
 struct StageCollisionFace;      // game/gamehooks.h
 struct StageParty;              // game/gamehooks.h
 struct StagePlayer;             // game/gamehooks.h
@@ -138,6 +140,8 @@ struct StageMission
     ~StageMission();                                                     // FS2 0x00287820: deleting
     // The start time (+0xac) = the scene clock's seconds (beginPlay).
     void markStart();                                                    // FS2 0x002870c0
+    // Forwards the message file to the object in the first field.
+    void setMessages(void *file);                                        // FS2 0x00286c30
 
     u_char  _00[0x4];
     u_short purposeText[1];     // FS2 +0x4: 16-bit, 0-terminated (extent unread)
@@ -206,11 +210,18 @@ struct StageScene
     void *getSubSceneBlock();                                            // FS2 0x00195d70
     // The stage's menu while it is open; null otherwise.
     StageMenu *getOpenMenu();                                            // FS2 0x001963d0
-    // AreaGrid::addId on the sound grid (+0xb8) / the second (+0xb0) and
-    // third (+0xb4) grids.
+    // AreaGrid::addId on the sound grid (+0xb8) / the second (+0xb0),
+    // third (+0xb4) and first (+0xac) grids.
     void addSoundArea(int id);                                           // FS2 0x0019ae30
     void addArea2(int id);                                               // FS2 0x0019ae40
     void addArea1(int id);                                               // FS2 0x0019ae90
+    void addArea0(int id);                                               // FS2 0x0019af30
+    void setFlag84();                                                    // FS2 0x0019b540
+    // The bg target's: the last model's name, its areaclip.
+    void setBgName(const char *name);                                    // FS2 0x0019b740
+    void setAreaClip(void *file);                                        // FS2 0x0019b750
+    // The message keyword's file goes to the current mission.
+    void setMessages(void *file);                                        // FS2 0x00196840
     // A stage whose StageEvent is in its active state.
     bool isEventActive();                                                // FS2 0x001954c0
 
@@ -246,22 +257,22 @@ struct StageScene
     SceneRender        *render;          // FS2 +0x2c
     KeepList           *keepList;        // FS2 +0x30: a stage's
     StageViewStack     *views;           // FS2 +0x34
-    int                 _38;             // FS2 +0x38: zero (unread)
+    StageScript        *bgScript;        // FS2 +0x38: the bg target's last script (unread)
     StageScript        *scripts[2];      // FS2 +0x3c, +0x40: setScripts
     int                *scriptSlots;     // FS2 +0x44: one per scripts[0]->slotCount
     void               *route;           // FS2 +0x48: the rute file (setRoute)
     RoutePlayer        *routePlayer;     // FS2 +0x4c: setRoute
     int                 _50;             // FS2 +0x50: zero (unread)
     u_char             *array54;         // FS2 +0x54: delete[]
-    DrawLayerList      *drawLayers;      // FS2 +0x58
-    int                 _5c;             // FS2 +0x5c: zero (unread)
+    AreaClip           *areaClip;        // FS2 +0x58: setAreaClip
+    LptFile            *lpt;             // FS2 +0x5c: the bg target's
     Clock              *clock;           // FS2 +0x60: paused while a menu runs
     int                 _64;             // FS2 +0x64: zero (unread)
-    u_char              _68[0x10];       // FS2 +0x68: not set by the ctor
+    char                bgName[0x10];    // FS2 +0x68: setBgName; not set by the ctor
     StagePlayer        *player;          // FS2 +0x78
     int                 _7c;             // FS2 +0x7c: zero (unread)
     int                 _80;             // FS2 +0x80: zero (unread)
-    int                 _84;             // FS2 +0x84: zero (unread)
+    int                 flag84;          // FS2 +0x84: setFlag84 (unread)
     StageParty         *party;           // FS2 +0x88: a stage's
     SceneOwnedObject   *owned[3];        // FS2 +0x8c..+0x94
     void               *block98;         // FS2 +0x98: deleted (unread)
@@ -432,6 +443,16 @@ private:
     bool parseSndseh();                                                  // FS2 0x001a0580
     bool parseSndsth();                                                  // FS2 0x001a0040
     bool parseMessage();                                                 // FS2 0x0019fdf0
+    // A .mot's lines: each names an item of pack, or of the loader without
+    // a pack (only parseMotion calls it, with one); a # line stands for a
+    // null entry. The first pass only lists. False on a missing item.
+    bool readMotionList(const char *text, PakArchive *pack, int size,
+                        StageList<void *> *list);                        // FS2 0x001a1df0
+    // The loader's directory = its own + path's (inline in parseModel,
+    // parseMotion, parseSndseh).
+    void enterDirOf(const char *path);
+    // A bank's file in parseSndseh (inline in the ROM).
+    void takeBankFile(const char *file, StageList<void *> *list);
 };
 
 // An StDT stream table's header (beside its other reader 0x1a0040, which

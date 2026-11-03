@@ -23,6 +23,7 @@
 #include "game/seplayer.h"
 #include "game/stageloop.h"
 #include "game/stageobjlist.h"
+#include "game/stagelist.h"
 #include "game/stagenode.h"
 #include "game/stagesound.h"
 #include "game/streamring.h"
@@ -197,6 +198,8 @@ class StageCollision;
 // StageScene read; where the subclasses use an offset differently, a union
 // holds both.
 // layout: host -- EE: vptr at +0 (getKind is slot 123, vtable +0x1f4).
+class Tim2Texture;              // game/gsutil.h
+struct ModelInstance;
 class StageObject
 {
 public:
@@ -208,6 +211,10 @@ public:
     // Slot 3 (vtable +0x14): the object's matrix, row 1 its facing axis,
     // row 3 its position (StageSound's listener); a plain stub until its TU.
     const sceVu0FVECTOR *getMatrix();                                    // FS2 vtable +0x14
+    // A new map object takes its node: the scene's lists, instance,
+    // textures, collision.
+    void setupMapObject(const char *name, ModelInstance *instance,
+                        StringMap<Tim2Texture *> *textures, void *collision); // FS2 0x001760c0
 
     // This is the scene's player (gStageScene->player).
     bool isPlayer();                                                     // FS2 0x00215ef0
@@ -245,7 +252,9 @@ public:
         int    m_count;         // FS2 +0x20c: an item's count
         StageCollision **m_collisions; // FS2 +0x20c: a Root object's meshes
     };
-    u_char _210[0x98];
+    u_char _210[0x88];
+    int    m_doorRecord;        // FS2 +0x298: a door's gDoorRecords index (StageFiles::applyBgTarget)
+    u_char _29c[0xc];
     int    m_doorState;         // FS2 +0x2a8: a door's StageDoorState
     u_char _2ac[0x54];
     StageObject *m_linked;      // FS2 +0x300: the object a Kind9 / Kind11 listener hears through (StageSound)
@@ -455,6 +464,11 @@ struct StageNodeTree
     ~StageNodeTree();                                                    // FS2 0x00190bc0: deleting
     // Replaces the inner object's BoxGrid with a new one over a bbx file.
     void setBoxes(void *bbx);                                            // FS2 0x00190900
+    // The particle target's: the 16 textures from common01, then its first
+    // two particle files (which is which is unread).
+    void addParticleTexture(Tim2Texture *texture);                       // FS2 0x00190aa0
+    void setParticleFileA(void *file);                                   // FS2 0x00190b50
+    void setParticleFileB(void *file);                                   // FS2 0x00190ae0
 };
 
 // +0x2c: tex areas, an AreaGrid and a 0x5a10 table; its dtor puts the
@@ -519,11 +533,118 @@ struct CollisionFile
 };
 static_assert(sizeof(CollisionFile) == 4, "CollisionFile: only the magic so far");
 
-// +0x58: a pointer array (+0x30, count +0x2c) of objects deleted through
-// their vptr. layout: host.
-struct DrawLayerList
+// +0x58: built over the areaclip keyword's file (setAreaClip): an 8 x 8 grid
+// of index lists (0x2db080 picks the file's 0x40-byte records per cell), a
+// pointer array (+0x30, count +0x2c) of objects deleted through their vptr.
+// layout: host (EE 0x34).
+struct AreaClip
 {
-    ~DrawLayerList();                                                    // FS2 0x002dcab0: deleting
+    explicit AreaClip(void *file);                                       // FS2 0x002dccf0
+    ~AreaClip();                                                         // FS2 0x002dcab0: deleting
+};
+
+// A map file (the map keyword). relocate sets its six section pointers
+// +0x0..+0x14 in place: their TU must not write 8-byte pointers into them.
+// layout: host (nothing read here).
+struct StageMapFile
+{
+    void relocate();                                                     // FS2 0x00186ee0
+};
+
+// A node's record in a model file (0x30 bytes). EE layout: it lives in the
+// file.
+struct ModelFileNode
+{
+    int                _00;     // FS2 +0x00
+    S2dRef<const char> name;    // FS2 +0x04: a map model's: the object it becomes
+};
+static_assert(offsetof(ModelFileNode, name) == 4, "ModelFileNode::name");
+
+// What ModelFile::createInstance makes (vtable 0x31a7f0, 0x100 bytes,
+// 0x80-aligned): only the record is read here.
+// layout: host -- EE: the record at +0xc.
+struct ModelInstance
+{
+    ModelFileNode *node;        // FS2 +0xc
+};
+
+// A model file (the model keyword). EE layout: the file itself; relocate
+// (its TU, unassigned@002e2970) turns the offsets into pointers in place,
+// so the fields read here are S2dRef.
+struct ModelFile
+{
+    bool isValid();                                                      // FS2 0x002e2cf0: the magic at gp-0x7b48
+    void relocate();                                                     // FS2 0x002e2d20
+    int  getNodeCount();                                                 // FS2 0x002e5200
+    // A new instance of node index, or of the node called name when name
+    // is not null.
+    ModelInstance *createInstance(u_int index, const char *name);        // FS2 0x002e5210
+
+    u_char  _00[0x1e];
+    u_short textureCount;       // FS2 +0x1e
+    u_char  _20[0x1c];
+    S2dRef<S2dRef<const char> > textureNames; // FS2 +0x3c: textureCount, each a .tm2 of the .tpk without its extension
+};
+static_assert(offsetof(ModelFile, textureCount) == 0x1e, "ModelFile::textureCount");
+static_assert(offsetof(ModelFile, textureNames) == 0x3c, "ModelFile::textureNames");
+
+// An lpt file (the lpt keyword): magic kLptMagic until applyBgTarget made
+// +8 a pointer, then kLptRelocated.
+constexpr u_int kLptMagic     = 0x0074706c;     // "lpt"
+constexpr u_int kLptRelocated = 0x0054504c;     // "LPT"
+struct LptFile
+{
+    u_int        magic;         // FS2 +0x0
+    int          _04;           // FS2 +0x4
+    S2dRef<void> data;          // FS2 +0x8: file: an offset from the header
+};
+static_assert(offsetof(LptFile, data) == 8, "LptFile::data");
+
+// A door's record (0x38 bytes, kDoorRecords of them; bss 0x537d80, filled
+// at run time), found by its map object's name.
+constexpr int kDoorRecords = 0x87;
+struct DoorRecord
+{
+    char name[0x34];            // FS2 +0x00: extent unread
+    int  value;                 // FS2 +0x34: SubSceneDoorObject::m_recordValue (unread)
+};
+static_assert(sizeof(DoorRecord) == 0x38, "DoorRecord: EE 0x38");
+extern DoorRecord gDoorRecords[kDoorRecords];   /* bss 0x537d80 */
+
+// The stage's map object for a model's node called name; null none. The
+// class comes from the name.
+StageObject *createMapObject(const char *name, void *collision);         // FS2 0x001766c0
+// oGK99_01 and oDC99_01 ("gate" is a guess).
+bool isGateModelName(const char *name);                                  // FS2 0x001769e0
+
+// The map objects of a sub-scene (the bg target; vtables 0x319c90 and
+// 0x319a20, operator new 0x280 / 0x2c0 aligned 0x40). The ctor's argument is
+// always 1 here.
+// layout: host
+class SubSceneMapObject
+{
+public:
+    explicit SubSceneMapObject(int arg);                                 // FS2 0x002bc040
+    void setup(const char *name, ModelInstance *instance,
+               StringMap<Tim2Texture *> *textures, void *collision);     // FS2 0x002bbed0
+};
+// layout: host
+class SubSceneGateObject
+{
+public:
+    explicit SubSceneGateObject(int arg);                                // FS2 0x002bbdb0
+    void setup(const char *name, ModelInstance *instance,
+               StringMap<Tim2Texture *> *textures, void *collision);     // FS2 0x002bbc10
+};
+// A _dp / _ds node (a door's parts). Its constructor is inline in the ROM:
+// the base's, then the vtables 0x314ef0 / 0x314f14 / 0x314f2c. layout: host
+// -- EE 0x2c0.
+class SubSceneDoorObject : public SubSceneMapObject
+{
+public:
+    explicit SubSceneDoorObject(int arg) : SubSceneMapObject(arg), m_recordValue(0) {}
+
+    int m_recordValue;          // FS2 +0x280: DoorRecord::value
 };
 
 // +0x9c: eight blocks from +0x18. layout: host.

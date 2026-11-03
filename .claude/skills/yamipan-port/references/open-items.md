@@ -970,6 +970,36 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    path_language inline: the same code in the font keyword), then the apply targets 0x19f680,
    0x19f230, 0x19f140, 0x19f020, 0x19ddf0, 0x19d9e0 (one of them fills `groups`), then update /
    draw / setupCameras / enterSubScene / the pad tests / getFloor.
+   **Fourth run (2026-11-03, batch 082, 35 names; 17 more written, 56 in stagescene.cpp, and the
+   template instances listed at the end of that file, still `partial`)**: all the keyword handlers
+   (`parseTexture`, `parseModel`, `parseMotion` with `readMotionList` 0x1a1df0, `parseMap`,
+   `parseSndseh` with `fileWithSuffix` 0x1a4370, `parseSndsth`, `parseMessage`), `pathDir` 0x1a4480,
+   `applyParticleTarget`, `applyBgTarget`, and the scene's `addArea0`, `setFlag84`, `setBgName`,
+   `setAreaClip`, `setMessages`. `StreamTable::relocate` (seplayer.h / .cpp) now holds the body the
+   ROM inlines in both `SoundTrack::setTable` and `parseSndsth`. `DrawLayerList` is **`AreaClip`**
+   (0x2dccf0 takes the areaclip file; ctor added), `StageScene` +0x38 `bgScript`, +0x5c `lpt`, +0x68
+   `bgName`, +0x84 `flag84`. New stand-ins in gamehooks.h: `ModelFile`, `ModelFileNode`,
+   `ModelInstance`, `StageMapFile`, `LptFile`, `DoorRecord` / `gDoorRecords` (bss 0x537d80, filled at
+   run time: the build must define it and its filler is unread), `createMapObject`,
+   `isGateModelName`, `SubSceneMapObject`, `SubSceneGateObject`, `SubSceneDoorObject`;
+   `StageObject::m_doorRecord` +0x298; `SeBankInfo` got its two file names. `ModelFile` and `LptFile`
+   use S2dRef: **the ModelFile TU's relocate must write S2dRef, not 8-byte pointers** (the same goes
+   for `StageMapFile::relocate`, six pointers at +0..+0x14). Choices (unattended): `pathDir` answers
+   empty with no slash (the ROM builds a reversed range); `applyParticleTarget` stops at the end of
+   the map when fewer than 16 textures follow common01 (the ROM reads through null); the handlers'
+   stack path buffers stay unchecked at 0x100 as in the ROM; `enterDirOf` leaves `FileLoader::m_dir`
+   dangling as the ROM does, harmless because only `setDir` touches it (grep before changing that).
+   `getGameOptions()->_04` is the argument of `getFileSuffix`: rename `_04` when that option is read.
+   Guessed names: ModelInstance, ModelFile (the file's magic at gp-0x7b48 is unread), the gate class
+   (oGK99_01, oDC99_01), setFlag84 (caller 0x236b90 unread), setParticleFileA / B (which is which is
+   unread), DoorRecord +0x34's meaning. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only
+   -Wall clean on stagescene (only the known rena_pkt_vif1pktmanage.h:87 errors) and seplayer; a
+   scratch test of languageFile, fileWithSuffix and pathDir passes; nothing built or run. **Next for
+   this TU**: `applyMapTarget` 0x19ddf0 (0x1228 bytes) with its door / item helpers 0x19d0c0
+   (makes an item object: table 0x574c10, 0xa0 entries of 0x20) and 0x19d4e0, then `applyBgMotionTarget`
+   0x19f230, `applyItemTarget` 0x19f020, `applySoundTarget` 0x19d9e0 (one of them fills `groups`),
+   then update 0x199400 / draw 0x198970 / setupCameras 0x199f00 / enterSubScene 0x195e10 / the pad
+   tests / getFloor.
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
