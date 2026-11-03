@@ -1262,6 +1262,41 @@ the slots but keeps next page, so placement goes round robin across frames. PC: 
 uploads into GS memory (the no-GS-memory rule), so the drawer keeps its `TexAreaList *` only to
 pass along; `UiDrawer::m_texList`, `UiLayout::draw` and `UiDrawer::begin` now take the type.
 
+**`game/stageloop.cpp` 0x17f150..0x17fce0 (TU 43, 2026-11-03, batch 073 with 45 names, all 9
+written, `verify`; the file name is the port's)**: the **stage loop**. The menu flow **0x2b60b0**
+builds the stage's loader (a `PackFile` on `stagePackPath` with a 0x1800000 heap buffer, or a bare
+`FileLoader`), hands it to **`setStageLoader`** 0x17fc90 (sbss gp-0x7a78; deletes the old one), and
+starts **`stageThread`** 0x17f160 in **ThreadSlot_Game (3)** with the stage script's path (0x5997c0,
+`stageScriptPath`), then waits for the slot and sets the loader to 0. `stageThread`: clock mode
+(`StageResult::begin`: Countdown on stage 29, CountUp when `StageSelect::_10`, else None),
+`GameSystem::beginStage` 0x12cce0 (heap mark, meter reset), a **`StageSound`** (0x314, sbss
+gp-0x7a6c: SE player, four streams, 0x40 effect slots; one per stage, handed to every scene),
+**`stageLoad`** 0x17fb90 (deletes and rebuilds **`StageFiles`** 0x160 over the loader, sbss
+gp-0x7a74 = `getStageFiles`, and the **`StageScene`** 0x130 = `gStageScene` gp-0x7a7c; then
+`loadCommon` (spotlight / shadow_00), `loadList` (../data/listfile/s%02dlist.lst) or the empty
+sub-scene list, `load(script)`, `setupCameras`, `StageObjectList::rebalance`), the **e screen and,
+with hints on, the h screen**, `beginPlay`, `StageParty::resetSaved` (scene +0x88), the frame copy's
+**ALPHA FIX = the options' brightness** (`GfxCopyPacket` +0x114) and the meter on. **Per frame**:
+`StageScene::update` 0x199400, `draw(getActiveCharacter())` 0x198970, `StageResult::update` into
+packet list 10, then one of: **game over** (`isGameOver`: scene +0x118 and 0x2b1c50() == 5) ->
+`stageGameOverMenu` 0x17f890; **cleared** (`isCleared`: +0x11c and 0x2b1620() == 2) ->
+`stageCleared` 0x17f7c0 (notice dialog when `findStageMovie` < 0) and the loop ends; **a sub-scene
+request** (scene +4) -> the scene parks in gp-0x7a70 and a `StageScene(true, null)` over the same
+files plays (`enterSubScene` with the parent's +0xec event slot 3), back when `isSubSceneDone` (+0
+set, +8 null: sound unmuted); **start** (`wantsPauseMenu`, pad 0 bit 0x800) -> `stagePauseMenu`
+0x17f970 (thread 0x20ad20 in slot 4: 0 resume, 1 restart, 2 continue, 3 quit, 4 navi jump);
+**select** (`wantsMapMenu`, bit 0x100) -> the map menu 0x20afe0 / 0x20afa0 (thread 0x20b010). Every
+menu is bracketed the same way (inline in the ROM): `KeepList::removeUnkept` on scene +0x30,
+`StageResult::paused`, meter off, ALPHA FIX 0x80, the scene clock (+0x60) paused; menus poll with
+`threadYield(1)` + `StageScene::drawPaused` 0x198fc0. A restart / continue runs **`stageRestart`**
+0x17fa70: party ids saved (0x598b20), `StageSound::stopAll` and wait `isStopped`, `stageLoad`, party
+restored, the e screen only while `!StageResult::hasAttemptFlag`. **How the stage ended goes to
+`StageSelect::exitKind`** (+0xc, was `_0c`; `StageExit`: -1 none, 0 game over, 1 quit, 2 navi, 3
+cleared), written through `getSaveData()` + 0x4c8. The thread ends deleting files, scene and sound,
+`StageResult::releaseLayout`, `threadExit`. `stageAnswerZero` 0x17f7b0 (answers 0) is only a word
+of the handler tables 0x318038 / 0x318058 (the 0x2887a0.. classes). 0x17fce0 (answers 25) is slot
+108 of the bullet class vtable 0x312cdc, so the next file starts there.
+
 **`game/stageobjlist.cpp` 0x193900..0x1953f0 (TU 26, 2026-11-03, batch 058 with 45 names, all
 written, `verify`)**: the **stage's object registry** `StageObjectList` (0xdc, `gStageScene` +0x10,
 new in the stage scene ctor 0x19c180, deleted by its teardown 0x19bbe0). **Nine groups**, each a

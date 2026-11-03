@@ -182,6 +182,17 @@ enum StageKind
     StageKind_Hard   = 2,       // and anything above
 };
 
+// StageSelect::exitKind: how the last stage ended (the stage loop,
+// game/stageloop.cpp, sets it; the pause menu clears it before the navi).
+enum StageExit
+{
+    StageExit_None     = -1,    // the default
+    StageExit_GameOver = 0,     // left from the game-over dialog
+    StageExit_Quit     = 1,     // the pause menu's PauseMenu_Quit
+    StageExit_Navi     = 2,     // the pause menu's PauseMenu_Navi (a navigator jump)
+    StageExit_Cleared  = 3,
+};
+
 struct StageSelect
 {
     void setDefaults();                                                  // FS2 0x0023af80
@@ -190,8 +201,8 @@ struct StageSelect
     int    stage;               // FS2 +0x00: default 1
     int    kind;                // FS2 +0x04: StageKind, record kind 0..2, default 1
     int    variant;             // FS2 +0x08: record variant 0..1, default 0
-    int    _0c;                 // FS2 +0x0c: default -1
-    u_char _10;                 // FS2 +0x10: default 0
+    int    exitKind;            // FS2 +0x0c: StageExit, default StageExit_None
+    u_char _10;                 // FS2 +0x10: default 0; set: the stage runs StageClock_CountUp (stageThread)
 };
 static_assert(sizeof(StageSelect) == 0x14, "StageSelect: EE 0x14");
 

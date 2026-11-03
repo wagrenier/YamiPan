@@ -20,6 +20,7 @@
 
 #include "game/fileloader.h"
 #include "game/gamepaths.h"
+#include "game/stageloop.h"
 #include "game/stageobjlist.h"
 #include "game/streamring.h"
 #include "game/uilayout.h"
@@ -136,11 +137,31 @@ public:
     NameMap names3;             // FS2 +0x70
 };
 
-// The current stage's sound effects (the stage object's +0x24).
-// layout: host -- no fields declared yet.
+// The current stage's sound (the stage object's +0x24): an SE player, four
+// streams and 0x40 effect slots. Built once per stage by stageThread
+// (game/stageloop.cpp, sbss 0x31ae04) and handed to every StageScene it
+// builds; a sub-scene gets none.
+// layout: host -- EE 0x314: +0x8 the SE player (0x1298), four 0x3c streams
+// from +0x10, 0x40 effect slots of 8 from +0x100, +0x30c the state (0 idle,
+// 1 / 2 turned down, 3 playing), +0x310 why it is down (1 paused, 2 muted).
 class StageSound
 {
 public:
+    StageSound();                                                        // FS2 0x001d7750
+    ~StageSound();                                                       // FS2 0x001d76b0: deleting
+
+    // Turns the music down and fades the playing streams to half (the
+    // pause and map menus); resume undoes it.
+    void pause();                                                        // FS2 0x001d42e0
+    void resume();                                                       // FS2 0x001d41d0
+    // Turns the music down (muted) or back up (the clear, game over and a
+    // sub-scene's end).
+    void setMuted(bool muted);                                           // FS2 0x001d43f0
+    // Stops every effect and stream (before a reload).
+    void stopAll();                                                      // FS2 0x001d4020
+    // No stream still playing or stopping.
+    bool isStopped();                                                    // FS2 0x001d3f80
+
     void playNamed(const char *name, float volume);                      // FS2 0x001d6a80
     // playNamed, not muted while the stage is paused (state 1 / 2) and
     // through the player's other entry (0x292830): the play record, null
@@ -246,24 +267,95 @@ struct StagePlayer
     StageObject    *weapon[2];  // FS2 +0x238: long (rW00), short (rW01); null none
 };
 
-// The current stage object (0x130 bytes, built by the stage loop 0x17f160:
-// 0x19c180). Only what game/stageresult.cpp and game/uigame.cpp read.
-// layout: host -- EE: +0x10 the objects, +0x1c the box-grid owner
-// (game/boxgrid.h), +0x24 the sound, +0x78 the player.
+// The four characters the stage keeps across a reload (the stage object's
+// +0x88; its +0 holds them at +0x1c..+0x28). save / restore go through the
+// ids at 0x598b20 (StageObject::m_id, -1 none).
+// layout: host -- contents unread.
+struct StageParty
+{
+    void resetSaved();                                                   // FS2 0x001fe720: the four ids to -1
+    void save();                                                         // FS2 0x001fe6d0
+    void restore();                                                      // FS2 0x001fe6c0
+};
+
+// A singly linked list whose nodes {next, flags} carry a keep bit (the
+// stage object's +0x30). Only what stageThread calls.
+// layout: host -- EE: +0x4 head, +0x8 tail.
+struct KeepList
+{
+    // Unlinks and deletes every node whose flags bit 0 is clear.
+    void removeUnkept();                                                 // FS2 0x002bc5d0
+};
+
+// The stage object's +0xec: what a sub-scene starts from (the 0x287xxx
+// classes, vtables 0x318020..; their own TU). Only what stageThread calls.
+// layout: host -- EE: vptr at +0x2c.
+class StageEvent
+{
+public:
+    // A virtual in the ROM (slot 3, vtable +0x14); a plain stub until its
+    // TU. What StageScene::enterSubScene builds the sub-scene from.
+    void *getSubSceneData();
+};
+
+class Clock;                    // game/clock.h
+class StageFiles;
+
+// The current stage object (0x130 bytes): built by stageLoad 0x17fb90 for
+// the stage and by stageThread for a sub-scene (game/stageloop.cpp).
+// layout: host -- EE offsets in the comments.
 struct StageScene
 {
+    StageScene(bool isSubScene, StageSound *sound);                      // FS2 0x0019c180
+    ~StageScene();                                                       // FS2 0x0019bbe0: deleting
+
+    // The frame: update, then draw for the active character.
+    void update();                                                       // FS2 0x00199400
+    void draw(StageObject *active);                                      // FS2 0x00198970
+    // The frame while a dialog or menu thread runs.
+    void drawPaused();                                                   // FS2 0x00198fc0
+    // The character the player controls (null none).
+    StageObject *getActiveCharacter();                                   // FS2 0x0019bbb0
+    // Once, before the stage's first frame.
+    void beginPlay();                                                    // FS2 0x001963a0
+    void setupCameras();                                                 // FS2 0x00199f00
+    void enterSubScene(void *data);                                      // FS2 0x00195e10
+    void clearSubSceneRequest();                                         // FS2 0x00196050: subSceneRequest = 0
+
+    bool isGameOver();                                                   // FS2 0x001956e0
+    bool isCleared();                                                    // FS2 0x00195640
+    // A sub-scene whose own scene (subScene) has ended.
+    bool isSubSceneDone();                                               // FS2 0x00195d80
+    // Start / select on pad 0 while the stage allows its menu.
+    bool wantsPauseMenu();                                               // FS2 0x00195a50
+    bool wantsMapMenu();                                                 // FS2 0x001958b0
+
     // The floor the player is on (the S2D's rF01..rFDF: 0..9); negative
     // none.
     int getFloor(StagePlayer *player);                                   // FS2 0x0019aea0
 
-    u_char           _00[0x10];
-    StageObjectList *objects;   // FS2 +0x10
+    u_char           isSubScene;      // FS2 +0x00: the constructor's first argument
+    u_char           _01[0x3];
+    int              subSceneRequest; // FS2 +0x04: set: stageThread builds a sub-scene
+    void            *subScene;        // FS2 +0x08: a sub-scene's own scene (enterSubScene); null once it ended
+    u_char           _0c[0x4];
+    StageObjectList *objects;         // FS2 +0x10
     u_char           _14[0x10];
-    StageSound      *sound;     // FS2 +0x24
-    u_char           _28[0x50];
-    StagePlayer     *player;    // FS2 +0x78
+    StageSound      *sound;           // FS2 +0x24
+    u_char           _28[0x8];
+    KeepList        *keepList;        // FS2 +0x30
+    u_char           _34[0x2c];
+    Clock           *clock;           // FS2 +0x60: paused while a menu runs
+    u_char           _64[0x14];
+    StagePlayer     *player;          // FS2 +0x78
+    u_char           _7c[0xc];
+    StageParty      *party;           // FS2 +0x88
+    u_char           _8c[0x60];
+    StageEvent      *event;           // FS2 +0xec
+    u_char           _f0[0x1c];
+    StageScene      *parent;          // FS2 +0x10c: a sub-scene's (stageThread)
+    StageFiles      *files;           // FS2 +0x110: a sub-scene's (stageThread)
 };
-extern StageScene *gStageScene;     /* sbss 0x31adf4 (gp-0x7a7c) */
 
 // The navi menu (0x29a700..; sbss gp-0x79f8, null while there is none).
 // Only what getGameValue reads; the extents are guesses (each array ends
@@ -297,13 +389,45 @@ const u_short *getPurposeText();                                         // FS2 
 class Memcard;                  // game/memcard.h
 extern Memcard *gMenuMemcard;
 
-// The stage's files (sbss 0x31adfc, set by the stage loop): +0 its loader.
-// layout: host
-struct StageFiles
+// The stage's files (sbss 0x31adfc: getStageFiles; built by stageLoad over
+// the stage loader, game/stageloop.cpp): the loaded lists and scripts.
+// layout: host -- EE 0x160: +0 the loader, +4 a flag (1), 22 containers
+// from +0xc.
+class StageFiles
 {
+public:
+    explicit StageFiles(FileLoader *loader);                             // FS2 0x001a4270
+    ~StageFiles();                                                       // FS2 0x001a3f90: deleting
+
+    // Loads and reads a script file (the stage's, through the loader).
+    int  load(const char *path);                                         // FS2 0x001a37e0
+    // spotlight / shadow_00.
+    void loadCommon();                                                   // FS2 0x001a38e0
+    // ../data/listfile/s%02dlist.lst for a stage (not a sub-scene).
+    void loadList();                                                     // FS2 0x001a3a60
+    // Called for a sub-scene where loadList would be: empty in retail.
+    void loadSubSceneList();                                             // FS2 0x001a3db0
+
     FileLoader *loader;         // FS2 +0x0
 };
-StageFiles *getStageFiles();                                             // FS2 0x0017f150
+
+// The stage's pause menu (start: a thread in ThreadSlot_Dialog running the
+// stage screen layout, 0x20ad20) and map menu (select: 0x20b010), polled
+// by the stage loop while StageScene::drawPaused keeps the stage on screen.
+// What the pause menu's layout answered (pauseMenuResult).
+enum PauseMenuChoice
+{
+    PauseMenu_Running  = -1,
+    PauseMenu_Resume   = 0,
+    PauseMenu_Restart  = 1,     // the stage loop: StageResult::restart
+    PauseMenu_Continue = 2,     // the stage loop: StageResult::addContinue
+    PauseMenu_Quit     = 3,     // keeps the BG movie screen up
+    PauseMenu_Navi     = 4,     // a stage picked in the navigator
+};
+void pauseMenuStart();                                                   // FS2 0x0020acf0
+int  pauseMenuResult();                                                  // FS2 0x0020acb0: PauseMenuChoice
+void mapMenuStart();                                                     // FS2 0x0020afe0
+int  mapMenuResult();                                                    // FS2 0x0020afa0: -1 while open
 
 // The item definitions (bss 0x574c10, 160 x 0x20; loaded with the stage
 // data, not read here). Names are guesses from findSprite and the

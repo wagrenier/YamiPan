@@ -74,7 +74,7 @@ void StageSelect::setDefaults()
     stage = 1;
     kind = 1;
     variant = 0;
-    _0c = -1;
+    exitKind = StageExit_None;
     _10 = 0;
 }
 

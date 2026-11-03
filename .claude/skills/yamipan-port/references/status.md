@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 13:41 at commit `aa6681c` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 14:02 at commit `c46012c` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,27 +10,27 @@ Generated 2026-11-03 13:41 at commit `aa6681c` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **1971** (30%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1520, game-inferred 1100
-- context-name ledger: 2620 entries; overrides of wrong library matches: 0
-- placed in a source file: 1919/6599 in 60 files
+- game functions: **6599**, named **2016** (31%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1520, game-inferred 1145
+- context-name ledger: 2665 entries; overrides of wrong library matches: 0
+- placed in a source file: 1928/6599 in 61 files
 
 Least-named game-code regions (64 KB blocks):
 
 | block | named | inferred files |
 |---|---|---|
-| `001a0000` | 0/301 (0%) | - |
 | `001b0000` | 0/242 (0%) | - |
 | `001c0000` | 0/233 (0%) | - |
-| `00200000` | 0/122 (0%) | - |
 | `00210000` | 0/231 (0%) | - |
 | `00220000` | 0/167 (0%) | - |
 | `00270000` | 0/202 (0%) | - |
 | `00310000` | 0/9 (0%) | - |
+| `00180000` | 1/336 (0%) | - |
+| `00280000` | 3/232 (1%) | game/gamepaths.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **1680**; stubs: **0**
+- reconstructed FS2 functions: **1689**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -56,6 +56,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/s2ddata.cpp` | 9 | 0 |
 | `src/game/scene.cpp` | 1 | 0 |
 | `src/game/screen.cpp` | 18 | 0 |
+| `src/game/stageloop.cpp` | 9 | 0 |
 | `src/game/stageobjlist.cpp` | 45 | 0 |
 | `src/game/stageresult.cpp` | 32 | 0 |
 | `src/game/streamring.cpp` | 17 | 0 |
@@ -82,8 +83,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 80 TUs: todo 47, verify 47
-- next: **unassigned@00171300** (frontier score 10)
+- 82 TUs: todo 48, verify 48
+- next: **unassigned@001953f0** (frontier score 51)
 - pinned queue: (empty)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
@@ -107,6 +108,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/s2ddata.cpp` 9/9 -- Host: S2dRef<T> (s2ddata.h) is a 32-bit offset from the field itself, 0 null, implicit T* conversion, copy deleted; S2dData, S2dObject, S2dWidgetDef, S2dImage a
 - verify: `game/scene.cpp` 1/1 -- gameSceneThread written in full: loadInitPack, runStartupSequence, overlayThreadStart, then forever loadMenuPack, the scene from sScenes (one retail entry, Menu
 - verify: `game/screen.cpp` 18/18 -- All 18 functions of 0x2676e0..0x2681e0 written (batch 037, 33 names, Ghidra saved). Overlay thread slot 6 draws the BG movie screen layout (init pack file 2dEU/
+- verify: `game/stageloop.cpp` 9/9 -- Cut out of unassigned@00171300 and pinned 0x17f150-0x17fce0 (batch 073, 45 names; Ghidra saved by name_ctx). New src/game/stageloop.h defines gStageScene (exter
 - verify: `game/stageobjlist.cpp` 45/45 -- Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector in
 - verify: `game/stageresult.cpp` 32/32 -- All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (add
 - verify: `game/streamring.cpp` 17/21 -- All 21 functions accounted for: the 17 ring functions written, the thunks 0x151f70 / 0x151f80 / 0x152730 / 0x152740 call the rx functions directly. The classes 
@@ -135,6 +137,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 14:02 `game/stageloop.cpp` verify: The stage loop: stageThread (slot 3) with its clear, game-over, pause and restart helpers, stageLoad and setStageLoader; all 9 written, source-only, not built
 - 2026-11-03 13:41 `game/clock.cpp` verify: Cut out of unassigned@00133800 and pinned 0x1350d0-0x135990; all 14 written: Clock (create, setPaused, createChild, getDeltaSeconds, getSeconds, advance, resetT
 - 2026-11-03 13:40 `game/mathutil.cpp` verify: Cut out of unassigned@00133800 and pinned 0x133800-0x1350d0; all 18 written: copyVec4, matrixToRotYXZ / matrixToRotZYX, normalizeAngle / wrapAngle, colorToFloat
 - 2026-11-03 13:09 `rx/rxsndut.c` verify: rx sound utility layer: all 6 functions (init / exit / update of the rxsndstr layers, the PCM and ADPCM format tables, debug flags, BG-call check)
@@ -142,22 +145,21 @@ Recent sessions:
 - 2026-11-03 12:30 `rx/rxsndstr.c` verify: rx/rxsndstr.c: all 38 stream-core functions written (slot and format tables, play / stop / setters, format callbacks)
 - 2026-11-03 12:13 `game/streamring.cpp` verify: StreamRing / FileStreamRing cut out of unassigned@00148db0 as game/streamring.cpp 0x151f70..0x152750: all 17 written, the 4 rx jump thunks mapped to the rx call
 - 2026-11-03 11:53 `sdpr2/sdpr2.c` verify: all 36 written: the SDPR2 core and public API, type registry, 64 handle slots, inline checks in sdpr2check.h
-- 2026-11-03 11:31 `rx/rxthread.c` verify: all 53 functions written: RosePan's rxthread carried to C, all 53 identical to RoR (rxcmp.py), VBlank tail 0x159928 and core 0x166b50 with FS2 data and bss addr
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 10 | 0 |
-| `unassigned@00171300` | todo | 0/0/829 | 131.7 | 10 | 0 |
+| `unassigned@001953f0` | todo | 0/0/1313 | 395.4 | 51 | 0 |
+| `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 14 | 0 |
 | `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 9 | 0 |
 | `unassigned@00299d90` | todo | 0/0/215 | 62.3 | 9 | 0 |
+| `unassigned@0017fce0` | todo | 0/0/399 | 76.4 | 9 | 0 |
+| `unassigned@001fe6b0` | todo | 0/0/563 | 197.2 | 7 | 0 |
 | `unassigned@00231c90` | todo | 0/0/61 | 36.3 | 7 | 0 |
 | `unassigned@00252840` | todo | 0/0/100 | 35.5 | 7 | 0 |
-| `unassigned@001953f0` | todo | 0/0/1313 | 395.4 | 7 | 0 |
-| `unassigned@0012c9b8` | todo | 0/0/6 | 0.8 | 6 | 0 |
+| `unassigned@0012c9b8` | todo | 0/0/6 | 0.8 | 7 | 0 |
 | `unassigned@002908d0` | todo | 0/0/67 | 18.8 | 6 | 0 |
 | `rx/rxsndstrstream.c` | todo | 0/0/18 | 2.4 | 5 | 0 |
-| `game/rcnttimer.cpp` | todo | 0/0/4 | 0.2 | 4 | 0 |
-| `unassigned@002681e0` | todo | 0/0/514 | 156.6 | 4 | 0 |
+| `sdpr2/sdpr2single.c` | todo | 0/0/24 | 7.0 | 4 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -165,12 +167,16 @@ Recent sessions:
 |---|---|---|---|---|---|
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
+| `00198fc0` | StageScene::drawPaused | 5 | game | missing | - |
 | `0029efe0` | getNaviMenu | 5 | game | missing | - |
 | `001937f0` | FUN_001937f0 | 4 | - | missing | - |
 | `002955d0` | getNaviTable | 4 | game | missing | - |
+| `002bc5d0` | KeepList::removeUnkept | 4 | game | missing | - |
 | `0025a850` | mslTreeIncrement | 4 | lib-ctx | missing | - |
 | `00231d30` | overlayShowLoading | 3 | native | missing | - |
 | `00231d20` | overlayShowLoading | 3 | native | missing | - |
+| `0019bbe0` | StageScene::~StageScene | 3 | game | missing | - |
+| `001d43f0` | StageSound::setMuted | 3 | game | missing | - |
 | `002e1c50` | Tim2Texture::upload | 3 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `0025b590` | FUN_0025b590 | 3 | - | missing | - |
 | `0028fb80` | fsmFindText | 2 | game | missing | - |
@@ -185,22 +191,18 @@ Recent sessions:
 | `0016f808` | sdpr2SingleInit | 2 | lib-ctx | missing | sdpr2/sdpr2single.c |
 | `00152740` | rxFileCallSizeHook | 2 | native | missing | game/streamring.cpp |
 | `002e2920` | Tim2Texture::Tim2Texture | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
+| `001a3f90` | StageFiles::~StageFiles | 2 | game | missing | - |
+| `0019c180` | StageScene::StageScene | 2 | game | missing | - |
+| `001a3db0` | StageFiles::loadSubSceneList | 2 | game | missing | - |
+| `001a38e0` | StageFiles::loadCommon | 2 | game | missing | - |
+| `001a37e0` | StageFiles::load | 2 | game | missing | - |
+| `001d42e0` | StageSound::pause | 2 | game | missing | - |
+| `001d41d0` | StageSound::resume | 2 | game | missing | - |
 | `002e1b70` | Tim2Texture::putTex0 | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `002c3d70` | getSaveResource | 2 | game | missing | - |
 | `00193880` | FUN_00193880 | 2 | - | missing | - |
+| `001d3f80` | StageSound::isStopped | 2 | game | missing | - |
 | `002ec660` | optionLayoutPath | 1 | game | missing | - |
 | `001d6a90` | StageSound::stopNamed | 1 | game | missing | - |
 | `00292db0` | SePlayer::stop | 1 | game | missing | - |
-| `001660e0` | rxSndStrMemInit | 1 | lib-ctx | missing | rx/rxsndstrmem.c |
-| `001656e8` | rxSndStrStreamInit | 1 | lib-ctx | missing | rx/rxsndstrstream.c |
-| `00165738` | rxSndStrStreamExit | 1 | lib-ctx | missing | rx/rxsndstrstream.c |
-| `00166178` | rxSndStrMemExit | 1 | lib-ctx | missing | rx/rxsndstrmem.c |
-| `001661b8` | rxSndStrMemUpdate | 1 | lib-ctx | missing | rx/rxsndstrmem.c |
-| `00165788` | rxSndStrStreamUpdate | 1 | lib-ctx | missing | rx/rxsndstrstream.c |
-| `0029e4f0` | PrgScaleNavi::PrgScaleNavi | 1 | game | missing | - |
-| `0029ae30` | PrgScaleNaviScroll::PrgScaleNaviScroll | 1 | game | missing | - |
-| `002b9d60` | PrgMcCard::PrgMcCard | 1 | game | missing | - |
-| `002e14d0` | GsRegionAlloc::GsRegionAlloc | 1 | game | missing | - |
-| `002d7cf0` | drawSysInit | 1 | game | missing | - |
-| `0019aea0` | StageScene::getFloor | 1 | game | missing | - |
 

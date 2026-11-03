@@ -18,6 +18,7 @@
 #include "sdk/libvifpk.h"
 #include "sdk/scetypes.h"
 
+class TexAreaList;             // game/gsblockmap.h
 class UiLayout;
 
 // StageResult::mode: which clock the stage runs. The stage loop picks
@@ -95,7 +96,7 @@ struct StageResult
 
     bool  beatsRecord() const;                                           // FS2 0x002aff80
     u_int getPerfectBits() const;                                        // FS2 0x002b00d0
-    void  update(sceVif1Packet *packet, void *drawCtx);                  // FS2 0x002b0120
+    void  update(sceVif1Packet *packet, TexAreaList *texList);           // FS2 0x002b0120
     void  tick();                                                        // FS2 0x002b01a0
     void  addContinue();                                                 // FS2 0x002b0310
     void  restart();                                                     // FS2 0x002b0320

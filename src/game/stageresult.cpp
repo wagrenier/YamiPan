@@ -135,13 +135,13 @@ u_int StageResult::getPerfectBits() const
 // clock layout advances, updates and draws unless the game is paused.
 // FS2 0x002b0120
 
-void StageResult::update(sceVif1Packet *packet, void *drawCtx)
+void StageResult::update(sceVif1Packet *packet, TexAreaList *texList)
 {
     tick();
     if (paused == 0 && layout != nullptr) {
         layout->advance();
         layout->update();
-        layout->draw(packet, drawCtx);
+        layout->draw(packet, texList);
     }
 }
 

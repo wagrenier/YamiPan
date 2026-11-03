@@ -96,6 +96,9 @@ public:
 
     void flipFrame(int vsyncs);                                          // FS2 0x0012cdf0
     void endFrameSync();                                                 // FS2 0x0012cd20
+    // A stage starts: the heap's mark set and the meter's statistics reset
+    // (the stage loop, first thing).
+    void beginStage();                                                   // FS2 0x0012cce0
 
     int               m_meterMode;  // FS2 +0x000: MeterMode, 0 in retail
     GamePad           m_pad0;       // FS2 +0x004: port 0

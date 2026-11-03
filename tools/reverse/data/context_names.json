@@ -2573,6 +2573,12 @@
   "was": "FUN_0012cab8",
   "why": "newlib vsprintf (buf, fmt, va): a string FILE (flags 0x208, size 0x7fffffff, _impure_ptr 0x2f3398) through _vfprintf_r 0x12a3a0, then NUL; beside the reentrant variant 0x12cb10. The printers' print / printScaled / measureLines format into a 520-byte stack buffer with it"
  },
+ "0012cce0": {
+  "name": "GameSystem::beginStage",
+  "tag": "game-inferred",
+  "was": "FUN_0012cce0",
+  "why": "a0 gGameSystem: Heap::setMark(gHeap, 1) and PerfMeter::resetStats(+0x4a8); stageThread calls it first"
+ },
  "0012cd20": {
   "name": "GameSystem::endFrameSync",
   "tag": "game-inferred",
@@ -10841,6 +10847,54 @@
   "was": "FUN_0017f150",
   "why": "answers sbss 0x31adfc: a struct whose +0 is the stage's FileLoader (getStagePackData calls its getData, vtable +0x1c, on it); next to the stage loop 0x17f160"
  },
+ "0017f160": {
+  "name": "stageThread",
+  "tag": "game-inferred",
+  "was": "FUN_0017f160",
+  "why": "thread slot 3 entry (0x2b60b0 threadSlotCreate(0x17f160, 3, script path 0x5997c0)): StageResult::begin, builds StageSound / StageScene, runs the e / h screens, then per frame StageScene::update / draw and the clock, with the game-over, clear, pause, map and sub-scene branches; frees all and threadExit"
+ },
+ "0017f7b0": {
+  "name": "stageAnswerZero",
+  "tag": "game-inferred",
+  "was": "FUN_0017f7b0",
+  "why": "jr ra / v0 = 0, no callers; only a handler-table word at 0x318044 / 0x318064 (the 0x2887a0.. tables); placed between stageThread and stageCleared"
+ },
+ "0017f7c0": {
+  "name": "stageCleared",
+  "tag": "game-inferred",
+  "was": "FUN_0017f7c0",
+  "why": "the clear branch (StageScene::isCleared): PerfMeter::writeCsv(stage, kind), mutes the sound, notice dialog when findStageMovie < 0, StageSelect +0xc = 3"
+ },
+ "0017f890": {
+  "name": "stageGameOverMenu",
+  "tag": "game-inferred",
+  "was": "FUN_0017f890",
+  "why": "the game-over branch: writeCsv, mute, gameOverDialogStart and poll with StageScene::drawPaused; StageSelect +0xc = 0; restart / continue answer 0, quit 1"
+ },
+ "0017f970": {
+  "name": "stagePauseMenu",
+  "tag": "game-inferred",
+  "was": "FUN_0017f970",
+  "why": "the start-button branch: StageSound::pause, pauseMenuStart (thread 0x20ad20 in slot 4) polled, resume; answers 3 -> 1 / 4 -> 2 (StageSelect +0xc = 1 / 2, leave), 1 restart / 2 continue -> 0, else -1"
+ },
+ "0017fa70": {
+  "name": "stageRestart",
+  "tag": "game-inferred",
+  "was": "FUN_0017fa70",
+  "why": "after a restart / continue: saves the party ids, StageSound::stopAll and waits isStopped, stageLoad again, restores the party, the e screen unless StageResult::hasAttemptFlag, the h screen when hints"
+ },
+ "0017fb90": {
+  "name": "stageLoad",
+  "tag": "game-inferred",
+  "was": "FUN_0017fb90",
+  "why": "deletes the old StageFiles / StageScene, new StageFiles(0x160, the stage loader gp-0x7a78) into gp-0x7a74, new StageScene(0x130, false, the StageSound) into gp-0x7a7c, loadCommon, loadList (or the empty sub-scene list), load(script path), setupCameras, StageObjectList::rebalance"
+ },
+ "0017fc90": {
+  "name": "setStageLoader",
+  "tag": "game-inferred",
+  "was": "FUN_0017fc90",
+  "why": "deletes the previous loader in gp-0x7a78 (slot 0 at vptr +0x98, flag 1) and stores the new one; 0x2b60b0 hands it the stage PackFile / FileLoader before the stage thread and 0 after"
+ },
  "00185af0": {
   "name": "VcmController::getWeight",
   "tag": "game-inferred",
@@ -11117,17 +11171,173 @@
   "was": "FUN_001951e0",
   "why": "(node): 1 + the taller child's height, an empty child 0 (recursive, two levels unrolled); StageNameNode::balance's measure"
  },
+ "00195640": {
+  "name": "StageScene::isCleared",
+  "tag": "game-inferred",
+  "was": "FUN_00195640",
+  "why": "+0x11c set and 0x2b1620() == 2; true -> stageCleared and the loop ends"
+ },
+ "001956e0": {
+  "name": "StageScene::isGameOver",
+  "tag": "game-inferred",
+  "was": "FUN_001956e0",
+  "why": "+0x118 set and 0x2b1c50() == 5; true -> stageGameOverMenu"
+ },
+ "001958b0": {
+  "name": "StageScene::wantsMapMenu",
+  "tag": "game-inferred",
+  "was": "FUN_001958b0",
+  "why": "pad 0 pressed bit 0x100 (select), not a sub-scene, +0xf0 +2 flag, no busy character; true -> the map menu 0x20afe0 (its thread 0x20b010 reads getStageFiles)"
+ },
+ "00195a50": {
+  "name": "StageScene::wantsPauseMenu",
+  "tag": "game-inferred",
+  "was": "FUN_00195a50",
+  "why": "gGameSystem pad 0 pressed bit 0x800 (start), not a sub-scene, the scene +0xf0 +1 flag, no busy character; true -> stagePauseMenu"
+ },
  "00195d50": {
   "name": "getPurposeText",
   "tag": "game-inferred",
   "was": "FUN_00195d50",
   "why": "answers 0x196870() + 4: the 16-bit text formatTextValue shows for rPurpose in a stage (outside one the sample 0x2faeb0 'sub-goal: sample' in Japanese)"
  },
+ "00195d80": {
+  "name": "StageScene::isSubSceneDone",
+  "tag": "game-inferred",
+  "was": "FUN_00195d80",
+  "why": "+0 (isSubScene) set and +8 null; stageThread then deletes it and goes back to the parent scene"
+ },
+ "00195e10": {
+  "name": "StageScene::enterSubScene",
+  "tag": "game-inferred",
+  "was": "FUN_00195e10",
+  "why": "(data): the sub-scene start from its parent (+0x10c) event +0xec: new 4-byte holder of data at +0xc, its object at +8, setupCameras, the parent event layouts into +0x28"
+ },
+ "00196050": {
+  "name": "StageScene::clearSubSceneRequest",
+  "tag": "game-inferred",
+  "was": "FUN_00196050",
+  "why": "+4 = 0; stageThread after building the sub-scene that +4 asked for"
+ },
+ "001963a0": {
+  "name": "StageScene::beginPlay",
+  "tag": "game-inferred",
+  "was": "FUN_001963a0",
+  "why": "0x2870c0(0x196960(scene)); called once by stageThread between the screens and the first frame"
+ },
+ "00198970": {
+  "name": "StageScene::draw",
+  "tag": "game-inferred",
+  "was": "FUN_00198970",
+  "why": "(active character): perf labels rena draw / 2d draw; stageThread after update"
+ },
+ "00198fc0": {
+  "name": "StageScene::drawPaused",
+  "tag": "game-inferred",
+  "was": "FUN_00198fc0",
+  "why": "the scene frame while a dialog or menu thread runs: every poll loop of the stage thread calls it after threadYield(1)"
+ },
+ "00199400": {
+  "name": "StageScene::update",
+  "tag": "game-inferred",
+  "was": "FUN_00199400",
+  "why": "the frame step: perf labels action(start) / script / action(control) / collision / particle / camera / others; first thing of the stageThread loop"
+ },
+ "00199f00": {
+  "name": "StageScene::setupCameras",
+  "tag": "game-inferred",
+  "was": "FUN_00199f00",
+  "why": "strings camera / camview / camview_zoom / camview_snipe / cam_dive / flash / camera_demo; stageLoad and enterSubScene"
+ },
  "0019aea0": {
   "name": "StageScene::getFloor",
   "tag": "game-inferred",
   "was": "FUN_0019aea0",
   "why": "a0 gStageScene, a1 its player (+0x78): an int compared with the rF01..rF09 / rFDF index - 1 in UiLayout::testGameState (negative clamped to 0, 0 while the map does not show the player); guess: the floor the player is on"
+ },
+ "0019bbb0": {
+  "name": "StageScene::getActiveCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_0019bbb0",
+  "why": "+0x34 list: entry [+4 index] of the 0xc-byte array at +8, null when the index < 0; the entry object has getKind (vtable +0x1f4) in drawPaused; 29 callers"
+ },
+ "0019bbe0": {
+  "name": "StageScene::~StageScene",
+  "tag": "game-inferred",
+  "was": "FUN_0019bbe0",
+  "why": "deleting dtor (flag 1) of the stage scene; stageThread and stageLoad"
+ },
+ "0019c180": {
+  "name": "StageScene::StageScene",
+  "tag": "game-inferred",
+  "was": "FUN_0019c180",
+  "why": "ctor of the 0x130 stage scene (gp-0x7a7c): (isSubScene, sound); stageLoad passes false and the StageSound, the sub-scene branch true and 0; string streamEU/demo/"
+ },
+ "001a37e0": {
+  "name": "StageFiles::load",
+  "tag": "game-inferred",
+  "was": "FUN_001a37e0",
+  "why": "(path): sets the loader arg / prefix from 0x1a1ca0, addFile(path), startLoad, waitLoaded, getItem, parses it with 0x1a20f0 (a second load when it asks); stageLoad and the sub-scene branch pass the script path"
+ },
+ "001a38e0": {
+  "name": "StageFiles::loadCommon",
+  "tag": "game-inferred",
+  "was": "FUN_001a38e0",
+  "why": "strings spotlight / shadow_00; before every load"
+ },
+ "001a3a60": {
+  "name": "StageFiles::loadList",
+  "tag": "game-inferred",
+  "was": "FUN_001a3a60",
+  "why": "strings ../data/listfile/ and s%02dlist.lst; stageLoad for a scene that is not a sub-scene"
+ },
+ "001a3db0": {
+  "name": "StageFiles::loadSubSceneList",
+  "tag": "game-inferred",
+  "was": "FUN_001a3db0",
+  "why": "empty (jr ra); called where loadList would be for a sub-scene"
+ },
+ "001a3f90": {
+  "name": "StageFiles::~StageFiles",
+  "tag": "game-inferred",
+  "was": "FUN_001a3f90",
+  "why": "deleting dtor (flag 1); stageThread and stageLoad"
+ },
+ "001a4270": {
+  "name": "StageFiles::StageFiles",
+  "tag": "game-inferred",
+  "was": "FUN_001a4270",
+  "why": "ctor of the 0x160 object getStageFiles answers (gp-0x7a74): +0 the stage loader, +4 = 1, 22 containers from +0xc; stageLoad"
+ },
+ "001d3f80": {
+  "name": "StageSound::isStopped",
+  "tag": "game-inferred",
+  "was": "FUN_001d3f80",
+  "why": "1 unless a state 0..3 sound has a stream whose state is not 0 / 4 / 5"
+ },
+ "001d4020": {
+  "name": "StageSound::stopAll",
+  "tag": "game-inferred",
+  "was": "FUN_001d4020",
+  "why": "stops the 0x40 effect slots (+0x100), clears +0x300 / +0x304, volume 0x80, state 0, stops and clears the four streams; stageRestart then waits isStopped"
+ },
+ "001d41d0": {
+  "name": "StageSound::resume",
+  "tag": "game-inferred",
+  "was": "FUN_001d41d0",
+  "why": "state 1 / 2 -> volume 0x80 and state 3, +0x310 = 0, stream fades 64 -> 128; the counterpart of pause"
+ },
+ "001d42e0": {
+  "name": "StageSound::pause",
+  "tag": "game-inferred",
+  "was": "FUN_001d42e0",
+  "why": "state 0 / 3 -> volume 0 and state 1, +0x310 = 1, stream fades 128 -> 64; around the pause / map menus with resume"
+ },
+ "001d43f0": {
+  "name": "StageSound::setMuted",
+  "tag": "game-inferred",
+  "was": "FUN_001d43f0",
+  "why": "(on): on and state 0 / 3 -> volume 0, state 1; off and state 1 / 2 -> volume 0x80, state 3; +0x310 = on ? 2 : 0; on at the clear / game over, off back from a sub-scene"
  },
  "001d6a70": {
   "name": "StageSound::playNamedAlways",
@@ -11146,6 +11356,18 @@
   "tag": "game-inferred",
   "was": "FUN_001d6a90",
   "why": "a0 the stage sound, a1 a name: over the 64 play slots (+0x100, 8 bytes {kind, record}) stops every record of kind 2 / 1 whose entry name equals a1 and is not stopped yet (SePlayer::stop on +8 when its handle >= 0) and marks it stopped; UiLayout::stopSound inside a stage"
+ },
+ "001d76b0": {
+  "name": "StageSound::~StageSound",
+  "tag": "game-inferred",
+  "was": "FUN_001d76b0",
+  "why": "deleting dtor (flag 1) of the 0x314 sound; stageThread and StageScene::~StageScene"
+ },
+ "001d7750": {
+  "name": "StageSound::StageSound",
+  "tag": "game-inferred",
+  "was": "FUN_001d7750",
+  "why": "ctor of the 0x314 object stageThread keeps in gp-0x7a6c and hands StageScene's ctor (the scene +0x24 sound): new 0x1298 SE player at +8, four 0x3c streams from +0x10, state +0x30c"
  },
  "001e66c0": {
   "name": "PlayerMotion::refresh",
@@ -11584,6 +11806,48 @@
   "tag": "game-inferred",
   "was": "FUN_001fe5b0",
   "why": "nextGlyph 0x1fe4d0 for byte text: a byte < 0x20 (signed: also >= 0x80) and the next make code b0 << 8 | b1, any other byte code b << 8; binary search of the sorted entries, the fallback entry when missing; answers the next character, null at the terminator"
+ },
+ "001fe6c0": {
+  "name": "StageParty::restore",
+  "tag": "game-inferred",
+  "was": "FUN_001fe6c0",
+  "why": "j 0x1fed30 with *this: finds the saved ids again among the reloaded objects; stageRestart after the reload"
+ },
+ "001fe6d0": {
+  "name": "StageParty::save",
+  "tag": "game-inferred",
+  "was": "FUN_001fe6d0",
+  "why": "the four members (+0x1c.. of *this) into 0x598b20 as StageObject +0x208 ids, -1 for none; stageRestart before the reload"
+ },
+ "001fe720": {
+  "name": "StageParty::resetSaved",
+  "tag": "game-inferred",
+  "was": "FUN_001fe720",
+  "why": "memset(0x598b20, -1, 0x10): the four saved character ids; a0 the scene +0x88"
+ },
+ "0020acb0": {
+  "name": "pauseMenuResult",
+  "tag": "game-inferred",
+  "was": "FUN_0020acb0",
+  "why": "gp-0x7a40; overlayReleaseScreen once it is neither -1 nor 3; stagePauseMenu polls it"
+ },
+ "0020acf0": {
+  "name": "pauseMenuStart",
+  "tag": "game-inferred",
+  "was": "FUN_0020acf0",
+  "why": "result gp-0x7a40 = -1, threadSlotCreate(0x20ad20, slot 4); stagePauseMenu"
+ },
+ "0020afa0": {
+  "name": "mapMenuResult",
+  "tag": "game-inferred",
+  "was": "FUN_0020afa0",
+  "why": "gp-0x7a3c; overlayReleaseScreen once it is not -1; stageThread polls it"
+ },
+ "0020afe0": {
+  "name": "mapMenuStart",
+  "tag": "game-inferred",
+  "was": "FUN_0020afe0",
+  "why": "result gp-0x7a3c = -1, threadSlotCreate(0x20b010, slot 4); stageThread on StageScene::wantsMapMenu"
  },
  "00230980": {
   "name": "gfxUiPresetRgbOnly5",
@@ -15394,6 +15658,12 @@
   "tag": "game-inferred",
   "was": "FUN_002b9d60",
   "why": "create case 0x1d (prgMcCard, 0x94 bytes); unread"
+ },
+ "002bc5d0": {
+  "name": "KeepList::removeUnkept",
+  "tag": "game-inferred",
+  "was": "FUN_002bc5d0",
+  "why": "list {+4 head, +8 tail} of nodes {next, flags}: unlinks and deletes every node whose flags bit 0 is clear; stageThread on the scene +0x30 before each menu"
  },
  "002bcf10": {
   "name": "PackTables::parse",

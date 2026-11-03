@@ -776,6 +776,31 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    rotation matrices 0x1359f0 / 0x135b90 from a sin / cos table 0x135c30, angle wrap 0x135e20 /
    0x135ec0, distances 0x135f20 / 0x135f70, normalize 0x136020, project 0x136090, identity / copy
    matrix 0x136400 / 0x136430; vu0math.h takes the rest of its prototypes then.
+   TU 43 (the frontier's `unassigned@00171300`, 829 functions 0x171300..0x1938f8, for
+   `getStageFiles`): **`game/stageloop.cpp` 0x17f150..0x17fce0** cut out (9 functions, batch 073
+   with 45 names, **all written, `verify`**; architecture.md "Modules"): the stage thread, its
+   game-over / clear / pause / restart helpers, `stageLoad`, `setStageLoader`. New
+   `game/stageloop.h` (`gStageScene` is defined here now, its extern moved from gamehooks.h, which
+   includes stageloop.h; `getStageFiles` moved too). gamehooks.h: `StageSound` gained ctor / dtor /
+   pause / resume / setMuted / stopAll / isStopped; `StageScene` gained ctor / dtor and 13 methods
+   and the fields +0 / +4 / +8 / +0x30 / +0x60 / +0x88 / +0xec / +0x10c / +0x110; `StageFiles`
+   became a class (ctor, dtor, load / loadCommon / loadList / loadSubSceneList); new stand-ins
+   `StageParty`, `KeepList`, `StageEvent`, `PauseMenuChoice` + pause / map menu start / result.
+   `StageSelect::_0c` is **`exitKind`** (`StageExit`, sysdata.h); `GameSystem::beginStage` 0x12cce0
+   declared in gamesystem.h (its TU unassigned@0012c9b8); `StageResult::update` takes a
+   `TexAreaList *` (was `void *`: fixes the g++ error in stageresult.cpp seen since TU 32). Checked:
+   callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on stageloop / stageresult
+   / uigame / sysdata / scene / screen (RosePan's SDK headers + scratch libvifpk / sceGsTexEnv
+   stubs); no harness (all control flow). Host: the frame brightness writes the ALPHA FIX byte into
+   the copy packet as the ROM does; the any-aspect renderer must apply it as a brightness (the copy
+   packet itself is dropped on the host). Doubts for the user: the file name; every name is read
+   from the code (StageEvent and its slot 3, KeepList, StageParty, getActiveCharacter, the pause
+   menu's 3 = quit / 4 = navi from its thread 0x20ad70, select = the map menu from 0x20b010 reading
+   getStageFiles); stageAnswerZero's owner is unknown (kept in this file by position). PC: a sub-scene
+   is built with `new` (the ROM writes through null when operator new fails). **Next picks**: the
+   scene class itself (`StageScene` 0x195640..0x19c6a0 in unassigned@001953f0: ctor / dtor /
+   update / draw are every stage's first stubs), `StageFiles` 0x1a37e0..0x1a4370, the menus
+   0x20acb0..0x20b100, `StageSound` 0x1d3f80..0x1d79c0.
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

@@ -462,6 +462,25 @@
    ],
    "why": "The class at gStageScene +0xf4 (every caller of these 8 functions passes it; ctor 0x264070 news its 0x3c-byte member from 0x151600, the deleting dtor 0x264000): plays and stops the ALERT / CAUTION layouts on gStageScene +0x30 (0x263c10 / 0x263f10) and reads GameOptions +0x10. Between game/uigame.cpp and libscf 0x2640e8. The file name is the port's (no source string)."
   },
+  "game/stageloop.cpp": {
+   "notes": "Cut out of unassigned@00171300 and pinned 0x17f150-0x17fce0 (batch 073, 45 names; Ghidra saved by name_ctx). New src/game/stageloop.h defines gStageScene (extern moved from gamehooks.h, which includes stageloop.h) and getStageFiles. gamehooks.h stand-ins grew: StageSound (ctor, dtor, pause, resume, setMuted, stopAll, isStopped), StageScene (ctor, dtor, update, draw, drawPaused, getActiveCharacter, beginPlay, setupCameras, enterSubScene, clearSubSceneRequest, isGameOver, isCleared, isSubSceneDone, wantsPauseMenu, wantsMapMenu; fields +0 isSubScene, +4 subSceneRequest, +8 subScene, +0x30 keepList, +0x60 clock, +0x88 party, +0xec event, +0x10c parent, +0x110 files), StageFiles as a class, new StageParty / KeepList / StageEvent, PauseMenuChoice and pause / map menu start / result. StageSelect::_0c renamed exitKind (enum StageExit in sysdata.h); GameSystem::beginStage 0x12cce0 declared in gamesystem.h; StageResult::update takes TexAreaList * (fixes the old g++ error in stageresult.cpp). The menu brackets (KeepList::removeUnkept, paused, meter off, ALPHA FIX 0x80, scene clock paused) are inline helpers as in the ROM. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on stageloop, stageresult, uigame, sysdata, scene, screen (RosePan SDK headers plus scratch libvifpk and sceGsTexEnv stubs); no harness. Doubts: the file name; StageEvent slot 3, KeepList, StageParty and the menu meanings are read from the code; stageAnswerZero 0x17f7b0 is only a handler-table word (0x318044 / 0x318064). Next picks: StageScene 0x195640..0x19c6a0 (every stage call here is its stub), StageFiles 0x1a37e0..0x1a4370, the menus 0x20acb0..0x20b100, StageSound 0x1d3f80..0x1d79c0.",
+   "ranges": [
+    [
+     "0017f150",
+     "0017fce0"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 14:02",
+     "status": "verify",
+     "summary": "The stage loop: stageThread (slot 3) with its clear, game-over, pause and restart helpers, stageLoad and setStageLoader; all 9 written, source-only, not built"
+    }
+   ],
+   "status": "verify",
+   "why": "Cut out of unassigned@00171300 (the frontier pick for getStageFiles 0x17f150): one object file between the adjustor thunks 0x17f090..0x17f150 (the previous file's last code) and 0x17fce0 (answers 25: slot 108 of the bullet class vtable 0x312cdc, so the next file's inline virtuals): getStageFiles, stageThread 0x17f160 (slot 3, started by 0x2b60b0), its clear / game-over / pause / restart helpers, stageLoad 0x17fb90, setStageLoader 0x17fc90 and the handler-table stub 0x17f7b0. The file name is the port's (no strings)."
+  },
   "game/stageobjlist.cpp": {
    "notes": "Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector instances (vector of BoxColumn / BoxList dtor and clear) beside 0x1928f0..0x193770: host vector covers them, left unassigned. New src/game/stageobjlist.h: StageObjectList (EE 0xdc: nine StageNameMap at +0, nine StageObjArray at +0x90, last character id +0xd8), StageObjGroup (Characters 2 and Bullets 4 named from their adders, the rest numbered), StageObjArray (heap block of capacity + 2 words, items at data[1..count], 0 after the last; a negative or too large index answers the last), StageNameMap / StageNameNode (strcmp tree with an insertion chain; rebalance once after load). Moved StageObjectList out of gamehooks.h (which includes the new header); find renamed find1 (uigame.cpp follows); StageObject gained m_id +0x208 and a plain destroy() for the deleting dtor at vtable +0x10. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean (uigame.cpp only fails on gfxtarget.h sceGsTexEnv, absent from RosePan libgraph.h, not this TU), and a host harness of 600 objects in 9 groups vs brute force passed (lookups, ids, removals, rebalance order and count, teardown frees every block). Doubts: file, container and group names are read from the code; groups 0, 1, 3, 5..8 unnamed until their classes are read; the ROM rotates on a height difference of one too (kept). Next in the run: StageSound playNamed 0x1d6a80 / stopNamed 0x1d6a90, StageScene getFloor 0x19aea0, the stage scene ctor 0x19c180 / teardown 0x19bbe0 / load 0x17fb90, the class 0x230820..0x230980, the pak parser 0x231410..0x231bb0.",
    "ranges": [
