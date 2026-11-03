@@ -1253,7 +1253,7 @@ first page with a block in use (slots ending past it emptied), so **long-lived a
 the area's top and the per-frame texture lists use the pages below them**. **`TexAreaList`** (0x14,
 one per packet list, `TexArea::getList` 0x142dd0): first page (first + 31) / 32, end page, next
 page, slot count, slots (0xc: {key, first page, end page}, empty {0, -1, -1}). **`place`
-0x143510(list, &tbp, Tim2Texture)**: keyed by the texture's image copy (+0x40): already there ->
+0x143510(list, &tbp, Tim2Texture)**: keyed by the texture's TIM2 file (+0x40): already there ->
 TBP0, answers 0; else pages = (`Tim2Texture::getVramBlocks` 0x2e1c30 = (+0x20 + +0x30 + 31) & ~31,
 image and CLUT blocks) / 32 from next page, wrapping to the first page when the rest is short,
 **-0x20 and 1 when it does not fit at all**; `insert` 0x143450 empties the overlapped slots and

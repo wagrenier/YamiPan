@@ -63,7 +63,7 @@ public:
 // Empty: {nullptr, -1, -1}. layout: host -- EE 0xc.
 struct TexAreaSlot
 {
-    const void *key;            // FS2 +0x0: the Tim2Texture's image copy (+0x40)
+    const void *key;            // FS2 +0x0: the Tim2Texture's TIM2 file (+0x40)
     int         firstPage;      // FS2 +0x4
     int         endPage;        // FS2 +0x8
 

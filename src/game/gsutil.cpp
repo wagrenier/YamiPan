@@ -86,13 +86,6 @@ constexpr u_long kTex0TargetZbuf = SCE_GS_SET_TEX0(0x1800, 8, SCE_GS_PSMCT32, 9,
 constexpr u_long kTex0TargetDraw = SCE_GS_SET_TEX0(0x800, 8, SCE_GS_PSMCT32, 9, 9, 1, 0, 0, 0, 0, 0, 0);
 constexpr u_long kTex0TargetView = SCE_GS_SET_TEX0(0, 8, SCE_GS_PSMCT16, 9, 9, 1, 0, 0, 0, 0, 0, 0);
 
-// putTex0's packet: DMA CNT of 2 qwords; VIF FLUSH, DIRECT 2; a GIF tag
-// of one A+D (NLOOP 1, EOP, NREG 1).
-constexpr u_long kTexPktDmaCnt2 = 0x10000002;
-constexpr u_long kTexPktVifFlushDirect2 = 0x5100000211000000ull;
-constexpr u_long kTexPktGifTagAd1 = 0x1000000000008001ull;
-constexpr u_long kGifRegAd = 0xe;
-
 // ──────────────────────────────────────────────────────────────────────
 // Helpers, inline in the ROM.
 

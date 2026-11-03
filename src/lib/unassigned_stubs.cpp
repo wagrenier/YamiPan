@@ -1185,3 +1185,9 @@ void unloadMenuPack()
 {
     YAMIPAN_STUB("unloadMenuPack", 0x002c3db0);
 }
+
+// stub of FS2 0x002e0840
+void GsRegion::release()
+{
+    YAMIPAN_STUB("GsRegion::release", 0x002e0840);
+}

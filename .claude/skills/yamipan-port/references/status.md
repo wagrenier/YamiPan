@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 18:13 at commit `90e59e4` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 18:31 at commit `b9bc1a2` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-03 18:13 at commit `90e59e4` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **2274** (34%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1530, game-inferred 1400
-- context-name ledger: 2930 entries; overrides of wrong library matches: 0
-- placed in a source file: 2281/6599 in 65 files
+- game functions: **6599**, named **2281** (35%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1401
+- context-name ledger: 2937 entries; overrides of wrong library matches: 0
+- placed in a source file: 2290/6599 in 66 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **1944**; stubs: **223**
+- reconstructed FS2 functions: **1955**; stubs: **220**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -77,9 +77,10 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/uiwidget.cpp` | 56 | 0 |
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 167 |
-| `src/rena/rena_2d_texture_tim2.cpp` | 0 | 4 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 168 |
+| `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
+| `src/rena/tim2.cpp` | 4 | 0 |
 | `src/rx/filecd.c` | 35 | 0 |
 | `src/rx/filehdd.c` | 0 | 2 |
 | `src/rx/filehost.c` | 0 | 2 |
@@ -102,9 +103,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 88 TUs: todo 51, partial 1, verify 53
-- next: **rena/rena_2d_texture_tim2.cpp** (pinned in the queue)
-- pinned queue: rena/rena_2d_texture_tim2.cpp, yamipan/rendering/texture_store.cpp
+- 90 TUs: todo 51, partial 2, verify 54
+- next: **yamipan/rendering/texture_store.cpp** (pinned in the queue)
+- pinned queue: yamipan/rendering/texture_store.cpp
 - partial: `game/stagescene.cpp` 112/258 -- Written this run (batch 082, 35 names): parseTexture, parseModel, parseMotion with readMotionList 0x1a1df0, parseMap, parseSndseh with fileWithSuffix 0x1a4370, 
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
@@ -146,6 +147,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/uiwidget.cpp` 56/56 -- Cut out of unassigned@00252840 (the frontier pick) as 0x25b8e0..0x25fa50, batch 066 (74 names: the widget classes by their type strings from the class table 0x2
 - verify: `game/vcmtable.cpp` 52/52 -- Cut out of unassigned@00296d60 (the frontier pick) as 0x296d60..0x299d90, batches 063-065 (59 names, incl. the binary's std::string instances 0x297fb0.. and new
 - verify: `game/wstring.cpp` 5/5 -- Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds 
+- verify: `rena/rena_2d_texture_tim2.cpp` 7/7 -- All 7 written; class moved to rena/rena_2d_texture_tim2.h. One Tim2Texture per mip level of the first picture; m_image (+0x40) is the TIM2 file itself, not a co
 - verify: `rena/rena_pkt_vif1pktmanage.cpp` 13/17 -- Pinned 0x2eaff0-0x2ec110 under the new src/rena/ with the game's own file name (strings in Reset / AddList); the stale inferred key rena_pkt_vif1pktmanage.cpp r
 - verify: `rx/filecd.c` 35/35 -- All 35 of 0x1565c8..0x157db8 written. rxcmp.py: 34 of 35 identical to RoR with jump targets and data masked; the one difference is rxFileCdFindDir, 0x18 longer 
 - verify: `rx/rxfile.c` 108/108 -- rxfile core is RoR's prebuilt rx: rxcmp.py over both ranges finds 106 of 108 identical (jumps, lui, gp masked); rxFileOnCreate 0x154518 / rxFileOnGetSize 0x1545
@@ -162,6 +164,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 18:31 `rena/rena_2d_texture_tim2.cpp` verify: reconstruct Tim2Texture, all 7 functions (verify)
 - 2026-11-03 18:13 `game/menuscene.cpp` verify: reconstruct the menu flow, 14 functions (verify)
 - 2026-11-03 17:41 `rx/filecd.c` verify: rx/filecd.c: the cdrom0: driver carried over from RosePan with FS2's rxFileCdFindDir
 - 2026-11-03 17:39 `game/spkrom.cpp` verify: game/spkrom.cpp: rxInit, rxTerm, the SPK.ROM index (load, locate, size, load file), the rx memory hooks; with the Pan layer's virtual disc behind sceCdRead
@@ -169,7 +172,6 @@ Recent sessions:
 - 2026-11-03 16:19 `game/stagescene.cpp` partial: stage script reader: parseScript, splitLines, reset, target / end blocks, script and character targets, StageFiles ctor / dtor; StageList and StringMap template
 - 2026-11-03 15:55 `game/stagescene.cpp` partial: StageScene ctor / dtor and 17 small members written (30 of 258); batch 080 names every scene member class (54 names)
 - 2026-11-03 15:41 `game/stagescene.cpp` partial: StageScene / StageFiles run cut (0x1953f0..0x1a68b0); drawPaused, raycast, getMission, getPurposeText, StageFiles::load and dataDir written (11 of 258); stagesc
-- 2026-11-03 15:23 `game/seplayer.cpp` verify: SoundTrack and SePlayer complete: StDT / SEDT tables as EE-layout S2dRef images, the SeHandle bits, the voice records and master fade, placed play, subtitles by
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
@@ -177,14 +179,14 @@ Recent sessions:
 | `unassigned@002b6b90` | todo | 0/22/272 | 115.8 | 47 | 3 |
 | `unassigned@002681e0` | todo | 0/17/514 | 156.6 | 35 | 0 |
 | `unassigned@0017fce0` | todo | 0/11/399 | 76.4 | 24 | 0 |
-| `rena/rena_2d_texture_tim2.cpp` | todo | 0/4/7 | 3.5 | 22 | 2 |
-| `unassigned@002ec110` | todo | 0/21/25 | 1.9 | 20 | 2 |
 | `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
-| `unassigned@00231c90` | todo | 0/6/61 | 36.3 | 18 | 1 |
+| `unassigned@002d46a0` | todo | 0/8/252 | 51.5 | 17 | 2 |
 | `unassigned@001fe6b0` | todo | 0/16/563 | 197.2 | 16 | 0 |
-| `unassigned@002d46a0` | todo | 0/7/252 | 51.5 | 16 | 2 |
 | `game/stagescene.cpp` | partial | 112/13/258 | 67.6 | 15 | 0 |
 | `rx/rxsndstrstream.c` | todo | 0/5/18 | 2.4 | 15 | 2 |
+| `rx/rxsndstrmem.c` | todo | 0/3/16 | 2.6 | 13 | 2 |
+| `unassigned@00231c90` | todo | 0/6/61 | 36.3 | 13 | 0 |
+| `unassigned@00299d90` | todo | 0/8/215 | 62.3 | 13 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -196,7 +198,6 @@ Recent sessions:
 | `001494c0` | StringList::tail | 8 | game | stub | - |
 | `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
 | `00149230` | StringList::splitString | 5 | game | stub | - |
-| `002e2920` | Tim2Texture::Tim2Texture | 5 | lib-ctx | stub | rena/rena_2d_texture_tim2.cpp |
 | `0029efe0` | getNaviMenu | 5 | game | stub | - |
 | `001937f0` | FUN_001937f0 | 4 | - | missing | - |
 | `00284640` | AreaGrid::AreaGrid | 4 | game | stub | - |
@@ -213,7 +214,6 @@ Recent sessions:
 | `0028fd30` | fsmRelocate | 3 | game | stub | - |
 | `0028fc80` | fsmFindTrack | 3 | game | stub | - |
 | `00189840` | FUN_00189840 | 3 | - | missing | - |
-| `002e1c50` | Tim2Texture::upload | 3 | lib-ctx | missing | rena/rena_2d_texture_tim2.cpp |
 | `0025b590` | FUN_0025b590 | 3 | - | missing | - |
 | `0029efd0` | getSaveExtra | 2 | game | stub | - |
 | `0023ae40` | CollisionFile::relocate | 2 | game | stub | - |
@@ -230,4 +230,6 @@ Recent sessions:
 | `00152740` | rxFileCallSizeHook | 2 | native | missing | game/streamring.cpp |
 | `00184370` | StageNodeList::erase | 2 | game | stub | - |
 | `00149040` | String::String | 2 | game | stub | - |
+| `001a38e0` | StageFiles::loadCommon | 2 | game | stub | game/stagescene.cpp |
+| `002bc040` | SubSceneMapObject::SubSceneMapObject | 2 | game | stub | - |
 
