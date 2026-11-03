@@ -797,6 +797,36 @@
   "was": "FUN_00107888",
   "why": "libgraph: VIF1_FBRST / ERR, VU1 reset via ctc2 vi28 | 0x200, two init qwords into the VIF1 FIFO, GIF_CTRL reset"
  },
+ "001078f0": {
+  "name": "checkModelVersion",
+  "tag": "lib-context",
+  "was": "FUN_001078f0",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x259180 checkModelVersion; same size 0xa0 and place in a run of matching functions (rxalign.py)"
+ },
+ "00107990": {
+  "name": "_GetGsDxDyOffset",
+  "tag": "lib-context",
+  "was": "FUN_00107990",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x259220 _GetGsDxDyOffset; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "001079a0": {
+  "name": "sceGsSetDefDispEnv",
+  "tag": "lib-context",
+  "was": "FUN_001079a0",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x259230 sceGsSetDefDispEnv; same size 0x374 and place in a run of matching functions (rxalign.py)"
+ },
+ "00107d18": {
+  "name": "sceGsPutDispEnv",
+  "tag": "lib-context",
+  "was": "FUN_00107d18",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x2595a8 sceGsPutDispEnv; same size 0xbc and place in a run of matching functions (rxalign.py)"
+ },
+ "00107dd8": {
+  "name": "sceGszbufaddr",
+  "tag": "lib-context",
+  "was": "FUN_00107dd8",
+  "why": "SDK 3.0 libgraph by reading: (psm, w, h) -> page count of a w x h buffer (64-wide pages, 32 or 64 rows by psm bit 1), doubled unless sceGsGetGParam says interlace/field 1; RoR 0x25aa58 sceGszbufaddr has the same size 0xc8 (FS2 links it before sceGsSetDefDrawEnv)"
+ },
  "00107ea0": {
   "name": "sceGsSetDefDrawEnv",
   "tag": "lib-context",
@@ -808,6 +838,12 @@
   "tag": "lib-context",
   "was": "FUN_00108088",
   "why": "libgraph (clear, ztest, x, y, w, h, r, g, b, a, z): TEST_1 0x47, PRIM 6 sprite, RGBAQ 1, two XYZ2 5 corners scaled by 16, restores TEST; returns 6 qwords"
+ },
+ "00108190": {
+  "name": "sceGsPutDrawEnv",
+  "tag": "lib-context",
+  "was": "FUN_00108190",
+  "why": "SDK 3.0 libgraph by reading: waits for GIF DMA ch.2 idle (0x1000000 tries, else scePrintf error, -1), then sends the drawenv packet (QWC from the GIF tag NLOOP + 1, scratchpad bit) with CHCR 0x101; RoR 0x259668 sceGsPutDrawEnv, same size 0xe8"
  },
  "00108278": {
   "name": "sceGsSyncV",
@@ -821,11 +857,65 @@
   "was": "FUN_00108310",
   "why": "libgraph: waits on VIF1 / GIF DMA, VIF1_STAT, VU1 and GIF_STAT; prints 'sceGsSyncPath: DMA Ch.1 does not terminate' (0x2fe730) on timeout; mode != 0 returns the busy mask"
  },
+ "00108628": {
+  "name": "sceGsSetDefTexEnv",
+  "tag": "lib-context",
+  "was": "FUN_00108628",
+  "why": "SDK 3.0 libgraph by reading: 12 args (env, flush, tbp0, tbw, psm, w_p, h_p, tfx, cbp, cpsm, csm, cld) packed into TEX0_1 (reg 6), TEX1_1 (0x14), CLAMP_1 (8) A+D words, returns 4 (qwords); not in RoR's list"
+ },
+ "00108738": {
+  "name": "sceGsSetDefLoadImage",
+  "tag": "lib-context",
+  "was": "FUN_00108738",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x259df8 sceGsSetDefLoadImage; same size 0x1e4 and place in a run of matching functions (rxalign.py)"
+ },
+ "00108920": {
+  "name": "sceGsSetDefStoreImage",
+  "tag": "lib-context",
+  "was": "FUN_00108920",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x259fe0 sceGsSetDefStoreImage; same size 0x140 and place in a run of matching functions (rxalign.py)"
+ },
+ "00108a60": {
+  "name": "sceGsExecLoadImage",
+  "tag": "lib-context",
+  "was": "FUN_00108a60",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25a120 sceGsExecLoadImage; same size 0x17c and place in a run of matching functions (rxalign.py)"
+ },
+ "00108be0": {
+  "name": "sceGsExecStoreImage",
+  "tag": "lib-context",
+  "was": "FUN_00108be0",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25a2a0 sceGsExecStoreImage; same size 0x68c and place in a run of matching functions (rxalign.py)"
+ },
  "00109270": {
   "name": "sceGsSyncVCallback",
   "tag": "lib-context",
   "was": "FUN_00109270",
   "why": "libgraph: replaces GParam+8 / +0xc with AddIntcHandler(INTC_VBLANK_S 2, fn), Remove + DisableIntc for 0; returns the previous callback"
+ },
+ "00109310": {
+  "name": "WaitDma",
+  "tag": "lib-context",
+  "was": "FUN_00109310",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25ae10 WaitDma; same size 0x70 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109380": {
+  "name": "WatchDma",
+  "tag": "lib-context",
+  "was": "FUN_00109380",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25ae80 WatchDma; same size 0x84 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109408": {
+  "name": "CheckAddress",
+  "tag": "lib-context",
+  "was": "FUN_00109408",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25af08 CheckAddress; same size 0x28 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109430": {
+  "name": "memclr",
+  "tag": "lib-context",
+  "was": "FUN_00109430",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25af30 memclr; same size 0x30 and place in a run of matching functions (rxalign.py)"
  },
  "00109468": {
   "name": "sceDmaGetChan",
@@ -839,17 +929,179 @@
   "was": "FUN_00109490",
   "why": "libdma (enable): clears CHCR / MADR / QWC / TADR / ASR of the 10 channels, acks DMAC_STAT, re-arms, sets DMAC_CTRL bit 0 when 1; returns the old enable bit"
  },
+ "00109748": {
+  "name": "sceDmaGetEnv",
+  "tag": "lib-context",
+  "was": "FUN_00109748",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25b248 sceDmaGetEnv; same size 0x38 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109780": {
+  "name": "sceDmaPutStallAddr",
+  "tag": "lib-context",
+  "was": "FUN_00109780",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25b280 sceDmaPutStallAddr; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
  "00109798": {
   "name": "sceDmaSend",
   "tag": "lib-context",
   "was": "FUN_00109798",
   "why": "libdma (chan, tag): waits for the channel, TADR = tag (0x109408 maps scratchpad), QWC 0, CHCR = (CHCR & ~0xc) | 0x105 (from memory, source chain, start)"
  },
+ "00109800": {
+  "name": "sceDmaSendN",
+  "tag": "lib-context",
+  "was": "FUN_00109800",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25b300 sceDmaSendN; same size 0x74 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109878": {
+  "name": "sceDmaSendI",
+  "tag": "lib-context",
+  "was": "FUN_00109878",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25b378 sceDmaSendI; same size 0x74 and place in a run of matching functions (rxalign.py)"
+ },
+ "001098f0": {
+  "name": "sceDmaRecv",
+  "tag": "lib-context",
+  "was": "FUN_001098f0",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25b3f0 sceDmaRecv; same size 0x48 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109938": {
+  "name": "sceDmaRecvN",
+  "tag": "lib-context",
+  "was": "FUN_00109938",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25b438 sceDmaRecvN; same size 0x7c and place in a run of matching functions (rxalign.py)"
+ },
+ "001099b8": {
+  "name": "sceDmaRecvI",
+  "tag": "lib-context",
+  "was": "FUN_001099b8",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25b4b8 sceDmaRecvI; same size 0x80 and place in a run of matching functions (rxalign.py)"
+ },
  "00109a38": {
   "name": "sceDmaSync",
   "tag": "lib-context",
   "was": "FUN_00109a38",
   "why": "libdma (chan, mode, timeout): mode 1 returns CHCR.STR, else waits through 0x109310"
+ },
+ "00109a70": {
+  "name": "sceDmaWatch",
+  "tag": "lib-context",
+  "was": "FUN_00109a70",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25b570 sceDmaWatch; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109aa8": {
+  "name": "sceDmaPause",
+  "tag": "lib-context",
+  "was": "FUN_00109aa8",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25b5a8 sceDmaPause; same size 0x98 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109b40": {
+  "name": "sceDmaRestart",
+  "tag": "lib-context",
+  "was": "FUN_00109b40",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25b640 sceDmaRestart; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109b58": {
+  "name": "sceDevVu0CheckBusy",
+  "tag": "lib-context",
+  "was": "FUN_00109b58",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25c3a0 sceDevVu0CheckBusy; same size 0x14 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109b70": {
+  "name": "sceDevVu0Reset",
+  "tag": "lib-context",
+  "was": "FUN_00109b70",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25c3b8 sceDevVu0Reset; same size 0x10 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109be8": {
+  "name": "sceDevVu0Continue",
+  "tag": "lib-context",
+  "was": "FUN_00109be8",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25c430 sceDevVu0Continue; same size 0x50 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109c38": {
+  "name": "sceDevVu0PutDBit",
+  "tag": "lib-context",
+  "was": "FUN_00109c38",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25c480 sceDevVu0PutDBit; same size 0x2c and place in a run of matching functions (rxalign.py)"
+ },
+ "00109c68": {
+  "name": "sceDevVu0PutTBit",
+  "tag": "lib-context",
+  "was": "FUN_00109c68",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25c4b0 sceDevVu0PutTBit; same size 0x2c and place in a run of matching functions (rxalign.py)"
+ },
+ "00109c98": {
+  "name": "sceDevVu0GetDBit",
+  "tag": "lib-context",
+  "was": "FUN_00109c98",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25c4e0 sceDevVu0GetDBit; same size 0x10 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109ca8": {
+  "name": "sceDevVu0GetTBit",
+  "tag": "lib-context",
+  "was": "FUN_00109ca8",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25c4f0 sceDevVu0GetTBit; same size 0x10 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109cb8": {
+  "name": "sceDevVu0Sync",
+  "tag": "lib-context",
+  "was": "FUN_00109cb8",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25c500 sceDevVu0Sync; same size 0x40 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109cf8": {
+  "name": "sceDevVu0Exec",
+  "tag": "lib-context",
+  "was": "FUN_00109cf8",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25c540 sceDevVu0Exec; same size 0x10 and place in a run of matching functions (rxalign.py)"
+ },
+ "00109d08": {
+  "name": "sceDevVu0GetTpc",
+  "tag": "lib-context",
+  "was": "FUN_00109d08",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25c550 sceDevVu0GetTpc; same size 0xc and place in a run of matching functions (rxalign.py)"
+ },
+ "00109d18": {
+  "name": "sceDevVu0GetCnd",
+  "tag": "lib-context",
+  "was": "FUN_00109d18",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25c560 sceDevVu0GetCnd; same size 0x16c and place in a run of matching functions (rxalign.py)"
+ },
+ "00109e88": {
+  "name": "sceDevVu0PutCnd",
+  "tag": "lib-context",
+  "was": "FUN_00109e88",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25c6d0 sceDevVu0PutCnd; same size 0x164 and place in a run of matching functions (rxalign.py)"
+ },
+ "0010a0a8": {
+  "name": "sceDevVu1Reset",
+  "tag": "lib-context",
+  "was": "FUN_0010a0a8",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25c8f0 sceDevVu1Reset; same size 0x10 and place in a run of matching functions (rxalign.py)"
+ },
+ "0010a548": {
+  "name": "sceDevVif0Reset",
+  "tag": "lib-context",
+  "was": "FUN_0010a548",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25cd90 sceDevVif0Reset; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "0010a698": {
+  "name": "sceDevVif0GetCnd",
+  "tag": "lib-context",
+  "was": "FUN_0010a698",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25cee0 sceDevVif0GetCnd; same size 0x1dc and place in a run of matching functions (rxalign.py)"
+ },
+ "0010a878": {
+  "name": "sceDevVif1Reset",
+  "tag": "lib-context",
+  "was": "FUN_0010a878",
+  "why": "SDK 3.0 libgraph / libdma / libdev: RosePan names RoR 0x25d0c0 sceDevVif1Reset; same size 0x24 and place in a run of matching functions (rxalign.py)"
+ },
+ "0010a9c8": {
+  "name": "sceDevVif1GetCnd",
+  "tag": "lib-context",
+  "was": "FUN_0010a9c8",
+  "why": "SDK 3.0 libdev by reading and place: copies VIF1 ROW0-3 / COL0-3 / MASK / CODE / STAT / ITOP / ITOPS / BASE / OFST / TOP / TOPS into a condition record; the slot after sceDevVif1Reset .. RoR 0x25d210 sceDevVif1GetCnd (0x234; FS2's is 0x294 and has no sceDevVif1GetFifo after it)"
  },
  "0010ac60": {
   "name": "sceVif1PkReset",

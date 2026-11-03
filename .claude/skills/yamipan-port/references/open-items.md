@@ -130,10 +130,17 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    FF3's FF2 symbols; architecture.md "Key functions and globals", SDK). Doubts: `_sceFsCallRpc` /
    `_sceFsCountOpenIob` are names by reading (Sony's own unknown); 0x13bc38 (rpc 0xfe) / 0x13bd78
    (rpc 0xfd) left unnamed (no callers, unnamed in RoR and FF3).
-   **Next batches, in this order**: the rest of the SDK 3.0
-   libraries both games link, by `rxalign.py` size runs against
-   RoR's `// lib` names as batch 010 did for SIF (libgraph,
-   libdma, libpad, libmc, libcdvd: find each by a named anchor); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
+   **Batch 018 done (2026-11-02, 42 names, 7 merged starts created)**: libgraph / libdma / libdev
+   0x1076e8..0x10ac60 from RoR (38 aligned, 4 by reading: `sceGszbufaddr`, `sceGsPutDrawEnv`,
+   `sceGsSetDefTexEnv`, `sceDevVif1GetCnd`; architecture.md "Key functions and globals", SDK).
+   Doubts: 0x109570 (RoR's unnamed 0x224) and RoR's unnamed libdev slots stay `FUN_`.
+   **Next batches, in this order**: **libcdvd** (`rxalign.py 11b800 11e440 24b400 24d220`: 29 of
+   29 size matches, 1 merged start; dry run 2026-11-02, apply with `--missing`, `ghidra.py mkfunc`,
+   reset the JSON to `{}`, `refresh.py`, `--batch`), **libmc** (`rxalign.py 11fb70 120900 24d220
+   24eb28`: only 9 matches, FS2's `sceMcInit` 0x298 / `sceMcEnd` 0xac differ from RoR's 0x228 /
+   0x124: another libmc version, read the rest from its RPC numbers), libpad (RoR links libpad2,
+   no reference: name by reading from `scePadInit` 0x11e440 / `scePadPortOpen` 0x11e898 and ps2sdk's
+   order); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
    string rep); SDK functions from their `PsIIlib` / assert strings; rx (`rxfile.c`); rena
    (`rena_*.cpp`). Thunks 0x100218 (`_exit`) and 0x100270 keep Ghidra's thunk names (renaming a
    thunk may rename its target);
