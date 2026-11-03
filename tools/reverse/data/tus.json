@@ -1,6 +1,7 @@
 {
  "queue": [
-  "game/menuscene.cpp"
+  "game/menuscene.cpp",
+  "rena/rena_2d_texture_tim2.cpp"
  ],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
