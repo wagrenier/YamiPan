@@ -824,6 +824,7 @@
    "why": "rxsndut init / exit / update of the five stream layers (not in RoR; batch 008); file cut a guess."
   },
   "rx/rxsys.c": {
+   "notes": "rxsys is RoR's prebuilt rx: rxcmp.py '^rxSys' finds 126 of 126 identical (jumps, lui and gp offsets masked) and the data words and console font equal RoR's at +0x14eb0, so src/rx/rxsys.c is RosePan's rxsys.cpp in C with no FS2 difference. rxcmp.py --data gave the data map (data +0x14eb0, bss -0x4b1240, rxfile pools -0x30a030; architecture.md rx). New src/rx/rxfile.h (types, slot pools and the rxFile calls rxsys makes) and four more rxTh calls in rxthread.h; rxsys.h is the full header. Batch 070 names newlib atoi / strtol / _strtol_r. Host names renamed as in TU 36 (YamiPanDebugHandler, YamiPan_GetHostPointer in yamipan/yamipan_memory.h). Checked: callcheck clean, layout lint OK, g++ -x c++ -fsyntax-only -Wall -Wextra clean with RosePan's src and sdk/pc_prefix.h; gcc -std=c11 fails only inside RosePan's sce_gs.h / libgraph.h (C++-only): bootstrap 6 must make the SDK headers C-clean (open-items TU 37 lists what else it must give). Doubt: FS2's disc has no system.ini, so the save name stays BISCPS-00000 (unused). Next: tus.py next (rx/rxfile.c and rx/rxthread.c are RosePan carry-overs too; run rxcmp.py first).",
    "ranges": [
     [
      "00100328",
@@ -834,6 +835,15 @@
      "00153518"
     ]
    ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 10:55",
+     "status": "verify",
+     "summary": "all 126 functions written: RosePan's rxsys carried to C, every function RoR's word for word (new rxcmp.py), FS2 addresses"
+    }
+   ],
+   "status": "verify",
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. rxsys: RoR's rx/rxsys.cpp 0x23ff58..0x2437f8 split in two by FS2's link order (0x100328 rxSysNoMemFunc .. rxSysTermUser, rxSysThreadCallback .. rxSysStreamOpenPath); .c after FS2's own rxfile.c string."
   },
   "rx/rxthread.c": {

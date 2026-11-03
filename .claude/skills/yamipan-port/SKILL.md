@@ -179,6 +179,7 @@ what degrades while Ghidra is down.
 | map code | `modview.py range\|tree`, `yamipan_functions.txt`, `stage.py class:Name` |
 | name | `ctxcard.py`, `name_ctx.py`; seeding `sections.py --apply`, `libmatch.py --apply`, `rxalign.py` (rx and SDK libs from RosePan), `codeptrs.py` (missing starts behind code pointers) |
 | read code | `stage.py`, `dec.py`, `ghidra.py` (asm, refs, mkfunc), `hidden.py`, `mipsdis.py`, `vudis.py`, `mipsemu.py`, `sinit.py` |
+| carried-over libraries (rx) | `rxcmp.py` (FS2 vs RoR word for word, `--data` for the data map) |
 | classes | `rtti.py --class / --vtable` |
 | TU identity | `tuid.py <TU>` (in the brief) |
 | game data | `datadump.py`, `tm2png.py`, game-specific readers written as needed |

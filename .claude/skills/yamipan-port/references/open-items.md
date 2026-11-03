@@ -646,6 +646,29 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    RosePan's IOP driver (`src/iop/rxsnddrv/`), plus `sdk/sifman.h` / `sdk/sifrpc.h` / `sdk/eekernel.h`
    (`SemaParam`, `DeleteSema`, `SignalSema`, `sceSifGetOtherData`, `sceSifReceiveData`). The meaning
    of commands 0x52 / 0x53 / 0x62 is unread (the IOP module would tell). Next pick: `tus.py next`.
+   TU 37 (the frontier's pinned `rx/rxsys.c` 0x100328..0x1037c0 + 0x153108..0x153518,
+   2026-11-03): **all 126 written, `verify`** (batch 070: newlib `atoi` / `strtol` / `_strtol_r`;
+   architecture.md "rx"). Every function is RoR's word for word (the new **`tools/reverse/rxcmp.py`**
+   compares a shared library by name in both ELFs; `--data` pairs the data addresses), the data
+   words and the console font too, so the file is RosePan's `rxsys.cpp` carried to C with FS2
+   addresses and no FS2 difference. `src/rx/rxsys.h` is the full header now (C and C++, `extern
+   "C"`); new `src/rx/rxfile.h` (the driver / marker / tag / segment / slot types, the slot pools and
+   the 26 rxFile* calls rxsys makes, FS2 addresses); `rxthread.h` gained rxThYield / rxThRequest
+   (+ `RxThRequestFunc`) / rxThInitOnce / rxThExitOnce. Host names renamed as TU 36 did:
+   `RosePanDebugHandler` -> **`YamiPanDebugHandler`**, `RosePan_GetHostPointer` ->
+   **`YamiPan_GetHostPointer`** (`yamipan/yamipan_memory.h`). Checked: callcheck clean, layout lint
+   OK, g++ -x c++ -fsyntax-only -Wall -Wextra clean (RosePan's `src` + `sdk/pc_prefix.h` forced, a
+   two-line shim for the renamed names); gcc -std=c11 fails **only inside RosePan's `sdk/sce_gs.h` /
+   `libgraph.h`** (C++ `alignof` without `<stdalign.h>`, `sizeof(SCEGIFTAG_EOP)` on a macro).
+   **Bootstrap 6 must give**: C-clean SDK headers (`sce_gs.h`, `libgraph.h`: the rx TUs are C),
+   `sdk/pc_prefix.h` (scePrintf) forced on C as well, `yamipan/yamipan_memory.h`
+   (`YamiPan_GetHostPointer`), `sdk/eekernel.h` with `YamiPanDebugHandler` / `SetDebugHandler`,
+   `iDisableIntc`, `GetMemorySize`, `PollSema`; `sdk/libcdvd.h` (sceCdGetDiskType / sceCdMmode /
+   SCECdPS2DVD / SCECdDVDV / SCECdINIT), `sdk/sifdev.h` / `fileio.h` (sceRead / sceLseek / sceIoctl).
+   Host behaviour (RosePan's, unchanged): the boot path leaves s_bootDev empty (no tty), no BIOS
+   ROM date, the exception screen is log-only. Doubt: FS2's disc has no system.ini, so the
+   save-data name rxSysInit builds stays "BISCPS-00000" (nothing in rxsys reads it again). Next
+   pick: `tus.py next` (rx/rxfile.c, rx/rxthread.c are the neighbours; RosePan has both).
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

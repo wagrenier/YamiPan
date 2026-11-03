@@ -2411,6 +2411,12 @@
   "was": "FUN_00121ef0",
   "why": "raise(6) then _exit(1); Ghidra's body also swallows the next function (an abs: negate if < 0) after the noreturn call"
  },
+ "00121f38": {
+  "name": "atoi",
+  "tag": "lib-context",
+  "was": "FUN_00121f38",
+  "why": "newlib atoi: returns strtol(s, NULL, 10) (0x129d80); rxSysReadSystemIni calls it on system.ini's VERSION value, as RoR's rxsys calls atoi there"
+ },
  "00123538": {
   "name": "exit",
   "tag": "lib-context",
@@ -2536,6 +2542,18 @@
   "tag": "lib-context",
   "was": "FUN_00128a70",
   "why": "MSL C: first occurrence of s2 in s1 (s1 when s2 is empty, 0 when none); spkLocateFile uses it for 'ROM.' / 'ROMD.'"
+ },
+ "00129b48": {
+  "name": "_strtol_r",
+  "tag": "lib-context",
+  "was": "FUN_00129b48",
+  "why": "newlib _strtol_r(reent, s, end, base): what strtol hands _impure_ptr to"
+ },
+ "00129d80": {
+  "name": "strtol",
+  "tag": "lib-context",
+  "was": "FUN_00129d80",
+  "why": "newlib strtol: tail of _strtol_r(_impure_ptr, s, end, base) with _impure_ptr loaded from 0x2f3398; atoi's callee"
  },
  "0012a010": {
   "name": "toupper",

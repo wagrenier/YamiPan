@@ -7,9 +7,14 @@
 #ifndef _RX_RXTHREAD_H
 #define _RX_RXTHREAD_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* The arguments are words on the EE; intptr_t so a host pointer fits. */
+typedef int  (*RxThRequestFunc)(intptr_t *args);
 
 /* Called with 1 when a BG thread yields, 0 when it comes back. */
 typedef void (*RxThCallback)(int yielding);
@@ -19,8 +24,12 @@ void rxThAddCallback(RxThCallback func);                                /* FS2 0
 void rxThRemoveCallback(RxThCallback func);                             /* FS2 0x001672a8 */
 int  rxThIsYielding(void);                                              /* FS2 0x001672d8 */
 int  rxThIsRequestLocked(void);                                         /* FS2 0x00167438 */
+void rxThYield(void);                                                   /* FS2 0x001674d0 */
 void rxThDisableDispatch(void);                                         /* FS2 0x00167890 */
 void rxThEnableDispatch(void);                                          /* FS2 0x00167920 */
+void rxThRequest(RxThRequestFunc func, intptr_t a, intptr_t b, intptr_t c); /* FS2 0x00167e28 */
+void rxThInitOnce(void);                                                /* FS2 0x00168078 */
+void rxThExitOnce(void);                                                /* FS2 0x00168090 */
 
 #ifdef __cplusplus
 }

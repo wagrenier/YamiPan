@@ -157,6 +157,25 @@ RoR's moved by -0x2b7bc0** (s_config 0x4fdf00 .. s_queueReply 0x513780; s_xvab 0
 s_bufferBank 0x2f5b60, pitch tables 0x2f5b68 / 0x2f5cf0, BG-call hook 0x2f5e80, IOP hooks
 0x2f5e88 / 8c / 90, SPU hooks 0x2f5e98 / 9c / a0 (0x2f5e94 unused), ADPCM end block 0x2f5ec0,
 s_rpcSema / s_queuePos / s_queueReplyPos 0x2f5f00 / 04 / 08.
+**TU `rx/rxsys.c` (2026-11-03, all 126 written, `verify`)**: **all 126 rxsys functions are RoR's
+word for word** (`rxcmp.py '^rxSys'`: same sizes, jump targets / `lui` / gp offsets masked), so
+`src/rx/rxsys.c` is RosePan's `rxsys.cpp` carried to C with no FS2 difference. `rxcmp.py --data`
+pairs the addresses identical code forms: rxsys's **data is RoR's +0x14eb0** (s_printHook 0x2f0880,
+s_libVersion 0x2f0888, s_productNumber "SCPS-00000" 0x2f08b0, s_bootDevice 0x2f08d4, s_iopImage
+"ioprp300.img" 0x2f0b00, the module lists 0x2f0c08 / 20 / 38, semaphores 0x2f0c44 / 48, g_rxSysMemFunc
+0x2f0d3c..0x2f0d48, the console font 0x2f0d60..0x2f1060: words and font bytes identical), its **bss is
+RoR's -0x4b1240** (s_saveName 0x31b100, s_modules 0x31b140, s_deviceReady 0x31b540, s_confBuf
+0x31b580, s_ttyBuf 0x31c580, s_ttyClient 0x31d580, the console 0x31d5c0..0x32996c), and **rxfile's
+slot pools are RoR's -0x30a030** (rxFileSlots 0x4d0b80, rxFileTagPool 0x4d3f80, rxFileMarkerPool
+0x4d4384, rxFileSegmentPool 0x4d4988, free heads 0x4d4380 / 0x4d4984 / 0x4d5988). The System Monitor
+is 0x102fe0..0x1037a8; `_exit` (the instructions it patches) is 0x100218; newlib's ctype table is
+0x3000c1. FS2's callers: **`rxInit` 0x1527a0** (rxThSetPrioIndex, rxSysSetBootPath, rxSysInit, memory
+hooks `gameRxMemAlloc` 0x1530b0 twice / `gameRxMemRealloc` 0x153090 / `gameRxMemFree` 0x153080 over
+the heap at 0x329970, rxThSetInterval(4), rxFileCdSetLayerMode(0), rxSysInitFileDevice(1),
+spkRomLoad, rxSysSetDeviceParam(0x80000)) and `rxTerm` 0x152750 (rxSysTerm). Nothing found reads
+g_rxSysMemFunc besides its setters, and rxSysSetDebugHandlers / rxSysSetIopImage / rxSysBindRpc /
+rxSysHexDump have no caller in FS2. newlib `atoi` 0x121f38 -> `strtol` 0x129d80 -> `_strtol_r`
+0x129b48 (batch 070).
 **Batch 008 (2026-11-02): rxsndut + rxsndstr 0x162178..0x166b50** (not in RoR; named by reading
 in rx style, `rxSndUt*` / `rxSndStr*`; messages 0x3022e0..0x302738). Five layers, each with its own
 static slot table and init / exit / update called from `rxSndUtInit` 0x162178 / `rxSndUtExit`
