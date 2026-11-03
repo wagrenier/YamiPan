@@ -507,6 +507,25 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    ROM: `Open` of an id never added writes through a null list. **Next picks**: the rena
    `Tim2Texture` TU 0x2e1b70..0x2e2970 (the texture decode the draw module needs), bootstrap 6's
    host libvifpk (`sceVif1PkReset` / `Next` / `CloseDmaTag` as the harness has them).
+   TU 31 (the frontier's `unassigned@00142dd0`): **`game/gsblockmap.cpp` 0x142dd0..0x144080**
+   pinned (the whole run between the SIF library and sound.cpp; 14 functions, batch 062 with 8
+   names, **all written, `verify`**; architecture.md "Modules"): `GsBlockMap` (alloc / free /
+   findFree / setRange), `TexArea` (its three slots, the inline list clip) and `TexAreaList`
+   (place / insert). The stand-ins left `gfxtarget.h` for the new `game/gsblockmap.h`
+   (gfxtarget.h includes it); `getList` answers `TexAreaList *` and `UiDrawer::begin` /
+   `m_texList` / `UiLayout::draw` / screen.cpp take that type (were `void *`); `gsutil.h`'s
+   Tim2Texture stand-in gained `getVramBlocks` 0x2e1c30 and `m_image` (+0x40). Checked: callcheck
+   clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on gsblockmap / uidrawer /
+   uilayout / screen (gfxtarget.cpp only fails on the SDK gaps listed for bootstrap 6), and a host
+   harness (gfxInitRenderTargets' marks, the TexArea's free range exactly 0x3700..0x3fbe, place
+   new / resident / wrap / eviction / no fit, top allocations lowering and freeing raising the
+   lists' end, in-word and page findFree both ways) passed. Kept as the ROM, for the user to
+   overrule: setRange's head / tail bit counts (block & 0x7ff) >> 6 (right for every range the
+   game marks; wrong in general); the in-word search may answer a run cut short at bit 31;
+   `TexArea::alloc` ignores its fromTop / pageAligned; place answers -0x20 for no room. Doubts:
+   the file / class names (no strings); `Tim2Texture` +0x30 (read as the CLUT's blocks) is unread.
+   **Next picks**: the region allocator 0x2e1440..0x2e1b70 (`GsRegionAlloc`), `drawSysInit`
+   0x2d7cf0, the rena `Tim2Texture` TU 0x2e1b70..0x2e2970.
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

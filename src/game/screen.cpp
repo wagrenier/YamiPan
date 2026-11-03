@@ -34,7 +34,7 @@ static inline void drawOverlayLayout(UiLayout *layout)
     layout->advance();
     layout->update();
     sceVif1Packet *packet = gGameSystem->m_packets.openList(PacketList_Overlay);
-    void *texList = gfxGetTexArea()->getList(PacketList_Overlay);
+    TexAreaList *texList = gfxGetTexArea()->getList(PacketList_Overlay);
     layout->draw(packet, texList);
     gGameSystem->m_packets.closeList();
 }
@@ -187,7 +187,7 @@ int runLayout(void *item, int arg, bool cancelable, const char *baseDir)
             break;
         }
         sceVif1Packet *packet = gGameSystem->m_packets.openList(PacketList_Screen);
-        void *texList = gfxGetTexArea()->getList(PacketList_Screen);
+        TexAreaList *texList = gfxGetTexArea()->getList(PacketList_Screen);
         layout.draw(packet, texList);
         gGameSystem->m_packets.closeList();
         if (cancelable && (sys->m_pad0.m_pressed & kLayoutCancelButton)) {

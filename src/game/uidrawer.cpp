@@ -732,7 +732,7 @@ void UiDrawer::end()
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x0024fad0
 
-void UiDrawer::begin(sceVif1Packet *packet, void *texList)
+void UiDrawer::begin(sceVif1Packet *packet, TexAreaList *texList)
 {
     m_packet = packet;
     m_texList = texList;

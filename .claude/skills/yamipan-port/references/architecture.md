@@ -1045,6 +1045,32 @@ black. Getters: `gfxGetCurrentDisplay` 0x12e050, `gfxGetCurrentDrawEnv` 0x12e080
 0x2d7cf0(0x700, 0x700, 512, 512, alloc) (unread: about nine draw-system objects). Release deletes the
 region allocator and the block map, never the TexArea.
 
+**`game/gsblockmap.cpp` 0x142dd0..0x144080 (TU 31, 2026-11-03, batch 062 with 8 names, all 14
+written, `verify`)**: the GS allocators, the whole run between the SIF library and
+`sound/sound.cpp`. **`GsBlockMap`** slots: 0 `mark` (0x12ea60, in gfxtarget), 1 **`alloc`**
+0x143fd0(count, fromTop, pageAligned) = `findFree` 0x143640 then mark in use, 2 **`free`**
+0x144040(block, count). `findFree`: count 0 -> -1; **runs of 1..3 blocks are looked for inside one
+32-bit word** (every word touching [first, last), the lowest bit position that fits) unless
+pageAligned; longer runs (forced) are whole free words inside [first, last); fromTop scans words
+downwards. **`setRange` 0x1438c0**: under 0x200 blocks bit by bit; else head / whole words / tail,
+where **the ROM counts head and tail bits as (block & 0x7ff) >> 6, not block & 31** -- right only
+by coincidence for the game's own ranges (0x800-aligned, 0x2800..0x3700, 0x3700..0x3fbe): kept.
+**`TexArea`** (Vt_00311100, +0x80c list count, +0x810 list table on the global heap): `mark`
+0x142e70 / `alloc` 0x1430f0 / `free` 0x142fa0 do the base's work (**alloc always from the top,
+bit-level: its arguments are ignored**) and then an inline clip: every list's end page drops to the
+first page with a block in use (slots ending past it emptied), so **long-lived allocations come from
+the area's top and the per-frame texture lists use the pages below them**. **`TexAreaList`** (0x14,
+one per packet list, `TexArea::getList` 0x142dd0): first page (first + 31) / 32, end page, next
+page, slot count, slots (0xc: {key, first page, end page}, empty {0, -1, -1}). **`place`
+0x143510(list, &tbp, Tim2Texture)**: keyed by the texture's image copy (+0x40): already there ->
+TBP0, answers 0; else pages = (`Tim2Texture::getVramBlocks` 0x2e1c30 = (+0x20 + +0x30 + 31) & ~31,
+image and CLUT blocks) / 32 from next page, wrapping to the first page when the rest is short,
+**-0x20 and 1 when it does not fit at all**; `insert` 0x143450 empties the overlapped slots and
+takes the first empty one (slot 0 when none). `resetLists` (every frame, gfxFlipDisplay) empties
+the slots but keeps next page, so placement goes round robin across frames. PC: nothing on the host
+uploads into GS memory (the no-GS-memory rule), so the drawer keeps its `TexAreaList *` only to
+pass along; `UiDrawer::m_texList`, `UiLayout::draw` and `UiDrawer::begin` now take the type.
+
 **`game/stageobjlist.cpp` 0x193900..0x1953f0 (TU 26, 2026-11-03, batch 058 with 45 names, all
 written, `verify`)**: the **stage's object registry** `StageObjectList` (0xdc, `gStageScene` +0x10,
 new in the stage scene ctor 0x19c180, deleted by its teardown 0x19bbe0). **Nine groups**, each a

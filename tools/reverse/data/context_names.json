@@ -5423,17 +5423,47 @@
   "was": "FUN_00142df0",
   "why": "(): for each of the m_listCount (+0x80c) lists in +0x810, every 0xc-byte slot back to {0, -1, -1}, as TexArea::TexArea initialises them; gfxFlipDisplay calls it on gp-0x7ad0 every ready frame"
  },
+ "00142e70": {
+  "name": "TexArea::mark",
+  "tag": "game-inferred",
+  "was": "FUN_00142e70",
+  "why": "Vt_00311100 slot 0 over GsBlockMap::mark: setRange(lo, hi, used) then the inline list clip (each list's end page drops to the first page with a used block; slots past it emptied)"
+ },
+ "00142fa0": {
+  "name": "TexArea::free",
+  "tag": "game-inferred",
+  "was": "FUN_00142fa0",
+  "why": "Vt_00311100 slot 2 over GsBlockMap::free: block != -1 -> mark(block, block + count, 0) through the vtable, then the list clip"
+ },
+ "001430f0": {
+  "name": "TexArea::alloc",
+  "tag": "game-inferred",
+  "was": "FUN_001430f0",
+  "why": "Vt_00311100 slot 1 over GsBlockMap::alloc: findFree(count, 1, 0) (always from the top), mark(block, block + count, 1) through the vtable, then the list clip; answers the block or -1"
+ },
  "00143270": {
   "name": "TexArea::TexArea",
   "tag": "game-inferred",
   "was": "FUN_00143270",
   "why": "(first page 0x3700, last 0x3fbe, 14 lists, 0x20): built once by gfxInitRenderTargets into gp-0x7ad0 (fields unread)"
  },
+ "00143450": {
+  "name": "TexAreaList::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00143450",
+  "why": "(list, key, firstPage, pageCount): empties every slot overlapping [first, first + count), takes the first empty slot (slot 0 when none) and stores {key, first, first + count}; only caller TexAreaList::place"
+ },
  "00143510": {
   "name": "TexAreaList::place",
   "tag": "game-inferred",
   "was": "FUN_00143510",
   "why": "(list, int *tbp, GsTexture *): finds the texture's id (+0x40) among the list's entries, else allocates (size 0x2e1c30 in 0x20-block units, wrapping to the start) through 0x143450; answers 1 when newly placed (upload needed); the drawer's texList (+4)"
+ },
+ "00143640": {
+  "name": "GsBlockMap::findFree",
+  "tag": "game-inferred",
+  "was": "FUN_00143640",
+  "why": "(map, count, fromTop, pageAligned): bitmap search over [m_first, m_last); count 0 -> -1, count > 3 forces whole 32-block words, else a run of count bits inside one word; fromTop scans words downwards; answers the block or -1; callers the two alloc slots"
  },
  "001438c0": {
   "name": "GsBlockMap::setRange",
@@ -5452,6 +5482,18 @@
   "tag": "game-inferred",
   "was": "FUN_00143f50",
   "why": "(first, last): vptr +0x808 = 0x311120, range +0 / +4, the 0x800-byte bitmap +8 set to 0xff (all used), then mark(first, last, 0); gfxInitRenderTargets news 0x80c bytes for (0, 0x4000) and keeps it in gp-0x7ad4; TexArea::TexArea runs the same base code inline"
+ },
+ "00143fd0": {
+  "name": "GsBlockMap::alloc",
+  "tag": "game-inferred",
+  "was": "FUN_00143fd0",
+  "why": "Vt_00311120 slot 1: findFree(count, fromTop, pageAligned) passed through, then mark(block, block + count, 1) through the vtable; answers the block or -1"
+ },
+ "00144040": {
+  "name": "GsBlockMap::free",
+  "tag": "game-inferred",
+  "was": "FUN_00144040",
+  "why": "Vt_00311120 slot 2: block != -1 -> mark(block, block + count, 0) through the vtable"
  },
  "00144080": {
   "name": "SoundPcmSink::setAttr",
@@ -14140,6 +14182,12 @@
   "tag": "lib-context",
   "was": "FUN_002e1b70",
   "why": "(tex, u_long **cursor, int block, u_int reg): writes CNT 2 / FLUSH DIRECT 2 / A+D tag and TEX0 = the template +0 with TBP0 = block, CBP = block + the CLUT offset (+0x20 short) to reg; GsTexture::putTex0's non-target path"
+ },
+ "002e1c30": {
+  "name": "Tim2Texture::getVramBlocks",
+  "tag": "game-inferred",
+  "was": "FUN_002e1c30",
+  "why": "(h +0x20 + h +0x30 + 31) & ~31: the image's GS blocks with its CLUT, in whole pages; only caller TexAreaList::place (pages = blocks / 32)"
  },
  "002e1c50": {
   "name": "Tim2Texture::upload",

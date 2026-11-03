@@ -89,7 +89,7 @@ public:
     bool setData(void *data, int arg);                                   // FS2 0x00245e80
     void advance();                                                      // FS2 0x00243b90
     void update();                                                       // FS2 0x00243c10
-    int  draw(sceVif1Packet *packet, void *texList);                     // FS2 0x002439f0: answers the sequence count
+    int  draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x002439f0: answers the sequence count
     // Replaces the new[] copy at +0x60 (null clears it); runArchiveScreen
     // passes "2dEU/".
     void setBaseDir(const char *dir);                                    // FS2 0x00245f10

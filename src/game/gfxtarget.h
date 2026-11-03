@@ -7,14 +7,15 @@
  *  its draw env packet and the packet that copies the draw buffer to the
  *  display buffer; gfxFlipDisplay writes the current record to the GS when
  *  a frame is ready. gfxInitRenderTargets also makes the GS memory
- *  allocators (GsBlockMap, TexArea, GsRegionAlloc: stand-ins here, their
- *  TUs are not cut yet).
+ *  allocators (GsBlockMap and TexArea: game/gsblockmap.h; GsRegionAlloc: a
+ *  stand-in here, its TU is not cut yet).
  * ======================================================================== */
 #ifndef _GAME_GFXTARGET_H
 #define _GAME_GFXTARGET_H
 
 #include <stddef.h>
 
+#include "game/gsblockmap.h"
 #include "sdk/libgraph.h"
 #include "sdk/scetypes.h"
 
@@ -152,40 +153,6 @@ enum GfxVramArea
 // The GS block (64-word unit) where a VRAM area starts.
 int gfxGetVramBlock(int area);                                           // FS2 0x0012f170
 
-// GS blocks in use, one bit each (1 = in use), over [first, last).
-// layout: host -- EE 0x80c: first +0, last +4, the bitmap +8, the vptr +0x808
-// (Vt_00311120). Its TU (0x142dd0..) is not cut yet.
-class GsBlockMap
-{
-public:
-    GsBlockMap(u_int first, u_int last);                                 // FS2 0x00143f50: all in use, then [first, last) free
-    // EE: not virtual (not in the vtable, called directly); virtual on the
-    // host so that delete through the base is defined.
-    virtual ~GsBlockMap();                                               // FS2 0x00143f00
-    // EE slot 0 (+0x8): marks [lo, hi) in use or free (setRange).
-    virtual void mark(u_int lo, u_int hi, int used);                     // FS2 0x0012ea60
-    // EE slots 1 / 2 (+0xc / +0x10): 0x143fd0 / 0x144040, unread.
-
-    void setRange(u_int lo, u_int hi, int used);                         // FS2 0x001438c0
-
-    u_int m_first;              // FS2 +0x000
-    u_int m_last;               // FS2 +0x004
-    u_int m_bits[0x200];        // FS2 +0x008: 0x4000 blocks
-};
-
-// GS texture pages handed out per packet list (EE 0x814, Vt_00311100 over
-// GsBlockMap's). Layout draws take the list of the packet list they draw
-// into. layout: host -- not declared beyond the calls.
-// PC: the host draw module keeps textures on the GPU; this goes with the
-// GS upload path (the user's rule: no GS memory model).
-class TexArea : public GsBlockMap
-{
-public:
-    TexArea(int firstBlock, int lastBlock, int lists, int slotsPerList); // FS2 0x00143270
-    void *getList(int list);                                             // FS2 0x00142dd0
-    // Every list's slots back to empty ({0, -1, -1}): once per frame.
-    void resetLists();                                                   // FS2 0x00142df0
-};
 // The one TexArea (gp-0x7ad0).
 TexArea *gfxGetTexArea();                                                // FS2 0x0012f160
 

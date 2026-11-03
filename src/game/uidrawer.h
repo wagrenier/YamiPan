@@ -149,6 +149,7 @@ enum UiVertexFormat
 constexpr int kGsRegTex1_1 = 0x14;
 
 class GsTexture;                // game/gsutil.h
+class TexAreaList;              // game/gsblockmap.h
 class UiFont;                   // game/uigame.h
 struct TimSheetSprite;          // game/uigame.h
 
@@ -162,7 +163,7 @@ public:
     UiDrawer();                                                          // FS2 0x0024fb30
     ~UiDrawer();                                                         // FS2 0x0024fae0: deleting (obj, 1)
 
-    void begin(sceVif1Packet *packet, void *texList);                    // FS2 0x0024fad0
+    void begin(sceVif1Packet *packet, TexAreaList *texList);             // FS2 0x0024fad0
     int  setMode(int mode);                                              // FS2 0x0024e990: answers the old one
     void end();                                                          // FS2 0x0024f9e0
 
@@ -227,7 +228,7 @@ private:
 
 public:
     sceVif1Packet *m_packet;    // FS2 +0x00: the packet list drawn into (begin)
-    void     *m_texList;        // FS2 +0x04: the TexArea list of that packet list
+    TexAreaList *m_texList;   // FS2 +0x04: the TexArea list of that packet list
     u_char    m_directOpen;     // FS2 +0x08: a CNT tag and DIRECT code are open
     u_char    m_gifOpen;        // FS2 +0x09: a vertex REGLIST run is open
     int       m_gifFormat;      // FS2 +0x0c: its UiVertexFormat, -1 none

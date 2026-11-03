@@ -54,6 +54,11 @@ public:
     // the TEX0 template at GS block `block` (its CLUT after it) to reg.
     // PC: the host binds textures by their owner (yamipan_drawui.h).
     void putTex0(u_long **cursor, int block, u_int reg);                 // FS2 0x002e1b70
+    // The GS blocks of the image and its CLUT (+0x20 + the short at +0x30,
+    // unread), rounded up to whole pages (TexAreaList::place).
+    int getVramBlocks();                                                 // FS2 0x002e1c30
+
+    void *m_image;              // FS2 +0x40: the image copy (TexAreaList's key)
 
 protected:
     short m_width;              // FS2 +0x1c

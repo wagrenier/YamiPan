@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 08:35 at commit `13b689d` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 08:53 at commit `743e433` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-03 08:35 at commit `13b689d` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6595**, named **1755** (27%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1495, game-inferred 898
-- context-name ledger: 2393 entries; overrides of wrong library matches: 0
-- placed in a source file: 1699/6595 in 53 files
+- game functions: **6595**, named **1763** (27%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1495, game-inferred 906
+- context-name ledger: 2401 entries; overrides of wrong library matches: 0
+- placed in a source file: 1713/6595 in 54 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **727**; stubs: **0**
+- reconstructed FS2 functions: **741**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -42,6 +42,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/gamepaths.cpp` | 14 | 0 |
 | `src/game/gamesystem.cpp` | 17 | 0 |
 | `src/game/gfxtarget.cpp` | 15 | 0 |
+| `src/game/gsblockmap.cpp` | 14 | 0 |
 | `src/game/gsutil.cpp` | 12 | 0 |
 | `src/game/heap.cpp` | 17 | 0 |
 | `src/game/memcard.cpp` | 55 | 0 |
@@ -66,8 +67,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 74 TUs: todo 54, verify 31
-- next: **unassigned@00142dd0** (frontier score 10)
+- 74 TUs: todo 54, verify 32
+- next: **unassigned@00296d60** (frontier score 10)
 - pinned queue: (empty)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
@@ -77,6 +78,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/gamepaths.cpp` 14/14 -- All 14 functions of 0x28ff60..0x2908d0 written (batches 054-055, 25 names, Ghidra saved). Path builders from a StageSelect: digit 1 or 2 (variant 0 or not), let
 - verify: `game/gamesystem.cpp` 17/17 -- All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). N
 - verify: `game/gfxtarget.cpp` 15/15 -- Re-pinned to 0x12dfa0..0x12f190: the display records 0x4ae280 and gp-0x7ad8..-0x7ac8 are used only there; RcntTimer starts at 0x12f190. Two GfxDisplay records (
+- verify: `game/gsblockmap.cpp` 14/14 -- All 14 functions of 0x142dd0..0x144080 are in src/game/gsblockmap.cpp with the new game/gsblockmap.h (GsBlockMap, TexArea, TexAreaList, TexAreaSlot moved out of
 - verify: `game/gsutil.cpp` 12/12 -- Cut out of unassigned@00171300 and pinned 0x230980-0x231410 (batch 048: GsTexture::readTarget 0x231290, rena base Tim2Texture ctor 0x2e2920 / dtor 0x2e2810 / lo
 - verify: `game/heap.cpp` 17/17 -- Game code, not MSL: heap and RNG share one object (sdata 0x31a880..0x31a88c, bss 0x329970 then 0x3299c0, sbss 0x31ad80). All 17 functions written; batch 031 nam
 - verify: `game/memcard.cpp` 55/55 -- All 55 functions written (source only, not built). New this run: Memcard::stepSave (mkdir, then data / icon1.ico / icon.sys each open, write, flush, close; Save
@@ -103,6 +105,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 08:53 `game/gsblockmap.cpp` verify: GsBlockMap and TexArea: the GS block bitmap (alloc, free, findFree, setRange) and the per-packet-list texture page lists (place, insert, clip), all 14 functions
 - 2026-11-03 08:35 `rena/rena_pkt_vif1pktmanage.cpp` verify: rena Vif1PktManage / Vif1PktList: all 13 written, the 4 MSL vector instances mapped to the host vector; source-only, not built
 - 2026-11-03 08:08 `game/gamepacket.cpp` verify: GamePacketManager: ctor, deleting dtor, openList, closeList, endFrame, kickAndSwap on rena Vif1PktManage
 - 2026-11-03 07:52 `game/pakarchive.cpp` verify: PakArchive and the pak parser: PakHeader / PakEntry / PakId, relocate with the variant pack, lookups by id and by name, all 17 functions written
@@ -110,22 +113,21 @@ Recent sessions:
 - 2026-11-03 07:18 `game/stageobjlist.cpp` verify: the stage object registry: nine groups of name map and list, its tree and array containers; all 45 written (batch 058)
 - 2026-11-03 06:59 `game/gfxtarget.cpp` verify: display records, flip, copy packet and GS allocator set-up: all 15 written (re-pinned 0x12dfa0..0x12f190, batch 057)
 - 2026-11-03 06:37 `game/fontdata.cpp` verify: fonts: the knj glyph table FontData and the printers TextPrinter / FontPrinter, cut out of unassigned@00171300 (all 31 written)
-- 2026-11-03 06:16 `game/gamepaths.cpp` verify: the stage path builders and the resident init / language packs, cut out of unassigned@002681e0 (all 14 written)
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@00296d60` | todo | 0/0/267 | 74.1 | 10 | 0 |
-| `unassigned@00142dd0` | todo | 0/0/14 | 4.6 | 10 | 0 |
-| `unassigned@00171300` | todo | 0/0/829 | 131.7 | 9 | 0 |
 | `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 9 | 0 |
+| `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 9 | 0 |
+| `unassigned@00171300` | todo | 0/0/829 | 131.7 | 9 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 8 | 0 |
-| `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 8 | 0 |
 | `unassigned@00231c90` | todo | 0/0/61 | 36.3 | 7 | 0 |
 | `unassigned@001953f0` | todo | 0/0/1354 | 403.4 | 7 | 0 |
-| `unassigned@002908d0` | todo | 0/0/67 | 18.8 | 6 | 0 |
-| `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
 | `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 6 | 0 |
+| `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
+| `unassigned@002908d0` | todo | 0/0/67 | 18.8 | 6 | 0 |
 | `unassigned@0012c9b8` | todo | 0/0/6 | 0.8 | 5 | 0 |
+| `game/rcnttimer.cpp` | todo | 0/0/4 | 0.2 | 4 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -136,7 +138,6 @@ Recent sessions:
 | `0029efe0` | getNaviMenu | 5 | game | missing | - |
 | `001937f0` | FUN_001937f0 | 4 | - | missing | - |
 | `002955d0` | getNaviTable | 4 | game | missing | - |
-| `00142dd0` | TexArea::getList | 3 | game | missing | - |
 | `00297fb0` | FUN_00297fb0 | 3 | - | missing | - |
 | `00231d30` | overlayShowLoading | 3 | native | missing | - |
 | `00231d20` | overlayShowLoading | 3 | native | missing | - |
@@ -152,13 +153,11 @@ Recent sessions:
 | `002e1b70` | Tim2Texture::putTex0 | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `00152740` | rxFileCallSizeHook | 2 | native | missing | - |
 | `002c3d70` | getSaveResource | 2 | game | missing | - |
-| `00143510` | TexAreaList::place | 2 | game | missing | - |
 | `001e66c0` | PlayerMotion::refresh | 1 | game | missing | - |
 | `002ec660` | optionLayoutPath | 1 | game | missing | - |
 | `00135390` | MasterClock::MasterClock | 1 | game | missing | - |
 | `00135210` | Clock::createChild | 1 | game | missing | - |
 | `001351b0` | Clock::~Clock | 1 | game | missing | - |
-| `00142df0` | TexArea::resetLists | 1 | game | missing | - |
 | `001d6a90` | StageSound::stopNamed | 1 | game | missing | - |
 | `00292db0` | SePlayer::stop | 1 | game | missing | - |
 | `00151280` | debugSysShutdown | 1 | game | missing | - |
@@ -167,8 +166,11 @@ Recent sessions:
 | `00152750` | rxTerm | 1 | lib-ctx | missing | game/spkrom.cpp |
 | `002d0a10` | sldiDecompress | 1 | game | missing | - |
 | `00152730` | rxFileCallLoadHook | 1 | native | missing | - |
-| `001438c0` | GsBlockMap::setRange | 1 | game | missing | - |
 | `00195d50` | getPurposeText | 1 | game | missing | - |
 | `00151270` | debugSysUpdate | 1 | game | missing | - |
 | `00148500` | soundUpdate | 1 | game | missing | sound/sound.cpp |
+| `002ebc60` | Vif1PktBufferVector::insert | 1 | game | missing | rena/rena_pkt_vif1pktmanage.cpp |
+| `002e2810` | Tim2Texture::~Tim2Texture | 1 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
+| `002c3e10` | loadMenuPack | 1 | game | missing | - |
+| `002e14d0` | GsRegionAlloc::GsRegionAlloc | 1 | game | missing | - |
 

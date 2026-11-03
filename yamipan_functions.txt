@@ -1449,23 +1449,23 @@
 /* 00142d28 000000a8 */ sceSifExecNotifyHandler(){}  // lib-ctx
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/gsblockmap.cpp
 // *****************************************************************************
 
 /* 00142dd0 00000014 */ TexArea::getList(){}  // game
 /* 00142df0 0000007c */ TexArea::resetLists(){}  // game
-/* 00142e70 00000130 */ FUN_00142e70(){}
-/* 00142fa0 00000148 */ FUN_00142fa0(){}
-/* 001430f0 00000178 */ FUN_001430f0(){}
+/* 00142e70 00000130 */ TexArea::mark(){}  // game
+/* 00142fa0 00000148 */ TexArea::free(){}  // game
+/* 001430f0 00000178 */ TexArea::alloc(){}  // game
 /* 00143270 000001d8 */ TexArea::TexArea(){}  // game
-/* 00143450 000000b4 */ FUN_00143450(){}
+/* 00143450 000000b4 */ TexAreaList::insert(){}  // game
 /* 00143510 00000130 */ TexAreaList::place(){}  // game
-/* 00143640 00000278 */ FUN_00143640(){}
+/* 00143640 00000278 */ GsBlockMap::findFree(){}  // game
 /* 001438c0 00000640 */ GsBlockMap::setRange(){}  // game
 /* 00143f00 0000004c */ GsBlockMap::~GsBlockMap(){}  // game
 /* 00143f50 00000080 */ GsBlockMap::GsBlockMap(){}  // game
-/* 00143fd0 0000006c */ FUN_00143fd0(){}
-/* 00144040 0000003c */ FUN_00144040(){}
+/* 00143fd0 0000006c */ GsBlockMap::alloc(){}  // game
+/* 00144040 0000003c */ GsBlockMap::free(){}  // game
 
 // *****************************************************************************
 // FILE -- sound/sound.cpp
@@ -7883,7 +7883,7 @@
 // *****************************************************************************
 
 /* 002e1b70 000000c0 */ Tim2Texture::putTex0(){}  // lib-ctx
-/* 002e1c30 0000001c */ FUN_002e1c30(){}
+/* 002e1c30 0000001c */ Tim2Texture::getVramBlocks(){}  // game
 /* 002e1c50 00000680 */ Tim2Texture::upload(){}  // lib-ctx
 /* 002e22d0 000003e4 */ FUN_002e22d0(){}
 /* 002e26c0 0000014c */ Tim2Texture::load(){}  // lib-ctx

@@ -159,6 +159,25 @@
    "status": "verify",
    "why": "display records 0x4ae280 and the gp globals 0x7ad8..0x7acc are used only by 0x12dfa0..0x12f190 (set-up, flip, clear colour, display offset, the display packet builder 0x12ec10, gfxGetTexArea / gfxGetVramBlock); RcntTimer (perfmeter) starts at 0x12f190, GamePacketManager ends at 0x12dfa0"
   },
+  "game/gsblockmap.cpp": {
+   "notes": "All 14 functions of 0x142dd0..0x144080 are in src/game/gsblockmap.cpp with the new game/gsblockmap.h (GsBlockMap, TexArea, TexAreaList, TexAreaSlot moved out of gfxtarget.h, which includes it). Batch 062 named 8: TexArea::mark / free / alloc, TexAreaList::insert, GsBlockMap::findFree / alloc / free, Tim2Texture::getVramBlocks 0x2e1c30 (Ghidra saved by name_ctx). TexArea::getList answers TexAreaList pointer; UiDrawer::begin, UiDrawer::m_texList, UiLayout::draw and screen.cpp take that type. gsutil.h Tim2Texture stand-in gained getVramBlocks and m_image (+0x40, the list key). Kept as the ROM: setRange counts head and tail bits as (block and 0x7ff) shifted right 6, right only for the game's own ranges; the in-word search can answer a run cut short at bit 31; TexArea::alloc ignores fromTop / pageAligned (always top, bit-level); place answers -0x20 and 1 when the image does not fit. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on gsblockmap / uidrawer / uilayout / screen (RosePan SDK headers + libvifpk and sceGsTexEnv stubs), host harness passed (gfxInitRenderTargets marks, TexArea free range exactly 0x3700..0x3fbe, place new / resident / wrap / evict / no fit, list end lowered by top allocations and raised by frees, findFree both modes both ways). PC: no GS memory on the host, so nothing uploads into these pages. Doubts: file and class names (no strings); Tim2Texture +0x30 unread. Next: GsRegionAlloc 0x2e1440..0x2e1b70, drawSysInit 0x2d7cf0, the rena Tim2Texture TU 0x2e1b70..0x2e2970.",
+   "ranges": [
+    [
+     "00142dd0",
+     "00144080"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 08:53",
+     "status": "verify",
+     "summary": "GsBlockMap and TexArea: the GS block bitmap (alloc, free, findFree, setRange) and the per-packet-list texture page lists (place, insert, clip), all 14 functions written"
+    }
+   ],
+   "status": "verify",
+   "why": "The whole run between the SIF library (sceSifExecNotifyHandler ends 0x142dd0) and sound/sound.cpp (0x144080): GsBlockMap (Vt_00311120) and its subclass TexArea (Vt_00311100) with the per-packet-list texture page lists; no strings, file name the port's"
+  },
   "game/gsutil.cpp": {
    "notes": "Cut out of unassigned@00171300 and pinned 0x230980-0x231410 (batch 048: GsTexture::readTarget 0x231290, rena base Tim2Texture ctor 0x2e2920 / dtor 0x2e2810 / load 0x2e26c0 / putTex0 0x2e1b70, and 0x2e1c50 GsTexture::upload renamed Tim2Texture::upload; Ghidra saved). New src/game/gsutil.h holds the presets (moved from gamehooks.h), GsTexture (moved from gfxtarget.h, now with its EE fields +0x48 TEX0, +0x50 isTarget, +0x54 / +0x58 size) and a Tim2Texture stand-in (layout host, rena_2d_texture_tim2.cpp). The presets write their tables 0x3071a0..0x3072f0 through YamiPan_DrawUiReg, then FRAME_1 with the preset FBMSK and ZBUF_1 with ZMSK from the current draw env (DrawEnv: the env as is plus SCISSOR_1). An image whose TIM2 reserved word +0xc is Zbuf / Draw / View is a 512x512 render target (TEX0 block 0x1800 CT32 / 0x800 CT32 / 0 CT16). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on gsutil and its users, and a host harness matched every preset register word, the three target TEX0 and the putTex0 packet against the ROM. Bootstrap 6: the host draw module samples its own render-target copy for a GsTexture with m_isTarget; the TIM2 decode belongs to the Tim2Texture TU (rena 0x2e1b70..0x2e2970). Doubts: file name and the presets / GsTexture join are guesses by position; View as CT16 at block 0 not cross-checked with gfxInitRenderTargets. Next in the run: FontData 0x1fe020..0x1fe5b0, boxgrid callees 0x193780..0x1938f8, the pak parser 0x231410..0x231bb0.",
    "ranges": [
@@ -842,6 +861,7 @@
   },
   "unassigned@00121b80": {},
   "unassigned@001319f0": {},
+  "unassigned@00142dd0": {},
   "unassigned@00171300": {},
   "unassigned@00231410": {},
   "unassigned@0023c020": {},

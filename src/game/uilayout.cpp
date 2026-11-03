@@ -171,7 +171,7 @@ UiSubLayout::~UiSubLayout()
 // child on top; answers the sequence count.
 // FS2 0x002439f0
 
-int UiLayout::draw(sceVif1Packet *packet, void *texList)
+int UiLayout::draw(sceVif1Packet *packet, TexAreaList *texList)
 {
     m_drawer->begin(packet, texList);
     m_drawer->setMode(m_drawMode ? 1 : 0);
