@@ -821,7 +821,7 @@ group. On the host the presets go to `YamiPan_DrawUiReg`; the draw module must s
 of the named target when a GsTexture has m_isTarget (no GS memory).
 
 **`game/uigame.cpp` 0x25fa50..0x2640e8 (TU 21, 2026-11-03, batch 049; cut out of
-`unassigned@00252840`; the file name is the port's; 24 of 40 written, `partial`)**: the S2D UI's
+`unassigned@00252840`; the file name is the port's; 21 of 40 written, `partial`)**: the S2D UI's
 **game side**. Below it 0x252840..0x25fa50 are the widget classes (vtables 0x316a90..0x316c10,
 `UiWidget::create` 0x25e260) with a tween record helper set 0x25f5b0..0x25fa10 (0x25f860 has 64
 callers); above it libscf. In it: **`UiFont`** (0x14: glyphs, owned GsTexture, text, spacing 2 / 0);

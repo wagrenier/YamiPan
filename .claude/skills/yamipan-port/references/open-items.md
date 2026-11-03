@@ -313,7 +313,7 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    0x260bc0 / 0x2612c0, `testGameState` 0x2604a0, `getGameValue` / `setGameValue`,
    `getStagePackData` and 0x2625c0..0x264070. Left in `unassigned@00252840` (156): the widget
    classes 0x25b8e0..0x25fa50 (`UiWidget::create`) and the MSL vector / tree user 0x252840..0x25b8e0.
-   **Second run (2026-11-03, batch 050, 13 names): 24 of 40 written, still `partial`**:
+   **Second run (2026-11-03, batch 050, 13 names): 21 of 40 written, still `partial`**:
    `testGameState` (41 named states: architecture.md "Modules"), `findSprite`, `scanItems` /
    `scanWeapons`, `getDoorState`, `getStagePackData`, `getButtonMapDraft`. GameOptions +0x20 / +0x44
    / +0x48 named wideScreen / mapMode (MapMode) / hints. Stand-ins: `StageObject` (getKind is a

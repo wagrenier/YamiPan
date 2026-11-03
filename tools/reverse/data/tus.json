@@ -382,7 +382,7 @@
      "build": "not built",
      "date": "2026-11-03 04:57",
      "status": "partial",
-     "summary": "Second run: testGameState (41 named states), findSprite (key-config and item / weapon sprites), scanItems / scanWeapons, getDoorState, getStagePackData, getButtonMapDraft: 24 of 40 written, source-only, not built"
+     "summary": "Second run: testGameState (41 named states), findSprite (key-config and item / weapon sprites), scanItems / scanWeapons, getDoorState, getStagePackData, getButtonMapDraft: 21 of 40 written, source-only, not built"
     }
    ],
    "status": "partial",
