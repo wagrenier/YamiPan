@@ -320,7 +320,7 @@
    "why": "the cooperative thread system: threadSetSwitchHook .. threadSysInit, threadScheduler, jobWorkerThread, frameSync* (batch 002, architecture.md Thread system); 0x130a20 and the end after frameSyncThread are guesses."
   },
   "game/uidrawer.cpp": {
-   "notes": "game/uidrawer.cpp 0x24dfa0..0x252840 pinned (batches 045-046). Written: all UiMatrix members but interpolate, uiTransformPoint, UiVec4 multiply / toRgbaq, the drawer's ctor / dtor / begin / end / setMode / setPixelMode / setTranslate / updateMatrix / setAddPass / setTexture / setImage / setGsReg / setPrim / setPrimColor / setTexRepeat / setBlend / setDrawPreset / copyTarget / resetScissor / closeDirect / openVertices / vertexColor and drawFlat / drawGouraud / drawTexFlat / drawTexGouraud. Next run, same TU: interpolate 0x24dfa0, drawText 0x24eba0, 0x2503c0, setScissor 0x250520, drawSheetFlat / drawSheetGouraud 0x250750 / 0x2509b0, uiDrawTexStripFlat / Gouraud 0x251350 / 0x2519a0 (reuse putXyz / putUv / vertexColor). PC: the drawer keeps its decisions and calls src/yamipan/rendering/yamipan_drawui.h (declared only; bootstrap 6 implements it) with the GS register values the ROM packs, keyed by the packet list; textures by their GsTexture owner, no TexArea / upload / TEX0. Fixed readings: setNoAlphaTest is setTexRepeat (A+D reg 8 is CLAMP_1), kind 0x27 UiTexTrianglesRepeatTrack; setTargetRegs is copyTarget (a 512x512 GS local copy 0x800 to 0x1800 or back); m_b4 is m_fixedColor; vertex structs moved to uidrawer.h, draw* typed. setMode's two screen matrices are the game's 4:3 / 16:9 UI modes: the any-aspect plan is in open-items.md. Checked: callcheck clean, lint OK, g++ -fsyntax-only -Wall -Wextra clean on the UI files, a host harness reproduced the ROM's vertex words, UV, RGBAQ, add-pass PRIM and copy registers. Not built (source-only), nothing on screen yet.",
+   "notes": "game/uidrawer.cpp 0x24dfa0..0x252840: all 50 written (batch 047), source-only so verify. This run: interpolate 0x24dfa0, drawText 0x24eba0, setScissorPixels 0x2503c0 (new name), setScissor 0x250520, drawSheetFlat / drawSheetGouraud, drawTexStripFlat / drawTexStripGouraud 0x251350 / 0x2519a0 (renamed from uiDrawTexStrip*: UiDrawer members, f12 a float width from record +0x14, vertices UiVertex / UiColorVertex as a ribbon of point pairs; UiStripVertex / UiColorStripVertex removed). New game/fontdata.h: FontData (glyph table: +8 count, +0xe line height, +0x10 sorted 0x10-byte entries) with nextGlyph 0x1fe4d0 / countLines 0x1fe150 / lineWidth 0x1fe2b0 (their TU 0x1fe020.. not cut; stubgen stubs them). uitrack: UiFont::m_scale is m_spacing, S2dTextRec +0x1c is a UiTextBox, UiTextTrack m_x / m_y are the 0..1 alignment. ROM quirk kept: interpolate of a mirrored and rotated target does not round-trip at t=1 (atan2 with only x negated). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean, host harness for interpolate, text layout, colours, ribbon and scissor words. Nothing on screen until bootstrap 6 implements yamipan_drawui. Next: the widget classes 0x252840.. (vtables 0x316a78..).",
    "ranges": [
     [
      "0024dfa0",
@@ -333,9 +333,15 @@
      "date": "2026-11-03 03:43",
      "status": "partial",
      "summary": "UiMatrix and UiDrawer: 42 of 50 written (matrix helpers, ctor dtor begin end, matrix and add pass, every state call, the four vertex-list draws) through a new host UI draw module interface"
+    },
+    {
+     "build": "not built",
+     "date": "2026-11-03 03:55",
+     "status": "verify",
+     "summary": "UiMatrix and UiDrawer complete: interpolate, drawText, setScissor and setScissorPixels, the sheet draws and the strip ribbons as UiDrawer members, with a FontData glyph-table header"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "why": "UiMatrix (0x24dfa0..0x24e8a0) and UiDrawer (0x24e8a0..0x252840): the 2D draw helper of the layouts, every function a UiMatrix / UiDrawer member or its out-of-line helpers (uiTransformPoint, the strip meshes, uiPkAddGsData); after game/s2ddata.cpp, before the widget classes 0x252840.. (vtables 0x316a78..); name the port's (no source string), as uidrawer.h already had it"
   },
   "game/uilayout.cpp": {

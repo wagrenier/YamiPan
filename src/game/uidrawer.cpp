@@ -12,8 +12,10 @@
 #include <math.h>
 #include <stdint.h>
 
+#include "game/fontdata.h"
 #include "game/gamehooks.h"
 #include "game/gfxtarget.h"
+#include "game/uitrack.h"
 #include "sdk/libgraph.h"
 #include "sdk/libvifpk.h"
 #include "sdk/scetypes.h"
@@ -33,8 +35,15 @@ static const UiMatrix kUiScreenMatrix[2][2] = {
 // The vertices' window coordinates are clamped to the 12.4 range around
 // the GS centre (0x8000 = 2048.0) and drawn at the far depth.
 constexpr float kUiXyLimit = 32752.0f;
+constexpr float kUiPixelLimit = 2047.0f;    // the same in pixels
 constexpr int   kGsWindowCentre = 0x8000;
 constexpr u_int kUiVertexZ = 0xff0fffff;
+
+// The scissor's window origin: the 512x512 target's centre.
+constexpr int kUiScissorOrigin = 0x100;
+
+// drawText's PRIM: a sprite per glyph, textured, blended, in texels.
+constexpr u_long kUiPrimText = UiPrim_Sprite | UiPrim_Gouraud | UiPrim_Textured | UiPrim_Blend | UiPrim_UV;
 
 // The colour byte limits of UiVec4::toRgbaq (0x3f7f7f7f, 0x3fff7f7f): at
 // or above them the byte is 0xff.
@@ -98,9 +107,19 @@ static inline u_char colorByte(float f, float limit, float scale)
     return (u_char)(u_int)(f * scale);
 }
 
-// The XYZ2 word of a vertex: xy through the drawer's matrix in 12.4,
-// clamped, moved to the GS centre; split for the host the way the GS
-// reads it.
+// The XYZ2 word of a vertex from its 12.4 window offsets: moved to the GS
+// centre; split for the host the way the GS reads it.
+static void putXyzWord(YamiPanUiVertex *out, int x, int y)
+{
+    u_long word = (u_long)(int64_t)(x + kGsWindowCentre)
+                | (u_long)(int64_t)(y + kGsWindowCentre) << 16
+                | (u_long)kUiVertexZ << 32;
+    out->x = (u_short)word;
+    out->y = (u_short)(word >> 16);
+    out->z = (u_int)(word >> 32);
+}
+
+// xy through the drawer's matrix in 12.4, clamped.
 static void putXyz(YamiPanUiVertex *out, const UiMatrix *m, const float *xy)
 {
     float p[2];
@@ -113,21 +132,69 @@ static void putXyz(YamiPanUiVertex *out, const UiMatrix *m, const float *xy)
         p[1] = kUiXyLimit;
     if (p[1] < -kUiXyLimit)
         p[1] = -kUiXyLimit;
-    u_long word = (u_long)(int64_t)((int)p[0] + kGsWindowCentre)
-                | (u_long)(int64_t)((int)p[1] + kGsWindowCentre) << 16
-                | (u_long)kUiVertexZ << 32;
-    out->x = (u_short)word;
-    out->y = (u_short)(word >> 16);
-    out->z = (u_int)(word >> 32);
+    putXyzWord(out, (int)p[0], (int)p[1]);
 }
 
-// The UV word: uv 0..1 times the bound texture's size, in 12.4 texels.
-static void putUv(YamiPanUiVertex *out, const float *uv, int width, int height)
+// A window pixel (already through the matrix: the text and the wide
+// strips), clamped in pixels, then 12.4.
+static inline float clampPixel(float f)
 {
-    u_long word = (u_long)(int64_t)(int)(uv[0] * (float)width * 16.0f)
-                | (u_long)(int64_t)(int)(uv[1] * (float)height * 16.0f) << 16;
+    if (f > kUiPixelLimit)
+        f = kUiPixelLimit;
+    if (f < -kUiPixelLimit)
+        f = -kUiPixelLimit;
+    return f;
+}
+static void putXyzPixels(YamiPanUiVertex *out, float x, float y)
+{
+    x = clampPixel(x);
+    y = clampPixel(y);
+    putXyzWord(out, (int)(x * 16.0f), (int)(y * 16.0f));
+}
+
+// The UV word from texel coordinates, in 12.4.
+static void putUvTexels(YamiPanUiVertex *out, float u, float v)
+{
+    u_long word = (u_long)(int64_t)(int)(u * 16.0f)
+                | (u_long)(int64_t)(int)(v * 16.0f) << 16;
     out->u = (u_short)word;
     out->v = (u_short)(word >> 16);
+}
+
+// uv 0..1 times the bound texture's size.
+static void putUv(YamiPanUiVertex *out, const float *uv, int width, int height)
+{
+    putUvTexels(out, uv[0] * (float)width, uv[1] * (float)height);
+}
+
+// uv 0..1 within a sheet sprite's rect.
+static void putSheetUv(YamiPanUiVertex *out, const TimSheetSprite *sprite, const float *uv)
+{
+    putUvTexels(out, (float)sprite->w * uv[0] + (float)sprite->u + 0.0f,
+                (float)sprite->h * uv[1] + (float)sprite->v + 0.0f);
+}
+
+// SCISSOR_1 of a rect in window pixels: rounded, the far edges kept in
+// the 512x512 target (x0 y0 from -256, x1 y1 up to 255), its origin
+// moved to the target's centre.
+static u_long scissorWord(float x0f, float y0f, float x1f, float y1f)
+{
+    int x0 = (int)(x0f + 0.5f);
+    int y0 = (int)(y0f + 0.5f);
+    int x1 = (int)(x1f + 0.5f);
+    int y1 = (int)(y1f + 0.5f);
+    if (x0 < -kUiScissorOrigin)
+        x0 = -kUiScissorOrigin;
+    if (y0 < -kUiScissorOrigin)
+        y0 = -kUiScissorOrigin;
+    if (x1 > kUiScissorOrigin - 1)
+        x1 = kUiScissorOrigin - 1;
+    if (y1 > kUiScissorOrigin - 1)
+        y1 = kUiScissorOrigin - 1;
+    return (u_long)(int64_t)(y1 + kUiScissorOrigin) << 48
+         | (u_long)(int64_t)(y0 + kUiScissorOrigin) << 32
+         | (u_long)(int64_t)(x0 + kUiScissorOrigin)
+         | (u_long)(int64_t)(x1 + kUiScissorOrigin) << 16;
 }
 
 static void putRgbaq(YamiPanUiVertex *out, u_int rgbaq)
@@ -176,6 +243,60 @@ void UiDrawer::resetState()
 
 // ──────────────────────────────────────────────────────────────────────
 // UiMatrix
+// FS2 0x0024dfa0
+// callcheck: __extendsfdf2, FUN_00100230, FUN_00100250 (the angle compares as doubles)
+
+void UiMatrix::interpolate(const UiMatrix &from, const UiMatrix &to, float t)
+{
+    float fromX = pointX(from, 0.0f, 0.0f);
+    float fromY = pointY(from, 0.0f, 0.0f);
+    float fromAxisXx = pointX(from, 1.0f, 0.0f) - fromX;
+    float fromAxisXy = pointY(from, 1.0f, 0.0f) - fromY;
+    float fromAxisYx = pointX(from, 0.0f, 1.0f) - fromX;
+    float fromAxisYy = pointY(from, 0.0f, 1.0f) - fromY;
+    float toX = pointX(to, 0.0f, 0.0f);
+    float toY = pointY(to, 0.0f, 0.0f);
+    float toAxisXx = pointX(to, 1.0f, 0.0f) - toX;
+    float toAxisXy = pointY(to, 1.0f, 0.0f) - toY;
+    float toAxisYx = pointX(to, 0.0f, 1.0f) - toX;
+    float toAxisYy = pointY(to, 0.0f, 1.0f) - toY;
+
+    float fromScaleX = sqrtf(fromAxisXx * fromAxisXx + fromAxisXy * fromAxisXy);
+    float fromScaleY = sqrtf(fromAxisYx * fromAxisYx + fromAxisYy * fromAxisYy);
+    float scaleX = t * (sqrtf(toAxisXx * toAxisXx + toAxisXy * toAxisXy) - fromScaleX) + fromScaleX + 0.0f;
+    float fromAngle, toAngle;
+    if (fromAxisXx * fromAxisYy - fromAxisXy * fromAxisYx < 0.0f) {
+        // from is mirrored: x flipped, the angles of the flipped axes.
+        scaleX = scaleX * -1.0f;
+        fromAngle = atan2f(fromAxisXy, -fromAxisXx);
+        toAngle = atan2f(toAxisXy, -toAxisXx);
+    } else {
+        fromAngle = atan2f(fromAxisXy, fromAxisXx);
+        toAngle = atan2f(toAxisXy, toAxisXx);
+    }
+    // The shorter way round, and the result back into [-pi, pi].
+    if ((double)(toAngle - fromAngle) > 3.141592653589793)
+        toAngle -= 6.2831855f;
+    else if ((double)(toAngle - fromAngle) < -3.141592653589793)
+        toAngle += 6.2831855f;
+    float angle = t * (toAngle - fromAngle) + fromAngle + 0.0f;
+    if ((double)angle > 3.141592653589793)
+        angle -= 6.2831855f;
+    if ((double)angle < -3.141592653589793)
+        angle += 6.2831855f;
+
+    a = scaleX;
+    b = 0.0f;
+    tx = 0.0f;
+    c = 0.0f;
+    d = t * (sqrtf(toAxisYx * toAxisYx + toAxisYy * toAxisYy) - fromScaleY) + fromScaleY + 0.0f;
+    ty = 0.0f;
+    rotate(angle);
+    tx = tx + (toX - fromX) * t + fromX;
+    ty = ty + (toY - fromY) * t + fromY;
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // FS2 0x0024e360
 // callcheck: atan2f (tail call)
 
@@ -372,6 +493,116 @@ void UiDrawer::updateMatrix()
         m_matrix.d = m_matrix.d * screen[1].d;
         m_matrix.translate(m_translate);
     }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// UiDrawer: text
+// FS2 0x0024eba0
+// callcheck: UiVec4, sceVif1PkOpenGifTag, sceVif1PkAddGsAD, sceVif1PkAddGsData, sceVif1PkCloseGifTag (the implicit copy; PC: YamiPan_DrawUiReg / Prim / Vertex)
+
+int UiDrawer::drawText(UiFont *font, int /*message*/, const UiTextBox *box, float alignX, float alignY)
+{
+    const u_short *text = font->m_text;
+    if ((uintptr_t)text & 1)
+        return 0;
+    int drawn = 0;
+    if (text == nullptr)
+        return 0;
+    if (alignX < 0.0f)
+        alignX = 0.0f;
+    if (alignX > 1.0f)
+        alignX = 1.0f;
+    if (alignY < 0.0f)
+        alignY = 0.0f;
+    if (alignY > 1.0f)
+        alignY = 1.0f;
+
+    setTexture(font->m_texture);
+    if (m_packet != nullptr) {
+        setTexture(nullptr);
+        YamiPan_DrawUiReg(m_packet, SCE_GS_TEX1_1, 0);
+    }
+    u_char rgbaq[4];
+    if (isAddPass()) {
+        m_addColor.toRgbaq(rgbaq);
+    } else if (isFixedColor()) {
+        m_color.toRgbaq(rgbaq);
+    } else {
+        UiVec4 color = box->rgba;
+        color.multiply(m_color);
+        color.toRgbaq(rgbaq);
+    }
+    u_long prim = kUiPrimText;
+    if (m_packet != nullptr) {
+        setTexture(nullptr);
+        if (m_addPass)
+            prim = addPassPrim(prim);
+        YamiPan_DrawUiPrim(m_packet, prim, rgbaq);
+    }
+
+    // The box through the matrix (the glyphs are not: they keep their
+    // texel size), the text block aligned in it.
+    float topLeft[2], bottomRight[2];
+    uiTransformPoint(topLeft, &m_matrix, box->topLeft, 0);
+    uiTransformPoint(bottomRight, &m_matrix, box->bottomRight, 0);
+    const FontData *glyphs = (const FontData *)font->m_glyphs;
+    float spacingX = font->m_spacing[0];
+    float spacingY = font->m_spacing[1];
+    float boxHeight = bottomRight[1] - topLeft[1];
+    int lines = glyphs->countLines(text);
+    float y = alignY * (boxHeight - ((float)lines * ((float)glyphs->m_lineHeight / 16.0f)
+                                     - spacingY * (float)(lines - 1)));
+    if (y < 0.0f)
+        y = 0.0f;
+    y = y + topLeft[1];
+    if (openVertices(UiVertex_Uv) < 0)
+        return -1;
+
+    // Line by line, each aligned on its own width; a glyph is a sprite
+    // from its rect's corner to the opposite one.
+    while (text != nullptr) {
+        float x = alignX * ((bottomRight[0] - topLeft[0]) - glyphs->lineWidth(spacingX, text));
+        if (x < 0.0f)
+            x = 0.0f;
+        x = x + topLeft[0];
+        for (;;) {
+            u_short c = *text;
+            if (c == 0) {
+                text = nullptr;
+                break;
+            }
+            if (c == '\n') {
+                text++;
+                y = y + ((float)glyphs->m_lineHeight / 16.0f - spacingY);
+                break;
+            }
+            if (c < 0x20) {
+                text++;
+                continue;
+            }
+            FontGlyph glyph;
+            text = glyphs->nextGlyph(text, &glyph);
+            if (text == nullptr)
+                break;
+            float u = (float)glyph.u / 16.0f;
+            float v = (float)glyph.v / 16.0f;
+            float w = (float)glyph.w / 16.0f;
+            float h = (float)glyph.h / 16.0f;
+            float x0 = clampPixel(x);
+            float y0 = clampPixel(y);
+            YamiPanUiVertex corner = {};
+            putUvTexels(&corner, u, v);
+            putXyzPixels(&corner, x0, y0);
+            YamiPan_DrawUiVertex(m_packet, &corner);
+            corner = {};
+            putUvTexels(&corner, u + w, v + h);
+            putXyzPixels(&corner, x0 + w, y0 + h);
+            YamiPan_DrawUiVertex(m_packet, &corner);
+            drawn++;
+            x = x + (w - spacingX);
+        }
+    }
+    return drawn;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -701,6 +932,35 @@ int UiDrawer::copyTarget(u_char toBackup)
 }
 
 // ──────────────────────────────────────────────────────────────────────
+// FS2 0x002503c0
+// callcheck: sceVif1PkOpenGifTag, sceVif1PkAddGsAD, sceVif1PkCloseGifTag (PC: YamiPan_DrawUiReg)
+
+int UiDrawer::setScissorPixels(const float *rect)
+{
+    if (m_packet == nullptr)
+        return -1;
+    setTexture(nullptr);
+    YamiPan_DrawUiReg(m_packet, SCE_GS_SCISSOR_1, scissorWord(rect[0], rect[1], rect[2], rect[3]));
+    return 0;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x00250520
+// callcheck: sceVif1PkOpenGifTag, sceVif1PkAddGsAD, sceVif1PkCloseGifTag (PC: YamiPan_DrawUiReg)
+
+int UiDrawer::setScissor(const float *rect)
+{
+    if (m_packet == nullptr)
+        return -1;
+    setTexture(nullptr);
+    float p0[2], p1[2];
+    uiTransformPoint(p0, &m_matrix, rect, 0);
+    uiTransformPoint(p1, &m_matrix, rect + 2, 0);
+    YamiPan_DrawUiReg(m_packet, SCE_GS_SCISSOR_1, scissorWord(p0[0], p0[1], p1[0], p1[1]));
+    return 0;
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // FS2 0x002506c0
 // callcheck: sceVif1PkOpenGifTag, sceVif1PkAddGsAD, sceVif1PkCloseGifTag (PC: YamiPan_DrawUiReg)
 
@@ -740,6 +1000,42 @@ int UiDrawer::openVertices(int format)
 }
 
 // ──────────────────────────────────────────────────────────────────────
+// FS2 0x00250750
+// callcheck: uiTransformPoint, sceVif1PkAddGsData (in putXyz; PC: YamiPan_DrawUiVertex)
+
+int UiDrawer::drawSheetFlat(const UiTexVertex *verts, int count, const TimSheetSprite *sprite, int grouped)
+{
+    if (openVertices(grouped == 0 ? UiVertex_Uv : UiVertex_Grouped | UiVertex_Uv) < 0)
+        return -1;
+    for (int i = 0; i < count; i++) {
+        YamiPanUiVertex v = {};
+        putSheetUv(&v, sprite, verts[i].uv);
+        putXyz(&v, &m_matrix, verts[i].xy);
+        YamiPan_DrawUiVertex(m_packet, &v);
+    }
+    return count;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x002509b0
+// callcheck: uiTransformPoint, uiPkAddGsData, sceVif1PkAddGsData (in putXyz; PC: YamiPan_DrawUiVertex)
+
+int UiDrawer::drawSheetGouraud(const UiTexColorVertex *verts, int count, const TimSheetSprite *sprite, int grouped)
+{
+    if (openVertices(grouped == 0 ? UiVertex_Rgbaq | UiVertex_Uv
+                                  : UiVertex_Grouped | UiVertex_Rgbaq | UiVertex_Uv) < 0)
+        return -1;
+    for (int i = 0; i < count; i++) {
+        YamiPanUiVertex v = {};
+        putRgbaq(&v, vertexColor(&verts[i].rgba));
+        putSheetUv(&v, sprite, verts[i].uv);
+        putXyz(&v, &m_matrix, verts[i].xy);
+        YamiPan_DrawUiVertex(m_packet, &v);
+    }
+    return count;
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // An out-of-line jump to sceVif1PkAddGsData (the gouraud draws' RGBAQ
 // word); the host takes the colour with the vertex, nothing to write.
 // FS2 0x00250c30 uiPkAddGsData (library thunk)
@@ -763,6 +1059,97 @@ u_int UiDrawer::vertexColor(const UiVec4 *rgba) const
     u_char rgbaq[4];
     color.toRgbaq(rgbaq);
     return rgbaq[0] | rgbaq[1] << 8 | rgbaq[2] << 16 | (u_int)rgbaq[3] << 24;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The wide strips' half-width as a scale of each pair's cross vector:
+// width / 2 over the first pair's length (both through the matrix).
+static float stripScale(const UiMatrix *m, float width, const float *p, const float *q)
+{
+    float a[2], b[2];
+    uiTransformPoint(a, m, p, 0);
+    uiTransformPoint(b, m, q, 0);
+    float dx = a[0] - b[0];
+    float dy = a[1] - b[1];
+    return (width / 2.0f) / sqrtf(dx * dx + dy * dy);
+}
+
+// FS2 0x00251350
+// callcheck: sceVif1PkAddGsData (in putXyz; PC: YamiPan_DrawUiVertex)
+
+int UiDrawer::drawTexStripFlat(float width, const UiVertex *verts, int count, const UiVec4 *uvRect)
+{
+    if (openVertices(UiVertex_Uv) < 0)
+        return -1;
+    const float uv0[2] = { uvRect->x, uvRect->y };
+    const float uv1[2] = { uvRect->z, uvRect->w };
+    if (width == 0.0f) {
+        for (int i = 0; i < count; i++) {
+            YamiPanUiVertex v = {};
+            putUv(&v, uv0, m_texWidth, m_texHeight);
+            putXyz(&v, &m_matrix, verts[i].xy);
+            YamiPan_DrawUiVertex(m_packet, &v);
+        }
+    } else {
+        float scale = stripScale(&m_matrix, width, verts[0].xy, verts[1].xy);
+        for (int i = 0; i < count; i += 2, verts += 2) {
+            float p[2], q[2];
+            uiTransformPoint(p, &m_matrix, verts[0].xy, 0);
+            uiTransformPoint(q, &m_matrix, verts[1].xy, 0);
+            float offX = (q[0] - p[0]) * scale;
+            float offY = (q[1] - p[1]) * scale;
+            YamiPanUiVertex v = {};
+            putUv(&v, uv0, m_texWidth, m_texHeight);
+            putXyzPixels(&v, p[0] + offX, p[1] + offY);
+            YamiPan_DrawUiVertex(m_packet, &v);
+            v = {};
+            putUv(&v, uv1, m_texWidth, m_texHeight);
+            putXyzPixels(&v, p[0] - offX, p[1] - offY);
+            YamiPan_DrawUiVertex(m_packet, &v);
+        }
+    }
+    return count;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x002519a0
+// callcheck: uiPkAddGsData, sceVif1PkAddGsData (in putXyz; PC: YamiPan_DrawUiVertex)
+
+int UiDrawer::drawTexStripGouraud(float width, const UiColorVertex *verts, int count, const UiVec4 *uvRect)
+{
+    if (openVertices(UiVertex_Rgbaq | UiVertex_Uv) < 0)
+        return -1;
+    const float uv0[2] = { uvRect->x, uvRect->y };
+    const float uv1[2] = { uvRect->z, uvRect->w };
+    if (width == 0.0f) {
+        for (int i = 0; i < count; i++) {
+            YamiPanUiVertex v = {};
+            putRgbaq(&v, vertexColor(&verts[i].rgba));
+            putUv(&v, uv0, m_texWidth, m_texHeight);
+            putXyz(&v, &m_matrix, verts[i].xy);
+            YamiPan_DrawUiVertex(m_packet, &v);
+        }
+    } else {
+        float scale = stripScale(&m_matrix, width, verts[0].xy, verts[1].xy);
+        for (int i = 0; i < count; i += 2, verts += 2) {
+            float p[2], q[2];
+            uiTransformPoint(p, &m_matrix, verts[0].xy, 0);
+            uiTransformPoint(q, &m_matrix, verts[1].xy, 0);
+            float offX = (q[0] - p[0]) * scale;
+            float offY = (q[1] - p[1]) * scale;
+            YamiPanUiVertex v = {};
+            putRgbaq(&v, vertexColor(&verts[0].rgba));
+            putUv(&v, uv0, m_texWidth, m_texHeight);
+            putXyzPixels(&v, p[0] + offX, p[1] + offY);
+            YamiPan_DrawUiVertex(m_packet, &v);
+            v = {};
+            putRgbaq(&v, vertexColor(&verts[1].rgba));
+            putUv(&v, uv1, m_texWidth, m_texHeight);
+            putXyzPixels(&v, p[0] - offX, p[1] - offY);
+            YamiPan_DrawUiVertex(m_packet, &v);
+        }
+    }
+    return count;
 }
 
 // ──────────────────────────────────────────────────────────────────────

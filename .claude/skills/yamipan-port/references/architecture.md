@@ -691,7 +691,7 @@ in one record colour (PRIM 0x4a / 0x4e / 0x4b..0x4d = gouraud + ABE, line AA1 fr
 with the texture repeating (`setTexRepeat`: CLAMP_1; PRIM 0x15b..0x15e: + TME + FST; each owns a **`GsTexture`** 0x231360 (0x60,
 vptr +0x44; "Zbuf" / "Draw" / "View" image magics are render targets) of S2D image `+0xc`, TEX1_1
 from `+0x10`); **6 / 0x22** a sprite of a **TimM sheet** (`timSheetRelocate` 0x25fe10, picked by
-name through 0x261d00); **3 text** (`UiFont` 0x25fac0: glyph table + font texture, scale; text from
+name through 0x261d00); **3 text** (`UiFont` 0x25fac0: glyph table + font texture, spacing; text from
 fMsg message files or a copied wide string, setters 0x24c6e0..0x24ca00); **4 scissor**; drawer
 state **0xf..0x14** `setDrawPreset(0..5)` (0x250130: gfx calls 0x230980..0x231090), **0x1b** additive
 blend, **0x2a** dest-alpha blend (`setBlend` 0x24ffa0: ALPHA_1 0x44 / 0x48 / 0x58 / 0x54), **0x28 /
@@ -712,7 +712,7 @@ xform = scale(record +0xc) and parent = translate(world origin), else xform = `s
 `TimSheetSprite` {+2 image, +4 u v, +8 w h}; `UiDrawer::setImage` 0x24f580 binds the sheet's
 image (+0x24 table, 8-byte {?, image}) through a temporary GsTexture, then PRIM 0x15e and
 `drawSheetFlat` 0x250750 / `drawSheetGouraud` 0x2509b0 (uv 0..1 in the sprite rect). **Text** 3:
-`UiDrawer::drawText` 0x24eba0 (font, message, record +0x1c, the track's x / y) when the message is
+`UiDrawer::drawText` 0x24eba0 (font, message, record +0x1c box, the track's alignment) when the message is
 >= 0 and +0x24 visible; setters 0x24c6e0..0x24ca00 (widgets 0x25b8e0..0x25ce30, `UiWidget::create`):
 a borrowed or new[] copy of a 16-bit string (`wstrlen` 0x2d4650 / `wstrcpy` 0x2d4510, message
 10000), or an **fMsg** file's message by index or name (`fMsgRelocate` 0x25fbd0 like
@@ -740,8 +740,8 @@ names read like `pMASKOFF` / `APS44D1EN` (objects), `sFADEIN` / `slanguage_sel` 
 `_dmy.file.name_`, magic "YNAM"), sheet sprites `rItem00` / `rWeaponL00`, pin target
 `rCharactorPostion`.
 
-**`game/uidrawer.cpp` 0x24dfa0..0x252840 (TU 19, 2026-11-03, batches 045-046; 42 of 50 written,
-`partial`; names the port's)**: `UiMatrix` (2D affine rows (a b tx) (c d ty); `concat` = m * this,
+**`game/uidrawer.cpp` 0x24dfa0..0x252840 (TU 19, 2026-11-03, batches 045-047; all 50 written,
+`verify`; names the port's)**: `UiMatrix` (2D affine rows (a b tx) (c d ty); `concat` = m * this,
 `rotate` = R * this) and **`UiDrawer`** (0xe0), the layouts' **GIF packet writer**. Fields: +0 packet
 (the packet list drawn into), +4 the TexArea list, +8 DIRECT open, +9 vertex run open, +0xc its
 format, +0x10 texture TBP, +0x14 / +0x18 texture size (the UV scale), +0x1c matrix stack [4], +0x7c
@@ -768,9 +768,33 @@ TEST_1 before, hazards.md), **`copyTarget`** 0x24e8a0 TRXPOS / TRXREG 512x512 / 
 then sceGsDrawEnv1 at +0x10. libvifpk named here: `sceVif1PkCnt` 0x10acc8, `OpenGifTag` 0x10b058,
 `CloseGifTag` 0x10b070, `Align` 0x10b130, `AddCode` 0x10b1b0, `AddGsData` 0x10b328, `AddGsAD`
 0x10b350, `OpenDirectCode` 0x10b568, `CloseDirectCode` 0x10b5c0. On the host the drawer keeps its
-decisions and calls **`yamipan/rendering/yamipan_drawui.h`** ("PC platform layer"). Left: `interpolate`
-0x24dfa0, `drawText` 0x24eba0, 0x2503c0, `setScissor` 0x250520, the sheet draws 0x250750 /
-0x2509b0, the strip meshes 0x251350 / 0x2519a0.
+decisions and calls **`yamipan/rendering/yamipan_drawui.h`** ("PC platform layer").
+**`interpolate`** 0x24dfa0 decomposes both matrices (origin, axis lengths, the x axis's atan2),
+blends scale / angle (the short way, wrapped to [-pi, pi], compared as doubles) / origin by t, and
+rebuilds scale then rotate; a mirrored `from` (negative determinant) flips x and takes atan2(y, -x)
+for both ends (ROM: `neg.s f13`), so a mirrored *and rotated* `to` does not round-trip at t = 1 (a
+ROM quirk, kept). **`setScissor`** 0x250520 (rect through m_matrix) / **`setScissorPixels`** 0x2503c0
+(window pixels): rounded (+0.5), x0 y0 >= -256, x1 y1 <= 255, SCISSOR_1 = each + 0x100 (the 512x512
+target's centre). **Sheet draws** 0x250750 / 0x2509b0: UV = (sprite w x uv + sprite u) x16 (FST).
+**Strip meshes** `drawTexStripFlat` 0x251350 / `drawTexStripGouraud` 0x2519a0 are UiDrawer members
+(f12 a **float width**, record +0x14; were read as free functions (mode, drawer)): vertices are
+{xy} / {rgba, xy} (no uv: UV comes from the constant uvRect {0.5, 0, 0.5, 1}); width 0 = a plain
+strip at uvRect's first uv; else **a ribbon**: the points are pairs (point, cross-direction point),
+each pair emits point +- (q - p) x k, k = (width / 2) / |first pair| (through the matrix), uv
+first / second, xy clamped +-2047 px. **`drawText`** 0x24eba0 (a1 font, a2 message (unread), a3 the
+record's **`UiTextBox`** +0x1c {rgba, +0x10 topLeft, +0x28 bottomRight}, f12 / f13 **alignment**
+0..1 = UiTextTrack +0x1c / +0x20): text pointer odd -> 0; TEX1_1 = 0, PRIM 0x15e (sprite, gouraud,
+TME, ABE, FST; add pass 0x14e) + RGBAQ (box colour x drawer colour, or add / fixed colour); the box
+corners go through m_matrix, the glyphs do not (texel size); block height = lines x lineHeight -
+spacingY x (lines - 1), y = alignY x room + top; each line x = alignX x (box width - lineWidth) +
+left; per glyph a 2-vertex SPRITE (UV / XYZ2), advance w / 16 - spacingX; '
+' adds lineHeight -
+spacingY; control chars skipped. Answers the glyphs drawn. **`UiFont`** +0xc / +0x10 are the
+**spacing** (pixels off each advance / line; were "scale"; record S2dTextRec +0x14). **`FontData`**
+(game/fontdata.h, the glyph table, S2D image `glyphImage`): +8 count, +0xe line height (1/16 px),
++0x10 entries of 0x10 sorted by u16 code, glyph rect u v w h at +8 (1/16 texel), the entry after
+the last = the missing-character glyph; `nextGlyph` 0x1fe4d0 (binary search), `countLines` 0x1fe150,
+`lineWidth` 0x1fe2b0 (spacing + sum (w / 16 - spacing)).
 
 ## Classes
 

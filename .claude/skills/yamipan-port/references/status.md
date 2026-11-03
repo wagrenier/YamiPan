@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 03:43 at commit `e1c993a` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 03:55 at commit `b028d35` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-03 03:43 at commit `e1c993a` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6595**, named **1543** (23%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1487, game-inferred 692
-- context-name ledger: 2179 entries; overrides of wrong library matches: 0
+- game functions: **6595**, named **1547** (23%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1487, game-inferred 696
+- context-name ledger: 2183 entries; overrides of wrong library matches: 0
 - placed in a source file: 1467/6595 in 44 files
 
 Least-named game-code regions (64 KB blocks):
@@ -25,12 +25,12 @@ Least-named game-code regions (64 KB blocks):
 | `001b0000` | 0/242 (0%) | - |
 | `001c0000` | 0/233 (0%) | - |
 | `001e0000` | 0/75 (0%) | - |
-| `001f0000` | 0/185 (0%) | - |
 | `00200000` | 0/122 (0%) | - |
+| `00210000` | 0/231 (0%) | - |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **476**; stubs: **0**
+- reconstructed FS2 functions: **484**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -48,17 +48,16 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stageresult.cpp` | 32 | 0 |
 | `src/game/sysdata.cpp` | 37 | 0 |
 | `src/game/thread.cpp` | 19 | 0 |
-| `src/game/uidrawer.cpp` | 42 | 0 |
+| `src/game/uidrawer.cpp` | 50 | 0 |
 | `src/game/uilayout.cpp` | 22 | 0 |
 | `src/game/uisequence.cpp` | 29 | 0 |
 | `src/game/uitrack.cpp` | 99 | 0 |
 
 ## Translation units (one session each: `tus.py`)
 
-- 63 TUs: todo 52, partial 1, verify 19
-- next: **game/uidrawer.cpp** (continuing a partial TU)
+- 63 TUs: todo 52, verify 20
+- next: **unassigned@00171300** (frontier score 34)
 - pinned queue: (empty)
-- partial: `game/uidrawer.cpp` 42/50 -- game/uidrawer.cpp 0x24dfa0..0x252840 pinned (batches 045-046). Written: all UiMatrix members but interpolate, uiTransformPoint, UiVec4 multiply / toRgbaq, the d
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
 - verify: `game/gamesystem.cpp` 17/17 -- All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). N
@@ -73,6 +72,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stageresult.cpp` 32/32 -- All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (add
 - verify: `game/sysdata.cpp` 37/37 -- Cut out of unassigned@00171300 (the frontier pick, 5138 functions) and pinned 0x23af30-0x23c020. One SystemData block of 0x620 bytes at 0x598b30: SaveData +0 (0
 - verify: `game/thread.cpp` 19/19 -- All 19 functions written; thread.h has ThreadSlotRecord, ThreadStackDef, ThreadDetourStack, FrameSync, JobRecord with ThreadState / ThreadDetourState / JobCance
+- verify: `game/uidrawer.cpp` 50/50 -- game/uidrawer.cpp 0x24dfa0..0x252840: all 50 written (batch 047), source-only so verify. This run: interpolate 0x24dfa0, drawText 0x24eba0, setScissorPixels 0x2
 - verify: `game/uilayout.cpp` 22/22 -- Cut from unassigned@0023e740 (473 functions) as game/uilayout.cpp 0x243390..0x246230; batch 038 named these 22 and 28 callees (UiSequence / UiActor / UiAnim / U
 - verify: `game/uisequence.cpp` 29/29 -- Cut from unassigned@00246230 as game/uisequence.cpp 0x246230..0x249550; batches 039-040 named these 29 and the callees they need (UiMatrix 0x24e580..0x24e8a0, U
 - verify: `game/uitrack.cpp` 99/109 -- Second run on the file (batch 043, 20 names). Written from the asm: UiRotateToTrack / UiRotateTrack::apply (world = parent * xform, angle wrapped to -pi..pi, xf
@@ -81,6 +81,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 03:55 `game/uidrawer.cpp` verify: UiMatrix and UiDrawer complete: interpolate, drawText, setScissor and setScissorPixels, the sheet draws and the strip ribbons as UiDrawer members, with a FontDa
 - 2026-11-03 03:43 `game/uidrawer.cpp` partial: UiMatrix and UiDrawer: 42 of 50 written (matrix helpers, ctor dtor begin end, matrix and add pass, every state call, the four vertex-list draws) through a new h
 - 2026-11-03 03:16 `game/s2ddata.cpp` verify: S2D file code cut from unassigned@0024d530: all 9 written (getImage, getImageEntry, findSequence, findObject, findVarIndex, findVar, getVar, relocate, getString
 - 2026-11-03 02:56 `game/uitrack.cpp` verify: finish the rotate / pin applies, sheet-sprite draws, text draw and setters (all 109 written)
@@ -88,22 +89,21 @@ Recent sessions:
 - 2026-11-03 02:22 `game/uisequence.cpp` verify: reconstruct 29 functions (verify)
 - 2026-11-03 02:03 `game/uilayout.cpp` verify: UiLayout, the S2D 2D layout player: script interpreter (30 opcodes, 17 condition kinds), sequence management, nested layout base UiSubLayout; all 22 functions w
 - 2026-11-03 01:36 `game/screen.cpp` verify: The 2D screens: overlay thread (BG movie screen, loading indicator), modal runLayout / runLayoutFile, stage e/h, archive and option screens, game-over and notic
-- 2026-11-03 01:19 `game/stageresult.cpp` verify: StageResult (0x599700: counters, two stage clocks, clock layout, mode) and the game-pack loader written; MSL map instances mapped to the host
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@00171300` | todo | 0/0/2851 | 749.7 | 31 | 0 |
+| `unassigned@00171300` | todo | 0/0/2851 | 749.7 | 34 | 0 |
 | `unassigned@00252840` | todo | 0/0/196 | 69.0 | 26 | 0 |
 | `unassigned@002681e0` | todo | 0/0/595 | 177.6 | 19 | 0 |
-| `unassigned@001319f0` | todo | 0/0/53 | 4.9 | 12 | 0 |
 | `unassigned@002b0d50` | todo | 0/0/632 | 194.3 | 12 | 0 |
+| `unassigned@001319f0` | todo | 0/0/53 | 4.9 | 12 | 0 |
 | `game/gamepacket.cpp` | todo | 0/0/6 | 0.6 | 12 | 0 |
 | `game/gfxtarget.cpp` | todo | 0/0/8 | 2.6 | 9 | 0 |
-| `game/uidrawer.cpp` | partial | 42/0/50 | 17.8 | 7 | 0 |
 | `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
 | `unassigned@00142dd0` | todo | 0/0/14 | 4.6 | 5 | 0 |
-| `unassigned@00133800` | todo | 0/0/65 | 11.2 | 5 | 0 |
+| `unassigned@00296d60` | todo | 0/0/267 | 74.1 | 5 | 0 |
 | `unassigned@0012ea60` | todo | 0/0/7 | 1.7 | 5 | 0 |
+| `unassigned@00133800` | todo | 0/0/65 | 11.2 | 5 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

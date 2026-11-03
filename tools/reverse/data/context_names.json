@@ -10091,6 +10091,24 @@
   "was": "FUN_001d6a80",
   "why": "(sound, name, volume f12): tail to 0x1d66e0; StageResult::tick passes the stage object's +0x24 (gp-0x7a7c), 'SYS_COUNT1' / 'SYS_COUNT2' and 1.0"
  },
+ "001fe150": {
+  "name": "FontData::countLines",
+  "tag": "game-inferred",
+  "was": "FUN_001fe150",
+  "why": "a0 the glyph table, a1 a wide string: 1 + the newlines (0 for null), control chars skipped, glyphs through nextGlyph; UiDrawer::drawText's vertical alignment"
+ },
+ "001fe2b0": {
+  "name": "FontData::lineWidth",
+  "tag": "game-inferred",
+  "was": "FUN_001fe2b0",
+  "why": "f12 the letter spacing, a0 the glyph table, a1 a wide string: the width up to the newline or the end, spacing + sum of (glyph w/16 - spacing); UiDrawer::drawText's horizontal alignment"
+ },
+ "001fe4d0": {
+  "name": "FontData::nextGlyph",
+  "tag": "game-inferred",
+  "was": "FUN_001fe4d0",
+  "why": "a0 the font's glyph table (+8 count, +0x10 sorted 0x10-byte entries: u16 code, +8 u v w h shorts in 1/16 texel): binary search of the wide char at a1, copies the glyph's u v w h to a2 (the entry after the last when missing); answers the next char pointer, null at the terminator; UiDrawer::drawText's glyph walk"
+ },
  "00230980": {
   "name": "gfxUiPresetRgbOnly5",
   "tag": "game-inferred",
@@ -11651,6 +11669,12 @@
   "was": "FUN_00250240",
   "why": "(this, format 0..7): keeps the open REGLIST run if +0xc is the same format, else opens the tag 0x307660 + format*0x10 (bit0 RGBAQ, bit1 UV, bit2 groups of three with XYZF3 XYZF3 XYZ2); the draw* functions' first call"
  },
+ "002503c0": {
+  "name": "UiDrawer::setScissorPixels",
+  "tag": "game-inferred",
+  "was": "FUN_002503c0",
+  "why": "setScissor 0x250520 without the matrix: the rect x0 y0 x1 y1 rounded (+0.5), x0 y0 >= -256, x1 y1 <= 255, written as SCISSOR_1 (A+D 0x40) plus 0x100 each; a0 the drawer (packet at +0, setTexture(0) first); one caller 0x29d5e0"
+ },
  "00250520": {
   "name": "UiDrawer::setScissor",
   "tag": "game-inferred",
@@ -11688,16 +11712,16 @@
   "why": "(this, const UiVec4 *rgba): packed RGBAQ of a gouraud vertex: the add colour +0x98 in the add pass, the drawer colour +0x80 when isFixedColor, else rgba * drawer colour (toRgbaq's scaling)"
  },
  "00251350": {
-  "name": "uiDrawTexStripFlat",
+  "name": "UiDrawer::drawTexStripFlat",
   "tag": "game-inferred",
   "was": "FUN_00251350",
-  "why": "(mode, drawer, verts, count, const 0x2fac80): kind 0x24 textured strip mesh, one colour"
+  "why": "was uiDrawTexStripFlat with the record read as (mode, drawer): f12 is a float width (caller 0x24bb18 lwc1 f12,0x14(rec)), a0 the drawer; width 0: xy points each at uvRect[0..1]; else pairs of points widened by width/2 along the pair (scale from the first pair), uvRect[0..1] / [2..3] on the two sides; openVertices(UV)"
  },
  "002519a0": {
-  "name": "uiDrawTexStripGouraud",
+  "name": "UiDrawer::drawTexStripGouraud",
   "tag": "game-inferred",
   "was": "FUN_002519a0",
-  "why": "(mode, drawer, verts, count, const 0x2fac70): kind 8 textured strip mesh, vertex colours"
+  "why": "was uiDrawTexStripGouraud: as drawTexStripFlat with {rgba, xy} vertices (stride 0x18) and vertexColor per vertex; openVertices(RGBAQ | UV)"
  },
  "00252040": {
   "name": "UiDrawer::drawTexFlat",

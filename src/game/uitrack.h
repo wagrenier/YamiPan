@@ -35,7 +35,7 @@
 // ──────────────────────────────────────────────────────────────────────
 // Records
 
-// The vertex layouts (UiVertex .. UiColorStripVertex) are the drawer's:
+// The vertex layouts (UiVertex .. UiTexColorVertex, UiTextBox) are the drawer's:
 // game/uidrawer.h.
 
 // S2dTrianglesRec::mode and its kin: how the vertex list is joined.
@@ -111,20 +111,19 @@ struct S2dScissorRec            // UiTrackKind_Scissor
 static_assert(offsetof(S2dScissorRec, rect) == 0xc, "S2dScissorRec::rect");
 
 // The text record: two images (by S2D index, or by init-pack name when
-// negative: string -1 - index), the font scale, and from +0x1c what the
-// text draw takes (not read yet).
+// negative: string -1 - index), the font's spacing, and from +0x1c the
+// colour and box UiDrawer::drawText takes.
 struct S2dTextRec               // UiTrackKind_Text
 {
-    int    kind;                // FS2 +0x00
-    int    count;               // FS2 +0x04
-    int    fontImage;           // FS2 +0x08: the font texture
-    int    glyphImage;          // FS2 +0x0c: the glyph table
-    int    _10;
-    float  scale[2];            // FS2 +0x14: UiFont::m_scale
-    UiVec4 _1c;                 // FS2 +0x1c: handed to the text draw (0x24eba0)
-    float  xy[2];               // FS2 +0x2c: the anchor
+    int       kind;             // FS2 +0x00
+    int       count;            // FS2 +0x04
+    int       fontImage;        // FS2 +0x08: the font texture
+    int       glyphImage;       // FS2 +0x0c: the glyph table (FontData)
+    int       _10;
+    float     spacing[2];       // FS2 +0x14: UiFont::m_spacing
+    UiTextBox box;              // FS2 +0x1c: its topLeft (+0x2c) is the anchor
 };
-static_assert(offsetof(S2dTextRec, xy) == 0x2c, "S2dTextRec::xy");
+static_assert(offsetof(S2dTextRec, box) == 0x1c, "S2dTextRec::box");
 
 struct S2dTexSpriteRec          // UiTrackKind_TexSprite
 {
@@ -212,8 +211,8 @@ struct S2dTexStripRec           // UiTrackKind_TexStrip
     S2dRef<const char> label;  // FS2 +0x08: a name (unread)
     int                image;   // FS2 +0x0c
     int                _10;
-    int                mode;    // FS2 +0x14: the mesh's first argument
-    UiColorStripVertex verts[1]; // FS2 +0x18
+    float              width;   // FS2 +0x14: UiDrawer::drawTexStripGouraud's
+    UiColorVertex      verts[1]; // FS2 +0x18
 };
 static_assert(offsetof(S2dTexStripRec, verts) == 0x18, "S2dTexStripRec::verts");
 struct S2dTexStripFlatRec       // UiTrackKind_TexStripFlat
@@ -223,9 +222,9 @@ struct S2dTexStripFlatRec       // UiTrackKind_TexStripFlat
     S2dRef<const char> label;  // FS2 +0x08: a name (unread)
     int           image;        // FS2 +0x0c
     int           _10;
-    int           mode;         // FS2 +0x14
+    float         width;        // FS2 +0x14: UiDrawer::drawTexStripFlat's
     UiVec4        rgba;         // FS2 +0x18
-    UiStripVertex verts[1];     // FS2 +0x28
+    UiVertex      verts[1];     // FS2 +0x28
 };
 static_assert(offsetof(S2dTexStripFlatRec, verts) == 0x28, "S2dTexStripFlatRec::verts");
 
@@ -315,13 +314,15 @@ enum UiPinMode
 class UiFont
 {
 public:
-    UiFont(const void *glyphs, const void *image);                       // FS2 0x0025fac0: scale 2, 0
+    UiFont(const void *glyphs, const void *image);                       // FS2 0x0025fac0: spacing 2, 0
     ~UiFont();                                                           // FS2 0x0025fa50: deleting (obj, 1)
 
-    const void     *m_glyphs;   // FS2 +0x00
+    const void     *m_glyphs;   // FS2 +0x00: a FontData (game/fontdata.h)
     GsTexture      *m_texture;  // FS2 +0x04
     const u_short  *m_text;     // FS2 +0x08: UiTextTrack::m_text
-    float           m_scale[2]; // FS2 +0x0c
+    // Pixels taken off each glyph's advance and each line's height
+    // (UiDrawer::drawText): the record's.
+    float           m_spacing[2]; // FS2 +0x0c
 };
 
 // Relocates a TimM sheet image in place (once; "TimM" magic). False when
@@ -766,8 +767,8 @@ public:
           m_visible(1), m_fontKey(nullptr), m_glyphKey(nullptr), m_30(0), m_text(nullptr), m_ownsText(0)
     {
         const S2dTextRec *text = (const S2dTextRec *)rec;
-        m_font->m_scale[0] = text->scale[0];
-        m_font->m_scale[1] = text->scale[1];
+        m_font->m_spacing[0] = text->spacing[0];
+        m_font->m_spacing[1] = text->spacing[1];
     }
     ~UiTextTrack();                                                      // FS2 0x0024cbd0
     void draw(UiDrawer *drawer);                                         // FS2 0x0024cb80
@@ -785,7 +786,9 @@ public:
 
     UiFont         *m_font;     // FS2 +0x14
     int             m_message;  // FS2 +0x18: fMsg index, kUiTextLiteral; -1 none (nothing drawn)
-    float           m_x;        // FS2 +0x1c: UiDrawer::drawText's position
+    // The text's alignment in its box (UiDrawer::drawText: 0..1 of the
+    // room left, 0 left / top).
+    float           m_x;        // FS2 +0x1c
     float           m_y;        // FS2 +0x20
     u_char          m_visible;  // FS2 +0x24
     // The images' names: S2dImage::name, or (negative record index) the

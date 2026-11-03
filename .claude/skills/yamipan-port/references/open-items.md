@@ -251,6 +251,24 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    PRIM (0x15e -> 0x14e) and the copy's BITBLTBUF / TRXREG values. Bootstrap 6: `sdk/libgraph.h`
    (SCE_GS_SET_ALPHA / CLAMP / TRXPOS / TRXREG / BITBLTBUF / TRXDIR, sceGsDrawEnv1 with scissor1 at
    +0x30) is RosePan's; implement yamipan_drawui.
+   **TU 19 finished 2026-11-03 (second run, batch 047; all 50 written, `verify`)**: `interpolate`,
+   `drawText`, `setScissor` / new **`setScissorPixels`** 0x2503c0, the sheet draws and the strip
+   meshes, which are **UiDrawer members** with a **float width** first (`drawTexStripFlat` /
+   `Gouraud`; were free functions read as (mode, drawer)): a ribbon of point pairs, not uv'd
+   vertices, so `UiStripVertex` / `UiColorStripVertex` are gone (the records hold `UiVertex` /
+   `UiColorVertex`, +0x14 `width`). New `game/fontdata.h` (`FontData` glyph table: `nextGlyph` /
+   `countLines` / `lineWidth` 0x1fe4d0 / 0x1fe150 / 0x1fe2b0, game-inferred; its TU 0x1fe020.. is
+   not cut yet: stubgen stubs them). `UiFont::m_scale` -> **`m_spacing`** (pixels off each advance
+   / line), `S2dTextRec` +0x1c is a **`UiTextBox`** {rgba, topLeft, _18[4], bottomRight}; the text
+   track's `m_x` / `m_y` are the **alignment** 0..1 in that box, not a position. Doubts: the box's
+   +0x18..+0x28 (two more corners?) is unread; a mirrored and rotated keyframe does not round-trip
+   through `interpolate` at t = 1 (the ROM negates only x before atan2: kept); the glyph text is not
+   scaled by the UI matrix (only the box is), so on a 4:3 mode the text keeps its texel size: the
+   any-aspect renderer must keep that. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only
+   -Wall -Wextra clean on uidrawer.cpp, and a host harness: interpolate t = 0 / 1 return from / to,
+   drawText's line / alignment / spacing maths, colour bytes, the ribbon offsets and the scissor
+   word by hand. Next: the widget classes 0x252840.. (vtables 0x316a78..0x316c10), or what the
+   queue pins.
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

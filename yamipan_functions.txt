@@ -4820,12 +4820,12 @@
 /* 001fdff0 00000030 */ FUN_001fdff0(){}
 /* 001fe020 00000098 */ FUN_001fe020(){}
 /* 001fe0c0 00000088 */ FUN_001fe0c0(){}
-/* 001fe150 00000088 */ FUN_001fe150(){}
+/* 001fe150 00000088 */ FontData::countLines(){}  // game
 /* 001fe1e0 000000c8 */ FUN_001fe1e0(){}
-/* 001fe2b0 000000c0 */ FUN_001fe2b0(){}
+/* 001fe2b0 000000c0 */ FontData::lineWidth(){}  // game
 /* 001fe370 000000a0 */ FUN_001fe370(){}
 /* 001fe410 000000b8 */ FUN_001fe410(){}
-/* 001fe4d0 000000d0 */ FUN_001fe4d0(){}
+/* 001fe4d0 000000d0 */ FontData::nextGlyph(){}  // game
 /* 001fe5b0 000000f8 */ FUN_001fe5b0(){}
 /* 001fe6b0 00000010 */ FUN_001fe6b0(){}
 /* 001fe6c0 00000008 */ FUN_001fe6c0(){}
@@ -5853,15 +5853,15 @@
 /* 0024ffa0 00000184 */ UiDrawer::setBlend(){}  // game
 /* 00250130 00000104 */ UiDrawer::setDrawPreset(){}  // game
 /* 00250240 0000017c */ UiDrawer::openVertices(){}  // game
-/* 002503c0 0000015c */ FUN_002503c0(){}
+/* 002503c0 0000015c */ UiDrawer::setScissorPixels(){}  // game
 /* 00250520 00000198 */ UiDrawer::setScissor(){}  // game
 /* 002506c0 00000088 */ UiDrawer::resetScissor(){}  // game
 /* 00250750 0000025c */ UiDrawer::drawSheetFlat(){}  // game
 /* 002509b0 0000027c */ UiDrawer::drawSheetGouraud(){}  // game
 /* 00250c30 00000004 */ uiPkAddGsData(){}  // game
 /* 00250c40 00000710 */ UiDrawer::vertexColor(){}  // game
-/* 00251350 00000650 */ uiDrawTexStripFlat(){}  // game
-/* 002519a0 000006a0 */ uiDrawTexStripGouraud(){}  // game
+/* 00251350 00000650 */ UiDrawer::drawTexStripFlat(){}  // game
+/* 002519a0 000006a0 */ UiDrawer::drawTexStripGouraud(){}  // game
 /* 00252040 00000220 */ UiDrawer::drawTexFlat(){}  // game
 /* 00252260 00000238 */ UiDrawer::drawTexGouraud(){}  // game
 /* 002524a0 000001d8 */ UiDrawer::drawGouraud(){}  // game

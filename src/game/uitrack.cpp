@@ -776,7 +776,7 @@ void UiTexStripFlatTrack::draw(UiDrawer *drawer)
     const S2dTexStripFlatRec *rec = (const S2dTexStripFlatRec *)m_rec;
     drawer->setPrimColor(kUiPrimTexShape | UiPrim_TriStrip, &rec->rgba);
     UiVec4 uvRect = kStripUvRectFlat;
-    uiDrawTexStripFlat(rec->mode, drawer, rec->verts, rec->count, &uvRect);
+    drawer->drawTexStripFlat(rec->width, rec->verts, rec->count, &uvRect);
 }
 
 // FS2 0x0024bb40
@@ -801,7 +801,7 @@ void UiTexStripTrack::draw(UiDrawer *drawer)
     const S2dTexStripRec *rec = (const S2dTexStripRec *)m_rec;
     drawer->setPrim(kUiPrimTexShape | UiPrim_TriStrip);
     UiVec4 uvRect = kStripUvRectGouraud;
-    uiDrawTexStripGouraud(rec->mode, drawer, rec->verts, rec->count, &uvRect);
+    drawer->drawTexStripGouraud(rec->width, rec->verts, rec->count, &uvRect);
 }
 
 // FS2 0x0024bcb0
@@ -1116,7 +1116,7 @@ void UiTextTrack::draw(UiDrawer *drawer)
         return;
     if (!m_visible)
         return;
-    drawer->drawText(m_font, m_message, &((const S2dTextRec *)m_rec)->_1c, m_x, m_y);
+    drawer->drawText(m_font, m_message, &((const S2dTextRec *)m_rec)->box, m_x, m_y);
 }
 
 // FS2 0x0024cbd0
@@ -1419,7 +1419,7 @@ const float *UiScissorTrack::getAnchor()
 
 const float *UiTextTrack::getAnchor()
 {
-    return ((const S2dTextRec *)m_rec)->xy;
+    return ((const S2dTextRec *)m_rec)->box.topLeft;
 }
 
 // FS2 0x0024d4d0

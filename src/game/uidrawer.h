@@ -75,16 +75,24 @@ struct UiVertex             { float xy[2]; };
 struct UiColorVertex        { UiVec4 rgba; float xy[2]; };
 struct UiTexVertex          { float uv[2]; float xy[2]; };
 struct UiTexColorVertex     { UiVec4 rgba; float uv[2]; float xy[2]; };
-struct UiStripVertex        { float xy[2]; float uv[2]; };
-struct UiColorStripVertex   { UiVec4 rgba; float xy[2]; float uv[2]; };
 static_assert(sizeof(UiVertex) == 0x8, "UiVertex: EE 0x8");
 static_assert(sizeof(UiColorVertex) == 0x18, "UiColorVertex: EE 0x18");
 static_assert(sizeof(UiTexVertex) == 0x10, "UiTexVertex: EE 0x10");
 static_assert(sizeof(UiTexColorVertex) == 0x20, "UiTexColorVertex: EE 0x20");
-static_assert(sizeof(UiStripVertex) == 0x10, "UiStripVertex: EE 0x10");
 static_assert(offsetof(UiTexColorVertex, uv) == 0x10, "UiTexColorVertex::uv");
 static_assert(offsetof(UiTexColorVertex, xy) == 0x18, "UiTexColorVertex::xy");
-static_assert(offsetof(UiColorStripVertex, xy) == 0x10, "UiColorStripVertex::xy");
+
+// What a text track hands UiDrawer::drawText (S2dTextRec from +0x1c): the
+// text colour and the box the text is aligned in, in layout pixels.
+struct UiTextBox
+{
+    UiVec4 rgba;                // FS2 +0x00
+    float  topLeft[2];          // FS2 +0x10: also UiTextTrack::getAnchor
+    float  _18[4];              // FS2 +0x18: not read by the drawer
+    float  bottomRight[2];      // FS2 +0x28
+};
+static_assert(offsetof(UiTextBox, topLeft) == 0x10, "UiTextBox::topLeft");
+static_assert(offsetof(UiTextBox, bottomRight) == 0x28, "UiTextBox::bottomRight");
 
 // The GS PRIM values the tracks hand UiDrawer::setPrim / setPrimColor:
 // a primitive type and the flag bits (the add pass clears UiPrim_Textured
@@ -182,6 +190,7 @@ public:
     // (toBackup), or back (track kinds 0x28 / 0x29).
     int copyTarget(u_char toBackup);                                     // FS2 0x0024e8a0
     int setScissor(const float *rect);                                   // FS2 0x00250520: x0 y0 x1 y1, through m_matrix
+    int setScissorPixels(const float *rect);                             // FS2 0x002503c0: the same in window pixels
     int resetScissor();                                                  // FS2 0x002506c0: the draw env's
 
     // Vertex lists, drawn with the prim set before (count vertices; grouped
@@ -191,12 +200,20 @@ public:
     int drawTexFlat(const UiTexVertex *verts, int count, int grouped);   // FS2 0x00252040
     int drawTexGouraud(const UiTexColorVertex *verts, int count, int grouped); // FS2 0x00252260
     // Sprites cut from a TimM sheet: uv 0..1 within the sprite's rect.
-    int  drawSheetFlat(const void *verts, int count, const TimSheetSprite *sprite, int arg);    // FS2 0x00250750: {uv, xy}
-    int  drawSheetGouraud(const void *verts, int count, const TimSheetSprite *sprite, int arg); // FS2 0x002509b0: {rgba, uv, xy}
-    // A text track's text: its font, message (fMsg index, or
-    // kUiTextLiteral for the font's own text), the record from +0x1c and
-    // the track's position.
-    int  drawText(UiFont *font, int message, const void *block, float x, float y); // FS2 0x0024eba0
+    int  drawSheetFlat(const UiTexVertex *verts, int count, const TimSheetSprite *sprite, int grouped);         // FS2 0x00250750
+    int  drawSheetGouraud(const UiTexColorVertex *verts, int count, const TimSheetSprite *sprite, int grouped); // FS2 0x002509b0
+    // The textured strip meshes of track kinds 0x24 / 8 (uvRect the
+    // constant { 0.5, 0, 0.5, 1 }). Width 0: a strip of the points, every
+    // vertex at uvRect's first uv. Else the points are pairs (a point and
+    // one giving the cross direction), each pair two vertices width / 2
+    // either side of its point (the scale from the first pair's length),
+    // at uvRect's first and second uv. Answer count, -1 without a packet.
+    int  drawTexStripFlat(float width, const UiVertex *verts, int count, const UiVec4 *uvRect);         // FS2 0x00251350
+    int  drawTexStripGouraud(float width, const UiColorVertex *verts, int count, const UiVec4 *uvRect); // FS2 0x002519a0
+    // A text track's text in its font's texture, aligned in box (align 0..1
+    // of the room left: 0 left / top, 1 right / bottom), one sprite per
+    // glyph; message is unread here. Answers the glyphs drawn.
+    int  drawText(UiFont *font, int message, const UiTextBox *box, float alignX, float alignY); // FS2 0x0024eba0
 
     u_char isAddPass() const;                                            // FS2 0x0024f570
     u_char isFixedColor() const;                                         // FS2 0x0024f340
@@ -234,10 +251,5 @@ public:
     UiMatrix  m_matrix;         // FS2 +0xc4: the matrix the tracks draw with
     u_char    m_pixelMode;      // FS2 +0xdc
 };
-
-// The textured strip meshes of track kinds 8 / 0x24 (record mode first,
-// the drawer second; uvRect the constant { 0.5, 0, 0.5, 1 }).
-void uiDrawTexStripFlat(int mode, UiDrawer *drawer, const void *verts, int count, const UiVec4 *uvRect);    // FS2 0x00251350
-void uiDrawTexStripGouraud(int mode, UiDrawer *drawer, const void *verts, int count, const UiVec4 *uvRect); // FS2 0x002519a0
 
 #endif /* _GAME_UIDRAWER_H */
