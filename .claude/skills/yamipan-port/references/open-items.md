@@ -1227,6 +1227,9 @@ questions. Resolve items here when they are settled (move them to "Done" with th
        run reads SPK.ROM through rx's own ISO code and walks `loadGamePack` -> `PackTables` ->
        `loadMenuPack` -> `menuSceneThread`: **the frontier is now the reached stubs, the TU loop's job**
        (`rx/filehost.c` and `filehdd.c` stay stubs: FS2 never opens those devices);
+   **Pinned 2026-11-03 by the user: `game/menuscene.cpp` 0x2b5740..0x2b6b90** (14 functions, first in the
+   queue, before the partial stagescene): the reached stub on the way to a first picture. Queue order
+   is the user's: once it is `verify` the loop goes back to stagescene unless more is pinned.
    (b) `rena/rena_2d_texture_tim2.cpp`, then `TextureStore` behind `YamiPan_DrawUiTexture` (TIM2 decoded
        at the source): nothing textured draws until then;
    (c) any aspect: the renderer hands k to the game's UI matrices (`kUiScreenMatrix`, see TU 19), the one
