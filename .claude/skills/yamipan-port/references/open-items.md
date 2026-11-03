@@ -1235,7 +1235,8 @@ questions. Resolve items here when they are settled (move them to "Done" with th
        `sdk/libmpeg.cpp` (a movie reads as ended: PSS demux + FFmpeg), `sdk/sif.cpp` (no IOP: the audio
        milestone brings RosePan's IOP host and `iop/rxsnddrv`);
    (e) HDR in `PresentPass` (settings are there, the swapchain stays SDR), MSAA, anisotropy;
-   (f) re-enable the scheduled task: the user's decision.
+   ~~(f) re-enable the scheduled task~~ **done 2026-11-03, on the user's word**; `yamipan.py` now
+       finds MSYS2's toolchain without PATH, which a scheduled run does not have.
 
 ## Decisions
 
