@@ -12887,6 +12887,12 @@
   "was": "FUN_00231bb0",
   "why": "thread slot 1 started by gameMainThread: init calls, then forever runs the scene table 0x2fabd4 (0x18-byte entries, index gp-0x7a34) in thread slot 2 (stack from Heap::alloc), yields until it exits, then the next"
  },
+ "00231c90": {
+  "name": "runTitleScreen",
+  "tag": "game-inferred",
+  "was": "FUN_00231c90",
+  "why": "title%s.d2b with layout arg 0 / 1; folds its answer to 0 / 1 / 2"
+ },
  "00233810": {
   "name": "StageCollision::raycast",
   "tag": "game-inferred",
@@ -13180,6 +13186,12 @@
   "tag": "game-inferred",
   "was": "FUN_00243360",
   "why": "base slot 3 of Vt_00316560: null; the shape kinds answer their first vertex xy (was read as getText)"
+ },
+ "00243370": {
+  "name": "setUiWorkArea",
+  "tag": "game-inferred",
+  "was": "FUN_00243370",
+  "why": "the setter of the word getUiWorkArea reads (sbss 0x31ae40); menuPlayMovie is its caller"
  },
  "00243380": {
   "name": "getUiWorkArea",
@@ -15851,6 +15863,18 @@
   "was": "FUN_00293440",
   "why": "a0 the SePlayer: steps the master fade (+0x88 from, +0x8c to, +0x90 frames -1 none, +0x94 frame) into +0x84, then frees the voice records (+0x98 / +0x698 / +0xc98) whose bank voice ended"
  },
+ "00295470": {
+  "name": "runNaviFile",
+  "tag": "game-inferred",
+  "was": "FUN_00295470",
+  "why": "reads navi%s.d2b into a FileJob and runs it as the navi screen from the current node; answers the node or NaviAnswer bits"
+ },
+ "002954f0": {
+  "name": "runNaviLayout",
+  "tag": "game-inferred",
+  "was": "FUN_002954f0",
+  "why": "the layout loop over the navi file with the BG movie screen; 0x800 when a thread message arrives"
+ },
  "002955d0": {
   "name": "getNaviTable",
   "tag": "game-inferred",
@@ -16313,6 +16337,18 @@
   "was": "FUN_00299d40",
   "why": "MSL basic_string::assign(first, last) instance: replace(0, size, first, last); only caller replace_range (aliasing path)"
  },
+ "0029acb0": {
+  "name": "applyNaviAnswer",
+  "tag": "game-inferred",
+  "was": "FUN_0029acb0",
+  "why": "writes a navi answer's bits into the play record: low byte stage, 0x100 variant, 0x200 the record's +0x10"
+ },
+ "0029ad40": {
+  "name": "currentNaviAnswer",
+  "tag": "game-inferred",
+  "was": "FUN_0029ad40",
+  "why": "the inverse of applyNaviAnswer: the record as a navi node, negated after a cleared stage"
+ },
  "0029ae30": {
   "name": "PrgScaleNaviScroll::PrgScaleNaviScroll",
   "tag": "game-inferred",
@@ -16324,6 +16360,12 @@
   "tag": "game-inferred",
   "was": "FUN_0029e4f0",
   "why": "create case 0x1b (prgScaleNavi, 0x628 bytes) builds it with (seq, layout, data, def, arg); unread"
+ },
+ "0029ef70": {
+  "name": "saveExtraInit",
+  "tag": "game-inferred",
+  "was": "FUN_0029ef70",
+  "why": "sets the first words of the block getSaveExtra returns (0x5995e0) for a new game (guess: the block is unread)"
  },
  "0029efd0": {
   "name": "getSaveExtra",
@@ -16673,6 +16715,12 @@
   "was": "FUN_002acf90",
   "why": "port +0 = a1, slot +4 = a2, +0x10 and +8 = 0, then memcardLibInit inlined (sceMcInit once)"
  },
+ "002acff0": {
+  "name": "runHelpScreen",
+  "tag": "game-inferred",
+  "was": "FUN_002acff0",
+  "why": "help%s.d2b with the caller's page; always answers 0"
+ },
  "002ad070": {
   "name": "MenuProgHolder::~MenuProgHolder",
   "tag": "game-inferred",
@@ -16931,6 +16979,84 @@
   "was": "FUN_002b5740",
   "why": "the scene table's only entry (0x2fabd0: name 'Menu (Pack File)', arg 1): runs the menu flow 0x2b5770(1) then threadExit"
  },
+ "002b5770": {
+  "name": "menuFlow",
+  "tag": "game-inferred",
+  "was": "FUN_002b5770",
+  "why": "the scene's whole flow and never returns: boot screens, sce logo, then forever the title, new game or load, the top menu and the navi / stage loop"
+ },
+ "002b5aa0": {
+  "name": "runAttractDemo",
+  "tag": "game-inferred",
+  "was": "FUN_002b5aa0",
+  "why": "answers 1 and nothing else; menuFlow calls it when the title ended unanswered, so read as the attract demo left empty in retail (guess)"
+ },
+ "002b5ab0": {
+  "name": "menuPlayLoop",
+  "tag": "game-inferred",
+  "was": "FUN_002b5ab0",
+  "why": "navi screen, stage, save dialogs, until the navi cancels or a stage is quit; a1 skips the navi for a new game's first stage"
+ },
+ "002b5dc0": {
+  "name": "menuPlayStage",
+  "tag": "game-inferred",
+  "was": "FUN_002b5dc0",
+  "why": "plays the record's stage: opening movie, stage thread, ending movie, notice, recordStageResult; a single-part node only shows its movie"
+ },
+ "002b60b0": {
+  "name": "menuRunStage",
+  "tag": "game-inferred",
+  "was": "FUN_002b60b0",
+  "why": "gives the stage its loader (pack or bare FileLoader), starts stageThread in slot 3 on the script path and waits for it; passes a thread message on"
+ },
+ "002b62d0": {
+  "name": "menuTopMenu",
+  "tag": "game-inferred",
+  "was": "FUN_002b62d0",
+  "why": "topMenu%s.d2b's answers: options, archive, the extra mode, 4 play (1), 0 / 3 back to the title (0)"
+ },
+ "002b6410": {
+  "name": "runMenuLayoutFile",
+  "tag": "game-inferred",
+  "was": "FUN_002b6410",
+  "why": "runLayoutFile without cancel or base directory, the one the top menu uses"
+ },
+ "002b65e0": {
+  "name": "menuChooseKind",
+  "tag": "game-inferred",
+  "was": "FUN_002b65e0",
+  "why": "newGame%s.d2b: answers 1 / 2 / 3 write record kind 0 / 1 / 2 and answer 1, 8 opens the options, 0 goes back"
+ },
+ "002b66e0": {
+  "name": "menuLoadGame",
+  "tag": "game-inferred",
+  "was": "FUN_002b66e0",
+  "why": "resets the system data, runs mcBase%s.d2b with 0 (the load screen: its widgets load the card), applies the sound options when it answered"
+ },
+ "002b6770": {
+  "name": "menuSaveDialog",
+  "tag": "game-inferred",
+  "was": "FUN_002b6770",
+  "why": "mcBase%s.d2b with the caller's reason 1..5; clears the memcard flag first, sets it again when the layout answers 0"
+ },
+ "002b67d0": {
+  "name": "menuBootScreens",
+  "tag": "game-inferred",
+  "was": "FUN_002b67d0",
+  "why": "2dEU/languageEU.d2b, then the card check 0x2b6810"
+ },
+ "002b6810": {
+  "name": "menuCheckCard",
+  "tag": "game-inferred",
+  "was": "FUN_002b6810",
+  "why": "memAlt%s.d2b over Memcard::startScan: repeats until the scan is Ok or the layout answers 1"
+ },
+ "002b6a00": {
+  "name": "menuPlayMovie",
+  "tag": "game-inferred",
+  "was": "FUN_002b6a00",
+  "why": "the stageMoviePath file as a layout; lends a work area, starts the pack's job behind it; 1 when the stage has no such movie"
+ },
  "002b9d60": {
   "name": "PrgMcCard::PrgMcCard",
   "tag": "game-inferred",
@@ -17009,6 +17135,12 @@
   "was": "FUN_002c3d70",
   "why": "0 when the byte 0x31ae9c is clear, else the object 0x31ae98's vtable (+0x98) slot +0x20 with a1; Memcard::startSave takes id 0 as the icon1.ico it writes (0x10eb8 bytes), buildIconSys id 1 as an icon.sys template (lighting block at +0xc); the module is unread"
  },
+ "002c3db0": {
+  "name": "unloadMenuPack",
+  "tag": "game-inferred",
+  "was": "FUN_002c3db0",
+  "why": "deletes the pack at 0x31ae98 and the SePlayer at 0x31aea0, loadMenuPack's two objects"
+ },
  "002c3e10": {
   "name": "loadMenuPack",
   "tag": "game-inferred",
@@ -17020,6 +17152,12 @@
   "tag": "game-inferred",
   "was": "FUN_002c4140",
   "why": "answers the sbss pointer 0x31aea0: the sound-effect player whose +0 is the effect table (count +0xc, sorted name index +0x428 / +0x42c, entries 0x30 each at +0x430) that UiLayout::playSound looks up by name and hands to SePlayer::play / stop"
+ },
+ "002c42c0": {
+  "name": "runExtraMode",
+  "tag": "game-inferred",
+  "was": "FUN_002c42c0",
+  "why": "runs 0x2c4320 in slot 3 and waits; the word it answers says the save changed (guess at the mode: 16 scored entries of the save's +0x46c / +0x4ac)"
  },
  "002ce5a0": {
   "name": "SceneBufferSet::~SceneBufferSet",
@@ -17375,16 +17513,70 @@
   "was": "FUN_002ec520",
   "why": "(): movieEU/ev0102<lang>.d2b in the static buffer 0x5a5460; an entry of stageMoviePath's table 0x2fb520 (no direct caller)"
  },
+ "002ec570": {
+  "name": "naviLayoutPath",
+  "tag": "game-inferred",
+  "was": "FUN_002ec570",
+  "why": "2dEU/navi%s.d2b"
+ },
+ "002ec5c0": {
+  "name": "naviTuLayoutPath",
+  "tag": "game-inferred",
+  "was": "FUN_002ec5c0",
+  "why": "2dEU/navi_tu%s.d2b"
+ },
+ "002ec610": {
+  "name": "mcBaseLayoutPath",
+  "tag": "game-inferred",
+  "was": "FUN_002ec610",
+  "why": "2dEU/mcBase%s.d2b"
+ },
  "002ec660": {
   "name": "optionLayoutPath",
   "tag": "game-inferred",
   "was": "FUN_002ec660",
   "why": "sprintf into 0x5a53e0 '2dEU/option%s.d2b' with the language code"
  },
+ "002ec6b0": {
+  "name": "memAltLayoutPath",
+  "tag": "game-inferred",
+  "was": "FUN_002ec6b0",
+  "why": "2dEU/memAlt%s.d2b"
+ },
+ "002ec700": {
+  "name": "newGameLayoutPath",
+  "tag": "game-inferred",
+  "was": "FUN_002ec700",
+  "why": "2dEU/newGame%s.d2b"
+ },
+ "002ec750": {
+  "name": "sceLogoLayoutPath",
+  "tag": "game-inferred",
+  "was": "FUN_002ec750",
+  "why": "2dEU/scelogo%s.d2b"
+ },
+ "002ec7a0": {
+  "name": "topMenuLayoutPath",
+  "tag": "game-inferred",
+  "was": "FUN_002ec7a0",
+  "why": "2dEU/topMenu%s.d2b"
+ },
  "002ec7f0": {
   "name": "archiveLayoutPath",
   "tag": "game-inferred",
   "was": "FUN_002ec7f0",
   "why": "sprintf into 0x5a5340 '2dEU/archive%s.d2b' with the language code"
+ },
+ "002ec840": {
+  "name": "helpLayoutPath",
+  "tag": "game-inferred",
+  "was": "FUN_002ec840",
+  "why": "2dEU/help%s.d2b"
+ },
+ "002ec890": {
+  "name": "titleLayoutPath",
+  "tag": "game-inferred",
+  "was": "FUN_002ec890",
+  "why": "2dEU/title%s.d2b"
  }
 }

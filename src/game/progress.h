@@ -159,6 +159,9 @@ struct NaviTable
 static_assert(offsetof(NaviTable, count) == 0x08, "NaviTable::count");
 static_assert(sizeof(NaviTable) == 0x10, "NaviTable: EE 0x10");
 
+// The init pack's item holding the navi table.
+constexpr int kInitItemNaviTable = 1;
+
 // The navi table: the init pack's item 1 (pack vtable slot 6, inline like
 // getInitPackItem); null while the pack is not loaded.
 NaviTable *getNaviTable();                                               // FS2 0x002955d0

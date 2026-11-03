@@ -7,19 +7,11 @@
 #include "game/sysdata.h"
 #include "sdk/scetypes.h"
 
-// The stage clear bits of every kind in one variant (SaveData::clearBit:
-// kind 0..2 variant 0 = 0x01 / 0x04 / 0x10, variant 1 = 0x02 / 0x08 / 0x20).
-constexpr u_int kClearedVariant0 = 0x15;
-constexpr u_int kClearedVariant1 = 0x2a;
-
 // The one archive NaviCond_AllArchives does not ask for.
 constexpr int kArchiveNotRequired = 98;
 
 // The record kind whose clears NaviCond_AllStagesKind2 asks for.
 constexpr int kAllStagesKind = 2;
-
-// The init pack's item holding the navi table (getNaviTable).
-constexpr int kInitItemNaviTable = 1;
 
 // A fresh kind-0 record: 3599 = 59:59, the slowest time.
 constexpr u_int kDefaultRecordTime = 3599;

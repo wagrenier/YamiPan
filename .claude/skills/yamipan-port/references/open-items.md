@@ -1233,6 +1233,24 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    textured draws without it), **then the host task `yamipan/rendering/texture_store.cpp`** (the Pan
    side, its brief has the whole job: `tus.py brief` on that key). Queue order is the user's: once all
    three are through, the loop goes back to stagescene unless more is pinned.
+   **`game/menuscene.cpp` written 2026-11-03 (all 14, `verify`, batch 083; architecture.md "Modules").**
+   The default smoke run (no pad) now stays on 2dEU/languageEU.d2b: black for the first ~3000 presented
+   frames, then one white band across the screen (y 224..288 of the 683x512 shot) and nothing else, an
+   untextured layout: `Tim2Texture::Tim2Texture` and `UiTrack::draw` are its reached stubs, so this is
+   the picture the two next pinned TUs answer to. No reference is extracted yet (`work/ref/` is empty):
+   carve the language screen's TIM2s with tm2png.py when those TUs need it. Keep `settings.smoke_pad`
+   empty until then: **CROSS** leaves the language screen (CIRCLE does nothing there), e.g. `build.py
+   --run 8 --pad "30:CROSS,60:CROSS,90:CROSS"`, and the flow then runs `menuCheckCard` and the logo on
+   null paths and hangs in `menuFlow`'s title retry on the stub `runTitleScreen` (hazards.md "Stubs"). **So
+   the menu's next blockers, for the user to pin after the textures:** the layout paths 0x2ec110..0x2ec8e0
+   (tiny, one sprintf each; `naviTuLayoutPath` .. `titleLayoutPath`, `helpLayoutPath`, `naviLayoutPath`,
+   the two old ones and the event movies; all stubs answering null, so the scene runs no layout but the
+   language one), `runTitleScreen` 0x231c90 (one short function right after game/scene.cpp),
+   `loadMenuPack` / `unloadMenuPack` 0x2c3db0.. (the resident menu pack), `runHelpScreen` 0x2acff0, the
+   navi block `runNaviFile` 0x295470, `applyNaviAnswer` / `currentNaviAnswer` 0x29acb0 / 0x29ad40,
+   `saveExtraInit` 0x29ef70, then `setUiWorkArea` 0x243370 with `getUiWorkArea`.
+   Doubt for the user: the path getters were left as stubs to keep the run to one TU, though the menu
+   cannot pass the language screen properly without them.
    (b) textures: queued, see above;
    (c) any aspect: the renderer hands k to the game's UI matrices (`kUiScreenMatrix`, see TU 19), the one
        place a game file needs a `PC:` touch;

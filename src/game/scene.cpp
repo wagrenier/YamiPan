@@ -5,6 +5,7 @@
 #include "game/gamehooks.h"
 #include "game/gfxtarget.h"
 #include "game/heap.h"
+#include "game/menuscene.h"
 #include "game/screen.h"
 #include "game/stageresult.h"
 #include "game/thread.h"
