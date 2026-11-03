@@ -20,6 +20,8 @@
 #include "sdk/libvifpk.h"
 #include "sdk/scetypes.h"
 
+struct StageSelect;             // game/sysdata.h
+
 // rx boot: thread priorities given absolute, made relative to the caller.
 void rxInit(const char *bootPath, int prio0, int prio1, int prio2);      // FS2 0x001527a0
 void rxTerm();                                                           // FS2 0x00152750
@@ -52,18 +54,33 @@ bool boxContainsPoint(const float m[4][4], const float p[4]);            // FS2 
 // only while not loaded).
 void loadInitPack();                                                     // FS2 0x00290840
 void loadMenuPack();                                                     // FS2 0x002c3e10
-// Thread slot 6 (when free): draws the overlay objects gp-0x7a28 / -0x7a20
-// into packet list 0xb every frame.
-void overlayThreadStart();                                               // FS2 0x00267780
-// Deletes the overlay object gp-0x7a28 and clears its show flag.
-void overlayReleaseScreen();                                             // FS2 0x00267a00
 // The scene table's only scene, "Menu (Pack File)": the menu flow 0x2b5770(1).
 void menuSceneThread(void *arg);                                         // FS2 0x002b5740
+
+// A list of files loaded together by a job (unassigned@001319f0, 0x1320f0..):
+// addFile each, startLoad, waitLoaded, then getData / getSize by name (the
+// first listed path containing it). PackFile's base.
+// layout: host -- EE 0x9c, vptr at +0x98 (vtable 0x3110b0, 18 slots): +0
+// state, +4 / +8 / +0xc the file list head / tail / count (0x2c-byte
+// entries: +0xc size, +0x14 data, +0x28 next), +0x10 the job, +0x14 the
+// constructor's argument, +0x18 the path prefix.
+class FileLoader
+{
+public:
+    explicit FileLoader(int arg);                                        // FS2 0x00132920
+    virtual ~FileLoader();                                               // FS2 0x001328b0: slot 0, deleting
+    virtual int   addFile(const char *name);                             // FS2 0x001327a0: slot 2, answers the index
+    virtual void *getData(const char *name);                             // FS2 0x00132630: slot 5
+    virtual int   getSize(const char *name);                             // FS2 0x00132550: slot 7
+    virtual void  waitLoaded(int arg, bool showLoading);                 // FS2 0x001320f0: slot 15 (arg unused)
+    // Queues the load job; 0 while no job slot is free.
+    int startLoad();                                                     // FS2 0x00132280
+};
 
 // A pack file (dataEU/pack*.pak; unassigned@001319f0, 0x1319f0..).
 // layout: host -- EE 0xf8, vptr at +0x98 (Vt_00311060, 18 slots; slot 6 the
 // item lookup getInitPackItem calls), the path in new[] at +0xa0.
-class PackFile
+class PackFile : public FileLoader
 {
 public:
     PackFile(const char *path, int arg);                                 // FS2 0x00131f00
@@ -76,6 +93,19 @@ public:
 // (0x290670).
 void *getInitPackItem(int index);                                        // FS2 0x002907c0
 void *getLangPackItem(int index);                                        // FS2 0x00290630
+// The init pack's file data by name (FileLoader::getData; null while not
+// loaded).
+void *getInitPackData(const char *name);                                 // FS2 0x00290800
+
+// The stage screens' layout files for a play record (null when it is not
+// valid, and for stage 1 variant 0), formatted into static buffers:
+// 2dEU/s<stage>m<variant + 1>e<lang>.d2b and, per difficulty (the kind:
+// e / n / h), 2dEU/s<stage>m<variant + 1>h<e|n|h><lang>.d2b.
+const char *stageScreenPathE(const StageSelect *select);                 // FS2 0x002903b0
+const char *stageScreenPathH(const StageSelect *select);                 // FS2 0x002902d0
+// 2dEU/archive<lang>.d2b and 2dEU/option<lang>.d2b (static buffers).
+const char *archiveLayoutPath();                                         // FS2 0x002ec7f0
+const char *optionLayoutPath();                                          // FS2 0x002ec660
 
 // getInitPackItem indices game/stageresult.cpp asks for (their content is
 // not read yet).
@@ -89,9 +119,14 @@ enum InitPackItem
     InitItem_LangIT = 0x1a,
 };
 
-// getLangPackItem indices: the clock layouts StageResult::begin builds.
+// getLangPackItem indices: game/screen.cpp's loading indicator and dialogs,
+// the clock layouts StageResult::begin builds.
 enum LangPackItem
 {
+    LangItem_Loading        = 0,    // overlayShowLoading
+    LangItem_Notice         = 1,    // noticeDialogStart
+    LangItem_GameOver       = 2,    // gameOverDialogStart
+    LangItem_GameOverAttempt = 3,   // the same while StageResult::hasAttemptFlag
     LangItem_ClockCountUp   = 4,
     LangItem_ClockCountdown = 5,
 };
@@ -143,6 +178,13 @@ public:
     void advance();                                                      // FS2 0x00243b90
     void update();                                                       // FS2 0x00243c10
     void draw(sceVif1Packet *packet, void *drawCtx);                     // FS2 0x002439f0
+    // Replaces the new[] copy at +0x60 (null clears it); runArchiveScreen
+    // passes "2dEU/".
+    void setBaseDir(const char *dir);                                    // FS2 0x00245f10
+
+    // The fields game/screen.cpp reads (the rest is not declared yet).
+    int    m_result;            // FS2 +0x38: the answer, once m_done
+    u_char m_done;              // FS2 +0x3c: the layout has ended
 };
 
 // The current stage's sound effects (the stage object's +0x24).

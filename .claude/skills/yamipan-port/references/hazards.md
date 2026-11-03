@@ -181,6 +181,11 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   http.client`): import the submodule under another name.
 - **`gdbrun.py --help` launches the game**; read its docstring instead.
 - `python -I` drops the script's directory from `sys.path`: run tools as `python tool.py` from their folder.
+- **MSYS2's g++ fails silently outside its shell** (2026-11-03, TU 14): `/c/msys64/ucrt64/bin/g++.exe`
+  from Git Bash exits 1 with no message, even on a broken file, because cc1plus cannot find its DLLs.
+  Put `/c/msys64/ucrt64/bin` first on PATH (`export PATH=/c/msys64/ucrt64/bin:$PATH`) before a
+  `-fsyntax-only` check; test it on a bad file first. Until bootstrap 6 the SDK headers are stubs in
+  the scratchpad, so only errors in the TU's own files count.
 
 ## Build and run
 

@@ -26,9 +26,9 @@ enum ThreadSlot
     ThreadSlot_Main   = 1,      // gameSceneThread
     ThreadSlot_02     = 2,      // the current scene (gameSceneThread)
     ThreadSlot_Game   = 3,
-    ThreadSlot_04     = 4,
+    ThreadSlot_Dialog = 4,      // the game-over / notice dialogs (game/screen.cpp)
     ThreadSlot_Extra  = 5,
-    ThreadSlot_06     = 6,
+    ThreadSlot_Overlay = 6,     // overlayThread (game/screen.cpp)
     ThreadSlot_Effect = 7,
     ThreadSlot_Count  = 8,
     ThreadSlot_Current = -1,    // threadSwapMessage: the running slot

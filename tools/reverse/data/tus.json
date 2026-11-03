@@ -215,6 +215,25 @@
    "status": "verify",
    "why": "gameSceneThread alone: the next function 0x231c90 (menu step helper over 0x267c00, called by the menu flow 0x2b5770) and the pak parser 0x231660..0x231bb0 before it share no data or callers with it; the scene table 0x2fabd0 is read only here. A one-function file until a source string or link order says otherwise"
   },
+  "game/screen.cpp": {
+   "notes": "All 18 functions of 0x2676e0..0x2681e0 written (batch 037, 33 names, Ghidra saved). Overlay thread slot 6 draws the BG movie screen layout (init pack file 2dEU/BGMOVIEEU.d2b, overlayShowScreen / overlayReleaseScreen) and the loading indicator (lang item 0, asked per frame by overlayShowLoading from FileLoader::waitLoaded) into packet list 11. runLayout runs a stack UiLayout in packet list 12 until done (+0x3c, answer +0x38) or cross when cancelable (-1); runLayoutFile loads the file with a one-file FileLoader (PackFile base, vtable 0x3110b0). Screens: runStageScreenE / H (2dEU/s..m..e / h<e|n|h> per difficulty), runArchiveScreen (bit 0 answered 1, bit 1 save changed), runOptionScreen (memcardClearStamp unless options +0x4d, applySound on a sound change; 1 when options or the play record kind changed). Dialogs in slot 4: game over (lang 2, or 3 with StageResult::hasAttemptFlag; 0 restart 1 quit 2 continue) and notice (lang 1). Headers: screen.h new; overlay prototypes moved out of gamehooks.h; FileLoader, getInitPackData, the layout path getters, UiLayout setBaseDir / m_result / m_done, LangItem 0..3 in gamehooks.h; TexArea / gfxGetTexArea in gfxtarget.h; PacketList 10..12; ThreadSlot_Dialog / ThreadSlot_Overlay. Checked: callcheck clean, layout lint, g++ -fsyntax-only clean on screen.cpp and scene.cpp with stub SDK headers (MSYS2 needs ucrt64/bin on PATH: hazards.md). Next in the run: the LCG 0x2681e0..0x268310 (own file), 0x268310.., and the pack-item cluster 0x2902d0..0x2908c8 (getInitPackItem / getLangPackItem / loadInitPack / getInitPackData / stage screen paths), now the frontier's top.",
+   "ranges": [
+    [
+     "002676e0",
+     "002681e0"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 01:36",
+     "status": "verify",
+     "summary": "The 2D screens: overlay thread (BG movie screen, loading indicator), modal runLayout / runLayoutFile, stage e/h, archive and option screens, game-over and notice dialogs; callees named (FileLoader, TexArea, pack paths)"
+    }
+   ],
+   "status": "verify",
+   "why": "18 functions around the overlay thread (slot 6) and the modal UiLayout runner 0x267ae0 / 0x267c00 and their users (stage screens, archive / option screens, game-over and notice dialogs); 0x2681e0.. is a 48-bit LCG (0x5deece66d), another file. Name is the port's (no source string)"
+  },
   "game/spkrom.cpp": {
    "ranges": [
     [
@@ -500,6 +519,7 @@
   "unassigned@00171300": {},
   "unassigned@0023c020": {},
   "unassigned@002647e0": {},
+  "unassigned@002676e0": {},
   "unassigned@002acff0": {}
  }
 }

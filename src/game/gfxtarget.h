@@ -39,4 +39,19 @@ GfxDrawEnv *gfxGetCurrentDrawEnv();                                      // FS2 
 void gfxSetDrawEnvClear(GfxDrawEnv *env, int enable, u_char r, u_char g,
                         u_char b, u_char a);                             // FS2 0x0012ea80
 
+// GS texture pages 0x3700..0x3fbe handed out per packet list (EE 0x814,
+// gfxInitRenderTargets builds it: unassigned@00142dd0). Layout draws take
+// the list of the packet list they draw into. layout: host -- not declared.
+// PC: the host draw module keeps textures on the GPU; this goes with the
+// GS upload path (the user's rule: no GS memory model).
+class TexArea
+{
+public:
+    TexArea(int firstPage, int lastPage, int lists, int arg);            // FS2 0x00143270
+    void *getList(int list);                                             // FS2 0x00142dd0
+};
+// The one TexArea (gp-0x7ad0). In the same unassigned run as
+// gfxSetDisplayOffset.
+TexArea *gfxGetTexArea();                                                // FS2 0x0012f160
+
 #endif /* _GAME_GFXTARGET_H */

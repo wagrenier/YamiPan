@@ -3,6 +3,7 @@
  "0x311030": "MaskedGamePad",
  "0x311040": "GamePacketManager",
  "0x311050": "Pad",
+ "0x3110b0": "FileLoader",
  "0x311140": "SoundPcmSink",
  "0x311180": "SoundSink",
  "0x3111c0": "SoundAdpcmSink",

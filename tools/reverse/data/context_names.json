@@ -2615,6 +2615,12 @@
   "was": "FUN_0012ead0",
   "why": "stores x / y at record +0x3c / +0x40 and rewrites the DISPLAY1 / DISPLAY2 DX / DY fields at +0x18 / +0x30 (DX = x * (2560 / +0x38) + 0x290 or 0x27c by sceGsGetGParam mode, DY = y + 0x48 or 0x32)"
  },
+ "0012f160": {
+  "name": "gfxGetTexArea",
+  "tag": "game-inferred",
+  "was": "FUN_0012f160",
+  "why": "returns gp-0x7ad0, the 0x814-byte object gfxInitRenderTargets builds with 0x143270(obj, 0x3700, 0x3fbe, 14, 0x20): GS texture pages per packet list; UiLayout::draw takes one list of it"
+ },
  "0012f190": {
   "name": "RcntTimer::reset",
   "tag": "game-inferred",
@@ -2854,6 +2860,54 @@
   "tag": "game-inferred",
   "was": "FUN_00131f00",
   "why": "(path, arg): vptr at +0x98 (Vt_003110b0 then Vt_00311060), copies the path into new[] at +0xa0, arg into +0xd0/+0xd4/+0xe0/+0xe4; every 'dataEU/pack*.pak' loader builds a 0xf8-byte one"
+ },
+ "001320f0": {
+  "name": "FileLoader::waitLoaded",
+  "tag": "game-inferred",
+  "was": "FUN_001320f0",
+  "why": "slot 15 (?, showLoading): yields until slot 14 (done) answers true, calling overlayShowLoading each frame when showLoading"
+ },
+ "001321f0": {
+  "name": "FileLoader::loadJob",
+  "tag": "game-inferred",
+  "was": "FUN_001321f0",
+  "why": "job body: state 2, loads every listed file whose state < 2 (0x132a40), job 0, state 3"
+ },
+ "00132280": {
+  "name": "FileLoader::startLoad",
+  "tag": "game-inferred",
+  "was": "FUN_00132280",
+  "why": "jobAdd(FileLoader::loadJob, this) into +0x10, state 1 when queued; answers the job (0 = no free job slot: runLayoutFile retries each frame)"
+ },
+ "00132550": {
+  "name": "FileLoader::getSize",
+  "tag": "game-inferred",
+  "was": "FUN_00132550",
+  "why": "slot 7: as getData, the entry's size +0xc"
+ },
+ "00132630": {
+  "name": "FileLoader::getData",
+  "tag": "game-inferred",
+  "was": "FUN_00132630",
+  "why": "slot 5: the first entry whose path contains the name (strstr): its data +0x14, else 0"
+ },
+ "001327a0": {
+  "name": "FileLoader::addFile",
+  "tag": "game-inferred",
+  "was": "FUN_001327a0",
+  "why": "slot 2: answers slot 3's index when listed, else appends a 0x2c-byte entry (path = prefix +0x18 + name, '%s%s') and answers its index"
+ },
+ "001328b0": {
+  "name": "FileLoader::~FileLoader",
+  "tag": "game-inferred",
+  "was": "FUN_001328b0",
+  "why": "vtable 0x3110b0 slot 0: calls slot 16 (release), deletes when the short flag > 0"
+ },
+ "00132920": {
+  "name": "FileLoader::FileLoader",
+  "tag": "game-inferred",
+  "was": "FUN_00132920",
+  "why": "base class of PackFile (vtable 0x3110b0, vptr +0x98, 0x9c bytes): state, file list head / tail / count, job, +0x14 the argument, +0x18 an empty path prefix"
  },
  "00132f20": {
   "name": "PerfMeter::drawDetail",
@@ -4984,6 +5038,18 @@
   "tag": "lib-context",
   "was": "FUN_00142d28",
   "why": "SDK 3.0 libkernl / loadfile: RosePan names RoR 0x269668 sceSifExecNotifyHandler; same size 0xa8 and place in a run of matching functions (rxalign.py)"
+ },
+ "00142dd0": {
+  "name": "TexArea::getList",
+  "tag": "game-inferred",
+  "was": "FUN_00142dd0",
+  "why": "returns the list pointer table +0x810 [id]; id is the packet list (0xb overlay, 0xc screens); 0x142df0 resets each list's 0xc-byte slots to {0, -1, -1}"
+ },
+ "00143270": {
+  "name": "TexArea::TexArea",
+  "tag": "game-inferred",
+  "was": "FUN_00143270",
+  "why": "(first page 0x3700, last 0x3fbe, 14 lists, 0x20): built once by gfxInitRenderTargets into gp-0x7ad0 (fields unread)"
  },
  "00144080": {
   "name": "SoundPcmSink::setAttr",
@@ -10211,6 +10277,12 @@
   "was": "FUN_00245e80",
   "why": "(layout, item, arg): resets (0x245c80), stores arg +0x34 and the pack item +0x1c, validates it (0x24d820; 0 drops it) and when its +0xc >= 0 builds the parts (0x244d90); StageResult::begin passes getLangPackItem(4 / 5), -1"
  },
+ "00245f10": {
+  "name": "UiLayout::setBaseDir",
+  "tag": "game-inferred",
+  "was": "FUN_00245f10",
+  "why": "replaces the new[] string at +0x60 with a copy of the argument (or null); runArchiveScreen passes '2dEU/'"
+ },
  "00246010": {
   "name": "UiLayout::~UiLayout",
   "tag": "game-inferred",
@@ -10511,17 +10583,125 @@
   "was": "FUN_00267400",
   "why": "MSL vector<BoxList>::assign(first, last) ('vector::assign length error'): reallocate + copy-construct, or assign over (BoxList::assign) and destroy / construct the difference"
  },
+ "002676e0": {
+  "name": "runStageScreenE",
+  "tag": "game-inferred",
+  "was": "FUN_002676e0",
+  "why": "runLayoutFile(stageScreenPathE(getStageSelect()), -1, 0, 0, 1) when the path exists (2dEU/s%02dm%1de<lang>.d2b); callers the stage loop 0x17f160 / 0x17fa70 (what the e screen shows: unread)"
+ },
+ "00267730": {
+  "name": "runStageScreenH",
+  "tag": "game-inferred",
+  "was": "FUN_00267730",
+  "why": "as runStageScreenE on stageScreenPathH (2dEU/s%02dm%1dh<e|n|h><lang>.d2b, per difficulty); callers 0x17f160 / 0x17fa70 / 0x20ad70"
+ },
  "00267780": {
   "name": "overlayThreadStart",
   "tag": "game-inferred",
   "was": "FUN_00267780",
   "why": "starts 0x267830 in thread slot 6 (cleanup 0x2677e0) when the slot is free; 0x267830 draws, every frame, the 0x98-byte objects at gp-0x7a28 (while the byte gp-0x7a24 is set) and gp-0x7a20 (while gp-0x7a1c is set, i.e. while 0x267950 keeps being called by the pack loader 0x131d70) into packet list 0xb"
  },
+ "002677e0": {
+  "name": "overlayThreadCleanup",
+  "tag": "game-inferred",
+  "was": "FUN_002677e0",
+  "why": "slot-6 cleanup passed by every threadSlotCreate of overlayThread: deletes both overlay layouts (gp-0x7a28 / gp-0x7a20) and clears their show flags"
+ },
+ "00267830": {
+  "name": "overlayThread",
+  "tag": "game-inferred",
+  "was": "FUN_00267830",
+  "why": "slot-6 thread: every frame advances / updates / draws the screen layout gp-0x7a28 while its flag is set and the loading layout gp-0x7a20 while its keep-alive flag is set (deleted once it is not), both into packet list 0xb; clears the keep-alive flag and yields"
+ },
+ "00267950": {
+  "name": "overlayShowLoading",
+  "tag": "game-inferred",
+  "was": "FUN_00267950",
+  "why": "sets the keep-alive flag gp-0x7a1c, builds the layout gp-0x7a20 on getLangPackItem(0) once, starts overlayThread if slot 6 is free; FileLoader::waitLoaded calls it (via the thunks 0x231d20 / 0x231d30) every frame it waits: the loading indicator"
+ },
  "00267a00": {
   "name": "overlayReleaseScreen",
   "tag": "game-inferred",
   "was": "FUN_00267a00",
   "why": "deletes the overlay object at gp-0x7a28 (0x246010(obj, 1)) and clears its show byte gp-0x7a24: the first of the two objects overlayThreadStart's slot-6 thread draws; called after each scene by gameSceneThread and by the menu flow 0x2b5770"
+ },
+ "00267a30": {
+  "name": "overlayShowScreen",
+  "tag": "game-inferred",
+  "was": "FUN_00267a30",
+  "why": "sets the flag gp-0x7a24, builds the layout gp-0x7a28 once on the init pack's 2dEU/BGMOVIEEU.d2b, starts overlayThread if slot 6 is free; overlayReleaseScreen undoes it"
+ },
+ "00267ae0": {
+  "name": "runLayout",
+  "tag": "game-inferred",
+  "was": "FUN_00267ae0",
+  "why": "(item, arg, cancelable, baseDir): a stack UiLayout on the item, runs it in packet list 0xc each frame until it says done (+0x3c: answers +0x38) or, when cancelable, cross (Pad +0x18 bit 0x40) is pressed (answers -1)"
+ },
+ "00267c00": {
+  "name": "runLayoutFile",
+  "tag": "game-inferred",
+  "was": "FUN_00267c00",
+  "why": "(path, arg, cancelable, baseDir, yieldAfter): new FileLoader, addFile(path), startLoad until queued, waitLoaded(1, no loading indicator), runLayout(getData(path), ...) when getSize > 0, else -1; deletes the loader"
+ },
+ "00267d80": {
+  "name": "gameOverDialogResult",
+  "tag": "game-inferred",
+  "was": "FUN_00267d80",
+  "why": "gp-0x7c84 mapped: -1 while running, 0 / 1 / 2 as they are, anything else 1; the game-over loop 0x17f890 restarts on 0, continues on 2 (StageResult::addContinue), quits on 1"
+ },
+ "00267de0": {
+  "name": "gameOverDialogStart",
+  "tag": "game-inferred",
+  "was": "FUN_00267de0",
+  "why": "result gp-0x7c84 = -1, then gameOverDialogThread in slot 4 on getLangPackItem(3) when StageResult::hasAttemptFlag, else (2); caller 0x17f890"
+ },
+ "00267e50": {
+  "name": "gameOverDialogThread",
+  "tag": "game-inferred",
+  "was": "FUN_00267e50",
+  "why": "slot-4 thread: gp-0x7c84 = runLayout(item, -1, 0, 0) (a cancel answer -1 becomes 0), threadExit"
+ },
+ "00267ea0": {
+  "name": "noticeDialogState",
+  "tag": "game-inferred",
+  "was": "FUN_00267ea0",
+  "why": "-1 while gp-0x7c80 is -1 (running), else 0; callers 0x17f7c0 / 0x2b5dc0 yield until 0"
+ },
+ "00267ee0": {
+  "name": "noticeDialogStart",
+  "tag": "game-inferred",
+  "was": "FUN_00267ee0",
+  "why": "gp-0x7c80 = -1, noticeDialogThread in slot 4 on getLangPackItem(1); 0x17f7c0 shows it when 0x290080 answers < 0 (meaning unread)"
+ },
+ "00267f30": {
+  "name": "noticeDialogThread",
+  "tag": "game-inferred",
+  "was": "FUN_00267f30",
+  "why": "as gameOverDialogThread on gp-0x7c80"
+ },
+ "00267f80": {
+  "name": "runArchiveScreen",
+  "tag": "game-inferred",
+  "was": "FUN_00267f80",
+  "why": "(arg): copies the save data (0x4bc bytes of getSystemData()), runLayoutFile(archiveLayoutPath(), arg, 0, '2dEU/', 1), answers (layout answered 1 ? 1 : 0) + 2 when the save data changed (SaveData::equals)"
+ },
+ "00268050": {
+  "name": "runOptionScreen",
+  "tag": "game-inferred",
+  "was": "FUN_00268050",
+  "why": "(arg): copies GameOptions (0x50) and the play record's kind (+0x4c0), runLayoutFile(optionLayoutPath(), arg, 0, 0, 1), memcardClearStamp when options +0x4d is 0, applySound when the sound mode changed; answers 1 when the options or the kind changed"
+ },
+ "002902d0": {
+  "name": "stageScreenPathH",
+  "tag": "game-inferred",
+  "was": "FUN_002902d0",
+  "why": "as stageScreenPathE into 0x5995a0 with 'h%c': the kind as n (1) / e (0) / h (else): per difficulty"
+ },
+ "002903b0": {
+  "name": "stageScreenPathE",
+  "tag": "game-inferred",
+  "was": "FUN_002903b0",
+  "why": "(StageSelect *): 0 when invalid or stage 1 variant 0; else sprintf into 0x599580 '%ss%02dm%1de%s.d2b' (2dEU/, stage, variant + 1, language code)"
  },
  "00290630": {
   "name": "getLangPackItem",
@@ -10534,6 +10714,12 @@
   "tag": "game-inferred",
   "was": "FUN_002907c0",
   "why": "(index): 0 unless the byte 0x31ae64 is set, else the resident pack 0x31ae60 (packinitEU.pak, loadInitPack) vtable slot 6 (+0x20) with the index"
+ },
+ "00290800": {
+  "name": "getInitPackData",
+  "tag": "game-inferred",
+  "was": "FUN_00290800",
+  "why": "the init pack's (0x31ae60, loaded flag 0x31ae64) FileLoader::getData(name), 0 while not loaded; overlayShowScreen asks for 2dEU/BGMOVIEEU.d2b"
  },
  "00290840": {
   "name": "loadInitPack",
@@ -11326,5 +11512,17 @@
   "tag": "lib-context",
   "was": "FUN_002eb780",
   "why": "rena (rena_pkt_vif1pktmanage.cpp messages): vptr 0x31a808 at +0x2c, +0 write pointer, +4 buffer base, +8 chain start to kick, +0xc open list, +0x10 buffer index -1, list vector +0x14 (count +0x18, data +0x1c), buffer vector +0x20 (count +0x24, data +0x28, {base, size}); method names PascalCase after the message's (Reset)"
+ },
+ "002ec660": {
+  "name": "optionLayoutPath",
+  "tag": "game-inferred",
+  "was": "FUN_002ec660",
+  "why": "sprintf into 0x5a53e0 '2dEU/option%s.d2b' with the language code"
+ },
+ "002ec7f0": {
+  "name": "archiveLayoutPath",
+  "tag": "game-inferred",
+  "was": "FUN_002ec7f0",
+  "why": "sprintf into 0x5a5340 '2dEU/archive%s.d2b' with the language code"
  }
 }

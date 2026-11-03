@@ -14,10 +14,13 @@
 #include "sdk/libvifpk.h"
 #include "sdk/scetypes.h"
 
-// The packet lists (= draw layers, drawn in id order). Only the last one is
-// known so far.
+// The packet lists (= draw layers, drawn in id order). Only the ones read
+// so far.
 enum PacketList
 {
+    PacketList_StageClock = 10, // the stage loop's StageResult::update
+    PacketList_Overlay = 11,    // overlayThread: the BG movie screen and the loading indicator
+    PacketList_Screen  = 12,    // runLayout: modal screens and dialogs
     PacketList_Finish = 13,     // GameSystem::flipFrame puts a GS FINISH here
     PacketList_Count  = 14,
 };

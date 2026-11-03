@@ -586,6 +586,38 @@ columns ラベル / ctype / SEtype, then both are freed: where the parsed data g
 0xc {bit 0 of +0: heap buffer at +8}** (0x297fb0); CodeWarrior emits the map / vector instances
 between the file's last function and its static destructor.
 
+**`game/screen.cpp` 0x2676e0..0x2681e0 (TU 14, 2026-11-03, batch 037, all 18 written, `verify`; the
+file name is the port's)**: the 2D screens around the game. **Overlay thread** slot 6
+(`ThreadSlot_Overlay`; `overlayThreadStart` / `overlayThread` 0x267830 / cleanup 0x2677e0): every
+frame draws, into **packet list 11** (`PacketList_Overlay`), the **BG movie screen** gp-0x7a28 (a
+`UiLayout` on the init pack's file `2dEU/BGMOVIEEU.d2b` via `getInitPackData` 0x290800 = init pack
+`FileLoader::getData`; `overlayShowScreen` 0x267a30 shows it, `overlayReleaseScreen` deletes it;
+callers the menu flow 0x2b5770.., 0x20ad70.., 0x2954f0) and the **loading indicator** gp-0x7a20
+(language-pack **item 0**; `overlayShowLoading` 0x267950 asks for it one frame at a time, the
+thunks 0x231d20 / 0x231d30 for `FileLoader::waitLoaded` 0x1320f0 when its showLoading argument is
+set; deleted on the first frame nobody asked). **Modal runner** `runLayout` 0x267ae0(item, arg,
+cancelable, baseDir): a stack `UiLayout` (+0x38 answer, +0x3c done, +0x60 base dir by
+`setBaseDir` 0x245f10) drawn into **packet list 12** (`PacketList_Screen`) until done, or -1 on
+**cross** (`Pad::m_pressed` bit `PadBit_Cross`) when cancelable; `runLayoutFile` 0x267c00 loads the
+file first with a one-file **`FileLoader`** (PackFile's base, vtable 0x3110b0, EE 0x9c: slot 2
+`addFile`, 5 `getData`, 7 `getSize`, 14 done, 15 `waitLoaded`, 16 release; `startLoad` 0x132280
+= `jobAdd(loadJob 0x1321f0)`, 0 while no job slot is free). Screens on it: the stage's **e / h
+screens** `runStageScreenE` 0x2676e0 / `runStageScreenH` 0x267730 (`2dEU/s%02dm%1de<lang>.d2b` and
+`...h<e|n|h><lang>.d2b` per difficulty = `StageSelect::kind` 0 e / 1 n / else h; none for stage 1
+variant 0; the stage loop 0x17f160 / 0x17fa70), the **archive** `runArchiveScreen` 0x267f80
+(`2dEU/archive<lang>.d2b`, base dir "2dEU/": answers bit 0 = layout answered 1, bit 1 = the
+`SaveData` changed) and the **options** `runOptionScreen` 0x268050 (`2dEU/option<lang>.d2b`;
+afterwards `memcardClearStamp` unless `GameOptions::_4d`, `applySound` when `soundMode` changed;
+answers 1 when the options or `StageSelect::kind` changed). **Dialogs** in slot 4
+(`ThreadSlot_Dialog`), so the stage loop keeps drawing and polls: **game over** (language items 2,
+or 3 while `StageResult::hasAttemptFlag`; result gp-0x7c84 sdata -1: 0 restart, 1 quit, 2 continue,
+as 0x17f890 acts on them) and a **notice** (item 1, gp-0x7c80; 0x17f7c0 / 0x2b5dc0 when 0x290080
+answers < 0). `gfxGetTexArea` 0x12f160 = gp-0x7ad0, the `TexArea` (0x814, `TexArea::TexArea`
+0x143270(0x3700, 0x3fbe, 14, 0x20), built by `gfxInitRenderTargets`): GS texture pages per packet
+list; layout draws take `getList(list)` 0x142dd0. Next file: 0x2681e0..0x268310 is a **48-bit LCG**
+(0x5deece66d: java.util.Random's constants; seed 0x268290, ctor 0x2682e0, next-int-below 0x2681e0;
+callers 0x195d40 / 0x199f00 / 0x19c180), then 0x268310.. (vtables 0x315ab0 / 0x316c30).
+
 ## Classes
 
 Name, vtable, vptr offset, size, file. `python rtti.py` (CodeWarrior variant, bootstrap 4, 2026-10-31)

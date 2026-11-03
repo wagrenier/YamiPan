@@ -119,6 +119,23 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    Left in the unassigned run's head 0x2acff0..0x2afc20: a drawing cluster around 0x2adc70
    (getStageSelect, packet lists, 0x2e1c50 / 0x2e1b70) and `getSaveResource` 0x2c3d70 /
    `getSaveResourceAux` 0x2c3d30 / `loadMenuPack` 0x2c3e10 further on (memcard / scene callers).
+   TU 14 (the frontier's `unassigned@002676e0`, 613 functions 0x2676e0..0x2955e0, for the
+   overlay / pack-item callees of scene.cpp and stageresult.cpp): **`game/screen.cpp`
+   0x2676e0..0x2681e0** cut out (18 functions, batch 037, all written, `verify`; architecture.md
+   "Modules"): the overlay thread (BG movie screen + loading indicator), the modal `runLayout` /
+   `runLayoutFile`, the stage e / h screens, archive and option screens, game-over and notice
+   dialogs. The overlay prototypes moved from `gamehooks.h` to `screen.h`; `gamehooks.h` gained
+   `FileLoader` (PackFile's base), `getInitPackData`, the four layout-path getters, `UiLayout::
+   setBaseDir` / `m_result` / `m_done` and language items 0..3; `gfxtarget.h` gained `TexArea` /
+   `gfxGetTexArea`; `gamepacket.h` packet lists 10..12; `thread.h` slots 4 / 6 are now
+   `ThreadSlot_Dialog` / `ThreadSlot_Overlay`. Checked: callcheck clean, layout lint OK, g++
+   -fsyntax-only clean on screen.cpp / scene.cpp with stub SDK headers. Doubts for the user: the
+   file name, the screen names (what the stage e / h screens show is unread: the letters are the
+   file names'), "notice" for language item 1, TexArea for the 0x814-byte GS page allocator. Left
+   in the same run for later picks: the LCG 0x2681e0..0x268310 (its own small file), 0x268310..
+   (vtables 0x315ab0 / 0x316c30, the stage-unlock checks 0x268ae0 / 0x269160), and the pack-item
+   cluster 0x2902d0..0x2908c8 (`getInitPackItem` / `getLangPackItem` / `loadInitPack` /
+   `getInitPackData` / the stage screen paths: the frontier's top entries now).
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
