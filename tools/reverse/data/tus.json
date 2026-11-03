@@ -606,6 +606,25 @@
    "status": "verify",
    "why": "UiAnim::init (the track factory) right after uisequence.cpp's last function, then the 41 track classes' dtors / draw / apply (vtables 0x316540..0x316a60 in this order), the UiTrack base members step / isDone / setPlay with UiAnim::findTrack, and the classes' inline virtuals (UiWidget::refresh / getStatus, the getAnchor slots) at the end; 0x24d530 S2dData::getImage starts the S2D file"
   },
+  "game/vcmtable.cpp": {
+   "notes": "Cut out of unassigned@00296d60 (the frontier pick) as 0x296d60..0x299d90, batches 063-065 (59 names, incl. the binary's std::string instances 0x297fb0.. and newlib strchr / strncasecmp / fprintf / memcmp, mslTreeIncrement 0x25a850, RenaModel::findGroup 0x2e4100, VcmController::getWeight 0x185af0). New game/vcmtable.h; stand-ins RenaModel (+ ModelHeader / ModelPart / ModelGeometry / ModelMaterial / ModelPartRec) and VcmController in gamehooks.h. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean, a host harness over 5 parts (own VCM__ name, group VCM__ name, material tag, untagged, bare VCM__ fallback; attach by name; weights 0.5 / 0 / 1) passed. Kept as the ROM: each token is one byte longer than its run (middle tokens keep a trailing underscore; harmless for the one-token tags on the disc, vcm__ENV_SL etc.); bare VCM__ yields an empty token; fade / off bits are compact bytes; a token-less state keeps the previous alpha. PC: token names delete[]d, states zeroed. Doubts: file / class names, geometry / material for the part +8 chain, what the renderer does with record bytes +0xa..+0xc. Not this TU: stageresult.cpp:144 passes void * to UiLayout::draw (TexAreaList * since TU 31). Next in the run: the navi menu 0x29acb0..0x29eff0 (getNaviMenu / getSaveExtra), the VU0 helpers 0x299d90..0x29a700, the stage object class 0x29a700..0x29acb0.",
+   "ranges": [
+    [
+     "00296d60",
+     "00299d90"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 09:24",
+     "status": "verify",
+     "summary": "VcmTable, the VCM__ part fades of a rena model: all 9 game functions written, the 43 MSL string / set / map instances mapped to the host STL; source-only, not built"
+    }
+   ],
+   "status": "verify",
+   "why": "VcmTable: the VCM__ part-visibility table of a rena model (strings VCM__ / __ 0x309c90 / 0x309c98, used only here), its ctor / dtor / update / attach and the file-local tag helpers 0x2976a0..0x297c90, then its MSL string / set / map instances to 0x299d90 (CodeWarrior emits them after the file's code; the string ones are the binary's only copies, called from 129 sites). Before: game/progress.cpp ends at 0x296d60 (stageDefaultRecord); after: 0x299d90.. VU0 vector helpers called from 15+ sites, another file. No source-path string: the file name is the port's."
+  },
   "game/wstring.cpp": {
    "notes": "Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds all five; the three prototypes left uitrack.h, uitrack.cpp and uigame.cpp include wstring.h. Semantics from the asm: null or odd pointers answer 0 or null, a null source answers dst untouched, the copies answer the end of the copy (the 0 unit), dst == src copies through new[] first; wstrcmp compares only wstrlen(a) units (a prefix of b answers 0; callers test == 0); wstrstr answers hay for an empty needle. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on wstring, uitrack, uigame (RosePan SDK headers + a libvifpk stub), host harness passed. Doubt: the file name (no strings). Next in the run: getSaveResource 0x2c3d70 / getSaveResourceAux 0x2c3d30 / loadMenuPack 0x2c3e10 / getSePlayer 0x2c4140, PackTables::PackTables 0x2c0dc0, the SoundStream user 0x2b0d50..0x2b3890.",
    "ranges": [
@@ -874,6 +893,7 @@
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
   "unassigned@002681e0": {},
+  "unassigned@00296d60": {},
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {}
  }

@@ -1132,6 +1132,31 @@ returned by pointer) answers a sub-pak hit as that sub-pak's own index at level 
 the top pak's items are reachable (by name, `findEntry` 0x231770, all are). Lookups by name are
 strstr (the first entry whose name contains the key, own entries before the sub-paks').
 
+**`game/vcmtable.cpp` 0x296d60..0x299d90 (TU 32, 2026-11-03, batches 063-065 with 59 names, all 9
+game functions written, the 43 MSL instances mapped to the host STL, `verify`; the file name is the
+port's, from the `VCM__` string 0x309c90)**: **`VcmTable`** (0x1c, `operator new` in the model holder
+0x188b10, which keeps the rena model at +0 and the table at +4; per frame 0x187230 -> `update`, binding
+0x187b40 -> `attach`, teardown 0x188690 -> the dtor). A rena model part (header +0x14, 0x18 each, count
+u16 +0x2a) is **tagged** when its +8 -> +8 (geometry -> material, guesses) is non-null; its **tag** is
+the material's name (+4) when it holds `__` tokens, else the first part named `VCM__...` (case
+ignored) from the part up its group chain (`RenaModel::findGroup` 0x2e4100: the record of model
++0x1c, 0x10 each, whose u16 children range +4 / +8 holds the index), else `VCM__` itself. Tokens are
+the runs after each `__` **plus one byte** (`vcmSplitTokens` 0x297aa0; the last token's extra byte is
+its NUL, so one-token tags compare right; `VCM__` alone gives the empty token). The ctor sorts the
+distinct tokens (names owned, controllers null), makes one `VcmState` (8: token mask, fade bits, off
+bits, alpha) per distinct tag (map order) and one link {part record, state} per tagged part.
+`attach(obj)` binds the object whose inline name (+0x20) equals a token. `update`: per state, each
+token in the mask gives its controller's weight (`VcmController::getWeight` 0x185af0; 0 when absent
+or the byte +0x34 is clear): under 1 sets the next **compact** bit in fade, at 0 also in off, the
+alpha is the last fading weight * 128; then every linked part record gets +0xa alpha, +0xb fade,
++0xc off (what the renderer does with them is unread). Tags on the disc (uncompressed): `vcm__ENV_P`,
+`vcm__ENV_SL`, `vcm__ENV_SL01`, `vcm__ENV_SL42c1`: environment objects drive them. **The binary's MSL
+`std::string` instances live here** (`~string` 0x297fb0, 129 callers; ctors 0x298030 / 0x2980b0 /
+0x299320, `reserve` 0x2990c0, `replace` 0x298c70, `compare` 0x299060 / 0x299c20, `assign` 0x299d40;
+short form: size in byte 0 >> 1, chars from +1; long: bit 0 of +0, size +4, data +8), and the tree
+iterator ++ is `mslTreeIncrement` 0x25a850. Also named: newlib `strchr` 0x1280a8, `strncasecmp`
+0x1285d0, `fprintf` 0x1239a0, `memcmp` 0x125190.
+
 ## Classes
 
 Name, vtable, vptr offset, size, file. `python rtti.py` (CodeWarrior variant, bootstrap 4, 2026-10-31)

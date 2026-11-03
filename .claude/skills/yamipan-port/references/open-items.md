@@ -526,6 +526,32 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    the file / class names (no strings); `Tim2Texture` +0x30 (read as the CLUT's blocks) is unread.
    **Next picks**: the region allocator 0x2e1440..0x2e1b70 (`GsRegionAlloc`), `drawSysInit`
    0x2d7cf0, the rena `Tim2Texture` TU 0x2e1b70..0x2e2970.
+   TU 32 (the frontier's `unassigned@00296d60`, 267 functions 0x296d60..0x2a9c70, for
+   `getNaviMenu` / `getSaveExtra` / the string dtor 0x297fb0): **`game/vcmtable.cpp`
+   0x296d60..0x299d90** cut out of the run's head (52 functions, batches 063-065 with 59 names:
+   all 9 game functions written, the 43 MSL string / set / map instances mapped to the host STL in
+   a comment list, `verify`; architecture.md "Modules"): `VcmTable`, the VCM__ part fades of a
+   rena model. New `game/vcmtable.h`; stand-ins in `gamehooks.h`: `RenaModel` (+ `ModelHeader` /
+   `ModelPart` / `ModelGeometry` / `ModelMaterial` / `ModelPartRec`, `findGroup` 0x2e4100) and
+   `VcmController` (`getWeight` 0x185af0; name +0x20, active +0x34). **The binary's std::string
+   instances are in this file** (0x297fb0 etc., now `std::string::*`, lib-context). Checked:
+   callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean, and a host harness (5
+   parts: own VCM__ name, a group's VCM__ name, a material tag, an untagged part, the bare VCM__
+   fallback; attach by name incl. a non-token; weights 0.5 / 0 / 1) gave the expected tokens,
+   states, links and record bytes. Kept as the ROM, for the user to overrule: each token takes
+   one byte more than its run (a middle token keeps a trailing '_'; harmless for the one-token
+   tags on the disc); the bare `VCM__` tag makes an empty token; the fade / off bits are compact
+   and stored in bytes (a tag with more than 8 tokens loses the high ones); a state without
+   tokens stores the previous state's alpha (register reuse; PC: the first one 0). PC: the token
+   names are delete[]d (the ROM uses operator delete) and the states are zeroed at construction.
+   Doubts: the file / class names (only the VCM__ string), geometry / material for the part's +8
+   chain, what the renderer does with the record bytes +0xa..+0xc. Seen while checking, not this
+   TU's: `game/stageresult.cpp:144` passes `void *drawCtx` to `UiLayout::draw`, which takes
+   `TexAreaList *` since TU 31 (g++ error; fix the parameter type in stageresult.h / .cpp).
+   **Next picks in the run**: the navi menu 0x29acb0..0x29eff0 (`getNaviMenu` 0x29efe0 /
+   `getSaveExtra` 0x29efd0 at its end with its init 0x29ef70; widgets on vtables 0x318820 /
+   0x318840; ~17 KB: two or three runs), the VU0 vector helpers 0x299d90..0x29a700 (15+ callers),
+   the stage object class 0x29a700..0x29acb0 (vtables 0x311860.. / 0x3185b0..).
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

@@ -426,4 +426,70 @@ class GsRegionAlloc;            // game/gfxtarget.h
 void drawSysInit(int originX, int originY, int width, int height,
                  GsRegionAlloc *alloc);                                  // FS2 0x002d7cf0
 
+// What game/vcmtable.cpp reads of rena's model (unassigned@002e2970).
+// The geometry / material names of a part's +8 chain are guesses: only the
+// name at its end is read.
+// layout: host -- EE: name +4.
+struct ModelMaterial
+{
+    const char *name;           // FS2 +0x4
+};
+// layout: host -- EE: material +8.
+struct ModelGeometry
+{
+    ModelMaterial *material;    // FS2 +0x8
+};
+// One part of the model file (0x18 on the EE).
+// layout: host -- EE: name +0, geometry +8.
+struct ModelPart
+{
+    const char    *name;        // FS2 +0x0
+    ModelGeometry *geometry;    // FS2 +0x8
+};
+// layout: host -- EE: parts +0x14, the part count (u16) +0x2a.
+struct ModelHeader
+{
+    ModelPart *parts;           // FS2 +0x14
+    u_short    partCount;       // FS2 +0x2a
+};
+// The model instance's record of each part (0x10 on the EE, parallel to
+// the header's parts): the parts it groups and what VcmTable::update
+// writes for the renderer (unread there).
+// layout: host -- EE: +4 / +8 the first part / count (u16), +0xa .. +0xc
+// the VCM bytes.
+struct ModelPartRec
+{
+    u_short firstChild;         // FS2 +0x4
+    u_short childCount;         // FS2 +0x8: 0 for a part grouping none
+    u_char  vcmAlpha;           // FS2 +0xa: 0..0x80
+    u_char  vcmFadeBits;        // FS2 +0xb
+    u_char  vcmOffBits;         // FS2 +0xc
+};
+// layout: host -- EE: the header +0xc, the part records +0x1c.
+class RenaModel
+{
+public:
+    // The record whose children range holds rec's index (the group rec is
+    // in), null at the top.
+    ModelPartRec *findGroup(const ModelPartRec *rec) const;             // FS2 0x002e4100
+
+    ModelHeader  *m_header;     // FS2 +0xc
+    ModelPartRec *m_partRecs;   // FS2 +0x1c
+};
+
+// What VcmTable::attach / update read of the objects driving the VCM
+// parts (unassigned@00171300; their class is unread). The name is the
+// port's.
+// layout: host -- EE: the name inline at +0x20, the active byte +0x34.
+class VcmController
+{
+public:
+    // How much of the controlled parts shows: 0 off .. 1 fully (a progress
+    // over a total, or the motion's +0xc, times +0x2a8).
+    float getWeight() const;                                             // FS2 0x00185af0
+
+    char m_name[0x14];          // FS2 +0x20 (extent: up to m_active)
+    bool m_active;              // FS2 +0x34
+};
+
 #endif /* _GAME_GAMEHOOKS_H */

@@ -2405,6 +2405,12 @@
   "was": "FUN_00123538",
   "why": "Sony libc (newlib): runs _impure_ptr->_atexit (+0x148) handlers in reverse, then __cleanup (+0x3c), then _exit; entry jumps here with main's result"
  },
+ "001239a0": {
+  "name": "fprintf",
+  "tag": "lib-context",
+  "was": "FUN_001239a0",
+  "why": "varargs spill then vfprintf 0x12a3a0(stream, fmt, args); the MSL string / tree instances print their length / range errors with it to stderr (+0xc of the reent 0x2f3398) before abort"
+ },
  "00123b18": {
   "name": "_free_r",
   "tag": "lib-context",
@@ -2416,6 +2422,12 @@
   "tag": "lib-context",
   "was": "FUN_00124950",
   "why": "newlib (reent, size); initGlobalHeap calls it with _impure_ptr 0x2f3398, pairs with _free_r 0x123b18"
+ },
+ "00125190": {
+  "name": "memcmp",
+  "tag": "lib-context",
+  "was": "FUN_00125190",
+  "why": "(a, b, n): 16-byte pxor blocks when both are aligned, then bytes, answering the first difference; std::string::compare_pos compares with it"
  },
  "00125228": {
   "name": "memcpy",
@@ -2459,6 +2471,12 @@
   "was": "FUN_00127ea0",
   "why": "in Sony's newlib libc range (0x121ef0..0x12c9b8): compares two strings, each char folded with _ctype_ (0x3000c1, upper bit 1 -> +0x20), answers the difference of the first unequal folded chars; fMsgFind / timSheetFind"
  },
+ "001280a8": {
+  "name": "strchr",
+  "tag": "lib-context",
+  "was": "FUN_001280a8",
+  "why": "newlib MIPS strchr: (s, c & 0xff), 128-bit word scan with the 0x0101.. / 0x8080.. zero-byte test for c and NUL, then bytes; vcmSplitTokens calls it with 0 for the string's end"
+ },
  "00128238": {
   "name": "strcmp",
   "tag": "lib-context",
@@ -2476,6 +2494,12 @@
   "tag": "lib-context",
   "was": "FUN_00128498",
   "why": "R5900 quadword/doubleword zero-byte scan (0x0101.. / 0x8080.. masks), returns end - start"
+ },
+ "001285d0": {
+  "name": "strncasecmp",
+  "tag": "lib-context",
+  "was": "FUN_001285d0",
+  "why": "(a, b, n) case-insensitive compare: each byte lowered through the ctype table 0x3000c1 bit 0 (upper) + 0x20, stops at n, a difference or a NUL; vcmPartTag tests the VCM__ prefix with it"
  },
  "001286a8": {
   "name": "strncmp",
@@ -10451,6 +10475,12 @@
   "was": "FUN_0017f150",
   "why": "answers sbss 0x31adfc: a struct whose +0 is the stage's FileLoader (getStagePackData calls its getData, vtable +0x1c, on it); next to the stage loop 0x17f160"
  },
+ "00185af0": {
+  "name": "VcmController::getWeight",
+  "tag": "game-inferred",
+  "was": "FUN_00185af0",
+  "why": "float: 0 when +0x272 is set, +0x2a8 is 0, or +0x214 is clear and +0x23c is -1 / 0; else (+0x2ac motion with +0x18 non-zero ? its +0xc : +0x23c / +0x238) * +0x2a8; VcmTable::update's weight per controller (the object's name at +0x20, active byte +0x34); the class is unread, the name is the port's"
+ },
  "00193900": {
   "name": "StageObjectList::findAll7",
   "tag": "game-inferred",
@@ -12689,6 +12719,12 @@
   "was": "FUN_00252680",
   "why": "(drawer, verts xy, count, 0): untextured vertices in one colour (after setPrimColor)"
  },
+ "0025a850": {
+  "name": "mslTreeIncrement",
+  "tag": "lib-context",
+  "was": "FUN_0025a850",
+  "why": "MSL red-black tree iterator ++ (node: left +0, right +4, parent +8 with the colour in bit 0): leftmost of the right subtree, else up while a right child; every set / map walk in the game calls it"
+ },
  "0025c310": {
   "name": "UiScrollWidget::canScroll",
   "tag": "game-inferred",
@@ -13547,6 +13583,318 @@
   "was": "FUN_00296d00",
   "why": "kind 0 -> 3599 (0xe0f), kind 1 -> int table 0x309ab0 [stage][variant], kind 2 -> 0x309ba0 [stage][variant]: the record a fresh save holds (SaveData::setDefaults)"
  },
+ "00296d60": {
+  "name": "VcmTable::update",
+  "tag": "game-inferred",
+  "was": "FUN_00296d60",
+  "why": "per state: each controller in its mask -> weight (0 when absent or inactive +0x34, else 0x185af0); below 1 sets the compact fade bit, at 0 also the off bit, the last fading weight * 128 is the alpha; then copies {fade, off, alpha} into every linked model part record (+0xb / +0xc / +0xa); caller the model holder 0x187230"
+ },
+ "00297150": {
+  "name": "VcmTable::attach",
+  "tag": "game-inferred",
+  "was": "FUN_00297150",
+  "why": "(table, obj): lower_bound of obj +0x20 (its name) in the sorted token names, strcmp equal -> controllers[index] = obj; caller 0x187b40"
+ },
+ "00297210": {
+  "name": "VcmTable::~VcmTable",
+  "tag": "game-inferred",
+  "was": "FUN_00297210",
+  "why": "deletes each token name, then delete[] of the four arrays +4 / +8 / +0x10 / +0x18, deleting when the flag > 0; caller the model holder's dtor 0x188690"
+ },
+ "002972d0": {
+  "name": "VcmTable::VcmTable",
+  "tag": "game-inferred",
+  "was": "FUN_002972d0",
+  "why": "(table 0x1c, rena model): every distinct token of the parts' VCM tags (sorted names, empty controllers), one state per distinct tag (map<string> keyed by the tag, value {index, token mask}), one link {part record, state} per tagged part; caller 0x188b10 (operator_new(0x1c))"
+ },
+ "002976a0": {
+  "name": "vcmTokenMask",
+  "tag": "game-inferred",
+  "was": "FUN_002976a0",
+  "why": "(tag, names, count): bit (index in the sorted names) of each token of the tag's split, lower_bound without an equality test; only caller VcmTable::VcmTable"
+ },
+ "00297790": {
+  "name": "vcmCollectTokens",
+  "tag": "game-inferred",
+  "was": "FUN_00297790",
+  "why": "(set<char*>, model): every tagged part's VCM tag split at __, each token not in the set yet copied (new[] + strcpy) and inserted; only caller VcmTable::VcmTable"
+ },
+ "00297950": {
+  "name": "vcmPartTag",
+  "tag": "game-inferred",
+  "was": "FUN_00297950",
+  "why": "(model, part): the part's +8 -> +8 -> +4 name when it splits into tokens, else the nearest part record up the group chain (rena 0x2e4100) whose part name starts VCM__ (strnicmp 0x1285d0), else the literal VCM__ 0x309c90"
+ },
+ "00297aa0": {
+  "name": "vcmSplitTokens",
+  "tag": "game-inferred",
+  "was": "FUN_00297aa0",
+  "why": "(set<string> out, name): after each __ (0x309c98) up to the next __ or the end, a token string of the run plus one byte (kept as the ROM), inserted into a set; no __ -> empty set"
+ },
+ "00297bd0": {
+  "name": "vcmLowerBound",
+  "tag": "game-inferred",
+  "was": "FUN_00297bd0",
+  "why": "std::lower_bound instance over char * with strcmp (first, last, &key, comparator); callers VcmTable::attach and vcmTokenMask"
+ },
+ "00297c90": {
+  "name": "VcmNameSet::find",
+  "tag": "game-inferred",
+  "was": "FUN_00297c90",
+  "why": "MSL set<char *, strcmp less>::find instance (end is the header +4); only caller vcmCollectTokens"
+ },
+ "00297d50": {
+  "name": "VcmStateMap::operator_index",
+  "tag": "game-inferred",
+  "was": "FUN_00297d50",
+  "why": "MSL map<std::string, VcmStateRef>::operator[] instance: lower bound by string compare, inserts {copy of key, 0, 0} through 0x299a80 when missing, answers the value pair (node +0xc)"
+ },
+ "00297e80": {
+  "name": "VcmStateMap::destroyPair",
+  "tag": "game-inferred",
+  "was": "FUN_00297e80",
+  "why": "pair<const std::string, VcmStateRef> dtor instance: the key's heap buffer when long, deleting when the flag > 0"
+ },
+ "00297f00": {
+  "name": "VcmStateMap::find",
+  "tag": "game-inferred",
+  "was": "FUN_00297f00",
+  "why": "MSL map<std::string, ...>::find instance (string compare 0x299060), end = header +4"
+ },
+ "00297fb0": {
+  "name": "std::string::~string",
+  "tag": "lib-context",
+  "was": "FUN_00297fb0",
+  "why": "MSL basic_string<char> dtor instance (129 callers): frees the +8 buffer into the global heap when bit 0 of +0 (long form), deleting when the flag > 0"
+ },
+ "00298030": {
+  "name": "std::string::string_cstr",
+  "tag": "lib-context",
+  "was": "FUN_00298030",
+  "why": "MSL basic_string(const char *) instance (121 callers): zeroes the 0xc bytes, reserve(strlen), replace(0, 0, s, s + len)"
+ },
+ "002980b0": {
+  "name": "std::string::string_cstr_n",
+  "tag": "lib-context",
+  "was": "FUN_002980b0",
+  "why": "MSL basic_string(const char *, n) instance: reserve(n), replace(0, 0, s, s + n)"
+ },
+ "00298120": {
+  "name": "VcmTokenSet::destroyTree",
+  "tag": "game-inferred",
+  "was": "FUN_00298120",
+  "why": "MSL set<std::string> tree teardown instance (recursive over left / right, each key string freed, node freed into the global heap)"
+ },
+ "00298390": {
+  "name": "VcmTokenSet::deallocate",
+  "tag": "game-inferred",
+  "was": "FUN_00298390",
+  "why": "MSL allocator instance: Heap::free on the global heap"
+ },
+ "002983a0": {
+  "name": "VcmTokenSet::nodeAddress",
+  "tag": "game-inferred",
+  "was": "FUN_002983a0",
+  "why": "MSL tree helper instance: answers its argument + 4"
+ },
+ "002983b0": {
+  "name": "VcmTokenSet::destroyValue",
+  "tag": "game-inferred",
+  "was": "FUN_002983b0",
+  "why": "MSL allocator destroy instance: the string's heap buffer when long"
+ },
+ "002983f0": {
+  "name": "VcmTokenSet::identity",
+  "tag": "game-inferred",
+  "was": "FUN_002983f0",
+  "why": "MSL tree helper instance: answers its argument"
+ },
+ "00298400": {
+  "name": "VcmTokenSet::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00298400",
+  "why": "MSL set<std::string>::insert instance answering pair<iterator, bool> (the bools from sdata 0x31ac3c / 0x31ac40); only caller vcmSplitTokens"
+ },
+ "00298510": {
+  "name": "VcmTokenSet::VcmTokenSet_copy",
+  "tag": "game-inferred",
+  "was": "FUN_00298510",
+  "why": "MSL set<std::string> copy ctor instance (copyTree 0x299550); vcmSplitTokens returns its set by value"
+ },
+ "002985c0": {
+  "name": "VcmTokenSet::VcmTokenSet",
+  "tag": "game-inferred",
+  "was": "FUN_002985c0",
+  "why": "MSL set<std::string> default ctor instance (empty header)"
+ },
+ "002985e0": {
+  "name": "VcmNameSet::destroyTree",
+  "tag": "game-inferred",
+  "was": "FUN_002985e0",
+  "why": "MSL set<char *> tree teardown instance (recursive; the char * values are not freed: VcmTable owns them)"
+ },
+ "00298800": {
+  "name": "VcmNameSet::deallocate",
+  "tag": "game-inferred",
+  "was": "FUN_00298800",
+  "why": "MSL allocator instance: Heap::free on the global heap"
+ },
+ "00298810": {
+  "name": "VcmNameSet::nodeAddress",
+  "tag": "game-inferred",
+  "was": "FUN_00298810",
+  "why": "MSL tree helper instance: answers its argument + 4"
+ },
+ "00298820": {
+  "name": "VcmNameSet::destroyValue",
+  "tag": "game-inferred",
+  "was": "FUN_00298820",
+  "why": "MSL allocator destroy instance for char *: empty"
+ },
+ "00298830": {
+  "name": "VcmNameSet::identity",
+  "tag": "game-inferred",
+  "was": "FUN_00298830",
+  "why": "MSL tree helper instance: answers its argument"
+ },
+ "00298840": {
+  "name": "VcmNameSet::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00298840",
+  "why": "MSL set<char *, strcmp less>::insert instance; only caller vcmCollectTokens"
+ },
+ "00298950": {
+  "name": "VcmNameSet::VcmNameSet",
+  "tag": "game-inferred",
+  "was": "FUN_00298950",
+  "why": "MSL set<char *> default ctor instance"
+ },
+ "00298970": {
+  "name": "VcmStateMap::destroyTree",
+  "tag": "game-inferred",
+  "was": "FUN_00298970",
+  "why": "MSL map<std::string, VcmStateRef> tree teardown instance (recursive, destroyPair per node)"
+ },
+ "00298be0": {
+  "name": "VcmStateMap::deallocate",
+  "tag": "game-inferred",
+  "was": "FUN_00298be0",
+  "why": "MSL allocator instance: Heap::free on the global heap"
+ },
+ "00298bf0": {
+  "name": "VcmStateMap::nodeAddress",
+  "tag": "game-inferred",
+  "was": "FUN_00298bf0",
+  "why": "MSL tree helper instance: answers its argument + 4"
+ },
+ "00298c00": {
+  "name": "VcmStateMap::destroyValue",
+  "tag": "game-inferred",
+  "was": "FUN_00298c00",
+  "why": "MSL allocator destroy instance: the key string's heap buffer when long"
+ },
+ "00298c40": {
+  "name": "VcmStateMap::identity",
+  "tag": "game-inferred",
+  "was": "FUN_00298c40",
+  "why": "MSL tree helper instance: answers its argument"
+ },
+ "00298c50": {
+  "name": "VcmStateMap::VcmStateMap",
+  "tag": "game-inferred",
+  "was": "FUN_00298c50",
+  "why": "MSL map<std::string, VcmStateRef> default ctor instance"
+ },
+ "00298c70": {
+  "name": "std::string::replace_range",
+  "tag": "lib-context",
+  "was": "FUN_00298c70",
+  "why": "MSL basic_string::replace(pos, len, first, last) instance (basic_string: out_of_range / length_error 0x309ca0..): the string ctors and assign call it with pos 0"
+ },
+ "00299060": {
+  "name": "std::string::compare",
+  "tag": "lib-context",
+  "was": "FUN_00299060",
+  "why": "MSL basic_string::compare(const basic_string &) instance: compare(0, size, other data, other size); callers the VCM sets / map and PackTables 0x2c0e60 / 0x2c1430 / 0x2c15c0"
+ },
+ "002990c0": {
+  "name": "std::string::reserve",
+  "tag": "lib-context",
+  "was": "FUN_002990c0",
+  "why": "MSL basic_string::reserve instance (basic_string::reserve length_error); 27 callers"
+ },
+ "00299320": {
+  "name": "std::string::string_copy",
+  "tag": "lib-context",
+  "was": "FUN_00299320",
+  "why": "MSL basic_string copy ctor instance: the short form copied as 0xc bytes, the long one reserve + replace"
+ },
+ "002993c0": {
+  "name": "VcmTokenSet::insertNode",
+  "tag": "game-inferred",
+  "was": "FUN_002993c0",
+  "why": "MSL tree::insert instance (tree::insert length error): new node with a copy of the string, rebalance 0x25b590"
+ },
+ "00299550": {
+  "name": "VcmTokenSet::copyTree",
+  "tag": "game-inferred",
+  "was": "FUN_00299550",
+  "why": "MSL tree copy instance (recursive, node colour and parent through 0x299800 / 0x2998d0)"
+ },
+ "00299800": {
+  "name": "VcmTokenSet::setNodeColor",
+  "tag": "game-inferred",
+  "was": "FUN_00299800",
+  "why": "MSL tree helper instance: bit 0 of the node's +8 (parent word) set or cleared"
+ },
+ "00299830": {
+  "name": "VcmTokenSet::nodeColor",
+  "tag": "game-inferred",
+  "was": "FUN_00299830",
+  "why": "MSL tree helper instance: bit 0 of the node's +8"
+ },
+ "00299840": {
+  "name": "VcmTokenSet::constructValue",
+  "tag": "game-inferred",
+  "was": "FUN_00299840",
+  "why": "MSL allocator construct instance: copy-constructs a string in place"
+ },
+ "002998d0": {
+  "name": "VcmTokenSet::setParent",
+  "tag": "game-inferred",
+  "was": "FUN_002998d0",
+  "why": "MSL tree helper instance: stores the parent keeping bit 0 (the colour)"
+ },
+ "002998f0": {
+  "name": "VcmTokenSet::allocateNodes",
+  "tag": "game-inferred",
+  "was": "FUN_002998f0",
+  "why": "MSL allocator instance: Heap::alloc(n * 0x18, 0x10) on the global heap with the 0x3299a4 flag toggled around it"
+ },
+ "00299950": {
+  "name": "VcmNameSet::insertNode",
+  "tag": "game-inferred",
+  "was": "FUN_00299950",
+  "why": "MSL tree::insert instance for set<char *> (tree::insert length error)"
+ },
+ "00299a80": {
+  "name": "VcmStateMap::insertNode",
+  "tag": "game-inferred",
+  "was": "FUN_00299a80",
+  "why": "MSL tree::insert instance for map<std::string, VcmStateRef> (copies the key string)"
+ },
+ "00299c20": {
+  "name": "std::string::compare_pos",
+  "tag": "lib-context",
+  "was": "FUN_00299c20",
+  "why": "MSL basic_string::compare(pos, n, const char *, n2) instance (string compare: pos > len); callers std::string::compare and 0x2c1830"
+ },
+ "00299d40": {
+  "name": "std::string::assign_range",
+  "tag": "lib-context",
+  "was": "FUN_00299d40",
+  "why": "MSL basic_string::assign(first, last) instance: replace(0, size, first, last); only caller replace_range (aliasing path)"
+ },
  "0029efd0": {
   "name": "getSaveExtra",
   "tag": "game-inferred",
@@ -14212,6 +14560,12 @@
   "tag": "lib-context",
   "was": "FUN_002e2920",
   "why": "rena's TIM2 texture (rena_2d_texture_tim2.cpp, message 0x30fdd0 in its load 0x2e26c0): stores vtable 0x31a7c0 at +0x44, clears +8 / +0xc / +0x10 / +0x3c / +0x40, loads the image; GsTexture's base (called first by its ctor, 21 callers)"
+ },
+ "002e4100": {
+  "name": "RenaModel::findGroup",
+  "tag": "game-inferred",
+  "was": "FUN_002e4100",
+  "why": "(model, rec): the part record (model +0x1c, 0x10 each) whose children range [+4, +4 + +8) (u16s, +8 non-zero) holds rec's index, null when none; walks the header's +0x2a part count; caller vcmPartTag (the group chain up from a part)"
  },
  "002eaff0": {
   "name": "Vif1PktManage::GetUsedSize",
