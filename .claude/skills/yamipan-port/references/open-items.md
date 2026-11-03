@@ -729,6 +729,26 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    stay `static` in sdpr2.c: if sdpr2pair.c / sdpr2single.c read 0x537140 directly instead of
    through `sdpr2GetSlot`, make it extern there. Next pick: `tus.py next` (the other SDPR2 files
    are the neighbours).
+   TU 41 (the frontier's `unassigned@00148db0`, 146 functions 0x148db0..0x152750, for the movie
+   player's rings): **`game/streamring.cpp` 0x151f70..0x152750** cut out of its tail (21 functions:
+   StreamRing / FileStreamRing's 17, all written, `verify`, plus the four rx jump thunks mapped to
+   the rx calls; no new names, no Ghidra change; architecture.md "Modules"). The classes left
+   `gamehooks.h` for the new `game/streamring.h` (gamehooks.h includes it; sound.h's forward
+   declaration points there). This settles TU 39's doubt about the thunks 0x151f70 / 0x151f80.
+   Checked: callcheck clean (only the inline helpers as extra), layout lint OK, g++ -fsyntax-only
+   -Wall -Wextra clean on streamring / fileloader (movieplayer / uiwidget / scene / sound only fail
+   on the known bootstrap-6 SDK gaps), and a host harness (owned ring and 7/8 threshold, caller
+   memory zeroed, every slot -1 / null before open, missing file, contiguous cut at the ring end,
+   consume total, primed, delete through the base pointer closing the stream once and freeing an
+   owned ring only) passed. Doubts for the user: the file name (no strings); the destructor frees
+   an owned ring before closing the rx stream that reads into it (kept as the ROM; on the host the
+   rx file thread must not write into the freed block between the two: bootstrap 6's host rx
+   should close synchronously). StreamRing's base slots 0x1530d0..0x153100 stay in
+   game/spkrom.cpp (unwritten). Left in `unassigned@00148db0` (125 functions 0x148db0..0x151f70):
+   classes on vtables 0x311200..0x311280 (0x150f50 / 0x151020 with "mdl", the Clock users
+   0x151330..0x151840, a texture class 0x1518a0 with Tim2Texture / sceVif1Pk calls) and
+   `debugSysInit` / `Update` / `Shutdown` 0x151270..0x151290 (empty; frontier from gamesystem.cpp).
+   Next pick: `tus.py next`.
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

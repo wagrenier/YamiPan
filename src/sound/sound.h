@@ -15,7 +15,7 @@
 
 #include "sdk/scetypes.h"
 
-class StreamRing;               // game/gamehooks.h (its TU is not cut yet)
+class StreamRing;               // game/streamring.h
 
 // The full volume of every level here (L / R, fades, master volumes).
 constexpr int kSoundVolumeFull = 0x80;

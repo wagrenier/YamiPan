@@ -975,13 +975,27 @@ sceIpuStop / RestartDMA, Error / Background -> 1. `decodeFrame` steps open -> pr
 feeders (states 0 / 3 / 4 count as done) -> over. `uploadFrame` sends each 16x16 macroblock by
 `sceVif1PkRefLoadImage` 0x10b380 (libvifpk), **columns outer**, then a TEXFLUSH; `prime` draws the
 first one into tbp 0x700 through packet list 13. The rings: **StreamRing** (vtable 0x3112c0, vptr
-+0x10 after {size, threshold (7/8 by default), data, owned}; 0x151f90..0x153110, still
-`unassigned@00148db0`; slots filled / contiguous / freeSpace / write / readPtr / readPos / consume /
-poll / endPos, the base ones return 0), **FileStreamRing** (0x311290, +0x14 rx stream ring, +0x1c file
-size = endPos, +0x20 consumed; open 0x1521c0 = rxFileCallSizeHook + rxSysStreamOpenRing, table
-0x2f5a80[8]), **MovieRing** (0x315f50, 0x34: write / read positions, filled, totals, +0x2c the video
++0x10 after {size, threshold (7/8 by default), data, owned}; `game/streamring.cpp`, next paragraph;
+slots filled / contiguous / freeSpace / write / readPtr / readPos / consume / poll / endPos, the base
+ones return 0), **FileStreamRing** (0x311290, +0x14 rx stream ring, +0x1c file size = endPos, +0x20
+consumed; open 0x1521c0 = rxFileCallSizeHook + rxSysStreamOpenRing, table 0x2f5a80[8]), **MovieRing** (0x315f50, 0x34: write / read positions, filled, totals, +0x2c the video
 bytes in flight to the IPU, +0x30 endPos) and **MovieAudioRing** (0x315f80, 0x68: channel, player,
 header). The movie widget passes 2 audio channels and mutes one of them by `GameOptions::_04`.
+
+**`game/streamring.cpp` 0x151f70..0x152750** (TU 41, 2026-11-03, no new names): **StreamRing** /
+**FileStreamRing**, cut out of `unassigned@00148db0` between Vt_00311260's last slot 0x151f60 and rxTerm
+(game/spkrom.cpp). Both constructors inline one buffer set-up (release, take mem or `Heap::alloc(size,
+0x40)` from gGlobalHeap and mark it owned, **zero it**, threshold < 0 -> size * 7 / 8). FileStreamRing
+starts paused (+0x18 = 1) with stream -1; every slot answers -1 (readPtr null) while no stream is open;
+`contiguous` = min(filled, size - rxFileGetRingReadPos), floored at 0; `consume` = rxFileRingConsume and
+adds to +0x20, answering size; `poll` 0, `write` empty (the rx file thread fills the ring). `open(name)`:
+size hook first (< 0 -> -1, no stream), then `rxSysStreamOpenRing(name, data, size, threshold)` and
+`rxFilePause(id, 0)`; the open ids go to the table data 0x2f5a80[8] (-1 free) and a count sbss gp-0x7a90
+(the count rises even when the table is full); nothing reads either. The destructor frees the ring
+**before** `rxFileClose` (kept). The file holds four rx jump thunks (0x151f70 rxThEnableDispatch,
+0x151f80 rxThDisableDispatch, 0x152730 rxFileCallLoadHook, 0x152740 rxFileCallSizeHook): the port calls
+the rx functions. StreamRing's base slots filled / freeSpace / write / readPos (0x1530d0..0x153100) lie in
+game/spkrom.cpp's range (unwritten), contiguous / readPtr / consume / poll / endPos in sound/sound.cpp.
 
 **`game/uigame.cpp` 0x25fa50..0x263b90 (TU 21, 2026-11-03, batches 049-052; cut out of
 `unassigned@00252840`; the file name is the port's; all 32 written, `verify`)**: the S2D UI's
