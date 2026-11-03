@@ -8,8 +8,8 @@
  *  the string-map templates 0x1a4e80..0x1a6790 CodeWarrior emits last.
  *
  *  The scene's members, from the constructor 0x19c180 and the destructor
- *  0x19bbe0 (written in a later session; the classes are named as their
- *  TUs are read). "sub" marks what only a sub-scene builds, "stage" what
+ *  0x19bbe0 (both written; the member classes got names in batch 080 and
+ *  stand-ins in gamehooks.h, the fields below). "sub" marks what only a sub-scene builds, "stage" what
  *  only a stage builds (the other one leaves it null):
  *    +0x10 StageObjectList (0xdc)       +0x14 0x171680 (0x2c; dtor 0x171620)
  *    +0x18 0x1f6510 (0x70; 0x1f63f0)    +0x1c 0x190c20 (4; 0x190bc0)
@@ -49,8 +49,37 @@
 #include "sdk/libvu0.h"     /* sceVu0FVECTOR */
 #include "sdk/scetypes.h"
 
+// The members' classes: game/gamehooks.h (stand-ins, batch 080) unless
+// noted.
 class Clock;                    // game/clock.h
-class DemoStream;               // game/gamehooks.h
+class DemoStream;
+class SceneOwnedObject;
+class ScreenFill;
+class StageMenu;
+class SubSceneObject;
+class UiItemList;
+class WideFontPrinter;          // game/fontdata.h
+struct AreaGrid;
+struct ClearSequence;
+struct DrawLayerList;
+struct GameOverSequence;
+struct MenuProgHolder;
+struct MenuProgSet;
+struct PauseMenuState;
+struct Rand48;
+struct SceneArrayPair;
+struct SceneBoxList;
+struct SceneBufferSet;
+struct SceneDirector;
+struct SceneModelHolder;
+struct ScenePairTable;
+struct ScenePool;
+struct SceneRecordBuckets;
+struct SceneRender;
+struct SceneUiState;
+struct StageAlert;
+struct StageNodeTree;
+struct UiShowFlags;             // game/uiwidget.h
 class FileLoader;               // game/fileloader.h
 class StageEvent;               // game/gamehooks.h
 class StageFade;                // game/gamehooks.h
@@ -100,8 +129,24 @@ struct StageViewTarget
 // layout: host -- EE: the purpose text inline at +4.
 struct StageMission
 {
+    StageMission();                                                      // FS2 0x00287900
+    ~StageMission();                                                     // FS2 0x00287820: deleting
+    // The start time (+0xac) = the scene clock's seconds (beginPlay).
+    void markStart();                                                    // FS2 0x002870c0
+
     u_char  _00[0x4];
     u_short purposeText[1];     // FS2 +0x4: 16-bit, 0-terminated (extent unread)
+};
+
+// The scene's four area grids (+0xac..+0xb8); what the first three hold is
+// unread.
+enum StageArea
+{
+    StageArea_0     = 0,        // +0xac
+    StageArea_1     = 1,        // +0xb0
+    StageArea_2     = 2,        // +0xb4: addArea2
+    StageArea_Sound = 3,        // +0xb8: getSoundAttr, addSoundArea
+    StageArea_Count = 4,
 };
 
 // The current stage object (0x130 bytes): built by stageLoad 0x17fb90 for
@@ -151,43 +196,96 @@ struct StageScene
     // StageSound hands it to every placed sound (setAttr); reverb likely.
     bool getSoundAttr(const sceVu0FVECTOR pos);                          // FS2 0x0019ae10
 
+    // A number in 0..n-1 from the stage's generator.
+    int random(int n);                                                   // FS2 0x00195d40
+    void *getSubSceneBlock();                                            // FS2 0x00195d70
+    // The stage's menu while it is open; null otherwise.
+    StageMenu *getOpenMenu();                                            // FS2 0x001963d0
+    // AreaGrid::addId on the sound grid (+0xb8) / the third grid (+0xb4).
+    void addSoundArea(int id);                                           // FS2 0x0019ae30
+    void addArea2(int id);                                               // FS2 0x0019ae40
+
     // The scene a sub-scene was built under (null for the stage).
     StageScene *getParent();                                             // FS2 0x00196950
+    // Second out-of-line copies of getParent / getMission (the same code;
+    // likely the const overloads): most callers use these.
+    StageScene *parentScene();                                           // FS2 0x00196a40
+    StageMission *currentMission();                                      // FS2 0x00196960
     // The mission state: this scene's, else the nearest parent's (a
     // sub-scene has none of its own).
     StageMission *getMission();                                          // FS2 0x00196870
     // The stage's current objective as 16-bit text (the S2D's rPurpose).
     const u_short *getPurposeText();                                     // FS2 0x00195d50
 
-    u_char           isSubScene;      // FS2 +0x00: the constructor's first argument
-    u_char           _01[0x3];
-    int              subSceneRequest; // FS2 +0x04: set: stageThread builds a sub-scene
-    void            *subScene;        // FS2 +0x08: a sub-scene's own scene (enterSubScene); null once it ended
-    u_char           _0c[0x4];
-    StageObjectList *objects;         // FS2 +0x10
-    u_char           _14[0xc];
-    u_char           ownsSound;       // FS2 +0x20: sound was made by the constructor (the dtor deletes it)
-    u_char           _21[0x3];
-    StageSound      *sound;           // FS2 +0x24: a stage's (null in a sub-scene)
-    DemoStream      *demoStream;      // FS2 +0x28: a sub-scene's (null in a stage)
-    u_char           _2c[0x4];
-    KeepList        *keepList;        // FS2 +0x30
-    StageViewStack  *views;           // FS2 +0x34
-    u_char           _38[0x28];
-    Clock           *clock;           // FS2 +0x60: paused while a menu runs
-    u_char           _64[0x14];
-    StagePlayer     *player;          // FS2 +0x78
-    u_char           _7c[0xc];
-    StageParty      *party;           // FS2 +0x88
-    u_char           _8c[0x5c];
-    StageMission    *mission;         // FS2 +0xe8: a stage's (getMission)
-    StageEvent      *event;           // FS2 +0xec
-    u_char           _f0[0xc];
-    StageFade       *fade;            // FS2 +0xfc
-    StageViewTarget *viewTarget;      // FS2 +0x100
-    u_char           _104[0x8];
-    StageScene      *parent;          // FS2 +0x10c: a sub-scene's (stageThread)
-    StageFiles      *files;           // FS2 +0x110: a sub-scene's (stageThread)
+    u_char              isSubScene;      // FS2 +0x00: the constructor's first argument
+    int                 subSceneRequest; // FS2 +0x04: set: stageThread builds a sub-scene
+    SubSceneObject     *subScene;        // FS2 +0x08: a sub-scene's own scene (enterSubScene); null once it ended
+    void               *subSceneBlock;   // FS2 +0x0c: deleted beside subScene (unread)
+    StageObjectList    *objects;         // FS2 +0x10
+    ScenePairTable     *pairs;           // FS2 +0x14
+    SceneRecordBuckets *records;         // FS2 +0x18
+    StageNodeTree      *nodeTree;        // FS2 +0x1c
+    u_char              ownsSound;       // FS2 +0x20: sound was made by the constructor (the dtor deletes it)
+    StageSound         *sound;           // FS2 +0x24: a stage's (null in a sub-scene)
+    DemoStream         *demoStream;      // FS2 +0x28: a sub-scene's (null in a stage)
+    SceneRender        *render;          // FS2 +0x2c
+    KeepList           *keepList;        // FS2 +0x30: a stage's
+    StageViewStack     *views;           // FS2 +0x34
+    int                 _38;             // FS2 +0x38: zero (unread)
+    int                 _3c;             // FS2 +0x3c: zero (unread)
+    int                 _40;             // FS2 +0x40: zero (unread)
+    u_char             *array44;         // FS2 +0x44: delete[] (set outside the ctor)
+    int                 _48;             // FS2 +0x48: zero (unread)
+    SceneOwnedObject   *object4c;        // FS2 +0x4c
+    int                 _50;             // FS2 +0x50: zero (unread)
+    u_char             *array54;         // FS2 +0x54: delete[]
+    DrawLayerList      *drawLayers;      // FS2 +0x58
+    int                 _5c;             // FS2 +0x5c: zero (unread)
+    Clock              *clock;           // FS2 +0x60: paused while a menu runs
+    int                 _64;             // FS2 +0x64: zero (unread)
+    u_char              _68[0x10];       // FS2 +0x68: not set by the ctor
+    StagePlayer        *player;          // FS2 +0x78
+    int                 _7c;             // FS2 +0x7c: zero (unread)
+    int                 _80;             // FS2 +0x80: zero (unread)
+    int                 _84;             // FS2 +0x84: zero (unread)
+    StageParty         *party;           // FS2 +0x88: a stage's
+    SceneOwnedObject   *owned[3];        // FS2 +0x8c..+0x94
+    void               *block98;         // FS2 +0x98: deleted (unread)
+    SceneBufferSet     *buffers;         // FS2 +0x9c
+    ScreenFill         *screenFill;      // FS2 +0xa0
+    MenuProgHolder     *menuProg;        // FS2 +0xa4
+    MenuProgSet        *menuProgs;       // FS2 +0xa8
+    // Four area grids, a stage's; [3] (+0xb8) is the sound one (getSoundAttr).
+    AreaGrid           *areas[StageArea_Count]; // FS2 +0xac
+    WideFontPrinter    *printer;         // FS2 +0xbc
+    ScenePool          *pool;            // FS2 +0xc0: a stage's
+    PauseMenuState     *pauseState;      // FS2 +0xc4: a stage's
+    u_short             _c8;             // FS2 +0xc8: zero (unread)
+    UiItemList         *itemList;        // FS2 +0xcc: a stage's
+    StageMenu          *menu;            // FS2 +0xd0: a stage's
+    int                 _d4;             // FS2 +0xd4: zero (unread)
+    int                 _d8;             // FS2 +0xd8: zero (unread)
+    SceneBoxList       *boxes;           // FS2 +0xdc
+    SceneUiState       *uiState;         // FS2 +0xe0: a stage's
+    Rand48             *rng;             // FS2 +0xe4: a stage's
+    StageMission       *mission;         // FS2 +0xe8: a stage's (getMission)
+    StageEvent         *event;           // FS2 +0xec
+    UiShowFlags        *showFlags;       // FS2 +0xf0: a stage's
+    StageAlert         *alert;           // FS2 +0xf4: a stage's
+    u_char              _f8[0x4];        // FS2 +0xf8: not set by the ctor
+    StageFade          *fade;            // FS2 +0xfc
+    StageViewTarget    *viewTarget;      // FS2 +0x100
+    u_char              _104;            // FS2 +0x104: zero (unread)
+    int                 _108;            // FS2 +0x108: zero (unread)
+    StageScene         *parent;          // FS2 +0x10c: a sub-scene's (stageThread)
+    StageFiles         *files;           // FS2 +0x110: a sub-scene's (stageThread)
+    u_char              _114;            // FS2 +0x114: zero (unread)
+    GameOverSequence   *gameOver;        // FS2 +0x118
+    ClearSequence      *clear;           // FS2 +0x11c
+    SceneDirector      *director;        // FS2 +0x120
+    SceneArrayPair     *arrays;          // FS2 +0x124
+    u_char              _128[0x4];       // FS2 +0x128: not set by the ctor
+    SceneModelHolder   *model;           // FS2 +0x12c
 };
 
 // The path kinds that can read from a debug or a proof tree

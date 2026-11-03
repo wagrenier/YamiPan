@@ -913,6 +913,34 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    0x1a1b50 and StageFiles' 22 containers (the templates 0x1a4e80..0x1a6790). Checked: callcheck
    clean, layout lint OK, g++ -fsyntax-only -Wall clean on stagescene / seplayer / stagesound /
    fileloader (stageloop / uigame: only the known gfxtarget.h / rena errors).
+   **Second run (2026-11-03, batch 080, 54 names; 30 of 258 written, still `partial`)**: the
+   ctor 0x19c180 / dtor 0x19bbe0 and the small members (isCleared, isGameOver, random,
+   getSubSceneBlock, clearSubSceneRequest, beginPlay, getOpenMenu, currentMission /
+   parentScene (0x196960 / 0x196a40: second copies of getMission / getParent), getSoundAttr,
+   addSoundArea, addArea2, getActiveCharacter). Every member class got a name and a stand-in in
+   `gamehooks.h` (ctor / dtor and what this file calls; a `destroy()` stub where the ROM deletes
+   through a vtable, as for StageObject); `StageScene` now has a full host field map;
+   `WideFontPrinter` (0x2d4110) in fontdata.h; `StageMission` ctor / dtor / `markStart`,
+   `StageEvent::destroy`, `StageFade` ctor / destroy, `StageParty` / `KeepList` ctor / dtor.
+   Choices (unattended): **most member class names are guesses** from position and allocation
+   (ScenePairTable, SceneRecordBuckets, StageNodeTree, SceneRender, ScreenFill, MenuProgHolder /
+   MenuProgSet, ScenePool, PauseMenuState, UiItemList, StageMenu, SceneBoxList, SceneUiState,
+   GameOverSequence / ClearSequence, SceneDirector, SceneModel, DrawLayerList, SceneBufferSet,
+   SceneOwnedObject, SubSceneObject, resetStageGroupTable): rename them when their runs are read
+   (Rand48, AreaGrid, StageAlert, WideFontPrinter, drawSysPush / drawSysPop are solid). PC
+   choices: +0x120 starts null (the ROM ctor never sets it, the dtor deletes it when set); the
+   ROM dtor asks the already-deleted sub-scene DemoStream isPlaying / stop (use after free): the
+   port clears the pointer at the delete and skips the late stop; getOpenMenu answers null with
+   no menu (a sub-scene; the ROM reads through null); the +0x124 second array freed with
+   delete[] (the ROM frees p - 0x10, CodeWarrior's header, without element dtors).
+   stagescene.cpp now includes gamesystem.h (gGameSystem's clock), which pulls in the rena
+   header that fails the stub syntax check (rena_pkt_vif1pktmanage.h:87, known, not this TU).
+   **Next for this TU**: `parseScript` 0x1a20f0 (0x1408 bytes) with the line splitter 0x1a3500,
+   the line list 0x1a5a60 (vtable 0x311210), the container reset 0x1a3dc0, the keyword
+   handlers 0x1a0580..0x1a1b50 and the templates 0x1a4e80..0x1a6790 (0x1a5a00, 0x1a5db0,
+   0x1a5e60, 0x1a5f80, 0x1a60a0, 0x1a65a0, 0x1a6630, 0x1a6750 are in the brief's slice); then
+   update 0x199400, draw 0x198970, setupCameras 0x199f00, enterSubScene 0x195e10, the pad
+   tests 0x195a50 / 0x1958b0 and getFloor 0x19aea0 (stageloop calls them).
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

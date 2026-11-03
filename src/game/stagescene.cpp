@@ -6,11 +6,15 @@
 #include <float.h>
 #include <string.h>
 
+#include "game/clock.h"
 #include "game/fileloader.h"
+#include "game/fontdata.h"
 #include "game/gamehooks.h"
+#include "game/gamesystem.h"
 #include "game/seplayer.h"      /* StreamTable */
 #include "game/stageobjlist.h"
 #include "game/stagesound.h"
+#include "game/uiwidget.h"
 #include "game/vu0math.h"
 #include "sdk/libvu0.h"
 #include "sdk/scetypes.h"
@@ -33,6 +37,50 @@ static const char kScriptPrefix[] = "script/";         /* data 0x304118 */
 constexpr int  kWaitArg         = 1;
 constexpr bool kWaitShowLoading = true;
 
+// The view stack's depth (the ctor's new[] of 8 entries).
+constexpr int kViewStackSize = 8;
+// The sub-scene demo voice's directory.
+static const char kDemoDir[] = "streamEU/demo/";      /* data 0x303d20 */
+// The screen rect the fill, the fade and the printers are built with: GS
+// window units, the 512-pixel square at the 1792 offset (0x700).
+constexpr int kScreenX = 0x700;
+constexpr int kScreenY = 0x700;
+constexpr int kScreenW = 0x200;
+constexpr int kScreenH = 0x200;
+// The fill's colour (RGBA bytes; alpha 4).
+constexpr u_int kScreenFillRgba = 0x04808080;
+// ScenePool's arguments.
+constexpr u_int kScenePoolCount = 4;
+constexpr int   kScenePoolSize  = 0x800;
+constexpr int   kScenePoolSize2 = 0x878;
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x00195640
+// callcheck: getState
+
+bool StageScene::isCleared()
+{
+    return clear != nullptr && clear->getState() == kClearSequenceDone;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x001956e0
+// callcheck: getState
+
+bool StageScene::isGameOver()
+{
+    return gameOver != nullptr && gameOver->getState() == kGameOverSequenceDone;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x00195d40
+// callcheck: next
+
+int StageScene::random(int n)
+{
+    return rng->next(n);
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // The objective text: the mission state's, from this scene or the nearest
 // parent that has one.
@@ -45,11 +93,48 @@ const u_short *StageScene::getPurposeText()
 }
 
 // ──────────────────────────────────────────────────────────────────────
+// FS2 0x00195d70
+
+void *StageScene::getSubSceneBlock()
+{
+    return subSceneBlock;
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // FS2 0x00195d80
 
 bool StageScene::isSubSceneDone()
 {
     return isSubScene && subScene == nullptr;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x00196050
+
+void StageScene::clearSubSceneRequest()
+{
+    subSceneRequest = 0;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x001963a0
+// callcheck: currentMission, markStart
+
+void StageScene::beginPlay()
+{
+    currentMission()->markStart();
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// PC: a sub-scene has no menu (+0xd0 null); the ROM reads through it
+// anyway. Here a missing menu answers null.
+// FS2 0x001963d0
+
+StageMenu *StageScene::getOpenMenu()
+{
+    if (menu == nullptr || menu->state != StageMenu_Open)
+        return nullptr;
+    return menu;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -68,6 +153,26 @@ StageMission *StageScene::getMission()
 // FS2 0x00196950
 
 StageScene *StageScene::getParent()
+{
+    return parent;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The same code as getMission (also unrolled eight levels deep).
+// FS2 0x00196960
+// callcheck: parentScene, currentMission
+
+StageMission *StageScene::currentMission()
+{
+    if (mission != nullptr)
+        return mission;
+    return parentScene()->currentMission();
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x00196a40
+
+StageScene *StageScene::parentScene()
 {
     return parent;
 }
@@ -165,6 +270,270 @@ void StageScene::drawPaused()
         }
     }
     sound->update(listener, playerFlag, sceneFlag);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x0019ae10
+// callcheck: contains
+
+bool StageScene::getSoundAttr(const sceVu0FVECTOR pos)
+{
+    return areas[StageArea_Sound]->contains(pos) != 0;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x0019ae30
+// callcheck: addId
+
+void StageScene::addSoundArea(int id)
+{
+    areas[StageArea_Sound]->addId(id);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x0019ae40
+// callcheck: addId
+
+void StageScene::addArea2(int id)
+{
+    areas[StageArea_2]->addId(id);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The top of the view stack.
+// FS2 0x0019bbb0
+
+StageObject *StageScene::getActiveCharacter()
+{
+    return views->topObject();
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The members in the ROM's order. A stage's sound is reset rather than
+// deleted when it was handed in (stageLoad keeps one across reloads).
+//
+// PC: the ROM deletes a sub-scene's demo stream early and near the end
+// asks the deleted stream isPlaying / stop; here the pointer is cleared
+// at the delete and the late stop is skipped (the stream's dtor ends it).
+// The ROM's +0x124 second array is freed from 0x10 bytes before it
+// (CodeWarrior's array header); the host frees what it allocated.
+// FS2 0x0019bbe0
+// callcheck: ~StageObjectList, ~ScenePairTable, ~SceneRecordBuckets, ~StageNodeTree, ~StageSound, ~DemoStream, ~SceneRender, ~KeepList, ~Clock, ~MenuProgHolder, ~MenuProgSet, ~AreaGrid, ~SceneBufferSet, ~StageParty, ~ScenePool, ~PauseMenuState, ~SceneBoxList, ~SceneUiState, ~StageAlert, ~DrawLayerList, ~StageMission, ~SceneDirector, ~SceneModel, operator_delete, operator_delete[] (the delete-expressions; the printer through its virtual dtor)
+
+StageScene::~StageScene()
+{
+    if (isSubScene)
+        drawSysPop();
+
+    delete objects;
+    delete pairs;
+    delete records;
+    delete nodeTree;
+    if (views != nullptr) {
+        delete[] views->entries;
+        delete views;
+    }
+
+    if (!isSubScene) {
+        if (ownsSound)
+            delete sound;
+        else
+            sound->reset();
+    } else {
+        delete demoStream;
+        demoStream = nullptr;
+    }
+    delete render;
+    delete keepList;
+    delete clock;
+    if (screenFill != nullptr)
+        screenFill->destroy();
+    delete menuProg;
+    delete menuProgs;
+    for (int i = 0; i < StageArea_Count; i++)
+        delete areas[i];
+    for (int i = 0; i < 3; i++) {
+        if (owned[i] != nullptr)
+            owned[i]->destroy();
+    }
+    if (block98 != nullptr) {
+        operator delete(block98);
+        block98 = nullptr;
+    }
+    if (buffers != nullptr) {
+        delete buffers;
+        buffers = nullptr;
+    }
+    delete party;
+    delete printer;
+    delete pool;
+    delete pauseState;
+    delete[] array44;
+    if (itemList != nullptr)
+        itemList->destroy();
+    if (menu != nullptr)
+        menu->destroy();
+    delete boxes;
+    delete uiState;
+    delete showFlags;
+    delete alert;
+    if (fade != nullptr)
+        fade->destroy();
+    if (object4c != nullptr)
+        object4c->destroy();
+    delete[] array54;
+    delete drawLayers;
+
+    if (isSubScene) {
+        if (subScene != nullptr)
+            subScene->destroy();
+        operator delete(subSceneBlock);
+        subScene      = nullptr;
+        subSceneBlock = nullptr;
+        if (demoStream != nullptr && demoStream->isPlaying())
+            demoStream->stop();
+    }
+
+    delete rng;
+    delete mission;
+    if (event != nullptr)
+        event->destroy();
+    if (gameOver != nullptr) {
+        operator delete(gameOver);
+        gameOver = nullptr;
+    }
+    if (clear != nullptr) {
+        operator delete(clear);
+        clear = nullptr;
+    }
+    if (director != nullptr) {
+        delete director;
+        director = nullptr;
+    }
+    if (arrays != nullptr) {
+        delete[] arrays->first;
+        delete[] arrays->second;
+        delete arrays;
+    }
+    delete model;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// A stage builds everything; a sub-scene skips the stage-only members
+// (null) and gets a demo voice instead of a sound, plus its own draw
+// record. Who / files / the view target and the sequences are set later
+// (stageThread, the scene's update).
+// FS2 0x0019c180
+// callcheck: operator_new, StageObjectList, operator_new, ScenePairTable, operator_new, SceneRecordBuckets, operator_new, StageNodeTree, operator_new, StageSound, resetStageGroupTable, operator_new, DemoStream, setDir, operator_new, SceneRender, operator_new, KeepList, operator_new, operator_new[], createChild, operator_new, ScreenFill, operator_new, WideFontPrinter, operator_new, SceneBoxList, operator_new, StageFade, operator_new, ScenePool, operator_new, PauseMenuState, operator_new, UiItemList, operator_new, StageMenu, operator_new, SceneUiState, operator_new, UiShowFlags, operator_new, StageAlert, operator_new, Rand48, operator_new, StageMission, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, StageParty, drawSysPush
+
+StageScene::StageScene(bool isSubScene, StageSound *sound)
+{
+    this->isSubScene = isSubScene;
+    mission    = nullptr;
+    event      = nullptr;
+    viewTarget = nullptr;
+    _104       = 0;
+    _108       = 0;
+    gameOver   = nullptr;
+    clear      = nullptr;
+    arrays     = nullptr;
+    model      = nullptr;
+    director   = nullptr;   // PC: the ROM leaves +0x120 to whoever made the scene's memory
+    _114       = 0;
+
+    objects  = new StageObjectList();
+    pairs    = new ScenePairTable();
+    records  = new SceneRecordBuckets();
+    nodeTree = new StageNodeTree();
+
+    ownsSound = 0;
+    if (!this->isSubScene) {
+        if (sound == nullptr) {
+            ownsSound   = 1;
+            this->sound = new StageSound();
+        } else {
+            ownsSound   = 0;
+            this->sound = sound;
+        }
+        demoStream = nullptr;
+        resetStageGroupTable();
+    } else {
+        this->sound = nullptr;
+        demoStream  = new DemoStream();
+        demoStream->setDir(kDemoDir);
+    }
+
+    render   = new SceneRender();
+    keepList = this->isSubScene ? nullptr : new KeepList();
+
+    views           = new StageViewStack;
+    views->capacity = kViewStackSize;
+    views->entries  = new StageViewEntry[views->capacity];
+    views->top      = -1;
+
+    clock = gGameSystem->m_clock.createChild();
+    _64   = 0;
+    _3c = _40 = 0;
+    array44    = nullptr;
+    _48        = 0;
+    object4c   = nullptr;
+    _50        = 0;
+    array54    = nullptr;
+    drawLayers = nullptr;
+    _5c        = 0;
+    player = nullptr;
+    _7c = _80 = _84 = 0;
+    owned[0] = owned[1] = owned[2] = nullptr;
+    block98 = nullptr;
+    buffers = nullptr;
+
+    screenFill = new ScreenFill(kScreenFillRgba, kScreenX, kScreenY, kScreenW, kScreenH);
+    menuProg   = nullptr;
+    menuProgs  = nullptr;
+    printer    = new WideFontPrinter(kScreenX, kScreenY);
+    _c8        = 0;
+    boxes      = new SceneBoxList();
+    _d4 = _d8 = 0;
+    fade = new StageFade(kScreenX, kScreenY, kScreenW, kScreenH, 0);
+
+    if (!this->isSubScene) {
+        pool       = new ScenePool(kScenePoolCount, kScenePoolSize, kScenePoolSize2);
+        pauseState = new PauseMenuState();
+        itemList   = new UiItemList(printer, 0);
+        menu       = new StageMenu(printer, 0);
+        uiState    = new SceneUiState();
+        showFlags  = new UiShowFlags();
+        alert      = new StageAlert();
+        rng        = new Rand48();
+        mission    = new StageMission();
+        for (int i = 0; i < StageArea_Count; i++)
+            areas[i] = new AreaGrid();
+        party = new StageParty();
+    } else {
+        pool       = nullptr;
+        pauseState = nullptr;
+        itemList   = nullptr;
+        menu       = nullptr;
+        uiState    = nullptr;
+        showFlags  = nullptr;
+        alert      = nullptr;
+        rng        = nullptr;
+        mission    = nullptr;
+        for (int i = 0; i < StageArea_Count; i++)
+            areas[i] = nullptr;
+        party = nullptr;
+    }
+
+    _38             = 0;
+    subSceneRequest = 0;
+    subScene        = nullptr;
+    subSceneBlock   = nullptr;
+    event           = nullptr;
+    if (this->isSubScene)
+        drawSysPush();
+    parent = nullptr;
+    files  = nullptr;
+    _114   = 0;
 }
 
 // ──────────────────────────────────────────────────────────────────────

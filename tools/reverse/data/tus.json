@@ -539,7 +539,7 @@
    "why": "StageResult (0x599700, static init 0x310f60: begin(0) + __register_global_object with the destructor 0x2b0cf0) and the game-pack loader 0x2afd00..0x2aff80: the MSL map instances 0x2b0590..0x2b0cf0 serve the loader's tables and sit between getStageResult and StageResult's static destructor, so one object file; 0x2afc20/0x2afcd0 (init-pack items by language) joined by position (guess); 0x2af9a0 before is the 0x2adc70 drawing cluster, 0x2b0d50 after is a SoundStream thunk"
   },
   "game/stagescene.cpp": {
-   "notes": "Written: getPurposeText (a member now; uigame calls gStageScene->getPurposeText), isSubSceneDone, getMission (+0xe8 or the parent's), getParent, raycast (group-1 Root objects' meshes, nearest hit), drawPaused (sub-scene: DemoStream::update; stage: StageSound::update with the view-stack top, the player's alt flag and the scene flag), stdtEntryCount, stdtIsRelocated, StageFiles::dataDir, load (two parseScript passes), loadSubSceneList. Next: the ctor 0x19c180 and dtor 0x19bbe0 -- the full member map is the file comment of src/game/stagescene.h (about 25 member classes in other runs need names and minimal declarations in gamehooks.h) -- then parseScript 0x1a20f0 with 0x1a3500 (line splitter), 0x1a5a60 (line list, vtable 0x311210), 0x1a3dc0 and the keyword handlers 0x1a0580..0x1a1b50 (open-items.md TU 46). Guessed names: StageMission, StageViewStack, StageViewTarget, DemoStream, getAltSoundFlag, isMode1, getCompanion. g++ -fsyntax-only clean on stagescene, seplayer, stagesound, fileloader.",
+   "notes": "Written this run: StageScene ctor 0x19c180 and dtor 0x19bbe0 (every member in the ROM order, host field map in stagescene.h), isCleared / isGameOver (GameOverSequence +0x118 state 5, ClearSequence +0x11c state 2), random (Rand48 +0xe4, a drand48 LCG), getSubSceneBlock, clearSubSceneRequest, beginPlay (currentMission()->markStart()), getOpenMenu (StageMenu +0xd0 state 2), currentMission / parentScene (0x196960 / 0x196a40, second copies of getMission / getParent), getSoundAttr / addSoundArea / addArea2 (four AreaGrid +0xac..+0xb8), getActiveCharacter (view stack top). Member classes are stand-ins in gamehooks.h with ctor / dtor or a destroy() stub for vtable deletes; most names are guesses from position and allocation (list in open-items.md TU 46). PC choices: +0x120 starts null; the ROM dtor uses the deleted sub-scene DemoStream (use after free), the port clears it; getOpenMenu null-safe; +0x124 second array via delete[]. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall clean apart from the known rena_pkt_vif1pktmanage.h:87 error (stagescene.cpp now includes gamesystem.h). Next: parseScript 0x1a20f0 with 0x1a3500, 0x1a5a60, 0x1a3dc0, the keyword handlers 0x1a0580..0x1a1b50 and the templates; then update / draw / setupCameras / enterSubScene / the pad tests / getFloor.",
    "ranges": [
     [
      "001953f0",
@@ -552,6 +552,12 @@
      "date": "2026-11-03 15:41",
      "status": "partial",
      "summary": "StageScene / StageFiles run cut (0x1953f0..0x1a68b0); drawPaused, raycast, getMission, getPurposeText, StageFiles::load and dataDir written (11 of 258); stagescene.h takes StageScene / StageFiles out of gamehooks.h; FileLoader +0x14 is the directory (setDir)"
+    },
+    {
+     "build": "not built",
+     "date": "2026-11-03 15:55",
+     "status": "partial",
+     "summary": "StageScene ctor / dtor and 17 small members written (30 of 258); batch 080 names every scene member class (54 names)"
     }
    ],
    "status": "partial",

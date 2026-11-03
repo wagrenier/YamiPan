@@ -319,6 +319,8 @@ struct StagePlayer
 // layout: host -- contents unread.
 struct StageParty
 {
+    StageParty();                                                        // FS2 0x001fecf0: +0 = new 0x148-byte record (0x203d70)
+    ~StageParty();                                                       // FS2 0x001fec90: deleting
     void resetSaved();                                                   // FS2 0x001fe720: the four ids to -1
     void save();                                                         // FS2 0x001fe6d0
     void restore();                                                      // FS2 0x001fe6c0
@@ -333,6 +335,8 @@ struct StageParty
 // layout: host -- EE: +0x4 head, +0x8 tail.
 struct KeepList
 {
+    KeepList();                                                          // FS2 0x002bc770: three words zero
+    ~KeepList();                                                         // FS2 0x002bc6f0: deleting; deletes every node
     // Unlinks and deletes every node whose flags bit 0 is clear.
     void removeUnkept();                                                 // FS2 0x002bc5d0
 };
@@ -346,6 +350,9 @@ public:
     // A virtual in the ROM (slot 3, vtable +0x14); a plain stub until its
     // TU. What StageScene::enterSubScene builds the sub-scene from.
     void *getSubSceneData();
+    // The deleting dtor (vtable +0x8, vptr +0x2c: StageScene's dtor); a
+    // plain stub until its TU.
+    void destroy();
 };
 
 class Clock;                    // game/clock.h
@@ -402,8 +409,240 @@ public:
 class StageFade
 {
 public:
+    // (x, y, w, h, arg): StageScene passes 0x700, 0x700, 0x200, 0x200, 0
+    // (GS window units: the 512-pixel screen at the 1792 offset); arg is
+    // unread.
+    StageFade(int x, int y, int w, int h, int arg);                      // FS2 0x00151600
+    // The deleting dtor (vtable 0x311270 at +4, slot 0); a plain stub
+    // until its TU.
+    void destroy();
     // Mode 2 at level 1.0 (StageSound does not resume a cue stream then).
     bool isFullInMode2();                                                // FS2 0x001512a0
+};
+
+// -- The stage scene's members (StageScene's ctor 0x19c180 / dtor 0x19bbe0;
+// batch 080). Each lives in a run not read yet: only the ctor / dtor and
+// what game/stagescene.cpp calls are declared. Class names are the port's
+// guesses from where they sit and what they allocate (the batch's why).
+// The ones the ROM deletes through a vtable get a plain `destroy()` stub
+// (the deleting dtor's slot) until their TU, like StageObject's.
+
+// +0x14: five {0, 0} pairs (0x1716c0); contents unread. layout: host (EE 0x2c).
+struct ScenePairTable
+{
+    ScenePairTable();                                                    // FS2 0x00171680
+    ~ScenePairTable();                                                   // FS2 0x00171620: deleting
+};
+
+// +0x18: four arrays of records reserved for 0x1fe each. layout: host (EE 0x70).
+struct SceneRecordBuckets
+{
+    SceneRecordBuckets();                                                // FS2 0x001f6510
+    ~SceneRecordBuckets();                                               // FS2 0x001f63f0: deleting
+};
+
+// +0x1c: owns one 0x40-byte object (0x192080, built with this). layout: host (EE 4).
+struct StageNodeTree
+{
+    StageNodeTree();                                                     // FS2 0x00190c20
+    ~StageNodeTree();                                                    // FS2 0x00190bc0: deleting
+};
+
+// +0x2c: tex areas, an AreaGrid and a 0x5a10 table; its dtor puts the
+// parent scene's draw settings back. layout: host (EE 0xe70).
+struct SceneRender
+{
+    SceneRender();                                                       // FS2 0x001fa4a0
+    ~SceneRender();                                                      // FS2 0x001fa230: deleting
+};
+
+// +0x4c and +0x8c..+0x94: objects with the vptr at +0 (slot 0 their
+// deleting dtor), set outside the ctor; unread. layout: host (unread).
+class SceneOwnedObject
+{
+public:
+    void destroy();                                                      // FS2 vtable +0x8
+};
+
+// +0x58: a pointer array (+0x30, count +0x2c) of objects deleted through
+// their vptr. layout: host.
+struct DrawLayerList
+{
+    ~DrawLayerList();                                                    // FS2 0x002dcab0: deleting
+};
+
+// +0x9c: eight blocks from +0x18. layout: host.
+struct SceneBufferSet
+{
+    ~SceneBufferSet();                                                   // FS2 0x002ce5a0: deleting
+};
+
+// +0xa0: a colour and a screen rect (vtable 0x311280 over StageFade's base
+// 0x311260, vptr +4). layout: host (EE 0x24).
+class ScreenFill
+{
+public:
+    ScreenFill(u_int rgba, int x, int y, int w, int h);                  // FS2 0x00151f20
+    void destroy();                                                      // FS2 vtable +0x8 (vptr +4)
+};
+
+// +0xa4 / +0xa8: menu program holders (beside PrgMcCard), set outside the
+// ctor. layout: host.
+struct MenuProgHolder
+{
+    ~MenuProgHolder();                                                   // FS2 0x002ad070: deleting
+};
+struct MenuProgSet
+{
+    ~MenuProgSet();                                                      // FS2 0x002bb3e0: deleting
+};
+
+// +0xac..+0xb8: four area grids (a list, 0x40 cells, a box at +0x210).
+// layout: host (EE 0x240).
+struct AreaGrid
+{
+    AreaGrid();                                                          // FS2 0x00284640
+    ~AreaGrid();                                                         // FS2 0x00284580: deleting
+    // pos inside one of the grid's areas.
+    int  contains(const sceVu0FVECTOR pos);                              // FS2 0x00284190
+    void addId(int id);                                                  // FS2 0x00284560
+};
+
+// +0xc0: (count 4, 0x800, 0x878). layout: host (EE 0x2c).
+struct ScenePool
+{
+    ScenePool(u_int count, int size, int size2);                         // FS2 0x00289be0
+    ~ScenePool();                                                        // FS2 0x00289b60: deleting
+};
+
+// +0xc4: plain data beside the pause menu's code. layout: host (EE 0x678).
+struct PauseMenuState
+{
+    PauseMenuState();                                                    // FS2 0x00207ef0
+    ~PauseMenuState();                                                   // FS2 0x00207ea0: deleting
+};
+
+class WideFontPrinter;          // game/fontdata.h
+
+// +0xcc: a list view over the scene's printer (vtable 0x316530 at +0x88).
+// layout: host (EE 0x8c).
+class UiItemList
+{
+public:
+    UiItemList(WideFontPrinter *printer, int arg);                       // FS2 0x0023f0b0
+    void destroy();                                                      // FS2 vtable +0x8 (vptr +0x88)
+};
+
+// +0xd0: a menu over the scene's printer (vtable 0x3164b0 at +8; a 0xaa8
+// object at +0xc). StageScene::getOpenMenu reads its state.
+// layout: host -- EE 0x18: +0 state.
+enum StageMenuState
+{
+    StageMenu_Open = 2,         // getOpenMenu's test; the other values unread
+};
+class StageMenu
+{
+public:
+    StageMenu(WideFontPrinter *printer, int arg);                        // FS2 0x002308a0
+    void destroy();                                                      // FS2 vtable +0x8 (vptr +8)
+
+    int state;                  // FS2 +0x0: StageMenuState
+};
+
+// +0xdc: 0xc-byte entries after a count. layout: host (EE 0xc4).
+struct SceneBoxList
+{
+    SceneBoxList();                                                      // FS2 0x0023ad60
+    ~SceneBoxList();                                                     // FS2 0x0023ad10: deleting
+};
+
+// +0xe0. layout: host (EE 0x3cc).
+struct SceneUiState
+{
+    SceneUiState();                                                      // FS2 0x00243150
+    ~SceneUiState();                                                     // FS2 0x00243100: deleting
+};
+
+// +0xe4: a 48-bit LCG (drand48's multiplier 0x5deece66d; the run
+// 0x2681e0..0x268310). layout: host (EE 8).
+struct Rand48
+{
+    Rand48();                                                            // FS2 0x002682e0
+    // A number in 0..n-1.
+    int next(int n);                                                     // FS2 0x002681e0
+};
+
+// +0xf4: the ALERT / CAUTION state machine (game/stagealert.cpp).
+// layout: host (EE 0x1c).
+struct StageAlert
+{
+    StageAlert();                                                        // FS2 0x00264070
+    ~StageAlert();                                                       // FS2 0x00264000: deleting
+};
+
+// +0x118 / +0x11c: the game-over and stage-clear sequences (set outside
+// the ctor, beside DemoStream). Their state reads as done (5 / 2) once
+// the scene's fade is full in mode 2. layout: host -- EE: +0 the state.
+enum
+{
+    kGameOverSequenceDone = 5,  // StageScene::isGameOver
+    kClearSequenceDone    = 2,  // StageScene::isCleared
+};
+// layout: host (unread).
+struct GameOverSequence
+{
+    int getState();                                                      // FS2 0x002b1c50
+};
+// layout: host (unread).
+struct ClearSequence
+{
+    int getState();                                                      // FS2 0x002b1620
+};
+
+// +0x120 (StageScene::update deletes it too). layout: host.
+struct SceneDirector
+{
+    ~SceneDirector();                                                    // FS2 0x002b2280: deleting
+};
+
+// +0x124: a record of two arrays. The ROM frees the second as an array
+// with CodeWarrior's 0x10-byte header (p - 0x10) and runs no element dtor.
+// layout: host -- EE: +8, +0xc.
+struct SceneArrayPair
+{
+    u_char  _00[0x8];
+    u_char *first;              // FS2 +0x8: delete[]
+    u_char *second;             // FS2 +0xc: delete[] (header at -0x10 on the EE)
+};
+
+// +0x12c: an object with a member at +0x24 the dtor destroys in place.
+// layout: host.
+struct SceneModel
+{
+    ~SceneModel();                                                       // FS2 0x002cff30 (in place: flag -1)
+};
+struct SceneModelHolder
+{
+    u_char     _00[0x24];
+    SceneModel model;           // FS2 +0x24
+};
+
+// The draw system's record stack (gp-0x7994, saved in gp-0x7990): a
+// sub-scene draws into its own record.
+void drawSysPush();                                                      // FS2 0x002d7c70
+void drawSysPop();                                                       // FS2 0x002d7c00
+
+// 44 groups at 0x599830 / 0x599860 reset (a byte zero, 32 words one each):
+// a stage's ctor. What the groups are is unread.
+void resetStageGroupTable();                                             // FS2 0x002cf510
+
+// A sub-scene's own scene object (StageScene +0x8, from enterSubScene):
+// the vptr at +0xb4 like the character classes; only the deleting dtor
+// (vtable +0x18) is called here. layout: host (unread).
+class SubSceneObject
+{
+public:
+    void destroy();                                                      // FS2 vtable +0x18 (vptr +0xb4)
 };
 
 // StageScene (the current stage object) and StageFiles (the stage's

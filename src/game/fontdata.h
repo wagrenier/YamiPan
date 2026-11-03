@@ -169,6 +169,16 @@ private:
     int drawText(float scale, int x, int y, const char *text);
 };
 
+// The wide-text printer (EE 0x40, vtable 0x319ff0; its methods 0x2d3700..,
+// not read yet): StageScene +0xbc. Only the ctor is declared.
+// layout: host -- FontPrinter's fields, nothing of its own read.
+class WideFontPrinter : public FontPrinter
+{
+public:
+    // FontPrinter(x, y), then spacing 0x20 and line spacing 0.
+    WideFontPrinter(short x, short y);                                   // FS2 0x002d4110
+};
+
 // The vtable 0x315fc0 after the base's: no RTTI, and no code stores it, so
 // this class is never constructed. Its two prints use the printer's fields
 // and fetch glyphs through slot 1 of the object's own vtable -- a

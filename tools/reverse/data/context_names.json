@@ -6335,6 +6335,18 @@
   "was": "FUN_001512a0",
   "why": "a0 gStageScene +0xfc: mode +0x34 == 2 and level +0x24 == 1.0 (0x1512e0 the same for mode 1; StageScene 0x195850 ors them); StageSound does not resume a cue stream then. Class and mode meaning are guesses (a screen fade)"
  },
+ "00151600": {
+  "name": "StageFade::StageFade",
+  "tag": "game-inferred",
+  "was": "FUN_00151600",
+  "why": "StageScene ctor new(0x3c) for +0xfc (StageFade) with 0x700, 0x700, 0x200, 0x200, 0: vtable 0x311270 over 0x311260 at +4, a Clock child"
+ },
+ "00151f20": {
+  "name": "ScreenFill::ScreenFill",
+  "tag": "game-inferred",
+  "was": "FUN_00151f20",
+  "why": "StageScene ctor new(0x24) for +0xa0 with 0x04808080, 0x700, 0x700, 0x200, 0x200 (a colour and a screen rect); vtable 0x311280 over 0x311260, StageFade's base; name a guess"
+ },
  "00151f90": {
   "name": "StreamRing::isPrimed",
   "tag": "game-inferred",
@@ -10859,6 +10871,18 @@
   "was": "FUN_00171230",
   "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): sets the driver config 0x537d58 (defaults {1, 1, -1, -1, 0..}), copies it with sdpr2DrvSetConfig and installs the SE driver table 0x2f7a68 at 0x537d30 if none is"
  },
+ "00171620": {
+  "name": "ScenePairTable::~ScenePairTable",
+  "tag": "game-inferred",
+  "was": "FUN_00171620",
+  "why": "deleting dtor of StageScene +0x14: __destroy_arr 5 x 8 bytes (0x1716d0)"
+ },
+ "00171680": {
+  "name": "ScenePairTable::ScenePairTable",
+  "tag": "game-inferred",
+  "was": "FUN_00171680",
+  "why": "StageScene ctor new(0x2c) for +0x14: __construct_array of 5 elements of 8 bytes ({0, 0}, 0x1716c0); class name a guess, contents unread"
+ },
  "00177270": {
   "name": "BoneNode::find",
   "tag": "game-inferred",
@@ -10942,6 +10966,18 @@
   "tag": "game-inferred",
   "was": "FUN_001865c0",
   "why": "deleting dtor of the vtable 0x315ae0 node base (over 0x314150 / 0x314120): frees +0x10 / +0x14 (heap 0x329970), unlinks from the parent (+0x4, its child list +0x8), orphans its children, clears its list; StageSoundSource's dtor calls it"
+ },
+ "00190bc0": {
+  "name": "StageNodeTree::~StageNodeTree",
+  "tag": "game-inferred",
+  "was": "FUN_00190bc0",
+  "why": "deleting dtor of StageScene +0x1c: deletes its +0 object (0x191e90)"
+ },
+ "00190c20": {
+  "name": "StageNodeTree::StageNodeTree",
+  "tag": "game-inferred",
+  "was": "FUN_00190c20",
+  "why": "StageScene ctor new(4) for +0x1c: holds one 0x40 object built by 0x192080 with this (beside the StageObjectList code); name a guess"
  },
  "00193900": {
   "name": "StageObjectList::findAll7",
@@ -11237,11 +11273,23 @@
   "was": "FUN_00195a50",
   "why": "gGameSystem pad 0 pressed bit 0x800 (start), not a sub-scene, the scene +0xf0 +1 flag, no busy character; true -> stagePauseMenu"
  },
+ "00195d40": {
+  "name": "StageScene::random",
+  "tag": "game-inferred",
+  "was": "FUN_00195d40",
+  "why": "a0 a StageScene: Rand48::next on its +0xe4 (the drand48 state the ctor builds with 0x2682e0), a1 passed through as the bound"
+ },
  "00195d50": {
   "name": "StageScene::getPurposeText",
   "tag": "game-inferred",
   "was": "FUN_00195d50",
   "why": "a0 the scene (formatTextValue passes gStageScene): getMission() + 4, the S2D's rPurpose text; renamed from the free getPurposeText now that the a0 is known"
+ },
+ "00195d70": {
+  "name": "StageScene::getSubSceneBlock",
+  "tag": "game-inferred",
+  "was": "FUN_00195d70",
+  "why": "answers +0xc of a StageScene: the block a sub-scene's dtor deletes beside its +0x8 scene object; what it holds is unread"
  },
  "00195d80": {
   "name": "StageScene::isSubSceneDone",
@@ -11267,6 +11315,12 @@
   "was": "FUN_001963a0",
   "why": "0x2870c0(0x196960(scene)); called once by stageThread between the screens and the first frame"
  },
+ "001963d0": {
+  "name": "StageScene::getOpenMenu",
+  "tag": "game-inferred",
+  "was": "FUN_001963d0",
+  "why": "a0 a StageScene: its +0xd0 (StageMenu, 0x2308a0) when that object's first word is 2, else null; reading 2 as open is a guess"
+ },
  "00196870": {
   "name": "StageScene::getMission",
   "tag": "game-inferred",
@@ -11278,6 +11332,18 @@
   "tag": "game-inferred",
   "was": "FUN_00196950",
   "why": "answers +0x10c of a StageScene (the parent a sub-scene is built under: stageThread); StageScene::getMission's recursion"
+ },
+ "00196960": {
+  "name": "StageScene::currentMission",
+  "tag": "game-inferred",
+  "was": "FUN_00196960",
+  "why": "the same code as StageScene::getMission 0x196870 (+0xe8 else the parent's, unrolled eight times, calls 0x196a40 = +0x10c); a second out-of-line copy (211 call sites: beginPlay, update, setupCameras); likely the other (const) overload of getMission"
+ },
+ "00196a40": {
+  "name": "StageScene::parentScene",
+  "tag": "game-inferred",
+  "was": "FUN_00196a40",
+  "why": "answers +0x10c like StageScene::getParent 0x196950; the copy currentMission 0x196960 recurses through"
  },
  "00198170": {
   "name": "StageScene::raycast",
@@ -11314,6 +11380,18 @@
   "tag": "game-inferred",
   "was": "FUN_0019ae10",
   "why": "a0 the scene, a1 a position: 0x284190(scene +0xb8, pos) != 0 (a point-in-area grid test: min +0x210, max +0x220, cell +0x230); StageSound::update passes it to SePlayer::setAttr / SoundTrack::setAttr for every placed sound (what the area is: unread, reverb likely)"
+ },
+ "0019ae30": {
+  "name": "StageScene::addSoundArea",
+  "tag": "game-inferred",
+  "was": "FUN_0019ae30",
+  "why": "a0 a StageScene: AreaGrid::addId on +0xb8, the grid getSoundAttr tests"
+ },
+ "0019ae40": {
+  "name": "StageScene::addArea2",
+  "tag": "game-inferred",
+  "was": "FUN_0019ae40",
+  "why": "a0 a StageScene: AreaGrid::addId on +0xb4 (the third of the four area grids +0xac..+0xb8); which areas it holds is unread"
  },
  "0019aea0": {
   "name": "StageScene::getFloor",
@@ -11692,6 +11770,30 @@
   "tag": "game-inferred",
   "was": "FUN_001e66c0",
   "why": "a0 the player's +0x224 object (its +0 the player): picks names from the 0x210-byte records 0x577b20 (index +0x40, slot +0x6c; '*'-prefixed alternates when the long weapon +0x238's item def kind is 5 or 6) and hands them to 0x216400; guess: the motion set for the weapon carried. stepWeaponPreview in a stage"
+ },
+ "001f63f0": {
+  "name": "SceneRecordBuckets::~SceneRecordBuckets",
+  "tag": "game-inferred",
+  "was": "FUN_001f63f0",
+  "why": "deleting dtor of StageScene +0x18: per bucket deletes each record (members +0x14 and +0xd4 destroyed first)"
+ },
+ "001f6510": {
+  "name": "SceneRecordBuckets::SceneRecordBuckets",
+  "tag": "game-inferred",
+  "was": "FUN_001f6510",
+  "why": "StageScene ctor new(0x70) for +0x18: four 8-byte arrays (0x184430 dtor) each reserved for 0x1fe entries (0x1f6760, Heap); name a guess"
+ },
+ "001fa230": {
+  "name": "SceneRender::~SceneRender",
+  "tag": "game-inferred",
+  "was": "FUN_001fa230",
+  "why": "deleting dtor of StageScene +0x2c: frees its two tex areas, resets the draw settings to the parent scene's"
+ },
+ "001fa4a0": {
+  "name": "SceneRender::SceneRender",
+  "tag": "game-inferred",
+  "was": "FUN_001fa4a0",
+  "why": "StageScene ctor new(0xe70) for +0x2c: tex areas, an AreaGrid, a 0x5a10 table; its dtor restores the parent scene's +0x2c draw settings (0x2d4ee0 / 0x2d4ed0 / 0x2d4ec0); name a guess"
  },
  "001faa30": {
   "name": "MoviePlayer::setVolume",
@@ -12149,6 +12251,30 @@
   "was": "FUN_001fea50",
   "why": "a0 the party (StageScene +0x88): of its +0 record, by mode +0xb8, +0x18 (3 / 4), +0x14 (1), else null; StageScene::drawPaused compares it with the +0x100 object's +0x3c0 character; the name is a guess"
  },
+ "001fec90": {
+  "name": "StageParty::~StageParty",
+  "tag": "game-inferred",
+  "was": "FUN_001fec90",
+  "why": "deleting dtor of StageScene +0x88: deletes its +0 (0x203be0)"
+ },
+ "001fecf0": {
+  "name": "StageParty::StageParty",
+  "tag": "game-inferred",
+  "was": "FUN_001fecf0",
+  "why": "StageScene ctor new(4) for +0x88 (StageParty): its +0 = new(0x148) 0x203d70"
+ },
+ "00207ea0": {
+  "name": "PauseMenuState::~PauseMenuState",
+  "tag": "game-inferred",
+  "was": "FUN_00207ea0",
+  "why": "deleting dtor of StageScene +0xc4: only the delete"
+ },
+ "00207ef0": {
+  "name": "PauseMenuState::PauseMenuState",
+  "tag": "game-inferred",
+  "was": "FUN_00207ef0",
+  "why": "StageScene ctor new(0x678) for +0xc4, beside pauseMenuResult 0x20acb0; plain data (no vptr); name a guess"
+ },
  "0020acb0": {
   "name": "pauseMenuResult",
   "tag": "game-inferred",
@@ -12190,6 +12316,12 @@
   "tag": "game-inferred",
   "was": "FUN_00215ef0",
   "why": "a0 an object: equal to gStageScene->player (+0x78); 76 call sites"
+ },
+ "002308a0": {
+  "name": "StageMenu::StageMenu",
+  "tag": "game-inferred",
+  "was": "FUN_002308a0",
+  "why": "StageScene ctor new(0x18) for +0xd0 with (+0xbc printer, 0): vtable 0x3164b0 at +8, a 0xaa8 object 0x20ac30 at +0xc; StageScene::getOpenMenu tests its +0 for 2; name a guess"
  },
  "00230980": {
   "name": "gfxUiPresetRgbOnly5",
@@ -12382,6 +12514,18 @@
   "tag": "game-inferred",
   "was": "FUN_002362a0",
   "why": "(const float m[4][4], const float p[4]): VU0 m * p then vclip against w; true when no clip flag of the six is set (p inside the box's unit cube); BoxGrid::find's test"
+ },
+ "0023ad10": {
+  "name": "SceneBoxList::~SceneBoxList",
+  "tag": "game-inferred",
+  "was": "FUN_0023ad10",
+  "why": "deleting dtor of StageScene +0xdc: only the delete"
+ },
+ "0023ad60": {
+  "name": "SceneBoxList::SceneBoxList",
+  "tag": "game-inferred",
+  "was": "FUN_0023ad60",
+  "why": "StageScene ctor new(0xc4) for +0xdc: count zero, then every third word zero (entries of 0xc), beside boxContainsPoint; name a guess"
  },
  "0023af30": {
   "name": "StageSelect::isValid",
@@ -12616,6 +12760,24 @@
   "tag": "game-inferred",
   "was": "FUN_0023dfa0",
   "why": "a0 = the 8-byte DateTime getLocalDateTime fills; the flags byte's high nibble is the format (1 BCD, 0 binary): nothing when it already equals a1, a1 == 0 decodes second..month and the 4-digit year from BCD and clears the nibble, else encodes them to BCD and sets it to 1; only caller getLocalDateTime"
+ },
+ "0023f0b0": {
+  "name": "UiItemList::UiItemList",
+  "tag": "game-inferred",
+  "was": "FUN_0023f0b0",
+  "why": "StageScene ctor new(0x8c) for +0xcc with (+0xbc printer, 0): vtable 0x316530 at +0x88, a 0x38 object 0x208c70 at +0, the Japanese string for undefined; name a guess"
+ },
+ "00243100": {
+  "name": "SceneUiState::~SceneUiState",
+  "tag": "game-inferred",
+  "was": "FUN_00243100",
+  "why": "deleting dtor of StageScene +0xe0: only the delete"
+ },
+ "00243150": {
+  "name": "SceneUiState::SceneUiState",
+  "tag": "game-inferred",
+  "was": "FUN_00243150",
+  "why": "StageScene ctor new(0x3cc) for +0xe0: words +0x180 / +0x304 / +0x308 zero and a table from +0x30c (0, 0, 0xf, 0, 0 per entry); name a guess"
  },
  "00243350": {
   "name": "UiTrack::draw",
@@ -14483,6 +14645,18 @@
   "was": "FUN_00263b10",
   "why": "copies the options' button map (getSaveData +0x4f4..+0x510) into the 8 ints at 0x599470: the draft the key-configuration screen edits"
  },
+ "00264000": {
+  "name": "StageAlert::~StageAlert",
+  "tag": "game-inferred",
+  "was": "FUN_00264000",
+  "why": "deleting dtor of StageScene +0xf4: deletes +0x14 through its vptr (+4, slot 2)"
+ },
+ "00264070": {
+  "name": "StageAlert::StageAlert",
+  "tag": "game-inferred",
+  "was": "FUN_00264070",
+  "why": "StageScene ctor new(0x1c) for +0xf4, the ALERT / CAUTION state machine of game/stagealert.cpp (batch 052 notes); +0x14 a StageFade-like 0x3c object (0x151600)"
+ },
  "002640e8": {
   "name": "_scfReadRomVer",
   "tag": "lib-context",
@@ -14879,11 +15053,77 @@
   "was": "FUN_00268050",
   "why": "(arg): copies GameOptions (0x50) and the play record's kind (+0x4c0), runLayoutFile(optionLayoutPath(), arg, 0, 0, 1), memcardClearStamp when options +0x4d is 0, applySound when the sound mode changed; answers 1 when the options or the kind changed"
  },
+ "002681e0": {
+  "name": "Rand48::next",
+  "tag": "game-inferred",
+  "was": "FUN_002681e0",
+  "why": "a0 the 48-bit state: an LCG step by 0x5deece66d, answers (x >> 17) % a1 (looped); StageScene::random"
+ },
+ "002682e0": {
+  "name": "Rand48::Rand48",
+  "tag": "game-inferred",
+  "was": "FUN_002682e0",
+  "why": "StageScene ctor new(8) for +0xe4: the state's first doubleword = 0x5deece66d, the drand48 multiplier"
+ },
  "00283df0": {
   "name": "seDistanceVolume",
   "tag": "game-inferred",
   "was": "FUN_00283df0",
   "why": "f12 ratio (0 beyond 1, clamped at 0), a1 the curve (SeEntry +0x29: 2 = 1 - sin(r pi/2), 1 = cos(r pi/2), else 1 - r), a2 a volume byte (SeEntry +0x28): the volume scaled by the curve; SePlayer::playPlaced / setPlacement, SoundTrack::playPlaced / setPlacement"
+ },
+ "00284190": {
+  "name": "AreaGrid::contains",
+  "tag": "game-inferred",
+  "was": "FUN_00284190",
+  "why": "a0 an AreaGrid, a1 a point: VU0 subtract of +0x210 then a cell lookup (0x284690); StageScene::getSoundAttr answers it non-zero"
+ },
+ "00284560": {
+  "name": "AreaGrid::addId",
+  "tag": "game-inferred",
+  "was": "FUN_00284560",
+  "why": "a0 an AreaGrid, a1 an int: pushed through 0x1a5d00 (the vector template in game/stagescene.cpp); StageScene::addSoundArea / addArea2"
+ },
+ "00284580": {
+  "name": "AreaGrid::~AreaGrid",
+  "tag": "game-inferred",
+  "was": "FUN_00284580",
+  "why": "deleting dtor of the four StageScene area grids: deletes each listed object (vptr slot +0x10), destroys the 0x40 pairs"
+ },
+ "00284640": {
+  "name": "AreaGrid::AreaGrid",
+  "tag": "game-inferred",
+  "was": "FUN_00284640",
+  "why": "StageScene ctor new(0x240) four times (+0xac..+0xb8): a list at +0, 0x40 pairs at +8, +0x238 = 1; contains 0x284190 tests a point against +0x210; name a guess"
+ },
+ "002870c0": {
+  "name": "StageMission::markStart",
+  "tag": "game-inferred",
+  "was": "FUN_002870c0",
+  "why": "a0 the mission: +0xac = Clock::getSeconds(gStageScene +0x60); StageScene::beginPlay's only call"
+ },
+ "00287820": {
+  "name": "StageMission::~StageMission",
+  "tag": "game-inferred",
+  "was": "FUN_00287820",
+  "why": "deleting dtor of StageScene +0xe8: clears and deletes its +0 object, delete[] +0x69c and more"
+ },
+ "00287900": {
+  "name": "StageMission::StageMission",
+  "tag": "game-inferred",
+  "was": "FUN_00287900",
+  "why": "StageScene ctor new(0x13d0) for +0xe8 (StageMission: getMission / getPurposeText); calls 0x287690 for its tables"
+ },
+ "00289b60": {
+  "name": "ScenePool::~ScenePool",
+  "tag": "game-inferred",
+  "was": "FUN_00289b60",
+  "why": "deleting dtor of StageScene +0xc0: delete[] +0x1c and +0x28, base dtor 0x289530"
+ },
+ "00289be0": {
+  "name": "ScenePool::ScenePool",
+  "tag": "game-inferred",
+  "was": "FUN_00289be0",
+  "why": "StageScene ctor new(0x2c) for +0xc0 with (4, 0x800, 0x878): base 0x2895c0, then count pointers new[] (+0x1c), sizes +0x20 / +0x24; name a guess"
  },
  "0028fa90": {
   "name": "fsmTrackHasText",
@@ -16019,6 +16259,12 @@
   "was": "FUN_002acf90",
   "why": "port +0 = a1, slot +4 = a2, +0x10 and +8 = 0, then memcardLibInit inlined (sceMcInit once)"
  },
+ "002ad070": {
+  "name": "MenuProgHolder::~MenuProgHolder",
+  "tag": "game-inferred",
+  "was": "FUN_002ad070",
+  "why": "deleting dtor of StageScene +0xa4: deletes the object in its +0 record through that object's vptr +0x44 (menu programs beside PrgMcCard); name a guess"
+ },
  "002afc20": {
   "name": "getInitItemForLanguage",
   "tag": "game-inferred",
@@ -16247,6 +16493,24 @@
   "was": "FUN_002b1490",
   "why": "SoundStream's ctor, then +0x60..+0x70 zero, +0x74 0x80606060, +0x78 0x100, +0x7c 0x1bc (a text colour and position: subtitles, guess); 0x80 bytes, built by StageScene::StageScene for a sub-scene"
  },
+ "002b1620": {
+  "name": "ClearSequence::getState",
+  "tag": "game-inferred",
+  "was": "FUN_002b1620",
+  "why": "a0 StageScene +0x11c: its +0 state, or 2 while the scene fade is full in mode 2; StageScene::isCleared tests 2"
+ },
+ "002b1c50": {
+  "name": "GameOverSequence::getState",
+  "tag": "game-inferred",
+  "was": "FUN_002b1c50",
+  "why": "a0 StageScene +0x118: its +0 state, or 5 when the state is 4 or more (or +8 set) and the fade is full in mode 2; StageScene::isGameOver tests 5"
+ },
+ "002b2280": {
+  "name": "SceneDirector::~SceneDirector",
+  "tag": "game-inferred",
+  "was": "FUN_002b2280",
+  "why": "deleting dtor of StageScene +0x120 (also StageScene::update): only the delete; name a guess"
+ },
  "002b5740": {
   "name": "menuSceneThread",
   "tag": "game-inferred",
@@ -16259,11 +16523,29 @@
   "was": "FUN_002b9d60",
   "why": "create case 0x1d (prgMcCard, 0x94 bytes); unread"
  },
+ "002bb3e0": {
+  "name": "MenuProgSet::~MenuProgSet",
+  "tag": "game-inferred",
+  "was": "FUN_002bb3e0",
+  "why": "deleting dtor of StageScene +0xa8: deletes the objects at +4.. through their vptr +0x44 (beside PrgMcCard 0x2b9d60); name a guess"
+ },
  "002bc5d0": {
   "name": "KeepList::removeUnkept",
   "tag": "game-inferred",
   "was": "FUN_002bc5d0",
   "why": "list {+4 head, +8 tail} of nodes {next, flags}: unlinks and deletes every node whose flags bit 0 is clear; stageThread on the scene +0x30 before each menu"
+ },
+ "002bc6f0": {
+  "name": "KeepList::~KeepList",
+  "tag": "game-inferred",
+  "was": "FUN_002bc6f0",
+  "why": "deleting dtor of StageScene +0x30: unlinks and deletes every node from +4, tail +8 zero"
+ },
+ "002bc770": {
+  "name": "KeepList::KeepList",
+  "tag": "game-inferred",
+  "was": "FUN_002bc770",
+  "why": "StageScene ctor new(0xc) for +0x30 (KeepList, removeUnkept 0x2bc5d0): three words zero"
  },
  "002bcf10": {
   "name": "PackTables::parse",
@@ -16301,11 +16583,35 @@
   "was": "FUN_002c4140",
   "why": "answers the sbss pointer 0x31aea0: the sound-effect player whose +0 is the effect table (count +0xc, sorted name index +0x428 / +0x42c, entries 0x30 each at +0x430) that UiLayout::playSound looks up by name and hands to SePlayer::play / stop"
  },
+ "002ce5a0": {
+  "name": "SceneBufferSet::~SceneBufferSet",
+  "tag": "game-inferred",
+  "was": "FUN_002ce5a0",
+  "why": "deleting dtor of StageScene +0x9c: deletes the eight blocks at +0x18..; name a guess"
+ },
+ "002cf510": {
+  "name": "resetStageGroupTable",
+  "tag": "game-inferred",
+  "was": "FUN_002cf510",
+  "why": "called by a stage's StageScene ctor: 44 groups at 0x599830 (a byte each, zero) / 0x599860 (32 words each, one); other users 0x2cedc8 / 0x2cf3d4 unread; name a guess"
+ },
+ "002cff30": {
+  "name": "SceneModel::~SceneModel",
+  "tag": "game-inferred",
+  "was": "FUN_002cff30",
+  "why": "StageScene dtor calls it on (+0x12c object) + 0x24 with flag -1 (in place): destroys its +0x18 (0x2052d0); name a guess"
+ },
  "002d0a10": {
   "name": "sldiDecompress",
   "tag": "game-inferred",
   "was": "FUN_002d0a10",
   "why": "(src, dst): SLDI magic (0x30f9d8), unpacked size +0xc, LZ copies / literal runs from +0x10; answers the size, -1 on a bad magic or length; PackJob::load decompresses a pack into its buffer"
+ },
+ "002d4110": {
+  "name": "WideFontPrinter::WideFontPrinter",
+  "tag": "game-inferred",
+  "was": "FUN_002d4110",
+  "why": "FontPrinter ctor then vtable 0x319ff0 (the wide-text printer, fontdata.h), spacing +0x38 = 0x20, +0x3c = 0; StageScene +0xbc new(0x40) with 0x700, 0x700"
  },
  "002d4150": {
   "name": "wstrcmp",
@@ -16337,11 +16643,29 @@
   "was": "FUN_002d4650",
   "why": "(s): 16-bit characters up to the 0; 0 for null or an odd address; beside the char version 0x2d4440"
  },
+ "002d7c00": {
+  "name": "drawSysPop",
+  "tag": "game-inferred",
+  "was": "FUN_002d7c00",
+  "why": "a sub-scene's StageScene dtor: deletes the current draw-system record and restores the one drawSysPush saved"
+ },
+ "002d7c70": {
+  "name": "drawSysPush",
+  "tag": "game-inferred",
+  "was": "FUN_002d7c70",
+  "why": "a sub-scene's StageScene ctor: saves the draw-system record gp-0x7994 in gp-0x7990 and makes a new 0x14 one (a vector reserved 200, 0x241da0) copying the old +0xc / +0x10; beside drawSysInit"
+ },
  "002d7cf0": {
   "name": "drawSysInit",
   "tag": "game-inferred",
   "was": "FUN_002d7cf0",
   "why": "(originX, originY, width, height, GsRegionAlloc *): called once, last in gfxInitRenderTargets with (0x700, 0x700, 0x200, 0x200) and the region allocator; news about nine draw-system objects (vtables 0x31a6b0 / 0x31a680, lists of 200 via 0x241da0), floats 2048 / 512 / 2^24; what the system draws is unread, the name says only where it starts"
+ },
+ "002dcab0": {
+  "name": "DrawLayerList::~DrawLayerList",
+  "tag": "game-inferred",
+  "was": "FUN_002dcab0",
+  "why": "deleting dtor of StageScene +0x58: deletes every object of the pointer array +0x30 (count +0x2c) through vptr slot 2; beside drawSysInit; name a guess"
  },
  "002e1440": {
   "name": "GsRegionAlloc::~GsRegionAlloc",
