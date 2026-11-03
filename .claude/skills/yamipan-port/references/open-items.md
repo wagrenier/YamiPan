@@ -154,6 +154,26 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    TU must relocate into host-sized side tables (or keep offsets and resolve on access), the
    in-place relocate cannot widen them. Next in the run: the sequence classes 0x246230..0x249550
    (`UiSequence::draw` / `advance`, the frontier's next callees), then the S2D file and the drawer.
+   TU 16 (the frontier's `unassigned@00246230`, 393 functions 0x246230..0x2640e8): **`game/
+   uisequence.cpp` 0x246230..0x249550** cut out (29 functions, batches 039-040 with 33 names, all
+   written, `verify`; architecture.md "Modules"): `UiSequence`'s actors / widgets and their merged
+   priority walk (draw, advance), `UiActor` / `UiAnim` (play, frame, apply) and the `UiWidget` /
+   `UiTrack` bases. The stand-ins left `uilayout.h` for three headers: **`game/s2ddata.h`** (the S2D
+   file: objects, actor defs, anim set entries now {actor, priority, anim, play flags},
+   `S2dWidgetDef` with host name / type pointers), **`game/uidrawer.h`** (`UiVec4`, `UiMatrix`,
+   `UiDrawer` with its fields) and **`game/uisequence.h`**; `uilayout.h` includes them.
+   `S2dAnimSetEntry_NoWait` is now `UiPlay_Stop` (the same bit stops tracks). Checked: callcheck
+   clean, layout lint OK, g++ -fsyntax-only -Wall clean on uisequence / uilayout / scene /
+   stageresult (stub SDK headers; screen / sysdata only fail on the stub libmc.h, as before).
+   Doubts for the user: all names (the keyed kind groups A / B / C, BaseColor / LayoutColor, pixel
+   mode, add pass, refresh / getStatus, getText) are read from the code; `UiDrawer::m_b4` and the
+   `UiDrawState` byte that sets it are unread; with kind 0x1c the actor's own colour is multiplied
+   in twice (kept as the ROM does it); the ROM hands a null def name to strcmp in
+   findWidgetByName (the port skips it). Next in the run: **the track classes 0x249550..0x24d200**
+   (`UiAnim::init`, the factory over 40 kinds, then each class's draw / apply / getText; the
+   frontier's `UiTrack::isDone` / `setPlay` / `step` are at 0x24d200..0x24d400 right after), then
+   the S2D file 0x24d640.. and the drawer 0x24e580.. (`UiDrawer::begin` / `end` / ctor are on the
+   frontier).
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

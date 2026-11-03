@@ -10277,6 +10277,18 @@
   "was": "FUN_0023dfa0",
   "why": "a0 = the 8-byte DateTime getLocalDateTime fills; the flags byte's high nibble is the format (1 BCD, 0 binary): nothing when it already equals a1, a1 == 0 decodes second..month and the 4-digit year from BCD and clears the nibble, else encodes them to BCD and sets it to 1; only caller getLocalDateTime"
  },
+ "00243350": {
+  "name": "UiTrack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_00243350",
+  "why": "Vt_00316560 slot 1 (+0xc), empty base; UiSequence::draw calls slot +0xc of each playing track with the drawer"
+ },
+ "00243360": {
+  "name": "UiTrack::getText",
+  "tag": "game-inferred",
+  "was": "FUN_00243360",
+  "why": "Vt_00316560 slot 3 (+0x14), base answers 0; overrides answer a pointer into the track record (0x24d420: +0x28, 0x24d4c0: +0x2c); UiAnim::getText asks each track"
+ },
  "00243390": {
   "name": "UiSubLayout::load",
   "tag": "game-inferred",
@@ -10409,17 +10421,41 @@
   "was": "FUN_00246160",
   "why": "the 0x98-byte object StageResult::begin and the overlay (gp-0x7a28) use: +4 = -1, a 0xe0-byte child (0x24fb30) at +0x20, colour scale 1.0 x4 at +0x40, the -1 pairs +0x78..+0x90"
  },
+ "00246230": {
+  "name": "UiSequence::findAnimByName",
+  "tag": "game-inferred",
+  "was": "FUN_00246230",
+  "why": "(seq, string index): S2dData::getString on seq+0x18, S2dData::findObject, then the first anim (+4 == object index) of the actors up to +0x20; only caller UiWidget::create"
+ },
+ "00246340": {
+  "name": "UiSequence::findAnim",
+  "tag": "game-inferred",
+  "was": "FUN_00246340",
+  "why": "(seq, object index): the first anim whose +4 matches among the non-null actors up to the count +0x20; widget classes and create call it"
+ },
  "00246400": {
   "name": "UiSequence::draw",
   "tag": "game-inferred",
   "was": "FUN_00246400",
   "why": "(seq, drawer): UiLayout::draw calls it per sequence in priority order between UiDrawer::begin / end (body unread)"
  },
+ "00246da0": {
+  "name": "UiWidget::draw",
+  "tag": "game-inferred",
+  "was": "FUN_00246da0",
+  "why": "Vt_00316580 slot 1 (+0xc), empty; UiSequence::draw calls slot +0xc with the drawer"
+ },
  "00246db0": {
   "name": "UiSequence::advance",
   "tag": "game-inferred",
   "was": "FUN_00246db0",
   "why": "UiLayout::advance calls it per sequence each frame (body unread)"
+ },
+ "00247060": {
+  "name": "UiWidget::advance",
+  "tag": "game-inferred",
+  "was": "FUN_00247060",
+  "why": "Vt_00316580 slot 2 (+0x10), empty; UiSequence::advance calls slot +0x10"
  },
  "00247070": {
   "name": "UiSequence::setAnimSetPlay",
@@ -10439,11 +10475,35 @@
   "was": "FUN_00247330",
   "why": "(seq, set): for each entry of an S2D anim set adds the actor (0x18 bytes, id at +8) when missing (array +0x1c cap / +0x20 count / +0x24) and its anims; runCommands ops 1 / 0xd"
  },
+ "002475f0": {
+  "name": "UiSequence::reserveWidgetSlot",
+  "tag": "game-inferred",
+  "was": "FUN_002475f0",
+  "why": "grows the widget array (+0x30, capacity +0x28) by 16 on gGlobalHeap when full and answers &array[count +0x2c]; UiWidget::create stores the new widget there and counts it"
+ },
  "002476c0": {
   "name": "UiSequence::removeWidget",
   "tag": "game-inferred",
   "was": "FUN_002476c0",
   "why": "(id, -1 all): deletes widgets (+0x28 cap / +0x2c count / +0x30, vptr at +0x1c, slot 2 the deleting dtor) by id (+8); runCommands op 10, removeSequence with -1"
+ },
+ "00247820": {
+  "name": "UiWidget::~UiWidget",
+  "tag": "game-inferred",
+  "was": "FUN_00247820",
+  "why": "Vt_00316580 slot 0: restores the base vptr at +0x1c, operator_delete when flag > 0"
+ },
+ "00247870": {
+  "name": "UiSequence::findWidgetByName",
+  "tag": "game-inferred",
+  "was": "FUN_00247870",
+  "why": "(seq, name): strcmp against each widget's def (+0x10) name (def +0) over the capacity +0x28; testGameState and create call it"
+ },
+ "00247930": {
+  "name": "UiSequence::findWidget",
+  "tag": "game-inferred",
+  "was": "FUN_00247930",
+  "why": "(seq, id): the widget whose +8 == id over the capacity +0x28, null for id < 0; create's first lookup"
  },
  "002479b0": {
   "name": "UiSequence::removeActor",
@@ -10451,11 +10511,41 @@
   "was": "FUN_002479b0",
   "why": "(id, -1 all): frees actors; removeSequence calls it with -1 before deleting a sequence, runCommands ops 0xc / 0xe per anim-set entry"
  },
+ "00247d10": {
+  "name": "UiTrack::~UiTrack",
+  "tag": "game-inferred",
+  "was": "FUN_00247d10",
+  "why": "Vt_00316560 slot 0: restores the base vptr at +0x10, operator_delete when flag > 0; the base of the 40 track classes the anim factory 0x249550 builds"
+ },
  "00247d60": {
   "name": "UiSequence::UiSequence",
   "tag": "game-inferred",
   "was": "FUN_00247d60",
   "why": "(this, data, layout, value): zeroes the 0x70-byte sequence, data at +0x18, layout at +0x68, value at +0x6c; only caller startSequence"
+ },
+ "00247db0": {
+  "name": "UiWidget::findTrack",
+  "tag": "game-inferred",
+  "was": "FUN_00247db0",
+  "why": "(widget, string index, kind): the widget's anim by name (findAnim inline: widget +0 sequence, +4 S2dData), then its first track whose record kind (track +0 -> +0) == kind"
+ },
+ "00247f20": {
+  "name": "UiWidget::findAnim",
+  "tag": "game-inferred",
+  "was": "FUN_00247f20",
+  "why": "(widget, string index): getString / findObject on widget+4, UiSequence::findAnim inline on widget+0; widget classes and create call it"
+ },
+ "00248030": {
+  "name": "UiWidget::setDef",
+  "tag": "game-inferred",
+  "was": "FUN_00248030",
+  "why": "(widget, def): id +8 and priority +0xc from the def's +8 / +0xc, def at +0x10; the same stores end the base ctor"
+ },
+ "00248050": {
+  "name": "UiWidget::UiWidget",
+  "tag": "game-inferred",
+  "was": "FUN_00248050",
+  "why": "Vt_00316580 ctor (seq, layout, data, def, arg): +0 seq, +4 data, +0x14 layout, +0x18 arg, then setDef inline; create passes (seq, layout, seq+0x18, def, arg)"
  },
  "002480a0": {
   "name": "UiActor::setAnimFrame",
@@ -10469,11 +10559,53 @@
   "was": "FUN_00248410",
   "why": "(flags, which): as setAnimFrame, UiTrack::setPlay on the chosen anims' tracks"
  },
+ "00248920": {
+  "name": "UiActor::startAnim",
+  "tag": "game-inferred",
+  "was": "FUN_00248920",
+  "why": "(actor, flags, which): UiSequence::addAnimSet's per-entry play: selectors -5..-2 pick keyed anims by kind, -1 stops all (flag 0x80) or plays every unkeyed anim forward, else the anim with that object index; every track, playing or not, gets UiTrack::setPlay"
+ },
+ "00248e80": {
+  "name": "UiActor::init",
+  "tag": "game-inferred",
+  "was": "FUN_00248e80",
+  "why": "(actor, def, id, priority): clears the old anims, then one UiAnim per def entry {object, loop} (UiAnim::init 0x249550 on data->objects[object]) and sets each track's loop byte +0xc; only caller addAnimSet with data+0x24[actorId]"
+ },
+ "00249130": {
+  "name": "UiAnim::getText",
+  "tag": "game-inferred",
+  "was": "FUN_00249130",
+  "why": "the first non-null answer of the tracks' slot 3 (+0x14; base 0x243360 answers 0, overrides answer a pointer into the record, e.g. +0x28 that 0x24baa0 draws through 0x251350); create uses it"
+ },
  "002491c0": {
   "name": "UiAnim::setFrame",
   "tag": "game-inferred",
   "was": "FUN_002491c0",
   "why": "(frame): sets every playing track's frame (+8), clamped to its length or wrapped when the track loops (+0xc)"
+ },
+ "00249260": {
+  "name": "UiAnim::apply",
+  "tag": "game-inferred",
+  "was": "FUN_00249260",
+  "why": "(anim, xform, parent, color, offset, state): kind 0x1c / 0x25 reset colour 1 / offset 0 and set state +4 / +5; kinds 11 / 14 pass the offset, the others the colour to each playing track's slot 2 (+0x10); only caller UiSequence::draw"
+ },
+ "00249540": {
+  "name": "UiTrack::apply",
+  "tag": "game-inferred",
+  "was": "FUN_00249540",
+  "why": "Vt_00316560 slot 2 (+0x10), empty base; UiAnim::apply calls it"
+ },
+ "00249550": {
+  "name": "UiAnim::init",
+  "tag": "game-inferred",
+  "was": "FUN_00249550",
+  "why": "(anim, data, object, object index): clears the old tracks (virtual deleting dtors, heap free), keeps object at +0 and its index at +4, allocates trackCount (object +0) slots and builds one track per record (object +8 + i*4) by the record's kind (switch: 0x14-byte Vt_00316560 subclasses, 40 vtables 0x316540..0x316a60); only caller UiActor::init"
+ },
+ "0024d200": {
+  "name": "UiTrack::step",
+  "tag": "game-inferred",
+  "was": "FUN_0024d200",
+  "why": "keyed kinds 9..14 only: frame +8 +1 (state 1) or -1 (state 2), wrapped by the loop byte +0xc or clamped to -1..length (record +4); UiSequence::advance calls it per track"
  },
  "0024d2c0": {
   "name": "UiTrack::isDone",
@@ -10486,6 +10618,24 @@
   "tag": "game-inferred",
   "was": "FUN_0024d360",
   "why": "(flags): 0x80 stop, 1 / 2 / 4 play states 1 / 2 / 3, 8 frame 0, 0x10 last frame"
+ },
+ "0024d400": {
+  "name": "UiWidget::refresh",
+  "tag": "game-inferred",
+  "was": "FUN_0024d400",
+  "why": "Vt_00316580 slot 3 (+0x14), empty base; UiWidget::create calls it on an existing widget with (arg changed) after storing the new arg at +0x18; 0x25b8e0 rebuilds its resources"
+ },
+ "0024d410": {
+  "name": "UiWidget::getStatus",
+  "tag": "game-inferred",
+  "was": "FUN_0024d410",
+  "why": "Vt_00316580 slot 4 (+0x18), base answers 0; 0x25bae0 answers 1 while its +0x20 object exists, else -1"
+ },
+ "0024d640": {
+  "name": "S2dData::findObject",
+  "tag": "game-inferred",
+  "was": "FUN_0024d640",
+  "why": "(data, name): the index of the object (+0x1c table, count +0x18) whose name (+4) strcmps equal, -1 none"
  },
  "0024d770": {
   "name": "S2dData::findVar",
@@ -10511,11 +10661,53 @@
   "was": "FUN_0024df60",
   "why": "(index): the S2D file's string table (+0x40 count, +0x44 pointers), null out of range"
  },
+ "0024e580": {
+  "name": "UiMatrix::translate",
+  "tag": "game-inferred",
+  "was": "FUN_0024e580",
+  "why": "adds a float pair to the 2D affine matrix's tx (+8) and ty (+0x14)"
+ },
+ "0024e6d0": {
+  "name": "UiMatrix::copy",
+  "tag": "game-inferred",
+  "was": "FUN_0024e6d0",
+  "why": "copies the six floats of a 2D affine matrix (a b tx / c d ty)"
+ },
+ "0024e710": {
+  "name": "UiMatrix::concat",
+  "tag": "game-inferred",
+  "was": "FUN_0024e710",
+  "why": "(this, m): this = m * this for 2D affine matrices (rows a b tx / c d ty)"
+ },
+ "0024e880": {
+  "name": "UiMatrix::identity",
+  "tag": "game-inferred",
+  "was": "FUN_0024e880",
+  "why": "1 0 0 / 0 1 0"
+ },
  "0024e990": {
   "name": "UiDrawer::setMode",
   "tag": "game-inferred",
   "was": "FUN_0024e990",
   "why": "(mode): sets +0xc0 and refreshes when it changes, answers the old one; UiLayout::draw passes its +0x30 flag"
+ },
+ "0024e9d0": {
+  "name": "UiDrawer::setPixelMode",
+  "tag": "game-inferred",
+  "was": "FUN_0024e9d0",
+  "why": "(drawer, on): byte +0xdc, recomputes the matrix (0x24ea30) on change, answers the old one; with it set an unrotated matrix only gets the drawer translation, not the screen matrix's scale"
+ },
+ "0024ea10": {
+  "name": "UiDrawer::setTranslate",
+  "tag": "game-inferred",
+  "was": "FUN_0024ea10",
+  "why": "(drawer, float[2]): +0xb8 / +0xbc, then updateMatrix"
+ },
+ "0024ea30": {
+  "name": "UiDrawer::updateMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_0024ea30",
+  "why": "builds +0xc4 from the stack top (+0x1c + top +0x7c * 0x18), the screen matrix of mode +0xc0 (0x2fac90 / 0x2facc0) and the translation +0xb8 per pixel mode +0xdc"
  },
  "0024f9e0": {
   "name": "UiDrawer::end",
@@ -10540,6 +10732,12 @@
   "tag": "game-inferred",
   "was": "FUN_0024fb30",
   "why": "the 0xe0-byte draw helper UiLayout's constructor news at +0x20: four 0x18-byte states, colour 1, mode reset"
+ },
+ "0024fc20": {
+  "name": "UiDrawer::setAddPass",
+  "tag": "game-inferred",
+  "was": "FUN_0024fc20",
+  "why": "(drawer, on): byte +0xa8; on saves +0x90 / +0x94 and sets blend 2 (0x24ffa0), off restores them; answers the old byte; UiSequence::draw redraws an actor with it when its offset colour is not zero"
  },
  "0025e260": {
   "name": "UiWidget::create",

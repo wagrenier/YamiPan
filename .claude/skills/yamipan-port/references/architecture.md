@@ -623,8 +623,8 @@ file and class names the port's)**: the **2D layout player**. A `UiLayout` (EE 0
 **S2D file** (magic `"S2D\0"`, the `.d2b` files and pack items; `S2dData::relocate` 0x24d820 turns
 its offsets into pointers in place once, flag at +8): +0xc start sequence, +0x10 / +0x14 the
 **variables** (0x20: name[0x10], value, min, max, wrap), +0x18 / +0x1c objects, +0x2c **anim sets**
-(count, then 0x10-byte entries {actor id, -, anim (-1 = only names the actor), flags 0x80 =
-do not wait}), +0x34 **widget defs** (0x30, id at +8), +0x3c **sequence defs** {priority, command
+(count, then 0x10-byte entries {actor id, priority, anim, play flags}: next entry), +0x34
+**widget defs** (0x30, id at +8), +0x3c **sequence defs** {priority, command
 count, -, commands}, +0x40 / +0x44 the **string table**. A sequence runs a **script of 0x24-byte
 commands** {trigger 0 frame / 1 start / 2 stop, op, skip count, condition {kind, flags (bit 0 all
 keys, bit 1 negate, 0xf00 compare op 0 == / 0x100 > / 0x200 >= / 0x300 < / 0x400 <= / 0x500 &),
@@ -643,13 +643,40 @@ file hooks, states 1 queued / 2 loading / 3 done / 0x80 not found / 0x81 no memo
 `@name` inside a stage (`inStage` 0x262e60), the stage pack's item at once (`getStagePackData`
 0x262df0); it updates and draws on top, its result goes to +4 when it closes. Sounds: four slots,
 names +0x64, 64-bit handles +0x78 (`playSound` 0x25ff40: the stage's StageSound by name in a stage,
-else the menu bank; **`stopSound(-1)` does nothing**: its all-slots branch is dead). Still in
-unassigned@0023e740: the sequence / actor / anim / track classes 0x246230..~0x249550
-(`UiSequence` 0x70: +0x1c / +0x20 / +0x24 actors cap / count / array, +0x28.. widgets, +0x6c the
-script-readable value), the widget factory 0x249550 with its ~40 widget classes (vtables
-0x316540..0x316a60, vptr +0x10) and the 0x316a90.. family (vptr +0x1c, `UiWidget::create`
-0x25e260), the S2D file 0x24d2c0.., `UiDrawer` 0x24e..0x250..., the game hooks 0x25ff40..0x2640e8
-(sounds, game values / state names 0x599490).
+else the menu bank; **`stopSound(-1)` does nothing**: its all-slots branch is dead). The sequence
+side is `game/uisequence.cpp` (next entry); still in unassigned@00246230: the **track factory
+`UiAnim::init` 0x249550** with its 40 track classes (vtables 0x316540..0x316a60, vptr +0x10), the
+S2D file 0x24d2c0.., `UiDrawer` 0x24e580..0x250c30, the widget classes 0x25b..0x25e (vptr +0x1c,
+`UiWidget::create` 0x25e260, its type table 0x2facf0: 0x2a names) and the game hooks
+0x25ff40..0x2640e8 (sounds, game values / state names 0x599490).
+
+**`game/uisequence.cpp` 0x246230..0x249550 (TU 16, 2026-11-03, batches 039-040, all 29 written,
+`verify`; names the port's)**: a layout's **running sequence** and what it plays. S2D side
+(`game/s2ddata.h`): **objects** (+0x18 / +0x1c: {track count, name, track record pointers}; a record
+starts {kind, length}), **actor defs** (+0x24: {count, -, entries {object, loop}}), **anim set
+entries** {actor id, **priority**, anim, **play flags**} (the flags are `UiTrack::setPlay`'s: 1
+forward / 2 backward / 4 pause / 8 rewind / 0x10 to the end / **0x80 stop**; an entry with anim -1
+and 0x80 removes the actor, and AnimSetDone does not wait on 0x80 entries), widget defs {name,
+type name, id, priority, params}. Runtime: `UiSequence` (0x70) holds **actors** (`UiActor` 0x18:
+data, def, id, anim count / array, priority) and **widgets** (base `UiWidget` Vt_00316580, 0x20:
+sequence, data, id, priority, def, layout, arg, vptr +0x1c; slots dtor / draw / advance /
+refresh(arg changed) / getStatus); an actor plays one **`UiAnim`** (0x10: object, object index,
+tracks) per def entry; an anim's **tracks** (`UiTrack` Vt_00316560, 0x14: record, play state 0
+stopped / 1 fwd / 2 back / 3 paused, frame, loop byte, vptr +0x10; slots dtor / draw(drawer) /
+apply(xform, parent, colour, state) / getText). **Keyed kinds 9..14** have a frame length (the
+only ones `UiTrack::step` 0x24d200 moves and `isDone` waits on); selectors in anim set entries /
+script ops: an object index, or -2 every keyed anim, -3 kinds 9/12, -4 10/13, -5 11/14 (kinds
+11/14 apply to the **offset colour**), -1 (startAnim: every unkeyed anim forward, or all stopped).
+**Draw** (`UiSequence::draw` 0x246400): actors and widgets sorted by priority and **merged**
+(before each actor the widgets at or below its priority); per actor, from identity matrices
+(seq +0x38 / +0x50, 2D affine 6 floats, `UiMatrix` 0x24e580..0x24e8a0), colour 1 and offset 0,
+each anim applies itself (kind **0x1c** resets them and makes them the base of the next actors,
+kind **0x25** makes them the layout's +0x40 / +0x50); the colour is multiplied by base and layout
+colour, the offset added; the drawer gets matrix (stack +0x1c, top +0x7c; `updateMatrix` 0x24ea30
+applies the screen matrix of mode +0xc0 from 0x2fac90 / 0x2facc0 unless **pixel mode** +0xdc
+and no rotation), colour +0x80, flag +0xb4, then each playing track draws; a **non-zero offset
+colour redraws the actor in the additive pass** (`setAddPass` 0x24fc20: blend 2, colour +0x98).
+**Advance** 0x246db0: the same merged walk (widgets sorted only), tracks stepped, widgets advanced.
 
 ## Classes
 

@@ -319,6 +319,25 @@
    "status": "verify",
    "why": "UiLayout and its sub-layout base UiSubLayout: every function from UiSubLayout::load 0x243390 to UiLayout::UiLayout 0x246160 works on the layout object (0x98 bytes); 0x246230.. work on UiSequence (+0x18 data, +0x20/+0x24 actors), 0x243350..0x243390 are unreferenced one-liners of the file before. File name the port's (no source string)."
   },
+  "game/uisequence.cpp": {
+   "notes": "Cut from unassigned@00246230 as game/uisequence.cpp 0x246230..0x249550; batches 039-040 named these 29 and the callees they need (UiMatrix 0x24e580..0x24e8a0, UiDrawer setPixelMode / setTranslate / updateMatrix / setAddPass, S2dData::findObject, UiTrack::step / draw / getText, UiWidget::refresh / getStatus, UiAnim::init 0x249550 the track factory). Stand-ins moved out of uilayout.h into game/s2ddata.h (S2D file: objects, actor defs, anim set entries {actor, priority, anim, play flags}, widget defs with host name / type pointers), game/uidrawer.h (UiVec4, UiMatrix, UiDrawer fields) and game/uisequence.h (UiTrack, UiAnim, UiActor, UiWidget, UiSequence); uilayout.h includes them. S2dAnimSetEntry_NoWait became UiPlay_Stop. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall clean on uisequence / uilayout / scene / stageresult with stub SDK headers. Doubts: all names read from the code (keyed kind groups A/B/C, BaseColor 0x1c / LayoutColor 0x25, pixel mode, add pass, refresh, getStatus, getText); UiDrawer +0xb4 and the UiDrawState byte setting it unread; kind 0x1c multiplies the actor colour in twice (kept); findWidgetByName skips a null def name on the host (the ROM passes it to strcmp). Next: the track classes 0x249550..0x24d200 (UiAnim::init factory over 40 kinds, each class draw / apply / getText), then UiTrack::isDone / setPlay / step 0x24d200..0x24d400, the S2D file 0x24d640.. and the drawer 0x24e580... Ghidra saved by name_ctx.",
+   "ranges": [
+    [
+     "00246230",
+     "00249550"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 02:22",
+     "status": "verify",
+     "summary": "reconstruct 29 functions (verify)"
+    }
+   ],
+   "status": "verify",
+   "why": "Cut from unassigned@00246230 (the rest of unassigned@0023e740): the UiSequence / UiActor / UiAnim / UiWidget-base code between game/uilayout.cpp (ends 0x246230) and the anim factory 0x249550 that starts the track classes (Vt_00316560 subclasses 0x24a720..). No source string; the file name is the port's."
+  },
   "rx/filecd.c": {
    "ranges": [
     [
@@ -538,6 +557,7 @@
   "unassigned@00171300": {},
   "unassigned@0023c020": {},
   "unassigned@0023e740": {},
+  "unassigned@00246230": {},
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
   "unassigned@002acff0": {}
