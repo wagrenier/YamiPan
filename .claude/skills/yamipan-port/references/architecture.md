@@ -850,7 +850,7 @@ table 0x599490 (count 0x31abe8) that the TU's static initializer **0x310b60** fi
 pointers 0x31aae8..: r16_9 (`GameOptions` +0x20 **wideScreen**), rF01..rF09 / rFDF (the player's
 floor, `StageScene::getFloor` 0x19aea0, 0 while the map hides the player), rI00..rI07 (inventory
 kinds > n), rW00 / rW01 (player +0x238 / +0x23c weapons), rDunknown / rDunlock / rDblocked / rDlock /
-rDNone (`getDoorState` 0x2626f0: stage object by name through `StageObjectList::find` 0x193ce0 on
+rDNone (`getDoorState` 0x2626f0: stage object by name through `StageObjectList::find1` 0x193ce0 on
 gStageScene +0x10, kind (vtable +0x1f4) 2, +0x2a8 4 / 3 / 1-2 / 0), rCheckPoint
 (`StageResult::hasAttemptFlag`), rHint (options +0x48 **hints**), rMapP (options +0x44 **mapMode**: 1
 always, 0 never, else player +0x234 -> +0x240 -> ** -> +0x214), rMsgUpLimit / rMsgDownLimit /
@@ -1017,6 +1017,27 @@ black. Getters: `gfxGetCurrentDisplay` 0x12e050, `gfxGetCurrentDrawEnv` 0x12e080
 0x2800, size 0xf00), deleting dtor slot 0 0x2e1440) at gp-0x7ad8, handed to **`drawSysInit`**
 0x2d7cf0(0x700, 0x700, 512, 512, alloc) (unread: about nine draw-system objects). Release deletes the
 region allocator and the block map, never the TexArea.
+
+**`game/stageobjlist.cpp` 0x193900..0x1953f0 (TU 26, 2026-11-03, batch 058 with 45 names, all
+written, `verify`)**: the **stage's object registry** `StageObjectList` (0xdc, `gStageScene` +0x10,
+new in the stage scene ctor 0x19c180, deleted by its teardown 0x19bbe0). **Nine groups**, each a
+name map (+0x00, 0x10 each) and a list in creation order (+0x90, 8 each); +0xd8 the last character
+id. Who fills them: add0 0x177d20, add1 0x1760c0 ("Root"; doors are found here), **addCharacter**
+0x17c700 (bones head / bn_l_foot, BLOOD; numbers obj +0x208 from 1 for `findCharacterById`), add3
+0x183bf0 ("bn_pic"), **addBullet** from the bullet class 0x1803e0, add5 0x1861b0, add6 0x17ef10,
+add7 0x17ecb0, add8 0x269bd0; only groups 4 and 5 have a remove. Each group's add / find / findAll
+is its own function with the same body (`StageObjGroup` in stageobjlist.h). Lookups take (name,
+index): the index-th object of that name, **a negative or too large index answers the last one**;
+`findAny` 0x1939c0 tries the groups in order. The key a node holds is the object's own `m_name`
+(+0x20). The containers are the game's own: **`StageObjArray`** (8 bytes: data, u_short count /
+capacity; a gGlobalHeap block of capacity + 2 words, 64-aligned, items at data[1..count] and a 0
+after the last; capacity 14, grows to 2 * capacity + 2) and **`StageNameMap`** (0x10: root, first,
+last, count) of **`StageNameNode`** (0x14: array, key, left, right, insertion-order next): an
+unbalanced strcmp tree until `rebalance` 0x194010 (from the stage load 0x17fb90) runs
+`StageNameNode::balance` 0x194da0 on each root (rotates whenever the heights differ, even by one,
+until the top is within one). `StageNameNode::find` 0x194ae0 is also called directly by 0x1ba970 /
+0x1bac20 / 0x1c18b0 / 0x1d1150. The teardown deletes each listed object through its deleting dtor
+(vtable +0x10, `StageObject::destroy` on the host).
 
 ## Classes
 

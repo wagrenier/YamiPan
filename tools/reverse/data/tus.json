@@ -338,6 +338,25 @@
    ],
    "why": "The class at gStageScene +0xf4 (every caller of these 8 functions passes it; ctor 0x264070 news its 0x3c-byte member from 0x151600, the deleting dtor 0x264000): plays and stops the ALERT / CAUTION layouts on gStageScene +0x30 (0x263c10 / 0x263f10) and reads GameOptions +0x10. Between game/uigame.cpp and libscf 0x2640e8. The file name is the port's (no source string)."
   },
+  "game/stageobjlist.cpp": {
+   "notes": "Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector instances (vector of BoxColumn / BoxList dtor and clear) beside 0x1928f0..0x193770: host vector covers them, left unassigned. New src/game/stageobjlist.h: StageObjectList (EE 0xdc: nine StageNameMap at +0, nine StageObjArray at +0x90, last character id +0xd8), StageObjGroup (Characters 2 and Bullets 4 named from their adders, the rest numbered), StageObjArray (heap block of capacity + 2 words, items at data[1..count], 0 after the last; a negative or too large index answers the last), StageNameMap / StageNameNode (strcmp tree with an insertion chain; rebalance once after load). Moved StageObjectList out of gamehooks.h (which includes the new header); find renamed find1 (uigame.cpp follows); StageObject gained m_id +0x208 and a plain destroy() for the deleting dtor at vtable +0x10. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean (uigame.cpp only fails on gfxtarget.h sceGsTexEnv, absent from RosePan libgraph.h, not this TU), and a host harness of 600 objects in 9 groups vs brute force passed (lookups, ids, removals, rebalance order and count, teardown frees every block). Doubts: file, container and group names are read from the code; groups 0, 1, 3, 5..8 unnamed until their classes are read; the ROM rotates on a height difference of one too (kept). Next in the run: StageSound playNamed 0x1d6a80 / stopNamed 0x1d6a90, StageScene getFloor 0x19aea0, the stage scene ctor 0x19c180 / teardown 0x19bbe0 / load 0x17fb90, the class 0x230820..0x230980, the pak parser 0x231410..0x231bb0.",
+   "ranges": [
+    [
+     "00193900",
+     "001953f0"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 07:18",
+     "status": "verify",
+     "summary": "the stage object registry: nine groups of name map and list, its tree and array containers; all 45 written (batch 058)"
+    }
+   ],
+   "status": "verify",
+   "why": "Cut out of unassigned@00171300: the stage's name-keyed object registry (gStageScene +0x10, new 0xdc in 0x19c180): nine groups of a name map (AVL tree of StageNameNode by strcmp) and an object list, with their two containers. Bounded below by the BoxGrid vector instances (0x1928f0..0x1938f8) and above by game logic at 0x1953f0 (player state test, no registry use)."
+  },
   "game/stageresult.cpp": {
    "notes": "All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (addContinue), getPerfectBits one bit per zero counter, clocks at +0x94/+0xa4 {state, value, step, target}, mode +0xbc (0 none, 1 count-up, 2 countdown 7500 with SYS_COUNT1/2 cues), layout +0xb8 from getLangPackItem(4/5). runStartupSequence renamed loadGamePack: it parses packgameEU.pak into PackTables (0x2bcf10, columns label/ctype/SEtype) and frees it, no screens. StageResult moved from gamehooks.h to stageresult.h; sysdata.cpp now reads clock.value/clock2.value/mode; SaveData::_000 is playTime (StageResult::tick counts it). New stand-ins in gamehooks.h: PackFile, PackTables, UiLayout, StageSound, StageScene/gStageScene (gp-0x7a7c, data the build must define), getInitPackItem/getLangPackItem. Guesses: the file name; 0x2afc20/0x2afcd0 joined by position; counters 1..3, attempt/stage blocks, clock state bits 0x14 and PackTables element types read from shapes only. Not compiled (no toolchain here); callcheck clean, layout lint OK. Next in the run: 0x2acff0..0x2afc20 (drawing cluster around 0x2adc70).",
    "ranges": [

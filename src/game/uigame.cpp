@@ -1237,7 +1237,7 @@ int getDoorState(const char *name)
 {
     if (gStageScene == nullptr)
         return (signed char)name[10] % 5;
-    StageObject *door = gStageScene->objects->find(name, 0);
+    StageObject *door = gStageScene->objects->find1(name, 0);
     if (door == nullptr)
         return UiDoor_None;
     if (door->getKind() != StageObject_Door)

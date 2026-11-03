@@ -10205,11 +10205,275 @@
   "was": "FUN_0017f150",
   "why": "answers sbss 0x31adfc: a struct whose +0 is the stage's FileLoader (getStagePackData calls its getData, vtable +0x1c, on it); next to the stage loop 0x17f160"
  },
+ "00193900": {
+  "name": "StageObjectList::findAll7",
+  "tag": "game-inferred",
+  "was": "FUN_00193900",
+  "why": "(name): the name node of map 7 (+0x70) through StageNameNode::find; answers its StageObjArray (every group-7 object called name), null none"
+ },
+ "00193930": {
+  "name": "StageObjectList::findAll6",
+  "tag": "game-inferred",
+  "was": "FUN_00193930",
+  "why": "(name): the name node of map 6 (+0x60); answers its StageObjArray, null none"
+ },
+ "00193960": {
+  "name": "StageObjectList::findAll5",
+  "tag": "game-inferred",
+  "was": "FUN_00193960",
+  "why": "(name): the name node of map 5 (+0x50); answers its StageObjArray, null none (20 callers in stage code)"
+ },
+ "00193990": {
+  "name": "StageObjectList::findAll3",
+  "tag": "game-inferred",
+  "was": "FUN_00193990",
+  "why": "(name): the name node of map 3 (+0x30); answers its StageObjArray, null none"
+ },
+ "001939c0": {
+  "name": "StageObjectList::findAny",
+  "tag": "game-inferred",
+  "was": "FUN_001939c0",
+  "why": "(name, index): the indexed lookup of find0..find8 over the nine name maps (+0, stride 0x10) in group order; the first object found, null none"
+ },
+ "00193aa0": {
+  "name": "StageObjectList::find8",
+  "tag": "game-inferred",
+  "was": "FUN_00193aa0",
+  "why": "(name, index): map 8 (+0x80): the index-th object called name (negative or past the end: the last), null none; registered by add8"
+ },
+ "00193b30": {
+  "name": "StageObjectList::find7",
+  "tag": "game-inferred",
+  "was": "FUN_00193b30",
+  "why": "(name, index): map 7 (+0x70), the indexed lookup (negative or past the end: the last)"
+ },
+ "00193bc0": {
+  "name": "StageObjectList::find6",
+  "tag": "game-inferred",
+  "was": "FUN_00193bc0",
+  "why": "(name, index): map 6 (+0x60), the indexed lookup (negative or past the end: the last)"
+ },
+ "00193c50": {
+  "name": "StageObjectList::find5",
+  "tag": "game-inferred",
+  "was": "FUN_00193c50",
+  "why": "(name, index): map 5 (+0x50), the indexed lookup (negative or past the end: the last)"
+ },
  "00193ce0": {
-  "name": "StageObjectList::find",
+  "name": "StageObjectList::find1",
   "tag": "game-inferred",
   "was": "FUN_00193ce0",
-  "why": "a0 gStageScene +0x10, a1 a name, a2 0: answers the stage object of that name (getDoorState then reads its kind, vtable +0x1f4, and +0x2a8)"
+  "why": "was StageObjectList::find: one of nine per-group lookups of the same shape; this one reads map 1 (+0x10), the group add1 0x194430 fills (doors are in it: getDoorState)"
+ },
+ "00193d70": {
+  "name": "StageObjectList::findCharacterById",
+  "tag": "game-inferred",
+  "was": "FUN_00193d70",
+  "why": "(int id): walks list 2 (+0xa0) for the object whose +0x208 equals id; addCharacter 0x1944d0 numbers group 2 from +0xd8"
+ },
+ "00193dd0": {
+  "name": "StageObjectList::findCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_00193dd0",
+  "why": "(name, index): map 2 (+0x20), the indexed lookup; group 2 is filled by addCharacter from 0x17c700, whose setup reads bones head / bn_l_foot / bn_r_foot and the BLOOD effects (characters); 38 callers"
+ },
+ "00193e60": {
+  "name": "StageObjectList::find0",
+  "tag": "game-inferred",
+  "was": "FUN_00193e60",
+  "why": "(name, index): map 0 (+0), the indexed lookup (negative or past the end: the last)"
+ },
+ "00193ef0": {
+  "name": "StageObjectList::removeBullet",
+  "tag": "game-inferred",
+  "was": "FUN_00193ef0",
+  "why": "(obj): erases obj from its name array in map 4 (+0x40) and from list 4 (+0xb0); group 4 is filled by addBullet from 0x1803e0 (string bullet); the name node stays; callers 0x180260 / 0x180670 (the bullet class)"
+ },
+ "00193f80": {
+  "name": "StageObjectList::remove5",
+  "tag": "game-inferred",
+  "was": "FUN_00193f80",
+  "why": "(obj): erases obj from its name array in map 5 (+0x50) and from list 5 (+0xb8); the name node stays"
+ },
+ "00194010": {
+  "name": "StageObjectList::rebalance",
+  "tag": "game-inferred",
+  "was": "FUN_00194010",
+  "why": "(): StageNameNode::balance on the root of each of the nine name maps (stride 0x10); called once from 0x17fb90 (the stage load)"
+ },
+ "00194070": {
+  "name": "StageObjectList::add8",
+  "tag": "game-inferred",
+  "was": "FUN_00194070",
+  "why": "(obj): files obj under its name (+0x20) in map 8 (+0x80, a new StageObjArray for a new name) and appends it to list 8 (+0xd0); caller 0x269bd0"
+ },
+ "00194110": {
+  "name": "StageObjectList::add7",
+  "tag": "game-inferred",
+  "was": "FUN_00194110",
+  "why": "(obj): map 7 (+0x70) and list 7 (+0xc8), as add8; caller 0x17ecb0"
+ },
+ "001941b0": {
+  "name": "StageObjectList::add6",
+  "tag": "game-inferred",
+  "was": "FUN_001941b0",
+  "why": "(obj): map 6 (+0x60) and list 6 (+0xc0), as add8; caller 0x17ef10"
+ },
+ "00194250": {
+  "name": "StageObjectList::add5",
+  "tag": "game-inferred",
+  "was": "FUN_00194250",
+  "why": "(obj): map 5 (+0x50) and list 5 (+0xb8), as add8; caller 0x1861b0"
+ },
+ "001942f0": {
+  "name": "StageObjectList::addBullet",
+  "tag": "game-inferred",
+  "was": "FUN_001942f0",
+  "why": "(obj): map 4 (+0x40) and list 4 (+0xb0), as add8; caller 0x1803e0, the bullet class's ctor (string bullet)"
+ },
+ "00194390": {
+  "name": "StageObjectList::add3",
+  "tag": "game-inferred",
+  "was": "FUN_00194390",
+  "why": "(obj): map 3 (+0x30) and list 3 (+0xa8), as add8; caller 0x183bf0 (string bn_pic)"
+ },
+ "00194430": {
+  "name": "StageObjectList::add1",
+  "tag": "game-inferred",
+  "was": "FUN_00194430",
+  "why": "(obj): map 1 (+0x10) and list 1 (+0x98), as add8; caller 0x1760c0 (string Root)"
+ },
+ "001944d0": {
+  "name": "StageObjectList::addCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_001944d0",
+  "why": "(obj): map 2 (+0x20) and list 2 (+0xa0), as add8, then numbers obj: ++(+0xd8) into obj +0x208 (findCharacterById); caller 0x17c700, the character set-up"
+ },
+ "00194590": {
+  "name": "StageObjectList::add0",
+  "tag": "game-inferred",
+  "was": "FUN_00194590",
+  "why": "(obj): map 0 (+0) and list 0 (+0x90), as add8; caller 0x177d20"
+ },
+ "00194630": {
+  "name": "StageObjectList::~StageObjectList",
+  "tag": "game-inferred",
+  "was": "FUN_00194630",
+  "why": "(this, short flag): per group deletes every name node's StageObjArray, then each listed object through its deleting dtor (vtable +0x10), __destroy_arr on the nine lists (0x1947a0) and maps (0x194930); caller 0x19bbe0 (the stage scene's teardown)"
+ },
+ "001947a0": {
+  "name": "StageObjArray::dtorForArray",
+  "tag": "game-inferred",
+  "was": "FUN_001947a0",
+  "why": "(this, short flag): a second copy of the StageObjArray deleting dtor (0x1948a0 then delete), the one ~StageObjectList hands __destroy_arr"
+ },
+ "00194800": {
+  "name": "StageObjectList::StageObjectList",
+  "tag": "game-inferred",
+  "was": "FUN_00194800",
+  "why": "(): __construct_array of nine StageNameMap (0x194910, 0x10) and nine StageObjArray (0x194870, 8), +0xd8 = 0; caller 0x19c180 (the stage scene ctor: new 0xdc into scene +0x10)"
+ },
+ "00194870": {
+  "name": "StageObjArray::ctorForArray",
+  "tag": "game-inferred",
+  "was": "FUN_00194870",
+  "why": "(this): calls StageObjArray::StageObjArray 0x1950a0; the copy StageObjectList's ctor hands __construct_array"
+ },
+ "001948a0": {
+  "name": "StageObjArray::~StageObjArray",
+  "tag": "game-inferred",
+  "was": "FUN_001948a0",
+  "why": "(this, short flag): clear (0x195080), Heap::free(gGlobalHeap, data), delete when flag > 0"
+ },
+ "00194910": {
+  "name": "StageNameMap::StageNameMap",
+  "tag": "game-inferred",
+  "was": "FUN_00194910",
+  "why": "(this): zeroes root, first, last, count (0x10 bytes)"
+ },
+ "00194930": {
+  "name": "StageNameMap::~StageNameMap",
+  "tag": "game-inferred",
+  "was": "FUN_00194930",
+  "why": "(this, short flag): deletes every node along the insertion list (+4 first, node +0x10 next), zeroes root / first / last (not count)"
+ },
+ "001949c0": {
+  "name": "StageNameMap::insert",
+  "tag": "game-inferred",
+  "was": "FUN_001949c0",
+  "why": "(key, StageObjArray **value): the first node becomes root, first and last; else StageNameNode::insert 0x194b60 and the new node is linked after last; count + 1; answers the node, null for a key already there"
+ },
+ "00194a70": {
+  "name": "StageNameNode::StageNameNode",
+  "tag": "game-inferred",
+  "was": "FUN_00194a70",
+  "why": "(this, key, StageObjArray **value): value, key, left / right / next 0 (0x14-byte node)"
+ },
+ "00194a90": {
+  "name": "StageNameNode::~StageNameNode",
+  "tag": "game-inferred",
+  "was": "FUN_00194a90",
+  "why": "(this, short flag): trivial deleting dtor (delete when flag > 0)"
+ },
+ "00194ae0": {
+  "name": "StageNameNode::find",
+  "tag": "game-inferred",
+  "was": "FUN_00194ae0",
+  "why": "(node, key): binary search by strcmp (left when key sorts lower); a node without a value counts as missing; 27 callers, four of them outside the registry (0x1ba970, 0x1bac20, 0x1c18b0, 0x1d1150)"
+ },
+ "00194b60": {
+  "name": "StageNameNode::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00194b60",
+  "why": "(this, key, StageObjArray **value): recursive binary-tree insert by strcmp (one level unrolled by the compiler); answers the new leaf, null when the key is there"
+ },
+ "00194da0": {
+  "name": "StageNameNode::balance",
+  "tag": "game-inferred",
+  "was": "FUN_00194da0",
+  "why": "(node): balances the children first, then rotates toward the taller side whenever the heights differ, until the top differs by at most one; answers the new subtree root"
+ },
+ "00194ee0": {
+  "name": "StageObjArray::find",
+  "tag": "game-inferred",
+  "was": "FUN_00194ee0",
+  "why": "(StageObject **obj): the slot holding *obj (items at data[1..], a 0 after the last), null none"
+ },
+ "00194f40": {
+  "name": "StageObjArray::erase",
+  "tag": "game-inferred",
+  "was": "FUN_00194f40",
+  "why": "(slot): shifts the items after slot down one, zeroes the old last, count - 1; answers slot (now the next item), null when it was the last or the array is empty"
+ },
+ "00194fd0": {
+  "name": "StageObjArray::push",
+  "tag": "game-inferred",
+  "was": "FUN_00194fd0",
+  "why": "(StageObject **obj): grows the block to 2 * capacity + 2 when full (0x195120), stores the item at data[count + 1] and a 0 after it; answers 1"
+ },
+ "00195080": {
+  "name": "StageObjArray::clear",
+  "tag": "game-inferred",
+  "was": "FUN_00195080",
+  "why": "(this): count 0, data[1] = 0"
+ },
+ "001950a0": {
+  "name": "StageObjArray::StageObjArray",
+  "tag": "game-inferred",
+  "was": "FUN_001950a0",
+  "why": "(this): count 0, capacity 14, data = Heap::alloc(gGlobalHeap, (capacity + 2) * 4, 0x40), data[0] = data[1] = 0"
+ },
+ "00195120": {
+  "name": "StageObjArray::reserve",
+  "tag": "game-inferred",
+  "was": "FUN_00195120",
+  "why": "(u_short capacity): when larger, a new heap block of capacity + 2 words, copies count + 2 words, frees the old block"
+ },
+ "001951e0": {
+  "name": "StageNameNode::height",
+  "tag": "game-inferred",
+  "was": "FUN_001951e0",
+  "why": "(node): 1 + the taller child's height, an empty child 0 (recursive, two levels unrolled); StageNameNode::balance's measure"
  },
  "00195d50": {
   "name": "getPurposeText",

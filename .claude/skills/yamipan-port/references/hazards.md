@@ -48,6 +48,13 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   `swc1` / `lwc1` (no `cvt.w.s` before the store, no `cvt.s.w` after the load): float fields. Read
   the store / load opcode whenever a decompiled int field is converted to or from float.
 
+- **Recursive calls lose their arguments, and their call-site null tests look like part of the
+  callee** (2026-11-03, TU 26): Ghidra prints `FUN_001951e0()` with no argument inside
+  `if (node->right == 0) h = 0; else h = FUN_001951e0();`. The callee (a tree height) never tests
+  null; every caller does. Porting the call as `height(node->right)` crashed a host harness on the
+  first leaf. Keep each guard (a null-safe wrapper at the call sites), and say whose test it is.
+  A host harness over the containers found it in seconds: write one for any tree / list code.
+
 ## Names from a sister game (FF2 -> FF3; any engine shared with a symbolised build)
 
 - **Names are hints.** Wrong ones sat in every subsystem (sound, pad, file load, 2D, C++ runtime,

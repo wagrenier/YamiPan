@@ -317,7 +317,7 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    `testGameState` (41 named states: architecture.md "Modules"), `findSprite`, `scanItems` /
    `scanWeapons`, `getDoorState`, `getStagePackData`, `getButtonMapDraft`. GameOptions +0x20 / +0x44
    / +0x48 named wideScreen / mapMode (MapMode) / hints. Stand-ins: `StageObject` (getKind is a
-   virtual, slot 123, declared plain), `StageObjectList::find`, `StageScene::getFloor`,
+   virtual, slot 123, declared plain), `StageObjectList::find` (since TU 26 `find1`), `StageScene::getFloor`,
    `StageFiles` / `getStageFiles`, `ItemDef` / `gItemDefs` (gamehooks.h), `getNaviTable`
    (progress.h), `UiScrollWidget` (uisequence.h). Doubts: rF* read as the player's floor; the
    scroll widget's class (only its position after Vt_00316ab0's methods); `gItemDefs` (bss
@@ -433,6 +433,27 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    presents (any aspect: it ignores DISPLAY DX / DY; offsetX / offsetY are there for a nudge).
    **Next picks**: the GS allocators' TU 0x142dd0..0x144080 (`TexArea`, `GsBlockMap`, TexAreaList:
    many UI callers), the region allocator 0x2e1440..0x2e1b70, `drawSysInit` 0x2d7cf0.
+   TU 26 (the frontier's `unassigned@00171300`, for boxgrid's callees 0x193780..0x1938f8 and
+   `StageObjectList::find`): boxgrid's callees are **MSL vector instances** (vector<BoxColumn> /
+   vector<BoxList> dtor / clear, out of line beside 0x1928f0..0x193770: the host `<vector>` covers
+   them; left unassigned, they belong to whichever TU 0x1918d0.. is). Cut out instead: **`game/
+   stageobjlist.cpp` 0x193900..0x1953f0** (45 functions, batch 058 with 45 names, all written,
+   `verify`; architecture.md "Modules"): the stage's object registry, nine groups of a name map
+   (the game's own strcmp tree, `StageNameMap` / `StageNameNode`, rebalanced once after loading)
+   and a list (`StageObjArray`). `StageObjectList` moved from `gamehooks.h` to the new
+   `stageobjlist.h` (gamehooks.h includes it); **`find` renamed `find1`** (group 1; uigame.cpp
+   follows); `StageObject` gained `m_id` (+0x208) and a plain `destroy()` for the deleting dtor at
+   vtable +0x10. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean
+   on stageobjlist (uigame.cpp only fails on gfxtarget.h's `sceGsTexEnv`, missing from RosePan's
+   libgraph.h: not this TU's), and a host harness (600 objects over 9 groups vs brute force:
+   indexed lookups, ids, removals keeping order, the tree ordered and its count right after
+   rebalance, teardown freeing every heap block) passed. Doubts for the user: the file name and
+   every container / group name are read from the code (no strings); groups 0, 1, 3, 5..8 keep
+   numbers until their objects' classes are read; the ROM's balance rotates on a height
+   difference of one as well (kept; still yields a valid tree). **Next picks in the run**:
+   `StageSound::playNamed` 0x1d6a80 / `stopNamed` 0x1d6a90, `StageScene::getFloor` 0x19aea0, the
+   stage scene itself (ctor 0x19c180 / teardown 0x19bbe0 / load 0x17fb90: who owns +0x10), the
+   class 0x230820..0x230980 and the pak parser 0x231410..0x231bb0.
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

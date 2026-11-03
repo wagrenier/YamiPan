@@ -3392,51 +3392,61 @@
 /* 001937f0 0000008c */ FUN_001937f0(){}
 /* 00193880 00000068 */ FUN_00193880(){}
 /* 001938f0 00000008 */ FUN_001938f0(){}
-/* 00193900 00000028 */ FUN_00193900(){}
-/* 00193930 00000028 */ FUN_00193930(){}
-/* 00193960 00000028 */ FUN_00193960(){}
-/* 00193990 00000028 */ FUN_00193990(){}
-/* 001939c0 000000d4 */ FUN_001939c0(){}
-/* 00193aa0 00000084 */ FUN_00193aa0(){}
-/* 00193b30 00000084 */ FUN_00193b30(){}
-/* 00193bc0 00000084 */ FUN_00193bc0(){}
-/* 00193c50 00000084 */ FUN_00193c50(){}
-/* 00193ce0 00000084 */ StageObjectList::find(){}  // game
-/* 00193d70 00000050 */ FUN_00193d70(){}
-/* 00193dd0 00000084 */ FUN_00193dd0(){}
-/* 00193e60 00000084 */ FUN_00193e60(){}
-/* 00193ef0 00000088 */ FUN_00193ef0(){}
-/* 00193f80 00000088 */ FUN_00193f80(){}
-/* 00194010 00000054 */ FUN_00194010(){}
-/* 00194070 000000a0 */ FUN_00194070(){}
-/* 00194110 000000a0 */ FUN_00194110(){}
-/* 001941b0 000000a0 */ FUN_001941b0(){}
-/* 00194250 000000a0 */ FUN_00194250(){}
-/* 001942f0 000000a0 */ FUN_001942f0(){}
-/* 00194390 000000a0 */ FUN_00194390(){}
-/* 00194430 000000a0 */ FUN_00194430(){}
-/* 001944d0 000000c0 */ FUN_001944d0(){}
-/* 00194590 000000a0 */ FUN_00194590(){}
-/* 00194630 00000168 */ FUN_00194630(){}
-/* 001947a0 00000054 */ FUN_001947a0(){}
-/* 00194800 00000064 */ FUN_00194800(){}
-/* 00194870 00000028 */ FUN_00194870(){}
-/* 001948a0 00000064 */ FUN_001948a0(){}
-/* 00194910 00000018 */ FUN_00194910(){}
-/* 00194930 00000084 */ FUN_00194930(){}
-/* 001949c0 000000b0 */ FUN_001949c0(){}
-/* 00194a70 00000020 */ FUN_00194a70(){}
-/* 00194a90 00000044 */ FUN_00194a90(){}
-/* 00194ae0 0000007c */ FUN_00194ae0(){}
-/* 00194b60 00000238 */ FUN_00194b60(){}
-/* 00194da0 00000138 */ FUN_00194da0(){}
-/* 00194ee0 00000050 */ FUN_00194ee0(){}
-/* 00194f40 0000008c */ FUN_00194f40(){}
-/* 00194fd0 000000a8 */ FUN_00194fd0(){}
-/* 00195080 0000001c */ FUN_00195080(){}
-/* 001950a0 00000074 */ FUN_001950a0(){}
-/* 00195120 000000bc */ FUN_00195120(){}
-/* 001951e0 00000204 */ FUN_001951e0(){}
+
+// *****************************************************************************
+// FILE -- game/stageobjlist.cpp
+// *****************************************************************************
+
+/* 00193900 00000028 */ StageObjectList::findAll7(){}  // game
+/* 00193930 00000028 */ StageObjectList::findAll6(){}  // game
+/* 00193960 00000028 */ StageObjectList::findAll5(){}  // game
+/* 00193990 00000028 */ StageObjectList::findAll3(){}  // game
+/* 001939c0 000000d4 */ StageObjectList::findAny(){}  // game
+/* 00193aa0 00000084 */ StageObjectList::find8(){}  // game
+/* 00193b30 00000084 */ StageObjectList::find7(){}  // game
+/* 00193bc0 00000084 */ StageObjectList::find6(){}  // game
+/* 00193c50 00000084 */ StageObjectList::find5(){}  // game
+/* 00193ce0 00000084 */ StageObjectList::find1(){}  // game
+/* 00193d70 00000050 */ StageObjectList::findCharacterById(){}  // game
+/* 00193dd0 00000084 */ StageObjectList::findCharacter(){}  // game
+/* 00193e60 00000084 */ StageObjectList::find0(){}  // game
+/* 00193ef0 00000088 */ StageObjectList::removeBullet(){}  // game
+/* 00193f80 00000088 */ StageObjectList::remove5(){}  // game
+/* 00194010 00000054 */ StageObjectList::rebalance(){}  // game
+/* 00194070 000000a0 */ StageObjectList::add8(){}  // game
+/* 00194110 000000a0 */ StageObjectList::add7(){}  // game
+/* 001941b0 000000a0 */ StageObjectList::add6(){}  // game
+/* 00194250 000000a0 */ StageObjectList::add5(){}  // game
+/* 001942f0 000000a0 */ StageObjectList::addBullet(){}  // game
+/* 00194390 000000a0 */ StageObjectList::add3(){}  // game
+/* 00194430 000000a0 */ StageObjectList::add1(){}  // game
+/* 001944d0 000000c0 */ StageObjectList::addCharacter(){}  // game
+/* 00194590 000000a0 */ StageObjectList::add0(){}  // game
+/* 00194630 00000168 */ StageObjectList::~StageObjectList(){}  // game
+/* 001947a0 00000054 */ StageObjArray::dtorForArray(){}  // game
+/* 00194800 00000064 */ StageObjectList::StageObjectList(){}  // game
+/* 00194870 00000028 */ StageObjArray::ctorForArray(){}  // game
+/* 001948a0 00000064 */ StageObjArray::~StageObjArray(){}  // game
+/* 00194910 00000018 */ StageNameMap::StageNameMap(){}  // game
+/* 00194930 00000084 */ StageNameMap::~StageNameMap(){}  // game
+/* 001949c0 000000b0 */ StageNameMap::insert(){}  // game
+/* 00194a70 00000020 */ StageNameNode::StageNameNode(){}  // game
+/* 00194a90 00000044 */ StageNameNode::~StageNameNode(){}  // game
+/* 00194ae0 0000007c */ StageNameNode::find(){}  // game
+/* 00194b60 00000238 */ StageNameNode::insert(){}  // game
+/* 00194da0 00000138 */ StageNameNode::balance(){}  // game
+/* 00194ee0 00000050 */ StageObjArray::find(){}  // game
+/* 00194f40 0000008c */ StageObjArray::erase(){}  // game
+/* 00194fd0 000000a8 */ StageObjArray::push(){}  // game
+/* 00195080 0000001c */ StageObjArray::clear(){}  // game
+/* 001950a0 00000074 */ StageObjArray::StageObjArray(){}  // game
+/* 00195120 000000bc */ StageObjArray::reserve(){}  // game
+/* 001951e0 00000204 */ StageNameNode::height(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 001953f0 000000cc */ FUN_001953f0(){}
 /* 001954c0 00000054 */ FUN_001954c0(){}
 /* 00195520 000000b8 */ FUN_00195520(){}

@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "game/gamepaths.h"
+#include "game/stageobjlist.h"
 #include "game/uilayout.h"
 #include "sdk/libvifpk.h"
 #include "sdk/scetypes.h"
@@ -247,26 +248,21 @@ class StageObject
 public:
     // A virtual in the ROM (slot 123); a plain stub until its TU.
     int getKind();                                                       // FS2 vtable +0x1f4
+    // The deleting dtor (slot 2, flag 1: StageObjectList's teardown); a
+    // plain stub until its TU.
+    void destroy();                                                      // FS2 vtable +0x10
 
     u_char _000[0x20];
     char   m_name[0x1e0];       // FS2 +0x020: an item's / weapon's name (an ItemDef name)
     int    m_itemDef;           // FS2 +0x200: gItemDefs index
-    u_char _204[0x8];
+    u_char _204[0x4];
+    int    m_id;                // FS2 +0x208: a character's number (StageObjectList::addCharacter)
     int    m_count;             // FS2 +0x20c: an item's count
     u_char _210[0x98];
     int    m_doorState;         // FS2 +0x2a8: a door's StageDoorState
     u_char _2ac[0x1a8];
     int    m_ammoB;             // FS2 +0x454: a firearm's (findSprite's second number)
     int    m_ammoA;             // FS2 +0x458: a firearm's (the first)
-};
-
-// The stage's objects (the stage object's +0x10).
-// layout: host -- no fields declared yet.
-class StageObjectList
-{
-public:
-    // The object called name; null none (arg: 0 from game/uigame.cpp).
-    StageObject *find(const char *name, int arg);                        // FS2 0x00193ce0
 };
 
 // A node of the player's item list (the player's +0x22c): the item through

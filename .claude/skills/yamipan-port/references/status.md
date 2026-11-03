@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 06:59 at commit `50ec473` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 07:18 at commit `dd5a09b` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-03 06:59 at commit `50ec473` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6595**, named **1655** (25%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1495, game-inferred 798
-- context-name ledger: 2293 entries; overrides of wrong library matches: 0
-- placed in a source file: 1580/6595 in 50 files
+- game functions: **6595**, named **1699** (26%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1495, game-inferred 842
+- context-name ledger: 2337 entries; overrides of wrong library matches: 0
+- placed in a source file: 1625/6595 in 51 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **593**; stubs: **0**
+- reconstructed FS2 functions: **638**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -49,6 +49,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/s2ddata.cpp` | 9 | 0 |
 | `src/game/scene.cpp` | 1 | 0 |
 | `src/game/screen.cpp` | 18 | 0 |
+| `src/game/stageobjlist.cpp` | 45 | 0 |
 | `src/game/stageresult.cpp` | 32 | 0 |
 | `src/game/sysdata.cpp` | 37 | 0 |
 | `src/game/thread.cpp` | 19 | 0 |
@@ -61,8 +62,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 72 TUs: todo 55, verify 26
-- next: **unassigned@00171300** (frontier score 17)
+- 74 TUs: todo 56, verify 27
+- next: **unassigned@001319f0** (frontier score 16)
 - pinned queue: (empty)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
@@ -79,6 +80,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/s2ddata.cpp` 9/9 -- Host: S2dRef<T> (s2ddata.h) is a 32-bit offset from the field itself, 0 null, implicit T* conversion, copy deleted; S2dData, S2dObject, S2dWidgetDef, S2dImage a
 - verify: `game/scene.cpp` 1/1 -- gameSceneThread written in full: loadInitPack, runStartupSequence, overlayThreadStart, then forever loadMenuPack, the scene from sScenes (one retail entry, Menu
 - verify: `game/screen.cpp` 18/18 -- All 18 functions of 0x2676e0..0x2681e0 written (batch 037, 33 names, Ghidra saved). Overlay thread slot 6 draws the BG movie screen layout (init pack file 2dEU/
+- verify: `game/stageobjlist.cpp` 45/45 -- Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector in
 - verify: `game/stageresult.cpp` 32/32 -- All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (add
 - verify: `game/sysdata.cpp` 37/37 -- Cut out of unassigned@00171300 (the frontier pick, 5138 functions) and pinned 0x23af30-0x23c020. One SystemData block of 0x620 bytes at 0x598b30: SaveData +0 (0
 - verify: `game/thread.cpp` 19/19 -- All 19 functions written; thread.h has ThreadSlotRecord, ThreadStackDef, ThreadDetourStack, FrameSync, JobRecord with ThreadState / ThreadDetourState / JobCance
@@ -93,6 +95,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 07:18 `game/stageobjlist.cpp` verify: the stage object registry: nine groups of name map and list, its tree and array containers; all 45 written (batch 058)
 - 2026-11-03 06:59 `game/gfxtarget.cpp` verify: display records, flip, copy packet and GS allocator set-up: all 15 written (re-pinned 0x12dfa0..0x12f190, batch 057)
 - 2026-11-03 06:37 `game/fontdata.cpp` verify: fonts: the knj glyph table FontData and the printers TextPrinter / FontPrinter, cut out of unassigned@00171300 (all 31 written)
 - 2026-11-03 06:16 `game/gamepaths.cpp` verify: the stage path builders and the resident init / language packs, cut out of unassigned@002681e0 (all 14 written)
@@ -100,22 +103,21 @@ Recent sessions:
 - 2026-11-03 05:34 `game/uigame.cpp` verify: Fourth run: the text variables (UiWidget::expandTextVariable over the held-item message table, formatTextValue with 28 value names: counts, ammo, objective, rec
 - 2026-11-03 05:15 `game/uigame.cpp` partial: Third run: setGameValue / getGameValue (all 40 kinds from the jump tables, the clock amounts), the out-of-line player hooks, stepWeaponPreview, isHighestWinsSta
 - 2026-11-03 04:57 `game/uigame.cpp` partial: Second run: testGameState (41 named states), findSprite (key-config and item / weapon sprites), scanItems / scanWeapons, getDoorState, getStagePackData, getButt
-- 2026-11-03 04:35 `game/uigame.cpp` partial: The S2D UI game side cut out of unassigned@00252840: UiFont, fMsg and TimM find / relocate, the layout sound and game-value hooks, both target binds, inStage: 1
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@00171300` | todo | 0/0/2228 | 541.5 | 17 | 0 |
 | `unassigned@001319f0` | todo | 0/0/53 | 4.9 | 16 | 0 |
 | `game/gamepacket.cpp` | todo | 0/0/6 | 0.6 | 12 | 0 |
-| `unassigned@00142dd0` | todo | 0/0/14 | 4.6 | 10 | 0 |
 | `unassigned@00296d60` | todo | 0/0/267 | 74.1 | 10 | 0 |
-| `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 8 | 0 |
+| `unassigned@00142dd0` | todo | 0/0/14 | 4.6 | 10 | 0 |
+| `unassigned@00171300` | todo | 0/0/829 | 131.7 | 9 | 0 |
 | `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 8 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 8 | 0 |
+| `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 8 | 0 |
+| `unassigned@001953f0` | todo | 0/0/1354 | 403.4 | 7 | 0 |
 | `unassigned@002908d0` | todo | 0/0/67 | 18.8 | 6 | 0 |
 | `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
 | `unassigned@0012c9b8` | todo | 0/0/6 | 0.8 | 5 | 0 |
-| `unassigned@00252840` | todo | 0/0/156 | 51.6 | 4 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
