@@ -281,6 +281,15 @@
    ],
    "why": "the game's rx user layer: rxTerm, rxInit, spkRomLoad, spkLocateFile, spkGetFileSize, spkLoadFile (SPK.ROM index) and gameRxMemAlloc / Realloc / Free (batches 003, 005); file name a guess."
   },
+  "game/stagealert.cpp": {
+   "ranges": [
+    [
+     "00263b90",
+     "002640e8"
+    ]
+   ],
+   "why": "The class at gStageScene +0xf4 (every caller of these 8 functions passes it; ctor 0x264070 news its 0x3c-byte member from 0x151600, the deleting dtor 0x264000): plays and stops the ALERT / CAUTION layouts on gStageScene +0x30 (0x263c10 / 0x263f10) and reads GameOptions +0x10. Between game/uigame.cpp and libscf 0x2640e8. The file name is the port's (no source string)."
+  },
   "game/stageresult.cpp": {
    "notes": "All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (addContinue), getPerfectBits one bit per zero counter, clocks at +0x94/+0xa4 {state, value, step, target}, mode +0xbc (0 none, 1 count-up, 2 countdown 7500 with SYS_COUNT1/2 cues), layout +0xb8 from getLangPackItem(4/5). runStartupSequence renamed loadGamePack: it parses packgameEU.pak into PackTables (0x2bcf10, columns label/ctype/SEtype) and frees it, no screens. StageResult moved from gamehooks.h to stageresult.h; sysdata.cpp now reads clock.value/clock2.value/mode; SaveData::_000 is playTime (StageResult::tick counts it). New stand-ins in gamehooks.h: PackFile, PackTables, UiLayout, StageSound, StageScene/gStageScene (gp-0x7a7c, data the build must define), getInitPackItem/getLangPackItem. Guesses: the file name; 0x2afc20/0x2afcd0 joined by position; counters 1..3, attempt/stage blocks, clock state bits 0x14 and PackTables element types read from shapes only. Not compiled (no toolchain here); callcheck clean, layout lint OK. Next in the run: 0x2acff0..0x2afc20 (drawing cluster around 0x2adc70).",
    "ranges": [
@@ -364,11 +373,11 @@
    "why": "UiMatrix (0x24dfa0..0x24e8a0) and UiDrawer (0x24e8a0..0x252840): the 2D draw helper of the layouts, every function a UiMatrix / UiDrawer member or its out-of-line helpers (uiTransformPoint, the strip meshes, uiPkAddGsData); after game/s2ddata.cpp, before the widget classes 0x252840.. (vtables 0x316a78..); name the port's (no source string), as uidrawer.h already had it"
   },
   "game/uigame.cpp": {
-   "notes": "Batch 051 (7 names, Ghidra saved). Written: setGameValue 0x262e70 / getGameValue 0x2633f0 read case by case from the asm (jump tables 0x3086e0 / 0x308780; enum GameValueKind names all 40 kinds, GameValueClock 253 / 254 / 255, StageClockState in stageresult.h), getPlayerMapPos 0x2625c0, mapShowsPlayer 0x262640, getPlayerHeading 0x2627e0 (the static inlines replaced by these; bindTarget and testGameState call them), stepWeaponPreview 0x262840, isHighestWinsStage 0x261cf0, applyButtonMapDraft 0x263a80, loadButtonMapDraft 0x263b10. Stand-ins in gamehooks.h: PlayerMotion (player +0x224, refresh 0x1e66c0), NaviMenu / getNaviMenu 0x29efe0 (arrays at +0x2a8 / +0x584 / +0x5e0 / +0x5f0, extents guessed). Doubts: the clock state names describe the game values only; kind 25 constants 3 / 0x11 / 0xff unread; SystemData may derive from FlagTable (null-checked +0x520 adjust), not restructured; PC guard: an amount index past its table arms 0. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on uigame and its users. Next run, same TU: the text variables 0x260bc0 / 0x2612c0 (table 0x2fb120), then decide the tail 0x263b90..0x264070 (a small class with a 0x3c-byte member from 0x151600, called only from stage code: likely its own TU; re-pin uigame.cpp to end at 0x263ba0 and give the rest a file).",
+   "notes": "Batch 052 (4 names, saved by name_ctx). Re-pinned game/uigame.cpp to 0x25fa50..0x263b90: every caller of 0x263b90..0x2640e8 passes gStageScene +0xf4, one class, now the TU game/stagealert.cpp (8 functions, unwritten: ctor 0x264070, deleting dtor 0x264000, the ALERT / CAUTION state machine 0x263c10, 0x263f10, 0x263ed0, 0x263f80 on GameOptions +0x10, empty 0x263b90). Written: UiWidget::expandTextVariable 0x260bc0 (a0 the widget, unused; true = 16-bit text in the buffer, false = a message name for the caller 0x25cab0 to look up; table 0x2fb120 as kUiItemTexts) and formatTextValue 0x2612c0 (UiTextValue, 28 names 0x2fb300, every sprintf widened in place by wstrFromAscii 0x2d4440; times at 25 ticks a second). Stand-ins: getPurposeText 0x195d50 and gMenuMemcard (sbss 0x31ae94, gp-0x79dc, data the build must define) in gamehooks.h, NaviMenu::stage() (values[113] = +0x46c), wstrFromAscii in uitrack.h. Doubts: L / S in the weapon names read as large / small layouts; _C read as caption; the table +0x10 column unread. Kept from the ROM: the navi sample 12:34:56 is not widened. PC: a preview file without weapon messages answers nothing (the ROM divides by zero). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra -Wformat=2 clean on uigame / uitrack / uisequence / uilayout / memcard (RosePan SDK headers + a libvifpk stub); no harness.",
    "ranges": [
     [
      "0025fa50",
-     "002640e8"
+     "00263b90"
     ]
    ],
    "sessions": [
@@ -389,10 +398,16 @@
      "date": "2026-11-03 05:15",
      "status": "partial",
      "summary": "Third run: setGameValue / getGameValue (all 40 kinds from the jump tables, the clock amounts), the out-of-line player hooks, stepWeaponPreview, isHighestWinsStage, the button-map draft load / apply: 30 of 40 written, source-only, not built"
+    },
+    {
+     "build": "not built",
+     "date": "2026-11-03 05:34",
+     "status": "verify",
+     "summary": "Fourth run: the text variables (UiWidget::expandTextVariable over the held-item message table, formatTextValue with 28 value names: counts, ammo, objective, record / play / card times, scores) and the re-pin to 0x263b90 (the stage alert class is its own TU): all 32 written, source-only, not built"
     }
    ],
-   "status": "partial",
-   "why": "Cut out of unassigned@00252840 (the frontier pick, 196 functions): the S2D UI's game side, between the widget classes and their tween helpers (..0x25fa50, vtables 0x316a90..0x316c10) and libscf (0x2640e8). UiFont 0x25fa50, the fMsg message files and TimM sprite sheets (find / relocate, magic checked against ROM.001), the layout's sound / game-value / game-state hooks 0x25ff40.., the tracks' game targets (bindTarget, findSprite over the item tables), the text variables 0x260bc0 / 0x2612c0, the game values 0x262e70 / 0x2633f0 and small hooks to 0x264070. No source string: the file name and joining the font / message / sheet helpers to the hooks are guesses by position."
+   "status": "verify",
+   "why": "Cut out of unassigned@00252840 (the frontier pick, 196 functions): the S2D UI's game side, between the widget classes and their tween helpers (..0x25fa50, vtables 0x316a90..0x316c10) and the stage alert class (0x263b90, every caller passes gStageScene +0xf4). UiFont 0x25fa50, the fMsg message files and TimM sprite sheets (find / relocate, magic checked against ROM.001), the layout's sound / game-value / game-state hooks 0x25ff40.., the tracks' game targets (bindTarget, findSprite over the item tables), the text variables 0x260bc0 / 0x2612c0, the game values 0x262e70 / 0x2633f0 and small hooks to 0x263b90. No source string: the file name and joining the font / message / sheet helpers to the hooks are guesses by position."
   },
   "game/uilayout.cpp": {
    "notes": "Cut from unassigned@0023e740 (473 functions) as game/uilayout.cpp 0x243390..0x246230; batch 038 named these 22 and 28 callees (UiSequence / UiActor / UiAnim / UiTrack, S2dData, UiDrawer, UiWidget::create, the layout game hooks 0x25ff40.., FileJob 0x132a40..). UiLayout moved from gamehooks.h to uilayout.h (gamehooks.h includes it); gamehooks.h gained FileJob. Stand-ins for the rest of the run live in uilayout.h until their TUs are cut. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean with stub SDK headers (screen / stageresult / scene unchanged). Host trap for the S2D TU: S2dData pointer fields are 32-bit offsets relocated in place, they cannot hold host pointers. Doubts: every name is read from the code; op 7 / 8 read as yield / restart; condition kind 16 with a < 0 reads an uninitialised register in the ROM (port: no sequence, true); UiSubLayout +0x14 is never set in this file. Next: the sequence classes 0x246230..0x249550 (UiSequence::draw / advance), then the S2D file and UiDrawer. Ghidra saved by name_ctx.",

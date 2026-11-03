@@ -12,6 +12,7 @@
 #include "game/gamesystem.h"
 #include "game/gfxtarget.h"
 #include "game/gsutil.h"
+#include "game/memcard.h"
 #include "game/progress.h"
 #include "game/stageresult.h"
 #include "game/sysdata.h"
@@ -117,7 +118,8 @@ static const char *const kUiButtonIcons[8] = {
     "AI_L2", "AI_R2", "AI_L1", "AI_R1", "AI_A", "AI_O", "AI_X", "AI_H",
 };
 
-// A sprite a sheet-sprite track names by a slot.
+// A sprite a sheet-sprite track, or a message a text variable, names by a
+// slot.
 // layout: host -- EE 0x14.
 struct UiSpriteSlot
 {
@@ -179,6 +181,89 @@ static const UiSpriteSlot kUiKeySprites[] = {
     { "rKcLJack", 15, "", "", 7 },
 };
 constexpr int kUiKeySpriteCount = sizeof(kUiKeySprites) / sizeof(kUiKeySprites[0]);
+
+// The text variables that name a message by the held item (0x2fb120, 24):
+// "_C" its caption, "_I" its name (the slots as kUiItemSprites'; L / S
+// the large and small layouts of a weapon).
+static const UiSpriteSlot kUiItemTexts[] = {
+    { "rItem00", 0, "", "_C", 0 },
+    { "rItem01", 1, "", "_C", 1 },
+    { "rItem02", 2, "", "_C", 2 },
+    { "rItem03", 3, "", "_C", 3 },
+    { "rItem04", 4, "", "_C", 0 },
+    { "rItem05", 5, "", "_C", 1 },
+    { "rItem06", 6, "", "_C", 2 },
+    { "rItem07", 7, "", "_C", 3 },
+    { "rItem00_I", 0, "", "", 4 },
+    { "rItem01_I", 1, "", "", 5 },
+    { "rItem02_I", 2, "", "", 6 },
+    { "rItem03_I", 3, "", "", 7 },
+    { "rItem04_I", 4, "", "", 4 },
+    { "rItem05_I", 5, "", "", 5 },
+    { "rItem06_I", 6, "", "", 6 },
+    { "rItem07_I", 7, "", "", 7 },
+    { "rWeaponL00", 8, "", "_C", 8 },
+    { "rWeaponL01", 9, "", "_C", 9 },
+    { "rWeaponS00", 8, "", "_C", 8 },
+    { "rWeaponS01", 9, "", "_C", 9 },
+    { "rWeaponL00_I", 8, "", "", 10 },
+    { "rWeaponL01_I", 9, "", "", 11 },
+    { "rWeaponS00_I", 8, "", "", 10 },
+    { "rWeaponS01_I", 9, "", "", 11 },
+};
+constexpr int kUiItemTextCount = sizeof(kUiItemTexts) / sizeof(kUiItemTexts[0]);
+
+// The value text variables (formatTextValue), in the order of their names
+// (0x2fb300, 28).
+enum UiTextValue
+{
+    UiText_ItemCountFirst = 0,      // rItem00_N..rItem07_N: inventory slot n's count
+    UiText_ItemCountLast = 7,
+    UiText_Weapon0AmmoL = 8,        // rWeaponL00_N: weapon 0's ammo
+    UiText_Weapon0AmmoS = 9,        // rWeaponS00_N
+    UiText_Weapon1AmmoL = 10,       // rWeaponL01_N: weapon 1's
+    UiText_Weapon1AmmoS = 11,       // rWeaponS01_N
+    UiText_Purpose = 12,            // rPurpose: the stage's objective
+    UiText_NaviBestTime0 = 13,      // rLnBestTimeD1: the navi stage's record, variant 0
+    UiText_NaviBestTime1 = 14,      // rLnBestTimeD2: variant 1
+    UiText_BestTime = 15,           // rBestTime: the selected stage's record
+    UiText_CardPlayTimeFirst = 16,  // rMcTotalTime0..3: the card's saves' play times
+    UiText_CardPlayTimeLast = 19,
+    UiText_ScreenX = 20,            // rOptScrOfsX: GameOptions::screenX, signed
+    UiText_ScreenY = 21,            // rOptScrOfsY
+    UiText_Brightness = 22,         // rBrightness: GameOptions::brightness - 9, signed
+    UiText_PlayTime = 23,           // rPlayTime: StageResult::clock
+    UiText_BestScore = 24,          // rBestScore: the selected stage's record as a number
+    UiText_PlayScore = 25,          // rPlayScore: StageResult::clock2
+    UiText_BonusTime = 26,          // rBonusTime: clock's pending amount, seconds
+    UiText_BonusScore = 27,         // rBonusScore: clock2's pending amount
+    UiText_Count = 28,
+};
+
+static const char *const kUiTextValueNames[UiText_Count] = {
+    "rItem00_N", "rItem01_N", "rItem02_N", "rItem03_N",
+    "rItem04_N", "rItem05_N", "rItem06_N", "rItem07_N",
+    "rWeaponL00_N", "rWeaponS00_N", "rWeaponL01_N", "rWeaponS01_N",
+    "rPurpose",
+    "rLnBestTimeD1", "rLnBestTimeD2",
+    "rBestTime",
+    "rMcTotalTime0", "rMcTotalTime1", "rMcTotalTime2", "rMcTotalTime3",
+    "rOptScrOfsX", "rOptScrOfsY", "rBrightness",
+    "rPlayTime", "rBestScore", "rPlayScore", "rBonusTime", "rBonusScore",
+};
+
+// The objective outside a stage (0x2faeb0): U+5C0F U+76EE U+6A19 U+FF1A
+// "sample" (Japanese "sub-goal: sample", a placeholder).
+static const u_short kUiPurposePreview[] = {
+    0x5c0f, 0x76ee, 0x6a19, 0xff1a, 's', 'a', 'm', 'p', 'l', 'e', 0,
+};
+
+// The clocks tick 25 times a second; the record and play times show
+// minutes, seconds and hundredths, the card's play times hours, minutes
+// and seconds.
+constexpr u_int kClockTicksPerSecond = 25;
+// GameOptions::brightness's middle step, shown as 0.
+constexpr int kBrightnessMiddle = 9;
 
 ButtonMap gUiButtonMapDraft;    /* bss 0x599470 */
 
@@ -647,6 +732,331 @@ void UiPinRotTrack::bindTarget(const char *name)
     }
     getPlayerMapPos(m_pos);
     m_angle = getPlayerHeading();
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The text variables.
+
+// The name of an fMsg's entry index; null out of range. Inline in the ROM.
+static inline const char *msgEntryName(FMsgFile *file, int index)
+{
+    const FMsgEntry *entry = fMsgEntry(file, index);
+    return entry != nullptr ? entry->name.get() : nullptr;
+}
+
+// The item definition the message index is named after; null none.
+// Inline in the ROM.
+static inline const ItemDef *msgEntryItemDef(FMsgFile *file, int index)
+{
+    return getItemDef(findItemDef(msgEntryName(file, index)));
+}
+
+// In a stage, a held-item slot's message name ("<prefix><item
+// name><suffix>"). Outside one the slots preview msgFile's own entries:
+// an item slot its n-th item message, a weapon slot its weapon messages in
+// turn (sUiWeaponCycle). Anything else is a value (formatTextValue). The
+// caller (0x25cab0) asks without msgFile first, then again with it.
+// FS2 0x00260bc0
+// callcheck: strcmp, scanItems, scanWeapons, sprintf, fMsgRelocate, formatTextValue (fMsgCheck, fMsgEntry, findItemDef, getItemDef, inline)
+
+bool UiWidget::expandTextVariable(const char *name, char *out, void *msgFile)
+{
+    out[0] = '\0';
+    out[1] = '\0';              // an empty 16-bit text as well
+
+    if (gStageScene != nullptr) {
+        // The last slot of that name.
+        const UiSpriteSlot *text = nullptr;
+        for (int i = 0; i < kUiItemTextCount; i++) {
+            if (strcmp(name, kUiItemTexts[i].name) == 0)
+                text = &kUiItemTexts[i];
+        }
+        if (text != nullptr) {
+            out[0] = '\0';
+            int slot = text->slot;
+            const char *held;
+            if (slot >= UiSlot_ItemFirst && slot <= UiSlot_ItemLast) {
+                UiItemSlot items[kUiItemSlots];
+                scanItems(items);
+                held = items[slot].name;
+            } else if (slot >= UiSlot_WeaponFirst && slot <= UiSlot_WeaponLast) {
+                UiWeaponSlot weapons[kUiWeaponSlots];
+                scanWeapons(weapons);
+                held = weapons[slot - UiSlot_WeaponFirst].name;
+            } else {
+                held = nullptr;
+            }
+            if (held != nullptr) {
+                sprintf(out, "%s%s%s", text->prefix, held, text->suffix);
+                return false;
+            }
+        }
+        return formatTextValue(name, (u_short *)out);
+    }
+
+    // The preview: the first slot of that name.
+    const UiSpriteSlot *text = nullptr;
+    for (int i = 0; i < kUiItemTextCount; i++) {
+        if (strcmp(name, kUiItemTexts[i].name) == 0) {
+            text = &kUiItemTexts[i];
+            break;
+        }
+    }
+    if (text == nullptr)
+        return formatTextValue(name, (u_short *)out);
+    FMsgFile *file = fMsgCheck(msgFile);
+    if (file == nullptr)
+        return false;
+    int count = file->count;
+    if (count == 0)
+        return false;
+
+    int slot = text->slot;
+    if (slot >= UiSlot_ItemFirst && slot <= UiSlot_ItemLast) {
+        // The file's (slot + 1)-th item message.
+        int seen = 0;
+        for (int i = 0; i < count; i++) {
+            const ItemDef *def = msgEntryItemDef(file, i);
+            if (def != nullptr && def->kind >= ItemKind_ItemFirst)
+                seen++;
+            if (seen == slot + 1) {
+                sprintf(out, "%s%s%s", text->prefix, msgEntryName(file, i), text->suffix);
+                break;
+            }
+        }
+    } else if (slot >= UiSlot_WeaponFirst && slot <= UiSlot_WeaponLast) {
+        int weapons = 0;
+        for (int i = 0; i < count; i++) {
+            const ItemDef *def = msgEntryItemDef(file, i);
+            if (def != nullptr && def->kind < ItemKind_ItemFirst)
+                weapons++;
+        }
+        // PC: the ROM divides by zero when the file has no weapon message
+        // (and then finds none).
+        if (weapons == 0)
+            return false;
+        int pick = (slot + sUiWeaponCycle - UiSlot_WeaponFirst) % weapons;
+        const char *held = nullptr;
+        int seen = 0;
+        for (int i = 0; i < count; i++) {
+            const ItemDef *def = msgEntryItemDef(file, i);
+            if (def != nullptr && def->kind < ItemKind_ItemFirst && ++seen == pick + 1) {
+                held = msgEntryName(file, i);
+                break;
+            }
+        }
+        if (held != nullptr)
+            sprintf(out, "%s%s%s", text->prefix, held, text->suffix);
+    }
+    return false;
+}
+
+// A record or play time (ticks) as minutes:seconds:hundredths. Inline in
+// the ROM.
+static inline void formatClockTime(char *out, u_int ticks)
+{
+    sprintf(out, "%02d:%02d:%02d", (int)(ticks / (60 * kClockTicksPerSecond)),
+            (int)(ticks / kClockTicksPerSecond % 60),
+            (int)(ticks % kClockTicksPerSecond * 100 / kClockTicksPerSecond));
+}
+
+// A value that shows its sign: "+n" above 0. Inline in the ROM.
+static inline void formatSigned(char *out, int value)
+{
+    if (value > 0)
+        sprintf(out, "+%d", value);
+    else
+        sprintf(out, "%d", value);
+}
+
+// Every value is written as chars and widened in place. Outside a stage
+// the counts and ammo show their widest ("999", "999/999"); the times
+// without their source a sample ("12:34:56"). An empty slot or a weapon
+// that takes no ammo leaves out empty (the caller cleared it).
+// FS2 0x002612c0
+// callcheck: strcmp, scanItems, scanWeapons, getPurposeText, getNaviMenu, getSaveData, SaveData::isRecordSet, isHighestWinsStage, sprintf, wstrFromAscii, getStageResult (formatClockTime, formatSigned, SaveData::getRecord, inline)
+
+bool formatTextValue(const char *name, u_short *out)
+{
+    int value = -1;
+    for (int i = 0; i < UiText_Count; i++) {
+        if (strcmp(kUiTextValueNames[i], name) == 0) {
+            value = i;
+            break;
+        }
+    }
+    if (value == -1)
+        return false;
+
+    char *text = (char *)out;   // sprintf's output, widened in place
+    switch (value) {
+    case UiText_ItemCountFirst + 0: case UiText_ItemCountFirst + 1:
+    case UiText_ItemCountFirst + 2: case UiText_ItemCountFirst + 3:
+    case UiText_ItemCountFirst + 4: case UiText_ItemCountFirst + 5:
+    case UiText_ItemCountFirst + 6: case UiText_ItemCountLast:
+        if (gStageScene == nullptr) {
+            sprintf(text, "999");
+            wstrFromAscii(out, text);
+            return true;
+        } else {
+            UiItemSlot items[kUiItemSlots];
+            scanItems(items);
+            const UiItemSlot &slot = items[value - UiText_ItemCountFirst];
+            if (slot.used && slot.showsCount) {
+                sprintf(text, "%d", slot.count);
+                wstrFromAscii(out, text);
+            }
+            return true;
+        }
+
+    case UiText_Weapon0AmmoL:
+    case UiText_Weapon0AmmoS:
+    case UiText_Weapon1AmmoL:
+    case UiText_Weapon1AmmoS: {
+        if (gStageScene == nullptr) {
+            sprintf(text, "999/999");
+            wstrFromAscii(out, text);
+            return true;
+        }
+        UiWeaponSlot weapons[kUiWeaponSlots];
+        scanWeapons(weapons);
+        int index = value >= UiText_Weapon1AmmoL ? 1 : 0;
+        const UiWeaponSlot &slot = weapons[index];
+        if (slot.used && slot.isFirearm) {
+            sprintf(text, "%d/%d", slot.ammoA, slot.ammoB);
+            wstrFromAscii(out, text);
+        }
+        return true;
+    }
+
+    case UiText_Purpose: {
+        // A 16-bit copy with "\n" / "\N" as line breaks.
+        const u_short *src = gStageScene == nullptr ? kUiPurposePreview : getPurposeText();
+        if (src == nullptr) {
+            out[0] = 0;
+            return true;
+        }
+        while (*src != 0) {
+            if (*src == '\\' && (src[1] == 'n' || src[1] == 'N')) {
+                *out++ = '\n';
+                src += 2;
+            } else {
+                *out++ = *src++;
+            }
+        }
+        *out = 0;
+        return true;
+    }
+
+    case UiText_NaviBestTime0:
+    case UiText_NaviBestTime1: {
+        NaviMenu *navi = getNaviMenu();
+        if (navi == nullptr) {
+            sprintf(text, "12:34:56");
+            return true;        // not widened, as in the ROM (shows as garbage 16-bit text)
+        }
+        SystemData *data = reinterpret_cast<SystemData *>(getSaveData());
+        int kind = data->select.kind;
+        int variant = value == UiText_NaviBestTime1;
+        int stage = navi->stage();
+        if (!getSaveData()->isRecordSet(kind, variant, stage)) {
+            sprintf(text, "--:--:--");
+            if (isHighestWinsStage(stage))
+                sprintf(text, "--");
+            wstrFromAscii(out, text);
+            return true;
+        }
+        u_int record = getSaveData()->getRecord(kind, variant, stage);
+        formatClockTime(text, record);
+        if (isHighestWinsStage(stage))
+            sprintf(text, "%d", getSaveData()->getRecord(kind, variant, stage));
+        wstrFromAscii(out, text);
+        return true;
+    }
+
+    case UiText_BestTime: {
+        StageSelect &select = reinterpret_cast<SystemData *>(getSaveData())->select;
+        u_int record = getSaveData()->getRecord(select.kind, select.variant, select.stage);
+        if (isHighestWinsStage(select.stage))
+            sprintf(text, "%d", record);
+        else
+            formatClockTime(text, record);
+        wstrFromAscii(out, text);
+        return true;
+    }
+
+    case UiText_CardPlayTimeFirst + 0: case UiText_CardPlayTimeFirst + 1:
+    case UiText_CardPlayTimeFirst + 2: case UiText_CardPlayTimeLast: {
+        int index = value - UiText_CardPlayTimeFirst;
+        const SaveFile *file = gMenuMemcard != nullptr ? gMenuMemcard->m_files[index] : nullptr;
+        if (file == nullptr) {
+            // No menu: the sample, with the slot as its seconds.
+            sprintf(text, "12:34:%02d", index);
+        } else {
+            u_int seconds = file->save.playTime / kClockTicksPerSecond;
+            sprintf(text, "%02d:%02d:%02d", (int)(seconds / 3600), (int)(seconds / 60 % 60),
+                    (int)(seconds % 60));
+        }
+        wstrFromAscii(out, text);
+        return true;
+    }
+
+    case UiText_ScreenX:
+    case UiText_ScreenY: {
+        GameOptions &options = reinterpret_cast<SystemData *>(getSaveData())->options;
+        formatSigned(text, value == UiText_ScreenX ? options.screenX : options.screenY);
+        wstrFromAscii(out, text);
+        return true;
+    }
+
+    case UiText_Brightness:
+        formatSigned(text, reinterpret_cast<SystemData *>(getSaveData())->options.brightness -
+                               kBrightnessMiddle);
+        wstrFromAscii(out, text);
+        return true;
+
+    case UiText_PlayTime:
+        formatClockTime(text, getStageResult()->clock.value);
+        wstrFromAscii(out, text);
+        return true;
+
+    case UiText_BestScore: {
+        StageSelect &select = reinterpret_cast<SystemData *>(getSaveData())->select;
+        sprintf(text, "%d", getSaveData()->getRecord(select.kind, select.variant, select.stage));
+        wstrFromAscii(out, text);
+        return true;
+    }
+
+    case UiText_PlayScore:
+        sprintf(text, "%d", getStageResult()->clock2.value);
+        wstrFromAscii(out, text);
+        return true;
+
+    case UiText_BonusTime: {
+        u_int bonus = getStageResult()->clock.target;
+        if (bonus == 0) {
+            text[0] = '\0';
+        } else {
+            sprintf(text, "+%ds", (int)(bonus / kClockTicksPerSecond));
+            wstrFromAscii(out, text);
+        }
+        return true;
+    }
+
+    case UiText_BonusScore: {
+        int bonus = getStageResult()->clock2.target;
+        if (bonus == 0) {
+            text[0] = '\0';
+        } else {
+            sprintf(text, "+%dp", bonus);
+            wstrFromAscii(out, text);
+        }
+        return true;
+    }
+
+    default:
+        return false;
+    }
 }
 
 // ──────────────────────────────────────────────────────────────────────

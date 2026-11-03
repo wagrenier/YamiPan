@@ -820,8 +820,8 @@ the base's. Callers: UiDrawer, the textured tracks, UiFont, FUN_00288c00 and the
 group. On the host the presets go to `YamiPan_DrawUiReg`; the draw module must sample its own copy
 of the named target when a GsTexture has m_isTarget (no GS memory).
 
-**`game/uigame.cpp` 0x25fa50..0x2640e8 (TU 21, 2026-11-03, batch 049; cut out of
-`unassigned@00252840`; the file name is the port's; 30 of 40 written, `partial`)**: the S2D UI's
+**`game/uigame.cpp` 0x25fa50..0x263b90 (TU 21, 2026-11-03, batches 049-052; cut out of
+`unassigned@00252840`; the file name is the port's; all 32 written, `verify`)**: the S2D UI's
 **game side**. Below it 0x252840..0x25fa50 are the widget classes (vtables 0x316a90..0x316c10,
 `UiWidget::create` 0x25e260) with a tween record helper set 0x25f5b0..0x25fa10 (0x25f860 has 64
 callers); above it libscf. In it: **`UiFont`** (0x14: glyphs, owned GsTexture, text, spacing 2 / 0);
@@ -888,11 +888,33 @@ those as the expected value it answers it when the bit is set, else the armed am
 `getPlayerMapPos` 0x2625c0, `mapShowsPlayer` 0x262640, `getPlayerHeading` 0x2627e0;
 `stepWeaponPreview` 0x262840 (UiWidget::create) steps the preview counter outside a stage, in one
 calls `PlayerMotion::refresh` 0x1e66c0 on the player's +0x224 (guess: the motion set by weapon);
-`isHighestWinsStage` 0x261cf0. Unwritten: the text variables 0x260bc0 / 0x2612c0 ("%s%s%s",
-"--:--:--"; table 0x2fb120 rItem00_C / rItem00_I), the empty 0x263b90 (called by 0x287f20 with
-gStageScene +0xf4) and the small class 0x263ba0..0x264070 (members at +0xc / +0x10 / +0x14; +0x14 a
-0x3c-byte object from 0x151600(0x700, 0x700, 0x200, 0x200, 0); callers in stage code 0x198970..
-0x1dbca0: possibly its own TU).
+`isHighestWinsStage` 0x261cf0.
+**Text variables** (fourth run, batch 052): a text widget (0x25cab0) expands its string through
+**`UiWidget::expandTextVariable`** 0x260bc0 (a0 the widget, unused): answers 1 when the 256-byte buffer
+now holds 16-bit text (the widget then `setTextAt`), 0 when it holds a message name or nothing (then
+`setMessageByName` on its fMsg; the widget asks first without the file, then with it). Names from
+table 0x2fb120 (24 x 0x14, the sprite-slot record: rItem00..07 suffix "_C" = caption, rItem00_I..
+= the item's own message, rWeaponL / S 00 / 01 slots 8 / 9, L / S the large / small layout) print
+"<prefix><held name><suffix>"; outside a stage the fMsg's own entries preview them (item slot n = its
+(n + 1)-th item-def-named entry, weapons cycling by 0x31ae44). Anything else goes to
+**`formatTextValue`** 0x2612c0: 28 names 0x2fb300 (`UiTextValue` in uigame.cpp): rItem00_N.. counts,
+rWeaponL00_N / S00_N (weapon 0) and L01 / S01 (weapon 1) ammo "%d/%d", rPurpose (**`getPurposeText`**
+0x195d50, a 16-bit text with \n / \N breaks; outside a stage 0x2faeb0, Japanese "sub-goal: sample"),
+rLnBestTimeD1 / D2 (the navi menu's stage +0x46c, record variant 0 / 1 of the play record's kind),
+rBestTime / rBestScore (the play record's record), rMcTotalTime0..3 (the memory-card menu's
+**`Memcard`** at sbss 0x31ae94 (gp-0x79dc, set by the menu 0x2b8600..): `m_files[n]` play time as
+h:m:s), rOptScrOfsX / Y and rBrightness (- 9) signed "+%d", rPlayTime / rPlayScore (`StageResult`
+clock / clock2 value), rBonusTime / rBonusScore (their pending target, "+%ds" / "+%dp"). Times are
+**25 ticks a second**: minutes:seconds:hundredths (t / 1500, t / 25 % 60, t % 25 * 4); stage 29 shows
+numbers. Every value is sprintf'd as chars and widened in place by **`wstrFromAscii`** 0x2d4440
+(copies src first when dst == src); outside a stage counts / ammo / times show samples ("999",
+"999/999", "12:34:56", "12:34:<slot>"); the navi sample is left narrow (a ROM slip).
+The class after it, 0x263b90..0x2640e8, is **`game/stagealert.cpp`** (its own TU): every caller passes
+gStageScene +0xf4; ctor 0x264070 (members +0xc / +0x10 / +0x14, +0x14 a 0x3c-byte object from
+0x151600(0x700, 0x700, 0x200, 0x200, 0) with 0x151380(obj, 0x80)), deleting dtor 0x264000, the ALERT
+/ CAUTION layouts on gStageScene +0x30 (0x263c10 a 4-state machine timed by 0x1353d0 on gStageScene
++0x60, 0x263f10), 0x263ed0 / 0x263f10 call 0x151330(0.01, 0.25, 0.25, obj), 0x263f80 tests
+GameOptions +0x10; 0x263b90 is empty (0x287f20).
 
 ## Classes
 

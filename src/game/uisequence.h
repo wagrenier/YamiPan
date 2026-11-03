@@ -324,6 +324,10 @@ public:
     void     setDef(S2dWidgetDef *def);                                  // FS2 0x00248030
     UiAnim  *findAnim(int nameString);                                   // FS2 0x00247f20: in its sequence
     UiTrack *findTrack(int nameString, int kind);                        // FS2 0x00247db0: of that anim
+    // A text variable (game/uigame.cpp): true when out now holds 16-bit
+    // text to show, false when it holds the name of a message of msgFile
+    // (the held item's), or nothing.
+    bool     expandTextVariable(const char *name, char *out, void *msgFile); // FS2 0x00260bc0
 
     UiSequence   *m_seq;        // FS2 +0x00
     S2dData      *m_data;       // FS2 +0x04

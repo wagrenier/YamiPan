@@ -330,6 +330,11 @@ enum GameValueClock
 int  getGameValue(int kind, int i, int j, int expected);                // FS2 0x002633f0
 void setGameValue(int kind, int value, int i, int j);                    // FS2 0x00262e70
 
+// A value text variable (the S2D's rItem00_N .. rBonusScore: counts,
+// ammo, the objective, times and scores) as 16-bit text into out; false
+// when name is none of them. UiWidget::expandTextVariable's last resort.
+bool formatTextValue(const char *name, u_short *out);                    // FS2 0x002612c0
+
 // Stage 29, the one whose clock2 keeps the highest score.
 bool isHighestWinsStage(int stage);                                      // FS2 0x00261cf0
 

@@ -343,6 +343,21 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    "%02d:%02d:%02d", table 0x2fb120), then decide the tail 0x263b90..0x264070 (the class with a
    0x3c-byte member from 0x151600, called only from stage code: likely its own TU -- re-pin
    game/uigame.cpp to end at 0x263b90 or 0x263ba0 and give the rest a file).
+   **Fourth run (2026-11-03, batch 052, 4 names): finished, all 32 written, `verify`**: re-pinned
+   to **0x25fa50..0x263b90** (every caller of 0x263b90..0x2640e8 passes gStageScene +0xf4: that is
+   one class, now the TU **`game/stagealert.cpp`**, 8 functions, unwritten); written
+   `UiWidget::expandTextVariable` 0x260bc0 (table 0x2fb120 as `kUiItemTexts`) and
+   `formatTextValue` 0x2612c0 (28 names, `UiTextValue`; architecture.md "Modules"). Stand-ins:
+   `getPurposeText` 0x195d50 and `gMenuMemcard` (sbss 0x31ae94, data the build must define) in
+   gamehooks.h, `NaviMenu::stage()` (values[113], +0x46c: the values extent is a guess),
+   `wstrFromAscii` 0x2d4440 in uitrack.h. Doubts: L / S in rWeaponL00 / rWeaponS00 read as the large
+   / small layouts (both slot 8); "_C" read as caption; the table's +0x10 column is unread. Kept from
+   the ROM: the navi sample "12:34:56" is not widened (16-bit garbage on screen when there is no navi
+   menu). PC: no weapon message in the preview file answers nothing (the ROM divides by zero).
+   Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra -Wformat=2 clean on
+   uigame / uitrack / uisequence / uilayout / memcard (RosePan's SDK headers + a libvifpk stub); no
+   harness. Next in this region: `game/stagealert.cpp`, the widget classes 0x25b8e0..0x25fa50 (the
+   text widget 0x25cab0 calls expandTextVariable) and the MSL vector / tree user 0x252840..0x25b8e0.
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

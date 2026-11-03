@@ -10109,6 +10109,12 @@
   "was": "FUN_00193ce0",
   "why": "a0 gStageScene +0x10, a1 a name, a2 0: answers the stage object of that name (getDoorState then reads its kind, vtable +0x1f4, and +0x2a8)"
  },
+ "00195d50": {
+  "name": "getPurposeText",
+  "tag": "game-inferred",
+  "was": "FUN_00195d50",
+  "why": "answers 0x196870() + 4: the 16-bit text formatTextValue shows for rPurpose in a stage (outside one the sample 0x2faeb0 'sub-goal: sample' in Japanese)"
+ },
  "0019aea0": {
   "name": "StageScene::getFloor",
   "tag": "game-inferred",
@@ -11909,6 +11915,18 @@
   "was": "FUN_00260ab0",
   "why": "(track, name): name == rCharactorPostion -> +0x14 / +0x18 = camera x, -z (+0x150 / +0x154) * 0.1 (5000 default), +0x1c the yaw as bindTarget of kind 0x1a; else 0, 0, 0; UiAnim::init kinds 0x16 / 0x18"
  },
+ "00260bc0": {
+  "name": "UiWidget::expandTextVariable",
+  "tag": "game-inferred",
+  "was": "FUN_00260bc0",
+  "why": "a0 the text widget (unused; the caller 0x25cab0 passes it), a1 a variable name, a2 a 256-byte buffer, a3 an fMsg file: in a stage the held item's message name '<prefix><item name><suffix>' from table 0x2fb120 (rItem00.. _C / _I, rWeaponL00..) via scanItems / scanWeapons, outside one the fMsg's n-th item entry (weapons in turn by sbss 0x31ae44); else 0x2612c0. Answers 1 when the buffer is 16-bit text (0x25cab0 then setTextAt, else setMessageByName)"
+ },
+ "002612c0": {
+  "name": "formatTextValue",
+  "tag": "game-inferred",
+  "was": "FUN_002612c0",
+  "why": "a0 a name from the 28 at 0x2fb300 (rItem00_N .. rWeaponS01_N, rPurpose, rLnBestTimeD1/D2, rBestTime, rMcTotalTime0..3, rOptScrOfsX/Y, rBrightness, rPlayTime, rBestScore, rPlayScore, rBonusTime, rBonusScore): sprintf the count / ammo / time (%02d:%02d:%02d at 25 ticks a second) / score into a1 and widen it in place with 0x2d4440; 0 for an unknown name"
+ },
  "00261cf0": {
   "name": "isHighestWinsStage",
   "tag": "game-inferred",
@@ -13174,6 +13192,12 @@
   "tag": "game-inferred",
   "was": "FUN_002c4140",
   "why": "answers the sbss pointer 0x31aea0: the sound-effect player whose +0 is the effect table (count +0xc, sorted name index +0x428 / +0x42c, entries 0x30 each at +0x430) that UiLayout::playSound looks up by name and hands to SePlayer::play / stop"
+ },
+ "002d4440": {
+  "name": "wstrFromAscii",
+  "tag": "game-inferred",
+  "was": "FUN_002d4440",
+  "why": "(u_short *dst, const char *src): widens each byte to a u_short up to the 0; dst == src copies src to a new[] buffer first; null for a null or odd dst; beside wstrcpy 0x2d4510 / wstrlen 0x2d4650"
  },
  "002d4510": {
   "name": "wstrcpy",

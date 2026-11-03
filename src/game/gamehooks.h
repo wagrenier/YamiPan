@@ -339,8 +339,13 @@ extern StageScene *gStageScene;     /* sbss 0x31adf4 (gp-0x7a7c) */
 // The navi menu (0x29a700..; sbss gp-0x79f8, null while there is none).
 // Only what getGameValue reads; the extents are guesses (each array ends
 // where the next one starts).
+// The stage the menu points at is values[113] (+0x46c): inside values as
+// its extent is guessed.
+constexpr int kNaviMenuStageValue = (0x46c - 0x2a8) / 4;
 struct NaviMenu
 {
+    int stage() const { return values[kNaviMenuStageValue]; }
+
     u_char _000[0x2a8];
     int    values[0xb7];        // FS2 +0x2a8: GameValue_NaviValue
     u_char bits[0x5c];          // FS2 +0x584: GameValue_NaviBits
@@ -352,6 +357,16 @@ static_assert(offsetof(NaviMenu, bits) == 0x584, "NaviMenu::bits");
 static_assert(offsetof(NaviMenu, flagsE0) == 0x5e0, "NaviMenu::flagsE0");
 static_assert(offsetof(NaviMenu, flagsF0) == 0x5f0, "NaviMenu::flagsF0");
 NaviMenu *getNaviMenu();                                                 // FS2 0x0029efe0
+
+// The stage's current objective as 16-bit text (the S2D's rPurpose):
+// 0x196870's record + 4.
+const u_short *getPurposeText();                                         // FS2 0x00195d50
+
+// The memory-card menu's save manager (sbss 0x31ae94, gp-0x79dc; set and
+// deleted by the menu 0x2b8600.., null while there is none): the S2D's
+// rMcTotalTime0..3 show its saves' play times. Data the build must define.
+class Memcard;                  // game/memcard.h
+extern Memcard *gMenuMemcard;
 
 // The stage's files (sbss 0x31adfc, set by the stage loop): +0 its loader.
 // layout: host
