@@ -11,6 +11,7 @@
 #ifndef _GAME_GAMEPACKET_H
 #define _GAME_GAMEPACKET_H
 
+#include "rena/rena_pkt_vif1pktmanage.h"
 #include "sdk/libvifpk.h"
 #include "sdk/scetypes.h"
 
@@ -24,42 +25,6 @@ enum PacketList
     PacketList_Screen  = 12,    // runLayout: modal screens and dialogs
     PacketList_Finish = 13,     // GameSystem::flipFrame puts a GS FINISH here
     PacketList_Count  = 14,
-};
-
-// ──────────────────────────────────────────────────────────────────────
-// rena's packet manager (rena_pkt_vif1pktmanage.cpp, 0x2eaff0..; not
-// written yet). layout: host -- EE 0x30, vtable 0x31a808 at +0x2c after
-// the data: {+0 write ptr, +4 buffer base, +8 chain start, +0xc open list,
-// +0x10 buffer index, +0x14 list vector (count +0x18, data +0x1c), +0x20
-// buffer vector {base, size} (count +0x24, data +0x28)}.
-class Vif1PktManage
-{
-public:
-    Vif1PktManage();                                                     // FS2 0x002eb780
-    virtual ~Vif1PktManage();                                            // FS2 0x002eb600: deleting (obj, flag)
-
-    // Adds a {base, size} frame buffer (GamePacketManager adds two).
-    void AddBuffer(void *base, u_int size);                              // FS2 0x002eb380
-    // Adds packet list `id` (a 0x34-byte Vif1PktList).
-    void AddList(int id);                                                // FS2 0x002eb500
-
-    // Opens list `id` and returns its packet, the write cursor first.
-    sceVif1Packet *Open(int id);                                         // FS2 0x002eb3d0
-    // Closes the open list (its DMA tag).
-    void Close();                                                        // FS2 0x002eb320
-    // True when the current buffer's used part is larger than the buffer.
-    bool IsOverflow();                                                   // FS2 0x002eb030
-    // Links the non-empty lists in id order into one chain with an end tag.
-    void Terminate();                                                    // FS2 0x002eb070
-    // Sends the chain on VIF1 (CHCR 0x1c5). PC: hands it to the host draw module.
-    void Kick();                                                         // FS2 0x002eb2a0
-    // Flips to the other buffer and empties the lists.
-    void Reset();                                                        // FS2 0x002eb170
-
-    u_int GetUsedSize();                                                 // FS2 0x002eaff0
-    u_int GetBufferSize();                                               // FS2 0x002eb010
-
-    u_char _00[0x2c];
 };
 
 // ──────────────────────────────────────────────────────────────────────

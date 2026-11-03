@@ -492,6 +492,21 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    memory. The file name is the port's (no strings). **Next picks**: `sldiDecompress` with the wide
    printer in unassigned@002b0d50, the loader's users 0x2b5dc0 / 0x2b60b0, and the other PakArchive
    users 0x1a0ae0 / 0x1a0e70 / 0x1a1df0 (unassigned@001953f0).
+   TU 30 (the frontier's inferred `rena_pkt_vif1pktmanage.cpp`, after TU 29 `game/gamepacket.cpp`):
+   **`rena/rena_pkt_vif1pktmanage.cpp` 0x2eaff0..0x2ec110** pinned under a new `src/rena/` (the
+   game's own file name from its strings; the stale inferred key dropped from tus.json), 17
+   functions, batch 061 with 4 names (the file's MSL vector instances), **all 13 written + the 4
+   instances mapped to the host `<vector>`, `verify`**; architecture.md "Modules" (rena
+   `Vif1PktManage`). `Vif1PktManage` moved out of gamepacket.h (which includes the new header);
+   `AddBuffer` / `AddList` now return the ROM's int. New: `src/rx/rxsys.h` (rxSysPrintf only) and
+   `YamiPan_DrawUiKick` declared in yamipan_drawui.h (see "Decisions" 2026-11-03). Checked: callcheck
+   clean, layout lint OK, g++ -Wall -Wextra clean on the TU and gamepacket.cpp, both message strings
+   byte-equal to the ROM, and a host harness (libvifpk Reset / Next / CloseDmaTag mirrored from the
+   asm; 3 frames over 2 buffers, a list opened twice in a frame) walked the chain: start tag, list 0,
+   list 2's two segments in order, list 3, end tag; Kick handed over the 3 drawn lists. Kept as the
+   ROM: `Open` of an id never added writes through a null list. **Next picks**: the rena
+   `Tim2Texture` TU 0x2e1b70..0x2e2970 (the texture decode the draw module needs), bootstrap 6's
+   host libvifpk (`sceVif1PkReset` / `Next` / `CloseDmaTag` as the harness has them).
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
@@ -708,6 +723,16 @@ questions. Resolve items here when they are settled (move them to "Done" with th
 7. Fill architecture.md as each step learns something.
 
 ## Decisions
+
+- 2026-11-03 (scheduled run, rena/rena_pkt_vif1pktmanage.cpp; for the user to overrule): **the
+  frame's DMA chain stays built, with buffer offsets.** The packet buffers keep the ROM's tags (so
+  used size, overflow and the layout of what other code writes stay the ROM's), but a tag's ADDR
+  holds the target's byte offset in the current frame buffer instead of an EE address (host pointers
+  do not fit 32 bits). `Kick` does not touch DMAC registers: it hands the lists holding draws, in
+  chain order, to a new host call `YamiPan_DrawUiKick(lists, count)` (declared in
+  `yamipan/rendering/yamipan_drawui.h`, implemented at bootstrap 6), whose `list` pointers are the
+  same `sceVif1Packet *` the draw calls name. `rena/` is a new top-level directory under `src/` for
+  rena's own files (keys keep the game's file names).
 
 - 2026-11-02 (the user): **four rules for all code** (SKILL.md "The user's rules"): (1) no GS
   emulator, not even for textures (MioPan's `miopan_gs.cpp` reimplements the GS for textures: do not

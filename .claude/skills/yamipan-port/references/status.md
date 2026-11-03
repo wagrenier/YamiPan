@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 08:08 at commit `66b8500` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 08:35 at commit `13b689d` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-03 08:08 at commit `66b8500` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6595**, named **1751** (27%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1495, game-inferred 894
-- context-name ledger: 2389 entries; overrides of wrong library matches: 0
-- placed in a source file: 1695/6595 in 53 files
+- game functions: **6595**, named **1755** (27%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1495, game-inferred 898
+- context-name ledger: 2393 entries; overrides of wrong library matches: 0
+- placed in a source file: 1699/6595 in 53 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **714**; stubs: **0**
+- reconstructed FS2 functions: **727**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -62,11 +62,12 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/uisequence.cpp` | 29 | 0 |
 | `src/game/uitrack.cpp` | 99 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
+| `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
 
 ## Translation units (one session each: `tus.py`)
 
-- 74 TUs: todo 55, verify 30
-- next: **rena_pkt_vif1pktmanage.cpp** (frontier score 17)
+- 74 TUs: todo 54, verify 31
+- next: **unassigned@00142dd0** (frontier score 10)
 - pinned queue: (empty)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
@@ -96,11 +97,13 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/uisequence.cpp` 29/29 -- Cut from unassigned@00246230 as game/uisequence.cpp 0x246230..0x249550; batches 039-040 named these 29 and the callees they need (UiMatrix 0x24e580..0x24e8a0, U
 - verify: `game/uitrack.cpp` 99/109 -- Second run on the file (batch 043, 20 names). Written from the asm: UiRotateToTrack / UiRotateTrack::apply (world = parent * xform, angle wrapped to -pi..pi, xf
 - verify: `game/wstring.cpp` 5/5 -- Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds 
+- verify: `rena/rena_pkt_vif1pktmanage.cpp` 13/17 -- Pinned 0x2eaff0-0x2ec110 under the new src/rena/ with the game's own file name (strings in Reset / AddList); the stale inferred key rena_pkt_vif1pktmanage.cpp r
 - verify: `sdk/mcerror.cpp` 0/1 -- Pinned 0x121b80..0x121ef0 as sdk/mcerror.cpp (read as libmc's: between the read-fast tail and libc abort, maps commands FS2 never issues). McCmd and McErrno in 
 - verify: `unassigned@00116fb8` 0/0 -- This key is empty now: its whole run is two lib_ranges (architecture.md Address map, naming table row batch 025). Game code calling __extendsfdf2 / __cmpdf2 / _
 
 Recent sessions:
 
+- 2026-11-03 08:35 `rena/rena_pkt_vif1pktmanage.cpp` verify: rena Vif1PktManage / Vif1PktList: all 13 written, the 4 MSL vector instances mapped to the host vector; source-only, not built
 - 2026-11-03 08:08 `game/gamepacket.cpp` verify: GamePacketManager: ctor, deleting dtor, openList, closeList, endFrame, kickAndSwap on rena Vif1PktManage
 - 2026-11-03 07:52 `game/pakarchive.cpp` verify: PakArchive and the pak parser: PakHeader / PakEntry / PakId, relocate with the variant pack, lookups by id and by name, all 17 functions written
 - 2026-11-03 07:43 `game/fileloader.cpp` verify: FileJob, FileLoader (18 slots), PackFile with its PackJob base and TextTokenizer: all 53 written (batch 059, 45 names)
@@ -108,22 +111,21 @@ Recent sessions:
 - 2026-11-03 06:59 `game/gfxtarget.cpp` verify: display records, flip, copy packet and GS allocator set-up: all 15 written (re-pinned 0x12dfa0..0x12f190, batch 057)
 - 2026-11-03 06:37 `game/fontdata.cpp` verify: fonts: the knj glyph table FontData and the printers TextPrinter / FontPrinter, cut out of unassigned@00171300 (all 31 written)
 - 2026-11-03 06:16 `game/gamepaths.cpp` verify: the stage path builders and the resident init / language packs, cut out of unassigned@002681e0 (all 14 written)
-- 2026-11-03 05:50 `game/wstring.cpp` verify: The 16-bit string helpers wstrcmp, wstrstr, wstrFromAscii, wstrcpy, wstrlen: all 5 written, source-only, not built
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `rena_pkt_vif1pktmanage.cpp` | todo | 0/0/13 | 1.9 | 17 | 0 |
 | `unassigned@00296d60` | todo | 0/0/267 | 74.1 | 10 | 0 |
 | `unassigned@00142dd0` | todo | 0/0/14 | 4.6 | 10 | 0 |
 | `unassigned@00171300` | todo | 0/0/829 | 131.7 | 9 | 0 |
 | `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 9 | 0 |
-| `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 8 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 8 | 0 |
-| `unassigned@001953f0` | todo | 0/0/1354 | 403.4 | 7 | 0 |
+| `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 8 | 0 |
 | `unassigned@00231c90` | todo | 0/0/61 | 36.3 | 7 | 0 |
-| `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 6 | 0 |
+| `unassigned@001953f0` | todo | 0/0/1354 | 403.4 | 7 | 0 |
 | `unassigned@002908d0` | todo | 0/0/67 | 18.8 | 6 | 0 |
 | `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
+| `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 6 | 0 |
+| `unassigned@0012c9b8` | todo | 0/0/6 | 0.8 | 5 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -145,16 +147,12 @@ Recent sessions:
 | `002c4140` | getSePlayer | 2 | game | missing | - |
 | `002e2920` | Tim2Texture::Tim2Texture | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `00193880` | FUN_00193880 | 2 | - | missing | - |
+| `00102328` | rxSysPrintf | 2 | lib-ctx | missing | rx/rxsys.c |
 | `001d6a80` | StageSound::playNamed | 2 | game | missing | - |
 | `002e1b70` | Tim2Texture::putTex0 | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `00152740` | rxFileCallSizeHook | 2 | native | missing | - |
 | `002c3d70` | getSaveResource | 2 | game | missing | - |
-| `002eb320` | Vif1PktManage::Close | 2 | lib-ctx | missing | rena_pkt_vif1pktmanage.cpp |
-| `002eb030` | Vif1PktManage::IsOverflow | 2 | lib-ctx | missing | rena_pkt_vif1pktmanage.cpp |
-| `002eb170` | Vif1PktManage::Reset | 2 | lib-ctx | missing | rena_pkt_vif1pktmanage.cpp |
 | `00143510` | TexAreaList::place | 2 | game | missing | - |
-| `002eb070` | Vif1PktManage::Terminate | 2 | lib-ctx | missing | rena_pkt_vif1pktmanage.cpp |
-| `002eb380` | Vif1PktManage::AddBuffer | 2 | lib-ctx | missing | rena_pkt_vif1pktmanage.cpp |
 | `001e66c0` | PlayerMotion::refresh | 1 | game | missing | - |
 | `002ec660` | optionLayoutPath | 1 | game | missing | - |
 | `00135390` | MasterClock::MasterClock | 1 | game | missing | - |
@@ -169,4 +167,8 @@ Recent sessions:
 | `00152750` | rxTerm | 1 | lib-ctx | missing | game/spkrom.cpp |
 | `002d0a10` | sldiDecompress | 1 | game | missing | - |
 | `00152730` | rxFileCallLoadHook | 1 | native | missing | - |
+| `001438c0` | GsBlockMap::setRange | 1 | game | missing | - |
+| `00195d50` | getPurposeText | 1 | game | missing | - |
+| `00151270` | debugSysUpdate | 1 | game | missing | - |
+| `00148500` | soundUpdate | 1 | game | missing | sound/sound.cpp |
 

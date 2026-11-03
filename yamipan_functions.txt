@@ -7993,7 +7993,7 @@
 /* 002eaeb0 00000134 */ FUN_002eaeb0(){}
 
 // *****************************************************************************
-// FILE -- rena_pkt_vif1pktmanage.cpp
+// FILE -- rena/rena_pkt_vif1pktmanage.cpp
 // *****************************************************************************
 
 /* 002eaff0 0000001c */ Vif1PktManage::GetUsedSize(){}  // lib-ctx
@@ -8009,15 +8009,15 @@
 /* 002eb600 00000128 */ Vif1PktManage::~Vif1PktManage(){}  // lib-ctx
 /* 002eb730 0000004c */ Vif1PktList::~Vif1PktList(){}  // lib-ctx
 /* 002eb780 00000044 */ Vif1PktManage::Vif1PktManage(){}  // lib-ctx
+/* 002eb7d0 00000484 */ Vif1PktListVector::insert(){}  // game
+/* 002ebc60 00000430 */ Vif1PktBufferVector::insert(){}  // game
+/* 002ec090 0000006c */ Vif1PktBufferVector::~Vif1PktBufferVector(){}  // game
+/* 002ec100 00000008 */ Vif1PktBufferVector::clear(){}  // game
 
 // *****************************************************************************
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 002eb7d0 00000484 */ FUN_002eb7d0(){}
-/* 002ebc60 00000430 */ FUN_002ebc60(){}
-/* 002ec090 0000006c */ FUN_002ec090(){}
-/* 002ec100 00000008 */ FUN_002ec100(){}
 /* 002ec110 0000004c */ FUN_002ec110(){}
 /* 002ec160 0000004c */ eventMoviePath2506(){}  // game
 /* 002ec1b0 0000004c */ eventMoviePath2502(){}  // game

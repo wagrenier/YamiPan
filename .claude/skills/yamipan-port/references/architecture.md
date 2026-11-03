@@ -369,6 +369,23 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
     draw layer order is the list id (0..13; `GameSystem::flipFrame` puts a GS FINISH on 13): the port's
     host draw module keys its layers on it. libvifpk: `sceVif1PkReset` 0x10ac60,
     `sceVif1PkCloseDmaTag` 0x10ac70, `sceVif1PkNext` 0x10ad20.
+    **Written 2026-11-03 (TU 30, `src/rena/rena_pkt_vif1pktmanage.cpp`, 0x2eaff0..0x2ec110, `verify`;
+    the MSL vector instances 0x2eb7d0..0x2ec110 are the host `<vector>`'s).** The sceVif1Packet is
+    the SDK's `{pCurrent +0, pBase +4, pDmaTag +8, pVifcode +0xc, ..}` (0x20; `sceVif1PkReset` =
+    pCurrent = pBase, pDmaTag = 0; `Next(pkt, addr, opt)` closes the open tag and writes
+    `{0x20000000 | opt, addr & 0x9fffffff}`, pDmaTag = it; `CloseDmaTag` pads to a qword and fixes
+    the open tag's QWC). `Reset` takes the next buffer of the ring (index +0x10 from -1), resets each
+    list (head / tail 0) and puts a "next" tag (0x20000000, ADDR patched later) at the buffer start;
+    `Open(id)` (when not already open) closes the open list, sets the list's pCurrent to the write
+    cursor and makes it the list's head or links the list's tail tag to it, so **a list opened
+    several times per frame is one chain of segments**; `Close` puts a "next" tag after the
+    segment (= the tail) and moves the cursor past it; `Terminate` = Close + chain start = buffer
+    start, the start tag -> each non-empty list's head, its tail -> the next one, the last -> an
+    "end" tag (0x70000000) at the cursor, FlushCache(0); `Kick` only when a chain exists (DMAC_CTRL
+    1, STAT 2 under DIntr, VIF1 QWC 0 / TADR / CHCR 0x1c5). `AddBuffer` answers the new index,
+    `AddList` 0 or -1 with "このID(%d)はすでに登録されています。" -- whose %d gets the found list's
+    address, not the id (a ROM slip). PC: tag ADDR = byte offset in the frame buffer, Kick ->
+    `YamiPan_DrawUiKick` (open-items.md "Decisions" 2026-11-03).
   - **`GamePacketManager`** (`src/game/gamepacket.cpp`, 0x12dd30..0x12dfa0, written 2026-11-03; EE
     0x3c, vtable 0x311040 with only the destructor): `Vif1PktManage` + `{+0x30 open list id (-1 none),
     +0x34 skip-next-kick byte}`. Every call writes the D-cache back first (`FlushCache(0)`).

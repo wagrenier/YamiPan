@@ -59,4 +59,9 @@ void YamiPan_DrawUiTexture(const void *list, const void *owner);
 void YamiPan_DrawUiBegin(const void *list, int format);
 void YamiPan_DrawUiVertex(const void *list, const YamiPanUiVertex *vertex);
 
+/* The end of a frame: the packet lists that hold draws, in chain order
+ * (= the layer order), as Vif1PktManage::Kick would send them on VIF1.
+ * The module draws those layers in this order. */
+void YamiPan_DrawUiKick(const void *const *lists, int count);
+
 #endif /* YAMIPAN_DRAWUI_H */

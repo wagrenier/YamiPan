@@ -14243,6 +14243,30 @@
   "was": "FUN_002eb780",
   "why": "rena (rena_pkt_vif1pktmanage.cpp messages): vptr 0x31a808 at +0x2c, +0 write pointer, +4 buffer base, +8 chain start to kick, +0xc open list, +0x10 buffer index -1, list vector +0x14 (count +0x18, data +0x1c), buffer vector +0x20 (count +0x24, data +0x28, {base, size}); method names PascalCase after the message's (Reset)"
  },
+ "002eb7d0": {
+  "name": "Vif1PktListVector::insert",
+  "tag": "game-inferred",
+  "was": "FUN_002eb7d0",
+  "why": "MSL vector<Vif1PktList *>::insert(pos, n, value) instance ('vector::insert length error' 0x3106e0, Heap::alloc of 4-byte elements on the global heap); only caller Vif1PktManage::AddList (push_back of the new list)"
+ },
+ "002ebc60": {
+  "name": "Vif1PktBufferVector::insert",
+  "tag": "game-inferred",
+  "was": "FUN_002ebc60",
+  "why": "MSL vector<{base, size}>::insert(pos, n, value) instance ('vector::insert length error', 8-byte elements); only caller Vif1PktManage::AddBuffer (push_back)"
+ },
+ "002ec090": {
+  "name": "Vif1PktBufferVector::~Vif1PktBufferVector",
+  "tag": "game-inferred",
+  "was": "FUN_002ec090",
+  "why": "MSL vector dtor instance: clear, frees data +8 into the global heap, deleting when the flag > 0; only caller ~Vif1PktManage on +0x20"
+ },
+ "002ec100": {
+  "name": "Vif1PktBufferVector::clear",
+  "tag": "game-inferred",
+  "was": "FUN_002ec100",
+  "why": "size +4 = 0 (trivial elements); callers the buffer vector's insert (its temporary) and dtor"
+ },
  "002ec160": {
   "name": "eventMoviePath2506",
   "tag": "game-inferred",
