@@ -150,9 +150,14 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    reading (Sony's own unknown); `sceMcReadFast` comes from the thread string, `sceMcWriteFast`
    (rpc 0x1b) by analogy only; 0x121b80 (error-code mapper, called only by the game's memory-card
    layer 0x2ac710..) left unnamed: libmc or game code?
-   **Next batches, in this order**: libpad (RoR links libpad2,
-   no reference: name by reading from `scePadInit` 0x11e440 / `scePadPortOpen` 0x11e898 and ps2sdk's
-   order); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
+   **Batch 021 done (2026-11-02, 23 names)**: libpad 0x11e440..0x11fb70 one to one with FF3's
+   list (`../ReiPan/ff3_functions.txt` 0x283a28..0x285158: same sizes and order, FF3 merged
+   PortOpen + PortClose; 14 names FF2 symbols, 6 FF3 names checked by reading) + three internals
+   by reading (architecture.md "Key functions and globals", SDK). Doubts: `_scePadCmdHandler`,
+   `_scePadSendActData`, `_scePadSetCallback` are made-up names; `rxalign.py` only reads RoR's
+   list, so this alignment was done by hand (a `--ref` option for FF3's list would make the next
+   one a command).
+   **Next batches, in this order**: libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
    string rep); SDK functions from their `PsIIlib` / assert strings; rx (`rxfile.c`); rena
    (`rena_*.cpp`). Thunks 0x100218 (`_exit`) and 0x100270 keep Ghidra's thunk names (renaming a
    thunk may rename its target);

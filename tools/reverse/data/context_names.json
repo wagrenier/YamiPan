@@ -1583,6 +1583,30 @@
   "was": "FUN_0011e440",
   "why": "libpad: binds SIF RPC 0x80000100 / 0x80000101 (padman), checks the module version and prints 'libpad: Module version mismatch' (0x2ffea8); padSysInit calls it with 0"
  },
+ "0011e590": {
+  "name": "_scePadCmdHandler",
+  "tag": "lib-context",
+  "was": "FUN_0011e590",
+  "why": "SDK libpad, name by reading (Sony's own unknown; FF3 0x283b78 unnamed, same size 0x48): SIF cmd handler scePadInit2 installs for cmd 0x80000019; calls the callback in 0x2f2f50 with packet+0xc, then sync / EI"
+ },
+ "0011e5d8": {
+  "name": "scePadInit2",
+  "tag": "lib-context",
+  "was": "FUN_0011e5d8",
+  "why": "SDK libpad: ReiPan names FF3 0x283bc0 scePadInit2 (FF2 symbol at 0028b0a8); same size 0xf4 and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158)"
+ },
+ "0011e6d0": {
+  "name": "scePadEnd",
+  "tag": "lib-context",
+  "was": "FUN_0011e6d0",
+  "why": "SDK libpad: ReiPan names FF3 0x283cb8 scePadEnd (FF2 symbol at 0028b148); same size 0xac and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158)"
+ },
+ "0011e780": {
+  "name": "_scePadSendActData",
+  "tag": "lib-context",
+  "was": "FUN_0011e780",
+  "why": "SDK libpad, name by reading (FF3 0x283d68 unnamed, same size 0x114): bumps the port/slot actuator packet counter and sceSifSetDma-s 0x20 bytes to the IOP double buffer; only caller scePadSetActDirect"
+ },
  "0011e898": {
   "name": "scePadPortOpen",
   "tag": "lib-context",
@@ -1594,6 +1618,120 @@
   "tag": "lib-context",
   "was": "FUN_0011ea80",
   "why": "libpad (port, slot): RPC command 0xe on the padman client 0x32a040 for an open port record (0x32a0a0 + port*0x70 + slot*0x1c), clears it; padSysShutdown calls it"
+ },
+ "0011eb38": {
+  "name": "scePadGetDmaStr",
+  "tag": "lib-context",
+  "was": "FUN_0011eb38",
+  "why": "SDK libpad: ReiPan names FF3 0x284120 scePadGetDmaStr (ReiPan name by reading); same size 0x1b0 and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158); read: copies the port/slot DMA receive buffer (the newer of two 0x80 halves) under DIntr"
+ },
+ "0011ece8": {
+  "name": "scePadRead",
+  "tag": "lib-context",
+  "was": "FUN_0011ece8",
+  "why": "SDK libpad: ReiPan names FF3 0x2842d0 scePadRead (ReiPan name by reading); same size 0x74 and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158); read: GetDmaStr into a stack copy, memcpy of its length byte to the caller"
+ },
+ "0011ed60": {
+  "name": "scePadGetState",
+  "tag": "lib-context",
+  "was": "FUN_0011ed60",
+  "why": "SDK libpad: ReiPan names FF3 0x284348 scePadGetState (ReiPan name by reading); same size 0xac and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158); read: returns the state byte of the DMA buffer, 0x63 when the port is closed, 6/2 -> 5"
+ },
+ "0011ee10": {
+  "name": "scePadSetReqState",
+  "tag": "lib-context",
+  "was": "FUN_0011ee10",
+  "why": "SDK libpad: ReiPan names FF3 0x2843f8 scePadSetReqState (FF2 symbol at 0028b730); same size 0xb4 and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158)"
+ },
+ "0011eec8": {
+  "name": "scePadGetReqState",
+  "tag": "lib-context",
+  "was": "FUN_0011eec8",
+  "why": "SDK libpad: ReiPan names FF3 0x2844b0 scePadGetReqState (FF2 symbol at 0028b798); same size 0x8c and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158)"
+ },
+ "0011ef58": {
+  "name": "scePadInfoAct",
+  "tag": "lib-context",
+  "was": "FUN_0011ef58",
+  "why": "SDK libpad: ReiPan names FF3 0x284540 scePadInfoAct (ReiPan name by reading); same size 0x22c and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158); read: actuator table of the DMA buffer by index and term 1..4, count for index -1"
+ },
+ "0011f188": {
+  "name": "scePadInfoMode",
+  "tag": "lib-context",
+  "was": "FUN_0011f188",
+  "why": "SDK libpad: ReiPan names FF3 0x284770 scePadInfoMode (FF2 symbol at 0028ba60); same size 0x134 and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158)"
+ },
+ "0011f2c0": {
+  "name": "scePadSetMainMode",
+  "tag": "lib-context",
+  "was": "FUN_0011f2c0",
+  "why": "SDK libpad: ReiPan names FF3 0x2848a8 scePadSetMainMode (FF2 symbol at 0028bb98); same size 0xb4 and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158)"
+ },
+ "0011f378": {
+  "name": "scePadSetActDirect",
+  "tag": "lib-context",
+  "was": "FUN_0011f378",
+  "why": "SDK libpad: ReiPan names FF3 0x284960 scePadSetActDirect (FF2 symbol at 0028bc50); same size 0xc8 and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158)"
+ },
+ "0011f440": {
+  "name": "scePadSetActAlign",
+  "tag": "lib-context",
+  "was": "FUN_0011f440",
+  "why": "SDK libpad: ReiPan names FF3 0x284a28 scePadSetActAlign (FF2 symbol at 0028bd10); same size 0x188 and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158)"
+ },
+ "0011f5c8": {
+  "name": "scePadSetButtonInfo",
+  "tag": "lib-context",
+  "was": "FUN_0011f5c8",
+  "why": "SDK libpad: ReiPan names FF3 0x284bb0 scePadSetButtonInfo (FF2 symbol at 0028bea0); same size 0xb0 and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158)"
+ },
+ "0011f678": {
+  "name": "scePadInfoPressMode",
+  "tag": "lib-context",
+  "was": "FUN_0011f678",
+  "why": "SDK libpad: ReiPan names FF3 0x284c60 scePadInfoPressMode (ReiPan name by reading); same size 0x80 and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158); read: returns 1 when the mode byte has bit 2 (pressure mode available)"
+ },
+ "0011f6f8": {
+  "name": "scePadEnterPressMode",
+  "tag": "lib-context",
+  "was": "FUN_0011f6f8",
+  "why": "SDK libpad: ReiPan names FF3 0x284ce0 scePadEnterPressMode (ReiPan name by reading); same size 0xac and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158); read: scePadSetButtonInfo(port, slot, 0xfff), as SDK libpad does"
+ },
+ "0011f7a8": {
+  "name": "scePadSetVrefParam",
+  "tag": "lib-context",
+  "was": "FUN_0011f7a8",
+  "why": "SDK libpad: ReiPan names FF3 0x284d90 scePadSetVrefParam (FF2 symbol at 0028c060); same size 0xcc and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158)"
+ },
+ "0011f878": {
+  "name": "scePadGetPortMax",
+  "tag": "lib-context",
+  "was": "FUN_0011f878",
+  "why": "SDK libpad: ReiPan names FF3 0x284e60 scePadGetPortMax (FF2 symbol at 0028c130); same size 0x64 and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158)"
+ },
+ "0011f8e0": {
+  "name": "scePadGetSlotMax",
+  "tag": "lib-context",
+  "was": "FUN_0011f8e0",
+  "why": "SDK libpad: ReiPan names FF3 0x284ec8 scePadGetSlotMax (FF2 symbol at 0028c198); same size 0x68 and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158)"
+ },
+ "0011f948": {
+  "name": "scePadGetModVersion",
+  "tag": "lib-context",
+  "was": "FUN_0011f948",
+  "why": "SDK libpad: ReiPan names FF3 0x284f30 scePadGetModVersion (FF2 symbol at 0028c200); same size 0x64 and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158)"
+ },
+ "0011f9b0": {
+  "name": "scePadSetWarningLevel",
+  "tag": "lib-context",
+  "was": "FUN_0011f9b0",
+  "why": "SDK libpad: ReiPan names FF3 0x284f98 scePadSetWarningLevel (FF2 symbol at 0028c268); same size 0x68 and place in a one-to-one run 0x11e440..0x11fb70 (FF3 0x283a28..0x285158)"
+ },
+ "0011fa18": {
+  "name": "_scePadSetCallback",
+  "tag": "lib-context",
+  "was": "FUN_0011fa18",
+  "why": "SDK libpad, name by reading (FF3 0x285000 unnamed, same size 0x158): sets the callback 0x2f2f50 the cmd handler calls, RPC 0x18 enabling (1) / disabling (0) it on the IOP, returns the previous one; scePadEnd clears it"
  },
  "0011fb70": {
   "name": "sceMcInit",

@@ -507,31 +507,31 @@
 /* 0011e290 000000bc */ sceCdReadClock(){}  // lib-ctx
 /* 0011e350 000000ec */ sceCdTrayReq(){}  // lib-ctx
 /* 0011e440 0000014c */ scePadInit(){}  // lib-ctx
-/* 0011e590 00000048 */ FUN_0011e590(){}
-/* 0011e5d8 000000f4 */ FUN_0011e5d8(){}
-/* 0011e6d0 000000ac */ FUN_0011e6d0(){}
-/* 0011e780 00000114 */ FUN_0011e780(){}
+/* 0011e590 00000048 */ _scePadCmdHandler(){}  // lib-ctx
+/* 0011e5d8 000000f4 */ scePadInit2(){}  // lib-ctx
+/* 0011e6d0 000000ac */ scePadEnd(){}  // lib-ctx
+/* 0011e780 00000114 */ _scePadSendActData(){}  // lib-ctx
 /* 0011e898 000001e4 */ scePadPortOpen(){}  // lib-ctx
 /* 0011ea80 000000b8 */ scePadPortClose(){}  // lib-ctx
-/* 0011eb38 000001b0 */ FUN_0011eb38(){}
-/* 0011ece8 00000074 */ FUN_0011ece8(){}
-/* 0011ed60 000000ac */ FUN_0011ed60(){}
-/* 0011ee10 000000b4 */ FUN_0011ee10(){}
-/* 0011eec8 0000008c */ FUN_0011eec8(){}
-/* 0011ef58 0000022c */ FUN_0011ef58(){}
-/* 0011f188 00000134 */ FUN_0011f188(){}
-/* 0011f2c0 000000b4 */ FUN_0011f2c0(){}
-/* 0011f378 000000c8 */ FUN_0011f378(){}
-/* 0011f440 00000188 */ FUN_0011f440(){}
-/* 0011f5c8 000000b0 */ FUN_0011f5c8(){}
-/* 0011f678 00000080 */ FUN_0011f678(){}
-/* 0011f6f8 000000ac */ FUN_0011f6f8(){}
-/* 0011f7a8 000000cc */ FUN_0011f7a8(){}
-/* 0011f878 00000064 */ FUN_0011f878(){}
-/* 0011f8e0 00000068 */ FUN_0011f8e0(){}
-/* 0011f948 00000064 */ FUN_0011f948(){}
-/* 0011f9b0 00000068 */ FUN_0011f9b0(){}
-/* 0011fa18 00000158 */ FUN_0011fa18(){}
+/* 0011eb38 000001b0 */ scePadGetDmaStr(){}  // lib-ctx
+/* 0011ece8 00000074 */ scePadRead(){}  // lib-ctx
+/* 0011ed60 000000ac */ scePadGetState(){}  // lib-ctx
+/* 0011ee10 000000b4 */ scePadSetReqState(){}  // lib-ctx
+/* 0011eec8 0000008c */ scePadGetReqState(){}  // lib-ctx
+/* 0011ef58 0000022c */ scePadInfoAct(){}  // lib-ctx
+/* 0011f188 00000134 */ scePadInfoMode(){}  // lib-ctx
+/* 0011f2c0 000000b4 */ scePadSetMainMode(){}  // lib-ctx
+/* 0011f378 000000c8 */ scePadSetActDirect(){}  // lib-ctx
+/* 0011f440 00000188 */ scePadSetActAlign(){}  // lib-ctx
+/* 0011f5c8 000000b0 */ scePadSetButtonInfo(){}  // lib-ctx
+/* 0011f678 00000080 */ scePadInfoPressMode(){}  // lib-ctx
+/* 0011f6f8 000000ac */ scePadEnterPressMode(){}  // lib-ctx
+/* 0011f7a8 000000cc */ scePadSetVrefParam(){}  // lib-ctx
+/* 0011f878 00000064 */ scePadGetPortMax(){}  // lib-ctx
+/* 0011f8e0 00000068 */ scePadGetSlotMax(){}  // lib-ctx
+/* 0011f948 00000064 */ scePadGetModVersion(){}  // lib-ctx
+/* 0011f9b0 00000068 */ scePadSetWarningLevel(){}  // lib-ctx
+/* 0011fa18 00000158 */ _scePadSetCallback(){}  // lib-ctx
 /* 0011fb70 00000298 */ sceMcInit(){}  // lib-ctx
 /* 0011fe08 000000ac */ sceMcEnd(){}  // lib-ctx
 /* 0011feb8 000000cc */ mceSignalSema(){}  // lib-ctx

@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-02 17:00 at commit `d2647d9` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-02 17:05 at commit `c61d43f` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-02 17:00 at commit `d2647d9` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **7582**, named **1641** (22%); library functions: 0
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1377, game-inferred 175
-- context-name ledger: 1552 entries; overrides of wrong library matches: 0
+- game functions: **7582**, named **1664** (22%); library functions: 0
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1400, game-inferred 175
+- context-name ledger: 1575 entries; overrides of wrong library matches: 0
 - placed in a source file: 6/7582 in 2 files
 
 Least-named game-code regions (64 KB blocks):
