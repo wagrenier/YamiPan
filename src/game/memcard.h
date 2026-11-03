@@ -20,24 +20,26 @@
 
 #include "game/sysdata.h"
 #include "sdk/libmc.h"
+#include "sdk/mcerror.h"
 #include "sdk/scetypes.h"
 
 // ──────────────────────────────────────────────────────────────────────
 // McDevice
 
-// The libmc function each McDevice call records in m_lastFunc and hands
-// to mcErrorCode. Read is stored as 0x16, not libmc's own number for it.
+// The libmc command each McDevice call records in m_lastFunc and hands
+// to mcErrorCode (sdk/mcerror.h McCmd). Read records sceMcReadFast's
+// command 0x16 although it calls sceMcRead.
 enum McFunc
 {
-    McFunc_GetInfo = 0x01,
-    McFunc_Open    = 0x02,
-    McFunc_Close   = 0x03,
-    McFunc_Write   = 0x06,
-    McFunc_Flush   = 0x0a,
-    McFunc_Mkdir   = 0x0b,
-    McFunc_GetDir  = 0x0d,
-    McFunc_Format  = 0x10,
-    McFunc_Read    = 0x16,
+    McFunc_GetInfo = McCmd_GetInfo,
+    McFunc_Open    = McCmd_Open,
+    McFunc_Close   = McCmd_Close,
+    McFunc_Write   = McCmd_Write,
+    McFunc_Flush   = McCmd_Flush,
+    McFunc_Mkdir   = McCmd_Mkdir,
+    McFunc_GetDir  = McCmd_GetDir,
+    McFunc_Format  = McCmd_Format,
+    McFunc_Read    = McCmd_ReadFast,
 };
 
 // McDevice::m_result: 0 when the request finished well, -1 while it runs,
@@ -51,10 +53,10 @@ enum McResult
 // The error codes the manager tests (mcErrorCode's low 16 bits).
 enum McError
 {
-    McError_NoEntry     = 0x0002,   // GetDir: sceMcResNoEntry (-4), no such directory
-    McError_DirDenied   = 0x0005,   // GetDir: result -6
-    McError_NoFormat    = 0x002f,   // GetInfo: sceMcResNoFormat (-2)
-    McError_ChangedCard = 0x9003,   // GetInfo: sceMcResChangedCard (-1)
+    McError_NoEntry     = McErrno_NoEnt,        // GetDir: sceMcResNoEntry (-4), no such directory
+    McError_DirDenied   = McErrno_Io,           // GetDir: sceMcResNotEmpty (-6)
+    McError_NoFormat    = McErrno_NoFormat,     // GetInfo: sceMcResNoFormat (-2)
+    McError_ChangedCard = McErrno_ChangedCard,  // GetInfo: sceMcResChangedCard (-1)
 };
 
 // The three values sceMcGetInfo fills (Memcard +0x3c).
@@ -108,10 +110,6 @@ static_assert(sizeof(McDevice) == 0x14, "McDevice: EE 0x14");
 // libmc once for the whole module (the byte 0x31ae90).
 void memcardLibInit();                                                   // FS2 0x002acf00
 void memcardLibEnd();                                                    // FS2 0x002acec0
-
-// (libmc function, negative result) -> a 0x8108xxxx code; outside this TU
-// (0x121b80, between libmc and libc).
-int mcErrorCode(int func, int result);                                   // FS2 0x00121b80
 
 // ──────────────────────────────────────────────────────────────────────
 // SaveFile

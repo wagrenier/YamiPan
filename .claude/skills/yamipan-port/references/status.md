@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-02 23:12 at commit `f125c69` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-02 23:30 at commit `b290639` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -13,7 +13,7 @@ Generated 2026-11-02 23:12 at commit `f125c69` by `tools/reverse/status.py` (`re
 - game functions: **6595**, named **1148** (17%); library functions: 987
 - by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1478, game-inferred 299
 - context-name ledger: 1777 entries; overrides of wrong library matches: 0
-- placed in a source file: 1143/6595 in 33 files
+- placed in a source file: 1144/6595 in 34 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -44,8 +44,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 48 TUs: todo 42, verify 8
-- next: **unassigned@00121b80** (frontier score 19)
+- 48 TUs: todo 42, verify 9
+- next: **game/thread.cpp** (frontier score 8)
 - pinned queue: (empty)
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
 - verify: `game/gamesystem.cpp` 17/17 -- All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). N
@@ -54,10 +54,12 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
 - verify: `game/sysdata.cpp` 37/37 -- Cut out of unassigned@00171300 (the frontier pick, 5138 functions) and pinned 0x23af30-0x23c020. One SystemData block of 0x620 bytes at 0x598b30: SaveData +0 (0
+- verify: `sdk/mcerror.cpp` 0/1 -- Pinned 0x121b80..0x121ef0 as sdk/mcerror.cpp (read as libmc's: between the read-fast tail and libc abort, maps commands FS2 never issues). McCmd and McErrno in 
 - verify: `unassigned@00116fb8` 0/0 -- This key is empty now: its whole run is two lib_ranges (architecture.md Address map, naming table row batch 025). Game code calling __extendsfdf2 / __cmpdf2 / _
 
 Recent sessions:
 
+- 2026-11-02 23:30 `sdk/mcerror.cpp` verify: mcErrorCode, libmc's error encoder: libmc command and result to SCE_ERROR_ENCODE(0x01080000, errno or Sony code)
 - 2026-11-02 23:12 `game/heap.cpp` verify: heap allocator and RNG cut out of unassigned@001037c0 and pinned 0x1037c0-0x104b40: Heap (alloc, free, realloc, marks, gap list), initGlobalHeap / shutdownGloba
 - 2026-11-02 22:51 `game/memcard.cpp` verify: memory card module complete: stepSave, stepLoad, stepCheckAll, stepScan and buildIconSys written, the four implicit operator= explained; stepScan looks for the 
 - 2026-11-02 22:39 `game/memcard.cpp` partial: memory card module cut out of unassigned@002647e0 and pinned 0x2a9c70-0x2acff0: McDevice libmc wrapper, SaveFile save image and module state written, Memcard ma
@@ -65,28 +67,27 @@ Recent sessions:
 - 2026-11-02 21:55 `game/sysdata.cpp` verify: system data block: SaveData, StageSelect, GameOptions, FlagTable in SystemData 0x598b30; language and region strings; all 37 functions
 - 2026-11-02 21:33 `unassigned@00116fb8` verify: Resolved as library, not game code: newlib float libm 0x116fb8..0x119be8 and libgcc (libgcc2 64-bit helpers + fp-bit soft-float) 0x119be8..0x11c6b0, 51 names by
 - 2026-11-02 21:25 `game/perfmeter.cpp` verify: PerfMeter, all 10 functions: ctor, dtor, beginFrame, collectStats, resetStats, writeCsv, dumpGroups and the empty addBar / drawBars / drawDetail; RcntTimer prot
-- 2026-11-02 18:09 `game/pad.cpp` verify: Pad layer written: PadPort detection state machine, Pad ctors/dtor, update, readSticks, updateRepeat, setVibration, listener table, padSysInit/Update/Shutdown (
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@00121b80` | todo | 0/0/1 | 0.9 | 19 | 0 |
 | `unassigned@002647e0` | todo | 0/0/937 | 271.6 | 8 | 0 |
 | `game/thread.cpp` | todo | 0/0/19 | 3.8 | 8 | 0 |
 | `unassigned@002acff0` | todo | 0/0/688 | 209.3 | 8 | 0 |
 | `game/gfxtarget.cpp` | todo | 0/0/8 | 2.6 | 7 | 0 |
-| `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
 | `game/gamepacket.cpp` | todo | 0/0/6 | 0.6 | 6 | 0 |
+| `sound/sound.cpp` | todo | 0/0/98 | 18.8 | 6 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 5 | 0 |
 | `game/rcnttimer.cpp` | todo | 0/0/4 | 0.2 | 4 | 0 |
 | `unassigned@00148db0` | todo | 0/0/146 | 37.4 | 3 | 0 |
 | `rena_pkt_vif1pktmanage.cpp` | todo | 0/0/13 | 1.9 | 2 | 0 |
 | `game/spkrom.cpp` | todo | 0/0/13 | 2.4 | 2 | 0 |
+| `unassigned@0012ea60` | todo | 0/0/7 | 1.7 | 1 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
-| `00121b80` | mcErrorCode | 19 | game | missing | - |
+| `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `00296d00` | stageDefaultRecord | 6 | game | missing | - |
 | `002b0580` | getStageResult | 4 | game | missing | - |
 | `0012e0e0` | gfxFlipDisplay | 4 | game | missing | game/gfxtarget.cpp |

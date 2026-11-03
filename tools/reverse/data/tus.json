@@ -329,6 +329,25 @@
    ],
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. rxthread: RoR's rx/rxthread.cpp 0x249b88..0x24b490; FS2 links its VBlank tail (rxThVBlankHandler .. rxThSync) before rxsnd."
   },
+  "sdk/mcerror.cpp": {
+   "notes": "Pinned 0x121b80..0x121ef0 as sdk/mcerror.cpp (read as libmc's: between the read-fast tail and libc abort, maps commands FS2 never issues). McCmd and McErrno in sdk/mcerror.h use the EE newlib errno numbers, not host errno. memcard.h McFunc / McError now built from them; its mcErrorCode prototype moved here. Bootstrap 6: move McCmd into sdk/libmc.h, keep this file as is (pure code). Doubts in open-items.md TU 9: real SDK name unknown, command 0x20 unidentified, a full card on read returns a bare 5 as the ROM does. No Ghidra changes.",
+   "ranges": [
+    [
+     "00121b80",
+     "00121ef0"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-02 23:30",
+     "status": "verify",
+     "summary": "mcErrorCode, libmc's error encoder: libmc command and result to SCE_ERROR_ENCODE(0x01080000, errno or Sony code)"
+    }
+   ],
+   "status": "verify",
+   "why": "mcErrorCode alone, between libmc's read-fast tail (mce*, 0x121470..0x121b80) and libc's abort 0x121ef0: it maps every libmc command number, the read/write-fast rpcs 0x16 / 0x1b included, so it is read as libmc's own error encoder, not game code"
+  },
   "sdpr2/sdpr2.c": {
    "ranges": [
     [
@@ -387,6 +406,7 @@
    ],
    "status": "verify"
   },
+  "unassigned@00121b80": {},
   "unassigned@00171300": {},
   "unassigned@0023c020": {},
   "unassigned@002647e0": {}

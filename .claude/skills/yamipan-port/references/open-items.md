@@ -69,7 +69,16 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    now starts there). `randUnit` moved from `gamehooks.h` to `heap.h`. Bootstrap 6 must give
    `sdk/eekernel.h` from RosePan (SemaParam, CreateSema / DeleteSema / WaitSema / SignalSema).
    Decision to overrule: the host heap keeps the EE size (~26 MB) with 0x20-byte headers; if host
-   allocations (8-byte pointers inside structs sized with sizeof) run it out, raise `sHeapSize`. Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
+   allocations (8-byte pointers inside structs sized with sizeof) run it out, raise `sHeapSize`.
+   TU 9 (the frontier's `unassigned@00121b80`): **`sdk/mcerror.cpp` 0x121b80..0x121ef0**, the one
+   function `mcErrorCode` (`verify`, no new names: kept the existing `mcErrorCode`, no Ghidra
+   change); `McCmd` / `McErrno` in `sdk/mcerror.h`, memcard.h's `McFunc` / `McError` now built from
+   them. Doubts for the user: read as libmc's (link position, it maps commands FS2 never issues), so
+   the tree gets `src/sdk/mcerror.*` before bootstrap 6 brings RosePan's `src/sdk/`; its real SDK
+   name is unknown; the `McCmd` sceMcFuncNo* values are from the SDK's numbering as remembered
+   (0x20 unidentified). Bootstrap 6: move `McCmd` into `sdk/libmc.h`; the host libmc keeps calling
+   this encoder unchanged (pure code).
+   Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
    `game/perfmeter.cpp`, `game/thread.cpp`, `game/gfxtarget.cpp`, the clocks, the heap, sound,

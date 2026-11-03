@@ -644,9 +644,14 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   `mceReadFastRpcServer` 0x1218b0), page ECC `mceCalcEcc` 0x121560 / `mceCorrectEcc` /
   `mceCorrectPage` / `mceReadFastCopy`, `sceMcReadFast` 0x121970 (rpc 0x16), `sceMcWriteFast`
   0x121a80 (rpc 0x1b, name by analogy). libmc's rpc client 0x32a340, send buffer 0x32a3c0, reply
-  0x32b900, call semaphore 0x2f2f9c, last command 0x2f2f98. 0x121b80 (0x370, unnamed) maps (command,
-  libmc result) to 0x8108xxxx / 0x8109xxxx error codes, called only by the game's memory-card layer
-  0x2ac710..0x2acbb0: libmc tail or game code, read it there. **SIF cmd
+  0x32b900, call semaphore 0x2f2f9c, last command 0x2f2f98. `mcErrorCode` 0x121b80..0x121ef0 (TU
+  `sdk/mcerror.cpp`, 2026-11-02, `verify`) maps (libmc command, result) to SCE_ERROR_ENCODE(0x01080000,
+  e): e an EE newlib errno (ENOENT / EIO / EBADF / EACCES / EEXIST / ENOSPC / ENOTEMPTY 90 / ...),
+  0x2f for NoFormat, Sony 0x8001.. / 0x9003 (ChangedCard); the command matters only for FullDevice,
+  NoEntry, DeniedPermit and NotEmpty, and a full card on a read returns a bare 5 (no prefix). It knows
+  every libmc command plus 0x16 / 0x1b (read / write fast) and 0x20 (all errors -> 0), so it is read
+  as libmc's own encoder (link position: after the read-fast tail, before libc's `abort` 0x121ef0);
+  the game's `McDevice` 0x2ac630..0x2ace30 is its only caller and keeps the low 16 bits. **SIF cmd
   / rpc + fileio head 0x139bc0..0x13b7e4 (batch 010, RoR's libkernl in the same order and sizes,
   `rxalign.py 139bc0 13b600 260508 262300`)**: `sceSifExitCmd` .. `_sceSifCmdIntrHdlr` 0x139ea8,
   `sceSifInitRpc` 0x13a0a0 (registers `_request_end` / `_request_bind` / `_request_call` 0x13a998 /
