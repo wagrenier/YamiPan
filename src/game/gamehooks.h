@@ -2,8 +2,8 @@
  *  game/gamehooks.h
  *
  *  Subsystems main and its loop call that have no TU of their own yet:
- *  the rx runtime's game layer and SPK.ROM (game/spkrom.cpp), sound
- *  (sound/sound.cpp), the empty debug hooks
+ *  the rx runtime's game layer and SPK.ROM (game/spkrom.cpp), the empty
+ *  debug hooks
  *  0x151270..0x151290, the scene controller's callees (game/scene.cpp), and
  *  the UI layout and stage object game/stageresult.cpp calls.
  *  Each moves to its TU's header when that TU is written. Minimal.
@@ -24,6 +24,7 @@
 #include "game/uilayout.h"
 #include "sdk/libvifpk.h"
 #include "sdk/scetypes.h"
+#include "sound/sound.h"
 
 struct StageSelect;             // game/sysdata.h
 
@@ -39,19 +40,6 @@ int  rxFileCallLoadHook(const char *name, void *buf);                    // FS2 
 // unpacked size, -1 for another magic or a length that does not add up
 // (unassigned@002b0d50; PackJob::load).
 int sldiDecompress(const void *src, void *dst);                          // FS2 0x002d0a10
-
-void soundInit(int isPal);                                               // FS2 0x001486e0
-void soundUpdate();                                                      // FS2 0x00148500
-void soundShutdown();                                                    // FS2 0x00148540
-
-// The sound output settings (only what game/sysdata.cpp calls).
-// layout: host -- no fields declared yet (EE: the mode at +0x14, the
-// output / surround bytes at +0x48 / +0x49).
-struct SoundConfig
-{
-    void setOutputMode(int mode);                                        // FS2 0x00147ee0: SoundOutput
-};
-extern SoundConfig *gSoundConfig;   /* sbss 0x31addc (gp-0x7a94) */
 
 // Empty in retail: a stripped system's init / per-frame / teardown (guess).
 void debugSysInit();                                                     // FS2 0x00151290
@@ -494,26 +482,6 @@ public:
 
 // What the S2D widgets (game/uiwidget.cpp) call of systems without a TU.
 
-// A streamed sound (sound/sound.cpp, 0x144090..0x145de0; only what the
-// prgSndStream widget calls). The meaning of the arguments the widget
-// passes as constants is unread.
-// layout: host -- EE 0x60: the state at +0x10.
-class SoundStream
-{
-public:
-    SoundStream();                                                       // FS2 0x00145d70
-    ~SoundStream();                                                      // FS2 0x00145be0: deleting (obj, 1)
-    void setBuffer(int size, void *buffer);                              // FS2 0x00145a50: (0x10000, null)
-    // The stream name of a bank image (an S2D image).
-    void openBankFile(const void *bank, const char *name);               // FS2 0x00145750
-    void play(int a1, int a2);                                           // FS2 0x00145240: (0, 0)
-    void setVolume(int left, int right);                                 // FS2 0x001447e0: 0x80 full
-    void stop(int a1);                                                   // FS2 0x00144d80: (0)
-    void update();                                                       // FS2 0x00144a10
-
-    int m_state;                // FS2 +0x10: 1..3 while it streams
-};
-
 // The byte rings the movie player streams through (unassigned@00148db0,
 // 0x151f90..0x153110, not cut yet; only what game/movieplayer.cpp uses).
 // StreamRing is the interface: the data, its size and the threshold at
@@ -527,7 +495,9 @@ class StreamRing
 public:
     StreamRing(int size, void *mem, int threshold);                      // FS2 0x00152620: mem null allocates; threshold < 0 = size * 7 / 8
     virtual ~StreamRing();                                               // FS2 0x00152590: deleting (obj, flag)
-    // The base slots return 0 / do nothing.
+    // The base slots return 0 / do nothing (contiguous, readPtr, consume,
+    // poll and endPos are written in sound/sound.cpp, where CodeWarrior
+    // emitted them).
     virtual int     filled();                                            // FS2 0x001530d0: bytes to read
     virtual int     contiguous();                                        // FS2 0x001461f0: of those, before the wrap
     virtual int     freeSpace();                                         // FS2 0x001530e0
@@ -572,70 +542,6 @@ public:
     u_char m_paused;            // FS2 +0x18
     int    m_fileSize;          // FS2 +0x1c: endPos()
     int    m_consumed;          // FS2 +0x20
-};
-
-// The game's sound layer (sound/sound.cpp; only what the movie player
-// uses): a SoundFeeder moves a StreamRing's bytes into a SoundSink (an rx
-// PCM or ADPCM stream) each frame.
-// layout: host -- EE 0x10, vtable 0x311180 at +0xc.
-class SoundSink
-{
-public:
-    virtual ~SoundSink();                                                // FS2 0x001468e0
-    virtual void setVolume(int left, int right) = 0;                     // slot +0xc
-    // mode 0 mono, 1 stereo, 2 stereo interleaved by 16 bytes.
-    virtual int  open(int mode, int rate, int a3, int a4, int a5, int a6, int interleave) = 0; // slot +0x10
-
-    int m_handle;               // FS2 +0x0
-    int m_mode;                 // FS2 +0x4
-    int m_interleave;           // FS2 +0x8
-};
-// layout: host -- EE 0x10, vtable 0x311140.
-class SoundPcmSink : public SoundSink
-{
-public:
-    SoundPcmSink();                                                      // FS2 0x001468b0
-    virtual ~SoundPcmSink();                                             // FS2 0x00146830
-    virtual void setVolume(int left, int right);                         // FS2 0x001467d0
-    virtual int  open(int mode, int rate, int a3, int a4, int a5, int a6, int interleave); // FS2 0x00146740: rxSndPcmOpen
-};
-// layout: host -- EE 0x10, vtable 0x3111c0.
-class SoundAdpcmSink : public SoundSink
-{
-public:
-    SoundAdpcmSink();                                                    // FS2 0x00146eb0
-    virtual ~SoundAdpcmSink();                                           // FS2 0x00146e30
-    virtual void setVolume(int left, int right);                         // FS2 0x00146dd0
-    virtual int  open(int mode, int rate, int a3, int a4, int a5, int a6, int interleave); // FS2 0x00146cf0: rxSndAdpcmOpen
-};
-
-// The feeder's states (+0): 0 idle, 1 feeding, 2 paused, 3 stopping, 4
-// ended.
-enum SoundFeederState
-{
-    SoundFeeder_Idle     = 0,
-    SoundFeeder_Feeding  = 1,
-    SoundFeeder_Paused   = 2,
-    SoundFeeder_Stopping = 3,
-    SoundFeeder_Ended    = 4,
-};
-// layout: host -- EE 0x18 (the two pointers widen on the host).
-class SoundFeeder
-{
-public:
-    SoundFeeder();                                                       // FS2 0x001463a0: volume 0x80
-    ~SoundFeeder();                                                      // FS2 0x00146310: deleting (obj, 1)
-    int  start();                                                        // FS2 0x00146210
-    void update();                                                       // FS2 0x00145de0
-    void setSource(StreamRing *source);                                  // FS2 0x00146300
-    void setSink(SoundSink *sink);                                       // FS2 0x001462f0
-
-    int         m_state;        // FS2 +0x0: SoundFeederState
-    StreamRing *m_source;       // FS2 +0x4
-    SoundSink  *m_sink;         // FS2 +0x8
-    int         m_fed;          // FS2 +0xc
-    int         m_volumeL;      // FS2 +0x10
-    int         m_volumeR;      // FS2 +0x14
 };
 
 // The word at sbss 0x31ae40 (gp-0x7a30; unassigned@0023e740): a work area

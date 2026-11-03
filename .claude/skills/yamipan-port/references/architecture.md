@@ -1217,6 +1217,33 @@ short form: size in byte 0 >> 1, chars from +1; long: bit 0 of +0, size +4, data
 iterator ++ is `mslTreeIncrement` 0x25a850. Also named: newlib `strchr` 0x1280a8, `strncasecmp`
 0x1285d0, `fprintf` 0x1239a0, `memcmp` 0x125190.
 
+**`sound/sound.cpp` 0x144080..0x148db0 (TU 35, 2026-11-03, no new names: batch 013's held; all 98
+written, `verify`; one file: the pinned range kept, the classes share the three semaphores and the
+inlined SPU helpers, and CodeWarrior put the inline `SoundPcmSink::setAttr` at its head and
+StreamRing's five empty base slots 0x1461c0..0x146200 beside the feeder)**: what "The game's sound
+layer" (Program flow) lists, read in full. Details the reading added:
+- Inlined everywhere: `spuMemFree` (every SPU ring release), `spuMemAllocHigh` (play's 0x4000 ring),
+  `closeBank` (the open*, setBuffer, freeBuffer and dtor heads), `setVolume` / `applyVolume` (L or R
+  * fade / 128, signed), `getPosition` and `soundUpdate` (in `stop(true)`'s poll loop: DelayThread
+  4000, then rx / rxsndut / SDPR2 updates), the IOP body's release (+0..+8: a member with its own dtor,
+  run after ~SoundStream's body). `stop(false)` with a read in flight leaves state 3 for `update`.
+- `SoundFeeder::update`: stereo sinks (mode 1) take left + right blocks of the sink's interleave
+  (+8) from the ring (right after left), as many as fit; mono / interleaved ones whole units of 0x40
+  (mono: the interleave if larger), at most twice a frame; the sink is ended once the ring's endPos is
+  fed, the feeder ends with the sink (status bit 4); status bit 2 makes it push its volume.
+- Sink slot semantics: `open` closes first (the ADPCM sink then mutes itself), the PCM sink passes
+  only (mode, a3, a4) to `rxSndPcmOpen`; `close` mutes, then closes.
+- `SoundSeBank`: `poll` asks rx with wait 1, `getState` with 0; `unload(true)` retries the free 30
+  times (threadYield 1 between) then frees the bank's IOP / SPU2 memory itself; the dtor stops all
+  effects, unloads, and spins printing "終了待ち。。。%d" (0x3014e0) until the state is 0.
+- `SoundConfig`: the reverb is two `SoundEffect` records (+0x18 / +0x30, 0x18 each: core, mode, depth
+  L / R, feedback, delay); output mode 0 / 1 / 2 = stereo off+surround off / stereo / stereo+surround.
+  ~SoundConfig (inline in soundShutdown) stops SDPR2, SE and BGM.
+- SPU2 allocator 0x4d08d0 (0x2b0): head / tail sentinels, lo / hi words, 32 nodes; the head's end
+  and the tail's start bound the free span; sizes round up to 0x40 (signed).
+- SDPR2's config 0x2f5030 is 8 words {0, 0, -1, -1, 0, 0, 0, 0} (sdpr2Init copies it to the driver
+  and both types).
+
 ## Classes
 
 Name, vtable, vptr offset, size, file. `python rtti.py` (CodeWarrior variant, bootstrap 4, 2026-10-31)

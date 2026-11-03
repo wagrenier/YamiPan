@@ -895,12 +895,22 @@
    "why": "SDPR2 one-voice type sdpr2Single* + pan math: the third message copy (0x302a88); batch 011."
   },
   "sound/sound.cpp": {
+   "notes": "All 98 of 0x144080..0x148db0 written, one file, no Ghidra change (batch 013 names held). New src/sound/sound.h takes the sound stand-ins out of game/gamehooks.h (which includes it); new declaration headers src/rx/rxsndstr.h, src/rx/rxsndut.h, src/sdpr2/sdpr2.h. callcheck clean, layout lint OK; NOT compiled: the MinGW at yamipan.MINGW_BIN (CLion 2) is gone from this machine, no g++ found. Kept as the ROM: update asks rx about stream -1 after a pending stop resolves; setBuffer leaks an earlier owned buffer. PC: null guards when the 32 SPU nodes are all taken; m_fadeEnd zeroed. Bootstrap 6 must add DelayThread (sdk/eekernel.h) and sceSifFreeSysMemory (sdk/sif.h), and host rxsndstr / rxsndut / SDPR2. Next: the sound users 0x2908d0..0x2931b0 (SePlayer), the ring classes unassigned@00148db0. open-items.md TU 35 has the rest.",
    "ranges": [
     [
      "00144080",
      "00148db0"
     ]
    ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 10:22",
+     "status": "verify",
+     "summary": "sound/sound.cpp: all 98 functions written (SoundStream, sinks, SoundFeeder, SoundSeBank, SoundConfig, soundInit/Update/Shutdown, SPU2 and IOP hooks)"
+    }
+   ],
+   "status": "verify",
    "why": "the game's sound layer: SoundStream, SoundSink / SoundPcmSink / SoundAdpcmSink, SoundFeeder, SoundSeBank, SoundConfig, soundInit / Update / Shutdown, the IOP / SPU memory hooks (batch 013); probably several files: split at the TU."
   },
   "unassigned@001037c0": {},

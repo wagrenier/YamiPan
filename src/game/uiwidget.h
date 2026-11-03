@@ -30,7 +30,7 @@
 
 class Clock;                    // game/clock.h
 class MoviePlayer;              // game/movieplayer.h
-class SoundStream;              // game/gamehooks.h
+class SoundStream;              // sound/sound.h
 class UiTextTrack;              // game/uitrack.h
 
 // The widget types, in the order of the class table 0x2facf0 (its names).

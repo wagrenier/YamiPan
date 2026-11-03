@@ -603,7 +603,33 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    `getSaveExtra` 0x29efd0 at its end with its init 0x29ef70; widgets on vtables 0x318820 /
    0x318840; ~17 KB: two or three runs), the VU0 vector helpers 0x299d90..0x29a700 (15+ callers),
    the stage object class 0x29a700..0x29acb0 (vtables 0x311860.. / 0x3185b0..).
-   Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
+   TU 35 (the frontier's pinned `sound/sound.cpp` 0x144080..0x148db0): **all 98 written, `verify`**,
+   no Ghidra change (batch 013's names held; architecture.md "Modules"). Kept as one file (the pin
+   said "probably several": the three semaphores, the inlined SPU / volume / closeBank helpers and
+   CodeWarrior's placement of inline slots tie it together; split later if a string says otherwise).
+   New `src/sound/sound.h` takes SoundStream / SoundSink / SoundPcmSink / SoundAdpcmSink /
+   SoundFeeder / SoundConfig / gSoundConfig and soundInit / Update / Shutdown out of `gamehooks.h`
+   (which includes it) and adds SoundSeBank, SoundEffect, the SPU / IOP hooks and the state enums;
+   SoundStream's stand-in signatures changed (`stop(bool wait)`, `openBankFile` answers the bank,
+   `play(request, start)`), SoundFeeder's `update` answers int. New declaration headers for FS2-only
+   libraries: `src/rx/rxsndstr.h` (rxSndStr* / rxSndStrBank*), `src/rx/rxsndut.h`,
+   `src/sdpr2/sdpr2.h` (argument names read from these callers only). Defined here: `gSoundConfig`
+   (no longer "data the build must define"). Checked: callcheck clean, layout lint OK. **Not checked:
+   no compiler** -- `yamipan.MINGW_BIN` (CLion 2's MinGW) no longer exists on this machine and no
+   other g++ was found, so no -fsyntax-only run this time (for the user: install / point MINGW_BIN
+   at a MinGW; layoutcheck's GCC pass needs it too). Kept as the ROM, for the user to overrule:
+   `update` asks rx about stream -1 right after a pending stop resolves; `setBuffer` does not free an
+   earlier owned buffer; a stereo sink with interleave 0 would loop forever in the feeder. PC: null
+   guards where all 32 SPU nodes are taken (the ROM writes through null); `m_fadeEnd` zeroed by the
+   ctor; IOP addresses pass through u_int (the host sif heap must answer 32-bit addresses). Doubts:
+   `rxSndStrPlayAt`'s 0, 4 arguments, `rxSndSetSysParam` kinds 0..2 and the SDPR2 config words are
+   unread. **Bootstrap 6 must give**: RosePan's `rx/rxsnd.h` / `rx/rxthread.h` (they have every
+   rxSnd* / rxTh* call used), `sdk/eekernel.h` **`DelayThread`** and `sdk/sif.h`
+   **`sceSifFreeSysMemory`** (RosePan has neither), and host implementations (or stubs answering
+   "ended") for rxsndstr / rxsndut / SDPR2. **Next picks**: the sound users 0x2908d0..0x2931b0
+   (`SePlayer`, the SoundStream / SeBank wrappers; unassigned@002681e0), the ring classes TU
+   `unassigned@00148db0` (StreamRing / FileStreamRing 0x151f90..0x153110, right after this file).
+   Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
    `game/perfmeter.cpp`, `game/thread.cpp`, `game/gfxtarget.cpp`, the clocks, the heap, sound,
