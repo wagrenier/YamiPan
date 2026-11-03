@@ -13,7 +13,7 @@ counterpart: every function from its own binary). This skill distils what those 
 skills keep the full history. It is the playbook and the project's memory: follow it, and keep it true
 ("Keeping this skill alive").
 
-**State (2026-11-02): bootstrap, step 4 in progress (names: batches 001-016 applied; rxsys / rxfile / rxthread / rxsnd, SIF cmd / rpc, iopheap and libmpeg / libipu and libkernl but its fileio run 0x13b7e4..0x13ed90 (klib.s, glue, thread, tty, kprintf, loadfile, TLB, initsys, exit, timer, alarm) named from RosePan, rxsndut / rxsndstr / SDPR2 and the game's sound layer by reading; 4(a) and the code-pointer pass done: every known missing function start created, 7,573 functions)** (open-items.md "Next up" has what is left). The game is Forbidden Siren 2 (Europe, `SCES_538.51`;
+**State (2026-11-02): bootstrap, step 4 in progress (names: batches 001-017 applied; rxsys / rxfile / rxthread / rxsnd, SIF cmd / rpc, iopheap and libmpeg / libipu and all of libkernl (klib.s, glue, thread, tty, kprintf, fileio, loadfile, TLB, initsys, exit, timer, alarm) named from RosePan, rxsndut / rxsndstr / SDPR2 and the game's sound layer by reading; 4(a) and the code-pointer pass done: every known missing function start created, 7,573 functions)** (open-items.md "Next up" has what is left). The game is Forbidden Siren 2 (Europe, `SCES_538.51`;
 files under "Environment"), annotation tag `FS2`; a stripped **Metrowerks CodeWarrior** build (not GCC:
 open-items.md has what that changes). What exists: the Ghidra layer on bethington's GhidraMCP 7.0.0
 (`tools/reverse/ghidra_mcp.py`, `ghidra_bridge.py`, `.mcp.json`), a Ghidra project with the game

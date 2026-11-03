@@ -2669,17 +2669,245 @@
   "was": "FUN_0013b158",
   "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261aa0 _sceFsIobSemaMK; same size 0x70 and place in a run of matching functions (rxalign.py)"
  },
+ "0013b1c8": {
+  "name": "_sceFsCountOpenIob",
+  "tag": "lib-context",
+  "was": "FUN_0013b1c8",
+  "why": "SDK 3.0 fileio (filestub.c), by reading (RoR / FF3 0x27a578 unnamed, Sony's name unknown): counts the 32 iob slots at 0x4cc900 whose +4 word is non-zero, under the iob semaphore; the two rpc 0xfe / 0xfd setters refuse with -16 (EBUSY) while it is non-zero"
+ },
  "0013b248": {
   "name": "new_iob",
   "tag": "lib-context",
   "was": "FUN_0013b248",
   "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261b90 new_iob; same size 0x88 and place in a run of matching functions (rxalign.py)"
  },
+ "0013b2d0": {
+  "name": "_sceFsCallRpc",
+  "tag": "lib-context",
+  "was": "FUN_0013b2d0",
+  "why": "SDK 3.0 fileio (filestub.c), by reading (RoR 0x261c18 / FF3 0x27a680 unnamed, Sony's name unknown): sceSifCallRpc retried with DelayThread back-off (1, 2, 4 .. 127 ms, up to 100 tries) unless its last argument says no-retry; every fileio entry point sends through it"
+ },
+ "0013b3c0": {
+  "name": "get_iob",
+  "tag": "lib-context",
+  "was": "FUN_0013b3c0",
+  "why": "SDK 3.0 fileio (filestub.c): FF3 0x27a770 get_iob from FF2's symbol 0x281028 (same size 0x6c, same slot after new_iob's neighbour); returns &iob[fd] (0x4cc900 + fd*16) for fd < 32, else 0, under the iob semaphore"
+ },
  "0013b430": {
   "name": "_sceFs_Rcv_Intr",
   "tag": "lib-context",
   "was": "FUN_0013b430",
   "why": "SDK 3.0 libkernl SIF cmd / rpc and fileio, linked as in RoR: RosePan names RoR 0x261d78 _sceFs_Rcv_Intr; same size 0x3b4 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013b7e8": {
+  "name": "_sceFsSemInit",
+  "tag": "lib-context",
+  "was": "FUN_0013b7e8",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x262130 _sceFsSemInit; same size 0x54 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioFioSema' agrees"
+ },
+ "0013b840": {
+  "name": "_sceFsWaitS",
+  "tag": "lib-context",
+  "was": "FUN_0013b840",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x262188 _sceFsWaitS; same size 0x2c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013b870": {
+  "name": "scePowerOffHandler",
+  "tag": "lib-context",
+  "was": "FUN_0013b870",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x2621b8 scePowerOffHandler; same size 0xb0 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013b920": {
+  "name": "_sceFs_Poff_Intr",
+  "tag": "lib-context",
+  "was": "FUN_0013b920",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x262268 _sceFs_Poff_Intr; same size 0x44 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013b968": {
+  "name": "sceFsInit",
+  "tag": "lib-context",
+  "was": "FUN_0013b968",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x2622b0 sceFsInit; same size 0x208 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013bb70": {
+  "name": "_fs_version",
+  "tag": "lib-context",
+  "was": "FUN_0013bb70",
+  "why": "SDK 3.0 fileio (filestub.c): RoR 0x2624b8 unnamed at the same slot, FF3 0x27af20 _fs_version from FF2's symbol 0x2817d8 (same size 0x8c); compares the bound fileio server's version word (0x4ccb28, set by sceFsInit from rpc 0xff) with two saved copies"
+ },
+ "0013bc00": {
+  "name": "sceFsReset",
+  "tag": "lib-context",
+  "was": "FUN_0013bc00",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x262548 sceFsReset; same size 0x34 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013be68": {
+  "name": "sceOpen",
+  "tag": "lib-context",
+  "was": "FUN_0013be68",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x2627b0 sceOpen; same size 0x290 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioOpenSema' agrees"
+ },
+ "0013c0f8": {
+  "name": "sceClose",
+  "tag": "lib-context",
+  "was": "FUN_0013c0f8",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x262a40 sceClose; same size 0x178 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioCloseSema' agrees"
+ },
+ "0013c270": {
+  "name": "sceLseek",
+  "tag": "lib-context",
+  "was": "FUN_0013c270",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x262bb8 sceLseek; same size 0x23c and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioLseekSema' agrees"
+ },
+ "0013c4b0": {
+  "name": "sceRead",
+  "tag": "lib-context",
+  "was": "FUN_0013c4b0",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x262df8 sceRead; same size 0x26c and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioReadSema' agrees"
+ },
+ "0013c720": {
+  "name": "sceWrite",
+  "tag": "lib-context",
+  "was": "FUN_0013c720",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x263068 sceWrite; same size 0x2c0 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioWriteSema' agrees"
+ },
+ "0013c9e0": {
+  "name": "sceIoctl",
+  "tag": "lib-context",
+  "was": "FUN_0013c9e0",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x263328 sceIoctl; same size 0x388 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioIoctlSema' agrees"
+ },
+ "0013cd68": {
+  "name": "sceIoctl2",
+  "tag": "lib-context",
+  "was": "FUN_0013cd68",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x2636b0 sceIoctl2; same size 0x1e8 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioIoctl2Sema' agrees"
+ },
+ "0013cf50": {
+  "name": "_sceCallCode",
+  "tag": "lib-context",
+  "was": "FUN_0013cf50",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x263898 _sceCallCode; same size 0x1b0 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioCCodeSema' agrees"
+ },
+ "0013d100": {
+  "name": "sceRemove",
+  "tag": "lib-context",
+  "was": "FUN_0013d100",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x263a48 sceRemove; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013d120": {
+  "name": "sceMkdir",
+  "tag": "lib-context",
+  "was": "FUN_0013d120",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x263a68 sceMkdir; same size 0x1b8 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioMkdirSema' agrees"
+ },
+ "0013d2d8": {
+  "name": "sceRmdir",
+  "tag": "lib-context",
+  "was": "FUN_0013d2d8",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x263c20 sceRmdir; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013d2f8": {
+  "name": "sceFormat",
+  "tag": "lib-context",
+  "was": "FUN_0013d2f8",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x263c40 sceFormat; same size 0x280 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioFormatSema' agrees"
+ },
+ "0013d578": {
+  "name": "sceAddDrv",
+  "tag": "lib-context",
+  "was": "FUN_0013d578",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x263ec0 sceAddDrv; same size 0x12c and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioAddDrvSema' agrees"
+ },
+ "0013d6a8": {
+  "name": "sceDelDrv",
+  "tag": "lib-context",
+  "was": "FUN_0013d6a8",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x263ff0 sceDelDrv; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013d6c8": {
+  "name": "sceDopen",
+  "tag": "lib-context",
+  "was": "FUN_0013d6c8",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x264010 sceDopen; same size 0xc8 and place in a run of matching functions (rxalign.py)"
+ },
+ "0013d790": {
+  "name": "sceDclose",
+  "tag": "lib-context",
+  "was": "FUN_0013d790",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x2640d8 sceDclose; same size 0x164 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioDcloseSema' agrees"
+ },
+ "0013d8f8": {
+  "name": "sceDread",
+  "tag": "lib-context",
+  "was": "FUN_0013d8f8",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x264240 sceDread; same size 0x154 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioDreadSema' agrees"
+ },
+ "0013da50": {
+  "name": "sceGetstat",
+  "tag": "lib-context",
+  "was": "FUN_0013da50",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x264398 sceGetstat; same size 0x1b4 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioGetstatSema' agrees"
+ },
+ "0013dc08": {
+  "name": "sceChstat",
+  "tag": "lib-context",
+  "was": "FUN_0013dc08",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x264550 sceChstat; same size 0x24c and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioChstatSema' agrees"
+ },
+ "0013de58": {
+  "name": "sceRename",
+  "tag": "lib-context",
+  "was": "FUN_0013de58",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x2647a0 sceRename; same size 0x208 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioRenameSema' agrees"
+ },
+ "0013e060": {
+  "name": "sceChdir",
+  "tag": "lib-context",
+  "was": "FUN_0013e060",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x2649a8 sceChdir; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013e080": {
+  "name": "sceSync",
+  "tag": "lib-context",
+  "was": "FUN_0013e080",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x2649c8 sceSync; same size 0x1ac and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioSyncSema' agrees"
+ },
+ "0013e230": {
+  "name": "sceMount",
+  "tag": "lib-context",
+  "was": "FUN_0013e230",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x264b78 sceMount; same size 0x280 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioMountSema' agrees"
+ },
+ "0013e4b0": {
+  "name": "sceUmount",
+  "tag": "lib-context",
+  "was": "FUN_0013e4b0",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x264df8 sceUmount; same size 0x1c and place in a run of matching functions (rxalign.py)"
+ },
+ "0013e4d0": {
+  "name": "sceLseek64",
+  "tag": "lib-context",
+  "was": "FUN_0013e4d0",
+  "why": "SDK 3.0 fileio (filestub.c): RoR 0x264e18 unnamed at the same slot, FF3 0x27d880 sceLseek64 from FF2's symbol 0x283e40 (same size 0x23c); its semaphore string 'SceStdioLseek64Sema' agrees"
+ },
+ "0013e710": {
+  "name": "sceDevctl",
+  "tag": "lib-context",
+  "was": "FUN_0013e710",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x265058 sceDevctl; same size 0x2a8 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioDevctlSema' agrees"
+ },
+ "0013e9b8": {
+  "name": "sceSymlink",
+  "tag": "lib-context",
+  "was": "FUN_0013e9b8",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x265300 sceSymlink; same size 0x1f8 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioSymlinkSema' agrees"
+ },
+ "0013ebb0": {
+  "name": "sceReadlink",
+  "tag": "lib-context",
+  "was": "FUN_0013ebb0",
+  "why": "SDK 3.0 libkernl fileio (filestub.c): RosePan names RoR 0x2654f8 sceReadlink; same size 0x1e0 and place in a run of matching functions (rxalign.py); its semaphore string 'SceStdioReadlinkSema' agrees"
  },
  "0013ed90": {
   "name": "sceSifInitIopHeap",

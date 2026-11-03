@@ -1123,48 +1123,48 @@
 /* 0013af50 000001c4 */ sceSifExecRequest(){}  // lib-ctx
 /* 0013b118 0000003c */ sceSifRpcLoop(){}  // lib-ctx
 /* 0013b158 00000070 */ _sceFsIobSemaMK(){}  // lib-ctx
-/* 0013b1c8 0000007c */ FUN_0013b1c8(){}
+/* 0013b1c8 0000007c */ _sceFsCountOpenIob(){}  // lib-ctx
 /* 0013b248 00000088 */ new_iob(){}  // lib-ctx
-/* 0013b2d0 000000ec */ FUN_0013b2d0(){}
-/* 0013b3c0 0000006c */ FUN_0013b3c0(){}
+/* 0013b2d0 000000ec */ _sceFsCallRpc(){}  // lib-ctx
+/* 0013b3c0 0000006c */ get_iob(){}  // lib-ctx
 /* 0013b430 000003b4 */ _sceFs_Rcv_Intr(){}  // lib-ctx
-/* 0013b7e8 00000054 */ FUN_0013b7e8(){}
-/* 0013b840 0000002c */ FUN_0013b840(){}
-/* 0013b870 000000b0 */ FUN_0013b870(){}
-/* 0013b920 00000044 */ FUN_0013b920(){}
-/* 0013b968 00000208 */ FUN_0013b968(){}
-/* 0013bb70 0000008c */ FUN_0013bb70(){}
-/* 0013bc00 00000034 */ FUN_0013bc00(){}
+/* 0013b7e8 00000054 */ _sceFsSemInit(){}  // lib-ctx
+/* 0013b840 0000002c */ _sceFsWaitS(){}  // lib-ctx
+/* 0013b870 000000b0 */ scePowerOffHandler(){}  // lib-ctx
+/* 0013b920 00000044 */ _sceFs_Poff_Intr(){}  // lib-ctx
+/* 0013b968 00000208 */ sceFsInit(){}  // lib-ctx
+/* 0013bb70 0000008c */ _fs_version(){}  // lib-ctx
+/* 0013bc00 00000034 */ sceFsReset(){}  // lib-ctx
 /* 0013bc38 00000140 */ FUN_0013bc38(){}
 /* 0013bd78 000000f0 */ FUN_0013bd78(){}
-/* 0013be68 00000290 */ FUN_0013be68(){}
-/* 0013c0f8 00000178 */ FUN_0013c0f8(){}
-/* 0013c270 0000023c */ FUN_0013c270(){}
-/* 0013c4b0 0000026c */ FUN_0013c4b0(){}
-/* 0013c720 000002c0 */ FUN_0013c720(){}
-/* 0013c9e0 00000388 */ FUN_0013c9e0(){}
-/* 0013cd68 000001e8 */ FUN_0013cd68(){}
-/* 0013cf50 000001b0 */ FUN_0013cf50(){}
-/* 0013d100 0000001c */ FUN_0013d100(){}
-/* 0013d120 000001b8 */ FUN_0013d120(){}
-/* 0013d2d8 0000001c */ FUN_0013d2d8(){}
-/* 0013d2f8 00000280 */ FUN_0013d2f8(){}
-/* 0013d578 0000012c */ FUN_0013d578(){}
-/* 0013d6a8 0000001c */ FUN_0013d6a8(){}
-/* 0013d6c8 000000c8 */ FUN_0013d6c8(){}
-/* 0013d790 00000164 */ FUN_0013d790(){}
-/* 0013d8f8 00000154 */ FUN_0013d8f8(){}
-/* 0013da50 000001b4 */ FUN_0013da50(){}
-/* 0013dc08 0000024c */ FUN_0013dc08(){}
-/* 0013de58 00000208 */ FUN_0013de58(){}
-/* 0013e060 0000001c */ FUN_0013e060(){}
-/* 0013e080 000001ac */ FUN_0013e080(){}
-/* 0013e230 00000280 */ FUN_0013e230(){}
-/* 0013e4b0 0000001c */ FUN_0013e4b0(){}
-/* 0013e4d0 0000023c */ FUN_0013e4d0(){}
-/* 0013e710 000002a8 */ FUN_0013e710(){}
-/* 0013e9b8 000001f8 */ FUN_0013e9b8(){}
-/* 0013ebb0 000001e0 */ FUN_0013ebb0(){}
+/* 0013be68 00000290 */ sceOpen(){}  // lib-ctx
+/* 0013c0f8 00000178 */ sceClose(){}  // lib-ctx
+/* 0013c270 0000023c */ sceLseek(){}  // lib-ctx
+/* 0013c4b0 0000026c */ sceRead(){}  // lib-ctx
+/* 0013c720 000002c0 */ sceWrite(){}  // lib-ctx
+/* 0013c9e0 00000388 */ sceIoctl(){}  // lib-ctx
+/* 0013cd68 000001e8 */ sceIoctl2(){}  // lib-ctx
+/* 0013cf50 000001b0 */ _sceCallCode(){}  // lib-ctx
+/* 0013d100 0000001c */ sceRemove(){}  // lib-ctx
+/* 0013d120 000001b8 */ sceMkdir(){}  // lib-ctx
+/* 0013d2d8 0000001c */ sceRmdir(){}  // lib-ctx
+/* 0013d2f8 00000280 */ sceFormat(){}  // lib-ctx
+/* 0013d578 0000012c */ sceAddDrv(){}  // lib-ctx
+/* 0013d6a8 0000001c */ sceDelDrv(){}  // lib-ctx
+/* 0013d6c8 000000c8 */ sceDopen(){}  // lib-ctx
+/* 0013d790 00000164 */ sceDclose(){}  // lib-ctx
+/* 0013d8f8 00000154 */ sceDread(){}  // lib-ctx
+/* 0013da50 000001b4 */ sceGetstat(){}  // lib-ctx
+/* 0013dc08 0000024c */ sceChstat(){}  // lib-ctx
+/* 0013de58 00000208 */ sceRename(){}  // lib-ctx
+/* 0013e060 0000001c */ sceChdir(){}  // lib-ctx
+/* 0013e080 000001ac */ sceSync(){}  // lib-ctx
+/* 0013e230 00000280 */ sceMount(){}  // lib-ctx
+/* 0013e4b0 0000001c */ sceUmount(){}  // lib-ctx
+/* 0013e4d0 0000023c */ sceLseek64(){}  // lib-ctx
+/* 0013e710 000002a8 */ sceDevctl(){}  // lib-ctx
+/* 0013e9b8 000001f8 */ sceSymlink(){}  // lib-ctx
+/* 0013ebb0 000001e0 */ sceReadlink(){}  // lib-ctx
 /* 0013ed90 00000088 */ sceSifInitIopHeap(){}  // lib-ctx
 /* 0013ee18 00000070 */ sceSifAllocIopHeap(){}  // lib-ctx
 /* 0013ee88 00000080 */ sceSifAllocSysMemory(){}  // lib-ctx

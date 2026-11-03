@@ -125,8 +125,12 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    `deci2Vprintf`, `kprintf`) and `getpid` / `sceSifGetDataTable` are names by reading, Sony's
    own unknown (RoR and FF3 have them unnamed); 0x123528 (glue's errno setter?) and the VU0
    math run 0x135a90..0x1366bc before klib.s are unread.
-   **Next batches, in this order**: libkernl's fileio run 0x13b7e4..0x13ed90 (37 functions, all
-   unnamed, after `_sceFs_Rcv_Intr`; RoR's fileio after 0x262300); then the rest of the SDK 3.0
+   **Batch 017 done (2026-11-02, 38 names)**: libkernl's fileio 0x13b7e8..0x13ed90 from RoR, one
+   to one, every `SceStdio*Sema` string agreeing (+ `_fs_version`, `sceLseek64`, `get_iob` from
+   FF3's FF2 symbols; architecture.md "Key functions and globals", SDK). Doubts: `_sceFsCallRpc` /
+   `_sceFsCountOpenIob` are names by reading (Sony's own unknown); 0x13bc38 (rpc 0xfe) / 0x13bd78
+   (rpc 0xfd) left unnamed (no callers, unnamed in RoR and FF3).
+   **Next batches, in this order**: the rest of the SDK 3.0
    libraries both games link, by `rxalign.py` size runs against
    RoR's `// lib` names as batch 010 did for SIF (libgraph,
    libdma, libpad, libmc, libcdvd: find each by a named anchor); libc near strlen / strcpy (0x1252d8 memmove?; 0x106c00 / 0x106b80 = MSL's refcounted
