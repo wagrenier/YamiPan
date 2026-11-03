@@ -1,6 +1,5 @@
 {
  "queue": [
-  "rena/rena_2d_texture_tim2.cpp",
   "yamipan/rendering/texture_store.cpp"
  ],
  "settings": {
@@ -876,12 +875,21 @@
    "why": "Cut out of unassigned@002b0d50 (the frontier pick, 628 functions 0x2b0d50..0x2e1b70): the game's 16-bit string helpers wstrcmp 0x2d4150, wstrstr 0x2d42a0, wstrFromAscii 0x2d4440, wstrcpy 0x2d4510, wstrlen 0x2d4650 (the run's most-called functions, 22x for wstrFromAscii). Bounded by a FontData-derived class before (ctor 0x2d4110, vtable 0x319ff0) and a scene lookup reading +0x40 tables after (0x2d46a0). No strings: the file name is a guess."
   },
   "rena/rena_2d_texture_tim2.cpp": {
+   "notes": "All 7 written; class moved to rena/rena_2d_texture_tim2.h. One Tim2Texture per mip level of the first picture; m_image (+0x40) is the TIM2 file itself, not a copy. upload is empty on purpose (no GS memory; its comment says what the ROM sends). Sony's sample library is rena/tim2.cpp 0x2e97a8..0x2e9d90 (range end a guess), defined here with four functions written because stubs would have left the class useless; the rest are still todo. Tested on real TIM2s carved from ROM.000 and ROM.001: sizes, PSM, CPSM, pixel and CLUT offsets agree with the file headers. Screen unchanged, one white band: nothing binds a texture until the host task yamipan/rendering/texture_store.cpp, which is next. Open: the second CLUT +0x3c has no known writer; GsRegion is a stand-in and its release a stub. Ghidra names batch 084 saved by name_ctx.",
    "ranges": [
     [
      "002e1b70",
      "002e2970"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-03 18:31",
+     "status": "verify",
+     "summary": "reconstruct Tim2Texture, all 7 functions (verify)"
+    }
+   ],
+   "status": "verify",
    "why": "The game's own file name from its strings (rena_2d_texture_tim2.cpp: ...); pinned at bootstrap 6 so the stubs land in src/rena/."
   },
   "rena/rena_pkt_vif1pktmanage.cpp": {
@@ -902,6 +910,15 @@
    ],
    "status": "verify",
    "why": "rena's VIF1 packet manager: the source string rena_pkt_vif1pktmanage.cpp in Reset 0x2eb170 and AddList 0x2eb500, classes Vif1PktManage (vtable 0x31a808) / Vif1PktList (0x31a818); 0x2eb7d0..0x2ec110 are its MSL vector instances (insert of the list / buffer vectors, the buffer vector dtor and clear), called only from this file. Before: unassigned@002e2970 code; after: 0x2ec110 a lazy static init of another file (drawSysInit's caller set). Key under rena/ with the game's own file name."
+  },
+  "rena/tim2.cpp": {
+   "ranges": [
+    [
+     "002e97a8",
+     "002e9d90"
+    ]
+   ],
+   "why": "Sony's sample TIM2 library by its own message (Tim2GetPictureHeader: Illegal image no.) and shapes; Tim2Texture needs four of its functions. The end of the run is a guess (0x2e9b88 read as Tim2GetClutColor is the last one looked at)."
   },
   "rx/filecd.c": {
    "notes": "All 35 of 0x1565c8..0x157db8 written. rxcmp.py: 34 of 35 identical to RoR with jump targets and data masked; the one difference is rxFileCdFindDir, 0x18 longer in FS2: it also looks in the root when the path table holds nothing else, which the host's one-directory disc relies on. rxFileVerbose is rxfile.c's s_verbose, shared now the driver is its own file. Runs on io::Disc: a smoke run reads sectors 16, 18, 19 and finds SPK.ROM.",

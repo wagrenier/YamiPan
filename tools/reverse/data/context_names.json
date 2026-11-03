@@ -17249,6 +17249,12 @@
   "was": "FUN_002dccf0",
   "why": "built over the areaclip keyword's file: an 8 x 8 grid of index lists; was the guess DrawLayerList"
  },
+ "002e0840": {
+  "name": "GsRegion::release",
+  "tag": "game-inferred",
+  "was": "FUN_002e0840",
+  "why": "state +0x12 = 3 and owner +0x14 = 0 on the region a Tim2Texture holds at +8 (given by 0x2e0a10 from the allocator, state 1 waiting for upload, 2 uploaded)"
+ },
  "002e1440": {
   "name": "GsRegionAlloc::~GsRegionAlloc",
   "tag": "game-inferred",
@@ -17278,6 +17284,12 @@
   "tag": "lib-context",
   "was": "FUN_002e1c50",
   "why": "was GsTexture::upload: it sits in rena's TIM2 texture code (0x2e1b70..0x2e2970) and every GsTexture is a Tim2Texture (base at +0), so it is the base's image transfer; UiDrawer::setTexture's upload when newly placed"
+ },
+ "002e22d0": {
+  "name": "Tim2Texture::setupMip",
+  "tag": "lib-context",
+  "was": "FUN_002e22d0",
+  "why": "fills one Tim2Texture from a TIM2 picture header and a mip level: TEX0 template (PSM, TBW, TW, TH, CPSM, CLD), GS blocks, pixel and CLUT pointers"
  },
  "002e26c0": {
   "name": "Tim2Texture::load",
@@ -17332,6 +17344,36 @@
   "tag": "game-inferred",
   "was": "FUN_002e5210",
   "why": "new 0x100 object (vtable 0x31a7f0) over record index, or over the record called name"
+ },
+ "002e97a8": {
+  "name": "Tim2CheckFileHeaer",
+  "tag": "lib-context",
+  "was": "FUN_002e97a8",
+  "why": "first of Sony's sample tim2 library in link order (the misspelling is Sony's); not read in detail"
+ },
+ "002e9868": {
+  "name": "Tim2GetPictureHeader",
+  "tag": "lib-context",
+  "was": "FUN_002e9868",
+  "why": "its own message: Tim2GetPictureHeader: Illegal image no.(%d)"
+ },
+ "002e98f0": {
+  "name": "Tim2GetMipMapPictureSize",
+  "tag": "lib-context",
+  "was": "FUN_002e98f0",
+  "why": "picture width / height >> mip level, answers the level's byte size rounded to 16"
+ },
+ "002e9af0": {
+  "name": "Tim2GetImage",
+  "tag": "lib-context",
+  "was": "FUN_002e9af0",
+  "why": "header + HeaderSize, plus the sizes of the lower mip levels (mip header +0x10)"
+ },
+ "002e9b60": {
+  "name": "Tim2GetClut",
+  "tag": "lib-context",
+  "was": "FUN_002e9b60",
+  "why": "null without ClutColors, else after the header and ImageSize"
  },
  "002eaff0": {
   "name": "Vif1PktManage::GetUsedSize",

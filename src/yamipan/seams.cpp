@@ -47,7 +47,7 @@ void YamiPan_DrawUiPrim(const void *list, uint64_t prim, const uint8_t *rgbaq)
 
 void YamiPan_DrawUiTexture(const void *, const void *)
 {
-    // Images come with the rena TU that decodes TIM2 at its source (Tim2Texture is still unwritten).
+    // Images come with rendering::TextureStore (queued): it decodes the TIM2 the owner points at.
 }
 
 void YamiPan_DrawUiBegin(const void *list, int format)

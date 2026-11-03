@@ -11,6 +11,7 @@
 #ifndef _GAME_GSUTIL_H
 #define _GAME_GSUTIL_H
 
+#include "rena/rena_2d_texture_tim2.h"
 #include "sdk/libvifpk.h"
 #include "sdk/scetypes.h"
 
@@ -37,34 +38,6 @@ void gfxUiPresetRgbOnly5(sceVif1Packet *packet);                         // FS2 
 void gfxUiPresetDrawEnv(sceVif1Packet *packet);                          // FS2 0x00230f70
 
 // ──────────────────────────────────────────────────────────────────────
-// rena's TIM2 texture (rena_2d_texture_tim2.cpp, 0x2e1b70..0x2e2970; not
-// written yet): EE 0x48, vptr 0x31a7c0 at +0x44 after the data: +0x00 the
-// TEX0 template, +0x08 a held resource, +0x0c the per-picture textures (one
-// more Tim2Texture per extra picture), +0x10 their count, +0x1c / +0x1e
-// the size, +0x20 the CLUT's block offset, +0x3c / +0x40 the image copy on
-// the global heap. Only what GsTexture uses. layout: host
-class Tim2Texture
-{
-public:
-    // Loads a TIM2 image ('T' first, else rena's "tim2" message).
-    Tim2Texture(const void *image);                                      // FS2 0x002e2920
-    virtual ~Tim2Texture();                                              // FS2 0x002e2810: deleting (obj, flag)
-
-    // Writes a 3-qword packet at *cursor (CNT / FLUSH DIRECT / A+D) with
-    // the TEX0 template at GS block `block` (its CLUT after it) to reg.
-    // PC: the host binds textures by their owner (yamipan_drawui.h).
-    void putTex0(u_long **cursor, int block, u_int reg);                 // FS2 0x002e1b70
-    // The GS blocks of the image and its CLUT (+0x20 + the short at +0x30,
-    // unread), rounded up to whole pages (TexAreaList::place).
-    int getVramBlocks();                                                 // FS2 0x002e1c30
-
-    void *m_image;              // FS2 +0x40: the image copy (TexAreaList's key)
-
-protected:
-    short m_width;              // FS2 +0x1c
-    short m_height;             // FS2 +0x1e
-};
-
 // The render targets an image record can name in its TIM2 header's
 // reserved word (+0xc): the 512x512 buffers of gfxInitRenderTargets.
 enum GsTargetTag

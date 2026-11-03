@@ -167,4 +167,13 @@ public:
     virtual ~GsRegionAlloc();                                            // FS2 0x002e1440: EE slot 0 (+0x8)
 };
 
+// A region GsRegionAlloc gave a texture (Tim2Texture::m_region): +0x8 its GS
+// block, +0x12 its state (1 to send, 2 sent, 3 released), +0x14 its texture.
+// layout: host -- only the call; same TU.
+class GsRegion
+{
+public:
+    void release();                                                      // FS2 0x002e0840
+};
+
 #endif /* _GAME_GFXTARGET_H */
