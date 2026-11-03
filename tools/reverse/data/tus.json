@@ -1,5 +1,7 @@
 {
- "queue": [],
+ "queue": [
+  "game/menuscene.cpp"
+ ],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
   "frontier_ignore": [],
@@ -278,6 +280,15 @@
    ],
    "status": "verify",
    "why": "the memory card module: the libmc device wrapper McDevice (0x2ac630..0x2acff0, ctor 0x2acf90), the save manager Memcard (state machines 0x2a9cc0..0x2ab9f0, requests, update) and the SaveFile image (0x2aa720, 0x2abc20..0x2ac540); its sbss bytes 0x31ae80..0x31ae90 are one block (gp-0x79f0..-0x79e0: saveFound, flag, stamp, lib inited). 0x2a9be0 before it is a Vt_00318ca0 ctor; 0x2acff0 after it starts unrelated code (a 0x2ec840 / 0x267c00 call, then a 0x1cc0 object and lens-flare-like float code)"
+  },
+  "game/menuscene.cpp": {
+   "ranges": [
+    [
+     "002b5740",
+     "002b6b90"
+    ]
+   ],
+   "why": "Cut out of unassigned@002b0d50 at bootstrap 6, on the user's word, to pin the menu scene: menuSceneThread 0x2b5740 and everything only its tree calls (0x2b5770 -> 0x2b5aa0, 0x2b5ab0, 0x2b62d0, 0x2b65e0, 0x2b66e0, 0x2b67d0, 0x2b6410, 0x2b5dc0, 0x2b60b0, 0x2b6770, 0x2b6810, 0x2b6a00); refs show no caller from outside, and 0x2b6b90 is called from 0x1ff184. The file name is the port's."
   },
   "game/movieplayer.cpp": {
    "notes": "Cut out of unassigned@001953f0 (its tail 0x1faa30..0x1fcb40; the rest of that run is still unassigned). New game/movieplayer.h; gamehooks.h lost MoviePlayer and gained StreamRing / FileStreamRing (unassigned@00148db0, not cut) and SoundSink / SoundPcmSink / SoundAdpcmSink / SoundFeeder (sound/sound.cpp). PC: uploadFrame calls the new host YamiPan_DrawUiMovie (decoded macroblocks as the player's texture, no GS upload); feedIpu paces by YamiPanMpegVideoPending as RosePan did; Stop/RestartDMA callbacks are no-ops; the reader starts null. Bootstrap 6 must add sceMpegDemuxPssRing to the host libmpeg, rename RosePanMpegVideoPending, bring eeregs.h, and implement YamiPan_DrawUiMovie. Doubts in open-items.md TU 34: kMovieAudioTail 0x4000, the data ring and MovieState_Abort have no writer here. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean with RosePan SDK headers plus stubs.",
