@@ -479,8 +479,8 @@ FileLoader::~FileLoader()
 
 // FS2 0x00132920
 
-FileLoader::FileLoader(int arg)
-    : m_state(FileJob_Idle), m_head(NULL), m_tail(NULL), m_count(0), m_jobId(0), m_arg(arg)
+FileLoader::FileLoader(const char *dir)
+    : m_state(FileJob_Idle), m_head(NULL), m_tail(NULL), m_count(0), m_jobId(0), m_dir(dir)
 {
     m_prefix[0] = '\0';
 }

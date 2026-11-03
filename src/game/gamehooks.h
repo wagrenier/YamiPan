@@ -189,9 +189,13 @@ enum StageDoorState
     StageDoor_Blocked  = 4,
 };
 
-// An object of the stage: doors, the player's items and weapons (one
-// family: getKind is the same vtable slot in all). Only what
-// game/uigame.cpp reads.
+class StageCollision;
+
+// An object of the stage: doors, the player's items and weapons, the Root
+// objects (the map's pieces, group 1) -- one family: getKind is the same
+// vtable slot in all. Only what game/uigame.cpp, StageSound and
+// StageScene read; where the subclasses use an offset differently, a union
+// holds both.
 // layout: host -- EE: vptr at +0 (getKind is slot 123, vtable +0x1f4).
 class StageObject
 {
@@ -205,16 +209,42 @@ public:
     // row 3 its position (StageSound's listener); a plain stub until its TU.
     const sceVu0FVECTOR *getMatrix();                                    // FS2 vtable +0x14
 
+    // This is the scene's player (gStageScene->player).
+    bool isPlayer();                                                     // FS2 0x00215ef0
+    // StageSound::update's playerFlag for a character (the X_J / X_D
+    // alternate entries): for the player the party's flag byte (0x1fe800),
+    // for another character whether its +0x224 record's +0x40 is 0x11 or
+    // 0x2a (unread).
+    u_char getAltSoundFlag();                                            // FS2 0x00214f60
+
+    // A Root object's mesh i; null past the last (inline in the ROM).
+    StageCollision *collisionAt(u_int i) const
+    {
+        return m_collisions == nullptr || i >= m_collisionCount ? nullptr : m_collisions[i];
+    }
+
     u_char _000[0x20];
     // The name ends before +0x30 (a character's model there): 0x10 like an
     // ItemDef name. Was sized to +0x200 before (open-items.md TU 44).
     char   m_name[0x10];        // FS2 +0x020: an item's / weapon's name (an ItemDef name), the object's map key
     StageModel *m_model;        // FS2 +0x030: a character's model (StageSound: its bone map)
-    u_char _034[0x1cc];
-    int    m_itemDef;           // FS2 +0x200: gItemDefs index; gStageObjRecords too (StageSound)
+    u_char m_active;            // FS2 +0x034: the list walks (StageScene::raycast) skip an inactive object
+    u_char _035[0x2];
+    u_char m_hidden;            // FS2 +0x037: (guess) set: StageScene::raycast leaves the object out
+    u_char _038[0x1c8];
+    union {
+        int    m_itemDef;       // FS2 +0x200: gItemDefs index; gStageObjRecords too (StageSound)
+        u_char m_collides;      // FS2 +0x200: a Root object's: it has collision meshes (StageScene::raycast)
+    };
     u_char _204[0x4];
-    int    m_id;                // FS2 +0x208: a character's number (StageObjectList::addCharacter)
-    int    m_count;             // FS2 +0x20c: an item's count
+    union {
+        int    m_id;            // FS2 +0x208: a character's number (StageObjectList::addCharacter)
+        u_int  m_collisionCount; // FS2 +0x208: a Root object's mesh count
+    };
+    union {
+        int    m_count;         // FS2 +0x20c: an item's count
+        StageCollision **m_collisions; // FS2 +0x20c: a Root object's meshes
+    };
     u_char _210[0x98];
     int    m_doorState;         // FS2 +0x2a8: a door's StageDoorState
     u_char _2ac[0x54];
@@ -262,6 +292,13 @@ struct PlayerMotion
 // the items, +0x234 the map's holder, +0x238 / +0x23c the two weapons.
 struct StagePlayer
 {
+    // +0x400 set and +0x3c8 == 1: StageScene::drawPaused / update then
+    // pass StageSound::update sceneFlag 1. What mode 1 is is unread.
+    bool isMode1();                                                      // FS2 0x002152d0
+    // The player is a character (a StageObject) in the ROM; the host
+    // stand-ins keep separate layouts until the character TU joins them.
+    StageObject *character() { return reinterpret_cast<StageObject *>(this); }
+
     u_char _000[0x150];
     float  posX;                // FS2 +0x150
     float  posZ;                // FS2 +0x154
@@ -285,6 +322,10 @@ struct StageParty
     void resetSaved();                                                   // FS2 0x001fe720: the four ids to -1
     void save();                                                         // FS2 0x001fe6d0
     void restore();                                                      // FS2 0x001fe6c0
+    // Of the +0 record, by its mode (+0xb8): +0x18 (modes 3, 4), +0x14
+    // (mode 1), else null. The name is a guess (StageScene::drawPaused
+    // compares it with the view target's character).
+    StageObject *getCompanion();                                         // FS2 0x001fea50
 };
 
 // A singly linked list whose nodes {next, flags} carry a keep bit (the
@@ -308,7 +349,6 @@ public:
 };
 
 class Clock;                    // game/clock.h
-class StageFiles;
 
 // What StageScene::raycast answers (from 0x233810). Only the flag
 // StageSound tests.
@@ -323,6 +363,39 @@ struct StageCollisionFace
     u_int  flags;               // FS2 +0x40: StageCollisionFlag
 };
 
+// One collision mesh of a Root object (StageObject::m_collisions; the run
+// unassigned@00231c90). Only the ray test StageScene::raycast uses.
+// layout: host -- contents unread.
+class StageCollision
+{
+public:
+    // The face the segment from..to hits (hit: where), null none; mask /
+    // flags / arg select the faces (StageSound's values).
+    StageCollisionFace *raycast(sceVu0FVECTOR hit, const sceVu0FVECTOR from,
+                                const sceVu0FVECTOR to, u_int mask,
+                                u_int flags, int arg);                   // FS2 0x00233810
+};
+
+// A sub-scene's demo voice (StageScene +0x28; the run unassigned@002b0d50):
+// a SoundStream with a directory (streamEU/demo/) and what looks like a
+// subtitle colour and position. Only what StageScene calls.
+// layout: host -- EE 0x80: SoundStream's 0x60, +0x60..+0x70 zero (+0x64
+// the directory, +0x68 a string, +0x70 an object with the vptr at +0x10),
+// +0x74 0x80606060, +0x78 0x100, +0x7c 0x1bc.
+class DemoStream : public SoundStream
+{
+public:
+    DemoStream();                                                        // FS2 0x002b1490
+    ~DemoStream();                                                       // FS2 0x002b13e0: deleting
+    void setDir(const char *dir);                                        // FS2 0x002b1370: a heap copy, null none
+    // SoundStream state Playing or Paused.
+    bool isPlaying();                                                    // FS2 0x002b1140
+    // SoundStream::stop(false); -1 when it failed.
+    int  stop();                                                         // FS2 0x002b1170
+    // A jump to SoundStream::update: once a frame.
+    void update();                                                       // FS2 0x002b1100
+};
+
 // The scene's fade (StageScene +0xfc; 0x1512a0 / 0x1512e0 in the run
 // unassigned@00148db0). Class and mode meaning are guesses.
 // layout: host -- EE: +0x24 level, +0x34 mode.
@@ -333,73 +406,9 @@ public:
     bool isFullInMode2();                                                // FS2 0x001512a0
 };
 
-// The current stage object (0x130 bytes): built by stageLoad 0x17fb90 for
-// the stage and by stageThread for a sub-scene (game/stageloop.cpp).
-// layout: host -- EE offsets in the comments.
-struct StageScene
-{
-    StageScene(bool isSubScene, StageSound *sound);                      // FS2 0x0019c180
-    ~StageScene();                                                       // FS2 0x0019bbe0: deleting
-
-    // The frame: update, then draw for the active character.
-    void update();                                                       // FS2 0x00199400
-    void draw(StageObject *active);                                      // FS2 0x00198970
-    // The frame while a dialog or menu thread runs.
-    void drawPaused();                                                   // FS2 0x00198fc0
-    // The character the player controls (null none).
-    StageObject *getActiveCharacter();                                   // FS2 0x0019bbb0
-    // Once, before the stage's first frame.
-    void beginPlay();                                                    // FS2 0x001963a0
-    void setupCameras();                                                 // FS2 0x00199f00
-    void enterSubScene(void *data);                                      // FS2 0x00195e10
-    void clearSubSceneRequest();                                         // FS2 0x00196050: subSceneRequest = 0
-
-    bool isGameOver();                                                   // FS2 0x001956e0
-    bool isCleared();                                                    // FS2 0x00195640
-    // A sub-scene whose own scene (subScene) has ended.
-    bool isSubSceneDone();                                               // FS2 0x00195d80
-    // Start / select on pad 0 while the stage allows its menu.
-    bool wantsPauseMenu();                                               // FS2 0x00195a50
-    bool wantsMapMenu();                                                 // FS2 0x001958b0
-
-    // The floor the player is on (the S2D's rF01..rFDF: 0..9); negative
-    // none.
-    int getFloor(StagePlayer *player);                                   // FS2 0x0019aea0
-
-    // The nearest collision face on the segment from..to (hit: where);
-    // null none. mask / flags select what counts (StageSound's values in
-    // game/stagesound.cpp), skip an object left out.
-    StageCollisionFace *raycast(sceVu0FVECTOR hit, const sceVu0FVECTOR from,
-                                const sceVu0FVECTOR to, int arg, u_int mask,
-                                u_int flags, void *skip);                // FS2 0x00198170
-    // The sound attr at pos: inside the area grid of +0xb8 (0x284190).
-    // StageSound hands it to every placed sound (setAttr); reverb likely.
-    bool getSoundAttr(const sceVu0FVECTOR pos);                          // FS2 0x0019ae10
-
-    u_char           isSubScene;      // FS2 +0x00: the constructor's first argument
-    u_char           _01[0x3];
-    int              subSceneRequest; // FS2 +0x04: set: stageThread builds a sub-scene
-    void            *subScene;        // FS2 +0x08: a sub-scene's own scene (enterSubScene); null once it ended
-    u_char           _0c[0x4];
-    StageObjectList *objects;         // FS2 +0x10
-    u_char           _14[0x10];
-    StageSound      *sound;           // FS2 +0x24
-    u_char           _28[0x8];
-    KeepList        *keepList;        // FS2 +0x30
-    u_char           _34[0x2c];
-    Clock           *clock;           // FS2 +0x60: paused while a menu runs
-    u_char           _64[0x14];
-    StagePlayer     *player;          // FS2 +0x78
-    u_char           _7c[0xc];
-    StageParty      *party;           // FS2 +0x88
-    u_char           _8c[0x60];
-    StageEvent      *event;           // FS2 +0xec
-    u_char           _f0[0xc];
-    StageFade       *fade;            // FS2 +0xfc
-    u_char           _100[0xc];
-    StageScene      *parent;          // FS2 +0x10c: a sub-scene's (stageThread)
-    StageFiles      *files;           // FS2 +0x110: a sub-scene's (stageThread)
-};
+// StageScene (the current stage object) and StageFiles (the stage's
+// files): game/stagescene.h.
+#include "game/stagescene.h"
 
 // The navi menu (0x29a700..; sbss gp-0x79f8, null while there is none).
 // Only what getGameValue reads; the extents are guesses (each array ends
@@ -423,37 +432,12 @@ static_assert(offsetof(NaviMenu, flagsE0) == 0x5e0, "NaviMenu::flagsE0");
 static_assert(offsetof(NaviMenu, flagsF0) == 0x5f0, "NaviMenu::flagsF0");
 NaviMenu *getNaviMenu();                                                 // FS2 0x0029efe0
 
-// The stage's current objective as 16-bit text (the S2D's rPurpose):
-// 0x196870's record + 4.
-const u_short *getPurposeText();                                         // FS2 0x00195d50
 
 // The memory-card menu's save manager (sbss 0x31ae94, gp-0x79dc; set and
 // deleted by the menu 0x2b8600.., null while there is none): the S2D's
 // rMcTotalTime0..3 show its saves' play times. Data the build must define.
 class Memcard;                  // game/memcard.h
 extern Memcard *gMenuMemcard;
-
-// The stage's files (sbss 0x31adfc: getStageFiles; built by stageLoad over
-// the stage loader, game/stageloop.cpp): the loaded lists and scripts.
-// layout: host -- EE 0x160: +0 the loader, +4 a flag (1), 22 containers
-// from +0xc.
-class StageFiles
-{
-public:
-    explicit StageFiles(FileLoader *loader);                             // FS2 0x001a4270
-    ~StageFiles();                                                       // FS2 0x001a3f90: deleting
-
-    // Loads and reads a script file (the stage's, through the loader).
-    int  load(const char *path);                                         // FS2 0x001a37e0
-    // spotlight / shadow_00.
-    void loadCommon();                                                   // FS2 0x001a38e0
-    // ../data/listfile/s%02dlist.lst for a stage (not a sub-scene).
-    void loadList();                                                     // FS2 0x001a3a60
-    // Called for a sub-scene where loadList would be: empty in retail.
-    void loadSubSceneList();                                             // FS2 0x001a3db0
-
-    FileLoader *loader;         // FS2 +0x0
-};
 
 // The stage's pause menu (start: a thread in ThreadSlot_Dialog running the
 // stage screen layout, 0x20ad20) and map menu (select: 0x20b010), polled
@@ -612,9 +596,7 @@ bool           fsmTrackHasText(void *file, int track);                  // FS2 0
 // (unassigned@002681e0; SePlayer / SoundTrack).
 int seDistanceVolume(float ratio, int falloff, int volume);              // FS2 0x00283df0
 
-// An StDT stream table's header (unassigned@001953f0, beside its other
-// reader 0x1a0040): relocated, entry count.
-bool stdtIsRelocated(const StreamTable *table);                          // FS2 0x001a0570
-int  stdtEntryCount(const StreamTable *table);                           // FS2 0x001a0560
+// The StDT stream table's header readers stdtIsRelocated / stdtEntryCount:
+// game/stagescene.h.
 
 #endif /* _GAME_GAMEHOOKS_H */

@@ -934,7 +934,7 @@ bool formatTextValue(const char *name, u_short *out)
 
     case UiText_Purpose: {
         // A 16-bit copy with "\n" / "\N" as line breaks.
-        const u_short *src = gStageScene == nullptr ? kUiPurposePreview : getPurposeText();
+        const u_short *src = gStageScene == nullptr ? kUiPurposePreview : gStageScene->getPurposeText();
         if (src == nullptr) {
             out[0] = 0;
             return true;

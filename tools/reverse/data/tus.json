@@ -538,6 +538,25 @@
    "status": "verify",
    "why": "StageResult (0x599700, static init 0x310f60: begin(0) + __register_global_object with the destructor 0x2b0cf0) and the game-pack loader 0x2afd00..0x2aff80: the MSL map instances 0x2b0590..0x2b0cf0 serve the loader's tables and sit between getStageResult and StageResult's static destructor, so one object file; 0x2afc20/0x2afcd0 (init-pack items by language) joined by position (guess); 0x2af9a0 before is the 0x2adc70 drawing cluster, 0x2b0d50 after is a SoundStream thunk"
   },
+  "game/stagescene.cpp": {
+   "notes": "Written: getPurposeText (a member now; uigame calls gStageScene->getPurposeText), isSubSceneDone, getMission (+0xe8 or the parent's), getParent, raycast (group-1 Root objects' meshes, nearest hit), drawPaused (sub-scene: DemoStream::update; stage: StageSound::update with the view-stack top, the player's alt flag and the scene flag), stdtEntryCount, stdtIsRelocated, StageFiles::dataDir, load (two parseScript passes), loadSubSceneList. Next: the ctor 0x19c180 and dtor 0x19bbe0 -- the full member map is the file comment of src/game/stagescene.h (about 25 member classes in other runs need names and minimal declarations in gamehooks.h) -- then parseScript 0x1a20f0 with 0x1a3500 (line splitter), 0x1a5a60 (line list, vtable 0x311210), 0x1a3dc0 and the keyword handlers 0x1a0580..0x1a1b50 (open-items.md TU 46). Guessed names: StageMission, StageViewStack, StageViewTarget, DemoStream, getAltSoundFlag, isMode1, getCompanion. g++ -fsyntax-only clean on stagescene, seplayer, stagesound, fileloader.",
+   "ranges": [
+    [
+     "001953f0",
+     "001a68b0"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 15:41",
+     "status": "partial",
+     "summary": "StageScene / StageFiles run cut (0x1953f0..0x1a68b0); drawPaused, raycast, getMission, getPurposeText, StageFiles::load and dataDir written (11 of 258); stagescene.h takes StageScene / StageFiles out of gamehooks.h; FileLoader +0x14 is the directory (setDir)"
+    }
+   ],
+   "status": "partial",
+   "why": "StageScene methods 0x195640..0x19c180 and StageFiles 0x1a37e0..0x1a4270 share helpers (path filter 0x1a1ca0, script loader 0x1a20f0, string-map templates 0x1a4e80..0x1a6790); CodeWarrior emits a TU's weak templates and this-adjust thunks (0x1a67c0..0x1a68a0) last, so the file ends before 0x1a68b0 (dtor of vtable 0x315690, the next run's class). Start 0x1953f0: game/stageobjlist.cpp ends there. No source-path string; one file is a guess, StageFiles may be its own file."
+  },
   "game/stagesound.cpp": {
    "notes": "Batch 077 (31 names: the 18 slice functions, abs 0x121f08, SoundTrack hasSubtitles / getSubtitle / setVolume, SePlayer setTable / setPitch, StageNodeBase ctor 0x1d8540 / dtor 0x1865c0, NodeTransform ctor 0x1d7f20 / setPosition 0x1d7ee0, StageNodeList pushBack 0x1842c0 / erase 0x184370). New header src/game/stagenode.h (decision taken unattended, open-items TU 44): stand-ins for the uncut scene-node run unassigned@0017fce0; StageNode moved there from gamehooks.h because StageSoundSource now derives from it and gamehooks.h includes stagesound.h. gamehooks.h: SeEntry subtitleKey +0x8, priority +0x2c, cycle mutable; StreamTable (StDT: count +0x10, entries +0x40) as SoundTrack m_table +0x60. stagesound.h: StageCueReject codes, the source's parent +0x4 (was _04) and _10c, 18 new members. The occlusion raycasts are one static helper (soundOcclusion) shared by updateChannels and pickCueChannel. Checked: callcheck clean (45 annotated), layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on stagesound / stageobjlist / vcmtable / stageresult (RosePan SDK headers + scratch libvifpk stub); scene / uigame / stageloop show only the known gfxtarget / rena gaps. Boundaries: 0x1d7c50.. belongs to the node family (transform, node base ctor), 0x1d3d20 stays outside. Nothing on screen can show this yet (no build). Next for sound: the stage objects' sound commands 0x2a6380..0x2a6830.",
    "ranges": [

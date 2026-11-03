@@ -352,8 +352,7 @@ static void stageLoad(const char *scriptPath)
     if (gStageScene != nullptr)
         delete gStageScene;
     sStageFiles = new StageFiles(sStageLoader);
-    sStageLoader->m_arg = 0;
-    sStageLoader->m_prefix[0] = '\0';
+    sStageLoader->setDir(nullptr);
     gStageScene = new StageScene(false, sStageSound);
     sStageFiles->loadCommon();
     if (!gStageScene->isSubScene)

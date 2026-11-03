@@ -19,6 +19,7 @@
 #define _GAME_FILELOADER_H
 
 #include <stddef.h>
+#include <string.h>
 
 #include "game/pakarchive.h"
 #include "sdk/scetypes.h"
@@ -85,7 +86,7 @@ struct FileEntry : public FileJob
 class FileLoader
 {
 public:
-    explicit FileLoader(int arg);                                        // FS2 0x00132920
+    explicit FileLoader(const char *dir);                                // FS2 0x00132920: every caller passes 0
     virtual ~FileLoader();                                               // FS2 0x001328b0: slot 0, deleting
     virtual bool        isPack();                                        // FS2 0x00132ef0: slot 1
     // Lists m_prefix + name (once: a name findIndex knows answers its
@@ -108,14 +109,24 @@ public:
     virtual void        compact();                                       // FS2 0x00132f10: slot 17
     // Queues the load job; 0 while no job slot is free.
     int startLoad();                                                     // FS2 0x00132280
+    // m_dir = dir and m_prefix its copy (null: empty). Inline in the ROM
+    // (stageLoad, StageFiles::load and every script keyword).
+    void setDir(const char *dir)
+    {
+        m_dir = dir;
+        if (dir == NULL)
+            m_prefix[0] = '\0';
+        else
+            strcpy(m_prefix, dir);
+    }
 
     int        m_state;         // FS2 +0x00: FileJobState of the whole list
     FileEntry *m_head;          // FS2 +0x04
     FileEntry *m_tail;          // FS2 +0x08
     int        m_count;         // FS2 +0x0c
     int        m_jobId;         // FS2 +0x10
-    int        m_arg;           // FS2 +0x14: the constructor's argument (unread)
-    char       m_prefix[0x80];  // FS2 +0x18: put before every added name (set outside this file)
+    const char *m_dir;          // FS2 +0x14: the directory m_prefix copies (setDir; the constructor's argument)
+    char       m_prefix[0x80];  // FS2 +0x18: put before every added name (setDir)
 
 private:
     void clearFiles();                                                   // FS2 0x00132000

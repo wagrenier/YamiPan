@@ -886,6 +886,33 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    rena headers against RosePan's libgraph, not this TU). Next: the ELEVATOR2 object run when the
    frontier reaches it; the seplayer frontier is fsm (0x28fa90 / 0x28fc80 / 0x28fb80 / 0x28fd30)
    and seDistanceVolume in unassigned@002681e0, the StDT getters in unassigned@001953f0.
+   TU 46 (the frontier's `unassigned@001953f0`, 972 functions 0x1953f0..0x1d3db8, 2026-11-03):
+   cut into **`game/stagescene.cpp` 0x1953f0..0x1a68b0** (258 functions: StageScene 0x195640..
+   0x19c180, the stage loaders, StageFiles 0x1a37e0..0x1a4270, string-map templates and
+   this-adjust thunks last); 0x1a68b0..0x1d3db8 stays `unassigned@001a68b0` (the character /
+   actor classes, vtables 0x315690 / 0x315850 / 0x315b10 / 0x315cf0). One file for scene and
+   files is a guess (no source-path string): split StageFiles out if a later read says so.
+   Written (11, `partial`): getPurposeText (now a member: uigame passes gStageScene),
+   isSubSceneDone, getMission, getParent, raycast, drawPaused, stdtEntryCount, stdtIsRelocated,
+   StageFiles::dataDir / load / loadSubSceneList. Batch 079 (17 names). **Choices (unattended):
+   new header `game/stagescene.h`** takes StageScene / StageFiles / stdt* out of gamehooks.h
+   (gamehooks.h includes it); **`FileLoader::m_arg` is `m_dir`** (+0x14, the directory
+   `m_prefix` copies) with the inline `setDir` (stageLoad's two stores now call it; the ctor
+   takes `const char *`); StageObject gained unions at +0x200 / +0x208 / +0x20c for the Root
+   objects' collision fields (m_collides, m_collisionCount, m_collisions) and m_active (+0x34) /
+   m_hidden (+0x37, a guess); `StagePlayer::character()` casts the player to its StageObject
+   stand-in (the ROM's player is a character); `raycast`'s skip is a StageObject*. Guessed names
+   to revisit: StageMission (+0xe8), StageViewStack (+0x34), StageViewTarget (+0x100),
+   DemoStream (+0x28), StageObject::getAltSoundFlag, StagePlayer::isMode1,
+   StageParty::getCompanion. PC choice: raycast's best-hit local starts as hit's contents (the
+   ROM's is uninitialised and copied back even with no hit). **Next for this TU**: the
+   constructor 0x19c180 / destructor 0x19bbe0 (the member map is the file comment of
+   stagescene.h: about 25 member classes in other runs need a name and a minimal declaration
+   each), then `parseScript` 0x1a20f0 (0x1408 bytes) with the line splitter 0x1a3500, the line
+   list 0x1a5a60 (vtable 0x311210), the container reset 0x1a3dc0, the keyword handlers 0x1a0580..
+   0x1a1b50 and StageFiles' 22 containers (the templates 0x1a4e80..0x1a6790). Checked: callcheck
+   clean, layout lint OK, g++ -fsyntax-only -Wall clean on stagescene / seplayer / stagesound /
+   fileloader (stageloop / uigame: only the known gfxtarget.h / rena errors).
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

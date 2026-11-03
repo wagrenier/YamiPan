@@ -21,8 +21,8 @@
 #include "sdk/scetypes.h"
 
 class FileLoader;               // game/fileloader.h
-class StageFiles;               // game/gamehooks.h
-struct StageScene;              // game/gamehooks.h
+class StageFiles;               // game/stagescene.h
+struct StageScene;              // game/stagescene.h
 
 // The current stage object; null outside a stage (game/uigame.cpp tests it).
 extern StageScene *gStageScene;     /* sbss 0x31adf4 (gp-0x7a7c) */
