@@ -4,8 +4,10 @@
 #include <span>
 #include <thread>
 
+#include "rena/rena_2d_texture_tim2.h"
 #include "yamipan/core/application.h"
 #include "yamipan/os/yamipan_time.h"
+#include "yamipan/rendering/renderer.h"
 #include "yamipan/rendering/ui_canvas.h"
 #include "yamipan/rendering/yamipan_drawui.h"
 #include "yamipan/yamipan_memory.h"
@@ -45,9 +47,14 @@ void YamiPan_DrawUiPrim(const void *list, uint64_t prim, const uint8_t *rgbaq)
     canvas().setPrimitive(list, prim, rgbaq);
 }
 
-void YamiPan_DrawUiTexture(const void *, const void *)
+void YamiPan_DrawUiTexture(const void *list, const void *owner)
 {
-    // Images come with rendering::TextureStore (queued): it decodes the TIM2 the owner points at.
+    if (owner == nullptr)
+        return; // the bound one stays
+
+    // Every owner the game hands over is a Tim2Texture: a GsTexture (the drawer) or the font's own.
+    yamipan::rendering::Renderer &renderer = yamipan::Application::instance().renderer();
+    renderer.canvas().bindImage(list, renderer.textures().imageOf(*static_cast<const Tim2Texture *>(owner)));
 }
 
 void YamiPan_DrawUiBegin(const void *list, int format)

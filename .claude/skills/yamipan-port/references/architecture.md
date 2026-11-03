@@ -1823,6 +1823,17 @@ rules or by being RoR's. From its 14 K line SDK only what FS2 calls came over.
 - **Frame**: game threads fill `UiCanvas` layers keyed by packet list; `Vif1PktManage::Kick` ->
   `YamiPan_DrawUiKick` joins them into a `Frame` for the render thread's mailbox. The frame always fills
   the scene target, so the 512x512 frame's shape is `DisplayGeometry`'s alone.
+- **Textures** (`rendering::TextureStore`, 2026-11-03): `YamiPan_DrawUiTexture(list, owner)` -> `imageOf` ->
+  `UiCanvas::bindImage`. The owner is a `Tim2Texture`: a `GsTexture` from the drawer, a plain `Tim2Texture`
+  from the font (so `m_isTarget` is reached by `dynamic_cast`). The picture is decoded during the call to
+  RGBA8 with alpha doubled (`min(a * 2, 0xff)`; a 16-bit colour's top bit gives 0xff or 0, 24-bit is
+  opaque, TCC 0 is opaque) and the render thread makes the GPU texture. The cache key is a hash of
+  the size, picture header, pixels and CLUT, not the address (`texture_store.cpp` says why), least recently
+  bound dropped past 256 MB. **What the disc holds** (every TIM2 in ROM.000..ROMD.010 + SPK.ROM by a raw
+  scan): 21,751 4-bit CLUT32, 3,180 8-bit CLUT32 in CSM1 order, 26 32-bit direct, 2 4-bit CLUT16, no mip
+  levels, no 16 / 24-bit direct, no linear CLUT. **The language screen** (2dEU/languageEU.d2b) binds six:
+  the 512x64 row of names, black and opaque, drawn at frame y 224..288, and five 56..72 x 24 word tiles
+  (grey ground, dark letters) for the highlight; their CLUT alpha is 0x7f, stored 0xfe.
 - **Screenshots** are the scene before the overlay, 512 high at the composed aspect;
   `YAMIPAN_SHOT_WINDOW=1` takes the whole window with the overlay, `YAMIPAN_SHOW_MENU=1` opens the menu bar.
 - **The disc** (`io::Disc`, 2026-11-03): FS2 boots from cdrom0: (`rxInit` -> device 1) and rx's driver reads

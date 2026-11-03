@@ -62,7 +62,7 @@ src/yamipan/
            DisplayGeometry       THE source of display size and aspect (port feature #1)
            Renderer              the render thread: frames in, pictures out
            UiCanvas              the game's 2D draw module (game/uidrawer.cpp & co call it)
-           TextureStore          decoded assets as GPU textures, keyed by owner
+           TextureStore          TIM2 pictures decoded to RGBA8, cached by content
            PresentPass           grade + HDR output, Screenshotter the smoke shots
   io/      InputSystem           keyboard + gamepad -> a DualShock 2 report, bindings
   ui/      Overlay, Panel        the ImGui menu bar and its panels

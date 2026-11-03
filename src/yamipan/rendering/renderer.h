@@ -24,6 +24,7 @@
 #include "yamipan/os/thread.h"
 #include "yamipan/rendering/display_geometry.h"
 #include "yamipan/rendering/frame.h"
+#include "yamipan/rendering/texture_store.h"
 #include "yamipan/rendering/ui_canvas.h"
 
 namespace yamipan
@@ -53,6 +54,7 @@ public:
     void stop();
 
     UiCanvas &canvas() { return m_canvas; }
+    TextureStore &textures() { return m_textures; }
 
     // A frame to fill, with its storage from a frame already shown.
     std::unique_ptr<Frame> takeFreeFrame();
@@ -95,6 +97,7 @@ private:
     EventQueue &m_events;
     ui::Overlay &m_overlay;
     UiCanvas m_canvas;
+    TextureStore m_textures;
 
     SDL_GPUTextureFormat m_sceneFormat;
     SDL_GPUTextureFormat m_outputFormat;

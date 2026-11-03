@@ -51,7 +51,7 @@ enum GsTargetTag
 // a target tag a fixed TEX0 on that render target. The UI tracks own one
 // per textured shape. layout: host -- EE offsets in the comments.
 // PC: the host draw module decodes the image at its source to a GPU
-// texture keyed by this object, or samples its own copy of the target
+// texture (TextureStore), or samples its own copy of the target
 // (m_isTarget / m_targetTex0's TBP0): no GS upload.
 class GsTexture : public Tim2Texture
 {
