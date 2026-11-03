@@ -300,6 +300,25 @@
    "status": "verify",
    "why": "the cooperative thread system: threadSetSwitchHook .. threadSysInit, threadScheduler, jobWorkerThread, frameSync* (batch 002, architecture.md Thread system); 0x130a20 and the end after frameSyncThread are guesses."
   },
+  "game/uilayout.cpp": {
+   "notes": "Cut from unassigned@0023e740 (473 functions) as game/uilayout.cpp 0x243390..0x246230; batch 038 named these 22 and 28 callees (UiSequence / UiActor / UiAnim / UiTrack, S2dData, UiDrawer, UiWidget::create, the layout game hooks 0x25ff40.., FileJob 0x132a40..). UiLayout moved from gamehooks.h to uilayout.h (gamehooks.h includes it); gamehooks.h gained FileJob. Stand-ins for the rest of the run live in uilayout.h until their TUs are cut. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean with stub SDK headers (screen / stageresult / scene unchanged). Host trap for the S2D TU: S2dData pointer fields are 32-bit offsets relocated in place, they cannot hold host pointers. Doubts: every name is read from the code; op 7 / 8 read as yield / restart; condition kind 16 with a < 0 reads an uninitialised register in the ROM (port: no sequence, true); UiSubLayout +0x14 is never set in this file. Next: the sequence classes 0x246230..0x249550 (UiSequence::draw / advance), then the S2D file and UiDrawer. Ghidra saved by name_ctx.",
+   "ranges": [
+    [
+     "00243390",
+     "00246230"
+    ]
+   ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 02:03",
+     "status": "verify",
+     "summary": "UiLayout, the S2D 2D layout player: script interpreter (30 opcodes, 17 condition kinds), sequence management, nested layout base UiSubLayout; all 22 functions written"
+    }
+   ],
+   "status": "verify",
+   "why": "UiLayout and its sub-layout base UiSubLayout: every function from UiSubLayout::load 0x243390 to UiLayout::UiLayout 0x246160 works on the layout object (0x98 bytes); 0x246230.. work on UiSequence (+0x18 data, +0x20/+0x24 actors), 0x243350..0x243390 are unreferenced one-liners of the file before. File name the port's (no source string)."
+  },
   "rx/filecd.c": {
    "ranges": [
     [
@@ -518,6 +537,7 @@
   "unassigned@00121b80": {},
   "unassigned@00171300": {},
   "unassigned@0023c020": {},
+  "unassigned@0023e740": {},
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
   "unassigned@002acff0": {}

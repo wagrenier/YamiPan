@@ -618,6 +618,39 @@ list; layout draws take `getList(list)` 0x142dd0. Next file: 0x2681e0..0x268310 
 (0x5deece66d: java.util.Random's constants; seed 0x268290, ctor 0x2682e0, next-int-below 0x2681e0;
 callers 0x195d40 / 0x199f00 / 0x19c180), then 0x268310.. (vtables 0x315ab0 / 0x316c30).
 
+**`game/uilayout.cpp` 0x243390..0x246230 (TU 15, 2026-11-03, batch 038, all 22 written, `verify`;
+file and class names the port's)**: the **2D layout player**. A `UiLayout` (EE 0x98) plays an
+**S2D file** (magic `"S2D\0"`, the `.d2b` files and pack items; `S2dData::relocate` 0x24d820 turns
+its offsets into pointers in place once, flag at +8): +0xc start sequence, +0x10 / +0x14 the
+**variables** (0x20: name[0x10], value, min, max, wrap), +0x18 / +0x1c objects, +0x2c **anim sets**
+(count, then 0x10-byte entries {actor id, -, anim (-1 = only names the actor), flags 0x80 =
+do not wait}), +0x34 **widget defs** (0x30, id at +8), +0x3c **sequence defs** {priority, command
+count, -, commands}, +0x40 / +0x44 the **string table**. A sequence runs a **script of 0x24-byte
+commands** {trigger 0 frame / 1 start / 2 stop, op, skip count, condition {kind, flags (bit 0 all
+keys, bit 1 negate, 0xf00 compare op 0 == / 0x100 > / 0x200 >= / 0x300 < / 0x400 <= / 0x500 &),
+a, b}, arg0, arg1}: **30 opcodes** (`UiLayout::runCommands` 0x243f40, `S2dOp` in uilayout.h) and
+**17 condition kinds** (`testCondition` 0x245060, `S2dCondKind`), the pad read from
+`gGameSystem->m_pad0` (pressed / repeat / held words; the d-pad always from repeat as bits
+0x2000000..0x10000000; decide / cancel = `ButtonMap::defaultButton(0 / 1)` as 0x20000000 /
+0x40000000; 0x80000000 = any key). Ops 25..30 pack anim set lo16(arg0) + var hi16(arg1), value
+lo16(arg1), sequence hi16(arg0). Op 15 **ends the layout** (`m_result` +0x38, `m_done` +0x3c).
+A frame: `advance` (sequences' `UiSequence::advance` 0x246db0) / `update` (frame commands in
+priority order, a pass that starts / stops a sequence begins again) / `draw` (`UiDrawer` 0xe0 at
++0x20: begin(packet, texList) / setMode(+0x30) / per sequence `UiSequence::draw` 0x246400 / end).
+**`UiSubLayout`** (+0x00..+0x1c, UiLayout's base): one **nested layout** opened by op 21 from
+`m_baseDir` + a file (a **`FileJob`** 0x132cc0, 0x28 bytes: dir + path then path through the rx
+file hooks, states 1 queued / 2 loading / 3 done / 0x80 not found / 0x81 no memory) or, for
+`@name` inside a stage (`inStage` 0x262e60), the stage pack's item at once (`getStagePackData`
+0x262df0); it updates and draws on top, its result goes to +4 when it closes. Sounds: four slots,
+names +0x64, 64-bit handles +0x78 (`playSound` 0x25ff40: the stage's StageSound by name in a stage,
+else the menu bank; **`stopSound(-1)` does nothing**: its all-slots branch is dead). Still in
+unassigned@0023e740: the sequence / actor / anim / track classes 0x246230..~0x249550
+(`UiSequence` 0x70: +0x1c / +0x20 / +0x24 actors cap / count / array, +0x28.. widgets, +0x6c the
+script-readable value), the widget factory 0x249550 with its ~40 widget classes (vtables
+0x316540..0x316a60, vptr +0x10) and the 0x316a90.. family (vptr +0x1c, `UiWidget::create`
+0x25e260), the S2D file 0x24d2c0.., `UiDrawer` 0x24e..0x250..., the game hooks 0x25ff40..0x2640e8
+(sounds, game values / state names 0x599490).
+
 ## Classes
 
 Name, vtable, vptr offset, size, file. `python rtti.py` (CodeWarrior variant, bootstrap 4, 2026-10-31)

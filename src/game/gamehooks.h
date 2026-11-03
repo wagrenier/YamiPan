@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+#include "game/uilayout.h"
 #include "sdk/libvifpk.h"
 #include "sdk/scetypes.h"
 
@@ -75,6 +76,41 @@ public:
     virtual void  waitLoaded(int arg, bool showLoading);                 // FS2 0x001320f0: slot 15 (arg unused)
     // Queues the load job; 0 while no job slot is free.
     int startLoad();                                                     // FS2 0x00132280
+};
+
+// FileJob::m_state.
+enum FileJobState
+{
+    FileJob_Idle = 0,
+    FileJob_Queued = 1,
+    FileJob_Loading = 2,
+    FileJob_Done = 3,           // m_data holds the file (null when it is empty)
+    FileJob_Failed = 0x80,      // bit: 0x80 not found, 0x81 no memory
+    FileJob_NoMemory = 0x81,
+};
+
+// One file loaded by a job (unassigned@001319f0, 0x132a40..0x132cf0):
+// m_dir + m_path first, then m_path, through the rx file hooks.
+// layout: host -- EE 0x28.
+class FileJob
+{
+public:
+    FileJob(const char *path, int arg);                                  // FS2 0x00132cc0: path copied to new[]
+    ~FileJob();                                                          // FS2 0x00132c10: deleting (obj, 1)
+    // jobAdd(run, this); queued (state 1) when it answers non-zero.
+    int start();                                                         // FS2 0x00132bc0
+    static int run(void *job);                                           // FS2 0x00132a40
+
+    int         m_state;        // FS2 +0x00: FileJobState
+    char       *m_path;         // FS2 +0x04
+    int         m_arg;          // FS2 +0x08
+    int         m_size;         // FS2 +0x0c
+    u_char      m_notOwned;     // FS2 +0x10: the destructor leaves m_data alone
+    void       *m_data;         // FS2 +0x14: gGlobalHeap unless m_buffer is given
+    int         m_jobId;        // FS2 +0x18
+    const char *m_dir;          // FS2 +0x1c: tried first as a prefix
+    void       *m_buffer;       // FS2 +0x20: the caller's buffer, if any
+    int         m_bufferOffset; // FS2 +0x24: negative: from the end
 };
 
 // A pack file (dataEU/pack*.pak; unassigned@001319f0, 0x1319f0..).
@@ -163,28 +199,6 @@ public:
     NameMap names2;             // FS2 +0x50
     ListMap lists3;             // FS2 +0x60
     NameMap names3;             // FS2 +0x70
-};
-
-// A 2D layout drawn from a pack item (unassigned@0023e740, 0x2434c0..):
-// parts sorted by priority, a 0xe0-byte child at +0x20. The overlay
-// (gp-0x7a28, overlayThreadStart) is one too.
-// layout: host -- EE 0x98.
-class UiLayout
-{
-public:
-    UiLayout();                                                          // FS2 0x00246160
-    ~UiLayout();                                                         // FS2 0x00246010: deleting (obj, 1)
-    bool setData(void *item, int arg);                                   // FS2 0x00245e80
-    void advance();                                                      // FS2 0x00243b90
-    void update();                                                       // FS2 0x00243c10
-    void draw(sceVif1Packet *packet, void *drawCtx);                     // FS2 0x002439f0
-    // Replaces the new[] copy at +0x60 (null clears it); runArchiveScreen
-    // passes "2dEU/".
-    void setBaseDir(const char *dir);                                    // FS2 0x00245f10
-
-    // The fields game/screen.cpp reads (the rest is not declared yet).
-    int    m_result;            // FS2 +0x38: the answer, once m_done
-    u_char m_done;              // FS2 +0x3c: the layout has ended
 };
 
 // The current stage's sound effects (the stage object's +0x24).

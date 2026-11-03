@@ -2909,6 +2909,30 @@
   "was": "FUN_00132920",
   "why": "base class of PackFile (vtable 0x3110b0, vptr +0x98, 0x9c bytes): state, file list head / tail / count, job, +0x14 the argument, +0x18 an empty path prefix"
  },
+ "00132a40": {
+  "name": "FileJob::run",
+  "tag": "game-inferred",
+  "was": "FUN_00132a40",
+  "why": "the job: state 2, sizes dir+path (%s%s) then path through the rx file hooks, allocates (or places in the caller's buffer +0x20 / +0x24), loads; state 3 done, 0x80 not found, 0x81 no memory"
+ },
+ "00132bc0": {
+  "name": "FileJob::start",
+  "tag": "game-inferred",
+  "was": "FUN_00132bc0",
+  "why": "jobAdd(FileJob::run, this) into +0x18; state 1 when queued; answers the job id"
+ },
+ "00132c10": {
+  "name": "FileJob::~FileJob",
+  "tag": "game-inferred",
+  "was": "FUN_00132c10",
+  "why": "CodeWarrior (obj, flag) destructor: frees the path, jobCancel while queued, frees the data (gGlobalHeap) unless +0x10 says it is not owned"
+ },
+ "00132cc0": {
+  "name": "FileJob::FileJob",
+  "tag": "game-inferred",
+  "was": "FUN_00132cc0",
+  "why": "(this, path, arg): 0x28-byte one-file load job: path copied to new[] at +4, arg +8, state / size / data / job / dir / buffer cleared"
+ },
  "00132f20": {
   "name": "PerfMeter::drawDetail",
   "tag": "game-inferred",
@@ -10253,6 +10277,48 @@
   "was": "FUN_0023dfa0",
   "why": "a0 = the 8-byte DateTime getLocalDateTime fills; the flags byte's high nibble is the format (1 BCD, 0 binary): nothing when it already equals a1, a1 == 0 decodes second..month and the 4-digit year from BCD and clears the nibble, else encodes them to BCD and sets it to 1; only caller getLocalDateTime"
  },
+ "00243390": {
+  "name": "UiSubLayout::load",
+  "tag": "game-inferred",
+  "was": "FUN_00243390",
+  "why": "(this, dir, path, arg): close(), keeps arg at +0x10; path '@name' inside a stage opens dir+name from the stage pack (sprintf %s%s, getStagePackData) at once, otherwise (or without '@') queues a FileJob(path) with dir at job+0x1c and state 1; only caller runCommands op 0x15"
+ },
+ "002434c0": {
+  "name": "UiSubLayout::update",
+  "tag": "game-inferred",
+  "was": "FUN_002434c0",
+  "why": "state 2: child->update(), close() once the child's result (+0x38) is >= 0; called at the end of UiLayout::update"
+ },
+ "00243520": {
+  "name": "UiSubLayout::advance",
+  "tag": "game-inferred",
+  "was": "FUN_00243520",
+  "why": "state 3 closes; state 2 advances the child (UiLayout::advance inline); state 1 opens the job's data once the FileJob is done (3), closes on its error bit 0x80; called at the end of UiLayout::advance"
+ },
+ "00243630": {
+  "name": "UiSubLayout::open",
+  "tag": "game-inferred",
+  "was": "FUN_00243630",
+  "why": "(this, data): null closes; else new UiLayout (0x98), setBaseDir(+0x14) inline, setData(data, arg +0x10), false closes, else state 2 and the child's first advance; answers bool"
+ },
+ "00243770": {
+  "name": "UiSubLayout::close",
+  "tag": "game-inferred",
+  "was": "FUN_00243770",
+  "why": "keeps the child's result in +4, deletes the child (UiLayout dtor inline) and the FileJob (+0xc, FileJob::~FileJob), clears state / +0x14 / +0x18"
+ },
+ "00243890": {
+  "name": "UiVec4::set",
+  "tag": "game-inferred",
+  "was": "FUN_00243890",
+  "why": "stores four floats; the out-of-line inline UiSubLayout::close uses for UiLayout's colour (1,1,1,1) at +0x40 and offset (0,0,0,0) at +0x50"
+ },
+ "002438b0": {
+  "name": "UiSubLayout::~UiSubLayout",
+  "tag": "game-inferred",
+  "was": "FUN_002438b0",
+  "why": "CodeWarrior (obj, flag) destructor: close() inline, delete when flag > 0; UiLayout's destructor calls it on the child with -1 (base part)"
+ },
  "002439f0": {
   "name": "UiLayout::draw",
   "tag": "game-inferred",
@@ -10271,6 +10337,48 @@
   "was": "FUN_00243c10",
   "why": "sorts the parts by their +8 (priority), marks each, then runs 0x243f40 on the marked ones until none asks again, then 0x2434c0"
  },
+ "00243dc0": {
+  "name": "UiLayout::stopSequence",
+  "tag": "game-inferred",
+  "was": "FUN_00243dc0",
+  "why": "(id): runs the sequence's trigger-2 (stop) commands, removeSequence(id), re-sorts by priority; answers id or -1; runCommands ops 4 / 5"
+ },
+ "00243f40": {
+  "name": "UiLayout::runCommands",
+  "tag": "game-inferred",
+  "was": "FUN_00243f40",
+  "why": "(seq, trigger): the S2D script interpreter: steps the sequence's 0x24-byte commands from its cursor, each with a trigger (0 frame, 1 start, 2 stop), a skip count and a condition (testCondition), 30 opcodes (start / stop sequences, variables, anim sets, widgets, sounds, sub-layout, end the layout); answers the starts / stops done or the sequence id on a yield"
+ },
+ "00244d90": {
+  "name": "UiLayout::startSequence",
+  "tag": "game-inferred",
+  "was": "FUN_00244d90",
+  "why": "(id, value): unless running, grows the sequence array by 16 (gGlobalHeap), new UiSequence (0x70) on S2D sequence id, value at +0x6c, runs its start commands, re-sorts; answers id"
+ },
+ "00245060": {
+  "name": "UiLayout::testCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00245060",
+  "why": "(seq, cond): 17 condition kinds on the 0x10-byte condition (kind, flags: bit0 all keys, bit1 negate, 0xf00 compare op, a, b): pad keys pressed / repeat / held via gGameSystem's pad, anim sets / actors done, variables, sequences, game state and values, the sub-layout"
+ },
+ "00245c00": {
+  "name": "UiLayout::compare",
+  "tag": "game-inferred",
+  "was": "FUN_00245c00",
+  "why": "(a, b, cond): cond flags & 0xf00: 0 ==, 0x100 >, 0x200 >=, 0x300 <, 0x400 <=, 0x500 a & b"
+ },
+ "00245c80": {
+  "name": "UiLayout::removeSequence",
+  "tag": "game-inferred",
+  "was": "FUN_00245c80",
+  "why": "(id): -1 deletes every sequence and frees the array (gGlobalHeap); else deletes the one with that id and moves the last into its place; answers the index or -1"
+ },
+ "00245e00": {
+  "name": "UiLayout::findSequence",
+  "tag": "game-inferred",
+  "was": "FUN_00245e00",
+  "why": "(id): the running sequence with that id (+4) or null; inline everywhere else in the file"
+ },
  "00245e80": {
   "name": "UiLayout::setData",
   "tag": "game-inferred",
@@ -10283,6 +10391,12 @@
   "was": "FUN_00245f10",
   "why": "replaces the new[] string at +0x60 with a copy of the argument (or null); runArchiveScreen passes '2dEU/'"
  },
+ "00245f80": {
+  "name": "UiLayout::clear",
+  "tag": "game-inferred",
+  "was": "FUN_00245f80",
+  "why": "stopSound(-1), removeSequence(-1), result / arg -1, colour 1 / offset 0, data 0, setBaseDir(0) inline; the destructor's body (inline there)"
+ },
  "00246010": {
   "name": "UiLayout::~UiLayout",
   "tag": "game-inferred",
@@ -10294,6 +10408,192 @@
   "tag": "game-inferred",
   "was": "FUN_00246160",
   "why": "the 0x98-byte object StageResult::begin and the overlay (gp-0x7a28) use: +4 = -1, a 0xe0-byte child (0x24fb30) at +0x20, colour scale 1.0 x4 at +0x40, the -1 pairs +0x78..+0x90"
+ },
+ "00246400": {
+  "name": "UiSequence::draw",
+  "tag": "game-inferred",
+  "was": "FUN_00246400",
+  "why": "(seq, drawer): UiLayout::draw calls it per sequence in priority order between UiDrawer::begin / end (body unread)"
+ },
+ "00246db0": {
+  "name": "UiSequence::advance",
+  "tag": "game-inferred",
+  "was": "FUN_00246db0",
+  "why": "UiLayout::advance calls it per sequence each frame (body unread)"
+ },
+ "00247070": {
+  "name": "UiSequence::setAnimSetPlay",
+  "tag": "game-inferred",
+  "was": "FUN_00247070",
+  "why": "(set, flags): per anim-set entry, UiActor::setAnimPlay (UiTrack::setPlay flags); runCommands ops 0x1b / 0x1e"
+ },
+ "002471d0": {
+  "name": "UiSequence::setAnimSetFrame",
+  "tag": "game-inferred",
+  "was": "FUN_002471d0",
+  "why": "(set, frame): per anim-set entry whose +8 != -1, UiActor::setAnimFrame on the actor; runCommands ops 0x19 / 0x1a / 0x1c / 0x1d"
+ },
+ "00247330": {
+  "name": "UiSequence::addAnimSet",
+  "tag": "game-inferred",
+  "was": "FUN_00247330",
+  "why": "(seq, set): for each entry of an S2D anim set adds the actor (0x18 bytes, id at +8) when missing (array +0x1c cap / +0x20 count / +0x24) and its anims; runCommands ops 1 / 0xd"
+ },
+ "002476c0": {
+  "name": "UiSequence::removeWidget",
+  "tag": "game-inferred",
+  "was": "FUN_002476c0",
+  "why": "(id, -1 all): deletes widgets (+0x28 cap / +0x2c count / +0x30, vptr at +0x1c, slot 2 the deleting dtor) by id (+8); runCommands op 10, removeSequence with -1"
+ },
+ "002479b0": {
+  "name": "UiSequence::removeActor",
+  "tag": "game-inferred",
+  "was": "FUN_002479b0",
+  "why": "(id, -1 all): frees actors; removeSequence calls it with -1 before deleting a sequence, runCommands ops 0xc / 0xe per anim-set entry"
+ },
+ "00247d60": {
+  "name": "UiSequence::UiSequence",
+  "tag": "game-inferred",
+  "was": "FUN_00247d60",
+  "why": "(this, data, layout, value): zeroes the 0x70-byte sequence, data at +0x18, layout at +0x68, value at +0x6c; only caller startSequence"
+ },
+ "002480a0": {
+  "name": "UiActor::setAnimFrame",
+  "tag": "game-inferred",
+  "was": "FUN_002480a0",
+  "why": "(frame, which): which -5 / -4 / ... picks the anims by their first track's kind (0xb / 0xe, 0xa / 0xd, ...), UiAnim::setFrame on them"
+ },
+ "00248410": {
+  "name": "UiActor::setAnimPlay",
+  "tag": "game-inferred",
+  "was": "FUN_00248410",
+  "why": "(flags, which): as setAnimFrame, UiTrack::setPlay on the chosen anims' tracks"
+ },
+ "002491c0": {
+  "name": "UiAnim::setFrame",
+  "tag": "game-inferred",
+  "was": "FUN_002491c0",
+  "why": "(frame): sets every playing track's frame (+8), clamped to its length or wrapped when the track loops (+0xc)"
+ },
+ "0024d2c0": {
+  "name": "UiTrack::isDone",
+  "tag": "game-inferred",
+  "was": "FUN_0024d2c0",
+  "why": "a track of kind 9..14 that does not loop is done when stopped / state 3, played to its length (state 1) or rewound below 0 (state 2); every other track is done"
+ },
+ "0024d360": {
+  "name": "UiTrack::setPlay",
+  "tag": "game-inferred",
+  "was": "FUN_0024d360",
+  "why": "(flags): 0x80 stop, 1 / 2 / 4 play states 1 / 2 / 3, 8 frame 0, 0x10 last frame"
+ },
+ "0024d770": {
+  "name": "S2dData::findVar",
+  "tag": "game-inferred",
+  "was": "FUN_0024d770",
+  "why": "(name): the 0x20-byte variable (+0x10 count, +0x14 array) whose name (first 0x10 bytes) matches, or null"
+ },
+ "0024d810": {
+  "name": "S2dData::getVar",
+  "tag": "game-inferred",
+  "was": "FUN_0024d810",
+  "why": "(index): &vars[index] (+0x14, 0x20 bytes each), no check"
+ },
+ "0024d820": {
+  "name": "S2dData::relocate",
+  "tag": "game-inferred",
+  "was": "FUN_0024d820",
+  "why": "checks the magic 'S2D\\0', turns the file's offsets into pointers once (flag at +8); UiLayout::setData drops the data when it answers false"
+ },
+ "0024df60": {
+  "name": "S2dData::getString",
+  "tag": "game-inferred",
+  "was": "FUN_0024df60",
+  "why": "(index): the S2D file's string table (+0x40 count, +0x44 pointers), null out of range"
+ },
+ "0024e990": {
+  "name": "UiDrawer::setMode",
+  "tag": "game-inferred",
+  "was": "FUN_0024e990",
+  "why": "(mode): sets +0xc0 and refreshes when it changes, answers the old one; UiLayout::draw passes its +0x30 flag"
+ },
+ "0024f9e0": {
+  "name": "UiDrawer::end",
+  "tag": "game-inferred",
+  "was": "FUN_0024f9e0",
+  "why": "step 6, closes the open packet (sceVif1PkCloseDmaTag) and resets the states"
+ },
+ "0024fad0": {
+  "name": "UiDrawer::begin",
+  "tag": "game-inferred",
+  "was": "FUN_0024fad0",
+  "why": "(packet, ctx): keeps the packet list and the texture list UiLayout::draw is given, step 0"
+ },
+ "0024fae0": {
+  "name": "UiDrawer::~UiDrawer",
+  "tag": "game-inferred",
+  "was": "FUN_0024fae0",
+  "why": "CodeWarrior (obj, flag) destructor, empty body: UiLayout's delete of +0x20"
+ },
+ "0024fb30": {
+  "name": "UiDrawer::UiDrawer",
+  "tag": "game-inferred",
+  "was": "FUN_0024fb30",
+  "why": "the 0xe0-byte draw helper UiLayout's constructor news at +0x20: four 0x18-byte states, colour 1, mode reset"
+ },
+ "0025e260": {
+  "name": "UiWidget::create",
+  "tag": "game-inferred",
+  "was": "FUN_0025e260",
+  "why": "(seq, def, layout, arg): builds a widget from a 0x30-byte S2D widget def into the sequence (the Vt_00316a90.. classes' factory, after their constructors); runCommands op 9"
+ },
+ "0025ff40": {
+  "name": "UiLayout::playSound",
+  "tag": "game-inferred",
+  "was": "FUN_0025ff40",
+  "why": "(slot 0..3, name): stopSound, then in a stage the stage sound by name (StageSound at gStageScene+0x24), else the menu sound bank's binary-searched name; name at +0x64, handle (u64) at +0x78; runCommands op 0x13"
+ },
+ "00260100": {
+  "name": "UiLayout::stopSound",
+  "tag": "game-inferred",
+  "was": "FUN_00260100",
+  "why": "(slot 0..3): stops the slot's sound; -1 does nothing (the all-slots branch is dead: the range check comes first); runCommands op 0x14, UiLayout::clear with -1"
+ },
+ "002601f0": {
+  "name": "UiLayout::readGameValue",
+  "tag": "game-inferred",
+  "was": "FUN_002601f0",
+  "why": "(kind, packed): three byte fields, the low bits of byte 0 marking which are variable indices; stores the game value (0x2633f0) into the first one's variable; runCommands op 0x17"
+ },
+ "002602a0": {
+  "name": "UiLayout::writeGameValue",
+  "tag": "game-inferred",
+  "was": "FUN_002602a0",
+  "why": "(kind, packed): as readGameValue's fields; kind 0xd sets SaveData stage flags (+0x69) and marks unlock 468, others 0x262e70; runCommands op 0x16"
+ },
+ "002603d0": {
+  "name": "UiLayout::testGameValue",
+  "tag": "game-inferred",
+  "was": "FUN_002603d0",
+  "why": "(kind, packed): kind 0xd SaveData::testStageFlags, others 0x2633f0, compared with field 0; condition kind 0xd"
+ },
+ "002604a0": {
+  "name": "UiLayout::testGameState",
+  "tag": "game-inferred",
+  "was": "FUN_002604a0",
+  "why": "(name, arg, seq): looks name up in a table of state names (0x599490, gp count) and tests options, stage state, stage result; condition kind 6"
+ },
+ "00262df0": {
+  "name": "getStagePackData",
+  "tag": "game-inferred",
+  "was": "FUN_00262df0",
+  "why": "(name): in a stage, the stage's pack (0x17f150) item data by name through its vtable (+0x98 vptr, slot at +0x1c), else null; UiSubLayout::load's '@' paths"
+ },
+ "00262e60": {
+  "name": "inStage",
+  "tag": "game-inferred",
+  "was": "FUN_00262e60",
+  "why": "answers gStageScene (gp-0x7a7c) != 0"
  },
  "002640e8": {
   "name": "_scfReadRomVer",

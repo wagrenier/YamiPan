@@ -136,6 +136,24 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    (vtables 0x315ab0 / 0x316c30, the stage-unlock checks 0x268ae0 / 0x269160), and the pack-item
    cluster 0x2902d0..0x2908c8 (`getInitPackItem` / `getLangPackItem` / `loadInitPack` /
    `getInitPackData` / the stage screen paths: the frontier's top entries now).
+   TU 15 (the frontier's `unassigned@0023e740`, 473 functions 0x23e740..0x2640e8, for
+   `UiLayout::~UiLayout` / `setData`): **`game/uilayout.cpp` 0x243390..0x246230** cut out (22
+   functions, batch 038 with 50 names, all written, `verify`; architecture.md "Modules"): the S2D
+   layout player, its script interpreter (30 opcodes, 17 condition kinds as `S2dOp` /
+   `S2dCondKind` enums) and its nested layout base `UiSubLayout`. `UiLayout` moved from
+   `gamehooks.h` to the new `uilayout.h` (gamehooks.h includes it; `draw` now answers the sequence
+   count); `gamehooks.h` gained `FileJob` (0x132a40..0x132cf0). Stand-ins in `uilayout.h` for the
+   rest of the run: `S2dData`, `UiSequence` / `UiActor` / `UiAnim` / `UiTrack`, `UiWidget::create`,
+   `UiDrawer`, the game hooks (`playSound` .. `testGameState`, `inStage`, `getStagePackData`).
+   Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean (stub SDK headers; screen /
+   stageresult / scene unchanged). Doubts for the user: all names (UiSubLayout, S2dData, the
+   opcode / condition names) are read from the code; op 7 / 8 read as "yield" / "restart";
+   condition kind 16 with a < 0 reads an uninitialised register in the ROM (the port tests
+   nothing); `UiSubLayout::m_childDir` (+0x14) is never set in this file (open passes it to the
+   child's setBaseDir); **host: S2dData's pointer fields are 32-bit offsets in the file**: the S2D
+   TU must relocate into host-sized side tables (or keep offsets and resolve on access), the
+   in-place relocate cannot widen them. Next in the run: the sequence classes 0x246230..0x249550
+   (`UiSequence::draw` / `advance`, the frontier's next callees), then the S2D file and the drawer.
    Open from TU 5: `gSoundConfig` (gp-0x7a94) and `gSystemData` are data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
