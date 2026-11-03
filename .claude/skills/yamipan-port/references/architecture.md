@@ -221,6 +221,12 @@ static slot table and init / exit / update called from `rxSndUtInit` 0x162178 / 
   (1 pause, 2 attr, 4 volume, 8 pitch, 0x10 a float nobody reads, 0x20 track volumes) that the format
   update applies; mark / branch callbacks +0x54 / +0x58 run with interrupts off; master volume
   0x521688. `rxSndStrStop` / `rxSndStrStopAsync` / `rxSndStrStopAll` are the names its own checks print.
+  Written 2026-11-03 (src/rx/rxsndstr.c, `RxSndStrSlot` in rxsndstr.h): `rxSndStrPlayEx` takes 10
+  arguments (bank, request, start, buf, bufSize, iopAddr +0x3c, iopKB +0x40, spuAddr +0x44, spuKB? +0x48
+  on the stack, keepOnEnd +0x1b on the stack); `rxSndStrPlayAt` is it under another name,
+  `rxSndStrPlay` the same from 0. `SoundStream::play` passes (.., 0, 4, ring, 4, 0). `rxSndStrUpdate`
+  stops a stream whose status has bit 4 (played out) unless keepOnEnd. Free slots are pushed 0..63, so
+  slot 63 is taken first.
 - **PCM format** 0x164398..0x164c38 (table 0x2f5f18, format 1 "PCM stream") and **ADPCM format**
   0x164c38..0x1656e8 (0x2f5f38, format 0 "ADPCM stream", multi-track interleave): feed rxsnd's
   `rxSndPcm*` / `rxSndAdpcm*` from a source.

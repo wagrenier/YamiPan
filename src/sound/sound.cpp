@@ -541,7 +541,7 @@ int SoundStream::play(int request, int start)
     if (m_spuRing == 0)
         return -1;
     WaitSema(sSoundSema);
-    int stream = rxSndStrPlayAt(m_bank, request, start, buf, bufSize, 0, 4, m_spuRing);
+    int stream = rxSndStrPlayAt(m_bank, request, start, buf, bufSize, 0, 4, m_spuRing, 4, 0);
     SignalSema(sSoundSema);
     m_stream = stream;
     m_request = request;

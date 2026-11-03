@@ -790,12 +790,22 @@
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. rxsnd: RoR's rx/rxsnd.cpp 0x237ce8..0x23ff58 (190 aligned, three FS2-only RPC wrappers)."
   },
   "rx/rxsndstr.c": {
+   "notes": "All 38 of 0x1634b8..0x164398 written, no Ghidra change. rxsndstr.h now has RxSndStrSlot (EE 0x9c, layout host), RxSndStrFormat (the 8-entry format table), RxSndStrRequest (head only; rxsndstrbank.c completes it), the dirty and status bits and every rxSndStr prototype; rxsndut.h gains rxSndUtGetDebugFlags 0x162268, rxSndUtCheckBgCall 0x162278 and the RXSNDUT_DEBUG bits. Fixed a caller: rxSndStrPlayAt takes 10 arguments (spuKB and keepOnEnd on the stack), so SoundStream::play in sound.cpp now passes 4, 0 as the ROM does at 0x145320. PC: PlayEx bounds the request format byte (the ROM indexes unchecked). callcheck clean (extras are the format table calls and the inline active-slot lookup), layout lint OK; not compiled (no compiler on this machine). Doubt: +0x48 named spuKB from rxSndAdpcmOpen's argument order, unconfirmed until rxsndstradpcm.c. Next: the format TUs rx/rxsndstrpcm.c and rx/rxsndstradpcm.c read RxSndStrSlot fields; rx/rxsndstrbank.c and rx/rxsndut.c are the other callees.",
    "ranges": [
     [
      "001634b8",
      "00164398"
     ]
    ],
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-03 12:30",
+     "status": "verify",
+     "summary": "rx/rxsndstr.c: all 38 stream-core functions written (slot and format tables, play / stop / setters, format callbacks)"
+    }
+   ],
+   "status": "verify",
    "why": "stream core rxSndStr* (own slot table 0x51ef80; batch 008); file cut a guess."
   },
   "rx/rxsndstradpcm.c": {

@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 12:13 at commit `ef7fa9a` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 12:30 at commit `01d867f` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **1556**; stubs: **0**
+- reconstructed FS2 functions: **1594**; stubs: **0**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -70,6 +70,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
 | `src/rx/rxfile.c` | 108 | 0 |
 | `src/rx/rxsnd.c` | 229 | 0 |
+| `src/rx/rxsndstr.c` | 38 | 0 |
 | `src/rx/rxsys.c` | 126 | 0 |
 | `src/rx/rxthread.c` | 53 | 0 |
 | `src/sdpr2/sdpr2.c` | 36 | 0 |
@@ -77,8 +78,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 78 TUs: todo 49, verify 42
-- next: **rx/rxsndstr.c** (frontier score 24)
+- 78 TUs: todo 48, verify 43
+- next: **rx/rxsndstrbank.c** (frontier score 19)
 - pinned queue: (empty)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
@@ -116,6 +117,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `rena/rena_pkt_vif1pktmanage.cpp` 13/17 -- Pinned 0x2eaff0-0x2ec110 under the new src/rena/ with the game's own file name (strings in Reset / AddList); the stale inferred key rena_pkt_vif1pktmanage.cpp r
 - verify: `rx/rxfile.c` 108/108 -- rxfile core is RoR's prebuilt rx: rxcmp.py over both ranges finds 106 of 108 identical (jumps, lui, gp masked); rxFileOnCreate 0x154518 / rxFileOnGetSize 0x1545
 - verify: `rx/rxsnd.c` 229/229 -- All 229 of 0x159bc0..0x162178 in src/rx/rxsnd.c (C), with new src/rx/rxsnd.h (C and C++) and src/rx/rxthread.h (the seven rxTh calls). 215 functions are RoR's w
+- verify: `rx/rxsndstr.c` 38/38 -- All 38 of 0x1634b8..0x164398 written, no Ghidra change. rxsndstr.h now has RxSndStrSlot (EE 0x9c, layout host), RxSndStrFormat (the 8-entry format table), RxSnd
 - verify: `rx/rxsys.c` 126/126 -- rxsys is RoR's prebuilt rx: rxcmp.py '^rxSys' finds 126 of 126 identical (jumps, lui and gp offsets masked) and the data words and console font equal RoR's at +
 - verify: `rx/rxthread.c` 53/53 -- Every rxTh function is RoR's word for word, so the file is RosePan's rxthread.cpp in C with FS2 addresses (architecture.md rx has the data and bss map). rxthrea
 - verify: `sdk/mcerror.cpp` 0/1 -- Pinned 0x121b80..0x121ef0 as sdk/mcerror.cpp (read as libmc's: between the read-fast tail and libc abort, maps commands FS2 never issues). McCmd and McErrno in 
@@ -125,6 +127,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 12:30 `rx/rxsndstr.c` verify: rx/rxsndstr.c: all 38 stream-core functions written (slot and format tables, play / stop / setters, format callbacks)
 - 2026-11-03 12:13 `game/streamring.cpp` verify: StreamRing / FileStreamRing cut out of unassigned@00148db0 as game/streamring.cpp 0x151f70..0x152750: all 17 written, the 4 rx jump thunks mapped to the rx call
 - 2026-11-03 11:53 `sdpr2/sdpr2.c` verify: all 36 written: the SDPR2 core and public API, type registry, 64 handle slots, inline checks in sdpr2check.h
 - 2026-11-03 11:31 `rx/rxthread.c` verify: all 53 functions written: RosePan's rxthread carried to C, all 53 identical to RoR (rxcmp.py), VBlank tail 0x159928 and core 0x166b50 with FS2 data and bss addr
@@ -132,17 +135,16 @@ Recent sessions:
 - 2026-11-03 10:55 `rx/rxsys.c` verify: all 126 functions written: RosePan's rxsys carried to C, every function RoR's word for word (new rxcmp.py), FS2 addresses
 - 2026-11-03 10:34 `rx/rxsnd.c` verify: rx/rxsnd.c: all 229 functions written (RosePan's rxsnd carried to C, FS2's differences and four hidden GetActiveList functions)
 - 2026-11-03 10:22 `sound/sound.cpp` verify: sound/sound.cpp: all 98 functions written (SoundStream, sinks, SoundFeeder, SoundSeBank, SoundConfig, soundInit/Update/Shutdown, SPU2 and IOP hooks)
-- 2026-11-03 10:05 `game/movieplayer.cpp` verify: MoviePlayer, the prgMovie widget's PSS player: file ring, libmpeg demux into video / audio / data rings, IPU feed, audio sinks and feeders, one RGB32 picture pe
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `rx/rxsndstr.c` | todo | 0/0/38 | 3.6 | 24 | 0 |
-| `rx/rxsndstrbank.c` | todo | 0/0/48 | 4.3 | 18 | 0 |
+| `rx/rxsndstrbank.c` | todo | 0/0/48 | 4.3 | 19 | 0 |
 | `unassigned@00133800` | todo | 0/0/65 | 11.2 | 13 | 0 |
-| `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 10 | 0 |
 | `unassigned@00171300` | todo | 0/0/829 | 131.7 | 10 | 0 |
-| `unassigned@00299d90` | todo | 0/0/215 | 62.3 | 9 | 0 |
+| `rx/rxsndut.c` | todo | 0/0/6 | 0.4 | 10 | 0 |
+| `unassigned@002b0d50` | todo | 0/0/371 | 138.7 | 10 | 0 |
 | `rena_2d_texture_tim2.cpp` | todo | 0/0/7 | 3.5 | 9 | 0 |
+| `unassigned@00299d90` | todo | 0/0/215 | 62.3 | 9 | 0 |
 | `unassigned@00252840` | todo | 0/0/100 | 35.5 | 7 | 0 |
 | `unassigned@001953f0` | todo | 0/0/1313 | 395.4 | 7 | 0 |
 | `unassigned@00231c90` | todo | 0/0/61 | 36.3 | 7 | 0 |
@@ -154,19 +156,17 @@ Recent sessions:
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
-| `00163a20` | rxSndStrSetVolume | 6 | lib-ctx | missing | rx/rxsndstr.c |
 | `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
 | `001624d8` | rxSndStrBankClose | 6 | lib-ctx | missing | rx/rxsndstrbank.c |
 | `0029efe0` | getNaviMenu | 5 | game | missing | - |
 | `001937f0` | FUN_001937f0 | 4 | - | missing | - |
+| `00162268` | rxSndUtGetDebugFlags | 4 | lib-ctx | missing | rx/rxsndut.c |
 | `002955d0` | getNaviTable | 4 | game | missing | - |
-| `00163848` | rxSndStrStop | 4 | lib-ctx | missing | rx/rxsndstr.c |
 | `0025a850` | mslTreeIncrement | 4 | lib-ctx | missing | - |
 | `00231d30` | overlayShowLoading | 3 | native | missing | - |
 | `00231d20` | overlayShowLoading | 3 | native | missing | - |
 | `001339c0` | normalizeAngle | 3 | game | missing | - |
 | `00162850` | rxSndStrBankGetRequestChannels | 3 | lib-ctx | missing | rx/rxsndstrbank.c |
-| `00163ea8` | rxSndStrSyncRead | 3 | lib-ctx | missing | rx/rxsndstr.c |
 | `002e1c50` | Tim2Texture::upload | 3 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `0025b590` | FUN_0025b590 | 3 | - | missing | - |
 | `001622f8` | rxSndStrBankOpen | 3 | lib-ctx | missing | rx/rxsndstrbank.c |
@@ -183,14 +183,16 @@ Recent sessions:
 | `0016e328` | sdpr2PairInit | 2 | lib-ctx | missing | sdpr2/sdpr2pair.c |
 | `0016f808` | sdpr2SingleInit | 2 | lib-ctx | missing | sdpr2/sdpr2single.c |
 | `00162220` | rxSndUtUpdate | 2 | lib-ctx | missing | rx/rxsndut.c |
-| `00163750` | rxSndStrPause | 2 | lib-ctx | missing | rx/rxsndstr.c |
-| `00163dc8` | rxSndStrGetHandle | 2 | lib-ctx | missing | rx/rxsndstr.c |
 | `00152740` | rxFileCallSizeHook | 2 | native | missing | game/streamring.cpp |
-| `001638d8` | rxSndStrSuspend | 2 | lib-ctx | missing | rx/rxsndstr.c |
 | `001351b0` | Clock::~Clock | 2 | game | missing | - |
 | `002e2920` | Tim2Texture::Tim2Texture | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
 | `002e1b70` | Tim2Texture::putTex0 | 2 | lib-ctx | missing | rena_2d_texture_tim2.cpp |
+| `00162278` | rxSndUtCheckBgCall | 2 | lib-ctx | missing | rx/rxsndut.c |
 | `002c3d70` | getSaveResource | 2 | game | missing | - |
 | `00193880` | FUN_00193880 | 2 | - | missing | - |
 | `002ec660` | optionLayoutPath | 1 | game | missing | - |
+| `001d6a90` | StageSound::stopNamed | 1 | game | missing | - |
+| `00292db0` | SePlayer::stop | 1 | game | missing | - |
+| `0029e4f0` | PrgScaleNavi::PrgScaleNavi | 1 | game | missing | - |
+| `0029ae30` | PrgScaleNaviScroll::PrgScaleNaviScroll | 1 | game | missing | - |
 
