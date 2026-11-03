@@ -344,6 +344,10 @@ struct KeepList
 // The stage object's +0xec: what a sub-scene starts from (the 0x287xxx
 // classes, vtables 0x318020..; their own TU). Only what stageThread calls.
 // layout: host -- EE: vptr at +0x2c.
+enum StageEventState
+{
+    StageEvent_Active = 2,      // StageScene::isEventActive; the name is a guess
+};
 class StageEvent
 {
 public:
@@ -353,6 +357,9 @@ public:
     // The deleting dtor (vtable +0x8, vptr +0x2c: StageScene's dtor); a
     // plain stub until its TU.
     void destroy();
+
+    u_char _00[0x24];
+    int    state;               // FS2 +0x24: StageEventState
 };
 
 class Clock;                    // game/clock.h
@@ -446,6 +453,8 @@ struct StageNodeTree
 {
     StageNodeTree();                                                     // FS2 0x00190c20
     ~StageNodeTree();                                                    // FS2 0x00190bc0: deleting
+    // Replaces the inner object's BoxGrid with a new one over a bbx file.
+    void setBoxes(void *bbx);                                            // FS2 0x00190900
 };
 
 // +0x2c: tex areas, an AreaGrid and a 0x5a10 table; its dtor puts the
@@ -463,6 +472,52 @@ class SceneOwnedObject
 public:
     void destroy();                                                      // FS2 vtable +0x8
 };
+
+// +0x4c: what runs the stage's rute file (vtable 0x316a78; run
+// unassigned@00252840); what it does is unread. layout: host (EE 0xc).
+class RoutePlayer : public SceneOwnedObject
+{
+public:
+    explicit RoutePlayer(void *rute);                                    // FS2 0x00253180
+    void start(int arg);                                                 // FS2 0x00252b10: empty here
+};
+
+class Tim2Texture;              // game/gsutil.h
+
+// +0x8c, built by the `effect` target from the texture "siglamp" (vtable
+// 0x314c40; run unassigned@00299d90). layout: host (EE 8).
+class SigLamp : public SceneOwnedObject
+{
+public:
+    explicit SigLamp(Tim2Texture *texture);                              // FS2 0x002a7bf0
+};
+
+// A script file as loaded (script/ in the stage script; 0x1d3a40 turns its
+// offsets into pointers; run unassigned@001a68b0).
+// layout: file -- 32-bit on the disc; only the counts are read here.
+struct StageScript
+{
+    // PC: the two tables at +0 / +4 are 32-bit fields in the file; the
+    // relocate of their TU must keep the pointers off the image.
+    int   table;                // FS2 +0x0
+    int   table2;               // FS2 +0x4
+    short count;                // FS2 +0x8
+    short slotCount;            // FS2 +0xa: StageScene::scriptSlots
+
+    StageScript *relocate(bool withTable2);                              // FS2 0x001d3a40
+};
+static_assert(sizeof(StageScript) == 0xc, "StageScript: the file header");
+
+// A collision file as loaded ("SSS\x1a" first; run unassigned@00231c90).
+// layout: file -- only the magic is read here.
+enum { kCollisionMagic = 0x1a535353 };
+struct CollisionFile
+{
+    void relocate();                                                     // FS2 0x0023ae40
+
+    int magic;                  // FS2 +0x0: kCollisionMagic
+};
+static_assert(sizeof(CollisionFile) == 4, "CollisionFile: only the magic so far");
 
 // +0x58: a pointer array (+0x30, count +0x2c) of objects deleted through
 // their vptr. layout: host.

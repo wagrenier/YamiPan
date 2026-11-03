@@ -3,6 +3,7 @@
 
 #include "game/stagescene.h"
 
+#include <ctype.h>
 #include <float.h>
 #include <string.h>
 
@@ -11,9 +12,12 @@
 #include "game/fontdata.h"
 #include "game/gamehooks.h"
 #include "game/gamesystem.h"
+#include "game/gsutil.h"        /* Tim2Texture */
 #include "game/seplayer.h"      /* StreamTable */
 #include "game/stageobjlist.h"
+#include "game/stageresult.h"   /* getInitItemForLanguage */
 #include "game/stagesound.h"
+#include "game/stringlist.h"
 #include "game/uiwidget.h"
 #include "game/vu0math.h"
 #include "sdk/libvu0.h"
@@ -31,6 +35,66 @@ static const char *const kKindPrefixes[StageData_KindCount] = {
     "item/",                    /* data 0x304180 */
 };
 static const char kScriptPrefix[] = "script/";         /* data 0x304118 */
+
+// A stage script's word separators and comment mark.
+static const char kScriptSeparators[] = " \t\r\n";    /* data 0x303d40 */
+constexpr char    kScriptComment = '#';
+
+// The stage script's keywords, in the order the ROM tries them (table
+// 0x31a928).
+enum ScriptKeyword
+{
+    ScriptKeyword_Target,
+    ScriptKeyword_End,
+    ScriptKeyword_Texture,
+    ScriptKeyword_Model,
+    ScriptKeyword_Motion,
+    ScriptKeyword_Mdl,
+    ScriptKeyword_Collision,
+    ScriptKeyword_Particle,
+    ScriptKeyword_Map,
+    ScriptKeyword_Script,
+    ScriptKeyword_Rute,
+    ScriptKeyword_Sndxv,
+    ScriptKeyword_Sndseh,
+    ScriptKeyword_Font,
+    ScriptKeyword_Areaclip,
+    ScriptKeyword_Bbx,
+    ScriptKeyword_Lpt,
+    ScriptKeyword_Sndsth,
+    ScriptKeyword_Message,
+    ScriptKeyword_Count,
+};
+static const char *const kScriptKeywords[ScriptKeyword_Count] = {
+    "target", "end", "texture", "model", "motion", "mdl", "collision",
+    "particle", "map", "script", "rute", "sndxv", "sndseh", "font",
+    "areaclip", "bbx", "lpt", "sndsth", "message",
+};
+// What a `target` line opens (table 0x31a974).
+enum ScriptTarget
+{
+    ScriptTarget_Script,
+    ScriptTarget_Camera,
+    ScriptTarget_Character,
+    ScriptTarget_Bg,
+    ScriptTarget_BgMotion,
+    ScriptTarget_Particle,
+    ScriptTarget_Item,
+    ScriptTarget_Map,
+    ScriptTarget_Sound,
+    ScriptTarget_Effect,
+    ScriptTarget_Count,
+};
+static const char *const kScriptTargets[ScriptTarget_Count] = {
+    "script", "camera", "character", "bg", "bg_motion", "particle", "item",
+    "map", "sound", "effect",
+};
+// The texture the effect target builds SigLamp from.
+static const char kSigLampTexture[] = "siglamp";       /* data 0x303ee8 */
+// FontPrinter::setTexture: the texture area's block.
+constexpr int kBlockAuto = -1;
+// Longest line splitLines takes (its stack buffer).
+constexpr int kScriptLineSize = 0x410;
 
 // The loader's waitLoaded arguments in StageFiles::load (arg unused, the
 // loading indicator shown).
@@ -368,7 +432,7 @@ StageScene::~StageScene()
     delete printer;
     delete pool;
     delete pauseState;
-    delete[] array44;
+    delete[] scriptSlots;
     if (itemList != nullptr)
         itemList->destroy();
     if (menu != nullptr)
@@ -379,8 +443,8 @@ StageScene::~StageScene()
     delete alert;
     if (fade != nullptr)
         fade->destroy();
-    if (object4c != nullptr)
-        object4c->destroy();
+    if (routePlayer != nullptr)
+        routePlayer->destroy();
     delete[] array54;
     delete drawLayers;
 
@@ -473,10 +537,10 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
 
     clock = gGameSystem->m_clock.createChild();
     _64   = 0;
-    _3c = _40 = 0;
-    array44    = nullptr;
-    _48        = 0;
-    object4c   = nullptr;
+    scripts[0] = scripts[1] = nullptr;
+    scriptSlots = nullptr;
+    route       = nullptr;
+    routePlayer = nullptr;
     _50        = 0;
     array54    = nullptr;
     drawLayers = nullptr;
@@ -598,4 +662,508 @@ int StageFiles::load(const char *path)
 
 void StageFiles::loadSubSceneList()
 {
+}
+
+// PC: the ROM's libc strcasecmp (0x127ea0); MSVC has no such name.
+static int scriptStrCaseCmp(const char *a, const char *b)
+{
+    for (;; a++, b++) {
+        int ca = tolower((u_char)*a);
+        int cb = tolower((u_char)*b);
+        if (ca != cb || ca == 0)
+            return ca - cb;
+    }
+}
+
+// The index of word in table, count none (the ROM's strcasecmp chains).
+static int findWord(const char *word, const char *const *table, int count)
+{
+    int i;
+    for (i = 0; i < count; i++) {
+        if (scriptStrCaseCmp(word, table[i]) == 0)
+            break;
+    }
+    return i;
+}
+
+// The bytes of the Shift-JIS character starting with c.
+static inline int sjisCharSize(u_char c)
+{
+    bool lead = (c > 0x80 && c < 0xa0) || (c > 0xdf && c < 0xfd);
+    return lead ? 2 : 1;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Adds text's lines to lines; line ends are LF, CR, LF CR or CR LF. With
+// trim, the blanks around each line go (an empty line stays, empty).
+// FS2 0x001a3500
+// callcheck: String, operator_delete[] (the String ctor and its inline dtor: entry)
+
+static void splitLines(StringList *lines, const char *text, bool trim)
+{
+    const char *start = text;
+    while (*start != '\0') {
+        const char *end = start;
+        while (*end != '\0' && *end != '\n' && *end != '\r')
+            end += sjisCharSize((u_char)*end);
+
+        const char *stop = end;
+        if (trim) {
+            while (strchr(kScriptSeparators, *start) != nullptr && start < end)
+                start++;
+            for (const char *p = start; p != end; p += sjisCharSize((u_char)*p)) {
+                if (strchr(kScriptSeparators, *p) == nullptr)
+                    stop = p + sjisCharSize((u_char)*p);
+            }
+        }
+
+        char line[kScriptLineSize];
+        memcpy(line, start, stop - start);
+        line[stop - start] = '\0';
+        String entry(line);
+        lines->pushBack(entry);
+
+        start = end;
+        if (*end == '\n') {
+            start = end + 1;
+            if (*start == '\r')
+                start++;
+        } else if (*end == '\r') {
+            start = end + 1;
+            if (*start == '\n')
+                start++;
+        }
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x001a4270
+// callcheck: FUN_001a4960, FUN_001a4ac0, FUN_001a4c20, FUN_001a5910, FUN_001a5980, FUN_001a59f0 (the members' constructors)
+
+StageFiles::StageFiles(FileLoader *fileLoader)
+{
+    // PC: the ROM leaves target and the rest to parseScript's reset.
+    target = nullptr;
+    streamTablePath[0] = '\0';
+    fsmPath[0] = '\0';
+    listPass = 0;
+    loader = fileLoader;
+    sharedLoader = 1;
+    for (int kind = 0; kind < StageData_KindCount; kind++)
+        debugTree[kind] = 0;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x001a3f90
+// callcheck: FUN_001a4980, FUN_001a4ae0, FUN_001a4c40, FUN_001a58b0, FUN_001a5920, FUN_001a5990, FUN_001a5a00, operator_delete, operator_delete[] (the members' and the records' destructors)
+
+StageFiles::~StageFiles()
+{
+    for (StringMap<Tim2Texture *>::Node *node = textures.first; node != nullptr; node = node->next)
+        delete node->value;
+    for (StringMap<StageList<StageCharacterModel *> *>::Node *node = characters.first;
+         node != nullptr; node = node->next) {
+        StageList<StageCharacterModel *> *list = node->value;
+        for (StageList<StageCharacterModel *>::Node *entry = list->head; entry != nullptr;
+             entry = entry->next) {
+            delete[] entry->value->altName;
+            delete entry->value;
+        }
+        delete list;
+    }
+    for (StringMap<StageFileGroup *>::Node *node = groups.first; node != nullptr; node = node->next)
+        delete node->value;
+
+    if (!sharedLoader && loader != nullptr)
+        delete loader;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// new[]'d strings out of a list, and the list emptied.
+static void clearStrings(StageList<char *> &list)
+{
+    for (StageList<char *>::Node *node = list.head; node != nullptr; node = node->next)
+        delete[] node->value;
+    list.clear();
+}
+
+// The same for a list of lists.
+static void clearLists(StageList<StageList<void *> *> &lists)
+{
+    for (StageList<StageList<void *> *>::Node *node = lists.head; node != nullptr; node = node->next)
+        delete node->value;
+    lists.clear();
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x001a3dc0
+// callcheck: FUN_001a5a00, FUN_001a5e60, FUN_001a5f80, FUN_001a60a0, operator_delete[] (StageList::clear and clearStrings / clearLists)
+
+void StageFiles::reset()
+{
+    target = nullptr;
+    models.clear();
+    clearStrings(modelNames);
+    clearStrings(modelAltNames);
+    clearLists(motionLists);
+    clearStrings(motionNames);
+    mdls.clear();
+    collisions.clear();
+    particles.clear();
+    maps.clear();
+    clearStrings(mapNames);
+    scripts.clear();
+    rutes.clear();
+    sndxvs.clear();
+    sndsehs.clear();
+    clearLists(sndsehLists);
+    streamTablePath[0] = '\0';
+    fsmPath[0] = '\0';
+    fonts.clear();
+    areaclips.clear();
+    bbxs.clear();
+    lpts.clear();
+}
+
+// ──────────────────────────────────────────────────────────────────────
+template <class T>
+bool StageFiles::takeFile(StageList<T> &list, T *item)
+{
+    const char *path = strtok(nullptr, kScriptSeparators);
+    if (path == nullptr)
+        return false;
+    loader->setDir(dataDir(path));
+    if (listPass) {
+        loader->addFile(path);
+        *item = T();
+        return true;
+    }
+    *item = (T)loader->getItem(loader->findIndex(path));
+    if (*item == T())
+        return false;
+    list.pushBack(*item);
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The ROM has one chain of compares per kind of scene. A sub-scene skips
+// the keywords only a stage's own systems take (the isSubScene tests).
+bool StageFiles::parseLine(const char *keyword, bool isSubScene)
+{
+    void *item;
+    switch (findWord(keyword, kScriptKeywords, ScriptKeyword_Count)) {
+    case ScriptKeyword_Target:
+        return parseTarget();
+    case ScriptKeyword_End:
+        return parseEnd();
+    case ScriptKeyword_Texture:
+        return parseTexture();
+    case ScriptKeyword_Model:
+        return parseModel();
+    case ScriptKeyword_Motion:
+        return isSubScene || parseMotion();
+    case ScriptKeyword_Mdl:
+        return isSubScene || takeFile(mdls, &item);
+    case ScriptKeyword_Collision:
+        if (!takeFile(collisions, &item))
+            return false;
+        if (item != nullptr) {
+            CollisionFile *file = (CollisionFile *)item;
+            if (file->magic != kCollisionMagic)
+                return false;
+            file->relocate();
+        }
+        return true;
+    case ScriptKeyword_Particle:
+        return takeFile(particles, &item);
+    case ScriptKeyword_Map:
+        return parseMap();
+    case ScriptKeyword_Script: {
+        StageScript *script;
+        if (!takeFile(scripts, &script))
+            return false;
+        if (script != nullptr)
+            script->relocate(true);
+        return true;
+    }
+    case ScriptKeyword_Rute:
+        return isSubScene || takeFile(rutes, &item);
+    case ScriptKeyword_Sndxv:
+        return isSubScene || takeFile(sndxvs, &item);
+    case ScriptKeyword_Sndseh:
+        return isSubScene || parseSndseh();
+    case ScriptKeyword_Font:
+        if (isSubScene)
+            return true;
+        if (strtok(nullptr, kScriptSeparators) == nullptr)
+            return false;
+        // The ROM also builds <path>_<language><ext> here, as parseTexture
+        // does, and never reads it: the font is the init pack's. In both
+        // passes.
+        fonts.pushBack((FontData *)getInitItemForLanguage());
+        return true;
+    case ScriptKeyword_Areaclip:
+        return takeFile(areaclips, &item);
+    case ScriptKeyword_Bbx:
+        return takeFile(bbxs, &item);
+    case ScriptKeyword_Lpt:
+        return takeFile(lpts, &item);
+    case ScriptKeyword_Sndsth:
+        return isSubScene || parseSndsth();
+    case ScriptKeyword_Message:
+        return isSubScene || parseMessage();
+    }
+    return false;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x001a20f0
+// callcheck: FUN_001a5a60, FUN_001a5db0, dataDir, getGameOptions, getInitItemForLanguage, getLanguage, getLanguageCode, operator_delete[], operator_new[], parseEnd, parseMap, parseMessage, parseModel, parseMotion, parseSndseh, parseSndsth, parseTarget, parseTexture, relocate, strcasecmp, strcat, strcpy, ~StringList (parseLine and takeFile; the font's unread path; new / delete of text; lines' ctor and dtor)
+
+bool StageFiles::parseScript(int index)
+{
+    // A 0-terminated copy of the item.
+    int size = loader->getItemSize(index);
+    char *text = new char[size + 1];
+    memset(text, 0, loader->getItemSize(index) + 1);
+    strncpy(text, (const char *)loader->getItem(index), loader->getItemSize(index));
+
+    StringList lines;
+    splitLines(&lines, text, true);
+    delete[] text;
+
+    reset();
+    bool ok = true;
+    for (StringList::Node *node = lines.head; node != nullptr; node = node->next) {
+        char *line = node->value->m_text;
+        if (line[0] == '\0' || line[0] == kScriptComment)
+            continue;
+        const char *keyword = strtok(line, kScriptSeparators);
+        ok = parseLine(keyword, gStageScene->isSubScene != 0);
+        if (!ok)
+            break;
+    }
+    return ok;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x001a1b50
+// callcheck: strcasecmp (findWord)
+
+bool StageFiles::parseTarget()
+{
+    if (target != nullptr)
+        return false;
+    const char *name = strtok(nullptr, kScriptSeparators);
+    if (name == nullptr)
+        return false;
+    if (findWord(name, kScriptTargets, ScriptTarget_Count) == ScriptTarget_Count)
+        return false;
+    target = name;
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The first pass's end only closes the block. A stage runs every target; a
+// sub-scene only script's bbx, bg, particle and map. An unknown target
+// cannot be open (parseTarget).
+// FS2 0x001a1820
+// callcheck: FUN_00189840, operator_new, strcasecmp (StringMap::find, new SigLamp, findWord)
+
+bool StageFiles::parseEnd()
+{
+    if (target == nullptr)
+        return false;
+
+    bool ok = true;
+    if (!listPass) {
+        StageScene *scene = gStageScene;
+        int kind = findWord(target, kScriptTargets, ScriptTarget_Count);
+        if (scene->isSubScene) {
+            switch (kind) {
+            case ScriptTarget_Script:
+                if (bbxs.count > 0)
+                    scene->nodeTree->setBoxes(bbxs.head->value);
+                break;
+            case ScriptTarget_Bg:
+                ok = applyBgTarget();
+                break;
+            case ScriptTarget_Particle:
+                ok = applyParticleTarget();
+                break;
+            case ScriptTarget_Map:
+                ok = applyMapTarget();
+                break;
+            }
+        } else {
+            switch (kind) {
+            case ScriptTarget_Script:
+                ok = applyScriptTarget();
+                break;
+            case ScriptTarget_Camera:
+                break;
+            case ScriptTarget_Character:
+                ok = applyCharacterTarget();
+                break;
+            case ScriptTarget_Bg:
+                ok = applyBgTarget();
+                break;
+            case ScriptTarget_BgMotion:
+                ok = applyBgMotionTarget();
+                break;
+            case ScriptTarget_Particle:
+                ok = applyParticleTarget();
+                break;
+            case ScriptTarget_Item:
+                ok = applyItemTarget();
+                break;
+            case ScriptTarget_Map:
+                ok = applyMapTarget();
+                break;
+            case ScriptTarget_Sound:
+                ok = applySoundTarget();
+                break;
+            case ScriptTarget_Effect: {
+                StringMap<Tim2Texture *>::Node *lamp = textures.find(kSigLampTexture);
+                if (lamp != nullptr) {
+                    // As the ROM: a second effect block's lamp is dropped
+                    // without being deleted.
+                    SigLamp *object = new SigLamp(lamp->value);
+                    if (scene->owned[0] == nullptr)
+                        scene->owned[0] = object;
+                }
+                break;
+            }
+            }
+        }
+    }
+    reset();
+    return ok;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Two scripts, the rute, the font and the last texture listed are required.
+// FS2 0x0019fcd0
+// callcheck: FUN_001a4d80 (StringMap::at)
+
+bool StageFiles::applyScriptTarget()
+{
+    StageScene *scene = gStageScene;
+    if (scripts.count < 2)
+        return false;
+    scene->setScripts(scripts.head->value, scripts.head->next->value);
+    if (rutes.count < 1)
+        return false;
+    scene->setRoute(rutes.head->value);
+    if (fonts.count < 1)
+        return false;
+    scene->printer->setFont(fonts.head->value);
+
+    // PC: at answers null with no texture listed (the ROM reads through it).
+    StringMap<Tim2Texture *>::Node *last = textures.at(textures.count - 1);
+    if (last == nullptr || last->value == nullptr)
+        return false;
+    scene->printer->setTexture(last->value, kBlockAuto);
+
+    if (bbxs.count > 0)
+        scene->nodeTree->setBoxes(bbxs.head->value);
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// One StageCharacterModel per model line, under the model's name; each
+// takes two motion lists. The ROM needs two motion lists per model (it reads
+// through a null node otherwise); kept.
+// FS2 0x0019fac0
+// callcheck: FUN_001a4b70, FUN_001a5250, FUN_001a58a0, FUN_001a59f0, FUN_001a5db0, FUN_001a6140, operator_new, operator_new[] (StringMap::insert / find, StageList::StageList / pushBack, new)
+
+bool StageFiles::applyCharacterTarget()
+{
+    StageList<char *>::Node *name = modelNames.head;
+    StageList<char *>::Node *altName = modelAltNames.head;
+    StageList<StageList<void *> *>::Node *motions = motionLists.head;
+    StageList<void *>::Node *mdl = mdls.head;
+
+    for (StageList<void *>::Node *model = models.head; model != nullptr; model = model->next) {
+        StageList<StageCharacterModel *> *list;
+        StringMap<StageList<StageCharacterModel *> *>::Node *found = characters.find(name->value);
+        if (found != nullptr) {
+            list = found->value;
+        } else {
+            list = new StageList<StageCharacterModel *>;
+            characters.insert(name->value, list);
+        }
+
+        StageCharacterModel *record = new StageCharacterModel;
+        record->model = model->value;
+        const char *alt = altName->value;
+        if (alt == nullptr) {
+            record->altName = nullptr;
+        } else {
+            record->altName = new char[strlen(alt) + 1];
+            strcpy(record->altName, alt);
+        }
+
+        for (StageList<void *>::Node *entry = motions->value->head; entry != nullptr; entry = entry->next)
+            record->motions.pushBack(entry->value);
+        motions = motions->next;
+        for (StageList<void *>::Node *entry = motions->value->head; entry != nullptr; entry = entry->next)
+            record->motions2.pushBack(entry->value);
+
+        if (mdl == nullptr) {
+            record->mdl = nullptr;
+        } else {
+            record->mdl = mdl->value;
+            mdl = mdl->next;
+        }
+        list->pushBack(record);
+
+        name = name->next;
+        altName = altName->next;
+        motions = motions->next;
+    }
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x0019b7a0
+// callcheck: operator_new[]
+
+void StageScene::setScripts(StageScript *script, StageScript *script2)
+{
+    scripts[0] = script;
+    scripts[1] = script2;
+    scriptSlots = new int[script->slotCount];
+    for (int i = 0; i < script->slotCount; i++)
+        scriptSlots[i] = 0;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x00196280
+// callcheck: operator_new
+
+void StageScene::setRoute(void *rute)
+{
+    route = rute;
+    if (routePlayer != nullptr)
+        routePlayer->destroy();
+    routePlayer = new RoutePlayer(rute);
+    routePlayer->start(0);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x001954c0
+
+bool StageScene::isEventActive()
+{
+    return event != nullptr && !isSubScene && event->state == StageEvent_Active;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x0019ae90
+// callcheck: addId
+
+void StageScene::addArea1(int id)
+{
+    areas[StageArea_1]->addId(id);
 }

@@ -46,6 +46,7 @@
 #ifndef _GAME_STAGESCENE_H
 #define _GAME_STAGESCENE_H
 
+#include "game/stagelist.h"
 #include "sdk/libvu0.h"     /* sceVu0FVECTOR */
 #include "sdk/scetypes.h"
 
@@ -59,6 +60,9 @@ class StageMenu;
 class SubSceneObject;
 class UiItemList;
 class WideFontPrinter;          // game/fontdata.h
+class FontData;                 // game/fontdata.h
+class RoutePlayer;
+class Tim2Texture;              // game/gsutil.h
 struct AreaGrid;
 struct ClearSequence;
 struct DrawLayerList;
@@ -91,6 +95,7 @@ struct KeepList;                // game/gamehooks.h
 struct StageCollisionFace;      // game/gamehooks.h
 struct StageParty;              // game/gamehooks.h
 struct StagePlayer;             // game/gamehooks.h
+struct StageScript;             // game/gamehooks.h
 struct StreamTable;             // game/seplayer.h
 
 // The stack of who the stage is heard and seen through (StageScene +0x34;
@@ -201,9 +206,19 @@ struct StageScene
     void *getSubSceneBlock();                                            // FS2 0x00195d70
     // The stage's menu while it is open; null otherwise.
     StageMenu *getOpenMenu();                                            // FS2 0x001963d0
-    // AreaGrid::addId on the sound grid (+0xb8) / the third grid (+0xb4).
+    // AreaGrid::addId on the sound grid (+0xb8) / the second (+0xb0) and
+    // third (+0xb4) grids.
     void addSoundArea(int id);                                           // FS2 0x0019ae30
     void addArea2(int id);                                               // FS2 0x0019ae40
+    void addArea1(int id);                                               // FS2 0x0019ae90
+    // A stage whose StageEvent is in its active state.
+    bool isEventActive();                                                // FS2 0x001954c0
+
+    // The stage script's two files (StageFiles::applyScriptTarget) and a
+    // zeroed slot per the first's slotCount.
+    void setScripts(StageScript *script, StageScript *script2);          // FS2 0x0019b7a0
+    // The rute file and a new RoutePlayer over it, started.
+    void setRoute(void *rute);                                           // FS2 0x00196280
 
     // The scene a sub-scene was built under (null for the stage).
     StageScene *getParent();                                             // FS2 0x00196950
@@ -232,11 +247,10 @@ struct StageScene
     KeepList           *keepList;        // FS2 +0x30: a stage's
     StageViewStack     *views;           // FS2 +0x34
     int                 _38;             // FS2 +0x38: zero (unread)
-    int                 _3c;             // FS2 +0x3c: zero (unread)
-    int                 _40;             // FS2 +0x40: zero (unread)
-    u_char             *array44;         // FS2 +0x44: delete[] (set outside the ctor)
-    int                 _48;             // FS2 +0x48: zero (unread)
-    SceneOwnedObject   *object4c;        // FS2 +0x4c
+    StageScript        *scripts[2];      // FS2 +0x3c, +0x40: setScripts
+    int                *scriptSlots;     // FS2 +0x44: one per scripts[0]->slotCount
+    void               *route;           // FS2 +0x48: the rute file (setRoute)
+    RoutePlayer        *routePlayer;     // FS2 +0x4c: setRoute
     int                 _50;             // FS2 +0x50: zero (unread)
     u_char             *array54;         // FS2 +0x54: delete[]
     DrawLayerList      *drawLayers;      // FS2 +0x58
@@ -299,12 +313,30 @@ enum StageDataKind
     StageData_KindCount = 4,
 };
 
+// One model line under a `character` target (StageFiles::characters).
+// layout: host -- EE 0x1c: the offsets below.
+struct StageCharacterModel
+{
+    void             *model;    // FS2 +0x00: the model's item (null for "nothing")
+    char             *altName;  // FS2 +0x04: new[]'d; null without one
+    StageList<void *> motions;  // FS2 +0x08: from the line's first motion list
+    StageList<void *> motions2; // FS2 +0x10: from the next one
+    void             *mdl;      // FS2 +0x18: the mdl of the same position; null past the end
+};
+
+// A value of StageFiles::groups (+0x14c): only ~StageFiles is read so far.
+// layout: host -- EE: a list at +4; size unread.
+struct StageFileGroup
+{
+    int               _00;      // FS2 +0x0 (unread)
+    StageList<void *> items;    // FS2 +0x4
+};
+
 // The stage's files (sbss 0x31adfc: getStageFiles; built by stageLoad over
 // the stage loader, game/stageloop.cpp): the stage script and what its
-// lines name, loaded in two passes.
-// layout: host -- EE 0x160: +0 the loader, +4 a flag (1), 22 containers
-// from +0xc (the string maps / lists 0x1a4e80..0x1a6790), +0x124..+0x127
-// the debug-tree flags, +0x128 the pass.
+// lines name, loaded in two passes. The lists +0xc..+0x9c live for one
+// `target` .. `end` block (reset).
+// layout: host -- EE 0x160: the offsets below.
 class StageFiles
 {
 public:
@@ -329,16 +361,77 @@ public:
     const char *dataDir(const char *path);                               // FS2 0x001a1ca0
 
     FileLoader *loader;         // FS2 +0x000
+    u_char      sharedLoader;   // FS2 +0x004: 1: the dtor leaves loader alone (the ctor's value)
+    const char *target;         // FS2 +0x008: the open block's name, in its line; null none
+
+    // What a block's lines took (by keyword), +0xc..+0x9c.
+    StageList<void *>  models;       // FS2 +0x00c: model (null for "nothing")
+    StageList<char *>  modelNames;   // FS2 +0x014: model, new[]'d
+    StageList<char *>  modelAltNames; // FS2 +0x01c: model, new[]'d; null without one
+    StageList<StageList<void *> *> motionLists; // FS2 +0x024: motion
+    StageList<char *>  motionNames;  // FS2 +0x02c: motion, new[]'d
+    StageList<void *>  mdls;         // FS2 +0x034: mdl
+    StageList<void *>  collisions;   // FS2 +0x03c: collision
+    StageList<void *>  particles;    // FS2 +0x044: particle
+    StageList<void *>  maps;         // FS2 +0x04c: map
+    StageList<char *>  mapNames;     // FS2 +0x054: map, new[]'d
+    StageList<StageScript *> scripts; // FS2 +0x05c: script
+    StageList<void *>  rutes;        // FS2 +0x064: rute
+    StageList<void *>  sndxvs;       // FS2 +0x06c: sndxv
+    StageList<void *>  sndsehs;      // FS2 +0x074: sndseh
+    StageList<StageList<void *> *> sndsehLists; // FS2 +0x07c: sndseh
+    StageList<FontData *> fonts;     // FS2 +0x084: font
+    StageList<void *>  areaclips;    // FS2 +0x08c: areaclip
+    StageList<void *>  bbxs;         // FS2 +0x094: bbx
+    StageList<void *>  lpts;         // FS2 +0x09c: lpt
+    char        streamTablePath[0x40]; // FS2 +0x0a4: sndsth's .sth
+    char        fsmPath[0x40];  // FS2 +0x0e4: sndsth's .fsm
+
     // Per StageDataKind: read from ../data/debug/ rather than
     // ../data/proof/ (set outside this slice).
     u_char      debugTree[StageData_KindCount]; // FS2 +0x124
     u_char      listPass;       // FS2 +0x128: 1 during load's first pass (lines list their files)
 
+    // What outlives the blocks, by name.
+    StringMap<Tim2Texture *> textures;   // FS2 +0x12c: owned
+    StringMap<StageList<StageCharacterModel *> *> characters; // FS2 +0x13c: owned
+    StringMap<StageFileGroup *> groups;  // FS2 +0x14c: owned
+
 private:
-    // Runs the script the loader holds at index line by line (target,
-    // texture, model, motion, collision, particle, script, sndxv, sndseh,
-    // areaclip, ...); false on the first line that fails.
+    // Runs the script the loader holds at index line by line; false on the
+    // first line that fails or that has an unknown keyword.
     bool parseScript(int index);                                         // FS2 0x001a20f0
+    // One line, its keyword already cut (inline in parseScript).
+    bool parseLine(const char *keyword, bool isSubScene);
+    // A keyword line that only names a file: the first pass lists it, the
+    // second puts its item in list and in *item. False with no path or no
+    // item (inline for every such keyword in the ROM).
+    template <class T>
+    bool takeFile(StageList<T> &list, T *item);
+    // Drops everything the lists +0xc..+0xe4 hold.
+    void reset();                                                        // FS2 0x001a3dc0
+
+    // target NAME and end: one block.
+    bool parseTarget();                                                  // FS2 0x001a1b50
+    bool parseEnd();                                                     // FS2 0x001a1820
+    // What end does with the block, by target.
+    bool applyScriptTarget();                                            // FS2 0x0019fcd0
+    bool applyCharacterTarget();                                         // FS2 0x0019fac0
+    bool applyBgTarget();                                                // FS2 0x0019f680
+    bool applyBgMotionTarget();                                          // FS2 0x0019f230
+    bool applyParticleTarget();                                          // FS2 0x0019f140
+    bool applyItemTarget();                                              // FS2 0x0019f020
+    bool applyMapTarget();                                               // FS2 0x0019ddf0
+    bool applySoundTarget();                                             // FS2 0x0019d9e0
+
+    // The keywords with more to do than takeFile.
+    bool parseTexture();                                                 // FS2 0x001a1430
+    bool parseModel();                                                   // FS2 0x001a0e70
+    bool parseMotion();                                                  // FS2 0x001a0ae0
+    bool parseMap();                                                     // FS2 0x001a0950
+    bool parseSndseh();                                                  // FS2 0x001a0580
+    bool parseSndsth();                                                  // FS2 0x001a0040
+    bool parseMessage();                                                 // FS2 0x0019fdf0
 };
 
 // An StDT stream table's header (beside its other reader 0x1a0040, which

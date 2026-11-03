@@ -2507,6 +2507,12 @@
   "was": "FUN_00127ea0",
   "why": "in Sony's newlib libc range (0x121ef0..0x12c9b8): compares two strings, each char folded with _ctype_ (0x3000c1, upper bit 1 -> +0x20), answers the difference of the first unequal folded chars; fMsgFind / timSheetFind"
  },
+ "00127f78": {
+  "name": "strcat",
+  "tag": "lib-context",
+  "was": "FUN_00127f78",
+  "why": "EE-optimised strlen by qwords, then strcpy at the end, answers the destination"
+ },
  "001280a8": {
   "name": "strchr",
   "tag": "lib-context",
@@ -2554,6 +2560,12 @@
   "tag": "lib-context",
   "was": "FUN_00128a70",
   "why": "MSL C: first occurrence of s2 in s1 (s1 when s2 is empty, 0 when none); spkLocateFile uses it for 'ROM.' / 'ROMD.'"
+ },
+ "00129a60": {
+  "name": "strtok",
+  "tag": "lib-context",
+  "was": "FUN_00129a60",
+  "why": "MSL strtok: skips leading delimiters, cuts at the next, keeps the position in the thread-local block (PTR_DAT_002f3398 +0x5c); parseScript calls it with (line, ws) then (0, ws)"
  },
  "00129b48": {
   "name": "_strtol_r",
@@ -6310,6 +6322,90 @@
   "tag": "game-inferred",
   "was": "FUN_00148d60",
   "why": "rxSndSetIopAllocHook target (soundInit): sceSifAllocSysMemory(0, size, 0) under semaphore 0x31a8b0"
+ },
+ "00148db0": {
+  "name": "String::~String",
+  "tag": "game-inferred",
+  "was": "FUN_00148db0",
+  "why": "vtable 0x311200 slot 0, deleting: delete[] +0 and +4; the class stores char data at +0 and the vptr at +8"
+ },
+ "00148e30": {
+  "name": "String::nextToken",
+  "tag": "game-inferred",
+  "was": "FUN_00148e30",
+  "why": "calls strtok with a null first argument on this string's token buffer; StringList::split's loop step"
+ },
+ "00148e40": {
+  "name": "String::firstToken",
+  "tag": "game-inferred",
+  "was": "FUN_00148e40",
+  "why": "strtok's first call on a copy of the text; StringList::split's loop start"
+ },
+ "00148ec0": {
+  "name": "String::append",
+  "tag": "game-inferred",
+  "was": "FUN_00148ec0",
+  "why": "new[] of both lengths + 1, strcpy, strcat, delete[] the old text"
+ },
+ "00148f60": {
+  "name": "String::assign",
+  "tag": "game-inferred",
+  "was": "FUN_00148f60",
+  "why": "StringList::split: stores a token (const char *) into a String"
+ },
+ "00148fd0": {
+  "name": "String::copyFrom",
+  "tag": "game-inferred",
+  "was": "FUN_00148fd0",
+  "why": "delete[] +0, new[] strlen + 1, strcpy of the other String's text; the copy StringList::pushBack makes"
+ },
+ "00149040": {
+  "name": "String::String",
+  "tag": "game-inferred",
+  "was": "FUN_00149040",
+  "why": "vtable 0x311200 at +8, +0 a new[] copy of the argument, +4 zero"
+ },
+ "00149100": {
+  "name": "StringList::split",
+  "tag": "game-inferred",
+  "was": "FUN_00149100",
+  "why": "vtable 0x311210 slot 2: clears the list, cuts the text by the delimiters, pushBack each token, answers the count"
+ },
+ "00149230": {
+  "name": "StringList::splitString",
+  "tag": "game-inferred",
+  "was": "FUN_00149230",
+  "why": "vtable 0x311210 slot 1: slot 2 with the String's text"
+ },
+ "00149250": {
+  "name": "StringList::~StringList",
+  "tag": "game-inferred",
+  "was": "FUN_00149250",
+  "why": "deleting dtor of the list with vtable 0x311210 at +8; calls clear 0x149380"
+ },
+ "001492b0": {
+  "name": "StringList::pushBack",
+  "tag": "game-inferred",
+  "was": "FUN_001492b0",
+  "why": "new String + copyFrom, new node linked after the tail (0x1494c0), count + 1; an empty list goes through 0x149400"
+ },
+ "00149380": {
+  "name": "StringList::clear",
+  "tag": "game-inferred",
+  "was": "FUN_00149380",
+  "why": "walks the nodes, deletes each String through its vptr and the node, zeroes head and count"
+ },
+ "00149400": {
+  "name": "StringList::pushFront",
+  "tag": "game-inferred",
+  "was": "FUN_00149400",
+  "why": "the branch of pushBack for an empty list: new node at the head"
+ },
+ "001494c0": {
+  "name": "StringList::tail",
+  "tag": "game-inferred",
+  "was": "FUN_001494c0",
+  "why": "walks next (+4) to the last node"
  },
  "00151270": {
   "name": "debugSysUpdate",
@@ -10967,6 +11063,12 @@
   "was": "FUN_001865c0",
   "why": "deleting dtor of the vtable 0x315ae0 node base (over 0x314150 / 0x314120): frees +0x10 / +0x14 (heap 0x329970), unlinks from the parent (+0x4, its child list +0x8), orphans its children, clears its list; StageSoundSource's dtor calls it"
  },
+ "00190900": {
+  "name": "StageNodeTree::setBoxes",
+  "tag": "game-inferred",
+  "was": "FUN_00190900",
+  "why": "a0 StageScene +0x1c: replaces the inner object's +0x3c with a new BoxGrid over the bbx file (size 8)"
+ },
  "00190bc0": {
   "name": "StageNodeTree::~StageNodeTree",
   "tag": "game-inferred",
@@ -11249,6 +11351,12 @@
   "was": "FUN_001951e0",
   "why": "(node): 1 + the taller child's height, an empty child 0 (recursive, two levels unrolled); StageNameNode::balance's measure"
  },
+ "001954c0": {
+  "name": "StageScene::isEventActive",
+  "tag": "game-inferred",
+  "was": "FUN_001954c0",
+  "why": "a stage (not a sub-scene) whose StageEvent +0xec has state +0x24 == 2; what state 2 means is unread"
+ },
  "00195640": {
   "name": "StageScene::isCleared",
   "tag": "game-inferred",
@@ -11308,6 +11416,12 @@
   "tag": "game-inferred",
   "was": "FUN_00196050",
   "why": "+4 = 0; stageThread after building the sub-scene that +4 asked for"
+ },
+ "00196280": {
+  "name": "StageScene::setRoute",
+  "tag": "game-inferred",
+  "was": "FUN_00196280",
+  "why": "a0 gStageScene: +0x48 the rute file, +0x4c a new 0x253180 over it, the old one deleted"
  },
  "001963a0": {
   "name": "StageScene::beginPlay",
@@ -11393,11 +11507,23 @@
   "was": "FUN_0019ae40",
   "why": "a0 a StageScene: AreaGrid::addId on +0xb4 (the third of the four area grids +0xac..+0xb8); which areas it holds is unread"
  },
+ "0019ae90": {
+  "name": "StageScene::addArea1",
+  "tag": "game-inferred",
+  "was": "FUN_0019ae90",
+  "why": "AreaGrid::addId on +0xb0, like addArea2 / addSoundArea"
+ },
  "0019aea0": {
   "name": "StageScene::getFloor",
   "tag": "game-inferred",
   "was": "FUN_0019aea0",
   "why": "a0 gStageScene, a1 its player (+0x78): an int compared with the rF01..rF09 / rFDF index - 1 in UiLayout::testGameState (negative clamped to 0, 0 while the map does not show the player); guess: the floor the player is on"
+ },
+ "0019b7a0": {
+  "name": "StageScene::setScripts",
+  "tag": "game-inferred",
+  "was": "FUN_0019b7a0",
+  "why": "a0 gStageScene: +0x3c / +0x40 the two script files, +0x44 a zeroed int array of the first one's short at +10"
  },
  "0019bbb0": {
   "name": "StageScene::getActiveCharacter",
@@ -11417,6 +11543,66 @@
   "was": "FUN_0019c180",
   "why": "ctor of the 0x130 stage scene (gp-0x7a7c): (isSubScene, sound); stageLoad passes false and the StageSound, the sub-scene branch true and 0; string streamEU/demo/"
  },
+ "0019d9e0": {
+  "name": "StageFiles::applySoundTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0019d9e0",
+  "why": "parseEnd's handler of target sound"
+ },
+ "0019ddf0": {
+  "name": "StageFiles::applyMapTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0019ddf0",
+  "why": "parseEnd's handler of target map"
+ },
+ "0019f020": {
+  "name": "StageFiles::applyItemTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0019f020",
+  "why": "parseEnd's handler of target item"
+ },
+ "0019f140": {
+  "name": "StageFiles::applyParticleTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0019f140",
+  "why": "parseEnd's handler of target particle"
+ },
+ "0019f230": {
+  "name": "StageFiles::applyBgMotionTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0019f230",
+  "why": "parseEnd's handler of target bg_motion"
+ },
+ "0019f680": {
+  "name": "StageFiles::applyBgTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0019f680",
+  "why": "parseEnd's handler of target bg"
+ },
+ "0019fac0": {
+  "name": "StageFiles::applyCharacterTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0019fac0",
+  "why": "target character: one 0x1c record per model line, listed in the map +0x13c under the model's name"
+ },
+ "0019fcd0": {
+  "name": "StageFiles::applyScriptTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0019fcd0",
+  "why": "target script: hands the scene two script files, the rute, the font, the last texture and the bbx"
+ },
+ "0019fdf0": {
+  "name": "StageFiles::parseMessage",
+  "tag": "game-inferred",
+  "was": "FUN_0019fdf0",
+  "why": "the keyword message"
+ },
+ "001a0040": {
+  "name": "StageFiles::parseSndsth",
+  "tag": "game-inferred",
+  "was": "FUN_001a0040",
+  "why": "the keyword sndsth: Stream_s%02d_SE%s.sth into +0xa4, the fsm name into +0xe4"
+ },
  "001a0560": {
   "name": "stdtEntryCount",
   "tag": "game-inferred",
@@ -11429,6 +11615,48 @@
   "was": "FUN_001a0570",
   "why": "answers the byte at +4 of an StDT stream table (set to 1 by SoundTrack::setTable / 0x1a0040 once relocated)"
  },
+ "001a0580": {
+  "name": "StageFiles::parseSndseh",
+  "tag": "game-inferred",
+  "was": "FUN_001a0580",
+  "why": "the keyword sndseh"
+ },
+ "001a0950": {
+  "name": "StageFiles::parseMap",
+  "tag": "game-inferred",
+  "was": "FUN_001a0950",
+  "why": "the keyword map: an item in +0x4c and its name in +0x54"
+ },
+ "001a0ae0": {
+  "name": "StageFiles::parseMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001a0ae0",
+  "why": "the keyword motion: a motion and its .mpk"
+ },
+ "001a0e70": {
+  "name": "StageFiles::parseModel",
+  "tag": "game-inferred",
+  "was": "FUN_001a0e70",
+  "why": "the keyword model: a model, its .tpk textures and its names"
+ },
+ "001a1430": {
+  "name": "StageFiles::parseTexture",
+  "tag": "game-inferred",
+  "was": "FUN_001a1430",
+  "why": "the keyword texture (table 0x31a930): adds or takes a tm2, script/ paths by language, into the map +0x12c"
+ },
+ "001a1820": {
+  "name": "StageFiles::parseEnd",
+  "tag": "game-inferred",
+  "was": "FUN_001a1820",
+  "why": "the keyword end: runs the open target's handler in the second pass, then reset"
+ },
+ "001a1b50": {
+  "name": "StageFiles::parseTarget",
+  "tag": "game-inferred",
+  "was": "FUN_001a1b50",
+  "why": "the keyword target: the next word must be one of the ten names at 0x31a974 and is kept in +8; fails inside an open block"
+ },
  "001a1ca0": {
   "name": "StageFiles::dataDir",
   "tag": "game-inferred",
@@ -11440,6 +11668,12 @@
   "tag": "game-inferred",
   "was": "FUN_001a20f0",
   "why": "a0 StageFiles, a1 the loader item of a script: copies it, splits it into lines (0x1a3500), then runs each line's keyword (target, texture, model, motion, collision, particle, script, sndxv, sndseh, areaclip, ...) through strcasecmp; StageFiles::load calls it twice (list pass +0x128 = 1, then load pass)"
+ },
+ "001a3500": {
+  "name": "splitLines",
+  "tag": "game-inferred",
+  "was": "FUN_001a3500",
+  "why": "cuts a text at LF / CR (SJIS lead bytes skipped) into a StringList, trimming blanks when the third argument is set; parseScript's only line source"
  },
  "001a37e0": {
   "name": "StageFiles::load",
@@ -11465,6 +11699,12 @@
   "was": "FUN_001a3db0",
   "why": "empty (jr ra); called where loadList would be for a sub-scene"
  },
+ "001a3dc0": {
+  "name": "StageFiles::reset",
+  "tag": "game-inferred",
+  "was": "FUN_001a3dc0",
+  "why": "target +8 = 0, clears all the file lists from +0xc to +0x9c and the two path buffers +0xa4 / +0xe4; parseScript's start and the end of every target block"
+ },
  "001a3f90": {
   "name": "StageFiles::~StageFiles",
   "tag": "game-inferred",
@@ -11476,6 +11716,12 @@
   "tag": "game-inferred",
   "was": "FUN_001a4270",
   "why": "ctor of the 0x160 object getStageFiles answers (gp-0x7a74): +0 the stage loader, +4 = 1, 22 containers from +0xc; stageLoad"
+ },
+ "001d3a40": {
+  "name": "StageScript::relocate",
+  "tag": "game-inferred",
+  "was": "FUN_001d3a40",
+  "why": "turns the offsets of a loaded script file into pointers; second argument: with the +4 table"
  },
  "001d3dc0": {
   "name": "StageSoundSlot::release",
@@ -12526,6 +12772,12 @@
   "tag": "game-inferred",
   "was": "FUN_0023ad60",
   "why": "StageScene ctor new(0xc4) for +0xdc: count zero, then every third word zero (entries of 0xc), beside boxContainsPoint; name a guess"
+ },
+ "0023ae40": {
+  "name": "CollisionFile::relocate",
+  "tag": "game-inferred",
+  "was": "FUN_0023ae40",
+  "why": "turns the offsets of a loaded SSS file into pointers (+4 = this + 0x210, per 0x20 entry +0x14); parseScript's collision"
  },
  "0023af30": {
   "name": "StageSelect::isValid",
@@ -14110,6 +14362,18 @@
   "tag": "game-inferred",
   "was": "FUN_00252680",
   "why": "(drawer, verts xy, count, 0): untextured vertices in one colour (after setPrimColor)"
+ },
+ "00252b10": {
+  "name": "RoutePlayer::start",
+  "tag": "game-inferred",
+  "was": "FUN_00252b10",
+  "why": "called once after the ctor with 0; empty in this build"
+ },
+ "00253180": {
+  "name": "RoutePlayer::RoutePlayer",
+  "tag": "game-inferred",
+  "was": "FUN_00253180",
+  "why": "vtable 0x316a78, 0xc bytes, built over the rute file by StageScene::setRoute; what it plays is unread"
  },
  "0025a850": {
   "name": "mslTreeIncrement",
@@ -15928,6 +16192,12 @@
   "tag": "game-inferred",
   "was": "FUN_0029efe0",
   "why": "answers sbss gp-0x79f8, the navi menu object (0x29a700..); getGameValue kinds 21 / 22 / 30 / 31 read its +0x2a8 ints and +0x584 / +0x5e0 / +0x5f0 bytes after a null check"
+ },
+ "002a7bf0": {
+  "name": "SigLamp::SigLamp",
+  "tag": "game-inferred",
+  "was": "FUN_002a7bf0",
+  "why": "vtable 0x314c40, 8 bytes, built by parseEnd's effect target from the texture named siglamp, into StageScene +0x8c"
  },
  "002a9c70": {
   "name": "memcardEnd",

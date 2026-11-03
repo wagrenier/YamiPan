@@ -539,7 +539,7 @@
    "why": "StageResult (0x599700, static init 0x310f60: begin(0) + __register_global_object with the destructor 0x2b0cf0) and the game-pack loader 0x2afd00..0x2aff80: the MSL map instances 0x2b0590..0x2b0cf0 serve the loader's tables and sit between getStageResult and StageResult's static destructor, so one object file; 0x2afc20/0x2afcd0 (init-pack items by language) joined by position (guess); 0x2af9a0 before is the 0x2adc70 drawing cluster, 0x2b0d50 after is a SoundStream thunk"
   },
   "game/stagescene.cpp": {
-   "notes": "Written this run: StageScene ctor 0x19c180 and dtor 0x19bbe0 (every member in the ROM order, host field map in stagescene.h), isCleared / isGameOver (GameOverSequence +0x118 state 5, ClearSequence +0x11c state 2), random (Rand48 +0xe4, a drand48 LCG), getSubSceneBlock, clearSubSceneRequest, beginPlay (currentMission()->markStart()), getOpenMenu (StageMenu +0xd0 state 2), currentMission / parentScene (0x196960 / 0x196a40, second copies of getMission / getParent), getSoundAttr / addSoundArea / addArea2 (four AreaGrid +0xac..+0xb8), getActiveCharacter (view stack top). Member classes are stand-ins in gamehooks.h with ctor / dtor or a destroy() stub for vtable deletes; most names are guesses from position and allocation (list in open-items.md TU 46). PC choices: +0x120 starts null; the ROM dtor uses the deleted sub-scene DemoStream (use after free), the port clears it; getOpenMenu null-safe; +0x124 second array via delete[]. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall clean apart from the known rena_pkt_vif1pktmanage.h:87 error (stagescene.cpp now includes gamesystem.h). Next: parseScript 0x1a20f0 with 0x1a3500, 0x1a5a60, 0x1a3dc0, the keyword handlers 0x1a0580..0x1a1b50 and the templates; then update / draw / setupCameras / enterSubScene / the pad tests / getFloor.",
+   "notes": "Written this run (batch 081, 45 names): parseScript 0x1a20f0 as one table-driven parseLine (keywords table 0x31a928; a sub-scene skips motion, mdl, rute, sndxv, sndseh, font, sndsth, message), splitLines 0x1a3500, reset 0x1a3dc0, parseTarget 0x1a1b50 / parseEnd 0x1a1820 (targets table 0x31a974), applyScriptTarget 0x19fcd0, applyCharacterTarget 0x19fac0, StageFiles ctor 0x1a4270 / dtor 0x1a3f90, StageScene setScripts 0x19b7a0 / setRoute 0x196280 / isEventActive 0x1954c0 / addArea1 0x19ae90. New headers: game/stagelist.h (StageList, StringMap: 29 template instances annotated) and game/stringlist.h (String, StringList: prototypes only, their TU is unassigned@00148db0, so the script reader needs that run before it works). StageFiles now has its full field map. The keyword handlers are private members with no body yet: stubgen will stub them. StageScript and CollisionFile in gamehooks.h are file-header stand-ins: their relocate must not write 8-byte pointers into the 32-bit fields. PC choices: StageList keeps the value in the node; font drops the language path the ROM builds and never reads; applyScriptTarget answers false with no texture. Guessed names: RoutePlayer, SigLamp, StageEvent_Active, StageFileGroup, the list names (from the keywords). 0x19cf80 (empty slot of vtable 0x314d30) left for that class. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean (stageloop, uigame: only the known gfxtarget.h errors), scratch test of splitLines, StringMap and StageList passes; nothing built or run. Next: parseTexture 0x1a1430, parseModel 0x1a0e70, parseMotion 0x1a0ae0 with 0x1a1df0, parseMap 0x1a0950, parseSndseh 0x1a0580, parseSndsth 0x1a0040, parseMessage 0x19fdf0, then the apply targets 0x19f680, 0x19f230, 0x19f140, 0x19f020, 0x19ddf0, 0x19d9e0 (one fills groups), then update / draw / setupCameras / enterSubScene / the pad tests / getFloor.",
    "ranges": [
     [
      "001953f0",
@@ -558,6 +558,12 @@
      "date": "2026-11-03 15:55",
      "status": "partial",
      "summary": "StageScene ctor / dtor and 17 small members written (30 of 258); batch 080 names every scene member class (54 names)"
+    },
+    {
+     "build": "not built",
+     "date": "2026-11-03 16:19",
+     "status": "partial",
+     "summary": "stage script reader: parseScript, splitLines, reset, target / end blocks, script and character targets, StageFiles ctor / dtor; StageList and StringMap templates in stagelist.h"
     }
    ],
    "status": "partial",

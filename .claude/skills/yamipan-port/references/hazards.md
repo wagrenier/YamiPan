@@ -245,6 +245,15 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **No GCC case ranges** (`case 1 ... 10:`, 2026-11-03): MSVC (layoutcheck) rejects them; write the
   numbered groups as range tests before the switch.
 
+- **A big heredoc fails with `ENAMETOOLONG: name too long, uv_spawn`** (2026-11-03): the Bash tool
+  passes the command on one command line, so a multi-screen edit script never starts. Write the
+  script and its long texts with Write into the scratchpad and run the file. **`src/` is CRLF**: a
+  Python edit script must normalise to LF on read and restore on write, or every multi-line
+  `str.replace` misses.
+- **The compiler is `C:\msys64\ucrt64\bin\g++.exe`** on this machine (2026-11-03): `yamipan.py`'s
+  default CLion path no longer exists. Until the build, a syntax check needs `-I src -I <copy of
+  RosePan's src/sdk/*.h>` plus stub `sdk/libvifpk.h` / `sdk/eestruct.h` in a scratch folder.
+
 ## Build and run
 
 - **MinGW must be on PATH** or `cc1plus` fails silently: use `build.py`. Shader builds can hit a file

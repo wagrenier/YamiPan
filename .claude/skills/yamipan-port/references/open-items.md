@@ -941,6 +941,35 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    0x1a5e60, 0x1a5f80, 0x1a60a0, 0x1a65a0, 0x1a6630, 0x1a6750 are in the brief's slice); then
    update 0x199400, draw 0x198970, setupCameras 0x199f00, enterSubScene 0x195e10, the pad
    tests 0x195a50 / 0x1958b0 and getFloor 0x19aea0 (stageloop calls them).
+   **Third run (2026-11-03, batch 081, 45 names; 13 more written, 39 in stagescene.cpp, and 29 template instances annotated in stagelist.h, of 258, still `partial`)**: the stage
+   script reader. `parseScript` 0x1a20f0 (one table-driven `parseLine` for the ROM's two compare
+   chains; a sub-scene skips motion, mdl, rute, sndxv, sndseh, font, sndsth, message), `splitLines`
+   0x1a3500, `reset` 0x1a3dc0, `parseTarget` 0x1a1b50, `parseEnd` 0x1a1820, `applyScriptTarget`
+   0x19fcd0, `applyCharacterTarget` 0x19fac0, the `StageFiles` ctor 0x1a4270 / dtor 0x1a3f90,
+   `StageScene::setScripts` 0x19b7a0 / `setRoute` 0x196280 / `isEventActive` 0x1954c0 / `addArea1`
+   0x19ae90. New headers: **`game/stagelist.h`** (`StageList<T>`, `StringMap<T>`: one template for
+   the ROM's instances, their addresses listed there) and **`game/stringlist.h`** (`String`,
+   `StringList`: prototypes only, their TU is the run `unassigned@00148db0`). `strtok` 0x129a60 and
+   `strcat` 0x127f78 are named. `StageFiles` has its full field map (every list by keyword; the
+   three name maps textures / characters / groups). Choices (unattended): the host `StageList` keeps
+   the value in the node (the ROM boxes it in a new'd 4 bytes); `StageScript` / `CollisionFile` in
+   gamehooks.h are file-header stand-ins whose **relocate must not write 8-byte pointers into the
+   32-bit fields** (their TU decides how); `font` drops the language path the ROM builds and never
+   reads; `applyScriptTarget` answers false with no texture (the ROM reads through null);
+   `splitLines` keeps the ROM's unchecked 0x410-byte line buffer. Guessed names: RoutePlayer (the
+   rute file's meaning is unread), SigLamp, StageEvent_Active (state 2), `StageFileGroup`, every
+   list name taken from its script keyword. `0x19cf80` (empty slot 13 of vtable 0x314d30) left for
+   that class's run. Checked: callcheck clean, layout lint OK; g++ -fsyntax-only clean on stagescene
+   / seplayer / stagesound / fileloader / stageresult (stageloop / uigame: only the known
+   gfxtarget.h errors) with RosePan's SDK headers plus stub libvifpk.h / eestruct.h; a scratch test
+   of `splitLines` (LF / CR pairs, trim, a Shift-JIS trail byte equal to a backslash), `StringMap`
+   (order, duplicates, at) and `StageList` passes. **Next for this TU**: the keyword handlers
+   parseTexture 0x1a1430, parseModel 0x1a0e70, parseMotion 0x1a0ae0 (with 0x1a1df0, the .mpk reader),
+   parseMap 0x1a0950, parseSndseh 0x1a0580, parseSndsth 0x1a0040, parseMessage 0x19fdf0 (the first
+   three need the MSL std::string uses 0x1a6310 / 0x1a4480 / 0x1a5a70 / 0x1a5b70 / 0x1072c0 and the
+   path_language inline: the same code in the font keyword), then the apply targets 0x19f680,
+   0x19f230, 0x19f140, 0x19f020, 0x19ddf0, 0x19d9e0 (one of them fills `groups`), then update /
+   draw / setupCameras / enterSubScene / the pad tests / getFloor.
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
