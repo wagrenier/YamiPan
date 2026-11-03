@@ -77,6 +77,11 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - Renaming moves inferred boundaries (export anchors on names): re-brief after a name batch.
 - Satellites (inline getters, templates) go to the TU that calls them most, not always their owner.
 - A stub inside a TU marked done is never picked: grep `stub of <TAG>` and the run log's reached stubs.
+- **The frontier picks library runs** (2026-11-02): `tus.py next` claimed `unassigned@00116fb8`
+  because game code calls `atan2f` / `__extendsfdf2` in it -- newlib libm + libgcc soft-float, not
+  game code. An `unassigned@` run between library ranges: read its shapes first (fdlibm constants,
+  fp-bit unpack / pack, `__clz_tab`); if library, name it, add it to `layout.json` `lib_ranges`,
+  `export.py` + `status.py`, and finish the emptied key `verify` with a summary saying so.
 
 ## Types and layouts
 

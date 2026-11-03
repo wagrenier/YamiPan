@@ -73,6 +73,15 @@ noise; `lq` / `sq` move 16-byte vectors. Static constructors: `.ctors` entries m
 file-scope objects; on the host the same `static T obj;` runs before main, so that constructor must be
 real, not a stub.
 
+**Soft-float double and 64-bit integer helpers** (libgcc, 0x119be8..0x11c6b0 in FS2; never TUs):
+the EE has a single-precision FPU only, so every `double` operation and `long long` divide in game
+code is a call. Write the C expression, not the call: `__extendsfdf2(f)` is `(double)f`,
+`__truncdfsf2(d)` `(float)d`, `__adddf3` / `__subdf3` / `__muldf3` / `__divdf3` the operators,
+`__cmpdf2(a, b) < 0` `a < b`, `__floatsidf` / `__fixdfsi` / `__fixunsdfsi` the casts, `__divdi3` /
+`__moddi3` / `__udivdi3` / `__umoddi3` `/` and `%` on 64-bit, `__muldi3` `*`. A `double` in a
+`printf`-family call (`PerfMeter::writeCsv`, `_kvprintf`) is the varargs promotion of a float.
+Callcheck: name such calls in `// callcheck: ...` comments where the operator hides them.
+
 ## Semantics
 
 - Follow the game's decompilation. A sister game's code (MioPan for FF3) is a starting point only

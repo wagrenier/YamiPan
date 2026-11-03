@@ -291,6 +291,18 @@
     ]
    ],
    "why": "the game's sound layer: SoundStream, SoundSink / SoundPcmSink / SoundAdpcmSink, SoundFeeder, SoundSeBank, SoundConfig, soundInit / Update / Shutdown, the IOP / SPU memory hooks (batch 013); probably several files: split at the TU."
+  },
+  "unassigned@00116fb8": {
+   "notes": "This key is empty now: its whole run is two lib_ranges (architecture.md Address map, naming table row batch 025). Game code calling __extendsfdf2 / __cmpdf2 / __divdi3 and kin is plain C double or 64-bit arithmetic (reconstruction.md, soft-float note). Next unread runs to classify the same way before writing: 0x1037c0..0x104c60, 0x121b80, 0x12c9b8..0x12cd20, 0x135a90..0x1366c0, 0x142dd0..0x144080 (open-items.md Next up 0c).",
+   "sessions": [
+    {
+     "build": "not built",
+     "date": "2026-11-02 21:33",
+     "status": "verify",
+     "summary": "Resolved as library, not game code: newlib float libm 0x116fb8..0x119be8 and libgcc (libgcc2 64-bit helpers + fp-bit soft-float) 0x119be8..0x11c6b0, 51 names by reading (batch 025), two new lib_ranges in layout.json; nothing to reconstruct (the host libm and compiler replace them)"
+    }
+   ],
+   "status": "verify"
   }
  }
 }

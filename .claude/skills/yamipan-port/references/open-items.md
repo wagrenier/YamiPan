@@ -28,7 +28,13 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    layer") and the SCE_PAD* button bits in `sdk/libpad.h` (RosePan's lacks them). TU 3
    `game/perfmeter.cpp` written (all 10, `verify`, batch 024; RcntTimer moved to `game/rcnttimer.h`).
    Bootstrap 6 must give `sdk/fileio.h` the SDK 3.0 `sceOpen(const char *, int, ...)` (FS2 passes a
-   mode, 0666; RosePan's takes two arguments) and the CRT `sprintf` / `strlen`.** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
+   mode, 0666; RosePan's takes two arguments) and the CRT `sprintf` / `strlen`. TU 4, the frontier's
+   `unassigned@00116fb8`, was **library, not game code** (batch 025, 51 names): newlib float libm
+   0x116fb8..0x119be8 and libgcc (libgcc2 + fp-bit soft-float) ..0x11c6b0, now two `lib_ranges`
+   (architecture.md "Address map"); the host libm / compiler replace them, nothing to write. The
+   other unread runs the frontier may pick next (0x1037c0..0x104c60 `Heap` and kin, 0x121b80,
+   0x12c9b8..0x12cd20, the VU0 math 0x135a90..0x1366c0, 0x142dd0..0x144080) get the same first
+   look: library -> name + `lib_ranges`, game code -> `tus.py define` a real file.** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,
    `game/perfmeter.cpp`, `game/thread.cpp`, `game/gfxtarget.cpp`, the clocks, the heap, sound,
    `rxInit` / SPK.ROM, system data. Choices made there, for the user to overrule:
    - **Headers for TUs not written yet are minimal** (`src/game/pad.h`, `clock.h`, `heap.h`,

@@ -1403,11 +1403,137 @@
   "was": "FUN_00116d80",
   "why": "SDK 3.0 libipu, linked as in RoR (FS2 puts the decoder members before mpeg.c, RoR after): RosePan names RoR 0x269d50 sceIpuInit; same size 0x238 and place in a run of matching functions (rxalign.py)"
  },
+ "00116fb8": {
+  "name": "__ieee754_acosf",
+  "tag": "lib-context",
+  "was": "FUN_00116fb8",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm e_acosf: |x|==1 -> 0/pi, pS/qS rational with pio2_hi 1.5707963 / pio2_lo 7.5497894e-08, calls sqrtf 0x118600; w_ wrapper acosf 0x119b70"
+ },
  "001173e0": {
   "name": "__ieee754_atan2f",
   "tag": "lib-context",
   "was": "FUN_001173e0",
   "why": "fdlibm e_atan2f: x == 1 -> atanf, sign quadrant word (y >> 31 | x >> 30 & 2), returns +-pi 0x40490fda / +-pi/2 0x3fc90fda, pi_lo 1.5099579e-07 correction"
+ },
+ "001175c0": {
+  "name": "__ieee754_fmodf",
+  "tag": "lib-context",
+  "was": "FUN_001175c0",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm e_fmodf: integer shift-subtract on the mantissas, Zero[] table 0x2ff288 by sign; wrapper fmodf 0x119ba0"
+ },
+ "00117790": {
+  "name": "__ieee754_logf",
+  "tag": "lib-context",
+  "was": "FUN_00117790",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm e_logf: ln2_hi 0.6931381 / ln2_lo 9.058001e-06, Lg1..Lg7 polynomial; wrapper logf 0x119bb8"
+ },
+ "00117a70": {
+  "name": "__ieee754_powf",
+  "tag": "lib-context",
+  "was": "FUN_00117a70",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm e_powf: y==2 -> x*x, y==0.5 -> sqrtf, bp/dp_h/dp_l tables 0x2ff2c0.., huge 1e30 / tiny 1e-30, scalbnf for the result; wrapper powf 0x119bd0"
+ },
+ "00118250": {
+  "name": "__ieee754_rem_pio2f",
+  "tag": "lib-context",
+  "was": "FUN_00118250",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm e_rem_pio2f: pio2_1 1.5707855 / pio2_1t 1.0804333e-05, npio2_hw table 0x2ff65c, two_over_pi 0x2ff348 to __kernel_rem_pio2f for big args; returns n, y[2]"
+ },
+ "00118600": {
+  "name": "__ieee754_sqrtf",
+  "tag": "lib-context",
+  "was": "FUN_00118600",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm e_sqrtf: bit-by-bit square root of the mantissa (r = 0x1000000 shifting), NaN for negatives; called by acosf / powf"
+ },
+ "001186d0": {
+  "name": "__kernel_cosf",
+  "tag": "lib-context",
+  "was": "FUN_001186d0",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm k_cosf(x, y): C1..C6 0.041666664 .. -1.1359648e-11, qx = x - 0x1000000 above 0.3, 0.28125 above 0.78125"
+ },
+ "00118820": {
+  "name": "__kernel_rem_pio2f",
+  "tag": "lib-context",
+  "was": "FUN_00118820",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm k_rem_pio2f(x, y, e0, nx, prec, ipio2): init_jk table 0x2ff708, called only from __ieee754_rem_pio2f with prec 2 and two_over_pi"
+ },
+ "00119088": {
+  "name": "__kernel_sinf",
+  "tag": "lib-context",
+  "was": "FUN_00119088",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm k_sinf(x, y, iy): S1 -0.16666666, S2..S6 0.008333334 .. 1.5896909e-10"
+ },
+ "00119190": {
+  "name": "__kernel_tanf",
+  "tag": "lib-context",
+  "was": "FUN_00119190",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm k_tanf(x, y, iy): T[] table 0x2ff768.., pio4 0.7853981 / pio4lo 3.7748944e-08, iy -1 -> -1/tan"
+ },
+ "00119418": {
+  "name": "isinf",
+  "tag": "lib-context",
+  "was": "FUN_00119418",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): newlib s_isinf (double): hx = 0x7ff00000 - (hx&0x7fffffff | (lx|-lx)>>31); 1 - ((hx|-hx)>>31)"
+ },
+ "00119460": {
+  "name": "isnan",
+  "tag": "lib-context",
+  "was": "FUN_00119460",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): newlib s_isnan (double): (0x7ff00000 - (hx&0x7fffffff | (lx|-lx)>>31)) >> 31"
+ },
+ "001194a0": {
+  "name": "atanf",
+  "tag": "lib-context",
+  "was": "FUN_001194a0",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm s_atanf: atanhi/atanlo tables 0x2ff7a8 / 0x2ff7b8, aT[] 0x2ff7c8..; called by __ieee754_atan2f"
+ },
+ "00119730": {
+  "name": "copysignf",
+  "tag": "lib-context",
+  "was": "FUN_00119730",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm s_copysignf: x&0x7fffffff | y&0x80000000; called by scalbnf"
+ },
+ "00119770": {
+  "name": "cosf",
+  "tag": "lib-context",
+  "was": "FUN_00119770",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm s_cosf: |x|<pi/4 -> __kernel_cosf, else rem_pio2f and an n&3 switch over kernel cos / sin"
+ },
+ "00119848": {
+  "name": "fabsf",
+  "tag": "lib-context",
+  "was": "FUN_00119848",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm s_fabsf: x & 0x7fffffff"
+ },
+ "00119870": {
+  "name": "floorf",
+  "tag": "lib-context",
+  "was": "FUN_00119870",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm s_floorf: huge 1e30 inexact trick, mask 0x7fffff>>j0"
+ },
+ "00119948": {
+  "name": "scalbnf",
+  "tag": "lib-context",
+  "was": "FUN_00119948",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm s_scalbnf(x, n): exponent add, huge/tiny with copysignf, n>50000 overflow; called by powf"
+ },
+ "00119a10": {
+  "name": "sinf",
+  "tag": "lib-context",
+  "was": "FUN_00119a10",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm s_sinf: |x|<pi/4 -> __kernel_sinf(x,0,0), else rem_pio2f and an n&3 switch"
+ },
+ "00119af8": {
+  "name": "tanf",
+  "tag": "lib-context",
+  "was": "FUN_00119af8",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): fdlibm s_tanf: __kernel_tanf(y0, y1, 1-((n&1)<<1))"
+ },
+ "00119b70": {
+  "name": "acosf",
+  "tag": "lib-context",
+  "was": "FUN_00119b70",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): w_acosf: _IEEE_LIBM wrapper, tail jump to __ieee754_acosf"
  },
  "00119b88": {
   "name": "atan2f",
@@ -1415,11 +1541,191 @@
   "was": "FUN_00119b88",
   "why": "wrapper that tail-jumps to __ieee754_atan2f 0x1173e0 (y in f12, x in f13); GamePad::computeSticks calls it for stick angles"
  },
+ "00119ba0": {
+  "name": "fmodf",
+  "tag": "lib-context",
+  "was": "FUN_00119ba0",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): w_fmodf: _IEEE_LIBM wrapper, tail jump to __ieee754_fmodf"
+ },
+ "00119bb8": {
+  "name": "logf",
+  "tag": "lib-context",
+  "was": "FUN_00119bb8",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): w_logf: _IEEE_LIBM wrapper, tail jump to __ieee754_logf"
+ },
+ "00119bd0": {
+  "name": "powf",
+  "tag": "lib-context",
+  "was": "FUN_00119bd0",
+  "why": "newlib libm (float, _IEEE_LIBM), run 0x116fb8..0x119be8 in newlib file order (e_*, k_*, isinf/isnan, s_*, w_*): w_powf: _IEEE_LIBM wrapper, tail jump to __ieee754_powf"
+ },
+ "00119be8": {
+  "name": "__muldi3",
+  "tag": "lib-context",
+  "was": "FUN_00119be8",
+  "why": "libgcc2 (ee-gcc 2.9x): 64-bit multiply from 32x32 partial products (lo*lo + cross terms into the high word); called by __muldf3 0x11bef8"
+ },
+ "00119c60": {
+  "name": "__divdi3",
+  "tag": "lib-context",
+  "was": "FUN_00119c60",
+  "why": "libgcc2 (ee-gcc 2.9x): signed 64-bit divide: negates both operands, quotient sign = xor of signs (c = ~c), then the __udivmoddi4 body inline"
+ },
+ "0011a2f8": {
+  "name": "__moddi3",
+  "tag": "lib-context",
+  "was": "FUN_0011a2f8",
+  "why": "libgcc2 (ee-gcc 2.9x): signed 64-bit remainder: sign from the numerator only, both negated, __udivmoddi4 body inline with rp"
+ },
+ "0011a988": {
+  "name": "__udivdi3",
+  "tag": "lib-context",
+  "was": "FUN_0011a988",
+  "why": "libgcc2 (ee-gcc 2.9x): unsigned 64-bit divide: trap 7 on zero divisor, count_leading_zeros with __clz_tab 0x2ffa00"
+ },
+ "0011af08": {
+  "name": "__umoddi3",
+  "tag": "lib-context",
+  "was": "FUN_0011af08",
+  "why": "libgcc2 (ee-gcc 2.9x): unsigned 64-bit remainder: returns n when d1 > n1, __clz_tab normalisation"
+ },
+ "0011b470": {
+  "name": "__floatdidf",
+  "tag": "lib-context",
+  "was": "FUN_0011b470",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: libgcc2 __floatdidf: (double)hi * 65536 * 65536 + (double)(unsigned)lo (adds 2^32 when lo<0)"
+ },
+ "0011b518": {
+  "name": "__floatdisf",
+  "tag": "lib-context",
+  "was": "FUN_0011b518",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: libgcc2 __floatdisf: sticky-bit fix for |u| >= 2^53, then as __floatdidf and __truncdfsf2"
+ },
+ "0011b600": {
+  "name": "__fixunsdfdi",
+  "tag": "lib-context",
+  "was": "FUN_0011b600",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: libgcc2 __fixunsdfdi: hi = (unsigned)(a / 2^32) (0x3df0000000000000 multiply), low part from a - hi*2^32 via __fixunsdfsi"
+ },
+ "0011b718": {
+  "name": "__fixdfdi",
+  "tag": "lib-context",
+  "was": "FUN_0011b718",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: libgcc2 __fixdfdi: a<0 -> -__fixunsdfdi(-a)"
+ },
+ "0011b790": {
+  "name": "__fixunssfdi",
+  "tag": "lib-context",
+  "was": "FUN_0011b790",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: libgcc2 __fixunssfdi: __extendsfdf2, then the __fixunsdfdi body inline"
+ },
+ "0011b8b8": {
+  "name": "__pack_f",
+  "tag": "lib-context",
+  "was": "FUN_0011b8b8",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit pack_f (single): class 2 zero, exp < -126 -> 0, exp > 127 -> 0xff, fraction >> 7 (NGARDS 7)"
+ },
+ "0011b970": {
+  "name": "__unpack_f",
+  "tag": "lib-context",
+  "was": "FUN_0011b970",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit unpack_f (single, no denormals/NaN: exp 0 -> CLASS_ZERO), fraction << 7 | 0x40000000; called by __extendsfdf2"
+ },
+ "0011b9d0": {
+  "name": "__make_fp",
+  "tag": "lib-context",
+  "was": "FUN_0011b9d0",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit __make_fp(class, sign, exp, frac): builds an fp_number_type on the stack and packs it with __pack_f; called by __truncdfsf2"
+ },
  "0011ba00": {
   "name": "__extendsfdf2",
   "tag": "lib-context",
   "was": "FUN_0011ba00",
   "why": "soft-float float -> double: unpacks f12 with 0x11b970 and repacks it as a double with 0x11c588, result in a0 (64-bit); the compiler emits it to promote float varargs for printf (%.2f in PerfMeter::writeCsv)"
+ },
+ "0011ba40": {
+  "name": "__pack_d",
+  "tag": "lib-context",
+  "was": "FUN_0011ba40",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit pack_d (double): NaN classes < 2 -> 0x7ff with QUIET, CLASS_INFINITY 4, exp bias 0x3ff, fraction >> 8 (NGARDS 8)"
+ },
+ "0011bb18": {
+  "name": "__unpack_d",
+  "tag": "lib-context",
+  "was": "FUN_0011bb18",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit unpack_d (double): exp 0x7ff -> INFINITY / QNAN / SNAN, normal fraction << 8 | IMPLICIT_1 0x1000000000000000"
+ },
+ "0011bbd8": {
+  "name": "_fpadd_parts",
+  "tag": "lib-context",
+  "was": "FUN_0011bbd8",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit static _fpadd_parts (double): the shared add of __adddf3 / __subdf3"
+ },
+ "0011be38": {
+  "name": "__adddf3",
+  "tag": "lib-context",
+  "was": "FUN_0011be38",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit __adddf3: unpack_d both, _fpadd_parts, pack_d"
+ },
+ "0011be90": {
+  "name": "__subdf3",
+  "tag": "lib-context",
+  "was": "FUN_0011be90",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit __subdf3: as __adddf3 with b.sign ^= 1"
+ },
+ "0011bef8": {
+  "name": "__muldf3",
+  "tag": "lib-context",
+  "was": "FUN_0011bef8",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit __muldf3: 64x64 fraction product through __muldi3 0x119be8, renormalise"
+ },
+ "0011c180": {
+  "name": "__divdf3",
+  "tag": "lib-context",
+  "was": "FUN_0011c180",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit __divdf3: shift-subtract fraction division"
+ },
+ "0011c2c0": {
+  "name": "__fpcmp_parts_d",
+  "tag": "lib-context",
+  "was": "FUN_0011c2c0",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit __fpcmp_parts_d: three-way compare of two unpacked doubles"
+ },
+ "0011c3e0": {
+  "name": "__cmpdf2",
+  "tag": "lib-context",
+  "was": "FUN_0011c3e0",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit __cmpdf2 (L_compare_df): unpack both and __fpcmp_parts_d; the only compare entry FS2 links (callers test < 0 / >= 0)"
+ },
+ "0011c430": {
+  "name": "__floatsidf",
+  "tag": "lib-context",
+  "was": "FUN_0011c430",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit __floatsidf: INT_MIN -> -2^31 constant, normalise to fraction < IMPLICIT_1 from exp 60"
+ },
+ "0011c4e8": {
+  "name": "__fixdfsi",
+  "tag": "lib-context",
+  "was": "FUN_0011c4e8",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit __fixdfsi: saturates to INT_MAX / INT_MIN, fraction >> (60 - exp)"
+ },
+ "0011c588": {
+  "name": "__make_dp",
+  "tag": "lib-context",
+  "was": "FUN_0011c588",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit __make_dp(class, sign, exp, frac): builds and packs with __pack_d; called by __extendsfdf2"
+ },
+ "0011c5b8": {
+  "name": "__truncdfsf2",
+  "tag": "lib-context",
+  "was": "FUN_0011c5b8",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit __truncdfsf2: unpack_d, fraction >> 30 with a sticky bit, __make_fp"
+ },
+ "0011c610": {
+  "name": "__fixunsdfsi",
+  "tag": "lib-context",
+  "was": "FUN_0011c610",
+  "why": "libgcc fp-bit.c (FLOAT single without NaN/Inf, double full), run 0x11b470..0x11c6b0: fp-bit __fixunsdfsi: negative -> 0, INFINITY or exp >= 32 -> 0xffffffff, fraction >> (60 - exp)"
  },
  "0011c6b0": {
   "name": "sceCdCallback",

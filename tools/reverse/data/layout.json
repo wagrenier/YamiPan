@@ -81,6 +81,16 @@
    "libipu: SDK 3.0, aligned with RoR (batch 012)"
   ],
   [
+   "00116fb8",
+   "00119be8",
+   "newlib libm (float fdlibm, _IEEE_LIBM wrappers): e_acosf .. w_powf, isinf / isnan (batch 025)"
+  ],
+  [
+   "00119be8",
+   "0011c6b0",
+   "libgcc: libgcc2 __muldi3 .. __umoddi3, __floatdidf .. __fixunssfdi, fp-bit sf / df soft-float (batch 025)"
+  ],
+  [
    "0011c6b0",
    "0011e440",
    "libcdvd: SDK 3.0 eecdvd.c, aligned with RoR (batch 019)"

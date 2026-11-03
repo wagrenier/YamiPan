@@ -77,12 +77,12 @@ yet; gp-relative small data straddles 0x31ad80).
 TU; `export.py` lists each under its label's library): crt0 + CodeWarrior entry 0x100000..0x100328,
 MSL C++ runtime 0x104c60..0x1076e8, libgraph / libdma / libdev 0x1076e8..0x10ac60, libvifpk
 0x10ac60..0x10c218 (its leaf run after 0x10acc8 unread: libvu0?), libmpeg 0x10c218..0x116978, libipu
-..0x116fb8, libcdvd 0x11c6b0..0x11e440, libpad ..0x11fb70, libmc ..0x121b80, libc (newlib)
+..0x116fb8, newlib libm (float) 0x116fb8..0x119be8, libgcc (libgcc2 + fp-bit soft-float) ..0x11c6b0,
+libcdvd 0x11c6b0..0x11e440, libpad ..0x11fb70, libmc ..0x121b80, libc (newlib)
 0x121ef0..0x12c9b8, libkernl 0x1366c0..0x142dd0 (front, sifcmd / sifrpc, fileio, iopheap, tail) and
 the kernel-patch island 0x2f3a40..0x2f4d20: 912 functions. **Unread runs between them stay game code
 until read** (not library by default): `Heap` + its neighbours 0x1037c0..0x104c60 (MSL pool or the
-game's?), 0x116fb8..0x11c6b0 (soft-float / math runtime shapes 0x119b70..0x11af08, then the
-~40-caller cluster 0x11b800..), 0x121b80 (libmc error mapper?), 0x12c9b8..0x12cd20, the VU0 math
+game's?), 0x121b80 (libmc error mapper?), 0x12c9b8..0x12cd20, the VU0 math
 0x135a90..0x1366c0, 0x142dd0..0x144080.
 
 First features pass over it (`refresh.py`, 2026-10-31): 6,393 functions, 25,668 calls, 871 tail
@@ -111,6 +111,7 @@ files from the 4 file-name strings.
 | libkernl tail, batches 014-015 (2026-11-02) | **14 starts created** (syscall stubs and small helpers Ghidra had merged; Ghidra 7,498); 111 names: SDK 3.0 libkernl 0x13ef80..0x142dd0 (iopheap tail, loadfile, TLB, initsys, libosd, exit, timer, alarm, reboot notify) from RoR (77 aligned one to one), 14 RoR placeholders from FF3 (FF2 symbols), 18 by reading; `InitThread` / `topThread` | rxalign.py --lib + name_ctx.py | lib-context; ledger 1,269 |
 | libkernl front, batch 016 (2026-11-02) | **75 starts created** (71 klib.s syscall stubs nobody calls, 4 merged glue / sifcmd stubs; Ghidra 7,573); 139 names: klib.s 0x1366c0..0x136f60 by slot from RoR, glue / cache / intr / thread / deci2 / tty / kprintf 0x136f60..0x139940 from RoR + FF3 (FF2 symbols), 15 by reading | rxalign.py --lib, a slot table + name_ctx.py | lib-context; ledger 1,408 |
 | fileio, batch 017 (2026-11-02) | 38 names: SDK 3.0 fileio (filestub.c) 0x13b7e8..0x13ed90 from RoR (35 aligned one to one), `_fs_version` / `sceLseek64` / `get_iob` from FF3 (FF2 symbols), `_sceFsCallRpc` / `_sceFsCountOpenIob` by reading | rxalign.py --lib + name_ctx.py | lib-context; ledger 1,446 |
+| libm + libgcc, batch 025 (2026-11-02) | 51 names by reading (TU `unassigned@00116fb8` resolved as library): **newlib libm, float fdlibm** 0x116fb8..0x119be8 in newlib's member order (`__ieee754_acosf` / `atan2f` / `fmodf` / `logf` / `powf` / `rem_pio2f` / `sqrtf`, `__kernel_cosf` / `rem_pio2f` / `sinf` / `tanf`, double `isinf` / `isnan`, `atanf` `copysignf` `cosf` `fabsf` `floorf` `scalbnf` `sinf` `tanf`, the `_IEEE_LIBM` wrappers `acosf` `atan2f` `fmodf` `logf` `powf` 0x119b70..0x119be8: no `sqrtf` wrapper, the game uses the FPU's sqrt.s); **libgcc** 0x119be8..0x11c6b0: libgcc2 `__muldi3` `__divdi3` `__moddi3` `__udivdi3` `__umoddi3` (`__clz_tab` 0x2ffa00), `__floatdidf` `__floatdisf` `__fixunsdfdi` `__fixdfdi` `__fixunssfdi`, then fp-bit: single-float `__pack_f` / `__unpack_f` / `__make_fp` without NaN / Inf / denormals (the R5900 FPU's format), full double `__pack_d` / `__unpack_d` / `_fpadd_parts` / `__adddf3` `__subdf3` `__muldf3` `__divdf3` `__fpcmp_parts_d` `__cmpdf2` (the only compare entry) `__floatsidf` `__fixdfsi` `__make_dp` `__truncdfsf2` `__fixunsdfsi`, plus `__extendsfdf2` 0x11ba00 | name_ctx.py | lib-context; ledger +51 |
 
 Expected sources (bootstrap step 4): Sony SDK 3.0 libraries by match (libmatch.py against FF3 / RoR,
 both SDK 3.0); MSL C++ / CodeWarrior runtime only by reading (no reference game built with it); rx and
@@ -345,7 +346,7 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
     `rndInit` 0x104860 (97-word table 0x3299c0, LCG x * 0x5d588b65 + 1) with second + minute + hour +
     day + month of `getLocalDateTime`'s 8-byte BCD date `{flags 0x10 (0x11 clock error), second,
     minute, hour, day, month, u16 year 0x20yy}`. `atan2f` 0x119b88 -> fdlibm `__ieee754_atan2f`
-    0x1173e0 (MSL math in the run after libipu). Empty hooks `debugSysInit` / `Update` / `Shutdown`
+    0x1173e0 (newlib libm, batch 025). Empty hooks `debugSysInit` / `Update` / `Shutdown`
     0x151290 / 0x151270 / 0x151280 and the meter's `PerfMeter::addBar` 0x133610 (value, ABGR colour,
     group, label), `drawBars` 0x133600, `drawDetail` 0x132f20 are retail-stripped.
   - **rena `Vif1PktManage`** (0x30 bytes, vptr at +0x2c): `{+0 write ptr, +4 buffer base, +8 chain
