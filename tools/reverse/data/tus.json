@@ -1,5 +1,11 @@
 {
- "queue": [],
+ "queue": [
+  "game/packtables.cpp",
+  "game/nodetransform.cpp",
+  "game/stagemodel.cpp",
+  "rena/rena_model.cpp",
+  "yamipan/rendering/model_renderer.cpp"
+ ],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
   "frontier_ignore": [],
@@ -393,6 +399,12 @@
    "status": "verify",
    "why": "MoviePlayer (uiwidget's prgMovie player) and its MPEG / IPU callbacks and sound sinks: starts after the 0x1fa230 texture class (vtables 0x315f00/0x315f20, its dtors end 0x1fa9d0), ends at fontdata.cpp's TextPrinter::~TextPrinter 0x1fcb40; vtables 0x315f50 / 0x315f80 (ctors 0x1fc4e0 / 0x1fcad0) are inside"
   },
+  "game/nodetransform.cpp": {
+   "task": "3D path 2 of 5 (the user's pin). NodeTransform 0x1d7f20, update 0x1d7d50, updateMatrix 0x1d8420 and what the stage's nodes need to place a model: StageNodeBase 0x1d8540. Pin the real extent with tus.py define under this key; the rest of unassigned@001d7c50 is not part of this."
+  },
+  "game/packtables.cpp": {
+   "task": "3D path 1 of 5 (the user's pin, 2026-11-04). First find why no model reaches the code: in the New Game run with work/newgame_pad.txt, ModelFile::isValid, getNodeCount and createInstance are never called, so StageFiles::models is empty. Trace StageFiles::loadList, load, parseModel and applyBgTarget (stagescene.cpp) under gdbrun with a time limit and fix what stops them, wherever it is. Then write PackTables::parse 0x2bcf10 and PackTables::PackTables 0x2c0dc0: pin the real extent with tus.py define under this key (rename the key if the evidence says another file). Success: the run log shows ModelFile::createInstance reached."
+  },
   "game/pad.cpp": {
    "notes": "All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout (asserts). Source-only: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean against RosePan sdk headers. Pad::update only reads input for terminal mode 8 (DualShock 2 in pressure mode): bootstrap 6's host libpad must report that. Stick order is libpad's right x, right y, left x, left y; GamePad's comments and computeSticks locals in gamesystem were swapped and are fixed. 0x12fed0 renamed Pad::registerListener (it was Pad::setListening); 0x12fa30 is Pad::setListening. Ghidra saved by name_ctx.",
    "ranges": [
@@ -687,6 +699,9 @@
    ],
    "status": "verify",
    "why": "Cut out of unassigned@00171300 (the frontier pick for getStageFiles 0x17f150): one object file between the adjustor thunks 0x17f090..0x17f150 (the previous file's last code) and 0x17fce0 (answers 25: slot 108 of the bullet class vtable 0x312cdc, so the next file's inline virtuals): getStageFiles, stageThread 0x17f160 (slot 3, started by 0x2b60b0), its clear / game-over / pause / restart helpers, stageLoad 0x17fb90, setStageLoader 0x17fc90 and the handler-table stub 0x17f7b0. The file name is the port's (no strings)."
+  },
+  "game/stagemodel.cpp": {
+   "task": "3D path 3 of 5 (the user's pin). StageModel::init 0x188b10 and the neighbours it needs: it calls drawSysAddModel and drawSysFindKind1Surface (both written in drawsys.cpp) and needs a host field for +0xa8. Pin the real extent with tus.py define under this key."
   },
   "game/stageobject.cpp": {
    "notes": "Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp:3270): drawSysCurrent 0x2d4fd0 is a stub answering null. No stage picture yet, last shot black, nothing here draws. Left in this TU: 0x18a5b0, 0x189f40 and 0x189ce0 (slots +0x1f8, +0x1fc, +0x230, still FUN_). Every object matrix is uninitialised until NodeTransform 0x1d7f20 / update 0x1d7d50 and updateMatrix 0x1d8420 are written. PC zeroing in StageObject::StageObject goes when the subclass ctors are written. Host-pass only: nothing compared with the ROM by running it. Details: open-items.md, architecture.md The object family.",
@@ -1133,6 +1148,9 @@
    "status": "verify",
    "why": "The game's own file name from its strings (rena_2d_texture_tim2.cpp: ...); pinned at bootstrap 6 so the stubs land in src/rena/."
   },
+  "rena/rena_model.cpp": {
+   "task": "3D path 4 of 5 (the user's pin). The model file and instance from unassigned@002e2970: ModelFile::isValid 0x2e2cf0, relocate 0x2e2d20, getNodeCount 0x2e5200, createInstance 0x2e5210 with 0x2e4800 and 0x2e3e10, allocating ModelSurface and the +0x40 and +0x44 tables (gamehooks.h has the layouts). Check by loading real model files from the disc in a host harness. Pin the real extent with tus.py define under this key."
+  },
   "rena/rena_pkt_vif1pktmanage.cpp": {
    "notes": "Pinned 0x2eaff0-0x2ec110 under the new src/rena/ with the game's own file name (strings in Reset / AddList); the stale inferred key rena_pkt_vif1pktmanage.cpp removed from tus.json. Batch 061 named the vector instances (Vif1PktListVector::insert, Vif1PktBufferVector::insert / dtor / clear); Ghidra saved by name_ctx. Vif1PktManage moved from game/gamepacket.h to rena/rena_pkt_vif1pktmanage.h (gamepacket.h includes it); AddBuffer / AddList return the ROM's int. New src/rx/rxsys.h (rxSysPrintf) and YamiPan_DrawUiKick(lists, count) in yamipan_drawui.h. PC decision (open-items Decisions 2026-11-03): tags keep the ROM words but ADDR is the byte offset in the frame buffer; Kick hands the lists with draws, in chain order, to YamiPan_DrawUiKick instead of the DMAC. Checked: callcheck clean, layout lint OK, g++ -Wall -Wextra clean on the TU and gamepacket.cpp, both SJIS messages byte-equal to the ROM, host harness (libvifpk mirrored from asm, 3 frames, 2 buffers, a list opened twice) walked start tag, list 0, list 2 segments in order, list 3, end tag. ROM kept: Open of an unknown id writes through null; AddList message prints the found list address in the ROM (PC prints the id). Next: rena Tim2Texture 0x2e1b70..0x2e2970; bootstrap 6 host libvifpk as in the harness.",
    "ranges": [
@@ -1532,6 +1550,9 @@
   "unassigned@002b0d50": {},
   "unassigned@002c42a0": {},
   "unassigned@002d46a0": {},
+  "yamipan/rendering/model_renderer.cpp": {
+   "task": "3D path 5 of 5 (the user's pin): the first milestone is one static map model on screen. A new C++ 3D host module (cpp-port.md) with a depth buffer, and renaBeginFrame, renaDrawModels and renaEndPass reconstructed to feed it, meshes decoded from the model file at the source (no VU1, no GS memory). Flat colour first, then textures through texture_store. The projection must follow the renderer's display aspect, not the fixed 4:3 of drawSysInit (the user's any-aspect rule). Read the VU1 microcode 0x2ec900..0x2f0880 only as far as needed. Success is a picture of the map, compared with the game. Later fill in yamipan_drawshadow.h."
+  },
   "yamipan/rendering/texture_store.cpp": {
    "notes": "Host task. src/yamipan/rendering/texture_store.h and .cpp: decodes the TIM2 the owner points at to RGBA8 during the bind, alpha doubled, cached by a hash of size, header, pixels and CLUT (the comment on imageOf says why not by address), least recently bound dropped past 256 MB. seams.cpp forwards to Renderer::textures() then UiCanvas::bindImage. UiCanvas::emit now drops a textured primitive with no image. Checked on screen: the language screen at rest equals the six TIM2s the game binds, rendered by tm2png.py from the same bytes: best offset 0,0 in a search of +-2 frame units, peak 192 as in the file, mean difference 2.66 over the row (the 4:3 stretch). Checked by a scratch program through the real Tim2Texture: byte-equal to tm2png.py on 20 disc TIM2s and 7 synthetic ones, including 16 and 24-bit direct, which the disc lacks; a rewritten pixel misses the cache. Proven on screen: UV scale, 512x512 mapping, alpha blend, bilinear, 4-bit images only. Not yet seen on screen: the font path, additive and other blend modes, scissor, repeat. Choice for the user to overrule: a textured draw with no image is dropped rather than drawn white; a render target binds nothing. Left, in open-items.md Next up item 8: render targets, repeat on non-power-of-two images, TEXA not applied, m_altClut, a dump hook for references. Next: the queue goes back to stagescene unless the user pins the menu blockers listed under item 8 (path getters, runTitleScreen, loadMenuPack).",
    "sessions": [
