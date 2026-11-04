@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-04 16:52 at commit `3a8df28` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-04 17:37 at commit `f9bcb9c` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-04 16:52 at commit `3a8df28` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **3353** (51%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 2434
-- context-name ledger: 3978 entries; overrides of wrong library matches: 0
-- placed in a source file: 3875/6599 in 88 files
+- game functions: **6599**, named **3369** (51%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 2450
+- context-name ledger: 3994 entries; overrides of wrong library matches: 0
+- placed in a source file: 3916/6599 in 89 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **2994**; stubs: **261**
+- reconstructed FS2 functions: **2997**; stubs: **261**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -102,7 +102,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/wstring.cpp` | 5 | 0 |
 | `src/lib/unassigned_stubs.cpp` | 0 | 218 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
-| `src/rena/rena_draw.cpp` | 15 | 0 |
+| `src/rena/rena_draw.cpp` | 18 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
 | `src/rena/tim2.cpp` | 4 | 0 |
@@ -128,9 +128,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 138 TUs: todo 83, partial 14, verify 73, done 2
-- next: **rena/rena_draw.cpp** (pinned in the queue)
-- pinned queue: rena/rena_draw.cpp, game/stagecamera.cpp, game/demoevent.cpp, game/scenepairs.cpp, game/stagecollision.cpp, game/stagecharacter.cpp, game/playermotion.cpp, game/characterground.cpp, game/characterbrain.cpp, game/characterinput.cpp, game/stageplayer.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
+- 137 TUs: todo 82, partial 12, verify 74, done 2
+- next: **game/stagecamera.cpp** (pinned in the queue)
+- pinned queue: game/stagecamera.cpp, game/demoevent.cpp, game/scenepairs.cpp, game/stagecollision.cpp, game/stagecharacter.cpp, game/playermotion.cpp, game/characterground.cpp, game/characterbrain.cpp, game/characterinput.cpp, game/stageplayer.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
 - partial: `game/demoevent.cpp` 66/90 -- Written: StageMission, StageEvent, StageFileEvent, StageSimpleEvent, StageFade, gsFillRect, DemoCamera, the pack lookup, DemoStream but setFont and drawSubtitle
 - partial: `game/scriptrunner.cpp` 90/652 -- VM 0x1d1c40, ScriptRunner, ScriptFrame, relocate, findEntry, scriptPrepare, the arg readers and 30 natives (every one stage 1 bg script calls) are written. All 
 - partial: `game/stageobject.cpp` 40/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
@@ -193,6 +193,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/vcmtable.cpp` 52/52 -- Cut out of unassigned@00296d60 (the frontier pick) as 0x296d60..0x299d90, batches 063-065 (59 names, incl. the binary's std::string instances 0x297fb0.. and new
 - verify: `game/wstring.cpp` 5/5 -- Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds 
 - verify: `rena/rena_2d_texture_tim2.cpp` 7/7 -- All 7 written; class moved to rena/rena_2d_texture_tim2.h. One Tim2Texture per mip level of the first picture; m_image (+0x40) is the TIM2 file itself, not a co
+- verify: `rena/rena_draw.cpp` 18/41 -- Skin written: drawSkinnedMesh 0x2e43e0, skinnedPartOutside 0x2e68a0, buildPalette 0x2e9480, skinVertex in model_renderer.cpp. Seen in New Game runs: the boy of 
 - verify: `rena/rena_model.cpp` 34/34 -- Written: createInstance 0x2e5210, ModelInstance::init 0x2e4800, ModelSurface 0x2e3e10, buildPartRecs 0x2e4f50, setFrames, renaStepTexAnim, modelFindPart, findGr
 - verify: `rena/rena_pkt_vif1pktmanage.cpp` 13/17 -- Pinned 0x2eaff0-0x2ec110 under the new src/rena/ with the game's own file name (strings in Reset / AddList); the stale inferred key rena_pkt_vif1pktmanage.cpp r
 - verify: `rx/filecd.c` 35/35 -- All 35 of 0x1565c8..0x157db8 written. rxcmp.py: 34 of 35 identical to RoR with jump targets and data masked; the one difference is rxFileCdFindDir, 0x18 longer 
@@ -211,6 +212,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-04 17:37 `rena/rena_draw.cpp` verify: Skinned meshes: palette, part box, the VU1 weights in the host module; the boy of d0101 and the sea of stage 1 draw
 - 2026-11-04 16:52 `game/subsceneobject.cpp` verify: All 50 of the TU recorded; the event now ends: a silent timed ADPCM stream bridge, the black after it traced to the missing player
 - 2026-11-04 16:10 `game/subsceneobject.cpp` partial: The event's objects and natives 0x144, 0x145, 0x148, 0x163, 0x164: first pictures of the opening from its own camera
 - 2026-11-04 15:18 `game/modelpose.cpp` verify: The solvers, the leg IK and the sw bones swing written; TU complete, not seen on screen
@@ -218,7 +220,6 @@ Recent sessions:
 - 2026-11-04 14:04 `game/demoevent.cpp` partial: The opening event starts: mission, events, fade, demo camera and voice written, d0101 proven from the script and its own script runs; nothing of it shows yet
 - 2026-11-04 13:00 `game/scenerender.cpp` verify: Pinned lights closed: YAMIPAN_AMBIENT and the isKeyed guards deleted, the script's lights drive the picture, VU1's fog limits added
 - 2026-11-04 12:30 `game/scriptrunner.cpp` partial: Stage script VM written, 30 natives; the scripts key the lights, picture unchanged, the pin stays
-- 2026-11-04 11:34 `game/scenerender.cpp` partial: SceneRender and VectorTrack written; the keys come from scripts, so the pin stays
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
@@ -231,9 +232,9 @@ Recent sessions:
 | `unassigned@001d85b0` | todo | 0/13/239 | 119.7 | 30 | 0 |
 | `unassigned@00171300` | partial | 3/11/169 | 19.0 | 28 | 0 |
 | `unassigned@0017e140` | todo | 0/4/110 | 3.2 | 27 | 0 |
-| `unassigned@002e5450` | partial | 14/0/39 | 16.6 | 25 | 0 |
 | `unassigned@00176480` | partial | 18/3/134 | 29.0 | 23 | 0 |
 | `unassigned@00288c00` | todo | 0/13/74 | 28.4 | 23 | 0 |
+| `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

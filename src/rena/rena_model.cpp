@@ -141,10 +141,10 @@ void ModelInstance::setTexture(int slot, Tim2Texture *texture)
 
 static void relocateBatch(ModelBatch *batch, const ModelPrim *prim, const Relocation &to)
 {
-    int tagCount = prim->isLong ? ModelBatch::kLongTags : ModelBatch::kShortTags;
+    int tagCount = prim->paletteCount ? ModelBatch::kLongTags : ModelBatch::kShortTags;
     for (int i = 0; i < tagCount; i++)
         to.fix(batch->tags[i].next);
-    if (prim->skinned) {
+    if (prim->listFlags) {
         to.fixList(reinterpret_cast<S2dRef<S2dRef<void> > &>(batch->tags[tagCount - 2].next), prim->listACount);
         to.fixList(reinterpret_cast<S2dRef<S2dRef<void> > &>(batch->tags[tagCount - 1].next), prim->listBCount);
     }
@@ -156,9 +156,9 @@ static void relocateBatch(ModelBatch *batch, const ModelPrim *prim, const Reloca
 static void relocatePrim(ModelPrim *prim, const Relocation &to)
 {
     to.fix(prim->batches);
-    to.fix(prim->_0);
-    int stride = (prim->isLong ? ModelBatch::kLongSize : ModelBatch::kShortSize)
-                 + (prim->skinned ? 0 : ModelBatch::kPadSize);
+    to.fix(prim->paletteBones);
+    int stride = (prim->paletteCount ? ModelBatch::kLongSize : ModelBatch::kShortSize)
+                 + (prim->listFlags ? 0 : ModelBatch::kPadSize);
     char *batch = (char *)prim->batches.get();
     for (int i = 0; i < prim->batchCount; i++, batch += stride)
         relocateBatch((ModelBatch *)batch, prim, to);

@@ -1,6 +1,5 @@
 {
  "queue": [
-  "rena/rena_draw.cpp",
   "game/stagecamera.cpp",
   "game/demoevent.cpp",
   "game/scenepairs.cpp",
@@ -1440,7 +1439,27 @@
    "why": "The game's own file name from its strings (rena_2d_texture_tim2.cpp: ...); pinned at bootstrap 6 so the stubs land in src/rena/."
   },
   "rena/rena_draw.cpp": {
-   "task": "Skinned meshes, queued by the user 2026-11-04 to come after the sub-scene's objects: 0x2e43e0 (524 i, in unassigned@002e41a0) and 0x2e68a0 (335 i, in unassigned@002e5450), skipped today at parts->boneCount != 0 in drawTree. Pin them with tus.py define. Palette: bone world * inverseBinds[b] * M, M = boneBinds[mesh.bone] or unit; the 7-tag batches carry bone ids and weights (architecture.md, The batches of a model). Needs game/modelpose.cpp. First test on stage 1: oMK01_01, its only skinned map object, 3,952 vertices, then the characters. Done when a skinned model stands on screen where its bones say."
+   "notes": "Skin written: drawSkinnedMesh 0x2e43e0, skinnedPartOutside 0x2e68a0, buildPalette 0x2e9480, skinVertex in model_renderer.cpp. Seen in New Game runs: the boy of d0101 whole on the bedding from the event camera, and the sea of oMK01_01 meeting the quay (progress/20261104-skinned-*.png). No shot of the real game exists, so neither is compared with the game: verify, not done. Both ran with temporary logging, since removed; the final build ran the 15 s check only. Not moving until game/scenepairs.cpp. Still unwritten in the pinned range: shadows, spotlight, ghost pass, fades, tracked with yamipan/rendering/model_renderer.cpp. open-items.md has the doubts.",
+   "ranges": [
+    [
+     "002e41a0",
+     "002e44e0"
+    ],
+    [
+     "002e5450",
+     "002e9790"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 17:37",
+     "status": "verify",
+     "summary": "Skinned meshes: palette, part box, the VU1 weights in the host module; the boy of d0101 and the sea of stage 1 draw"
+    }
+   ],
+   "status": "verify",
+   "task": "Skinned meshes, queued by the user 2026-11-04 to come after the sub-scene's objects: 0x2e43e0 (524 i, in unassigned@002e41a0) and 0x2e68a0 (335 i, in unassigned@002e5450), skipped today at parts->boneCount != 0 in drawTree. Pin them with tus.py define. Palette: bone world * inverseBinds[b] * M, M = boneBinds[mesh.bone] or unit; the 7-tag batches carry bone ids and weights (architecture.md, The batches of a model). Needs game/modelpose.cpp. First test on stage 1: oMK01_01, its only skinned map object, 3,952 vertices, then the characters. Done when a skinned model stands on screen where its bones say.",
+   "why": "The draw walk: 0x2e41a0..0x2e44e0 between rena_model's ranges, 0x2e5450..0x2e9790 up to ModelBone (rena_model). No path strings; by who calls whom. Shadows, spotlight, ghost and fade inside it are not written, they stay on yamipan/rendering/model_renderer.cpp"
   },
   "rena/rena_model.cpp": {
    "notes": "Written: createInstance 0x2e5210, ModelInstance::init 0x2e4800, ModelSurface 0x2e3e10, buildPartRecs 0x2e4f50, setFrames, renaStepTexAnim, modelFindPart, findGroup, setAmbient, setLight, ~ModelInstance, modelTexturePremultiplyPalette. CharacterPart was ModelPartRec. Checked by a host harness over every RM2 in the 114 SLDI packs (1,768 models, 4,702 nodes, 0 bad) and a New Game run: 22 real instances including the map node Root, no crash. The screen is black because no 3D host module exists yet, so status verify, not done. Next: TU 5 yamipan/rendering/model_renderer.cpp; open-items.md has what it must read. Also this run: the user's Japanese text rule, in reconstruction.md, and printed Shift-JIS messages became UTF-8 literals; strings compared or written out keep their escaped bytes.",
