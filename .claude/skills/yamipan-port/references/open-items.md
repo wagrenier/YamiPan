@@ -1562,6 +1562,8 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
 
 ## Decisions
 
+- 2026-11-04 (the user, live): **the sub-scene's objects, skinned meshes and natives 0x70 / 0x64 go in the priority queue.** After `game/modelpose.cpp` come `game/subsceneobject.cpp`, `rena/rena_draw.cpp` and `game/stagecamera.cpp`, then `game/demoevent.cpp` and the rest. They sit ahead of `demoevent` because `tus.py next` takes the first queued item not `verify` or `done`, and `demoevent` cannot finish without them. The natives have their own key because `game/scriptrunner.cpp` is 84 of 652: moved up, it would hold the slot for many runs. Their code still goes in `scriptrunner.cpp`. Still not queued: the rest of the roadmap, `game/scenepairs.cpp`, collision and `StageCharacter`, so nothing can show the natives working yet.
+
 - 2026-11-04 (the user, live): **the opening event goes right after the pinned lighting**, ahead of the character. Queue: `game/scriptrunner.cpp` (the VM, which the lighting's values come from, so it serves the pin), `game/scenerender.cpp`, `game/demoevent.cpp` (a new key, the file name is the session's choice), `yamipan/rendering/model_renderer.cpp`.
 
 - 2026-11-04 (the user, live, during the scheduled run): **"add the stub but make sure to pin the lighting as a priority as to not forget about removing the stub".** The stub is `YAMIPAN_AMBIENT`. The lighting is `game/scenerender.cpp`, at the top of the queue, ahead of what is left of the model renderer and of the character; its end condition is the stub's removal (top of "Next up").

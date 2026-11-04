@@ -1,6 +1,9 @@
 {
  "queue": [
   "game/modelpose.cpp",
+  "game/subsceneobject.cpp",
+  "rena/rena_draw.cpp",
+  "game/stagecamera.cpp",
   "game/demoevent.cpp",
   "yamipan/rendering/model_renderer.cpp",
   "game/scriptrunner.cpp"
@@ -773,6 +776,9 @@
    ],
    "why": "The class at gStageScene +0xf4 (every caller of these 8 functions passes it; ctor 0x264070 news its 0x3c-byte member from 0x151600, the deleting dtor 0x264000): plays and stops the ALERT / CAUTION layouts on gStageScene +0x30 (0x263c10 / 0x263f10) and reads GameOptions +0x10. Between game/uigame.cpp and libscf 0x2640e8. The file name is the port's (no source string)."
   },
+  "game/stagecamera.cpp": {
+   "task": "The two natives that choose the view, queued by the user 2026-11-04. A host task: the code goes in kNatives in src/game/scriptrunner.cpp and both addresses are that TU's, but it is 84 of 652 and would hold this place in the queue for many runs, so they have their own key. Native 0x70 (0x1c81a0, 56 i, one code word): find the character by label, then StageScene::setPlayer. Stage 1's Root calls it with F_PC01 straight after its test of menuMode == 1, the block that also requests d0101, and a New Game run reaches the stub today (scriptNative_70), so the main camera never links without it, even with a character. Native 0x64 (0x1c8dc0, 94 i, one code word): 0x1c8f40 tests the name (the script passes NULL) and removes view priority 3, any other name is found (0x1d1260) and pushed at priority 3, and an active event takes a further step (0x1b56b0, 0x1b54a0, 0x1b5460). sd_MK01_10 calls it with CAM_EV10, then NULL. StageCharacter does not exist yet, so the character lookup answers null: make sure setPlayer survives that. The other route to setPlayer is property 0x50 (0x172620 and its twins 0x189f40, 0x212530, 0x268ae0), behind the setProperty stubs; native 0xef is unused on stage 1. Nothing can show the link until a character exists, so this ends verify."
+  },
   "game/stageitem.cpp": {
    "notes": "All of 0x17fce0..0x184860 written or mapped (thunks listed, 0x180018 is padding). New Game run under gdb: StageBullet's ctor ran from setupCameras with no fault, 113 stubs reached, the stop is unchanged: SIGSEGV in StageScene::draw (stagescene.cpp:3272), drawSysCurrent 0x2d4fd0 a stub answering null, black last shot, so no stage picture and nothing here is on screen. Default smoke run rests on the language screen, unchanged. Host-pass only: no item is placed yet (PackTables::parse and StageModel::init are stubs), ScenePairTable::add is a stub, so no frame or collision hook has run and nothing was compared with the ROM by running it. CollisionOwner::onCollide and collisionHook3 changed signature for all owners; sysDataReturnZero 0x23c010 was a mislabel and is gone (ItemPhysics::onCollide). Next pinned: unassigned@002d46a0 for drawSysCurrent, then NodeTransform and updateMatrix. Details and doubts: open-items.md, architecture.md The bullet and the items.",
    "ranges": [
@@ -1046,6 +1052,9 @@
    ],
    "status": "done",
    "why": "String and StringList, whose vtables 0x311200 / 0x311210 only these use; ends at the VU math 0x149510. Written with game/packtables.cpp (it was what stopped every stage script)."
+  },
+  "game/subsceneobject.cpp": {
+   "task": "The event's objects, queued by the user 2026-11-04 to come right after ModelPose: SubSceneCharacter, SubSceneItem, SubSceneProp, SubSceneMapObject, SubSceneGateObject and SubSceneDoorObject, 0x2bb680..0x2bc100 (cut them out of unassigned@002b9ef0 with tus.py define), with the base SubSceneModelObject they stand on. All stubs today: applyBgTarget and placeCharacter call them, nothing enters the scene, and the stage is black from the opening's first frame. Check each ctor against the ROM for setDirtyTree(false): a map object left dirty lands at the origin (hazards.md, A picture that looks like a place can still be wrong). Needs game/modelpose.cpp. Also find who calls DemoCamera::playCutNamed (vtable +0x264, a script native, unread): without it the camera has no cut to play. The event's natives by reach: roadmap-3d-control.md. Done when the picture shows the event's objects from the event's own camera, with no YAMIPAN_CAMERA."
   },
   "game/sysdata.cpp": {
    "notes": "Cut out of unassigned@00171300 (the frontier pick, 5138 functions) and pinned 0x23af30-0x23c020. One SystemData block of 0x620 bytes at 0x598b30: SaveData +0 (0x4bc: stage flags +0x69, records [3][2][30] +0xd8, medals [3][2][30] +0x3b4), StageSelect +0x4bc (the play record, 153 callers of getStageSelect), GameOptions +0x4d0 (0x50), FlagTable +0x520 (64 ints). Outgoing prototypes in gamehooks.h (SoundConfig and gSoundConfig, memcardGetState, randUnit, stageDefaultRecord, StageResult and getStageResult) and gfxtarget.h (GfxDisplay, gfxGetCurrentDisplay, gfxSetDisplayOffset). Data the build must define: gSoundConfig (sbss 0x31addc) and gSystemData lives here. ButtonMap::assign with action -1 reads button[-1] in the ROM: the port keeps the holder unchanged (PC note). Unknown: SaveData +0x468 / +0x3ac roles, record kinds, brightness guess for options +0x18, which of 0x23bb30 / 0x23bb40 is the save getter. Next in the same unassigned run: gameSceneThread 0x231bb0, getLocalDateTime 0x23de20, memcard 0x2a9c70..0x2acf00, each its own file via tus.py define.",
@@ -1333,6 +1342,9 @@
    ],
    "status": "verify",
    "why": "The game's own file name from its strings (rena_2d_texture_tim2.cpp: ...); pinned at bootstrap 6 so the stubs land in src/rena/."
+  },
+  "rena/rena_draw.cpp": {
+   "task": "Skinned meshes, queued by the user 2026-11-04 to come after the sub-scene's objects: 0x2e43e0 (524 i, in unassigned@002e41a0) and 0x2e68a0 (335 i, in unassigned@002e5450), skipped today at parts->boneCount != 0 in drawTree. Pin them with tus.py define. Palette: bone world * inverseBinds[b] * M, M = boneBinds[mesh.bone] or unit; the 7-tag batches carry bone ids and weights (architecture.md, The batches of a model). Needs game/modelpose.cpp. First test on stage 1: oMK01_01, its only skinned map object, 3,952 vertices, then the characters. Done when a skinned model stands on screen where its bones say."
   },
   "rena/rena_model.cpp": {
    "notes": "Written: createInstance 0x2e5210, ModelInstance::init 0x2e4800, ModelSurface 0x2e3e10, buildPartRecs 0x2e4f50, setFrames, renaStepTexAnim, modelFindPart, findGroup, setAmbient, setLight, ~ModelInstance, modelTexturePremultiplyPalette. CharacterPart was ModelPartRec. Checked by a host harness over every RM2 in the 114 SLDI packs (1,768 models, 4,702 nodes, 0 bad) and a New Game run: 22 real instances including the map node Root, no crash. The screen is black because no 3D host module exists yet, so status verify, not done. Next: TU 5 yamipan/rendering/model_renderer.cpp; open-items.md has what it must read. Also this run: the user's Japanese text rule, in reconstruction.md, and printed Shift-JIS messages became UTF-8 literals; strings compared or written out keep their escaped bytes.",
