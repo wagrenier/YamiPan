@@ -22,6 +22,7 @@
 #include "game/fileloader.h"
 #include "game/gamepaths.h"
 #include "game/layoutpaths.h"
+#include "game/menupack.h"
 #include "game/seplayer.h"
 #include "game/stageloop.h"
 #include "game/stageobjlist.h"
@@ -63,12 +64,7 @@ void debugSysShutdown();                                                 // FS2 
 bool boxContainsPoint(const float m[4][4], const float p[4]);            // FS2 0x002362a0
 
 // What game/scene.cpp calls.
-// The resident menu pack: dataEU/packmenuEU.pak at 0x31ae98, loaded only
-// while not loaded (loadInitPack: game/gamepaths.h).
-void loadMenuPack();                                                     // FS2 0x002c3e10
-// Deletes what loadMenuPack made (the pack, its SePlayer); a stage needs
-// the memory.
-void unloadMenuPack();                                                   // FS2 0x002c3db0
+// The resident menu pack is game/menupack.h; loadInitPack game/gamepaths.h.
 
 // What game/menuscene.cpp calls.
 // help<lang>.d2b at a page; always 0.
@@ -1846,8 +1842,8 @@ static_assert(sizeof(WeaponDef) == 0x54, "WeaponDef: EE 0x54");
 extern WeaponDef gWeaponDefs[kWeaponDefCount];  /* bss 0x576010 */
 
 // ──────────────────────────────────────────────────────────────────────
-// The sound players are game/seplayer.h. The one outside a stage:
-SePlayer *getSePlayer();                                                 // FS2 0x002c4140: sbss 0x31aea0
+// The sound players are game/seplayer.h; the one outside a stage is
+// getSePlayer (game/menupack.h).
 
 // What game/gfxtarget.cpp calls.
 class GsRegionAlloc;            // game/gfxtarget.h

@@ -7547,21 +7547,21 @@
 // FILE -- game/menupack.cpp
 // *****************************************************************************
 
-/* 002c3d30 0000003c */ getSaveResourceAux(){}  // game
-/* 002c3d70 0000003c */ getSaveResource(){}  // game
+/* 002c3d30 0000003c */ getMenuPackItemSize(){}  // game
+/* 002c3d70 0000003c */ getMenuPackItem(){}  // game
 /* 002c3db0 00000058 */ unloadMenuPack(){}  // game
 /* 002c3e10 0000009c */ loadMenuPack(){}  // game
-/* 002c3eb0 00000288 */ FUN_002c3eb0(){}
+/* 002c3eb0 00000288 */ createMenuSePlayer(){}  // game
 /* 002c4140 00000008 */ getSePlayer(){}  // game
-/* 002c4150 00000098 */ FUN_002c4150(){}
-/* 002c41f0 00000094 */ FUN_002c41f0(){}
-/* 002c4290 0000000c */ FUN_002c4290(){}
-/* 002c42a0 00000020 */ FUN_002c42a0(){}
+/* 002c4150 00000098 */ MessageTable::find(){}  // game
+/* 002c41f0 00000094 */ MessageTable::setFile(){}  // game
+/* 002c4290 0000000c */ MessageTable::MessageTable(){}  // game
 
 // *****************************************************************************
 // FILE -- (unassigned)
 // *****************************************************************************
 
+/* 002c42a0 00000020 */ FUN_002c42a0(){}
 /* 002c42c0 00000054 */ runExtraMode(){}  // game
 /* 002c4320 00000b30 */ FUN_002c4320(){}
 /* 002c4e50 00000090 */ FUN_002c4e50(){}

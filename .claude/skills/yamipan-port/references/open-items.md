@@ -1175,6 +1175,27 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    navi block, then `setUiWorkArea` 0x243370 with `getUiWorkArea` (the movie widget has a null work area
    until then). `unassigned@00231d40` is what is left of the run: the collision code to 0x236b90 (a
    `game/stagecollision.cpp` to cut: `StageCollision` is on stagescene.cpp's frontier).
+   **`game/menupack.cpp` 0x2c3d30..0x2c42a0 written (2026-11-03, all 9, `verify`, batch 092; architecture.md
+   "Modules"). The title now answers and no longer crashes:** with the title's pad script (159 LEFT / CROSS
+   events every 200 reads, then CROSS every 300 reads from read 32100) CROSS on Load Game leaves the title for
+   a new screen, a dark red picture of a window frame with red specks, no text. **Not compared with a
+   reference**, so whether it is complete is open; `PrgMcCard::PrgMcCard` 0x2b9d60 is the stub reached there and
+   very likely its missing text (inferred). Two 140 s runs ended "still running", no crash. New Game was not
+   tried. So TitleAnswer 2 = Load Game is seen on screen, 1 = New Game still rests on the reading.
+   **Sound:** `SePlayer::loadBank` / `openStreamBank` survive `sdk/sif.cpp`'s no-IOP placeholder (the run gets
+   through createMenuSePlayer and plays the press), but nothing is audible and whether the banks hold data was
+   not looked at. Corrected: `getSaveResource` / `getSaveResourceAux` are now `getMenuPackItem` /
+   `getMenuPackItemSize`, `Memcard::m_iconAux` is `m_iconSize`. `0x2c42a0` left the range: it is slot 1 of
+   Vt_00319f00, an inline virtual of the class at 0x2ca870.., to read with it (the key `unassigned@002c42a0`
+   holds it). New `SeTable::bankCount` (parseSndseh uses it too). Doubts for the user: (1) the file name, and
+   `MessageTable` / `MessageFile` are the port's; (2) MessageTable sits here by position only, it may be the
+   end of another file; no message file was seen (a raw scan of the ROMs for the magic found none, so they
+   are presumably packed), so the file format is read from the code alone and `setFile` / `find` have not run;
+   (3) PC difference: a missing seMenu_SE.seh would reach `SePlayer::setTable` with null as the ROM does; the
+   ROM reads address 0, the port would crash (the pack has it, the run shows). `StageMission::setMessages`
+   0x286c30 and the forwarder 0x286c20 are still unwritten. **Next, for the user to pin:** `PrgMcCard` 0x2b9d60
+   (the screen above), then by item 8 `runHelpScreen`, the navi block, `setUiWorkArea` 0x243370 with
+   `getUiWorkArea`.
 1. **The game**: Forbidden Siren 2, Europe, `SCES_538.51`, annotation tag `FS2` (decided, below;
    `yamipan.py` has `ANNOT`, the stub regex and the game-folder defaults since bootstrap 3).
 2. Bootstrap (bootstrap.md, in order): identify the binary (done 2026-10-31: architecture.md
@@ -1575,8 +1596,7 @@ apply here):
 - **(2026-11-02, TU 7) memcard semantics guessed.** `memcardRequiredKB` (returns 80, settled: stepScan
   compares it with sceMcGetInfo's free clusters, 1 KB each; now `kSaveRequiredKB`);
   the byte 0x31ae84 (`memcardGetFlag` and kin, set by memcardInit: meaning unknown); `SaveStatus_Denied`
-  (GetDir mapped result 5, from libmc -6); `Memcard::m_iconAux` (getSaveResourceAux(0), never written
-  by stepSave: a size?); `MemcardRequest_Save7` (no starter in the file: who sets request 7?);
+  (GetDir mapped result 5, from libmc -6); ~~`Memcard::m_iconAux`~~ (settled 2026-11-03: `m_iconSize`, the item's size, game/menupack.cpp); `MemcardRequest_Save7` (no starter in the file: who sets request 7?);
   `mcErrorCode` 0x121b80 may be library code (it sits between libmc and libc). The SaveFile byte at
   GameOptions +0x4d decides whether a load keeps its stamp: name it when the options menu is read.
   Second run: `stepCheckAll`'s open loop returns the starting file's read step even when it opened

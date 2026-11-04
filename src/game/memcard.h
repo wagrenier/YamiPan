@@ -304,8 +304,8 @@ public:
     int         m_outcome;      // FS2 +0x68: MemcardOutcome
     float       m_progress;     // FS2 +0x6c: 0..1 for the save / check bars
     sceMcIconSys *m_iconSys;    // FS2 +0x70: kIconSysSize, built by buildIconSys
-    void       *m_iconData;     // FS2 +0x74: icon1.ico, getSaveResource(0)
-    void       *m_iconAux;      // FS2 +0x78: getSaveResourceAux(0), not written by stepSave
+    void       *m_iconData;     // FS2 +0x74: icon1.ico, MenuPackItem_SaveIcon
+    int         m_iconSize;     // FS2 +0x78: its size in the pack; stepSave writes kIconSize
     SaveFile   *m_image;        // FS2 +0x7c: the save being written (kSaveDataSize used)
     SaveFile   *m_files[kSaveFiles];    // FS2 +0x80
 
@@ -355,9 +355,5 @@ void clearDirEntry(sceMcTblGetDir *entry);                               // FS2 
 
 // Outside this TU.
 SaveExtra *getSaveExtra();                                               // FS2 0x0029efd0
-// The save's resources through the object 0x31ae98 (0 when 0x31ae9c is
-// clear): 0 = icon1.ico, 1 = an icon.sys template (buildIconSys).
-void *getSaveResource(int id);                                           // FS2 0x002c3d70
-void *getSaveResourceAux(int id);                                        // FS2 0x002c3d30
 
 #endif /* _GAME_MEMCARD_H */

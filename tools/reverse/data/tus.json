@@ -1,7 +1,5 @@
 {
- "queue": [
-  "game/menupack.cpp"
- ],
+ "queue": [],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
   "frontier_ignore": [],
@@ -318,13 +316,22 @@
    "why": "the memory card module: the libmc device wrapper McDevice (0x2ac630..0x2acff0, ctor 0x2acf90), the save manager Memcard (state machines 0x2a9cc0..0x2ab9f0, requests, update) and the SaveFile image (0x2aa720, 0x2abc20..0x2ac540); its sbss bytes 0x31ae80..0x31ae90 are one block (gp-0x79f0..-0x79e0: saveFound, flag, stamp, lib inited). 0x2a9be0 before it is a Vt_00318ca0 ctor; 0x2acff0 after it starts unrelated code (a 0x2ec840 / 0x267c00 call, then a 0x1cc0 object and lens-flare-like float code)"
   },
   "game/menupack.cpp": {
+   "notes": "All 9 written, range now 0x2c3d30..0x2c42a0 (0x2c42a0 is slot 1 of Vt_00319f00, an inline virtual of the class at 0x2ca870, left for it). Renamed getSaveResource / getSaveResourceAux to getMenuPackItem / getMenuPackItemSize; Memcard m_iconAux is m_iconSize. Picture: CROSS on Load Game leaves the title for a dark red picture of a window frame with specks and no text, not compared with a reference; PrgMcCard::PrgMcCard 0x2b9d60 is the stub reached there. Two 140 s runs did not crash. No sound is audible and bank contents were not looked at. MessageTable has not run: StageMission::setMessages 0x286c30 and the forwarder 0x286c20 are unwritten. Full pad script and doubts in open-items.md.",
    "ranges": [
     [
      "002c3d30",
-     "002c42c0"
+     "002c42a0"
     ]
    ],
-   "why": "Queued by the run that wrote game/titlescreen.cpp, range not yet read closely: the resident menu pack (loadMenuPack, unloadMenuPack, FUN_002c3eb0 which builds the SePlayer from seMenu_SE.seh, getSePlayer) with the save-resource getters and small helpers around it; the file name is the port's."
+   "sessions": [
+    {
+     "date": "2026-11-03 21:42",
+     "status": "verify",
+     "summary": "the menu pack, its SePlayer and MessageTable: all 9 written; the title now answers a press"
+    }
+   ],
+   "status": "verify",
+   "why": "read closely: the menu pack and its item getters, createMenuSePlayer, getSePlayer (sbss 0x31ae98..0x31aea4) and MessageTable 0x2c4150..0x2c42a0 by position. 0x2c42a0 left out: slot 1 of Vt_00319f00, whose class lives at 0x2ca870..0x2cc8c0; it is that class's inline virtual, read with it"
   },
   "game/menuscene.cpp": {
    "notes": "All 14 functions of 0x2b5740..0x2b6b90 written (batch 083, 32 names, saved in Ghidra): the whole menu flow, architecture.md Modules has the map. Build, callcheck and layoutcheck green. Smoke, no pad: the language screen runs, black for about 3000 presented frames, then one white band across the screen (y 224..288 of 683x512) with no text or images: untextured, because Tim2Texture::Tim2Texture and UiTrack::draw are stubs; no reference picture was extracted, work/ref is empty. With a scripted CROSS the flow passes the language screen, the card check and the logo (both on null path stubs, so no layout shows) and then spins in menuFlow on the stub runTitleScreen (hazards.md Stubs). CIRCLE does nothing on the language screen. Next in the queue: rena/rena_2d_texture_tim2.cpp and the texture store, judged on this language screen. The stubs that block the menu after that are listed in open-items.md Next up item 8: layout paths 0x2ec110.., runTitleScreen 0x231c90, loadMenuPack / unloadMenuPack, the navi block. Doubts: the file name, the screen names, SaveDialogReason, runAttractDemo, the 0x40 size of the script path buffer. One PC: mark: menuPlayMovie guards the ROM double delete of an empty movie loader.",

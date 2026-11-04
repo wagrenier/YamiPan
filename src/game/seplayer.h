@@ -170,6 +170,18 @@ struct SeTable
     S2dRef<SeName> names;       // FS2 +0x42c
     SeEntry    entries[1];      // FS2 +0x430: count
 
+    // Banks in use: those with a file name. Inline in the ROM
+    // (StageFiles::parseSndseh, createMenuSePlayer).
+    int bankCount() const
+    {
+        int used = 0;
+        for (int i = 0; i < kSeBanks; i++) {
+            if (banks[i].file[0] != '\0')
+                used++;
+        }
+        return used;
+    }
+
     // The effect called name; null none. A binary search over names,
     // inline in the ROM (UiLayout::playSound, StageSound's play 0x1d66e0);
     // like the ROM it reads names[0] even when there are none.
