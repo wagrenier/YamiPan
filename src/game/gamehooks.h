@@ -1635,9 +1635,9 @@ struct ModelTag
     int          _8[2];
 };
 static_assert(sizeof(ModelTag) == 0x10, "ModelTag: EE 0x10");
-// One packet of a ModelPrim: 5 tags, or 7 when ModelPrim::isLong; 0x10
-// more unless skinned. Its last two tags' addresses list pointers when
-// skinned.
+// One packet of a ModelPrim: 5 tags, or 7 with a palette (tags 3, 4: bone
+// ids and weights); 0x10 more unless listFlags. Its last two tags' addresses
+// list pointers when listFlags.
 struct ModelBatch
 {
     enum
@@ -1660,16 +1660,16 @@ struct ModelPrim
         u_short end;            // FS2 +0x2: 0x8000 on the GIF tag's EOP
         int     vertexCount;    // FS2 +0x4: the same number
         int     flags;          // FS2 +0x8: Strip, Weighted
-        int     weightsLess1;   // FS2 +0xc: bones per vertex - 1
+        int     weightsLess1;   // FS2 +0xc: bones per vertex - 1 (VU1 0x07f picks the loop)
     };
-    S2dRef<void>       _0;      // FS2 +0x0
+    S2dRef<u_short>    paletteBones; // FS2 +0x0: paletteCount indices into ModelMesh::boneMap
     S2dRef<ModelBatch> batches; // FS2 +0x4: batchCount
     u_short            _8;      // FS2 +0x8
     u_short            batchCount; // FS2 +0xa
-    u_char             isLong;  // FS2 +0xc
+    u_char             paletteCount; // FS2 +0xc: bones of the palette; non-zero makes 7 tags
     u_char             listACount; // FS2 +0xd
     u_char             listBCount; // FS2 +0xe
-    u_char             skinned; // FS2 +0xf
+    u_char             listFlags; // FS2 +0xf: non-zero: colours and UVs by lists; 2: the fade path 0x2e9220 / 0x2e96a0
 };
 static_assert(sizeof(ModelPrim) == 0x10, "ModelPrim: EE 0x10");
 static_assert(sizeof(ModelPrim::Header) == 0x10, "ModelPrim::Header: one quadword");
@@ -1686,9 +1686,9 @@ struct ModelMeshPart
 {
     u_char                    _00[0x20];
     int                       materialCount; // FS2 +0x20
-    int                       _24;
+    int                       paletted;      // FS2 +0x24: its prims carry bones (0x2e43e0 hands it to 0x2e83b0)
     S2dRef<ModelMeshMaterial> materials;     // FS2 +0x28
-    S2dRef<S2dRef<void> >     lists;         // FS2 +0x2c: ModelMeshParts::boneCount
+    S2dRef<S2dRef<float> >    lists;         // FS2 +0x2c: ModelMeshParts::boneCount; [0]: per bone its box, centre then half size, 2 vectors each
 };
 static_assert(sizeof(ModelMeshPart) == 0x30, "ModelMeshPart: EE 0x30");
 struct ModelMeshParts

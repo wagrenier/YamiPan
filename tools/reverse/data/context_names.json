@@ -23333,6 +23333,12 @@
   "was": "FUN_002e2920",
   "why": "rena's TIM2 texture (rena_2d_texture_tim2.cpp, message 0x30fdd0 in its load 0x2e26c0): stores vtable 0x31a7c0 at +0x44, clears +8 / +0xc / +0x10 / +0x3c / +0x40, loads the image; GsTexture's base (called first by its ctor, 21 callers)"
  },
+ "002e2a60": {
+  "name": "boxClipTest",
+  "tag": "game-inferred",
+  "was": "FUN_002e2a60",
+  "why": "a box against the frame's clip: 2 wholly outside, 1 or 0 drawn; all draw paths use it"
+ },
  "002e2cf0": {
   "name": "ModelFile::isValid",
   "tag": "game-inferred",
@@ -23453,6 +23459,18 @@
   "was": "FUN_002e4100",
   "why": "the source file's class is ModelInstance: walks its part records"
  },
+ "002e41a0": {
+  "name": "drawTree",
+  "tag": "game-inferred",
+  "was": "FUN_002e41a0",
+  "why": "walks ModelInstance::partRecs by next / firstChild, skips hidden records, a mesh with parts->boneCount goes to 0x2e43e0, the others part by part"
+ },
+ "002e43e0": {
+  "name": "drawSkinnedMesh",
+  "tag": "game-inferred",
+  "was": "FUN_002e43e0",
+  "why": "sets the state's M to boneBinds[mesh.bone] or unit, each part through 0x2e68a0 and 0x2e6590 with the unit matrix uploaded"
+ },
  "002e44e0": {
   "name": "ModelInstance::setAmbient",
   "tag": "game-inferred",
@@ -23531,6 +23549,48 @@
   "was": "FUN_002e5450",
   "why": "called once per pass with the record and a mask of model draw groups"
  },
+ "002e5860": {
+  "name": "drawDeferred",
+  "tag": "game-inferred",
+  "was": "FUN_002e5860",
+  "why": "one entry of the blended table: lights, matrix, 0x2e6b70"
+ },
+ "002e62f0": {
+  "name": "drawModels",
+  "tag": "game-inferred",
+  "was": "FUN_002e62f0",
+  "why": "the record's models of a group mask, each with its lights, then 0x2e41a0"
+ },
+ "002e6590": {
+  "name": "drawPart",
+  "tag": "game-inferred",
+  "was": "FUN_002e6590",
+  "why": "writes the part's VU1 block, draws opaque materials through 0x2e6b70 and queues blended ones with a depth key"
+ },
+ "002e68a0": {
+  "name": "skinnedPartOutside",
+  "tag": "game-inferred",
+  "was": "FUN_002e68a0",
+  "why": "joins each bone's box (ModelMeshPart::lists[0]) through inverse bind and bone matrix into a world box, then 0x2e2a60 with the unit matrix"
+ },
+ "002e6b50": {
+  "name": "rigidPartClip",
+  "tag": "game-inferred",
+  "was": "FUN_002e6b50",
+  "why": "0x2e2a60 on the part's own box and the mesh's matrix"
+ },
+ "002e6b70": {
+  "name": "drawMaterial",
+  "tag": "game-inferred",
+  "was": "FUN_002e6b70",
+  "why": "sets the surface and chains its prims, with a Kind1 material's two frames over its base"
+ },
+ "002e7610": {
+  "name": "uploadMeshMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_002e7610",
+  "why": "sends a matrix, its inverse and the normal scales to VU address 212, skipped when it is the current one (+0x1ec)"
+ },
  "002e8080": {
   "name": "renaSetLights",
   "tag": "game-inferred",
@@ -23548,6 +23608,12 @@
   "tag": "game-inferred",
   "was": "FUN_002e8300",
   "why": "unpacks two matrices to VU1 0x40 + 8 * index for index 0..6"
+ },
+ "002e83b0": {
+  "name": "drawPrims",
+  "tag": "game-inferred",
+  "was": "FUN_002e83b0",
+  "why": "chains a material's prims; +0x218 picks the palette path, ModelPrim +0xf the list and fade copies"
  },
  "002e8570": {
   "name": "renaSetShadowCount",
@@ -23572,6 +23638,36 @@
   "tag": "game-inferred",
   "was": "FUN_002e87f0",
   "why": "binds the spotlight texture into the frame's TEX0 packets"
+ },
+ "002e9220": {
+  "name": "chainPaletteFadeBatches",
+  "tag": "game-inferred",
+  "was": "FUN_002e9220",
+  "why": "palette path of the fade: 0x2e9480, then 7-tag copies; prim +0xf bit 1 with a fade set"
+ },
+ "002e9370": {
+  "name": "chainPaletteListBatches",
+  "tag": "game-inferred",
+  "was": "FUN_002e9370",
+  "why": "0x2e9480, then copies of 7-tag batches with the colour and UV pointers picked from their lists"
+ },
+ "002e9480": {
+  "name": "buildPalette",
+  "tag": "game-inferred",
+  "was": "FUN_002e9480",
+  "why": "for each of a prim's paletteCount bones sends M * inverseBinds[b] * bone matrix to VU address 228 (0xe4), which the VU1 skinning loops read"
+ },
+ "002e95d0": {
+  "name": "chainListBatches",
+  "tag": "game-inferred",
+  "was": "FUN_002e95d0",
+  "why": "copies of 5-tag batches with the colour and UV pointers picked from their lists"
+ },
+ "002e96a0": {
+  "name": "chainFadeBatches",
+  "tag": "game-inferred",
+  "was": "FUN_002e96a0",
+  "why": "the no-palette path of the fade, prim +0xf bit 1"
  },
  "002e9790": {
   "name": "ModelBone::ModelBone",

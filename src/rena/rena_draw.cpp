@@ -15,19 +15,21 @@
  *  0x2e7c30 and 0x2e7e90 (ALPHA_1 0x2a / 0x44, TEST_1 0x5050b / 0x50000,
  *  CLAMP_1 repeat, TEX1_1 linear: the module's opaque and blended draws).
  *
- *  Not written yet (open-items.md "Next up"): skinned meshes 0x2e43e0 /
- *  0x2e68a0, a ModelMaterial_Kind1's frames, the shadow projections, the
- *  spotlight, the ghost's pass 0x2e7960, the fade 0x2e9220 / 0x2e96a0, mips.
+ *  Not written yet (open-items.md "Next up"): a ModelMaterial_Kind1's frames,
+ *  the shadow projections, the spotlight, the ghost's pass 0x2e7960, the fade
+ *  0x2e9220 / 0x2e96a0, mips.
  * ======================================================================== */
 #include "rena/rena_draw.h"
 
 #include <algorithm>
+#include <memory>
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
 
 #include "game/drawsys.h"
 #include "game/gamehooks.h"
+#include "game/vu0math.h"
 #include "yamipan/rendering/yamipan_drawmodel.h"
 
 namespace {
@@ -42,6 +44,13 @@ struct RecordLights
 };
 RecordLights sLights;
 
+// What a skinned mesh's parts share: draw state +0x21c, +0x1f8. layout: host.
+struct Skin
+{
+    const ModelMesh *mesh;
+    const float     (*meshBind)[4]; // boneBinds[mesh.bone] or unit
+};
+
 // One material of a blended model part, waiting for its place (0x20 bytes in
 // the table at 0x59d240, sorted through the keys at 0x59b240). layout: host.
 struct Deferred
@@ -50,6 +59,7 @@ struct Deferred
     const ModelMeshMaterial *material;
     const ModelPartRec      *rec;
     const float             (*matrix)[4];
+    const Skin              *skin;
     int                      key;
     bool                     unlit;
 };
@@ -58,6 +68,14 @@ std::vector<Deferred> sDeferred;
 constexpr int   kNoSurfaceUvSet = 1;    // what 0x2e6b70 hands on without a surface
 constexpr float kFrameHalf = 256.0f;
 constexpr float kCullWidthMargin = 3.0f; // PC: every aspect ratio stays inside the box test
+constexpr int   kMaxPalette = 256;      // ModelPrim::paletteCount is a byte
+constexpr int   kBoxVectors = 2;        // ModelMeshPart::lists[0] per bone
+constexpr float kSkinBoxLimit = 1e30f;  // the ROM's 0x310610 / 0x310620 start the min and the max
+
+// A skinned part's matrix: its vertices are in the world after the palette.
+sceVu0FMATRIX sUnitMatrix = { { 1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } };
+// The Skins of the frame's skinned meshes that wait in sDeferred.
+std::vector<std::unique_ptr<Skin> > sDeferredSkins;
 
 void copyVector3(float *out, const float *in)
 {
@@ -83,9 +101,8 @@ const float *partCenter(const ModelMeshPart *part)
 
 // The depth 0x2e6590 sorts a blended part by: the screen z of its centre,
 // before the divide.
-float partScreenZ(const ModelMeshPart *part, const float (*world)[4])
+float pointScreenZ(const float *center, const float (*world)[4])
 {
-    const float *center = partCenter(part);
     const float point[4] = { center[0], center[1], center[2], 1.0f };
     float placed[4];
     float screen[4];
@@ -94,12 +111,9 @@ float partScreenZ(const ModelMeshPart *part, const float (*world)[4])
     return screen[2];
 }
 
-// Whether the part's box lies wholly outside the frame: what 0x2e2a60
-// answers with 2.
-bool partOutside(const ModelMeshPart *part, const float (*world)[4])
+// Whether a box lies wholly outside the frame: what 0x2e2a60 answers with 2.
+bool boxOutside(const float *center, const float *half, const float (*world)[4])
 {
-    const float *center = partCenter(part);
-    const float *half = center + 4;
     u_int outside = ~0u;
     for (int corner = 0; corner < 8; corner++) {
         const float point[4] = {
@@ -136,6 +150,79 @@ bool partOutside(const ModelMeshPart *part, const float (*world)[4])
     return true;
 }
 
+bool partOutside(const ModelMeshPart *part, const float (*world)[4])
+{
+    const float *center = partCenter(part);
+    return boxOutside(center, center + 4, world);
+}
+
+// A bone's matrix for a skinned vertex: M, then the inverse of the bind, then
+// the bone as it stands. Written twice in the ROM, both inline: 0x2e68a0 and
+// 0x2e9480.
+void skinMatrix(sceVu0FMATRIX out, const ModelInstance *model, int bone, const float (*meshBind)[4])
+{
+    sceVu0FMATRIX fromMesh;
+    multiplyMatrix(fromMesh, (const sceVu0FVECTOR *)model->inverseBinds[bone], (const sceVu0FVECTOR *)meshBind);
+    multiplyMatrix(out, (const sceVu0FVECTOR *)model->bones[bone].matrix, (const sceVu0FVECTOR *)fromMesh);
+}
+
+// The box of a skinned part in the world: each of its bones' boxes through
+// that bone's matrix, all corners joined. Then the same test as a rigid part,
+// around the box's own centre. The ROM stores the centre only when 0x2e2a60
+// answers 1, so a part wholly in frame sorts by the last one that did; the
+// host's test has no such answer and always stores it.
+// FS2 0x002e68a0
+// callcheck: boxClipTest (packets and VU1 state: the draw module's on the host)
+
+bool skinnedPartOutside(float *center, const ModelInstance *model, const Skin &skin, const ModelMeshPart *part,
+                        int boneCount)
+{
+    float low[3] = { kSkinBoxLimit, kSkinBoxLimit, kSkinBoxLimit };
+    float high[3] = { -kSkinBoxLimit, -kSkinBoxLimit, -kSkinBoxLimit };
+    const float *box = part->lists.get()[0].get();
+    const short *boneMap = skin.mesh->boneMap.get();
+    for (int b = 0; b < boneCount; b++, box += kBoxVectors * 4) {
+        sceVu0FMATRIX matrix;
+        skinMatrix(matrix, model, boneMap[b], skin.meshBind);
+        const float *half = box + 4;
+        for (int corner = 0; corner < 8; corner++) {
+            const float point[4] = {
+                box[0] + ((corner & 1) ? half[0] : -half[0]),
+                box[1] + ((corner & 2) ? half[1] : -half[1]),
+                box[2] + ((corner & 4) ? half[2] : -half[2]),
+                1.0f,
+            };
+            float placed[4];
+            transformPoint(placed, (const float (*)[4])matrix, point);
+            for (int axis = 0; axis < 3; axis++) {
+                low[axis] = std::min(low[axis], placed[axis]);
+                high[axis] = std::max(high[axis], placed[axis]);
+            }
+        }
+    }
+    float half[3];
+    for (int axis = 0; axis < 3; axis++) {
+        center[axis] = (high[axis] + low[axis]) * 0.5f;
+        half[axis] = (high[axis] - low[axis]) * 0.5f;
+    }
+    return boxOutside(center, half, (const float (*)[4])sUnitMatrix);
+}
+
+// The prim's palette: what the ROM uploads to VU address 228. Returns its
+// first float, null when the prim has none.
+// FS2 0x002e9480
+
+const float *buildPalette(sceVu0FMATRIX *palette, const ModelInstance *model, const ModelPrim &prim, const Skin &skin)
+{
+    if (prim.paletteCount == 0)
+        return nullptr;
+    const u_short *bones = prim.paletteBones.get();
+    const short *boneMap = skin.mesh->boneMap.get();
+    for (int i = 0; i < prim.paletteCount; i++)
+        skinMatrix(palette[i], model, boneMap[bones[i]], skin.meshBind);
+    return &palette[0][0][0];
+}
+
 // The lights of one model: each its own where drawMode says so (the head of
 // 0x2e62f0).
 void setModelLights(sceVif1Packet *packet, const ModelInstance *model)
@@ -157,6 +244,7 @@ void setModelLights(sceVif1Packet *packet, const ModelInstance *model)
 }
 
 // The GS and VU1 state of a surface: FS2 0x002e7240, as far as a host draw
+// callcheck: FUN_002e0850, FUN_002e09b0, FUN_002e0a10, FUN_002e16c0, FUN_002e16d0, FUN_002e6ef0, FUN_002e7070, logf (the texture upload, mips and GS registers: the module binds the texture itself)
 // has a use for it.
 void setSurface(sceVif1Packet *packet, const ModelInstance *model, const ModelSurface *surface, bool blended,
                 bool unlit)
@@ -183,19 +271,22 @@ const void *listEntry(const ModelTag &tag, int index)
 }
 
 // The batches of a material's prims. The ROM's 0x2e83b0 chains each one (or,
-// with the lists, a copy of its tags: 0x2e95d0); here its data goes straight
-// to the module.
+// with the lists, a copy of its tags: 0x2e95d0, with a palette 0x2e9370);
+// here its data goes straight to the module.
 // FS2 0x002e83b0
+// callcheck: chainFadeBatches, chainListBatches, chainPaletteFadeBatches, chainPaletteListBatches (the copies of the tags: the module takes the data in place; the fades are not written)
 
-void drawPrims(sceVif1Packet *packet, const ModelMeshMaterial *material, const float (*world)[4], int colorSet,
-               int uvSet)
+void drawPrims(sceVif1Packet *packet, const ModelInstance *model, const ModelMeshMaterial *material,
+               const float (*world)[4], const Skin *skin, int colorSet, int uvSet)
 {
+    sceVu0FMATRIX palette[kMaxPalette];
     const ModelPrim *prims = material->prims.get();
     for (int p = 0; p < material->primCount; p++) {
         const ModelPrim &prim = prims[p];
-        const int tagCount = prim.isLong ? ModelBatch::kLongTags : ModelBatch::kShortTags;
-        const int stride = (prim.isLong ? ModelBatch::kLongSize : ModelBatch::kShortSize)
-                         + (prim.skinned ? 0 : ModelBatch::kPadSize);
+        const int tagCount = prim.paletteCount != 0 ? ModelBatch::kLongTags : ModelBatch::kShortTags;
+        const int stride = (prim.paletteCount != 0 ? ModelBatch::kLongSize : ModelBatch::kShortSize)
+                         + (prim.listFlags ? 0 : ModelBatch::kPadSize);
+        const float *matrices = skin != nullptr ? buildPalette(palette, model, prim, *skin) : nullptr;
         const char *record = (const char *)prim.batches.get();
         for (int b = 0; b < prim.batchCount; b++, record += stride) {
             const ModelTag *tags = ((const ModelBatch *)record)->tags;
@@ -204,7 +295,7 @@ void drawPrims(sceVif1Packet *packet, const ModelMeshMaterial *material, const f
             YamiPanModelBatch batch;
             batch.positions = (const float *)tags[1].next.get();
             batch.normals = (const float *)tags[2].next.get();
-            if (prim.skinned) {
+            if (prim.listFlags) {
                 batch.colors = (const uint8_t *)listEntry(tags[tagCount - 2], colorSet);
                 batch.uvs = (const int16_t *)listEntry(tags[tagCount - 1], uvSet);
             } else {
@@ -213,6 +304,17 @@ void drawPrims(sceVif1Packet *packet, const ModelMeshMaterial *material, const f
             }
             batch.count = header->vertexCount;
             batch.strip = (header->flags & ModelPrim::Header::Strip) != 0;
+            batch.palette = matrices;
+            batch.boneIds = nullptr;
+            batch.weights = nullptr;
+            batch.bonesPerVertex = 0;
+            batch.firstBoneOnly = 0;
+            if (matrices != nullptr) {
+                batch.boneIds = (const int8_t *)tags[3].next.get();
+                batch.weights = (const float *)tags[4].next.get();
+                batch.bonesPerVertex = header->weightsLess1 + 1;
+                batch.firstBoneOnly = (model->flags & ModelFlag_Distant) != 0;
+            }
             YamiPan_ModelDrawBatch(packet, world, &batch);
         }
     }
@@ -221,9 +323,10 @@ void drawPrims(sceVif1Packet *packet, const ModelMeshMaterial *material, const f
 // One material. The ROM's second half, a ModelMaterial_Kind1's two frames
 // over its base, is not written yet (file header): the base is drawn.
 // FS2 0x002e6b70
+// callcheck: FUN_002e7e90 (packets and VU1 state: the draw module's on the host)
 
 void drawMaterial(sceVif1Packet *packet, ModelInstance *model, const ModelMeshMaterial *material,
-                  const ModelPartRec *rec, const float (*world)[4], bool blended, bool unlit)
+                  const ModelPartRec *rec, const float (*world)[4], const Skin *skin, bool blended, bool unlit)
 {
     const ModelSurface *surface = material->material < 0 ? nullptr : model->surfaceOfMaterial[material->material];
     if (surface != nullptr && surface->material->kind != ModelMaterial_Textured) {
@@ -233,7 +336,7 @@ void drawMaterial(sceVif1Packet *packet, ModelInstance *model, const ModelMeshMa
         surface = model->surfaceOfMaterial[base];
     }
     setSurface(packet, model, surface, blended, unlit);
-    drawPrims(packet, material, world, rec->vcmFadeBits,
+    drawPrims(packet, model, material, world, skin, rec->vcmFadeBits,
               surface != nullptr ? surface->material->uvSet : kNoSurfaceUvSet);
 }
 
@@ -241,7 +344,7 @@ void drawMaterial(sceVif1Packet *packet, ModelInstance *model, const ModelMeshMa
 // FS2 0x002e6590
 
 void drawPart(sceVif1Packet *packet, ModelInstance *model, const ModelPartRec *rec, const ModelMeshPart *part,
-              const float (*world)[4], bool ghost, bool unlit)
+              const float *center, const float (*world)[4], const Skin *skin, bool ghost, bool unlit)
 {
     const ModelMeshMaterial *materials = part->materials.get();
     for (int i = 0; i < part->materialCount; i++) {
@@ -249,17 +352,43 @@ void drawPart(sceVif1Packet *packet, ModelInstance *model, const ModelPartRec *r
         const ModelSurface *surface = material->material < 0 ? nullptr : model->surfaceOfMaterial[material->material];
         const bool blended = surface != nullptr && (surface->material->flags & ModelMaterialFlag_Blended) != 0;
         if (!blended && !ghost) {
-            drawMaterial(packet, model, material, rec, world, false, unlit);
+            drawMaterial(packet, model, material, rec, world, skin, false, unlit);
             continue;
         }
-        Deferred entry = { model, material, rec, world, 0, unlit };
-        entry.key = (int)partScreenZ(part, world) + (int)sDeferred.size();
+        Deferred entry = { model, material, rec, world, skin, 0, unlit };
+        if (skin != nullptr)
+            entry.skin = sDeferredSkins.emplace_back(std::make_unique<Skin>(*skin)).get();
+        entry.key = (int)pointScreenZ(center, world) + (int)sDeferred.size();
         sDeferred.push_back(entry);
+    }
+}
+
+// A skinned mesh: each part with its own box. The ROM asks for the unit matrix
+// (0x2e7610) before each part; the batches take it from drawPrims.
+// FS2 0x002e43e0
+// callcheck: uploadMeshMatrix (packets and VU1 state: the draw module's on the host)
+
+void drawSkinnedMesh(sceVif1Packet *packet, ModelInstance *model, const ModelPartRec *rec, const ModelMesh *mesh,
+                     const ModelMeshParts *parts, bool ghost, bool unlit)
+{
+    Skin skin = { mesh, (const float (*)[4])sUnitMatrix };
+    if (mesh->bone >= 0)
+        skin.meshBind = (const float (*)[4])model->boneBinds[mesh->bone];
+    const ModelMeshPart *list = parts->parts.get();
+    for (int p = 0; p < parts->count; p++) {
+        if (list[p].materials.rel == 0)
+            continue;
+        float center[3];
+        if (skinnedPartOutside(center, model, skin, &list[p], parts->boneCount))
+            continue;
+        drawPart(packet, model, rec, &list[p], center, (const float (*)[4])sUnitMatrix,
+                 list[p].paletted != 0 ? &skin : nullptr, ghost, unlit);
     }
 }
 
 // A model's mesh tree, skipping what the switches of its records hide.
 // FS2 0x002e41a0
+// callcheck: rigidPartClip, uploadMeshMatrix (the matrix is handed to each batch; the prefetches and the rigid test are partOutside)
 
 void drawTree(sceVif1Packet *packet, ModelInstance *model, bool ghost)
 {
@@ -277,15 +406,16 @@ void drawTree(sceVif1Packet *packet, ModelInstance *model, bool ghost)
         if (rec->hasMesh && rec->drawMode == 0) {
             const ModelMesh *mesh = &meshes[index];
             const ModelMeshParts *parts = mesh->parts.get();
-            // The skinned path, 0x2e43e0, is not written yet.
-            if (parts->boneCount == 0) {
+            if (parts->boneCount != 0) {
+                drawSkinnedMesh(packet, model, rec, mesh, parts, ghost, (mesh->vuFlags & ModelMeshFlag_Unlit) != 0);
+            } else {
                 const float (*world)[4] = mesh->bone < 0 ? (const float (*)[4])model->rootBone->matrix
                                                          : (const float (*)[4])model->bones[mesh->bone].matrix;
                 const ModelMeshPart *list = parts->parts.get();
                 const bool unlit = (mesh->vuFlags & ModelMeshFlag_Unlit) != 0;
                 for (int p = 0; p < parts->count; p++) {
                     if (list[p].materials.rel != 0 && !partOutside(&list[p], world))
-                        drawPart(packet, model, rec, &list[p], world, ghost, unlit);
+                        drawPart(packet, model, rec, &list[p], partCenter(&list[p]), world, nullptr, ghost, unlit);
                 }
             }
         }
@@ -295,6 +425,7 @@ void drawTree(sceVif1Packet *packet, ModelInstance *model, bool ghost)
 
 // The record's models of a group, each with its lights.
 // FS2 0x002e62f0
+// callcheck: FUN_002e7820 (packets and VU1 state: the draw module's on the host)
 
 void drawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask)
 {
@@ -308,11 +439,12 @@ void drawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask)
 
 // One entry of the table.
 // FS2 0x002e5860
+// callcheck: FUN_002e7960, FUN_002e7e90, uploadMeshMatrix (the ghost pass is not written; the matrix and blend state are the module draw)
 
 void drawDeferred(sceVif1Packet *packet, const Deferred &entry)
 {
     setModelLights(packet, entry.model);
-    drawMaterial(packet, entry.model, entry.material, entry.rec, entry.matrix, true, entry.unlit);
+    drawMaterial(packet, entry.model, entry.material, entry.rec, entry.matrix, entry.skin, true, entry.unlit);
 }
 
 } // namespace
@@ -372,6 +504,7 @@ static void aimDebugCamera(DrawSysRecord *record)
 
 // The VU1 program and the frame's GS state: nothing for the host.
 // FS2 0x002e86b0
+// callcheck: FUN_0010ad90, FUN_0010ae28, FUN_0010b028, FUN_0010b6e0, getDrawTarget, sceVif1PkAddCode, sceVif1PkCloseDmaTag, sceVif1PkCloseGifTag, sceVif1PkCnt, sceVif1PkOpenDirectCode, sceVif1PkOpenGifTag (packets and VU1 state: the draw module's on the host)
 
 void renaBeginFrame(sceVif1Packet *packet)
 {
@@ -379,6 +512,7 @@ void renaBeginFrame(sceVif1Packet *packet)
 }
 
 // FS2 0x002e87f0
+// callcheck: FUN_0010aef0, FUN_0010af80, FUN_0010b5f0, FUN_002e1b10, sceVif1PkCloseDmaTag, sceVif1PkCnt, upload (the spotlight is not written yet)
 
 void renaSetSpotlight(sceVif1Packet *packet, Tim2Texture *texture, int block)
 {
@@ -388,6 +522,7 @@ void renaSetSpotlight(sceVif1Packet *packet, Tim2Texture *texture, int block)
 }
 
 // FS2 0x002e82a0
+// callcheck: FUN_002e1b10, upload (shadows are not written yet)
 
 void renaSetShadowTexture(sceVif1Packet *packet, Tim2Texture *texture, int block)
 {
@@ -412,6 +547,7 @@ void renaSetLights(sceVif1Packet *packet, DrawSysLights *lights)
 }
 
 // FS2 0x002e8300
+// callcheck: FUN_0010aef0, FUN_0010af80, FUN_0010b5f0, sceVif1PkCloseDmaTag, sceVif1PkCnt (shadows are not written yet)
 
 void renaSetShadowMatrices(sceVif1Packet *packet, int index, sceVu0FMATRIX projection, sceVu0FMATRIX clip)
 {
@@ -422,6 +558,7 @@ void renaSetShadowMatrices(sceVif1Packet *packet, int index, sceVu0FMATRIX proje
 }
 
 // FS2 0x002e8570
+// callcheck: FUN_0010aef0, FUN_0010af80, FUN_0010b288, sceVif1PkCloseDmaTag, sceVif1PkCnt (shadows are not written yet)
 
 void renaSetShadowCount(sceVif1Packet *packet, int count)
 {
@@ -432,7 +569,7 @@ void renaSetShadowCount(sceVif1Packet *packet, int count)
 // A pass: every model of the groups in mask, then what blends, far to near
 // (the ROM's own sort is 0x2e8990, a quicksort on the key).
 // FS2 0x002e5450
-// callcheck: sceVu0UnitMatrix, FUN_002e5da0, FUN_002e5bb0, FUN_002e5a00, FUN_002e7e90, FUN_002e7c30, FUN_002e62f0, FUN_002e8990, FUN_002e5860 (the first three and the GS set-up are VU1's constants: file header)
+// callcheck: sceVu0UnitMatrix, FUN_002e5da0, FUN_002e5bb0, FUN_002e5a00, FUN_002e7e90, FUN_002e7c30, drawModels, FUN_002e8990, drawDeferred (the first three and the GS set-up are VU1's constants: file header)
 
 void renaDrawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask)
 {
@@ -470,9 +607,11 @@ void renaDrawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask)
     for (const Deferred &entry : sDeferred)
         drawDeferred(packet, entry);
     sDeferred.clear();
+    sDeferredSkins.clear();
 }
 
 // FS2 0x002e85e0
+// callcheck: FUN_0010ad90, FUN_0010b028, FUN_0010b6e0, getDrawTarget, sceVif1PkAddGsAD, sceVif1PkCloseDmaTag, sceVif1PkCloseGifTag, sceVif1PkCnt, sceVif1PkOpenDirectCode, sceVif1PkOpenGifTag (packets and VU1 state: the draw module's on the host)
 
 void renaEndPass(sceVif1Packet *packet)
 {

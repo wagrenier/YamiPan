@@ -79,9 +79,8 @@ Grouped by what the picture needs, with what is known about each. Together: 144 
 91 functions, 13,951 i of them are not in the character's set.
 
 **Needed to see characters at all**
-- **Skinned meshes** 0x2e43e0 (524 i) and 0x2e68a0 (335 i): skipped today (`boneCount != 0`). Palette: bone
-  world * inverseBinds[b] * M, M = boneBinds[mesh.bone] or unit; the 7-tag batches carry bone ids and
-  weights (architecture.md "The batches of a model"). Needs step 1.
+- ~~**Skinned meshes**~~ **written 2026-11-04** (`rena/rena_draw.cpp`): the boy of d0101 and the sea of stage 1
+  are on screen, still until `game/scenepairs.cpp` moves them (architecture.md "Skinning").
 - **The per-object draw**: `StageNodeTree::draw` 0x190a80 (4,502 i with its callees) and `update` 0x190a90
   (3,457 i). Particles, smoke, lamps. Today every object draws by the map walk only.
 - **`SceneModelHolder::draw`** 0x2d0550 (2,009 i).

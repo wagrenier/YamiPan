@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <cstring>
 
@@ -66,13 +67,8 @@ constexpr std::uint32_t kVertexAlpha = 0x80;
 // ambient + each light's colour * max(0, its direction . the turned normal), the vertex colour is multiplied by
 // it and clamped to 255. The vertex's alpha is never loaded (lqi.xyz): every vertex takes VU address 25's w, 0x80
 // but for a ModelMaterial_Kind1's frames, which are not written. The spotlight kernel 0x545 is not here yet.
-std::uint32_t litColor(const YamiPanModelLights &lights, const float *normal, const float *matrix,
-                       const std::uint8_t *color)
+std::uint32_t litColor(const YamiPanModelLights &lights, const float *worldNormal, const std::uint8_t *color)
 {
-    float worldNormal[3];
-    for (int axis = 0; axis < 3; axis++)
-        worldNormal[axis] = matrix[0 + axis] * normal[0] + matrix[4 + axis] * normal[1] + matrix[8 + axis] * normal[2];
-
     float sum[3];
     std::copy_n(lights.ambient, 3, sum);
     for (int index = 0; index < kLightCount; index++)
@@ -89,6 +85,54 @@ std::uint32_t litColor(const YamiPanModelLights &lights, const float *normal, co
     {
         const float lit = static_cast<float>(color[channel]) * sum[channel];
         out |= static_cast<std::uint32_t>(std::clamp(lit, 0.0f, 255.0f)) << (channel * 8);
+    }
+    return out;
+}
+
+// A vertex through its bones, VU1 0x08a (four), 0x0bd (two), 0x0e1 (three), 0x113 (one): the sum of each bone's
+// matrix times the weight. Weights are floats, used as they stand; a bone id counts VU quadwords (signed). The normal
+// goes through the same sum and is normalised, except with one bone, which only turns it.
+struct SkinnedVertex
+{
+    float position[3];
+    float normal[3];
+};
+
+SkinnedVertex skinVertex(const YamiPanModelBatch &batch, int index)
+{
+    constexpr int kPaletteIdStep = 4;
+    constexpr int kMatrixFloats = 16;
+
+    const float *const position = batch.positions + index * 3;
+    const float *const normal = batch.normals + index * 3;
+    const std::int8_t *const ids = batch.boneIds + index * batch.bonesPerVertex;
+    const float *const weights = batch.weights + index * batch.bonesPerVertex;
+    const int bones = batch.firstBoneOnly ? 1 : batch.bonesPerVertex;
+
+    SkinnedVertex out = {};
+    for (int bone = 0; bone < bones; bone++)
+    {
+        if (ids[bone] < 0)
+            continue; // an unused slot, -1 with weight 0: VU1 reads whatever lies before the palette and adds nothing
+        const float *const matrix = batch.palette + (ids[bone] / kPaletteIdStep) * kMatrixFloats;
+        const float weight = bones == 1 ? 1.0f : weights[bone];
+        for (int axis = 0; axis < 3; axis++)
+        {
+            out.position[axis] += weight * (matrix[0 + axis] * position[0] + matrix[4 + axis] * position[1] +
+                                            matrix[8 + axis] * position[2] + matrix[12 + axis]);
+            out.normal[axis] += weight * (matrix[0 + axis] * normal[0] + matrix[4 + axis] * normal[1] +
+                                          matrix[8 + axis] * normal[2]);
+        }
+    }
+    if (bones > 1)
+    {
+        const float length = std::sqrt(out.normal[0] * out.normal[0] + out.normal[1] * out.normal[1] +
+                                       out.normal[2] * out.normal[2]);
+        if (length > 0.0f)
+        {
+            for (float &value : out.normal)
+                value /= length;
+        }
     }
     return out;
 }
@@ -172,15 +216,33 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
 
     const float *const matrix = &world[0][0];
     const auto vertexAt = [&](int index) {
-        const float *const position = batch.positions + index * 3;
         ModelVertex vertex;
-        vertex.x = matrix[0] * position[0] + matrix[4] * position[1] + matrix[8] * position[2] + matrix[12];
-        vertex.y = matrix[1] * position[0] + matrix[5] * position[1] + matrix[9] * position[2] + matrix[13];
-        vertex.z = matrix[2] * position[0] + matrix[6] * position[1] + matrix[10] * position[2] + matrix[14];
+        float worldNormal[3];
+        if (batch.palette != nullptr)
+        {
+            const SkinnedVertex skinned = skinVertex(batch, index);
+            vertex.x = skinned.position[0];
+            vertex.y = skinned.position[1];
+            vertex.z = skinned.position[2];
+            std::copy_n(skinned.normal, 3, worldNormal);
+        }
+        else
+        {
+            const float *const position = batch.positions + index * 3;
+            const float *const normal = batch.normals + index * 3;
+            vertex.x = matrix[0] * position[0] + matrix[4] * position[1] + matrix[8] * position[2] + matrix[12];
+            vertex.y = matrix[1] * position[0] + matrix[5] * position[1] + matrix[9] * position[2] + matrix[13];
+            vertex.z = matrix[2] * position[0] + matrix[6] * position[1] + matrix[10] * position[2] + matrix[14];
+            for (int axis = 0; axis < 3; axis++)
+            {
+                worldNormal[axis] =
+                    matrix[0 + axis] * normal[0] + matrix[4 + axis] * normal[1] + matrix[8 + axis] * normal[2];
+            }
+        }
         vertex.u = static_cast<float>(batch.uvs[index * 2]) / kUvUnit + layer.scrollU;
         vertex.v = static_cast<float>(batch.uvs[index * 2 + 1]) / kUvUnit + layer.scrollV;
         vertex.color = layer.unlit ? rawColor(batch.colors + index * 4)
-                                   : litColor(layer.lights, batch.normals + index * 3, matrix, batch.colors + index * 4);
+                                   : litColor(layer.lights, worldNormal, batch.colors + index * 4);
         return vertex;
     };
 

@@ -50,7 +50,8 @@ struct YamiPanModelLights
     float   directions[3][3];
 };
 
-/* One batch, in place in the model file: all `count` long. */
+/* One batch, in place in the model file: all `count` long. With a palette the positions and normals go
+ * through its matrices (`world` is unit, the palette already takes them to the world): VU1 0x07f. */
 struct YamiPanModelBatch
 {
     const float   *positions;   /* x y z */
@@ -59,6 +60,11 @@ struct YamiPanModelBatch
     const int16_t *uvs;         /* u v, 4096 = 1.0 */
     int            count;
     int            strip;       /* a strip; otherwise a list of triangles */
+    const float   *palette;     /* null: rigid; otherwise 4 x 4 floats per palette bone (sceVu0 layout) */
+    const int8_t  *boneIds;     /* bonesPerVertex per vertex: VU quadwords into the palette, 4 per matrix; -1 unused */
+    const float   *weights;     /* bonesPerVertex per vertex; not read with one bone */
+    int            bonesPerVertex; /* 1..4 */
+    int            firstBoneOnly;  /* ModelFlag_Distant: every vertex takes its first bone, unweighted */
 };
 
 void YamiPan_ModelBeginPass(const void *list, const YamiPanModelPass *pass);
