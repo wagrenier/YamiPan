@@ -982,10 +982,10 @@
 // *****************************************************************************
 
 /* 00135990 00000060 */ FUN_00135990(){}
-/* 001359f0 000000a0 */ FUN_001359f0(){}
+/* 001359f0 000000a0 */ rotationMatrixZxy(){}  // game
 /* 00135a90 000000f4 */ FUN_00135a90(){}
-/* 00135b90 000000a0 */ FUN_00135b90(){}
-/* 00135c30 00000114 */ FUN_00135c30(){}
+/* 00135b90 000000a0 */ rotationMatrixXyz(){}  // game
+/* 00135c30 00000114 */ sinCosVec(){}  // game
 /* 00135d50 000000c4 */ FUN_00135d50(){}
 /* 00135e20 0000009c */ FUN_00135e20(){}
 /* 00135ec0 00000054 */ FUN_00135ec0(){}
@@ -1001,9 +1001,9 @@
 /* 001361c0 000000dc */ rotateMatrixX(){}  // game
 /* 001362a0 000000d8 */ rotateMatrixZ(){}  // game
 /* 00136380 00000070 */ FUN_00136380(){}
-/* 00136400 00000024 */ FUN_00136400(){}
-/* 00136430 00000024 */ FUN_00136430(){}
-/* 00136460 0000002c */ FUN_00136460(){}
+/* 00136400 00000024 */ identityMatrix(){}  // game
+/* 00136430 00000024 */ copyMatrix(){}  // game
+/* 00136460 0000002c */ translateMatrix(){}  // game
 /* 00136490 0000001c */ scaleVec4(){}  // game
 /* 001364b0 00000024 */ FUN_001364b0(){}
 /* 001364e0 00000020 */ FUN_001364e0(){}
@@ -1012,7 +1012,7 @@
 /* 001365a0 00000028 */ vecDot(){}  // game
 /* 001365d0 0000001c */ FUN_001365d0(){}
 /* 001365f0 0000004c */ FUN_001365f0(){}
-/* 00136640 0000004c */ FUN_00136640(){}
+/* 00136640 0000004c */ multiplyMatrix(){}  // game
 /* 00136690 0000002c */ applyMatrix(){}  // game
 
 // *****************************************************************************
@@ -2750,7 +2750,7 @@
 /* 001755f0 000000b8 */ FUN_001755f0(){}
 /* 001756b0 00000044 */ FUN_001756b0(){}
 /* 00175700 000001e4 */ FUN_00175700(){}
-/* 001758f0 00000008 */ FUN_001758f0(){}
+/* 001758f0 00000008 */ StageMatrixNode::getWorldMatrix(){}  // game
 /* 00175900 00000300 */ FUN_00175900(){}
 /* 00175c00 00000038 */ stageMotionTargetName(){}  // game
 /* 00175c40 000000f8 */ StageObject::isMotionTarget(){}  // game
@@ -3331,12 +3331,12 @@
 /* 00187a90 000000b0 */ StageModel::addMotion(){}  // game
 /* 00187b40 00000028 */ FUN_00187b40(){}
 /* 00187b70 00000190 */ StageModel::placeBones(){}  // game
-/* 00187d00 00000008 */ FUN_00187d00(){}
+/* 00187d00 00000008 */ StageBoneNode::getWorldMatrix(){}  // game
 /* 00187d10 00000430 */ StageModel::bindBones(){}  // game
 /* 00188140 00000548 */ StageModel::setBaseMotion(){}  // game
 /* 00188690 000001fc */ StageModel::~StageModel(){}  // game
-/* 00188890 00000138 */ FUN_00188890(){}
-/* 001889d0 00000138 */ FUN_001889d0(){}
+/* 00188890 00000138 */ StageBoneNode::~StageBoneNode(){}  // game
+/* 001889d0 00000138 */ StageMatrixNode::~StageMatrixNode(){}  // game
 /* 00188b10 00000248 */ StageModel::init(){}  // game
 /* 00188d60 00000084 */ FUN_00188d60(){}
 /* 00188df0 000000b0 */ FUN_00188df0(){}
@@ -4560,35 +4560,40 @@
 /* 001d7a30 00000218 */ stageSoundLocateFacing(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/nodetransform.cpp
 // *****************************************************************************
 
-/* 001d7c50 00000004 */ FUN_001d7c50(){}
-/* 001d7c60 00000008 */ FUN_001d7c60(){}
-/* 001d7c70 00000004 */ FUN_001d7c70(){}
-/* 001d7c80 00000060 */ FUN_001d7c80(){}
+/* 001d7c50 00000004 */ StageBoneNode::setDirty(){}  // game
+/* 001d7c60 00000008 */ StageBoneNode::getMatrix(){}  // game
+/* 001d7c70 00000004 */ StageBoneNode::setDirtyTree(){}  // game
+/* 001d7c80 00000060 */ StageBoneNode::rebuildMatrix(){}  // game
 /* 001d7ce0 0000006c */ StageNode::setDirtyTree(){}  // game
 /* 001d7d50 00000148 */ NodeTransform::update(){}  // game
-/* 001d7ea0 0000001c */ FUN_001d7ea0(){}
+/* 001d7ea0 0000001c */ NodeTransform::setRotationVec(){}  // game
 /* 001d7ec0 00000018 */ NodeTransform::setRotation(){}  // game
 /* 001d7ee0 0000001c */ NodeTransform::setPosition(){}  // game
 /* 001d7f00 00000018 */ NodeTransform::setPositionXyz(){}  // game
 /* 001d7f20 00000068 */ NodeTransform::NodeTransform(){}  // game
-/* 001d7f90 00000004 */ FUN_001d7f90(){}
-/* 001d7fa0 00000004 */ FUN_001d7fa0(){}
-/* 001d7fb0 00000004 */ FUN_001d7fb0(){}
-/* 001d7fc0 000001f8 */ FUN_001d7fc0(){}
-/* 001d81c0 00000008 */ FUN_001d81c0(){}
-/* 001d81d0 00000008 */ FUN_001d81d0(){}
-/* 001d81e0 0000006c */ FUN_001d81e0(){}
-/* 001d8250 00000008 */ FUN_001d8250(){}
-/* 001d8260 000001ac */ StageObject::propagate(){}  // game
-/* 001d8410 0000000c */ FUN_001d8410(){}
+/* 001d7f90 00000004 */ StageMatrixNode::setDirtyTree(){}  // game
+/* 001d7fa0 00000004 */ StageMatrixNode::rebuildMatrix(){}  // game
+/* 001d7fb0 00000004 */ StageMatrixNode::setDirty(){}  // game
+/* 001d7fc0 000001f8 */ StageNodeBase::setInverseTree(){}  // game
+/* 001d81c0 00000008 */ StageNodeList::linkNext(){}  // game
+/* 001d81d0 00000008 */ StageNodeList::begin(){}  // game
+/* 001d81e0 0000006c */ StageNodeBase::setInverse(){}  // game
+/* 001d8250 00000008 */ StageNodeList::linkValue(){}  // game
+/* 001d8260 000001ac */ StageNodeBase::propagate(){}  // game
+/* 001d8410 0000000c */ StageNodeBase::copyPosition(){}  // game
 /* 001d8420 0000005c */ StageNodeBase::updateMatrix(){}  // game
-/* 001d8480 000000b8 */ FUN_001d8480(){}
+/* 001d8480 000000b8 */ StageNodeBase::updateChildMatrices(){}  // game
 /* 001d8540 00000050 */ StageNodeBase::StageNodeBase(){}  // game
-/* 001d8590 00000008 */ FUN_001d8590(){}
-/* 001d85a0 00000010 */ FUN_001d85a0(){}
+/* 001d8590 00000008 */ StageMatrixNode::getMatrix(){}  // game
+/* 001d85a0 00000010 */ StageNodeList::StageNodeList(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 001d85b0 00000008 */ FUN_001d85b0(){}
 /* 001d85c0 00000008 */ FUN_001d85c0(){}
 /* 001d85d0 0000005c */ FUN_001d85d0(){}

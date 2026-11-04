@@ -454,14 +454,10 @@ public:
     // FS2 0x00177640
     // callcheck: setPosition
     virtual void setPosition(const float *pos) { m_xform.setPosition(pos); }
-    // Copies x, y, z of the rotation (0x1d7ea0).
+    // Copies x, y, z of the rotation.
     // FS2 0x00177630
-    virtual void setRotation(const float *rot)
-    {
-        m_xform.rotation[0] = rot[0];
-        m_xform.rotation[1] = rot[1];
-        m_xform.rotation[2] = rot[2];
-    }
+    // callcheck: setRotationVec
+    virtual void setRotation(const float *rot) { m_xform.setRotationVec(rot); }
     // FS2 0x00177620
     virtual void setYaw(float yaw) { m_xform.rotation[2] = yaw; }
     // FS2 0x00172300
@@ -545,8 +541,6 @@ public:
     void cameraStep();                                                   // FS2 vtable +0x25c
     // Slot +0x260: a camera's m_linked changed. A plain stub until its TU.
     void onLinkChanged();                                                // FS2 vtable +0x260
-    // The node's position goes to its slot and down the children.
-    void propagate();                                                    // FS2 0x001d8260
     // A door hangs itself from the Root object's lists.
     void attachToRoot();                                                 // FS2 0x00173cb0
     // A character of the mission's list, around the frame's scripts

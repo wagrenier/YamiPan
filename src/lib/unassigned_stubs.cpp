@@ -146,18 +146,6 @@ ModelInstance * ModelFile::createInstance(u_int index, const char *name)
     return {};
 }
 
-// stub of FS2 0x001d7f20
-NodeTransform::NodeTransform()
-{
-    YAMIPAN_STUB("NodeTransform::NodeTransform", 0x001d7f20);
-}
-
-// stub of FS2 0x001d7ee0
-void NodeTransform::setPosition(const float *pos)
-{
-    YAMIPAN_STUB("NodeTransform::setPosition", 0x001d7ee0);
-}
-
 // stub of FS2 0x00207ef0
 PauseMenuState::PauseMenuState()
 {
@@ -413,18 +401,6 @@ void StageMission::setMessages(void *file)
 StageMission::~StageMission()
 {
     YAMIPAN_STUB("StageMission::~StageMission", 0x00287820);
-}
-
-// stub of FS2 address unknown (1 candidates)
-void StageNodeBase::updateMatrix()
-{
-    YAMIPAN_STUB("StageNodeBase::updateMatrix", 0x001d8420);
-}
-
-// stub of FS2 0x001d8540
-StageNodeBase::StageNodeBase()
-{
-    YAMIPAN_STUB("StageNodeBase::StageNodeBase", 0x001d8540);
 }
 
 // stub of FS2 0x00190c20
@@ -820,12 +796,6 @@ MenuProgHolder::MenuProgHolder(void const*, int)
     YAMIPAN_STUB("MenuProgHolder::MenuProgHolder", 0x00000000);
 }
 
-// stub of FS2 0x001d7ec0
-void NodeTransform::setRotation(float x, float y, float z)
-{
-    YAMIPAN_STUB("NodeTransform::setRotation", 0x001d7ec0);
-}
-
 // stub of FS2 address unknown (0 candidates)
 
 // stub of FS2 address unknown (1 candidates)
@@ -1076,12 +1046,6 @@ void StageMarker::addToScene(const char *name)
 void StageVolume::addToScene(const char *name)
 {
     YAMIPAN_STUB("StageVolume::addToScene", 0x0017ecb0);
-}
-
-// stub of FS2 0x001d7f00
-void NodeTransform::setPositionXyz(float x, float y, float z)
-{
-    YAMIPAN_STUB("NodeTransform::setPositionXyz", 0x001d7f00);
 }
 
 // stub of FS2 0x002dcc30
@@ -1440,12 +1404,6 @@ bool StageObject::isPartner()
 void StageObject::onLinkChanged()
 {
     YAMIPAN_STUB("StageObject::onLinkChanged", 0x00000000);
-}
-
-// stub of FS2 0x001d8260
-void StageObject::propagate()
-{
-    YAMIPAN_STUB("StageObject::propagate", 0x001d8260);
 }
 
 // stub of FS2 0x001febb0
@@ -1813,12 +1771,6 @@ int ScriptRunner::unsupportedCommand()
 StageModel::~StageModel()
 {
     YAMIPAN_STUB("StageModel::~StageModel", 0x00188690);
-}
-
-// stub of FS2 0x001d7d50
-void NodeTransform::update(StageNodeBase *parent)
-{
-    YAMIPAN_STUB("NodeTransform::update", 0x001d7d50);
 }
 
 // stub of FS2 0x002430a0

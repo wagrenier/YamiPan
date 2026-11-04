@@ -4,9 +4,8 @@
  *  The game's VU0 macro-mode vector helpers, 0x135990..0x1366c0 (the run
  *  unassigned@00135990 right before klib.s; not cut into a file yet, so
  *  the file name is provisional). Only what other files call; the
- *  rest (matrix from rotation 0x1359f0 / 0x135b90, sin / cos tables
- *  0x135c30 / 0x135d50, distance 0x135f70, identity / copy
- *  matrix 0x136400 / 0x136430, ...) waits for that TU.
+ *  rest (the sin / cos table 0x135d50, the third rotation order 0x135a90,
+ *  ...) waits for that TU.
  * ======================================================================== */
 #ifndef _GAME_VU0MATH_H
 #define _GAME_VU0MATH_H
@@ -122,6 +121,85 @@ inline void identityMatrix(sceVu0FMATRIX out)
 {
     memset(out, 0, sizeof(sceVu0FMATRIX));
     out[0][0] = out[1][1] = out[2][2] = out[3][3] = 1.0f;
+}
+
+// out = m with v added to its position (row 3, xyz; its w stays). The VU0's
+// vadd.xyz. out may be m.
+// FS2 0x00136460
+inline void translateMatrix(sceVu0FMATRIX out, const sceVu0FVECTOR *m, const sceVu0FVECTOR v)
+{
+    float x = m[3][0] + v[0], y = m[3][1] + v[1], z = m[3][2] + v[2], w = m[3][3];
+    for (int row = 0; row < 3; row++)
+        for (int lane = 0; lane < 4; lane++)
+            out[row][lane] = m[row][lane];
+    out[3][0] = x;
+    out[3][1] = y;
+    out[3][2] = z;
+    out[3][3] = w;
+}
+// out's rows = b's rows through a (each is applyMatrix(a, b[i])), a * b for
+// the column vectors applyMatrix takes. out may be a or b.
+// FS2 0x00136640
+inline void multiplyMatrix(sceVu0FMATRIX out, const sceVu0FVECTOR *a, const sceVu0FVECTOR *b)
+{
+    sceVu0MulMatrix(out, reinterpret_cast<float (*)[4]>(const_cast<sceVu0FVECTOR *>(a)),
+                    reinterpret_cast<float (*)[4]>(const_cast<sceVu0FVECTOR *>(b)));
+}
+
+// The sines and cosines of the first three lanes. The ROM folds the angle
+// into -pi/2..pi/2 and runs one Taylor series on all lanes at once, so it
+// counts on -pi..pi; the host's functions agree with it there. It answers in
+// f1..f6 (s, c, s, c, s, c), no C signature.
+// FS2 0x00135c30
+inline void sinCosVec(float *sines, float *cosines, const sceVu0FVECTOR angles)
+{
+    for (int lane = 0; lane < 3; lane++) {
+        sines[lane] = sinf(angles[lane]);
+        cosines[lane] = cosf(angles[lane]);
+    }
+}
+// out = the turns of rotation (radians), Rz Rx Ry for applyMatrix's vectors:
+// around y first, z last. Row 3 = (0, 0, 0, 1).
+// FS2 0x001359f0
+inline void rotationMatrixZxy(sceVu0FMATRIX out, const sceVu0FVECTOR rotation)
+{
+    float s[3], c[3];
+    sinCosVec(s, c, rotation);
+    out[0][0] = c[1] * c[2] - s[0] * s[1] * s[2];
+    out[0][1] = c[1] * s[2] + s[0] * s[1] * c[2];
+    out[0][2] = -c[0] * s[1];
+    out[0][3] = 0.0f;
+    out[1][0] = -c[0] * s[2];
+    out[1][1] = c[0] * c[2];
+    out[1][2] = s[0];
+    out[1][3] = 0.0f;
+    out[2][0] = s[1] * c[2] + s[0] * c[1] * s[2];
+    out[2][1] = s[1] * s[2] - s[0] * c[1] * c[2];
+    out[2][2] = c[0] * c[1];
+    out[2][3] = 0.0f;
+    out[3][0] = out[3][1] = out[3][2] = 0.0f;
+    out[3][3] = 1.0f;
+}
+// The same in the order Rx Ry Rz: around z first, x last.
+// FS2 0x00135b90
+inline void rotationMatrixXyz(sceVu0FMATRIX out, const sceVu0FVECTOR rotation)
+{
+    float s[3], c[3];
+    sinCosVec(s, c, rotation);
+    out[0][0] = c[1] * c[2];
+    out[0][1] = c[0] * s[2] + s[0] * s[1] * c[2];
+    out[0][2] = s[0] * s[2] - c[0] * s[1] * c[2];
+    out[0][3] = 0.0f;
+    out[1][0] = -c[1] * s[2];
+    out[1][1] = c[0] * c[2] - s[0] * s[1] * s[2];
+    out[1][2] = s[0] * c[2] + c[0] * s[1] * s[2];
+    out[1][3] = 0.0f;
+    out[2][0] = s[1];
+    out[2][1] = -c[1] * s[0];
+    out[2][2] = c[1] * c[0];
+    out[2][3] = 0.0f;
+    out[3][0] = out[3][1] = out[3][2] = 0.0f;
+    out[3][3] = 1.0f;
 }
 
 // (a - b) / |a - b|, w too.

@@ -3677,6 +3677,24 @@
   "was": "FUN_00135860",
   "why": "(list {u16 capacity, u16 count, void **data}, p, grow): grows the array by grow slots (Heap::alloc / Heap::realloc, zeroed) when full, stores p in the first empty slot, returns the count"
  },
+ "001359f0": {
+  "name": "rotationMatrixZxy",
+  "tag": "game-inferred",
+  "was": "FUN_001359f0",
+  "why": "VU0 helper: from sinCosVec builds Rz Rx Ry in column form with row 3 (0,0,0,1); read term by term, NodeTransform::update's default order"
+ },
+ "00135b90": {
+  "name": "rotationMatrixXyz",
+  "tag": "game-inferred",
+  "was": "FUN_00135b90",
+  "why": "the same shape, terms read as Rx Ry Rz; NodeTransform::update with the +2 byte set"
+ },
+ "00135c30": {
+  "name": "sinCosVec",
+  "tag": "game-inferred",
+  "was": "FUN_00135c30",
+  "why": "folds the vector into -pi/2..pi/2, one Taylor series (table 0x300e60) on all lanes; answers sin in f1,f3,f5 and cos in f2,f4,f6"
+ },
  "00135f20": {
   "name": "vecDistance",
   "tag": "game-inferred",
@@ -3713,6 +3731,24 @@
   "was": "FUN_001362a0",
   "why": "VU0 macro: out rows = in rows times R, R[0] = (c,s,0,0), R[1] = (-s,c,0,0)"
  },
+ "00136400": {
+  "name": "identityMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00136400",
+  "why": "writes 1 down the diagonal, row 3 from vf0"
+ },
+ "00136430": {
+  "name": "copyMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00136430",
+  "why": "four lq / sq, a1 to a0"
+ },
+ "00136460": {
+  "name": "translateMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00136460",
+  "why": "rows 0..2 copied, vadd.xyz of a2 onto row 3"
+ },
  "00136490": {
   "name": "scaleVec4",
   "tag": "game-inferred",
@@ -3736,6 +3772,12 @@
   "tag": "game-inferred",
   "was": "FUN_001365a0",
   "why": "xyz dot product"
+ },
+ "00136640": {
+  "name": "multiplyMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00136640",
+  "why": "vmulax / vmadday / vmaddaz / vmaddw of a1's rows by each row of a2, the sceVu0MulMatrix shape"
  },
  "00136690": {
   "name": "applyMatrix",
@@ -11279,6 +11321,12 @@
   "was": "FUN_00173cb0",
   "why": "doors (kind 2) reach the Root object +0xd8"
  },
+ "001758f0": {
+  "name": "StageMatrixNode::getWorldMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_001758f0",
+  "why": "vtable 0x315ab0 slot +0x18: the pointer at +0x18"
+ },
  "00175c00": {
   "name": "stageMotionTargetName",
   "tag": "game-inferred",
@@ -12539,6 +12587,12 @@
   "was": "FUN_00187b70",
   "why": "the object matrix through every root link"
  },
+ "00187d00": {
+  "name": "StageBoneNode::getWorldMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00187d00",
+  "why": "vtable 0x315a50 slot +0x18: this + 0x80"
+ },
  "00187d10": {
   "name": "StageModel::bindBones",
   "tag": "game-inferred",
@@ -12556,6 +12610,18 @@
   "tag": "game-inferred",
   "was": "FUN_00188690",
   "why": "deleted from setModel and the object dtor, flag 1"
+ },
+ "00188890": {
+  "name": "StageBoneNode::~StageBoneNode",
+  "tag": "game-inferred",
+  "was": "FUN_00188890",
+  "why": "sets vtable 0x315a50, then the StageNodeBase dtor inline, deletes on a positive flag"
+ },
+ "001889d0": {
+  "name": "StageMatrixNode::~StageMatrixNode",
+  "tag": "game-inferred",
+  "was": "FUN_001889d0",
+  "why": "sets vtable 0x315ab0, then the StageNodeBase dtor inline, deletes on a positive flag"
  },
  "00188b10": {
   "name": "StageModel::init",
@@ -14591,6 +14657,30 @@
   "was": "FUN_001d7a30",
   "why": "f12 the listener facing, a0 float* pan out, a1 a position vec4, a2 the listener object: distance from the listener matrix (vslot +0x14, +0x30) to the point, pan = -addAngle(atan2Octant(dx, dy), -facing); a listener of kind 0xb whose +0x300 object has record kind 0xf (table 0x539b10) divides the distance by clamp(1 - (pi/4)/|pan|, 0.4, 1) * 2.5"
  },
+ "001d7c50": {
+  "name": "StageBoneNode::setDirty",
+  "tag": "game-inferred",
+  "was": "FUN_001d7c50",
+  "why": "vtable 0x315a50 slot +8, empty: a class with no dirty flag"
+ },
+ "001d7c60": {
+  "name": "StageBoneNode::getMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_001d7c60",
+  "why": "vtable 0x315a50 slot +0x14: this + 0x80"
+ },
+ "001d7c70": {
+  "name": "StageBoneNode::setDirtyTree",
+  "tag": "game-inferred",
+  "was": "FUN_001d7c70",
+  "why": "vtable 0x315a50 slot +0x1c, empty"
+ },
+ "001d7c80": {
+  "name": "StageBoneNode::rebuildMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_001d7c80",
+  "why": "vtable 0x315a50 slot +0xc: +0x80 = parent world * +0x40, or a copy with no parent"
+ },
  "001d7ce0": {
   "name": "StageNode::setDirtyTree",
   "tag": "game-inferred",
@@ -14602,6 +14692,12 @@
   "tag": "game-inferred",
   "was": "FUN_001d7d50",
   "why": "called with the transform and +4 by slot 1"
+ },
+ "001d7ea0": {
+  "name": "NodeTransform::setRotationVec",
+  "tag": "game-inferred",
+  "was": "FUN_001d7ea0",
+  "why": "copies three words to +0x20; StageObject::setRotation tail-jumps here"
  },
  "001d7ec0": {
   "name": "NodeTransform::setRotation",
@@ -14627,11 +14723,65 @@
   "was": "FUN_001d7f20",
   "why": "a node's transform (StageSoundSource +0x40): flags bytes +0 = 1 (dirty) / +1 / +2 = 0, position (0,0,0,1) +0x10, rotation (0,0,0,1) +0x20, two matrices (0x136400) +0x40 / +0x80"
  },
+ "001d7f90": {
+  "name": "StageMatrixNode::setDirtyTree",
+  "tag": "game-inferred",
+  "was": "FUN_001d7f90",
+  "why": "vtable 0x315ab0 slot +0x1c, empty"
+ },
+ "001d7fa0": {
+  "name": "StageMatrixNode::rebuildMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_001d7fa0",
+  "why": "vtable 0x315ab0 slot +0xc, empty: the matrix is someone else's"
+ },
+ "001d7fb0": {
+  "name": "StageMatrixNode::setDirty",
+  "tag": "game-inferred",
+  "was": "FUN_001d7fb0",
+  "why": "vtable 0x315ab0 slot +8, empty"
+ },
+ "001d7fc0": {
+  "name": "StageNodeBase::setInverseTree",
+  "tag": "game-inferred",
+  "was": "FUN_001d7fc0",
+  "why": "allocates (identity) or frees +0x14 on the node and down the children, unrolled three levels, then 0x1d81e0 and itself"
+ },
+ "001d81c0": {
+  "name": "StageNodeList::linkNext",
+  "tag": "game-inferred",
+  "was": "FUN_001d81c0",
+  "why": "returns a list link's +4, the next link; the recursive walks use it"
+ },
+ "001d81d0": {
+  "name": "StageNodeList::begin",
+  "tag": "game-inferred",
+  "was": "FUN_001d81d0",
+  "why": "returns the list's head"
+ },
+ "001d81e0": {
+  "name": "StageNodeBase::setInverse",
+  "tag": "game-inferred",
+  "was": "FUN_001d81e0",
+  "why": "the one-node body of setInverseTree: 0x40 block with identity, or free and null"
+ },
+ "001d8250": {
+  "name": "StageNodeList::linkValue",
+  "tag": "game-inferred",
+  "was": "FUN_001d8250",
+  "why": "returns a link's +0, the value's box"
+ },
  "001d8260": {
-  "name": "StageObject::propagate",
+  "name": "StageNodeBase::propagate",
   "tag": "game-inferred",
   "was": "FUN_001d8260",
-  "why": "copies the matrix position to +0x10 and recurses over the children"
+  "why": "takes any node (walks children, reads +0x10 on each): the base's, not StageObject's; copies the world position to +0x10"
+ },
+ "001d8410": {
+  "name": "StageNodeBase::copyPosition",
+  "tag": "game-inferred",
+  "was": "FUN_001d8410",
+  "why": "four words a1 to a0; propagate's copy of the world position, out of line in the deepest level (copyVec4 is 0x133800)"
  },
  "001d8420": {
   "name": "StageNodeBase::updateMatrix",
@@ -14639,11 +14789,29 @@
   "was": "FUN_001d8420",
   "why": "slot 6 of every node table"
  },
+ "001d8480": {
+  "name": "StageNodeBase::updateChildMatrices",
+  "tag": "game-inferred",
+  "was": "FUN_001d8480",
+  "why": "slot +0xc and the inverse on every child, then recursion on each: one level at a time"
+ },
  "001d8540": {
   "name": "StageNodeBase::StageNodeBase",
   "tag": "game-inferred",
   "was": "FUN_001d8540",
   "why": "the node base ctor: vtable 0x314150, child list +0x8 empty (0x1d85a0), parent +0x4 0, vtable 0x315ae0, +0x10 / +0x14 0; StageSound::addSource builds its sources on it"
+ },
+ "001d8590": {
+  "name": "StageMatrixNode::getMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_001d8590",
+  "why": "vtable 0x315ab0 slot +0x14: the pointer at +0x18"
+ },
+ "001d85a0": {
+  "name": "StageNodeList::StageNodeList",
+  "tag": "game-inferred",
+  "was": "FUN_001d85a0",
+  "why": "zeroes head and count; StageNodeBase's ctor calls it on +8"
  },
  "001dd330": {
   "name": "CharacterBrain::update",
