@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 21:42 at commit `31296ee` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 22:21 at commit `507d1ec` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-03 21:42 at commit `31296ee` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **2632** (40%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1719
-- context-name ledger: 3255 entries; overrides of wrong library matches: 0
-- placed in a source file: 2337/6599 in 70 files
+- game functions: **6599**, named **2638** (40%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1725
+- context-name ledger: 3261 entries; overrides of wrong library matches: 0
+- placed in a source file: 2344/6599 in 71 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **2148**; stubs: **337**
+- reconstructed FS2 functions: **2155**; stubs: **336**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -56,6 +56,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/pad.cpp` | 14 | 0 |
 | `src/game/pakarchive.cpp` | 17 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
+| `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rcnttimer.cpp` | 0 | 4 |
 | `src/game/s2ddata.cpp` | 9 | 0 |
@@ -81,7 +82,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/uiwidget.cpp` | 56 | 0 |
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 294 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 293 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
 | `src/rena/tim2.cpp` | 4 | 0 |
@@ -107,7 +108,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 96 TUs: todo 53, partial 1, verify 59, done 1
+- 98 TUs: todo 54, partial 1, verify 60, done 1
 - next: **unassigned@0017fce0** (frontier score 86)
 - pinned queue: (empty)
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -132,6 +133,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
+- verify: `game/prgmccard.cpp` 7/7 -- All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide close
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/s2ddata.cpp` 9/9 -- Host: S2dRef<T> (s2ddata.h) is a 32-bit offset from the field itself, 0 null, implicit T* conversion, copy deleted; S2dData, S2dObject, S2dWidgetDef, S2dImage a
 - verify: `game/scene.cpp` 1/1 -- gameSceneThread written in full: loadInitPack, runStartupSequence, overlayThreadStart, then forever loadMenuPack, the scene from sScenes (one retail entry, Menu
@@ -172,14 +174,14 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 22:21 `game/prgmccard.cpp` verify: PrgMcCard, the load and save screens: all 7 written; the load screen now says No memory card and closes back to the title
+- 2026-11-03 21:45 `unassigned@0017fce0` todo: marked todo -> todo: released untouched: the queue was empty, so this run took the menu's reached stub, as SKILL.md Starting sessions asks
 - 2026-11-03 21:42 `game/menupack.cpp` verify: the menu pack, its SePlayer and MessageTable: all 9 written; the title now answers a press
 - 2026-11-03 21:18 `game/titlescreen.cpp` verify: runTitleScreen and the two loading hooks written; the title menu is on screen
 - 2026-11-03 20:57 `game/layoutpaths.cpp` verify: all 24 event movie and layout paths written; the menu now runs past the language screen to the no-card dialog and the SCE logo; new YAMIPAN_TEX_DUMP hook
 - 2026-11-03 20:47 `unassigned@0017fce0` todo: marked todo -> todo: released untouched: the queue was empty, so this run took the menu's blockers, as the handoff asked
 - 2026-11-03 20:39 `game/areagrid.cpp` verify: AreaGrid, AreaBox and seDistanceVolume: all 11 written; AreaGrid::contains answers the box, seDistanceVolume is unsigned; moved out of gamehooks.h into areagrid
 - 2026-11-03 20:24 `game/stagescene.cpp` verify: the last 67 functions: collision finders, scene accessors, script command defaults, DemoExecuter; all 258 written
-- 2026-11-03 20:06 `game/stagescene.cpp` partial: stage script step, sound and bg-motion targets, loadList, block updates, 28 small members, collision queries
-- 2026-11-03 19:44 `game/stagescene.cpp` partial: the stage frame: update, draw, setupCameras and their helpers; camera kinds, view stack, control request, frame order from the perf labels
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
@@ -188,13 +190,13 @@ Recent sessions:
 | `unassigned@001fe6b0` | todo | 0/34/563 | 197.2 | 60 | 0 |
 | `unassigned@00148db0` | todo | 0/17/125 | 35.6 | 60 | 2 |
 | `unassigned@00171300` | todo | 0/24/421 | 52.5 | 41 | 0 |
-| `unassigned@002b6b90` | todo | 0/18/115 | 51.7 | 37 | 2 |
 | `unassigned@002849c0` | todo | 0/28/129 | 44.6 | 37 | 0 |
+| `unassigned@002b9ef0` | todo | 0/17/101 | 39.0 | 36 | 2 |
 | `unassigned@002b0d50` | todo | 0/23/85 | 17.9 | 34 | 0 |
 | `unassigned@002d46a0` | todo | 0/17/252 | 51.5 | 27 | 2 |
 | `unassigned@00231d40` | todo | 0/10/58 | 36.1 | 24 | 0 |
 | `unassigned@00299d90` | todo | 0/11/215 | 62.3 | 24 | 0 |
-| `unassigned@001a68b0` | todo | 0/6/714 | 174.8 | 20 | 0 |
+| `unassigned@0023e740` | todo | 0/13/58 | 18.7 | 23 | 2 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

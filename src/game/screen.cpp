@@ -324,7 +324,7 @@ int runArchiveScreen(int arg)
 
 // ──────────────────────────────────────────────────────────────────────
 // The options screen. Afterwards: the loaded save's stamp is dropped unless
-// the options keep it (+0x4d, as SaveFile::apply), the sound output is
+// the options keep it (autoSave, as SaveFile::apply), the sound output is
 // applied when it changed.
 // FS2 0x00268050
 
@@ -335,7 +335,7 @@ int runOptionScreen(int arg)
     // reads the play record and the options through getSaveData.
     int savedKind = reinterpret_cast<SystemData *>(getSaveData())->select.kind;
     runLayoutFile(optionLayoutPath(), arg, false, nullptr, true);
-    if (reinterpret_cast<SystemData *>(getSaveData())->options._4d == 0)
+    if (reinterpret_cast<SystemData *>(getSaveData())->options.autoSave == 0)
         memcardClearStamp();
     if (saved.soundMode != getGameOptions()->soundMode)
         getGameOptions()->applySound();

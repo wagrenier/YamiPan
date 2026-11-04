@@ -1004,7 +1004,7 @@ bool SaveFile::hasAllFiles()
 
 // ──────────────────────────────────────────────────────────────────────
 // A loaded save into the game. The loaded stamp is kept only when the
-// options' byte +0x4d is set.
+// options' autoSave is set.
 // FS2 0x002ac070
 
 void SaveFile::apply() const
@@ -1014,7 +1014,7 @@ void SaveFile::apply() const
     SaveExtra *ext = getSaveExtra();
     if (ext != 0)
         *ext = extra;
-    if (options._4d != 0)
+    if (options.autoSave != 0)
         sMcLoadedStamp = stamp.value;
     else
         sMcLoadedStamp = (u_long)-1;

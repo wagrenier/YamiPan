@@ -231,7 +231,7 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **A heredoc whose body has an odd number of apostrophes fails in the Bash tool**, even with a quoted
   delimiter: "unexpected EOF while looking for matching". A batch JSON with one apostrophe did it, and
   nothing ran (2026-11-03). Write such files with the Write tool.
-
+ Nothing in the command runs, not even what stands before the heredoc, so a check run beside it tests the old tree (2026-11-03).
 - **A long heredoc in one Bash call** (2026-11-03): one holding C++ with apostrophes in comments failed
   with "unexpected EOF while looking for matching" even with a quoted delimiter, and only the part
   before it had run. Write big files with the Write tool, small edits with a script in the scratchpad.

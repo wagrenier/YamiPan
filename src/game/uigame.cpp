@@ -1546,8 +1546,8 @@ void setGameValue(int kind, int value, int i, int j)
     case GameValue_SelectVariant:
         data->select.variant = value;
         break;
-    case GameValue_Option4d:
-        options->_4d = value != 0;
+    case GameValue_AutoSave:
+        options->autoSave = value != 0;
         break;
     case GameValue_Unlock468:
         save->unlock468 = value != 0;
@@ -1684,8 +1684,8 @@ int getGameValue(int kind, int i, int j, int expected)
         return data->select.kind;
     case GameValue_SelectVariant:
         return data->select.variant;
-    case GameValue_Option4d:
-        return options->_4d;
+    case GameValue_AutoSave:
+        return options->autoSave;
     case GameValue_Unlock468:
         return save->unlock468;
     case GameValue_ButtonMap:
