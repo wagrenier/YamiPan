@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-04 14:50 at commit `bab4dfc` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-04 15:19 at commit `167e2e0` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-04 14:50 at commit `bab4dfc` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **3275** (50%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 2357
-- context-name ledger: 3901 entries; overrides of wrong library matches: 0
+- game functions: **6599**, named **3291** (50%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 2372
+- context-name ledger: 3916 entries; overrides of wrong library matches: 0
 - placed in a source file: 3825/6599 in 87 files
 
 Least-named game-code regions (64 KB blocks):
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **2891**; stubs: **272**
+- reconstructed FS2 functions: **2931**; stubs: **264**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -55,7 +55,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/memcard.cpp` | 55 | 0 |
 | `src/game/menupack.cpp` | 9 | 0 |
 | `src/game/menuscene.cpp` | 14 | 0 |
-| `src/game/modelpose.cpp` | 53 | 8 |
+| `src/game/modelpose.cpp` | 93 | 0 |
 | `src/game/movieplayer.cpp` | 41 | 0 |
 | `src/game/nodetransform.cpp` | 17 | 0 |
 | `src/game/packtables.cpp` | 8 | 0 |
@@ -127,11 +127,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 131 TUs: todo 71, partial 14, verify 71, done 2
-- next: **game/modelpose.cpp** (pinned in the queue)
-- pinned queue: game/modelpose.cpp, game/subsceneobject.cpp, rena/rena_draw.cpp, game/stagecamera.cpp, game/demoevent.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
+- 131 TUs: todo 79, partial 13, verify 72, done 2
+- next: **game/subsceneobject.cpp** (pinned in the queue)
+- pinned queue: game/subsceneobject.cpp, rena/rena_draw.cpp, game/stagecamera.cpp, game/demoevent.cpp, game/scenepairs.cpp, game/stagecollision.cpp, game/stagecharacter.cpp, game/playermotion.cpp, game/characterground.cpp, game/characterbrain.cpp, game/characterinput.cpp, game/stageplayer.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
 - partial: `game/demoevent.cpp` 58/90 -- Written: StageMission, StageEvent, StageFileEvent, StageSimpleEvent, StageFade, gsFillRect, DemoCamera, the pack lookup, DemoStream but setFont and drawSubtitle
-- partial: `game/modelpose.cpp` 52/92 -- Written: ctor, dtor, load, update, solve, the play calls, the walk, the target setters, every bone step, ModelMotion, motionBoneMatrix, motionBoneSuffix, native
 - partial: `game/scriptrunner.cpp` 84/652 -- VM 0x1d1c40, ScriptRunner, ScriptFrame, relocate, findEntry, scriptPrepare, the arg readers and 30 natives (every one stage 1 bg script calls) are written. All 
 - partial: `game/stageobject.cpp` 40/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
 - partial: `yamipan/rendering/model_renderer.cpp` 0/0 -- Written: game/stagecamera.cpp whole base plus StageMainCamera (0x178160 step, 0x179490, 0x179680, ctor). The step has NEVER run: StageCharacter ctor and setup a
@@ -154,6 +153,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/memcard.cpp` 55/55 -- All 55 functions written (source only, not built). New this run: Memcard::stepSave (mkdir, then data / icon1.ico / icon.sys each open, write, flush, close; Save
 - verify: `game/menupack.cpp` 9/9 -- All 9 written, range now 0x2c3d30..0x2c42a0 (0x2c42a0 is slot 1 of Vt_00319f00, an inline virtual of the class at 0x2ca870, left for it). Renamed getSaveResourc
 - verify: `game/menuscene.cpp` 14/14 -- All 14 functions of 0x2b5740..0x2b6b90 written (batch 083, 32 names, saved in Ghidra): the whole menu flow, architecture.md Modules has the map. Build, callchec
+- verify: `game/modelpose.cpp` 92/92 -- All 92 written, no stubs left in the TU (batch 111). Second run wrote the five solvers, solveLeg, settle and settleFixed, the sw bones swing with its spring and
 - verify: `game/movieplayer.cpp` 41/41 -- Cut out of unassigned@001953f0 (its tail 0x1faa30..0x1fcb40; the rest of that run is still unassigned). New game/movieplayer.h; gamehooks.h lost MoviePlayer and
 - verify: `game/nodetransform.cpp` 16/26 -- All of 0x1d7c50..0x1d85b0 written (batches 100, 101); rotation, translate and multiply helpers in vu0math.h. New Game run: 31,560 frames with no crash, the open
 - verify: `game/packtables.cpp` 8/51 -- 3D path 1 of 5. Root cause: String and StringList were stubs, so every stage script split into zero lines. Written here: game/stringlist.cpp (marked done), Pack
@@ -209,6 +209,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-04 15:18 `game/modelpose.cpp` verify: The solvers, the leg IK and the sw bones swing written; TU complete, not seen on screen
 - 2026-11-04 14:50 `game/modelpose.cpp` partial: ModelPose, ModelPoseBone, ModelMotion and the quaternions written, native 0x159, solvers left as stubs
 - 2026-11-04 14:04 `game/demoevent.cpp` partial: The opening event starts: mission, events, fade, demo camera and voice written, d0101 proven from the script and its own script runs; nothing of it shows yet
 - 2026-11-04 13:00 `game/scenerender.cpp` verify: Pinned lights closed: YAMIPAN_AMBIENT and the isKeyed guards deleted, the script's lights drive the picture, VU1's fog limits added
@@ -216,65 +217,64 @@ Recent sessions:
 - 2026-11-04 11:34 `game/scenerender.cpp` partial: SceneRender and VectorTrack written; the keys come from scripts, so the pin stays
 - 2026-11-04 10:49 `yamipan/rendering/model_renderer.cpp` partial: Main camera written (never run: no character links it yet), VU1 light formula read and in the host, lighting pinned; map darker, not compared with the game
 - 2026-11-04 10:11 `yamipan/rendering/model_renderer.cpp` partial: First 3D picture: textured map ground through a new host 3D module; camera and map objects written; lighting a guess, characters not drawn, not compared with th
-- 2026-11-04 09:10 `rena/rena_model.cpp` verify: ModelFile::createInstance and the model instance: bones, surfaces, part records, texture animation, lights; all 1,768 models on the disc checked
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@00135990` | partial | 2/1/33 | 3.1 | 226 | 0 |
-| `unassigned@001fe6b0` | todo | 0/42/563 | 197.2 | 81 | 0 |
-| `unassigned@00171300` | partial | 20/18/421 | 52.5 | 68 | 0 |
+| `unassigned@00135990` | partial | 2/1/33 | 3.1 | 360 | 1 |
+| `unassigned@001fe6b0` | todo | 0/42/563 | 197.2 | 141 | 12 |
+| `unassigned@00171300` | partial | 20/18/421 | 52.5 | 123 | 11 |
+| `game/scriptrunner.cpp` | partial | 84/2/652 | 172.7 | 119 | 18 |
+| `unassigned@0018c050` | todo | 0/14/71 | 29.7 | 86 | 9 |
 | `game/vectortrack.cpp` | partial | 9/0/16 | 2.5 | 68 | 0 |
-| `unassigned@0018c050` | todo | 0/14/71 | 29.7 | 41 | 0 |
-| `game/modelpose.cpp` | partial | 52/8/92 | 31.7 | 36 | 0 |
-| `unassigned@00231d40` | partial | 2/11/58 | 36.1 | 32 | 0 |
-| `unassigned@001d85b0` | todo | 0/13/239 | 119.7 | 30 | 0 |
-| `game/scriptrunner.cpp` | partial | 84/2/652 | 172.7 | 29 | 0 |
-| `unassigned@002e5450` | partial | 14/0/39 | 16.6 | 25 | 0 |
-| `unassigned@002b9ef0` | todo | 0/15/50 | 11.2 | 24 | 0 |
-| `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
+| `unassigned@001d85b0` | todo | 0/13/239 | 119.7 | 55 | 5 |
+| `unassigned@002b9ef0` | todo | 0/15/50 | 11.2 | 54 | 6 |
+| `unassigned@00288c00` | todo | 0/11/74 | 28.4 | 49 | 6 |
+| `unassigned@00231d40` | partial | 2/11/58 | 36.1 | 47 | 3 |
+| `unassigned@0023e740` | todo | 0/11/54 | 18.7 | 35 | 4 |
+| `unassigned@002c42a0` | todo | 0/18/123 | 49.1 | 33 | 3 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
 | `002c1430` | FUN_002c1430 | 115 | - | missing | game/packtables.cpp |
+| `00136690` | applyMatrix | 55 | game | missing | - |
+| `00136490` | scaleVec4 | 54 | game | missing | - |
+| `00136560` | vecNormalize | 35 | game | missing | - |
 | `00184370` | StageNodeList::erase | 32 | game | missing | game/stageitem.cpp |
-| `00136690` | applyMatrix | 29 | game | missing | - |
-| `00136490` | scaleVec4 | 29 | game | missing | - |
-| `00136400` | identityMatrix | 20 | game | missing | - |
-| `00136560` | vecNormalize | 19 | game | missing | - |
+| `00136400` | identityMatrix | 28 | game | missing | - |
+| `00136640` | multiplyMatrix | 26 | game | missing | - |
+| `001365a0` | vecDot | 26 | game | missing | - |
+| `00136500` | invertRigidMatrix | 19 | game | missing | - |
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
-| `00136640` | multiplyMatrix | 18 | game | missing | - |
 | `00135f20` | vecDistance | 18 | game | stub | - |
 | `00296cb0` | VectorFade::setFrom | 18 | game | missing | game/vectortrack.cpp |
 | `002c0d90` | FUN_002c0d90 | 18 | - | missing | game/packtables.cpp |
-| `001365a0` | vecDot | 17 | game | missing | - |
 | `00296ca0` | VectorFade::setTo | 16 | game | missing | game/vectortrack.cpp |
 | `0029a700` | FUN_0029a700 | 15 | - | missing | game/vectortrack.cpp |
+| `00135fe0` | setVecLength | 14 | game | missing | - |
 | `001d1a00` | ScriptRunner::getEntry | 14 | game | missing | game/scriptrunner.cpp |
 | `001842c0` | StageNodeList::pushBack | 14 | game | missing | game/stageitem.cpp |
 | `0017e260` | FUN_0017e260 | 13 | - | missing | - |
 | `00296cc0` | VectorFade::VectorFade | 12 | game | missing | game/vectortrack.cpp |
+| `00136430` | copyMatrix | 12 | game | missing | - |
 | `002c0d40` | FUN_002c0d40 | 12 | - | missing | game/packtables.cpp |
-| `00136430` | copyMatrix | 11 | game | missing | - |
 | `00190890` | StageNodeTree::spawn | 10 | game | stub | - |
 | `00214f60` | StageObject::getAltSoundFlag | 10 | game | stub | - |
-| `00136500` | invertRigidMatrix | 10 | game | missing | - |
 | `002c0d80` | FUN_002c0d80 | 10 | - | missing | game/packtables.cpp |
+| `00135b90` | rotationMatrixXyz | 9 | game | missing | - |
 | `00136020` | vecDirection | 9 | game | missing | - |
 | `00177270` | BoneNode::find | 9 | game | missing | - |
 | `001715f0` | ScenePairTable::add | 8 | game | stub | - |
-| `00135b90` | rotationMatrixXyz | 8 | game | missing | - |
+| `00136460` | translateMatrix | 8 | game | missing | - |
 | `00215ef0` | StageObject::isPlayer | 8 | game | stub | - |
 | `002ec110` | getDrawTarget | 7 | game | missing | - |
 | `001361c0` | rotateMatrixX | 7 | game | missing | - |
 | `00207440` | PauseMenuState::clearList | 7 | game | stub | - |
 | `0018c2d0` | StageParticle::setRunning | 7 | game | stub | - |
+| `001365d0` | vecCross | 7 | game | missing | - |
 | `00239bb0` | CharacterInput::setActive | 7 | game | stub | - |
 | `001f6690` | CollisionBody::CollisionBody | 6 | game | stub | - |
 | `001f6180` | SceneRecordBuckets::add | 6 | game | stub | - |
 | `00233810` | StageCollision::raycast | 6 | game | stub | - |
-| `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
-| `001fea50` | StageParty::getCompanion | 6 | game | stub | - |
-| `001d1c20` | ScriptRunner::getParent2 | 6 | game | missing | game/scriptrunner.cpp |
 

@@ -3,13 +3,11 @@
  *
  *  Skeletons and motion playback: a bone file becomes the bones of a pose, a
  *  motion file's tracks are bound to them, update walks the keys and solve
- *  turns what was played into matrices. Written: everything a played pose
- *  needs, the walk, the target setters. Left as stubs: the solvers under
- *  m_solvers and the sw bones' swing (modelpose.h; the math under them is
- *  the unwritten rest of 0x149950..0x14b270 and 0x14cc60..0x14df50).
+ *  turns what was played into matrices. On top of that the solvers under
+ *  m_solvers bend the played pose towards targets, and the sw bones swing on
+ *  springs.
  * ======================================================================== */
 #include "game/modelpose.h"
-#include "common/yamipan_stub.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -33,6 +31,9 @@ constexpr float kWeightOff   = 0.01f;  // ModelPose::update: under it a solver's
 constexpr float kTargetDecay = 0.7f;
 constexpr float kFootDecay   = 0.8f;
 constexpr float kFootContact = 0.1f;
+constexpr float kWeightFull  = 0.99f;  // ModelPoseBone::settleFixed: over it a solver's weight is whole
+constexpr float kSwingDrop   = 30.0f;  // how far from a sw bone its spring's rest point lies
+constexpr float kSwingLength = 15.0f;  // a sw bone's length: its record holds swingParams instead
 constexpr float kWalkTurnDone = 0.0349065848f; // two degrees
 constexpr float kWalkTurnLead = 3.0f;  // frames the turn ends before the walk
 constexpr float kHeadDrop    = 11.0f;  // ModelPose::setHeadTarget
@@ -139,9 +140,32 @@ const float kGrowth[3][kGrowthBones][kGrowthKnots] = {
     },
 };
 
+// FS2 0x001498a0
 inline void copyVector(sceVu0FVECTOR out, const sceVu0FVECTOR in)
 {
     memcpy(out, in, sizeof(sceVu0FVECTOR));
+}
+
+// vsub.xyzw, vadd.xyzw.
+inline void subVector(sceVu0FVECTOR out, const sceVu0FVECTOR a, const sceVu0FVECTOR b)
+{
+    for (int lane = 0; lane < 4; lane++)
+        out[lane] = a[lane] - b[lane];
+}
+
+inline void addVector(sceVu0FVECTOR out, const sceVu0FVECTOR a, const sceVu0FVECTOR b)
+{
+    for (int lane = 0; lane < 4; lane++)
+        out[lane] = a[lane] + b[lane];
+}
+
+// from half of the way to to, as every solver's target eases.
+inline void easeHalfway(sceVu0FVECTOR from, const sceVu0FVECTOR to)
+{
+    sceVu0FVECTOR step;
+    subVector(step, to, from);
+    scaleVec4(0.5f, step, step);
+    addVector(from, from, step);
 }
 
 // (x, y, z, 1).
@@ -757,10 +781,10 @@ void ModelPoseBone::setup(const PoseBoneRecord *record)
     strcpy(name, record->name);
     strcpy(parentName, record->parent);
     if (isSwing()) {
-        memcpy(swingParams, &record->radius, sizeof(swingParams));
-        radius = 15.0f;
+        memcpy(swingParams, &record->length, sizeof(swingParams));
+        length = kSwingLength;
     } else {
-        radius = record->radius;
+        length = record->length;
     }
     position[PoseSlot_Bind][0] = record->position[0];
     position[PoseSlot_Bind][1] = record->position[1];
@@ -1138,7 +1162,7 @@ void ModelPose::setRootScale(float x, float y, float z, float w)
 // ModelPose: the frame.
 
 // FS2 0x0014f4b0
-// callcheck: stepWalk, advance, solve, solveLook, solveHead, solveTool, settleFixed, settleFixed, settleFixed, settle, settle, settle, scaleVec4, solveFeet, interpolate, interpolate, buildMatrix, stepSwing, solveNeckLimits
+// callcheck: stepWalk, advance, solve, solveLook, solveHead, solveTool, settleFixed, settleFixed, settleFixed, settle, settle, settle, scaleVec4, solveFeet, interpolate, interpolate, buildMatrix, stepSwing, solveChestTool
 void ModelPose::update(float frames, bool loop)
 {
     flags &= ~kPoseFlagFresh;
@@ -1166,7 +1190,7 @@ void ModelPose::update(float frames, bool loop)
     const u_int solvers = m_solvers & kPoseSolverMask;
     if (solvers != 0) {
         if (m_solvers & PoseSolver_Look)
-            solveLook(lookRate2, lookRate, lookArg);
+            solveLook(lookRate2, lookRate, lookBone);
         if (m_solvers & PoseSolver_Head)
             solveHead(headRate);
         if (m_solvers & PoseSolver_Tool)
@@ -1209,8 +1233,8 @@ void ModelPose::update(float frames, bool loop)
         if (bone->isSwing())
             bone->stepSwing();
     }
-    if (hasNeckLimits != 0)
-        solveNeckLimits(toolRate);
+    if (hasChestTool != 0)
+        solveChestTool(toolRate);
 }
 
 // FS2 0x0014f910
@@ -1453,7 +1477,7 @@ int motionBoneSuffix(void *motion, const char *prefix)
 }
 
 // FS2 0x00150d80
-// callcheck: strcpy, strlen, FUN_001498a0, FUN_001498a0, quatToMatrix, strcpy, strcpy, strcpy, strcmp, identityMatrix, multiplyMatrix
+// callcheck: strcpy, strlen, copyVectorWords, copyVectorWords, quatToMatrix, strcpy, strcpy, strcpy, strcmp, identityMatrix, multiplyMatrix
 int motionBoneMatrix(sceVu0FMATRIX out, void *motion, const char *bone, int prefix)
 {
     constexpr int kChainMax = 0x40;     // the ROM's 0x1000 bytes of stack
@@ -1525,10 +1549,10 @@ ModelPose::ModelPose()
     toolRate = 0.2f;
     aimRate = 0.2f;
     footRate = 0.2f;
-    _374[0] = _374[1] = _374[2] = 0x1.e28c76p-1f; // 54 degrees
+    headLimit = headLimitUp = headLimitDown = 0x1.e28c76p-1f; // 54 degrees
     lookRate2 = 0x1.41b2f8p+0f;                   // 72 degrees
-    _395 = 1;
-    setVector(_3a0, 1.0f, 1.0f, 0.0f, 0.7f);
+    windOn = 1;
+    setVector(wind, 1.0f, 1.0f, 0.0f, 0.7f);
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -1605,52 +1629,847 @@ ModelMotion::ModelMotion(ModelPose *owner, void *motionFile)
     }
 }
 
-// ---- stubs (tools/reverse/stubgen.py) ----
+// ──────────────────────────────────────────────────────────────────────
+// The swing of the sw bones. A spring runs after a point the bone would reach
+// at rest; the bone then turns towards the spring's end or moves to it. A bone
+// name carries it: ??sw?KA.., K the kind (upper case no wind, lower case wind,
+// S, F, R, T, C), A the one axis it may turn around (x, y or z; upper case
+// only by negative angles, lower case only by positive ones).
 
-// stub of FS2 0x0014d130
-void ModelPose::solveFeet(const float *left, const float *right)
+// The spring's step: swingOut is what comes of it. A cleared swingPos[3]
+// (resetSwingBones) starts it where it should end.
+// FS2 0x0014a090
+void ModelPoseBone::stepSpring(bool windy)
 {
-    YAMIPAN_STUB("ModelPose::solveFeet", 0x0014d130);
+    constexpr float kParamStep = 0.1f;
+    if (swingPos[3] == 0.0f)
+        copyVector(swingPos, swingTarget);
+
+    const float damping = 1.0f - (float)(int)(s_char)swingParams[1] * kParamStep;
+    sceVu0FVECTOR pull;
+    subVector(pull, swingTarget, swingPos);
+    scaleVec4(1.0f - (float)(int)(s_char)swingParams[0] * kParamStep, pull, pull);
+    scaleVec4(damping, swingVelocity, swingVelocity);
+    addVector(swingVelocity, swingVelocity, pull);
+    addVector(swingPos, swingPos, swingVelocity);
+
+    if (!windy || owner->windOn == 0)
+        copyVector(swingOut, swingPos);
+    else
+        addWind(owner->wind);
+    swingPos[3] = 1.0f;
+    swingOut[3] = 1.0f;
 }
 
-// stub of FS2 0x0014df50
-void ModelPose::solveHead(float rate)
+// swingOut = the spring's end, blown. wind: a direction, w its strength; time,
+// not used by a sw bone otherwise, is the flutter's phase.
+// FS2 0x00149ee0
+void ModelPoseBone::addWind(const sceVu0FVECTOR wind)
 {
-    YAMIPAN_STUB("ModelPose::solveHead", 0x0014df50);
+    constexpr float kParamStep = 0.1f;
+    constexpr float kBlow = 5.0f;
+    constexpr float kFlutter = 3.0f;
+    constexpr float kPhaseStep = 0.01f;
+    constexpr int   kPhases = 7;
+    sceVu0FVECTOR blow;
+    copyVector(blow, wind);
+    const float flutter = 1.0f - (float)(int)(s_char)swingParams[1] * kParamStep;
+    const float strength = 1.0f <= blow[3] ? 1.0f : blow[3];
+    vecNormalize(blow, blow);
+    scaleVec4((1.0f - (float)(int)(s_char)swingParams[0] * kParamStep) * strength * kBlow, blow, blow);
+
+    float phase = time + (float)(modelBone % kPhases) * kPhaseStep + strength + 0.0f;
+    time = phase;
+    if (kPi < phase)
+        time = phase - kTwoPi;
+    const float sine = sinCos(time, 0);
+    const float cosine = sinCos(time, 1);
+    sceVu0FVECTOR side;
+    setVector(side, flutter * sine * kFlutter, flutter * cosine * kFlutter, 0.0f, 1.0f);
+    addVector(blow, blow, side);
+    addVector(swingOut, swingPos, blow);
 }
 
-// stub of FS2 0x0014d990
-void ModelPose::solveLook(float rate, float rate2, int arg)
+// The axis the name allows, and the side of it.
+// FS2 0x00149cc0
+void ModelPoseBone::limitSwingAxis(sceVu0FVECTOR axisAngle) const
 {
-    YAMIPAN_STUB("ModelPose::solveLook", 0x0014d990);
+    const char axis = name[7];
+    int lane;
+    if (axis == 'z' || axis == 'Z')
+        lane = 2;
+    else if (axis == 'y' || axis == 'Y')
+        lane = 1;
+    else if (axis == 'x' || axis == 'X')
+        lane = 0;
+    else
+        return;
+    const float along = axisAngle[lane];
+    axisAngle[0] = 0.0f;
+    axisAngle[1] = 0.0f;
+    axisAngle[2] = 0.0f;
+    axisAngle[lane] = along;
+    if (along < 0.0f) {
+        axisAngle[lane] = along * -1.0f;
+        axisAngle[3] *= -1.0f;
+    }
+    if (axis < 'a' && 0.0f < axisAngle[3])
+        axisAngle[3] = 0.0f;
+    if ('a' < axis && axisAngle[3] < 0.0f)
+        axisAngle[3] = 0.0f;
 }
 
-// stub of FS2 0x0014d370
-void ModelPose::solveNeckLimits(float rate)
+// Final = Bind turned by axisAngle, and the matrices from it. The tail of
+// every branch of the swing in the ROM.
+void ModelPoseBone::placeSwing(const sceVu0FVECTOR axisAngle)
 {
-    YAMIPAN_STUB("ModelPose::solveNeckLimits", 0x0014d370);
+    sceVu0FVECTOR quat;
+    quatFromAxisAngle(quat, axisAngle);
+    quatMultiply(rotation[PoseSlot_Final], rotation[PoseSlot_Bind], quat);
+    copyVector(position[PoseSlot_Final], position[PoseSlot_Bind]);
+    identityMatrix(matrix);
+    quatToMatrix(matrix, rotation[PoseSlot_Final]);
+    translateMatrix(matrix, matrix, position[PoseSlot_Final]);
+    multiplyMatrix(matrix, parent->matrix, matrix);
+    copyVector(worldPosition, matrix[3]);
 }
 
-// stub of FS2 0x0014d4c0
-void ModelPose::solveTool(float rate)
+// Moved to the spring's end, no turn. The tail of T and C.
+void ModelPoseBone::placeSwingAtSpring()
 {
-    YAMIPAN_STUB("ModelPose::solveTool", 0x0014d4c0);
+    static const sceVu0FVECTOR kNoTurn = { 1.0f, 0.0f, 0.0f, 0.0f }; // data 0x2f5060, 0x2f5080
+    sceVu0FMATRIX inverse;
+    invertRigidMatrix(inverse, parent->matrix);
+    sceVu0FVECTOR local;
+    applyMatrix(local, inverse, swingOut);
+    sceVu0FVECTOR bind;
+    copyVector(bind, position[PoseSlot_Bind]);
+    copyVector(position[PoseSlot_Bind], local);
+    placeSwing(kNoTurn);
+    copyVector(position[PoseSlot_Bind], bind);
 }
 
-// stub of FS2 0x0014a790
-void ModelPoseBone::settle(float rate, int count)
+// Letters F and R, and any other: a point ahead along the bone. 0x00149940 is
+// a jump here, the entry F takes in the ROM.
+// FS2 0x00149b40
+// callcheck: identityMatrix, multiplyMatrix, quatMultiply, quatToMatrix, setVecLength, sinCos, translateMatrix (held by placeSwing and stepSpring)
+void ModelPoseBone::swingAhead(bool windy)
 {
-    YAMIPAN_STUB("ModelPoseBone::settle", 0x0014a790);
+    const float *bind = position[PoseSlot_Bind];
+    setVector(swingTarget, sqrtf(bind[2] * bind[2] + bind[0] * bind[0] + bind[1] * bind[1]) + kSwingDrop,
+              0.0f, 0.0f, 1.0f);
+    applyMatrix(swingTarget, matrix, swingTarget);
+    stepSpring(windy);
+    sceVu0FVECTOR axisAngle = { 1.0f, 0.0f, 0.0f, 1.0f }; // data 0x2f5050
+    aimOwnAxis(kHalfPi, axisAngle, swingOut, axisAngle);
+    limitSwingAxis(axisAngle);
+    placeSwing(axisAngle);
 }
 
-// stub of FS2 0x0014a810
-void ModelPoseBone::settleFixed(float rate, int count)
+// Letter C, a skirt's middle: two thirds of the way down to between the calves.
+// FS2 0x00149950
+// callcheck: applyMatrix, identityMatrix, invertRigidMatrix, lerpVec4b, multiplyMatrix, quatMultiply, quatToMatrix, setVecLength, sinCos, translateMatrix (held by placeSwingAtSpring; lerpVec4b is blendVec4)
+void ModelPoseBone::swingBetweenCalves(bool windy)
 {
-    YAMIPAN_STUB("ModelPoseBone::settleFixed", 0x0014a810);
+    constexpr float kCalfReach = 0.66f;
+    if (name[7] != '0')
+        return;
+    ModelPoseBone *left = owner->findBone("bn_l_calf");
+    ModelPoseBone *right = owner->findBone("bn_r_calf");
+    if (left == nullptr || right == nullptr)
+        return;
+    sceVu0FVECTOR middle;
+    blendVec4(0.5f, middle, left->worldPosition, right->worldPosition);
+    subVector(swingTarget, middle, parent->worldPosition);
+    scaleVec4(kCalfReach, swingTarget, swingTarget);
+    addVector(swingTarget, swingTarget, parent->worldPosition);
+    stepSpring(windy);
+    placeSwingAtSpring();
 }
 
-// stub of FS2 0x0014a1c0
+// FS2 0x0014a1c0
+// callcheck: applyMatrix, invertRigidMatrix, quatMultiply, setVecLength, sinCos (held by placeSwing and placeSwingAtSpring)
 void ModelPoseBone::stepSwing()
 {
-    YAMIPAN_STUB("ModelPoseBone::stepSwing", 0x0014a1c0);
+    identityMatrix(matrix);
+    quatToMatrix(matrix, rotation[PoseSlot_Bind]);
+    translateMatrix(matrix, matrix, position[PoseSlot_Bind]);
+    multiplyMatrix(matrix, parent->matrix, matrix);
+
+    const char kind = name[6];
+    switch (kind) {
+    case 'S':
+    case 's': {     // hangs straight down from where it is
+        copyVector(swingTarget, matrix[3]);
+        swingTarget[2] -= kSwingDrop;
+        stepSpring(kind == 's');
+        sceVu0FVECTOR axisAngle = { 1.0f, 0.0f, 0.0f, 1.0f }; // data 0x2f5070
+        aimAxis(kPi, axisAngle, swingOut, axisAngle);
+        limitSwingAxis(axisAngle);
+        setVector(rotation[PoseSlot_Bind], 0.0f, 0.0f, 0.0f, 1.0f);
+        placeSwing(axisAngle);
+        break;
+    }
+    case 'F':
+    case 'R':
+        swingAhead(false);
+        break;
+    case 'f':
+    case 'r':
+        swingAhead(true);
+        break;
+    case 'C':
+    case 'c':
+        swingBetweenCalves(kind == 'c');
+        break;
+    case 'T':
+    case 't':       // the bone's own place, by the spring
+        copyVector(swingTarget, matrix[3]);
+        stepSpring(kind == 't');
+        placeSwingAtSpring();
+        break;
+    default:
+        swingAhead(false);
+        break;
+    }
 }
+
+// ──────────────────────────────────────────────────────────────────────
+// What the solvers bend a bone with. All of them work on PoseSlot_Solve.
+
+// FS2 0x0014a790
+void ModelPoseBone::settle(float rate, int count)
+{
+    for (ModelPoseBone *bone = this; bone != nullptr && count != 0; bone = bone->parent, count--) {
+        bone->solveWeight -= rate;
+        if (bone->solveWeight < kWeightOff)
+            bone->solveWeight = 0.0f;
+    }
+}
+
+// FS2 0x0014a810
+void ModelPoseBone::settleFixed(float rate, int count)
+{
+    for (ModelPoseBone *bone = this; bone != nullptr && count != 0; bone = bone->parent, count--) {
+        bone->solveWeight += rate;
+        if (kWeightFull < bone->solveWeight)
+            bone->solveWeight = 1.0f;
+    }
+}
+
+// Solve = slot towards Solve.
+// FS2 0x0014a9b0
+void ModelPoseBone::blendSolve(float t, int slot)
+{
+    quatSlerp(t, rotation[PoseSlot_Solve], rotation[slot], rotation[PoseSlot_Solve]);
+}
+
+// FS2 0x0014ad10
+// callcheck: setVecLength, sinCos (held by quatFromAxisAngle)
+bool ModelPoseBone::aimTurn(float limit, const sceVu0FVECTOR target, const sceVu0FVECTOR dir)
+{
+    sceVu0FVECTOR axisAngle;
+    const bool limited = aimAxis(limit, axisAngle, target, dir);
+    quatFromAxisAngle(rotation[PoseSlot_Solve], axisAngle);
+    return limited;
+}
+
+// FS2 0x0014ac40
+// callcheck: aimAxis, setVecLength, sinCos (held by aimTurn)
+bool ModelPoseBone::aimAlongAxis(float limit, const sceVu0FVECTOR target, int axis)
+{
+    sceVu0FVECTOR dir = { 0.0f, 0.0f, 0.0f, 1.0f };
+    if (axis < 0)
+        axis = 0;
+    if (3 < axis)
+        axis = 2;
+    dir[axis] = 1.0f;
+    return aimTurn(limit, target, dir);
+}
+
+// aimAxis in the bone's own space rather than the parent's. Its origin is the
+// matrix's, the place it aims from is Final through that same matrix (the ROM).
+// FS2 0x0014aaa0
+bool ModelPoseBone::aimOwnAxis(float limit, sceVu0FVECTOR out, const sceVu0FVECTOR target,
+                               const sceVu0FVECTOR dir) const
+{
+    sceVu0FVECTOR tip = { 1.0f, 0.0f, 0.0f, 1.0f };
+    if (dir != nullptr) {
+        tip[0] = dir[0];
+        tip[1] = dir[1];
+        tip[2] = dir[2];
+    }
+    sceVu0FVECTOR origin;
+    copyVector(origin, matrix[3]);
+    applyMatrix(tip, matrix, tip);
+    sceVu0FVECTOR from;
+    subVector(from, tip, origin);
+    vecNormalize(from, from);
+
+    copyVector(origin, position[PoseSlot_Final]);
+    applyMatrix(origin, matrix, origin);
+    sceVu0FVECTOR to;
+    subVector(to, target, origin);
+    vecNormalize(to, to);
+
+    float angle = asinAcos(vecDot(from, to), AsinAcos_Acos);
+    vecCross(out, from, to);
+    scaleVec4(kAimScale, out, out);
+    sceVu0FMATRIX inverse;
+    invertRigidMatrix(inverse, matrix);
+    applyMatrix(out, inverse, out);
+    vecNormalize(out, out);
+    const bool over = limit < angle;
+    if (over)
+        angle = limit;
+    const bool under = angle < -limit;
+    if (under)
+        angle = -limit;
+    out[3] = angle;
+    return over || under;
+}
+
+// Rebuilds the bone, then adds the turn to Solve.
+// FS2 0x0014a9d0
+// callcheck: setVecLength, sinCos (held by quatFromAxisAngle)
+bool ModelPoseBone::aimOwnTurn(float limit, const sceVu0FVECTOR target, const sceVu0FVECTOR dir)
+{
+    buildMatrix(0.0f, PoseSlot_Solve, 0);
+    sceVu0FVECTOR axisAngle;
+    const bool limited = aimOwnAxis(limit, axisAngle, target, dir);
+    sceVu0FVECTOR quat;
+    quatFromAxisAngle(quat, axisAngle);
+    quatMultiply(rotation[PoseSlot_Solve], rotation[PoseSlot_Solve], quat);
+    return limited;
+}
+
+// Turns this bone so that the x axis of held, a bone down the chain, points
+// through target: this bone goes around the normal of the plane of held's x
+// axis and target. Solve = Current and that turn.
+// FS2 0x0014af70
+// callcheck: setVecLength, sinCos (held by quatFromAxisAngle)
+void ModelPoseBone::aimThrough(float limit, const ModelPoseBone *held, const sceVu0FVECTOR target)
+{
+    static const sceVu0FVECTOR kX = { 1.0f, 0.0f, 0.0f, 0.0f };
+    sceVu0FVECTOR axis;
+    applyMatrix(axis, held->matrix, kX);
+    sceVu0FVECTOR heldToTarget;
+    subVector(heldToTarget, target, held->matrix[3]);
+    sceVu0FVECTOR scratch;
+    vecCross(scratch, axis, heldToTarget);
+    sceVu0FVECTOR plane;
+    vecNormalize(plane, scratch);
+    plane[3] = -vecDot(plane, held->matrix[3]);
+
+    // This bone on that plane; then the foot of it on held's axis.
+    scaleVec4(plane[3] + vecDot(plane, matrix[3]), scratch, plane);
+    sceVu0FVECTOR pivot;
+    subVector(pivot, matrix[3], scratch);
+    subVector(scratch, pivot, held->matrix[3]);
+    scaleVec4(vecDot(axis, scratch), scratch, axis);
+    sceVu0FVECTOR foot;
+    addVector(foot, held->matrix[3], scratch);
+
+    // Where on the axis it stands as far from pivot as target does. PC: the
+    // EE's sqrt.s takes the magnitude; a root of a negative stays a number.
+    subVector(scratch, target, pivot);
+    const float toTargetSq = scratch[0] * scratch[0] + scratch[1] * scratch[1] + scratch[2] * scratch[2];
+    subVector(scratch, foot, pivot);
+    const float toFootSq = scratch[0] * scratch[0] + scratch[1] * scratch[1] + scratch[2] * scratch[2];
+    scaleVec4(sqrtf(fabsf(toTargetSq - toFootSq)), scratch, axis);
+    sceVu0FVECTOR reached;
+    addVector(reached, foot, scratch);
+
+    subVector(scratch, target, pivot);
+    vecNormalize(scratch, scratch);
+    sceVu0FVECTOR from;
+    subVector(from, reached, pivot);
+    vecNormalize(from, from);
+    float angle = asinAcos(vecDot(from, scratch), AsinAcos_Acos);
+    if (limit < angle)
+        angle = limit;
+    else if (angle < -limit)
+        angle = -limit;
+
+    sceVu0FMATRIX inverse;
+    invertRigidMatrix(inverse, parent->matrix);
+    setVector(scratch, plane[0], plane[1], plane[2], 0.0f);
+    sceVu0FVECTOR axisAngle;
+    applyMatrix(axisAngle, inverse, scratch);
+    vecNormalize(axisAngle, axisAngle);
+    axisAngle[3] = angle;
+    sceVu0FVECTOR quat;
+    quatFromAxisAngle(quat, axisAngle);
+    quatMultiply(rotation[PoseSlot_Solve], rotation[PoseSlot_Current], quat);
+}
+
+// The turn (a quaternion, into out) that aims dir at target in two steps, in
+// the xy plane by limit, then what is left by upLimit, or downLimit when the
+// target is below dir.
+// FS2 0x0014b270
+// callcheck: setVecLength, sinCos (held by quatFromAxisAngle)
+bool ModelPoseBone::aimLimited(float limit, float upLimit, float downLimit, sceVu0FVECTOR out,
+                               const sceVu0FVECTOR target, const sceVu0FVECTOR dir) const
+{
+    bool limited = false;
+    sceVu0FMATRIX base;
+    if (parent == nullptr)
+        identityMatrix(base);
+    else
+        copyMatrix(base, parent->matrix);
+    sceVu0FMATRIX inverse;
+    invertRigidMatrix(inverse, base);
+
+    sceVu0FVECTOR tip = { 1.0f, 0.0f, 0.0f, 1.0f };
+    if (dir != nullptr) {
+        tip[0] = dir[0];
+        tip[1] = dir[1];
+        tip[2] = dir[2];
+    }
+    sceVu0FVECTOR origin;
+    copyVector(origin, base[3]);
+    applyMatrix(tip, base, tip);
+    sceVu0FVECTOR from;
+    subVector(from, tip, origin);
+    vecNormalize(from, from);
+
+    copyVector(origin, position[PoseSlot_Final]);
+    applyMatrix(origin, base, origin);
+    sceVu0FVECTOR to;
+    subVector(to, target, origin);
+    vecNormalize(to, to);
+
+    sceVu0FVECTOR flatFrom, flatTo;
+    setVector(flatFrom, from[0], from[1], 0.0f, 1.0f);
+    vecNormalize(flatFrom, flatFrom);
+    setVector(flatTo, to[0], to[1], 0.0f, 1.0f);
+    vecNormalize(flatTo, flatTo);
+    vecCross(out, flatFrom, flatTo);
+    scaleVec4(kAimScale, out, out);
+    applyMatrix(out, inverse, out);
+    vecNormalize(out, out);
+    float angle = asinAcos(vecDot(flatFrom, flatTo), AsinAcos_Acos);
+    if (limit < angle) {
+        limited = true;
+        angle = limit;
+    } else if (angle < -limit) {
+        limited = true;
+        angle = -limit;
+    }
+    out[3] = angle;
+    sceVu0FVECTOR flatTurn;
+    quatFromAxisAngle(flatTurn, out);
+
+    quatToMatrix(base, flatTurn);
+    sceVu0FVECTOR turned;
+    applyMatrix(turned, base, from);
+    vecCross(out, turned, to);
+    scaleVec4(kAimScale, out, out);
+    applyMatrix(out, inverse, out);
+    vecNormalize(out, out);
+    angle = asinAcos(vecDot(turned, to), AsinAcos_Acos);
+    const float pitchLimit = to[2] < from[2] ? downLimit : upLimit;
+    if (pitchLimit < angle) {
+        limited = true;
+        angle = pitchLimit;
+    } else if (angle < -pitchLimit) {
+        limited = true;
+        angle = -pitchLimit;
+    }
+    out[3] = angle;
+    sceVu0FVECTOR pitch;
+    quatFromAxisAngle(pitch, out);
+    quatMultiply(out, flatTurn, pitch);
+    return limited;
+}
+
+// The knee of a two-bone leg, this bone the shin and its parent the thigh, by
+// the bones' lengths: along, a share of the way from the hip to target; side,
+// how far off that line. Past its reach the leg goes straight.
+// FS2 0x0014a890
+void ModelPoseBone::kneePlacement(float *along, float *side, const sceVu0FVECTOR target) const
+{
+    const float shin = length;
+    const float thigh = parent->length;
+    const float thighSq = thigh * thigh;
+    const float reachSq = (shin + thigh) * (shin + thigh);
+    sceVu0FVECTOR hip = { 0.0f, 0.0f, 0.0f, 1.0f };
+    applyMatrix(hip, parent->matrix, hip);
+    sceVu0FVECTOR delta;
+    subVector(delta, target, hip);
+    const float distanceSq = delta[2] * delta[2] + delta[0] * delta[0] + delta[1] * delta[1];
+    if (reachSq < distanceSq) {
+        *along = 1.0f;
+        *side = 0.5f;
+    } else {
+        const float share = (distanceSq + (thighSq - shin * shin)) / (distanceSq * 2.0f);
+        *along = share;
+        // PC: the EE's sqrt.s takes the magnitude.
+        *side = sqrtf(fabsf((thighSq + 0.0f) - distanceSq * share * share));
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The solvers.
+
+// A leg to target: thigh, shin, then the foot flat on ground (its plane's
+// normal), or level when it is off the ground. ground may be null.
+// FS2 0x0014cc60
+bool ModelPose::solveLeg(const sceVu0FVECTOR target, const sceVu0FVECTOR ground, bool left)
+{
+    constexpr float kFootAhead    = 100.0f;
+    constexpr float kFootLift     = 10.0f;  // the toe's raw height where the foot stops following the ground
+    constexpr float kFootAimLimit = 0.785398185f;
+    constexpr float kFootEaseAir  = 0.1f;
+    constexpr float kFootEaseDown = 0.2f;
+    constexpr float kCalfTwist    = 0.6f;
+    constexpr float kThighTwist   = 0.4f;
+    if (leftToe == nullptr || rightToe == nullptr)
+        return false;
+    ModelPoseBone *toe = left ? leftToe : rightToe;
+    ModelPoseBone *foot = toe->parent;
+    ModelPoseBone *calf = foot->parent;
+    ModelPoseBone *thigh = calf->parent;
+
+    float along, side;
+    calf->kneePlacement(&along, &side, target);
+    sceVu0FVECTOR hip;
+    copyVector(hip, thigh->matrix[3]);
+    sceVu0FVECTOR bend = { 0.0f, 0.0f, 1.0f, 1.0f };
+    applyMatrix(bend, thigh->matrix, bend);
+    subVector(bend, bend, hip);
+    sceVu0FVECTOR toTarget;
+    subVector(toTarget, target, hip);
+    vecCross(bend, bend, toTarget);
+    vecNormalize(bend, bend);
+    sceVu0FVECTOR straight, out;
+    scaleVec4(along, straight, toTarget);
+    scaleVec4(side, out, bend);
+    sceVu0FVECTOR knee;
+    addVector(knee, straight, out);
+    addVector(knee, knee, hip);
+
+    // The leg's twist: how far the foot looks away from the hips, flat, taken
+    // from whichever of the foot's two axes lies flatter.
+    sceVu0FVECTOR hipAhead = { 0.0f, 1.0f, 0.0f, 1.0f };  // data 0x2f5a40
+    sceVu0FVECTOR footAhead = { 0.0f, 1.0f, 0.0f, 1.0f }; // data 0x2f5a50
+    sceVu0FVECTOR footSide = { -1.0f, 0.0f, 0.0f, 1.0f }; // data 0x2f5a60
+    thigh->parent->turnVector(hipAhead, hipAhead);
+    foot->turnVector(footAhead, footAhead);
+    foot->turnVector(footSide, footSide);
+    sceVu0FVECTOR flat;
+    copyVector(flat, fabsf(footAhead[2]) < fabsf(footSide[2]) ? footAhead : footSide);
+    flat[2] = 0.0f;
+    hipAhead[2] = 0.0f;
+    sceVu0FVECTOR twist;
+    quatAxisBetween(twist, hipAhead, flat);
+    sceVu0FVECTOR calfTurn, thighTurn;
+    setVector(calfTurn, -twist[2], 0.0f, 0.0f, twist[3] * kCalfTwist);
+    quatFromAxisAngle(calfTurn, calfTurn);
+    setVector(thighTurn, -twist[2], 0.0f, 0.0f, twist[3] * kThighTwist);
+    quatFromAxisAngle(thighTurn, thighTurn);
+
+    thigh->aimAlongAxis(kPi, knee, 0);
+    quatMultiply(thigh->rotation[PoseSlot_Solve], thigh->rotation[PoseSlot_Solve], thighTurn);
+    thigh->buildMatrix(0.0f, PoseSlot_Solve, 0);
+    calf->aimAlongAxis(kPi, target, 0);
+    quatMultiply(calf->rotation[PoseSlot_Solve], calf->rotation[PoseSlot_Solve], calfTurn);
+    calf->buildMatrix(0.0f, PoseSlot_Solve, 0);
+
+    const float toeHeight = toe->getRawHeight();
+    sceVu0FVECTOR at, aimAt;
+    if (ground == nullptr || kFootLift <= toeHeight) {
+        setVector(aimAt, kFootAhead, 0.0f, 0.0f, 1.0f);    // data 0x2f5a70
+        foot->turnVector(aimAt, aimAt);
+        foot->getPosition(at);
+        addVector(aimAt, aimAt, at);
+        foot->aimAlongAxis(kFootAimLimit, aimAt, 0);
+        foot->blendSolve(kFootEaseAir, PoseSlot_Final);
+    } else {
+        foot->getPosition(at);
+        scaleVec4(-kFootAhead, aimAt, ground);
+        addVector(aimAt, aimAt, at);
+        foot->aimAlongAxis(kFootAimLimit, aimAt, 0);
+        foot->blendSolve(kFootEaseDown, PoseSlot_Final);
+    }
+    return true;
+}
+
+// The feet on their targets: (normal of the ground, its height) each. The
+// pelvis drops to let the higher foot reach, by half the gap each frame, and a
+// foot is held at least 30 under the pelvis.
+// FS2 0x0014d130
+bool ModelPose::solveFeet(const float *left, const float *right)
+{
+    constexpr float kSteepGround = 0.9f;
+    constexpr float kSteepDrop   = 3.0f;
+    constexpr float kMinLegRoom  = 30.0f;
+    if (leftToe == nullptr || rightToe == nullptr)
+        return false;
+    if (left == nullptr || right == nullptr)
+        return false;
+
+    float pelvisHeight = pelvisBone->getRawHeight();
+    sceVu0FVECTOR leftGround, rightGround;
+    copyVector(leftGround, left);
+    const float pelvisBind = pelvisBone->position[PoseSlot_Bind][1];
+    copyVector(rightGround, right);
+    if (leftGround[2] < kSteepGround || rightGround[2] < kSteepGround)
+        pelvisHeight -= kSteepDrop;
+
+    float pelvisAt;
+    if (leftGround[3] < rightGround[3]) {
+        pelvisAt = rightGround[3] + pelvisHeight;
+        if (pelvisBind < pelvisAt - leftGround[3])
+            pelvisAt = leftGround[3] + pelvisBind;
+        if (pelvisAt - rightGround[3] < kMinLegRoom)
+            rightGround[3] = pelvisAt - kMinLegRoom;
+    } else {
+        pelvisAt = leftGround[3] + pelvisHeight;
+        if (pelvisBind < pelvisAt - rightGround[3])
+            pelvisAt = rightGround[3] + pelvisBind;
+        if (pelvisAt - leftGround[3] < kMinLegRoom)
+            leftGround[3] = pelvisAt - kMinLegRoom;
+    }
+    rootOffset[1] = (pelvisAt - (rootOffset[1] + pelvisHeight + position[2])) * 0.5f + rootOffset[1] + 0.0f;
+
+    sceVu0FVECTOR ankle;
+    leftToe->parent->getPosition(ankle);
+    ankle[2] = leftGround[3] + leftToe->parent->getRawHeight();
+    solveLeg(ankle, leftGround, true);
+    rightToe->parent->getPosition(ankle);
+    ankle[2] = rightGround[3] + rightToe->parent->getRawHeight();
+    solveLeg(ankle, rightGround, false);
+    return true;
+}
+
+// The left tool bone hung on the chest (spine1) at a fixed place, for the five
+// named characters: what they carry there aims at the tool target, if any.
+// FS2 0x0014d370
+// callcheck: scaleVec4 (held by easeHalfway)
+void ModelPose::solveChestTool(float rate)
+{
+    if (leftTool == nullptr || spine1Bone == nullptr)
+        return;
+    leftTool->parent = spine1Bone;
+    copyVector(leftTool->position[PoseSlot_Current], chestToolPosition);
+    copyVector(leftTool->position[PoseSlot_Solve], chestToolPosition);
+    copyVector(leftTool->position[PoseSlot_Final], chestToolPosition);
+    sceVu0FVECTOR quat;
+    quatFromAxisAngle(quat, chestToolAxis);
+    copyVector(leftTool->rotation[PoseSlot_Current], quat);
+    copyVector(leftTool->rotation[PoseSlot_Solve], quat);
+    copyVector(leftTool->rotation[PoseSlot_Final], quat);
+    if (toolTo[3] != 0.0f) {
+        easeHalfway(toolFrom, toolTo);
+        leftTool->settleFixed(rate, 1);
+        static const sceVu0FVECTOR kX = { 1.0f, 0.0f, 0.0f, 1.0f };
+        leftTool->aimTurn(kTwoPi, toolFrom, kX);
+    }
+    leftTool->buildMatrix(0.0f, PoseSlot_Solve, 0);
+    copyVector(leftTool->rotation[PoseSlot_Final], leftTool->rotation[PoseSlot_Solve]);
+}
+
+// The left arm reaches for the tool target: the elbow is put out by where the
+// target lies in the shoulder's axes, the hand ends turned to it.
+// FS2 0x0014d4c0
+void ModelPose::solveTool(float rate)
+{
+    constexpr float kAimedWeight = 0.001f;
+    constexpr float kNearSq      = 10000.0f;
+    constexpr float kElbowDrop   = 100.0f;
+    constexpr float kHandTurn    = -2.19911504f; // 0xc00cbe4c
+    if (leftTool == nullptr || hasChestTool != 0)
+        return;
+    ModelPoseBone *hand = leftTool->parent;
+    ModelPoseBone *wrist = hand->parent;
+    ModelPoseBone *forearm = wrist->parent;
+    ModelPoseBone *upperArm = forearm->parent;
+    ModelPoseBone *shoulder = upperArm->parent;
+
+    if (toolTo[3] == 0.0f) {
+        hand->settle(rate, 4);
+        if (hand->solveWeight < kAimedWeight)
+            return;
+    } else {
+        easeHalfway(toolFrom, toolTo);
+        hand->settleFixed(rate, 4);
+    }
+
+    sceVu0FVECTOR origin = { 0.0f, 0.0f, 0.0f, 1.0f };
+    sceVu0FVECTOR axisX = { 1.0f, 0.0f, 0.0f, 1.0f };
+    sceVu0FVECTOR axisY = { 0.0f, 1.0f, 0.0f, 1.0f };
+    sceVu0FVECTOR axisZ = { 0.0f, 0.0f, 1.0f, 1.0f };
+    applyMatrix(origin, shoulder->matrix, origin);
+    applyMatrix(axisX, shoulder->matrix, axisX);
+    subVector(axisX, axisX, origin);
+    applyMatrix(axisY, shoulder->matrix, axisY);
+    subVector(axisY, axisY, origin);
+    applyMatrix(axisZ, shoulder->matrix, axisZ);
+    subVector(axisZ, axisZ, origin);
+
+    sceVu0FVECTOR toTool;
+    subVector(toTool, toolFrom, origin);
+    const float distanceSq = toTool[2] * toTool[2] + toTool[0] * toTool[0] + toTool[1] * toTool[1];
+    vecNormalize(toTool, toTool);
+    const float byZ = vecDot(axisZ, toTool);
+    const float byX = vecDot(axisX, toTool);
+
+    sceVu0FVECTOR elbowX, elbowZ, nearY, nearX;
+    if (byX < 0.0f)
+        scaleVec4(byX * 300.0f, elbowX, axisY);
+    else
+        scaleVec4(byX * 100.0f, elbowX, axisX);
+    if (0.0f < byZ)
+        scaleVec4(-byZ * 300.0f, elbowZ, axisY);
+    else
+        scaleVec4(0.0f, elbowZ, axisY);
+    if (distanceSq < kNearSq) {
+        scaleVec4((kNearSq - distanceSq) * 0.03f, nearY, axisY);
+        scaleVec4((kNearSq - distanceSq) * 0.01f + 20.0f, nearX, axisX);
+    } else {
+        scaleVec4(0.0f, nearY, axisY);
+        scaleVec4(20.0f, nearX, axisX);
+    }
+    sceVu0FVECTOR elbow;
+    addVector(elbow, upperArm->matrix[3], elbowX);
+    addVector(elbow, elbow, elbowZ);
+    addVector(elbow, elbow, nearX);
+    addVector(elbow, elbow, nearY);
+    elbow[2] -= kElbowDrop;
+
+    upperArm->aimAlongAxis(kHalfPi, elbow, 0);
+    upperArm->buildMatrix(0.0f, PoseSlot_Solve, 0);
+    forearm->aimAlongAxis(kPi, toolFrom, 0);
+    forearm->buildMatrix(0.0f, PoseSlot_Solve, 0);
+    wrist->buildMatrix(0.0f, PoseSlot_Solve, 0);
+
+    sceVu0FVECTOR toolAxis = { 1.0f, 0.0f, 0.0f, 1.0f };
+    sceVu0FMATRIX toolTurn;
+    quatToMatrix(toolTurn, leftTool->rotation[PoseSlot_Current]);
+    applyMatrix(toolAxis, toolTurn, toolAxis);
+    hand->aimTurn(kPi, toolFrom, toolAxis);
+    sceVu0FVECTOR quat = { 1.0f, 0.0f, 0.0f, kHandTurn };
+    quatFromAxisAngle(quat, quat);
+    quatMultiply(hand->rotation[PoseSlot_Solve], quat, hand->rotation[PoseSlot_Solve]);
+}
+
+// The upper body turns to the look target, spine0 by 40% of limit and spine1
+// by 60%; given a bone, so that the bone's x axis (a held gun's) points at it.
+// FS2 0x0014d990
+// callcheck: scaleVec4 (held by easeHalfway)
+void ModelPose::solveLook(float limit, float rate, const ModelPoseBone *held)
+{
+    constexpr float kAimedWeight = 0.001f;
+    constexpr float kLowerShare  = 0.4f;
+    constexpr float kUpperShare  = 0.6f;
+    constexpr float kLookEase    = 0.3f;
+    constexpr int   kHeldChain   = 8;       // the bones from the spine down to a tool
+    if (spine0Bone == nullptr || spine1Bone == nullptr)
+        return;
+    if (lookTo[3] == 0.0f) {
+        spine0Bone->settle(rate, 1);
+        spine1Bone->settle(rate, 1);
+        if (spine0Bone->solveWeight < kAimedWeight)
+            return;
+    } else {
+        easeHalfway(lookFrom, lookTo);
+        spine0Bone->settleFixed(rate, 1);
+        spine1Bone->settleFixed(rate, 1);
+    }
+    sceVu0FVECTOR target;
+    copyVector(target, lookFrom);
+    target[3] = 0.0f;
+
+    if (held == nullptr) {
+        sceVu0FVECTOR up, dir;
+        copyVector(up, rootBone->matrix[2]);
+        ModelPoseBone *neck = neckBone;
+        if (neck != nullptr)
+            target[2] = lookFrom[2] + (spine0Bone->getRawHeight() - neck->getRawHeight());
+        spine0Bone->getPosition(dir);
+        addVector(dir, dir, up);
+        sceVu0FMATRIX inverse;
+        invertRigidMatrix(inverse, spine0Bone->matrix);
+        applyMatrix(dir, inverse, dir);
+        spine0Bone->aimOwnTurn(limit * kLowerShare, target, dir);
+        spine0Bone->blendSolve(kLookEase, PoseSlot_Final);
+        spine0Bone->buildMatrix(0.0f, PoseSlot_Solve, 0);
+
+        if (neckBone != nullptr)
+            target[2] = lookFrom[2] + (spine1Bone->getRawHeight() - neckBone->getRawHeight());
+        spine1Bone->getPosition(dir);
+        addVector(dir, dir, up);
+        invertRigidMatrix(inverse, spine1Bone->matrix);
+        applyMatrix(dir, inverse, dir);
+        spine1Bone->aimOwnTurn(limit * kUpperShare, target, dir);
+        spine1Bone->blendSolve(kLookEase, PoseSlot_Final);
+        spine1Bone->buildMatrix(0.0f, PoseSlot_Solve, 0);
+
+        // The arms follow; the left from one bone further up than the right (the ROM).
+        if (leftUpperArm != nullptr) {
+            leftUpperArm->parent->parent->parent->buildMatrix(0.0f, PoseSlot_Solve, 0);
+            leftUpperArm->parent->parent->buildMatrix(0.0f, PoseSlot_Solve, 0);
+            leftUpperArm->parent->buildMatrix(0.0f, PoseSlot_Solve, 0);
+            leftUpperArm->buildMatrix(0.0f, PoseSlot_Solve, 0);
+        }
+        if (rightUpperArm != nullptr) {
+            rightUpperArm->parent->parent->buildMatrix(0.0f, PoseSlot_Solve, 0);
+            rightUpperArm->parent->buildMatrix(0.0f, PoseSlot_Solve, 0);
+            rightUpperArm->buildMatrix(0.0f, PoseSlot_Solve, 0);
+        }
+    } else {
+        spine0Bone->aimThrough(limit * kLowerShare, held, target);
+        spine0Bone->blendSolve(kLookEase, PoseSlot_Final);
+        spine0Bone->buildMatrix(0.0f, PoseSlot_Solve, 0);
+        if (held == leftTool || held == rightTool) {
+            spine1Bone->buildMatrix(0.0f, PoseSlot_Solve, 0);
+            for (int depth = kHeldChain - 1; depth >= 0; depth--) {
+                ModelPoseBone *bone = const_cast<ModelPoseBone *>(held);
+                for (int up = 0; up < depth; up++)
+                    bone = bone->parent;
+                bone->buildMatrix(0.0f, PoseSlot_Solve, 0);
+            }
+        }
+        spine1Bone->aimThrough(limit * kUpperShare, held, target);
+        spine1Bone->blendSolve(kLookEase, PoseSlot_Final);
+        spine1Bone->buildMatrix(0.0f, PoseSlot_Solve, 0);
+    }
+}
+
+// The neck, then the head, to the head target, each by the head limits.
+// FS2 0x0014df50
+// callcheck: scaleVec4 (held by easeHalfway)
+void ModelPose::solveHead(float rate)
+{
+    constexpr float kAimedWeight = 0.001f;
+    constexpr float kHeadEase    = 0.3f;
+    if (headBone == nullptr)
+        return;
+    if (headTo[3] == 0.0f) {
+        headBone->settle(rate, 2);
+        if (headBone->solveWeight < kAimedWeight)
+            return;
+    } else {
+        headBone->settleFixed(rate, 2);
+    }
+    easeHalfway(headFrom, headTo);
+
+    ModelPoseBone *neck = headBone->parent;
+    neck->aimLimited(headLimit, headLimitUp, headLimitDown, neck->rotation[PoseSlot_Solve], headFrom, neckForward);
+    neck->blendSolve(kHeadEase, PoseSlot_Final);
+    neck->buildMatrix(0.0f, PoseSlot_Solve, 0);
+    headBone->aimLimited(headLimit, headLimitUp, headLimitDown, headBone->rotation[PoseSlot_Solve], headFrom,
+                         headForward);
+    headBone->blendSolve(kHeadEase, PoseSlot_Final);
+}
+
+// Written in modelpose.h, so not seen by the tools there:
+// ModelPoseBone::getPosition FS2 0x0014b620, getRawHeight FS2 0x0014b630,
+// getValue FS2 0x0014b970, the implicit ~ModelPoseBone FS2 0x0014cac0,
+// ModelPose::getLowerNames FS2 0x0014e0a0, setWindOn FS2 0x0014e0b0,
+// popEvent FS2 0x0014e410, isWalking FS2 0x0014e930, clearPlacement
+// FS2 0x0014ef60, setPosition FS2 0x0014ef90, getPosition FS2 0x0014f190,
+// getPosition2 FS2 0x0014f1b0, rotate FS2 0x0014f1d0, findBone FS2 0x0014f2a0,
+// resetSwingBones FS2 0x0014f430, getBoneMatrix FS2 0x0014f8c0. The jump
+// FS2 0x00149940 is swingAhead.
