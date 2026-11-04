@@ -104,6 +104,7 @@ SDL_GPUColorTargetBlendState blendStateOf(PipelineKey key)
 
 Renderer::Renderer(Window &window, gpu::Device &device, Config &config, EventQueue &events, ui::Overlay &overlay)
     : m_window(window), m_device(device), m_config(config), m_events(events), m_overlay(overlay), m_canvas(*this),
+      m_models(*this, device),
       m_sceneFormat(SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM), m_outputFormat(SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM)
 {
     m_vertexShader = m_device.loadShader("ui.vert", SDL_GPU_SHADERSTAGE_VERTEX, {.samplers = 0, .uniformBuffers = 1});
@@ -218,6 +219,7 @@ void Renderer::ensureTargets(const PictureLayout &layout)
         m_outputWidth = layout.windowWidth;
         m_outputHeight = layout.windowHeight;
     }
+    m_models.ensureDepth(layout.renderWidth, layout.renderHeight);
 }
 
 SDL_GPUGraphicsPipeline *Renderer::pipelineFor(PipelineKey key)
@@ -268,11 +270,9 @@ SDL_GPUSampler *Renderer::samplerFor(bool linear, bool repeat) const
 
 void Renderer::uploadImages(SDL_GPUCopyPass *copy, Frame &frame)
 {
-    for (const DrawCall &draw : frame.draws)
-    {
-        Image *const image = draw.image.get();
+    const auto upload = [&](Image *image) {
         if (image == nullptr || image->texture != nullptr || image->pixels.empty())
-            continue;
+            return;
 
         image->texture = std::make_shared<gpu::Texture>(
             m_device.createTexture(static_cast<unsigned>(image->width), static_cast<unsigned>(image->height),
@@ -281,7 +281,12 @@ void Renderer::uploadImages(SDL_GPUCopyPass *copy, Frame &frame)
                                static_cast<unsigned>(image->height), image->pixels,
                                m_staging.emplace_back());
         std::vector<std::byte>().swap(image->pixels);
-    }
+    };
+
+    for (const DrawCall &draw : frame.draws)
+        upload(draw.image.get());
+    for (const ModelDraw &draw : frame.modelDraws)
+        upload(draw.image.get());
 }
 
 void Renderer::uploadVertices(SDL_GPUCopyPass *copy, const Frame &frame)
@@ -315,9 +320,29 @@ void Renderer::uploadVertices(SDL_GPUCopyPass *copy, const Frame &frame)
 
 void Renderer::recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout)
 {
+    // The 2D draws and the model passes take turns, as the game's lists do. A pass of models has a depth
+    // target and the 2D pipelines have none, so each stretch is its own render pass.
+    std::size_t nextDraw = 0;
+    bool cleared = false;
+    for (const ModelPass &pass : frame.modelPasses)
+    {
+        recordUi(commands, frame, layout, nextDraw, pass.uiDrawsBefore, !cleared);
+        cleared = true;
+        nextDraw = pass.uiDrawsBefore;
+        m_models.recordPass(commands, frame, pass, m_scene.get(), m_white.get(), layout);
+    }
+    recordUi(commands, frame, layout, nextDraw, frame.draws.size(), !cleared);
+}
+
+void Renderer::recordUi(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout,
+                        std::size_t first, std::size_t last, bool clear)
+{
+    if (first == last && !clear)
+        return;
+
     SDL_GPUColorTargetInfo target{};
     target.texture = m_scene.get();
-    target.load_op = SDL_GPU_LOADOP_CLEAR;
+    target.load_op = clear ? SDL_GPU_LOADOP_CLEAR : SDL_GPU_LOADOP_LOAD;
     target.store_op = SDL_GPU_STOREOP_STORE;
     target.clear_color = {0.0f, 0.0f, 0.0f, 0.0f};
 
@@ -328,7 +353,7 @@ void Renderer::recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, c
         return;
     }
 
-    if (!frame.draws.empty())
+    if (first != last)
     {
         SDL_GPUBufferBinding vertices{};
         vertices.buffer = m_vertexBuffer.get();
@@ -339,8 +364,9 @@ void Renderer::recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, c
     const float scaleX = static_cast<float>(layout.renderWidth) / kFrameWidth;
     const float scaleY = static_cast<float>(layout.renderHeight) / kFrameHeight;
 
-    for (const DrawCall &draw : frame.draws)
+    for (std::size_t index = first; index < last; index++)
     {
+        const DrawCall &draw = frame.draws[index];
         SDL_GPUGraphicsPipeline *const pipeline = pipelineFor(draw.pipeline);
         if (pipeline == nullptr || draw.vertexCount == 0)
             continue;
@@ -484,6 +510,7 @@ void Renderer::renderOnce()
     {
         uploadImages(copy, *m_shown);
         uploadVertices(copy, *m_shown);
+        m_models.uploadVertices(copy, *m_shown);
     }
     SDL_EndGPUCopyPass(copy);
 

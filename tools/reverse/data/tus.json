@@ -1640,6 +1640,15 @@
   "unassigned@002c42a0": {},
   "unassigned@002d46a0": {},
   "yamipan/rendering/model_renderer.cpp": {
+   "notes": "Picture: YAMIPAN_CAMERA=auto, build.py --run 290 --pad with work/newgame_pad.txt shows the stage Root model textured with depth. No in-game reference exists, so it proves the path, not the colours. The stage is black without YAMIPAN_CAMERA: the camera step 0x178160 is not written. open-items.md (before Decisions) has the ordered list: camera step, the light formula from VU1, special map objects and collision, skinned meshes, the left-out draw features. createMapObject was a stub answering null, which is why no model reached the record.",
+   "sessions": [
+    {
+     "date": "2026-11-04 10:11",
+     "status": "partial",
+     "summary": "First 3D picture: textured map ground through a new host 3D module; camera and map objects written; lighting a guess, characters not drawn, not compared with the game"
+    }
+   ],
+   "status": "partial",
    "task": "3D path 5 of 5 (the user's pin): the first milestone is one static map model on screen. A new C++ 3D host module (cpp-port.md) with a depth buffer, and renaBeginFrame, renaDrawModels and renaEndPass reconstructed to feed it, meshes decoded from the model file at the source (no VU1, no GS memory). Flat colour first, then textures through texture_store. The projection must follow the renderer's display aspect, not the fixed 4:3 of drawSysInit (the user's any-aspect rule). Read the VU1 microcode 0x2ec900..0x2f0880 only as far as needed. Success is a picture of the map, compared with the game. Later fill in yamipan_drawshadow.h."
   },
   "yamipan/rendering/texture_store.cpp": {

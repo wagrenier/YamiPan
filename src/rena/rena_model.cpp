@@ -30,6 +30,7 @@
 #include "game/vu0math.h"
 #include "rena/rena_2d_texture_tim2.h"
 #include "rena/rena_draw.h"
+#include "yamipan/rendering/yamipan_drawmodel.h"
 #include "rx/rxsys.h"
 
 static const char kModelMagic[] = "RM2";    /* data 0x30fe00, gp-0x7b48 */
@@ -130,6 +131,7 @@ void ModelInstance::setTexture(int slot, Tim2Texture *texture)
     if (length > 2 && name[length - 2] == kPremultipliedSuffix[0] && name[length - 1] == kPremultipliedSuffix[1])
         modelTexturePremultiplyPalette(texture);
     textures[slot] = texture;
+    YamiPan_ModelForgetTextures();  // PC: a stage's pack reuses the last one's addresses
 }
 
 // A packet's five or seven tags, and with skinning its two lists of

@@ -381,3 +381,7 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   tool and run that.
 - **Source files may be CRLF.** A replace script with LF in its search text fails its assert. Fix:
   normalise to LF, replace, and write the file back as it was.
+
+## Stubs that answer null (2026-11-04)
+
+Symptom: a loader "ran", instances were counted, yet nothing appears and the stub never shows in the reached list of the next function. Cause: `createMapObject` was a stub answering null and `applyBgTarget` skips a null; 3D path TU 4 counted 22 instances and read that as success, so TU 5 built a renderer for an empty record. Fix: when something does not reach the draw, walk its callers for a `continue` on a stub's answer, and read the reached stubs in work/run_relwithdebinfo.log, not build.py's output, which only shows its tail.
