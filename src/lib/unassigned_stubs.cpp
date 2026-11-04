@@ -34,12 +34,6 @@ AreaGrid::AreaGrid()
     YAMIPAN_STUB("AreaGrid::AreaGrid", 0x00284640);
 }
 
-// stub of FS2 0x00284560
-void AreaGrid::addId(int id)
-{
-    YAMIPAN_STUB("AreaGrid::addId", 0x00284560);
-}
-
 // stub of FS2 0x00284190
 int AreaGrid::contains(const sceVu0FVECTOR pos)
 {
@@ -1190,4 +1184,450 @@ void unloadMenuPack()
 void GsRegion::release()
 {
     YAMIPAN_STUB("GsRegion::release", 0x002e0840);
+}
+
+// stub of FS2 address unknown (0 candidates)
+AreaBox::AreaBox()
+{
+    YAMIPAN_STUB("AreaBox::AreaBox", 0x00000000);
+}
+
+// stub of FS2 0x002848d0
+void AreaBox::setSize(float width, float height, float depth)
+{
+    YAMIPAN_STUB("AreaBox::setSize", 0x002848d0);
+}
+
+// stub of FS2 0x00284560
+void AreaGrid::addBox(AreaBox *box)
+{
+    YAMIPAN_STUB("AreaGrid::addBox", 0x00284560);
+}
+
+// stub of FS2 0x00283ff0
+int AreaGrid::collect(const sceVu0FVECTOR pos, AreaBox **out, int max)
+{
+    YAMIPAN_STUB("AreaGrid::collect", 0x00283ff0);
+    return {};
+}
+
+// stub of FS2 address unknown (0 candidates)
+BoxVolume::BoxVolume()
+{
+    YAMIPAN_STUB("BoxVolume::BoxVolume", 0x00000000);
+}
+
+// stub of FS2 0x0017ea50
+void BoxVolume::setSize(float width, float height, float depth)
+{
+    YAMIPAN_STUB("BoxVolume::setSize", 0x0017ea50);
+}
+
+// stub of FS2 0x002b1270
+bool DemoStream::open(const void *header, const char *name)
+{
+    YAMIPAN_STUB("DemoStream::open", 0x002b1270);
+    return {};
+}
+
+// stub of FS2 0x002b1240
+bool DemoStream::play(int volume)
+{
+    YAMIPAN_STUB("DemoStream::play", 0x002b1240);
+    return {};
+}
+
+// stub of FS2 0x002b1010
+bool DemoStream::setFont(const void *font, const void *image)
+{
+    YAMIPAN_STUB("DemoStream::setFont", 0x002b1010);
+    return {};
+}
+
+// stub of FS2 0x002b11a0
+bool DemoStream::setFsm(void *fsm)
+{
+    YAMIPAN_STUB("DemoStream::setFsm", 0x002b11a0);
+    return {};
+}
+
+// stub of FS2 0x002b1110
+bool DemoStream::setPaused(bool on)
+{
+    YAMIPAN_STUB("DemoStream::setPaused", 0x002b1110);
+    return {};
+}
+
+// stub of FS2 address unknown (0 candidates)
+MenuProgHolder::MenuProgHolder(void const*, int)
+{
+    YAMIPAN_STUB("MenuProgHolder::MenuProgHolder", 0x00000000);
+}
+
+// stub of FS2 0x001d7ec0
+void NodeTransform::setRotation(float x, float y, float z)
+{
+    YAMIPAN_STUB("NodeTransform::setRotation", 0x001d7ec0);
+}
+
+// stub of FS2 address unknown (0 candidates)
+PointLight::PointLight()
+{
+    YAMIPAN_STUB("PointLight::PointLight", 0x00000000);
+}
+
+// stub of FS2 address unknown (1 candidates)
+bool SceneOwnedObject::isBusy()
+{
+    YAMIPAN_STUB("SceneOwnedObject::isBusy", 0x00000000);
+    return {};
+}
+
+// stub of FS2 0x001f6ad0
+void SceneRender::addCbBox(AreaBox *box)
+{
+    YAMIPAN_STUB("SceneRender::addCbBox", 0x001f6ad0);
+}
+
+// stub of FS2 0x001f6ac0
+void SceneRender::addSbBox(AreaBox *box)
+{
+    YAMIPAN_STUB("SceneRender::addSbBox", 0x001f6ac0);
+}
+
+// stub of FS2 0x001fa150
+void SceneRender::setShadowTexture(Tim2Texture *texture)
+{
+    YAMIPAN_STUB("SceneRender::setShadowTexture", 0x001fa150);
+}
+
+// stub of FS2 0x001fa1c0
+void SceneRender::setSpotlightTexture(Tim2Texture *texture)
+{
+    YAMIPAN_STUB("SceneRender::setSpotlightTexture", 0x001fa1c0);
+}
+
+// stub of FS2 0x00151e10
+void ScreenFill::setImage(const void *image)
+{
+    YAMIPAN_STUB("ScreenFill::setImage", 0x00151e10);
+}
+
+// stub of FS2 0x001d27e0
+void ScriptRunner::run(int arg)
+{
+    YAMIPAN_STUB("ScriptRunner::run", 0x001d27e0);
+}
+
+// stub of FS2 0x001d2f40
+void ScriptRunner::setEntry(const void *entry)
+{
+    YAMIPAN_STUB("ScriptRunner::setEntry", 0x001d2f40);
+}
+
+// stub of FS2 address unknown (0 candidates)
+SphereVolume::SphereVolume()
+{
+    YAMIPAN_STUB("SphereVolume::SphereVolume", 0x00000000);
+}
+
+// stub of FS2 0x0017ec20
+void SphereVolume::setRadius(float radius)
+{
+    YAMIPAN_STUB("SphereVolume::setRadius", 0x0017ec20);
+}
+
+// stub of FS2 address unknown (0 candidates)
+SpotLight::SpotLight()
+{
+    YAMIPAN_STUB("SpotLight::SpotLight", 0x00000000);
+}
+
+// stub of FS2 0x00185210
+void SpotLight::setConeAngle(int degrees)
+{
+    YAMIPAN_STUB("SpotLight::setConeAngle", 0x00185210);
+}
+
+// stub of FS2 address unknown (0 candidates)
+StageCamera::StageCamera(float, float, float, float)
+{
+    YAMIPAN_STUB("StageCamera::StageCamera", 0x00000000);
+}
+
+// stub of FS2 0x00177d20
+void StageCamera::addToScene(const char *name)
+{
+    YAMIPAN_STUB("StageCamera::addToScene", 0x00177d20);
+}
+
+// stub of FS2 0x00177900
+void StageCamera::lookAt(const float *target)
+{
+    YAMIPAN_STUB("StageCamera::lookAt", 0x00177900);
+}
+
+// stub of FS2 address unknown (0 candidates)
+StageCharacter::StageCharacter()
+{
+    YAMIPAN_STUB("StageCharacter::StageCharacter", 0x00000000);
+}
+
+// stub of FS2 0x0017c700
+void StageCharacter::setup(const char *name, ModelInstance *instance, StringMap<Tim2Texture *> *textures,
+               StageList<void *> *motions, StageList<void *> *motions2, void *mdl)
+{
+    YAMIPAN_STUB("StageCharacter::setup", 0x0017c700);
+}
+
+// stub of FS2 0x00287bb0
+const char * StageEvent::getVoicePath(char *out)
+{
+    YAMIPAN_STUB("StageEvent::getVoicePath", 0x00287bb0);
+    return {};
+}
+
+// stub of FS2 0x00287b70
+bool StageEvent::isSkippable()
+{
+    YAMIPAN_STUB("StageEvent::isSkippable", 0x00287b70);
+    return {};
+}
+
+// stub of FS2 0x00287af0
+bool StageEvent::usesLanguageFont()
+{
+    YAMIPAN_STUB("StageEvent::usesLanguageFont", 0x00287af0);
+    return {};
+}
+
+// stub of FS2 0x001512e0
+bool StageFade::isFullInMode1()
+{
+    YAMIPAN_STUB("StageFade::isFullInMode1", 0x001512e0);
+    return {};
+}
+
+// stub of FS2 address unknown (0 candidates)
+StageItem::StageItem()
+{
+    YAMIPAN_STUB("StageItem::StageItem", 0x00000000);
+}
+
+// stub of FS2 0x001823f0
+void StageItem::initWeapon()
+{
+    YAMIPAN_STUB("StageItem::initWeapon", 0x001823f0);
+}
+
+// stub of FS2 address unknown (1 candidates)
+void StageItem::setupItem(const char *name, ModelInstance *instance,
+                   StringMap<Tim2Texture *> *textures, StageList<void *> *motions)
+{
+    YAMIPAN_STUB("StageItem::setupItem", 0x00000000);
+}
+
+// stub of FS2 address unknown (0 candidates)
+StageItemE::StageItemE()
+{
+    YAMIPAN_STUB("StageItemE::StageItemE", 0x00000000);
+}
+
+// stub of FS2 0x001861b0
+void StageLight::addToScene(const char *name, bool withShade)
+{
+    YAMIPAN_STUB("StageLight::addToScene", 0x001861b0);
+}
+
+// stub of FS2 0x00186160
+void StageLight::copyShownFrom(StageLight *other)
+{
+    YAMIPAN_STUB("StageLight::copyShownFrom", 0x00186160);
+}
+
+// stub of FS2 0x00185fb0
+void StageLight::setEnabled(bool on)
+{
+    YAMIPAN_STUB("StageLight::setEnabled", 0x00185fb0);
+}
+
+// stub of FS2 0x00185bb0
+void StageLight::setRadiusSquared(float radiusSquared)
+{
+    YAMIPAN_STUB("StageLight::setRadiusSquared", 0x00185bb0);
+}
+
+// stub of FS2 0x00185c40
+void StageLight::setVector(float x, float y, float z)
+{
+    YAMIPAN_STUB("StageLight::setVector", 0x00185c40);
+}
+
+// stub of FS2 0x002868c0
+void StageMission::onRestore()
+{
+    YAMIPAN_STUB("StageMission::onRestore", 0x002868c0);
+}
+
+// stub of FS2 0x002867a0
+void StageMission::setSpawnPoint(int id, const float *pos, const float *rot)
+{
+    YAMIPAN_STUB("StageMission::setSpawnPoint", 0x002867a0);
+}
+
+// stub of FS2 address unknown (0 candidates)
+StageObject::StageObject()
+{
+    YAMIPAN_STUB("StageObject::StageObject", 0x00000000);
+}
+
+// stub of FS2 0x00214fc0
+int StageObject::getActionState()
+{
+    YAMIPAN_STUB("StageObject::getActionState", 0x00214fc0);
+    return {};
+}
+
+// stub of FS2 address unknown (1 candidates)
+void StageObject::onViewTop()
+{
+    YAMIPAN_STUB("StageObject::onViewTop", 0x00000000);
+}
+
+// stub of FS2 0x0018bdc0
+void StageObjectTree::setActive(bool on)
+{
+    YAMIPAN_STUB("StageObjectTree::setActive", 0x0018bdc0);
+}
+
+// stub of FS2 0x0018bbe0
+void StageObjectTree::setShown(bool on)
+{
+    YAMIPAN_STUB("StageObjectTree::setShown", 0x0018bbe0);
+}
+
+// stub of FS2 0x001fe9b0
+void StageParty::setFillImage(const void *image)
+{
+    YAMIPAN_STUB("StageParty::setFillImage", 0x001fe9b0);
+}
+
+// stub of FS2 address unknown (0 candidates)
+StageThrownItem::StageThrownItem()
+{
+    YAMIPAN_STUB("StageThrownItem::StageThrownItem", 0x00000000);
+}
+
+// stub of FS2 address unknown (0 candidates)
+StageTrapItem::StageTrapItem()
+{
+    YAMIPAN_STUB("StageTrapItem::StageTrapItem", 0x00000000);
+}
+
+// stub of FS2 address unknown (0 candidates)
+StageWeaponItem::StageWeaponItem()
+{
+    YAMIPAN_STUB("StageWeaponItem::StageWeaponItem", 0x00000000);
+}
+
+// stub of FS2 address unknown (0 candidates)
+SubSceneCharacter::SubSceneCharacter(int)
+{
+    YAMIPAN_STUB("SubSceneCharacter::SubSceneCharacter", 0x00000000);
+}
+
+// stub of FS2 0x002bb870
+void SubSceneCharacter::setup(const char *name, ModelInstance *instance,
+               StringMap<Tim2Texture *> *textures)
+{
+    YAMIPAN_STUB("SubSceneCharacter::setup", 0x002bb870);
+}
+
+// stub of FS2 0x0026c880
+StageScript * SubSceneData::getScript()
+{
+    YAMIPAN_STUB("SubSceneData::getScript", 0x0026c880);
+    return {};
+}
+
+// stub of FS2 address unknown (0 candidates)
+SubSceneItem::SubSceneItem(int)
+{
+    YAMIPAN_STUB("SubSceneItem::SubSceneItem", 0x00000000);
+}
+
+// stub of FS2 0x002bb680
+void SubSceneItem::setup(const char *name, ModelInstance *instance,
+               StringMap<Tim2Texture *> *textures)
+{
+    YAMIPAN_STUB("SubSceneItem::setup", 0x002bb680);
+}
+
+// stub of FS2 address unknown (0 candidates)
+SubSceneModelObject::SubSceneModelObject(int)
+{
+    YAMIPAN_STUB("SubSceneModelObject::SubSceneModelObject", 0x00000000);
+}
+
+// stub of FS2 address unknown (0 candidates)
+SubSceneObject::SubSceneObject(bool)
+{
+    YAMIPAN_STUB("SubSceneObject::SubSceneObject", 0x00000000);
+}
+
+// stub of FS2 0x002bb810
+void SubSceneProp::setup(const char *name, ModelInstance *instance,
+               StringMap<Tim2Texture *> *textures)
+{
+    YAMIPAN_STUB("SubSceneProp::setup", 0x002bb810);
+}
+
+// stub of FS2 0x0029fb30
+int parseSpawnId(const char *name)
+{
+    YAMIPAN_STUB("parseSpawnId", 0x0029fb30);
+    return {};
+}
+
+// stub of FS2 0x0029f050
+void scriptPrepare(StageScript *script)
+{
+    YAMIPAN_STUB("scriptPrepare", 0x0029f050);
+}
+
+// stub of FS2 0x0018b290
+bool stageObjectIsShown(StageObject *object)
+{
+    YAMIPAN_STUB("stageObjectIsShown", 0x0018b290);
+    return {};
+}
+
+// stub of FS2 address unknown (0 candidates)
+ScriptRunner::ScriptRunner()
+{
+    YAMIPAN_STUB("ScriptRunner::ScriptRunner", 0x00000000);
+}
+
+// stub of FS2 address unknown (0 candidates)
+StageLight::StageLight()
+{
+    YAMIPAN_STUB("StageLight::StageLight", 0x00000000);
+}
+
+// stub of FS2 0x0017ef10
+void StageMarker::addToScene(const char *name)
+{
+    YAMIPAN_STUB("StageMarker::addToScene", 0x0017ef10);
+}
+
+// stub of FS2 0x0017ecb0
+void StageVolume::addToScene(const char *name)
+{
+    YAMIPAN_STUB("StageVolume::addToScene", 0x0017ecb0);
+}
+
+// stub of FS2 0x001d7f00
+void NodeTransform::setPositionXyz(float x, float y, float z)
+{
+    YAMIPAN_STUB("NodeTransform::setPositionXyz", 0x001d7f00);
 }

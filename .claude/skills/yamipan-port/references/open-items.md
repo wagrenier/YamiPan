@@ -994,12 +994,31 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    (oGK99_01, oDC99_01), setFlag84 (caller 0x236b90 unread), setParticleFileA / B (which is which is
    unread), DoorRecord +0x34's meaning. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only
    -Wall clean on stagescene (only the known rena_pkt_vif1pktmanage.h:87 errors) and seplayer; a
-   scratch test of languageFile, fileWithSuffix and pathDir passes; nothing built or run. **Next for
-   this TU**: `applyMapTarget` 0x19ddf0 (0x1228 bytes) with its door / item helpers 0x19d0c0
-   (makes an item object: table 0x574c10, 0xa0 entries of 0x20) and 0x19d4e0, then `applyBgMotionTarget`
-   0x19f230, `applyItemTarget` 0x19f020, `applySoundTarget` 0x19d9e0 (one of them fills `groups`),
-   then update 0x199400 / draw 0x198970 / setupCameras 0x199f00 / enterSubScene 0x195e10 / the pad
-   tests / getFloor.
+   scratch test of languageFile, fileWithSuffix and pathDir passes; nothing built or run.
+   **Fifth run (2026-11-03, batch 085, 86 names; the 20-function slice written, still `partial`)**:
+   `applyMapTarget` (one member per map section), `placeItem` 0x19d0c0, `placeCharacter` 0x19d4e0,
+   `applyItemTarget`, `loadCommon` with `createMenuProg`, `wantsMapMenu` / `wantsPauseMenu` (shared
+   `playerAction`, inline in the ROM), `isInputBlocked`, `isBusy`, `partnerResponds`,
+   `restoreObjectFlags`, `getFloor`, `enterSubScene`, `removeView`, `StageViewStack::remove`,
+   `stageFps`, `setFlag84To`. **The map file's layout is proven by `relocate` 0x186ee0** and is now EE
+   structs in gamehooks.h (`StageMapFile` + six record types, S2dRef sections: `relocate`, still a
+   stub, must use `S2dRef::set`). Corrected: `AreaGrid::addId` takes a **box object**, not an id
+   (`addBox`), so `addArea0/1/2` / `addSoundArea` are `addFloorBox` / `addAbBox` / `addSmokeBox` /
+   `addReverbBox`, `StageArea_*` likewise; `getSoundAttr` is REVERB_ON, `getFloor` the ENV_MB box's
+   number. New stand-ins: `StageObject()` (0x18b700) with `m_xform` +0x140, `StageMarker`,
+   `StageCamera`, `StageLight` / `SpotLight` / `PointLight`, `StageVolume` / `SphereVolume` /
+   `BoxVolume`, `AreaBox` / `CbAreaBox` / `FloorAreaBox`, `StageCharacter`, `StageItem` and four
+   classes, the sub-scene classes, `ScriptRunner` / `gRunningScript`, `SubSceneData`,
+   `StageObjectTree`, `gWeaponDefs` (lib/unassigned_data.cpp holds the two new globals). ROM oddities
+   kept: the YAM_PL test reads the **spot** section at the point light's index, so a YAM_PL record
+   becomes a SphereVolume; F_YRT / F_SRT without a name_Snn record search the plain name and drop the
+   answer, placing nothing. Guessed names: partner, `partnerResponds`, controlled, `isSkippable`,
+   "volume", `setVector` (the ENV_ lights all pass 1, 0, 0), the PlayerAction values, `StageItemE`.
+   `StageScript::entry` treats `table` as an offset: the relocate TU must keep it one. Checked: build
+   green, callcheck clean, layoutcheck OK, smoke run unchanged (language screen; nothing here runs
+   before a stage loads). **Next for this TU**: `applySoundTarget` 0x19d9e0, `applyBgMotionTarget`
+   0x19f230, then update 0x199400, draw 0x198970, setupCameras 0x199f00, loadList 0x1a3a60, and
+   0x19c6a0 (`SceneArrayPair::restoreFlags`).
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

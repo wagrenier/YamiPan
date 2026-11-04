@@ -6449,11 +6449,23 @@
   "was": "FUN_001512a0",
   "why": "a0 gStageScene +0xfc: mode +0x34 == 2 and level +0x24 == 1.0 (0x1512e0 the same for mode 1; StageScene 0x195850 ors them); StageSound does not resume a cue stream then. Class and mode meaning are guesses (a screen fade)"
  },
+ "001512e0": {
+  "name": "StageFade::isFullInMode1",
+  "tag": "game-inferred",
+  "was": "FUN_001512e0",
+  "why": "the same as isFullInMode2 with mode 1"
+ },
  "00151600": {
   "name": "StageFade::StageFade",
   "tag": "game-inferred",
   "was": "FUN_00151600",
   "why": "StageScene ctor new(0x3c) for +0xfc (StageFade) with 0x700, 0x700, 0x200, 0x200, 0: vtable 0x311270 over 0x311260 at +4, a Clock child"
+ },
+ "00151e10": {
+  "name": "ScreenFill::setImage",
+  "tag": "game-inferred",
+  "was": "FUN_00151e10",
+  "why": "a new Tim2Texture at +8, the old one deleted"
  },
  "00151f20": {
   "name": "ScreenFill::ScreenFill",
@@ -11021,6 +11033,72 @@
   "was": "FUN_00177270",
   "why": "a0 a node {object +0, name +4, left +8, right +0xc}, a1 a name: binary search by strcmp; the node whose object is set, null none. StageSound::update finds bn_head (0x303178) under model +0x14"
  },
+ "00177900": {
+  "name": "StageCamera::lookAt",
+  "tag": "game-inferred",
+  "was": "FUN_00177900",
+  "why": "target - position through atan2 into the transform's rotation"
+ },
+ "00177d20": {
+  "name": "StageCamera::addToScene",
+  "tag": "game-inferred",
+  "was": "FUN_00177d20",
+  "why": "setName, then StageObjectList::add0"
+ },
+ "00177d60": {
+  "name": "StageCamera::StageCamera",
+  "tag": "game-inferred",
+  "was": "FUN_00177d60",
+  "why": "vtable 0x311860, sceVu0ViewScreenMatrix-shaped call on the scrZ, width, height arguments; 450, 512, 512, 1600 from the map"
+ },
+ "0017c700": {
+  "name": "StageCharacter::setup",
+  "tag": "game-inferred",
+  "was": "FUN_0017c700",
+  "why": "takes the name, instance, textures, two motion lists and mdl of a StageCharacterModel"
+ },
+ "0017de30": {
+  "name": "StageCharacter::StageCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_0017de30",
+  "why": "made by placeCharacter, 0x800 bytes"
+ },
+ "0017ea50": {
+  "name": "BoxVolume::setSize",
+  "tag": "game-inferred",
+  "was": "FUN_0017ea50",
+  "why": "min +0x200 / max +0x210 centred on x / y, z 0..height"
+ },
+ "0017ea90": {
+  "name": "BoxVolume::BoxVolume",
+  "tag": "game-inferred",
+  "was": "FUN_0017ea90",
+  "why": "base vtable 0x3127f0, then 0x312580, two zero vectors"
+ },
+ "0017ec20": {
+  "name": "SphereVolume::setRadius",
+  "tag": "game-inferred",
+  "was": "FUN_0017ec20",
+  "why": "+0x200 = argument; the point section's float +0x1c"
+ },
+ "0017ec30": {
+  "name": "SphereVolume::SphereVolume",
+  "tag": "game-inferred",
+  "was": "FUN_0017ec30",
+  "why": "base vtable 0x3127f0, then 0x312a40, +0x200 radius"
+ },
+ "0017ecb0": {
+  "name": "StageVolume::addToScene",
+  "tag": "game-inferred",
+  "was": "FUN_0017ecb0",
+  "why": "setName, add7, its script by name"
+ },
+ "0017ef10": {
+  "name": "StageMarker::addToScene",
+  "tag": "game-inferred",
+  "was": "FUN_0017ef10",
+  "why": "setName, add6, its script by name"
+ },
  "0017f150": {
   "name": "getStageFiles",
   "tag": "game-inferred",
@@ -11075,6 +11153,42 @@
   "was": "FUN_0017fc90",
   "why": "deletes the previous loader in gp-0x7a78 (slot 0 at vptr +0x98, flag 1) and stores the new one; 0x2b60b0 hands it the stage PackFile / FileLoader before the stage thread and 0 after"
  },
+ "00180d30": {
+  "name": "StageThrownItem::StageThrownItem",
+  "tag": "game-inferred",
+  "was": "FUN_00180d30",
+  "why": "placeItem, I_HATUEN, I_AKIKAN, I_PET, I_NUT"
+ },
+ "00181200": {
+  "name": "StageTrapItem::StageTrapItem",
+  "tag": "game-inferred",
+  "was": "FUN_00181200",
+  "why": "placeItem, I_WANA (wana: a trap)"
+ },
+ "001823f0": {
+  "name": "StageItem::initWeapon",
+  "tag": "game-inferred",
+  "was": "FUN_001823f0",
+  "why": "placeItem's last call on a kind 0x15 object, after +0x450 = the weapon index"
+ },
+ "00182670": {
+  "name": "StageWeaponItem::StageWeaponItem",
+  "tag": "game-inferred",
+  "was": "FUN_00182670",
+  "why": "placeItem, ItemDef kind below 7"
+ },
+ "00182ad0": {
+  "name": "StageItemE::StageItemE",
+  "tag": "game-inferred",
+  "was": "FUN_00182ad0",
+  "why": "placeItem, ItemDef kind 0xe; class meaning unread"
+ },
+ "00183f40": {
+  "name": "StageItem::StageItem",
+  "tag": "game-inferred",
+  "was": "FUN_00183f40",
+  "why": "placeItem's default class, 0x240 bytes"
+ },
  "001842c0": {
   "name": "StageNodeList::pushBack",
   "tag": "game-inferred",
@@ -11087,11 +11201,59 @@
   "was": "FUN_00184370",
   "why": "a0 the list, a1 a link: unlinks it (head moves on when it was the head), frees it (0x184580), count - 1"
  },
+ "00185210": {
+  "name": "SpotLight::setConeAngle",
+  "tag": "game-inferred",
+  "was": "FUN_00185210",
+  "why": "+0x2c0 = degrees, +0x2c4 its cosine"
+ },
+ "00185260": {
+  "name": "SpotLight::SpotLight",
+  "tag": "game-inferred",
+  "was": "FUN_00185260",
+  "why": "vtable 0x313e30; made for ENV_CL / ENV_SL / YAM_CL / YAM_SL, has a cone angle"
+ },
+ "001856b0": {
+  "name": "PointLight::PointLight",
+  "tag": "game-inferred",
+  "was": "FUN_001856b0",
+  "why": "vtable 0x3141b0; made for ENV_PL"
+ },
  "00185af0": {
   "name": "VcmController::getWeight",
   "tag": "game-inferred",
   "was": "FUN_00185af0",
   "why": "float: 0 when +0x272 is set, +0x2a8 is 0, or +0x214 is clear and +0x23c is -1 / 0; else (+0x2ac motion with +0x18 non-zero ? its +0xc : +0x23c / +0x238) * +0x2a8; VcmTable::update's weight per controller (the object's name at +0x20, active byte +0x34); the class is unread, the name is the port's"
+ },
+ "00185bb0": {
+  "name": "StageLight::setRadiusSquared",
+  "tag": "game-inferred",
+  "was": "FUN_00185bb0",
+  "why": "+0x230 = argument, +0x234 its square root; map passes radius squared"
+ },
+ "00185c40": {
+  "name": "StageLight::setVector",
+  "tag": "game-inferred",
+  "was": "FUN_00185c40",
+  "why": "+0x220 = x, y, z, 1; meaning unread"
+ },
+ "00185fb0": {
+  "name": "StageLight::setEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_00185fb0",
+  "why": "byte at +0x200 and +0x36; YAM_ lights pass 0"
+ },
+ "00186160": {
+  "name": "StageLight::copyShownFrom",
+  "tag": "game-inferred",
+  "was": "FUN_00186160",
+  "why": "applies the other light's +0x214 and +0x272 to its object tree node; sub-scene only"
+ },
+ "001861b0": {
+  "name": "StageLight::addToScene",
+  "tag": "game-inferred",
+  "was": "FUN_001861b0",
+  "why": "setName, add5, its script by name, the light's setup"
  },
  "001865c0": {
   "name": "StageNodeBase::~StageNodeBase",
@@ -11099,11 +11261,47 @@
   "was": "FUN_001865c0",
   "why": "deleting dtor of the vtable 0x315ae0 node base (over 0x314150 / 0x314120): frees +0x10 / +0x14 (heap 0x329970), unlinks from the parent (+0x4, its child list +0x8), orphans its children, clears its list; StageSoundSource's dtor calls it"
  },
+ "001866f0": {
+  "name": "StageLight::StageLight",
+  "tag": "game-inferred",
+  "was": "FUN_001866f0",
+  "why": "base ctor of the two light classes"
+ },
  "00186ee0": {
   "name": "StageMapFile::relocate",
   "tag": "game-inferred",
   "was": "FUN_00186ee0",
   "why": "parseMap's: sets the map file's six section pointers +0..+0x14 from the counts at +0x18.."
+ },
+ "0018b290": {
+  "name": "stageObjectIsShown",
+  "tag": "game-inferred",
+  "was": "FUN_0018b290",
+  "why": "a byte through +0x30's first pointer, else +0x35"
+ },
+ "0018b4d0": {
+  "name": "StageObject::setName",
+  "tag": "game-inferred",
+  "was": "FUN_0018b4d0",
+  "why": "first call of every addToScene; takes the name passed on from a1"
+ },
+ "0018b700": {
+  "name": "StageObject::StageObject",
+  "tag": "game-inferred",
+  "was": "FUN_0018b700",
+  "why": "base ctor of 17 classes: vptrs +0, +0x1c, +0xf4, script runner +0x40, NodeTransform +0x140, name cleared"
+ },
+ "0018bbe0": {
+  "name": "StageObjectTree::setShown",
+  "tag": "game-inferred",
+  "was": "FUN_0018bbe0",
+  "why": "walks the node tree calling the objects' +0x244"
+ },
+ "0018bdc0": {
+  "name": "StageObjectTree::setActive",
+  "tag": "game-inferred",
+  "was": "FUN_0018bdc0",
+  "why": "walks the node tree writing the objects' +0x34 and +0x18"
  },
  "00190900": {
   "name": "StageNodeTree::setBoxes",
@@ -11411,11 +11609,23 @@
   "was": "FUN_001951e0",
   "why": "(node): 1 + the taller child's height, an empty child 0 (recursive, two levels unrolled); StageNameNode::balance's measure"
  },
+ "001953f0": {
+  "name": "StageScene::partnerResponds",
+  "tag": "game-inferred",
+  "was": "FUN_001953f0",
+  "why": "object flags, isPlayer, the motion's look angle in -190..-160, then +0x7c's byte +0x3c1; meaning is a guess"
+ },
  "001954c0": {
   "name": "StageScene::isEventActive",
   "tag": "game-inferred",
   "was": "FUN_001954c0",
   "why": "a stage (not a sub-scene) whose StageEvent +0xec has state +0x24 == 2; what state 2 means is unread"
+ },
+ "00195520": {
+  "name": "StageScene::restoreObjectFlags",
+  "tag": "game-inferred",
+  "was": "FUN_00195520",
+  "why": "0x19c6a0 on +0x124 with the mission's +0xbc object's flags saved around it"
  },
  "00195640": {
   "name": "StageScene::isCleared",
@@ -11428,6 +11638,18 @@
   "tag": "game-inferred",
   "was": "FUN_001956e0",
   "why": "+0x118 set and 0x2b1c50() == 5; true -> stageGameOverMenu"
+ },
+ "001957a0": {
+  "name": "StageScene::isBusy",
+  "tag": "game-inferred",
+  "was": "FUN_001957a0",
+  "why": "clear or gameOver sequence, mission +0xc8, or an event whose runner +0x28 is not the running script"
+ },
+ "00195850": {
+  "name": "StageScene::isInputBlocked",
+  "tag": "game-inferred",
+  "was": "FUN_00195850",
+  "why": "fade full in mode 1 or 2, or 0x1957a0; both menu tests refuse on it"
  },
  "001958b0": {
   "name": "StageScene::wantsMapMenu",
@@ -11482,6 +11704,12 @@
   "tag": "game-inferred",
   "was": "FUN_00196280",
   "why": "a0 gStageScene: +0x48 the rute file, +0x4c a new 0x253180 over it, the old one deleted"
+ },
+ "00196300": {
+  "name": "stageFps",
+  "tag": "game-inferred",
+  "was": "FUN_00196300",
+  "why": "1 / the scene clock's delta seconds"
  },
  "001963a0": {
   "name": "StageScene::beginPlay",
@@ -11562,22 +11790,22 @@
   "why": "a0 the scene, a1 a position: 0x284190(scene +0xb8, pos) != 0 (a point-in-area grid test: min +0x210, max +0x220, cell +0x230); StageSound::update passes it to SePlayer::setAttr / SoundTrack::setAttr for every placed sound (what the area is: unread, reverb likely)"
  },
  "0019ae30": {
-  "name": "StageScene::addSoundArea",
+  "name": "StageScene::addReverbBox",
   "tag": "game-inferred",
   "was": "FUN_0019ae30",
-  "why": "a0 a StageScene: AreaGrid::addId on +0xb8, the grid getSoundAttr tests"
+  "why": "the REVERB_ON boxes of the map go to grid +0xb8; was addSoundArea"
  },
  "0019ae40": {
-  "name": "StageScene::addArea2",
+  "name": "StageScene::addSmokeBox",
   "tag": "game-inferred",
   "was": "FUN_0019ae40",
-  "why": "a0 a StageScene: AreaGrid::addId on +0xb4 (the third of the four area grids +0xac..+0xb8); which areas it holds is unread"
+  "why": "SMOKE_A boxes, grid +0xb4; was addArea2"
  },
  "0019ae90": {
-  "name": "StageScene::addArea1",
+  "name": "StageScene::addAbBox",
   "tag": "game-inferred",
   "was": "FUN_0019ae90",
-  "why": "AreaGrid::addId on +0xb0, like addArea2 / addSoundArea"
+  "why": "ENV_AB boxes, grid +0xb0; was addArea1"
  },
  "0019aea0": {
   "name": "StageScene::getFloor",
@@ -11586,16 +11814,28 @@
   "why": "a0 gStageScene, a1 its player (+0x78): an int compared with the rF01..rF09 / rFDF index - 1 in UiLayout::testGameState (negative clamped to 0, 0 while the map does not show the player); guess: the floor the player is on"
  },
  "0019af30": {
-  "name": "StageScene::addArea0",
+  "name": "StageScene::addFloorBox",
   "tag": "game-inferred",
   "was": "FUN_0019af30",
-  "why": "AreaGrid::addId on +0xac, the same as its neighbours for +0xb0..+0xb8"
+  "why": "ENV_MB_f%02d boxes, grid +0xac (getFloor); was addArea0"
+ },
+ "0019af40": {
+  "name": "StageScene::createMenuProg",
+  "tag": "game-inferred",
+  "was": "FUN_0019af40",
+  "why": "+0xa4 = new 4-byte holder on the init pack item 6 and the stage number; loadCommon's last call"
  },
  "0019b540": {
   "name": "StageScene::setFlag84",
   "tag": "game-inferred",
   "was": "FUN_0019b540",
   "why": "+0x84 = 1; the flag's meaning is unread (caller 0x236b90)"
+ },
+ "0019b550": {
+  "name": "StageScene::setFlag84To",
+  "tag": "game-inferred",
+  "was": "FUN_0019b550",
+  "why": "+0x84 = argument, beside setFlag84"
  },
  "0019b740": {
   "name": "StageScene::setBgName",
@@ -11615,6 +11855,12 @@
   "was": "FUN_0019b7a0",
   "why": "a0 gStageScene: +0x3c / +0x40 the two script files, +0x44 a zeroed int array of the first one's short at +10"
  },
+ "0019bb60": {
+  "name": "StageScene::removeView",
+  "tag": "game-inferred",
+  "was": "FUN_0019bb60",
+  "why": "tail jump to 0x19cb50 on +0x34 the view stack"
+ },
  "0019bbb0": {
   "name": "StageScene::getActiveCharacter",
   "tag": "game-inferred",
@@ -11633,6 +11879,30 @@
   "was": "FUN_0019c180",
   "why": "ctor of the 0x130 stage scene (gp-0x7a7c): (isSubScene, sound); stageLoad passes false and the StageSound, the sub-scene branch true and 0; string streamEU/demo/"
  },
+ "0019c6a0": {
+  "name": "SceneArrayPair::restoreFlags",
+  "tag": "game-inferred",
+  "was": "FUN_0019c6a0",
+  "why": "3 saved bytes per object in every group but 4 (+8)"
+ },
+ "0019cb50": {
+  "name": "StageViewStack::remove",
+  "tag": "game-inferred",
+  "was": "FUN_0019cb50",
+  "why": "finds the object, shifts the 0xc entries down, clears its +0x18; the new top gets +0x24c if not active"
+ },
+ "0019d0c0": {
+  "name": "StageFiles::placeItem",
+  "tag": "game-inferred",
+  "was": "FUN_0019d0c0",
+  "why": "groups map (+0x14c) gives the model, gItemDefs the kind, the class follows; called for map points and carried items"
+ },
+ "0019d4e0": {
+  "name": "StageFiles::placeCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_0019d4e0",
+  "why": "characters map (+0x13c) gives the model line, gStageObjRecords the record whose two item names it places, then a new character at +0x200 = record"
+ },
  "0019d9e0": {
   "name": "StageFiles::applySoundTarget",
   "tag": "game-inferred",
@@ -11643,7 +11913,7 @@
   "name": "StageFiles::applyMapTarget",
   "tag": "game-inferred",
   "was": "FUN_0019ddf0",
-  "why": "parseEnd's handler of target map"
+  "why": "already named; map target: six sections of the map file become the scene's objects"
  },
  "0019f020": {
   "name": "StageFiles::applyItemTarget",
@@ -11854,6 +12124,24 @@
   "tag": "lib-context",
   "was": "FUN_001a6310",
   "why": "MSL std::string(const char *) instance"
+ },
+ "001d27e0": {
+  "name": "ScriptRunner::run",
+  "tag": "game-inferred",
+  "was": "FUN_001d27e0",
+  "why": "gp-0x7a58 = this and +4 raised around 0x1d1c40"
+ },
+ "001d2f40": {
+  "name": "ScriptRunner::setEntry",
+  "tag": "game-inferred",
+  "was": "FUN_001d2f40",
+  "why": "given a script's 0x1c-byte entry (the object's by name, a sub-scene's last)"
+ },
+ "001d3130": {
+  "name": "ScriptRunner::ScriptRunner",
+  "tag": "game-inferred",
+  "was": "FUN_001d3130",
+  "why": "base of SubSceneObject and of every stage object's +0x40"
  },
  "001d3a40": {
   "name": "StageScript::relocate",
@@ -12131,11 +12419,23 @@
   "was": "FUN_001d7a30",
   "why": "f12 the listener facing, a0 float* pan out, a1 a position vec4, a2 the listener object: distance from the listener matrix (vslot +0x14, +0x30) to the point, pan = -addAngle(atan2Octant(dx, dy), -facing); a listener of kind 0xb whose +0x300 object has record kind 0xf (table 0x539b10) divides the distance by clamp(1 - (pi/4)/|pan|, 0.4, 1) * 2.5"
  },
+ "001d7ec0": {
+  "name": "NodeTransform::setRotation",
+  "tag": "game-inferred",
+  "was": "FUN_001d7ec0",
+  "why": "+0x20..+0x28 = the three floats, w 1"
+ },
  "001d7ee0": {
   "name": "NodeTransform::setPosition",
   "tag": "game-inferred",
   "was": "FUN_001d7ee0",
   "why": "copies x, y, z of a1 to +0x10..+0x18; StageSound::addSource places a source with it"
+ },
+ "001d7f00": {
+  "name": "NodeTransform::setPositionXyz",
+  "tag": "game-inferred",
+  "was": "FUN_001d7f00",
+  "why": "+0x10..+0x18 = the three floats, w 1"
  },
  "001d7f20": {
   "name": "NodeTransform::NodeTransform",
@@ -12166,6 +12466,30 @@
   "tag": "game-inferred",
   "was": "FUN_001f6510",
   "why": "StageScene ctor new(0x70) for +0x18: four 8-byte arrays (0x184430 dtor) each reserved for 0x1fe entries (0x1f6760, Heap); name a guess"
+ },
+ "001f6ac0": {
+  "name": "SceneRender::addSbBox",
+  "tag": "game-inferred",
+  "was": "FUN_001f6ac0",
+  "why": "ENV_SB boxes, grid +0xe00"
+ },
+ "001f6ad0": {
+  "name": "SceneRender::addCbBox",
+  "tag": "game-inferred",
+  "was": "FUN_001f6ad0",
+  "why": "ENV_CB boxes, grid +0xdfc"
+ },
+ "001fa150": {
+  "name": "SceneRender::setShadowTexture",
+  "tag": "game-inferred",
+  "was": "FUN_001fa150",
+  "why": "loadCommon's shadow_00; +0xe58 and a texture area"
+ },
+ "001fa1c0": {
+  "name": "SceneRender::setSpotlightTexture",
+  "tag": "game-inferred",
+  "was": "FUN_001fa1c0",
+  "why": "loadCommon's spotlight; +0xe2c and a texture area"
  },
  "001fa230": {
   "name": "SceneRender::~SceneRender",
@@ -12629,6 +12953,12 @@
   "was": "FUN_001fe720",
   "why": "memset(0x598b20, -1, 0x10): the four saved character ids; a0 the scene +0x88"
  },
+ "001fe9b0": {
+  "name": "StageParty::setFillImage",
+  "tag": "game-inferred",
+  "was": "FUN_001fe9b0",
+  "why": "ScreenFill::setImage on the record's +0x3c"
+ },
  "001fea50": {
   "name": "StageParty::getCompanion",
   "tag": "game-inferred",
@@ -12688,6 +13018,12 @@
   "tag": "game-inferred",
   "was": "FUN_00214f60",
   "why": "a0 a character: for the scene's player (gStageScene +0x78) the party's flag byte (0x1fe800), else whether its +0x224 record's +0x40 is 0x11 or 0x2a; StageScene::drawPaused / update hand it to StageSound::update as playerFlag (the X_J / X_D alternate entries); meaning of 0x11 / 0x2a unread"
+ },
+ "00214fc0": {
+  "name": "StageObject::getActionState",
+  "tag": "game-inferred",
+  "was": "FUN_00214fc0",
+  "why": "a character's action number from its +0x224 record; both menu tests read it"
  },
  "002152d0": {
   "name": "StagePlayer::isMode1",
@@ -15479,11 +15815,35 @@
   "was": "FUN_002682e0",
   "why": "StageScene ctor new(8) for +0xe4: the state's first doubleword = 0x5deece66d, the drand48 multiplier"
  },
+ "00269d00": {
+  "name": "SubSceneModelObject::SubSceneModelObject",
+  "tag": "game-inferred",
+  "was": "FUN_00269d00",
+  "why": "base of the sub-scene item class 0x315420 (inline), argument 3"
+ },
+ "0026c880": {
+  "name": "SubSceneData::getScript",
+  "tag": "game-inferred",
+  "was": "FUN_0026c880",
+  "why": "the pack's +0xc index into its table +0x14: the script; null below 0"
+ },
+ "0026c8c0": {
+  "name": "SubSceneObject::SubSceneObject",
+  "tag": "game-inferred",
+  "was": "FUN_0026c8c0",
+  "why": "script runner base, vtable 0x314d30 at +0xb4, +0xb9 = argument"
+ },
  "00283df0": {
   "name": "seDistanceVolume",
   "tag": "game-inferred",
   "was": "FUN_00283df0",
   "why": "f12 ratio (0 beyond 1, clamped at 0), a1 the curve (SeEntry +0x29: 2 = 1 - sin(r pi/2), 1 = cos(r pi/2), else 1 - r), a2 a volume byte (SeEntry +0x28): the volume scaled by the curve; SePlayer::playPlaced / setPlacement, SoundTrack::playPlaced / setPlacement"
+ },
+ "00283ff0": {
+  "name": "AreaGrid::collect",
+  "tag": "game-inferred",
+  "was": "FUN_00283ff0",
+  "why": "the cell of a point, then each box containing it into out, at most max; answers the count"
  },
  "00284190": {
   "name": "AreaGrid::contains",
@@ -15492,10 +15852,10 @@
   "why": "a0 an AreaGrid, a1 a point: VU0 subtract of +0x210 then a cell lookup (0x284690); StageScene::getSoundAttr answers it non-zero"
  },
  "00284560": {
-  "name": "AreaGrid::addId",
+  "name": "AreaGrid::addBox",
   "tag": "game-inferred",
   "was": "FUN_00284560",
-  "why": "a0 an AreaGrid, a1 an int: pushed through 0x1a5d00 (the vector template in game/stagescene.cpp); StageScene::addSoundArea / addArea2"
+  "why": "the argument is a box object, not an id; was addId"
  },
  "00284580": {
   "name": "AreaGrid::~AreaGrid",
@@ -15508,6 +15868,30 @@
   "tag": "game-inferred",
   "was": "FUN_00284640",
   "why": "StageScene ctor new(0x240) four times (+0xac..+0xb8): a list at +0, 0x40 pairs at +8, +0x238 = 1; contains 0x284190 tests a point against +0x210; name a guess"
+ },
+ "002848d0": {
+  "name": "AreaBox::setSize",
+  "tag": "game-inferred",
+  "was": "FUN_002848d0",
+  "why": "min +0x100 / max +0x110: x and y centred, z from 0 to height"
+ },
+ "00284950": {
+  "name": "AreaBox::AreaBox",
+  "tag": "game-inferred",
+  "was": "FUN_00284950",
+  "why": "StageNodeBase, vtable 0x315a80, NodeTransform at +0x40, vtable 0x314180, box zero"
+ },
+ "002867a0": {
+  "name": "StageMission::setSpawnPoint",
+  "tag": "game-inferred",
+  "was": "FUN_002867a0",
+  "why": "0x20-byte slots at +0x750 by id, the first call for an id kept, +0x748 the count"
+ },
+ "002868c0": {
+  "name": "StageMission::onRestore",
+  "tag": "game-inferred",
+  "was": "FUN_002868c0",
+  "why": "first call of restoreObjectFlags; body unread"
  },
  "00286c30": {
   "name": "StageMission::setMessages",
@@ -15532,6 +15916,24 @@
   "tag": "game-inferred",
   "was": "FUN_00287900",
   "why": "StageScene ctor new(0x13d0) for +0xe8 (StageMission: getMission / getPurposeText); calls 0x287690 for its tables"
+ },
+ "00287af0": {
+  "name": "StageEvent::usesLanguageFont",
+  "tag": "game-inferred",
+  "was": "FUN_00287af0",
+  "why": "language in 1, 5..9; enterSubScene takes the init pack's font then, the event's otherwise"
+ },
+ "00287b70": {
+  "name": "StageEvent::isSkippable",
+  "tag": "game-inferred",
+  "was": "FUN_00287b70",
+  "why": "not d0101, or SaveData::testStageFlags(1, 0x15); the name is a guess"
+ },
+ "00287bb0": {
+  "name": "StageEvent::getVoicePath",
+  "tag": "game-inferred",
+  "was": "FUN_00287bb0",
+  "why": "0x288930 + .xwb, null without a path"
  },
  "00289b60": {
   "name": "ScenePool::~ScenePool",
@@ -16379,6 +16781,18 @@
   "was": "FUN_0029efe0",
   "why": "answers sbss gp-0x79f8, the navi menu object (0x29a700..); getGameValue kinds 21 / 22 / 30 / 31 read its +0x2a8 ints and +0x584 / +0x5e0 / +0x5f0 bytes after a null check"
  },
+ "0029f050": {
+  "name": "scriptPrepare",
+  "tag": "game-inferred",
+  "was": "FUN_0029f050",
+  "why": "walks a relocated script's chunks 0x1a4c424c, 0x1a525453, 0x1a545353; read only by shape"
+ },
+ "0029fb30": {
+  "name": "parseSpawnId",
+  "tag": "game-inferred",
+  "was": "FUN_0029fb30",
+  "why": "sscanf P_SPW%02d, -1 when it does not match"
+ },
  "002a7bf0": {
   "name": "SigLamp::SigLamp",
   "tag": "game-inferred",
@@ -16727,6 +17141,12 @@
   "was": "FUN_002ad070",
   "why": "deleting dtor of StageScene +0xa4: deletes the object in its +0 record through that object's vptr +0x44 (menu programs beside PrgMcCard); name a guess"
  },
+ "002ad100": {
+  "name": "MenuProgHolder::MenuProgHolder",
+  "tag": "game-inferred",
+  "was": "FUN_002ad100",
+  "why": "a 0x1cc0-byte object 0x2aef00 on (data, stage) at +0"
+ },
  "002afc20": {
   "name": "getInitItemForLanguage",
   "tag": "game-inferred",
@@ -16919,11 +17339,23 @@
   "was": "FUN_002b0cf0",
   "why": "registered by the static init 0x310f60 (__register_global_object(0x599700, 0x2b0cf0, 0x5996e8)): releases the clock layout +0xb8, deleting when the flag > 0"
  },
+ "002b1010": {
+  "name": "DemoStream::setFont",
+  "tag": "game-inferred",
+  "was": "FUN_002b1010",
+  "why": "a new WideFontPrinter at +0x70 on font and image"
+ },
  "002b1100": {
   "name": "DemoStream::update",
   "tag": "game-inferred",
   "was": "SoundStream::update",
   "why": "j SoundStream::update: the sub-scene's demo voice stream (StageScene +0x28) once a frame (StageScene::drawPaused / update); was named SoundStream::update by its tail jump"
+ },
+ "002b1110": {
+  "name": "DemoStream::setPaused",
+  "tag": "game-inferred",
+  "was": "FUN_002b1110",
+  "why": "SoundStream::pause"
  },
  "002b1140": {
   "name": "DemoStream::isPlaying",
@@ -16936,6 +17368,24 @@
   "tag": "game-inferred",
   "was": "FUN_002b1170",
   "why": "SoundStream::stop(false), a negative result as -1; StageScene::update / ~StageScene"
+ },
+ "002b11a0": {
+  "name": "DemoStream::setFsm",
+  "tag": "game-inferred",
+  "was": "FUN_002b11a0",
+  "why": "checks the fsm magic, fsmRelocate, +0x60"
+ },
+ "002b1240": {
+  "name": "DemoStream::play",
+  "tag": "game-inferred",
+  "was": "FUN_002b1240",
+  "why": "SoundStream::playVolume with one volume twice"
+ },
+ "002b1270": {
+  "name": "DemoStream::open",
+  "tag": "game-inferred",
+  "was": "FUN_002b1270",
+  "why": "directory + name, SoundStream::setBuffer, openBankFile"
  },
  "002b1370": {
   "name": "DemoStream::setDir",
@@ -17068,6 +17518,36 @@
   "tag": "game-inferred",
   "was": "FUN_002bb3e0",
   "why": "deleting dtor of StageScene +0xa8: deletes the objects at +4.. through their vptr +0x44 (beside PrgMcCard 0x2b9d60); name a guess"
+ },
+ "002bb680": {
+  "name": "SubSceneItem::setup",
+  "tag": "game-inferred",
+  "was": "FUN_002bb680",
+  "why": "name, instance, textures"
+ },
+ "002bb7a0": {
+  "name": "SubSceneItem::SubSceneItem",
+  "tag": "game-inferred",
+  "was": "FUN_002bb7a0",
+  "why": "placeItem in a sub-scene, kind 0xe, argument 3"
+ },
+ "002bb810": {
+  "name": "SubSceneProp::setup",
+  "tag": "game-inferred",
+  "was": "FUN_002bb810",
+  "why": "placeItem in a sub-scene, other kinds"
+ },
+ "002bb870": {
+  "name": "SubSceneCharacter::setup",
+  "tag": "game-inferred",
+  "was": "FUN_002bb870",
+  "why": "name, instance, textures"
+ },
+ "002bbab0": {
+  "name": "SubSceneCharacter::SubSceneCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_002bbab0",
+  "why": "placeCharacter in a sub-scene, argument 2"
  },
  "002bbc10": {
   "name": "SubSceneGateObject::setup",

@@ -97,13 +97,19 @@ struct LptFile;                 // game/gamehooks.h
 struct StageCollisionFace;      // game/gamehooks.h
 struct StageParty;              // game/gamehooks.h
 struct StagePlayer;             // game/gamehooks.h
+struct StageMapFile;            // game/gamehooks.h
 struct StageScript;             // game/gamehooks.h
 struct StreamTable;             // game/seplayer.h
+
+struct SubSceneData;            // game/gamehooks.h
+class AreaBox;                  // game/gamehooks.h
 
 // The stack of who the stage is heard and seen through (StageScene +0x34;
 // new'd by the constructor with 8 entries of 0xc, top -1). Only the top's
 // object is read here (StageSound's listener); who pushes is unread
 // (guess: the player, and a character the player looks through).
+// remove: the entry's object leaves wherever it stands, and the new top
+// becomes active.
 // layout: host -- EE 0xc: +0 capacity, +4 top (-1 empty), +8 the entries.
 struct StageViewEntry
 {
@@ -116,6 +122,7 @@ struct StageViewStack
     // The top entry's object; null while the stack is empty (inline in
     // the ROM).
     StageObject *topObject() const { return top < 0 ? nullptr : entries[top].object; }
+    void remove(StageObject *object);                                    // FS2 0x0019cb50
 
     int             capacity;   // FS2 +0x0: 8
     int             top;        // FS2 +0x4: -1 empty
@@ -143,19 +150,27 @@ struct StageMission
     // Forwards the message file to the object in the first field.
     void setMessages(void *file);                                        // FS2 0x00286c30
 
+    // spawn id's place (kept once; the first call wins).
+    void setSpawnPoint(int id, const float *pos, const float *rot);      // FS2 0x002867a0
+    // StageScene::restoreObjectFlags, first.
+    void onRestore();                                                    // FS2 0x002868c0
+
     u_char  _00[0x4];
-    u_short purposeText[1];     // FS2 +0x4: 16-bit, 0-terminated (extent unread)
+    u_short purposeText[0x5c];  // FS2 +0x4: 16-bit, 0-terminated (extent: up to keptObject)
+    StageObject *keptObject;    // FS2 +0xbc: keeps its flags through restoreObjectFlags
+    u_char  _c0[0x8];
+    u_char  busy;               // FS2 +0xc8: StageScene::isBusy
 };
 
-// The scene's four area grids (+0xac..+0xb8); what the first three hold is
-// unread.
+// The scene's four area grids (+0xac..+0xb8), filled from the map file's
+// boxes (StageFiles::applyMapTarget).
 enum StageArea
 {
-    StageArea_0     = 0,        // +0xac
-    StageArea_1     = 1,        // +0xb0
-    StageArea_2     = 2,        // +0xb4: addArea2
-    StageArea_Sound = 3,        // +0xb8: getSoundAttr, addSoundArea
-    StageArea_Count = 4,
+    StageArea_Floor  = 0,       // +0xac: ENV_MB_f%02d (getFloor)
+    StageArea_Ab     = 1,       // +0xb0: ENV_AB (unread)
+    StageArea_Smoke  = 2,       // +0xb4: SMOKE_A
+    StageArea_Reverb = 3,       // +0xb8: REVERB_ON (getSoundAttr)
+    StageArea_Count  = 4,
 };
 
 // The current stage object (0x130 bytes): built by stageLoad 0x17fb90 for
@@ -188,10 +203,28 @@ struct StageScene
     // Start / select on pad 0 while the stage allows its menu.
     bool wantsPauseMenu();                                               // FS2 0x00195a50
     bool wantsMapMenu();                                                 // FS2 0x001958b0
+    // What the player is doing, for the two tests above (inline in the
+    // ROM): PlayerAction.
+    int  playerAction();
+    // What the menus must wait for: a full fade, or isBusy.
+    bool isInputBlocked();                                               // FS2 0x00195850
+    // The stage is ending, the mission is busy, or an event runs whose
+    // script is not the one asking.
+    bool isBusy();                                                       // FS2 0x001957a0
+    // Every object's saved flags back, keptObject's left as they were.
+    void restoreObjectFlags();                                           // FS2 0x00195520
+    // object may act with the partner (+0x7c): the partner's answer while
+    // the player's look angle is in the window. The reading of the fields
+    // is a guess.
+    bool partnerResponds(StageObject *object);                           // FS2 0x001953f0
+    // The object leaves the view stack.
+    void removeView(StageObject *object);                                // FS2 0x0019bb60
+    // loadCommon: the menu program of the init pack's item.
+    void createMenuProg(const void *data);                               // FS2 0x0019af40
 
     // The floor the player is on (the S2D's rF01..rFDF: 0..9); negative
     // none.
-    int getFloor(StagePlayer *player);                                   // FS2 0x0019aea0
+    int getFloor(StagePlayer *who);                                      // FS2 0x0019aea0
 
     // The nearest collision face on the segment from..to (hit: where; left
     // as the ROM leaves it -- see the code -- when nothing is hit); null
@@ -201,22 +234,22 @@ struct StageScene
     StageCollisionFace *raycast(sceVu0FVECTOR hit, const sceVu0FVECTOR from,
                                 const sceVu0FVECTOR to, int arg, u_int mask,
                                 u_int flags, StageObject *skip);         // FS2 0x00198170
-    // The sound attr at pos: inside the area grid of +0xb8 (0x284190).
-    // StageSound hands it to every placed sound (setAttr); reverb likely.
+    // The sound attr at pos: inside a REVERB_ON box (+0xb8, 0x284190).
+    // StageSound hands it to every placed sound (setAttr).
     bool getSoundAttr(const sceVu0FVECTOR pos);                          // FS2 0x0019ae10
 
     // A number in 0..n-1 from the stage's generator.
     int random(int n);                                                   // FS2 0x00195d40
-    void *getSubSceneBlock();                                            // FS2 0x00195d70
+    SubSceneData *getSubSceneBlock();                                    // FS2 0x00195d70
     // The stage's menu while it is open; null otherwise.
     StageMenu *getOpenMenu();                                            // FS2 0x001963d0
-    // AreaGrid::addId on the sound grid (+0xb8) / the second (+0xb0),
-    // third (+0xb4) and first (+0xac) grids.
-    void addSoundArea(int id);                                           // FS2 0x0019ae30
-    void addArea2(int id);                                               // FS2 0x0019ae40
-    void addArea1(int id);                                               // FS2 0x0019ae90
-    void addArea0(int id);                                               // FS2 0x0019af30
+    // AreaGrid::addBox on the grids.
+    void addReverbBox(AreaBox *box);                                     // FS2 0x0019ae30
+    void addSmokeBox(AreaBox *box);                                      // FS2 0x0019ae40
+    void addAbBox(AreaBox *box);                                         // FS2 0x0019ae90
+    void addFloorBox(AreaBox *box);                                      // FS2 0x0019af30
     void setFlag84();                                                    // FS2 0x0019b540
+    void setFlag84To(int value);                                         // FS2 0x0019b550
     // The bg target's: the last model's name, its areaclip.
     void setBgName(const char *name);                                    // FS2 0x0019b740
     void setAreaClip(void *file);                                        // FS2 0x0019b750
@@ -246,7 +279,7 @@ struct StageScene
     u_char              isSubScene;      // FS2 +0x00: the constructor's first argument
     int                 subSceneRequest; // FS2 +0x04: set: stageThread builds a sub-scene
     SubSceneObject     *subScene;        // FS2 +0x08: a sub-scene's own scene (enterSubScene); null once it ended
-    void               *subSceneBlock;   // FS2 +0x0c: deleted beside subScene (unread)
+    SubSceneData       *subSceneBlock;   // FS2 +0x0c: what enterSubScene was given; deleted beside subScene
     StageObjectList    *objects;         // FS2 +0x10
     ScenePairTable     *pairs;           // FS2 +0x14
     SceneRecordBuckets *records;         // FS2 +0x18
@@ -270,8 +303,8 @@ struct StageScene
     int                 _64;             // FS2 +0x64: zero (unread)
     char                bgName[0x10];    // FS2 +0x68: setBgName; not set by the ctor
     StagePlayer        *player;          // FS2 +0x78
-    int                 _7c;             // FS2 +0x7c: zero (unread)
-    int                 _80;             // FS2 +0x80: zero (unread)
+    StageObject        *partner;         // FS2 +0x7c: partnerResponds; the name is a guess
+    StageObject        *controlled;      // FS2 +0x80: acts for the player when set (playerAction)
     int                 flag84;          // FS2 +0x84: setFlag84 (unread)
     StageParty         *party;           // FS2 +0x88: a stage's
     SceneOwnedObject   *owned[3];        // FS2 +0x8c..+0x94
@@ -335,12 +368,12 @@ struct StageCharacterModel
     void             *mdl;      // FS2 +0x18: the mdl of the same position; null past the end
 };
 
-// A value of StageFiles::groups (+0x14c): only ~StageFiles is read so far.
-// layout: host -- EE: a list at +4; size unread.
+// A value of StageFiles::groups (+0x14c), one per model of an `item` target.
+// layout: host -- EE 0xc.
 struct StageFileGroup
 {
-    int               _00;      // FS2 +0x0 (unread)
-    StageList<void *> items;    // FS2 +0x4
+    void             *model;    // FS2 +0x0: the model's item
+    StageList<void *> motions;  // FS2 +0x4: copied from the block's motion list
 };
 
 // The stage's files (sbss 0x31adfc: getStageFiles; built by stageLoad over
@@ -370,6 +403,12 @@ public:
     // chara/, motion/ or item/ path whose debug flag is set, ../data/proof/
     // for one whose flag is clear, ../data/ for any other.
     const char *dataDir(const char *path);                               // FS2 0x001a1ca0
+
+    // A character of the characters map, and a new item of the groups map,
+    // at pos / rot (null: where they are); the ROM's event code calls
+    // these too (0x1b3dc0, 0x1b9680).
+    void placeCharacter(const char *name, const float *pos, const float *rot); // FS2 0x0019d4e0
+    void placeItem(const char *name, const float *pos, const float *rot); // FS2 0x0019d0c0
 
     FileLoader *loader;         // FS2 +0x000
     u_char      sharedLoader;   // FS2 +0x004: 1: the dtor leaves loader alone (the ctor's value)
@@ -453,11 +492,23 @@ private:
     void enterDirOf(const char *path);
     // A bank's file in parseSndseh (inline in the ROM).
     void takeBankFile(const char *file, StageList<void *> *list);
+    // loadCommon's texture: the one of that name, else a new one of the
+    // init pack's item (inline in the ROM).
+    Tim2Texture *commonTexture(const char *name, const void *image);
+    // A map file's sections (inline in applyMapTarget).
+    void placeMapPoints(const StageMapFile *map);
+    void placeMapCameras(const StageMapFile *map);
+    void placeMapLights(const StageMapFile *map);
+    void placeMapBoxes(const StageMapFile *map);
+    void placeMapMarks(const StageMapFile *map);
 };
 
 // An StDT stream table's header (beside its other reader 0x1a0040, which
 // relocates it): relocated, entry count.
 bool stdtIsRelocated(const StreamTable *table);                          // FS2 0x001a0570
 int  stdtEntryCount(const StreamTable *table);                           // FS2 0x001a0560
+
+// The stage clock's frames per second.
+int stageFps();                                                          // FS2 0x00196300
 
 #endif /* _GAME_STAGESCENE_H */

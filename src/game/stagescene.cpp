@@ -17,14 +17,18 @@
 #include "game/gamehooks.h"
 #include "game/gamesystem.h"
 #include "game/gsutil.h"        /* Tim2Texture */
+#include "game/heap.h"          /* randNext */
 #include "game/pakarchive.h"
 #include "game/seplayer.h"      /* StreamTable */
 #include "game/stageobjlist.h"
 #include "game/stageresult.h"   /* getInitItemForLanguage */
 #include "game/stagesound.h"
 #include "game/stringlist.h"
+#include "game/sysdata.h"       /* getStageSelect */
+#include "game/thread.h"        /* threadYield */
 #include "game/uiwidget.h"
 #include "game/vu0math.h"
+#include "sdk/libpad.h"         /* SCE_PADstart, SCE_PADselect */
 #include "sdk/libvu0.h"
 #include "sdk/scetypes.h"
 
@@ -94,6 +98,9 @@ static const char *const kScriptTargets[ScriptTarget_Count] = {
     "script", "camera", "character", "bg", "bg_motion", "particle", "item",
     "map", "sound", "effect",
 };
+// The init-pack textures every stage takes (StageFiles::loadCommon).
+static const char kSpotlightTexture[] = "spotlight";  /* data 0x3041c8 */
+static const char kShadowTexture[]    = "shadow_00";  /* data 0x3041d8 */
 // The texture the effect target builds SigLamp from.
 static const char kSigLampTexture[] = "siglamp";       /* data 0x303ee8 */
 // FontPrinter::setTexture: the texture area's block.
@@ -164,7 +171,7 @@ const u_short *StageScene::getPurposeText()
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x00195d70
 
-void *StageScene::getSubSceneBlock()
+SubSceneData *StageScene::getSubSceneBlock()
 {
     return subSceneBlock;
 }
@@ -347,25 +354,25 @@ void StageScene::drawPaused()
 
 bool StageScene::getSoundAttr(const sceVu0FVECTOR pos)
 {
-    return areas[StageArea_Sound]->contains(pos) != 0;
+    return areas[StageArea_Reverb]->contains(pos) != 0;
 }
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x0019ae30
-// callcheck: addId
+// callcheck: addBox
 
-void StageScene::addSoundArea(int id)
+void StageScene::addReverbBox(AreaBox *box)
 {
-    areas[StageArea_Sound]->addId(id);
+    areas[StageArea_Reverb]->addBox(box);
 }
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x0019ae40
-// callcheck: addId
+// callcheck: addBox
 
-void StageScene::addArea2(int id)
+void StageScene::addSmokeBox(AreaBox *box)
 {
-    areas[StageArea_2]->addId(id);
+    areas[StageArea_Smoke]->addBox(box);
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -551,7 +558,8 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
     areaClip = nullptr;
     lpt      = nullptr;
     player = nullptr;
-    _7c = _80 = flag84 = 0;
+    partner = controlled = nullptr;
+    flag84 = 0;
     owned[0] = owned[1] = owned[2] = nullptr;
     block98 = nullptr;
     buffers = nullptr;
@@ -1166,20 +1174,20 @@ bool StageScene::isEventActive()
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x0019ae90
-// callcheck: addId
+// callcheck: addBox
 
-void StageScene::addArea1(int id)
+void StageScene::addAbBox(AreaBox *box)
 {
-    areas[StageArea_1]->addId(id);
+    areas[StageArea_Ab]->addBox(box);
 }
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x0019af30
-// callcheck: addId
+// callcheck: addBox
 
-void StageScene::addArea0(int id)
+void StageScene::addFloorBox(AreaBox *box)
 {
-    areas[StageArea_0]->addId(id);
+    areas[StageArea_Floor]->addBox(box);
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -1843,19 +1851,823 @@ bool StageFiles::applyBgTarget()
 }
 
 // ──────────────────────────────────────────────────────────────────────
+// A map file's records are told apart by name.
+static const char kMapEnv[]      = "ENV";          /* data 0x303f00 */
+constexpr int     kMapEnvKindAt  = 10;             // ENV map names: 'd' here is the plain kind
+constexpr char    kMapEnvKindPlain = 'd';
+static const char kPointFigure[] = "F_";           /* data 0x303f08 */
+static const char kPointPlayer[] = "player";       /* data 0x303f10 */
+static const char kPointMark[]   = "P_";           /* data 0x303f18 */
+static const char kPointBa[]     = "BA_";          /* inline compares */
+static const char kEnvPointLight[] = "ENV_PL";     /* data 0x303f20 */
+static const char kYamPointLight[] = "YAM_PL";     /* data 0x303f28 */
+static const char kEnvBoxCb[]    = "ENV_CB";       /* data 0x303f30 */
+static const char kEnvBoxSb[]    = "ENV_SB";       /* data 0x303f38 */
+static const char kEnvBoxMb[]    = "ENV_MB";       /* data 0x303f40 */
+static const char kEnvBoxMbFormat[] = "ENV_MB_f%02d"; /* data 0x303f48 */
+static const char kEnvConeLight[] = "ENV_CL";      /* data 0x303f58 */
+static const char kEnvSpotLight[] = "ENV_SL";      /* data 0x303f60 */
+static const char kYamConeLight[] = "YAM_CL";      /* data 0x303f68 */
+static const char kYamSpotLight[] = "YAM_SL";      /* data 0x303f70 */
+static const char kEnvBoxCbFormat[] = "ENV_CB%d";  /* data 0x303f78 */
+static const char kEnvBoxAb[]    = "ENV_AB";       /* data 0x303f88 */
+static const char kSmokeBox[]    = "SMOKE_A";      /* data 0x303f90 */
+static const char kReverbBox[]   = "REVERB_ON";    /* data 0x303f98 */
+constexpr int kMapPrefixSize = 6;
+constexpr int kSmokePrefixSize = 7;
+// A box named after a light: "ENV_CLnn", or "ENV_CLnnc?" with two more.
+constexpr int  kLightNameSize       = 8;
+constexpr int  kLightNameSizeLong   = 10;
+constexpr char kLightNameLongMark   = 'c';
+// A point without a rotation (data 0x303e50).
+static const float kNoRotation[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+// The map's cameras.
+constexpr float kMapCameraScrZ   = 450.0f;
+constexpr float kMapCameraWidth  = 512.0f;
+constexpr float kMapCameraHeight = 512.0f;
+constexpr float kMapCameraFar    = 1600.0f;
+constexpr float kRadToDeg = 57.295776f;
+
+// Items and characters of the map.
+static const char kItemTrap[]   = "I_WANA";        /* data 0x303e90 */
+static const char *const kItemsThrown[] = {
+    "I_HATUEN",                 /* data 0x303e98 */
+    "I_AKIKAN",                 /* data 0x303ea8 */
+    "I_PET",                    /* data 0x303eb8 */
+    "I_NUT",                    /* data 0x303ec0 */
+};
+static const char kCharacterYrt[] = "F_YRT";       /* data 0x303ec8 */
+static const char kCharacterSrt[] = "F_SRT";       /* data 0x303ee0 */
+static const char kCharacterStageFormat[] = "%s_S%02d"; /* data 0x303ed0 */
+// F_YRT's model part, one at random (table 0x2f7db0).
+static const char *const kYrtParts[] = { "ext_eyr01", "ext_eyr02", "ext_eyr03" };
+constexpr int kYrtPartCount = 3;
+constexpr int kSubSceneCharacterArg = 2;
+constexpr int kSubSceneItemArg      = 3;
+
+// A spawn name's point goes to the mission, any other to a new marker. Inline
+// in the ROM, with and without a rotation.
+static void placeMarker(const char *name, const float *pos, const float *rot)
+{
+    int id = parseSpawnId(name);
+    if (id >= 0) {
+        gStageScene->currentMission()->setSpawnPoint(id, pos, rot != nullptr ? rot : kNoRotation);
+        return;
+    }
+    StageMarker *marker = new StageMarker;
+    marker->m_xform.setPositionXyz(pos[0], pos[1], pos[2]);
+    if (rot != nullptr)
+        marker->m_xform.setRotation(rot[0], rot[1], rot[2]);
+    marker->addToScene(name);
+}
+
+// The set of gStageObjRecords the stage kind reads.
+static const StageObjRecord *stageObjRecords()
+{
+    int set;
+    switch (getStageSelect()->kind) {
+    case StageKind_Hard: set = 2; break;
+    case StageKind_Easy: set = 0; break;
+    default:             set = 1; break;
+    }
+    return gStageObjRecords[set];
+}
+
+static int findStageObjRecord(const char *name)
+{
+    const StageObjRecord *records = stageObjRecords();
+    for (int i = 0; i < kStageObjRecordCount; i++) {
+        if (strcmp(records[i].name, name) == 0)
+            return i;
+    }
+    return -1;
+}
+
+static int findItemDef(const char *name)
+{
+    for (int i = 0; i < kItemDefCount; i++) {
+        if (strcmp(gItemDefs[i].name, name) == 0)
+            return i;
+    }
+    return -1;
+}
+
+static int findWeaponDef(const char *name)
+{
+    for (int i = 0; i < kWeaponDefCount; i++) {
+        if (strcmp(gWeaponDefs[i].name, name) == 0)
+            return i;
+    }
+    return -1;
+}
+
+// The class of an item, by its definition's kind and its name.
+static StageItem *newItem(const char *name, u_int kind)
+{
+    if (kind == ItemKind_E)
+        return new StageItemE;
+    if (kind < ItemKind_ItemFirst)
+        return new StageWeaponItem;
+    if (kind == ItemKind_F) {
+        if (strcmp(name, kItemTrap) == 0)
+            return new StageTrapItem;
+        for (const char *thrown : kItemsThrown) {
+            if (strcmp(name, thrown) == 0)
+                return new StageThrownItem;
+        }
+    }
+    return new StageItem;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The item's group gives the model; the kind in its definition, or in a
+// sub-scene one of two lighter classes, gives the object. An item without a
+// group or a definition places nothing.
+// FS2 0x0019d0c0
+// callcheck: strcmp, heapAllocAligned, FUN_001a4e80, StageItem, StageItemE, StageThrownItem, StageTrapItem, StageWeaponItem, SubSceneModelObject (the definition searches, StringMap::find, the classes through newItem and SubSceneProp)
+
+void StageFiles::placeItem(const char *name, const float *pos, const float *rot)
+{
+    StringMap<StageFileGroup *>::Node *node = groups.find(name);
+    if (node == nullptr)
+        return;
+    StageFileGroup *group = node->value;
+    ModelInstance *instance = ((ModelFile *)group->model)->createInstance(0, nullptr);
+
+    int def = findItemDef(name);
+    if (def < 0)
+        return;
+    u_int kind = gItemDefs[def].kind;
+
+    if (gStageScene->isSubScene) {
+        if (kind == ItemKind_E) {
+            SubSceneItem *item = new SubSceneItem(kSubSceneItemArg);
+            item->setup(name, instance, &textures);
+        }
+        else {
+            SubSceneProp *prop = new SubSceneProp(kSubSceneItemArg);
+            prop->setup(name, instance, &textures);
+        }
+        return;
+    }
+
+    StageItem *item = newItem(name, kind);
+    item->m_itemDef = def;
+    if (pos != nullptr)
+        item->m_xform.setPositionXyz(pos[0], pos[1], pos[2]);
+    if (rot != nullptr)
+        item->m_xform.setRotation(rot[0], rot[1], rot[2]);
+    item->setupItem(name, instance, &textures, &group->motions);
+    if (item->getKind() == kStageObjectKindWeapon) {
+        item->m_weaponDef = findWeaponDef(name);
+        item->initWeapon();
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The character's last model line. F_YRT and F_SRT have a record per stage
+// (name_Snn); the ROM searches for the plain name too when that fails, then
+// drops the answer, so they place nothing without one (kept). The record's
+// items are placed first, without a position.
+// FS2 0x0019d4e0
+// callcheck: strcmp, heapAllocAligned, FUN_001a5250, FUN_001a6110, StageCharacter (the record searches, StringMap::find, the tail search written as a loop, the new)
+
+void StageFiles::placeCharacter(const char *name, const float *pos, const float *rot)
+{
+    StringMap<StageList<StageCharacterModel *> *>::Node *node = characters.find(name);
+    if (node == nullptr)
+        return;
+    StageList<StageCharacterModel *>::Node *line = node->value->head;
+    while (line->next != nullptr)
+        line = line->next;
+    StageCharacterModel *model = line->value;
+
+    const char *part = strcmp(name, kCharacterYrt) == 0
+                     ? kYrtParts[randNext() % kYrtPartCount] : model->altName;
+    ModelInstance *instance = nullptr;
+    if (model->model != nullptr)
+        instance = ((ModelFile *)model->model)->createInstance(0, part);
+
+    int record;
+    if (strcmp(name, kCharacterSrt) == 0 || strcmp(name, kCharacterYrt) == 0) {
+        char stageName[0x20];
+        sprintf(stageName, kCharacterStageFormat, name, getStageSelect()->stage);
+        record = findStageObjRecord(stageName);
+    }
+    else {
+        record = findStageObjRecord(name);
+    }
+    if (record < 0)
+        return;
+
+    const StageObjRecord *entry = &stageObjRecords()[record];
+    for (const char *item : entry->items) {
+        if (strlen(item) != 0)
+            placeItem(item, nullptr, nullptr);
+    }
+
+    if (gStageScene->isSubScene) {
+        SubSceneCharacter *character = new SubSceneCharacter(kSubSceneCharacterArg);
+        character->setup(name, instance, &textures);
+        return;
+    }
+    StageCharacter *character = new StageCharacter;
+    character->m_itemDef = record;
+    if (pos != nullptr)
+        character->m_xform.setPositionXyz(pos[0], pos[1], pos[2]);
+    if (rot != nullptr)
+        character->m_xform.setRotation(rot[0], rot[1], rot[2]);
+    character->setup(name, instance, &textures, &model->motions, &model->motions2, model->mdl);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Characters (F_, player), marks (P_, BA_) and items (the rest).
+
+void StageFiles::placeMapPoints(const StageMapFile *map)
+{
+    const StageMapPoint *points = map->points;
+    for (int i = 0; i < map->pointCount; i++) {
+        const StageMapPoint *point = &points[i];
+        const char *name = point->name;
+        if (strstr(name, kPointFigure) != nullptr || strstr(name, kPointPlayer) != nullptr)
+            placeCharacter(name, point->pos, point->rot);
+        else if (strstr(name, kPointMark) != nullptr
+                 || strncmp(name, kPointBa, sizeof(kPointBa) - 1) == 0)
+            placeMarker(name, point->pos, point->rot);
+        else
+            placeItem(name, point->pos, point->rot);
+    }
+}
+
+void StageFiles::placeMapCameras(const StageMapFile *map)
+{
+    const StageMapCamera *cameras = map->cameras;
+    for (int i = 0; i < map->cameraCount; i++) {
+        const StageMapCamera *record = &cameras[i];
+        StageCamera *camera = new StageCamera(kMapCameraScrZ, kMapCameraWidth, kMapCameraHeight,
+                                              kMapCameraFar);
+        camera->addToScene(record->name);
+        camera->m_viewActive = 0;
+        camera->m_xform.setPositionXyz(record->pos[0], record->pos[1], record->pos[2]);
+        sceVu0FVECTOR target = { record->pos[0] + record->aim[0], record->pos[1] + record->aim[1],
+                                 record->pos[2] + record->aim[2], 0.0f };
+        camera->lookAt(target);
+    }
+}
+
+// A sub-scene's ENV_ light takes what the parent's light of its name shows.
+static void copyParentLight(StageLight *light)
+{
+    if (!gStageScene->isSubScene)
+        return;
+    StageObject *other = gStageScene->parent->objects->find5(light->m_name, 0);
+    light->copyShownFrom(static_cast<StageLight *>(other));
+}
+
+// The first pass: the ENV_ lights exist once, whatever the number of maps
+// that name them; the YAM_ ones are a stage's, and start off. The second
+// pass's YAM_PL test reads the spot section, at the light's index, in the
+// ROM (kept): a YAM_PL record ends up a SphereVolume unless the spot record
+// of that index happens to be named YAM_PL.
+
+void StageFiles::placeMapLights(const StageMapFile *map)
+{
+    StageScene *scene = gStageScene;
+    const StageMapSpot *spots = map->spots;
+    for (int i = 0; i < map->spotCount; i++) {
+        const StageMapSpot *record = &spots[i];
+        bool env = strncmp(record->name, kEnvConeLight, kMapPrefixSize) == 0
+                || strncmp(record->name, kEnvSpotLight, kMapPrefixSize) == 0;
+        bool yam = !env && (strncmp(record->name, kYamConeLight, kMapPrefixSize) == 0
+                         || strncmp(record->name, kYamSpotLight, kMapPrefixSize) == 0);
+        if (env ? scene->objects->find5(record->name, 0) != nullptr
+                : !yam || scene->isSubScene)
+            continue;
+
+        SpotLight *light = new SpotLight;
+        light->m_xform.setPositionXyz(record->pos[0], record->pos[1], record->pos[2]);
+        light->m_xform.setRotation(record->rot[0], record->rot[1], record->rot[2]);
+        light->setConeAngle((int)(record->angle / 2.0f * kRadToDeg));
+        light->setRadiusSquared(record->radius * record->radius);
+        if (env) {
+            light->setVector(1.0f, 0.0f, 0.0f);
+            light->m_envLight = 1;
+            light->addToScene(record->name, true);
+            copyParentLight(light);
+        }
+        else {
+            light->m_yamLight = 1;
+            light->setEnabled(false);
+            light->addToScene(record->name, true);
+        }
+    }
+
+    const StageMapLight *lights = map->lights;
+    for (int i = 0; i < map->lightCount; i++) {
+        const StageMapLight *record = &lights[i];
+        if (strncmp(record->name, kEnvPointLight, kMapPrefixSize) == 0) {
+            if (scene->objects->find5(record->name, 0) != nullptr)
+                continue;
+            PointLight *light = new PointLight;
+            light->m_xform.setPositionXyz(record->pos[0], record->pos[1], record->pos[2]);
+            light->setRadiusSquared(record->radius * record->radius);
+            light->setVector(1.0f, 0.0f, 0.0f);
+            light->m_envLight = 1;
+            light->addToScene(record->name, true);
+            copyParentLight(light);
+        }
+        else if (strncmp(spots[i].name, kYamPointLight, kMapPrefixSize) == 0) {
+            if (scene->isSubScene)
+                continue;
+            PointLight *light = new PointLight;
+            light->m_xform.setPositionXyz(record->pos[0], record->pos[1], record->pos[2]);
+            light->setRadiusSquared(record->radius * record->radius);
+            light->m_yamLight = 1;
+            light->setEnabled(false);
+            light->addToScene(record->name, true);
+        }
+        else if (!scene->isSubScene) {
+            SphereVolume *volume = new SphereVolume;
+            volume->m_xform.setPositionXyz(record->pos[0], record->pos[1], record->pos[2]);
+            volume->setRadius(record->radius);
+            volume->addToScene(record->name);
+        }
+    }
+}
+
+// A box of the class, placed (inline for each kind in the ROM).
+template <class T>
+static T *newMapBox(const StageMapBox *record)
+{
+    T *box = new T;
+    box->m_xform.setPositionXyz(record->pos[0], record->pos[1], record->pos[2]);
+    box->m_xform.setRotation(record->rot[0], record->rot[1], record->rot[2]);
+    box->setSize(record->size[0], record->size[2], record->size[1]);
+    return box;
+}
+
+// The ENV_ boxes feed the renderer's and the scene's grids; a box named after
+// a light (its first 8 or 10 characters) joins that light; on a stage,
+// SMOKE_A and REVERB_ON go to their grids and any other name is a BoxVolume.
+
+void StageFiles::placeMapBoxes(const StageMapFile *map)
+{
+    StageScene *scene = gStageScene;
+    const StageMapBox *boxes = map->boxes;
+    for (int i = 0; i < map->boxCount; i++) {
+        const StageMapBox *record = &boxes[i];
+        const char *name = record->name;
+        if (strncmp(name, kEnvBoxCb, kMapPrefixSize) == 0) {
+            CbAreaBox *box = newMapBox<CbAreaBox>(record);
+            sscanf(name, kEnvBoxCbFormat, &box->m_number);
+            box->updateMatrix();
+            scene->render->addCbBox(box);
+        }
+        else if (strncmp(name, kEnvBoxSb, kMapPrefixSize) == 0) {
+            AreaBox *box = newMapBox<AreaBox>(record);
+            box->updateMatrix();
+            scene->render->addSbBox(box);
+        }
+        else if (strncmp(name, kEnvBoxMb, kMapPrefixSize) == 0) {
+            if (scene->isSubScene)
+                continue;
+            FloorAreaBox *box = newMapBox<FloorAreaBox>(record);
+            sscanf(name, kEnvBoxMbFormat, &box->m_floor);
+            box->updateMatrix();
+            scene->addFloorBox(box);
+        }
+        else if (strncmp(name, kEnvBoxAb, kMapPrefixSize) == 0) {
+            if (scene->isSubScene)
+                continue;
+            AreaBox *box = newMapBox<AreaBox>(record);
+            box->updateMatrix();
+            scene->addAbBox(box);
+        }
+        else if (strncmp(name, kEnvConeLight, kMapPrefixSize) == 0
+                 || strncmp(name, kEnvSpotLight, kMapPrefixSize) == 0
+                 || strncmp(name, kEnvPointLight, kMapPrefixSize) == 0) {
+            char lightName[0x10];
+            memset(lightName, 0, sizeof(lightName));
+            strncpy(lightName, name,
+                    name[kLightNameSize] == kLightNameLongMark ? kLightNameSizeLong : kLightNameSize);
+            StageObject *light = scene->objects->find5(lightName, 0);
+            if (light != nullptr) {
+                AreaBox *box = newMapBox<AreaBox>(record);
+                box->updateMatrix();
+                static_cast<StageLight *>(light)->m_boxes.pushBack(box);
+            }
+        }
+        else if (!scene->isSubScene) {
+            if (strncmp(name, kSmokeBox, kSmokePrefixSize) == 0) {
+                AreaBox *box = newMapBox<AreaBox>(record);
+                box->updateMatrix();
+                scene->addSmokeBox(box);
+            }
+            else if (strcmp(name, kReverbBox) == 0) {
+                AreaBox *box = newMapBox<AreaBox>(record);
+                box->updateMatrix();
+                scene->addReverbBox(box);
+            }
+            else {
+                BoxVolume *box = new BoxVolume;
+                box->m_xform.setPositionXyz(record->pos[0], record->pos[1], record->pos[2]);
+                box->m_xform.setRotation(record->rot[0], record->rot[1], record->rot[2]);
+                box->setSize(record->size[0], record->size[2], record->size[1]);
+                box->addToScene(name);
+            }
+        }
+    }
+}
+
+void StageFiles::placeMapMarks(const StageMapFile *map)
+{
+    const StageMapMark *marks = map->marks;
+    for (int i = 0; i < map->markCount; i++)
+        placeMarker(marks[i].name, marks[i].pos, nullptr);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Every map of the block, one section after the other. A stage takes all the
+// sections of every map but a plain ENV map (kind 'd'), which it skips. A
+// sub-scene takes the lights of an ENV map of another kind and the boxes of
+// any other map, nothing else.
+// FS2 0x0019ddf0
+// callcheck: strncmp, strcmp, memset, strncpy, sscanf, heapAllocAligned, AreaBox, BoxVolume, FUN_001a5d00, PointLight, SphereVolume, SpotLight, StageCamera, StageObject, addAbBox, addCbBox, addFloorBox, addReverbBox, addSbBox, addSmokeBox, addToScene, copyShownFrom, currentMission, find5, lookAt, parseSpawnId, placeCharacter, placeItem, setConeAngle, setEnabled, setPositionXyz, setRadius, setRadiusSquared, setRotation, setSize, setSpawnPoint, setVector (the sections, inline in the ROM: placeMap*, placeMarker, newMapBox)
+
+bool StageFiles::applyMapTarget()
+{
+    StageScene *scene = gStageScene;
+    StageList<char *>::Node *name = mapNames.head;
+    for (StageList<void *>::Node *node = maps.head; node != nullptr;
+         node = node->next, name = name->next) {
+        const StageMapFile *map = (const StageMapFile *)node->value;
+
+        bool envMap = false;
+        if (strstr(name->value, kMapEnv) != nullptr) {
+            if (name->value[kMapEnvKindAt] != kMapEnvKindPlain)
+                envMap = true;
+            else if (!scene->isSubScene)
+                continue;
+        }
+
+        if (!scene->isSubScene) {
+            placeMapPoints(map);
+            placeMapCameras(map);
+        }
+        if (!scene->isSubScene || envMap)
+            placeMapLights(map);
+        if (!scene->isSubScene || !envMap)
+            placeMapBoxes(map);
+        if (!scene->isSubScene)
+            placeMapMarks(map);
+    }
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Every model of the block whose name is new becomes a group with a copy of
+// the motion list beside it.
+// FS2 0x0019f020
+// callcheck: operator_new, FUN_001a4a10, FUN_001a4e80, FUN_001a59f0, FUN_001a5db0 (the group's new and the templates StringMap::insert / find, StageList ctor / pushBack)
+
+bool StageFiles::applyItemTarget()
+{
+    StageList<char *>::Node *name = modelNames.head;
+    StageList<StageList<void *> *>::Node *motions = motionLists.head;
+    for (StageList<void *>::Node *model = models.head; model != nullptr;
+         model = model->next, name = name->next) {
+        if (groups.find(name->value) != nullptr)
+            continue;
+        StageFileGroup *group = new StageFileGroup;
+        group->model = model->value;
+        if (motions != nullptr) {
+            for (StageList<void *>::Node *motion = motions->value->head; motion != nullptr;
+                 motion = motion->next)
+                group->motions.pushBack(motion->value);
+            motions = motions->next;
+        }
+        groups.insert(name->value, group);
+    }
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+Tim2Texture *StageFiles::commonTexture(const char *name, const void *image)
+{
+    StringMap<Tim2Texture *>::Node *node = textures.find(name);
+    if (node != nullptr)
+        return node->value;
+    Tim2Texture *texture = new Tim2Texture(image);
+    textures.insert(name, texture);
+    return texture;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// What every stage has, from the init pack: the renderer's spotlight and
+// shadow textures, the party's and the scene's fill image, the menu program.
+// FS2 0x001a38e0
+// callcheck: getInitPackItem, operator_new, Tim2Texture, FUN_00189840, FUN_001a4cd0, setSpotlightTexture, setShadowTexture (commonTexture: StringMap::find / insert; the render calls are in the same block)
+
+void StageFiles::loadCommon()
+{
+    StageScene *scene = gStageScene;
+    loader->setDir(nullptr);
+
+    const void *image = getInitPackItem(InitItem_Spotlight);
+    scene->render->setSpotlightTexture(commonTexture(kSpotlightTexture, image));
+    image = getInitPackItem(InitItem_Shadow);
+    scene->render->setShadowTexture(commonTexture(kShadowTexture, image));
+
+    image = getInitPackItem(InitItem_Fill);
+    if (scene->party != nullptr)
+        scene->party->setFillImage(image);
+    scene->screenFill->setImage(image);
+
+    scene->createMenuProg(getInitPackItem(InitItem_MenuProg));
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x0019af40
+// callcheck: operator_new, getStageSelect, MenuProgHolder::MenuProgHolder
+
+void StageScene::createMenuProg(const void *data)
+{
+    menuProg = new MenuProgHolder(data, getStageSelect()->stage);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x001957a0
+// callcheck: getMission
+
+bool StageScene::isBusy()
+{
+    if (clear != nullptr || gameOver != nullptr || getMission()->busy)
+        return true;
+    return event != nullptr && event->runner != gRunningScript;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x00195850
+// callcheck: isFullInMode1, isFullInMode2, isBusy
+
+bool StageScene::isInputBlocked()
+{
+    return fade->isFullInMode1() || fade->isFullInMode2() || isBusy();
+}
+
+// What StageScene::playerAction answers; which are what is unread but for
+// their sources.
+enum PlayerAction
+{
+    PlayerAction_None    = 0,
+    PlayerAction_1       = 1,
+    PlayerAction_9       = 9,       // StageObject +0x400 set and mode 1
+    PlayerAction_Owned2  = 0xa,     // StageScene::owned[2] busy
+    PlayerAction_Owned1  = 0xb,
+    PlayerAction_Owned0  = 0xc,
+    PlayerAction_Alt     = 0x12,    // getAltSoundFlag, m_altAction clear
+    PlayerAction_AltB    = 0x13,    // getAltSoundFlag, m_altAction set
+    PlayerAction_20      = 0x14,
+};
+
+// The UiShowFlags the stage's menus need.
+constexpr int kShowFlagPauseMenu = 1;
+constexpr int kShowFlagMapMenu   = 2;
+
+static bool actionAllowsMenu(int action)
+{
+    return action == PlayerAction_20 || action == PlayerAction_AltB || action == PlayerAction_9
+        || action == PlayerAction_1 || action == PlayerAction_None;
+}
+
+// Inline in wantsMapMenu and wantsPauseMenu.
+int StageScene::playerAction()
+{
+    StageObject *character = player != nullptr ? player->character() : nullptr;
+    if (character != nullptr && character->getAltSoundFlag())
+        return character->m_altAction == 0 ? PlayerAction_Alt : PlayerAction_AltB;
+    if (owned[2] != nullptr && owned[2]->isBusy())
+        return PlayerAction_Owned2;
+    if (owned[1] != nullptr && owned[1]->isBusy())
+        return PlayerAction_Owned1;
+    if (owned[0] != nullptr && owned[0]->isBusy())
+        return PlayerAction_Owned0;
+    StageObject *actor = controlled != nullptr ? controlled : character;
+    return actor != nullptr ? actor->getActionState() : PlayerAction_None;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x001958b0
+// callcheck: isInputBlocked, getAltSoundFlag, getActionState
+
+bool StageScene::wantsMapMenu()
+{
+    if ((gGameSystem->m_pad0.m_pressed & SCE_PADselect) == 0 || isInputBlocked()
+        || isSubScene || !gStageScene->showFlags->flag[kShowFlagMapMenu])
+        return false;
+    return actionAllowsMenu(playerAction());
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x00195a50
+// callcheck: isInputBlocked, getAltSoundFlag, getActionState
+
+bool StageScene::wantsPauseMenu()
+{
+    if ((gGameSystem->m_pad0.m_pressed & SCE_PADstart) == 0 || isInputBlocked())
+        return false;
+    if (player != nullptr && !player->character()->m_canPause)
+        return false;
+    if (isSubScene || !gStageScene->showFlags->flag[kShowFlagPauseMenu])
+        return false;
+    return actionAllowsMenu(playerAction());
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The look angle's window (StageScene::partnerResponds).
+constexpr float kLookWindowHigh = -160.0f;
+constexpr float kLookWindowLow  = -190.0f;
+
+// FS2 0x001953f0
+// callcheck: isPlayer
+
+bool StageScene::partnerResponds(StageObject *object)
+{
+    if (!object->m_3c0)
+        return false;
+    if (!object->m_3c3 && object->m_290 != nullptr)
+        return false;
+    if (!object->isPlayer())
+        return false;
+    PlayerLookState *look = object->m_motion->look;
+    if (!look->active || kLookWindowHigh < look->angle || look->angle < kLookWindowLow)
+        return false;
+    return partner != nullptr && partner->m_3c1 != 0;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x00195520
+// callcheck: currentMission, onRestore, restoreFlags, stageObjectIsShown, setActive, setShown
+
+void StageScene::restoreObjectFlags()
+{
+    currentMission()->onRestore();
+    StageObject *kept = currentMission()->keptObject;
+    if (kept == nullptr) {
+        arrays->restoreFlags();
+        return;
+    }
+    bool active = kept->m_active != 0;
+    bool shown = stageObjectIsShown(kept);
+    u_char viewActive = kept->m_viewActive;
+    arrays->restoreFlags();
+    kept->m_tree->setActive(active);
+    kept->m_tree->setShown(active);
+    kept->m_tree->setShown(shown);
+    kept->m_viewActive = viewActive;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x00196300
+// callcheck: getDeltaSeconds
+
+int stageFps()
+{
+    return (int)(1.0f / gStageScene->clock->getDeltaSeconds());
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x0019b550
+
+void StageScene::setFlag84To(int value)
+{
+    flag84 = value;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x0019bb60: a tail jump.
+// callcheck: remove
+
+void StageScene::removeView(StageObject *object)
+{
+    views->remove(object);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x0019cb50
+// callcheck: onViewTop
+
+void StageViewStack::remove(StageObject *object)
+{
+    int index = 0;
+    while (index <= top && entries[index].object != object)
+        index++;
+    if (index > top)
+        return;
+    for (int i = index + 1; i <= top; i++)
+        entries[i - 1] = entries[i];
+    top--;
+    object->m_viewActive = 0;
+
+    StageObject *next = topObject();
+    if (next != nullptr) {
+        if (!next->m_viewActive)
+            next->onViewTop();
+        next->m_viewActive = 1;
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The floor number of the highest ENV_MB box the point 50 units above the
+// player's feet stands in; -1 in none.
+constexpr float kFloorProbeHeight = 50.0f;
+constexpr int   kFloorProbeBoxes  = 5;
+
+// FS2 0x0019aea0
+// callcheck: collect
+
+int StageScene::getFloor(StagePlayer *who)
+{
+    sceVu0FVECTOR pos = { who->posX, who->posZ, who->height + kFloorProbeHeight, who->posW };
+    AreaBox *boxes[kFloorProbeBoxes];
+    int count = areas[StageArea_Floor]->collect(pos, boxes, kFloorProbeBoxes);
+    if (count < 1)
+        return -1;
+    int floor = 0;
+    for (int i = 0; i < count; i++) {
+        int number = static_cast<FloorAreaBox *>(boxes[i])->m_floor;
+        if (floor < number)
+            floor = number;
+    }
+    return floor;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The demo voice's volume and its path buffer in enterSubScene.
+constexpr int kDemoVoiceVolume = 0x80;
+constexpr int kDemoVoicePathSize = 0x80;
+
+// Runs the pack's script in a new SubSceneObject under the parent's event,
+// builds the cameras, then readies the event's subtitles and voice: the voice
+// starts paused and enterSubScene waits for its first data.
+// FS2 0x00195e10
+// callcheck: FUN_0026c8b0, operator_new, relocate, scriptPrepare, isSkippable, setEntry, run, setupCameras, usesLanguageFont, setFsm, setFont, getInitItemForLanguage, getInitItem21, getVoicePath, open, play, setPaused, getDataWritten, threadYield
+
+void StageScene::enterSubScene(void *data)
+{
+    subSceneBlock = new SubSceneData(data);
+    StageScript *script = subSceneBlock->getScript();
+    if (script != nullptr) {
+        script->relocate(true);
+        scriptPrepare(script);
+        if (script->count > 1)
+            bgScript = script;
+        subScene = new SubSceneObject(parent->event->isSkippable());
+        subScene->setEntry(script->entry(script->count - 1));
+        subScene->run(0);
+    }
+    setupCameras();
+
+    StageEvent *ev = parent->event;
+    if (ev->usesLanguageFont()) {
+        if (ev->fsm != nullptr) {
+            demoStream->setFsm(ev->fsm);
+            demoStream->setFont(getInitItemForLanguage(), getInitItem21());
+        }
+    }
+    else if (ev->fsm != nullptr && ev->subtitleImage != nullptr && ev->subtitleFont != nullptr) {
+        demoStream->setFsm(ev->fsm);
+        demoStream->setFont(ev->subtitleFont, ev->subtitleImage);
+    }
+
+    if (ev->voice != nullptr) {
+        char path[kDemoVoicePathSize];
+        demoStream->open(ev->voice, ev->getVoicePath(path));
+        demoStream->play(kDemoVoiceVolume);
+        demoStream->setPaused(true);
+        while (demoStream->getDataWritten() < 1)
+            threadYield(1);
+        demoStream->setPaused(false);
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // Template instances of this file, one source in game/stagelist.h (a few
 // more use the host's <string>):
 //   FS2 0x001a4960  StringMap::StringMap
 //   FS2 0x001a4980  StringMap::~StringMap
 //   FS2 0x001a4ac0  StringMap::StringMap
 //   FS2 0x001a4ae0  StringMap::~StringMap
+//   FS2 0x001a4a10  StringMap::insert
 //   FS2 0x001a4b70  StringMap::insert
 //   FS2 0x001a4c20  StringMap::StringMap
 //   FS2 0x001a4c40  StringMap::~StringMap
 //   FS2 0x001a4cd0  StringMap::insert
 //   FS2 0x001a4d80  StringMap::at
+//   FS2 0x001a4db0  StringMap::Node::Node
 //   FS2 0x001a4e20  StringMap::Node::~Node
 //   FS2 0x001a4e80  StringMap::find
+//   FS2 0x001a4f00  StringMap::insert (the search)
 //   FS2 0x001a5180  StringMap::insert
 //   FS2 0x001a51f0  StringMap::Node::~Node
 //   FS2 0x001a5250  StringMap::find
@@ -1911,31 +2723,11 @@ bool StageFiles::applyBgMotionTarget()
     return {};
 }
 
-// stub of FS2 0x0019f020
-bool StageFiles::applyItemTarget()
-{
-    YAMIPAN_STUB("StageFiles::applyItemTarget", 0x0019f020);
-    return {};
-}
-
-// stub of FS2 0x0019ddf0
-bool StageFiles::applyMapTarget()
-{
-    YAMIPAN_STUB("StageFiles::applyMapTarget", 0x0019ddf0);
-    return {};
-}
-
 // stub of FS2 0x0019d9e0
 bool StageFiles::applySoundTarget()
 {
     YAMIPAN_STUB("StageFiles::applySoundTarget", 0x0019d9e0);
     return {};
-}
-
-// stub of FS2 0x001a38e0
-void StageFiles::loadCommon()
-{
-    YAMIPAN_STUB("StageFiles::loadCommon", 0x001a38e0);
 }
 
 // stub of FS2 0x001a3a60
@@ -1950,19 +2742,6 @@ void StageScene::draw(StageObject *active)
     YAMIPAN_STUB("StageScene::draw", 0x00198970);
 }
 
-// stub of FS2 0x00195e10
-void StageScene::enterSubScene(void *data)
-{
-    YAMIPAN_STUB("StageScene::enterSubScene", 0x00195e10);
-}
-
-// stub of FS2 0x0019aea0
-int StageScene::getFloor(StagePlayer *player)
-{
-    YAMIPAN_STUB("StageScene::getFloor", 0x0019aea0);
-    return {};
-}
-
 // stub of FS2 0x00199f00
 void StageScene::setupCameras()
 {
@@ -1975,16 +2754,9 @@ void StageScene::update()
     YAMIPAN_STUB("StageScene::update", 0x00199400);
 }
 
-// stub of FS2 0x001958b0
-bool StageScene::wantsMapMenu()
-{
-    YAMIPAN_STUB("StageScene::wantsMapMenu", 0x001958b0);
-    return {};
-}
 
-// stub of FS2 0x00195a50
-bool StageScene::wantsPauseMenu()
+// stub of FS2 0x0019c6a0
+void SceneArrayPair::restoreFlags()
 {
-    YAMIPAN_STUB("StageScene::wantsPauseMenu", 0x00195a50);
-    return {};
+    YAMIPAN_STUB("SceneArrayPair::restoreFlags", 0x0019c6a0);
 }
