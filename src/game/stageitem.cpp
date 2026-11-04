@@ -15,6 +15,7 @@
 #include "game/clock.h"
 #include "game/heap.h"
 #include "game/mathutil.h"
+#include "game/modelpose.h"
 #include "game/stagelight.h"
 #include "game/stageobjlist.h"
 #include "game/stagescene.h"

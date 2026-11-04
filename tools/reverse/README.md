@@ -97,7 +97,7 @@ The API, how the plugin behaves, the setup and the traps: the skill's `reference
 | `modview.py` | `range <lo> <hi>` / `tree <func> [depth]` -- one line per function: name, provenance, size, call sites, callees, strings. Offline. |
 | `dec.py` | `python dec.py <addr\|name> ...` -- decompile. |
 | `ghidra.py` | `asm` (read-only disassembly of any range), `func`, `xrefs`, `refs` (xrefs + `jal`/`j` encodings + data words + low halves: "is it really unreferenced"), `find` (over the ELF's bytes, with an optional bit mask), `segments`, `mkfunc` (create + save). |
-| `mipsdis.py` | Offline R5900 disassembler over the ELF, annotated with cached names; for code Ghidra has no function for. |
+| `mipsdis.py` | Offline R5900 disassembler over the ELF, annotated with cached names; for code Ghidra has no function for, and **for VU0 macro code** (decodes COP2 with field masks and broadcast lanes, which the decompiler loses; lqc2 / sqc2 still print the GPR name of the vf number). |
 | `reach.py` | `reach.py <name|addr> ... [--list]`, `--slots <vtable> <n>`: the unwritten game functions under a root, transitively (direct calls only, so a floor for comparing roots). `references/roadmap-3d-control.md` is made with it. Offline. |
 | `sssdis.py` | `sssdis.py <script file> [--natives lo-hi]`: the stage scripts ("SSS", VM 0x1d1c40) read statically: each entry and its native calls with the constant arguments; by default the lighting natives 0x1b3..0x1c3. |
 | `sssnatives.py` | `sssnatives.py`: writes `src/game/scriptnatives.inc`, the pops, code words and address of all 541 script natives read from the ROM, so an unwritten native still leaves the VM right. `--list lo-hi` prints them with size, `acc`, `yield` and callees. |

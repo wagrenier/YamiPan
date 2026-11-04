@@ -1595,6 +1595,35 @@ static const int *nativeFileEventDelayed(ScriptRunner *self, int *, const int *c
     return next;
 }
 
+// 0x159 demoCut(name): the next cut of an event, a motion of its pack on the
+// demo camera. The runner's first one waits a frame.
+// The ROM then compares a null pointer with "SJN" and "SJE" for the overlay
+// (data 0x304b58, 0x304b60: 1, 2); nothing there matches, so it is 0.
+// PC: the kind test: the ROM calls the slot on whatever is on top.
+// FS2 0x001b7e70
+// callcheck: readStringArg, scriptYield, getTopView, playCutNamed, strcmp, strcmp, setOverlay
+
+static const int *nativeDemoCut(ScriptRunner *self, int *, const int *code)
+{
+    enum { Native = 0x147 };    // what the ROM yields under; 0x147 waits the same way
+    const char *name = nullptr;
+    const int *next = self->readStringArg(&name, code);
+    takeScriptYield();
+    if (self->m_cutWaited == 0) {
+        self->m_cutWaited = 1;
+        scriptYield(Native, 0);
+        return next;
+    }
+    StageObject *top = gStageScene->getTopView();
+    if (top != nullptr && top->getKind() == StageObject_Kind13) {
+        DemoCamera *camera = static_cast<DemoCamera *>(top);
+        camera->playCutNamed(name);
+        camera->setOverlay(0);
+        camera->m_demoCut++;
+    }
+    return next;
+}
+
 // 0x161 simpleEvent(name): half a second of fade
 // FS2 0x001b7390
 // callcheck: readNameArg, startSimpleEvent, scriptYield
@@ -1722,6 +1751,7 @@ static const ScriptNativeBinding kNatives[] = {
     { 0x138, nativeMissionValue },
     { 0x139, nativeMoveScale },
     { 0x155, nativeSimpleEventNow },
+    { 0x159, nativeDemoCut },
     { 0x15f, nativeFileEvent },
     { 0x160, nativeFileEventDelayed },
     { 0x161, nativeSimpleEvent },

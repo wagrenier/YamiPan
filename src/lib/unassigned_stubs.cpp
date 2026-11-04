@@ -523,18 +523,6 @@ void resetStageGroupTable()
     YAMIPAN_STUB("resetStageGroupTable", 0x002cf510);
 }
 
-// stub of FS2 0x00136490
-void scaleVec4(float s, sceVu0FVECTOR out, const sceVu0FVECTOR in)
-{
-    YAMIPAN_STUB("scaleVec4", 0x00136490);
-}
-
-// stub of FS2 0x00135fe0
-void setVecLength(float len, sceVu0FVECTOR out, const sceVu0FVECTOR in)
-{
-    YAMIPAN_STUB("setVecLength", 0x00135fe0);
-}
-
 // stub of FS2 0x00135f20
 float vecDistance(const sceVu0FVECTOR a, const sceVu0FVECTOR b)
 {
@@ -1467,13 +1455,6 @@ const SeEntry * getSurfaceSound(int surface)
     return {};
 }
 
-// stub of FS2 0x00150d80
-int motionBoneMatrix(sceVu0FMATRIX out, void *motion, const char *bone, int frame)
-{
-    YAMIPAN_STUB("motionBoneMatrix", 0x00150d80);
-    return {};
-}
-
 // stub of FS2 0x0027ef70
 CarPose::CarPose()
 {
@@ -1486,66 +1467,6 @@ ElevatorPose::ElevatorPose()
     YAMIPAN_STUB("ElevatorPose::ElevatorPose", 0x0027ffb0);
 }
 
-// stub of FS2 0x002d0fa0
-ModelMotion::ModelMotion(ModelPose*, void*)
-{
-    YAMIPAN_STUB("ModelMotion::ModelMotion", 0x002d0fa0);
-}
-
-// stub of FS2 0x002d0f30
-ModelMotion::~ModelMotion()
-{
-    YAMIPAN_STUB("ModelMotion::~ModelMotion", 0x002d0f30);
-}
-
-// stub of FS2 0x00151020
-ModelPose::ModelPose()
-{
-    YAMIPAN_STUB("ModelPose::ModelPose", 0x00151020);
-}
-
-// stub of FS2 0x0014e300
-int ModelPose::getSurfaceFrames(float *out)
-{
-    YAMIPAN_STUB("ModelPose::getSurfaceFrames", 0x0014e300);
-    return {};
-}
-
-// stub of FS2 0x0014fab0
-int ModelPose::play(ModelMotion *motion, u_int flags, int arg)
-{
-    YAMIPAN_STUB("ModelPose::play", 0x0014fab0);
-    return {};
-}
-
-// stub of FS2 0x0014fca0
-int ModelPose::playFile(void *file, u_int flags, int arg)
-{
-    YAMIPAN_STUB("ModelPose::playFile", 0x0014fca0);
-    return {};
-}
-
-// stub of FS2 0x0014f950
-int ModelPose::playFileLayered(void *file, u_int flags, int arg)
-{
-    YAMIPAN_STUB("ModelPose::playFileLayered", 0x0014f950);
-    return {};
-}
-
-// stub of FS2 0x0014f910
-int ModelPose::playLayered(ModelMotion *motion, u_int flags, int arg)
-{
-    YAMIPAN_STUB("ModelPose::playLayered", 0x0014f910);
-    return {};
-}
-
-// stub of FS2 0x0014e4d0
-int ModelPose::solve(int iterations, int count, int flaggedOnly)
-{
-    YAMIPAN_STUB("ModelPose::solve", 0x0014e4d0);
-    return {};
-}
-
 // stub of FS2 0x002a7a50
 NmlPose::NmlPose(int, int, int, int)
 {
@@ -1556,24 +1477,6 @@ NmlPose::NmlPose(int, int, int, int)
 SkyPose::SkyPose(int, int)
 {
     YAMIPAN_STUB("SkyPose::SkyPose", 0x002b37d0);
-}
-
-// stub of FS2 0x0014ff90
-void ModelPose::load(void *file, int arg, const char *boneNames, u_int boneCount)
-{
-    YAMIPAN_STUB("ModelPose::load", 0x0014ff90);
-}
-
-// stub of FS2 0x0014f4b0
-void ModelPose::update(float frames, bool loop)
-{
-    YAMIPAN_STUB("ModelPose::update", 0x0014f4b0);
-}
-
-// stub of FS2 0x00150f50
-ModelPose::~ModelPose()
-{
-    YAMIPAN_STUB("ModelPose::~ModelPose", 0x00150f50);
 }
 
 // stub of FS2 0x001eff00

@@ -382,6 +382,8 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **Source files may be CRLF.** A replace script with LF in its search text fails its assert. Fix:
   normalise to LF, replace, and write the file back as it was.
 
+**A here-document can break the Bash tool (2026-11-04).** Symptom: `unexpected EOF while looking for matching` on a command whose quoted heredoc is correct in a terminal. Cause: not found; both times the body held triple quotes and apostrophes. Fix: write the script with the Write tool into the scratchpad and run it; do not retry the heredoc. Also: a stray `cat > file` with no input hangs until the 60-second timeout.
+
 ## VU1 addresses are not EE offsets (2026-11-04)
 
 Symptom: the VU1 program tests "address 15" and nothing writes bss +15 quadwords; `xrefs` on the block it seems to name finds a view matrix. Cause: what VU1 reads at a low address comes from a UNPACK in the packet, not from the block the upload function fills; 0x2e5bb0's `pauVar21[0xc]` is an offset in its own buffer. Fix: search the code for the UNPACK word itself (`lui 0x6c01` + `ori ..., 0xf`, a short scan of the ELF), and print `dest` on `ilw`: address 15 is three fields, x the pass mask, y the model flags, z the mesh's.

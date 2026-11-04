@@ -387,6 +387,7 @@ public:
     // FS2 0x0019d0b0
     virtual int command101(void *) { return defaultCommand(); }
 
+    u_char m_cutWaited = 0;     // FS2 +0xb8: natives 0x147, 0x159 and one more wait one frame, once ever
     u_char m_skippable = 0;     // FS2 +0xb9: a sub-scene's: start ends it
 
 private:

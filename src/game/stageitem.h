@@ -47,9 +47,6 @@ constexpr float kItemLingerSeconds = 10.0f;
 // Seconds a smoke flare burns.
 constexpr float kFlareBurnSeconds  = 20.0f;
 
-// A bone's matrix in a motion file at frame; above 0 when it has the bone. The
-// run unassigned@00148db0.
-int motionBoneMatrix(sceVu0FMATRIX out, void *motion, const char *bone, int frame); // FS2 0x00150d80
 // A surface's sound (StageCollisionFace::surface); null none. The run
 // unassigned@002c42a0.
 const SeEntry *getSurfaceSound(int surface);                             // FS2 0x002cf0b0
