@@ -709,19 +709,6 @@ void UiItemList::destroy()
     YAMIPAN_STUB("UiItemList::destroy", 0x00000000);
 }
 
-// stub of FS2 0x00243350
-void UiTrack::draw(UiDrawer *drawer)
-{
-    YAMIPAN_STUB("UiTrack::draw", 0x00243350);
-}
-
-// stub of FS2 0x00243360
-const float * UiTrack::getAnchor()
-{
-    YAMIPAN_STUB("UiTrack::getAnchor", 0x00243360);
-    return {};
-}
-
 // stub of FS2 0x00185af0
 float VcmController::getWeight() const
 {
@@ -826,13 +813,6 @@ NaviMenu * getNaviMenu()
 SaveExtra * getSaveExtra()
 {
     YAMIPAN_STUB("getSaveExtra", 0x0029efd0);
-    return {};
-}
-
-// stub of FS2 0x00243380
-void * getUiWorkArea()
-{
-    YAMIPAN_STUB("getUiWorkArea", 0x00243380);
     return {};
 }
 
@@ -946,12 +926,6 @@ int runNaviFile()
 void saveExtraInit()
 {
     YAMIPAN_STUB("saveExtraInit", 0x0029ef70);
-}
-
-// stub of FS2 0x00243370
-void setUiWorkArea(void *area)
-{
-    YAMIPAN_STUB("setUiWorkArea", 0x00243370);
 }
 
 // stub of FS2 0x002e0840

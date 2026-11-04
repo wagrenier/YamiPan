@@ -31,6 +31,7 @@
 #include "game/stagesound.h"
 #include "game/streamring.h"
 #include "game/uilayout.h"
+#include "game/uiworkarea.h"
 #include "rx/rxfile.h"
 #include "sdk/libgraph.h"     /* sceGsDrawEnv1 */
 #include "sdk/libvifpk.h"
@@ -1920,12 +1921,6 @@ public:
 };
 
 // What the S2D widgets (game/uiwidget.cpp) call of systems without a TU.
-
-// The word at sbss 0x31ae40 (gp-0x7a30; unassigned@0023e740): a work area
-// the movie widget lends its player; menuPlayMovie sets it to the stage
-// pack's buffer around a stage's opening movie.
-void *getUiWorkArea();                                                   // FS2 0x00243380
-void  setUiWorkArea(void *area);                                         // FS2 0x00243370
 
 // fsm subtitle files (unassigned@002681e0): tracks of timed 16-bit texts,
 // relocated in place once.
