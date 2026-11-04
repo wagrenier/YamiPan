@@ -11933,6 +11933,12 @@
   "was": "FUN_001760c0",
   "why": "adds the object to the scene's lists and takes its model instance, textures and collision"
  },
+ "001763e0": {
+  "name": "StageObject::applyMapModelFlags",
+  "tag": "game-inferred",
+  "was": "FUN_001763e0",
+  "why": "the model flags block inline in setupMapObject, called on its own by the sub-scene's map setup"
+ },
  "001766c0": {
   "name": "createMapObject",
   "tag": "game-inferred",
@@ -11944,6 +11950,24 @@
   "tag": "game-inferred",
   "was": "FUN_001769e0",
   "why": "strcmp with oGK99_01 and oDC99_01; gate is a guess"
+ },
+ "00176a40": {
+  "name": "MapObjectParts::copyShown",
+  "tag": "game-inferred",
+  "was": "FUN_00176a40",
+  "why": "walks the ids: PartSwitch::show and StageParticle::setEmitting from another object's parts"
+ },
+ "00176b30": {
+  "name": "MapObjectParts::~MapObjectParts",
+  "tag": "game-inferred",
+  "was": "FUN_00176b30",
+  "why": "frees the ids, the PartSwitch array and the effects; deleting"
+ },
+ "00176bc0": {
+  "name": "MapObjectParts::MapObjectParts",
+  "tag": "game-inferred",
+  "was": "FUN_00176bc0",
+  "why": "0x14 block: distinct part ids from a collision record's faces +0x46, a PartSwitch for each, effects"
  },
  "00177270": {
   "name": "BoneNode::find",
@@ -12119,6 +12143,18 @@
   "was": "FUN_0017c700",
   "why": "takes the name, instance, textures, two motion lists and mdl of a StageCharacterModel"
  },
+ "0017d970": {
+  "name": "StageObject::setupBody",
+  "tag": "game-inferred",
+  "was": "FUN_0017d970",
+  "why": "sets the model's light proxy from a bone, shadow box from the table 0x2f8000 by model name, effects for a model with no data"
+ },
+ "0017dcb0": {
+  "name": "StageObject::applyCharacterModelFlags",
+  "tag": "game-inferred",
+  "was": "FUN_0017dcb0",
+  "why": "model flags 2 or 10 by record kind 0xb, own lights bytes +0xb4 +0xb5"
+ },
  "0017de30": {
   "name": "StageCharacter::StageCharacter",
   "tag": "game-inferred",
@@ -12130,6 +12166,24 @@
   "tag": "game-inferred",
   "was": "FUN_0017df60",
   "why": "every character with +0x18: three calls on +0x224"
+ },
+ "0017e010": {
+  "name": "CharacterHidePart::copyFrom",
+  "tag": "game-inferred",
+  "was": "FUN_0017e010",
+  "why": "PartSwitch::show of the other's shown"
+ },
+ "0017e050": {
+  "name": "CharacterHidePart::~CharacterHidePart",
+  "tag": "game-inferred",
+  "was": "FUN_0017e050",
+  "why": "deletes the PartSwitch; deleting dtor"
+ },
+ "0017e0b0": {
+  "name": "CharacterHidePart::CharacterHidePart",
+  "tag": "game-inferred",
+  "was": "FUN_0017e0b0",
+  "why": "for record kinds 0xb and 0xd: a PartSwitch on the model's part hide, 2 parts"
  },
  "0017e900": {
   "name": "BoxVolume::getKind",
@@ -15209,6 +15263,30 @@
   "was": "FUN_001b1850",
   "why": "script native 0x1b3: slot +0x74"
  },
+ "001b5460": {
+  "name": "demoSwitchOn",
+  "tag": "game-inferred",
+  "was": "FUN_001b5460",
+  "why": "tree setActive and setShown together; natives 0x145 and others"
+ },
+ "001b6fe0": {
+  "name": "nativeDemoFade",
+  "tag": "game-inferred",
+  "was": "FUN_001b6fe0",
+  "why": "native 0x163: StageFade colour and start from frames"
+ },
+ "001b9680": {
+  "name": "nativeDemoBind",
+  "tag": "game-inferred",
+  "was": "FUN_001b9680",
+  "why": "native 0x145: finds or makes the object called name in group 8, binds the motion, turns it on"
+ },
+ "001b9ac0": {
+  "name": "nativeDemoPosition",
+  "tag": "game-inferred",
+  "was": "FUN_001b9ac0",
+  "why": "native 0x144: three float code words to the target's scriptSetPosition"
+ },
  "001cd040": {
   "name": "nativeLightConeAngle",
   "tag": "game-inferred",
@@ -17182,6 +17260,12 @@
   "tag": "game-inferred",
   "was": "FUN_0023ad60",
   "why": "StageScene ctor new(0xc4) for +0xdc: count zero, then every third word zero (entries of 0xc), beside boxContainsPoint; name a guess"
+ },
+ "0023adb0": {
+  "name": "collisionFindRecord",
+  "tag": "game-inferred",
+  "was": "FUN_0023adb0",
+  "why": "strcmp over 0x20-byte records from +4, count +8; null none"
  },
  "0023ae40": {
   "name": "CollisionFile::relocate",
@@ -19859,6 +19943,96 @@
   "was": "FUN_002682e0",
   "why": "StageScene ctor new(8) for +0xe4: the state's first doubleword = 0x5deece66d, the drand48 multiplier"
  },
+ "00268310": {
+  "name": "SubSceneLamp::build",
+  "tag": "game-inferred",
+  "was": "FUN_00268310",
+  "why": "news two SpotLight and two PointLight named %s_sl, %s_sl2, %s_pl, %s_pl2 under the node, the shape of ItemLamp's ctor"
+ },
+ "002687c0": {
+  "name": "SubSceneLamp::~SubSceneLamp",
+  "tag": "game-inferred",
+  "was": "FUN_002687c0",
+  "why": "deleting dtor of vtable 0x316c30 over StageMatrixNode"
+ },
+ "00268830": {
+  "name": "SubSceneModelObject::setLampOn",
+  "tag": "game-inferred",
+  "was": "FUN_00268830",
+  "why": "slot +0x264: builds the lamp on bn_top on first use, turns the first spot and point on or off"
+ },
+ "00268a20": {
+  "name": "SubSceneModelObject::playNamedMotion",
+  "tag": "game-inferred",
+  "was": "FUN_00268a20",
+  "why": "slot +0x260: SubSceneData::findMotion then StageModel::playMotionFile flags 0x50, as DemoCamera's cuts"
+ },
+ "00268a90": {
+  "name": "SubSceneModelObject::setPosition",
+  "tag": "game-inferred",
+  "was": "FUN_00268a90",
+  "why": "slot +0x20c: NodeTransform::setPosition, then applyMotion when role is 2"
+ },
+ "00268ae0": {
+  "name": "SubSceneModelObject::setProperty",
+  "tag": "game-inferred",
+  "was": "FUN_00268ae0",
+  "why": "slot +0x1fc behind the runner's thunk: script property writes by id"
+ },
+ "00269150": {
+  "name": "SubSceneModelObject::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_00269150",
+  "why": "slot +0x1f4 answers 0x1f"
+ },
+ "00269160": {
+  "name": "SubSceneModelObject::getProperty",
+  "tag": "game-inferred",
+  "was": "FUN_00269160",
+  "why": "slot +0x1f8 behind the runner's thunk: script property reads by id"
+ },
+ "002699e0": {
+  "name": "SubSceneModelObject::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_002699e0",
+  "why": "slot +0x25c, empty: the side base's fourth hook"
+ },
+ "002699f0": {
+  "name": "SubSceneModelObject::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_002699f0",
+  "why": "slot +0x258: StageModel::advance 1.2, then the lamp's lights: the frame"
+ },
+ "00269a70": {
+  "name": "SubSceneModelObject::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_00269a70",
+  "why": "slot +0x254, empty"
+ },
+ "00269a80": {
+  "name": "SubSceneModelObject::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_00269a80",
+  "why": "slot +0x250, empty"
+ },
+ "00269a90": {
+  "name": "SubSceneModelObject::bindMotion",
+  "tag": "game-inferred",
+  "was": "FUN_00269a90",
+  "why": "slot +0x24c, called by native 0x145 with a name: setBaseMotion, bindBones, placeBones, joins ScenePairTable, setDirtyTree(true)"
+ },
+ "00269bd0": {
+  "name": "SubSceneModelObject::attach",
+  "tag": "game-inferred",
+  "was": "FUN_00269bd0",
+  "why": "setName, StageObjectList::add8, setModel: every setup of the family starts here"
+ },
+ "00269c30": {
+  "name": "SubSceneModelObject::~SubSceneModelObject",
+  "tag": "game-inferred",
+  "was": "FUN_00269c30",
+  "why": "deleting dtor of vtable 0x316c60"
+ },
  "00269d00": {
   "name": "SubSceneModelObject::SubSceneModelObject",
   "tag": "game-inferred",
@@ -20050,6 +20224,54 @@
   "tag": "game-inferred",
   "was": "FUN_00286910",
   "why": "+0xb8, +0xbc keptObject; +0xc0 cleared when the first is set"
+ },
+ "00286a50": {
+  "name": "StageMission::getScoreClock",
+  "tag": "game-inferred",
+  "was": "FUN_00286a50",
+  "why": "StageResult +0xa8, clock2.value"
+ },
+ "00286a70": {
+  "name": "StageMission::setScoreClock",
+  "tag": "game-inferred",
+  "was": "FUN_00286a70",
+  "why": "StageResult +0xa8"
+ },
+ "00286aa0": {
+  "name": "StageMission::getClockFrames",
+  "tag": "game-inferred",
+  "was": "FUN_00286aa0",
+  "why": "StageResult +0x98 in 30ths of a second"
+ },
+ "00286b20": {
+  "name": "StageMission::setClockFrames",
+  "tag": "game-inferred",
+  "was": "FUN_00286b20",
+  "why": "StageResult +0x98 from 30ths"
+ },
+ "00286b80": {
+  "name": "StageMission::getResultHold",
+  "tag": "game-inferred",
+  "was": "FUN_00286b80",
+  "why": "StageResult +0xb5"
+ },
+ "00286ba0": {
+  "name": "StageMission::setResultHold",
+  "tag": "game-inferred",
+  "was": "FUN_00286ba0",
+  "why": "StageResult +0xb5"
+ },
+ "00286bd0": {
+  "name": "StageMission::getResultPaused",
+  "tag": "game-inferred",
+  "was": "FUN_00286bd0",
+  "why": "StageResult +0xb4"
+ },
+ "00286bf0": {
+  "name": "StageMission::setResultPaused",
+  "tag": "game-inferred",
+  "was": "FUN_00286bf0",
+  "why": "StageResult +0xb4"
  },
  "00286c20": {
   "name": "StageMission::getItemText",
@@ -20254,6 +20476,30 @@
   "tag": "game-inferred",
   "was": "FUN_0028ec70",
   "why": "writes +0x2b0 of the two lights at +0x14 and +0x20"
+ },
+ "0028ecb0": {
+  "name": "GateParts::setEffects",
+  "tag": "game-inferred",
+  "was": "FUN_0028ecb0",
+  "why": "setTreeScriptFlag on its four objects, StageParticle::setEmitting on two"
+ },
+ "0028ed60": {
+  "name": "GateParts::copyFrom",
+  "tag": "game-inferred",
+  "was": "FUN_0028ed60",
+  "why": "state bytes +0x2c..+0x3f from another, or closed with null"
+ },
+ "0028f820": {
+  "name": "GateParts::~GateParts",
+  "tag": "game-inferred",
+  "was": "FUN_0028f820",
+  "why": "destroys the PartSwitch array; deleting"
+ },
+ "0028f890": {
+  "name": "GateParts::GateParts",
+  "tag": "game-inferred",
+  "was": "FUN_0028f890",
+  "why": "0x40 block: PartSwitch per id named BKW%02di"
  },
  "0028fa90": {
   "name": "fsmTrackHasText",
@@ -22103,11 +22349,41 @@
   "was": "FUN_002bb4e0",
   "why": "seven words zero"
  },
+ "002bb600": {
+  "name": "SubSceneItem::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_002bb600",
+  "why": "vtable 0x319540 slot +0x1f4 answers 0x25"
+ },
+ "002bb610": {
+  "name": "SubSceneItem::setScriptFlag",
+  "tag": "game-inferred",
+  "was": "FUN_002bb610",
+  "why": "vtable +0x9c, the runner's +0x60: ItemLamp::setDark"
+ },
+ "002bb620": {
+  "name": "SubSceneItem::setLampOn",
+  "tag": "game-inferred",
+  "was": "FUN_002bb620",
+  "why": "slot +0x264: ItemLamp::setSwitchedOn"
+ },
+ "002bb630": {
+  "name": "SubSceneItem::bindMotion",
+  "tag": "game-inferred",
+  "was": "FUN_002bb630",
+  "why": "slot +0x24c: the base's, then ItemLamp::attachTo bn_top's node"
+ },
  "002bb680": {
   "name": "SubSceneItem::setup",
   "tag": "game-inferred",
   "was": "FUN_002bb680",
   "why": "name, instance, textures"
+ },
+ "002bb6e0": {
+  "name": "SubSceneItem::~SubSceneItem",
+  "tag": "game-inferred",
+  "was": "FUN_002bb6e0",
+  "why": "deleting dtor of vtable 0x319540"
  },
  "002bb7a0": {
   "name": "SubSceneItem::SubSceneItem",
@@ -22121,11 +22397,23 @@
   "was": "FUN_002bb810",
   "why": "placeItem in a sub-scene, other kinds"
  },
+ "002bb840": {
+  "name": "SubSceneCharacter::bindMotion",
+  "tag": "game-inferred",
+  "was": "FUN_002bb840",
+  "why": "slot +0x24c: the base's, then 0x17d970 with 0"
+ },
  "002bb870": {
   "name": "SubSceneCharacter::setup",
   "tag": "game-inferred",
   "was": "FUN_002bb870",
   "why": "name, instance, textures"
+ },
+ "002bba20": {
+  "name": "SubSceneCharacter::~SubSceneCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_002bba20",
+  "why": "deleting dtor of vtable 0x3197b0"
  },
  "002bbab0": {
   "name": "SubSceneCharacter::SubSceneCharacter",
@@ -22133,11 +22421,35 @@
   "was": "FUN_002bbab0",
   "why": "placeCharacter in a sub-scene, argument 2"
  },
+ "002bbb00": {
+  "name": "SubSceneGateObject::setLampOn",
+  "tag": "game-inferred",
+  "was": "FUN_002bbb00",
+  "why": "slot +0x264 of vtable 0x319a20: GateParts::setEffects"
+ },
+ "002bbb10": {
+  "name": "SubSceneGateObject::bindMotion",
+  "tag": "game-inferred",
+  "was": "FUN_002bbb10",
+  "why": "slot +0x24c: map's, then GateParts built on the map parts and synced from the view target's +0x2b0"
+ },
+ "002bbc00": {
+  "name": "SubSceneMapObject::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_002bbc00",
+  "why": "vtable 0x319c90 slot +0x1f4 answers 0x20"
+ },
  "002bbc10": {
   "name": "SubSceneGateObject::setup",
   "tag": "game-inferred",
   "was": "FUN_002bbc10",
   "why": "same code as SubSceneMapObject::setup, the gate class's copy"
+ },
+ "002bbcf0": {
+  "name": "SubSceneGateObject::~SubSceneGateObject",
+  "tag": "game-inferred",
+  "was": "FUN_002bbcf0",
+  "why": "deleting dtor of vtable 0x319a20"
  },
  "002bbdb0": {
   "name": "SubSceneGateObject::SubSceneGateObject",
@@ -22145,17 +22457,41 @@
   "was": "FUN_002bbdb0",
   "why": "vtable 0x319a20, 0x2c0 bytes, for the isGateModelName nodes in a sub-scene"
  },
+ "002bbe30": {
+  "name": "SubSceneMapObject::bindMotion",
+  "tag": "game-inferred",
+  "was": "FUN_002bbe30",
+  "why": "slot +0x24c of vtable 0x319c90: the base's, then MapObjectParts synced from the stage's object"
+ },
  "002bbed0": {
   "name": "SubSceneMapObject::setup",
   "tag": "game-inferred",
   "was": "FUN_002bbed0",
   "why": "the bg target's call after the ctor; finds the node called Root"
  },
+ "002bbfb0": {
+  "name": "SubSceneMapObject::~SubSceneMapObject",
+  "tag": "game-inferred",
+  "was": "FUN_002bbfb0",
+  "why": "deleting dtor of vtable 0x319c90"
+ },
  "002bc040": {
   "name": "SubSceneMapObject::SubSceneMapObject",
   "tag": "game-inferred",
   "was": "FUN_002bc040",
   "why": "vtable 0x319c90, 0x280 bytes, made by the bg target in a sub-scene"
+ },
+ "002bc090": {
+  "name": "SubSceneCharacter::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_002bc090",
+  "why": "vtable 0x3197b0 slot +0x1f4 answers 0x23"
+ },
+ "002bc0a0": {
+  "name": "SubSceneGateObject::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_002bc0a0",
+  "why": "vtable 0x319a20 slot +0x1f4 answers 0x22"
  },
  "002bc100": {
   "name": "KeepList::update",

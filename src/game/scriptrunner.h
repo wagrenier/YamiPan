@@ -366,6 +366,9 @@ public:
     // FS2 0x0019d010
     // callcheck: defaultCommand
     virtual float command59(void *) { return (float)defaultCommand(); }
+    // Slot +0x140: an event's object plays the pack's motion called name; the
+    // demo camera takes it as its cut. Native 0x148.
+    virtual void scriptPlayMotion(const char *name) { (void)name; defaultCommand(); }
     // A tail jump to defaultCommand.
     // FS2 0x0019d050
     virtual int command80() { return defaultCommand(); }

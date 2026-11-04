@@ -32,6 +32,7 @@
 #include "game/stageresult.h"   /* getInitItemForLanguage */
 #include "game/stagesound.h"
 #include "game/stringlist.h"
+#include "game/subsceneobject.h"
 #include "game/sysdata.h"       /* getStageSelect */
 #include "game/thread.h"        /* threadYield */
 #include "game/uiwidget.h"
@@ -1925,6 +1926,11 @@ static const StageObjRecord *stageObjRecords()
     default:             set = 1; break;
     }
     return gStageObjRecords[set];
+}
+
+const StageObjRecord *stageObjRecord(int index)
+{
+    return &stageObjRecords()[index < 0 || index >= kStageObjRecordCount ? 0 : index];
 }
 
 static int findStageObjRecord(const char *name)
@@ -4858,26 +4864,12 @@ DemoExecuter::~DemoExecuter()
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// The kinds of three object classes: slot 123 of their vtables.
-// FS2 0x001a45d0
-
-int SubSceneDoorObject::getKind()
-{
-    return StageObject_SubSceneDoor;
-}
-
+// StageMarker's kind: slot 123 of its vtable.
 // FS2 0x001a4880
 
 int StageMarker::getKind()
 {
     return StageObject_Marker;
-}
-
-// FS2 0x001a4950
-
-int SubSceneProp::getKind()
-{
-    return StageObject_SubSceneProp;
 }
 
 // FS2 0x001a48c0

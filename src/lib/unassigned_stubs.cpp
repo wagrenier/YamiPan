@@ -370,32 +370,6 @@ bool StagePlayer::isMode1()
 }
 
 // stub of FS2 0x001d3a40
-// stub of FS2 0x002bbdb0
-SubSceneGateObject::SubSceneGateObject(int)
-{
-    YAMIPAN_STUB("SubSceneGateObject::SubSceneGateObject", 0x002bbdb0);
-}
-
-// stub of FS2 0x002bbc10
-void SubSceneGateObject::setup(const char *name, ModelInstance *instance,
-               StringMap<Tim2Texture *> *textures, void *collision)
-{
-    YAMIPAN_STUB("SubSceneGateObject::setup", 0x002bbc10);
-}
-
-// stub of FS2 0x002bc040
-SubSceneMapObject::SubSceneMapObject(int)
-{
-    YAMIPAN_STUB("SubSceneMapObject::SubSceneMapObject", 0x002bc040);
-}
-
-// stub of FS2 0x002bbed0
-void SubSceneMapObject::setup(const char *name, ModelInstance *instance,
-               StringMap<Tim2Texture *> *textures, void *collision)
-{
-    YAMIPAN_STUB("SubSceneMapObject::setup", 0x002bbed0);
-}
-
 // stub of FS2 0x0023f0b0
 UiItemList::UiItemList(WideFontPrinter*, int)
 {
@@ -481,13 +455,6 @@ NaviMenu * getNaviMenu()
 SaveExtra * getSaveExtra()
 {
     YAMIPAN_STUB("getSaveExtra", 0x0029efd0);
-    return {};
-}
-
-// stub of FS2 0x001769e0
-bool isGateModelName(const char *name)
-{
-    YAMIPAN_STUB("isGateModelName", 0x001769e0);
     return {};
 }
 
@@ -682,45 +649,6 @@ void StageObject::onViewTop()
 void StageParty::setFillImage(const void *image)
 {
     YAMIPAN_STUB("StageParty::setFillImage", 0x001fe9b0);
-}
-
-// stub of FS2 address unknown (0 candidates)
-SubSceneCharacter::SubSceneCharacter(int)
-{
-    YAMIPAN_STUB("SubSceneCharacter::SubSceneCharacter", 0x00000000);
-}
-
-// stub of FS2 0x002bb870
-void SubSceneCharacter::setup(const char *name, ModelInstance *instance,
-               StringMap<Tim2Texture *> *textures)
-{
-    YAMIPAN_STUB("SubSceneCharacter::setup", 0x002bb870);
-}
-
-// stub of FS2 address unknown (0 candidates)
-SubSceneItem::SubSceneItem(int)
-{
-    YAMIPAN_STUB("SubSceneItem::SubSceneItem", 0x00000000);
-}
-
-// stub of FS2 0x002bb680
-void SubSceneItem::setup(const char *name, ModelInstance *instance,
-               StringMap<Tim2Texture *> *textures)
-{
-    YAMIPAN_STUB("SubSceneItem::setup", 0x002bb680);
-}
-
-// stub of FS2 address unknown (0 candidates)
-SubSceneModelObject::SubSceneModelObject(int)
-{
-    YAMIPAN_STUB("SubSceneModelObject::SubSceneModelObject", 0x00000000);
-}
-
-// stub of FS2 0x002bb810
-void SubSceneProp::setup(const char *name, ModelInstance *instance,
-               StringMap<Tim2Texture *> *textures)
-{
-    YAMIPAN_STUB("SubSceneProp::setup", 0x002bb810);
 }
 
 // stub of FS2 0x0029fb30
@@ -1605,5 +1533,60 @@ void missionSpawnAt(int *point, int id)
 bool missionSpawnPointTaken(int *point)
 {
     YAMIPAN_STUB("missionSpawnPointTaken", 0x0029fd10);
+    return {};
+}
+
+// stub of FS2 address unknown (0 candidates)
+GateParts::GateParts(StageObject*, PartSwitch*, int*, int, GateParts*)
+{
+    YAMIPAN_STUB("GateParts::GateParts", 0x00000000);
+}
+
+// stub of FS2 0x0028ed60
+void GateParts::copyFrom(const GateParts *from)
+{
+    YAMIPAN_STUB("GateParts::copyFrom", 0x0028ed60);
+}
+
+// stub of FS2 0x0028ecb0
+void GateParts::setEffects(bool on)
+{
+    YAMIPAN_STUB("GateParts::setEffects", 0x0028ecb0);
+}
+
+// stub of FS2 address unknown (0 candidates)
+GateParts::~GateParts()
+{
+    YAMIPAN_STUB("GateParts::~GateParts", 0x00000000);
+}
+
+// stub of FS2 address unknown (0 candidates)
+MapObjectParts::MapObjectParts(StageObject*, void*, bool)
+{
+    YAMIPAN_STUB("MapObjectParts::MapObjectParts", 0x00000000);
+}
+
+// stub of FS2 0x00176a40
+void MapObjectParts::copyShown(const MapObjectParts *from)
+{
+    YAMIPAN_STUB("MapObjectParts::copyShown", 0x00176a40);
+}
+
+// stub of FS2 address unknown (0 candidates)
+MapObjectParts::~MapObjectParts()
+{
+    YAMIPAN_STUB("MapObjectParts::~MapObjectParts", 0x00000000);
+}
+
+// stub of FS2 0x0017d970
+void StageObject::setupBody(bool keep)
+{
+    YAMIPAN_STUB("StageObject::setupBody", 0x0017d970);
+}
+
+// stub of FS2 0x0023adb0
+void * collisionFindRecord(void *file, const char *name)
+{
+    YAMIPAN_STUB("collisionFindRecord", 0x0023adb0);
     return {};
 }
