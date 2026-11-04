@@ -32,6 +32,7 @@
 #include "game/streamring.h"
 #include "game/uilayout.h"
 #include "game/uiworkarea.h"
+#include "game/vu0math.h"
 #include "rx/rxfile.h"
 #include "sdk/libgraph.h"     /* sceGsDrawEnv1 */
 #include "sdk/libvifpk.h"
@@ -400,8 +401,9 @@ public:
 };
 extern ScriptRunner *gRunningScript;    /* sbss 0x31ae18 (gp-0x7a58) */
 // The object's second base (EE +0x18): the view flag, then a vtable of four
-// slots (empty in the base's table). What they are is unread (StageMarker's
-// are empty; 0x2699f0 of SubSceneModelObject draws something).
+// slots (empty in the base's table): an entry of ScenePairTable, whose four
+// action steps call them. StageMarker's are empty; a light's third is its
+// frame (StageLight::sideHook2), a spot's fourth trims it against the map.
 // layout: host -- EE: +0 the flag, +4 the vptr.
 class StageSideBase
 {
@@ -500,8 +502,8 @@ public:
     virtual void setTreeShown(bool on);                                  // FS2 0x00172260
 
     // Slots +0x60 / +0x68 of the runner's table, empty in the base; the
-    // tree walks call them. What the flags are is unread (the lights
-    // override them; StageScene::requestSubScene clears the first on lamps).
+    // tree walks call them. On a light they are switched on and broken
+    // (StageLight); StageScene::requestSubScene clears the first on lamps.
     // FS2 0x00171bf0
     virtual void setScriptFlag(bool on) { (void)on; }
     // FS2 0x00171c10
@@ -778,6 +780,31 @@ public:
     // (StageObject::~StageObject).
     ~StageObjectTree();
 
+    // Leaves the parent's child list, if in it. Inline in the ROM
+    // (StageLight::attachEffect).
+    void detach()
+    {
+        if (m_parent == nullptr)
+            return;
+        for (StageList<StageObjectTree *>::Node *link = m_parent->m_children.head; link != nullptr;
+             link = link->next) {
+            if (link->value == this) {
+                m_parent->m_children.erase(link);
+                m_parent = nullptr;
+                break;
+            }
+        }
+    }
+    // Hangs the node under parent (null: only detached). Inline in the ROM.
+    void setParent(StageObjectTree *parent)
+    {
+        detach();
+        if (parent != nullptr) {
+            m_parent = parent;
+            parent->m_children.pushBack(this);
+        }
+    }
+
     // Sets the node's and its children's m_active and m_viewActive.
     void setActive(bool on);                                             // FS2 0x0018bdc0
     // The same on the children only.
@@ -794,6 +821,152 @@ public:
     StageObjectTree *m_parent;              // FS2 +0x0
     StageList<StageObjectTree *> m_children; // FS2 +0x4
     StageObject *m_object;                  // FS2 +0xc
+};
+
+// One shape of the collision world (SceneRecordBuckets), EE 0xe0: built by
+// lights, bullets, traps, map objects, cameras. The world pairs up bodies
+// whose category meets the other's mask, so the names are read from add
+// 0x1f6180, not from the collide step.
+// layout: host -- EE offsets in the comments.
+class CollisionOwner;
+struct CollisionBody
+{
+    // Shape 0 until the owner says; on = 1, the dirty bytes clear.
+    CollisionBody(CollisionOwner *bodyOwner, int bodyBucket, u_int bodyCategory,
+                  u_int bodyMask);                                       // FS2 0x001f6690
+    // Marks it dirty and works out the box.
+    void refresh();                                                      // FS2 0x001f6670
+
+    CollisionOwner *owner;      // FS2 +0x04
+    int            bucket;      // FS2 +0x08: SceneRecordBuckets' list
+    u_int          category;    // FS2 +0x0c
+    u_int          mask;        // FS2 +0x10
+    int            shape;       // FS2 +0x40: CollisionShape
+    BoundingSphere sphere;      // FS2 +0x80
+};
+// CollisionBody::shape (0x1f6590): the box comes from the one sphere, or
+// from the list at +0xd4 (unread).
+enum CollisionShape
+{
+    CollisionShape_Sphere  = 3,
+    CollisionShape_Spheres = 4,
+};
+// A body's category, the ones read.
+constexpr u_int kCollisionLight = 0x2000;
+// What onCollide is given: only the other side's body is read.
+// layout: host -- EE: +4 the body.
+struct CollisionContact
+{
+    CollisionBody *body;        // FS2 +0x04
+};
+// The base that owns a body (EE +0 a flag, +4 the vptr; +0x200 in the lights
+// and the Root objects, +0x240 in the items). Vtable 0x3115a0: six slots,
+// five of them empty there. Like the object's bases its slots repeat, after
+// the runner's, in the class's own table.
+// layout: host
+class CollisionOwner
+{
+public:
+    // Slot 0. What it asks is unread: a light answers 0.
+    virtual int  collisionHook0() = 0;
+    // Slot 1: contact with something; answers 0 on a light.
+    virtual int  onCollide(CollisionContact *contact) = 0;
+    // Slot 2: the body follows the owner.
+    virtual void syncBody(CollisionBody *body) = 0;
+    // Slot 3. Empty on a light.
+    virtual void collisionHook3() = 0;
+    // Slot 4 (+0x18): the object behind the body; the world compares these.
+    virtual StageObject *getCollisionObject() = 0;
+    // Slot 5 (+0x1c): an object the body must not meet (add 0x1f6180
+    // compares it with the other's); null here.
+    // FS2 0x00171ad0
+    virtual StageObject *getCollisionParent() { return nullptr; }
+
+    u_char m_enabled = 1;       // FS2 +0x00: 1 from the base's ctor
+};
+// A keyed vector over frames, EE 0x20: the lights' colour, a block of
+// SceneRender. value is the frame's vector; its w the weight (StageLight::
+// getWeight). The class's TU is the run unassigned@00299d90.
+// layout: host -- EE offsets in the comments; a key is EE 0x40.
+struct VectorKey
+{
+    // FS2 0x0029a6e0
+    VectorKey(const float *from, int keyFrames)
+        : frames(keyFrames), prev(nullptr), next(nullptr)
+    {
+        memcpy(value, from, sizeof(value));
+    }
+
+    sceVu0FVECTOR value;        // FS2 +0x00
+    int           frames;       // FS2 +0x30: to the next key
+    VectorKey    *prev;         // FS2 +0x38
+    VectorKey    *next;         // FS2 +0x3c
+};
+// layout: host -- EE 0x20.
+struct VectorTrack
+{
+    // FS2 0x0029a580
+    VectorTrack()
+        : linear(0), loop(0), done(0), curve(0), frame(0), count(0), index(0), keys(nullptr) {}
+    // FS2 0x0029a500
+    // callcheck: operator_delete
+    ~VectorTrack()
+    {
+        for (VectorKey *key = keys; key != nullptr;) {
+            VectorKey *next = key->next;
+            delete key;
+            key = next;
+        }
+    }
+    // One frame: index and frame move, value is worked out.
+    void step();                                                         // FS2 0x00299d90
+    // Chains key last; time places it, computeFrames (1 here) makes the
+    // frames from the distance when the key has none.
+    void addKey(VectorKey *key, int time, bool computeFrames);           // FS2 0x0029a370
+
+    sceVu0FVECTOR value;        // FS2 +0x00: w the weight (+0xc)
+    u_char     linear;          // FS2 +0x10: 1 linear, 0 a curve
+    u_char     loop;            // FS2 +0x11
+    u_char     done;            // FS2 +0x12
+    u_char     curve;           // FS2 +0x13: 2 wraps the values as angles
+    int        frame;           // FS2 +0x14
+    short      count;           // FS2 +0x18: keys
+    short      index;           // FS2 +0x1a: the key playing
+    VectorKey *keys;            // FS2 +0x1c
+};
+// Model parts named bn_<name>_<i>, of which one shows: the rest get
+// CharacterPart::drawMode 2. A light's lit and dark pieces; a character's too.
+// layout: host -- EE 0x10.
+struct PartSwitch
+{
+    // FS2 0x00187220
+    PartSwitch() : model(nullptr), parts(nullptr), count(0), shown(-1) {}
+    // FS2 0x001871c0
+    // callcheck: operator_delete[]
+    ~PartSwitch() { delete[] parts; }
+    // Finds the parts; shown as in show.
+    void init(ModelInstance *partsModel, const char *name, int partCount, int firstShown); // FS2 0x00187060
+    // Shows part index; no such index hides them all.
+    void show(int index);                                                // FS2 0x00186fe0
+
+    ModelInstance  *model;      // FS2 +0x0
+    CharacterPart **parts;      // FS2 +0x4
+    int             count;      // FS2 +0x8
+    int             shown;      // FS2 +0xc
+};
+// The model's part called name (length: strlen), null none.
+CharacterPart *modelFindPart(ModelInstance *model, const char *name, size_t length, int arg); // FS2 0x002e4610
+// A particle effect of the stage (EE 0x280, kind 0x1d, vtable 0x3149e0; ctors
+// 0x190500 / 0x190450, built by StageNodeTree::spawn). A stand-in: what the
+// lights call. Effects hang from each other through +0x20c, and both calls
+// walk that chain.
+// layout: host
+class StageParticle : public StageObject
+{
+public:
+    // On or off, down the chain.
+    void setEmitting(bool on);                                           // FS2 0x0018c220
+    void setRangeSquared(float rangeSquared);                            // FS2 0x00190040
 };
 // Every character with m_viewActive: three steps on its motion (+0x224).
 void stageUpdateCharacterMotions();                                      // FS2 0x0017df60
@@ -1015,6 +1188,10 @@ struct ScenePairTable
 {
     ScenePairTable();                                                    // FS2 0x00171680
     ~ScenePairTable();                                                   // FS2 0x00171620: deleting
+    // entry joins list; every action step reaches it.
+    void add(StageSideBase *entry, int list);                            // FS2 0x001715f0
+    // entry leaves whichever of the five lists holds it.
+    void remove(StageSideBase *entry);                                   // FS2 0x00171580
     // The frame's action steps over the five lists: slots +8, +0xc, +0x10,
     // +0x14 of every entry that is on (the perf bars' names).
     void actionStart();                                                  // FS2 0x001714e0
@@ -1028,6 +1205,9 @@ struct SceneRecordBuckets
 {
     SceneRecordBuckets();                                                // FS2 0x001f6510
     ~SceneRecordBuckets();                                               // FS2 0x001f63f0: deleting
+    // body joins its bucket, and is paired up with what its category meets.
+    void add(CollisionBody *body);                                       // FS2 0x001f6180
+    void remove(CollisionBody *body);                                    // FS2 0x001f60a0
     void collide();                                                      // FS2 0x001f5250
 };
 
@@ -1036,6 +1216,14 @@ struct StageNodeTree
 {
     StageNodeTree();                                                     // FS2 0x00190c20
     ~StageNodeTree();                                                    // FS2 0x00190bc0: deleting
+    // A new effect by its definition's name, under parent, at pos / rot
+    // (either null: the definition's); null no such name. arg goes to +0x25c.
+    StageParticle *spawn(const char *name, StageNodeBase *parent, const float *pos,
+                         const float *rot, int arg, int arg2);             // FS2 0x00190890
+    // The same with no parent, place or rotation.
+    StageParticle *spawnNamed(const char *name, int arg, int arg2);      // FS2 0x001908a0
+    // effect stops; null is fine.
+    void remove(StageParticle *effect);                                  // FS2 0x001908c0
     // Replaces the inner object's BoxGrid with a new one over a bbx file.
     void setBoxes(void *bbx);                                            // FS2 0x00190900
     // The particle target's: the 16 textures from common01, then its first
@@ -1129,6 +1317,9 @@ struct StageScript
     // PC: table stays an offset from the script (above), so relocate's TU
     // must leave it one.
     const void *entry(int index) const { return (const char *)this + table + index * 0x1c; }
+    // The entry of the first table whose name is name, null none (also on a
+    // null script: the ROM tests this).
+    const void *findEntry(const char *name);                             // FS2 0x001d3d20
 };
 static_assert(sizeof(StageScript) == 0xc, "StageScript: the file header");
 
@@ -1277,6 +1468,15 @@ struct LptFile
     S2dRef<void> data;          // FS2 +0x8: file: an offset from the header
 };
 static_assert(offsetof(LptFile, data) == 8, "LptFile::data");
+// An lpt record (data, _04 of them): the light named name gets the effect.
+struct LptRecord
+{
+    char          name[0x10];   // FS2 +0x00
+    char          effect[0x10]; // FS2 +0x10
+    sceVu0FVECTOR pos;          // FS2 +0x20
+    sceVu0FVECTOR rot;          // FS2 +0x30
+};
+static_assert(sizeof(LptRecord) == 0x40, "LptRecord: EE 0x40");
 
 // A door's record (0x38 bytes, kDoorRecords of them; bss 0x537d80, filled
 // at run time), found by its map object's name.
@@ -1405,46 +1605,7 @@ public:
     StageBullet(int arg0, int arg1);                                     // FS2 0x001803e0
 };
 
-// The two light classes' base (ctor 0x1866f0; vtables 0x313e30 / 0x3141b0).
-// layout: host -- EE offsets in the comments.
-class AreaBox;
-class StageLight : public StageObject
-{
-public:
-    // FS2 0x00185fa0
-    int getKind() override { return StageObject_Light; }
-    StageLight();                                                        // FS2 0x001866f0
-    void setRadiusSquared(float radiusSquared);                          // FS2 0x00185bb0
-    // The vector +0x220; the map's ENV_ lights all pass (1, 0, 0). What it
-    // is (a colour, an axis) is unread.
-    void setVector(float x, float y, float z);                           // FS2 0x00185c40
-    void setEnabled(bool on);                                            // FS2 0x00185fb0: +0x200 and +0x36
-    // withShade: the applyMapTarget calls always pass 1 (0x185c60 runs).
-    void addToScene(const char *name, bool withShade);                   // FS2 0x001861b0: StageObjectList::add5
-    // A sub-scene's light shows what the parent's light of its name shows.
-    void copyShownFrom(StageLight *other);                               // FS2 0x00186160
-
-    u_char m_envLight;          // FS2 +0x271: ENV_ lights
-    StageList<AreaBox *> m_boxes; // FS2 +0x278: the boxes named after the light
-    u_char m_yamLight;          // FS2 +0x2a1: YAM_ lights; off at the start
-};
-// ENV_CL, ENV_SL, YAM_CL, YAM_SL. vtable 0x313e30. layout: host -- EE 0x300.
-class SpotLight : public StageLight
-{
-public:
-    // FS2 0x001848f0
-    int getKind() override { return StageObject_SpotLight; }
-    SpotLight();                                                         // FS2 0x00185260
-    void setConeAngle(int degrees);                                      // FS2 0x00185210: half the cone
-};
-// ENV_PL, YAM_PL. vtable 0x3141b0. layout: host -- EE 0x2c0.
-class PointLight : public StageLight
-{
-public:
-    // FS2 0x00186ad0
-    int getKind() override { return StageObject_PointLight; }
-    PointLight();                                                        // FS2 0x001856b0
-};
+// The lights: game/stagelight.h.
 
 // The rest of the light and box sections: scripted volumes (base vtable
 // 0x3127f0). "Volume" is a guess: their script hears them.
@@ -2095,21 +2256,6 @@ public:
 
     ModelHeader  *m_header;     // FS2 +0xc
     ModelPartRec *m_partRecs;   // FS2 +0x1c
-};
-
-// What VcmTable::attach / update read of the objects driving the VCM
-// parts (unassigned@00171300; their class is unread). The name is the
-// port's.
-// layout: host -- EE: the name inline at +0x20, the active byte +0x34.
-class VcmController
-{
-public:
-    // How much of the controlled parts shows: 0 off .. 1 fully (a progress
-    // over a total, or the motion's +0xc, times +0x2a8).
-    float getWeight() const;                                             // FS2 0x00185af0
-
-    char m_name[0x14];          // FS2 +0x20 (extent: up to m_active)
-    bool m_active;              // FS2 +0x34
 };
 
 // What the S2D widgets (game/uiwidget.cpp) call of systems without a TU.

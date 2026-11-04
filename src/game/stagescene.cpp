@@ -24,6 +24,7 @@
 #include "game/heap.h"          /* randNext */
 #include "game/pakarchive.h"
 #include "game/seplayer.h"      /* StreamTable */
+#include "game/stagelight.h"
 #include "game/stageobjlist.h"
 #include "game/stageresult.h"   /* getInitItemForLanguage */
 #include "game/stagesound.h"

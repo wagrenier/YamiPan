@@ -35,10 +35,10 @@ public:
     // FS2 0x001a59f0, 0x001a5980, 0x001a5910, 0x001a58a0, 0x00186b10: the instances'
     // constructors.
     StageList() : head(NULL), count(0) {}
-    // FS2 0x001a5a00, 0x001a5990, 0x001a5920, 0x001a58b0, 0x00186b20: the destructors.
+    // FS2 0x001a5a00, 0x001a5990, 0x001a5920, 0x001a58b0, 0x00186b20, 0x00186b80: the destructors.
     ~StageList() { clear(); }
 
-    // FS2 0x001a5e60, 0x001a5f80, 0x001a60a0, 0x001a6210, 0x00186c50
+    // FS2 0x001a5e60, 0x001a5f80, 0x001a60a0, 0x001a6210, 0x00186c50, 0x00186be0
     void clear()
     {
         for (Node *node = head; node != NULL;) {

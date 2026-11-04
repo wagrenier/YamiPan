@@ -10,6 +10,7 @@
 #include <string>
 
 #include "game/gamehooks.h"
+#include "game/stagelight.h"
 
 // The token names compared as C strings (the instances' strcmp less).
 // layout: host -- no data.
@@ -175,7 +176,7 @@ void VcmTable::update()
             if ((state.mask & (1u << token)) == 0) {
                 continue;
             }
-            VcmController *controller = m_controllers[token];
+            StageLight *controller = m_controllers[token];
             float weight = (controller == NULL || !controller->m_active)
                                ? 0.0f
                                : controller->getWeight();
@@ -211,7 +212,7 @@ void VcmTable::update()
 // callcheck: vcmLowerBound (std::lower_bound)
 // FS2 0x00297150
 
-void VcmTable::attach(VcmController *obj)
+void VcmTable::attach(StageLight *obj)
 {
     const char **end = m_tokens + m_tokenCount;
     const char **found = std::lower_bound(m_tokens, end, (const char *)obj->m_name,
@@ -250,7 +251,7 @@ VcmTable::VcmTable(RenaModel *model)
     vcmCollectTokens(names, model);
     m_tokenCount = (int)names.size();
     m_tokens = new const char *[m_tokenCount];
-    m_controllers = new VcmController *[m_tokenCount];
+    m_controllers = new StageLight *[m_tokenCount];
     VcmNameSet::const_iterator name = names.begin();
     for (int i = 0; i < m_tokenCount; i++, ++name) {
         m_tokens[i] = *name;
