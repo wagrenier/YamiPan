@@ -151,7 +151,7 @@ StageSound::StageSound()
         ch.next.clear();
         ch.volume = 1.0f;
     }
-    _308 = 0;
+    m_banksApplied = 0;
     reset();
 }
 

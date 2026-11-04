@@ -2395,7 +2395,7 @@ void StageScene::createMenuProg(const void *data)
 
 bool StageScene::isBusy()
 {
-    if (clear != nullptr || gameOver != nullptr || getMission()->busy)
+    if (clear != nullptr || gameOver != nullptr || getMission()->pendingEvent[0] != '\0')
         return true;
     return event != nullptr && event->runner != gRunningScript;
 }
@@ -2434,7 +2434,10 @@ static bool actionAllowsMenu(int action)
         || action == PlayerAction_1 || action == PlayerAction_None;
 }
 
-// Inline in wantsMapMenu and wantsPauseMenu.
+// Inline in wantsMapMenu and wantsPauseMenu, and this copy for 0x230400.
+// FS2 0x001963f0
+// callcheck: getAltSoundFlag, isBusy, isBusy, isBusy, getActionState
+
 int StageScene::playerAction()
 {
     StageObject *character = player != nullptr ? player->character() : nullptr;
@@ -3650,6 +3653,860 @@ void StageScene::setupCameras()
 }
 
 // ──────────────────────────────────────────────────────────────────────
+// The scene's end sequences, script-started.
+// FS2 0x00195690
+// callcheck: isBusy, operator_new, ClearSequence
+
+void StageScene::startClear()
+{
+    if (!isBusy())
+        clear = new ClearSequence;
+}
+
+// FS2 0x00195730
+// callcheck: isInputBlocked, operator_new, GameOverSequence
+
+void StageScene::startGameOver(int arg, int arg2)
+{
+    if (!isInputBlocked())
+        gameOver = new GameOverSequence(arg, arg2);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The counterpart of restoreObjectFlags.
+// FS2 0x001955e0
+// callcheck: saveFlags, currentMission, setRestore
+
+void StageScene::saveObjectFlags(void *arg, StageObject *object)
+{
+    arrays->saveFlags();
+    currentMission()->setRestore(arg, object);
+}
+
+// The walk of restoreFlags, writing. The ROM copies the transform by its
+// fields; the host's has no others.
+// FS2 0x0019c960
+// callcheck: stageObjectIsShown
+
+void SceneArrayPair::saveFlags()
+{
+    int index = 0;
+    for (int group = 0; group < StageObjGroup_Count; group++) {
+        if (group == StageObjGroup_Bullets)
+            continue;
+        StageObjArray &list = gStageScene->objects->m_lists[group];
+        for (StageObject **slot = list.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+            StageObject *obj = *slot;
+            if (group == StageObjGroup_5 && obj->m_keepFlags)
+                continue;
+            u_char *saved = &first[index * 3];
+            saved[0] = obj->m_active != 0;
+            saved[1] = stageObjectIsShown(obj);
+            saved[2] = obj->m_viewActive;
+            second[index] = obj->m_xform;
+            index++;
+        }
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The event that puts the lamps out before its sub-scene.
+static const char kEventLampsOff[] = "d1804";          /* data 0x303bb0 */
+constexpr int kEventLamps = 4;
+static const char *const kEventLampNames[kEventLamps] = {   /* data 0x2f7da0 */
+    "ENV_PL03", "ENV_PL04", "ENV_PL05", "ENV_PL06",
+};
+
+// FS2 0x00196060
+// callcheck: strcmp, findAll5, setTreeScriptFlag
+
+bool StageScene::requestSubScene(const char *name)
+{
+    if (isSubScene || subSceneRequest != nullptr)
+        return false;
+
+    if (strcmp(name, kEventLampsOff) == 0) {
+        for (int i = 0; i < kEventLamps; i++) {
+            StageObjArray *lamps = objects->findAll5(kEventLampNames[i]);
+            if (lamps == nullptr)
+                continue;
+            for (StageObject **slot = firstActive(lamps->begin()); slot != nullptr;
+                 slot = firstActive(StageObjArray::next(slot)))
+                (*slot)->setTreeScriptFlag(false);
+        }
+    }
+    subSceneRequest = name;
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x001961c0
+// callcheck: operator_new, StageFileEvent
+
+StageEvent *StageScene::startFileEvent(float arg, const char *name)
+{
+    event = new StageFileEvent(arg, name);
+    return event;
+}
+
+// FS2 0x00196220
+// callcheck: operator_new, StageSimpleEvent
+
+StageEvent *StageScene::startSimpleEvent(float arg, const char *name)
+{
+    event = new StageSimpleEvent(arg, name);
+    return event;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+constexpr float kMissionFramesPerSecond = 30.0f;
+
+// FS2 0x00196340
+// callcheck: getMission, getSeconds
+
+int StageScene::getMissionFrames()
+{
+    float start = getMission()->startTime;
+    return (int)((gStageScene->clock->getSeconds() - start) * kMissionFramesPerSecond + 0.5f);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The first answer from the top: FS2 0x001964f0
+
+bool StageScene::ownedHasTarget()
+{
+    bool has = false;
+    if (owned[2] != nullptr)
+        has = owned[2]->hasTarget();
+    if (!has && owned[1] != nullptr)
+        has = owned[1]->hasTarget();
+    if (!has && owned[0] != nullptr)
+        has = owned[0]->hasTarget();
+    return has;
+}
+
+// FS2 0x001965a0
+
+bool StageScene::isOwned2Busy()
+{
+    return owned[2] != nullptr && owned[2]->isBusy();
+}
+
+// FS2 0x001965e0
+
+bool StageScene::isOwned1Busy()
+{
+    return owned[1] != nullptr && owned[1]->isBusy();
+}
+
+// FS2 0x00196620
+
+bool StageScene::isOwned0Busy()
+{
+    return owned[0] != nullptr && owned[0]->isBusy();
+}
+
+// FS2 0x00196660
+// callcheck: getAltSoundFlag
+
+u_char StageScene::getPlayerAltFlag()
+{
+    return player != nullptr ? player->character()->getAltSoundFlag() : 0;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The mission's script-set values.
+// FS2 0x00196690
+// callcheck: getMission
+
+float StageScene::getMissionValue()
+{
+    return getMission()->value;
+}
+
+// FS2 0x001966b0
+// callcheck: currentMission
+
+void StageScene::setMissionValue(float value)
+{
+    currentMission()->value = value;
+}
+
+// FS2 0x001966e0
+// callcheck: getMission
+
+float StageScene::getMoveScale(int index)
+{
+    return getMission()->moveScale[index];
+}
+
+// FS2 0x00196710
+// callcheck: currentMission
+
+void StageScene::setMoveScale(float scale, int index)
+{
+    currentMission()->moveScale[index] = scale;
+}
+
+// FS2 0x00196750
+// callcheck: getMission
+
+float StageScene::getDefaultMoveScale()
+{
+    return getMission()->defaultMoveScale;
+}
+
+// FS2 0x00196770
+// callcheck: currentMission
+
+void StageScene::setDefaultMoveScale(float scale)
+{
+    currentMission()->defaultMoveScale = scale;
+}
+
+// FS2 0x001967a0
+// callcheck: currentMission
+
+void StageScene::setScriptVar3f(int value)
+{
+    currentMission()->scriptVar3f = value;
+}
+
+// FS2 0x001967d0
+// callcheck: currentMission
+
+int StageScene::getScriptVar3f()
+{
+    return currentMission()->scriptVar3f;
+}
+
+// FS2 0x001967f0
+// callcheck: currentMission
+
+void StageScene::setScriptVar3e(int value)
+{
+    currentMission()->scriptVar3e = value;
+}
+
+// FS2 0x00196820
+// callcheck: getMission
+
+int StageScene::getScriptVar3e()
+{
+    return getMission()->scriptVar3e;
+}
+
+// FS2 0x00196a50
+// callcheck: currentMission, setResultValue
+
+void StageScene::setResultValue(int index, int value)
+{
+    currentMission()->setResultValue(index, value);
+}
+
+// FS2 0x00196a90
+// callcheck: getMission, getResultValue
+
+int StageScene::getResultValue(int index)
+{
+    return getMission()->getResultValue(index);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// What StageScene::getMenuMode answers. Only SceneMenu_Free has been read
+// (the fade and the mission's pending event go on then); 4 is never
+// answered.
+enum SceneMenuMode
+{
+    SceneMenu_None     = 0,
+    SceneMenu_Free     = 1,     // inFrame clear
+    SceneMenu_Open     = 2,     // the menu is open
+    SceneMenu_Pending  = 3,     // the menu has one pending
+    SceneMenu_ItemList = 5,     // the item list has one pending
+};
+
+// FS2 0x00196ac0
+
+int StageScene::getMenuMode()
+{
+    if (!inFrame)
+        return SceneMenu_Free;
+    if (menu->state == StageMenu_Open)
+        return SceneMenu_Open;
+    if (menu->pendingOn != 0 && menu->pending != 0)
+        return SceneMenu_Pending;
+    return itemList->pendingCount < 1 ? SceneMenu_None : SceneMenu_ItemList;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// A door's collision faces carry its type and number: doorId is
+// kDoorFaceBase + (type - 1) * kDoorFacesPerType + (number - 1) * 4.
+constexpr int kDoorFaceBase     = 100;
+constexpr int kDoorFacesPerType = 180;
+constexpr int kDoorFacesPerDoor = 4;
+
+// Inline in findDoorOfFace.
+static bool faceNamesDoor(const StageCollisionFace *face)
+{
+    return (face->flags & StageCollision_Door) != 0 && face->doorId >= kDoorFaceBase;
+}
+
+// FS2 0x00196cc0
+
+bool StageScene::isDoorFace(const StageCollisionFace *face)
+{
+    return faceNamesDoor(face);
+}
+
+// FS2 0x00196b20
+// callcheck: getKind
+
+StageObject *StageScene::findDoorOfFace(const StageCollisionFace *face)
+{
+    if (!faceNamesDoor(face))
+        return nullptr;
+
+    int id     = face->doorId - kDoorFaceBase;
+    int type   = id / kDoorFacesPerType + 1;
+    int number = id % kDoorFacesPerType / kDoorFacesPerDoor + 1;
+
+    StageObjArray &roots = objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = firstActive(roots.begin()); slot != nullptr;
+         slot = firstActive(StageObjArray::next(slot))) {
+        StageObject *door = *slot;
+        if (door->getKind() == StageObject_Door && type == door->m_doorType
+            && number == door->m_doorIndex)
+            return door;
+    }
+    return nullptr;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Can this object be hit at all (the walks below, inline in the ROM)?
+static bool isHittable(const StageObject *obj)
+{
+    return obj->m_active && obj->m_collides && !obj->m_dead;
+}
+
+// mode 1 at both calls of StageCollision::sphereHits.
+constexpr int kSphereHitMode = 1;
+
+// FS2 0x00196cf0
+// callcheck: getKind, sphereHits
+
+bool StageScene::sphereHitsKind(float radius, const float *pos, int kind, u_int mask, u_int flags,
+                                StageObject *skip)
+{
+    StageObjArray &roots = objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = firstActive(roots.begin()); slot != nullptr;
+         slot = firstActive(StageObjArray::next(slot))) {
+        StageObject *obj = *slot;
+        if (kind != obj->getKind() || (skip != nullptr && skip == obj) || !isHittable(obj))
+            continue;
+        for (u_int i = 0; obj->collisionAt(i) != nullptr; i++) {
+            int out;
+            if (obj->collisionAt(i)->sphereHits(radius, kSphereHitMode, &out, mask, flags, pos))
+                return true;
+        }
+    }
+    return false;
+}
+
+// FS2 0x00196f00
+// callcheck: sphereHits
+
+bool StageScene::sphereHitsAny(float radius, const float *pos, u_int mask, u_int flags,
+                               StageObject *skip)
+{
+    StageObjArray &roots = objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = firstActive(roots.begin()); slot != nullptr;
+         slot = firstActive(StageObjArray::next(slot))) {
+        StageObject *obj = *slot;
+        if ((skip != nullptr && skip == obj) || !isHittable(obj))
+            continue;
+        for (u_int i = 0; obj->collisionAt(i) != nullptr; i++) {
+            int out;
+            if (obj->collisionAt(i)->sphereHits(radius, kSphereHitMode, &out, mask, flags, pos))
+                return true;
+        }
+    }
+    return false;
+}
+
+// FS2 0x00197a90
+// callcheck: segmentHits
+
+bool StageScene::segmentHitsAny(const float *from, const float *to, int arg, u_int mask,
+                                u_int flags, StageObject *skip)
+{
+    StageObjArray &roots = objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = firstActive(roots.begin()); slot != nullptr;
+         slot = firstActive(StageObjArray::next(slot))) {
+        StageObject *obj = *slot;
+        if ((skip != nullptr && skip == obj) || !isHittable(obj))
+            continue;
+        for (u_int i = 0; obj->collisionAt(i) != nullptr; i++) {
+            if (obj->collisionAt(i)->segmentHits(from, to, mask, flags, arg))
+                return true;
+        }
+    }
+    return false;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// How far down findFloorFace looks when the range is negative.
+constexpr float kFloorRayLength = 10000.0f;
+
+// FS2 0x00197280
+// callcheck: heightAt, raycast
+
+StageCollisionFace *StageScene::findFloorFace(float x, float y, float range, float *height,
+                                              u_int mask, u_int flags, StageObject **skip,
+                                              int skipCount)
+{
+    StageCollisionFace *best = nullptr;
+    float bestHeight = -FLT_MAX;
+
+    StageObjArray &roots = objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = firstActive(roots.begin()); slot != nullptr;
+         slot = firstActive(StageObjArray::next(slot))) {
+        StageObject *obj = *slot;
+        int skipped = 0;
+        for (; skipped < skipCount; skipped++) {
+            if (skip[skipped] != nullptr && skip[skipped] == obj)
+                break;
+        }
+        if (skipped < skipCount || !isHittable(obj))
+            continue;
+
+        for (u_int i = 0; obj->collisionAt(i) != nullptr; i++) {
+            StageCollision *mesh = obj->collisionAt(i);
+            float faceHeight = *height;
+            StageCollisionFace *face;
+            if (mesh->nodes == nullptr) {
+                face = mesh->heightAt(x, y, range, &faceHeight, mask, flags, 0);
+            } else {
+                sceVu0FVECTOR hit;
+                sceVu0FVECTOR from = { x, y, *height, 1.0f };
+                sceVu0FVECTOR to   = { x, y, *height - (range < 0.0f ? kFloorRayLength : range), 1.0f };
+                face = mesh->raycast(hit, from, to, mask, flags, 0);
+                faceHeight = hit[2];
+            }
+            if (face != nullptr && bestHeight < faceHeight) {
+                best = face;
+                bestHeight = faceHeight;
+            }
+        }
+    }
+
+    *height = bestHeight;
+    return best;
+}
+
+// The mask, the probe's start above pos, and what a miss answers.
+constexpr u_int   kFloorMask       = 0x42400c;
+constexpr float   kFloorProbeAbove = 50.0f;
+constexpr float   kFloorProbeRange = -1.0f;
+constexpr u_short kFloorAttrNone   = 0xffff;
+
+// FS2 0x001970f0
+// callcheck: findFloorFace
+
+u_short StageScene::getFloorAttr(const float *pos)
+{
+    float height = pos[2] + kFloorProbeAbove;
+    StageCollisionFace *face = findFloorFace(pos[0], pos[1], kFloorProbeRange, &height, kFloorMask,
+                                             0, viewTargets, viewTargetCount);
+    return face != nullptr ? face->attr : kFloorAttrNone;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The object the view stack's top camera follows; null for any other top
+// (inline in updateBuffers and updateBlock98; it reads gStageScene).
+static StageObject *viewLinkedObject()
+{
+    StageObject *top = gStageScene->views->topObject();
+    if (top == nullptr)
+        return nullptr;
+    if (top->getKind() != StageObject_Kind9 && top->getKind() != StageObject_Kind10
+        && top->getKind() != StageObject_Kind11)
+        return nullptr;
+    return top->m_linked;
+}
+
+// The eight character blocks and the player's block follow the camera's
+// linked object.
+// FS2 0x0019afb0
+// callcheck: attachCharacters, getKind, getKind, getKind, setActiveFor, currentMission, updateRange, storeActive
+
+void StageScene::updateBuffers()
+{
+    if (buffers == nullptr)
+        return;
+
+    buffers->attachCharacters(objects);
+    StageObject *linked = viewLinkedObject();
+    buffers->setActiveFor(linked, render);
+    buffers->updateRange(currentMission()->blockRange, linked, render);
+    buffers->storeActive(linked);
+}
+
+// FS2 0x0019b1f0
+// callcheck: hasTarget, hasTarget, hasTarget, getKind, getKind, getKind, setActive, updateVisible, attachTo
+
+void StageScene::updateBlock98()
+{
+    if (block98 == nullptr)
+        return;
+
+    bool on = true;
+    if ((owned[0] != nullptr && owned[0]->hasTarget())
+        || (owned[1] != nullptr && owned[1]->hasTarget())
+        || (owned[2] != nullptr && owned[2]->hasTarget())) {
+        on = false;
+    } else {
+        StageObject *linked = viewLinkedObject();
+        if (linked == nullptr || linked != player->character())
+            on = false;
+    }
+
+    block98->setActive(on, render);
+    if (on)
+        block98->updateVisible(render);
+    block98->attachTo(player);
+    block98->active = on;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// With a stage script and no event: the characters' steps around the
+// scripts, the mission's records and its pending event. While an event
+// runs only its end is watched. A brain is not null-tested (a character of
+// the list has one).
+// FS2 0x0019aba0
+// callcheck: poll, destroy, pollSoundSources, currentMission, currentMission, beforeScripts, canSpawn, spawn, currentMission, tickPending, currentMission, currentMission, run, currentMission, currentMission, update, currentMission, afterScripts, currentMission, currentMission, afterScripts
+
+void StageScene::runStageScripts()
+{
+    if (scripts[0] == nullptr)
+        return;
+
+    if (event != nullptr) {
+        if (event->poll() == kStageEventFinished) {
+            event->destroy();
+            event = nullptr;
+        }
+        return;
+    }
+    if (isSubScene)
+        return;
+
+    uiState->pollSoundSources();
+
+    StageObject **it = currentMission()->characters;
+    StageObject **end = currentMission()->charactersEnd();
+    for (; it != end; it++) {
+        StageObject *character = *it;
+        if (character->m_active)
+            character->beforeScripts();
+        else if (character->canSpawn())
+            character->spawn();
+    }
+
+    currentMission()->tickPending();
+
+    if (gameOver == nullptr) {
+        it  = currentMission()->scriptObjects;
+        end = currentMission()->scriptObjectsEnd();
+        for (; it != end; it++) {
+            if ((*it)->m_active)
+                (*it)->scriptRunner()->run(0);
+        }
+
+        it  = currentMission()->characters;
+        end = currentMission()->charactersEnd();
+        for (; it != end; it++) {
+            if ((*it)->m_active)
+                (*it)->m_brain->update();
+        }
+    }
+
+    currentMission()->afterScripts();
+
+    it  = currentMission()->characters;
+    end = currentMission()->charactersEnd();
+    for (; it != end; it++) {
+        if ((*it)->m_active)
+            (*it)->afterScripts();
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// What the bgmotion target's names stand for: all doors of a type, all
+// objects of a kind, a motion target, or one object by name.
+static const char kMotionDoorR[]    = "MODEL_dr_r";    /* data 0x303fb8 */
+static const char kMotionDoorT[]    = "MODEL_dr_t";    /* data 0x303fc8 */
+static const char kMotionCar[]      = "CAR";           /* data 0x303fd8 */
+static const char kMotionSevenKeys[] = "Seven_Keys";   /* data 0x303fe0 */
+constexpr int kMotionTargetFirst = 1;
+constexpr int kMotionTargetLast  = 8;
+
+// The doors of type take list (inline twice).
+static void setDoorMotion(int type, void *list)
+{
+    StageObjArray &roots = gStageScene->objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = roots.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        StageObject *door = *slot;
+        if (door->getKind() == StageObject_Door && door->m_doorType == type) {
+            door->setMotionList(list, 1, 1);
+            door->applyDoorRecord();
+        }
+    }
+}
+
+// The objects of kind take list (inline twice).
+static void setKindMotion(int kind, void *list)
+{
+    StageObjArray &roots = gStageScene->objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = roots.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        if ((*slot)->getKind() == kind)
+            (*slot)->setMotionList(list, 1, 1);
+    }
+}
+
+// The objects of motion target index take list (inline).
+static void setTargetMotion(int index, void *list)
+{
+    StageObjArray &roots = gStageScene->objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = roots.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        if ((*slot)->isMotionTarget(index))
+            (*slot)->setMotionList(list, 1, 1);
+    }
+}
+
+// FS2 0x0019f230
+// callcheck: strcmp, getKind, setMotionList, applyDoorRecord, strcmp, stageMotionTargetName, strcmp, isMotionTarget, setMotionList, strcmp, getKind, setMotionList, strcmp, find1, setMotionList (the walks are setDoorMotion, setKindMotion, setTargetMotion)
+
+bool StageFiles::applyBgMotionTarget()
+{
+    StageList<StageList<void *> *>::Node *list = motionLists.head;
+    for (StageList<char *>::Node *node = motionNames.head; node != nullptr;
+         node = node->next, list = list->next) {
+        const char *name = node->value;
+
+        if (strcmp(name, kMotionDoorR) == 0) {
+            setDoorMotion(StageDoorType_R, list->value);
+            continue;
+        }
+        if (strcmp(name, kMotionDoorT) == 0) {
+            setDoorMotion(StageDoorType_T, list->value);
+            continue;
+        }
+
+        int target = kMotionTargetFirst;
+        for (; target <= kMotionTargetLast; target++) {
+            if (strcmp(name, stageMotionTargetName(target)) == 0)
+                break;
+        }
+        if (target <= kMotionTargetLast) {
+            setTargetMotion(target, list->value);
+            continue;
+        }
+
+        if (strcmp(name, kMotionCar) == 0) {
+            setKindMotion(StageObject_Kind3, list->value);
+        } else if (strcmp(name, kMotionSevenKeys) == 0) {
+            setKindMotion(StageObject_Kind6, list->value);
+        } else {
+            StageObject *object = gStageScene->objects->find1(name, 0);
+            if (object != nullptr)
+                object->setMotionList(list->value, 0, 1);
+        }
+    }
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The banks of the player's table with a file (inline in the ROM, twice in
+// the loop's test); none without a table.
+static int usedBankCount(const SePlayer *player)
+{
+    const SeTable *table = player->m_table;
+    if (table == nullptr)
+        return 0;
+    int count = 0;
+    for (int bank = 0; bank < kSeBanks; bank++) {
+        if (table->banks[bank].file[0] != '\0')
+            count++;
+    }
+    return count;
+}
+
+// The bank's file and second file; null when empty (inline in the ROM).
+static const char *bankFile(const SePlayer *player, int bank)
+{
+    const SeTable *table = player->m_table;
+    return table == nullptr || table->banks[bank].file[0] == '\0' ? nullptr
+                                                                  : table->banks[bank].file;
+}
+
+static const char *bankStreamFile(const SePlayer *player, int bank)
+{
+    const SeTable *table = player->m_table;
+    return table == nullptr || table->banks[bank].streamFile[0] == '\0'
+               ? nullptr : table->banks[bank].streamFile;
+}
+
+// Once for a stage (StageSound::m_banksApplied): each SEDT file becomes the
+// sound's table and its banks are made from what the loader holds, then
+// the stream table, its subtitles and the stream banks' headers (read in
+// streamEU/), last the loader lets go of what it no longer needs. PC: the
+// ROM passes an empty bank's null name to getData, which on the EE reads
+// address 0; skipped here.
+// FS2 0x0019d9e0
+// callcheck: setSeTable, getData, getData, loadBank, getData, getData, getData, getSize, openStreamBank, getData, setStreamTable, setStreamName, getData, setSubtitles, setDir, strcpy, getData, getData, compact
+
+bool StageFiles::applySoundTarget()
+{
+    if (gStageScene->sound->m_banksApplied != 0)
+        return true;
+    gStageScene->sound->m_banksApplied = 1;
+
+    for (StageList<void *>::Node *node = sndsehs.head; node != nullptr; node = node->next) {
+        StageSound *sound = gStageScene->sound;
+        sound->setSeTable((SeTable *)node->value);
+        SePlayer *player = sound->m_player;
+
+        for (int bank = 0; bank < usedBankCount(player); bank++) {
+            const char *file = bankFile(player, bank);
+            if (file == nullptr || loader->getData(file) == nullptr)
+                continue;
+            if (!player->m_table->banks[bank].isStream) {
+                player->loadBank(bank, loader->getData(file));
+                continue;
+            }
+            const char *streamFile = bankStreamFile(player, bank);
+            if (streamFile != nullptr && loader->getData(streamFile) != nullptr) {
+                player->openStreamBank(bank, loader->getData(file), loader->getData(streamFile),
+                                       loader->getSize(streamFile));
+            }
+        }
+    }
+
+    if (streamTablePath[0] != '\0') {
+        StageSound *sound = gStageScene->sound;
+        void *tableFile = loader->getData(streamTablePath);
+        if (tableFile != nullptr) {
+            sound->setStreamTable(tableFile);
+            if (kStreamDir[0] != '\0')
+                sound->setStreamName(kStreamDir);
+            if (fsmPath[0] != '\0') {
+                void *fsm = loader->getData(fsmPath);
+                if (fsm != nullptr)
+                    sound->setSubtitles(fsm);
+            }
+            loader->setDir(kStreamDir);
+
+            StreamTable *table = (StreamTable *)loader->getData(streamTablePath);
+            if (table == nullptr)
+                return false;
+            if (table->magic[0] == 'S' && table->magic[1] == 't' && table->magic[2] == 'D'
+                && table->magic[3] == 'T') {
+                StBank *banks = table->banks;
+                for (int i = 0; i < table->bankCount; i++) {
+                    void *header = loader->getData(banks[i].name);
+                    if (header != nullptr)
+                        banks[i].header.set(header);
+                }
+            }
+        }
+    }
+
+    loader->compact();
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The list file's directory and name.
+static const char kListDir[]  = "../data/listfile/";   /* data 0x3041f0 */
+static const char kListName[] = "s%02dlist.lst";       /* data 0x304208 */
+constexpr int kListNameSize = 0x10;
+constexpr int kListWordSize = 0x80;
+constexpr int kMenuImages   = 6;
+constexpr int kPartyImages  = 4;
+
+// The init pack's pieces of a stage's objects first. Then the stage's
+// files: the pack of the stage's screen when there is one (a PackFile
+// loader takes them all from it); otherwise s%02dlist.lst, each word a
+// file to load.
+// FS2 0x001a3a60
+// callcheck: getInitPackItem, getInitPackItem, operator_new, MenuProgSet, load, getInitPackItem, addImage, getInitPackItem, setImage, getInitPackItem, getInitPackItemSize, setSheet, getInitPackItem, getInitPackItemSize, setData, getInitPackItem, getInitPackItemSize, setImage, setPrinter, getStageSelect, stageScreenPathMp, addFile, startLoad, waitLoaded, isPack, setDir, strcpy, getStageSelect, sprintf, addFile, startLoad, waitLoaded, getItem, TextTokenizer, getItem, getItemSize, setText, next, addFile, startLoad, waitLoaded, ~TextTokenizer, setDir
+
+void StageFiles::loadList()
+{
+    StageScene *scene = gStageScene;
+    if (scene->keepList != nullptr)
+        scene->keepList->data = getInitPackItem(InitItem_KeepData);
+
+    bool missing = false;
+    void *images[kMenuImages];
+    for (int i = 0; i < kMenuImages; i++) {
+        images[i] = getInitPackItem(InitItem_MenuImages + i);
+        if (images[i] == nullptr)
+            missing = true;
+    }
+    if (!missing) {
+        scene->menuProgs = new MenuProgSet;
+        scene->menuProgs->load(images[0], images[1], images[2], images[3], images[4], images[5]);
+    }
+
+    for (int i = 0; i < kPartyImages; i++) {
+        void *image = getInitPackItem(InitItem_PartyImages + i);
+        if (image != nullptr)
+            scene->party->addImage(image);
+    }
+    scene->party->setImage(getInitPackItem(InitItem_PartyImage));
+
+    void *item = getInitPackItem(InitItem_ItemSheet);
+    getInitPackItemSize(InitItem_ItemSheet);
+    scene->itemList->setSheet(item);
+    item = getInitPackItem(InitItem_MenuData);
+    getInitPackItemSize(InitItem_MenuData);
+    scene->menu->setData(item);
+    item = getInitPackItem(InitItem_PoolImage);
+    getInitPackItemSize(InitItem_PoolImage);
+    scene->pool->setImage(item);
+    scene->pool->setPrinter(scene->printer);
+
+    loader->setDir(nullptr);
+    const char *pack = stageScreenPathMp(getStageSelect());
+    if (pack != nullptr) {
+        loader->addFile(pack);
+        loader->startLoad();
+        loader->waitLoaded(0, false);
+    }
+
+    if (loader->isPack())
+        return;
+
+    loader->setDir(kListDir);
+    char name[kListNameSize];
+    sprintf(name, kListName, getStageSelect()->stage);
+    int index = loader->addFile(name);
+    loader->startLoad();
+    loader->waitLoaded(kWaitArg, kWaitShowLoading);
+
+    if (loader->getItem(index) != nullptr) {
+        TextTokenizer words(kListWordSize);
+        words.setText((const char *)loader->getItem(index), loader->getItemSize(index));
+        const char *word;
+        while ((word = words.next()) != nullptr)
+            loader->addFile(word);
+        loader->startLoad();
+        loader->waitLoaded(kWaitArg, kWaitShowLoading);
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // Template instances of this file, one source in game/stagelist.h (a few
 // more use the host's <string>):
 //   FS2 0x001a4960  StringMap::StringMap
@@ -3711,45 +4568,3 @@ void StageScene::setupCameras()
 //   FS2 0x001a6750  StageList::Node::Node
 //   FS2 0x001a6770  StageList::Node::Node
 //   FS2 0x001a6790  StageList::pushBack (the tail search)
-
-// ---- stubs (tools/reverse/stubgen.py) ----
-
-// stub of FS2 0x0019f230
-bool StageFiles::applyBgMotionTarget()
-{
-    YAMIPAN_STUB("StageFiles::applyBgMotionTarget", 0x0019f230);
-    return {};
-}
-
-// stub of FS2 0x0019d9e0
-bool StageFiles::applySoundTarget()
-{
-    YAMIPAN_STUB("StageFiles::applySoundTarget", 0x0019d9e0);
-    return {};
-}
-
-// stub of FS2 0x001a3a60
-void StageFiles::loadList()
-{
-    YAMIPAN_STUB("StageFiles::loadList", 0x001a3a60);
-}
-
-
-
-// stub of FS2 0x0019aba0
-void StageScene::runStageScripts()
-{
-    YAMIPAN_STUB("StageScene::runStageScripts", 0x0019aba0);
-}
-
-// stub of FS2 0x0019b1f0
-void StageScene::updateBlock98()
-{
-    YAMIPAN_STUB("StageScene::updateBlock98", 0x0019b1f0);
-}
-
-// stub of FS2 0x0019afb0
-void StageScene::updateBuffers()
-{
-    YAMIPAN_STUB("StageScene::updateBuffers", 0x0019afb0);
-}

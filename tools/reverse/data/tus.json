@@ -566,7 +566,7 @@
    "why": "StageResult (0x599700, static init 0x310f60: begin(0) + __register_global_object with the destructor 0x2b0cf0) and the game-pack loader 0x2afd00..0x2aff80: the MSL map instances 0x2b0590..0x2b0cf0 serve the loader's tables and sit between getStageResult and StageResult's static destructor, so one object file; 0x2afc20/0x2afcd0 (init-pack items by language) joined by position (guess); 0x2af9a0 before is the 0x2adc70 drawing cluster, 0x2b0d50 after is a SoundStream thunk"
   },
   "game/stagescene.cpp": {
-   "notes": "Written this run (batch 086): StageScene update, draw, setupCameras, calcMatrices, propagateNodes, updateVcms, updateRumble, getRumbleSource, getInputFocus, setPlayer, prepareDrawFlags, drawViewFilter, collectViewTargets, pushView, removeViewPriority; SceneArrayPair restoreFlags; StageViewStack push and removePriority. Renamed: setFlag84 is releaseControl, setFlag84To is requestControl (+0x84 is controlRequest, 0, 1 or a StageObject, uintptr_t on the host); m_hidden is m_dead. Camera kinds: 7 StageCamera, 9 StageMainCamera, 10 ViewCamera, 11 camjack, 13 DemoCamera. NOTHING HERE HAS RUN: no stage loads yet, the smoke run stays on the language screen, unchanged. gsFillRect 0x2eaeb0 is a stub, so the letterbox and every fill draw nothing until that TU. Stand-ins to replace with the camera TU: StageObject cameraScreen and cameraView. ROM oddity kept: removePriority reads the entry after the shift. Still stubs here: runStageScripts 0x19aba0, updateBlock98 0x19b1f0, updateBuffers 0x19afb0, applySoundTarget 0x19d9e0, applyBgMotionTarget 0x19f230, loadList 0x1a3a60: do these next.",
+   "notes": "Written this run (batch 088, 71 names): the last six stubs here (runStageScripts, updateBuffers, updateBlock98, applySoundTarget, applyBgMotionTarget, loadList) plus startClear, startGameOver, saveObjectFlags, SceneArrayPair saveFlags, requestSubScene, both startEvent, the mission value accessors, ownedHasTarget, getMenuMode, isDoorFace, findDoorOfFace, sphereHitsKind, sphereHitsAny, segmentHitsAny, getFloorAttr, findFloorFace; playerAction now carries 0x1963f0. No stubs are left in stagescene.cpp. Facts: mission +0xc8 is the pending event's NAME (busy was its first byte), scene +4 holds the sub-scene name (now const char pointer), purposeText ends before +0x84, door faces encode type and number in +0x46. NOTHING HERE HAS RUN: no stage loads, the smoke run stays on the language screen, unchanged. Before a stage runs: StageObject scriptRunner() is a stand-in into padding at +0x40, the character TU must give it a real member. PC difference: applySoundTarget skips an empty bank name instead of getData(null). Left in the TU: 0x195db0, 0x19cf40, 0x19cf80 need host virtuals, and the rest of the unwritten functions per tus.py brief. Doubts are in open-items.md Seventh run.",
    "ranges": [
     [
      "001953f0",
@@ -607,6 +607,11 @@
      "date": "2026-11-03 19:44",
      "status": "partial",
      "summary": "the stage frame: update, draw, setupCameras and their helpers; camera kinds, view stack, control request, frame order from the perf labels"
+    },
+    {
+     "date": "2026-11-03 20:06",
+     "status": "partial",
+     "summary": "stage script step, sound and bg-motion targets, loadList, block updates, 28 small members, collision queries"
     }
    ],
    "status": "partial",

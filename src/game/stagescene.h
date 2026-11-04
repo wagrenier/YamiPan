@@ -161,6 +161,18 @@ struct StageMission
     void markStart();                                                    // FS2 0x002870c0
     // Forwards the message file to the object in the first field.
     void setMessages(void *file);                                        // FS2 0x00286c30
+    // A frame, between the scripts: the timed records count down
+    // (0x286e30 behind this thunk); the pending event starts.
+    void tickPending();                                                  // FS2 0x00286ce0
+    void afterScripts();                                                 // FS2 0x00286c40
+    // restoreObjectFlags keeps object's flags; what arg is is unread.
+    void setRestore(void *arg, StageObject *object);                     // FS2 0x00286910
+    // StageResult +0x10[index].
+    void setResultValue(int index, int value);                           // FS2 0x00287050
+    int  getResultValue(int index);                                      // FS2 0x00287090
+    // Where the character list ends (inline in the ROM).
+    StageObject **charactersEnd() { return characters + characterCount; }
+    StageObject **scriptObjectsEnd() { return scriptObjects + scriptObjectCount; }
     // Takes the map's volumes by name, after the map is read.
     void setup();                                                        // FS2 0x002870f0
 
@@ -170,12 +182,27 @@ struct StageMission
     void onRestore();                                                    // FS2 0x002868c0
 
     u_char  _00[0x4];
-    u_short purposeText[0x5c];  // FS2 +0x4: 16-bit, 0-terminated (extent: up to keptObject)
+    u_short purposeText[0x40];  // FS2 +0x4: 16-bit, 0-terminated (extent: up to scriptVar3e)
+    int     scriptVar3e;        // FS2 +0x84: object property 0x3e of the scripts
+    int     scriptVar3f;        // FS2 +0x88: property 0x3f
+    float   defaultMoveScale;   // FS2 +0x8c: the character's fallback (0x20d8c0)
+    float   moveScale[6];       // FS2 +0x90: by action, set in percent by a script command
+    float   value;              // FS2 +0xa8: a script command's (0x1ba660); unread otherwise
+    float   startTime;          // FS2 +0xac: the scene clock's seconds at markStart
+    u_char  _b0[0x4];
+    float   blockRange;         // FS2 +0xb4: SceneBufferSet::updateRange
+    void   *restoreArg;         // FS2 +0xb8: setRestore
     StageObject *keptObject;    // FS2 +0xbc: keeps its flags through restoreObjectFlags
     u_char  _c0[0x8];
-    u_char  busy;               // FS2 +0xc8: StageScene::isBusy
-    u_char  _c9[0x11];
+    char    pendingEvent[0x10]; // FS2 +0xc8: the event afterScripts starts, empty none (StageScene::isBusy); the extent is a guess
+    u_char  _d8[0x2];
     u_char  blackout;           // FS2 +0xda: set: StageScene::update fades the screen to black, clear: back
+    u_char  _db[0x5c1];
+    StageObject **characters;   // FS2 +0x69c: the stage's characters with a script
+    int     characterCount;     // FS2 +0x6a0
+    u_char  _6a4[0x9c];
+    StageObject **scriptObjects; // FS2 +0x740: objects whose runner runScripts steps
+    int     scriptObjectCount;  // FS2 +0x744
 };
 
 // The scene's four area grids (+0xac..+0xb8), filled from the map file's
@@ -221,9 +248,9 @@ struct StageScene
     // Start / select on pad 0 while the stage allows its menu.
     bool wantsPauseMenu();                                               // FS2 0x00195a50
     bool wantsMapMenu();                                                 // FS2 0x001958b0
-    // What the player is doing, for the two tests above (inline in the
-    // ROM): PlayerAction.
-    int  playerAction();
+    // What the player is doing, for the two tests above (inline there, and
+    // this copy for 0x230400): PlayerAction.
+    int  playerAction();                                                 // FS2 0x001963f0
     // What the menus must wait for: a full fade, or isBusy.
     bool isInputBlocked();                                               // FS2 0x00195850
     // The stage is ending, the mission is busy, or an event runs whose
@@ -238,6 +265,59 @@ struct StageScene
     // The object leaves the view stack.
     void removeView(StageObject *object);                                // FS2 0x0019bb60
     void removeViewPriority(int priority);                               // FS2 0x0019bb70
+    // Every object's flags and transform go into arrays; the mission keeps
+    // the two arguments for restoreObjectFlags.
+    void saveObjectFlags(void *arg, StageObject *object);                // FS2 0x001955e0
+    // The stage's end sequences, unless the stage is busy.
+    void startClear();                                                   // FS2 0x00195690
+    void startGameOver(int arg, int arg2);                               // FS2 0x00195730
+    // A stage with no request asks for sub-scene name. false when it may
+    // not. Event d1804 first turns the lamps ENV_PL03..06 off.
+    bool requestSubScene(const char *name);                              // FS2 0x00196060
+    // event = a new event called name; arg goes to its +0x20.
+    StageEvent *startFileEvent(float arg, const char *name);             // FS2 0x001961c0
+    StageEvent *startSimpleEvent(float arg, const char *name);           // FS2 0x00196220
+    // Frames since the mission started, at 30 a second.
+    int  getMissionFrames();                                             // FS2 0x00196340
+    bool ownedHasTarget();                                               // FS2 0x001964f0
+    bool isOwned2Busy();                                                 // FS2 0x001965a0
+    bool isOwned1Busy();                                                 // FS2 0x001965e0
+    bool isOwned0Busy();                                                 // FS2 0x00196620
+    u_char getPlayerAltFlag();                                           // FS2 0x00196660
+    // The mission's script-set values; the getters read getMission, the
+    // setters currentMission, as in the ROM.
+    float getMissionValue();                                             // FS2 0x00196690
+    void  setMissionValue(float value);                                  // FS2 0x001966b0
+    float getMoveScale(int index);                                       // FS2 0x001966e0
+    void  setMoveScale(float scale, int index);                          // FS2 0x00196710
+    float getDefaultMoveScale();                                         // FS2 0x00196750
+    void  setDefaultMoveScale(float scale);                              // FS2 0x00196770
+    void  setScriptVar3f(int value);                                     // FS2 0x001967a0
+    int   getScriptVar3f();                                              // FS2 0x001967d0
+    void  setScriptVar3e(int value);                                     // FS2 0x001967f0
+    int   getScriptVar3e();                                              // FS2 0x00196820
+    void  setResultValue(int index, int value);                          // FS2 0x00196a50
+    int   getResultValue(int index);                                     // FS2 0x00196a90
+    // SceneMenuMode.
+    int   getMenuMode();                                                 // FS2 0x00196ac0
+    // A face that names a door, and that door (null none).
+    bool  isDoorFace(const StageCollisionFace *face);                    // FS2 0x00196cc0
+    StageObject *findDoorOfFace(const StageCollisionFace *face);         // FS2 0x00196b20
+    // Does anything of group 1 touch? Each skips skip and what cannot be
+    // hit; sphereHitsKind only objects of kind.
+    bool sphereHitsKind(float radius, const float *pos, int kind, u_int mask, u_int flags,
+                        StageObject *skip);                              // FS2 0x00196cf0
+    bool sphereHitsAny(float radius, const float *pos, u_int mask, u_int flags,
+                       StageObject *skip);                               // FS2 0x00196f00
+    bool segmentHitsAny(const float *from, const float *to, int arg, u_int mask, u_int flags,
+                        StageObject *skip);                              // FS2 0x00197a90
+    // The attr of the floor under pos (the view targets left out); 0xffff
+    // none.
+    u_short getFloorAttr(const float *pos);                              // FS2 0x001970f0
+    // The highest face below *height at x, y, range under it (negative:
+    // 10000), *height its height; null none (*height = -FLT_MAX).
+    StageCollisionFace *findFloorFace(float x, float y, float range, float *height, u_int mask,
+                                      u_int flags, StageObject **skip, int skipCount); // FS2 0x00197280
     void pushView(StageObject *object, int priority, u_char flag);       // FS2 0x0019bb80
     // who becomes the player: input, brain and the two cameras move over.
     void setPlayer(StagePlayer *who);                                    // FS2 0x0019b560
@@ -324,7 +404,7 @@ struct StageScene
     void releaseControlled();
 
     u_char              isSubScene;      // FS2 +0x00: the constructor's first argument
-    int                 subSceneRequest; // FS2 +0x04: set: stageThread builds a sub-scene
+    const char         *subSceneRequest; // FS2 +0x04: the sub-scene's name (requestSubScene); set: stageThread builds it
     SubSceneObject     *subScene;        // FS2 +0x08: a sub-scene's own scene (enterSubScene); null once it ended
     SubSceneData       *subSceneBlock;   // FS2 +0x0c: what enterSubScene was given; deleted beside subScene
     StageObjectList    *objects;         // FS2 +0x10
@@ -367,7 +447,7 @@ struct StageScene
     WideFontPrinter    *printer;         // FS2 +0xbc
     ScenePool          *pool;            // FS2 +0xc0: a stage's
     PauseMenuState     *pauseState;      // FS2 +0xc4: a stage's
-    u_char              inFrame;         // FS2 +0xc8: set by update (unread)
+    u_char              inFrame;         // FS2 +0xc8: set by update (getMenuMode)
     u_char              itemPicked;      // FS2 +0xc9: the item list took the action button this frame
     UiItemList         *itemList;        // FS2 +0xcc: a stage's
     StageMenu          *menu;            // FS2 +0xd0: a stage's

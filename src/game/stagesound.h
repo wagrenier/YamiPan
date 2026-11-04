@@ -308,7 +308,7 @@ public:
     StageSoundSlot     m_slots[kStageSoundSlots];           // FS2 +0x100
     int                m_freeHint;      // FS2 +0x300: where the free-slot search starts
     int                m_lastSlot;      // FS2 +0x304: the highest slot used, -1 none
-    int                _308;            // FS2 +0x308: 0 in the ctor, unread
+    int                m_banksApplied;  // FS2 +0x308: 0 in the ctor; StageFiles::applySoundTarget runs once
     int                m_state;         // FS2 +0x30c: StageSoundState
     int                m_downReason;    // FS2 +0x310: StageSoundDownReason
 };

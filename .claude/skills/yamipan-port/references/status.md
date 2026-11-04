@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 19:44 at commit `9f9b176` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 20:06 at commit `ee47471` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-03 19:44 at commit `9f9b176` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **2451** (37%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1569
-- context-name ledger: 3105 entries; overrides of wrong library matches: 0
+- game functions: **6599**, named **2523** (38%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1640
+- context-name ledger: 3176 entries; overrides of wrong library matches: 0
 - placed in a source file: 2290/6599 in 66 files
 
 Least-named game-code regions (64 KB blocks):
@@ -25,12 +25,12 @@ Least-named game-code regions (64 KB blocks):
 | `00310000` | 0/9 (0%) | - |
 | `001c0000` | 1/233 (0%) | - |
 | `001e0000` | 1/75 (1%) | - |
-| `00210000` | 6/231 (3%) | - |
-| `002c0000` | 11/173 (6%) | - |
+| `00210000` | 10/231 (4%) | - |
+| `00200000` | 9/122 (7%) | - |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **1994**; stubs: **331**
+- reconstructed FS2 functions: **2034**; stubs: **362**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -64,7 +64,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stageloop.cpp` | 9 | 0 |
 | `src/game/stageobjlist.cpp` | 45 | 0 |
 | `src/game/stageresult.cpp` | 32 | 0 |
-| `src/game/stagescene.cpp` | 151 | 6 |
+| `src/game/stagescene.cpp` | 191 | 0 |
 | `src/game/stagesound.cpp` | 45 | 0 |
 | `src/game/streamring.cpp` | 17 | 0 |
 | `src/game/sysdata.cpp` | 37 | 0 |
@@ -77,7 +77,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/uiwidget.cpp` | 56 | 0 |
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 284 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 321 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
 | `src/rena/tim2.cpp` | 4 | 0 |
@@ -106,7 +106,7 @@ Least-named game-code regions (64 KB blocks):
 - 90 TUs: todo 50, partial 2, verify 54, done 1
 - next: **game/stagescene.cpp** (continuing a partial TU)
 - pinned queue: (empty)
-- partial: `game/stagescene.cpp` 151/258 -- Written this run (batch 086): StageScene update, draw, setupCameras, calcMatrices, propagateNodes, updateVcms, updateRumble, getRumbleSource, getInputFocus, set
+- partial: `game/stagescene.cpp` 191/258 -- Written this run (batch 088, 71 names): the last six stubs here (runStageScripts, updateBuffers, updateBlock98, applySoundTarget, applyBgMotionTarget, loadList)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
@@ -164,6 +164,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 20:06 `game/stagescene.cpp` partial: stage script step, sound and bg-motion targets, loadList, block updates, 28 small members, collision queries
 - 2026-11-03 19:44 `game/stagescene.cpp` partial: the stage frame: update, draw, setupCameras and their helpers; camera kinds, view stack, control request, frame order from the perf labels
 - 2026-11-03 19:19 `game/stagescene.cpp` partial: StageFiles map, item and common targets, placeItem, placeCharacter, menu tests, enterSubScene, getFloor; map file layout proven; AreaGrid holds boxes, not ids
 - 2026-11-03 18:46 `yamipan/rendering/texture_store.cpp` done: rendering::TextureStore written and bound through the seam: the language screen is the first textured picture and equals its assets
@@ -171,20 +172,19 @@ Recent sessions:
 - 2026-11-03 18:13 `game/menuscene.cpp` verify: reconstruct the menu flow, 14 functions (verify)
 - 2026-11-03 17:41 `rx/filecd.c` verify: rx/filecd.c: the cdrom0: driver carried over from RosePan with FS2's rxFileCdFindDir
 - 2026-11-03 17:39 `game/spkrom.cpp` verify: game/spkrom.cpp: rxInit, rxTerm, the SPK.ROM index (load, locate, size, load file), the rx memory hooks; with the Pan layer's virtual disc behind sceCdRead
-- 2026-11-03 16:37 `game/stagescene.cpp` partial: stage script keyword handlers, bg and particle targets, small scene members; StreamTable::relocate shared; DrawLayerList is AreaClip
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@0017fce0` | todo | 0/27/399 | 76.4 | 74 | 0 |
-| `unassigned@002681e0` | todo | 0/33/514 | 156.6 | 73 | 0 |
-| `unassigned@001d7c50` | todo | 0/22/296 | 137.5 | 62 | 0 |
+| `unassigned@002681e0` | todo | 0/42/514 | 156.6 | 82 | 0 |
+| `unassigned@0017fce0` | todo | 0/28/399 | 76.4 | 76 | 0 |
+| `unassigned@002b6b90` | todo | 0/38/272 | 115.8 | 66 | 3 |
+| `unassigned@001d7c50` | todo | 0/23/296 | 137.5 | 63 | 0 |
 | `unassigned@00148db0` | todo | 0/17/125 | 35.6 | 60 | 2 |
-| `unassigned@002b6b90` | todo | 0/29/272 | 115.8 | 57 | 3 |
-| `unassigned@001fe6b0` | todo | 0/27/563 | 197.2 | 45 | 0 |
-| `unassigned@00171300` | todo | 0/21/421 | 52.5 | 37 | 0 |
-| `unassigned@002b0d50` | todo | 0/21/85 | 17.9 | 32 | 0 |
+| `unassigned@001fe6b0` | todo | 0/34/563 | 197.2 | 55 | 0 |
+| `unassigned@00171300` | todo | 0/24/421 | 52.5 | 41 | 0 |
+| `unassigned@002b0d50` | todo | 0/23/85 | 17.9 | 34 | 0 |
 | `unassigned@002d46a0` | todo | 0/17/252 | 51.5 | 27 | 2 |
-| `unassigned@00231c90` | todo | 0/8/61 | 36.3 | 21 | 0 |
+| `unassigned@00231c90` | todo | 0/11/61 | 36.3 | 26 | 0 |
 | `unassigned@00299d90` | todo | 0/11/215 | 62.3 | 21 | 0 |
 | `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
 
@@ -196,9 +196,9 @@ Recent sessions:
 | `001d7f00` | NodeTransform::setPositionXyz | 18 | game | stub | - |
 | `00149250` | StringList::~StringList | 14 | game | stub | - |
 | `001d7ec0` | NodeTransform::setRotation | 13 | game | stub | - |
+| `00214f60` | StageObject::getAltSoundFlag | 10 | game | stub | - |
 | `00149100` | StringList::split | 9 | game | stub | - |
 | `001494c0` | StringList::tail | 8 | game | stub | - |
-| `00214f60` | StageObject::getAltSoundFlag | 8 | game | stub | - |
 | `00239bb0` | CharacterInput::setActive | 7 | game | stub | - |
 | `00177d20` | StageCamera::addToScene | 7 | game | stub | - |
 | `002848d0` | AreaBox::setSize | 7 | game | stub | - |
@@ -218,6 +218,7 @@ Recent sessions:
 | `001fea50` | StageParty::getCompanion | 4 | game | stub | - |
 | `0018bdc0` | StageObjectTree::setActive | 4 | game | stub | - |
 | `001d8260` | StageObject::propagate | 4 | game | stub | - |
+| `001d27e0` | ScriptRunner::run | 4 | game | stub | - |
 | `00177270` | BoneNode::find | 4 | game | stub | - |
 | `00284560` | AreaGrid::addBox | 4 | game | stub | - |
 | `002e5210` | ModelFile::createInstance | 4 | game | stub | - |
@@ -231,5 +232,4 @@ Recent sessions:
 | `00231d20` | overlayShowLoading | 3 | native | missing | - |
 | `001d3a40` | StageScript::relocate | 3 | game | stub | - |
 | `0028fd30` | fsmRelocate | 3 | game | stub | - |
-| `002152d0` | StagePlayer::isMode1 | 3 | game | stub | - |
 

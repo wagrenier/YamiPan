@@ -217,8 +217,8 @@ struct StBank
     S2dRef<const char> name;    // FS2 +0x0
     S2dRef<const char> file;    // FS2 +0x4: the body file, after SoundTrack::m_name
     u_char             _08[4];  // FS2 +0x8
-    // Not relocated by setTable; who points it at the bank's header is
-    // unread (the stage's loader 0x19d9e0 is the guess). Null: no play.
+    // Not relocated by setTable: StageFiles::applySoundTarget points it at
+    // the file called name once the stage's loader has it. Null: no play.
     S2dRef<const void> header;  // FS2 +0xc
 };
 static_assert(sizeof(StBank) == 0x10, "StBank: EE 0x10");

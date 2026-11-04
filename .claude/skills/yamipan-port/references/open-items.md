@@ -1069,6 +1069,21 @@ questions. Resolve items here when they are settled (move them to "Done" with th
        `src/` with its header and names made at that TU.
    The platform layer (bootstrap 6) and first build (7) follow once the user has a toolchain; until
    then reconstructed TUs are `verify` (written, not compiled or seen on screen).
+   **Seventh run (2026-11-03, batch 088, 71 names; the last 6 stubs and 28 small members written, still `partial`)**:
+   runStageScripts, updateBuffers, updateBlock98, applySoundTarget, applyBgMotionTarget, loadList, and
+   startClear / startGameOver, saveObjectFlags + SceneArrayPair::saveFlags, requestSubScene, the two
+   startEvent, the mission's value accessors, getMenuMode, door faces, the sphere / segment / floor
+   queries (architecture.md "The stage's script step"). `StageScene::subSceneRequest` is now
+   `const char *` (the ROM keeps the name in the int); `StageMission::busy` was the first byte of the
+   pending event's name, `purposeText` ends before +0x84. Nothing here has run: no stage loads, the
+   smoke run stays on the language screen. Doubts: SceneBufferSet / SceneBlock98 look like the
+   characters' and the player's light (spotlight, render +0xe24, bones), left unnamed as such; the two
+   event classes StageFileEvent / StageSimpleEvent, the mission's value / scriptVar names and
+   setTreeScriptFlag are guesses; `StageObject::scriptRunner()` points into the padding at +0x40 until
+   the character TU gives the object a real member (it must before a stage runs). PC difference:
+   applySoundTarget skips a bank with an empty file instead of calling getData(null). Not written in
+   the slice: 0x195db0 (SubSceneObject's deleting dtor), 0x19cf40 (answers "DemoExecuter"), 0x19cf80
+   (empty slot): no host virtuals to hang them on yet.
 
 1. **The game**: Forbidden Siren 2, Europe, `SCES_538.51`, annotation tag `FS2` (decided, below;
    `yamipan.py` has `ANNOT`, the stub regex and the game-folder defaults since bootstrap 3).
