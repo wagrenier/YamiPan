@@ -50,11 +50,6 @@ struct StageSelect;             // game/sysdata.h
 // rxFileCallLoadHook 0x155690; the game reaches them through jump thunks of
 // the same names beside rxTerm (0x152740 / 0x152730).
 
-// Unpacks an "SLDI" block (LZ copies and literal runs) into dst; the
-// unpacked size, -1 for another magic or a length that does not add up
-// (unassigned@002b0d50; PackJob::load).
-int sldiDecompress(const void *src, void *dst);                          // FS2 0x002d0a10
-
 // Empty in retail: a stripped system's init / per-frame / teardown (guess).
 void debugSysInit();                                                     // FS2 0x00151290
 void debugSysUpdate();                                                   // FS2 0x00151270
