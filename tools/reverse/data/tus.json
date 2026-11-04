@@ -1,6 +1,5 @@
 {
  "queue": [
-  "rena/rena_model.cpp",
   "yamipan/rendering/model_renderer.cpp"
  ],
  "settings": {
@@ -1211,7 +1210,35 @@
    "why": "The game's own file name from its strings (rena_2d_texture_tim2.cpp: ...); pinned at bootstrap 6 so the stubs land in src/rena/."
   },
   "rena/rena_model.cpp": {
-   "task": "3D path 4 of 5 (the user's pin). The model file and instance from unassigned@002e2970: ModelFile::isValid 0x2e2cf0, relocate 0x2e2d20, getNodeCount 0x2e5200, createInstance 0x2e5210 with 0x2e4800 and 0x2e3e10, allocating ModelSurface and the +0x40 and +0x44 tables (gamehooks.h has the layouts). Check by loading real model files from the disc in a host harness. Pin the real extent with tus.py define under this key."
+   "notes": "Written: createInstance 0x2e5210, ModelInstance::init 0x2e4800, ModelSurface 0x2e3e10, buildPartRecs 0x2e4f50, setFrames, renaStepTexAnim, modelFindPart, findGroup, setAmbient, setLight, ~ModelInstance, modelTexturePremultiplyPalette. CharacterPart was ModelPartRec. Checked by a host harness over every RM2 in the 114 SLDI packs (1,768 models, 4,702 nodes, 0 bad) and a New Game run: 22 real instances including the map node Root, no crash. The screen is black because no 3D host module exists yet, so status verify, not done. Next: TU 5 yamipan/rendering/model_renderer.cpp; open-items.md has what it must read. Also this run: the user's Japanese text rule, in reconstruction.md, and printed Shift-JIS messages became UTF-8 literals; strings compared or written out keep their escaped bytes.",
+   "ranges": [
+    [
+     "002e1700",
+     "002e1b10"
+    ],
+    [
+     "002e2cf0",
+     "002e41a0"
+    ],
+    [
+     "002e44e0",
+     "002e5450"
+    ],
+    [
+     "002e9790",
+     "002e97a8"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 09:10",
+     "status": "verify",
+     "summary": "ModelFile::createInstance and the model instance: bones, surfaces, part records, texture animation, lights; all 1,768 models on the disc checked"
+    }
+   ],
+   "status": "verify",
+   "task": "3D path 4 of 5 (the user's pin). The model file and instance from unassigned@002e2970: ModelFile::isValid 0x2e2cf0, relocate 0x2e2d20, getNodeCount 0x2e5200, createInstance 0x2e5210 with 0x2e4800 and 0x2e3e10, allocating ModelSurface and the +0x40 and +0x44 tables (gamehooks.h has the layouts). Check by loading real model files from the disc in a host harness. Pin the real extent with tus.py define under this key.",
+   "why": "The RM2 file and its instances: relocate, ModelSurface, ModelPartRec, ModelInstance, createInstance; 0x2e41a0 and 0x2e43e0 stay with the rena draw run; the palette premultiply and the bone ctor sit apart in the ROM"
   },
   "rena/rena_pkt_vif1pktmanage.cpp": {
    "notes": "Pinned 0x2eaff0-0x2ec110 under the new src/rena/ with the game's own file name (strings in Reset / AddList); the stale inferred key rena_pkt_vif1pktmanage.cpp removed from tus.json. Batch 061 named the vector instances (Vif1PktListVector::insert, Vif1PktBufferVector::insert / dtor / clear); Ghidra saved by name_ctx. Vif1PktManage moved from game/gamepacket.h to rena/rena_pkt_vif1pktmanage.h (gamepacket.h includes it); AddBuffer / AddList return the ROM's int. New src/rx/rxsys.h (rxSysPrintf) and YamiPan_DrawUiKick(lists, count) in yamipan_drawui.h. PC decision (open-items Decisions 2026-11-03): tags keep the ROM words but ADDR is the byte offset in the frame buffer; Kick hands the lists with draws, in chain order, to YamiPan_DrawUiKick instead of the DMAC. Checked: callcheck clean, layout lint OK, g++ -Wall -Wextra clean on the TU and gamepacket.cpp, both SJIS messages byte-equal to the ROM, host harness (libvifpk mirrored from asm, 3 frames, 2 buffers, a list opened twice) walked start tag, list 0, list 2 segments in order, list 3, end tag. ROM kept: Open of an unknown id writes through null; AddList message prints the found list address in the ROM (PC prints the id). Next: rena Tim2Texture 0x2e1b70..0x2e2970; bootstrap 6 host libvifpk as in the harness.",

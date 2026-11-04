@@ -166,6 +166,10 @@ struct ModelNodeBone;
 // layout: host -- EE 8.
 struct ModelBone
 {
+    // rec's first word is the bind matrix: a ModelNodeBone, or the
+    // ModelFileNode for the root (cast: only the matrix is read of it).
+    explicit ModelBone(const ModelNodeBone *rec);                        // FS2 0x002e9790
+
     const ModelNodeBone *node;   // FS2 +0x0: its name, its parent
     const sceVu0FVECTOR *matrix; // FS2 +0x4: a StageBoneNode's world or a pose bone's, once bound
 };
@@ -336,14 +340,28 @@ struct CharacterBrain
     // A frame: its script runs while the flag holds and it has a route.
     void update();                                                       // FS2 0x001dd330
 };
-// One of a character's two parts (+0x240 / +0x244): what they are is
-// unread. EE layout, as far as read.
-struct CharacterPart
+// The model instance's record of each mesh (vtable 0x31a7d0, 0x10 on the EE,
+// parallel to ModelFileNode::meshes): the mesh tree, threaded through next,
+// and what the game switches per part. modelFindPart hands them out: a
+// character's +0x240 / +0x244, a light's PartSwitch, VcmTable.
+// layout: host -- the EE's +0 is the vptr; the virtuals are trivial here.
+struct ModelMesh;
+struct ModelPartRec
 {
-    u_char _0[0xd];
-    u_char drawMode;            // FS2 +0xd: StageScene::prepareDrawFlags (0 off, 2 on)
+    ModelPartRec(const ModelMesh *mesh, u_short next);                   // FS2 0x002e3ba0
+    void   setFlagE(u_char value);                                       // FS2 0x002e3b50: slot 0 of vtable 0x31a7d0
+    u_char getFlagE() const;                                             // FS2 0x002e3b60: slot 1
+
+    u_short firstChild;         // FS2 +0x4: a mesh index
+    u_short next;               // FS2 +0x6: the next sibling, or the parent's; 0 at the end
+    u_short childCount;         // FS2 +0x8: 0 for a part grouping none
+    u_char  vcmAlpha;           // FS2 +0xa: 0..0x80 (VcmTable::update)
+    u_char  vcmFadeBits;        // FS2 +0xb
+    u_char  vcmOffBits;         // FS2 +0xc
+    u_char  drawMode;           // FS2 +0xd: StageScene::prepareDrawFlags (0 off, 2 on)
+    u_char  flagE;              // FS2 +0xe: only the two virtuals (unread)
+    bool    hasMesh;            // FS2 +0xf: ModelMesh::parts is set
 };
-static_assert(offsetof(CharacterPart, drawMode) == 0xd, "CharacterPart::drawMode");
 // A script-run object: the map's name is the script's. Stage objects have
 // one at +0x40 (so has a sub-scene, as its base).
 //
@@ -657,7 +675,7 @@ public:
     StageNodeBase *m_handNode;  // FS2 +0x238: a character's: StageWeaponItem::fire's report comes from it
     u_char _23c[0x4];
     union {
-        CharacterPart *m_parts[2]; // FS2 +0x240: a character's; StagePlayer::isMode1 picks which one shows in a view camera
+        ModelPartRec *m_parts[2]; // FS2 +0x240: a character's; StagePlayer::isMode1 picks which one shows in a view camera
         struct {
             int m_doorType;     // FS2 +0x240: a door's StageDoorType
             int m_doorIndex;    // FS2 +0x244: a door's number from 1 (StageScene::findDoorOfFace)
@@ -978,7 +996,7 @@ struct VectorTrack
     VectorKey *keys;            // FS2 +0x1c
 };
 // Model parts named bn_<name>_<i>, of which one shows: the rest get
-// CharacterPart::drawMode 2. A light's lit and dark pieces; a character's too.
+// ModelPartRec::drawMode 2. A light's lit and dark pieces; a character's too.
 // layout: host -- EE 0x10.
 struct PartSwitch
 {
@@ -993,12 +1011,12 @@ struct PartSwitch
     void show(int index);                                                // FS2 0x00186fe0
 
     ModelInstance  *model;      // FS2 +0x0
-    CharacterPart **parts;      // FS2 +0x4
+    ModelPartRec **parts;      // FS2 +0x4
     int             count;      // FS2 +0x8
     int             shown;      // FS2 +0xc
 };
 // The model's part called name (length: strlen), null none.
-CharacterPart *modelFindPart(ModelInstance *model, const char *name, size_t length, int arg); // FS2 0x002e4610
+ModelPartRec *modelFindPart(ModelInstance *model, const char *name, size_t length, int arg); // FS2 0x002e4610
 // A particle effect of the stage (EE 0x280, kind 0x1d, vtable 0x3149e0; ctors
 // 0x190500 / 0x190450, built by StageNodeTree::spawn). A stand-in: what the
 // lights call. Effects hang from each other through +0x20c, and both calls
@@ -1480,23 +1498,53 @@ enum ModelMaterialKind
 };
 enum ModelMaterialFlag
 {
+    ModelMaterialFlag_Wave    = 0x08,   // has a ModelTexAnim_Wave (set by ModelSurface)
     ModelMaterialFlag_Foliage = 0x20,   // the texture is a plant's (drawSysAddModel)
 };
 struct ModelMaterialExt
 {
-    int          _0;
+    short        _0;
+    short        texture;       // FS2 +0x2: a third texture, into ModelFile::textureNames, or negative
     S2dRef<void> data;          // FS2 +0x4
 };
 static_assert(sizeof(ModelMaterialExt) == 8, "ModelMaterialExt: EE 8");
+// A textured material's animation.
+enum ModelTexAnimKind
+{
+    ModelTexAnim_None   = 0,
+    ModelTexAnim_Scroll = 1,    // ModelSurface::scrollU / V
+    ModelTexAnim_Wave   = 2,    // ModelSurface::waveValue, a sine
+};
+struct ModelTexAnim
+{
+    int kind;                   // FS2 +0x0: ModelTexAnimKind
+    union
+    {
+        struct
+        {
+            int speedU;         // FS2 +0x4
+            int speedV;         // FS2 +0x8
+        } scroll;
+        struct
+        {
+            float period;       // FS2 +0x4: in 300ths of the ticks' unit
+            float phase;        // FS2 +0x8: the start, 0..period
+            float amplitude;    // FS2 +0xc: each swing draws 0.5..1 of it
+        } wave;
+    };
+};
+static_assert(sizeof(ModelTexAnim) == 0x10, "ModelTexAnim: 0x10 as read");
 struct ModelMaterial
 {
     u_char             kind;    // FS2 +0x00: ModelMaterialKind
     u_char             flags;   // FS2 +0x01: ModelMaterialFlag
     u_char             _02[2];
     S2dRef<const char> name;    // FS2 +0x04
-    S2dRef<void>       texAnim; // FS2 +0x08: the texture animation (renaStepTexAnim)
+    S2dRef<ModelTexAnim> texAnim; // FS2 +0x08: may be null (renaStepTexAnim)
     short              texture; // FS2 +0x0c: into ModelFile::textureNames, or negative
-    u_char             _0e[0xa];
+    short              texture2; // FS2 +0x0e: the same
+    float              _10;     // FS2 +0x10: ModelSurface::levelScale
+    float              _14;     // FS2 +0x14: picks ModelSurface::level
     S2dRef<ModelMaterialExt> ext; // FS2 +0x18: not on ModelMaterial_Kind1
 };
 static_assert(offsetof(ModelMaterial, name) == 4, "ModelMaterial::name");
@@ -1568,15 +1616,19 @@ struct ModelMesh
     S2dRef<const char>     name;  // FS2 +0x00
     S2dRef<short>          boneMap; // FS2 +0x04: into the node's bones; -1 from the first node's
     S2dRef<ModelMeshParts> parts; // FS2 +0x08: may be null
-    u_char                 _0c[0xc];
+    u_short                firstChild; // FS2 +0x0c: a mesh index
+    u_char                 _0e[4];
+    u_short                childCount; // FS2 +0x12
+    u_char                 _14[4];
 };
 static_assert(sizeof(ModelMesh) == 0x18, "ModelMesh: EE 0x18");
+static_assert(offsetof(ModelMesh, childCount) == 0x12, "ModelMesh::childCount");
 
 struct ModelFile;
 // A node's bone (0x10 bytes).
 struct ModelNodeBone
 {
-    S2dRef<void>       matrix;  // FS2 +0x0
+    S2dRef<const sceVu0FVECTOR> matrix; // FS2 +0x0: 4 rows, the bind pose in the file's space
     S2dRef<const char> name;    // FS2 +0x4
     int                parent;  // FS2 +0x8: bone index, negative at the top
     u_char             _c[4];
@@ -1586,6 +1638,9 @@ static_assert(sizeof(ModelNodeBone) == 0x10, "ModelNodeBone: EE 0x10");
 // A node's record in a model file (0x30 bytes).
 struct ModelFileNode
 {
+    // How many surfaces have a running texture animation.
+    int countTexAnims() const;                                           // FS2 0x002e5190
+
     S2dRef<const sceVu0FVECTOR> matrix; // FS2 +0x00: 4 rows, the node's
     S2dRef<const char> name;    // FS2 +0x04: a map model's: the object it becomes
     u_char             _08[8];
@@ -1593,7 +1648,7 @@ struct ModelFileNode
     S2dRef<ModelMesh>  meshes;  // FS2 +0x14: meshCount
     S2dRef<ModelNodeBone> bones; // FS2 +0x18: boneCount
     S2dRef<u_short>    textureSlots; // FS2 +0x1c: textureSlotCount of ModelFile::textureNames indices
-    S2dRef<void>       _20;     // FS2 +0x20
+    S2dRef<u_short>    surfaceMaterials; // FS2 +0x20: surfaceCount of ModelFile::materials indices
     u_short            boneCount;    // FS2 +0x24
     u_short            surfaceCount; // FS2 +0x26
     u_short            textureSlotCount; // FS2 +0x28
@@ -1605,25 +1660,40 @@ static_assert(offsetof(ModelFileNode, name) == 4, "ModelFileNode::name");
 static_assert(offsetof(ModelFileNode, surfaceCount) == 0x26, "ModelFileNode::surfaceCount");
 static_assert(offsetof(ModelFileNode, meshCount) == 0x2a, "ModelFileNode::meshCount");
 
-// A material as a model instance draws it (EE 0x50, FUN_002e3e10 builds it).
-// layout: host.
+// A material as a model instance draws it (EE 0x50). layout: host.
 struct ModelSurface
 {
+    ModelSurface(ModelMaterial *material, const ModelFileNode *node);    // FS2 0x002e3e10
     // Two frames of the texture and the blend between them (a zero second
     // frame: the first, faded).
     void setFrames(float blend, int frame0, int frame1);                 // FS2 0x002e3d90
 
+    int            _00[2];      // FS2 +0x00: zero (the draw run reads them: unread)
+    float          waveValue;   // FS2 +0x08: amplitude * sin(phase)
+    int            _0c;         // FS2 +0x0c: zero
+    float          wavePhase;   // FS2 +0x10: -pi..pi
+    float          waveAmplitude; // FS2 +0x14
     ModelMaterial *material;    // FS2 +0x18
+    short          textureSlot; // FS2 +0x1c: of ModelFileNode::textureSlots, -1 none (material->texture)
+    short          extTextureSlot; // FS2 +0x1e: the same, material->ext->texture
     float          blend;       // FS2 +0x20: setFrames
-    int            waveIndex;   // FS2 +0x24: the number after WaveComposit
-    int            _28;         // FS2 +0x28: 0 on a wave (unread)
-    int            isWave;      // FS2 +0x2c
+    int            blendFix;    // FS2 +0x24: setFrames, 0..0x80; on a wave the number after WaveComposit
+    int            frame0;      // FS2 +0x28: setFrames, 0 on a wave
+    int            frame1;      // FS2 +0x2c: setFrames, 1 on a wave
+    int            scrollU;     // FS2 +0x30: 0..0xfff
+    int            scrollV;     // FS2 +0x34
+    short          texture2Slot; // FS2 +0x38: the same, material->texture2
+    int            level;       // FS2 +0x3c: 0..4, from material->_14
+    float          levelScale;  // FS2 +0x40: material->_10
 };
+
+// Bits of ModelInstance::drawMode: the lights set on it.
+constexpr u_short kModelLightMask = 0x7; // one bit per light, ModelInstance::setLight
+constexpr u_short kModelAmbient   = 0x80; // ModelInstance::setAmbient
 
 // What ModelFile::createInstance makes (vtable 0x31a7f0, 0x100 bytes,
 // 0x80-aligned): the model StageModel::data and the draw system's lists
-// hold. Only what the callers read so far. layout: host.
-struct ModelPartRec;
+// hold. Everything but the object itself lives in one heap block. layout: host.
 struct ModelInstance
 {
     // The record whose children range holds rec's index (the group rec is
@@ -1633,29 +1703,50 @@ struct ModelInstance
     // The name of texture slot i (ModelFileNode::textureSlots).
     const char *getTextureName(int slot) const;                          // FS2 0x002e47d0
     void setTexture(int slot, Tim2Texture *texture);                     // FS2 0x002e4550
+    void   setDistant(u_char value);                                     // FS2 0x002e40e0: a slot of vtable 0x31a7f0
+    u_char getDistant() const;                                           // FS2 0x002e40f0: the next slot
+    void setAmbient(const sceVu0FVECTOR color);                          // FS2 0x002e44e0
+    // Light index (0..2): its direction, a column of lightDirs, and colour.
+    void setLight(u_int index, const sceVu0FVECTOR direction, const sceVu0FVECTOR color); // FS2 0x002e4500
+    // Fills the instance from a node of a relocated file.
+    void init(ModelFileNode *fileNode);                                  // FS2 0x002e4800
 
     u_char         distant = 0;   // FS2 +0x04: set to 1 when farther than the draw distance (drawSysBuildShadows)
     u_char         drawGroup = 0; // FS2 +0x05: DrawSysGroup
     u_char         _06 = 0;       // FS2 +0x06: 1 from StageModel::init (unread)
     u_char         shown = 0;     // FS2 +0x07: the model's own shown flag: while there is a model it replaces StageObject::m_shown
-    u_short        drawMode = 0;  // FS2 +0x08: 0x87 for the boss shadow's draw (unread)
+    u_short        drawMode = 0;  // FS2 +0x08: kModelLightMask | kModelAmbient: which of lightColors are set
     u_short        flags = 0;     // FS2 +0x0a: ModelFlag
     ModelFileNode *node = nullptr; // FS2 +0x0c
     ModelBone     *rootBone = nullptr; // FS2 +0x10: its matrix is the owner's (StageModel::init)
     ModelBone     *bones = nullptr; // FS2 +0x14: boneCount of them; [2] carries the shadow
     u_int          boneCount = 0; // FS2 +0x18
     ModelPartRec  *partRecs = nullptr; // FS2 +0x1c: one per node->meshes
-    sceVu0FMATRIX *inverseBinds = nullptr; // FS2 +0x20: per bone (StageModel::bindBones)
-    const sceVu0FVECTOR **bindMatrices = nullptr; // FS2 +0x24: per bone
-    const sceVu0FVECTOR *rootMatrix = nullptr; // FS2 +0x28
+    sceVu0FMATRIX *inverseBinds = nullptr; // FS2 +0x20: per bone, the inverses of boneBinds (StageModel::bindBones)
+    const sceVu0FVECTOR **bindMatrices = nullptr; // FS2 +0x24: per bone, the file's matrix
+    const sceVu0FVECTOR *rootMatrix = nullptr; // FS2 +0x28: the inverse of the node's matrix
+    sceVu0FMATRIX *boneBinds = nullptr; // FS2 +0x2c: per bone, its matrix in the node's space
+    int            _30 = 0;       // FS2 +0x30: zero (unread)
     float          ghostParam0 = 0.0f; // FS2 +0x34: 191 on ext_ghost (unread)
     float          ghostParam1 = 0.0f; // FS2 +0x38: -52 on ext_ghost (unread)
     ModelSurface  *surfaces = nullptr; // FS2 +0x3c: node->surfaceCount
     ModelSurface **surfaceOfMaterial = nullptr; // FS2 +0x40: by the file's material index, null if unused
     ModelSurface **texAnims = nullptr; // FS2 +0x44: texAnimCount records of renaStepTexAnim
     int            texAnimCount = 0;   // FS2 +0x48
+    int            _4c = 0;       // FS2 +0x4c: zero (unread)
     Tim2Texture  **textures = nullptr; // FS2 +0x50: node->textureSlotCount
-    sceVu0FMATRIX  colorMatrix = {};   // FS2 +0x80: zero for the boss shadow's draw (unread, the name is a guess)
+    char          *block = nullptr; // FS2 +0x54: the one block all those live in
+    u_int          blockUsed = 0; // FS2 +0x58
+    u_int          blockSize = 0; // FS2 +0x5c
+    int            _60 = 0;       // FS2 +0x60: zero (unread)
+    sceVu0FMATRIX  lightColors = {}; // FS2 +0x80: [0] ambient, [1..3] the lights; zero for the boss shadow's draw
+    sceVu0FMATRIX  lightDirs = {};   // FS2 +0xc0: one column per light
+
+private:
+    // The next count T of the block, null for none. The ROM's inline.
+    template <class T> T *take(u_int count);
+    // recs[index] and its subtree; next: what follows them.
+    void buildPartRecs(int index, u_short next);                         // FS2 0x002e4f50
 };
 
 // A texture named .._s: a copy of its palette at +0x3c, the colours times
@@ -1672,6 +1763,10 @@ struct ModelFile
     // A new instance of node index, or of the node called name when name
     // is not null.
     ModelInstance *createInstance(u_int index, const char *name);        // FS2 0x002e5210
+    // The two lookups createInstance inlines; each says why when it answers
+    // null. The file is relocated first.
+    ModelFileNode *findNode(u_int index);
+    ModelFileNode *findNode(const char *name);
 
     u_char  _00[0x18];
     u_short userCount;          // FS2 +0x18: instances of it
@@ -2465,20 +2560,6 @@ extern WeaponDef gWeaponDefs[kWeaponDefCount];  /* bss 0x576010 */
 // The sound players are game/seplayer.h; the one outside a stage is
 // getSePlayer (game/menupack.h).
 
-// What game/vcmtable.cpp reads of rena's model (unassigned@002e2970).
-// The model instance's record of each part (0x10 on the EE, parallel to
-// the header's parts): the parts it groups and what VcmTable::update
-// writes for the renderer (unread there).
-// layout: host -- EE: +4 / +8 the first part / count (u16), +0xa .. +0xc
-// the VCM bytes.
-struct ModelPartRec
-{
-    u_short firstChild;         // FS2 +0x4
-    u_short childCount;         // FS2 +0x8: 0 for a part grouping none
-    u_char  vcmAlpha;           // FS2 +0xa: 0..0x80
-    u_char  vcmFadeBits;        // FS2 +0xb
-    u_char  vcmOffBits;         // FS2 +0xc
-};
 // What the S2D widgets (game/uiwidget.cpp) call of systems without a TU.
 
 // fsm subtitle files (unassigned@002681e0): tracks of timed 16-bit texts,

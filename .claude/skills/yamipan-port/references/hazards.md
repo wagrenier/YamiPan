@@ -366,3 +366,18 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **A pad file path does nothing, silently** (2026-11-04). Symptom: a New Game run sits black with only 22 stubs, no error. Cause: `build.py --pad` and `gdbrun.py --pad` take the script text; a path is parsed as a script with no entries. Fix: `--pad "$(cat work/newgame_pad.txt)"`.
 - **A later `build.py --run` overwrites work/run_relwithdebinfo.log** (2026-11-04), even `--run 1`: copy the log first. `work/gdb/log.txt` keeps gdb's run.
 - **Stub constructors leave a real base's subclass fields as heap garbage** (2026-11-04). Symptom: 0xbaadf00d in `StageSound::update` from a camera's `m_linked`. Cause: `StageCamera::StageCamera` is a stub, so nothing set the field. Fix until the ctor is written: `// PC:` zeroing in `StageObject::StageObject`.
+
+## Harness and shell (2026-11-04)
+
+- **"RM2" inside other data.** Symptom: a disc harness crashes in `relocateNode` with a null node on
+  ROM.006. Cause: 4 16-aligned hits of the magic in a pack are not models (base 0x324d46: odd). Fix:
+  only a file whose base +0x30 is 0 on the disc is a model. The game itself never scans, so this is
+  a harness trap only.
+- **Models are not on the disc raw.** Symptom: a scan of ROM.00x finds no aligned RM2 (S2D, TimM and
+  fMsg files do turn up raw). Cause: models live in the SLDI packs. Fix: scan every 0x800 for "SLDI"
+  version 1 and `sldiDecompress` into a 0x1800000 buffer (game/sldi.cpp links alone).
+- **Backslashes in a heredoc.** Symptom: `\\n` written in a Bash heredoc reaches Python as a real
+  newline; a long heredoc can die with "unexpected EOF". Fix: put edit scripts in a file with the Write
+  tool and run that.
+- **Source files may be CRLF.** A replace script with LF in its search text fails its assert. Fix:
+  normalise to LF, replace, and write the file back as it was.

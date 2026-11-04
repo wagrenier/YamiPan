@@ -1791,9 +1791,6 @@ bool StageFiles::applyBgTarget()
 
         for (int i = file->getNodeCount() - 1; i >= 0; i--) {
             ModelInstance *instance = file->createInstance(i, nullptr);
-            // PC: createInstance is still a stub (rena/rena_model.cpp, 3D path 4).
-            if (instance == nullptr)
-                continue;
             const char *objectName = instance->node->name;
 
             if (!scene->isSubScene) {
@@ -3166,7 +3163,7 @@ void StageScene::prepareDrawFlags()
             return;
         // PC: the stand-ins keep StagePlayer apart from StageObject; the ROM
         // passes the character.
-        CharacterPart *part = reinterpret_cast<StagePlayer *>(linked)->isMode1()
+        ModelPartRec *part = reinterpret_cast<StagePlayer *>(linked)->isMode1()
                                   ? linked->m_parts[1] : linked->m_parts[0];
         if (part != nullptr)
             part->drawMode = kPartShow;

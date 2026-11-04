@@ -98,8 +98,7 @@ void Vif1PktManage::Reset()
 {
     if (m_buffers.empty())
     {
-        rxSysPrintf("rena_pkt_vif1pktmanage.cpp: (Reset) \x83\x70\x83\x50\x83\x62\x83\x67\x83\x6f\x83\x62\x83\x74\x83\x40"
-                    "\x82\xaa\x93\x6f\x98\x5e\x82\xb3\x82\xea\x82\xc4\x82\xa2\x82\xdc\x82\xb9\x82\xf1\x81\x42\n");   // "no packet buffer is registered."
+        rxSysPrintf("rena_pkt_vif1pktmanage.cpp: (Reset) パケットバッファが登録されていません。\n");
         return;
     }
 
@@ -225,8 +224,7 @@ int Vif1PktManage::AddList(int id)
     {
         // ROM: the %d gets the found list's address (a1 left over from the
         // search); PC: the id.
-        rxSysPrintf("rena_pkt_vif1pktmanage.cpp:\x82\xb1\x82\xccID(%d)\x82\xcd\x82\xb7\x82\xc5\x82\xc9\x93\x6f\x98\x5e"
-                    "\x82\xb3\x82\xea\x82\xc4\x82\xa2\x82\xdc\x82\xb7\x81\x42 \n", id);   // "this ID (%d) is already registered."
+        rxSysPrintf("rena_pkt_vif1pktmanage.cpp:このID(%d)はすでに登録されています。 \n", id);
         return -1;
     }
 

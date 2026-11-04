@@ -182,6 +182,10 @@ frontmatter; the user's rule: automated runs at xhigh or above). Keep that line.
   it as classes, adapted to FS2. Game code is untouched by this: `src/game`, `rena`, `sound`, `rx`,
   `sdpr2` go on as reconstruction.md says, with the game's own file names (`rxfile.c`) and shapes.
   `references/cpp-port.md` has the scope, the style and the map: read it before writing host code.
+- **Japanese stays Japanese** (2026-11-04): Shift-JIS text found in the ROM goes into the source as the
+  Japanese itself (a UTF-8 literal when it is only printed), never as raw bytes alone; bytes the game
+  compares with disc data or writes out stay, with the exact Japanese beside them. reconstruction.md
+  "Japanese text".
 - **Methods, not free functions**: a function taking the object in a0 is a member.
 - **Automated work at xhigh or above; sessions never start sessions.**
 

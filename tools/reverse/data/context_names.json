@@ -21581,6 +21581,30 @@
   "was": "FUN_002e3a10",
   "why": "fixes the addresses of seven tags and, flagged, two lists"
  },
+ "002e3b50": {
+  "name": "ModelPartRec::setFlagE",
+  "tag": "game-inferred",
+  "was": "FUN_002e3b50",
+  "why": "sets byte +0xe of the part record"
+ },
+ "002e3b60": {
+  "name": "ModelPartRec::getFlagE",
+  "tag": "game-inferred",
+  "was": "FUN_002e3b60",
+  "why": "reads byte +0xe of the part record"
+ },
+ "002e3b70": {
+  "name": "ModelPartRec::~ModelPartRec",
+  "tag": "game-inferred",
+  "was": "FUN_002e3b70",
+  "why": "sets vtable 0x31a7d0 then 0x31a700; the record of a mesh"
+ },
+ "002e3ba0": {
+  "name": "ModelPartRec::ModelPartRec",
+  "tag": "game-inferred",
+  "was": "FUN_002e3ba0",
+  "why": "vtable 0x31a7d0; first child, next sibling, child count and has-mesh from a ModelMesh"
+ },
  "002e3bf0": {
   "name": "renaStepTexAnim",
   "tag": "game-inferred",
@@ -21593,11 +21617,41 @@
   "was": "FUN_002e3d90",
   "why": "writes the surface's +0x20..+0x2c from a blend and two frames"
  },
+ "002e3e10": {
+  "name": "ModelSurface::ModelSurface",
+  "tag": "game-inferred",
+  "was": "FUN_002e3e10",
+  "why": "built per node surface by ModelInstance::init: material, texture slots, wave start, level"
+ },
+ "002e40e0": {
+  "name": "ModelInstance::setDistant",
+  "tag": "game-inferred",
+  "was": "FUN_002e40e0",
+  "why": "vtable 0x31a7f0 slot: sets byte +4, the distant flag"
+ },
+ "002e40f0": {
+  "name": "ModelInstance::getDistant",
+  "tag": "game-inferred",
+  "was": "FUN_002e40f0",
+  "why": "vtable 0x31a7f0 slot: reads byte +4"
+ },
  "002e4100": {
-  "name": "RenaModel::findGroup",
+  "name": "ModelInstance::findGroup",
   "tag": "game-inferred",
   "was": "FUN_002e4100",
-  "why": "(model, rec): the part record (model +0x1c, 0x10 each) whose children range [+4, +4 + +8) (u16s, +8 non-zero) holds rec's index, null when none; walks the header's +0x2a part count; caller vcmPartTag (the group chain up from a part)"
+  "why": "the source file's class is ModelInstance: walks its part records"
+ },
+ "002e44e0": {
+  "name": "ModelInstance::setAmbient",
+  "tag": "game-inferred",
+  "was": "FUN_002e44e0",
+  "why": "stores a vector at +0x80 and sets bit 0x80 of +8; called by SceneRender::updateLights"
+ },
+ "002e4500": {
+  "name": "ModelInstance::setLight",
+  "tag": "game-inferred",
+  "was": "FUN_002e4500",
+  "why": "stores light i: colour +0x90+i*0x10, direction column in +0xc0, sets bit i of +8; called by SceneRender::updateLights"
  },
  "002e4550": {
   "name": "ModelInstance::setTexture",
@@ -21622,6 +21676,30 @@
   "tag": "game-inferred",
   "was": "FUN_002e47d0",
   "why": "file's textureNames through the node's slot list +0x1c"
+ },
+ "002e4800": {
+  "name": "ModelInstance::init",
+  "tag": "game-inferred",
+  "was": "FUN_002e4800",
+  "why": "allocates the one block (matrices, surfaces, bones, part records, tables) and fills it from a ModelFileNode"
+ },
+ "002e4f50": {
+  "name": "ModelInstance::buildPartRecs",
+  "tag": "game-inferred",
+  "was": "FUN_002e4f50",
+  "why": "walks the mesh tree recursively building one ModelPartRec per mesh, threading next sibling"
+ },
+ "002e5180": {
+  "name": "modelPlacementNew",
+  "tag": "game-inferred",
+  "was": "FUN_002e5180",
+  "why": "returns its second argument: placement new"
+ },
+ "002e5190": {
+  "name": "ModelFileNode::countTexAnims",
+  "tag": "game-inferred",
+  "was": "FUN_002e5190",
+  "why": "counts the node's textured surfaces whose material has a non-zero texture animation"
  },
  "002e5200": {
   "name": "ModelFile::getNodeCount",
@@ -21682,6 +21760,12 @@
   "tag": "game-inferred",
   "was": "FUN_002e87f0",
   "why": "binds the spotlight texture into the frame's TEX0 packets"
+ },
+ "002e9790": {
+  "name": "ModelBone::ModelBone",
+  "tag": "game-inferred",
+  "was": "FUN_002e9790",
+  "why": "stores a record and the matrix pointer that is its first word"
  },
  "002e97a8": {
   "name": "Tim2CheckFileHeaer",

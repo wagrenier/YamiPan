@@ -126,6 +126,25 @@ Callcheck: name such calls in `// callcheck: ...` comments where the operator hi
   for its subsystem instead. A PS2 behaviour emulated in game code is marked `// PC:` with the reason.
 - `printf` goes to the log; keep the game's messages (often the best names).
 
+## Japanese text (the user's rule, 2026-11-04)
+
+Shift-JIS found in the ROM is written as the **Japanese itself**, never left as raw bytes alone. Read
+the bytes as cp932 (`elf32.Elf(path).read(addr, n)`, then `.decode('cp932')`; take the whole string,
+not the head of it), then:
+
+- **Printed only** (rxSysPrintf and the like): the Japanese as a UTF-8 literal in the source, with its
+  `data 0x...` address: `"error: %d番のモデルは 存在しません。\n"`. The host console reads UTF-8.
+- **The bytes matter** (compared with Shift-JIS read from the disc, such as the pack's column names,
+  or written out, such as the memory card's icon.sys title): the bytes stay, because a UTF-8 literal
+  would change behaviour, and the exact Japanese goes beside them on the same line:
+  `"\x83\x89\x83\x78\x83\x8b";  // ラベル`.
+
+**Why the split:** a `\x` escape is the same byte under every compiler flag (`-finput-charset`,
+`-fexec-charset`, MSVC `/utf-8`, `/source-charset`); a Japanese literal is not, so a string that is
+compared or written must never become one. If in doubt whether a string is only printed, keep the bytes.
+
+Same in comments, names' `why` and the references: quote the text, not a hex dump or a paraphrase.
+
 ## Types and layouts
 
 Types are rediscovered piece by piece; write each down as code the moment reconstructed code touches

@@ -1383,7 +1383,7 @@ SoundSeBank::~SoundSeBank()
     while (getState() != SoundSeBank_Empty) {
         threadYield(1);
         tries++;
-        rxSysPrintf("\x8f\x49\x97\xb9\x91\xd2\x82\xbf\x81\x42\x81\x42\x81\x42%d\n", tries); // "終了待ち。。。%d\n" (Shift-JIS)
+        rxSysPrintf("終了待ち。。。%d\n", tries);
     }
 }
 

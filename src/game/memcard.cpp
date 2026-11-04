@@ -42,16 +42,20 @@ static const char *const sIconPaths[kSaveFiles] = {         /* data 0x2fb7d0 */
     "/BESCES-5385100/icon1.ico", "/BESCES-5385101/icon1.ico",
     "/BESCES-5385102/icon1.ico", "/BESCES-5385103/icon1.ico",
 };
-// icon.sys titles, SJIS full-width "Forbidden" / "Siren 2 File01".."04",
-// the line break after "Forbidden" (kIconSysTitleBreak) (data 0x2fb7e0,
-// strings 0x30a9d0..0x30aa60).
+// icon.sys titles, written to the card as Shift-JIS, so the bytes stay:
+// Ｆｏｒｂｉｄｄｅｎ / Ｓｉｒｅｎ　２　Ｆｉｌｅ０１..０４, the line break after
+// Ｆｏｒｂｉｄｄｅｎ (kIconSysTitleBreak) (data 0x2fb7e0, strings
+// 0x30a9d0..0x30aa60).
 #define FS2_ICON_TITLE(n)                                                   \
+    /* Ｆｏｒｂｉｄｄｅｎ */                                                \
     "\x82\x65\x82\x8f\x82\x92\x82\x82\x82\x89\x82\x84\x82\x84\x82\x85\x82\x8e" \
+    /* Ｓｉｒｅｎ　２　 */                                                  \
     "\x82\x72\x82\x89\x82\x92\x82\x85\x82\x8e\x81\x40\x82\x51\x81\x40"        \
+    /* Ｆｉｌｅ０ */                                                        \
     "\x82\x65\x82\x89\x82\x8c\x82\x85\x82\x4f" n
 static const char *const sIconSysTitles[kSaveFiles] = {     /* data 0x2fb7e0 */
-    FS2_ICON_TITLE("\x82\x50"), FS2_ICON_TITLE("\x82\x51"),
-    FS2_ICON_TITLE("\x82\x52"), FS2_ICON_TITLE("\x82\x53"),
+    FS2_ICON_TITLE("\x82\x50"), FS2_ICON_TITLE("\x82\x51"),     // １, ２
+    FS2_ICON_TITLE("\x82\x52"), FS2_ICON_TITLE("\x82\x53"),     // ３, ４
 };
 #undef FS2_ICON_TITLE
 constexpr u_short kIconSysTitleBreak = 0x12;    // bytes: the nine SJIS letters of "Forbidden"
