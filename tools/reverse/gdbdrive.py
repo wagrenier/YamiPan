@@ -95,7 +95,9 @@ def main():
             else:
                 reason = f'{sig} at {pc:#x} in {where}'
         else:
+            # A heap the debug CRT finds corrupted stops here, in ntdll, and then exits: keep the stack.
             log(f'stop ({sig}) at {pc:#x} in {where}: continuing')
+            log(run('bt 16'))
         if reason:
             dump(reason)
             if serve() == 'quit':

@@ -38,6 +38,12 @@ public:
     // at (x, y) in the frame.
     void drawImage(const void *list, std::shared_ptr<Image> image, float x, float y);
 
+    // A movie's picture: `columns` x `rows` 16 x 16 RGBA32 macroblocks in column-major order. `picture` counts
+    // the movie's decoded pictures, and the image is only rebuilt when it moves: a movie runs at 25 pictures a
+    // second under a faster game loop, and each image is a GPU texture.
+    void drawMacroblocks(const void *list, const void *owner, int picture, const void *macroblocks, int columns,
+                         int rows, float x, float y);
+
     // Ends the frame: these layers, in this order, go to the renderer.
     void kick(std::span<const void *const> lists);
 
@@ -84,6 +90,9 @@ private:
     static DrawCall stateOf(const Layer &layer);
 
     Renderer &m_renderer;
+    const void *m_movieOwner = nullptr;
+    int m_moviePicture = -1;
+    std::shared_ptr<Image> m_movieImage;
     std::mutex m_lock;
     std::unordered_map<const void *, Layer> m_layers;
     std::uint64_t m_frames = 0;

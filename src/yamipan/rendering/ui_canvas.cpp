@@ -1,6 +1,7 @@
 #include "yamipan/rendering/ui_canvas.h"
 
 #include <cmath>
+#include <cstring>
 #include <utility>
 
 #include "yamipan/rendering/display_geometry.h"
@@ -356,6 +357,44 @@ void UiCanvas::drawImage(const void *list, std::shared_ptr<Image> image, float x
     target.primitive = previousPrimitive;
     target.textured = previousTextured;
     target.blended = previousBlended;
+}
+
+void UiCanvas::drawMacroblocks(const void *list, const void *owner, int picture, const void *macroblocks, int columns,
+                               int rows, float x, float y)
+{
+    constexpr int kBlockSize = 16;
+    constexpr std::size_t kBlockRowBytes = kBlockSize * 4;
+    constexpr std::size_t kBlockBytes = kBlockSize * kBlockRowBytes;
+    constexpr std::byte kOpaque{0xff};
+
+    if (m_movieImage == nullptr || m_movieOwner != owner || m_moviePicture != picture)
+    {
+        auto image = std::make_shared<Image>();
+        image->width = columns * kBlockSize;
+        image->height = rows * kBlockSize;
+        image->pixels.resize(static_cast<std::size_t>(image->width) * static_cast<std::size_t>(image->height) * 4);
+
+        const auto stride = static_cast<std::size_t>(image->width) * 4;
+        const auto *const blocks = static_cast<const std::byte *>(macroblocks);
+        for (int column = 0; column < columns; column++)
+        {
+            for (int row = 0; row < rows; row++)
+            {
+                const std::byte *src = blocks + static_cast<std::size_t>(column * rows + row) * kBlockBytes;
+                std::byte *dst = image->pixels.data() + static_cast<std::size_t>(row * kBlockSize) * stride +
+                                 static_cast<std::size_t>(column * kBlockSize) * 4;
+                for (int line = 0; line < kBlockSize; line++, src += kBlockRowBytes, dst += stride)
+                    std::memcpy(dst, src, kBlockRowBytes);
+            }
+        }
+        for (std::size_t alpha = 3; alpha < image->pixels.size(); alpha += 4)
+            image->pixels[alpha] = kOpaque;
+
+        m_movieImage = std::move(image);
+        m_movieOwner = owner;
+        m_moviePicture = picture;
+    }
+    drawImage(list, m_movieImage, x, y);
 }
 
 void UiCanvas::kick(std::span<const void *const> lists)

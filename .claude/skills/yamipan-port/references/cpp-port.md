@@ -64,6 +64,7 @@ src/yamipan/
            UiCanvas              the game's 2D draw module (game/uidrawer.cpp & co call it)
            TextureStore          TIM2 pictures decoded to RGBA8, cached by content
            PresentPass           grade + HDR output, Screenshotter the smoke shots
+  media/   MpegStream, MpegDecoder  libmpeg on the host: PSS demux, FFmpeg MPEG-2
   io/      InputSystem           keyboard + gamepad -> a DualShock 2 report, bindings
   ui/      Overlay, Panel        the ImGui menu bar and its panels
 ```

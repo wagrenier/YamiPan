@@ -257,6 +257,8 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **Python text mode vs CRLF**: `open(p, encoding='utf-8', newline='')`, keep the file's own endings.
 - **A module-level function named like a stdlib package shadows it** (`def http` after `import
   http.client`): import the submodule under another name.
+- **A gdb dump with no game frames meant the game never started** (fixed 2026-11-03): `gdbrun.py` did not pass `YAMIPAN_DATA_DIR`, so the app sat in its Game Data window. It cost one run the location of the black after the card. If a dump shows no `YamiPanEe*` threads, look for that first.
+- **Exit 0xC0000374 (-1073740940) is heap corruption**, usually a use-after-free the EE heap forgave. Under gdb the debug heap reports it at the free; `gdbdrive.py` now logs the stack to work/gdb/log.txt. The plain build can run past it, so a run that gets further than gdb is not clean. First case 2026-11-03: `~UiSequence` freed the actors, then `PrgMovie::close` wrote to a text track inside one.
 - **`gdbrun.py --help` launches the game**; read its docstring instead.
 - `python -I` drops the script's directory from `sys.path`: run tools as `python tool.py` from their folder.
 - **MSYS2's g++ fails silently outside its shell** (2026-11-03, TU 14): `/c/msys64/ucrt64/bin/g++.exe`
