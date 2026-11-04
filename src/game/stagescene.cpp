@@ -2,6 +2,7 @@
 // (game/stagescene.h).
 #include "common/yamipan_stub.h"
 
+#include "game/scenerender.h"
 #include "game/stagescene.h"
 
 #include <ctype.h>
@@ -375,7 +376,7 @@ void StageScene::addSmokeBox(AreaBox *box)
 // The top of the view stack.
 // FS2 0x0019bbb0
 
-StageObject *StageScene::getActiveCharacter()
+StageObject *StageScene::getTopView()
 {
     return views->topObject();
 }
@@ -2948,8 +2949,8 @@ void StageScene::update()
 {
     focus = nullptr;
     perfMark(kPerfBlack, nullptr);
-    render->spotActive = 0;
-    render->spotGroup = sceneRenderGroup(0);
+    render->m_snap = 0;
+    render->m_forcedSet = sceneRenderGroup(0);
     if (block98 != nullptr)
         block98->dirty = 1;
     if (buffers != nullptr)

@@ -471,7 +471,7 @@ StageModel::~StageModel()
     if (data != nullptr) {
         drawSysRemoveModel(data);
         delete data;
-        delete[] m_slots;
+        delete[] m_lightFades;
         delete vcm;
     }
     for (MotionMap &map : motions)
@@ -493,7 +493,7 @@ StageModel::~StageModel()
 // its textures by name, the VCM table, the draw system's list; the root bone
 // follows the owner's matrix.
 // FS2 0x00188b10
-// callcheck: getTextureName, FUN_00189840, find, setTexture, operator_new, VcmTable, drawSysAddModel, heapAllocAligned, FUN_00296cc0, FUN_00296cc0, FUN_00296cc0, drawSysFindKind1Surface (the array's ctor is StageModelSlot's)
+// callcheck: getTextureName, FUN_00189840, find, setTexture, operator_new, VcmTable, drawSysAddModel, heapAllocAligned, FUN_00296cc0, FUN_00296cc0, FUN_00296cc0, drawSysFindKind1Surface (the array's ctor is VectorFade's)
 
 void StageModel::init(ModelInstance *instance, StringMap<Tim2Texture *> *textures,
                       const sceVu0FVECTOR *matrix)
@@ -512,6 +512,6 @@ void StageModel::init(ModelInstance *instance, StringMap<Tim2Texture *> *texture
     drawSysAddModel(data);
     data->rootBone->matrix = matrix;
     data->_06 = 1;
-    m_slots = new StageModelSlot[kModelSlots]();
+    m_lightFades = new VectorFade[kModelSlots]();
     m_kind1Surface = drawSysFindKind1Surface(data);
 }

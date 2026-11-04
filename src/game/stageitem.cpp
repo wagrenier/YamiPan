@@ -316,8 +316,8 @@ StageItem::~StageItem()
 
 void StageObject::markModelAsItem()
 {
-    m_model->_b5 = 1;
-    m_model->_b4 = 1;
+    m_model->m_ownAmbient = 1;
+    m_model->m_lit = 1;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -1032,7 +1032,7 @@ ItemLamp::ItemLamp(StageObject *owner)
     m_spot->addToScene(name, true);
     hangLight(m_spot, owner);
     m_spot->m_limitByMap = 1;
-    m_spot->m_2b0 = 0;
+    m_spot->m_priority = 0;
     m_spot->m_mode = StageLight_Hard;
 
     sprintf(name, "%s_sl2", owner->m_name);
@@ -1057,7 +1057,7 @@ ItemLamp::ItemLamp(StageObject *owner)
     hangLight(m_point2, owner);
     m_point2->m_castsShadow = 0;
     m_point2->m_usable = 0;
-    m_point2->m_2b0 = 0;
+    m_point2->m_priority = 0;
     m_point2->m_mode = StageLight_Hard;
 
     m_parts = new PartSwitch;
@@ -1087,8 +1087,8 @@ void ItemLamp::setCastsShadow(bool on)
 
 void ItemLamp::setValue2b0(int value)
 {
-    m_point2->m_2b0 = value;
-    m_spot->m_2b0 = value;
+    m_point2->m_priority = value;
+    m_spot->m_priority = value;
 }
 
 // ──────────────────────────────────────────────────────────────────────

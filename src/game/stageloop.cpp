@@ -148,7 +148,7 @@ void stageThread(void *arg)
 
     do {
         gStageScene->update();
-        gStageScene->draw(gStageScene->getActiveCharacter());
+        gStageScene->draw(gStageScene->getTopView());
         sceVif1Packet *packet = gGameSystem->m_packets.openList(PacketList_StageClock);
         StageResult *result = getStageResult();
         TexAreaList *texList = gfxGetTexArea()->getList(PacketList_StageClock);

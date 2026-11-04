@@ -234,7 +234,7 @@ struct StageScene
     // the sound goes on (a stage's StageSound, a sub-scene's demo voice).
     void drawPaused();                                                   // FS2 0x00198fc0
     // The character the player controls (null none).
-    StageObject *getActiveCharacter();                                   // FS2 0x0019bbb0
+    StageObject *getTopView();                                   // FS2 0x0019bbb0
     // Once, before the stage's first frame.
     void beginPlay();                                                    // FS2 0x001963a0
     // Once, after the stage's files: the cameras, bullet and flash, the

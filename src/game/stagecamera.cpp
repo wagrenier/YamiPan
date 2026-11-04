@@ -18,6 +18,7 @@
 #include "game/gamehooks.h"
 #include "game/mathutil.h"
 #include "game/packtables.h"
+#include "game/scenerender.h"
 #include "game/stageobjlist.h"
 #include "game/stagescene.h"
 #include "game/sysdata.h"
@@ -62,7 +63,22 @@ void StageCamera::addToScene(const char *name)
 
 void StageCamera::onViewTop()
 {
-    gStageScene->render->spotActive = 1;
+    gStageScene->render->m_snap = 1;
+}
+
+// FS2 0x001779a0
+// callcheck: identityMatrix, rotateMatrixX, sceVu0ViewScreenMatrix, sceVu0MulMatrix
+
+void StageCamera::setRange(float range)
+{
+    sceVu0FMATRIX axes;
+    identityMatrix(axes);
+    rotateMatrixX(kHalfPi, axes, axes);
+
+    m_range = range;
+    sceVu0ViewScreenMatrix(m_screen, m_scrZ, 1.0f, m_screenHeight / ((m_screenWidth * 3.0f) / 4.0f),
+                           kCameraScreenCenter, kCameraScreenCenter, kCameraZMin, kCameraZMax, kCameraNear, m_range);
+    sceVu0MulMatrix(m_screen, m_screen, axes);
 }
 
 // FS2 0x00177ac0
