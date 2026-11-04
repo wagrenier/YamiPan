@@ -255,7 +255,7 @@ PointLight::PointLight()
 // FS2 0x00185710
 // callcheck: spawn, setScriptFlag2, getCollisionObject, getKind (virtual)
 
-int StageLight::onCollide(CollisionContact *contact)
+int StageLight::onCollide(CollisionContact *contact, const float *, StageCollisionFace *, float, float)
 {
     StageObject *other = contact->body->owner->getCollisionObject();
     if (other->getKind() == StageObject_Bullet && other->m_dead) {

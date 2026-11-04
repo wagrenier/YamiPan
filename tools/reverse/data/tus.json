@@ -1,6 +1,6 @@
 {
  "queue": [
-  "unassigned@0017fce0"
+  "unassigned@002d46a0"
  ],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
@@ -600,6 +600,24 @@
    ],
    "why": "The class at gStageScene +0xf4 (every caller of these 8 functions passes it; ctor 0x264070 news its 0x3c-byte member from 0x151600, the deleting dtor 0x264000): plays and stops the ALERT / CAUTION layouts on gStageScene +0x30 (0x263c10 / 0x263f10) and reads GameOptions +0x10. Between game/uigame.cpp and libscf 0x2640e8. The file name is the port's (no source string)."
   },
+  "game/stageitem.cpp": {
+   "notes": "All of 0x17fce0..0x184860 written or mapped (thunks listed, 0x180018 is padding). New Game run under gdb: StageBullet's ctor ran from setupCameras with no fault, 113 stubs reached, the stop is unchanged: SIGSEGV in StageScene::draw (stagescene.cpp:3272), drawSysCurrent 0x2d4fd0 a stub answering null, black last shot, so no stage picture and nothing here is on screen. Default smoke run rests on the language screen, unchanged. Host-pass only: no item is placed yet (PackTables::parse and StageModel::init are stubs), ScenePairTable::add is a stub, so no frame or collision hook has run and nothing was compared with the ROM by running it. CollisionOwner::onCollide and collisionHook3 changed signature for all owners; sysDataReturnZero 0x23c010 was a mislabel and is gone (ItemPhysics::onCollide). Next pinned: unassigned@002d46a0 for drawSysCurrent, then NodeTransform and updateMatrix. Details and doubts: open-items.md, architecture.md The bullet and the items.",
+   "ranges": [
+    [
+     "0017fce0",
+     "00184860"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 02:33",
+     "status": "verify",
+     "summary": "The bullet and the items whole: StageBullet, StageItem and its four kinds, ItemLamp; ItemPhysics declared; CollisionOwner read in full"
+    }
+   ],
+   "status": "verify",
+   "why": "Bullets and items: every class here (StageBullet, StageItem and its four kinds) has its vtables and ctors in the run, the adjustor thunks 0x184610..0x184860 close it (a file ends with its thunks), game/stagelight.cpp starts right after. No source string: the name is the port's."
+  },
   "game/stagelight.cpp": {
    "notes": "All of 0x184860..0x186ee0 written. New Game run: lights build and join the scene with no fault, 114 stubs reached, the stop is unchanged (drawSysCurrent null in StageScene::draw, stagescene.cpp:3271), so no stage picture and nothing here is on screen. Default smoke run still rests on the language screen. Host-pass only: nothing compared with the ROM by running it, no harness for the light maths; the ctor colours match the ROM's float bits. Left in unassigned@0017fce0 (still pinned): the bullet classes and items 0x17fce0..0x184860. First blocker of a stage picture stays drawSysCurrent 0x2d4fd0, then NodeTransform and updateMatrix. Details and doubts: open-items.md, architecture.md The lights.",
    "ranges": [
@@ -825,7 +843,7 @@
    "ranges": [
     [
      "0023af30",
-     "0023c020"
+     "0023c010"
     ]
    ],
    "sessions": [
@@ -837,7 +855,7 @@
     }
    ],
    "status": "verify",
-   "why": "system data module: every function between 0x23af30 and 0x23c020 works on the save data 0x598b30 (0x4bc bytes), the record 0x598fec, the options 0x599000 with their ButtonMap or the table 0x599050, or returns one of them; 0x23ae40 before it builds a string table of another struct, 0x23c020 after it is VU0 vector code"
+   "why": "0x23c010 is slot 1 of vtable 0x316510 (ItemPhysics::onCollide), not sysdata: the class starts there"
   },
   "game/thread.cpp": {
    "notes": "All 19 functions written; thread.h has ThreadSlotRecord, ThreadStackDef, ThreadDetourStack, FrameSync, JobRecord with ThreadState / ThreadDetourState / JobCancelResult enums. Batch 032 named bitMask, threadSwapMessage, threadSlotState, threadExit, threadSlotKill, jobCancel, jobAdd (saved by name_ctx). ThreadFunc now takes void *arg (StartThread passes the slot arg): gameMainThread and gameSceneThread prototypes changed to match. threadYield returns the slot message. Source-only: callcheck clean (inline helpers explained in callcheck notes), layout lint OK; g++ -fsyntax-only -Wall -Wextra against RosePan sdk headers fails only on RotateThreadReadyQueue, which bootstrap 6 must add. The scheduler does not wait on vblank: it spins over the slots; the slots stay cooperative only by EE priorities, so the host needs a one-runnable-thread model or fibers (open-items.md Open questions, thread system). Nothing in the ELF sets the quit byte 0x31adbc, pushes the detour stack 0x4c8170 or sets the pre-switch hook. Job users are the next module unassigned@001319f0.",

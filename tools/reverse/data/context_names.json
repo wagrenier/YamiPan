@@ -3653,6 +3653,12 @@
   "was": "FUN_00135fe0",
   "why": "(len f12, out, in): vrsqrt of x2+y2+z2 (vaddAy / vmaddz), out.xyz = in.xyz * len * Q, out.w = in.w: in resized to len; approachVec3 and the 0x149xxx camera code call it"
  },
+ "00136020": {
+  "name": "vecDirection",
+  "tag": "game-inferred",
+  "was": "FUN_00136020",
+  "why": "(a - b) / |a - b|"
+ },
  "00136490": {
   "name": "scaleVec4",
   "tag": "game-inferred",
@@ -6460,6 +6466,12 @@
   "tag": "game-inferred",
   "was": "FUN_0014e4d0",
   "why": "model +0xc, called with 3, -1, 0 when +0x150 is set; bone entries +0x15c; the name is a guess"
+ },
+ "00150d80": {
+  "name": "motionBoneMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00150d80",
+  "why": "(out matrix, motion, bone name, frame): above 0 when the bone is in the motion"
  },
  "00151270": {
   "name": "debugSysUpdate",
@@ -11405,11 +11417,137 @@
   "was": "FUN_0017fce0",
   "why": "answers 0x19"
  },
+ "0017fcf0": {
+  "name": "StageBullet::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_0017fcf0",
+  "why": "empty, the fourth of the bullet's side slots (thunk 0x1847b0)"
+ },
+ "0017fd00": {
+  "name": "StageBullet::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_0017fd00",
+  "why": "empty, the second side slot (thunk 0x1847d0)"
+ },
+ "0017fd10": {
+  "name": "StageBullet::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_0017fd10",
+  "why": "empty, the first side slot (thunk 0x1847e0)"
+ },
+ "0017fd20": {
+  "name": "StageBullet::getCollisionParent",
+  "tag": "game-inferred",
+  "was": "FUN_0017fd20",
+  "why": "CollisionOwner slot 5 (thunk 0x184800): answers +0x200, the shooter"
+ },
+ "0017fd30": {
+  "name": "StageBullet::getCollisionObject",
+  "tag": "game-inferred",
+  "was": "FUN_0017fd30",
+  "why": "CollisionOwner slot 4 (thunk 0x184810): answers this"
+ },
+ "0017fd40": {
+  "name": "ItemDef::setLandSound",
+  "tag": "game-inferred",
+  "was": "FUN_0017fd40",
+  "why": "PackTables::parse: name -> index in SMOKE_LAND..KNIFE_LAND into +0x1c, -1 for an empty name"
+ },
+ "0017fdf0": {
+  "name": "ItemDef::setPickSound",
+  "tag": "game-inferred",
+  "was": "FUN_0017fdf0",
+  "why": "PackTables::parse: name -> index in GETITEM1..GETITEM12 into +0x1a"
+ },
+ "0017fea0": {
+  "name": "StageBullet::onCollide",
+  "tag": "game-inferred",
+  "was": "FUN_0017fea0",
+  "why": "CollisionOwner slot 1 (thunk 0x184840): category 0x100 keeps the map hit, 0x80 kills the bullet"
+ },
+ "00180020": {
+  "name": "StageBullet::collisionHook0",
+  "tag": "game-inferred",
+  "was": "FUN_00180020",
+  "why": "CollisionOwner slot 0 (thunk 0x184850): 0"
+ },
+ "00180030": {
+  "name": "StageBullet::collisionHook3",
+  "tag": "game-inferred",
+  "was": "FUN_00180030",
+  "why": "CollisionOwner slot 3 (thunk 0x184820): the hit's effect and sound, then dead"
+ },
+ "00180170": {
+  "name": "StageBullet::syncBody",
+  "tag": "game-inferred",
+  "was": "FUN_00180170",
+  "why": "CollisionOwner slot 2 (thunk 0x184830): the two ends of the sweep to the body by category"
+ },
+ "001801c0": {
+  "name": "StageBullet::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_001801c0",
+  "why": "third side slot (thunk 0x1847c0): moves the bullet, counts its frames"
+ },
+ "00180260": {
+  "name": "StageBullet::~StageBullet",
+  "tag": "game-inferred",
+  "was": "FUN_00180260",
+  "why": "slot 2 of the vtables StageBullet::StageBullet stores; deleting"
+ },
  "001803e0": {
   "name": "StageBullet::StageBullet",
   "tag": "game-inferred",
   "was": "FUN_001803e0",
   "why": "named bullet, StageObjectList::addBullet"
+ },
+ "00180670": {
+  "name": "StageBulletBase::~StageBulletBase",
+  "tag": "game-inferred",
+  "was": "FUN_00180670",
+  "why": "slot 2 of vtable 0x312f40, kind 0x18; deleting"
+ },
+ "00180710": {
+  "name": "StageThrownItem::isInSmokeArea",
+  "tag": "game-inferred",
+  "was": "FUN_00180710",
+  "why": "I_HATUEN at rest, gStageScene->areas[2] (SMOKE_A) contains it, kept in +0x470"
+ },
+ "001807c0": {
+  "name": "StageThrownItem::getLandSound",
+  "tag": "game-inferred",
+  "was": "FUN_001807c0",
+  "why": "ItemDef +0x1c through the table 0x2f7c20 of the *_LAND names"
+ },
+ "00180820": {
+  "name": "StageThrownItem::setThrowVector",
+  "tag": "game-inferred",
+  "was": "FUN_00180820",
+  "why": "stores a vector at +0x450, from the character's throw 0x216630"
+ },
+ "00180830": {
+  "name": "StageThrownItem::isSmoking",
+  "tag": "game-inferred",
+  "was": "FUN_00180830",
+  "why": "I_HATUEN with +0x46c below 20 seconds"
+ },
+ "001808b0": {
+  "name": "StageThrownItem::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_001808b0",
+  "why": "fourth side slot, thunk 0x184730: ItemPhysics::draw and addBufferObject"
+ },
+ "001808f0": {
+  "name": "StageThrownItem::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_001808f0",
+  "why": "third side slot, thunk 0x184740: motion, ItemPhysics::update, rest time, the flare's fire"
+ },
+ "00180c40": {
+  "name": "StageThrownItem::setupItem",
+  "tag": "game-inferred",
+  "was": "FUN_00180c40",
+  "why": "slot +0x24c: the base's, ItemPhysics::setup, hatsuen / heyasmoke for I_HATUEN"
  },
  "00180d30": {
   "name": "StageThrownItem::StageThrownItem",
@@ -11417,11 +11555,143 @@
   "was": "FUN_00180d30",
   "why": "placeItem, I_HATUEN, I_AKIKAN, I_PET, I_NUT"
  },
+ "00180e10": {
+  "name": "StageTrapItem::onCollide",
+  "tag": "game-inferred",
+  "was": "FUN_00180e10",
+  "why": "CollisionOwner slot 1 (thunk 0x184710): 0"
+ },
+ "00180e20": {
+  "name": "StageTrapItem::collisionHook0",
+  "tag": "game-inferred",
+  "was": "FUN_00180e20",
+  "why": "CollisionOwner slot 0 (thunk 0x184720): 0"
+ },
+ "00180e30": {
+  "name": "StageTrapItem::collisionHook3",
+  "tag": "game-inferred",
+  "was": "FUN_00180e30",
+  "why": "CollisionOwner slot 3 (thunk 0x1846f0): empty"
+ },
+ "00180e40": {
+  "name": "StageTrapItem::syncBody",
+  "tag": "game-inferred",
+  "was": "FUN_00180e40",
+  "why": "CollisionOwner slot 2 (thunk 0x184700): category 0x200, sphere centre = position"
+ },
+ "00180e70": {
+  "name": "StageTrapItem::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_00180e70",
+  "why": "third side slot, thunk 0x1846c0: motion, linger timer"
+ },
+ "00180f40": {
+  "name": "StageTrapItem::startLinger",
+  "tag": "game-inferred",
+  "was": "FUN_00180f40",
+  "why": "sets +0x250, clears the timer +0x24c that sideHook2 runs"
+ },
+ "00180f50": {
+  "name": "StageTrapItem::spring",
+  "tag": "game-inferred",
+  "was": "FUN_00180f50",
+  "why": "plays s_OBJ_098_CLOSE, body off, +0x218 = 1"
+ },
+ "00180f90": {
+  "name": "StageTrapItem::disarm",
+  "tag": "game-inferred",
+  "was": "FUN_00180f90",
+  "why": "body off, +0x208 = 0, no motion"
+ },
+ "00180fa0": {
+  "name": "StageTrapItem::arm",
+  "tag": "game-inferred",
+  "was": "FUN_00180fa0",
+  "why": "plays s_OBJ_098_OPEN, body on, +0x208 = 1"
+ },
+ "00180fe0": {
+  "name": "StageTrapItem::canSpring",
+  "tag": "game-inferred",
+  "was": "FUN_00180fe0",
+  "why": "+0x208, distance to the object at most 90, angle under pi / 4"
+ },
+ "001810b0": {
+  "name": "StageTrapItem::getWorkPlace",
+  "tag": "game-inferred",
+  "was": "FUN_001810b0",
+  "why": "position, rotation facing the other object, offset (0, 60, 0)"
+ },
+ "00181150": {
+  "name": "StageTrapItem::~StageTrapItem",
+  "tag": "game-inferred",
+  "was": "FUN_00181150",
+  "why": "slot 2 of its vtables; deleting"
+ },
  "00181200": {
   "name": "StageTrapItem::StageTrapItem",
   "tag": "game-inferred",
   "was": "FUN_00181200",
   "why": "placeItem, I_WANA (wana: a trap)"
+ },
+ "00181340": {
+  "name": "StageWeaponItem::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_00181340",
+  "why": "thunk 0x184670: the base's frozen flag and ItemPhysics::draw"
+ },
+ "00181400": {
+  "name": "StageWeaponItem::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_00181400",
+  "why": "thunk 0x184680: the base's motion and ItemPhysics::update"
+ },
+ "00181490": {
+  "name": "StageWeaponItem::getPickSound",
+  "tag": "game-inferred",
+  "was": "FUN_00181490",
+  "why": "ItemDef +0x1a through the table 0x2f7c40"
+ },
+ "001814f0": {
+  "name": "StageWeaponItem::getReloadSetSound",
+  "tag": "game-inferred",
+  "was": "FUN_001814f0",
+  "why": "RELOAD_SET2 for R_MURATA, else RELOAD_SET1"
+ },
+ "00181540": {
+  "name": "StageWeaponItem::getMagazineSetSound",
+  "tag": "game-inferred",
+  "was": "FUN_00181540",
+  "why": "MAGAZ_SET1 / 2, RELOAD_OFF1 / 2 for the three round-loaded guns"
+ },
+ "001816d0": {
+  "name": "StageWeaponItem::getMagazineOutSound",
+  "tag": "game-inferred",
+  "was": "FUN_001816d0",
+  "why": "MAGAZ_OUT1 / 2, RELOAD_ON1 / 2 for the three round-loaded guns"
+ },
+ "00181860": {
+  "name": "StageWeaponItem::getShotSound",
+  "tag": "game-inferred",
+  "was": "FUN_00181860",
+  "why": "BT_SHOT_* by ItemDef kind; used by fire"
+ },
+ "00181960": {
+  "name": "StageWeaponItem::getHitSound",
+  "tag": "game-inferred",
+  "was": "FUN_00181960",
+  "why": "BT_HT_* and BT_AT_BLD"
+ },
+ "00181b50": {
+  "name": "StageWeaponItem::getSwingSound",
+  "tag": "game-inferred",
+  "was": "FUN_00181b50",
+  "why": "BT_ATL_*, BT_ATH_*, BT_AT_RIFLE, BT_AT_GUN"
+ },
+ "00181f40": {
+  "name": "StageWeaponItem::fire",
+  "tag": "game-inferred",
+  "was": "FUN_00181f40",
+  "why": "a round, new StageBullet, M_Flash, yakkyo, the flash PointLight, the shot sound, GUNSHOOT"
  },
  "001823f0": {
   "name": "StageItem::initWeapon",
@@ -11429,11 +11699,47 @@
   "was": "FUN_001823f0",
   "why": "placeItem's last call on a kind 0x15 object, after +0x450 = the weapon index"
  },
+ "001825a0": {
+  "name": "StageWeaponItem::setupItem",
+  "tag": "game-inferred",
+  "was": "FUN_001825a0",
+  "why": "slot +0x24c: the base's, ItemPhysics::setup, bn_point and bn_fire"
+ },
  "00182670": {
   "name": "StageWeaponItem::StageWeaponItem",
   "tag": "game-inferred",
   "was": "FUN_00182670",
   "why": "placeItem, ItemDef kind below 7"
+ },
+ "00182770": {
+  "name": "StageItemE::getLightMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00182770",
+  "why": "SceneRender::update: the point light's matrix, moved back from a wall towards bn_head"
+ },
+ "001828b0": {
+  "name": "StageItemE::ownsLight",
+  "tag": "game-inferred",
+  "was": "FUN_001828b0",
+  "why": "compares its argument with the lamp's four lights"
+ },
+ "00182930": {
+  "name": "StageItemE::setShadowOwner",
+  "tag": "game-inferred",
+  "was": "FUN_00182930",
+  "why": "writes +0x2b8 of the lamp's four lights, StageLight::m_shadowOwner"
+ },
+ "00182970": {
+  "name": "StageItemE::setupItem",
+  "tag": "game-inferred",
+  "was": "FUN_00182970",
+  "why": "slot +0x24c: the base's, new ItemLamp, off, T_TORCH2 sets +0x244"
+ },
+ "00182a00": {
+  "name": "StageItemE::~StageItemE",
+  "tag": "game-inferred",
+  "was": "FUN_00182a00",
+  "why": "slot 2 of its vtables; deletes the lamp; deleting"
  },
  "00182ad0": {
   "name": "StageItemE::StageItemE",
@@ -11441,11 +11747,119 @@
   "was": "FUN_00182ad0",
   "why": "placeItem, ItemDef kind 0xe; class meaning unread"
  },
+ "00182b80": {
+  "name": "ItemLamp::setCastsShadow",
+  "tag": "game-inferred",
+  "was": "FUN_00182b80",
+  "why": "+0x2a0 StageLight::m_castsShadow of the two spots"
+ },
+ "00182ba0": {
+  "name": "ItemLamp::setValue2b0",
+  "tag": "game-inferred",
+  "was": "FUN_00182ba0",
+  "why": "+0x2b0 of lights 3 and 0"
+ },
+ "00182bc0": {
+  "name": "ItemLamp::attachTo",
+  "tag": "game-inferred",
+  "was": "FUN_00182bc0",
+  "why": "the inline setParent four times"
+ },
+ "00182eb0": {
+  "name": "ItemLamp::setSwitchedOn",
+  "tag": "game-inferred",
+  "was": "FUN_00182eb0",
+  "why": "setScriptFlag on +0x14's object tree, the same call as StageItemE slot +0x268"
+ },
+ "00182ec0": {
+  "name": "ItemLamp::setDark",
+  "tag": "game-inferred",
+  "was": "FUN_00182ec0",
+  "why": "PartSwitch::show(arg == 0) on +0x10"
+ },
+ "00182ee0": {
+  "name": "ItemLamp::~ItemLamp",
+  "tag": "game-inferred",
+  "was": "FUN_00182ee0",
+  "why": "deletes the PartSwitch +0x10"
+ },
+ "00182f40": {
+  "name": "ItemLamp::ItemLamp",
+  "tag": "game-inferred",
+  "was": "FUN_00182f40",
+  "why": "%s_sl, %s_sl2, %s_pl, %s_pl2 and the part nl, new 0x18 from StageItemE::setupItem"
+ },
+ "00183790": {
+  "name": "StageItem::canPickFar",
+  "tag": "game-inferred",
+  "was": "FUN_00183790",
+  "why": "the slot's test with 250 units in place of 100 / z -150..50"
+ },
+ "001838d0": {
+  "name": "StageItem::canPick",
+  "tag": "game-inferred",
+  "was": "FUN_001838d0",
+  "why": "the pick point in world space near the object and in front of it"
+ },
+ "00183a40": {
+  "name": "StageItem::getDisplayName",
+  "tag": "game-inferred",
+  "was": "FUN_00183a40",
+  "why": "the mission's text for the item's name, else the UTF-16 ???? at 0x303860"
+ },
+ "00183a90": {
+  "name": "StageItem::getPickSound",
+  "tag": "game-inferred",
+  "was": "FUN_00183a90",
+  "why": "ItemDef +0x1a through the table 0x2f7c40"
+ },
+ "00183af0": {
+  "name": "StageItem::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_00183af0",
+  "why": "fourth side slot, thunk 0x1846b0: flag 0x400 of the model's data"
+ },
+ "00183b80": {
+  "name": "StageItem::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_00183b80",
+  "why": "third side slot, thunk 0x184620: advances the motion"
+ },
+ "00183bf0": {
+  "name": "StageItem::setupItem",
+  "tag": "game-inferred",
+  "was": "FUN_00183bf0",
+  "why": "slot +0x24c: name, group 3, script, model, motions, count, bn_pic"
+ },
+ "00183ea0": {
+  "name": "StageObject::markModelAsItem",
+  "tag": "game-inferred",
+  "was": "FUN_00183ea0",
+  "why": "+0xb4 and +0xb5 of the model; the lines in setupItem, called by SubSceneItem::setup and SubSceneProp::setup"
+ },
+ "00183ec0": {
+  "name": "StageItem::~StageItem",
+  "tag": "game-inferred",
+  "was": "FUN_00183ec0",
+  "why": "slot 2 of vtable 0x313bc0; deleting"
+ },
  "00183f40": {
   "name": "StageItem::StageItem",
   "tag": "game-inferred",
   "was": "FUN_00183f40",
   "why": "placeItem's default class, 0x240 bytes"
+ },
+ "00183fd0": {
+  "name": "StageBulletBase::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_00183fd0",
+  "why": "0x18, table of vtable 0x312f40"
+ },
+ "00183fe0": {
+  "name": "StageThrownItem::~StageThrownItem",
+  "tag": "game-inferred",
+  "was": "FUN_00183fe0",
+  "why": "slot 2 of its vtables; deleting"
  },
  "001840a0": {
   "name": "StageThrownItem::getKind",
@@ -11453,11 +11867,47 @@
   "was": "FUN_001840a0",
   "why": "answers 0x17"
  },
+ "001840b0": {
+  "name": "ItemPhysics::getCollisionParent",
+  "tag": "game-inferred",
+  "was": "FUN_001840b0",
+  "why": "CollisionOwner slot 5 in vtable 0x316510: answers its +0x200"
+ },
+ "001840c0": {
+  "name": "StageItem::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_001840c0",
+  "why": "empty, the second side slot (thunk 0x184750)"
+ },
+ "001840d0": {
+  "name": "StageItem::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_001840d0",
+  "why": "empty, the first side slot (thunk 0x184760)"
+ },
+ "001840e0": {
+  "name": "StageThrownItem::getCollisionObject",
+  "tag": "game-inferred",
+  "was": "FUN_001840e0",
+  "why": "CollisionOwner slot 4 (thunk 0x184790): this"
+ },
  "001840f0": {
   "name": "StageTrapItem::getKind",
   "tag": "game-inferred",
   "was": "FUN_001840f0",
   "why": "answers 0x16"
+ },
+ "00184100": {
+  "name": "StageTrapItem::getCollisionObject",
+  "tag": "game-inferred",
+  "was": "FUN_00184100",
+  "why": "CollisionOwner slot 4 (thunk 0x1846e0): this"
+ },
+ "00184110": {
+  "name": "StageWeaponItem::~StageWeaponItem",
+  "tag": "game-inferred",
+  "was": "FUN_00184110",
+  "why": "slot 2 of its vtables; deleting"
  },
  "001841d0": {
   "name": "StageWeaponItem::getKind",
@@ -11465,11 +11915,35 @@
   "was": "FUN_001841d0",
   "why": "answers 0x15"
  },
+ "001841e0": {
+  "name": "StageWeaponItem::getCollisionObject",
+  "tag": "game-inferred",
+  "was": "FUN_001841e0",
+  "why": "CollisionOwner slot 4 (thunk 0x1846a0): this"
+ },
  "001841f0": {
   "name": "StageItemE::getKind",
   "tag": "game-inferred",
   "was": "FUN_001841f0",
   "why": "answers 0x14"
+ },
+ "00184200": {
+  "name": "StageItemE::isSwitchedOn",
+  "tag": "game-inferred",
+  "was": "FUN_00184200",
+  "why": "slot +0x26c: the spot's +0x214, StageLight::m_switchedOn"
+ },
+ "00184210": {
+  "name": "StageItemE::setSwitchedOn",
+  "tag": "game-inferred",
+  "was": "FUN_00184210",
+  "why": "slot +0x268: the tree's setScriptFlag"
+ },
+ "00184230": {
+  "name": "StageItemE::setDark",
+  "tag": "game-inferred",
+  "was": "FUN_00184230",
+  "why": "slot +0x264: PartSwitch::show(arg == 0)"
  },
  "00184250": {
   "name": "StageItem::getKind",
@@ -11933,6 +12407,36 @@
   "was": "FUN_00187230",
   "why": "VcmTable::update on +4 when +0 is set"
  },
+ "00187260": {
+  "name": "StageModel::advance",
+  "tag": "game-inferred",
+  "was": "FUN_00187260",
+  "why": "called with frames = seconds / (1 / 30), position and rotation: a frame of the motion"
+ },
+ "00187720": {
+  "name": "StageModel::playMotion",
+  "tag": "game-inferred",
+  "was": "FUN_00187720",
+  "why": "starts a motion object on the pose (+0xc), flags 2 or 0x22 plus its argument"
+ },
+ "00187770": {
+  "name": "StageModel::playNamed",
+  "tag": "game-inferred",
+  "was": "FUN_00187770",
+  "why": "the motion of that name in the map of list +0x2c + index * 0x10, then the play"
+ },
+ "00187870": {
+  "name": "StageModel::applyMotion",
+  "tag": "game-inferred",
+  "was": "FUN_00187870",
+  "why": "loops the pose towards position and rotation"
+ },
+ "00187a90": {
+  "name": "StageModel::addMotion",
+  "tag": "game-inferred",
+  "was": "FUN_00187a90",
+  "why": "new motion object on a motion file, keyed by name into list +0x2c + index * 0x10"
+ },
  "00187b70": {
   "name": "StageModel::placeBones",
   "tag": "game-inferred",
@@ -11944,6 +12448,12 @@
   "tag": "game-inferred",
   "was": "FUN_00187d10",
   "why": "setupCameras on each Root-group model; builds node links from the bone names"
+ },
+ "00188140": {
+  "name": "StageModel::setBaseMotion",
+  "tag": "game-inferred",
+  "was": "FUN_00188140",
+  "why": "first of a list of motions, before addMotion on the rest; argument an index"
  },
  "00188690": {
   "name": "StageModel::~StageModel",
@@ -12124,6 +12634,12 @@
   "tag": "game-inferred",
   "was": "FUN_0018c220",
   "why": "byte +0x271 down the chain +0x20c; the light passes isLit"
+ },
+ "0018c2d0": {
+  "name": "StageParticle::setRunning",
+  "tag": "game-inferred",
+  "was": "FUN_0018c2d0",
+  "why": "+0x21d and +0x273 down the chain +0x20c"
  },
  "00190040": {
   "name": "StageParticle::setRangeSquared",
@@ -14729,6 +15245,12 @@
   "was": "FUN_0020b1d0",
   "why": "+0x364 set: +0x2ca = 1; update calls it while the alternate flag holds; the meaning is a guess"
  },
+ "0020e6a0": {
+  "name": "StageCharacter::playerEvent",
+  "tag": "game-inferred",
+  "was": "FUN_0020e6a0",
+  "why": "only the scene's +0x78 character, while +0x30: reports a named event (GUNSHOOT)"
+ },
  "00214f60": {
   "name": "StageObject::getAltSoundFlag",
   "tag": "game-inferred",
@@ -15288,10 +15810,58 @@
   "why": "returns the byte table 0x2fac20 [+0x18]: 19 steps 28..176 (default index 9 -> 104); brightness is a guess; callers 0x17f160 / 0x2633f0"
  },
  "0023c010": {
-  "name": "sysDataReturnZero",
+  "name": "ItemPhysics::onCollide",
   "tag": "game-inferred",
   "was": "FUN_0023c010",
-  "why": "returns 0; no callers or data references found"
+  "why": "CollisionOwner slot 1 of vtable 0x316510"
+ },
+ "0023c020": {
+  "name": "ItemPhysics::collisionHook0",
+  "tag": "game-inferred",
+  "was": "FUN_0023c020",
+  "why": "CollisionOwner slot 0 of vtable 0x316510"
+ },
+ "0023c2f0": {
+  "name": "ItemPhysics::collisionHook3",
+  "tag": "game-inferred",
+  "was": "FUN_0023c2f0",
+  "why": "CollisionOwner slot 3 of vtable 0x316510"
+ },
+ "0023c300": {
+  "name": "ItemPhysics::syncBody",
+  "tag": "game-inferred",
+  "was": "FUN_0023c300",
+  "why": "CollisionOwner slot 2 of vtable 0x316510"
+ },
+ "0023c910": {
+  "name": "ItemPhysics::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0023c910",
+  "why": "called from the items' fourth side slot"
+ },
+ "0023ca50": {
+  "name": "ItemPhysics::update",
+  "tag": "game-inferred",
+  "was": "FUN_0023ca50",
+  "why": "called from the items' third side slot; asks the land sound"
+ },
+ "0023d600": {
+  "name": "ItemPhysics::setup",
+  "tag": "game-inferred",
+  "was": "FUN_0023d600",
+  "why": "after setupItem: owner and motion, counts its numbered bones"
+ },
+ "0023db00": {
+  "name": "ItemPhysics::~ItemPhysics",
+  "tag": "game-inferred",
+  "was": "FUN_0023db00",
+  "why": "restores vtable 0x316510"
+ },
+ "0023db50": {
+  "name": "ItemPhysics::ItemPhysics",
+  "tag": "game-inferred",
+  "was": "FUN_0023db50",
+  "why": "stores vtable 0x3115a0, then 0x316510, at +0x244 of its items"
  },
  "0023de20": {
   "name": "getLocalDateTime",
@@ -17819,6 +18389,12 @@
   "was": "FUN_00286910",
   "why": "+0xb8, +0xbc keptObject; +0xc0 cleared when the first is set"
  },
+ "00286c20": {
+  "name": "StageMission::getItemText",
+  "tag": "game-inferred",
+  "was": "FUN_00286c20",
+  "why": "the mission's text for the item's name, null none"
+ },
  "00286c30": {
   "name": "StageMission::setMessages",
   "tag": "game-inferred",
@@ -19888,6 +20464,12 @@
   "tag": "game-inferred",
   "was": "FUN_002cebd0",
   "why": "re-hangs the block node on a bone of the player"
+ },
+ "002cf0b0": {
+  "name": "getSurfaceSound",
+  "tag": "game-inferred",
+  "was": "FUN_002cf0b0",
+  "why": "takes a face's surface byte +0x4c, answers the SeEntry for playEntryHeard"
  },
  "002cf510": {
   "name": "resetStageGroupTable",

@@ -568,12 +568,3 @@ u_char GameOptions::getBrightnessValue() const
 {
     return sBrightnessValues[brightness];
 }
-
-// ──────────────────────────────────────────────────────────────────────
-// No callers or references found.
-// FS2 0x0023c010
-
-int sysDataReturnZero()
-{
-    return 0;
-}

@@ -216,11 +216,19 @@ struct StageModelData
     u_char drawGroup;           // FS2 +0x5: 1, or 0x20 for what the view target looks at (StageScene::prepareDrawFlags)
     u_char _6;
     u_char shown;               // FS2 +0x7: the model's own shown flag: while there is a model it replaces StageObject::m_shown
-    u_char _8[0x4];
+    u_char _8[0x2];
+    u_short flags;              // FS2 +0xa: ModelFlag
     const sceVu0FVECTOR **rootMatrix; // FS2 +0xc: -> -> the root's matrix (StageObject::setModel copies it)
 };
 static_assert(offsetof(StageModelData, drawGroup) == 5, "StageModelData::drawGroup");
 static_assert(offsetof(StageModelData, shown) == 7, "StageModelData::shown");
+static_assert(offsetof(StageModelData, flags) == 0xa, "StageModelData::flags");
+// Model flags (ModelInstance::flags, StageModelData::flags).
+enum ModelFlag
+{
+    ModelFlag_Item   = 0x2,     // every item's, from setupItem
+    ModelFlag_Frozen = 0x400,   // clear only while a free item's matrix is dirty (the name is a guess)
+};
 // The model's pose solver (+0xc; the run unassigned@00148db0). Only the
 // test before the call is read: +0x150 a count of something to solve.
 // layout: host -- EE: +0x150.
@@ -250,6 +258,17 @@ struct StageModel
     void bindBones();                                                    // FS2 0x00187d10
     void placeBones(StageObject *owner);                                 // FS2 0x00187b70
     void updateVcm();                                                    // FS2 0x00187230
+    // frames of the game's 30 of the motion, on position and rotation.
+    void advance(float frames, sceVu0FVECTOR position, sceVu0FVECTOR rotation, int arg); // FS2 0x00187260
+    // Starts motion (an addMotion object); flags go to the pose.
+    void playMotion(void *motion, bool arg0, bool arg1, u_int flags, int arg); // FS2 0x00187720
+    // The same by name, from list index.
+    void playNamed(int index, const char *name, bool arg0, bool arg1, u_int flags, int arg); // FS2 0x00187770
+    // Solves the pose towards position and rotation.
+    void applyMotion(const sceVu0FVECTOR position, const sceVu0FVECTOR rotation); // FS2 0x00187870
+    // A motion file into list index, under key (null: the file's name).
+    void *addMotion(void *file, int index, const char *key);             // FS2 0x00187a90
+    void setBaseMotion(void *file, int index);                           // FS2 0x00188140
     // The ROM's ctor is inline in StageObject::setModel: its members
     // cleared, then this body. matrix is the owner's.
     void init(ModelInstance *instance, StringMap<Tim2Texture *> *textures,
@@ -261,6 +280,8 @@ struct StageModel
     ModelPose *pose = nullptr;  // FS2 +0x0c
     BoneNode  *bones = nullptr; // FS2 +0x14: StageSound finds "bn_head" in it
     ModelLink *links = nullptr; // FS2 +0x18
+    u_char     _b4 = 0;         // FS2 +0xb4: 1 on items (StageObject::markModelAsItem; unread)
+    u_char     _b5 = 0;         // FS2 +0xb5: the same
     int        _bc = 0;         // FS2 +0xbc: StageObject::setModelValue (unread; -1 from init)
 };
 
@@ -535,6 +556,9 @@ public:
     // textures, collision.
     void setupMapObject(const char *name, ModelInstance *instance,
                         StringMap<Tim2Texture *> *textures, void *collision); // FS2 0x001760c0
+    // The model's two item bytes (setupItem; SubSceneItem's and SubSceneProp's
+    // setup call it).
+    void markModelAsItem();                                              // FS2 0x00183ea0
     // Copies name to m_name (first thing in every class's addToScene).
     void setName(const char *name);                                      // FS2 0x0018b4d0
     // Slot +0x24c: the object is the view stack's top again
@@ -630,7 +654,9 @@ public:
     CharacterInput *m_input;    // FS2 +0x21c: a character's
     CharacterBrain *m_brain;    // FS2 +0x220: a character's; null none
     PlayerMotion *m_motion;     // FS2 +0x224: a character's
-    u_char _228[0x18];
+    u_char _228[0x10];
+    StageNodeBase *m_handNode;  // FS2 +0x238: a character's: StageWeaponItem::fire's report comes from it
+    u_char _23c[0x4];
     union {
         CharacterPart *m_parts[2]; // FS2 +0x240: a character's; StagePlayer::isMode1 picks which one shows in a view camera
         struct {
@@ -707,7 +733,9 @@ struct PlayerMotion
 {
     void refresh();                                                      // FS2 0x001e66c0
 
-    u_char _000[0xbd8];
+    u_char _000[0xbd4];
+    u_char noFlash;             // FS2 +0xbd4: a shot shows no flash (StageWeaponItem::fire)
+    u_char _bd5[0x3];
     PlayerOverlay *overlay;     // FS2 +0xbd8: StageScene::draw
     u_char _bdc[0x24];
     PlayerLookState *look;      // FS2 +0xc00
@@ -829,6 +857,7 @@ public:
 // 0x1f6180, not from the collide step.
 // layout: host -- EE offsets in the comments.
 class CollisionOwner;
+struct StageCollisionFace;
 struct CollisionBody
 {
     // Shape 0 until the owner says; on = 1, the dirty bytes clear.
@@ -837,27 +866,39 @@ struct CollisionBody
     // Marks it dirty and works out the box.
     void refresh();                                                      // FS2 0x001f6670
 
+    u_char         on;          // FS2 +0x00: 1 from the ctor; a closed trap clears it
     CollisionOwner *owner;      // FS2 +0x04
     int            bucket;      // FS2 +0x08: SceneRecordBuckets' list
     u_int          category;    // FS2 +0x0c
     u_int          mask;        // FS2 +0x10
     int            shape;       // FS2 +0x40: CollisionShape
+    u_int          rayMask;     // FS2 +0x44: a segment's, for StageScene::raycast
+    u_int          rayFlags;    // FS2 +0x48: the same
+    sceVu0FVECTOR  segment[2];  // FS2 +0x60: a segment's ends
     BoundingSphere sphere;      // FS2 +0x80
+    sceVu0FVECTOR  capsule[2];  // FS2 +0xa0: a capsule's ends
+    float          capsuleRadius; // FS2 +0xc0
 };
 // CollisionBody::shape (0x1f6590): the box comes from the one sphere, or
 // from the list at +0xd4 (unread).
 enum CollisionShape
 {
+    CollisionShape_Segment = 2,
     CollisionShape_Sphere  = 3,
     CollisionShape_Spheres = 4,
+    CollisionShape_Capsule = 5,
 };
 // A body's category, the ones read.
-constexpr u_int kCollisionLight = 0x2000;
-// What onCollide is given: only the other side's body is read.
-// layout: host -- EE: +4 the body.
+constexpr u_int kCollisionBulletHit = 0x80;     // a bullet's capsule
+constexpr u_int kCollisionBulletRay = 0x100;    // a bullet's segment
+constexpr u_int kCollisionTrap      = 0x200;
+constexpr u_int kCollisionLight     = 0x2000;
+// What onCollide is given: the two bodies.
+// layout: host -- EE order, 4-byte pointers.
 struct CollisionContact
 {
-    CollisionBody *body;        // FS2 +0x04
+    CollisionBody *self;        // FS2 +0x00: the owner's own
+    CollisionBody *body;        // FS2 +0x04: the other side's
 };
 // The base that owns a body (EE +0 a flag, +4 the vptr; +0x200 in the lights
 // and the Root objects, +0x240 in the items). Vtable 0x3115a0: six slots,
@@ -869,12 +910,15 @@ class CollisionOwner
 public:
     // Slot 0. What it asks is unread: a light answers 0.
     virtual int  collisionHook0() = 0;
-    // Slot 1: contact with something; answers 0 on a light.
-    virtual int  onCollide(CollisionContact *contact) = 0;
+    // Slot 1: contact with something; answers 0 on a light and a bullet. On
+    // a segment: the sweep's vector, the map's face, how far along it (t,
+    // distance from the segment's start).
+    virtual int  onCollide(CollisionContact *contact, const float *sweep,
+                           StageCollisionFace *face, float t, float distance) = 0;
     // Slot 2: the body follows the owner.
     virtual void syncBody(CollisionBody *body) = 0;
-    // Slot 3. Empty on a light.
-    virtual void collisionHook3() = 0;
+    // Slot 3: after the frame's contacts. Empty on a light.
+    virtual void collisionHook3(CollisionBody *body) = 0;
     // Slot 4 (+0x18): the object behind the body; the world compares these.
     virtual StageObject *getCollisionObject() = 0;
     // Slot 5 (+0x1c): an object the body must not meet (add 0x1f6180
@@ -966,7 +1010,11 @@ class StageParticle : public StageObject
 public:
     // On or off, down the chain.
     void setEmitting(bool on);                                           // FS2 0x0018c220
+    // m_running and +0x21d, down the chain.
+    void setRunning(bool on);                                            // FS2 0x0018c2d0
     void setRangeSquared(float rangeSquared);                            // FS2 0x00190040
+
+    u_char m_running = 0;       // FS2 +0x273
 };
 // Every character with m_viewActive: three steps on its motion (+0x224).
 void stageUpdateCharacterMotions();                                      // FS2 0x0017df60
@@ -1094,10 +1142,13 @@ struct StageCollisionFace
     u_int  flags;               // FS2 +0x40: StageCollisionFlag
     u_short attr;               // FS2 +0x44: StageScene::getFloorAttr
     short  doorId;              // FS2 +0x46: kDoorFaceBase + what StageScene::findDoorOfFace decodes
+    u_char _48[0x4];
+    u_char surface;             // FS2 +0x4c: a bullet's effect and sound (getSurfaceSound)
 };
 static_assert(offsetof(StageCollisionFace, flags) == 0x40, "StageCollisionFace::flags");
 static_assert(offsetof(StageCollisionFace, attr) == 0x44, "StageCollisionFace::attr");
 static_assert(offsetof(StageCollisionFace, doorId) == 0x46, "StageCollisionFace::doorId");
+static_assert(offsetof(StageCollisionFace, surface) == 0x4c, "StageCollisionFace::surface");
 
 // One collision mesh of a Root object (StageObject::m_collisions; the run
 // unassigned@00231c90). Only the ray test StageScene::raycast uses.
@@ -1431,9 +1482,10 @@ static_assert(offsetof(ModelFileNode, name) == 4, "ModelFileNode::name");
 
 // What ModelFile::createInstance makes (vtable 0x31a7f0, 0x100 bytes,
 // 0x80-aligned): only the record is read here.
-// layout: host -- EE: the record at +0xc.
+// layout: host -- EE: the flags at +0xa, the record at +0xc.
 struct ModelInstance
 {
+    u_short        flags = 0;   // FS2 +0xa: ModelFlag
     ModelFileNode *node;        // FS2 +0xc
 };
 
@@ -1594,16 +1646,7 @@ public:
     // The fades on list 9 after the 3D frame.
     void drawOverlay();                                                  // FS2 0x0026c920
 };
-// A bullet (named "bullet", group 4; vtables 0x312ca0 / 0x312f40; the args
-// are 0 here: unread). setupCameras makes one, off, at the start.
-// layout: host -- EE 0x2c0.
-class StageBullet : public StageObject
-{
-public:
-    // FS2 0x0017fce0
-    int getKind() override { return StageObject_Bullet; }
-    StageBullet(int arg0, int arg1);                                     // FS2 0x001803e0
-};
+// The bullet and the items: game/stageitem.h.
 
 // The lights: game/stagelight.h.
 
@@ -1664,53 +1707,13 @@ public:
     // Model, textures, the model's two motion lists and mdl.
     void setup(const char *name, ModelInstance *instance, StringMap<Tim2Texture *> *textures,
                StageList<void *> *motions, StageList<void *> *motions2, void *mdl); // FS2 0x0017c700
-};
+    // A named event of the character in the scene's +0x78, while +0x30 is
+    // set; what takes it is unread (GUNSHOOT).
+    void playerEvent(const char *name);                                  // FS2 0x0020e6a0
 
-// The item classes (StageFiles::placeItem, by ItemDef::kind and name).
-// layout: host -- EE sizes in the comments.
-class StageItem : public StageObject
-{
-public:
-    // FS2 0x00184250
-    int getKind() override { return StageObject_Item; }
-    StageItem();                                                         // FS2 0x00183f40: EE 0x240
-    // Slot +0x24c in these classes. A plain stub until its TU.
-    void setupItem(const char *name, ModelInstance *instance,
-                   StringMap<Tim2Texture *> *textures, StageList<void *> *motions); // FS2 vtable +0x24c
-    // A weapon, once m_weaponDef is set.
-    void initWeapon();                                                   // FS2 0x001823f0
-};
-// layout: host
-class StageItemE : public StageItem     // ItemKind_E
-{
-public:
-    // FS2 0x001841f0
-    int getKind() override { return StageObject_ItemE; }
-    StageItemE();                                                        // FS2 0x00182ad0: EE 0x280
-};
-// layout: host
-class StageWeaponItem : public StageItem    // kinds below 7
-{
-public:
-    // FS2 0x001841d0
-    int getKind() override { return StageObject_WeaponItem; }
-    StageWeaponItem();                                                   // FS2 0x00182670: EE 0x480
-};
-// layout: host
-class StageTrapItem : public StageItem      // I_WANA
-{
-public:
-    // FS2 0x001840f0
-    int getKind() override { return StageObject_TrapItem; }
-    StageTrapItem();                                                     // FS2 0x00181200: EE 0x280
-};
-// layout: host
-class StageThrownItem : public StageItem    // I_HATUEN, I_AKIKAN, I_PET, I_NUT
-{
-public:
-    // FS2 0x001840a0
-    int getKind() override { return StageObject_ThrownItem; }
-    StageThrownItem();                                                   // FS2 0x00180d30: EE 0x480
+    sceVu0FVECTOR m_aimPoint = {}; // FS2 +0x2a0: where its bullets steer
+    float  m_aimLock = 0.0f;    // FS2 +0x5fc: not 0: they fly straight
+    u_char m_bulletFlying = 0;  // FS2 +0x688: set each frame by a bullet of its own
 };
 
 // A sub-scene's characters and items (vtables at their ctors; a lighter
@@ -2147,10 +2150,21 @@ struct ItemDef
 {
     char   name[0x10];          // FS2 +0x00: the TimM sprite names use it
     int    kind;                // FS2 +0x10: ItemKind
-    u_char _14[0x5];
-    u_char stackKind;           // FS2 +0x19: > 1 shows the count (UiItemSlot::showsCount)
-    u_char _1a[0x4];
+    u_char _14[0x4];
+    u_char startCount;          // FS2 +0x18: what a placed item holds (StageItem::setupItem)
+    u_char stackKind;           // FS2 +0x19: > 1 shows the count (UiItemSlot::showsCount); StageItem's most
+    signed char pickSound;      // FS2 +0x1a: kPickSounds in game/stageitem.cpp; -1 none
+    u_char isBlade;             // FS2 +0x1b: 1 cuts (the weapons' hit sounds)
+    signed char landSound;      // FS2 +0x1c: kLandSounds in game/stageitem.cpp; -1 none
+    u_char _1d;
     short  maxCount;            // FS2 +0x1e: UiItemSlot::max (guess: the most one can carry)
+
+    // The two sound names of the pack's table; false: no such sound.
+    bool setLandSound(const char *soundName);                            // FS2 0x0017fd40
+    bool setPickSound(const char *soundName);                            // FS2 0x0017fdf0
+    inline bool isFirearm() const;
+    inline bool isPistol() const;
+    inline bool isRifle() const;
 };
 static_assert(sizeof(ItemDef) == 0x20, "ItemDef: EE 0x20");
 extern ItemDef gItemDefs[kItemDefCount];  /* bss 0x574c10 */
@@ -2176,23 +2190,39 @@ extern StageObjRecord gStageObjRecords[kStageObjRecordSets][kStageObjRecordCount
 // inventory lists; below 7 the weapons' sprite set.
 enum ItemKind
 {
+    ItemKind_MeleeLight   = 0,
+    ItemKind_MeleeHeavy   = 1,
     ItemKind_FirearmFirst = 2,
+    ItemKind_PistolLast   = 4,      // 2..4 change magazines one way, 5, 6 the other
+    ItemKind_RifleFirst   = 5,
     ItemKind_FirearmLast  = 6,
     ItemKind_ItemFirst    = 7,
     ItemKind_E            = 0xe,    // StageItemE
     ItemKind_F            = 0xf,    // the named special items
 };
 
+inline bool ItemDef::isFirearm() const { return kind >= ItemKind_FirearmFirst && kind <= ItemKind_FirearmLast; }
+inline bool ItemDef::isPistol() const { return kind >= ItemKind_FirearmFirst && kind <= ItemKind_PistolLast; }
+inline bool ItemDef::isRifle() const { return kind >= ItemKind_RifleFirst && kind <= ItemKind_FirearmLast; }
+// The two sound tables (game/stageitem.cpp).
+constexpr int kItemLandSounds = 5;
+constexpr int kItemPickSounds = 0x13;
+
 // getKind's value of a weapon item (StageFiles::placeItem).
 constexpr int kStageObjectKindWeapon = 0x15;
-// The weapon definitions (bss 0x576010, 0x50 x 0x54): only the name read.
+// The weapon definitions (bss 0x576010, 0x50 x 0x54).
 constexpr int kWeaponDefCount = 0x50;
 struct WeaponDef
 {
     char   name[0x10];          // FS2 +0x00
-    u_char _10[0x44];
+    u_char _10[0x8];
+    int    range;               // FS2 +0x18: a bullet's reach, units
+    u_char _1c[0x8];
+    int    magazine;            // FS2 +0x24
+    u_char _28[0x2c];
 };
 static_assert(sizeof(WeaponDef) == 0x54, "WeaponDef: EE 0x54");
+static_assert(offsetof(WeaponDef, magazine) == 0x24, "WeaponDef::magazine");
 extern WeaponDef gWeaponDefs[kWeaponDefCount];  /* bss 0x576010 */
 
 // ──────────────────────────────────────────────────────────────────────
