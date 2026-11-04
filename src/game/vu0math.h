@@ -19,5 +19,10 @@ float vecDistance(const sceVu0FVECTOR a, const sceVu0FVECTOR b);                
 void setVecLength(float len, sceVu0FVECTOR out, const sceVu0FVECTOR in);          // FS2 0x00135fe0
 // out = in * s, all four lanes.
 void scaleVec4(float s, sceVu0FVECTOR out, const sceVu0FVECTOR in);               // FS2 0x00136490
+// out = the inverse of a rotation + translation: rows 0..2 transposed with
+// w 0, row 3 = -(R^T t) keeping t.w.
+void invertRigidMatrix(sceVu0FMATRIX out, const sceVu0FVECTOR *m);                // FS2 0x00136500
+// out = m[0] v.x + m[1] v.y + m[2] v.z + m[3] v.w; out may be v.
+void applyMatrix(sceVu0FVECTOR out, const sceVu0FVECTOR *m, const sceVu0FVECTOR v); // FS2 0x00136690
 
 #endif /* _GAME_VU0MATH_H */

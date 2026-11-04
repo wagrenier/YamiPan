@@ -62,7 +62,7 @@ inline SeHandle seMakeHandle(int voice, int entry, int bank, bool placed)
 // The effect / stream entries
 
 // SeEntry::falloff: the distance curve of a placed sound
-// (seDistanceVolume, game/gamehooks.h).
+// (seDistanceVolume, game/areagrid.h).
 enum SeFalloff
 {
     SeFalloff_Linear = 0,       // volume * (1 - ratio)

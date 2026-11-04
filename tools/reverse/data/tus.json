@@ -7,6 +7,24 @@
   "smoke_pad": ""
  },
  "tus": {
+  "game/areagrid.cpp": {
+   "notes": "Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the language screen, picture unchanged. Scratch test: grid queries match a brute-force scan over 200,000 random points with rotated boxes, using test versions of the math; the flat-grid case is found; the three curves match their formulas. Before a stage can use the grids: applyMatrix 0x136690 and invertRigidMatrix 0x136500 (run unassigned@00135990, vu0math.h) and StageNode::getMatrix / getWorldMatrix 0x186a20 / 0x186a30 (run unassigned@0017fce0) are still stubs, and getWorldBounds writes stack garbage until they are written. Guesses: the file name, seDistanceVolume here by link position only, +0x238 has no reader found. Left in the unassigned run: gsFrameFilter 0x2849c0 (render-target decision), StageMission 0x2867a0, fsm 0x28fb80, Rand48 0x2681e0, the 0x268a20 cluster.",
+   "ranges": [
+    [
+     "00283df0",
+     "002849c0"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-03 20:39",
+     "status": "verify",
+     "summary": "AreaGrid, AreaBox and seDistanceVolume: all 11 written; AreaGrid::contains answers the box, seDistanceVolume is unsigned; moved out of gamehooks.h into areagrid.h"
+    }
+   ],
+   "status": "verify",
+   "why": "AreaGrid (8 x 8 cells of AreaBox over the xy plane) and AreaBox's own methods, 0x283ff0..0x2849c0; before them seDistanceVolume, joined by position only (the class dtors 0x27cbe0.. end at 0x283df0; gsFrameFilter starts at 0x2849c0). Name is the port's (no source string)"
+  },
   "game/boxgrid.cpp": {
    "notes": "All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min / fabs / swap and 19 MSL vector instances (vector<const Box*> and nested) listed in a comment, replaced by the host vector. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean with stub sdk headers, scratch test with one rotated box (size 8, 20000 random points) matches the brute-force box test. The +0x10 / +0x14 scales are floats (swc1 / lwc1), not ints as Ghidra showed. boxContainsPoint 0x2362a0 (other TU) declared in gamehooks.h. Needs sdk/libvu0.h at bootstrap 6. Guesses: all names (no strings), the owner of the grid (object behind gp-0x7a7c +0x1c, built by the stage loader 0x19fcd0) and what the boxes mean. Next in the run: 0x2676e0 scene / movie threads.",
    "ranges": [
