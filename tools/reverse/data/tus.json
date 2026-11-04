@@ -1,5 +1,7 @@
 {
- "queue": [],
+ "queue": [
+  "unassigned@00231c90"
+ ],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
   "frontier_ignore": [],
@@ -252,6 +254,24 @@
    ],
    "status": "verify",
    "why": "One object file: the global heap allocator (Heap 0x1037c0..0x1046b0) and the game RNG (0x1046b0..0x104b40). Their data sit together too: sdata 0x31a880..0x31a88c (the image-end / stack / heap-size words only initGlobalHeap reads, then the LCG state), bss 0x329970 (gGlobalHeap, 0x44) then 0x3299c0 (the 97-word RNG table), sbss 0x31ad80 (the RNG index). 0x104b40 / 0x104be0 are MSL __destroy_new_array / __destroy_arr: the MSL lib_range now starts at 0x104b40 (batch 031)."
+  },
+  "game/layoutpaths.cpp": {
+   "notes": "All 24 functions of 0x2ec160..0x2ec8e0 written, no new names, Ghidra untouched. Prototypes moved from gamehooks.h to layoutpaths.h, which gamehooks.h includes. Seen on screen with a scripted pad (LEFT and CROSS by turns every 200 reads, build.py --run 40): language, no-card dialog, SCE Europe logo, then the loop on the stub runTitleScreen. Dialog and logo equal their TIM2 assets from YAMIPAN_TEX_DUMP. The default smoke run still rests on the language screen. verify, not done: 22 of the 24 paths have not been seen opening a file. Not written: FUN_002ec110, the drawSys singleton just before the range, left for that TU. Released unassigned@0017fce0 untouched and queued unassigned@00231c90 for runTitleScreen; open-items.md has why and the doubts.",
+   "ranges": [
+    [
+     "002ec160",
+     "002ec8e0"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-03 20:57",
+     "status": "verify",
+     "summary": "all 24 event movie and layout paths written; the menu now runs past the language screen to the no-card dialog and the SCE logo; new YAMIPAN_TEX_DUMP hook"
+    }
+   ],
+   "status": "verify",
+   "why": "One sprintf each: 13 event movie and 11 layout paths into static 0x20 buffers, 0x5a5460.. and 0x5a5300.., bss descending with the code. No file string, so the name is descriptive. 0x2ec110 (the draw state singleton behind drawSys) is left out: its users are 0x2d46a0.."
   },
   "game/mathutil.cpp": {
    "notes": "Source only. New mathutil.h (normalizeAngle moved there from gamehooks.h; uigame.cpp includes it; pi constants are kMath* to avoid uigame / uiwidget locals) and stand-in vu0math.h for the next TU (0x135990-0x1366c0). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean, and a host harness: sinCos / asinAcos / atan2Cw / atan2Octant within 3.2e-7 of libm over 200,000 arguments, both Euler extractors round-trip (0.3, -1.1, 2). Float exponents / mantissas are read by hand (floatBits) so the branches match the ROM; the huge-x sin / cos reduction is in double as the ROM (soft-float calls). ROM quirks kept: getBounds starts the maximum at FLT_MIN (not -FLT_MAX); matrixToRotYXZ's pole case reads m[2][2]; approachVec3's step is rate times the SQUARED distance. Doubts: file name and every name are the port's (no strings); the Euler order names follow sce's m[i] = image of axis i.",
@@ -1276,6 +1296,16 @@
   "unassigned@00142dd0": {},
   "unassigned@00148db0": {},
   "unassigned@00171300": {},
+  "unassigned@0017fce0": {
+   "sessions": [
+    {
+     "date": "2026-11-03 20:47",
+     "status": "todo",
+     "summary": "marked todo -> todo: released untouched: the queue was empty, so this run took the menu's blockers, as the handoff asked"
+    }
+   ],
+   "status": "todo"
+  },
   "unassigned@001953f0": {},
   "unassigned@00231410": {},
   "unassigned@0023c020": {},

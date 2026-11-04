@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 20:39 at commit `d853170` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 20:58 at commit `bbd9abf` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -13,7 +13,7 @@ Generated 2026-11-03 20:39 at commit `d853170` by `tools/reverse/status.py` (`re
 - game functions: **6599**, named **2628** (40%); library functions: 987
 - by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1713
 - context-name ledger: 3249 entries; overrides of wrong library matches: 0
-- placed in a source file: 2301/6599 in 67 files
+- placed in a source file: 2325/6599 in 68 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **2112**; stubs: **364**
+- reconstructed FS2 functions: **2136**; stubs: **343**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -47,6 +47,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/gsblockmap.cpp` | 14 | 0 |
 | `src/game/gsutil.cpp` | 12 | 0 |
 | `src/game/heap.cpp` | 17 | 0 |
+| `src/game/layoutpaths.cpp` | 24 | 0 |
 | `src/game/mathutil.cpp` | 18 | 0 |
 | `src/game/memcard.cpp` | 55 | 0 |
 | `src/game/menuscene.cpp` | 14 | 0 |
@@ -78,7 +79,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/uiwidget.cpp` | 56 | 0 |
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 321 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 300 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
 | `src/rena/tim2.cpp` | 4 | 0 |
@@ -104,9 +105,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 92 TUs: todo 51, partial 1, verify 56, done 1
-- next: **unassigned@0017fce0** (frontier score 86)
-- pinned queue: (empty)
+- 93 TUs: todo 51, partial 1, verify 57, done 1
+- next: **unassigned@00231c90** (pinned in the queue)
+- pinned queue: unassigned@00231c90
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
@@ -120,6 +121,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/gsblockmap.cpp` 14/14 -- All 14 functions of 0x142dd0..0x144080 are in src/game/gsblockmap.cpp with the new game/gsblockmap.h (GsBlockMap, TexArea, TexAreaList, TexAreaSlot moved out of
 - verify: `game/gsutil.cpp` 12/12 -- Cut out of unassigned@00171300 and pinned 0x230980-0x231410 (batch 048: GsTexture::readTarget 0x231290, rena base Tim2Texture ctor 0x2e2920 / dtor 0x2e2810 / lo
 - verify: `game/heap.cpp` 17/17 -- Game code, not MSL: heap and RNG share one object (sdata 0x31a880..0x31a88c, bss 0x329970 then 0x3299c0, sbss 0x31ad80). All 17 functions written; batch 031 nam
+- verify: `game/layoutpaths.cpp` 24/24 -- All 24 functions of 0x2ec160..0x2ec8e0 written, no new names, Ghidra untouched. Prototypes moved from gamehooks.h to layoutpaths.h, which gamehooks.h includes. 
 - verify: `game/mathutil.cpp` 18/18 -- Source only. New mathutil.h (normalizeAngle moved there from gamehooks.h; uigame.cpp includes it; pi constants are kMath* to avoid uigame / uiwidget locals) and
 - verify: `game/memcard.cpp` 55/55 -- All 55 functions written (source only, not built). New this run: Memcard::stepSave (mkdir, then data / icon1.ico / icon.sys each open, write, flush, close; Save
 - verify: `game/menuscene.cpp` 14/14 -- All 14 functions of 0x2b5740..0x2b6b90 written (batch 083, 32 names, saved in Ghidra): the whole menu flow, architecture.md Modules has the map. Build, callchec
@@ -166,22 +168,22 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 20:57 `game/layoutpaths.cpp` verify: all 24 event movie and layout paths written; the menu now runs past the language screen to the no-card dialog and the SCE logo; new YAMIPAN_TEX_DUMP hook
+- 2026-11-03 20:47 `unassigned@0017fce0` todo: marked todo -> todo: released untouched: the queue was empty, so this run took the menu's blockers, as the handoff asked
 - 2026-11-03 20:39 `game/areagrid.cpp` verify: AreaGrid, AreaBox and seDistanceVolume: all 11 written; AreaGrid::contains answers the box, seDistanceVolume is unsigned; moved out of gamehooks.h into areagrid
 - 2026-11-03 20:24 `game/stagescene.cpp` verify: the last 67 functions: collision finders, scene accessors, script command defaults, DemoExecuter; all 258 written
 - 2026-11-03 20:06 `game/stagescene.cpp` partial: stage script step, sound and bg-motion targets, loadList, block updates, 28 small members, collision queries
 - 2026-11-03 19:44 `game/stagescene.cpp` partial: the stage frame: update, draw, setupCameras and their helpers; camera kinds, view stack, control request, frame order from the perf labels
 - 2026-11-03 19:19 `game/stagescene.cpp` partial: StageFiles map, item and common targets, placeItem, placeCharacter, menu tests, enterSubScene, getFloor; map file layout proven; AreaGrid holds boxes, not ids
 - 2026-11-03 18:46 `yamipan/rendering/texture_store.cpp` done: rendering::TextureStore written and bound through the seam: the language screen is the first textured picture and equals its assets
-- 2026-11-03 18:31 `rena/rena_2d_texture_tim2.cpp` verify: reconstruct Tim2Texture, all 7 functions (verify)
-- 2026-11-03 18:13 `game/menuscene.cpp` verify: reconstruct the menu flow, 14 functions (verify)
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@0017fce0` | todo | 0/28/399 | 76.4 | 86 | 0 |
 | `unassigned@002b6b90` | todo | 0/42/272 | 115.8 | 71 | 3 |
 | `unassigned@001d7c50` | todo | 0/23/296 | 137.5 | 65 | 0 |
-| `unassigned@001fe6b0` | todo | 0/34/563 | 197.2 | 60 | 0 |
 | `unassigned@00148db0` | todo | 0/17/125 | 35.6 | 60 | 2 |
+| `unassigned@001fe6b0` | todo | 0/34/563 | 197.2 | 60 | 0 |
 | `unassigned@00171300` | todo | 0/24/421 | 52.5 | 41 | 0 |
 | `unassigned@002849c0` | todo | 0/28/129 | 44.6 | 37 | 0 |
 | `unassigned@002b0d50` | todo | 0/23/85 | 17.9 | 34 | 0 |
