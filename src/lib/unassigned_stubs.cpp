@@ -8,6 +8,7 @@
 #include "game/gfxtarget.h"
 #include "game/memcard.h"
 #include "game/stagenode.h"
+#include "game/stageitem.h"
 #include "game/stagescene.h"
 #include "game/stringlist.h"
 #include "game/uisequence.h"
@@ -1055,31 +1056,6 @@ bool StageFade::isFullInMode1()
     return {};
 }
 
-// stub of FS2 address unknown (0 candidates)
-StageItem::StageItem()
-{
-    YAMIPAN_STUB("StageItem::StageItem", 0x00000000);
-}
-
-// stub of FS2 0x001823f0
-void StageItem::initWeapon()
-{
-    YAMIPAN_STUB("StageItem::initWeapon", 0x001823f0);
-}
-
-// stub of FS2 address unknown (1 candidates)
-void StageItem::setupItem(const char *name, ModelInstance *instance,
-                   StringMap<Tim2Texture *> *textures, StageList<void *> *motions)
-{
-    YAMIPAN_STUB("StageItem::setupItem", 0x00000000);
-}
-
-// stub of FS2 address unknown (0 candidates)
-StageItemE::StageItemE()
-{
-    YAMIPAN_STUB("StageItemE::StageItemE", 0x00000000);
-}
-
 // stub of FS2 0x001861b0
 
 // stub of FS2 0x00186160
@@ -1119,24 +1095,6 @@ void StageObject::onViewTop()
 void StageParty::setFillImage(const void *image)
 {
     YAMIPAN_STUB("StageParty::setFillImage", 0x001fe9b0);
-}
-
-// stub of FS2 address unknown (0 candidates)
-StageThrownItem::StageThrownItem()
-{
-    YAMIPAN_STUB("StageThrownItem::StageThrownItem", 0x00000000);
-}
-
-// stub of FS2 address unknown (0 candidates)
-StageTrapItem::StageTrapItem()
-{
-    YAMIPAN_STUB("StageTrapItem::StageTrapItem", 0x00000000);
-}
-
-// stub of FS2 address unknown (0 candidates)
-StageWeaponItem::StageWeaponItem()
-{
-    YAMIPAN_STUB("StageWeaponItem::StageWeaponItem", 0x00000000);
 }
 
 // stub of FS2 address unknown (0 candidates)
@@ -1493,12 +1451,6 @@ void ScreenFill::draw(sceVif1Packet *packet, TexAreaList *texList)
 ScriptRunner::~ScriptRunner()
 {
     YAMIPAN_STUB("ScriptRunner::~ScriptRunner", 0x001d30c0);
-}
-
-// stub of FS2 0x001803e0
-StageBullet::StageBullet(int, int)
-{
-    YAMIPAN_STUB("StageBullet::StageBullet", 0x001803e0);
 }
 
 // stub of FS2 0x00177810
@@ -2171,5 +2123,124 @@ void VectorTrack::step()
 CharacterPart * modelFindPart(ModelInstance *model, const char *name, size_t length, int arg)
 {
     YAMIPAN_STUB("modelFindPart", 0x002e4610);
+    return {};
+}
+
+// stub of FS2 0x0023db50
+ItemPhysics::ItemPhysics(bool, bool)
+{
+    YAMIPAN_STUB("ItemPhysics::ItemPhysics", 0x0023db50);
+}
+
+// stub of FS2 0x0023c020
+int ItemPhysics::collisionHook0()
+{
+    YAMIPAN_STUB("ItemPhysics::collisionHook0", 0x0023c020);
+    return {};
+}
+
+// stub of FS2 0x0023c2f0
+void ItemPhysics::collisionHook3(CollisionBody *body)
+{
+    YAMIPAN_STUB("ItemPhysics::collisionHook3", 0x0023c2f0);
+}
+
+// stub of FS2 0x0023c910
+void ItemPhysics::draw()
+{
+    YAMIPAN_STUB("ItemPhysics::draw", 0x0023c910);
+}
+
+// stub of FS2 0x0023d600
+void ItemPhysics::setup(StageItem *owner, void *motion)
+{
+    YAMIPAN_STUB("ItemPhysics::setup", 0x0023d600);
+}
+
+// stub of FS2 0x0023c300
+void ItemPhysics::syncBody(CollisionBody *body)
+{
+    YAMIPAN_STUB("ItemPhysics::syncBody", 0x0023c300);
+}
+
+// stub of FS2 0x0023ca50
+void ItemPhysics::update()
+{
+    YAMIPAN_STUB("ItemPhysics::update", 0x0023ca50);
+}
+
+// stub of FS2 0x0023db00
+ItemPhysics::~ItemPhysics()
+{
+    YAMIPAN_STUB("ItemPhysics::~ItemPhysics", 0x0023db00);
+}
+
+// stub of FS2 0x0020e6a0
+void StageCharacter::playerEvent(const char *name)
+{
+    YAMIPAN_STUB("StageCharacter::playerEvent", 0x0020e6a0);
+}
+
+// stub of FS2 0x00286c20
+const char * StageMission::getItemText(const char *name)
+{
+    YAMIPAN_STUB("StageMission::getItemText", 0x00286c20);
+    return {};
+}
+
+// stub of FS2 0x00187a90
+void * StageModel::addMotion(void *file, int index, const char *key)
+{
+    YAMIPAN_STUB("StageModel::addMotion", 0x00187a90);
+    return {};
+}
+
+// stub of FS2 0x00187260
+void StageModel::advance(float frames, sceVu0FVECTOR position, sceVu0FVECTOR rotation, int arg)
+{
+    YAMIPAN_STUB("StageModel::advance", 0x00187260);
+}
+
+// stub of FS2 0x00187870
+void StageModel::applyMotion(const sceVu0FVECTOR position, const sceVu0FVECTOR rotation)
+{
+    YAMIPAN_STUB("StageModel::applyMotion", 0x00187870);
+}
+
+// stub of FS2 0x00187720
+void StageModel::playMotion(void *motion, bool arg0, bool arg1, u_int flags, int arg)
+{
+    YAMIPAN_STUB("StageModel::playMotion", 0x00187720);
+}
+
+// stub of FS2 0x00187770
+void StageModel::playNamed(int index, const char *name, bool arg0, bool arg1, u_int flags, int arg)
+{
+    YAMIPAN_STUB("StageModel::playNamed", 0x00187770);
+}
+
+// stub of FS2 0x00188140
+void StageModel::setBaseMotion(void *file, int index)
+{
+    YAMIPAN_STUB("StageModel::setBaseMotion", 0x00188140);
+}
+
+// stub of FS2 0x0018c2d0
+void StageParticle::setRunning(bool on)
+{
+    YAMIPAN_STUB("StageParticle::setRunning", 0x0018c2d0);
+}
+
+// stub of FS2 0x002cf0b0
+const SeEntry * getSurfaceSound(int surface)
+{
+    YAMIPAN_STUB("getSurfaceSound", 0x002cf0b0);
+    return {};
+}
+
+// stub of FS2 0x00150d80
+int motionBoneMatrix(sceVu0FMATRIX out, void *motion, const char *bone, int frame)
+{
+    YAMIPAN_STUB("motionBoneMatrix", 0x00150d80);
     return {};
 }

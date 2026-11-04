@@ -252,6 +252,5 @@ int          getLanguage();                                              // FS2 
 const char  *getLanguageCode(int language);                              // FS2 0x0023bc30
 const char  *getFileSuffix(int alternate);                               // FS2 0x0023bbf0
 const char  *getRegionCode();                                            // FS2 0x0023bc20
-int          sysDataReturnZero();                                        // FS2 0x0023c010
 
 #endif /* _GAME_SYSDATA_H */

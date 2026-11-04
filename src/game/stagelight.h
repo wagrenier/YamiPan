@@ -17,8 +17,8 @@
 
 class AreaBox;
 
-// StageLight::m_mode. Who sets it is unread (no writer in the file: the
-// neighbours 0x182f40, 0x181f40 build lights); the names say what the checks do.
+// StageLight::m_mode: ItemLamp's lights are Hard, nothing sets Keyed so far.
+// The names say what the checks do.
 enum StageLightMode
 {
     StageLight_Soft  = 0,
@@ -47,6 +47,10 @@ constexpr float kHardLightRangeSq = 640000.0f;
 // layout: host -- EE offsets in the comments; EE 0x2c0.
 class StageLight : public StageObject, public CollisionOwner
 {
+    friend class ItemLamp;          // game/stageitem.cpp
+    friend class StageItemE;
+    friend class StageWeaponItem;
+
 public:
     StageLight();                                                        // FS2 0x001866f0
     ~StageLight() override;                                              // FS2 0x00186380
@@ -68,10 +72,11 @@ public:
     // CollisionOwner.
     // FS2 0x001857c0
     int  collisionHook0() override { return 0; }
-    int  onCollide(CollisionContact *contact) override;                  // FS2 0x00185710
+    int  onCollide(CollisionContact *contact, const float *sweep, StageCollisionFace *face,
+                   float t, float distance) override;                    // FS2 0x00185710
     void syncBody(CollisionBody *body) override;                         // FS2 0x001857e0
     // FS2 0x001857d0
-    void collisionHook3() override {}
+    void collisionHook3(CollisionBody *) override {}
     // FS2 0x00184bc0
     StageObject *getCollisionObject() override { return this; }
 
@@ -203,6 +208,8 @@ protected:
 // layout: host -- EE 0x300.
 class SpotLight : public StageLight
 {
+    friend class ItemLamp;          // game/stageitem.cpp
+
 public:
     SpotLight();                                                         // FS2 0x00185260
     ~SpotLight() override;                                               // FS2 0x00184860: deleting
@@ -231,7 +238,7 @@ public:
 private:
     int    m_coneDegrees;       // FS2 +0x2c0
     float  m_coneCos;           // FS2 +0x2c4: the cone's edge
-    u_char m_limitByMap;        // FS2 +0x2c8: no writer in the file
+    u_char m_limitByMap;        // FS2 +0x2c8: ItemLamp's first spot
     float  m_reach;             // FS2 +0x2cc: the radius, or to the map
     float  m_reachSq;           // FS2 +0x2d0: PC: 0 from the ctor (the ROM leaves it)
     int    m_2d4;               // FS2 +0x2d4: 0 from the ctor, unread

@@ -25,8 +25,8 @@ static u_int sObjectSerial;     /* sdata 0x31ae08 (gp-0x7a68) */
 
 StageNodeBase::~StageNodeBase()
 {
-    if (_10 != nullptr)
-        gGlobalHeap.free(_10);
+    if (m_lastPosition != nullptr)
+        gGlobalHeap.free(m_lastPosition);
     if (m_inverse != nullptr)
         gGlobalHeap.free(m_inverse);
     detach();

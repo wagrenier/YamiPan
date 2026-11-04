@@ -33,7 +33,9 @@ public:
     };
 
     // FS2 0x001a59f0, 0x001a5980, 0x001a5910, 0x001a58a0, 0x00186b10: the instances'
-    // constructors.
+    // constructors. CollisionBody's +0xd4 list (dtor, clear) and its +0x14 block
+    // (dtor, reset) are inline in the bullet's dtor and wait for that class's TU.
+    // FS2 0x00184260, 0x001843c0, 0x00184430, 0x001845f0
     StageList() : head(NULL), count(0) {}
     // FS2 0x001a5a00, 0x001a5990, 0x001a5920, 0x001a58b0, 0x00186b20, 0x00186b80: the destructors.
     ~StageList() { clear(); }
@@ -54,7 +56,8 @@ public:
     // 0x1a6420, 0x1a6390), its tail search a function of its own (0x1a6630,
     // 0x1a6570, 0x1a64b0), its node a two-argument constructor (0x1a6750,
     // 0x1a6730, 0x1a6710, 0x1a66f0).
-    // FS2 0x001a5db0, 0x001a5ed0, 0x001a5ff0, 0x001a6140, 0x001a5d00, 0x001842c0, 0x0017e1b0
+    // The instance 0x1842c0's are 0x1844a0 (head), 0x184530 (tail), 0x184560 (node).
+    // FS2 0x001a5db0, 0x001a5ed0, 0x001a5ff0, 0x001a6140, 0x001a5d00, 0x001842c0, 0x0017e1b0, 0x001844a0, 0x00184530, 0x00184560
     void pushBack(const T &value)
     {
         Node *node = new Node;
@@ -74,7 +77,7 @@ public:
     }
 
     // Unlinks and frees node.
-    // FS2 0x00184370, 0x0017e260
+    // FS2 0x00184370, 0x0017e260, 0x00184580 (the instance's unlink)
     void erase(Node *node)
     {
         if (node == head)

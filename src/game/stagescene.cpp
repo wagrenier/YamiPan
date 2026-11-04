@@ -24,6 +24,7 @@
 #include "game/heap.h"          /* randNext */
 #include "game/pakarchive.h"
 #include "game/seplayer.h"      /* StreamTable */
+#include "game/stageitem.h"
 #include "game/stagelight.h"
 #include "game/stageobjlist.h"
 #include "game/stageresult.h"   /* getInitItemForLanguage */
@@ -3564,7 +3565,7 @@ void StageScene::setupCameras()
         dive->addToScene(kCamDiveName);
         dive->m_viewActive = 0;
 
-        StageBullet *bullet = new StageBullet(0, 0);
+        StageBullet *bullet = new StageBullet(nullptr, nullptr);
         bullet->m_tree->setActive(false);
         bullet->m_tree->setShown(false);
 

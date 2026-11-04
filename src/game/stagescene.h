@@ -159,6 +159,8 @@ struct StageMission
     ~StageMission();                                                     // FS2 0x00287820: deleting
     // The start time (+0xac) = the scene clock's seconds (beginPlay).
     void markStart();                                                    // FS2 0x002870c0
+    // The text for the item called name; null none.
+    const char *getItemText(const char *name);                           // FS2 0x00286c20
     // Forwards the message file to the object in the first field.
     void setMessages(void *file);                                        // FS2 0x00286c30
     // A frame, between the scripts: the timed records count down

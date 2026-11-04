@@ -92,4 +92,14 @@ inline void identityMatrix(sceVu0FMATRIX out)
     out[0][0] = out[1][1] = out[2][2] = out[3][3] = 1.0f;
 }
 
+// (a - b) / |a - b|, w too.
+// FS2 0x00136020
+inline void vecDirection(sceVu0FVECTOR out, const sceVu0FVECTOR a, const sceVu0FVECTOR b)
+{
+    sceVu0FVECTOR diff = { a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3] };
+    float scale = 1.0f / sqrtf(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
+    for (int i = 0; i < 4; i++)
+        out[i] = diff[i] * scale;
+}
+
 #endif /* _GAME_VU0MATH_H */

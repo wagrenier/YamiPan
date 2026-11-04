@@ -1,11 +1,10 @@
 /* ==========================================================================
  *  game/stagenode.h
  *
- *  The scene-node family of the run 0x17fce0..
- *  (the object base is in game/stageobject.cpp; the file name is the port's): bones
- *  and StageSound's positional sources are nodes. What game/stagesound.cpp
- *  builds and calls, nothing more; it moves to the run's own header when
- *  that TU is written.
+ *  The scene-node family (the object base is in game/stageobject.cpp; the
+ *  transform's code in the run at 0x1d7c50; the file name is the port's):
+ *  bones and StageSound's positional sources are nodes. What is built and
+ *  called so far, nothing more.
  *
  *  A node hangs under a parent (+0x4) in the parent's child list (+0x8,
  *  links of {item cell, next, prev}); the base dtor unlinks it and orphans
@@ -76,7 +75,7 @@ public:
 
     StageNodeBase *m_parent = nullptr;  // FS2 +0x04: none: the node rebuilds its own matrix (StageSound::updateSlots)
     StageNodeList  m_children;          // FS2 +0x08
-    void          *_10 = nullptr;       // FS2 +0x10: a heap block (unread)
+    float         *m_lastPosition = nullptr; // FS2 +0x10: a heap vector, only where a class allocates it: StageObject::propagate keeps the world position in it
     sceVu0FVECTOR *m_inverse = nullptr; // FS2 +0x14: the matrix's inverse, a heap block (StageObject::setModel); updateMatrix keeps it
 };
 
