@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 20:24 at commit `988e990` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 20:39 at commit `d853170` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-03 20:24 at commit `988e990` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **2624** (40%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1709
-- context-name ledger: 3245 entries; overrides of wrong library matches: 0
-- placed in a source file: 2290/6599 in 66 files
+- game functions: **6599**, named **2628** (40%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1713
+- context-name ledger: 3249 entries; overrides of wrong library matches: 0
+- placed in a source file: 2301/6599 in 67 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,10 +30,11 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **2101**; stubs: **370**
+- reconstructed FS2 functions: **2112**; stubs: **364**
 
 | file | reconstructed | stubs |
 |---|---|---|
+| `src/game/areagrid.cpp` | 11 | 0 |
 | `src/game/boxgrid.cpp` | 29 | 0 |
 | `src/game/clock.cpp` | 14 | 0 |
 | `src/game/datetime.cpp` | 2 | 0 |
@@ -77,7 +78,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/uiwidget.cpp` | 56 | 0 |
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 327 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 321 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
 | `src/rena/tim2.cpp` | 4 | 0 |
@@ -103,9 +104,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 90 TUs: todo 50, partial 1, verify 55, done 1
-- next: **unassigned@002681e0** (frontier score 92)
+- 92 TUs: todo 51, partial 1, verify 56, done 1
+- next: **unassigned@0017fce0** (frontier score 86)
 - pinned queue: (empty)
+- verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
@@ -164,6 +166,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 20:39 `game/areagrid.cpp` verify: AreaGrid, AreaBox and seDistanceVolume: all 11 written; AreaGrid::contains answers the box, seDistanceVolume is unsigned; moved out of gamehooks.h into areagrid
 - 2026-11-03 20:24 `game/stagescene.cpp` verify: the last 67 functions: collision finders, scene accessors, script command defaults, DemoExecuter; all 258 written
 - 2026-11-03 20:06 `game/stagescene.cpp` partial: stage script step, sound and bg-motion targets, loadList, block updates, 28 small members, collision queries
 - 2026-11-03 19:44 `game/stagescene.cpp` partial: the stage frame: update, draw, setupCameras and their helpers; camera kinds, view stack, control request, frame order from the perf labels
@@ -171,17 +174,16 @@ Recent sessions:
 - 2026-11-03 18:46 `yamipan/rendering/texture_store.cpp` done: rendering::TextureStore written and bound through the seam: the language screen is the first textured picture and equals its assets
 - 2026-11-03 18:31 `rena/rena_2d_texture_tim2.cpp` verify: reconstruct Tim2Texture, all 7 functions (verify)
 - 2026-11-03 18:13 `game/menuscene.cpp` verify: reconstruct the menu flow, 14 functions (verify)
-- 2026-11-03 17:41 `rx/filecd.c` verify: rx/filecd.c: the cdrom0: driver carried over from RosePan with FS2's rxFileCdFindDir
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002681e0` | todo | 0/43/514 | 156.6 | 92 | 0 |
-| `unassigned@0017fce0` | todo | 0/28/399 | 76.4 | 81 | 0 |
+| `unassigned@0017fce0` | todo | 0/28/399 | 76.4 | 86 | 0 |
 | `unassigned@002b6b90` | todo | 0/42/272 | 115.8 | 71 | 3 |
-| `unassigned@001d7c50` | todo | 0/23/296 | 137.5 | 63 | 0 |
+| `unassigned@001d7c50` | todo | 0/23/296 | 137.5 | 65 | 0 |
 | `unassigned@001fe6b0` | todo | 0/34/563 | 197.2 | 60 | 0 |
 | `unassigned@00148db0` | todo | 0/17/125 | 35.6 | 60 | 2 |
 | `unassigned@00171300` | todo | 0/24/421 | 52.5 | 41 | 0 |
+| `unassigned@002849c0` | todo | 0/28/129 | 44.6 | 37 | 0 |
 | `unassigned@002b0d50` | todo | 0/23/85 | 17.9 | 34 | 0 |
 | `unassigned@00231c90` | todo | 0/11/61 | 36.3 | 31 | 0 |
 | `unassigned@002d46a0` | todo | 0/17/252 | 51.5 | 27 | 2 |
@@ -204,8 +206,6 @@ Recent sessions:
 | `0018bbe0` | StageObjectTree::setShown | 7 | game | stub | - |
 | `00239bb0` | CharacterInput::setActive | 7 | game | stub | - |
 | `00177d20` | StageCamera::addToScene | 7 | game | stub | - |
-| `002848d0` | AreaBox::setSize | 7 | game | stub | - |
-| `00284950` | AreaBox::AreaBox | 7 | game | missing | - |
 | `00233810` | StageCollision::raycast | 6 | game | stub | - |
 | `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
 | `001fea50` | StageParty::getCompanion | 6 | game | stub | - |
@@ -218,18 +218,20 @@ Recent sessions:
 | `001861b0` | StageLight::addToScene | 5 | game | stub | - |
 | `001937f0` | FUN_001937f0 | 4 | - | missing | - |
 | `00135f20` | vecDistance | 4 | game | stub | - |
-| `00284640` | AreaGrid::AreaGrid | 4 | game | stub | - |
-| `00283df0` | seDistanceVolume | 4 | game | stub | - |
 | `002152d0` | StagePlayer::isMode1 | 4 | game | stub | - |
 | `001d8260` | StageObject::propagate | 4 | game | stub | - |
 | `001d27e0` | ScriptRunner::run | 4 | game | stub | - |
 | `00177270` | BoneNode::find | 4 | game | stub | - |
-| `00284560` | AreaGrid::addBox | 4 | game | stub | - |
 | `002e5210` | ModelFile::createInstance | 4 | game | stub | - |
 | `0025a850` | mslTreeIncrement | 4 | lib-ctx | missing | - |
 | `002c3e10` | loadMenuPack | 4 | game | stub | - |
-| `00284580` | AreaGrid::~AreaGrid | 4 | game | stub | - |
 | `00185bb0` | StageLight::setRadiusSquared | 4 | game | stub | - |
-| `002842f0` | AreaGrid::build | 4 | game | stub | - |
 | `0028fb80` | fsmFindText | 3 | game | stub | - |
+| `002a9be0` | FUN_002a9be0 | 3 | - | missing | - |
+| `00231d30` | overlayShowLoading | 3 | native | missing | - |
+| `00231d20` | overlayShowLoading | 3 | native | missing | - |
+| `001d3a40` | StageScript::relocate | 3 | game | stub | - |
+| `0028fd30` | fsmRelocate | 3 | game | stub | - |
+| `00214fc0` | StageObject::getActionState | 3 | game | stub | - |
+| `00184370` | StageNodeList::erase | 3 | game | stub | - |
 

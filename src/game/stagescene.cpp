@@ -347,7 +347,7 @@ void StageScene::drawPaused()
 
 bool StageScene::getSoundAttr(const sceVu0FVECTOR pos)
 {
-    return areas[StageArea_Reverb]->contains(pos) != 0;
+    return areas[StageArea_Reverb]->contains(pos) != nullptr;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -4713,7 +4713,7 @@ bool StageScene::isInAbArea(StageObject *object)
 {
     const sceVu0FVECTOR &position = object->m_xform.position;
     sceVu0FVECTOR pos = { position[0], position[1], position[2] + kAbProbeAbove, position[3] };
-    return areas[StageArea_Ab]->contains(pos) != 0;
+    return areas[StageArea_Ab]->contains(pos) != nullptr;
 }
 
 // FS2 0x0019b180

@@ -28,25 +28,6 @@ AreaClip::~AreaClip()
     YAMIPAN_STUB("AreaClip::~AreaClip", 0x002dcab0);
 }
 
-// stub of FS2 0x00284640
-AreaGrid::AreaGrid()
-{
-    YAMIPAN_STUB("AreaGrid::AreaGrid", 0x00284640);
-}
-
-// stub of FS2 0x00284190
-int AreaGrid::contains(const sceVu0FVECTOR pos)
-{
-    YAMIPAN_STUB("AreaGrid::contains", 0x00284190);
-    return {};
-}
-
-// stub of FS2 0x00284580
-AreaGrid::~AreaGrid()
-{
-    YAMIPAN_STUB("AreaGrid::~AreaGrid", 0x00284580);
-}
-
 // stub of FS2 0x00177270
 BoneNode * BoneNode::find(BoneNode *node, const char *key)
 {
@@ -1039,13 +1020,6 @@ void scaleVec4(float s, sceVu0FVECTOR out, const sceVu0FVECTOR in)
     YAMIPAN_STUB("scaleVec4", 0x00136490);
 }
 
-// stub of FS2 0x00283df0
-int seDistanceVolume(float ratio, int falloff, int volume)
-{
-    YAMIPAN_STUB("seDistanceVolume", 0x00283df0);
-    return {};
-}
-
 // stub of FS2 0x00135fe0
 void setVecLength(float len, sceVu0FVECTOR out, const sceVu0FVECTOR in)
 {
@@ -1178,31 +1152,6 @@ void unloadMenuPack()
 void GsRegion::release()
 {
     YAMIPAN_STUB("GsRegion::release", 0x002e0840);
-}
-
-// stub of FS2 address unknown (0 candidates)
-AreaBox::AreaBox()
-{
-    YAMIPAN_STUB("AreaBox::AreaBox", 0x00000000);
-}
-
-// stub of FS2 0x002848d0
-void AreaBox::setSize(float width, float height, float depth)
-{
-    YAMIPAN_STUB("AreaBox::setSize", 0x002848d0);
-}
-
-// stub of FS2 0x00284560
-void AreaGrid::addBox(AreaBox *box)
-{
-    YAMIPAN_STUB("AreaGrid::addBox", 0x00284560);
-}
-
-// stub of FS2 0x00283ff0
-int AreaGrid::collect(const sceVu0FVECTOR pos, AreaBox **out, int max)
-{
-    YAMIPAN_STUB("AreaGrid::collect", 0x00283ff0);
-    return {};
 }
 
 // stub of FS2 address unknown (0 candidates)
@@ -1636,12 +1585,6 @@ void AreaClip::setup()
 void AreaClip::update(StageObject *camera)
 {
     YAMIPAN_STUB("AreaClip::update", 0x002dbd10);
-}
-
-// stub of FS2 0x002842f0
-void AreaGrid::build()
-{
-    YAMIPAN_STUB("AreaGrid::build", 0x002842f0);
 }
 
 // stub of FS2 0x001dd3f0
@@ -2436,4 +2379,16 @@ int ScriptRunner::unsupportedCommand()
 {
     YAMIPAN_STUB("ScriptRunner::unsupportedCommand", 0x001cf1b0);
     return {};
+}
+
+// stub of FS2 0x00136690
+void applyMatrix(sceVu0FVECTOR out, const sceVu0FVECTOR *m, const sceVu0FVECTOR v)
+{
+    YAMIPAN_STUB("applyMatrix", 0x00136690);
+}
+
+// stub of FS2 0x00136500
+void invertRigidMatrix(sceVu0FMATRIX out, const sceVu0FVECTOR *m)
+{
+    YAMIPAN_STUB("invertRigidMatrix", 0x00136500);
 }

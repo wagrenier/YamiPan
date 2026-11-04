@@ -32,13 +32,13 @@ public:
         Node *prev;             // FS2 +0x8
     };
 
-    // FS2 0x001a59f0, 0x001a5980, 0x001a5910, 0x001a58a0: the instances'
+    // FS2 0x001a59f0, 0x001a5980, 0x001a5910, 0x001a58a0, 0x00186b10: the instances'
     // constructors.
     StageList() : head(NULL), count(0) {}
-    // FS2 0x001a5a00, 0x001a5990, 0x001a5920, 0x001a58b0: the destructors.
+    // FS2 0x001a5a00, 0x001a5990, 0x001a5920, 0x001a58b0, 0x00186b20: the destructors.
     ~StageList() { clear(); }
 
-    // FS2 0x001a5e60, 0x001a5f80, 0x001a60a0, 0x001a6210
+    // FS2 0x001a5e60, 0x001a5f80, 0x001a60a0, 0x001a6210, 0x00186c50
     void clear()
     {
         for (Node *node = head; node != NULL;) {
@@ -54,7 +54,7 @@ public:
     // 0x1a6420, 0x1a6390), its tail search a function of its own (0x1a6630,
     // 0x1a6570, 0x1a64b0), its node a two-argument constructor (0x1a6750,
     // 0x1a6730, 0x1a6710, 0x1a66f0).
-    // FS2 0x001a5db0, 0x001a5ed0, 0x001a5ff0, 0x001a6140
+    // FS2 0x001a5db0, 0x001a5ed0, 0x001a5ff0, 0x001a6140, 0x001a5d00
     void pushBack(const T &value)
     {
         Node *node = new Node;

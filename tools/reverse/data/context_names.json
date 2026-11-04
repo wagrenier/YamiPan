@@ -3653,6 +3653,18 @@
   "was": "FUN_00136490",
   "why": "(s f12, out, in): VU0 vmulx with s in vf5.x, dest xyzw: out = in * s; lerpVec4 scales the difference with it; 66 callers"
  },
+ "00136500": {
+  "name": "invertRigidMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00136500",
+  "why": "VU0 macro: rows 0..2 transposed with w 0, row 3 = -(R^T t) keeping t.w: the inverse of a rotation + translation"
+ },
+ "00136690": {
+  "name": "applyMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00136690",
+  "why": "VU0 macro: out = m[0] v.x + m[1] v.y + m[2] v.z + m[3] v.w, the sceVu0ApplyMatrix shape (out, m, v)"
+ },
  "001366c0": {
   "name": "RFU000_FullReset",
   "tag": "lib-context",
@@ -16930,6 +16942,18 @@
   "tag": "game-inferred",
   "was": "FUN_00284640",
   "why": "StageScene ctor new(0x240) four times (+0xac..+0xb8): a list at +0, 0x40 pairs at +8, +0x238 = 1; contains 0x284190 tests a point against +0x210; name a guess"
+ },
+ "00284690": {
+  "name": "AreaBox::contains",
+  "tag": "game-inferred",
+  "was": "FUN_00284690",
+  "why": "takes the box in a0: inverts its matrix (slot +0x14), moves the point into box space and tests it against +0x100..+0x118; the AreaGrid queries and the light 0x185a60 ask it"
+ },
+ "00284740": {
+  "name": "AreaBox::getWorldBounds",
+  "tag": "game-inferred",
+  "was": "FUN_00284740",
+  "why": "the eight corners of +0x100..+0x118 through the matrix of slot +0x18, then getBounds; only AreaGrid::build calls it"
  },
  "002848d0": {
   "name": "AreaBox::setSize",

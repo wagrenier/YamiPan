@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "game/gamehooks.h" /* fsm*, seDistanceVolume, stdt* */
+#include "game/areagrid.h"  /* seDistanceVolume */
+#include "game/gamehooks.h" /* fsm*, stdt* */
 #include "game/heap.h"      /* randUnit */
 #include "sound/sound.h"
 

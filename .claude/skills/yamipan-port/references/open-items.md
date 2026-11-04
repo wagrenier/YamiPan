@@ -1112,6 +1112,21 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    menu's blockers above (layout paths, `runTitleScreen`, `loadMenuPack`) rather than following the
    frontier blindly.
 
+   **`game/areagrid.cpp` 0x283df0..0x2849c0 cut out of `unassigned@002681e0` (2026-11-03, batch 090, all
+   11 written, `verify`; architecture.md "Modules").** `AreaBox` and `AreaGrid` moved from `gamehooks.h`
+   to `areagrid.h`, with `seDistanceVolume`. Corrected: `AreaGrid::contains` returns the box, and
+   `seDistanceVolume` is unsigned. Nothing in the game has run it (the smoke run stays on the language
+   screen); a scratch test agrees with a brute-force scan of the boxes over 200,000 random points with
+   rotated boxes, using test versions of the math. **Before a stage can use the grids:**
+   `applyMatrix` 0x136690, `invertRigidMatrix` 0x136500 (run `unassigned@00135990`, declared in
+   `vu0math.h`) and `StageNode::getMatrix` / `getWorldMatrix` 0x186a20 / 0x186a30 (run
+   `unassigned@0017fce0`) are still stubs; until they are written `AreaBox::getWorldBounds` writes
+   stack garbage into the bounds. Doubts for the user: the file name; `seDistanceVolume` joined by
+   position only; `areaCell` is a `PC:` guard for cells of size 0 (the EE saturates, x64 would index
+   before the array). Left in the run, in the order the slice had them: `gsFrameFilter`
+   0x2849c0..0x286790 (needs a render-target decision: see the texture store's "Render targets"),
+   `StageMission` 0x2867a0.., `fsm*` 0x28fb80..0x28ff54, `Rand48` 0x2681e0..0x268310, and the
+   `FUN_00268a20` / `SubSceneData::getScript` cluster.
 1. **The game**: Forbidden Siren 2, Europe, `SCES_538.51`, annotation tag `FS2` (decided, below;
    `yamipan.py` has `ANNOT`, the stub regex and the game-folder defaults since bootstrap 3).
 2. Bootstrap (bootstrap.md, in order): identify the binary (done 2026-10-31: architecture.md

@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "game/areagrid.h"
 #include "game/fileloader.h"
 #include "game/gamepaths.h"
 #include "game/seplayer.h"
@@ -1330,16 +1331,6 @@ public:
     void setSize(float width, float height, float depth);                // FS2 0x0017ea50
 };
 
-// A box of the map (vtable 0x314180 over StageNode, EE 0x140): the
-// AreaGrids hold these. The box +0x100..+0x118 is centred on x / y; z runs
-// from 0 to height, whichever way height points.
-// layout: host
-class AreaBox : public StageNode
-{
-public:
-    AreaBox();                                                           // FS2 0x00284950
-    void setSize(float width, float height, float depth);                // FS2 0x002848d0
-};
 // The boxes with a number in their name (+0x140; EE 0x180, the vtables
 // 0x315190 / 0x315160 and their dtors inline). ENV_CB%d: unread.
 // layout: host
@@ -1513,22 +1504,6 @@ struct MenuProgSet
     // Six textures over the init pack's images.
     void load(void *image0, void *image1, void *image2, void *image3, void *image4,
               void *image5);                                             // FS2 0x002bb2b0
-};
-
-// +0xac..+0xb8: four area grids (a list, 0x40 cells, a box at +0x210).
-// layout: host (EE 0x240).
-class AreaBox;
-struct AreaGrid
-{
-    AreaGrid();                                                          // FS2 0x00284640
-    ~AreaGrid();                                                         // FS2 0x00284580: deleting
-    // pos inside one of the grid's areas.
-    int  contains(const sceVu0FVECTOR pos);                              // FS2 0x00284190
-    void addBox(AreaBox *box);                                           // FS2 0x00284560
-    // The boxes at pos, at most max of them; how many.
-    int  collect(const sceVu0FVECTOR pos, AreaBox **out, int max);       // FS2 0x00283ff0
-    // Bounds and cells from the boxes added so far.
-    void build();                                                        // FS2 0x002842f0
 };
 
 // The frame-buffer filter of the view cameras and event d0101: passes
@@ -1992,10 +1967,6 @@ int            fsmFindTrack(void *file, const char *key);               // FS2 0
 // The track has a non-empty text.
 bool           fsmTrackHasText(void *file, int track);                  // FS2 0x0028fa90
 
-// A placed sound's volume at ratio (its distance over its range, 0..1;
-// 0 beyond 1) by the entry's falloff curve (SeFalloff), from volume
-// (unassigned@002681e0; SePlayer / SoundTrack).
-int seDistanceVolume(float ratio, int falloff, int volume);              // FS2 0x00283df0
 
 // The StDT stream table's header readers stdtIsRelocated / stdtEntryCount:
 // game/stagescene.h.

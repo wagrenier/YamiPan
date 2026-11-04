@@ -106,7 +106,7 @@ struct StageScript;             // game/gamehooks.h
 struct StreamTable;             // game/seplayer.h
 
 struct SubSceneData;            // game/gamehooks.h
-class AreaBox;                  // game/gamehooks.h
+class AreaBox;                  // game/areagrid.h
 
 // The stack of who the stage is heard and seen through (StageScene +0x34;
 // new'd by the constructor with 8 entries of 0xc, top -1). Only the top's
