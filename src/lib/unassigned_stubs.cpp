@@ -976,13 +976,6 @@ int runNaviFile()
     return {};
 }
 
-// stub of FS2 0x00231c90
-int runTitleScreen(bool withIntro)
-{
-    YAMIPAN_STUB("runTitleScreen", 0x00231c90);
-    return {};
-}
-
 // stub of FS2 0x0029ef70
 void saveExtraInit()
 {

@@ -16,6 +16,7 @@
 #include "game/stageresult.h"
 #include "game/sysdata.h"
 #include "game/thread.h"
+#include "game/titlescreen.h"
 #include "sdk/scetypes.h"
 
 static const char kLanguageLayout[] = "2dEU/languageEU.d2b";

@@ -71,8 +71,6 @@ void loadMenuPack();                                                     // FS2 
 void unloadMenuPack();                                                   // FS2 0x002c3db0
 
 // What game/menuscene.cpp calls.
-// title<lang>.d2b, without its intro unless withIntro: TitleAnswer.
-int  runTitleScreen(bool withIntro);                                     // FS2 0x00231c90
 // help<lang>.d2b at a page; always 0.
 int  runHelpScreen(int page);                                            // FS2 0x002acff0
 // The mode behind the top menu's answer 10, in slot 3 (0x2c4320; 16 scored

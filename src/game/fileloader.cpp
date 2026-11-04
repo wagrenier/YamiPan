@@ -9,7 +9,7 @@
 
 #include "game/gamehooks.h"
 #include "game/heap.h"
-#include "game/screen.h"
+#include "game/titlescreen.h"
 #include "game/thread.h"
 #include "sdk/scetypes.h"
 
@@ -62,7 +62,7 @@ int PackFile::unloadItem(int index)
 // with one it opens on the buffer even when unpacking failed (the open
 // then fails on the magic).
 // FS2 0x00131a30
-// callcheck: jobAdd, overlayShowLoading, threadYield (start and wait, inline in the ROM)
+// callcheck: jobAdd, loadingBegin, loadingTick, threadYield (start and wait, inline in the ROM)
 
 bool PackJob::load(int arg, bool showLoading)
 {
@@ -276,10 +276,10 @@ void FileLoader::waitLoaded(int arg, bool showLoading)
 {
     (void)arg;
     if (showLoading)
-        overlayShowLoading();
+        loadingBegin();
     while (!isLoaded()) {
         if (showLoading)
-            overlayShowLoading();
+            loadingTick();
         threadYield(1);
     }
 }
@@ -496,11 +496,11 @@ void FileJob::wait(int arg, bool showLoading)
     while (!fileJobSettled(m_state)) {
         if (first) {
             if (showLoading)
-                overlayShowLoading();
+                loadingBegin();
             first = false;
         }
         if (showLoading)
-            overlayShowLoading();
+            loadingTick();
         threadYield(1);
     }
 }

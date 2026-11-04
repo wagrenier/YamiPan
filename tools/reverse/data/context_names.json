@@ -14201,6 +14201,18 @@
   "was": "FUN_00231c90",
   "why": "title%s.d2b with layout arg 0 / 1; folds its answer to 0 / 1 / 2"
  },
+ "00231d20": {
+  "name": "loadingTick",
+  "tag": "game-inferred",
+  "was": "overlayShowLoading",
+  "why": "j overlayShowLoading; FileLoader::waitLoaded, FileJob::wait and PackJob::load call it once per turn of their wait loops"
+ },
+ "00231d30": {
+  "name": "loadingBegin",
+  "tag": "game-inferred",
+  "was": "overlayShowLoading",
+  "why": "j overlayShowLoading; the same three waits call it once, before the loop (FileJob::wait and PackJob::load behind their first flag)"
+ },
  "00232870": {
   "name": "StageCollision::sphereHits",
   "tag": "game-inferred",

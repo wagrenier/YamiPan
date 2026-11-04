@@ -1,6 +1,6 @@
 {
  "queue": [
-  "unassigned@00231c90"
+  "game/menupack.cpp"
  ],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
@@ -316,6 +316,15 @@
    ],
    "status": "verify",
    "why": "the memory card module: the libmc device wrapper McDevice (0x2ac630..0x2acff0, ctor 0x2acf90), the save manager Memcard (state machines 0x2a9cc0..0x2ab9f0, requests, update) and the SaveFile image (0x2aa720, 0x2abc20..0x2ac540); its sbss bytes 0x31ae80..0x31ae90 are one block (gp-0x79f0..-0x79e0: saveFound, flag, stamp, lib inited). 0x2a9be0 before it is a Vt_00318ca0 ctor; 0x2acff0 after it starts unrelated code (a 0x2ec840 / 0x267c00 call, then a 0x1cc0 object and lens-flare-like float code)"
+  },
+  "game/menupack.cpp": {
+   "ranges": [
+    [
+     "002c3d30",
+     "002c42c0"
+    ]
+   ],
+   "why": "Queued by the run that wrote game/titlescreen.cpp, range not yet read closely: the resident menu pack (loadMenuPack, unloadMenuPack, FUN_002c3eb0 which builds the SePlayer from seMenu_SE.seh, getSePlayer) with the save-resource getters and small helpers around it; the file name is the port's."
   },
   "game/menuscene.cpp": {
    "notes": "All 14 functions of 0x2b5740..0x2b6b90 written (batch 083, 32 names, saved in Ghidra): the whole menu flow, architecture.md Modules has the map. Build, callcheck and layoutcheck green. Smoke, no pad: the language screen runs, black for about 3000 presented frames, then one white band across the screen (y 224..288 of 683x512) with no text or images: untextured, because Tim2Texture::Tim2Texture and UiTrack::draw are stubs; no reference picture was extracted, work/ref is empty. With a scripted CROSS the flow passes the language screen, the card check and the logo (both on null path stubs, so no layout shows) and then spins in menuFlow on the stub runTitleScreen (hazards.md Stubs). CIRCLE does nothing on the language screen. Next in the queue: rena/rena_2d_texture_tim2.cpp and the texture store, judged on this language screen. The stubs that block the menu after that are listed in open-items.md Next up item 8: layout paths 0x2ec110.., runTitleScreen 0x231c90, loadMenuPack / unloadMenuPack, the navi block. Doubts: the file name, the screen names, SaveDialogReason, runAttractDemo, the 0x40 size of the script path buffer. One PC: mark: menuPlayMovie guards the ROM double delete of an empty movie loader.",
@@ -747,6 +756,24 @@
    ],
    "status": "verify",
    "why": "the cooperative thread system: threadSetSwitchHook .. threadSysInit, threadScheduler, jobWorkerThread, frameSync* (batch 002, architecture.md Thread system); 0x130a20 and the end after frameSyncThread are guesses."
+  },
+  "game/titlescreen.cpp": {
+   "notes": "All 3 functions of 0x231c90..0x231d40 written, batch 091 names loadingTick 0x231d20 and loadingBegin 0x231d30 (both j overlayShowLoading, fileloader.cpp now calls them at the ROM's sites). TitleAnswer moved from menuscene.h to titlescreen.h. Seen with a scripted pad: logo, the Sony Europe presents card, then Load Game / New Game, Select Menu Item and the copyright line, which match the dumped TIM2s by eye. verify, not done: the background is black (a movie widget opens, sdk/libmpeg.cpp reads movies as ended; inferred to be the background), and the answers are untested because any press crashes in UiLayout::playSound on the stub getSePlayer (null, exit 0xC0000005). game/menupack.cpp 0x2c3d30..0x2c42c0 defined, range unread, and queued next by this run to end that crash. The rest of the old run is unassigned@00231d40, the collision code. open-items.md has the pad recipe and doubts.",
+   "ranges": [
+    [
+     "00231c90",
+     "00231d40"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-03 21:18",
+     "status": "verify",
+     "summary": "runTitleScreen and the two loading hooks written; the title menu is on screen"
+    }
+   ],
+   "status": "verify",
+   "why": "Cut from the run after game/scene.cpp: runTitleScreen and the two loading hooks behind it, up to the first collision helper 0x231d40 (no source string; the file name is the port's)."
   },
   "game/uidrawer.cpp": {
    "notes": "game/uidrawer.cpp 0x24dfa0..0x252840: all 50 written (batch 047), source-only so verify. This run: interpolate 0x24dfa0, drawText 0x24eba0, setScissorPixels 0x2503c0 (new name), setScissor 0x250520, drawSheetFlat / drawSheetGouraud, drawTexStripFlat / drawTexStripGouraud 0x251350 / 0x2519a0 (renamed from uiDrawTexStrip*: UiDrawer members, f12 a float width from record +0x14, vertices UiVertex / UiColorVertex as a ribbon of point pairs; UiStripVertex / UiColorStripVertex removed). New game/fontdata.h: FontData (glyph table: +8 count, +0xe line height, +0x10 sorted 0x10-byte entries) with nextGlyph 0x1fe4d0 / countLines 0x1fe150 / lineWidth 0x1fe2b0 (their TU 0x1fe020.. not cut; stubgen stubs them). uitrack: UiFont::m_scale is m_spacing, S2dTextRec +0x1c is a UiTextBox, UiTextTrack m_x / m_y are the 0..1 alignment. ROM quirk kept: interpolate of a mirrored and rotated target does not round-trip at t=1 (atan2 with only x negated). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean, host harness for interpolate, text layout, colours, ribbon and scissor words. Nothing on screen until bootstrap 6 implements yamipan_drawui. Next: the widget classes 0x252840.. (vtables 0x316a78..).",
@@ -1308,6 +1335,7 @@
   },
   "unassigned@001953f0": {},
   "unassigned@00231410": {},
+  "unassigned@00231c90": {},
   "unassigned@0023c020": {},
   "unassigned@0023e740": {},
   "unassigned@00246230": {},
