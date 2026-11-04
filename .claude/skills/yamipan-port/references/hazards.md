@@ -336,3 +336,5 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   words there did not fit threadSlotCreate's arguments. Cause: field +0 (a name string) is never
   read, so Ghidra folds the +4 into the base address. Fix: read the `lui` / `addiu` pair in the asm
   (`ghidra.py asm`): the base was 0x2fabd0, the entry `{name, func, cleanup, arg, stackSize, stack}`.
+
+- **A pad script from an older note lands on the wrong screen (2026-11-03).** Symptom: RIGHT then CROSS on the title opens Load Game, or the title never answers. Cause: pad timing is in reads and the read rate changes between machines and runs (now ~0.76 a frame), so an old script's boot presses were still playing on the title, and the unanswered title loops ~1000 frames up, ~1000 black. Fix: boot presses only up to the logo, one RIGHT, one CROSS, and **read the highlight in the shots** rather than trust the script (open-items.md has the current one). A press in the script is not a press the game saw.

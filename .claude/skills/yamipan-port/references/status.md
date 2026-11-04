@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 22:21 at commit `507d1ec` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 23:01 at commit `f1bf326` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -13,7 +13,7 @@ Generated 2026-11-03 22:21 at commit `507d1ec` by `tools/reverse/status.py` (`re
 - game functions: **6599**, named **2638** (40%); library functions: 987
 - by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1725
 - context-name ledger: 3261 entries; overrides of wrong library matches: 0
-- placed in a source file: 2344/6599 in 71 files
+- placed in a source file: 2348/6599 in 72 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **2155**; stubs: **336**
+- reconstructed FS2 functions: **2159**; stubs: **332**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -80,9 +80,10 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/uisequence.cpp` | 29 | 0 |
 | `src/game/uitrack.cpp` | 99 | 0 |
 | `src/game/uiwidget.cpp` | 56 | 0 |
+| `src/game/uiworkarea.cpp` | 4 | 0 |
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 293 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 289 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
 | `src/rena/tim2.cpp` | 4 | 0 |
@@ -108,7 +109,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 98 TUs: todo 54, partial 1, verify 60, done 1
+- 99 TUs: todo 54, partial 1, verify 61, done 1
 - next: **unassigned@0017fce0** (frontier score 86)
 - pinned queue: (empty)
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -155,6 +156,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/uisequence.cpp` 29/29 -- Cut from unassigned@00246230 as game/uisequence.cpp 0x246230..0x249550; batches 039-040 named these 29 and the callees they need (UiMatrix 0x24e580..0x24e8a0, U
 - verify: `game/uitrack.cpp` 99/109 -- Second run on the file (batch 043, 20 names). Written from the asm: UiRotateToTrack / UiRotateTrack::apply (world = parent * xform, angle wrapped to -pi..pi, xf
 - verify: `game/uiwidget.cpp` 56/56 -- Cut out of unassigned@00252840 (the frontier pick) as 0x25b8e0..0x25fa50, batch 066 (74 names: the widget classes by their type strings from the class table 0x2
+- verify: `game/uiworkarea.cpp` 4/4 -- All 4 of 0x243350..0x243390 written. Released unassigned@0017fce0 untouched (third time) because New Game was the untried road into a stage and these were on it
 - verify: `game/vcmtable.cpp` 52/52 -- Cut out of unassigned@00296d60 (the frontier pick) as 0x296d60..0x299d90, batches 063-065 (59 names, incl. the binary's std::string instances 0x297fb0.. and new
 - verify: `game/wstring.cpp` 5/5 -- Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds 
 - verify: `rena/rena_2d_texture_tim2.cpp` 7/7 -- All 7 written; class moved to rena/rena_2d_texture_tim2.h. One Tim2Texture per mip level of the first picture; m_image (+0x40) is the TIM2 file itself, not a co
@@ -174,6 +176,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 23:00 `game/uiworkarea.cpp` verify: UiTrack base slots and the UI work area; New Game now reaches the opening card
 - 2026-11-03 22:21 `game/prgmccard.cpp` verify: PrgMcCard, the load and save screens: all 7 written; the load screen now says No memory card and closes back to the title
 - 2026-11-03 21:45 `unassigned@0017fce0` todo: marked todo -> todo: released untouched: the queue was empty, so this run took the menu's reached stub, as SKILL.md Starting sessions asks
 - 2026-11-03 21:42 `game/menupack.cpp` verify: the menu pack, its SePlayer and MessageTable: all 9 written; the title now answers a press
@@ -181,22 +184,21 @@ Recent sessions:
 - 2026-11-03 20:57 `game/layoutpaths.cpp` verify: all 24 event movie and layout paths written; the menu now runs past the language screen to the no-card dialog and the SCE logo; new YAMIPAN_TEX_DUMP hook
 - 2026-11-03 20:47 `unassigned@0017fce0` todo: marked todo -> todo: released untouched: the queue was empty, so this run took the menu's blockers, as the handoff asked
 - 2026-11-03 20:39 `game/areagrid.cpp` verify: AreaGrid, AreaBox and seDistanceVolume: all 11 written; AreaGrid::contains answers the box, seDistanceVolume is unsigned; moved out of gamehooks.h into areagrid
-- 2026-11-03 20:24 `game/stagescene.cpp` verify: the last 67 functions: collision finders, scene accessors, script command defaults, DemoExecuter; all 258 written
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@0017fce0` | todo | 0/28/399 | 76.4 | 86 | 0 |
 | `unassigned@001d7c50` | todo | 0/23/296 | 137.5 | 65 | 0 |
-| `unassigned@001fe6b0` | todo | 0/34/563 | 197.2 | 60 | 0 |
 | `unassigned@00148db0` | todo | 0/17/125 | 35.6 | 60 | 2 |
+| `unassigned@001fe6b0` | todo | 0/34/563 | 197.2 | 60 | 0 |
+| `unassigned@002849c0` | todo | 0/28/129 | 44.6 | 47 | 2 |
 | `unassigned@00171300` | todo | 0/24/421 | 52.5 | 41 | 0 |
-| `unassigned@002849c0` | todo | 0/28/129 | 44.6 | 37 | 0 |
 | `unassigned@002b9ef0` | todo | 0/17/101 | 39.0 | 36 | 2 |
+| `unassigned@00299d90` | todo | 0/11/215 | 62.3 | 34 | 2 |
 | `unassigned@002b0d50` | todo | 0/23/85 | 17.9 | 34 | 0 |
 | `unassigned@002d46a0` | todo | 0/17/252 | 51.5 | 27 | 2 |
 | `unassigned@00231d40` | todo | 0/10/58 | 36.1 | 24 | 0 |
-| `unassigned@00299d90` | todo | 0/11/215 | 62.3 | 24 | 0 |
-| `unassigned@0023e740` | todo | 0/13/58 | 18.7 | 23 | 2 |
+| `unassigned@001a68b0` | todo | 0/6/714 | 174.8 | 20 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

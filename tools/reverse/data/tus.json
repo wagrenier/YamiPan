@@ -944,6 +944,24 @@
    "status": "verify",
    "why": "The S2D script widgets (prg*, the class table 0x2facf0 of 42 type names UiWidget::create looks S2dWidgetDef::type up in): the 13 widget classes (vtables 0x316a90..0x316c10, each a UiWidget subclass, vptr +0x1c), create 0x25e260 and the out-of-line inlines CodeWarrior emitted after them (UiTween 0x25f5b0..0x25f990, used from 30+ sites; UiFont::countLines 0x25fa10). Before: 0x252840..0x25b8e0 a vector / tree heavy subsystem with its MSL instances (another file, still unassigned); after: game/uigame.cpp from UiFont::~UiFont 0x25fa50. No source-path string: the file name is the port's."
   },
+  "game/uiworkarea.cpp": {
+   "notes": "All 4 of 0x243350..0x243390 written. Released unassigned@0017fce0 untouched (third time) because New Game was the untried road into a stage and these were on it. Seen: title with New Game selected, Screen page, difficulty page, first in-game card Shu Mikami / Aonoku Settlement, none compared with a reference. Then black from frame ~4200 with no crash and no new stub; why is NOT known, the wait was not located. An access violation after setUiWorkArea was seen once with the stubs and not in one run with the code, so the fix is not proven. Pad: RIGHT on the rested title; open-items.md has the working script. Next for the user to pin: the black after the card, saveExtraInit, currentNaviAnswer, then the stage objects.",
+   "ranges": [
+    [
+     "00243350",
+     "00243390"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-03 23:00",
+     "status": "verify",
+     "summary": "UiTrack base slots and the UI work area; New Game now reaches the opening card"
+    }
+   ],
+   "status": "verify",
+   "why": "The two setter / getter one-liners of the UI work area and UiTrack's two empty base slots: 0x243350..0x243390, between the file before and UiSubLayout::load 0x243390 (game/uilayout.cpp). No source string: the file name is the port's."
+  },
   "game/vcmtable.cpp": {
    "notes": "Cut out of unassigned@00296d60 (the frontier pick) as 0x296d60..0x299d90, batches 063-065 (59 names, incl. the binary's std::string instances 0x297fb0.. and newlib strchr / strncasecmp / fprintf / memcmp, mslTreeIncrement 0x25a850, RenaModel::findGroup 0x2e4100, VcmController::getWeight 0x185af0). New game/vcmtable.h; stand-ins RenaModel (+ ModelHeader / ModelPart / ModelGeometry / ModelMaterial / ModelPartRec) and VcmController in gamehooks.h. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean, a host harness over 5 parts (own VCM__ name, group VCM__ name, material tag, untagged, bare VCM__ fallback; attach by name; weights 0.5 / 0 / 1) passed. Kept as the ROM: each token is one byte longer than its run (middle tokens keep a trailing underscore; harmless for the one-token tags on the disc, vcm__ENV_SL etc.); bare VCM__ yields an empty token; fade / off bits are compact bytes; a token-less state keeps the previous alpha. PC: token names delete[]d, states zeroed. Doubts: file / class names, geometry / material for the part +8 chain, what the renderer does with record bytes +0xa..+0xc. Not this TU: stageresult.cpp:144 passes void * to UiLayout::draw (TexAreaList * since TU 31). Next in the run: the navi menu 0x29acb0..0x29eff0 (getNaviMenu / getSaveExtra), the VU0 helpers 0x299d90..0x29a700, the stage object class 0x29a700..0x29acb0.",
    "ranges": [
