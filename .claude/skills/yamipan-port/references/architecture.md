@@ -1482,7 +1482,7 @@ jump to `PackJob::load` 0x131a30 with a0 + 0x9c. The slots answer from the archi
 isLoaded always; unload / waitLoaded / clear do nothing; compact reallocs the pack's block to its header
 +0x1c). `setBuffer` 0x131eb0 (callers 0x2b5dc0 / 0x2b60b0: a 0x1800000 block and a variant 0 / 3 / 6 /
 9 + a save field) makes the job read the packed file into the buffer's end; load then **SLDI-unpacks**
-it to the start (`sldiDecompress` 0x2d0a10: "SLDI", unpacked size +0xc, LZ runs from +0x10) and
+it to the start (`sldiDecompress` 0x2d0a10, **game/sldi.cpp**: header "SLDI", version 1, file size +8, unpacked size +0xc, records from +0x10, format in sldi.h; the disc holds 114 such packs, all 0x1800000 or smaller unpacked, largest 0x179bf80, all "pak" inside, found by a raw scan of ROM.000..ROMD.009, none in ROMD.010 / SPK.ROM) and
 `PakArchive::open` 0x231520 keeps only the items whose u_short mask (entry +2) has bit `variant`.
 The pak format is game/pakarchive.cpp (below). **`TextTokenizer`** (0x18, only user
 0x1a3a60): whitespace-separated words into a buffer of fixed capacity.

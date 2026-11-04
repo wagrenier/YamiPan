@@ -867,13 +867,6 @@ void setVecLength(float len, sceVu0FVECTOR out, const sceVu0FVECTOR in)
     YAMIPAN_STUB("setVecLength", 0x00135fe0);
 }
 
-// stub of FS2 0x002d0a10
-int sldiDecompress(const void *src, void *dst)
-{
-    YAMIPAN_STUB("sldiDecompress", 0x002d0a10);
-    return {};
-}
-
 // stub of FS2 0x00135f20
 float vecDistance(const sceVu0FVECTOR a, const sceVu0FVECTOR b)
 {

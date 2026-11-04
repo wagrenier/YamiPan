@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 23:48 at commit `67cb450` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-04 00:19 at commit `27583d9` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -13,7 +13,7 @@ Generated 2026-11-03 23:48 at commit `67cb450` by `tools/reverse/status.py` (`re
 - game functions: **6599**, named **2638** (40%); library functions: 987
 - by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1725
 - context-name ledger: 3261 entries; overrides of wrong library matches: 0
-- placed in a source file: 2348/6599 in 72 files
+- placed in a source file: 2349/6599 in 73 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **2159**; stubs: **332**
+- reconstructed FS2 functions: **2160**; stubs: **331**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -63,6 +63,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/scene.cpp` | 1 | 0 |
 | `src/game/screen.cpp` | 18 | 0 |
 | `src/game/seplayer.cpp` | 35 | 0 |
+| `src/game/sldi.cpp` | 1 | 0 |
 | `src/game/spkrom.cpp` | 13 | 0 |
 | `src/game/stagealert.cpp` | 0 | 4 |
 | `src/game/stageloop.cpp` | 9 | 0 |
@@ -83,7 +84,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/uiworkarea.cpp` | 4 | 0 |
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 289 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 288 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
 | `src/rena/tim2.cpp` | 4 | 0 |
@@ -109,9 +110,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 99 TUs: todo 54, partial 1, verify 62, done 1
-- next: **unassigned@002c42a0** (pinned in the queue)
-- pinned queue: unassigned@002c42a0, unassigned@0017fce0
+- 101 TUs: todo 55, partial 1, verify 63, done 1
+- next: **unassigned@0017fce0** (pinned in the queue)
+- pinned queue: unassigned@0017fce0
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
@@ -140,6 +141,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/scene.cpp` 1/1 -- gameSceneThread written in full: loadInitPack, runStartupSequence, overlayThreadStart, then forever loadMenuPack, the scene from sScenes (one retail entry, Menu
 - verify: `game/screen.cpp` 18/18 -- All 18 functions of 0x2676e0..0x2681e0 written (batch 037, 33 names, Ghidra saved). Overlay thread slot 6 draws the BG movie screen layout (init pack file 2dEU/
 - verify: `game/seplayer.cpp` 35/35 -- Cut from unassigned@002908d0: game/seplayer.cpp is 0x2908d0..0x2937e0 (SoundTrack 17, SePlayer 18, batch 078: fsmFindTrack, fsmTrackHasText, seDistanceVolume, s
+- verify: `game/sldi.cpp` 1/1 -- Cut out of unassigned@002c42a0 and pinned 0x2d0a10-0x2d0d10; no new names, no Ghidra change. Scratch test: all 114 SLDI files on the disc unpack to the header s
 - verify: `game/spkrom.cpp` 13/13 -- All 13 of 0x152730..0x153108 written. The entries keep offsets on the host (the ROM relocates them to pointers in place), strings through spkString. Host: argv[
 - verify: `game/stageloop.cpp` 9/9 -- Cut out of unassigned@00171300 and pinned 0x17f150-0x17fce0 (batch 073, 45 names; Ghidra saved by name_ctx). New src/game/stageloop.h defines gStageScene (exter
 - verify: `game/stageobjlist.cpp` 45/45 -- Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector in
@@ -177,6 +179,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-04 00:19 `game/sldi.cpp` verify: sldiDecompress written: stage packs unpack for real; all 114 SLDI files on the disc tested
 - 2026-11-03 23:48 `sdk/libmpeg.cpp` verify: Real libmpeg: PSS demux, FFmpeg MPEG-2 decode, movie pictures through UiCanvas; the opening film plays and the road reaches stageThread
 - 2026-11-03 23:17 `unassigned@0017fce0` todo: marked active -> todo: released untouched a fourth time: gdb located the black after the card (PrgMovie, MoviePlayer state 15), so this run took the host task s
 - 2026-11-03 23:00 `game/uiworkarea.cpp` verify: UiTrack base slots and the UI work area; New Game now reaches the opening card
@@ -184,22 +187,21 @@ Recent sessions:
 - 2026-11-03 21:45 `unassigned@0017fce0` todo: marked todo -> todo: released untouched: the queue was empty, so this run took the menu's reached stub, as SKILL.md Starting sessions asks
 - 2026-11-03 21:42 `game/menupack.cpp` verify: the menu pack, its SePlayer and MessageTable: all 9 written; the title now answers a press
 - 2026-11-03 21:18 `game/titlescreen.cpp` verify: runTitleScreen and the two loading hooks written; the title menu is on screen
-- 2026-11-03 20:57 `game/layoutpaths.cpp` verify: all 24 event movie and layout paths written; the menu now runs past the language screen to the no-card dialog and the SCE logo; new YAMIPAN_TEX_DUMP hook
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@0017fce0` | todo | 0/28/399 | 76.4 | 86 | 0 |
-| `unassigned@001d7c50` | todo | 0/23/296 | 137.5 | 65 | 0 |
-| `unassigned@001fe6b0` | todo | 0/34/563 | 197.2 | 60 | 0 |
-| `unassigned@00148db0` | todo | 0/17/125 | 35.6 | 60 | 2 |
-| `unassigned@00171300` | todo | 0/24/421 | 52.5 | 41 | 0 |
-| `unassigned@002849c0` | todo | 0/28/129 | 44.6 | 37 | 0 |
-| `unassigned@002b9ef0` | todo | 0/17/101 | 39.0 | 36 | 2 |
+| `unassigned@0017fce0` | todo | 0/28/399 | 76.4 | 116 | 6 |
+| `unassigned@001fe6b0` | todo | 0/34/563 | 197.2 | 110 | 10 |
+| `unassigned@001d7c50` | todo | 0/23/296 | 137.5 | 105 | 8 |
+| `unassigned@00148db0` | todo | 0/17/125 | 35.6 | 95 | 9 |
+| `unassigned@00171300` | todo | 0/24/421 | 52.5 | 81 | 8 |
+| `unassigned@002849c0` | todo | 0/28/129 | 44.6 | 77 | 8 |
+| `unassigned@002b9ef0` | todo | 0/17/101 | 39.0 | 56 | 6 |
+| `unassigned@00299d90` | todo | 0/11/215 | 62.3 | 44 | 4 |
+| `unassigned@00231d40` | todo | 0/10/58 | 36.1 | 34 | 2 |
 | `unassigned@002b0d50` | todo | 0/23/85 | 17.9 | 34 | 0 |
-| `unassigned@002d46a0` | todo | 0/17/252 | 51.5 | 27 | 2 |
-| `unassigned@00299d90` | todo | 0/11/215 | 62.3 | 24 | 0 |
-| `unassigned@00231d40` | todo | 0/10/58 | 36.1 | 24 | 0 |
-| `unassigned@001a68b0` | todo | 0/6/714 | 174.8 | 20 | 0 |
+| `unassigned@002d46a0` | todo | 0/17/252 | 51.5 | 32 | 3 |
+| `unassigned@002681e0` | todo | 0/7/374 | 109.0 | 28 | 2 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

@@ -1,6 +1,5 @@
 {
  "queue": [
-  "unassigned@002c42a0",
   "unassigned@0017fce0"
  ],
  "settings": {
@@ -555,6 +554,24 @@
    ],
    "status": "verify",
    "why": "SoundTrack (fsm subtitles + StDT stream table over SoundStream) and SePlayer (the SEDT effect player): one class pair from SoundTrack::setAttr to SePlayer::update; after it 0x2937e0 starts an ELEVATOR2 stage object"
+  },
+  "game/sldi.cpp": {
+   "notes": "Cut out of unassigned@002c42a0 and pinned 0x2d0a10-0x2d0d10; no new names, no Ghidra change. Scratch test: all 114 SLDI files on the disc unpack to the header size with nothing written past it, each starts with pak, and in place at the end of a 0x1800000 block gives the same bytes. Temporary trace in the New Game run: size 11396480, pak variant 1 with 159 items. Nothing on screen shows it yet: the run ends as before, exit 0xC0000005 with StageObject::getMatrix the last stub (gdb not run, fault location carried from the libmpeg run). Item readers such as ScenePool::setImage and StageParty::setImage are still stubs, so what they do with the data is unchecked. Guesses: the file name and the single-function file, by position only. Next: unassigned@0017fce0.",
+   "ranges": [
+    [
+     "002d0a10",
+     "002d0d10"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 00:19",
+     "status": "verify",
+     "summary": "sldiDecompress written: stage packs unpack for real; all 114 SLDI files on the disc tested"
+    }
+   ],
+   "status": "verify",
+   "why": "The one function sldiDecompress, packing of the stage packs; alone by position, between SceneModelHolder and 0x2d0d10 (a stage-model method, unrelated). Name is the port's (no source string)"
   },
   "game/spkrom.cpp": {
    "notes": "All 13 of 0x152730..0x153108 written. The entries keep offsets on the host (the ROM relocates them to pointers in place), strings through spkString. Host: argv[0] is SYSTEM.CNF's BOOT2, so rx takes cdrom0: as the boot device; io::Disc serves the data folder as an ISO image with two volumes, so rx/filecd.c runs unchanged. Reached in a smoke run: SPK.ROM read through rx's ISO code at its exact 243425 bytes. Also here: layoutcheck.py learnt that nothing is force-included and takes C++23, stubgen.py stubs constructors and extern C functions, explicit casts in uisequence.cpp and uitrack.cpp for MSVC's ternary.",
@@ -1420,6 +1437,7 @@
   "unassigned@00296d60": {},
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {},
+  "unassigned@002c42a0": {},
   "yamipan/rendering/texture_store.cpp": {
    "notes": "Host task. src/yamipan/rendering/texture_store.h and .cpp: decodes the TIM2 the owner points at to RGBA8 during the bind, alpha doubled, cached by a hash of size, header, pixels and CLUT (the comment on imageOf says why not by address), least recently bound dropped past 256 MB. seams.cpp forwards to Renderer::textures() then UiCanvas::bindImage. UiCanvas::emit now drops a textured primitive with no image. Checked on screen: the language screen at rest equals the six TIM2s the game binds, rendered by tm2png.py from the same bytes: best offset 0,0 in a search of +-2 frame units, peak 192 as in the file, mean difference 2.66 over the row (the 4:3 stretch). Checked by a scratch program through the real Tim2Texture: byte-equal to tm2png.py on 20 disc TIM2s and 7 synthetic ones, including 16 and 24-bit direct, which the disc lacks; a rewritten pixel misses the cache. Proven on screen: UV scale, 512x512 mapping, alpha blend, bilinear, 4-bit images only. Not yet seen on screen: the font path, additive and other blend modes, scissor, repeat. Choice for the user to overrule: a textured draw with no image is dropped rather than drawn white; a render target binds nothing. Left, in open-items.md Next up item 8: render targets, repeat on non-power-of-two images, TEXA not applied, m_altClut, a dump hook for references. Next: the queue goes back to stagescene unless the user pins the menu blockers listed under item 8 (path getters, runTitleScreen, loadMenuPack).",
    "sessions": [

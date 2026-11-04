@@ -9,6 +9,7 @@
 
 #include "game/gamehooks.h"
 #include "game/heap.h"
+#include "game/sldi.h"
 #include "game/titlescreen.h"
 #include "game/thread.h"
 #include "sdk/scetypes.h"
