@@ -1631,3 +1631,529 @@ void NodeTransform::setPositionXyz(float x, float y, float z)
 {
     YAMIPAN_STUB("NodeTransform::setPositionXyz", 0x001d7f00);
 }
+
+// stub of FS2 0x002dcc30
+void AreaClip::setup()
+{
+    YAMIPAN_STUB("AreaClip::setup", 0x002dcc30);
+}
+
+// stub of FS2 0x002dbd10
+void AreaClip::update(StageObject *camera)
+{
+    YAMIPAN_STUB("AreaClip::update", 0x002dbd10);
+}
+
+// stub of FS2 0x002842f0
+void AreaGrid::build()
+{
+    YAMIPAN_STUB("AreaGrid::build", 0x002842f0);
+}
+
+// stub of FS2 0x001dd3f0
+void CharacterBrain::setEnabled(bool on)
+{
+    YAMIPAN_STUB("CharacterBrain::setEnabled", 0x001dd3f0);
+}
+
+// stub of FS2 0x00239bb0
+void CharacterInput::setActive(bool on)
+{
+    YAMIPAN_STUB("CharacterInput::setActive", 0x00239bb0);
+}
+
+// stub of FS2 0x002b1500
+void ClearSequence::update()
+{
+    YAMIPAN_STUB("ClearSequence::update", 0x002b1500);
+}
+
+// stub of FS2 0x0026ce20
+DemoCamera::DemoCamera() : StageCamera(450.0f, 512.0f, 512.0f, 1600.0f)
+{
+    YAMIPAN_STUB("DemoCamera::DemoCamera", 0x0026ce20);
+}
+
+// stub of FS2 0x0026c920
+void DemoCamera::drawOverlay()
+{
+    YAMIPAN_STUB("DemoCamera::drawOverlay", 0x0026c920);
+}
+
+// stub of FS2 0x002b0d60
+void DemoStream::drawSubtitles(sceVif1Packet *packet)
+{
+    YAMIPAN_STUB("DemoStream::drawSubtitles", 0x002b0d60);
+}
+
+// stub of FS2 address unknown (1 candidates)
+void DrawSysCamera::setScreenMatrix(const void *matrix)
+{
+    YAMIPAN_STUB("DrawSysCamera::setScreenMatrix", 0x00000000);
+}
+
+// stub of FS2 address unknown (1 candidates)
+void DrawSysCamera::setViewMatrix(const void *matrix)
+{
+    YAMIPAN_STUB("DrawSysCamera::setViewMatrix", 0x00000000);
+}
+
+// stub of FS2 0x002b1670
+void GameOverSequence::update()
+{
+    YAMIPAN_STUB("GameOverSequence::update", 0x002b1670);
+}
+
+// stub of FS2 0x002bc100
+void KeepList::update(float frames, u_char *motorA, u_char *motorB, char *flags, int *tags,
+                int max, StageObject *source)
+{
+    YAMIPAN_STUB("KeepList::update", 0x002bc100);
+}
+
+// stub of FS2 0x002ad030
+void MenuProgHolder::draw(float deltaSeconds, GamePacketManager *packets, StageObject *camera)
+{
+    YAMIPAN_STUB("MenuProgHolder::draw", 0x002ad030);
+}
+
+// stub of FS2 0x0014e4d0
+int ModelPose::solve(int iterations, int count, int flaggedOnly)
+{
+    YAMIPAN_STUB("ModelPose::solve", 0x0014e4d0);
+    return {};
+}
+
+// stub of FS2 0x002078d0
+bool PauseMenuState::isActive()
+{
+    YAMIPAN_STUB("PauseMenuState::isActive", 0x002078d0);
+    return {};
+}
+
+// stub of FS2 0x00207500
+void PauseMenuState::update()
+{
+    YAMIPAN_STUB("PauseMenuState::update", 0x00207500);
+}
+
+// stub of FS2 0x002bb260
+void PlayerOverlay::draw()
+{
+    YAMIPAN_STUB("PlayerOverlay::draw", 0x002bb260);
+}
+
+// stub of FS2 0x00268290
+void Rand48::seed(u_int value)
+{
+    YAMIPAN_STUB("Rand48::seed", 0x00268290);
+}
+
+// stub of FS2 0x0023aca0
+void SceneBoxList::update()
+{
+    YAMIPAN_STUB("SceneBoxList::update", 0x0023aca0);
+}
+
+// stub of FS2 0x002b22d0
+SceneDirector::SceneDirector()
+{
+    YAMIPAN_STUB("SceneDirector::SceneDirector", 0x002b22d0);
+}
+
+// stub of FS2 0x002b20a0
+void SceneDirector::draw(sceVif1Packet *packet)
+{
+    YAMIPAN_STUB("SceneDirector::draw", 0x002b20a0);
+}
+
+// stub of FS2 0x002b2270
+bool SceneDirector::isRunning()
+{
+    YAMIPAN_STUB("SceneDirector::isRunning", 0x002b2270);
+    return {};
+}
+
+// stub of FS2 0x002b2250
+void SceneDirector::start(int frames, u_int from, u_int to)
+{
+    YAMIPAN_STUB("SceneDirector::start", 0x002b2250);
+}
+
+// stub of FS2 0x002d07a0
+SceneModelHolder::SceneModelHolder(StageNodeTree*, int)
+{
+    YAMIPAN_STUB("SceneModelHolder::SceneModelHolder", 0x002d07a0);
+}
+
+// stub of FS2 0x002d0550
+void SceneModelHolder::draw(float deltaSeconds, sceVif1Packet *packet, StageObject *camera)
+{
+    YAMIPAN_STUB("SceneModelHolder::draw", 0x002d0550);
+}
+
+// stub of FS2 address unknown (1 candidates)
+void SceneOwnedObject::draw()
+{
+    YAMIPAN_STUB("SceneOwnedObject::draw", 0x00000000);
+}
+
+// stub of FS2 address unknown (1 candidates)
+StageObject * SceneOwnedObject::getTarget()
+{
+    YAMIPAN_STUB("SceneOwnedObject::getTarget", 0x00000000);
+    return {};
+}
+
+// stub of FS2 address unknown (1 candidates)
+bool SceneOwnedObject::hasTarget()
+{
+    YAMIPAN_STUB("SceneOwnedObject::hasTarget", 0x00000000);
+    return {};
+}
+
+// stub of FS2 address unknown (1 candidates)
+void SceneOwnedObject::prepare()
+{
+    YAMIPAN_STUB("SceneOwnedObject::prepare", 0x00000000);
+}
+
+// stub of FS2 address unknown (1 candidates)
+void SceneOwnedObject::update()
+{
+    YAMIPAN_STUB("SceneOwnedObject::update", 0x00000000);
+}
+
+// stub of FS2 0x00171440
+void ScenePairTable::actionControl()
+{
+    YAMIPAN_STUB("ScenePairTable::actionControl", 0x00171440);
+}
+
+// stub of FS2 0x001713a0
+void ScenePairTable::actionMovement()
+{
+    YAMIPAN_STUB("ScenePairTable::actionMovement", 0x001713a0);
+}
+
+// stub of FS2 0x001714e0
+void ScenePairTable::actionStart()
+{
+    YAMIPAN_STUB("ScenePairTable::actionStart", 0x001714e0);
+}
+
+// stub of FS2 0x00171300
+void ScenePairTable::actionTerminate()
+{
+    YAMIPAN_STUB("ScenePairTable::actionTerminate", 0x00171300);
+}
+
+// stub of FS2 0x00289800
+void ScenePool::draw(sceVif1Packet *packet, TexAreaList *texList)
+{
+    YAMIPAN_STUB("ScenePool::draw", 0x00289800);
+}
+
+// stub of FS2 0x00289b20
+int ScenePool::setSlot(int index, const u_short *text)
+{
+    YAMIPAN_STUB("ScenePool::setSlot", 0x00289b20);
+    return {};
+}
+
+// stub of FS2 0x001f5250
+void SceneRecordBuckets::collide()
+{
+    YAMIPAN_STUB("SceneRecordBuckets::collide", 0x001f5250);
+}
+
+// stub of FS2 0x001f7380
+void SceneRender::applyClearColor()
+{
+    YAMIPAN_STUB("SceneRender::applyClearColor", 0x001f7380);
+}
+
+// stub of FS2 0x001f94c0
+void SceneRender::setup()
+{
+    YAMIPAN_STUB("SceneRender::setup", 0x001f94c0);
+}
+
+// stub of FS2 0x001f73c0
+void SceneRender::update()
+{
+    YAMIPAN_STUB("SceneRender::update", 0x001f73c0);
+}
+
+// stub of FS2 0x001f8620
+void SceneRender::updateLights()
+{
+    YAMIPAN_STUB("SceneRender::updateLights", 0x001f8620);
+}
+
+// stub of FS2 address unknown (1 candidates)
+void ScreenFill::draw(sceVif1Packet *packet, TexAreaList *texList)
+{
+    YAMIPAN_STUB("ScreenFill::draw", 0x00000000);
+}
+
+// stub of FS2 address unknown (1 candidates)
+void ScriptRunner::destroy()
+{
+    YAMIPAN_STUB("ScriptRunner::destroy", 0x00000000);
+}
+
+// stub of FS2 0x001803e0
+StageBullet::StageBullet(int, int)
+{
+    YAMIPAN_STUB("StageBullet::StageBullet", 0x001803e0);
+}
+
+// stub of FS2 0x00177810
+void StageCamera::calcViewMatrix()
+{
+    YAMIPAN_STUB("StageCamera::calcViewMatrix", 0x00177810);
+}
+
+// stub of FS2 address unknown (1 candidates)
+bool StageEvent::hidesText()
+{
+    YAMIPAN_STUB("StageEvent::hidesText", 0x00000000);
+    return {};
+}
+
+// stub of FS2 address unknown (1 candidates)
+void StageFade::draw(sceVif1Packet *packet, TexAreaList *texList)
+{
+    YAMIPAN_STUB("StageFade::draw", 0x00000000);
+}
+
+// stub of FS2 0x00179700
+StageMainCamera::StageMainCamera() : StageCamera(450.0f, 512.0f, 512.0f, 1600.0f)
+{
+    YAMIPAN_STUB("StageMainCamera::StageMainCamera", 0x00179700);
+}
+
+// stub of FS2 address unknown (1 candidates)
+void StageMenu::draw(sceVif1Packet *packet, TexAreaList *texList)
+{
+    YAMIPAN_STUB("StageMenu::draw", 0x00000000);
+}
+
+// stub of FS2 address unknown (1 candidates)
+void StageMenu::update()
+{
+    YAMIPAN_STUB("StageMenu::update", 0x00000000);
+}
+
+// stub of FS2 0x002870f0
+void StageMission::setup()
+{
+    YAMIPAN_STUB("StageMission::setup", 0x002870f0);
+}
+
+// stub of FS2 0x00187d10
+void StageModel::bindBones()
+{
+    YAMIPAN_STUB("StageModel::bindBones", 0x00187d10);
+}
+
+// stub of FS2 0x00187b70
+void StageModel::placeBones(StageObject *owner)
+{
+    YAMIPAN_STUB("StageModel::placeBones", 0x00187b70);
+}
+
+// stub of FS2 0x00187230
+void StageModel::updateVcm()
+{
+    YAMIPAN_STUB("StageModel::updateVcm", 0x00187230);
+}
+
+// stub of FS2 0x00190a80
+void StageNodeTree::draw(GamePacketManager *packets, StageObject *camera)
+{
+    YAMIPAN_STUB("StageNodeTree::draw", 0x00190a80);
+}
+
+// stub of FS2 0x00190a90
+void StageNodeTree::update(float range, int arg, StageObject *view, StagePlayer *player)
+{
+    YAMIPAN_STUB("StageNodeTree::update", 0x00190a90);
+}
+
+// stub of FS2 0x00173cb0
+void StageObject::attachToRoot()
+{
+    YAMIPAN_STUB("StageObject::attachToRoot", 0x00173cb0);
+}
+
+// stub of FS2 address unknown (1 candidates)
+void StageObject::calcMatrix()
+{
+    YAMIPAN_STUB("StageObject::calcMatrix", 0x00000000);
+}
+
+// stub of FS2 address unknown (1 candidates)
+void StageObject::cameraStep()
+{
+    YAMIPAN_STUB("StageObject::cameraStep", 0x00000000);
+}
+
+// stub of FS2 0x002152a0
+bool StageObject::isMode2()
+{
+    YAMIPAN_STUB("StageObject::isMode2", 0x002152a0);
+    return {};
+}
+
+// stub of FS2 0x00215ed0
+bool StageObject::isPartner()
+{
+    YAMIPAN_STUB("StageObject::isPartner", 0x00215ed0);
+    return {};
+}
+
+// stub of FS2 address unknown (1 candidates)
+void StageObject::onLinkChanged()
+{
+    YAMIPAN_STUB("StageObject::onLinkChanged", 0x00000000);
+}
+
+// stub of FS2 0x001d8260
+void StageObject::propagate()
+{
+    YAMIPAN_STUB("StageObject::propagate", 0x001d8260);
+}
+
+// stub of FS2 0x001febb0
+void StageParty::createCamera()
+{
+    YAMIPAN_STUB("StageParty::createCamera", 0x001febb0);
+}
+
+// stub of FS2 0x001feb70
+void StageParty::draw()
+{
+    YAMIPAN_STUB("StageParty::draw", 0x001feb70);
+}
+
+// stub of FS2 0x001fe9c0
+void StageParty::setCompanion(StageObject *object)
+{
+    YAMIPAN_STUB("StageParty::setCompanion", 0x001fe9c0);
+}
+
+// stub of FS2 0x001feb80
+void StageParty::update()
+{
+    YAMIPAN_STUB("StageParty::update", 0x001feb80);
+}
+
+// stub of FS2 0x0020b1d0
+void StagePlayer::latchAltAction()
+{
+    YAMIPAN_STUB("StagePlayer::latchAltAction", 0x0020b1d0);
+}
+
+// stub of FS2 0x0023e770
+void UiItemList::draw(sceVif1Packet *packet, TexAreaList *texList)
+{
+    YAMIPAN_STUB("UiItemList::draw", 0x0023e770);
+}
+
+// stub of FS2 0x0023ee90
+int UiItemList::pick()
+{
+    YAMIPAN_STUB("UiItemList::pick", 0x0023ee90);
+    return {};
+}
+
+// stub of FS2 0x0023e7b0
+void UiItemList::update()
+{
+    YAMIPAN_STUB("UiItemList::update", 0x0023e7b0);
+}
+
+// stub of FS2 0x0023e740
+bool UiPickSlot::isReady()
+{
+    YAMIPAN_STUB("UiPickSlot::isReady", 0x0023e740);
+    return {};
+}
+
+// stub of FS2 0x0029aae0
+ViewCamera::ViewCamera() : StageCamera(450.0f, 512.0f, 512.0f, 1600.0f)
+{
+    YAMIPAN_STUB("ViewCamera::ViewCamera", 0x0029aae0);
+}
+
+// stub of FS2 0x002d4780
+void drawSysClearTargetView()
+{
+    YAMIPAN_STUB("drawSysClearTargetView", 0x002d4780);
+}
+
+// stub of FS2 0x002d4fd0
+DrawSysRecord * drawSysCurrent()
+{
+    YAMIPAN_STUB("drawSysCurrent", 0x002d4fd0);
+    return {};
+}
+
+// stub of FS2 0x002d5560
+void drawSysRender(GamePacketManager *packets, const sceGsDrawEnv1 *env, int flags)
+{
+    YAMIPAN_STUB("drawSysRender", 0x002d5560);
+}
+
+// stub of FS2 0x002d4790
+void drawSysSetTargetView()
+{
+    YAMIPAN_STUB("drawSysSetTargetView", 0x002d4790);
+}
+
+// stub of FS2 0x002d4ef0
+void drawSysTick(int ticks)
+{
+    YAMIPAN_STUB("drawSysTick", 0x002d4ef0);
+}
+
+// stub of FS2 0x002d9aa0
+float getDrawDistance()
+{
+    YAMIPAN_STUB("getDrawDistance", 0x002d9aa0);
+    return {};
+}
+
+// stub of FS2 0x002eaeb0
+void gsFillRect(sceVif1Packet *packet, int x, int y, int x2, int y2, u_int rgba)
+{
+    YAMIPAN_STUB("gsFillRect", 0x002eaeb0);
+}
+
+// stub of FS2 0x002849c0
+void gsFrameFilter(sceVif1Packet *packet, const sceGsDrawEnv1 *env, int w, int h,
+                   u_short block, int passes, int arg)
+{
+    YAMIPAN_STUB("gsFrameFilter", 0x002849c0);
+}
+
+// stub of FS2 0x001f9c70
+int sceneRenderGroup(int mode)
+{
+    YAMIPAN_STUB("sceneRenderGroup", 0x001f9c70);
+    return {};
+}
+
+// stub of FS2 0x002d9ab0
+void setDrawDistance(float distance)
+{
+    YAMIPAN_STUB("setDrawDistance", 0x002d9ab0);
+}
+
+// stub of FS2 0x0017df60
+void stageUpdateCharacterMotions()
+{
+    YAMIPAN_STUB("stageUpdateCharacterMotions", 0x0017df60);
+}

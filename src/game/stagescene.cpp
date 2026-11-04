@@ -15,7 +15,11 @@
 #include "game/fileloader.h"
 #include "game/fontdata.h"
 #include "game/gamehooks.h"
+#include "game/gamepacket.h"
 #include "game/gamesystem.h"
+#include "game/gfxtarget.h"
+#include "game/gsblockmap.h"
+#include "game/perfmeter.h"
 #include "game/gsutil.h"        /* Tim2Texture */
 #include "game/heap.h"          /* randNext */
 #include "game/pakarchive.h"
@@ -28,9 +32,11 @@
 #include "game/thread.h"        /* threadYield */
 #include "game/uiwidget.h"
 #include "game/vu0math.h"
+#include "sdk/libgraph.h"       /* SCE_GS_ALPHA_1, SCE_GS_TEST_1 */
 #include "sdk/libpad.h"         /* SCE_PADstart, SCE_PADselect */
 #include "sdk/libvu0.h"
 #include "sdk/scetypes.h"
+#include "yamipan/rendering/yamipan_drawui.h"
 
 // The data trees a stage script's paths are read from (StageFiles::dataDir).
 static const char kDataDir[]      = "../data/";        /* data 0x304188 */
@@ -289,7 +295,7 @@ StageCollisionFace *StageScene::raycast(sceVu0FVECTOR hit, const sceVu0FVECTOR f
          slot = firstActive(StageObjArray::next(slot))) {
         StageObject *obj = *slot;
         if ((skip != nullptr && skip == obj) || !obj->m_active || !obj->m_collides ||
-            obj->m_hidden)
+            obj->m_dead)
             continue;
         for (u_int i = 0; obj->collisionAt(i) != nullptr; i++) {
             StageCollisionFace *face = obj->collisionAt(i)->raycast(hit, from, to, mask,
@@ -331,20 +337,7 @@ void StageScene::drawPaused()
     StageObject *listener = views->topObject();
     u_char playerFlag = player == nullptr ? 0 : player->character()->getAltSoundFlag();
 
-    bool sceneFlag;
-    if (player != nullptr && player->isMode1()) {
-        sceneFlag = true;
-    } else {
-        sceneFlag = false;
-        StageObject *target;
-        if (viewTarget != nullptr && (target = viewTarget->character) != nullptr) {
-            bool kind11 = views->topObject()->getKind() == StageObject_Kind11;
-            if (target->isPlayer())
-                sceneFlag = !kind11;
-            else if (kind11)
-                sceneFlag = party->getCompanion() == target;
-        }
-    }
+    bool sceneFlag = (player != nullptr && player->isMode1()) || targetInView();
     sound->update(listener, playerFlag, sceneFlag);
 }
 
@@ -457,7 +450,7 @@ StageScene::~StageScene()
         fade->destroy();
     if (routePlayer != nullptr)
         routePlayer->destroy();
-    delete[] array54;
+    delete[] viewTargets;
     delete areaClip;
 
     if (isSubScene) {
@@ -515,7 +508,7 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
     arrays     = nullptr;
     model      = nullptr;
     director   = nullptr;   // PC: the ROM leaves +0x120 to whoever made the scene's memory
-    _114       = 0;
+    camerasReady = 0;
 
     objects  = new StageObjectList();
     pairs    = new ScenePairTable();
@@ -548,18 +541,18 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
     views->top      = -1;
 
     clock = gGameSystem->m_clock.createChild();
-    _64   = 0;
+    frameCount = 0;
     scripts[0] = scripts[1] = nullptr;
     scriptSlots = nullptr;
     route       = nullptr;
     routePlayer = nullptr;
-    _50        = 0;
-    array54    = nullptr;
+    viewTargetCount = 0;
+    viewTargets     = nullptr;
     areaClip = nullptr;
     lpt      = nullptr;
     player = nullptr;
     partner = controlled = nullptr;
-    flag84 = 0;
+    controlRequest = 0;
     owned[0] = owned[1] = owned[2] = nullptr;
     block98 = nullptr;
     buffers = nullptr;
@@ -568,9 +561,10 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
     menuProg   = nullptr;
     menuProgs  = nullptr;
     printer    = new WideFontPrinter(kScreenX, kScreenY);
-    _c8        = 0;
+    inFrame    = 0;
+    itemPicked = 0;
     boxes      = new SceneBoxList();
-    _d4 = _d8 = 0;
+    rootAny = root = nullptr;
     fade = new StageFade(kScreenX, kScreenY, kScreenW, kScreenH, 0);
 
     if (!this->isSubScene) {
@@ -610,7 +604,7 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
         drawSysPush();
     parent = nullptr;
     files  = nullptr;
-    _114   = 0;
+    camerasReady = 0;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -1193,9 +1187,9 @@ void StageScene::addFloorBox(AreaBox *box)
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x0019b540
 
-void StageScene::setFlag84()
+void StageScene::releaseControl()
 {
-    flag84 = 1;
+    controlRequest = 1;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -2539,9 +2533,9 @@ int stageFps()
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x0019b550
 
-void StageScene::setFlag84To(int value)
+void StageScene::requestControl(StageObject *object)
 {
-    flag84 = value;
+    controlRequest = (uintptr_t)object;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -2652,6 +2646,1010 @@ void StageScene::enterSubScene(void *data)
 }
 
 // ──────────────────────────────────────────────────────────────────────
+// The frame's walks over the object groups.
+
+// The timing marks of the frame (retail's addBar is empty; the colours and
+// the labels stay). The label names the stretch that ends at the mark.
+constexpr u_int kPerfBlack     = 0x80000000;
+constexpr u_int kPerfDarkGreen = 0x80008000;
+constexpr u_int kPerfOrange    = 0x80007fff;
+
+static void perfMark(u_int colour, const char *label)
+{
+    gGameSystem->m_perfMeter.addBar(0.0f, colour, PerfMeterGroup_Detail, label);
+}
+
+// The groups whose models have a VCM table to step (updateVcms).
+static bool groupHasVcm(int group)
+{
+    return group == StageObjGroup_1 || group == StageObjGroup_Characters
+        || group == StageObjGroup_3 || group == StageObjGroup_8;
+}
+
+// Every group but the cameras': each active root node carries its position
+// down and takes its matrices, then the model's pose is solved and what
+// hangs from its bones follows.
+// FS2 0x0019a850
+// callcheck: propagate, solve, propagate
+
+void StageScene::calcMatrices()
+{
+    for (int group = StageObjGroup_1; group < StageObjGroup_Count; group++) {
+        StageObjArray &list = objects->m_lists[group];
+        for (StageObject **slot = firstActive(list.begin()); slot != nullptr;
+             slot = firstActive(StageObjArray::next(slot))) {
+            StageObject *obj = *slot;
+            StageModel *model = obj->m_model;
+            if (obj->m_parent == nullptr) {
+                obj->propagate();
+                obj->calcMatrix();
+            }
+            if (model == nullptr || model->pose == nullptr)
+                continue;
+            if (model->pose->pending != 0)
+                model->pose->solve(3, -1, 0);
+            for (ModelLink *link = model->links; link != nullptr; link = link->next) {
+                link->object->propagate();
+                link->object->calcMatrix();
+            }
+        }
+    }
+}
+
+// calcMatrices' walk with only the positions (setupCameras, before the
+// first frame).
+// FS2 0x0019aa30
+// callcheck: propagate, propagate
+
+void StageScene::propagateNodes()
+{
+    for (int group = StageObjGroup_1; group < StageObjGroup_Count; group++) {
+        StageObjArray &list = objects->m_lists[group];
+        for (StageObject **slot = firstActive(list.begin()); slot != nullptr;
+             slot = firstActive(StageObjArray::next(slot))) {
+            StageObject *obj = *slot;
+            StageModel *model = obj->m_model;
+            if (obj->m_parent == nullptr)
+                obj->propagate();
+            if (model == nullptr)
+                continue;
+            for (ModelLink *link = model->links; link != nullptr; link = link->next)
+                link->object->propagate();
+        }
+    }
+}
+
+// FS2 0x0019a710
+// callcheck: updateVcm
+
+void StageScene::updateVcms()
+{
+    for (int group = 0; group < StageObjGroup_Count; group++) {
+        if (!groupHasVcm(group))
+            continue;
+        StageObjArray &list = objects->m_lists[group];
+        for (StageObject **slot = firstActive(list.begin()); slot != nullptr;
+             slot = firstActive(StageObjArray::next(slot))) {
+            if ((*slot)->m_model != nullptr)
+                (*slot)->m_model->updateVcm();
+        }
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Inline in the ROM: drawPaused, update and prepareDrawFlags (there on
+// gStageScene).
+// callcheck: getKind, isPlayer, getCompanion
+
+bool StageScene::targetInView()
+{
+    StageObject *target;
+    if (viewTarget == nullptr || (target = viewTarget->character) == nullptr)
+        return false;
+    bool camjack = views->topObject()->getKind() == StageObject_Kind11;
+    if (target->isPlayer())
+        return !camjack;
+    return camjack && party->getCompanion() == target;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// What takes the buttons: an open menu, then a ready item, then the pause
+// state, then the character. During an event only the pause state can.
+constexpr u_int kControlToPlayer = 1;   // StageScene::controlRequest
+
+// FS2 0x00195c10
+// callcheck: isActive, isReady, isActive
+
+void *StageScene::getInputFocus()
+{
+    if (focus != nullptr)
+        return focus;
+
+    if (event != nullptr) {
+        if (pauseState->isActive())
+            focus = pauseState;
+        return focus;
+    }
+    if (menu->state == StageMenu_Open) {
+        focus = menu;
+        return focus;
+    }
+    UiPickSlot *slot = itemList->frontSlot();
+    if (slot->isReady() && slot->object != nullptr && slot->enabled) {
+        focus = itemList;
+        return focus;
+    }
+    if (pauseState->isActive())
+        focus = pauseState;
+    else if (controlled != nullptr)
+        focus = controlled;
+    else
+        focus = player;
+    return focus;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Inline three times in update.
+// callcheck: setActive, setEnabled
+
+void StageScene::releaseControlled()
+{
+    StageObject *object = controlled;
+    controlled = nullptr;
+    if (object == nullptr)
+        return;
+    object->m_input->setActive(false);
+    if (object->m_brain != nullptr)
+        object->m_brain->setEnabled(true);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// who becomes the player. The main camera follows them, and camview too;
+// a view camera that was following the old player goes over at once.
+static const char kCameraName[]  = "camera";    /* data 0x303ca8 */
+static const char kCamviewName[] = "camview";   /* data 0x303cb8 */
+
+// FS2 0x0019b560
+// callcheck: find0, getKind, onLinkChanged, onViewTop, setActive, setEnabled, onLinkChanged, setActive, setEnabled, onLinkChanged, onViewTop, find0, onLinkChanged, onViewTop
+
+void StageScene::setPlayer(StagePlayer *who)
+{
+    StageObject *whoObject = who != nullptr ? who->character() : nullptr;
+    StageObject *camera = objects->find0(kCameraName, 0);
+
+    StageObject *top = views->topObject();
+    if (camera != top && top->getKind() == StageObject_Kind10
+        && top->m_linked == player->character()) {
+        top->m_linked = whoObject;
+        top->onLinkChanged();
+        top->onViewTop();
+    }
+
+    if (player != nullptr) {
+        StageObject *old = player->character();
+        old->m_input->setActive(false);
+        if (old->m_brain != nullptr)
+            old->m_brain->setEnabled(true);
+        camera->m_linked = nullptr;
+        camera->onLinkChanged();
+    }
+
+    player = who;
+
+    if (player != nullptr) {
+        whoObject->m_input->setActive(true);
+        if (whoObject->m_brain != nullptr)
+            whoObject->m_brain->setEnabled(false);
+        camera->m_linked = whoObject;
+        camera->onLinkChanged();
+        camera->onViewTop();
+    }
+
+    StageObject *camview = objects->find0(kCamviewName, 0);
+    if (camview != nullptr) {
+        camview->m_linked = whoObject;
+        camview->onLinkChanged();
+        camview->onViewTop();
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The frame's rumble: the KeepList's nodes of the source give the two
+// motors (when the option is on), and a node that fires an alert sounds it.
+static const char kRumbleAlert[] = "ALERT2";    /* data 0x303bf8 */
+constexpr int   kRumbleFlags  = 8;
+constexpr float kRumbleVolume = 1.0f;
+
+// FS2 0x00199250
+// callcheck: getAltSoundFlag, getCompanion, getKind, getKind, getKind
+
+StageObject *StageScene::getRumbleSource()
+{
+    StageObject *who = nullptr;
+    if (player != nullptr && player->character()->getAltSoundFlag()) {
+        who = party->getCompanion();
+    } else {
+        StageObject *top = gStageScene->views->topObject();
+        if (top != nullptr
+            && (top->getKind() == StageObject_Kind9 || top->getKind() == StageObject_Kind10
+                || top->getKind() == StageObject_Kind11))
+            who = top->m_linked;
+    }
+    return who != nullptr ? who : player->character();
+}
+
+// FS2 0x00199130
+// callcheck: removeUnkept, getRumbleSource, update, getGameOptions, setVibration, setVibration, playNamed
+
+void StageScene::updateRumble(float frames)
+{
+    if (keepList == nullptr)
+        return;
+    if (event != nullptr) {
+        keepList->removeUnkept();
+        return;
+    }
+
+    u_char motorLarge, motorSmall;
+    char   flags[kRumbleFlags];
+    int    tags[kRumbleFlags];
+    keepList->update(frames, &motorLarge, &motorSmall, flags, tags, kRumbleFlags,
+                     getRumbleSource());
+    // _08: the vibration option (read here for the first time).
+    if (getGameOptions()->_08) {
+        gGameSystem->m_pad0.setVibration(PadMotor_Small, motorSmall);
+        gGameSystem->m_pad0.setVibration(PadMotor_Large, motorLarge);
+    }
+    for (int i = 0; i < kRumbleFlags; i++) {
+        if (flags[i] == 1)
+            sound->playNamed(kRumbleAlert, kRumbleVolume);
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// One frame of the scene, in the order of its timing marks: actions,
+// scripts, control, movement, collision, terminate, matrices, the owned
+// objects, particles, sound, UI, who has control, the dead objects.
+constexpr float kParticleRangeScale = 1.2f;     // of the draw distance
+constexpr float kFrameSeconds = 0.033333335f;   // 1/30 s: updateRumble counts in these
+constexpr float kDrawSysTicksPerSecond = 300.0f;
+constexpr int   kBlackoutFrames = 0xf;
+constexpr u_int kBlack = 0x80000000;
+
+// FS2 0x00199400
+// callcheck: addBar, sceneRenderGroup, actionStart, addBar, runStageScripts, run, isPlaying, operator_delete, isPlaying, stop, update, update, addBar, getAltSoundFlag, latchAltAction, actionControl, stageUpdateCharacterMotions, addBar, actionMovement, addBar, collide, addBar, actionTerminate, addBar, calcMatrices, cameraStep, calcMatrix, addBar, update, updateBlock98, updateBuffers, getDrawDistance, update, update, getDeltaSeconds, updateRumble, addBar, getAltSoundFlag, isMode1, update, getCueSubtitle, setSlot, update, update, updateLights, update, update, update, getInputFocus, bitMask, pick, update, currentMission, isRunning, ~SceneDirector, start, operator_new, SceneDirector, start, getAltSoundFlag, addBar, updateVcms, getDeltaSeconds, drawSysTick, isPlayer, getCompanion (perfMark, targetInView and releaseControlled carry the rest; the ROM repeats them inline)
+
+void StageScene::update()
+{
+    focus = nullptr;
+    perfMark(kPerfBlack, nullptr);
+    render->spotActive = 0;
+    render->spotGroup = sceneRenderGroup(0);
+    if (block98 != nullptr)
+        block98->dirty = 1;
+    if (buffers != nullptr)
+        buffers->used = 0;
+    pairs->actionStart();
+    perfMark(PerfMeterColour_Blue, "action(start)");
+
+    if (!isSubScene) {
+        runStageScripts();
+    } else if (subScene != nullptr) {
+        subScene->run(0);
+        bool going = subScene->m_running != 0 || demoStream->isPlaying();
+        bool skipped = subScene->m_skippable
+            && (gGameSystem->m_pad0.m_pressed & SCE_PADstart) != 0;
+        if (skipped || !going) {
+            subScene->destroy();
+            operator delete(subSceneBlock);
+            subScene = nullptr;
+            subSceneBlock = nullptr;
+            if (demoStream->isPlaying())
+                demoStream->stop();
+        }
+    }
+    if (gameOver != nullptr)
+        gameOver->update();
+    else if (clear != nullptr)
+        clear->update();
+    perfMark(PerfMeterColour_Yellow, "script");
+
+    inFrame = 1;
+    if (altLatch) {
+        if (player != nullptr && player->character()->getAltSoundFlag())
+            player->latchAltAction();
+        else
+            altLatch = 0;
+    }
+    pairs->actionControl();
+    stageUpdateCharacterMotions();
+    perfMark(PerfMeterColour_Blue, "action(control)");
+    pairs->actionMovement();
+    perfMark(PerfMeterColour_Cyan, "action(movement(&motion))");
+    records->collide();
+    perfMark(kPerfDarkGreen, "collision");
+    pairs->actionTerminate();
+    perfMark(PerfMeterColour_Red, "action(terminate)");
+
+    calcMatrices();
+    StageObjArray &cameras = objects->m_lists[StageObjGroup_0];
+    for (StageObject **slot = firstActive(cameras.begin()); slot != nullptr;
+         slot = firstActive(StageObjArray::next(slot))) {
+        if ((*slot)->m_viewActive) {
+            (*slot)->cameraStep();
+            (*slot)->calcMatrix();
+        }
+    }
+    perfMark(kPerfOrange, "calcmatrix(root)");
+
+    if (!isSubScene) {
+        for (int i = 0; i < 3; i++) {
+            if (owned[i] != nullptr)
+                owned[i]->update();
+        }
+        party->update();
+        updateBlock98();
+        updateBuffers();
+    }
+
+    float range = getDrawDistance() * kParticleRangeScale;
+    nodeTree->update(range, 0, views->topObject(), player);
+    boxes->update();
+    updateRumble(clock->getDeltaSeconds() / kFrameSeconds);
+    perfMark(PerfMeterColour_Green, "particle");
+
+    if (!isSubScene) {
+        StageObject *listener = views->topObject();
+        u_char playerFlag = player == nullptr ? 0 : player->character()->getAltSoundFlag();
+        bool sceneFlag = (player != nullptr && player->isMode1()) || targetInView();
+        sound->update(listener, playerFlag, sceneFlag);
+        pool->setSlot(0, sound->getCueSubtitle());
+    } else {
+        demoStream->update();
+    }
+
+    render->update();
+    render->updateLights();
+
+    if (!isSubScene) {
+        pauseState->update();
+        if (event == nullptr) {
+            menu->update();
+            itemList->update();
+            bool pressed = false;
+            if (getInputFocus() == itemList) {
+                const GamePad &pad = gGameSystem->m_pad0;
+                int button = pad.m_optionsMap == nullptr ? pad.m_buttonMap.button[0]
+                                                         : pad.m_optionsMap->button[0];
+                pressed = (pad.m_pressed & bitMask(button)) != 0;
+            }
+            itemPicked = pressed && itemList->pick() >= 0;
+            alert->update();
+        }
+
+        if (currentMission()->blackout) {
+            if (director == nullptr) {
+                director = new SceneDirector;
+                director->start(kBlackoutFrames, 0, kBlack);
+            }
+        } else if (director != nullptr && !director->isRunning()) {
+            if (director->colour == 0) {
+                delete director;
+                director = nullptr;
+            } else {
+                director->start(kBlackoutFrames, kBlack, 0);
+            }
+        }
+    }
+
+    if (controlRequest == 0) {
+        bool alt = player != nullptr && player->character()->getAltSoundFlag();
+        if (!alt && controlled != nullptr && controlled != player->character()) {
+            releaseControlled();
+            setPlayer(player);
+        }
+    } else if (controlRequest == kControlToPlayer) {
+        releaseControlled();
+        setPlayer(player);
+        controlRequest = 0;
+    } else {
+        if (player != nullptr && player->character()->getAltSoundFlag()) {
+            StageObject *object = (StageObject *)controlRequest;
+            party->setCompanion(object);
+            releaseControlled();
+            setPlayer(player);
+            player->character()->m_input->setActive(false);
+            object->m_input->setActive(true);
+            if (object->m_brain != nullptr)
+                object->m_brain->setEnabled(false);
+            controlled = object;
+            StageObject *camera = objects->find0(kCameraName, 0);
+            camera->m_linked = controlled;
+            camera->onLinkChanged();
+            camera->onViewTop();
+        }
+        controlRequest = 0;
+    }
+
+    // An object's dtor takes it out of the list, so the next one moves into
+    // its slot.
+    for (int group = 0; group < StageObjGroup_Count; group++) {
+        StageObject **slot = objects->m_lists[group].begin();
+        while (slot != nullptr) {
+            StageObject *obj = *slot;
+            if (!obj->m_dead) {
+                slot = StageObjArray::next(slot);
+                continue;
+            }
+            bool last = StageObjArray::next(slot) == nullptr;
+            obj->destroy();
+            if (last)
+                slot = nullptr;
+        }
+    }
+    perfMark(PerfMeterColour_Magenta, "others");
+
+    updateVcms();
+    drawSysTick((int)(clock->getDeltaSeconds() * kDrawSysTicksPerSecond));
+    frameCount++;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Before drawing: every character's two parts off; the view target's model
+// gets the target group while it is in view (the partner's too in its mode
+// 2); then the part a camera shows is turned on: the followed character's
+// for camview / camjack, the second part of an owned object's target else.
+constexpr u_char kDrawGroupNormal = 1;
+constexpr u_char kDrawGroupTarget = 0x20;
+constexpr u_char kPartOff  = 0;
+constexpr u_char kPartShow = 2;
+
+// FS2 0x00198560
+// callcheck: isPlayer, getCompanion, getKind, drawSysClearTargetView, drawSysSetTargetView, isMode2, getKind, getKind, hasTarget, getTarget, isMode1 (targetInView holds the first ones)
+
+void StageScene::prepareDrawFlags()
+{
+    StageObjArray &characters = objects->m_lists[StageObjGroup_Characters];
+    for (StageObject **slot = firstActive(characters.begin()); slot != nullptr;
+         slot = firstActive(StageObjArray::next(slot))) {
+        for (int i = 0; i < 2; i++) {
+            if ((*slot)->m_parts[i] != nullptr)
+                (*slot)->m_parts[i]->drawMode = kPartOff;
+        }
+    }
+
+    if (gStageScene->targetInView()) {
+        drawSysSetTargetView();
+        viewTarget->model->data->drawGroup = kDrawGroupTarget;
+        if (partner != nullptr && partner->isMode2())
+            partner->m_model->data->drawGroup = kDrawGroupTarget;
+    } else {
+        drawSysClearTargetView();
+        if (viewTarget != nullptr)
+            viewTarget->model->data->drawGroup = kDrawGroupNormal;
+        if (partner != nullptr)
+            partner->m_model->data->drawGroup = kDrawGroupNormal;
+    }
+
+    if (views->topObject()->getKind() == StageObject_Kind10
+        || views->topObject()->getKind() == StageObject_Kind11) {
+        StageObject *linked = views->topObject()->m_linked;
+        if (linked == nullptr)
+            return;
+        // PC: the stand-ins keep StagePlayer apart from StageObject; the ROM
+        // passes the character.
+        CharacterPart *part = reinterpret_cast<StagePlayer *>(linked)->isMode1()
+                                  ? linked->m_parts[1] : linked->m_parts[0];
+        if (part != nullptr)
+            part->drawMode = kPartShow;
+        return;
+    }
+
+    SceneOwnedObject *owner = nullptr;
+    for (int i = 0; i < 3 && owner == nullptr; i++) {
+        if (owned[i] != nullptr && owned[i]->hasTarget())
+            owner = owned[i];
+    }
+    if (owner == nullptr)
+        return;
+    StageObject *target = owner->getTarget();
+    if (target != nullptr && target->m_parts[1] != nullptr)
+        target->m_parts[1]->drawMode = kPartShow;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The frame filter of camview and camjack, by who the camera follows.
+struct ViewFilter
+{
+    int passes;
+    int arg;
+};
+enum ViewFilterKind
+{
+    ViewFilter_NoOne,           // the camera follows no one
+    ViewFilter_PlayerStage6,    // the player, on stage 6
+    ViewFilter_PartnerStage12,  // the partner, on stage 12
+    ViewFilter_Snpc,            // F_E24_SNPC2, F_E21_SNPC1
+    ViewFilter_Other,
+    ViewFilter_Count,
+};
+static const ViewFilter kViewFilters[ViewFilter_Count] = {     /* data 0x31a8f8 */
+    { 0, 0 }, { 3, 1 }, { 3, 1 }, { 1, 1 }, { 0, 0 },
+};
+static_assert(sizeof(ViewFilter) == 8, "ViewFilter: the table's stride");
+constexpr int kFilterStagePlayer  = 6;
+constexpr int kFilterStagePartner = 12;
+static const char kSnpcE24[] = "F_E24_SNPC2";   /* data 0x303bb8 */
+static const char kSnpcE21[] = "F_E21_SNPC1";   /* data 0x303bc8 */
+// The 512 x 512 frame the filters and fills work on.
+constexpr int kSceneFrameSize = 0x200;
+// GsVram area 4's block in the filter's page units (>> 5).
+constexpr int kFilterVramArea = 4;
+constexpr int kFilterBlockShift = 5;
+
+// FS2 0x001983b0
+// callcheck: getKind, getKind, getStageSelect, isPlayer, isPartner, strcmp, strcmp, openList, gfxGetDrawEnv, gfxGetVramBlock, gsFrameFilter, closeList
+
+void StageScene::drawViewFilter(GamePacketManager *packets, StageObject *camera)
+{
+    if (camera->getKind() != StageObject_Kind10 && camera->getKind() != StageObject_Kind11)
+        return;
+
+    ViewFilterKind kind = ViewFilter_NoOne;
+    StageObject *linked = camera->m_linked;
+    if (linked != nullptr) {
+        int stage = getStageSelect()->stage;
+        if (linked->isPlayer() && stage == kFilterStagePlayer)
+            kind = ViewFilter_PlayerStage6;
+        else if (linked->isPartner() && stage == kFilterStagePartner)
+            kind = ViewFilter_PartnerStage12;
+        else if (strcmp(linked->m_name, kSnpcE24) == 0 || strcmp(linked->m_name, kSnpcE21) == 0)
+            kind = ViewFilter_Snpc;
+        else
+            kind = ViewFilter_Other;
+    }
+
+    const ViewFilter &filter = kViewFilters[kind];
+    if (filter.passes == 0)
+        return;
+    sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
+    GfxDrawEnv *env = gfxGetDrawEnv();
+    u_int block = (u_int)gfxGetVramBlock(kFilterVramArea);
+    gsFrameFilter(packet, &env->env, kSceneFrameSize, kSceneFrameSize,
+                  (u_short)(block >> kFilterBlockShift), filter.passes, filter.arg);
+    packets->closeList();
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// One frame's draw for camera, layer by layer: the 3D frame, particles,
+// the menu program, then the packet lists in the game's order.
+static const char kEventD0101[] = "d0101";      /* data 0x303be8 */
+// The filter of the event d0101 (below 2 of the demo camera's m_demoCut).
+constexpr int kD0101FilterCuts = 2;
+constexpr int kD0101FilterPasses = 1;
+constexpr int kD0101FilterArg = 5;
+// A sub-scene's letterbox: black bars over the 512-tall frame. ALPHA
+// (Cs - Cd) * As + Cd, TEST: depth always, no alpha test.
+constexpr u_long kLetterboxAlpha = 0x44;
+constexpr u_long kLetterboxTest  = 0x30000;
+constexpr int kLetterboxTop    = 0x40;
+constexpr int kLetterboxBottom = 0x1c0;
+
+// FS2 0x00198970
+// callcheck: applyClearColor, prepareDrawFlags, calcViewMatrix, drawSysCurrent, drawSysCurrent, setDrawDistance, update, gfxGetCurrentDrawEnv, drawSysRender, addBar, draw, getDeltaSeconds, draw, drawViewFilter, draw, getKind, strcmp, openList, gfxGetDrawEnv, gfxGetVramBlock, gsFrameFilter, closeList, drawOverlay, openList, getDeltaSeconds, draw, closeList, openList, gfxGetTexArea, getList, closeList, draw, openList, gfxGetTexArea, getList, draw, gfxGetTexArea, getList, closeList, openList, gfxGetTexArea, getList, draw, closeList, openList, drawSubtitles, closeList, openList, gfxGetTexArea, getList, draw, gfxGetTexArea, getList, draw, gfxGetTexArea, getList, gsFillRect, gsFillRect, closeList, addBar (perfMark holds addBar; the two GS register packets are YamiPan_DrawUiReg here)
+
+void StageScene::draw(StageObject *active)
+{
+    GamePacketManager *packets = &gGameSystem->m_packets;
+
+    render->applyClearColor();
+    prepareDrawFlags();
+    static_cast<StageCamera *>(active)->calcViewMatrix();
+    drawSysCurrent()->camera->setViewMatrix(active->cameraView());
+    drawSysCurrent()->camera->setScreenMatrix(active->cameraScreen());
+    setDrawDistance(active->m_range + active->m_range2);
+    if (areaClip != nullptr)
+        areaClip->update(active);
+
+    GfxDrawEnv *env = gfxGetCurrentDrawEnv();
+    drawSysRender(packets, env != nullptr ? &env->env : nullptr, 0);
+    perfMark(PerfMeterColour_White, "rena draw");
+
+    nodeTree->draw(packets, active);
+    if (menuProg != nullptr)
+        menuProg->draw(clock->getDeltaSeconds(), packets, active);
+
+    if (!isSubScene) {
+        drawViewFilter(packets, active);
+        party->draw();
+    } else {
+        StageObject *top = views->topObject();
+        if (top->getKind() == StageObject_Kind13) {
+            if (strcmp(parent->event->name, kEventD0101) == 0
+                && top->m_demoCut < kD0101FilterCuts) {
+                sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
+                GfxDrawEnv *frame = gfxGetDrawEnv();
+                u_int block = (u_int)gfxGetVramBlock(kFilterVramArea);
+                gsFrameFilter(packet, &frame->env, kSceneFrameSize, kSceneFrameSize,
+                              (u_short)(block >> kFilterBlockShift), kD0101FilterPasses,
+                              kD0101FilterArg);
+                packets->closeList();
+            }
+            static_cast<DemoCamera *>(top)->drawOverlay();
+        }
+    }
+
+    if (model != nullptr) {
+        sceVif1Packet *packet = packets->openList(PacketList_SceneModel);
+        model->draw(clock->getDeltaSeconds(), packet, active);
+        packets->closeList();
+    }
+
+    {
+        sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
+        screenFill->draw(packet, gfxGetTexArea()->getList(PacketList_Scene2d));
+        packets->closeList();
+    }
+
+    for (int i = 0; i < 3; i++) {
+        if (owned[i] != nullptr)
+            owned[i]->draw();
+    }
+    if (menuProgs != nullptr && player != nullptr)
+        player->motion->overlay->draw();
+
+    if (!isSubScene) {
+        if (printer->m_texture != nullptr) {
+            if (event == nullptr) {
+                sceVif1Packet *packet = packets->openList(PacketList_StageClock);
+                itemList->draw(packet, gfxGetTexArea()->getList(PacketList_StageClock));
+                menu->draw(packet, gfxGetTexArea()->getList(PacketList_StageClock));
+                packets->closeList();
+            }
+            if (event == nullptr || !event->hidesText()) {
+                sceVif1Packet *packet = packets->openList(PacketList_Screen);
+                gStageScene->pool->draw(packet, gfxGetTexArea()->getList(PacketList_Screen));
+                packets->closeList();
+            }
+        }
+    } else {
+        sceVif1Packet *packet = packets->openList(PacketList_Screen);
+        demoStream->drawSubtitles(packet);
+        packets->closeList();
+    }
+
+    sceVif1Packet *packet = packets->openList(PacketList_Overlay);
+    if (!isSubScene) {
+        alert->draw(packet, gfxGetTexArea()->getList(PacketList_Overlay));
+        fade->draw(packet, gfxGetTexArea()->getList(PacketList_Overlay));
+        if (director != nullptr)
+            director->draw(packet);
+    } else {
+        fade->draw(packet, gfxGetTexArea()->getList(PacketList_Overlay));
+        YamiPan_DrawUiReg(packet, SCE_GS_ALPHA_1, kLetterboxAlpha);
+        YamiPan_DrawUiReg(packet, SCE_GS_TEST_1, kLetterboxTest);
+        gsFillRect(packet, 0, 0, kSceneFrameSize, kLetterboxTop, kBlack);
+        gsFillRect(packet, 0, kLetterboxBottom, kSceneFrameSize, kSceneFrameSize, kBlack);
+    }
+    packets->closeList();
+    perfMark(PerfMeterColour_White, "2d draw");
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The objects the stage looks at (the view target and the two statues of
+// stage 24, where they exist). What reads the array is unread.
+static const char *const kSightObjects[2] = {   /* data 0x31a920 */
+    "oSJ24_02",                 /* data 0x303b50 */
+    "oSJ24_03",                 /* data 0x303b60 */
+};
+
+// FS2 0x00197160
+// callcheck: find1, operator_new[], find1
+
+void StageScene::collectViewTargets()
+{
+    if (viewTarget != nullptr)
+        viewTargetCount++;
+    for (u_int i = 0; i < 2; i++) {
+        if (objects->find1(kSightObjects[i], 0) != nullptr)
+            viewTargetCount++;
+    }
+
+    viewTargets = new StageObject *[viewTargetCount];
+    int index = 0;
+    if (viewTarget != nullptr)
+        viewTargets[index++] = reinterpret_cast<StageObject *>(viewTarget);
+    for (u_int i = 0; i < 2; i++) {
+        StageObject *object = objects->find1(kSightObjects[i], 0);
+        if (object != nullptr)
+            viewTargets[index++] = object;
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Room for every object's saved state but the bullets'. Inline in
+// setupCameras.
+SceneArrayPair::SceneArrayPair()
+{
+    count = 0;
+    for (int group = 0; group < StageObjGroup_Count; group++) {
+        if (group != StageObjGroup_Bullets)
+            count += gStageScene->objects->m_lists[group].m_count;
+    }
+    first  = new u_char[(int)count * 3];
+    second = new NodeTransform[(int)count];
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Every object's three saved bytes back, group by group, in the walk that
+// counted them (SceneArrayPair above). A light with m_keepFlags has no
+// record.
+// FS2 0x0019c6a0
+// callcheck: setActive, setShown, setShown
+
+void SceneArrayPair::restoreFlags()
+{
+    int index = 0;
+    for (int group = 0; group < StageObjGroup_Count; group++) {
+        if (group == StageObjGroup_Bullets)
+            continue;
+        StageObjArray &list = gStageScene->objects->m_lists[group];
+        for (StageObject **slot = list.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+            StageObject *obj = *slot;
+            if (group == StageObjGroup_5 && obj->m_keepFlags)
+                continue;
+            const u_char *saved = &first[index * 3];
+            bool active = saved[0] != 0;
+            obj->m_tree->setActive(active);
+            obj->m_tree->setShown(active);
+            obj->m_tree->setShown(saved[1] != 0);
+            index++;
+            obj->m_viewActive = saved[2] != 0;
+        }
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// FS2 0x0019cdc0
+// callcheck: onViewTop
+
+void StageViewStack::push(StageObject *object, int priority, u_char flag)
+{
+    int last = top;
+    for (int i = 0; i <= last; i++) {
+        if (entries[i].object == object)
+            return;
+    }
+
+    top++;
+    int index = last;
+    for (; index >= 0; index--) {
+        if (entries[index].priority <= priority)
+            break;
+        entries[index + 1] = entries[index];
+    }
+    index++;
+    entries[index].object   = object;
+    entries[index].priority = priority;
+    entries[index].flag     = flag;
+
+    for (int i = 0; i < top; i++)
+        entries[i].object->m_viewActive = 0;
+
+    StageObject *next = topObject();
+    if (next != nullptr) {
+        if (next == object)
+            next->onViewTop();
+        next->m_viewActive = 1;
+    }
+}
+
+// FS2 0x0019cc80
+// callcheck: onViewTop
+
+StageObject *StageViewStack::removePriority(int priority)
+{
+    int index = top;
+    while (index >= 0 && entries[index].priority != priority)
+        index--;
+    if (index < 0)
+        return nullptr;
+
+    for (int i = index + 1; i <= top; i++)
+        entries[i - 1] = entries[i];
+    top--;
+    // As the ROM: it reads the entry after the shift, so below the top this
+    // is the object that moved into the place, not the one removed.
+    StageObject *object = entries[index].object;
+    object->m_viewActive = 0;
+
+    StageObject *next = topObject();
+    if (next != nullptr) {
+        if (!next->m_viewActive)
+            next->onViewTop();
+        next->m_viewActive = 1;
+    }
+    return object;
+}
+
+// FS2 0x0019bb70
+// callcheck: removePriority (a tail jump)
+
+void StageScene::removeViewPriority(int priority)
+{
+    views->removePriority(priority);
+}
+
+// FS2 0x0019bb80
+// callcheck: push (a tail jump)
+
+void StageScene::pushView(StageObject *object, int priority, u_char flag)
+{
+    views->push(object, priority, flag);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Once for a scene: a stage gets its cameras (camera, the three camviews,
+// cam_dive), a spare bullet and the flash light, off; a sub-scene its demo
+// camera. The Root objects are found, the bg script's entries run (a
+// sub-scene's last entry is its own, and entries ending in m are left to
+// it), the bones are bound, the first two characters become player and
+// partner unless a script said otherwise, and a stage builds what needs the
+// whole map.
+static const char kCamviewZoomName[]  = "camview_zoom";  /* data 0x303cc0 */
+static const char kCamviewSnipeName[] = "camview_snipe"; /* data 0x303cd0 */
+static const char kCamDiveName[]      = "cam_dive";      /* data 0x303ce0 */
+static const char kFlashName[]        = "flash";         /* data 0x303cf0 */
+static const char kRootName[]         = "Root";          /* data 0x303cf8 */
+static const char kCameraDemoName[]   = "camera_demo";   /* data 0x303d00 */
+constexpr float kCameraScrZ   = 450.0f;
+constexpr float kCameraWidth  = 512.0f;
+constexpr float kCameraHeight = 512.0f;
+constexpr float kCameraFar    = 1600.0f;
+constexpr int   kViewPriorityMain = 0;
+constexpr int   kViewPriorityDemo = 4;
+constexpr char  kScriptSkipMark = 'm';
+
+// FS2 0x00199f00
+// callcheck: prepare, operator_new, StageMainCamera, addToScene, push, operator_new, ViewCamera, addToScene, operator_new, ViewCamera, addToScene, operator_new, ViewCamera, addToScene, operator_new, StageCamera, addToScene, operator_new, StageBullet, setActive, setShown, operator_new, PointLight, addToScene, setActive, setShown, currentMission, setup, scriptPrepare, operator_new, DemoCamera, addToScene, push, createCamera, strcmp, getKind, attachToRoot, setup, setup, scriptPrepare, strlen, operator_new, ScriptRunner, setEntry, run, bindBones, placeBones, calcMatrices, propagateNodes, setPlayer, build, build, build, build, GetTimerSystemTime, seed, operator_new, operator_new[], operator_new[], FUN_00104d90, operator_new, getStageSelect, SceneModelHolder, collectViewTargets, operator_delete, operator_delete (the array's ctor is SceneArrayPair's; m_name stands for the virtual +0x21c)
+
+void StageScene::setupCameras()
+{
+    if (camerasReady)
+        return;
+
+    if (!isSubScene) {
+        for (int i = 0; i < 3; i++) {
+            if (owned[i] != nullptr)
+                owned[i]->prepare();
+        }
+
+        StageMainCamera *mainCamera = new StageMainCamera;
+        mainCamera->addToScene(kCameraName);
+        views->push(mainCamera, kViewPriorityMain, 0);
+
+        static const char *const viewCameras[3] = {
+            kCamviewName, kCamviewZoomName, kCamviewSnipeName,
+        };
+        for (int i = 0; i < 3; i++) {
+            ViewCamera *view = new ViewCamera;
+            view->addToScene(viewCameras[i]);
+            view->m_viewActive = 0;
+        }
+
+        StageCamera *dive = new StageCamera(kCameraScrZ, kCameraWidth, kCameraHeight, kCameraFar);
+        dive->addToScene(kCamDiveName);
+        dive->m_viewActive = 0;
+
+        StageBullet *bullet = new StageBullet(0, 0);
+        bullet->m_tree->setActive(false);
+        bullet->m_tree->setShown(false);
+
+        PointLight *flash = new PointLight;
+        flash->addToScene(kFlashName, true);
+        flash->m_tree->setActive(false);
+        flash->m_tree->setShown(false);
+
+        currentMission()->setup();
+        scriptPrepare(scripts[0]);
+    } else {
+        DemoCamera *demo = new DemoCamera;
+        demo->addToScene(kCameraDemoName);
+        views->push(demo, kViewPriorityDemo, 0);
+    }
+
+    if (party != nullptr)
+        party->createCamera();
+
+    if (rootAny == nullptr) {
+        for (int group = 0; group < StageObjGroup_Count; group++) {
+            StageObjArray &list = objects->m_lists[group];
+            for (StageObject **slot = list.begin(); slot != nullptr;
+                 slot = StageObjArray::next(slot)) {
+                if (strcmp((*slot)->m_name, kRootName) == 0) {
+                    rootAny = *slot;
+                    if (group == StageObjGroup_1)
+                        root = rootAny;
+                    break;
+                }
+            }
+        }
+    }
+
+    StageObjArray &roots = objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = roots.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        if ((*slot)->getKind() == StageObject_Door)
+            (*slot)->attachToRoot();
+    }
+
+    if (areaClip != nullptr)
+        areaClip->setup();
+    render->setup();
+
+    if (bgScript != nullptr) {
+        scriptPrepare(bgScript);
+        int count = bgScript->count;
+        if (isSubScene && count >= 2)
+            count--;
+        for (int i = 0; i < count; i++) {
+            const char *entry = (const char *)bgScript->entry(i);
+            if (isSubScene && entry[strlen(entry) - 1] == kScriptSkipMark)
+                continue;
+            ScriptRunner *runner = new ScriptRunner;
+            runner->setEntry(entry);
+            runner->run(0);
+            runner->destroy();
+        }
+    }
+
+    for (StageObject **slot = roots.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        StageObject *obj = *slot;
+        StageModel *objModel = obj->m_model;
+        if (obj != rootAny && objModel != nullptr) {
+            objModel->bindBones();
+            objModel->placeBones(obj);
+        }
+    }
+
+    calcMatrices();
+    propagateNodes();
+
+    if (scripts[0] == nullptr) {
+        StageObjArray &characters = objects->m_lists[StageObjGroup_Characters];
+        StageObject **first = firstActive(characters.begin());
+        if (player == nullptr && first != nullptr && *first != nullptr)
+            setPlayer(reinterpret_cast<StagePlayer *>(*first));
+        if (partner == nullptr && first != nullptr) {
+            StageObject **second = firstActive(StageObjArray::next(first));
+            if (second != nullptr && *second != nullptr)
+                partner = *second;
+        }
+    }
+
+    focus = nullptr;
+    if (!isSubScene) {
+        for (int i = 0; i < StageArea_Count; i++)
+            areas[i]->build();
+        rng->seed((u_int)GetTimerSystemTime());
+        arrays = new SceneArrayPair;
+        model  = new SceneModelHolder(nodeTree, getStageSelect()->stage);
+        collectViewTargets();
+    }
+    director = nullptr;
+
+    if (gameOver != nullptr) {
+        operator delete(gameOver);
+        gameOver = nullptr;
+    }
+    if (clear != nullptr) {
+        operator delete(clear);
+        clear = nullptr;
+    }
+    altLatch = 0;
+    camerasReady = 1;
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // Template instances of this file, one source in game/stagelist.h (a few
 // more use the host's <string>):
 //   FS2 0x001a4960  StringMap::StringMap
@@ -2736,27 +3734,22 @@ void StageFiles::loadList()
     YAMIPAN_STUB("StageFiles::loadList", 0x001a3a60);
 }
 
-// stub of FS2 0x00198970
-void StageScene::draw(StageObject *active)
+
+
+// stub of FS2 0x0019aba0
+void StageScene::runStageScripts()
 {
-    YAMIPAN_STUB("StageScene::draw", 0x00198970);
+    YAMIPAN_STUB("StageScene::runStageScripts", 0x0019aba0);
 }
 
-// stub of FS2 0x00199f00
-void StageScene::setupCameras()
+// stub of FS2 0x0019b1f0
+void StageScene::updateBlock98()
 {
-    YAMIPAN_STUB("StageScene::setupCameras", 0x00199f00);
+    YAMIPAN_STUB("StageScene::updateBlock98", 0x0019b1f0);
 }
 
-// stub of FS2 0x00199400
-void StageScene::update()
+// stub of FS2 0x0019afb0
+void StageScene::updateBuffers()
 {
-    YAMIPAN_STUB("StageScene::update", 0x00199400);
-}
-
-
-// stub of FS2 0x0019c6a0
-void SceneArrayPair::restoreFlags()
-{
-    YAMIPAN_STUB("SceneArrayPair::restoreFlags", 0x0019c6a0);
+    YAMIPAN_STUB("StageScene::updateBuffers", 0x0019afb0);
 }

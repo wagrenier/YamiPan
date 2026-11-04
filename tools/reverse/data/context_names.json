@@ -6425,6 +6425,12 @@
   "was": "FUN_001494c0",
   "why": "walks next (+4) to the last node"
  },
+ "0014e4d0": {
+  "name": "ModelPose::solve",
+  "tag": "game-inferred",
+  "was": "FUN_0014e4d0",
+  "why": "model +0xc, called with 3, -1, 0 when +0x150 is set; bone entries +0x15c; the name is a guess"
+ },
  "00151270": {
   "name": "debugSysUpdate",
   "tag": "game-inferred",
@@ -10997,6 +11003,30 @@
   "was": "FUN_00171230",
   "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): sets the driver config 0x537d58 (defaults {1, 1, -1, -1, 0..}), copies it with sdpr2DrvSetConfig and installs the SE driver table 0x2f7a68 at 0x537d30 if none is"
  },
+ "00171300": {
+  "name": "ScenePairTable::actionTerminate",
+  "tag": "game-inferred",
+  "was": "FUN_00171300",
+  "why": "slot +0x14; perf label action(terminate)"
+ },
+ "001713a0": {
+  "name": "ScenePairTable::actionMovement",
+  "tag": "game-inferred",
+  "was": "FUN_001713a0",
+  "why": "slot +0x10; perf label action(movement(&motion))"
+ },
+ "00171440": {
+  "name": "ScenePairTable::actionControl",
+  "tag": "game-inferred",
+  "was": "FUN_00171440",
+  "why": "slot +0xc; perf label action(control)"
+ },
+ "001714e0": {
+  "name": "ScenePairTable::actionStart",
+  "tag": "game-inferred",
+  "was": "FUN_001714e0",
+  "why": "five lists, slot +8 of each enabled entry; perf label action(start)"
+ },
  "00171620": {
   "name": "ScenePairTable::~ScenePairTable",
   "tag": "game-inferred",
@@ -11008,6 +11038,12 @@
   "tag": "game-inferred",
   "was": "FUN_00171680",
   "why": "StageScene ctor new(0x2c) for +0x14: __construct_array of 5 elements of 8 bytes ({0, 0}, 0x1716c0); class name a guess, contents unread"
+ },
+ "00173cb0": {
+  "name": "StageObject::attachToRoot",
+  "tag": "game-inferred",
+  "was": "FUN_00173cb0",
+  "why": "doors (kind 2) reach the Root object +0xd8"
  },
  "001760c0": {
   "name": "StageObject::setupMapObject",
@@ -11033,6 +11069,12 @@
   "was": "FUN_00177270",
   "why": "a0 a node {object +0, name +4, left +8, right +0xc}, a1 a name: binary search by strcmp; the node whose object is set, null none. StageSound::update finds bn_head (0x303178) under model +0x14"
  },
+ "00177810": {
+  "name": "StageCamera::calcViewMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00177810",
+  "why": "inverts the object matrix into +0x240, multiplies into +0x280"
+ },
  "00177900": {
   "name": "StageCamera::lookAt",
   "tag": "game-inferred",
@@ -11051,6 +11093,12 @@
   "was": "FUN_00177d60",
   "why": "vtable 0x311860, sceVu0ViewScreenMatrix-shaped call on the scrZ, width, height arguments; 450, 512, 512, 1600 from the map"
  },
+ "00179700": {
+  "name": "StageMainCamera::StageMainCamera",
+  "tag": "game-inferred",
+  "was": "FUN_00179700",
+  "why": "EE 0x3c0; camera; kind 9"
+ },
  "0017c700": {
   "name": "StageCharacter::setup",
   "tag": "game-inferred",
@@ -11062,6 +11110,12 @@
   "tag": "game-inferred",
   "was": "FUN_0017de30",
   "why": "made by placeCharacter, 0x800 bytes"
+ },
+ "0017df60": {
+  "name": "stageUpdateCharacterMotions",
+  "tag": "game-inferred",
+  "was": "FUN_0017df60",
+  "why": "every character with +0x18: three calls on +0x224"
  },
  "0017ea50": {
   "name": "BoxVolume::setSize",
@@ -11152,6 +11206,12 @@
   "tag": "game-inferred",
   "was": "FUN_0017fc90",
   "why": "deletes the previous loader in gp-0x7a78 (slot 0 at vptr +0x98, flag 1) and stores the new one; 0x2b60b0 hands it the stage PackFile / FileLoader before the stage thread and 0 after"
+ },
+ "001803e0": {
+  "name": "StageBullet::StageBullet",
+  "tag": "game-inferred",
+  "was": "FUN_001803e0",
+  "why": "named bullet, StageObjectList::addBullet"
  },
  "00180d30": {
   "name": "StageThrownItem::StageThrownItem",
@@ -11273,6 +11333,24 @@
   "was": "FUN_00186ee0",
   "why": "parseMap's: sets the map file's six section pointers +0..+0x14 from the counts at +0x18.."
  },
+ "00187230": {
+  "name": "StageModel::updateVcm",
+  "tag": "game-inferred",
+  "was": "FUN_00187230",
+  "why": "VcmTable::update on +4 when +0 is set"
+ },
+ "00187b70": {
+  "name": "StageModel::placeBones",
+  "tag": "game-inferred",
+  "was": "FUN_00187b70",
+  "why": "the object matrix through every root link"
+ },
+ "00187d10": {
+  "name": "StageModel::bindBones",
+  "tag": "game-inferred",
+  "was": "FUN_00187d10",
+  "why": "setupCameras on each Root-group model; builds node links from the bone names"
+ },
  "0018b290": {
   "name": "stageObjectIsShown",
   "tag": "game-inferred",
@@ -11308,6 +11386,18 @@
   "tag": "game-inferred",
   "was": "FUN_00190900",
   "why": "a0 StageScene +0x1c: replaces the inner object's +0x3c with a new BoxGrid over the bbx file (size 8)"
+ },
+ "00190a80": {
+  "name": "StageNodeTree::draw",
+  "tag": "game-inferred",
+  "was": "FUN_00190a80",
+  "why": "tail to 0x190c70, with the packet manager and the active camera"
+ },
+ "00190a90": {
+  "name": "StageNodeTree::update",
+  "tag": "game-inferred",
+  "was": "FUN_00190a90",
+  "why": "tail to 0x1914c0; the inner object particles in range of the view; perf label particle"
  },
  "00190aa0": {
   "name": "StageNodeTree::addParticleTexture",
@@ -11663,6 +11753,12 @@
   "was": "FUN_00195a50",
   "why": "gGameSystem pad 0 pressed bit 0x800 (start), not a sub-scene, the scene +0xf0 +1 flag, no busy character; true -> stagePauseMenu"
  },
+ "00195c10": {
+  "name": "StageScene::getInputFocus",
+  "tag": "game-inferred",
+  "was": "FUN_00195c10",
+  "why": "caches +0xf8: the open menu, the item list, the pause state or the character; compared with the item list and pause state by the callers"
+ },
  "00195d40": {
   "name": "StageScene::random",
   "tag": "game-inferred",
@@ -11753,11 +11849,29 @@
   "was": "FUN_00196a40",
   "why": "answers +0x10c like StageScene::getParent 0x196950; the copy currentMission 0x196960 recurses through"
  },
+ "00197160": {
+  "name": "StageScene::collectViewTargets",
+  "tag": "game-inferred",
+  "was": "FUN_00197160",
+  "why": "+0x54 = new array of the view target and the objects oSJ24_02 / oSJ24_03, count +0x50"
+ },
  "00198170": {
   "name": "StageScene::raycast",
   "tag": "game-inferred",
   "was": "FUN_00198170",
   "why": "a0 the scene (gStageScene): a1 hit point out, a2 from, a3 to, t0 0, t1 mask 0xe42600f, t2 flags (0x200 / 0x600), t3 an object to skip; walks the objects (+0x10 list) for the nearest hit (start 3.4e38), returns the hit object (its +0x40 bit 0x400 tested by StageSound)"
+ },
+ "001983b0": {
+  "name": "StageScene::drawViewFilter",
+  "tag": "game-inferred",
+  "was": "FUN_001983b0",
+  "why": "kinds 10 / 11 only: table 0x31a8f8 picks a count and an argument of 0x2849c0 on packet list 9; names F_E24_SNPC2, F_E21_SNPC1"
+ },
+ "00198560": {
+  "name": "StageScene::prepareDrawFlags",
+  "tag": "game-inferred",
+  "was": "FUN_00198560",
+  "why": "first call of draw: every character part +0x240 / +0x244 byte +0xd, the view target model byte +5 (0x20 / 1), then part modes for camview / camjack"
  },
  "00198970": {
   "name": "StageScene::draw",
@@ -11771,6 +11885,18 @@
   "was": "FUN_00198fc0",
   "why": "the scene frame while a dialog or menu thread runs: every poll loop of the stage thread calls it after threadYield(1)"
  },
+ "00199130": {
+  "name": "StageScene::updateRumble",
+  "tag": "game-inferred",
+  "was": "FUN_00199130",
+  "why": "KeepList update into two motor values, Pad::setVibration when the option is on, ALERT2 on a flagged entry"
+ },
+ "00199250": {
+  "name": "StageScene::getRumbleSource",
+  "tag": "game-inferred",
+  "was": "FUN_00199250",
+  "why": "the companion, or the +0x300 of a kind 9 / 10 / 11 view, else the player: the KeepList entries of this object rumble"
+ },
  "00199400": {
   "name": "StageScene::update",
   "tag": "game-inferred",
@@ -11782,6 +11908,30 @@
   "tag": "game-inferred",
   "was": "FUN_00199f00",
   "why": "strings camera / camview / camview_zoom / camview_snipe / cam_dive / flash / camera_demo; stageLoad and enterSubScene"
+ },
+ "0019a710": {
+  "name": "StageScene::updateVcms",
+  "tag": "game-inferred",
+  "was": "FUN_0019a710",
+  "why": "groups 1, 2, 3, 8, active object models: 0x187230"
+ },
+ "0019a850": {
+  "name": "StageScene::calcMatrices",
+  "tag": "game-inferred",
+  "was": "FUN_0019a850",
+  "why": "groups 1..8, active objects: root nodes propagate and slot +0x20, then model pose and links; the perf label after it is calcmatrix(root)"
+ },
+ "0019aa30": {
+  "name": "StageScene::propagateNodes",
+  "tag": "game-inferred",
+  "was": "FUN_0019aa30",
+  "why": "the same walk as 0x19a850 with only 0x1d8260; setupCameras only"
+ },
+ "0019aba0": {
+  "name": "StageScene::runStageScripts",
+  "tag": "game-inferred",
+  "was": "FUN_0019aba0",
+  "why": "the script step of update for a stage: scene UI, mission lists, ScriptRunner::run; not written yet"
  },
  "0019ae10": {
   "name": "StageScene::getSoundAttr",
@@ -11825,17 +11975,35 @@
   "was": "FUN_0019af40",
   "why": "+0xa4 = new 4-byte holder on the init pack item 6 and the stage number; loadCommon's last call"
  },
+ "0019afb0": {
+  "name": "StageScene::updateBuffers",
+  "tag": "game-inferred",
+  "was": "FUN_0019afb0",
+  "why": "works on +0x9c with the objects and the view; 0x2ce3e0 family; not read yet"
+ },
+ "0019b1f0": {
+  "name": "StageScene::updateBlock98",
+  "tag": "game-inferred",
+  "was": "FUN_0019b1f0",
+  "why": "works on +0x98 with the view state; 0x2ce790 family; not read yet"
+ },
  "0019b540": {
-  "name": "StageScene::setFlag84",
+  "name": "StageScene::releaseControl",
   "tag": "game-inferred",
   "was": "FUN_0019b540",
-  "why": "+0x84 = 1; the flag's meaning is unread (caller 0x236b90)"
+  "why": "+0x84 = 1: update gives control back to the player; was setFlag84"
  },
  "0019b550": {
-  "name": "StageScene::setFlag84To",
+  "name": "StageScene::requestControl",
   "tag": "game-inferred",
   "was": "FUN_0019b550",
-  "why": "+0x84 = argument, beside setFlag84"
+  "why": "+0x84 = an object: update hands it control; was setFlag84To"
+ },
+ "0019b560": {
+  "name": "StageScene::setPlayer",
+  "tag": "game-inferred",
+  "was": "FUN_0019b560",
+  "why": "moves input / brain and the +0x300 of camera and camview from +0x78 to the argument; nine callers"
  },
  "0019b740": {
   "name": "StageScene::setBgName",
@@ -11860,6 +12028,18 @@
   "tag": "game-inferred",
   "was": "FUN_0019bb60",
   "why": "tail jump to 0x19cb50 on +0x34 the view stack"
+ },
+ "0019bb70": {
+  "name": "StageScene::removeViewPriority",
+  "tag": "game-inferred",
+  "was": "FUN_0019bb70",
+  "why": "tail jump to 0x19cc80 on +0x34"
+ },
+ "0019bb80": {
+  "name": "StageScene::pushView",
+  "tag": "game-inferred",
+  "was": "FUN_0019bb80",
+  "why": "tail jump to 0x19cdc0 on +0x34"
  },
  "0019bbb0": {
   "name": "StageScene::getActiveCharacter",
@@ -11890,6 +12070,18 @@
   "tag": "game-inferred",
   "was": "FUN_0019cb50",
   "why": "finds the object, shifts the 0xc entries down, clears its +0x18; the new top gets +0x24c if not active"
+ },
+ "0019cc80": {
+  "name": "StageViewStack::removePriority",
+  "tag": "game-inferred",
+  "was": "FUN_0019cc80",
+  "why": "the topmost entry of that priority leaves; same tail as remove; answers its object"
+ },
+ "0019cdc0": {
+  "name": "StageViewStack::push",
+  "tag": "game-inferred",
+  "was": "FUN_0019cdc0",
+  "why": "object once, entries kept sorted by priority (+4), byte +8; the new top gets +0x24c when it is the pushed one, every other entry +0x18 cleared"
  },
  "0019d0c0": {
   "name": "StageFiles::placeItem",
@@ -12443,17 +12635,35 @@
   "was": "FUN_001d7f20",
   "why": "a node's transform (StageSoundSource +0x40): flags bytes +0 = 1 (dirty) / +1 / +2 = 0, position (0,0,0,1) +0x10, rotation (0,0,0,1) +0x20, two matrices (0x136400) +0x40 / +0x80"
  },
+ "001d8260": {
+  "name": "StageObject::propagate",
+  "tag": "game-inferred",
+  "was": "FUN_001d8260",
+  "why": "copies the matrix position to +0x10 and recurses over the children"
+ },
  "001d8540": {
   "name": "StageNodeBase::StageNodeBase",
   "tag": "game-inferred",
   "was": "FUN_001d8540",
   "why": "the node base ctor: vtable 0x314150, child list +0x8 empty (0x1d85a0), parent +0x4 0, vtable 0x315ae0, +0x10 / +0x14 0; StageSound::addSource builds its sources on it"
  },
+ "001dd3f0": {
+  "name": "CharacterBrain::setEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_001dd3f0",
+  "why": "+0x174 = flag, the object +0x220; opposite of the input when a character is taken over"
+ },
  "001e66c0": {
   "name": "PlayerMotion::refresh",
   "tag": "game-inferred",
   "was": "FUN_001e66c0",
   "why": "a0 the player's +0x224 object (its +0 the player): picks names from the 0x210-byte records 0x577b20 (index +0x40, slot +0x6c; '*'-prefixed alternates when the long weapon +0x238's item def kind is 5 or 6) and hands them to 0x216400; guess: the motion set for the weapon carried. stepWeaponPreview in a stage"
+ },
+ "001f5250": {
+  "name": "SceneRecordBuckets::collide",
+  "tag": "game-inferred",
+  "was": "FUN_001f5250",
+  "why": "perf label collision after it"
  },
  "001f63f0": {
   "name": "SceneRecordBuckets::~SceneRecordBuckets",
@@ -12478,6 +12688,36 @@
   "tag": "game-inferred",
   "was": "FUN_001f6ad0",
   "why": "ENV_CB boxes, grid +0xdfc"
+ },
+ "001f7380": {
+  "name": "SceneRender::applyClearColor",
+  "tag": "game-inferred",
+  "was": "FUN_001f7380",
+  "why": "gfxSetClearColor from +0xc6d and +0xd90.."
+ },
+ "001f73c0": {
+  "name": "SceneRender::update",
+  "tag": "game-inferred",
+  "was": "FUN_001f73c0",
+  "why": "once a frame, raycast and area tests from the view"
+ },
+ "001f8620": {
+  "name": "SceneRender::updateLights",
+  "tag": "game-inferred",
+  "was": "FUN_001f8620",
+  "why": "right after update; shown lights, bn_head; the name is a guess"
+ },
+ "001f94c0": {
+  "name": "SceneRender::setup",
+  "tag": "game-inferred",
+  "was": "FUN_001f94c0",
+  "why": "makes yami_pl / demo_pl lights, the bn_ links; setupCameras only"
+ },
+ "001f9c70": {
+  "name": "sceneRenderGroup",
+  "tag": "game-inferred",
+  "was": "FUN_001f9c70",
+  "why": "2 -> 0x12, 1 -> 0x13, else -1; update stores the answer at SceneRender +0xe28"
  },
  "001fa150": {
   "name": "SceneRender::setShadowTexture",
@@ -12959,11 +13199,35 @@
   "was": "FUN_001fe9b0",
   "why": "ScreenFill::setImage on the record's +0x3c"
  },
+ "001fe9c0": {
+  "name": "StageParty::setCompanion",
+  "tag": "game-inferred",
+  "was": "FUN_001fe9c0",
+  "why": "mode 4, +0x18 = object: what getCompanion answers in that mode"
+ },
  "001fea50": {
   "name": "StageParty::getCompanion",
   "tag": "game-inferred",
   "was": "FUN_001fea50",
   "why": "a0 the party (StageScene +0x88): of its +0 record, by mode +0xb8, +0x18 (3 / 4), +0x14 (1), else null; StageScene::drawPaused compares it with the +0x100 object's +0x3c0 character; the name is a guess"
+ },
+ "001feb70": {
+  "name": "StageParty::draw",
+  "tag": "game-inferred",
+  "was": "FUN_001feb70",
+  "why": "tail to 0x2024c0 on the record"
+ },
+ "001feb80": {
+  "name": "StageParty::update",
+  "tag": "game-inferred",
+  "was": "FUN_001feb80",
+  "why": "tail to 0x203240 on the record"
+ },
+ "001febb0": {
+  "name": "StageParty::createCamera",
+  "tag": "game-inferred",
+  "was": "FUN_001febb0",
+  "why": "the record +0xc = new camera camjack (kind 11)"
  },
  "001fec90": {
   "name": "StageParty::~StageParty",
@@ -12976,6 +13240,18 @@
   "tag": "game-inferred",
   "was": "FUN_001fecf0",
   "why": "StageScene ctor new(4) for +0x88 (StageParty): its +0 = new(0x148) 0x203d70"
+ },
+ "00207500": {
+  "name": "PauseMenuState::update",
+  "tag": "game-inferred",
+  "was": "FUN_00207500",
+  "why": "five entries of 0x114 tested against the scene clock and the input focus"
+ },
+ "002078d0": {
+  "name": "PauseMenuState::isActive",
+  "tag": "game-inferred",
+  "was": "FUN_002078d0",
+  "why": "an entry in state 1 whose window holds the scene clock"
  },
  "00207ea0": {
   "name": "PauseMenuState::~PauseMenuState",
@@ -13013,6 +13289,12 @@
   "was": "FUN_0020afe0",
   "why": "result gp-0x7a3c = -1, threadSlotCreate(0x20b010, slot 4); stageThread on StageScene::wantsMapMenu"
  },
+ "0020b1d0": {
+  "name": "StagePlayer::latchAltAction",
+  "tag": "game-inferred",
+  "was": "FUN_0020b1d0",
+  "why": "+0x364 set: +0x2ca = 1; update calls it while the alternate flag holds; the meaning is a guess"
+ },
  "00214f60": {
   "name": "StageObject::getAltSoundFlag",
   "tag": "game-inferred",
@@ -13025,11 +13307,23 @@
   "was": "FUN_00214fc0",
   "why": "a character's action number from its +0x224 record; both menu tests read it"
  },
+ "002152a0": {
+  "name": "StageObject::isMode2",
+  "tag": "game-inferred",
+  "was": "FUN_002152a0",
+  "why": "+0x400 set and +0x3c8 == 2; beside isMode1"
+ },
  "002152d0": {
   "name": "StagePlayer::isMode1",
   "tag": "game-inferred",
   "was": "FUN_002152d0",
   "why": "a0 the player: +0x400 non-null and +0x3c8 == 1; StageScene::drawPaused / update then pass sceneFlag 1 to StageSound::update; what mode 1 is is unread"
+ },
+ "00215ed0": {
+  "name": "StageObject::isPartner",
+  "tag": "game-inferred",
+  "was": "FUN_00215ed0",
+  "why": "this is the scene +0x7c; beside isPlayer"
  },
  "00215ef0": {
   "name": "StageObject::isPlayer",
@@ -13240,6 +13534,18 @@
   "tag": "game-inferred",
   "was": "FUN_002362a0",
   "why": "(const float m[4][4], const float p[4]): VU0 m * p then vclip against w; true when no clip flag of the six is set (p inside the box's unit cube); BoxGrid::find's test"
+ },
+ "00239bb0": {
+  "name": "CharacterInput::setActive",
+  "tag": "game-inferred",
+  "was": "FUN_00239bb0",
+  "why": "byte +0 and Pad::setListening on +8; the object +0x21c"
+ },
+ "0023aca0": {
+  "name": "SceneBoxList::update",
+  "tag": "game-inferred",
+  "was": "FUN_0023aca0",
+  "why": "16 entries of 0xc: clears +0xc when 0x190810 refuses it"
  },
  "0023ad10": {
   "name": "SceneBoxList::~SceneBoxList",
@@ -13492,6 +13798,30 @@
   "tag": "game-inferred",
   "was": "FUN_0023dfa0",
   "why": "a0 = the 8-byte DateTime getLocalDateTime fills; the flags byte's high nibble is the format (1 BCD, 0 binary): nothing when it already equals a1, a1 == 0 decodes second..month and the 4-digit year from BCD and clears the nibble, else encodes them to BCD and sets it to 1; only caller getLocalDateTime"
+ },
+ "0023e740": {
+  "name": "UiPickSlot::isReady",
+  "tag": "game-inferred",
+  "was": "FUN_0023e740",
+  "why": "object set and the timer past 6; UiItemSlot is another class"
+ },
+ "0023e770": {
+  "name": "UiItemList::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0023e770",
+  "why": "list 10 with its tex area; three 0x208xxx calls"
+ },
+ "0023e7b0": {
+  "name": "UiItemList::update",
+  "tag": "game-inferred",
+  "was": "FUN_0023e7b0",
+  "why": "fills the back slot from the character each frame"
+ },
+ "0023ee90": {
+  "name": "UiItemList::pick",
+  "tag": "game-inferred",
+  "was": "FUN_0023ee90",
+  "why": "acts on the front slot; update takes a non-negative answer as picked"
  },
  "0023f0b0": {
   "name": "UiItemList::UiItemList",
@@ -15395,6 +15725,18 @@
   "was": "FUN_00263b10",
   "why": "copies the options' button map (getSaveData +0x4f4..+0x510) into the 8 ints at 0x599470: the draft the key-configuration screen edits"
  },
+ "00263ba0": {
+  "name": "StageAlert::draw",
+  "tag": "game-inferred",
+  "was": "FUN_00263ba0",
+  "why": "draws its fade +0x14 when it is not done"
+ },
+ "00263c10": {
+  "name": "StageAlert::update",
+  "tag": "game-inferred",
+  "was": "FUN_00263c10",
+  "why": "state machine on the scene clock, ALERT in the KeepList"
+ },
  "00264000": {
   "name": "StageAlert::~StageAlert",
   "tag": "game-inferred",
@@ -15809,6 +16151,12 @@
   "was": "FUN_002681e0",
   "why": "a0 the 48-bit state: an LCG step by 0x5deece66d, answers (x >> 17) % a1 (looped); StageScene::random"
  },
+ "00268290": {
+  "name": "Rand48::seed",
+  "tag": "game-inferred",
+  "was": "FUN_00268290",
+  "why": "state = seed ^ 0x5deece66d"
+ },
  "002682e0": {
   "name": "Rand48::Rand48",
   "tag": "game-inferred",
@@ -15833,6 +16181,18 @@
   "was": "FUN_0026c8c0",
   "why": "script runner base, vtable 0x314d30 at +0xb4, +0xb9 = argument"
  },
+ "0026c920": {
+  "name": "DemoCamera::drawOverlay",
+  "tag": "game-inferred",
+  "was": "FUN_0026c920",
+  "why": "draw for a kind 13 view: list 9 fades on +0x308, +0x30c"
+ },
+ "0026ce20": {
+  "name": "DemoCamera::DemoCamera",
+  "tag": "game-inferred",
+  "was": "FUN_0026ce20",
+  "why": "EE 0x340; camera_demo; kind 13; Model_camera"
+ },
  "00283df0": {
   "name": "seDistanceVolume",
   "tag": "game-inferred",
@@ -15850,6 +16210,12 @@
   "tag": "game-inferred",
   "was": "FUN_00284190",
   "why": "a0 an AreaGrid, a1 a point: VU0 subtract of +0x210 then a cell lookup (0x284690); StageScene::getSoundAttr answers it non-zero"
+ },
+ "002842f0": {
+  "name": "AreaGrid::build",
+  "tag": "game-inferred",
+  "was": "FUN_002842f0",
+  "why": "bounds and the cells from the added boxes; after the map is read"
  },
  "00284560": {
   "name": "AreaGrid::addBox",
@@ -15881,6 +16247,12 @@
   "was": "FUN_00284950",
   "why": "StageNodeBase, vtable 0x315a80, NodeTransform at +0x40, vtable 0x314180, box zero"
  },
+ "002849c0": {
+  "name": "gsFrameFilter",
+  "tag": "game-inferred",
+  "was": "FUN_002849c0",
+  "why": "takes the frame buffer draw env and a VRAM block, a pass count; run for view cameras and event d0101"
+ },
  "002867a0": {
   "name": "StageMission::setSpawnPoint",
   "tag": "game-inferred",
@@ -15904,6 +16276,12 @@
   "tag": "game-inferred",
   "was": "FUN_002870c0",
   "why": "a0 the mission: +0xac = Clock::getSeconds(gStageScene +0x60); StageScene::beginPlay's only call"
+ },
+ "002870f0": {
+  "name": "StageMission::setup",
+  "tag": "game-inferred",
+  "was": "FUN_002870f0",
+  "why": "binds volumes by name (I_HATUEN, Root ...); setupCameras"
  },
  "00287820": {
   "name": "StageMission::~StageMission",
@@ -15934,6 +16312,18 @@
   "tag": "game-inferred",
   "was": "FUN_00287bb0",
   "why": "0x288930 + .xwb, null without a path"
+ },
+ "00289800": {
+  "name": "ScenePool::draw",
+  "tag": "game-inferred",
+  "was": "FUN_00289800",
+  "why": "list 12 of draw; writes VIF / GIF text packets"
+ },
+ "00289b20": {
+  "name": "ScenePool::setSlot",
+  "tag": "game-inferred",
+  "was": "FUN_00289b20",
+  "why": "writes +0x1c[index] below the count +0x14; update puts the cue subtitle in slot 0"
  },
  "00289b60": {
   "name": "ScenePool::~ScenePool",
@@ -16739,6 +17129,12 @@
   "was": "FUN_00299d40",
   "why": "MSL basic_string::assign(first, last) instance: replace(0, size, first, last); only caller replace_range (aliasing path)"
  },
+ "0029aae0": {
+  "name": "ViewCamera::ViewCamera",
+  "tag": "game-inferred",
+  "was": "FUN_0029aae0",
+  "why": "EE 0x440; camview, camview_zoom, camview_snipe; kind 10"
+ },
  "0029acb0": {
   "name": "applyNaviAnswer",
   "tag": "game-inferred",
@@ -17135,6 +17531,12 @@
   "was": "FUN_002acff0",
   "why": "help%s.d2b with the caller's page; always answers 0"
  },
+ "002ad030": {
+  "name": "MenuProgHolder::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002ad030",
+  "why": "calls 0x2adc70 on a scratchpad stack, with the frame time"
+ },
  "002ad070": {
   "name": "MenuProgHolder::~MenuProgHolder",
   "tag": "game-inferred",
@@ -17339,6 +17741,12 @@
   "was": "FUN_002b0cf0",
   "why": "registered by the static init 0x310f60 (__register_global_object(0x599700, 0x2b0cf0, 0x5996e8)): releases the clock layout +0xb8, deleting when the flag > 0"
  },
+ "002b0d60": {
+  "name": "DemoStream::drawSubtitles",
+  "tag": "game-inferred",
+  "was": "FUN_002b0d60",
+  "why": "option +0x1c, stream time, the printer at +0x70, packet list 12"
+ },
  "002b1010": {
   "name": "DemoStream::setFont",
   "tag": "game-inferred",
@@ -17405,11 +17813,23 @@
   "was": "FUN_002b1490",
   "why": "SoundStream's ctor, then +0x60..+0x70 zero, +0x74 0x80606060, +0x78 0x100, +0x7c 0x1bc (a text colour and position: subtitles, guess); 0x80 bytes, built by StageScene::StageScene for a sub-scene"
  },
+ "002b1500": {
+  "name": "ClearSequence::update",
+  "tag": "game-inferred",
+  "was": "FUN_002b1500",
+  "why": "state machine on the scene fade; update when the stage is clearing"
+ },
  "002b1620": {
   "name": "ClearSequence::getState",
   "tag": "game-inferred",
   "was": "FUN_002b1620",
   "why": "a0 StageScene +0x11c: its +0 state, or 2 while the scene fade is full in mode 2; StageScene::isCleared tests 2"
+ },
+ "002b1670": {
+  "name": "GameOverSequence::update",
+  "tag": "game-inferred",
+  "was": "FUN_002b1670",
+  "why": "start skips; state machine on the scene fade"
  },
  "002b1c50": {
   "name": "GameOverSequence::getState",
@@ -17417,11 +17837,35 @@
   "was": "FUN_002b1c50",
   "why": "a0 StageScene +0x118: its +0 state, or 5 when the state is 4 or more (or +8 set) and the fade is full in mode 2; StageScene::isGameOver tests 5"
  },
+ "002b20a0": {
+  "name": "SceneDirector::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002b20a0",
+  "why": "ramps the colour bytes and fills the screen"
+ },
+ "002b2250": {
+  "name": "SceneDirector::start",
+  "tag": "game-inferred",
+  "was": "FUN_002b2250",
+  "why": "frames +0x10, count +0xc zero, colours from +4 and to +8"
+ },
+ "002b2270": {
+  "name": "SceneDirector::isRunning",
+  "tag": "game-inferred",
+  "was": "FUN_002b2270",
+  "why": "+0x10 != 0: frames of the colour ramp"
+ },
  "002b2280": {
   "name": "SceneDirector::~SceneDirector",
   "tag": "game-inferred",
   "was": "FUN_002b2280",
   "why": "deleting dtor of StageScene +0x120 (also StageScene::update): only the delete; name a guess"
+ },
+ "002b22d0": {
+  "name": "SceneDirector::SceneDirector",
+  "tag": "game-inferred",
+  "was": "FUN_002b22d0",
+  "why": "five words zero; EE 0x14"
  },
  "002b5740": {
   "name": "menuSceneThread",
@@ -17513,6 +17957,12 @@
   "was": "FUN_002b9d60",
   "why": "create case 0x1d (prgMcCard, 0x94 bytes); unread"
  },
+ "002bb260": {
+  "name": "PlayerOverlay::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002bb260",
+  "why": "by state 1 / 2 on the player motion +0xbd8"
+ },
  "002bb3e0": {
   "name": "MenuProgSet::~MenuProgSet",
   "tag": "game-inferred",
@@ -17572,6 +18022,12 @@
   "tag": "game-inferred",
   "was": "FUN_002bc040",
   "why": "vtable 0x319c90, 0x280 bytes, made by the bg target in a sub-scene"
+ },
+ "002bc100": {
+  "name": "KeepList::update",
+  "tag": "game-inferred",
+  "was": "FUN_002bc100",
+  "why": "each node values into two motor bytes, flags and tags, for the nodes of one object"
  },
  "002bc5d0": {
   "name": "KeepList::removeUnkept",
@@ -17657,6 +18113,18 @@
   "was": "FUN_002cff30",
   "why": "StageScene dtor calls it on (+0x12c object) + 0x24 with flag -1 (in place): destroys its +0x18 (0x2052d0); name a guess"
  },
+ "002d0550": {
+  "name": "SceneModelHolder::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002d0550",
+  "why": "+0x12c on list 8 with frame time and camera"
+ },
+ "002d07a0": {
+  "name": "SceneModelHolder::SceneModelHolder",
+  "tag": "game-inferred",
+  "was": "FUN_002d07a0",
+  "why": "EE 0x54, takes the node tree and the stage number"
+ },
  "002d0a10": {
   "name": "sldiDecompress",
   "tag": "game-inferred",
@@ -17699,6 +18167,36 @@
   "was": "FUN_002d4650",
   "why": "(s): 16-bit characters up to the 0; 0 for null or an odd address; beside the char version 0x2d4440"
  },
+ "002d4780": {
+  "name": "drawSysClearTargetView",
+  "tag": "game-inferred",
+  "was": "FUN_002d4780",
+  "why": "writes the flag 0 written 1 by 0x2d4790; the name is a guess"
+ },
+ "002d4790": {
+  "name": "drawSysSetTargetView",
+  "tag": "game-inferred",
+  "was": "FUN_002d4790",
+  "why": "writes the flag 1 when the view target is in view; the name is a guess"
+ },
+ "002d4ef0": {
+  "name": "drawSysTick",
+  "tag": "game-inferred",
+  "was": "FUN_002d4ef0",
+  "why": "every record entry: 0x2e3bf0 with the frame time in 1/300 s"
+ },
+ "002d4fd0": {
+  "name": "drawSysCurrent",
+  "tag": "game-inferred",
+  "was": "FUN_002d4fd0",
+  "why": "answers gp-0x7994, the record drawSysPush stacks"
+ },
+ "002d5560": {
+  "name": "drawSysRender",
+  "tag": "game-inferred",
+  "was": "FUN_002d5560",
+  "why": "the 3D frame; perf label rena draw right after it"
+ },
  "002d7c00": {
   "name": "drawSysPop",
   "tag": "game-inferred",
@@ -17717,11 +18215,35 @@
   "was": "FUN_002d7cf0",
   "why": "(originX, originY, width, height, GsRegionAlloc *): called once, last in gfxInitRenderTargets with (0x700, 0x700, 0x200, 0x200) and the region allocator; news about nine draw-system objects (vtables 0x31a6b0 / 0x31a680, lists of 200 via 0x241da0), floats 2048 / 512 / 2^24; what the system draws is unread, the name says only where it starts"
  },
+ "002d9aa0": {
+  "name": "getDrawDistance",
+  "tag": "game-inferred",
+  "was": "FUN_002d9aa0",
+  "why": "gp-0x798c; set by draw from the camera +0x2cc + +0x2d0"
+ },
+ "002d9ab0": {
+  "name": "setDrawDistance",
+  "tag": "game-inferred",
+  "was": "FUN_002d9ab0",
+  "why": "gp-0x798c"
+ },
+ "002dbd10": {
+  "name": "AreaClip::update",
+  "tag": "game-inferred",
+  "was": "FUN_002dbd10",
+  "why": "takes the active camera; draw calls it before rendering"
+ },
  "002dcab0": {
   "name": "AreaClip::~AreaClip",
   "tag": "game-inferred",
   "was": "FUN_002dcab0",
   "why": "the deleting dtor StageScene's dtor calls for +0x58"
+ },
+ "002dcc30": {
+  "name": "AreaClip::setup",
+  "tag": "game-inferred",
+  "was": "FUN_002dcc30",
+  "why": "binds the file names to the map objects; setupCameras"
  },
  "002dccf0": {
   "name": "AreaClip::AreaClip",
@@ -17854,6 +18376,12 @@
   "tag": "lib-context",
   "was": "FUN_002e9b60",
   "why": "null without ClutColors, else after the header and ImageSize"
+ },
+ "002eaeb0": {
+  "name": "gsFillRect",
+  "tag": "game-inferred",
+  "was": "FUN_002eaeb0",
+  "why": "a sprite x, y to x2, y2 in the 0x700-offset frame, flat colour"
  },
  "002eaff0": {
   "name": "Vif1PktManage::GetUsedSize",

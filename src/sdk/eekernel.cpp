@@ -53,6 +53,15 @@ int iChangeThreadPriority(int threadId, int priority) { return kernel().changePr
 int RotateThreadReadyQueue(int priority) { return kernel().rotateReadyQueue(priority); }
 int iRotateThreadReadyQueue(int priority) { return kernel().rotateReadyQueue(priority); }
 int ReferThreadStatus(int threadId, ThreadParam *info) { return kernel().referThread(threadId, *info); }
+u_long GetTimerSystemTime()
+{
+    // 147.456 MHz bus clocks, near enough for a seed.
+    constexpr u_long kBusClocksPerMicrosecond = 147;
+    auto elapsed = std::chrono::steady_clock::now().time_since_epoch();
+    return (u_long)std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count()
+         * kBusClocksPerMicrosecond;
+}
+
 int DelayThread(u_int microseconds) { return kernel().delayThread(std::chrono::microseconds(microseconds)); }
 void ExitThread() { kernel().exitThread(false); }
 void ExitDeleteThread() { kernel().exitThread(true); }

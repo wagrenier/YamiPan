@@ -19,7 +19,7 @@
  *    +0x34 StageViewStack (8 entries)   +0x38..+0x5c zero; +0x44 / +0x54
  *          arrays, +0x4c an object (vptr +0), +0x58 0x2dcab0's (dtor only)
  *    +0x60 a Clock under gGameSystem +0x510
- *    +0x78 player .. +0x84, +0x8c..+0x9c zero (+0x8c..+0x94 objects with
+ *    +0x78 player .. +0x84 (controlRequest), +0x8c..+0x9c zero (+0x8c..+0x94 objects with
  *          the vptr at +0, +0x98 a block, +0x9c 0x2ce5a0's: dtor only)
  *    +0x88 StageParty (stage; 0x1fecf0, 4 bytes)
  *    +0xa0 0x151f20 (0x24; 0x04808080, 0x700, 0x700, 0x200, 0x200; vptr +4)
@@ -47,6 +47,8 @@
 #define _GAME_STAGESCENE_H
 
 #include "game/stagelist.h"
+#include <stdint.h>
+
 #include "sdk/libvu0.h"     /* sceVu0FVECTOR */
 #include "sdk/scetypes.h"
 
@@ -73,6 +75,7 @@ struct PauseMenuState;
 struct Rand48;
 struct SceneArrayPair;
 struct SceneBoxList;
+struct SceneBlock98;
 struct SceneBufferSet;
 struct SceneDirector;
 struct SceneModelHolder;
@@ -85,6 +88,7 @@ struct StageAlert;
 struct StageNodeTree;
 struct UiShowFlags;             // game/uiwidget.h
 class FileLoader;               // game/fileloader.h
+class GamePacketManager;        // game/gamepacket.h
 class StageEvent;               // game/gamehooks.h
 class StageFade;                // game/gamehooks.h
 class PakArchive;               // game/pakarchive.h
@@ -114,7 +118,8 @@ class AreaBox;                  // game/gamehooks.h
 struct StageViewEntry
 {
     StageObject *object;        // FS2 +0x0
-    u_char       _04[0x8];
+    int          priority;      // FS2 +0x4: the stack stays sorted by it, highest on top
+    u_char       flag;          // FS2 +0x8: only stored here (0 at both calls read)
 };
 // layout: host -- EE 0xc (above).
 struct StageViewStack
@@ -123,6 +128,11 @@ struct StageViewStack
     // the ROM).
     StageObject *topObject() const { return top < 0 ? nullptr : entries[top].object; }
     void remove(StageObject *object);                                    // FS2 0x0019cb50
+    // object goes above the entries of its priority or lower, unless it is
+    // in the stack already; a new top becomes active.
+    void push(StageObject *object, int priority, u_char flag);           // FS2 0x0019cdc0
+    // The topmost entry of that priority leaves; its object, null none.
+    StageObject *removePriority(int priority);                           // FS2 0x0019cc80
 
     int             capacity;   // FS2 +0x0: 8
     int             top;        // FS2 +0x4: -1 empty
@@ -132,8 +142,10 @@ struct StageViewStack
 // The object at StageScene +0x100 (set outside the constructor). Only the
 // character at +0x3c0 is read (drawPaused); the name is a guess.
 // layout: host -- EE: +0x3c0 the character.
+struct StageModel;              // game/gamehooks.h
 struct StageViewTarget
 {
+    StageModel  *model;         // FS2 +0x30: prepareDrawFlags marks it
     StageObject *character;     // FS2 +0x3c0
 };
 
@@ -149,6 +161,8 @@ struct StageMission
     void markStart();                                                    // FS2 0x002870c0
     // Forwards the message file to the object in the first field.
     void setMessages(void *file);                                        // FS2 0x00286c30
+    // Takes the map's volumes by name, after the map is read.
+    void setup();                                                        // FS2 0x002870f0
 
     // spawn id's place (kept once; the first call wins).
     void setSpawnPoint(int id, const float *pos, const float *rot);      // FS2 0x002867a0
@@ -160,6 +174,8 @@ struct StageMission
     StageObject *keptObject;    // FS2 +0xbc: keeps its flags through restoreObjectFlags
     u_char  _c0[0x8];
     u_char  busy;               // FS2 +0xc8: StageScene::isBusy
+    u_char  _c9[0x11];
+    u_char  blackout;           // FS2 +0xda: set: StageScene::update fades the screen to black, clear: back
 };
 
 // The scene's four area grids (+0xac..+0xb8), filled from the map file's
@@ -192,6 +208,8 @@ struct StageScene
     StageObject *getActiveCharacter();                                   // FS2 0x0019bbb0
     // Once, before the stage's first frame.
     void beginPlay();                                                    // FS2 0x001963a0
+    // Once, after the stage's files: the cameras, bullet and flash, the
+    // bg script, the first player, what setup needs of the map.
     void setupCameras();                                                 // FS2 0x00199f00
     void enterSubScene(void *data);                                      // FS2 0x00195e10
     void clearSubSceneRequest();                                         // FS2 0x00196050: subSceneRequest = 0
@@ -219,6 +237,17 @@ struct StageScene
     bool partnerResponds(StageObject *object);                           // FS2 0x001953f0
     // The object leaves the view stack.
     void removeView(StageObject *object);                                // FS2 0x0019bb60
+    void removeViewPriority(int priority);                               // FS2 0x0019bb70
+    void pushView(StageObject *object, int priority, u_char flag);       // FS2 0x0019bb80
+    // who becomes the player: input, brain and the two cameras move over.
+    void setPlayer(StagePlayer *who);                                    // FS2 0x0019b560
+    // The view target is in view: the target is the player and the view is
+    // not camjack, or the view is camjack and the target the companion
+    // (inline in the ROM: drawPaused, update, prepareDrawFlags).
+    bool targetInView();
+    // What takes the buttons now (cached in focus for the frame): the open
+    // menu, the item list, the pause state, the character.
+    void *getInputFocus();                                               // FS2 0x00195c10
     // loadCommon: the menu program of the init pack's item.
     void createMenuProg(const void *data);                               // FS2 0x0019af40
 
@@ -248,8 +277,9 @@ struct StageScene
     void addSmokeBox(AreaBox *box);                                      // FS2 0x0019ae40
     void addAbBox(AreaBox *box);                                         // FS2 0x0019ae90
     void addFloorBox(AreaBox *box);                                      // FS2 0x0019af30
-    void setFlag84();                                                    // FS2 0x0019b540
-    void setFlag84To(int value);                                         // FS2 0x0019b550
+    // At the next update: the player's control back; object takes it.
+    void releaseControl();                                               // FS2 0x0019b540
+    void requestControl(StageObject *object);                            // FS2 0x0019b550
     // The bg target's: the last model's name, its areaclip.
     void setBgName(const char *name);                                    // FS2 0x0019b740
     void setAreaClip(void *file);                                        // FS2 0x0019b750
@@ -276,6 +306,23 @@ struct StageScene
     // The stage's current objective as 16-bit text (the S2D's rPurpose).
     const u_short *getPurposeText();                                     // FS2 0x00195d50
 
+    // The frame's pieces (update and draw only).
+    void calcMatrices();                                                 // FS2 0x0019a850
+    void propagateNodes();                                               // FS2 0x0019aa30
+    void updateVcms();                                                   // FS2 0x0019a710
+    void updateRumble(float frames);                                     // FS2 0x00199130
+    // Whose KeepList entries rumble.
+    StageObject *getRumbleSource();                                      // FS2 0x00199250
+    void collectViewTargets();                                           // FS2 0x00197160
+    void prepareDrawFlags();                                             // FS2 0x00198560
+    void drawViewFilter(GamePacketManager *packets, StageObject *camera); // FS2 0x001983b0
+    // A stage's scripts and mission lists, in update's script step.
+    void runStageScripts();                                              // FS2 0x0019aba0
+    void updateBlock98();                                                // FS2 0x0019b1f0
+    void updateBuffers();                                                // FS2 0x0019afb0
+    // controlled gives the buttons back (inline in update).
+    void releaseControlled();
+
     u_char              isSubScene;      // FS2 +0x00: the constructor's first argument
     int                 subSceneRequest; // FS2 +0x04: set: stageThread builds a sub-scene
     SubSceneObject     *subScene;        // FS2 +0x08: a sub-scene's own scene (enterSubScene); null once it ended
@@ -295,20 +342,22 @@ struct StageScene
     int                *scriptSlots;     // FS2 +0x44: one per scripts[0]->slotCount
     void               *route;           // FS2 +0x48: the rute file (setRoute)
     RoutePlayer        *routePlayer;     // FS2 +0x4c: setRoute
-    int                 _50;             // FS2 +0x50: zero (unread)
-    u_char             *array54;         // FS2 +0x54: delete[]
+    int                 viewTargetCount; // FS2 +0x50: collectViewTargets
+    StageObject       **viewTargets;     // FS2 +0x54: the view target, oSJ24_02, oSJ24_03 where they exist
     AreaClip           *areaClip;        // FS2 +0x58: setAreaClip
     LptFile            *lpt;             // FS2 +0x5c: the bg target's
     Clock              *clock;           // FS2 +0x60: paused while a menu runs
-    int                 _64;             // FS2 +0x64: zero (unread)
+    int                 frameCount;      // FS2 +0x64: update counts
     char                bgName[0x10];    // FS2 +0x68: setBgName; not set by the ctor
     StagePlayer        *player;          // FS2 +0x78
     StageObject        *partner;         // FS2 +0x7c: partnerResponds; the name is a guess
     StageObject        *controlled;      // FS2 +0x80: acts for the player when set (playerAction)
-    int                 flag84;          // FS2 +0x84: setFlag84 (unread)
+    // 0 nothing, 1 back to the player, else the StageObject to take over
+    // (the ROM keeps both in one word).
+    uintptr_t           controlRequest;  // FS2 +0x84
     StageParty         *party;           // FS2 +0x88: a stage's
     SceneOwnedObject   *owned[3];        // FS2 +0x8c..+0x94
-    void               *block98;         // FS2 +0x98: deleted (unread)
+    SceneBlock98       *block98;         // FS2 +0x98: deleted
     SceneBufferSet     *buffers;         // FS2 +0x9c
     ScreenFill         *screenFill;      // FS2 +0xa0
     MenuProgHolder     *menuProg;        // FS2 +0xa4
@@ -318,11 +367,12 @@ struct StageScene
     WideFontPrinter    *printer;         // FS2 +0xbc
     ScenePool          *pool;            // FS2 +0xc0: a stage's
     PauseMenuState     *pauseState;      // FS2 +0xc4: a stage's
-    u_short             _c8;             // FS2 +0xc8: zero (unread)
+    u_char              inFrame;         // FS2 +0xc8: set by update (unread)
+    u_char              itemPicked;      // FS2 +0xc9: the item list took the action button this frame
     UiItemList         *itemList;        // FS2 +0xcc: a stage's
     StageMenu          *menu;            // FS2 +0xd0: a stage's
-    int                 _d4;             // FS2 +0xd4: zero (unread)
-    int                 _d8;             // FS2 +0xd8: zero (unread)
+    StageObject        *rootAny;         // FS2 +0xd4: the last group's first "Root"
+    StageObject        *root;            // FS2 +0xd8: group 1's
     SceneBoxList       *boxes;           // FS2 +0xdc
     SceneUiState       *uiState;         // FS2 +0xe0: a stage's
     Rand48             *rng;             // FS2 +0xe4: a stage's
@@ -330,19 +380,19 @@ struct StageScene
     StageEvent         *event;           // FS2 +0xec
     UiShowFlags        *showFlags;       // FS2 +0xf0: a stage's
     StageAlert         *alert;           // FS2 +0xf4: a stage's
-    u_char              _f8[0x4];        // FS2 +0xf8: not set by the ctor
+    void               *focus;           // FS2 +0xf8: getInputFocus's cache, cleared each frame; not set by the ctor
     StageFade          *fade;            // FS2 +0xfc
     StageViewTarget    *viewTarget;      // FS2 +0x100
     u_char              _104;            // FS2 +0x104: zero (unread)
     int                 _108;            // FS2 +0x108: zero (unread)
     StageScene         *parent;          // FS2 +0x10c: a sub-scene's (stageThread)
     StageFiles         *files;           // FS2 +0x110: a sub-scene's (stageThread)
-    u_char              _114;            // FS2 +0x114: zero (unread)
+    u_char              camerasReady;    // FS2 +0x114: setupCameras ran
     GameOverSequence   *gameOver;        // FS2 +0x118
     ClearSequence      *clear;           // FS2 +0x11c
     SceneDirector      *director;        // FS2 +0x120
     SceneArrayPair     *arrays;          // FS2 +0x124
-    u_char              _128[0x4];       // FS2 +0x128: not set by the ctor
+    u_char              altLatch;        // FS2 +0x128: while set, update latches the player's alternate action; not set by the ctor
     SceneModelHolder   *model;           // FS2 +0x12c
 };
 

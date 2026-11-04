@@ -177,6 +177,12 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 ## callcheck / stubgen
 
+- **stubgen and new declarations** (2026-11-03): a member declared right after `public:` with an
+  address-less comment (`// FS2 vtable +0x18`) comes out with `public:` in its signature and a `return
+  {};` in a void; a derived class whose base has no default ctor gets a stub that does not compile (it
+  needs `: Base(...)`). Fix both by hand in src/lib/unassigned_stubs.cpp; stubgen leaves them alone
+  afterwards.
+
 - **Implicit copy assignments are calls in the ROM** (2026-11-02, TU 7): CodeWarrior emits
   `SaveData::operator=` and kin as out-of-line functions, so a struct assignment shows as a missing
   `operator=`; explain it with `// callcheck: operator= (...)` (callcheck.py accepts `=` in the names
@@ -221,6 +227,10 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **`last.png` can come out 0 bytes**: check its size after `check`.
 
 ## Shell and Python on Windows
+
+- **A heredoc whose body has an odd number of apostrophes fails in the Bash tool**, even with a quoted
+  delimiter: "unexpected EOF while looking for matching". A batch JSON with one apostrophe did it, and
+  nothing ran (2026-11-03). Write such files with the Write tool.
 
 - **A long heredoc in one Bash call** (2026-11-03): one holding C++ with apostrophes in comments failed
   with "unexpected EOF while looking for matching" even with a quoted delimiter, and only the part

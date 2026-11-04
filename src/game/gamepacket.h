@@ -20,9 +20,11 @@
 enum PacketList
 {
     PacketList_None = -1,       // GamePacketManager: no list open
-    PacketList_StageClock = 10, // the stage loop's StageResult::update
-    PacketList_Overlay = 11,    // overlayThread: the BG movie screen and the loading indicator
-    PacketList_Screen  = 12,    // runLayout: modal screens and dialogs
+    PacketList_SceneModel = 8,  // StageScene::draw: the scene's model holder
+    PacketList_Scene2d    = 9,  // StageScene::draw: filters, fades and the fill over the 3D frame
+    PacketList_StageClock = 10, // the stage loop's StageResult::update; StageScene::draw: the item list and the menu
+    PacketList_Overlay = 11,    // overlayThread: the BG movie screen and the loading indicator; StageScene::draw: alert, fade, letterbox
+    PacketList_Screen  = 12,    // runLayout: modal screens and dialogs; StageScene::draw: the pool's text, subtitles
     PacketList_Finish = 13,     // GameSystem::flipFrame puts a GS FINISH here
     PacketList_Count  = 14,
 };
