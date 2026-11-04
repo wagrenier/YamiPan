@@ -177,6 +177,8 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 - **"No callers or references found" can be a vtable slot** (2026-11-04). Symptom: stubgen puts a class's stub in an unrelated file. Cause: `game/sysdata.cpp` ended with `sysDataReturnZero` 0x23c010, called by nobody: a `return 0` right before the next class, in fact the slot of vtable 0x316510 (`ghidra.py refs` lists the DATA references; the function's own decompile says nothing). Fix: before writing a tiny function at a TU's edge, look at its refs; stubgen places a stub by the TU whose range holds the address, so a stub in the wrong file means the range is wrong.
 
+- **A stub that returns nothing can make a loader succeed on nothing** (2026-11-04, a day of "no model ever reaches the code"). Symptom: `StageFiles::load` answers true, no crash, the stage plays empty. Cause: `String` / `StringList::pushBack` were stubs, so the script had zero lines and the loop never ran. Fix: when a run is empty but silent, list the reached stubs in order (`run_relwithdebinfo.log`) and look for a data structure among them before tracing the caller.
+
 ## callcheck / stubgen
 
 - **stubgen and new declarations** (2026-11-03): a member declared right after `public:` with an

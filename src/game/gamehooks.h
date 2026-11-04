@@ -124,39 +124,7 @@ enum LangPackItem
     LangItem_ClockCountdown = 5,
 };
 
-// The tables PackTables::parse reads out of packgameEU.pak (columns ラベル
-// "label", ctype, SEtype). The element types are read from the MSL
-// instances' destructors only (unverified): a ListMap value is a 4-byte key
-// and a vector of 0x10-byte {4 bytes, string} entries, a NameMap value a
-// string key and 4 trivially destroyed bytes.
-// layout: host -- std::string; EE 0x10.
-struct PackEntry
-{
-    int         id;             // FS2 +0x0 (unverified)
-    std::string text;           // FS2 +0x4: MSL string, EE 0xc
-};
-typedef std::vector<PackEntry> EntryList;
-typedef std::map<int, EntryList> ListMap;
-typedef std::map<std::string, int> NameMap;
-
-// layout: host -- EE 0x80: eight MSL maps of 0x10, ListMap at +0x00 / +0x20 /
-// +0x40 / +0x60, NameMap at +0x10 / +0x30 / +0x50 / +0x70 (0x2c16b0 /
-// 0x2c1710); the destructor is implicit (inline in loadGamePackTables).
-class PackTables
-{
-public:
-    PackTables();                                                        // FS2 0x002c0dc0
-    void parse(PackFile *pack);                                          // FS2 0x002bcf10
-
-    ListMap lists0;             // FS2 +0x00
-    NameMap names0;             // FS2 +0x10
-    ListMap lists1;             // FS2 +0x20
-    NameMap names1;             // FS2 +0x30
-    ListMap lists2;             // FS2 +0x40
-    NameMap names2;             // FS2 +0x50
-    ListMap lists3;             // FS2 +0x60
-    NameMap names3;             // FS2 +0x70
-};
+// PackTables moved to game/packtables.h (game/packtables.cpp).
 
 // StageSound moved to game/stagesound.h (game/stagesound.cpp).
 
@@ -1481,9 +1449,8 @@ struct StageMapFile
 static_assert(sizeof(StageMapFile) == 0x24, "StageMapFile: EE 0x24");
 
 // A model file (the model keyword) and what ModelFile::createInstance reads
-// from it. EE layout: the file itself; relocate (its TU, unassigned@002e2970)
-// turns the offsets into pointers in place, so the fields read here are
-// S2dRef.
+// from it. EE layout: the file itself; relocate (rena/rena_model.cpp) moves
+// its pointers in place, so they are all S2dRef.
 enum ModelMaterialKind
 {
     ModelMaterial_Textured = 0,
@@ -1493,24 +1460,66 @@ enum ModelMaterialFlag
 {
     ModelMaterialFlag_Foliage = 0x20,   // the texture is a plant's (drawSysAddModel)
 };
+struct ModelMaterialExt
+{
+    int          _0;
+    S2dRef<void> data;          // FS2 +0x4
+};
+static_assert(sizeof(ModelMaterialExt) == 8, "ModelMaterialExt: EE 8");
 struct ModelMaterial
 {
     u_char             kind;    // FS2 +0x00: ModelMaterialKind
     u_char             flags;   // FS2 +0x01: ModelMaterialFlag
     u_char             _02[2];
     S2dRef<const char> name;    // FS2 +0x04
-    u_char             _08[4];  // FS2 +0x08: the texture animation (renaStepTexAnim)
+    S2dRef<void>       texAnim; // FS2 +0x08: the texture animation (renaStepTexAnim)
     short              texture; // FS2 +0x0c: into ModelFile::textureNames, or negative
+    u_char             _0e[0xa];
+    S2dRef<ModelMaterialExt> ext; // FS2 +0x18: not on ModelMaterial_Kind1
 };
 static_assert(offsetof(ModelMaterial, name) == 4, "ModelMaterial::name");
 static_assert(offsetof(ModelMaterial, texture) == 0xc, "ModelMaterial::texture");
 
+// A DMA tag of a mesh's packet: its address is a pointer of the file.
+struct ModelTag
+{
+    int          _0;
+    S2dRef<void> next;          // FS2 +0x4
+    int          _8[2];
+};
+static_assert(sizeof(ModelTag) == 0x10, "ModelTag: EE 0x10");
+// One packet of a ModelPrim: 5 tags, or 7 when ModelPrim::isLong; 0x10
+// more unless skinned. Its last two tags' addresses list pointers when
+// skinned.
+struct ModelBatch
+{
+    enum
+    {
+        kShortTags = 5, kLongTags = 7,
+        kShortSize = 0x50, kLongSize = 0x70, kPadSize = 0x10,
+    };
+    ModelTag tags[kLongTags];
+};
+static_assert(sizeof(ModelBatch) == ModelBatch::kLongSize, "ModelBatch: EE 0x70 at most");
+// A mesh material's run of packets (0x10 bytes).
+struct ModelPrim
+{
+    S2dRef<void>       _0;      // FS2 +0x0
+    S2dRef<ModelBatch> batches; // FS2 +0x4: batchCount
+    u_short            _8;      // FS2 +0x8
+    u_short            batchCount; // FS2 +0xa
+    u_char             isLong;  // FS2 +0xc
+    u_char             listACount; // FS2 +0xd
+    u_char             listBCount; // FS2 +0xe
+    u_char             skinned; // FS2 +0xf
+};
+static_assert(sizeof(ModelPrim) == 0x10, "ModelPrim: EE 0x10");
 // One material of a mesh part (8 bytes).
 struct ModelMeshMaterial
 {
-    short _0;
-    short material;             // FS2 +0x2: into the file's materials, or negative
-    int   _4;
+    u_short           primCount; // FS2 +0x0
+    short             material; // FS2 +0x2: into the file's materials, or negative
+    S2dRef<ModelPrim> prims;    // FS2 +0x4
 };
 static_assert(sizeof(ModelMeshMaterial) == 8, "ModelMeshMaterial: EE 8");
 // A mesh's part (0x30 bytes).
@@ -1520,13 +1529,13 @@ struct ModelMeshPart
     int                       materialCount; // FS2 +0x20
     int                       _24;
     S2dRef<ModelMeshMaterial> materials;     // FS2 +0x28
-    int                       _2c;
+    S2dRef<S2dRef<void> >     lists;         // FS2 +0x2c: ModelMeshParts::boneCount
 };
 static_assert(sizeof(ModelMeshPart) == 0x30, "ModelMeshPart: EE 0x30");
 struct ModelMeshParts
 {
     u_short               count; // FS2 +0x0
-    u_short               _2;
+    u_short               boneCount; // FS2 +0x2: of ModelMesh::boneMap
     S2dRef<ModelMeshPart> parts; // FS2 +0x4
     S2dRef<ModelMaterial> material; // FS2 +0x8: its name tags the mesh for the VCM (vcmtable.cpp)
 };
@@ -1535,13 +1544,21 @@ static_assert(offsetof(ModelMeshParts, material) == 8, "ModelMeshParts::material
 struct ModelMesh
 {
     S2dRef<const char>     name;  // FS2 +0x00
-    u_char                 _04[4];
+    S2dRef<short>          boneMap; // FS2 +0x04: into the node's bones; -1 from the first node's
     S2dRef<ModelMeshParts> parts; // FS2 +0x08: may be null
     u_char                 _0c[0xc];
 };
 static_assert(sizeof(ModelMesh) == 0x18, "ModelMesh: EE 0x18");
 
 struct ModelFile;
+// A node's bone (0x10 bytes).
+struct ModelNodeBone
+{
+    S2dRef<void>       matrix;  // FS2 +0x0
+    S2dRef<const char> name;    // FS2 +0x4
+    u_char             _8[8];
+};
+static_assert(sizeof(ModelNodeBone) == 0x10, "ModelNodeBone: EE 0x10");
 // A node's record in a model file (0x30 bytes).
 struct ModelFileNode
 {
@@ -1550,7 +1567,9 @@ struct ModelFileNode
     u_char             _08[8];
     S2dRef<ModelFile>  file;    // FS2 +0x10
     S2dRef<ModelMesh>  meshes;  // FS2 +0x14: meshCount
-    u_char             _18[0xc];
+    S2dRef<ModelNodeBone> bones; // FS2 +0x18: boneCount
+    S2dRef<void>       _1c;     // FS2 +0x1c
+    S2dRef<void>       _20;     // FS2 +0x20
     u_short            boneCount;    // FS2 +0x24
     u_short            surfaceCount; // FS2 +0x26
     u_short            _28;          // FS2 +0x28
@@ -1605,6 +1624,8 @@ struct ModelFile
 {
     bool isValid();                                                      // FS2 0x002e2cf0: the magic at gp-0x7b48
     void relocate();                                                     // FS2 0x002e2d20
+    // Moves every pointer of the file from the base oldBase to the file.
+    void relocateFrom(int oldBase);                                      // FS2 0x002e2d80
     int  getNodeCount();                                                 // FS2 0x002e5200
     // A new instance of node index, or of the node called name when name
     // is not null.
@@ -1615,15 +1636,23 @@ struct ModelFile
     u_short nodeCount;          // FS2 +0x1a
     u_short materialCount;      // FS2 +0x1c
     u_short textureCount;       // FS2 +0x1e
-    u_char  _20[0x14];
+    u_char  _20[4];
+    int     meshPartCount;      // FS2 +0x24
+    S2dRef<ModelMeshParts> meshParts; // FS2 +0x28: meshPartCount
+    S2dRef<void> _2c;           // FS2 +0x2c
+    S2dRef<ModelFile> base;     // FS2 +0x30: on the disc an address, then the file itself
     S2dRef<ModelFileNode> nodes; // FS2 +0x34
     S2dRef<S2dRef<ModelMaterial> > materials; // FS2 +0x38: materialCount
     S2dRef<S2dRef<const char> > textureNames; // FS2 +0x3c: textureCount, each a .tm2 of the .tpk without its extension
+    S2dRef<void> _40;           // FS2 +0x40
+    S2dRef<void> _44;           // FS2 +0x44
 };
 static_assert(offsetof(ModelFile, materialCount) == 0x1c, "ModelFile::materialCount");
 static_assert(offsetof(ModelFile, textureCount) == 0x1e, "ModelFile::textureCount");
 static_assert(offsetof(ModelFile, nodes) == 0x34, "ModelFile::nodes");
 static_assert(offsetof(ModelFile, textureNames) == 0x3c, "ModelFile::textureNames");
+static_assert(offsetof(ModelFile, meshPartCount) == 0x24, "ModelFile::meshPartCount");
+static_assert(offsetof(ModelFile, base) == 0x30, "ModelFile::base");
 
 // An lpt file (the lpt keyword): magic kLptMagic until applyBgTarget made
 // +8 a pointer, then kLptRelocated.
@@ -1646,13 +1675,21 @@ struct LptRecord
 };
 static_assert(sizeof(LptRecord) == 0x40, "LptRecord: EE 0x40");
 
-// A door's record (0x38 bytes, kDoorRecords of them; bss 0x537d80, filled
-// at run time), found by its map object's name.
+// A door's record (0x38 bytes, kDoorRecords of them; bss 0x537d80, read
+// from the pack's door sheet by PackTables::parse), found by its map
+// object's name. The ROM's five setters 0x172370..0x1723b0 write +0x10..+0x1e.
 constexpr int kDoorRecords = 0x87;
 struct DoorRecord
 {
-    char name[0x34];            // FS2 +0x00: extent unread
-    int  value;                 // FS2 +0x34: SubSceneDoorObject::m_recordValue (unread)
+    char   name[0x10];          // FS2 +0x00: Name
+    int    keyKind;             // FS2 +0x10: 鍵属性
+    int    startState;          // FS2 +0x14: 初期状態
+    int    windowState;         // FS2 +0x18: 窓状態
+    short  hp;                  // FS2 +0x1c: ドアHP
+    short  seIndex;             // FS2 +0x1e: the number of SEラベル DOOR_%02d
+    char   light[0x10];         // FS2 +0x20: light
+    u_char hasObject;           // FS2 +0x30: object
+    int    value;               // FS2 +0x34: particle; SubSceneDoorObject::m_recordValue
 };
 static_assert(sizeof(DoorRecord) == 0x38, "DoorRecord: EE 0x38");
 extern DoorRecord gDoorRecords[kDoorRecords];   /* bss 0x537d80 */
@@ -2230,22 +2267,22 @@ int  pauseMenuResult();                                                  // FS2 
 void mapMenuStart();                                                     // FS2 0x0020afe0
 int  mapMenuResult();                                                    // FS2 0x0020afa0: -1 while open
 
-// The item definitions (bss 0x574c10, 160 x 0x20; loaded with the stage
-// data, not read here). Names are guesses from findSprite and the
-// inventory scans.
+// The item definitions (bss 0x574c10, 160 x 0x20; the pack's item sheet,
+// PackTables::parse). The names not from a column are guesses from
+// findSprite and the inventory scans.
 constexpr int kItemDefCount = 160;
 struct ItemDef
 {
     char   name[0x10];          // FS2 +0x00: the TimM sprite names use it
-    int    kind;                // FS2 +0x10: ItemKind
-    u_char _14[0x4];
-    u_char startCount;          // FS2 +0x18: what a placed item holds (StageItem::setupItem)
-    u_char stackKind;           // FS2 +0x19: > 1 shows the count (UiItemSlot::showsCount); StageItem's most
+    int    kind;                // FS2 +0x10: ItemKind (種別, kItemKinds in game/packtables.cpp)
+    int    effect;              // FS2 +0x14: アイテム効果
+    u_char startCount;          // FS2 +0x18: 入手数: what a placed item holds (StageItem::setupItem)
+    u_char stackKind;           // FS2 +0x19: 所持上限 (the carry limit): > 1 shows the count (UiItemSlot::showsCount); StageItem's most
     signed char pickSound;      // FS2 +0x1a: kPickSounds in game/stageitem.cpp; -1 none
     u_char isBlade;             // FS2 +0x1b: 1 cuts (the weapons' hit sounds)
     signed char landSound;      // FS2 +0x1c: kLandSounds in game/stageitem.cpp; -1 none
     u_char _1d;
-    short  maxCount;            // FS2 +0x1e: UiItemSlot::max (guess: the most one can carry)
+    short  maxCount;            // FS2 +0x1e: the sheet's No (UiItemSlot::max; the name was a guess, 所持上限 is +0x19)
 
     // The two sound names of the pack's table; false: no such sound.
     bool setLandSound(const char *soundName);                            // FS2 0x0017fd40
@@ -2257,22 +2294,81 @@ struct ItemDef
 static_assert(sizeof(ItemDef) == 0x20, "ItemDef: EE 0x20");
 extern ItemDef gItemDefs[kItemDefCount];  /* bss 0x574c10 */
 
-// A record table per StageKind (bss 0x539b10: 3 x 0x140 x 0xfc), indexed
-// by an object's m_itemDef; only kind is read (StageSound: 0xf muffles a
-// Kind11 listener). What it describes is unread.
+// The character sheet per StageKind (bss 0x539b10: 3 x 0x140 x 0xfc, the
+// pack's items 0..2, PackTables::parse), indexed by an object's m_itemDef.
+// The field names say what the sheet's column says.
 constexpr int kStageObjRecordSets  = 3;
 constexpr int kStageObjRecordCount = 0x140;
 constexpr int kStageObjRecordMuffles = 0xf;
 struct StageObjRecord
 {
-    char   name[0x10];          // FS2 +0x00: a map point's (StageFiles::placeCharacter)
-    int    kind;                // FS2 +0x10
-    u_char _14[0x4];
-    char   items[2][0x10];      // FS2 +0x18: items placed with the character; empty none
-    u_char _38[0xc4];
+    char   name[0x10];          // FS2 +0x00: ラベル: a map point's (StageFiles::placeCharacter)
+    int    kind;                // FS2 +0x10: ctype (StageSound: 0xf muffles a Kind11 listener)
+    int    seType;              // FS2 +0x14: SEtype
+    char   items[2][0x10];      // FS2 +0x18: 武器ラベル, 懐中電灯ラベル: items placed with the character; empty none
+    u_char lightWeapon : 2;     // FS2 +0x38: 軽
+    u_char heavyWeapon : 2;     // FS2 +0x38: 重
+    u_char shortGun    : 2;     // FS2 +0x38: 短
+    u_char rifle       : 2;     // FS2 +0x38: ラ
+    u_int  sides;               // FS2 +0x3c: StageObjSide bits
+    int    startMotion;        // FS2 +0x40: 初期M
+    int    aiType;             // FS2 +0x44: AIﾀｲﾌﾟ
+    int    aiLevel;            // FS2 +0x48: AILV
+    int    sight;              // FS2 +0x4c: 視界
+    int    hearing;            // FS2 +0x50: 音感
+    int    health;             // FS2 +0x54: 体力
+    int    endurance;          // FS2 +0x58: 耐久力
+    int    leftArm;            // FS2 +0x5c: 左腕
+    int    rightArm;           // FS2 +0x60: 右腕
+    int    rightLeg;           // FS2 +0x64: 右足
+    int    leftLeg;            // FS2 +0x68: 左足
+    int    recovery;           // FS2 +0x6c: 回復
+    int    lightResist;        // FS2 +0x70: 光耐性
+    int    lightDamage;        // FS2 +0x74: 光ﾀﾞﾒｰｼﾞ
+    int    lightFlinch;        // FS2 +0x78: 光怯み
+    int    unarmedAttack;      // FS2 +0x7c: 素手攻撃
+    int    unarmedMsp;         // FS2 +0x80: 素手MSP
+    int    unarmedMspDrop;     // FS2 +0x84: 素手MSP減少値
+    int    weaponMspScale;     // FS2 +0x88: 武器MSP修正値
+    int    meleeAttackScale;   // FS2 +0x8c: 打撃攻撃力修正値
+    int    shotAttackScale;    // FS2 +0x90: 射撃攻撃力修正値
+    int    bite;               // FS2 +0x94: かみつき
+    int    attackCheck;        // FS2 +0x98: 攻撃判定
+    int    walkSpeed;          // FS2 +0x9c: 移動速度
+    int    runSpeed;           // FS2 +0xa0: 走り速度
+    int    turnSpeed;          // FS2 +0xa4: 旋回速度
+    int    flashlight;         // FS2 +0xa8: 懐中電灯
+    int    reviveTime;         // FS2 +0xac: 復活時間
+    int    flinchResist;       // FS2 +0xb0: ひるみ耐性値
+    int    decoyResist;        // FS2 +0xb4: 陽動耐性
+    int    controlResist;      // FS2 +0xb8: 操り耐性
+    int    trapResist;         // FS2 +0xbc: 罠耐性
+    int    shot;               // FS2 +0xc0: 射撃
+    int    shotInterval;       // FS2 +0xc4: 射撃間隔
+    int    attackInterval;     // FS2 +0xc8: 攻撃間隔
+    int    biteInterval;       // FS2 +0xcc: 噛みつき間隔
+    int    reload;             // FS2 +0xd0: リロード
+    int    stepLevel;          // FS2 +0xd4: 段差Lv
+    int    ladder;             // FS2 +0xd8: ハシゴ
+    int    jumpLevel;          // FS2 +0xdc: ｼﾞｬﾝﾌﾟLv
+    int    stepDown;           // FS2 +0xe0: 段差下り
+    int    bloodSpray;         // FS2 +0xe4: 血しぶき
+    int    unarmedCombo;       // FS2 +0xe8: 素手コンボ
+    int    weaponCombo;        // FS2 +0xec: 武器コンボ
+    int    drivingSkill;       // FS2 +0xf0: 運転スキル
+    int    snipeLerp;          // FS2 +0xf4: 狙撃補間率
+    int    snipeShake;         // FS2 +0xf8: 狙撃ブレ率
 };
 static_assert(sizeof(StageObjRecord) == 0xfc, "StageObjRecord: EE 0xfc");
 extern StageObjRecord gStageObjRecords[kStageObjRecordSets][kStageObjRecordCount]; /* bss 0x539b10 */
+// StageObjRecord::sides (columns PC, NP, 屍 and 闇).
+enum StageObjSide
+{
+    StageObjSide_Player = 0x1,  // PC
+    StageObjSide_Npc    = 0x2,  // NP
+    StageObjSide_Corpse = 0x4,  // 屍 (shibito)
+    StageObjSide_Dark   = 0x8,  // 闇 (yamibito)
+};
 
 // ItemDef::kind: 2..6 are firearms (they show ammo), 7 and up items the
 // inventory lists; below 7 the weapons' sprite set.
@@ -2298,16 +2394,26 @@ constexpr int kItemPickSounds = 0x13;
 
 // getKind's value of a weapon item (StageFiles::placeItem).
 constexpr int kStageObjectKindWeapon = 0x15;
-// The weapon definitions (bss 0x576010, 0x50 x 0x54).
+// The weapon definitions (bss 0x576010, 0x50 x 0x54): the item sheet's
+// rows of a weapon kind (below ItemKind_ItemFirst), in order.
 constexpr int kWeaponDefCount = 0x50;
 struct WeaponDef
 {
-    char   name[0x10];          // FS2 +0x00
-    u_char _10[0x8];
-    int    range;               // FS2 +0x18: a bullet's reach, units
-    u_char _1c[0x8];
-    int    magazine;            // FS2 +0x24
-    u_char _28[0x2c];
+    char   name[0x10];          // FS2 +0x00: LABEL
+    int    param1;              // FS2 +0x10: parameter 1
+    int    param2;              // FS2 +0x14: parameter 2
+    int    range;               // FS2 +0x18: parameter 3: a bullet's reach, units
+    int    param4;              // FS2 +0x1c: parameter 4
+    int    param5;              // FS2 +0x20: parameter 5
+    int    magazine;            // FS2 +0x24: parameter 6
+    char   ammo[0x10];          // FS2 +0x28: parameter 7: another item's LABEL; empty none
+    int    param8;              // FS2 +0x38: parameter 8
+    int    param9;              // FS2 +0x3c: parameter 9
+    int    param10;             // FS2 +0x40: parameter 10
+    int    param11;             // FS2 +0x44: parameter 11
+    int    param12;             // FS2 +0x48: parameter 12
+    int    ammoParam1;          // FS2 +0x4c: that item's parameter 1
+    int    ammoParam12;         // FS2 +0x50: that item's parameter 12
 };
 static_assert(sizeof(WeaponDef) == 0x54, "WeaponDef: EE 0x54");
 static_assert(offsetof(WeaponDef, magazine) == 0x24, "WeaponDef::magazine");
