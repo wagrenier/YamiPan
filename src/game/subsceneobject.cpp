@@ -713,3 +713,26 @@ CharacterHidePart::CharacterHidePart(StageObject *owner, int kind)
         m_switch->init(owner->m_model->data, kHidePartName, kHidePartCount, 0);
     }
 }
+
+/* What has no body of its own here, for the ledger:
+ *
+ * The slots the host's compiler writes (game/subsceneobject.h has them):
+ *   FS2 0x002687c0 SubSceneLamp::~SubSceneLamp
+ *   FS2 0x00269150 SubSceneModelObject::getKind
+ *   FS2 0x002bb600 SubSceneItem::getKind
+ *   FS2 0x002bbc00 SubSceneMapObject::getKind
+ *   FS2 0x002bc090 SubSceneCharacter::getKind
+ *   FS2 0x002bc0a0 SubSceneGateObject::getKind
+ *
+ * Empty in the ROM, the StageObject defaults on the host:
+ *   FS2 0x00269a80 SubSceneModelObject::sideHook0
+ *   FS2 0x00269a70 SubSceneModelObject::sideHook1
+ *   FS2 0x002699e0 SubSceneModelObject::sideHook3
+ *
+ * The ROM's this-adjusting thunks (-0x40), which the host has no need of:
+ *   FS2 0x002bc0b0 to SubSceneMapObject::~SubSceneMapObject
+ *   FS2 0x002bc0c0 to SubSceneGateObject::~SubSceneGateObject
+ *   FS2 0x002bc0d0 to SubSceneCharacter::~SubSceneCharacter
+ *   FS2 0x002bc0e0 to SubSceneItem::setScriptFlag
+ *   FS2 0x002bc0f0 to SubSceneItem::~SubSceneItem
+ */

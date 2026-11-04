@@ -6422,7 +6422,7 @@
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 00269da0 00000008 */ FUN_00269da0(){}
+/* 00269da0 00000008 */ SubSceneModelObject::~SubSceneModelObject_thunk(){}  // game
 /* 00269db0 00000254 */ FUN_00269db0(){}
 /* 0026a010 00000234 */ FUN_0026a010(){}
 /* 0026a250 0000013c */ FUN_0026a250(){}
@@ -7711,11 +7711,11 @@
 /* 002bc040 00000050 */ SubSceneMapObject::SubSceneMapObject(){}  // game
 /* 002bc090 00000008 */ SubSceneCharacter::getKind(){}  // game
 /* 002bc0a0 00000008 */ SubSceneGateObject::getKind(){}  // game
-/* 002bc0b0 00000008 */ FUN_002bc0b0(){}
-/* 002bc0c0 00000008 */ FUN_002bc0c0(){}
-/* 002bc0d0 00000008 */ FUN_002bc0d0(){}
-/* 002bc0e0 00000008 */ FUN_002bc0e0(){}
-/* 002bc0f0 00000008 */ FUN_002bc0f0(){}
+/* 002bc0b0 00000008 */ SubSceneMapObject::~SubSceneMapObject_thunk(){}  // game
+/* 002bc0c0 00000008 */ SubSceneGateObject::~SubSceneGateObject_thunk(){}  // game
+/* 002bc0d0 00000008 */ SubSceneCharacter::~SubSceneCharacter_thunk(){}  // game
+/* 002bc0e0 00000008 */ SubSceneItem::setScriptFlag_thunk(){}  // game
+/* 002bc0f0 00000008 */ SubSceneItem::~SubSceneItem_thunk(){}  // game
 
 // *****************************************************************************
 // FILE -- (unassigned)
