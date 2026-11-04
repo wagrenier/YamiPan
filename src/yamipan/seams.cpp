@@ -4,6 +4,7 @@
 #include <span>
 #include <thread>
 
+#include "game/movieplayer.h"
 #include "rena/rena_2d_texture_tim2.h"
 #include "yamipan/core/application.h"
 #include "yamipan/os/yamipan_time.h"
@@ -67,9 +68,17 @@ void YamiPan_DrawUiVertex(const void *list, const YamiPanUiVertex *vertex)
     canvas().addVertex(list, *vertex);
 }
 
-void YamiPan_DrawUiMovie(const void *, const void *, const void *, int, int, int, int, int, int)
+void YamiPan_DrawUiMovie(const void *list, const void *owner, const void *macroblocks, int columns, int rows, int tbp,
+                         int, int x, int y)
 {
-    // The movie path arrives with libmpeg.
+    // MoviePlayer::prime sends its first picture to the movie's own buffer, which nothing shows; only the
+    // widget's draw (the frame's buffer) is seen.
+    constexpr int kMovieFrameTbp = 0x800;
+    if (tbp != kMovieFrameTbp)
+        return;
+    const int picture = static_cast<const MoviePlayer *>(owner)->m_mpeg.frameCount;
+    canvas().drawMacroblocks(list, owner, picture, macroblocks, columns, rows, static_cast<float>(x),
+                             static_cast<float>(y));
 }
 
 void YamiPan_DrawUiKick(const void *const *lists, int count)

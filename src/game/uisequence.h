@@ -347,8 +347,11 @@ public:
     // Inline in the ROM (UiLayout::removeSequence).
     ~UiSequence()
     {
-        removeActor(-1);
+        // PC: the ROM's order is actors, then widgets, and a movie or stream
+        // widget's close then writes to its text track inside a freed actor;
+        // harmless on the EE heap, heap corruption here.
         removeWidget(-1);
+        removeActor(-1);
     }
 
     void advance();                                                      // FS2 0x00246db0

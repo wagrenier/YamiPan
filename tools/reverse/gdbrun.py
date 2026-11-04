@@ -81,6 +81,8 @@ def play():
         (DIR / f).unlink(missing_ok=True)
     env = dict(os.environ, YAMIPAN_GDB_DIR=str(DIR),
                PATH=yamipan.MINGW_BIN + os.pathsep + os.environ.get('PATH', ''))
+    # As build.py does: without the data folder the game never starts, and the held process shows no game frames.
+    env.setdefault('YAMIPAN_DATA_DIR', str(yamipan.GAME_DATA))
     env.pop('YAMIPAN_AUTOPAD', None)
     if opt('--pad'):
         env['YAMIPAN_AUTOPAD'] = opt('--pad')

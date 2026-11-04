@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 23:01 at commit `f1bf326` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 23:48 at commit `67cb450` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -109,9 +109,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 99 TUs: todo 54, partial 1, verify 61, done 1
-- next: **unassigned@0017fce0** (frontier score 86)
-- pinned queue: (empty)
+- 99 TUs: todo 54, partial 1, verify 62, done 1
+- next: **unassigned@002c42a0** (pinned in the queue)
+- pinned queue: unassigned@002c42a0, unassigned@0017fce0
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
@@ -169,6 +169,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `rx/rxsndut.c` 6/6 -- All 6 written in src/rx/rxsndut.c. Data: debug flags 0x2f5f10 (boot value 7 = error / BG-call / register prints) and the format tables 0x2f5f18 PCM (id 1) / 0x2
 - verify: `rx/rxsys.c` 126/126 -- rxsys is RoR's prebuilt rx: rxcmp.py '^rxSys' finds 126 of 126 identical (jumps, lui and gp offsets masked) and the data words and console font equal RoR's at +
 - verify: `rx/rxthread.c` 53/53 -- Every rxTh function is RoR's word for word, so the file is RosePan's rxthread.cpp in C with FS2 addresses (architecture.md rx has the data and bss map). rxthrea
+- verify: `sdk/libmpeg.cpp` 0/0 -- src/yamipan/media (MpegStream, MpegDecoder), sdk/libmpeg.cpp thin, YamiPan_DrawUiMovie to UiCanvas::drawMacroblocks. The black after the card was the opening fi
 - verify: `sdk/mcerror.cpp` 0/1 -- Pinned 0x121b80..0x121ef0 as sdk/mcerror.cpp (read as libmc's: between the read-fast tail and libc abort, maps commands FS2 never issues). McCmd and McErrno in 
 - verify: `sdpr2/sdpr2.c` 36/36 -- All 36 functions written (0x1681c0..0x16c870), no new names, no Ghidra change. sdpr2.h is the full header: Sdpr2Type (19-slot function table, layout host), Sdpr
 - verify: `sound/sound.cpp` 97/98 -- All 98 of 0x144080..0x148db0 written, one file, no Ghidra change (batch 013 names held). New src/sound/sound.h takes the sound stand-ins out of game/gamehooks.h
@@ -176,27 +177,27 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 23:48 `sdk/libmpeg.cpp` verify: Real libmpeg: PSS demux, FFmpeg MPEG-2 decode, movie pictures through UiCanvas; the opening film plays and the road reaches stageThread
+- 2026-11-03 23:17 `unassigned@0017fce0` todo: marked active -> todo: released untouched a fourth time: gdb located the black after the card (PrgMovie, MoviePlayer state 15), so this run took the host task s
 - 2026-11-03 23:00 `game/uiworkarea.cpp` verify: UiTrack base slots and the UI work area; New Game now reaches the opening card
 - 2026-11-03 22:21 `game/prgmccard.cpp` verify: PrgMcCard, the load and save screens: all 7 written; the load screen now says No memory card and closes back to the title
 - 2026-11-03 21:45 `unassigned@0017fce0` todo: marked todo -> todo: released untouched: the queue was empty, so this run took the menu's reached stub, as SKILL.md Starting sessions asks
 - 2026-11-03 21:42 `game/menupack.cpp` verify: the menu pack, its SePlayer and MessageTable: all 9 written; the title now answers a press
 - 2026-11-03 21:18 `game/titlescreen.cpp` verify: runTitleScreen and the two loading hooks written; the title menu is on screen
 - 2026-11-03 20:57 `game/layoutpaths.cpp` verify: all 24 event movie and layout paths written; the menu now runs past the language screen to the no-card dialog and the SCE logo; new YAMIPAN_TEX_DUMP hook
-- 2026-11-03 20:47 `unassigned@0017fce0` todo: marked todo -> todo: released untouched: the queue was empty, so this run took the menu's blockers, as the handoff asked
-- 2026-11-03 20:39 `game/areagrid.cpp` verify: AreaGrid, AreaBox and seDistanceVolume: all 11 written; AreaGrid::contains answers the box, seDistanceVolume is unsigned; moved out of gamehooks.h into areagrid
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@0017fce0` | todo | 0/28/399 | 76.4 | 86 | 0 |
 | `unassigned@001d7c50` | todo | 0/23/296 | 137.5 | 65 | 0 |
-| `unassigned@00148db0` | todo | 0/17/125 | 35.6 | 60 | 2 |
 | `unassigned@001fe6b0` | todo | 0/34/563 | 197.2 | 60 | 0 |
-| `unassigned@002849c0` | todo | 0/28/129 | 44.6 | 47 | 2 |
+| `unassigned@00148db0` | todo | 0/17/125 | 35.6 | 60 | 2 |
 | `unassigned@00171300` | todo | 0/24/421 | 52.5 | 41 | 0 |
+| `unassigned@002849c0` | todo | 0/28/129 | 44.6 | 37 | 0 |
 | `unassigned@002b9ef0` | todo | 0/17/101 | 39.0 | 36 | 2 |
-| `unassigned@00299d90` | todo | 0/11/215 | 62.3 | 34 | 2 |
 | `unassigned@002b0d50` | todo | 0/23/85 | 17.9 | 34 | 0 |
 | `unassigned@002d46a0` | todo | 0/17/252 | 51.5 | 27 | 2 |
+| `unassigned@00299d90` | todo | 0/11/215 | 62.3 | 24 | 0 |
 | `unassigned@00231d40` | todo | 0/10/58 | 36.1 | 24 | 0 |
 | `unassigned@001a68b0` | todo | 0/6/714 | 174.8 | 20 | 0 |
 

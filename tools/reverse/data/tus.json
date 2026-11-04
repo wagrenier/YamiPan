@@ -1,5 +1,8 @@
 {
- "queue": [],
+ "queue": [
+  "unassigned@002c42a0",
+  "unassigned@0017fce0"
+ ],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
   "frontier_ignore": [],
@@ -1263,6 +1266,18 @@
    "status": "verify",
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. rxthread: RoR's rx/rxthread.cpp 0x249b88..0x24b490; FS2 links its VBlank tail (rxThVBlankHandler .. rxThSync) before rxsnd."
   },
+  "sdk/libmpeg.cpp": {
+   "notes": "src/yamipan/media (MpegStream, MpegDecoder), sdk/libmpeg.cpp thin, YamiPan_DrawUiMovie to UiCanvas::drawMacroblocks. The black after the card was the opening film never ending on the placeholder (gdb: PrgMovie, MoviePlayer state 15). Films show and end, not compared with a reference, silent: kMovieHostHasSound false until the IOP host exists. Fixed ~UiSequence order (PC: widgets before actors, a use-after-free in every movie that ends) and gdbrun.py (no data folder, game never started). Stops at an access violation in listenerFacing, StageObject::getMatrix is a stub. Next queued: unassigned@002c42a0 for sldiDecompress, then unassigned@0017fce0. open-items.md Next up has all of it.",
+   "sessions": [
+    {
+     "date": "2026-11-03 23:48",
+     "status": "verify",
+     "summary": "Real libmpeg: PSS demux, FFmpeg MPEG-2 decode, movie pictures through UiCanvas; the opening film plays and the road reaches stageThread"
+    }
+   ],
+   "status": "verify",
+   "task": "Real sdk/libmpeg: PSS demux, FFmpeg MPEG-2 decode and the movie picture through UiCanvas (item 8(d)); the opening movie after the stage card never ended on the placeholder"
+  },
   "sdk/mcerror.cpp": {
    "notes": "Pinned 0x121b80..0x121ef0 as sdk/mcerror.cpp (read as libmc's: between the read-fast tail and libc abort, maps commands FS2 never issues). McCmd and McErrno in sdk/mcerror.h use the EE newlib errno numbers, not host errno. memcard.h McFunc / McError now built from them; its mcErrorCode prototype moved here. Bootstrap 6: move McCmd into sdk/libmc.h, keep this file as is (pure code). Doubts in open-items.md TU 9: real SDK name unknown, command 0x20 unidentified, a full card on read returns a bare 5 as the ROM does. No Ghidra changes.",
    "ranges": [
@@ -1367,6 +1382,8 @@
   "unassigned@00148db0": {},
   "unassigned@00171300": {},
   "unassigned@0017fce0": {
+   "claimed": "2026-11-03 23:02",
+   "prev_status": "todo",
    "sessions": [
     {
      "date": "2026-11-03 20:47",
@@ -1377,6 +1394,11 @@
      "date": "2026-11-03 21:45",
      "status": "todo",
      "summary": "marked todo -> todo: released untouched: the queue was empty, so this run took the menu's reached stub, as SKILL.md Starting sessions asks"
+    },
+    {
+     "date": "2026-11-03 23:17",
+     "status": "todo",
+     "summary": "marked active -> todo: released untouched a fourth time: gdb located the black after the card (PrgMovie, MoviePlayer state 15), so this run took the host task sdk/libmpeg.cpp"
     }
    ],
    "status": "todo"
