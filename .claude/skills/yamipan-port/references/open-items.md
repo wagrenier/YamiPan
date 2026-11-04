@@ -1140,7 +1140,7 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    which shows it again; LEFT moves to Yes. Presented frames run far ahead of pad reads (dialog at frame
    ~45000, logo ~84000), so read `<read>` as game time, not shots.
    **`unassigned@00231c90` is queued next, for `runTitleScreen` 0x231c90** (five lines over
-   `titleLayoutPath` and `runLayoutFile`). Queued by this run, not by the user: drop it to overrule. After
+   `titleLayoutPath` and `runLayoutFile`). Queued by that run, not by the user; written the same day (below). After
    it, by the list under item 8: `loadMenuPack` / `unloadMenuPack`, `runHelpScreen`, the navi block.
    Doubts for the user: (1) the file name is the port's; (2) `FUN_002ec110`, right before the range, is a
    singleton `{100, 100, 100, _, 1.0f, ...}` at 0x5a52d0 (guard sbss 0x31af30; +0x14 the draw env,
@@ -1148,6 +1148,33 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    key `unassigned@002ec110` still holds that one function; (3) 22 of the 24 paths have not been seen
    opening a file yet (the logo's has; the dialog's image comes from a layout, which one is not proven).
    New Pan hook: `YAMIPAN_TEX_DUMP=<dir>` (README), so a screen's references need no patched build.
+
+   **`game/titlescreen.cpp` 0x231c90..0x231d40 cut out of `unassigned@00231c90` (2026-11-03, all 3 written,
+   `verify`, batch 091; architecture.md "Modules"). The title screen is on screen:** after the logo the title
+   layout plays the "Sony Computer Entertainment Europe presents" card, then Load Game / New Game, "Select
+   Menu Item" and the copyright line slide in and stay, the first menu with a moving layout.
+   Compared by eye with the textures `YAMIPAN_TEX_DUMP` gave (tm2png.py into `work/ref/`, not committed): the
+   labels and the copyright line show those TIM2s; Load Game is orange as the selected item. Not compared
+   numerically. To get there: `build.py --run 75 --shot-every 1500 --pad <LEFT and CROSS by turns, every 200
+   reads, 159 events>`; the menu rests from frame ~261000 (a shot's number, far ahead of game time).
+   **Missing from the picture:** the background. The layout opens a movie widget (`getUiWorkArea` is reached
+   for the first time here, so `PrgMovie::open` ran), and `sdk/libmpeg.cpp` reads every movie as ended
+   (item 8(d)); black behind the menu is most likely that placeholder, not this TU (inferred: no reference of the real background was seen). Which movie it names was
+   not read. **Not tested:** the answers. Any press on the title crashes first: `UiLayout::playSound` calls
+   the stub `getSePlayer` 0x2c4140, whose null is read (access violation, exit 0xC0000005, seen with CROSS
+   every 300 reads after read 32000). So TitleAnswer 1 = New Game, 2 = Load Game still rests on menuFlow's
+   reading alone, and the two `TitleLayoutArg` names on the existing "without its intro unless withIntro"
+   comment. Doubts for the user: (1) the file name is the port's; (2) `loadingBegin` / `loadingTick` are
+   read from their call sites: both are `j overlayShowLoading`, and fileloader.cpp now calls them where the
+   ROM does (PackJob::load's wait is the shared `FileJob::wait` here, as before).
+   **`game/menupack.cpp` 0x2c3d30..0x2c42c0 is defined and queued next, for `getSePlayer` and `loadMenuPack`:
+   queued by this run, not by the user, drop it to overrule.** The range is a first guess from the function
+   list, unread: check it against the brief. It should end the crash and bring the menu's sound table
+   (seMenu_SE.seh); the sound itself waits for the audio milestone, so check `SePlayer::loadBank` and
+   `openStreamBank` survive `sdk/sif.cpp`'s no-IOP placeholder. After it, by item 8: `runHelpScreen`, the
+   navi block, then `setUiWorkArea` 0x243370 with `getUiWorkArea` (the movie widget has a null work area
+   until then). `unassigned@00231d40` is what is left of the run: the collision code to 0x236b90 (a
+   `game/stagecollision.cpp` to cut: `StageCollision` is on stagescene.cpp's frontier).
 1. **The game**: Forbidden Siren 2, Europe, `SCES_538.51`, annotation tag `FS2` (decided, below;
    `yamipan.py` has `ANNOT`, the stub regex and the game-folder defaults since bootstrap 3).
 2. Bootstrap (bootstrap.md, in order): identify the binary (done 2026-10-31: architecture.md

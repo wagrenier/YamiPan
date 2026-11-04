@@ -20,14 +20,6 @@
 
 #include "sdk/scetypes.h"
 
-// runTitleScreen's answer.
-enum TitleAnswer
-{
-    TitleAnswer_None     = 0,   // the title ended unanswered: runAttractDemo, the title again
-    TitleAnswer_NewGame  = 1,
-    TitleAnswer_LoadGame = 2,
-};
-
 // What 2dEU/topMenu%s.d2b answers. Others just show it again.
 enum TopMenuAnswer
 {

@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 20:58 at commit `bbd9abf` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 21:18 at commit `b40e61f` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -11,9 +11,9 @@ Generated 2026-11-03 20:58 at commit `bbd9abf` by `tools/reverse/status.py` (`re
 ## Naming (game code; library ranges excluded)
 
 - game functions: **6599**, named **2628** (40%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1713
-- context-name ledger: 3249 entries; overrides of wrong library matches: 0
-- placed in a source file: 2325/6599 in 68 files
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1715
+- context-name ledger: 3251 entries; overrides of wrong library matches: 0
+- placed in a source file: 2338/6599 in 70 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **2136**; stubs: **343**
+- reconstructed FS2 functions: **2139**; stubs: **342**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -71,6 +71,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/streamring.cpp` | 17 | 0 |
 | `src/game/sysdata.cpp` | 37 | 0 |
 | `src/game/thread.cpp` | 19 | 0 |
+| `src/game/titlescreen.cpp` | 3 | 0 |
 | `src/game/uidrawer.cpp` | 50 | 0 |
 | `src/game/uigame.cpp` | 32 | 0 |
 | `src/game/uilayout.cpp` | 22 | 0 |
@@ -79,7 +80,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/uiwidget.cpp` | 56 | 0 |
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 300 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 299 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
 | `src/rena/tim2.cpp` | 4 | 0 |
@@ -105,9 +106,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 93 TUs: todo 51, partial 1, verify 57, done 1
-- next: **unassigned@00231c90** (pinned in the queue)
-- pinned queue: unassigned@00231c90
+- 96 TUs: todo 54, partial 1, verify 58, done 1
+- next: **game/menupack.cpp** (pinned in the queue)
+- pinned queue: game/menupack.cpp
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
@@ -143,6 +144,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/streamring.cpp` 17/21 -- All 21 functions accounted for: the 17 ring functions written, the thunks 0x151f70 / 0x151f80 / 0x152730 / 0x152740 call the rx functions directly. The classes 
 - verify: `game/sysdata.cpp` 37/37 -- Cut out of unassigned@00171300 (the frontier pick, 5138 functions) and pinned 0x23af30-0x23c020. One SystemData block of 0x620 bytes at 0x598b30: SaveData +0 (0
 - verify: `game/thread.cpp` 19/19 -- All 19 functions written; thread.h has ThreadSlotRecord, ThreadStackDef, ThreadDetourStack, FrameSync, JobRecord with ThreadState / ThreadDetourState / JobCance
+- verify: `game/titlescreen.cpp` 3/3 -- All 3 functions of 0x231c90..0x231d40 written, batch 091 names loadingTick 0x231d20 and loadingBegin 0x231d30 (both j overlayShowLoading, fileloader.cpp now cal
 - verify: `game/uidrawer.cpp` 50/50 -- game/uidrawer.cpp 0x24dfa0..0x252840: all 50 written (batch 047), source-only so verify. This run: interpolate 0x24dfa0, drawText 0x24eba0, setScissorPixels 0x2
 - verify: `game/uigame.cpp` 32/32 -- Batch 052 (4 names, saved by name_ctx). Re-pinned game/uigame.cpp to 0x25fa50..0x263b90: every caller of 0x263b90..0x2640e8 passes gStageScene +0xf4, one class,
 - verify: `game/uilayout.cpp` 22/22 -- Cut from unassigned@0023e740 (473 functions) as game/uilayout.cpp 0x243390..0x246230; batch 038 named these 22 and 28 callees (UiSequence / UiActor / UiAnim / U
@@ -168,6 +170,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 21:18 `game/titlescreen.cpp` verify: runTitleScreen and the two loading hooks written; the title menu is on screen
 - 2026-11-03 20:57 `game/layoutpaths.cpp` verify: all 24 event movie and layout paths written; the menu now runs past the language screen to the no-card dialog and the SCE logo; new YAMIPAN_TEX_DUMP hook
 - 2026-11-03 20:47 `unassigned@0017fce0` todo: marked todo -> todo: released untouched: the queue was empty, so this run took the menu's blockers, as the handoff asked
 - 2026-11-03 20:39 `game/areagrid.cpp` verify: AreaGrid, AreaBox and seDistanceVolume: all 11 written; AreaGrid::contains answers the box, seDistanceVolume is unsigned; moved out of gamehooks.h into areagrid
@@ -175,22 +178,21 @@ Recent sessions:
 - 2026-11-03 20:06 `game/stagescene.cpp` partial: stage script step, sound and bg-motion targets, loadList, block updates, 28 small members, collision queries
 - 2026-11-03 19:44 `game/stagescene.cpp` partial: the stage frame: update, draw, setupCameras and their helpers; camera kinds, view stack, control request, frame order from the perf labels
 - 2026-11-03 19:19 `game/stagescene.cpp` partial: StageFiles map, item and common targets, placeItem, placeCharacter, menu tests, enterSubScene, getFloor; map file layout proven; AreaGrid holds boxes, not ids
-- 2026-11-03 18:46 `yamipan/rendering/texture_store.cpp` done: rendering::TextureStore written and bound through the seam: the language screen is the first textured picture and equals its assets
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@0017fce0` | todo | 0/28/399 | 76.4 | 86 | 0 |
-| `unassigned@002b6b90` | todo | 0/42/272 | 115.8 | 71 | 3 |
 | `unassigned@001d7c50` | todo | 0/23/296 | 137.5 | 65 | 0 |
-| `unassigned@00148db0` | todo | 0/17/125 | 35.6 | 60 | 2 |
 | `unassigned@001fe6b0` | todo | 0/34/563 | 197.2 | 60 | 0 |
+| `unassigned@00148db0` | todo | 0/17/125 | 35.6 | 60 | 2 |
 | `unassigned@00171300` | todo | 0/24/421 | 52.5 | 41 | 0 |
 | `unassigned@002849c0` | todo | 0/28/129 | 44.6 | 37 | 0 |
+| `unassigned@002b6b90` | todo | 0/18/115 | 51.7 | 37 | 2 |
 | `unassigned@002b0d50` | todo | 0/23/85 | 17.9 | 34 | 0 |
-| `unassigned@00231c90` | todo | 0/11/61 | 36.3 | 31 | 0 |
 | `unassigned@002d46a0` | todo | 0/17/252 | 51.5 | 27 | 2 |
+| `unassigned@00231d40` | todo | 0/10/58 | 36.1 | 24 | 0 |
 | `unassigned@00299d90` | todo | 0/11/215 | 62.3 | 24 | 0 |
-| `unassigned@001a68b0` | todo | 0/6/714 | 174.8 | 20 | 0 |
+| `unassigned@0023e740` | todo | 0/13/58 | 18.7 | 23 | 2 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -226,14 +228,14 @@ Recent sessions:
 | `00177270` | BoneNode::find | 4 | game | stub | - |
 | `002e5210` | ModelFile::createInstance | 4 | game | stub | - |
 | `0025a850` | mslTreeIncrement | 4 | lib-ctx | missing | - |
-| `002c3e10` | loadMenuPack | 4 | game | stub | - |
+| `002c3e10` | loadMenuPack | 4 | game | stub | game/menupack.cpp |
 | `00185bb0` | StageLight::setRadiusSquared | 4 | game | stub | - |
 | `0028fb80` | fsmFindText | 3 | game | stub | - |
 | `002a9be0` | FUN_002a9be0 | 3 | - | missing | - |
-| `00231d30` | overlayShowLoading | 3 | native | missing | - |
-| `00231d20` | overlayShowLoading | 3 | native | missing | - |
 | `001d3a40` | StageScript::relocate | 3 | game | stub | - |
 | `0028fd30` | fsmRelocate | 3 | game | stub | - |
 | `00214fc0` | StageObject::getActionState | 3 | game | stub | - |
 | `00184370` | StageNodeList::erase | 3 | game | stub | - |
+| `0028fc80` | fsmFindTrack | 3 | game | stub | - |
+| `0025b590` | FUN_0025b590 | 3 | - | missing | - |
 
