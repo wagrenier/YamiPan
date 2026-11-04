@@ -743,13 +743,6 @@ WideFontPrinter::WideFontPrinter(short x, short y)
     YAMIPAN_STUB("WideFontPrinter::WideFontPrinter", 0x002d4110);
 }
 
-// stub of FS2 0x002ec7f0
-const char * archiveLayoutPath()
-{
-    YAMIPAN_STUB("archiveLayoutPath", 0x002ec7f0);
-    return {};
-}
-
 // stub of FS2 0x002362a0
 bool boxContainsPoint(const float m[4][4], const float p[4])
 {
@@ -799,97 +792,6 @@ void drawSysPop()
 void drawSysPush()
 {
     YAMIPAN_STUB("drawSysPush", 0x002d7c70);
-}
-
-// stub of FS2 0x002ec520
-const char * eventMoviePath0102()
-{
-    YAMIPAN_STUB("eventMoviePath0102", 0x002ec520);
-    return {};
-}
-
-// stub of FS2 0x002ec4d0
-const char * eventMoviePath0202()
-{
-    YAMIPAN_STUB("eventMoviePath0202", 0x002ec4d0);
-    return {};
-}
-
-// stub of FS2 0x002ec480
-const char * eventMoviePath1206()
-{
-    YAMIPAN_STUB("eventMoviePath1206", 0x002ec480);
-    return {};
-}
-
-// stub of FS2 0x002ec430
-const char * eventMoviePath1404()
-{
-    YAMIPAN_STUB("eventMoviePath1404", 0x002ec430);
-    return {};
-}
-
-// stub of FS2 0x002ec3e0
-const char * eventMoviePath1405()
-{
-    YAMIPAN_STUB("eventMoviePath1405", 0x002ec3e0);
-    return {};
-}
-
-// stub of FS2 0x002ec390
-const char * eventMoviePath1505()
-{
-    YAMIPAN_STUB("eventMoviePath1505", 0x002ec390);
-    return {};
-}
-
-// stub of FS2 0x002ec340
-const char * eventMoviePath1506()
-{
-    YAMIPAN_STUB("eventMoviePath1506", 0x002ec340);
-    return {};
-}
-
-// stub of FS2 0x002ec2f0
-const char * eventMoviePath1608()
-{
-    YAMIPAN_STUB("eventMoviePath1608", 0x002ec2f0);
-    return {};
-}
-
-// stub of FS2 0x002ec2a0
-const char * eventMoviePath2103()
-{
-    YAMIPAN_STUB("eventMoviePath2103", 0x002ec2a0);
-    return {};
-}
-
-// stub of FS2 0x002ec250
-const char * eventMoviePath2205()
-{
-    YAMIPAN_STUB("eventMoviePath2205", 0x002ec250);
-    return {};
-}
-
-// stub of FS2 0x002ec200
-const char * eventMoviePath2301()
-{
-    YAMIPAN_STUB("eventMoviePath2301", 0x002ec200);
-    return {};
-}
-
-// stub of FS2 0x002ec1b0
-const char * eventMoviePath2502()
-{
-    YAMIPAN_STUB("eventMoviePath2502", 0x002ec1b0);
-    return {};
-}
-
-// stub of FS2 0x002ec160
-const char * eventMoviePath2506()
-{
-    YAMIPAN_STUB("eventMoviePath2506", 0x002ec160);
-    return {};
 }
 
 // stub of FS2 0x0028fb80
@@ -988,13 +890,6 @@ void mapMenuStart()
     YAMIPAN_STUB("mapMenuStart", 0x0020afe0);
 }
 
-// stub of FS2 0x002ec660
-const char * optionLayoutPath()
-{
-    YAMIPAN_STUB("optionLayoutPath", 0x002ec660);
-    return {};
-}
-
 // stub of FS2 0x0020acb0
 int pauseMenuResult()
 {
@@ -1060,34 +955,6 @@ int currentNaviAnswer()
     return {};
 }
 
-// stub of FS2 0x002ec610
-const char * mcBaseLayoutPath()
-{
-    YAMIPAN_STUB("mcBaseLayoutPath", 0x002ec610);
-    return {};
-}
-
-// stub of FS2 0x002ec6b0
-const char * memAltLayoutPath()
-{
-    YAMIPAN_STUB("memAltLayoutPath", 0x002ec6b0);
-    return {};
-}
-
-// stub of FS2 0x002ec5c0
-const char * naviTuLayoutPath()
-{
-    YAMIPAN_STUB("naviTuLayoutPath", 0x002ec5c0);
-    return {};
-}
-
-// stub of FS2 0x002ec700
-const char * newGameLayoutPath()
-{
-    YAMIPAN_STUB("newGameLayoutPath", 0x002ec700);
-    return {};
-}
-
 // stub of FS2 0x002c42c0
 int runExtraMode(int arg)
 {
@@ -1122,24 +989,10 @@ void saveExtraInit()
     YAMIPAN_STUB("saveExtraInit", 0x0029ef70);
 }
 
-// stub of FS2 0x002ec750
-const char * sceLogoLayoutPath()
-{
-    YAMIPAN_STUB("sceLogoLayoutPath", 0x002ec750);
-    return {};
-}
-
 // stub of FS2 0x00243370
 void setUiWorkArea(void *area)
 {
     YAMIPAN_STUB("setUiWorkArea", 0x00243370);
-}
-
-// stub of FS2 0x002ec7a0
-const char * topMenuLayoutPath()
-{
-    YAMIPAN_STUB("topMenuLayoutPath", 0x002ec7a0);
-    return {};
 }
 
 // stub of FS2 0x002c3db0

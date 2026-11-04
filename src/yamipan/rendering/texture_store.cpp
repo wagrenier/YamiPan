@@ -3,7 +3,11 @@
 #include <algorithm>
 #include <array>
 #include <bit>
+#include <cstdlib>
 #include <cstring>
+#include <filesystem>
+#include <format>
+#include <fstream>
 #include <span>
 
 #include "game/gsutil.h"
@@ -258,6 +262,25 @@ private:
     const TIM2_PICTUREHEADER *m_header = nullptr;
 };
 
+// YAMIPAN_TEX_DUMP=<dir> writes every newly decoded TIM2 file there, so tm2png.py can give a screen its
+// references: nothing maps a d2b to its TIM2s offline.
+void dumpTim2File(const Tim2Texture &texture, std::uint64_t key)
+{
+    const char *const directory = std::getenv("YAMIPAN_TEX_DUMP");
+    if (directory == nullptr)
+        return;
+
+    const auto *const bytes = static_cast<const std::uint8_t *>(texture.m_image);
+    const auto *const header = reinterpret_cast<const TIM2_FILEHEADER *>(bytes);
+    std::size_t size = header->formatId == Tim2Format_Align128 ? std::size_t{0x80} : sizeof(TIM2_FILEHEADER);
+    for (int picture = 0; picture < header->pictures; ++picture)
+        size += reinterpret_cast<const TIM2_PICTUREHEADER *>(bytes + size)->totalSize;
+
+    std::filesystem::create_directories(directory);
+    std::ofstream file(std::filesystem::path(directory) / std::format("{:016x}.tm2", key), std::ios::binary);
+    file.write(reinterpret_cast<const char *>(bytes), static_cast<std::streamsize>(size));
+}
+
 } // namespace
 
 // The cache is keyed on the picture's content, the header, pixels and CLUT together, not on the texture
@@ -300,6 +323,7 @@ std::shared_ptr<Image> TextureStore::imageOf(const Tim2Texture &texture)
         return found->second.image;
     }
 
+    dumpTim2File(texture, key);
     std::shared_ptr<Image> image = decoder.decode();
     m_bytes += image->pixels.size();
     m_entries.emplace(key, Entry{image, ++m_uses});

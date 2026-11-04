@@ -146,6 +146,7 @@ these hooks:
 | `YAMIPAN_SHOT_DIR` / `YAMIPAN_SHOT_EVERY`: save every Nth presented frame as `shot_<frame>.png` + `last.png` | `rendering::Screenshotter` | build.py --run, tus.py finish (progress/) |
 | `YAMIPAN_AUTOPAD`: scripted pad 0, `<read>:<BUTTON>[*<reads>],...`, host input masked | `io::InputSystem` | build.py --pad, settings.smoke_pad |
 | `YAMIPAN_DATA_DIR`: the game's data folder | `Paths` | build.py (`yamipan.GAME_DATA`) |
+| `YAMIPAN_TEX_DUMP=<dir>`: write every newly decoded TIM2 file to `<dir>/<hash>.tm2`, for `tm2png.py` | `rendering::TextureStore` | `build.py --env`, a screen's references |
 | the EE main thread named `YamiPanGame` | `ee::Kernel` | gdbrun.py / gdbdrive.py |
 | `[stub] <name> (FS2 0x%08x) reached` from `YAMIPAN_STUB` / `YAMIPAN_BRIDGE` | common/yamipan_stub.h | tus.py (reached stubs rank first), status.py, stubgen.py |
 | log lines `[W]` / `[E]` for warnings and errors on stdout | `log::` | build.py --run summary |

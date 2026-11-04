@@ -1127,6 +1127,27 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    0x2849c0..0x286790 (needs a render-target decision: see the texture store's "Render targets"),
    `StageMission` 0x2867a0.., `fsm*` 0x28fb80..0x28ff54, `Rand48` 0x2681e0..0x268310, and the
    `FUN_00268a20` / `SubSceneData::getScript` cluster.
+
+   **`game/layoutpaths.cpp` 0x2ec160..0x2ec8e0 cut out of `unassigned@002ec110` (2026-11-03, all 24 written,
+   `verify`, no new names, no Ghidra change; architecture.md "Modules").** With the queue empty `tus.py next`
+   offered `unassigned@0017fce0` (the frontier); this run released that claim and took the first of the
+   menu's blockers instead, as the handoff above and SKILL.md "Starting sessions" ask. **The menu now
+   goes on past the language screen:** language, the no-card dialog, the SCE Europe logo, then the loop on
+   the stub `runTitleScreen`. The dialog and the logo equal their assets (512x216 and 512x512 TIM2s from
+   `YAMIPAN_TEX_DUMP`, through tm2png.py; the logo keeps its x 48 -> 64, y 240 under the 4:3 mapping). To
+   get there (the default smoke run still rests on the language screen): `build.py --run 40 --shot-every
+   120 --pad <LEFT and CROSS by turns, every 200 reads>`. CROSS alone answers the dialog's default No,
+   which shows it again; LEFT moves to Yes. Presented frames run far ahead of pad reads (dialog at frame
+   ~45000, logo ~84000), so read `<read>` as game time, not shots.
+   **`unassigned@00231c90` is queued next, for `runTitleScreen` 0x231c90** (five lines over
+   `titleLayoutPath` and `runLayoutFile`). Queued by this run, not by the user: drop it to overrule. After
+   it, by the list under item 8: `loadMenuPack` / `unloadMenuPack`, `runHelpScreen`, the navi block.
+   Doubts for the user: (1) the file name is the port's; (2) `FUN_002ec110`, right before the range, is a
+   singleton `{100, 100, 100, _, 1.0f, ...}` at 0x5a52d0 (guard sbss 0x31af30; +0x14 the draw env,
+   +0x18 / +0x1c read each frame), used only by drawSys and 0x2e8080..0x2e86b0: left for that TU, so the
+   key `unassigned@002ec110` still holds that one function; (3) 22 of the 24 paths have not been seen
+   opening a file yet (the logo's has; the dialog's image comes from a layout, which one is not proven).
+   New Pan hook: `YAMIPAN_TEX_DUMP=<dir>` (README), so a screen's references need no patched build.
 1. **The game**: Forbidden Siren 2, Europe, `SCES_538.51`, annotation tag `FS2` (decided, below;
    `yamipan.py` has `ANNOT`, the stub regex and the game-folder defaults since bootstrap 3).
 2. Bootstrap (bootstrap.md, in order): identify the binary (done 2026-10-31: architecture.md
@@ -1385,9 +1406,8 @@ questions. Resolve items here when they are settled (move them to "Done" with th
      game sets TEXA per draw (the font: TA0 0, AEM 1, TA1 0x80). Only two CLUT16 files exist on the disc,
      so this is unlikely to matter, but check them if one draws wrongly.
    - **`m_altClut`** (the second CLUT) has no writer yet; the store ignores it.
-   - Getting a screen's references: nothing maps a d2b to its TIM2s offline yet, so this run patched
-     `imageOf` for one smoke run to write each new file to work/dump and ran tm2png.py on those (not
-     committed). The same manual step twice should become a `YAMIPAN_*` dump hook.
+   - Getting a screen's references: nothing maps a d2b to its TIM2s offline yet, so run with
+     `--env YAMIPAN_TEX_DUMP=<dir>` and pass the files to tm2png.py.
    (c) any aspect: the renderer hands k to the game's UI matrices (`kUiScreenMatrix`, see TU 19), the one
        place a game file needs a `PC:` touch;
    (d) placeholders to replace: `sdk/libmc.cpp` (the empty slot: a real card under `memcard/`),

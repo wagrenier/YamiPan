@@ -27,7 +27,7 @@ struct StageMovie
     int          stage;         // FS2 +0x0: StageSelect::stage
     int          variant;       // FS2 +0x4: StageSelect::variant
     int          branch;        // FS2 +0x8: 0 any, else the caller's branch
-    const char *(*path)();      // FS2 +0xc: eventMoviePath* (game/gamehooks.h)
+    const char *(*path)();      // FS2 +0xc: eventMoviePath* (game/layoutpaths.h)
 };
 static_assert(offsetof(StageMovie, branch) == 0x8, "StageMovie::branch");
 
