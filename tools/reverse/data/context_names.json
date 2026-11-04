@@ -6569,17 +6569,119 @@
   "was": "FUN_001494f0",
   "why": "value = arg, next = prev = 0; pushBack and pushFront construct their node with it"
  },
+ "0014e300": {
+  "name": "ModelPose::getSurfaceFrames",
+  "tag": "game-inferred",
+  "was": "FUN_0014e300",
+  "why": "three floats from +0x178's record, fed to 0x2e3d90 by StageModel::advance"
+ },
+ "0014e410": {
+  "name": "ModelPose::popEvent",
+  "tag": "game-inferred",
+  "was": "FUN_0014e410",
+  "why": "takes the first of eight 0x10 strings at +0x1e0, shifts the rest; event names HIT_, STEP_L.."
+ },
  "0014e4d0": {
   "name": "ModelPose::solve",
   "tag": "game-inferred",
   "was": "FUN_0014e4d0",
   "why": "model +0xc, called with 3, -1, 0 when +0x150 is set; bone entries +0x15c; the name is a guess"
  },
+ "0014ef60": {
+  "name": "ModelPose::clearPlacement",
+  "tag": "game-inferred",
+  "was": "FUN_0014ef60",
+  "why": "zeroes +0x30 rotation and +0x40 position"
+ },
+ "0014ef90": {
+  "name": "ModelPose::setPosition",
+  "tag": "game-inferred",
+  "was": "FUN_0014ef90",
+  "why": "copies to +0x40, w 1; into the parent matrix +0x150's space while a motion plays"
+ },
+ "0014f190": {
+  "name": "ModelPose::getPosition",
+  "tag": "game-inferred",
+  "was": "FUN_0014f190",
+  "why": "xyz of +0x40"
+ },
+ "0014f1b0": {
+  "name": "ModelPose::getPosition2",
+  "tag": "game-inferred",
+  "was": "FUN_0014f1b0",
+  "why": "the ROM's second identical copy"
+ },
+ "0014f1d0": {
+  "name": "ModelPose::rotate",
+  "tag": "game-inferred",
+  "was": "FUN_0014f1d0",
+  "why": "builds Rx Ry Rz of delta, turns the root's vectors and +0x90, adds to +0x30, solves"
+ },
+ "0014f430": {
+  "name": "ModelPose::resetSwingBones",
+  "tag": "game-inferred",
+  "was": "FUN_0014f430",
+  "why": "clears +0x27c on bones whose name has sw at index 3"
+ },
+ "0014f4b0": {
+  "name": "ModelPose::update",
+  "tag": "game-inferred",
+  "was": "FUN_0014f4b0",
+  "why": "slot 2: StageModel::advance passes the frames"
+ },
+ "0014f8c0": {
+  "name": "ModelPose::getBoneMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_0014f8c0",
+  "why": "model bone index through +0x160 to pose bone's +0x80"
+ },
+ "0014f910": {
+  "name": "ModelPose::playLayered",
+  "tag": "game-inferred",
+  "was": "FUN_0014f910",
+  "why": "takes the file at motion +4, adds flag 0x20000"
+ },
+ "0014f950": {
+  "name": "ModelPose::playFileLayered",
+  "tag": "game-inferred",
+  "was": "FUN_0014f950",
+  "why": "the same on a file directly, per bone"
+ },
+ "0014fab0": {
+  "name": "ModelPose::play",
+  "tag": "game-inferred",
+  "was": "FUN_0014fab0",
+  "why": "makes the motion's file current (+0x1a4) and copies its header"
+ },
+ "0014fca0": {
+  "name": "ModelPose::playFile",
+  "tag": "game-inferred",
+  "was": "FUN_0014fca0",
+  "why": "the same on a file directly"
+ },
+ "0014ff90": {
+  "name": "ModelPose::load",
+  "tag": "game-inferred",
+  "was": "FUN_0014ff90",
+  "why": "slot 1: StageModel::setBaseMotion passes the file and the bone names"
+ },
  "00150d80": {
   "name": "motionBoneMatrix",
   "tag": "game-inferred",
   "was": "FUN_00150d80",
   "why": "(out matrix, motion, bone name, frame): above 0 when the bone is in the motion"
+ },
+ "00150f50": {
+  "name": "ModelPose::~ModelPose",
+  "tag": "game-inferred",
+  "was": "FUN_00150f50",
+  "why": "slot 0 of vtable 0x311230"
+ },
+ "00151020": {
+  "name": "ModelPose::ModelPose",
+  "tag": "game-inferred",
+  "was": "FUN_00151020",
+  "why": "vtable 0x311230, tag mdl; first call of the four subclass ctors"
  },
  "00151270": {
   "name": "debugSysUpdate",
@@ -12569,17 +12671,47 @@
   "was": "FUN_00187770",
   "why": "the motion of that name in the map of list +0x2c + index * 0x10, then the play"
  },
+ "00187820": {
+  "name": "StageModel::playMotionFile",
+  "tag": "game-inferred",
+  "was": "FUN_00187820",
+  "why": "playMotion's shape over the two file-taking pose calls 0x14fca0 / 0x14f950"
+ },
  "00187870": {
   "name": "StageModel::applyMotion",
   "tag": "game-inferred",
   "was": "FUN_00187870",
   "why": "loops the pose towards position and rotation"
  },
+ "001879b0": {
+  "name": "StageModel::findMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001879b0",
+  "why": "the motion list's tree find, returns the value"
+ },
+ "001879f0": {
+  "name": "StageModel::findMotionFile",
+  "tag": "game-inferred",
+  "was": "FUN_001879f0",
+  "why": "the same, returns the value's +4, the file"
+ },
+ "00187a30": {
+  "name": "StageModel::balanceMotions",
+  "tag": "game-inferred",
+  "was": "FUN_00187a30",
+  "why": "balances the five lists' trees"
+ },
  "00187a90": {
   "name": "StageModel::addMotion",
   "tag": "game-inferred",
   "was": "FUN_00187a90",
   "why": "new motion object on a motion file, keyed by name into list +0x2c + index * 0x10"
+ },
+ "00187b40": {
+  "name": "StageModel::attachVcm",
+  "tag": "game-inferred",
+  "was": "FUN_00187b40",
+  "why": "VcmTable::attach through +4, tested for null"
  },
  "00187b70": {
   "name": "StageModel::placeBones",
@@ -18605,6 +18737,18 @@
   "was": "FUN_0026ce20",
   "why": "EE 0x340; camera_demo; kind 13; Model_camera"
  },
+ "0027ef70": {
+  "name": "CarPose::CarPose",
+  "tag": "game-inferred",
+  "was": "FUN_0027ef70",
+  "why": "ModelPose ctor, vtable 0x317c50, tag car"
+ },
+ "0027ffb0": {
+  "name": "ElevatorPose::ElevatorPose",
+  "tag": "game-inferred",
+  "was": "FUN_0027ffb0",
+  "why": "ModelPose ctor, vtable 0x317c70, tag elv"
+ },
  "00283df0": {
   "name": "seDistanceVolume",
   "tag": "game-inferred",
@@ -19709,6 +19853,12 @@
   "was": "FUN_0029fb30",
   "why": "sscanf P_SPW%02d, -1 when it does not match"
  },
+ "002a7a50": {
+  "name": "NmlPose::NmlPose",
+  "tag": "game-inferred",
+  "was": "FUN_002a7a50",
+  "why": "ModelPose ctor, vtable 0x318b10, tag nml"
+ },
  "002a7bf0": {
   "name": "SigLamp::SigLamp",
   "tag": "game-inferred",
@@ -20399,6 +20549,12 @@
   "was": "FUN_002b22d0",
   "why": "five words zero; EE 0x14"
  },
+ "002b37d0": {
+  "name": "SkyPose::SkyPose",
+  "tag": "game-inferred",
+  "was": "FUN_002b37d0",
+  "why": "ModelPose ctor, vtable 0x319260, tag sky"
+ },
  "002b5740": {
   "name": "menuSceneThread",
   "tag": "game-inferred",
@@ -20842,6 +20998,18 @@
   "tag": "game-inferred",
   "was": "FUN_002d0a10",
   "why": "(src, dst): SLDI magic (0x30f9d8), unpacked size +0xc, LZ copies / literal runs from +0x10; answers the size, -1 on a bad magic or length; PackJob::load decompresses a pack into its buffer"
+ },
+ "002d0f30": {
+  "name": "ModelMotion::~ModelMotion",
+  "tag": "game-inferred",
+  "was": "FUN_002d0f30",
+  "why": "frees +8; deleted by ~StageModel for each list value"
+ },
+ "002d0fa0": {
+  "name": "ModelMotion::ModelMotion",
+  "tag": "game-inferred",
+  "was": "FUN_002d0fa0",
+  "why": "0x14 bytes from StageModel::addMotion: pose, file, per-bone tracks by name"
  },
  "002d4110": {
   "name": "WideFontPrinter::WideFontPrinter",
@@ -21305,6 +21473,12 @@
   "was": "FUN_002e14d0",
   "why": "(base, size): vptr +0x1834 = 0x31a7b0, base / size +0 / +4, two pools of 0x80 list nodes and 0x80 region records, one free region {base, size}; gfxInitRenderTargets news 0x1838 bytes for (0x2800, 0xf00): GS blocks 0x2800..0x3700, VRAM areas 3..4; kept in gp-0x7ad8"
  },
+ "002e1700": {
+  "name": "modelTexturePremultiplyPalette",
+  "tag": "game-inferred",
+  "was": "FUN_002e1700",
+  "why": "copies the palette +0x38 to a new block +0x3c with rgb * a >> 7 and alpha 0x80"
+ },
  "002e1b70": {
   "name": "Tim2Texture::putTex0",
   "tag": "lib-context",
@@ -21413,17 +21587,41 @@
   "was": "FUN_002e3bf0",
   "why": "per tick: scrolls UV or wobbles an amplitude by the material's anim kind"
  },
+ "002e3d90": {
+  "name": "ModelSurface::setFrames",
+  "tag": "game-inferred",
+  "was": "FUN_002e3d90",
+  "why": "writes the surface's +0x20..+0x2c from a blend and two frames"
+ },
  "002e4100": {
   "name": "RenaModel::findGroup",
   "tag": "game-inferred",
   "was": "FUN_002e4100",
   "why": "(model, rec): the part record (model +0x1c, 0x10 each) whose children range [+4, +4 + +8) (u16s, +8 non-zero) holds rec's index, null when none; walks the header's +0x2a part count; caller vcmPartTag (the group chain up from a part)"
  },
+ "002e4550": {
+  "name": "ModelInstance::setTexture",
+  "tag": "game-inferred",
+  "was": "FUN_002e4550",
+  "why": "stores into +0x50 per slot; a name ending _s calls 0x2e1700 first"
+ },
  "002e4610": {
   "name": "modelFindPart",
   "tag": "game-inferred",
   "was": "FUN_002e4610",
   "why": "the part of a model by name and length, bn_* (rena; body unread); answers what PartSwitch sets +0xd on"
+ },
+ "002e46d0": {
+  "name": "ModelInstance::~ModelInstance",
+  "tag": "game-inferred",
+  "was": "FUN_002e46d0",
+  "why": "slot 0 of vtable 0x31a7f0"
+ },
+ "002e47d0": {
+  "name": "ModelInstance::getTextureName",
+  "tag": "game-inferred",
+  "was": "FUN_002e47d0",
+  "why": "file's textureNames through the node's slot list +0x1c"
  },
  "002e5200": {
   "name": "ModelFile::getNodeCount",

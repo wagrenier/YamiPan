@@ -162,6 +162,9 @@ public:
     // FS2 0x001d7c50
     void setDirty(bool dirty) override {}
     void rebuildMatrix() override;                                       // FS2 0x001d7c80
+    // FS2 0x00188890
+    // callcheck: free, free, erase, FUN_00186b80, operator_delete (the base's dtor, inline in the ROM)
+    ~StageBoneNode() override {}
     // FS2 0x001d7c60
     const sceVu0FVECTOR *getMatrix() override { return m_world; }
     // FS2 0x00187d00
@@ -184,6 +187,9 @@ public:
     void setDirty(bool dirty) override {}
     // FS2 0x001d7fa0
     void rebuildMatrix() override {}
+    // FS2 0x001889d0
+    // callcheck: free, free, erase, FUN_00186b80, operator_delete (the base's dtor, inline in the ROM)
+    ~StageMatrixNode() override {}
     // FS2 0x001d8590
     const sceVu0FVECTOR *getMatrix() override { return m_matrix; }
     // FS2 0x001758f0

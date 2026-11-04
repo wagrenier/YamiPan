@@ -8,6 +8,7 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 ## Decompiler (the most common time sink)
 
+- **A register the decompiler dropped is the argument** (2026-11-04, FS2). Symptom: `invertRigidMatrix(auStack_40)` / `matrixToRotZYX(auStack_20)` with one argument, and a field read just before for a null test (pose +0x150), so an earlier run named the field a count. Cause: the test's `lw a1,0x150(a0)` is left in a1 and the call takes it: the field is a matrix pointer. Fix: when a known two-argument helper shows one argument, read the asm before naming what was tested.
 - **A body swallows the function after it.** Code reached only through data (vtable slots, callback,
   dispatch and step tables, hook lists, code after a tail call) was never made a function, so the body
   before runs on over it: the decompile stops at the first `jr ra` while the callee list shows calls it

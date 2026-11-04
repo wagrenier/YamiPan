@@ -10,6 +10,7 @@
 #include "game/gamesystem.h"
 #include "game/gfxtarget.h"
 #include "game/memcard.h"
+#include "game/modelpose.h"
 #include "game/stagenode.h"
 #include "game/stageitem.h"
 #include "game/stagescene.h"
@@ -30,13 +31,6 @@ AreaClip::AreaClip(void*)
 AreaClip::~AreaClip()
 {
     YAMIPAN_STUB("AreaClip::~AreaClip", 0x002dcab0);
-}
-
-// stub of FS2 0x00177270
-BoneNode * BoneNode::find(BoneNode *node, const char *key)
-{
-    YAMIPAN_STUB("BoneNode::find", 0x00177270);
-    return {};
 }
 
 // stub of FS2 0x002b1620
@@ -1115,13 +1109,6 @@ void MenuProgHolder::draw(float deltaSeconds, GamePacketManager *packets, StageO
     YAMIPAN_STUB("MenuProgHolder::draw", 0x002ad030);
 }
 
-// stub of FS2 0x0014e4d0
-int ModelPose::solve(int iterations, int count, int flaggedOnly)
-{
-    YAMIPAN_STUB("ModelPose::solve", 0x0014e4d0);
-    return {};
-}
-
 // stub of FS2 0x002078d0
 bool PauseMenuState::isActive()
 {
@@ -1342,24 +1329,6 @@ void StageMenu::update()
 void StageMission::setup()
 {
     YAMIPAN_STUB("StageMission::setup", 0x002870f0);
-}
-
-// stub of FS2 0x00187d10
-void StageModel::bindBones()
-{
-    YAMIPAN_STUB("StageModel::bindBones", 0x00187d10);
-}
-
-// stub of FS2 0x00187b70
-void StageModel::placeBones(StageObject *owner)
-{
-    YAMIPAN_STUB("StageModel::placeBones", 0x00187b70);
-}
-
-// stub of FS2 0x00187230
-void StageModel::updateVcm()
-{
-    YAMIPAN_STUB("StageModel::updateVcm", 0x00187230);
 }
 
 // stub of FS2 0x00190a80
@@ -1767,12 +1736,6 @@ int ScriptRunner::unsupportedCommand()
     return {};
 }
 
-// stub of FS2 0x00188690
-StageModel::~StageModel()
-{
-    YAMIPAN_STUB("StageModel::~StageModel", 0x00188690);
-}
-
 // stub of FS2 0x002430a0
 void SceneUiState::addNoise(float loudness, StageObject *object, void *extra)
 {
@@ -1783,13 +1746,6 @@ void SceneUiState::addNoise(float loudness, StageObject *object, void *extra)
 void SceneUiState::addSourceNoise(StageObject *object, StageSoundSource *source)
 {
     YAMIPAN_STUB("SceneUiState::addSourceNoise", 0x00242fc0);
-}
-
-// stub of FS2 0x00188b10
-void StageModel::init(ModelInstance *instance, StringMap<Tim2Texture *> *textures,
-              const sceVu0FVECTOR *matrix)
-{
-    YAMIPAN_STUB("StageModel::init", 0x00188b10);
 }
 
 // stub of FS2 0x001f6690
@@ -1961,43 +1917,6 @@ const char * StageMission::getItemText(const char *name)
     return {};
 }
 
-// stub of FS2 0x00187a90
-void * StageModel::addMotion(void *file, int index, const char *key)
-{
-    YAMIPAN_STUB("StageModel::addMotion", 0x00187a90);
-    return {};
-}
-
-// stub of FS2 0x00187260
-void StageModel::advance(float frames, sceVu0FVECTOR position, sceVu0FVECTOR rotation, int arg)
-{
-    YAMIPAN_STUB("StageModel::advance", 0x00187260);
-}
-
-// stub of FS2 0x00187870
-void StageModel::applyMotion(const sceVu0FVECTOR position, const sceVu0FVECTOR rotation)
-{
-    YAMIPAN_STUB("StageModel::applyMotion", 0x00187870);
-}
-
-// stub of FS2 0x00187720
-void StageModel::playMotion(void *motion, bool arg0, bool arg1, u_int flags, int arg)
-{
-    YAMIPAN_STUB("StageModel::playMotion", 0x00187720);
-}
-
-// stub of FS2 0x00187770
-void StageModel::playNamed(int index, const char *name, bool arg0, bool arg1, u_int flags, int arg)
-{
-    YAMIPAN_STUB("StageModel::playNamed", 0x00187770);
-}
-
-// stub of FS2 0x00188140
-void StageModel::setBaseMotion(void *file, int index)
-{
-    YAMIPAN_STUB("StageModel::setBaseMotion", 0x00188140);
-}
-
 // stub of FS2 0x0018c2d0
 void StageParticle::setRunning(bool on)
 {
@@ -2071,4 +1990,124 @@ void renaSetSpotlight(sceVif1Packet *packet, Tim2Texture *texture, int block)
 void renaStepTexAnim(ModelSurface *surface, int ticks)
 {
     YAMIPAN_STUB("renaStepTexAnim", 0x002e3bf0);
+}
+
+// stub of FS2 0x0027ef70
+CarPose::CarPose()
+{
+    YAMIPAN_STUB("CarPose::CarPose", 0x0027ef70);
+}
+
+// stub of FS2 0x0027ffb0
+ElevatorPose::ElevatorPose()
+{
+    YAMIPAN_STUB("ElevatorPose::ElevatorPose", 0x0027ffb0);
+}
+
+// stub of FS2 0x002e46d0
+ModelInstance::~ModelInstance()
+{
+    YAMIPAN_STUB("ModelInstance::~ModelInstance", 0x002e46d0);
+}
+
+// stub of FS2 0x002d0fa0
+ModelMotion::ModelMotion(ModelPose*, void*)
+{
+    YAMIPAN_STUB("ModelMotion::ModelMotion", 0x002d0fa0);
+}
+
+// stub of FS2 0x002d0f30
+ModelMotion::~ModelMotion()
+{
+    YAMIPAN_STUB("ModelMotion::~ModelMotion", 0x002d0f30);
+}
+
+// stub of FS2 0x00151020
+ModelPose::ModelPose()
+{
+    YAMIPAN_STUB("ModelPose::ModelPose", 0x00151020);
+}
+
+// stub of FS2 0x0014e300
+int ModelPose::getSurfaceFrames(float *out)
+{
+    YAMIPAN_STUB("ModelPose::getSurfaceFrames", 0x0014e300);
+    return {};
+}
+
+// stub of FS2 0x0014fab0
+int ModelPose::play(ModelMotion *motion, u_int flags, int arg)
+{
+    YAMIPAN_STUB("ModelPose::play", 0x0014fab0);
+    return {};
+}
+
+// stub of FS2 0x0014fca0
+int ModelPose::playFile(void *file, u_int flags, int arg)
+{
+    YAMIPAN_STUB("ModelPose::playFile", 0x0014fca0);
+    return {};
+}
+
+// stub of FS2 0x0014f950
+int ModelPose::playFileLayered(void *file, u_int flags, int arg)
+{
+    YAMIPAN_STUB("ModelPose::playFileLayered", 0x0014f950);
+    return {};
+}
+
+// stub of FS2 0x0014f910
+int ModelPose::playLayered(ModelMotion *motion, u_int flags, int arg)
+{
+    YAMIPAN_STUB("ModelPose::playLayered", 0x0014f910);
+    return {};
+}
+
+// stub of FS2 0x0014e4d0
+int ModelPose::solve(int iterations, int count, int flaggedOnly)
+{
+    YAMIPAN_STUB("ModelPose::solve", 0x0014e4d0);
+    return {};
+}
+
+// stub of FS2 0x002e3d90
+void ModelSurface::setFrames(float blend, int frame0, int frame1)
+{
+    YAMIPAN_STUB("ModelSurface::setFrames", 0x002e3d90);
+}
+
+// stub of FS2 0x002a7a50
+NmlPose::NmlPose(int, int, int, int)
+{
+    YAMIPAN_STUB("NmlPose::NmlPose", 0x002a7a50);
+}
+
+// stub of FS2 0x002b37d0
+SkyPose::SkyPose(int, int)
+{
+    YAMIPAN_STUB("SkyPose::SkyPose", 0x002b37d0);
+}
+
+// stub of FS2 0x002e1700
+void modelTexturePremultiplyPalette(Tim2Texture *texture)
+{
+    YAMIPAN_STUB("modelTexturePremultiplyPalette", 0x002e1700);
+}
+
+// stub of FS2 0x0014ff90
+void ModelPose::load(void *file, int arg, const char *boneNames, u_int boneCount)
+{
+    YAMIPAN_STUB("ModelPose::load", 0x0014ff90);
+}
+
+// stub of FS2 0x0014f4b0
+void ModelPose::update(float frames, bool loop)
+{
+    YAMIPAN_STUB("ModelPose::update", 0x0014f4b0);
+}
+
+// stub of FS2 0x00150f50
+ModelPose::~ModelPose()
+{
+    YAMIPAN_STUB("ModelPose::~ModelPose", 0x00150f50);
 }
