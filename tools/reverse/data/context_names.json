@@ -20039,6 +20039,12 @@
   "was": "FUN_00269d00",
   "why": "base of the sub-scene item class 0x315420 (inline), argument 3"
  },
+ "00269da0": {
+  "name": "SubSceneModelObject::~SubSceneModelObject_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00269da0",
+  "why": "this-adjusting thunk in the vtable of the object seen at +0x40, a jump to SubSceneModelObject::~SubSceneModelObject"
+ },
  "0026c700": {
   "name": "SubSceneData::findModel",
   "tag": "game-inferred",
@@ -22492,6 +22498,36 @@
   "tag": "game-inferred",
   "was": "FUN_002bc0a0",
   "why": "vtable 0x319a20 slot +0x1f4 answers 0x22"
+ },
+ "002bc0b0": {
+  "name": "SubSceneMapObject::~SubSceneMapObject_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_002bc0b0",
+  "why": "this-adjusting thunk in the vtable of the object seen at +0x40, a jump to SubSceneMapObject::~SubSceneMapObject"
+ },
+ "002bc0c0": {
+  "name": "SubSceneGateObject::~SubSceneGateObject_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_002bc0c0",
+  "why": "this-adjusting thunk in the vtable of the object seen at +0x40, a jump to SubSceneGateObject::~SubSceneGateObject"
+ },
+ "002bc0d0": {
+  "name": "SubSceneCharacter::~SubSceneCharacter_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_002bc0d0",
+  "why": "this-adjusting thunk in the vtable of the object seen at +0x40, a jump to SubSceneCharacter::~SubSceneCharacter"
+ },
+ "002bc0e0": {
+  "name": "SubSceneItem::setScriptFlag_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_002bc0e0",
+  "why": "this-adjusting thunk in the vtable of the object seen at +0x40, a jump to SubSceneItem::setScriptFlag"
+ },
+ "002bc0f0": {
+  "name": "SubSceneItem::~SubSceneItem_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_002bc0f0",
+  "why": "this-adjusting thunk in the vtable of the object seen at +0x40, a jump to SubSceneItem::~SubSceneItem"
  },
  "002bc100": {
   "name": "KeepList::update",

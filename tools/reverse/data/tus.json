@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/subsceneobject.cpp",
   "rena/rena_draw.cpp",
   "game/stagecamera.cpp",
   "game/demoevent.cpp",
@@ -1110,7 +1109,7 @@
    "why": "String and StringList, whose vtables 0x311200 / 0x311210 only these use; ends at the VU math 0x149510. Written with game/packtables.cpp (it was what stopped every stage script)."
   },
   "game/subsceneobject.cpp": {
-   "notes": "Written: SubSceneModelObject, SubSceneLamp, map, gate, door, character, item, prop (batch 112, 56 names, saved). Classes moved from gamehooks.h to game/subsceneobject.h. No YAMIPAN_CAMERA, no crash in a 330 s New Game run. SEEN: after the intro the screen is no longer black: with the letterbox, a tilted ceiling lamp (up to shot 3600) and a door between two walls (shot 3900), so the cuts change the view. progress/20261104-d0101-cut1.png and cut2.png. Very dark, no characters (skinned meshes are skipped), no reference for this scene, so nothing is compared with the game. NOT DONE: black again from shot 4050 to the end of the run (5550), unexplained. Unproven reading: the script ends early because voice streams are stubs, the sub-scene is deleted and the stage has no linked camera. First thing next: print frameCount where StageScene::update deletes subScene and in natives 0x159, 0x163, 0x164, on stdout (build.py drops stderr on timeout and prints only 60 stub lines; read work/run_relwithdebinfo.log). A traced run was tried here and lost for that reason. The objects do not animate: sideHook2 needs ScenePairTable, a stub. Left as stubs: MapObjectParts, collisionFindRecord (collision file), GateParts, setupBody 0x17d970. Left out: 0x2689a0. PC marks in SubSceneCharacter::setup and SubSceneModelObject::bindMotion go with StageCharacter. playCutNamed is reached by native 0x159 and native 0x148 (runner slot +0x140, thunk 0x26d000). Doubts: open-items.md. check: build OK, layoutcheck OK, callcheck clean on the TU; the 15 s smoke run only reaches the language screen.",
+   "notes": "All 50 written or recorded: the last 14 were header getKinds, empty hooks and thunks (ledger block at the end of the cpp; batch 113 named the thunks, saved). Status verify: map objects show from the event's camera, characters do not, motions stand still until ScenePairTable, no reference exists for the scene. The black after the event is settled, see open-items.md: d0101 ran 1262 frames and faded out itself, then waited for ever on a voice stream stub. Bridge in rx/rxsndstradpcm.c (Open, Close, Update): silent, lasts the request's length (51.02 s), so the event ends at frame 1276 and the stage returns. After that the fade is right (Root calls native 0x4e on the third frame, level reaches 0); black because no StageCharacter means no native 0x70, no setPlayer, no linked camera. Proof: YAMIPAN_CAMERA shows the room there, progress/20261104-d0101-after-fixedcam.png. The user saw the same thing live and guessed a missing step before control: right, it is the player, roadmap steps 4 to 6. Still stubs by choice: MapObjectParts, collisionFindRecord, CollisionFile::relocate, GateParts, setupBody; MapObjectParts needs a host table for the record pointers (the build is 64-bit). The PCM stream format is still a stub and would hang a wait the same way. check: build OK, callcheck clean, layoutcheck OK. Next: rena/rena_draw.cpp.",
    "ranges": [
     [
      "001763e0",
@@ -1142,9 +1141,14 @@
      "date": "2026-11-04 16:10",
      "status": "partial",
      "summary": "The event's objects and natives 0x144, 0x145, 0x148, 0x163, 0x164: first pictures of the opening from its own camera"
+    },
+    {
+     "date": "2026-11-04 16:52",
+     "status": "verify",
+     "summary": "All 50 of the TU recorded; the event now ends: a silent timed ADPCM stream bridge, the black after it traced to the missing player"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "task": "The event's objects, queued by the user 2026-11-04 to come right after ModelPose: SubSceneCharacter, SubSceneItem, SubSceneProp, SubSceneMapObject, SubSceneGateObject and SubSceneDoorObject, 0x2bb680..0x2bc100 (cut them out of unassigned@002b9ef0 with tus.py define), with the base SubSceneModelObject they stand on. All stubs today: applyBgTarget and placeCharacter call them, nothing enters the scene, and the stage is black from the opening's first frame. Check each ctor against the ROM for setDirtyTree(false): a map object left dirty lands at the origin (hazards.md, A picture that looks like a place can still be wrong). Needs game/modelpose.cpp. Also find who calls DemoCamera::playCutNamed (vtable +0x264, a script native, unread): without it the camera has no cut to play. The event's natives by reach: roadmap-3d-control.md. Done when the picture shows the event's objects from the event's own camera, with no YAMIPAN_CAMERA.",
    "why": "The event's objects: base SubSceneModelObject from 0x268310 (its lamp) to the runner thunk, classes on it at 0x2bb600..0x2bc100, plus the character's model helpers the setup calls. 0x2689a0 left out (nothing calls it)."
   },

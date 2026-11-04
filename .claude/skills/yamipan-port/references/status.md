@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-04 16:10 at commit `75fa90e` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-04 16:52 at commit `3a8df28` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-04 16:10 at commit `75fa90e` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **3347** (51%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 2428
-- context-name ledger: 3972 entries; overrides of wrong library matches: 0
+- game functions: **6599**, named **3353** (51%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 2434
+- context-name ledger: 3978 entries; overrides of wrong library matches: 0
 - placed in a source file: 3875/6599 in 88 files
 
 Least-named game-code regions (64 KB blocks):
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **2980**; stubs: **261**
+- reconstructed FS2 functions: **2994**; stubs: **261**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -86,7 +86,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stagesound.cpp` | 45 | 0 |
 | `src/game/streamring.cpp` | 17 | 0 |
 | `src/game/stringlist.cpp` | 14 | 0 |
-| `src/game/subsceneobject.cpp` | 35 | 0 |
+| `src/game/subsceneobject.cpp` | 49 | 0 |
 | `src/game/sysdata.cpp` | 36 | 0 |
 | `src/game/thread.cpp` | 19 | 0 |
 | `src/game/titlescreen.cpp` | 3 | 0 |
@@ -128,13 +128,12 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 138 TUs: todo 83, partial 15, verify 72, done 2
-- next: **game/subsceneobject.cpp** (pinned in the queue)
-- pinned queue: game/subsceneobject.cpp, rena/rena_draw.cpp, game/stagecamera.cpp, game/demoevent.cpp, game/scenepairs.cpp, game/stagecollision.cpp, game/stagecharacter.cpp, game/playermotion.cpp, game/characterground.cpp, game/characterbrain.cpp, game/characterinput.cpp, game/stageplayer.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
+- 138 TUs: todo 83, partial 14, verify 73, done 2
+- next: **rena/rena_draw.cpp** (pinned in the queue)
+- pinned queue: rena/rena_draw.cpp, game/stagecamera.cpp, game/demoevent.cpp, game/scenepairs.cpp, game/stagecollision.cpp, game/stagecharacter.cpp, game/playermotion.cpp, game/characterground.cpp, game/characterbrain.cpp, game/characterinput.cpp, game/stageplayer.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
 - partial: `game/demoevent.cpp` 66/90 -- Written: StageMission, StageEvent, StageFileEvent, StageSimpleEvent, StageFade, gsFillRect, DemoCamera, the pack lookup, DemoStream but setFont and drawSubtitle
 - partial: `game/scriptrunner.cpp` 90/652 -- VM 0x1d1c40, ScriptRunner, ScriptFrame, relocate, findEntry, scriptPrepare, the arg readers and 30 natives (every one stage 1 bg script calls) are written. All 
 - partial: `game/stageobject.cpp` 40/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
-- partial: `game/subsceneobject.cpp` 36/50 -- Written: SubSceneModelObject, SubSceneLamp, map, gate, door, character, item, prop (batch 112, 56 names, saved). Classes moved from gamehooks.h to game/subscene
 - partial: `yamipan/rendering/model_renderer.cpp` 0/0 -- Written: game/stagecamera.cpp whole base plus StageMainCamera (0x178160 step, 0x179490, 0x179680, ctor). The step has NEVER run: StageCharacter ctor and setup a
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -180,6 +179,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stagescene.cpp` 256/258 -- All 258 written, nothing has run: the smoke run stays on the language screen and the picture is unchanged (no stage loads). Batch 089, 70 names. SubSceneObject 
 - verify: `game/stagesound.cpp` 45/45 -- Batch 077 (31 names: the 18 slice functions, abs 0x121f08, SoundTrack hasSubtitles / getSubtitle / setVolume, SePlayer setTable / setPitch, StageNodeBase ctor 0
 - verify: `game/streamring.cpp` 17/21 -- All 21 functions accounted for: the 17 ring functions written, the thunks 0x151f70 / 0x151f80 / 0x152730 / 0x152740 call the rx functions directly. The classes 
+- verify: `game/subsceneobject.cpp` 50/50 -- All 50 written or recorded: the last 14 were header getKinds, empty hooks and thunks (ledger block at the end of the cpp; batch 113 named the thunks, saved). St
 - verify: `game/sysdata.cpp` 36/36 -- Cut out of unassigned@00171300 (the frontier pick, 5138 functions) and pinned 0x23af30-0x23c020. One SystemData block of 0x620 bytes at 0x598b30: SaveData +0 (0
 - verify: `game/thread.cpp` 19/19 -- All 19 functions written; thread.h has ThreadSlotRecord, ThreadStackDef, ThreadDetourStack, FrameSync, JobRecord with ThreadState / ThreadDetourState / JobCance
 - verify: `game/titlescreen.cpp` 3/3 -- All 3 functions of 0x231c90..0x231d40 written, batch 091 names loadingTick 0x231d20 and loadingBegin 0x231d30 (both j overlayShowLoading, fileloader.cpp now cal
@@ -211,6 +211,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-04 16:52 `game/subsceneobject.cpp` verify: All 50 of the TU recorded; the event now ends: a silent timed ADPCM stream bridge, the black after it traced to the missing player
 - 2026-11-04 16:10 `game/subsceneobject.cpp` partial: The event's objects and natives 0x144, 0x145, 0x148, 0x163, 0x164: first pictures of the opening from its own camera
 - 2026-11-04 15:18 `game/modelpose.cpp` verify: The solvers, the leg IK and the sw bones swing written; TU complete, not seen on screen
 - 2026-11-04 14:50 `game/modelpose.cpp` partial: ModelPose, ModelPoseBone, ModelMotion and the quaternions written, native 0x159, solvers left as stubs
@@ -218,7 +219,6 @@ Recent sessions:
 - 2026-11-04 13:00 `game/scenerender.cpp` verify: Pinned lights closed: YAMIPAN_AMBIENT and the isKeyed guards deleted, the script's lights drive the picture, VU1's fog limits added
 - 2026-11-04 12:30 `game/scriptrunner.cpp` partial: Stage script VM written, 30 natives; the scripts key the lights, picture unchanged, the pin stays
 - 2026-11-04 11:34 `game/scenerender.cpp` partial: SceneRender and VectorTrack written; the keys come from scripts, so the pin stays
-- 2026-11-04 10:49 `yamipan/rendering/model_renderer.cpp` partial: Main camera written (never run: no character links it yet), VU1 light formula read and in the host, lighting pinned; map darker, not compared with the game
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
@@ -232,8 +232,8 @@ Recent sessions:
 | `unassigned@00171300` | partial | 3/11/169 | 19.0 | 28 | 0 |
 | `unassigned@0017e140` | todo | 0/4/110 | 3.2 | 27 | 0 |
 | `unassigned@002e5450` | partial | 14/0/39 | 16.6 | 25 | 0 |
-| `unassigned@00288c00` | todo | 0/13/74 | 28.4 | 23 | 0 |
 | `unassigned@00176480` | partial | 18/3/134 | 29.0 | 23 | 0 |
+| `unassigned@00288c00` | todo | 0/13/74 | 28.4 | 23 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
