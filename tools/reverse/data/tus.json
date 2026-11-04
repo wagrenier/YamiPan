@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/nodetransform.cpp",
   "game/stagemodel.cpp",
   "rena/rena_model.cpp",
   "yamipan/rendering/model_renderer.cpp"
@@ -399,7 +398,23 @@
    "why": "MoviePlayer (uiwidget's prgMovie player) and its MPEG / IPU callbacks and sound sinks: starts after the 0x1fa230 texture class (vtables 0x315f00/0x315f20, its dtors end 0x1fa9d0), ends at fontdata.cpp's TextPrinter::~TextPrinter 0x1fcb40; vtables 0x315f50 / 0x315f80 (ctors 0x1fc4e0 / 0x1fcad0) are inside"
   },
   "game/nodetransform.cpp": {
-   "task": "3D path 2 of 5 (the user's pin). NodeTransform 0x1d7f20, update 0x1d7d50, updateMatrix 0x1d8420 and what the stage's nodes need to place a model: StageNodeBase 0x1d8540. Pin the real extent with tus.py define under this key; the rest of unassigned@001d7c50 is not part of this."
+   "notes": "All of 0x1d7c50..0x1d85b0 written (batches 100, 101); rotation, translate and multiply helpers in vu0math.h. New Game run: 31,560 frames with no crash, the opening movie at frame 3600, black at the end. Nothing draws 3D yet, so no picture tests this: the first map model does. TU 3 stagemodel.cpp: use StageBoneNode and StageMatrixNode from stagenode.h in bindBones and setBaseMotion, and change BoneNode::value to StageNodeBase pointer. architecture.md has The node transform; open-items.md has the doubts.",
+   "ranges": [
+    [
+     "001d7c50",
+     "001d85b0"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 07:58",
+     "status": "verify",
+     "summary": "NodeTransform, the bone and matrix nodes, StageNodeBase walks; 3D path 2 of 5"
+    }
+   ],
+   "status": "verify",
+   "task": "3D path 2 of 5 (the user's pin). NodeTransform 0x1d7f20, update 0x1d7d50, updateMatrix 0x1d8420 and what the stage's nodes need to place a model: StageNodeBase 0x1d8540. Pin the real extent with tus.py define under this key; the rest of unassigned@001d7c50 is not part of this.",
+   "why": "vtable 0x315a50 and 0x315ab0 slots, NodeTransform, the StageNodeBase walks and ctor; 0x1d85b0 starts the next class (vtable 0x315ba0)"
   },
   "game/packtables.cpp": {
    "notes": "3D path 1 of 5. Root cause: String and StringList were stubs, so every stage script split into zero lines. Written here: game/stringlist.cpp (marked done), PackTables::parse cut into one method per sheet, rena/rena_model.cpp with isValid, relocate, getNodeCount (TU 4 continues in that file), stageMotionTargetName and StageMapFile::relocate in stagescene.cpp until their file is cut; the StageMission stub ctor zeroes itself. Seen: New Game run of 250 s under a limit reaches ModelFile::createInstance with no crash and ends black, which is all the code can show (no 3D yet); the boot picture is unchanged. NOT checked: the contents of the tables were never printed or compared with the sheets, and the relocation was not walked on a real file beyond texture names, so this is verify. The same run reached only frame 3060 where the run before reached 7080 in the same time: the stage load or the stage loop is slower now, not looked into. Next: game/nodetransform.cpp. PC guard in applyBgTarget skips the null instance until createInstance is written; placeItem and placeCharacter have no guard yet. StageScript::relocate 0x1d3a40 and CollisionFile::relocate 0x23ae40 are still stubs. Ghidra: batch 099 saved by name_ctx.",

@@ -219,6 +219,9 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 - 2026-11-03 (game/stagescene.cpp): **stubgen reads two shapes wrong.** Symptom: `expected unqualified-id before 'public'` in unassigned_stubs.cpp, and an undefined reference stubgen never fills. Cause: its declaration regex lets the return type run over a newline, so a method right after `public:` gets `public:` in its stub; and an overload of a declared name is taken for the existing one. Fix: put a comment line between `public:` and the method, delete the bad stub, and give the overload its own name (`setPositionXyz`).
 
+- **`name_ctx.py` skips a name another address already has, silently** (2026-11-04). Symptom: one row of a batch stays `FUN_...` while the run reports nothing, and callcheck goes on printing the old name. Cause: the plugin refuses a duplicate name (`copyVec4` was 0x133800). Fix: grep yamipan_functions.txt for each new name first, and check the batch landed.
+- **Renaming or moving a method leaves its stub in unassigned_stubs.cpp** (2026-11-04). Symptom: `no declaration matches` in lib/unassigned_stubs.cpp, or a duplicate definition. Fix: delete this TU's stub blocks by hand before the first `tus.py check` (protocol step 5).
+
 ## Sessions
 
 - **A session never launches other sessions, agents or scheduled tasks** (the auto-mode classifier
@@ -291,6 +294,8 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   and backslashes inside a heredoc can reach the file halved. Bash parses the whole command first, so
   nothing in it ran. Fix: write source files with the Write tool, and patch with a script file, not an
   inline heredoc with escapes.
+
+- **A long Bash heredoc with mixed quotes can fail to parse as a whole** (2026-11-04): `unexpected EOF while looking for matching` and nothing runs, so no step of the command happened. Use the Write tool for source files and for Python scripts over a few lines.
 
 ## Build and run
 

@@ -1884,6 +1884,16 @@ Kinds (`getKind`): 0 character, 2 door, 7 camera, 8 vtable 0x311d30, 9 main came
 
 `StageObject` ends with the transform at +0x140 (world matrix +0x1c0). The serial at +0x3c is `(counter << 1) | 1`, so odd; `getHandle` answers it for characters and the pointer otherwise. The tree node (+0x38, EE 0x10): parent +0, children `StageList` +4, object +0xc; its walks inline four levels and use accessors 0x18b9a0..0x18b9d0 below that.
 
+## The node transform (game/nodetransform.cpp, 2026-11-04)
+
+0x1d7c50..0x1d85b0. **The conventions the 3D path rests on:** `applyMatrix` 0x136690 treats a matrix's rows as column vectors (rows 0..2 the axes, row 3 the position), and `multiplyMatrix` 0x136640 is a * b for those vectors (the sceVu0MulMatrix shape): world = parent world * local. Angles are radians, as `sinCosVec` 0x135c30's fold at pi and pi/2 shows; it answers in f1..f6, sin in the odd registers, and its one Taylor series expects -pi..pi. Two rotation orders, read term by term and checked numerically against the composed axis turns: `rotationMatrixZxy` 0x1359f0 (Rz Rx Ry, y applied first), the default, and `rotationMatrixXyz` 0x135b90 (Rx Ry Rz). 0x135a90 is a third order nothing here needs.
+
+**`NodeTransform`** (EE 0xc0, exact layout now, +0x30 unused): the +2 byte `rotationXyz` picks the order (`StageCharacter`'s ctor sets it at 0x17df3c). The +1 byte `positionOnly` (set in 0x18e280 and 0x190220) makes the parent move the node without turning it: world = local rotation, position = parent * position, and with no parent the position is **dropped** (the ROM copies a local whose row 3 is still the origin). Otherwise local row 3 = position, w = 1, world = parent * local. `update` never clears `dirty`: the ctor sets it, and callers clear it through slots 0 / 5 (`setDirtyTree(false)` in stagelight.cpp is one). It uses the parent's slot +0x14 (`getMatrix`), `StageBoneNode` the parent's +0x18 (`getWorldMatrix`).
+
+**Two more node classes**, both over `StageNodeBase`: `StageBoneNode` (vtable 0x315a50, EE 0xc0, an array from `StageModel::bindBones`): bare local +0x40 / world +0x80, setDirty empty. `StageMatrixNode` (vtable 0x315ab0, EE 0x1c): a pointer +0x18 to a matrix it does not own, the +0x80 of a motion's bone (`StageModel::setBaseMotion`), rebuild empty. Vtable 0x316c30 (EE 0x34) derives from it, built in 0x268830. **`BoneNode::value` is really one of these, a `StageNodeBase *`**, not the `StageNode *` gamehooks.h declares: stagemodel.cpp must change it.
+
+**The walks**: `updateMatrix` slot +0x20 rebuilds the node, keeps `m_inverse` when there is one, then `updateChildMatrices` 0x1d8480 finishes a whole level (rebuild and inverse on each child) before going down. `propagate` 0x1d8260 belongs to the base, not to StageObject: it copies world row 3 to `m_lastPosition`. `setInverseTree` 0x1d7fc0 allocates or frees `m_inverse` down the tree (callers 0x175d40, 0x28e000, 0x295010, none written yet).
+
 ## The lights (game/stagelight.cpp, 2026-11-04)
 
 `StageLight` (kind 0xf, abstract) with `SpotLight` (0x11, EE 0x300) and `PointLight` (0x10, EE 0x2c0), 0x184860..0x186ee0. The adjustor thunks just before it, 0x184610..0x184860, are the item and bullet classes': CodeWarrior closes each file with its thunks, so **a run of 8-byte thunks marks a file's end**. The lights' are 0x186cc0..0x186ed0, then `StageMapFile::relocate`.
