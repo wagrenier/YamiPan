@@ -248,6 +248,7 @@ finishing any session:
 |---|---|---|
 | `references/open-items.md` | priorities, decisions, questions, done log | every session |
 | `references/status.md` | generated progress (after bootstrap) | every session |
+| `references/roadmap-3d-control.md` | what is missing for the 3D and for playing the character, measured | choosing what comes next |
 | `references/ghidra.md` | instances, ports, discovery, MCP bridge, GhidraMCP traps | Ghidra not found, or odd |
 | `references/bootstrap.md` | a new port from an empty repo to the loop | until the loop runs |
 | `references/architecture.md` | the game: binary, address map, modules, classes, data, platform | understanding a TU |

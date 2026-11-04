@@ -790,6 +790,9 @@ const char *stageMotionTargetName(int index);                            // FS2 
 // the items, +0x234 the map's holder, +0x238 / +0x23c the two weapons.
 struct StagePlayer
 {
+    // Its action is 0x11 or 0x2a (+0x224's +0x40), what an event breaks off.
+    bool isHoldingAction();                                              // FS2 0x00214f20
+    void releaseAction();                                                // FS2 0x001dedb0
     // +0x400 set and +0x3c8 == 1: StageScene::drawPaused / update then
     // pass StageSound::update sceneFlag 1. What mode 1 is is unread.
     bool isMode1();                                                      // FS2 0x002152d0
@@ -1111,16 +1114,20 @@ struct KeepList
 // layout: host -- EE: vptr at +0x2c.
 enum StageEventState
 {
-    StageEvent_Active = 2,      // StageScene::isEventActive; the name is a guess
+    StageEvent_Starting = 0,    // the first poll
+    StageEvent_Fading   = 1,    // waits for the fade to black
+    StageEvent_Active   = 2,    // StageScene::isEventActive
+    StageEvent_Finished = 3,    // StageScene::runStageScripts deletes it
 };
-// StageEvent::poll: the event has ended (StageScene::runStageScripts
-// deletes it).
-constexpr int kStageEventFinished = 3;
+constexpr int kStageEventFinished = StageEvent_Finished;
 class ScriptRunner;
-// layout: host
+class FileLoader;               // game/fileloader.h
+// layout: host (game/demoevent.cpp)
 class StageEvent
 {
 public:
+    StageEvent(float fadeSeconds, const char *name);                     // inline in the ROM (vtable 0x318050)
+    virtual ~StageEvent();                                               // FS2 0x002888a0: slot 0, deleting
     // The first subtitle font for a language of the set {1, 5..9}, the
     // event's own otherwise (the argument is unused; the language's
     // meaning is unread).
@@ -1131,43 +1138,73 @@ public:
     // out = the voice stream's file, .xwb; null with no voice.
     const char *getVoicePath(char *out);                                 // FS2 0x00287bb0
 
-    // Slot 2 (vtable +0x10, vptr +0x2c): the event's state; a plain stub
-    // until its TU.
-    int poll();
-    // A virtual in the ROM (slot 3, vtable +0x14); a plain stub until its
-    // TU. What StageScene::enterSubScene builds the sub-scene from.
-    void *getSubSceneData();
-    // The deleting dtor (vtable +0x8, vptr +0x2c: StageScene's dtor); a
-    // plain stub until its TU.
-    void destroy();
-    // Slot 1 (vtable +0xc, vptr +0x2c): set, StageScene::draw leaves the
-    // pool's text out. A plain stub until its TU.
-    bool hidesText();
+    // Slot 1 (vtable +0xc): set, StageScene::draw leaves the pool's text
+    // out, and the end of the event leaves the pause state's list alone.
+    virtual bool hidesText() { return false; }                           // FS2 0x00288920 (StageSimpleEvent)
+    // Slot 2 (vtable +0x10): one frame; answers the state.
+    virtual int poll() = 0;
+    // Slot 3 (vtable +0x14): what StageScene::enterSubScene builds the
+    // sub-scene from.
+    virtual void *getSubSceneData() { return nullptr; }                  // FS2 0x0017f7b0 (stageAnswerZero)
 
-    char   name[0x24];          // FS2 +0x00: the event's id (d0101); the extent is a guess
+    char   name[0x20];          // FS2 +0x00: the event's id (d0101); the fade seconds follow it
+    float  fadeSeconds;         // FS2 +0x20: 0: no fade first
     int    state;               // FS2 +0x24: StageEventState
     ScriptRunner *runner;       // FS2 +0x28: StageScene::isBusy: its script may go on while the event runs
-    u_char _2c[0x8];
-    const void *voice;          // FS2 +0x34: the voice stream's header (DemoStream::open); null none
-    void       *fsm;            // FS2 +0x38: subtitles (DemoStream::setFsm)
-    const void *subtitleImage;  // FS2 +0x3c: their font's image
-    const void *subtitleFont;   // FS2 +0x40: their font
+    // A StageFileEvent's (here for enterSubScene, whose event is one).
+    void       *pack = nullptr;          // FS2 +0x30: the .edp
+    const void *voice = nullptr;         // FS2 +0x34: the voice stream's header (DemoStream::open); null none
+    void       *fsm = nullptr;           // FS2 +0x38: subtitles (DemoStream::setFsm)
+    const void *subtitleImage = nullptr; // FS2 +0x3c: their font's image
+    const void *subtitleFont = nullptr;  // FS2 +0x40: their font
+
+protected:
+    // state = Finished; the pause state's list closes unless hidesText.
+    void finish();                                                       // inline in the ROM
 };
 
-// The event a sub-scene runs from (vtable 0x318010, EE 0xf4: a FileLoader
-// at +0x44): arg goes to +0x20. The name is a guess.
+// The event a sub-scene runs from (vtable 0x318010): reads
+// demoEU/s<stage>/<name>.edp and its voice and subtitles, then asks the stage
+// loop for a sub-scene. The name is a guess.
 // layout: host -- EE 0xf4.
 class StageFileEvent : public StageEvent
 {
 public:
-    StageFileEvent(float arg, const char *name);                         // FS2 0x002882b0
+    StageFileEvent(float fadeSeconds, const char *name);                 // FS2 0x002882b0
+    ~StageFileEvent() override;                                          // FS2 0x00288210
+    bool hidesText() override { return true; }                           // FS2 0x00287ad0
+    int  poll() override;                                                // FS2 0x00287c00
+    void *getSubSceneData() override { return pack; }                    // FS2 0x00287ae0
+
+private:
+    // The sound dies down, then the files are queued.
+    void queueFiles();                                                   // FS2 0x00287f20
+    // Waits for them; the sub-scene, or the end with no pack.
+    void takeFiles();                                                    // FS2 0x00287db0
+
+    FileLoader *m_loader;       // FS2 +0x44: the object itself on the EE
+    int m_packIndex = -1;       // FS2 +0xe0
+    int m_voiceIndex = -1;      // FS2 +0xe4
+    int m_fsmIndex = -1;        // FS2 +0xe8
+    int m_imageIndex = -1;      // FS2 +0xec
+    int m_fontIndex = -1;       // FS2 +0xf0
 };
-// The other one (vtable 0x318030). The name is a guess.
+// An event played by the stage's own script: the entry of its name, in a
+// runner of its own, with the objects' flags kept (vtable 0x318030). The name
+// is a guess.
 // layout: host -- EE 0x34.
 class StageSimpleEvent : public StageEvent
 {
 public:
-    StageSimpleEvent(float arg, const char *name);                       // FS2 0x00288850
+    StageSimpleEvent(float fadeSeconds, const char *name);               // FS2 0x00288850
+    ~StageSimpleEvent() override;                                        // FS2 0x002887a0
+    int poll() override;                                                 // FS2 0x00288340
+
+private:
+    // Runner and entry; no entry ends the event at once.
+    void begin();                                                        // inline in the ROM (twice)
+
+    void *m_30 = nullptr;       // FS2 +0x30: delete[] by the dtor; nothing here sets it
 };
 
 class Clock;                    // game/clock.h
@@ -1256,27 +1293,60 @@ public:
     bool open(const void *header, const char *name);                     // FS2 0x002b1270
     bool play(int volume);                                               // FS2 0x002b1240: left = right = volume
     bool setPaused(bool on);                                             // FS2 0x002b1110
+
+private:
+    void       *m_fsm = nullptr;        // FS2 +0x60
+    char       *m_dir = nullptr;        // FS2 +0x64
+    char       *m_path = nullptr;       // FS2 +0x68
+    const void *m_header = nullptr;     // FS2 +0x6c
+    void       *m_printer = nullptr;    // FS2 +0x70: setFont's
+    u_int       m_colour = 0x80606060;  // FS2 +0x74: the subtitles'
+    int         m_textX = 0x100;        // FS2 +0x78
+    int         m_textY = 0x1bc;        // FS2 +0x7c
 };
 
 // The scene's fade (StageScene +0xfc; 0x1512a0 / 0x1512e0 in the run
 // unassigned@00148db0). Class and mode meaning are guesses.
-// layout: host -- EE: +0x24 level, +0x34 mode.
+// layout: host -- EE offsets in the comments, 0x3c.
+enum StageFadeMode
+{
+    StageFade_Idle    = 0,
+    StageFade_Running = 1,
+    StageFade_Done    = 2,      // holds its target
+};
+// layout: host
 class StageFade
 {
 public:
-    // (x, y, w, h, arg): StageScene passes 0x700, 0x700, 0x200, 0x200, 0
-    // (GS window units: the 512-pixel screen at the 1792 offset); arg is
-    // unread.
-    StageFade(int x, int y, int w, int h, int arg);                      // FS2 0x00151600
-    // The deleting dtor (vtable 0x311270 at +4, slot 0); a plain stub
-    // until its TU.
-    void destroy();
-    // Mode 2 at level 1.0 (StageSound does not resume a cue stream then).
+    // (x, y, w, h, clock): StageScene passes 0x700, 0x700, 0x200, 0x200, null
+    // (GS window units: the 512-pixel screen at the 1792 offset); null: a
+    // clock of its own under the game's.
+    StageFade(int x, int y, int w, int h, Clock *clock);                 // FS2 0x00151600
+    ~StageFade();                                                        // FS2 0x00151550: deleting
+    // Goes to target in seconds, from from (negative: from where it is).
+    void start(float seconds, float target, float from);                 // FS2 0x00151330
+    // Full in mode 2 (StageSound does not resume a cue stream then).
     bool isFullInMode2();                                                // FS2 0x001512a0
     // The same in mode 1.
     bool isFullInMode1();                                                // FS2 0x001512e0
-    // Slot 2 (vtable +0xc, vptr +4). A plain stub until its TU.
-    void draw(sceVif1Packet *packet, TexAreaList *texList);
+    // Slot 2 (vtable +0xc, vptr +4): steps it and fills the rect. The list is
+    // unused.
+    void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x001513a0
+
+private:
+    int    m_x;                 // FS2 +0x08
+    int    m_y;                 // FS2 +0x0c
+    int    m_w;                 // FS2 +0x10
+    int    m_h;                 // FS2 +0x14
+    u_int  m_colour = 0;        // FS2 +0x18: 24 bits
+    float  m_drawn = 0.0f;      // FS2 +0x1c: the level clamped
+    bool   m_clockShared = false; // FS2 +0x20: not ours to delete
+    float  m_target = 0.0f;     // FS2 +0x24
+    float  m_from = 0.0f;       // FS2 +0x28
+    float  m_level = 0.0f;      // FS2 +0x2c
+    float  m_seconds = 0.0f;    // FS2 +0x30
+    int    m_mode = StageFade_Idle; // FS2 +0x34: StageFadeMode
+    Clock *m_clock = nullptr;   // FS2 +0x38
 };
 
 // -- The stage scene's members (StageScene's ctor 0x19c180 / dtor 0x19bbe0;
@@ -1975,6 +2045,27 @@ public:
     int getKind() override { return StageObject_Kind10; }
     ViewCamera();                                                        // FS2 0x0029aae0
 };
+// What the event code calls of TUs to come.
+// The film overlay's data: two parts of the parent's party (0x1fea40,
+// 0x1fea30 inline here).
+void demoFilmTake(StageParty *party, void **film, void **flecks);          // FS2 0x001fea40
+void demoFilmDestroy(void *film);                                        // FS2 0x002052d0
+void demoFilmDraw(float level, void *film, sceVif1Packet *packet);       // FS2 0x00204550
+void demoFleckStep(void *flecks);                                        // FS2 0x002a11d0
+void demoFleckDraw(float level, void *flecks, sceVif1Packet *packet);    // FS2 0x002a11c0
+// The mission's script helpers beside scriptPrepare.
+bool missionRestoreCheck();                                              // FS2 0x0029f2a0
+int  missionPickSpawnPoint(const float *place, int mode);                 // FS2 0x0029f810
+bool missionSpawnPointTaken(int *point);                                 // FS2 0x0029fd10
+void missionSpawnAt(int *point, int id);                                 // FS2 0x0029fb60
+
+// A DemoCamera's overlay (+0x300): what drawOverlay adds after the 3D frame.
+enum DemoOverlay
+{
+    DemoOverlay_None  = 0,
+    DemoOverlay_Film  = 1,      // the two effects 0x2a11c0 / 0x204550
+    DemoOverlay_FilmDark = 2,   // the same under a half-dark fill
+};
 // A sub-scene's "camera_demo" (kind 13; vtable 0x316ed0; run
 // unassigned@002681e0). layout: host -- EE 0x340.
 class DemoCamera : public StageCamera
@@ -1983,8 +2074,23 @@ public:
     // FS2 0x0026c910
     int getKind() override { return StageObject_Kind13; }
     DemoCamera();                                                        // FS2 0x0026ce20
+    ~DemoCamera() override;                                              // FS2 0x0026cd30
+    // The frame: the cut's motion forward; the bones bn_fovy (or bn_length)
+    // and bn_top are the lens and the view.
+    void cameraStep() override;                                          // FS2 0x0026cb90
+    // A cut: the motion file on the camera's model.
+    void playCut(void *motionFile);                                      // FS2 0x0026cb70: vtable +0x260
+    // The same by name in the event's pack; the view jumps to it at once.
+    void playCutNamed(const char *name);                                 // FS2 0x0026ca40: vtable +0x264
+    // Sets the overlay; the first one takes the pack's film data.
+    void setOverlay(int overlay);                                        // FS2 0x0026cab0
     // The fades on list 9 after the 3D frame.
     void drawOverlay();                                                  // FS2 0x0026c920
+
+    int   m_overlay = DemoOverlay_None;   // FS2 +0x300
+    bool  m_ownsFilm = false;   // FS2 +0x304: the dtor deletes m_film (never set here)
+    void *m_film = nullptr;     // FS2 +0x308
+    void *m_flecks = nullptr;   // FS2 +0x30c
 };
 // The bullet and the items: game/stageitem.h.
 
@@ -2196,6 +2302,8 @@ struct PauseMenuState
     void update();                                                       // FS2 0x00207500
     // One of its five entries is on and holds the scene clock's time.
     bool isActive();                                                     // FS2 0x002078d0
+    // Every entry off.
+    void clearList();                                                    // FS2 0x00207440
 };
 
 class WideFontPrinter;          // game/fontdata.h
@@ -2385,6 +2493,8 @@ class DemoExecuter : public ScriptRunner
 public:
     // vtable 0x314d30. flag: +0xb9; "skippable" is a guess.
     explicit DemoExecuter(bool skippable);                               // FS2 0x0026c8c0
+    bool m_b8 = false;          // FS2 +0xb8 (writers unread)
+    bool m_skippable;           // FS2 +0xb9
     ~DemoExecuter() override;                                            // FS2 0x00195db0: deleting
     const char *getName() override;                                      // FS2 0x0019cf40
 };
@@ -2396,6 +2506,9 @@ struct SubSceneData
     explicit SubSceneData(void *pack) : pack(pack) {}                    // FS2 0x0026c8b0
     // The pack's script; null with none.
     StageScript *getScript();                                            // FS2 0x0026c880
+    // A file of the pack: name + .mdl, name + .mtn; null none.
+    void *findModel(const char *name);                                  // FS2 0x0026c700
+    void *findMotion(const char *name);                                  // FS2 0x0026c7c0
 
     void *pack;                 // FS2 +0x0
 };

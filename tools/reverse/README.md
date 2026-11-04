@@ -98,6 +98,7 @@ The API, how the plugin behaves, the setup and the traps: the skill's `reference
 | `dec.py` | `python dec.py <addr\|name> ...` -- decompile. |
 | `ghidra.py` | `asm` (read-only disassembly of any range), `func`, `xrefs`, `refs` (xrefs + `jal`/`j` encodings + data words + low halves: "is it really unreferenced"), `find` (over the ELF's bytes, with an optional bit mask), `segments`, `mkfunc` (create + save). |
 | `mipsdis.py` | Offline R5900 disassembler over the ELF, annotated with cached names; for code Ghidra has no function for. |
+| `reach.py` | `reach.py <name|addr> ... [--list]`, `--slots <vtable> <n>`: the unwritten game functions under a root, transitively (direct calls only, so a floor for comparing roots). `references/roadmap-3d-control.md` is made with it. Offline. |
 | `sssdis.py` | `sssdis.py <script file> [--natives lo-hi]`: the stage scripts ("SSS", VM 0x1d1c40) read statically: each entry and its native calls with the constant arguments; by default the lighting natives 0x1b3..0x1c3. |
 | `sssnatives.py` | `sssnatives.py`: writes `src/game/scriptnatives.inc`, the pops, code words and address of all 541 script natives read from the ROM, so an unwritten native still leaves the VM right. `--list lo-hi` prints them with size, `acc`, `yield` and callees. |
 | `vudis.py` | VU microcode over the ELF, following the image's VIF MPG codes: `vudis.py 2ec908 3f8 --all` is FS2's VU1 program (the image's DMA tag is the first 8 bytes). `I = ...` constants are not printed: they sit in the lower word when the upper's bit 31 is set. |

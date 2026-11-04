@@ -236,6 +236,15 @@ public:
     void run(int arg = 0);                                               // FS2 0x001d27e0
 
     bool isRunning() const { return m_entry != nullptr; }
+    // What the last yield left for the native waiting here, cleared; 0 with
+    // none. Inline in the ROM's waiting natives.
+    int takeYield()
+    {
+        int value = m_yieldA != 0 ? m_yieldB : 0;
+        m_yieldA = 0;
+        m_yieldB = 0;
+        return value;
+    }
     // FS2 0x001d1a00
     const ScriptEntry *getEntry() const { return m_entry; }
     // FS2 0x001d19f0

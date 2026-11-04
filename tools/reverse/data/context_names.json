@@ -6605,6 +6605,12 @@
   "was": "FUN_001494f0",
   "why": "value = arg, next = prev = 0; pushBack and pushFront construct their node with it"
  },
+ "0014b970": {
+  "name": "ModelPoseBone::getValue",
+  "tag": "game-inferred",
+  "was": "FUN_0014b970",
+  "why": "+0x120 when flag 0x20 is set, else 0; DemoCamera reads the lens angle with it"
+ },
  "0014e300": {
   "name": "ModelPose::getSurfaceFrames",
   "tag": "game-inferred",
@@ -6652,6 +6658,12 @@
   "tag": "game-inferred",
   "was": "FUN_0014f1d0",
   "why": "builds Rx Ry Rz of delta, turns the root's vectors and +0x90, adds to +0x30, solves"
+ },
+ "0014f2a0": {
+  "name": "ModelPose::findBone",
+  "tag": "game-inferred",
+  "was": "FUN_0014f2a0",
+  "why": "strcmp against bones[i].name (0x300 stride at +0x15c), null none"
  },
  "0014f430": {
   "name": "ModelPose::resetSwingBones",
@@ -6748,6 +6760,24 @@
   "tag": "game-inferred",
   "was": "FUN_001512e0",
   "why": "the same as isFullInMode2 with mode 1"
+ },
+ "00151330": {
+  "name": "StageFade::start",
+  "tag": "game-inferred",
+  "was": "FUN_00151330",
+  "why": "sets mode 1, target +0x24, from +0x28/+0x2c (negative keeps the level), seconds +0x30, resets its clock"
+ },
+ "001513a0": {
+  "name": "StageFade::draw",
+  "tag": "game-inferred",
+  "was": "FUN_001513a0",
+  "why": "steps the level by the clock, ALPHA_1 0x44, gsFillRect of the rect with level * 128 as alpha"
+ },
+ "00151550": {
+  "name": "StageFade::~StageFade",
+  "tag": "game-inferred",
+  "was": "FUN_00151550",
+  "why": "deletes the clock unless +0x20; base vtables 0x311270, 0x311260"
  },
  "00151600": {
   "name": "StageFade::StageFade",
@@ -15515,6 +15545,12 @@
   "was": "FUN_001dd3f0",
   "why": "+0x174 = flag, the object +0x220; opposite of the input when a character is taken over"
  },
+ "001dedb0": {
+  "name": "StagePlayer::releaseAction",
+  "tag": "game-inferred",
+  "was": "FUN_001dedb0",
+  "why": "on +0x224, ends the held action; StageSimpleEvent::poll"
+ },
  "001e60b0": {
   "name": "PlayerMotion::getLampMatrix",
   "tag": "game-inferred",
@@ -16217,6 +16253,18 @@
   "was": "FUN_001fe9c0",
   "why": "mode 4, +0x18 = object: what getCompanion answers in that mode"
  },
+ "001fea30": {
+  "name": "StageParty::getFlecks",
+  "tag": "game-inferred",
+  "was": "FUN_001fea30",
+  "why": "*(*this + 0x44), DemoCamera::setOverlay's second block"
+ },
+ "001fea40": {
+  "name": "StageParty::getFilm",
+  "tag": "game-inferred",
+  "was": "FUN_001fea40",
+  "why": "*this + 0x54, DemoCamera::setOverlay's first block"
+ },
  "001fea50": {
   "name": "StageParty::getCompanion",
   "tag": "game-inferred",
@@ -16252,6 +16300,24 @@
   "tag": "game-inferred",
   "was": "FUN_001fecf0",
   "why": "StageScene ctor new(4) for +0x88 (StageParty): its +0 = new(0x148) 0x203d70"
+ },
+ "00204550": {
+  "name": "demoFilmDraw",
+  "tag": "game-inferred",
+  "was": "FUN_00204550",
+  "why": "the film effect of DemoCamera::drawOverlay: a CLUT in scratchpad, four quads; the word film is the port's"
+ },
+ "002052d0": {
+  "name": "demoFilmDestroy",
+  "tag": "game-inferred",
+  "was": "FUN_002052d0",
+  "why": "deleting dtor of the block DemoCamera::~DemoCamera frees"
+ },
+ "00207440": {
+  "name": "PauseMenuState::clearList",
+  "tag": "game-inferred",
+  "was": "FUN_00207440",
+  "why": "zeroes the two counts, state 2; StageEvent's end when not hidesText"
  },
  "00207500": {
   "name": "PauseMenuState::update",
@@ -16318,6 +16384,12 @@
   "tag": "game-inferred",
   "was": "FUN_00214a70",
   "why": "+0x40 = 1, first thing parse does to a character record"
+ },
+ "00214f20": {
+  "name": "StagePlayer::isHoldingAction",
+  "tag": "game-inferred",
+  "was": "FUN_00214f20",
+  "why": "+0x224's +0x40 is 0x11 or 0x2a; StageSimpleEvent::poll"
  },
  "00214f60": {
   "name": "StageObject::getAltSoundFlag",
@@ -19373,6 +19445,18 @@
   "was": "FUN_00269d00",
   "why": "base of the sub-scene item class 0x315420 (inline), argument 3"
  },
+ "0026c700": {
+  "name": "SubSceneData::findModel",
+  "tag": "game-inferred",
+  "was": "FUN_0026c700",
+  "why": "sprintf %s.mdl, strcmp over the pack's names"
+ },
+ "0026c7c0": {
+  "name": "SubSceneData::findMotion",
+  "tag": "game-inferred",
+  "was": "FUN_0026c7c0",
+  "why": "sprintf %s.mtn, strcmp over the pack's names"
+ },
  "0026c880": {
   "name": "SubSceneData::getScript",
   "tag": "game-inferred",
@@ -19396,6 +19480,36 @@
   "tag": "game-inferred",
   "was": "FUN_0026c920",
   "why": "draw for a kind 13 view: list 9 fades on +0x308, +0x30c"
+ },
+ "0026ca40": {
+  "name": "DemoCamera::playCutNamed",
+  "tag": "game-inferred",
+  "was": "FUN_0026ca40",
+  "why": "vtable +0x264: findMotion, then slot +0x260 and onViewTop"
+ },
+ "0026cab0": {
+  "name": "DemoCamera::setOverlay",
+  "tag": "game-inferred",
+  "was": "FUN_0026cab0",
+  "why": "+0x300; modes 1 and 2 take the party's two film blocks first"
+ },
+ "0026cb70": {
+  "name": "DemoCamera::playCut",
+  "tag": "game-inferred",
+  "was": "FUN_0026cb70",
+  "why": "vtable +0x260: StageModel::playMotionFile with flags 0x50"
+ },
+ "0026cb90": {
+  "name": "DemoCamera::cameraStep",
+  "tag": "game-inferred",
+  "was": "FUN_0026cb90",
+  "why": "vtable +0x25c, the slot of StageMainCamera's step: advance 1.2, bn_fovy or bn_length to setScrZ, bn_top to the world matrix"
+ },
+ "0026cd30": {
+  "name": "DemoCamera::~DemoCamera",
+  "tag": "game-inferred",
+  "was": "FUN_0026cd30",
+  "why": "vtable 0x316ed0 slot 2 of the object group; frees +0x308 when +0x304"
  },
  "0026ce20": {
   "name": "DemoCamera::DemoCamera",
@@ -19493,6 +19607,18 @@
   "was": "FUN_002867a0",
   "why": "0x20-byte slots at +0x750 by id, the first call for an id kept, +0x748 the count"
  },
+ "00286820": {
+  "name": "StageMission::setVisibilityRange",
+  "tag": "game-inferred",
+  "was": "FUN_00286820",
+  "why": "VISIBILITY_ name table 0x2fb480, stores the float at +0x268 + 8 i"
+ },
+ "002868b0": {
+  "name": "StageMission::setPendingEvent",
+  "tag": "game-inferred",
+  "was": "FUN_002868b0",
+  "why": "strcpy to +0xc8, only caller native 0x1f2"
+ },
  "002868c0": {
   "name": "StageMission::onRestore",
   "tag": "game-inferred",
@@ -19553,6 +19679,12 @@
   "was": "FUN_002870f0",
   "why": "binds volumes by name (I_HATUEN, Root ...); setupCameras"
  },
+ "00287690": {
+  "name": "StageMission::reset",
+  "tag": "game-inferred",
+  "was": "FUN_00287690",
+  "why": "the ctor's second half: default move scales 0x2fb490, timed records -1, new MessageTable"
+ },
  "00287820": {
   "name": "StageMission::~StageMission",
   "tag": "game-inferred",
@@ -19583,17 +19715,83 @@
   "was": "FUN_00287bb0",
   "why": "0x288930 + .xwb, null without a path"
  },
+ "00287c00": {
+  "name": "StageFileEvent::poll",
+  "tag": "game-inferred",
+  "was": "FUN_00287c00",
+  "why": "vtable 0x318010 slot 2: states 0..3, queue then take"
+ },
+ "00287db0": {
+  "name": "StageFileEvent::takeFiles",
+  "tag": "game-inferred",
+  "was": "FUN_00287db0",
+  "why": "waitLoaded, getItem by the five indices, requestSubScene"
+ },
+ "00287f20": {
+  "name": "StageFileEvent::queueFiles",
+  "tag": "game-inferred",
+  "was": "FUN_00287f20",
+  "why": "mutes and settles the sound, addFile of .edp .fsm .tm2 .cod .xwh, startLoad"
+ },
+ "00288210": {
+  "name": "StageFileEvent::~StageFileEvent",
+  "tag": "game-inferred",
+  "was": "FUN_00288210",
+  "why": "vtable 0x318010 slot 0"
+ },
  "002882b0": {
   "name": "StageFileEvent::StageFileEvent",
   "tag": "game-inferred",
   "was": "FUN_002882b0",
   "why": "vtable 0x318010 over 0x318050, FileLoader at +0x44, EE 0xf4"
  },
+ "00288340": {
+  "name": "StageSimpleEvent::poll",
+  "tag": "game-inferred",
+  "was": "FUN_00288340",
+  "why": "vtable 0x318030 slot 2: an entry of scripts[0] by name in a runner of its own"
+ },
+ "002887a0": {
+  "name": "StageSimpleEvent::~StageSimpleEvent",
+  "tag": "game-inferred",
+  "was": "FUN_002887a0",
+  "why": "vtable 0x318030 slot 0"
+ },
  "00288850": {
   "name": "StageSimpleEvent::StageSimpleEvent",
   "tag": "game-inferred",
   "was": "FUN_00288850",
   "why": "vtable 0x318030 over 0x318050, EE 0x34"
+ },
+ "002888a0": {
+  "name": "StageEvent::~StageEvent",
+  "tag": "game-inferred",
+  "was": "FUN_002888a0",
+  "why": "vtable 0x318050 slot 0: deletes the runner"
+ },
+ "00288930": {
+  "name": "voiceFileName",
+  "tag": "game-inferred",
+  "was": "FUN_00288930",
+  "why": "d%2d%2d%c to EV%02d_%02d%c%s"
+ },
+ "00288a90": {
+  "name": "languageFileName",
+  "tag": "game-inferred",
+  "was": "FUN_00288a90",
+  "why": "%s%s with J Ct KR EN DE FR ES IT"
+ },
+ "00288b80": {
+  "name": "eventPackName",
+  "tag": "game-inferred",
+  "was": "FUN_00288b80",
+  "why": "%s.edp"
+ },
+ "00288bc0": {
+  "name": "eventDemoDir",
+  "tag": "game-inferred",
+  "was": "FUN_00288bc0",
+  "why": "demoEU/s%02d/ with the selected stage"
  },
  "002894b0": {
   "name": "ScenePool::setImage",
@@ -20579,11 +20777,23 @@
   "was": "FUN_0029f050",
   "why": "walks a relocated script's chunks 0x1a4c424c, 0x1a525453, 0x1a545353; read only by shape"
  },
+ "0029f2a0": {
+  "name": "missionRestoreCheck",
+  "tag": "game-inferred",
+  "was": "FUN_0029f2a0",
+  "why": "tests mission +0xb8 = 3, 2; StageMission::onRestore's once-only answer"
+ },
  "0029f500": {
   "name": "scriptObjectOfValue",
   "tag": "game-inferred",
   "was": "FUN_0029f500",
   "why": "odd value: the mission character with that handle; even: the value itself"
+ },
+ "0029f810": {
+  "name": "missionPickSpawnPoint",
+  "tag": "game-inferred",
+  "was": "FUN_0029f810",
+  "why": "walks the mission's spawn points, out of the view, by distance or at random"
  },
  "0029fb30": {
   "name": "parseSpawnId",
@@ -20591,11 +20801,35 @@
   "was": "FUN_0029fb30",
   "why": "sscanf P_SPW%02d, -1 when it does not match"
  },
+ "0029fb60": {
+  "name": "missionSpawnAt",
+  "tag": "game-inferred",
+  "was": "FUN_0029fb60",
+  "why": "the timed record's id at the picked point"
+ },
+ "0029fd10": {
+  "name": "missionSpawnPointTaken",
+  "tag": "game-inferred",
+  "was": "FUN_0029fd10",
+  "why": "called with 0x29f810's answer before 0x29fb60"
+ },
  "0029fd20": {
   "name": "ScriptEntry::checkedBlock",
   "tag": "game-inferred",
   "was": "FUN_0029fd20",
   "why": "trailer words and block magic checked"
+ },
+ "002a11c0": {
+  "name": "demoFleckDraw",
+  "tag": "game-inferred",
+  "was": "FUN_002a11c0",
+  "why": "uploads its texture, draws the records stepped by demoFleckStep"
+ },
+ "002a11d0": {
+  "name": "demoFleckStep",
+  "tag": "game-inferred",
+  "was": "FUN_002a11d0",
+  "why": "steps 28 and 12 records, drawOverlay before demoFleckDraw"
  },
  "002a7a50": {
   "name": "NmlPose::NmlPose",

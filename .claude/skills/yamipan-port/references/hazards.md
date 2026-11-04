@@ -396,3 +396,11 @@ Symptom: a loader "ran", instances were counted, yet nothing appears and the stu
 
 - **`build.py --run` loses stderr when the run hits its limit.** Symptom: a trace with `fprintf(stderr, ...)` never appears in `work/run_relwithdebinfo.log` though the code ran. Cause: on timeout only stdout is kept, and a game run always ends by timeout. Fix: trace with `printf`, like `YAMIPAN_STUB`.
 - **Shell heredocs with an apostrophe or a backslash-n go wrong here.** Symptom: "unexpected EOF while looking for matching" although the heredoc is quoted, or a `\n` in a C string arrives as a line break with a CR. Fix: write files with the Write tool, and scripts that hold source text too.
+
+## A guard that sees another session (2026-11-04)
+
+**Symptom:** `gdbrun.py` answers "YamiPan.exe is already running" with no run of this session alive, and every game run takes twice as long. **Cause:** another Claude session on the machine was running two copies of the game from its own scratchpad; `gdbrun.py` looks for the process name only. **Fix:** do not touch them; check `Get-CimInstance Win32_Process` for the path and parent before believing the guard. Run gdb from a scratch script for that one run, or print faults from a temporary vectored handler in main.cpp and read them with addr2line. Under that load a stage takes over 170 s to reach under gdb.
+
+## GCC deletes `if (this == nullptr)` (2026-11-04)
+
+**Symptom:** an access violation reading address 8 inside `StageScript::findEntry`, the moment a sub-scene builds its lights; the source plainly tests `this`. **Cause:** the ROM calls members on null on purpose (a sub-scene has no `scripts[0]`), and GCC at -O2 treats `this` as non-null and removes the test. **Fix:** `-fno-delete-null-pointer-checks` for that file (CMakeLists.txt, `set_source_files_properties`). A new `this == nullptr` in game code needs the same line. Also: **a piped `printf` is buffered**, so the last `[stub]` line of a crashed run is not the last stub it reached.

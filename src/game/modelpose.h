@@ -46,13 +46,21 @@ enum ModelPoseKind
 };
 
 // One bone of a pose (EE 0x300, the record array at +0x15c).
+constexpr u_char kPoseBoneHasValue = 0x20;
 struct ModelPoseBone
 {
-    u_char        _000[0x38];
+    // Its keyed value, what a lens bone holds; 0 without one.
+    // FS2 0x0014b970
+    float getValue() const { return (flags & kPoseBoneHasValue) ? value : 0.0f; }
+
+    u_char        flags;        // FS2 +0x00
+    u_char        _001[0x37];
     char          name[kPoseBoneName]; // FS2 +0x38
     u_char        _048[0x38];
     sceVu0FMATRIX matrix;       // FS2 +0x80: a StageMatrixNode's matrix
-    u_char        _0c0[0x160];
+    u_char        _0c0[0x60];
+    float         value;        // FS2 +0x120
+    u_char        _124[0xfc];
     sceVu0FVECTOR _220;         // FS2 +0x220: on the root, turned by ModelPose::rotate
     sceVu0FVECTOR _230;         // FS2 +0x230: the same
     u_char        _240[0x3c];
@@ -167,6 +175,16 @@ public:
     {
         int index = modelBone < boneMapCount ? boneMap[modelBone] : -1;
         return index < 0 ? nullptr : bones[index].matrix;
+    }
+    // The pose's bone of that name; null none.
+    // FS2 0x0014f2a0
+    ModelPoseBone *findBone(const char *boneName) const
+    {
+        for (int i = 0; i < boneCount; i++) {
+            if (strcmp(boneName, bones[i].name) == 0)
+                return &bones[i];
+        }
+        return nullptr;
     }
     // The oldest queued event of the motion into out; false when none.
     // FS2 0x0014e410

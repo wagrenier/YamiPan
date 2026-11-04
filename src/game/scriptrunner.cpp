@@ -669,6 +669,11 @@ int ScriptRunner::execute()
         const int *after = args;
         int value;
 
+        // PC: no script here names an object that is missing, but the objects of
+        // a sub-scene are stubs until their TU, and neither player nor partner
+        // exists yet. Delete with SubSceneCharacter and StageCharacter.
+        if (m_target == nullptr)
+            m_target = this;
         switch (word) {
         case ScriptOp_Exit:
             setEntry(nullptr);
@@ -1502,6 +1507,194 @@ static const int *nativeModelColorSb(ScriptRunner *self, int *, const int *code)
 // ──────────────────────────────────────────────────────────────────────
 // The table.
 
+// ──────────────────────────────────────────────────────────────────────
+// Natives: starting an event (game/demoevent.cpp).
+
+constexpr int   kEventDefaultDelay = 15;    // 30ths of a second, but for d0503
+constexpr float kScriptFramesPerSecond = 30.0f;
+static const char kEventNoDelay[] = "d0503";    /* data 0x304b98 */
+
+// What the waiting native left on the runner (scriptYield), cleared; 0 the
+// first time.
+static int takeScriptYield()
+{
+    ScriptRunner *running = gRunningScript;
+    if (running == nullptr)
+        return 0;
+    return running->takeYield();
+}
+
+// A file event from a script: starts it, and waits for it to end. 0x15f, 0x160
+static void waitFileEvent(float seconds, const char *name)
+{
+    enum { Native = 0x160, Start = 0, Running = 1, Done = 2 };
+    StageEvent *event = gStageScene->event;
+    switch (takeScriptYield()) {
+    case Start:
+        if (event == nullptr) {
+            gStageScene->startFileEvent(seconds, name);
+            scriptYield(Native, Running);
+        } else {
+            scriptYield(Native, Start);
+        }
+        break;
+    case Running:
+        scriptYield(Native, event == nullptr ? Done : Running);
+        break;
+    default:
+        break;
+    }
+}
+
+// The same with a script event. 0x161, 0x162
+static void waitSimpleEvent(float seconds, const char *name)
+{
+    enum { Native = 0x162, Start = 0, Running = 1 };
+    StageEvent *event = gStageScene->event;
+    switch (takeScriptYield()) {
+    case Start:
+        if (event == nullptr) {
+            gStageScene->startSimpleEvent(seconds, name);
+            scriptYield(Native, Running);
+        } else {
+            scriptYield(Native, Start);
+        }
+        break;
+    case Running:
+        if (event != nullptr)
+            scriptYield(Native, Running);
+        break;
+    default:
+        break;
+    }
+}
+
+// 0x15f fileEvent(name): 15 / 30 s of fade, none for d0503
+// FS2 0x001b77a0
+// callcheck: readNameArg, strcmp, startFileEvent, scriptYield
+
+static const int *nativeFileEvent(ScriptRunner *self, int *, const int *code)
+{
+    const char *name = nullptr;
+    const int *next = self->readNameArg(&name, code);
+    int delay = strcmp(name, kEventNoDelay) == 0 ? 0 : kEventDefaultDelay;
+    waitFileEvent((float)delay / kScriptFramesPerSecond, name);
+    return next;
+}
+
+// 0x160 fileEventDelayed(delay; name)
+// FS2 0x001b7550
+// callcheck: readNameArg, startFileEvent, scriptYield
+
+static const int *nativeFileEventDelayed(ScriptRunner *self, int *, const int *code)
+{
+    int delay = self->popped(1)[0];
+    const char *name = nullptr;
+    const int *next = self->readNameArg(&name, code);
+    waitFileEvent((float)delay / kScriptFramesPerSecond, name);
+    return next;
+}
+
+// 0x161 simpleEvent(name): half a second of fade
+// FS2 0x001b7390
+// callcheck: readNameArg, startSimpleEvent, scriptYield
+
+static const int *nativeSimpleEvent(ScriptRunner *self, int *, const int *code)
+{
+    const char *name = nullptr;
+    const int *next = self->readNameArg(&name, code);
+    waitSimpleEvent(0.5f, name);
+    return next;
+}
+
+// 0x162 simpleEventDelayed(delay; name)
+// FS2 0x001b7170
+// callcheck: readNameArg, startSimpleEvent, scriptYield
+
+static const int *nativeSimpleEventDelayed(ScriptRunner *self, int *, const int *code)
+{
+    int delay = self->popped(1)[0];
+    const char *name = nullptr;
+    const int *next = self->readNameArg(&name, code);
+    waitSimpleEvent((float)delay / kScriptFramesPerSecond, name);
+    return next;
+}
+
+// 0x155 simpleEventNow(name): black at once, in the stage's menu mode 1 only
+// FS2 0x001b8460
+// callcheck: readNameArg, getMenuMode, start, startSimpleEvent
+
+static const int *nativeSimpleEventNow(ScriptRunner *self, int *, const int *code)
+{
+    const char *name = nullptr;
+    const int *next = self->readNameArg(&name, code);
+    if (gStageScene->getMenuMode() == 1) {
+        gStageScene->fade->start(0.0f, 1.0f, 0.0f);
+        gStageScene->startSimpleEvent(0.0f, name);
+    }
+    return next;
+}
+
+// 0x1f2 pendingEvent(name): black at once; the event starts after the scripts
+// FS2 0x001ac0b0
+// callcheck: readNameArg, getMenuMode, start, currentMission, setPendingEvent
+
+static const int *nativePendingEvent(ScriptRunner *self, int *, const int *code)
+{
+    const char *name = nullptr;
+    const int *next = self->readNameArg(&name, code);
+    if (gStageScene->getMenuMode() == 1) {
+        gStageScene->fade->start(0.0f, 1.0f, 0.0f);
+        gStageScene->currentMission()->setPendingEvent(name);
+    }
+    return next;
+}
+
+// 0x53 menuMode(): acc = StageScene::getMenuMode. Stage 1's Root tests it for 1
+// first of all: everything it does sits behind this.
+// FS2 0x001ca5a0
+// callcheck: getMenuMode
+
+static const int *nativeMenuMode(ScriptRunner *, int *acc, const int *code)
+{
+    *acc = gStageScene->getMenuMode();
+    return code;
+}
+
+// 0x4e fadeIn(frames): frames in 30ths, from black
+// FS2 0x001cab60
+// callcheck: start
+
+static const int *nativeFadeIn(ScriptRunner *self, int *, const int *code)
+{
+    int frames = self->popped(1)[0];
+    gStageScene->fade->start((float)frames / kScriptFramesPerSecond, 0.0f, 1.0f);
+    return code;
+}
+
+// 0x138 missionValue(value)
+// FS2 0x001ba660
+// callcheck: setMissionValue
+
+static const int *nativeMissionValue(ScriptRunner *self, int *, const int *code)
+{
+    gStageScene->setMissionValue((float)self->popped(1)[0]);
+    return code;
+}
+
+// 0x139 moveScale(action, percent)
+// FS2 0x001ba590
+// callcheck: setMoveScale
+
+static const int *nativeMoveScale(ScriptRunner *self, int *, const int *code)
+{
+    constexpr int kMoveActions = 6;
+    const int *args = self->popped(2);
+    if (args[0] >= 0 && args[0] < kMoveActions)
+        gStageScene->setMoveScale((float)args[1] / 100.0f, args[0]);
+    return code;
+}
+
 enum { kFirstNative = 0x19, kLastNative = 0x235, kNativeCount = kLastNative - kFirstNative + 1 };
 
 // What the VM does for a native nobody wrote yet.
@@ -1524,6 +1717,16 @@ struct ScriptNativeBinding
     ScriptNative native;
 };
 static const ScriptNativeBinding kNatives[] = {
+    { 0x04e, nativeFadeIn },
+    { 0x053, nativeMenuMode },
+    { 0x138, nativeMissionValue },
+    { 0x139, nativeMoveScale },
+    { 0x155, nativeSimpleEventNow },
+    { 0x15f, nativeFileEvent },
+    { 0x160, nativeFileEventDelayed },
+    { 0x161, nativeSimpleEvent },
+    { 0x162, nativeSimpleEventDelayed },
+    { 0x1f2, nativePendingEvent },
     { 0x026, nativeSetPosition },
     { 0x027, nativeSetRotation },
     { 0x02a, nativeLightColor },
