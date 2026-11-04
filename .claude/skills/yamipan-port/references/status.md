@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-04 11:34 at commit `dc0de6d` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-04 11:35 at commit `1fae173` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -124,9 +124,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 121 TUs: todo 62, partial 12, verify 70, done 2
+- 121 TUs: todo 63, partial 12, verify 70, done 2
 - next: **game/scriptrunner.cpp** (pinned in the queue)
-- pinned queue: game/scriptrunner.cpp, game/scenerender.cpp, yamipan/rendering/model_renderer.cpp
+- pinned queue: game/scriptrunner.cpp, game/scenerender.cpp, game/demoevent.cpp, yamipan/rendering/model_renderer.cpp
 - partial: `game/scenerender.cpp` 24/34 -- All of SceneRender 0x1f6ac0..0x1fa900, rena light records, game/vectortrack.cpp and StageCamera::setRange are written. Every light value comes only from script 
 - partial: `game/stageobject.cpp` 40/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
 - partial: `yamipan/rendering/model_renderer.cpp` 0/0 -- Written: game/stagecamera.cpp whole base plus StageMainCamera (0x178160 step, 0x179490, 0x179680, ctor). The step has NEVER run: StageCharacter ctor and setup a
