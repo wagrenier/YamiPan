@@ -1509,6 +1509,14 @@ Doubts: the file and class names are the port's; `sRegionAlloc` / `sReservedBloc
 
 ## Decisions
 
+- 2026-11-04 (the user, "Yes, pin it"): **the 3D path goes first.** After asking what is missing for the
+  3D to show, the user pinned it at the top of the queue. Five tasks in `tus.json` "queue", in order:
+  `game/packtables.cpp` (first find why no model reaches the code), `game/nodetransform.cpp`,
+  `game/stagemodel.cpp`, `rena/rena_model.cpp`, `yamipan/rendering/model_renderer.cpp`. The first
+  milestone is one static map model on screen. The file keys are the session's choices (no extents
+  pinned yet: each run settles its own with `tus.py define`, and may rename the key); a task left
+  `partial` stays pinned until `verify` or `done`.
+
 - 2026-11-03 (the user): **"Instead of using C style CPP, I want everything now to be C++, which
   means object oriented and more modern pragmatism. The basis should be the same like the window and
   ui and so on, but adapt it to FS2 and make it C++"**, then, the same day, **"I want the equivalent of
