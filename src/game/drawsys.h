@@ -25,9 +25,10 @@ class GamePacketManager;        // game/gamepacket.h
 class GsRegionAlloc;            // game/gfxtarget.h
 class Tim2Texture;              // game/gsutil.h
 struct ModelInstance;           // game/gamehooks.h
+struct ModelSurface;            // game/gamehooks.h
 struct SceneRender;             // game/gamehooks.h
 
-// Which pass draws a model (StageModelData::drawGroup, one bit). The far_
+// Which pass draws a model (ModelInstance::drawGroup, one bit). The far_
 // models are the stage's backdrop, drawn at 1 / 20 scale with a fog each.
 enum DrawSysGroup
 {
@@ -37,6 +38,7 @@ enum DrawSysGroup
     DrawSysGroup_Far2   = 0x08, // far_2
     DrawSysGroup_Far3   = 0x10, // far_3
     DrawSysGroup_Target = 0x20, // what the view target looks at (StageScene::prepareDrawFlags)
+    DrawSysGroup_BossShadow = 0x40, // the boss, for its shadow's draw only
 };
 
 constexpr int kDrawSysFogCount    = 10;
@@ -251,14 +253,19 @@ DrawSysFog *drawSysGetFog(int index);                                    // FS2 
 void drawSysSetShadowTexture(Tim2Texture *texture, int block);           // FS2 0x002d4ec0
 void drawSysSetSpotlightTexture(Tim2Texture *texture, int block);        // FS2 0x002d4ed0
 void drawSysSetSceneRender(SceneRender *render);                         // FS2 0x002d4ee0
+// Hands a new model to the current record: its draw group and the flags its
+// name asks for (StageModel::init).
+void drawSysAddModel(ModelInstance *model);                              // FS2 0x002d5140
+// The surface of the model's first mesh material of kind 1 (StageModel::init).
+ModelSurface *drawSysFindKind1Surface(ModelInstance *model);             // FS2 0x002d46a0
 // Takes model out of the current record (StageModel's dtor).
 void drawSysRemoveModel(ModelInstance *model);                           // FS2 0x002d4fe0
 // The boss stage's one shadow; answers how many.
 int  drawSysBuildBossShadow();                                           // FS2 0x002d4cf0
 // Each shadow's matrices into rena.
 void drawSysUploadShadows(sceVif1Packet *packet);                        // FS2 0x002d7a60
-// What the boss stage draws instead of binding the shadow texture (1,002
-// instructions, unread).
-void FUN_002d5e10(sceVif1Packet *packet);                                // FS2 0x002d5e10
+// What the boss stage draws instead of binding the shadow texture: the boss
+// from above, blurred, as the frame's shadow texture.
+void drawSysBuildBossShadowTexture(sceVif1Packet *packet);               // FS2 0x002d5e10
 
 #endif /* _GAME_DRAWSYS_H */

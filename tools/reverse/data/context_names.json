@@ -20615,6 +20615,12 @@
   "was": "FUN_002d4650",
   "why": "(s): 16-bit characters up to the 0; 0 for null or an odd address; beside the char version 0x2d4440"
  },
+ "002d46a0": {
+  "name": "drawSysFindKind1Surface",
+  "tag": "game-inferred",
+  "was": "FUN_002d46a0",
+  "why": "walks a model's meshes, parts and their materials through the surface table +0x40, answers the first whose material kind is 1; StageModel::init keeps it at +0xa8"
+ },
  "002d4780": {
   "name": "drawSysClearTargetView",
   "tag": "game-inferred",
@@ -20675,11 +20681,59 @@
   "was": "FUN_002d4fd0",
   "why": "answers gp-0x7994, the record drawSysPush stacks"
  },
+ "002d5140": {
+  "name": "drawSysAddModel",
+  "tag": "game-inferred",
+  "was": "FUN_002d5140",
+  "why": "StageModel::init: pushes the model on the current record, sets drawGroup from the far_ names, flags from ext_ghost / oXX27_* / name tags, marks WaveComposit surfaces and the plant textures"
+ },
+ "002d54a0": {
+  "name": "parseNameTags",
+  "tag": "game-inferred",
+  "was": "FUN_002d54a0",
+  "why": "walks a name backwards collecting one-letter _x tags into a buffer; drawSysAddModel tests them for c"
+ },
  "002d5560": {
   "name": "drawSysRender",
   "tag": "game-inferred",
   "was": "FUN_002d5560",
   "why": "the 3D frame; perf label rena draw right after it"
+ },
+ "002d5e10": {
+  "name": "drawSysBuildBossShadowTexture",
+  "tag": "game-inferred",
+  "was": "FUN_002d5e10",
+  "why": "stage 0x1b: draws group 0x40 into a 256 square frame from 800 above the shadow, blurs through 128 / 64 and back, builds an alpha CLUT and hands the T8 TEX0 to rena through 0x2e8290"
+ },
+ "002d6dc0": {
+  "name": "bossShadowUploadClut",
+  "tag": "game-inferred",
+  "was": "FUN_002d6dc0",
+  "why": "packs a 256-entry CLUT upload (16 columns of the table, swizzled) with BITBLTBUF to the given block; only caller the boss shadow"
+ },
+ "002d7030": {
+  "name": "bossShadowResolve",
+  "tag": "game-inferred",
+  "was": "FUN_002d7030",
+  "why": "last blit of the boss shadow: FRAME with FBMSK 0x3fff, TEX0 PSM T4, TEXA, sprites a page wide; makes the result readable as 8 bits"
+ },
+ "002d72c0": {
+  "name": "bossShadowBlitUp",
+  "tag": "game-inferred",
+  "was": "FUN_002d72c0",
+  "why": "three sprites a page wide with alpha 1, 1/2, 1/3 and u shifted a texel, to twice the size"
+ },
+ "002d7540": {
+  "name": "bossShadowBlitBlur",
+  "tag": "game-inferred",
+  "was": "FUN_002d7540",
+  "why": "three sprites a page wide with alpha 1, 1/2, 1/3 and v shifted a texel, same size"
+ },
+ "002d77d0": {
+  "name": "bossShadowBlitDown",
+  "tag": "game-inferred",
+  "was": "FUN_002d77d0",
+  "why": "three sprites a page wide with alpha 1, 1/2, 1/3 and u shifted a texel, to half the size"
  },
  "002d7a60": {
   "name": "drawSysUploadShadows",
@@ -20938,6 +20992,12 @@
   "tag": "game-inferred",
   "was": "FUN_002da210",
   "why": "answers +0x10"
+ },
+ "002da220": {
+  "name": "foliageLowerBound",
+  "tag": "lib-context",
+  "was": "FUN_002da220",
+  "why": "MSL lower_bound instance over const char * with strcmp, used only on the plant texture table 0x2fd9c0"
  },
  "002dbd10": {
   "name": "AreaClip::update",

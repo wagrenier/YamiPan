@@ -7799,7 +7799,7 @@
 // FILE -- game/drawsys.cpp
 // *****************************************************************************
 
-/* 002d46a0 000000d0 */ FUN_002d46a0(){}
+/* 002d46a0 000000d0 */ drawSysFindKind1Surface(){}  // game
 /* 002d4780 00000008 */ drawSysClearTargetView(){}  // game
 /* 002d4790 0000000c */ drawSysSetTargetView(){}  // game
 /* 002d47a0 00000018 */ drawSysGetFog(){}  // game
@@ -7816,15 +7816,15 @@
 /* 002d50c0 00000048 */ FUN_002d50c0(){}
 /* 002d5110 00000018 */ FUN_002d5110(){}
 /* 002d5130 0000000c */ FUN_002d5130(){}
-/* 002d5140 00000360 */ FUN_002d5140(){}
-/* 002d54a0 000000c0 */ FUN_002d54a0(){}
+/* 002d5140 00000360 */ drawSysAddModel(){}  // game
+/* 002d54a0 000000c0 */ parseNameTags(){}  // game
 /* 002d5560 000008a4 */ drawSysRender(){}  // game
-/* 002d5e10 00000fa8 */ FUN_002d5e10(){}
-/* 002d6dc0 0000026c */ FUN_002d6dc0(){}
-/* 002d7030 00000288 */ FUN_002d7030(){}
-/* 002d72c0 00000278 */ FUN_002d72c0(){}
-/* 002d7540 00000290 */ FUN_002d7540(){}
-/* 002d77d0 00000284 */ FUN_002d77d0(){}
+/* 002d5e10 00000fa8 */ drawSysBuildBossShadowTexture(){}  // game
+/* 002d6dc0 0000026c */ bossShadowUploadClut(){}  // game
+/* 002d7030 00000288 */ bossShadowResolve(){}  // game
+/* 002d72c0 00000278 */ bossShadowBlitUp(){}  // game
+/* 002d7540 00000290 */ bossShadowBlitBlur(){}  // game
+/* 002d77d0 00000284 */ bossShadowBlitDown(){}  // game
 /* 002d7a60 00000194 */ drawSysUploadShadows(){}  // game
 /* 002d7c00 00000068 */ drawSysPop(){}  // game
 /* 002d7c70 00000080 */ drawSysPush(){}  // game
@@ -7897,7 +7897,7 @@
 /* 002da1f0 00000008 */ DrawSysDirLight::getDirection(){}  // game
 /* 002da200 00000008 */ DrawSysDirLight::getColor(){}  // game
 /* 002da210 00000008 */ DrawSysAmbient::getColor(){}  // game
-/* 002da220 000000c0 */ FUN_002da220(){}
+/* 002da220 000000c0 */ foliageLowerBound(){}  // lib-ctx
 /* 002da2e0 00000408 */ FUN_002da2e0(){}
 /* 002da6f0 000000f4 */ FUN_002da6f0(){}
 /* 002da7f0 00000094 */ FUN_002da7f0(){}

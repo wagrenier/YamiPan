@@ -1061,7 +1061,7 @@ ItemLamp::ItemLamp(StageObject *owner)
     m_point2->m_mode = StageLight_Hard;
 
     m_parts = new PartSwitch;
-    m_parts->init(reinterpret_cast<ModelInstance *>(owner->m_model->data), "nl", 2, 1);
+    m_parts->init(owner->m_model->data, "nl", 2, 1);
 }
 
 // ──────────────────────────────────────────────────────────────────────

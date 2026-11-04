@@ -1501,24 +1501,11 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    ~~(f) re-enable the scheduled task~~ **done 2026-11-03, on the user's word**; `yamipan.py` now
        finds MSYS2's toolchain without PATH, which a scheduled run does not have.
 
-**game/drawsys.cpp, partial (2026-11-04): where the New Game run stands.** Under gdb the New Game pad no
-longer faults: `StageScene::draw` gets a record from `drawSysCurrent`, every pass runs into the rena stubs
-(`renaBeginFrame` .. `renaEndPass`) and on to the stubs after them, last first hit `SceneDirector::draw`.
-The game ended on its log line Quitting with code 0, cause unconfirmed, no crash.txt. **No picture of the stage has been seen**: gdbrun.py takes
-no screenshots, and the New Game screenshot run (`build.py --run N --pad <work/newgame_pad.txt>`) was
-skipped to end an overdue session. Do that first; expect black, nothing draws yet.
-Next, in the order the picture needs them: `drawSysAddModel` 0x2d5140 (no model reaches a record until
-then), NodeTransform 0x1d7f20 / update 0x1d7d50 / updateMatrix 0x1d8420, `PackTables::parse` 0x2bcf10,
-`StageModel::init` 0x188b10, `ModelFile::createInstance`, then the rena draw run `unassigned@002e2970`.
-Unwritten in the file: 0x2d46a0, 0x2d5140, 0x2d54a0, 0x2d5e10 (1,002 instructions, boss stage),
-0x2d6dc0..0x2d77d0, 0x2da220.
-Left out on purpose (file header): the frame's GsRegionAlloc, FlushCache, the TEST_1 packets, the uncached
-packet switch, the sceVif1PkCall flags branch; the VU1 upload of SceneRender +0x80 and +0xf4 * 1.2 waits
-for the SceneRender TU. No 3D host module exists yet, so the depth clear is stored as a rect only.
-Doubts: the file and class names are the port's; `sRegionAlloc` / `sReservedBlock` are stored and unused;
-`StageModelData` and `ModelInstance` are probably one class; the `flags` parameter of `drawSysRender` is
-really a packet pointer no caller passes; the GsRegionAlloc comment in gfxtarget.h (its TU at 0x2d46a0) is
-stale, GsRegionAlloc is 0x2e1440.. in the remaining unassigned run and 0x2e14d0 is still a reached stub.
+**game/drawsys.cpp, verify (2026-11-04, second run, batch 098): all 164 written; where the New Game run stands.** New here: `drawSysAddModel` 0x2d5140, `drawSysFindKind1Surface` 0x2d46a0, `parseNameTags`, the plant search 0x2da220, and the boss shadow texture 0x2d5e10 with its blits (architecture.md "The draw system"). `StageModelData` and `RenaModel` were folded into `ModelInstance`; the file's records are in gamehooks.h in EE layout.
+**Seen (`build.py --run 240 --pad "$(cat work/newgame_pad.txt)"`, 118 screenshots to frame 7080):** Easy / Normal / Options on the red background at frame 3600, black at the last frame, no crash; every rena pass and the scene draws up to `SceneDirector::draw` are reached stubs. Black is all the code can show: nothing draws 3D. No reference picture to compare yet.
+Next, in the order the picture needs them (each its own TU): NodeTransform 0x1d7f20 / update 0x1d7d50 / updateMatrix 0x1d8420, `PackTables::parse` 0x2bcf10, `StageModel::init` 0x188b10 (calls `drawSysAddModel` and `drawSysFindKind1Surface`; needs a +0xa8 field), `ModelFile::createInstance` 0x2e5210 with 0x2e4800 and 0x2e3e10 (must allocate `ModelSurface` and the +0x40 / +0x44 tables), then the rena draw run `unassigned@002e2970` and a 3D host module, which must also fill in `yamipan_drawshadow.h` (empty bodies in seams.cpp).
+Left out on purpose (file header): the frame's GsRegionAlloc, FlushCache, the TEST_1 packets, the uncached packet switch, the sceVif1PkCall flags branch; the VU1 upload of SceneRender +0x80 and +0xf4 * 1.2 waits for the SceneRender TU. No 3D host module exists yet, so the depth clear is stored as a rect only. The boss target's GS env, pages and copies are gone too.
+Doubts: the file and class names are the port's; `sRegionAlloc` / `sReservedBlock` are stored and unused; the `flags` parameter of `drawSysRender` is really a packet pointer no caller passes. **New, for the user to overrule:** (1) a new host seam `src/yamipan/rendering/yamipan_drawshadow.h` for the boss target (blits as data, no GS pages); (2) `ModelFlag_Ghost` / `ModelFlag_TagC` / `ModelMaterial_Kind1` / `ModelInstance::colorMatrix` / `drawMode` / `ghostParam0..1` say where they are set, not what they do: their readers are in the rena run, and "drawn black" for the zeroed colorMatrix is a guess; (3) the 0x2d7030 + T8H > T8 path is read as "the result becomes an 8-bit image", and which channel the host should use as brightness is not proven: check against the boss stage on a real picture; (4) the guard in `drawSysFindKind1Surface` is for unused table entries, the ROM reads through them.
 
 ## Decisions
 
