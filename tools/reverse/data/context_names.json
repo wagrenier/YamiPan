@@ -1265,6 +1265,36 @@
   "was": "FUN_0010b5c0",
   "why": "(pkt): fills the open DIRECT code's qword count"
  },
+ "0010b750": {
+  "name": "sceVu0MulMatrix",
+  "tag": "lib-context",
+  "was": "FUN_0010b750",
+  "why": "libvu0: m0 rows = m2 rows times m1"
+ },
+ "0010b868": {
+  "name": "sceVu0InversMatrix",
+  "tag": "lib-context",
+  "was": "FUN_0010b868",
+  "why": "libvu0: transpose and negated translation, keeps w"
+ },
+ "0010ba48": {
+  "name": "sceVu0UnitMatrix",
+  "tag": "lib-context",
+  "was": "FUN_0010ba48",
+  "why": "libvu0: writes the identity; drawSysRender, drawSysUploadShadows"
+ },
+ "0010bb90": {
+  "name": "sceVu0RotMatrixX",
+  "tag": "lib-context",
+  "was": "FUN_0010bb90",
+  "why": "libvu0: same shape as 0x1361c0"
+ },
+ "0010bf30": {
+  "name": "sceVu0ViewScreenMatrix",
+  "tag": "lib-context",
+  "was": "FUN_0010bf30",
+  "why": "libvu0: (m, scrz, ax, ay, cx, cy, zmin, zmax, nearz, farz)"
+ },
  "0010ccf0": {
   "name": "_motionComp0",
   "tag": "lib-context",
@@ -3658,6 +3688,18 @@
   "tag": "game-inferred",
   "was": "FUN_00136020",
   "why": "(a - b) / |a - b|"
+ },
+ "001361c0": {
+  "name": "rotateMatrixX",
+  "tag": "game-inferred",
+  "was": "FUN_001361c0",
+  "why": "VU0 macro: out rows = in rows times R, R[1] = (0,c,s,0), R[2] = (0,-s,c,0)"
+ },
+ "001362a0": {
+  "name": "rotateMatrixZ",
+  "tag": "game-inferred",
+  "was": "FUN_001362a0",
+  "why": "VU0 macro: out rows = in rows times R, R[0] = (c,s,0,0), R[1] = (-s,c,0,0)"
  },
  "00136490": {
   "name": "scaleVec4",
@@ -14639,6 +14681,42 @@
   "was": "FUN_001f73c0",
   "why": "once a frame, raycast and area tests from the view"
  },
+ "001f8590": {
+  "name": "DrawSysFog::setColor",
+  "tag": "game-inferred",
+  "was": "FUN_001f8590",
+  "why": "slot +0x60"
+ },
+ "001f85a0": {
+  "name": "DrawSysFog::setFarValue",
+  "tag": "game-inferred",
+  "was": "FUN_001f85a0",
+  "why": "slot +0x4c"
+ },
+ "001f85b0": {
+  "name": "DrawSysFog::setNearValue",
+  "tag": "game-inferred",
+  "was": "FUN_001f85b0",
+  "why": "slot +0x44"
+ },
+ "001f85c0": {
+  "name": "DrawSysFog::setFar",
+  "tag": "game-inferred",
+  "was": "FUN_001f85c0",
+  "why": "slot +0x3c"
+ },
+ "001f85d0": {
+  "name": "DrawSysFog::setNear",
+  "tag": "game-inferred",
+  "was": "FUN_001f85d0",
+  "why": "slot +0x34 of vtable 0x31a480"
+ },
+ "001f85e0": {
+  "name": "DrawSysFog::setEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_001f85e0",
+  "why": "slot +0x68"
+ },
  "001f8620": {
   "name": "SceneRender::updateLights",
   "tag": "game-inferred",
@@ -20549,6 +20627,42 @@
   "was": "FUN_002d4790",
   "why": "writes the flag 1 when the view target is in view; the name is a guess"
  },
+ "002d47a0": {
+  "name": "drawSysGetFog",
+  "tag": "game-inferred",
+  "was": "FUN_002d47a0",
+  "why": "answers word index of the ten fog objects at 0x59ae60 (SceneRender::update sets them up)"
+ },
+ "002d47c0": {
+  "name": "drawSysBuildShadows",
+  "tag": "game-inferred",
+  "was": "FUN_002d47c0",
+  "why": "walks the shown characters, builds a matrix and size per caster, sorts by view depth, keeps seven at 0x59ae90; answers the count"
+ },
+ "002d4cf0": {
+  "name": "drawSysBuildBossShadow",
+  "tag": "game-inferred",
+  "was": "FUN_002d4cf0",
+  "why": "stage 0x1b: the one shadow of F_E27_BOSS at its bn_l_calf bone"
+ },
+ "002d4ec0": {
+  "name": "drawSysSetShadowTexture",
+  "tag": "game-inferred",
+  "was": "FUN_002d4ec0",
+  "why": "SceneRender::setShadowTexture hands it the shadow_00 texture and its block"
+ },
+ "002d4ed0": {
+  "name": "drawSysSetSpotlightTexture",
+  "tag": "game-inferred",
+  "was": "FUN_002d4ed0",
+  "why": "SceneRender::setSpotlightTexture hands it the spotlight texture and its block"
+ },
+ "002d4ee0": {
+  "name": "drawSysSetSceneRender",
+  "tag": "game-inferred",
+  "was": "FUN_002d4ee0",
+  "why": "0x1f9ee0 passes the SceneRender; the main pass copies it to the render state +0xc0"
+ },
  "002d4ef0": {
   "name": "drawSysTick",
   "tag": "game-inferred",
@@ -20566,6 +20680,12 @@
   "tag": "game-inferred",
   "was": "FUN_002d5560",
   "why": "the 3D frame; perf label rena draw right after it"
+ },
+ "002d7a60": {
+  "name": "drawSysUploadShadows",
+  "tag": "game-inferred",
+  "was": "FUN_002d7a60",
+  "why": "per shadow a texture projection and a clip matrix from its inverse, handed to 0x2e8300"
  },
  "002d7c00": {
   "name": "drawSysPop",
@@ -20585,6 +20705,48 @@
   "was": "FUN_002d7cf0",
   "why": "(originX, originY, width, height, GsRegionAlloc *): called once, last in gfxInitRenderTargets with (0x700, 0x700, 0x200, 0x200) and the region allocator; news about nine draw-system objects (vtables 0x31a6b0 / 0x31a680, lists of 200 via 0x241da0), floats 2048 / 512 / 2^24; what the system draws is unread, the name says only where it starts"
  },
+ "002d8db0": {
+  "name": "DrawSysAmbient::setColor",
+  "tag": "game-inferred",
+  "was": "FUN_002d8db0",
+  "why": "+0x10, called with (1,1,1,1) by the leaf ctor"
+ },
+ "002d8dc0": {
+  "name": "DrawSysAmbient::setEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_002d8dc0",
+  "why": "byte +0x20"
+ },
+ "002d9190": {
+  "name": "DrawSysDirLight::setDirection",
+  "tag": "game-inferred",
+  "was": "FUN_002d9190",
+  "why": "+0x20; drawSysInit passes small vectors with w 1"
+ },
+ "002d91a0": {
+  "name": "DrawSysDirLight::setColor",
+  "tag": "game-inferred",
+  "was": "FUN_002d91a0",
+  "why": "+0x10"
+ },
+ "002d91b0": {
+  "name": "setVector4",
+  "tag": "game-inferred",
+  "was": "FUN_002d91b0",
+  "why": "stores four floats in out and answers out"
+ },
+ "002d91d0": {
+  "name": "DrawSysDirLight::setEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_002d91d0",
+  "why": "byte +0x30"
+ },
+ "002d9760": {
+  "name": "drawSysBuildDepthClear",
+  "tag": "game-inferred",
+  "was": "FUN_002d9760",
+  "why": "a GIF packet of 64-wide sprites at z 0 over the frame, drawn with TEST ZB_ONLY between the passes"
+ },
  "002d9aa0": {
   "name": "getDrawDistance",
   "tag": "game-inferred",
@@ -20596,6 +20758,186 @@
   "tag": "game-inferred",
   "was": "FUN_002d9ab0",
   "why": "gp-0x798c"
+ },
+ "002d9ac0": {
+  "name": "DrawSysFog::~DrawSysFog",
+  "tag": "game-inferred",
+  "was": "FUN_002d9ac0",
+  "why": "slot 0 of vtable 0x31a480"
+ },
+ "002d9ba0": {
+  "name": "DrawSysFog::getNear",
+  "tag": "game-inferred",
+  "was": "FUN_002d9ba0",
+  "why": "answers +0x20, 500 from drawSysInit"
+ },
+ "002d9bb0": {
+  "name": "DrawSysFog::getFar",
+  "tag": "game-inferred",
+  "was": "FUN_002d9bb0",
+  "why": "answers +0x24, 2000 from drawSysInit"
+ },
+ "002d9bc0": {
+  "name": "DrawSysFog::getNearValue",
+  "tag": "game-inferred",
+  "was": "FUN_002d9bc0",
+  "why": "answers +0x28, 255: the value at near"
+ },
+ "002d9bd0": {
+  "name": "DrawSysFog::getFarValue",
+  "tag": "game-inferred",
+  "was": "FUN_002d9bd0",
+  "why": "answers +0x2c, 0: the value at far"
+ },
+ "002d9be0": {
+  "name": "DrawSysFog::getCoefficientA",
+  "tag": "game-inferred",
+  "was": "FUN_002d9be0",
+  "why": "the A of A + B / z through (near, +0x28) and (far, +0x2c)"
+ },
+ "002d9c30": {
+  "name": "DrawSysFog::getCoefficientB",
+  "tag": "game-inferred",
+  "was": "FUN_002d9c30",
+  "why": "the B of A + B / z"
+ },
+ "002d9c70": {
+  "name": "DrawSysFog::getFogValue",
+  "tag": "game-inferred",
+  "was": "FUN_002d9c70",
+  "why": "coefficient A + B / z clamped between +0x2c and +0x28"
+ },
+ "002d9d40": {
+  "name": "DrawSysFog::getColor",
+  "tag": "game-inferred",
+  "was": "FUN_002d9d40",
+  "why": "slot +0x64"
+ },
+ "002d9d50": {
+  "name": "DrawSysFog::isEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_002d9d50",
+  "why": "slot +0x6c"
+ },
+ "002d9d60": {
+  "name": "DrawSysAmbient::~DrawSysAmbient",
+  "tag": "game-inferred",
+  "was": "FUN_002d9d60",
+  "why": "slot 0 of vtable 0x31a580"
+ },
+ "002d9e00": {
+  "name": "DrawSysDirLight::~DrawSysDirLight",
+  "tag": "game-inferred",
+  "was": "FUN_002d9e00",
+  "why": "slot 0 of vtable 0x31a5d0"
+ },
+ "002d9f30": {
+  "name": "DrawSysCamera::~DrawSysCamera",
+  "tag": "game-inferred",
+  "was": "FUN_002d9f30",
+  "why": "slot 0 of vtable 0x31a430"
+ },
+ "002d9fc0": {
+  "name": "DrawSysCamera::getViewScreen",
+  "tag": "game-inferred",
+  "was": "FUN_002d9fc0",
+  "why": "answers +0x90, view times screen"
+ },
+ "002d9fd0": {
+  "name": "DrawSysCamera::getView",
+  "tag": "game-inferred",
+  "was": "FUN_002d9fd0",
+  "why": "answers +0x50, written by setViewMatrix"
+ },
+ "002d9fe0": {
+  "name": "DrawSysCamera::getScreen",
+  "tag": "game-inferred",
+  "was": "FUN_002d9fe0",
+  "why": "answers +0x10, written by setScreenMatrix"
+ },
+ "002d9ff0": {
+  "name": "DrawSysCamera::setViewMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_002d9ff0",
+  "why": "StageScene::draw hands it the camera view; recomputes +0x90"
+ },
+ "002da060": {
+  "name": "DrawSysCamera::setScreenMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_002da060",
+  "why": "drawSysInit and StageScene::draw; recomputes +0x90"
+ },
+ "002da0d0": {
+  "name": "DrawSysLights::~DrawSysLights",
+  "tag": "game-inferred",
+  "was": "FUN_002da0d0",
+  "why": "slot 0 of vtable 0x31a630"
+ },
+ "002da160": {
+  "name": "DrawSysLights::getAmbient",
+  "tag": "game-inferred",
+  "was": "FUN_002da160",
+  "why": "answers +4"
+ },
+ "002da170": {
+  "name": "DrawSysLights::setAmbient",
+  "tag": "game-inferred",
+  "was": "FUN_002da170",
+  "why": "swaps +4; drawSysInit stores the ambient object"
+ },
+ "002da180": {
+  "name": "DrawSysLights::getLight",
+  "tag": "game-inferred",
+  "was": "FUN_002da180",
+  "why": "answers the index-th of +8"
+ },
+ "002da190": {
+  "name": "DrawSysLights::setLight",
+  "tag": "game-inferred",
+  "was": "FUN_002da190",
+  "why": "drawSysInit stores three directional lights"
+ },
+ "002da1b0": {
+  "name": "DrawSysLights::getFog",
+  "tag": "game-inferred",
+  "was": "FUN_002da1b0",
+  "why": "answers +0x14; the main pass reads it"
+ },
+ "002da1c0": {
+  "name": "DrawSysLights::setFog",
+  "tag": "game-inferred",
+  "was": "FUN_002da1c0",
+  "why": "swaps +0x14"
+ },
+ "002da1d0": {
+  "name": "DrawSysDirLight::isEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_002da1d0",
+  "why": "byte +0x30"
+ },
+ "002da1e0": {
+  "name": "DrawSysAmbient::isEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_002da1e0",
+  "why": "byte +0x20"
+ },
+ "002da1f0": {
+  "name": "DrawSysDirLight::getDirection",
+  "tag": "game-inferred",
+  "was": "FUN_002da1f0",
+  "why": "answers +0x20"
+ },
+ "002da200": {
+  "name": "DrawSysDirLight::getColor",
+  "tag": "game-inferred",
+  "was": "FUN_002da200",
+  "why": "answers +0x10"
+ },
+ "002da210": {
+  "name": "DrawSysAmbient::getColor",
+  "tag": "game-inferred",
+  "was": "FUN_002da210",
+  "why": "answers +0x10"
  },
  "002dbd10": {
   "name": "AreaClip::update",
@@ -20699,6 +21041,12 @@
   "was": "FUN_002e2d80",
   "why": "turns every offset of the file into a pointer against the old base"
  },
+ "002e3bf0": {
+  "name": "renaStepTexAnim",
+  "tag": "game-inferred",
+  "was": "FUN_002e3bf0",
+  "why": "per tick: scrolls UV or wobbles an amplitude by the material's anim kind"
+ },
  "002e4100": {
   "name": "RenaModel::findGroup",
   "tag": "game-inferred",
@@ -20722,6 +21070,54 @@
   "tag": "game-inferred",
   "was": "FUN_002e5210",
   "why": "new 0x100 object (vtable 0x31a7f0) over record index, or over the record called name"
+ },
+ "002e5450": {
+  "name": "renaDrawModels",
+  "tag": "game-inferred",
+  "was": "FUN_002e5450",
+  "why": "called once per pass with the record and a mask of model draw groups"
+ },
+ "002e8080": {
+  "name": "renaSetLights",
+  "tag": "game-inferred",
+  "was": "FUN_002e8080",
+  "why": "reads the ambient and directional colours and directions into 0x5a5240.."
+ },
+ "002e82a0": {
+  "name": "renaSetShadowTexture",
+  "tag": "game-inferred",
+  "was": "FUN_002e82a0",
+  "why": "binds and uploads the shadow texture"
+ },
+ "002e8300": {
+  "name": "renaSetShadowMatrices",
+  "tag": "game-inferred",
+  "was": "FUN_002e8300",
+  "why": "unpacks two matrices to VU1 0x40 + 8 * index for index 0..6"
+ },
+ "002e8570": {
+  "name": "renaSetShadowCount",
+  "tag": "game-inferred",
+  "was": "FUN_002e8570",
+  "why": "unpacks one word to VU1 0x96; drawSysRender passes the shadow count or 0"
+ },
+ "002e85e0": {
+  "name": "renaEndPass",
+  "tag": "game-inferred",
+  "was": "FUN_002e85e0",
+  "why": "ends each pass: the draw env back through DIRECT"
+ },
+ "002e86b0": {
+  "name": "renaBeginFrame",
+  "tag": "game-inferred",
+  "was": "FUN_002e86b0",
+  "why": "the first calls in list 0: VU1 program 0x2ec900, constants, draw env"
+ },
+ "002e87f0": {
+  "name": "renaSetSpotlight",
+  "tag": "game-inferred",
+  "was": "FUN_002e87f0",
+  "why": "binds the spotlight texture into the frame's TEX0 packets"
  },
  "002e97a8": {
   "name": "Tim2CheckFileHeaer",
@@ -20860,6 +21256,12 @@
   "tag": "game-inferred",
   "was": "FUN_002ec100",
   "why": "size +4 = 0 (trivial elements); callers the buffer vector's insert (its temporary) and dtor"
+ },
+ "002ec110": {
+  "name": "getDrawTarget",
+  "tag": "game-inferred",
+  "was": "FUN_002ec110",
+  "why": "the lazily built record at 0x5a52d0: +0x14 draw env, +0x18 / +0x1c size, +0x20 / +0x24 origin"
  },
  "002ec160": {
   "name": "eventMoviePath2506",

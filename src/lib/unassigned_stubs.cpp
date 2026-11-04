@@ -1,5 +1,6 @@
 // lib/unassigned_stubs.cpp -- Forbidden Siren 2 module (file from the inference in yamipan_functions.txt).
 // Functions below are stubs until reconstructed; see tools/reverse/stage.py.
+#include "rena/rena_draw.h"
 
 #include "common/yamipan_stub.h"
 #include "game/fontdata.h"
@@ -699,25 +700,6 @@ void debugSysUpdate()
     YAMIPAN_STUB("debugSysUpdate", 0x00151270);
 }
 
-// stub of FS2 0x002d7cf0
-void drawSysInit(int originX, int originY, int width, int height,
-                 GsRegionAlloc *alloc)
-{
-    YAMIPAN_STUB("drawSysInit", 0x002d7cf0);
-}
-
-// stub of FS2 0x002d7c00
-void drawSysPop()
-{
-    YAMIPAN_STUB("drawSysPop", 0x002d7c00);
-}
-
-// stub of FS2 0x002d7c70
-void drawSysPush()
-{
-    YAMIPAN_STUB("drawSysPush", 0x002d7c70);
-}
-
 // stub of FS2 0x0028fb80
 const u_short * fsmFindText(float seconds, const void *file, int track)
 {
@@ -1236,18 +1218,6 @@ void DemoStream::drawSubtitles(sceVif1Packet *packet)
     YAMIPAN_STUB("DemoStream::drawSubtitles", 0x002b0d60);
 }
 
-// stub of FS2 address unknown (1 candidates)
-void DrawSysCamera::setScreenMatrix(const void *matrix)
-{
-    YAMIPAN_STUB("DrawSysCamera::setScreenMatrix", 0x00000000);
-}
-
-// stub of FS2 address unknown (1 candidates)
-void DrawSysCamera::setViewMatrix(const void *matrix)
-{
-    YAMIPAN_STUB("DrawSysCamera::setViewMatrix", 0x00000000);
-}
-
 // stub of FS2 0x002b1670
 void GameOverSequence::update()
 {
@@ -1626,44 +1596,6 @@ ViewCamera::ViewCamera() : StageCamera(450.0f, 512.0f, 512.0f, 1600.0f)
     YAMIPAN_STUB("ViewCamera::ViewCamera", 0x0029aae0);
 }
 
-// stub of FS2 0x002d4780
-void drawSysClearTargetView()
-{
-    YAMIPAN_STUB("drawSysClearTargetView", 0x002d4780);
-}
-
-// stub of FS2 0x002d4fd0
-DrawSysRecord * drawSysCurrent()
-{
-    YAMIPAN_STUB("drawSysCurrent", 0x002d4fd0);
-    return {};
-}
-
-// stub of FS2 0x002d5560
-void drawSysRender(GamePacketManager *packets, const sceGsDrawEnv1 *env, int flags)
-{
-    YAMIPAN_STUB("drawSysRender", 0x002d5560);
-}
-
-// stub of FS2 0x002d4790
-void drawSysSetTargetView()
-{
-    YAMIPAN_STUB("drawSysSetTargetView", 0x002d4790);
-}
-
-// stub of FS2 0x002d4ef0
-void drawSysTick(int ticks)
-{
-    YAMIPAN_STUB("drawSysTick", 0x002d4ef0);
-}
-
-// stub of FS2 0x002d9aa0
-float getDrawDistance()
-{
-    YAMIPAN_STUB("getDrawDistance", 0x002d9aa0);
-    return {};
-}
-
 // stub of FS2 0x002eaeb0
 void gsFillRect(sceVif1Packet *packet, int x, int y, int x2, int y2, u_int rgba)
 {
@@ -1682,12 +1614,6 @@ int sceneRenderGroup(int mode)
 {
     YAMIPAN_STUB("sceneRenderGroup", 0x001f9c70);
     return {};
-}
-
-// stub of FS2 0x002d9ab0
-void setDrawDistance(float distance)
-{
-    YAMIPAN_STUB("setDrawDistance", 0x002d9ab0);
 }
 
 // stub of FS2 0x0017df60
@@ -1976,18 +1902,6 @@ int ScriptRunner::unsupportedCommand()
     return {};
 }
 
-// stub of FS2 0x00136690
-void applyMatrix(sceVu0FVECTOR out, const sceVu0FVECTOR *m, const sceVu0FVECTOR v)
-{
-    YAMIPAN_STUB("applyMatrix", 0x00136690);
-}
-
-// stub of FS2 0x00136500
-void invertRigidMatrix(sceVu0FMATRIX out, const sceVu0FVECTOR *m)
-{
-    YAMIPAN_STUB("invertRigidMatrix", 0x00136500);
-}
-
 // stub of FS2 0x00188690
 StageModel::~StageModel()
 {
@@ -2243,4 +2157,59 @@ int motionBoneMatrix(sceVu0FMATRIX out, void *motion, const char *bone, int fram
 {
     YAMIPAN_STUB("motionBoneMatrix", 0x00150d80);
     return {};
+}
+
+// stub of FS2 0x002e86b0
+void renaBeginFrame(sceVif1Packet *packet)
+{
+    YAMIPAN_STUB("renaBeginFrame", 0x002e86b0);
+}
+
+// stub of FS2 0x002e5450
+void renaDrawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask)
+{
+    YAMIPAN_STUB("renaDrawModels", 0x002e5450);
+}
+
+// stub of FS2 0x002e85e0
+void renaEndPass(sceVif1Packet *packet)
+{
+    YAMIPAN_STUB("renaEndPass", 0x002e85e0);
+}
+
+// stub of FS2 0x002e8080
+void renaSetLights(sceVif1Packet *packet, DrawSysLights *lights)
+{
+    YAMIPAN_STUB("renaSetLights", 0x002e8080);
+}
+
+// stub of FS2 0x002e8570
+void renaSetShadowCount(sceVif1Packet *packet, int count)
+{
+    YAMIPAN_STUB("renaSetShadowCount", 0x002e8570);
+}
+
+// stub of FS2 0x002e8300
+void renaSetShadowMatrices(sceVif1Packet *packet, int index, sceVu0FMATRIX projection,
+                           sceVu0FMATRIX clip)
+{
+    YAMIPAN_STUB("renaSetShadowMatrices", 0x002e8300);
+}
+
+// stub of FS2 0x002e82a0
+void renaSetShadowTexture(sceVif1Packet *packet, Tim2Texture *texture, int block)
+{
+    YAMIPAN_STUB("renaSetShadowTexture", 0x002e82a0);
+}
+
+// stub of FS2 0x002e87f0
+void renaSetSpotlight(sceVif1Packet *packet, Tim2Texture *texture, int block)
+{
+    YAMIPAN_STUB("renaSetSpotlight", 0x002e87f0);
+}
+
+// stub of FS2 0x002e3bf0
+void renaStepTexAnim(void *anim, int ticks)
+{
+    YAMIPAN_STUB("renaStepTexAnim", 0x002e3bf0);
 }
