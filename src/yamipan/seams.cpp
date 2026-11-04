@@ -10,6 +10,7 @@
 #include "yamipan/os/yamipan_time.h"
 #include "yamipan/rendering/renderer.h"
 #include "yamipan/rendering/ui_canvas.h"
+#include "yamipan/rendering/yamipan_drawmodel.h"
 #include "yamipan/rendering/yamipan_drawshadow.h"
 #include "yamipan/rendering/yamipan_drawui.h"
 #include "yamipan/yamipan_memory.h"
@@ -22,7 +23,42 @@ yamipan::rendering::UiCanvas &canvas()
     return yamipan::Application::instance().renderer().canvas();
 }
 
+yamipan::rendering::ModelRenderer &models()
+{
+    return yamipan::Application::instance().renderer().models();
+}
+
 } // namespace
+
+void YamiPan_ModelBeginPass(const void *list, const YamiPanModelPass *pass)
+{
+    models().beginPass(list, *pass);
+}
+
+void YamiPan_ModelSetMaterial(const void *list, const YamiPanModelMaterial *material)
+{
+    models().setMaterial(list, *material);
+}
+
+void YamiPan_ModelSetLights(const void *list, const YamiPanModelLights *lights)
+{
+    models().setLights(list, *lights);
+}
+
+void YamiPan_ModelDrawBatch(const void *list, const float world[4][4], const YamiPanModelBatch *batch)
+{
+    models().drawBatch(list, world, *batch);
+}
+
+void YamiPan_ModelEndPass(const void *list)
+{
+    models().endPass(list);
+}
+
+void YamiPan_ModelForgetTextures()
+{
+    models().forgetTextures();
+}
 
 void YamiPan_Sleep(unsigned int milliseconds)
 {

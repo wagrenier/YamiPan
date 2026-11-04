@@ -24,6 +24,7 @@
 #include "yamipan/os/thread.h"
 #include "yamipan/rendering/display_geometry.h"
 #include "yamipan/rendering/frame.h"
+#include "yamipan/rendering/model_renderer.h"
 #include "yamipan/rendering/texture_store.h"
 #include "yamipan/rendering/ui_canvas.h"
 
@@ -54,6 +55,7 @@ public:
     void stop();
 
     UiCanvas &canvas() { return m_canvas; }
+    ModelRenderer &models() { return m_models; }
     TextureStore &textures() { return m_textures; }
 
     // A frame to fill, with its storage from a frame already shown.
@@ -77,6 +79,8 @@ public:
     // Applies the settings the swapchain depends on (from the render thread: the overlay).
     void applyPresentMode();
 
+    SDL_GPUSampler *samplerFor(bool linear, bool repeat) const;
+
     SDL_GPUTextureFormat outputFormat() const { return m_outputFormat; }
 
 private:
@@ -86,9 +90,10 @@ private:
     void uploadImages(SDL_GPUCopyPass *copy, Frame &frame);
     void uploadVertices(SDL_GPUCopyPass *copy, const Frame &frame);
     void recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout);
+    void recordUi(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout, std::size_t first,
+                  std::size_t last, bool clear);
     void recordOutput(SDL_GPUCommandBuffer *commands, const PictureLayout &layout);
     SDL_GPUGraphicsPipeline *pipelineFor(PipelineKey key);
-    SDL_GPUSampler *samplerFor(bool linear, bool repeat) const;
     void updateStats(bool newFrame);
 
     Window &m_window;
@@ -97,6 +102,7 @@ private:
     EventQueue &m_events;
     ui::Overlay &m_overlay;
     UiCanvas m_canvas;
+    ModelRenderer m_models;
     TextureStore m_textures;
 
     SDL_GPUTextureFormat m_sceneFormat;

@@ -132,6 +132,7 @@ enum LangPackItem
 enum StageObjectKind
 {
     StageObject_Character = 0,  // StageCharacter; the player and the partner are ones
+    StageObject_MapObject = 1,  // a plain map object (game/mapobject.cpp)
     StageObject_Door   = 2,     // StageObject::m_doorState is read
     StageObject_Kind3  = 3,     // takes the motion named CAR (StageFiles::applyBgMotionTarget)
     StageObject_Kind6  = 6,     // takes the motion named Seven_Keys
@@ -631,11 +632,11 @@ public:
         return m_collisions == nullptr || i >= m_collisionCount ? nullptr : m_collisions[i];
     }
 
-    // A camera's matrices. PC: the stand-in family has no fields there
-    // (+0x200 and +0x240 mean other things in other classes); both go when
-    // the camera class gets its own layout.
-    const void *cameraScreen() const { return &m_itemDef; }              // FS2 +0x200
-    const void *cameraView() const { return &m_parts; }                  // FS2 +0x240
+    // A camera's matrices: the object is a StageCamera. PC: the stand-in
+    // family has no fields there (+0x200 and +0x240 mean other things in
+    // other classes), they are StageCamera's own members.
+    const void *cameraScreen() const;                                    // FS2 +0x200
+    const void *cameraView() const;                                      // FS2 +0x240
 
     // The name ends before +0x30 (a character's model there): 0x10 like an
     // ItemDef name. Was sized to +0x200 before (open-items.md TU 44).
@@ -1498,6 +1499,7 @@ enum ModelMaterialKind
 };
 enum ModelMaterialFlag
 {
+    ModelMaterialFlag_Blended = 0x01,   // drawn after the rest, far to near (rena_draw.cpp)
     ModelMaterialFlag_Wave    = 0x08,   // has a ModelTexAnim_Wave (set by ModelSurface)
     ModelMaterialFlag_Foliage = 0x20,   // the texture is a plant's (drawSysAddModel)
 };
@@ -1538,7 +1540,7 @@ struct ModelMaterial
 {
     u_char             kind;    // FS2 +0x00: ModelMaterialKind
     u_char             flags;   // FS2 +0x01: ModelMaterialFlag
-    u_char             _02[2];
+    short              uvSet;   // FS2 +0x02: which of a skinned prim's UV lists; on ModelMaterial_Kind1 the base material
     S2dRef<const char> name;    // FS2 +0x04
     S2dRef<ModelTexAnim> texAnim; // FS2 +0x08: may be null (renaStepTexAnim)
     short              texture; // FS2 +0x0c: into ModelFile::textureNames, or negative
@@ -1574,6 +1576,17 @@ static_assert(sizeof(ModelBatch) == ModelBatch::kLongSize, "ModelBatch: EE 0x70 
 // A mesh material's run of packets (0x10 bytes).
 struct ModelPrim
 {
+    // What a batch's first tag points at (one VU1 quadword). layout: host
+    // -- read in place, its size asserted below the class.
+    struct Header
+    {
+        enum { Strip = 0x1, Weighted = 0x2 };
+        u_short vertices;       // FS2 +0x0
+        u_short end;            // FS2 +0x2: 0x8000 on the GIF tag's EOP
+        int     vertexCount;    // FS2 +0x4: the same number
+        int     flags;          // FS2 +0x8: Strip, Weighted
+        int     weightsLess1;   // FS2 +0xc: bones per vertex - 1
+    };
     S2dRef<void>       _0;      // FS2 +0x0
     S2dRef<ModelBatch> batches; // FS2 +0x4: batchCount
     u_short            _8;      // FS2 +0x8
@@ -1584,6 +1597,7 @@ struct ModelPrim
     u_char             skinned; // FS2 +0xf
 };
 static_assert(sizeof(ModelPrim) == 0x10, "ModelPrim: EE 0x10");
+static_assert(sizeof(ModelPrim::Header) == 0x10, "ModelPrim::Header: one quadword");
 // One material of a mesh part (8 bytes).
 struct ModelMeshMaterial
 {
@@ -1617,7 +1631,8 @@ struct ModelMesh
     S2dRef<short>          boneMap; // FS2 +0x04: into the node's bones; -1 from the first node's
     S2dRef<ModelMeshParts> parts; // FS2 +0x08: may be null
     u_short                firstChild; // FS2 +0x0c: a mesh index
-    u_char                 _0e[4];
+    short                  bone;  // FS2 +0x0e: the node's bone a rigid mesh hangs on, negative the root
+    short                  _10;   // FS2 +0x10: goes to VU1 with each part (unread)
     u_short                childCount; // FS2 +0x12
     u_char                 _14[4];
 };
@@ -1907,7 +1922,16 @@ public:
     // The view matrix (+0x240) and view-screen matrix (+0x280) from the
     // object's matrix; each frame for the active camera.
     void calcViewMatrix();                                               // FS2 0x00177810
+
+    sceVu0FMATRIX m_screen;     // FS2 +0x200
+    sceVu0FMATRIX m_view;       // FS2 +0x240
+    sceVu0FMATRIX m_viewScreen; // FS2 +0x280
+    float m_scrZ;               // FS2 +0x2c0
+    float m_screenWidth;        // FS2 +0x2c4
+    float m_screenHeight;       // FS2 +0x2c8
 };
+inline const void *StageObject::cameraScreen() const { return static_cast<const StageCamera *>(this)->m_screen; }
+inline const void *StageObject::cameraView() const { return static_cast<const StageCamera *>(this)->m_view; }
 // The stage's "camera" (kind 9; vtable 0x311fa0). layout: host -- EE 0x3c0.
 class StageMainCamera : public StageCamera
 {
@@ -1916,6 +1940,8 @@ public:
     int getKind() override { return StageObject_Kind9; }
     StageMainCamera();                                                   // FS2 0x00179700
 };
+// PC: aims the debug camera (game/stagecamera.cpp).
+void stageCameraDebugLookAt(const float *eye, const float *target, const float *up);
 // "camview", "camview_zoom", "camview_snipe" (kind 10; vtable 0x3185b0; run
 // unassigned@00299d90). layout: host -- EE 0x440.
 class ViewCamera : public StageCamera

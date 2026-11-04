@@ -405,6 +405,8 @@ void UiCanvas::kick(std::span<const void *const> lists)
         frame->number = ++m_frames;
         for (const void *const list : lists)
         {
+            m_renderer.models().collect(list, *frame);
+
             const auto found = m_layers.find(list);
             if (found == m_layers.end())
                 continue;

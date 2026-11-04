@@ -62,6 +62,8 @@ src/yamipan/
            DisplayGeometry       THE source of display size and aspect (port feature #1)
            Renderer              the render thread: frames in, pictures out
            UiCanvas              the game's 2D draw module (game/uidrawer.cpp & co call it)
+           ModelRenderer         the game's 3D draw module (rena/rena_draw.cpp calls it): lights and
+                                 places batches, draws them with a depth buffer
            TextureStore          TIM2 pictures decoded to RGBA8, cached by content
            PresentPass           grade + HDR output, Screenshotter the smoke shots
   media/   MpegStream, MpegDecoder  libmpeg on the host: PSS demux, FFmpeg MPEG-2

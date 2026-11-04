@@ -2,6 +2,7 @@
 // memory, so the game can go on while the GPU works, and the last frame can be shown again.
 #pragma once
 
+#include <array>
 #include <compare>
 #include <cstddef>
 #include <cstdint>
@@ -83,16 +84,58 @@ struct DrawCall
     std::uint32_t vertexCount = 0;
 };
 
+// A model's vertex, lit and in the world: the render thread only projects it.
+struct ModelVertex
+{
+    float x, y, z;
+    float u, v;
+    std::uint32_t color; // 0x80 is 1.0
+};
+static_assert(sizeof(ModelVertex) == 24);
+
+struct ModelDraw
+{
+    std::shared_ptr<Image> image; // null: untextured
+    bool blended = false;
+    std::uint32_t firstVertex = 0;
+    std::uint32_t vertexCount = 0;
+};
+
+// One pass of models, drawn in the frame's order among the 2D draws: before draws[uiDrawsBefore].
+struct ModelPass
+{
+    std::array<float, 16> viewScreen{}; // the game's, in rows: the projection is finished at draw time
+    float centerX = 2048.0f;
+    float centerY = 2048.0f;
+    float halfWidth = 256.0f;
+    float halfHeight = 256.0f;
+    float depthMin = 1.0f;
+    float depthMax = 16777215.0f;
+    std::array<float, 3> fogColor{};
+    float fogA = 255.0f;
+    float fogB = 0.0f;
+    bool clearDepth = true;
+    std::uint32_t uiDrawsBefore = 0;
+    std::uint32_t firstDraw = 0;
+    std::uint32_t drawCount = 0;
+};
+
 struct Frame
 {
     std::vector<Vertex> vertices;
     std::vector<DrawCall> draws;
+    std::vector<ModelVertex> modelVertices;
+    std::vector<ModelDraw> modelDraws;
+    std::vector<ModelPass> modelPasses;
     std::uint64_t number = 0;
 
     void clear()
     {
         vertices.clear();
         draws.clear();
+        modelVertices.clear();
+        modelDraws.clear();
+        modelPasses.clear();
     }
 };
 
