@@ -29,10 +29,16 @@ constexpr u_short kMapModelFlags = 0x91;    // ModelFlag names none of these bit
 // The plain map object (vtable 0x3115c0): the ROM's ctor also makes a table
 // of collision slots, which waits for setupMapObject's collision half.
 // layout: host -- EE 0x240.
-// FS2 0x001765e0
 class StageMapObject : public StageObject
 {
 public:
+    // Its placement is the node's matrix, which setModel writes straight into
+    // the world matrix. Left dirty, the first calcmatrix would rebuild that
+    // from position and rotation, both zero, and put the object at the origin.
+    // FS2 0x001765e0
+    // callcheck: StageObject, operator_new[], setDirtyTree (the base, the collision table, slot +0x1c)
+    StageMapObject() { setDirtyTree(false); }
+
     int getKind() override { return StageObject_MapObject; }
 };
 
