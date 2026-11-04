@@ -28,6 +28,30 @@ inline void invertRigidMatrix(sceVu0FMATRIX out, const sceVu0FVECTOR *m)
 {
     sceVu0InversMatrix(out, reinterpret_cast<float (*)[4]>(const_cast<sceVu0FVECTOR *>(m)));
 }
+// out = the inverse of any affine matrix (the upper 3x3 by cofactors): rows
+// 0..2 w 0, row 3 keeps m's w. Inlined by the ROM (ModelInstance::init, twice).
+inline void invertAffineMatrix(sceVu0FMATRIX out, const sceVu0FVECTOR *m)
+{
+    const float a[3] = { m[0][0], m[1][0], m[2][0] };
+    const float b[3] = { m[0][1], m[1][1], m[2][1] };
+    const float c[3] = { m[0][2], m[1][2], m[2][2] };
+    float inverse[3][3] = {
+        { b[1] * c[2] - b[2] * c[1], b[2] * c[0] - b[0] * c[2], b[0] * c[1] - b[1] * c[0] },
+        { c[1] * a[2] - c[2] * a[1], c[2] * a[0] - c[0] * a[2], c[0] * a[1] - c[1] * a[0] },
+        { a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0] },
+    };
+    const float scale = 1.0f / (inverse[0][0] * a[0] + inverse[0][1] * a[1] + inverse[0][2] * a[2]);
+    const float t[3] = { -m[3][0], -m[3][1], -m[3][2] };
+    const float w = m[3][3];
+    for (int row = 0; row < 3; row++) {
+        for (int lane = 0; lane < 3; lane++)
+            out[row][lane] = inverse[row][lane] * scale;
+        out[row][3] = 0.0f;
+    }
+    for (int lane = 0; lane < 3; lane++)
+        out[3][lane] = out[0][lane] * t[0] + out[1][lane] * t[1] + out[2][lane] * t[2];
+    out[3][3] = w;
+}
 // out = m[0] v.x + m[1] v.y + m[2] v.z + m[3] v.w; out may be v.
 // FS2 0x00136690
 inline void applyMatrix(sceVu0FVECTOR out, const sceVu0FVECTOR *m, const sceVu0FVECTOR v)

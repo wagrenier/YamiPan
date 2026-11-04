@@ -133,13 +133,6 @@ MenuProgSet::~MenuProgSet()
     YAMIPAN_STUB("MenuProgSet::~MenuProgSet", 0x002bb3e0);
 }
 
-// stub of FS2 0x002e5210
-ModelInstance * ModelFile::createInstance(u_int index, const char *name)
-{
-    YAMIPAN_STUB("ModelFile::createInstance", 0x002e5210);
-    return {};
-}
-
 // stub of FS2 0x00207ef0
 PauseMenuState::PauseMenuState()
 {
@@ -182,13 +175,6 @@ Rand48::Rand48()
 int Rand48::next(int n)
 {
     YAMIPAN_STUB("Rand48::next", 0x002681e0);
-    return {};
-}
-
-// stub of FS2 0x002e4100
-ModelPartRec * ModelInstance::findGroup(const ModelPartRec *rec) const
-{
-    YAMIPAN_STUB("ModelInstance::findGroup", 0x002e4100);
     return {};
 }
 
@@ -1848,13 +1834,6 @@ void VectorTrack::step()
     YAMIPAN_STUB("VectorTrack::step", 0x00299d90);
 }
 
-// stub of FS2 0x002e4610
-CharacterPart * modelFindPart(ModelInstance *model, const char *name, size_t length, int arg)
-{
-    YAMIPAN_STUB("modelFindPart", 0x002e4610);
-    return {};
-}
-
 // stub of FS2 0x0023db50
 ItemPhysics::ItemPhysics(bool, bool)
 {
@@ -1986,12 +1965,6 @@ void renaSetSpotlight(sceVif1Packet *packet, Tim2Texture *texture, int block)
     YAMIPAN_STUB("renaSetSpotlight", 0x002e87f0);
 }
 
-// stub of FS2 0x002e3bf0
-void renaStepTexAnim(ModelSurface *surface, int ticks)
-{
-    YAMIPAN_STUB("renaStepTexAnim", 0x002e3bf0);
-}
-
 // stub of FS2 0x0027ef70
 CarPose::CarPose()
 {
@@ -2002,12 +1975,6 @@ CarPose::CarPose()
 ElevatorPose::ElevatorPose()
 {
     YAMIPAN_STUB("ElevatorPose::ElevatorPose", 0x0027ffb0);
-}
-
-// stub of FS2 0x002e46d0
-ModelInstance::~ModelInstance()
-{
-    YAMIPAN_STUB("ModelInstance::~ModelInstance", 0x002e46d0);
 }
 
 // stub of FS2 0x002d0fa0
@@ -2070,12 +2037,6 @@ int ModelPose::solve(int iterations, int count, int flaggedOnly)
     return {};
 }
 
-// stub of FS2 0x002e3d90
-void ModelSurface::setFrames(float blend, int frame0, int frame1)
-{
-    YAMIPAN_STUB("ModelSurface::setFrames", 0x002e3d90);
-}
-
 // stub of FS2 0x002a7a50
 NmlPose::NmlPose(int, int, int, int)
 {
@@ -2086,12 +2047,6 @@ NmlPose::NmlPose(int, int, int, int)
 SkyPose::SkyPose(int, int)
 {
     YAMIPAN_STUB("SkyPose::SkyPose", 0x002b37d0);
-}
-
-// stub of FS2 0x002e1700
-void modelTexturePremultiplyPalette(Tim2Texture *texture)
-{
-    YAMIPAN_STUB("modelTexturePremultiplyPalette", 0x002e1700);
 }
 
 // stub of FS2 0x0014ff90

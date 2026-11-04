@@ -69,7 +69,7 @@ public:
     short         m_clutBlocks; // FS2 +0x30
     int           m_clutQwords; // FS2 +0x34: of one row
     void         *m_clut;       // FS2 +0x38
-    void         *m_altClut;    // FS2 +0x3c: a second CLUT on the global heap, sent 4 blocks after the first (nothing read so far sets it)
+    void         *m_altClut;    // FS2 +0x3c: a second CLUT on the global heap, sent 4 blocks after the first (modelTexturePremultiplyPalette)
     void         *m_image;      // FS2 +0x40: the TIM2 file (TexAreaList's key)
 
 private:

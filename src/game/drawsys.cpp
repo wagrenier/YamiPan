@@ -481,9 +481,9 @@ void drawSysAddModel(ModelInstance *model)
         ModelSurface &surface = model->surfaces[i];
         const char *material = surface.material->name;
         if (nameCompareNoCase(material, kMaterialWave, waveLength) == 0) {
-            surface._28 = 0;
-            surface.isWave = 1;
-            surface.waveIndex = atoi(material + waveLength);
+            surface.frame0 = 0;
+            surface.frame1 = 1;
+            surface.blendFix = atoi(material + waveLength);
         }
     }
 
@@ -706,14 +706,14 @@ void drawSysBuildBossShadowTexture(sceVif1Packet *packet)
     // The boss alone, without its lights.
     u_short drawMode = boss->drawMode;
     u_char drawGroup = boss->drawGroup;
-    sceVu0FMATRIX colorMatrix;
-    memcpy(colorMatrix, boss->colorMatrix, sizeof(sceVu0FMATRIX));
+    sceVu0FMATRIX lightColors;
+    memcpy(lightColors, boss->lightColors, sizeof(sceVu0FMATRIX));
     boss->drawMode = kBossShadowDrawMode;
-    memset(boss->colorMatrix, 0, sizeof(sceVu0FMATRIX));
+    memset(boss->lightColors, 0, sizeof(sceVu0FMATRIX));
     boss->drawGroup = DrawSysGroup_BossShadow;
     renaDrawModels(packet, sCurrent, DrawSysGroup_BossShadow);
     boss->drawGroup = drawGroup;
-    memcpy(boss->colorMatrix, colorMatrix, sizeof(sceVu0FMATRIX));
+    memcpy(boss->lightColors, lightColors, sizeof(sceVu0FMATRIX));
     boss->drawMode = drawMode;
 
     // Down to 64 and back to 256, a blur at each size but the last.
