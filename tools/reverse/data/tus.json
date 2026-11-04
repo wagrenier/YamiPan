@@ -5,6 +5,14 @@
   "rena/rena_draw.cpp",
   "game/stagecamera.cpp",
   "game/demoevent.cpp",
+  "game/scenepairs.cpp",
+  "game/stagecollision.cpp",
+  "game/stagecharacter.cpp",
+  "game/playermotion.cpp",
+  "game/characterground.cpp",
+  "game/characterbrain.cpp",
+  "game/characterinput.cpp",
+  "game/stageplayer.cpp",
   "yamipan/rendering/model_renderer.cpp",
   "game/scriptrunner.cpp"
  ],
@@ -51,6 +59,15 @@
    ],
    "status": "verify",
    "why": "BoxGrid: a 2D n x n grid over a BoxSet's oriented boxes (cell lists built with VU0 box/cell overlap tests, point lookup through boxContainsPoint) and its MSL vector<vector<vector<const Box*>>> template instances, which end at 0x2676e0; 0x2676e0 starts unrelated scene / thread code (getStageSelect, BGMOVIE). No source-path strings: file name descriptive."
+  },
+  "game/characterbrain.cpp": {
+   "task": "The character's brain, step 5 of roadmap-3d-control.md, queued 2026-11-04: 0x1dbca0..0x1df0b0 out of unassigned@001d85b0: ctor 0x1dd680 (EE 0x9b0), update CharacterBrain::update 0x1dd330. setPlayer turns the player's off, so the player only needs it to exist; do the part the character's ctor and setPlayer reach first. Ends verify."
+  },
+  "game/characterground.cpp": {
+   "task": "The character's ground, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1f3d20.. (EE 0x1c0) and CharacterGround::faceNear 0x1eff00, out of unassigned@001d85b0. The main camera's slope tilt and GroundVolume read this. Needs game/stagecollision.cpp. Ends verify until the character stands on the map."
+  },
+  "game/characterinput.cpp": {
+   "task": "The pad to the character, step 6 of roadmap-3d-control.md, queued 2026-11-04: CharacterInput 0x239c60 and its reader 0x239d50 (710 i), out of unassigned@00231d40. It reads GamePad, the menus and the scene's input focus; the host pad is ready. lookYaw and lookPitch are named from how the camera uses them, so check that pair here, and write padSway. Ends verify until the player logic moves the character."
   },
   "game/clock.cpp": {
    "notes": "Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode whose destructor 0x135550 is the real body (Clock::~Clock 0x1351b0 and MasterClock::~MasterClock 0x135330 only call it and free: Metrowerks one-dtor-with-flags). ROM bugs kept: the destructor detaches only its FIRST child (clearing the slot makes next(child) end the walk), the others keep a dangling parent (harmless while children die first; on the host a later child delete would read freed memory, watch at bootstrap 7); when that child was the last the ROM walks a null list (EE address 4), the port stops. PtrList slots are pointer-sized on the host (EE 4 bytes). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean, host harness (advance with scale 0x80, pause, getSeconds / getDeltaSeconds, delete detaching from the parent and freeing an emptied list). Next: the VU0 run unassigned@00135990 (20 functions; decode the COP2 words from the asm, open-items.md TU 42).",
@@ -554,6 +571,9 @@
    "status": "verify",
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
+  "game/playermotion.cpp": {
+   "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves."
+  },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
    "ranges": [
@@ -641,6 +661,9 @@
    ],
    "status": "verify",
    "why": "gameSceneThread alone: the next function 0x231c90 (menu step helper over 0x267c00, called by the menu flow 0x2b5770) and the pak parser 0x231660..0x231bb0 before it share no data or callers with it; the scene table 0x2fabd0 is read only here. A one-function file until a source string or link order says otherwise"
+  },
+  "game/scenepairs.cpp": {
+   "task": "The frame's action phases, step 3 of roadmap-3d-control.md, queued 2026-11-04: ScenePairTable, 0x171300..0x1718xx: ctor 0x171680, add, actionStart 0x1714e0, actionControl 0x171440, actionMovement 0x1713a0, actionTerminate 0x171300, all stubs that StageScene::update calls. Cut it out of unassigned@00171300 with tus.py define. About 14 functions, 356 i, the smallest step on the list. Without it no character part is ever stepped. Nothing can show it yet, so it ends verify."
   },
   "game/scenerender.cpp": {
    "notes": "The pin is closed: applyDebugAmbient, its call, the README paragraph and SceneRender::isKeyed with its two guards are gone; nothing was brightened. Measured in a New Game run: the record holds ambient 1.37255 1.41176 1.56863, directional 0, fog 1100..1500. Fog was not why the stage is dark: the auto camera stands 437 from its target. The map's vertex colours average 20 of 0x80, so a lit vertex averages 27, 28, 31: dark by its own data. Fixed from VU1 0x22f..0x259: the fog value is clamped to far value..near value (VU address 24), the host only saturated; stage 1's near value 230 now takes 10 percent off everything near. Mean brightness of the auto view: 3.2 unkeyed, 12 lit, 10.9 with the limit, ratio 0.90 = 230/255. Default camera, no YAMIPAN_CAMERA: an alley with walls and ground, work/shot_lights_default_camera.png. No game reference exists for either view, hence verify. No crash in 280 s runs. Left outside this TU: spot, skinned meshes, lamps; the event camera is next, game/demoevent.cpp. Doubt: host W against VU1 W with the scales 0x59b190, 0x59b194 is read from the upload's shape; open-items.md Done has it.",
@@ -799,6 +822,12 @@
   "game/stagecamera.cpp": {
    "task": "The two natives that choose the view, queued by the user 2026-11-04. A host task: the code goes in kNatives in src/game/scriptrunner.cpp and both addresses are that TU's, but it is 84 of 652 and would hold this place in the queue for many runs, so they have their own key. Native 0x70 (0x1c81a0, 56 i, one code word): find the character by label, then StageScene::setPlayer. Stage 1's Root calls it with F_PC01 straight after its test of menuMode == 1, the block that also requests d0101, and a New Game run reaches the stub today (scriptNative_70), so the main camera never links without it, even with a character. Native 0x64 (0x1c8dc0, 94 i, one code word): 0x1c8f40 tests the name (the script passes NULL) and removes view priority 3, any other name is found (0x1d1260) and pushed at priority 3, and an active event takes a further step (0x1b56b0, 0x1b54a0, 0x1b5460). sd_MK01_10 calls it with CAM_EV10, then NULL. StageCharacter does not exist yet, so the character lookup answers null: make sure setPlayer survives that. The other route to setPlayer is property 0x50 (0x172620 and its twins 0x189f40, 0x212530, 0x268ae0), behind the setProperty stubs; native 0xef is unused on stage 1. Nothing can show the link until a character exists, so this ends verify."
   },
+  "game/stagecharacter.cpp": {
+   "task": "The character, built, step 4 of roadmap-3d-control.md, queued 2026-11-04: StageCharacter ctor 0x17de30 and setup 0x17c700, the parameter tables 0x17b3e0 and 0x17bd10, the run 0x17b3e0..0x17df60 out of unassigned@00171300. placeCharacter already passes the map's position and turn. The parts it news are the next three items of the queue: stub them first. With this and native 0x70 (game/stagecamera.cpp) the main camera links, and YAMIPAN_CAMERA, stageCameraDebugLookAt and aimDebugCamera go (open-items.md). Check onLinkChanged: it looks up bn_head with no null test. Done when F_PC01 stands in the scene at (7286, 6064, 1138) and the main camera's step runs on it."
+  },
+  "game/stagecollision.cpp": {
+   "task": "Collision, step 2 of roadmap-3d-control.md, queued 2026-11-04: StageCollision::sphereHits 0x232870, segmentHits, raycast 0x233810, heightAt 0x2342c0, getNormal 0x236030, CollisionFile::relocate 0x23ae40, CollisionBody 0x1f6690, SceneRecordBuckets::collide 0x1f5250: about 32 functions, 4,533 i, in unassigned@00231d40 and unassigned@001d85b0. Also setupMapObject's collision half, left out so far (0x23adb0, 0x234440, 0x176bc0, CollisionBody). The main camera's rays stop on this: without it nothing pulls the eye out of a wall. Nothing can show it until a character stands, so it ends verify."
+  },
   "game/stageitem.cpp": {
    "notes": "All of 0x17fce0..0x184860 written or mapped (thunks listed, 0x180018 is padding). New Game run under gdb: StageBullet's ctor ran from setupCameras with no fault, 113 stubs reached, the stop is unchanged: SIGSEGV in StageScene::draw (stagescene.cpp:3272), drawSysCurrent 0x2d4fd0 a stub answering null, black last shot, so no stage picture and nothing here is on screen. Default smoke run rests on the language screen, unchanged. Host-pass only: no item is placed yet (PackTables::parse and StageModel::init are stubs), ScenePairTable::add is a stub, so no frame or collision hook has run and nothing was compared with the ROM by running it. CollisionOwner::onCollide and collisionHook3 changed signature for all owners; sysDataReturnZero 0x23c010 was a mislabel and is gone (ItemPhysics::onCollide). Next pinned: unassigned@002d46a0 for drawSysCurrent, then NodeTransform and updateMatrix. Details and doubts: open-items.md, architecture.md The bullet and the items.",
    "ranges": [
@@ -929,6 +958,9 @@
    ],
    "status": "verify",
    "why": "Cut out of unassigned@00171300: the stage's name-keyed object registry (gStageScene +0x10, new 0xdc in 0x19c180): nine groups of a name map (AVL tree of StageNameNode by strcmp) and an object list, with their two containers. Bounded below by the BoxGrid vector instances (0x1928f0..0x1938f8) and above by game logic at 0x1953f0 (player state test, no registry use)."
+  },
+  "game/stageplayer.cpp": {
+   "task": "Control, steps 5 to 7 of roadmap-3d-control.md, queued 2026-11-04: the player logic 0x20a000..0x21d000 out of unassigned@001fe6b0, by what a run reaches: beforeScripts 0x21c7c0, afterScripts 0x21c310, canSpawn, spawn 0x218630, the move 0x20d8c0 (887 i, applies getMoveScale), the action states 0x21cc70, and stageUpdateCharacterMotions 0x17df60. Natives of F_PC01's own entry as they are reached: 0xf7, 0xf8, 0xb5, 0x6f, 0xaf, 0x53, 0x7a, 0x45, 0xb4, 0x94, 0x3a. Done when the pad walks the character on stage 1 with the main camera following it, and the game's own camera has replaced every debug hook."
   },
   "game/stageresult.cpp": {
    "notes": "All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (addContinue), getPerfectBits one bit per zero counter, clocks at +0x94/+0xa4 {state, value, step, target}, mode +0xbc (0 none, 1 count-up, 2 countdown 7500 with SYS_COUNT1/2 cues), layout +0xb8 from getLangPackItem(4/5). runStartupSequence renamed loadGamePack: it parses packgameEU.pak into PackTables (0x2bcf10, columns label/ctype/SEtype) and frees it, no screens. StageResult moved from gamehooks.h to stageresult.h; sysdata.cpp now reads clock.value/clock2.value/mode; SaveData::_000 is playTime (StageResult::tick counts it). New stand-ins in gamehooks.h: PackFile, PackTables, UiLayout, StageSound, StageScene/gStageScene (gp-0x7a7c, data the build must define), getInitPackItem/getLangPackItem. Guesses: the file name; 0x2afc20/0x2afcd0 joined by position; counters 1..3, attempt/stage blocks, clock state bits 0x14 and PackTables element types read from shapes only. Not compiled (no toolchain here); callcheck clean, layout lint OK. Next in the run: 0x2acff0..0x2afc20 (drawing cluster around 0x2adc70).",
