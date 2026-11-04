@@ -2157,3 +2157,249 @@ void stageUpdateCharacterMotions()
 {
     YAMIPAN_STUB("stageUpdateCharacterMotions", 0x0017df60);
 }
+
+// stub of FS2 0x001dd330
+void CharacterBrain::update()
+{
+    YAMIPAN_STUB("CharacterBrain::update", 0x001dd330);
+}
+
+// stub of FS2 0x002b1660
+ClearSequence::ClearSequence()
+{
+    YAMIPAN_STUB("ClearSequence::ClearSequence", 0x002b1660);
+}
+
+// stub of FS2 0x002b1cb0
+GameOverSequence::GameOverSequence(int, int)
+{
+    YAMIPAN_STUB("GameOverSequence::GameOverSequence", 0x002b1cb0);
+}
+
+// stub of FS2 0x002bb4e0
+MenuProgSet::MenuProgSet()
+{
+    YAMIPAN_STUB("MenuProgSet::MenuProgSet", 0x002bb4e0);
+}
+
+// stub of FS2 0x002bb2b0
+void MenuProgSet::load(void *image0, void *image1, void *image2, void *image3, void *image4,
+              void *image5)
+{
+    YAMIPAN_STUB("MenuProgSet::load", 0x002bb2b0);
+}
+
+// stub of FS2 0x002cebd0
+void SceneBlock98::attachTo(StagePlayer *player)
+{
+    YAMIPAN_STUB("SceneBlock98::attachTo", 0x002cebd0);
+}
+
+// stub of FS2 0x002ceb70
+void SceneBlock98::setActive(bool on, SceneRender *render)
+{
+    YAMIPAN_STUB("SceneBlock98::setActive", 0x002ceb70);
+}
+
+// stub of FS2 0x002ce790
+void SceneBlock98::updateVisible(SceneRender *render)
+{
+    YAMIPAN_STUB("SceneBlock98::updateVisible", 0x002ce790);
+}
+
+// stub of FS2 0x002ce3e0
+void SceneBufferSet::attachCharacters(StageObjectList *objects)
+{
+    YAMIPAN_STUB("SceneBufferSet::attachCharacters", 0x002ce3e0);
+}
+
+// stub of FS2 0x002ce0c0
+void SceneBufferSet::setActiveFor(StageObject *linked, SceneRender *render)
+{
+    YAMIPAN_STUB("SceneBufferSet::setActiveFor", 0x002ce0c0);
+}
+
+// stub of FS2 0x002ce180
+void SceneBufferSet::storeActive(StageObject *linked)
+{
+    YAMIPAN_STUB("SceneBufferSet::storeActive", 0x002ce180);
+}
+
+// stub of FS2 0x002ce1c0
+void SceneBufferSet::updateRange(float range, StageObject *linked, SceneRender *render)
+{
+    YAMIPAN_STUB("SceneBufferSet::updateRange", 0x002ce1c0);
+}
+
+// stub of FS2 0x002894b0
+void ScenePool::setImage(const void *image)
+{
+    YAMIPAN_STUB("ScenePool::setImage", 0x002894b0);
+}
+
+// stub of FS2 0x00289b50
+void ScenePool::setPrinter(WideFontPrinter *printer)
+{
+    YAMIPAN_STUB("ScenePool::setPrinter", 0x00289b50);
+}
+
+// stub of FS2 0x00242e80
+void SceneUiState::pollSoundSources()
+{
+    YAMIPAN_STUB("SceneUiState::pollSoundSources", 0x00242e80);
+}
+
+// stub of FS2 0x002342c0
+StageCollisionFace * StageCollision::heightAt(float x, float y, float range, float *height, u_int mask,
+                                 u_int flags, int arg)
+{
+    YAMIPAN_STUB("StageCollision::heightAt", 0x002342c0);
+    return {};
+}
+
+// stub of FS2 0x00233160
+bool StageCollision::segmentHits(const float *from, const float *to, u_int mask, u_int flags,
+                     int arg)
+{
+    YAMIPAN_STUB("StageCollision::segmentHits", 0x00233160);
+    return {};
+}
+
+// stub of FS2 0x00232870
+bool StageCollision::sphereHits(float radius, int mode, void *out, u_int mask, u_int flags,
+                    const float *pos)
+{
+    YAMIPAN_STUB("StageCollision::sphereHits", 0x00232870);
+    return {};
+}
+
+// stub of FS2 address unknown (1 candidates)
+int StageEvent::poll()
+{
+    YAMIPAN_STUB("StageEvent::poll", 0x00000000);
+    return {};
+}
+
+// stub of FS2 0x002882b0
+StageFileEvent::StageFileEvent(float, char const*)
+{
+    YAMIPAN_STUB("StageFileEvent::StageFileEvent", 0x002882b0);
+}
+
+// stub of FS2 0x00230810
+void StageMenu::setData(void *data)
+{
+    YAMIPAN_STUB("StageMenu::setData", 0x00230810);
+}
+
+// stub of FS2 0x00286c40
+void StageMission::afterScripts()
+{
+    YAMIPAN_STUB("StageMission::afterScripts", 0x00286c40);
+}
+
+// stub of FS2 0x00287090
+int StageMission::getResultValue(int index)
+{
+    YAMIPAN_STUB("StageMission::getResultValue", 0x00287090);
+    return {};
+}
+
+// stub of FS2 0x00286910
+void StageMission::setRestore(void *arg, StageObject *object)
+{
+    YAMIPAN_STUB("StageMission::setRestore", 0x00286910);
+}
+
+// stub of FS2 0x00287050
+void StageMission::setResultValue(int index, int value)
+{
+    YAMIPAN_STUB("StageMission::setResultValue", 0x00287050);
+}
+
+// stub of FS2 0x00286ce0
+void StageMission::tickPending()
+{
+    YAMIPAN_STUB("StageMission::tickPending", 0x00286ce0);
+}
+
+// stub of FS2 0x0021c310
+void StageObject::afterScripts()
+{
+    YAMIPAN_STUB("StageObject::afterScripts", 0x0021c310);
+}
+
+// stub of FS2 0x00173880
+void StageObject::applyDoorRecord()
+{
+    YAMIPAN_STUB("StageObject::applyDoorRecord", 0x00173880);
+}
+
+// stub of FS2 0x0021c7c0
+void StageObject::beforeScripts()
+{
+    YAMIPAN_STUB("StageObject::beforeScripts", 0x0021c7c0);
+}
+
+// stub of FS2 0x002185a0
+bool StageObject::canSpawn()
+{
+    YAMIPAN_STUB("StageObject::canSpawn", 0x002185a0);
+    return {};
+}
+
+// stub of FS2 0x00175c40
+bool StageObject::isMotionTarget(int index)
+{
+    YAMIPAN_STUB("StageObject::isMotionTarget", 0x00175c40);
+    return {};
+}
+
+// stub of FS2 address unknown (1 candidates)
+void StageObject::setMotionList(void *list, int arg, int arg2)
+{
+    YAMIPAN_STUB("StageObject::setMotionList", 0x00000000);
+}
+
+// stub of FS2 0x00185fc0
+void StageObject::setTreeScriptFlag(bool on)
+{
+    YAMIPAN_STUB("StageObject::setTreeScriptFlag", 0x00185fc0);
+}
+
+// stub of FS2 0x00218630
+void StageObject::spawn()
+{
+    YAMIPAN_STUB("StageObject::spawn", 0x00218630);
+}
+
+// stub of FS2 0x001fe890
+void StageParty::addImage(const void *image)
+{
+    YAMIPAN_STUB("StageParty::addImage", 0x001fe890);
+}
+
+// stub of FS2 0x001fe900
+void StageParty::setImage(const void *image)
+{
+    YAMIPAN_STUB("StageParty::setImage", 0x001fe900);
+}
+
+// stub of FS2 0x00288850
+StageSimpleEvent::StageSimpleEvent(float, char const*)
+{
+    YAMIPAN_STUB("StageSimpleEvent::StageSimpleEvent", 0x00288850);
+}
+
+// stub of FS2 0x0023f030
+void UiItemList::setSheet(void *sheet)
+{
+    YAMIPAN_STUB("UiItemList::setSheet", 0x0023f030);
+}
+
+// stub of FS2 0x00175c00
+const char * stageMotionTargetName(int index)
+{
+    YAMIPAN_STUB("stageMotionTargetName", 0x00175c00);
+    return {};
+}

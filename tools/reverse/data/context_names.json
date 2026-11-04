@@ -11039,11 +11039,29 @@
   "was": "FUN_00171680",
   "why": "StageScene ctor new(0x2c) for +0x14: __construct_array of 5 elements of 8 bytes ({0, 0}, 0x1716c0); class name a guess, contents unread"
  },
+ "00173880": {
+  "name": "StageObject::applyDoorRecord",
+  "tag": "game-inferred",
+  "was": "FUN_00173880",
+  "why": "door: fields from gDoorRecords[m_doorRecord]"
+ },
  "00173cb0": {
   "name": "StageObject::attachToRoot",
   "tag": "game-inferred",
   "was": "FUN_00173cb0",
   "why": "doors (kind 2) reach the Root object +0xd8"
+ },
+ "00175c00": {
+  "name": "stageMotionTargetName",
+  "tag": "game-inferred",
+  "was": "FUN_00175c00",
+  "why": "table 0x2f7aa0: CAT CROW tonbi oMT04_04.. by 1..8, else UNKNOWN"
+ },
+ "00175c40": {
+  "name": "StageObject::isMotionTarget",
+  "tag": "game-inferred",
+  "was": "FUN_00175c40",
+  "why": "the object belongs to motion target i, by name"
  },
  "001760c0": {
   "name": "StageObject::setupMapObject",
@@ -11302,6 +11320,12 @@
   "tag": "game-inferred",
   "was": "FUN_00185fb0",
   "why": "byte at +0x200 and +0x36; YAM_ lights pass 0"
+ },
+ "00185fc0": {
+  "name": "StageObject::setTreeScriptFlag",
+  "tag": "game-inferred",
+  "was": "FUN_00185fc0",
+  "why": "slot +0x60 of the +0xf4 table on the object and every object of its tree"
  },
  "00186160": {
   "name": "StageLight::copyShownFrom",
@@ -11717,17 +11741,35 @@
   "was": "FUN_00195520",
   "why": "0x19c6a0 on +0x124 with the mission's +0xbc object's flags saved around it"
  },
+ "001955e0": {
+  "name": "StageScene::saveObjectFlags",
+  "tag": "game-inferred",
+  "was": "FUN_001955e0",
+  "why": "SceneArrayPair::saveFlags on +0x124, then the mission keeps the two arguments (0x286910); the counterpart of restoreObjectFlags"
+ },
  "00195640": {
   "name": "StageScene::isCleared",
   "tag": "game-inferred",
   "was": "FUN_00195640",
   "why": "+0x11c set and 0x2b1620() == 2; true -> stageCleared and the loop ends"
  },
+ "00195690": {
+  "name": "StageScene::startClear",
+  "tag": "game-inferred",
+  "was": "FUN_00195690",
+  "why": "unless isBusy: +0x11c = new 4-byte sequence"
+ },
  "001956e0": {
   "name": "StageScene::isGameOver",
   "tag": "game-inferred",
   "was": "FUN_001956e0",
   "why": "+0x118 set and 0x2b1c50() == 5; true -> stageGameOverMenu"
+ },
+ "00195730": {
+  "name": "StageScene::startGameOver",
+  "tag": "game-inferred",
+  "was": "FUN_00195730",
+  "why": "unless isInputBlocked: +0x118 = new 0x18-byte sequence with the two arguments"
  },
  "001957a0": {
   "name": "StageScene::isBusy",
@@ -11795,6 +11837,24 @@
   "was": "FUN_00196050",
   "why": "+4 = 0; stageThread after building the sub-scene that +4 asked for"
  },
+ "00196060": {
+  "name": "StageScene::requestSubScene",
+  "tag": "game-inferred",
+  "was": "FUN_00196060",
+  "why": "a stage with no request: +4 = name; d1804 first turns the ENV_PL03..06 lights off"
+ },
+ "001961c0": {
+  "name": "StageScene::startFileEvent",
+  "tag": "game-inferred",
+  "was": "FUN_001961c0",
+  "why": "+0xec = new 0xf4-byte event (float in f12, name); the mission starts its pending event with it"
+ },
+ "00196220": {
+  "name": "StageScene::startSimpleEvent",
+  "tag": "game-inferred",
+  "was": "FUN_00196220",
+  "why": "+0xec = new 0x34-byte event (float in f12, name)"
+ },
  "00196280": {
   "name": "StageScene::setRoute",
   "tag": "game-inferred",
@@ -11807,6 +11867,12 @@
   "was": "FUN_00196300",
   "why": "1 / the scene clock's delta seconds"
  },
+ "00196340": {
+  "name": "StageScene::getMissionFrames",
+  "tag": "game-inferred",
+  "was": "FUN_00196340",
+  "why": "(clock seconds - mission start) * 30 rounded"
+ },
  "001963a0": {
   "name": "StageScene::beginPlay",
   "tag": "game-inferred",
@@ -11818,6 +11884,102 @@
   "tag": "game-inferred",
   "was": "FUN_001963d0",
   "why": "a0 a StageScene: its +0xd0 (StageMenu, 0x2308a0) when that object's first word is 2, else null; reading 2 as open is a guess"
+ },
+ "001963f0": {
+  "name": "StageScene::playerAction",
+  "tag": "game-inferred",
+  "was": "FUN_001963f0",
+  "why": "out-of-line copy of the action test inlined in wantsMapMenu / wantsPauseMenu"
+ },
+ "001964f0": {
+  "name": "StageScene::ownedHasTarget",
+  "tag": "game-inferred",
+  "was": "FUN_001964f0",
+  "why": "slot +0x40 of owned[2], [1], [0]: the first that answers"
+ },
+ "001965a0": {
+  "name": "StageScene::isOwned2Busy",
+  "tag": "game-inferred",
+  "was": "FUN_001965a0",
+  "why": "slot +0x3c of +0x94"
+ },
+ "001965e0": {
+  "name": "StageScene::isOwned1Busy",
+  "tag": "game-inferred",
+  "was": "FUN_001965e0",
+  "why": "slot +0x3c of +0x90"
+ },
+ "00196620": {
+  "name": "StageScene::isOwned0Busy",
+  "tag": "game-inferred",
+  "was": "FUN_00196620",
+  "why": "slot +0x3c of +0x8c"
+ },
+ "00196660": {
+  "name": "StageScene::getPlayerAltFlag",
+  "tag": "game-inferred",
+  "was": "FUN_00196660",
+  "why": "the player getAltSoundFlag, 0 without a player"
+ },
+ "00196690": {
+  "name": "StageScene::getMissionValue",
+  "tag": "game-inferred",
+  "was": "FUN_00196690",
+  "why": "float mission +0xa8"
+ },
+ "001966b0": {
+  "name": "StageScene::setMissionValue",
+  "tag": "game-inferred",
+  "was": "FUN_001966b0",
+  "why": "float mission +0xa8"
+ },
+ "001966e0": {
+  "name": "StageScene::getMoveScale",
+  "tag": "game-inferred",
+  "was": "FUN_001966e0",
+  "why": "float mission +0x90[i]; 0x20d8c0 reads 1..5 by action, a script command sets 0..5 as percent / 100"
+ },
+ "00196710": {
+  "name": "StageScene::setMoveScale",
+  "tag": "game-inferred",
+  "was": "FUN_00196710",
+  "why": "float mission +0x90[i]"
+ },
+ "00196750": {
+  "name": "StageScene::getDefaultMoveScale",
+  "tag": "game-inferred",
+  "was": "FUN_00196750",
+  "why": "float mission +0x8c; 0x20d8c0 falls back on it"
+ },
+ "00196770": {
+  "name": "StageScene::setDefaultMoveScale",
+  "tag": "game-inferred",
+  "was": "FUN_00196770",
+  "why": "float mission +0x8c"
+ },
+ "001967a0": {
+  "name": "StageScene::setScriptVar3f",
+  "tag": "game-inferred",
+  "was": "FUN_001967a0",
+  "why": "mission +0x88; object property 0x3f in five setters"
+ },
+ "001967d0": {
+  "name": "StageScene::getScriptVar3f",
+  "tag": "game-inferred",
+  "was": "FUN_001967d0",
+  "why": "mission +0x88"
+ },
+ "001967f0": {
+  "name": "StageScene::setScriptVar3e",
+  "tag": "game-inferred",
+  "was": "FUN_001967f0",
+  "why": "mission +0x84; object property 0x3e"
+ },
+ "00196820": {
+  "name": "StageScene::getScriptVar3e",
+  "tag": "game-inferred",
+  "was": "FUN_00196820",
+  "why": "mission +0x84"
  },
  "00196840": {
   "name": "StageScene::setMessages",
@@ -11849,11 +12011,71 @@
   "was": "FUN_00196a40",
   "why": "answers +0x10c like StageScene::getParent 0x196950; the copy currentMission 0x196960 recurses through"
  },
+ "00196a50": {
+  "name": "StageScene::setResultValue",
+  "tag": "game-inferred",
+  "was": "FUN_00196a50",
+  "why": "mission 0x287050: StageResult +0x10[i]; object property 0x3c"
+ },
+ "00196a90": {
+  "name": "StageScene::getResultValue",
+  "tag": "game-inferred",
+  "was": "FUN_00196a90",
+  "why": "mission 0x287090"
+ },
+ "00196ac0": {
+  "name": "StageScene::getMenuMode",
+  "tag": "game-inferred",
+  "was": "FUN_00196ac0",
+  "why": "1 outside a frame, else from the menu state and the item list; 1 lets the fade run"
+ },
+ "00196b20": {
+  "name": "StageScene::findDoorOfFace",
+  "tag": "game-inferred",
+  "was": "FUN_00196b20",
+  "why": "the door whose +0x240 / +0x244 the face id +0x46 encodes"
+ },
+ "00196cc0": {
+  "name": "StageScene::isDoorFace",
+  "tag": "game-inferred",
+  "was": "FUN_00196cc0",
+  "why": "face flag 0x4000000 and id >= 100"
+ },
+ "00196cf0": {
+  "name": "StageScene::sphereHitsKind",
+  "tag": "game-inferred",
+  "was": "FUN_00196cf0",
+  "why": "group 1 objects of one kind: 0x232870 on every mesh"
+ },
+ "00196f00": {
+  "name": "StageScene::sphereHitsAny",
+  "tag": "game-inferred",
+  "was": "FUN_00196f00",
+  "why": "group 1 objects: 0x232870 on every mesh"
+ },
+ "001970f0": {
+  "name": "StageScene::getFloorAttr",
+  "tag": "game-inferred",
+  "was": "FUN_001970f0",
+  "why": "0x197280 from 50 above pos skipping the view targets: the face +0x44, 0xffff none"
+ },
  "00197160": {
   "name": "StageScene::collectViewTargets",
   "tag": "game-inferred",
   "was": "FUN_00197160",
   "why": "+0x54 = new array of the view target and the objects oSJ24_02 / oSJ24_03, count +0x50"
+ },
+ "00197280": {
+  "name": "StageScene::findFloorFace",
+  "tag": "game-inferred",
+  "was": "FUN_00197280",
+  "why": "the highest face under x, y from the height given; every mesh of the active Root objects not skipped"
+ },
+ "00197a90": {
+  "name": "StageScene::segmentHitsAny",
+  "tag": "game-inferred",
+  "was": "FUN_00197a90",
+  "why": "group 1 objects: 0x233160 on every mesh"
  },
  "00198170": {
   "name": "StageScene::raycast",
@@ -12064,6 +12286,12 @@
   "tag": "game-inferred",
   "was": "FUN_0019c6a0",
   "why": "3 saved bytes per object in every group but 4 (+8)"
+ },
+ "0019c960": {
+  "name": "SceneArrayPair::saveFlags",
+  "tag": "game-inferred",
+  "was": "FUN_0019c960",
+  "why": "the walk of 0x19c6a0 writing: three bytes per object and 0xc0 of its transform"
  },
  "0019cb50": {
   "name": "StageViewStack::remove",
@@ -12647,6 +12875,12 @@
   "was": "FUN_001d8540",
   "why": "the node base ctor: vtable 0x314150, child list +0x8 empty (0x1d85a0), parent +0x4 0, vtable 0x315ae0, +0x10 / +0x14 0; StageSound::addSource builds its sources on it"
  },
+ "001dd330": {
+  "name": "CharacterBrain::update",
+  "tag": "game-inferred",
+  "was": "FUN_001dd330",
+  "why": "runs the brain script while the flag +0x174 holds and there is a route"
+ },
  "001dd3f0": {
   "name": "CharacterBrain::setEnabled",
   "tag": "game-inferred",
@@ -13193,6 +13427,18 @@
   "was": "FUN_001fe720",
   "why": "memset(0x598b20, -1, 0x10): the four saved character ids; a0 the scene +0x88"
  },
+ "001fe890": {
+  "name": "StageParty::addImage",
+  "tag": "game-inferred",
+  "was": "FUN_001fe890",
+  "why": "a new Tim2Texture pushed on the record +0x54"
+ },
+ "001fe900": {
+  "name": "StageParty::setImage",
+  "tag": "game-inferred",
+  "was": "FUN_001fe900",
+  "why": "the record +0x40 texture and +0x44 object rebuilt"
+ },
  "001fe9b0": {
   "name": "StageParty::setFillImage",
   "tag": "game-inferred",
@@ -13330,6 +13576,36 @@
   "tag": "game-inferred",
   "was": "FUN_00215ef0",
   "why": "a0 an object: equal to gStageScene->player (+0x78); 76 call sites"
+ },
+ "002185a0": {
+  "name": "StageObject::canSpawn",
+  "tag": "game-inferred",
+  "was": "FUN_002185a0",
+  "why": "+0x66c position record valid and +0x6ac 0: no; else yes"
+ },
+ "00218630": {
+  "name": "StageObject::spawn",
+  "tag": "game-inferred",
+  "was": "FUN_00218630",
+  "why": "script entry from the first script, position from the mission or the saved one"
+ },
+ "0021c310": {
+  "name": "StageObject::afterScripts",
+  "tag": "game-inferred",
+  "was": "FUN_0021c310",
+  "why": "clears the per-frame fields of a character"
+ },
+ "0021c7c0": {
+  "name": "StageObject::beforeScripts",
+  "tag": "game-inferred",
+  "was": "FUN_0021c7c0",
+  "why": "a character of the mission list, each frame before the scripts"
+ },
+ "00230810": {
+  "name": "StageMenu::setData",
+  "tag": "game-inferred",
+  "was": "FUN_00230810",
+  "why": "to 0x20aaa0 on +0xc"
  },
  "002308a0": {
   "name": "StageMenu::StageMenu",
@@ -13523,11 +13799,29 @@
   "was": "FUN_00231c90",
   "why": "title%s.d2b with layout arg 0 / 1; folds its answer to 0 / 1 / 2"
  },
+ "00232870": {
+  "name": "StageCollision::sphereHits",
+  "tag": "game-inferred",
+  "was": "FUN_00232870",
+  "why": "float radius in f12, position last"
+ },
+ "00233160": {
+  "name": "StageCollision::segmentHits",
+  "tag": "game-inferred",
+  "was": "FUN_00233160",
+  "why": "from, to, mask, flags, arg"
+ },
  "00233810": {
   "name": "StageCollision::raycast",
   "tag": "game-inferred",
   "was": "FUN_00233810",
   "why": "a0 one collision mesh of a Root object (+0x20c array), a1 hit out, a2 from, a3 to, t0 mask, t1 flags, t2 arg: the face hit (StageCollisionFace, +0x40 flags) or null; StageScene::raycast keeps the nearest of every mesh"
+ },
+ "002342c0": {
+  "name": "StageCollision::heightAt",
+  "tag": "game-inferred",
+  "was": "FUN_002342c0",
+  "why": "x, y, range in f12..f14: mesh with +0 clear"
  },
  "002362a0": {
   "name": "boxContainsPoint",
@@ -13823,11 +14117,23 @@
   "was": "FUN_0023ee90",
   "why": "acts on the front slot; update takes a non-negative answer as picked"
  },
+ "0023f030": {
+  "name": "UiItemList::setSheet",
+  "tag": "game-inferred",
+  "was": "FUN_0023f030",
+  "why": "+0x1c, +0x24 the sheet, relocated; a texture over it"
+ },
  "0023f0b0": {
   "name": "UiItemList::UiItemList",
   "tag": "game-inferred",
   "was": "FUN_0023f0b0",
   "why": "StageScene ctor new(0x8c) for +0xcc with (+0xbc printer, 0): vtable 0x316530 at +0x88, a 0x38 object 0x208c70 at +0, the Japanese string for undefined; name a guess"
+ },
+ "00242e80": {
+  "name": "SceneUiState::pollSoundSources",
+  "tag": "game-inferred",
+  "was": "FUN_00242e80",
+  "why": "16 entries: StageSound::findSource, pushes into one of two 0x20-entry lists, flips them"
  },
  "00243100": {
   "name": "SceneUiState::~SceneUiState",
@@ -16265,11 +16571,41 @@
   "was": "FUN_002868c0",
   "why": "first call of restoreObjectFlags; body unread"
  },
+ "00286910": {
+  "name": "StageMission::setRestore",
+  "tag": "game-inferred",
+  "was": "FUN_00286910",
+  "why": "+0xb8, +0xbc keptObject; +0xc0 cleared when the first is set"
+ },
  "00286c30": {
   "name": "StageMission::setMessages",
   "tag": "game-inferred",
   "was": "FUN_00286c30",
   "why": "forwards the file to the object in its first field (0x2c41f0)"
+ },
+ "00286c40": {
+  "name": "StageMission::afterScripts",
+  "tag": "game-inferred",
+  "was": "FUN_00286c40",
+  "why": "starts the pending event +0xc8 or the fade; clears +0xd8, +0xd9"
+ },
+ "00286e30": {
+  "name": "StageMission::tickPending",
+  "tag": "game-inferred",
+  "was": "FUN_00286e30",
+  "why": "+0xe0 records of 0x20 count down at +0xe8, then 0x29fb60"
+ },
+ "00287050": {
+  "name": "StageMission::setResultValue",
+  "tag": "game-inferred",
+  "was": "FUN_00287050",
+  "why": "getStageResult +0x10[i]"
+ },
+ "00287090": {
+  "name": "StageMission::getResultValue",
+  "tag": "game-inferred",
+  "was": "FUN_00287090",
+  "why": "getStageResult +0x10[i]"
  },
  "002870c0": {
   "name": "StageMission::markStart",
@@ -16313,6 +16649,24 @@
   "was": "FUN_00287bb0",
   "why": "0x288930 + .xwb, null without a path"
  },
+ "002882b0": {
+  "name": "StageFileEvent::StageFileEvent",
+  "tag": "game-inferred",
+  "was": "FUN_002882b0",
+  "why": "vtable 0x318010 over 0x318050, FileLoader at +0x44, EE 0xf4"
+ },
+ "00288850": {
+  "name": "StageSimpleEvent::StageSimpleEvent",
+  "tag": "game-inferred",
+  "was": "FUN_00288850",
+  "why": "vtable 0x318030 over 0x318050, EE 0x34"
+ },
+ "002894b0": {
+  "name": "ScenePool::setImage",
+  "tag": "game-inferred",
+  "was": "FUN_002894b0",
+  "why": "+0x10 a new GsTexture"
+ },
  "00289800": {
   "name": "ScenePool::draw",
   "tag": "game-inferred",
@@ -16324,6 +16678,12 @@
   "tag": "game-inferred",
   "was": "FUN_00289b20",
   "why": "writes +0x1c[index] below the count +0x14; update puts the cue subtitle in slot 0"
+ },
+ "00289b50": {
+  "name": "ScenePool::setPrinter",
+  "tag": "game-inferred",
+  "was": "FUN_00289b50",
+  "why": "+0x18"
  },
  "00289b60": {
   "name": "ScenePool::~ScenePool",
@@ -17825,6 +18185,12 @@
   "was": "FUN_002b1620",
   "why": "a0 StageScene +0x11c: its +0 state, or 2 while the scene fade is full in mode 2; StageScene::isCleared tests 2"
  },
+ "002b1660": {
+  "name": "ClearSequence::ClearSequence",
+  "tag": "game-inferred",
+  "was": "FUN_002b1660",
+  "why": "+0 = 0"
+ },
  "002b1670": {
   "name": "GameOverSequence::update",
   "tag": "game-inferred",
@@ -17836,6 +18202,12 @@
   "tag": "game-inferred",
   "was": "FUN_002b1c50",
   "why": "a0 StageScene +0x118: its +0 state, or 5 when the state is 4 or more (or +8 set) and the fade is full in mode 2; StageScene::isGameOver tests 5"
+ },
+ "002b1cb0": {
+  "name": "GameOverSequence::GameOverSequence",
+  "tag": "game-inferred",
+  "was": "FUN_002b1cb0",
+  "why": "+0 = 1, two arguments at +0xc, +0x10"
  },
  "002b20a0": {
   "name": "SceneDirector::draw",
@@ -17963,11 +18335,23 @@
   "was": "FUN_002bb260",
   "why": "by state 1 / 2 on the player motion +0xbd8"
  },
+ "002bb2b0": {
+  "name": "MenuProgSet::load",
+  "tag": "game-inferred",
+  "was": "FUN_002bb2b0",
+  "why": "six new Tim2Texture"
+ },
  "002bb3e0": {
   "name": "MenuProgSet::~MenuProgSet",
   "tag": "game-inferred",
   "was": "FUN_002bb3e0",
   "why": "deleting dtor of StageScene +0xa8: deletes the objects at +4.. through their vptr +0x44 (beside PrgMcCard 0x2b9d60); name a guess"
+ },
+ "002bb4e0": {
+  "name": "MenuProgSet::MenuProgSet",
+  "tag": "game-inferred",
+  "was": "FUN_002bb4e0",
+  "why": "seven words zero"
  },
  "002bb680": {
   "name": "SubSceneItem::setup",
@@ -18095,11 +18479,53 @@
   "was": "FUN_002c42c0",
   "why": "runs 0x2c4320 in slot 3 and waits; the word it answers says the save changed (guess at the mode: 16 scored entries of the save's +0x46c / +0x4ac)"
  },
+ "002ce0c0": {
+  "name": "SceneBufferSet::setActiveFor",
+  "tag": "game-inferred",
+  "was": "FUN_002ce0c0",
+  "why": "each block whose owner changed active: shown, render +0xe24"
+ },
+ "002ce180": {
+  "name": "SceneBufferSet::storeActive",
+  "tag": "game-inferred",
+  "was": "FUN_002ce180",
+  "why": "block +4 = its owner is the linked object"
+ },
+ "002ce1c0": {
+  "name": "SceneBufferSet::updateRange",
+  "tag": "game-inferred",
+  "was": "FUN_002ce1c0",
+  "why": "float range in f12: block node on when near a listed object"
+ },
+ "002ce3e0": {
+  "name": "SceneBufferSet::attachCharacters",
+  "tag": "game-inferred",
+  "was": "FUN_002ce3e0",
+  "why": "the first time, the characters of group 2 fill the eight blocks"
+ },
  "002ce5a0": {
   "name": "SceneBufferSet::~SceneBufferSet",
   "tag": "game-inferred",
   "was": "FUN_002ce5a0",
   "why": "deleting dtor of StageScene +0x9c: deletes the eight blocks at +0x18..; name a guess"
+ },
+ "002ce790": {
+  "name": "SceneBlock98::updateVisible",
+  "tag": "game-inferred",
+  "was": "FUN_002ce790",
+  "why": "+0xc clear and +0x10 below 500: shown and the render group"
+ },
+ "002ceb70": {
+  "name": "SceneBlock98::setActive",
+  "tag": "game-inferred",
+  "was": "FUN_002ceb70",
+  "why": "a change of on: shown, render +0xe24"
+ },
+ "002cebd0": {
+  "name": "SceneBlock98::attachTo",
+  "tag": "game-inferred",
+  "was": "FUN_002cebd0",
+  "why": "re-hangs the block node on a bone of the player"
  },
  "002cf510": {
   "name": "resetStageGroupTable",
