@@ -566,7 +566,7 @@
    "why": "StageResult (0x599700, static init 0x310f60: begin(0) + __register_global_object with the destructor 0x2b0cf0) and the game-pack loader 0x2afd00..0x2aff80: the MSL map instances 0x2b0590..0x2b0cf0 serve the loader's tables and sit between getStageResult and StageResult's static destructor, so one object file; 0x2afc20/0x2afcd0 (init-pack items by language) joined by position (guess); 0x2af9a0 before is the 0x2adc70 drawing cluster, 0x2b0d50 after is a SoundStream thunk"
   },
   "game/stagescene.cpp": {
-   "notes": "Written this run (batch 088, 71 names): the last six stubs here (runStageScripts, updateBuffers, updateBlock98, applySoundTarget, applyBgMotionTarget, loadList) plus startClear, startGameOver, saveObjectFlags, SceneArrayPair saveFlags, requestSubScene, both startEvent, the mission value accessors, ownedHasTarget, getMenuMode, isDoorFace, findDoorOfFace, sphereHitsKind, sphereHitsAny, segmentHitsAny, getFloorAttr, findFloorFace; playerAction now carries 0x1963f0. No stubs are left in stagescene.cpp. Facts: mission +0xc8 is the pending event's NAME (busy was its first byte), scene +4 holds the sub-scene name (now const char pointer), purposeText ends before +0x84, door faces encode type and number in +0x46. NOTHING HERE HAS RUN: no stage loads, the smoke run stays on the language screen, unchanged. Before a stage runs: StageObject scriptRunner() is a stand-in into padding at +0x40, the character TU must give it a real member. PC difference: applySoundTarget skips an empty bank name instead of getData(null). Left in the TU: 0x195db0, 0x19cf40, 0x19cf80 need host virtuals, and the rest of the unwritten functions per tus.py brief. Doubts are in open-items.md Seventh run.",
+   "notes": "All 258 written, nothing has run: the smoke run stays on the language screen and the picture is unchanged (no stage loads). Batch 089, 70 names. SubSceneObject is now DemoExecuter, the name the ROM gives in slot 7. ScriptRunner has a host vptr and a virtual dtor, so destroy became delete. Before a stage runs: StageObject scriptRunner() still casts padding at +0x40 to a now polymorphic ScriptRunner, so a virtual call on it would crash; the character TU must give it a real member. Only 20 of 108 ScriptRunner slots are declared, in host order, and nothing calls one. command10..101 and sideHook0..3 are placeholder names. getKind of SubSceneDoorObject, StageMarker and SubSceneProp are plain members nothing reaches until StageObject getKind becomes virtual in the objects TU. Comment-only at the end of stagescene.cpp: 15 this-adjust thunks and 9 deleting dtors the host compiler makes; 17 ScriptRunner defaults are inline in gamehooks.h. The queue is now empty: re-assess from the menu blockers in open-items.md. Doubts: open-items.md Eighth run.",
    "ranges": [
     [
      "001953f0",
@@ -612,9 +612,14 @@
      "date": "2026-11-03 20:06",
      "status": "partial",
      "summary": "stage script step, sound and bg-motion targets, loadList, block updates, 28 small members, collision queries"
+    },
+    {
+     "date": "2026-11-03 20:24",
+     "status": "verify",
+     "summary": "the last 67 functions: collision finders, scene accessors, script command defaults, DemoExecuter; all 258 written"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "why": "StageScene methods 0x195640..0x19c180 and StageFiles 0x1a37e0..0x1a4270 share helpers (path filter 0x1a1ca0, script loader 0x1a20f0, string-map templates 0x1a4e80..0x1a6790); CodeWarrior emits a TU's weak templates and this-adjust thunks (0x1a67c0..0x1a68a0) last, so the file ends before 0x1a68b0 (dtor of vtable 0x315690, the next run's class). Start 0x1953f0: game/stageobjlist.cpp ends there. No source-path string; one file is a guess, StageFiles may be its own file."
   },
   "game/stagesound.cpp": {

@@ -1084,6 +1084,33 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    applySoundTarget skips a bank with an empty file instead of calling getData(null). Not written in
    the slice: 0x195db0 (SubSceneObject's deleting dtor), 0x19cf40 (answers "DemoExecuter"), 0x19cf80
    (empty slot): no host virtuals to hang them on yet.
+   **Eighth run (2026-11-03, batch 089, 70 names; the last 67 written, 258 of 258, `verify`)**: the
+   four collision finders left, the buffer / block98 / oZS99_01 accessors, `isInView`,
+   `playerOrTargetInView`, `viewLinkedObject` (now public), `getViewBottom`, `stageHideObjects`,
+   `StageFiles::hasItem` / `hasCharacter`, and every vtable function (architecture.md "The script
+   runner's vtable"). **Nothing here has run**: the smoke run still stays on the language screen, the
+   picture is unchanged. The stand-in `SubSceneObject` is now **`DemoExecuter`**, the ROM's own name
+   (slot 7); `ScriptRunner` has a host vptr and a virtual dtor, so `->destroy()` became `delete`.
+   Choices for the user to overrule:
+   (1) **`ScriptRunner` is now polymorphic while `StageObject::scriptRunner()` still casts padding to
+   it**: non-virtual calls work as before, but a virtual call there would crash, and only 20 of its 108
+   slots are declared (host order is not EE order). The character / runner TU must give the object a
+   real member, as the seventh run already asked. Nothing calls a slot yet.
+   (2) `command10` .. `command101`, `sideHook0..3` and their `void *` arguments are placeholders: the
+   commands' meaning is unread. Only the Shift-JIS string and the forwarding in 0x315690 are facts.
+   (3) `getKind` of `SubSceneDoorObject`, `StageMarker`, `SubSceneProp` and StageMarker's `sideHook*` are
+   plain members: `StageObject::getKind` is still a non-virtual stub, so **nothing reaches them until
+   the objects' TU makes it virtual**, and `SubSceneMapObject` has no StageObject base on the host.
+   (4) Fifteen this-adjust thunks and nine deleting dtors are comment-only (end of stagescene.cpp): the
+   host compiler makes them. 0x19c060 / 0x19c0c0 (vtables 0x314ce0 / 0x314c90) have no host class yet;
+   their ctors are 0x2b2c80 / 0x2a89b0.
+   (5) The five Ghidra thunks 0x19d040.. were not renamed: renaming a thunk can rename its target, so
+   they keep showing `ScriptRunner::defaultCommand`; the source names them command80..101.
+   PC difference: `raycastObject` / `raycastObjectExcept` start the best hit as hit's own contents where
+   the ROM copies an uninitialised local, as `raycast` already does.
+   **With this the queue is empty**: per SKILL.md "Starting sessions" the next run re-assesses from the
+   menu's blockers above (layout paths, `runTitleScreen`, `loadMenuPack`) rather than following the
+   frontier blindly.
 
 1. **The game**: Forbidden Siren 2, Europe, `SCES_538.51`, annotation tag `FS2` (decided, below;
    `yamipan.py` has `ANNOT`, the stub regex and the game-folder defaults since bootstrap 3).
