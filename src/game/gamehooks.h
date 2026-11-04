@@ -120,6 +120,10 @@ const char *eventMoviePath2506();                                        // FS2 
 // not read yet).
 enum InitPackItem
 {
+    InitItem_Spotlight = 2,     // StageFiles::loadCommon: the renderer's spotlight
+    InitItem_Shadow    = 3,     // shadow_00
+    InitItem_Fill      = 4,     // the screen fills' image
+    InitItem_MenuProg  = 6,     // StageScene::createMenuProg
     InitItem_21     = 0x15,     // getInitItem21
     InitItem_LangDE = 0x16,
     InitItem_LangEN = 0x17,     // every language but the four below
@@ -232,9 +236,17 @@ class StageCollision;
 // layout: host -- EE: vptr at +0 (getKind is slot 123, vtable +0x1f4).
 class Tim2Texture;              // game/gsutil.h
 struct ModelInstance;
+class StageObjectTree;
+struct PlayerMotion;
+class ScriptRunner;
+// layout: host
 class StageObject
 {
 public:
+    // The family's base (vptrs +0, +0x1c, +0xf4; the node state, the
+    // script runner at +0x40, the transform at +0x140). Vtable 0x314770.
+    StageObject();                                                       // FS2 0x0018b700
+
     // A virtual in the ROM (slot 123); a plain stub until its TU.
     int getKind();                                                       // FS2 vtable +0x1f4
     // The deleting dtor (slot 2, flag 1: StageObjectList's teardown); a
@@ -247,6 +259,13 @@ public:
     // textures, collision.
     void setupMapObject(const char *name, ModelInstance *instance,
                         StringMap<Tim2Texture *> *textures, void *collision); // FS2 0x001760c0
+    // Copies name to m_name (first thing in every class's addToScene).
+    void setName(const char *name);                                      // FS2 0x0018b4d0
+    // Slot +0x24c: the object is the view stack's top again
+    // (StageViewStack::remove). A plain stub until its TU.
+    void onViewTop();                                                    // FS2 vtable +0x24c
+    // A character's action as the menus see it (StageScene::playerAction).
+    int  getActionState();                                               // FS2 0x00214fc0
 
     // This is the scene's player (gStageScene->player).
     bool isPlayer();                                                     // FS2 0x00215ef0
@@ -262,7 +281,9 @@ public:
         return m_collisions == nullptr || i >= m_collisionCount ? nullptr : m_collisions[i];
     }
 
-    u_char _000[0x20];
+    u_char _000[0x18];
+    u_char m_viewActive;        // FS2 +0x018: 1 from the ctor; cleared off the view stack and on the map's cameras
+    u_char _019[0x7];
     // The name ends before +0x30 (a character's model there): 0x10 like an
     // ItemDef name. Was sized to +0x200 before (open-items.md TU 44).
     char   m_name[0x10];        // FS2 +0x020: an item's / weapon's name (an ItemDef name), the object's map key
@@ -270,7 +291,9 @@ public:
     u_char m_active;            // FS2 +0x034: the list walks (StageScene::raycast) skip an inactive object
     u_char _035[0x2];
     u_char m_hidden;            // FS2 +0x037: (guess) set: StageScene::raycast leaves the object out
-    u_char _038[0x1c8];
+    StageObjectTree *m_tree;    // FS2 +0x038: its node in the object tree (StageScene::restoreObjectFlags)
+    u_char _03c[0x104];
+    NodeTransform m_xform;      // FS2 +0x140: the placement the map file sets
     union {
         int    m_itemDef;       // FS2 +0x200: gItemDefs index; gStageObjRecords too (StageSound)
         u_char m_collides;      // FS2 +0x200: a Root object's: it has collision meshes (StageScene::raycast)
@@ -284,14 +307,29 @@ public:
         int    m_count;         // FS2 +0x20c: an item's count
         StageCollision **m_collisions; // FS2 +0x20c: a Root object's meshes
     };
-    u_char _210[0x88];
+    u_char _210[0x14];
+    PlayerMotion *m_motion;     // FS2 +0x224: a character's
+    u_char _228[0x68];
+    void  *m_290;               // FS2 +0x290: a character's (StageScene::partnerResponds; unread)
+    u_char _294[0x4];
     int    m_doorRecord;        // FS2 +0x298: a door's gDoorRecords index (StageFiles::applyBgTarget)
     u_char _29c[0xc];
     int    m_doorState;         // FS2 +0x2a8: a door's StageDoorState
     u_char _2ac[0x54];
     StageObject *m_linked;      // FS2 +0x300: the object a Kind9 / Kind11 listener hears through (StageSound)
-    u_char _304[0x150];
-    int    m_ammoB;             // FS2 +0x454: a firearm's (findSprite's second number)
+    u_char _304[0x9d];
+    u_char m_canPause;          // FS2 +0x3a1: the player's: clear: no pause menu
+    u_char _3a2[0x1e];
+    u_char m_3c0;               // FS2 +0x3c0: StageScene::partnerResponds (unread)
+    u_char m_3c1;               // FS2 +0x3c1: the same, of the partner
+    u_char _3c2;
+    u_char m_3c3;               // FS2 +0x3c3: the same (unread)
+    u_char _3c4[0x8c];
+    int    m_weaponDef;         // FS2 +0x450: a weapon's gWeaponDefs index (StageFiles::placeItem)
+    union {
+        int    m_ammoB;         // FS2 +0x454: a firearm's (findSprite's second number)
+        u_char m_altAction;     // FS2 +0x454: the player's: which alternate action (StageScene::playerAction)
+    };
     int    m_ammoA;             // FS2 +0x458: a firearm's (the first)
 };
 
@@ -321,11 +359,25 @@ struct StageMapHolder
 
 // The player's +0x224 object (its +0 the player). Guess: the motion set,
 // picked by the weapon carried.
-// layout: host -- contents unread.
+// layout: host -- EE: +0xc00 the look state.
+struct PlayerLookState;
 struct PlayerMotion
 {
     void refresh();                                                      // FS2 0x001e66c0
+
+    u_char _000[0xc00];
+    PlayerLookState *look;      // FS2 +0xc00
 };
+// What StageScene::partnerResponds reads of it; the angle's unit and what
+// the -190..-160 window means are unread. EE layout.
+struct PlayerLookState
+{
+    u_char _00[0x60];
+    float  angle;               // FS2 +0x60
+    u_char _64[0x2c];
+    u_char active;              // FS2 +0x90
+};
+static_assert(offsetof(PlayerLookState, active) == 0x90, "PlayerLookState::active");
 
 // The player character of a stage (the stage object's +0x78). Only what
 // game/uigame.cpp reads.
@@ -343,7 +395,9 @@ struct StagePlayer
     u_char _000[0x150];
     float  posX;                // FS2 +0x150
     float  posZ;                // FS2 +0x154
-    u_char _158[0x10];
+    float  height;              // FS2 +0x158: the world's up axis (StageScene::getFloor)
+    float  posW;                // FS2 +0x15c
+    u_char _160[0x8];
     float  yaw;                 // FS2 +0x168
     u_char _16c[0xb8];
     PlayerMotion   *motion;     // FS2 +0x224
@@ -358,6 +412,20 @@ struct StagePlayer
 // +0x88; its +0 holds them at +0x1c..+0x28). save / restore go through the
 // ids at 0x598b20 (StageObject::m_id, -1 none).
 // layout: host -- contents unread.
+// An object's node in the tree of objects (StageObject +0x38). EE 0x10.
+class StageObjectTree
+{
+public:
+    // Sets the node's and its children's m_active and m_viewActive.
+    void setActive(bool on);                                             // FS2 0x0018bdc0
+    // A virtual (+0x244) on the node's object and its children; what it
+    // sets is unread.
+    void setShown(bool on);                                              // FS2 0x0018bbe0
+};
+// The object's shown state (0x18b290).
+bool stageObjectIsShown(StageObject *object);                            // FS2 0x0018b290
+
+// layout: host
 struct StageParty
 {
     StageParty();                                                        // FS2 0x001fecf0: +0 = new 0x148-byte record (0x203d70)
@@ -369,6 +437,8 @@ struct StageParty
     // (mode 1), else null. The name is a guess (StageScene::drawPaused
     // compares it with the view target's character).
     StageObject *getCompanion();                                         // FS2 0x001fea50
+    // ScreenFill::setImage on the record's +0x3c.
+    void setFillImage(const void *image);                                // FS2 0x001fe9b0
 };
 
 // A singly linked list whose nodes {next, flags} carry a keep bit (the
@@ -389,9 +459,21 @@ enum StageEventState
 {
     StageEvent_Active = 2,      // StageScene::isEventActive; the name is a guess
 };
+class ScriptRunner;
+// layout: host
 class StageEvent
 {
 public:
+    // The first subtitle font for a language of the set {1, 5..9}, the
+    // event's own otherwise (the argument is unused; the language's
+    // meaning is unread).
+    bool usesLanguageFont();                                             // FS2 0x00287af0
+    // SubSceneObject's flag: the event is not d0101, or SaveData flag
+    // (1, 0x15) is set. "Skippable" is a guess.
+    bool isSkippable();                                                  // FS2 0x00287b70
+    // out = the voice stream's file, .xwb; null with no voice.
+    const char *getVoicePath(char *out);                                 // FS2 0x00287bb0
+
     // A virtual in the ROM (slot 3, vtable +0x14); a plain stub until its
     // TU. What StageScene::enterSubScene builds the sub-scene from.
     void *getSubSceneData();
@@ -401,6 +483,12 @@ public:
 
     u_char _00[0x24];
     int    state;               // FS2 +0x24: StageEventState
+    ScriptRunner *runner;       // FS2 +0x28: StageScene::isBusy: its script may go on while the event runs
+    u_char _2c[0x8];
+    const void *voice;          // FS2 +0x34: the voice stream's header (DemoStream::open); null none
+    void       *fsm;            // FS2 +0x38: subtitles (DemoStream::setFsm)
+    const void *subtitleImage;  // FS2 +0x3c: their font's image
+    const void *subtitleFont;   // FS2 +0x40: their font
 };
 
 class Clock;                    // game/clock.h
@@ -449,6 +537,15 @@ public:
     int  stop();                                                         // FS2 0x002b1170
     // A jump to SoundStream::update: once a frame.
     void update();                                                       // FS2 0x002b1100
+    // The subtitles' fsm file, relocated; false when it is not one.
+    bool setFsm(void *fsm);                                              // FS2 0x002b11a0
+    // A new printer on font and image; false when either is null or the
+    // font does not take.
+    bool setFont(const void *font, const void *image);                   // FS2 0x002b1010
+    // Opens the voice: header, the directory + name.
+    bool open(const void *header, const char *name);                     // FS2 0x002b1270
+    bool play(int volume);                                               // FS2 0x002b1240: left = right = volume
+    bool setPaused(bool on);                                             // FS2 0x002b1110
 };
 
 // The scene's fade (StageScene +0xfc; 0x1512a0 / 0x1512e0 in the run
@@ -466,6 +563,8 @@ public:
     void destroy();
     // Mode 2 at level 1.0 (StageSound does not resume a cue stream then).
     bool isFullInMode2();                                                // FS2 0x001512a0
+    // The same in mode 1.
+    bool isFullInMode1();                                                // FS2 0x001512e0
 };
 
 // -- The stage scene's members (StageScene's ctor 0x19c180 / dtor 0x19bbe0;
@@ -505,10 +604,19 @@ struct StageNodeTree
 
 // +0x2c: tex areas, an AreaGrid and a 0x5a10 table; its dtor puts the
 // parent scene's draw settings back. layout: host (EE 0xe70).
+class AreaBox;
+class Tim2Texture;              // game/gsutil.h
 struct SceneRender
 {
     SceneRender();                                                       // FS2 0x001fa4a0
     ~SceneRender();                                                      // FS2 0x001fa230: deleting
+    // The map's ENV_CB / ENV_SB boxes (grids +0xdfc / +0xe00; what they
+    // gate is unread).
+    void addCbBox(AreaBox *box);                                         // FS2 0x001f6ad0
+    void addSbBox(AreaBox *box);                                         // FS2 0x001f6ac0
+    // loadCommon's spotlight and shadow_00 (+0xe2c / +0xe58).
+    void setSpotlightTexture(Tim2Texture *texture);                      // FS2 0x001fa1c0
+    void setShadowTexture(Tim2Texture *texture);                         // FS2 0x001fa150
 };
 
 // +0x4c and +0x8c..+0x94: objects with the vptr at +0 (slot 0 their
@@ -517,6 +625,8 @@ class SceneOwnedObject
 {
 public:
     void destroy();                                                      // FS2 vtable +0x8
+    // Slot +0x3c: it holds the player's actions (StageScene::playerAction).
+    bool isBusy();                                                       // FS2 vtable +0x3c
 };
 
 // +0x4c: what runs the stage's rute file (vtable 0x316a78; run
@@ -551,6 +661,10 @@ struct StageScript
     short slotCount;            // FS2 +0xa: StageScene::scriptSlots
 
     StageScript *relocate(bool withTable2);                              // FS2 0x001d3a40
+    // Entry index of the first table (0x1c bytes each; inline in the ROM).
+    // PC: table stays an offset from the script (above), so relocate's TU
+    // must leave it one.
+    const void *entry(int index) const { return (const char *)this + table + index * 0x1c; }
 };
 static_assert(sizeof(StageScript) == 0xc, "StageScript: the file header");
 
@@ -575,13 +689,79 @@ struct AreaClip
     ~AreaClip();                                                         // FS2 0x002dcab0: deleting
 };
 
-// A map file (the map keyword). relocate sets its six section pointers
-// +0x0..+0x14 in place: their TU must not write 8-byte pointers into them.
-// layout: host (nothing read here).
+// A map file (the map keyword): six record sections after this 0x24-byte
+// header, in file order. EE layout: it is the file. relocate sets the six
+// section refs from the counts, in place: its TU must use S2dRef::set, not
+// write 8-byte pointers. Each record starts with its name; the name's prefix
+// picks the object (StageFiles::applyMapTarget).
+struct StageMapPoint            // what stands somewhere: characters, items, P_ and BA_ marks
+{
+    char  name[0x10];           // FS2 +0x00
+    float pos[3];               // FS2 +0x10
+    float rot[3];               // FS2 +0x1c
+    u_char _28[0x4];
+};
+static_assert(sizeof(StageMapPoint) == 0x2c, "StageMapPoint: EE 0x2c");
+struct StageMapCamera
+{
+    char  name[0x10];           // FS2 +0x00
+    float pos[3];               // FS2 +0x10
+    float aim[3];               // FS2 +0x1c: from pos to what it looks at
+    u_char _28[0x8];
+};
+static_assert(sizeof(StageMapCamera) == 0x30, "StageMapCamera: EE 0x30");
+struct StageMapSpot             // ENV_CL, ENV_SL, YAM_CL, YAM_SL
+{
+    char  name[0x10];           // FS2 +0x00
+    float pos[3];               // FS2 +0x10
+    float rot[3];               // FS2 +0x1c
+    float angle;                // FS2 +0x28: the full cone, radians
+    float radius;               // FS2 +0x2c
+    u_char _30[0x4];
+};
+static_assert(sizeof(StageMapSpot) == 0x34, "StageMapSpot: EE 0x34");
+struct StageMapLight            // ENV_PL, YAM_PL; any other name a SphereVolume
+{
+    char  name[0x10];           // FS2 +0x00
+    float pos[3];               // FS2 +0x10
+    float radius;               // FS2 +0x1c
+    u_char _20[0x4];
+};
+static_assert(sizeof(StageMapLight) == 0x24, "StageMapLight: EE 0x24");
+struct StageMapBox              // the ENV_ boxes and the rest (applyMapTarget)
+{
+    char  name[0x10];           // FS2 +0x00
+    float pos[3];               // FS2 +0x10
+    float size[3];              // FS2 +0x1c: width, depth, height
+    float rot[3];               // FS2 +0x28
+    u_char _34[0x4];
+};
+static_assert(sizeof(StageMapBox) == 0x38, "StageMapBox: EE 0x38");
+struct StageMapMark             // the last section: points without a rotation
+{
+    char  name[0x10];           // FS2 +0x00
+    float pos[3];               // FS2 +0x10
+    u_char _1c[0x4];
+};
+static_assert(sizeof(StageMapMark) == 0x20, "StageMapMark: EE 0x20");
 struct StageMapFile
 {
     void relocate();                                                     // FS2 0x00186ee0
+
+    S2dRef<StageMapPoint>  points;      // FS2 +0x00
+    S2dRef<StageMapCamera> cameras;     // FS2 +0x04
+    S2dRef<StageMapSpot>   spots;       // FS2 +0x08
+    S2dRef<StageMapLight>  lights;      // FS2 +0x0c
+    S2dRef<StageMapBox>    boxes;       // FS2 +0x10
+    S2dRef<StageMapMark>   marks;       // FS2 +0x14
+    short pointCount;                   // FS2 +0x18
+    short cameraCount;                  // FS2 +0x1a
+    short spotCount;                    // FS2 +0x1c
+    short lightCount;                   // FS2 +0x1e
+    short boxCount;                     // FS2 +0x20
+    short markCount;                    // FS2 +0x22
 };
+static_assert(sizeof(StageMapFile) == 0x24, "StageMapFile: EE 0x24");
 
 // A node's record in a model file (0x30 bytes). EE layout: it lives in the
 // file.
@@ -679,6 +859,217 @@ public:
     int m_recordValue;          // FS2 +0x280: DoorRecord::value
 };
 
+// What a stage's map file becomes (StageFiles::applyMapTarget). The ROM
+// news each with operator new aligned 0x40; the sizes are in the comments.
+// All names but ENV_ / YAM_ / P_SPW are the port's. The classes' virtuals
+// are read only as far as these calls.
+
+// A script-run object: the map's name is the script's. Stage objects have
+// one at +0x40 (so has a sub-scene, as its base).
+// layout: host -- EE: vptr +0xb4; +4 the run depth.
+class ScriptRunner
+{
+public:
+    ScriptRunner();                                                      // FS2 0x001d3130
+    // The script entry it runs.
+    void setEntry(const void *entry);                                    // FS2 0x001d2f40
+    // One step: it is gRunningScript meanwhile.
+    void run(int arg);                                                   // FS2 0x001d27e0
+};
+extern ScriptRunner *gRunningScript;    /* sbss 0x31ae18 (gp-0x7a58) */
+
+// Named places with their script (vtables 0x3151c0 / 0x3151e4 / 0x3151fc;
+// the ctor inline in the ROM; dtor 0x1a4800). layout: host -- EE 0x200.
+class StageMarker : public StageObject
+{
+public:
+    // The object list's group 6, then its script by name.
+    void addToScene(const char *name);                                   // FS2 0x0017ef10: StageObjectList::add6
+};
+
+// vtable 0x311860; used for the map's cameras and by setupCameras.
+// layout: host -- EE 0x300.
+class StageCamera : public StageObject
+{
+public:
+    // scrZ is the view-screen distance of sceVu0ViewScreenMatrix; farZ
+    // only stored here.
+    StageCamera(float scrZ, float width, float height, float farZ);      // FS2 0x00177d60
+    void addToScene(const char *name);                                   // FS2 0x00177d20: StageObjectList::add0
+    // Turns the transform's rotation to look at target.
+    void lookAt(const float *target);                                    // FS2 0x00177900
+};
+
+// The two light classes' base (ctor 0x1866f0; vtables 0x313e30 / 0x3141b0).
+// layout: host -- EE offsets in the comments.
+class AreaBox;
+class StageLight : public StageObject
+{
+public:
+    StageLight();                                                        // FS2 0x001866f0
+    void setRadiusSquared(float radiusSquared);                          // FS2 0x00185bb0
+    // The vector +0x220; the map's ENV_ lights all pass (1, 0, 0). What it
+    // is (a colour, an axis) is unread.
+    void setVector(float x, float y, float z);                           // FS2 0x00185c40
+    void setEnabled(bool on);                                            // FS2 0x00185fb0: +0x200 and +0x36
+    // withShade: the applyMapTarget calls always pass 1 (0x185c60 runs).
+    void addToScene(const char *name, bool withShade);                   // FS2 0x001861b0: StageObjectList::add5
+    // A sub-scene's light shows what the parent's light of its name shows.
+    void copyShownFrom(StageLight *other);                               // FS2 0x00186160
+
+    u_char m_envLight;          // FS2 +0x271: ENV_ lights
+    StageList<AreaBox *> m_boxes; // FS2 +0x278: the boxes named after the light
+    u_char m_yamLight;          // FS2 +0x2a1: YAM_ lights; off at the start
+};
+// ENV_CL, ENV_SL, YAM_CL, YAM_SL. vtable 0x313e30. layout: host -- EE 0x300.
+class SpotLight : public StageLight
+{
+public:
+    SpotLight();                                                         // FS2 0x00185260
+    void setConeAngle(int degrees);                                      // FS2 0x00185210: half the cone
+};
+// ENV_PL, YAM_PL. vtable 0x3141b0. layout: host -- EE 0x2c0.
+class PointLight : public StageLight
+{
+public:
+    PointLight();                                                        // FS2 0x001856b0
+};
+
+// The rest of the light and box sections: scripted volumes (base vtable
+// 0x3127f0). "Volume" is a guess: their script hears them.
+// layout: host -- EE 0x240.
+class StageVolume : public StageObject
+{
+public:
+    // The object list's group 7, then its script by name.
+    void addToScene(const char *name);                                   // FS2 0x0017ecb0: StageObjectList::add7
+};
+// layout: host
+class SphereVolume : public StageVolume
+{
+public:
+    SphereVolume();                                                      // FS2 0x0017ec30
+    void setRadius(float radius);                                        // FS2 0x0017ec20
+};
+// layout: host
+class BoxVolume : public StageVolume
+{
+public:
+    BoxVolume();                                                         // FS2 0x0017ea90
+    void setSize(float width, float height, float depth);                // FS2 0x0017ea50
+};
+
+// A box of the map (vtable 0x314180 over StageNode, EE 0x140): the
+// AreaGrids hold these. The box +0x100..+0x118 is centred on x / y; z runs
+// from 0 to height, whichever way height points.
+// layout: host
+class AreaBox : public StageNode
+{
+public:
+    AreaBox();                                                           // FS2 0x00284950
+    void setSize(float width, float height, float depth);                // FS2 0x002848d0
+};
+// The boxes with a number in their name (+0x140; EE 0x180, the vtables
+// 0x315190 / 0x315160 and their dtors inline). ENV_CB%d: unread.
+// layout: host
+class CbAreaBox : public AreaBox
+{
+public:
+    int m_number = 0;           // FS2 +0x140
+};
+// ENV_MB_f%02d: the floor the box is on (StageScene::getFloor).
+// layout: host
+class FloorAreaBox : public AreaBox
+{
+public:
+    int m_floor = 0;            // FS2 +0x140
+};
+
+// A character of the map (the F_ and player points). vtable at 0x17de30.
+// layout: host -- EE 0x800.
+class StageCharacter : public StageObject
+{
+public:
+    StageCharacter();                                                    // FS2 0x0017de30
+    // Model, textures, the model's two motion lists and mdl.
+    void setup(const char *name, ModelInstance *instance, StringMap<Tim2Texture *> *textures,
+               StageList<void *> *motions, StageList<void *> *motions2, void *mdl); // FS2 0x0017c700
+};
+
+// The item classes (StageFiles::placeItem, by ItemDef::kind and name).
+// layout: host -- EE sizes in the comments.
+class StageItem : public StageObject
+{
+public:
+    StageItem();                                                         // FS2 0x00183f40: EE 0x240
+    // Slot +0x24c in these classes. A plain stub until its TU.
+    void setupItem(const char *name, ModelInstance *instance,
+                   StringMap<Tim2Texture *> *textures, StageList<void *> *motions); // FS2 vtable +0x24c
+    // A weapon, once m_weaponDef is set.
+    void initWeapon();                                                   // FS2 0x001823f0
+};
+// layout: host
+class StageItemE : public StageItem     // ItemKind_E
+{
+public:
+    StageItemE();                                                        // FS2 0x00182ad0: EE 0x280
+};
+// layout: host
+class StageWeaponItem : public StageItem    // kinds below 7
+{
+public:
+    StageWeaponItem();                                                   // FS2 0x00182670: EE 0x480
+};
+// layout: host
+class StageTrapItem : public StageItem      // I_WANA
+{
+public:
+    StageTrapItem();                                                     // FS2 0x00181200: EE 0x280
+};
+// layout: host
+class StageThrownItem : public StageItem    // I_HATUEN, I_AKIKAN, I_PET, I_NUT
+{
+public:
+    StageThrownItem();                                                   // FS2 0x00180d30: EE 0x480
+};
+
+// A sub-scene's characters and items (vtables at their ctors; a lighter
+// family like SubSceneMapObject). layout: host.
+class SubSceneCharacter
+{
+public:
+    explicit SubSceneCharacter(int arg);                                 // FS2 0x002bbab0: always 2; EE 0x280
+    void setup(const char *name, ModelInstance *instance,
+               StringMap<Tim2Texture *> *textures);                      // FS2 0x002bb870
+};
+// layout: host
+class SubSceneItem
+{
+public:
+    explicit SubSceneItem(int arg);                                      // FS2 0x002bb7a0: always 3; EE 0x280
+    void setup(const char *name, ModelInstance *instance,
+               StringMap<Tim2Texture *> *textures);                      // FS2 0x002bb680
+};
+// Any other item; vtables 0x315420 / 0x315444 / 0x31545c, the ctor inline
+// in the ROM over 0x269d00. EE 0x240.
+// layout: host
+class SubSceneModelObject
+{
+public:
+    explicit SubSceneModelObject(int arg);                               // FS2 0x00269d00
+};
+// layout: host
+class SubSceneProp : public SubSceneModelObject
+{
+public:
+    explicit SubSceneProp(int arg) : SubSceneModelObject(arg) {}
+    void setup(const char *name, ModelInstance *instance,
+               StringMap<Tim2Texture *> *textures);                      // FS2 0x002bb810
+};
+
+// The script's number of a player spawn name (P_SPW%02d); -1 not one.
+int parseSpawnId(const char *name);                                      // FS2 0x0029fb30
+
 // +0x9c: eight blocks from +0x18. layout: host.
 struct SceneBufferSet
 {
@@ -691,6 +1082,8 @@ class ScreenFill
 {
 public:
     ScreenFill(u_int rgba, int x, int y, int w, int h);                  // FS2 0x00151f20
+    // A new Tim2Texture of image at +8, the old one deleted.
+    void setImage(const void *image);                                    // FS2 0x00151e10
     void destroy();                                                      // FS2 vtable +0x8 (vptr +4)
 };
 
@@ -698,8 +1091,11 @@ public:
 // ctor. layout: host.
 struct MenuProgHolder
 {
+    // A new 0x1cc0-byte program object (0x2aef00) on the init pack's item.
+    MenuProgHolder(const void *data, int stage);                         // FS2 0x002ad100
     ~MenuProgHolder();                                                   // FS2 0x002ad070: deleting
 };
+// layout: host
 struct MenuProgSet
 {
     ~MenuProgSet();                                                      // FS2 0x002bb3e0: deleting
@@ -707,13 +1103,16 @@ struct MenuProgSet
 
 // +0xac..+0xb8: four area grids (a list, 0x40 cells, a box at +0x210).
 // layout: host (EE 0x240).
+class AreaBox;
 struct AreaGrid
 {
     AreaGrid();                                                          // FS2 0x00284640
     ~AreaGrid();                                                         // FS2 0x00284580: deleting
     // pos inside one of the grid's areas.
     int  contains(const sceVu0FVECTOR pos);                              // FS2 0x00284190
-    void addId(int id);                                                  // FS2 0x00284560
+    void addBox(AreaBox *box);                                           // FS2 0x00284560
+    // The boxes at pos, at most max of them; how many.
+    int  collect(const sceVu0FVECTOR pos, AreaBox **out, int max);       // FS2 0x00283ff0
 };
 
 // +0xc0: (count 4, 0x800, 0x878). layout: host (EE 0x2c).
@@ -818,6 +1217,9 @@ struct SceneDirector
 // layout: host -- EE: +8, +0xc.
 struct SceneArrayPair
 {
+    // Every object's saved flags back (3 bytes each, group 4 left out).
+    void restoreFlags();                                                 // FS2 0x0019c6a0
+
     u_char  _00[0x8];
     u_char *first;              // FS2 +0x8: delete[]
     u_char *second;             // FS2 +0xc: delete[] (header at -0x10 on the EE)
@@ -847,11 +1249,28 @@ void resetStageGroupTable();                                             // FS2 
 // A sub-scene's own scene object (StageScene +0x8, from enterSubScene):
 // the vptr at +0xb4 like the character classes; only the deleting dtor
 // (vtable +0x18) is called here. layout: host (unread).
-class SubSceneObject
+class SubSceneObject : public ScriptRunner
 {
 public:
+    // vtable 0x314d30. flag: +0xb9; "skippable" is a guess.
+    explicit SubSceneObject(bool skippable);                             // FS2 0x0026c8c0
     void destroy();                                                      // FS2 vtable +0x18 (vptr +0xb4)
+    // Slot 13 (+0x3c) of 0x314d30 / 0x315850 is empty: FS2 0x0019cf80.
 };
+
+// What enterSubScene keeps at StageScene +0xc (one pointer, EE 4 bytes).
+// layout: host.
+struct SubSceneData
+{
+    explicit SubSceneData(void *pack) : pack(pack) {}                    // FS2 0x0026c8b0
+    // The pack's script; null with none.
+    StageScript *getScript();                                            // FS2 0x0026c880
+
+    void *pack;                 // FS2 +0x0
+};
+// Goes over a relocated script's text tables (magic LBL, STR, SST); read
+// only by its shape.
+void scriptPrepare(StageScript *script);                                 // FS2 0x0029f050
 
 // StageScene (the current stage object) and StageFiles (the stage's
 // files): game/stagescene.h.
@@ -928,9 +1347,11 @@ constexpr int kStageObjRecordCount = 0x140;
 constexpr int kStageObjRecordMuffles = 0xf;
 struct StageObjRecord
 {
-    u_char _00[0x10];
+    char   name[0x10];          // FS2 +0x00: a map point's (StageFiles::placeCharacter)
     int    kind;                // FS2 +0x10
-    u_char _14[0xe8];
+    u_char _14[0x4];
+    char   items[2][0x10];      // FS2 +0x18: items placed with the character; empty none
+    u_char _38[0xc4];
 };
 static_assert(sizeof(StageObjRecord) == 0xfc, "StageObjRecord: EE 0xfc");
 extern StageObjRecord gStageObjRecords[kStageObjRecordSets][kStageObjRecordCount]; /* bss 0x539b10 */
@@ -942,7 +1363,21 @@ enum ItemKind
     ItemKind_FirearmFirst = 2,
     ItemKind_FirearmLast  = 6,
     ItemKind_ItemFirst    = 7,
+    ItemKind_E            = 0xe,    // StageItemE
+    ItemKind_F            = 0xf,    // the named special items
 };
+
+// getKind's value of a weapon item (StageFiles::placeItem).
+constexpr int kStageObjectKindWeapon = 0x15;
+// The weapon definitions (bss 0x576010, 0x50 x 0x54): only the name read.
+constexpr int kWeaponDefCount = 0x50;
+struct WeaponDef
+{
+    char   name[0x10];          // FS2 +0x00
+    u_char _10[0x44];
+};
+static_assert(sizeof(WeaponDef) == 0x54, "WeaponDef: EE 0x54");
+extern WeaponDef gWeaponDefs[kWeaponDefCount];  /* bss 0x576010 */
 
 // ──────────────────────────────────────────────────────────────────────
 // The sound players are game/seplayer.h. The one outside a stage:

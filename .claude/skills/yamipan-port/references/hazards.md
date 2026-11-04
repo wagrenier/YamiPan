@@ -207,6 +207,8 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   the build broke on the stub. Cause: it takes the access label as part of the declaration. Fix by hand
   in `unassigned_stubs.cpp`: drop the label and the return.
 
+- 2026-11-03 (game/stagescene.cpp): **stubgen reads two shapes wrong.** Symptom: `expected unqualified-id before 'public'` in unassigned_stubs.cpp, and an undefined reference stubgen never fills. Cause: its declaration regex lets the return type run over a newline, so a method right after `public:` gets `public:` in its stub; and an overload of a declared name is taken for the existing one. Fix: put a comment line between `public:` and the method, delete the bad stub, and give the overload its own name (`setPositionXyz`).
+
 ## Sessions
 
 - **A session never launches other sessions, agents or scheduled tasks** (the auto-mode classifier

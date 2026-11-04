@@ -94,6 +94,9 @@ struct NodeTransform
     NodeTransform();                                                     // FS2 0x001d7f20
     // Copies x, y, z (w stays).
     void setPosition(const float *pos);                                  // FS2 0x001d7ee0
+    // The same from three floats, w = 1.
+    void setPositionXyz(float x, float y, float z);                      // FS2 0x001d7f00
+    void setRotation(float x, float y, float z);                         // FS2 0x001d7ec0
 
     u_char        dirty;        // FS2 +0x00: 1 after the ctor
     u_char        _01;          // FS2 +0x01
