@@ -24,9 +24,41 @@ void setVecLength(float len, sceVu0FVECTOR out, const sceVu0FVECTOR in);        
 void scaleVec4(float s, sceVu0FVECTOR out, const sceVu0FVECTOR in);               // FS2 0x00136490
 // out = the inverse of a rotation + translation: rows 0..2 transposed with
 // w 0, row 3 = -(R^T t) keeping t.w.
-void invertRigidMatrix(sceVu0FMATRIX out, const sceVu0FVECTOR *m);                // FS2 0x00136500
+// FS2 0x00136500
+inline void invertRigidMatrix(sceVu0FMATRIX out, const sceVu0FVECTOR *m)
+{
+    sceVu0InversMatrix(out, reinterpret_cast<float (*)[4]>(const_cast<sceVu0FVECTOR *>(m)));
+}
 // out = m[0] v.x + m[1] v.y + m[2] v.z + m[3] v.w; out may be v.
-void applyMatrix(sceVu0FVECTOR out, const sceVu0FVECTOR *m, const sceVu0FVECTOR v); // FS2 0x00136690
+// FS2 0x00136690
+inline void applyMatrix(sceVu0FVECTOR out, const sceVu0FVECTOR *m, const sceVu0FVECTOR v)
+{
+    float x = v[0], y = v[1], z = v[2], w = v[3];
+    for (int lane = 0; lane < 4; lane++)
+        out[lane] = m[0][lane] * x + m[1][lane] * y + m[2][lane] * z + m[3][lane] * w;
+}
+// out's rows = in's rows through a turn around x (sceVu0RotMatrixX's matrix).
+// FS2 0x001361c0
+inline void rotateMatrixX(float angle, sceVu0FMATRIX out, sceVu0FMATRIX in)
+{
+    sceVu0RotMatrixX(out, in, angle);
+}
+// out's rows = in's rows through a turn around z: R[0] = (c, s, 0, 0),
+// R[1] = (-s, c, 0, 0).
+// FS2 0x001362a0
+inline void rotateMatrixZ(float angle, sceVu0FMATRIX out, sceVu0FMATRIX in)
+{
+    float c = cosf(angle);
+    float s = sinf(angle);
+    for (int row = 0; row < 4; row++) {
+        float x = in[row][0];
+        float y = in[row][1];
+        out[row][0] = c * x - s * y;
+        out[row][1] = s * x + c * y;
+        out[row][2] = in[row][2];
+        out[row][3] = in[row][3];
+    }
+}
 
 // a . b (xyz).
 // FS2 0x001365a0

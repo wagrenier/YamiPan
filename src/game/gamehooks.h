@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "game/areagrid.h"
+#include "game/drawsys.h"
 #include "game/fileloader.h"
 #include "game/gamepaths.h"
 #include "game/layoutpaths.h"
@@ -210,15 +211,31 @@ struct BoneNode
 // A character's model (the object's +0x30). Only the bone map's root.
 // layout: host -- EE: +0x14 the root.
 class VcmTable;                 // game/vcmtable.h
+// A rena model's bone: its node and its matrix. The node's type is
+// unread but for the name. layout: host -- EE: name +4.
+struct ModelBoneNode
+{
+    u_char      _0[0x4];
+    const char *name;           // FS2 +0x4
+};
+// layout: host -- EE 8.
+struct ModelBone
+{
+    ModelBoneNode       *node;   // FS2 +0x0
+    const sceVu0FVECTOR *matrix; // FS2 +0x4
+};
 struct StageModelData
 {
-    u_char _0[0x5];
+    u_char _0[0x4];
+    u_char distant;             // FS2 +0x4: set to 1 when farther than the draw distance (drawSysBuildShadows)
     u_char drawGroup;           // FS2 +0x5: 1, or 0x20 for what the view target looks at (StageScene::prepareDrawFlags)
     u_char _6;
     u_char shown;               // FS2 +0x7: the model's own shown flag: while there is a model it replaces StageObject::m_shown
     u_char _8[0x2];
     u_short flags;              // FS2 +0xa: ModelFlag
     const sceVu0FVECTOR **rootMatrix; // FS2 +0xc: -> -> the root's matrix (StageObject::setModel copies it)
+    ModelBone *bones = nullptr; // FS2 +0x14: boneCount of them; [2] carries the shadow
+    u_int      boneCount = 0;   // FS2 +0x18
 };
 static_assert(offsetof(StageModelData, drawGroup) == 5, "StageModelData::drawGroup");
 static_assert(offsetof(StageModelData, shown) == 7, "StageModelData::shown");
@@ -227,6 +244,8 @@ static_assert(offsetof(StageModelData, flags) == 0xa, "StageModelData::flags");
 enum ModelFlag
 {
     ModelFlag_Item   = 0x2,     // every item's, from setupItem
+    ModelFlag_CastsShadow = 0x8,  // drawSysBuildShadows takes it (cleared on oXX27_05)
+    ModelFlag_Distant     = 0x40, // past a quarter of the squared draw distance, when StageModel::_189 is set
     ModelFlag_Frozen = 0x400,   // clear only while a free item's matrix is dirty (the name is a guess)
 };
 // The model's pose solver (+0xc; the run unassigned@00148db0). Only the
@@ -283,6 +302,10 @@ struct StageModel
     u_char     _b4 = 0;         // FS2 +0xb4: 1 on items (StageObject::markModelAsItem; unread)
     u_char     _b5 = 0;         // FS2 +0xb5: the same
     int        _bc = 0;         // FS2 +0xbc: StageObject::setModelValue (unread; -1 from init)
+    sceVu0FVECTOR shadowSize = {};      // FS2 +0x150: x, y, z of the shadow box
+    sceVu0FVECTOR shadowOffset = {};    // FS2 +0x160: from bone 2
+    sceVu0FVECTOR shadowDirection = {}; // FS2 +0x170
+    u_char     _189 = 0;        // FS2 +0x189: lets ModelFlag_Distant be set (unread)
 };
 
 // StageNode: game/stagenode.h (the scene-node family's stand-ins).
@@ -1487,6 +1510,8 @@ struct ModelInstance
 {
     u_short        flags = 0;   // FS2 +0xa: ModelFlag
     ModelFileNode *node;        // FS2 +0xc
+    void         **texAnims = nullptr; // FS2 +0x44: texAnimCount records of renaStepTexAnim
+    int            texAnimCount = 0;   // FS2 +0x48
 };
 
 // A model file (the model keyword). EE layout: the file itself; relocate
@@ -2032,34 +2057,6 @@ struct SceneModelHolder
     SceneModel model;           // FS2 +0x24
 };
 
-// The draw system's record stack (gp-0x7994, saved in gp-0x7990): a
-// sub-scene draws into its own record.
-void drawSysPush();                                                      // FS2 0x002d7c70
-void drawSysPop();                                                       // FS2 0x002d7c00
-// The record's camera object (+0xc): the view and screen matrices go there.
-// layout: host -- EE: slots +0x18, +0x1c.
-class DrawSysCamera
-{
-public:
-    void setViewMatrix(const void *matrix);                              // FS2 vtable +0x18
-    void setScreenMatrix(const void *matrix);                            // FS2 vtable +0x1c
-};
-// layout: host -- EE: +0xc the camera.
-struct DrawSysRecord
-{
-    DrawSysCamera *camera;      // FS2 +0xc
-};
-DrawSysRecord *drawSysCurrent();                                         // FS2 0x002d4fd0
-// The frame's 3D draw ("rena draw"); env is the frame's, flags 0 here.
-void drawSysRender(GamePacketManager *packets, const sceGsDrawEnv1 *env, int flags); // FS2 0x002d5560
-// Advances every record by ticks of 1/300 s.
-void drawSysTick(int ticks);                                             // FS2 0x002d4ef0
-// The flag beside the view target's model mark (prepareDrawFlags).
-void drawSysClearTargetView();                                           // FS2 0x002d4780
-void drawSysSetTargetView();                                             // FS2 0x002d4790
-float getDrawDistance();                                                 // FS2 0x002d9aa0
-void  setDrawDistance(float distance);                                   // FS2 0x002d9ab0
-
 // 44 groups at 0x599830 / 0x599860 reset (a byte zero, 32 words one each):
 // a stage's ctor. What the groups are is unread.
 void resetStageGroupTable();                                             // FS2 0x002cf510
@@ -2228,14 +2225,6 @@ extern WeaponDef gWeaponDefs[kWeaponDefCount];  /* bss 0x576010 */
 // ──────────────────────────────────────────────────────────────────────
 // The sound players are game/seplayer.h; the one outside a stage is
 // getSePlayer (game/menupack.h).
-
-// What game/gfxtarget.cpp calls.
-class GsRegionAlloc;            // game/gfxtarget.h
-// Builds the draw system (about nine objects) on the screen origin and size
-// with the texture region allocator: gfxInitRenderTargets calls it once,
-// last. What it draws is unread.
-void drawSysInit(int originX, int originY, int width, int height,
-                 GsRegionAlloc *alloc);                                  // FS2 0x002d7cf0
 
 // What game/vcmtable.cpp reads of rena's model (unassigned@002e2970).
 // The geometry / material names of a part's +8 chain are guesses: only the

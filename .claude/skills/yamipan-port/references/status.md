@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-04 02:33 at commit `ab7ac64` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-04 06:12 at commit `754543b` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-04 02:33 at commit `ab7ac64` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **2880** (44%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1965
-- context-name ledger: 3501 entries; overrides of wrong library matches: 0
-- placed in a source file: 2631/6599 in 76 files
+- game functions: **6599**, named **2942** (45%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1541, game-inferred 2027
+- context-name ledger: 3568 entries; overrides of wrong library matches: 0
+- placed in a source file: 2795/6599 in 77 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **2371**; stubs: **357**
+- reconstructed FS2 functions: **2446**; stubs: **355**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -38,6 +38,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/boxgrid.cpp` | 29 | 0 |
 | `src/game/clock.cpp` | 14 | 0 |
 | `src/game/datetime.cpp` | 2 | 0 |
+| `src/game/drawsys.cpp` | 75 | 1 |
 | `src/game/fileloader.cpp` | 53 | 0 |
 | `src/game/fontdata.cpp` | 31 | 0 |
 | `src/game/gamepacket.cpp` | 6 | 0 |
@@ -87,7 +88,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/uiworkarea.cpp` | 4 | 0 |
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 313 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 310 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
 | `src/rena/tim2.cpp` | 4 | 0 |
@@ -113,9 +114,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 106 TUs: todo 58, partial 3, verify 65, done 1
-- next: **unassigned@002d46a0** (pinned in the queue)
-- pinned queue: unassigned@002d46a0
+- 107 TUs: todo 57, partial 6, verify 65, done 1
+- next: **game/drawsys.cpp** (continuing a partial TU)
+- pinned queue: (empty)
+- partial: `game/drawsys.cpp` 73/164 -- New file 0x2d46a0-0x2dac70: record stack, camera, lights, fog, shadows, drawSysRender passes, plus src/rena/rena_draw.h for the rena calls (stubs). New Game run
 - partial: `game/stageobject.cpp` 40/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -185,6 +187,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-04 06:12 `game/drawsys.cpp` partial: game/drawsys.cpp: reconstruct the draw system, passes reach rena stubs (partial); add run time limits to the skill
 - 2026-11-04 02:33 `game/stageitem.cpp` verify: The bullet and the items whole: StageBullet, StageItem and its four kinds, ItemLamp; ItemPhysics declared; CollisionOwner read in full
 - 2026-11-04 01:40 `game/stagelight.cpp` verify: StageLight, SpotLight and PointLight whole: collision base, script commands, the frame, effects and parts; VcmController is StageLight
 - 2026-11-04 01:11 `game/stageobject.cpp` partial: the object family made real: StageObject on StageNodeBase, a side base and ScriptRunner with real virtuals, getKind per class, ctor, dtor, helpers and StageObje
@@ -192,17 +195,16 @@ Recent sessions:
 - 2026-11-03 23:48 `sdk/libmpeg.cpp` verify: Real libmpeg: PSS demux, FFmpeg MPEG-2 decode, movie pictures through UiCanvas; the opening film plays and the road reaches stageThread
 - 2026-11-03 23:17 `unassigned@0017fce0` todo: marked active -> todo: released untouched a fourth time: gdb located the black after the card (PrgMovie, MoviePlayer state 15), so this run took the host task s
 - 2026-11-03 23:00 `game/uiworkarea.cpp` verify: UiTrack base slots and the UI work area; New Game now reaches the opening card
-- 2026-11-03 22:21 `game/prgmccard.cpp` verify: PrgMcCard, the load and save screens: all 7 written; the load screen now says No memory card and closes back to the title
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@001d7c50` | todo | 0/29/296 | 137.5 | 85 | 0 |
+| `unassigned@001d7c50` | partial | 1/29/296 | 137.5 | 85 | 0 |
 | `unassigned@00171300` | partial | 1/26/421 | 52.5 | 67 | 0 |
 | `unassigned@00148db0` | todo | 0/18/125 | 35.6 | 63 | 2 |
 | `unassigned@001fe6b0` | todo | 0/35/563 | 197.2 | 61 | 0 |
-| `unassigned@00135990` | todo | 0/5/33 | 3.1 | 40 | 0 |
+| `unassigned@00135990` | todo | 0/3/33 | 3.1 | 46 | 0 |
 | `unassigned@00186ee0` | todo | 0/14/41 | 11.2 | 39 | 0 |
-| `unassigned@0018c050` | todo | 0/14/71 | 29.7 | 38 | 0 |
+| `unassigned@0018c050` | todo | 0/14/71 | 29.7 | 39 | 0 |
 | `unassigned@002849c0` | todo | 0/29/129 | 44.6 | 38 | 0 |
 | `unassigned@002b9ef0` | todo | 0/17/101 | 39.0 | 36 | 2 |
 | `unassigned@002b0d50` | todo | 0/23/85 | 17.9 | 34 | 0 |
@@ -231,14 +233,15 @@ Recent sessions:
 | `00215ef0` | StageObject::isPlayer | 7 | game | stub | - |
 | `0018c2d0` | StageParticle::setRunning | 7 | game | stub | - |
 | `00239bb0` | CharacterInput::setActive | 7 | game | stub | - |
+| `002d91b0` | setVector4 | 7 | game | missing | game/drawsys.cpp |
 | `00177d20` | StageCamera::addToScene | 7 | game | stub | - |
 | `00233810` | StageCollision::raycast | 6 | game | stub | - |
 | `00136490` | scaleVec4 | 6 | game | stub | - |
 | `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
 | `001fea50` | StageParty::getCompanion | 6 | game | stub | - |
+| `00136690` | applyMatrix | 6 | game | missing | - |
 | `001dd3f0` | CharacterBrain::setEnabled | 6 | game | stub | - |
 | `00136560` | vecNormalize | 5 | game | missing | - |
-| `00136690` | applyMatrix | 5 | game | stub | - |
 | `00177270` | BoneNode::find | 5 | game | stub | - |
 | `001d8260` | StageObject::propagate | 5 | game | stub | - |
 | `00149230` | StringList::splitString | 5 | game | stub | - |
@@ -252,5 +255,4 @@ Recent sessions:
 | `001871c0` | PartSwitch::~PartSwitch | 4 | game | missing | - |
 | `001f6690` | CollisionBody::CollisionBody | 4 | game | stub | - |
 | `001f6180` | SceneRecordBuckets::add | 4 | game | stub | - |
-| `002152d0` | StagePlayer::isMode1 | 4 | game | stub | - |
 

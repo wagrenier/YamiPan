@@ -292,6 +292,12 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 ## Build and run
 
+- **`gdbrun.py` never times out** (2026-11-04). It returns when the game exits, and a game that no longer
+  crashes does not exit, so a background run waited 3 hours. SKILL.md "Time limits" says how to bound it.
+- **A prototype moved between headers leaves its stub behind** (2026-11-04): stubgen does not remove a
+  stale stub, so the build fails with a redefinition or a multiple definition. Delete it from
+  `src/lib/unassigned_stubs.cpp` by hand.
+
 - **`work/shots/last.png` can be cut short** (2026-11-03). Symptom: a PNG reader fails with "incomplete or
   truncated stream" on last.png. Likely cause, seen once and not proven: the smoke run is killed when its
   time is up, during the write. Fix: use the newest complete `shot_*.png` for pixel work; the numbered

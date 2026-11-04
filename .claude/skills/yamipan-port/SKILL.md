@@ -125,6 +125,22 @@ still ends in a commit.
 `blocked` means a decision is needed: say which in the notes and open-items.md. Never leave the tree
 dirty or the build red.
 
+## Time limits (the user's rule, 2026-11-04)
+
+A run on 2026-11-04 lost 3 hours: `gdbrun.py` returns only when the game exits, nothing bounded it, and
+a game that no longer crashes never exits by itself. So:
+
+- **A session has 60 minutes, counted from `started` in `work/run.lock`** (or the session's first
+  command when there is no lock). Check the clock at each protocol step. At 45 minutes start no new
+  work: finish what is coherent, status `partial` or `verify`, notes for the next run. At 60 minutes
+  finish, push and release the lock whatever is left. An unfinished TU is fine; a lost afternoon is not.
+- **No game run lasts more than 10 minutes.** Everything that starts the game has a limit before it
+  starts: `build.py --run N` and `tus.py check --run N` carry their own; `gdbrun.py` has none, so a
+  background run gets `Monitor` with a timeout, then `py gdbrun.py --break` and
+  `py gdbrun.py --cmd quit`. Never launch one and wait for the notification alone.
+- **Any other background command gets a limit too.** If it is overdue, stop it; do not keep waiting
+  for its notification.
+
 ## Starting sessions
 
 The user starts each session (`/yamipan-port next`, the desktop app's scheduled task `yamipan-next-tu`

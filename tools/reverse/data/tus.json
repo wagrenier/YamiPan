@@ -1,7 +1,5 @@
 {
- "queue": [
-  "unassigned@002d46a0"
- ],
+ "queue": [],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
   "frontier_ignore": [],
@@ -83,6 +81,24 @@
    ],
    "status": "verify",
    "why": "the RTC date module: getLocalDateTime reads sceCdReadClock, converts to local time with libscf and hands the DateTime to DateTime::setFormat, its only callee and caller pair; 0x23e740 starts unrelated code (a two-int validity test, a 0x208xxx wrapper), 0x23db50 before it is a Vt_00316510 ctor"
+  },
+  "game/drawsys.cpp": {
+   "notes": "New file 0x2d46a0-0x2dac70: record stack, camera, lights, fog, shadows, drawSysRender passes, plus src/rena/rena_draw.h for the rena calls (stubs). New Game run under gdb, build of this TU: no fault, the old SIGSEGV in StageScene::draw is gone, every pass reaches renaBeginFrame..renaEndPass and the stubs after them, last first hit SceneDirector::draw, exit code 0 after the log line Quitting, cause unconfirmed. Screen: default smoke run rests on the language screen, unchanged. NO stage picture was seen: gdbrun takes no screenshots and the New Game screenshot run was skipped because the session was 3.5 hours over; run build.py --run with work/newgame_pad.txt first, expect black since nothing draws yet. Unwritten: 0x2d46a0, drawSysAddModel 0x2d5140, 0x2d54a0, 0x2d5e10 (boss stage), 0x2d6dc0..0x2d77d0, 0x2da220. Next: drawSysAddModel, NodeTransform 0x1d7f20, PackTables::parse 0x2bcf10, StageModel::init 0x188b10, rena draw run unassigned@002e2970. Also added SKILL.md Time limits at the user request. Details and doubts: open-items.md Next up, architecture.md The draw system.",
+   "ranges": [
+    [
+     "002d46a0",
+     "002dac70"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 06:12",
+     "status": "partial",
+     "summary": "game/drawsys.cpp: reconstruct the draw system, passes reach rena stubs (partial); add run time limits to the skill"
+    }
+   ],
+   "status": "partial",
+   "why": "The scene record and its camera, lights and fogs (drawSys*), the frame's 3D passes, the shadow caster list and the model list: everything up to AreaClip's helpers 0x2dac70. Calls getStageSelect, gStageScene and the object lists, so the file is in game/, not rena/. No file string: the name is the port's; rena's packet writers are 0x2e2970.."
   },
   "game/fileloader.cpp": {
    "notes": "All 53 functions of 0x1319f0..0x132f20 are in src/game/fileloader.cpp with game/fileloader.h; FileJob / FileLoader / PackFile left gamehooks.h (which includes fileloader.h). PackFile derives from FileLoader and PackJob (+0x9c: FileJob + PakArchive + unpack buffer / variant); PackFile::load(arg, showLoading) jumps to PackJob::load. FileJob::m_arg is now m_index. Stand-ins: game/pakarchive.h (PakArchive / PakHeader, the parser TU 0x231410..0x231bb0), rxFileCallSizeHook / rxFileCallLoadHook and sldiDecompress in gamehooks.h. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean on fileloader and its users (only the known gfxtarget.h sceGsTexEnv miss), host harness passed (loader list, buffers, pack unpack, tokenizer). Doubts: file name and TextTokenizer's place are by position; PackJob +0x34 / +0x44 / +0x48 unread; a missing pack item answers done from getState (kept). Next: the pak parser 0x231410..0x231bb0, sldiDecompress, setBuffer's users 0x2b5dc0 / 0x2b60b0. Picture: nothing to see until bootstrap 6-7.",
@@ -1510,6 +1526,7 @@
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {},
   "unassigned@002c42a0": {},
+  "unassigned@002d46a0": {},
   "yamipan/rendering/texture_store.cpp": {
    "notes": "Host task. src/yamipan/rendering/texture_store.h and .cpp: decodes the TIM2 the owner points at to RGBA8 during the bind, alpha doubled, cached by a hash of size, header, pixels and CLUT (the comment on imageOf says why not by address), least recently bound dropped past 256 MB. seams.cpp forwards to Renderer::textures() then UiCanvas::bindImage. UiCanvas::emit now drops a textured primitive with no image. Checked on screen: the language screen at rest equals the six TIM2s the game binds, rendered by tm2png.py from the same bytes: best offset 0,0 in a search of +-2 frame units, peak 192 as in the file, mean difference 2.66 over the row (the 4:3 stretch). Checked by a scratch program through the real Tim2Texture: byte-equal to tm2png.py on 20 disc TIM2s and 7 synthetic ones, including 16 and 24-bit direct, which the disc lacks; a rewritten pixel misses the cache. Proven on screen: UV scale, 512x512 mapping, alpha blend, bilinear, 4-bit images only. Not yet seen on screen: the font path, additive and other blend modes, scissor, repeat. Choice for the user to overrule: a textured draw with no image is dropped rather than drawn white; a render target binds nothing. Left, in open-items.md Next up item 8: render targets, repeat on non-power-of-two images, TEXA not applied, m_altClut, a dump hook for references. Next: the queue goes back to stagescene unless the user pins the menu blockers listed under item 8 (path getters, runTitleScreen, loadMenuPack).",
    "sessions": [

@@ -1915,3 +1915,17 @@ Effects: a spot named TORCH takes `dento1`, SigLamp `siglight`, both at the ligh
 **Thrown** (I_HATUEN, I_AKIKAN, I_PET, I_NUT): at rest and used, gone after 10 seconds. I_HATUEN is a flare: 20 seconds of `hatsuen` where it lies with SMOKE_ON, or `heyasmoke` once it rests inside an `areas[StageArea_Smoke]` box (+0x470 is 1 until asked). **Trap** (I_WANA): a sphere of radius 80 (bucket 2, category 0x200, mask 8), on only while open; the close and open motions are s_OBJ_098_CLOSE / OPEN; springs when the character is within 90 and the angle is under pi / 4. **The lamp** `ItemLamp` (EE 0x18, `StageItemE` +0x240): four lights of mode 1 under the item in both trees, `%s_sl` (`m_limitByMap`), `%s_sl2` (white, radius 200, cone 45), `%s_pl`, `%s_pl2` (not usable by `updateLights`), and the part `nl`. `SceneRender::update` asks `getLightMatrix`: the last point's matrix, pulled back 30 from a wall on the line from the holder's `bn_head`.
 
 The list instances at the end (0x184260..0x1845f0) are `stagelist.h`'s, or `CollisionBody`'s +0xd4 list and +0x14 block, which the bullet's dtor has inline.
+
+## The draw system (game/drawsys.cpp, 2026-11-04)
+
+A stack of records (gp-0x7994 = 0x31aedc the current one), each with its models, camera and lights. `drawSysRender` writes these packet lists: 0 set-up; 2 the far_ models (mask 2, fog 0); 4 far_1..3 (masks 4, 8, 0x10, fogs 1..3) at 1/20 scale; 5 a depth clear, then the main models (mask 1) with shadows and the lights' fog; 7, only with a view target, a depth clear and the target view (mask 0x20).
+
+**Camera** slots: +0xc viewScreen (+0x90), +0x10 view (+0x50), +0x14 screen (+0x10), +0x18 setView, +0x1c setScreen. Screen matrix: `sceVu0ViewScreenMatrix(512, 1, 0.93333, 2048, 2048, 1, 16777215, 5, 200000)`; the draw distance defaults to 200000.
+
+**Lights** (0x1c): ambient +4, lights[3] +8, fog +0x14. Defaults: (.4, dir 0 .2 .8), (.3, dir .1 0 0), (.2, dir .1 0 0), ambient .1, fog 500..2000 at 255..0. Fog is A + B/z, 255 at near and 0 at far.
+
+**Depth clear**: 64-wide sprites at Z 0 with TEST_1 0x32001 (ZB_ONLY); the port keeps only the rect.
+
+**Shadows**: depth is view-space y, below 0 becomes 100000, sorted ascending, at most 7. From model data bones[2].matrix; pitch clamped to 2.61799..2.96706. In stage 0x1b the shadow is the boss's own (F_E27_BOSS, bn_l_calf, size 400, 400, 1200, 1).
+
+`sceVu0MulMatrix` and `sceVu0ViewScreenMatrix` were checked against the ROM (0x10b750, 0x10bf30); the signs of rotateMatrixX / Z come from the COP2 words.

@@ -20,6 +20,11 @@
 enum PacketList
 {
     PacketList_None = -1,       // GamePacketManager: no list open
+    PacketList_RenaFrame = 0,   // drawSysRender: the frame's set-up (VU1 program, textures, lights)
+    PacketList_RenaFar0  = 2,   // drawSysRender: the far_ models
+    PacketList_RenaFar   = 4,   // drawSysRender: the far_1..3 models
+    PacketList_RenaMain  = 5,   // drawSysRender: the depth clear and the frame's models
+    PacketList_RenaTarget = 7,  // drawSysRender: what the view target looks at, over a new depth
     PacketList_SceneModel = 8,  // StageScene::draw: the scene's model holder
     PacketList_Scene2d    = 9,  // StageScene::draw: filters, fades and the fill over the 3D frame
     PacketList_StageClock = 10, // the stage loop's StageResult::update; StageScene::draw: the item list and the menu

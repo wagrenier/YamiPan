@@ -1501,6 +1501,25 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    ~~(f) re-enable the scheduled task~~ **done 2026-11-03, on the user's word**; `yamipan.py` now
        finds MSYS2's toolchain without PATH, which a scheduled run does not have.
 
+**game/drawsys.cpp, partial (2026-11-04): where the New Game run stands.** Under gdb the New Game pad no
+longer faults: `StageScene::draw` gets a record from `drawSysCurrent`, every pass runs into the rena stubs
+(`renaBeginFrame` .. `renaEndPass`) and on to the stubs after them, last first hit `SceneDirector::draw`.
+The game ended on its log line Quitting with code 0, cause unconfirmed, no crash.txt. **No picture of the stage has been seen**: gdbrun.py takes
+no screenshots, and the New Game screenshot run (`build.py --run N --pad <work/newgame_pad.txt>`) was
+skipped to end an overdue session. Do that first; expect black, nothing draws yet.
+Next, in the order the picture needs them: `drawSysAddModel` 0x2d5140 (no model reaches a record until
+then), NodeTransform 0x1d7f20 / update 0x1d7d50 / updateMatrix 0x1d8420, `PackTables::parse` 0x2bcf10,
+`StageModel::init` 0x188b10, `ModelFile::createInstance`, then the rena draw run `unassigned@002e2970`.
+Unwritten in the file: 0x2d46a0, 0x2d5140, 0x2d54a0, 0x2d5e10 (1,002 instructions, boss stage),
+0x2d6dc0..0x2d77d0, 0x2da220.
+Left out on purpose (file header): the frame's GsRegionAlloc, FlushCache, the TEST_1 packets, the uncached
+packet switch, the sceVif1PkCall flags branch; the VU1 upload of SceneRender +0x80 and +0xf4 * 1.2 waits
+for the SceneRender TU. No 3D host module exists yet, so the depth clear is stored as a rect only.
+Doubts: the file and class names are the port's; `sRegionAlloc` / `sReservedBlock` are stored and unused;
+`StageModelData` and `ModelInstance` are probably one class; the `flags` parameter of `drawSysRender` is
+really a packet pointer no caller passes; the GsRegionAlloc comment in gfxtarget.h (its TU at 0x2d46a0) is
+stale, GsRegionAlloc is 0x2e1440.. in the remaining unassigned run and 0x2e14d0 is still a reached stub.
+
 ## Decisions
 
 - 2026-11-03 (the user): **"Instead of using C style CPP, I want everything now to be C++, which
