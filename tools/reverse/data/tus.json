@@ -1,5 +1,6 @@
 {
  "queue": [
+  "game/scriptrunner.cpp",
   "game/scenerender.cpp",
   "yamipan/rendering/model_renderer.cpp"
  ],
@@ -580,7 +581,39 @@
    "why": "gameSceneThread alone: the next function 0x231c90 (menu step helper over 0x267c00, called by the menu flow 0x2b5770) and the pak parser 0x231660..0x231bb0 before it share no data or callers with it; the scene table 0x2fabd0 is read only here. A one-function file until a source string or link order says otherwise"
   },
   "game/scenerender.cpp": {
-   "task": "PINNED BY THE USER 2026-11-04: real lighting, and delete the YAMIPAN_AMBIENT stub. SceneRender (ctor 0x1fa4a0, update 0x1f73c0, updateLights 0x1f8620, setup 0x1f94c0): the 20 VectorTrack light sets, the set chosen by the ENV_CB box, the per-model tables, so renaSetLights and the models get the real ambient, colours and directions instead of the defaults of drawSysInit. The formula is already right (model_renderer.cpp, from VU1). First find where the key values come from and whether they exceed 1. The map is dark at ambient 1.0 and that may be right: the user says the game opens on a nearly black scripted event, and no script or event runs yet (open-items.md, The opening event), so do not brighten anything to look right. getActiveCharacter answers null while no character exists: a PC guard on the camera position until then. Not done until the real values drive the lights and applyDebugAmbient in rena_draw.cpp, its call and the README paragraph are gone. Keep it pinned until then (open-items.md, top of Next up)."
+   "notes": "All of SceneRender 0x1f6ac0..0x1fa900, rena light records, game/vectortrack.cpp and StageCamera::setRange are written. Every light value comes only from script natives 0x1b6..0x1c3 (stage 1 entry s01_l: ambient 175,180,200 / 127.5, directional 0, fog 1100..1500), and no script runs, so the isKeyed guards keep the drawSysInit defaults and the picture is unchanged from before. A temporary uncommitted test with made-up keys lit the ground with no fault; the real values have not been seen on screen. Next: game/scriptrunner.cpp (first in the queue), then delete the guards and the YAMIPAN_AMBIENT stub here. Keep pinned.",
+   "ranges": [
+    [
+     "001f6ac0",
+     "001fa980"
+    ],
+    [
+     "002e04e0",
+     "002e0580"
+    ],
+    [
+     "002e0730",
+     "002e07b0"
+    ],
+    [
+     "002e07b0",
+     "002e07d0"
+    ],
+    [
+     "002e0810",
+     "002e0820"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 11:34",
+     "status": "partial",
+     "summary": "SceneRender and VectorTrack written; the keys come from scripts, so the pin stays"
+    }
+   ],
+   "status": "partial",
+   "task": "PINNED BY THE USER 2026-11-04: real lighting, and delete the YAMIPAN_AMBIENT stub. SceneRender and VectorTrack are written (game/scenerender.cpp, game/vectortrack.cpp); their values come only from scripts. After game/scriptrunner.cpp: delete the two isKeyed guards, applyDebugAmbient in rena_draw.cpp, its call and the README paragraph, look at the picture, compare stage 1 with the script's ambient 1.37..1.57 and fog 1100..1500 (architecture.md, The lights of a stage). Do not brighten anything. Keep it pinned until the stub is gone (open-items.md, top of Next up).",
+   "why": "SceneRender 0x1f6ac0..0x1fa8f0 with its base and member's dtors 0x1fa880, 0x1fa900 and the rena light records it builds; DrawSysFog setters inside stay in drawsys.h"
   },
   "game/screen.cpp": {
    "notes": "All 18 functions of 0x2676e0..0x2681e0 written (batch 037, 33 names, Ghidra saved). Overlay thread slot 6 draws the BG movie screen layout (init pack file 2dEU/BGMOVIEEU.d2b, overlayShowScreen / overlayReleaseScreen) and the loading indicator (lang item 0, asked per frame by overlayShowLoading from FileLoader::waitLoaded) into packet list 11. runLayout runs a stack UiLayout in packet list 12 until done (+0x3c, answer +0x38) or cross when cancelable (-1); runLayoutFile loads the file with a one-file FileLoader (PackFile base, vtable 0x3110b0). Screens: runStageScreenE / H (2dEU/s..m..e / h<e|n|h> per difficulty), runArchiveScreen (bit 0 answered 1, bit 1 save changed), runOptionScreen (memcardClearStamp unless options +0x4d, applySound on a sound change; 1 when options or the play record kind changed). Dialogs in slot 4: game over (lang 2, or 3 with StageResult::hasAttemptFlag; 0 restart 1 quit 2 continue) and notice (lang 1). Headers: screen.h new; overlay prototypes moved out of gamehooks.h; FileLoader, getInitPackData, the layout path getters, UiLayout setBaseDir / m_result / m_done, LangItem 0..3 in gamehooks.h; TexArea / gfxGetTexArea in gfxtarget.h; PacketList 10..12; ThreadSlot_Dialog / ThreadSlot_Overlay. Checked: callcheck clean, layout lint, g++ -fsyntax-only clean on screen.cpp and scene.cpp with stub SDK headers (MSYS2 needs ucrt64/bin on PATH: hazards.md). Next in the run: the LCG 0x2681e0..0x268310 (own file), 0x268310.., and the pack-item cluster 0x2902d0..0x2908c8 (getInitPackItem / getLangPackItem / loadInitPack / getInitPackData / stage screen paths), now the frontier's top.",
@@ -600,6 +633,9 @@
    ],
    "status": "verify",
    "why": "18 functions around the overlay thread (slot 6) and the modal UiLayout runner 0x267ae0 / 0x267c00 and their users (stage screens, archive / option screens, game-over and notice dialogs); 0x2681e0.. is a 48-bit LCG (0x5deece66d), another file. Name is the port's (no source string)"
+  },
+  "game/scriptrunner.cpp": {
+   "task": "What the pinned lights need next: the stage script VM. ScriptRunner::ScriptRunner, setEntry 0x1d2f40, run 0x1d27e0, the VM 0x1d1c40 and its helpers 0x1d1a10..0x1d3d20, StageScript::relocate 0x1d3a40, the slot call of 0x02000000 words and the native table 0x304230 (ids 0x19..0x235, index id - 0x19, 541 natives). Each native pops its own arguments, so an unwritten one must still pop its count: generate the counts from the ROM. First the lighting natives 0x1b6..0x1c3 (sssdis.py shows them with constants; architecture.md, The lights of a stage), so setupCameras' run of the bg script keys SceneRender. Then game/scenerender.cpp's task. The same VM is what the opening event and the character's brain need (open-items.md, The opening event)."
   },
   "game/seplayer.cpp": {
    "notes": "Cut from unassigned@002908d0: game/seplayer.cpp is 0x2908d0..0x2937e0 (SoundTrack 17, SePlayer 18, batch 078: fsmFindTrack, fsmTrackHasText, seDistanceVolume, stdtIsRelocated, stdtEntryCount, SePlayer::openStreamBank, SePlayer::loadBank); getNaviTable 0x2955d0 went to game/progress.cpp; 0x2937e0..0x2955d0 (an ELEVATOR2 stage object and a menu overlay) stays unassigned. New header game/seplayer.h takes SeEntry, SeName, SeTable, StreamTable, SePlayer, SoundTrack and SeHandle out of gamehooks.h and stagesound.h. Kept as the ROM (doubts in open-items.md TU 45): stream-bank pause and resume refuse while the stream plays; SePlayer::setVolume on a voice bank only rewrites the record until the next master fade; who fills an StDT bank header (+0xc) is unread. Not built (source-only); g++ -fsyntax-only -Wall clean on seplayer, stagesound, progress with RosePan SDK headers.",
@@ -1175,6 +1211,19 @@
    ],
    "status": "verify",
    "why": "VcmTable: the VCM__ part-visibility table of a rena model (strings VCM__ / __ 0x309c90 / 0x309c98, used only here), its ctor / dtor / update / attach and the file-local tag helpers 0x2976a0..0x297c90, then its MSL string / set / map instances to 0x299d90 (CodeWarrior emits them after the file's code; the string ones are the binary's only copies, called from 129 sites). Before: game/progress.cpp ends at 0x296d60 (stageDefaultRecord); after: 0x299d90.. VU0 vector helpers called from 15+ sites, another file. No source-path string: the file name is the port's."
+  },
+  "game/vectortrack.cpp": {
+   "ranges": [
+    [
+     "00296c10",
+     "00296d00"
+    ],
+    [
+     "00299d90",
+     "0029a730"
+    ]
+   ],
+   "why": "VectorTrack, VectorKey, VectorFade; needed by SceneRender"
   },
   "game/wstring.cpp": {
    "notes": "Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds all five; the three prototypes left uitrack.h, uitrack.cpp and uigame.cpp include wstring.h. Semantics from the asm: null or odd pointers answer 0 or null, a null source answers dst untouched, the copies answer the end of the copy (the 0 unit), dst == src copies through new[] first; wstrcmp compares only wstrlen(a) units (a prefix of b answers 0; callers test == 0); wstrstr answers hay for an empty needle. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on wstring, uitrack, uigame (RosePan SDK headers + a libvifpk stub), host harness passed. Doubt: the file name (no strings). Next in the run: getSaveResource 0x2c3d70 / getSaveResourceAux 0x2c3d30 / loadMenuPack 0x2c3e10 / getSePlayer 0x2c4140, PackTables::PackTables 0x2c0dc0, the SoundStream user 0x2b0d50..0x2b3890.",

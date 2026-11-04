@@ -83,6 +83,50 @@ inline void rotateMatrixZ(float angle, sceVu0FMATRIX out, sceVu0FMATRIX in)
     }
 }
 
+// out's rows = in's rows through a turn around y: R[0] = (c, 0, -s, 0),
+// R[2] = (s, 0, c, 0).
+// FS2 0x001360e0
+inline void rotateMatrixY(float angle, sceVu0FMATRIX out, sceVu0FMATRIX in)
+{
+    float c = cosf(angle);
+    float s = sinf(angle);
+    for (int row = 0; row < 4; row++) {
+        float x = in[row][0];
+        float z = in[row][2];
+        out[row][0] = c * x + s * z;
+        out[row][1] = in[row][1];
+        out[row][2] = c * z - s * x;
+        out[row][3] = in[row][3];
+    }
+}
+
+// out = in * s, xyz; w stays in's.
+// FS2 0x00136070
+inline void scaleVec3(float s, sceVu0FVECTOR out, const sceVu0FVECTOR in)
+{
+    out[0] = in[0] * s;
+    out[1] = in[1] * s;
+    out[2] = in[2] * s;
+    out[3] = in[3];
+}
+// out = a * t + b * (1 - t).
+// FS2 0x001364b0
+inline void blendVec4(float t, sceVu0FVECTOR out, const sceVu0FVECTOR a, const sceVu0FVECTOR b)
+{
+    for (int lane = 0; lane < 4; lane++)
+        out[lane] = b[lane] + a[lane] * t - b[lane] * t;
+}
+// point lies between the two corners (each lane of xyz; the VU's sign flags).
+// FS2 0x00231d40
+inline bool boxContains(const sceVu0FVECTOR low, const sceVu0FVECTOR high, const sceVu0FVECTOR point)
+{
+    for (int lane = 0; lane < 3; lane++) {
+        if (point[lane] < low[lane] || high[lane] < point[lane])
+            return false;
+    }
+    return true;
+}
+
 // a . b (xyz).
 // FS2 0x001365a0
 inline float vecDot(const sceVu0FVECTOR a, const sceVu0FVECTOR b)

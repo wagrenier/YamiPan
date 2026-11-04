@@ -191,8 +191,8 @@ SpotLight::SpotLight()
     m_limitByMap = 0;
     m_reach = 0.0f;
     m_reachSq = 0.0f;
-    m_2d4 = 0;
-    m_2d8 = 100;
+    m_texture = nullptr;
+    m_intensityPercent = 100;
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -545,17 +545,17 @@ StageLight::StageLight()
     m_radius = 0.0f;
     m_fadeFrames = kLightFadeFrames;
     m_fade = -1;
-    m_240 = 0;
-    m_244 = 30;
-    m_248 = 1;
-    m_color250[0] = 42.0f / 255.0f;
-    m_color250[1] = 46.0f / 255.0f;
-    m_color250[2] = 54.0f / 255.0f;
-    m_color250[3] = 0.0f;
-    m_color260[0] = 40.0f / 255.0f;
-    m_color260[1] = 44.0f / 255.0f;
-    m_color260[2] = 46.0f / 255.0f;
-    m_color260[3] = 0.0f;
+    m_modelFade = 0;
+    m_modelFadeFrames = 30;
+    m_lightsModels = 1;
+    m_modelColor[0] = 42.0f / 255.0f;
+    m_modelColor[1] = 46.0f / 255.0f;
+    m_modelColor[2] = 54.0f / 255.0f;
+    m_modelColor[3] = 0.0f;
+    m_modelAmbient[0] = 40.0f / 255.0f;
+    m_modelAmbient[1] = 44.0f / 255.0f;
+    m_modelAmbient[2] = 46.0f / 255.0f;
+    m_modelAmbient[3] = 0.0f;
     m_usable = 1;
     m_broken = 0;
     _273 = 0;
@@ -573,7 +573,7 @@ StageLight::StageLight()
         m_body->sphere.radiusSq = kLightBodyRadius * kLightBodyRadius;
     }
     m_track = nullptr;
-    m_2b0 = -1;
+    m_priority = -1;
     m_shadowOwner = nullptr;
 }
 

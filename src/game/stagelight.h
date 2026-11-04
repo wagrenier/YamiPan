@@ -49,6 +49,7 @@ class StageLight : public StageObject, public CollisionOwner
 {
     friend class ItemLamp;          // game/stageitem.cpp
     friend class StageItemE;
+    friend struct SceneRender;      // game/scenerender.cpp
     friend class StageWeaponItem;
 
 public:
@@ -136,19 +137,19 @@ public:
     virtual void cmdSetFadeFrames(int frames) { m_fadeFrames = frames; }
     // Runner slot 27.
     // FS2 0x001849e0
-    virtual void cmdSetFlag240(bool on) { m_240 = on; }
+    virtual void cmdSetFlag240(bool on) { m_modelFade = on; }
     // Runner slot 28.
     // FS2 0x001849d0
-    virtual void cmdSetValue244(int value) { m_244 = value; }
+    virtual void cmdSetValue244(int value) { m_modelFadeFrames = value; }
     // Runner slot 29.
     // FS2 0x001849c0
-    virtual void cmdSetFlag248(bool on) { m_248 = on; }
+    virtual void cmdSetFlag248(bool on) { m_lightsModels = on; }
     // Runner slot 30.
     // FS2 0x001849b0
-    virtual void cmdSetColor250(const float *color) { memcpy(m_color250, color, sizeof(m_color250)); }
+    virtual void cmdSetColor250(const float *color) { memcpy(m_modelColor, color, sizeof(m_modelColor)); }
     // Runner slot 31.
     // FS2 0x001849a0
-    virtual void cmdSetColor260(const float *color) { memcpy(m_color260, color, sizeof(m_color260)); }
+    virtual void cmdSetColor260(const float *color) { memcpy(m_modelAmbient, color, sizeof(m_modelAmbient)); }
     // Runner slot 32.
     // FS2 0x00184990
     virtual void cmdSetCastsShadow(bool on) { m_castsShadow = on; }
@@ -183,11 +184,11 @@ protected:
     float  m_radius;            // FS2 +0x234
     int    m_fadeFrames;        // FS2 +0x238: the fade's length
     int    m_fade;              // FS2 +0x23c: 0..m_fadeFrames; -1 at the start: the first frame jumps to the end
-    u_char m_240;               // FS2 +0x240: unread (SceneRender)
-    int    m_244;               // FS2 +0x244: 30 from the ctor, unread
-    u_char m_248;               // FS2 +0x248: 1 from the ctor, unread
-    sceVu0FVECTOR m_color250;   // FS2 +0x250: (42, 46, 54) / 255, unread
-    sceVu0FVECTOR m_color260;   // FS2 +0x260: (40, 44, 46) / 255, unread
+    u_char m_modelFade;         // FS2 +0x240: a model fades when it takes or loses this light
+    int    m_modelFadeFrames;   // FS2 +0x244: over so many frames; 30 from the ctor
+    u_char m_lightsModels;      // FS2 +0x248: models may pick it; 1 from the ctor
+    sceVu0FVECTOR m_modelColor; // FS2 +0x250: light 0 of a model; (42, 46, 54) / 255
+    sceVu0FVECTOR m_modelAmbient; // FS2 +0x260: added to its ambient; (40, 44, 46) / 255
     u_char m_usable;            // FS2 +0x270: SceneRender::updateLights skips the light when clear
     u_char m_broken;            // FS2 +0x272
     u_char _273;                // FS2 +0x273: 0 from the ctor
@@ -198,7 +199,7 @@ protected:
     float  m_lifetime;          // FS2 +0x2a4: seconds left of a temporary light
     float  m_brightness;        // FS2 +0x2a8: 1 from the ctor
     VectorTrack *m_track;       // FS2 +0x2ac: the colour's keys (ENV_ and Keyed lights)
-    int    m_2b0;               // FS2 +0x2b0: -1 from the ctor, unread
+    int    m_priority;          // FS2 +0x2b0: the scene's own point and spot take the highest; -1 from the ctor: never
     int    m_mode;              // FS2 +0x2b4: StageLightMode
     StageObject *m_shadowOwner; // FS2 +0x2b8: null any; SceneRender only takes the shadow while this is the player
 };
@@ -209,6 +210,7 @@ protected:
 class SpotLight : public StageLight
 {
     friend class ItemLamp;          // game/stageitem.cpp
+    friend struct SceneRender;      // game/scenerender.cpp
 
 public:
     SpotLight();                                                         // FS2 0x00185260
@@ -233,7 +235,7 @@ public:
     virtual void cmdSetConeAngle(int degrees) { setConeAngle(degrees); }
     // Runner slot 21.
     // FS2 0x00184a40
-    virtual void cmdSetValue2d8(int value) { m_2d8 = value; }
+    virtual void cmdSetValue2d8(int value) { m_intensityPercent = value; }
 
 private:
     int    m_coneDegrees;       // FS2 +0x2c0
@@ -241,8 +243,8 @@ private:
     u_char m_limitByMap;        // FS2 +0x2c8: ItemLamp's first spot
     float  m_reach;             // FS2 +0x2cc: the radius, or to the map
     float  m_reachSq;           // FS2 +0x2d0: PC: 0 from the ctor (the ROM leaves it)
-    int    m_2d4;               // FS2 +0x2d4: 0 from the ctor, unread
-    int    m_2d8;               // FS2 +0x2d8: 100 from the ctor, unread
+    Tim2Texture *m_texture;     // FS2 +0x2d4: <name>.tm2 (SceneRender::setup); null: the common spotlight
+    int    m_intensityPercent;  // FS2 +0x2d8: 100 from the ctor
 };
 
 // ENV_PL, YAM_PL, the flash. Vtables 0x3141b0 / 0x3141d4 / 0x3141ec /

@@ -262,18 +262,6 @@ SceneRecordBuckets::~SceneRecordBuckets()
     YAMIPAN_STUB("SceneRecordBuckets::~SceneRecordBuckets", 0x001f63f0);
 }
 
-// stub of FS2 0x001fa4a0
-SceneRender::SceneRender()
-{
-    YAMIPAN_STUB("SceneRender::SceneRender", 0x001fa4a0);
-}
-
-// stub of FS2 0x001fa230
-SceneRender::~SceneRender()
-{
-    YAMIPAN_STUB("SceneRender::~SceneRender", 0x001fa230);
-}
-
 // stub of FS2 0x00243150
 SceneUiState::SceneUiState()
 {
@@ -771,30 +759,6 @@ bool SceneOwnedObject::isBusy()
     return {};
 }
 
-// stub of FS2 0x001f6ad0
-void SceneRender::addCbBox(AreaBox *box)
-{
-    YAMIPAN_STUB("SceneRender::addCbBox", 0x001f6ad0);
-}
-
-// stub of FS2 0x001f6ac0
-void SceneRender::addSbBox(AreaBox *box)
-{
-    YAMIPAN_STUB("SceneRender::addSbBox", 0x001f6ac0);
-}
-
-// stub of FS2 0x001fa150
-void SceneRender::setShadowTexture(Tim2Texture *texture)
-{
-    YAMIPAN_STUB("SceneRender::setShadowTexture", 0x001fa150);
-}
-
-// stub of FS2 0x001fa1c0
-void SceneRender::setSpotlightTexture(Tim2Texture *texture)
-{
-    YAMIPAN_STUB("SceneRender::setSpotlightTexture", 0x001fa1c0);
-}
-
 // stub of FS2 0x00151e10
 void ScreenFill::setImage(const void *image)
 {
@@ -1207,30 +1171,6 @@ void SceneRecordBuckets::collide()
     YAMIPAN_STUB("SceneRecordBuckets::collide", 0x001f5250);
 }
 
-// stub of FS2 0x001f7380
-void SceneRender::applyClearColor()
-{
-    YAMIPAN_STUB("SceneRender::applyClearColor", 0x001f7380);
-}
-
-// stub of FS2 0x001f94c0
-void SceneRender::setup()
-{
-    YAMIPAN_STUB("SceneRender::setup", 0x001f94c0);
-}
-
-// stub of FS2 0x001f73c0
-void SceneRender::update()
-{
-    YAMIPAN_STUB("SceneRender::update", 0x001f73c0);
-}
-
-// stub of FS2 0x001f8620
-void SceneRender::updateLights()
-{
-    YAMIPAN_STUB("SceneRender::updateLights", 0x001f8620);
-}
-
 // stub of FS2 address unknown (1 candidates)
 void ScreenFill::draw(sceVif1Packet *packet, TexAreaList *texList)
 {
@@ -1391,13 +1331,6 @@ void gsFrameFilter(sceVif1Packet *packet, const sceGsDrawEnv1 *env, int w, int h
                    u_short block, int passes, int arg)
 {
     YAMIPAN_STUB("gsFrameFilter", 0x002849c0);
-}
-
-// stub of FS2 0x001f9c70
-int sceneRenderGroup(int mode)
-{
-    YAMIPAN_STUB("sceneRenderGroup", 0x001f9c70);
-    return {};
 }
 
 // stub of FS2 0x0017df60
@@ -1779,18 +1712,6 @@ const void * StageScript::findEntry(const char *name)
     return {};
 }
 
-// stub of FS2 0x0029a370
-void VectorTrack::addKey(VectorKey *key, int time, bool computeFrames)
-{
-    YAMIPAN_STUB("VectorTrack::addKey", 0x0029a370);
-}
-
-// stub of FS2 0x00299d90
-void VectorTrack::step()
-{
-    YAMIPAN_STUB("VectorTrack::step", 0x00299d90);
-}
-
 // stub of FS2 0x0023db50
 ItemPhysics::ItemPhysics(bool, bool)
 {
@@ -1993,4 +1914,37 @@ float CharacterInput::padSway() const
 void StageCollisionFace::getNormal(sceVu0FVECTOR out) const
 {
     YAMIPAN_STUB("StageCollisionFace::getNormal", 0x00236030);
+}
+
+// stub of FS2 0x001e60b0
+void PlayerMotion::getLampMatrix(sceVu0FMATRIX out)
+{
+    YAMIPAN_STUB("PlayerMotion::getLampMatrix", 0x001e60b0);
+}
+
+// stub of FS2 address unknown (1 candidates)
+bool StageObject::followsPlayerLight()
+{
+    YAMIPAN_STUB("StageObject::followsPlayerLight", 0x00000000);
+    return {};
+}
+
+// stub of FS2 0x00216140
+u_int StageObject::getCharacterClass()
+{
+    YAMIPAN_STUB("StageObject::getCharacterClass", 0x00216140);
+    return {};
+}
+
+// stub of FS2 0x00215e70
+bool StageObject::isYriOrKne()
+{
+    YAMIPAN_STUB("StageObject::isYriOrKne", 0x00215e70);
+    return {};
+}
+
+// stub of FS2 0x0028ec70
+void StagePlayer::setGearLightOrder(int order)
+{
+    YAMIPAN_STUB("StagePlayer::setGearLightOrder", 0x0028ec70);
 }

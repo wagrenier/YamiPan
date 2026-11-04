@@ -3707,6 +3707,18 @@
   "was": "FUN_00135f70",
   "why": "VU0: (a - b)^2 summed over xyz, the squared vecDistance"
  },
+ "00135fa0": {
+  "name": "addScaledVec4",
+  "tag": "game-inferred",
+  "was": "FUN_00135fa0",
+  "why": "out = a + b * s"
+ },
+ "00135fc0": {
+  "name": "addScaledVec3",
+  "tag": "game-inferred",
+  "was": "FUN_00135fc0",
+  "why": "out = a + b * s, xyz"
+ },
  "00135fe0": {
   "name": "setVecLength",
   "tag": "game-inferred",
@@ -3718,6 +3730,18 @@
   "tag": "game-inferred",
   "was": "FUN_00136020",
   "why": "(a - b) / |a - b|"
+ },
+ "00136070": {
+  "name": "scaleVec3",
+  "tag": "game-inferred",
+  "was": "FUN_00136070",
+  "why": "VMULx dest xyz: in * s, out's w untouched by the register's in"
+ },
+ "001360e0": {
+  "name": "rotateMatrixY",
+  "tag": "game-inferred",
+  "was": "FUN_001360e0",
+  "why": "the third of rotateMatrixX / Z"
  },
  "001361c0": {
   "name": "rotateMatrixX",
@@ -3754,6 +3778,18 @@
   "tag": "game-inferred",
   "was": "FUN_00136490",
   "why": "(s f12, out, in): VU0 vmulx with s in vf5.x, dest xyzw: out = in * s; lerpVec4 scales the difference with it; 66 callers"
+ },
+ "001364b0": {
+  "name": "lerpVec4b",
+  "tag": "game-inferred",
+  "was": "FUN_001364b0",
+  "why": "second copy with the other order: to + (from - to) * t"
+ },
+ "001364e0": {
+  "name": "divideVec4",
+  "tag": "game-inferred",
+  "was": "FUN_001364e0",
+  "why": "VDIV: in / s, all lanes"
  },
  "00136500": {
   "name": "invertRigidMatrix",
@@ -11507,6 +11543,12 @@
   "was": "FUN_00177900",
   "why": "target - position through atan2 into the transform's rotation"
  },
+ "001779a0": {
+  "name": "StageCamera::setRange",
+  "tag": "game-inferred",
+  "was": "FUN_001779a0",
+  "why": "stores +0x2cc and rebuilds the screen matrix as the ctor does"
+ },
  "00177ac0": {
   "name": "StageCamera::setScrZ",
   "tag": "game-inferred",
@@ -13998,10 +14040,10 @@
   "why": "entry 0 of the view stack; null while empty"
  },
  "0019bbb0": {
-  "name": "StageScene::getActiveCharacter",
+  "name": "StageScene::getTopView",
   "tag": "game-inferred",
   "was": "FUN_0019bbb0",
-  "why": "+0x34 list: entry [+4 index] of the 0xc-byte array at +8, null when the index < 0; the entry object has getKind (vtable +0x1f4) in drawPaused; 29 callers"
+  "why": "views->topObject(): the top camera, not a character (getKind 9 is tested on it, +0x2d0 read)"
  },
  "0019bbe0": {
   "name": "StageScene::~StageScene",
@@ -15047,6 +15089,12 @@
   "was": "FUN_001dd3f0",
   "why": "+0x174 = flag, the object +0x220; opposite of the input when a character is taken over"
  },
+ "001e60b0": {
+  "name": "PlayerMotion::getLampMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_001e60b0",
+  "why": "turned by the motion's angles and the player's, half a turn, at bn_head; SceneRender::update aims 200 ahead of it"
+ },
  "001e66c0": {
   "name": "PlayerMotion::refresh",
   "tag": "game-inferred",
@@ -15119,6 +15167,30 @@
   "was": "FUN_001f6ad0",
   "why": "ENV_CB boxes, grid +0xdfc"
  },
+ "001f6ae0": {
+  "name": "SceneRender::setSetLoop",
+  "tag": "game-inferred",
+  "was": "FUN_001f6ae0",
+  "why": "writes the loop byte +0x11 of all 36 tracks of one light set; script native 0x1c3"
+ },
+ "001f6c30": {
+  "name": "SceneRender::addSetKeys",
+  "tag": "game-inferred",
+  "was": "FUN_001f6c30",
+  "why": "one new key at a time in each of the 36 tracks of a set, the last with (1600, 30, 30); script native 0x1c2"
+ },
+ "001f7020": {
+  "name": "SceneRender::updateModelDirection",
+  "tag": "game-inferred",
+  "was": "FUN_001f7020",
+  "why": "key of +0x44c = (0,1,0) turned by the key's angles in +0x53c, degrees"
+ },
+ "001f71d0": {
+  "name": "SceneRender::updateDirection",
+  "tag": "game-inferred",
+  "was": "FUN_001f71d0",
+  "why": "the same for +0x12c from +0x21c"
+ },
  "001f7380": {
   "name": "SceneRender::applyClearColor",
   "tag": "game-inferred",
@@ -15167,11 +15239,35 @@
   "was": "FUN_001f85e0",
   "why": "slot +0x68"
  },
+ "001f85f0": {
+  "name": "RenaLight::getMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_001f85f0",
+  "why": "slot +0x1c of the three light vtables: this + 0x10"
+ },
+ "001f8600": {
+  "name": "RenaLight::setActive",
+  "tag": "game-inferred",
+  "was": "FUN_001f8600",
+  "why": "slot +0xc of the light vtables: byte +4"
+ },
+ "001f8610": {
+  "name": "RenaLight::isActive",
+  "tag": "game-inferred",
+  "was": "FUN_001f8610",
+  "why": "slot +0x10 of the light vtables: byte +4"
+ },
  "001f8620": {
   "name": "SceneRender::updateLights",
   "tag": "game-inferred",
   "was": "FUN_001f8620",
   "why": "right after update; shown lights, bn_head; the name is a guess"
+ },
+ "001f9490": {
+  "name": "sceneGroupIsLit",
+  "tag": "game-inferred",
+  "was": "FUN_001f9490",
+  "why": "object groups 1, 2, 3, 8: the ones updateLights and setup walk"
  },
  "001f94c0": {
   "name": "SceneRender::setup",
@@ -15184,6 +15280,18 @@
   "tag": "game-inferred",
   "was": "FUN_001f9c70",
   "why": "2 -> 0x12, 1 -> 0x13, else -1; update stores the answer at SceneRender +0xe28"
+ },
+ "001f9ca0": {
+  "name": "SceneRender::getModelAmbient",
+  "tag": "game-inferred",
+  "was": "FUN_001f9ca0",
+  "why": "the set's model ambient for an object, plus extra, raised for an item lying free"
+ },
+ "001f9ee0": {
+  "name": "SceneRender::start",
+  "tag": "game-inferred",
+  "was": "FUN_001f9ee0",
+  "why": "end of setup: rewinds every track, zeroes the frame's values, hands the renderer to drawSys"
  },
  "001fa150": {
   "name": "SceneRender::setShadowTexture",
@@ -15809,6 +15917,12 @@
   "was": "FUN_002152d0",
   "why": "a0 the player: +0x400 non-null and +0x3c8 == 1; StageScene::drawPaused / update then pass sceneFlag 1 to StageSound::update; what mode 1 is is unread"
  },
+ "00215e70": {
+  "name": "StageObject::isYriOrKne",
+  "tag": "game-inferred",
+  "was": "FUN_00215e70",
+  "why": "the model's name holds yri or kne"
+ },
  "00215ed0": {
   "name": "StageObject::isPartner",
   "tag": "game-inferred",
@@ -15820,6 +15934,12 @@
   "tag": "game-inferred",
   "was": "FUN_00215ef0",
   "why": "a0 an object: equal to gStageScene->player (+0x78); 76 call sites"
+ },
+ "00216140": {
+  "name": "StageObject::getCharacterClass",
+  "tag": "game-inferred",
+  "was": "FUN_00216140",
+  "why": "a bit from the character record's kind +0x10, by difficulty"
  },
  "002185a0": {
   "name": "StageObject::canSpawn",
@@ -16054,6 +16174,12 @@
   "tag": "game-inferred",
   "was": "overlayShowLoading",
   "why": "j overlayShowLoading; the same three waits call it once, before the loop (FileJob::wait and PackJob::load behind their first flag)"
+ },
+ "00231d40": {
+  "name": "boxContains",
+  "tag": "game-inferred",
+  "was": "FUN_00231d40",
+  "why": "point inside the two corners, by the VU's sign flags"
  },
  "00232870": {
   "name": "StageCollision::sphereHits",
@@ -19079,6 +19205,12 @@
   "was": "FUN_00289be0",
   "why": "StageScene ctor new(0x2c) for +0xc0 with (4, 0x800, 0x878): base 0x2895c0, then count pointers new[] (+0x1c), sizes +0x20 / +0x24; name a guess"
  },
+ "0028ec70": {
+  "name": "PlayerGear::setLightOrder",
+  "tag": "game-inferred",
+  "was": "FUN_0028ec70",
+  "why": "writes +0x2b0 of the two lights at +0x14 and +0x20"
+ },
  "0028fa90": {
   "name": "fsmTrackHasText",
   "tag": "game-inferred",
@@ -19553,6 +19685,30 @@
   "was": "FUN_00296a00",
   "why": "(save, id): the byte save+4+id != 0; id 0 means every one of 1..100 (recursive, inlined five levels by CodeWarrior); only testConditions calls it; 100 entries match the archive file 2dEU/archive%s.d2b"
  },
+ "00296c10": {
+  "name": "VectorFade::step",
+  "tag": "game-inferred",
+  "was": "FUN_00296c10",
+  "why": "value = from + (to - from) * frame / frames, frame up to frames"
+ },
+ "00296ca0": {
+  "name": "VectorFade::setTo",
+  "tag": "game-inferred",
+  "was": "FUN_00296ca0",
+  "why": "copies a vector to +0x10"
+ },
+ "00296cb0": {
+  "name": "VectorFade::setFrom",
+  "tag": "game-inferred",
+  "was": "FUN_00296cb0",
+  "why": "copies a vector to +0"
+ },
+ "00296cc0": {
+  "name": "VectorFade::VectorFade",
+  "tag": "game-inferred",
+  "was": "FUN_00296cc0",
+  "why": "zeroes the 0x38 bytes"
+ },
  "00296d00": {
   "name": "stageDefaultRecord",
   "tag": "game-inferred",
@@ -19877,11 +20033,41 @@
   "was": "FUN_00299d90",
   "why": "counts frames +0x14 over the keys +0x1c, wraps with +0x11, value through 0x299f90"
  },
+ "00299f40": {
+  "name": "VectorTrack::reset",
+  "tag": "game-inferred",
+  "was": "FUN_00299f40",
+  "why": "frame and index 0, done clear, value from the first key"
+ },
+ "00299f90": {
+  "name": "VectorTrack::sample",
+  "tag": "game-inferred",
+  "was": "FUN_00299f90",
+  "why": "value at the frame between a key and the next, linear or Bezier"
+ },
+ "0029a160": {
+  "name": "VectorTrack::computeControls",
+  "tag": "game-inferred",
+  "was": "FUN_0029a160",
+  "why": "the Bezier control points of every key from its neighbours"
+ },
  "0029a370": {
   "name": "VectorTrack::addKey",
   "tag": "game-inferred",
   "was": "FUN_0029a370",
   "why": "chains the key last (0x29a3b0), places it (0x29a5b0)"
+ },
+ "0029a3b0": {
+  "name": "VectorTrack::append",
+  "tag": "game-inferred",
+  "was": "FUN_0029a3b0",
+  "why": "chains a key last, makes the previous key's frames from the distance"
+ },
+ "0029a4c0": {
+  "name": "VectorTrack::keyAt",
+  "tag": "game-inferred",
+  "was": "FUN_0029a4c0",
+  "why": "the index-th key of the chain"
  },
  "0029a500": {
   "name": "VectorTrack::~VectorTrack",
@@ -19894,6 +20080,12 @@
   "tag": "game-inferred",
   "was": "FUN_0029a580",
   "why": "clears the flags, counters and key list of the 0x20 record"
+ },
+ "0029a5b0": {
+  "name": "VectorKey::setTime",
+  "tag": "game-inferred",
+  "was": "FUN_0029a5b0",
+  "why": "moves the key to a time by trading frames with its neighbours"
  },
  "0029a6e0": {
   "name": "VectorKey::VectorKey",
@@ -21568,6 +21760,36 @@
   "tag": "game-inferred",
   "was": "FUN_002dccf0",
   "why": "built over the areaclip keyword's file: an 8 x 8 grid of index lists; was the guess DrawLayerList"
+ },
+ "002e04e0": {
+  "name": "RenaSpotLight::RenaSpotLight",
+  "tag": "game-inferred",
+  "was": "FUN_002e04e0",
+  "why": "vtable 0x31a720, what a model's +0x4c points at"
+ },
+ "002e0730": {
+  "name": "RenaPointLight::RenaPointLight",
+  "tag": "game-inferred",
+  "was": "FUN_002e0730",
+  "why": "vtable 0x31a750; the base's matrix, colour; radius 1200, weight 4"
+ },
+ "002e07b0": {
+  "name": "RenaLight::setShade",
+  "tag": "game-inferred",
+  "was": "FUN_002e07b0",
+  "why": "copies a vector to +0x60"
+ },
+ "002e07c0": {
+  "name": "RenaLight::setColor",
+  "tag": "game-inferred",
+  "was": "FUN_002e07c0",
+  "why": "copies a vector to +0x50"
+ },
+ "002e0810": {
+  "name": "RenaLight::setMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_002e0810",
+  "why": "copies a matrix to +0x10"
  },
  "002e0840": {
   "name": "GsRegion::release",

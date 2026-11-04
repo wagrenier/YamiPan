@@ -187,6 +187,8 @@ public:
     const char *getPickSound();                                          // FS2 0x00183a90
 
 protected:
+    friend struct SceneRender;      // game/scenerender.cpp
+
     // The definition; PC: the first for a bad index, where the ROM reads
     // from address 0.
     const ItemDef &itemDef() const;
@@ -255,6 +257,7 @@ public:
     void getLightMatrix(sceVu0FMATRIX out);                              // FS2 0x00182770
 
 private:
+    friend struct SceneRender;      // game/scenerender.cpp
     ItemLamp *m_lamp;           // FS2 +0x240
     u_char    m_isTorch2;       // FS2 +0x244: T_TORCH2 (unread)
 };

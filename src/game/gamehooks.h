@@ -162,6 +162,9 @@ enum StageObjectKind
 };
 
 class StageNode;
+class StageItemE;                // game/stageitem.h
+class StageLight;               // game/stagelight.h
+struct RenaSpotLight;           // game/scenerender.h
 class VcmTable;                 // game/vcmtable.h
 struct ModelNodeBone;
 // layout: host -- EE 8.
@@ -214,14 +217,29 @@ enum MotionEvent
 };
 constexpr int kModelMotionLists = 5;
 constexpr int kModelSlots = 7;  // 0x1c0 aligned 0x40: three, three and one in the ROM's loops
+constexpr int kModelFadeColor = 3;   // StageModel::m_lightFades: after the three directions
+constexpr int kModelFadeAmbient = 6;
 constexpr int kMotionFileName = 0x10; // a motion file's name
-// One of the seven zeroed records at StageModel +0x140 (EE 0x38 in 0x40,
-// FUN_00296cc0; nothing here reads them).
-struct alignas(0x40) StageModelSlot
+// A vector moving from one value to another over a number of frames: the
+// seven at StageModel +0x140 (EE 0x38 in 0x40) and SceneRender's own.
+// setFrom, frames and frame are set first; each frame setTo, then step.
+struct alignas(0x40) VectorFade
 {
-    u_int words[14];
+    // FS2 0x00296cc0
+    VectorFade() : from{}, to{}, value{}, frames(0), frame(0) {}
+    // FS2 0x00296cb0
+    void setFrom(const sceVu0FVECTOR v) { memcpy(from, v, sizeof(from)); }
+    // FS2 0x00296ca0
+    void setTo(const sceVu0FVECTOR v) { memcpy(to, v, sizeof(to)); }
+    void step();                                                         // FS2 0x00296c10
+
+    sceVu0FVECTOR from;         // FS2 +0x00
+    sceVu0FVECTOR to;           // FS2 +0x10
+    sceVu0FVECTOR value;        // FS2 +0x20
+    int           frames;       // FS2 +0x30
+    int           frame;        // FS2 +0x34
 };
-static_assert(sizeof(StageModelSlot) == 0x40, "StageModelSlot: EE 0x40");
+static_assert(sizeof(VectorFade) == 0x40, "VectorFade: EE 0x40");
 typedef StringMap<StageNodeBase *> BoneMap;
 typedef StringMap<ModelMotion *> MotionMap;
 // What an object holds of its model: game/stagemodel.cpp. The ROM's ctor is
@@ -277,15 +295,15 @@ struct StageModel
     ModelSurface *m_kind1Surface = nullptr; // FS2 +0xa8
     u_char     m_loop = 1;      // FS2 +0xac: the pose's update flag
     u_int      m_motionEvents = 0; // FS2 +0xb0: MotionEvent
-    u_char     _b4 = 0;         // FS2 +0xb4: 1 on items (StageObject::markModelAsItem; unread)
-    u_char     _b5 = 0;         // FS2 +0xb5: the same
-    int        _b8 = 0;         // FS2 +0xb8
-    int        _bc = -1;        // FS2 +0xbc: StageObject::setModelValue (unread)
-    u_char     _c0 = 0;         // FS2 +0xc0
-    sceVu0FVECTOR _d0[3] = {};  // FS2 +0xd0
-    sceVu0FVECTOR _100[3] = {}; // FS2 +0x100
-    sceVu0FVECTOR _130 = {};    // FS2 +0x130
-    StageModelSlot *m_slots = nullptr; // FS2 +0x140: kModelSlots
+    u_char     m_lit = 0;       // FS2 +0xb4: SceneRender::updateLights gives it its own lights (items: StageObject::markModelAsItem)
+    u_char     m_ownAmbient = 0; // FS2 +0xb5: and its own ambient
+    StageObject *m_lightProxy = nullptr; // FS2 +0xb8: the lights are worked out at this object's place, not the owner's
+    int        m_lightSet = -1; // FS2 +0xbc: the ENV_CB box's light set it stands in; StageObject::setModelValue
+    u_char     m_inSbBox = 0;   // FS2 +0xc0: it stands in an ENV_SB box
+    sceVu0FVECTOR m_lightDirs[3] = {};   // FS2 +0xd0
+    sceVu0FVECTOR m_lightColors[3] = {}; // FS2 +0x100
+    sceVu0FVECTOR m_ambient = {};        // FS2 +0x130
+    VectorFade *m_lightFades = nullptr;  // FS2 +0x140: kModelSlots: the directions, the colours, the ambient
     sceVu0FVECTOR shadowSize = {};      // FS2 +0x150: x, y, z of the shadow box
     sceVu0FVECTOR shadowOffset = {};    // FS2 +0x160: from bone 2
     sceVu0FVECTOR shadowDirection = {}; // FS2 +0x170
@@ -541,7 +559,7 @@ public:
     virtual void setModelValue(int value)
     {
         if (m_model != nullptr)
-            m_model->_bc = value;
+            m_model->m_lightSet = value;
     }
     // FS2 0x00172350
     virtual const char *getObjectName() { return m_name; }
@@ -642,6 +660,14 @@ public:
     void setTreeScriptFlag(bool on);                                     // FS2 0x00185fc0
     // The script runner every object has as a base (EE +0x40).
     ScriptRunner *scriptRunner() { return this; }
+    // What kind of body the character's record says, as one bit (bit 8:
+    // SceneRender::update hangs yami_pl on it).
+    u_int getCharacterClass();                                           // FS2 0x00216140
+    // The character's model is called yri or kne.
+    bool isYriOrKne();                                                   // FS2 0x00215e70
+    // +0x5cc above 0: such a character's shadow may come from a light that
+    // follows the player (SceneRender::updateLights). A plain stub until its TU.
+    bool followsPlayerLight();                                           // FS2 +0x5cc
     // A character's action as the menus see it (StageScene::playerAction).
     int  getActionState();                                               // FS2 0x00214fc0
 
@@ -688,9 +714,7 @@ public:
     u_int  m_serial;            // FS2 +0x03c: odd, from a counter (assignSerial); getHandle
     // +0x40: ScriptRunner, EE 0xb8 (a base on the host).
     Clock *m_clock;             // FS2 +0x0f8: StageCharacter's ctor sets one
-    void  *_0fc;                // FS2 +0x0fc: 0 from the ctor
-    void  *_100;                // FS2 +0x100: 0 from the ctor
-    void  *_104;                // FS2 +0x104: 0 from the ctor
+    StageLight *m_modelLights[3]; // FS2 +0x0fc: the lights SceneRender::updateLights chose last frame; 0 from the ctor
     u_char _108[0x38];
     NodeTransform m_xform;      // FS2 +0x140: the placement the map file sets
     union {
@@ -712,7 +736,8 @@ public:
     CharacterBrain *m_brain;    // FS2 +0x220: a character's; null none
     PlayerMotion *m_motion;     // FS2 +0x224: a character's
     CharacterGround *m_ground;  // FS2 +0x228: a character's
-    u_char _22c[0xc];
+    u_char _22c[0x8];
+    StageItemE *m_lampItem;     // FS2 +0x234: a character's: the lamp it holds (SceneRender::update)
     StageNodeBase *m_handNode;  // FS2 +0x238: a character's: StageWeaponItem::fire's report comes from it
     u_char _23c[0x4];
     union {
@@ -722,7 +747,8 @@ public:
             int m_doorIndex;    // FS2 +0x244: a door's number from 1 (StageScene::findDoorOfFace)
         };
     };
-    u_char _248[0x48];
+    u_char _248[0x44];
+    StageObject *m_doorLight;   // FS2 +0x28c: a door's: the light of its record (SceneRender::setup)
     StageObject *m_290;         // FS2 +0x290: a character's. Set: the main camera goes over the shoulder and looks at m_aimPoint; a kind 1..6 is left out of its rays (StageScene::partnerResponds reads it too)
     u_char _294[0x4];
     int    m_doorRecord;        // FS2 +0x298: a door's gDoorRecords index (StageFiles::applyBgTarget)
@@ -744,7 +770,12 @@ public:
     u_char m_3c1;               // FS2 +0x3c1: the same, of the partner
     u_char _3c2;
     u_char m_3c3;               // FS2 +0x3c3: the same (unread)
-    u_char _3c4[0x8c];
+    u_char _3c4[0xc];
+    StageLight *m_shadowLight;  // FS2 +0x3d0: a character's: what throws its shadow (SceneRender::updateLights); null none
+    float  m_shadowWeight;      // FS2 +0x3d4: how strongly
+    u_char _3d8[0x28];
+    StageObject *m_gear;        // FS2 +0x400: what the player carries; left out of updateLights' head ray
+    u_char _404[0x4c];
     int    m_weaponDef;         // FS2 +0x450: a weapon's gWeaponDefs index (StageFiles::placeItem)
     union {
         int    m_ammoB;         // FS2 +0x454: a firearm's (findSprite's second number)
@@ -790,6 +821,9 @@ struct PlayerOverlay
 struct PlayerMotion
 {
     void refresh();                                                      // FS2 0x001e66c0
+    // The matrix of the lamp the player aims: at bn_head, turned as the
+    // player and the motion are.
+    void getLampMatrix(sceVu0FMATRIX out);                               // FS2 0x001e60b0
 
     u_char _000[0x40];
     int    motionId;            // FS2 +0x040: gMotionDefs index; outside the table none
@@ -836,6 +870,9 @@ struct StagePlayer
     bool isMode1();                                                      // FS2 0x002152d0
     // +0x364 set: +0x2ca = 1. What the two bytes are is unread.
     void latchAltAction();                                               // FS2 0x0020b1d0
+    // +0x400's +0x2b0: the two lights of what the player carries get
+    // m_priority (SceneRender::update).
+    void setGearLightOrder(int order);                                   // FS2 0x0028ec70
     // The player is a character (a StageObject) in the ROM; the host
     // stand-ins keep separate layouts until the character TU joins them.
     StageObject *character() { return reinterpret_cast<StageObject *>(this); }
@@ -993,20 +1030,28 @@ public:
 
     u_char m_enabled = 1;       // FS2 +0x00: 1 from the base's ctor
 };
-// A keyed vector over frames, EE 0x20: the lights' colour, a block of
+// A keyed vector over frames, EE 0x20: the lights' colour, every value of
 // SceneRender. value is the frame's vector; its w the weight (StageLight::
-// getWeight). The class's TU is the run unassigned@00299d90.
+// getWeight). game/vectortrack.cpp, cut out of the run unassigned@00299d90.
 // layout: host -- EE offsets in the comments; a key is EE 0x40.
 struct VectorKey
 {
     // FS2 0x0029a6e0
     VectorKey(const float *from, int keyFrames)
-        : frames(keyFrames), prev(nullptr), next(nullptr)
+        : ctrlOut{}, ctrlIn{}, frames(keyFrames), prev(nullptr), next(nullptr)
     {
         memcpy(value, from, sizeof(value));
     }
+    // FS2 0x0029a700
+    explicit VectorKey(int keyFrames)
+        : value{}, ctrlOut{}, ctrlIn{}, frames(keyFrames), prev(nullptr), next(nullptr) {}
+    // The key moves to time frames from the start, trading frames with its
+    // neighbours; below 0 it stays.
+    void setTime(int time);                                              // FS2 0x0029a5b0
 
     sceVu0FVECTOR value;        // FS2 +0x00
+    sceVu0FVECTOR ctrlOut;      // FS2 +0x10: the Bezier point after the key
+    sceVu0FVECTOR ctrlIn;       // FS2 +0x20: the Bezier point before it
     int           frames;       // FS2 +0x30: to the next key
     VectorKey    *prev;         // FS2 +0x38
     VectorKey    *next;         // FS2 +0x3c
@@ -1029,12 +1074,16 @@ struct VectorTrack
     }
     // One frame: index and frame move, value is worked out.
     void step();                                                         // FS2 0x00299d90
+    // Back to the start; with two keys or more the first key's value.
+    void reset();                                                        // FS2 0x00299f40
     // Chains key last; time places it, computeFrames (1 here) makes the
     // frames from the distance when the key has none.
     void addKey(VectorKey *key, int time, bool computeFrames);           // FS2 0x0029a370
+    // The index-th key, null past the last.
+    VectorKey *keyAt(int index);                                         // FS2 0x0029a4c0
 
     sceVu0FVECTOR value;        // FS2 +0x00: w the weight (+0xc)
-    u_char     linear;          // FS2 +0x10: 1 linear, 0 a curve
+    u_char     linear;          // FS2 +0x10: 1 linear (SceneRender's), 0 a Bezier
     u_char     loop;            // FS2 +0x11
     u_char     done;            // FS2 +0x12
     u_char     curve;           // FS2 +0x13: 2 wraps the values as angles
@@ -1042,6 +1091,11 @@ struct VectorTrack
     short      count;           // FS2 +0x18: keys
     short      index;           // FS2 +0x1a: the key playing
     VectorKey *keys;            // FS2 +0x1c
+
+private:
+    void sample(VectorKey *key);                                         // FS2 0x00299f90
+    void append(VectorKey *key, bool computeFrames);                     // FS2 0x0029a3b0
+    void computeControls();                                              // FS2 0x0029a160
 };
 // Model parts named bn_<name>_<i>, of which one shows: the rest get
 // ModelPartRec::drawMode 2. A light's lit and dark pieces; a character's too.
@@ -1359,34 +1413,6 @@ struct StageNodeTree
     void update(float range, int arg, StageObject *view, StagePlayer *player); // FS2 0x00190a90
     void draw(GamePacketManager *packets, StageObject *camera);          // FS2 0x00190a80
 };
-
-// +0x2c: tex areas, an AreaGrid and a 0x5a10 table; its dtor puts the
-// parent scene's draw settings back. layout: host (EE 0xe70).
-class AreaBox;
-class Tim2Texture;              // game/gsutil.h
-struct SceneRender
-{
-    SceneRender();                                                       // FS2 0x001fa4a0
-    ~SceneRender();                                                      // FS2 0x001fa230: deleting
-    // The map's ENV_CB / ENV_SB boxes (grids +0xdfc / +0xe00; what they
-    // gate is unread).
-    void addCbBox(AreaBox *box);                                         // FS2 0x001f6ad0
-    void addSbBox(AreaBox *box);                                         // FS2 0x001f6ac0
-    // loadCommon's spotlight and shadow_00 (+0xe2c / +0xe58).
-    void setSpotlightTexture(Tim2Texture *texture);                      // FS2 0x001fa1c0
-    void setShadowTexture(Tim2Texture *texture);                         // FS2 0x001fa150
-    void update();                                                       // FS2 0x001f73c0
-    void updateLights();                                                 // FS2 0x001f8620
-    // gfxSetClearColor with the scene's colour.
-    void applyClearColor();                                              // FS2 0x001f7380
-    // yami_pl / demo_pl and the bn_ links, once.
-    void setup();                                                        // FS2 0x001f94c0
-
-    u_char spotActive;          // FS2 +0xe24: cleared each frame by StageScene::update
-    int    spotGroup;           // FS2 +0xe28: sceneRenderGroup(0) each frame
-};
-// 2 -> 0x12, 1 -> 0x13, else -1.
-int sceneRenderGroup(int mode);                                          // FS2 0x001f9c70
 
 // +0x4c and +0x8c..+0x94: objects with the vptr at +0 (slot 0 their
 // deleting dtor), set outside the ctor; unread. layout: host (unread).
@@ -1808,7 +1834,7 @@ struct ModelInstance
     ModelSurface **surfaceOfMaterial = nullptr; // FS2 +0x40: by the file's material index, null if unused
     ModelSurface **texAnims = nullptr; // FS2 +0x44: texAnimCount records of renaStepTexAnim
     int            texAnimCount = 0;   // FS2 +0x48
-    int            _4c = 0;       // FS2 +0x4c: zero (unread)
+    RenaSpotLight *spot = nullptr; // FS2 +0x4c: the scene's (SceneRender::setup); no host draw reads it yet
     Tim2Texture  **textures = nullptr; // FS2 +0x50: node->textureSlotCount
     char          *block = nullptr; // FS2 +0x54: the one block all those live in
     u_int          blockUsed = 0; // FS2 +0x58
@@ -1983,6 +2009,8 @@ public:
     void aimFrom(const float *target, const float *eye);                 // FS2 0x00177860
     // A new view-screen distance (zooms); the screen matrix follows.
     void setScrZ(float scrZ);                                            // FS2 0x00177ac0
+    // The far range, what SceneRender::update gives every camera; the same.
+    void setRange(float range);                                          // FS2 0x001779a0
     void onViewTop() override;                                           // FS2 0x00177d00
     // The view matrix (+0x240) and view-screen matrix (+0x280) from the
     // object's matrix; each frame for the active camera.
@@ -2177,7 +2205,7 @@ struct SceneBufferSet
     // The first time, the characters fill the eight blocks.
     void attachCharacters(StageObjectList *objects);                     // FS2 0x002ce3e0
     // Each block whose owner became or stopped being linked: shown or
-    // hidden, render->spotActive set.
+    // hidden, render->m_snap set.
     void setActiveFor(StageObject *linked, SceneRender *render);         // FS2 0x002ce0c0
     // A block near a listed object within range shows.
     void updateRange(float range, StageObject *linked, SceneRender *render); // FS2 0x002ce1c0
@@ -2194,7 +2222,7 @@ struct SceneBlock98
     // object's frame against the block (unread: a record's type, a
     // distance to the player).
     void updateFor(StageObject *object, StagePlayer *player);            // FS2 0x002ce820
-    // A change of on: the node shown or hidden, render->spotActive set.
+    // A change of on: the node shown or hidden, render->m_snap set.
     void setActive(bool on, SceneRender *render);                        // FS2 0x002ceb70
     void updateVisible(SceneRender *render);                             // FS2 0x002ce790
     // The node hangs from a bone of the player.

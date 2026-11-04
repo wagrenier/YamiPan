@@ -305,9 +305,7 @@ StageObject::StageObject()
     m_lightOn = 0;
     assignSerial();
     m_tree = new StageObjectTree(this);
-    _0fc = nullptr;
-    _100 = nullptr;
-    _104 = nullptr;
+    m_modelLights[0] = m_modelLights[1] = m_modelLights[2] = nullptr;
 }
 
 // ──────────────────────────────────────────────────────────────────────
