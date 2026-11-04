@@ -29,10 +29,14 @@
 #include "game/streamring.h"
 #include "game/uilayout.h"
 #include "rx/rxfile.h"
+#include "sdk/libgraph.h"     /* sceGsDrawEnv1 */
 #include "sdk/libvifpk.h"
 #include "sdk/libvu0.h"     /* sceVu0FVECTOR */
 #include "sdk/scetypes.h"
 #include "sound/sound.h"
+
+class GamePacketManager;        // game/gamepacket.h
+class TexAreaList;              // game/gsblockmap.h
 
 struct StageSelect;             // game/sysdata.h
 
@@ -184,8 +188,10 @@ public:
 enum StageObjectKind
 {
     StageObject_Door   = 2,     // StageObject::m_doorState is read
-    StageObject_Kind9  = 9,     // a listener that hears from its m_linked's head (unidentified)
-    StageObject_Kind11 = 0xb,   // a listener whose m_linked record may muffle (unidentified)
+    StageObject_Kind9  = 9,     // the main camera "camera" (StageMainCamera): hears from its m_linked's head
+    StageObject_Kind10 = 0xa,   // the camera "camview" and its two variants (ViewCamera)
+    StageObject_Kind11 = 0xb,   // the party's "camjack" camera: its m_linked record may muffle
+    StageObject_Kind13 = 0xd,   // a sub-scene's "camera_demo" (DemoCamera)
     StageObject_Kind21 = 0x15,  // left out of the inventory (unidentified)
 };
 
@@ -207,10 +213,45 @@ struct BoneNode
 
 // A character's model (the object's +0x30). Only the bone map's root.
 // layout: host -- EE: +0x14 the root.
+class VcmTable;                 // game/vcmtable.h
+struct StageModelData
+{
+    u_char _0[0x5];
+    u_char drawGroup;           // FS2 +0x5: 1, or 0x20 for what the view target looks at (StageScene::prepareDrawFlags)
+};
+static_assert(offsetof(StageModelData, drawGroup) == 5, "StageModelData::drawGroup");
+// The model's pose solver (+0xc; the run unassigned@00148db0). Only the
+// test before the call is read: +0x150 a count of something to solve.
+// layout: host -- EE: +0x150.
+struct ModelPose
+{
+    // iterations 3, count -1 (all), flaggedOnly 0 at the one caller here.
+    int solve(int iterations, int count, int flaggedOnly);               // FS2 0x0014e4d0
+
+    int pending;                // FS2 +0x150
+};
+class StageObject;
+// What hangs from a model's bones (+0x18): objects, in a list.
+// layout: host -- EE: +0 the object, +0x10 the next.
+struct ModelLink
+{
+    StageObject *object;        // FS2 +0x00
+    ModelLink   *next;          // FS2 +0x10
+};
+// layout: host -- EE offsets in the comments.
 struct StageModel
 {
-    u_char    _00[0x14];
-    BoneNode *bones;            // FS2 +0x14: StageSound finds "bn_head" in it
+    // Hangs the bones' link nodes and the object's matrix on them; once,
+    // from StageScene::setupCameras.
+    void bindBones();                                                    // FS2 0x00187d10
+    void placeBones(StageObject *owner);                                 // FS2 0x00187b70
+    void updateVcm();                                                    // FS2 0x00187230
+
+    StageModelData *data;       // FS2 +0x00: the model file (updateVcm tests it)
+    VcmTable  *vcm;             // FS2 +0x04
+    ModelPose *pose;            // FS2 +0x0c
+    BoneNode  *bones;           // FS2 +0x14: StageSound finds "bn_head" in it
+    ModelLink *links;           // FS2 +0x18
 };
 
 // StageNode: game/stagenode.h (the scene-node family's stand-ins).
@@ -239,6 +280,29 @@ struct ModelInstance;
 class StageObjectTree;
 struct PlayerMotion;
 class ScriptRunner;
+class Pad;                      // game/pad.h
+// What drives a character from the pad (+0x21c). layout: host -- EE: +0
+// the flag, +8 the pad.
+struct CharacterInput
+{
+    void setActive(bool on);                                             // FS2 0x00239bb0
+};
+// What drives a character otherwise (+0x220, null without one). The name
+// is a guess: it is switched the other way round from the input. EE: +0x174
+// the flag.
+// layout: host
+struct CharacterBrain
+{
+    void setEnabled(bool on);                                            // FS2 0x001dd3f0
+};
+// One of a character's two parts (+0x240 / +0x244): what they are is
+// unread. EE layout, as far as read.
+struct CharacterPart
+{
+    u_char _0[0xd];
+    u_char drawMode;            // FS2 +0xd: StageScene::prepareDrawFlags (0 off, 2 on)
+};
+static_assert(offsetof(CharacterPart, drawMode) == 0xd, "CharacterPart::drawMode");
 // layout: host
 class StageObject
 {
@@ -264,11 +328,26 @@ public:
     // Slot +0x24c: the object is the view stack's top again
     // (StageViewStack::remove). A plain stub until its TU.
     void onViewTop();                                                    // FS2 vtable +0x24c
+    // Slot +0x20: the object's matrices from its transform ("calcmatrix").
+    // A plain stub until its TU.
+    void calcMatrix();                                                   // FS2 vtable +0x20
+    // Slot +0x25c: a camera's step for the frame. A plain stub until its TU.
+    void cameraStep();                                                   // FS2 vtable +0x25c
+    // Slot +0x260: a camera's m_linked changed. A plain stub until its TU.
+    void onLinkChanged();                                                // FS2 vtable +0x260
+    // The node's position goes to its slot and down the children.
+    void propagate();                                                    // FS2 0x001d8260
+    // A door hangs itself from the Root object's lists.
+    void attachToRoot();                                                 // FS2 0x00173cb0
     // A character's action as the menus see it (StageScene::playerAction).
     int  getActionState();                                               // FS2 0x00214fc0
 
     // This is the scene's player (gStageScene->player).
     bool isPlayer();                                                     // FS2 0x00215ef0
+    // This is the scene's partner (gStageScene->partner).
+    bool isPartner();                                                    // FS2 0x00215ed0
+    // +0x400 set and +0x3c8 == 2 (the player's isMode1 has 1).
+    bool isMode2();                                                      // FS2 0x002152a0
     // StageSound::update's playerFlag for a character (the X_J / X_D
     // alternate entries): for the player the party's flag byte (0x1fe800),
     // for another character whether its +0x224 record's +0x40 is 0x11 or
@@ -281,7 +360,15 @@ public:
         return m_collisions == nullptr || i >= m_collisionCount ? nullptr : m_collisions[i];
     }
 
-    u_char _000[0x18];
+    // A camera's matrices. PC: the stand-in family has no fields there
+    // (+0x200 and +0x240 mean other things in other classes); both go when
+    // the camera class gets its own layout.
+    const void *cameraScreen() const { return &m_itemDef; }              // FS2 +0x200
+    const void *cameraView() const { return &m_parts; }                  // FS2 +0x240
+
+    u_char _000[0x4];
+    StageObject *m_parent;      // FS2 +0x004: its parent node; null for a root
+    u_char _008[0x10];
     u_char m_viewActive;        // FS2 +0x018: 1 from the ctor; cleared off the view stack and on the map's cameras
     u_char _019[0x7];
     // The name ends before +0x30 (a character's model there): 0x10 like an
@@ -290,7 +377,7 @@ public:
     StageModel *m_model;        // FS2 +0x030: a character's model (StageSound: its bone map)
     u_char m_active;            // FS2 +0x034: the list walks (StageScene::raycast) skip an inactive object
     u_char _035[0x2];
-    u_char m_hidden;            // FS2 +0x037: (guess) set: StageScene::raycast leaves the object out
+    u_char m_dead;              // FS2 +0x037: StageScene::update deletes the object at the frame's end; raycast leaves it out
     StageObjectTree *m_tree;    // FS2 +0x038: its node in the object tree (StageScene::restoreObjectFlags)
     u_char _03c[0x104];
     NodeTransform m_xform;      // FS2 +0x140: the placement the map file sets
@@ -307,17 +394,28 @@ public:
         int    m_count;         // FS2 +0x20c: an item's count
         StageCollision **m_collisions; // FS2 +0x20c: a Root object's meshes
     };
-    u_char _210[0x14];
+    u_char _210[0xc];
+    CharacterInput *m_input;    // FS2 +0x21c: a character's
+    CharacterBrain *m_brain;    // FS2 +0x220: a character's; null none
     PlayerMotion *m_motion;     // FS2 +0x224: a character's
-    u_char _228[0x68];
+    u_char _228[0x18];
+    CharacterPart *m_parts[2];  // FS2 +0x240: a character's; StagePlayer::isMode1 picks which one shows in a view camera
+    u_char _248[0x48];
     void  *m_290;               // FS2 +0x290: a character's (StageScene::partnerResponds; unread)
     u_char _294[0x4];
     int    m_doorRecord;        // FS2 +0x298: a door's gDoorRecords index (StageFiles::applyBgTarget)
-    u_char _29c[0xc];
+    u_char _29c[0x6];
+    u_char m_keepFlags;         // FS2 +0x2a2: a light's: SceneArrayPair::restoreFlags leaves it alone
+    u_char _2a3[0x5];
     int    m_doorState;         // FS2 +0x2a8: a door's StageDoorState
-    u_char _2ac[0x54];
-    StageObject *m_linked;      // FS2 +0x300: the object a Kind9 / Kind11 listener hears through (StageSound)
-    u_char _304[0x9d];
+    u_char _2ac[0x20];
+    float  m_range;             // FS2 +0x2cc: a camera's; with m_range2 the draw distance
+    float  m_range2;            // FS2 +0x2d0: a camera's
+    u_char _2d4[0x2c];
+    StageObject *m_linked;      // FS2 +0x300: what a camera follows (StageScene::setPlayer); the object a Kind9 / Kind11 listener hears through (StageSound)
+    u_char _304[0xc];
+    int    m_demoCut;           // FS2 +0x310: a DemoCamera's (StageScene::draw: below 2 the filter runs in d0101)
+    u_char _314[0x8d];
     u_char m_canPause;          // FS2 +0x3a1: the player's: clear: no pause menu
     u_char _3a2[0x1e];
     u_char m_3c0;               // FS2 +0x3c0: StageScene::partnerResponds (unread)
@@ -361,11 +459,19 @@ struct StageMapHolder
 // picked by the weapon carried.
 // layout: host -- EE: +0xc00 the look state.
 struct PlayerLookState;
+// The record at +0xbd8: a state, 1 or 2 draw something (0x2b9ef0 / 0x2ba8d0,
+// beside PrgMcCard). layout: host -- EE: +0 the state.
+struct PlayerOverlay
+{
+    void draw();                                                         // FS2 0x002bb260
+};
 struct PlayerMotion
 {
     void refresh();                                                      // FS2 0x001e66c0
 
-    u_char _000[0xc00];
+    u_char _000[0xbd8];
+    PlayerOverlay *overlay;     // FS2 +0xbd8: StageScene::draw
+    u_char _bdc[0x24];
     PlayerLookState *look;      // FS2 +0xc00
 };
 // What StageScene::partnerResponds reads of it; the angle's unit and what
@@ -388,6 +494,8 @@ struct StagePlayer
     // +0x400 set and +0x3c8 == 1: StageScene::drawPaused / update then
     // pass StageSound::update sceneFlag 1. What mode 1 is is unread.
     bool isMode1();                                                      // FS2 0x002152d0
+    // +0x364 set: +0x2ca = 1. What the two bytes are is unread.
+    void latchAltAction();                                               // FS2 0x0020b1d0
     // The player is a character (a StageObject) in the ROM; the host
     // stand-ins keep separate layouts until the character TU joins them.
     StageObject *character() { return reinterpret_cast<StageObject *>(this); }
@@ -422,6 +530,8 @@ public:
     // sets is unread.
     void setShown(bool on);                                              // FS2 0x0018bbe0
 };
+// Every character with m_viewActive: three steps on its motion (+0x224).
+void stageUpdateCharacterMotions();                                      // FS2 0x0017df60
 // The object's shown state (0x18b290).
 bool stageObjectIsShown(StageObject *object);                            // FS2 0x0018b290
 
@@ -439,6 +549,13 @@ struct StageParty
     StageObject *getCompanion();                                         // FS2 0x001fea50
     // ScreenFill::setImage on the record's +0x3c.
     void setFillImage(const void *image);                                // FS2 0x001fe9b0
+    // The frame's step and draw on the record (0x203240 / 0x2024c0).
+    void update();                                                       // FS2 0x001feb80
+    void draw();                                                         // FS2 0x001feb70
+    // The record's "camjack" camera.
+    void createCamera();                                                 // FS2 0x001febb0
+    // Mode 4, object the companion.
+    void setCompanion(StageObject *object);                              // FS2 0x001fe9c0
 };
 
 // A singly linked list whose nodes {next, flags} carry a keep bit (the
@@ -450,6 +567,10 @@ struct KeepList
     ~KeepList();                                                         // FS2 0x002bc6f0: deleting; deletes every node
     // Unlinks and deletes every node whose flags bit 0 is clear.
     void removeUnkept();                                                 // FS2 0x002bc5d0
+    // Advances the nodes by frames; the nodes of source (null all) give the
+    // two motors' values and up to max flags and tags.
+    void update(float frames, u_char *motorA, u_char *motorB, char *flags, int *tags,
+                int max, StageObject *source);                           // FS2 0x002bc100
 };
 
 // The stage object's +0xec: what a sub-scene starts from (the 0x287xxx
@@ -480,8 +601,11 @@ public:
     // The deleting dtor (vtable +0x8, vptr +0x2c: StageScene's dtor); a
     // plain stub until its TU.
     void destroy();
+    // Slot 1 (vtable +0xc, vptr +0x2c): set, StageScene::draw leaves the
+    // pool's text out. A plain stub until its TU.
+    bool hidesText();
 
-    u_char _00[0x24];
+    char   name[0x24];          // FS2 +0x00: the event's id (d0101); the extent is a guess
     int    state;               // FS2 +0x24: StageEventState
     ScriptRunner *runner;       // FS2 +0x28: StageScene::isBusy: its script may go on while the event runs
     u_char _2c[0x8];
@@ -537,6 +661,8 @@ public:
     int  stop();                                                         // FS2 0x002b1170
     // A jump to SoundStream::update: once a frame.
     void update();                                                       // FS2 0x002b1100
+    // The subtitle of the stream's time.
+    void drawSubtitles(sceVif1Packet *packet);                           // FS2 0x002b0d60
     // The subtitles' fsm file, relocated; false when it is not one.
     bool setFsm(void *fsm);                                              // FS2 0x002b11a0
     // A new printer on font and image; false when either is null or the
@@ -565,6 +691,8 @@ public:
     bool isFullInMode2();                                                // FS2 0x001512a0
     // The same in mode 1.
     bool isFullInMode1();                                                // FS2 0x001512e0
+    // Slot 2 (vtable +0xc, vptr +4). A plain stub until its TU.
+    void draw(sceVif1Packet *packet, TexAreaList *texList);
 };
 
 // -- The stage scene's members (StageScene's ctor 0x19c180 / dtor 0x19bbe0;
@@ -579,6 +707,12 @@ struct ScenePairTable
 {
     ScenePairTable();                                                    // FS2 0x00171680
     ~ScenePairTable();                                                   // FS2 0x00171620: deleting
+    // The frame's action steps over the five lists: slots +8, +0xc, +0x10,
+    // +0x14 of every entry that is on (the perf bars' names).
+    void actionStart();                                                  // FS2 0x001714e0
+    void actionControl();                                                // FS2 0x00171440
+    void actionMovement();                                               // FS2 0x001713a0
+    void actionTerminate();                                              // FS2 0x00171300
 };
 
 // +0x18: four arrays of records reserved for 0x1fe each. layout: host (EE 0x70).
@@ -586,6 +720,7 @@ struct SceneRecordBuckets
 {
     SceneRecordBuckets();                                                // FS2 0x001f6510
     ~SceneRecordBuckets();                                               // FS2 0x001f63f0: deleting
+    void collide();                                                      // FS2 0x001f5250
 };
 
 // +0x1c: owns one 0x40-byte object (0x192080, built with this). layout: host (EE 4).
@@ -600,6 +735,9 @@ struct StageNodeTree
     void addParticleTexture(Tim2Texture *texture);                       // FS2 0x00190aa0
     void setParticleFileA(void *file);                                   // FS2 0x00190b50
     void setParticleFileB(void *file);                                   // FS2 0x00190ae0
+    // The particles within range of view; arg is 0 here.
+    void update(float range, int arg, StageObject *view, StagePlayer *player); // FS2 0x00190a90
+    void draw(GamePacketManager *packets, StageObject *camera);          // FS2 0x00190a80
 };
 
 // +0x2c: tex areas, an AreaGrid and a 0x5a10 table; its dtor puts the
@@ -617,7 +755,18 @@ struct SceneRender
     // loadCommon's spotlight and shadow_00 (+0xe2c / +0xe58).
     void setSpotlightTexture(Tim2Texture *texture);                      // FS2 0x001fa1c0
     void setShadowTexture(Tim2Texture *texture);                         // FS2 0x001fa150
+    void update();                                                       // FS2 0x001f73c0
+    void updateLights();                                                 // FS2 0x001f8620
+    // gfxSetClearColor with the scene's colour.
+    void applyClearColor();                                              // FS2 0x001f7380
+    // yami_pl / demo_pl and the bn_ links, once.
+    void setup();                                                        // FS2 0x001f94c0
+
+    u_char spotActive;          // FS2 +0xe24: cleared each frame by StageScene::update
+    int    spotGroup;           // FS2 +0xe28: sceneRenderGroup(0) each frame
 };
+// 2 -> 0x12, 1 -> 0x13, else -1.
+int sceneRenderGroup(int mode);                                          // FS2 0x001f9c70
 
 // +0x4c and +0x8c..+0x94: objects with the vptr at +0 (slot 0 their
 // deleting dtor), set outside the ctor; unread. layout: host (unread).
@@ -627,6 +776,13 @@ public:
     void destroy();                                                      // FS2 vtable +0x8
     // Slot +0x3c: it holds the player's actions (StageScene::playerAction).
     bool isBusy();                                                       // FS2 vtable +0x3c
+    // The frame: slot +0xc once (setupCameras), +0x30 update, +0x34 draw.
+    void prepare();                                                      // FS2 vtable +0xc
+    void update();                                                       // FS2 vtable +0x30
+    void draw();                                                         // FS2 vtable +0x34
+    // Slot +0x40: it has a target; +0x38 which (prepareDrawFlags).
+    bool hasTarget();                                                    // FS2 vtable +0x40
+    StageObject *getTarget();                                            // FS2 vtable +0x38
 };
 
 // +0x4c: what runs the stage's rute file (vtable 0x316a78; run
@@ -687,6 +843,8 @@ struct AreaClip
 {
     explicit AreaClip(void *file);                                       // FS2 0x002dccf0
     ~AreaClip();                                                         // FS2 0x002dcab0: deleting
+    void setup();                                                        // FS2 0x002dcc30
+    void update(StageObject *camera);                                    // FS2 0x002dbd10
 };
 
 // A map file (the map keyword): six record sections after this 0x24-byte
@@ -875,6 +1033,11 @@ public:
     void setEntry(const void *entry);                                    // FS2 0x001d2f40
     // One step: it is gRunningScript meanwhile.
     void run(int arg);                                                   // FS2 0x001d27e0
+    // The deleting dtor (vtable +0x18, vptr +0xb4); a plain stub until its TU.
+    void destroy();
+
+    int    m_running;           // FS2 +0xa8: non-zero while the script has more to do (StageScene::update)
+    u_char m_skippable;         // FS2 +0xb9: a sub-scene's: start ends it
 };
 extern ScriptRunner *gRunningScript;    /* sbss 0x31ae18 (gp-0x7a58) */
 
@@ -898,6 +1061,39 @@ public:
     void addToScene(const char *name);                                   // FS2 0x00177d20: StageObjectList::add0
     // Turns the transform's rotation to look at target.
     void lookAt(const float *target);                                    // FS2 0x00177900
+    // The view matrix (+0x240) and view-screen matrix (+0x280) from the
+    // object's matrix; each frame for the active camera.
+    void calcViewMatrix();                                               // FS2 0x00177810
+};
+// The stage's "camera" (kind 9; vtable 0x311fa0). layout: host -- EE 0x3c0.
+class StageMainCamera : public StageCamera
+{
+public:
+    StageMainCamera();                                                   // FS2 0x00179700
+};
+// "camview", "camview_zoom", "camview_snipe" (kind 10; vtable 0x3185b0; run
+// unassigned@00299d90). layout: host -- EE 0x440.
+class ViewCamera : public StageCamera
+{
+public:
+    ViewCamera();                                                        // FS2 0x0029aae0
+};
+// A sub-scene's "camera_demo" (kind 13; vtable 0x316ed0; run
+// unassigned@002681e0). layout: host -- EE 0x340.
+class DemoCamera : public StageCamera
+{
+public:
+    DemoCamera();                                                        // FS2 0x0026ce20
+    // The fades on list 9 after the 3D frame.
+    void drawOverlay();                                                  // FS2 0x0026c920
+};
+// A bullet (named "bullet", group 4; vtables 0x312ca0 / 0x312f40; the args
+// are 0 here: unread). setupCameras makes one, off, at the start.
+// layout: host -- EE 0x2c0.
+class StageBullet : public StageObject
+{
+public:
+    StageBullet(int arg0, int arg1);                                     // FS2 0x001803e0
 };
 
 // The two light classes' base (ctor 0x1866f0; vtables 0x313e30 / 0x3141b0).
@@ -1074,6 +1270,13 @@ int parseSpawnId(const char *name);                                      // FS2 
 struct SceneBufferSet
 {
     ~SceneBufferSet();                                                   // FS2 0x002ce5a0: deleting
+
+    int used;                   // FS2 +0x14: zeroed each frame by StageScene::update
+};
+// +0x98: only the byte StageScene::update sets. layout: host -- EE: +0xc.
+struct SceneBlock98
+{
+    u_char dirty;               // FS2 +0xc
 };
 
 // +0xa0: a colour and a screen rect (vtable 0x311280 over StageFade's base
@@ -1085,6 +1288,7 @@ public:
     // A new Tim2Texture of image at +8, the old one deleted.
     void setImage(const void *image);                                    // FS2 0x00151e10
     void destroy();                                                      // FS2 vtable +0x8 (vptr +4)
+    void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 vtable +0xc (vptr +4)
 };
 
 // +0xa4 / +0xa8: menu program holders (beside PrgMcCard), set outside the
@@ -1094,6 +1298,8 @@ struct MenuProgHolder
     // A new 0x1cc0-byte program object (0x2aef00) on the init pack's item.
     MenuProgHolder(const void *data, int stage);                         // FS2 0x002ad100
     ~MenuProgHolder();                                                   // FS2 0x002ad070: deleting
+    // The program's frame (on the scratchpad stack in the ROM).
+    void draw(float deltaSeconds, GamePacketManager *packets, StageObject *camera); // FS2 0x002ad030
 };
 // layout: host
 struct MenuProgSet
@@ -1113,13 +1319,26 @@ struct AreaGrid
     void addBox(AreaBox *box);                                           // FS2 0x00284560
     // The boxes at pos, at most max of them; how many.
     int  collect(const sceVu0FVECTOR pos, AreaBox **out, int max);       // FS2 0x00283ff0
+    // Bounds and cells from the boxes added so far.
+    void build();                                                        // FS2 0x002842f0
 };
+
+// The frame-buffer filter of the view cameras and event d0101: passes
+// times over the w x h frame of env, block the VRAM block (32-block
+// pages), arg 1 or 5.
+void gsFrameFilter(sceVif1Packet *packet, const sceGsDrawEnv1 *env, int w, int h,
+                   u_short block, int passes, int arg);                  // FS2 0x002849c0
+// A flat sprite from (x, y) to (x2, y2) of the 512 x 512 frame.
+void gsFillRect(sceVif1Packet *packet, int x, int y, int x2, int y2, u_int rgba); // FS2 0x002eaeb0
 
 // +0xc0: (count 4, 0x800, 0x878). layout: host (EE 0x2c).
 struct ScenePool
 {
     ScenePool(u_int count, int size, int size2);                         // FS2 0x00289be0
     ~ScenePool();                                                        // FS2 0x00289b60: deleting
+    // Text for slot index; -1 past the last.
+    int  setSlot(int index, const u_short *text);                        // FS2 0x00289b20
+    void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x00289800
 };
 
 // +0xc4: plain data beside the pause menu's code. layout: host (EE 0x678).
@@ -1127,17 +1346,44 @@ struct PauseMenuState
 {
     PauseMenuState();                                                    // FS2 0x00207ef0
     ~PauseMenuState();                                                   // FS2 0x00207ea0: deleting
+    void update();                                                       // FS2 0x00207500
+    // One of its five entries is on and holds the scene clock's time.
+    bool isActive();                                                     // FS2 0x002078d0
 };
 
 class WideFontPrinter;          // game/fontdata.h
 
 // +0xcc: a list view over the scene's printer (vtable 0x316530 at +0x88).
 // layout: host (EE 0x8c).
+// One of UiItemList's two slots (front and back). Named from the fields'
+// use only. layout: host -- EE 0x14.
+struct UiPickSlot
+{
+    // object set and timer past 6.
+    bool isReady();                                                      // FS2 0x0023e740
+
+    void  *object;              // FS2 +0x00
+    int    timer;               // FS2 +0x04
+    int    _08;                 // FS2 +0x08
+    const void *label;          // FS2 +0x0c
+    u_char enabled;             // FS2 +0x10
+};
+// layout: host
 class UiItemList
 {
 public:
     UiItemList(WideFontPrinter *printer, int arg);                       // FS2 0x0023f0b0
     void destroy();                                                      // FS2 vtable +0x8 (vptr +0x88)
+    void update();                                                       // FS2 0x0023e7b0
+    void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x0023e770
+    // The front slot is used; negative when nothing could be.
+    int  pick();                                                         // FS2 0x0023ee90
+
+    // The slot in front (flip's bit 0 picks it; update fills the other).
+    UiPickSlot *frontSlot() { return &slots[flip & 1]; }
+
+    UiPickSlot slots[2];        // FS2 +0x58 (0x14 each)
+    u_int      flip;            // FS2 +0x80
 };
 
 // +0xd0: a menu over the scene's printer (vtable 0x3164b0 at +8; a 0xaa8
@@ -1152,6 +1398,8 @@ class StageMenu
 public:
     StageMenu(WideFontPrinter *printer, int arg);                        // FS2 0x002308a0
     void destroy();                                                      // FS2 vtable +0x8 (vptr +8)
+    void update();                                                       // FS2 vtable +0xc (vptr +8)
+    void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 vtable +0x10 (vptr +8)
 
     int state;                  // FS2 +0x0: StageMenuState
 };
@@ -1161,6 +1409,7 @@ struct SceneBoxList
 {
     SceneBoxList();                                                      // FS2 0x0023ad60
     ~SceneBoxList();                                                     // FS2 0x0023ad10: deleting
+    void update();                                                       // FS2 0x0023aca0
 };
 
 // +0xe0. layout: host (EE 0x3cc).
@@ -1177,6 +1426,7 @@ struct Rand48
     Rand48();                                                            // FS2 0x002682e0
     // A number in 0..n-1.
     int next(int n);                                                     // FS2 0x002681e0
+    void seed(u_int value);                                              // FS2 0x00268290
 };
 
 // +0xf4: the ALERT / CAUTION state machine (game/stagealert.cpp).
@@ -1185,6 +1435,8 @@ struct StageAlert
 {
     StageAlert();                                                        // FS2 0x00264070
     ~StageAlert();                                                       // FS2 0x00264000: deleting
+    u_long update();                                                     // FS2 0x00263c10
+    void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x00263ba0
 };
 
 // +0x118 / +0x11c: the game-over and stage-clear sequences (set outside
@@ -1199,17 +1451,28 @@ enum
 struct GameOverSequence
 {
     int getState();                                                      // FS2 0x002b1c50
+    void update();                                                       // FS2 0x002b1670
 };
 // layout: host (unread).
 struct ClearSequence
 {
     int getState();                                                      // FS2 0x002b1620
+    void update();                                                       // FS2 0x002b1500
 };
 
 // +0x120 (StageScene::update deletes it too). layout: host.
 struct SceneDirector
 {
+    SceneDirector();                                                     // FS2 0x002b22d0
     ~SceneDirector();                                                    // FS2 0x002b2280: deleting
+    // A colour ramp still has frames to go.
+    bool isRunning();                                                    // FS2 0x002b2270
+    // From colour from to colour to over frames frames.
+    void start(int frames, u_int from, u_int to);                        // FS2 0x002b2250
+    // Ramps the colour and fills the screen with it.
+    void draw(sceVif1Packet *packet);                                    // FS2 0x002b20a0
+
+    u_int colour;               // FS2 +0x0: the ramp's colour now
 };
 
 // +0x124: a record of two arrays. The ROM frees the second as an array
@@ -1217,12 +1480,14 @@ struct SceneDirector
 // layout: host -- EE: +8, +0xc.
 struct SceneArrayPair
 {
+    // Room for every object but group 4's (inline in setupCameras).
+    SceneArrayPair();
     // Every object's saved flags back (3 bytes each, group 4 left out).
     void restoreFlags();                                                 // FS2 0x0019c6a0
 
-    u_char  _00[0x8];
-    u_char *first;              // FS2 +0x8: delete[]
-    u_char *second;             // FS2 +0xc: delete[] (header at -0x10 on the EE)
+    u_long         count;       // FS2 +0x0
+    u_char        *first;       // FS2 +0x8: delete[]; 3 bytes per object
+    NodeTransform *second;      // FS2 +0xc: delete[] (header at -0x10 on the EE); one per object
 };
 
 // +0x12c: an object with a member at +0x24 the dtor destroys in place.
@@ -1233,6 +1498,9 @@ struct SceneModel
 };
 struct SceneModelHolder
 {
+    SceneModelHolder(StageNodeTree *tree, int stage);                    // FS2 0x002d07a0
+    void draw(float deltaSeconds, sceVif1Packet *packet, StageObject *camera); // FS2 0x002d0550
+
     u_char     _00[0x24];
     SceneModel model;           // FS2 +0x24
 };
@@ -1241,6 +1509,29 @@ struct SceneModelHolder
 // sub-scene draws into its own record.
 void drawSysPush();                                                      // FS2 0x002d7c70
 void drawSysPop();                                                       // FS2 0x002d7c00
+// The record's camera object (+0xc): the view and screen matrices go there.
+// layout: host -- EE: slots +0x18, +0x1c.
+class DrawSysCamera
+{
+public:
+    void setViewMatrix(const void *matrix);                              // FS2 vtable +0x18
+    void setScreenMatrix(const void *matrix);                            // FS2 vtable +0x1c
+};
+// layout: host -- EE: +0xc the camera.
+struct DrawSysRecord
+{
+    DrawSysCamera *camera;      // FS2 +0xc
+};
+DrawSysRecord *drawSysCurrent();                                         // FS2 0x002d4fd0
+// The frame's 3D draw ("rena draw"); env is the frame's, flags 0 here.
+void drawSysRender(GamePacketManager *packets, const sceGsDrawEnv1 *env, int flags); // FS2 0x002d5560
+// Advances every record by ticks of 1/300 s.
+void drawSysTick(int ticks);                                             // FS2 0x002d4ef0
+// The flag beside the view target's model mark (prepareDrawFlags).
+void drawSysClearTargetView();                                           // FS2 0x002d4780
+void drawSysSetTargetView();                                             // FS2 0x002d4790
+float getDrawDistance();                                                 // FS2 0x002d9aa0
+void  setDrawDistance(float distance);                                   // FS2 0x002d9ab0
 
 // 44 groups at 0x599830 / 0x599860 reset (a byte zero, 32 words one each):
 // a stage's ctor. What the groups are is unread.

@@ -1016,9 +1016,31 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    "volume", `setVector` (the ENV_ lights all pass 1, 0, 0), the PlayerAction values, `StageItemE`.
    `StageScript::entry` treats `table` as an offset: the relocate TU must keep it one. Checked: build
    green, callcheck clean, layoutcheck OK, smoke run unchanged (language screen; nothing here runs
-   before a stage loads). **Next for this TU**: `applySoundTarget` 0x19d9e0, `applyBgMotionTarget`
-   0x19f230, then update 0x199400, draw 0x198970, setupCameras 0x199f00, loadList 0x1a3a60, and
-   0x19c6a0 (`SceneArrayPair::restoreFlags`).
+   before a stage loads).
+   **Sixth run (2026-11-03, batch 086, 90 names; 18 more written, 151 of 258, still `partial`)**: the frame itself:
+   `update`, `draw`, `setupCameras`, with `calcMatrices`, `propagateNodes`, `updateVcms`, `updateRumble`
+   / `getRumbleSource`, `getInputFocus`, `setPlayer`, `prepareDrawFlags`, `drawViewFilter`,
+   `collectViewTargets`, `SceneArrayPair::restoreFlags`, `StageViewStack::push` / `removePriority`,
+   `pushView`, `removeViewPriority`. `setFlag84` / `setFlag84To` are **`releaseControl` /
+   `requestControl`**: +0x84 holds 0, 1 or a StageObject, so on the host it is `uintptr_t
+   controlRequest`. `m_hidden` +0x37 is **`m_dead`** (update deletes such objects). Camera kinds read
+   from the vtables: 7 StageCamera, 9 `StageMainCamera`, 10 `ViewCamera` (camview), 11 camjack (the
+   party's), 13 `DemoCamera`. ScenePairTable is the four action steps; the perf labels gave the frame's
+   order (architecture.md "Modules"). `sdk/eekernel` gained `GetTimerSystemTime`. Stubs still in this
+   TU's update: `runStageScripts` 0x19aba0, `updateBlock98` 0x19b1f0, `updateBuffers` 0x19afb0.
+   Choices (unattended): the two GS register packets of the letterbox go through `YamiPan_DrawUiReg`;
+   `gsFillRect` 0x2eaeb0 is a stub, so **a sub-scene's letterbox and every fill draw nothing until that
+   TU** (14 call sites; it should end in the UI canvas). ROM oddity kept: `removePriority` reads the
+   entry after the shift, so below the top it clears and returns the object that moved in. Stand-ins
+   to go with the camera TU: `StageObject::cameraScreen` / `cameraView` hand out &m_itemDef and
+   &m_parts as the +0x200 / +0x240 matrices (the family has no room for them); `getName` slot +0x21c
+   is read as `m_name` (every vtable read answers +0x20). Guessed names: oSJ24_02 / 03 as sight
+   objects, `collectViewTargets`, `getRumbleSource`, `CharacterBrain`, `ModelPose`, `altLatch`,
+   `SceneBlock98`, the view filter's table names. `GameOptions::_08` reads as the vibration option
+   (`updateRumble`): rename when the option screen is read. Checked: build green, callcheck clean,
+   layoutcheck OK, smoke run unchanged (language screen; no stage loads yet, so **none of this has
+   run**). **Next for this TU**: `runStageScripts`, `updateBlock98`, `updateBuffers`, `applySoundTarget`
+   0x19d9e0, `applyBgMotionTarget` 0x19f230, `loadList` 0x1a3a60.
    Open from TU 5: `gSystemData` is data the build will
    need defined (stubgen makes functions only); the semantics of SaveData +0x468, +0x3ac and the
    record kinds; whether 0x23bb30 or 0x23bb40 is the save data's own getter. ** Its callees' TUs are the frontier: `game/pad.cpp`, `game/gamepacket.cpp`,

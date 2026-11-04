@@ -49,6 +49,9 @@ int DeleteThread(int threadId);
 int SuspendThread(int threadId);
 int ResumeThread(int threadId);
 int GetThreadId();
+// The kernel timer's count, in bus clocks since boot (libkernl timer.c). FS2
+// only seeds the stage's generator with it.
+u_long GetTimerSystemTime();
 int SleepThread();
 int WakeupThread(int threadId);
 int iWakeupThread(int threadId);

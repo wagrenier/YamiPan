@@ -17,3 +17,16 @@ StageAlert::~StageAlert()
 {
     YAMIPAN_STUB("StageAlert::~StageAlert", 0x00264000);
 }
+
+// stub of FS2 0x00263ba0
+void StageAlert::draw(sceVif1Packet *packet, TexAreaList *texList)
+{
+    YAMIPAN_STUB("StageAlert::draw", 0x00263ba0);
+}
+
+// stub of FS2 0x00263c10
+u_long StageAlert::update()
+{
+    YAMIPAN_STUB("StageAlert::update", 0x00263c10);
+    return {};
+}

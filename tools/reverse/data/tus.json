@@ -566,7 +566,7 @@
    "why": "StageResult (0x599700, static init 0x310f60: begin(0) + __register_global_object with the destructor 0x2b0cf0) and the game-pack loader 0x2afd00..0x2aff80: the MSL map instances 0x2b0590..0x2b0cf0 serve the loader's tables and sit between getStageResult and StageResult's static destructor, so one object file; 0x2afc20/0x2afcd0 (init-pack items by language) joined by position (guess); 0x2af9a0 before is the 0x2adc70 drawing cluster, 0x2b0d50 after is a SoundStream thunk"
   },
   "game/stagescene.cpp": {
-   "notes": "Written this run (batch 085, 86 names): applyMapTarget 0x19ddf0 as five placeMap members, placeItem 0x19d0c0, placeCharacter 0x19d4e0, applyItemTarget, loadCommon, createMenuProg, wantsMapMenu, wantsPauseMenu with the shared playerAction, isInputBlocked, isBusy, partnerResponds, restoreObjectFlags, getFloor, enterSubScene, removeView, StageViewStack::remove, stageFps, setFlag84To. StageMapFile is now EE structs in gamehooks.h with S2dRef sections: relocate 0x186ee0 is still a stub and must use S2dRef::set. AreaGrid holds box objects: addId is addBox, addArea0/1/2 and addSoundArea are addFloorBox, addAbBox, addSmokeBox, addReverbBox. ROM oddities kept: the YAM_PL test reads the spot section, and F_YRT / F_SRT drop the plain-name search result. StageScript::entry treats table as an offset, so the relocate TU must keep it one. stubgen traps are in hazards.md. Guessed names: partner, partnerResponds, controlled, isSkippable, volume, setVector, PlayerAction values, StageItemE. Checked: build green, callcheck clean, layoutcheck OK, smoke run shows the language screen as before; nothing here runs before a stage loads, so no picture covers this code. Next: applySoundTarget 0x19d9e0, applyBgMotionTarget 0x19f230, then update 0x199400, draw 0x198970, setupCameras 0x199f00, loadList 0x1a3a60, restoreFlags 0x19c6a0.",
+   "notes": "Written this run (batch 086): StageScene update, draw, setupCameras, calcMatrices, propagateNodes, updateVcms, updateRumble, getRumbleSource, getInputFocus, setPlayer, prepareDrawFlags, drawViewFilter, collectViewTargets, pushView, removeViewPriority; SceneArrayPair restoreFlags; StageViewStack push and removePriority. Renamed: setFlag84 is releaseControl, setFlag84To is requestControl (+0x84 is controlRequest, 0, 1 or a StageObject, uintptr_t on the host); m_hidden is m_dead. Camera kinds: 7 StageCamera, 9 StageMainCamera, 10 ViewCamera, 11 camjack, 13 DemoCamera. NOTHING HERE HAS RUN: no stage loads yet, the smoke run stays on the language screen, unchanged. gsFillRect 0x2eaeb0 is a stub, so the letterbox and every fill draw nothing until that TU. Stand-ins to replace with the camera TU: StageObject cameraScreen and cameraView. ROM oddity kept: removePriority reads the entry after the shift. Still stubs here: runStageScripts 0x19aba0, updateBlock98 0x19b1f0, updateBuffers 0x19afb0, applySoundTarget 0x19d9e0, applyBgMotionTarget 0x19f230, loadList 0x1a3a60: do these next.",
    "ranges": [
     [
      "001953f0",
@@ -602,6 +602,11 @@
      "date": "2026-11-03 19:19",
      "status": "partial",
      "summary": "StageFiles map, item and common targets, placeItem, placeCharacter, menu tests, enterSubScene, getFloor; map file layout proven; AreaGrid holds boxes, not ids"
+    },
+    {
+     "date": "2026-11-03 19:44",
+     "status": "partial",
+     "summary": "the stage frame: update, draw, setupCameras and their helpers; camera kinds, view stack, control request, frame order from the perf labels"
     }
    ],
    "status": "partial",
