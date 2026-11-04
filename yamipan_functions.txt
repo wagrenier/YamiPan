@@ -2822,12 +2822,12 @@
 /* 00177650 00000078 */ FUN_00177650(){}
 /* 001776d0 00000134 */ FUN_001776d0(){}
 /* 00177810 00000048 */ StageCamera::calcViewMatrix(){}  // game
-/* 00177860 00000094 */ FUN_00177860(){}
+/* 00177860 00000094 */ StageCamera::aimFrom(){}  // game
 /* 00177900 00000094 */ StageCamera::lookAt(){}  // game
 /* 001779a0 00000114 */ FUN_001779a0(){}
-/* 00177ac0 00000114 */ FUN_00177ac0(){}
+/* 00177ac0 00000114 */ StageCamera::setScrZ(){}  // game
 /* 00177be0 00000114 */ FUN_00177be0(){}
-/* 00177d00 00000014 */ FUN_00177d00(){}
+/* 00177d00 00000014 */ StageCamera::onViewTop(){}  // game
 /* 00177d20 00000034 */ StageCamera::addToScene(){}  // game
 /* 00177d60 00000144 */ StageCamera::StageCamera(){}  // game
 /* 00177eb0 00000008 */ FUN_00177eb0(){}
@@ -2843,19 +2843,19 @@
 /* 00178010 00000008 */ FUN_00178010(){}
 /* 00178020 00000004 */ FUN_00178020(){}
 /* 00178030 000000e4 */ FUN_00178030(){}
-/* 00178120 00000008 */ FUN_00178120(){}
-/* 00178130 00000008 */ FUN_00178130(){}
-/* 00178140 00000004 */ FUN_00178140(){}
-/* 00178150 00000004 */ FUN_00178150(){}
-/* 00178160 00001324 */ FUN_00178160(){}
-/* 00179490 000001ec */ FUN_00179490(){}
-/* 00179680 00000078 */ FUN_00179680(){}
+/* 00178120 00000008 */ StageMainCamera::onCollide(){}  // game
+/* 00178130 00000008 */ StageMainCamera::collisionHook0(){}  // game
+/* 00178140 00000004 */ StageMainCamera::collisionHook3(){}  // game
+/* 00178150 00000004 */ StageMainCamera::syncBody(){}  // game
+/* 00178160 00001324 */ StageMainCamera::cameraStep(){}  // game
+/* 00179490 000001ec */ StageMainCamera::onViewTop(){}  // game
+/* 00179680 00000078 */ StageMainCamera::onLinkChanged(){}  // game
 /* 00179700 0000013c */ StageMainCamera::StageMainCamera(){}  // game
-/* 00179840 000000a0 */ FUN_00179840(){}
+/* 00179840 000000a0 */ StageMainCamera::~StageMainCamera(){}  // game
 /* 001798e0 00000008 */ FUN_001798e0(){}
 /* 001798f0 000000d4 */ FUN_001798f0(){}
 /* 001799d0 00000008 */ StageMainCamera::getKind(){}  // game
-/* 001799e0 00000008 */ FUN_001799e0(){}
+/* 001799e0 00000008 */ StageMainCamera::getCollisionObject(){}  // game
 /* 001799f0 00000008 */ FUN_001799f0(){}
 /* 00179a00 00000008 */ FUN_00179a00(){}
 /* 00179a10 00000008 */ FUN_00179a10(){}
@@ -2882,10 +2882,10 @@
 /* 0017b3b0 00000008 */ FUN_0017b3b0(){}
 /* 0017b3c0 00000014 */ FUN_0017b3c0(){}
 /* 0017b3e0 00000730 */ FUN_0017b3e0(){}
-/* 0017bb10 0000001c */ FUN_0017bb10(){}
+/* 0017bb10 0000001c */ StageObject::cameraBodyHeight(){}  // game
 /* 0017bb30 00000050 */ FUN_0017bb30(){}
-/* 0017bb80 00000064 */ FUN_0017bb80(){}
-/* 0017bbf0 00000064 */ FUN_0017bbf0(){}
+/* 0017bb80 00000064 */ StageObject::cameraEyeOffset(){}  // game
+/* 0017bbf0 00000064 */ StageObject::cameraFocusOffset(){}  // game
 /* 0017bc60 000000b0 */ FUN_0017bc60(){}
 /* 0017bd10 00000910 */ FUN_0017bd10(){}
 /* 0017c620 000000e0 */ FUN_0017c620(){}
@@ -4795,7 +4795,7 @@
 /* 001efad0 00000204 */ FUN_001efad0(){}
 /* 001efce0 00000204 */ FUN_001efce0(){}
 /* 001efef0 00000008 */ FUN_001efef0(){}
-/* 001eff00 00000080 */ FUN_001eff00(){}
+/* 001eff00 00000080 */ CharacterGround::faceNear(){}  // game
 /* 001eff80 0000011c */ FUN_001eff80(){}
 /* 001f00a0 000000cc */ FUN_001f00a0(){}
 /* 001f0170 0000053c */ FUN_001f0170(){}
@@ -5604,11 +5604,11 @@
 /* 002353b0 00000384 */ FUN_002353b0(){}
 /* 00235740 0000019c */ FUN_00235740(){}
 /* 002358e0 00000220 */ FUN_002358e0(){}
-/* 00235b00 00000044 */ FUN_00235b00(){}
+/* 00235b00 00000044 */ StageCollisionFace::inFront(){}  // game
 /* 00235b50 000001c8 */ FUN_00235b50(){}
 /* 00235d20 00000264 */ FUN_00235d20(){}
 /* 00235f90 00000094 */ FUN_00235f90(){}
-/* 00236030 0000003c */ FUN_00236030(){}
+/* 00236030 0000003c */ StageCollisionFace::getNormal(){}  // game
 /* 00236070 00000224 */ FUN_00236070(){}
 /* 002362a0 00000050 */ boxContainsPoint(){}  // game
 /* 002362f0 00000020 */ BoundingSphere::toBox(){}  // game
@@ -5621,7 +5621,7 @@
 /* 00236910 00000020 */ BoundingSphere::BoundingSphere(){}  // game
 /* 00236930 00000180 */ FUN_00236930(){}
 /* 00236ab0 00000060 */ FUN_00236ab0(){}
-/* 00236b20 0000005c */ FUN_00236b20(){}
+/* 00236b20 0000005c */ boxHolds(){}  // game
 /* 00236b80 0000000c */ FUN_00236b80(){}
 /* 00236b90 00002f00 */ FUN_00236b90(){}
 /* 00239a90 000000fc */ FUN_00239a90(){}

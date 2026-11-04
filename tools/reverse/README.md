@@ -98,6 +98,7 @@ The API, how the plugin behaves, the setup and the traps: the skill's `reference
 | `dec.py` | `python dec.py <addr\|name> ...` -- decompile. |
 | `ghidra.py` | `asm` (read-only disassembly of any range), `func`, `xrefs`, `refs` (xrefs + `jal`/`j` encodings + data words + low halves: "is it really unreferenced"), `find` (over the ELF's bytes, with an optional bit mask), `segments`, `mkfunc` (create + save). |
 | `mipsdis.py` | Offline R5900 disassembler over the ELF, annotated with cached names; for code Ghidra has no function for. |
+| `vudis.py` | VU microcode over the ELF, following the image's VIF MPG codes: `vudis.py 2ec908 3f8 --all` is FS2's VU1 program (the image's DMA tag is the first 8 bytes). `I = ...` constants are not printed: they sit in the lower word when the upper's bit 31 is set. |
 | `mipsemu.py` | A tiny EE integer interpreter: run a leaf function over every input to check a C rewrite of a switch-table function; `Emu` with load / call hooks for non-leaf ones. |
 | `sinit.py` | Run a static initializer's straight-line stores symbolically and dump the table it fills. |
 | `datadump.py` | `python datadump.py <addr> <count> "<fields>"` -- a data table as host C++ initializers (pointers printed as the symbols they point at). |
@@ -163,4 +164,6 @@ these hooks:
   stale names behind (stubs at address 0, callcheck "missing" calls).
 - `python -I` drops the script directory from `sys.path`; run the tools as `python tool.py` from here.
 
-`YAMIPAN_CAMERA` (environment, 2026-11-04, until the camera's step 0x178160 is written): `auto` aims the stage's camera at the biggest part of the `Root` model, `ex,ey,ez,tx,ty,tz` places it with z up. Set it before `build.py --run`; a New Game run reaches the stage after about 200 seconds, so use `--run 290 --pad` with work/newgame_pad.txt.
+`YAMIPAN_AMBIENT=<level>` (environment, 2026-11-04, until `SceneRender`'s lights are written) replaces the record's ambient in `renaSetLights`: at drawSysInit's 0.1 the VU1 formula draws a stage almost black.
+
+`YAMIPAN_CAMERA` (environment, 2026-11-04, until a character links the main camera): `auto` aims the stage's camera at the biggest part of the `Root` model, `ex,ey,ez,tx,ty,tz` places it with z up. Set it before `build.py --run`; a New Game run reaches the stage after about 200 seconds, so use `--run 290 --pad` with work/newgame_pad.txt.

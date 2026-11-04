@@ -37,6 +37,7 @@ struct YamiPanModelMaterial
     int     scrollU;            /* 0..0xfff: VIF's row, added to every UV (4096 = one repeat) */
     int     scrollV;
     int     blended;            /* over what is drawn, no depth written; otherwise opaque with an alpha test */
+    int     unlit;              /* the vertex colours as they are; otherwise multiplied by the light */
 };
 
 /* What lights a model: colours 0..1 and each light's direction. */

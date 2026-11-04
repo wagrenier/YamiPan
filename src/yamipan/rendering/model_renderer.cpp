@@ -17,7 +17,6 @@ namespace
 constexpr unsigned kInitialVertexCapacity = 16 * 1024 * 1024;
 constexpr SDL_GPUTextureFormat kDepthFormat = SDL_GPU_TEXTUREFORMAT_D32_FLOAT;
 constexpr float kUvUnit = 4096.0f; // ITOF12
-constexpr float kColorUnit = 128.0f;
 constexpr int kLightCount = 3;
 
 // TEST_1 of the opaque pass (0x5050b): what falls under this alpha never reaches the depth buffer. The ROM
@@ -61,8 +60,12 @@ void buildWorldToClip(const ModelPass &pass, const PictureLayout &layout, float 
     }
 }
 
-// A vertex's colour in the GS's scale. The formula is a first reading of the picture, not of the VU1 program:
-// open-items.md "Next up".
+constexpr std::uint32_t kVertexAlpha = 0x80;
+
+// A vertex's colour in the GS's scale (0x80 = 1.0): what the VU1 program does, 0x2a9 and 0x2bb. The light is
+// ambient + each light's colour * max(0, its direction . the turned normal), the vertex colour is multiplied by
+// it and clamped to 255. The vertex's alpha is never loaded (lqi.xyz): every vertex takes VU address 25's w, 0x80
+// but for a ModelMaterial_Kind1's frames, which are not written. The spotlight kernel 0x545 is not here yet.
 std::uint32_t litColor(const YamiPanModelLights &lights, const float *normal, const float *matrix,
                        const std::uint8_t *color)
 {
@@ -81,13 +84,20 @@ std::uint32_t litColor(const YamiPanModelLights &lights, const float *normal, co
             sum[channel] += lights.colors[index][channel] * amount;
     }
 
-    std::uint32_t out = static_cast<std::uint32_t>(color[3]) << 24;
+    std::uint32_t out = kVertexAlpha << 24;
     for (int channel = 0; channel < 3; channel++)
     {
-        const float lit = static_cast<float>(color[channel]) + sum[channel] * kColorUnit;
+        const float lit = static_cast<float>(color[channel]) * sum[channel];
         out |= static_cast<std::uint32_t>(std::clamp(lit, 0.0f, 255.0f)) << (channel * 8);
     }
     return out;
+}
+
+// ModelMeshFlag_Unlit: the VU1 program's 0x29e, the same alpha.
+std::uint32_t rawColor(const std::uint8_t *color)
+{
+    return static_cast<std::uint32_t>(color[0]) | static_cast<std::uint32_t>(color[1]) << 8 |
+           static_cast<std::uint32_t>(color[2]) << 16 | kVertexAlpha << 24;
 }
 
 } // namespace
@@ -142,6 +152,7 @@ void ModelRenderer::setMaterial(const void *list, const YamiPanModelMaterial &ma
     layer.scrollU = static_cast<float>(material.scrollU) / kUvUnit;
     layer.scrollV = static_cast<float>(material.scrollV) / kUvUnit;
     layer.blended = material.blended != 0;
+    layer.unlit = material.unlit != 0;
 }
 
 void ModelRenderer::setLights(const void *list, const YamiPanModelLights &lights)
@@ -166,7 +177,8 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
         vertex.z = matrix[2] * position[0] + matrix[6] * position[1] + matrix[10] * position[2] + matrix[14];
         vertex.u = static_cast<float>(batch.uvs[index * 2]) / kUvUnit + layer.scrollU;
         vertex.v = static_cast<float>(batch.uvs[index * 2 + 1]) / kUvUnit + layer.scrollV;
-        vertex.color = litColor(layer.lights, batch.normals + index * 3, matrix, batch.colors + index * 4);
+        vertex.color = layer.unlit ? rawColor(batch.colors + index * 4)
+                                   : litColor(layer.lights, batch.normals + index * 3, matrix, batch.colors + index * 4);
         return vertex;
     };
 

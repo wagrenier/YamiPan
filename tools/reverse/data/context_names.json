@@ -11495,11 +11495,29 @@
   "was": "FUN_00177810",
   "why": "inverts the object matrix into +0x240, multiplies into +0x280"
  },
+ "00177860": {
+  "name": "StageCamera::aimFrom",
+  "tag": "game-inferred",
+  "was": "FUN_00177860",
+  "why": "lookAt with the eye as an argument: atan2 of target - eye into the transform's rotation"
+ },
  "00177900": {
   "name": "StageCamera::lookAt",
   "tag": "game-inferred",
   "was": "FUN_00177900",
   "why": "target - position through atan2 into the transform's rotation"
+ },
+ "00177ac0": {
+  "name": "StageCamera::setScrZ",
+  "tag": "game-inferred",
+  "was": "FUN_00177ac0",
+  "why": "stores +0x2c0 and rebuilds the screen matrix as the ctor does"
+ },
+ "00177d00": {
+  "name": "StageCamera::onViewTop",
+  "tag": "game-inferred",
+  "was": "FUN_00177d00",
+  "why": "vtable 0x311860 slot +0x24c: sets the render record's +0xe24"
  },
  "00177d20": {
   "name": "StageCamera::addToScene",
@@ -11513,11 +11531,59 @@
   "was": "FUN_00177d60",
   "why": "vtable 0x311860, sceVu0ViewScreenMatrix-shaped call on the scrZ, width, height arguments; 450, 512, 512, 1600 from the map"
  },
+ "00178120": {
+  "name": "StageMainCamera::onCollide",
+  "tag": "game-inferred",
+  "was": "FUN_00178120",
+  "why": "second interface vtable 0x312204 slot 1, through thunk 0x179a40: answers 0"
+ },
+ "00178130": {
+  "name": "StageMainCamera::collisionHook0",
+  "tag": "game-inferred",
+  "was": "FUN_00178130",
+  "why": "vtable 0x312204 slot 0, through thunk 0x179a50: answers 0"
+ },
+ "00178140": {
+  "name": "StageMainCamera::collisionHook3",
+  "tag": "game-inferred",
+  "was": "FUN_00178140",
+  "why": "vtable 0x312204 slot 3, through thunk 0x179a20: empty"
+ },
+ "00178150": {
+  "name": "StageMainCamera::syncBody",
+  "tag": "game-inferred",
+  "was": "FUN_00178150",
+  "why": "vtable 0x312204 slot 2, through thunk 0x179a30: empty"
+ },
+ "00178160": {
+  "name": "StageMainCamera::cameraStep",
+  "tag": "game-inferred",
+  "was": "FUN_00178160",
+  "why": "vtable 0x311fa0 slot +0x25c: follows m_linked, the file's name for the slot"
+ },
+ "00179490": {
+  "name": "StageMainCamera::onViewTop",
+  "tag": "game-inferred",
+  "was": "FUN_00179490",
+  "why": "vtable 0x311fa0 slot +0x24c: snaps to the character, then steps"
+ },
+ "00179680": {
+  "name": "StageMainCamera::onLinkChanged",
+  "tag": "game-inferred",
+  "was": "FUN_00179680",
+  "why": "vtable 0x311fa0 slot +0x260: bn_head height above the character, then onViewTop"
+ },
  "00179700": {
   "name": "StageMainCamera::StageMainCamera",
   "tag": "game-inferred",
   "was": "FUN_00179700",
   "why": "EE 0x3c0; camera; kind 9"
+ },
+ "00179840": {
+  "name": "StageMainCamera::~StageMainCamera",
+  "tag": "game-inferred",
+  "was": "FUN_00179840",
+  "why": "writes the vtables back 0x311d30, 0x311860, then ~StageObject"
  },
  "001799d0": {
   "name": "StageMainCamera::getKind",
@@ -11525,11 +11591,35 @@
   "was": "FUN_001799d0",
   "why": "answers 9"
  },
+ "001799e0": {
+  "name": "StageMainCamera::getCollisionObject",
+  "tag": "game-inferred",
+  "was": "FUN_001799e0",
+  "why": "vtable 0x312204 slot 4, through thunk 0x179a10: answers this"
+ },
  "00179a80": {
   "name": "StageCharacter::getKind",
   "tag": "game-inferred",
   "was": "FUN_00179a80",
   "why": "answers 0"
+ },
+ "0017bb10": {
+  "name": "StageObject::cameraBodyHeight",
+  "tag": "game-inferred",
+  "was": "FUN_0017bb10",
+  "why": "table 0x2f7c10 by +0x20c; used by the main camera's stick step"
+ },
+ "0017bb80": {
+  "name": "StageObject::cameraEyeOffset",
+  "tag": "game-inferred",
+  "was": "FUN_0017bb80",
+  "why": "the current motion's record +0x190 by set and +0x20c: the eye offset of the main camera"
+ },
+ "0017bbf0": {
+  "name": "StageObject::cameraFocusOffset",
+  "tag": "game-inferred",
+  "was": "FUN_0017bbf0",
+  "why": "the same at +0x110: the point the main camera looks at"
  },
  "0017c700": {
   "name": "StageCharacter::setup",
@@ -14963,6 +15053,12 @@
   "was": "FUN_001e66c0",
   "why": "a0 the player's +0x224 object (its +0 the player): picks names from the 0x210-byte records 0x577b20 (index +0x40, slot +0x6c; '*'-prefixed alternates when the long weapon +0x238's item def kind is 5 or 6) and hands them to 0x216400; guess: the motion set for the weapon carried. stepWeaponPreview in a stage"
  },
+ "001eff00": {
+  "name": "CharacterGround::faceNear",
+  "tag": "game-inferred",
+  "was": "FUN_001eff00",
+  "why": "findFloorFaceExcept from a point of the owner's space"
+ },
  "001f5250": {
   "name": "SceneRecordBuckets::collide",
   "tag": "game-inferred",
@@ -15983,6 +16079,18 @@
   "was": "FUN_002342c0",
   "why": "x, y, range in f12..f14: mesh with +0 clear"
  },
+ "00235b00": {
+  "name": "StageCollisionFace::inFront",
+  "tag": "game-inferred",
+  "was": "FUN_00235b00",
+  "why": "d + normal . point >= 0"
+ },
+ "00236030": {
+  "name": "StageCollisionFace::getNormal",
+  "tag": "game-inferred",
+  "was": "FUN_00236030",
+  "why": "the plane's normal, w 0, turned by the mesh's matrix when +0x48 has one"
+ },
  "002362a0": {
   "name": "boxContainsPoint",
   "tag": "game-inferred",
@@ -16000,6 +16108,12 @@
   "tag": "game-inferred",
   "was": "FUN_00236910",
   "why": "zeroes radius, its square and the centre +0x10"
+ },
+ "00236b20": {
+  "name": "boxHolds",
+  "tag": "game-inferred",
+  "was": "FUN_00236b20",
+  "why": "min, max at the first argument: point inside with the margin vector on each side"
  },
  "00239bb0": {
   "name": "CharacterInput::setActive",

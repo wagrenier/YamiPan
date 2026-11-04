@@ -382,6 +382,10 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **Source files may be CRLF.** A replace script with LF in its search text fails its assert. Fix:
   normalise to LF, replace, and write the file back as it was.
 
+## VU1 addresses are not EE offsets (2026-11-04)
+
+Symptom: the VU1 program tests "address 15" and nothing writes bss +15 quadwords; `xrefs` on the block it seems to name finds a view matrix. Cause: what VU1 reads at a low address comes from a UNPACK in the packet, not from the block the upload function fills; 0x2e5bb0's `pauVar21[0xc]` is an offset in its own buffer. Fix: search the code for the UNPACK word itself (`lui 0x6c01` + `ori ..., 0xf`, a short scan of the ELF), and print `dest` on `ilw`: address 15 is three fields, x the pass mask, y the model flags, z the mesh's.
+
 ## Stubs that answer null (2026-11-04)
 
 Symptom: a loader "ran", instances were counted, yet nothing appears and the stub never shows in the reached list of the next function. Cause: `createMapObject` was a stub answering null and `applyBgTarget` skips a null; 3D path TU 4 counted 22 instances and read that as success, so TU 5 built a renderer for an empty record. Fix: when something does not reach the draw, walk its callers for a `continue` on a stub's answer, and read the reached stubs in work/run_relwithdebinfo.log, not build.py's output, which only shows its tail.
