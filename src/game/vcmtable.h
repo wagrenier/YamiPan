@@ -21,7 +21,7 @@
 #include "sdk/scetypes.h"
 
 class RenaModel;                // game/gamehooks.h (rena's model)
-class VcmController;            // game/gamehooks.h
+class StageLight;               // game/stagelight.h
 struct ModelPartRec;            // game/gamehooks.h
 
 // The tag a part without a VCM__ part above it gets, and the prefix looked
@@ -65,11 +65,11 @@ public:
     // The weights of the controllers now: every state, then every part.
     void update();                                                       // FS2 0x00296d60
     // Binds obj to the token equal to its name (nothing when none is).
-    void attach(VcmController *obj);                                     // FS2 0x00297150
+    void attach(StageLight *obj);                                     // FS2 0x00297150
 
     int            m_tokenCount;    // FS2 +0x00
     const char   **m_tokens;        // FS2 +0x04: sorted by strcmp, owned
-    VcmController **m_controllers;  // FS2 +0x08: per token, null until attached
+    StageLight **m_controllers;  // FS2 +0x08: per token, null until attached
     int            m_stateCount;    // FS2 +0x0c
     VcmState      *m_states;        // FS2 +0x10: in tag order (strcmp)
     int            m_linkCount;     // FS2 +0x14

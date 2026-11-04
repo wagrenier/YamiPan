@@ -11,6 +11,7 @@
 #ifndef _GAME_VU0MATH_H
 #define _GAME_VU0MATH_H
 
+#include <math.h>
 #include <string.h>
 
 #include "sdk/libvu0.h"     /* sceVu0FVECTOR */
@@ -26,6 +27,56 @@ void scaleVec4(float s, sceVu0FVECTOR out, const sceVu0FVECTOR in);             
 void invertRigidMatrix(sceVu0FMATRIX out, const sceVu0FVECTOR *m);                // FS2 0x00136500
 // out = m[0] v.x + m[1] v.y + m[2] v.z + m[3] v.w; out may be v.
 void applyMatrix(sceVu0FVECTOR out, const sceVu0FVECTOR *m, const sceVu0FVECTOR v); // FS2 0x00136690
+
+// a . b (xyz).
+// FS2 0x001365a0
+inline float vecDot(const sceVu0FVECTOR a, const sceVu0FVECTOR b)
+{
+    return a[2] * b[2] + a[0] * b[0] + a[1] * b[1];
+}
+// The squared distance between a and b (xyz).
+// FS2 0x00135f70
+inline float vecDistanceSq(const sceVu0FVECTOR a, const sceVu0FVECTOR b)
+{
+    float dx = a[0] - b[0];
+    float dy = a[1] - b[1];
+    float dz = a[2] - b[2];
+    return dx * dx + dy * dy + dz * dz;
+}
+// out = in at length 1 (xyz). The ROM leaves out's w to the register's last
+// value, so nothing reads it; here it is in's. out may be in.
+// FS2 0x00136560
+inline void vecNormalize(sceVu0FVECTOR out, const sceVu0FVECTOR in)
+{
+    float scale = 1.0f / sqrtf(vecDot(in, in));
+    float w = in[3];
+    out[0] = in[0] * scale;
+    out[1] = in[1] * scale;
+    out[2] = in[2] * scale;
+    out[3] = w;
+}
+
+// A sphere as the collision world keeps it, EE 0x20. The run
+// unassigned@00231d40.
+struct BoundingSphere
+{
+    // FS2 0x00236910
+    BoundingSphere() : radius(0.0f), radiusSq(0.0f), center{0.0f, 0.0f, 0.0f, 0.0f} {}
+    // box[0] = the low corner, box[1] the high one (xyz; w is left alone).
+    // FS2 0x002362f0
+    void toBox(sceVu0FVECTOR *box) const
+    {
+        for (int i = 0; i < 3; i++) {
+            box[0][i] = center[i] - radius;
+            box[1][i] = center[i] + radius;
+        }
+    }
+
+    float         radius;       // FS2 +0x00
+    float         radiusSq;     // FS2 +0x04
+    sceVu0FVECTOR center;       // FS2 +0x10
+};
+static_assert(sizeof(BoundingSphere) == 0x20, "BoundingSphere: EE 0x20");
 
 // out = m.
 // FS2 0x00136430

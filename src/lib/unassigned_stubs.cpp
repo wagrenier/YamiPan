@@ -658,11 +658,6 @@ void UiItemList::destroy()
 }
 
 // stub of FS2 0x00185af0
-float VcmController::getWeight() const
-{
-    YAMIPAN_STUB("VcmController::getWeight", 0x00185af0);
-    return {};
-}
 
 // stub of FS2 0x002d4110
 WideFontPrinter::WideFontPrinter(short x, short y)
@@ -935,10 +930,6 @@ void NodeTransform::setRotation(float x, float y, float z)
 }
 
 // stub of FS2 address unknown (0 candidates)
-PointLight::PointLight()
-{
-    YAMIPAN_STUB("PointLight::PointLight", 0x00000000);
-}
 
 // stub of FS2 address unknown (1 candidates)
 bool SceneOwnedObject::isBusy()
@@ -1002,16 +993,8 @@ void SphereVolume::setRadius(float radius)
 }
 
 // stub of FS2 address unknown (0 candidates)
-SpotLight::SpotLight()
-{
-    YAMIPAN_STUB("SpotLight::SpotLight", 0x00000000);
-}
 
 // stub of FS2 0x00185210
-void SpotLight::setConeAngle(int degrees)
-{
-    YAMIPAN_STUB("SpotLight::setConeAngle", 0x00185210);
-}
 
 // stub of FS2 address unknown (0 candidates)
 StageCamera::StageCamera(float, float, float, float)
@@ -1098,34 +1081,14 @@ StageItemE::StageItemE()
 }
 
 // stub of FS2 0x001861b0
-void StageLight::addToScene(const char *name, bool withShade)
-{
-    YAMIPAN_STUB("StageLight::addToScene", 0x001861b0);
-}
 
 // stub of FS2 0x00186160
-void StageLight::copyShownFrom(StageLight *other)
-{
-    YAMIPAN_STUB("StageLight::copyShownFrom", 0x00186160);
-}
 
 // stub of FS2 0x00185fb0
-void StageLight::setEnabled(bool on)
-{
-    YAMIPAN_STUB("StageLight::setEnabled", 0x00185fb0);
-}
 
 // stub of FS2 0x00185bb0
-void StageLight::setRadiusSquared(float radiusSquared)
-{
-    YAMIPAN_STUB("StageLight::setRadiusSquared", 0x00185bb0);
-}
 
 // stub of FS2 0x00185c40
-void StageLight::setVector(float x, float y, float z)
-{
-    YAMIPAN_STUB("StageLight::setVector", 0x00185c40);
-}
 
 // stub of FS2 0x002868c0
 void StageMission::onRestore()
@@ -1248,10 +1211,6 @@ ScriptRunner::ScriptRunner()
 }
 
 // stub of FS2 address unknown (0 candidates)
-StageLight::StageLight()
-{
-    YAMIPAN_STUB("StageLight::StageLight", 0x00000000);
-}
 
 // stub of FS2 0x0017ef10
 void StageMarker::addToScene(const char *name)
@@ -2106,4 +2065,111 @@ void StageModel::init(ModelInstance *instance, StringMap<Tim2Texture *> *texture
               const sceVu0FVECTOR *matrix)
 {
     YAMIPAN_STUB("StageModel::init", 0x00188b10);
+}
+
+// stub of FS2 0x001f6690
+CollisionBody::CollisionBody(CollisionOwner*, int, unsigned int, unsigned int)
+{
+    YAMIPAN_STUB("CollisionBody::CollisionBody", 0x001f6690);
+}
+
+// stub of FS2 0x001f6670
+void CollisionBody::refresh()
+{
+    YAMIPAN_STUB("CollisionBody::refresh", 0x001f6670);
+}
+
+// stub of FS2 0x00187060
+void PartSwitch::init(ModelInstance *partsModel, const char *name, int partCount, int firstShown)
+{
+    YAMIPAN_STUB("PartSwitch::init", 0x00187060);
+}
+
+// stub of FS2 0x00186fe0
+void PartSwitch::show(int index)
+{
+    YAMIPAN_STUB("PartSwitch::show", 0x00186fe0);
+}
+
+// stub of FS2 0x001715f0
+void ScenePairTable::add(StageSideBase *entry, int list)
+{
+    YAMIPAN_STUB("ScenePairTable::add", 0x001715f0);
+}
+
+// stub of FS2 0x00171580
+void ScenePairTable::remove(StageSideBase *entry)
+{
+    YAMIPAN_STUB("ScenePairTable::remove", 0x00171580);
+}
+
+// stub of FS2 0x001f6180
+void SceneRecordBuckets::add(CollisionBody *body)
+{
+    YAMIPAN_STUB("SceneRecordBuckets::add", 0x001f6180);
+}
+
+// stub of FS2 0x001f60a0
+void SceneRecordBuckets::remove(CollisionBody *body)
+{
+    YAMIPAN_STUB("SceneRecordBuckets::remove", 0x001f60a0);
+}
+
+// stub of FS2 0x001908c0
+void StageNodeTree::remove(StageParticle *effect)
+{
+    YAMIPAN_STUB("StageNodeTree::remove", 0x001908c0);
+}
+
+// stub of FS2 0x00190890
+StageParticle * StageNodeTree::spawn(const char *name, StageNodeBase *parent, const float *pos,
+                         const float *rot, int arg, int arg2)
+{
+    YAMIPAN_STUB("StageNodeTree::spawn", 0x00190890);
+    return {};
+}
+
+// stub of FS2 0x001908a0
+StageParticle * StageNodeTree::spawnNamed(const char *name, int arg, int arg2)
+{
+    YAMIPAN_STUB("StageNodeTree::spawnNamed", 0x001908a0);
+    return {};
+}
+
+// stub of FS2 0x0018c220
+void StageParticle::setEmitting(bool on)
+{
+    YAMIPAN_STUB("StageParticle::setEmitting", 0x0018c220);
+}
+
+// stub of FS2 0x00190040
+void StageParticle::setRangeSquared(float rangeSquared)
+{
+    YAMIPAN_STUB("StageParticle::setRangeSquared", 0x00190040);
+}
+
+// stub of FS2 0x001d3d20
+const void * StageScript::findEntry(const char *name)
+{
+    YAMIPAN_STUB("StageScript::findEntry", 0x001d3d20);
+    return {};
+}
+
+// stub of FS2 0x0029a370
+void VectorTrack::addKey(VectorKey *key, int time, bool computeFrames)
+{
+    YAMIPAN_STUB("VectorTrack::addKey", 0x0029a370);
+}
+
+// stub of FS2 0x00299d90
+void VectorTrack::step()
+{
+    YAMIPAN_STUB("VectorTrack::step", 0x00299d90);
+}
+
+// stub of FS2 0x002e4610
+CharacterPart * modelFindPart(ModelInstance *model, const char *name, size_t length, int arg)
+{
+    YAMIPAN_STUB("modelFindPart", 0x002e4610);
+    return {};
 }

@@ -3641,6 +3641,12 @@
   "was": "FUN_00135f20",
   "why": "a0, a1 two vectors: sqrt of the xyz squared differences; 104 call sites (StageScene::raycast ranks hits by it)"
  },
+ "00135f70": {
+  "name": "vecDistanceSq",
+  "tag": "game-inferred",
+  "was": "FUN_00135f70",
+  "why": "VU0: (a - b)^2 summed over xyz, the squared vecDistance"
+ },
  "00135fe0": {
   "name": "setVecLength",
   "tag": "game-inferred",
@@ -3658,6 +3664,18 @@
   "tag": "game-inferred",
   "was": "FUN_00136500",
   "why": "VU0 macro: rows 0..2 transposed with w 0, row 3 = -(R^T t) keeping t.w: the inverse of a rotation + translation"
+ },
+ "00136560": {
+  "name": "vecNormalize",
+  "tag": "game-inferred",
+  "was": "FUN_00136560",
+  "why": "VU0: out.xyz = in.xyz / length"
+ },
+ "001365a0": {
+  "name": "vecDot",
+  "tag": "game-inferred",
+  "was": "FUN_001365a0",
+  "why": "xyz dot product"
  },
  "00136690": {
   "name": "applyMatrix",
@@ -11039,6 +11057,18 @@
   "was": "FUN_001714e0",
   "why": "five lists, slot +8 of each enabled entry; perf label action(start)"
  },
+ "00171580": {
+  "name": "ScenePairTable::remove",
+  "tag": "game-inferred",
+  "was": "FUN_00171580",
+  "why": "walks the five lists, removes the entry"
+ },
+ "001715f0": {
+  "name": "ScenePairTable::add",
+  "tag": "game-inferred",
+  "was": "FUN_001715f0",
+  "why": "a list by index in the +0x14 table; StageLight::addToScene passes the side base and 2"
+ },
  "00171620": {
   "name": "ScenePairTable::~ScenePairTable",
   "tag": "game-inferred",
@@ -11459,11 +11489,173 @@
   "was": "FUN_00184370",
   "why": "a0 the list, a1 a link: unlinks it (head moves on when it was the head), frees it (0x184580), count - 1"
  },
+ "00184860": {
+  "name": "SpotLight::~SpotLight",
+  "tag": "game-inferred",
+  "was": "FUN_00184860",
+  "why": "slot 2 of the vtable SpotLight::SpotLight stores: its four vptrs, then the base dtor 0x186380, deleting"
+ },
  "001848f0": {
   "name": "SpotLight::getKind",
   "tag": "game-inferred",
   "was": "FUN_001848f0",
   "why": "answers 0x11"
+ },
+ "00184900": {
+  "name": "SpotLight::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_00184900",
+  "why": "empty, table slot 33 and thunk 0x186d30 of the side base's slot 1"
+ },
+ "00184910": {
+  "name": "SpotLight::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_00184910",
+  "why": "empty, table slot 32 and thunk 0x186d40 of the side base's slot 0"
+ },
+ "00184920": {
+  "name": "StageLight::cmdIsLit",
+  "tag": "game-inferred",
+  "was": "FUN_00184920",
+  "why": "runner slot 86 through thunk 0x186d50: broken +0x272, brightness +0x2a8, on +0x214 or fade +0x23c, the copy of isLit"
+ },
+ "00184980": {
+  "name": "StageLight::cmdSetEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_00184980",
+  "why": "runner slot 33: the bool copy of setEnabled (+0x200 and +0x36)"
+ },
+ "00184990": {
+  "name": "StageLight::cmdSetCastsShadow",
+  "tag": "game-inferred",
+  "was": "FUN_00184990",
+  "why": "runner slot 32: +0x2a0, the flag both shadowAt test first"
+ },
+ "001849a0": {
+  "name": "StageLight::cmdSetColor260",
+  "tag": "game-inferred",
+  "was": "FUN_001849a0",
+  "why": "runner slot 31: copies a vector to +0x260, a colour from the ctor (40, 44, 46) / 255"
+ },
+ "001849b0": {
+  "name": "StageLight::cmdSetColor250",
+  "tag": "game-inferred",
+  "was": "FUN_001849b0",
+  "why": "runner slot 30: copies a vector to +0x250, a colour from the ctor (42, 46, 54) / 255"
+ },
+ "001849c0": {
+  "name": "StageLight::cmdSetFlag248",
+  "tag": "game-inferred",
+  "was": "FUN_001849c0",
+  "why": "runner slot 29: bool to +0x248, unread"
+ },
+ "001849d0": {
+  "name": "StageLight::cmdSetValue244",
+  "tag": "game-inferred",
+  "was": "FUN_001849d0",
+  "why": "runner slot 28: int to +0x244, unread"
+ },
+ "001849e0": {
+  "name": "StageLight::cmdSetFlag240",
+  "tag": "game-inferred",
+  "was": "FUN_001849e0",
+  "why": "runner slot 27: bool to +0x240, unread"
+ },
+ "001849f0": {
+  "name": "StageLight::cmdSetFadeFrames",
+  "tag": "game-inferred",
+  "was": "FUN_001849f0",
+  "why": "runner slot 26: +0x238, the end value of the fade +0x23c in sideHook2"
+ },
+ "00184a00": {
+  "name": "StageLight::cmdSetTreeBroken",
+  "tag": "game-inferred",
+  "was": "FUN_00184a00",
+  "why": "runner slot 25: StageObjectTree::setScriptFlag2 on +0x38"
+ },
+ "00184a10": {
+  "name": "StageLight::setScriptFlag2",
+  "tag": "game-inferred",
+  "was": "FUN_00184a10",
+  "why": "runner slot 24 (+0x68, the tree walk's second flag): +0x272, set when a bullet breaks the light"
+ },
+ "00184a20": {
+  "name": "StageLight::cmdSetTreeSwitchedOn",
+  "tag": "game-inferred",
+  "was": "FUN_00184a20",
+  "why": "runner slot 23: StageObjectTree::setScriptFlag on +0x38"
+ },
+ "00184a30": {
+  "name": "StageLight::setScriptFlag",
+  "tag": "game-inferred",
+  "was": "FUN_00184a30",
+  "why": "runner slot 22 (+0x60, the tree walk's first flag): +0x214, which steers the fade"
+ },
+ "00184a40": {
+  "name": "SpotLight::cmdSetValue2d8",
+  "tag": "game-inferred",
+  "was": "FUN_00184a40",
+  "why": "runner slot 21: int to +0x2d8, 100 from the ctor, unread"
+ },
+ "00184a50": {
+  "name": "SpotLight::cmdSetConeAngle",
+  "tag": "game-inferred",
+  "was": "FUN_00184a50",
+  "why": "runner slot 20: the same body as setConeAngle 0x185210"
+ },
+ "00184aa0": {
+  "name": "StageLight::cmdSetRadiusSquared",
+  "tag": "game-inferred",
+  "was": "FUN_00184aa0",
+  "why": "runner slot 19: the same body as setRadiusSquared 0x185bb0"
+ },
+ "00184b30": {
+  "name": "StageLight::cmdSetColorLoop",
+  "tag": "game-inferred",
+  "was": "FUN_00184b30",
+  "why": "runner slot 18: byte to the track's +0x11, the loop test of VectorTrack::step"
+ },
+ "00184b40": {
+  "name": "StageLight::cmdAddColorKey",
+  "tag": "game-inferred",
+  "was": "FUN_00184b40",
+  "why": "runner slot 17: a new 0x40 key with the vector, VectorTrack::addKey"
+ },
+ "00184bb0": {
+  "name": "StageLight::cmdSetColor",
+  "tag": "game-inferred",
+  "was": "FUN_00184bb0",
+  "why": "runner slot 16: copies a vector to +0x220, the vector setVector writes"
+ },
+ "00184bc0": {
+  "name": "StageLight::getCollisionObject",
+  "tag": "game-inferred",
+  "was": "FUN_00184bc0",
+  "why": "answers this; CollisionOwner slot 4, thunk -0x200, which 0x185710 and the world's add ask for the object"
+ },
+ "00184bd0": {
+  "name": "SpotLight::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_00184bd0",
+  "why": "side slot 3 through thunk 0x186d10: raycast along row 1 of the matrix over the radius, reach +0x2cc / +0x2d0"
+ },
+ "00184d50": {
+  "name": "SpotLight::shadowAt",
+  "tag": "game-inferred",
+  "was": "FUN_00184d50",
+  "why": "table +0x274 (updateLights asks it for characters only): cone and distance, gated by +0x2a0"
+ },
+ "00184f00": {
+  "name": "SpotLight::inReach",
+  "tag": "game-inferred",
+  "was": "FUN_00184f00",
+  "why": "table +0x270: lit, distance under the reach, inside the cone"
+ },
+ "00185010": {
+  "name": "SpotLight::lightAt",
+  "tag": "game-inferred",
+  "was": "FUN_00185010",
+  "why": "table +0x26c (SceneRender::updateLights keeps the strongest): weight times cone times distance falloff"
  },
  "00185210": {
   "name": "SpotLight::setConeAngle",
@@ -11477,17 +11669,83 @@
   "was": "FUN_00185260",
   "why": "vtable 0x313e30; made for ENV_CL / ENV_SL / YAM_CL / YAM_SL, has a cone angle"
  },
+ "001852e0": {
+  "name": "PointLight::shadowAt",
+  "tag": "game-inferred",
+  "was": "FUN_001852e0",
+  "why": "table +0x274 of the point vtable"
+ },
+ "00185430": {
+  "name": "PointLight::inReach",
+  "tag": "game-inferred",
+  "was": "FUN_00185430",
+  "why": "table +0x270 of the point vtable"
+ },
+ "00185510": {
+  "name": "PointLight::lightAt",
+  "tag": "game-inferred",
+  "was": "FUN_00185510",
+  "why": "table +0x26c of the point vtable: weight times distance falloff"
+ },
  "001856b0": {
   "name": "PointLight::PointLight",
   "tag": "game-inferred",
   "was": "FUN_001856b0",
   "why": "vtable 0x3141b0; made for ENV_PL"
  },
+ "00185710": {
+  "name": "StageLight::onCollide",
+  "tag": "game-inferred",
+  "was": "FUN_00185710",
+  "why": "CollisionOwner slot 1: a dead kind 0x19 (bullet) spawns lightbreak, breaks the tree, disables the light"
+ },
+ "001857c0": {
+  "name": "StageLight::collisionHook0",
+  "tag": "game-inferred",
+  "was": "FUN_001857c0",
+  "why": "CollisionOwner slot 0, answers 0"
+ },
+ "001857d0": {
+  "name": "StageLight::collisionHook3",
+  "tag": "game-inferred",
+  "was": "FUN_001857d0",
+  "why": "CollisionOwner slot 3, empty"
+ },
+ "001857e0": {
+  "name": "StageLight::syncBody",
+  "tag": "game-inferred",
+  "was": "FUN_001857e0",
+  "why": "CollisionOwner slot 2: for category 0x2000 the body's sphere centre takes the world position"
+ },
+ "00185830": {
+  "name": "StageLight::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_00185830",
+  "why": "side slot 2 through thunk 0x186d20, the light's action entry: track, fade, effect, parts, lifetime"
+ },
+ "00185a50": {
+  "name": "StageLight::setLifetime",
+  "tag": "game-inferred",
+  "was": "FUN_00185a50",
+  "why": "sets +0x2a2 and the seconds +0x2a4 that sideHook2 counts down to m_dead"
+ },
+ "00185a60": {
+  "name": "StageLight::inBoxes",
+  "tag": "game-inferred",
+  "was": "FUN_00185a60",
+  "why": "any of the list +0x278 contains the point, or the list is empty; SceneRender::updateLights"
+ },
+ "00185ae0": {
+  "name": "StageLight::getBodyPosition",
+  "tag": "game-inferred",
+  "was": "FUN_00185ae0",
+  "why": "answers the body's +0x90"
+ },
  "00185af0": {
-  "name": "VcmController::getWeight",
+  "name": "StageLight::getWeight",
   "tag": "game-inferred",
   "was": "FUN_00185af0",
-  "why": "float: 0 when +0x272 is set, +0x2a8 is 0, or +0x214 is clear and +0x23c is -1 / 0; else (+0x2ac motion with +0x18 non-zero ? its +0xc : +0x23c / +0x238) * +0x2a8; VcmTable::update's weight per controller (the object's name at +0x20, active byte +0x34); the class is unread, the name is the port's"
+  "why": "was VcmController::getWeight: reads the light's fields; VcmTable's controllers are lights"
  },
  "00185bb0": {
   "name": "StageLight::setRadiusSquared",
@@ -11500,6 +11758,12 @@
   "tag": "game-inferred",
   "was": "FUN_00185c40",
   "why": "+0x220 = x, y, z, 1; meaning unread"
+ },
+ "00185c60": {
+  "name": "StageLight::attachEffect",
+  "tag": "game-inferred",
+  "was": "FUN_00185c60",
+  "why": "addToScene's call: TORCH -> dento1, SigLamp -> siglight, the effect of the name, the lpt records; effect's tree under the light's"
  },
  "00185fa0": {
   "name": "StageLight::getKind",
@@ -11519,6 +11783,18 @@
   "was": "FUN_00185fc0",
   "why": "slot +0x60 of the +0xf4 table on the object and every object of its tree"
  },
+ "00185fd0": {
+  "name": "StageLight::isLit",
+  "tag": "game-inferred",
+  "was": "FUN_00185fd0",
+  "why": "the test every light function inlines, out of line for SceneRender"
+ },
+ "00186030": {
+  "name": "StageLight::bindParts",
+  "tag": "game-inferred",
+  "was": "FUN_00186030",
+  "why": "bn_%s_0 / bn_%s_f_0 in the model: the two PartSwitch at +0x20c / +0x210"
+ },
  "00186160": {
   "name": "StageLight::copyShownFrom",
   "tag": "game-inferred",
@@ -11531,6 +11807,18 @@
   "was": "FUN_001861b0",
   "why": "setName, add5, its script by name, the light's setup"
  },
+ "00186380": {
+  "name": "StageLight::~StageLight",
+  "tag": "game-inferred",
+  "was": "FUN_00186380",
+  "why": "stores the base's four vtables: parts, boxes, a temporary light leaves the scene, track, ~StageObject"
+ },
+ "00186550": {
+  "name": "Vt_00314180::~Vt_00314180",
+  "tag": "game-inferred",
+  "was": "FUN_00186550",
+  "why": "deleting dtor over StageNode's vtable 0x315a80; no ctor read yet"
+ },
  "001865c0": {
   "name": "StageNodeBase::~StageNodeBase",
   "tag": "game-inferred",
@@ -11542,6 +11830,18 @@
   "tag": "game-inferred",
   "was": "FUN_001866f0",
   "why": "base ctor of the two light classes"
+ },
+ "001868d0": {
+  "name": "StageNodeRoot::~StageNodeRoot",
+  "tag": "game-inferred",
+  "was": "FUN_001868d0",
+  "why": "vtable 0x314120, the empty base under StageNodeBase's; deleting"
+ },
+ "00186920": {
+  "name": "StageNodeLinks::~StageNodeLinks",
+  "tag": "game-inferred",
+  "was": "FUN_00186920",
+  "why": "vtable 0x314150: leaves the parent, orphans the children, the second base under StageNodeBase's"
  },
  "00186a00": {
   "name": "StageNode::setDirty",
@@ -11567,17 +11867,65 @@
   "was": "FUN_00186a30",
   "why": "slot 4 of 0x315a80"
  },
+ "00186a40": {
+  "name": "PointLight::~PointLight",
+  "tag": "game-inferred",
+  "was": "FUN_00186a40",
+  "why": "slot 2 of the vtable PointLight::PointLight stores, deleting"
+ },
  "00186ad0": {
   "name": "PointLight::getKind",
   "tag": "game-inferred",
   "was": "FUN_00186ad0",
   "why": "answers 0x10"
  },
+ "00186ae0": {
+  "name": "PointLight::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_00186ae0",
+  "why": "empty, thunk 0x186cd0"
+ },
+ "00186af0": {
+  "name": "PointLight::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_00186af0",
+  "why": "empty, thunk 0x186ce0"
+ },
+ "00186b00": {
+  "name": "PointLight::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_00186b00",
+  "why": "empty, thunk 0x186cf0"
+ },
  "00186ee0": {
   "name": "StageMapFile::relocate",
   "tag": "game-inferred",
   "was": "FUN_00186ee0",
   "why": "parseMap's: sets the map file's six section pointers +0..+0x14 from the counts at +0x18.."
+ },
+ "00186fe0": {
+  "name": "PartSwitch::show",
+  "tag": "game-inferred",
+  "was": "FUN_00186fe0",
+  "why": "part index gets drawMode 0 (+0xd), the others 2"
+ },
+ "00187060": {
+  "name": "PartSwitch::init",
+  "tag": "game-inferred",
+  "was": "FUN_00187060",
+  "why": "bn_%s_%d for count parts through 0x2e4610, then as show"
+ },
+ "001871c0": {
+  "name": "PartSwitch::~PartSwitch",
+  "tag": "game-inferred",
+  "was": "FUN_001871c0",
+  "why": "delete[] of +4, deleting"
+ },
+ "00187220": {
+  "name": "PartSwitch::PartSwitch",
+  "tag": "game-inferred",
+  "was": "FUN_00187220",
+  "why": "clears +4"
  },
  "00187230": {
   "name": "StageModel::updateVcm",
@@ -11770,6 +12118,36 @@
   "tag": "game-inferred",
   "was": "FUN_0018bdc0",
   "why": "walks the node tree writing the objects' +0x34 and +0x18"
+ },
+ "0018c220": {
+  "name": "StageParticle::setEmitting",
+  "tag": "game-inferred",
+  "was": "FUN_0018c220",
+  "why": "byte +0x271 down the chain +0x20c; the light passes isLit"
+ },
+ "00190040": {
+  "name": "StageParticle::setRangeSquared",
+  "tag": "game-inferred",
+  "was": "FUN_00190040",
+  "why": "float +0x250 down the chain +0x20c; the spot passes its squared reach"
+ },
+ "00190890": {
+  "name": "StageNodeTree::spawn",
+  "tag": "game-inferred",
+  "was": "FUN_00190890",
+  "why": "tail to 0x1918d0 on the inner object: finds a 0x158 definition by name, new 0x280 effect, parent, pos +0x150, rot +0x160"
+ },
+ "001908a0": {
+  "name": "StageNodeTree::spawnNamed",
+  "tag": "game-inferred",
+  "was": "FUN_001908a0",
+  "why": "the same with parent, pos and rot null"
+ },
+ "001908c0": {
+  "name": "StageNodeTree::remove",
+  "tag": "game-inferred",
+  "was": "FUN_001908c0",
+  "why": "stops the effect and its two chained ones"
  },
  "00190900": {
   "name": "StageNodeTree::setBoxes",
@@ -13325,6 +13703,12 @@
   "was": "FUN_001d3a40",
   "why": "turns the offsets of a loaded script file into pointers; second argument: with the +4 table"
  },
+ "001d3d20": {
+  "name": "StageScript::findEntry",
+  "tag": "game-inferred",
+  "was": "FUN_001d3d20",
+  "why": "strcmp over the 0x1c entries of the first table, null safe"
+ },
  "001d3dc0": {
   "name": "StageSoundSlot::release",
   "tag": "game-inferred",
@@ -13673,6 +14057,18 @@
   "was": "FUN_001f5250",
   "why": "perf label collision after it"
  },
+ "001f60a0": {
+  "name": "SceneRecordBuckets::remove",
+  "tag": "game-inferred",
+  "was": "FUN_001f60a0",
+  "why": "takes the body off its bucket and every other body's pair list"
+ },
+ "001f6180": {
+  "name": "SceneRecordBuckets::add",
+  "tag": "game-inferred",
+  "was": "FUN_001f6180",
+  "why": "pushes the body on bucket +8, then pairs it with every body whose category meets its mask"
+ },
  "001f63f0": {
   "name": "SceneRecordBuckets::~SceneRecordBuckets",
   "tag": "game-inferred",
@@ -13684,6 +14080,24 @@
   "tag": "game-inferred",
   "was": "FUN_001f6510",
   "why": "StageScene ctor new(0x70) for +0x18: four 8-byte arrays (0x184430 dtor) each reserved for 0x1fe entries (0x1f6760, Heap); name a guess"
+ },
+ "001f6590": {
+  "name": "CollisionBody::updateBox",
+  "tag": "game-inferred",
+  "was": "FUN_001f6590",
+  "why": "shape 3: the sphere's box into +0x20; shape 4: the union over the list +0xd4"
+ },
+ "001f6670": {
+  "name": "CollisionBody::refresh",
+  "tag": "game-inferred",
+  "was": "FUN_001f6670",
+  "why": "sets the three bytes +1..+3, then 0x1f6590 makes the box from the shape"
+ },
+ "001f6690": {
+  "name": "CollisionBody::CollisionBody",
+  "tag": "game-inferred",
+  "was": "FUN_001f6690",
+  "why": "0xe0 record of the buckets: owner +4, bucket +8, category +0xc, mask +0x10, sphere +0x80"
  },
  "001f6ac0": {
   "name": "SceneRender::addSbBox",
@@ -14614,6 +15028,18 @@
   "tag": "game-inferred",
   "was": "FUN_002362a0",
   "why": "(const float m[4][4], const float p[4]): VU0 m * p then vclip against w; true when no clip flag of the six is set (p inside the box's unit cube); BoxGrid::find's test"
+ },
+ "002362f0": {
+  "name": "BoundingSphere::toBox",
+  "tag": "game-inferred",
+  "was": "FUN_002362f0",
+  "why": "VU0: centre minus / plus radius (xyz) into two vectors"
+ },
+ "00236910": {
+  "name": "BoundingSphere::BoundingSphere",
+  "tag": "game-inferred",
+  "was": "FUN_00236910",
+  "why": "zeroes radius, its square and the centre +0x10"
  },
  "00239bb0": {
   "name": "CharacterInput::setActive",
@@ -18305,6 +18731,36 @@
   "was": "FUN_00299d40",
   "why": "MSL basic_string::assign(first, last) instance: replace(0, size, first, last); only caller replace_range (aliasing path)"
  },
+ "00299d90": {
+  "name": "VectorTrack::step",
+  "tag": "game-inferred",
+  "was": "FUN_00299d90",
+  "why": "counts frames +0x14 over the keys +0x1c, wraps with +0x11, value through 0x299f90"
+ },
+ "0029a370": {
+  "name": "VectorTrack::addKey",
+  "tag": "game-inferred",
+  "was": "FUN_0029a370",
+  "why": "chains the key last (0x29a3b0), places it (0x29a5b0)"
+ },
+ "0029a500": {
+  "name": "VectorTrack::~VectorTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0029a500",
+  "why": "walks and deletes the keys, deleting"
+ },
+ "0029a580": {
+  "name": "VectorTrack::VectorTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0029a580",
+  "why": "clears the flags, counters and key list of the 0x20 record"
+ },
+ "0029a6e0": {
+  "name": "VectorKey::VectorKey",
+  "tag": "game-inferred",
+  "was": "FUN_0029a6e0",
+  "why": "copies the vector, frames +0x30, links +0x38 / +0x3c"
+ },
  "0029a830": {
   "name": "ViewCamera::getKind",
   "tag": "game-inferred",
@@ -19666,6 +20122,12 @@
   "tag": "game-inferred",
   "was": "FUN_002e4100",
   "why": "(model, rec): the part record (model +0x1c, 0x10 each) whose children range [+4, +4 + +8) (u16s, +8 non-zero) holds rec's index, null when none; walks the header's +0x2a part count; caller vcmPartTag (the group chain up from a part)"
+ },
+ "002e4610": {
+  "name": "modelFindPart",
+  "tag": "game-inferred",
+  "was": "FUN_002e4610",
+  "why": "the part of a model by name and length, bn_* (rena; body unread); answers what PartSwitch sets +0xd on"
  },
  "002e5200": {
   "name": "ModelFile::getNodeCount",

@@ -600,6 +600,36 @@
    ],
    "why": "The class at gStageScene +0xf4 (every caller of these 8 functions passes it; ctor 0x264070 news its 0x3c-byte member from 0x151600, the deleting dtor 0x264000): plays and stops the ALERT / CAUTION layouts on gStageScene +0x30 (0x263c10 / 0x263f10) and reads GameOptions +0x10. Between game/uigame.cpp and libscf 0x2640e8. The file name is the port's (no source string)."
   },
+  "game/stagelight.cpp": {
+   "notes": "All of 0x184860..0x186ee0 written. New Game run: lights build and join the scene with no fault, 114 stubs reached, the stop is unchanged (drawSysCurrent null in StageScene::draw, stagescene.cpp:3271), so no stage picture and nothing here is on screen. Default smoke run still rests on the language screen. Host-pass only: nothing compared with the ROM by running it, no harness for the light maths; the ctor colours match the ROM's float bits. Left in unassigned@0017fce0 (still pinned): the bullet classes and items 0x17fce0..0x184860. First blocker of a stage picture stays drawSysCurrent 0x2d4fd0, then NodeTransform and updateMatrix. Details and doubts: open-items.md, architecture.md The lights.",
+   "ranges": [
+    [
+     "00184860",
+     "00185fc0"
+    ],
+    [
+     "00185fd0",
+     "001865c0"
+    ],
+    [
+     "001866f0",
+     "00186a00"
+    ],
+    [
+     "00186a40",
+     "00186ee0"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 01:40",
+     "status": "verify",
+     "summary": "StageLight, SpotLight and PointLight whole: collision base, script commands, the frame, effects and parts; VcmController is StageLight"
+    }
+   ],
+   "status": "verify",
+   "why": "StageLight and its SpotLight / PointLight: from the spot's deleting dtor 0x184860 to the adjustor thunks closing the run at 0x186ed0. The thunks 0x184610..0x184860 before it are the item and bullet classes', so a file ends there. 0x185fc0 and 0x1865c0 stay in game/stageobject.cpp, 0x186a00..0x186a40 are StageNode's inlines. No string: the file name is the port's."
+  },
   "game/stageloop.cpp": {
    "notes": "Cut out of unassigned@00171300 and pinned 0x17f150-0x17fce0 (batch 073, 45 names; Ghidra saved by name_ctx). New src/game/stageloop.h defines gStageScene (extern moved from gamehooks.h, which includes stageloop.h) and getStageFiles. gamehooks.h stand-ins grew: StageSound (ctor, dtor, pause, resume, setMuted, stopAll, isStopped), StageScene (ctor, dtor, update, draw, drawPaused, getActiveCharacter, beginPlay, setupCameras, enterSubScene, clearSubSceneRequest, isGameOver, isCleared, isSubSceneDone, wantsPauseMenu, wantsMapMenu; fields +0 isSubScene, +4 subSceneRequest, +8 subScene, +0x30 keepList, +0x60 clock, +0x88 party, +0xec event, +0x10c parent, +0x110 files), StageFiles as a class, new StageParty / KeepList / StageEvent, PauseMenuChoice and pause / map menu start / result. StageSelect::_0c renamed exitKind (enum StageExit in sysdata.h); GameSystem::beginStage 0x12cce0 declared in gamesystem.h; StageResult::update takes TexAreaList * (fixes the old g++ error in stageresult.cpp). The menu brackets (KeepList::removeUnkept, paused, meter off, ALPHA FIX 0x80, scene clock paused) are inline helpers as in the ROM. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on stageloop, stageresult, uigame, sysdata, scene, screen (RosePan SDK headers plus scratch libvifpk and sceGsTexEnv stubs); no harness. Doubts: the file name; StageEvent slot 3, KeepList, StageParty and the menu meanings are read from the code; stageAnswerZero 0x17f7b0 is only a handler-table word (0x318044 / 0x318064). Next picks: StageScene 0x195640..0x19c6a0 (every stage call here is its stub), StageFiles 0x1a37e0..0x1a4370, the menus 0x20acb0..0x20b100, StageSound 0x1d3f80..0x1d79c0.",
    "ranges": [
@@ -1425,8 +1455,6 @@
   "unassigned@00148db0": {},
   "unassigned@00171300": {},
   "unassigned@0017fce0": {
-   "claimed": "2026-11-04 00:25",
-   "prev_status": "todo",
    "sessions": [
     {
      "date": "2026-11-03 20:47",
@@ -1444,7 +1472,7 @@
      "summary": "marked active -> todo: released untouched a fourth time: gdb located the black after the card (PrgMovie, MoviePlayer state 15), so this run took the host task sdk/libmpeg.cpp"
     }
    ],
-   "status": "active"
+   "status": "todo"
   },
   "unassigned@001953f0": {},
   "unassigned@00231410": {},
