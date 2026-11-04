@@ -1647,11 +1647,7 @@ bool StageFiles::parseSndseh()
     enterDirOf(file);
     StageList<void *> *bankFiles = new StageList<void *>;
     if (isSeTable(table)) {
-        int bankCount = 0;
-        for (int i = 0; i < kSeBanks; i++) {
-            if (table->banks[i].file[0] != '\0')
-                bankCount++;
-        }
+        int bankCount = table->bankCount();
         for (int i = 0; i < bankCount; i++) {
             const SeBankInfo &bank = table->banks[i];
             takeBankFile(bank.file, bankFiles);

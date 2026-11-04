@@ -7,6 +7,7 @@
 
 #include "game/datetime.h"
 #include "game/heap.h"
+#include "game/menupack.h"
 #include "game/sysdata.h"
 #include "sdk/fileio.h"
 #include "sdk/libmc.h"
@@ -700,7 +701,7 @@ Memcard::~Memcard()
         m_iconSys = 0;
     }
     m_iconData = 0;
-    m_iconAux = 0;
+    m_iconSize = 0;
     if (m_image != 0) {
         gGlobalHeap.free(m_image);
         m_image = 0;
@@ -723,7 +724,7 @@ Memcard::Memcard()
 {
     m_iconSys = 0;
     m_iconData = 0;
-    m_iconAux = 0;
+    m_iconSize = 0;
     m_image = 0;
     m_request = MemcardRequest_None;
     m_fileIndex = 0;
@@ -834,7 +835,7 @@ inline void SaveFile::judge()
 
 // ──────────────────────────────────────────────────────────────────────
 // icon.sys for save `index` into m_iconSys: the lighting and background
-// from the template getSaveResource(1), the title, icon1.ico for all
+// from the template MenuPackItem_IconSys, the title, icon1.ico for all
 // three views.
 // FS2 0x002ab7c0
 
@@ -842,7 +843,7 @@ void Memcard::buildIconSys(int index)
 {
     if (m_iconSys == 0)
         m_iconSys = static_cast<sceMcIconSys *>(gGlobalHeap.alloc(kIconSysSize, kMemcardAlign));
-    const sceMcIconSys *tmpl = static_cast<const sceMcIconSys *>(getSaveResource(1));
+    const sceMcIconSys *tmpl = static_cast<const sceMcIconSys *>(getMenuPackItem(MenuPackItem_IconSys));
 
     sceMcIconSys *sys = m_iconSys;
     memset(sys, 0, kIconSysSize);
@@ -942,9 +943,9 @@ bool Memcard::startSave(int index)
     m_image->clear();
     m_image->capture(index);
     buildIconSys(index);
-    void *aux = getSaveResourceAux(0);
-    m_iconData = getSaveResource(0);
-    m_iconAux = aux;
+    int iconSize = getMenuPackItemSize(MenuPackItem_SaveIcon);
+    m_iconData = getMenuPackItem(MenuPackItem_SaveIcon);
+    m_iconSize = iconSize;
     m_fileIndex = index;
     return begin(MemcardRequest_Save);
 }

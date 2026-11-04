@@ -836,27 +836,6 @@ SaveExtra * getSaveExtra()
     return {};
 }
 
-// stub of FS2 0x002c3d70
-void * getSaveResource(int id)
-{
-    YAMIPAN_STUB("getSaveResource", 0x002c3d70);
-    return {};
-}
-
-// stub of FS2 0x002c3d30
-void * getSaveResourceAux(int id)
-{
-    YAMIPAN_STUB("getSaveResourceAux", 0x002c3d30);
-    return {};
-}
-
-// stub of FS2 0x002c4140
-SePlayer * getSePlayer()
-{
-    YAMIPAN_STUB("getSePlayer", 0x002c4140);
-    return {};
-}
-
 // stub of FS2 0x00243380
 void * getUiWorkArea()
 {
@@ -869,12 +848,6 @@ bool isGateModelName(const char *name)
 {
     YAMIPAN_STUB("isGateModelName", 0x001769e0);
     return {};
-}
-
-// stub of FS2 0x002c3e10
-void loadMenuPack()
-{
-    YAMIPAN_STUB("loadMenuPack", 0x002c3e10);
 }
 
 // stub of FS2 0x0020afa0
@@ -986,12 +959,6 @@ void saveExtraInit()
 void setUiWorkArea(void *area)
 {
     YAMIPAN_STUB("setUiWorkArea", 0x00243370);
-}
-
-// stub of FS2 0x002c3db0
-void unloadMenuPack()
-{
-    YAMIPAN_STUB("unloadMenuPack", 0x002c3db0);
 }
 
 // stub of FS2 0x002e0840

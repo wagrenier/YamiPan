@@ -18870,16 +18870,16 @@
   "why": "builds eight MSL maps at +0x00..+0x70, 0x2c16b0 (ListMap) / 0x2c1710 (NameMap) alternating; the 0x80-byte object loadGamePackTables fills from packgameEU.pak"
  },
  "002c3d30": {
-  "name": "getSaveResourceAux",
+  "name": "getMenuPackItemSize",
   "tag": "game-inferred",
   "was": "FUN_002c3d30",
-  "why": "the twin of getSaveResource through vtable slot +0x28; Memcard::startSave keeps its id 0 answer at +0x78, which stepSave does not write; size or second resource, open"
+  "why": "answers slot +0x28 (getItemSize) of the pack at 0x31ae98, 0 unless 0x31ae9c is set; was getSaveResourceAux: the memcard stores it at Memcard +0x78, a size"
  },
  "002c3d70": {
-  "name": "getSaveResource",
+  "name": "getMenuPackItem",
   "tag": "game-inferred",
   "was": "FUN_002c3d70",
-  "why": "0 when the byte 0x31ae9c is clear, else the object 0x31ae98's vtable (+0x98) slot +0x20 with a1; Memcard::startSave takes id 0 as the icon1.ico it writes (0x10eb8 bytes), buildIconSys id 1 as an icon.sys template (lighting block at +0xc); the module is unread"
+  "why": "answers slot +0x20 (getItem) of the pack at 0x31ae98, 0 unless 0x31ae9c is set; was getSaveResource: nothing save-specific in it"
  },
  "002c3db0": {
   "name": "unloadMenuPack",
@@ -18893,11 +18893,35 @@
   "was": "FUN_002c3e10",
   "why": "unless the byte 0x31ae9c is 1: deletes the pack at 0x31ae98, builds and loads 'dataEU/packmenuEU.pak' (0x30bca0) the same way as loadInitPack, keeps it at 0x31ae98, sets 0x31ae9c, then 0x2c3eb0; called before every scene by gameSceneThread and by the menu flow 0x2b5770"
  },
+ "002c3eb0": {
+  "name": "createMenuSePlayer",
+  "tag": "game-inferred",
+  "was": "FUN_002c3eb0",
+  "why": "only caller loadMenuPack; news a SePlayer into 0x31aea0, setTable from seMenu_SE.seh in the menu pack, then loadBank / openStreamBank for each named bank; guard byte 0x31aea4"
+ },
  "002c4140": {
   "name": "getSePlayer",
   "tag": "game-inferred",
   "was": "FUN_002c4140",
   "why": "answers the sbss pointer 0x31aea0: the sound-effect player whose +0 is the effect table (count +0xc, sorted name index +0x428 / +0x42c, entries 0x30 each at +0x430) that UiLayout::playSound looks up by name and hands to SePlayer::play / stop"
+ },
+ "002c4150": {
+  "name": "MessageTable::find",
+  "tag": "game-inferred",
+  "was": "FUN_002c4150",
+  "why": "strcmp over the {key, text} pairs from +0x10 of the file in its first field; called by StageMission's forwarder 0x286c20, whose callers replace a script string with the answer"
+ },
+ "002c41f0": {
+  "name": "MessageTable::setFile",
+  "tag": "game-inferred",
+  "was": "FUN_002c41f0",
+  "why": "checks magic 0x6d621a00, keeps the file, relocates the pairs once (flag +0xc); StageMission::setMessages forwards the message file here"
+ },
+ "002c4290": {
+  "name": "MessageTable::MessageTable",
+  "tag": "game-inferred",
+  "was": "FUN_002c4290",
+  "why": "zeroes its one word; StageMission's builder 0x287690 calls it on operator_new(4)"
  },
  "002c42c0": {
   "name": "runExtraMode",
