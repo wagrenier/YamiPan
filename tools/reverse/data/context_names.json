@@ -15269,6 +15269,18 @@
   "was": "FUN_001b5460",
   "why": "tree setActive and setShown together; natives 0x145 and others"
  },
+ "001b54a0": {
+  "name": "StageNodeBase::setParent",
+  "tag": "game-inferred",
+  "was": "FUN_001b54a0",
+  "why": "out-of-line copy of the detach and pushBack the ROM inlines elsewhere: +4 parent, +8 child list"
+ },
+ "001b56b0": {
+  "name": "findLightObject",
+  "tag": "game-inferred",
+  "was": "FUN_001b56b0",
+  "why": "gStageScene->objects->find5(name, 0); both callers pass light names (scr_demo_pl)"
+ },
  "001b6fe0": {
   "name": "nativeDemoFade",
   "tag": "game-inferred",
@@ -15286,6 +15298,24 @@
   "tag": "game-inferred",
   "was": "FUN_001b9ac0",
   "why": "native 0x144: three float code words to the target's scriptSetPosition"
+ },
+ "001c81a0": {
+  "name": "nativeSetPlayer",
+  "tag": "game-inferred",
+  "was": "FUN_001c81a0",
+  "why": "script native 0x70: reads a name, StageObjectList::findCharacter, StageScene::setPlayer"
+ },
+ "001c8dc0": {
+  "name": "nativeScriptView",
+  "tag": "game-inferred",
+  "was": "FUN_001c8dc0",
+  "why": "script native 0x64: \"NULL\" removes view priority 3, any other name pushes that object at priority 3; in an active event the light scr_demo_pl hangs from the view and turns on, or is detached and turned off"
+ },
+ "001c8f40": {
+  "name": "isNullName",
+  "tag": "game-inferred",
+  "was": "FUN_001c8f40",
+  "why": "strcmp(name, \"NULL\") == 0"
  },
  "001cd040": {
   "name": "nativeLightConeAngle",
@@ -15358,6 +15388,12 @@
   "tag": "game-inferred",
   "was": "FUN_001d0a60",
   "why": "strings PC, NPC, SELF, else StageObjectList::findAny"
+ },
+ "001d1260": {
+  "name": "findCameraObject",
+  "tag": "game-inferred",
+  "was": "FUN_001d1260",
+  "why": "one caller, the view native: gStageScene->objects->find0(name, 0)"
  },
  "001d1330": {
   "name": "ScriptRunner::runCommand",

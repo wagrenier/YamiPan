@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/stagecamera.cpp",
   "game/demoevent.cpp",
   "game/scenepairs.cpp",
   "game/stagecollision.cpp",
@@ -822,6 +821,15 @@
    "why": "The class at gStageScene +0xf4 (every caller of these 8 functions passes it; ctor 0x264070 news its 0x3c-byte member from 0x151600, the deleting dtor 0x264000): plays and stops the ALERT / CAUTION layouts on gStageScene +0x30 (0x263c10 / 0x263f10) and reads GameOptions +0x10. Between game/uigame.cpp and libscf 0x2640e8. The file name is the port's (no source string)."
   },
   "game/stagecamera.cpp": {
+   "notes": "Written in src/game/scriptrunner.cpp: nativeSetPlayer 0x1c81a0, nativeScriptView 0x1c8dc0, isNullName 0x1c8f40, findCameraObject 0x1d1260, findLightObject 0x1b56b0 (batch 115, saved); 0x1b54a0 is StageNodeBase::setParent out of line. 0x70: New Game run of 200 s, no crash, its stub line is gone, setPlayer(null) survives, the link itself not seen because no character exists. 0x64: nothing reaches sd_MK01_10 yet, so a temporary build (removed) held native 0x1f2 off and drove it: top view CAM_EV10 kind 7 then camera kind 9, shots show tatami, picture book and bedding, then black (unlinked main camera at the empty origin), progress/20261104-script-view-cam-ev10.png. Not compared with the game, no reference exists. The event branch (scr_demo_pl on the view) has not run. YAMIPAN_CAMERA overrides every StageCamera, so test view switches without it (hazards.md).",
+   "sessions": [
+    {
+     "date": "2026-11-04 18:06",
+     "status": "verify",
+     "summary": "Natives 0x70 setPlayer and 0x64 script view written; CAM_EV10 shows in a test build"
+    }
+   ],
+   "status": "verify",
    "task": "The two natives that choose the view, queued by the user 2026-11-04. A host task: the code goes in kNatives in src/game/scriptrunner.cpp and both addresses are that TU's, but it is 84 of 652 and would hold this place in the queue for many runs, so they have their own key. Native 0x70 (0x1c81a0, 56 i, one code word): find the character by label, then StageScene::setPlayer. Stage 1's Root calls it with F_PC01 straight after its test of menuMode == 1, the block that also requests d0101, and a New Game run reaches the stub today (scriptNative_70), so the main camera never links without it, even with a character. Native 0x64 (0x1c8dc0, 94 i, one code word): 0x1c8f40 tests the name (the script passes NULL) and removes view priority 3, any other name is found (0x1d1260) and pushed at priority 3, and an active event takes a further step (0x1b56b0, 0x1b54a0, 0x1b5460). sd_MK01_10 calls it with CAM_EV10, then NULL. StageCharacter does not exist yet, so the character lookup answers null: make sure setPlayer survives that. The other route to setPlayer is property 0x50 (0x172620 and its twins 0x189f40, 0x212530, 0x268ae0), behind the setProperty stubs; native 0xef is unused on stage 1. Nothing can show the link until a character exists, so this ends verify."
   },
   "game/stagecharacter.cpp": {

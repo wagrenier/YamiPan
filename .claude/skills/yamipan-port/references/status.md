@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-04 17:37 at commit `f9bcb9c` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-04 18:06 at commit `5d3e7d0` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-04 17:37 at commit `f9bcb9c` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **3369** (51%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 2450
-- context-name ledger: 3994 entries; overrides of wrong library matches: 0
+- game functions: **6599**, named **3375** (51%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 2456
+- context-name ledger: 4000 entries; overrides of wrong library matches: 0
 - placed in a source file: 3916/6599 in 89 files
 
 Least-named game-code regions (64 KB blocks):
@@ -23,14 +23,14 @@ Least-named game-code regions (64 KB blocks):
 | `00310000` | 0/9 (0%) | - |
 | `00270000` | 3/202 (1%) | - |
 | `001e0000` | 3/75 (4%) | - |
-| `001c0000` | 11/233 (5%) | game/scriptrunner.cpp |
+| `001c0000` | 14/233 (6%) | game/scriptrunner.cpp |
 | `00210000` | 14/231 (6%) | - |
-| `001b0000` | 15/242 (6%) | game/scriptrunner.cpp |
+| `001b0000` | 17/242 (7%) | game/scriptrunner.cpp |
 | `00200000` | 13/122 (11%) | - |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **2997**; stubs: **261**
+- reconstructed FS2 functions: **3002**; stubs: **261**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -69,7 +69,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/scene.cpp` | 1 | 0 |
 | `src/game/scenerender.cpp` | 23 | 0 |
 | `src/game/screen.cpp` | 18 | 0 |
-| `src/game/scriptrunner.cpp` | 90 | 2 |
+| `src/game/scriptrunner.cpp` | 95 | 2 |
 | `src/game/seplayer.cpp` | 35 | 0 |
 | `src/game/sldi.cpp` | 1 | 0 |
 | `src/game/spkrom.cpp` | 13 | 0 |
@@ -128,11 +128,11 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 137 TUs: todo 82, partial 12, verify 74, done 2
-- next: **game/stagecamera.cpp** (pinned in the queue)
-- pinned queue: game/stagecamera.cpp, game/demoevent.cpp, game/scenepairs.cpp, game/stagecollision.cpp, game/stagecharacter.cpp, game/playermotion.cpp, game/characterground.cpp, game/characterbrain.cpp, game/characterinput.cpp, game/stageplayer.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
+- 137 TUs: todo 81, partial 12, verify 75, done 2
+- next: **game/demoevent.cpp** (pinned in the queue)
+- pinned queue: game/demoevent.cpp, game/scenepairs.cpp, game/stagecollision.cpp, game/stagecharacter.cpp, game/playermotion.cpp, game/characterground.cpp, game/characterbrain.cpp, game/characterinput.cpp, game/stageplayer.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
 - partial: `game/demoevent.cpp` 66/90 -- Written: StageMission, StageEvent, StageFileEvent, StageSimpleEvent, StageFade, gsFillRect, DemoCamera, the pack lookup, DemoStream but setFont and drawSubtitle
-- partial: `game/scriptrunner.cpp` 90/652 -- VM 0x1d1c40, ScriptRunner, ScriptFrame, relocate, findEntry, scriptPrepare, the arg readers and 30 natives (every one stage 1 bg script calls) are written. All 
+- partial: `game/scriptrunner.cpp` 95/652 -- VM 0x1d1c40, ScriptRunner, ScriptFrame, relocate, findEntry, scriptPrepare, the arg readers and 30 natives (every one stage 1 bg script calls) are written. All 
 - partial: `game/stageobject.cpp` 40/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
 - partial: `yamipan/rendering/model_renderer.cpp` 0/0 -- Written: game/stagecamera.cpp whole base plus StageMainCamera (0x178160 step, 0x179490, 0x179680, ctor). The step has NEVER run: StageCharacter ctor and setup a
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -170,6 +170,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/seplayer.cpp` 35/35 -- Cut from unassigned@002908d0: game/seplayer.cpp is 0x2908d0..0x2937e0 (SoundTrack 17, SePlayer 18, batch 078: fsmFindTrack, fsmTrackHasText, seDistanceVolume, s
 - verify: `game/sldi.cpp` 1/1 -- Cut out of unassigned@002c42a0 and pinned 0x2d0a10-0x2d0d10; no new names, no Ghidra change. Scratch test: all 114 SLDI files on the disc unpack to the header s
 - verify: `game/spkrom.cpp` 13/13 -- All 13 of 0x152730..0x153108 written. The entries keep offsets on the host (the ROM relocates them to pointers in place), strings through spkString. Host: argv[
+- verify: `game/stagecamera.cpp` 0/0 -- Written in src/game/scriptrunner.cpp: nativeSetPlayer 0x1c81a0, nativeScriptView 0x1c8dc0, isNullName 0x1c8f40, findCameraObject 0x1d1260, findLightObject 0x1b5
 - verify: `game/stageitem.cpp` 107/139 -- All of 0x17fce0..0x184860 written or mapped (thunks listed, 0x180018 is padding). New Game run under gdb: StageBullet's ctor ran from setupCameras with no fault
 - verify: `game/stagelight.cpp` 64/101 -- All of 0x184860..0x186ee0 written. New Game run: lights build and join the scene with no fault, 114 stubs reached, the stop is unchanged (drawSysCurrent null in
 - verify: `game/stageloop.cpp` 9/9 -- Cut out of unassigned@00171300 and pinned 0x17f150-0x17fce0 (batch 073, 45 names; Ghidra saved by name_ctx). New src/game/stageloop.h defines gStageScene (exter
@@ -212,6 +213,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-04 18:06 `game/stagecamera.cpp` verify: Natives 0x70 setPlayer and 0x64 script view written; CAM_EV10 shows in a test build
 - 2026-11-04 17:37 `rena/rena_draw.cpp` verify: Skinned meshes: palette, part box, the VU1 weights in the host module; the boy of d0101 and the sea of stage 1 draw
 - 2026-11-04 16:52 `game/subsceneobject.cpp` verify: All 50 of the TU recorded; the event now ends: a silent timed ADPCM stream bridge, the black after it traced to the missing player
 - 2026-11-04 16:10 `game/subsceneobject.cpp` partial: The event's objects and natives 0x144, 0x145, 0x148, 0x163, 0x164: first pictures of the opening from its own camera
@@ -219,14 +221,13 @@ Recent sessions:
 - 2026-11-04 14:50 `game/modelpose.cpp` partial: ModelPose, ModelPoseBone, ModelMotion and the quaternions written, native 0x159, solvers left as stubs
 - 2026-11-04 14:04 `game/demoevent.cpp` partial: The opening event starts: mission, events, fade, demo camera and voice written, d0101 proven from the script and its own script runs; nothing of it shows yet
 - 2026-11-04 13:00 `game/scenerender.cpp` verify: Pinned lights closed: YAMIPAN_AMBIENT and the isKeyed guards deleted, the script's lights drive the picture, VU1's fog limits added
-- 2026-11-04 12:30 `game/scriptrunner.cpp` partial: Stage script VM written, 30 natives; the scripts key the lights, picture unchanged, the pin stays
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@00135990` | partial | 2/1/33 | 3.1 | 355 | 0 |
 | `unassigned@001fe6b0` | todo | 0/42/563 | 197.2 | 81 | 0 |
 | `game/vectortrack.cpp` | partial | 9/0/16 | 2.5 | 68 | 0 |
-| `game/scriptrunner.cpp` | partial | 90/2/652 | 172.7 | 43 | 0 |
+| `game/scriptrunner.cpp` | partial | 95/2/652 | 172.7 | 45 | 0 |
 | `unassigned@0018c050` | todo | 0/14/71 | 29.7 | 41 | 0 |
 | `unassigned@00231d40` | partial | 2/12/58 | 36.1 | 34 | 0 |
 | `unassigned@001d85b0` | todo | 0/13/239 | 119.7 | 30 | 0 |
