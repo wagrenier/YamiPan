@@ -125,6 +125,8 @@ void ModelRenderer::beginPass(const void *list, const YamiPanModelPass &pass)
     std::copy_n(pass.fogColor, 3, out.fogColor.begin());
     out.fogA = pass.fogA;
     out.fogB = pass.fogB;
+    out.fogNearValue = pass.fogNearValue;
+    out.fogFarValue = pass.fogFarValue;
     out.clearDepth = pass.clearDepth != 0;
     out.firstDraw = static_cast<std::uint32_t>(layer.draws.size());
     layer.open = true;
@@ -389,6 +391,8 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
         buildWorldToClip(pass, layout, vertexUniforms.worldToClip);
         vertexUniforms.fog[0] = pass.fogA;
         vertexUniforms.fog[1] = pass.fogB;
+        vertexUniforms.fog[2] = pass.fogNearValue;
+        vertexUniforms.fog[3] = pass.fogFarValue;
         SDL_PushGPUVertexUniformData(commands, 0, &vertexUniforms, sizeof(vertexUniforms));
 
         for (std::uint32_t index = 0; index < pass.drawCount; index++)

@@ -27,6 +27,8 @@ struct YamiPanModelPass
     float   fogColor[3];        /* 0..1 */
     float   fogA;
     float   fogB;
+    float   fogNearValue;   /* the value stays between these two (VU address 24 y, z) */
+    float   fogFarValue;
     int     clearDepth;
 };
 

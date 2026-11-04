@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-04 12:30 at commit `bc1b644` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-04 13:00 at commit `ce4b4f5` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -125,10 +125,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 125 TUs: todo 65, partial 13, verify 70, done 2
-- next: **game/scenerender.cpp** (pinned in the queue)
-- pinned queue: game/scenerender.cpp, game/demoevent.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
-- partial: `game/scenerender.cpp` 24/34 -- All of SceneRender 0x1f6ac0..0x1fa900, rena light records, game/vectortrack.cpp and StageCamera::setRange are written. Every light value comes only from script 
+- 125 TUs: todo 65, partial 12, verify 71, done 2
+- next: **game/demoevent.cpp** (pinned in the queue)
+- pinned queue: game/demoevent.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
 - partial: `game/scriptrunner.cpp` 73/652 -- VM 0x1d1c40, ScriptRunner, ScriptFrame, relocate, findEntry, scriptPrepare, the arg readers and 30 natives (every one stage 1 bg script calls) are written. All 
 - partial: `game/stageobject.cpp` 40/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
 - partial: `yamipan/rendering/model_renderer.cpp` 0/0 -- Written: game/stagecamera.cpp whole base plus StageMainCamera (0x178160 step, 0x179490, 0x179680, ctor). The step has NEVER run: StageCharacter ctor and setup a
@@ -161,6 +160,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/s2ddata.cpp` 9/9 -- Host: S2dRef<T> (s2ddata.h) is a 32-bit offset from the field itself, 0 null, implicit T* conversion, copy deleted; S2dData, S2dObject, S2dWidgetDef, S2dImage a
 - verify: `game/scene.cpp` 1/1 -- gameSceneThread written in full: loadInitPack, runStartupSequence, overlayThreadStart, then forever loadMenuPack, the scene from sScenes (one retail entry, Menu
+- verify: `game/scenerender.cpp` 24/34 -- The pin is closed: applyDebugAmbient, its call, the README paragraph and SceneRender::isKeyed with its two guards are gone; nothing was brightened. Measured in 
 - verify: `game/screen.cpp` 18/18 -- All 18 functions of 0x2676e0..0x2681e0 written (batch 037, 33 names, Ghidra saved). Overlay thread slot 6 draws the BG movie screen layout (init pack file 2dEU/
 - verify: `game/seplayer.cpp` 35/35 -- Cut from unassigned@002908d0: game/seplayer.cpp is 0x2908d0..0x2937e0 (SoundTrack 17, SePlayer 18, batch 078: fsmFindTrack, fsmTrackHasText, seDistanceVolume, s
 - verify: `game/sldi.cpp` 1/1 -- Cut out of unassigned@002c42a0 and pinned 0x2d0a10-0x2d0d10; no new names, no Ghidra change. Scratch test: all 114 SLDI files on the disc unpack to the header s
@@ -205,6 +205,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-04 13:00 `game/scenerender.cpp` verify: Pinned lights closed: YAMIPAN_AMBIENT and the isKeyed guards deleted, the script's lights drive the picture, VU1's fog limits added
 - 2026-11-04 12:30 `game/scriptrunner.cpp` partial: Stage script VM written, 30 natives; the scripts key the lights, picture unchanged, the pin stays
 - 2026-11-04 11:34 `game/scenerender.cpp` partial: SceneRender and VectorTrack written; the keys come from scripts, so the pin stays
 - 2026-11-04 10:49 `yamipan/rendering/model_renderer.cpp` partial: Main camera written (never run: no character links it yet), VU1 light formula read and in the host, lighting pinned; map darker, not compared with the game
@@ -212,22 +213,21 @@ Recent sessions:
 - 2026-11-04 09:10 `rena/rena_model.cpp` verify: ModelFile::createInstance and the model instance: bones, surfaces, part records, texture animation, lights; all 1,768 models on the disc checked
 - 2026-11-04 08:34 `game/stagemodel.cpp` verify: StageModel 0x187230..0x188d60: all 19 functions written, ModelPose stand-in, StringMap::balance
 - 2026-11-04 07:58 `game/nodetransform.cpp` verify: NodeTransform, the bone and matrix nodes, StageNodeBase walks; 3D path 2 of 5
-- 2026-11-04 07:34 `game/packtables.cpp` verify: stage scripts now parse: String / StringList, PackTables::parse and PackTables::PackTables written, RM2 relocate, createInstance reached
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@00135990` | partial | 1/3/33 | 3.1 | 156 | 0 |
+| `unassigned@00135990` | partial | 1/3/33 | 3.1 | 161 | 1 |
+| `unassigned@001fe6b0` | todo | 0/37/563 | 197.2 | 131 | 13 |
+| `unassigned@00171300` | partial | 20/18/421 | 52.5 | 118 | 10 |
+| `unassigned@002849c0` | todo | 0/30/129 | 44.6 | 116 | 15 |
+| `unassigned@0018c050` | todo | 0/14/71 | 29.7 | 86 | 9 |
 | `game/vectortrack.cpp` | partial | 9/0/16 | 2.5 | 68 | 0 |
-| `unassigned@00171300` | partial | 20/18/421 | 52.5 | 68 | 0 |
-| `unassigned@001fe6b0` | todo | 0/37/563 | 197.2 | 66 | 0 |
-| `unassigned@00149510` | todo | 0/19/109 | 33.9 | 46 | 2 |
-| `unassigned@002849c0` | todo | 0/30/129 | 44.6 | 41 | 0 |
-| `unassigned@0018c050` | todo | 0/14/71 | 29.7 | 41 | 0 |
+| `unassigned@00149510` | todo | 0/19/109 | 33.9 | 61 | 5 |
+| `unassigned@001d85b0` | todo | 0/12/239 | 119.7 | 54 | 5 |
+| `unassigned@0023e740` | todo | 0/11/54 | 18.7 | 50 | 7 |
+| `unassigned@00231d40` | partial | 2/11/58 | 36.1 | 47 | 3 |
+| `unassigned@002b9ef0` | todo | 0/15/50 | 11.2 | 44 | 4 |
 | `unassigned@002b0d50` | todo | 0/24/85 | 17.9 | 37 | 0 |
-| `unassigned@00231d40` | partial | 2/11/58 | 36.1 | 32 | 0 |
-| `unassigned@001d85b0` | todo | 0/12/239 | 119.7 | 29 | 0 |
-| `game/scriptrunner.cpp` | partial | 73/2/652 | 172.7 | 29 | 0 |
-| `unassigned@002e5450` | partial | 14/0/39 | 16.6 | 25 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

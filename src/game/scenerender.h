@@ -155,9 +155,6 @@ private:
     void getModelAmbient(StageObject *object, sceVu0FVECTOR out, const float *extra); // FS2 0x001f9ca0
     // The end of setup: the tracks rewound, the values cleared.
     void start();                                                        // FS2 0x001f9ee0
-    // PC: the current set has keys. Nothing but a script makes them, and no
-    // script runs yet.
-    bool isKeyed() const;
     // One object of updateLights' walk.
     void lightObject(StageObject *object);
     // The point light's and the spot's lines of update.

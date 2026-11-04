@@ -390,7 +390,7 @@ Symptom: the VU1 program tests "address 15" and nothing writes bss +15 quadwords
 
 Symptom: a loader "ran", instances were counted, yet nothing appears and the stub never shows in the reached list of the next function. Cause: `createMapObject` was a stub answering null and `applyBgTarget` skips a null; 3D path TU 4 counted 22 instances and read that as success, so TU 5 built a renderer for an empty record. Fix: when something does not reach the draw, walk its callers for a `continue` on a stub's answer, and read the reached stubs in work/run_relwithdebinfo.log, not build.py's output, which only shows its tail.
 
-- **A SceneRender set with no keys is all zero** (2026-11-04). Symptom: writing `update` as the ROM has it would turn every light off and give every camera range 0, so nothing draws. Cause: only script natives key the tracks; the ROM has no default. Fix: `SceneRender::isKeyed` guards, to delete once `game/scriptrunner.cpp` runs the entries. A one-key track never writes `value` either: `VectorTrack::step` needs count 2 (the scripts always make keys 0 and 1).
+- **A SceneRender set with no keys is all zero** (2026-11-04). Symptom: writing `update` as the ROM has it would turn every light off and give every camera range 0, so nothing draws. Cause: only script natives key the tracks; the ROM has no default. Fix: the entries of the stage's script key them (`game/scriptrunner.cpp`); the `isKeyed` guards that stood in are gone, so a stage whose script does not key a set really is dark. A one-key track never writes `value` either: `VectorTrack::step` needs count 2 (the scripts always make keys 0 and 1).
 
 ## Debugging a run (2026-11-04)
 

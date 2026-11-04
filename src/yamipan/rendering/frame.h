@@ -114,6 +114,8 @@ struct ModelPass
     std::array<float, 3> fogColor{};
     float fogA = 255.0f;
     float fogB = 0.0f;
+    float fogNearValue = 255.0f;
+    float fogFarValue = 255.0f;
     bool clearDepth = true;
     std::uint32_t uiDrawsBefore = 0;
     std::uint32_t firstDraw = 0;

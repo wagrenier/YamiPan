@@ -262,11 +262,6 @@ void SceneRender::applyClearColor()
                      (int)m_clearColor[2] & 0xff, 0);
 }
 
-bool SceneRender::isKeyed() const
-{
-    return m_set >= 0 && m_sets[m_set].transition.count > 0;
-}
-
 // The point light's record.
 void SceneRender::updatePointLight(StageLight *point, bool wasActive)
 {
@@ -487,12 +482,6 @@ void SceneRender::update()
         m_spot.setActive(spot->m_active && spot->isLit());
         updateSpotLight(spot);
     }
-
-    // PC: an unkeyed set's values are all zero, which would turn off the
-    // lights and set every camera's range to 0: until scripts run the
-    // record keeps drawSysInit's defaults.
-    if (!isKeyed())
-        return;
 
     DrawSysLights *record = drawSysCurrent()->lights;
     for (int i = 0; i < kSceneLights; i++) {
@@ -734,10 +723,6 @@ void SceneRender::lightObject(StageObject *object)
 
 void SceneRender::updateLights()
 {
-    // PC: see update.
-    if (!isKeyed())
-        return;
-
     for (int group = 0; group < StageObjGroup_Count; group++) {
         if (!sceneGroupIsLit(group))
             continue;
