@@ -35,6 +35,8 @@ objects' scripts run each frame; the opening event d0101 is requested by the scr
 host pad gives the game a DualShock 2 in pressure mode (`sdk/libpad.cpp`, `yamipan/io/input_system.cpp`)
 and `StageMainCamera`'s step is written (never run, nothing links it).
 
+**What a New Game run shows today:** black from the frame the stage starts, whatever `YAMIPAN_CAMERA` says. `Root` asks for d0101 (native 0x1f2: a fade to black, then the event), and the event draws nothing yet. Held off in a test build, the stage is there and correct, so this is the event's missing objects and not the map. Before the event existed, an unlinked camera stood at the world origin, empty space about 9,500 units from stage 1 (architecture.md "Where stage 1 is"), where the map objects' dirty bug had piled them up: it looked like a place and was not one (hazards.md).
+
 ## The opening: why d0101 and what stops it
 
 **Proven from the script (stage 1's object script, entry `Root`):** the entry tests `menuMode == 1`,
@@ -45,7 +47,7 @@ opening is the event d0101") is answered for a first entry into the stage.
 
 **Seen in a New Game run (2026-11-04, 200 s, no crash):** the script asks, `StageFileEvent` loads the pack, the stage loop builds the sub-scene, the event's own script runs (natives 0x145, 0x159, 0x163, 0x144 reached), `DemoCamera` is built, `ModelPose::load` is called and is a stub, and the voice stream stops at `rxSndStrAdpcmOpen`. **No picture of the event exists**: the last shot of that run shows no opening, so "the opening from the event's own camera" is not done. What stops it, in order:
 
-1. `ModelPose` (step 1 below): `cameraStep` returns at once with no bones, so the view never moves.
+1. `ModelPose` (step 1 below): `cameraStep` returns at once with no bones, so the view never moves. Nothing in the port calls `DemoCamera::playCutNamed` (vtable +0x264) yet either: a script native reaches it through the slot, which one is unread, and without it the bones have no cut to play.
 2. `SubSceneCharacter`, `SubSceneItem`, `SubSceneProp`, `SubSceneMapObject`, `SubSceneGateObject` (0x2bb680..0x2bc100, 42 functions, 2,703 i with `DemoStream::drawSubtitles` and the stream calls): **the event's objects are stubs and never enter the scene**, so nothing but what the parent left can draw. The VM keeps running only behind a `PC:` guard (a null target becomes the runner itself).
 3. The event's natives, by reach: 0x144, 0x145, 0x159, 0x163 first (0x163 is a fade).
 4. The voice: the host's `rxSndStr*` streams are stubs, so the wait in `enterSubScene` gives up after 60 frames (a `PC:` bound) and the event's length comes from its script alone.
@@ -61,7 +63,7 @@ Each step needs the ones above it. Sizes are the unwritten closure of its roots.
 | 1 | **Pose**: bones, motion files, playback, the solver | `ModelPose::load` 0x14ff90, `update` 0x14f4b0, `play` / `playFile`, `solve` 0x14e4d0, ctor, `ModelMotion` | 57 functions, 6,640 i | The camera's bones, the bone map (`bn_head`, on which `StageSound` and `onLinkChanged` depend), every animated object |
 | 2 | **Collision**: map faces, spheres, segments, heights | `StageCollision::sphereHits` 0x232870, `segmentHits`, `raycast` 0x233810, `heightAt` 0x2342c0, `getNormal`, `CollisionFile::relocate` 0x23ae40, `CollisionBody` 0x1f6690, `SceneRecordBuckets::collide` 0x1f5250 | 32 functions, 4,533 i | Standing on the map. Also `setupMapObject`'s collision half, left out so far |
 | 3 | **The frame's phases** | `ScenePairTable` 0x171300..0x1718xx: `add`, `actionStart` / `Control` / `Movement` / `Terminate`, called by `StageScene::update` and stubbed | 14 functions, 356 i | Without it no character part is ever stepped, whatever else is written. The smallest step on this list |
-| 4 | **The character, built** | `StageCharacter` ctor 0x17de30, `setup` 0x17c700 (under it: the motion 0x1ed410, 1,638 i; the ground 0x1f3d20; the parameter tables 0x17b3e0, 0x17bd10; the gear 0x216aa0) | 223 functions, 24,586 i | A character in the scene. `setupCameras` finds a player, `setPlayer` links the main camera, `YAMIPAN_CAMERA` can go |
+| 4 | **The character, built** | `StageCharacter` ctor 0x17de30, `setup` 0x17c700 (under it: the motion 0x1ed410, 1,638 i; the ground 0x1f3d20; the parameter tables 0x17b3e0, 0x17bd10; the gear 0x216aa0) | 223 functions, 24,586 i | A character in the scene. **Native 0x70 must come with it:** `Root` calls it with `F_PC01`, and that is what reaches `setPlayer` and links the main camera; `setupCameras` does so only in a scene with no script. Then `YAMIPAN_CAMERA` can go |
 | 5 | **The character, each frame** | `beforeScripts` 0x21c7c0, `afterScripts` 0x21c310, `canSpawn`, `spawn` 0x218630, `stageUpdateCharacterMotions` 0x17df60, `PlayerMotion::refresh` 0x1e66c0, `CharacterBrain::update` 0x1dd330 | with 4: 274 functions, 28,501 i | It stands, turns and animates |
 | 6 | **The player**: pad to action | `CharacterInput` 0x239c60 and its reader 0x239d50 (710 i), the move 0x20d8c0 (887 i), the action states 0x21cc70, 0x1e6d60 | 19 functions, 3,495 i for the input half | **Control.** 0x239d50 reads `GamePad`, the menus and the scene's input focus; 0x20d8c0 applies `getMoveScale` |
 | 7 | **The natives of stage 1** | 57 natives in the object script, 6 written | 137 functions, 8,735 i | The stage's logic. `F_PC01` is the player's own entry: 0xf7, 0xf8, 0xb5, 0x6f, 0xaf, 0x53, 0x7a, 0x45, 0xb4, 0x94, 0x3a. An unwritten native pops and skips, so this can go by reach (`[stub] scriptNative_<id>`), one group per run |
@@ -87,7 +89,7 @@ Grouped by what the picture needs, with what is known about each. Together: 144 
 
 **Needed for a stage that is right**
 - **Doors and special map objects**: `createMapObject`'s classes 0x174940, 0x28e5a0, 0x295360, 0x2a7340,
-  0x2b2a60 come out as plain objects; `applyDoorRecord` 0x173880, `attachToRoot` 0x173cb0. 19 functions,
+  0x2b2a60 come out as plain objects, which stand in their places but do not open; `applyDoorRecord` 0x173880, `attachToRoot` 0x173cb0. 19 functions,
   1,166 i.
 - **`AreaClip`** 0x2dbd10 (2,483 i): reached every frame, a stub.
 - **`gsFrameFilter`** 0x2849c0 (1,903 i, a GS frame effect): the filter of d0101 and the candidate for the

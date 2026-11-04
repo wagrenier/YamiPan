@@ -7,8 +7,9 @@
  *  The camjack (0x311ac0), ViewCamera and DemoCamera have their own files
  *  to come; their slots are stubs.
  *
- *  A camera without a link stays where its object was placed, so the host
- *  hook below (YAMIPAN_CAMERA) puts it somewhere to look at a map from, until
+ *  A camera without a link stays where its object was placed: the world
+ *  origin, which on stage 1 is empty space far from the map. So the host hook
+ *  below (YAMIPAN_CAMERA) puts it somewhere to look at a map from, until
  *  StageCharacter is written: no character means no link.
  * ======================================================================== */
 #include <math.h>
@@ -29,6 +30,7 @@ constexpr float kCameraZMin = 1.0f;
 constexpr float kCameraZMax = 16777215.0f;
 constexpr float kCameraNear = 1.0f;
 constexpr float kHalfPi = 1.5707964f;       // 0x3fc90fdb
+constexpr float kCameraFarMargin = 1000.0f; // 0x447a0000: the screen's far is this past the range
 
 // FS2 0x00177d60
 // callcheck: StageObject, identityMatrix, rotateMatrixX, sceVu0ViewScreenMatrix, sceVu0MulMatrix
@@ -43,10 +45,11 @@ StageCamera::StageCamera(float scrZ, float width, float height, float farZ)
     m_screenWidth = width;
     m_screenHeight = height;
     m_range = farZ;
+    m_range2 = 0.0f;    // PC: the ROM clears it after the matrix, which reads whatever the heap held
     sceVu0ViewScreenMatrix(m_screen, m_scrZ, 1.0f, m_screenHeight / ((m_screenWidth * 3.0f) / 4.0f),
-                           kCameraScreenCenter, kCameraScreenCenter, kCameraZMin, kCameraZMax, kCameraNear, m_range);
+                           kCameraScreenCenter, kCameraScreenCenter, kCameraZMin, kCameraZMax, kCameraNear,
+                           m_range + m_range2 + kCameraFarMargin);
     sceVu0MulMatrix(m_screen, m_screen, axes);
-    m_range2 = 0.0f;
 }
 
 // FS2 0x00177d20
@@ -77,7 +80,8 @@ void StageCamera::setRange(float range)
 
     m_range = range;
     sceVu0ViewScreenMatrix(m_screen, m_scrZ, 1.0f, m_screenHeight / ((m_screenWidth * 3.0f) / 4.0f),
-                           kCameraScreenCenter, kCameraScreenCenter, kCameraZMin, kCameraZMax, kCameraNear, m_range);
+                           kCameraScreenCenter, kCameraScreenCenter, kCameraZMin, kCameraZMax, kCameraNear,
+                           m_range + m_range2 + kCameraFarMargin);
     sceVu0MulMatrix(m_screen, m_screen, axes);
 }
 
@@ -92,7 +96,8 @@ void StageCamera::setScrZ(float scrZ)
 
     m_scrZ = scrZ;
     sceVu0ViewScreenMatrix(m_screen, m_scrZ, 1.0f, m_screenHeight / ((m_screenWidth * 3.0f) / 4.0f),
-                           kCameraScreenCenter, kCameraScreenCenter, kCameraZMin, kCameraZMax, kCameraNear, m_range);
+                           kCameraScreenCenter, kCameraScreenCenter, kCameraZMin, kCameraZMax, kCameraNear,
+                           m_range + m_range2 + kCameraFarMargin);
     sceVu0MulMatrix(m_screen, m_screen, axes);
 }
 
