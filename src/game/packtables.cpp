@@ -697,17 +697,17 @@ void PackTables::parseMotionOffsets(PackFile *pack)
                     continue;
                 for (int group = 0; group < 4; group++) {
                     int first = group * 6 + 1;
-                    sceVu0FVECTOR &a = motion->offsetA[set][group];
+                    sceVu0FVECTOR &a = motion->cameraFocus[set][group];
                     a[0] = fieldFloat(fields, first);
                     a[1] = fieldFloat(fields, first + 1);
                     a[2] = fieldFloat(fields, first + 2);
                     a[3] = 0.0f;
-                    sceVu0FVECTOR &b = motion->offsetB[set][group];
+                    sceVu0FVECTOR &b = motion->cameraEye[set][group];
                     b[0] = fieldFloat(fields, first + 3);
                     b[1] = fieldFloat(fields, first + 4);
                     b[2] = fieldFloat(fields, first + 5);
                     b[3] = 0.0f;
-                    motion->offsetFlag[set] = atoi(fields.at(first + 6)->value->m_text) != 0;
+                    motion->cameraShift[set] = atoi(fields.at(first + 6)->value->m_text) != 0;
                 }
             }
         }

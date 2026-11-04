@@ -830,18 +830,6 @@ void SphereVolume::setRadius(float radius)
 // stub of FS2 0x00185210
 
 // stub of FS2 address unknown (0 candidates)
-// stub of FS2 0x00177d20
-void StageCamera::addToScene(const char *name)
-{
-    YAMIPAN_STUB("StageCamera::addToScene", 0x00177d20);
-}
-
-// stub of FS2 0x00177900
-void StageCamera::lookAt(const float *target)
-{
-    YAMIPAN_STUB("StageCamera::lookAt", 0x00177900);
-}
-
 // stub of FS2 address unknown (0 candidates)
 StageCharacter::StageCharacter()
 {
@@ -1266,12 +1254,6 @@ bool StageEvent::hidesText()
 void StageFade::draw(sceVif1Packet *packet, TexAreaList *texList)
 {
     YAMIPAN_STUB("StageFade::draw", 0x00000000);
-}
-
-// stub of FS2 0x00179700
-StageMainCamera::StageMainCamera() : StageCamera(450.0f, 512.0f, 512.0f, 1600.0f)
-{
-    YAMIPAN_STUB("StageMainCamera::StageMainCamera", 0x00179700);
 }
 
 // stub of FS2 address unknown (1 candidates)
@@ -1991,4 +1973,24 @@ void ModelPose::update(float frames, bool loop)
 ModelPose::~ModelPose()
 {
     YAMIPAN_STUB("ModelPose::~ModelPose", 0x00150f50);
+}
+
+// stub of FS2 0x001eff00
+StageCollisionFace * CharacterGround::faceNear(const float *localPoint)
+{
+    YAMIPAN_STUB("CharacterGround::faceNear", 0x001eff00);
+    return {};
+}
+
+// stub of FS2 address unknown (1 candidates)
+float CharacterInput::padSway() const
+{
+    YAMIPAN_STUB("CharacterInput::padSway", 0x00000000);
+    return {};
+}
+
+// stub of FS2 0x00236030
+void StageCollisionFace::getNormal(sceVu0FVECTOR out) const
+{
+    YAMIPAN_STUB("StageCollisionFace::getNormal", 0x00236030);
 }

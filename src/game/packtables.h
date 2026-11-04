@@ -102,10 +102,10 @@ struct MotionDef
     u_char        flashlightControl; // FS2 +0x105: 懐中電灯制御
     u_char        headSway2;         // FS2 +0x106: 頭振り == 2
     u_char        headSwayBoneLink;  // FS2 +0x107: 頭振りボーン連動
-    u_char        offsetFlag[kMotionOffsetSets]; // FS2 +0x108: the last group's flag in items 6, 7
+    u_char        cameraShift[kMotionOffsetSets]; // FS2 +0x108: the last group's flag in items 6, 7
     // Items 6 and 7: four groups of two vectors each (w 0).
-    sceVu0FVECTOR offsetA[kMotionOffsetSets][4]; // FS2 +0x110
-    sceVu0FVECTOR offsetB[kMotionOffsetSets][4]; // FS2 +0x190
+    sceVu0FVECTOR cameraFocus[kMotionOffsetSets][4]; // FS2 +0x110
+    sceVu0FVECTOR cameraEye[kMotionOffsetSets][4]; // FS2 +0x190
 };
 extern MotionDef gMotionDefs[kMotionDefCount];   /* bss 0x577b20 */
 

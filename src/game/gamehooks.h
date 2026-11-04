@@ -181,7 +181,7 @@ enum ModelFlag
     ModelFlag_CastsShadow = 0x8,  // drawSysBuildShadows takes it (cleared on oXX27_05)
     ModelFlag_Distant     = 0x40, // past a quarter of the squared draw distance, when StageModel::m_mayGoDistant is set
     ModelFlag_Ghost  = 0x100,   // the model ext_ghost (drawSysAddModel; what it does is unread)
-    ModelFlag_TagC   = 0x200,   // a name tag _c, or oXX27_05 / oXX27_11 (drawSysAddModel; unread)
+    ModelFlag_TagC   = 0x200,   // a name tag _c, or oXX27_05 / oXX27_11 (drawSysAddModel): VU1 culls the faces turned from the eye
     ModelFlag_Frozen = 0x400,   // set by drawSysAddModel, clear only while a free item's matrix is dirty (the name is a guess)
 };
 class StageObject;
@@ -330,6 +330,36 @@ class Pad;                      // game/pad.h
 struct CharacterInput
 {
     void setActive(bool on);                                             // FS2 0x00239bb0
+    // The pad's +0x12c (a float of the character's pad class, unread): the
+    // main camera leans by it while a swaying motion plays.
+    float padSway() const;                                               // FS2 +0x8 -> +0x12c
+
+    // The push on the view, -1..1: both are written by 0x239d50. Their
+    // signs say which way they turn it (StageMainCamera::cameraStep).
+    float lookPitch = 0.0f;     // FS2 +0x10
+    float lookYaw = 0.0f;       // FS2 +0x18
+};
+// What keeps a character on the ground (+0x228, EE 0x1c0, ctor 0x1f3d20,
+// CollisionOwner at +0; the run unassigned@00171300). Only what the main
+// camera reads. layout: host.
+struct GroundVolume;
+struct StageCollisionFace;
+struct CharacterGround
+{
+    // The floor near a point of the character's own space: from 70 above
+    // it, down to 85 below that.
+    StageCollisionFace *faceNear(const float *localPoint);               // FS2 0x001eff00
+
+    GroundVolume *volume;       // FS2 +0x184: 0 from the ctor
+};
+// A box a character stands in (0x1f3d20 makes it). What it is is unread:
+// the camera stays above its top.
+// layout: host
+struct GroundVolume
+{
+    u_char        active;       // FS2 +0x03
+    sceVu0FVECTOR min;          // FS2 +0x20
+    sceVu0FVECTOR max;          // FS2 +0x30
 };
 // What drives a character otherwise (+0x220, null without one). The name
 // is a guess: it is switched the other way round from the input. EE: +0x174
@@ -582,12 +612,13 @@ public:
     // Copies name to m_name (first thing in every class's addToScene).
     void setName(const char *name);                                      // FS2 0x0018b4d0
     // Slot +0x24c: the object is the view stack's top again
-    // (StageViewStack::remove). A plain stub until its TU.
-    void onViewTop();                                                    // FS2 vtable +0x24c
-    // Slot +0x25c: a camera's step for the frame. A plain stub until its TU.
-    void cameraStep();                                                   // FS2 vtable +0x25c
-    // Slot +0x260: a camera's m_linked changed. A plain stub until its TU.
-    void onLinkChanged();                                                // FS2 vtable +0x260
+    // (StageViewStack::remove). StageMainCamera has its own; the other
+    // cameras' are stubs until their TUs.
+    virtual void onViewTop();                                            // FS2 vtable +0x24c
+    // Slot +0x25c: a camera's step for the frame. The same.
+    virtual void cameraStep();                                           // FS2 vtable +0x25c
+    // Slot +0x260: a camera's m_linked changed. The same.
+    virtual void onLinkChanged();                                        // FS2 vtable +0x260
     // A door hangs itself from the Root object's lists.
     void attachToRoot();                                                 // FS2 0x00173cb0
     // A character of the mission's list, around the frame's scripts
@@ -638,6 +669,13 @@ public:
     const void *cameraScreen() const;                                    // FS2 +0x200
     const void *cameraView() const;                                      // FS2 +0x240
 
+    // A character's camera offsets for its motion, by body size; set: 1 in
+    // an AB area (StageMainCamera). The motion's record must exist.
+    const float *cameraEyeOffset(int set) const;                         // FS2 0x0017bb80
+    const float *cameraFocusOffset(int set) const;                       // FS2 0x0017bbf0
+    // How tall the body is, for the camera.
+    float cameraBodyHeight() const;                                      // FS2 0x0017bb10
+
     // The name ends before +0x30 (a character's model there): 0x10 like an
     // ItemDef name. Was sized to +0x200 before (open-items.md TU 44).
     char   m_name[0x10];        // FS2 +0x020: an item's / weapon's name (an ItemDef name), the object's map key
@@ -666,13 +704,15 @@ public:
     };
     union {
         int    m_count;         // FS2 +0x20c: an item's count
+        int    m_bodySize;      // FS2 +0x20c: a character's: 0..3 from its model's name (_lh_ _th_, _mh_ _ms_, _sh_ _ss_, _ch_), default 1 (StageCharacter::setup)
         StageCollision **m_collisions; // FS2 +0x20c: a Root object's meshes
     };
     u_char _210[0xc];
     CharacterInput *m_input;    // FS2 +0x21c: a character's
     CharacterBrain *m_brain;    // FS2 +0x220: a character's; null none
     PlayerMotion *m_motion;     // FS2 +0x224: a character's
-    u_char _228[0x10];
+    CharacterGround *m_ground;  // FS2 +0x228: a character's
+    u_char _22c[0xc];
     StageNodeBase *m_handNode;  // FS2 +0x238: a character's: StageWeaponItem::fire's report comes from it
     u_char _23c[0x4];
     union {
@@ -683,7 +723,7 @@ public:
         };
     };
     u_char _248[0x48];
-    void  *m_290;               // FS2 +0x290: a character's (StageScene::partnerResponds; unread)
+    StageObject *m_290;         // FS2 +0x290: a character's. Set: the main camera goes over the shoulder and looks at m_aimPoint; a kind 1..6 is left out of its rays (StageScene::partnerResponds reads it too)
     u_char _294[0x4];
     int    m_doorRecord;        // FS2 +0x298: a door's gDoorRecords index (StageFiles::applyBgTarget)
     u_char _29c[0x6];
@@ -751,7 +791,13 @@ struct PlayerMotion
 {
     void refresh();                                                      // FS2 0x001e66c0
 
-    u_char _000[0xbd4];
+    u_char _000[0x40];
+    int    motionId;            // FS2 +0x040: gMotionDefs index; outside the table none
+    u_char _044[0x24];
+    PlayerLookState *activeLook; // FS2 +0x068: the main camera reacts when this is look
+    u_char _06c[0xb44];
+    sceVu0FVECTOR position;     // FS2 +0xbb0
+    u_char _bc0[0x14];
     u_char noFlash;             // FS2 +0xbd4: a shot shows no flash (StageWeaponItem::fire)
     u_char _bd5[0x3];
     PlayerOverlay *overlay;     // FS2 +0xbd8: StageScene::draw
@@ -901,6 +947,7 @@ struct CollisionBody
 // from the list at +0xd4 (unread).
 enum CollisionShape
 {
+    CollisionShape_Camera  = 1, // the main camera's: updateBox gives it no box
     CollisionShape_Segment = 2,
     CollisionShape_Sphere  = 3,
     CollisionShape_Spheres = 4,
@@ -1152,11 +1199,19 @@ class Clock;                    // game/clock.h
 enum StageCollisionFlag
 {
     StageCollision_Thin = 0x400,    // sound passes once (StageSound: twice the distance)
+    StageCollision_Slope = 0x4008,  // either bit: the main camera tilts with the floor
     StageCollision_Door = 0x4000000, // doorId is a door's (StageScene::isDoorFace)
+    StageCollision_CameraPass = 0x8000000, // the main camera may stand behind it
 };
 struct StageCollisionFace
 {
-    u_char _00[0x40];
+    // The plane's normal in the world (a moved mesh's turned by its matrix).
+    void getNormal(sceVu0FVECTOR out) const;                             // FS2 0x00236030
+    // point is on the normal's side of the plane, or on it.
+    bool inFront(const sceVu0FVECTOR point) const;                       // FS2 0x00235b00
+
+    sceVu0FVECTOR plane;        // FS2 +0x00: normal, then the plane's d
+    u_char _10[0x30];
     u_int  flags;               // FS2 +0x40: StageCollisionFlag
     u_short attr;               // FS2 +0x44: StageScene::getFloorAttr
     short  doorId;              // FS2 +0x46: kDoorFaceBase + what StageScene::findDoorOfFace decodes
@@ -1625,6 +1680,11 @@ struct ModelMeshParts
 };
 static_assert(offsetof(ModelMeshParts, material) == 8, "ModelMeshParts::material");
 // A node's mesh (0x18 bytes).
+// ModelMesh::vuFlags. The other bits are unread.
+enum ModelMeshFlag
+{
+    ModelMeshFlag_Unlit = 0x4,  // the VU1 program copies the vertex colours (0x29e) instead of lighting them (0x2a9, 0x2bb)
+};
 struct ModelMesh
 {
     S2dRef<const char>     name;  // FS2 +0x00
@@ -1632,7 +1692,7 @@ struct ModelMesh
     S2dRef<ModelMeshParts> parts; // FS2 +0x08: may be null
     u_short                firstChild; // FS2 +0x0c: a mesh index
     short                  bone;  // FS2 +0x0e: the node's bone a rigid mesh hangs on, negative the root
-    short                  _10;   // FS2 +0x10: goes to VU1 with each part (unread)
+    short                  vuFlags; // FS2 +0x10: goes to VU1 with each part (VU address 15 z): ModelMeshFlag
     u_short                childCount; // FS2 +0x12
     u_char                 _14[4];
 };
@@ -1919,6 +1979,11 @@ public:
     void addToScene(const char *name);                                   // FS2 0x00177d20: StageObjectList::add0
     // Turns the transform's rotation to look at target.
     void lookAt(const float *target);                                    // FS2 0x00177900
+    // The same from eye: only the rotation changes.
+    void aimFrom(const float *target, const float *eye);                 // FS2 0x00177860
+    // A new view-screen distance (zooms); the screen matrix follows.
+    void setScrZ(float scrZ);                                            // FS2 0x00177ac0
+    void onViewTop() override;                                           // FS2 0x00177d00
     // The view matrix (+0x240) and view-screen matrix (+0x280) from the
     // object's matrix; each frame for the active camera.
     void calcViewMatrix();                                               // FS2 0x00177810
@@ -1933,12 +1998,40 @@ public:
 inline const void *StageObject::cameraScreen() const { return static_cast<const StageCamera *>(this)->m_screen; }
 inline const void *StageObject::cameraView() const { return static_cast<const StageCamera *>(this)->m_view; }
 // The stage's "camera" (kind 9; vtable 0x311fa0). layout: host -- EE 0x3c0.
-class StageMainCamera : public StageCamera
+// The kind 8 class between it and StageCamera (vtable 0x311d30, ctor inline)
+// adds only m_linked, which stays a stand-in's field. The camjack derives
+// from that class too.
+class StageMainCamera : public StageCamera, public CollisionOwner
 {
 public:
     // FS2 0x001799d0
     int getKind() override { return StageObject_Kind9; }
     StageMainCamera();                                                   // FS2 0x00179700
+    void onViewTop() override;                                           // FS2 0x00179490
+    void cameraStep() override;                                          // FS2 0x00178160
+    void onLinkChanged() override;                                       // FS2 0x00179680
+
+    // FS2 0x00178130
+    int  collisionHook0() override { return 0; }
+    // FS2 0x00178120
+    int  onCollide(CollisionContact *, const float *, StageCollisionFace *, float, float) override { return 0; }
+    // FS2 0x00178150
+    void syncBody(CollisionBody *) override {}
+    // FS2 0x00178140
+    void collisionHook3(CollisionBody *) override {}
+    // FS2 0x001799e0
+    StageObject *getCollisionObject() override { return this; }
+
+    sceVu0FVECTOR m_focusOffset; // FS2 +0x350: the point looked at, in the linked character's space
+    sceVu0FVECTOR m_eyeOffset;  // FS2 +0x360: the eye from that point (w 0: only turned)
+    sceVu0FVECTOR m_lookTarget; // FS2 +0x370: the point looked at, in the world, eased
+    sceVu0FVECTOR m_turn;       // FS2 +0x380: radians per step, eased (the stick's)
+    int    m_shoulderSlot;      // FS2 +0x390: the kShoulderEyes entry that worked last
+    float  m_zoom;              // FS2 +0x394: added to the view-screen distance, 0..160
+    int    m_blockedFrames;     // FS2 +0x398: how long the wanted place has been out of sight
+    float  m_headHeight;        // FS2 +0x39c: bn_head above the character; nothing reads it here
+    u_char m_nearWall;          // FS2 +0x3a0
+    u_char m_snap;              // FS2 +0x3a1: the next step jumps instead of easing
 };
 // PC: aims the debug camera (game/stagecamera.cpp).
 void stageCameraDebugLookAt(const float *eye, const float *target, const float *up);

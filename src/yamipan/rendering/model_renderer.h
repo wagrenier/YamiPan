@@ -58,6 +58,7 @@ private:
         float scrollU = 0.0f;
         float scrollV = 0.0f;
         bool blended = false;
+        bool unlit = false;
         bool open = false;
     };
 

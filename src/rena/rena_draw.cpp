@@ -51,6 +51,7 @@ struct Deferred
     const ModelPartRec      *rec;
     const float             (*matrix)[4];
     int                      key;
+    bool                     unlit;
 };
 std::vector<Deferred> sDeferred;
 
@@ -157,10 +158,12 @@ void setModelLights(sceVif1Packet *packet, const ModelInstance *model)
 
 // The GS and VU1 state of a surface: FS2 0x002e7240, as far as a host draw
 // has a use for it.
-void setSurface(sceVif1Packet *packet, const ModelInstance *model, const ModelSurface *surface, bool blended)
+void setSurface(sceVif1Packet *packet, const ModelInstance *model, const ModelSurface *surface, bool blended,
+                bool unlit)
 {
     YamiPanModelMaterial material = {};
     material.blended = blended;
+    material.unlit = unlit;
     if (surface != nullptr) {
         if (surface->textureSlot >= 0)
             material.texture = model->textures[surface->textureSlot];
@@ -220,7 +223,7 @@ void drawPrims(sceVif1Packet *packet, const ModelMeshMaterial *material, const f
 // FS2 0x002e6b70
 
 void drawMaterial(sceVif1Packet *packet, ModelInstance *model, const ModelMeshMaterial *material,
-                  const ModelPartRec *rec, const float (*world)[4], bool blended)
+                  const ModelPartRec *rec, const float (*world)[4], bool blended, bool unlit)
 {
     const ModelSurface *surface = material->material < 0 ? nullptr : model->surfaceOfMaterial[material->material];
     if (surface != nullptr && surface->material->kind != ModelMaterial_Textured) {
@@ -229,7 +232,7 @@ void drawMaterial(sceVif1Packet *packet, ModelInstance *model, const ModelMeshMa
             return;
         surface = model->surfaceOfMaterial[base];
     }
-    setSurface(packet, model, surface, blended);
+    setSurface(packet, model, surface, blended, unlit);
     drawPrims(packet, material, world, rec->vcmFadeBits,
               surface != nullptr ? surface->material->uvSet : kNoSurfaceUvSet);
 }
@@ -238,7 +241,7 @@ void drawMaterial(sceVif1Packet *packet, ModelInstance *model, const ModelMeshMa
 // FS2 0x002e6590
 
 void drawPart(sceVif1Packet *packet, ModelInstance *model, const ModelPartRec *rec, const ModelMeshPart *part,
-              const float (*world)[4], bool ghost)
+              const float (*world)[4], bool ghost, bool unlit)
 {
     const ModelMeshMaterial *materials = part->materials.get();
     for (int i = 0; i < part->materialCount; i++) {
@@ -246,10 +249,10 @@ void drawPart(sceVif1Packet *packet, ModelInstance *model, const ModelPartRec *r
         const ModelSurface *surface = material->material < 0 ? nullptr : model->surfaceOfMaterial[material->material];
         const bool blended = surface != nullptr && (surface->material->flags & ModelMaterialFlag_Blended) != 0;
         if (!blended && !ghost) {
-            drawMaterial(packet, model, material, rec, world, false);
+            drawMaterial(packet, model, material, rec, world, false, unlit);
             continue;
         }
-        Deferred entry = { model, material, rec, world, 0 };
+        Deferred entry = { model, material, rec, world, 0, unlit };
         entry.key = (int)partScreenZ(part, world) + (int)sDeferred.size();
         sDeferred.push_back(entry);
     }
@@ -279,9 +282,10 @@ void drawTree(sceVif1Packet *packet, ModelInstance *model, bool ghost)
                 const float (*world)[4] = mesh->bone < 0 ? (const float (*)[4])model->rootBone->matrix
                                                          : (const float (*)[4])model->bones[mesh->bone].matrix;
                 const ModelMeshPart *list = parts->parts.get();
+                const bool unlit = (mesh->vuFlags & ModelMeshFlag_Unlit) != 0;
                 for (int p = 0; p < parts->count; p++) {
                     if (list[p].materials.rel != 0 && !partOutside(&list[p], world))
-                        drawPart(packet, model, rec, &list[p], world, ghost);
+                        drawPart(packet, model, rec, &list[p], world, ghost, unlit);
                 }
             }
         }
@@ -308,12 +312,12 @@ void drawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask)
 void drawDeferred(sceVif1Packet *packet, const Deferred &entry)
 {
     setModelLights(packet, entry.model);
-    drawMaterial(packet, entry.model, entry.material, entry.rec, entry.matrix, true);
+    drawMaterial(packet, entry.model, entry.material, entry.rec, entry.matrix, true, entry.unlit);
 }
 
 } // namespace
 
-// PC: YAMIPAN_CAMERA=auto, until the camera's step is written: the camera looks
+// PC: YAMIPAN_CAMERA=auto, until a character links the main camera: it looks
 // at the biggest part of the map model from above its side, in the model's
 // own axes (y up), once.
 // callcheck: none (host only)
@@ -392,6 +396,20 @@ void renaSetShadowTexture(sceVif1Packet *packet, Tim2Texture *texture, int block
     (void)block;
 }
 
+// PC, TEMPORARY: while SceneRender's lights are stubs every model has drawSysInit's ambient, 0.1,
+// and the VU1 formula draws the map almost black. YAMIPAN_AMBIENT=<level> replaces it, to look at
+// one. Delete this with the pinned task game/scenerender.cpp (open-items.md, top of "Next up").
+// callcheck: none (host only)
+
+static void applyDebugAmbient(float *ambient)
+{
+    const char *text = getenv("YAMIPAN_AMBIENT");
+    if (text == nullptr)
+        return;
+    const float level = (float)atof(text);
+    ambient[0] = ambient[1] = ambient[2] = level;
+}
+
 // The record's lights, for the models that have none of their own.
 // FS2 0x002e8080
 // callcheck: getDrawTarget (its answer is not used)
@@ -400,6 +418,7 @@ void renaSetLights(sceVif1Packet *packet, DrawSysLights *lights)
 {
     (void)packet;
     copyVector3(sLights.ambient, lights->getAmbient()->getColor());
+    applyDebugAmbient(sLights.ambient);
     for (int i = 0; i < DrawSysLights::kLightCount; i++) {
         DrawSysDirLight *light = lights->getLight(i);
         copyVector3(sLights.colors[i], light->getColor());
