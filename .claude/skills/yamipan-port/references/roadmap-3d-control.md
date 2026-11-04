@@ -115,6 +115,8 @@ to walk in it.
 
 ## A proposal for the queue
 
+**Queued 2026-11-04:** the steps below are in `tools/reverse/data/tus.json`, in this order; open-items.md "Decisions" has why. The queue is what runs read, and this list is the reasoning.
+
 1. `game/modelpose.cpp` (0x149510..0x151020): step 1. **Also what the opening's camera needs.**
 2. The sub-scene's objects (0x2bb680..0x2bc100, 42 functions, 2,703 i), then skinned meshes: the opening on
    screen, the first picture to compare with the game.
