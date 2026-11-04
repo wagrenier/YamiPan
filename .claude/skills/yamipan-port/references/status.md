@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-03 20:06 at commit `ee47471` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-03 20:24 at commit `988e990` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-03 20:06 at commit `ee47471` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **2523** (38%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1640
-- context-name ledger: 3176 entries; overrides of wrong library matches: 0
+- game functions: **6599**, named **2624** (40%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1536, game-inferred 1709
+- context-name ledger: 3245 entries; overrides of wrong library matches: 0
 - placed in a source file: 2290/6599 in 66 files
 
 Least-named game-code regions (64 KB blocks):
@@ -23,14 +23,14 @@ Least-named game-code regions (64 KB blocks):
 | `00220000` | 0/167 (0%) | - |
 | `00270000` | 0/202 (0%) | - |
 | `00310000` | 0/9 (0%) | - |
-| `001c0000` | 1/233 (0%) | - |
 | `001e0000` | 1/75 (1%) | - |
+| `001c0000` | 4/233 (2%) | - |
 | `00210000` | 10/231 (4%) | - |
 | `00200000` | 9/122 (7%) | - |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **2034**; stubs: **362**
+- reconstructed FS2 functions: **2101**; stubs: **370**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -64,7 +64,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stageloop.cpp` | 9 | 0 |
 | `src/game/stageobjlist.cpp` | 45 | 0 |
 | `src/game/stageresult.cpp` | 32 | 0 |
-| `src/game/stagescene.cpp` | 191 | 0 |
+| `src/game/stagescene.cpp` | 258 | 0 |
 | `src/game/stagesound.cpp` | 45 | 0 |
 | `src/game/streamring.cpp` | 17 | 0 |
 | `src/game/sysdata.cpp` | 37 | 0 |
@@ -77,7 +77,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/uiwidget.cpp` | 56 | 0 |
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 321 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 327 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
 | `src/rena/tim2.cpp` | 4 | 0 |
@@ -103,10 +103,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 90 TUs: todo 50, partial 2, verify 54, done 1
-- next: **game/stagescene.cpp** (continuing a partial TU)
+- 90 TUs: todo 50, partial 1, verify 55, done 1
+- next: **unassigned@002681e0** (frontier score 92)
 - pinned queue: (empty)
-- partial: `game/stagescene.cpp` 191/258 -- Written this run (batch 088, 71 names): the last six stubs here (runStageScripts, updateBuffers, updateBlock98, applySoundTarget, applyBgMotionTarget, loadList)
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
@@ -135,6 +134,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stageloop.cpp` 9/9 -- Cut out of unassigned@00171300 and pinned 0x17f150-0x17fce0 (batch 073, 45 names; Ghidra saved by name_ctx). New src/game/stageloop.h defines gStageScene (exter
 - verify: `game/stageobjlist.cpp` 45/45 -- Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector in
 - verify: `game/stageresult.cpp` 32/32 -- All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (add
+- verify: `game/stagescene.cpp` 258/258 -- All 258 written, nothing has run: the smoke run stays on the language screen and the picture is unchanged (no stage loads). Batch 089, 70 names. SubSceneObject 
 - verify: `game/stagesound.cpp` 45/45 -- Batch 077 (31 names: the 18 slice functions, abs 0x121f08, SoundTrack hasSubtitles / getSubtitle / setVolume, SePlayer setTable / setPitch, StageNodeBase ctor 0
 - verify: `game/streamring.cpp` 17/21 -- All 21 functions accounted for: the 17 ring functions written, the thunks 0x151f70 / 0x151f80 / 0x152730 / 0x152740 call the rx functions directly. The classes 
 - verify: `game/sysdata.cpp` 37/37 -- Cut out of unassigned@00171300 (the frontier pick, 5138 functions) and pinned 0x23af30-0x23c020. One SystemData block of 0x620 bytes at 0x598b30: SaveData +0 (0
@@ -164,6 +164,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-03 20:24 `game/stagescene.cpp` verify: the last 67 functions: collision finders, scene accessors, script command defaults, DemoExecuter; all 258 written
 - 2026-11-03 20:06 `game/stagescene.cpp` partial: stage script step, sound and bg-motion targets, loadList, block updates, 28 small members, collision queries
 - 2026-11-03 19:44 `game/stagescene.cpp` partial: the stage frame: update, draw, setupCameras and their helpers; camera kinds, view stack, control request, frame order from the perf labels
 - 2026-11-03 19:19 `game/stagescene.cpp` partial: StageFiles map, item and common targets, placeItem, placeCharacter, menu tests, enterSubScene, getFloor; map file layout proven; AreaGrid holds boxes, not ids
@@ -171,22 +172,21 @@ Recent sessions:
 - 2026-11-03 18:31 `rena/rena_2d_texture_tim2.cpp` verify: reconstruct Tim2Texture, all 7 functions (verify)
 - 2026-11-03 18:13 `game/menuscene.cpp` verify: reconstruct the menu flow, 14 functions (verify)
 - 2026-11-03 17:41 `rx/filecd.c` verify: rx/filecd.c: the cdrom0: driver carried over from RosePan with FS2's rxFileCdFindDir
-- 2026-11-03 17:39 `game/spkrom.cpp` verify: game/spkrom.cpp: rxInit, rxTerm, the SPK.ROM index (load, locate, size, load file), the rx memory hooks; with the Pan layer's virtual disc behind sceCdRead
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002681e0` | todo | 0/42/514 | 156.6 | 82 | 0 |
-| `unassigned@0017fce0` | todo | 0/28/399 | 76.4 | 76 | 0 |
-| `unassigned@002b6b90` | todo | 0/38/272 | 115.8 | 66 | 3 |
+| `unassigned@002681e0` | todo | 0/43/514 | 156.6 | 92 | 0 |
+| `unassigned@0017fce0` | todo | 0/28/399 | 76.4 | 81 | 0 |
+| `unassigned@002b6b90` | todo | 0/42/272 | 115.8 | 71 | 3 |
 | `unassigned@001d7c50` | todo | 0/23/296 | 137.5 | 63 | 0 |
+| `unassigned@001fe6b0` | todo | 0/34/563 | 197.2 | 60 | 0 |
 | `unassigned@00148db0` | todo | 0/17/125 | 35.6 | 60 | 2 |
-| `unassigned@001fe6b0` | todo | 0/34/563 | 197.2 | 55 | 0 |
 | `unassigned@00171300` | todo | 0/24/421 | 52.5 | 41 | 0 |
 | `unassigned@002b0d50` | todo | 0/23/85 | 17.9 | 34 | 0 |
+| `unassigned@00231c90` | todo | 0/11/61 | 36.3 | 31 | 0 |
 | `unassigned@002d46a0` | todo | 0/17/252 | 51.5 | 27 | 2 |
-| `unassigned@00231c90` | todo | 0/11/61 | 36.3 | 26 | 0 |
-| `unassigned@00299d90` | todo | 0/11/215 | 62.3 | 21 | 0 |
-| `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
+| `unassigned@00299d90` | todo | 0/11/215 | 62.3 | 24 | 0 |
+| `unassigned@001a68b0` | todo | 0/6/714 | 174.8 | 20 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -199,24 +199,28 @@ Recent sessions:
 | `00214f60` | StageObject::getAltSoundFlag | 10 | game | stub | - |
 | `00149100` | StringList::split | 9 | game | stub | - |
 | `001494c0` | StringList::tail | 8 | game | stub | - |
+| `001cf1e0` | ScriptRunner::defaultCommand | 8 | game | stub | - |
+| `00215ef0` | StageObject::isPlayer | 7 | game | stub | - |
+| `0018bbe0` | StageObjectTree::setShown | 7 | game | stub | - |
 | `00239bb0` | CharacterInput::setActive | 7 | game | stub | - |
 | `00177d20` | StageCamera::addToScene | 7 | game | stub | - |
 | `002848d0` | AreaBox::setSize | 7 | game | stub | - |
 | `00284950` | AreaBox::AreaBox | 7 | game | missing | - |
+| `00233810` | StageCollision::raycast | 6 | game | stub | - |
 | `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
-| `0018bbe0` | StageObjectTree::setShown | 6 | game | stub | - |
+| `001fea50` | StageParty::getCompanion | 6 | game | stub | - |
 | `001dd3f0` | CharacterBrain::setEnabled | 6 | game | stub | - |
-| `00215ef0` | StageObject::isPlayer | 5 | game | stub | - |
+| `0018bdc0` | StageObjectTree::setActive | 5 | game | stub | - |
 | `00149230` | StringList::splitString | 5 | game | stub | - |
 | `00189840` | FUN_00189840 | 5 | - | missing | - |
 | `002bc5d0` | KeepList::removeUnkept | 5 | game | stub | - |
 | `0029efe0` | getNaviMenu | 5 | game | stub | - |
 | `001861b0` | StageLight::addToScene | 5 | game | stub | - |
 | `001937f0` | FUN_001937f0 | 4 | - | missing | - |
+| `00135f20` | vecDistance | 4 | game | stub | - |
 | `00284640` | AreaGrid::AreaGrid | 4 | game | stub | - |
 | `00283df0` | seDistanceVolume | 4 | game | stub | - |
-| `001fea50` | StageParty::getCompanion | 4 | game | stub | - |
-| `0018bdc0` | StageObjectTree::setActive | 4 | game | stub | - |
+| `002152d0` | StagePlayer::isMode1 | 4 | game | stub | - |
 | `001d8260` | StageObject::propagate | 4 | game | stub | - |
 | `001d27e0` | ScriptRunner::run | 4 | game | stub | - |
 | `00177270` | BoneNode::find | 4 | game | stub | - |
@@ -228,8 +232,4 @@ Recent sessions:
 | `00185bb0` | StageLight::setRadiusSquared | 4 | game | stub | - |
 | `002842f0` | AreaGrid::build | 4 | game | stub | - |
 | `0028fb80` | fsmFindText | 3 | game | stub | - |
-| `00231d30` | overlayShowLoading | 3 | native | missing | - |
-| `00231d20` | overlayShowLoading | 3 | native | missing | - |
-| `001d3a40` | StageScript::relocate | 3 | game | stub | - |
-| `0028fd30` | fsmRelocate | 3 | game | stub | - |
 

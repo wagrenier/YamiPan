@@ -202,6 +202,9 @@ enum StageObjectKind
     StageObject_Kind11 = 0xb,   // the party's "camjack" camera: its m_linked record may muffle
     StageObject_Kind13 = 0xd,   // a sub-scene's "camera_demo" (DemoCamera)
     StageObject_Kind21 = 0x15,  // left out of the inventory (unidentified)
+    StageObject_Marker = 0x1a,  // StageMarker
+    StageObject_SubSceneDoor = 0x21, // SubSceneDoorObject
+    StageObject_SubSceneProp = 0x24, // SubSceneProp
 };
 
 // A model's bone map node (0x177270's tree: {value, key, left, right},
@@ -648,7 +651,7 @@ public:
     // event's own otherwise (the argument is unused; the language's
     // meaning is unread).
     bool usesLanguageFont();                                             // FS2 0x00287af0
-    // SubSceneObject's flag: the event is not d0101, or SaveData flag
+    // DemoExecuter's flag: the event is not d0101, or SaveData flag
     // (1, 0x15) is set. "Skippable" is a guess.
     bool isSkippable();                                                  // FS2 0x00287b70
     // out = the voice stream's file, .xwb; null with no voice.
@@ -1109,6 +1112,9 @@ class SubSceneDoorObject : public SubSceneMapObject
 {
 public:
     explicit SubSceneDoorObject(int arg) : SubSceneMapObject(arg), m_recordValue(0) {}
+    // Slot 123 in the ROM: StageObject::getKind stays a plain stub, and this
+    // family has no host base, until the objects' TU.
+    int getKind();                                                       // FS2 0x001a45d0
 
     int m_recordValue;          // FS2 +0x280: DoorRecord::value
 };
@@ -1120,17 +1126,81 @@ public:
 
 // A script-run object: the map's name is the script's. Stage objects have
 // one at +0x40 (so has a sub-scene, as its base).
+//
+// Vtable 0x315850, 108 slots: most are the script's commands, and this base
+// answers each one with a default (0x315690 forwards them to a target).
+// CodeWarrior put a copy of the defaults below beside DemoExecuter's vtable
+// in game/stagescene.cpp, so these are the ones written so far; the other
+// slots and the commands' meaning wait for this class's TU (unassigned@
+// 001a68b0), which also fixes the placeholder names and argument types.
+// Host order is not EE order yet: nothing calls a slot.
 // layout: host -- EE: vptr +0xb4; +4 the run depth.
 class ScriptRunner
 {
 public:
     ScriptRunner();                                                      // FS2 0x001d3130
+    virtual ~ScriptRunner();                                             // FS2 0x001d30c0: deleting
     // The script entry it runs.
     void setEntry(const void *entry);                                    // FS2 0x001d2f40
     // One step: it is gRunningScript meanwhile.
     void run(int arg);                                                   // FS2 0x001d27e0
-    // The deleting dtor (vtable +0x18, vptr +0xb4); a plain stub until its TU.
-    void destroy();
+
+    // The command's default: logs "unsupported command" (Shift-JIS at
+    // 0x304ab0; the log is empty in retail) and answers 0.
+    int unsupportedCommand();                                            // FS2 0x001cf1b0
+    // The default of most commands: 0.
+    int defaultCommand();                                                // FS2 0x001cf1e0
+
+    // Slot 7 (+0x24): the class's name; null here (0x1a7a10).
+    virtual const char *getName() { return nullptr; }
+
+    // FS2 0x0019cf50
+    virtual int command10() { return 0; }
+    // FS2 0x0019cf60
+    virtual int command11() { return 0; }
+    // FS2 0x0019cf70
+    virtual int command12() { return 0; }
+    // FS2 0x0019cf80
+    virtual void command13(void *) {}
+    // FS2 0x0019cf90
+    virtual void command14(void *) {}
+    // FS2 0x0019cfa0
+    virtual void command15(void *) {}
+    // FS2 0x0019cfb0
+    virtual void command34(void *) {}
+    // FS2 0x0019cfc0
+    // callcheck: unsupportedCommand
+    virtual int command39()
+    {
+        unsupportedCommand();
+        return 0;
+    }
+    // FS2 0x0019cfe0
+    // callcheck: defaultCommand
+    virtual float command58(void *) { return (float)defaultCommand(); }
+    // FS2 0x0019d010
+    // callcheck: defaultCommand
+    virtual float command59(void *) { return (float)defaultCommand(); }
+    // A tail jump to defaultCommand.
+    // FS2 0x0019d050
+    virtual int command80() { return defaultCommand(); }
+    // A tail jump to defaultCommand.
+    // FS2 0x0019d040
+    virtual int command83(void *, void *, void *) { return defaultCommand(); }
+    // A tail jump to defaultCommand.
+    // FS2 0x0019d060
+    virtual int command87() { return defaultCommand(); }
+    // FS2 0x0019d070
+    virtual void command88() {}
+    // FS2 0x0019d080
+    // callcheck: defaultCommand
+    virtual bool command99() { return defaultCommand() != 0; }
+    // A tail jump to defaultCommand.
+    // FS2 0x0019d0a0
+    virtual int command100() { return defaultCommand(); }
+    // A tail jump to defaultCommand.
+    // FS2 0x0019d0b0
+    virtual int command101(void *) { return defaultCommand(); }
 
     int    m_running;           // FS2 +0xa8: non-zero while the script has more to do (StageScene::update)
     u_char m_skippable;         // FS2 +0xb9: a sub-scene's: start ends it
@@ -1144,6 +1214,15 @@ class StageMarker : public StageObject
 public:
     // The object list's group 6, then its script by name.
     void addToScene(const char *name);                                   // FS2 0x0017ef10: StageObjectList::add6
+    // Slot 123 in the ROM: StageObject::getKind stays a plain stub until
+    // the objects' TU, so nothing reaches this one yet.
+    int getKind();                                                       // FS2 0x001a4880
+    // The four slots of the base at +0x18 (vptr +0x1c): empty here; what
+    // they are is unread (0x2699f0 of SubSceneModelObject draws something).
+    void sideHook0();                                                    // FS2 0x001a48c0
+    void sideHook1();                                                    // FS2 0x001a48b0
+    void sideHook2();                                                    // FS2 0x001a48a0
+    void sideHook3();                                                    // FS2 0x001a4890
 };
 
 // vtable 0x311860; used for the map's cameras and by setupCameras.
@@ -1355,6 +1434,8 @@ class SubSceneProp : public SubSceneModelObject
 {
 public:
     explicit SubSceneProp(int arg) : SubSceneModelObject(arg) {}
+    // Slot 123 in the ROM; see StageMarker::getKind.
+    int getKind();                                                       // FS2 0x001a4950
     void setup(const char *name, ModelInstance *instance,
                StringMap<Tim2Texture *> *textures);                      // FS2 0x002bb810
 };
@@ -1368,6 +1449,10 @@ struct SceneRender;
 struct SceneBufferSet
 {
     ~SceneBufferSet();                                                   // FS2 0x002ce5a0: deleting
+    // A new set when owner is I_HATUEN, else null.
+    static SceneBufferSet *createFor(StageObject *owner, StageNodeTree *tree); // FS2 0x002ce620
+    // object joins the list of up to five, if it passes two tests.
+    void addObject(StageObject *object);                                 // FS2 0x002ce360
     // The first time, the characters fill the eight blocks.
     void attachCharacters(StageObjectList *objects);                     // FS2 0x002ce3e0
     // Each block whose owner became or stopped being linked: shown or
@@ -1383,6 +1468,11 @@ struct SceneBufferSet
 // +0x98: only the byte StageScene::update sets. layout: host -- EE: +0xc.
 struct SceneBlock98
 {
+    // What owner builds; null for one that has none (unread).
+    static SceneBlock98 *createFor(StageObject *owner, StageNodeTree *tree); // FS2 0x002ce9d0
+    // object's frame against the block (unread: a record's type, a
+    // distance to the player).
+    void updateFor(StageObject *object, StagePlayer *player);            // FS2 0x002ce820
     // A change of on: the node shown or hidden, render->spotActive set.
     void setActive(bool on, SceneRender *render);                        // FS2 0x002ceb70
     void updateVisible(SceneRender *render);                             // FS2 0x002ce790
@@ -1672,16 +1762,17 @@ void  setDrawDistance(float distance);                                   // FS2 
 // a stage's ctor. What the groups are is unread.
 void resetStageGroupTable();                                             // FS2 0x002cf510
 
-// A sub-scene's own scene object (StageScene +0x8, from enterSubScene):
-// the vptr at +0xb4 like the character classes; only the deleting dtor
-// (vtable +0x18) is called here. layout: host (unread).
-class SubSceneObject : public ScriptRunner
+// What runs a sub-scene's script (StageScene +0x8, from enterSubScene). The
+// ROM names the class itself: slot 7 answers "DemoExecuter" (the stand-in
+// was SubSceneObject). It overrides nothing else written so far.
+// layout: host (unread).
+class DemoExecuter : public ScriptRunner
 {
 public:
     // vtable 0x314d30. flag: +0xb9; "skippable" is a guess.
-    explicit SubSceneObject(bool skippable);                             // FS2 0x0026c8c0
-    void destroy();                                                      // FS2 vtable +0x18 (vptr +0xb4)
-    // Slot 13 (+0x3c) of 0x314d30 / 0x315850 is empty: FS2 0x0019cf80.
+    explicit DemoExecuter(bool skippable);                               // FS2 0x0026c8c0
+    ~DemoExecuter() override;                                            // FS2 0x00195db0: deleting
+    const char *getName() override;                                      // FS2 0x0019cf40
 };
 
 // What enterSubScene keeps at StageScene +0xc (one pointer, EE 4 bytes).

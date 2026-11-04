@@ -59,7 +59,7 @@ class DemoStream;
 class SceneOwnedObject;
 class ScreenFill;
 class StageMenu;
-class SubSceneObject;
+class DemoExecuter;
 class UiItemList;
 class WideFontPrinter;          // game/fontdata.h
 class FontData;                 // game/fontdata.h
@@ -318,6 +318,41 @@ struct StageScene
     // 10000), *height its height; null none (*height = -FLT_MAX).
     StageCollisionFace *findFloorFace(float x, float y, float range, float *height, u_int mask,
                                       u_int flags, StageObject **skip, int skipCount); // FS2 0x00197280
+    // findFloorFace with one object left out.
+    StageCollisionFace *findFloorFaceExcept(float x, float y, float range, float *height,
+                                            u_int mask, u_int flags,
+                                            StageObject *skip);          // FS2 0x00197580
+    // The object of that kind whose mesh the segment hits nearest from;
+    // null none.
+    StageObject *findObjectOnSegment(const sceVu0FVECTOR from, const sceVu0FVECTOR to, int arg,
+                                     int kind, u_int mask, u_int flags,
+                                     StageObject *skip);                 // FS2 0x00197850
+    // raycast that also answers the object hit (object may be null): with
+    // a list of objects to leave out, and with one.
+    StageCollisionFace *raycastObjectExcept(StageObject **object, sceVu0FVECTOR hit,
+                                            const sceVu0FVECTOR from, const sceVu0FVECTOR to,
+                                            int arg, u_int mask, u_int flags, StageObject **skip,
+                                            int skipCount);              // FS2 0x00197c80
+    StageCollisionFace *raycastObject(StageObject **object, sceVu0FVECTOR hit,
+                                      const sceVu0FVECTOR from, const sceVu0FVECTOR to, int arg,
+                                      u_int mask, u_int flags, StageObject *skip); // FS2 0x00197f10
+    // object, 50 above its position, is in an ENV_AB box.
+    bool isInAbArea(StageObject *object);                                // FS2 0x0019ae50
+    // The two members the objects fill in (nothing until they exist), and
+    // the first owner that asks builds them.
+    void addBufferObject(StageObject *object);                           // FS2 0x0019b180
+    void createBuffers(StageObject *owner);                              // FS2 0x0019b1b0
+    void updateBlock98For(StageObject *object);                          // FS2 0x0019b470
+    void createBlock98(StageObject *owner);                              // FS2 0x0019b4a0
+    // The object oZS99_01 of the stage, sought once.
+    StageObject *getZs9901();                                            // FS2 0x0019b4e0
+    // targetInView for target; null: the view target.
+    bool isInView(StageViewTarget *target);                              // FS2 0x0019b820
+    // The player is in mode 1, or targetInView (the scene flag of update
+    // and drawPaused).
+    bool playerOrTargetInView();                                         // FS2 0x0019b900
+    // The view stack's first entry; null while empty.
+    StageObject *getViewBottom();                                        // FS2 0x0019bb90
     void pushView(StageObject *object, int priority, u_char flag);       // FS2 0x0019bb80
     // who becomes the player: input, brain and the two cameras move over.
     void setPlayer(StagePlayer *who);                                    // FS2 0x0019b560
@@ -405,7 +440,7 @@ struct StageScene
 
     u_char              isSubScene;      // FS2 +0x00: the constructor's first argument
     const char         *subSceneRequest; // FS2 +0x04: the sub-scene's name (requestSubScene); set: stageThread builds it
-    SubSceneObject     *subScene;        // FS2 +0x08: a sub-scene's own scene (enterSubScene); null once it ended
+    DemoExecuter       *subScene;        // FS2 +0x08: a sub-scene's own scene (enterSubScene); null once it ended
     SubSceneData       *subSceneBlock;   // FS2 +0x0c: what enterSubScene was given; deleted beside subScene
     StageObjectList    *objects;         // FS2 +0x10
     ScenePairTable     *pairs;           // FS2 +0x14
@@ -463,8 +498,8 @@ struct StageScene
     void               *focus;           // FS2 +0xf8: getInputFocus's cache, cleared each frame; not set by the ctor
     StageFade          *fade;            // FS2 +0xfc
     StageViewTarget    *viewTarget;      // FS2 +0x100
-    u_char              _104;            // FS2 +0x104: zero (unread)
-    int                 _108;            // FS2 +0x108: zero (unread)
+    u_char              zs9901Sought;    // FS2 +0x104: getZs9901 looked
+    StageObject        *zs9901;          // FS2 +0x108: what it found
     StageScene         *parent;          // FS2 +0x10c: a sub-scene's (stageThread)
     StageFiles         *files;           // FS2 +0x110: a sub-scene's (stageThread)
     u_char              camerasReady;    // FS2 +0x114: setupCameras ran
@@ -539,6 +574,9 @@ public:
     // these too (0x1b3dc0, 0x1b9680).
     void placeCharacter(const char *name, const float *pos, const float *rot); // FS2 0x0019d4e0
     void placeItem(const char *name, const float *pos, const float *rot); // FS2 0x0019d0c0
+    // The script listed that name.
+    bool hasCharacter(const char *name);                                 // FS2 0x0019d9c0
+    bool hasItem(const char *name);                                      // FS2 0x0019d4c0
 
     FileLoader *loader;         // FS2 +0x000
     u_char      sharedLoader;   // FS2 +0x004: 1: the dtor leaves loader alone (the ctor's value)
@@ -632,6 +670,11 @@ private:
     void placeMapBoxes(const StageMapFile *map);
     void placeMapMarks(const StageMapFile *map);
 };
+
+// The object the view stack's top camera follows; null for any other top.
+StageObject *viewLinkedObject();                                         // FS2 0x0019b9f0
+// Groups 2..4 go inactive and unshown, group 1 leaves the view.
+void stageHideObjects();                                                 // FS2 0x0019c7e0
 
 // An StDT stream table's header (beside its other reader 0x1a0040, which
 // relocates it): relocated, entry count.

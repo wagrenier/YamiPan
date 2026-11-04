@@ -455,7 +455,7 @@ StageScene::~StageScene()
 
     if (isSubScene) {
         if (subScene != nullptr)
-            subScene->destroy();
+            delete subScene;
         operator delete(subSceneBlock);
         subScene      = nullptr;
         subSceneBlock = nullptr;
@@ -501,8 +501,8 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
     mission    = nullptr;
     event      = nullptr;
     viewTarget = nullptr;
-    _104       = 0;
-    _108       = 0;
+    zs9901Sought = 0;
+    zs9901     = nullptr;
     gameOver   = nullptr;
     clear      = nullptr;
     arrays     = nullptr;
@@ -2604,7 +2604,7 @@ int StageScene::getFloor(StagePlayer *who)
 constexpr int kDemoVoiceVolume = 0x80;
 constexpr int kDemoVoicePathSize = 0x80;
 
-// Runs the pack's script in a new SubSceneObject under the parent's event,
+// Runs the pack's script in a new DemoExecuter under the parent's event,
 // builds the cameras, then readies the event's subtitles and voice: the voice
 // starts paused and enterSubScene waits for its first data.
 // FS2 0x00195e10
@@ -2619,7 +2619,7 @@ void StageScene::enterSubScene(void *data)
         scriptPrepare(script);
         if (script->count > 1)
             bgScript = script;
-        subScene = new SubSceneObject(parent->event->isSkippable());
+        subScene = new DemoExecuter(parent->event->isSkippable());
         subScene->setEntry(script->entry(script->count - 1));
         subScene->run(0);
     }
@@ -2740,19 +2740,42 @@ void StageScene::updateVcms()
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Inline in the ROM: drawPaused, update and prepareDrawFlags (there on
-// gStageScene).
+// FS2 0x0019b820
 // callcheck: getKind, isPlayer, getCompanion
 
-bool StageScene::targetInView()
+bool StageScene::isInView(StageViewTarget *target)
 {
-    StageObject *target;
-    if (viewTarget == nullptr || (target = viewTarget->character) == nullptr)
+    if (target == nullptr)
+        target = viewTarget;
+    StageObject *character;
+    if (target == nullptr || (character = target->character) == nullptr)
         return false;
     bool camjack = views->topObject()->getKind() == StageObject_Kind11;
-    if (target->isPlayer())
+    if (character->isPlayer())
         return !camjack;
-    return camjack && party->getCompanion() == target;
+    return camjack && party->getCompanion() == character;
+}
+
+// Inline in the ROM: drawPaused, update, prepareDrawFlags (there on
+// gStageScene) and playerOrTargetInView.
+bool StageScene::targetInView()
+{
+    return isInView(viewTarget);
+}
+
+// FS2 0x0019b900
+// callcheck: isMode1, isPlayer, getCompanion, getKind (targetInView holds the last three)
+
+bool StageScene::playerOrTargetInView()
+{
+    return (player != nullptr && player->isMode1()) || targetInView();
+}
+
+// FS2 0x0019bb90
+
+StageObject *StageScene::getViewBottom()
+{
+    return views->top < 0 ? nullptr : views->entries[0].object;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -2943,7 +2966,7 @@ void StageScene::update()
         bool skipped = subScene->m_skippable
             && (gGameSystem->m_pad0.m_pressed & SCE_PADstart) != 0;
         if (skipped || !going) {
-            subScene->destroy();
+            delete subScene;
             operator delete(subSceneBlock);
             subScene = nullptr;
             subSceneBlock = nullptr;
@@ -3601,7 +3624,7 @@ void StageScene::setupCameras()
             ScriptRunner *runner = new ScriptRunner;
             runner->setEntry(entry);
             runner->run(0);
-            runner->destroy();
+            delete runner;
         }
     }
 
@@ -4057,8 +4080,25 @@ bool StageScene::segmentHitsAny(const float *from, const float *to, int arg, u_i
 // How far down findFloorFace looks when the range is negative.
 constexpr float kFloorRayLength = 10000.0f;
 
+// One mesh's floor below height (inline in both finders): a mesh without
+// nodes answers by height, any other by a ray straight down.
+static StageCollisionFace *meshFloorFace(StageCollision *mesh, float x, float y, float range,
+                                         float height, u_int mask, u_int flags, float *faceHeight)
+{
+    *faceHeight = height;
+    if (mesh->nodes == nullptr)
+        return mesh->heightAt(x, y, range, faceHeight, mask, flags, 0);
+
+    sceVu0FVECTOR hit;
+    sceVu0FVECTOR from = { x, y, height, 1.0f };
+    sceVu0FVECTOR to   = { x, y, height - (range < 0.0f ? kFloorRayLength : range), 1.0f };
+    StageCollisionFace *face = mesh->raycast(hit, from, to, mask, flags, 0);
+    *faceHeight = hit[2];
+    return face;
+}
+
 // FS2 0x00197280
-// callcheck: heightAt, raycast
+// callcheck: heightAt, raycast (in meshFloorFace)
 
 StageCollisionFace *StageScene::findFloorFace(float x, float y, float range, float *height,
                                               u_int mask, u_int flags, StageObject **skip,
@@ -4080,18 +4120,9 @@ StageCollisionFace *StageScene::findFloorFace(float x, float y, float range, flo
             continue;
 
         for (u_int i = 0; obj->collisionAt(i) != nullptr; i++) {
-            StageCollision *mesh = obj->collisionAt(i);
-            float faceHeight = *height;
-            StageCollisionFace *face;
-            if (mesh->nodes == nullptr) {
-                face = mesh->heightAt(x, y, range, &faceHeight, mask, flags, 0);
-            } else {
-                sceVu0FVECTOR hit;
-                sceVu0FVECTOR from = { x, y, *height, 1.0f };
-                sceVu0FVECTOR to   = { x, y, *height - (range < 0.0f ? kFloorRayLength : range), 1.0f };
-                face = mesh->raycast(hit, from, to, mask, flags, 0);
-                faceHeight = hit[2];
-            }
+            float faceHeight;
+            StageCollisionFace *face = meshFloorFace(obj->collisionAt(i), x, y, range, *height,
+                                                     mask, flags, &faceHeight);
             if (face != nullptr && bestHeight < faceHeight) {
                 best = face;
                 bestHeight = faceHeight;
@@ -4100,6 +4131,169 @@ StageCollisionFace *StageScene::findFloorFace(float x, float y, float range, flo
     }
 
     *height = bestHeight;
+    return best;
+}
+
+// FS2 0x00197580
+// callcheck: heightAt, raycast (in meshFloorFace)
+
+StageCollisionFace *StageScene::findFloorFaceExcept(float x, float y, float range, float *height,
+                                                    u_int mask, u_int flags, StageObject *skip)
+{
+    StageCollisionFace *best = nullptr;
+    float bestHeight = -FLT_MAX;
+
+    StageObjArray &roots = objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = firstActive(roots.begin()); slot != nullptr;
+         slot = firstActive(StageObjArray::next(slot))) {
+        StageObject *obj = *slot;
+        if ((skip != nullptr && skip == obj) || !isHittable(obj))
+            continue;
+
+        for (u_int i = 0; obj->collisionAt(i) != nullptr; i++) {
+            float faceHeight;
+            StageCollisionFace *face = meshFloorFace(obj->collisionAt(i), x, y, range, *height,
+                                                     mask, flags, &faceHeight);
+            if (face != nullptr && bestHeight < faceHeight) {
+                best = face;
+                bestHeight = faceHeight;
+            }
+        }
+    }
+
+    *height = bestHeight;
+    return best;
+}
+
+// FS2 0x00197850
+// callcheck: getKind, raycast, vecDistance
+
+StageObject *StageScene::findObjectOnSegment(const sceVu0FVECTOR from, const sceVu0FVECTOR to,
+                                             int arg, int kind, u_int mask, u_int flags,
+                                             StageObject *skip)
+{
+    StageObject *best = nullptr;
+    float bestDistance = FLT_MAX;
+
+    StageObjArray &roots = objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = firstActive(roots.begin()); slot != nullptr;
+         slot = firstActive(StageObjArray::next(slot))) {
+        StageObject *obj = *slot;
+        if (kind != obj->getKind() || (skip != nullptr && skip == obj) || !isHittable(obj))
+            continue;
+        for (u_int i = 0; obj->collisionAt(i) != nullptr; i++) {
+            sceVu0FVECTOR hit;
+            if (obj->collisionAt(i)->raycast(hit, from, to, mask, flags, arg) == nullptr)
+                continue;
+            float distance = vecDistance(hit, from);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = obj;
+            }
+        }
+    }
+    return best;
+}
+
+// Both take from and to by value first: hit may be one of them. The best
+// hit starts as hit's own contents, as in StageScene::raycast (the ROM
+// leaves that local uninitialised).
+// FS2 0x00197c80
+// callcheck: raycast, vecDistance
+
+StageCollisionFace *StageScene::raycastObjectExcept(StageObject **object, sceVu0FVECTOR hit,
+                                                    const sceVu0FVECTOR from,
+                                                    const sceVu0FVECTOR to, int arg, u_int mask,
+                                                    u_int flags, StageObject **skip, int skipCount)
+{
+    StageCollisionFace *best = nullptr;
+    StageObject *bestObject = nullptr;
+    float bestDistance = FLT_MAX;
+    sceVu0FVECTOR start, end, bestHit;
+    for (int k = 0; k < 4; k++) {
+        start[k] = from[k];
+        end[k] = to[k];
+        bestHit[k] = hit[k];
+    }
+
+    StageObjArray &roots = objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = firstActive(roots.begin()); slot != nullptr;
+         slot = firstActive(StageObjArray::next(slot))) {
+        StageObject *obj = *slot;
+        int skipped = 0;
+        for (; skipped < skipCount; skipped++) {
+            if (skip[skipped] != nullptr && skip[skipped] == obj)
+                break;
+        }
+        if (skipped < skipCount || !isHittable(obj))
+            continue;
+
+        for (u_int i = 0; obj->collisionAt(i) != nullptr; i++) {
+            StageCollisionFace *face = obj->collisionAt(i)->raycast(hit, start, end, mask, flags,
+                                                                    arg);
+            if (face == nullptr)
+                continue;
+            float distance = vecDistance(hit, start);
+            if (distance < bestDistance) {
+                for (int k = 0; k < 4; k++)
+                    bestHit[k] = hit[k];
+                best = face;
+                bestDistance = distance;
+                bestObject = obj;
+            }
+        }
+    }
+
+    for (int k = 0; k < 4; k++)
+        hit[k] = bestHit[k];
+    if (object != nullptr)
+        *object = bestObject;
+    return best;
+}
+
+// FS2 0x00197f10
+// callcheck: raycast, vecDistance
+
+StageCollisionFace *StageScene::raycastObject(StageObject **object, sceVu0FVECTOR hit,
+                                              const sceVu0FVECTOR from, const sceVu0FVECTOR to,
+                                              int arg, u_int mask, u_int flags, StageObject *skip)
+{
+    StageCollisionFace *best = nullptr;
+    StageObject *bestObject = nullptr;
+    float bestDistance = FLT_MAX;
+    sceVu0FVECTOR start, end, bestHit;
+    for (int k = 0; k < 4; k++) {
+        start[k] = from[k];
+        end[k] = to[k];
+        bestHit[k] = hit[k];
+    }
+
+    StageObjArray &roots = objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = firstActive(roots.begin()); slot != nullptr;
+         slot = firstActive(StageObjArray::next(slot))) {
+        StageObject *obj = *slot;
+        if ((skip != nullptr && skip == obj) || !isHittable(obj))
+            continue;
+        for (u_int i = 0; obj->collisionAt(i) != nullptr; i++) {
+            StageCollisionFace *face = obj->collisionAt(i)->raycast(hit, start, end, mask, flags,
+                                                                    arg);
+            if (face == nullptr)
+                continue;
+            float distance = vecDistance(hit, start);
+            if (distance < bestDistance) {
+                for (int k = 0; k < 4; k++)
+                    bestHit[k] = hit[k];
+                best = face;
+                bestDistance = distance;
+                bestObject = obj;
+            }
+        }
+    }
+
+    for (int k = 0; k < 4; k++)
+        hit[k] = bestHit[k];
+    if (object != nullptr)
+        *object = bestObject;
     return best;
 }
 
@@ -4121,9 +4315,11 @@ u_short StageScene::getFloorAttr(const float *pos)
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// The object the view stack's top camera follows; null for any other top
-// (inline in updateBuffers and updateBlock98; it reads gStageScene).
-static StageObject *viewLinkedObject()
+// Also inline in updateBuffers and updateBlock98 in the ROM.
+// FS2 0x0019b9f0
+// callcheck: getKind
+
+StageObject *viewLinkedObject()
 {
     StageObject *top = gStageScene->views->topObject();
     if (top == nullptr)
@@ -4505,6 +4701,223 @@ void StageFiles::loadList()
         loader->waitLoaded(kWaitArg, kWaitShowLoading);
     }
 }
+
+// ──────────────────────────────────────────────────────────────────────
+// How far above an object's position isInAbArea looks.
+constexpr float kAbProbeAbove = 50.0f;
+
+// FS2 0x0019ae50
+// callcheck: contains
+
+bool StageScene::isInAbArea(StageObject *object)
+{
+    const sceVu0FVECTOR &position = object->m_xform.position;
+    sceVu0FVECTOR pos = { position[0], position[1], position[2] + kAbProbeAbove, position[3] };
+    return areas[StageArea_Ab]->contains(pos) != 0;
+}
+
+// FS2 0x0019b180
+// callcheck: addObject
+
+void StageScene::addBufferObject(StageObject *object)
+{
+    if (buffers != nullptr)
+        buffers->addObject(object);
+}
+
+// FS2 0x0019b1b0
+// callcheck: createFor
+
+void StageScene::createBuffers(StageObject *owner)
+{
+    if (buffers == nullptr)
+        buffers = SceneBufferSet::createFor(owner, nodeTree);
+}
+
+// FS2 0x0019b470
+// callcheck: updateFor
+
+void StageScene::updateBlock98For(StageObject *object)
+{
+    if (block98 != nullptr)
+        block98->updateFor(object, player);
+}
+
+// FS2 0x0019b4a0
+// callcheck: createFor
+
+void StageScene::createBlock98(StageObject *owner)
+{
+    if (block98 == nullptr)
+        block98 = SceneBlock98::createFor(owner, nodeTree);
+}
+
+static const char kObjectZs9901[] = "oZS99_01";
+
+// FS2 0x0019b4e0
+// callcheck: find1
+
+StageObject *StageScene::getZs9901()
+{
+    if (!zs9901Sought) {
+        zs9901 = objects->find1(kObjectZs9901, 0);
+        zs9901Sought = 1;
+    }
+    return zs9901;
+}
+
+// Reads gStageScene, whatever the caller passes.
+// FS2 0x0019c7e0
+// callcheck: setActive, setShown
+
+void stageHideObjects()
+{
+    for (int group = 0; group < StageObjGroup_Count; group++) {
+        bool stays = group != StageObjGroup_Bullets && group != StageObjGroup_3
+                     && group != StageObjGroup_Characters;
+        StageObjArray &list = gStageScene->objects->m_lists[group];
+        for (StageObject **slot = firstActive(list.begin()); slot != nullptr;
+             slot = firstActive(StageObjArray::next(slot))) {
+            StageObject *obj = *slot;
+            if (!stays) {
+                obj->m_tree->setActive(false);
+                obj->m_tree->setShown(false);
+            }
+            if (group == StageObjGroup_1)
+                obj->m_viewActive = 0;
+        }
+    }
+}
+
+// FS2 0x0019d4c0
+// callcheck: FUN_001a4e80 (StringMap find, game/stagelist.h)
+
+bool StageFiles::hasItem(const char *name)
+{
+    return groups.find(name) != nullptr;
+}
+
+// FS2 0x0019d9c0
+// callcheck: FUN_001a5250 (StringMap find, game/stagelist.h)
+
+bool StageFiles::hasCharacter(const char *name)
+{
+    return characters.find(name) != nullptr;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The ROM's name for the class that runs a sub-scene's script.
+// FS2 0x0019cf40
+
+const char *DemoExecuter::getName()
+{
+    return "DemoExecuter";
+}
+
+// FS2 0x00195db0
+// callcheck: ~ScriptRunner, operator_delete (the base dtor, deleting)
+
+DemoExecuter::~DemoExecuter()
+{
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The kinds of three object classes. In the ROM these are slot 123 of
+// their vtables; on the host nothing reaches them until StageObject::getKind
+// becomes virtual in the objects' TU.
+// FS2 0x001a45d0
+
+int SubSceneDoorObject::getKind()
+{
+    return StageObject_SubSceneDoor;
+}
+
+// FS2 0x001a4880
+
+int StageMarker::getKind()
+{
+    return StageObject_Marker;
+}
+
+// FS2 0x001a4950
+
+int SubSceneProp::getKind()
+{
+    return StageObject_SubSceneProp;
+}
+
+// FS2 0x001a48c0
+
+void StageMarker::sideHook0()
+{
+}
+
+// FS2 0x001a48b0
+
+void StageMarker::sideHook1()
+{
+}
+
+// FS2 0x001a48a0
+
+void StageMarker::sideHook2()
+{
+}
+
+// FS2 0x001a4890
+
+void StageMarker::sideHook3()
+{
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// What the compiler makes on the host: deleting destructors whose body is
+// their base's, each a weak copy here because this file builds the object.
+//   FS2 0x0019c060  deleting dtor, vtable 0x314ce0 (ctor 0x2b2c80), over 0x2a9be0
+//   FS2 0x0019c0c0  deleting dtor, vtable 0x314c90 (ctor 0x2a89b0), over 0x2a9be0
+//   FS2 0x0019c120  SigLamp, vtable 0x314c40, over 0x2a9be0
+//   FS2 0x001a4550  SubSceneDoorObject, over 0x2bbfb0 (SubSceneMapObject)
+//   FS2 0x001a45e0  CbAreaBox / FloorAreaBox, vtable 0x315160, AreaBox's inline
+//   FS2 0x001a4650  StageNode, StageNodeBase's inline
+//   FS2 0x001a4790  CbAreaBox / FloorAreaBox, vtable 0x315190, AreaBox's inline
+//   FS2 0x001a4800  StageMarker, over 0x18b4e0 (StageObject)
+//   FS2 0x001a48d0  SubSceneProp, over 0x269c30 (SubSceneModelObject)
+// The defaults of ScriptRunner's command slots, inline in game/gamehooks.h
+// (CodeWarrior's copy for DemoExecuter's vtable):
+//   FS2 0x0019cf50  ScriptRunner::command10
+//   FS2 0x0019cf60  ScriptRunner::command11
+//   FS2 0x0019cf70  ScriptRunner::command12
+//   FS2 0x0019cf80  ScriptRunner::command13
+//   FS2 0x0019cf90  ScriptRunner::command14
+//   FS2 0x0019cfa0  ScriptRunner::command15
+//   FS2 0x0019cfb0  ScriptRunner::command34
+//   FS2 0x0019cfc0  ScriptRunner::command39
+//   FS2 0x0019cfe0  ScriptRunner::command58
+//   FS2 0x0019d010  ScriptRunner::command59
+//   FS2 0x0019d040  ScriptRunner::command83
+//   FS2 0x0019d050  ScriptRunner::command80
+//   FS2 0x0019d060  ScriptRunner::command87
+//   FS2 0x0019d070  ScriptRunner::command88
+//   FS2 0x0019d080  ScriptRunner::command99
+//   FS2 0x0019d0a0  ScriptRunner::command100
+//   FS2 0x0019d0b0  ScriptRunner::command101
+// This-adjust thunks of the objects' two other bases: -0x40 the script
+// runner, -0x18 the base with four slots.
+//   FS2 0x001a67c0  -0x40 to SubSceneProp's dtor
+//   FS2 0x001a67d0  -0x18 to StageMarker::sideHook3
+//   FS2 0x001a67e0  -0x18 to StageMarker::sideHook2
+//   FS2 0x001a67f0  -0x18 to StageMarker::sideHook1
+//   FS2 0x001a6800  -0x18 to StageMarker::sideHook0
+//   FS2 0x001a6810  -0x40 to StageMarker's dtor
+//   FS2 0x001a6820  -0x18 to 0x2699e0 (SubSceneModelObject)
+//   FS2 0x001a6830  -0x18 to 0x2699f0
+//   FS2 0x001a6840  -0x18 to 0x269a70
+//   FS2 0x001a6850  -0x18 to 0x269a80
+//   FS2 0x001a6860  -0x40 to 0x268a20 (SubSceneModelObject, slot 78 of the runner)
+//   FS2 0x001a6870  -0x40 to 0x268a90 (slot 13)
+//   FS2 0x001a6880  -0x40 to SubSceneDoorObject's dtor
+//   FS2 0x001a6890  -0x40 to 0x268ae0 (slot 2)
+//   FS2 0x001a68a0  -0x40 to 0x269160 (slot 1)
 
 // ──────────────────────────────────────────────────────────────────────
 // Template instances of this file, one source in game/stagelist.h (a few

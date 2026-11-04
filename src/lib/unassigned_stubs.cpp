@@ -723,12 +723,6 @@ void SubSceneMapObject::setup(const char *name, ModelInstance *instance,
     YAMIPAN_STUB("SubSceneMapObject::setup", 0x002bbed0);
 }
 
-// stub of FS2 address unknown (1 candidates)
-void SubSceneObject::destroy()
-{
-    YAMIPAN_STUB("SubSceneObject::destroy", 0x00000000);
-}
-
 // stub of FS2 0x0023f0b0
 UiItemList::UiItemList(WideFontPrinter*, int)
 {
@@ -1570,9 +1564,9 @@ SubSceneModelObject::SubSceneModelObject(int)
 }
 
 // stub of FS2 address unknown (0 candidates)
-SubSceneObject::SubSceneObject(bool)
+DemoExecuter::DemoExecuter(bool)
 {
-    YAMIPAN_STUB("SubSceneObject::SubSceneObject", 0x00000000);
+    YAMIPAN_STUB("DemoExecuter::DemoExecuter", 0x0026c8c0);
 }
 
 // stub of FS2 0x002bb810
@@ -1898,9 +1892,9 @@ void ScreenFill::draw(sceVif1Packet *packet, TexAreaList *texList)
 }
 
 // stub of FS2 address unknown (1 candidates)
-void ScriptRunner::destroy()
+ScriptRunner::~ScriptRunner()
 {
-    YAMIPAN_STUB("ScriptRunner::destroy", 0x00000000);
+    YAMIPAN_STUB("ScriptRunner::~ScriptRunner", 0x001d30c0);
 }
 
 // stub of FS2 0x001803e0
@@ -2401,5 +2395,45 @@ void UiItemList::setSheet(void *sheet)
 const char * stageMotionTargetName(int index)
 {
     YAMIPAN_STUB("stageMotionTargetName", 0x00175c00);
+    return {};
+}
+
+// stub of FS2 0x002ce9d0
+SceneBlock98 * SceneBlock98::createFor(StageObject *owner, StageNodeTree *tree)
+{
+    YAMIPAN_STUB("SceneBlock98::createFor", 0x002ce9d0);
+    return {};
+}
+
+// stub of FS2 0x002ce820
+void SceneBlock98::updateFor(StageObject *object, StagePlayer *player)
+{
+    YAMIPAN_STUB("SceneBlock98::updateFor", 0x002ce820);
+}
+
+// stub of FS2 0x002ce360
+void SceneBufferSet::addObject(StageObject *object)
+{
+    YAMIPAN_STUB("SceneBufferSet::addObject", 0x002ce360);
+}
+
+// stub of FS2 0x002ce620
+SceneBufferSet * SceneBufferSet::createFor(StageObject *owner, StageNodeTree *tree)
+{
+    YAMIPAN_STUB("SceneBufferSet::createFor", 0x002ce620);
+    return {};
+}
+
+// stub of FS2 0x001cf1e0
+int ScriptRunner::defaultCommand()
+{
+    YAMIPAN_STUB("ScriptRunner::defaultCommand", 0x001cf1e0);
+    return {};
+}
+
+// stub of FS2 0x001cf1b0
+int ScriptRunner::unsupportedCommand()
+{
+    YAMIPAN_STUB("ScriptRunner::unsupportedCommand", 0x001cf1b0);
     return {};
 }

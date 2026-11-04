@@ -11825,6 +11825,12 @@
   "was": "FUN_00195d80",
   "why": "+0 (isSubScene) set and +8 null; stageThread then deletes it and goes back to the parent scene"
  },
+ "00195db0": {
+  "name": "DemoExecuter::~DemoExecuter",
+  "tag": "game-inferred",
+  "was": "FUN_00195db0",
+  "why": "deleting dtor of vtable 0x314d30, whose slot 7 answers the string DemoExecuter: the class's own name, was the stand-in SubSceneObject"
+ },
  "00195e10": {
   "name": "StageScene::enterSubScene",
   "tag": "game-inferred",
@@ -12071,11 +12077,35 @@
   "was": "FUN_00197280",
   "why": "the highest face under x, y from the height given; every mesh of the active Root objects not skipped"
  },
+ "00197580": {
+  "name": "StageScene::findFloorFaceExcept",
+  "tag": "game-inferred",
+  "was": "FUN_00197580",
+  "why": "findFloorFace 0x197280 with one object left out instead of a list"
+ },
+ "00197850": {
+  "name": "StageScene::findObjectOnSegment",
+  "tag": "game-inferred",
+  "was": "FUN_00197850",
+  "why": "group 1 objects of one kind, the one whose mesh is hit nearest from; answers the object"
+ },
  "00197a90": {
   "name": "StageScene::segmentHitsAny",
   "tag": "game-inferred",
   "was": "FUN_00197a90",
   "why": "group 1 objects: 0x233160 on every mesh"
+ },
+ "00197c80": {
+  "name": "StageScene::raycastObjectExcept",
+  "tag": "game-inferred",
+  "was": "FUN_00197c80",
+  "why": "StageScene::raycast with a skip list, also answering the object hit in a1"
+ },
+ "00197f10": {
+  "name": "StageScene::raycastObject",
+  "tag": "game-inferred",
+  "was": "FUN_00197f10",
+  "why": "StageScene::raycast also answering the object hit in a1"
  },
  "00198170": {
   "name": "StageScene::raycast",
@@ -12173,6 +12203,12 @@
   "was": "FUN_0019ae40",
   "why": "SMOKE_A boxes, grid +0xb4; was addArea2"
  },
+ "0019ae50": {
+  "name": "StageScene::isInAbArea",
+  "tag": "game-inferred",
+  "was": "FUN_0019ae50",
+  "why": "object position 50 above in the grid +0xb0 (the ENV_AB boxes)"
+ },
  "0019ae90": {
   "name": "StageScene::addAbBox",
   "tag": "game-inferred",
@@ -12203,11 +12239,41 @@
   "was": "FUN_0019afb0",
   "why": "works on +0x9c with the objects and the view; 0x2ce3e0 family; not read yet"
  },
+ "0019b180": {
+  "name": "StageScene::addBufferObject",
+  "tag": "game-inferred",
+  "was": "FUN_0019b180",
+  "why": "SceneBufferSet::addObject on +0x9c when it exists"
+ },
+ "0019b1b0": {
+  "name": "StageScene::createBuffers",
+  "tag": "game-inferred",
+  "was": "FUN_0019b1b0",
+  "why": "fills an empty +0x9c from SceneBufferSet::createFor with +0x1c"
+ },
  "0019b1f0": {
   "name": "StageScene::updateBlock98",
   "tag": "game-inferred",
   "was": "FUN_0019b1f0",
   "why": "works on +0x98 with the view state; 0x2ce790 family; not read yet"
+ },
+ "0019b470": {
+  "name": "StageScene::updateBlock98For",
+  "tag": "game-inferred",
+  "was": "FUN_0019b470",
+  "why": "SceneBlock98::updateFor on +0x98 when it exists, with the player"
+ },
+ "0019b4a0": {
+  "name": "StageScene::createBlock98",
+  "tag": "game-inferred",
+  "was": "FUN_0019b4a0",
+  "why": "fills an empty +0x98 from SceneBlock98::createFor with +0x1c; StageCharacter::setup calls it"
+ },
+ "0019b4e0": {
+  "name": "StageScene::getZs9901",
+  "tag": "game-inferred",
+  "was": "FUN_0019b4e0",
+  "why": "finds oZS99_01 once, caches it in +0x108 under flag +0x104"
  },
  "0019b540": {
   "name": "StageScene::releaseControl",
@@ -12245,6 +12311,24 @@
   "was": "FUN_0019b7a0",
   "why": "a0 gStageScene: +0x3c / +0x40 the two script files, +0x44 a zeroed int array of the first one's short at +10"
  },
+ "0019b820": {
+  "name": "StageScene::isInView",
+  "tag": "game-inferred",
+  "was": "FUN_0019b820",
+  "why": "targetInView for a given target, null the view target"
+ },
+ "0019b900": {
+  "name": "StageScene::playerOrTargetInView",
+  "tag": "game-inferred",
+  "was": "FUN_0019b900",
+  "why": "the player's mode 1 or targetInView: drawPaused's and update's sceneFlag, out of line"
+ },
+ "0019b9f0": {
+  "name": "viewLinkedObject",
+  "tag": "game-inferred",
+  "was": "FUN_0019b9f0",
+  "why": "m_linked of the view stack's top when it is a Kind9, 10 or 11 camera; reads gStageScene"
+ },
  "0019bb60": {
   "name": "StageScene::removeView",
   "tag": "game-inferred",
@@ -12263,6 +12347,12 @@
   "was": "FUN_0019bb80",
   "why": "tail jump to 0x19cdc0 on +0x34"
  },
+ "0019bb90": {
+  "name": "StageScene::getViewBottom",
+  "tag": "game-inferred",
+  "was": "FUN_0019bb90",
+  "why": "entry 0 of the view stack; null while empty"
+ },
  "0019bbb0": {
   "name": "StageScene::getActiveCharacter",
   "tag": "game-inferred",
@@ -12275,6 +12365,24 @@
   "was": "FUN_0019bbe0",
   "why": "deleting dtor (flag 1) of the stage scene; stageThread and stageLoad"
  },
+ "0019c060": {
+  "name": "SceneOwnedObject_314ce0::dtor",
+  "tag": "game-inferred",
+  "was": "FUN_0019c060",
+  "why": "deleting dtor of vtable 0x314ce0 over 0x2a9be0"
+ },
+ "0019c0c0": {
+  "name": "SceneOwnedObject_314c90::dtor",
+  "tag": "game-inferred",
+  "was": "FUN_0019c0c0",
+  "why": "deleting dtor of vtable 0x314c90 over 0x2a9be0"
+ },
+ "0019c120": {
+  "name": "SigLamp::~SigLamp",
+  "tag": "game-inferred",
+  "was": "FUN_0019c120",
+  "why": "deleting dtor of vtable 0x314c40, SigLamp's"
+ },
  "0019c180": {
   "name": "StageScene::StageScene",
   "tag": "game-inferred",
@@ -12286,6 +12394,12 @@
   "tag": "game-inferred",
   "was": "FUN_0019c6a0",
   "why": "3 saved bytes per object in every group but 4 (+8)"
+ },
+ "0019c7e0": {
+  "name": "stageHideObjects",
+  "tag": "game-inferred",
+  "was": "FUN_0019c7e0",
+  "why": "groups 2 to 4 inactive and not shown through their tree, group 1 off the view; reads gStageScene"
  },
  "0019c960": {
   "name": "SceneArrayPair::saveFlags",
@@ -12311,17 +12425,107 @@
   "was": "FUN_0019cdc0",
   "why": "object once, entries kept sorted by priority (+4), byte +8; the new top gets +0x24c when it is the pushed one, every other entry +0x18 cleared"
  },
+ "0019cf40": {
+  "name": "DemoExecuter::getName",
+  "tag": "game-inferred",
+  "was": "FUN_0019cf40",
+  "why": "slot 7 returns the string DemoExecuter 0x303d30; the base's 0x1a7a10 returns null"
+ },
+ "0019cf50": {
+  "name": "ScriptRunner::command10",
+  "tag": "game-inferred",
+  "was": "FUN_0019cf50",
+  "why": "slot 10 of 0x315850: answers 0; what the command is, is unread"
+ },
+ "0019cf60": {
+  "name": "ScriptRunner::command11",
+  "tag": "game-inferred",
+  "was": "FUN_0019cf60",
+  "why": "slot 11 of 0x315850: answers 0"
+ },
+ "0019cf70": {
+  "name": "ScriptRunner::command12",
+  "tag": "game-inferred",
+  "was": "FUN_0019cf70",
+  "why": "slot 12 of 0x315850: answers 0"
+ },
+ "0019cf80": {
+  "name": "ScriptRunner::command13",
+  "tag": "game-inferred",
+  "was": "FUN_0019cf80",
+  "why": "slot 13 of 0x315850: empty; 0x315690 forwards it with one argument"
+ },
+ "0019cf90": {
+  "name": "ScriptRunner::command14",
+  "tag": "game-inferred",
+  "was": "FUN_0019cf90",
+  "why": "slot 14 of 0x315850: empty"
+ },
+ "0019cfa0": {
+  "name": "ScriptRunner::command15",
+  "tag": "game-inferred",
+  "was": "FUN_0019cfa0",
+  "why": "slot 15 of 0x315850: empty"
+ },
+ "0019cfb0": {
+  "name": "ScriptRunner::command34",
+  "tag": "game-inferred",
+  "was": "FUN_0019cfb0",
+  "why": "slot 34 of 0x315850: empty"
+ },
+ "0019cfc0": {
+  "name": "ScriptRunner::command39",
+  "tag": "game-inferred",
+  "was": "FUN_0019cfc0",
+  "why": "slot 39 of 0x315850: unsupportedCommand, answers 0"
+ },
+ "0019cfe0": {
+  "name": "ScriptRunner::command58",
+  "tag": "game-inferred",
+  "was": "FUN_0019cfe0",
+  "why": "slot 58 of 0x315850: defaultCommand as a float"
+ },
+ "0019d010": {
+  "name": "ScriptRunner::command59",
+  "tag": "game-inferred",
+  "was": "FUN_0019d010",
+  "why": "slot 59 of 0x315850: defaultCommand as a float"
+ },
+ "0019d070": {
+  "name": "ScriptRunner::command88",
+  "tag": "game-inferred",
+  "was": "FUN_0019d070",
+  "why": "slot 88 of 0x315850: empty"
+ },
+ "0019d080": {
+  "name": "ScriptRunner::command99",
+  "tag": "game-inferred",
+  "was": "FUN_0019d080",
+  "why": "slot 99 of 0x315850: defaultCommand as a bool"
+ },
  "0019d0c0": {
   "name": "StageFiles::placeItem",
   "tag": "game-inferred",
   "was": "FUN_0019d0c0",
   "why": "groups map (+0x14c) gives the model, gItemDefs the kind, the class follows; called for map points and carried items"
  },
+ "0019d4c0": {
+  "name": "StageFiles::hasItem",
+  "tag": "game-inferred",
+  "was": "FUN_0019d4c0",
+  "why": "find on the map +0x14c placeItem reads"
+ },
  "0019d4e0": {
   "name": "StageFiles::placeCharacter",
   "tag": "game-inferred",
   "was": "FUN_0019d4e0",
   "why": "characters map (+0x13c) gives the model line, gStageObjRecords the record whose two item names it places, then a new character at +0x200 = record"
+ },
+ "0019d9c0": {
+  "name": "StageFiles::hasCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_0019d9c0",
+  "why": "find on the map +0x13c placeCharacter reads"
  },
  "0019d9e0": {
   "name": "StageFiles::applySoundTarget",
@@ -12515,6 +12719,84 @@
   "was": "FUN_001a4480",
   "why": "std::string up to the last slash; empty for an empty path; used to build the directory of a model, motion or sndseh"
  },
+ "001a4550": {
+  "name": "SubSceneDoorObject::~SubSceneDoorObject",
+  "tag": "game-inferred",
+  "was": "FUN_001a4550",
+  "why": "deleting dtor of vtables 0x314ef0 / 0x314f14 / 0x314f2c over 0x2bbfb0"
+ },
+ "001a45d0": {
+  "name": "SubSceneDoorObject::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_001a45d0",
+  "why": "slot 123 from the vptr at +0: 0x314ef0 + 0x1f4 is this entry; answers 0x21"
+ },
+ "001a45e0": {
+  "name": "CbAreaBox::dtor_315160",
+  "tag": "game-inferred",
+  "was": "FUN_001a45e0",
+  "why": "deleting dtor of vtable 0x315160, the AreaBox dtor inline"
+ },
+ "001a4650": {
+  "name": "StageNode::~StageNode",
+  "tag": "game-inferred",
+  "was": "FUN_001a4650",
+  "why": "deleting dtor storing 0x315a80 then 0x315ae0, the base dtor inline"
+ },
+ "001a4790": {
+  "name": "CbAreaBox::dtor_315190",
+  "tag": "game-inferred",
+  "was": "FUN_001a4790",
+  "why": "deleting dtor of vtable 0x315190, the AreaBox dtor inline"
+ },
+ "001a4800": {
+  "name": "StageMarker::~StageMarker",
+  "tag": "game-inferred",
+  "was": "FUN_001a4800",
+  "why": "deleting dtor of vtables 0x3151c0 / 0x3151e4 / 0x3151fc over the StageObject dtor 0x18b4e0"
+ },
+ "001a4880": {
+  "name": "StageMarker::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_001a4880",
+  "why": "slot 123: 0x3151c0 + 0x1f4; answers 0x1a"
+ },
+ "001a4890": {
+  "name": "StageMarker::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_001a4890",
+  "why": "empty override of slot 3 of the +0x1c base (thunk 0x1a67d0)"
+ },
+ "001a48a0": {
+  "name": "StageMarker::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_001a48a0",
+  "why": "empty override of slot 2 of the +0x1c base (thunk 0x1a67e0)"
+ },
+ "001a48b0": {
+  "name": "StageMarker::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_001a48b0",
+  "why": "empty override of slot 1 of the +0x1c base (thunk 0x1a67f0)"
+ },
+ "001a48c0": {
+  "name": "StageMarker::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_001a48c0",
+  "why": "empty override of slot 0 of the +0x1c base (thunk 0x1a6800)"
+ },
+ "001a48d0": {
+  "name": "SubSceneProp::~SubSceneProp",
+  "tag": "game-inferred",
+  "was": "FUN_001a48d0",
+  "why": "deleting dtor of vtables 0x315420 / 0x315444 / 0x31545c over 0x269c30"
+ },
+ "001a4950": {
+  "name": "SubSceneProp::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_001a4950",
+  "why": "slot 123: 0x315420 + 0x1f4; answers 0x24"
+ },
  "001a5a70": {
   "name": "msl_string::operator_plus_cstr",
   "tag": "lib-context",
@@ -12545,6 +12827,108 @@
   "was": "FUN_001a6310",
   "why": "MSL std::string(const char *) instance"
  },
+ "001a67c0": {
+  "name": "SubSceneProp::~SubSceneProp_at40",
+  "tag": "game-inferred",
+  "was": "FUN_001a67c0",
+  "why": "this-adjust thunk: the script base at +0x40"
+ },
+ "001a67d0": {
+  "name": "StageMarker::sideHook3_at1c",
+  "tag": "game-inferred",
+  "was": "FUN_001a67d0",
+  "why": "this-adjust thunk of the +0x1c base"
+ },
+ "001a67e0": {
+  "name": "StageMarker::sideHook2_at1c",
+  "tag": "game-inferred",
+  "was": "FUN_001a67e0",
+  "why": "this-adjust thunk of the +0x1c base"
+ },
+ "001a67f0": {
+  "name": "StageMarker::sideHook1_at1c",
+  "tag": "game-inferred",
+  "was": "FUN_001a67f0",
+  "why": "this-adjust thunk of the +0x1c base"
+ },
+ "001a6800": {
+  "name": "StageMarker::sideHook0_at1c",
+  "tag": "game-inferred",
+  "was": "FUN_001a6800",
+  "why": "this-adjust thunk of the +0x1c base"
+ },
+ "001a6810": {
+  "name": "StageMarker::~StageMarker_at40",
+  "tag": "game-inferred",
+  "was": "FUN_001a6810",
+  "why": "this-adjust thunk: the script base at +0x40"
+ },
+ "001a6820": {
+  "name": "SubSceneModelObject::sideHook3_at1c",
+  "tag": "game-inferred",
+  "was": "FUN_001a6820",
+  "why": "this-adjust thunk to 0x2699e0"
+ },
+ "001a6830": {
+  "name": "SubSceneModelObject::sideHook2_at1c",
+  "tag": "game-inferred",
+  "was": "FUN_001a6830",
+  "why": "this-adjust thunk to 0x2699f0"
+ },
+ "001a6840": {
+  "name": "SubSceneModelObject::sideHook1_at1c",
+  "tag": "game-inferred",
+  "was": "FUN_001a6840",
+  "why": "this-adjust thunk to 0x269a70"
+ },
+ "001a6850": {
+  "name": "SubSceneModelObject::sideHook0_at1c",
+  "tag": "game-inferred",
+  "was": "FUN_001a6850",
+  "why": "this-adjust thunk to 0x269a80"
+ },
+ "001a6860": {
+  "name": "SubSceneModelObject::command78_at40",
+  "tag": "game-inferred",
+  "was": "FUN_001a6860",
+  "why": "this-adjust thunk to 0x268a20, slot 78 of the script base"
+ },
+ "001a6870": {
+  "name": "SubSceneModelObject::command13_at40",
+  "tag": "game-inferred",
+  "was": "FUN_001a6870",
+  "why": "this-adjust thunk to 0x268a90, slot 13 of the script base"
+ },
+ "001a6880": {
+  "name": "SubSceneDoorObject::~SubSceneDoorObject_at40",
+  "tag": "game-inferred",
+  "was": "FUN_001a6880",
+  "why": "this-adjust thunk: the script base at +0x40"
+ },
+ "001a6890": {
+  "name": "SubSceneModelObject::slot2_at40",
+  "tag": "game-inferred",
+  "was": "FUN_001a6890",
+  "why": "this-adjust thunk to 0x268ae0, slot 2 of the script base"
+ },
+ "001a68a0": {
+  "name": "SubSceneModelObject::slot1_at40",
+  "tag": "game-inferred",
+  "was": "FUN_001a68a0",
+  "why": "this-adjust thunk to 0x269160, slot 1 of the script base"
+ },
+ "001cf1b0": {
+  "name": "ScriptRunner::unsupportedCommand",
+  "tag": "game-inferred",
+  "was": "FUN_001cf1b0",
+  "why": "logs the Shift-JIS string at 0x304ab0, unsupported command, and answers 0"
+ },
+ "001cf1e0": {
+  "name": "ScriptRunner::defaultCommand",
+  "tag": "game-inferred",
+  "was": "FUN_001cf1e0",
+  "why": "answers 0; what the base's command slots call or tail-jump to"
+ },
  "001d27e0": {
   "name": "ScriptRunner::run",
   "tag": "game-inferred",
@@ -12556,6 +12940,12 @@
   "tag": "game-inferred",
   "was": "FUN_001d2f40",
   "why": "given a script's 0x1c-byte entry (the object's by name, a sub-scene's last)"
+ },
+ "001d30c0": {
+  "name": "ScriptRunner::~ScriptRunner",
+  "tag": "game-inferred",
+  "was": "FUN_001d30c0",
+  "why": "deleting dtor storing vtable 0x315850, the ScriptRunner ctor's; slot 4 of that table"
  },
  "001d3130": {
   "name": "ScriptRunner::ScriptRunner",
@@ -16482,10 +16872,10 @@
   "why": "the pack's +0xc index into its table +0x14: the script; null below 0"
  },
  "0026c8c0": {
-  "name": "SubSceneObject::SubSceneObject",
+  "name": "DemoExecuter::DemoExecuter",
   "tag": "game-inferred",
   "was": "FUN_0026c8c0",
-  "why": "script runner base, vtable 0x314d30 at +0xb4, +0xb9 = argument"
+  "why": "stores vtable 0x314d30, the class 0x19cf40 names DemoExecuter (was SubSceneObject)"
  },
  "0026c920": {
   "name": "DemoCamera::drawOverlay",
@@ -18497,6 +18887,12 @@
   "was": "FUN_002ce1c0",
   "why": "float range in f12: block node on when near a listed object"
  },
+ "002ce360": {
+  "name": "SceneBufferSet::addObject",
+  "tag": "game-inferred",
+  "was": "FUN_002ce360",
+  "why": "up to five objects passing two tests join the list at +0, count +0x14"
+ },
  "002ce3e0": {
   "name": "SceneBufferSet::attachCharacters",
   "tag": "game-inferred",
@@ -18509,11 +18905,29 @@
   "was": "FUN_002ce5a0",
   "why": "deleting dtor of StageScene +0x9c: deletes the eight blocks at +0x18..; name a guess"
  },
+ "002ce620": {
+  "name": "SceneBufferSet::createFor",
+  "tag": "game-inferred",
+  "was": "FUN_002ce620",
+  "why": "a new set of eight blocks when the owner's name is I_HATUEN, else null"
+ },
  "002ce790": {
   "name": "SceneBlock98::updateVisible",
   "tag": "game-inferred",
   "was": "FUN_002ce790",
   "why": "+0xc clear and +0x10 below 500: shown and the render group"
+ },
+ "002ce820": {
+  "name": "SceneBlock98::updateFor",
+  "tag": "game-inferred",
+  "was": "FUN_002ce820",
+  "why": "an object's frame against the block, given the player; only the shape is read"
+ },
+ "002ce9d0": {
+  "name": "SceneBlock98::createFor",
+  "tag": "game-inferred",
+  "was": "FUN_002ce9d0",
+  "why": "the block's constructor by name check, StageScene::createBlock98; only the shape is read"
  },
  "002ceb70": {
   "name": "SceneBlock98::setActive",
