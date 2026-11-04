@@ -308,16 +308,10 @@ void DemoCamera::cameraStep()
     ModelPoseBone *lens = pose->findBone(kBoneFovy);
     if (lens == nullptr)
         lens = pose->findBone(kBoneLength);
-    // PC: the ROM reads every bone unguarded. ModelPose::load is a stub, so a
-    // pose has no bones yet and the camera keeps its own place.
-    if (lens == nullptr)
-        return;
     float angle = lens->getValue();
     setScrZ(m_screenHeight / tanf(angle * kDegToRad));
 
     ModelPoseBone *top = pose->findBone(kBoneTop);
-    if (top == nullptr)
-        return;
 
     // The bone's rows to the view's: y and z swap, z turns over.
     sceVu0FMATRIX view;

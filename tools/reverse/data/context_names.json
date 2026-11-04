@@ -3695,6 +3695,18 @@
   "was": "FUN_00135c30",
   "why": "folds the vector into -pi/2..pi/2, one Taylor series (table 0x300e60) on all lanes; answers sin in f1,f3,f5 and cos in f2,f4,f6"
  },
+ "00135e20": {
+  "name": "wrapAngleVec",
+  "tag": "game-inferred",
+  "was": "FUN_00135e20",
+  "why": "VU status flag over pi + a, pi - a; all lanes through the 0x135ec0 formula"
+ },
+ "00135ec0": {
+  "name": "wrapAngleLane",
+  "tag": "game-inferred",
+  "was": "FUN_00135ec0",
+  "why": "angle + 2pi - trunc(a / 2pi) 2pi - trunc(1.5 + ...) 2pi"
+ },
  "00135f20": {
   "name": "vecDistance",
   "tag": "game-inferred",
@@ -3808,6 +3820,18 @@
   "tag": "game-inferred",
   "was": "FUN_001365a0",
   "why": "xyz dot product"
+ },
+ "001365d0": {
+  "name": "vecCross",
+  "tag": "game-inferred",
+  "was": "FUN_001365d0",
+  "why": "vopmula / vopmsub with w 0 from acc cleared"
+ },
+ "001365f0": {
+  "name": "multiplyTurn",
+  "tag": "game-inferred",
+  "was": "FUN_001365f0",
+  "why": "rows 0..2 of b through rows 0..2 of a, row 3 untouched"
  },
  "00136640": {
   "name": "multiplyMatrix",
@@ -6605,11 +6629,233 @@
   "was": "FUN_001494f0",
   "why": "value = arg, next = prev = 0; pushBack and pushFront construct their node with it"
  },
+ "00149510": {
+  "name": "quatAxisBetween",
+  "tag": "game-inferred",
+  "was": "FUN_00149510",
+  "why": "normalizes both, cross into out, acos of the dot into out.w (VU math head of the run)"
+ },
+ "00149580": {
+  "name": "quatSlerp",
+  "tag": "game-inferred",
+  "was": "FUN_00149580",
+  "why": "dot of two quaternions, sign flip, sin-based slerp under 0.949, else lerp + normalize"
+ },
+ "001496f0": {
+  "name": "quatMultiply",
+  "tag": "game-inferred",
+  "was": "FUN_001496f0",
+  "why": "vopmula / vmaddaw / vopmsub: Hamilton product"
+ },
+ "00149730": {
+  "name": "quatToMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00149730",
+  "why": "VU macro: rows from 2xx.. 2wz, the standard quaternion matrix"
+ },
+ "001497c0": {
+  "name": "quatFromAxisAngle",
+  "tag": "game-inferred",
+  "was": "FUN_001497c0",
+  "why": "xyz resized to sin(w/2), w = cos(w/2)"
+ },
+ "00149830": {
+  "name": "vecHeading",
+  "tag": "game-inferred",
+  "was": "FUN_00149830",
+  "why": "z cleared, normalized; acos(x) with the sign of asin(y)"
+ },
+ "001498d0": {
+  "name": "boneBasis",
+  "tag": "game-inferred",
+  "was": "FUN_001498d0",
+  "why": "rows m0, m2, -m1, m3; null: the same of identity. Every parentless bone goes through it"
+ },
+ "0014a1c0": {
+  "name": "ModelPoseBone::stepSwing",
+  "tag": "game-inferred",
+  "was": "FUN_0014a1c0",
+  "why": "called by update for bones whose name has sw at [3..4]; not read"
+ },
+ "0014a790": {
+  "name": "ModelPoseBone::settle",
+  "tag": "game-inferred",
+  "was": "FUN_0014a790",
+  "why": "update, feet solver, toes and pelvis, not read"
+ },
+ "0014a810": {
+  "name": "ModelPoseBone::settleFixed",
+  "tag": "game-inferred",
+  "was": "FUN_0014a810",
+  "why": "update, feet solver with kPoseFlagFootSolve, not read"
+ },
+ "0014ada0": {
+  "name": "ModelPoseBone::aimAxis",
+  "tag": "game-inferred",
+  "was": "FUN_0014ada0",
+  "why": "parent matrix, dir and target into it, cross and acos, limit in f12"
+ },
+ "0014b5f0": {
+  "name": "ModelPoseBone::turnVector",
+  "tag": "game-inferred",
+  "was": "FUN_0014b5f0",
+  "why": "vector through rows +0x80..+0xa0, w 0"
+ },
+ "0014b620": {
+  "name": "ModelPoseBone::getPosition",
+  "tag": "game-inferred",
+  "was": "FUN_0014b620",
+  "why": "copies +0xb0, matrix row 3"
+ },
+ "0014b630": {
+  "name": "ModelPoseBone::getRawHeight",
+  "tag": "game-inferred",
+  "was": "FUN_0014b630",
+  "why": "returns +0xf8, rawMatrix row 3 z"
+ },
+ "0014b650": {
+  "name": "ModelPoseBone::buildMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_0014b650",
+  "why": "quat / euler / identity from a slot into +0x80, current into +0xc0, parent times, history at +0x200.."
+ },
  "0014b970": {
   "name": "ModelPoseBone::getValue",
   "tag": "game-inferred",
   "was": "FUN_0014b970",
   "why": "+0x120 when flag 0x20 is set, else 0; DemoCamera reads the lens angle with it"
+ },
+ "0014b9a0": {
+  "name": "ModelPoseBone::interpolate",
+  "tag": "game-inferred",
+  "was": "FUN_0014b9a0",
+  "why": "slot = a to b: slerp or euler the short way, lerps position and value"
+ },
+ "0014bbe0": {
+  "name": "ModelPoseBone::seek",
+  "tag": "game-inferred",
+  "was": "FUN_0014bbe0",
+  "why": "walks keys to a frame, reads them; slot -1 only places the cursor"
+ },
+ "0014be10": {
+  "name": "ModelPoseBone::readKey",
+  "tag": "game-inferred",
+  "was": "FUN_0014be10",
+  "why": "key words by track bits into slots 0 and 1, last word abs is the span"
+ },
+ "0014c0c0": {
+  "name": "ModelPoseBone::stepRoot",
+  "tag": "game-inferred",
+  "was": "FUN_0014c0c0",
+  "why": "parentless with pose flag 0x40: moves the pose by the root delta * +0xe0 and turns it"
+ },
+ "0014c340": {
+  "name": "ModelPoseBone::advance",
+  "tag": "game-inferred",
+  "was": "FUN_0014c340",
+  "why": "modulo duration, recursion over keys, sets 8 near the end and 4 at the end"
+ },
+ "0014c670": {
+  "name": "ModelPoseBone::keyAt",
+  "tag": "game-inferred",
+  "was": "FUN_0014c670",
+  "why": "sums key lengths up to a frame; null on the last"
+ },
+ "0014c710": {
+  "name": "ModelPoseBone::bindTrack",
+  "tag": "game-inferred",
+  "was": "FUN_0014c710",
+  "why": "strcmp bone name, key offset, stride from track bits, seek"
+ },
+ "0014c980": {
+  "name": "ModelPoseBone::setup",
+  "tag": "game-inferred",
+  "was": "FUN_0014c980",
+  "why": "names, position, quat from a 0x40 record into all seven slots"
+ },
+ "0014cac0": {
+  "name": "ModelPoseBone::~ModelPoseBone",
+  "tag": "game-inferred",
+  "was": "FUN_0014cac0",
+  "why": "empty deleting dtor from ~ModelPose"
+ },
+ "0014cb10": {
+  "name": "ModelPoseBone::ModelPoseBone",
+  "tag": "game-inferred",
+  "was": "FUN_0014cb10",
+  "why": "load placement-constructs each 0x300 record; clears, identity at +0x80"
+ },
+ "0014d130": {
+  "name": "ModelPose::solveFeet",
+  "tag": "game-inferred",
+  "was": "FUN_0014d130",
+  "why": "update, under solver bit 1 with toes, with +0x310 and +0x330; not read"
+ },
+ "0014d370": {
+  "name": "ModelPose::solveNeckLimits",
+  "tag": "game-inferred",
+  "was": "FUN_0014d370",
+  "why": "update, when +0x3b0 is set; not read"
+ },
+ "0014d4c0": {
+  "name": "ModelPose::solveTool",
+  "tag": "game-inferred",
+  "was": "FUN_0014d4c0",
+  "why": "update, solver bit 4, rate +0x388; not read"
+ },
+ "0014d990": {
+  "name": "ModelPose::solveLook",
+  "tag": "game-inferred",
+  "was": "FUN_0014d990",
+  "why": "update, solver bit 8, rates +0x384 +0x380, +0x1a0; not read"
+ },
+ "0014df50": {
+  "name": "ModelPose::solveHead",
+  "tag": "game-inferred",
+  "was": "FUN_0014df50",
+  "why": "update, solver bit 2, rate +0x370; not read"
+ },
+ "0014e0a0": {
+  "name": "ModelPose::getLowerNames",
+  "tag": "game-inferred",
+  "was": "FUN_0014e0a0",
+  "why": "returns byte +0x394, set by load from name[6] lower case"
+ },
+ "0014e0b0": {
+  "name": "ModelPose::setFlag395",
+  "tag": "game-inferred",
+  "was": "FUN_0014e0b0",
+  "why": "stores byte +0x395"
+ },
+ "0014e0c0": {
+  "name": "ModelPose::setFootTargets",
+  "tag": "game-inferred",
+  "was": "FUN_0014e0c0",
+  "why": "with both toes: flag 0x200000, +0x310, +0x330; rate +0x390"
+ },
+ "0014e150": {
+  "name": "ModelPose::setToolTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0014e150",
+  "why": "needs bn_l_tool +0x198; +0x2f0 once, +0x300; rate +0x388"
+ },
+ "0014e1b0": {
+  "name": "ModelPose::setLookTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0014e1b0",
+  "why": "+0x2d0 once, +0x2e0; rates +0x380 +0x384"
+ },
+ "0014e200": {
+  "name": "ModelPose::setAimDirection",
+  "tag": "game-inferred",
+  "was": "FUN_0014e200",
+  "why": "normalized into +0x100, scaled 100; rate +0x38c, which solve eases +0xf0 by"
+ },
+ "0014e270": {
+  "name": "ModelPose::setHeadTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0014e270",
+  "why": "needs bn_head +0x180; +0x2b0 once, +0x2c0, z - 11; rate +0x370"
  },
  "0014e300": {
   "name": "ModelPose::getSurfaceFrames",
@@ -6617,17 +6863,71 @@
   "was": "FUN_0014e300",
   "why": "three floats from +0x178's record, fed to 0x2e3d90 by StageModel::advance"
  },
+ "0014e3b0": {
+  "name": "ModelPose::pushEvent",
+  "tag": "game-inferred",
+  "was": "FUN_0014e3b0",
+  "why": "strcpy into the first free of eight 16-byte slots at +0x1e0"
+ },
  "0014e410": {
   "name": "ModelPose::popEvent",
   "tag": "game-inferred",
   "was": "FUN_0014e410",
   "why": "takes the first of eight 0x10 strings at +0x1e0, shifts the rest; event names HIT_, STEP_L.."
  },
+ "0014e470": {
+  "name": "ModelPose::translate",
+  "tag": "game-inferred",
+  "was": "FUN_0014e470",
+  "why": "adds a vector to every bone row 3 and to the position"
+ },
  "0014e4d0": {
   "name": "ModelPose::solve",
   "tag": "game-inferred",
   "was": "FUN_0014e4d0",
   "why": "model +0xc, called with 3, -1, 0 when +0x150 is set; bone entries +0x15c; the name is a guess"
+ },
+ "0014e8b0": {
+  "name": "ModelPose::resetPlacement",
+  "tag": "game-inferred",
+  "was": "FUN_0014e8b0",
+  "why": "copyMatrix to +0x90 from an arg or +0x50, clears its translation"
+ },
+ "0014e900": {
+  "name": "ModelPose::stopWalk",
+  "tag": "game-inferred",
+  "was": "FUN_0014e900",
+  "why": "walk flag 0x10 on, 1 off, answers whether it was walking"
+ },
+ "0014e930": {
+  "name": "ModelPose::isWalking",
+  "tag": "game-inferred",
+  "was": "FUN_0014e930",
+  "why": "walk flag 1"
+ },
+ "0014e940": {
+  "name": "ModelPose::stepWalk",
+  "tag": "game-inferred",
+  "was": "FUN_0014e940",
+  "why": "update while walk flag 1: frames +0x280 down, position to +0x260, heading to +0x270"
+ },
+ "0014ed30": {
+  "name": "ModelPose::getWalkStart",
+  "tag": "game-inferred",
+  "was": "FUN_0014ed30",
+  "why": "placeRecord from a null record; out minus offset"
+ },
+ "0014ee00": {
+  "name": "ModelPose::getRecordOffset",
+  "tag": "game-inferred",
+  "was": "FUN_0014ee00",
+  "why": "placeRecord, out minus dir"
+ },
+ "0014ee60": {
+  "name": "ModelPose::startWalk",
+  "tag": "game-inferred",
+  "was": "FUN_0014ee60",
+  "why": "fills +0x260, +0x270, +0x280, flags 8, 4, 1; default aim 100 ahead through the root"
  },
  "0014ef60": {
   "name": "ModelPose::clearPlacement",
@@ -6640,6 +6940,18 @@
   "tag": "game-inferred",
   "was": "FUN_0014ef90",
   "why": "copies to +0x40, w 1; into the parent matrix +0x150's space while a motion plays"
+ },
+ "0014f010": {
+  "name": "ModelPose::getFootPositions",
+  "tag": "game-inferred",
+  "was": "FUN_0014f010",
+  "why": "matrix position of each toe parent, into non-null outs"
+ },
+ "0014f080": {
+  "name": "ModelPose::placeRecord",
+  "tag": "game-inferred",
+  "was": "FUN_0014f080",
+  "why": "record position y z swapped, turned by the heading of dir, plus origin"
  },
  "0014f190": {
   "name": "ModelPose::getPosition",
@@ -6665,11 +6977,23 @@
   "was": "FUN_0014f2a0",
   "why": "strcmp against bones[i].name (0x300 stride at +0x15c), null none"
  },
+ "0014f360": {
+  "name": "ModelPose::isBoneEnding",
+  "tag": "game-inferred",
+  "was": "FUN_0014f360",
+  "why": "by name (null: the first bone), play flag 8"
+ },
  "0014f430": {
   "name": "ModelPose::resetSwingBones",
   "tag": "game-inferred",
   "was": "FUN_0014f430",
   "why": "clears +0x27c on bones whose name has sw at index 3"
+ },
+ "0014f490": {
+  "name": "ModelPose::setRootScale",
+  "tag": "game-inferred",
+  "was": "FUN_0014f490",
+  "why": "stores four floats at +0xe0"
  },
  "0014f4b0": {
   "name": "ModelPose::update",
@@ -6712,6 +7036,12 @@
   "tag": "game-inferred",
   "was": "FUN_0014ff90",
   "why": "slot 1: StageModel::setBaseMotion passes the file and the bone names"
+ },
+ "00150c90": {
+  "name": "motionBoneSuffix",
+  "tag": "game-inferred",
+  "was": "FUN_00150c90",
+  "why": "first bone name starting with a prefix, atoi of the rest; -1 none"
  },
  "00150d80": {
   "name": "motionBoneMatrix",
@@ -21976,6 +22306,18 @@
   "tag": "game-inferred",
   "was": "FUN_002d0a10",
   "why": "(src, dst): SLDI magic (0x30f9d8), unpacked size +0xc, LZ copies / literal runs from +0x10; answers the size, -1 on a bad magic or length; PackJob::load decompresses a pack into its buffer"
+ },
+ "002d0d10": {
+  "name": "ModelMotion::bindTracksLayered",
+  "tag": "game-inferred",
+  "was": "FUN_002d0d10",
+  "why": "per bone, group mask, bindTrack on its cached track, sets bone +0x10"
+ },
+ "002d0e10": {
+  "name": "ModelMotion::bindTracks",
+  "tag": "game-inferred",
+  "was": "FUN_002d0e10",
+  "why": "the same plus the file flag 0x1000 seek through keyAt"
  },
  "002d0f30": {
   "name": "ModelMotion::~ModelMotion",

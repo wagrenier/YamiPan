@@ -17,10 +17,60 @@
 
 // The distance between a and b (xyz).
 float vecDistance(const sceVu0FVECTOR a, const sceVu0FVECTOR b);                  // FS2 0x00135f20
-// out = in resized to length len (xyz; out.w = in.w).
-void setVecLength(float len, sceVu0FVECTOR out, const sceVu0FVECTOR in);          // FS2 0x00135fe0
+// out = in resized to length len (xyz; out.w = in.w). PC: a zero vector stays
+// zero, as it does on the VU, where 1 / 0 is the largest float and 0 times it 0.
+// FS2 0x00135fe0
+inline void setVecLength(float len, sceVu0FVECTOR out, const sceVu0FVECTOR in)
+{
+    float square = in[0] * in[0] + in[1] * in[1] + in[2] * in[2];
+    float scale = square > 0.0f ? len / sqrtf(square) : 0.0f;
+    float w = in[3];
+    out[0] = in[0] * scale;
+    out[1] = in[1] * scale;
+    out[2] = in[2] * scale;
+    out[3] = w;
+}
 // out = in * s, all four lanes.
-void scaleVec4(float s, sceVu0FVECTOR out, const sceVu0FVECTOR in);               // FS2 0x00136490
+// FS2 0x00136490
+inline void scaleVec4(float s, sceVu0FVECTOR out, const sceVu0FVECTOR in)
+{
+    for (int lane = 0; lane < 4; lane++)
+        out[lane] = in[lane] * s;
+}
+// out = a x b (xyz), w 0.
+// FS2 0x001365d0
+inline void vecCross(sceVu0FVECTOR out, const sceVu0FVECTOR a, const sceVu0FVECTOR b)
+{
+    float x = a[1] * b[2] - a[2] * b[1];
+    float y = a[2] * b[0] - a[0] * b[2];
+    float z = a[0] * b[1] - a[1] * b[0];
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    out[3] = 0.0f;
+}
+// An angle into -pi..pi.
+// FS2 0x00135ec0
+inline float wrapAngleLane(float angle)
+{
+    constexpr float kOverTwoPi = 0.159154937f; // 0x3e22f983
+    constexpr float kTwoPi = 6.28318548f;      // 0x40c90fdb
+    float turns = (float)(int)(angle * kOverTwoPi);
+    return ((angle + kTwoPi) - turns * kTwoPi)
+         - (float)(int)((angle * kOverTwoPi + 1.5f) - turns) * kTwoPi;
+}
+// All four lanes the same way, when any is outside -pi..pi (the VU's sticky
+// sign flag over pi + a and pi - a).
+// FS2 0x00135e20
+inline void wrapAngleVec(sceVu0FVECTOR out, const sceVu0FVECTOR in)
+{
+    constexpr float kPi = 3.14159274f;
+    bool outside = false;
+    for (int lane = 0; lane < 4; lane++)
+        outside = outside || in[lane] + kPi < 0.0f || kPi - in[lane] < 0.0f;
+    for (int lane = 0; lane < 4; lane++)
+        out[lane] = outside ? wrapAngleLane(in[lane]) : in[lane];
+}
 // out = the inverse of a rotation + translation: rows 0..2 transposed with
 // w 0, row 3 = -(R^T t) keeping t.w.
 // FS2 0x00136500
@@ -143,11 +193,13 @@ inline float vecDistanceSq(const sceVu0FVECTOR a, const sceVu0FVECTOR b)
     return dx * dx + dy * dy + dz * dz;
 }
 // out = in at length 1 (xyz). The ROM leaves out's w to the register's last
-// value, so nothing reads it; here it is in's. out may be in.
+// value, so nothing reads it; here it is in's. out may be in. PC: zero stays
+// zero, as on the VU.
 // FS2 0x00136560
 inline void vecNormalize(sceVu0FVECTOR out, const sceVu0FVECTOR in)
 {
-    float scale = 1.0f / sqrtf(vecDot(in, in));
+    float square = vecDot(in, in);
+    float scale = square > 0.0f ? 1.0f / sqrtf(square) : 0.0f;
     float w = in[3];
     out[0] = in[0] * scale;
     out[1] = in[1] * scale;

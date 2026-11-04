@@ -418,7 +418,27 @@
    "why": "Cut out of unassigned@002b0d50 at bootstrap 6, on the user's word, to pin the menu scene: menuSceneThread 0x2b5740 and everything only its tree calls (0x2b5770 -> 0x2b5aa0, 0x2b5ab0, 0x2b62d0, 0x2b65e0, 0x2b66e0, 0x2b67d0, 0x2b6410, 0x2b5dc0, 0x2b60b0, 0x2b6770, 0x2b6810, 0x2b6a00); refs show no caller from outside, and 0x2b6b90 is called from 0x1ff184. The file name is the port's."
   },
   "game/modelpose.cpp": {
-   "task": "Step 1 of references/roadmap-3d-control.md: ModelPose load 0x14ff90, update 0x14f4b0, play and playFile, solve 0x14e4d0, ctor 0x151020, ModelMotion, with the math under them 0x149510..0x14e0a0. The opening event's camera is bones (DemoCamera::cameraStep, game/demoevent.cpp) and so is every character. Done when bn_top moves the event's view; delete the bone checks in cameraStep then."
+   "notes": "Written: ctor, dtor, load, update, solve, the play calls, the walk, the target setters, every bone step, ModelMotion, motionBoneMatrix, motionBoneSuffix, native 0x159 in scriptrunner.cpp (starts a cut). Batch 110, 57 names. Bone checks in cameraStep deleted. SEEN in a 200 s New Game run with no crash: DemoCamera has 3 bones; bn_top time runs at 1.2 a step, position stays near 7240,1161,-6103 with a slow drift, its forward row turns, lens 50, matrix rows unit and orthogonal to four places in every sample. NOT SEEN: any picture of the event. Everything after the intro movie is pure black, so nothing on screen proves this code, and whether the camera matrix reaches the renderer is unchecked. Black is expected while the SubScene objects are stubs, but that is an expectation, not a measurement. No character uses a pose yet: the name lists, blending into a new motion, stepRoot, the growth tables and the walk have run on the 3-bone camera or on nothing. Left in the TU as named stubs: solveLook, solveHead, solveTool, solveNeckLimits, solveFeet, settle, settleFixed, stepSwing, and unread math 0x149950..0x14a090, 0x14a890..0x14ac40, 0x14ad10, 0x14af70, 0x14b270, 0x14cc60. m_solvers has no writer found so far. Next for the picture: the SubScene objects 0x2bb680..0x2bc100, then skinned meshes. open-items.md has the doubts.",
+   "ranges": [
+    [
+     "00149510",
+     "00151270"
+    ],
+    [
+     "002d0d10",
+     "002d10f0"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 14:50",
+     "status": "partial",
+     "summary": "ModelPose, ModelPoseBone, ModelMotion and the quaternions written, native 0x159, solvers left as stubs"
+    }
+   ],
+   "status": "partial",
+   "task": "Step 1 of references/roadmap-3d-control.md: ModelPose load 0x14ff90, update 0x14f4b0, play and playFile, solve 0x14e4d0, ctor 0x151020, ModelMotion, with the math under them 0x149510..0x14e0a0. The opening event's camera is bones (DemoCamera::cameraStep, game/demoevent.cpp) and so is every character. Done when bn_top moves the event's view; delete the bone checks in cameraStep then.",
+   "why": "ModelPose and the bone math under it, 0x149510 up to the pose ctor; plus ModelMotion, four functions at 0x2d0d10, the same class by what they touch"
   },
   "game/movieplayer.cpp": {
    "notes": "Cut out of unassigned@001953f0 (its tail 0x1faa30..0x1fcb40; the rest of that run is still unassigned). New game/movieplayer.h; gamehooks.h lost MoviePlayer and gained StreamRing / FileStreamRing (unassigned@00148db0, not cut) and SoundSink / SoundPcmSink / SoundAdpcmSink / SoundFeeder (sound/sound.cpp). PC: uploadFrame calls the new host YamiPan_DrawUiMovie (decoded macroblocks as the player's texture, no GS upload); feedIpu paces by YamiPanMpegVideoPending as RosePan did; Stop/RestartDMA callbacks are no-ops; the reader starts null. Bootstrap 6 must add sceMpegDemuxPssRing to the host libmpeg, rename RosePanMpegVideoPending, bring eeregs.h, and implement YamiPan_DrawUiMovie. Doubts in open-items.md TU 34: kMovieAudioTail 0x4000, the data ring and MovieState_Abort have no writer here. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean with RosePan SDK headers plus stubs.",

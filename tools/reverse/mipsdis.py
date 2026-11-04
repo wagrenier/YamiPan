@@ -9,7 +9,7 @@ delay slots without Ghidra's `_` and `li` as `addiu rt,zero,imm`).
 Use it where Ghidra has no instructions (code after a tail call that no function covers, inline
 virtuals and hooks only reached through data pointers): GhidraMCP's disassemble_bytes writes
 instructions into the program unless dry_run is in the query string. Covers the integer, COP1 and
-common MMI encodings the game code uses; anything else prints as `.word`. jal/j targets and
+common MMI encodings and VU0 macro mode the game code uses; anything else prints as `.word`. jal/j targets and
 gp-relative addresses are annotated with the cached function names (work/feat_fs2.json).
 """
 import struct
@@ -49,6 +49,54 @@ MMI = {0x00: 'madd', 0x01: 'maddu', 0x04: 'plzcw', 0x10: 'mfhi1', 0x11: 'mthi1',
 
 def s16(v):
     return v - 0x10000 if v & 0x8000 else v
+
+
+def decode_cop2(w):
+    """VU0 macro mode (COP2) and the EE <-> VU moves; None when it is neither."""
+    if w >> 26 != 0x12:
+        return None
+    rs = (w >> 21) & 0x1f
+    ft, fs, fd = (w >> 16) & 0x1f, (w >> 11) & 0x1f, (w >> 6) & 0x1f
+    if rs < 0x10:
+        name = {1: 'qmfc2', 2: 'cfc2', 5: 'qmtc2', 6: 'ctc2'}.get(rs)
+        return f'{name} {R[ft]},vf{fs}' if name else None
+    dest = ''.join(c for c, bit in zip('xyzw', (8, 4, 2, 1)) if (rs & 0xf) & bit)
+    op = w & 0x3f
+    bc = 'xyzw'
+    three = {0x1c: 'vmulq', 0x1d: 'vmaxi', 0x1e: 'vmuli', 0x1f: 'vminii', 0x20: 'vaddq',
+             0x21: 'vmaddq', 0x22: 'vaddi', 0x23: 'vmaddi', 0x24: 'vsubq', 0x25: 'vmsubq',
+             0x26: 'vsubi', 0x27: 'vmsubi', 0x28: 'vadd', 0x29: 'vmadd', 0x2a: 'vmul',
+             0x2b: 'vmax', 0x2c: 'vsub', 0x2d: 'vmsub', 0x2e: 'vopmsub', 0x2f: 'vmini'}
+    if op < 0x1c:
+        base = ('vadd', 'vsub', 'vmadd', 'vmsub', 'vmax', 'vmini', 'vmul')[op >> 2]
+        return f'{base}{bc[op & 3]}.{dest} vf{fd},vf{fs},vf{ft}{bc[op & 3]}'
+    if op in three:
+        return f'{three[op]}.{dest} vf{fd},vf{fs},vf{ft}'
+    if op >= 0x3c:
+        fn = (w & 3) | (((w >> 6) & 0x1f) << 2)
+        if fn < 0x10 or 0x18 <= fn < 0x1c:
+            base = {0: 'vadda', 1: 'vsuba', 2: 'vmadda', 3: 'vmsuba', 6: 'vmula'}[fn >> 2]
+            return f'{base}{bc[fn & 3]}.{dest} acc,vf{fs},vf{ft}{bc[fn & 3]}'
+        two = {0x10: 'vitof0', 0x11: 'vitof4', 0x12: 'vitof12', 0x13: 'vitof15', 0x14: 'vftoi0',
+               0x15: 'vftoi4', 0x16: 'vftoi12', 0x17: 'vftoi15', 0x1d: 'vabs', 0x30: 'vmove',
+               0x31: 'vmr32'}
+        if fn in two:
+            return f'{two[fn]}.{dest} vf{ft},vf{fs}'
+        acc = {0x1c: 'vmulaq', 0x1e: 'vmulai', 0x20: 'vaddaq', 0x21: 'vmaddaq', 0x22: 'vaddai',
+               0x23: 'vmaddai', 0x24: 'vsubaq', 0x25: 'vmsubaq', 0x26: 'vsubai', 0x27: 'vmsubai',
+               0x28: 'vadda', 0x29: 'vmadda', 0x2a: 'vmula', 0x2c: 'vsuba', 0x2d: 'vmsuba',
+               0x2e: 'vopmula'}
+        if fn in acc:
+            return f'{acc[fn]}.{dest} acc,vf{fs},vf{ft}'
+        if fn == 0x2f:
+            return 'vnop'
+        if fn in (0x38, 0x39, 0x3a):
+            fsf, ftf = bc[(w >> 21) & 3], bc[(w >> 23) & 3]
+            name = {0x38: 'vdiv', 0x39: 'vsqrt', 0x3a: 'vrsqrt'}[fn]
+            return f'{name} Q,vf{fs}{fsf},vf{ft}{ftf}'
+        if fn == 0x3b:
+            return 'vwaitq'
+    return None
 
 
 def decode(pc, w, names, gp):
@@ -141,6 +189,9 @@ def decode(pc, w, names, gp):
         if m:
             return f'{m} {R[rd]},{R[rs]},{R[rt]}', ''
         return f'.word 0x{w:08x}', 'mmi'
+    text = decode_cop2(w)
+    if text:
+        return text, ''
     return f'.word 0x{w:08x}', ''
 
 

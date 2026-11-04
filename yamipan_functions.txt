@@ -987,8 +987,8 @@
 /* 00135b90 000000a0 */ rotationMatrixXyz(){}  // game
 /* 00135c30 00000114 */ sinCosVec(){}  // game
 /* 00135d50 000000c4 */ FUN_00135d50(){}
-/* 00135e20 0000009c */ FUN_00135e20(){}
-/* 00135ec0 00000054 */ FUN_00135ec0(){}
+/* 00135e20 0000009c */ wrapAngleVec(){}  // game
+/* 00135ec0 00000054 */ wrapAngleLane(){}  // game
 /* 00135f20 00000040 */ vecDistance(){}  // game
 /* 00135f70 00000024 */ vecDistanceSq(){}  // game
 /* 00135fa0 00000020 */ addScaledVec4(){}  // game
@@ -1010,8 +1010,8 @@
 /* 00136500 0000005c */ invertRigidMatrix(){}  // game
 /* 00136560 0000003c */ vecNormalize(){}  // game
 /* 001365a0 00000028 */ vecDot(){}  // game
-/* 001365d0 0000001c */ FUN_001365d0(){}
-/* 001365f0 0000004c */ FUN_001365f0(){}
+/* 001365d0 0000001c */ vecCross(){}  // game
+/* 001365f0 0000004c */ multiplyTurn(){}  // game
 /* 00136640 0000004c */ multiplyMatrix(){}  // game
 /* 00136690 0000002c */ applyMatrix(){}  // game
 
@@ -1602,86 +1602,86 @@
 /* 001494f0 00000014 */ StringList::Node::Node(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/modelpose.cpp
 // *****************************************************************************
 
-/* 00149510 0000006c */ FUN_00149510(){}
-/* 00149580 00000164 */ FUN_00149580(){}
-/* 001496f0 00000034 */ FUN_001496f0(){}
-/* 00149730 00000090 */ FUN_00149730(){}
-/* 001497c0 00000070 */ FUN_001497c0(){}
-/* 00149830 00000064 */ FUN_00149830(){}
+/* 00149510 0000006c */ quatAxisBetween(){}  // game
+/* 00149580 00000164 */ quatSlerp(){}  // game
+/* 001496f0 00000034 */ quatMultiply(){}  // game
+/* 00149730 00000090 */ quatToMatrix(){}  // game
+/* 001497c0 00000070 */ quatFromAxisAngle(){}  // game
+/* 00149830 00000064 */ vecHeading(){}  // game
 /* 001498a0 00000024 */ FUN_001498a0(){}
-/* 001498d0 00000060 */ FUN_001498d0(){}
+/* 001498d0 00000060 */ boneBasis(){}  // game
 /* 00149940 00000004 */ thunk_FUN_00149b40(){}
 /* 00149950 000001ec */ FUN_00149950(){}
 /* 00149b40 00000180 */ FUN_00149b40(){}
 /* 00149cc0 00000210 */ FUN_00149cc0(){}
 /* 00149ee0 000001a4 */ FUN_00149ee0(){}
 /* 0014a090 00000128 */ FUN_0014a090(){}
-/* 0014a1c0 000005c8 */ FUN_0014a1c0(){}
-/* 0014a790 00000074 */ FUN_0014a790(){}
-/* 0014a810 00000074 */ FUN_0014a810(){}
+/* 0014a1c0 000005c8 */ ModelPoseBone::stepSwing(){}  // game
+/* 0014a790 00000074 */ ModelPoseBone::settle(){}  // game
+/* 0014a810 00000074 */ ModelPoseBone::settleFixed(){}  // game
 /* 0014a890 00000120 */ FUN_0014a890(){}
 /* 0014a9b0 00000018 */ FUN_0014a9b0(){}
 /* 0014a9d0 000000c4 */ FUN_0014a9d0(){}
 /* 0014aaa0 00000198 */ FUN_0014aaa0(){}
 /* 0014ac40 000000d0 */ FUN_0014ac40(){}
 /* 0014ad10 00000088 */ FUN_0014ad10(){}
-/* 0014ada0 000001c8 */ FUN_0014ada0(){}
+/* 0014ada0 000001c8 */ ModelPoseBone::aimAxis(){}  // game
 /* 0014af70 00000300 */ FUN_0014af70(){}
 /* 0014b270 00000378 */ FUN_0014b270(){}
-/* 0014b5f0 00000028 */ FUN_0014b5f0(){}
-/* 0014b620 0000000c */ FUN_0014b620(){}
-/* 0014b630 00000018 */ FUN_0014b630(){}
-/* 0014b650 00000320 */ FUN_0014b650(){}
+/* 0014b5f0 00000028 */ ModelPoseBone::turnVector(){}  // game
+/* 0014b620 0000000c */ ModelPoseBone::getPosition(){}  // game
+/* 0014b630 00000018 */ ModelPoseBone::getRawHeight(){}  // game
+/* 0014b650 00000320 */ ModelPoseBone::buildMatrix(){}  // game
 /* 0014b970 00000020 */ ModelPoseBone::getValue(){}  // game
-/* 0014b9a0 00000238 */ FUN_0014b9a0(){}
-/* 0014bbe0 0000022c */ FUN_0014bbe0(){}
-/* 0014be10 000002ac */ FUN_0014be10(){}
-/* 0014c0c0 00000280 */ FUN_0014c0c0(){}
-/* 0014c340 0000032c */ FUN_0014c340(){}
-/* 0014c670 00000090 */ FUN_0014c670(){}
-/* 0014c710 00000264 */ FUN_0014c710(){}
-/* 0014c980 00000140 */ FUN_0014c980(){}
-/* 0014cac0 00000044 */ FUN_0014cac0(){}
-/* 0014cb10 00000148 */ FUN_0014cb10(){}
+/* 0014b9a0 00000238 */ ModelPoseBone::interpolate(){}  // game
+/* 0014bbe0 0000022c */ ModelPoseBone::seek(){}  // game
+/* 0014be10 000002ac */ ModelPoseBone::readKey(){}  // game
+/* 0014c0c0 00000280 */ ModelPoseBone::stepRoot(){}  // game
+/* 0014c340 0000032c */ ModelPoseBone::advance(){}  // game
+/* 0014c670 00000090 */ ModelPoseBone::keyAt(){}  // game
+/* 0014c710 00000264 */ ModelPoseBone::bindTrack(){}  // game
+/* 0014c980 00000140 */ ModelPoseBone::setup(){}  // game
+/* 0014cac0 00000044 */ ModelPoseBone::~ModelPoseBone(){}  // game
+/* 0014cb10 00000148 */ ModelPoseBone::ModelPoseBone(){}  // game
 /* 0014cc60 000004d0 */ FUN_0014cc60(){}
-/* 0014d130 00000234 */ FUN_0014d130(){}
-/* 0014d370 00000144 */ FUN_0014d370(){}
-/* 0014d4c0 000004c4 */ FUN_0014d4c0(){}
-/* 0014d990 000005b8 */ FUN_0014d990(){}
-/* 0014df50 00000144 */ FUN_0014df50(){}
-/* 0014e0a0 00000008 */ FUN_0014e0a0(){}
-/* 0014e0b0 00000008 */ FUN_0014e0b0(){}
-/* 0014e0c0 00000080 */ FUN_0014e0c0(){}
-/* 0014e150 00000058 */ FUN_0014e150(){}
-/* 0014e1b0 00000048 */ FUN_0014e1b0(){}
-/* 0014e200 0000006c */ FUN_0014e200(){}
-/* 0014e270 00000080 */ FUN_0014e270(){}
+/* 0014d130 00000234 */ ModelPose::solveFeet(){}  // game
+/* 0014d370 00000144 */ ModelPose::solveNeckLimits(){}  // game
+/* 0014d4c0 000004c4 */ ModelPose::solveTool(){}  // game
+/* 0014d990 000005b8 */ ModelPose::solveLook(){}  // game
+/* 0014df50 00000144 */ ModelPose::solveHead(){}  // game
+/* 0014e0a0 00000008 */ ModelPose::getLowerNames(){}  // game
+/* 0014e0b0 00000008 */ ModelPose::setFlag395(){}  // game
+/* 0014e0c0 00000080 */ ModelPose::setFootTargets(){}  // game
+/* 0014e150 00000058 */ ModelPose::setToolTarget(){}  // game
+/* 0014e1b0 00000048 */ ModelPose::setLookTarget(){}  // game
+/* 0014e200 0000006c */ ModelPose::setAimDirection(){}  // game
+/* 0014e270 00000080 */ ModelPose::setHeadTarget(){}  // game
 /* 0014e300 000000a4 */ ModelPose::getSurfaceFrames(){}  // game
-/* 0014e3b0 00000060 */ FUN_0014e3b0(){}
+/* 0014e3b0 00000060 */ ModelPose::pushEvent(){}  // game
 /* 0014e410 00000054 */ ModelPose::popEvent(){}  // game
-/* 0014e470 0000005c */ FUN_0014e470(){}
+/* 0014e470 0000005c */ ModelPose::translate(){}  // game
 /* 0014e4d0 000003e0 */ ModelPose::solve(){}  // game
-/* 0014e8b0 00000050 */ FUN_0014e8b0(){}
-/* 0014e900 00000028 */ FUN_0014e900(){}
-/* 0014e930 00000010 */ FUN_0014e930(){}
-/* 0014e940 000003f0 */ FUN_0014e940(){}
-/* 0014ed30 000000d0 */ FUN_0014ed30(){}
-/* 0014ee00 00000058 */ FUN_0014ee00(){}
-/* 0014ee60 000000f4 */ FUN_0014ee60(){}
+/* 0014e8b0 00000050 */ ModelPose::resetPlacement(){}  // game
+/* 0014e900 00000028 */ ModelPose::stopWalk(){}  // game
+/* 0014e930 00000010 */ ModelPose::isWalking(){}  // game
+/* 0014e940 000003f0 */ ModelPose::stepWalk(){}  // game
+/* 0014ed30 000000d0 */ ModelPose::getWalkStart(){}  // game
+/* 0014ee00 00000058 */ ModelPose::getRecordOffset(){}  // game
+/* 0014ee60 000000f4 */ ModelPose::startWalk(){}  // game
 /* 0014ef60 00000024 */ ModelPose::clearPlacement(){}  // game
 /* 0014ef90 00000078 */ ModelPose::setPosition(){}  // game
-/* 0014f010 00000064 */ FUN_0014f010(){}
-/* 0014f080 00000108 */ FUN_0014f080(){}
+/* 0014f010 00000064 */ ModelPose::getFootPositions(){}  // game
+/* 0014f080 00000108 */ ModelPose::placeRecord(){}  // game
 /* 0014f190 0000001c */ ModelPose::getPosition(){}  // game
 /* 0014f1b0 0000001c */ ModelPose::getPosition2(){}  // game
 /* 0014f1d0 000000d0 */ ModelPose::rotate(){}  // game
 /* 0014f2a0 000000b8 */ ModelPose::findBone(){}  // game
-/* 0014f360 000000c8 */ FUN_0014f360(){}
+/* 0014f360 000000c8 */ ModelPose::isBoneEnding(){}  // game
 /* 0014f430 0000005c */ ModelPose::resetSwingBones(){}  // game
-/* 0014f490 00000014 */ FUN_0014f490(){}
+/* 0014f490 00000014 */ ModelPose::setRootScale(){}  // game
 /* 0014f4b0 0000040c */ ModelPose::update(){}  // game
 /* 0014f8c0 00000044 */ ModelPose::getBoneMatrix(){}  // game
 /* 0014f910 0000003c */ ModelPose::playLayered(){}  // game
@@ -1689,10 +1689,15 @@
 /* 0014fab0 000001e4 */ ModelPose::play(){}  // game
 /* 0014fca0 000002e8 */ ModelPose::playFile(){}  // game
 /* 0014ff90 00000d00 */ ModelPose::load(){}  // game
-/* 00150c90 000000ec */ FUN_00150c90(){}
+/* 00150c90 000000ec */ motionBoneSuffix(){}  // game
 /* 00150d80 000001c8 */ motionBoneMatrix(){}  // game
 /* 00150f50 000000c8 */ ModelPose::~ModelPose(){}  // game
 /* 00151020 00000248 */ ModelPose::ModelPose(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 00151270 00000004 */ debugSysUpdate(){}  // game
 /* 00151280 00000004 */ debugSysShutdown(){}  // game
 /* 00151290 00000004 */ debugSysInit(){}  // game
@@ -7872,13 +7877,18 @@
 /* 002d0a10 00000300 */ sldiDecompress(){}  // game
 
 // *****************************************************************************
+// FILE -- game/modelpose.cpp
+// *****************************************************************************
+
+/* 002d0d10 000000fc */ ModelMotion::bindTracksLayered(){}  // game
+/* 002d0e10 00000120 */ ModelMotion::bindTracks(){}  // game
+/* 002d0f30 00000064 */ ModelMotion::~ModelMotion(){}  // game
+/* 002d0fa0 00000150 */ ModelMotion::ModelMotion(){}  // game
+
+// *****************************************************************************
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 002d0d10 000000fc */ FUN_002d0d10(){}
-/* 002d0e10 00000120 */ FUN_002d0e10(){}
-/* 002d0f30 00000064 */ ModelMotion::~ModelMotion(){}  // game
-/* 002d0fa0 00000150 */ ModelMotion::ModelMotion(){}  // game
 /* 002d10f0 00001b30 */ FUN_002d10f0(){}
 /* 002d2c20 0000006c */ FUN_002d2c20(){}
 /* 002d2c90 00000178 */ FUN_002d2c90(){}
