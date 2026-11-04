@@ -21,7 +21,7 @@ LIGHT_NATIVES = {
     0x1b9: 'modelAmbient(set, key, r, g, b)',
     0x1ba: 'modelLight(set, i, key, rx, ry, rz, r, g, b)',
     0x1bb: 'fog(set, key, near, far, nearValue, farValue, r, g, b)',
-    0x1bc: 'farFog(set, i, key, near, far, nearValue, farValue, r, g, b)',
+    0x1bc: 'farFog0(set, key, near, far, nearValue, farValue, r, g, b)',
     0x1bd: 'transition0(set, key, value)',
     0x1be: 'transition1(set, key, value)',
     0x1c2: 'addSetKeys(set, time)',

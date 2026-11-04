@@ -466,12 +466,6 @@ bool StagePlayer::isMode1()
 }
 
 // stub of FS2 0x001d3a40
-StageScript * StageScript::relocate(bool withTable2)
-{
-    YAMIPAN_STUB("StageScript::relocate", 0x001d3a40);
-    return {};
-}
-
 // stub of FS2 0x002bbdb0
 SubSceneGateObject::SubSceneGateObject(int)
 {
@@ -766,17 +760,7 @@ void ScreenFill::setImage(const void *image)
 }
 
 // stub of FS2 0x001d27e0
-void ScriptRunner::run(int arg)
-{
-    YAMIPAN_STUB("ScriptRunner::run", 0x001d27e0);
-}
-
 // stub of FS2 0x001d2f40
-void ScriptRunner::setEntry(const void *entry)
-{
-    YAMIPAN_STUB("ScriptRunner::setEntry", 0x001d2f40);
-}
-
 // stub of FS2 address unknown (0 candidates)
 SphereVolume::SphereVolume()
 {
@@ -936,17 +920,7 @@ int parseSpawnId(const char *name)
 }
 
 // stub of FS2 0x0029f050
-void scriptPrepare(StageScript *script)
-{
-    YAMIPAN_STUB("scriptPrepare", 0x0029f050);
-}
-
 // stub of FS2 address unknown (0 candidates)
-ScriptRunner::ScriptRunner()
-{
-    YAMIPAN_STUB("ScriptRunner::ScriptRunner", 0x00000000);
-}
-
 // stub of FS2 address unknown (0 candidates)
 
 // stub of FS2 0x0017ef10
@@ -1178,11 +1152,6 @@ void ScreenFill::draw(sceVif1Packet *packet, TexAreaList *texList)
 }
 
 // stub of FS2 address unknown (1 candidates)
-ScriptRunner::~ScriptRunner()
-{
-    YAMIPAN_STUB("ScriptRunner::~ScriptRunner", 0x001d30c0);
-}
-
 // stub of FS2 address unknown (1 candidates)
 bool StageEvent::hidesText()
 {
@@ -1599,19 +1568,7 @@ SceneBufferSet * SceneBufferSet::createFor(StageObject *owner, StageNodeTree *tr
 }
 
 // stub of FS2 0x001cf1e0
-int ScriptRunner::defaultCommand()
-{
-    YAMIPAN_STUB("ScriptRunner::defaultCommand", 0x001cf1e0);
-    return {};
-}
-
 // stub of FS2 0x001cf1b0
-int ScriptRunner::unsupportedCommand()
-{
-    YAMIPAN_STUB("ScriptRunner::unsupportedCommand", 0x001cf1b0);
-    return {};
-}
-
 // stub of FS2 0x002430a0
 void SceneUiState::addNoise(float loudness, StageObject *object, void *extra)
 {
@@ -1706,12 +1663,6 @@ void StageParticle::setRangeSquared(float rangeSquared)
 }
 
 // stub of FS2 0x001d3d20
-const void * StageScript::findEntry(const char *name)
-{
-    YAMIPAN_STUB("StageScript::findEntry", 0x001d3d20);
-    return {};
-}
-
 // stub of FS2 0x0023db50
 ItemPhysics::ItemPhysics(bool, bool)
 {

@@ -2,5 +2,4 @@
 // promise them, and the build must define them. Each moves to its TU when that is written.
 #include "game/gamehooks.h"
 
-ScriptRunner *gRunningScript;           /* sbss 0x31ae18 (gp-0x7a58) */
 Memcard *gMenuMemcard;                  /* sbss 0x31ae94 */

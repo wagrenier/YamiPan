@@ -24,6 +24,7 @@
 #include "game/gamepaths.h"
 #include "game/layoutpaths.h"
 #include "game/menupack.h"
+#include "game/scriptrunner.h"
 #include "game/seplayer.h"
 #include "game/stageloop.h"
 #include "game/stageobjlist.h"
@@ -411,88 +412,6 @@ struct ModelPartRec
     u_char  flagE;              // FS2 +0xe: only the two virtuals (unread)
     bool    hasMesh;            // FS2 +0xf: ModelMesh::parts is set
 };
-// A script-run object: the map's name is the script's. Stage objects have
-// one at +0x40 (so has a sub-scene, as its base).
-//
-// Vtable 0x315850, 108 slots: most are the script's commands, and this base
-// answers each one with a default (0x315690 forwards them to a target).
-// CodeWarrior put a copy of the defaults below beside DemoExecuter's vtable
-// in game/stagescene.cpp, so these are the ones written so far; the other
-// slots and the commands' meaning wait for this class's TU (unassigned@
-// 001a68b0), which also fixes the placeholder names and argument types.
-// Host order is not EE order yet: nothing calls a slot.
-// layout: host -- EE: vptr +0xb4; +4 the run depth.
-class ScriptRunner
-{
-public:
-    ScriptRunner();                                                      // FS2 0x001d3130
-    virtual ~ScriptRunner();                                             // FS2 0x001d30c0: deleting
-    // The script entry it runs.
-    void setEntry(const void *entry);                                    // FS2 0x001d2f40
-    // One step: it is gRunningScript meanwhile.
-    void run(int arg);                                                   // FS2 0x001d27e0
-
-    // The command's default: logs "unsupported command" (Shift-JIS at
-    // 0x304ab0; the log is empty in retail) and answers 0.
-    int unsupportedCommand();                                            // FS2 0x001cf1b0
-    // The default of most commands: 0.
-    int defaultCommand();                                                // FS2 0x001cf1e0
-
-    // Slot 7 (+0x24): the class's name; null here (0x1a7a10).
-    virtual const char *getName() { return nullptr; }
-
-    // FS2 0x0019cf50
-    virtual int command10() { return 0; }
-    // FS2 0x0019cf60
-    virtual int command11() { return 0; }
-    // FS2 0x0019cf70
-    virtual int command12() { return 0; }
-    // FS2 0x0019cf80
-    virtual void command13(void *) {}
-    // FS2 0x0019cf90
-    virtual void command14(void *) {}
-    // FS2 0x0019cfa0
-    virtual void command15(void *) {}
-    // FS2 0x0019cfb0
-    virtual void command34(void *) {}
-    // FS2 0x0019cfc0
-    // callcheck: unsupportedCommand
-    virtual int command39()
-    {
-        unsupportedCommand();
-        return 0;
-    }
-    // FS2 0x0019cfe0
-    // callcheck: defaultCommand
-    virtual float command58(void *) { return (float)defaultCommand(); }
-    // FS2 0x0019d010
-    // callcheck: defaultCommand
-    virtual float command59(void *) { return (float)defaultCommand(); }
-    // A tail jump to defaultCommand.
-    // FS2 0x0019d050
-    virtual int command80() { return defaultCommand(); }
-    // A tail jump to defaultCommand.
-    // FS2 0x0019d040
-    virtual int command83(void *, void *, void *) { return defaultCommand(); }
-    // A tail jump to defaultCommand.
-    // FS2 0x0019d060
-    virtual int command87() { return defaultCommand(); }
-    // FS2 0x0019d070
-    virtual void command88() {}
-    // FS2 0x0019d080
-    // callcheck: defaultCommand
-    virtual bool command99() { return defaultCommand() != 0; }
-    // A tail jump to defaultCommand.
-    // FS2 0x0019d0a0
-    virtual int command100() { return defaultCommand(); }
-    // A tail jump to defaultCommand.
-    // FS2 0x0019d0b0
-    virtual int command101(void *) { return defaultCommand(); }
-
-    int    m_running = 0;       // FS2 +0xa8: non-zero while the script has more to do (StageScene::update)
-    u_char m_skippable = 0;     // FS2 +0xb9: a sub-scene's: start ends it
-};
-extern ScriptRunner *gRunningScript;    /* sbss 0x31ae18 (gp-0x7a58) */
 // The object's second base (EE +0x18): the view flag, then a vtable of four
 // slots (empty in the base's table): an entry of ScenePairTable, whose four
 // action steps call them. StageMarker's are empty; a light's third is its
@@ -563,6 +482,12 @@ public:
     }
     // FS2 0x00172350
     virtual const char *getObjectName() { return m_name; }
+    // The runner's slots: thunks to the object's (-0x40). FS2 0x00177520,
+    // 0x00177f10, 0x00177f00, 0x00177480 are those thunks.
+    const char *getName() override { return getObjectName(); }
+    void scriptSetPosition(const float *pos) override { setPosition(pos); }
+    void scriptSetRotation(const float *rot) override { setRotation(rot); }
+    StageObject *getScriptObject() override { return this; }
     // The object as a target; a class that stands for another overrides it.
     // FS2 0x001722d0
     virtual StageObject *getSelf() { return this; }
@@ -1450,28 +1375,6 @@ public:
     explicit SigLamp(Tim2Texture *texture);                              // FS2 0x002a7bf0
 };
 
-// A script file as loaded (script/ in the stage script; 0x1d3a40 turns its
-// offsets into pointers; run unassigned@001a68b0).
-// layout: file -- 32-bit on the disc; only the counts are read here.
-struct StageScript
-{
-    // PC: the two tables at +0 / +4 are 32-bit fields in the file; the
-    // relocate of their TU must keep the pointers off the image.
-    int   table;                // FS2 +0x0
-    int   table2;               // FS2 +0x4
-    short count;                // FS2 +0x8
-    short slotCount;            // FS2 +0xa: StageScene::scriptSlots
-
-    StageScript *relocate(bool withTable2);                              // FS2 0x001d3a40
-    // Entry index of the first table (0x1c bytes each; inline in the ROM).
-    // PC: table stays an offset from the script (above), so relocate's TU
-    // must leave it one.
-    const void *entry(int index) const { return (const char *)this + table + index * 0x1c; }
-    // The entry of the first table whose name is name, null none (also on a
-    // null script: the ROM tests this).
-    const void *findEntry(const char *name);                             // FS2 0x001d3d20
-};
-static_assert(sizeof(StageScript) == 0xc, "StageScript: the file header");
 
 // A collision file as loaded ("SSS\x1a" first; run unassigned@00231c90).
 // layout: file -- only the magic is read here.
@@ -2498,7 +2401,6 @@ struct SubSceneData
 };
 // Goes over a relocated script's text tables (magic LBL, STR, SST); read
 // only by its shape.
-void scriptPrepare(StageScript *script);                                 // FS2 0x0029f050
 
 // StageScene (the current stage object) and StageFiles (the stage's
 // files): game/stagescene.h.

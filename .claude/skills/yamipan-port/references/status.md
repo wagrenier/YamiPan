@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-04 11:35 at commit `1fae173` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-04 12:30 at commit `bc1b644` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,27 +10,27 @@ Generated 2026-11-04 11:35 at commit `1fae173` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **3105** (47%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 2188
-- context-name ledger: 3732 entries; overrides of wrong library matches: 0
-- placed in a source file: 2991/6599 in 84 files
+- game functions: **6599**, named **3178** (48%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 2261
+- context-name ledger: 3805 entries; overrides of wrong library matches: 0
+- placed in a source file: 3643/6599 in 85 files
 
 Least-named game-code regions (64 KB blocks):
 
 | block | named | inferred files |
 |---|---|---|
-| `001b0000` | 0/242 (0%) | - |
 | `00220000` | 0/167 (0%) | - |
 | `00310000` | 0/9 (0%) | - |
 | `00270000` | 3/202 (1%) | - |
-| `001c0000` | 4/233 (2%) | - |
 | `001e0000` | 3/75 (4%) | - |
+| `001b0000` | 11/242 (5%) | game/scriptrunner.cpp |
+| `001c0000` | 11/233 (5%) | game/scriptrunner.cpp |
 | `00210000` | 13/231 (6%) | - |
 | `00200000` | 10/122 (8%) | - |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **2696**; stubs: **309**
+- reconstructed FS2 functions: **2769**; stubs: **303**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -67,6 +67,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/scene.cpp` | 1 | 0 |
 | `src/game/scenerender.cpp` | 23 | 0 |
 | `src/game/screen.cpp` | 18 | 0 |
+| `src/game/scriptrunner.cpp` | 73 | 2 |
 | `src/game/seplayer.cpp` | 35 | 0 |
 | `src/game/sldi.cpp` | 1 | 0 |
 | `src/game/spkrom.cpp` | 13 | 0 |
@@ -96,7 +97,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/vectortrack.cpp` | 10 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 266 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 259 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 15 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -124,10 +125,11 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 121 TUs: todo 63, partial 12, verify 70, done 2
-- next: **game/scriptrunner.cpp** (pinned in the queue)
-- pinned queue: game/scriptrunner.cpp, game/scenerender.cpp, game/demoevent.cpp, yamipan/rendering/model_renderer.cpp
+- 125 TUs: todo 65, partial 13, verify 70, done 2
+- next: **game/scenerender.cpp** (pinned in the queue)
+- pinned queue: game/scenerender.cpp, game/demoevent.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
 - partial: `game/scenerender.cpp` 24/34 -- All of SceneRender 0x1f6ac0..0x1fa900, rena light records, game/vectortrack.cpp and StageCamera::setRange are written. Every light value comes only from script 
+- partial: `game/scriptrunner.cpp` 73/652 -- VM 0x1d1c40, ScriptRunner, ScriptFrame, relocate, findEntry, scriptPrepare, the arg readers and 30 natives (every one stage 1 bg script calls) are written. All 
 - partial: `game/stageobject.cpp` 40/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
 - partial: `yamipan/rendering/model_renderer.cpp` 0/0 -- Written: game/stagecamera.cpp whole base plus StageMainCamera (0x178160 step, 0x179490, 0x179680, ctor). The step has NEVER run: StageCharacter ctor and setup a
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -203,6 +205,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-04 12:30 `game/scriptrunner.cpp` partial: Stage script VM written, 30 natives; the scripts key the lights, picture unchanged, the pin stays
 - 2026-11-04 11:34 `game/scenerender.cpp` partial: SceneRender and VectorTrack written; the keys come from scripts, so the pin stays
 - 2026-11-04 10:49 `yamipan/rendering/model_renderer.cpp` partial: Main camera written (never run: no character links it yet), VU1 light formula read and in the host, lighting pinned; map darker, not compared with the game
 - 2026-11-04 10:11 `yamipan/rendering/model_renderer.cpp` partial: First 3D picture: textured map ground through a new host 3D module; camera and map objects written; lighting a guess, characters not drawn, not compared with th
@@ -210,22 +213,21 @@ Recent sessions:
 - 2026-11-04 08:34 `game/stagemodel.cpp` verify: StageModel 0x187230..0x188d60: all 19 functions written, ModelPose stand-in, StringMap::balance
 - 2026-11-04 07:58 `game/nodetransform.cpp` verify: NodeTransform, the bone and matrix nodes, StageNodeBase walks; 3D path 2 of 5
 - 2026-11-04 07:34 `game/packtables.cpp` verify: stage scripts now parse: String / StringList, PackTables::parse and PackTables::PackTables written, RM2 relocate, createInstance reached
-- 2026-11-04 07:32 `game/stringlist.cpp` done: marked todo -> done: the stage scripts split into lines and words through it in the New Game run; stringlist functions all written (0x1490a0 is the vtable wrapp
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@00135990` | partial | 1/3/33 | 3.1 | 156 | 0 |
-| `unassigned@00171300` | partial | 20/18/421 | 52.5 | 68 | 0 |
 | `game/vectortrack.cpp` | partial | 9/0/16 | 2.5 | 68 | 0 |
+| `unassigned@00171300` | partial | 20/18/421 | 52.5 | 68 | 0 |
 | `unassigned@001fe6b0` | todo | 0/37/563 | 197.2 | 66 | 0 |
 | `unassigned@00149510` | todo | 0/19/109 | 33.9 | 46 | 2 |
+| `unassigned@002849c0` | todo | 0/30/129 | 44.6 | 41 | 0 |
 | `unassigned@0018c050` | todo | 0/14/71 | 29.7 | 41 | 0 |
-| `unassigned@002849c0` | todo | 0/30/129 | 44.6 | 40 | 0 |
 | `unassigned@002b0d50` | todo | 0/24/85 | 17.9 | 37 | 0 |
 | `unassigned@00231d40` | partial | 2/11/58 | 36.1 | 32 | 0 |
 | `unassigned@001d85b0` | todo | 0/12/239 | 119.7 | 29 | 0 |
-| `unassigned@001a68b0` | todo | 0/7/714 | 174.8 | 28 | 0 |
-| `unassigned@0029a730` | todo | 0/12/203 | 60.0 | 27 | 0 |
+| `game/scriptrunner.cpp` | partial | 73/2/652 | 172.7 | 29 | 0 |
+| `unassigned@002e5450` | partial | 14/0/39 | 16.6 | 25 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -243,6 +245,7 @@ Recent sessions:
 | `001365a0` | vecDot | 15 | game | missing | - |
 | `0029a700` | FUN_0029a700 | 15 | - | missing | game/vectortrack.cpp |
 | `00136400` | identityMatrix | 14 | game | missing | - |
+| `001d1a00` | ScriptRunner::getEntry | 14 | game | missing | game/scriptrunner.cpp |
 | `001842c0` | StageNodeList::pushBack | 14 | game | missing | game/stageitem.cpp |
 | `0017e260` | FUN_0017e260 | 13 | - | missing | - |
 | `00296cc0` | VectorFade::VectorFade | 12 | game | missing | game/vectortrack.cpp |
@@ -255,7 +258,6 @@ Recent sessions:
 | `00177270` | BoneNode::find | 9 | game | missing | - |
 | `001715f0` | ScenePairTable::add | 8 | game | stub | - |
 | `00215ef0` | StageObject::isPlayer | 8 | game | stub | - |
-| `001cf1e0` | ScriptRunner::defaultCommand | 8 | game | stub | - |
 | `002ec110` | getDrawTarget | 7 | game | missing | - |
 | `001361c0` | rotateMatrixX | 7 | game | missing | - |
 | `00136500` | invertRigidMatrix | 7 | game | missing | - |
@@ -268,7 +270,7 @@ Recent sessions:
 | `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
 | `001fea50` | StageParty::getCompanion | 6 | game | stub | - |
 | `00136430` | copyMatrix | 6 | game | missing | - |
+| `001d1c20` | ScriptRunner::getParent2 | 6 | game | missing | game/scriptrunner.cpp |
 | `00189840` | FUN_00189840 | 6 | - | missing | - |
 | `002c0db0` | FUN_002c0db0 | 6 | - | missing | game/packtables.cpp |
-| `0017e1b0` | FUN_0017e1b0 | 6 | - | missing | - |
 
