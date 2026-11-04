@@ -144,7 +144,7 @@ struct StageSoundSlot
 // layout: host -- EE six words.
 struct StageStreamCue
 {
-    StageNode  *source;         // FS2 +0x00: the owner's head bone (BoneNode::find(owner model, "bn_head"))
+    StageNodeBase *source;      // FS2 +0x00: the owner's head bone (boneMap.find("bn_head"))
     SeEntry    *def;            // FS2 +0x04: the first of its variants (range +0x10)
     StageObject *owner;         // FS2 +0x08
     int         variant;        // FS2 +0x0c: def[variant] plays (cycled or random)

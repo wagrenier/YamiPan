@@ -8,7 +8,8 @@
  *  to where the file was loaded. Every such field is an S2dRef.
  *
  *  The instances (ModelFile::createInstance 0x2e5210 and its 0x2e4800,
- *  0x2e3e10) are the next part of this file: still stubs.
+ *  0x2e3e10) are the next part of this file: still stubs; only the two
+ *  texture calls of StageModel::init are written.
  * ======================================================================== */
 #include <ctype.h>
 #include <stdlib.h>
@@ -19,6 +20,7 @@
 
 static const char kModelMagic[] = "RM2";    /* data 0x30fe00, gp-0x7b48 */
 static const char kBaseMeshSuffix[] = "000"; /* data 0x30fe58 */
+static const char kPremultipliedSuffix[] = "_s";
 static const char kBaseMoved[] =
     "\x91\x53\x82\xc4\x82\xcc\x83\x82\x83\x66\x83\x8b\x82\xf0\x89\xf0\x95\xfa\x82\xb9\x82\xb8\x82\xc9";
     // 全てのモデルを解放せずに ... (data 0x30fe10; the tail is not kept)
@@ -68,6 +70,26 @@ bool ModelFile::isValid()
 int ModelFile::getNodeCount()
 {
     return nodeCount;
+}
+
+// FS2 0x002e47d0
+
+const char *ModelInstance::getTextureName(int slot) const
+{
+    return node->file.get()->textureNames.get()[node->textureSlots.get()[slot]].get();
+}
+
+// A texture whose name ends in _s gets its premultiplied palette first.
+// FS2 0x002e4550
+// callcheck: strlen
+
+void ModelInstance::setTexture(int slot, Tim2Texture *texture)
+{
+    const char *name = getTextureName(slot);
+    size_t length = strlen(name);
+    if (length > 2 && name[length - 2] == kPremultipliedSuffix[0] && name[length - 1] == kPremultipliedSuffix[1])
+        modelTexturePremultiplyPalette(texture);
+    textures[slot] = texture;
 }
 
 // A packet's five or seven tags, and with skinning its two lists of
@@ -173,7 +195,7 @@ static void relocateNode(ModelFileNode *node, ModelFile *file, const Relocation 
 {
     node->file.set(file);
     to.fix(node->bones);
-    to.fix(node->_1c);
+    to.fix(node->textureSlots);
     to.fix(node->_20);
     to.fix(node->meshes);
     to.fix(node->name);

@@ -343,7 +343,7 @@ void StageItem::setupItem(const char *name, ModelInstance *instance,
         m_itemMotion = first->value;
     if (motions->count > 1) {
         m_model->setBaseMotion(first->value, 0);
-        void *last = nullptr;
+        ModelMotion *last = nullptr;
         for (StageList<void *>::Node *node = first->next; node != nullptr; node = node->next)
             last = m_model->addMotion(node->value, 0, nullptr);
         if (last != nullptr) {
@@ -1215,7 +1215,7 @@ void StageItemE::getLightMatrix(sceVu0FMATRIX out)
     if (holder == nullptr)
         return;
 
-    BoneNode *bone = BoneNode::find(holder->m_model->bones, "bn_head");
+    BoneMap::Node *bone = holder->m_model->boneMap.find("bn_head");
     sceVu0FVECTOR head;
     memcpy(head, bone->value->getMatrix()[3], sizeof(head));
     head[2] = getMatrix()[3][2];

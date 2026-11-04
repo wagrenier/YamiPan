@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/stagemodel.cpp",
   "rena/rena_model.cpp",
   "yamipan/rendering/model_renderer.cpp"
  ],
@@ -731,7 +730,23 @@
    "why": "Cut out of unassigned@00171300 (the frontier pick for getStageFiles 0x17f150): one object file between the adjustor thunks 0x17f090..0x17f150 (the previous file's last code) and 0x17fce0 (answers 25: slot 108 of the bullet class vtable 0x312cdc, so the next file's inline virtuals): getStageFiles, stageThread 0x17f160 (slot 3, started by 0x2b60b0), its clear / game-over / pause / restart helpers, stageLoad 0x17fb90, setStageLoader 0x17fc90 and the handler-table stub 0x17f7b0. The file name is the port's (no strings)."
   },
   "game/stagemodel.cpp": {
-   "task": "3D path 3 of 5 (the user's pin). StageModel::init 0x188b10 and the neighbours it needs: it calls drawSysAddModel and drawSysFindKind1Surface (both written in drawsys.cpp) and needs a host field for +0xa8. Pin the real extent with tus.py define under this key."
+   "notes": "All of StageModel is written (init, bindBones, placeBones, setBaseMotion, advance, applyMotion, the play and find calls, the dtor). BoneNode and ModelLink were one StringMap, now boneMap. game/modelpose.h holds the pose as a stand-in: short accessors written, load / update / solve / play and the ctors are stubs, so a pose has no bones yet. Pose +0x150 is a matrix pointer, not a count (was called pending). New Game run: reaches the stage, no crash, black at the last frame; nothing tests this on screen yet because createInstance answers null and no pose was built. StringMap::balance passed a scratch test on 3000 trees. Next, rena/rena_model.cpp: createInstance must fill rootBone +0x10, bones with node at ModelNodeBone records, inverseBinds +0x20, bindMatrices +0x24, rootMatrix +0x28 and textures +0x50, and allocate with plain new (delete data in ~StageModel). open-items.md has the doubts.",
+   "ranges": [
+    [
+     "00187230",
+     "00188d60"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 08:34",
+     "status": "verify",
+     "summary": "StageModel 0x187230..0x188d60: all 19 functions written, ModelPose stand-in, StringMap::balance"
+    }
+   ],
+   "status": "verify",
+   "task": "3D path 3 of 5 (the user's pin). StageModel::init 0x188b10 and the neighbours it needs: it calls drawSysAddModel and drawSysFindKind1Surface (both written in drawsys.cpp) and needs a host field for +0xa8. Pin the real extent with tus.py define under this key.",
+   "why": "StageModel: first method updateVcm 0x187230 (after PartSwitch), through init 0x188b10; first cut, tails (MSL instances) to follow"
   },
   "game/stageobject.cpp": {
    "notes": "Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp:3270): drawSysCurrent 0x2d4fd0 is a stub answering null. No stage picture yet, last shot black, nothing here draws. Left in this TU: 0x18a5b0, 0x189f40 and 0x189ce0 (slots +0x1f8, +0x1fc, +0x230, still FUN_). Every object matrix is uninitialised until NodeTransform 0x1d7f20 / update 0x1d7d50 and updateMatrix 0x1d8420 are written. PC zeroing in StageObject::StageObject goes when the subclass ctors are written. Host-pass only: nothing compared with the ROM by running it. Details: open-items.md, architecture.md The object family.",

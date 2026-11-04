@@ -304,7 +304,7 @@ static int drawSysBuildShadows(const sceVu0FVECTOR *view)
         for (int i = 0; i < count; i++) {
             const ShadowWork &work = works[keys[i].index];
             float distanceSq = vecDistanceSq(eye[3], work.object->m_xform.position);
-            if (distanceSq <= distantSq || work.model->_189 == 0)
+            if (distanceSq <= distantSq || work.model->m_mayGoDistant == 0)
                 work.data->flags &= ~ModelFlag_Distant;
             else
                 work.data->flags |= ModelFlag_Distant;

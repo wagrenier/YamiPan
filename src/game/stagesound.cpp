@@ -689,7 +689,7 @@ void StageSound::update(StageObject *listener, u_char playerFlag, u_char sceneFl
         if (listener->getKind() == StageObject_Kind9 && listener->m_linked != nullptr) {
             // Hears from the linked object's head. The ROM does not test
             // the find for null.
-            BoneNode *head = BoneNode::find(listener->m_linked->m_model->bones, kHeadBone);
+            BoneMap::Node *head = listener->m_linked->m_model->boneMap.find(kHeadBone);
             m = head->value->getMatrix();
         } else {
             m = listener->getMatrix();
@@ -1037,10 +1037,10 @@ int StageSound::pickCueVariant(SeEntry *def)
     return def->cycle++ % def->variants;
 }
 
-// callcheck: find (BoneNode::find, the owner's head)
+// callcheck: find (the bone map's, the owner's head)
 void StageSound::queueCue(StageStreamChannel &ch, SeEntry *def, StageObject *owner, int variant)
 {
-    ch.next.source     = BoneNode::find(owner->m_model->bones, kHeadBone)->value;
+    ch.next.source     = owner->m_model->boneMap.find(kHeadBone)->value;
     ch.next.def        = def;
     ch.next.owner      = owner;
     ch.next.variant    = variant;
@@ -1176,7 +1176,7 @@ int StageSound::pickCueChannel(SeEntry *def, StageObject *owner, StageObject *li
         return StageCueReject_NoChannel;
 
     // Heard from the owner's head: within range and not behind a wall.
-    StageNode *head = BoneNode::find(owner->m_model->bones, kHeadBone)->value;
+    StageNodeBase *head = owner->m_model->boneMap.find(kHeadBone)->value;
     float pan;
     float dist  = stageSoundLocate(&pan, head->getMatrix()[3], listener);
     float ratio = 0.0f;

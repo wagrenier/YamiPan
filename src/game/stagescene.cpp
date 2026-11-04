@@ -22,6 +22,7 @@
 #include "game/perfmeter.h"
 #include "game/gsutil.h"        /* Tim2Texture */
 #include "game/heap.h"          /* randNext */
+#include "game/modelpose.h"
 #include "game/pakarchive.h"
 #include "game/seplayer.h"      /* StreamTable */
 #include "game/stageitem.h"
@@ -2690,11 +2691,11 @@ void StageScene::calcMatrices()
             }
             if (model == nullptr || model->pose == nullptr)
                 continue;
-            if (model->pose->pending != 0)
+            if (model->pose->parentMatrix != nullptr)
                 model->pose->solve(3, -1, 0);
-            for (ModelLink *link = model->links; link != nullptr; link = link->next) {
-                link->object->propagate();
-                link->object->updateMatrix();
+            for (BoneMap::Node *link = model->boneMap.first; link != nullptr; link = link->next) {
+                link->value->propagate();
+                link->value->updateMatrix();
             }
         }
     }
@@ -2717,8 +2718,8 @@ void StageScene::propagateNodes()
                 obj->propagate();
             if (model == nullptr)
                 continue;
-            for (ModelLink *link = model->links; link != nullptr; link = link->next)
-                link->object->propagate();
+            for (BoneMap::Node *link = model->boneMap.first; link != nullptr; link = link->next)
+                link->value->propagate();
         }
     }
 }

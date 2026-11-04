@@ -160,106 +160,134 @@ enum StageObjectKind
     StageObject_SubSceneProp = 0x24, // SubSceneProp
 };
 
-// A model's bone map node (0x177270's tree: {value, key, left, right},
-// sorted by strcmp; the same shape as StageNameNode). Only find is used.
-// layout: host -- EE 0x10 (four words).
 class StageNode;
-struct BoneNode
-{
-    // The node for key under node (null: empty); a node without a value
-    // counts as missing.
-    static BoneNode *find(BoneNode *node, const char *key);              // FS2 0x00177270
-
-    StageNode  *value;          // FS2 +0x0: the bone
-    const char *key;            // FS2 +0x4
-    BoneNode   *left;           // FS2 +0x8
-    BoneNode   *right;          // FS2 +0xc
-};
-
-// A character's model (the object's +0x30). Only the bone map's root.
-// layout: host -- EE: +0x14 the root.
 class VcmTable;                 // game/vcmtable.h
-// A rena model's bone: its node and its matrix. The node's type is
-// unread but for the name. layout: host -- EE: name +4.
-struct ModelBoneNode
-{
-    u_char      _0[0x4];
-    const char *name;           // FS2 +0x4
-};
+struct ModelNodeBone;
 // layout: host -- EE 8.
 struct ModelBone
 {
-    ModelBoneNode       *node;   // FS2 +0x0
-    const sceVu0FVECTOR *matrix; // FS2 +0x4
+    const ModelNodeBone *node;   // FS2 +0x0: its name, its parent
+    const sceVu0FVECTOR *matrix; // FS2 +0x4: a StageBoneNode's world or a pose bone's, once bound
 };
 // Model flags (ModelInstance::flags).
 enum ModelFlag
 {
     ModelFlag_Item   = 0x2,     // every item's, from setupItem
     ModelFlag_CastsShadow = 0x8,  // drawSysBuildShadows takes it (cleared on oXX27_05)
-    ModelFlag_Distant     = 0x40, // past a quarter of the squared draw distance, when StageModel::_189 is set
+    ModelFlag_Distant     = 0x40, // past a quarter of the squared draw distance, when StageModel::m_mayGoDistant is set
     ModelFlag_Ghost  = 0x100,   // the model ext_ghost (drawSysAddModel; what it does is unread)
     ModelFlag_TagC   = 0x200,   // a name tag _c, or oXX27_05 / oXX27_11 (drawSysAddModel; unread)
     ModelFlag_Frozen = 0x400,   // set by drawSysAddModel, clear only while a free item's matrix is dirty (the name is a guess)
-};
-// The model's pose solver (+0xc; the run unassigned@00148db0). Only the
-// test before the call is read: +0x150 a count of something to solve.
-// layout: host -- EE: +0x150.
-struct ModelPose
-{
-    // iterations 3, count -1 (all), flaggedOnly 0 at the one caller here.
-    int solve(int iterations, int count, int flaggedOnly);               // FS2 0x0014e4d0
-
-    int pending;                // FS2 +0x150
 };
 class StageObject;
 class Clock;                    // game/clock.h
 class Tim2Texture;              // game/gsutil.h
 struct ModelInstance;
-// What hangs from a model's bones (+0x18): objects, in a list.
-// layout: host -- EE: +0 the object, +0x10 the next.
-struct ModelLink
+class ModelPose;                // game/modelpose.h
+struct ModelMotion;
+class StageLight;
+struct ModelSurface;
+// What a motion's frame reported (StageModel::m_motionEvents).
+enum MotionEvent
 {
-    StageObject *object;        // FS2 +0x00
-    ModelLink   *next;          // FS2 +0x10
+    MotionEvent_HitRightHand = 0x0001, // HIT_.._RH_.._BEGIN, or a HIT_ BEGIN with no limb
+    MotionEvent_HitLeftHand  = 0x0002,
+    MotionEvent_HitRightLeg  = 0x0004,
+    MotionEvent_HitLeftLeg   = 0x0008,
+    MotionEvent_HitHead      = 0x0010,
+    MotionEvent_HitPelvis    = 0x0020,
+    MotionEvent_HitEnd       = 0x0040,
+    MotionEvent_HitSwing     = 0x0080,
+    MotionEvent_StepLeft     = 0x0100,
+    MotionEvent_StepRight    = 0x0200,
+    MotionEvent_Click        = 0x0400,
+    MotionEvent_Begin        = 0x0800,
+    MotionEvent_End          = 0x1000,
+    MotionEvent_Cancel       = 0x2000,
+    MotionEvent_CancelW      = 0x4000,
+    MotionEvent_Sound        = 0x8000,
 };
+constexpr int kModelMotionLists = 5;
+constexpr int kModelSlots = 7;  // 0x1c0 aligned 0x40: three, three and one in the ROM's loops
+constexpr int kMotionFileName = 0x10; // a motion file's name
+// One of the seven zeroed records at StageModel +0x140 (EE 0x38 in 0x40,
+// FUN_00296cc0; nothing here reads them).
+struct alignas(0x40) StageModelSlot
+{
+    u_int words[14];
+};
+static_assert(sizeof(StageModelSlot) == 0x40, "StageModelSlot: EE 0x40");
+typedef StringMap<StageNodeBase *> BoneMap;
+typedef StringMap<ModelMotion *> MotionMap;
+// What an object holds of its model: game/stagemodel.cpp. The ROM's ctor is
+// inline in StageObject::setModel, and init clears everything again.
 // layout: host -- EE offsets in the comments.
 struct StageModel
 {
-    // Hangs the bones' link nodes and the object's matrix on them; once,
-    // from StageScene::setupCameras.
-    void bindBones();                                                    // FS2 0x00187d10
-    void placeBones(StageObject *owner);                                 // FS2 0x00187b70
     void updateVcm();                                                    // FS2 0x00187230
-    // frames of the game's 30 of the motion, on position and rotation.
+    // frames of the game's 30 of the motion, on position and rotation. arg
+    // is not read (the callers pass 0).
     void advance(float frames, sceVu0FVECTOR position, sceVu0FVECTOR rotation, int arg); // FS2 0x00187260
     // Starts motion (an addMotion object); flags go to the pose.
-    void playMotion(void *motion, bool arg0, bool arg1, u_int flags, int arg); // FS2 0x00187720
+    void playMotion(ModelMotion *motion, bool arg0, bool layered, u_int flags, int arg); // FS2 0x00187720
     // The same by name, from list index.
-    void playNamed(int index, const char *name, bool arg0, bool arg1, u_int flags, int arg); // FS2 0x00187770
+    void playNamed(int index, const char *name, bool arg0, bool layered, u_int flags, int arg); // FS2 0x00187770
+    // The same with a motion file, null for the current one.
+    void playMotionFile(void *file, bool arg0, bool layered, u_int flags, int arg); // FS2 0x00187820
     // Solves the pose towards position and rotation.
     void applyMotion(const sceVu0FVECTOR position, const sceVu0FVECTOR rotation); // FS2 0x00187870
+    ModelMotion *findMotion(int index, const char *name);                // FS2 0x001879b0
+    void *findMotionFile(int index, const char *name);                   // FS2 0x001879f0
+    // Every motion list's tree evened out, after the loading.
+    void balanceMotions();                                               // FS2 0x00187a30
     // A motion file into list index, under key (null: the file's name).
-    void *addMotion(void *file, int index, const char *key);             // FS2 0x00187a90
-    void setBaseMotion(void *file, int index);                           // FS2 0x00188140
-    // The ROM's ctor is inline in StageObject::setModel: its members
-    // cleared, then this body. matrix is the owner's.
+    ModelMotion *addMotion(void *file, int index, const char *key);      // FS2 0x00187a90
+    void attachVcm(StageLight *obj);                                     // FS2 0x00187b40
+    // Hangs the bones without a parent under owner.
+    void placeBones(StageObject *owner);                                 // FS2 0x00187b70
+    // The bones' link nodes; once, after setBaseMotion if there is one.
+    void bindBones();                                                    // FS2 0x00187d10
+    void setBaseMotion(void *file, int kind);                            // FS2 0x00188140
+    ~StageModel();                                                       // FS2 0x00188690: deleting
+    // matrix is the owner's.
     void init(ModelInstance *instance, StringMap<Tim2Texture *> *textures,
               const sceVu0FVECTOR *matrix);                              // FS2 0x00188b10
-    ~StageModel();                                                       // FS2 0x00188690: deleting
+
+    // Inline in the ROM (bindBones).
+    bool poseOwnsBone(int bone) const;
 
     ModelInstance *data = nullptr; // FS2 +0x00: the model (updateVcm tests it)
     VcmTable  *vcm = nullptr;   // FS2 +0x04
+    int        m_poseKind = 0;  // FS2 +0x08: ModelPoseKind
     ModelPose *pose = nullptr;  // FS2 +0x0c
-    BoneNode  *bones = nullptr; // FS2 +0x14: StageSound finds "bn_head" in it
-    ModelLink *links = nullptr; // FS2 +0x18
+    StageMatrixNode *m_poseNodes = nullptr; // FS2 +0x10: pose->boneCount, a heap block
+    BoneMap    boneMap;         // FS2 +0x14: the pose's nodes by bone name; StageSound finds "bn_head" in it
+    StageBoneNode *m_boneNodes = nullptr; // FS2 +0x24: a heap block
+    int        m_boneNodeCount = 0; // FS2 +0x28
+    MotionMap  motions[kModelMotionLists]; // FS2 +0x2c
+    sceVu0FVECTOR m_rotationStep = {}; // FS2 +0x80: what the last advance turned
+    sceVu0FVECTOR m_positionStep = {}; // FS2 +0x90: what it moved
+    float      m_motionFrames = 0.0f;  // FS2 +0xa0
+    u_char     m_animateSurface = 0;   // FS2 +0xa4: nothing here sets it
+    ModelSurface *m_kind1Surface = nullptr; // FS2 +0xa8
+    u_char     m_loop = 1;      // FS2 +0xac: the pose's update flag
+    u_int      m_motionEvents = 0; // FS2 +0xb0: MotionEvent
     u_char     _b4 = 0;         // FS2 +0xb4: 1 on items (StageObject::markModelAsItem; unread)
     u_char     _b5 = 0;         // FS2 +0xb5: the same
-    int        _bc = 0;         // FS2 +0xbc: StageObject::setModelValue (unread; -1 from init)
+    int        _b8 = 0;         // FS2 +0xb8
+    int        _bc = -1;        // FS2 +0xbc: StageObject::setModelValue (unread)
+    u_char     _c0 = 0;         // FS2 +0xc0
+    sceVu0FVECTOR _d0[3] = {};  // FS2 +0xd0
+    sceVu0FVECTOR _100[3] = {}; // FS2 +0x100
+    sceVu0FVECTOR _130 = {};    // FS2 +0x130
+    StageModelSlot *m_slots = nullptr; // FS2 +0x140: kModelSlots
     sceVu0FVECTOR shadowSize = {};      // FS2 +0x150: x, y, z of the shadow box
     sceVu0FVECTOR shadowOffset = {};    // FS2 +0x160: from bone 2
     sceVu0FVECTOR shadowDirection = {}; // FS2 +0x170
-    u_char     _189 = 0;        // FS2 +0x189: lets ModelFlag_Distant be set (unread)
+    u_char     _180 = 1;        // FS2 +0x180
+    void      *m_motionFile = nullptr; // FS2 +0x184: the base motion's
+    u_char     _188 = 0;        // FS2 +0x188
+    u_char     m_mayGoDistant = 1; // FS2 +0x189: lets ModelFlag_Distant be set; off on the kkb_ models
 };
 
 // StageNode: game/stagenode.h (the scene-node family's stand-ins).
@@ -1550,8 +1578,10 @@ struct ModelNodeBone
 {
     S2dRef<void>       matrix;  // FS2 +0x0
     S2dRef<const char> name;    // FS2 +0x4
-    u_char             _8[8];
+    int                parent;  // FS2 +0x8: bone index, negative at the top
+    u_char             _c[4];
 };
+static_assert(offsetof(ModelNodeBone, parent) == 8, "ModelNodeBone::parent");
 static_assert(sizeof(ModelNodeBone) == 0x10, "ModelNodeBone: EE 0x10");
 // A node's record in a model file (0x30 bytes).
 struct ModelFileNode
@@ -1562,11 +1592,11 @@ struct ModelFileNode
     S2dRef<ModelFile>  file;    // FS2 +0x10
     S2dRef<ModelMesh>  meshes;  // FS2 +0x14: meshCount
     S2dRef<ModelNodeBone> bones; // FS2 +0x18: boneCount
-    S2dRef<void>       _1c;     // FS2 +0x1c
+    S2dRef<u_short>    textureSlots; // FS2 +0x1c: textureSlotCount of ModelFile::textureNames indices
     S2dRef<void>       _20;     // FS2 +0x20
     u_short            boneCount;    // FS2 +0x24
     u_short            surfaceCount; // FS2 +0x26
-    u_short            _28;          // FS2 +0x28
+    u_short            textureSlotCount; // FS2 +0x28
     u_short            meshCount;    // FS2 +0x2a
     u_char             _2c[4];
 };
@@ -1579,7 +1609,12 @@ static_assert(offsetof(ModelFileNode, meshCount) == 0x2a, "ModelFileNode::meshCo
 // layout: host.
 struct ModelSurface
 {
+    // Two frames of the texture and the blend between them (a zero second
+    // frame: the first, faded).
+    void setFrames(float blend, int frame0, int frame1);                 // FS2 0x002e3d90
+
     ModelMaterial *material;    // FS2 +0x18
+    float          blend;       // FS2 +0x20: setFrames
     int            waveIndex;   // FS2 +0x24: the number after WaveComposit
     int            _28;         // FS2 +0x28: 0 on a wave (unread)
     int            isWave;      // FS2 +0x2c
@@ -1594,6 +1629,10 @@ struct ModelInstance
     // The record whose children range holds rec's index (the group rec is
     // in), null at the top.
     ModelPartRec *findGroup(const ModelPartRec *rec) const;              // FS2 0x002e4100
+    ~ModelInstance();                                                    // FS2 0x002e46d0: slot 0 of vtable 0x31a7f0, deleting
+    // The name of texture slot i (ModelFileNode::textureSlots).
+    const char *getTextureName(int slot) const;                          // FS2 0x002e47d0
+    void setTexture(int slot, Tim2Texture *texture);                     // FS2 0x002e4550
 
     u_char         distant = 0;   // FS2 +0x04: set to 1 when farther than the draw distance (drawSysBuildShadows)
     u_char         drawGroup = 0; // FS2 +0x05: DrawSysGroup
@@ -1602,17 +1641,26 @@ struct ModelInstance
     u_short        drawMode = 0;  // FS2 +0x08: 0x87 for the boss shadow's draw (unread)
     u_short        flags = 0;     // FS2 +0x0a: ModelFlag
     ModelFileNode *node = nullptr; // FS2 +0x0c
+    ModelBone     *rootBone = nullptr; // FS2 +0x10: its matrix is the owner's (StageModel::init)
     ModelBone     *bones = nullptr; // FS2 +0x14: boneCount of them; [2] carries the shadow
     u_int          boneCount = 0; // FS2 +0x18
     ModelPartRec  *partRecs = nullptr; // FS2 +0x1c: one per node->meshes
+    sceVu0FMATRIX *inverseBinds = nullptr; // FS2 +0x20: per bone (StageModel::bindBones)
+    const sceVu0FVECTOR **bindMatrices = nullptr; // FS2 +0x24: per bone
+    const sceVu0FVECTOR *rootMatrix = nullptr; // FS2 +0x28
     float          ghostParam0 = 0.0f; // FS2 +0x34: 191 on ext_ghost (unread)
     float          ghostParam1 = 0.0f; // FS2 +0x38: -52 on ext_ghost (unread)
     ModelSurface  *surfaces = nullptr; // FS2 +0x3c: node->surfaceCount
     ModelSurface **surfaceOfMaterial = nullptr; // FS2 +0x40: by the file's material index, null if unused
     ModelSurface **texAnims = nullptr; // FS2 +0x44: texAnimCount records of renaStepTexAnim
     int            texAnimCount = 0;   // FS2 +0x48
+    Tim2Texture  **textures = nullptr; // FS2 +0x50: node->textureSlotCount
     sceVu0FMATRIX  colorMatrix = {};   // FS2 +0x80: zero for the boss shadow's draw (unread, the name is a guess)
 };
+
+// A texture named .._s: a copy of its palette at +0x3c, the colours times
+// their alpha, alpha opaque (ModelInstance::setTexture).
+void modelTexturePremultiplyPalette(Tim2Texture *texture);                     // FS2 0x002e1700
 
 struct ModelFile
 {

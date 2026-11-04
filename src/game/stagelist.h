@@ -7,8 +7,8 @@
  *  them (StringMap::find 0x189840):
  *  - StageList<T>: a doubly linked list with no tail pointer (pushBack walks
  *    to the end);
- *  - StringMap<T>: an unbalanced binary tree on strcmp, its nodes also
- *    chained in insertion order, the keys owned.
+ *  - StringMap<T>: a binary tree on strcmp, unbalanced until balance is
+ *    called, its nodes also chained in insertion order, the keys owned.
  *  The classes' real names are unknown (no RTTI strings, no symbols).
  * ======================================================================== */
 #ifndef _GAME_STAGELIST_H
@@ -182,12 +182,60 @@ public:
         return node;
     }
 
+    // Evens the tree out, once the map is full (bones, motions).
+    void balance() { root = balanceFrom(root); }
+
     Node *root;                 // FS2 +0x0
     Node *first;                // FS2 +0x4
     Node *last;                 // FS2 +0x8
     int   count;                // FS2 +0xc
 
 private:
+    // FS2 0x00189ad0, 0x001898c0
+    static int height(const Node *node)
+    {
+        if (node == NULL)
+            return 0;
+        int right = height(node->right);
+        int left = height(node->left);
+        return (right > left ? right : left) + 1;
+    }
+    static int lean(const Node *node) { return height(node->right) - height(node->left); }
+
+    // Rotations from the leaves up, until no node leans by more than one.
+    // FS2 0x001895c0, 0x00189700
+    static Node *balanceFrom(Node *node)
+    {
+        Node *top;
+        int after;
+        do {
+            int before;
+            do {
+                if (node == NULL)
+                    return NULL;
+                if (node->right != NULL)
+                    node->right = balanceFrom(node->right);
+                if (node->left != NULL)
+                    node->left = balanceFrom(node->left);
+                before = lean(node);
+                if (before < 0) {
+                    top = node->left;
+                    node->left = top->right;
+                    top->right = node;
+                } else if (before > 0) {
+                    top = node->right;
+                    node->right = top->left;
+                    top->left = node;
+                } else {
+                    return node;
+                }
+                node = top;
+            } while (before != -1 && before != 1);
+            after = lean(top);
+        } while (after < -1 || after > 1);
+        return top;
+    }
+
     StringMap(const StringMap &);
     StringMap &operator=(const StringMap &);
 };
