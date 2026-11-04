@@ -384,13 +384,6 @@ void UiItemList::destroy()
 
 // stub of FS2 0x00185af0
 
-// stub of FS2 0x002d4110
-WideFontPrinter::WideFontPrinter(short x, short y)
-    : FontPrinter(x, y)
-{
-    YAMIPAN_STUB("WideFontPrinter::WideFontPrinter", 0x002d4110);
-}
-
 // stub of FS2 0x002362a0
 bool boxContainsPoint(const float m[4][4], const float p[4])
 {
@@ -414,34 +407,6 @@ void debugSysShutdown()
 void debugSysUpdate()
 {
     YAMIPAN_STUB("debugSysUpdate", 0x00151270);
-}
-
-// stub of FS2 0x0028fb80
-const u_short * fsmFindText(float seconds, const void *file, int track)
-{
-    YAMIPAN_STUB("fsmFindText", 0x0028fb80);
-    return {};
-}
-
-// stub of FS2 0x0028fc80
-int fsmFindTrack(void *file, const char *key)
-{
-    YAMIPAN_STUB("fsmFindTrack", 0x0028fc80);
-    return {};
-}
-
-// stub of FS2 0x0028fd30
-bool fsmRelocate(void *file)
-{
-    YAMIPAN_STUB("fsmRelocate", 0x0028fd30);
-    return {};
-}
-
-// stub of FS2 0x0028fa90
-bool fsmTrackHasText(void *file, int track)
-{
-    YAMIPAN_STUB("fsmTrackHasText", 0x0028fa90);
-    return {};
 }
 
 // stub of FS2 0x0029efe0
@@ -560,13 +525,6 @@ BoxVolume::BoxVolume()
 void BoxVolume::setSize(float width, float height, float depth)
 {
     YAMIPAN_STUB("BoxVolume::setSize", 0x0017ea50);
-}
-
-// stub of FS2 0x002b1010
-bool DemoStream::setFont(const void *font, const void *image)
-{
-    YAMIPAN_STUB("DemoStream::setFont", 0x002b1010);
-    return {};
 }
 
 // stub of FS2 address unknown (0 candidates)
@@ -702,12 +660,6 @@ void CharacterInput::setActive(bool on)
 void ClearSequence::update()
 {
     YAMIPAN_STUB("ClearSequence::update", 0x002b1500);
-}
-
-// stub of FS2 0x002b0d60
-void DemoStream::drawSubtitles(sceVif1Packet *packet)
-{
-    YAMIPAN_STUB("DemoStream::drawSubtitles", 0x002b0d60);
 }
 
 // stub of FS2 0x002b1670
@@ -1588,5 +1540,12 @@ void StageObject::setupBody(bool keep)
 void * collisionFindRecord(void *file, const char *name)
 {
     YAMIPAN_STUB("collisionFindRecord", 0x0023adb0);
+    return {};
+}
+
+// stub of FS2 0x00207aa0
+bool PauseMenuState::addNotice(const u_short *text, int frames, int arg, int level)
+{
+    YAMIPAN_STUB("PauseMenuState::addNotice", 0x00207aa0);
     return {};
 }

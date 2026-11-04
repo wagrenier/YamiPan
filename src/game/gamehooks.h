@@ -1288,6 +1288,8 @@ public:
 // layout: host -- EE 0x80: SoundStream's 0x60, +0x60..+0x70 zero (+0x64
 // the directory, +0x68 a string, +0x70 an object with the vptr at +0x10),
 // +0x74 0x80606060, +0x78 0x100, +0x7c 0x1bc.
+class WideFontPrinter;          // game/fontdata.h
+
 class DemoStream : public SoundStream
 {
 public:
@@ -1317,7 +1319,7 @@ private:
     char       *m_dir = nullptr;        // FS2 +0x64
     char       *m_path = nullptr;       // FS2 +0x68
     const void *m_header = nullptr;     // FS2 +0x6c
-    void       *m_printer = nullptr;    // FS2 +0x70: setFont's
+    WideFontPrinter *m_printer = nullptr; // FS2 +0x70: setFont's
     u_int       m_colour = 0x80606060;  // FS2 +0x74: the subtitles'
     int         m_textX = 0x100;        // FS2 +0x78
     int         m_textY = 0x1bc;        // FS2 +0x7c
@@ -1346,6 +1348,9 @@ public:
     // The fade's colour, 24 bits.
     // FS2 0x00151380
     void setColour(u_int colour) { m_colour = colour & 0xffffff; }
+    // Anything but mode 1.
+    // FS2 0x00151320
+    bool isNotRunning() const { return m_mode != StageFade_Running; }
     // Full in mode 2 (StageSound does not resume a cue stream then).
     bool isFullInMode2();                                                // FS2 0x001512a0
     // The same in mode 1.
@@ -2310,6 +2315,9 @@ struct PauseMenuState
     bool isActive();                                                     // FS2 0x002078d0
     // Every entry off.
     void clearList();                                                    // FS2 0x00207440
+    // A notice for the list: true when a free entry of the 11 took it and
+    // no number was negative.
+    bool addNotice(const u_short *text, int frames, int arg, int level); // FS2 0x00207aa0
 };
 
 class WideFontPrinter;          // game/fontdata.h

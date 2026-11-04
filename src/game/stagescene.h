@@ -178,8 +178,12 @@ struct MissionTimedRecord
 // layout: host
 struct MissionNotice
 {
+    // text into out (size 16-bit chars, terminated): $1..$9 are args[n - 1],
+    // $$ a dollar, $ before anything else is dropped.
+    u_short *format(u_short *out, int size, const u_short *const *args) const; // FS2 0x00286930
+
     u_char      enabled;        // FS2 +0x00
-    const void *text;           // FS2 +0x04: null none
+    const u_short *text;        // FS2 +0x04: null none
     int         frames;         // FS2 +0x08: 0 means for ever
     int         arg;            // FS2 +0x0c
     int         level;          // FS2 +0x10: raised to the default at gp-0x7c58
@@ -239,6 +243,13 @@ struct StageMission
     // StageResult +0x10[index].
     void setResultValue(int index, int value);                           // FS2 0x00287050
     int  getResultValue(int index);                                      // FS2 0x00287090
+    // The notice with arg as its $1, into the pause state's list.
+    void showNotice(int index, const u_short *arg);                      // FS2 0x00286cf0
+    void setNoticeEnabled(int index, bool on);                           // FS2 0x00286de0
+    void setNotice(int index, const u_short *text, int frames, int arg, int level); // FS2 0x00286e00
+    // A timed record at the place, for tickPending; 0 when none is free.
+    int  addTimedRecord(int id, int x, int y, int z, int arg, int frames); // FS2 0x00286f30
+    void setPurposeText(const u_short *text);                            // FS2 0x00287040
     // Where the character list ends (inline in the ROM).
     StageObject **charactersEnd() { return characters + characterCount; }
     StageObject **scriptObjectsEnd() { return scriptObjects + scriptObjectCount; }

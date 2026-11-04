@@ -662,3 +662,176 @@ const char *FontData::nextGlyphMb(const char *text, FontGlyph *glyph) const
     *glyph = find(code)->glyph;
     return next;
 }
+
+// ──────────────────────────────────────────────────────────────────────
+// WideFontPrinter: 16-bit text. Every entry refuses an odd address.
+
+static inline bool isWideAligned(const void *text)
+{
+    return ((uintptr_t)text & 1) == 0;
+}
+
+// FS2 0x002d4110
+// callcheck: FontPrinter
+
+WideFontPrinter::WideFontPrinter(short x, short y)
+    : FontPrinter(x, y)
+{
+    m_spacing = 0x20;
+    m_lineSpacing = 0;
+}
+
+// FS2 0x002d40a0
+// callcheck: releaseTexture, ~FontPrinter, operator_delete (the deleting dtor's delete of this)
+
+WideFontPrinter::~WideFontPrinter()
+{
+    releaseTexture();
+}
+
+// FS2 0x002d3700
+// callcheck: nextGlyph
+
+const char *WideFontPrinter::nextGlyph(const char *text, FontGlyph *glyph)
+{
+    const u_short *wide = reinterpret_cast<const u_short *>(text);
+    if (*wide == 0)
+        return nullptr;
+    if (!isWideAligned(text))
+        return nullptr;
+    return reinterpret_cast<const char *>(m_font->nextGlyph(wide, glyph));
+}
+
+// The sprites of print and printScaledText: as FontPrinter::drawText, with
+// the centring widths taken at the line's start and the glyphs fetched here.
+
+int WideFontPrinter::drawText(float scale, int x, int y, const u_short *text)
+{
+    if (!isWideAligned(text))
+        return 0;
+    int drawn = 0;
+    int penX = (x + m_originX) * 16;
+    int penY = (y + m_originY) * 16;
+    m_startX = penX;
+    m_startY = penY;
+    int lineH = (int)((float)m_font->m_lineHeight * scale);
+    int lineStep = lineH - m_lineSpacing;
+    if (m_flags & TextPrinterFlag_CenterY)
+        penY -= lineH / 2;
+    if (m_flags & TextPrinterFlag_CenterX)
+        penX -= m_font->lineWidthFixed(text, m_spacing) / 2;
+    for (;;) {
+        u_short c = *text;
+        if (c == 0)
+            break;
+        if (c == '\n') {
+            penY += lineStep;
+            penX = m_startX;
+            text++;
+            if (m_flags & TextPrinterFlag_CenterX) {
+                int width = isWideAligned(text) ? m_font->lineWidthFixed(text, m_spacing) : 0;
+                penX -= width / 2;
+            }
+            continue;
+        }
+        if (c < ' ') {
+            text++;
+            continue;
+        }
+        FontGlyph glyph;
+        text = isWideAligned(text) ? m_font->nextGlyph(text, &glyph) : nullptr;
+        if (text == nullptr)
+            break;
+        int w = (int)((float)glyph.w * scale);
+        int h = (int)((float)glyph.h * scale);
+        putGlyphSprite(m_packet, m_rgba, glyph, penX, penY, penX + w, penY + h);
+        drawn++;
+        penX += w - m_spacing;
+    }
+    m_endX = penX;
+    m_endY = penY;
+    return drawn;
+}
+
+// FS2 0x00208b70: the slot's thunk.
+// FS2 0x002d3b30
+// callcheck: lineWidthFixed, nextGlyph, sceVif1PkAddGsData (PC: YamiPan_DrawUiPrim / Vertex in drawText)
+
+int WideFontPrinter::print(int x, int y, const char *text, ...)
+{
+    return drawText(1.0f, x, y, reinterpret_cast<const u_short *>(text));
+}
+
+// FS2 0x002d3780
+
+int WideFontPrinter::printScaled(float scale, int x, int y, const char *text, ...)
+{
+    return printScaledText(scale, x, y, reinterpret_cast<const u_short *>(text));
+}
+
+// FS2 0x002d37f0
+// callcheck: lineWidthFixed, nextGlyph, sceVif1PkAddGsData (PC: YamiPan_DrawUiPrim / Vertex in drawText)
+
+int WideFontPrinter::printScaledText(float scale, int x, int y, const u_short *text)
+{
+    return drawText(scale, x, y, text);
+}
+
+// FS2 0x002d3750: the slot's thunk.
+// FS2 0x002d3e20
+// callcheck: lineWidthFixed, nextGlyph
+
+int WideFontPrinter::measureLines(int *widths, int count, const char *text, ...)
+{
+    for (int i = 0; i < count; i++)
+        widths[i] = 0;
+    const u_short *wide = reinterpret_cast<const u_short *>(text);
+    if (widths == nullptr || wide == nullptr || !isWideAligned(wide))
+        return 0;
+    if (count > 0)
+        widths[0] = m_font->lineWidthFixed(wide, m_spacing) >> 4;
+    int lines = 1;
+    int *next = widths + 1;
+    for (;;) {
+        u_short c = *wide;
+        if (c == 0)
+            return lines;
+        if (c == '\n') {
+            wide++;
+            if (lines < count)
+                *next = (isWideAligned(wide) ? m_font->lineWidthFixed(wide, m_spacing) : 0) >> 4;
+            next++;
+            lines++;
+            continue;
+        }
+        if (c < ' ') {
+            wide++;
+            continue;
+        }
+        FontGlyph glyph;
+        wide = isWideAligned(wide) ? m_font->nextGlyph(wide, &glyph) : nullptr;
+        if (wide == nullptr)
+            return lines;
+    }
+}
+
+// FS2 0x00208ba0: the slot's thunk.
+// FS2 0x002d4060
+// callcheck: lineWidthFixed
+
+int WideFontPrinter::textWidth(const char *text)
+{
+    if (!isWideAligned(text))
+        return 0;
+    return m_font->lineWidthFixed(reinterpret_cast<const u_short *>(text), m_spacing);
+}
+
+// FS2 0x002d37c0
+// callcheck: countLines
+
+int WideFontPrinter::countLines(const char *text)
+{
+    if (m_font == nullptr)
+        return 0;
+    return m_font->countLines(reinterpret_cast<const u_short *>(text));
+}

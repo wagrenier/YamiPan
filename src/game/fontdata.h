@@ -169,14 +169,34 @@ private:
     int drawText(float scale, int x, int y, const char *text);
 };
 
-// The wide-text printer (EE 0x40, vtable 0x319ff0; its methods 0x2d3700..,
-// not read yet): StageScene +0xbc. Only the ctor is declared.
-// layout: host -- FontPrinter's fields, nothing of its own read.
+// The wide-text printer (EE 0x40, vtable 0x319ff0): StageScene +0xbc and
+// DemoStream's subtitles. FontPrinter's slots with 16-bit text and no printf:
+// the text arguments keep the base's const char * and hold u_short text
+// (printText casts), the rest of print's arguments are never read.
+// layout: host -- FontPrinter's fields, nothing of its own.
 class WideFontPrinter : public FontPrinter
 {
 public:
     // FontPrinter(x, y), then spacing 0x20 and line spacing 0.
     WideFontPrinter(short x, short y);                                   // FS2 0x002d4110
+    ~WideFontPrinter() override;                                         // FS2 0x002d40a0: slot 0, deleting
+
+    const char *nextGlyph(const char *text, FontGlyph *glyph) override;  // FS2 0x002d3700: slot 1
+    int  print(int x, int y, const char *text, ...) override;            // FS2 0x002d3b30: slot 4 (thunk 0x208b70)
+    int  printScaled(float scale, int x, int y, const char *text, ...) override; // FS2 0x002d3780: slot 5
+    int  measureLines(int *widths, int count, const char *text, ...) override; // FS2 0x002d3e20: slot 6 (thunk 0x2d3750)
+    int  textWidth(const char *text) override;                           // FS2 0x002d4060: slot 7 (thunk 0x208ba0)
+    int  countLines(const char *text) override;                          // FS2 0x002d37c0: slot 10
+    // Slot 11: what slot 5 calls.
+    virtual int printScaledText(float scale, int x, int y, const u_short *text); // FS2 0x002d37f0
+
+    // print with the text's real type; not a ROM function.
+    int  printText(int x, int y, const u_short *text) { return print(x, y, reinterpret_cast<const char *>(text)); }
+
+private:
+    // The body print and printScaledText each have inline in the ROM (print's
+    // is this at scale 1); not a ROM function.
+    int drawText(float scale, int x, int y, const u_short *text);
 };
 
 // The vtable 0x315fc0 after the base's: no RTTI, and no code stores it, so

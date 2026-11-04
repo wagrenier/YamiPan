@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/demoevent.cpp",
   "game/scenepairs.cpp",
   "game/stagecollision.cpp",
   "game/stagecharacter.cpp",
@@ -104,7 +103,7 @@
    "why": "the RTC date module: getLocalDateTime reads sceCdReadClock, converts to local time with libscf and hands the DateTime to DateTime::setFormat, its only callee and caller pair; 0x23e740 starts unrelated code (a two-int validity test, a 0x208xxx wrapper), 0x23db50 before it is a Vt_00316510 ctor"
   },
   "game/demoevent.cpp": {
-   "notes": "Written: StageMission, StageEvent, StageFileEvent, StageSimpleEvent, StageFade, gsFillRect, DemoCamera, the pack lookup, DemoStream but setFont and drawSubtitles, natives 0x4e 0x53 0x138 0x139 0x155 0x15f..0x162 0x1f2 (batch 109). Proven from the script: Root asks for d0101 on a first entry (architecture.md, Scripted events). Seen in a 200 s New Game run: the pack loads, the sub-scene is built, the event script runs (natives 0x145 0x159 0x163 0x144 reached), DemoCamera is built, ModelPose::load is reached and is a stub, the voice stops at rxSndStrAdpcmOpen. No crash in that run. NOT seen: any picture of the event. The last screenshot of that run was not compared, and the check run only reached the language screen in 15 s. After that run a 60-frame bound was added to the voice wait; it is built but has not been run into the stage. Stops the picture, in order: ModelPose (the camera is bones), the five SubScene object classes, the event natives. Three PC guards to delete later: null target in ScriptRunner::execute, the 60-frame bound in enterSubScene, the bone checks in cameraStep. callcheck lists mismatches on 11 functions from inlined helpers, FS2 addresses in the annotations and renamed callees, not all reviewed. game/modelpose.cpp is queued first. For the references: roadmap-3d-control.md is the user's requested analysis.",
+   "notes": "All of the TU is written or accounted for (batch 116). Added: DemoStream setFont and drawSubtitles, the fsm readers 0x28fa90..0x28ff60 (range added here; the host keeps file offsets in the 32-bit cells), MissionNotice::format, showNotice, setNoticeEnabled, setNotice, addTimedRecord, setPurposeText, eventPackName, eventDemoDir, and WideFontPrinter 0x2d3700..0x2d4150 (range added to game/fontdata.cpp). The silent voice bridge counts its position. Seen in a 235 s New Game run, no crash, no YAMIPAN_CAMERA: Open the door!, It's outside!, Daddy...? Kanae...? on the event's own pictures (progress/20261104-d0101-subtitle-*.png), words and times as the file has them. No game reference exists for the event, so it is verify, not done. Left, outside this TU: gsFrameFilter 0x2849c0 (down-sample, blur, up-sample), demoFilmDraw 0x204550, demoFleckDraw 0x2a11c0, each a host pass, not queued: the user's call. PauseMenuState::addNotice is a stub. Three PC guards remain: null target in ScriptRunner::execute, the 60-frame bound in enterSubScene, the bone checks in cameraStep. callcheck mismatches left are inlined helpers, compiler-made dtors and the GIF packet calls the host UI module replaces.",
    "ranges": [
     [
      "001512a0",
@@ -117,6 +116,10 @@
     [
      "002867a0",
      "00288c00"
+    ],
+    [
+     "0028fa90",
+     "0028ff60"
     ],
     [
      "002b0d60",
@@ -132,11 +135,16 @@
      "date": "2026-11-04 14:04",
      "status": "partial",
      "summary": "The opening event starts: mission, events, fade, demo camera and voice written, d0101 proven from the script and its own script runs; nothing of it shows yet"
+    },
+    {
+     "date": "2026-11-04 18:40",
+     "status": "verify",
+     "summary": "The opening event shows its subtitles: fsm files, WideFontPrinter, setFont, drawSubtitles and the mission notices written; the event picture has no reference"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "task": "The opening event, queued by the user 2026-11-04 to come right after the lighting. The game opens on a scripted event, almost perfectly dark, with something circling; none of it shows yet. Needs game/scriptrunner.cpp first. Find the path: mission +0xc8 (the pending event's name, afterScripts 0x286c40 starts it), StageMission setup 0x2870f0 and tickPending 0x286ce0, requestSubScene 0x196060, DemoCamera 0x26ce20 and its step, DemoExecuter, drawOverlay 0x26c920. Unproven that the opening is d0101, the only event with its own filter in StageScene::draw. Done when the picture shows the opening from the event's own camera, without YAMIPAN_CAMERA (open-items.md, The opening event).",
-   "why": "The stage's side of a scripted event: the fade every event waits on, the pack lookup and DemoCamera, StageMission (pending event), StageEvent and its file and script forms, the event voice DemoStream, the flat fill gsFillRect. Joined by the event alone; the file name is the port's."
+   "why": "The stage's side of a scripted event: the fade every event waits on, the pack lookup and DemoCamera, StageMission (pending event), StageEvent and its file and script forms, the event voice DemoStream and its subtitle file (fsm), the flat fill gsFillRect. Joined by the event alone; the file name is the port's."
   },
   "game/drawsys.cpp": {
    "notes": "All 164 of 0x2d46a0-0x2dac70 are written or listed. New: drawSysAddModel 0x2d5140 (draw group, name flags, wave surfaces, plant textures), drawSysFindKind1Surface 0x2d46a0, parseNameTags 0x2d54a0, the plant search 0x2da220 and drawSysBuildBossShadowTexture 0x2d5e10 with its three blits, batch 098. StageModelData and RenaModel were the same object as ModelInstance: folded, and the model file records are now in gamehooks.h in EE layout (ModelFile, ModelFileNode, ModelMesh, ModelMeshParts, ModelMeshPart, ModelMaterial), so vcmtable.cpp changed with them; ModelSurface is host. New host seam src/yamipan/rendering/yamipan_drawshadow.h with empty bodies in seams.cpp until a 3D host module exists. Checked: build green, layoutcheck OK, callcheck no missing, a scratch harness on parseNameTags, the alpha ramp and the blur chain order. Screen: New Game run of 240 s under the scripted pad, 118 screenshots to frame 7080: the Easy / Normal / Options menu at 3600, black at 6000 and at the last frame, no crash. Black is expected: nothing draws 3D, and drawSysAddModel is not called yet because StageModel::init is a stub. Unproven: nothing here has run on real model data; the boss chain and which channel is the brightness need a real picture. Next: PackTables::parse 0x2bcf10, NodeTransform 0x1d7f20, StageModel::init 0x188b10 (needs a +0xa8 field), ModelFile::createInstance 0x2e5210 with 0x2e4800 and 0x2e3e10, then the rena run unassigned@002e2970 and a 3D host module. Details and doubts: open-items.md Next up, architecture.md The draw system.",
@@ -186,6 +194,10 @@
     [
      "001fcb40",
      "001fe6b0"
+    ],
+    [
+     "002d3700",
+     "002d4150"
     ]
    ],
    "sessions": [
@@ -197,7 +209,7 @@
     }
    ],
    "status": "verify",
-   "why": "Cut out of unassigned@00171300 (frontier pick, 0x171300..0x230820): the font class on vtables 0x315fb0 / 0x315ff0 (ctor/dtor 0x1fcb40 / 0x1fe020 / 0x1fe0c0), its glyph table FontData (countLines 0x1fe150 / lineWidth 0x1fe2b0 / nextGlyph 0x1fe4d0: uidrawer.cpp's callees) and its draws (Tim2Texture, the knj font). Bounded by the movie player's last dtor 0x1fcad0 below and the unrelated small run at 0x1fe6b0 above."
+   "why": "Cut out of unassigned@00171300 (frontier pick): the font class on vtables 0x315fb0 / 0x315ff0, its glyph table FontData and its draws, and WideFontPrinter 0x2d3700..0x2d4150 (vtable 0x319ff0: the same printer for 16-bit text, its slots 4 and 7 thunks at 0x208b70, 0x208ba0)."
   },
   "game/gamepacket.cpp": {
    "notes": "All 6 functions written; source-only, callcheck clean. Header now declares the rena Vif1PktManage members the TU calls (ctor, virtual dtor, AddBuffer, AddList, Open, Close, IsOverflow, Terminate, Kick, Reset) with their FS2 addresses, so stubgen can stub rena_pkt_vif1pktmanage.cpp until that TU is written. +0x30 is the open list id (PacketList_None = -1); openList closes whatever is open unless it is the same id, also when none is open. +0x34 m_skipKick drops one frame's Kick; no writer found in the ELF (open-items.md question). closeList's IsOverflow result is discarded; not every caller was checked for reading v0. PC: Kick should hand the terminated chain (lists in id order = layers) to the host draw module in the rena TU.",

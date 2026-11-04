@@ -13,6 +13,7 @@
  *      demoEU/s<stage>/<name>.edp, its voice and subtitles, and asks the
  *      stage loop for a sub-scene; StageSimpleEvent plays an entry of the
  *      stage's own script.
+ *    fsm files (0x28fa90..0x28ff60): the voice's timed subtitles.
  *
  *  The order on the way in: a script native (0x1f2, 0x155, 0x15f..0x162 in
  *  game/scriptrunner.cpp) -> StageScene::startFileEvent -> poll each frame in
@@ -28,6 +29,7 @@
 
 #include "game/clock.h"
 #include "game/fileloader.h"
+#include "game/fontdata.h"
 #include "game/gamehooks.h"
 #include "game/gamepacket.h"
 #include "game/gamesystem.h"
@@ -42,9 +44,17 @@
 #include "game/sysdata.h"
 #include "game/thread.h"
 #include "game/vu0math.h"
+#include "game/wstring.h"
 #include "sdk/libgraph.h"
 #include "sound/sound.h"
 #include "yamipan/rendering/yamipan_drawui.h"
+
+static const char kFsmMagic[] = "fsm";
+
+// PC: the ROM's libc strcasecmp (0x127ea0); MSVC has no such name.
+#ifdef _MSC_VER
+#define strcasecmp _stricmp
+#endif
 
 // ──────────────────────────────────────────────────────────────────────
 // A flat rect in the frame's pixels, blended. PC: the ROM writes the sprite's
@@ -121,6 +131,7 @@ bool StageFade::isFullInMode1()
     return m_mode == StageFade_Running && m_target == 1.0f;
 }
 
+// In gamehooks.h: FS2 0x00151320 isNotRunning, FS2 0x00151380 setColour.
 // FS2 0x00151330
 // callcheck: resetTime
 
@@ -138,7 +149,8 @@ void StageFade::start(float seconds, float target, float from)
     m_clock->resetTime();
 }
 
-// FS2 0x001513a0 (0x151390 the slot's thunk)
+// FS2 0x00151390: the slot's thunk.
+// FS2 0x001513a0
 // callcheck: getSeconds, gsFillRect
 
 void StageFade::draw(sceVif1Packet *packet, TexAreaList *)
@@ -202,6 +214,7 @@ static void *findPackFile(void *file, const char *format, const char *name)
     return nullptr;
 }
 
+// In gamehooks.h: FS2 0x0026c910 getKind, FS2 0x0026c8b0 SubSceneData's ctor.
 // FS2 0x0026c700
 // callcheck: sprintf, strcmp
 
@@ -268,7 +281,8 @@ DemoCamera::DemoCamera() : StageCamera(kDemoScrZ, kDemoScreen, kDemoScreen, kDem
     setDirty(false);
 }
 
-// FS2 0x0026cd30 (0x26cf40 the base's copy, 0x26d010 the thunk)
+// FS2 0x0026cf40: the base's copy, FS2 0x0026cfe0 its thunk, FS2 0x0026d010 this one's.
+// FS2 0x0026cd30
 // callcheck: 0x2052d0
 
 DemoCamera::~DemoCamera()
@@ -285,7 +299,8 @@ void DemoCamera::playCut(void *motionFile)
     m_model->playMotionFile(motionFile, false, false, kDemoCutFlags, 0);
 }
 
-// FS2 0x0026ca40 (0x26d000 the thunk)
+// FS2 0x0026d000: the thunk.
+// FS2 0x0026ca40
 // callcheck: getSubSceneBlock, findMotion, playCut, onViewTop
 
 void DemoCamera::playCutNamed(const char *name)
@@ -297,7 +312,8 @@ void DemoCamera::playCutNamed(const char *name)
     }
 }
 
-// FS2 0x0026cb90 (0x26cff0 the thunk)
+// FS2 0x0026cff0: the thunk.
+// FS2 0x0026cb90
 // callcheck: advance, findBone, findBone, getValue, tanf, setScrZ, findBone, copyMatrix, getMatrix, copyMatrix
 
 void DemoCamera::cameraStep()
@@ -364,6 +380,9 @@ void DemoCamera::drawOverlay()
 
 // ──────────────────────────────────────────────────────────────────────
 // The mission.
+
+constexpr int kNoticeForever  = 0x7fffffff;
+constexpr int kNoticeMinLevel = 5;              // data 0x31ac18 (gp-0x7c58)
 
 constexpr float kMissionValue      = 2000.0f;     // 0x44fa0000
 constexpr int   kMission_b0        = 0x800000;
@@ -529,6 +548,7 @@ void StageMission::afterScripts()
 }
 
 // The timed records: the ROM's thunk 0x286ce0 over 0x286e30.
+// FS2 0x00286ce0: the thunk.
 // FS2 0x00286e30
 // callcheck: 0x29f810, 0x29fd10, 0x29fb60
 
@@ -555,6 +575,110 @@ void StageMission::tickPending()
 }
 
 constexpr int kResultFramesPerSecond = 30;  // the scripts' frames
+
+// FS2 0x00286930
+
+u_short *MissionNotice::format(u_short *out, int size, const u_short *const *args) const
+{
+    int in = 0;
+    int written = 0;
+    while (written < size - 1) {
+        u_short c = text[in];
+        if (c == '$') {
+            u_short which = text[in + 1];
+            if (which >= '1' && which <= '9') {
+                const u_short *arg = args[which - '1'];
+                while (written < size - 1 && *arg != 0)
+                    out[written++] = *arg++;
+                in += 2;
+            } else if (which == '$') {
+                out[written++] = which;
+                in += 2;
+            } else {
+                in++;
+            }
+        } else if (c == 0) {
+            break;
+        } else {
+            out[written++] = c;
+            in++;
+        }
+    }
+    out[written] = 0;
+    return out;
+}
+
+// FS2 0x00286cf0
+// callcheck: format, addNotice
+
+void StageMission::showNotice(int index, const u_short *arg)
+{
+    if (index != 0)     // PC: one record; the ROM's next one would be +0x69c
+        return;
+    if (notice.text == nullptr || !notice.enabled)
+        return;
+    textIndex = (textIndex + 1) & (kMissionTextBuffers - 1);
+    int frames = notice.frames != 0 ? notice.frames : kNoticeForever;
+    int level = notice.level < kNoticeMinLevel ? kNoticeMinLevel : notice.level;
+    const u_short *args[1] = { arg };
+    gStageScene->pauseState->addNotice(notice.format(texts[textIndex], kMissionTextSize, args),
+                                       frames, notice.arg, level);
+}
+
+// FS2 0x00286de0
+
+void StageMission::setNoticeEnabled(int index, bool on)
+{
+    if (index != 0)     // PC: see showNotice
+        return;
+    notice.enabled = on;
+}
+
+// FS2 0x00286e00
+
+void StageMission::setNotice(int index, const u_short *text, int frames, int arg, int level)
+{
+    if (index != 0)     // PC: see showNotice
+        return;
+    notice.text = text;
+    notice.frames = frames;
+    notice.arg = arg;
+    notice.level = level;
+}
+
+// The ROM counts down what is left, so a part-full table scans only that many
+// records from the start.
+// FS2 0x00286f30
+// callcheck: getMissionFrames, stageFps (their answers unused)
+
+int StageMission::addTimedRecord(int id, int x, int y, int z, int arg, int frames)
+{
+    u_int scan = (u_int)(kMissionTimedRecords - timedCount);
+    for (u_int i = 0; i < scan; i++) {
+        MissionTimedRecord &record = timed[i];
+        if (record.id != -1)
+            continue;
+        gStageScene->getMissionFrames();
+        stageFps();
+        record.id = id;
+        record.position[0] = (float)x;
+        record.position[1] = (float)y;
+        record.position[2] = (float)z;
+        record.arg = arg;
+        record.frames = frames;
+        timedCount++;
+        return 1;
+    }
+    return 0;
+}
+
+// FS2 0x00287040
+// callcheck: wstrcpy
+
+void StageMission::setPurposeText(const u_short *text)
+{
+    wstrcpy(purposeText, text);
+}
 
 // FS2 0x00286a50
 // callcheck: getStageResult
@@ -758,11 +882,160 @@ void StageMission::setup()
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// The event's voice: a SoundStream with a directory and subtitles. setFont and
-// drawSubtitles are still stubs, so no subtitle shows.
+// An fsm file: tracks of timed 16-bit texts behind three tables of offsets.
+// The ROM relocates the file in place, offsets into pointers. PC: a 32-bit
+// cell cannot hold a host pointer, so every cell ends as an offset from the
+// file's start (0 null) and fsmAt reads it.
+
+// layout: EE
+struct FsmCue
+{
+    float start;                // FS2 +0x0: seconds
+    float end;                  // FS2 +0x4
+    int   text;                 // FS2 +0x8: an index, then the text
+};
+static_assert(sizeof(FsmCue) == 0xc, "FsmCue");
+
+// layout: EE
+struct FsmTrack
+{
+    int   name;                 // FS2 +0x0: an index (negative none), then the name
+    u_int cueCount;             // FS2 +0x4
+    int   cues;                 // FS2 +0x8: an index, then the FsmCue array
+};
+static_assert(sizeof(FsmTrack) == 0xc, "FsmTrack");
+
+// layout: EE
+struct FsmFile
+{
+    char   magic[4];            // FS2 +0x00: "fsm"
+    u_char relocated;           // FS2 +0x04
+    u_char _05[0xb];
+    int    trackCount;          // FS2 +0x10
+    int    nameCount;           // FS2 +0x14
+    int    names;               // FS2 +0x18: the table of names
+    int    nameBase;            // FS2 +0x1c: its entries count from here
+    int    cueListCount;        // FS2 +0x20
+    int    cueLists;            // FS2 +0x24
+    int    cueListBase;         // FS2 +0x28
+    int    textCount;           // FS2 +0x2c
+    int    texts;               // FS2 +0x30
+    int    textBase;            // FS2 +0x34
+    u_char _38[8];
+    FsmTrack tracks[1];         // FS2 +0x40: trackCount of them
+};
+static_assert(offsetof(FsmFile, tracks) == 0x40, "FsmFile");
+
+template <typename T>
+static T *fsmAt(const FsmFile *file, int offset)
+{
+    return (T *)((const char *)file + offset);
+}
+
+static void fsmRebaseTable(FsmFile *file, int table, int count, int base)
+{
+    int *entries = fsmAt<int>(file, table);
+    for (int i = 0; i < count; i++)
+        entries[i] += base;
+}
+
+// FS2 0x0028fd30
+
+bool fsmRelocate(void *data)
+{
+    FsmFile *file = (FsmFile *)data;
+    if (file->relocated)
+        return true;
+    if (memcmp(file->magic, kFsmMagic, sizeof(kFsmMagic)) != 0)
+        return false;
+    fsmRebaseTable(file, file->names, file->nameCount, file->nameBase);
+    fsmRebaseTable(file, file->texts, file->textCount, file->textBase);
+    fsmRebaseTable(file, file->cueLists, file->cueListCount, file->cueListBase);
+    const int *names = fsmAt<int>(file, file->names);
+    const int *texts = fsmAt<int>(file, file->texts);
+    const int *cueLists = fsmAt<int>(file, file->cueLists);
+    for (int t = 0; t < file->trackCount; t++) {
+        FsmTrack *track = &file->tracks[t];
+        track->name = track->name < 0 ? 0 : names[track->name];
+        track->cues = cueLists[track->cues];
+        FsmCue *cues = fsmAt<FsmCue>(file, track->cues);
+        for (u_int c = 0; c < track->cueCount; c++)
+            cues[c].text = texts[cues[c].text];
+    }
+    file->relocated = 1;
+    return true;
+}
+
+// Inline in the ROM's three readers; null when the file is not one or the
+// track is out of range.
+static const FsmTrack *fsmGetTrack(const void *data, int track)
+{
+    if (!fsmRelocate(const_cast<void *>(data)))
+        return nullptr;
+    const FsmFile *file = (const FsmFile *)data;
+    if (track < 0 || track >= file->trackCount)
+        return nullptr;
+    return &file->tracks[track];
+}
+
+// FS2 0x0028fa90
+// callcheck: fsmRelocate (in fsmGetTrack)
+
+bool fsmTrackHasText(void *data, int track)
+{
+    if (track < 0)
+        return false;
+    const FsmTrack *entry = fsmGetTrack(data, track);
+    if (entry == nullptr)
+        return false;
+    const FsmFile *file = (const FsmFile *)data;
+    const FsmCue *cues = fsmAt<FsmCue>(file, entry->cues);
+    for (u_int c = 0; c < entry->cueCount; c++) {
+        if (cues[c].text != 0 && *fsmAt<u_short>(file, cues[c].text) != 0)
+            return true;
+    }
+    return false;
+}
+
+// FS2 0x0028fb80
+// callcheck: fsmRelocate (in fsmGetTrack)
+
+const u_short *fsmFindText(float seconds, const void *data, int track)
+{
+    const FsmTrack *entry = fsmGetTrack(data, track);
+    if (entry == nullptr)
+        return nullptr;
+    const FsmFile *file = (const FsmFile *)data;
+    const FsmCue *cues = fsmAt<FsmCue>(file, entry->cues);
+    for (u_int c = 0; c < entry->cueCount; c++) {
+        if (cues[c].start <= seconds && seconds < cues[c].end)
+            return cues[c].text != 0 ? fsmAt<u_short>(file, cues[c].text) : nullptr;
+    }
+    return nullptr;
+}
+
+// FS2 0x0028fc80
+
+int fsmFindTrack(void *data, const char *key)
+{
+    if (key == nullptr || !fsmRelocate(data))
+        return -1;
+    const FsmFile *file = (const FsmFile *)data;
+    for (int t = 0; t < file->trackCount; t++) {
+        if (strcasecmp(fsmAt<const char>(file, file->tracks[t].name), key) == 0)
+            return t;
+    }
+    return -1;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The event's voice: a SoundStream with a directory and subtitles.
 
 constexpr int kDemoVoiceBuffer = 0x10000;
-static const char kFsmMagic[] = "fsm";
+constexpr short kDemoPrinterOrigin = 0x700;
+// A stream's position is ADPCM bytes: 16 of them hold 28 samples.
+constexpr float kAdpcmBlockSamples = 28.0f;
+constexpr float kAdpcmBlockBytes   = 16.0f;
 
 // FS2 0x002b1490
 // callcheck: SoundStream, operator_delete[]
@@ -880,6 +1153,60 @@ constexpr int kFlagGroupFirstStage = 1;     // SaveData::testStageFlags
 constexpr int kFlagWatchedOpening  = 0x15;
 static const char kEventOpening[] = "d0101";    /* data 0x309188 */
 
+// FS2 0x002b1010
+// callcheck: operator_new, WideFontPrinter, setFont, setImage (the two deletes through the printer's virtual dtor)
+
+bool DemoStream::setFont(const void *font, const void *image)
+{
+    delete m_printer;
+    m_printer = nullptr;
+    if (font == nullptr || image == nullptr)
+        return false;
+    WideFontPrinter *printer = new WideFontPrinter(kDemoPrinterOrigin, kDemoPrinterOrigin);
+    u_char taken = printer->setFont((const FontData *)font);
+    printer->setImage(image, -1);
+    if (!taken) {
+        delete printer;
+        return false;
+    }
+    m_printer = printer;
+    return true;
+}
+
+// The text of the voice's time, centred on (m_textX, m_textY): that is the
+// last line's place, more lines stand above it.
+// FS2 0x002b0d60
+// callcheck: getGameOptions, getPosition, getRequestChannels, getRequestRate, fsmFindText, countLines, lineHeight, uploadTexture, setDrawState, print (PC: sceVif1PkCnt..sceVif1PkCloseDmaTag: the host UI draw module opens no GIF run; printText casts for print)
+
+void DemoStream::drawSubtitles(sceVif1Packet *packet)
+{
+    if (!getGameOptions()->subtitles || m_printer == nullptr)
+        return;
+    const u_short *text = nullptr;
+    if (m_fsm != nullptr && (m_state == SoundStream_Playing || m_state == SoundStream_Paused)) {
+        int position = getPosition();
+        float seconds = -1.0f;
+        if (position >= 0)
+            seconds = (float)position * kAdpcmBlockSamples / kAdpcmBlockBytes
+                      / (float)getRequestChannels(0) / (float)getRequestRate(0);
+        if (seconds >= 0.0f)
+            text = fsmFindText(seconds, m_fsm, 0);
+    }
+    if (text == nullptr)
+        return;
+    int lines = m_printer->m_font != nullptr ? m_printer->m_font->countLines(text) : 0;
+    if (lines < 1)
+        lines = 1;
+    int lineHeight = m_printer->lineHeight();
+    m_printer->m_flags = TextPrinterFlag_CenterX;
+    m_printer->uploadTexture(packet);
+    m_printer->m_packet = packet;
+    m_printer->setDrawState(packet, false);
+    m_printer->m_rgba = m_colour;
+    m_printer->printText(m_textX, m_textY - (lines - 1) * lineHeight, text);
+    m_printer->m_packet = nullptr;
+}
+
 // FS2 0x00287af0
 // callcheck: getSaveData, getLanguage
 
@@ -964,6 +1291,8 @@ StageEvent::StageEvent(float seconds, const char *eventName)
     strcpy(name, eventName);
 }
 
+// In gamehooks.h: FS2 0x00287ad0 and FS2 0x00288920 hidesText,
+// FS2 0x00287ae0 getSubSceneData.
 // FS2 0x002888a0 (the base part of the two below)
 // callcheck: deleting dtor of the runner
 
@@ -997,6 +1326,22 @@ StageFileEvent::~StageFileEvent()
     delete m_loader;
 }
 
+// FS2 0x00288b80
+
+static char *eventPackName(char *out, const char *name)
+{
+    sprintf(out, "%s.edp", name);                               /* data 0x309278 */
+    return out;
+}
+
+// FS2 0x00288bc0
+
+static char *eventDemoDir(char *out)
+{
+    sprintf(out, "demoEU/s%02d/", getStageSelect()->stage);     /* data 0x309280 */
+    return out;
+}
+
 // FS2 0x00287f20
 // callcheck: 0x263b90, setMuted, getTopView, getPlayerAltFlag, playerOrTargetInView, update, threadYield, isSettled, getTopView, getPlayerAltFlag, playerOrTargetInView, update, threadYield, isSettled, 0x288bc0, strcpy, 0x288b80, addFile, 0x288a90, sprintf, addFile, getSaveData, getLanguage, sprintf, addFile, sprintf, addFile, 0x288930, strcat, strcpy, addFile, startLoad
 
@@ -1017,10 +1362,8 @@ void StageFileEvent::queueFiles()
         stepSound();
 
     char path[0x100];
-    sprintf(path, "demoEU/s%02d/", getStageSelect()->stage);    /* data 0x309280 */
-    m_loader->setDir(path);
-    sprintf(path, "%s.edp", name);                              /* data 0x309278 */
-    m_packIndex = m_loader->addFile(path);
+    m_loader->setDir(eventDemoDir(path));
+    m_packIndex = m_loader->addFile(eventPackName(path, name));
 
     char base[0x80];
     languageFileName(base, name);
