@@ -85,7 +85,7 @@ struct SeEntry
     S2dRef<const char> name;    // FS2 +0x00: StageSound::stopNamed compares it
     int         bank;           // FS2 +0x04: SeTable::banks / StreamTable::banks
     S2dRef<const char> subtitleKey; // FS2 +0x08: StDT: its fsm track (SoundTrack::hasSubtitles); a string index before relocate, < 0 none
-    u_char      _0c[4];         // FS2 +0x0c
+    float       loudness;       // FS2 +0x0c: what can hear a played sound by (StageObject::playEntryHeard, SceneUiState::addSourceNoise); 0 unheard
     float       range;          // FS2 +0x10: a placed sound's reach; 0 everywhere
     int         program;        // FS2 +0x14
     int         note;           // FS2 +0x18: a stream bank's / an StDT entry's request

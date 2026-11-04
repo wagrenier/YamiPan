@@ -1873,3 +1873,13 @@ rules or by being RoR's. From its 14 K line SDK only what FS2 calls came over.
   decoded at its source; `setImage`'s owner is deleted right after the call), `YamiPan_DrawUiBegin`
   (vertex format) / `YamiPan_DrawUiVertex` (RGBAQ bytes, UV / XY 12.4, Z). The gfx presets
   (`gfxUiPreset*`) still write their own packets until their TU is written.
+
+## The object family (game/stageobject.cpp, 2026-11-04)
+
+Every stage object is three bases in the ROM: the node (`StageNodeBase`, vptr +0, parent +4, children +8, blocks +0x10 / +0x14), the side base at +0x18 (a view flag, vptr +0x1c, four slots) and `ScriptRunner` at +0x40 (vptr +0xf4, 108 slots). **CodeWarrior keeps the three tables in one block and appends a class's new virtuals after the runner's**, which is why `rtti.py` shows 130 slots at +0xf4 and why calls through the first vptr read +0x1f4 and up: those slots are the object's own, not the runner's.
+
+Node slots: 0 `setDirty` (+0x08), 1 `rebuildMatrix`, 2 dtor (+0x10), 3 `getMatrix` (+0x14), 4 `getWorldMatrix`, 5 `setDirtyTree`, 6 `updateMatrix` (+0x20, 0x1d8420 for all). Object slots: +0x1f4 `getKind` (empty in the base), +0x1f8 0x18a5b0, +0x1fc 0x189f40, +0x200..+0x208 `getPosX/Y/Z`, +0x20c `setPosition`, +0x210 `setRotation`, +0x214 `setYaw`, +0x218 `setModelValue`, +0x21c `getObjectName`, +0x220 `getSelf`, +0x224 `distanceTo`, +0x228 `distanceToPoint`, +0x22c `heightDifference`, +0x230 0x189ce0, +0x234 `playNamedHeard`, +0x238 `makeNoise`, +0x23c `noiseHook`, +0x240 `isShown`, +0x244 `setShown`, +0x248 `setTreeShown`; +0x24c.. differ by class.
+
+Kinds (`getKind`): 0 character, 2 door, 7 camera, 8 vtable 0x311d30, 9 main camera, 10 view camera, 0xb 0x311ac0 (camjack), 0xd demo camera, 0xf light, 0x10 point, 0x11 spot, 0x13 item, 0x14 item E, 0x15 weapon, 0x16 trap, 0x17 thrown, 0x18 0x312f40, 0x19 bullet, 0x1a volume and marker, 0x1b sphere, 0x1c box, 0x1d 0x3149e0.
+
+`StageObject` ends with the transform at +0x140 (world matrix +0x1c0). The serial at +0x3c is `(counter << 1) | 1`, so odd; `getHandle` answers it for characters and the pointer otherwise. The tree node (+0x38, EE 0x10): parent +0, children `StageList` +4, object +0xc; its walks inline four levels and use accessors 0x18b9a0..0x18b9d0 below that.

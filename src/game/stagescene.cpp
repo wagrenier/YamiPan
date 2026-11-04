@@ -2500,7 +2500,7 @@ bool StageScene::partnerResponds(StageObject *object)
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x00195520
-// callcheck: currentMission, onRestore, restoreFlags, stageObjectIsShown, setActive, setShown
+// callcheck: currentMission, onRestore, restoreFlags, getShownState, setActive, setShown
 
 void StageScene::restoreObjectFlags()
 {
@@ -2511,7 +2511,7 @@ void StageScene::restoreObjectFlags()
         return;
     }
     bool active = kept->m_active != 0;
-    bool shown = stageObjectIsShown(kept);
+    bool shown = kept->getShownState();
     u_char viewActive = kept->m_viewActive;
     arrays->restoreFlags();
     kept->m_tree->setActive(active);
@@ -2681,7 +2681,7 @@ void StageScene::calcMatrices()
             StageModel *model = obj->m_model;
             if (obj->m_parent == nullptr) {
                 obj->propagate();
-                obj->calcMatrix();
+                obj->updateMatrix();
             }
             if (model == nullptr || model->pose == nullptr)
                 continue;
@@ -2689,7 +2689,7 @@ void StageScene::calcMatrices()
                 model->pose->solve(3, -1, 0);
             for (ModelLink *link = model->links; link != nullptr; link = link->next) {
                 link->object->propagate();
-                link->object->calcMatrix();
+                link->object->updateMatrix();
             }
         }
     }
@@ -2999,7 +2999,7 @@ void StageScene::update()
          slot = firstActive(StageObjArray::next(slot))) {
         if ((*slot)->m_viewActive) {
             (*slot)->cameraStep();
-            (*slot)->calcMatrix();
+            (*slot)->updateMatrix();
         }
     }
     perfMark(kPerfOrange, "calcmatrix(root)");
@@ -3705,7 +3705,7 @@ void StageScene::saveObjectFlags(void *arg, StageObject *object)
 // The walk of restoreFlags, writing. The ROM copies the transform by its
 // fields; the host's has no others.
 // FS2 0x0019c960
-// callcheck: stageObjectIsShown
+// callcheck: getShownState
 
 void SceneArrayPair::saveFlags()
 {
@@ -3720,7 +3720,7 @@ void SceneArrayPair::saveFlags()
                 continue;
             u_char *saved = &first[index * 3];
             saved[0] = obj->m_active != 0;
-            saved[1] = stageObjectIsShown(obj);
+            saved[1] = obj->getShownState();
             saved[2] = obj->m_viewActive;
             second[index] = obj->m_xform;
             index++;
@@ -4818,9 +4818,7 @@ DemoExecuter::~DemoExecuter()
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// The kinds of three object classes. In the ROM these are slot 123 of
-// their vtables; on the host nothing reaches them until StageObject::getKind
-// becomes virtual in the objects' TU.
+// The kinds of three object classes: slot 123 of their vtables.
 // FS2 0x001a45d0
 
 int SubSceneDoorObject::getKind()

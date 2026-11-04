@@ -231,7 +231,8 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **A heredoc whose body has an odd number of apostrophes fails in the Bash tool**, even with a quoted
   delimiter: "unexpected EOF while looking for matching". A batch JSON with one apostrophe did it, and
   nothing ran (2026-11-03). Write such files with the Write tool.
- Nothing in the command runs, not even what stands before the heredoc, so a check run beside it tests the old tree (2026-11-03).
+
+ Nothing in the command runs, not even what stands before the heredoc, so a check run beside it tests the old tree (2026-11-03).
 - **A long heredoc in one Bash call** (2026-11-03): one holding C++ with apostrophes in comments failed
   with "unexpected EOF while looking for matching" even with a quoted delimiter, and only the part
   before it had run. Write big files with the Write tool, small edits with a script in the scratchpad.
@@ -340,3 +341,7 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   (`ghidra.py asm`): the base was 0x2fabd0, the entry `{name, func, cleanup, arg, stackSize, stack}`.
 
 - **A pad script from an older note lands on the wrong screen (2026-11-03).** Symptom: RIGHT then CROSS on the title opens Load Game, or the title never answers. Cause: pad timing is in reads and the read rate changes between machines and runs (now ~0.76 a frame), so an old script's boot presses were still playing on the title, and the unanswered title loops ~1000 frames up, ~1000 black. Fix: boot presses only up to the logo, one RIGHT, one CROSS, and **read the highlight in the shots** rather than trust the script (open-items.md has the current one). A press in the script is not a press the game saw.
+
+- **A pad file path does nothing, silently** (2026-11-04). Symptom: a New Game run sits black with only 22 stubs, no error. Cause: `build.py --pad` and `gdbrun.py --pad` take the script text; a path is parsed as a script with no entries. Fix: `--pad "$(cat work/newgame_pad.txt)"`.
+- **A later `build.py --run` overwrites work/run_relwithdebinfo.log** (2026-11-04), even `--run 1`: copy the log first. `work/gdb/log.txt` keeps gdb's run.
+- **Stub constructors leave a real base's subclass fields as heap garbage** (2026-11-04). Symptom: 0xbaadf00d in `StageSound::update` from a camera's `m_linked`. Cause: `StageCamera::StageCamera` is a stub, so nothing set the field. Fix until the ctor is written: `// PC:` zeroing in `StageObject::StageObject`.

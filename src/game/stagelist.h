@@ -54,7 +54,7 @@ public:
     // 0x1a6420, 0x1a6390), its tail search a function of its own (0x1a6630,
     // 0x1a6570, 0x1a64b0), its node a two-argument constructor (0x1a6750,
     // 0x1a6730, 0x1a6710, 0x1a66f0).
-    // FS2 0x001a5db0, 0x001a5ed0, 0x001a5ff0, 0x001a6140, 0x001a5d00
+    // FS2 0x001a5db0, 0x001a5ed0, 0x001a5ff0, 0x001a6140, 0x001a5d00, 0x001842c0, 0x0017e1b0
     void pushBack(const T &value)
     {
         Node *node = new Node;
@@ -71,6 +71,20 @@ public:
             tail = tail->next;
         node->prev = tail;
         tail->next = node;
+    }
+
+    // Unlinks and frees node.
+    // FS2 0x00184370, 0x0017e260
+    void erase(Node *node)
+    {
+        if (node == head)
+            head = head->next;
+        if (node->prev != NULL)
+            node->prev->next = node->next;
+        if (node->next != NULL)
+            node->next->prev = node->prev;
+        delete node;
+        count--;
     }
 
     Node *head;                 // FS2 +0x0
