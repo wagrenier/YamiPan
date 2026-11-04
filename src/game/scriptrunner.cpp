@@ -1804,6 +1804,89 @@ static const int *nativePendingEvent(ScriptRunner *self, int *, const int *code)
     return next;
 }
 
+// 0x70 setPlayer(name): the character called name becomes the player and the
+// cameras follow it; no such character clears the player. Stage 1's Root does
+// this for F_PC01 in its menu mode 1 block.
+// FS2 0x001c81a0
+// callcheck: readNameArg, findCharacter, setPlayer
+
+static const int *nativeSetPlayer(ScriptRunner *self, int *, const int *code)
+{
+    const char *name = nullptr;
+    const int *next = self->readNameArg(&name, code);
+    // PC: the player or partner label with nobody behind it leaves the ROM's
+    // name uninitialised.
+    if (name == nullptr)
+        return next;
+    StageObject *who = gStageScene->objects->findCharacter(name, 0);
+    gStageScene->setPlayer(reinterpret_cast<StagePlayer *>(who));
+    return next;
+}
+
+static const char kViewNone[]  = "NULL";        /* data 0x304ba8 */
+static const char kViewLight[] = "scr_demo_pl"; /* data 0x304bd0 */
+constexpr int kViewPriorityScript = 3;          // between the main camera 0 and the demo camera 4
+constexpr u_char kViewFlagScript  = 1;
+
+// FS2 0x001c8f40
+
+static bool isNullName(const char *name)
+{
+    return strcmp(name, kViewNone) == 0;
+}
+
+// FS2 0x001d1260
+// callcheck: find0
+
+static StageObject *findCameraObject(const char *name)
+{
+    return gStageScene->objects->find0(name, 0);
+}
+
+// FS2 0x001b56b0
+// callcheck: find5
+
+static StageObject *findLightObject(const char *name)
+{
+    return gStageScene->objects->find5(name, 0);
+}
+
+// 0x64 scriptView(name): the object called name takes the view above the main
+// camera; "NULL" gives it back. During an event the light scr_demo_pl hangs
+// from that view while it lasts.
+// FS2 0x001c8dc0
+// callcheck: readNameArg, isNullName, removeViewPriority, isEventActive, findLightObject, setParent, demoSwitchOn, findCameraObject, getTopView, pushView, isEventActive, findLightObject, setParent, demoSwitchOn
+
+static const int *nativeScriptView(ScriptRunner *self, int *, const int *code)
+{
+    const char *name = nullptr;
+    const int *next = self->readNameArg(&name, code);
+    // PC: as nativeSetPlayer.
+    if (name == nullptr)
+        return next;
+
+    if (isNullName(name)) {
+        gStageScene->removeViewPriority(kViewPriorityScript);
+        if (gStageScene->isEventActive()) {
+            StageObject *light = findLightObject(kViewLight);
+            light->setParent(nullptr);
+            demoSwitchOn(light, false);
+        }
+        return next;
+    }
+
+    StageObject *view = findCameraObject(name);
+    if (view != nullptr && gStageScene->getTopView() != view) {
+        gStageScene->pushView(view, kViewPriorityScript, kViewFlagScript);
+        if (gStageScene->isEventActive()) {
+            StageObject *light = findLightObject(kViewLight);
+            light->setParent(view);
+            demoSwitchOn(light, true);
+        }
+    }
+    return next;
+}
+
 // 0x53 menuMode(): acc = StageScene::getMenuMode. Stage 1's Root tests it for 1
 // first of all: everything it does sits behind this.
 // FS2 0x001ca5a0
@@ -1873,6 +1956,8 @@ struct ScriptNativeBinding
 static const ScriptNativeBinding kNatives[] = {
     { 0x04e, nativeFadeIn },
     { 0x053, nativeMenuMode },
+    { 0x064, nativeScriptView },
+    { 0x070, nativeSetPlayer },
     { 0x138, nativeMissionValue },
     { 0x139, nativeMoveScale },
     { 0x155, nativeSimpleEventNow },
