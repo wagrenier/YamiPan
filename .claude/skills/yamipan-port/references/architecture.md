@@ -1935,3 +1935,21 @@ A stack of records (gp-0x7994 = 0x31aedc the current one), each with its models,
 **The boss shadow texture** 0x2d5e10 (stage 0x1b, group 0x40, only while `drawSysBuildBossShadow` found F_E27_BOSS): a 256 square CT16 frame cleared white (gsFillRect 0x80, 0x60, 0x180, 0x160), the boss drawn with +8 = 0x87 and the 0x40 bytes at +0x80 zeroed (read as: drawn black; the readers of those fields are unread). View rows (1,0,0,0), (0,0,1,0), (0,-1,0,0), (-x, z + 800, -y, 1) from the shadow's origin; screen `sceVu0ViewScreenMatrix(256, 1, 1, 2048, 2048, 1, 0, 0, 1)` with row 1 = old row 2 and row 2 = -old row 1. Blur chain: down 256>128 (0x2d77d0), blur 128 (0x2d7540), down 128>64, blur 64, up 64>128 (0x2d72c0), blur 128, up 128>256. Each blit is three page-wide sprite passes at -1, 0, +1 texels, alpha 1, 1/2, 1/3 (0x30fa40 / 50 / 60), which is their mean; the source wraps (CLAMP_1 0), which is why the blur's v coordinates start at the size. 0x2d7030 and a T8H > T8 local copy make the result readable as 8 bits at sReservedBlock; the CLUT (0x2d6dc0, block +0x100) has alpha clamp((256 - i) / 4, 0, 128) in its top byte, so index 0 is 64 of 128. rena gets the TEX0 from template gp-0x7b70 through 0x2e8290 (bss 0x31af28). gp-0x7958 and gp-0x7954 are debug flags nothing writes (a sceVif1PkCall, a DISPFB2 view of the target). The host keeps the sizes, order, taps and ramp and hands the rest to `yamipan/rendering/yamipan_drawshadow.h`.
 
 `sceVu0MulMatrix` and `sceVu0ViewScreenMatrix` were checked against the ROM (0x10b750, 0x10bf30); the signs of rotateMatrixX / Z come from the COP2 words.
+
+## The parameter tables (game/packtables.cpp, 2026-11-04)
+
+`dataEU/packgameEU.pak` is read once at boot by `loadGamePackThread` -> `PackTables::parse` 0x2bcf10 (0x3df0 bytes, one function in the ROM) and freed again; only the tables below stay. Items, by id:
+
+| item | form | into |
+|---|---|---|
+| 0..2 | CSV sheet, one per StageKind | `gStageObjRecords` 0x539b10, 3 x 0x140 x 0xfc: every character's stats, columns in gamehooks.h |
+| 3 | CSV sheet | `gItemDefs` 0x574c10 (0xa0 x 0x20); rows of a weapon kind (< 7) also `gWeaponDefs` 0x576010 (0x50 x 0x54), in order |
+| 4 | CSV sheet | `gDoorRecords` 0x537d80 (0x87 x 0x38), columns by find, not operator[] |
+| 5 | CSV sheet | `gMotionDefs` 0x577b20 (0x100 x 0x210), second pass for the next motion |
+| 6, 7 | lines of `label,` + 4 x (6 floats, flag) | `MotionDef::offsetA/B` sets 0, 1 |
+| 8 | lines of `tag,` + 15 floats | `gMotionModels` 0x2f8000 (0x14 x 0x50), data with defaults |
+| 9..0x30 | lines of `bone,a,b,c,d` | `gMotionBoneSets`, 4 groups of 10 lists of 0x20-byte entries (data 0x2f8720..0x2fa3e0) |
+
+A sheet: Shift-JIS, CRLF lines; the first line with a first field holds the column names; each next one is a row under the number in that field; once a number repeats, later taken numbers move up. The file's last byte is overwritten by the terminator. A cell keeps its text and its atoi. A column name a sheet lacks reads column 0 (operator[] inserts 0). Item kinds: LW HW G3 G9 G7 R5 R7 B3 B9 B5 B7 II QI KI T OI = 0..15; an unknown one keeps the row before's (parse's unset s0). Side flags of a character: PC, NP, 屍, 闇.
+
+The RM2 model file (rena/rena_model.cpp): pointers are absolute on the disc, against the base stored at +0x30; `relocate` moves them and writes the base, so a file relocates once. Layout: gamehooks.h. Below `ModelPrim` the fields at +4, +0x14.. of a batch are DMA tag addresses, so a mesh's packets are chains (5 tags, or 7 when `isLong`; decoded at the source by the 3D host module, TU 5).

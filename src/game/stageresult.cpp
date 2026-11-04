@@ -2,6 +2,7 @@
 // (game/stageresult.h).
 
 #include "game/stageresult.h"
+#include "game/packtables.h"
 
 #include <string.h>
 
@@ -79,7 +80,7 @@ void loadGamePackThread(void *arg)
 
 // ──────────────────────────────────────────────────────────────────────
 // Loads packgameEU.pak, parses its tables and frees both again: what
-// PackTables::parse keeps lives elsewhere (not read yet).
+// PackTables::parse keeps is in the tables of game/packtables.h.
 // FS2 0x002afd80
 // callcheck: operator_new, operator_delete, PackTables (the new- and delete-expressions)
 // callcheck: ~NameMap, ~ListMap (PackTables' implicit destructor, inline: its eight maps from +0x70 down)

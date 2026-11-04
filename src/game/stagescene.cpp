@@ -1790,6 +1790,9 @@ bool StageFiles::applyBgTarget()
 
         for (int i = file->getNodeCount() - 1; i >= 0; i--) {
             ModelInstance *instance = file->createInstance(i, nullptr);
+            // PC: createInstance is still a stub (rena/rena_model.cpp, 3D path 4).
+            if (instance == nullptr)
+                continue;
             const char *objectName = instance->node->name;
 
             if (!scene->isSubScene) {
@@ -4432,6 +4435,38 @@ void StageScene::runStageScripts()
         if ((*it)->m_active)
             (*it)->afterScripts();
     }
+}
+
+// The sections follow the header in the order of the fields.
+// FS2 0x00186ee0
+
+void StageMapFile::relocate()
+{
+    StageMapPoint *pointList = reinterpret_cast<StageMapPoint *>(this + 1);
+    points.set(pointList);
+    StageMapCamera *cameraList = reinterpret_cast<StageMapCamera *>(pointList + pointCount);
+    cameras.set(cameraList);
+    StageMapSpot *spotList = reinterpret_cast<StageMapSpot *>(cameraList + cameraCount);
+    spots.set(spotList);
+    StageMapLight *lightList = reinterpret_cast<StageMapLight *>(spotList + spotCount);
+    lights.set(lightList);
+    StageMapBox *boxList = reinterpret_cast<StageMapBox *>(lightList + lightCount);
+    boxes.set(boxList);
+    marks.set(boxList + boxCount);
+}
+
+// The motion targets' names, 1..8; UNKNOWN for any other index. kept
+// here until the map objects' file 0x175c00.. is cut.
+// FS2 0x00175c00
+
+const char *stageMotionTargetName(int index)
+{
+    static const char *const kNames[] = {
+        "CAT", "CROW", "tonbi", "oMT04_04", "oZS09_04", "oDC07_05", "oMK21_09", "oMT04_99", "UNKNOWN",
+    };    /* data 0x2f7aa0 */
+    if (index < 1 || index > 8)
+        index = 9;
+    return kNames[index - 1];
 }
 
 // ──────────────────────────────────────────────────────────────────────

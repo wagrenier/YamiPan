@@ -2,6 +2,8 @@
 // Functions below are stubs until reconstructed; see tools/reverse/stage.py.
 #include "rena/rena_draw.h"
 
+#include <string.h>
+
 #include "common/yamipan_stub.h"
 #include "game/fontdata.h"
 #include "game/gamehooks.h"
@@ -144,26 +146,6 @@ ModelInstance * ModelFile::createInstance(u_int index, const char *name)
     return {};
 }
 
-// stub of FS2 0x002e5200
-int ModelFile::getNodeCount()
-{
-    YAMIPAN_STUB("ModelFile::getNodeCount", 0x002e5200);
-    return {};
-}
-
-// stub of FS2 0x002e2cf0
-bool ModelFile::isValid()
-{
-    YAMIPAN_STUB("ModelFile::isValid", 0x002e2cf0);
-    return {};
-}
-
-// stub of FS2 0x002e2d20
-void ModelFile::relocate()
-{
-    YAMIPAN_STUB("ModelFile::relocate", 0x002e2d20);
-}
-
 // stub of FS2 0x001d7f20
 NodeTransform::NodeTransform()
 {
@@ -174,18 +156,6 @@ NodeTransform::NodeTransform()
 void NodeTransform::setPosition(const float *pos)
 {
     YAMIPAN_STUB("NodeTransform::setPosition", 0x001d7ee0);
-}
-
-// stub of FS2 0x002c0dc0
-PackTables::PackTables()
-{
-    YAMIPAN_STUB("PackTables::PackTables", 0x002c0dc0);
-}
-
-// stub of FS2 0x002bcf10
-void PackTables::parse(PackFile *pack)
-{
-    YAMIPAN_STUB("PackTables::parse", 0x002bcf10);
 }
 
 // stub of FS2 0x00207ef0
@@ -407,12 +377,6 @@ bool StageFade::isFullInMode2()
     return {};
 }
 
-// stub of FS2 0x00186ee0
-void StageMapFile::relocate()
-{
-    YAMIPAN_STUB("StageMapFile::relocate", 0x00186ee0);
-}
-
 // stub of FS2 0x002308a0
 StageMenu::StageMenu(WideFontPrinter*, int)
 {
@@ -429,6 +393,8 @@ void StageMenu::destroy()
 StageMission::StageMission()
 {
     YAMIPAN_STUB("StageMission::StageMission", 0x00287900);
+    // PC: no lists yet: runStageScripts walks them once a stage has scripts.
+    memset((void *)this, 0, sizeof(*this));
 }
 
 // stub of FS2 0x002870c0
@@ -567,58 +533,6 @@ StageScript * StageScript::relocate(bool withTable2)
 {
     YAMIPAN_STUB("StageScript::relocate", 0x001d3a40);
     return {};
-}
-
-// stub of FS2 0x00149040
-String::String(char const*)
-{
-    YAMIPAN_STUB("String::String", 0x00149040);
-}
-
-// stub of FS2 0x00148ec0
-String & String::append(const char *text)
-{
-    YAMIPAN_STUB("String::append", 0x00148ec0);
-    return *this;
-}
-
-// stub of FS2 0x00148db0
-String::~String()
-{
-    YAMIPAN_STUB("String::~String", 0x00148db0);
-}
-
-// stub of FS2 0x001492b0
-void StringList::pushBack(const String &text)
-{
-    YAMIPAN_STUB("StringList::pushBack", 0x001492b0);
-}
-
-// stub of FS2 0x00149100
-int StringList::split(const char *text, const char *delimiters)
-{
-    YAMIPAN_STUB("StringList::split", 0x00149100);
-    return {};
-}
-
-// stub of FS2 0x00149230
-int StringList::splitString(const String &text, const char *delimiters)
-{
-    YAMIPAN_STUB("StringList::splitString", 0x00149230);
-    return {};
-}
-
-// stub of FS2 0x001494c0
-StringList::Node * StringList::tail()
-{
-    YAMIPAN_STUB("StringList::tail", 0x001494c0);
-    return {};
-}
-
-// stub of FS2 0x00149250
-StringList::~StringList()
-{
-    YAMIPAN_STUB("StringList::~StringList", 0x00149250);
 }
 
 // stub of FS2 0x002bbdb0
@@ -1853,13 +1767,6 @@ StageSimpleEvent::StageSimpleEvent(float, char const*)
 void UiItemList::setSheet(void *sheet)
 {
     YAMIPAN_STUB("UiItemList::setSheet", 0x0023f030);
-}
-
-// stub of FS2 0x00175c00
-const char * stageMotionTargetName(int index)
-{
-    YAMIPAN_STUB("stageMotionTargetName", 0x00175c00);
-    return {};
 }
 
 // stub of FS2 0x002ce9d0

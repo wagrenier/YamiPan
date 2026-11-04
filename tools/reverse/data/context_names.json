@@ -2459,6 +2459,12 @@
   "was": "FUN_00121f08",
   "why": "v0 = a0 < 0 ? -a0 : a0; StageSound's random cue variant (randNext() % abs(count))"
  },
+ "00121f20": {
+  "name": "atof",
+  "tag": "lib-context",
+  "was": "FUN_00121f20",
+  "why": "strtod(s, 0) thunk; PackTables::parse truncates its double to float"
+ },
  "00121f38": {
   "name": "atoi",
   "tag": "lib-context",
@@ -2602,6 +2608,12 @@
   "tag": "lib-context",
   "was": "FUN_00128860",
   "why": "newlib strncpy (EE): 16 / 8-byte copies while no NUL, then bytes and zero fill; after strlen"
+ },
+ "00128a20": {
+  "name": "strrchr",
+  "tag": "lib-context",
+  "was": "FUN_00128a20",
+  "why": "walks the text keeping the last position of the char, null without one"
  },
  "00128a70": {
   "name": "strstr",
@@ -6461,6 +6473,12 @@
   "was": "FUN_00149040",
   "why": "vtable 0x311200 at +8, +0 a new[] copy of the argument, +4 zero"
  },
+ "001490a0": {
+  "name": "StringList::destroySlot",
+  "tag": "game-inferred",
+  "was": "FUN_001490a0",
+  "why": "vtable 0x311210 slot 0: sets the vptr, calls ~StringList(this, 0), deletes on a positive flag"
+ },
  "00149100": {
   "name": "StringList::split",
   "tag": "game-inferred",
@@ -6502,6 +6520,12 @@
   "tag": "game-inferred",
   "was": "FUN_001494c0",
   "why": "walks next (+4) to the last node"
+ },
+ "001494f0": {
+  "name": "StringList::Node::Node",
+  "tag": "game-inferred",
+  "was": "FUN_001494f0",
+  "why": "value = arg, next = prev = 0; pushBack and pushFront construct their node with it"
  },
  "0014e4d0": {
   "name": "ModelPose::solve",
@@ -11213,6 +11237,36 @@
   "was": "FUN_00172350",
   "why": "slot +0x21c: this + 0x20"
  },
+ "00172370": {
+  "name": "DoorRecord::setSeIndex",
+  "tag": "game-inferred",
+  "was": "FUN_00172370",
+  "why": "short +0x1e = arg; parse passes the number sscanf took from DOOR_%02d"
+ },
+ "00172380": {
+  "name": "DoorRecord::setHp",
+  "tag": "game-inferred",
+  "was": "FUN_00172380",
+  "why": "short +0x1c = arg; parse passes the door HP column"
+ },
+ "00172390": {
+  "name": "DoorRecord::setWindowState",
+  "tag": "game-inferred",
+  "was": "FUN_00172390",
+  "why": "+0x18 = arg; parse passes the window state column"
+ },
+ "001723a0": {
+  "name": "DoorRecord::setStartState",
+  "tag": "game-inferred",
+  "was": "FUN_001723a0",
+  "why": "+0x14 = arg; parse passes the start state column"
+ },
+ "001723b0": {
+  "name": "DoorRecord::setKeyKind",
+  "tag": "game-inferred",
+  "was": "FUN_001723b0",
+  "why": "+0x10 = arg; parse passes the door sheet's key column"
+ },
  "00173880": {
   "name": "StageObject::applyDoorRecord",
   "tag": "game-inferred",
@@ -15328,6 +15382,12 @@
   "tag": "game-inferred",
   "was": "FUN_0020e6a0",
   "why": "only the scene's +0x78 character, while +0x30: reports a named event (GUNSHOOT)"
+ },
+ "00214a70": {
+  "name": "StageObjRecord::init",
+  "tag": "game-inferred",
+  "was": "FUN_00214a70",
+  "why": "+0x40 = 1, first thing parse does to a character record"
  },
  "00214f60": {
   "name": "StageObject::getAltSoundFlag",
@@ -20399,6 +20459,24 @@
   "was": "FUN_002bc770",
   "why": "StageScene ctor new(0xc) for +0x30 (KeepList, removeUnkept 0x2bc5d0): three words zero"
  },
+ "002bcd20": {
+  "name": "PackTables::clear",
+  "tag": "game-inferred",
+  "was": "FUN_002bcd20",
+  "why": "clears all eight maps; the last call of parse"
+ },
+ "002bcd80": {
+  "name": "PackTables::doorText",
+  "tag": "game-inferred",
+  "was": "FUN_002bcd80",
+  "why": "finds the column in the door names map, answers the row's cell text, empty without the column"
+ },
+ "002bce70": {
+  "name": "PackTables::doorNumber",
+  "tag": "game-inferred",
+  "was": "FUN_002bce70",
+  "why": "finds the column in the door names map, answers the row's cell number, 0 without the column"
+ },
  "002bcf10": {
   "name": "PackTables::parse",
   "tag": "game-inferred",
@@ -20410,6 +20488,24 @@
   "tag": "game-inferred",
   "was": "FUN_002c0dc0",
   "why": "builds eight MSL maps at +0x00..+0x70, 0x2c16b0 (ListMap) / 0x2c1710 (NameMap) alternating; the 0x80-byte object loadGamePackTables fills from packgameEU.pak"
+ },
+ "002c0ef0": {
+  "name": "packReadSheet",
+  "tag": "game-inferred",
+  "was": "FUN_002c0ef0",
+  "why": "splits an item at CRLF and commas, first row into the column map, the others into the row map by their first number"
+ },
+ "002c1730": {
+  "name": "StringList::at",
+  "tag": "game-inferred",
+  "was": "FUN_002c1730",
+  "why": "walks index nodes from the head, head when index is not below the count; parse reads its fields with it"
+ },
+ "002c18a0": {
+  "name": "packSplitFields",
+  "tag": "game-inferred",
+  "was": "FUN_002c18a0",
+  "why": "pushes the fields of a text cut at a delimiter set onto a vector of strings, runs collapsed on a flag"
  },
  "002c3d30": {
   "name": "getMenuPackItemSize",
@@ -21100,6 +21196,48 @@
   "tag": "game-inferred",
   "was": "FUN_002e2d80",
   "why": "turns every offset of the file into a pointer against the old base"
+ },
+ "002e30e0": {
+  "name": "modelRelocateNode",
+  "tag": "game-inferred",
+  "was": "FUN_002e30e0",
+  "why": "ModelFile::relocateFrom's per-node step; bones, meshes and the instance meshes' bone map"
+ },
+ "002e3450": {
+  "name": "modelFindBaseMesh",
+  "tag": "game-inferred",
+  "was": "FUN_002e3450",
+  "why": "copies the mesh name, replaces what follows the last _ by 000, finds that name in the node's meshes"
+ },
+ "002e3540": {
+  "name": "modelIsInstanceMesh",
+  "tag": "game-inferred",
+  "was": "FUN_002e3540",
+  "why": "name i + two letters + two digits + _ + a number other than 100"
+ },
+ "002e3640": {
+  "name": "modelRelocateMeshPart",
+  "tag": "game-inferred",
+  "was": "FUN_002e3640",
+  "why": "fixes a part's +0x28 and +0x2c and each material's 0x10-byte records"
+ },
+ "002e37d0": {
+  "name": "modelRelocatePrim",
+  "tag": "game-inferred",
+  "was": "FUN_002e37d0",
+  "why": "fixes a 0x10-byte record and its packets of 0x50 / 0x70 bytes"
+ },
+ "002e3900": {
+  "name": "modelRelocateBatch",
+  "tag": "game-inferred",
+  "was": "FUN_002e3900",
+  "why": "fixes the addresses of five tags and, flagged, two lists"
+ },
+ "002e3a10": {
+  "name": "modelRelocateLongBatch",
+  "tag": "game-inferred",
+  "was": "FUN_002e3a10",
+  "why": "fixes the addresses of seven tags and, flagged, two lists"
  },
  "002e3bf0": {
   "name": "renaStepTexAnim",

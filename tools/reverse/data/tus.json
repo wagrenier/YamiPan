@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/packtables.cpp",
   "game/nodetransform.cpp",
   "game/stagemodel.cpp",
   "rena/rena_model.cpp",
@@ -403,7 +402,23 @@
    "task": "3D path 2 of 5 (the user's pin). NodeTransform 0x1d7f20, update 0x1d7d50, updateMatrix 0x1d8420 and what the stage's nodes need to place a model: StageNodeBase 0x1d8540. Pin the real extent with tus.py define under this key; the rest of unassigned@001d7c50 is not part of this."
   },
   "game/packtables.cpp": {
-   "task": "3D path 1 of 5 (the user's pin, 2026-11-04). First find why no model reaches the code: in the New Game run with work/newgame_pad.txt, ModelFile::isValid, getNodeCount and createInstance are never called, so StageFiles::models is empty. Trace StageFiles::loadList, load, parseModel and applyBgTarget (stagescene.cpp) under gdbrun with a time limit and fix what stops them, wherever it is. Then write PackTables::parse 0x2bcf10 and PackTables::PackTables 0x2c0dc0: pin the real extent with tus.py define under this key (rename the key if the evidence says another file). Success: the run log shows ModelFile::createInstance reached."
+   "notes": "3D path 1 of 5. Root cause: String and StringList were stubs, so every stage script split into zero lines. Written here: game/stringlist.cpp (marked done), PackTables::parse cut into one method per sheet, rena/rena_model.cpp with isValid, relocate, getNodeCount (TU 4 continues in that file), stageMotionTargetName and StageMapFile::relocate in stagescene.cpp until their file is cut; the StageMission stub ctor zeroes itself. Seen: New Game run of 250 s under a limit reaches ModelFile::createInstance with no crash and ends black, which is all the code can show (no 3D yet); the boot picture is unchanged. NOT checked: the contents of the tables were never printed or compared with the sheets, and the relocation was not walked on a real file beyond texture names, so this is verify. The same run reached only frame 3060 where the run before reached 7080 in the same time: the stage load or the stage loop is slower now, not looked into. Next: game/nodetransform.cpp. PC guard in applyBgTarget skips the null instance until createInstance is written; placeItem and placeCharacter have no guard yet. StageScript::relocate 0x1d3a40 and CollisionFile::relocate 0x23ae40 are still stubs. Ghidra: batch 099 saved by name_ctx.",
+   "ranges": [
+    [
+     "002bcd20",
+     "002c3d30"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 07:34",
+     "status": "verify",
+     "summary": "stage scripts now parse: String / StringList, PackTables::parse and PackTables::PackTables written, RM2 relocate, createInstance reached"
+    }
+   ],
+   "status": "verify",
+   "task": "3D path 1 of 5 (the user's pin, 2026-11-04). First find why no model reaches the code: in the New Game run with work/newgame_pad.txt, ModelFile::isValid, getNodeCount and createInstance are never called, so StageFiles::models is empty. Trace StageFiles::loadList, load, parseModel and applyBgTarget (stagescene.cpp) under gdbrun with a time limit and fix what stops them, wherever it is. Then write PackTables::parse 0x2bcf10 and PackTables::PackTables 0x2c0dc0: pin the real extent with tus.py define under this key (rename the key if the evidence says another file). Success: the run log shows ModelFile::createInstance reached.",
+   "why": "Sized by PackTables::parse 0x2bcf10 and its reader 0x2c0ef0; the MSL map / vector / string instances 0x2c0d00..0x2c3d30 only it uses are the host <map> / <vector> / <string>. The pack's sheets name the data; the file name is the port's. 0x2bc000.. before it is KeepList, 0x2c3d30 after it the menu pack."
   },
   "game/pad.cpp": {
    "notes": "All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout (asserts). Source-only: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean against RosePan sdk headers. Pad::update only reads input for terminal mode 8 (DualShock 2 in pressure mode): bootstrap 6's host libpad must report that. Stick order is libpad's right x, right y, left x, left y; GamePad's comments and computeSticks locals in gamesystem were swapped and are fixed. 0x12fed0 renamed Pad::registerListener (it was Pad::setListening); 0x12fa30 is Pad::setListening. Ghidra saved by name_ctx.",
@@ -873,6 +888,23 @@
    ],
    "status": "verify",
    "why": "StreamRing and FileStreamRing (vtables 0x3112c0 / 0x311290): every function from the first rx jump thunk after Vt_00311260's last slot 0x151f60 to the rx file hook thunks before rxTerm (game/spkrom.cpp); the thunks 0x151f70 / 0x151f80 / 0x152730 / 0x152740 are mapped to the rx calls. StreamRing's base slots filled / freeSpace / write / readPos 0x1530d0..0x153100 lie in game/spkrom.cpp's range. File name the port's (no strings)."
+  },
+  "game/stringlist.cpp": {
+   "ranges": [
+    [
+     "00148db0",
+     "00149510"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 07:32",
+     "status": "done",
+     "summary": "marked todo -> done: the stage scripts split into lines and words through it in the New Game run; stringlist functions all written (0x1490a0 is the vtable wrapper, 0x1494f0 Node's inline ctor)"
+    }
+   ],
+   "status": "done",
+   "why": "String and StringList, whose vtables 0x311200 / 0x311210 only these use; ends at the VU math 0x149510. Written with game/packtables.cpp (it was what stopped every stage script)."
   },
   "game/sysdata.cpp": {
    "notes": "Cut out of unassigned@00171300 (the frontier pick, 5138 functions) and pinned 0x23af30-0x23c020. One SystemData block of 0x620 bytes at 0x598b30: SaveData +0 (0x4bc: stage flags +0x69, records [3][2][30] +0xd8, medals [3][2][30] +0x3b4), StageSelect +0x4bc (the play record, 153 callers of getStageSelect), GameOptions +0x4d0 (0x50), FlagTable +0x520 (64 ints). Outgoing prototypes in gamehooks.h (SoundConfig and gSoundConfig, memcardGetState, randUnit, stageDefaultRecord, StageResult and getStageResult) and gfxtarget.h (GfxDisplay, gfxGetCurrentDisplay, gfxSetDisplayOffset). Data the build must define: gSoundConfig (sbss 0x31addc) and gSystemData lives here. ButtonMap::assign with action -1 reads button[-1] in the ROM: the port keeps the holder unchanged (PC note). Unknown: SaveData +0x468 / +0x3ac roles, record kinds, brightness guess for options +0x18, which of 0x23bb30 / 0x23bb40 is the save getter. Next in the same unassigned run: gameSceneThread 0x231bb0, getLocalDateTime 0x23de20, memcard 0x2a9c70..0x2acf00, each its own file via tus.py define.",
