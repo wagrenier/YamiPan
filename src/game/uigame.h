@@ -292,7 +292,7 @@ enum GameValueKind
     GameValue_SelectVariant = 20,   // StageSelect::variant
     GameValue_NaviValue = 21,       // NaviMenu::values[i]; 0 without the menu
     GameValue_NaviBits = 22,        // NaviMenu::bits[i] & j
-    GameValue_Option4d = 23,        // GameOptions::_4d (bool)
+    GameValue_AutoSave = 23,        // GameOptions::autoSave (bool)
     GameValue_Unlock468 = 24,       // SaveData::unlock468 (bool)
     GameValue_Fixed = 25,           // kGameValueFixed[i], else 0xfe (unread what for)
     GameValue_ButtonMap = 26,       // GameOptions::buttonMap: (button, action) / (action)

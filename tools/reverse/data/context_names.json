@@ -18749,6 +18749,42 @@
   "was": "FUN_002b6a00",
   "why": "the stageMoviePath file as a layout; lends a work area, starts the pack's job behind it; 1 when the stage has no such movie"
  },
+ "002b85a0": {
+  "name": "PrgMcCard::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002b85a0",
+  "why": "slot 1 (+0xc, UiWidget::draw) of Vt_00319520, PrgMcCard's vtable: empty"
+ },
+ "002b85b0": {
+  "name": "PrgMcCard::advance",
+  "tag": "game-inferred",
+  "was": "FUN_002b85b0",
+  "why": "slot 2 (+0x10, UiWidget::advance): eases the percent variable, Memcard::update, then the layout's arg picks the load or the save steps"
+ },
+ "002b86e0": {
+  "name": "PrgMcCard::stepSave",
+  "tag": "game-inferred",
+  "was": "FUN_002b86e0",
+  "why": "advance's call for args 1..5 (the save dialog's reasons, third argument the prompt): state machine over Memcard::startSave / startFormat / startCheckAll, the slot list and yes / no"
+ },
+ "002b9710": {
+  "name": "SaveFile::assignHead",
+  "tag": "game-inferred",
+  "was": "FUN_002b9710",
+  "why": "only caller stepSave after a good save: member-wise copy of SaveFile +0..+0xa30 (the four SystemData parts, SaveExtra, the stamp), an implicit operator= CodeWarrior emitted out of line"
+ },
+ "002b97b0": {
+  "name": "PrgMcCard::stepLoad",
+  "tag": "game-inferred",
+  "was": "FUN_002b97b0",
+  "why": "advance's call for arg 0 (SaveDialog_Load, menuLoadGame): checks the card, lists the saves, SaveFile::apply on the one confirmed"
+ },
+ "002b9ce0": {
+  "name": "PrgMcCard::~PrgMcCard",
+  "tag": "game-inferred",
+  "was": "FUN_002b9ce0",
+  "why": "slot 0, deleting: deletes gMenuMemcard (0x31ae94), clears it, base vtable"
+ },
  "002b9d60": {
   "name": "PrgMcCard::PrgMcCard",
   "tag": "game-inferred",

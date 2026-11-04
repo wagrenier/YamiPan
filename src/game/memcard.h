@@ -189,7 +189,14 @@ struct SaveFile
     void exportTo(SystemData *dst) const;                                // FS2 0x002ac110
     void capture(int index);                                             // FS2 0x002ac3f0
     void importFrom(const SystemData *src);                              // FS2 0x002ac540
+    void assignHead(const SaveFile &src);                                // FS2 0x002b9710: +0..kSaveSumSize
     void judge();               // inline in the ROM (stepLoad, stepCheckAll): sets status
+    // Inline in the ROM (the save screens): nothing there, or nothing to read.
+    bool isFree() const { return status == SaveStatus_Unknown || status == SaveStatus_NoDir; }
+    bool isBroken() const
+    {
+        return status == SaveStatus_Empty || status == SaveStatus_Broken || status == SaveStatus_Denied;
+    }
 
     SaveData    save;           // FS2 +0x000
     StageSelect select;         // FS2 +0x4bc
@@ -264,7 +271,7 @@ constexpr int kStepFirstFile = 10;
 constexpr int kStepPerFile = 10;
 constexpr int kStepFilesEnd = kStepFirstFile + kSaveFiles * kStepPerFile;   // 50: past the last file
 
-// The save manager (0x90 bytes; the menus 0x2b5770 / 0x2b6810 / 0x2b85b0
+// The save manager (0x90 bytes; the menus 0x2b5770 / 0x2b6810 and PrgMcCard
 // own one). Port 0, slot 0.
 class Memcard : public McDevice
 {

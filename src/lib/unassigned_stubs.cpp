@@ -204,13 +204,6 @@ void PlayerMotion::refresh()
     YAMIPAN_STUB("PlayerMotion::refresh", 0x001e66c0);
 }
 
-// stub of FS2 0x002b9d60
-PrgMcCard::PrgMcCard(UiSequence *seq, UiLayout *layout, S2dData *data, S2dWidgetDef *def, int arg)
-    : UiWidget(seq, layout, data, def, arg)
-{
-    YAMIPAN_STUB("PrgMcCard::PrgMcCard", 0x002b9d60);
-}
-
 // stub of FS2 0x0029e4f0
 PrgScaleNavi::PrgScaleNavi(UiSequence *seq, UiLayout *layout, S2dData *data, S2dWidgetDef *def, int arg)
     : UiWidget(seq, layout, data, def, arg)

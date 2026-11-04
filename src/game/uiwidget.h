@@ -498,12 +498,4 @@ public:
     PrgScaleNaviScroll(UiSequence *seq, UiLayout *layout, S2dData *data, S2dWidgetDef *def, int arg); // FS2 0x0029ae30
 };
 
-// "prgMcCard" (0x94 bytes; unassigned@002b0d50).
-// layout: host -- fields unread
-class PrgMcCard : public UiWidget
-{
-public:
-    PrgMcCard(UiSequence *seq, UiLayout *layout, S2dData *data, S2dWidgetDef *def, int arg); // FS2 0x002b9d60
-};
-
 #endif /* _GAME_UIWIDGET_H */

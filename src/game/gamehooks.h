@@ -1761,8 +1761,8 @@ static_assert(offsetof(NaviMenu, flagsF0) == 0x5f0, "NaviMenu::flagsF0");
 NaviMenu *getNaviMenu();                                                 // FS2 0x0029efe0
 
 
-// The memory-card menu's save manager (sbss 0x31ae94, gp-0x79dc; set and
-// deleted by the menu 0x2b8600.., null while there is none): the S2D's
+// The memory-card menu's save manager (sbss 0x31ae94, gp-0x79dc; owned by
+// PrgMcCard, game/prgmccard.h, null while there is none): the S2D's
 // rMcTotalTime0..3 show its saves' play times. Data the build must define.
 class Memcard;                  // game/memcard.h
 extern Memcard *gMenuMemcard;

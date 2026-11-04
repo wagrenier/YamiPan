@@ -49,7 +49,7 @@ enum SaveDialogReason
     SaveDialog_StageQuit = 2,   // leaving the navi with something unsaved
     SaveDialog_Archive   = 3,   // the archive changed the save
     SaveDialog_Options   = 4,   // the options changed
-    SaveDialog_Extra     = 5,   // runExtraMode changed the save
+    SaveDialog_Extra     = 5,   // runExtraMode changed the save ("Kunitoris" play data, McMessage_KunitoriPrompt)
 };
 
 // runHelpScreen's pages.

@@ -427,6 +427,24 @@
    "status": "verify",
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
+  "game/prgmccard.cpp": {
+   "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
+   "ranges": [
+    [
+     "002b85a0",
+     "002b9ef0"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-03 22:21",
+     "status": "verify",
+     "summary": "PrgMcCard, the load and save screens: all 7 written; the load screen now says No memory card and closes back to the title"
+    }
+   ],
+   "status": "verify",
+   "why": "PrgMcCard: the ctor 0x2b9d60 and vtable methods before it (update 0x2b85b0, state machines 0x2b86e0 / 0x2b97b0, dtor 0x2b9ce0); the reached stub on the Load Game screen"
+  },
   "game/progress.cpp": {
    "notes": "All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (0x70) / NaviCond / NaviTrigger / NaviPendingLink with EE static_asserts and NaviCondType 0..14. stageDefaultRecord moved from gamehooks.h to progress.h (sysdata.cpp includes it); SaveData +4 is now archive[101]. Guesses: the file name, stageDefaultRecord's placement in this file, and the navigator vocabulary (goals, triggers, pending links). Left out on purpose: 0x2955d0 (thunk, file before) and 0x296c10..0x296d00 (out-of-line inline copies of other classes). getSaveExtra 0x29efd0 belongs to the navi menu 0x29a700..~0x2a0000 (uses 0x5995e0, init 0x29ef70, getter 0x29efe0) and is still a frontier call from memcard.cpp: write it with that menu's file. NaviCond_KindSelected reads SystemData +0x4c0 (select.kind) as the ROM does; its meaning is unread.",
    "ranges": [
@@ -1336,6 +1354,11 @@
      "date": "2026-11-03 20:47",
      "status": "todo",
      "summary": "marked todo -> todo: released untouched: the queue was empty, so this run took the menu's blockers, as the handoff asked"
+    },
+    {
+     "date": "2026-11-03 21:45",
+     "status": "todo",
+     "summary": "marked todo -> todo: released untouched: the queue was empty, so this run took the menu's reached stub, as SKILL.md Starting sessions asks"
     }
    ],
    "status": "todo"

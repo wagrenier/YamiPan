@@ -484,7 +484,7 @@ int GameOptions::equals(const GameOptions *other) const
         return 0;
     if (_4c != other->_4c)
         return 0;
-    if (_4d != other->_4d)
+    if (autoSave != other->autoSave)
         return 0;
     if (_04 != other->_04)
         return 0;
@@ -496,7 +496,7 @@ int GameOptions::equals(const GameOptions *other) const
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Every option's default (+0x4d is left as it is).
+// Every option's default (autoSave is left as it is).
 // FS2 0x0023be70
 // callcheck: setDefaults (ButtonMap::setDefaults inline in the ROM)
 

@@ -118,7 +118,7 @@ struct GameOptions
     int       mapMode;          // FS2 +0x44: MapMode (the S2D's rMapP), default always
     int       hints;            // FS2 +0x48: 1 hints on (the S2D's rHint), default 1
     u_char    _4c;              // FS2 +0x4c: default 1
-    u_char    _4d;              // FS2 +0x4d: compared, never set by setDefaults
+    u_char    autoSave;         // FS2 +0x4d: never set by setDefaults; with it the save dialog goes straight to the save of the loaded stamp (PrgMcCard::stepSave)
 };
 static_assert(offsetof(GameOptions, screenX) == 0x0a, "GameOptions::screenX");
 static_assert(offsetof(GameOptions, _10) == 0x10, "GameOptions::_10");
@@ -126,7 +126,7 @@ static_assert(offsetof(GameOptions, brightness) == 0x18, "GameOptions::brightnes
 static_assert(offsetof(GameOptions, wideScreen) == 0x20, "GameOptions::wideScreen");
 static_assert(offsetof(GameOptions, buttonMap) == 0x24, "GameOptions::buttonMap");
 static_assert(offsetof(GameOptions, mapMode) == 0x44, "GameOptions::mapMode");
-static_assert(offsetof(GameOptions, _4d) == 0x4d, "GameOptions::_4d");
+static_assert(offsetof(GameOptions, autoSave) == 0x4d, "GameOptions::autoSave");
 static_assert(sizeof(GameOptions) == 0x50, "GameOptions: EE 0x50");
 
 // The save data at 0x598b30 (SystemData +0).
