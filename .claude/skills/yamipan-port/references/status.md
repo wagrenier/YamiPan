@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-04 18:06 at commit `5d3e7d0` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-04 18:40 at commit `5289e28` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-04 18:06 at commit `5d3e7d0` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **3375** (51%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 2456
-- context-name ledger: 4000 entries; overrides of wrong library matches: 0
-- placed in a source file: 3916/6599 in 89 files
+- game functions: **6599**, named **3400** (52%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 2480
+- context-name ledger: 4024 entries; overrides of wrong library matches: 0
+- placed in a source file: 3930/6599 in 89 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -26,11 +26,11 @@ Least-named game-code regions (64 KB blocks):
 | `001c0000` | 14/233 (6%) | game/scriptrunner.cpp |
 | `00210000` | 14/231 (6%) | - |
 | `001b0000` | 17/242 (7%) | game/scriptrunner.cpp |
-| `00200000` | 13/122 (11%) | - |
+| `00200000` | 16/122 (13%) | - |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **3002**; stubs: **261**
+- reconstructed FS2 functions: **3042**; stubs: **255**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -38,10 +38,10 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/boxgrid.cpp` | 29 | 0 |
 | `src/game/clock.cpp` | 14 | 0 |
 | `src/game/datetime.cpp` | 2 | 0 |
-| `src/game/demoevent.cpp` | 66 | 0 |
+| `src/game/demoevent.cpp` | 94 | 0 |
 | `src/game/drawsys.cpp` | 166 | 0 |
 | `src/game/fileloader.cpp` | 53 | 0 |
-| `src/game/fontdata.cpp` | 31 | 0 |
+| `src/game/fontdata.cpp` | 43 | 0 |
 | `src/game/gamepacket.cpp` | 6 | 0 |
 | `src/game/gamepaths.cpp` | 14 | 0 |
 | `src/game/gamesystem.cpp` | 17 | 0 |
@@ -100,7 +100,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/vectortrack.cpp` | 10 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 218 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 212 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 18 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -128,10 +128,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 137 TUs: todo 81, partial 12, verify 75, done 2
-- next: **game/demoevent.cpp** (pinned in the queue)
-- pinned queue: game/demoevent.cpp, game/scenepairs.cpp, game/stagecollision.cpp, game/stagecharacter.cpp, game/playermotion.cpp, game/characterground.cpp, game/characterbrain.cpp, game/characterinput.cpp, game/stageplayer.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
-- partial: `game/demoevent.cpp` 66/90 -- Written: StageMission, StageEvent, StageFileEvent, StageSimpleEvent, StageFade, gsFillRect, DemoCamera, the pack lookup, DemoStream but setFont and drawSubtitle
+- 137 TUs: todo 80, partial 12, verify 76, done 2
+- next: **game/scenepairs.cpp** (pinned in the queue)
+- pinned queue: game/scenepairs.cpp, game/stagecollision.cpp, game/stagecharacter.cpp, game/playermotion.cpp, game/characterground.cpp, game/characterbrain.cpp, game/characterinput.cpp, game/stageplayer.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
 - partial: `game/scriptrunner.cpp` 95/652 -- VM 0x1d1c40, ScriptRunner, ScriptFrame, relocate, findEntry, scriptPrepare, the arg readers and 30 natives (every one stage 1 bg script calls) are written. All 
 - partial: `game/stageobject.cpp` 40/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
 - partial: `yamipan/rendering/model_renderer.cpp` 0/0 -- Written: game/stagecamera.cpp whole base plus StageMainCamera (0x178160 step, 0x179490, 0x179680, ctor). The step has NEVER run: StageCharacter ctor and setup a
@@ -139,9 +138,10 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
+- verify: `game/demoevent.cpp` 94/94 -- All of the TU is written or accounted for (batch 116). Added: DemoStream setFont and drawSubtitles, the fsm readers 0x28fa90..0x28ff60 (range added here; the ho
 - verify: `game/drawsys.cpp` 164/164 -- All 164 of 0x2d46a0-0x2dac70 are written or listed. New: drawSysAddModel 0x2d5140 (draw group, name flags, wave surfaces, plant textures), drawSysFindKind1Surfa
 - verify: `game/fileloader.cpp` 53/53 -- All 53 functions of 0x1319f0..0x132f20 are in src/game/fileloader.cpp with game/fileloader.h; FileJob / FileLoader / PackFile left gamehooks.h (which includes f
-- verify: `game/fontdata.cpp` 31/31 -- Cut out of unassigned@00171300 and pinned 0x1fcb40-0x1fe6b0 (batch 056, 31 names: the FontData byte variants countLinesMb / lineWidthFixed / lineWidthFixedMb / 
+- verify: `game/fontdata.cpp` 41/41 -- Cut out of unassigned@00171300 and pinned 0x1fcb40-0x1fe6b0 (batch 056, 31 names: the FontData byte variants countLinesMb / lineWidthFixed / lineWidthFixedMb / 
 - verify: `game/gamepacket.cpp` 6/6 -- All 6 functions written; source-only, callcheck clean. Header now declares the rena Vif1PktManage members the TU calls (ctor, virtual dtor, AddBuffer, AddList, 
 - verify: `game/gamepaths.cpp` 14/14 -- All 14 functions of 0x28ff60..0x2908d0 written (batches 054-055, 25 names, Ghidra saved). Path builders from a StageSelect: digit 1 or 2 (variant 0 or not), let
 - verify: `game/gamesystem.cpp` 17/17 -- All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). N
@@ -213,6 +213,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-04 18:40 `game/demoevent.cpp` verify: The opening event shows its subtitles: fsm files, WideFontPrinter, setFont, drawSubtitles and the mission notices written; the event picture has no reference
 - 2026-11-04 18:06 `game/stagecamera.cpp` verify: Natives 0x70 setPlayer and 0x64 script view written; CAM_EV10 shows in a test build
 - 2026-11-04 17:37 `rena/rena_draw.cpp` verify: Skinned meshes: palette, part box, the VU1 weights in the host module; the boy of d0101 and the sea of stage 1 draw
 - 2026-11-04 16:52 `game/subsceneobject.cpp` verify: All 50 of the TU recorded; the event now ends: a silent timed ADPCM stream bridge, the black after it traced to the missing player
@@ -220,12 +221,11 @@ Recent sessions:
 - 2026-11-04 15:18 `game/modelpose.cpp` verify: The solvers, the leg IK and the sw bones swing written; TU complete, not seen on screen
 - 2026-11-04 14:50 `game/modelpose.cpp` partial: ModelPose, ModelPoseBone, ModelMotion and the quaternions written, native 0x159, solvers left as stubs
 - 2026-11-04 14:04 `game/demoevent.cpp` partial: The opening event starts: mission, events, fade, demo camera and voice written, d0101 proven from the script and its own script runs; nothing of it shows yet
-- 2026-11-04 13:00 `game/scenerender.cpp` verify: Pinned lights closed: YAMIPAN_AMBIENT and the isKeyed guards deleted, the script's lights drive the picture, VU1's fog limits added
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@00135990` | partial | 2/1/33 | 3.1 | 355 | 0 |
-| `unassigned@001fe6b0` | todo | 0/42/563 | 197.2 | 81 | 0 |
+| `unassigned@001fe6b0` | partial | 2/43/563 | 197.2 | 82 | 0 |
 | `game/vectortrack.cpp` | partial | 9/0/16 | 2.5 | 68 | 0 |
 | `game/scriptrunner.cpp` | partial | 95/2/652 | 172.7 | 45 | 0 |
 | `unassigned@0018c050` | todo | 0/14/71 | 29.7 | 41 | 0 |
@@ -234,8 +234,8 @@ Recent sessions:
 | `unassigned@00171300` | partial | 3/11/169 | 19.0 | 28 | 0 |
 | `unassigned@0017e140` | todo | 0/4/110 | 3.2 | 27 | 0 |
 | `unassigned@00176480` | partial | 18/3/134 | 29.0 | 23 | 0 |
-| `unassigned@00288c00` | todo | 0/13/74 | 28.4 | 23 | 0 |
 | `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
+| `unassigned@002c42a0` | todo | 0/18/123 | 49.1 | 18 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

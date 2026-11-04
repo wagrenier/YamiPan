@@ -1568,7 +1568,7 @@ void setGameValue(int kind, int value, int i, int j)
         options->_15 = value != 0;
         break;
     case GameValue_Option1c:
-        options->_1c = value != 0;
+        options->subtitles = value != 0;
         break;
     case GameValue_Clock2Amount:
         setClockAmount(&getStageResult()->clock2, value, sClock2Amounts, sClock2AmountCount);
@@ -1699,7 +1699,7 @@ int getGameValue(int kind, int i, int j, int expected)
     case GameValue_Option15:
         return options->_15;
     case GameValue_Option1c:
-        return options->_1c;
+        return options->subtitles;
     default:
         return 0;
     }

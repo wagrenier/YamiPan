@@ -27,6 +27,7 @@ typedef struct AdpcmHostStream
 {
     RxSndStrSlot *slot;         // null: free
     double        secondsLeft;  // below 0: loops
+    double        secondsPlayed;
     clock_t       lastTick;
 } AdpcmHostStream;
 
@@ -54,6 +55,7 @@ int rxSndStrAdpcmOpen(RxSndStrSlot *slot)
             stream->slot = slot;
             stream->secondsLeft = (request->flags & 1) ? -1.0
                                                        : adpcmRequestSeconds(request, slot->start);
+            stream->secondsPlayed = 0.0;
             stream->lastTick = clock();
             return i;
         }
@@ -81,7 +83,10 @@ void rxSndStrAdpcmUpdate(void)
             continue;
         double elapsed = (double)(now - stream->lastTick) / CLOCKS_PER_SEC;
         stream->lastTick = now;
-        if (stream->secondsLeft < 0.0 || stream->slot->pause)
+        if (stream->slot->pause)
+            continue;
+        stream->secondsPlayed += elapsed * stream->slot->pitch;
+        if (stream->secondsLeft < 0.0)
             continue;
         stream->secondsLeft -= elapsed * stream->slot->pitch;
         if (stream->secondsLeft <= 0.0) {
@@ -91,19 +96,33 @@ void rxSndStrAdpcmUpdate(void)
     }
 }
 
+// The bytes played of a stream's request, as rxSndAdpcmGetPosition would answer
+// them: the subtitles run on it.
+u_long rxSndStrAdpcmBridgePosition(int handle)
+{
+    if (handle < 0 || handle >= kAdpcmHostStreams || s_hostStreams[handle].slot == NULL)
+        return 0;
+    const AdpcmHostStream *stream = &s_hostStreams[handle];
+    const RxSndStrRequest *request = rxSndStrBankGetRequest(stream->slot->bank, stream->slot->request);
+    if (request == NULL)
+        return 0;
+    double samples = stream->secondsPlayed * request->rate;
+    return (u_long)(samples / kAdpcmBlockSamples * kAdpcmBlockBytes * request->channels);
+}
+
+// bridge of FS2 0x00165680: the handle is the stream, nothing maps it.
+int rxSndStrAdpcmGetHandle(int handle)
+{
+    YAMIPAN_BRIDGE("rxSndStrAdpcmGetHandle", 0x00165680);
+    return handle;
+}
+
 // ---- stubs (tools/reverse/stubgen.py) ----
 
 // stub of FS2 0x00164c80
 void rxSndStrAdpcmExit(void)
 {
     YAMIPAN_STUB("rxSndStrAdpcmExit", 0x00164c80);
-}
-
-// stub of FS2 0x00165680
-int rxSndStrAdpcmGetHandle(int handle)
-{
-    YAMIPAN_STUB("rxSndStrAdpcmGetHandle", 0x00165680);
-    return {};
 }
 
 // stub of FS2 0x00164c38

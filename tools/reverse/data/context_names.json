@@ -7181,11 +7181,23 @@
   "was": "FUN_001512e0",
   "why": "the same as isFullInMode2 with mode 1"
  },
+ "00151320": {
+  "name": "StageFade::isNotRunning",
+  "tag": "game-inferred",
+  "was": "FUN_00151320",
+  "why": "mode (+0x34) != 1 on a fade: StageAlert and the fade natives wait on it"
+ },
  "00151330": {
   "name": "StageFade::start",
   "tag": "game-inferred",
   "was": "FUN_00151330",
   "why": "sets mode 1, target +0x24, from +0x28/+0x2c (negative keeps the level), seconds +0x30, resets its clock"
+ },
+ "00151380": {
+  "name": "StageFade::setColour",
+  "tag": "game-inferred",
+  "was": "FUN_00151380",
+  "why": "+0x18 = colour & 0xffffff; nativeDemoFade passes the fade's colour"
  },
  "001513a0": {
   "name": "StageFade::draw",
@@ -16865,6 +16877,12 @@
   "was": "FUN_002078d0",
   "why": "an entry in state 1 whose window holds the scene clock"
  },
+ "00207aa0": {
+  "name": "PauseMenuState::addNotice",
+  "tag": "game-inferred",
+  "was": "FUN_00207aa0",
+  "why": "takes a free entry of 11 at +8: mode, id, frames, arg, level, text"
+ },
  "00207ea0": {
   "name": "PauseMenuState::~PauseMenuState",
   "tag": "game-inferred",
@@ -16876,6 +16894,12 @@
   "tag": "game-inferred",
   "was": "FUN_00207ef0",
   "why": "StageScene ctor new(0x678) for +0xc4, beside pauseMenuResult 0x20acb0; plain data (no vptr); name a guess"
+ },
+ "00208b70": {
+  "name": "thunk_WideFontPrinter::print",
+  "tag": "game-inferred",
+  "was": "FUN_00208b70",
+  "why": "vtable 0x319ff0 slot 4, jumps to 0x2d3b30"
  },
  "0020acb0": {
   "name": "pauseMenuResult",
@@ -20099,6 +20123,12 @@
   "was": "FUN_0026c880",
   "why": "the pack's +0xc index into its table +0x14: the script; null below 0"
  },
+ "0026c8b0": {
+  "name": "SubSceneData::SubSceneData",
+  "tag": "game-inferred",
+  "was": "FUN_0026c8b0",
+  "why": "stores the pack in +0, on the stack of enterSubScene"
+ },
  "0026c8c0": {
   "name": "DemoExecuter::DemoExecuter",
   "tag": "game-inferred",
@@ -20152,6 +20182,12 @@
   "tag": "game-inferred",
   "was": "FUN_0026ce20",
   "why": "EE 0x340; camera_demo; kind 13; Model_camera"
+ },
+ "0026cf40": {
+  "name": "DemoCameraBase::~DemoCameraBase",
+  "tag": "game-inferred",
+  "was": "FUN_0026cf40",
+  "why": "the dtor on vtables 0x317140 / 0x317164 / 0x31717c, then StageObject's"
  },
  "0027ef70": {
   "name": "CarPose::CarPose",
@@ -20267,6 +20303,12 @@
   "was": "FUN_00286910",
   "why": "+0xb8, +0xbc keptObject; +0xc0 cleared when the first is set"
  },
+ "00286930": {
+  "name": "MissionNotice::format",
+  "tag": "game-inferred",
+  "was": "FUN_00286930",
+  "why": "copies the notice's text at +4 into a buffer, $1..$9 from an argument table, $$ a dollar"
+ },
  "00286a50": {
   "name": "StageMission::getScoreClock",
   "tag": "game-inferred",
@@ -20333,11 +20375,41 @@
   "was": "FUN_00286c40",
   "why": "starts the pending event +0xc8 or the fade; clears +0xd8, +0xd9"
  },
+ "00286cf0": {
+  "name": "StageMission::showNotice",
+  "tag": "game-inferred",
+  "was": "FUN_00286cf0",
+  "why": "enabled record at +0x688: next text buffer, format, PauseMenuState::addNotice"
+ },
+ "00286de0": {
+  "name": "StageMission::setNoticeEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_00286de0",
+  "why": "writes +0x688 of the record"
+ },
+ "00286e00": {
+  "name": "StageMission::setNotice",
+  "tag": "game-inferred",
+  "was": "FUN_00286e00",
+  "why": "writes +0x68c..+0x698 of the record"
+ },
  "00286e30": {
   "name": "StageMission::tickPending",
   "tag": "game-inferred",
   "was": "FUN_00286e30",
   "why": "+0xe0 records of 0x20 count down at +0xe8, then 0x29fb60"
+ },
+ "00286f30": {
+  "name": "StageMission::addTimedRecord",
+  "tag": "game-inferred",
+  "was": "FUN_00286f30",
+  "why": "takes a free record of +0xe0 for tickPending: id, place, arg, frames"
+ },
+ "00287040": {
+  "name": "StageMission::setPurposeText",
+  "tag": "game-inferred",
+  "was": "FUN_00287040",
+  "why": "wstrcpy to +4, the purpose text"
  },
  "00287050": {
   "name": "StageMission::setResultValue",
@@ -20380,6 +20452,18 @@
   "tag": "game-inferred",
   "was": "FUN_00287900",
   "why": "StageScene ctor new(0x13d0) for +0xe8 (StageMission: getMission / getPurposeText); calls 0x287690 for its tables"
+ },
+ "00287ad0": {
+  "name": "StageFileEvent::hidesText",
+  "tag": "game-inferred",
+  "was": "FUN_00287ad0",
+  "why": "vtable 0x318010: answers 1"
+ },
+ "00287ae0": {
+  "name": "StageFileEvent::getSubSceneData",
+  "tag": "game-inferred",
+  "was": "FUN_00287ae0",
+  "why": "vtable 0x318010: answers +0x30, the pack"
  },
  "00287af0": {
   "name": "StageEvent::usesLanguageFont",
@@ -20452,6 +20536,12 @@
   "tag": "game-inferred",
   "was": "FUN_002888a0",
   "why": "vtable 0x318050 slot 0: deletes the runner"
+ },
+ "00288920": {
+  "name": "StageSimpleEvent::hidesText",
+  "tag": "game-inferred",
+  "was": "FUN_00288920",
+  "why": "vtable 0x318030: answers 0"
  },
  "00288930": {
   "name": "voiceFileName",
@@ -22828,6 +22918,60 @@
   "tag": "game-inferred",
   "was": "FUN_002d0fa0",
   "why": "0x14 bytes from StageModel::addMotion: pose, file, per-bone tracks by name"
+ },
+ "002d3700": {
+  "name": "WideFontPrinter::nextGlyph",
+  "tag": "game-inferred",
+  "was": "FUN_002d3700",
+  "why": "vtable 0x319ff0 slot 1: FontData::nextGlyph on 16-bit text"
+ },
+ "002d3750": {
+  "name": "thunk_WideFontPrinter::measureLines",
+  "tag": "game-inferred",
+  "was": "FUN_002d3750",
+  "why": "slot 6, jumps to 0x2d3e20"
+ },
+ "002d3780": {
+  "name": "WideFontPrinter::printScaled",
+  "tag": "game-inferred",
+  "was": "FUN_002d3780",
+  "why": "slot 5, calls slot 11"
+ },
+ "002d37c0": {
+  "name": "WideFontPrinter::countLines",
+  "tag": "game-inferred",
+  "was": "FUN_002d37c0",
+  "why": "slot 10: FontData::countLines"
+ },
+ "002d37f0": {
+  "name": "WideFontPrinter::printScaledText",
+  "tag": "game-inferred",
+  "was": "FUN_002d37f0",
+  "why": "slot 11: the scaled sprites"
+ },
+ "002d3b30": {
+  "name": "WideFontPrinter::print",
+  "tag": "game-inferred",
+  "was": "FUN_002d3b30",
+  "why": "FontPrinter::print for 16-bit text, no format"
+ },
+ "002d3e20": {
+  "name": "WideFontPrinter::measureLines",
+  "tag": "game-inferred",
+  "was": "FUN_002d3e20",
+  "why": "as FontPrinter::measureLines, 16-bit text"
+ },
+ "002d4060": {
+  "name": "WideFontPrinter::textWidth",
+  "tag": "game-inferred",
+  "was": "FUN_002d4060",
+  "why": "slot 7 by thunk 0x208ba0: lineWidthFixed"
+ },
+ "002d40a0": {
+  "name": "WideFontPrinter::~WideFontPrinter",
+  "tag": "game-inferred",
+  "was": "FUN_002d40a0",
+  "why": "slot 0: vtable 0x319ff0, releaseTexture, ~FontPrinter"
  },
  "002d4110": {
   "name": "WideFontPrinter::WideFontPrinter",

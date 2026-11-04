@@ -435,3 +435,8 @@ Symptom: a loader "ran", instances were counted, yet nothing appears and the stu
 ## YAMIPAN_CAMERA hides every view change (2026-11-04)
 
 - Symptom: a native that switches the view changes nothing on screen; 15 shots are byte-identical across it, while the log says the top view changed. Cause: `StageCamera::calcViewMatrix` applies the debug camera to every StageCamera, not only the main one, so any map camera draws from the debug place. Fix: test view switches with `YAMIPAN_CAMERA` unset. A black shot from the unlinked main camera is then expected: it sits at the world origin, which is empty space.
+
+## Temporary logging from the game (2026-11-04)
+
+- Symptom: a `fprintf(stderr, ...)` added for a run shows nothing in work/run_<config>.log, which looks like the code was never reached. Cause: only stdout reaches that log (the stub lines are `printf`). Fix: `printf` and `fflush(stdout)`.
+- Symptom: code generated through a Bash heredoc comes out with a real line break inside a C string. Cause: the shell tool turned a doubled backslash into a single one before Python saw it. Fix: write the script with the Write tool, and run it.

@@ -112,7 +112,7 @@ struct GameOptions
     u_char    _14;              // FS2 +0x14: default 1
     u_char    _15;              // FS2 +0x15: default 0
     int       brightness;       // FS2 +0x18: index into the 19-step table 0x2fac20 (guess: brightness), default 9
-    u_char    _1c;              // FS2 +0x1c: default 1
+    u_char    subtitles;        // FS2 +0x1c: DemoStream draws subtitles when set, default 1
     int       wideScreen;       // FS2 +0x20: 1 the 16:9 screen (the S2D's r16_9), default 0
     ButtonMap buttonMap;        // FS2 +0x24
     int       mapMode;          // FS2 +0x44: MapMode (the S2D's rMapP), default always

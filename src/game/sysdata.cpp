@@ -474,7 +474,7 @@ int GameOptions::equals(const GameOptions *other) const
         return 0;
     if (brightness != other->brightness)
         return 0;
-    if (_1c != other->_1c)
+    if (subtitles != other->subtitles)
         return 0;
     if (wideScreen != other->wideScreen)
         return 0;
@@ -511,7 +511,7 @@ void GameOptions::setDefaults()
     _14 = 1;
     _15 = 0;
     brightness = 9;
-    _1c = 1;
+    subtitles = 1;
     wideScreen = 0;
     buttonMap.setDefaults();
     mapMode = MapMode_Always;
