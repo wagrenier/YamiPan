@@ -619,6 +619,32 @@
    "status": "verify",
    "why": "Cut out of unassigned@00171300 (the frontier pick for getStageFiles 0x17f150): one object file between the adjustor thunks 0x17f090..0x17f150 (the previous file's last code) and 0x17fce0 (answers 25: slot 108 of the bullet class vtable 0x312cdc, so the next file's inline virtuals): getStageFiles, stageThread 0x17f160 (slot 3, started by 0x2b60b0), its clear / game-over / pause / restart helpers, stageLoad 0x17fb90, setStageLoader 0x17fc90 and the handler-table stub 0x17f7b0. The file name is the port's (no strings)."
   },
+  "game/stageobject.cpp": {
+   "notes": "Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp:3270): drawSysCurrent 0x2d4fd0 is a stub answering null. No stage picture yet, last shot black, nothing here draws. Left in this TU: 0x18a5b0, 0x189f40 and 0x189ce0 (slots +0x1f8, +0x1fc, +0x230, still FUN_). Every object matrix is uninitialised until NodeTransform 0x1d7f20 / update 0x1d7d50 and updateMatrix 0x1d8420 are written. PC zeroing in StageObject::StageObject goes when the subclass ctors are written. Host-pass only: nothing compared with the ROM by running it. Details: open-items.md, architecture.md The object family.",
+   "ranges": [
+    [
+     "00185fc0",
+     "00185fc8"
+    ],
+    [
+     "001865c0",
+     "00186660"
+    ],
+    [
+     "00189ce0",
+     "0018c050"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 01:11",
+     "status": "partial",
+     "summary": "the object family made real: StageObject on StageNodeBase, a side base and ScriptRunner with real virtuals, getKind per class, ctor, dtor, helpers and StageObjectTree; 3 script slots left"
+    }
+   ],
+   "status": "partial",
+   "why": "the StageObject base: every slot of its vtable 0x314770 in this run sits at 0x189ce0..0x18ae70 or after it; ctor 0x18b700, dtor 0x18b4e0, the tree 0x18b7f0..0x18bfd0, ends before kind 0x1d's 0x18c050. No string: the file name is the port's. 0x185fc0 and 0x1865c0 lie in the lights' run and are joined by what they do"
+  },
   "game/stageobjlist.cpp": {
    "notes": "Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector instances (vector of BoxColumn / BoxList dtor and clear) beside 0x1928f0..0x193770: host vector covers them, left unassigned. New src/game/stageobjlist.h: StageObjectList (EE 0xdc: nine StageNameMap at +0, nine StageObjArray at +0x90, last character id +0xd8), StageObjGroup (Characters 2 and Bullets 4 named from their adders, the rest numbered), StageObjArray (heap block of capacity + 2 words, items at data[1..count], 0 after the last; a negative or too large index answers the last), StageNameMap / StageNameNode (strcmp tree with an insertion chain; rebalance once after load). Moved StageObjectList out of gamehooks.h (which includes the new header); find renamed find1 (uigame.cpp follows); StageObject gained m_id +0x208 and a plain destroy() for the deleting dtor at vtable +0x10. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean (uigame.cpp only fails on gfxtarget.h sceGsTexEnv, absent from RosePan libgraph.h, not this TU), and a host harness of 600 objects in 9 groups vs brute force passed (lookups, ids, removals, rebalance order and count, teardown frees every block). Doubts: file, container and group names are read from the code; groups 0, 1, 3, 5..8 unnamed until their classes are read; the ROM rotates on a height difference of one too (kept). Next in the run: StageSound playNamed 0x1d6a80 / stopNamed 0x1d6a90, StageScene getFloor 0x19aea0, the stage scene ctor 0x19c180 / teardown 0x19bbe0 / load 0x17fb90, the class 0x230820..0x230980, the pak parser 0x231410..0x231bb0.",
    "ranges": [
@@ -1399,7 +1425,7 @@
   "unassigned@00148db0": {},
   "unassigned@00171300": {},
   "unassigned@0017fce0": {
-   "claimed": "2026-11-03 23:02",
+   "claimed": "2026-11-04 00:25",
    "prev_status": "todo",
    "sessions": [
     {
@@ -1418,7 +1444,7 @@
      "summary": "marked active -> todo: released untouched a fourth time: gdb located the black after the card (PrgMovie, MoviePlayer state 15), so this run took the host task sdk/libmpeg.cpp"
     }
    ],
-   "status": "todo"
+   "status": "active"
   },
   "unassigned@001953f0": {},
   "unassigned@00231410": {},

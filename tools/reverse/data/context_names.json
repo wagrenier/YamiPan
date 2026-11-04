@@ -11051,6 +11051,84 @@
   "was": "FUN_00171680",
   "why": "StageScene ctor new(0x2c) for +0x14: __construct_array of 5 elements of 8 bytes ({0, 0}, 0x1716c0); class name a guess, contents unread"
  },
+ "00171ae0": {
+  "name": "StageObject::setDirty",
+  "tag": "game-inferred",
+  "was": "FUN_00171ae0",
+  "why": "slot 0: +0x140"
+ },
+ "00171af0": {
+  "name": "StageObject::rebuildMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00171af0",
+  "why": "slot 1: transform update under +4"
+ },
+ "00171b10": {
+  "name": "StageObject::getMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00171b10",
+  "why": "slot 3: this + 0x1c0"
+ },
+ "00171b20": {
+  "name": "StageObject::getWorldMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00171b20",
+  "why": "slot 4: this + 0x1c0"
+ },
+ "00172260": {
+  "name": "StageObject::setTreeShown",
+  "tag": "game-inferred",
+  "was": "FUN_00172260",
+  "why": "slot +0x248: the tree node setShown"
+ },
+ "00172290": {
+  "name": "StageObject::heightDifference",
+  "tag": "game-inferred",
+  "was": "FUN_00172290",
+  "why": "slot +0x22c: abs of +0x158 difference"
+ },
+ "001722b0": {
+  "name": "StageObject::distanceTo",
+  "tag": "game-inferred",
+  "was": "FUN_001722b0",
+  "why": "slot +0x224: slot +0x228 with the other position"
+ },
+ "001722d0": {
+  "name": "StageObject::getSelf",
+  "tag": "game-inferred",
+  "was": "FUN_001722d0",
+  "why": "slot +0x220: this"
+ },
+ "00172300": {
+  "name": "StageObject::setModelValue",
+  "tag": "game-inferred",
+  "was": "FUN_00172300",
+  "why": "slot +0x218: model +0xbc"
+ },
+ "00172320": {
+  "name": "StageObject::getPosZ",
+  "tag": "game-inferred",
+  "was": "FUN_00172320",
+  "why": "slot +0x208: +0x158"
+ },
+ "00172330": {
+  "name": "StageObject::getPosY",
+  "tag": "game-inferred",
+  "was": "FUN_00172330",
+  "why": "slot +0x204: +0x154"
+ },
+ "00172340": {
+  "name": "StageObject::getPosX",
+  "tag": "game-inferred",
+  "was": "FUN_00172340",
+  "why": "slot +0x200: +0x150"
+ },
+ "00172350": {
+  "name": "StageObject::getObjectName",
+  "tag": "game-inferred",
+  "was": "FUN_00172350",
+  "why": "slot +0x21c: this + 0x20"
+ },
  "00173880": {
   "name": "StageObject::applyDoorRecord",
   "tag": "game-inferred",
@@ -11099,6 +11177,30 @@
   "was": "FUN_00177270",
   "why": "a0 a node {object +0, name +4, left +8, right +0xc}, a1 a name: binary search by strcmp; the node whose object is set, null none. StageSound::update finds bn_head (0x303178) under model +0x14"
  },
+ "001775b0": {
+  "name": "StageCamera::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_001775b0",
+  "why": "answers 7"
+ },
+ "00177620": {
+  "name": "StageObject::setYaw",
+  "tag": "game-inferred",
+  "was": "FUN_00177620",
+  "why": "slot +0x214: f12 into +0x168"
+ },
+ "00177630": {
+  "name": "StageObject::setRotation",
+  "tag": "game-inferred",
+  "was": "FUN_00177630",
+  "why": "slot +0x210"
+ },
+ "00177640": {
+  "name": "StageObject::setPosition",
+  "tag": "game-inferred",
+  "was": "FUN_00177640",
+  "why": "slot +0x20c"
+ },
  "00177810": {
   "name": "StageCamera::calcViewMatrix",
   "tag": "game-inferred",
@@ -11129,6 +11231,18 @@
   "was": "FUN_00179700",
   "why": "EE 0x3c0; camera; kind 9"
  },
+ "001799d0": {
+  "name": "StageMainCamera::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_001799d0",
+  "why": "answers 9"
+ },
+ "00179a80": {
+  "name": "StageCharacter::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_00179a80",
+  "why": "answers 0"
+ },
  "0017c700": {
   "name": "StageCharacter::setup",
   "tag": "game-inferred",
@@ -11146,6 +11260,12 @@
   "tag": "game-inferred",
   "was": "FUN_0017df60",
   "why": "every character with +0x18: three calls on +0x224"
+ },
+ "0017e900": {
+  "name": "BoxVolume::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_0017e900",
+  "why": "answers 0x1c"
  },
  "0017ea50": {
   "name": "BoxVolume::setSize",
@@ -11182,6 +11302,18 @@
   "tag": "game-inferred",
   "was": "FUN_0017ef10",
   "why": "setName, add6, its script by name"
+ },
+ "0017ef90": {
+  "name": "StageVolume::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_0017ef90",
+  "why": "answers 0x1a"
+ },
+ "0017f040": {
+  "name": "SphereVolume::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_0017f040",
+  "why": "answers 0x1b"
  },
  "0017f150": {
   "name": "getStageFiles",
@@ -11237,6 +11369,12 @@
   "was": "FUN_0017fc90",
   "why": "deletes the previous loader in gp-0x7a78 (slot 0 at vptr +0x98, flag 1) and stores the new one; 0x2b60b0 hands it the stage PackFile / FileLoader before the stage thread and 0 after"
  },
+ "0017fce0": {
+  "name": "StageBullet::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_0017fce0",
+  "why": "answers 0x19"
+ },
  "001803e0": {
   "name": "StageBullet::StageBullet",
   "tag": "game-inferred",
@@ -11279,6 +11417,36 @@
   "was": "FUN_00183f40",
   "why": "placeItem's default class, 0x240 bytes"
  },
+ "001840a0": {
+  "name": "StageThrownItem::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_001840a0",
+  "why": "answers 0x17"
+ },
+ "001840f0": {
+  "name": "StageTrapItem::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_001840f0",
+  "why": "answers 0x16"
+ },
+ "001841d0": {
+  "name": "StageWeaponItem::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_001841d0",
+  "why": "answers 0x15"
+ },
+ "001841f0": {
+  "name": "StageItemE::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_001841f0",
+  "why": "answers 0x14"
+ },
+ "00184250": {
+  "name": "StageItem::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_00184250",
+  "why": "answers 0x13"
+ },
  "001842c0": {
   "name": "StageNodeList::pushBack",
   "tag": "game-inferred",
@@ -11290,6 +11458,12 @@
   "tag": "game-inferred",
   "was": "FUN_00184370",
   "why": "a0 the list, a1 a link: unlinks it (head moves on when it was the head), frees it (0x184580), count - 1"
+ },
+ "001848f0": {
+  "name": "SpotLight::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_001848f0",
+  "why": "answers 0x11"
  },
  "00185210": {
   "name": "SpotLight::setConeAngle",
@@ -11327,6 +11501,12 @@
   "was": "FUN_00185c40",
   "why": "+0x220 = x, y, z, 1; meaning unread"
  },
+ "00185fa0": {
+  "name": "StageLight::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_00185fa0",
+  "why": "answers 0xf"
+ },
  "00185fb0": {
   "name": "StageLight::setEnabled",
   "tag": "game-inferred",
@@ -11363,6 +11543,36 @@
   "was": "FUN_001866f0",
   "why": "base ctor of the two light classes"
  },
+ "00186a00": {
+  "name": "StageNode::setDirty",
+  "tag": "game-inferred",
+  "was": "FUN_00186a00",
+  "why": "slot 0 of 0x315a80"
+ },
+ "00186a10": {
+  "name": "StageNode::rebuildMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00186a10",
+  "why": "slot 1 of 0x315a80"
+ },
+ "00186a20": {
+  "name": "StageNode::getMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00186a20",
+  "why": "slot 3 of 0x315a80"
+ },
+ "00186a30": {
+  "name": "StageNode::getWorldMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_00186a30",
+  "why": "slot 4 of 0x315a80"
+ },
+ "00186ad0": {
+  "name": "PointLight::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_00186ad0",
+  "why": "answers 0x10"
+ },
  "00186ee0": {
   "name": "StageMapFile::relocate",
   "tag": "game-inferred",
@@ -11387,11 +11597,125 @@
   "was": "FUN_00187d10",
   "why": "setupCameras on each Root-group model; builds node links from the bone names"
  },
+ "00188690": {
+  "name": "StageModel::~StageModel",
+  "tag": "game-inferred",
+  "was": "FUN_00188690",
+  "why": "deleted from setModel and the object dtor, flag 1"
+ },
+ "00188b10": {
+  "name": "StageModel::init",
+  "tag": "game-inferred",
+  "was": "FUN_00188b10",
+  "why": "the body after the inline member clears in setModel"
+ },
+ "0018ae70": {
+  "name": "StageObject::noiseHook",
+  "tag": "game-inferred",
+  "was": "FUN_0018ae70",
+  "why": "slot +0x23c of the family table, empty"
+ },
+ "0018ae80": {
+  "name": "StageObject::makeNoise",
+  "tag": "game-inferred",
+  "was": "FUN_0018ae80",
+  "why": "slot +0x238: f12 passed on to the +0xe0 record with this and 0"
+ },
+ "0018aea0": {
+  "name": "StageObject::playNamedHeard",
+  "tag": "game-inferred",
+  "was": "FUN_0018aea0",
+  "why": "slot +0x234: addSourceNamed, then the +0xe0 record when entry +0xc is above 0"
+ },
+ "0018af00": {
+  "name": "StageObject::distanceToPoint",
+  "tag": "game-inferred",
+  "was": "FUN_0018af00",
+  "why": "slot +0x228: vecDistance from +0x150"
+ },
+ "0018af10": {
+  "name": "StageObject::getHandle",
+  "tag": "game-inferred",
+  "was": "FUN_0018af10",
+  "why": "getKind 0 answers +0x3c (the odd serial), others this"
+ },
+ "0018af70": {
+  "name": "StageObject::assignSerial",
+  "tag": "game-inferred",
+  "was": "FUN_0018af70",
+  "why": "ctor only: (counter << 1) | 1 in +0x3c"
+ },
+ "0018afc0": {
+  "name": "StageObject_nextSerial",
+  "tag": "game-inferred",
+  "was": "FUN_0018afc0",
+  "why": "recursive step of the serial counter skipping 0, unrolled by the compiler"
+ },
+ "0018b0d0": {
+  "name": "StageObject::setDirtyTree",
+  "tag": "game-inferred",
+  "was": "FUN_0018b0d0",
+  "why": "slot 5: +0x140 and the children slot 5"
+ },
+ "0018b130": {
+  "name": "StageObject::stopSound",
+  "tag": "game-inferred",
+  "was": "FUN_0018b130",
+  "why": "findSource then stopSource on the scene sound"
+ },
+ "0018b170": {
+  "name": "StageObject::playNamed",
+  "tag": "game-inferred",
+  "was": "FUN_0018b170",
+  "why": "tail of addSourceNamed on the scene sound"
+ },
+ "0018b180": {
+  "name": "StageObject::playEntry",
+  "tag": "game-inferred",
+  "was": "FUN_0018b180",
+  "why": "tail of addSource on the scene sound"
+ },
+ "0018b190": {
+  "name": "StageObject::playEntryHeard",
+  "tag": "game-inferred",
+  "was": "FUN_0018b190",
+  "why": "addSource, then the +0xe0 record"
+ },
+ "0018b210": {
+  "name": "StageObject::playNamedHeard2",
+  "tag": "game-inferred",
+  "was": "FUN_0018b210",
+  "why": "addSourceNamed, then the +0xe0 record, answers the source"
+ },
  "0018b290": {
-  "name": "stageObjectIsShown",
+  "name": "StageObject::getShownState",
   "tag": "game-inferred",
   "was": "FUN_0018b290",
-  "why": "a byte through +0x30's first pointer, else +0x35"
+  "why": "model data +7, or +0x35 without"
+ },
+ "0018b2d0": {
+  "name": "StageObject::setShownState",
+  "tag": "game-inferred",
+  "was": "FUN_0018b2d0",
+  "why": "the setter of the same two"
+ },
+ "0018b320": {
+  "name": "StageObject::setActive",
+  "tag": "game-inferred",
+  "was": "FUN_0018b320",
+  "why": "+0x34 and +0x18 together"
+ },
+ "0018b330": {
+  "name": "StageObject::setClock",
+  "tag": "game-inferred",
+  "was": "FUN_0018b330",
+  "why": "one caller StageCharacter ctor: Clock::create into +0xf8"
+ },
+ "0018b380": {
+  "name": "StageObject::setModel",
+  "tag": "game-inferred",
+  "was": "FUN_0018b380",
+  "why": "new 400-byte StageModel into +0x30, the matrix from the root, inverse in +0x14"
  },
  "0018b4d0": {
   "name": "StageObject::setName",
@@ -11399,17 +11723,47 @@
   "was": "FUN_0018b4d0",
   "why": "first call of every addToScene; takes the name passed on from a1"
  },
+ "0018b4e0": {
+  "name": "StageObject::~StageObject",
+  "tag": "game-inferred",
+  "was": "FUN_0018b4e0",
+  "why": "slot 2 of Vt_00314770: deleting"
+ },
  "0018b700": {
   "name": "StageObject::StageObject",
   "tag": "game-inferred",
   "was": "FUN_0018b700",
   "why": "base ctor of 17 classes: vptrs +0, +0x1c, +0xf4, script runner +0x40, NodeTransform +0x140, name cleared"
  },
+ "0018b7f0": {
+  "name": "StageObjectTree::setScriptFlag2",
+  "tag": "game-inferred",
+  "was": "FUN_0018b7f0",
+  "why": "slot +0x68 of the runner table on the node and children"
+ },
+ "0018b9e0": {
+  "name": "StageObjectTree::setScriptFlag",
+  "tag": "game-inferred",
+  "was": "FUN_0018b9e0",
+  "why": "slot +0x60 of the runner table on the node and children"
+ },
+ "0018bb90": {
+  "name": "StageObjectTree::setChildrenShown",
+  "tag": "game-inferred",
+  "was": "FUN_0018bb90",
+  "why": "setShown on the children only"
+ },
  "0018bbe0": {
   "name": "StageObjectTree::setShown",
   "tag": "game-inferred",
   "was": "FUN_0018bbe0",
   "why": "walks the node tree calling the objects' +0x244"
+ },
+ "0018bd70": {
+  "name": "StageObjectTree::setChildrenActive",
+  "tag": "game-inferred",
+  "was": "FUN_0018bd70",
+  "why": "setActive on the children only"
  },
  "0018bdc0": {
   "name": "StageObjectTree::setActive",
@@ -13241,6 +13595,18 @@
   "was": "FUN_001d7a30",
   "why": "f12 the listener facing, a0 float* pan out, a1 a position vec4, a2 the listener object: distance from the listener matrix (vslot +0x14, +0x30) to the point, pan = -addAngle(atan2Octant(dx, dy), -facing); a listener of kind 0xb whose +0x300 object has record kind 0xf (table 0x539b10) divides the distance by clamp(1 - (pi/4)/|pan|, 0.4, 1) * 2.5"
  },
+ "001d7ce0": {
+  "name": "StageNode::setDirtyTree",
+  "tag": "game-inferred",
+  "was": "FUN_001d7ce0",
+  "why": "slot 5 of 0x315a80"
+ },
+ "001d7d50": {
+  "name": "NodeTransform::update",
+  "tag": "game-inferred",
+  "was": "FUN_001d7d50",
+  "why": "called with the transform and +4 by slot 1"
+ },
  "001d7ec0": {
   "name": "NodeTransform::setRotation",
   "tag": "game-inferred",
@@ -13270,6 +13636,12 @@
   "tag": "game-inferred",
   "was": "FUN_001d8260",
   "why": "copies the matrix position to +0x10 and recurses over the children"
+ },
+ "001d8420": {
+  "name": "StageNodeBase::updateMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_001d8420",
+  "why": "slot 6 of every node table"
  },
  "001d8540": {
   "name": "StageNodeBase::StageNodeBase",
@@ -14548,6 +14920,18 @@
   "tag": "game-inferred",
   "was": "FUN_00242e80",
   "why": "16 entries: StageSound::findSource, pushes into one of two 0x20-entry lists, flips them"
+ },
+ "00242fc0": {
+  "name": "SceneUiState::addSourceNoise",
+  "tag": "game-inferred",
+  "was": "FUN_00242fc0",
+  "why": "the same from a source, entry +0xc the value"
+ },
+ "002430a0": {
+  "name": "SceneUiState::addNoise",
+  "tag": "game-inferred",
+  "was": "FUN_002430a0",
+  "why": "f12, object and extra into the back list of 0x20"
  },
  "00243100": {
   "name": "SceneUiState::~SceneUiState",
@@ -16901,6 +17285,12 @@
   "was": "FUN_0026c8c0",
   "why": "stores vtable 0x314d30, the class 0x19cf40 names DemoExecuter (was SubSceneObject)"
  },
+ "0026c910": {
+  "name": "DemoCamera::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_0026c910",
+  "why": "answers 13"
+ },
  "0026c920": {
   "name": "DemoCamera::drawOverlay",
   "tag": "game-inferred",
@@ -17914,6 +18304,12 @@
   "tag": "lib-context",
   "was": "FUN_00299d40",
   "why": "MSL basic_string::assign(first, last) instance: replace(0, size, first, last); only caller replace_range (aliasing path)"
+ },
+ "0029a830": {
+  "name": "ViewCamera::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_0029a830",
+  "why": "answers 10"
  },
  "0029aae0": {
   "name": "ViewCamera::ViewCamera",

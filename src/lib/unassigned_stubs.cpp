@@ -448,47 +448,15 @@ StageMission::~StageMission()
 }
 
 // stub of FS2 address unknown (1 candidates)
-const sceVu0FVECTOR * StageNode::getMatrix()
+void StageNodeBase::updateMatrix()
 {
-    YAMIPAN_STUB("StageNode::getMatrix", 0x00000000);
-    return {};
-}
-
-// stub of FS2 address unknown (1 candidates)
-const sceVu0FVECTOR * StageNode::getWorldMatrix()
-{
-    YAMIPAN_STUB("StageNode::getWorldMatrix", 0x00000000);
-    return {};
-}
-
-// stub of FS2 address unknown (1 candidates)
-void StageNode::updateMatrix()
-{
-    YAMIPAN_STUB("StageNode::updateMatrix", 0x00000000);
+    YAMIPAN_STUB("StageNodeBase::updateMatrix", 0x001d8420);
 }
 
 // stub of FS2 0x001d8540
 StageNodeBase::StageNodeBase()
 {
     YAMIPAN_STUB("StageNodeBase::StageNodeBase", 0x001d8540);
-}
-
-// stub of FS2 0x001865c0
-StageNodeBase::~StageNodeBase()
-{
-    YAMIPAN_STUB("StageNodeBase::~StageNodeBase", 0x001865c0);
-}
-
-// stub of FS2 0x00184370
-void StageNodeList::erase(StageNodeLink *link)
-{
-    YAMIPAN_STUB("StageNodeList::erase", 0x00184370);
-}
-
-// stub of FS2 0x001842c0
-void StageNodeList::pushBack(StageNodeBase **item)
-{
-    YAMIPAN_STUB("StageNodeList::pushBack", 0x001842c0);
 }
 
 // stub of FS2 0x00190c20
@@ -527,30 +495,10 @@ StageNodeTree::~StageNodeTree()
     YAMIPAN_STUB("StageNodeTree::~StageNodeTree", 0x00190bc0);
 }
 
-// stub of FS2 address unknown (1 candidates)
-void StageObject::destroy()
-{
-    YAMIPAN_STUB("StageObject::destroy", 0x00000000);
-}
-
 // stub of FS2 0x00214f60
 u_char StageObject::getAltSoundFlag()
 {
     YAMIPAN_STUB("StageObject::getAltSoundFlag", 0x00214f60);
-    return {};
-}
-
-// stub of FS2 address unknown (1 candidates)
-int StageObject::getKind()
-{
-    YAMIPAN_STUB("StageObject::getKind", 0x00000000);
-    return {};
-}
-
-// stub of FS2 address unknown (1 candidates)
-const sceVu0FVECTOR * StageObject::getMatrix()
-{
-    YAMIPAN_STUB("StageObject::getMatrix", 0x00000000);
     return {};
 }
 
@@ -1191,12 +1139,6 @@ void StageMission::setSpawnPoint(int id, const float *pos, const float *rot)
     YAMIPAN_STUB("StageMission::setSpawnPoint", 0x002867a0);
 }
 
-// stub of FS2 address unknown (0 candidates)
-StageObject::StageObject()
-{
-    YAMIPAN_STUB("StageObject::StageObject", 0x00000000);
-}
-
 // stub of FS2 0x00214fc0
 int StageObject::getActionState()
 {
@@ -1208,18 +1150,6 @@ int StageObject::getActionState()
 void StageObject::onViewTop()
 {
     YAMIPAN_STUB("StageObject::onViewTop", 0x00000000);
-}
-
-// stub of FS2 0x0018bdc0
-void StageObjectTree::setActive(bool on)
-{
-    YAMIPAN_STUB("StageObjectTree::setActive", 0x0018bdc0);
-}
-
-// stub of FS2 0x0018bbe0
-void StageObjectTree::setShown(bool on)
-{
-    YAMIPAN_STUB("StageObjectTree::setShown", 0x0018bbe0);
 }
 
 // stub of FS2 0x001fe9b0
@@ -1309,13 +1239,6 @@ int parseSpawnId(const char *name)
 void scriptPrepare(StageScript *script)
 {
     YAMIPAN_STUB("scriptPrepare", 0x0029f050);
-}
-
-// stub of FS2 0x0018b290
-bool stageObjectIsShown(StageObject *object)
-{
-    YAMIPAN_STUB("stageObjectIsShown", 0x0018b290);
-    return {};
 }
 
 // stub of FS2 address unknown (0 candidates)
@@ -1699,12 +1622,6 @@ void StageObject::attachToRoot()
 }
 
 // stub of FS2 address unknown (1 candidates)
-void StageObject::calcMatrix()
-{
-    YAMIPAN_STUB("StageObject::calcMatrix", 0x00000000);
-}
-
-// stub of FS2 address unknown (1 candidates)
 void StageObject::cameraStep()
 {
     YAMIPAN_STUB("StageObject::cameraStep", 0x00000000);
@@ -2071,12 +1988,6 @@ void StageObject::setMotionList(void *list, int arg, int arg2)
     YAMIPAN_STUB("StageObject::setMotionList", 0x00000000);
 }
 
-// stub of FS2 0x00185fc0
-void StageObject::setTreeScriptFlag(bool on)
-{
-    YAMIPAN_STUB("StageObject::setTreeScriptFlag", 0x00185fc0);
-}
-
 // stub of FS2 0x00218630
 void StageObject::spawn()
 {
@@ -2164,4 +2075,35 @@ void applyMatrix(sceVu0FVECTOR out, const sceVu0FVECTOR *m, const sceVu0FVECTOR 
 void invertRigidMatrix(sceVu0FMATRIX out, const sceVu0FVECTOR *m)
 {
     YAMIPAN_STUB("invertRigidMatrix", 0x00136500);
+}
+
+// stub of FS2 0x00188690
+StageModel::~StageModel()
+{
+    YAMIPAN_STUB("StageModel::~StageModel", 0x00188690);
+}
+
+// stub of FS2 0x001d7d50
+void NodeTransform::update(StageNodeBase *parent)
+{
+    YAMIPAN_STUB("NodeTransform::update", 0x001d7d50);
+}
+
+// stub of FS2 0x002430a0
+void SceneUiState::addNoise(float loudness, StageObject *object, void *extra)
+{
+    YAMIPAN_STUB("SceneUiState::addNoise", 0x002430a0);
+}
+
+// stub of FS2 0x00242fc0
+void SceneUiState::addSourceNoise(StageObject *object, StageSoundSource *source)
+{
+    YAMIPAN_STUB("SceneUiState::addSourceNoise", 0x00242fc0);
+}
+
+// stub of FS2 0x00188b10
+void StageModel::init(ModelInstance *instance, StringMap<Tim2Texture *> *textures,
+              const sceVu0FVECTOR *matrix)
+{
+    YAMIPAN_STUB("StageModel::init", 0x00188b10);
 }

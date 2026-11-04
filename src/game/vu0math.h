@@ -11,6 +11,8 @@
 #ifndef _GAME_VU0MATH_H
 #define _GAME_VU0MATH_H
 
+#include <string.h>
+
 #include "sdk/libvu0.h"     /* sceVu0FVECTOR */
 
 // The distance between a and b (xyz).
@@ -24,5 +26,19 @@ void scaleVec4(float s, sceVu0FVECTOR out, const sceVu0FVECTOR in);             
 void invertRigidMatrix(sceVu0FMATRIX out, const sceVu0FVECTOR *m);                // FS2 0x00136500
 // out = m[0] v.x + m[1] v.y + m[2] v.z + m[3] v.w; out may be v.
 void applyMatrix(sceVu0FVECTOR out, const sceVu0FVECTOR *m, const sceVu0FVECTOR v); // FS2 0x00136690
+
+// out = m.
+// FS2 0x00136430
+inline void copyMatrix(sceVu0FMATRIX out, const sceVu0FVECTOR *m)
+{
+    memcpy(out, m, sizeof(sceVu0FMATRIX));
+}
+// out = the identity.
+// FS2 0x00136400
+inline void identityMatrix(sceVu0FMATRIX out)
+{
+    memset(out, 0, sizeof(sceVu0FMATRIX));
+    out[0][0] = out[1][1] = out[2][2] = out[3][3] = 1.0f;
+}
 
 #endif /* _GAME_VU0MATH_H */
