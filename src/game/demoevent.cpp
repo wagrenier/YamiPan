@@ -474,12 +474,13 @@ void StageMission::setPendingEvent(const char *name)
 // FS2 0x002868c0
 // callcheck: 0x29f2a0
 
-void StageMission::onRestore()
+int StageMission::onRestore()
 {
     if (!restoreAsked) {
         restoreAsked = true;
         restoreAnswer = missionRestoreCheck();
     }
+    return restoreAnswer;
 }
 
 // FS2 0x00286910
@@ -551,6 +552,74 @@ void StageMission::tickPending()
         seen++;
     }
     timedCount -= done;
+}
+
+constexpr int kResultFramesPerSecond = 30;  // the scripts' frames
+
+// FS2 0x00286a50
+// callcheck: getStageResult
+
+int StageMission::getScoreClock()
+{
+    return getStageResult()->clock2.value;
+}
+
+// FS2 0x00286a70
+// callcheck: getStageResult
+
+void StageMission::setScoreClock(int value)
+{
+    getStageResult()->clock2.value = value;
+}
+
+// FS2 0x00286aa0
+// callcheck: getStageResult, stageFps
+
+int StageMission::getClockFrames()
+{
+    int ticks = getStageResult()->clock.value;
+    return (int)((float)(u_int)(ticks * kResultFramesPerSecond / stageFps()) + 0.5f);
+}
+
+// FS2 0x00286b20
+// callcheck: stageFps, getStageResult
+
+void StageMission::setClockFrames(int frames)
+{
+    int fps = stageFps();
+    getStageResult()->clock.value = frames * fps / kResultFramesPerSecond;
+}
+
+// FS2 0x00286b80
+// callcheck: getStageResult
+
+bool StageMission::getResultHold()
+{
+    return getStageResult()->hold;
+}
+
+// FS2 0x00286ba0
+// callcheck: getStageResult
+
+void StageMission::setResultHold(bool on)
+{
+    getStageResult()->hold = on;
+}
+
+// FS2 0x00286bd0
+// callcheck: getStageResult
+
+bool StageMission::getResultPaused()
+{
+    return getStageResult()->paused;
+}
+
+// FS2 0x00286bf0
+// callcheck: getStageResult
+
+void StageMission::setResultPaused(bool on)
+{
+    getStageResult()->paused = on;
 }
 
 // FS2 0x00287050

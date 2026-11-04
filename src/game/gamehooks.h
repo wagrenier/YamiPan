@@ -158,12 +158,20 @@ enum StageObjectKind
     StageObject_Volume = 0x1a,  // StageVolume: the same number as StageMarker
     StageObject_SphereVolume = 0x1b,
     StageObject_BoxVolume = 0x1c,
-    StageObject_SubSceneDoor = 0x21, // SubSceneDoorObject
-    StageObject_SubSceneProp = 0x24, // SubSceneProp
+    StageObject_SubSceneModel = 0x1f, // game/subsceneobject.h, as the next six
+    StageObject_SubSceneMap  = 0x20,
+    StageObject_SubSceneDoor = 0x21,
+    StageObject_SubSceneGate = 0x22,
+    StageObject_SubSceneCharacter = 0x23,
+    StageObject_SubSceneProp = 0x24,
+    StageObject_SubSceneItem = 0x25,
 };
 
 class StageNode;
 class StageItemE;                // game/stageitem.h
+class StageParticle;
+struct MapObjectParts;
+struct CharacterHidePart;
 class StageLight;               // game/stagelight.h
 struct RenaSpotLight;           // game/scenerender.h
 class VcmTable;                 // game/vcmtable.h
@@ -549,6 +557,14 @@ public:
     // textures, collision.
     void setupMapObject(const char *name, ModelInstance *instance,
                         StringMap<Tim2Texture *> *textures, void *collision); // FS2 0x001760c0
+    // The flags of a map object's model; a gate's and a kind 3's are lit by
+    // themselves. Inline in setupMapObject.
+    void applyMapModelFlags();                                           // FS2 0x001763e0
+    // The same of a character's, by its record's kind.
+    void applyCharacterModelFlags(int kind);                             // FS2 0x0017dcb0
+    // The body's links, its shadow box from the table 0x2f8000, and for a
+    // model with no data the effects; keep: the ROM news the block.
+    void setupBody(bool keep);                                           // FS2 0x0017d970
     // The model's two item bytes (setupItem; SubSceneItem's and SubSceneProp's
     // setup call it).
     void markModelAsItem();                                              // FS2 0x00183ea0
@@ -646,7 +662,7 @@ public:
         int    m_itemDef;       // FS2 +0x200: gItemDefs index; gStageObjRecords too (StageSound)
         u_char m_collides;      // FS2 +0x200: a Root object's: it has collision meshes (StageScene::raycast)
     };
-    u_char _204[0x4];
+    CharacterHidePart *m_hidePart; // FS2 +0x204: a character's (StageCharacter)
     union {
         int    m_id;            // FS2 +0x208: a character's number (StageObjectList::addCharacter)
         u_int  m_collisionCount; // FS2 +0x208: a Root object's mesh count
@@ -656,7 +672,9 @@ public:
         int    m_bodySize;      // FS2 +0x20c: a character's: 0..3 from its model's name (_lh_ _th_, _mh_ _ms_, _sh_ _ss_, _ch_), default 1 (StageCharacter::setup)
         StageCollision **m_collisions; // FS2 +0x20c: a Root object's meshes
     };
-    u_char _210[0xc];
+    u_char _210[0x4];
+    MapObjectParts *m_mapParts; // FS2 +0x214: a Root object's: read by the sub-scene's copy
+    u_char _218[0x4];
     CharacterInput *m_input;    // FS2 +0x21c: a character's
     CharacterBrain *m_brain;    // FS2 +0x220: a character's; null none
     PlayerMotion *m_motion;     // FS2 +0x224: a character's
@@ -1325,6 +1343,9 @@ public:
     ~StageFade();                                                        // FS2 0x00151550: deleting
     // Goes to target in seconds, from from (negative: from where it is).
     void start(float seconds, float target, float from);                 // FS2 0x00151330
+    // The fade's colour, 24 bits.
+    // FS2 0x00151380
+    void setColour(u_int colour) { m_colour = colour & 0xffffff; }
     // Full in mode 2 (StageSound does not resume a cue stream then).
     bool isFullInMode2();                                                // FS2 0x001512a0
     // The same in mode 1.
@@ -1911,36 +1932,40 @@ StageObject *createMapObject(const char *name, void *collision);         // FS2 
 // oGK99_01 and oDC99_01 ("gate" is a guess).
 bool isGateModelName(const char *name);                                  // FS2 0x001769e0
 
-// The map objects of a sub-scene (the bg target; vtables 0x319c90 and
-// 0x319a20, operator new 0x280 / 0x2c0 aligned 0x40). The ctor's argument is
-// always 1 here.
-// layout: host
-class SubSceneMapObject
-{
-public:
-    explicit SubSceneMapObject(int arg);                                 // FS2 0x002bc040
-    void setup(const char *name, ModelInstance *instance,
-               StringMap<Tim2Texture *> *textures, void *collision);     // FS2 0x002bbed0
-};
-// layout: host
-class SubSceneGateObject
-{
-public:
-    explicit SubSceneGateObject(int arg);                                // FS2 0x002bbdb0
-    void setup(const char *name, ModelInstance *instance,
-               StringMap<Tim2Texture *> *textures, void *collision);     // FS2 0x002bbc10
-};
-// A _dp / _ds node (a door's parts). Its constructor is inline in the ROM:
-// the base's, then the vtables 0x314ef0 / 0x314f14 / 0x314f2c. layout: host
-// -- EE 0x2c0.
-class SubSceneDoorObject : public SubSceneMapObject
-{
-public:
-    explicit SubSceneDoorObject(int arg) : SubSceneMapObject(arg), m_recordValue(0) {}
-    // Slot 123 in the ROM. This family has no host base yet (StageObject).
-    int getKind();                                                       // FS2 0x001a45d0
+// The sub-scene's copies of these: game/subsceneobject.h.
 
-    int m_recordValue;          // FS2 +0x280: DoorRecord::value
+// What of a map object switches with its faces (EE 0x14; a stage's Root and
+// every sub-scene map object): the part ids its collision record names, a
+// PartSwitch for each, and effects with withEffects. Written with the
+// collision file: its record's faces are not relocated yet.
+// layout: host -- EE offsets in the comments.
+struct MapObjectParts
+{
+    MapObjectParts(StageObject *owner, void *collisionRecord, bool withEffects); // FS2 0x00176bc0
+    ~MapObjectParts();                                                   // FS2 0x00176b30
+    // Each part as from shows it, and each effect as from's emits.
+    void copyShown(const MapObjectParts *from);                          // FS2 0x00176a40
+
+    int             count = 0;      // FS2 +0x00
+    int            *ids = nullptr;  // FS2 +0x04
+    PartSwitch     *switches = nullptr; // FS2 +0x08
+    StageParticle **effects = nullptr;  // FS2 +0x0c
+};
+// A collision file's record for the node called name; null none (0x20 bytes
+// each from +4, count at +8). The file is not relocated yet (StageCollision).
+void *collisionFindRecord(void *file, const char *name);                 // FS2 0x0023adb0
+
+// A gate's parts BKW%02di and effects (EE 0x40). Only what the sub-scene's
+// gate calls; "gate" is a guess from isGateModelName.
+// layout: host -- EE offsets in the comments.
+struct GateParts
+{
+    GateParts(StageObject *owner, PartSwitch *switches, int *ids, int count, GateParts *from); // FS2 0x0028f890
+    ~GateParts();                                                        // FS2 0x0028f820
+    // The effects' objects and particles on or off.
+    void setEffects(bool on);                                            // FS2 0x0028ecb0
+    // Takes from's state; null: the closed one.
+    void copyFrom(const GateParts *from);                                // FS2 0x0028ed60
 };
 
 // What a stage's map file becomes (StageFiles::applyMapTarget). The ROM
@@ -2082,6 +2107,10 @@ public:
     void playCut(void *motionFile);                                      // FS2 0x0026cb70: vtable +0x260
     // The same by name in the event's pack; the view jumps to it at once.
     void playCutNamed(const char *name);                                 // FS2 0x0026ca40: vtable +0x264
+    // Native 0x148 on the camera.
+    // FS2 0x0026d000
+    // callcheck: playCutNamed
+    void scriptPlayMotion(const char *name) override { playCutNamed(name); }
     // Sets the overlay; the first one takes the pack's film data.
     void setOverlay(int overlay);                                        // FS2 0x0026cab0
     // The fades on list 9 after the 3D frame.
@@ -2162,40 +2191,17 @@ public:
     u_char m_bulletFlying = 0;  // FS2 +0x688: set each frame by a bullet of its own
 };
 
-// A sub-scene's characters and items (vtables at their ctors; a lighter
-// family like SubSceneMapObject). layout: host.
-class SubSceneCharacter
-{
-public:
-    explicit SubSceneCharacter(int arg);                                 // FS2 0x002bbab0: always 2; EE 0x280
-    void setup(const char *name, ModelInstance *instance,
-               StringMap<Tim2Texture *> *textures);                      // FS2 0x002bb870
-};
+// What a character's kind 0xb / 0xd hides: the model's part "hide" (EE 4;
+// StageCharacter +0x204, SubSceneCharacter +0x240).
 // layout: host
-class SubSceneItem
+struct CharacterHidePart
 {
-public:
-    explicit SubSceneItem(int arg);                                      // FS2 0x002bb7a0: always 3; EE 0x280
-    void setup(const char *name, ModelInstance *instance,
-               StringMap<Tim2Texture *> *textures);                      // FS2 0x002bb680
-};
-// Any other item; vtables 0x315420 / 0x315444 / 0x31545c, the ctor inline
-// in the ROM over 0x269d00. EE 0x240.
-// layout: host
-class SubSceneModelObject
-{
-public:
-    explicit SubSceneModelObject(int arg);                               // FS2 0x00269d00
-};
-// layout: host
-class SubSceneProp : public SubSceneModelObject
-{
-public:
-    explicit SubSceneProp(int arg) : SubSceneModelObject(arg) {}
-    // Slot 123 in the ROM; see StageMarker::getKind.
-    int getKind();                                                       // FS2 0x001a4950
-    void setup(const char *name, ModelInstance *instance,
-               StringMap<Tim2Texture *> *textures);                      // FS2 0x002bb810
+    CharacterHidePart(StageObject *owner, int kind);                     // FS2 0x0017e0b0
+    ~CharacterHidePart();                                                // FS2 0x0017e050
+    // Shows what other shows.
+    void copyFrom(const CharacterHidePart *other);                       // FS2 0x0017e010
+
+    PartSwitch *m_switch;       // FS2 +0x0
 };
 
 // The script's number of a player spawn name (P_SPW%02d); -1 not one.
@@ -2660,6 +2666,8 @@ struct StageObjRecord
 };
 static_assert(sizeof(StageObjRecord) == 0xfc, "StageObjRecord: EE 0xfc");
 extern StageObjRecord gStageObjRecords[kStageObjRecordSets][kStageObjRecordCount]; /* bss 0x539b10 */
+// The record at index of the stage kind's set; the first with a bad index.
+const StageObjRecord *stageObjRecord(int index);                         // inline in the ROM (game/stagescene.cpp)
 // StageObjRecord::sides (columns PC, NP, 屍 and 闇).
 enum StageObjSide
 {

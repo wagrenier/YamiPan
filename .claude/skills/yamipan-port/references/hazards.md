@@ -418,3 +418,12 @@ Symptom: a loader "ran", instances were counted, yet nothing appears and the stu
 ## Scratch tests of pose math (2026-11-04)
 
 **Symptom:** a solver seems to do nothing or to miss in a scratch test. **Cause:** `buildMatrix` only reads a rotation slot under `PoseTrack_Quat` or `_Euler`, so a hand-made bone needs its `tracks` bits; and a parent left turned by an earlier case moves the result. **Also:** the decompiler drops float and vector arguments of the VU helpers (`scaleVec4(a, b)`, `vecCross(a, a)`, `vecDot(a)`): read the asm around each such call. The EE's `sqrt.s` takes the magnitude, so a root of a small negative is a number there and NaN on the host: `sqrtf(fabsf(x))`.
+
+
+## A run's stderr is lost when build.py stops it (2026-11-04)
+
+**Symptom:** `fprintf(stderr, ...)` traces print nothing after `build.py --run N`, though the code ran. **Cause:** on the timeout path `build.py` keeps only stdout, and it lists only the first 60 `[stub]` lines. **Fix:** trace on stdout with an explicit flush, then read work/run_relwithdebinfo.log, not the printed summary. Budget it: a New Game run that reaches the event takes 6 minutes.
+
+## Long shell commands and background runs (2026-11-04)
+
+**Symptom:** the Bash tool answers `ENAMETOOLONG` for a big heredoc, or a background run dies at once with paths not found. **Cause:** the command line has a length limit, and a background command does not start in the directory the last foreground `cd` left. **Fix:** write source files and edit scripts with the Write tool; start every background command with an absolute `cd`.

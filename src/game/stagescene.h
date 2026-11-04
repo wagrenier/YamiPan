@@ -148,6 +148,7 @@ struct StageModel;              // game/gamehooks.h
 struct StageViewTarget
 {
     StageModel  *model;         // FS2 +0x30: prepareDrawFlags marks it
+    struct GateParts *gateParts; // FS2 +0x2b0: what SubSceneGateObject copies
     StageObject *character;     // FS2 +0x3c0
 };
 
@@ -248,7 +249,17 @@ struct StageMission
     void setSpawnPoint(int id, const float *pos, const float *rot);      // FS2 0x002867a0
     // StageScene::restoreObjectFlags, first; the once-only answer of
     // 0x29f2a0.
-    void onRestore();                                                    // FS2 0x002868c0
+    int  onRestore();                                                    // FS2 0x002868c0
+    // The result's clocks and pause bytes, as the scripts see them
+    // (SubSceneModelObject's properties); the stage clock in 30ths.
+    int  getScoreClock();                                                // FS2 0x00286a50
+    void setScoreClock(int value);                                       // FS2 0x00286a70
+    int  getClockFrames();                                               // FS2 0x00286aa0
+    void setClockFrames(int frames);                                     // FS2 0x00286b20
+    bool getResultHold();                                                // FS2 0x00286b80
+    void setResultHold(bool on);                                         // FS2 0x00286ba0
+    bool getResultPaused();                                              // FS2 0x00286bd0
+    void setResultPaused(bool on);                                       // FS2 0x00286bf0
 
     MessageTable *messages = nullptr;   // FS2 +0x0
     u_short purposeText[kMissionTextSize / 2] = {}; // FS2 +0x4: 16-bit, 0-terminated (extent: up to scriptVar3e)
@@ -263,7 +274,7 @@ struct StageMission
     void   *restoreArg = nullptr; // FS2 +0xb8: setRestore; 0x29f2a0 tests 1, 2, 3
     StageObject *keptObject = nullptr; // FS2 +0xbc: keeps its flags through restoreObjectFlags
     bool    restoreAsked = false;  // FS2 +0xc0: onRestore has answered
-    bool    restoreAnswer = false; // FS2 +0xc4
+    int     restoreAnswer = 0;   // FS2 +0xc4
     char    pendingEvent[kMissionEventName] = {}; // FS2 +0xc8: the event afterScripts starts, empty none (StageScene::isBusy)
     u_char  _d8 = 0;            // FS2 +0xd8: cleared by afterScripts (writers unread)
     u_char  _d9 = 0;            // FS2 +0xd9: the same

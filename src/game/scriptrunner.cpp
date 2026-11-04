@@ -24,6 +24,7 @@
 #include "game/stagelight.h"
 #include "game/stageobjlist.h"
 #include "game/stagescene.h"
+#include "game/subsceneobject.h"
 #include "game/sysdata.h"
 
 ScriptRunner *gRunningScript;           /* sbss 0x31ae18 (gp-0x7a58) */
@@ -1595,6 +1596,130 @@ static const int *nativeFileEventDelayed(ScriptRunner *self, int *, const int *c
     return next;
 }
 
+// 0x144 demoPosition(x, y, z): the target's place, three float words in the
+// code.
+// FS2 0x001b9ac0
+
+static const int *nativeDemoPosition(ScriptRunner *self, int *, const int *code)
+{
+    enum { Words = 3 };
+    ScriptRunner *target = self->getTarget();
+    sceVu0FVECTOR pos = { 0.0f, 0.0f, 0.0f, 1.0f };
+    memcpy(pos, code, Words * sizeof(float));
+    target->scriptSetPosition(pos);
+    return code + Words;
+}
+
+// The object joins the event with motion and shows.
+// FS2 0x001b5460
+// callcheck: setActive, setShown
+
+static void demoSwitchOn(StageObject *object, bool on)
+{
+    object->m_tree->setActive(on);
+    object->m_tree->setShown(on);
+}
+
+// 0x145 demoBind(name, motion): before the event's cameras are ready, the
+// object called name takes motion and comes on. One missing is made: the
+// files' character or item, else an actor with no model of its own.
+static void demoBindObject(StageObject *object, const char *motion)
+{
+    static_cast<SubSceneModelObject *>(object)->bindMotion(motion);
+    demoSwitchOn(object, true);
+    object->setTreeShown(true);
+}
+
+// FS2 0x001b9680
+// callcheck: readNameArg, readStringArg, FUN_001b9ab0, FUN_001b36b0, FUN_001b9aa0, FUN_001b9a80, FUN_001b9a30, FUN_001b9a70, FUN_001b9a60, FUN_001b9a50, strcmp, FUN_001b9a20, hasCharacter, placeCharacter, find8, hasItem, placeItem, find8, operator_new, SubSceneModelObject, FUN_001a4c20, attach, FUN_001a4c40, demoSwitchOn, bindMotion (small getters and the list walk, inline here; the ROM's bind sequences are demoBindObject)
+
+static const int *nativeDemoBind(ScriptRunner *self, int *, const int *code)
+{
+    const char *name = nullptr;
+    const char *motion = nullptr;
+    code = self->readNameArg(&name, code);
+    code = self->readStringArg(&motion, code);
+    StageScene *scene = gStageScene;
+    if (scene->camerasReady)
+        return code;
+
+    StageObjArray *group = &scene->objects->m_lists[StageObjGroup_8];
+    for (StageObject **slot = group->begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        StageObject *object = *slot;
+        if (strcmp(object->m_name, name) == 0) {
+            demoBindObject(object, motion);
+            return code;
+        }
+    }
+
+    StageFiles *files = scene->files;
+    if (files->hasCharacter(name))
+        files->placeCharacter(name, nullptr, nullptr);
+    else if (files->hasItem(name))
+        files->placeItem(name, nullptr, nullptr);
+    else {
+        SubSceneModelObject *actor = new SubSceneModelObject(SubSceneRole_Actor);
+        StringMap<Tim2Texture *> textures;
+        actor->attach(name, nullptr, &textures);
+        actor->bindMotion(motion);
+        demoSwitchOn(actor, true);
+        return code;
+    }
+    if (StageObject *object = scene->objects->find8(name, 0))
+        demoBindObject(object, motion);
+    return code;
+}
+
+// 0x163 demoFade(frames, colour, _, _): back from a colour; frames below 0 at
+// once. Of the last three the ROM keeps only the first: it overwrites what it
+// has shifted, so the two others count for nothing (asm 0x1b7070..0x1b7080).
+// FS2 0x001b6fe0
+// callcheck: FUN_00151380, start, start
+
+static const int *nativeDemoFade(ScriptRunner *self, int *, const int *code)
+{
+    const int *args = self->popped(4);
+    int frames = args[0];
+    StageFade *fade = gStageScene->fade;
+    fade->setColour((u_int)args[1]);
+    if (frames < 0)
+        fade->start(0.0f, 0.0f, 0.0f);
+    else
+        fade->start((float)frames / kScriptFramesPerSecond, 0.0f, 1.0f);
+    return code;
+}
+
+// 0x164 demoFadeOut(frames, colour, _, _): to a colour, as 0x163 back from one.
+// FS2 0x001b6e50
+// callcheck: FUN_00151380, start, start
+
+static const int *nativeDemoFadeOut(ScriptRunner *self, int *, const int *code)
+{
+    const int *args = self->popped(4);
+    int frames = args[0];
+    StageFade *fade = gStageScene->fade;
+    fade->setColour((u_int)args[1]);
+    if (frames < 0)
+        fade->start(0.0f, 0.0f, 0.0f);
+    else
+        fade->start((float)frames / kScriptFramesPerSecond, 1.0f, 0.0f);
+    return code;
+}
+
+// 0x148 demoMotion(name): the target plays the pack's motion; on the demo
+// camera, a cut. This is what reaches DemoCamera::playCutNamed.
+// FS2 0x001b92f0
+// callcheck: readStringArg
+
+static const int *nativeDemoMotion(ScriptRunner *self, int *, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const char *name = nullptr;
+    code = self->readStringArg(&name, code);
+    target->scriptPlayMotion(name);
+    return code;
+}
+
 // 0x159 demoCut(name): the next cut of an event, a motion of its pack on the
 // demo camera. The runner's first one waits a frame.
 // The ROM then compares a null pointer with "SJN" and "SJE" for the overlay
@@ -1751,7 +1876,12 @@ static const ScriptNativeBinding kNatives[] = {
     { 0x138, nativeMissionValue },
     { 0x139, nativeMoveScale },
     { 0x155, nativeSimpleEventNow },
+    { 0x144, nativeDemoPosition },
+    { 0x145, nativeDemoBind },
+    { 0x148, nativeDemoMotion },
     { 0x159, nativeDemoCut },
+    { 0x163, nativeDemoFade },
+    { 0x164, nativeDemoFadeOut },
     { 0x15f, nativeFileEvent },
     { 0x160, nativeFileEventDelayed },
     { 0x161, nativeSimpleEvent },

@@ -24,7 +24,10 @@ namespace {
 constexpr char kRootModelName[] = "Root";   // data 0x3030c0
 
 // Bits setupMapObject sets on every map model.
+constexpr char kGateModelA[] = "oGK99_01";   // data 0x3030d8
+constexpr char kGateModelB[] = "oDC99_01";   // data 0x3030e8
 constexpr u_short kMapModelFlags = 0x91;    // ModelFlag names none of these bits yet (unread)
+constexpr u_short kMapModelLitBit = 0x80;   // off on a model with its own lights
 
 // The plain map object (vtable 0x3115c0): the ROM's ctor also makes a table
 // of collision slots, which waits for setupMapObject's collision half.
@@ -58,7 +61,7 @@ StageObject *createMapObject(const char *name, void *collision)
 
 // A new map object takes its node: the scene's lists, instance, textures.
 // FS2 0x001760c0
-// callcheck: setName, add1, add, findEntry, setEntry, setModel, strcmp, FUN_0023adb0, operator_new, FUN_00234440, operator_new, FUN_00176bc0, operator_new, CollisionBody, add, refresh (the collision half: file header)
+// callcheck: setName, add1, add, findEntry, setEntry, setModel, strcmp, collisionFindRecord, operator_new, FUN_00234440, operator_new, MapObjectParts, operator_new, CollisionBody, add, refresh (the collision half: file header)
 
 void StageObject::setupMapObject(const char *name, ModelInstance *instance,
                                  StringMap<Tim2Texture *> *textures, void *collision)
@@ -70,6 +73,30 @@ void StageObject::setupMapObject(const char *name, ModelInstance *instance,
     scriptRunner()->setEntry(gStageScene->scripts[0]->findEntry(m_name));
     setModel(instance, textures);
     m_model->_180 = strcmp(name, kRootModelName) != 0;
-    if (m_model->data != nullptr)
-        m_model->data->flags |= kMapModelFlags;
+    applyMapModelFlags();
+}
+
+// FS2 0x001769e0
+// callcheck: strcmp, strcmp
+
+bool isGateModelName(const char *name)
+{
+    return strcmp(name, kGateModelA) == 0 || strcmp(name, kGateModelB) == 0;
+}
+
+// PC: the data test: a sub-scene's node may have no model data. The ROM has none.
+// FS2 0x001763e0
+// callcheck: getKind, getKind
+
+void StageObject::applyMapModelFlags()
+{
+    if (m_model->data == nullptr)
+        return;
+    m_model->data->flags |= kMapModelFlags;
+    int kind = getKind();
+    if (kind == StageObject_Kind3 || kind == StageObject_SubSceneGate) {
+        m_model->data->flags &= ~kMapModelLitBit;
+        m_model->m_ownAmbient = 1;
+        m_model->m_lit = 1;
+    }
 }
