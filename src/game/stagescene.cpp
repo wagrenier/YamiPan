@@ -451,7 +451,7 @@ StageScene::~StageScene()
     delete showFlags;
     delete alert;
     if (fade != nullptr)
-        fade->destroy();
+        delete fade;
     if (routePlayer != nullptr)
         routePlayer->destroy();
     delete[] viewTargets;
@@ -470,7 +470,7 @@ StageScene::~StageScene()
     delete rng;
     delete mission;
     if (event != nullptr)
-        event->destroy();
+        delete event;
     if (gameOver != nullptr) {
         operator delete(gameOver);
         gameOver = nullptr;
@@ -569,7 +569,7 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
     itemPicked = 0;
     boxes      = new SceneBoxList();
     rootAny = root = nullptr;
-    fade = new StageFade(kScreenX, kScreenY, kScreenW, kScreenH, 0);
+    fade = new StageFade(kScreenX, kScreenY, kScreenW, kScreenH, nullptr);
 
     if (!this->isSubScene) {
         pool       = new ScenePool(kScenePoolCount, kScenePoolSize, kScenePoolSize2);
@@ -2642,7 +2642,11 @@ void StageScene::enterSubScene(void *data)
         demoStream->open(ev->voice, ev->getVoicePath(path));
         demoStream->play(kDemoVoiceVolume);
         demoStream->setPaused(true);
-        while (demoStream->getDataWritten() < 1)
+        // PC: the ROM waits as long as it takes. The host's voice streams are
+        // stubs (rxSndStrAdpcmOpen), so no data ever comes: give up after a
+        // second. Back to the plain loop with the streams.
+        constexpr int kVoiceWaitFrames = 60;
+        for (int i = 0; i < kVoiceWaitFrames && demoStream->getDataWritten() < 1; i++)
             threadYield(1);
         demoStream->setPaused(false);
     }
@@ -4388,7 +4392,7 @@ void StageScene::runStageScripts()
 
     if (event != nullptr) {
         if (event->poll() == kStageEventFinished) {
-            event->destroy();
+            delete event;
             event = nullptr;
         }
         return;

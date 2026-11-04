@@ -88,6 +88,8 @@ struct StageAlert;
 struct StageNodeTree;
 struct UiShowFlags;             // game/uiwidget.h
 class FileLoader;               // game/fileloader.h
+class MessageTable;             // game/menupack.h
+class StageObjArray;            // game/stageobjlist.h
 class GamePacketManager;        // game/gamepacket.h
 class StageEvent;               // game/gamehooks.h
 class StageFade;                // game/gamehooks.h
@@ -149,14 +151,74 @@ struct StageViewTarget
     StageObject *character;     // FS2 +0x3c0
 };
 
+// The sizes of the mission's tables.
+constexpr int kMissionTimedRecords  = 12;   // the timed records at +0xe0
+constexpr int kMissionVisibilities  = 4;    // VISIBILITY_MASK, VISIBILITY_01..03
+constexpr int kMissionTextBuffers   = 4;    // +0x288, by turns
+constexpr int kMissionTextSize      = 0x80; // 16-bit chars each
+constexpr int kMissionClassLists    = 16;   // by the low four bits of getCharacterClass
+constexpr int kMissionSpawnPoints   = 0x60;
+constexpr int kMissionEventName     = 0x10;
+
+// A waiting record of 0x286f30: tickPending counts it down and plays a
+// sound at its place (the id's meaning is unread). EE 0x20.
+// layout: host
+struct MissionTimedRecord
+{
+    int   id;                   // FS2 +0x00: -1 free
+    int   arg;                  // FS2 +0x04: 0x29f810's second argument
+    int   frames;               // FS2 +0x08
+    int   _0c;
+    float position[3];          // FS2 +0x10
+    float _1c;
+};
+
+// The notice slot (0x286de0, 0x286e00, 0x286cf0). EE 0x14.
+// layout: host
+struct MissionNotice
+{
+    u_char      enabled;        // FS2 +0x00
+    const void *text;           // FS2 +0x04: null none
+    int         frames;         // FS2 +0x08: 0 means for ever
+    int         arg;            // FS2 +0x0c
+    int         level;          // FS2 +0x10: raised to the default at gp-0x7c58
+};
+
+// A list by name of the map's objects, with a script's range: VISIBILITY_*.
+// EE 8.
+// layout: host
+struct MissionVisibility
+{
+    StageObjArray *objects;     // FS2 +0x0
+    float          range;       // FS2 +0x4: -1 unset
+};
+
+// A list of objects (setup). EE 8.
+// layout: host
+struct MissionObjectList
+{
+    StageObject **objects;      // FS2 +0x0
+    int           count;        // FS2 +0x4
+};
+
+// A place setSpawnPoint keeps. EE 0x20.
+// layout: host
+struct MissionSpawnPoint
+{
+    float position[3];          // FS2 +0x00
+    int   state;                // FS2 +0x0c: 0 free, 2 kept
+    float rotation[4];          // FS2 +0x10: w 1
+};
+
 // The stage's mission state (StageScene +0xe8: 0x287900 builds it, 0x13d0
-// bytes; unassigned@002681e0). Only the purpose text is read here; the
-// class name is a guess.
-// layout: host -- EE: the purpose text inline at +4.
+// bytes; game/demoevent.cpp). The class name is a guess.
+// layout: host -- EE offsets in the comments.
 struct StageMission
 {
     StageMission();                                                      // FS2 0x00287900
     ~StageMission();                                                     // FS2 0x00287820: deleting
+    // Everything back to a new stage's values (the ctor; a restart).
+    void reset();                                                        // FS2 0x00287690
     // The start time (+0xac) = the scene clock's seconds (beginPlay).
     void markStart();                                                    // FS2 0x002870c0
     // The text for the item called name; null none.
@@ -167,6 +229,10 @@ struct StageMission
     // (0x286e30 behind this thunk); the pending event starts.
     void tickPending();                                                  // FS2 0x00286ce0
     void afterScripts();                                                 // FS2 0x00286c40
+    // A script's event to start at the end of this frame's scripts.
+    void setPendingEvent(const char *name);                              // FS2 0x002868b0
+    // The script's own range for one of the VISIBILITY_ lists, by name.
+    void setVisibilityRange(float range, const char *name);              // FS2 0x00286820
     // restoreObjectFlags keeps object's flags; what arg is is unread.
     void setRestore(void *arg, StageObject *object);                     // FS2 0x00286910
     // StageResult +0x10[index].
@@ -180,31 +246,45 @@ struct StageMission
 
     // spawn id's place (kept once; the first call wins).
     void setSpawnPoint(int id, const float *pos, const float *rot);      // FS2 0x002867a0
-    // StageScene::restoreObjectFlags, first.
+    // StageScene::restoreObjectFlags, first; the once-only answer of
+    // 0x29f2a0.
     void onRestore();                                                    // FS2 0x002868c0
 
-    u_char  _00[0x4];
-    u_short purposeText[0x40];  // FS2 +0x4: 16-bit, 0-terminated (extent: up to scriptVar3e)
-    int     scriptVar3e;        // FS2 +0x84: object property 0x3e of the scripts
-    int     scriptVar3f;        // FS2 +0x88: property 0x3f
-    float   defaultMoveScale;   // FS2 +0x8c: the character's fallback (0x20d8c0)
-    float   moveScale[6];       // FS2 +0x90: by action, set in percent by a script command
-    float   value;              // FS2 +0xa8: a script command's (0x1ba660); unread otherwise
-    float   startTime;          // FS2 +0xac: the scene clock's seconds at markStart
-    u_char  _b0[0x4];
-    float   blockRange;         // FS2 +0xb4: SceneBufferSet::updateRange
-    void   *restoreArg;         // FS2 +0xb8: setRestore
-    StageObject *keptObject;    // FS2 +0xbc: keeps its flags through restoreObjectFlags
-    u_char  _c0[0x8];
-    char    pendingEvent[0x10]; // FS2 +0xc8: the event afterScripts starts, empty none (StageScene::isBusy); the extent is a guess
-    u_char  _d8[0x2];
-    u_char  blackout;           // FS2 +0xda: set: StageScene::update fades the screen to black, clear: back
-    u_char  _db[0x5c1];
-    StageObject **characters;   // FS2 +0x69c: the stage's characters with a script
-    int     characterCount;     // FS2 +0x6a0
-    u_char  _6a4[0x9c];
-    StageObject **scriptObjects; // FS2 +0x740: objects whose runner runScripts steps
-    int     scriptObjectCount;  // FS2 +0x744
+    MessageTable *messages = nullptr;   // FS2 +0x0
+    u_short purposeText[kMissionTextSize / 2] = {}; // FS2 +0x4: 16-bit, 0-terminated (extent: up to scriptVar3e)
+    int     scriptVar3e = 0;    // FS2 +0x84: object property 0x3e of the scripts
+    int     scriptVar3f = 0;    // FS2 +0x88: property 0x3f
+    float   defaultMoveScale = 0.0f; // FS2 +0x8c: the character's fallback (0x20d8c0)
+    float   moveScale[6] = {};  // FS2 +0x90: by action, set in percent by a script command
+    float   value = 0.0f;       // FS2 +0xa8: a script command's (0x1ba660); unread otherwise
+    float   startTime = 0.0f;   // FS2 +0xac: the scene clock's seconds at markStart
+    int     _b0 = 0;            // FS2 +0xb0: 0x800000 (unread)
+    float   blockRange = 0.0f;  // FS2 +0xb4: SceneBufferSet::updateRange
+    void   *restoreArg = nullptr; // FS2 +0xb8: setRestore; 0x29f2a0 tests 1, 2, 3
+    StageObject *keptObject = nullptr; // FS2 +0xbc: keeps its flags through restoreObjectFlags
+    bool    restoreAsked = false;  // FS2 +0xc0: onRestore has answered
+    bool    restoreAnswer = false; // FS2 +0xc4
+    char    pendingEvent[kMissionEventName] = {}; // FS2 +0xc8: the event afterScripts starts, empty none (StageScene::isBusy)
+    u_char  _d8 = 0;            // FS2 +0xd8: cleared by afterScripts (writers unread)
+    u_char  _d9 = 0;            // FS2 +0xd9: the same
+    u_char  blackout = 0;       // FS2 +0xda: set: StageScene::update fades the screen to black, clear: back
+    MissionTimedRecord timed[kMissionTimedRecords]; // FS2 +0xe0
+    int     timedCount = 0;     // FS2 +0x260
+    MissionVisibility visibility[kMissionVisibilities] = {}; // FS2 +0x264
+    int     textIndex = 0;      // FS2 +0x284: which of texts is next
+    u_short texts[kMissionTextBuffers][kMissionTextSize] = {}; // FS2 +0x288
+    MissionNotice notice = {};  // FS2 +0x688
+    StageObject **characters = nullptr; // FS2 +0x69c: the stage's characters, by their m_id - 1
+    int     characterCount = 0; // FS2 +0x6a0
+    StageObject **classBlock = nullptr; // FS2 +0x6a4: count * 16 cells behind byClass
+    MissionObjectList byClass[kMissionClassLists] = {}; // FS2 +0x6a8: characters whose class has any of the index's bits
+    MissionObjectList burners = {};     // FS2 +0x728: thrown items named I_HATUEN
+    MissionObjectList thrownItems = {}; // FS2 +0x730: group 3's kind 0x17
+    MissionObjectList trapItems = {};   // FS2 +0x738: group 3's kind 0x16
+    StageObject **scriptObjects = nullptr; // FS2 +0x740: objects whose runner runScripts steps; the first is Root
+    int     scriptObjectCount = 0; // FS2 +0x744
+    int     spawnCount = 0;     // FS2 +0x748
+    MissionSpawnPoint spawnPoints[kMissionSpawnPoints]; // FS2 +0x750
 };
 
 // The scene's four area grids (+0xac..+0xb8), filled from the map file's

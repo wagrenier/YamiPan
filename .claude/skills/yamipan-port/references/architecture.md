@@ -1936,6 +1936,22 @@ Effects: a spot named TORCH takes `dento1`, SigLamp `siglight`, both at the ligh
 
 **The scene's point and spot** (+0 base, +0x80 member, rena's records 0x2e0xxx; every lit model's `ModelInstance::spot`): of group 5, the highest `m_priority` (never -1) of each class, nearest wins a tie. `yami_pl` (priority 4) hangs under a character of class 8, `scr_demo_pl` / `demo_pl` priority 5. What holds a lamp gets priority 4 for it. The host renders neither record yet (VU1 0x545).
 
+## Scripted events (game/demoevent.cpp, 2026-11-04)
+
+**How an event starts.** A script native asks: 0x1f2 `pendingEvent(name)` (black at once; `StageMission::afterScripts` 0x286c40 starts it after the frame's scripts), 0x15f / 0x160 file event, waiting for its end, 0x161 / 0x162 and 0x155 script event. The waiting natives yield with `scriptYield` and take the state back from the runner's +0xac / +0xb0 (`ScriptRunner::takeYield`). `StageScene::runStageScripts` polls `event` first and runs nothing else of the stage while one exists; a finished one is deleted there.
+
+**StageFileEvent** (vtable 0x318010): state 0 fades if `fadeSeconds` > 0, then `queueFiles` 0x287f20 mutes the sound, waits 24 frames and `isSettled`, and queues `demoEU/s<stage>/<name>.edp`, `<name><lang>.fsm`, for languages outside {1, 5..9} `.tm2` and `.cod`, and `streamEU/demo/EV<aa>_<bb>[A-E]<suffix>.xwh`. `takeFiles` 0x287db0 waits and calls `requestSubScene(name)`; `stageThread` then builds a second StageScene over the same files and `enterSubScene(pack)`. **StageSimpleEvent** (0x318030) plays the entry of its name of `scripts[0]` in a runner of its own, with the objects' flags saved and hidden.
+
+**An .edp pack**: +0xa count, +0xc script's index (negative none), +0x10 pairs of (name offset, data offset). Its files: `<x>.mdl`, `<x>.mtn`, the script. `Model_camera.mdl` is the camera's skeleton (`setBaseMotion`, not a drawn model).
+
+**DemoCamera** (vtable 0x316ed0): each cut is a motion on that skeleton. `cameraStep` 0x26cb90: advance 1.2 frames (60 / 50? a guess), `bn_fovy` or `bn_length` gives the angle, `setScrZ(height / tan(angle))`; `bn_top`'s matrix with rows 2, 0, 1, 3 and y, z swapped (z negated) becomes the world matrix. So **the event's view is entirely bones, and ModelPose is a stub: the camera stays where it was built.** Vtable +0x25c is `cameraStep` (0x178160 in StageMainCamera), +0x260 is `onLinkChanged` there and `playCut` here, +0x264 `playCutNamed`.
+
+**StageFade** (+0xfc): `start(seconds, target, from)`, from < 0 keeps the level; mode 1 running, 2 done. **Its rect starts at 0x700 and `gsFillRect` adds 0x700 again**: the far corner wraps past 0xffff to 0 and the sprite covers everything from 0 to 0xe00, which is how it fills the screen. `gsFillRect` keeps the wrapped words.
+
+**StageMission** (0x13d0 on the EE): stagescene.h has the map. `setup` 0x2870f0 builds `scriptObjects` (Root first), `characters` by `m_id - 1`, the 16 class lists and the item lists. **Now that it runs, every object's script runs each frame**, reaching the stage's natives.
+
+**Stage 1's opening is d0101, proven from the script**: the entry `Root` tests `menuMode == 1`, and with property 0x3c zero (0x21c8) goes to 0x2558: native 0xac `AMB_ST01_01`, native 0x1f2 label 0x4a, `d0101`. The other branch asks for `d0106` (label 0x48). Labels are the script's LBL block: offsets from its +0xc to names.
+
 ## The bullet and the items (game/stageitem.cpp, 2026-11-04)
 
 0x17fce0..0x184860, 139 functions, whole file (`stageitem.h` holds every class; `gamehooks.h` lost them). A character's gear, one family: `StageItem` (kind 0x13) with `StageItemE` (0x14, the lamp), `StageWeaponItem` (0x15), `StageTrapItem` (0x16), `StageThrownItem` (0x17); and the bullet, two classes: `StageBulletBase` (0x18, ctor inline) and `StageBullet` (0x19, `new`ed by `StageWeaponItem::fire` 0x181f40 and once, off and with null arguments, by `setupCameras`).

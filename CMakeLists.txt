@@ -51,6 +51,8 @@ target_link_libraries(yamipan_game PUBLIC SDL3::SDL3)
 # NOT OPTIONAL. Reconstructed code reads the game's file formats in place and walks packets through
 # u_int*; GCC exploits the aliasing violation from -O2 up (MioPan's release-only crashes).
 target_compile_options(yamipan_game PRIVATE -fno-strict-aliasing -fpermissive -w)
+# StageScript::findEntry keeps the ROM's test of this for null (a sub-scene has no scripts[0]).
+set_source_files_properties(src/game/scriptrunner.cpp PROPERTIES COMPILE_OPTIONS -fno-delete-null-pointer-checks)
 
 # ---- the Pan layer -------------------------------------------------------------------------------
 file(GLOB_RECURSE YAMIPAN_HOST_SOURCES CONFIGURE_DEPENDS src/yamipan/*.cpp)
