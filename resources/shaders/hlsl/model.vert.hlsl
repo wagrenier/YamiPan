@@ -7,7 +7,7 @@
 cbuffer ModelVertexUniforms : register(b0, space1)
 {
     row_major float4x4 uWorldToClip;
-    float4 uFog; // x = A, y = B of DrawSysFog: the value (A + B / z) of 255
+    float4 uFog; // x = A, y = B of DrawSysFog: the value (A + B / z) of 255; z = near value, w = far value, its limits
 };
 
 struct VSInput
@@ -31,6 +31,6 @@ VSOutput main(VSInput input)
     output.position = mul(float4(input.aPosition, 1.0), uWorldToClip);
     output.vUV = input.aUv;
     output.vColor = input.aColor;
-    output.vFog = saturate((uFog.x + uFog.y / output.position.w) / 255.0);
+    output.vFog = clamp(uFog.x + uFog.y / output.position.w, uFog.w, uFog.z) / 255.0; // VU1 0x243, 0x247
     return output;
 }

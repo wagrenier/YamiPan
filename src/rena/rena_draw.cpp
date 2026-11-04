@@ -396,20 +396,6 @@ void renaSetShadowTexture(sceVif1Packet *packet, Tim2Texture *texture, int block
     (void)block;
 }
 
-// PC, TEMPORARY: while SceneRender's lights are stubs every model has drawSysInit's ambient, 0.1,
-// and the VU1 formula draws the map almost black. YAMIPAN_AMBIENT=<level> replaces it, to look at
-// one. Delete this with the pinned task game/scenerender.cpp (open-items.md, top of "Next up").
-// callcheck: none (host only)
-
-static void applyDebugAmbient(float *ambient)
-{
-    const char *text = getenv("YAMIPAN_AMBIENT");
-    if (text == nullptr)
-        return;
-    const float level = (float)atof(text);
-    ambient[0] = ambient[1] = ambient[2] = level;
-}
-
 // The record's lights, for the models that have none of their own.
 // FS2 0x002e8080
 // callcheck: getDrawTarget (its answer is not used)
@@ -418,7 +404,6 @@ void renaSetLights(sceVif1Packet *packet, DrawSysLights *lights)
 {
     (void)packet;
     copyVector3(sLights.ambient, lights->getAmbient()->getColor());
-    applyDebugAmbient(sLights.ambient);
     for (int i = 0; i < DrawSysLights::kLightCount; i++) {
         DrawSysDirLight *light = lights->getLight(i);
         copyVector3(sLights.colors[i], light->getColor());
@@ -463,6 +448,8 @@ void renaDrawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask)
     pass.depthMin = 1.0f;
     pass.depthMax = 16777215.0f;
     pass.fogA = 255.0f;
+    pass.fogNearValue = 255.0f;     // the ROM's no fog (0x2e5a00)
+    pass.fogFarValue = 255.0f;
     pass.clearDepth = (mask & (DrawSysGroup_Far1 | DrawSysGroup_Far2 | DrawSysGroup_Far3)) == 0;
 
     const DrawSysFog *fog = gDrawSysState.fog;
@@ -470,6 +457,8 @@ void renaDrawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask)
         copyVector3(pass.fogColor, fog->getColor());
         pass.fogA = fog->getCoefficientA();
         pass.fogB = fog->getCoefficientB();
+        pass.fogNearValue = fog->getNearValue();
+        pass.fogFarValue = fog->getFarValue();
     }
 
     aimDebugCamera(record);

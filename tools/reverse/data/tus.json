@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/scenerender.cpp",
   "game/demoevent.cpp",
   "yamipan/rendering/model_renderer.cpp",
   "game/scriptrunner.cpp"
@@ -585,7 +584,7 @@
    "why": "gameSceneThread alone: the next function 0x231c90 (menu step helper over 0x267c00, called by the menu flow 0x2b5770) and the pak parser 0x231660..0x231bb0 before it share no data or callers with it; the scene table 0x2fabd0 is read only here. A one-function file until a source string or link order says otherwise"
   },
   "game/scenerender.cpp": {
-   "notes": "All of SceneRender 0x1f6ac0..0x1fa900, rena light records, game/vectortrack.cpp and StageCamera::setRange are written. Every light value comes only from script natives 0x1b6..0x1c3 (stage 1 entry s01_l: ambient 175,180,200 / 127.5, directional 0, fog 1100..1500), and no script runs, so the isKeyed guards keep the drawSysInit defaults and the picture is unchanged from before. A temporary uncommitted test with made-up keys lit the ground with no fault; the real values have not been seen on screen. Next: game/scriptrunner.cpp (first in the queue), then delete the guards and the YAMIPAN_AMBIENT stub here. Keep pinned.",
+   "notes": "The pin is closed: applyDebugAmbient, its call, the README paragraph and SceneRender::isKeyed with its two guards are gone; nothing was brightened. Measured in a New Game run: the record holds ambient 1.37255 1.41176 1.56863, directional 0, fog 1100..1500. Fog was not why the stage is dark: the auto camera stands 437 from its target. The map's vertex colours average 20 of 0x80, so a lit vertex averages 27, 28, 31: dark by its own data. Fixed from VU1 0x22f..0x259: the fog value is clamped to far value..near value (VU address 24), the host only saturated; stage 1's near value 230 now takes 10 percent off everything near. Mean brightness of the auto view: 3.2 unkeyed, 12 lit, 10.9 with the limit, ratio 0.90 = 230/255. Default camera, no YAMIPAN_CAMERA: an alley with walls and ground, work/shot_lights_default_camera.png. No game reference exists for either view, hence verify. No crash in 280 s runs. Left outside this TU: spot, skinned meshes, lamps; the event camera is next, game/demoevent.cpp. Doubt: host W against VU1 W with the scales 0x59b190, 0x59b194 is read from the upload's shape; open-items.md Done has it.",
    "ranges": [
     [
      "001f6ac0",
@@ -613,9 +612,14 @@
      "date": "2026-11-04 11:34",
      "status": "partial",
      "summary": "SceneRender and VectorTrack written; the keys come from scripts, so the pin stays"
+    },
+    {
+     "date": "2026-11-04 13:00",
+     "status": "verify",
+     "summary": "Pinned lights closed: YAMIPAN_AMBIENT and the isKeyed guards deleted, the script's lights drive the picture, VU1's fog limits added"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "task": "PINNED BY THE USER 2026-11-04: real lighting, and delete the YAMIPAN_AMBIENT stub. SceneRender and VectorTrack are written (game/scenerender.cpp, game/vectortrack.cpp); their values come only from scripts. After game/scriptrunner.cpp: delete the two isKeyed guards, applyDebugAmbient in rena_draw.cpp, its call and the README paragraph, look at the picture, compare stage 1 with the script's ambient 1.37..1.57 and fog 1100..1500 (architecture.md, The lights of a stage). Do not brighten anything. Keep it pinned until the stub is gone (open-items.md, top of Next up).",
    "why": "SceneRender 0x1f6ac0..0x1fa8f0 with its base and member's dtors 0x1fa880, 0x1fa900 and the rena light records it builds; DrawSysFog setters inside stay in drawsys.h"
   },
