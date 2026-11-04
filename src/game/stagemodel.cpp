@@ -35,8 +35,8 @@ constexpr int   kNameInline = kPoseBoneName - 1;
 // A character's neck: the first three letters of the model. The first name
 // has its own limits.
 static const char *const kNeckCharacters[] = { "kyo", "tka", "yrt", "jei", "hrs" }; /* 0x2f7cf0 */
-static const sceVu0FVECTOR kNeckLimitsFirst = { 23.0f, 11.0f, 10.0f, 1.0f };
-static const sceVu0FVECTOR kNeckLimitsOther = { 23.0f, 14.0f, 11.0f, 1.0f };
+static const sceVu0FVECTOR kChestToolFirst = { 23.0f, 11.0f, 10.0f, 1.0f };
+static const sceVu0FVECTOR kChestToolOther = { 23.0f, 14.0f, 11.0f, 1.0f };
 // The models that keep their neck bone (the first six letters).
 static const char *const kNeckBoneModels[] = { "ryh_ky", "ekm_ky" };            /* 0x2f7d08 */
 static const char kNeckBone[] = "bn_d_neck";    /* 0x3039f0 */
@@ -418,12 +418,12 @@ void StageModel::setBaseMotion(void *file, int kind)
 
     for (size_t i = 0; i < sizeof(kNeckCharacters) / sizeof(kNeckCharacters[0]); i++) {
         if (nameCompareNoCase(pose->name, kNeckCharacters[i], 3) == 0) {
-            pose->hasNeckLimits = 1;
-            memcpy(pose->neckLimits, i == 0 ? kNeckLimitsFirst : kNeckLimitsOther, sizeof(sceVu0FVECTOR));
-            pose->neckAxis[0] = 0.0f;
-            pose->neckAxis[1] = 0.0f;
-            pose->neckAxis[2] = 1.0f;
-            pose->neckAxis[3] = kPi2;
+            pose->hasChestTool = 1;
+            memcpy(pose->chestToolPosition, i == 0 ? kChestToolFirst : kChestToolOther, sizeof(sceVu0FVECTOR));
+            pose->chestToolAxis[0] = 0.0f;
+            pose->chestToolAxis[1] = 0.0f;
+            pose->chestToolAxis[2] = 1.0f;
+            pose->chestToolAxis[3] = kPi2;
             break;
         }
     }

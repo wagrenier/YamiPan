@@ -6665,11 +6665,47 @@
   "was": "FUN_00149830",
   "why": "z cleared, normalized; acos(x) with the sign of asin(y)"
  },
+ "001498a0": {
+  "name": "copyVectorWords",
+  "tag": "game-inferred",
+  "was": "FUN_001498a0",
+  "why": "copies four words, a struct copy helper of motionBoneMatrix"
+ },
  "001498d0": {
   "name": "boneBasis",
   "tag": "game-inferred",
   "was": "FUN_001498d0",
   "why": "rows m0, m2, -m1, m3; null: the same of identity. Every parentless bone goes through it"
+ },
+ "00149950": {
+  "name": "ModelPoseBone::swingBetweenCalves",
+  "tag": "game-inferred",
+  "was": "FUN_00149950",
+  "why": "letter C of a sw bone, name[7] must be 0: spring target 0.66 of the way from the parent to the middle of bn_l_calf and bn_r_calf"
+ },
+ "00149b40": {
+  "name": "ModelPoseBone::swingAhead",
+  "tag": "game-inferred",
+  "was": "FUN_00149b40",
+  "why": "letters F, R and the default: spring target along the bone, length of the bind position + 30, then turn to it"
+ },
+ "00149cc0": {
+  "name": "ModelPoseBone::limitSwingAxis",
+  "tag": "game-inferred",
+  "was": "FUN_00149cc0",
+  "why": "name[7] x y z picks the axis lane, upper case keeps negative angles, lower positive"
+ },
+ "00149ee0": {
+  "name": "ModelPoseBone::addWind",
+  "tag": "game-inferred",
+  "was": "FUN_00149ee0",
+  "why": "wind vector +0x3a0 of the pose scaled by the swing params, a sin / cos flutter stepping time by modelBone % 7"
+ },
+ "0014a090": {
+  "name": "ModelPoseBone::stepSpring",
+  "tag": "game-inferred",
+  "was": "FUN_0014a090",
+  "why": "velocity = damped velocity + scaled (target - pos), pos += velocity; first frame starts at the target"
  },
  "0014a1c0": {
   "name": "ModelPoseBone::stepSwing",
@@ -6689,11 +6725,59 @@
   "was": "FUN_0014a810",
   "why": "update, feet solver with kPoseFlagFootSolve, not read"
  },
+ "0014a890": {
+  "name": "ModelPoseBone::kneePlacement",
+  "tag": "game-inferred",
+  "was": "FUN_0014a890",
+  "why": "law of cosines on the lengths at +0x1f0 of the bone and its parent: share along hip to target, and side offset"
+ },
+ "0014a9b0": {
+  "name": "ModelPoseBone::blendSolve",
+  "tag": "game-inferred",
+  "was": "FUN_0014a9b0",
+  "why": "quatSlerp of rotation slot n towards rotation Solve into Solve"
+ },
+ "0014a9d0": {
+  "name": "ModelPoseBone::aimOwnTurn",
+  "tag": "game-inferred",
+  "was": "FUN_0014a9d0",
+  "why": "buildMatrix slot 5, aimOwnAxis, axis angle to quat multiplied onto Solve"
+ },
+ "0014aaa0": {
+  "name": "ModelPoseBone::aimOwnAxis",
+  "tag": "game-inferred",
+  "was": "FUN_0014aaa0",
+  "why": "aimAxis with the bone's own matrix for the parent's"
+ },
+ "0014ac40": {
+  "name": "ModelPoseBone::aimAlongAxis",
+  "tag": "game-inferred",
+  "was": "FUN_0014ac40",
+  "why": "unit vector of a lane index through aimAxis, quaternion into Solve"
+ },
+ "0014ad10": {
+  "name": "ModelPoseBone::aimTurn",
+  "tag": "game-inferred",
+  "was": "FUN_0014ad10",
+  "why": "aimAxis, quaternion into Solve"
+ },
  "0014ada0": {
   "name": "ModelPoseBone::aimAxis",
   "tag": "game-inferred",
   "was": "FUN_0014ada0",
   "why": "parent matrix, dir and target into it, cross and acos, limit in f12"
+ },
+ "0014af70": {
+  "name": "ModelPoseBone::aimThrough",
+  "tag": "game-inferred",
+  "was": "FUN_0014af70",
+  "why": "plane of a held bone's x axis and the target; this bone turns around its normal so the axis passes through the target"
+ },
+ "0014b270": {
+  "name": "ModelPoseBone::aimLimited",
+  "tag": "game-inferred",
+  "was": "FUN_0014b270",
+  "why": "aim in two steps, xy plane by the first limit then the rest by the second or third by the sign of the z difference"
  },
  "0014b5f0": {
   "name": "ModelPoseBone::turnVector",
@@ -6785,6 +6869,12 @@
   "was": "FUN_0014cb10",
   "why": "load placement-constructs each 0x300 record; clears, identity at +0x80"
  },
+ "0014cc60": {
+  "name": "ModelPose::solveLeg",
+  "tag": "game-inferred",
+  "was": "FUN_0014cc60",
+  "why": "two-bone IK on thigh and calf to a target, twist 40/60, foot to the ground normal or level"
+ },
  "0014d130": {
   "name": "ModelPose::solveFeet",
   "tag": "game-inferred",
@@ -6792,10 +6882,10 @@
   "why": "update, under solver bit 1 with toes, with +0x310 and +0x330; not read"
  },
  "0014d370": {
-  "name": "ModelPose::solveNeckLimits",
+  "name": "ModelPose::solveChestTool",
   "tag": "game-inferred",
   "was": "FUN_0014d370",
-  "why": "update, when +0x3b0 is set; not read"
+  "why": "reparents leftTool to spine1 at a fixed place from +0x350, +0x360; replaces the misleading solveNeckLimits"
  },
  "0014d4c0": {
   "name": "ModelPose::solveTool",
@@ -6822,10 +6912,10 @@
   "why": "returns byte +0x394, set by load from name[6] lower case"
  },
  "0014e0b0": {
-  "name": "ModelPose::setFlag395",
+  "name": "ModelPose::setWindOn",
   "tag": "game-inferred",
   "was": "FUN_0014e0b0",
-  "why": "stores byte +0x395"
+  "why": "+0x395 is what stepSpring tests before addWind"
  },
  "0014e0c0": {
   "name": "ModelPose::setFootTargets",

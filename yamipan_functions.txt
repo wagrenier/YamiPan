@@ -1611,26 +1611,26 @@
 /* 00149730 00000090 */ quatToMatrix(){}  // game
 /* 001497c0 00000070 */ quatFromAxisAngle(){}  // game
 /* 00149830 00000064 */ vecHeading(){}  // game
-/* 001498a0 00000024 */ FUN_001498a0(){}
+/* 001498a0 00000024 */ copyVectorWords(){}  // game
 /* 001498d0 00000060 */ boneBasis(){}  // game
-/* 00149940 00000004 */ thunk_FUN_00149b40(){}
-/* 00149950 000001ec */ FUN_00149950(){}
-/* 00149b40 00000180 */ FUN_00149b40(){}
-/* 00149cc0 00000210 */ FUN_00149cc0(){}
-/* 00149ee0 000001a4 */ FUN_00149ee0(){}
-/* 0014a090 00000128 */ FUN_0014a090(){}
+/* 00149940 00000004 */ ModelPoseBone::swingAhead(){}  // native
+/* 00149950 000001ec */ ModelPoseBone::swingBetweenCalves(){}  // game
+/* 00149b40 00000180 */ ModelPoseBone::swingAhead(){}  // game
+/* 00149cc0 00000210 */ ModelPoseBone::limitSwingAxis(){}  // game
+/* 00149ee0 000001a4 */ ModelPoseBone::addWind(){}  // game
+/* 0014a090 00000128 */ ModelPoseBone::stepSpring(){}  // game
 /* 0014a1c0 000005c8 */ ModelPoseBone::stepSwing(){}  // game
 /* 0014a790 00000074 */ ModelPoseBone::settle(){}  // game
 /* 0014a810 00000074 */ ModelPoseBone::settleFixed(){}  // game
-/* 0014a890 00000120 */ FUN_0014a890(){}
-/* 0014a9b0 00000018 */ FUN_0014a9b0(){}
-/* 0014a9d0 000000c4 */ FUN_0014a9d0(){}
-/* 0014aaa0 00000198 */ FUN_0014aaa0(){}
-/* 0014ac40 000000d0 */ FUN_0014ac40(){}
-/* 0014ad10 00000088 */ FUN_0014ad10(){}
+/* 0014a890 00000120 */ ModelPoseBone::kneePlacement(){}  // game
+/* 0014a9b0 00000018 */ ModelPoseBone::blendSolve(){}  // game
+/* 0014a9d0 000000c4 */ ModelPoseBone::aimOwnTurn(){}  // game
+/* 0014aaa0 00000198 */ ModelPoseBone::aimOwnAxis(){}  // game
+/* 0014ac40 000000d0 */ ModelPoseBone::aimAlongAxis(){}  // game
+/* 0014ad10 00000088 */ ModelPoseBone::aimTurn(){}  // game
 /* 0014ada0 000001c8 */ ModelPoseBone::aimAxis(){}  // game
-/* 0014af70 00000300 */ FUN_0014af70(){}
-/* 0014b270 00000378 */ FUN_0014b270(){}
+/* 0014af70 00000300 */ ModelPoseBone::aimThrough(){}  // game
+/* 0014b270 00000378 */ ModelPoseBone::aimLimited(){}  // game
 /* 0014b5f0 00000028 */ ModelPoseBone::turnVector(){}  // game
 /* 0014b620 0000000c */ ModelPoseBone::getPosition(){}  // game
 /* 0014b630 00000018 */ ModelPoseBone::getRawHeight(){}  // game
@@ -1646,14 +1646,14 @@
 /* 0014c980 00000140 */ ModelPoseBone::setup(){}  // game
 /* 0014cac0 00000044 */ ModelPoseBone::~ModelPoseBone(){}  // game
 /* 0014cb10 00000148 */ ModelPoseBone::ModelPoseBone(){}  // game
-/* 0014cc60 000004d0 */ FUN_0014cc60(){}
+/* 0014cc60 000004d0 */ ModelPose::solveLeg(){}  // game
 /* 0014d130 00000234 */ ModelPose::solveFeet(){}  // game
-/* 0014d370 00000144 */ ModelPose::solveNeckLimits(){}  // game
+/* 0014d370 00000144 */ ModelPose::solveChestTool(){}  // game
 /* 0014d4c0 000004c4 */ ModelPose::solveTool(){}  // game
 /* 0014d990 000005b8 */ ModelPose::solveLook(){}  // game
 /* 0014df50 00000144 */ ModelPose::solveHead(){}  // game
 /* 0014e0a0 00000008 */ ModelPose::getLowerNames(){}  // game
-/* 0014e0b0 00000008 */ ModelPose::setFlag395(){}  // game
+/* 0014e0b0 00000008 */ ModelPose::setWindOn(){}  // game
 /* 0014e0c0 00000080 */ ModelPose::setFootTargets(){}  // game
 /* 0014e150 00000058 */ ModelPose::setToolTarget(){}  // game
 /* 0014e1b0 00000048 */ ModelPose::setLookTarget(){}  // game

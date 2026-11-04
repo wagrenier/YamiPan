@@ -9,9 +9,9 @@
  *
  *  A pose is a skeleton read from a bone file and played by motion files, both
  *  used in place as they came off the disc (the record types below). The
- *  solvers that bend a played pose towards targets (feet, tools, head, the
- *  swinging sw bones) are declared here and still stubs: they only run under
- *  m_solvers, which nothing sets yet, and for sw bones.
+ *  solvers bend a played pose towards targets (feet, tools, head); they run
+ *  under m_solvers, whose writer is not found yet. The bones named ??sw.. swing
+ *  on springs.
  * ======================================================================== */
 #ifndef _GAME_MODELPOSE_H
 #define _GAME_MODELPOSE_H
@@ -54,12 +54,12 @@ struct PoseBoneRecord
     char  name[kPoseBoneName];   // FS2 +0x00
     char  parent[kPoseBoneName]; // FS2 +0x10
     float position[3];           // FS2 +0x20
-    float radius;                // FS2 +0x2c: for sw bones four bytes instead (swingParams)
+    float length;                // FS2 +0x2c: to the next bone; for sw bones four bytes instead (swingParams)
     float rotation[4];           // FS2 +0x30: a quaternion
 };
 static_assert(sizeof(PoseBoneRecord) == 0x40, "PoseBoneRecord: EE 0x40");
 static_assert(offsetof(PoseBoneRecord, position) == 0x20, "PoseBoneRecord::position");
-static_assert(offsetof(PoseBoneRecord, radius) == 0x2c, "PoseBoneRecord::radius");
+static_assert(offsetof(PoseBoneRecord, length) == 0x2c, "PoseBoneRecord::length");
 static_assert(offsetof(PoseBoneRecord, rotation) == 0x30, "PoseBoneRecord::rotation");
 
 struct PoseBoneFile
@@ -155,7 +155,7 @@ constexpr u_int kPoseFlagFootSolve = 0x200000; // ModelPose::flags: feet follow 
 constexpr u_int kPoseFlagFresh     = 0x001000; // ModelPose::flags: not updated yet
 constexpr u_int kPoseFlagHasPelvis = 0x000100; // ModelPose::fileFlags
 
-// ModelPose::m_solvers. Nothing sets it yet.
+// ModelPose::m_solvers. No writer found yet.
 enum PoseSolver
 {
     PoseSolver_Feet = 0x1,
@@ -242,11 +242,32 @@ struct ModelPoseBone
     // Its keyed value, what a lens bone holds; 0 without one.
     // FS2 0x0014b970
     float getValue() const { return (tracks & PoseTrack_Value) ? position[PoseSlot_Current][0] : 0.0f; }
-    // The swing of a sw bone. Not written.
+    // The swing of a sw bone, after the bones it hangs from.
     void stepSwing();                                                    // FS2 0x0014a1c0
-    // The feet's settling, free and with targets. Not written.
+    void stepSpring(bool windy);                                         // FS2 0x0014a090
+    void addWind(const sceVu0FVECTOR wind);                              // FS2 0x00149ee0
+    void limitSwingAxis(sceVu0FVECTOR axisAngle) const;                  // FS2 0x00149cc0
+    void placeSwing(const sceVu0FVECTOR axisAngle);
+    void placeSwingAtSpring();
+    void swingAhead(bool windy);                                         // FS2 0x00149b40
+    void swingBetweenCalves(bool windy);                                 // FS2 0x00149950
+    // solveWeight down and up, count bones from this one to the root.
     void settle(float rate, int count);                                  // FS2 0x0014a790
     void settleFixed(float rate, int count);                             // FS2 0x0014a810
+    // Solve = slot towards Solve.
+    void blendSolve(float t, int slot);                                  // FS2 0x0014a9b0
+    // Solve = the turn that aims dir at target; aimAlongAxis takes a lane of
+    // the bone for dir. True when limit cut it short.
+    bool aimTurn(float limit, const sceVu0FVECTOR target, const sceVu0FVECTOR dir); // FS2 0x0014ad10
+    bool aimAlongAxis(float limit, const sceVu0FVECTOR target, int axis); // FS2 0x0014ac40
+    // aimAxis in the bone's own space; the same added to Solve.
+    bool aimOwnAxis(float limit, sceVu0FVECTOR out, const sceVu0FVECTOR target,
+                    const sceVu0FVECTOR dir) const;                      // FS2 0x0014aaa0
+    bool aimOwnTurn(float limit, const sceVu0FVECTOR target, const sceVu0FVECTOR dir); // FS2 0x0014a9d0
+    void aimThrough(float limit, const ModelPoseBone *held, const sceVu0FVECTOR target); // FS2 0x0014af70
+    bool aimLimited(float limit, float upLimit, float downLimit, sceVu0FVECTOR out,
+                    const sceVu0FVECTOR target, const sceVu0FVECTOR dir) const; // FS2 0x0014b270
+    void kneePlacement(float *along, float *side, const sceVu0FVECTOR target) const; // FS2 0x0014a890
 
     // The bones named ??sw.. swing.
     bool isSwing() const { return name[3] == 's' && name[4] == 'w'; }
@@ -279,19 +300,18 @@ struct ModelPoseBone
     float          targetWeight = 0.0f;  // FS2 +0x170: how far Final moves to Target
     float          solveWeight = 0.0f;   // FS2 +0x174: how far Final moves to Solve
     sceVu0FVECTOR  rotation[kPoseSlots]; // FS2 +0x180: PoseSlot
-    float          radius = 0.0f;    // FS2 +0x1f0: 15 on a sw bone
+    float          length = 0.0f;    // FS2 +0x1f0: to the next bone (kneePlacement); 15 on a sw bone
     sceVu0FVECTOR  worldPosition = { 0.0f, 0.0f, 0.0f, 1.0f };     // FS2 +0x200
     sceVu0FVECTOR  lastWorldPosition = { 0.0f, 0.0f, 0.0f, 1.0f }; // FS2 +0x210
     sceVu0FVECTOR  rawPosition = { 0.0f, 0.0f, 0.0f, 1.0f };       // FS2 +0x220: on the root, turned by ModelPose::rotate
     sceVu0FVECTOR  lastRawPosition = { 0.0f, 0.0f, 0.0f, 1.0f };   // FS2 +0x230: the same
     sceVu0FVECTOR  turn = { 0.0f, 0.0f, 0.0f, 1.0f };              // FS2 +0x240
     sceVu0FVECTOR  lastTurn = { 0.0f, 0.0f, 0.0f, 1.0f };          // FS2 +0x250
-    sceVu0FVECTOR  _260 = {};        // FS2 +0x260: stepSwing's
-    sceVu0FVECTOR  _270 = {};        // FS2 +0x270: the same
-    float          swing = 0.0f;     // FS2 +0x27c, in the EE's _270: cleared by resetSwingBones
-    sceVu0FVECTOR  _280 = {};        // FS2 +0x280: stepSwing's
-    sceVu0FVECTOR  _290 = {};        // FS2 +0x290: the same
-    u_char         swingParams[4] = {}; // FS2 +0x2a0
+    sceVu0FVECTOR  swingTarget = {}; // FS2 +0x260: the spring's rest point
+    sceVu0FVECTOR  swingPos = {};    // FS2 +0x270: where it is; w 0: starts from swingTarget (resetSwingBones)
+    sceVu0FVECTOR  swingOut = {};    // FS2 +0x280: the same with the wind
+    sceVu0FVECTOR  swingVelocity = {}; // FS2 +0x290
+    u_char         swingParams[4] = {}; // FS2 +0x2a0: [0] loose, [1] undamped, tenths; read signed
 };
 static_assert(offsetof(ModelPoseBone, owner) == 8, "ModelPoseBone::owner");
 static_assert(sizeof(ModelPoseBone) >= 0x2a4, "ModelPoseBone: EE 0x300");
@@ -391,7 +411,7 @@ public:
     {
         for (int i = 0; i < boneCount; i++) {
             if (bones[i].isSwing())
-                bones[i].swing = 0.0f;
+                bones[i].swingPos[3] = 0.0f;
         }
     }
     // The matrix of the pose's bone for the model's bone index, null if the
@@ -446,7 +466,7 @@ public:
     bool isBoneEnding(const char *boneName) const;                       // FS2 0x0014f360
     void setRootScale(float x, float y, float z, float w);               // FS2 0x0014f490
     bool getLowerNames() const { return lowerNames != 0; }               // FS2 0x0014e0a0
-    void setFlag395(u_char value) { _395 = value; }                      // FS2 0x0014e0b0
+    void setWindOn(u_char value) { windOn = value; }                     // FS2 0x0014e0b0
     // The world positions of the toes, into whichever is not null.
     void getFootPositions(float *left, float *right) const;              // FS2 0x0014f010
     void setFootTargets(float rate, const float *left, const float *right); // FS2 0x0014e0c0
@@ -455,12 +475,13 @@ public:
     void setAimDirection(float rate, const float *direction);            // FS2 0x0014e200
     void setHeadTarget(float rate, const float *target);                 // FS2 0x0014e270
 
-    // The solvers, under m_solvers. Not written.
-    void solveLook(float rate, float rate2, int arg);                    // FS2 0x0014d990
+    // The solvers, under m_solvers (solveChestTool under hasChestTool).
+    void solveLook(float limit, float rate, const ModelPoseBone *held);  // FS2 0x0014d990
     void solveHead(float rate);                                          // FS2 0x0014df50
     void solveTool(float rate);                                          // FS2 0x0014d4c0
-    void solveNeckLimits(float rate);                                    // FS2 0x0014d370
-    void solveFeet(const float *left, const float *right);               // FS2 0x0014d130
+    void solveChestTool(float rate);                                     // FS2 0x0014d370
+    bool solveFeet(const float *left, const float *right);               // FS2 0x0014d130
+    bool solveLeg(const sceVu0FVECTOR target, const sceVu0FVECTOR ground, bool left); // FS2 0x0014cc60
 
     char           name[kPoseBoneName] = {}; // FS2 +0x004: the model's (kyo.., ryh_ky..)
     char           tag[8] = {};      // FS2 +0x014: "mdl" and the subclasses'
@@ -496,7 +517,7 @@ public:
     ModelPoseBone *rightUpperArm = nullptr; // FS2 +0x194
     ModelPoseBone *leftTool = nullptr;   // FS2 +0x198
     ModelPoseBone *rightTool = nullptr;  // FS2 +0x19c
-    int            lookArg = 0;      // FS2 +0x1a0: given to solveLook
+    ModelPoseBone *lookBone = nullptr; // FS2 +0x1a0: given to solveLook; no writer found yet
     const PoseMotionFile *current = nullptr; // FS2 +0x1a4: the motion file playing
     u_char         motionKind = 0;   // FS2 +0x1a8
     char           motionName[0x13] = {}; // FS2 +0x1a9
@@ -521,19 +542,21 @@ public:
     sceVu0FVECTOR  _320 = {};            // FS2 +0x320
     sceVu0FVECTOR  rightFootTarget = {}; // FS2 +0x330
     sceVu0FVECTOR  _340 = {};            // FS2 +0x340
-    sceVu0FVECTOR  neckLimits = {};  // FS2 +0x350: by setBaseMotion on the five named characters (unread)
-    sceVu0FVECTOR  neckAxis = {};    // FS2 +0x360: the same; (0, 0, 1, pi/2) (unread)
+    sceVu0FVECTOR  chestToolPosition = {}; // FS2 +0x350: by setBaseMotion on the five named characters, on spine1
+    sceVu0FVECTOR  chestToolAxis = {};     // FS2 +0x360: the same; (0, 0, 1, pi/2)
     float          headRate = 0.0f;  // FS2 +0x370
-    float          _374[3] = {};     // FS2 +0x374
+    float          headLimit = 0.0f; // FS2 +0x374: aimLimited, across
+    float          headLimitUp = 0.0f;   // FS2 +0x378
+    float          headLimitDown = 0.0f; // FS2 +0x37c
     float          lookRate = 0.0f;  // FS2 +0x380
     float          lookRate2 = 0.0f; // FS2 +0x384
     float          toolRate = 0.0f;  // FS2 +0x388
     float          aimRate = 0.0f;   // FS2 +0x38c: aim to aimTarget
     float          footRate = 0.0f;  // FS2 +0x390
     u_char         lowerNames = 0;   // FS2 +0x394: a bone name's seventh letter is lower case
-    u_char         _395 = 0;         // FS2 +0x395
-    sceVu0FVECTOR  _3a0 = {};        // FS2 +0x3a0
-    u_char         hasNeckLimits = 0; // FS2 +0x3b0
+    u_char         windOn = 0;       // FS2 +0x395: the lower-case sw bones feel wind
+    sceVu0FVECTOR  wind = {};        // FS2 +0x3a0: direction, w its strength
+    u_char         hasChestTool = 0; // FS2 +0x3b0: solveChestTool runs, solveTool does not
 
 private:
     // The head play and playFile share (the ROM has it twice): false when the
