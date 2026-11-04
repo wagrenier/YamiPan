@@ -10,6 +10,7 @@
 #include "yamipan/os/yamipan_time.h"
 #include "yamipan/rendering/renderer.h"
 #include "yamipan/rendering/ui_canvas.h"
+#include "yamipan/rendering/yamipan_drawshadow.h"
 #include "yamipan/rendering/yamipan_drawui.h"
 #include "yamipan/yamipan_memory.h"
 
@@ -79,6 +80,20 @@ void YamiPan_DrawUiMovie(const void *list, const void *owner, const void *macrob
     const int picture = static_cast<const MoviePlayer *>(owner)->m_mpeg.frameCount;
     canvas().drawMacroblocks(list, owner, picture, macroblocks, columns, rows, static_cast<float>(x),
                              static_cast<float>(y));
+}
+
+// The boss stage's shadow target: empty until the 3D host module exists, like
+// the rena stubs that would draw into it.
+void YamiPan_ShadowBegin(const void *, int)
+{
+}
+
+void YamiPan_ShadowBlit(const void *, const YamiPanShadowBlit *)
+{
+}
+
+void YamiPan_ShadowEnd(const void *, const unsigned char *)
+{
 }
 
 void YamiPan_DrawUiKick(const void *const *lists, int count)

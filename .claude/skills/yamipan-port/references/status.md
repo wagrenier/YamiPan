@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-04 06:12 at commit `754543b` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-04 06:38 at commit `a3cdf23` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-04 06:12 at commit `754543b` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **2942** (45%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1541, game-inferred 2027
-- context-name ledger: 3568 entries; overrides of wrong library matches: 0
+- game functions: **6599**, named **2952** (45%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1542, game-inferred 2036
+- context-name ledger: 3578 entries; overrides of wrong library matches: 0
 - placed in a source file: 2795/6599 in 77 files
 
 Least-named game-code regions (64 KB blocks):
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **2446**; stubs: **355**
+- reconstructed FS2 functions: **2537**; stubs: **354**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -38,7 +38,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/boxgrid.cpp` | 29 | 0 |
 | `src/game/clock.cpp` | 14 | 0 |
 | `src/game/datetime.cpp` | 2 | 0 |
-| `src/game/drawsys.cpp` | 75 | 1 |
+| `src/game/drawsys.cpp` | 166 | 0 |
 | `src/game/fileloader.cpp` | 53 | 0 |
 | `src/game/fontdata.cpp` | 31 | 0 |
 | `src/game/gamepacket.cpp` | 6 | 0 |
@@ -114,15 +114,15 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 107 TUs: todo 57, partial 6, verify 65, done 1
-- next: **game/drawsys.cpp** (continuing a partial TU)
+- 107 TUs: todo 57, partial 5, verify 66, done 1
+- next: **game/stageobject.cpp** (continuing a partial TU)
 - pinned queue: (empty)
-- partial: `game/drawsys.cpp` 73/164 -- New file 0x2d46a0-0x2dac70: record stack, camera, lights, fog, shadows, drawSysRender passes, plus src/rena/rena_draw.h for the rena calls (stubs). New Game run
 - partial: `game/stageobject.cpp` 40/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
+- verify: `game/drawsys.cpp` 164/164 -- All 164 of 0x2d46a0-0x2dac70 are written or listed. New: drawSysAddModel 0x2d5140 (draw group, name flags, wave surfaces, plant textures), drawSysFindKind1Surfa
 - verify: `game/fileloader.cpp` 53/53 -- All 53 functions of 0x1319f0..0x132f20 are in src/game/fileloader.cpp with game/fileloader.h; FileJob / FileLoader / PackFile left gamehooks.h (which includes f
 - verify: `game/fontdata.cpp` 31/31 -- Cut out of unassigned@00171300 and pinned 0x1fcb40-0x1fe6b0 (batch 056, 31 names: the FontData byte variants countLinesMb / lineWidthFixed / lineWidthFixedMb / 
 - verify: `game/gamepacket.cpp` 6/6 -- All 6 functions written; source-only, callcheck clean. Header now declares the rena Vif1PktManage members the TU calls (ctor, virtual dtor, AddBuffer, AddList, 
@@ -187,6 +187,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-04 06:38 `game/drawsys.cpp` verify: game/drawsys.cpp: every function written, drawSysAddModel and the boss shadow target; ModelInstance folded (verify)
 - 2026-11-04 06:12 `game/drawsys.cpp` partial: game/drawsys.cpp: reconstruct the draw system, passes reach rena stubs (partial); add run time limits to the skill
 - 2026-11-04 02:33 `game/stageitem.cpp` verify: The bullet and the items whole: StageBullet, StageItem and its four kinds, ItemLamp; ItemPhysics declared; CollisionOwner read in full
 - 2026-11-04 01:40 `game/stagelight.cpp` verify: StageLight, SpotLight and PointLight whole: collision base, script commands, the frame, effects and parts; VcmController is StageLight
@@ -194,22 +195,21 @@ Recent sessions:
 - 2026-11-04 00:19 `game/sldi.cpp` verify: sldiDecompress written: stage packs unpack for real; all 114 SLDI files on the disc tested
 - 2026-11-03 23:48 `sdk/libmpeg.cpp` verify: Real libmpeg: PSS demux, FFmpeg MPEG-2 decode, movie pictures through UiCanvas; the opening film plays and the road reaches stageThread
 - 2026-11-03 23:17 `unassigned@0017fce0` todo: marked active -> todo: released untouched a fourth time: gdb located the black after the card (PrgMovie, MoviePlayer state 15), so this run took the host task s
-- 2026-11-03 23:00 `game/uiworkarea.cpp` verify: UiTrack base slots and the UI work area; New Game now reaches the opening card
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@001d7c50` | partial | 1/29/296 | 137.5 | 85 | 0 |
-| `unassigned@00171300` | partial | 1/26/421 | 52.5 | 67 | 0 |
-| `unassigned@00148db0` | todo | 0/18/125 | 35.6 | 63 | 2 |
-| `unassigned@001fe6b0` | todo | 0/35/563 | 197.2 | 61 | 0 |
+| `unassigned@001d7c50` | partial | 1/29/296 | 137.5 | 156 | 14 |
+| `unassigned@001fe6b0` | todo | 0/35/563 | 197.2 | 126 | 13 |
+| `unassigned@00171300` | partial | 1/26/421 | 52.5 | 117 | 10 |
+| `unassigned@00148db0` | todo | 0/18/125 | 35.6 | 98 | 9 |
+| `unassigned@002849c0` | todo | 0/29/129 | 44.6 | 83 | 9 |
+| `unassigned@002e2970` | partial | 1/15/76 | 27.1 | 65 | 7 |
+| `unassigned@0018c050` | todo | 0/14/71 | 29.7 | 60 | 4 |
+| `unassigned@002b9ef0` | todo | 0/17/101 | 39.0 | 56 | 6 |
+| `unassigned@002b0d50` | todo | 0/23/85 | 17.9 | 49 | 3 |
+| `unassigned@00299d90` | todo | 0/13/215 | 62.3 | 49 | 4 |
 | `unassigned@00135990` | todo | 0/3/33 | 3.1 | 46 | 0 |
-| `unassigned@00186ee0` | todo | 0/14/41 | 11.2 | 39 | 0 |
-| `unassigned@0018c050` | todo | 0/14/71 | 29.7 | 39 | 0 |
-| `unassigned@002849c0` | todo | 0/29/129 | 44.6 | 38 | 0 |
-| `unassigned@002b9ef0` | todo | 0/17/101 | 39.0 | 36 | 2 |
-| `unassigned@002b0d50` | todo | 0/23/85 | 17.9 | 34 | 0 |
-| `unassigned@00299d90` | todo | 0/13/215 | 62.3 | 29 | 0 |
-| `unassigned@00231d40` | todo | 0/10/58 | 36.1 | 28 | 0 |
+| `unassigned@0023e740` | todo | 0/11/54 | 18.7 | 40 | 5 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -233,7 +233,6 @@ Recent sessions:
 | `00215ef0` | StageObject::isPlayer | 7 | game | stub | - |
 | `0018c2d0` | StageParticle::setRunning | 7 | game | stub | - |
 | `00239bb0` | CharacterInput::setActive | 7 | game | stub | - |
-| `002d91b0` | setVector4 | 7 | game | missing | game/drawsys.cpp |
 | `00177d20` | StageCamera::addToScene | 7 | game | stub | - |
 | `00233810` | StageCollision::raycast | 6 | game | stub | - |
 | `00136490` | scaleVec4 | 6 | game | stub | - |
@@ -249,6 +248,7 @@ Recent sessions:
 | `0017e1b0` | FUN_0017e1b0 | 5 | - | missing | - |
 | `002bc5d0` | KeepList::removeUnkept | 5 | game | stub | - |
 | `0029efe0` | getNaviMenu | 5 | game | stub | - |
+| `002e5450` | renaDrawModels | 5 | game | stub | - |
 | `001937f0` | FUN_001937f0 | 4 | - | missing | - |
 | `001d2f40` | ScriptRunner::setEntry | 4 | game | stub | - |
 | `00186fe0` | PartSwitch::show | 4 | game | stub | - |

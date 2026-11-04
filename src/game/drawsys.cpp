@@ -18,9 +18,15 @@
  *  decoded at their source): the per-frame GsRegionAlloc on the scratchpad,
  *  the writes to the packet's pointer that switch it to the uncached mirror
  *  (0x30000000), FlushCache and the TEST_1 packets around the depth clear.
+ *  The boss stage's shadow target goes to the host's module whole
+ *  (yamipan/rendering/yamipan_drawshadow.h): its frames, texture pages, the
+ *  T4 / T8H copy that reads the result as an 8-bit image and the CLUT upload
+ *  are GS memory work; its sizes, taps and alpha ramp stay here.
  * ======================================================================== */
 #include <algorithm>
+#include <ctype.h>
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 #include "common/yamipan_stub.h"
 
@@ -34,6 +40,7 @@
 #include "game/sysdata.h"
 #include "game/vu0math.h"
 #include "rena/rena_draw.h"
+#include "yamipan/rendering/yamipan_drawshadow.h"
 
 DrawSysShadow gDrawSysShadows[kDrawSysMaxShadows];  /* bss 0x59ae90 */
 DrawSysState  gDrawSysState;                        /* bss 0x59b0c0 */
@@ -49,7 +56,7 @@ static int            sSpotlightBlock;  /* sbss 0x31aef8 (gp-0x7978) */
 static int            sShadowBlock;     /* sbss 0x31aefc (gp-0x7974) */
 static int            sShadowCount;     /* sbss 0x31af08 (gp-0x7968) */
 static int            sReservedBlock;   /* sbss 0x31af0c (gp-0x7964): 0x120 blocks of the TexArea (unread) */
-static StageModelData *sBossModel;      /* sbss 0x31af10 (gp-0x7960) */
+static ModelInstance *sBossModel;      /* sbss 0x31af10 (gp-0x7960) */
 static u_char         sTargetView;      /* sbss 0x31af14 (gp-0x795c) */
 
 static DrawSysFog *sFogs[kDrawSysFogCount]; /* bss 0x59ae60 */
@@ -71,6 +78,56 @@ constexpr float kScreenZMin = 1.0f;
 constexpr float kScreenZMax = 16777215.0f;
 constexpr float kScreenNear = 5.0f;
 constexpr int   kReservedBlocks = 0x120;
+// A model's name, for the flags and groups it asks for.
+constexpr const char kModelExtGhost[] = "ext_ghost";    /* 0x30fbf0 */
+constexpr const char kModelTagged0[]  = "oXX27_11";     /* 0x30fc00 */
+constexpr const char kModelTagged1[]  = "oXX27_05";     /* 0x30fc10 */
+constexpr const char kMaterialWave[]  = "WaveComposit"; /* 0x30fc40 */
+constexpr float kGhostParam0 = 191.0f;
+constexpr float kGhostParam1 = -52.0f;
+constexpr char  kNameTagC = 'c';
+constexpr int   kNameTagSpace = 0x10;
+// The far models, by name (strcasecmp): far_, far_1, far_2, far_3.
+static const struct { const char *name; int group; } kFarModels[] = {
+    { "far_",  DrawSysGroup_Far0 }, /* 0x30fc20 */
+    { "far_1", DrawSysGroup_Far1 }, /* 0x30fc28 */
+    { "far_2", DrawSysGroup_Far2 }, /* 0x30fc30 */
+    { "far_3", DrawSysGroup_Far3 }, /* 0x30fc38 */
+};
+// The plant textures, sorted for the search (0x2fd9c0..0x2fd9e4).
+static const char *const kFoliageTextures[] = {
+    "tCM99_PLTbrchA_01", "tCM99_PLTbrchB_01", "tCM99_PLTgrsC_01",
+    "tCM99_PLTgrsD_01",  "tCM99_PLTgrsE_03",  "tCM99_PLTgrsE_04",
+    "tCM99_PLTleafA_01", "tCM99_PLTleafB_01", "tCM99_PLTleafC_01",
+};
+// The boss's shadow target: 256 square, seen from this far above the shadow.
+constexpr int   kBossShadowSize = 0x100;
+constexpr int   kBossShadowMinSize = 0x40;
+constexpr float kBossShadowHeight = 800.0f;
+constexpr float kBossShadowScreenDistance = 256.0f;
+constexpr u_short kBossShadowDrawMode = 0x87;
+// The blend of one blit's three passes, alpha 1, 1/2, 1/3 (0x30fa40 / 50 / 60,
+// one table three times): the mean of the three.
+static const u_int kBossShadowTaps[kYamiPanShadowTaps] = { 0x80808080, 0x40808080, 0x2b808080 };
+constexpr int   kBossShadowAlphaMax = 0x80;     /* 0x31acf8 */
+constexpr int   kBossShadowAlphaMin = 0;        /* 0x31acfc */
+
+// PC: the ROM's libc strcasecmp / strncasecmp (0x127ea0..); MSVC has no such
+// names.
+static int nameCompareNoCase(const char *a, const char *b, size_t length)
+{
+    for (size_t i = 0; i < length; i++, a++, b++) {
+        int ca = tolower((u_char)*a);
+        int cb = tolower((u_char)*b);
+        if (ca != cb || ca == 0)
+            return ca - cb;
+    }
+    return 0;
+}
+static bool nameEqualsNoCase(const char *a, const char *b)
+{
+    return nameCompareNoCase(a, b, (size_t)-1) == 0;
+}
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x002d4780
@@ -92,6 +149,34 @@ void drawSysSetTargetView()
 DrawSysFog *drawSysGetFog(int index)
 {
     return sFogs[index];
+}
+
+// The first surface of kind 1 over the model's meshes, null with none:
+// StageModel::init keeps it (+0xa8, unread).
+// FS2 0x002d46a0
+
+ModelSurface *drawSysFindKind1Surface(ModelInstance *model)
+{
+    const ModelFileNode *node = model->node;
+    for (int m = 0; m < node->meshCount; m++) {
+        const ModelMeshParts *parts = node->meshes.get()[m].parts;
+        if (parts == nullptr)
+            continue;
+        for (int p = 0; p < parts->count; p++) {
+            const ModelMeshPart &part = parts->parts.get()[p];
+            for (int i = 0; i < part.materialCount; i++) {
+                int material = part.materials.get()[i].material;
+                if (material < 0)
+                    continue;
+                // PC: the ROM reads through a null entry; every material a
+                // mesh names has a surface.
+                ModelSurface *surface = model->surfaceOfMaterial[material];
+                if (surface != nullptr && surface->material->kind == ModelMaterial_Kind1)
+                    return surface;
+            }
+        }
+    }
+    return nullptr;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -129,7 +214,7 @@ struct ShadowWork
     sceVu0FVECTOR   size;       // FS2 +0x40
     StageObject    *object;     // FS2 +0x50
     StageModel     *model;      // FS2 +0x54
-    StageModelData *data;       // FS2 +0x58
+    ModelInstance *data;       // FS2 +0x58
 };
 // Its sort key. layout: host -- EE 8, after the records.
 struct ShadowKey
@@ -159,7 +244,7 @@ static int drawSysBuildShadows(const sceVu0FVECTOR *view)
     for (StageObject **slot = firstActive(shadowCasters()); slot != nullptr; slot = nextActive(slot)) {
         StageObject *object = *slot;
         StageModel *model = object->m_model;
-        StageModelData *data = model->data;
+        ModelInstance *data = model->data;
         if (data == nullptr || (data->flags & ModelFlag_CastsShadow) == 0 || !data->shown
             || (data->drawGroup & DrawSysGroup_Main) == 0)
             continue;
@@ -245,7 +330,7 @@ int drawSysBuildBossShadow()
         return 0;
     }
 
-    StageModelData *data = (*slot)->m_model->data;
+    ModelInstance *data = (*slot)->m_model->data;
     sBossModel = data;
     ModelBone *bone = data->bones;
     for (u_int i = 0; i < data->boneCount; i++) {
@@ -305,6 +390,112 @@ void drawSysTick(int ticks)
 DrawSysRecord *drawSysCurrent()
 {
     return sCurrent;
+}
+
+// A name's tags, the last first: "name_a_b" gives "ba". A tag is one letter
+// after an underscore; the walk stops at the first thing that is not one.
+// FS2 0x002d54a0
+
+static void parseNameTags(char *tags, int size, const char *name)
+{
+    const char *cursor = name + strlen(name);
+    if (cursor - name < 3) {
+        *tags = '\0';
+        return;
+    }
+    const char *last = tags + size - 1;
+    char pending = '\0';
+    for (;;) {
+        cursor--;
+        if (pending == '\0') {
+            pending = *cursor;
+            if (pending == '_')
+                break;
+        } else {
+            if (*cursor != '_')
+                break;
+            *tags++ = pending;
+            pending = '\0';
+        }
+        // PC: <= where the ROM has <, which reads the byte before the name.
+        if (cursor <= name || last <= tags)
+            break;
+    }
+    *tags = '\0';
+}
+
+// Is the texture one of the plants? The ROM's search is the MSL lower_bound
+// instance over the table.
+// FS2 0x002da220
+// callcheck: strcmp
+
+static bool isFoliageTexture(const char *name)
+{
+    const char *const *end = kFoliageTextures + sizeof(kFoliageTextures) / sizeof(kFoliageTextures[0]);
+    const char *const *found = std::lower_bound(kFoliageTextures, end, name,
+        [](const char *entry, const char *key) { return strcmp(entry, key) < 0; });
+    return found != end && strcmp(*found, name) == 0;
+}
+
+// A new model joins the current record. Its name picks the far pass or the
+// main one and a few flags; the same pass over its materials finds the water
+// surfaces and the plants.
+// FS2 0x002d5140
+// callcheck: strcasecmp, strcmp, strcmp, strcasecmp, FUN_001928f0, strcmp, strcasecmp, strcasecmp, strcasecmp, strlen, strncasecmp, strlen (nameEqualsNoCase; FUN_001928f0 is the vector insert, push_back here; the second strcmp is isFoliageTexture's)
+
+void drawSysAddModel(ModelInstance *model)
+{
+    const ModelFileNode *node = model->node;
+    const char *name = node->name;
+
+    if (nameEqualsNoCase(name, kModelExtGhost)) {
+        model->flags |= ModelFlag_Ghost;
+        model->ghostParam0 = kGhostParam0;
+        model->ghostParam1 = kGhostParam1;
+    }
+    if (strcmp(name, kModelTagged0) == 0)
+        model->flags |= ModelFlag_TagC;
+    if (strcmp(name, kModelTagged1) == 0) {
+        model->flags &= ~ModelFlag_CastsShadow;
+        model->flags |= ModelFlag_TagC;
+    }
+
+    char tags[kNameTagSpace];
+    parseNameTags(tags, sizeof(tags), name);
+    for (const char *tag = tags; *tag != '\0'; tag++)
+        if (*tag == kNameTagC)
+            model->flags |= ModelFlag_TagC;
+
+    model->drawGroup = DrawSysGroup_Main;
+    for (const auto &entry : kFarModels) {
+        if (nameEqualsNoCase(name, entry.name)) {
+            model->drawGroup = (u_char)entry.group;
+            break;
+        }
+    }
+
+    sCurrent->models.push_back(model);
+
+    const size_t waveLength = strlen(kMaterialWave);
+    for (int i = 0; i < node->surfaceCount; i++) {
+        ModelSurface &surface = model->surfaces[i];
+        const char *material = surface.material->name;
+        if (nameCompareNoCase(material, kMaterialWave, waveLength) == 0) {
+            surface._28 = 0;
+            surface.isWave = 1;
+            surface.waveIndex = atoi(material + waveLength);
+        }
+    }
+
+    ModelFile *file = node->file;
+    for (int i = 0; i < file->materialCount; i++) {
+        ModelMaterial *material = file->materials.get()[i];
+        if (material->kind == ModelMaterial_Textured && material->texture >= 0
+            && isFoliageTexture(file->textureNames.get()[material->texture]))
+            material->flags |= ModelMaterialFlag_Foliage;
+    }
+
+    model->flags |= ModelFlag_Frozen;
 }
 
 // Finds model and erases it from the record's list, when it is there.
@@ -373,7 +564,7 @@ void drawSysRender(GamePacketManager *packets, const sceGsDrawEnv1 *env, int fla
     renaBeginFrame(packet);
     renaSetSpotlight(packet, sSpotlightTexture, sSpotlightBlock);
     if (getStageSelect()->stage == kStageBoss)
-        FUN_002d5e10(packet);
+        drawSysBuildBossShadowTexture(packet);
     else
         renaSetShadowTexture(packet, sShadowTexture, sShadowBlock);
 
@@ -419,6 +610,132 @@ void drawSysRender(GamePacketManager *packets, const sceGsDrawEnv1 *env, int fla
         renaEndPass(packet);
         packets->closeList();
     }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The boss's shadow target. In the ROM these write sprites a page wide, each
+// with the XYOFFSET and SCISSOR of the size; a blit's source wraps (CLAMP_1
+// REPEAT), which is how its first tap reaches before the texture's edge.
+
+// Half the size, the taps along u.
+// FS2 0x002d77d0
+
+static void bossShadowBlitDown(sceVif1Packet *packet, int size)
+{
+    YamiPanShadowBlit blit = { size, size / 2, YamiPanShadowAxis_U, 1.0f, 1.0f, kBossShadowTaps };
+    YamiPan_ShadowBlit(packet, &blit);
+}
+
+// The same size, the taps along v.
+// FS2 0x002d7540
+
+static void bossShadowBlitBlur(sceVif1Packet *packet, int size)
+{
+    YamiPanShadowBlit blit = { size, size, YamiPanShadowAxis_V, 0.5f, 0.5f, kBossShadowTaps };
+    YamiPan_ShadowBlit(packet, &blit);
+}
+
+// Twice the size, the taps along u.
+// FS2 0x002d72c0
+
+static void bossShadowBlitUp(sceVif1Packet *packet, int size)
+{
+    YamiPanShadowBlit blit = { size, size * 2, YamiPanShadowAxis_U, 0.25f, 1.0f, kBossShadowTaps };
+    YamiPan_ShadowBlit(packet, &blit);
+}
+
+// The ramp from the result's brightness to the shadow's alpha: white nothing,
+// black half of full (0x80 is 1.0). The ROM builds it inline in the function below, as
+// the CLUT (alpha in the top byte) on the scratchpad.
+static void bossShadowBuildRamp(u_char *ramp)
+{
+    for (int i = 0; i < 0x100; i++) {
+        int alpha = (int)((float)((0x100 - i) / 2) * 0.5f);
+        ramp[i] = (u_char)std::max(std::min(alpha, kBossShadowAlphaMax), kBossShadowAlphaMin);
+    }
+}
+
+// No host counterpart, YamiPan_ShadowEnd takes the result and the ramp:
+// FS2 0x002d7030  bossShadowResolve: the result through a T4 read and a frame mask into a page that reads as 8 bits (T8H -> T8, BITBLTBUF in the function below)
+// FS2 0x002d6dc0  bossShadowUploadClut: the ramp, swizzled, to the CLUT block
+
+// The boss stage's shadow texture, every frame the boss is there
+// (drawSysBuildBossShadow found it): the boss black on white from above its
+// shadow, blurred down to 64 and back, through the alpha ramp. Leaves the
+// frame's env as it was; the matrices are the next pass's to set.
+// FS2 0x002d5e10
+// callcheck: sceVif1PkCnt, sceVif1PkAddCode, FUN_0010afd0, FUN_0010b2d8, FUN_0010b668, FUN_0010b028, sceVif1PkAddCode, sceVif1PkCloseDmaTag, gsFillRect, sceVif1PkCnt, sceVif1PkAddCode, sceVif1PkCloseDmaTag, FlushCache, bossShadowResolve, sceVif1PkCnt, sceVif1PkOpenDirectCode, sceVif1PkOpenGifTag, sceVif1PkAddGsAD, sceVif1PkAddGsAD, sceVif1PkAddGsAD, sceVif1PkAddGsAD, sceVif1PkCloseGifTag, sceVif1PkCloseDirectCode, sceVif1PkCloseDmaTag, bossShadowUploadClut, FUN_002e8290, sceVif1PkCnt, FUN_0010afd0, FUN_0010b2d8, FUN_0010b668, FUN_0010b028, sceVif1PkCloseDmaTag, FUN_0010ae98, sceVif1PkCloseDmaTag (the GS env, frames and copies: file header; gsFillRect is YamiPan_ShadowBegin's clear, FUN_002e8290 its YamiPan_ShadowEnd; FUN_0010ae98 and the DISPFB2 debug view hang on gp-0x7958 / gp-0x7954, which nothing writes)
+
+void drawSysBuildBossShadowTexture(sceVif1Packet *packet)
+{
+    ModelInstance *boss = sBossModel;
+    if (boss == nullptr)
+        return;
+
+    gDrawSysState.render = nullptr;
+    gDrawSysState.width = kBossShadowSize;
+    gDrawSysState.height = kBossShadowSize;
+
+    // A view straight down, centred on the shadow.
+    const sceVu0FVECTOR &origin = gDrawSysShadows[0].matrix[3];
+    sceVu0FMATRIX &view = gDrawSysState.view;
+    static const sceVu0FVECTOR kViewX = {  1.0f, 0.0f, 0.0f, 0.0f };
+    static const sceVu0FVECTOR kViewY = {  0.0f, 0.0f, 1.0f, 0.0f };
+    static const sceVu0FVECTOR kViewZ = {  0.0f, -1.0f, 0.0f, 0.0f };
+    memcpy(view[0], kViewX, sizeof(sceVu0FVECTOR));
+    memcpy(view[1], kViewY, sizeof(sceVu0FVECTOR));
+    memcpy(view[2], kViewZ, sizeof(sceVu0FVECTOR));
+    view[3][0] = -origin[0];
+    view[3][1] = origin[2] + kBossShadowHeight;
+    view[3][2] = -origin[1];
+    view[3][3] = 1.0f;
+
+    // The screen, turned a quarter about x: the view's y is its depth.
+    sceVu0FMATRIX &screen = gDrawSysState.screen;
+    sceVu0ViewScreenMatrix(screen, kBossShadowScreenDistance, 1.0f, 1.0f, kScreenCenter, kScreenCenter,
+                           1.0f, 0.0f, 0.0f, 1.0f);
+    sceVu0FVECTOR row;
+    memcpy(row, screen[1], sizeof(sceVu0FVECTOR));
+    memcpy(screen[1], screen[2], sizeof(sceVu0FVECTOR));
+    for (int lane = 0; lane < 4; lane++)
+        screen[2][lane] = -row[lane];
+    sceVu0MulMatrix(gDrawSysState.viewScreen, screen, view);
+
+    YamiPan_ShadowBegin(packet, kBossShadowSize);
+
+    // The boss alone, without its lights.
+    u_short drawMode = boss->drawMode;
+    u_char drawGroup = boss->drawGroup;
+    sceVu0FMATRIX colorMatrix;
+    memcpy(colorMatrix, boss->colorMatrix, sizeof(sceVu0FMATRIX));
+    boss->drawMode = kBossShadowDrawMode;
+    memset(boss->colorMatrix, 0, sizeof(sceVu0FMATRIX));
+    boss->drawGroup = DrawSysGroup_BossShadow;
+    renaDrawModels(packet, sCurrent, DrawSysGroup_BossShadow);
+    boss->drawGroup = drawGroup;
+    memcpy(boss->colorMatrix, colorMatrix, sizeof(sceVu0FMATRIX));
+    boss->drawMode = drawMode;
+
+    // Down to 64 and back to 256, a blur at each size but the last.
+    int size = kBossShadowSize;
+    do {
+        int half = size >> 1;
+        bossShadowBlitDown(packet, size);
+        bossShadowBlitBlur(packet, half);
+        if (half >= kBossShadowMinSize)
+            size = half;
+    } while (size > kBossShadowMinSize);
+    while (size < kBossShadowSize) {
+        int twice = size * 2;
+        bossShadowBlitUp(packet, size);
+        if (twice < kBossShadowSize)
+            bossShadowBlitBlur(packet, twice);
+        size = twice;
+    }
+
+    u_char ramp[0x100];
+    bossShadowBuildRamp(ramp);
+    YamiPan_ShadowEnd(packet, ramp);
 }
 
 // Each shadow's two matrices, from the inverse of its box: the texture
@@ -595,15 +912,6 @@ void drawSysInit(int originX, int originY, int width, int height, GsRegionAlloc 
 //   FS2 0x002d9ef0  setLight
 //   FS2 0x002d9f10  getFog
 //   FS2 0x002d9f20  setFog
-// The adjustor thunks that end the file (the host's compiler makes its own):
-//   FS2 0x002da890, 0x002da8a0, 0x002da8b0, 0x002da8c0, 0x002da8d0, 0x002da8e0, 0x002da8f0: DrawSysLights, -0x18
-//   FS2 0x002da900, 0x002da910, 0x002da920, 0x002dab00, 0x002dab10, 0x002dab90, 0x002daba0, 0x002dabf0, 0x002dac00: DrawSysDirLight
-//   FS2 0x002da930, 0x002da940, 0x002daa10, 0x002daa20, 0x002daa60, 0x002daa70: DrawSysAmbient
-//   FS2 0x002da950, 0x002da960, 0x002da970, 0x002da980, 0x002da990, 0x002da9a0, 0x002da9b0, 0x002da9c0: DrawSysFog
-//   FS2 0x002da9d0: DrawSysCamera, -0xd4
-//   FS2 0x002da9e0, 0x002da9f0, 0x002daa00, 0x002daa30, 0x002daa40, 0x002daa50, 0x002daa80, 0x002daa90, 0x002daaa0, 0x002daab0: the ambient bases
-//   FS2 0x002daac0, 0x002daad0, 0x002daae0, 0x002daaf0, 0x002dab20, 0x002dab30, 0x002dab40, 0x002dab50, 0x002dab60, 0x002dab70, 0x002dab80, 0x002dabb0, 0x002dabc0, 0x002dabd0, 0x002dabe0, 0x002dac10, 0x002dac20, 0x002dac30, 0x002dac40, 0x002dac50, 0x002dac60: the light bases
-
 // The base's default (0x2e2970 builds it with an aspect of 1.1666) and the
 // identity view; drawSysInit replaces the screen at once.
 // FS2 0x002e2970
@@ -761,10 +1069,94 @@ void setDrawDistance(float distance)
 //   FS2 0x002da6f0  median of three
 //   FS2 0x002da7f0  selection sort under 21 items
 
-// ---- stubs (tools/reverse/stubgen.py) ----
+// The adjustor thunks that end the file (the host's compiler makes its own):
+//   FS2 0x002da890  DrawSysLights, -0x18
+//   FS2 0x002da8a0  DrawSysLights, -0x18
+//   FS2 0x002da8b0  DrawSysLights, -0x18
+//   FS2 0x002da8c0  DrawSysLights, -0x18
+//   FS2 0x002da8d0  DrawSysLights, -0x18
+//   FS2 0x002da8e0  DrawSysLights, -0x18
+//   FS2 0x002da8f0  DrawSysLights, -0x18
+//   FS2 0x002da900  DrawSysDirLight
+//   FS2 0x002da910  DrawSysDirLight
+//   FS2 0x002da920  DrawSysDirLight
+//   FS2 0x002da930  DrawSysAmbient
+//   FS2 0x002da940  DrawSysAmbient
+//   FS2 0x002da950  DrawSysFog
+//   FS2 0x002da960  DrawSysFog
+//   FS2 0x002da970  DrawSysFog
+//   FS2 0x002da980  DrawSysFog
+//   FS2 0x002da990  DrawSysFog
+//   FS2 0x002da9a0  DrawSysFog
+//   FS2 0x002da9b0  DrawSysFog
+//   FS2 0x002da9c0  DrawSysFog
+//   FS2 0x002da9d0  DrawSysCamera, -0xd4
+//   FS2 0x002da9e0  the ambient bases
+//   FS2 0x002da9f0  the ambient bases
+//   FS2 0x002daa00  the ambient bases
+//   FS2 0x002daa10  DrawSysAmbient
+//   FS2 0x002daa20  DrawSysAmbient
+//   FS2 0x002daa30  the ambient bases
+//   FS2 0x002daa40  the ambient bases
+//   FS2 0x002daa50  the ambient bases
+//   FS2 0x002daa60  DrawSysAmbient
+//   FS2 0x002daa70  DrawSysAmbient
+//   FS2 0x002daa80  the ambient bases
+//   FS2 0x002daa90  the ambient bases
+//   FS2 0x002daaa0  the ambient bases
+//   FS2 0x002daab0  the ambient bases
+//   FS2 0x002daac0  the light bases
+//   FS2 0x002daad0  the light bases
+//   FS2 0x002daae0  the light bases
+//   FS2 0x002daaf0  the light bases
+//   FS2 0x002dab00  DrawSysDirLight
+//   FS2 0x002dab10  DrawSysDirLight
+//   FS2 0x002dab20  the light bases
+//   FS2 0x002dab30  the light bases
+//   FS2 0x002dab40  the light bases
+//   FS2 0x002dab50  the light bases
+//   FS2 0x002dab60  the light bases
+//   FS2 0x002dab70  the light bases
+//   FS2 0x002dab80  the light bases
+//   FS2 0x002dab90  DrawSysDirLight
+//   FS2 0x002daba0  DrawSysDirLight
+//   FS2 0x002dabb0  the light bases
+//   FS2 0x002dabc0  the light bases
+//   FS2 0x002dabd0  the light bases
+//   FS2 0x002dabe0  the light bases
+//   FS2 0x002dabf0  DrawSysDirLight
+//   FS2 0x002dac00  DrawSysDirLight
+//   FS2 0x002dac10  the light bases
+//   FS2 0x002dac20  the light bases
+//   FS2 0x002dac30  the light bases
+//   FS2 0x002dac40  the light bases
+//   FS2 0x002dac50  the light bases
+//   FS2 0x002dac60  the light bases
 
-// stub of FS2 0x002d5e10
-void FUN_002d5e10(sceVif1Packet *packet)
-{
-    YAMIPAN_STUB("FUN_002d5e10", 0x002d5e10);
-}
+// Inline in drawsys.h:
+//   FS2 0x002d8dc0  DrawSysAmbient::setEnabled
+//   FS2 0x002d91b0  setVector4 (the lane copy of the ctors)
+//   FS2 0x002d91d0  DrawSysDirLight::setEnabled
+//   FS2 0x002d9ac0  DrawSysFog::~DrawSysFog
+//   FS2 0x002d9ba0  DrawSysFog::getNear
+//   FS2 0x002d9bb0  DrawSysFog::getFar
+//   FS2 0x002d9bc0  DrawSysFog::getNearValue
+//   FS2 0x002d9bd0  DrawSysFog::getFarValue
+//   FS2 0x002d9d40  DrawSysFog::getColor
+//   FS2 0x002d9d50  DrawSysFog::isEnabled
+//   FS2 0x002d9d60  DrawSysAmbient::~DrawSysAmbient
+//   FS2 0x002d9e00  DrawSysDirLight::~DrawSysDirLight
+//   FS2 0x002d9f30  DrawSysCamera::~DrawSysCamera
+//   FS2 0x002d9fc0  DrawSysCamera::getViewScreen
+//   FS2 0x002d9fd0  DrawSysCamera::getView
+//   FS2 0x002d9fe0  DrawSysCamera::getScreen
+//   FS2 0x002da0d0  DrawSysLights::~DrawSysLights
+//   FS2 0x002da160  DrawSysLights::getAmbient
+//   FS2 0x002da180  DrawSysLights::getLight
+//   FS2 0x002da190  DrawSysLights::setLight
+//   FS2 0x002da1b0  DrawSysLights::getFog
+//   FS2 0x002da1d0  DrawSysDirLight::isEnabled
+//   FS2 0x002da1e0  DrawSysAmbient::isEnabled
+//   FS2 0x002da1f0  DrawSysDirLight::getDirection
+//   FS2 0x002da200  DrawSysDirLight::getColor
+//   FS2 0x002da210  DrawSysAmbient::getColor

@@ -14,6 +14,7 @@
 #include "sdk/libvu0.h"
 
 class DrawSysLights;            // game/drawsys.h
+struct ModelSurface;            // game/gamehooks.h
 class Tim2Texture;              // game/gsutil.h
 struct DrawSysRecord;           // game/drawsys.h
 
@@ -31,6 +32,6 @@ void renaSetShadowCount(sceVif1Packet *packet, int count);               // FS2 
 void renaDrawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask); // FS2 0x002e5450
 void renaEndPass(sceVif1Packet *packet);                                 // FS2 0x002e85e0
 // One step of a texture animation (ModelInstance::texAnims).
-void renaStepTexAnim(void *anim, int ticks);                             // FS2 0x002e3bf0
+void renaStepTexAnim(ModelSurface *surface, int ticks);                             // FS2 0x002e3bf0
 
 #endif /* _RENA_RENA_DRAW_H */

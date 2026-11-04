@@ -228,10 +228,10 @@ void StageObject::setModel(ModelInstance *instance, StringMap<Tim2Texture *> *te
     m_model = new StageModel;
     m_model->init(instance, textures, getWorldMatrix());
 
-    StageModelData *data = m_model->data;
+    ModelInstance *data = m_model->data;
     if (data != nullptr) {
         // PC: the ROM writes through the vtable's matrix; it is m_xform.world.
-        copyMatrix(m_xform.world, *data->rootMatrix);
+        copyMatrix(m_xform.world, data->node->matrix.get());
         m_inverse = (sceVu0FVECTOR *)gGlobalHeap.alloc(sizeof(sceVu0FMATRIX), sizeof(sceVu0FMATRIX));
         identityMatrix(m_inverse);
         invertRigidMatrix(m_inverse, getWorldMatrix());

@@ -20,7 +20,7 @@
 
 #include "sdk/scetypes.h"
 
-class RenaModel;                // game/gamehooks.h (rena's model)
+struct ModelInstance;           // game/gamehooks.h (rena's model)
 class StageLight;               // game/stagelight.h
 struct ModelPartRec;            // game/gamehooks.h
 
@@ -59,7 +59,7 @@ struct VcmPartLink
 class VcmTable
 {
 public:
-    explicit VcmTable(RenaModel *model);                                 // FS2 0x002972d0
+    explicit VcmTable(ModelInstance *model);                                 // FS2 0x002972d0
     ~VcmTable();                                                         // FS2 0x00297210
 
     // The weights of the controllers now: every state, then every part.

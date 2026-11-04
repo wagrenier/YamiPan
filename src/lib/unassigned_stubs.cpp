@@ -234,9 +234,9 @@ int Rand48::next(int n)
 }
 
 // stub of FS2 0x002e4100
-ModelPartRec * RenaModel::findGroup(const ModelPartRec *rec) const
+ModelPartRec * ModelInstance::findGroup(const ModelPartRec *rec) const
 {
-    YAMIPAN_STUB("RenaModel::findGroup", 0x002e4100);
+    YAMIPAN_STUB("ModelInstance::findGroup", 0x002e4100);
     return {};
 }
 
@@ -2209,7 +2209,7 @@ void renaSetSpotlight(sceVif1Packet *packet, Tim2Texture *texture, int block)
 }
 
 // stub of FS2 0x002e3bf0
-void renaStepTexAnim(void *anim, int ticks)
+void renaStepTexAnim(ModelSurface *surface, int ticks)
 {
     YAMIPAN_STUB("renaStepTexAnim", 0x002e3bf0);
 }

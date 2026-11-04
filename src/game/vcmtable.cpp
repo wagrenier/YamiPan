@@ -55,9 +55,9 @@ static int vcmStrncasecmp(const char *a, const char *b, size_t n)
 // The name a part is tagged by, null for an untagged part (the callers
 // test the geometry's material before asking for the tag). Inline in the
 // ROM.
-static const ModelMaterial *vcmPartMaterial(const RenaModel *model, int part)
+static const ModelMaterial *vcmPartMaterial(const ModelInstance *model, int part)
 {
-    const ModelGeometry *geometry = model->m_header->parts[part].geometry;
+    const ModelMeshParts *geometry = model->node->meshes.get()[part].parts;
     if (geometry == NULL) {
         return NULL;
     }
@@ -99,15 +99,15 @@ static VcmTokenSet vcmSplitTokens(const char *name)
 // callcheck: strncasecmp, destroyTree (vcmStrncasecmp; the token set's destructor)
 // FS2 0x00297950
 
-static const char *vcmPartTag(const RenaModel *model, int part)
+static const char *vcmPartTag(const ModelInstance *model, int part)
 {
     const char *name = vcmPartMaterial(model, part)->name;
     if (!vcmSplitTokens(name).empty()) {
         return name;
     }
-    for (const ModelPartRec *rec = &model->m_partRecs[part]; rec != NULL;
+    for (const ModelPartRec *rec = &model->partRecs[part]; rec != NULL;
          rec = model->findGroup(rec)) {
-        const char *partName = model->m_header->parts[rec - model->m_partRecs].name;
+        const char *partName = model->node->meshes.get()[rec - model->partRecs].name;
         if (vcmStrncasecmp(partName, VCM_TAG_PREFIX, strlen(VCM_TAG_PREFIX)) == 0) {
             return partName;
         }
@@ -120,9 +120,9 @@ static const char *vcmPartTag(const RenaModel *model, int part)
 // callcheck: destroyTree, mslTreeIncrement, operator_new[] (the token set's walk and destructor; new char[])
 // FS2 0x00297790
 
-static void vcmCollectTokens(VcmNameSet &names, const RenaModel *model)
+static void vcmCollectTokens(VcmNameSet &names, const ModelInstance *model)
 {
-    for (int part = 0; part < model->m_header->partCount; part++) {
+    for (int part = 0; part < model->node->meshCount; part++) {
         if (vcmPartMaterial(model, part) == NULL) {
             continue;
         }
@@ -245,7 +245,7 @@ VcmTable::~VcmTable()
 // callcheck: VcmNameSet, VcmStateMap, destroyTree, mslTreeIncrement, operator_index, operator_new[], string_cstr, ~string (the set / map / string instances: host STL; the new-expressions)
 // FS2 0x002972d0
 
-VcmTable::VcmTable(RenaModel *model)
+VcmTable::VcmTable(ModelInstance *model)
 {
     VcmNameSet names;
     vcmCollectTokens(names, model);
@@ -259,7 +259,7 @@ VcmTable::VcmTable(RenaModel *model)
     }
 
     VcmStateMap tags;
-    for (int part = 0; part < model->m_header->partCount; part++) {
+    for (int part = 0; part < model->node->meshCount; part++) {
         if (vcmPartMaterial(model, part) == NULL) {
             continue;
         }
@@ -284,19 +284,19 @@ VcmTable::VcmTable(RenaModel *model)
     }
 
     m_linkCount = 0;
-    for (int part = 0; part < model->m_header->partCount; part++) {
+    for (int part = 0; part < model->node->meshCount; part++) {
         if (vcmPartMaterial(model, part) != NULL) {
             m_linkCount++;
         }
     }
     m_links = new VcmPartLink[m_linkCount];
     VcmPartLink *link = m_links;
-    for (int part = 0; part < model->m_header->partCount; part++) {
+    for (int part = 0; part < model->node->meshCount; part++) {
         if (vcmPartMaterial(model, part) == NULL) {
             continue;
         }
         const char *tag = vcmPartTag(model, part);
-        link->rec = &model->m_partRecs[part];
+        link->rec = &model->partRecs[part];
         link->state = tags[tag].index;
         link++;
     }

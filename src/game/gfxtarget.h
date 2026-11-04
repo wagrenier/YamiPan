@@ -158,7 +158,7 @@ TexArea *gfxGetTexArea();                                                // FS2 
 
 // A region allocator over GS blocks [base, base + size) (EE 0x1838: base +0,
 // size +4, node and region pools, the vptr +0x1834 = Vt_0031a7b0).
-// layout: host -- not declared beyond the calls; its TU (0x2d46a0..) is
+// layout: host -- not declared beyond the calls; its TU (0x2e1440.., unassigned) is
 // not cut yet.
 class GsRegionAlloc
 {

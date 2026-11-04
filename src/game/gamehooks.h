@@ -224,29 +224,15 @@ struct ModelBone
     ModelBoneNode       *node;   // FS2 +0x0
     const sceVu0FVECTOR *matrix; // FS2 +0x4
 };
-struct StageModelData
-{
-    u_char _0[0x4];
-    u_char distant;             // FS2 +0x4: set to 1 when farther than the draw distance (drawSysBuildShadows)
-    u_char drawGroup;           // FS2 +0x5: 1, or 0x20 for what the view target looks at (StageScene::prepareDrawFlags)
-    u_char _6;
-    u_char shown;               // FS2 +0x7: the model's own shown flag: while there is a model it replaces StageObject::m_shown
-    u_char _8[0x2];
-    u_short flags;              // FS2 +0xa: ModelFlag
-    const sceVu0FVECTOR **rootMatrix; // FS2 +0xc: -> -> the root's matrix (StageObject::setModel copies it)
-    ModelBone *bones = nullptr; // FS2 +0x14: boneCount of them; [2] carries the shadow
-    u_int      boneCount = 0;   // FS2 +0x18
-};
-static_assert(offsetof(StageModelData, drawGroup) == 5, "StageModelData::drawGroup");
-static_assert(offsetof(StageModelData, shown) == 7, "StageModelData::shown");
-static_assert(offsetof(StageModelData, flags) == 0xa, "StageModelData::flags");
-// Model flags (ModelInstance::flags, StageModelData::flags).
+// Model flags (ModelInstance::flags).
 enum ModelFlag
 {
     ModelFlag_Item   = 0x2,     // every item's, from setupItem
     ModelFlag_CastsShadow = 0x8,  // drawSysBuildShadows takes it (cleared on oXX27_05)
     ModelFlag_Distant     = 0x40, // past a quarter of the squared draw distance, when StageModel::_189 is set
-    ModelFlag_Frozen = 0x400,   // clear only while a free item's matrix is dirty (the name is a guess)
+    ModelFlag_Ghost  = 0x100,   // the model ext_ghost (drawSysAddModel; what it does is unread)
+    ModelFlag_TagC   = 0x200,   // a name tag _c, or oXX27_05 / oXX27_11 (drawSysAddModel; unread)
+    ModelFlag_Frozen = 0x400,   // set by drawSysAddModel, clear only while a free item's matrix is dirty (the name is a guess)
 };
 // The model's pose solver (+0xc; the run unassigned@00148db0). Only the
 // test before the call is read: +0x150 a count of something to solve.
@@ -294,7 +280,7 @@ struct StageModel
               const sceVu0FVECTOR *matrix);                              // FS2 0x00188b10
     ~StageModel();                                                       // FS2 0x00188690: deleting
 
-    StageModelData *data = nullptr; // FS2 +0x00: the model file (updateVcm tests it)
+    ModelInstance *data = nullptr; // FS2 +0x00: the model (updateVcm tests it)
     VcmTable  *vcm = nullptr;   // FS2 +0x04
     ModelPose *pose = nullptr;  // FS2 +0x0c
     BoneNode  *bones = nullptr; // FS2 +0x14: StageSound finds "bn_head" in it
@@ -1494,29 +1480,127 @@ struct StageMapFile
 };
 static_assert(sizeof(StageMapFile) == 0x24, "StageMapFile: EE 0x24");
 
-// A node's record in a model file (0x30 bytes). EE layout: it lives in the
-// file.
+// A model file (the model keyword) and what ModelFile::createInstance reads
+// from it. EE layout: the file itself; relocate (its TU, unassigned@002e2970)
+// turns the offsets into pointers in place, so the fields read here are
+// S2dRef.
+enum ModelMaterialKind
+{
+    ModelMaterial_Textured = 0,
+    ModelMaterial_Kind1    = 1, // drawSysFindKind1Surface finds it; what it is, is unread
+};
+enum ModelMaterialFlag
+{
+    ModelMaterialFlag_Foliage = 0x20,   // the texture is a plant's (drawSysAddModel)
+};
+struct ModelMaterial
+{
+    u_char             kind;    // FS2 +0x00: ModelMaterialKind
+    u_char             flags;   // FS2 +0x01: ModelMaterialFlag
+    u_char             _02[2];
+    S2dRef<const char> name;    // FS2 +0x04
+    u_char             _08[4];  // FS2 +0x08: the texture animation (renaStepTexAnim)
+    short              texture; // FS2 +0x0c: into ModelFile::textureNames, or negative
+};
+static_assert(offsetof(ModelMaterial, name) == 4, "ModelMaterial::name");
+static_assert(offsetof(ModelMaterial, texture) == 0xc, "ModelMaterial::texture");
+
+// One material of a mesh part (8 bytes).
+struct ModelMeshMaterial
+{
+    short _0;
+    short material;             // FS2 +0x2: into the file's materials, or negative
+    int   _4;
+};
+static_assert(sizeof(ModelMeshMaterial) == 8, "ModelMeshMaterial: EE 8");
+// A mesh's part (0x30 bytes).
+struct ModelMeshPart
+{
+    u_char                    _00[0x20];
+    int                       materialCount; // FS2 +0x20
+    int                       _24;
+    S2dRef<ModelMeshMaterial> materials;     // FS2 +0x28
+    int                       _2c;
+};
+static_assert(sizeof(ModelMeshPart) == 0x30, "ModelMeshPart: EE 0x30");
+struct ModelMeshParts
+{
+    u_short               count; // FS2 +0x0
+    u_short               _2;
+    S2dRef<ModelMeshPart> parts; // FS2 +0x4
+    S2dRef<ModelMaterial> material; // FS2 +0x8: its name tags the mesh for the VCM (vcmtable.cpp)
+};
+static_assert(offsetof(ModelMeshParts, material) == 8, "ModelMeshParts::material");
+// A node's mesh (0x18 bytes).
+struct ModelMesh
+{
+    S2dRef<const char>     name;  // FS2 +0x00
+    u_char                 _04[4];
+    S2dRef<ModelMeshParts> parts; // FS2 +0x08: may be null
+    u_char                 _0c[0xc];
+};
+static_assert(sizeof(ModelMesh) == 0x18, "ModelMesh: EE 0x18");
+
+struct ModelFile;
+// A node's record in a model file (0x30 bytes).
 struct ModelFileNode
 {
-    int                _00;     // FS2 +0x00
+    S2dRef<const sceVu0FVECTOR> matrix; // FS2 +0x00: 4 rows, the node's
     S2dRef<const char> name;    // FS2 +0x04: a map model's: the object it becomes
+    u_char             _08[8];
+    S2dRef<ModelFile>  file;    // FS2 +0x10
+    S2dRef<ModelMesh>  meshes;  // FS2 +0x14: meshCount
+    u_char             _18[0xc];
+    u_short            boneCount;    // FS2 +0x24
+    u_short            surfaceCount; // FS2 +0x26
+    u_short            _28;          // FS2 +0x28
+    u_short            meshCount;    // FS2 +0x2a
+    u_char             _2c[4];
 };
+static_assert(sizeof(ModelFileNode) == 0x30, "ModelFileNode: EE 0x30");
 static_assert(offsetof(ModelFileNode, name) == 4, "ModelFileNode::name");
+static_assert(offsetof(ModelFileNode, surfaceCount) == 0x26, "ModelFileNode::surfaceCount");
+static_assert(offsetof(ModelFileNode, meshCount) == 0x2a, "ModelFileNode::meshCount");
+
+// A material as a model instance draws it (EE 0x50, FUN_002e3e10 builds it).
+// layout: host.
+struct ModelSurface
+{
+    ModelMaterial *material;    // FS2 +0x18
+    int            waveIndex;   // FS2 +0x24: the number after WaveComposit
+    int            _28;         // FS2 +0x28: 0 on a wave (unread)
+    int            isWave;      // FS2 +0x2c
+};
 
 // What ModelFile::createInstance makes (vtable 0x31a7f0, 0x100 bytes,
-// 0x80-aligned): only the record is read here.
-// layout: host -- EE: the flags at +0xa, the record at +0xc.
+// 0x80-aligned): the model StageModel::data and the draw system's lists
+// hold. Only what the callers read so far. layout: host.
+struct ModelPartRec;
 struct ModelInstance
 {
-    u_short        flags = 0;   // FS2 +0xa: ModelFlag
-    ModelFileNode *node;        // FS2 +0xc
-    void         **texAnims = nullptr; // FS2 +0x44: texAnimCount records of renaStepTexAnim
+    // The record whose children range holds rec's index (the group rec is
+    // in), null at the top.
+    ModelPartRec *findGroup(const ModelPartRec *rec) const;              // FS2 0x002e4100
+
+    u_char         distant = 0;   // FS2 +0x04: set to 1 when farther than the draw distance (drawSysBuildShadows)
+    u_char         drawGroup = 0; // FS2 +0x05: DrawSysGroup
+    u_char         _06 = 0;       // FS2 +0x06: 1 from StageModel::init (unread)
+    u_char         shown = 0;     // FS2 +0x07: the model's own shown flag: while there is a model it replaces StageObject::m_shown
+    u_short        drawMode = 0;  // FS2 +0x08: 0x87 for the boss shadow's draw (unread)
+    u_short        flags = 0;     // FS2 +0x0a: ModelFlag
+    ModelFileNode *node = nullptr; // FS2 +0x0c
+    ModelBone     *bones = nullptr; // FS2 +0x14: boneCount of them; [2] carries the shadow
+    u_int          boneCount = 0; // FS2 +0x18
+    ModelPartRec  *partRecs = nullptr; // FS2 +0x1c: one per node->meshes
+    float          ghostParam0 = 0.0f; // FS2 +0x34: 191 on ext_ghost (unread)
+    float          ghostParam1 = 0.0f; // FS2 +0x38: -52 on ext_ghost (unread)
+    ModelSurface  *surfaces = nullptr; // FS2 +0x3c: node->surfaceCount
+    ModelSurface **surfaceOfMaterial = nullptr; // FS2 +0x40: by the file's material index, null if unused
+    ModelSurface **texAnims = nullptr; // FS2 +0x44: texAnimCount records of renaStepTexAnim
     int            texAnimCount = 0;   // FS2 +0x48
+    sceVu0FMATRIX  colorMatrix = {};   // FS2 +0x80: zero for the boss shadow's draw (unread, the name is a guess)
 };
 
-// A model file (the model keyword). EE layout: the file itself; relocate
-// (its TU, unassigned@002e2970) turns the offsets into pointers in place,
-// so the fields read here are S2dRef.
 struct ModelFile
 {
     bool isValid();                                                      // FS2 0x002e2cf0: the magic at gp-0x7b48
@@ -1526,12 +1610,19 @@ struct ModelFile
     // is not null.
     ModelInstance *createInstance(u_int index, const char *name);        // FS2 0x002e5210
 
-    u_char  _00[0x1e];
+    u_char  _00[0x18];
+    u_short userCount;          // FS2 +0x18: instances of it
+    u_short nodeCount;          // FS2 +0x1a
+    u_short materialCount;      // FS2 +0x1c
     u_short textureCount;       // FS2 +0x1e
-    u_char  _20[0x1c];
+    u_char  _20[0x14];
+    S2dRef<ModelFileNode> nodes; // FS2 +0x34
+    S2dRef<S2dRef<ModelMaterial> > materials; // FS2 +0x38: materialCount
     S2dRef<S2dRef<const char> > textureNames; // FS2 +0x3c: textureCount, each a .tm2 of the .tpk without its extension
 };
+static_assert(offsetof(ModelFile, materialCount) == 0x1c, "ModelFile::materialCount");
 static_assert(offsetof(ModelFile, textureCount) == 0x1e, "ModelFile::textureCount");
+static_assert(offsetof(ModelFile, nodes) == 0x34, "ModelFile::nodes");
 static_assert(offsetof(ModelFile, textureNames) == 0x3c, "ModelFile::textureNames");
 
 // An lpt file (the lpt keyword): magic kLptMagic until applyBgTarget made
@@ -2227,31 +2318,6 @@ extern WeaponDef gWeaponDefs[kWeaponDefCount];  /* bss 0x576010 */
 // getSePlayer (game/menupack.h).
 
 // What game/vcmtable.cpp reads of rena's model (unassigned@002e2970).
-// The geometry / material names of a part's +8 chain are guesses: only the
-// name at its end is read.
-// layout: host -- EE: name +4.
-struct ModelMaterial
-{
-    const char *name;           // FS2 +0x4
-};
-// layout: host -- EE: material +8.
-struct ModelGeometry
-{
-    ModelMaterial *material;    // FS2 +0x8
-};
-// One part of the model file (0x18 on the EE).
-// layout: host -- EE: name +0, geometry +8.
-struct ModelPart
-{
-    const char    *name;        // FS2 +0x0
-    ModelGeometry *geometry;    // FS2 +0x8
-};
-// layout: host -- EE: parts +0x14, the part count (u16) +0x2a.
-struct ModelHeader
-{
-    ModelPart *parts;           // FS2 +0x14
-    u_short    partCount;       // FS2 +0x2a
-};
 // The model instance's record of each part (0x10 on the EE, parallel to
 // the header's parts): the parts it groups and what VcmTable::update
 // writes for the renderer (unread there).
@@ -2265,18 +2331,6 @@ struct ModelPartRec
     u_char  vcmFadeBits;        // FS2 +0xb
     u_char  vcmOffBits;         // FS2 +0xc
 };
-// layout: host -- EE: the header +0xc, the part records +0x1c.
-class RenaModel
-{
-public:
-    // The record whose children range holds rec's index (the group rec is
-    // in), null at the top.
-    ModelPartRec *findGroup(const ModelPartRec *rec) const;             // FS2 0x002e4100
-
-    ModelHeader  *m_header;     // FS2 +0xc
-    ModelPartRec *m_partRecs;   // FS2 +0x1c
-};
-
 // What the S2D widgets (game/uiwidget.cpp) call of systems without a TU.
 
 // fsm subtitle files (unassigned@002681e0): tracks of timed 16-bit texts,
