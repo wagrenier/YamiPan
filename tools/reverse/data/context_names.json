@@ -14136,22 +14136,22 @@
   "why": "slot 12 of 0x315850: answers 0"
  },
  "0019cf80": {
-  "name": "ScriptRunner::command13",
+  "name": "ScriptRunner::scriptSetPosition",
   "tag": "game-inferred",
   "was": "FUN_0019cf80",
-  "why": "slot 13 of 0x315850: empty; 0x315690 forwards it with one argument"
+  "why": "slot +0x3c; native 0x26 passes (x, y, z, 1); StageObject's thunk goes to setPosition"
  },
  "0019cf90": {
-  "name": "ScriptRunner::command14",
+  "name": "ScriptRunner::scriptSetRotation",
   "tag": "game-inferred",
   "was": "FUN_0019cf90",
-  "why": "slot 14 of 0x315850: empty"
+  "why": "slot +0x40; native 0x27, radians; StageObject's thunk goes to setRotation"
  },
  "0019cfa0": {
-  "name": "ScriptRunner::command15",
+  "name": "ScriptRunner::scriptSetYaw",
   "tag": "game-inferred",
   "was": "FUN_0019cfa0",
-  "why": "slot 15 of 0x315850: empty"
+  "why": "slot +0x44; StageObject's thunk goes to setYaw"
  },
  "0019cfb0": {
   "name": "ScriptRunner::command34",
@@ -14160,10 +14160,10 @@
   "why": "slot 34 of 0x315850: empty"
  },
  "0019cfc0": {
-  "name": "ScriptRunner::command39",
+  "name": "ScriptRunner::getScriptObject",
   "tag": "game-inferred",
   "was": "FUN_0019cfc0",
-  "why": "slot 39 of 0x315850: unsupportedCommand, answers 0"
+  "why": "slot +0xa4; StageObject's thunk goes to getSelf"
  },
  "0019cfe0": {
   "name": "ScriptRunner::command58",
@@ -14603,6 +14603,192 @@
   "was": "FUN_001a68a0",
   "why": "this-adjust thunk to 0x269160, slot 1 of the script base"
  },
+ "001a7a20": {
+  "name": "scriptCallNative",
+  "tag": "game-inferred",
+  "was": "FUN_001a7a20",
+  "why": "table 0x304230 indexed by id - 0x19, a0 runner, a1 acc address, a2 code; the VM's 0x01000000 words"
+ },
+ "001a86b0": {
+  "name": "nativeLightValue2d8",
+  "tag": "game-inferred",
+  "was": "FUN_001a86b0",
+  "why": "script native 0x229: slot +0x5c"
+ },
+ "001a9a40": {
+  "name": "nativeFarFog",
+  "tag": "game-inferred",
+  "was": "FUN_001a9a40",
+  "why": "script native 0x217: far fog i"
+ },
+ "001aa720": {
+  "name": "nativeLightEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_001aa720",
+  "why": "script native 0x20c: slot +0x8c"
+ },
+ "001ab180": {
+  "name": "nativeLightRadius",
+  "tag": "game-inferred",
+  "was": "FUN_001ab180",
+  "why": "script native 0x203: slot +0x54 with value squared"
+ },
+ "001ace90": {
+  "name": "nativeLightCastsShadow",
+  "tag": "game-inferred",
+  "was": "FUN_001ace90",
+  "why": "script native 0x1e5: slot +0x88"
+ },
+ "001ad090": {
+  "name": "nativeLightModelColors",
+  "tag": "game-inferred",
+  "was": "FUN_001ad090",
+  "why": "script native 0x1e4: slots +0x80, +0x84"
+ },
+ "001ad320": {
+  "name": "nativeLightValue244",
+  "tag": "game-inferred",
+  "was": "FUN_001ad320",
+  "why": "script native 0x1e3: slot +0x78"
+ },
+ "001ad520": {
+  "name": "nativeLightFadeFrames",
+  "tag": "game-inferred",
+  "was": "FUN_001ad520",
+  "why": "script native 0x1e2: slot +0x70"
+ },
+ "001ad720": {
+  "name": "nativeTransitionSbFrames",
+  "tag": "game-inferred",
+  "was": "FUN_001ad720",
+  "why": "script native 0x1e1: lane 2"
+ },
+ "001ad830": {
+  "name": "nativeModelColorSb",
+  "tag": "game-inferred",
+  "was": "FUN_001ad830",
+  "why": "script native 0x1e0: +0x71c"
+ },
+ "001ad970": {
+  "name": "nativeModelAmbientSb",
+  "tag": "game-inferred",
+  "was": "FUN_001ad970",
+  "why": "script native 0x1df: +0x85c"
+ },
+ "001ae310": {
+  "name": "nativeIsActive",
+  "tag": "game-inferred",
+  "was": "FUN_001ae310",
+  "why": "script native 0x1d4: label's object exists and +0x34 is set"
+ },
+ "001af6a0": {
+  "name": "nativeSetSetLoop",
+  "tag": "game-inferred",
+  "was": "FUN_001af6a0",
+  "why": "script native 0x1c3"
+ },
+ "001af770": {
+  "name": "nativeAddSetKeys",
+  "tag": "game-inferred",
+  "was": "FUN_001af770",
+  "why": "script native 0x1c2"
+ },
+ "001b0100": {
+  "name": "nativeTransitionFrames",
+  "tag": "game-inferred",
+  "was": "FUN_001b0100",
+  "why": "script native 0x1be: lane 1"
+ },
+ "001b0210": {
+  "name": "nativeTransitionRange",
+  "tag": "game-inferred",
+  "was": "FUN_001b0210",
+  "why": "script native 0x1bd: +0xc1c lane 0"
+ },
+ "001b0320": {
+  "name": "nativeFarFog0",
+  "tag": "game-inferred",
+  "was": "FUN_001b0320",
+  "why": "script native 0x1bc: first far fog +0x94c, +0xa8c"
+ },
+ "001b0600": {
+  "name": "nativeFog",
+  "tag": "game-inferred",
+  "was": "FUN_001b0600",
+  "why": "script native 0x1bb: +0x8ac, +0x8fc tracks"
+ },
+ "001b08d0": {
+  "name": "nativeModelLight",
+  "tag": "game-inferred",
+  "was": "FUN_001b08d0",
+  "why": "script native 0x1ba: +0x53c angles, +0x62c colours"
+ },
+ "001b0c20": {
+  "name": "nativeModelAmbient",
+  "tag": "game-inferred",
+  "was": "FUN_001b0c20",
+  "why": "script native 0x1b9: +0x80c tracks"
+ },
+ "001b0d50": {
+  "name": "nativeLight",
+  "tag": "game-inferred",
+  "was": "FUN_001b0d50",
+  "why": "script native 0x1b8: +0x21c angles, +0x30c colours"
+ },
+ "001b10a0": {
+  "name": "nativeAmbient",
+  "tag": "game-inferred",
+  "was": "FUN_001b10a0",
+  "why": "script native 0x1b7: SceneRender +0x3fc tracks"
+ },
+ "001b11d0": {
+  "name": "nativeClearColor",
+  "tag": "game-inferred",
+  "was": "FUN_001b11d0",
+  "why": "script native 0x1b6: SceneRender +0xbcc tracks"
+ },
+ "001b1650": {
+  "name": "nativeLightFlag248",
+  "tag": "game-inferred",
+  "was": "FUN_001b1650",
+  "why": "script native 0x1b4: slot +0x7c"
+ },
+ "001b1850": {
+  "name": "nativeLightFlag240",
+  "tag": "game-inferred",
+  "was": "FUN_001b1850",
+  "why": "script native 0x1b3: slot +0x74"
+ },
+ "001cd040": {
+  "name": "nativeLightConeAngle",
+  "tag": "game-inferred",
+  "was": "FUN_001cd040",
+  "why": "script native 0x2c: slot +0x58"
+ },
+ "001cd240": {
+  "name": "nativeLightRadiusSquared",
+  "tag": "game-inferred",
+  "was": "FUN_001cd240",
+  "why": "script native 0x2b: slot +0x54"
+ },
+ "001cd440": {
+  "name": "nativeLightColor",
+  "tag": "game-inferred",
+  "was": "FUN_001cd440",
+  "why": "script native 0x2a: slot +0x48 of each same-named light"
+ },
+ "001cd940": {
+  "name": "nativeSetRotation",
+  "tag": "game-inferred",
+  "was": "FUN_001cd940",
+  "why": "script native 0x27"
+ },
+ "001cdc50": {
+  "name": "nativeSetPosition",
+  "tag": "game-inferred",
+  "was": "FUN_001cdc50",
+  "why": "script native 0x26"
+ },
  "001cf1b0": {
   "name": "ScriptRunner::unsupportedCommand",
   "tag": "game-inferred",
@@ -14615,11 +14801,167 @@
   "was": "FUN_001cf1e0",
   "why": "answers 0; what the base's command slots call or tail-jump to"
  },
+ "001cf200": {
+  "name": "ScriptRunner::setProperty",
+  "tag": "game-inferred",
+  "was": "FUN_001cf200",
+  "why": "vtable 0x315850 slot +0x10, the VM's property store"
+ },
+ "001cfc20": {
+  "name": "ScriptRunner::getProperty",
+  "tag": "game-inferred",
+  "was": "FUN_001cfc20",
+  "why": "vtable 0x315850 slot +0xc, the VM's property load"
+ },
+ "001d09a0": {
+  "name": "ScriptRunner::setTargetByHandle",
+  "tag": "game-inferred",
+  "was": "FUN_001d09a0",
+  "why": "op 0x1e: target = object of the value, +0x40 runner"
+ },
+ "001d09e0": {
+  "name": "ScriptRunner::setTargetByIndex",
+  "tag": "game-inferred",
+  "was": "FUN_001d09e0",
+  "why": "op 0x1d: target = mission character list +0x69c [value - 1]"
+ },
+ "001d0a60": {
+  "name": "ScriptRunner::setTargetByName",
+  "tag": "game-inferred",
+  "was": "FUN_001d0a60",
+  "why": "strings PC, NPC, SELF, else StageObjectList::findAny"
+ },
+ "001d1330": {
+  "name": "ScriptRunner::runCommand",
+  "tag": "game-inferred",
+  "was": "FUN_001d1330",
+  "why": "vtable slot +8, the 0x02000000 words; the base answers the code unchanged"
+ },
+ "001d1340": {
+  "name": "ScriptFrame::prepare",
+  "tag": "game-inferred",
+  "was": "FUN_001d1340",
+  "why": "vtable 0x315a08 class: clears for an entry, fresh locals of entry +0x1a when it changes"
+ },
+ "001d1480": {
+  "name": "ScriptFrame::restoreTo",
+  "tag": "game-inferred",
+  "was": "FUN_001d1480",
+  "why": "copies the frame back onto a runner's +0x14.. fields"
+ },
+ "001d1550": {
+  "name": "ScriptFrame::saveFrom",
+  "tag": "game-inferred",
+  "was": "FUN_001d1550",
+  "why": "copies a runner's +0x14.. fields into the frame"
+ },
+ "001d1630": {
+  "name": "ScriptFrame::clear",
+  "tag": "game-inferred",
+  "was": "FUN_001d1630",
+  "why": "zeroes position, stack and locals of the same entry"
+ },
+ "001d16b0": {
+  "name": "ScriptFrame::release",
+  "tag": "game-inferred",
+  "was": "FUN_001d16b0",
+  "why": "frees the locals, zeroes everything"
+ },
+ "001d1710": {
+  "name": "ScriptFrame::ScriptFrame",
+  "tag": "game-inferred",
+  "was": "FUN_001d1710",
+  "why": "stores vtable 0x315a08 at +0xa4, zeroes the fields"
+ },
+ "001d1750": {
+  "name": "ScriptRunner::setNamed",
+  "tag": "game-inferred",
+  "was": "FUN_001d1750",
+  "why": "op 0x1a: a local by name, in the entry's slot names, walking the parents"
+ },
+ "001d1980": {
+  "name": "ScriptRunner::getSlotCount",
+  "tag": "game-inferred",
+  "was": "FUN_001d1980",
+  "why": "entry +0x1a, 0 without an entry"
+ },
+ "001d19a0": {
+  "name": "ScriptRunner::getLocals",
+  "tag": "game-inferred",
+  "was": "FUN_001d19a0",
+  "why": "+0x14"
+ },
+ "001d19b0": {
+  "name": "ScriptRunner::getSlotName",
+  "tag": "game-inferred",
+  "was": "FUN_001d19b0",
+  "why": "entry +0x14 + index * 0x10, else (unknown)"
+ },
+ "001d19f0": {
+  "name": "ScriptRunner::getParent",
+  "tag": "game-inferred",
+  "was": "FUN_001d19f0",
+  "why": "+0"
+ },
+ "001d1a00": {
+  "name": "ScriptRunner::getEntry",
+  "tag": "game-inferred",
+  "was": "FUN_001d1a00",
+  "why": "+0xa8"
+ },
+ "001d1a10": {
+  "name": "ScriptRunner::getNamed",
+  "tag": "game-inferred",
+  "was": "FUN_001d1a10",
+  "why": "op 0x19: a local by name, walking the parents"
+ },
+ "001d1c20": {
+  "name": "ScriptRunner::getParent2",
+  "tag": "game-inferred",
+  "was": "FUN_001d1c20",
+  "why": "second copy of getParent"
+ },
+ "001d1c30": {
+  "name": "ScriptRunner::getLocals2",
+  "tag": "game-inferred",
+  "was": "FUN_001d1c30",
+  "why": "second copy of getLocals"
+ },
+ "001d1c40": {
+  "name": "ScriptRunner::execute",
+  "tag": "game-inferred",
+  "was": "FUN_001d1c40",
+  "why": "the VM: switch on the code word, 0x36 cases, then native and command calls"
+ },
  "001d27e0": {
   "name": "ScriptRunner::run",
   "tag": "game-inferred",
   "was": "FUN_001d27e0",
   "why": "gp-0x7a58 = this and +4 raised around 0x1d1c40"
+ },
+ "001d2830": {
+  "name": "ScriptRunner::getStrings",
+  "tag": "game-inferred",
+  "was": "FUN_001d2830",
+  "why": "cached STR table of the SSS block, the parent's first"
+ },
+ "001d2b10": {
+  "name": "ScriptRunner::getBlock",
+  "tag": "game-inferred",
+  "was": "FUN_001d2b10",
+  "why": "reads the trailer word: the SSS block"
+ },
+ "001d2bc0": {
+  "name": "ScriptRunner::getLabels",
+  "tag": "game-inferred",
+  "was": "FUN_001d2bc0",
+  "why": "cached LBL table of the SSS block, the parent's first"
+ },
+ "001d2ea0": {
+  "name": "ScriptRunner::bindEntry",
+  "tag": "game-inferred",
+  "was": "FUN_001d2ea0",
+  "why": "stores the entry at +0xa8, resolves trailer and both tables"
  },
  "001d2f40": {
   "name": "ScriptRunner::setEntry",
@@ -14638,6 +14980,90 @@
   "tag": "game-inferred",
   "was": "FUN_001d3130",
   "why": "base of SubSceneObject and of every stage object's +0x40"
+ },
+ "001d3180": {
+  "name": "scriptApply",
+  "tag": "game-inferred",
+  "was": "FUN_001d3180",
+  "why": "jump table 0x304db0: assign, + - * / & | ^ on acc"
+ },
+ "001d3200": {
+  "name": "ScriptRunner::readObjectArg",
+  "tag": "game-inferred",
+  "was": "FUN_001d3200",
+  "why": "code word = label; indices 0,1,2 store the object in the word before the label"
+ },
+ "001d32e0": {
+  "name": "ScriptRunner::readNameArg",
+  "tag": "game-inferred",
+  "was": "FUN_001d32e0",
+  "why": "code word = label; indices 0,1,2 answer the object's name"
+ },
+ "001d33c0": {
+  "name": "ScriptRunner::readLabelArg",
+  "tag": "game-inferred",
+  "was": "FUN_001d33c0",
+  "why": "code word = label"
+ },
+ "001d3410": {
+  "name": "ScriptRunner::readCellArg",
+  "tag": "game-inferred",
+  "was": "FUN_001d3410",
+  "why": "the word before the label, else the label"
+ },
+ "001d3470": {
+  "name": "ScriptRunner::readStringArg",
+  "tag": "game-inferred",
+  "was": "FUN_001d3470",
+  "why": "code word = STR table index"
+ },
+ "001d34c0": {
+  "name": "ScriptRunner::popArgs",
+  "tag": "game-inferred",
+  "was": "FUN_001d34c0",
+  "why": "count values off +0x1c by +0x9c into out, deepest first"
+ },
+ "001d3710": {
+  "name": "scriptYield",
+  "tag": "game-inferred",
+  "was": "FUN_001d3710",
+  "why": "stores a, b at +0xac, +0xb0 of the running script and sets the VM's yield byte gp-0x7a5c"
+ },
+ "001d3740": {
+  "name": "scriptFramesTo30",
+  "tag": "game-inferred",
+  "was": "FUN_001d3740",
+  "why": "n * 30 / (1 / delta)"
+ },
+ "001d37c0": {
+  "name": "scriptFramesFrom30",
+  "tag": "game-inferred",
+  "was": "FUN_001d37c0",
+  "why": "n * (1 / delta) / 30"
+ },
+ "001d3850": {
+  "name": "ScriptBlock::findStrings",
+  "tag": "game-inferred",
+  "was": "FUN_001d3850",
+  "why": "walks the SSS sub-blocks to STR"
+ },
+ "001d38e0": {
+  "name": "ScriptBlock::findLabels",
+  "tag": "game-inferred",
+  "was": "FUN_001d38e0",
+  "why": "walks the SSS sub-blocks to LBL"
+ },
+ "001d3970": {
+  "name": "ScriptEntry::block",
+  "tag": "game-inferred",
+  "was": "FUN_001d3970",
+  "why": "entry code + size - 0xc: the trailer word"
+ },
+ "001d39b0": {
+  "name": "ScriptFrame::~ScriptFrame",
+  "tag": "game-inferred",
+  "was": "FUN_001d39b0",
+  "why": "deleting dtor of vtable 0x315a08"
  },
  "001d3a40": {
   "name": "StageScript::relocate",
@@ -20153,11 +20579,23 @@
   "was": "FUN_0029f050",
   "why": "walks a relocated script's chunks 0x1a4c424c, 0x1a525453, 0x1a545353; read only by shape"
  },
+ "0029f500": {
+  "name": "scriptObjectOfValue",
+  "tag": "game-inferred",
+  "was": "FUN_0029f500",
+  "why": "odd value: the mission character with that handle; even: the value itself"
+ },
  "0029fb30": {
   "name": "parseSpawnId",
   "tag": "game-inferred",
   "was": "FUN_0029fb30",
   "why": "sscanf P_SPW%02d, -1 when it does not match"
+ },
+ "0029fd20": {
+  "name": "ScriptEntry::checkedBlock",
+  "tag": "game-inferred",
+  "was": "FUN_0029fd20",
+  "why": "trailer words and block magic checked"
  },
  "002a7a50": {
   "name": "NmlPose::NmlPose",

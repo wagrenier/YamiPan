@@ -143,6 +143,9 @@ struct SceneRender : RenaPointLight
     void updateModelDirection(int set, int light, int key);              // FS2 0x001f7020
     void updateDirection(int set, int light, int key);                   // FS2 0x001f71d0
 
+    // The tracks of a set, for the natives.
+    SceneLightSet &getSet(int set) { return m_sets[set]; }
+
     u_char m_snap;              // FS2 +0xe24: the next values come at once: set by the ctor and a view change, cleared each frame by StageScene::update
     int    m_forcedSet;         // FS2 +0xe28: sceneRenderGroup(0) each frame: -1 the boxes choose
 

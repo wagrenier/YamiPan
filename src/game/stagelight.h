@@ -42,8 +42,7 @@ constexpr float kHardLightRangeSq = 640000.0f;
 // shadowAt, +0x278 sideHook2, the five again (+0x27c..), then the cmd* below
 // in order, then the side base's hooks 0, 1, 3. Most cmd* are also the
 // script's commands: the runner's slots are thunks to them (slot numbers in
-// the comments). Host order is not EE order: no caller goes through the slot
-// yet, and ScriptRunner has no such commands to override until its TU.
+// the comments).
 // layout: host -- EE offsets in the comments; EE 0x2c0.
 class StageLight : public StageObject, public CollisionOwner
 {
@@ -117,13 +116,13 @@ public:
     // The commands (the class's slots after the repeated five).
     // The colour as a vector. Runner slot 16.
     // FS2 0x00184bb0
-    virtual void cmdSetColor(const float *color) { memcpy(m_color, color, sizeof(m_color)); }
+    void cmdSetColor(const float *color) override { memcpy(m_color, color, sizeof(m_color)); }
     // Runner slot 19: 0x184aa0, the copy of setRadiusSquared.
-    virtual void cmdSetRadiusSquared(float radiusSquared) { setRadiusSquared(radiusSquared); }
+    void cmdSetRadiusSquared(float radiusSquared) override { setRadiusSquared(radiusSquared); }
     // The tree's setScriptFlag. Runner slot 23.
     // FS2 0x00184a20
     // callcheck: setScriptFlag
-    virtual void cmdSetTreeSwitchedOn(bool on) { m_tree->setScriptFlag(on); }
+    void cmdSetTreeSwitchedOn(bool on) override { m_tree->setScriptFlag(on); }
     // Runner slot 86.
     // FS2 0x00184920
     // callcheck: isLit (inline in the ROM)
@@ -131,35 +130,35 @@ public:
     // The tree's setScriptFlag2. Runner slot 25.
     // FS2 0x00184a00
     // callcheck: setScriptFlag2
-    virtual void cmdSetTreeBroken(bool on) { m_tree->setScriptFlag2(on); }
+    void cmdSetTreeBroken(bool on) override { m_tree->setScriptFlag2(on); }
     // Runner slot 26.
     // FS2 0x001849f0
-    virtual void cmdSetFadeFrames(int frames) { m_fadeFrames = frames; }
+    void cmdSetFadeFrames(int frames) override { m_fadeFrames = frames; }
     // Runner slot 27.
     // FS2 0x001849e0
-    virtual void cmdSetFlag240(bool on) { m_modelFade = on; }
+    void cmdSetFlag240(bool on) override { m_modelFade = on; }
     // Runner slot 28.
     // FS2 0x001849d0
-    virtual void cmdSetValue244(int value) { m_modelFadeFrames = value; }
+    void cmdSetValue244(int value) override { m_modelFadeFrames = value; }
     // Runner slot 29.
     // FS2 0x001849c0
-    virtual void cmdSetFlag248(bool on) { m_lightsModels = on; }
+    void cmdSetFlag248(bool on) override { m_lightsModels = on; }
     // Runner slot 30.
     // FS2 0x001849b0
-    virtual void cmdSetColor250(const float *color) { memcpy(m_modelColor, color, sizeof(m_modelColor)); }
+    void cmdSetColor250(const float *color) override { memcpy(m_modelColor, color, sizeof(m_modelColor)); }
     // Runner slot 31.
     // FS2 0x001849a0
-    virtual void cmdSetColor260(const float *color) { memcpy(m_modelAmbient, color, sizeof(m_modelAmbient)); }
+    void cmdSetColor260(const float *color) override { memcpy(m_modelAmbient, color, sizeof(m_modelAmbient)); }
     // Runner slot 32.
     // FS2 0x00184990
-    virtual void cmdSetCastsShadow(bool on) { m_castsShadow = on; }
+    void cmdSetCastsShadow(bool on) override { m_castsShadow = on; }
     // Runner slot 33: 0x184980, the copy of setEnabled.
-    virtual void cmdSetEnabled(bool on) { setEnabled(on); }
+    void cmdSetEnabled(bool on) override { setEnabled(on); }
     // A key of the colour track, frames in from the start. Runner slot 17.
-    virtual void cmdAddColorKey(int frames, const float *color);         // FS2 0x00184b40
+    void cmdAddColorKey(int frames, const float *color) override;         // FS2 0x00184b40
     // Runner slot 18.
     // FS2 0x00184b30
-    virtual void cmdSetColorLoop(u_char loop) { m_track->loop = loop; }
+    void cmdSetColorLoop(u_char loop) override { m_track->loop = loop; }
 
     u_char m_envLight;          // FS2 +0x271: ENV_ lights
     StageList<AreaBox *> m_boxes; // FS2 +0x278: the boxes named after the light; it only works inside them
@@ -232,10 +231,10 @@ public:
 
     void setConeAngle(int degrees);                                      // FS2 0x00185210, 0x00184a50: half the cone
     // Runner slot 20: 0x184a50, the copy of setConeAngle.
-    virtual void cmdSetConeAngle(int degrees) { setConeAngle(degrees); }
+    void cmdSetConeAngle(int degrees) override { setConeAngle(degrees); }
     // Runner slot 21.
     // FS2 0x00184a40
-    virtual void cmdSetValue2d8(int value) { m_intensityPercent = value; }
+    void cmdSetValue2d8(int value) override { m_intensityPercent = value; }
 
 private:
     int    m_coneDegrees;       // FS2 +0x2c0

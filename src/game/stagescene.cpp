@@ -2962,7 +2962,7 @@ void StageScene::update()
         runStageScripts();
     } else if (subScene != nullptr) {
         subScene->run(0);
-        bool going = subScene->m_running != 0 || demoStream->isPlaying();
+        bool going = subScene->isRunning() || demoStream->isPlaying();
         bool skipped = subScene->m_skippable
             && (gGameSystem->m_pad0.m_pressed & SCE_PADstart) != 0;
         if (skipped || !going) {
@@ -4917,11 +4917,11 @@ void StageMarker::sideHook3()
 //   FS2 0x0019cf50  ScriptRunner::command10
 //   FS2 0x0019cf60  ScriptRunner::command11
 //   FS2 0x0019cf70  ScriptRunner::command12
-//   FS2 0x0019cf80  ScriptRunner::command13
-//   FS2 0x0019cf90  ScriptRunner::command14
-//   FS2 0x0019cfa0  ScriptRunner::command15
+//   FS2 0x0019cf80  ScriptRunner::scriptSetPosition
+//   FS2 0x0019cf90  ScriptRunner::scriptSetRotation
+//   FS2 0x0019cfa0  ScriptRunner::scriptSetYaw
 //   FS2 0x0019cfb0  ScriptRunner::command34
-//   FS2 0x0019cfc0  ScriptRunner::command39
+//   FS2 0x0019cfc0  ScriptRunner::getScriptObject
 //   FS2 0x0019cfe0  ScriptRunner::command58
 //   FS2 0x0019d010  ScriptRunner::command59
 //   FS2 0x0019d040  ScriptRunner::command83
