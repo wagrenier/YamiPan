@@ -27683,11 +27683,137 @@
   "was": "FUN_0029ad40",
   "why": "the inverse of applyNaviAnswer: the record as a navi node, negated after a cleared stage"
  },
+ "0029ada0": {
+  "name": "PrgScaleNaviScroll::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0029ada0",
+  "why": "vtable 0x318820 slot 1: applies the map widget's view"
+ },
+ "0029add0": {
+  "name": "PrgScaleNaviScroll::~PrgScaleNaviScroll",
+  "tag": "game-inferred",
+  "was": "FUN_0029add0",
+  "why": "vtable 0x318820 slot 0: deleting dtor"
+ },
  "0029ae30": {
   "name": "PrgScaleNaviScroll::PrgScaleNaviScroll",
   "tag": "game-inferred",
   "was": "FUN_0029ae30",
   "why": "create case 0x1c (prgScaleNaviScroll, 0x28 bytes); unread"
+ },
+ "0029aef0": {
+  "name": "PrgScaleNavi::updateLinkBits",
+  "tag": "game-inferred",
+  "was": "FUN_0029aef0",
+  "why": "fills +0x584 with the route top's open links; answers that the tab variable changed"
+ },
+ "0029b1a0": {
+  "name": "PrgScaleNavi::updateLinkVars",
+  "tag": "game-inferred",
+  "was": "FUN_0029b1a0",
+  "why": "variables 3..5 from the route: link 0, link 1, back"
+ },
+ "0029b2e0": {
+  "name": "PrgScaleNavi::syncRoute",
+  "tag": "game-inferred",
+  "was": "FUN_0029b2e0",
+  "why": "takes the saved route 0x5995e0 when it ends on the node, else starts a new one"
+ },
+ "0029b430": {
+  "name": "PrgScaleNavi::getPendingRows",
+  "tag": "game-inferred",
+  "was": "FUN_0029b430",
+  "why": "first and last grid row of the pending nodes +0x5d0"
+ },
+ "0029b530": {
+  "name": "PrgScaleNavi::markPending",
+  "tag": "game-inferred",
+  "was": "FUN_0029b530",
+  "why": "node pictures again, findPendingLink's targets lit by 5 or 10"
+ },
+ "0029b6f0": {
+  "name": "PrgScaleNavi::nodeKindOf",
+  "tag": "game-inferred",
+  "was": "FUN_0029b6f0",
+  "why": "picture number of a node from its flags"
+ },
+ "0029b830": {
+  "name": "PrgScaleNavi::nodeFlagsOf",
+  "tag": "game-inferred",
+  "was": "FUN_0029b830",
+  "why": "a node's state from the save and NaviTable: open, cleared, goals, single part"
+ },
+ "0029b980": {
+  "name": "PrgScaleNavi::advance",
+  "tag": "game-inferred",
+  "was": "FUN_0029b980",
+  "why": "vtable 0x318840 slot 2: the input and state machine"
+ },
+ "0029c7a0": {
+  "name": "PrgScaleNavi::moveCursor",
+  "tag": "game-inferred",
+  "was": "FUN_0029c7a0",
+  "why": "starts the cursor and scroll tweens between two grid cells at a speed"
+ },
+ "0029cb20": {
+  "name": "PrgScaleNavi::updateStatus",
+  "tag": "game-inferred",
+  "was": "FUN_0029cb20",
+  "why": "variable 11 from the node's flags"
+ },
+ "0029cc50": {
+  "name": "PrgScaleNavi::updateNode",
+  "tag": "game-inferred",
+  "was": "FUN_0029cc50",
+  "why": "findNodeAt under the cursor and every variable that hangs on the node"
+ },
+ "0029d460": {
+  "name": "PrgScaleNavi::updateHardVars",
+  "tag": "game-inferred",
+  "was": "FUN_0029d460",
+  "why": "variables 30..32: clear bits 0x10, 0x20 of the hard kind"
+ },
+ "0029d5e0": {
+  "name": "PrgScaleNavi::applyView",
+  "tag": "game-inferred",
+  "was": "FUN_0029d5e0",
+  "why": "scale and scroll on the sequence's matrix, the scissor of one rectangle; called by the scroll widget"
+ },
+ "0029d8a0": {
+  "name": "PrgScaleNavi::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0029d8a0",
+  "why": "vtable 0x318840 slot 1: scale and scroll on the sequence's matrix"
+ },
+ "0029d960": {
+  "name": "PrgScaleNavi::updateHints",
+  "tag": "game-inferred",
+  "was": "FUN_0029d960",
+  "why": "variables 16..18 from the node, its row and the pending rows"
+ },
+ "0029db00": {
+  "name": "PrgScaleNavi::isAtEnd",
+  "tag": "game-inferred",
+  "was": "FUN_0029db00",
+  "why": "the tweens' progress is 1"
+ },
+ "0029dbc0": {
+  "name": "PrgScaleNavi::isMoveDone",
+  "tag": "game-inferred",
+  "was": "FUN_0029dbc0",
+  "why": "the tweens are done"
+ },
+ "0029dc50": {
+  "name": "PrgScaleNavi::setZoom",
+  "tag": "game-inferred",
+  "was": "FUN_0029dc50",
+  "why": "tweens between the plain view and the overview; scale 0.35345513"
+ },
+ "0029e3d0": {
+  "name": "PrgScaleNavi::~PrgScaleNavi",
+  "tag": "game-inferred",
+  "was": "FUN_0029e3d0",
+  "why": "vtable 0x318840 slot 0: keeps the route in 0x5995e0 unless the answer picks no node"
  },
  "0029e4f0": {
   "name": "PrgScaleNavi::PrgScaleNavi",

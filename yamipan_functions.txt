@@ -7804,6 +7804,11 @@
 /* 00295440 00000008 */ FUN_00295440(){}
 /* 00295450 00000008 */ FUN_00295450(){}
 /* 00295460 00000008 */ FUN_00295460(){}
+
+// *****************************************************************************
+// FILE -- game/navimenu.cpp
+// *****************************************************************************
+
 /* 00295470 00000078 */ runNaviFile(){}  // game
 /* 002954f0 000000e0 */ runNaviLayout(){}  // game
 
@@ -7954,37 +7959,42 @@
 /* 0029aca0 00000008 */ ViewCamera::dtorThunk(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/navimenu.cpp
 // *****************************************************************************
 
 /* 0029acb0 00000088 */ applyNaviAnswer(){}  // game
 /* 0029ad40 00000060 */ currentNaviAnswer(){}  // game
-/* 0029ada0 00000030 */ FUN_0029ada0(){}
-/* 0029add0 00000060 */ FUN_0029add0(){}
+/* 0029ada0 00000030 */ PrgScaleNaviScroll::draw(){}  // game
+/* 0029add0 00000060 */ PrgScaleNaviScroll::~PrgScaleNaviScroll(){}  // game
 /* 0029ae30 000000c0 */ PrgScaleNaviScroll::PrgScaleNaviScroll(){}  // game
-/* 0029aef0 000002a4 */ FUN_0029aef0(){}
-/* 0029b1a0 00000134 */ FUN_0029b1a0(){}
-/* 0029b2e0 0000014c */ FUN_0029b2e0(){}
-/* 0029b430 000000f8 */ FUN_0029b430(){}
-/* 0029b530 000001bc */ FUN_0029b530(){}
-/* 0029b6f0 0000013c */ FUN_0029b6f0(){}
-/* 0029b830 00000148 */ FUN_0029b830(){}
-/* 0029b980 00000e1c */ FUN_0029b980(){}
-/* 0029c7a0 00000374 */ FUN_0029c7a0(){}
-/* 0029cb20 00000130 */ FUN_0029cb20(){}
-/* 0029cc50 00000804 */ FUN_0029cc50(){}
-/* 0029d460 0000017c */ FUN_0029d460(){}
-/* 0029d5e0 000002b4 */ FUN_0029d5e0(){}
-/* 0029d8a0 000000b4 */ FUN_0029d8a0(){}
-/* 0029d960 000001a0 */ FUN_0029d960(){}
-/* 0029db00 000000b8 */ FUN_0029db00(){}
-/* 0029dbc0 0000008c */ FUN_0029dbc0(){}
-/* 0029dc50 00000778 */ FUN_0029dc50(){}
-/* 0029e3d0 0000011c */ FUN_0029e3d0(){}
+/* 0029aef0 000002a4 */ PrgScaleNavi::updateLinkBits(){}  // game
+/* 0029b1a0 00000134 */ PrgScaleNavi::updateLinkVars(){}  // game
+/* 0029b2e0 0000014c */ PrgScaleNavi::syncRoute(){}  // game
+/* 0029b430 000000f8 */ PrgScaleNavi::getPendingRows(){}  // game
+/* 0029b530 000001bc */ PrgScaleNavi::markPending(){}  // game
+/* 0029b6f0 0000013c */ PrgScaleNavi::nodeKindOf(){}  // game
+/* 0029b830 00000148 */ PrgScaleNavi::nodeFlagsOf(){}  // game
+/* 0029b980 00000e1c */ PrgScaleNavi::advance(){}  // game
+/* 0029c7a0 00000374 */ PrgScaleNavi::moveCursor(){}  // game
+/* 0029cb20 00000130 */ PrgScaleNavi::updateStatus(){}  // game
+/* 0029cc50 00000804 */ PrgScaleNavi::updateNode(){}  // game
+/* 0029d460 0000017c */ PrgScaleNavi::updateHardVars(){}  // game
+/* 0029d5e0 000002b4 */ PrgScaleNavi::applyView(){}  // game
+/* 0029d8a0 000000b4 */ PrgScaleNavi::draw(){}  // game
+/* 0029d960 000001a0 */ PrgScaleNavi::updateHints(){}  // game
+/* 0029db00 000000b8 */ PrgScaleNavi::isAtEnd(){}  // game
+/* 0029dbc0 0000008c */ PrgScaleNavi::isMoveDone(){}  // game
+/* 0029dc50 00000778 */ PrgScaleNavi::setZoom(){}  // game
+/* 0029e3d0 0000011c */ PrgScaleNavi::~PrgScaleNavi(){}  // game
 /* 0029e4f0 00000a7c */ PrgScaleNavi::PrgScaleNavi(){}  // game
 /* 0029ef70 0000005c */ saveExtraInit(){}  // game
 /* 0029efd0 0000000c */ getSaveExtra(){}  // game
 /* 0029efe0 00000008 */ getNaviMenu(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 0029eff0 0000005c */ scriptHasLabelTexts(){}  // game
 
 // *****************************************************************************

@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-05 18:07 at commit `ee6a6f2` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-05 18:57 at commit `cfa751a` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-05 18:07 at commit `ee6a6f2` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **4479** (68%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3558
-- context-name ledger: 5102 entries; overrides of wrong library matches: 0
-- placed in a source file: 4607/6599 in 104 files
+- game functions: **6599**, named **4500** (68%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3579
+- context-name ledger: 5123 entries; overrides of wrong library matches: 0
+- placed in a source file: 4637/6599 in 105 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **4163**; stubs: **305**
+- reconstructed FS2 functions: **4193**; stubs: **297**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -60,6 +60,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/menuscene.cpp` | 14 | 0 |
 | `src/game/modelpose.cpp` | 93 | 0 |
 | `src/game/movieplayer.cpp` | 41 | 0 |
+| `src/game/navimenu.cpp` | 30 | 0 |
 | `src/game/nodetransform.cpp` | 17 | 0 |
 | `src/game/packtables.cpp` | 8 | 0 |
 | `src/game/pad.cpp` | 14 | 0 |
@@ -115,7 +116,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/vectortrack.cpp` | 10 | 0 |
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 255 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 247 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -143,7 +144,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 218 TUs: todo 93, partial 41, verify 86, done 25
+- 219 TUs: todo 93, partial 40, verify 87, done 26
 - next: **game/uiitemlist.cpp** (continuing a partial TU)
 - pinned queue: (empty)
 - partial: `game/scenepool.cpp` 11/11 -- Written with game/playermotion.cpp thirteenth run (2026-11-05): all 11. The text shows; the dark strip behind it could not be told apart on the dark room of sta
@@ -174,6 +175,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/menuscene.cpp` 14/14 -- All 14 functions of 0x2b5740..0x2b6b90 written (batch 083, 32 names, saved in Ghidra): the whole menu flow, architecture.md Modules has the map. Build, callchec
 - verify: `game/modelpose.cpp` 92/92 -- All 92 written, no stubs left in the TU (batch 111). Second run wrote the five solvers, solveLeg, settle and settleFixed, the sw bones swing with its spring and
 - verify: `game/movieplayer.cpp` 41/41 -- Cut out of unassigned@001953f0 (its tail 0x1faa30..0x1fcb40; the rest of that run is still unassigned). New game/movieplayer.h; gamehooks.h lost MoviePlayer and
+- verify: `game/navimenu.cpp` 30/30 -- Seen in the user's own playthrough: after stage 1 the navigator appears, the cursor moves and picking the next node starts that stage. Not looked at: the overvi
 - verify: `game/nodetransform.cpp` 16/26 -- All of 0x1d7c50..0x1d85b0 written (batches 100, 101); rotation, translate and multiply helpers in vu0math.h. New Game run: 31,560 frames with no crash, the open
 - verify: `game/packtables.cpp` 8/51 -- 3D path 1 of 5. Root cause: String and StringList were stubs, so every stage script split into zero lines. Written here: game/stringlist.cpp (marked done), Pack
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
@@ -238,6 +240,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-05 18:57 `game/navimenu.cpp` verify: The navigator: the screen after a stage, its two widgets and the answer
 - 2026-11-05 18:07 `game/stageplayer.cpp` verify: The stage's end: a box answers native 0x44, ClearSequence is written, New Game's first part ends
 - 2026-11-05 17:36 `game/scriptrunner.cpp` verify: The last 89 natives: every native the disc's scripts call is bound; nothing seen to run
 - 2026-11-05 16:56 `game/scriptrunner.cpp` partial: 52 more natives by use on the disc, takeDamage and getHandClass, scriptHurt, the runner slots behind them
@@ -245,7 +248,6 @@ Recent sessions:
 - 2026-11-05 15:30 `game/scriptrunner.cpp` partial: 63 more natives by use on the disc, the foe weights and picks, the character slots behind them
 - 2026-11-05 14:52 `game/scriptrunner.cpp` partial: All natives of stage 1's object script and 14 of the most used on the disc; sssall.py orders the rest
 - 2026-11-05 14:08 `yamipan/rendering/model_renderer.cpp` verify: Shadow pass read from VU1 and in the host; the pass runs in d0101 by its numbers, no screenshot shows a shadow yet
-- 2026-11-05 13:11 `yamipan/rendering/model_renderer.cpp` partial: Scene point light, the spot's projected pass and back-face culling read from VU1 and in the host; stage 1 lights neither, so seen only with a forced test lamp
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|

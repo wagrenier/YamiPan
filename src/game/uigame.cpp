@@ -1612,19 +1612,19 @@ int getGameValue(int kind, int i, int j, int expected)
         return getSaveData()->archive[i];
     case GameValue_NaviValue: {
         NaviMenu *menu = getNaviMenu();
-        return menu != nullptr ? menu->values[i] : 0;
+        return menu != nullptr ? menu->m_nodeKind[i] : 0;
     }
     case GameValue_NaviBits: {
         NaviMenu *menu = getNaviMenu();
-        return menu != nullptr ? (menu->bits[i] & j) != 0 : 0;
+        return menu != nullptr ? (menu->m_bits[i] & j) != 0 : 0;
     }
     case GameValue_NaviFlagF0: {
         NaviMenu *menu = getNaviMenu();
-        return menu != nullptr ? menu->flagsF0[i] != 0 : 0;
+        return menu != nullptr ? menu->m_rowShown[i] != 0 : 0;
     }
     case GameValue_NaviFlagE0: {
         NaviMenu *menu = getNaviMenu();
-        return menu != nullptr ? menu->flagsE0[i] != 0 : 0;
+        return menu != nullptr ? menu->m_columnShown[i] != 0 : 0;
     }
     case GameValue_Fixed:
         if (i >= 0 && i < kGameValueFixedCount)

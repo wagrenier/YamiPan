@@ -290,8 +290,8 @@ enum GameValueKind
     GameValue_SelectStage = 18,     // StageSelect::stage
     GameValue_SelectKind = 19,      // StageSelect::kind
     GameValue_SelectVariant = 20,   // StageSelect::variant
-    GameValue_NaviValue = 21,       // NaviMenu::values[i]; 0 without the menu
-    GameValue_NaviBits = 22,        // NaviMenu::bits[i] & j
+    GameValue_NaviValue = 21,       // NaviMenu::m_nodeKind[i]; 0 without the menu
+    GameValue_NaviBits = 22,        // NaviMenu::m_bits[i] & j
     GameValue_AutoSave = 23,        // GameOptions::autoSave (bool)
     GameValue_Unlock468 = 24,       // SaveData::unlock468 (bool)
     GameValue_Fixed = 25,           // kGameValueFixed[i], else 0xfe (unread what for)
@@ -299,8 +299,8 @@ enum GameValueKind
     GameValue_ButtonMapDraft = 27,  // gUiButtonMapDraft
     GameValue_PerfectBits = 28,     // StageResult::getPerfectBits
     GameValue_StageClock = 29,      // StageSelect::_10 (the count-up clock); stage 29 reads 1
-    GameValue_NaviFlagF0 = 30,      // NaviMenu::flagsF0[i] != 0
-    GameValue_NaviFlagE0 = 31,      // NaviMenu::flagsE0[i] != 0
+    GameValue_NaviFlagF0 = 30,      // NaviMenu::m_rowShown[i] != 0
+    GameValue_NaviFlagE0 = 31,      // NaviMenu::m_columnShown[i] != 0
     GameValue_Option14 = 32,        // GameOptions::invertY (bool)
     GameValue_Option15 = 33,        // GameOptions::invertX (bool)
     GameValue_BeatsRecord = 34,     // StageResult::beatsRecord

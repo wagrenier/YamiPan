@@ -3554,26 +3554,85 @@ struct SubSceneData
 // files): game/stagescene.h.
 #include "game/stagescene.h"
 
-// The navi menu (0x29a700..; sbss gp-0x79f8, null while there is none).
-// Only what getGameValue reads; the extents are guesses (each array ends
-// where the next one starts).
-// The stage the menu points at is values[113] (+0x46c): inside values as
-// its extent is guessed.
-constexpr int kNaviMenuStageValue = (0x46c - 0x2a8) / 4;
+// The navigator (game/navimenu.h). A step of the route: the node, and which
+// of its links back it was reached by (-1 neither). layout: EE 8 bytes, also
+// in SaveExtra.
+struct NaviStep
+{
+    int node;                   // FS2 +0x0
+    int side;                   // FS2 +0x4
+};
+static_assert(sizeof(NaviStep) == 8, "NaviStep: EE 8");
+
+constexpr int kNaviNodes = 0x45;
+constexpr int kNaviRows = 0x34;
+constexpr int kNaviRouteSteps = 0x20;
+constexpr int kNaviPending = 4;
+
+// NaviMenu::m_nodeFlags.
+enum NaviNodeFlag
+{
+    NaviNode_Open          = 0x01,
+    NaviNode_FirstCleared  = 0x02,
+    NaviNode_SecondCleared = 0x04,
+    NaviNode_FirstGoal     = 0x08,
+    NaviNode_SecondGoal    = 0x10,
+    NaviNode_HereFirst     = 0x20,  // the stage running now, its first part
+    NaviNode_HereSecond    = 0x40,
+    NaviNode_SinglePart    = 0x80,
+};
+
+// NaviMenu::m_bits.
+enum NaviBit
+{
+    NaviBit_Link0  = 0x01,
+    NaviBit_Link1  = 0x02,
+    NaviBit_Link2  = 0x04,
+    NaviBit_Link3  = 0x08,
+    NaviBit_Shown0 = 0x10,      // ... and the layout's tab shows it
+    NaviBit_Shown1 = 0x20,
+    NaviBit_Shown2 = 0x40,
+    NaviBit_Shown3 = 0x80,
+};
+
+// The navi screen's data, the part of PrgScaleNavi a layout reads by index
+// (getGameValue). layout: EE, the widget's +0x2a8..+0x628; the offsets noted
+// are the widget's.
 struct NaviMenu
 {
-    int stage() const { return values[kNaviMenuStageValue]; }
+    int stage() const { return m_node; }
 
-    u_char _000[0x2a8];
-    int    values[0xb7];        // FS2 +0x2a8: GameValue_NaviValue
-    u_char bits[0x5c];          // FS2 +0x584: GameValue_NaviBits
-    u_char flagsE0[0x10];       // FS2 +0x5e0: GameValue_NaviFlagE0
-    u_char flagsF0[0x10];       // FS2 +0x5f0: GameValue_NaviFlagF0
+    int      m_nodeKind[kNaviNodes];   // FS2 +0x2a8: GameValue_NaviValue: PrgScaleNavi::nodeKindOf
+    u_short  m_nodeFlags[kNaviNodes];  // FS2 +0x3bc: NaviNodeFlag
+    u_char   _446[2];
+    int      m_cursorX;         // FS2 +0x448
+    int      m_cursorY;         // FS2 +0x44c
+    int      m_linkX;           // FS2 +0x450
+    int      m_linkY;           // FS2 +0x454
+    int      m_linkNode;        // FS2 +0x458
+    int      m_linkSecond;      // FS2 +0x45c
+    int      m_savedX;          // FS2 +0x460: where the overview was opened
+    int      m_savedY;          // FS2 +0x464
+    int      m_savedNode;       // FS2 +0x468: -1 while it is not open
+    int      m_node;            // FS2 +0x46c: under the cursor, -1 none
+    float    m_markA[2];        // FS2 +0x470
+    float    m_markB[2];        // FS2 +0x478
+    int      m_routeCount;      // FS2 +0x480
+    NaviStep m_route[kNaviRouteSteps]; // FS2 +0x484
+    u_char   m_bits[kNaviNodes];       // FS2 +0x584: GameValue_NaviBits: NaviBit
+    u_char   _5c9[3];
+    int      m_pendingCount;    // FS2 +0x5cc
+    int      m_pending[kNaviPending];  // FS2 +0x5d0: the nodes a link would open
+    u_char   m_columnShown[0x10];      // FS2 +0x5e0: GameValue_NaviFlagE0
+    u_char   m_rowShown[kNaviRows];    // FS2 +0x5f0: GameValue_NaviFlagF0
+    int      m_lastTab;         // FS2 +0x624
 };
-static_assert(offsetof(NaviMenu, values) == 0x2a8, "NaviMenu::values");
-static_assert(offsetof(NaviMenu, bits) == 0x584, "NaviMenu::bits");
-static_assert(offsetof(NaviMenu, flagsE0) == 0x5e0, "NaviMenu::flagsE0");
-static_assert(offsetof(NaviMenu, flagsF0) == 0x5f0, "NaviMenu::flagsF0");
+static_assert(offsetof(NaviMenu, m_nodeFlags) == 0x3bc - 0x2a8, "NaviMenu::m_nodeFlags");
+static_assert(offsetof(NaviMenu, m_node) == 0x46c - 0x2a8, "NaviMenu::m_node");
+static_assert(offsetof(NaviMenu, m_bits) == 0x584 - 0x2a8, "NaviMenu::m_bits");
+static_assert(offsetof(NaviMenu, m_columnShown) == 0x5e0 - 0x2a8, "NaviMenu::m_columnShown");
+static_assert(offsetof(NaviMenu, m_rowShown) == 0x5f0 - 0x2a8, "NaviMenu::m_rowShown");
+static_assert(sizeof(NaviMenu) == 0x628 - 0x2a8, "NaviMenu: to EE 0x628");
 NaviMenu *getNaviMenu();                                                 // FS2 0x0029efe0
 
 
