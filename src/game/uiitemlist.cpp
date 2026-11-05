@@ -323,8 +323,8 @@ void UiItemList::update()
                     takeKind(back, who, UiUse_LevelDown);
                 if (allows.ladder == 1 || allows.ladder == 2)
                     takeKind(back, who, UiUse_Ladder);
-                if (allows.useItem5 != 0)
-                    takeKind(back, who, UiUse_Gate);
+                if (allows.pickup != 0)
+                    takeKind(back, who, UiUse_Pickup);
                 if (allows.jump != 0)
                     takeKind(back, who, UiUse_Jump);
             }

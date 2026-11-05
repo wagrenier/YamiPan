@@ -170,7 +170,9 @@ enum StageObjectKind
 };
 
 class StageNode;
+class StageItem;                 // game/stageitem.h
 class StageItemE;                // game/stageitem.h
+class StageThrownItem;           // game/stageitem.h
 class StageParticle;
 struct MapObjectParts;
 struct CharacterHidePart;
@@ -2073,6 +2075,16 @@ enum CharacterMoveKind
     CharacterMove_WalkSlow    = 9, // w
 };
 
+// The classes of weapon StageCharacter::canWield is asked about.
+enum WieldClass
+{
+    WieldClass_Light = 1,
+    WieldClass_Heavy = 2,
+    WieldClass_Short = 4,
+    WieldClass_Rifle = 8,
+    WieldClass_Any   = 0xffff,
+};
+
 // What the input or the brain asks of the character this frame: +0x2c0,
 // which the start hook clears. The conditions of the running motion read it
 // and turn it into motions. EE layout.
@@ -2089,8 +2101,11 @@ struct CharacterWants
     u_char useJump;             // FS2 +0x2ce: for Jump
     u_char useDoor;             // FS2 +0x2cf: Door: open or close, as allows.doorHand
     u_char useDoorKey;          // FS2 +0x2d0: Door: as allows.doorKey
-    u_char useItem5;            // FS2 +0x2d1: kind 5
-    u_char _2d2[0x1f];
+    u_char pickup;              // FS2 +0x2d1: the item list gave the Use button to PickupItem
+    u_char putItem;             // FS2 +0x2d2: put down m_putItem (the writer 0x218850 is unread)
+    u_char _2d3;
+    int    putItemEe;           // FS2 +0x2d4: its size on the EE; StageCharacter::m_putItem holds the pointer
+    u_char _2d8[0x19];
     u_char ready;               // FS2 +0x2f1: PadAction_Ready held
     u_char _2f2[2];
     int    fire;                // FS2 +0x2f4: CharacterFire
@@ -2122,6 +2137,8 @@ static_assert(offsetof(CharacterWants, headOn) == 0x40, "CharacterWants::headOn"
 static_assert(offsetof(CharacterWants, aimAngles) == 0x70, "CharacterWants::aimAngles");
 static_assert(offsetof(CharacterWants, lampSwitch) == 0x94, "CharacterWants::lampSwitch");
 static_assert(offsetof(CharacterWants, fire) == 0x34, "CharacterWants::fire");
+static_assert(offsetof(CharacterWants, ready) == 0x31, "CharacterWants::ready");
+static_assert(offsetof(CharacterWants, putItemEe) == 0x14, "CharacterWants::putItemEe");
 static_assert(offsetof(CharacterWants, dpadSide) == 0x84, "CharacterWants::dpadSide");
 static_assert(offsetof(CharacterWants, liftPartner) == 0x81, "CharacterWants::liftPartner");
 static_assert(offsetof(CharacterWants, rightStickY) == 0x98, "CharacterWants::rightStickY");
@@ -2145,8 +2162,11 @@ struct CharacterAllows
     int    doorHand;            // FS2 +0x374: Door: 1 it can open, 2 close (natives 0x87, 0x88)
     int    doorKey;             // FS2 +0x378: Door: 1 it can lock, 2 unlock, 3 only force (native 0x89)
     int    doorEe;              // FS2 +0x37c: its size on the EE; door below holds the pointer
-    u_char useItem5;            // FS2 +0x380
-    u_char _381[0xd];
+    u_char pickup;              // FS2 +0x380: PickupItem: m_pickItem can be taken
+    u_char _381[3];
+    int    pickItemEe;          // FS2 +0x384: its size on the EE; StageCharacter::m_pickItem holds the pointer
+    u_char putItem;             // FS2 +0x388: PutItem: nothing stands ahead
+    u_char _389[5];
     u_char fire;                // FS2 +0x38e
     u_char _38f;
     u_char head;                // FS2 +0x390: the sheet's 頭振り
@@ -2168,6 +2188,7 @@ static_assert(offsetof(CharacterAllows, head) == 0x30, "CharacterAllows::head");
 static_assert(offsetof(CharacterAllows, level) == 0x8, "CharacterAllows::level");
 static_assert(offsetof(CharacterAllows, liftPartner) == 0x38, "CharacterAllows::liftPartner");
 static_assert(offsetof(CharacterAllows, fire) == 0x2e, "CharacterAllows::fire");
+static_assert(offsetof(CharacterAllows, putItem) == 0x28, "CharacterAllows::putItem");
 static_assert(offsetof(CharacterAllows, standing) == 0x41, "CharacterAllows::standing");
 
 // A character of the map (the F_ and player points), the player and the
@@ -2208,6 +2229,21 @@ public:
     void resetActionState();                                             // FS2 0x0021e050
     // Hands item over: lamp, weapon, or the list; false: it has an owner.
     bool giveItem(StageObject *item);                                    // FS2 0x00216aa0
+    // Takes item off the character: it stands where the character stands,
+    // on its own again. false: it did not carry it.
+    bool dropItem(StageObject *item);                                    // FS2 0x00216920
+    // dropItem, and the item falls; offset: a push, in the character's space.
+    void dropWeapon(StageObject *item, sceVu0FVECTOR offset);            // FS2 0x002166d0
+    // The same for an item that flies: it goes along the character's position.
+    void throwItem(StageThrownItem *item, sceVu0FVECTOR offset);         // FS2 0x00216630
+    // There is room for a weapon to drop from where it hangs.
+    bool canDropWeapon(StageObject *weapon);                             // FS2 0x00216760
+    // The sheet lets the character use a weapon of item's kind; mask: the
+    // WieldClass bits asked about.
+    bool canWield(StageObject *item, u_int mask);                        // FS2 0x0020b240
+    void playPickSound(StageItem *item);                                 // FS2 0x002a3160
+    // The mission's notice with the item's name.
+    void noticeItem(StageItem *item);                                    // FS2 0x002184b0
     // The three status setters of the player's code: each clamps to the
     // sheet, and what going to zero does is theirs.
     void setEndurance(int value);                                        // FS2 0x00211430
@@ -2310,6 +2346,9 @@ public:
     // CharacterAllows +0x37c: the door in reach. PC: a pointer does not fit
     // the EE's int there, so it stands beside; the same clear covers both.
     StageDoor *m_door = nullptr;
+    // CharacterAllows +0x384 and CharacterWants +0x2d4, the same way.
+    StageItem *m_pickItem = nullptr;
+    StageItem *m_putItem = nullptr;
     CharacterAllows m_allows = {};  // FS2 +0x360: the start hook clears it, the conditions fill it
     u_char m_fidgets = 1;       // FS2 +0x3e0: resetActionState sets it, a script's property may clear it: stepFidgets' idle0 / idle1
     int    m_3e4 = 0;           // FS2 +0x3e4: 0 from initStatus (unread); so are the next five
@@ -2523,7 +2562,7 @@ enum UiUseKind
     UiUse_LevelUp   = 0,
     UiUse_LevelDown = 1,
     UiUse_Ladder    = 2,
-    UiUse_Gate      = 5,        // CharacterAllows::useItem5: not read yet
+    UiUse_Pickup    = 5,        // CharacterAllows::pickup
     UiUse_Jump      = 6,
     UiUse_Script    = 7,
 };
@@ -2931,6 +2970,7 @@ enum ItemKind
     ItemKind_RifleFirst   = 5,
     ItemKind_FirearmLast  = 6,
     ItemKind_ItemFirst    = 7,
+    ItemKind_StackLast    = 10,     // 7..10 stack by name (StageCharacter::giveItem)
     ItemKind_E            = 0xe,    // StageItemE
     ItemKind_F            = 0xf,    // the named special items
 };

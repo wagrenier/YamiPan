@@ -474,7 +474,7 @@ void AlwaysCondition::onApply()
                 target = wants.headOn != 0 && boneLink ? point : nullptr;
             }
             else {
-                applyMatrix(point, m->m_lookObject->node->getMatrix(), m->m_lookObject->point);
+                applyMatrix(point, m->m_lookObject->getMatrix(), m->m_lookObject->m_pickPoint);
                 target = boneLink ? point : nullptr;
             }
             m->setHeadTarget(0.15f, target);
@@ -991,6 +991,26 @@ public:
 
 private:
     int forceOr(int id) const;
+};
+
+// Puts down what the wants name, unless a wall stands ahead. EE vtable 0x3175d0.
+// layout: host
+class PutItemCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x00271070
+    void onApply() override;                                             // FS2 0x00271020
+};
+
+// Finds the item in reach and bends for it. EE vtable 0x3175b0.
+// layout: host
+class PickupItemCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x00270e90
+    void onApply() override;                                             // FS2 0x00270c50
 };
 
 // The partner lifts the character up a ledge (Motion_Pair). EE vtable 0x317650.
@@ -2056,6 +2076,8 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_conditions["QuickTurn"] = new QuickTurnCondition(character, this);
     m_conditions["LadderMove"] = new LadderMoveCondition(character, this);
     m_conditions["Door"] = new DoorCondition(character, this);
+    m_conditions["PutItem"] = new PutItemCondition(character, this);
+    m_conditions["PickupItem"] = new PickupItemCondition(character, this);
 
     walkLink = new WalkLink(character, this);
     m_links["Walk"] = walkLink;
@@ -2065,6 +2087,8 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_links["Ladder"] = new LadderLink(character, this);
     doorLink = new DoorLink(character, this);
     m_links["Door"] = doorLink;
+    pickupLink = new PickupLink(character, this);
+    m_links["Pickup"] = pickupLink;
 
     // PC: the ROM's 0x212530 sets these from a script's property; nothing
     // written sets them yet, so the sheet's.
@@ -3866,4 +3890,462 @@ void stageUpdateCharacterMotions()
         // PC: the movement hook runs after this, in actionMovement.
         body->moveStep();
     }
+}
+
+// ───────────────────────────────────────
+// What a character carries.
+
+namespace {
+
+// Where the hand-held things hang. data 0x306fd0, 0x306ff0, 0x306970.
+const char kLeftTool[]  = "bn_l_tool";
+const char kRightTool[] = "bn_r_tool";
+const char kChest[]     = "bn_spine1";
+const char kChestLamp[] = "T_TORCH2";   /* data 0x306fe0: the lamp worn on the chest */
+
+constexpr float kFootHeight = 50.0f;    // the probes' height over a position
+constexpr float kFootDepth  = 10.0f;    // and how far under it
+constexpr float kDropDepth  = 1000.0f;  // a thing dropped must have a floor this close
+constexpr u_int kFaceDropWalls = 0xe8021f3;
+constexpr u_int kFaceDropSolid = 0x42400c;
+constexpr u_int kFaceDropFloor = 0x400000;
+constexpr u_int kFaceSkipBodies = 0x40000;
+constexpr u_int kFaceItemSight = 0xe002003;
+
+constexpr float kPickHighAbove = 65.0f; // over this the higher bend
+constexpr float kPickWalkFar   = 30.0f; // further than this it turns to the item as it bends
+constexpr float kPickWalkRate  = 0.35f;
+constexpr int   kMotionPickLow  = 0x12;
+constexpr int   kMotionPickHigh = 0x13;
+
+// A sheet of this ctype holds firearms left and keeps its second weapon shown.
+constexpr int kSheetKindTwoHands = 10;
+
+StageNodeBase *bodyBone(StageObject *owner, const char *name)
+{
+    BoneMap::Node *bone = owner->m_model->boneMap.find(name);
+    return bone != nullptr ? bone->value : owner;
+}
+
+void showCarried(StageObject *item, bool shown)
+{
+    if (item->m_model != nullptr && item->m_model->data != nullptr)
+        item->m_model->data->shown = shown;
+}
+
+const ItemDef &defOf(const StageObject *item)
+{
+    const int id = item->m_itemDef;
+    return gItemDefs[id < 0 || id >= kItemDefCount ? 0 : id];
+}
+
+} // namespace
+
+// FS2 0x00216400
+// callcheck: FUN_0017e260, FUN_0017e1b0, getStageSelect (setParent, detach, stageObjRecord, inline)
+
+void StageCharacter::swapWeapons()
+{
+    StageObject *held = m_weapons[0];
+    m_weapons[0] = m_weapons[1];
+    if (m_weapons[0] != nullptr) {
+        showCarried(m_weapons[0], true);
+        m_weapons[0]->m_tree->setParent(m_tree);
+    }
+    m_weapons[1] = held;
+    if (held != nullptr && stageObjRecord(m_itemDef)->kind != kSheetKindTwoHands) {
+        showCarried(held, false);
+        held->m_tree->detach();
+    }
+}
+
+// FS2 0x00216920
+// callcheck: FUN_00217730, setShadowOwner, setPosition, StageNodeList__erase, FUN_0017e260, FUN_00217840
+
+bool StageCharacter::dropItem(StageObject *item)
+{
+    StageList<StageObject *>::Node *node = m_items.head;
+    while (node != nullptr && node->value != item)
+        node = node->next;
+    if (node == nullptr)
+        return false;
+    if (m_lampItem == item) {
+        m_lampItem->setShadowOwner(nullptr);
+        m_lampItem = nullptr;
+    }
+    if (m_weapons[0] == item)
+        m_weapons[0] = nullptr;
+    if (m_weapons[1] == item)
+        m_weapons[1] = nullptr;
+    showCarried(item, true);
+    item->m_xform.setPosition(m_xform.position);
+    item->detach();
+    item->m_tree->detach();
+    item->m_model->m_lit = 1;
+    item->m_model->m_lightSet = -1;
+    m_items.erase(node);
+    return true;
+}
+
+// FS2 0x00216630
+// callcheck: dropItem, setMoving, getWorldMatrix, applyMatrix, push, setThrowVector
+
+void StageCharacter::throwItem(StageThrownItem *item, sceVu0FVECTOR offset)
+{
+    dropItem(item);
+    ItemPhysics *physics = item;
+    physics->setMoving(true, false);
+    if (offset != nullptr) {
+        applyMatrix(offset, getWorldMatrix(), offset);
+        physics->push(offset, -1);
+    }
+    physics->m_parent = this;
+    item->m_inUse = 1;
+    item->setThrowVector(m_xform.position);
+}
+
+// FS2 0x002166d0
+// callcheck: dropItem, setMoving, getWorldMatrix, applyMatrix, push
+
+void StageCharacter::dropWeapon(StageObject *item, sceVu0FVECTOR offset)
+{
+    dropItem(item);
+    ItemPhysics *physics = static_cast<StageWeaponItem *>(item);
+    physics->setMoving(true, false);
+    if (offset != nullptr) {
+        applyMatrix(offset, getWorldMatrix(), offset);
+        physics->push(offset, 0);
+    }
+    physics->m_parent = this;
+}
+
+// FS2 0x00216760
+// callcheck: segmentHitsAny, getWorldMatrix, segmentHitsAny, getWorldMatrix, getWorldMatrix, segmentHitsAny, getWorldMatrix, getWorldMatrix, segmentHitsAny
+
+bool StageCharacter::canDropWeapon(StageObject *weapon)
+{
+    sceVu0FVECTOR from, to;
+    memcpy(from, m_xform.position, sizeof(from));
+    memcpy(to, weapon->getWorldMatrix()[3], sizeof(to));
+    if (gStageScene->segmentHitsAny(from, to, 0, kFaceDropWalls, kFaceSkipBodies, nullptr))
+        return false;
+    from[2] += kFootHeight;
+    to[2] = from[2];
+    if (gStageScene->segmentHitsAny(from, to, 0, kFaceDropWalls, kFaceSkipBodies, nullptr))
+        return false;
+    memcpy(from, weapon->getWorldMatrix()[3], sizeof(from));
+    memcpy(to, from, sizeof(to));
+    from[2] += kFootHeight;
+    if (gStageScene->segmentHitsAny(from, to, 0, kFaceDropSolid, kFaceSkipBodies, nullptr))
+        return false;
+    memcpy(from, weapon->getWorldMatrix()[3], sizeof(from));
+    memcpy(to, from, sizeof(to));
+    from[2] -= kDropDepth;
+    return !gStageScene->segmentHitsAny(from, to, 0, kFaceDropFloor, 0, nullptr);
+}
+
+// FS2 0x0020b240
+// callcheck: getStageSelect, getStageSelect, getStageSelect, getStageSelect (stageObjRecord, inline)
+
+bool StageCharacter::canWield(StageObject *item, u_int mask)
+{
+    const StageObjRecord *sheet = stageObjRecord(m_itemDef);
+    const ItemDef &def = defOf(item);
+    switch (def.kind) {
+    case ItemKind_MeleeLight:
+        return sheet->lightWeapon != 0 && (mask & WieldClass_Light) != 0;
+    case ItemKind_MeleeHeavy:
+        return sheet->heavyWeapon != 0 && (mask & WieldClass_Heavy) != 0;
+    default:
+        if (def.isPistol())
+            return sheet->shortGun != 0 && (mask & WieldClass_Short) != 0;
+        if (def.isRifle())
+            return sheet->rifle != 0 && (mask & WieldClass_Rifle) != 0;
+        return false;
+    }
+}
+
+// FS2 0x00216aa0
+// callcheck: FUN_0017e1b0, FUN_0017e260, erase (the trees, setParent and detach inline), setMoving, setPositionXyz, setRotation, find, swapWeapons, dropItem, setPosition, setRotation, attachTo, setShadowOwner, strcmp, strcmp, setActive, setShown, FUN_00217700, FUN_00217770, getStageSelect
+
+bool StageCharacter::giveItem(StageObject *item)
+{
+    if (item->m_parent != nullptr)
+        return false;
+    const int kind = item->getKind();
+    if (kind == StageObject_WeaponItem && static_cast<StageWeaponItem *>(item)->m_moving != 0)
+        static_cast<StageWeaponItem *>(item)->setMoving(false, true);
+    item->setParent(this);
+    item->m_xform.setPositionXyz(0.0f, 0.0f, 0.0f);
+    item->m_xform.setRotation(0.0f, 0.0f, 0.0f);
+    showCarried(item, false);
+    item->m_model->m_lit = 0;
+
+    if (kind == StageObject_ItemE) {
+        m_items.pushBack(item);
+        m_lampItem = static_cast<StageItemE *>(item);
+        showCarried(item, true);
+        item->m_tree->setParent(m_tree);
+        if (strcmp(item->m_name, kChestLamp) == 0) {
+            item->setParent(bodyBone(this, kChest));
+            const ModelPose *pose = m_model->pose;
+            item->m_xform.setPosition(pose->chestToolPosition);
+            item->m_xform.setRotation(0.0f, 0.0f, pose->chestToolAxis[3]);
+            m_lampItem->lamp()->attachTo(bodyBone(this, kLeftTool));
+        }
+        else {
+            item->setParent(bodyBone(this, kLeftTool));
+        }
+        m_lampItem->setShadowOwner(this);
+    }
+    else if (kind == StageObject_WeaponItem) {
+        m_items.pushBack(item);
+        if (m_weapons[1] == nullptr)
+            swapWeapons();
+        else if (m_weapons[0] != nullptr)
+            dropItem(m_weapons[0]);
+        m_weapons[0] = item;
+        showCarried(item, true);
+        item->m_tree->setParent(m_tree);
+        const bool left = stageObjRecord(m_itemDef)->kind == kSheetKindTwoHands && defOf(item).isFirearm();
+        item->setParent(bodyBone(this, left ? kLeftTool : kRightTool));
+    }
+    else if (kind == StageObject_ThrownItem) {
+        m_items.pushBack(item);
+        item->setParent(bodyBone(this, kRightTool));
+    }
+    else if (defOf(item).kind < ItemKind_ItemFirst || defOf(item).kind > ItemKind_StackLast) {
+        m_items.pushBack(item);
+    }
+    else {
+        // What stacks goes into the count of the same name, and the new one
+        // is gone. The ROM walks the list from its tail.
+        StageObject *same = nullptr;
+        for (StageList<StageObject *>::Node *node = m_items.head; node != nullptr && same == nullptr;
+             node = node->next) {
+            if (strcmp(node->value->m_name, item->m_name) == 0)
+                same = node->value;
+        }
+        if (same == nullptr) {
+            m_items.pushBack(item);
+        }
+        else {
+            StageItem *stack = static_cast<StageItem *>(same);
+            int total = stack->m_count + item->m_count;
+            if (total < 0)      // sdata 0x31aa10, 0: bytes the ELF does not hold
+                total = 0;
+            stack->m_count = total < stack->m_maxCount ? total : stack->m_maxCount;
+            item->m_tree->setActive(false);
+            item->m_tree->setShown(false);
+            item->detach();
+            item->m_tree->detach();
+        }
+    }
+    return true;
+}
+
+// FS2 0x002a3160
+// callcheck: getPickSound, playNamedHeard2
+
+void StageCharacter::playPickSound(StageItem *item)
+{
+    // PC: the host lookup takes no null name; the ROM's finds nothing.
+    if (const char *sound = item->getPickSound())
+        playNamedHeard2(sound, m_xform.position, nullptr);
+}
+
+// FS2 0x002184b0
+// callcheck: currentMission, getDisplayName, showNotice
+
+void StageCharacter::noticeItem(StageItem *item)
+{
+    gStageScene->currentMission()->showNotice(0, reinterpret_cast<const u_short *>(item->getDisplayName()));
+}
+
+// FS2 0x0026a4a0
+// callcheck: canPickFar, getMatrix, applyMatrix, find, getMatrix, segmentHitsAny, vecDistance
+
+StageItem *MotionProbe::findItem()
+{
+    StageItem *best = nullptr;
+    float bestDistance = 0.0f;
+    StageObjArray &items = gStageScene->objects->m_lists[StageObjGroup_3];
+    for (StageObject **slot = items.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        if ((*slot)->m_active == 0)
+            continue;
+        StageItem *item = static_cast<StageItem *>(*slot);
+        if (item->m_parent != nullptr || item->m_holder != nullptr || item->m_xform.dirty == 0
+            || item->m_inUse != 0 || item->m_sprung != 0 || !item->canPickFar(owner))
+            continue;
+        sceVu0FVECTOR point;
+        applyMatrix(point, item->getMatrix(), item->m_pickPoint);
+        const sceVu0FVECTOR *head = bodyBone(owner, "bn_head")->getMatrix();
+        if (gStageScene->segmentHitsAny(head[3], point, 0, kFaceItemSight, kFaceSkipBodies, nullptr))
+            continue;
+        const float distance = vecDistance(owner->m_xform.position, point);
+        if (best == nullptr || distance < bestDistance) {
+            bestDistance = distance;
+            best = item;
+        }
+    }
+    return best;
+}
+
+// FS2 0x00271070
+
+void PutItemCondition::onUpdate()
+{
+    if (motion->walkLink->wallFace == nullptr)
+        character->m_allows.putItem = 1;
+}
+
+// FS2 0x00271020
+// callcheck: request
+
+void PutItemCondition::onApply()
+{
+    if (character->m_allows.putItem == 0 || character->m_wants.putItem == 0)
+        return;
+    motion->pickupLink->picks = 0;
+    motion->request(kMotionPickLow);
+}
+
+// FS2 0x00270e90
+// callcheck: isPlayer, isPartner, isTakenOver, findItem, getKind, canWield, getKind, getKind, canDropWeapon, canPick
+
+void PickupItemCondition::onUpdate()
+{
+    if (character->m_abilities.flag3b9 == 0)
+        return;
+    if (character->m_abilities.flag3c3 == 0 && character->m_290 != nullptr)
+        return;
+    if (!character->isPlayer() && !character->isPartner() && character->m_weapons[0] != nullptr)
+        return;
+    if (character->isTakenOver())
+        return;
+    StageItem *item = motion->probe->findItem();
+    motion->m_lookObject = item;
+    if (item == nullptr)
+        return;
+    if (item->getKind() == StageObject_WeaponItem) {
+        if (!character->canWield(item, WieldClass_Any))
+            return;
+        if (static_cast<StageWeaponItem *>(item)->m_moving != 0)
+            return;
+        if (character->m_weapons[0] != nullptr && character->m_weapons[1] != nullptr
+            && !character->canDropWeapon(character->m_weapons[0]))
+            return;
+    }
+    if (!item->canPick(character))
+        return;
+    character->m_allows.pickup = 1;
+    character->m_pickItem = item;
+}
+
+// FS2 0x00270c50
+// callcheck: getKind, dropWeapon, getMatrix, applyMatrix, request, request, atan2Octant, addAngle, requestedFile, startWalkFile, requestedFile, startWalkFile
+
+void PickupItemCondition::onApply()
+{
+    if (character->m_allows.pickup == 0 || character->m_wants.pickup == 0)
+        return;
+    StageItem *item = character->m_pickItem;
+    if (item->m_holder != nullptr)
+        return;
+    // Both hands full: the held weapon falls for the new one.
+    if (item->getKind() == StageObject_WeaponItem && character->m_weapons[0] != nullptr
+        && character->m_weapons[1] != nullptr)
+        character->dropWeapon(character->m_weapons[0], nullptr);
+    motion->pickupLink->picks = 1;
+
+    sceVu0FVECTOR point;
+    applyMatrix(point, item->getMatrix(), item->m_pickPoint);
+    const float *position = character->m_xform.position;
+    motion->request(point[2] - position[2] > kPickHighAbove ? kMotionPickHigh : kMotionPickLow);
+
+    const float dx = position[0] - point[0];
+    const float dy = position[1] - point[1];
+    if (sqrtf(dx * dx + dy * dy) > kPickWalkFar) {
+        constexpr float kPi = 3.1415927f;
+        sceVu0FVECTOR angles = { 0.0f, 0.0f, 0.0f, 0.0f };
+        angles[2] = addAngle(atan2Octant(dx, -dy), -kPi);
+        motion->startWalkFile(kPickWalkRate, motion->requestedFile(), point, angles, true, false);
+    }
+    else {
+        motion->startWalkFile(kPickWalkRate, motion->requestedFile(), point, character->m_xform.rotation, true, false);
+    }
+}
+
+// FS2 0x0027c100
+
+void PickupLink::onRequest()
+{
+    if (picks == 0) {
+        putting = character->m_putItem;
+        taking = nullptr;
+    }
+    else {
+        putting = nullptr;
+        taking = character->m_pickItem;
+        taking->m_holder = character;
+    }
+}
+
+// The item leaves the hand: a flying one is thrown, the rest stays where it
+// is and counts as used. Twice inline in 0x27bef0.
+
+static void letGoOf(StageCharacter *character, StageItem *item)
+{
+    if (item->getKind() == StageObject_ThrownItem) {
+        character->throwItem(static_cast<StageThrownItem *>(item), nullptr);
+    }
+    else {
+        character->dropItem(item);
+        item->m_inUse = 1;
+    }
+}
+
+// FS2 0x0027bef0
+// callcheck: getWorldMatrix, getWorldMatrix, segmentHitsAny, getKind, throwItem, dropItem, noteEnding, getKind, throwItem, dropItem, noteEnding, giveItem, playPickSound, isControlled, noticeItem, noteEnding
+
+void PickupLink::onRun()
+{
+    if (putting != nullptr) {
+        // Early, when the hand is down at something solid.
+        sceVu0FVECTOR from, to;
+        memcpy(from, putting->getWorldMatrix()[3], sizeof(from));
+        memcpy(to, from, sizeof(to));
+        from[2] += kFootHeight;
+        to[2] -= kFootDepth;
+        if (gStageScene->segmentHitsAny(from, to, 0, kFaceDropSolid, kFaceSkipBodies, nullptr)) {
+            letGoOf(character, putting);
+            motion->noteEnding();
+            putting = nullptr;
+        }
+    }
+    if ((character->m_model->m_motionEvents & MotionEvent_Click) == 0)
+        return;
+    if (taking != nullptr) {
+        character->giveItem(taking);
+        character->playPickSound(taking);
+        if (character->isControlled())
+            character->noticeItem(taking);
+        motion->noteEnding();
+    }
+    else if (putting != nullptr) {
+        letGoOf(character, putting);
+        motion->noteEnding();
+    }
+    onCancel();
+}
+
+// FS2 0x0027c0e0
+
+void PickupLink::onCancel()
+{
+    if (taking != nullptr) {
+        taking->m_holder = nullptr;
+        taking = nullptr;
+    }
+    putting = nullptr;
 }
