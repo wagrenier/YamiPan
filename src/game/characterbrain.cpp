@@ -334,6 +334,30 @@ StageCharacter *ScriptProxy::getScriptActor()
     return getForwardObject()->getScriptActor();
 }
 
+// FS2 0x001a69d0
+// callcheck: getForwardObject, getScriptCar
+
+StageCar *ScriptProxy::getScriptCar()
+{
+    return getForwardObject()->getScriptCar();
+}
+
+// FS2 0x001a7890
+// callcheck: getForwardObject, scriptPickableHandle
+
+int ScriptProxy::scriptPickableHandle()
+{
+    return getForwardObject()->scriptPickableHandle();
+}
+
+// FS2 0x001a71b0
+// callcheck: getForwardObject, scriptHasAllyWithin
+
+bool ScriptProxy::scriptHasAllyWithin(float range)
+{
+    return getForwardObject()->scriptHasAllyWithin(range);
+}
+
 // FS2 0x001a7130
 
 void ScriptProxy::scriptMarkPlace()

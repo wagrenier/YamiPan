@@ -974,6 +974,12 @@ public:
 };
 // The object of the scene's number lock (the list at +0x90 names it).
 StageObject *findNumLockTarget();                                        // FS2 0x0029f440
+// Its four dials, kept on a stack of one: push (a negative dial keeps its
+// number; answers the depth, -1 full), pop (-1 empty), four new random
+// numbers. The dials live on a pose class not written (+0x3f0).
+int  numLockPushDials(StageObject *lock, int a, int b, int c, int d);    // FS2 0x002a6cd0
+int  numLockPopDials(StageObject *lock);                                 // FS2 0x002a6c40
+void numLockScramble(StageObject *lock);                                 // FS2 0x002a6b70
 // Every character with m_viewActive: three steps on its motion (+0x224).
 void stageUpdateCharacterMotions();                                      // FS2 0x0017df60
 
@@ -992,6 +998,15 @@ struct StageParty
     void warnAttacker(StageCharacter *attacker);                         // FS2 0x001feab0
     void save();                                                         // FS2 0x001fe6d0
     void restore();                                                      // FS2 0x001fe6c0
+    // The record's mode (+0xb8) is 3 or 4.
+    bool isCompanionMode();                                              // FS2 0x001fe9f0
+    // What the sound KAKOSI opens: the record's +0xe4 and mode word +0xdc 8,
+    // null also empties the two lists; addVisionA, addVisionB fill them
+    // (+0xe8, +0x110); frames +0xe0. Past-sight is a guess from the sound.
+    void setVisionTarget(StageObject *object);                           // FS2 0x001fe7a0
+    void addVisionA(StageObject *object);                                // FS2 0x001fe770
+    void addVisionB(StageObject *object);                                // FS2 0x001fe740
+    void setVisionFrames(int frames);                                    // FS2 0x001fe7b0
     // Of the +0 record, by its mode (+0xb8): +0x18 (modes 3, 4), +0x14
     // (mode 1), else null. The name is a guess (StageScene::drawPaused
     // compares it with the view target's character).
@@ -1294,6 +1309,16 @@ public:
     // Slot +0x40: it has a target; +0x38 which (prepareDrawFlags).
     bool hasTarget();                                                    // FS2 vtable +0x40
     StageObject *getTarget();                                            // FS2 vtable +0x38
+    // Slot +0x10: two names from a script (natives 0x1ee, 0x1ec, 0x204);
+    // slots +0x2c, +0x44: what natives 0x1e6, 0x1eb ask. All unread.
+    void setNames(const char *first, const char *second);                // FS2 vtable +0x10
+    bool isSlot2c();                                                     // FS2 vtable +0x2c
+    bool isSlot44();                                                     // FS2 vtable +0x44
+    // The seven-key pad's (native 0x205): the object of that name, when it
+    // is of kind 6, takes the two pairs (0x2b2420, 0x2b23e0, unread).
+    void setSevenKeyNumbers(const char *name, int a, int b, int c, int d); // FS2 0x002b2b70
+    // The number lock's: its +4 record's +0x31 (native 0x220).
+    bool getRecordFlag31();                                              // FS2 0x002a8920
 };
 
 // +0x4c: what runs the stage's rute file (vtable 0x316a78; run
@@ -1823,8 +1848,12 @@ public:
     const float *getVelocity();                                          // FS2 0x00289e10
     // +0x3ac is past 0.3: one may climb on it, and a fall onto it is a fall.
     bool hasSettled();                                                   // FS2 0x0028ab90
-    // PC: +0x39c, of a class not written: Level keeps off at 1.
-    int  getMode() { return 0; }
+    // FS2 0x001774a0: slot +0x9c, this object (0x1722f0 behind the thunk).
+    StageCar *getScriptCar() override { return this; }
+    // Back to where it was placed, by what moved (0x28d850 behind it).
+    void resetPlace();                                                   // FS2 0x0028dac0
+    // Level keeps off at 1; native 0x1c8 sets it.
+    int  getMode() { return m_mode; }
     float getAcceleration();                                             // FS2 0x00289e20
     const float *getFrameStep();                                         // FS2 0x00289ea0
     // One of the places beside it (bn_dmg_sr, bn_dmg_sl, ahead, behind), by
@@ -1837,6 +1866,8 @@ public:
     u_char m_throttle;          // FS2 +0x381
     u_char m_brake;             // FS2 +0x383
     float  m_steer;             // FS2 +0x384
+    int    m_mode = 0;          // FS2 +0x39c
+    u_char m_flag3a0 = 0;       // FS2 +0x3a0: native 0x1ac
 };
 
 // What a stage's map file becomes (StageFiles::applyMapTarget). The ROM
@@ -2596,6 +2627,29 @@ public:
     float getAttackReach();                                              // FS2 0x0020ce80
     // A special action of the motion (PlayerMotion::m_specials).
     bool isSpecialAllowed(const char *name);                             // FS2 0x0017b3b0
+    // Gets into (off false) or out of the view target's car; side picks the
+    // door. The class it needs is not written.
+    bool rideCar(int off, int side);                                     // FS2 0x0017af50
+    // It stands on the elevator: the floor's object is of kind 4.
+    bool isOnElevator();                                                 // FS2 0x002123e0
+    // The motion rate's timed change: off (letting go of the drained
+    // motion), from one rate to another, a stage's drain.
+    void clearSlowChange();                                              // FS2 0x0020d1c0
+    void setSlowChange(int fromPercent, int frames30, int toPercent);    // FS2 0x0020d210
+    void startDrainSlow(int frames30, int rate);                         // FS2 0x0020d2c0
+    // As playVoice, from its head and heard; the source is what stopSounds
+    // stops.
+    void playVoiceHeard(const char *name);                               // FS2 0x002a65c0
+    // Where it comes back (w 1).
+    void setRespawnPlace(const float *position, const float *rotation);  // FS2 0x00218610
+    bool scriptHasAllyWithin(float range) override;                      // FS2 0x00210810
+    bool scriptAskRouteKind11() override;                                // FS2 0x00218200
+    bool scriptSwingAtBite() override;                                   // FS2 0x0021ad40
+    bool scriptFireAtBite(const char *flags, int frames30) override;     // FS2 0x0021ad00
+    int  scriptPickableHandle() override;                                // FS2 0x0021ac30
+    void scriptUseItemAt(const char *name, const float *point) override; // FS2 0x00218e00
+    bool scriptCallOut(float loudness) override;                         // FS2 0x00219ae0
+    bool scriptAskNumLock(int which) override;                           // FS2 0x00218140
     void setSpecial(bool on, const char *name);                          // FS2 0x0017b3c0
 
     // The player's.
@@ -2892,6 +2946,21 @@ class StageObjectList;          // game/stageobjlist.h
 // the call. Not written.
 bool elevatorCanCall(StageObject *elevator, const float *position, const float *rotation, int floor); // FS2 0x00294140
 void elevatorCall(StageObject *elevator, int floor);                     // FS2 0x00294280
+// The rest of what scripts ask of it. The state is its pose's +0x408, a
+// pose class not written: phase the low nibble, 0x10 the direction (a move
+// to B3 clears it). At B1 / at B3 are the phases of each direction but the
+// last (6, 5): native 0x1ce answers those floors, and the special that
+// leaves a floor is named for the other one (at B1, ElevatorBxB3).
+bool elevatorIsPhase1(StageObject *elevator);                            // FS2 0x00294b60
+bool elevatorIsPhase2(StageObject *elevator);                            // FS2 0x00294b00
+bool elevatorIsPhase3(StageObject *elevator);                            // FS2 0x00294b30
+bool elevatorIsPhase4(StageObject *elevator);                            // FS2 0x00294ad0
+bool elevatorIsAtB1(StageObject *elevator);                              // FS2 0x00294c70
+bool elevatorIsAtB3(StageObject *elevator);                              // FS2 0x00294c30
+// second picks the pose's other motion file of the two (what differs is unread).
+void elevatorMove(StageObject *elevator, bool toB3, bool second);        // FS2 0x00294f90
+// Its +0x2fc: the floors already called, a bit each. Inline in the ROM.
+u_int elevatorCalledFloors(StageObject *elevator);                       // FS2 vtable +0x2fc
 struct SceneRender;
 // +0x9c: eight blocks from +0x18. layout: host.
 struct SceneBufferSet

@@ -70,6 +70,9 @@ public:
     StageDoor *getScriptDoor() override;                                 // FS2 0x001a6a10
     StageObject *getScriptObject() override;                             // FS2 0x001a6a50
     StageCharacter *getScriptActor() override;                           // FS2 0x001a6920
+    StageCar *getScriptCar() override;                                   // FS2 0x001a69d0
+    int  scriptPickableHandle() override;                                // FS2 0x001a7890
+    bool scriptHasAllyWithin(float range) override;                      // FS2 0x001a71b0
     bool scriptCanSee(float viewAngle, StageObject *other) override;     // FS2 0x001a70e0
     void scriptMarkPlace() override;                                     // FS2 0x001a7130
     float scriptDistanceTo(StageObject *other) override;                 // FS2 0x001a7270

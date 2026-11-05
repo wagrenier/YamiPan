@@ -1,6 +1,6 @@
 {
  "queue": [
-  "game/scriptrunner.cpp"
+  "game/stageplayer.cpp"
  ],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
@@ -1331,7 +1331,7 @@
    "why": "18 functions around the overlay thread (slot 6) and the modal UiLayout runner 0x267ae0 / 0x267c00 and their users (stage screens, archive / option screens, game-over and notice dialogs); 0x2681e0.. is a 48-bit LCG (0x5deece66d), another file. Name is the port's (no source string)"
   },
   "game/scriptrunner.cpp": {
-   "notes": "Written: 52 natives in kAskedNatives (list in open-items.md Done), StageCharacter::takeDamage 0x20eb40 and getHandClass 0x210540 (both were stubs), scriptHurt 0x217d60, setMotionByLabel, scriptIsCompanion, scriptUseSpecial, scriptDragOutCar, scriptCrouch, missionObjectInSight 0x29f200 (TU range grew to 0x29f2a0), applySpawnPointList 0x1d0b50, runner slots +0x118, +0x1a4, +0x1a8, +0x1ac, native 0x6b takes bn_top. New Game 290 s with work/doorwalk_pad.txt on the final code: no crash, no unwritten native reached, picture unchanged, the dark first-person wall. None of the new code is known to have run: stage 1's first rooms hit nobody, so takeDamage is unverified. Next by count: py sssall.py --unwritten: 0x18d (rideCar 0x17af50 with the car's 0x28dac0, 0x28a9a0, 0x28a890), the elevator natives 0x1ce, 0x1ca, 0x1cb, 0x21d, 0x1cf (zs9901: pose + 0x408, not on ModelPose yet; elevatorCanCall and elevatorCall are stubs), 0x220, 0x1ee. takeHits past its first line can go on: it needed takeDamage. For the references: done in this commit (open-items, architecture, hazards).",
+   "notes": "All 364 natives the scan finds a script calling are bound; py sssall.py --unwritten lists none called, 160 never called stay unwritten (the scan reads version 0.4 blocks only). Written: natives in kAskedNatives (list in open-items.md Done), runner slots +0x9c, +0xc8, +0xd0, +0xd8, +0x15c, +0x174, +0x1a0, +0x1b0, +0x1b4, StageCharacter isOnElevator, clearSlowChange, setSlowChange, startDrainSlow, playVoiceHeard, setRespawnPlace, PlayerMotion isSpecialOnly, setHold. Stubs on purpose, their classes do not exist on the host: rideCar and the car, the elevator, the number lock, StageParty vision setters, the SceneOwnedObject slots. New Game 290 s with work/doorwalk_pad.txt on the final code: no crash, no unwritten native, none of these stubs reached, picture unchanged, the dark first-person wall. So none of this code is known to have run. Nine older callcheck MISSING lines remain, from earlier runs. Queue now empty: re-assess, open-items.md Next up: the route, then createMapObject classes (car 0x28e5a0, elevator 0x295360, lock 0x2a7340). For the references: done in this commit (open-items, architecture, hazards).",
    "ranges": [
     [
      "001a7a20",
@@ -1371,9 +1371,14 @@
      "date": "2026-11-05 16:56",
      "status": "partial",
      "summary": "52 more natives by use on the disc, takeDamage and getHandClass, scriptHurt, the runner slots behind them"
+    },
+    {
+     "date": "2026-11-05 17:36",
+     "status": "verify",
+     "summary": "The last 89 natives: every native the disc's scripts call is bound; nothing seen to run"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "task": "What the pinned lights need next: the stage script VM. ScriptRunner::ScriptRunner, setEntry 0x1d2f40, run 0x1d27e0, the VM 0x1d1c40 and its helpers 0x1d1a10..0x1d3d20, StageScript::relocate 0x1d3a40, the slot call of 0x02000000 words and the native table 0x304230 (ids 0x19..0x235, index id - 0x19, 541 natives). Each native pops its own arguments, so an unwritten one must still pop its count: generate the counts from the ROM. First the lighting natives 0x1b6..0x1c3 (sssdis.py shows them with constants; architecture.md, The lights of a stage), so setupCameras' run of the bg script keys SceneRender. Then game/scenerender.cpp's task. The same VM is what the opening event and the character's brain need (open-items.md, The opening event).",
    "why": "The script VM: native dispatcher 0x1a7a20, natives 0x1a7a80..0x1cf1b0 (table 0x304230), base property get/set, VM helpers and ScriptRunner / ScriptFrame to 0x1d3dc0; scriptPrepare, two helpers and missionObjectInSight at 0x29f050..0x29f2a0; from 0x29f500 the label helpers, scriptPickNamed 0x29f5c0, the mission's spawn picks 0x29f810..0x29fd20 and checkedBlock 0x29fd20"
   },
@@ -1761,7 +1766,7 @@
     }
    ],
    "status": "verify",
-   "task": "Control, steps 5 to 7 of roadmap-3d-control.md, queued 2026-11-04: the player logic 0x20a000..0x21d000 out of unassigned@001fe6b0, by what a run reaches: beforeScripts 0x21c7c0, afterScripts 0x21c310, canSpawn, spawn 0x218630, the move 0x20d8c0 (887 i, applies getMoveScale), the action states 0x21cc70, and stageUpdateCharacterMotions 0x17df60. Natives of F_PC01's own entry as they are reached: 0xf7, 0xf8, 0xb5, 0x6f, 0xaf, 0x53, 0x7a, 0x45, 0xb4, 0x94, 0x3a. Done when the pad walks the character on stage 1 with the main camera following it, and the game's own camera has replaced every debug hook.",
+   "task": "TOP PRIORITY, the user 2026-11-05: New Game's first part cannot end, the kid reaches downstairs and nothing starts. open-items.md 'Next up' first entry has the three blockers: (1) BoxVolume needs script slot +0xfc = containsObject (0x17e950 by thunk 0x17f130), or no AREA_* script fires; (2) ClearSequence 0x2b1500..0x2b1660 is stubs, native 0x52 never ends the stage; (3) the navigator after a clear: runNaviFile 0x295470 and its widgets. Test: warp into AREA01 (6959, 6342, 811) with a temporary --env hook, removed before the commit.",
    "why": "The character around the frame's scripts, what it hears and sees, the noise list, the volumes: read 2026-11-05; extents by function, the file name is the port's"
   },
   "game/stageresult.cpp": {

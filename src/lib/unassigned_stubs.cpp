@@ -1713,3 +1713,168 @@ void StageParticle::setStopFrames(int frames)
 {
     YAMIPAN_STUB("StageParticle::setStopFrames", 0x001900f0);
 }
+
+// stub of FS2 0x001dee50
+bool PlayerMotion::getCarSpecialFlag()
+{
+    YAMIPAN_STUB("PlayerMotion::getCarSpecialFlag", 0x001dee50);
+    return {};
+}
+
+// stub of FS2 0x001dee90
+void PlayerMotion::setCarSpecialFlag(bool on)
+{
+    YAMIPAN_STUB("PlayerMotion::setCarSpecialFlag", 0x001dee90);
+}
+
+// stub of FS2 0x002a8920
+bool SceneOwnedObject::getRecordFlag31()
+{
+    YAMIPAN_STUB("SceneOwnedObject::getRecordFlag31", 0x002a8920);
+    return {};
+}
+
+// stub of FS2 address unknown (1 candidates)
+bool SceneOwnedObject::isSlot2c()
+{
+    YAMIPAN_STUB("SceneOwnedObject::isSlot2c", 0x00000000);
+    return {};
+}
+
+// stub of FS2 address unknown (1 candidates)
+bool SceneOwnedObject::isSlot44()
+{
+    YAMIPAN_STUB("SceneOwnedObject::isSlot44", 0x00000000);
+    return {};
+}
+
+// stub of FS2 address unknown (1 candidates)
+void SceneOwnedObject::setNames(const char *first, const char *second)
+{
+    YAMIPAN_STUB("SceneOwnedObject::setNames", 0x00000000);
+}
+
+// stub of FS2 0x0028dac0
+void StageCar::resetPlace()
+{
+    YAMIPAN_STUB("StageCar::resetPlace", 0x0028dac0);
+}
+
+// stub of FS2 0x0017af50
+bool StageCharacter::rideCar(int off, int side)
+{
+    YAMIPAN_STUB("StageCharacter::rideCar", 0x0017af50);
+    return {};
+}
+
+// stub of FS2 0x001fe770
+void StageParty::addVisionA(StageObject *object)
+{
+    YAMIPAN_STUB("StageParty::addVisionA", 0x001fe770);
+}
+
+// stub of FS2 0x001fe740
+void StageParty::addVisionB(StageObject *object)
+{
+    YAMIPAN_STUB("StageParty::addVisionB", 0x001fe740);
+}
+
+// stub of FS2 0x001fe9f0
+bool StageParty::isCompanionMode()
+{
+    YAMIPAN_STUB("StageParty::isCompanionMode", 0x001fe9f0);
+    return {};
+}
+
+// stub of FS2 0x001fe7b0
+void StageParty::setVisionFrames(int frames)
+{
+    YAMIPAN_STUB("StageParty::setVisionFrames", 0x001fe7b0);
+}
+
+// stub of FS2 0x001fe7a0
+void StageParty::setVisionTarget(StageObject *object)
+{
+    YAMIPAN_STUB("StageParty::setVisionTarget", 0x001fe7a0);
+}
+
+// stub of FS2 address unknown (0 candidates)
+u_int elevatorCalledFloors(StageObject *elevator)
+{
+    YAMIPAN_STUB("elevatorCalledFloors", 0x00000000);
+    return {};
+}
+
+// stub of FS2 0x00294c30
+bool elevatorIsAtB1(StageObject *elevator)
+{
+    YAMIPAN_STUB("elevatorIsAtB1", 0x00294c30);
+    return {};
+}
+
+// stub of FS2 0x00294c70
+bool elevatorIsAtB3(StageObject *elevator)
+{
+    YAMIPAN_STUB("elevatorIsAtB3", 0x00294c70);
+    return {};
+}
+
+// stub of FS2 0x00294b60
+bool elevatorIsPhase1(StageObject *elevator)
+{
+    YAMIPAN_STUB("elevatorIsPhase1", 0x00294b60);
+    return {};
+}
+
+// stub of FS2 0x00294b00
+bool elevatorIsPhase2(StageObject *elevator)
+{
+    YAMIPAN_STUB("elevatorIsPhase2", 0x00294b00);
+    return {};
+}
+
+// stub of FS2 0x00294b30
+bool elevatorIsPhase3(StageObject *elevator)
+{
+    YAMIPAN_STUB("elevatorIsPhase3", 0x00294b30);
+    return {};
+}
+
+// stub of FS2 0x00294ad0
+bool elevatorIsPhase4(StageObject *elevator)
+{
+    YAMIPAN_STUB("elevatorIsPhase4", 0x00294ad0);
+    return {};
+}
+
+// stub of FS2 0x00294f90
+void elevatorMove(StageObject *elevator, bool toB3, bool fast)
+{
+    YAMIPAN_STUB("elevatorMove", 0x00294f90);
+}
+
+// stub of FS2 0x002a6c40
+int numLockPopDials(StageObject *lock)
+{
+    YAMIPAN_STUB("numLockPopDials", 0x002a6c40);
+    return {};
+}
+
+// stub of FS2 0x002a6cd0
+int numLockPushDials(StageObject *lock, int a, int b, int c, int d)
+{
+    YAMIPAN_STUB("numLockPushDials", 0x002a6cd0);
+    return {};
+}
+
+// stub of FS2 0x002a6b70
+void numLockScramble(StageObject *lock)
+{
+    YAMIPAN_STUB("numLockScramble", 0x002a6b70);
+}
+
+// stub of FS2 0x002b2b70
+void SceneOwnedObject::setSevenKeyNumbers(const char *name, int a, int b, int c, int d)
+{
+    YAMIPAN_STUB("SceneOwnedObject::setSevenKeyNumbers", 0x002b2b70);
+}

@@ -151,6 +151,8 @@ struct StageViewTarget
     StageModel  *model;         // FS2 +0x30: prepareDrawFlags marks it
     sceVu0FVECTOR position;     // FS2 +0x150: PlayerMotion::applyMovement measures from it
     struct GateParts *gateParts; // FS2 +0x2b0: what SubSceneGateObject copies
+    float value394;             // FS2 +0x394: native 0x19e
+    u_char flag3b9;             // FS2 +0x3b9: native 0x154
     StageObject *character;     // FS2 +0x3c0
 
     // On the ground plane, nearer than range to pos.
@@ -298,8 +300,8 @@ struct StageMission
     bool    restoreAsked = false;  // FS2 +0xc0: onRestore has answered
     int     restoreAnswer = 0;   // FS2 +0xc4
     char    pendingEvent[kMissionEventName] = {}; // FS2 +0xc8: the event afterScripts starts, empty none (StageScene::isBusy)
-    u_char  _d8 = 0;            // FS2 +0xd8: cleared by afterScripts (writers unread)
-    u_char  _d9 = 0;            // FS2 +0xd9: the same
+    u_char  _d8 = 0;            // FS2 +0xd8: cleared by afterScripts (writers unread); native 0x1f5 answers it
+    u_char  _d9 = 0;            // FS2 +0xd9: the same; native 0x22a answers it
     u_char  blackout = 0;       // FS2 +0xda: set: StageScene::update fades the screen to black, clear: back
     MissionTimedRecord timed[kMissionTimedRecords]; // FS2 +0xe0
     int     timedCount = 0;     // FS2 +0x260
