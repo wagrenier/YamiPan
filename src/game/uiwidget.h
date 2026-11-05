@@ -479,23 +479,4 @@ public:
     float        m_textY;       // FS2 +0x34
 };
 
-// ──────────────────────────────────────────────────────────────────────
-// Widgets of other TUs create builds (unread; only their constructors).
-
-// "prgScaleNavi" (0x628 bytes; unassigned@00299d90).
-// layout: host -- fields unread
-class PrgScaleNavi : public UiWidget
-{
-public:
-    PrgScaleNavi(UiSequence *seq, UiLayout *layout, S2dData *data, S2dWidgetDef *def, int arg); // FS2 0x0029e4f0
-};
-
-// "prgScaleNaviScroll" (0x28 bytes; unassigned@00299d90).
-// layout: host -- fields unread
-class PrgScaleNaviScroll : public UiWidget
-{
-public:
-    PrgScaleNaviScroll(UiSequence *seq, UiLayout *layout, S2dData *data, S2dWidgetDef *def, int arg); // FS2 0x0029ae30
-};
-
 #endif /* _GAME_UIWIDGET_H */

@@ -15,6 +15,7 @@
 #include "game/gamesystem.h"
 #include "game/memcard.h"
 #include "game/movieplayer.h"
+#include "game/navimenu.h"
 #include "game/prgmccard.h"
 #include "game/sysdata.h"
 #include "game/uigame.h"

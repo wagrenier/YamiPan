@@ -88,20 +88,6 @@ MenuProgSet::~MenuProgSet()
 
 // stub of FS2 0x00207ef0
 // stub of FS2 0x00207ea0
-// stub of FS2 0x0029e4f0
-PrgScaleNavi::PrgScaleNavi(UiSequence *seq, UiLayout *layout, S2dData *data, S2dWidgetDef *def, int arg)
-    : UiWidget(seq, layout, data, def, arg)
-{
-    YAMIPAN_STUB("PrgScaleNavi::PrgScaleNavi", 0x0029e4f0);
-}
-
-// stub of FS2 0x0029ae30
-PrgScaleNaviScroll::PrgScaleNaviScroll(UiSequence *seq, UiLayout *layout, S2dData *data, S2dWidgetDef *def, int arg)
-    : UiWidget(seq, layout, data, def, arg)
-{
-    YAMIPAN_STUB("PrgScaleNaviScroll::PrgScaleNaviScroll", 0x0029ae30);
-}
-
 // stub of FS2 0x002682e0
 Rand48::Rand48()
 {
@@ -263,20 +249,6 @@ void debugSysUpdate()
     YAMIPAN_STUB("debugSysUpdate", 0x00151270);
 }
 
-// stub of FS2 0x0029efe0
-NaviMenu * getNaviMenu()
-{
-    YAMIPAN_STUB("getNaviMenu", 0x0029efe0);
-    return {};
-}
-
-// stub of FS2 0x0029efd0
-SaveExtra * getSaveExtra()
-{
-    YAMIPAN_STUB("getSaveExtra", 0x0029efd0);
-    return {};
-}
-
 // stub of FS2 0x0020afa0
 int mapMenuResult()
 {
@@ -315,20 +287,6 @@ GsRegionAlloc::~GsRegionAlloc()
     YAMIPAN_STUB("GsRegionAlloc::~GsRegionAlloc", 0x002e1440);
 }
 
-// stub of FS2 0x0029acb0
-int applyNaviAnswer(int answer)
-{
-    YAMIPAN_STUB("applyNaviAnswer", 0x0029acb0);
-    return {};
-}
-
-// stub of FS2 0x0029ad40
-int currentNaviAnswer()
-{
-    YAMIPAN_STUB("currentNaviAnswer", 0x0029ad40);
-    return {};
-}
-
 // stub of FS2 0x002c42c0
 int runExtraMode(int arg)
 {
@@ -341,19 +299,6 @@ int runHelpScreen(int page)
 {
     YAMIPAN_STUB("runHelpScreen", 0x002acff0);
     return {};
-}
-
-// stub of FS2 0x00295470
-int runNaviFile()
-{
-    YAMIPAN_STUB("runNaviFile", 0x00295470);
-    return {};
-}
-
-// stub of FS2 0x0029ef70
-void saveExtraInit()
-{
-    YAMIPAN_STUB("saveExtraInit", 0x0029ef70);
 }
 
 // stub of FS2 0x002e0840

@@ -98,14 +98,14 @@ static_assert(sizeof(NaviPendingLink) == 0x4, "NaviPendingLink: EE 0x4");
 struct NaviNode
 {
     short    kind;              // FS2 +0x00: kNaviKindSinglePart or two parts
-    short    _02;
+    short    index;             // FS2 +0x02: its own
     short    part[2];           // FS2 +0x04: nonzero when the part exists (hasPart)
     float    x;                 // FS2 +0x08: grid column
     float    y;                 // FS2 +0x0c: grid row
     NaviCond cond[kNaviCondSets][kNaviCondsPerSet];                // FS2 +0x10
     NaviTrigger trigger[kNaviTriggers];                            // FS2 +0x28
     NaviPendingLink pending[kNaviLinkGroups][kNaviLinksPerGroup];  // FS2 +0x30
-    u_char   _60[8];            // FS2 +0x60
+    float    goalPos[2];        // FS2 +0x60: on the map, < 0 none
     short    link[kNaviDirections];  // FS2 +0x68: neighbouring nodes, < 0 (or 0 for getLinkOrNone) none
 };
 static_assert(offsetof(NaviNode, x) == 0x08, "NaviNode::x");

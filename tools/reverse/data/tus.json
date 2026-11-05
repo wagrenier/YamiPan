@@ -542,6 +542,28 @@
    "status": "verify",
    "why": "MoviePlayer (uiwidget's prgMovie player) and its MPEG / IPU callbacks and sound sinks: starts after the 0x1fa230 texture class (vtables 0x315f00/0x315f20, its dtors end 0x1fa9d0), ends at fontdata.cpp's TextPrinter::~TextPrinter 0x1fcb40; vtables 0x315f50 / 0x315f80 (ctors 0x1fc4e0 / 0x1fcad0) are inside"
   },
+  "game/navimenu.cpp": {
+   "notes": "Seen in the user's own playthrough: after stage 1 the navigator appears, the cursor moves and picking the next node starts that stage. Not looked at: the overview on L1, the link and back requests, other aspects. NaviMenu is now the widget's +0x2a8..+0x628 with named fields. The next stage then faults in ModelPose::play under native 0xb1: open-items.md, Next up.",
+   "ranges": [
+    [
+     "00295470",
+     "002955d0"
+    ],
+    [
+     "0029acb0",
+     "0029eff0"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-05 18:57",
+     "status": "verify",
+     "summary": "The navigator: the screen after a stage, its two widgets and the answer"
+    }
+   ],
+   "status": "verify",
+   "why": "The navigator: the screen after a stage (runNaviFile, runNaviLayout), the answer it leaves in the save, and its two widgets, PrgScaleNavi and PrgScaleNaviScroll. The file name is the port's."
+  },
   "game/nodetransform.cpp": {
    "notes": "All of 0x1d7c50..0x1d85b0 written (batches 100, 101); rotation, translate and multiply helpers in vu0math.h. New Game run: 31,560 frames with no crash, the opening movie at frame 3600, black at the end. Nothing draws 3D yet, so no picture tests this: the first map model does. TU 3 stagemodel.cpp: use StageBoneNode and StageMatrixNode from stagenode.h in bindBones and setBaseMotion, and change BoneNode::value to StageNodeBase pointer. architecture.md has The node transform; open-items.md has the doubts.",
    "ranges": [
