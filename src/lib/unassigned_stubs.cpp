@@ -1268,13 +1268,6 @@ void RouteFilter::allow(const char *name, bool on)
     YAMIPAN_STUB("RouteFilter::allow", 0x0023f310);
 }
 
-// stub of FS2 0x00216aa0
-bool StageCharacter::giveItem(StageObject *item)
-{
-    YAMIPAN_STUB("StageCharacter::giveItem", 0x00216aa0);
-    return {};
-}
-
 // stub of FS2 0x002a6910
 void StageCharacter::initSounds()
 {
@@ -1321,12 +1314,6 @@ void StageParticle::stopChain()
 void PlayerMotion::clearNoFlash(int arg)
 {
     YAMIPAN_STUB("PlayerMotion::clearNoFlash", 0x001dfd90);
-}
-
-// stub of FS2 0x00216400
-void StageCharacter::swapWeapons()
-{
-    YAMIPAN_STUB("StageCharacter::swapWeapons", 0x00216400);
 }
 
 // stub of FS2 0x00215620
@@ -1528,4 +1515,16 @@ bool StageCharacter::hasFollower()
 {
     YAMIPAN_STUB("StageCharacter::hasFollower", 0x00210720);
     return {};
+}
+
+// stub of FS2 0x0023cf50
+void ItemPhysics::push(const sceVu0FVECTOR velocity, int bone)
+{
+    YAMIPAN_STUB("ItemPhysics::push", 0x0023cf50);
+}
+
+// stub of FS2 0x0023cfc0
+void ItemPhysics::setMoving(bool moving, bool awake)
+{
+    YAMIPAN_STUB("ItemPhysics::setMoving", 0x0023cfc0);
 }

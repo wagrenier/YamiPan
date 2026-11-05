@@ -17657,6 +17657,12 @@
   "was": "FUN_0020b1d0",
   "why": "+0x364 set: +0x2ca = 1; update calls it while the alternate flag holds; the meaning is a guess"
  },
+ "0020b240": {
+  "name": "StageCharacter::canWield",
+  "tag": "game-inferred",
+  "was": "FUN_0020b240",
+  "why": "ItemDef kind against the sheet's bitfields at +0x38 and a mask of 1, 2, 4, 8"
+ },
  "0020b590": {
   "name": "StageCharacter::canUsePrompt",
   "tag": "game-inferred",
@@ -17867,6 +17873,30 @@
   "was": "FUN_00216400",
   "why": "exchanges +0x238 and +0x23c and reparents them"
  },
+ "00216630": {
+  "name": "StageCharacter::throwItem",
+  "tag": "game-inferred",
+  "was": "FUN_00216630",
+  "why": "dropItem, wakes the physics at +0x240, push to every bone, +0x440 owner, +0x208 set, setThrowVector"
+ },
+ "002166d0": {
+  "name": "StageCharacter::dropWeapon",
+  "tag": "game-inferred",
+  "was": "FUN_002166d0",
+  "why": "dropItem, wakes the physics, push to bone 0, +0x440 owner: PickupItem's call when both weapon slots are full"
+ },
+ "00216760": {
+  "name": "StageCharacter::canDropWeapon",
+  "tag": "game-inferred",
+  "was": "FUN_00216760",
+  "why": "four segment tests from the character to the weapon and under it, arg is m_weapons[0] at 0x270fb0"
+ },
+ "00216920": {
+  "name": "StageCharacter::dropItem",
+  "tag": "game-inferred",
+  "was": "FUN_00216920",
+  "why": "finds the object in the +0x22c list, clears lamp and weapon slots, shows it at the character's position, detaches it, erases the node"
+ },
  "00216aa0": {
   "name": "StageCharacter::giveItem",
   "tag": "game-inferred",
@@ -17878,6 +17908,12 @@
   "tag": "game-inferred",
   "was": "FUN_002176d0",
   "why": "viewLinkedObject() == this"
+ },
+ "002184b0": {
+  "name": "StageCharacter::noticeItem",
+  "tag": "game-inferred",
+  "was": "FUN_002184b0",
+  "why": "mission showNotice 0 with the item's display name"
  },
  "002185a0": {
   "name": "StageObject::canSpawn",
@@ -18712,6 +18748,18 @@
   "tag": "game-inferred",
   "was": "FUN_0023ca50",
   "why": "called from the items' third side slot; asks the land sound"
+ },
+ "0023cf50": {
+  "name": "ItemPhysics::push",
+  "tag": "game-inferred",
+  "was": "FUN_0023cf50",
+  "why": "adds a vector to a bone's +0x10, all bones when the index is negative"
+ },
+ "0023cfc0": {
+  "name": "ItemPhysics::setMoving",
+  "tag": "game-inferred",
+  "was": "FUN_0023cfc0",
+  "why": "sets +0x1fc, the owner's +0x43c, and its three copies"
  },
  "0023d600": {
   "name": "ItemPhysics::setup",
@@ -21263,6 +21311,12 @@
   "was": "FUN_00269da0",
   "why": "this-adjusting thunk in the vtable of the object seen at +0x40, a jump to SubSceneModelObject::~SubSceneModelObject"
  },
+ "0026a4a0": {
+  "name": "MotionProbe::findItem",
+  "tag": "game-inferred",
+  "was": "FUN_0026a4a0",
+  "why": "walks list group 3, canPickFar, sight from bn_head, nearest by vecDistance"
+ },
  "0026a6b0": {
   "name": "MotionProbe::findDoor",
   "tag": "game-inferred",
@@ -21412,6 +21466,30 @@
   "tag": "game-inferred",
   "was": "FUN_002702a0",
   "why": "name QuickTurn (vtable 0x3174f0); ability +0x3a4 sets +0x363"
+ },
+ "00270c50": {
+  "name": "PickupItemCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00270c50",
+  "why": "slot +0x10 of vtable 0x3175b0, requests motion 0x12 or 0x13"
+ },
+ "00270e90": {
+  "name": "PickupItemCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00270e90",
+  "why": "slot +0xc of vtable 0x3175b0, findItem, sets allows +0x380 and +0x384"
+ },
+ "00271020": {
+  "name": "PutItemCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00271020",
+  "why": "slot +0x10 of vtable 0x3175d0, clears the Pickup link's picks and requests 0x12"
+ },
+ "00271070": {
+  "name": "PutItemCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00271070",
+  "why": "slot +0xc of vtable 0x3175d0, allows +0x388 when no wall face ahead"
  },
  "002710a0": {
   "name": "DoorCondition::onApply",
@@ -21616,6 +21694,30 @@
   "tag": "game-inferred",
   "was": "FUN_0027be70",
   "why": "slot +0x14 of vtable 0x317b60, the sheet's link Up: the rise from WalkLink's edgeDrop"
+ },
+ "0027bef0": {
+  "name": "PickupLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_0027bef0",
+  "why": "slot +0x1c, on event 0x400 giveItem, sound and notice"
+ },
+ "0027c0e0": {
+  "name": "PickupLink::onCancel",
+  "tag": "game-inferred",
+  "was": "FUN_0027c0e0",
+  "why": "slot +0x24, clears the item's +0x204 and the two pointers"
+ },
+ "0027c100": {
+  "name": "PickupLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_0027c100",
+  "why": "slot +0x14 of vtable 0x317b90, takes the item from wants +0x2d4 or allows +0x384"
+ },
+ "0027c140": {
+  "name": "PickupLink::PickupLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027c140",
+  "why": "sets vtable 0x317b90, stored at motion +0xc08, map key Pickup"
  },
  "0027c420": {
   "name": "WalkLink::onUpdate",
@@ -23164,6 +23266,12 @@
   "tag": "game-inferred",
   "was": "FUN_002a2fc0",
   "why": "findStepSound on the floor face's surface with pace 4, playEntryHeard"
+ },
+ "002a3160": {
+  "name": "StageCharacter::playPickSound",
+  "tag": "game-inferred",
+  "was": "FUN_002a3160",
+  "why": "StageItem::getPickSound through playNamedHeard2 at the character's position"
  },
  "002a49c0": {
   "name": "StageCharacter::playStepSound",

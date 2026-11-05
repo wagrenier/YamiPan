@@ -133,6 +133,11 @@ public:
     void draw();                                                         // FS2 0x0023c910
     // The mean of the bones' velocities.
     void getMeanVelocity(sceVu0FVECTOR out);                             // FS2 0x0023ce00
+    // Falls again (moving) or comes to rest; awake: at rest, the body takes
+    // the root bone's place.
+    void setMoving(bool moving, bool awake);                             // FS2 0x0023cfc0
+    // Adds to a bone's velocity, every bone's with -1.
+    void push(const sceVu0FVECTOR velocity, int bone);                   // FS2 0x0023cf50
 
     int  collisionHook0(CollisionContact *contact, const float *normal, StageCollisionFace *face,
                         float depth) override;                                      // FS2 0x0023c020
@@ -195,7 +200,8 @@ protected:
     // from address 0.
     const ItemDef &itemDef() const;
 
-    void         *m_holder;     // FS2 +0x204: 0 from the ctor, unread: set, the model stays frozen
+public:
+    StageCharacter *m_holder;   // FS2 +0x204: who is picking it up (PickupLink); set, the model stays frozen
     u_char        m_inUse;      // FS2 +0x208: a thrown flare's and an open trap's
     int           m_maxCount;   // FS2 +0x210
     void         *m_itemMotion; // FS2 +0x214: the motion list's first
@@ -256,6 +262,8 @@ public:
     // light is one of the four.
     bool ownsLight(StageObject *light) const;                            // FS2 0x001828b0
     void setShadowOwner(StageObject *owner);                             // FS2 0x00182930
+    // Inline in the ROM (StageCharacter::giveItem).
+    ItemLamp *lamp() const { return m_lamp; }
     // The matrix a shadow is thrown from: the last point's, pulled back
     // from a wall between the holder's head and it.
     void getLightMatrix(sceVu0FMATRIX out);                              // FS2 0x00182770

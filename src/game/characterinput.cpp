@@ -412,8 +412,8 @@ void CharacterInput::stepItems()
             owner->m_wants.useLadder = list->offer(owner, UiUse_Ladder);
         if (owner->m_allows.jump != 0)
             owner->m_wants.useJump = list->offer(owner, UiUse_Jump);
-        if (owner->m_allows.useItem5 != 0)
-            owner->m_wants.useItem5 = list->offer(owner, UiUse_Gate);
+        if (owner->m_allows.pickup != 0)
+            owner->m_wants.pickup = list->offer(owner, UiUse_Pickup);
     }
     if (m_pad->actionPressed(PadAction_Squat) && owner->m_allows.squatAction != 0)
         owner->m_wants.squatAction = 1;

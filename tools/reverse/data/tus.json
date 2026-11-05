@@ -621,7 +621,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Crash: StageMenu::StageMenu was a stub, so state, pending and pendingOn were host heap garbage and native 0x45 passed them to wstrcmp; it depended on heap contents, which is why gdb never saw it. Fixed by the ctor in new game/stagemenu.cpp (ctor only: update, draw and destroy stay stubs on purpose, with update and no window the menu button would open an invisible menu holding the input focus). Door not opening: the start hook ran after the scripts and wiped wants; now StageCharacter::sideHook0 0x17a860 runs in actionStart and sideHook1 0x17a810 in actionControl. kDoorsEnabled is gone. New: yamipan::crash prints [crash] lines on stdout, py crashsym.py names them; try it before gdb. Seen: oMK99_ds_05 (type T) opened by Use at the game's own place, motion 73, modes 0-1-2; the pad's own CROSS closed it (motion 74) and reopened it. Pictures: progress/20261105-door-shut.png, progress/20261105-door-open.png; no reference exists. After the fix 7 of 7 runs lived, no [crash] line. Not proven: walking through the open door, walking on the final build (the walking-pad run shows the same room with a small shift), keys, locks, forcing, type R doors, the door sounds. Left: the rest of 0x17a860 (flags +0x3a8, +0x3ac, the live clocks, the look-ahead point), the brain in sideHook1, native 0x7a and the StageMenu window 0x20ac30, the shared property ids, hasNotice, hasFollower, the 18 other conditions, the other links, the list 0x1df0b0, clearNoFlash. Next: walk through the open door. open-items.md Done has all of it.",
+   "notes": "Written: giveItem 0x216aa0, swapWeapons, dropItem, dropWeapon, throwItem, canDropWeapon, canWield, playPickSound, noticeItem, MotionProbe::findItem, conditions PickupItem and PutItem, PickupLink. Measured in New Game: stage 1 has no items at all (group 3 empty, F_PC01 sheet columns empty, no ItemDef name has a file group, so placeItem cannot be forced), so giveItem, dropItem, the pickup motions, the click, sound, notice and the chest lamp have never run. Seen: PickupItem::onUpdate runs on the player each frame; three 290 s runs lived, the 15 s smoke ends on the language screen as before. Stubs: ItemPhysics::setMoving and push, so a dropped weapon does not fall. PutItem cannot fire: its writer 0x218850 is unread. Left in the TU: the other conditions (BtOn, GunOn, TrapSet, TrapCancel, Throw, Showt, Reload, Jack, Bite, Lock, BtAttack, BtAtkCombo, BtMove, GunAttack, Snipe, GunMove), the other links, the list 0x1df0b0, clearNoFlash, the rest of 0x17a860, the brain in sideHook1, native 0x7a and the StageMenu window. Still open from the last run: walking through an open door was not tested this run. Next: find a stage with items, or go on to the Lock and BtAttack conditions, which stage 1 can test. Holders of a lamp make m_lampItem non-null for the first time, so SceneRender light code will run: watch the picture. open-items.md Done has all of it.",
    "ranges": [
     [
      "0017df60",
@@ -668,6 +668,10 @@
      "001ed950"
     ],
     [
+     "0020b240",
+     "0020b588"
+    ],
+    [
      "0020d390",
      "0020d3f4"
     ],
@@ -680,6 +684,14 @@
      "00215ae8"
     ],
     [
+     "00216400",
+     "002176d0"
+    ],
+    [
+     "002184b0",
+     "00218500"
+    ],
+    [
      "00219b30",
      "00219be0"
     ],
@@ -688,7 +700,7 @@
      "0021c290"
     ],
     [
-     "0026a6b0",
+     "0026a4a0",
      "0026a8f0"
     ],
     [
@@ -708,7 +720,7 @@
      "002702e0"
     ],
     [
-     "002710a0",
+     "00270c50",
      "00271790"
     ],
     [
@@ -728,12 +740,20 @@
      "0027b6e0"
     ],
     [
+     "0027bef0",
+     "0027c1e0"
+    ],
+    [
      "0027c420",
      "0027c6d0"
     ],
     [
      "002a2100",
      "002a2274"
+    ],
+    [
+     "002a3160",
+     "002a31b0"
     ],
     [
      "002a49c0",
@@ -774,11 +794,16 @@
      "date": "2026-11-05 03:49",
      "status": "partial",
      "summary": "door crash found and fixed, doors on: a door opens and closes on Use, with the game's own labels on screen"
+    },
+    {
+     "date": "2026-11-05 04:37",
+     "status": "partial",
+     "summary": "what a character carries: giveItem, dropItem, swapWeapons, PickupItem, PutItem and the Pickup link written; stage 1 has no items, so none of it has been seen working"
     }
    ],
    "status": "partial",
    "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves.",
-   "why": "the motion core, then the conditions Always, QuickTurn, Squat, Turn, Move, the Walk link and the probes, then what controlStep calls alone: the step sounds and the health tests: no second TU yet; a later cut may give the conditions and links 0x26d020..0x27d8d0 their own file"
+   "why": "the motion core, the conditions, the links and probes, what controlStep calls alone, and what a character carries: giveItem, dropItem, the Pickup link"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",

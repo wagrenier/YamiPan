@@ -243,6 +243,22 @@ public:
     float  rate = 1.0f;         // FS2 +0x24: of the motion and of the door
 };
 
+// Bending for an item: on the motion's click it comes into the hand, or
+// leaves it; PickupItem and PutItem share the motion. EE 0x2c, vtable 0x317b90,
+// the field +0xc08 of PlayerMotion. layout: host.
+class PickupLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;                                        // FS2 0x0027c140
+    void onRequest() override;                                           // FS2 0x0027c100
+    void onRun() override;                                               // FS2 0x0027bef0
+    void onCancel() override;                                            // FS2 0x0027c0e0
+
+    StageItem *putting = nullptr; // FS2 +0x20: going down
+    StageItem *taking = nullptr;  // FS2 +0x24: coming up
+    u_char     picks = 1;         // FS2 +0x28: 1 PickupItem asked, 0 PutItem
+};
+
 // The motions of the feet: stand, walk, run, turn. Each frame it looks for
 // a face ahead and what lies behind it: the edge the player may stop at.
 // The main camera rises when the drop is deep, partnerResponds asks the
@@ -318,14 +334,6 @@ public:
     float height = 0.0f;        // FS2 +0x24: LadderCondition's
 };
 
-// What PlayerMotion +0xbd0 points at; who sets it is unread. layout: host --
-// EE: an object, +0x220 a point on it.
-struct MotionLookTarget
-{
-    StageNodeBase *node;        // FS2 +0x0
-    sceVu0FVECTOR  point;       // FS2 +0x220
-};
-
 // What the wall probes share (PlayerMotion +0x4, 0x26c6b0). layout: host --
 // EE 8: +0 the character, +4 a small vector { 0, 1, 0 }.
 struct MotionProbe
@@ -334,6 +342,8 @@ struct MotionProbe
     // The door within reach, facing it, free. A door of type R that stands
     // open must leave room to walk to its place.
     StageDoor *findDoor();                                               // FS2 0x0026a6b0
+    // The nearest free item in reach that the head can see.
+    StageItem *findItem();                                               // FS2 0x0026a4a0
     // A ray from 50 above the feet to just beyond the radius, ahead or
     // behind. out takes the end, back at the feet's height.
     StageCollisionFace *faceAhead(sceVu0FVECTOR out, bool forward);      // FS2 0x0026c4b0
@@ -557,13 +567,14 @@ public:
     u_char m_bae = 0;           // FS2 +0xbae
     sceVu0FVECTOR position = {}; // FS2 +0xbb0
     sceVu0FVECTOR m_liftAngles = {}; // FS2 +0xbc0: LevelLift: how the partner faces
-    MotionLookTarget *m_lookObject = nullptr; // FS2 +0xbd0: the head looks at it, cleared each frame
+    StageItem *m_lookObject = nullptr; // FS2 +0xbd0: the item in reach: the head looks at its pick point, cleared each frame
     u_char noFlash = 0;         // FS2 +0xbd4: a shot shows no flash (StageWeaponItem::fire)
     PlayerOverlay *overlay = nullptr; // FS2 +0xbd8: StageScene::draw
     float  m_bf0 = 0.0f;        // FS2 +0xbf0
     float  m_bf4 = 0.0f;        // FS2 +0xbf4
     u_char m_bfc = 0;           // FS2 +0xbfc
     WalkLink *walkLink = nullptr; // FS2 +0xc00: the map's Walk
+    PickupLink *pickupLink = nullptr; // FS2 +0xc08: the map's Pickup
     DoorLink *doorLink = nullptr; // FS2 +0xc0c: the map's Door
 };
 
