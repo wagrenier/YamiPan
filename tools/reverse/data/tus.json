@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/viewcamera.cpp",
   "game/playermotion.cpp",
   "game/stagecharacter.cpp",
   "game/characterbrain.cpp",
@@ -678,7 +677,7 @@
     ],
     [
      "001e5d90",
-     "001e5f70"
+     "001e60b0"
     ],
     [
      "001e60b0",
@@ -1011,7 +1010,7 @@
    ],
    "status": "partial",
    "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves.",
-   "why": "the motion core, the conditions, the links and probes, what controlStep calls alone, what a character carries, the fight, the firearms, traps and throws, the character's start hook, the special actions, the bite, the status setters"
+   "why": "the ranges so far, with 0x1e5f70 getEyeMatrix joined: getLampMatrix's code plus the eye offset, beside it"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -1977,6 +1976,7 @@
    "why": "VectorTrack, VectorKey, VectorFade; needed by SceneRender"
   },
   "game/viewcamera.cpp": {
+   "notes": "All 6 functions written, plus PlayerMotion::getEyeMatrix 0x1e5f70 and StageObject::setProperty 0x189f40 (outside the ranges: the view needs it). Root stores property 0x56 sub 7 = 1, ForceView; the store used to end in the ScriptRunner stub. drawMode 2 means hidden: prepareDrawFlags hides the head of the followed character, the names were backwards and are fixed. Seen in New Game: room from eye height, no body; a temporary probe showed top=camview, head part hidden, and with setScope by hand top=camview_snipe with a zoomed room, not black. Stage 1 now refuses Run, Ready, Alt and the pause and map menus until Root clears them: that is the ROM. Not proven: that the character's 200 units of movement came from the scripted pad, the right stick turning the view, the head coming back in the third-person view. Next: StageCharacter's own property slots 0x2132d0 / 0x212530 and StageObject::getProperty 0x18a5b0 are unwritten (open-items.md, Done).",
    "ranges": [
     [
      "0029a730",
@@ -1987,6 +1987,14 @@
      "0029acb0"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-05 07:53",
+     "status": "done",
+     "summary": "the first-person view: ViewCamera written, stage 1's Root forces it through StageObject::setProperty, the head hides; seen from the eyes with no body, scope not black"
+    }
+   ],
+   "status": "done",
    "why": "the first-person view, camview, camview_zoom, camview_snipe: queued by the user 2026-11-05 as needed for gameplay; open-items.md top of Next up has the steps"
   },
   "game/wstring.cpp": {

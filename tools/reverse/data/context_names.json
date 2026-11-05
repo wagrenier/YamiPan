@@ -13751,6 +13751,12 @@
   "was": "FUN_00188b10",
   "why": "the body after the inline member clears in setModel"
  },
+ "00189f40": {
+  "name": "StageObject::setProperty",
+  "tag": "game-inferred",
+  "was": "FUN_00189f40",
+  "why": "slot +0x1fc of 29 object vtables; the script's property store: same list as SubSceneModelObject::setProperty, ids 0x72, 0x59, 0x4f, 3, 0x56 ..."
+ },
  "0018ae70": {
   "name": "StageObject::noiseHook",
   "tag": "game-inferred",
@@ -16612,6 +16618,12 @@
   "tag": "game-inferred",
   "was": "FUN_001e5d90",
   "why": "from the start hook 0x17a860: timers, the queues' open toggle, root scale, Always condition, link update"
+ },
+ "001e5f70": {
+  "name": "PlayerMotion::getEyeMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_001e5f70",
+  "why": "getLampMatrix's code, then row 3 moved by gMotionModels[+0xb58].a with its lanes reversed (default 0x305040: 0, 11, 11): the eye ViewCamera::cameraStep stands at"
  },
  "001e60b0": {
   "name": "PlayerMotion::getLampMatrix",
@@ -23807,6 +23819,12 @@
   "was": "FUN_0029a6e0",
   "why": "copies the vector, frames +0x30, links +0x38 / +0x3c"
  },
+ "0029a730": {
+  "name": "ViewCamera::~ViewCamera",
+  "tag": "game-inferred",
+  "was": "FUN_0029a730",
+  "why": "slot +0x10 of vtable 0x3185b0: restores vtables 0x3185b0 / 0x311d30 / 0x311860, destroys the node at +0x340, deleting by a1"
+ },
  "0029a830": {
   "name": "ViewCamera::getKind",
   "tag": "game-inferred",
@@ -23819,11 +23837,35 @@
   "was": "FUN_0029a840",
   "why": "called on camview_zoom with the character's +0x350"
  },
+ "0029a8c0": {
+  "name": "ViewCamera::cameraStep",
+  "tag": "game-inferred",
+  "was": "FUN_0029a8c0",
+  "why": "vtable 0x3185b0 + 0x25c: the slot StageScene::update calls; turns with the linked character's +0xb80 and sets the eye row of the world matrix"
+ },
+ "0029a9c0": {
+  "name": "ViewCamera::onViewTop",
+  "tag": "game-inferred",
+  "was": "FUN_0029a9c0",
+  "why": "vtable 0x3185b0 + 0x24c, the slot StageViewStack calls: hangs the node at +0x340 from m_linked, then cameraStep"
+ },
  "0029aae0": {
   "name": "ViewCamera::ViewCamera",
   "tag": "game-inferred",
   "was": "FUN_0029aae0",
   "why": "EE 0x440; camview, camview_zoom, camview_snipe; kind 10"
+ },
+ "0029ac90": {
+  "name": "ViewCamera::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_0029ac90",
+  "why": "side table 0x3185d4 last slot, this - 0x18, falls into cameraStep: ScenePairTable::actionTerminate's step"
+ },
+ "0029aca0": {
+  "name": "ViewCamera::dtorThunk",
+  "tag": "game-inferred",
+  "was": "FUN_0029aca0",
+  "why": "runner table 0x3185ec slot +0x18, this - 0x40, to the dtor"
  },
  "0029acb0": {
   "name": "applyNaviAnswer",

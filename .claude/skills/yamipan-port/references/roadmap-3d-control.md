@@ -61,7 +61,9 @@ opening is the event d0101") is answered for a first entry into the stage.
 
 **2026-11-05, later still:** doors are written and switched off (`kDoorsEnabled`): with them on a stage run crashes (open-items.md, Done, game/playermotion.cpp fifth run).
 
-**2026-11-05, later still:** firearms are written and run with a fake rifle in a test: stance, aim, shots, ammo; the scope view is black until `ViewCamera` has its frame step (open-items.md, Done, game/playermotion.cpp tenth run).
+**2026-11-05, later still:** firearms are written and run with a fake rifle in a test: stance, aim, shots, ammo; the scope view was black until `ViewCamera` had its frame step (open-items.md, Done, game/playermotion.cpp tenth run).
+
+**2026-11-05, later still:** New Game's first segment plays in first person: stage 1's Root forces `camview`, which has its frame step now, and the scope shows the zoomed room (open-items.md, Done, game/viewcamera.cpp). Root's property stores work; its property reads do not yet.
 
 **2026-11-05, later still:** the melee stance and blows work in New Game on stage 1 (R1, then Cross); nothing there can be locked or hit yet, and the camera in the stance is not proven (open-items.md, Done, game/playermotion.cpp ninth run).
 

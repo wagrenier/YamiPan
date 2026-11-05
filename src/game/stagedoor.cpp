@@ -2,9 +2,8 @@
  *  game/stagedoor.cpp -- a door of the map (game/stagedoor.h says how one
  *  works). The file name is the port's.
  *
- *  Not written: what getProperty and setProperty share with the plain map
- *  object (0x174b00, 0x189f40: position, motions, the mission's clocks): those
- *  ids fall to ScriptRunner's.
+ *  Not written: what getProperty shares with the plain map object (0x174b00:
+ *  position, motions, the mission's clocks): those ids fall to ScriptRunner's.
  * ======================================================================== */
 #include <math.h>
 #include <stdio.h>

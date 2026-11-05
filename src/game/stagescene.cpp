@@ -38,6 +38,7 @@
 #include "game/sysdata.h"       /* getStageSelect */
 #include "game/thread.h"        /* threadYield */
 #include "game/uiwidget.h"
+#include "game/viewcamera.h"
 #include "game/vu0math.h"
 #include "sdk/libgraph.h"       /* SCE_GS_ALPHA_1, SCE_GS_TEST_1 */
 #include "sdk/libpad.h"         /* SCE_PADstart, SCE_PADselect */
@@ -3134,14 +3135,15 @@ void StageScene::update()
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Before drawing: every character's two parts off; the view target's model
+// Before drawing: all of every character is drawn; the view target's model
 // gets the target group while it is in view (the partner's too in its mode
-// 2); then the part a camera shows is turned on: the followed character's
-// for camview / camjack, the second part of an owned object's target else.
+// 2); then what the camera is inside of is hidden: for camview / camjack the
+// followed character's head (with the gear of isMode1, the whole body), else
+// the whole body of an owned object's target.
 constexpr u_char kDrawGroupNormal = 1;
 constexpr u_char kDrawGroupTarget = 0x20;
-constexpr u_char kPartOff  = 0;
-constexpr u_char kPartShow = 2;
+constexpr u_char kPartDrawn  = 0;
+constexpr u_char kPartHidden = 2;
 
 // FS2 0x00198560
 // callcheck: isPlayer, getCompanion, getKind, drawSysClearTargetView, drawSysSetTargetView, isMode2, getKind, getKind, hasTarget, getTarget, isMode1 (targetInView holds the first ones)
@@ -3153,7 +3155,7 @@ void StageScene::prepareDrawFlags()
          slot = firstActive(StageObjArray::next(slot))) {
         for (int i = 0; i < 2; i++) {
             if ((*slot)->m_parts[i] != nullptr)
-                (*slot)->m_parts[i]->drawMode = kPartOff;
+                (*slot)->m_parts[i]->drawMode = kPartDrawn;
         }
     }
 
@@ -3178,7 +3180,7 @@ void StageScene::prepareDrawFlags()
         ModelPartRec *part = static_cast<StagePlayer *>(linked)->isMode1()
                                   ? linked->m_parts[1] : linked->m_parts[0];
         if (part != nullptr)
-            part->drawMode = kPartShow;
+            part->drawMode = kPartHidden;
         return;
     }
 
@@ -3191,7 +3193,7 @@ void StageScene::prepareDrawFlags()
         return;
     StageObject *target = owner->getTarget();
     if (target != nullptr && target->m_parts[1] != nullptr)
-        target->m_parts[1]->drawMode = kPartShow;
+        target->m_parts[1]->drawMode = kPartHidden;
 }
 
 // ──────────────────────────────────────────────────────────────────────

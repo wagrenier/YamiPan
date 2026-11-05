@@ -4,15 +4,20 @@
  *  The base of the stage's objects (StageObject, gamehooks.h: doors, items,
  *  cameras, lights, characters) and the tree of objects (StageObjectTree),
  *  0x18ae70..0x18c050, with the three script-facing slots before it
- *  (0x189ce0..0x18ae70, not written yet). The node base's dtor 0x1865c0 is
- *  here too, since a StageObject is one. The file name is the port's (no
- *  source string).
+ *  (0x189ce0..0x18ae70: setProperty is written, the other two are not). The
+ *  node base's dtor 0x1865c0 is here too, since a StageObject is one. The file
+ *  name is the port's (no source string).
  * ======================================================================== */
 #include "game/clock.h"
 #include "game/gamehooks.h"
 #include "game/heap.h"
+#include "game/objectproperty.h"
 #include "game/stagescene.h"
+#include "game/sysdata.h"
+#include "game/uiwidget.h"      /* UiShowFlags */
 #include "game/vu0math.h"
+
+constexpr float kDegreesToRadians = 0.017453292f;
 
 // The serial's counter.
 static u_int sObjectSerial;     /* sdata 0x31ae08 (gp-0x7a68) */
@@ -32,6 +37,110 @@ StageNodeBase::~StageNodeBase()
     detach();
     for (StageNodeList::Node *link = m_children.head; link != nullptr; link = link->next)
         link->value->m_parent = nullptr;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Records it; both unlock flags set then mark the save, as a clear does.
+static void markStageCleared(int stage, int variant)
+{
+    SaveData *save = getSaveData();
+    int bit = save->clearBit(getStageSelect()->kind, variant);
+    u_char *flags = &save->stageFlags[stage];
+    if ((bit & ~*flags) == 0)
+        return;
+    *flags |= (u_char)bit;
+    if (save->stageFlags[kStageFlagUnlockA] != 0 && save->stageFlags[kStageFlagUnlockB] != 0)
+        save->markUnlock468();
+}
+
+// Stage 1's Root is what sets Prop_ShowFlag: run and the menus off, ForceView
+// on. Every other id, the character's own among them, does nothing here; 0x5d
+// asks for the mission and drops it.
+// FS2 0x00189f40
+// callcheck: getKind, setTreeShown, setYaw, currentMission, setScoreClock, currentMission, setClockFrames, currentMission, setResultHold, currentMission, setResultPaused, currentMission, findCharacterById, findCharacterById, setPlayer, setScriptVar3f, setScriptVar3e, setResultValue, getSaveData, pickVariant3ac, getSaveData, getSaveData, clearBit, markUnlock468, getSaveData, clearBit, markUnlock468 (markStageCleared holds the last; cmdSetTreeSwitchedOn is the runner's slot +0x64)
+
+void StageObject::setProperty(int id, int sub, int value)
+{
+    StageScene *scene = gStageScene;
+    switch (id) {
+    case Prop_ViewActive:
+        if (getKind() == StageObject_Kind3)
+            m_viewActive = value != 0;
+        break;
+    case Prop_Shown:
+        setTreeShown(value != 0);
+        break;
+    case Prop_SwitchedOn:
+        cmdSetTreeSwitchedOn(value != 0);
+        break;
+    case Prop_YawDegrees:
+        setYaw((float)value * kDegreesToRadians);
+        break;
+    case Prop_ScoreClock:
+        scene->currentMission()->setScoreClock(value);
+        break;
+    case Prop_ClockFrames:
+        scene->currentMission()->setClockFrames(value);
+        break;
+    case Prop_ResultHold:
+        scene->currentMission()->setResultHold(value != 0);
+        break;
+    case Prop_ResultPaused:
+        scene->currentMission()->setResultPaused(value != 0);
+        break;
+    case Prop_ShowFlag:
+        if (sub >= 0 && sub < kShowFlagCount) {
+            bool hidden = value != 1;
+            scene->showFlags->flag[(int)kShowFlagByte[sub]] = sub == kShowFlagInverted ? !hidden : hidden;
+        }
+        break;
+    case Prop_PartnerId:
+        if (value == 0)
+            scene->partner = nullptr;
+        else if (StageObject *who = scene->objects->findCharacterById(value))
+            scene->partner = who;
+        break;
+    case Prop_PlayerId:
+        if (StageObject *who = scene->objects->findCharacterById(value))
+            scene->setPlayer(static_cast<StagePlayer *>(who));
+        break;
+    case Prop_ScriptVar3f:
+        scene->setScriptVar3f(value);
+        break;
+    case Prop_ScriptVar3e:
+        scene->setScriptVar3e(value);
+        break;
+    case Prop_Result:
+        scene->setResultValue(sub, value);
+        break;
+    case Prop_Archive: {
+        int archive = sub + 1;
+        if (archive <= 0 || archive > kArchiveCount || value < 0 || value >= kArchiveStates)
+            break;
+        SaveData *save = getSaveData();
+        if (archive == kArchiveVariantUnlock) {
+            if (value == kArchiveWanted)
+                save->pickVariant3ac(-1);
+            else if (value == kArchiveHeld && save->archive[archive] != kArchiveHeld
+                     && save->variant3ac == 0)
+                save->_3b0 = 1;
+        }
+        save->archive[archive] = (u_char)value;
+        break;
+    }
+    case Prop_StageCleared: {
+        int stage = sub + 1;
+        if (stage < 0 || stage >= kStageCount)
+            break;
+        if (value == 2)
+            markStageCleared(stage, 1);
+        else if (value == 1)
+            markStageCleared(stage, 0);
+        break;
+    }
+    default:
+        break;
+    }
 }
 
 // ──────────────────────────────────────────────────────────────────────

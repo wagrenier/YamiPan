@@ -19,6 +19,7 @@
 #include "game/stageitem.h"
 #include "game/stagelight.h"
 #include "game/stageobjlist.h"
+#include "game/objectproperty.h"
 #include "game/stagescene.h"
 #include "game/sysdata.h"
 #include "game/uiwidget.h"      /* UiShowFlags */
@@ -36,57 +37,8 @@ constexpr u_int kNamedMotionFlags = 0x50;       // DemoCamera's cuts pass the sa
 constexpr float kLightTurn = -1.5707964f;       // a light's axis along the bone
 
 constexpr int   kFramesPerSecond30 = 30;
-constexpr float kDegreesToRadians  = 0.017453292f;
 constexpr float kRadiansToDegrees  = 57.295776f;
 constexpr int   kFrameStepUnit     = 300;       // Prop_FrameStep: of these, a frame's worth
-
-// What getProperty and setProperty take. The numbers are the scripts'; the
-// names are read from these two functions (ScriptRunner::getProperty's own
-// list is unread).
-enum SubSceneProperty
-{
-    Prop_StageCleared   = 0x00,     // sub: stage - 1; 0 no, 1 variant 0, 2 both
-    Prop_Archive        = 0x01,     // sub: id - 1
-    Prop_Random100      = 0x02,
-    Prop_YawDegrees     = 0x03,
-    Prop_MissionFrames  = 0x39,
-    Prop_Frames30       = 0x3a,     // the object's clock in 30ths
-    Prop_Fps            = 0x3b,
-    Prop_Result         = 0x3c,
-    Prop_ScriptVar3e    = 0x3e,
-    Prop_ScriptVar3f    = 0x3f,
-    Prop_Group          = 0x40,     // always 4
-    Prop_FrameStep      = 0x4d,
-    Prop_SwitchedOn     = 0x4f,
-    Prop_PlayerId       = 0x50,
-    Prop_PartnerId      = 0x51,
-    Prop_ActorId        = 0x52,     // who acts for the player, or the player
-    Prop_Handle         = 0x54,
-    Prop_Restore        = 0x55,
-    Prop_ShowFlag       = 0x56,     // sub: an index of kShowFlagByte
-    Prop_Shown          = 0x59,
-    Prop_ResultPaused   = 0x6d,
-    Prop_ResultHold     = 0x6e,
-    Prop_ClockFrames    = 0x6f,
-    Prop_ScoreClock     = 0x70,
-    Prop_ViewActive     = 0x72,
-};
-
-// Prop_ShowFlag's numbers: the byte of UiShowFlags each one is. The set
-// stores "value != 1" there and the get answers the byte's inverse, so 1
-// means shown, except 7, which is the other way round.
-constexpr int kShowFlagCount = 17;
-constexpr signed char kShowFlagByte[kShowFlagCount] = {
-    0, 1, 2, 3, 4, 9, 5, 10, 6, 7, 13, 12, 11, 14, 8, 15, 16,
-};
-constexpr int kShowFlagInverted  = 7;   // the byte holds the value as it is
-constexpr int kShowFlagWithFirst = 6;   // read: the byte and'ed with byte 0
-
-constexpr int kArchiveVariantUnlock = 0x40;     // the one id with rules of its own
-constexpr int kArchiveWanted   = 1;
-constexpr int kArchiveHeld     = 2;
-constexpr int kArchiveReported = 3;             // read only
-constexpr int kArchiveStates   = 3;
 
 StageObjectList *parentObjects()
 {
@@ -109,19 +61,6 @@ int stageClearedState(int stage)
     if (!save->testStageFlags(stage, save->clearBit(kind, 1)))
         return 1;
     return 2;
-}
-
-// Records it; both unlock flags set then mark the save, as a clear does.
-void markStageCleared(int stage, int variant)
-{
-    SaveData *save = getSaveData();
-    int bit = save->clearBit(getStageSelect()->kind, variant);
-    u_char *flags = &save->stageFlags[stage];
-    if ((bit & ~*flags) == 0)
-        return;
-    *flags |= (u_char)bit;
-    if (save->stageFlags[kStageFlagUnlockA] != 0 && save->stageFlags[kStageFlagUnlockB] != 0)
-        save->markUnlock468();
 }
 
 } // namespace
@@ -221,91 +160,13 @@ void SubSceneModelObject::setPosition(const float *pos)
 }
 
 // ──────────────────────────────────────────────────────────────────────
+// The ROM's copy of StageObject::setProperty, less an id with no effect.
 // FS2 0x00268ae0 (0x1a6890 the runner's thunk)
 // callcheck: getKind, setTreeShown, setYaw, currentMission, setScoreClock, setClockFrames, setResultHold, setResultPaused, findCharacterById, setPlayer, setScriptVar3f, setScriptVar3e, setResultValue, getSaveData, pickVariant3ac, clearBit, markUnlock468
 
 void SubSceneModelObject::setProperty(int id, int sub, int value)
 {
-    StageScene *scene = gStageScene;
-    switch (id) {
-    case Prop_ViewActive:
-        if (getKind() == StageObject_Kind3)
-            m_viewActive = value != 0;
-        break;
-    case Prop_Shown:
-        setTreeShown(value != 0);
-        break;
-    case Prop_SwitchedOn:
-        cmdSetTreeSwitchedOn(value != 0);
-        break;
-    case Prop_YawDegrees:
-        setYaw((float)value * kDegreesToRadians);
-        break;
-    case Prop_ScoreClock:
-        scene->currentMission()->setScoreClock(value);
-        break;
-    case Prop_ClockFrames:
-        scene->currentMission()->setClockFrames(value);
-        break;
-    case Prop_ResultHold:
-        scene->currentMission()->setResultHold(value != 0);
-        break;
-    case Prop_ResultPaused:
-        scene->currentMission()->setResultPaused(value != 0);
-        break;
-    case Prop_ShowFlag:
-        if (sub >= 0 && sub < kShowFlagCount) {
-            bool hidden = value != 1;
-            scene->showFlags->flag[(int)kShowFlagByte[sub]] = sub == kShowFlagInverted ? !hidden : hidden;
-        }
-        break;
-    case Prop_PartnerId:
-        if (value == 0)
-            scene->partner = nullptr;
-        else if (StageObject *who = scene->objects->findCharacterById(value))
-            scene->partner = who;
-        break;
-    case Prop_PlayerId:
-        if (StageObject *who = scene->objects->findCharacterById(value))
-            scene->setPlayer(static_cast<StagePlayer *>(who));
-        break;
-    case Prop_ScriptVar3f:
-        scene->setScriptVar3f(value);
-        break;
-    case Prop_ScriptVar3e:
-        scene->setScriptVar3e(value);
-        break;
-    case Prop_Result:
-        scene->setResultValue(sub, value);
-        break;
-    case Prop_Archive: {
-        int archive = sub + 1;
-        if (archive <= 0 || archive > kArchiveCount || value < 0 || value >= kArchiveStates)
-            break;
-        SaveData *save = getSaveData();
-        if (archive == kArchiveVariantUnlock) {
-            if (value == kArchiveWanted)
-                save->pickVariant3ac(-1);
-            else if (value == kArchiveHeld && save->archive[archive] != kArchiveHeld
-                     && save->variant3ac == 0)
-                save->_3b0 = 1;
-        }
-        save->archive[archive] = (u_char)value;
-        break;
-    }
-    case Prop_StageCleared: {
-        int stage = sub + 1;
-        if (stage < 0 || stage >= kStageCount)
-            break;
-        if (value == 2)
-            markStageCleared(stage, 1);
-        else if (value == 1)
-            markStageCleared(stage, 0);
-        break;
-    }
-    default:
-        break;
-    }
+    StageObject::setProperty(id, sub, value);
 }
 
 // FS2 0x00269160 (0x1a68a0 the runner's thunk)
