@@ -45,8 +45,7 @@ constexpr char kTopBone[]   = "bn_top";      // data 0x3030b8
 // Bits setupMapObject sets on every map model.
 constexpr char kGateModelA[] = "oGK99_01";   // data 0x3030d8
 constexpr char kGateModelB[] = "oDC99_01";   // data 0x3030e8
-constexpr u_short kMapModelFlag10 = 0x10;   // no reader found yet
-constexpr u_short kMapModelFlags = ModelFlag_TakesSpot | ModelFlag_TakesPoint | kMapModelFlag10;
+constexpr u_short kMapModelFlags = ModelFlag_TakesSpot | ModelFlag_TakesPoint | ModelFlag_TakesShadow;
 constexpr u_short kMapModelLitBit = ModelFlag_TakesPoint;   // off on a model with its own lights
 
 } // namespace

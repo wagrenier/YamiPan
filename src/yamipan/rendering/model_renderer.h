@@ -53,12 +53,16 @@ private:
     {
         std::vector<ModelVertex> vertices;
         std::vector<ModelSpotVertex> spotVertices;
+        std::vector<ModelShadowVertex> shadowVertices;
         std::vector<ModelDraw> draws;
         std::vector<ModelPass> passes;
         std::vector<ModelVertex> batch; // one batch's vertices, each once: a strip reuses them
+        std::vector<int> triangles;     // the batch's faces that were kept, as indices into batch
+        std::vector<ModelShadowVertex> shadowBatch; // the same for a shadow
         YamiPanModelLights lights{};
         YamiPanModelPointLight point{};
         YamiPanModelSpotLight spot{};
+        YamiPanModelShadows shadows{};
         std::array<float, 3> eye{};
         std::shared_ptr<Image> image;
         float scrollU = 0.0f;
@@ -67,6 +71,7 @@ private:
         bool unlit = false;
         bool pointFlat = false;
         bool noSpot = false;
+        bool noShadow = false;
         bool open = false;
     };
 
@@ -81,7 +86,9 @@ private:
     std::shared_ptr<Image> imageOf(const void *texture);
     void uploadStream(SDL_GPUCopyPass *copy, VertexStream &stream, const void *data, unsigned bytes);
     SDL_GPUGraphicsPipeline *pipelineFor(bool blended);
+    SDL_GPUGraphicsPipeline *createProjectedPipeline(const SDL_GPUColorTargetDescription &target);
     SDL_GPUGraphicsPipeline *spotPipeline();
+    SDL_GPUGraphicsPipeline *shadowPipeline();
 
     Renderer &m_renderer;
     gpu::Device &m_device;
@@ -96,11 +103,13 @@ private:
     gpu::Shader m_spotFragmentShader;
     std::map<bool, gpu::GraphicsPipeline> m_pipelines;
     gpu::GraphicsPipeline m_spotPipeline;
+    gpu::GraphicsPipeline m_shadowPipeline;
     gpu::Texture m_depth;
     int m_depthWidth = 0;
     int m_depthHeight = 0;
     VertexStream m_vertices;
     VertexStream m_spotVertices;
+    VertexStream m_shadowVertices;
 };
 
 } // namespace yamipan::rendering
