@@ -17,9 +17,12 @@
 #include "game/characterground.h"
 #include "game/characterinput.h"
 
+#include <algorithm>
 #include <float.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
 
 #include "game/clock.h"
 #include "game/mathutil.h"
@@ -4646,7 +4649,7 @@ int StageCharacter::getLifeState()
     if (m_active == 0)
         return 0;
     if (m_lifeOverride >= 0)
-        return m_lifeOverride != 0 ? 6 : 7;
+        return m_lifeOverride != 0 ? LifeState_Leaving : LifeState_Left;
     if (m_brain != nullptr) {
         if (m_brain->getState() == kBrainDown)
             return 2;
@@ -4971,7 +4974,7 @@ StageItem *MotionProbe::findItem()
         if ((*slot)->m_active == 0)
             continue;
         StageItem *item = static_cast<StageItem *>(*slot);
-        if (item->m_parent != nullptr || item->m_holder != nullptr || item->m_xform.dirty == 0
+        if (static_cast<StageObject *>(item)->m_parent != nullptr || item->m_holder != nullptr || item->m_xform.dirty == 0
             || item->m_inUse != 0 || item->m_sprung != 0 || !item->canPickFar(owner))
             continue;
         sceVu0FVECTOR point;
@@ -7312,8 +7315,7 @@ static int firstBrainState(int startMotion)
 }
 
 // The fields initStatus sets too are set again here, as the ROM does. Left
-// out, nothing here reads them: the byte and two ints at +0x610, the +0x66c
-// group and the record at +0x6a0.
+// out, nothing here reads them: the byte and two ints at +0x610.
 // FS2 0x0021cc70
 // callcheck: getStageSelect, setState
 
@@ -7361,6 +7363,10 @@ void StageCharacter::initStatusBlock()
         m_scriptValues[i] = 0;
     m_lastHitBy = nullptr;
     m_biteCandidate = nullptr;
+    m_nearSearchPoint = nullptr;
+    m_spawnPoint = -1;
+    memset(m_respawnPosition, 0, sizeof(m_respawnPosition));
+    memset(m_respawnRotation, 0, sizeof(m_respawnRotation));
     m_62c = 0;
     m_670 = 0;
     m_bulletFlying = 0;
@@ -7975,7 +7981,7 @@ StageObject *StageCharacter::getUnnoticedFoe()
 // owner at +0x120 are one object, +0x468), which also tests the line's address
 // for null; it never is.
 // FS2 0x00210930
-// callcheck: FUN_002179c0 (this, on the host), canSee
+// callcheck: FUN_002179c0, canSee (this, on the host)
 
 bool StageCharacter::canSeeThisFrame(StageCharacter *other, float *distance)
 {
@@ -8054,7 +8060,7 @@ bool StageCharacter::isBitten()
 // anything but a corpse (m_reviveTime in frames); the first test leaves it
 // dead here.
 // FS2 0x002117e0
-// callcheck: getLifeState, stageFps (the dead arm), getKind (isNear is inline)
+// callcheck: getLifeState, stageFps, getKind (the dead arm; isNear is inline)
 
 bool StageCharacter::isCorpseGone()
 {
@@ -8766,4 +8772,428 @@ int StageCharacter::getProperty(int id, int sub)
     default:
         return StageObject::getProperty(id, sub);
     }
+}
+
+// What scripts ask of a character beside the frame's picks (natives 0x2d..0x214).
+
+// FS2 0x0020ca80 (thunk 0x0017e6c0)
+// callcheck: getStageSelect, canFireLongWeapon (getAttackReach, weaponSheet)
+
+bool StageCharacter::scriptIsFacing(StageObject *other)
+{
+    float reach = getAttackReach();
+    if (canFireLongWeapon()) {
+        const float bullet = m_weapons[0] != nullptr ? (float)weaponSheet(m_weapons[0]).range : 0.0f;
+        if (bullet < reach)
+            reach = bullet;
+    }
+    return distanceTo(other) < reach;
+}
+
+// FS2 0x00210910 (thunk 0x0017e790)
+// callcheck: canSee
+
+bool StageCharacter::scriptCanSee(float viewAngle, StageObject *other)
+{
+    float distance = 0.0f;
+    return canSee(viewAngle, other, &distance);
+}
+
+// FS2 0x0021ad20 (thunk 0x0017e710)
+// callcheck: askSwingAt
+
+bool StageCharacter::scriptSwingAt(StageObject *target)
+{
+    // PC: the ROM has no test of the brain.
+    return m_brain != nullptr && m_brain->askSwingAt(target);
+}
+
+// FS2 0x0021ace0 (thunk 0x0017e6f0)
+// callcheck: askFireAt
+
+bool StageCharacter::scriptFireAt(StageObject *target, const char *flags, int frames30)
+{
+    return m_brain != nullptr && m_brain->askFireAt(target, flags, frames30);
+}
+
+// FS2 0x00218470 (thunk 0x0017e640)
+// callcheck: askRouteAction12c
+
+int StageCharacter::scriptRouteAction12c()
+{
+    return m_brain != nullptr && m_brain->askRouteAction12c();
+}
+
+// FS2 0x00218450 (thunk 0x0017e630)
+// callcheck: askRouteAction130
+
+int StageCharacter::scriptRouteAction130()
+{
+    return m_brain != nullptr && m_brain->askRouteAction130();
+}
+
+// FS2 0x002185a0
+// callcheck: missionSpawnPointTaken
+
+bool StageCharacter::canSpawn()
+{
+    int point = m_spawnPoint;
+    return !missionSpawnPointTaken(&point) || m_respawnPosition[3] != 0.0f;
+}
+
+// FS2 0x00218630
+// callcheck: findEntry, setEntry, missionSpawnPointTaken, currentMission, setPosition, currentMission, setRotationVec, setPosition, setRotationVec, getSaveData, raycast, reset, setActive, setShown, assignSerial (getSystemData)
+
+void StageCharacter::spawn()
+{
+    constexpr int   kStageFalling   = 0x1b;     // always arrives falling
+    constexpr int   kStageHighA     = 0x1a;     // arrive falling when the floor is far under
+    constexpr int   kStageHighB     = 0x1d;
+    constexpr int   kMotionFall     = 0xed;
+    constexpr int   kMotionNone     = 0;
+    constexpr float kProbeDrop      = 850.0f;
+    constexpr float kFallHeight     = 750.0f;
+    constexpr u_int kFaceFloorProbe = 0x42400c;
+    setEntry(gStageScene->scripts[0]->findEntry(m_name));
+    int point = m_spawnPoint;
+    if (!missionSpawnPointTaken(&point)) {
+        const MissionSpawnPoint &place = gStageScene->currentMission()->spawnPoints[point];
+        m_xform.setPosition(place.position);
+        m_xform.setRotationVec(place.rotation);
+    } else {
+        m_xform.setPosition(m_respawnPosition);
+        m_xform.setRotationVec(m_respawnRotation);
+        memset(m_respawnPosition, 0, sizeof(m_respawnPosition));
+        memset(m_respawnRotation, 0, sizeof(m_respawnRotation));
+    }
+    const int stage = getSystemData()->select.stage;
+    int motion = kMotionNone;
+    if (stage == kStageFalling) {
+        motion = kMotionFall;
+    } else if (stage == kStageHighA || stage == kStageHighB) {
+        const sceVu0FVECTOR from = { m_xform.position[0], m_xform.position[1], m_xform.position[2], m_xform.position[3] };
+        const sceVu0FVECTOR to = { from[0], from[1], from[2] - kProbeDrop, from[3] };
+        sceVu0FVECTOR hit;
+        if (gStageScene->raycast(hit, from, to, 0, kFaceFloorProbe, 0, nullptr) != nullptr
+            && kFallHeight <= m_xform.position[2] - hit[2])
+            motion = kMotionFall;
+    }
+    reset(motion);
+    m_tree->setActive(true);
+    m_tree->setShown(true);
+    assignSerial();
+    m_7a0 = 1;
+}
+
+// FS2 0x002115e0
+// callcheck: getStageSelect, getStageSelect
+
+bool StageCharacter::isSpawnable()
+{
+    constexpr int kKindWeak   = 3;
+    constexpr int kKindStrong = 7;
+    const int kind = stageObjRecord(m_itemDef)->kind;
+    if (kind != kKindWeak && kind != kKindStrong)
+        return false;
+    return m_name[0] == 'F' && m_name[1] == '_' && (m_name[2] == 'Y' || m_name[2] == 'S')
+        && m_name[3] == 'R' && m_name[4] == 'T' && m_name[5] == '\0';
+}
+
+// FS2 0x002a6980
+// callcheck: getStageSelect
+
+int StageCharacter::getSoundKind()
+{
+    switch (stageObjRecord(m_itemDef)->kind) {
+    case 0:   return 1;
+    case 1:   return 2;
+    case 2: case 4: case 5: case 6: case 8: case 10: case 12:
+              return 3;
+    case 3:   return 5;
+    case 7:   return 6;
+    case 11:  return 9;
+    case 13:  return 4;
+    case 15:  return 8;
+    default:  return 0;
+    }
+}
+
+// The ROM's call passes 800 in a float register that playNamedHeard2 never reads.
+// FS2 0x002a31b0
+// callcheck: FUN_002a6980, playNamedHeard2 (getSoundKind)
+
+void StageCharacter::playVanishSound()
+{
+    enum { kSoundShiryo = 5, kSoundYami = 6 };
+    const int kind = getSoundKind();
+    const char *name = kind == kSoundYami ? "YRT_VANISH" : kind == kSoundShiryo ? "SRT_VANISH" : nullptr;
+    playNamedHeard2(name, m_xform.position, nullptr);
+}
+
+// The head of the four leaves: not when it is leaving already; in the two
+// motions 0x9e, 0x9f the running script yields and asks again.
+static bool mayLeaveNow(StageCharacter *character)
+{
+    constexpr int kMotionHeldFirst  = 0x9e;
+    constexpr int kMotionHeldSecond = 0x9f;
+    constexpr int kYieldLeave       = 0x9f; // what the waiting word keeps; not a native's id
+    if (character->getLifeState() == LifeState_Leaving || character->getLifeState() == LifeState_Left)
+        return false;
+    const int id = character->m_motion->motionId;
+    if (gRunningScript != nullptr)
+        gRunningScript->takeYield();
+    if (id == kMotionHeldSecond || id == kMotionHeldFirst) {
+        scriptYield(kYieldLeave, 0);
+        return false;
+    }
+    return true;
+}
+
+// A shiryo's smoke, and the cry.
+static void playLeaveEffects(StageCharacter *character)
+{
+    constexpr int kKindShiryo = 3;
+    if (stageObjRecord(character->m_itemDef)->kind == kKindShiryo) {
+        BoneMap::Node *pelvis = character->m_model->boneMap.find("bn_pelvis");
+        gStageScene->nodeTree->spawn("shiryoin", pelvis->value, nullptr, nullptr, 0, 0);
+    }
+    character->playVanishSound();
+}
+
+// FS2 0x00219510
+// callcheck: getLifeState, getLifeState, scriptYield, getStageSelect, getStageSelect, find, spawn, FUN_002a31b0 (mayLeaveNow, playLeaveEffects)
+
+void StageCharacter::leaveLoud()
+{
+    if (!mayLeaveNow(this))
+        return;
+    playLeaveEffects(this);
+    m_lifeOverride = 1;
+}
+
+// FS2 0x00219420
+// callcheck: getLifeState, getLifeState, scriptYield, getLifeState (mayLeaveNow)
+
+void StageCharacter::leaveQuiet()
+{
+    if (!mayLeaveNow(this))
+        return;
+    m_lifeOverride = 1;
+}
+
+// FS2 0x002196f0
+// callcheck: getLifeState, getLifeState, scriptYield, currentMission, currentMission, isCorpseGone, getStageSelect, getStageSelect, find, spawn, FUN_002a31b0 (mayLeaveNow, playLeaveEffects)
+
+void StageCharacter::leaveNoticed()
+{
+    if (!mayLeaveNow(this))
+        return;
+    StageMission *mission = gStageScene->currentMission();
+    for (StageObject **it = mission->characters; it != mission->charactersEnd(); it++) {
+        StageCharacter *corpse = static_cast<StageCharacter *>(*it);
+        if (corpse->m_active == 0 || !corpse->isCorpseGone())
+            continue;
+        const float distance = corpse->distanceTo(this);
+        if (distance < corpse->m_noiseRange)
+            corpse->m_noiseRange = distance;
+    }
+    playLeaveEffects(this);
+    m_lifeOverride = 1;
+}
+
+// FS2 0x00219310
+// callcheck: getLifeState, getLifeState, scriptYield, FUN_002115e0, reset, setBrainState (mayLeaveNow; the ROM drops isSpawnable's answer)
+
+void StageCharacter::leaveAtOnce()
+{
+    if (!mayLeaveNow(this))
+        return;
+    reset(0);
+    setBrainState(0, 0);
+}
+
+// FS2 0x00219cb0
+// callcheck: dropSlots, setState, dropSlots, setBrainState
+
+bool StageCharacter::wakeBrain()
+{
+    if (m_brain == nullptr)
+        return false;
+    const int state = getBrainPace();
+    switch (state) {
+    case BrainState_Off:
+    case 7:
+        return false;
+    case 1:
+        m_brain->dropSlots(false);
+        m_brain->setState(1, 1);
+        return true;
+    case 2: case 3: case 4: case 5: case 6:
+        m_brain->dropSlots(false);
+        setBrainState(1, 1);
+        return true;
+    default:
+        return true;
+    }
+}
+
+// FS2 0x0021bfd0 (thunk 0x0017e780)
+// callcheck: set
+
+void StageCharacter::scriptMarkPlace()
+{
+    if (m_point700.isSet == 0)
+        m_point700.set(m_xform.position);
+}
+
+// FS2 0x00218110
+// callcheck: allowPath
+
+void StageCharacter::allowPath(const char *name, bool on)
+{
+    if (m_brain != nullptr)
+        m_brain->allowPath(name, on);
+}
+
+// FS2 0x00219040
+// callcheck: isPlayer, set
+
+int StageCharacter::getClimbPoint(StageObject *other)
+{
+    constexpr float kAbove = 100.0f;
+    constexpr float kAtIt  = 15.0f;
+    if (!isPlayer() || m_xform.position[2] - other->m_xform.position[2] <= kAbove || m_motion->m_bae == 0)
+        return 0;
+    const float distance = other->distanceToPoint(m_motion->position);
+    m_scriptPoint.set(m_motion->position);
+    return distance < kAtIt ? 2 : 1;
+}
+
+// FS2 0x0021b690
+// callcheck: canWield
+
+StageObject *StageCharacter::findLooseWeapon(float range, u_int mask)
+{
+    StageObject *best = nullptr;
+    StageObjArray &items = gStageScene->objects->m_lists[StageObjGroup_3];
+    for (StageObject **slot = items.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        if ((*slot)->m_active == 0 || (*slot)->getKind() != StageObject_WeaponItem)
+            continue;
+        StageWeaponItem *item = static_cast<StageWeaponItem *>(*slot);
+        if (static_cast<StageObject *>(item)->m_parent != nullptr || item->m_holder != nullptr || item->m_xform.dirty == 0
+            || item->m_inUse != 0 || item->m_sprung != 0)
+            continue;
+        if (!canWield(item, mask) || item->m_45c != 0)
+            continue;
+        const float distance = distanceTo(item);
+        if (distance < range) {
+            range = distance;
+            best = item;
+        }
+    }
+    return best;
+}
+
+// The search points: group 6's objects called P_SRC<group>_<n>. The ROM
+// walks them through two little iterator classes (vtables 0x316080, every
+// active object of the group, and 0x316070, those with n 0).
+static const char kSearchPointName[] = "P_SRC%02d_%d";  /* data 0x303448 */
+
+// FS2 0x0021ee40
+// FS2 0x0021edc0
+// FS2 0x0021ede0
+// FS2 0x0021ed20
+// callcheck: FUN_0017eeb0 (getSearchGroup)
+
+static StageObject *nextSearchGroup(StageObject **&slot)
+{
+    while (slot != nullptr) {
+        StageObject *object = *slot;
+        slot = StageObjArray::next(slot);
+        int index = 0;
+        if (object->m_active != 0 && object->getSearchGroup(&index) >= 0 && index == 0)
+            return object;
+    }
+    return nullptr;
+}
+
+// FS2 0x0017eeb0
+// callcheck: sscanf
+
+int StageObject::getSearchGroup(int *index)
+{
+    int group;
+    if (sscanf(getObjectName(), kSearchPointName, &group, index) != 2)
+        group = -1;
+    return group;
+}
+
+// FS2 0x0017ed30
+// callcheck: sscanf, sscanf, sprintf, find6 (getSearchGroup, findSearchPoint)
+
+int StageObject::getSearchLastIndex()
+{
+    constexpr int kHighest = 9;
+    int index = -1;
+    if (getSearchGroup(&index) < 0 || index != 0)
+        return 0;
+    for (int number = kHighest; number > 0; number--) {
+        if (findSearchPoint(number) != nullptr)
+            return number;
+    }
+    return 0;
+}
+
+// FS2 0x0017ee30
+// callcheck: sscanf, sprintf, find6
+
+StageObject *StageObject::findSearchPoint(int index)
+{
+    int ignored;
+    char name[0x20];
+    sprintf(name, kSearchPointName, getSearchGroup(&ignored), index);
+    return gStageScene->objects->find6(name, 0);
+}
+
+// FS2 0x0021c010
+// PC: the ROM's first half is on the status block (a0 + 0xd8), a1 the character.
+// callcheck: FUN_0021ee40, FUN_0021edc0 (nextSearchGroup)
+
+StageObject *StageCharacter::getNearSearchPoint()
+{
+    constexpr float kNear = 50.0f;
+    StageObject *point = m_nearSearchPoint;
+    if (point != nullptr && kNear < point->distanceTo(this))
+        point = nullptr;
+    if (point == nullptr) {
+        StageObject **slot = gStageScene->objects->m_lists[StageObjGroup_6].begin();
+        for (point = nextSearchGroup(slot); point != nullptr; point = nextSearchGroup(slot)) {
+            if (point->distanceTo(this) <= kNear)
+                break;
+        }
+    }
+    m_nearSearchPoint = point;
+    return point;
+}
+
+// FS2 0x00219210
+// callcheck: FUN_0021ee40, FUN_0021edc0, FUN_0021e120 (nextSearchGroup, std::stable_sort)
+
+StageObject *StageCharacter::pickSearchPoint(const sceVu0FVECTOR point, u_int rank)
+{
+    // layout: host -- the ROM keeps these on its stack.
+    struct Candidate
+    {
+        StageObject *object;
+        float        distance;
+    };
+    std::vector<Candidate> found;
+    StageObject **slot = gStageScene->objects->m_lists[StageObjGroup_6].begin();
+    for (StageObject *group = nextSearchGroup(slot); group != nullptr; group = nextSearchGroup(slot))
+        found.push_back({ group, group->distanceToPoint(point) });
+    if (rank >= found.size())
+        return nullptr;
+    std::stable_sort(found.begin(), found.end(),
+                     [](const Candidate &a, const Candidate &b) { return a.distance < b.distance; });
+    return found[rank].object;
 }

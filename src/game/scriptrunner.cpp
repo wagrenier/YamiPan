@@ -12,18 +12,23 @@
 #include "game/stagedoor.h"
 #include "game/wstring.h"
 
+#include <algorithm>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <vector>
 
 #include "common/yamipan_stub.h"
 #include "game/characterbrain.h"
+#include "game/characterroute.h"
 #include "game/clock.h"
 #include "game/gamehooks.h"
 #include "game/mathutil.h"
+#include "game/modelpose.h"
+#include "game/playermotion.h"
 #include "game/scenerender.h"
 #include "game/stagelight.h"
 #include "game/stageobjlist.h"
@@ -3601,7 +3606,7 @@ static const int *nativeAskLift(ScriptRunner *self, int *acc, const int *code)
 
 // 0xf3 addFoeWeight(number, amount).
 // FS2 0x001beb20
-// callcheck: isEnemyOf, addFoeWeightTo, currentMission (scriptCharacterAt), FUN_00217be0, FUN_00217c60 (addFoeWeightTo)
+// callcheck: isEnemyOf, addFoeWeightTo, currentMission, FUN_00217be0, FUN_00217c60 (scriptCharacterAt; addFoeWeightTo)
 
 static const int *nativeAddFoeWeight(ScriptRunner *self, int *, const int *code)
 {
@@ -3868,19 +3873,1079 @@ static const int *nativeIsFatal(ScriptRunner *self, int *acc, const int *code)
     return code;
 }
 
+// Natives 0x2d .. 0x214, by how many scripts call them: sssall.py's order.
+
+// 0x2d switchOn(on): the slot +0x64: a light's tree, a character's lamp.
+// FS2 0x001ccf90
+
+static const int *nativeSwitchOn(ScriptRunner *self, int *, const int *code)
+{
+    const int on = self->popped(1)[0];
+    self->getTarget()->cmdSetTreeSwitchedOn(on != 0);
+    return code;
+}
+
+// What natives 0x32, 0x33 ask of a character: 60 degrees of cone.
+constexpr float kScriptViewCone = 1.0471975f;
+
+// Who sees target: the actor through the frame's sight table, a runner with
+// none through its own slot.
+static bool scriptSeesCharacter(ScriptRunner *target, StageCharacter *other)
+{
+    StageCharacter *actor = target->getScriptActor();
+    if (actor == nullptr)
+        return target->scriptCanSee(kScriptViewCone, other);
+    float distance = 0.0f;
+    return actor->canSeeThisFrame(other, &distance);
+}
+
+// 0x32 canSee(number).
+// FS2 0x001cca70
+// callcheck: canSeeThisFrame, currentMission (scriptCharacterAt)
+
+static const int *nativeCanSeeNumber(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    StageCharacter *other = scriptCharacterAt(self->popped(1)[0]);
+    *acc = other != nullptr && scriptSeesCharacter(target, other);
+    return code;
+}
+
+// 0x33 canSee(name): a character by the sight table, anything else or a
+// spawn point (a label with no object: S01..) by the cone at full range.
+// FS2 0x001cc710
+// callcheck: readObjectArg, canSeeThisFrame, isPointInView, parseSpawnId, currentMission, isPointInView
+
+static const int *nativeCanSeeName(ScriptRunner *self, int *acc, const int *code)
+{
+    constexpr float kFullRange = 1.0f;
+    ScriptRunner *target = self->getTarget();
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    StageObject *object = (StageObject *)scriptLabelCell(label);
+    float distance;
+    if (object == nullptr) {
+        const int id = parseSpawnId(label);
+        StageMission *mission = gStageScene->currentMission();
+        StageCharacter *who = id >= 0 && mission->spawnPoints[id].state != 0 ? target->getScriptCharacter() : nullptr;
+        *acc = who != nullptr
+            && who->isPointInView(kScriptViewCone, kFullRange, mission->spawnPoints[id].position, &distance, nullptr);
+    } else if (object->getKind() == StageObject_Character) {
+        *acc = scriptSeesCharacter(target, static_cast<StageCharacter *>(object));
+    } else {
+        StageCharacter *who = target->getScriptCharacter();
+        *acc = who != nullptr
+            && who->isPointInView(kScriptViewCone, kFullRange, object->m_xform.position, &distance, nullptr);
+    }
+    return next;
+}
+
+// 0x50, 0x51 blockPath(name), allowPath(name): every character's route.
+// FS2 0x001ca870
+// callcheck: readNameArg, currentMission, currentMission, FUN_00218110 (allowPath)
+
+static const int *nativeBlockPath(ScriptRunner *self, int *acc, const int *code)
+{
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageMission *mission = gStageScene->currentMission();
+    for (StageObject **it = mission->characters; it != mission->charactersEnd(); it++)
+        static_cast<StageCharacter *>(*it)->allowPath(name, false);
+    *acc = 1;
+    return next;
+}
+
+// FS2 0x001ca740
+// callcheck: readNameArg, currentMission, currentMission, FUN_00218110 (allowPath)
+static const int *nativeAllowPath(ScriptRunner *self, int *acc, const int *code)
+{
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageMission *mission = gStageScene->currentMission();
+    for (StageObject **it = mission->characters; it != mission->charactersEnd(); it++)
+        static_cast<StageCharacter *>(*it)->allowPath(name, true);
+    *acc = 1;
+    return next;
+}
+
+// 0x54 hasLineTo(name), 0xea's form with a name.
+// FS2 0x001ca480
+// callcheck: readNameArg, findCharacter
+
+static const int *nativeHasLineToName(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageCharacter *other = static_cast<StageCharacter *>(gStageScene->objects->findCharacter(name, 0));
+    // PC: a null other has no head to ask.
+    *acc = other != nullptr && target->scriptHasLineTo(other);
+    return next;
+}
+
+// 0x57 isCrouchingName(name).
+// FS2 0x001ca150
+// callcheck: readNameArg, findCharacter
+
+static const int *nativeIsCrouchingName(ScriptRunner *self, int *acc, const int *code)
+{
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageCharacter *who = static_cast<StageCharacter *>(gStageScene->objects->findCharacter(name, 0));
+    *acc = who != nullptr && who->scriptIsCrouching();
+    return next;
+}
+
+// 0x59, 0x5a: what the route asks now.
+// FS2 0x001c9fb0
+
+static const int *nativeRouteAction12c(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = self->getTarget()->scriptRouteAction12c();
+    return code;
+}
+
+// FS2 0x001c9f20
+static const int *nativeRouteAction130(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = self->getTarget()->scriptRouteAction130();
+    return code;
+}
+
+// An effect hung on one of object's bones; -1 without the bone. The ROM has
+// this body twice over: StageCharacter 0x21aa90 and SubSceneModelObject
+// 0x2689a0.
+// FS2 0x0021aa90
+// FS2 0x002689a0
+// callcheck: find, spawn
+
+static int spawnEffectOnBone(StageObject *object, const char *name, const char *bone)
+{
+    BoneMap::Node *node = object->m_model->boneMap.find(bone);
+    if (node == nullptr || node->value == nullptr)
+        return -1;
+    return gStageScene->effects->spawn(name, node->value, nullptr, nullptr);
+}
+
+// 0x5d spawnEffectOn(effect, object, bone): its handle. Bone "NULL" hangs it
+// on the object itself, object "NULL" too on the top view.
+// FS2 0x001c9800
+// callcheck: readNameArg, readObjectArg, readNameArg, strcmp, strcmp, getTopView, spawn, FUN_0021aa90, find, spawn (spawnEffectOnBone)
+
+static const int *nativeSpawnEffectOn(ScriptRunner *self, int *acc, const int *code)
+{
+    static const char kNone[] = "NULL";     /* data 0x304ba8 */
+    const char *name;
+    const char *label;
+    const char *bone;
+    const int *next = self->readNameArg(&name, code);
+    next = self->readObjectArg(&label, next);
+    next = self->readNameArg(&bone, next);
+    StageObject *object = (StageObject *)scriptLabelCell(label);
+    if (strcmp(bone, kNone) == 0) {
+        StageObject *parent = strcmp(label, kNone) == 0 ? gStageScene->getTopView() : object;
+        *acc = gStageScene->effects->spawn(name, parent, nullptr, nullptr);
+    } else {
+        // PC: the ROM has no test of the cell.
+        *acc = object != nullptr ? spawnEffectOnBone(object, name, bone) : -1;
+    }
+    return next;
+}
+
+// 0x82 wakeBrain().
+// FS2 0x001c7420
+// callcheck: FUN_00219cb0 (wakeBrain)
+
+static const int *nativeWakeBrain(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->wakeBrain();
+    return code;
+}
+
+// 0x85 climbPoint(name): 0, 1 or 2. 0x86 askLift(name): the name is only tested.
+// FS2 0x001c7160
+// callcheck: readNameArg, findCharacter, FUN_00219040 (getClimbPoint)
+
+static const int *nativeClimbPoint(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageCharacter *who = target->getScriptCharacter();
+    StageObject *other = gStageScene->objects->findCharacter(name, 0);
+    *acc = who != nullptr && other != nullptr ? who->getClimbPoint(other) : 0;
+    return next;
+}
+
+// FS2 0x001c7020
+// callcheck: readNameArg, findCharacter, askLift
+static const int *nativeAskLiftName(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageCharacter *who = target->getScriptCharacter();
+    StageObject *other = gStageScene->objects->findCharacter(name, 0);
+    *acc = who != nullptr && other != nullptr && who->askLift();
+    return next;
+}
+
+// 0x90 lastHitBy(): a character's this frame's hitter, a map object's or a
+// door's toucher: their number, 0 none.
+// FS2 0x001c6710
+
+static const int *nativeLastHitBy(ScriptRunner *self, int *acc, const int *code)
+{
+    constexpr int kMapKindLast = 6;
+    StageObject *object = self->getTarget()->getScriptObject();
+    int number = 0;
+    const int kind = object->getKind();
+    if (kind == StageObject_Character) {
+        StageObject *by = static_cast<StageCharacter *>(object)->m_hitThisFrameBy;
+        number = by != nullptr ? by->m_id : 0;
+    } else if (kind > 0 && kind <= kMapKindLast) {
+        StageObject *by = static_cast<StageMapObject *>(object)->getTouchedBy();
+        number = by != nullptr ? by->m_id : 0;
+    }
+    *acc = number;
+    return code;
+}
+
+// The runner's actor or object: where a spawn is measured from.
+// FS2 0x001c5800 (the ROM's 0x1c5460 has the same body inline)
+// callcheck: missionPickSpawnPoint, missionSpawnPointTaken, missionSpawnAt
+
+static bool spawnNear(ScriptRunner *runner, int strong, int mode)
+{
+    StageObject *object = runner->getScriptActor();
+    if (object == nullptr)
+        object = runner->getScriptObject();
+    int point = missionPickSpawnPoint(object->m_xform.position, mode);
+    return !missionSpawnPointTaken(&point) && missionSpawnAt(&point, strong);
+}
+
+// 0x9d spawnAt(name, strong, mode): name RANDOM any point, a spawn point's
+// name around it, an object's around it.
+// FS2 0x001c55c0
+// callcheck: readObjectArg, strcmp, FUN_001c5800, parseSpawnId, FUN_001afd00, FUN_001c5800, currentMission, FUN_001afd10, missionPickSpawnPoint, missionSpawnPointTaken, missionSpawnAt (spawnNear; scriptLabelCell; spawnPoints)
+
+static const int *nativeSpawnAt(ScriptRunner *self, int *acc, const int *code)
+{
+    static const char kRandom[] = "RANDOM"; /* data 0x304b28 */
+    constexpr int kAnyPoint = -1;
+    ScriptRunner *target = self->getTarget();
+    const int *args = self->popped(2);
+    const int strong = args[0];
+    const int mode = args[1];
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    bool spawned = false;
+    if (strcmp(label, kRandom) == 0) {
+        StageCharacter *actor = target->getScriptActor();
+        spawned = spawnNear(actor != nullptr ? static_cast<ScriptRunner *>(actor) : target, strong, kAnyPoint);
+    } else {
+        const int id = parseSpawnId(label);
+        if (id < 0) {
+            StageObject *object = (StageObject *)scriptLabelCell(label);
+            if (object != nullptr)
+                spawned = spawnNear(object, strong, mode);
+        } else {
+            int point = missionPickSpawnPoint(gStageScene->currentMission()->spawnPoints[id].position, mode);
+            spawned = !missionSpawnPointTaken(&point) && missionSpawnAt(&point, strong);
+        }
+    }
+    *acc = spawned;
+    return next;
+}
+
+// 0x9e spawnNear(strong, mode).
+// FS2 0x001c5460
+// callcheck: missionPickSpawnPoint, missionSpawnPointTaken, missionSpawnAt (spawnNear)
+
+static const int *nativeSpawnNear(ScriptRunner *self, int *acc, const int *code)
+{
+    const int *args = self->popped(2);
+    *acc = spawnNear(self->getTarget(), args[0], args[1]);
+    return code;
+}
+
+// 0xa5 loseItem(name): one of them goes off stage.
+// FS2 0x001c4dd0
+// callcheck: readNameArg, findItem, dropItem, setActive, setShown
+
+static const int *nativeLoseItem(ScriptRunner *self, int *, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageCharacter *who = target->getScriptCharacter();
+    StageObject *item = who != nullptr ? who->findItem(name) : nullptr;
+    if (item != nullptr) {
+        who->dropItem(item);
+        item->m_tree->setActive(false);
+        item->m_tree->setShown(false);
+    }
+    return next;
+}
+
+// 0xa7 showItems(name): those called so, off stage and on no one, come on.
+// FS2 0x001c4a90
+// callcheck: readNameArg, findAll3, setActive, setShown
+
+static const int *nativeShowItems(ScriptRunner *self, int *, const int *code)
+{
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageObjArray *items = gStageScene->objects->findAll3(name);
+    // PC: the ROM has no test of the list.
+    if (items == nullptr)
+        return next;
+    for (StageObject **slot = items->begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        StageObject *item = *slot;
+        if (item->m_parent != nullptr || item->m_active != 0)
+            continue;
+        item->m_tree->setActive(true);
+        item->m_tree->setShown(true);
+    }
+    return next;
+}
+
+// 0xb0 playObjectMotion(object, motion): on group 1's object of that name.
+// FS2 0x001c3d50
+// callcheck: readNameArg, readNameArg, find1, playNamed
+
+static const int *nativePlayObjectMotion(ScriptRunner *self, int *, const int *code)
+{
+    constexpr u_int kFlags = 0x50;
+    const char *object;
+    const char *motion;
+    const int *next = self->readNameArg(&object, code);
+    next = self->readNameArg(&motion, next);
+    StageObject *found = gStageScene->objects->find1(object, 0);
+    // PC: the ROM has no test.
+    if (found != nullptr)
+        found->m_model->playNamed(0, motion, false, false, kFlags, 0);
+    return next;
+}
+
+// 0xc4 searchPoint(): the handle of the search group at hand. 0xc5
+// searchPointLast(): its highest number.
+// FS2 0x001c2400
+// callcheck: FUN_0021c010, getHandle (getNearSearchPoint)
+
+static const int *nativeSearchPoint(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    StageObject *point = who != nullptr ? who->getNearSearchPoint() : nullptr;
+    *acc = point != nullptr ? (int)point->getHandle() : 0;
+    return code;
+}
+
+// FS2 0x001c2310
+// callcheck: FUN_0021c010, FUN_0017ed30 (getNearSearchPoint; getSearchLastIndex)
+static const int *nativeSearchPointLast(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    StageObject *point = who != nullptr ? who->getNearSearchPoint() : nullptr;
+    *acc = point != nullptr ? point->getSearchLastIndex() : 0;
+    return code;
+}
+
+// 0xdd abs(value).
+// FS2 0x001c06b0
+// callcheck: abs
+
+static const int *nativeAbs(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = abs(self->popped(1)[0]);
+    return code;
+}
+
+// 0xe9 inReach(number): slot +0xfc, a character's weapon reach.
+// FS2 0x001bf980
+// callcheck: currentMission (scriptCharacterAt)
+
+static const int *nativeInReach(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    StageCharacter *other = scriptCharacterAt(self->popped(1)[0]);
+    // PC: a null other has no place to measure.
+    *acc = other != nullptr && target->scriptIsFacing(other);
+    return code;
+}
+
+// 0xff searchPointAt(x, y, z, rank): the handle of the rank-th nearest search
+// group; the script point goes there.
+// FS2 0x001bde10
+// callcheck: FUN_00219210, set, getHandle (pickSearchPoint)
+
+static const int *nativeSearchPointAt(ScriptRunner *self, int *acc, const int *code)
+{
+    const int *args = self->popped(4);
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = 0;
+    if (who != nullptr) {
+        const sceVu0FVECTOR place = { (float)args[0], (float)args[1], (float)args[2], 1.0f };
+        StageObject *point = who->pickSearchPoint(place, args[3]);
+        if (point != nullptr) {
+            who->m_scriptPoint.set(point->m_xform.position);
+            *acc = (int)point->getHandle();
+        }
+    }
+    return code;
+}
+
+// 0x100 searchPointNext(number): the group's point of that number, for the
+// script point; number, 0 none.
+// FS2 0x001bdc90
+// callcheck: FUN_0021c010, FUN_0017ee30, set (getNearSearchPoint; findSearchPoint)
+
+static const int *nativeSearchPointNext(ScriptRunner *self, int *acc, const int *code)
+{
+    const int number = self->popped(1)[0];
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = 0;
+    if (who != nullptr) {
+        StageObject *group = who->getNearSearchPoint();
+        StageObject *point = group != nullptr ? group->findSearchPoint(number) : nullptr;
+        if (point != nullptr) {
+            who->m_scriptPoint.set(point->m_xform.position);
+            *acc = number;
+        }
+    }
+    return code;
+}
+
+// 0x123 nearWeapon(range): the handle of the nearest weapon it can wield;
+// the script point goes there.
+// FS2 0x001bbc50
+// callcheck: FUN_0021b690, set, getHandle (findLooseWeapon)
+
+static const int *nativeNearWeapon(ScriptRunner *self, int *acc, const int *code)
+{
+    constexpr u_int kAnyClass = 0xffff;
+    const int range = self->popped(1)[0];
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    StageObject *weapon = who != nullptr ? who->findLooseWeapon((float)range, kAnyClass) : nullptr;
+    *acc = 0;
+    if (weapon != nullptr) {
+        who->m_scriptPoint.set(weapon->m_xform.position);
+        *acc = (int)weapon->getHandle();
+    }
+    return code;
+}
+
+// 0x12e swing(): the brain swings at nothing named.
+// FS2 0x001bb160
+
+static const int *nativeSwing(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = self->getTarget()->scriptSwingAt(nullptr);
+    return code;
+}
+
+// 0x132 showGroup1(name): group 1's objects of that name, those off, come on.
+// FS2 0x001bac20
+// callcheck: readNameArg, find, setActive, setShown
+
+static const int *nativeShowGroup1(ScriptRunner *self, int *, const int *code)
+{
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageNameNode *node = StageNameNode::find(gStageScene->objects->m_names[StageObjGroup_1].m_root, name);
+    if (node == nullptr || node->value == nullptr)
+        return next;
+    for (StageObject **slot = node->value->begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        StageObject *object = *slot;
+        if (object->m_active != 0)
+            continue;
+        object->m_tree->setActive(true);
+        object->m_tree->setShown(true);
+    }
+    return next;
+}
+
+// 0x13b leaveQuiet(), 0x17e leave(): the character is done with the stage.
+// FS2 0x001ba3c0
+// callcheck: FUN_00219420 (leaveQuiet)
+
+static const int *nativeLeaveQuiet(ScriptRunner *self, int *, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    if (who != nullptr)
+        who->leaveQuiet();
+    return code;
+}
+
+// FS2 0x001b5200
+// callcheck: FUN_00219510 (leaveLoud)
+static const int *nativeLeave(ScriptRunner *self, int *, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    if (who != nullptr)
+        who->leaveLoud();
+    return code;
+}
+
+// 0x13f bulletFlying(): its own shot is in the air.
+// FS2 0x001ba0e0
+
+static const int *nativeBulletFlying(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->m_bulletFlying != 0;
+    return code;
+}
+
+// 0x143 isCorpse().
+// FS2 0x001b9bf0
+// callcheck: getLifeState
+
+static const int *nativeIsCorpse(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->getLifeState() == LifeState_Corpse;
+    return code;
+}
+
+// 0x166 isWalking(): moving, not at a run.
+// FS2 0x001b6820
+// callcheck: FUN_001b6d50, FUN_001b6cc0, FUN_001b6d50, FUN_001b6910 (m_motion, isRunMotion, isCrouchRunMotion, isMovingMotion)
+
+static const int *nativeIsWalking(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    // PC: the ROM has no test.
+    const int id = who != nullptr ? who->m_motion->motionId : 0;
+    *acc = !isRunMotion(id) && !isCrouchRunMotion(id) && isMovingMotion(id);
+    return code;
+}
+
+// 0x171 hasOverlay(): the brain runs an overlay slot.
+// FS2 0x001b60b0
+// callcheck: overlayMark
+
+static const int *nativeHasOverlay(ScriptRunner *self, int *acc, const int *code)
+{
+    constexpr int kNoOverlay = -1;
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->m_brain != nullptr && who->m_brain->overlayMark() != kNoOverlay;
+    return code;
+}
+
+// 0x18c angleTo(x, y): degrees, the facing of the object's world place.
+// FS2 0x001b42f0
+// callcheck: atan2Octant, addAngle
+
+static const int *nativeAngleTo(ScriptRunner *self, int *acc, const int *code)
+{
+    constexpr float kPi = 3.14159274f;
+    constexpr float kDegrees = 57.295776f;
+    const int *args = self->popped(2);
+    const sceVu0FVECTOR *world = self->getTarget()->getScriptObject()->getWorldMatrix();
+    const float angle = atan2Octant((float)args[0] - world[3][0], (float)args[1] - world[3][1]);
+    *acc = (int)(addAngle(-angle, kPi) * kDegrees);
+    return code;
+}
+
+// 0x192 eventEffect(effect, object): on bn_top of a sub-scene's object.
+// FS2 0x001b39a0
+// callcheck: readStringArg, readStringArg, find8, FUN_002689a0 (spawnEffectOnBone)
+
+static const int *nativeEventEffect(ScriptRunner *self, int *acc, const int *code)
+{
+    static const char kTop[] = "bn_top";    /* data 0x304b50 */
+    const char *name;
+    const char *objectName;
+    const int *next = self->readStringArg(&name, code);
+    next = self->readStringArg(&objectName, next);
+    StageObject *object = gStageScene->objects->find8(objectName, 0);
+    *acc = object != nullptr ? spawnEffectOnBone(object, name, kTop) : 0;
+    return next;
+}
+
+// 0x19b isMotionEnding(object).
+// FS2 0x001b2ba0
+// callcheck: readObjectArg, isBoneEnding
+
+static const int *nativeIsMotionEnding(ScriptRunner *self, int *acc, const int *code)
+{
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    StageObject *object = (StageObject *)scriptLabelCell(label);
+    // PC: an empty cell reads rubbish on the EE.
+    *acc = object != nullptr && object->m_model->pose->isBoneEnding(nullptr);
+    return next;
+}
+
+// 0x1ef nearNamed(name, rank): group 6's rank-th nearest, for the script point.
+// FS2 0x001ac5f0
+// callcheck: readNameArg, FUN_0029f5c0, FUN_00179ad0 (scriptPickNamed; setScriptPoint)
+
+static const int *nativeNearNamed(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const int rank = self->popped(1)[0];
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageCharacter *who = target->getScriptCharacter();
+    // PC: the ROM has no test.
+    StageObject *found = who != nullptr ? scriptPickNamed(name, who, rank, true, false) : nullptr;
+    if (found != nullptr)
+        who->setScriptPoint(found->m_xform.position);
+    *acc = found != nullptr;
+    return next;
+}
+
+// 0x1f9 smokeNear(): a burner in its area within the mission's block range.
+// FS2 0x001abc00
+// callcheck: currentMission, currentMission, currentMission, isInSmokeArea
+
+static const int *nativeSmokeNear(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    StageMission *mission = gStageScene->currentMission();
+    const float range = mission->blockRange;
+    StageObject **it = mission->burners.objects;
+    StageObject **end = it + mission->burners.count;
+    *acc = 0;
+    for (; it != end; it++) {
+        StageThrownItem *item = static_cast<StageThrownItem *>(*it);
+        if (item->m_active != 0 && static_cast<StageObject *>(item)->m_parent == nullptr && item->isInSmokeArea()
+            && target->scriptDistanceTo(item) <= range) {
+            *acc = 1;
+            break;
+        }
+    }
+    return code;
+}
+
+// 0x214 fireAt(name, flags, frames): the brain's shot, at a character or a
+// group 6 object.
+// FS2 0x001a9e40
+// callcheck: readNameArg, readStringArg, findCharacter, find6
+
+static const int *nativeFireAt(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const int frames30 = self->popped(1)[0];
+    const char *name;
+    const char *flags;
+    const int *next = self->readNameArg(&name, code);
+    next = self->readStringArg(&flags, next);
+    StageObject *object = gStageScene->objects->findCharacter(name, 0);
+    if (object == nullptr)
+        object = gStageScene->objects->find6(name, 0);
+    *acc = target->scriptFireAt(object, flags, frames30);
+    return next;
+}
+
+// 0x35 markPlace(): slot +0xb8, a character keeps where it stands, once.
+// FS2 0x001cc2d0
+
+static const int *nativeMarkPlace(ScriptRunner *self, int *, const int *code)
+{
+    self->getTarget()->scriptMarkPlace();
+    return code;
+}
+
+// 0x3d heardAlly2(): the bit 0x93 asks too; the ROM's has no test of the character.
+// FS2 0x001cbca0
+
+static const int *nativeHeardAllyAgain(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = heardBit(self, kHeardAlly);
+    return code;
+}
+
+// 0x9f leaveNoticed(), 0x17f leaveAtOnce().
+// FS2 0x001c53e0
+// callcheck: FUN_002196f0 (leaveNoticed)
+
+static const int *nativeLeaveNoticed(ScriptRunner *self, int *, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    if (who != nullptr)
+        who->leaveNoticed();
+    return code;
+}
+
+// FS2 0x001b5180
+// callcheck: FUN_00219310 (leaveAtOnce)
+static const int *nativeLeaveAtOnce(ScriptRunner *self, int *, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    if (who != nullptr)
+        who->leaveAtOnce();
+    return code;
+}
+
+static const char kSpawnPointName[] = "P_SPW%02d";  /* data 0x304bb0, 0x309d80 */
+
+// What P_SPW<id> may be: missionPickSpawnPoint takes only the kept ones.
+enum { kSpawnPointOff = 1, kSpawnPointKept = 2 };
+
+// The number in a P_SPW<id> name; -1 for any other.
+// FS2 0x0029fb30
+// callcheck: sscanf
+
+int parseSpawnId(const char *name)
+{
+    int id = -1;
+    sscanf(name, kSpawnPointName, &id);
+    return id;
+}
+
+// A named spawn point's state, when the map has it.
+static void setNamedSpawnPoint(const char *label, int state)
+{
+    int id;
+    if (sscanf(label, kSpawnPointName, &id) != 1)
+        return;
+    MissionSpawnPoint &point = gStageScene->currentMission()->spawnPoints[id];
+    if (point.state != 0)
+        point.state = state;
+}
+
+// 0xa0 keepSpawnPoint(name), 0xa1 dropSpawnPoint(name). 0x174 dropSpawnPoints().
+// FS2 0x001c52d0
+// callcheck: readObjectArg, sscanf, currentMission
+
+static const int *nativeKeepSpawnPoint(ScriptRunner *self, int *acc, const int *code)
+{
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    setNamedSpawnPoint(label, kSpawnPointKept);
+    *acc = 0;
+    return next;
+}
+
+// FS2 0x001c51c0
+// callcheck: readObjectArg, sscanf, currentMission
+static const int *nativeDropSpawnPoint(ScriptRunner *self, int *acc, const int *code)
+{
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    setNamedSpawnPoint(label, kSpawnPointOff);
+    *acc = 0;
+    return next;
+}
+
+// FS2 0x001b5d80
+// callcheck: currentMission
+static const int *nativeDropSpawnPoints(ScriptRunner *, int *acc, const int *code)
+{
+    StageMission *mission = gStageScene->currentMission();
+    for (MissionSpawnPoint &point : mission->spawnPoints) {
+        if (point.state != 0)
+            point.state = kSpawnPointOff;
+    }
+    *acc = 0;
+    return code;
+}
+
+// 0xb3 doorState(state): what the map shows of the door, in the script's
+// numbers.
+// FS2 0x001c3a30
+// callcheck: FUN_001725d0, FUN_001725d0, FUN_001725d0, FUN_001725d0
+
+static const int *nativeDoorState(ScriptRunner *self, int *, const int *code)
+{
+    const int state = self->popped(1)[0];
+    StageDoor *door = self->getTarget()->getScriptDoor();
+    // PC: the ROM has no test.
+    if (door == nullptr)
+        return code;
+    switch (state) {
+    case 3: door->m_doorState = StageDoor_None; break;
+    case 2: door->m_doorState = StageDoor_Locked; break;
+    case 1: door->m_doorState = StageDoor_Open2; break;
+    case 0: door->m_doorState = StageDoor_Unknown; break;
+    }
+    return code;
+}
+
+// 0xce isOnStage(number).
+// FS2 0x001c1590
+// callcheck: currentMission (scriptCharacterAt)
+
+static const int *nativeIsOnStage(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = scriptCharacterAt(self->popped(1)[0]);
+    *acc = who != nullptr && who->m_active != 0;
+    return code;
+}
+
+// 0x11f takeItem(name): one, mode 1.
+// FS2 0x001bbff0
+// callcheck: readNameArg, takeNamedItems
+
+static const int *nativeTakeNamedItem(ScriptRunner *self, int *, const int *code)
+{
+    constexpr u_int kModeHide = 1;
+    ScriptRunner *target = self->getTarget();
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageCharacter *who = target->getScriptCharacter();
+    if (who != nullptr)
+        who->takeNamedItems(name, 1, kModeHide);
+    return next;
+}
+
+// 0x128 setVisibility(name, percent); below 0 nothing.
+// FS2 0x001bb770
+// callcheck: readNameArg, currentMission, setVisibilityRange
+
+static const int *nativeSetVisibility(ScriptRunner *self, int *, const int *code)
+{
+    const int percent = self->popped(1)[0];
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    if (percent >= 0)
+        gStageScene->currentMission()->setVisibilityRange((float)percent / 100.0f, name);
+    return next;
+}
+
+// 0x12a spawnEffectAt(name, x, y, z, rx, ry, rz): degrees; its handle.
+// FS2 0x001bb4c0
+// callcheck: readNameArg, spawn
+
+static const int *nativeSpawnEffectAt(ScriptRunner *self, int *acc, const int *code)
+{
+    constexpr float kRadians = 0.017453292f;
+    const int *args = self->popped(6);
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    const sceVu0FVECTOR place = { (float)args[0], (float)args[1], (float)args[2], 1.0f };
+    const sceVu0FVECTOR turn = { (float)args[3] * kRadians, (float)args[4] * kRadians, (float)args[5] * kRadians, 1.0f };
+    *acc = gStageScene->effects->spawn(name, nullptr, place, turn);
+    return next;
+}
+
+// 0x137 springTraps(name): the free items of that name read as sprung.
+// FS2 0x001ba6f0
+// callcheck: readNameArg, FUN_0021eb50, FUN_0021ead0, strcmp
+
+static const int *nativeSpringTraps(ScriptRunner *self, int *, const int *code)
+{
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageObjArray &items = gStageScene->objects->m_lists[StageObjGroup_3];
+    for (StageObject **slot = items.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        StageObject *item = *slot;
+        if (item->m_active != 0 && item->m_parent == nullptr && strcmp(item->m_name, name) == 0)
+            static_cast<StageItem *>(item)->m_sprung = 1;
+    }
+    return next;
+}
+
+// 0x1c5 spawnNearLater(strong, mode, frames): now, or a timed record at its place.
+// FS2 0x001af290
+// callcheck: missionPickSpawnPoint, missionSpawnPointTaken, missionSpawnAt, currentMission, addTimedRecord
+
+static const int *nativeSpawnNearLater(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const int *args = self->popped(3);
+    const int strong = args[0];
+    const int mode = args[1];
+    const int frames = args[2];
+    if (frames < 1) {
+        *acc = spawnNear(target, strong, mode);
+    } else {
+        const int x = (int)target->scriptGetPosX();
+        const int y = (int)target->scriptGetPosY();
+        const int z = (int)target->scriptGetPosZ();
+        *acc = gStageScene->currentMission()->addTimedRecord(strong, x, y, z, mode, frames) != 0;
+    }
+    return code;
+}
+
+// 0x1c6 timedRecords(): how many wait.
+// FS2 0x001af220
+// callcheck: currentMission
+
+static const int *nativeTimedRecords(ScriptRunner *, int *acc, const int *code)
+{
+    *acc = gStageScene->currentMission()->timedCount;
+    return code;
+}
+
+// 0x1f6 blackout(on).
+// FS2 0x001abeb0
+// callcheck: currentMission
+
+static const int *nativeBlackout(ScriptRunner *self, int *, const int *code)
+{
+    const int on = self->popped(1)[0];
+    gStageScene->currentMission()->blackout = on != 0;
+    return code;
+}
+
+// The spawn system of the stage's waiting characters, beside scriptPrepare in
+// the ROM; what the natives above end in.
+
+// FS2 0x0029fd10
+
+bool missionSpawnPointTaken(int *point)
+{
+    return *point == -1;
+}
+
+// FS2 0x0029f810
+// callcheck: getMissionValue, getTopView, currentMission, getWorldMatrix, vecDistance, seesPoint, vecDistance, randNext2, FUN_0029fdb0 (std::stable_sort)
+
+int missionPickSpawnPoint(const float *place, int mode)
+{
+    // layout: host -- the ROM keeps these on its stack.
+    struct Candidate
+    {
+        int   index;
+        float distance;
+        bool  inView;
+    };
+    constexpr u_int kMost = 0x100;
+    constexpr int   kKept = 2;
+    const float reach = gStageScene->getMissionValue();
+    StageCamera *view = static_cast<StageCamera *>(gStageScene->getTopView());
+    StageMission *mission = gStageScene->currentMission();
+    std::vector<Candidate> found;
+    int hidden = 0;
+    for (int i = 0; i < mission->spawnCount && found.size() != kMost; i++) {
+        const MissionSpawnPoint &point = mission->spawnPoints[i];
+        if (point.state != kKept)
+            continue;
+        const bool inView = vecDistance(view->getWorldMatrix()[3], point.position) <= reach
+            && view->seesPoint(point.position);
+        if (!inView)
+            hidden++;
+        found.push_back({ i, vecDistance(place, point.position), inView });
+    }
+    if (hidden == 0)
+        return -1;
+    const int count = (int)found.size();
+    int from;
+    if (mode < 0) {
+        from = (int)(randNext2() % (u_int)count);
+    } else {
+        // The ROM's sort is unstable; ties are the file's order here.
+        std::stable_sort(found.begin(), found.end(),
+                         [](const Candidate &a, const Candidate &b) { return a.distance < b.distance; });
+        from = mode;
+    }
+    for (int i = from; i < count; i++) {
+        if (!found[i].inView)
+            return found[i].index;
+    }
+    for (int i = (from < count ? from : count) - 1; i >= 0; i--) {
+        if (!found[i].inView)
+            return found[i].index;
+    }
+    return -1;
+}
+
+// FS2 0x0029fb60
+// callcheck: currentMission, currentMission, getStageSelect, canSpawn, FUN_002115e0, FUN_002187f0 (isSpawnable; setSpawnPoint)
+
+bool missionSpawnAt(int *point, int strong)
+{
+    constexpr int kKindWeak   = 3;
+    constexpr int kKindStrong = 7;
+    const int kind = strong != 0 ? kKindStrong : kKindWeak;
+    StageMission *mission = gStageScene->currentMission();
+    for (StageObject **it = mission->characters; it != mission->charactersEnd(); it++) {
+        StageCharacter *who = static_cast<StageCharacter *>(*it);
+        if (who->m_active == 0 && stageObjRecord(who->m_itemDef)->kind == kind
+            && !who->canSpawn() && who->isSpawnable()) {
+            who->setSpawnPoint(point);
+            return true;
+        }
+    }
+    return false;
+}
+
+// FS2 0x0029f5c0
+// callcheck: findAll6, pathLength, FUN_002a0040 (std::stable_sort)
+
+StageObject *scriptPickNamed(const char *name, StageCharacter *who, u_int rank, bool straight, bool lastInstead)
+{
+    // layout: host -- the ROM keeps these on its stack.
+    struct Candidate
+    {
+        StageObject *object;
+        float        distance;
+    };
+    StageObjArray *list = gStageScene->objects->findAll6(name);
+    if (list == nullptr)
+        return nullptr;
+    if (list->m_count == 1) {
+        if (!lastInstead && rank != 0)
+            return nullptr;
+        for (StageObject **slot = list->begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+            if ((*slot)->m_active != 0)
+                return *slot;
+        }
+        // PC: the ROM reads through a null here.
+        return nullptr;
+    }
+    std::vector<Candidate> found;
+    for (StageObject **slot = list->begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        StageObject *object = *slot;
+        if (object->m_active == 0)
+            continue;
+        float distance;
+        if (straight) {
+            distance = who->distanceTo(object);
+        } else {
+            // PC: the route's filter is a stub's null until game/characterroute.cpp has it.
+            CharacterRoute *route = who->m_brain != nullptr ? who->m_brain->getRoute() : nullptr;
+            distance = route != nullptr && route->filter != nullptr
+                ? route->filter->pathLength(who->m_xform.position, object->m_xform.position)
+                : who->distanceTo(object);
+        }
+        found.push_back({ object, distance });
+    }
+    if (found.empty())
+        return nullptr;
+    if (found.size() == 1)
+        return rank == 0 ? found[0].object : nullptr;
+    std::stable_sort(found.begin(), found.end(),
+                     [](const Candidate &a, const Candidate &b) { return a.distance < b.distance; });
+    if (rank < found.size())
+        return found[rank].object;
+    return lastInstead ? found.back().object : nullptr;
+}
+
 // By how many scripts call them (sssall.py); the ROM's numbers.
 static const ScriptNativeBinding kAskedNatives[] = {
     { 0x022, nativeSpawnNamed },
     { 0x023, nativePosX },
     { 0x024, nativePosY },
     { 0x025, nativePosZ },
+    { 0x02d, nativeSwitchOn },
+    { 0x032, nativeCanSeeNumber },
+    { 0x033, nativeCanSeeName },
+    { 0x035, nativeMarkPlace },
+    { 0x03d, nativeHeardAllyAgain },
     { 0x040, nativeHeightToNumber },
     { 0x041, nativeHeightToName },
     { 0x04a, nativeReload },
+    { 0x050, nativeBlockPath },
+    { 0x051, nativeAllowPath },
+    { 0x054, nativeHasLineToName },
+    { 0x057, nativeIsCrouchingName },
+    { 0x059, nativeRouteAction12c },
+    { 0x05a, nativeRouteAction130 },
+    { 0x05d, nativeSpawnEffectOn },
     { 0x07f, nativeNothing7f },
     { 0x080, nativePutWeaponAway },
+    { 0x082, nativeWakeBrain },
+    { 0x085, nativeClimbPoint },
+    { 0x086, nativeAskLiftName },
     { 0x08e, nativeNearestAllyDistance },
     { 0x08f, nativeUnnoticedFoe },
+    { 0x090, nativeLastHitBy },
     { 0x091, nativeNearestFoeDistance },
     { 0x092, nativeNearestFoe },
     { 0x093, nativeHeardAlly },
@@ -3892,23 +4957,39 @@ static const ScriptNativeBinding kAskedNatives[] = {
     { 0x09a, nativeBestFoe },
     { 0x09b, nativeFoeWeightNamed },
     { 0x09c, nativeFoeWeight },
+    { 0x09d, nativeSpawnAt },
+    { 0x09e, nativeSpawnNear },
+    { 0x09f, nativeLeaveNoticed },
+    { 0x0a0, nativeKeepSpawnPoint },
+    { 0x0a1, nativeDropSpawnPoint },
     { 0x0a3, nativeNearestCorpse },
     { 0x0a4, nativeHeardWithin },
+    { 0x0a5, nativeLoseItem },
+    { 0x0a7, nativeShowItems },
     { 0x0a9, nativeHeardFoe },
+    { 0x0b0, nativePlayObjectMotion },
+    { 0x0b3, nativeDoorState },
     { 0x0bf, nativeIsBittenNumber },
     { 0x0c0, nativeIsBittenName },
     { 0x0c1, nativeForgetFoe },
+    { 0x0c4, nativeSearchPoint },
+    { 0x0c5, nativeSearchPointLast },
     { 0x0c7, nativeAlertOnName },
     { 0x0c8, nativeAlertOnNumber },
+    { 0x0ce, nativeIsOnStage },
     { 0x0dc, nativePercentOf },
+    { 0x0dd, nativeAbs },
     { 0x0e1, nativeClamp },
     { 0x0e2, nativeHeardAny },
     { 0x0e4, nativeAttackBite },
     { 0x0e5, nativeDistanceToNumber },
     { 0x0e6, nativePathToXyz },
+    { 0x0e9, nativeInReach },
     { 0x0ea, nativeHasLineTo },
     { 0x0f2, nativeAskLift },
     { 0x0f3, nativeAddFoeWeight },
+    { 0x0ff, nativeSearchPointAt },
+    { 0x100, nativeSearchPointNext },
     { 0x104, nativeUseItem },
     { 0x105, nativeUseSmoke },
     { 0x106, nativePutItem },
@@ -3922,17 +5003,41 @@ static const ScriptNativeBinding kAskedNatives[] = {
     { 0x10e, nativeSeesOpenTrap },
     { 0x10f, nativeCanTakeUpTrap },
     { 0x110, nativeTakeUpTrap },
+    { 0x11f, nativeTakeNamedItem },
     { 0x121, nativeDropLongWeapon },
     { 0x122, nativePickUp },
+    { 0x123, nativeNearWeapon },
+    { 0x128, nativeSetVisibility },
+    { 0x12a, nativeSpawnEffectAt },
+    { 0x12e, nativeSwing },
+    { 0x132, nativeShowGroup1 },
+    { 0x137, nativeSpringTraps },
+    { 0x13b, nativeLeaveQuiet },
     { 0x13e, nativeAlertCry },
+    { 0x13f, nativeBulletFlying },
+    { 0x143, nativeIsCorpse },
+    { 0x166, nativeIsWalking },
+    { 0x171, nativeHasOverlay },
+    { 0x174, nativeDropSpawnPoints },
+    { 0x17e, nativeLeave },
+    { 0x17f, nativeLeaveAtOnce },
+    { 0x18c, nativeAngleTo },
+    { 0x192, nativeEventEffect },
+    { 0x19b, nativeIsMotionEnding },
     { 0x1bf, nativeWasHit },
+    { 0x1c5, nativeSpawnNearLater },
+    { 0x1c6, nativeTimedRecords },
     { 0x1dd, nativeZero },
     { 0x1de, nativeDarkness },
+    { 0x1ef, nativeNearNamed },
     { 0x1f4, nativeIsNearViewTarget },
+    { 0x1f6, nativeBlackout },
+    { 0x1f9, nativeSmokeNear },
     { 0x206, nativeCanUseSevenKey },
     { 0x207, nativeRouteObject },
     { 0x20b, nativeIsStanding },
     { 0x213, nativeIsFatal },
+    { 0x214, nativeFireAt },
 };
 
 // The ROM indexes table 0x304230 by id - 0x19.

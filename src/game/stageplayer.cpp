@@ -232,7 +232,7 @@ void StageCharacter::afterScripts()
         m_doorInUse = door;
         m_lastDoorMode = door->m_doorMode;
     }
-    m_61c = 0;
+    m_hitThisFrameBy = nullptr;
     m_628 = 0;
     m_610 = 0;
     m_670 = getBrainPace();

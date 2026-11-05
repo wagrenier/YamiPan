@@ -26,9 +26,9 @@ class CharacterRoute;           // game/characterroute.h
 // A script runner whose commands go to another: vtable 0x315690, the runner's
 // table with most slots forwarding. Two slots say to whom: the object (+0x1b8)
 // and the target (+0x1bc); both subclasses answer the same for each. Only the
-// slots with a host name in ScriptRunner are here; the forwarders 0x1a6920
-// (+0x94), 0x1a69d0 (+0x9c), 0x1a6b50 (+0x104), 0x1a7060, 0x1a70a0, 0x1a70e0,
-// 0x1a7130, 0x1a7170, 0x1a71b0, 0x1a71f0, 0x1a7230, 0x1a7350, 0x1a73e0,
+// slots with a host name in ScriptRunner are here; the forwarders 0x1a69d0
+// (+0x9c), 0x1a6b50 (+0x104), 0x1a7060, 0x1a70a0,
+// 0x1a7170, 0x1a71b0, 0x1a71f0, 0x1a7230, 0x1a7350, 0x1a73e0,
 // 0x1a7420, 0x1a7460, 0x1a74e0, 0x1a7520, 0x1a7560, 0x1a75a0,
 // 0x1a75e0, 0x1a7620, 0x1a7660, 0x1a7700, 0x1a77c0, 0x1a7800,
 // 0x1a7890 wait for the natives that name their slots.
@@ -69,7 +69,10 @@ public:
     StageCharacter *getScriptCharacter() override;                       // FS2 0x001a6960
     StageDoor *getScriptDoor() override;                                 // FS2 0x001a6a10
     StageObject *getScriptObject() override;                             // FS2 0x001a6a50
-    float command58(void *arg) override;                                 // FS2 0x001a7270
+    StageCharacter *getScriptActor() override;                           // FS2 0x001a6920
+    bool scriptCanSee(float viewAngle, StageObject *other) override;     // FS2 0x001a70e0
+    void scriptMarkPlace() override;                                     // FS2 0x001a7130
+    float scriptDistanceTo(StageObject *other) override;                 // FS2 0x001a7270
     float command59(void *arg) override;                                 // FS2 0x001a72b0
     bool scriptIsFacing(StageObject *other) override;                    // FS2 0x001a73a0
     void scriptPlayMotion(const char *name) override;                    // FS2 0x001a76c0

@@ -419,13 +419,6 @@ void StageParty::setFillImage(const void *image)
     YAMIPAN_STUB("StageParty::setFillImage", 0x001fe9b0);
 }
 
-// stub of FS2 0x0029fb30
-int parseSpawnId(const char *name)
-{
-    YAMIPAN_STUB("parseSpawnId", 0x0029fb30);
-    return {};
-}
-
 // stub of FS2 0x0029f050
 // stub of FS2 address unknown (0 candidates)
 // stub of FS2 address unknown (0 candidates)
@@ -707,24 +700,11 @@ void StageMenu::setData(void *data)
     YAMIPAN_STUB("StageMenu::setData", 0x00230810);
 }
 
-// stub of FS2 0x002185a0
-bool StageObject::canSpawn()
-{
-    YAMIPAN_STUB("StageObject::canSpawn", 0x002185a0);
-    return {};
-}
-
 // stub of FS2 0x00175c40
 bool StageObject::isMotionTarget(int index)
 {
     YAMIPAN_STUB("StageObject::isMotionTarget", 0x00175c40);
     return {};
-}
-
-// stub of FS2 0x00218630
-void StageObject::spawn()
-{
-    YAMIPAN_STUB("StageObject::spawn", 0x00218630);
 }
 
 // stub of FS2 0x001fe890
@@ -934,30 +914,10 @@ void demoFleckStep(void *flecks)
     YAMIPAN_STUB("demoFleckStep", 0x002a11d0);
 }
 
-// stub of FS2 0x0029f810
-int missionPickSpawnPoint(const float *place, int mode)
-{
-    YAMIPAN_STUB("missionPickSpawnPoint", 0x0029f810);
-    return {};
-}
-
 // stub of FS2 0x0029f2a0
 bool missionRestoreCheck()
 {
     YAMIPAN_STUB("missionRestoreCheck", 0x0029f2a0);
-    return {};
-}
-
-// stub of FS2 0x0029fb60
-void missionSpawnAt(int *point, int id)
-{
-    YAMIPAN_STUB("missionSpawnAt", 0x0029fb60);
-}
-
-// stub of FS2 0x0029fd10
-bool missionSpawnPointTaken(int *point)
-{
-    YAMIPAN_STUB("missionSpawnPointTaken", 0x0029fd10);
     return {};
 }
 

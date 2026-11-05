@@ -57,6 +57,8 @@ public:
     // object's; arg: the placement moves from the node to bn_top's; arg2: the
     // parts with their effects.
     void setMotionList(void *list, int arg, int arg2) override;          // FS2 0x00175d40
+    // Native 0x90.
+    StageObject *getTouchedBy() const { return m_touchedBy; }
 
 private:
     void markMoved();
