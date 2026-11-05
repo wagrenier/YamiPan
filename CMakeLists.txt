@@ -48,11 +48,18 @@ set_source_files_properties(src/game/gamesystem.cpp PROPERTIES COMPILE_DEFINITIO
 add_library(yamipan_game OBJECT ${YAMIPAN_GAME_SOURCES})
 target_include_directories(yamipan_game PUBLIC src src/sdk)
 target_link_libraries(yamipan_game PUBLIC SDL3::SDL3)
-# NOT OPTIONAL. Reconstructed code reads the game's file formats in place and walks packets through
-# u_int*; GCC exploits the aliasing violation from -O2 up (MioPan's release-only crashes).
-target_compile_options(yamipan_game PRIVATE -fno-strict-aliasing -fpermissive -w)
-# StageScript::findEntry keeps the ROM's test of this for null (a sub-scene has no scripts[0]).
-set_source_files_properties(src/game/scriptrunner.cpp PROPERTIES COMPILE_OPTIONS -fno-delete-null-pointer-checks)
+if(MSVC)
+    # The flags layoutcheck.py compiles the game with; /utf-8 reads the sources as GCC does, or the
+    # Japanese literals change bytes. GCC's two flags below have no counterpart here: cl does not
+    # exploit aliasing, and at /O2 it keeps StageScript::findEntry's test of this for null.
+    target_compile_options(yamipan_game PRIVATE /permissive /Zc:preprocessor /utf-8 /w)
+else()
+    # NOT OPTIONAL. Reconstructed code reads the game's file formats in place and walks packets through
+    # u_int*; GCC exploits the aliasing violation from -O2 up (MioPan's release-only crashes).
+    target_compile_options(yamipan_game PRIVATE -fno-strict-aliasing -fpermissive -w)
+    # StageScript::findEntry keeps the ROM's test of this for null (a sub-scene has no scripts[0]).
+    set_source_files_properties(src/game/scriptrunner.cpp PROPERTIES COMPILE_OPTIONS -fno-delete-null-pointer-checks)
+endif()
 
 # ---- the Pan layer -------------------------------------------------------------------------------
 file(GLOB_RECURSE YAMIPAN_HOST_SOURCES CONFIGURE_DEPENDS src/yamipan/*.cpp)
@@ -61,7 +68,12 @@ add_executable(YamiPan src/main.cpp ${YAMIPAN_HOST_SOURCES} $<TARGET_OBJECTS:yam
 add_dependencies(YamiPan compile_shaders)
 target_include_directories(YamiPan PRIVATE src)
 target_link_libraries(YamiPan PRIVATE SDL3::SDL3 imgui)
-target_compile_options(YamiPan PRIVATE -Wall -Wextra -Wpedantic -Wshadow -Wno-missing-field-initializers)
+if(MSVC)
+    target_compile_options(YamiPan PRIVATE /W3 /Zc:preprocessor /utf-8)
+    target_compile_definitions(YamiPan PRIVATE _CRT_SECURE_NO_WARNINGS)
+else()
+    target_compile_options(YamiPan PRIVATE -Wall -Wextra -Wpedantic -Wshadow -Wno-missing-field-initializers)
+endif()
 
 if(YAMIPAN_HAVE_FFMPEG)
     target_compile_definitions(YamiPan PRIVATE YAMIPAN_HAVE_FFMPEG=1)

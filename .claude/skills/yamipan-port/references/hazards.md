@@ -316,7 +316,12 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **MinGW must be on PATH** or `cc1plus` fails silently: use `build.py`. Shader builds can hit a file
   lock: rerun.
 - **layoutcheck compiles every header alone**: a header relying on its .c's includes fails there.
-  MSVC runs only in layoutcheck (syntax): MSVC-only errors show up there.
+- **The Visual Studio build can break while every check stays green** (2026-11-05). Symptom:
+  `D8021 invalid numeric argument '/Wextra'` on every Pan-layer file, then `C2440` in `src/sdk`. Cause:
+  layoutcheck runs cl over game headers and sources only, so nothing but a Visual Studio build compiles
+  `src/yamipan` and `src/sdk` with cl. Fix: each compiler's flags sit in `if(MSVC)` in CMakeLists.txt, so
+  a new flag goes in both branches; `u_long128` is a struct under cl, so it takes no arithmetic or
+  integer initialiser. To check, configure a separate tree from a vcvars64 shell with `-G Ninja` and cl.
 - **Exit 0x20474343** is an uncaught C++ exception; **3221225477** an access violation: `gdbrun.py`
   with the same pad for the backtrace (the game runs on its own named thread).
 - **A run without the scripted pad** sits in the first menu: a trace in later code prints nothing.

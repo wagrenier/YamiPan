@@ -1,6 +1,7 @@
 // sdk/scetypes.h -- the EE's base types. Sizes follow the EE ABI (char 1, short 2, int 4, long 8, a 128-bit
-// quadword), so the GS / VIF / DMA register structs keep their layout on the host. The builds are MinGW;
-// the MSVC spellings are for layoutcheck.py, which compiles the game with both to catch layout drift.
+// quadword), so the GS / VIF / DMA register structs keep their layout on the host. The tree builds under
+// MinGW (build.py) and Visual Studio; layoutcheck.py compiles the game with both to catch layout drift.
+// u_long128 is an integer only under GCC: under MSVC it is a struct, so never do arithmetic on it.
 #pragma once
 
 #include <stddef.h>
