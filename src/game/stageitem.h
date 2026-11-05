@@ -131,6 +131,8 @@ public:
     void setup(StageItem *owner, void *motion);                          // FS2 0x0023d600
     void update();                                                       // FS2 0x0023ca50
     void draw();                                                         // FS2 0x0023c910
+    // The mean of the bones' velocities.
+    void getMeanVelocity(sceVu0FVECTOR out);                             // FS2 0x0023ce00
 
     int  collisionHook0(CollisionContact *contact, const float *normal, StageCollisionFace *face,
                         float depth) override;                                      // FS2 0x0023c020

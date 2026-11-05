@@ -4960,6 +4960,11 @@
 /* 001efad0 00000204 */ FUN_001efad0(){}
 /* 001efce0 00000204 */ FUN_001efce0(){}
 /* 001efef0 00000008 */ FUN_001efef0(){}
+
+// *****************************************************************************
+// FILE -- game/characterground.cpp
+// *****************************************************************************
+
 /* 001eff00 00000080 */ CharacterGround::faceNear(){}  // game
 /* 001eff80 0000011c */ CharacterGround::setContact(){}  // game
 /* 001f00a0 000000cc */ CharacterGround::setHitBone(){}  // game

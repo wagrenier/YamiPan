@@ -359,55 +359,7 @@ class StageCharacter;
 // The scene's player is a character: one class in the ROM (vtable 0x312240).
 typedef StageCharacter StagePlayer;
 struct CharacterInput;          // game/characterinput.h
-// What keeps a character on the ground (+0x228, EE 0x1c0, ctor 0x1f3d20,
-// CollisionOwner at +0; the run unassigned@00171300). Only what the main
-// camera reads. layout: host.
-struct GroundVolume;
-struct StageCollisionFace;
-struct CharacterGround
-{
-    explicit CharacterGround(StageObject *owner);                        // FS2 0x001f3d20
-    ~CharacterGround();                                                  // FS2 0x001f3c70: deleting
-    void reset();                                                        // FS2 0x001f3b30
-    // The floor near a point of the character's own space: from 70 above
-    // it, down to 85 below that.
-    StageCollisionFace *faceNear(const float *localPoint);               // FS2 0x001eff00
-
-    // Clears (0) or sets the contact bytes of the ground's feet; the
-    // player's own byte follows.
-    void setContact(int value);                                          // FS2 0x001eff80
-    // Which bone of the family's list a hit comes from; -1 none of them.
-    void setHitBone(const char *name);                                   // FS2 0x001f00a0
-    // Not in the air: the feet solve, and nothing pulls it down.
-    bool isGrounded() const { return landed != 0 || falling == 0; }
-
-    u_char        onGround = 0; // FS2 +0x000: StageCharacter::reset sets it (the name is a guess)
-    u_char        falling = 0;  // FS2 +0x010: read by PlayerMotion::controlStep only so far
-    int           groundCheck = 0; // FS2 +0x018: the motion's 接地判定 (PlayerMotion::stepLower)
-    int           repelLevel = 0;  // FS2 +0x01c: its キャラ反発LV
-    u_char        landed = 0;   // FS2 +0x020: beats falling (the same reader)
-    StageCollisionFace *floorFace = nullptr; // FS2 +0x024: the face it stands on
-    StageObject  *floorObject = nullptr; // FS2 +0x028: whose face that is
-    u_char        nearTarget = 0;  // FS2 +0x055: within 250 of the view target (PlayerMotion::applyMovement)
-    u_char        narrow = 0;      // FS2 +0x0e8: Move walks instead of running
-    float         slideSpeed = 0.0f; // FS2 +0x128: the floor carries it
-    sceVu0FVECTOR slideDirection = {}; // FS2 +0x130
-    float         radius = 0.0f;   // FS2 +0x154
-    float         radius2 = 0.0f;  // FS2 +0x158
-    GroundVolume *volume = nullptr; // FS2 +0x184: 0 from the ctor
-    u_char       *floats = nullptr; // FS2 +0x18c: F_YRT sets the byte it points at (unread; the name is a guess)
-    u_char       *wallCheck = nullptr; // FS2 +0x190: the motion's 壁判定, when it points anywhere
-    int           hitBone = -1; // FS2 +0x1ac: setHitBone
-};
-// A box a character stands in (0x1f3d20 makes it). What it is is unread:
-// the camera stays above its top.
-// layout: host
-struct GroundVolume
-{
-    u_char        active;       // FS2 +0x03
-    sceVu0FVECTOR min;          // FS2 +0x20
-    sceVu0FVECTOR max;          // FS2 +0x30
-};
+class CharacterGround;          // game/characterground.h
 // What drives a character otherwise (+0x220, null without one). The name
 // is a guess: it is switched the other way round from the input. EE: +0x174
 // the flag.
@@ -787,7 +739,8 @@ public:
             int m_doorIndex;    // FS2 +0x244: a door's number from 1 (StageScene::findDoorOfFace)
         };
     };
-    u_char _248[0x44];
+    int    m_doorMode;          // FS2 +0x248: a door's; 1 and 3 mark atDoor (CharacterGround), unread otherwise
+    u_char _24c[0x40];
     StageObject *m_doorLight;   // FS2 +0x28c: a door's: the light of its record (SceneRender::setup)
     StageObject *m_290;         // FS2 +0x290: a character's. Set: the main camera goes over the shoulder and looks at m_aimPoint; a kind 1..6 is left out of its rays (StageScene::partnerResponds reads it too)
     u_char _294[0x4];
@@ -1825,6 +1778,17 @@ public:
     void setDirection(int direction);                                    // FS2 0x0028d810
     void honk();                                                         // FS2 0x0028d780
     void setLights(bool on);                                             // FS2 0x0028db80
+    // What the character's ground asks. The owner of 0x289dd0..0x28abf0 is
+    // read from the ground's calls only: a kind 3 object.
+    float getSpeed();                                                    // FS2 0x00289dd0
+    const float *getVelocity();                                          // FS2 0x00289e10
+    float getAcceleration();                                             // FS2 0x00289e20
+    const float *getFrameStep();                                         // FS2 0x00289ea0
+    // One of the places beside it (bn_dmg_sr, bn_dmg_sl, ahead, behind), by
+    // the side and the index; answers 40.
+    float getDoorPoint(sceVu0FVECTOR out, int side, int index);          // FS2 0x00289f70
+    // How hard it hits something at position: GroundSlide.
+    int  getHitLevel(const float *position);                             // FS2 0x0028abf0
 
     GateParts *m_lights;        // FS2 +0x2b0
     u_char m_throttle;          // FS2 +0x381
@@ -2278,6 +2242,13 @@ public:
     const SeEntry *findStepSound(int surface, int pace) const;           // FS2 0x002cf210
     // The movement hook: the motion's step, then the model.
     void moveStep();                                                     // FS2 0x0017a490
+    // PC: the part of the terminate hook 0x179d30 that is written.
+    void sideHook3() override;
+    // 2 at the wheel, 3 the short weapons, 9 bare hands; the rest of the
+    // table is unread.
+    int  getHandClass();                                                 // FS2 0x00210540
+    // A blow on a wall: the surface's sound, for one with a long weapon.
+    void playBumpSound(int surface);                                     // FS2 0x002a2b10
 
     StageList<StageObject *> m_items; // FS2 +0x22c: what it carries (giveItem)
     int    m_294 = 0;           // FS2 +0x294: 0 from the ctor (unread)

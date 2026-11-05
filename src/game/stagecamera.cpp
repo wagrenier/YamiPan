@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "game/characterground.h"
 #include "game/characterinput.h"
 #include "game/gamehooks.h"
 #include "game/playermotion.h"
@@ -183,10 +184,10 @@ bool StageCollisionFace::inFront(const sceVu0FVECTOR point) const
 // The AABB min..max, each side moved out by margin, holds point.
 // FS2 0x00236b20
 
-static bool boxHolds(const GroundVolume *box, const sceVu0FVECTOR point, const sceVu0FVECTOR margin)
+static bool boxHolds(const CollisionBody *box, const sceVu0FVECTOR point, const sceVu0FVECTOR margin)
 {
     for (int i = 0; i < 3; i++) {
-        if (point[i] < box->min[i] - margin[i] || box->max[i] + margin[i] < point[i])
+        if (point[i] < box->box[0][i] - margin[i] || box->box[1][i] + margin[i] < point[i])
             return false;
     }
     return true;
@@ -645,10 +646,10 @@ void StageMainCamera::cameraStep()
     StageObjArray &characters = scene->objects->m_lists[StageObjGroup_Characters];
     for (StageObject **slot = nextActive(characters.begin()); slot != nullptr;
          slot = nextActive(StageObjArray::next(slot))) {
-        const GroundVolume *volume = (*slot)->m_ground->volume;
-        if (volume != nullptr && volume->active != 0 && boxHolds(volume, wanted, kVolumeMargin)) {
+        const CollisionBody *volume = (*slot)->m_ground->volume;
+        if (volume != nullptr && volume->boxed != 0 && boxHolds(volume, wanted, kVolumeMargin)) {
             aboveVolume = true;
-            wanted[2] = kVolumeMargin[2] + volume->max[2];
+            wanted[2] = kVolumeMargin[2] + volume->box[1][2];
         }
     }
 
@@ -669,9 +670,9 @@ void StageMainCamera::cameraStep()
             approachVec3(1.0f / followDivisor, kFollowMaxStep, m_xform.position, m_xform.position, wanted);
         }
 
-        const GroundVolume *volume = linked->m_ground->volume;
-        if (volume != nullptr && volume->active != 0 && boxHolds(volume, m_xform.position, kVolumeMargin))
-            m_xform.position[2] = kVolumeMargin[2] + volume->max[2];
+        const CollisionBody *volume = linked->m_ground->volume;
+        if (volume != nullptr && volume->boxed != 0 && boxHolds(volume, m_xform.position, kVolumeMargin))
+            m_xform.position[2] = kVolumeMargin[2] + volume->box[1][2];
 
         // The eased eye may have gone behind something the wanted place is
         // not: then it stops at what it hit, unless that may be passed.

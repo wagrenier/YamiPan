@@ -16,7 +16,12 @@
 #include "sdk/libvu0.h"     /* sceVu0FVECTOR */
 
 // The distance between a and b (xyz).
-float vecDistance(const sceVu0FVECTOR a, const sceVu0FVECTOR b);                  // FS2 0x00135f20
+// FS2 0x00135f20
+inline float vecDistance(const sceVu0FVECTOR a, const sceVu0FVECTOR b)
+{
+    return sqrtf((a[2] - b[2]) * (a[2] - b[2]) + (a[1] - b[1]) * (a[1] - b[1])
+                 + (a[0] - b[0]) * (a[0] - b[0]));
+}
 // out = in resized to length len (xyz; out.w = in.w). PC: a zero vector stays
 // zero, as it does on the VU, where 1 / 0 is the largest float and 0 times it 0.
 // FS2 0x00135fe0

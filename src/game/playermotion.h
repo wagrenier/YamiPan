@@ -77,6 +77,8 @@ enum MotionStanceSlot
 bool isCrouchMotion(int id);
 // run, tr_run, w_run and the stairs at a run.
 bool isRunMotion(int id);
+// The walks, armed or not: what 移動速度 sets the pace of (moveStep).
+bool isWalkMotion(int id);
 // sq_ka and sqw_ka: spend health like running.
 bool isCrouchRunMotion(int id);
 // Standing or crouched, doing nothing: health comes back to the player.
@@ -300,6 +302,8 @@ struct PlayerMotion
     // walk goes on this floor, the floor's push, m_moveStep and m_turnStep
     // into the character, whether the pose's solvers are worth running.
     void applyMovement();                                                // FS2 0x001e0e20
+    // Two characters in a struggle: this one comes out on top.
+    bool winsStruggle(StageObject *other);                               // FS2 0x001e05b0
     // Turns the body toward angles (limits +-65 degrees); slope: it leans
     // into the floor.
     void leanBody(const sceVu0FVECTOR angles, bool slope, u_char flag);  // FS2 0x001e6400
@@ -426,6 +430,7 @@ public:
     u_char m_leanFlag = 0;      // FS2 +0xba0: leanBody's
     float  m_fallSpeed = 0.0f;  // FS2 +0xba4: grows off the ground, into m_moveStep
     float  m_ba8 = 0.0f;        // FS2 +0xba8: a countdown
+    u_char m_wallCheckNow = 0;  // FS2 +0xbac: m_wallCheck as the last frame ended (0x1e18c0); the ground's sync reads it
     u_char m_wallCheck = 0;     // FS2 +0xbad: the motion's 壁判定
     u_char m_bae = 0;           // FS2 +0xbae
     sceVu0FVECTOR position = {}; // FS2 +0xbb0

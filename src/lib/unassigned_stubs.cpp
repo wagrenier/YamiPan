@@ -275,13 +275,6 @@ u_char StageObject::getAltSoundFlag()
     return {};
 }
 
-// stub of FS2 0x00215ef0
-bool StageObject::isPlayer()
-{
-    YAMIPAN_STUB("StageObject::isPlayer", 0x00215ef0);
-    return {};
-}
-
 // stub of FS2 0x001fecf0
 StageParty::StageParty()
 {
@@ -403,13 +396,6 @@ void pauseMenuStart()
 void resetStageGroupTable()
 {
     YAMIPAN_STUB("resetStageGroupTable", 0x002cf510);
-}
-
-// stub of FS2 0x00135f20
-float vecDistance(const sceVu0FVECTOR a, const sceVu0FVECTOR b)
-{
-    YAMIPAN_STUB("vecDistance", 0x00135f20);
-    return {};
 }
 
 // stub of FS2 0x002e1440
@@ -775,13 +761,6 @@ void StageObject::cameraStep()
 bool StageObject::isMode2()
 {
     YAMIPAN_STUB("StageObject::isMode2", 0x002152a0);
-    return {};
-}
-
-// stub of FS2 0x00215ed0
-bool StageObject::isPartner()
-{
-    YAMIPAN_STUB("StageObject::isPartner", 0x00215ed0);
     return {};
 }
 
@@ -1184,13 +1163,6 @@ SkyPose::SkyPose(int, int)
     YAMIPAN_STUB("SkyPose::SkyPose", 0x002b37d0);
 }
 
-// stub of FS2 0x001eff00
-StageCollisionFace * CharacterGround::faceNear(const float *localPoint)
-{
-    YAMIPAN_STUB("CharacterGround::faceNear", 0x001eff00);
-    return {};
-}
-
 // stub of FS2 address unknown (1 candidates)
 // stub of FS2 address unknown (1 candidates)
 bool StageObject::followsPlayerLight()
@@ -1357,28 +1329,10 @@ CharacterBrain::~CharacterBrain()
     YAMIPAN_STUB("CharacterBrain::~CharacterBrain", 0x00000000);
 }
 
-// stub of FS2 0x001f3d20
-CharacterGround::CharacterGround(StageObject *owner)
-{
-    YAMIPAN_STUB("CharacterGround::CharacterGround", 0x001f3d20);
-}
-
-// stub of FS2 0x001f3c70
-CharacterGround::~CharacterGround()
-{
-    YAMIPAN_STUB("CharacterGround::~CharacterGround", 0x001f3c70);
-}
-
 // stub of FS2 0x001dd460
 void CharacterBrain::reset()
 {
     YAMIPAN_STUB("CharacterBrain::reset", 0x001dd460);
-}
-
-// stub of FS2 0x001f3b30
-void CharacterGround::reset()
-{
-    YAMIPAN_STUB("CharacterGround::reset", 0x001f3b30);
 }
 
 // stub of FS2 0x00239bc0
@@ -1437,12 +1391,6 @@ void StageParticle::stopChain()
     YAMIPAN_STUB("StageParticle::stopChain", 0x0018fec0);
 }
 
-// stub of FS2 0x001eff80
-void CharacterGround::setContact(int value)
-{
-    YAMIPAN_STUB("CharacterGround::setContact", 0x001eff80);
-}
-
 // stub of FS2 0x001dfd90
 void PlayerMotion::clearNoFlash(int arg)
 {
@@ -1485,12 +1433,6 @@ void StageCharacter::getSwayMatrix(sceVu0FMATRIX out)
 void ViewCamera::setZoom(float level)
 {
     YAMIPAN_STUB("ViewCamera::setZoom", 0x0029a840);
-}
-
-// stub of FS2 0x001f00a0
-void CharacterGround::setHitBone(const char *name)
-{
-    YAMIPAN_STUB("CharacterGround::setHitBone", 0x001f00a0);
 }
 
 // stub of FS2 0x001908d0
@@ -1557,4 +1499,72 @@ u_char UiItemList::offer(StageCharacter *who, int kind)
 {
     YAMIPAN_STUB("UiItemList::offer", 0x0023ed10);
     return {};
+}
+
+// stub of FS2 0x0023ce00
+void ItemPhysics::getMeanVelocity(sceVu0FVECTOR out)
+{
+    YAMIPAN_STUB("ItemPhysics::getMeanVelocity", 0x0023ce00);
+}
+
+// stub of FS2 0x001e05b0
+bool PlayerMotion::winsStruggle(StageObject *other)
+{
+    YAMIPAN_STUB("PlayerMotion::winsStruggle", 0x001e05b0);
+    return {};
+}
+
+// stub of FS2 0x00289e20
+float StageCar::getAcceleration()
+{
+    YAMIPAN_STUB("StageCar::getAcceleration", 0x00289e20);
+    return {};
+}
+
+// stub of FS2 0x00289f70
+float StageCar::getDoorPoint(sceVu0FVECTOR out, int side, int index)
+{
+    YAMIPAN_STUB("StageCar::getDoorPoint", 0x00289f70);
+    return {};
+}
+
+// stub of FS2 0x00289ea0
+const float * StageCar::getFrameStep()
+{
+    YAMIPAN_STUB("StageCar::getFrameStep", 0x00289ea0);
+    return {};
+}
+
+// stub of FS2 0x0028abf0
+int StageCar::getHitLevel(const float *position)
+{
+    YAMIPAN_STUB("StageCar::getHitLevel", 0x0028abf0);
+    return {};
+}
+
+// stub of FS2 0x00289dd0
+float StageCar::getSpeed()
+{
+    YAMIPAN_STUB("StageCar::getSpeed", 0x00289dd0);
+    return {};
+}
+
+// stub of FS2 0x00289e10
+const float * StageCar::getVelocity()
+{
+    YAMIPAN_STUB("StageCar::getVelocity", 0x00289e10);
+    return {};
+}
+
+// stub of FS2 0x00210540
+int StageCharacter::getHandClass()
+{
+    YAMIPAN_STUB("StageCharacter::getHandClass", 0x00210540);
+    return {};
+}
+
+// stub of FS2 0x002a2b10
+void StageCharacter::playBumpSound(int surface)
+{
+    YAMIPAN_STUB("StageCharacter::playBumpSound", 0x002a2b10);
 }
