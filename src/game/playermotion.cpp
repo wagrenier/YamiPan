@@ -2894,9 +2894,9 @@ void PlayerMotion::reset(int arg)
     m_runDistance = 0.0f;
     memcpy(m_lastPosition, character->m_xform.position, sizeof(m_lastPosition));
     m_stanceFlag = 0;
-    m_b24 = 0.0f;
-    m_b28 = 0.0f;
-    m_b2c = 0.0f;
+    m_stanceTime = 0.0f;
+    m_hitTime = 0.0f;
+    m_soundEvent = 0;
     m_b30 = 0;
     m_forceStart = 0;
     memset(m_moveStep, 0, sizeof(m_moveStep));
@@ -2952,7 +2952,7 @@ void PlayerMotion::beginFrame()
     ModelPose *pose = owner->m_model->pose;
     m_motionTime += clock->getDeltaSeconds();
     if (pose->isBoneEnding(nullptr))
-        m_b2c = 0.0f;
+        m_soundEvent = 0;
     m_bae = 0;
     m_lookObject = nullptr;
     m_stepped = 0;
@@ -3377,7 +3377,7 @@ void PlayerMotion::stepLower(bool immediate)
 
         motionId = m_request;
         m_motionTime = 0.0f;
-        m_b2c = 0.0f;
+        m_soundEvent = 0;
         activeLink = link;
         if (activeLink != nullptr)
             activeLink->rewind();
@@ -7448,6 +7448,188 @@ StageObject *StageCharacter::findItem(const char *name)
             return link->value;
     }
     return nullptr;
+}
+
+// FS2 0x001dedb0
+// callcheck: request, request
+
+void PlayerMotion::releaseAction()
+{
+    constexpr int kMotionIdle = 0;
+    const bool hasNext = motionId >= 0 && motionId < kMotionDefCount
+        && gMotionDefs[motionId].nextMotion != Motion_None;
+    if (activeLink != nullptr && hasNext)
+        activeLink->finished = 1;
+    else
+        request(kMotionIdle);
+}
+
+// The frame's hits. PC: only the first line of 0x1e18c0 is written. The rest
+// (0x25c0 bytes) reads what hit it from the ground, plays the reaction, and
+// needs StageCharacter's hit 0x20eb40, the blood 0x26a010, 0x2103d0, 0x20e6e0
+// and something that can hit: stage 1 has nothing.
+// FS2 0x001e18c0
+
+void PlayerMotion::takeHits()
+{
+    m_wallCheckNow = m_wallCheck;
+}
+
+// A run's time and distance, which Move reads to trip it on a wall.
+
+void PlayerMotion::stepRunClock(StageCharacter *character)
+{
+    constexpr float kRunTimeLimit   = 10.0f;
+    constexpr float kWindedRecovery = 2.0f;
+    if (m_request != Motion_None || !isRunMotion(motionId)) {
+        m_runTime = 0.0f;
+        m_runDistance = 0.0f;
+        return;
+    }
+    if (m_runTime == 0.0f) {
+        memcpy(m_lastPosition, character->m_xform.position, sizeof(m_lastPosition));
+    } else {
+        const float distance = vecDistance(m_lastPosition, character->m_xform.position);
+        if (m_runDistance < distance)
+            m_runDistance = distance;
+    }
+    if (character->m_winded == 0) {
+        m_runTime += character->m_clock->getDeltaSeconds();
+    } else if (0.0f < m_runTime) {
+        if (kRunTimeLimit < m_runTime)
+            m_runTime = kRunTimeLimit;
+        m_runTime -= character->m_clock->getDeltaSeconds() * kWindedRecovery;
+        if (m_runTime < 0.0f) {
+            m_runTime = 0.0f;
+            m_runDistance = 0.0f;
+        }
+    }
+}
+
+// Inline in the ROM: the motions in which a Yri or Kne keeps its second stance.
+static bool isAltStanceMotion(int id)
+{
+    switch (id) {
+    case 0xf8: case 0xf7: case 0xf6: case 0xf5: case 0xf4:
+    case 2: case 1: case 0:
+    case 0x15: case 0x14:
+    case 0x1f: case 0x1e: case 0x1d: case 0x2b:
+        return true;
+    }
+    return false;
+}
+
+// A Yri or Kne's second stance comes half a second after a light that is not
+// a YAM_ one starts to throw its shadow, and goes half a second after it stops.
+
+void PlayerMotion::stepAltStance(StageCharacter *character)
+{
+    constexpr float kStanceDelay = 0.5f;
+    const StageLight *light = character->m_shadowLight;
+    if (light == nullptr || light->m_yamLight != 0) {
+        if (!isAltStanceMotion(motionId)) {
+            m_stanceFlag = 0;
+            m_stanceTime = 0.0f;
+        } else if (m_stanceFlag == 0) {
+            m_stanceTime = 0.0f;
+        } else {
+            m_stanceTime += character->m_clock->getDeltaSeconds();
+            if (kStanceDelay < m_stanceTime) {
+                m_stanceFlag = 0;
+                m_stanceTime = 0.0f;
+            }
+        }
+    } else if (m_stanceFlag == 0) {
+        m_stanceTime += character->m_clock->getDeltaSeconds();
+        if (kStanceDelay < m_stanceTime) {
+            m_stanceFlag = 1;
+            m_stanceTime = 0.0f;
+        }
+    } else {
+        m_stanceTime = 0.0f;
+    }
+}
+
+// The motion's sound event: the next of the sheet's S0..S3, whose names are
+// kMotionShotKinds' (packtables.cpp: the values below). Kind 0xd falls into
+// 0xe in the ROM: JUMP also says AT_NW1.
+
+void PlayerMotion::stepSoundEvents(StageCharacter *character)
+{
+    const u_int events = character->m_model->m_motionEvents;
+    if ((events & MotionEvent_HitSwing) != 0)
+        character->playSwingSound(true);
+    if ((events & MotionEvent_Sound) == 0)
+        return;
+    if (motionId < 0 || motionId >= kMotionDefCount)
+        return;
+    // PC: past S3 the ROM reads the columns that follow as kinds.
+    if (m_soundEvent >= kMotionShots) {
+        m_soundEvent++;
+        return;
+    }
+
+    const MotionDef *def = &gMotionDefs[motionId];
+    const int kind = def->shotKind[m_soundEvent];
+    switch (kind) {
+    case 0x00: character->playShout(m_shoutLoudness, 0, character->m_xform.position); break;
+    case 0x01: character->playIdleVoice(0); break;
+    case 0x02: character->playIdleVoice(1); break;
+    case 0x03: character->playDownVoice(); break;
+    case 0x04: character->playClashVoice(); break;
+    case 0x05: case 0x06: case 0x07: case 0x08: case 0x09:
+        character->playBreathUp(kind - 0x05);
+        break;
+    case 0x0a: case 0x0b: case 0x0c:
+        character->playBreathDown(kind - 0x0a);
+        break;
+    case 0x0d:
+        character->playJumpVoice();
+        // fall through
+    case 0x0e: case 0x10: case 0x12:
+        character->playAttackVoice(0, character->hasAlteredVoice());
+        break;
+    case 0x0f: case 0x11: case 0x13: case 0x14:
+        character->playAttackVoice(1, character->hasAlteredVoice());
+        break;
+    case 0x15: character->playHardDownVoice(); break;
+    case 0x16: character->playTrapVoice(); break;
+    case 0x17: character->playThrowVoice(); break;
+    case 0x18: character->playBiteVoice(); break;
+    case 0x19: character->playBittenVoice(); break;
+    case 0x1a: character->playUntieVoice(); break;
+    case 0x1b: character->playDamageVoice(true); break;
+    case 0x1c: character->playDamageVoice(false); break;
+    case 0x1d: character->playDieVoice(); break;
+    case 0x1e: character->playGetUpVoice(); break;
+    case 0x1f: character->playSurpriseVoice(); break;
+    case 0x20: character->playPanicVoice(); break;
+    case 0x21: character->playEndVoice(); break;
+    case 0x22:
+        if (character->m_ground->floorFace != nullptr)
+            character->playFallDownSound(character->m_ground->floorFace->surface);
+        break;
+    case 0x23: case 0x24: case 0x25: case 0x26:
+        character->playJobSound(kind - 0x22);
+        break;
+    case 0x27:
+        character->playMotionSound(def->shotText[m_soundEvent], character->m_xform.position);
+        break;
+    }
+    m_soundEvent++;
+}
+
+// FS2 0x001e06f0
+// callcheck: takeHits, vecDistance, getDeltaSeconds, getDeltaSeconds, isYriOrKne, getDeltaSeconds, getDeltaSeconds, playSwingSound, playShout, playIdleVoice, playDownVoice, playClashVoice, playBreathUp, playBreathDown, playJumpVoice, hasAlteredVoice, playAttackVoice, playHardDownVoice, playTrapVoice, playThrowVoice, playBiteVoice, playBittenVoice, playUntieVoice, playDamageVoice, playDieVoice, playGetUpVoice, playSurpriseVoice, playPanicVoice, playEndVoice, playFallDownSound, playJobSound, playMotionSound
+
+void PlayerMotion::endFrame()
+{
+    StageCharacter *character = static_cast<StageCharacter *>(owner);
+    takeHits();
+    stepRunClock(character);
+    if (character->isYriOrKne())
+        stepAltStance(character);
+    stepSoundEvents(character);
 }
 
 // FS2 0x00179af0

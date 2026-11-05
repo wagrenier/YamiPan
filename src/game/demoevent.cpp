@@ -31,6 +31,7 @@
 #include "game/fileloader.h"
 #include "game/fontdata.h"
 #include "game/gamehooks.h"
+#include "game/playermotion.h"
 #include "game/gamepacket.h"
 #include "game/gamesystem.h"
 #include "game/menupack.h"
@@ -1506,7 +1507,7 @@ int StageSimpleEvent::poll()
     }
 
     if (scene->player != nullptr && scene->player->isHoldingAction())
-        scene->player->releaseAction();
+        scene->player->m_motion->releaseAction();
 
     switch (state) {
     case StageEvent_Starting:

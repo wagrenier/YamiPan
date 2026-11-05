@@ -15,6 +15,10 @@
 
 #include "game/characterground.h"
 #include "game/characterinput.h"
+#include "game/stagecollision.h"
+#include "game/stagelight.h"
+#include "game/stageitem.h"
+#include "game/clock.h"
 #include "game/gamehooks.h"
 #include "game/heap.h"
 #include "game/modelpose.h"
@@ -37,6 +41,8 @@ static const char kBoneRightCalf[]  = "bn_r_calf";      /* data 0x303438 */
 static const char kBoneSpineBase[]  = "bn_spine_base";  /* data 0x303388 */
 static const char kBoneLeftFoot[]   = "bn_l_foot";      /* data 0x303330 */
 static const char kBoneRightFoot[]  = "bn_r_foot";      /* data 0x303340 */
+static const char kBoneHeadTop[]    = "bn_head";        /* data 0x303178 */
+static const char kBoneLeftToe[]    = "bn_l_toe1";      /* data 0x303210 */
 
 static const char kPartHead[]       = "head";           /* data 0x3032f8 */
 static const char kPartHide[]       = "hide";           /* data 0x303360 */
@@ -50,6 +56,8 @@ static const char kEffectGlow[]       = "koh";          /* data 0x303398 */
 static const char kEffectBathSplash[] = "bthamon";      /* data 0x303310 */
 static const char kEffectSplash[]     = "L_SPLASH";     /* data 0x303318 */
 static const char kEffectFootRipple[] = "F_HAMON";      /* data 0x303328 */
+static const char kEffectEnterSplash[] = "btsplash";    /* data 0x303220 */
+static const char kEffectStepSplash[]  = "F_SPLASH";    /* data 0x3031f0 */
 static const char kEffectBodyHead[]   = "shiryotai";    /* data 0x303408 */
 static const char kEffectBody[]       = "shiryotai2";   /* data 0x303418 */
 
@@ -90,6 +98,16 @@ constexpr float kIdleDelayFirst = 10.0f;
 constexpr float kRandRange      = 2.1474836e+09f;
 
 constexpr float kNoValue = -1.0f;       // reset's +0x458
+
+constexpr float kSmokeProbeHeight = 50.0f;
+constexpr u_int kRayWater       = 0x10000000; // the splash's ray; the bit's meaning is read from this one use
+constexpr int   kSurfaceWater   = 0x1f;     // StageCollisionFace::surface of a floor with ripples
+constexpr int   kLifeStateDown  = 4;        // getLifeState
+constexpr int   kMotionDrained  = 0xd6;
+constexpr int   kMotionHoldA    = 0x11;     // the actions an event breaks off
+constexpr int   kMotionHoldB    = 0x2a;
+constexpr int   kBrainStateGone = 7;        // slot +0x278
+constexpr int   kModelLights    = 3;
 
 constexpr u_char kGroundEnabled = 1;
 
@@ -614,15 +632,178 @@ StageCharacter::StageCharacter()
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// PC: the terminate hook 0x179d30 is not written. Its first calls are the
-// ground's end of the frame and the motion's 0x1e06f0, whose 0x1e18c0 opens
-// with the copy of the motion's wall flag; the rest (the character's
-// effects) waits for its TU.
+// The terminate hook, the last of the frame's four action phases
+// (ScenePairList_Characters). One function in the ROM; the step* below are
+// its parts, in its order.
+
+// The two smokes of stages 0x11..0x15: the first while a light other than a
+// YAM_ one throws its shadow, the second outside the tree's boxes.
+
+void StageCharacter::stepSmoke()
+{
+    if (m_smoke[0] != nullptr)
+        m_smoke[0]->setRunning(m_shadowLight != nullptr && m_shadowLight->m_yamLight == 0);
+    if (m_smoke[1] != nullptr) {
+        const sceVu0FVECTOR above = { m_xform.position[0], m_xform.position[1],
+                                      m_xform.position[2] + kSmokeProbeHeight, 1.0f };
+        m_smoke[1]->setRunning(!gStageScene->nodeTree->contains(above));
+    }
+}
+
+// The splash stands where the ray from the head to the feet meets water;
+// a kind 0xb looks from its pelvis to its toe and throws btsplash as it enters.
+
+void StageCharacter::stepSplash()
+{
+    if (m_splash == nullptr)
+        return;
+    const bool small = stageObjRecord(m_itemDef)->kind == CharacterKind_NoShadow;
+    StageNodeBase *top = characterBone(this, small ? kBonePelvis : kBoneHeadTop);
+    StageNodeBase *foot = small ? characterBone(this, kBoneLeftToe) : nullptr;
+    // PC: the ROM reads through a null bone.
+    if (top == nullptr || (small && foot == nullptr))
+        return;
+
+    sceVu0FVECTOR from, to, hit;
+    if (small) {
+        memcpy(from, top->getWorldMatrix()[3], sizeof(from));
+        memcpy(to, foot->getWorldMatrix()[3], sizeof(to));
+    } else {
+        memcpy(from, top->getMatrix()[3], sizeof(from));
+        memcpy(to, m_xform.position, sizeof(to));
+    }
+    if (gStageScene->raycast(hit, from, to, 0, kRayWater, 0, nullptr) == nullptr) {
+        m_splash->setRunning(false);
+        return;
+    }
+    if (m_splash->m_running == 0 && small)
+        gStageScene->nodeTree->spawn(kEffectEnterSplash, nullptr, hit, nullptr, 0, 0);
+    m_splash->m_xform.setPosition(hit);
+    m_splash->setRunning(true);
+}
+
+// On a water floor: a ripple at each foot, at the character's height, and a
+// splash with each step.
+
+void StageCharacter::stepFootEffects()
+{
+    if (m_footEffects[0] == nullptr)
+        return;
+    const StageCollisionFace *floor = m_ground->floorFace;
+    if (floor == nullptr || floor->surface != kSurfaceWater) {
+        for (int i = 0; i < kCharacterFeet; i++) {
+            if (m_footEffects[i] != nullptr)
+                m_footEffects[i]->setRunning(false);
+        }
+        return;
+    }
+
+    sceVu0FVECTOR feet[kCharacterFeet];
+    for (int i = 0; i < kCharacterFeet; i++) {
+        if (m_footEffects[i] == nullptr)
+            continue;
+        // PC: the ROM reads through a null bone; the character stands in.
+        StageNodeBase *node = m_footNodes[i] != nullptr ? m_footNodes[i] : this;
+        memcpy(feet[i], node->getWorldMatrix()[3], sizeof(feet[i]));
+        feet[i][2] = m_xform.position[2];
+    }
+    for (int i = 0; i < kCharacterFeet; i++) {
+        if (m_footEffects[i] == nullptr)
+            continue;
+        m_footEffects[i]->m_xform.setPosition(feet[i]);
+        m_footEffects[i]->updateMatrix();
+        m_footEffects[i]->setRunning(true);
+    }
+
+    const u_int events = m_model->m_motionEvents;
+    StageNodeTree *tree = gStageScene->nodeTree;
+    if (m_footEffects[1] == nullptr) {
+        if ((events & (MotionEvent_StepLeft | MotionEvent_StepRight)) != 0)
+            tree->spawn(kEffectStepSplash, nullptr, feet[0], nullptr, 0, 0);
+        return;
+    }
+    if ((events & MotionEvent_StepLeft) != 0)
+        tree->spawn(kEffectStepSplash, nullptr, feet[0], nullptr, 0, 0);
+    if ((events & MotionEvent_StepRight) != 0)
+        tree->spawn(kEffectStepSplash, nullptr, feet[1], nullptr, 0, 0);
+}
+
+// Whose lamp it is, for the light: the player's throws the shadow.
+
+void StageCharacter::stepLampOwner()
+{
+    if (m_lampItem == nullptr)
+        return;
+    ItemLamp *lamp = m_lampItem->lamp();
+    if (!isPlayer() && !isPartner() && getLifeState() == kLifeStateDown)
+        lamp->setValue2b0(-1);
+    else
+        lamp->setValue2b0(isPlayer() ? 2 : 0);
+    lamp->setCastsShadow(isPlayer());
+}
+
+// A timed change of the motion rate ends with its time, or with the brain's
+// state 7. On a draining stage it also ends when motion 0xd6 is left, and
+// lets go of the motion if it ended inside it.
+
+void StageCharacter::stepSlowChange()
+{
+    if (m_slowStart < 0.0f)
+        return;
+    bool draining = false;
+    if (isStageDrained()) {
+        draining = m_motion->motionId == kMotionDrained;
+        if (m_slowInDrain == 0) {
+            m_slowInDrain = draining;
+        } else if (!draining) {
+            m_slowStart = kNoValue;
+            return;
+        }
+    }
+    if (m_clock->getSeconds() >= m_slowEnd || getBrainPace() == kBrainStateGone) {
+        m_slowStart = kNoValue;
+        if (draining)
+            m_motion->releaseAction();
+    }
+}
+
+// What it carries has the character's lights, unless it has its own.
+
+void StageCharacter::lightCarriedItems()
+{
+    for (StageList<StageObject *>::Node *link = m_items.head; link != nullptr; link = link->next) {
+        StageModel *model = link->value->m_model;
+        if (model->m_lit != 0 || model->data->shown == 0)
+            continue;
+        for (int i = 0; i < kModelLights; i++)
+            model->data->setLight(i, m_model->m_lightDirs[i], m_model->m_lightColors[i]);
+        model->data->setAmbient(m_model->m_ambient);
+    }
+}
+
+// FS2 0x00179d30
+// callcheck: endFrame, endFrame, setRunning, setRunning, contains, setRunning, getStageSelect, find, find, find, raycast, setRunning, getStageSelect, spawn, setPosition, setRunning, setRunning, setPosition, setRunning, spawn, spawn, spawn, isPlayer, isPartner, getLifeState, setValue2b0, isPlayer, setValue2b0, isPlayer, setCastsShadow, updateBlock98For, updateSounds, isStageDrained, getSeconds, releaseAction, setLight, setAmbient
 
 void StageCharacter::sideHook3()
 {
     m_ground->endFrame();
-    m_motion->m_wallCheckNow = m_motion->m_wallCheck;
+    m_motion->endFrame();
+    stepSmoke();
+    stepSplash();
+    stepFootEffects();
+    stepLampOwner();
+    gStageScene->updateBlock98For(this);
+    updateSounds();
+    stepSlowChange();
+    lightCarriedItems();
+}
+
+// FS2 0x00214f20
+
+bool StageCharacter::isHoldingAction()
+{
+    const int id = m_motion->motionId;
+    return id == kMotionHoldA || id == kMotionHoldB;
 }
 
 // FS2 0x00215ef0

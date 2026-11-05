@@ -12425,6 +12425,12 @@
   "was": "FUN_00179af0",
   "why": "motion +0x40 among the run ids or the crouched runs; runner slot +0x128, native 0xb5"
  },
+ "00179d30": {
+  "name": "StageCharacter::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_00179d30",
+  "why": "slot of the terminate phase: ground endFrame, motion 0x1e06f0, the smokes, splash, foot ripples, lamp owner, 0x2a4a40, the end of the timed motion rate, the lights on carried items"
+ },
  "0017a490": {
   "name": "StageCharacter::moveStep",
   "tag": "game-inferred",
@@ -16631,11 +16637,23 @@
   "was": "FUN_001e0360",
   "why": "takes the motion in a0; another character near on a ladder motion, by rank 0x271f50"
  },
+ "001e06f0": {
+  "name": "PlayerMotion::endFrame",
+  "tag": "game-inferred",
+  "was": "FUN_001e06f0",
+  "why": "from the terminate hook: 0x1e18c0, the writer of m_runTime / m_runDistance, the Yri and Kne stance latch, then HitSwing and the sheet's S0..S3 sound events"
+ },
  "001e0e20": {
   "name": "PlayerMotion::applyMovement",
   "tag": "game-inferred",
   "was": "FUN_001e0e20",
   "why": "first call of the movement hook 0x17a490: root scale on slopes and at a run's start, +0xb60 into the position, +0xb70 into the rotation"
+ },
+ "001e18c0": {
+  "name": "PlayerMotion::takeHits",
+  "tag": "game-inferred",
+  "was": "FUN_001e18c0",
+  "why": "copies the wall flag, reads what hit the character from the ground (+0x80, +0x8c, +0xa0) and requests the reaction motions 0xa4..0xb8"
  },
  "001e3e80": {
   "name": "PlayerMotion::controlStep",
@@ -18088,6 +18106,12 @@
   "tag": "game-inferred",
   "was": "FUN_00215940",
   "why": "stages 0x19, 0x1b for kind 1 and 0xf, 0x17 for kind 0; controlStep then takes m_health down"
+ },
+ "00215af0": {
+  "name": "StageCharacter::hasAlteredVoice",
+  "tag": "game-inferred",
+  "was": "FUN_00215af0",
+  "why": "mission and kind test whose only readers here are the attack voices; what it means is unread"
  },
  "00215ce0": {
   "name": "StageCharacter::isOpeningLead",
@@ -24239,11 +24263,23 @@
   "was": "FUN_002a11d0",
   "why": "steps 28 and 12 records, drawOverlay before demoFleckDraw"
  },
+ "002a2070": {
+  "name": "StageCharacter::playMotionSound",
+  "tag": "game-inferred",
+  "was": "FUN_002a2070",
+  "why": "any other S%d text: the name itself at the character"
+ },
  "002a2100": {
   "name": "StageCharacter::playLadderStep",
   "tag": "game-inferred",
   "was": "FUN_002a2100",
   "why": "PC_LADDER / NPC_LADDER / SBT_LADDER / YBZ_LADDER / RYO_LADDER by the sheet's kind; called on the step events of ladder motions"
+ },
+ "002a29f0": {
+  "name": "StageCharacter::playFallDownSound",
+  "tag": "game-inferred",
+  "was": "FUN_002a29f0",
+  "why": "event FALLDW, with the floor's surface"
  },
  "002a2ad0": {
   "name": "StageCharacter::playTrapOffSound",
@@ -24256,6 +24292,36 @@
   "tag": "game-inferred",
   "was": "FUN_002a2af0",
   "why": "TRAP_SET"
+ },
+ "002a2b60": {
+  "name": "StageCharacter::playJobSound",
+  "tag": "game-inferred",
+  "was": "FUN_002a2b60",
+  "why": "events JOB01..JOB04: a formatted name, arg 1..4, plus 5 by 0x215320"
+ },
+ "002a2bc0": {
+  "name": "StageCharacter::playIdleVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a2bc0",
+  "why": "event IDLE01 / IDLE02"
+ },
+ "002a2c80": {
+  "name": "StageCharacter::playPanicVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a2c80",
+  "why": "event PANIC"
+ },
+ "002a2d00": {
+  "name": "StageCharacter::playGetUpVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a2d00",
+  "why": "event GETUP"
+ },
+ "002a2e30": {
+  "name": "StageCharacter::playDieVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a2e30",
+  "why": "event DIE"
  },
  "002a2fc0": {
   "name": "StageCharacter::playLandSound",
@@ -24287,11 +24353,119 @@
   "was": "FUN_002a3160",
   "why": "StageItem::getPickSound through playNamedHeard2 at the character's position"
  },
+ "002a3280": {
+  "name": "StageCharacter::playSwingSound",
+  "tag": "game-inferred",
+  "was": "FUN_002a3280",
+  "why": "MotionEvent_HitSwing: the weapon's getSwingSound through playNamedHeard2"
+ },
+ "002a32e0": {
+  "name": "StageCharacter::playClashVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a32e0",
+  "why": "event PC_CLASH"
+ },
+ "002a33e0": {
+  "name": "StageCharacter::playEndVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a33e0",
+  "why": "event END"
+ },
+ "002a34e0": {
+  "name": "StageCharacter::playSurpriseVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a34e0",
+  "why": "event SURP"
+ },
+ "002a35e0": {
+  "name": "StageCharacter::playTrapVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a35e0",
+  "why": "event TRP_O"
+ },
+ "002a39f0": {
+  "name": "StageCharacter::playUntieVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a39f0",
+  "why": "event UNTIE"
+ },
+ "002a3af0": {
+  "name": "StageCharacter::playBittenVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a3af0",
+  "why": "event BITE2"
+ },
+ "002a3bf0": {
+  "name": "StageCharacter::playJumpVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a3bf0",
+  "why": "event JUMP"
+ },
+ "002a3cf0": {
+  "name": "StageCharacter::playBreathDown",
+  "tag": "game-inferred",
+  "was": "FUN_002a3cf0",
+  "why": "events BM_DW*: arg 0..2"
+ },
+ "002a3e20": {
+  "name": "StageCharacter::playBreathUp",
+  "tag": "game-inferred",
+  "was": "FUN_002a3e20",
+  "why": "events BM_UP*, BM_LFUP: arg 0..4"
+ },
+ "002a3f50": {
+  "name": "StageCharacter::playHardDownVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a3f50",
+  "why": "event DOWN2"
+ },
+ "002a4050": {
+  "name": "StageCharacter::playDownVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a4050",
+  "why": "event PC_DW1"
+ },
+ "002a4150": {
+  "name": "StageCharacter::playThrowVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a4150",
+  "why": "event THROW"
+ },
+ "002a4250": {
+  "name": "StageCharacter::playBiteVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a4250",
+  "why": "event BITE"
+ },
+ "002a4450": {
+  "name": "StageCharacter::playDamageVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a4450",
+  "why": "events DMG_L (1), DMG_H (0)"
+ },
+ "002a4680": {
+  "name": "StageCharacter::playAttackVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a4680",
+  "why": "events AT_NW*, AT1..AT5"
+ },
+ "002a4800": {
+  "name": "StageCharacter::playShout",
+  "tag": "game-inferred",
+  "was": "FUN_002a4800",
+  "why": "NPC_SHOUT, PC_SHOUT, RYO_CALL by voice class; event SHOUT"
+ },
  "002a49c0": {
   "name": "StageCharacter::playStepSound",
   "tag": "game-inferred",
   "was": "FUN_002a49c0",
   "why": "0x2cf210's entry played at a foot, heard unless the partner"
+ },
+ "002a4a40": {
+  "name": "StageCharacter::updateSounds",
+  "tag": "game-inferred",
+  "was": "FUN_002a4a40",
+  "why": "each frame from the terminate hook, drives m_soundState +0x430 and the handle +0x434"
  },
  "002a6830": {
   "name": "StageCharacter::stopSounds",
