@@ -64,6 +64,8 @@ functions; a runtime cast (`__dynamic_cast`, `__rtti_si`) is `dynamic_cast` in s
 two vtable slots where the destructor is declared (usually first; FF3's GameModel has them at +8/+0xc:
 check `rtti.py --class`). Twins count only with the `<TAG>` annotation on each.
 
+**CodeWarrior** (FS2): vtables are plain 4-byte function pointers, slot 0 and 1 zero, the vptr where the class puts it (+0xb4 on a runner); not either shape above.
+
 **Both**: `rtti.py --class X` / `--vtable ADDR` lists bases, slots with their targets, ctors / dtors
 and the vptr offset; a slot's class comes from the vtable, and an inherited slot is the base's method.
 The EE passes the first float arguments in f12.. whatever their position, ints and pointers in a0..t3

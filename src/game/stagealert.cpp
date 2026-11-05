@@ -30,3 +30,10 @@ u_long StageAlert::update()
     YAMIPAN_STUB("StageAlert::update", 0x00263c10);
     return {};
 }
+
+// stub of FS2 0x00263ed0
+bool StageAlert::flash()
+{
+    YAMIPAN_STUB("StageAlert::flash", 0x00263ed0);
+    return {};
+}

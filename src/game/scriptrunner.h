@@ -226,6 +226,7 @@ class ScriptFrame;
 class ScriptRunner
 {
     friend class ScriptFrame;
+    friend class CharacterBrain;
     friend void scriptYield(int a, int b);
 
 public:
@@ -251,6 +252,7 @@ public:
     const ScriptEntry *getEntry() const { return m_entry; }
     // FS2 0x001d19f0
     ScriptRunner *getParent() const { return m_parentScript; }
+    void setScriptParent(ScriptRunner *parent) { m_parentScript = parent; }
     // FS2 0x001d19a0
     int *getLocals() const { return m_locals; }
     // FS2 0x001d1980
@@ -446,7 +448,7 @@ private:
     void setTargetByHandle(int handle);                                  // FS2 0x001d09a0
     void setTargetByIndex(int index);                                    // FS2 0x001d09e0
 
-    ScriptRunner       *m_parentScript;       // FS2 +0x00: whose tables and locals it shares; nothing written sets it yet
+    ScriptRunner       *m_parentScript;       // FS2 +0x00: whose tables and locals it shares; the brain's and its sub-script's
     int                 m_depth;        // FS2 +0x04: run's nesting
     const ScriptTable  *m_labels;       // FS2 +0x08
     const ScriptTable  *m_strings;      // FS2 +0x0c

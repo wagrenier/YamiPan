@@ -386,7 +386,7 @@ constexpr int kNoticeForever  = 0x7fffffff;
 constexpr int kNoticeMinLevel = 5;              // data 0x31ac18 (gp-0x7c58)
 
 constexpr float kMissionValue      = 2000.0f;     // 0x44fa0000
-constexpr int   kMission_b0        = 0x800000;
+constexpr float kMissionFirstFoeAlert = 0x1p-126f;  // bits 0x800000
 constexpr float kBlockRange        = 400.0f;      // 0x43c80000
 constexpr float kPendingFade       = 0.5f;
 constexpr int   kSpawnKept         = 2;
@@ -423,7 +423,7 @@ void StageMission::reset()
     value = kMissionValue;
     scriptVar3e = 0;
     scriptVar3f = 0;
-    _b0 = kMission_b0;
+    lastFoeAlert = kMissionFirstFoeAlert;
     purposeText[0] = 0;
     for (int i = 0; i < kMissionTimedRecords; i++)
         timed[i].id = -1;

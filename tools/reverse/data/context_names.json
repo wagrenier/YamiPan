@@ -15509,6 +15509,228 @@
   "was": "FUN_001a68a0",
   "why": "this-adjust thunk to 0x269160, slot 1 of the script base"
  },
+ "001a68b0": {
+  "name": "ScriptProxy::~ScriptProxy",
+  "tag": "game-inferred",
+  "was": "FUN_001a68b0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6960": {
+  "name": "ScriptProxy::getScriptCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_001a6960",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6a10": {
+  "name": "ScriptProxy::getScriptDoor",
+  "tag": "game-inferred",
+  "was": "FUN_001a6a10",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6a50": {
+  "name": "ScriptProxy::getScriptObject",
+  "tag": "game-inferred",
+  "was": "FUN_001a6a50",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6a90": {
+  "name": "ScriptProxy::command10",
+  "tag": "game-inferred",
+  "was": "FUN_001a6a90",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6ad0": {
+  "name": "ScriptProxy::command11",
+  "tag": "game-inferred",
+  "was": "FUN_001a6ad0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6b10": {
+  "name": "ScriptProxy::command12",
+  "tag": "game-inferred",
+  "was": "FUN_001a6b10",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6b90": {
+  "name": "ScriptProxy::scriptSetPosition",
+  "tag": "game-inferred",
+  "was": "FUN_001a6b90",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6bd0": {
+  "name": "ScriptProxy::scriptSetRotation",
+  "tag": "game-inferred",
+  "was": "FUN_001a6bd0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6c10": {
+  "name": "ScriptProxy::scriptSetYaw",
+  "tag": "game-inferred",
+  "was": "FUN_001a6c10",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6c50": {
+  "name": "ScriptProxy::cmdSetColor",
+  "tag": "game-inferred",
+  "was": "FUN_001a6c50",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6c90": {
+  "name": "ScriptProxy::cmdAddColorKey",
+  "tag": "game-inferred",
+  "was": "FUN_001a6c90",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6ce0": {
+  "name": "ScriptProxy::cmdSetColorLoop",
+  "tag": "game-inferred",
+  "was": "FUN_001a6ce0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6d20": {
+  "name": "ScriptProxy::cmdSetRadiusSquared",
+  "tag": "game-inferred",
+  "was": "FUN_001a6d20",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6d60": {
+  "name": "ScriptProxy::cmdSetConeAngle",
+  "tag": "game-inferred",
+  "was": "FUN_001a6d60",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6da0": {
+  "name": "ScriptProxy::cmdSetTreeSwitchedOn",
+  "tag": "game-inferred",
+  "was": "FUN_001a6da0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6de0": {
+  "name": "ScriptProxy::cmdSetTreeBroken",
+  "tag": "game-inferred",
+  "was": "FUN_001a6de0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6e20": {
+  "name": "ScriptProxy::cmdSetFadeFrames",
+  "tag": "game-inferred",
+  "was": "FUN_001a6e20",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6e60": {
+  "name": "ScriptProxy::cmdSetFlag240",
+  "tag": "game-inferred",
+  "was": "FUN_001a6e60",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6ea0": {
+  "name": "ScriptProxy::cmdSetValue244",
+  "tag": "game-inferred",
+  "was": "FUN_001a6ea0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6ee0": {
+  "name": "ScriptProxy::cmdSetFlag248",
+  "tag": "game-inferred",
+  "was": "FUN_001a6ee0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6f20": {
+  "name": "ScriptProxy::cmdSetColor250",
+  "tag": "game-inferred",
+  "was": "FUN_001a6f20",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6f60": {
+  "name": "ScriptProxy::cmdSetColor260",
+  "tag": "game-inferred",
+  "was": "FUN_001a6f60",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6fa0": {
+  "name": "ScriptProxy::cmdSetCastsShadow",
+  "tag": "game-inferred",
+  "was": "FUN_001a6fa0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a6fe0": {
+  "name": "ScriptProxy::cmdSetEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_001a6fe0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a7020": {
+  "name": "ScriptProxy::command34",
+  "tag": "game-inferred",
+  "was": "FUN_001a7020",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a7270": {
+  "name": "ScriptProxy::command58",
+  "tag": "game-inferred",
+  "was": "FUN_001a7270",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a72b0": {
+  "name": "ScriptProxy::command59",
+  "tag": "game-inferred",
+  "was": "FUN_001a72b0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a72f0": {
+  "name": "ScriptProxy::command83",
+  "tag": "game-inferred",
+  "was": "FUN_001a72f0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a73a0": {
+  "name": "ScriptProxy::scriptIsFacing",
+  "tag": "game-inferred",
+  "was": "FUN_001a73a0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a76c0": {
+  "name": "ScriptProxy::scriptPlayMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001a76c0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a7750": {
+  "name": "ScriptProxy::command80",
+  "tag": "game-inferred",
+  "was": "FUN_001a7750",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a78d0": {
+  "name": "ScriptProxy::cmdIsLit",
+  "tag": "game-inferred",
+  "was": "FUN_001a78d0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a7910": {
+  "name": "ScriptProxy::command87",
+  "tag": "game-inferred",
+  "was": "FUN_001a7910",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a7950": {
+  "name": "ScriptProxy::command88",
+  "tag": "game-inferred",
+  "was": "FUN_001a7950",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a7990": {
+  "name": "ScriptProxy::command99",
+  "tag": "game-inferred",
+  "was": "FUN_001a7990",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a79d0": {
+  "name": "ScriptProxy::command101",
+  "tag": "game-inferred",
+  "was": "FUN_001a79d0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
  "001a7a20": {
   "name": "scriptCallNative",
   "tag": "game-inferred",
@@ -15778,6 +16000,18 @@
   "tag": "game-inferred",
   "was": "FUN_001cdc50",
   "why": "script native 0x26"
+ },
+ "001cf0b0": {
+  "name": "ScriptProxy::setProperty",
+  "tag": "game-inferred",
+  "was": "FUN_001cf0b0",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001cf130": {
+  "name": "ScriptProxy::getProperty",
+  "tag": "game-inferred",
+  "was": "FUN_001cf130",
+  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
  },
  "001cf1b0": {
   "name": "ScriptRunner::unsupportedCommand",
@@ -16505,53 +16739,575 @@
   "was": "FUN_001d85a0",
   "why": "zeroes head and count; StageNodeBase's ctor calls it on +8"
  },
+ "001d85b0": {
+  "name": "CharacterBrain::getScriptCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_001d85b0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001d85c0": {
+  "name": "CharacterBrain::getOwnerCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_001d85c0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001d85d0": {
+  "name": "CharacterBrain::resetScripts",
+  "tag": "game-inferred",
+  "was": "FUN_001d85d0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001d8630": {
+  "name": "CharacterBrain::runCommand",
+  "tag": "game-inferred",
+  "was": "FUN_001d8630",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001d9ea0": {
+  "name": "CharacterBrain::routeAction130",
+  "tag": "game-inferred",
+  "was": "FUN_001d9ea0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001d9ec0": {
+  "name": "CharacterBrain::routeAction12c",
+  "tag": "game-inferred",
+  "was": "FUN_001d9ec0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001d9ee0": {
+  "name": "CharacterBrain::scriptUseDoorKey",
+  "tag": "game-inferred",
+  "was": "FUN_001d9ee0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001d9f50": {
+  "name": "CharacterBrain::scriptCloseDoor",
+  "tag": "game-inferred",
+  "was": "FUN_001d9f50",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001d9f90": {
+  "name": "CharacterBrain::scriptOpenDoor",
+  "tag": "game-inferred",
+  "was": "FUN_001d9f90",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001d9fc0": {
+  "name": "CharacterBrain::walkToPoint700",
+  "tag": "game-inferred",
+  "was": "FUN_001d9fc0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da020": {
+  "name": "CharacterBrain::takeUpTrap",
+  "tag": "game-inferred",
+  "was": "FUN_001da020",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da050": {
+  "name": "CharacterBrain::useItem850",
+  "tag": "game-inferred",
+  "was": "FUN_001da050",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da060": {
+  "name": "CharacterBrain::setTrap",
+  "tag": "game-inferred",
+  "was": "FUN_001da060",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da0b0": {
+  "name": "CharacterBrain::useItemAt",
+  "tag": "game-inferred",
+  "was": "FUN_001da0b0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da0c0": {
+  "name": "CharacterBrain::useNamedItem",
+  "tag": "game-inferred",
+  "was": "FUN_001da0c0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da110": {
+  "name": "CharacterBrain::useSmoke",
+  "tag": "game-inferred",
+  "was": "FUN_001da110",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da170": {
+  "name": "CharacterBrain::stopIfMoving",
+  "tag": "game-inferred",
+  "was": "FUN_001da170",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da1b0": {
+  "name": "CharacterBrain::walkToAndRetry",
+  "tag": "game-inferred",
+  "was": "FUN_001da1b0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da2d0": {
+  "name": "CharacterBrain::useSpecial",
+  "tag": "game-inferred",
+  "was": "FUN_001da2d0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da370": {
+  "name": "CharacterBrain::crouch1",
+  "tag": "game-inferred",
+  "was": "FUN_001da370",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da3c0": {
+  "name": "CharacterBrain::crouch3",
+  "tag": "game-inferred",
+  "was": "FUN_001da3c0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da410": {
+  "name": "CharacterBrain::scriptPlayMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001da410",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da430": {
+  "name": "CharacterBrain::useNumLock",
+  "tag": "game-inferred",
+  "was": "FUN_001da430",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
  "001da4e0": {
   "name": "MotionSpecial::setEnabled",
   "tag": "game-inferred",
   "was": "FUN_001da4e0",
   "why": "slot +0x1c of vtables 0x317c90..0x317d50: stores a1 in +0x15"
  },
+ "001da4f0": {
+  "name": "CharacterBrain::routeActionKind11",
+  "tag": "game-inferred",
+  "was": "FUN_001da4f0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da5d0": {
+  "name": "CharacterBrain::dragOutCar",
+  "tag": "game-inferred",
+  "was": "FUN_001da5d0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da5e0": {
+  "name": "CharacterBrain::takeItem",
+  "tag": "game-inferred",
+  "was": "FUN_001da5e0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da650": {
+  "name": "CharacterBrain::gunAction",
+  "tag": "game-inferred",
+  "was": "FUN_001da650",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da660": {
+  "name": "CharacterBrain::fireAt",
+  "tag": "game-inferred",
+  "was": "FUN_001da660",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da7a0": {
+  "name": "CharacterBrain::fireAtBite",
+  "tag": "game-inferred",
+  "was": "FUN_001da7a0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da8f0": {
+  "name": "CharacterBrain::swingAt",
+  "tag": "game-inferred",
+  "was": "FUN_001da8f0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da910": {
+  "name": "CharacterBrain::swingAtBite",
+  "tag": "game-inferred",
+  "was": "FUN_001da910",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da960": {
+  "name": "CharacterBrain::attackBite",
+  "tag": "game-inferred",
+  "was": "FUN_001da960",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da9b0": {
+  "name": "CharacterBrain::shout",
+  "tag": "game-inferred",
+  "was": "FUN_001da9b0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da9d0": {
+  "name": "CharacterBrain::getForwardObject",
+  "tag": "game-inferred",
+  "was": "FUN_001da9d0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001da9f0": {
+  "name": "CharacterBrain::getForwardTarget",
+  "tag": "game-inferred",
+  "was": "FUN_001da9f0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001daa10": {
+  "name": "CharacterBrain::setProperty",
+  "tag": "game-inferred",
+  "was": "FUN_001daa10",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001daa70": {
+  "name": "CharacterBrain::getProperty",
+  "tag": "game-inferred",
+  "was": "FUN_001daa70",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001daab0": {
+  "name": "CharacterBrain::allowPath",
+  "tag": "game-inferred",
+  "was": "FUN_001daab0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001daac0": {
+  "name": "CharacterBrain::stopAndRetry",
+  "tag": "game-inferred",
+  "was": "FUN_001daac0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dab80": {
+  "name": "CharacterBrain::playActionAndRetry",
+  "tag": "game-inferred",
+  "was": "FUN_001dab80",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dac50": {
+  "name": "CharacterBrain::getMoveGoal",
+  "tag": "game-inferred",
+  "was": "FUN_001dac50",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dac60": {
+  "name": "CharacterBrain::askUseSpecial",
+  "tag": "game-inferred",
+  "was": "FUN_001dac60",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dad30": {
+  "name": "CharacterBrain::askNumLock",
+  "tag": "game-inferred",
+  "was": "FUN_001dad30",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dae00": {
+  "name": "CharacterBrain::askRouteActionKind11",
+  "tag": "game-inferred",
+  "was": "FUN_001dae00",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001daed0": {
+  "name": "CharacterBrain::askDragOutCar",
+  "tag": "game-inferred",
+  "was": "FUN_001daed0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dafa0": {
+  "name": "CharacterBrain::askTakeItem",
+  "tag": "game-inferred",
+  "was": "FUN_001dafa0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001db060": {
+  "name": "CharacterBrain::askGunAction",
+  "tag": "game-inferred",
+  "was": "FUN_001db060",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001db130": {
+  "name": "CharacterBrain::askRouteAction130",
+  "tag": "game-inferred",
+  "was": "FUN_001db130",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001db200": {
+  "name": "CharacterBrain::askRouteAction12c",
+  "tag": "game-inferred",
+  "was": "FUN_001db200",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
  "001db2d0": {
   "name": "CharacterBrain::askDoorKey",
   "tag": "game-inferred",
   "was": "FUN_001db2d0",
-  "why": "the brain's half of scriptUseDoorKey"
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
  },
  "001db3a0": {
   "name": "CharacterBrain::askCloseDoor",
   "tag": "game-inferred",
   "was": "FUN_001db3a0",
-  "why": "the brain's half of scriptCloseDoor"
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
  },
  "001db470": {
   "name": "CharacterBrain::askOpenDoor",
   "tag": "game-inferred",
   "was": "FUN_001db470",
-  "why": "the brain's half of scriptOpenDoor"
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001db540": {
+  "name": "CharacterBrain::askTakeUpTrap",
+  "tag": "game-inferred",
+  "was": "FUN_001db540",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001db610": {
+  "name": "CharacterBrain::askSetTrap",
+  "tag": "game-inferred",
+  "was": "FUN_001db610",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001db6e0": {
+  "name": "CharacterBrain::askNothing",
+  "tag": "game-inferred",
+  "was": "FUN_001db6e0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001db6f0": {
+  "name": "CharacterBrain::askRoute22ab90",
+  "tag": "game-inferred",
+  "was": "FUN_001db6f0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001db7c0": {
+  "name": "CharacterBrain::askFireAt",
+  "tag": "game-inferred",
+  "was": "FUN_001db7c0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001db890": {
+  "name": "CharacterBrain::askFireAtBite",
+  "tag": "game-inferred",
+  "was": "FUN_001db890",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001db960": {
+  "name": "CharacterBrain::askSwingAt",
+  "tag": "game-inferred",
+  "was": "FUN_001db960",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dba30": {
+  "name": "CharacterBrain::askSwingAtBite",
+  "tag": "game-inferred",
+  "was": "FUN_001dba30",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dbb00": {
+  "name": "CharacterBrain::askAttackBite",
+  "tag": "game-inferred",
+  "was": "FUN_001dbb00",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dbbd0": {
+  "name": "CharacterBrain::askShout",
+  "tag": "game-inferred",
+  "was": "FUN_001dbbd0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dbca0": {
+  "name": "CharacterBrain::setState",
+  "tag": "game-inferred",
+  "was": "FUN_001dbca0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dc060": {
+  "name": "CharacterBrain::clearAllSlots",
+  "tag": "game-inferred",
+  "was": "FUN_001dc060",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dc0d0": {
+  "name": "CharacterBrain::setSlotEntry",
+  "tag": "game-inferred",
+  "was": "FUN_001dc0d0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dc330": {
+  "name": "CharacterBrain::endOverlayById",
+  "tag": "game-inferred",
+  "was": "FUN_001dc330",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dc440": {
+  "name": "CharacterBrain::endOverlay",
+  "tag": "game-inferred",
+  "was": "FUN_001dc440",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dc5f0": {
+  "name": "CharacterBrain::startOverlay",
+  "tag": "game-inferred",
+  "was": "FUN_001dc5f0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dc840": {
+  "name": "CharacterBrain::hasOverlay",
+  "tag": "game-inferred",
+  "was": "FUN_001dc840",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dc900": {
+  "name": "CharacterBrain::overlayMark",
+  "tag": "game-inferred",
+  "was": "FUN_001dc900",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dc950": {
+  "name": "CharacterBrain::revive",
+  "tag": "game-inferred",
+  "was": "FUN_001dc950",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dca60": {
+  "name": "CharacterBrain::suspend",
+  "tag": "game-inferred",
+  "was": "FUN_001dca60",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dccb0": {
+  "name": "CharacterBrain::switchSlot",
+  "tag": "game-inferred",
+  "was": "FUN_001dccb0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dd180": {
+  "name": "CharacterBrain::dropSlots",
+  "tag": "game-inferred",
+  "was": "FUN_001dd180",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dd2f0": {
+  "name": "CharacterBrain::updateRoute",
+  "tag": "game-inferred",
+  "was": "FUN_001dd2f0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
  },
  "001dd330": {
   "name": "CharacterBrain::update",
   "tag": "game-inferred",
   "was": "FUN_001dd330",
-  "why": "runs the brain script while the flag +0x174 holds and there is a route"
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dd3e0": {
+  "name": "CharacterBrain::isEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_001dd3e0",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
  },
  "001dd3f0": {
   "name": "CharacterBrain::setEnabled",
   "tag": "game-inferred",
   "was": "FUN_001dd3f0",
-  "why": "+0x174 = flag, the object +0x220; opposite of the input when a character is taken over"
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dd400": {
+  "name": "CharacterBrain::msToFrames",
+  "tag": "game-inferred",
+  "was": "FUN_001dd400",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dd450": {
+  "name": "CharacterBrain::getName",
+  "tag": "game-inferred",
+  "was": "FUN_001dd450",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
  },
  "001dd460": {
   "name": "CharacterBrain::reset",
   "tag": "game-inferred",
   "was": "FUN_001dd460",
-  "why": "called on +0x220 in StageCharacter::reset"
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dd510": {
+  "name": "CharacterBrain::~CharacterBrain",
+  "tag": "game-inferred",
+  "was": "FUN_001dd510",
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dd610": {
+  "name": "BrainFrame::~BrainFrame",
+  "tag": "game-inferred",
+  "was": "FUN_001dd610",
+  "why": "vtable 0x315cd8: ScriptFrame + look + overlay id"
  },
  "001dd680": {
   "name": "CharacterBrain::CharacterBrain",
   "tag": "game-inferred",
   "was": "FUN_001dd680",
-  "why": "operator_new(0x9b0) in the ctor of StageCharacter when the scene has a route, stored at +0x220"
+  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+ },
+ "001dd7f0": {
+  "name": "BrainSubRunner::~BrainSubRunner",
+  "tag": "game-inferred",
+  "was": "FUN_001dd7f0",
+  "why": "vtable 0x315cf0: forwards to its parent"
+ },
+ "001dd860": {
+  "name": "BrainFrame::BrainFrame",
+  "tag": "game-inferred",
+  "was": "FUN_001dd860",
+  "why": "vtable 0x315cd8: ScriptFrame + look + overlay id"
+ },
+ "001dd8a0": {
+  "name": "BrainWait::lookAt",
+  "tag": "game-inferred",
+  "was": "FUN_001dd8a0",
+  "why": "the object at brain +0x184"
+ },
+ "001dda10": {
+  "name": "BrainWait::turnTo",
+  "tag": "game-inferred",
+  "was": "FUN_001dda10",
+  "why": "the object at brain +0x184"
+ },
+ "001ddb70": {
+  "name": "BrainWait::moveTo",
+  "tag": "game-inferred",
+  "was": "FUN_001ddb70",
+  "why": "the object at brain +0x184"
+ },
+ "001ddf20": {
+  "name": "BrainWait::isDone",
+  "tag": "game-inferred",
+  "was": "FUN_001ddf20",
+  "why": "the object at brain +0x184"
+ },
+ "001de050": {
+  "name": "findNearest",
+  "tag": "game-inferred",
+  "was": "FUN_001de050",
+  "why": "called from the brain; a brief read"
+ },
+ "001de290": {
+  "name": "BrainSubRunner::getName",
+  "tag": "game-inferred",
+  "was": "FUN_001de290",
+  "why": "vtable 0x315cf0: forwards to its parent"
+ },
+ "001de2d0": {
+  "name": "BrainSubRunner::getForwardTarget",
+  "tag": "game-inferred",
+  "was": "FUN_001de2d0",
+  "why": "vtable 0x315cf0: forwards to its parent"
+ },
+ "001de2e0": {
+  "name": "BrainSubRunner::getForwardObject",
+  "tag": "game-inferred",
+  "was": "FUN_001de2e0",
+  "why": "vtable 0x315cf0: forwards to its parent"
  },
  "001dec30": {
   "name": "PlayerMotion::setToolTarget",
@@ -17645,6 +18401,12 @@
   "was": "FUN_001fea50",
   "why": "a0 the party (StageScene +0x88): of its +0 record, by mode +0xb8, +0x18 (3 / 4), +0x14 (1), else null; StageScene::drawPaused compares it with the +0x100 object's +0x3c0 character; the name is a guess"
  },
+ "001feab0": {
+  "name": "StageParty::warnAttacker",
+  "tag": "game-inferred",
+  "was": "FUN_001feab0",
+  "why": "called from the brain; a brief read"
+ },
  "001feb70": {
   "name": "StageParty::draw",
   "tag": "game-inferred",
@@ -17963,6 +18725,12 @@
   "was": "FUN_00210720",
   "why": "walks the enemies of its side: a living one whose bite target is this; hasFollower was a guess"
  },
+ "00210b30": {
+  "name": "StageCharacter::isPointInView",
+  "tag": "game-inferred",
+  "was": "FUN_00210b30",
+  "why": "called from the brain; a brief read"
+ },
  "00210e60": {
   "name": "StageCharacter::getWieldSkills",
   "tag": "game-inferred",
@@ -18034,6 +18802,12 @@
   "tag": "game-inferred",
   "was": "FUN_00214a70",
   "why": "+0x40 = 1, first thing parse does to a character record"
+ },
+ "00214a80": {
+  "name": "StageCharacter::findNearestFoe",
+  "tag": "game-inferred",
+  "was": "FUN_00214a80",
+  "why": "called from the brain; a brief read"
  },
  "00214d40": {
   "name": "StageCharacter::isEnemyOf",
@@ -18149,6 +18923,12 @@
   "was": "FUN_00216140",
   "why": "a bit from the character record's kind +0x10, by difficulty"
  },
+ "00216270": {
+  "name": "StageCharacter::tryShout",
+  "tag": "game-inferred",
+  "was": "FUN_00216270",
+  "why": "called from the brain; a brief read"
+ },
  "002162a0": {
   "name": "StageCharacter::isBlowActive",
   "tag": "game-inferred",
@@ -18215,6 +18995,12 @@
   "was": "FUN_002176d0",
   "why": "viewLinkedObject() == this"
  },
+ "002184a0": {
+  "name": "StageCharacter::isHeld7a0",
+  "tag": "game-inferred",
+  "was": "FUN_002184a0",
+  "why": "called from the brain; a brief read"
+ },
  "002184b0": {
   "name": "StageCharacter::noticeItem",
   "tag": "game-inferred",
@@ -18233,6 +19019,18 @@
   "was": "FUN_00218630",
   "why": "script entry from the first script, position from the mission or the saved one"
  },
+ "00218850": {
+  "name": "StageCharacter::item218850",
+  "tag": "game-inferred",
+  "was": "FUN_00218850",
+  "why": "called from the brain; a brief read"
+ },
+ "00218b50": {
+  "name": "StageCharacter::useItem",
+  "tag": "game-inferred",
+  "was": "FUN_00218b50",
+  "why": "called from the brain; a brief read"
+ },
  "00219b30": {
   "name": "StageCharacter::doorActions",
   "tag": "game-inferred",
@@ -18250,6 +19048,12 @@
   "tag": "game-inferred",
   "was": "FUN_0021a1c0",
   "why": "nearest living enemies by the sight table +0x468 into +0x7a8 and +0x7ac"
+ },
+ "0021a380": {
+  "name": "StageCharacter::getBestFoe",
+  "tag": "game-inferred",
+  "was": "FUN_0021a380",
+  "why": "called from the brain; a brief read"
  },
  "0021a960": {
   "name": "StageCharacter::noteMotion",
@@ -18430,6 +19234,270 @@
   "tag": "game-inferred",
   "was": "FUN_0021e050",
   "why": "clears +0x700.., the 0x18 records at +0x468, +0x3d8..+0x3e1; called by reset only"
+ },
+ "0022a370": {
+  "name": "CharacterRoute::allowPath",
+  "tag": "game-inferred",
+  "was": "FUN_0022a370",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022a4f0": {
+  "name": "CharacterRoute::dragOutCar",
+  "tag": "game-inferred",
+  "was": "FUN_0022a4f0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022a550": {
+  "name": "CharacterRoute::useDoorKey",
+  "tag": "game-inferred",
+  "was": "FUN_0022a550",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022a710": {
+  "name": "CharacterRoute::useDoor",
+  "tag": "game-inferred",
+  "was": "FUN_0022a710",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022a8c0": {
+  "name": "CharacterRoute::takeUpTrap",
+  "tag": "game-inferred",
+  "was": "FUN_0022a8c0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022a8f0": {
+  "name": "CharacterRoute::setTrap",
+  "tag": "game-inferred",
+  "was": "FUN_0022a8f0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022a920": {
+  "name": "CharacterRoute::gunAction",
+  "tag": "game-inferred",
+  "was": "FUN_0022a920",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022ab50": {
+  "name": "CharacterRoute::takeItem",
+  "tag": "game-inferred",
+  "was": "FUN_0022ab50",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022ab90": {
+  "name": "CharacterRoute::action22ab90",
+  "tag": "game-inferred",
+  "was": "FUN_0022ab90",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022abf0": {
+  "name": "CharacterRoute::action22abf0",
+  "tag": "game-inferred",
+  "was": "FUN_0022abf0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022ad60": {
+  "name": "CharacterRoute::action22ad60",
+  "tag": "game-inferred",
+  "was": "FUN_0022ad60",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022b970": {
+  "name": "CharacterRoute::attackTask",
+  "tag": "game-inferred",
+  "was": "FUN_0022b970",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022ba80": {
+  "name": "CharacterRoute::hitInTime",
+  "tag": "game-inferred",
+  "was": "FUN_0022ba80",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022bc50": {
+  "name": "CharacterRoute::hitRunning",
+  "tag": "game-inferred",
+  "was": "FUN_0022bc50",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022be10": {
+  "name": "CharacterRoute::hit",
+  "tag": "game-inferred",
+  "was": "thunk_FUN_0022aee0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022be20": {
+  "name": "CharacterRoute::swingAt",
+  "tag": "game-inferred",
+  "was": "FUN_0022be20",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022bf60": {
+  "name": "CharacterRoute::action22bf60",
+  "tag": "game-inferred",
+  "was": "FUN_0022bf60",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022c0f0": {
+  "name": "CharacterRoute::action22c0f0",
+  "tag": "game-inferred",
+  "was": "FUN_0022c0f0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022c840": {
+  "name": "CharacterRoute::action22c840",
+  "tag": "game-inferred",
+  "was": "FUN_0022c840",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022c960": {
+  "name": "CharacterRoute::action22c960",
+  "tag": "game-inferred",
+  "was": "FUN_0022c960",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022cac0": {
+  "name": "CharacterRoute::playAction",
+  "tag": "game-inferred",
+  "was": "FUN_0022cac0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022cbe0": {
+  "name": "CharacterRoute::action22cbe0",
+  "tag": "game-inferred",
+  "was": "FUN_0022cbe0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022ccf0": {
+  "name": "CharacterRoute::actOnCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_0022ccf0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022cde0": {
+  "name": "CharacterRoute::actLeftRight",
+  "tag": "game-inferred",
+  "was": "FUN_0022cde0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022cf90": {
+  "name": "CharacterRoute::actLeft",
+  "tag": "game-inferred",
+  "was": "FUN_0022cf90",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022d0f0": {
+  "name": "CharacterRoute::actOnFoeRight",
+  "tag": "game-inferred",
+  "was": "FUN_0022d0f0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022d220": {
+  "name": "CharacterRoute::actOnFoe",
+  "tag": "game-inferred",
+  "was": "FUN_0022d220",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022d350": {
+  "name": "CharacterRoute::attack",
+  "tag": "game-inferred",
+  "was": "FUN_0022d350",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022d6d0": {
+  "name": "CharacterRoute::approach",
+  "tag": "game-inferred",
+  "was": "FUN_0022d6d0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022d810": {
+  "name": "CharacterRoute::stop",
+  "tag": "game-inferred",
+  "was": "FUN_0022d810",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022d900": {
+  "name": "CharacterRoute::lookAtObject",
+  "tag": "game-inferred",
+  "was": "FUN_0022d900",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022da50": {
+  "name": "CharacterRoute::lookAtPoint",
+  "tag": "game-inferred",
+  "was": "FUN_0022da50",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022db80": {
+  "name": "CharacterRoute::lookAtYaw",
+  "tag": "game-inferred",
+  "was": "FUN_0022db80",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022dc60": {
+  "name": "CharacterRoute::stopLook",
+  "tag": "game-inferred",
+  "was": "FUN_0022dc60",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022dca0": {
+  "name": "CharacterRoute::turnToObject",
+  "tag": "game-inferred",
+  "was": "FUN_0022dca0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022de30": {
+  "name": "CharacterRoute::turnToPoint",
+  "tag": "game-inferred",
+  "was": "FUN_0022de30",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022dfc0": {
+  "name": "CharacterRoute::turnToYaw",
+  "tag": "game-inferred",
+  "was": "FUN_0022dfc0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022e110": {
+  "name": "CharacterRoute::getMoveGoal",
+  "tag": "game-inferred",
+  "was": "FUN_0022e110",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022e140": {
+  "name": "CharacterRoute::moveToObject",
+  "tag": "game-inferred",
+  "was": "FUN_0022e140",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022e4a0": {
+  "name": "CharacterRoute::moveToPoint",
+  "tag": "game-inferred",
+  "was": "FUN_0022e4a0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022e6f0": {
+  "name": "CharacterRoute::cancelMove",
+  "tag": "game-inferred",
+  "was": "FUN_0022e6f0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022e740": {
+  "name": "CharacterRoute::update",
+  "tag": "game-inferred",
+  "was": "FUN_0022e740",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022f1b0": {
+  "name": "CharacterRoute::~CharacterRoute",
+  "tag": "game-inferred",
+  "was": "FUN_0022f1b0",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022f270": {
+  "name": "CharacterRoute::CharacterRoute",
+  "tag": "game-inferred",
+  "was": "FUN_0022f270",
+  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
  },
  "00230810": {
   "name": "StageMenu::setData",
@@ -19300,6 +20368,12 @@
   "tag": "game-inferred",
   "was": "FUN_0023f0b0",
   "why": "StageScene ctor new(0x8c) for +0xcc with (+0xbc printer, 0): vtable 0x316530 at +0x88, a 0x38 object 0x208c70 at +0, the Japanese string for undefined; name a guess"
+ },
+ "0023f290": {
+  "name": "RouteFilter::pathLength",
+  "tag": "game-inferred",
+  "was": "FUN_0023f290",
+  "why": "called from the brain; a brief read"
  },
  "0023f310": {
   "name": "RouteFilter::allow",
@@ -21232,6 +22306,12 @@
   "tag": "game-inferred",
   "was": "FUN_00263c10",
   "why": "state machine on the scene clock, ALERT in the KeepList"
+ },
+ "00263ed0": {
+  "name": "StageAlert::flash",
+  "tag": "game-inferred",
+  "was": "FUN_00263ed0",
+  "why": "called from the brain; a brief read"
  },
  "00264000": {
   "name": "StageAlert::~StageAlert",
@@ -24215,6 +25295,12 @@
   "was": "FUN_0029f2a0",
   "why": "tests mission +0xb8 = 3, 2; StageMission::onRestore's once-only answer"
  },
+ "0029f440": {
+  "name": "findNumLockTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0029f440",
+  "why": "called from the brain; a brief read"
+ },
  "0029f500": {
   "name": "scriptObjectOfValue",
   "tag": "game-inferred",
@@ -24448,6 +25534,12 @@
   "tag": "game-inferred",
   "was": "FUN_002a4680",
   "why": "events AT_NW*, AT1..AT5"
+ },
+ "002a46d0": {
+  "name": "StageCharacter::sayFound",
+  "tag": "game-inferred",
+  "was": "FUN_002a46d0",
+  "why": "called from the brain; a brief read"
  },
  "002a4800": {
   "name": "StageCharacter::playShout",
