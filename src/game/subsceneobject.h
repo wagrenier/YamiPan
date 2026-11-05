@@ -114,7 +114,7 @@ public:
                StringMap<Tim2Texture *> *textures, void *collision);     // FS2 0x002bbed0
 
     MapObjectParts *m_parts = nullptr;  // FS2 +0x240
-    void *m_collisionRecord = nullptr;  // FS2 +0x244
+    CollisionRecord *m_collisionRecord = nullptr;  // FS2 +0x244
 };
 
 // The gates oGK99_01 and oDC99_01.

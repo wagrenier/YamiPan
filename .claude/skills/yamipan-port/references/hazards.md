@@ -440,3 +440,7 @@ Symptom: a loader "ran", instances were counted, yet nothing appears and the stu
 
 - Symptom: a `fprintf(stderr, ...)` added for a run shows nothing in work/run_<config>.log, which looks like the code was never reached. Cause: only stdout reaches that log (the stub lines are `printf`). Fix: `printf` and `fflush(stdout)`.
 - Symptom: code generated through a Bash heredoc comes out with a real line break inside a C string. Cause: the shell tool turned a doubled backslash into a single one before Python saw it. Fix: write the script with the Write tool, and run it.
+
+- **A New Game run reaches the stage at a different time each run** (2026-11-04, game/stagecollision.cpp): with the same work/newgame_pad.txt, 170 s ended before the stage loaded and 210 s got there. A probe that fires at stage load needs `--run 230`; before trusting "no output", check how far the log got.
+- **A bash heredoc can eat a backslash and break on a quote** (2026-11-04): a C printf with a newline escape came out as a real newline, and a long heredoc holding apostrophes failed the whole command, so nothing ran. Write anything with quotes or escapes through the Write tool as a scratch script.
+- **CRLF in the work tree**: `git` normalises to LF but files on disk may be CRLF or mixed, so a Python replace of a multi-line string misses. Open in text mode (universal newlines) and write with `newline=chr(10)`.

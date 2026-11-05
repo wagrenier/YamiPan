@@ -62,7 +62,7 @@ Each step needs the ones above it. Sizes are the unwritten closure of its roots.
 | # | what | roots | floor | what it gives |
 |---|---|---|---|---|
 | 1 | **Pose**: bones, motion files, playback, the solver | `ModelPose::load` 0x14ff90, `update` 0x14f4b0, `play` / `playFile`, `solve` 0x14e4d0, ctor, `ModelMotion` | 57 functions, 6,640 i | The camera's bones, the bone map (`bn_head`, on which `StageSound` and `onLinkChanged` depend), every animated object |
-| 2 | **Collision**: map faces, spheres, segments, heights | `StageCollision::sphereHits` 0x232870, `segmentHits`, `raycast` 0x233810, `heightAt` 0x2342c0, `getNormal`, `CollisionFile::relocate` 0x23ae40, `CollisionBody` 0x1f6690, `SceneRecordBuckets::collide` 0x1f5250 | 32 functions, 4,533 i | Standing on the map. Also `setupMapObject`'s collision half, left out so far |
+| 2 | ~~**Collision**: map faces, spheres, segments, heights~~ **written 2026-11-04** | `StageCollision::sphereHits` 0x232870, `segmentHits`, `raycast` 0x233810, `heightAt` 0x2342c0, `getNormal`, `CollisionFile::relocate` 0x23ae40, `CollisionBody` 0x1f6690, `SceneRecordBuckets::collide` 0x1f5250 | 32 functions, 4,533 i | Standing on the map. Also `setupMapObject`'s collision half, left out so far |
 | 3 | ~~**The frame's phases**~~ **written 2026-11-04** | `ScenePairTable` 0x171300..0x1718xx: `add`, `actionStart` / `Control` / `Movement` / `Terminate`, called by `StageScene::update` and stubbed | 14 functions, 356 i | Without it no character part is ever stepped, whatever else is written. The smallest step on this list |
 | 4 | **The character, built** | `StageCharacter` ctor 0x17de30, `setup` 0x17c700 (under it: the motion 0x1ed410, 1,638 i; the ground 0x1f3d20; the parameter tables 0x17b3e0, 0x17bd10; the gear 0x216aa0) | 223 functions, 24,586 i | A character in the scene. **Native 0x70 must come with it:** `Root` calls it with `F_PC01`, and that is what reaches `setPlayer` and links the main camera; `setupCameras` does so only in a scene with no script. Then `YAMIPAN_CAMERA` can go |
 | 5 | **The character, each frame** | `beforeScripts` 0x21c7c0, `afterScripts` 0x21c310, `canSpawn`, `spawn` 0x218630, `stageUpdateCharacterMotions` 0x17df60, `PlayerMotion::refresh` 0x1e66c0, `CharacterBrain::update` 0x1dd330 | with 4: 274 functions, 28,501 i | It stands, turns and animates |
@@ -71,7 +71,7 @@ Each step needs the ones above it. Sizes are the unwritten closure of its roots.
 | 8 | **Everything the character's vtable reaches** | `reach.py --slots 0x31227c 180` | 513 functions, 44,878 i; with 4..6, 646 functions, 59,794 i | The honest floor: it holds steps 4..6 and, by their position, probably the AI, weapons and sight-jacking (not read) |
 
 Steps 4..6 are unnamed code: 246 of the 274 functions have no name yet, so each run names as it goes.
-**Step 3 did show on screen, against this file's first guess: d0101's characters move since `game/scenepairs.cpp`. For the map's collision (step 2) nothing shows until step 4 with its draw.**
+**Step 3 did show on screen, against this file's first guess: d0101's characters move since `game/scenepairs.cpp`. The map's collision (step 2) is written and agrees with brute force on stage 1's data; nothing shows it until step 4 with its draw.**
 
 ## The 3D list
 

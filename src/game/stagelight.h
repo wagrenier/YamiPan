@@ -70,7 +70,7 @@ public:
 
     // CollisionOwner.
     // FS2 0x001857c0
-    int  collisionHook0() override { return 0; }
+    int  collisionHook0(CollisionContact *, const float *, StageCollisionFace *, float) override { return 0; }
     int  onCollide(CollisionContact *contact, const float *sweep, StageCollisionFace *face,
                    float t, float distance) override;                    // FS2 0x00185710
     void syncBody(CollisionBody *body) override;                         // FS2 0x001857e0

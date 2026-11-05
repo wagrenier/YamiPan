@@ -37,6 +37,12 @@ inline void scaleVec4(float s, sceVu0FVECTOR out, const sceVu0FVECTOR in)
     for (int lane = 0; lane < 4; lane++)
         out[lane] = in[lane] * s;
 }
+// out = in / s, all four lanes (the VU's vdiv, then a scale by 1 / s).
+// FS2 0x001364e0
+inline void divideVec4(float s, sceVu0FVECTOR out, const sceVu0FVECTOR in)
+{
+    scaleVec4(1.0f / s, out, in);
+}
 // out = a x b (xyz), w 0.
 // FS2 0x001365d0
 inline void vecCross(sceVu0FVECTOR out, const sceVu0FVECTOR a, const sceVu0FVECTOR b)
@@ -222,6 +228,28 @@ struct BoundingSphere
             box[1][i] = center[i] + radius;
         }
     }
+
+    // Sphere and segment (matrix, not null, moves the sphere), the radius
+    // grown by margin: the closest point of the segment's line, between the
+    // ends only.
+    bool hitsSegment(float margin, const sceVu0FVECTOR from, const sceVu0FVECTOR to,
+                     const sceVu0FVECTOR *matrix) const;                 // FS2 0x002366c0
+    // The same with margin 0, not moved.
+    bool hitsSegment0(const sceVu0FVECTOR from, const sceVu0FVECTOR to) const; // FS2 0x00236800
+    // Sphere and capsule. The capsule's radius counts at its two ends only:
+    // its middle is tested as a line (the ROM's).
+    bool hitsCapsule(float capsuleRadius, const sceVu0FVECTOR from, const sceVu0FVECTOR to,
+                     const sceVu0FVECTOR *matrix) const;                 // FS2 0x00236310
+    // Sphere and sphere (the other's center, radius). offset, when not null,
+    // takes this center less the other, and on a hit the distance in w.
+    bool hitsSphere(float otherRadius, const sceVu0FVECTOR otherCenter,
+                    const sceVu0FVECTOR *matrix, sceVu0FVECTOR offset) const; // FS2 0x00236480
+    // The edge a..b comes nearer the center than the radius: offset, when not
+    // null, the closest point less the center, w the distance.
+    bool edgeTouches(const sceVu0FVECTOR a, const sceVu0FVECTOR b,
+                     sceVu0FVECTOR offset) const;                        // FS2 0x00236570
+    // The sphere around count points; false none.
+    bool fromPoints(int count, const sceVu0FVECTOR *points);             // FS2 0x00236810
 
     float         radius;       // FS2 +0x00
     float         radiusSq;     // FS2 +0x04

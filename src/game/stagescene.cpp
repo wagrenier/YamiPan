@@ -4021,8 +4021,8 @@ static bool isHittable(const StageObject *obj)
     return obj->m_active && obj->m_collides && !obj->m_dead;
 }
 
-// mode 1 at both calls of StageCollision::sphereHits.
-constexpr int kSphereHitMode = 1;
+// Any one face will do at both calls of StageCollision::sphereHits.
+constexpr int kSphereHitCount = 1;
 
 // FS2 0x00196cf0
 // callcheck: getKind, sphereHits
@@ -4037,8 +4037,8 @@ bool StageScene::sphereHitsKind(float radius, const float *pos, int kind, u_int 
         if (kind != obj->getKind() || (skip != nullptr && skip == obj) || !isHittable(obj))
             continue;
         for (u_int i = 0; obj->collisionAt(i) != nullptr; i++) {
-            int out;
-            if (obj->collisionAt(i)->sphereHits(radius, kSphereHitMode, &out, mask, flags, pos))
+            StageCollisionFace *out;
+            if (obj->collisionAt(i)->sphereHits(radius, kSphereHitCount, &out, mask, flags, pos) != 0)
                 return true;
         }
     }
@@ -4058,8 +4058,8 @@ bool StageScene::sphereHitsAny(float radius, const float *pos, u_int mask, u_int
         if ((skip != nullptr && skip == obj) || !isHittable(obj))
             continue;
         for (u_int i = 0; obj->collisionAt(i) != nullptr; i++) {
-            int out;
-            if (obj->collisionAt(i)->sphereHits(radius, kSphereHitMode, &out, mask, flags, pos))
+            StageCollisionFace *out;
+            if (obj->collisionAt(i)->sphereHits(radius, kSphereHitCount, &out, mask, flags, pos) != 0)
                 return true;
         }
     }
@@ -4090,14 +4090,14 @@ bool StageScene::segmentHitsAny(const float *from, const float *to, int arg, u_i
 // How far down findFloorFace looks when the range is negative.
 constexpr float kFloorRayLength = 10000.0f;
 
-// One mesh's floor below height (inline in both finders): a mesh without
-// nodes answers by height, any other by a ray straight down.
+// One mesh's floor below height (inline in both finders): a mesh that does
+// not move answers by height, any other by a ray straight down.
 static StageCollisionFace *meshFloorFace(StageCollision *mesh, float x, float y, float range,
                                          float height, u_int mask, u_int flags, float *faceHeight)
 {
     *faceHeight = height;
-    if (mesh->nodes == nullptr)
-        return mesh->heightAt(x, y, range, faceHeight, mask, flags, 0);
+    if (mesh->m_matrix == nullptr)
+        return mesh->heightAt(x, y, range, faceHeight, mask, flags, nullptr);
 
     sceVu0FVECTOR hit;
     sceVu0FVECTOR from = { x, y, height, 1.0f };

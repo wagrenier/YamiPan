@@ -40,12 +40,6 @@ int ClearSequence::getState()
     return {};
 }
 
-// stub of FS2 0x0023ae40
-void CollisionFile::relocate()
-{
-    YAMIPAN_STUB("CollisionFile::relocate", 0x0023ae40);
-}
-
 // stub of FS2 0x002b1c50
 int GameOverSequence::getState()
 {
@@ -200,18 +194,6 @@ ScenePool::~ScenePool()
     YAMIPAN_STUB("ScenePool::~ScenePool", 0x00289b60);
 }
 
-// stub of FS2 0x001f6510
-SceneRecordBuckets::SceneRecordBuckets()
-{
-    YAMIPAN_STUB("SceneRecordBuckets::SceneRecordBuckets", 0x001f6510);
-}
-
-// stub of FS2 0x001f63f0
-SceneRecordBuckets::~SceneRecordBuckets()
-{
-    YAMIPAN_STUB("SceneRecordBuckets::~SceneRecordBuckets", 0x001f63f0);
-}
-
 // stub of FS2 0x00243150
 SceneUiState::SceneUiState()
 {
@@ -240,15 +222,6 @@ void ScreenFill::destroy()
 SigLamp::SigLamp(Tim2Texture*)
 {
     YAMIPAN_STUB("SigLamp::SigLamp", 0x002a7bf0);
-}
-
-// stub of FS2 0x00233810
-StageCollisionFace * StageCollision::raycast(sceVu0FVECTOR hit, const sceVu0FVECTOR from,
-                                const sceVu0FVECTOR to, u_int mask,
-                                u_int flags, int arg)
-{
-    YAMIPAN_STUB("StageCollision::raycast", 0x00233810);
-    return {};
 }
 
 // stub of FS2 0x002308a0
@@ -371,13 +344,6 @@ void UiItemList::destroy()
 }
 
 // stub of FS2 0x00185af0
-
-// stub of FS2 0x002362a0
-bool boxContainsPoint(const float m[4][4], const float p[4])
-{
-    YAMIPAN_STUB("boxContainsPoint", 0x002362a0);
-    return {};
-}
 
 // stub of FS2 0x00151290
 void debugSysInit()
@@ -782,12 +748,6 @@ int ScenePool::setSlot(int index, const u_short *text)
     return {};
 }
 
-// stub of FS2 0x001f5250
-void SceneRecordBuckets::collide()
-{
-    YAMIPAN_STUB("SceneRecordBuckets::collide", 0x001f5250);
-}
-
 // stub of FS2 address unknown (1 candidates)
 void ScreenFill::draw(sceVif1Packet *packet, TexAreaList *texList)
 {
@@ -1017,30 +977,6 @@ void SceneUiState::pollSoundSources()
     YAMIPAN_STUB("SceneUiState::pollSoundSources", 0x00242e80);
 }
 
-// stub of FS2 0x002342c0
-StageCollisionFace * StageCollision::heightAt(float x, float y, float range, float *height, u_int mask,
-                                 u_int flags, int arg)
-{
-    YAMIPAN_STUB("StageCollision::heightAt", 0x002342c0);
-    return {};
-}
-
-// stub of FS2 0x00233160
-bool StageCollision::segmentHits(const float *from, const float *to, u_int mask, u_int flags,
-                     int arg)
-{
-    YAMIPAN_STUB("StageCollision::segmentHits", 0x00233160);
-    return {};
-}
-
-// stub of FS2 0x00232870
-bool StageCollision::sphereHits(float radius, int mode, void *out, u_int mask, u_int flags,
-                    const float *pos)
-{
-    YAMIPAN_STUB("StageCollision::sphereHits", 0x00232870);
-    return {};
-}
-
 // stub of FS2 0x00230810
 void StageMenu::setData(void *data)
 {
@@ -1149,18 +1085,6 @@ void SceneUiState::addSourceNoise(StageObject *object, StageSoundSource *source)
     YAMIPAN_STUB("SceneUiState::addSourceNoise", 0x00242fc0);
 }
 
-// stub of FS2 0x001f6690
-CollisionBody::CollisionBody(CollisionOwner*, int, unsigned int, unsigned int)
-{
-    YAMIPAN_STUB("CollisionBody::CollisionBody", 0x001f6690);
-}
-
-// stub of FS2 0x001f6670
-void CollisionBody::refresh()
-{
-    YAMIPAN_STUB("CollisionBody::refresh", 0x001f6670);
-}
-
 // stub of FS2 0x00187060
 void PartSwitch::init(ModelInstance *partsModel, const char *name, int partCount, int firstShown)
 {
@@ -1171,18 +1095,6 @@ void PartSwitch::init(ModelInstance *partsModel, const char *name, int partCount
 void PartSwitch::show(int index)
 {
     YAMIPAN_STUB("PartSwitch::show", 0x00186fe0);
-}
-
-// stub of FS2 0x001f6180
-void SceneRecordBuckets::add(CollisionBody *body)
-{
-    YAMIPAN_STUB("SceneRecordBuckets::add", 0x001f6180);
-}
-
-// stub of FS2 0x001f60a0
-void SceneRecordBuckets::remove(CollisionBody *body)
-{
-    YAMIPAN_STUB("SceneRecordBuckets::remove", 0x001f60a0);
 }
 
 // stub of FS2 0x001908c0
@@ -1223,13 +1135,6 @@ void StageParticle::setRangeSquared(float rangeSquared)
 ItemPhysics::ItemPhysics(bool, bool)
 {
     YAMIPAN_STUB("ItemPhysics::ItemPhysics", 0x0023db50);
-}
-
-// stub of FS2 0x0023c020
-int ItemPhysics::collisionHook0()
-{
-    YAMIPAN_STUB("ItemPhysics::collisionHook0", 0x0023c020);
-    return {};
 }
 
 // stub of FS2 0x0023c2f0
@@ -1323,12 +1228,6 @@ float CharacterInput::padSway() const
 {
     YAMIPAN_STUB("CharacterInput::padSway", 0x00000000);
     return {};
-}
-
-// stub of FS2 0x00236030
-void StageCollisionFace::getNormal(sceVu0FVECTOR out) const
-{
-    YAMIPAN_STUB("StageCollisionFace::getNormal", 0x00236030);
 }
 
 // stub of FS2 0x001e60b0
@@ -1464,35 +1363,10 @@ GateParts::~GateParts()
     YAMIPAN_STUB("GateParts::~GateParts", 0x00000000);
 }
 
-// stub of FS2 address unknown (0 candidates)
-MapObjectParts::MapObjectParts(StageObject*, void*, bool)
-{
-    YAMIPAN_STUB("MapObjectParts::MapObjectParts", 0x00000000);
-}
-
-// stub of FS2 0x00176a40
-void MapObjectParts::copyShown(const MapObjectParts *from)
-{
-    YAMIPAN_STUB("MapObjectParts::copyShown", 0x00176a40);
-}
-
-// stub of FS2 address unknown (0 candidates)
-MapObjectParts::~MapObjectParts()
-{
-    YAMIPAN_STUB("MapObjectParts::~MapObjectParts", 0x00000000);
-}
-
 // stub of FS2 0x0017d970
 void StageObject::setupBody(bool keep)
 {
     YAMIPAN_STUB("StageObject::setupBody", 0x0017d970);
-}
-
-// stub of FS2 0x0023adb0
-void * collisionFindRecord(void *file, const char *name)
-{
-    YAMIPAN_STUB("collisionFindRecord", 0x0023adb0);
-    return {};
 }
 
 // stub of FS2 0x00207aa0
@@ -1500,4 +1374,18 @@ bool PauseMenuState::addNotice(const u_short *text, int frames, int arg, int lev
 {
     YAMIPAN_STUB("PauseMenuState::addNotice", 0x00207aa0);
     return {};
+}
+
+// stub of FS2 0x0023c020
+int ItemPhysics::collisionHook0(CollisionContact *contact, const float *normal, StageCollisionFace *face,
+                        float depth)
+{
+    YAMIPAN_STUB("ItemPhysics::collisionHook0", 0x0023c020);
+    return {};
+}
+
+// stub of FS2 0x00175900
+void StageObject::breakPart(int part, bool withEffect)
+{
+    YAMIPAN_STUB("StageObject::breakPart", 0x00175900);
 }

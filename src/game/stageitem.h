@@ -60,6 +60,8 @@ public:
     StageBulletBase(StageCharacter *owner, StageItem *weapon);
     ~StageBulletBase() override;                                         // FS2 0x00180670
 
+    StageCharacter *shooter() const { return m_owner; }
+
     // FS2 0x00183fd0
     int getKind() override { return StageObject_BulletBase; }
 
@@ -93,7 +95,7 @@ public:
     void sideHook3() override {}
 
     // FS2 0x00180020
-    int  collisionHook0() override { return 0; }
+    int  collisionHook0(CollisionContact *, const float *, StageCollisionFace *, float) override { return 0; }
     int  onCollide(CollisionContact *contact, const float *sweep, StageCollisionFace *face,
                    float t, float distance) override;                    // FS2 0x0017fea0
     void syncBody(CollisionBody *body) override;                         // FS2 0x00180170
@@ -130,7 +132,8 @@ public:
     void update();                                                       // FS2 0x0023ca50
     void draw();                                                         // FS2 0x0023c910
 
-    int  collisionHook0() override;                                      // FS2 0x0023c020
+    int  collisionHook0(CollisionContact *contact, const float *normal, StageCollisionFace *face,
+                        float depth) override;                                      // FS2 0x0023c020
     // FS2 0x0023c010
     int  onCollide(CollisionContact *, const float *, StageCollisionFace *, float, float) override { return 0; }
     void syncBody(CollisionBody *body) override;                         // FS2 0x0023c300
@@ -317,7 +320,7 @@ public:
     void sideHook2() override;                                           // FS2 0x00180e70
 
     // FS2 0x00180e20
-    int  collisionHook0() override { return 0; }
+    int  collisionHook0(CollisionContact *, const float *, StageCollisionFace *, float) override { return 0; }
     // FS2 0x00180e10
     int  onCollide(CollisionContact *, const float *, StageCollisionFace *, float, float) override { return 0; }
     void syncBody(CollisionBody *body) override;                         // FS2 0x00180e40

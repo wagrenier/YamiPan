@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/stagecollision.cpp",
   "game/stagecharacter.cpp",
   "game/playermotion.cpp",
   "game/characterground.cpp",
@@ -863,7 +862,39 @@
    "task": "The character, built, step 4 of roadmap-3d-control.md, queued 2026-11-04: StageCharacter ctor 0x17de30 and setup 0x17c700, the parameter tables 0x17b3e0 and 0x17bd10, the run 0x17b3e0..0x17df60 out of unassigned@00171300. placeCharacter already passes the map's position and turn. The parts it news are the next three items of the queue: stub them first. With this and native 0x70 (game/stagecamera.cpp) the main camera links, and YAMIPAN_CAMERA, stageCameraDebugLookAt and aimDebugCamera go (open-items.md). Check onLinkChanged: it looks up bn_head with no null test. Done when F_PC01 stands in the scene at (7286, 6064, 1138) and the main camera's step runs on it."
   },
   "game/stagecollision.cpp": {
-   "task": "Collision, step 2 of roadmap-3d-control.md, queued 2026-11-04: StageCollision::sphereHits 0x232870, segmentHits, raycast 0x233810, heightAt 0x2342c0, getNormal 0x236030, CollisionFile::relocate 0x23ae40, CollisionBody 0x1f6690, SceneRecordBuckets::collide 0x1f5250: about 32 functions, 4,533 i, in unassigned@00231d40 and unassigned@001d85b0. Also setupMapObject's collision half, left out so far (0x23adb0, 0x234440, 0x176bc0, CollisionBody). The main camera's rays stop on this: without it nothing pulls the eye out of a wall. Nothing can show it until a character stands, so it ends verify."
+   "notes": "All of the TU's functions are written or mapped to StageList and the host vector. Seen on stage 1's data in a New Game run: against brute force over all 8165 faces of Root, rays 0 wrong, segments 0, spheres 0, heights 1 of 3000; hit points on their plane and in their triangle; down rays agree with heightAt. No crash, d0101 still draws. Nothing on screen shows collision until a character stands (step 4 of roadmap-3d-control.md), so verify. Untested: moved meshes, the world's pairs, spherePush. Left: StageObject::breakPart 0x175900 and ItemPhysics::collisionHook0 0x23c020 are stubs, the doors' effect in MapObjectParts is null, FUN_00295010 unwritten. Next in the queue: game/stagecharacter.cpp. A probe at stage load needs a run of 230 s: the stage's arrival varies. open-items.md has the doubts.",
+   "ranges": [
+    [
+     "001f4bb0",
+     "001f6ac0"
+    ],
+    [
+     "00231d40",
+     "00236b90"
+    ],
+    [
+     "0023adb0",
+     "0023af30"
+    ],
+    [
+     "002cedb0",
+     "002cede0"
+    ],
+    [
+     "002cf590",
+     "002cf870"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 19:50",
+     "status": "verify",
+     "summary": "Map collision and the world of bodies: StageCollision grid and height tree, ray, segment, sphere and height queries, CollisionBody, SceneRecordBuckets add, remove, collide, the map objects' collision half and MapObjectParts"
+    }
+   ],
+   "status": "verify",
+   "task": "Collision, step 2 of roadmap-3d-control.md, queued 2026-11-04: StageCollision::sphereHits 0x232870, segmentHits, raycast 0x233810, heightAt 0x2342c0, getNormal 0x236030, CollisionFile::relocate 0x23ae40, CollisionBody 0x1f6690, SceneRecordBuckets::collide 0x1f5250: about 32 functions, 4,533 i, in unassigned@00231d40 and unassigned@001d85b0. Also setupMapObject's collision half, left out so far (0x23adb0, 0x234440, 0x176bc0, CollisionBody). The main camera's rays stop on this: without it nothing pulls the eye out of a wall. Nothing can show it until a character stands, so it ends verify.",
+   "why": "The collision file: StageCollision (map meshes) 0x231d40..0x236b90 with boxContains .. boxHolds, the world of bodies 0x1f4bb0..0x1f6ac0 (CollisionBody, SceneRecordBuckets and its list instances), collisionFindRecord and CollisionFile::relocate, and the two surface name helpers the mesh ctor calls. Pieces by position: the file name is the port's, no string names it."
   },
   "game/stageitem.cpp": {
    "notes": "All of 0x17fce0..0x184860 written or mapped (thunks listed, 0x180018 is padding). New Game run under gdb: StageBullet's ctor ran from setupCameras with no fault, 113 stubs reached, the stop is unchanged: SIGSEGV in StageScene::draw (stagescene.cpp:3272), drawSysCurrent 0x2d4fd0 a stub answering null, black last shot, so no stage picture and nothing here is on screen. Default smoke run rests on the language screen, unchanged. Host-pass only: no item is placed yet (PackTables::parse and StageModel::init are stubs), ScenePairTable::add is a stub, so no frame or collision hook has run and nothing was compared with the ROM by running it. CollisionOwner::onCollide and collisionHook3 changed signature for all owners; sysDataReturnZero 0x23c010 was a mislabel and is gone (ItemPhysics::onCollide). Next pinned: unassigned@002d46a0 for drawSysCurrent, then NodeTransform and updateMatrix. Details and doubts: open-items.md, architecture.md The bullet and the items.",
