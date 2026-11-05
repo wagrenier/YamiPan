@@ -7396,7 +7396,7 @@ void StageCharacter::resetActionState()
     m_flinched = 0;
     m_fidgets = 1;
     m_7a0 = 0;
-    m_7c0 = 0;
+    m_area = nullptr;
     m_7c4 = 0;
 }
 

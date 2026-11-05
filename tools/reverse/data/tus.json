@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/stageplayer.cpp",
   "yamipan/rendering/model_renderer.cpp",
   "game/scriptrunner.cpp"
  ],
@@ -1663,7 +1662,83 @@
    "why": "Cut out of unassigned@00171300: the stage's name-keyed object registry (gStageScene +0x10, new 0xdc in 0x19c180): nine groups of a name map (AVL tree of StageNameNode by strcmp) and an object list, with their two containers. Bounded below by the BoxGrid vector instances (0x1928f0..0x1938f8) and above by game logic at 0x1953f0 (player state test, no registry use)."
   },
   "game/stageplayer.cpp": {
-   "task": "Control, steps 5 to 7 of roadmap-3d-control.md, queued 2026-11-04: the player logic 0x20a000..0x21d000 out of unassigned@001fe6b0, by what a run reaches: beforeScripts 0x21c7c0, afterScripts 0x21c310, canSpawn, spawn 0x218630, the move 0x20d8c0 (887 i, applies getMoveScale), the action states 0x21cc70, and stageUpdateCharacterMotions 0x17df60. Natives of F_PC01's own entry as they are reached: 0xf7, 0xf8, 0xb5, 0x6f, 0xaf, 0x53, 0x7a, 0x45, 0xb4, 0x94, 0x3a. Done when the pad walks the character on stage 1 with the main camera following it, and the game's own camera has replaced every debug hook."
+   "notes": "Written, batch 138, 33 functions. New Game 285 s with doorwalk_pad, no crash: F_PC01 stays in the scene, visibility 0.525 walking and 0.500 standing at the default dark 0.5, stage 1's three box volumes enter group 7 and contains answers right, a noise reaches the list. The picture is unchanged (dark first-person view at a wall); nothing here draws. Not proven: VISIBILITY_ volumes (stage 1 has none), canSee on a real target, thrown items, the muffling rays: they wait for the route. Left of the task: natives 0x13c, 0x13d (StageParty, class 0x203d70), 0x5b, 0x20f (StageNodeTree). updateSounds 0x2a4a40 would fill the noise list with footsteps. architecture.md section Around the scripts has the facts; open-items.md Done has the doubts.",
+   "ranges": [
+    [
+     "0017e950",
+     "0017ea50"
+    ],
+    [
+     "0017ea50",
+     "0017ec20"
+    ],
+    [
+     "0017ec20",
+     "0017ed30"
+    ],
+    [
+     "0017ef10",
+     "0017ef90"
+    ],
+    [
+     "0017efa0",
+     "0017f040"
+    ],
+    [
+     "0020d8c0",
+     "0020e6a0"
+    ],
+    [
+     "00210940",
+     "00210e50"
+    ],
+    [
+     "00214cf0",
+     "00214d40"
+    ],
+    [
+     "00214f60",
+     "00215270"
+    ],
+    [
+     "002152a0",
+     "00215300"
+    ],
+    [
+     "00215620",
+     "00215940"
+    ],
+    [
+     "00215e70",
+     "00215ed0"
+    ],
+    [
+     "00216140",
+     "00216270"
+    ],
+    [
+     "00217a80",
+     "00217be0"
+    ],
+    [
+     "0021c310",
+     "0021ca70"
+    ],
+    [
+     "00242e80",
+     "00243340"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-05 12:24",
+     "status": "verify",
+     "summary": "The character around the frame's scripts: beforeScripts, afterScripts, stepStatus, ageSightTable, updateVisibility (the roadmap's move, which moves nothing), canSee, isPointInView, the small answers 0x214f60..0x216140, SceneNoiseList (was SceneUiState) and the scripted volumes. No reached stub is left in 0x20a000..0x21d000."
+    }
+   ],
+   "status": "verify",
+   "task": "Control, steps 5 to 7 of roadmap-3d-control.md, queued 2026-11-04: the player logic 0x20a000..0x21d000 out of unassigned@001fe6b0, by what a run reaches: beforeScripts 0x21c7c0, afterScripts 0x21c310, canSpawn, spawn 0x218630, the move 0x20d8c0 (887 i, applies getMoveScale), the action states 0x21cc70, and stageUpdateCharacterMotions 0x17df60. Natives of F_PC01's own entry as they are reached: 0xf7, 0xf8, 0xb5, 0x6f, 0xaf, 0x53, 0x7a, 0x45, 0xb4, 0x94, 0x3a. Done when the pad walks the character on stage 1 with the main camera following it, and the game's own camera has replaced every debug hook.",
+   "why": "The character around the frame's scripts, what it hears and sees, the noise list, the volumes: read 2026-11-05; extents by function, the file name is the port's"
   },
   "game/stageresult.cpp": {
    "notes": "All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (addContinue), getPerfectBits one bit per zero counter, clocks at +0x94/+0xa4 {state, value, step, target}, mode +0xbc (0 none, 1 count-up, 2 countdown 7500 with SYS_COUNT1/2 cues), layout +0xb8 from getLangPackItem(4/5). runStartupSequence renamed loadGamePack: it parses packgameEU.pak into PackTables (0x2bcf10, columns label/ctype/SEtype) and frees it, no screens. StageResult moved from gamehooks.h to stageresult.h; sysdata.cpp now reads clock.value/clock2.value/mode; SaveData::_000 is playTime (StageResult::tick counts it). New stand-ins in gamehooks.h: PackFile, PackTables, UiLayout, StageSound, StageScene/gStageScene (gp-0x7a7c, data the build must define), getInitPackItem/getLangPackItem. Guesses: the file name; 0x2afc20/0x2afcd0 joined by position; counters 1..3, attempt/stage blocks, clock state bits 0x14 and PackTables element types read from shapes only. Not compiled (no toolchain here); callcheck clean, layout lint OK. Next in the run: 0x2acff0..0x2afc20 (drawing cluster around 0x2adc70).",

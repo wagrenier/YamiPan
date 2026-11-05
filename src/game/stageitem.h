@@ -375,6 +375,7 @@ public:
 
     // FS2 0x001840a0
     int getKind() override { return StageObject_ThrownItem; }
+    const float *getThrowVector() const { return m_throwVector; }
     void setupItem(const char *name, ModelInstance *instance, StringMap<Tim2Texture *> *textures,
                    StageList<void *> *motions) override;                 // FS2 0x00180c40
     void sideHook2() override;                                           // FS2 0x001808f0

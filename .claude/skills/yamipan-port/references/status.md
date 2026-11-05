@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-05 11:47 at commit `00c8c74` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-05 12:24 at commit `4944250` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-05 11:47 at commit `00c8c74` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **4061** (62%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3140
-- context-name ledger: 4684 entries; overrides of wrong library matches: 0
-- placed in a source file: 4559/6599 in 102 files
+- game functions: **6599**, named **4074** (62%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3153
+- context-name ledger: 4697 entries; overrides of wrong library matches: 0
+- placed in a source file: 4592/6599 in 103 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -26,11 +26,11 @@ Least-named game-code regions (64 KB blocks):
 | `00220000` | 44/167 (26%) | - |
 | `002d0000` | 90/256 (35%) | game/drawsys.cpp, game/fontdata.cpp, game/wstring.cpp |
 | `001a0000` | 108/301 (36%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
-| `00210000` | 87/231 (38%) | game/playermotion.cpp, game/characterinput.cpp, game/stagecharacter.cpp |
+| `00200000` | 47/122 (39%) | game/pausemenustate.cpp, game/playermotion.cpp, game/uiitemlist.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **3701**; stubs: **313**
+- reconstructed FS2 functions: **3734**; stubs: **294**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -92,6 +92,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stagemodel.cpp` | 16 | 0 |
 | `src/game/stageobject.cpp` | 43 | 0 |
 | `src/game/stageobjlist.cpp` | 45 | 0 |
+| `src/game/stageplayer.cpp` | 33 | 0 |
 | `src/game/stageresult.cpp` | 32 | 0 |
 | `src/game/stagescene.cpp` | 258 | 0 |
 | `src/game/stagesound.cpp` | 45 | 0 |
@@ -113,7 +114,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/vectortrack.cpp` | 10 | 0 |
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 266 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 247 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 18 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -141,9 +142,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 212 TUs: todo 110, partial 31, verify 83, done 16
-- next: **game/stageplayer.cpp** (pinned in the queue)
-- pinned queue: game/stageplayer.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
+- 219 TUs: todo 114, partial 30, verify 84, done 18
+- next: **yamipan/rendering/model_renderer.cpp** (pinned in the queue)
+- pinned queue: yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
 - partial: `game/scenepool.cpp` 11/11 -- Written with game/playermotion.cpp thirteenth run (2026-11-05): all 11. The text shows; the dark strip behind it could not be told apart on the dark room of sta
 - partial: `game/scriptrunner.cpp` 134/652 -- VM 0x1d1c40, ScriptRunner, ScriptFrame, relocate, findEntry, scriptPrepare, the arg readers and 30 natives (every one stage 1 bg script calls) are written. All 
 - partial: `game/stageobject.cpp` 42/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
@@ -198,6 +199,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stageloop.cpp` 9/9 -- Cut out of unassigned@00171300 and pinned 0x17f150-0x17fce0 (batch 073, 45 names; Ghidra saved by name_ctx). New src/game/stageloop.h defines gStageScene (exter
 - verify: `game/stagemodel.cpp` 17/19 -- All of StageModel is written (init, bindBones, placeBones, setBaseMotion, advance, applyMotion, the play and find calls, the dtor). BoneNode and ModelLink were 
 - verify: `game/stageobjlist.cpp` 45/45 -- Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector in
+- verify: `game/stageplayer.cpp` 33/33 -- Written, batch 138, 33 functions. New Game 285 s with doorwalk_pad, no crash: F_PC01 stays in the scene, visibility 0.525 walking and 0.500 standing at the defa
 - verify: `game/stageresult.cpp` 32/32 -- All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (add
 - verify: `game/stagescene.cpp` 256/258 -- All 258 written, nothing has run: the smoke run stays on the language screen and the picture is unchanged (no stage loads). Batch 089, 70 names. SubSceneObject 
 - verify: `game/stagesound.cpp` 45/45 -- Batch 077 (31 names: the 18 slice functions, abs 0x121f08, SoundTrack hasSubtitles / getSubtitle / setVolume, SePlayer setTable / setPitch, StageNodeBase ctor 0
@@ -235,6 +237,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-05 12:24 `game/stageplayer.cpp` verify: The character around the frame's scripts: beforeScripts, afterScripts, stepStatus, ageSightTable, updateVisibility (the roadmap's move, which moves nothing), ca
 - 2026-11-05 11:47 `game/characterbrain.cpp` verify: the brain: ScriptProxy, CharacterBrain with its eight script slots, 59 commands, the ask family and setState; CharacterRoute stubbed
 - 2026-11-05 10:56 `game/stagecharacter.cpp` verify: re-judged whole, third person; the terminate hook 0x179d30, PlayerMotion::endFrame 0x1e06f0 with the run clock and sound events, releaseAction, isHoldingAction
 - 2026-11-05 10:24 `game/playermotion.cpp` verify: closed: resetActionState whole, ScriptPoint and the sight table, stale call notes fixed; a door opened and crossed with the pad alone
@@ -242,34 +245,33 @@ Recent sessions:
 - 2026-11-05 08:47 `game/playermotion.cpp` partial: a character's script properties and its status block: setProperty, getProperty, resetActionState, initStatusBlock, StageObject::getProperty: rates come from the
 - 2026-11-05 07:53 `game/viewcamera.cpp` done: the first-person view: ViewCamera written, stage 1's Root forces it through StageObject::setProperty, the head hides; seen from the eyes with no body, scope not
 - 2026-11-05 07:14 `game/playermotion.cpp` partial: the special actions, the bite and the status setters: initList, its condition classes, Walk's list, BiteCondition, BiteLink, setFlinch, setEndurance, setBrainSt
-- 2026-11-05 06:16 `game/playermotion.cpp` partial: firearms, traps, throws and the start hook: GunOn, GunMove, Snipe, GunAttack, Reload, Showt, Jack, Throw, TrapSet, TrapCancel with their links, the scope, shot 
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@00135990` | partial | 3/0/33 | 3.1 | 569 | 0 |
+| `unassigned@00135990` | partial | 3/0/33 | 3.1 | 575 | 0 |
 | `unassigned@001eedb0` | partial | 1/0/25 | 4.1 | 129 | 0 |
-| `unassigned@0021e120` | todo | 0/44/195 | 71.5 | 123 | 3 |
-| `unassigned@00176480` | partial | 13/0/69 | 5.3 | 95 | 0 |
-| `unassigned@001fe6b0` | todo | 0/21/77 | 34.1 | 92 | 9 |
-| `game/scriptrunner.cpp` | partial | 134/2/652 | 172.7 | 75 | 4 |
-| `unassigned@0017e140` | todo | 0/4/110 | 3.2 | 69 | 2 |
+| `unassigned@0021e120` | todo | 0/44/195 | 71.5 | 110 | 0 |
+| `unassigned@00176480` | partial | 13/0/69 | 5.3 | 99 | 0 |
 | `game/vectortrack.cpp` | partial | 9/0/16 | 2.5 | 68 | 0 |
-| `unassigned@0018c050` | todo | 0/7/36 | 17.9 | 66 | 2 |
-| `unassigned@00190900` | partial | 2/7/34 | 11.8 | 52 | 7 |
+| `unassigned@0018c050` | todo | 0/7/36 | 17.9 | 56 | 0 |
+| `game/scriptrunner.cpp` | partial | 134/2/652 | 172.7 | 55 | 0 |
+| `unassigned@0017e140` | todo | 0/0/78 | 1.4 | 51 | 0 |
+| `unassigned@001fe6b0` | todo | 0/21/77 | 34.1 | 48 | 0 |
 | `unassigned@0027cab0` | partial | 3/2/59 | 13.1 | 45 | 0 |
-| `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 41 | 2 |
+| `unassigned@002a31b0` | todo | 0/18/22 | 5.9 | 39 | 0 |
+| `unassigned@002764b0` | todo | 0/0/43 | 7.8 | 33 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
+| `00136690` | applyMatrix | 116 | game | missing | - |
 | `002c1430` | FUN_002c1430 | 115 | - | missing | game/packtables.cpp |
-| `00136690` | applyMatrix | 114 | game | missing | - |
-| `00177270` | BoneNode::find | 92 | game | missing | - |
+| `00177270` | BoneNode::find | 96 | game | missing | - |
 | `00136490` | scaleVec4 | 70 | game | missing | - |
 | `00184370` | StageNodeList::erase | 58 | game | missing | game/stageitem.cpp |
-| `00136560` | vecNormalize | 52 | game | missing | - |
-| `001365a0` | vecDot | 49 | game | missing | - |
+| `00136560` | vecNormalize | 53 | game | missing | - |
+| `001365a0` | vecDot | 50 | game | missing | - |
 | `00135f20` | vecDistance | 46 | game | missing | - |
 | `001eef90` | FUN_001eef90 | 44 | - | missing | - |
 | `00136400` | identityMatrix | 39 | game | missing | - |
@@ -280,8 +282,8 @@ Recent sessions:
 | `00190890` | StageNodeTree::spawn | 27 | game | stub | - |
 | `00136640` | multiplyMatrix | 26 | game | missing | - |
 | `001842c0` | StageNodeList::pushBack | 26 | game | missing | game/stageitem.cpp |
-| `00136500` | invertRigidMatrix | 22 | game | missing | - |
-| `00136020` | vecDirection | 21 | game | missing | - |
+| `00136500` | invertRigidMatrix | 23 | game | missing | - |
+| `00136020` | vecDirection | 22 | game | missing | - |
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `0027cc50` | MotionLink::MotionLink | 19 | game | missing | - |
 | `00135fe0` | setVecLength | 18 | game | missing | - |
@@ -289,7 +291,6 @@ Recent sessions:
 | `0018c2d0` | StageParticle::setRunning | 18 | game | stub | - |
 | `002c0d90` | FUN_002c0d90 | 18 | - | missing | game/packtables.cpp |
 | `001365d0` | vecCross | 17 | game | missing | - |
-| `00214f60` | StageObject::getAltSoundFlag | 16 | game | stub | - |
 | `00296ca0` | VectorFade::setTo | 16 | game | missing | game/vectortrack.cpp |
 | `0017e1b0` | FUN_0017e1b0 | 15 | - | missing | - |
 | `0029a700` | FUN_0029a700 | 15 | - | missing | game/vectortrack.cpp |
@@ -302,5 +303,6 @@ Recent sessions:
 | `00136430` | copyMatrix | 12 | game | missing | - |
 | `002c0d40` | FUN_002c0d40 | 12 | - | missing | game/packtables.cpp |
 | `00136460` | translateMatrix | 11 | game | missing | - |
+| `001fe800` | StageParty::isRunning | 11 | game | stub | - |
 | `001fea50` | StageParty::getCompanion | 11 | game | stub | - |
 

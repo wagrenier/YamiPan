@@ -160,6 +160,7 @@ public:
     // Runner slot 18.
     // FS2 0x00184b30
     void cmdSetColorLoop(u_char loop) override { m_track->loop = loop; }
+    int getMode() const { return m_mode; }
 
     u_char m_envLight;          // FS2 +0x271: ENV_ lights
     StageList<AreaBox *> m_boxes; // FS2 +0x278: the boxes named after the light; it only works inside them

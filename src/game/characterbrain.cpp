@@ -1774,7 +1774,7 @@ bool CharacterBrain::useSpecial(const char *name)
 
 void CharacterBrain::crouch1()
 {
-    gStageScene->uiState->addNoise(0.0f, m_owner, reinterpret_cast<void *>((intptr_t)kBrainNoiseCrouch));
+    gStageScene->noises->addNoise(0.0f, m_owner, kBrainNoiseCrouch);
     m_route->playAction(kCrouch1, nullptr, nullptr);
 }
 
@@ -1784,7 +1784,7 @@ void CharacterBrain::crouch1()
 
 void CharacterBrain::crouch3()
 {
-    gStageScene->uiState->addNoise(0.0f, m_owner, reinterpret_cast<void *>((intptr_t)kBrainNoiseCrouch));
+    gStageScene->noises->addNoise(0.0f, m_owner, kBrainNoiseCrouch);
     m_route->playAction(kCrouch3, nullptr, nullptr);
 }
 

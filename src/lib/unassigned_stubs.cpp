@@ -170,20 +170,6 @@ void SceneOwnedObject::destroy()
     YAMIPAN_STUB("SceneOwnedObject::destroy", 0x00000000);
 }
 
-// stub of FS2 0x00289be0
-// stub of FS2 0x00289b60
-// stub of FS2 0x00243150
-SceneUiState::SceneUiState()
-{
-    YAMIPAN_STUB("SceneUiState::SceneUiState", 0x00243150);
-}
-
-// stub of FS2 0x00243100
-SceneUiState::~SceneUiState()
-{
-    YAMIPAN_STUB("SceneUiState::~SceneUiState", 0x00243100);
-}
-
 // stub of FS2 0x00151f20
 ScreenFill::ScreenFill(unsigned int, int, int, int, int)
 {
@@ -238,13 +224,6 @@ StageNodeTree::~StageNodeTree()
     YAMIPAN_STUB("StageNodeTree::~StageNodeTree", 0x00190bc0);
 }
 
-// stub of FS2 0x00214f60
-u_char StageObject::getAltSoundFlag()
-{
-    YAMIPAN_STUB("StageObject::getAltSoundFlag", 0x00214f60);
-    return {};
-}
-
 // stub of FS2 0x001fecf0
 StageParty::StageParty()
 {
@@ -280,13 +259,6 @@ void StageParty::save()
 StageParty::~StageParty()
 {
     YAMIPAN_STUB("StageParty::~StageParty", 0x001fec90);
-}
-
-// stub of FS2 0x002152d0
-bool StageCharacter::isMode1()
-{
-    YAMIPAN_STUB("StageCharacter::isMode1", 0x002152d0);
-    return {};
 }
 
 // stub of FS2 0x001d3a40
@@ -410,18 +382,6 @@ void GsRegion::release()
 }
 
 // stub of FS2 address unknown (0 candidates)
-BoxVolume::BoxVolume()
-{
-    YAMIPAN_STUB("BoxVolume::BoxVolume", 0x00000000);
-}
-
-// stub of FS2 0x0017ea50
-void BoxVolume::setSize(float width, float height, float depth)
-{
-    YAMIPAN_STUB("BoxVolume::setSize", 0x0017ea50);
-}
-
-// stub of FS2 address unknown (0 candidates)
 MenuProgHolder::MenuProgHolder(void const*, int)
 {
     YAMIPAN_STUB("MenuProgHolder::MenuProgHolder", 0x00000000);
@@ -442,20 +402,6 @@ void ScreenFill::setImage(const void *image)
     YAMIPAN_STUB("ScreenFill::setImage", 0x00151e10);
 }
 
-// stub of FS2 0x001d27e0
-// stub of FS2 0x001d2f40
-// stub of FS2 address unknown (0 candidates)
-SphereVolume::SphereVolume()
-{
-    YAMIPAN_STUB("SphereVolume::SphereVolume", 0x00000000);
-}
-
-// stub of FS2 0x0017ec20
-void SphereVolume::setRadius(float radius)
-{
-    YAMIPAN_STUB("SphereVolume::setRadius", 0x0017ec20);
-}
-
 // stub of FS2 address unknown (0 candidates)
 
 // stub of FS2 0x00185210
@@ -472,13 +418,6 @@ void SphereVolume::setRadius(float radius)
 // stub of FS2 0x00185bb0
 
 // stub of FS2 0x00185c40
-
-// stub of FS2 0x00214fc0
-int StageObject::getActionState()
-{
-    YAMIPAN_STUB("StageObject::getActionState", 0x00214fc0);
-    return {};
-}
 
 // stub of FS2 address unknown (1 candidates)
 void StageObject::onViewTop()
@@ -502,18 +441,6 @@ int parseSpawnId(const char *name)
 // stub of FS2 0x0029f050
 // stub of FS2 address unknown (0 candidates)
 // stub of FS2 address unknown (0 candidates)
-
-// stub of FS2 0x0017ef10
-void StageMarker::addToScene(const char *name)
-{
-    YAMIPAN_STUB("StageMarker::addToScene", 0x0017ef10);
-}
-
-// stub of FS2 0x0017ecb0
-void StageVolume::addToScene(const char *name)
-{
-    YAMIPAN_STUB("StageVolume::addToScene", 0x0017ecb0);
-}
 
 // stub of FS2 0x002dcc30
 void AreaClip::setup()
@@ -681,13 +608,6 @@ void StageObject::cameraStep()
     YAMIPAN_STUB("StageObject::cameraStep", 0x00000000);
 }
 
-// stub of FS2 0x002152a0
-bool StageObject::isMode2()
-{
-    YAMIPAN_STUB("StageObject::isMode2", 0x002152a0);
-    return {};
-}
-
 // stub of FS2 address unknown (1 candidates)
 void StageObject::onLinkChanged()
 {
@@ -799,30 +719,10 @@ void SceneBufferSet::updateRange(float range, StageObject *linked, SceneRender *
     YAMIPAN_STUB("SceneBufferSet::updateRange", 0x002ce1c0);
 }
 
-// stub of FS2 0x002894b0
-// stub of FS2 0x00289b50
-// stub of FS2 0x00242e80
-void SceneUiState::pollSoundSources()
-{
-    YAMIPAN_STUB("SceneUiState::pollSoundSources", 0x00242e80);
-}
-
 // stub of FS2 0x00230810
 void StageMenu::setData(void *data)
 {
     YAMIPAN_STUB("StageMenu::setData", 0x00230810);
-}
-
-// stub of FS2 0x0021c310
-void StageObject::afterScripts()
-{
-    YAMIPAN_STUB("StageObject::afterScripts", 0x0021c310);
-}
-
-// stub of FS2 0x0021c7c0
-void StageObject::beforeScripts()
-{
-    YAMIPAN_STUB("StageObject::beforeScripts", 0x0021c7c0);
 }
 
 // stub of FS2 0x002185a0
@@ -881,20 +781,6 @@ SceneBufferSet * SceneBufferSet::createFor(StageObject *owner, StageNodeTree *tr
 {
     YAMIPAN_STUB("SceneBufferSet::createFor", 0x002ce620);
     return {};
-}
-
-// stub of FS2 0x001cf1e0
-// stub of FS2 0x001cf1b0
-// stub of FS2 0x002430a0
-void SceneUiState::addNoise(float loudness, StageObject *object, void *extra)
-{
-    YAMIPAN_STUB("SceneUiState::addNoise", 0x002430a0);
-}
-
-// stub of FS2 0x00242fc0
-void SceneUiState::addSourceNoise(StageObject *object, StageSoundSource *source)
-{
-    YAMIPAN_STUB("SceneUiState::addSourceNoise", 0x00242fc0);
 }
 
 // stub of FS2 0x00187060
@@ -1029,20 +915,6 @@ bool StageObject::followsPlayerLight()
     return {};
 }
 
-// stub of FS2 0x00216140
-u_int StageObject::getCharacterClass()
-{
-    YAMIPAN_STUB("StageObject::getCharacterClass", 0x00216140);
-    return {};
-}
-
-// stub of FS2 0x00215e70
-bool StageObject::isYriOrKne()
-{
-    YAMIPAN_STUB("StageObject::isYriOrKne", 0x00215e70);
-    return {};
-}
-
 // stub of FS2 0x0028ec70
 void StageCharacter::setGearLightOrder(int order)
 {
@@ -1172,13 +1044,6 @@ void StageCharacter::stopSounds()
 void StageParticle::stopChain()
 {
     YAMIPAN_STUB("StageParticle::stopChain", 0x0018fec0);
-}
-
-// stub of FS2 0x00215620
-bool StageObject::isScenarioLead()
-{
-    YAMIPAN_STUB("StageObject::isScenarioLead", 0x00215620);
-    return {};
 }
 
 // stub of FS2 0x001fe800
@@ -1873,13 +1738,6 @@ StageObject * StageCharacter::findNearestFoe(bool foes, bool sight)
 StageObject * StageCharacter::getBestFoe()
 {
     YAMIPAN_STUB("StageCharacter::getBestFoe", 0x0021a380);
-    return {};
-}
-
-// stub of FS2 0x00210b30
-bool StageCharacter::isPointInView(float halfAngle, float scale, const float *point, float *distance, void *unused)
-{
-    YAMIPAN_STUB("StageCharacter::isPointInView", 0x00210b30);
     return {};
 }
 

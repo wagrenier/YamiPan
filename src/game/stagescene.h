@@ -83,7 +83,7 @@ struct ScenePairTable;
 struct ScenePool;
 struct SceneRecordBuckets;
 struct SceneRender;
-struct SceneUiState;
+struct SceneNoiseList;
 struct StageAlert;
 struct StageNodeTree;
 struct UiShowFlags;             // game/uiwidget.h
@@ -206,7 +206,7 @@ struct MissionNotice
 struct MissionVisibility
 {
     StageObjArray *objects;     // FS2 +0x0
-    float          range;       // FS2 +0x4: -1 unset
+    float          range;       // FS2 +0x4: the dark inside (updateVisibility); -1 unset, the mission's default
 };
 
 // A list of objects (setup). EE 8.
@@ -287,8 +287,8 @@ struct StageMission
     u_short purposeText[kMissionTextSize / 2] = {}; // FS2 +0x4: 16-bit, 0-terminated (extent: up to scriptVar3e)
     int     scriptVar3e = 0;    // FS2 +0x84: object property 0x3e of the scripts
     int     scriptVar3f = 0;    // FS2 +0x88: property 0x3f
-    float   defaultMoveScale = 0.0f; // FS2 +0x8c: the character's fallback (0x20d8c0)
-    float   moveScale[6] = {};  // FS2 +0x90: by action, set in percent by a script command
+    float   defaultMoveScale = 0.0f; // FS2 +0x8c: the dark of a place in no VISIBILITY_ volume (StageCharacter::updateVisibility)
+    float   moveScale[6] = {};  // FS2 +0x90: concealment by posture (MoveScaleIndex), set in percent by a script command
     float   value = 0.0f;       // FS2 +0xa8: a script command's (0x1ba660); unread otherwise
     float   startTime = 0.0f;   // FS2 +0xac: the scene clock's seconds at markStart
     float   lastFoeAlert = 0.0f; // FS2 +0xb0: the scene clock's seconds of the last one; bits 0x800000 from the ctor
@@ -604,7 +604,7 @@ struct StageScene
     StageObject        *rootAny;         // FS2 +0xd4: the last group's first "Root"
     StageObject        *root;            // FS2 +0xd8: group 1's
     SceneBoxList       *boxes;           // FS2 +0xdc
-    SceneUiState       *uiState;         // FS2 +0xe0: a stage's
+    SceneNoiseList       *noises;         // FS2 +0xe0: a stage's
     Rand48             *rng;             // FS2 +0xe4: a stage's
     StageMission       *mission;         // FS2 +0xe8: a stage's (getMission)
     StageEvent         *event;           // FS2 +0xec
