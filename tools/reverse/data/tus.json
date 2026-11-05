@@ -1,5 +1,6 @@
 {
  "queue": [
+  "game/viewcamera.cpp",
   "game/playermotion.cpp",
   "game/stagecharacter.cpp",
   "game/characterbrain.cpp",
@@ -621,7 +622,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Written: conditions GunOn, GunMove, Snipe, GunAttack, Reload, Showt, Jack, Throw, TrapCancel, TrapSet; links Gun, GunAttack, Reload, TrapSet, TrapCancel, Throw; setScope (was clearNoFlash), ViewCamera::setZoom, StageCamera::setProjection, ShotSpread::scatter, findTrap, findCarried, all of sideHook0, getLifeState. Fixed: StageScene::draw called overlay->draw on a pointer nobody set; the ROM is menuProgs->draw(scopeZoom), and +0xbd8 is a float. MenuProgSet::draw stays a stub, so no sight is drawn. Seen, 400 s, temporary test since removed (bare R_89, no model, work/gun_pad.txt), no crash: rf_aon, rf_aim, two rf_fire with ammo 2 to 0, scope on and off, rf_aoff. scatter measured over 20000 draws: 99.50 unsettled, 49.94 settled at range 1000. Regression with no test weapon, 340 s, battle_pad, no crash. Picture NOT proven: no reference for the stance or aim; both show the room's corner from below with the top of his head at the foot of the frame, so the open question about the stance camera stands. The scope frame is pure black: ViewCamera has no frame step (unassigned@00299d90), which is the next blocker for scope, camview and camview_zoom. Not proven: ReloadLink (F_PC01 has no reload motion, so no Click), bullets and hits, the butt, TrapSet, TrapCancel, Throw, Showt, Jack (wants have no writer read yet: 0x218850, the brain), P_URIEN. Left in the TU: Bite, the brain in sideHook1, setFlinch, setEndurance, native 0x7a, the StageMenu window, and the list 0x1df0b0 with 0x1df030, 0x1df0a0: start by finding who calls slot +0x1c. open-items.md Done has all of it.",
+   "notes": "Written: MotionSpecial, MotionSpecialAction, MotionPartnerCall, MotionGadgetSpecial, initList 0x1df0b0, initSlots14 and 18, isSpecialAllowed, setSpecial, Walk's specials, Always's cr_2, BiteCondition, startBite, BiteLink, the plain link Bitten, setFlinch, setEndurance, setBrainState, getAttackReach, natives 0x19f..0x1a2 and 0x1a7. startGameOver now takes two objects. Seen with temporary tests since removed: 19 specials for F_PC01, endurance 100/100 after initStatus, setEndurance(0) sets gameOver with no crash, sp_lock plays motion 197 and sp_hole 196 and both return to 0. sp_rake asks 207, which has no link in the host, and the character stays there for good: write the missing links before scripts can reach such a special. Regression on the final code, New Game 330 s, no crash; last.png shows the room with the boy whole from behind, which the user says is wrong: the first segment is first person. Not proven: the bite (nothing writes +0x624 or wants.bite), cr_1..3, the gadgets, natives 0x19f..0x1a7. Doubt: getLifeState answered 0 at every sample, in Walk, so the clocks of sideHook0 do not run: m_active or a brain stuck at state 0, not measured. Left here: the three car specials, the unwritten links (architecture.md lists them), the brain in sideHook1, native 0x7a and the StageMenu window, the gadget and car natives. The next run is game/viewcamera.cpp, queued at the top by the user: open-items.md Next up has the steps.",
    "ranges": [
     [
      "00175700",
@@ -636,6 +637,10 @@
      "0017af50"
     ],
     [
+     "0017b3b0",
+     "0017b3d4"
+    ],
+    [
      "0017df60",
      "0017dfd0"
     ],
@@ -644,8 +649,20 @@
      "00190900"
     ],
     [
+     "001da4e0",
+     "001da4e8"
+    ],
+    [
+     "001def60",
+     "001defcc"
+    ],
+    [
      "001defd0",
      "001df0b0"
+    ],
+    [
+     "001df0b0",
+     "001dfd88"
     ],
     [
      "001dfd90",
@@ -692,12 +709,24 @@
      "0020c93c"
     ],
     [
+     "0020ce80",
+     "0020cf88"
+    ],
+    [
      "0020d390",
      "0020d3f4"
     ],
     [
      "0020d650",
      "0020d8c0"
+    ],
+    [
+     "00211150",
+     "002112fc"
+    ],
+    [
+     "00211430",
+     "002115e0"
     ],
     [
      "00211910",
@@ -710,6 +739,10 @@
     [
      "00214d40",
      "00214ee0"
+    ],
+    [
+     "00215290",
+     "0021529c"
     ],
     [
      "00215340",
@@ -742,6 +775,14 @@
     [
      "00219b30",
      "00219be0"
+    ],
+    [
+     "0021abb0",
+     "0021abb8"
+    ],
+    [
+     "0021ba10",
+     "0021bb64"
     ],
     [
      "0021bb70",
@@ -780,6 +821,10 @@
      "0026f964"
     ],
     [
+     "0026fb60",
+     "00270120"
+    ],
+    [
      "00270120",
      "002701b4"
     ],
@@ -810,6 +855,10 @@
     [
      "00274650",
      "00276200"
+    ],
+    [
+     "00278460",
+     "00278e34"
     ],
     [
      "00278e40",
@@ -846,6 +895,30 @@
     [
      "0027c420",
      "0027c6d0"
+    ],
+    [
+     "00280080",
+     "00280618"
+    ],
+    [
+     "002811c0",
+     "002812dc"
+    ],
+    [
+     "002812e0",
+     "00281370"
+    ],
+    [
+     "002813e0",
+     "00281454"
+    ],
+    [
+     "00281460",
+     "0028149c"
+    ],
+    [
+     "002814a0",
+     "00281548"
     ],
     [
      "0029a840",
@@ -929,11 +1002,16 @@
      "date": "2026-11-05 06:16",
      "status": "partial",
      "summary": "firearms, traps, throws and the start hook: GunOn, GunMove, Snipe, GunAttack, Reload, Showt, Jack, Throw, TrapSet, TrapCancel with their links, the scope, shot spread, sideHook0, getLifeState: a test rifle comes up, aims, fires and scopes on stage 1; the scope view is black"
+    },
+    {
+     "date": "2026-11-05 07:14",
+     "status": "partial",
+     "summary": "the special actions, the bite and the status setters: initList, its condition classes, Walk's list, BiteCondition, BiteLink, setFlinch, setEndurance, setBrainState: specials play their motions on stage 1 and the game over is reachable; the bite has not run"
     }
    ],
    "status": "partial",
    "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves.",
-   "why": "the motion core, the conditions, the links and probes, what controlStep calls alone, what a character carries, the fight, the firearms, traps and throws, the character's start hook"
+   "why": "the motion core, the conditions, the links and probes, what controlStep calls alone, what a character carries, the fight, the firearms, traps and throws, the character's start hook, the special actions, the bite, the status setters"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -1897,6 +1975,19 @@
     ]
    ],
    "why": "VectorTrack, VectorKey, VectorFade; needed by SceneRender"
+  },
+  "game/viewcamera.cpp": {
+   "ranges": [
+    [
+     "0029a730",
+     "0029a830"
+    ],
+    [
+     "0029a8c0",
+     "0029acb0"
+    ]
+   ],
+   "why": "the first-person view, camview, camview_zoom, camview_snipe: queued by the user 2026-11-05 as needed for gameplay; open-items.md top of Next up has the steps"
   },
   "game/wstring.cpp": {
    "notes": "Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds all five; the three prototypes left uitrack.h, uitrack.cpp and uigame.cpp include wstring.h. Semantics from the asm: null or odd pointers answer 0 or null, a null source answers dst untouched, the copies answer the end of the copy (the 0 unit), dst == src copies through new[] first; wstrcmp compares only wstrlen(a) units (a prefix of b answers 0; callers test == 0); wstrstr answers hay for an empty needle. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on wstring, uitrack, uigame (RosePan SDK headers + a libvifpk stub), host harness passed. Doubt: the file name (no strings). Next in the run: getSaveResource 0x2c3d70 / getSaveResourceAux 0x2c3d30 / loadMenuPack 0x2c3e10 / getSePlayer 0x2c4140, PackTables::PackTables 0x2c0dc0, the SoundStream user 0x2b0d50..0x2b3890.",

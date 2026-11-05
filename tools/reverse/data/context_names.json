@@ -12419,6 +12419,18 @@
   "was": "FUN_0017a860",
   "why": "the character's start hook: allows, beginFrame, wants, the clocks of the living, P_URIEN"
  },
+ "0017b3b0": {
+  "name": "StageCharacter::isSpecialAllowed",
+  "tag": "game-inferred",
+  "was": "FUN_0017b3b0",
+  "why": "tail of 0x1def60 with the motion: natives ask it by name, ElevatorB1, SigLamp"
+ },
+ "0017b3c0": {
+  "name": "StageCharacter::setSpecial",
+  "tag": "game-inferred",
+  "was": "FUN_0017b3c0",
+  "why": "0x1def90 with the arguments swapped: (on, name)"
+ },
  "0017b3e0": {
   "name": "StageCharacter::initAbilities",
   "tag": "game-inferred",
@@ -15617,6 +15629,36 @@
   "was": "FUN_001b1850",
   "why": "script native 0x1b3: slot +0x74"
  },
+ "001b2280": {
+  "name": "nativeSpecialAllowed",
+  "tag": "game-inferred",
+  "was": "FUN_001b2280",
+  "why": "table 0x304230, id 0x1a7: readStringArg, then 0x17b3b0"
+ },
+ "001b25d0": {
+  "name": "nativeSpecialAllowedElevatorBxB1",
+  "tag": "game-inferred",
+  "was": "FUN_001b25d0",
+  "why": "native 0x1a2"
+ },
+ "001b2690": {
+  "name": "nativeSpecialAllowedElevatorBxB3",
+  "tag": "game-inferred",
+  "was": "FUN_001b2690",
+  "why": "native 0x1a1"
+ },
+ "001b2750": {
+  "name": "nativeSpecialAllowedElevatorB3",
+  "tag": "game-inferred",
+  "was": "FUN_001b2750",
+  "why": "native 0x1a0"
+ },
+ "001b2810": {
+  "name": "nativeSpecialAllowedElevatorB1",
+  "tag": "game-inferred",
+  "was": "FUN_001b2810",
+  "why": "native 0x19f"
+ },
  "001b5460": {
   "name": "demoSwitchOn",
   "tag": "game-inferred",
@@ -16421,6 +16463,12 @@
   "was": "FUN_001d85a0",
   "why": "zeroes head and count; StageNodeBase's ctor calls it on +8"
  },
+ "001da4e0": {
+  "name": "MotionSpecial::setEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_001da4e0",
+  "why": "slot +0x1c of vtables 0x317c90..0x317d50: stores a1 in +0x15"
+ },
  "001db2d0": {
   "name": "CharacterBrain::askDoorKey",
   "tag": "game-inferred",
@@ -16487,17 +16535,47 @@
   "was": "FUN_001dedb0",
   "why": "on +0x224, ends the held action; StageSimpleEvent::poll"
  },
+ "001def60": {
+  "name": "PlayerMotion::isSpecialAllowed",
+  "tag": "game-inferred",
+  "was": "FUN_001def60",
+  "why": "map +0x2c lookup, reads byte +0x14 of the condition"
+ },
+ "001def90": {
+  "name": "PlayerMotion::setSpecial",
+  "tag": "game-inferred",
+  "was": "FUN_001def90",
+  "why": "map +0x2c lookup, calls slot +0x1c with the flag"
+ },
  "001defd0": {
   "name": "PlayerMotion::initSlots18",
   "tag": "game-inferred",
   "was": "FUN_001defd0",
   "why": "a0 = +0x224: slot +0x18 of each entry, after setup clears +0x2c0"
  },
+ "001df030": {
+  "name": "MotionSpecial::clearEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_001df030",
+  "why": "slot +0x18, clears +0x15; initSlots18 walks them"
+ },
  "001df040": {
   "name": "PlayerMotion::initSlots14",
   "tag": "game-inferred",
   "was": "FUN_001df040",
   "why": "a0 = +0x224: slot +0x14 of each entry of the list at +0x30, after setup clears +0x360"
+ },
+ "001df0a0": {
+  "name": "MotionSpecial::clearAllowed",
+  "tag": "game-inferred",
+  "was": "FUN_001df0a0",
+  "why": "slot +0x14, clears +0x14; initSlots14 walks them"
+ },
+ "001df0b0": {
+  "name": "PlayerMotion::initList",
+  "tag": "game-inferred",
+  "was": "FUN_001df0b0",
+  "why": "builds the named specials cr_1.. sp_*, by the sheet's kind and the scene's gadgets, into map +0x2c"
  },
  "001dfd90": {
   "name": "PlayerMotion::setScope",
@@ -17717,6 +17795,12 @@
   "was": "FUN_0020c940",
   "why": "matrix for the head's sway of kind 2 in AlwaysCondition::onApply"
  },
+ "0020ce80": {
+  "name": "StageCharacter::getAttackReach",
+  "tag": "game-inferred",
+  "was": "FUN_0020ce80",
+  "why": "the long weapon's parameter 2 else the sheet's +0x98 attackCheck, as a float"
+ },
  "0020d390": {
   "name": "StageCharacter::isMotionSlowed",
   "tag": "game-inferred",
@@ -17854,6 +17938,12 @@
   "tag": "game-inferred",
   "was": "FUN_00215270",
   "why": "scene +0x80, else +0x78, equals this"
+ },
+ "00215290": {
+  "name": "StageCharacter::hasGear",
+  "tag": "game-inferred",
+  "was": "FUN_00215290",
+  "why": "+0x400 != 0"
  },
  "002152a0": {
   "name": "StageObject::isMode2",
@@ -18010,6 +18100,18 @@
   "tag": "game-inferred",
   "was": "FUN_0021a960",
   "why": "ring of four { id, event bits, mission frame } at +0x7c8"
+ },
+ "0021abb0": {
+  "name": "StageCharacter::getBiteTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0021abb0",
+  "why": "getter of +0x624; the name is from Bite's use, other callers are the brain's"
+ },
+ "0021ba10": {
+  "name": "StageCharacter::setBrainState",
+  "tag": "game-inferred",
+  "was": "FUN_0021ba10",
+  "why": "0..7, compares slot +0x278, shows or hides the character at 0, tells the brain"
  },
  "0021bb70": {
   "name": "StageCharacter::getBrainPace",
@@ -21683,6 +21785,24 @@
   "was": "FUN_0026fb20",
   "why": "slot +0xc of vtable 0x317490: allows move, and squatAction at ld_s"
  },
+ "0026fb60": {
+  "name": "BiteCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_0026fb60",
+  "why": "vtable 0x3174b0 slot +0x10, wants +0x340, allows +0x392"
+ },
+ "0026fbc0": {
+  "name": "PlayerMotion::startBite",
+  "tag": "game-inferred",
+  "was": "FUN_0026fbc0",
+  "why": "requests 0x9e, faces the two with startWalkFile, the prey 0xa0 or 0xa1"
+ },
+ "0026fd30": {
+  "name": "BiteCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_0026fd30",
+  "why": "vtable 0x3174b0 slot +0xc: reach, height, arc, head to head, sets allows +0x392 / +0x394"
+ },
  "00270120": {
   "name": "JackCondition::onApply",
   "tag": "game-inferred",
@@ -21940,6 +22060,36 @@
   "tag": "game-inferred",
   "was": "FUN_002775d0",
   "why": "inserted under DamageDead (0x3057a0), +0xc10, vtable 0x3177a0: 0x2773d0 counts +0x5ec seconds and requests 0xb2 / 0xb1"
+ },
+ "00278460": {
+  "name": "BiteLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_00278460",
+  "why": "vtable 0x317860 slot +0x20: the prey's 0xa6 / 0xa4, its MSP back"
+ },
+ "00278640": {
+  "name": "BiteLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_00278640",
+  "why": "vtable 0x317860 slot +0x1c: BT_BITE, BITE, bn_neck, hit counts"
+ },
+ "00278d70": {
+  "name": "BiteLink::onCancel",
+  "tag": "game-inferred",
+  "was": "FUN_00278d70",
+  "why": "vtable 0x317860 slot +0x24"
+ },
+ "00278d90": {
+  "name": "BiteLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_00278d90",
+  "why": "vtable 0x317860 slot +0x14: takes +0x394"
+ },
+ "00278db0": {
+  "name": "BiteLink::BiteLink",
+  "tag": "game-inferred",
+  "was": "FUN_00278db0",
+  "why": "stores vtable 0x317860; the map name at 0x3056b0 is Bite"
  },
  "00278e40": {
   "name": "ThrowLink::setThrow",
@@ -22222,6 +22372,84 @@
   "tag": "game-inferred",
   "was": "FUN_0027ffb0",
   "why": "ModelPose ctor, vtable 0x317c70, tag elv"
+ },
+ "00280080": {
+  "name": "MotionGadgetSpecial::clearAllowed",
+  "tag": "game-inferred",
+  "was": "FUN_00280080",
+  "why": "vtable 0x317c90 slot +0x14"
+ },
+ "00280090": {
+  "name": "MotionGadgetSpecial::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00280090",
+  "why": "vtable 0x317c90 slot +0x10: by kind, motions 0xfc, 0xfd, 0xfe, 0xd1"
+ },
+ "00280230": {
+  "name": "MotionGadgetSpecial::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00280230",
+  "why": "vtable 0x317c90 slot +0xc"
+ },
+ "00280400": {
+  "name": "MotionGadgetSpecial::setText",
+  "tag": "game-inferred",
+  "was": "FUN_00280400",
+  "why": "strcpy to +0x20; natives give a code or a floor"
+ },
+ "00280410": {
+  "name": "MotionGadgetSpecial::MotionGadgetSpecial",
+  "tag": "game-inferred",
+  "was": "FUN_00280410",
+  "why": "parses Elevator*, SigLamp, NumLock*, SevenKey into kind and arg"
+ },
+ "002811c0": {
+  "name": "MotionPartnerCall::setEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_002811c0",
+  "why": "vtable 0x317d10 slot +0x1c: +0x15 and +0x1c"
+ },
+ "002811d0": {
+  "name": "MotionPartnerCall::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_002811d0",
+  "why": "vtable 0x317d10 slot +0x10: isPartner, isMode2, PC_END"
+ },
+ "002812c0": {
+  "name": "MotionPartnerCall::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_002812c0",
+  "why": "vtable 0x317d10 slot +0xc: endurance above 0"
+ },
+ "002812e0": {
+  "name": "MotionPartnerCall::MotionPartnerCall",
+  "tag": "game-inferred",
+  "was": "FUN_002812e0",
+  "why": "stores vtable 0x317d10; built for cr_1, cr_2, cr_3"
+ },
+ "002813e0": {
+  "name": "motionIdOfLabel",
+  "tag": "game-inferred",
+  "was": "FUN_002813e0",
+  "why": "walks table 0x577b20, 0x100 rows of 0x210, compares +0xa0"
+ },
+ "00281460": {
+  "name": "MotionSpecialAction::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00281460",
+  "why": "vtable 0x317d30 slot +0x10: enabled and allowed, request +0x18"
+ },
+ "002814a0": {
+  "name": "MotionSpecialAction::MotionSpecialAction",
+  "tag": "game-inferred",
+  "was": "FUN_002814a0",
+  "why": "stores vtable 0x317d30, id or by label"
+ },
+ "00281540": {
+  "name": "MotionSpecial::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00281540",
+  "why": "vtable 0x317d50 slot +0xc: sets +0x14"
  },
  "00283df0": {
   "name": "seDistanceVolume",

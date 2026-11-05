@@ -376,7 +376,7 @@ struct StageScene
     void saveObjectFlags(void *arg, StageObject *object);                // FS2 0x001955e0
     // The stage's end sequences, unless the stage is busy.
     void startClear();                                                   // FS2 0x00195690
-    void startGameOver(int arg, int arg2);                               // FS2 0x00195730
+    void startGameOver(StageObject *victim, StageObject *cause);         // FS2 0x00195730
     // A stage with no request asks for sub-scene name. false when it may
     // not. Event d1804 first turns the lamps ENV_PL03..06 off.
     bool requestSubScene(const char *name);                              // FS2 0x00196060

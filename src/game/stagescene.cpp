@@ -3700,10 +3700,10 @@ void StageScene::startClear()
 // FS2 0x00195730
 // callcheck: isInputBlocked, operator_new, GameOverSequence
 
-void StageScene::startGameOver(int arg, int arg2)
+void StageScene::startGameOver(StageObject *victim, StageObject *cause)
 {
     if (!isInputBlocked())
-        gameOver = new GameOverSequence(arg, arg2);
+        gameOver = new GameOverSequence(victim, cause);
 }
 
 // ──────────────────────────────────────────────────────────────────────

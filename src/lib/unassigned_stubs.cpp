@@ -797,7 +797,7 @@ ClearSequence::ClearSequence()
 }
 
 // stub of FS2 0x002b1cb0
-GameOverSequence::GameOverSequence(int, int)
+GameOverSequence::GameOverSequence(StageObject *, StageObject *)
 {
     YAMIPAN_STUB("GameOverSequence::GameOverSequence", 0x002b1cb0);
 }
@@ -1280,18 +1280,6 @@ void StageCharacter::resetActionState()
     YAMIPAN_STUB("StageCharacter::resetActionState", 0x0021e050);
 }
 
-// stub of FS2 0x00211430
-void StageCharacter::setEndurance(int value)
-{
-    YAMIPAN_STUB("StageCharacter::setEndurance", 0x00211430);
-}
-
-// stub of FS2 0x00211150
-void StageCharacter::setFlinch(int value)
-{
-    YAMIPAN_STUB("StageCharacter::setFlinch", 0x00211150);
-}
-
 // stub of FS2 0x00211300
 void StageCharacter::setRightArm(int value)
 {
@@ -1507,5 +1495,69 @@ void ItemPhysics::setMoving(bool moving, bool awake)
 const char * PartSwitch::partName(int index) const
 {
     YAMIPAN_STUB("PartSwitch::partName", 0x00186f80);
+    return {};
+}
+
+// stub of FS2 0x001dc950
+void CharacterBrain::revive()
+{
+    YAMIPAN_STUB("CharacterBrain::revive", 0x001dc950);
+}
+
+// stub of FS2 0x001dbca0
+void CharacterBrain::setState(int state, int arg)
+{
+    YAMIPAN_STUB("CharacterBrain::setState", 0x001dbca0);
+}
+
+// stub of FS2 0x0026a010
+void MotionProbe::spawnBlood(float size, StageNodeBase *node, const float *direction, int kind, int arg)
+{
+    YAMIPAN_STUB("MotionProbe::spawnBlood", 0x0026a010);
+}
+
+// stub of FS2 address unknown (1 candidates)
+bool SceneOwnedObject::canUse()
+{
+    YAMIPAN_STUB("SceneOwnedObject::canUse", 0x00000000);
+    return {};
+}
+
+// stub of FS2 address unknown (1 candidates)
+bool SceneOwnedObject::start(const char *text)
+{
+    YAMIPAN_STUB("SceneOwnedObject::start", 0x00000000);
+    return {};
+}
+
+// stub of FS2 0x002a6380
+void StageCharacter::stopBodySounds()
+{
+    YAMIPAN_STUB("StageCharacter::stopBodySounds", 0x002a6380);
+}
+
+// stub of FS2 0x0020eb40
+void StageCharacter::takeDamage(StageObject *from, int kind, int part, int amount)
+{
+    YAMIPAN_STUB("StageCharacter::takeDamage", 0x0020eb40);
+}
+
+// stub of FS2 0x001fe6b0
+bool StageParty::isRecordBusy()
+{
+    YAMIPAN_STUB("StageParty::isRecordBusy", 0x001fe6b0);
+    return {};
+}
+
+// stub of FS2 0x00294280
+void elevatorCall(StageObject *elevator, int floor)
+{
+    YAMIPAN_STUB("elevatorCall", 0x00294280);
+}
+
+// stub of FS2 0x00294140
+bool elevatorCanCall(StageObject *elevator, const float *position, const float *rotation, int floor)
+{
+    YAMIPAN_STUB("elevatorCanCall", 0x00294140);
     return {};
 }

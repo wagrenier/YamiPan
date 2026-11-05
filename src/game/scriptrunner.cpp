@@ -2169,7 +2169,44 @@ static const ScriptNativeBinding kDoorNatives[] = {
     { 0x231, nativeKeyWorksFrom },
 };
 
+// 0x1a7 specialAllowed(name), and the same with its name in the ROM: may the
+// target's character start that special action now.
+// PC: a target with no character says no.
+// FS2 0x001b2280
+// callcheck: readStringArg, isSpecialAllowed
+
+static const int *nativeSpecialAllowed(ScriptRunner *self, int *acc, const int *code)
+{
+    const char *name = nullptr;
+    code = self->readStringArg(&name, code);
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->isSpecialAllowed(name) ? 1 : 0;
+    return code;
+}
+
+template <const char *const &kName>
+static const int *nativeSpecialAllowedOf(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->isSpecialAllowed(kName) ? 1 : 0;
+    return code;
+}
+
+// FS2 0x001b2810
+extern const char *const kSpecialElevatorB1 = "ElevatorB1";
+// FS2 0x001b2750
+extern const char *const kSpecialElevatorB3 = "ElevatorB3";
+// FS2 0x001b2690
+extern const char *const kSpecialElevatorBxB3 = "ElevatorBxB3";
+// FS2 0x001b25d0
+extern const char *const kSpecialElevatorBxB1 = "ElevatorBxB1";
+
 static const ScriptNativeBinding kNatives[] = {
+    { 0x19f, nativeSpecialAllowedOf<kSpecialElevatorB1> },
+    { 0x1a0, nativeSpecialAllowedOf<kSpecialElevatorB3> },
+    { 0x1a1, nativeSpecialAllowedOf<kSpecialElevatorBxB3> },
+    { 0x1a2, nativeSpecialAllowedOf<kSpecialElevatorBxB1> },
+    { 0x1a7, nativeSpecialAllowed },
     { 0x0f7, nativeSetUseKind },
     { 0x0f8, nativeEnableUseKind },
     { 0x04e, nativeFadeIn },
