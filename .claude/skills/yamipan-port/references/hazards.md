@@ -6,6 +6,8 @@ ones any PS2 port meets, in short form. Their files keep the full stories with a
 matching section there when a symptom here fits. Add this game's own as **symptom / cause / fix**,
 dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
+- **`py -` with an empty heredoc never ends (2026-11-05).** Symptom: a shell line of greps hangs past its timeout and the output fills with `_pyrepl` tracebacks. Cause: Python's interactive reader retries forever when it has no console. Fix: run a script file, never `py -` without a body. A long Bash heredoc holding apostrophes also failed to parse: write such files with the Write tool.
+
 ## Decompiler (the most common time sink)
 
 - **A register the decompiler dropped is the argument** (2026-11-04, FS2). Symptom: `invertRigidMatrix(auStack_40)` / `matrixToRotZYX(auStack_20)` with one argument, and a field read just before for a null test (pose +0x150), so an earlier run named the field a count. Cause: the test's `lw a1,0x150(a0)` is left in a1 and the call takes it: the field is a matrix pointer. Fix: when a known two-argument helper shows one argument, read the asm before naming what was tested.

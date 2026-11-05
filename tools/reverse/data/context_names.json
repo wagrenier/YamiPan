@@ -12257,6 +12257,12 @@
   "was": "FUN_00177270",
   "why": "a0 a node {object +0, name +4, left +8, right +0xc}, a1 a name: binary search by strcmp; the node whose object is set, null none. StageSound::update finds bn_head (0x303178) under model +0x14"
  },
+ "00177450": {
+  "name": "StageObject::thunkAddMenuLine",
+  "tag": "game-inferred",
+  "was": "FUN_00177450",
+  "why": "runner side thunk of 0x189ce0, this - 0x40"
+ },
  "001775b0": {
   "name": "StageCamera::getKind",
   "tag": "game-inferred",
@@ -12425,6 +12431,12 @@
   "was": "FUN_00179af0",
   "why": "motion +0x40 among the run ids or the crouched runs; runner slot +0x128, native 0xb5"
  },
+ "00179bb0": {
+  "name": "StageCharacter::isCrouching",
+  "tag": "game-inferred",
+  "was": "FUN_00179bb0",
+  "why": "the crouched motion ids of isCrouchMotion against the motion's +0x40"
+ },
  "00179d30": {
   "name": "StageCharacter::sideHook3",
   "tag": "game-inferred",
@@ -12556,6 +12568,12 @@
   "tag": "game-inferred",
   "was": "FUN_0017e0b0",
   "why": "for record kinds 0xb and 0xd: a PartSwitch on the model's part hide, 2 parts"
+ },
+ "0017e660": {
+  "name": "StageCharacter::thunkIsCrouching",
+  "tag": "game-inferred",
+  "was": "FUN_0017e660",
+  "why": "runner side thunk of 0x179bb0, this - 0x40"
  },
  "0017e900": {
   "name": "BoxVolume::getKind",
@@ -13805,6 +13823,12 @@
   "was": "FUN_00188b10",
   "why": "the body after the inline member clears in setModel"
  },
+ "00189ce0": {
+  "name": "StageObject::scriptAddMenuLine",
+  "tag": "game-inferred",
+  "was": "FUN_00189ce0",
+  "why": "runner slot +0x154, native 0x7a: picks a line kind from the object's kind, gates on the player's record kind, StageMenu::addLine"
+ },
  "00189f40": {
   "name": "StageObject::setProperty",
   "tag": "game-inferred",
@@ -14003,6 +14027,18 @@
   "was": "FUN_00190040",
   "why": "float +0x250 down the chain +0x20c; the spot passes its squared reach"
  },
+ "001900f0": {
+  "name": "StageParticle::setStopFrames",
+  "tag": "game-inferred",
+  "was": "FUN_001900f0",
+  "why": "+0x220 takes the smaller nonzero value, down the +0x20c chain"
+ },
+ "00190810": {
+  "name": "StageNodeTree::isLive",
+  "tag": "game-inferred",
+  "was": "FUN_00190810",
+  "why": "walks the inner object's list (+0x24 count, +0x28 array) for the effect"
+ },
  "00190890": {
   "name": "StageNodeTree::spawn",
   "tag": "game-inferred",
@@ -14032,6 +14068,12 @@
   "tag": "game-inferred",
   "was": "FUN_00190900",
   "why": "a0 StageScene +0x1c: replaces the inner object's +0x3c with a new BoxGrid over the bbx file (size 8)"
+ },
+ "00190990": {
+  "name": "StageNodeTree::spawnMotes",
+  "tag": "game-inferred",
+  "was": "FUN_00190990",
+  "why": "new 0x240 object of class 0x2b3ef0 at a place, joins the tree's list; native 0x20f; name a guess, class unread"
  },
  "00190a80": {
   "name": "StageNodeTree::draw",
@@ -15695,6 +15737,12 @@
   "was": "FUN_001a7020",
   "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
  },
+ "001a70a0": {
+  "name": "ScriptProxy::scriptHeardKind",
+  "tag": "game-inferred",
+  "was": "FUN_001a70a0",
+  "why": "forwards slot +0xb0 through slot +0x1bc"
+ },
  "001a7270": {
   "name": "ScriptProxy::command58",
   "tag": "game-inferred",
@@ -15708,16 +15756,22 @@
   "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
  },
  "001a72f0": {
-  "name": "ScriptProxy::command83",
+  "name": "ScriptProxy::scriptAddMenuLine",
   "tag": "game-inferred",
   "was": "FUN_001a72f0",
-  "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+  "why": "was command83: forwards slot +0x154"
  },
  "001a73a0": {
   "name": "ScriptProxy::scriptIsFacing",
   "tag": "game-inferred",
   "was": "FUN_001a73a0",
   "why": "forwarding slot of vtable 0x315690, through +0x1b8 / +0x1bc"
+ },
+ "001a75a0": {
+  "name": "ScriptProxy::scriptIsCrouching",
+  "tag": "game-inferred",
+  "was": "FUN_001a75a0",
+  "why": "forwards slot +0x124 through slot +0x1bc"
  },
  "001a76c0": {
   "name": "ScriptProxy::scriptPlayMotion",
@@ -18389,6 +18443,18 @@
   "was": "FUN_001fe800",
   "why": "first byte of its record"
  },
+ "001fe810": {
+  "name": "StageParty::setJackAngle",
+  "tag": "game-inferred",
+  "was": "FUN_001fe810",
+  "why": "record +8 in radians, at least 0; native 0x13d in degrees, Root gives 30; ctor 20 degrees"
+ },
+ "001fe850": {
+  "name": "StageParty::setJackRange",
+  "tag": "game-inferred",
+  "was": "FUN_001fe850",
+  "why": "record +4, at least 0; native 0x13c, Root gives 7000; ctor 10000"
+ },
  "001fe890": {
   "name": "StageParty::addImage",
   "tag": "game-inferred",
@@ -19085,11 +19151,35 @@
   "was": "FUN_00218b50",
   "why": "called from the brain; a brief read"
  },
+ "00219160": {
+  "name": "StageCharacter::measurePath",
+  "tag": "game-inferred",
+  "was": "FUN_00219160",
+  "why": "vecDistance under 15 is 0, else RouteFilter::pathLength; keeps it at +0x678, negative left unkept"
+ },
+ "00219200": {
+  "name": "StageCharacter::stopMoving",
+  "tag": "game-inferred",
+  "was": "FUN_00219200",
+  "why": "CharacterBrain::stopIfMoving on +0x220; native 0xbb"
+ },
  "00219b30": {
   "name": "StageCharacter::doorActions",
   "tag": "game-inferred",
   "was": "FUN_00219b30",
   "why": "bits of allows +0x374 and +0x378, natives 0x11b.. test them"
+ },
+ "00219c50": {
+  "name": "StageCharacter::holdsWeapon",
+  "tag": "game-inferred",
+  "was": "FUN_00219c50",
+  "why": "name slot of +0x238 against the argument; native 0xf5"
+ },
+ "00219d70": {
+  "name": "StageCharacter::isInReachOf",
+  "tag": "game-inferred",
+  "was": "FUN_00219d70",
+  "why": "distance 180, rise -20..180, front half, 30 degrees of a point 10 ahead; native 0x83"
  },
  "0021a040": {
   "name": "StageCharacter::getSeenEnemyId",
@@ -19168,6 +19258,18 @@
   "tag": "game-inferred",
   "was": "FUN_0021b280",
   "why": "+0x238's item kind through a table, 0 with none"
+ },
+ "0021b890": {
+  "name": "StageCharacter::scriptHeardKind",
+  "tag": "game-inferred",
+  "was": "FUN_0021b890",
+  "why": "sorts +0x65c: player 4, enemy 3, ally 1, else 2, none 0; runner slot +0xb0, native 0x31"
+ },
+ "0021b970": {
+  "name": "StageCharacter::scriptSetBrainEntry",
+  "tag": "game-inferred",
+  "was": "FUN_0021b970",
+  "why": "kinds 6, 5, 2, 1 go to brain slots 2, 6, 4, 0; runner slot +0xa8, native 0x2f; what gives a brain its scripts"
  },
  "0021ba10": {
   "name": "StageCharacter::setBrainState",
@@ -19564,6 +19666,12 @@
   "tag": "game-inferred",
   "was": "FUN_0022f270",
   "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "00230800": {
+  "name": "StageMenu::addLine",
+  "tag": "game-inferred",
+  "was": "FUN_00230800",
+  "why": "forwards to the list window +0xc, 0x209d90"
  },
  "00230810": {
   "name": "StageMenu::setData",
@@ -20051,23 +20159,47 @@
   "was": "FUN_00239d50",
   "why": "the one slot of vtable 0x3164f8 (the GamePad made in CharacterInput's ctor): GamePad::read, then clears buttons and sticks by menu, game over, event, input focus and UiShowFlags"
  },
+ "0023a870": {
+  "name": "SceneEffectList::setRainEmitting",
+  "tag": "game-inferred",
+  "was": "FUN_0023a870",
+  "why": "setEmitting on the live entries whose flag says rain: spawn sets it for a name s??rain"
+ },
+ "0023a910": {
+  "name": "SceneEffectList::find",
+  "tag": "game-inferred",
+  "was": "FUN_0023a910",
+  "why": "the effect behind a handle; an entry the tree has let go is freed"
+ },
+ "0023a9f0": {
+  "name": "SceneEffectList::stop",
+  "tag": "game-inferred",
+  "was": "FUN_0023a9f0",
+  "why": "find inline, then setStopFrames(1); native 0x5f"
+ },
+ "0023aad0": {
+  "name": "SceneEffectList::spawn",
+  "tag": "game-inferred",
+  "was": "FUN_0023aad0",
+  "why": "takes a free entry of 16, a new handle, StageNodeTree::spawn; native 0x5b's acc"
+ },
  "0023aca0": {
-  "name": "SceneBoxList::update",
+  "name": "SceneEffectList::update",
   "tag": "game-inferred",
   "was": "FUN_0023aca0",
-  "why": "16 entries of 0xc: clears +0xc when 0x190810 refuses it"
+  "why": "was SceneBoxList: nothing here is a box, entries hold effects"
  },
  "0023ad10": {
-  "name": "SceneBoxList::~SceneBoxList",
+  "name": "SceneEffectList::~SceneEffectList",
   "tag": "game-inferred",
   "was": "FUN_0023ad10",
-  "why": "deleting dtor of StageScene +0xdc: only the delete"
+  "why": "was SceneBoxList"
  },
  "0023ad60": {
-  "name": "SceneBoxList::SceneBoxList",
+  "name": "SceneEffectList::SceneEffectList",
   "tag": "game-inferred",
   "was": "FUN_0023ad60",
-  "why": "StageScene ctor new(0xc4) for +0xdc: count zero, then every third word zero (entries of 0xc), beside boxContainsPoint; name a guess"
+  "why": "was SceneBoxList"
  },
  "0023adb0": {
   "name": "collisionFindRecord",
@@ -25361,6 +25493,12 @@
   "was": "FUN_0029efe0",
   "why": "answers sbss gp-0x79f8, the navi menu object (0x29a700..); getGameValue kinds 21 / 22 / 30 / 31 read its +0x2a8 ints and +0x584 / +0x5e0 / +0x5f0 bytes after a null check"
  },
+ "0029eff0": {
+  "name": "scriptHasLabelTexts",
+  "tag": "game-inferred",
+  "was": "FUN_0029eff0",
+  "why": "block version at +8 / +0xa is 0.4 or later; decides whether a label reads through its cell (native 0x126)"
+ },
  "0029f050": {
   "name": "scriptPrepare",
   "tag": "game-inferred",
@@ -25636,6 +25774,12 @@
   "tag": "game-inferred",
   "was": "FUN_002a4a40",
   "why": "each frame from the terminate hook, drives m_soundState +0x430 and the handle +0x434"
+ },
+ "002a6440": {
+  "name": "StageCharacter::playVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a6440",
+  "why": "findCue, priority against +0x438, stops what plays by +0x430, setCue; native 0xad"
  },
  "002a6830": {
   "name": "StageCharacter::stopSounds",

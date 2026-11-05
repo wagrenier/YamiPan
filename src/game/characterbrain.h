@@ -74,7 +74,9 @@ public:
     bool scriptIsFacing(StageObject *other) override;                    // FS2 0x001a73a0
     void scriptPlayMotion(const char *name) override;                    // FS2 0x001a76c0
     int  command80() override;                                           // FS2 0x001a7750
-    int  command83(void *a, void *b, void *c) override;                  // FS2 0x001a72f0
+    void scriptAddMenuLine(const u_short *text, int kind, bool plain) override; // FS2 0x001a72f0
+    bool scriptIsCrouching() override;                                   // FS2 0x001a75a0
+    int  scriptHeardKind() override;                                     // FS2 0x001a70a0
     bool cmdIsLit() override;                                            // FS2 0x001a78d0
     int  command87() override;                                           // FS2 0x001a7910
     void command88() override;                                           // FS2 0x001a7950

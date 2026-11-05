@@ -452,7 +452,7 @@ StageScene::~StageScene()
         itemList->destroy();
     if (menu != nullptr)
         menu->destroy();
-    delete boxes;
+    delete effects;
     delete noises;
     delete showFlags;
     delete alert;
@@ -573,7 +573,7 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
     printer    = new WideFontPrinter(kScreenX, kScreenY);
     inFrame    = 0;
     itemPicked = 0;
-    boxes      = new SceneBoxList();
+    effects    = new SceneEffectList();
     rootAny = root = nullptr;
     fade = new StageFade(kScreenX, kScreenY, kScreenW, kScreenH, nullptr);
 
@@ -3036,7 +3036,7 @@ void StageScene::update()
 
     float range = getDrawDistance() * kParticleRangeScale;
     nodeTree->update(range, 0, views->topObject(), player);
-    boxes->update();
+    effects->update();
     updateRumble(clock->getDeltaSeconds() / kFrameSeconds);
     perfMark(PerfMeterColour_Green, "particle");
 
@@ -4925,7 +4925,7 @@ void StageMarker::sideHook3()
 //   FS2 0x0019cfc0  ScriptRunner::getScriptObject
 //   FS2 0x0019cfe0  ScriptRunner::command58
 //   FS2 0x0019d010  ScriptRunner::command59
-//   FS2 0x0019d040  ScriptRunner::command83
+//   FS2 0x0019d040  ScriptRunner::scriptAddMenuLine
 //   FS2 0x0019d050  ScriptRunner::command80
 //   FS2 0x0019d060  ScriptRunner::command87
 //   FS2 0x0019d070  ScriptRunner::command88

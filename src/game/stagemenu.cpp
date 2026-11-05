@@ -11,6 +11,7 @@
  *  sees that holds the input focus.
  * ======================================================================== */
 #include "game/gamehooks.h"
+#include "common/yamipan_stub.h"
 
 // PC: the list window is not built yet, so `list` stays null, and the members
 // start as the ROM's ctor sets them (gamehooks.h). A stub here left them as
@@ -20,4 +21,12 @@
 
 StageMenu::StageMenu(WideFontPrinter *, int)
 {
+}
+
+// ---- stubs (tools/reverse/stubgen.py) ----
+
+// stub of FS2 0x00230800
+void StageMenu::addLine(const u_short *text, int kind, bool plain)
+{
+    YAMIPAN_STUB("StageMenu::addLine", 0x00230800);
 }
