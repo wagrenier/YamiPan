@@ -164,6 +164,7 @@ public:
     StageList<AreaBox *> m_boxes; // FS2 +0x278: the boxes named after the light; it only works inside them
     u_char m_yamLight;          // FS2 +0x2a1: YAM_ lights; off at the start
 
+    float getRadius() const { return m_radius; }                         // inline in the ROM (PlayerMotion::getLampTarget)
 protected:
     // point - position in out, the squared distance answered (the classes'
     // shared first lines; inline in the ROM).

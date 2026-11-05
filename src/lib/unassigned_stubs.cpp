@@ -1165,13 +1165,6 @@ void StageParticle::setRunning(bool on)
     YAMIPAN_STUB("StageParticle::setRunning", 0x0018c2d0);
 }
 
-// stub of FS2 0x002cf0b0
-const SeEntry * getSurfaceSound(int surface)
-{
-    YAMIPAN_STUB("getSurfaceSound", 0x002cf0b0);
-    return {};
-}
-
 // stub of FS2 0x0027ef70
 CarPose::CarPose()
 {
@@ -1208,12 +1201,6 @@ float CharacterInput::padSway() const
 {
     YAMIPAN_STUB("CharacterInput::padSway", 0x00000000);
     return {};
-}
-
-// stub of FS2 0x001e60b0
-void PlayerMotion::getLampMatrix(sceVu0FMATRIX out)
-{
-    YAMIPAN_STUB("PlayerMotion::getLampMatrix", 0x001e60b0);
 }
 
 // stub of FS2 address unknown (1 candidates)
@@ -1488,18 +1475,6 @@ void PlayerMotion::clearNoFlash(int arg)
     YAMIPAN_STUB("PlayerMotion::clearNoFlash", 0x001dfd90);
 }
 
-// stub of FS2 0x001ead00
-void PlayerMotion::startWalk(int kind, const float *from, const float *to, bool arg, bool arg2)
-{
-    YAMIPAN_STUB("PlayerMotion::startWalk", 0x001ead00);
-}
-
-// stub of FS2 0x001eaea0
-void PlayerMotion::startWalkAt(int kind, void *target, const float *offset, const float *to, bool arg, bool arg2)
-{
-    YAMIPAN_STUB("PlayerMotion::startWalkAt", 0x001eaea0);
-}
-
 // stub of FS2 0x00216400
 void StageCharacter::swapWeapons()
 {
@@ -1526,20 +1501,6 @@ void StageParty::stop()
     YAMIPAN_STUB("StageParty::stop", 0x001feb90);
 }
 
-// stub of FS2 0x0026b960
-bool MotionProbe::findEdge(StageCollisionFace *face, sceVu0FVECTOR hit, sceVu0FVECTOR target, float *drop,
-                  StageObject **floor, sceVu0FVECTOR point, sceVu0FVECTOR angles, u_char *blocked)
-{
-    YAMIPAN_STUB("MotionProbe::findEdge", 0x0026b960);
-    return {};
-}
-
-// stub of FS2 0x001e6160
-void PlayerMotion::getLampAngles(sceVu0FVECTOR out)
-{
-    YAMIPAN_STUB("PlayerMotion::getLampAngles", 0x001e6160);
-}
-
 // stub of FS2 0x0020c940
 void StageCharacter::getSwayMatrix(sceVu0FMATRIX out)
 {
@@ -1550,4 +1511,17 @@ void StageCharacter::getSwayMatrix(sceVu0FMATRIX out)
 void ViewCamera::setZoom(float level)
 {
     YAMIPAN_STUB("ViewCamera::setZoom", 0x0029a840);
+}
+
+// stub of FS2 0x001f00a0
+void CharacterGround::setHitBone(const char *name)
+{
+    YAMIPAN_STUB("CharacterGround::setHitBone", 0x001f00a0);
+}
+
+// stub of FS2 0x001908d0
+bool StageNodeTree::contains(const sceVu0FVECTOR point)
+{
+    YAMIPAN_STUB("StageNodeTree::contains", 0x001908d0);
+    return {};
 }

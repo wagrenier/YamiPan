@@ -15,7 +15,8 @@
  *  asking for the idle when nothing else did.
  *
  *  Written so far: the links Walk; the conditions Always, QuickTurn, Squat,
- *  Turn, Move. A link or a condition of another name answers null, which
+ *  Turn, Move, and all of controlStep (what a motion's events do, the feet,
+ *  the wind, health, the fidgets). A link or a condition of another name answers null, which
  *  the ROM takes as a motion with no link function; addCondition skips it.
  *  The list 0x1df0b0 fills is not written.
  */
@@ -45,6 +46,7 @@ enum MotionId
     Motion_StairsRunDown = 0x1a,
     Motion_Ops        = 0x1b, // ops: stops at an edge
     Motion_Wa         = 0x1c, // wa: running into a wall
+    Motion_CrouchStand = 0x1d, // sq_s
     Motion_CrouchWalk = 0x2c, // sqw_w
     Motion_CrouchIdle = 0x2b, // sq_idle0
     Motion_StandUp    = 0x27, // sq_u: from a crouch, before what was asked (arbitrate)
@@ -75,6 +77,14 @@ enum MotionStanceSlot
 bool isCrouchMotion(int id);
 // run, tr_run, w_run and the stairs at a run.
 bool isRunMotion(int id);
+// sq_ka and sqw_ka: spend health like running.
+bool isCrouchRunMotion(int id);
+// Standing or crouched, doing nothing: health comes back to the player.
+bool isRestingMotion(int id);
+// sqw, the crouched walks: the quietest steps.
+bool isCrouchWalkMotion(int id);
+// On a ladder, up or down: its steps have their own sound.
+bool isLadderMotion(int id);
 // Melee attacks and the guns' shots: Always leaves the lamp alone in them.
 bool isAttackMotion(int id);
 inline bool isCrouchSide(int id) { return isCrouchMotion(id) || id == Motion_Crouched; }
@@ -197,7 +207,7 @@ public:
 
     sceVu0FVECTOR wallPoint = {}; // FS2 +0x20: where the ray ended
     StageCollisionFace *wallFace = nullptr; // FS2 +0x30: the face ahead
-    sceVu0FVECTOR edgeHit = {};   // FS2 +0x40: on the face behind it
+    StageObject *edgeObject = nullptr; // FS2 +0x40: whose the edge is
     sceVu0FVECTOR edgeTarget = {}; // FS2 +0x50: where to land
     float  edgeDrop = 0.0f;       // FS2 +0x60: how far the floor is, negative below
     StageObject *edgeFloor = nullptr; // FS2 +0x64: whose floor that is
@@ -223,9 +233,15 @@ struct MotionProbe
     // A ray from 50 above the feet to just beyond the radius, ahead or
     // behind. out takes the end, back at the feet's height.
     StageCollisionFace *faceAhead(sceVu0FVECTOR out, bool forward);      // FS2 0x0026c4b0
-    // The floor behind face, and whether one can get there.
-    bool findEdge(StageCollisionFace *face, sceVu0FVECTOR hit, sceVu0FVECTOR target, float *drop,
+    // What lies behind a face ahead one may climb or drop over: object and
+    // point of the edge, angles facing it, the floor beyond it, how far that
+    // is and where to land. True when one can get there; blocked: nothing
+    // is there and nothing could ever be.
+    bool findEdge(StageCollisionFace *face, StageObject **object, sceVu0FVECTOR target, float *drop,
                   StageObject **floor, sceVu0FVECTOR point, sceVu0FVECTOR angles, u_char *blocked); // FS2 0x0026b960
+    // The floor at point: above it (up at most), else below (down at most).
+    // drop: the height to it, negative below.
+    bool findFloor(float up, float down, const sceVu0FVECTOR point, float *drop, StageObject **floor); // FS2 0x0026c180
     // A point 4000 ahead of the head, turned by the angles.
     void pointAhead(float x, float z, sceVu0FVECTOR out);                // FS2 0x0026b860
 
@@ -272,6 +288,11 @@ struct PlayerMotion
     void requestNow(int id);                                             // FS2 0x001ec650
     // The motion of a locomotion slot, in the character's stance.
     int  pickStance(int slot);                                           // FS2 0x001eb660
+    // The motion of a gun slot: by the long gun's class (no rifle, rifle,
+    // R_MINIMI), -1 without one.
+    int  pickGunMotion(int slot) const;                                  // FS2 0x001eb550
+    // The motion of an armed slot, { no long gun, a long gun }.
+    int  pickArmedMotion(int slot) const;                                // FS2 0x001eb520
     // The character's control hook: what the ground checks, then the
     // conditions ask.
     void controlStep();                                                  // FS2 0x001e3e80
@@ -288,11 +309,12 @@ struct PlayerMotion
     void setLookTarget(float rate, const float *target);                 // FS2 0x001dec50
     // The head, within the model family's limits.
     void setHeadTarget(float rate, const float *target);                 // FS2 0x001dec70
-    // The angles of the lamp the player aims.
-    void getLampAngles(sceVu0FVECTOR out);                               // FS2 0x001e6160
+    // Where the lamp's light ends: on the first face along it, or at its
+    // radius, never nearer than 200 to the lamp. Unchanged without a lamp.
+    void getLampTarget(sceVu0FVECTOR out);                               // FS2 0x001e6160
     void clearEnding() { m_b30 = 0; }
     // Walks to where a motion file ends, from a place (a ledge).
-    void startWalkFile(float kind, void *file, const float *from, const float *to, bool arg, bool arg2); // FS2 0x001eabc0
+    void startWalkFile(float rate, void *file, const float *from, const float *to, bool scaled, bool held); // FS2 0x001eabc0
 
     // The motion ended, or its link says so.
     bool isEnding() const;                                               // FS2 0x001eb150
@@ -323,8 +345,18 @@ public:
 private:
     // The list's half of noFlash (the list is not written).
     void clearNoFlash(int arg);                                          // FS2 0x001dfd90
-    void startWalk(int kind, const float *from, const float *to, bool arg, bool arg2); // FS2 0x001ead00
-    void startWalkAt(int kind, void *target, const float *offset, const float *to, bool arg, bool arg2); // FS2 0x001eaea0
+    // The pose walks to from, turning to aim at to, or where the file puts it.
+    // scaled: rate grows with what there is to cross, at least 4 frames' worth.
+    void startWalk(float rate, const float *from, const float *to, bool scaled, bool held); // FS2 0x001ead00
+    void startWalkAt(float rate, void *target, const float *offset, const float *to, bool scaled, bool held); // FS2 0x001eaea0
+    void walkPoseTo(float rate, const float *target, const float *aimAt, bool scaled); // the tail of both, inline in the ROM
+    // The parts of controlStep, one function in the ROM.
+    bool stepEvents();
+    void stepAim();
+    void stepFeet(bool solve);
+    void stepWind();
+    void stepHealth();
+    void stepFidgets(const StageObjRecord *record);
 
 public:
     StageObject *owner;         // FS2 +0x000
@@ -354,9 +386,9 @@ public:
     u_char m_walkHeld = 0;      // FS2 +0xa71
     u_char m_walkPending = 0;   // FS2 +0xa72: startWalk at the next stepLower
     u_char m_walkToTarget = 0;  // FS2 +0xa73: startWalkAt instead
-    int    m_walkKind = 0;      // FS2 +0xa74
-    u_char m_walkArg = 0;       // FS2 +0xa78
-    u_char m_walkArg2 = 0;      // FS2 +0xa79
+    float  m_walkRate = 0.0f;   // FS2 +0xa74
+    u_char m_walkScaled = 0;    // FS2 +0xa78
+    u_char m_walkHeldNext = 0;  // FS2 +0xa79: m_walkHeld when it starts
     u_char m_hasWalkFrom = 0;   // FS2 +0xa80
     sceVu0FVECTOR m_walkFrom = {}; // FS2 +0xa90
     u_char m_hasWalkTo = 0;     // FS2 +0xaa0
@@ -384,15 +416,15 @@ public:
     u_char m_kindFlags7 = 0;    // FS2 +0xb37
     u_char m_kindFlags8 = 0;    // FS2 +0xb38
     sceVu0FVECTOR m_kindVector = {}; // FS2 +0xb40: kinds 6 and 0xf
-    u_char m_stepsOn[4] = {};   // FS2 +0xb50: [2] stepUpper, [3] stepFace run; reset sets them
-    u_char m_b54 = 0;           // FS2 +0xb54
+    u_char m_stepsOn[4] = {};   // FS2 +0xb50: [0] the feet solve, [1] the wind blows, [2] stepUpper, [3] stepFace run; reset sets them
+    u_char m_b54 = 0;           // FS2 +0xb54: with m_kindFlags7, the body follows the floor
     int    m_modelFamily = -1;  // FS2 +0xb58: gMotionModels index
     sceVu0FVECTOR m_moveStep = {}; // FS2 +0xb60: this frame's, into the position (applyMovement)
     sceVu0FVECTOR m_turnStep = {}; // FS2 +0xb70: this frame's, into the rotation
     sceVu0FVECTOR m_lampAngles = {}; // FS2 +0xb80: the lean of leanBody; getLampMatrix's
     sceVu0FVECTOR m_leanScale = {}; // FS2 +0xb90: the lean / 65 degrees, y and w 1
     u_char m_leanFlag = 0;      // FS2 +0xba0: leanBody's
-    float  m_ba4 = 0.0f;        // FS2 +0xba4
+    float  m_fallSpeed = 0.0f;  // FS2 +0xba4: grows off the ground, into m_moveStep
     float  m_ba8 = 0.0f;        // FS2 +0xba8: a countdown
     u_char m_wallCheck = 0;     // FS2 +0xbad: the motion's 壁判定
     u_char m_bae = 0;           // FS2 +0xbae

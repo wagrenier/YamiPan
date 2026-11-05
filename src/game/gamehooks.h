@@ -393,11 +393,18 @@ struct CharacterGround
     // Clears (0) or sets the contact bytes of the ground's feet; the
     // player's own byte follows.
     void setContact(int value);                                          // FS2 0x001eff80
+    // Which bone of the family's list a hit comes from; -1 none of them.
+    void setHitBone(const char *name);                                   // FS2 0x001f00a0
+    // Not in the air: the feet solve, and nothing pulls it down.
+    bool isGrounded() const { return landed != 0 || falling == 0; }
 
     u_char        onGround = 0; // FS2 +0x000: StageCharacter::reset sets it (the name is a guess)
+    u_char        falling = 0;  // FS2 +0x010: read by PlayerMotion::controlStep only so far
     int           groundCheck = 0; // FS2 +0x018: the motion's 接地判定 (PlayerMotion::stepLower)
     int           repelLevel = 0;  // FS2 +0x01c: its キャラ反発LV
+    u_char        landed = 0;   // FS2 +0x020: beats falling (the same reader)
     StageCollisionFace *floorFace = nullptr; // FS2 +0x024: the face it stands on
+    StageObject  *floorObject = nullptr; // FS2 +0x028: whose face that is
     u_char        nearTarget = 0;  // FS2 +0x055: within 250 of the view target (PlayerMotion::applyMovement)
     u_char        narrow = 0;      // FS2 +0x0e8: Move walks instead of running
     float         slideSpeed = 0.0f; // FS2 +0x128: the floor carries it
@@ -407,6 +414,7 @@ struct CharacterGround
     GroundVolume *volume = nullptr; // FS2 +0x184: 0 from the ctor
     u_char       *floats = nullptr; // FS2 +0x18c: F_YRT sets the byte it points at (unread; the name is a guess)
     u_char       *wallCheck = nullptr; // FS2 +0x190: the motion's 壁判定, when it points anywhere
+    int           hitBone = -1; // FS2 +0x1ac: setHitBone
 };
 // A box a character stands in (0x1f3d20 makes it). What it is is unread:
 // the camera stays above its top.
@@ -1284,6 +1292,8 @@ struct StageNodeTree
     void remove(StageParticle *effect);                                  // FS2 0x001908c0
     // Replaces the inner object's BoxGrid with a new one over a bbx file.
     void setBoxes(void *bbx);                                            // FS2 0x00190900
+    // point is in one of those boxes; false without any.
+    bool contains(const sceVu0FVECTOR point);                            // FS2 0x001908d0
     // The particle target's: the 16 textures from common01, then its first
     // two particle files (which is which is unread).
     void addParticleTexture(Tim2Texture *texture);                       // FS2 0x00190aa0
@@ -2207,6 +2217,15 @@ public:
     float getMotionRate();                                               // FS2 0x0020d400
     // The world matrix the head's sway of kind 2 turns to.
     void getSwayMatrix(sceVu0FMATRIX out);                               // FS2 0x0020c940
+    // Inside the timed change of the motion rate.
+    bool isMotionSlowed();                                               // FS2 0x0020d390
+    // The stages where a character of one kind loses m_health by itself
+    // (0x19, 0x1b: kind 1; 0xf, 0x17: kind 0): the same test as getMotionRate.
+    bool isStageDrained() const;                                         // FS2 0x00215940
+    void playLadderStep();                                               // FS2 0x002a2100
+    // A step on surface at pace (0 quiet .. 3 running; see kStepColumns).
+    void playStepSound(int surface, int pace, const float *pos);         // FS2 0x002a49c0
+    const SeEntry *findStepSound(int surface, int pace) const;           // FS2 0x002cf210
     // The movement hook: the motion's step, then the model.
     void moveStep();                                                     // FS2 0x0017a490
 
@@ -2216,13 +2235,14 @@ public:
     int    m_2b0 = 0;           // FS2 +0x2b0: 0 from the ctor (unread)
     CharacterWants  m_wants = {};   // FS2 +0x2c0: the start hook clears it, input and brain fill it
     CharacterAllows m_allows = {};  // FS2 +0x360: the start hook clears it, the conditions fill it
+    u_char m_fidgets = 1;       // FS2 +0x3e0: resetActionState sets it, a script's property may clear it: stepFidgets' idle0 / idle1
     int    m_3e4 = 0;           // FS2 +0x3e4: 0 from initStatus (unread); so are the next five
     int    m_3e8 = 0;           // FS2 +0x3e8
     int    m_3ec = 0;           // FS2 +0x3ec
     int    m_3f0 = 0;           // FS2 +0x3f0
-    u_char m_3f4 = 0;           // FS2 +0x3f4
-    int    m_3f8 = 0;           // FS2 +0x3f8
-    float  m_idleDelay = 0.0f;  // FS2 +0x3fc: rollIdleDelay (the name is a guess)
+    u_char m_winded = 0;        // FS2 +0x3f4: m_health ran out, until it is back at 40%: the stance tables' second row, no running
+    float  m_idleTime = 0.0f;   // FS2 +0x3f8: seconds standing, for the next fidget
+    float  m_idleDelay = 0.0f;  // FS2 +0x3fc: the wait for a fidget (rollIdleDelay)
     const char *m_bloodEffect = nullptr; // FS2 +0x404: the effect its blood is
     StageParticle *m_smoke[2] = {};      // FS2 +0x408: yamismoke1, yamismoke2 (stages 0x11..0x15)
     StageParticle *m_glow = nullptr;     // FS2 +0x410: koh, at bn_spine_base
@@ -2237,7 +2257,7 @@ public:
     float  m_slowEnd = 0.0f;    // FS2 +0x45c
     float  m_slowFrom = 0.0f;   // FS2 +0x460: the rate at the start
     float  m_slowTo = 0.0f;     // FS2 +0x464: at the end
-    float  m_health = 0.0f;     // FS2 +0x594: the sheet's 体力
+    float  m_health = 0.0f;     // FS2 +0x594: the sheet's 体力: running spends a point a frame at 30 Hz, 5% of the sheet's a second comes back (PlayerMotion::stepHealth)
     int    m_endurance = 0;     // FS2 +0x598: the sheet's 耐久力; setEndurance
     int    m_leftArm = 0;       // FS2 +0x59c: the sheet's 左腕
     int    m_rightArm = 0;      // FS2 +0x5a0: the sheet's 右腕; setRightArm
@@ -2248,6 +2268,7 @@ public:
     float  m_walkRate = 1.0f;   // FS2 +0x5e0: 移動速度 / 100 (setProperty)
     float  m_runRate = 1.0f;    // FS2 +0x5e4: 走り速度 / 100
     float  m_reviveTime = 0.0f; // FS2 +0x5ec: seconds of DamageDead
+    int    m_drainRate = 0;     // FS2 +0x5f0: a script's property: what a drained character loses a frame at 30 Hz, read from whoever the player controls
     float  m_aimLock = 0.0f;    // FS2 +0x5fc: not 0: they fly straight
     u_char m_bulletFlying = 0;  // FS2 +0x688: set each frame by a bullet of its own
     CharacterBlock7c8 m_block7c8 = {}; // FS2 +0x7c8

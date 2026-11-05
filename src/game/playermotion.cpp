@@ -34,7 +34,7 @@ static const MotionStanceTable kStanceTable = {     /* data 0x2f7dd0 */
     { 0, 29 }, { 3, 32 }, { 6, 33 }, { 7, 34 }, { 8, 35 }, { 9, 36 },
     { 11, 37 }, { 12, 38 }, { 16, 41 }, { 17, 42 }, { 22, 45 }, { 0, 0 },
 };
-// Kinds 0 and 1 while +0x3f4 is set.
+// Kinds 0 and 1 while m_winded is set.
 static const MotionStanceTable kStanceTableDown = { /* data 0x2f7e30 */
     { 1, 30 }, { 4, 32 }, { 6, 33 }, { 7, 34 }, { 8, 35 }, { 10, 36 },
     { 11, 37 }, { 12, 38 }, { 16, 41 }, { 17, 42 }, { 22, 45 }, { 0, 0 },
@@ -159,6 +159,28 @@ bool isCrouchMotion(int id)
 bool isRunMotion(int id)
 {
     return id == 0x1a || id == 0x19 || id == 0x16 || id == 10 || id == 9;
+}
+
+bool isCrouchRunMotion(int id)
+{
+    return id == 0x2d || id == 0x24;
+}
+
+bool isRestingMotion(int id)
+{
+    return id == 0xf8 || id == 0xf7 || id == 0xf6 || id == 0xf5 || id == 0xf4 || id == 2 || id == 1 || id == 0
+        || id == Motion_Idle1 || id == Motion_Idle0
+        || id == 0x1f || id == 0x1e || id == Motion_CrouchStand || id == Motion_CrouchIdle;
+}
+
+bool isCrouchWalkMotion(int id)
+{
+    return id == 0x20 || id == 0x21 || id == 0x23 || id == 0x22;
+}
+
+bool isLadderMotion(int id)
+{
+    return id == 0xae || (0x3a <= id && id <= 0x42);
 }
 
 bool isAttackMotion(int id)
@@ -412,9 +434,9 @@ void AlwaysCondition::onApply()
     }
 
     if (character->m_290 == nullptr || isAttackMotion(m->motionId)) {
-        sceVu0FVECTOR lamp = {};   // PC: getLampAngles is a stub
+        sceVu0FVECTOR lamp = {};   // PC: getLampTarget leaves it without a lamp
         if (lampAim)
-            m->getLampAngles(lamp);
+            m->getLampTarget(lamp);
         m->setToolTarget(lampAim ? lamp : nullptr);
     }
 
@@ -528,7 +550,7 @@ void SquatCondition::onApply()
     if (character->m_allows.squat == 0 || character->m_wants.squat == 0)
         return;
     const bool crouched = isCrouchMotion(motion->motionId);
-    if (character->m_abilities.runStart != 0 && character->m_3f4 == 0) {
+    if (character->m_abilities.runStart != 0 && character->m_winded == 0) {
         if (motion->motionId == motion->pickStance(MotionStance_Run)
             || motion->motionId == motion->pickStance(MotionStance_WalkRun)) {
             motion->request(crouched ? 9 : 0x24);
@@ -688,12 +710,12 @@ void MoveCondition::applyForward()
         }
     }
 
-    const bool plainPace = character->m_abilities.runStart == 0 || character->m_3f4 != 0;
+    const bool plainPace = character->m_abilities.runStart == 0 || character->m_winded != 0;
     const bool walking = wants.moveKind == CharacterMove_Walk || wants.moveKind == CharacterMove_WalkSlow
         || stopAtWall || stopAtEdge || trip || character->m_ground->narrow != 0;
     if (walking) {
         if (stairs != 0) {
-            if (character->m_3f4 == 0)
+            if (character->m_winded == 0)
                 motion->request(stairs == 1 ? Motion_StairsUp : Motion_StairsDown);
             else
                 motion->request(motion->pickStance(MotionStance_Walk));
@@ -720,7 +742,7 @@ void MoveCondition::applyForward()
     }
 
     if (stairs != 0) {
-        if (character->m_3f4 == 0)
+        if (character->m_winded == 0)
             motion->request(stairs == 1 ? Motion_StairsRunUp : Motion_StairsRunDown);
         else
             motion->request(motion->pickStance(MotionStance_Run));
@@ -728,7 +750,7 @@ void MoveCondition::applyForward()
     }
     if (plainPace) {
         // A crouch that may not run walks (the ROM's two tests give this).
-        if (isCrouchMotion(motion->motionId) && character->m_3f4 != 0)
+        if (isCrouchMotion(motion->motionId) && character->m_winded != 0)
             motion->request(motion->pickStance(MotionStance_Walk));
         else
             motion->request(motion->pickStance(MotionStance_Run));
@@ -807,6 +829,119 @@ StageCollisionFace *MotionProbe::faceAhead(sceVu0FVECTOR out, bool forward)
     return face;
 }
 
+// A car's roof and the like: an edge on one is not a dead end.
+static bool isVehicle(StageObject *object)
+{
+    return object != nullptr && object->getKind() == StageObject_Kind3;
+}
+
+// Neither side of the place is against a wall.
+static bool sidesAreClear(const sceVu0FVECTOR place, float yaw, float reach)
+{
+    constexpr float kQuarterTurn = 1.5707964f;
+    const sceVu0FVECTOR from = { place[0], place[1], place[2] + 50.0f, place[3] };
+    for (const float side : { kQuarterTurn, -kQuarterTurn }) {
+        const float angle = -addAngle(yaw, side);
+        const sceVu0FVECTOR to = { from[0] + reach * sinCos(angle, 0), from[1] + reach * sinCos(angle, 1),
+                                   from[2], from[3] };
+        if (gStageScene->segmentHitsAny(from, to, 0, kFaceWall, 0, nullptr))
+            return false;
+    }
+    return true;
+}
+
+// FS2 0x0026b960
+// callcheck: BoundingSphere, addAngle, addAngle, addAngle, addAngle, addAngle, addAngle, addAngle, atan2Octant, atan2Octant, findFloor, getKind, getKind, getKind, getNormal, getNormal, raycastObject, segmentHitsAny, segmentHitsAny, segmentHitsAny, segmentHitsAny, sinCos, sinCos, sinCos, sinCos, sinCos, sinCos, sinCos, sinCos, sinCos, sinCos, sinCos, sinCos, sinCos, sinCos, sphereHitsAny, sphereHitsKind (the side tests twice over in the ROM: sidesAreClear; the sphere's two fields are its arguments here)
+
+bool MotionProbe::findEdge(StageCollisionFace *face, StageObject **object, sceVu0FVECTOR target, float *drop,
+                           StageObject **floor, sceVu0FVECTOR point, sceVu0FVECTOR angles, u_char *blocked)
+{
+    constexpr float kPi = 3.1415927f;
+    constexpr float kEyeHeight = 50.0f;
+    constexpr float kLookUp = 205.0f;
+    constexpr float kLookDown = 1000.0f;
+    constexpr float kOverEdge = 15.0f;
+    constexpr u_int kFaceEdge = 0x142;
+    constexpr u_int kFaceEdgeFinal = 2;     // an edge that ends the world for a walker
+    StageCharacter *character = static_cast<StageCharacter *>(owner);
+    CharacterGround *ground = character->m_ground;
+    if (blocked != nullptr)
+        *blocked = 0;
+    if (character->m_abilities.stepLevel == 0 || face == nullptr || (face->flags & kFaceEdge) == 0)
+        return false;
+
+    const float *position = owner->m_xform.position;
+    const sceVu0FVECTOR from = { position[0], position[1], position[2] + kEyeHeight, position[3] };
+    sceVu0FVECTOR normal;
+    face->getNormal(normal);
+    float yaw = atan2Octant(normal[0], -normal[1]);
+    const float ahead = ground->radius + 25.0f;
+    const sceVu0FVECTOR to = { from[0] + ahead * sinCos(-yaw, 0), from[1] + ahead * sinCos(-yaw, 1), from[2], from[3] };
+    sceVu0FVECTOR hit;
+    StageCollisionFace *edge = gStageScene->raycastObject(object, hit, from, to, 0, kFaceEdge, 0, nullptr);
+    if (edge == nullptr)
+        return false;
+    hit[2] -= kEyeHeight;
+
+    edge->getNormal(normal);
+    yaw = atan2Octant(normal[0], -normal[1]);
+    const float back = -yaw;
+    sceVu0FVECTOR over = { hit[0] + ground->radius2 * sinCos(back, 0), hit[1] + ground->radius2 * sinCos(back, 1),
+                           hit[2], hit[3] };
+    memcpy(point, hit, sizeof(hit));
+    angles[0] = 0.0f;
+    angles[1] = 0.0f;
+    angles[2] = addAngle(yaw, kPi);
+    angles[3] = 0.0f;
+
+    StageObject *floorObject = nullptr;     // PC: the ROM's is uninitialised without a hit
+    const bool found = findFloor(kLookUp, kLookDown, over, drop, &floorObject);
+    if (floor != nullptr)
+        *floor = floorObject;
+    if (!found) {
+        if (blocked != nullptr && (edge->flags & kFaceEdgeFinal) == 0 && !isVehicle(ground->floorObject))
+            *blocked = 1;
+        return false;
+    }
+
+    memcpy(target, over, sizeof(over));
+    target[2] += *drop;
+    if (character->m_42c == 0)
+        return sidesAreClear(target, yaw, ground->radius2);
+
+    const bool onVehicle = isVehicle(ground->floorObject);
+    if ((!onVehicle || !isVehicle(floorObject)) && !sidesAreClear(target, yaw, ground->radius2))
+        return false;
+    target[0] += sinCos(back, 0) * kOverEdge;
+    target[1] += sinCos(back, 1) * kOverEdge;
+    const sceVu0FVECTOR center = { target[0], target[1], target[2] + kEyeHeight, target[3] };
+    return onVehicle ? !gStageScene->sphereHitsAny(ground->radius2, center, kFaceWall, 0, nullptr)
+                     : !gStageScene->sphereHitsKind(ground->radius2, center, StageObject_Kind3, kFaceWall, 0, nullptr);
+}
+
+// FS2 0x0026c180
+// callcheck: raycastObject, raycastObject
+
+bool MotionProbe::findFloor(float up, float down, const sceVu0FVECTOR point, float *drop, StageObject **floor)
+{
+    constexpr u_int kFaceNoFloor = 0x20000;
+    constexpr u_int kFloorFlags = 0x40000;
+    const u_int mask = 0x42400c;
+    sceVu0FVECTOR hit;
+    const sceVu0FVECTOR above = { point[0], point[1], point[2] + up, point[3] };
+    StageCollisionFace *face = gStageScene->raycastObject(floor, hit, above, point, 0, mask, kFloorFlags, nullptr);
+    if (face != nullptr && (face->flags & kFaceNoFloor) == 0) {
+        *drop = fabsf(hit[2] - point[2]);
+        return true;
+    }
+    const sceVu0FVECTOR below = { point[0], point[1], point[2] - down, point[3] };
+    face = gStageScene->raycastObject(floor, hit, point, below, 0, mask, kFloorFlags, nullptr);
+    if (face == nullptr || (face->flags & kFaceNoFloor) != 0)
+        return false;
+    *drop = -fabsf(hit[2] - point[2]);
+    return true;
+}
+
 // FS2 0x0026b860
 
 void MotionProbe::pointAhead(float x, float z, sceVu0FVECTOR out)
@@ -857,7 +992,7 @@ void WalkLink::onUpdate()
     if (character->m_ground->wallCheck == nullptr)
         return;
     wallFace = motion->probe->faceAhead(wallPoint, true);
-    edgeFound = motion->probe->findEdge(wallFace, edgeHit, edgeTarget, &edgeDrop, &edgeFloor, edgePoint,
+    edgeFound = motion->probe->findEdge(wallFace, &edgeObject, edgeTarget, &edgeDrop, &edgeFloor, edgePoint,
                                         edgeAngles, &edgeBlocked);
 }
 
@@ -1098,7 +1233,7 @@ void PlayerMotion::reset(int arg)
     pose->setFootTargets(1.0f, ground, ground);
     memset(pose->rootOffset, 0, sizeof(pose->rootOffset));
 
-    m_ba4 = 0.0f;
+    m_fallSpeed = 0.0f;
     m_ba8 = 0.0f;
     if (noFlash != 0)
         clearNoFlash(0);
@@ -1114,8 +1249,8 @@ void PlayerMotion::reset(int arg)
     character->m_model->applyMotion(character->m_xform.position, character->m_xform.rotation);
 
     if (0 < stageObjRecord(character->m_itemDef)->health && character->m_health <= 0.0f) {
-        character->m_3f4 = 1;
-        character->m_3f8 = 0;
+        character->m_winded = 1;
+        character->m_idleTime = 0.0f;
     }
     character->stopBodyEffects();
 }
@@ -1489,11 +1624,11 @@ void PlayerMotion::stepLower(bool immediate)
 
     if (m_walkPending != 0) {
         if (m_walkToTarget == 0)
-            startWalk(m_walkKind, m_hasWalkFrom != 0 ? m_walkFrom : nullptr,
-                      m_hasWalkTo != 0 ? m_walkTo : nullptr, m_walkArg != 0, m_walkArg2 != 0);
+            startWalk(m_walkRate, m_hasWalkFrom != 0 ? m_walkFrom : nullptr,
+                      m_hasWalkTo != 0 ? m_walkTo : nullptr, m_walkScaled != 0, m_walkHeldNext != 0);
         else
-            startWalkAt(m_walkKind, m_walkTarget, m_walkOffset, m_hasWalkEnd != 0 ? m_walkEnd : nullptr,
-                        m_walkArg != 0, m_walkArg2 != 0);
+            startWalkAt(m_walkRate, m_walkTarget, m_walkOffset, m_hasWalkEnd != 0 ? m_walkEnd : nullptr,
+                        m_walkScaled != 0, m_walkHeldNext != 0);
         if (m_walking != 0 && m_walkHeld == 0) {
             m_walkQueue->store(m_request, character, motionId);
             m_request = isCrouchMotion(motionId) ? Motion_WalkCrouch : Motion_WalkStand;
@@ -1716,7 +1851,7 @@ int PlayerMotion::pickStance(int slot)
 {
     StageCharacter *character = static_cast<StageCharacter *>(owner);
     const int stance = isCrouchMotion(motionId) ? 1 : 0;
-    if (character->m_3f4 != 0) {
+    if (character->m_winded != 0) {
         const int kind = stageObjRecord(character->m_itemDef)->kind;
         if (kind == 0 || kind == 1)
             return kStanceTableDown[slot][stance];
@@ -1751,12 +1886,43 @@ void StageCharacter::noteMotion(int id, int event)
     }
 }
 
+// Constants of what follows; the masks are collision flag sets the ROM
+// spells out.
+constexpr float kAimRate = 0.07f;
+constexpr float kFootRate = 0.2f;
+constexpr float kFrame30Hz = 0.033333335f;
+constexpr u_int kFaceFloor     = 0x42400c;  // what a foot stands on
+constexpr u_int kFaceBodyFloor = 0x242400c; // what the body leans along
+constexpr u_int kFaceNoLean    = 0x2000000;
+constexpr u_int kMotionHitLimbs = MotionEvent_HitRightHand | MotionEvent_HitLeftHand | MotionEvent_HitRightLeg
+    | MotionEvent_HitLeftLeg | MotionEvent_HitHead | MotionEvent_HitPelvis;
+constexpr int kStageObjKindLone = 0xf;      // a record's kind that fidgets with no health
+
+// The named bone, or the model's root.
+static StageNodeBase *findFoot(StageModel *model, const char *name)
+{
+    BoneMap::Node *node = model->boneMap.find(name);
+    if (node == nullptr)
+        node = model->boneMap.find("bn_base");
+    return node->value;
+}
+
+// in = in * R(angles), row by row. FS2 0x00135990
+// callcheck: FUN_00135a90 (rotationMatrixXyz)
+static void rotateByAngles(sceVu0FMATRIX out, const sceVu0FVECTOR *in, const sceVu0FVECTOR angles)
+{
+    sceVu0FMATRIX turn;
+    rotationMatrixXyz(turn, angles);
+    multiplyMatrix(out, in, turn);
+}
+
 // FS2 0x001e3e80
-// callcheck: applyMatrix, randNext, vecCross, vecDirection, FUN_001f00a0, FUN_002a2100, FUN_002a49c0, setAimDirection, getNormal, segmentHitsAny, raycastObject, setFootTargets, getFootPositions, raycast, getLowerNames, FUN_001908d0, setWindOn, getDeltaSeconds, requestNow, rollIdleDelay, FUN_00215940, FUN_0020d390, getAltSoundFlag, isPlayer, getTopView, setContact, find, getStageSelect (written: the head; the rest of the function is below in the notes of open-items.md: step sounds, feet, wind, the fidgets)
+// callcheck: applyMatrix, randNext, vecCross, vecDirection, setHitBone, playLadderStep, playStepSound, setAimDirection, getNormal, segmentHitsAny, raycastObject, setFootTargets, getFootPositions, raycast, getLowerNames, contains, setWindOn, getDeltaSeconds, requestNow, rollIdleDelay, isStageDrained, isMotionSlowed, getAltSoundFlag, isPlayer, getTopView, setContact, find, getStageSelect (stepEvents, stepAim, stepFeet, stepWind, stepHealth, stepFidgets: one function in the ROM)
 
 void PlayerMotion::controlStep()
 {
-    CharacterGround *ground = static_cast<StageCharacter *>(owner)->m_ground;
+    StageCharacter *character = static_cast<StageCharacter *>(owner);
+    CharacterGround *ground = character->m_ground;
     const MotionDef *current = motionDef(motionId);
     if (current != nullptr) {
         const MotionDef *wall = current;
@@ -1775,6 +1941,587 @@ void PlayerMotion::controlStep()
         if (activeLink != nullptr)
             activeLink->onRun();
     }
+
+    const bool footSolve = stepEvents();
+
+    // Off the ground a motion that checks it falls.
+    constexpr float kFallPerFrame = 120.0f;
+    if (ground->isGrounded()) {
+        m_fallSpeed = 0.0f;
+    } else if (ground->groundCheck == 1) {
+        const float seconds = character->m_clock->getDeltaSeconds();
+        m_fallSpeed += kFallPerFrame / (float)(int)(1.0f / seconds);
+        m_moveStep[2] = -m_fallSpeed;
+    }
+
+    stepAim();
+    stepFeet(footSolve);
+    stepWind();
+    stepHealth();
+}
+
+// What a motion's events do: a hit's bone and contact, a foot's sound.
+// Answers the motion's IK flag: stepFeet needs it. controlStep, in the ROM.
+
+bool PlayerMotion::stepEvents()
+{
+    StageCharacter *character = static_cast<StageCharacter *>(owner);
+    CharacterGround *ground = character->m_ground;
+    StageModel *model = character->m_model;
+    const MotionDef *current = motionDef(motionId);
+    if (current == nullptr)
+        return false;
+
+    if (activeLink != nullptr) {
+        const u_int events = model->m_motionEvents;
+        if ((events & kMotionHitLimbs) != 0) {
+            if ((events & MotionEvent_HitRightHand) != 0)
+                ground->setHitBone("bn_r_hand");
+            else if ((events & MotionEvent_HitLeftHand) != 0)
+                ground->setHitBone("bn_l_hand");
+            else if ((events & MotionEvent_HitRightLeg) != 0)
+                ground->setHitBone("bn_r_foot");
+            else if ((events & MotionEvent_HitLeftLeg) != 0)
+                ground->setHitBone("bn_l_foot");
+            else if ((events & MotionEvent_HitHead) != 0)
+                ground->setHitBone("bn_head");
+            else if ((events & MotionEvent_HitPelvis) != 0)
+                ground->setHitBone("bn_pelvis");
+            ground->setContact(1);
+        } else if ((events & MotionEvent_HitEnd) != 0) {
+            ground->setContact(0);
+        }
+    }
+
+    StageNodeBase *foot = nullptr;
+    if ((model->m_motionEvents & MotionEvent_StepLeft) != 0)
+        foot = findFoot(model, "bn_l_foot");
+    if ((model->m_motionEvents & MotionEvent_StepRight) != 0)
+        foot = findFoot(model, "bn_r_foot");
+    if (foot != nullptr) {
+        if (isLadderMotion(motionId)) {
+            character->playLadderStep();
+        } else if (StageCollisionFace *floor = ground->floorFace) {
+            const int id = motionId;
+            int pace = 1;
+            if (isCrouchWalkMotion(id))
+                pace = 0;
+            else if (isRunMotion(id))
+                pace = 3;
+            else if (isCrouchRunMotion(id))
+                pace = 2;
+            character->playStepSound((signed char)floor->surface, pace, foot->getWorldMatrix()[3]);
+        }
+    }
+    return current->ik != 0;
+}
+
+// The pelvis leans to the floor. A character that walks on an object looks
+// along it from a point of its own instead of along the face it stands on.
+// controlStep, in the ROM.
+
+void PlayerMotion::stepAim()
+{
+    StageCharacter *character = static_cast<StageCharacter *>(owner);
+    CharacterGround *ground = character->m_ground;
+    ModelPose *pose = character->m_model->pose;
+    StageCollisionFace *floor = ground->floorFace;
+    if ((m_kindFlags6 == 0 && (m_kindFlags7 == 0 || m_b54 == 0)) || floor == nullptr) {
+        pose->setAimDirection(kAimRate, nullptr);
+        return;
+    }
+
+    sceVu0FVECTOR normal;
+    floor->getNormal(normal);
+    if (m_kindFlags8 != 0 || m_kindFlags7 != 0) {
+        sceVu0FVECTOR point;
+        if (m_kindFlags8 == 0)
+            memcpy(point, pose->neckBone->matrix[3], sizeof(point));
+        else
+            applyMatrix(point, character->getWorldMatrix(), m_kindVector);
+        const float *position = character->m_xform.position;
+        const bool blocked = m_kindFlags7 != 0
+            && gStageScene->segmentHitsAny(position, point, 0, kFaceWall, kFaceFlagsTrip, nullptr);
+        if (!blocked) {
+            const sceVu0FVECTOR above = { point[0], point[1], position[2] + 150.0f, point[3] };
+            const sceVu0FVECTOR below = { point[0], point[1], position[2] - 150.0f, point[3] };
+            StageObject *object = nullptr;
+            sceVu0FVECTOR hit;
+            StageCollisionFace *face = gStageScene->raycastObject(&object, hit, above, below, 0, kFaceBodyFloor,
+                                                                  kFaceFlagsTrip, nullptr);
+            if (face != nullptr && ground->floorObject == object && (face->flags & kFaceNoLean) == 0) {
+                const sceVu0FVECTOR up = { 0.0f, 0.0f, 1.0f, 0.0f };   /* data 0x2f8640 */
+                sceVu0FVECTOR along, side;
+                vecDirection(along, hit, position);
+                vecCross(side, along, up);
+                vecCross(normal, side, along);
+            }
+        }
+    }
+    pose->setAimDirection(kAimRate, normal);
+}
+
+// Each foot takes the plane under it, or lets go. controlStep, in the ROM.
+
+void PlayerMotion::stepFeet(bool solve)
+{
+    StageCharacter *character = static_cast<StageCharacter *>(owner);
+    ModelPose *pose = character->m_model->pose;
+    if (m_kindFlags3 == 0 || m_stepsOn[0] == 0 || !solve || !character->m_ground->isGrounded()) {
+        pose->setFootTargets(kFootRate, nullptr, nullptr);
+        return;
+    }
+
+    constexpr float kFootReach = 50.0f;
+    const float height = character->m_xform.position[2];
+    sceVu0FVECTOR feet[2], planes[2];
+    pose->getFootPositions(feet[0], feet[1]);
+    for (int i = 0; i < 2; i++) {
+        planes[i][0] = 0.0f;
+        planes[i][1] = 0.0f;
+        planes[i][2] = 1.0f;
+        planes[i][3] = height;
+        const sceVu0FVECTOR from = { feet[i][0], feet[i][1], height + kFootReach, feet[i][3] };
+        const sceVu0FVECTOR to = { feet[i][0], feet[i][1], height - kFootReach, feet[i][3] };
+        sceVu0FVECTOR hit;
+        StageCollisionFace *face = gStageScene->raycast(hit, from, to, 0, kFaceFloor, kFaceFlagsTrip, nullptr);
+        if (face != nullptr) {
+            if ((face->flags & kFaceStairs) == 0)
+                face->getNormal(planes[i]);
+            planes[i][3] = hit[2];
+        }
+    }
+    pose->setFootTargets(kFootRate, planes[0], planes[1]);
+}
+
+// Outside the stage's boxes the wind blows the clothes. controlStep, in the ROM.
+
+void PlayerMotion::stepWind()
+{
+    StageCharacter *character = static_cast<StageCharacter *>(owner);
+    ModelPose *pose = character->m_model->pose;
+    if (!pose->getLowerNames())
+        return;
+    if (m_stepsOn[1] == 0) {
+        pose->setWindOn(0);
+        return;
+    }
+    const float *position = character->m_xform.position;
+    const sceVu0FVECTOR point = { position[0], position[1], position[2] + 50.0f, 1.0f };
+    pose->setWindOn(gStageScene->nodeTree->contains(point) ? 0 : 1);
+}
+
+// The ROM clamps through 0 (sdata 0x31a9cc) and the sheet's value.
+static float clampHealth(float value, float limit)
+{
+    return value < 0.0f ? 0.0f : (limit < value ? limit : value);
+}
+
+// What the frame gives back; a winded character jumps to full from 40%.
+static void restoreHealth(StageCharacter *character, float gain, float limit)
+{
+    constexpr float kWindedBack = 0.4f;
+    character->m_health = clampHealth(character->m_health + gain, limit);
+    if (character->m_winded != 0 && limit * kWindedBack <= character->m_health)
+        character->m_health = limit;
+}
+
+// 体力: how long a character can run. Kinds 0 and 1 get fidgets once full, a
+// character the sheet gives no health to only kind 0xf.
+// controlStep, in the ROM; the sheet's value is re-read at each use there.
+
+void PlayerMotion::stepHealth()
+{
+    constexpr float kRecoveryPerSecond = 0.05f; // of the sheet's value
+    StageCharacter *character = static_cast<StageCharacter *>(owner);
+    const StageObjRecord *record = stageObjRecord(character->m_itemDef);
+    const float limit = (float)record->health;
+    if (limit <= 0.0f) {
+        if (record->kind != kStageObjKindLone || character->m_fidgets == 0)
+            return;
+        if (motionId == Motion_Stand && character->m_wants.headOn == 0)
+            character->m_idleTime += character->m_clock->getDeltaSeconds();
+        else
+            character->m_idleTime = 0.0f;
+        if (character->m_idleTime < character->m_idleDelay)
+            return;
+        if (m_request == Motion_Stand) {
+            requestNow(Motion_Idle0);
+            character->m_idleTime = 0.0f;
+            character->rollIdleDelay();
+        }
+        return;
+    }
+
+    const float seconds = character->m_clock->getDeltaSeconds();
+    const float frames = seconds / kFrame30Hz;
+    const float gain = seconds * limit * kRecoveryPerSecond;
+    // 0 by itself, 1 drained by whom the player controls, 2 by a timed change.
+    int drain = 0;
+    StageObject *controlled = gStageScene->controlled != nullptr
+        ? gStageScene->controlled : static_cast<StageObject *>(gStageScene->player);
+    if (character->isStageDrained()) {
+        if (gStageScene->player != controlled)
+            drain = 1;
+        else if (character->isMotionSlowed())
+            drain = 2;
+    }
+
+    if (drain == 2) {
+        character->m_health = clampHealth(character->m_health - character->m_slowFrom, limit);
+    } else if (drain == 1) {
+        const float left = character->m_health
+            - (float)static_cast<StageCharacter *>(controlled)->m_drainRate * frames;
+        character->m_health = clampHealth(left, limit);
+        if (left <= 0.0f)
+            gStageScene->altLatch = 1;
+    } else {
+        const int id = motionId;
+        if (isRunMotion(id) || isCrouchRunMotion(id)) {
+            character->m_health = clampHealth(character->m_health - frames, limit);
+        } else if (record->kind != 0 || isRestingMotion(id) || character->m_gear != nullptr
+                   || (character->getAltSoundFlag() != 0 && character->m_altAction == 0)) {
+            restoreHealth(character, gain, limit);
+        }
+    }
+
+    if (character->m_health <= 0.0f) {
+        character->m_winded = 1;
+        character->m_idleTime = 0.0f;
+        return;
+    }
+    if (character->m_health < limit)
+        return;
+    if (record->kind == 0 || record->kind == 1)
+        stepFidgets(record);
+    character->m_winded = 0;
+}
+
+// At full health, standing for m_idleDelay: idle0 or idle1, or the crouched
+// one. Not with gear, nor for the player seen through the view camera.
+// controlStep, in the ROM.
+
+void PlayerMotion::stepFidgets(const StageObjRecord *record)
+{
+    StageCharacter *character = static_cast<StageCharacter *>(owner);
+    if (character->m_fidgets == 0 || character->m_gear != nullptr)
+        return;
+    if (character->isPlayer()) {
+        StageObject *top = gStageScene->getTopView();
+        if (top->getKind() == StageObject_Kind10 && top->m_linked == character)
+            return;
+    }
+    if (character->m_winded != 0)
+        return;
+
+    if ((motionId == Motion_CrouchStand || motionId == Motion_Stand) && character->m_wants.headOn == 0)
+        character->m_idleTime += character->m_clock->getDeltaSeconds();
+    else
+        character->m_idleTime = 0.0f;
+    if (character->m_idleTime < character->m_idleDelay)
+        return;
+    if (m_request == Motion_CrouchStand) {
+        requestNow(Motion_CrouchIdle);
+    } else if (m_request == Motion_Stand) {
+        requestNow((u_char)randNext() < 0x7f ? Motion_Idle0 : Motion_Idle1);
+    } else {
+        return;
+    }
+    character->m_idleTime = 0.0f;
+    character->rollIdleDelay();
+}
+
+// FS2 0x001e60b0
+// callcheck: identityMatrix, rotateByAngles, rotateByAngles, rotateMatrixZ, find, translateMatrix
+
+void PlayerMotion::getLampMatrix(sceVu0FMATRIX out)
+{
+    constexpr float kPi = 3.1415927f;
+    identityMatrix(out);
+    rotateByAngles(out, out, m_lampAngles);
+    rotateByAngles(out, out, owner->m_xform.rotation);
+    rotateMatrixZ(kPi, out, out);
+    translateMatrix(out, out, owner->m_model->boneMap.find("bn_head")->value->getMatrix()[3]);
+}
+
+// FS2 0x001e6160
+// callcheck: applyMatrix, applyMatrix, find, find, getTopView, getTopView, getTopView, getTopView, identityMatrix, rotateByAngles, rotateByAngles, isViewLinked, raycast, rotateMatrixZ, scaleVec4, translateMatrix, vecDirection, vecDistance (getLampMatrix inline)
+
+void PlayerMotion::getLampTarget(sceVu0FVECTOR out)
+{
+    constexpr float kNearest = 200.0f;
+    constexpr u_int kFaceLamp = 0xe42600f;
+    StageCharacter *character = static_cast<StageCharacter *>(owner);
+    if (character->m_lampItem == nullptr)
+        return;
+
+    const sceVu0FVECTOR reach = { 0.0f, character->m_lampItem->m_lamp->m_spot->getRadius(), 0.0f, 1.0f };
+    sceVu0FVECTOR from, to;
+    if (character->isViewLinked()) {
+        StageObject *top = gStageScene->getTopView();
+        const int kind = top->getKind();
+        if (kind == StageObject_Kind10 || kind == StageObject_Kind11)
+            memcpy(from, top->getWorldMatrix()[3], sizeof(from));
+        else
+            memcpy(from, character->m_model->boneMap.find("bn_head")->value->getMatrix()[3], sizeof(from));
+        applyMatrix(to, top->getWorldMatrix(), reach);
+    } else {
+        sceVu0FMATRIX lamp;
+        getLampMatrix(lamp);
+        memcpy(from, character->m_model->boneMap.find("bn_head")->value->getMatrix()[3], sizeof(from));
+        applyMatrix(to, lamp, reach);
+    }
+
+    if (gStageScene->raycast(out, from, to, 0, kFaceLamp, kFaceFlagsTrip, nullptr) == nullptr)
+        memcpy(out, to, sizeof(to));
+    if (vecDistance(from, out) < kNearest) {
+        sceVu0FVECTOR direction;
+        vecDirection(direction, out, from);
+        scaleVec4(kNearest, direction, direction);
+        for (int i = 0; i < 4; i++)
+            out[i] = from[i] + direction[i];
+    }
+}
+
+// The tail of startWalk and startWalkAt.
+// callcheck: atan2Octant, addAngle, vecDistance, getDeltaSeconds, getDeltaSeconds, getDeltaSeconds, startWalk
+
+void PlayerMotion::walkPoseTo(float rate, const float *target, const float *aimAt, bool scaled)
+{
+    constexpr float kTurnPerRate = 0.61086524f;  // 35 degrees
+    constexpr float kWalkPerRate = 50.0f;
+    constexpr float kFewestFrames = 4.0f;
+    StageCharacter *character = static_cast<StageCharacter *>(owner);
+    const float seconds = character->m_clock->getDeltaSeconds();
+    if (scaled) {
+        const float yaw = atan2Octant(aimAt[0] - target[0], -(aimAt[1] - target[1]));
+        const float walk = vecDistance(target, character->m_xform.position) / kWalkPerRate;
+        const float turn = fabsf(addAngle(yaw, -character->m_xform.rotation[2])) / kTurnPerRate;
+        rate *= turn <= walk ? walk : turn;
+        if (rate < seconds * kFewestFrames)
+            rate = seconds * kFewestFrames;
+    }
+    character->m_model->pose->startWalk(rate / seconds, target, aimAt);
+}
+
+// FS2 0x001ead00
+// callcheck: getWalkStart, atan2Octant, addAngle, vecDistance, getDeltaSeconds, getDeltaSeconds, getDeltaSeconds, startWalk (walkPoseTo)
+
+void PlayerMotion::startWalk(float rate, const float *from, const float *to, bool scaled, bool held)
+{
+    m_walking = 1;
+    m_walkHeld = held;
+    sceVu0FVECTOR target, aimAt;
+    owner->m_model->pose->getWalkStart(target, aimAt, from, to);
+    walkPoseTo(rate, target, aimAt, scaled);
+}
+
+// FS2 0x001eaea0
+// callcheck: identityMatrix, rotateMatrixZ, applyMatrix, getRecordOffset, atan2Octant, addAngle, vecDistance, getDeltaSeconds, getDeltaSeconds, getDeltaSeconds, startWalk (walkPoseTo)
+
+void PlayerMotion::startWalkAt(float rate, void *target, const float *offset, const float *to, bool scaled, bool held)
+{
+    m_walking = 1;
+    m_walkHeld = held;
+    sceVu0FVECTOR ahead = { 0.0f, 100.0f, 0.0f, 0.0f };
+    if (to != nullptr) {
+        sceVu0FMATRIX turn;
+        identityMatrix(turn);
+        rotateMatrixZ(to[2], turn, turn);
+        applyMatrix(ahead, turn, ahead);
+    }
+    sceVu0FVECTOR walkTarget, aimAt;
+    owner->m_model->pose->getRecordOffset(walkTarget, aimAt, static_cast<const PoseBoneRecord *>(target), offset, ahead);
+    walkPoseTo(rate, walkTarget, aimAt, scaled);
+}
+
+// FS2 0x001eb550
+// callcheck: strcmp (weaponDef)
+
+int PlayerMotion::pickGunMotion(int slot) const
+{
+    static const int kGunMotions[][3] = {       /* data 0x2f7ef0 */
+        { 106, 122, 137 }, { 108, 123, 138 }, { 109, 124, 139 }, { 110, 125, 140 },
+        { 111, 126, 141 }, { 112, 127, 142 }, { 113, 128, 143 }, { 114, 129, 144 },
+        { 115, 130, 145 }, { 116, 131, 131 }, { 117, 132, 132 }, { 118, 133, 133 },
+        { 119, 134, 134 }, { 120, 135, 146 }, { 121, 136, 147 }, { 0, 0, 0 },
+    };
+    const StageObject *gun = owner->m_weapons[0];
+    if (gun == nullptr)
+        return Motion_None;
+    int gunClass = 0;
+    const int kind = weaponDef(gun)->kind;
+    if (kind == ItemKind_RifleFirst || kind == ItemKind_FirearmLast)
+        gunClass = strcmp(gun->m_name, "R_MINIMI") == 0 ? 2 : 1;
+    return kGunMotions[slot][gunClass];
+}
+
+// FS2 0x001eb520
+
+int PlayerMotion::pickArmedMotion(int slot) const
+{
+    static const int kArmedMotions[][2] = {     /* data 0x2f7fb0 */
+        { 77, 78 }, { 79, 80 }, { 81, 81 }, { 82, 82 }, { 83, 83 },
+        { 84, 84 }, { 85, 87 }, { 86, 88 }, { 104, 105 },
+    };
+    return kArmedMotions[slot][owner->m_weapons[0] != nullptr ? 1 : 0];
+}
+
+// FS2 0x00215940
+// callcheck: getSaveData, getStageSelect (stageObjRecord; getSaveData's +0x4bc is getStageSelect's record)
+
+bool StageCharacter::isStageDrained() const
+{
+    const int stage = getStageSelect()->stage;
+    if (stage == 0x1b || stage == 0x19)
+        return stageObjRecord(m_itemDef)->kind == 1;
+    if (stage == 0x17 || stage == 0xf)
+        return stageObjRecord(m_itemDef)->kind == 0;
+    return false;
+}
+
+// FS2 0x0020d390
+// callcheck: getSeconds
+
+bool StageCharacter::isMotionSlowed()
+{
+    if (m_slowStart < 0.0f)
+        return false;
+    return m_clock->getSeconds() - m_slowStart < m_slowEnd - m_slowStart;
+}
+
+// FS2 0x002a2100
+// callcheck: getStageSelect, isPartner, playNamed, playNamedHeard2 (stageObjRecord)
+
+void StageCharacter::playLadderStep()
+{
+    const char *name = nullptr;
+    switch (stageObjRecord(m_itemDef)->kind) {
+    case 0:
+        name = "PC_LADDER";
+        break;
+    case 1:
+    case 9:
+    case 10:
+        name = "NPC_LADDER";
+        break;
+    case 2:
+        name = "SBT_LADDER";
+        break;
+    case 4:
+        name = "YBZ_LADDER";
+        break;
+    case 8:
+        name = "RYO_LADDER";
+        break;
+    }
+    if (name == nullptr)
+        return;
+    if (isPartner())
+        playNamed(name, m_xform.position, nullptr);
+    else
+        playNamedHeard2(name, m_xform.position, nullptr);
+}
+
+// FS2 0x002a49c0
+// callcheck: findStepSound, isPartner, playEntry, playEntryHeard
+
+void StageCharacter::playStepSound(int surface, int pace, const float *pos)
+{
+    const SeEntry *entry = findStepSound(surface, pace);
+    if (entry == nullptr)
+        return;
+    if (isPartner())
+        playEntry(entry, pos, nullptr);
+    else
+        playEntryHeard(entry, pos, nullptr);
+}
+
+// The sound names by surface: 0 the surface's own, 1..29 the steps, 30 and
+// 31 what hits it.
+constexpr int kStepSoundColumns = 32;
+constexpr int kSurfaceHitColumn = 31;
+static const char *const kStepSounds[][kStepSoundColumns] = {   /* data 0x2fc3b0 */
+#include "game/stepsounds.inc"
+};
+constexpr int kStepSoundRows = sizeof(kStepSounds) / sizeof(kStepSounds[0]);
+
+// PC: the ROM keeps what it found in a table (bss 0x599860, 1 not looked
+// up); a search per step costs nothing here and cannot go stale.
+static const SeEntry *findSurfaceEntry(int surface, int column)
+{
+    if (surface >= kStepSoundRows)              // PC: the ROM has no bound
+        return nullptr;
+    const char *name = kStepSounds[surface][column];
+    SeTable *table = gStageScene->sound->m_player->m_table;
+    if (name == nullptr || table == nullptr)
+        return nullptr;
+    return table->find(name);
+}
+
+// FS2 0x002cf210
+// callcheck: getStageSelect, strcmp (stageObjRecord; findSurfaceEntry: the sound table's find, inline)
+
+const SeEntry *StageCharacter::findStepSound(int surface, int pace) const
+{
+    // The columns of each family: the first, and whether it has all five
+    // paces (H W S R L) or three (W R L). layout: host
+    struct StepColumn
+    {
+        int  first;
+        bool fivePaces;
+    };
+    static const StepColumn kStepColumns[] = {  /* data 0x30f830 */
+        { 1, true }, { 6, true }, { 11, false }, { 14, false },
+        { 17, false }, { 20, false }, { 23, false }, { 26, false },
+    };
+    if (surface < 0)
+        return nullptr;
+    int family;
+    switch (stageObjRecord(m_itemDef)->kind) {
+    case 0:
+        family = 0;
+        break;
+    case 1:
+    case 9:
+    case 10:
+        family = 1;
+        break;
+    case 2:
+        family = 2;
+        break;
+    case 4:
+        family = 3;
+        break;
+    case 5:
+    case 0xc:
+        family = 4;
+        break;
+    case 6:
+        family = 5;
+        break;
+    case 8:
+        family = 6;
+        break;
+    case 0xf:
+        family = 7;
+        break;
+    default:
+        return nullptr;
+    }
+    if (!kStepColumns[family].fivePaces)
+        pace = pace == 4 ? 2 : (pace == 3 || pace == 2 ? 1 : 0);
+    return findSurfaceEntry(surface, kStepColumns[family].first + pace);
+}
+
+// FS2 0x002cf0b0
+// callcheck: strcmp (findSurfaceEntry: the sound table's find, inline)
+
+const SeEntry *getSurfaceSound(int surface)
+{
+    if (surface < 0)
+        return nullptr;
+    return findSurfaceEntry(surface, kSurfaceHitColumn);
 }
 
 // FS2 0x001e0e20
@@ -1949,13 +2696,13 @@ void PlayerMotion::setHeadTarget(float rate, const float *target)
 
 // FS2 0x001eabc0
 
-void PlayerMotion::startWalkFile(float kind, void *file, const float *from, const float *to, bool arg, bool arg2)
+void PlayerMotion::startWalkFile(float rate, void *file, const float *from, const float *to, bool scaled, bool held)
 {
     m_walkPending = 1;
     m_walkToTarget = 1;
-    memcpy(&m_walkKind, &kind, sizeof(kind));
-    m_walkArg = arg;
-    m_walkArg2 = arg2;
+    m_walkRate = rate;
+    m_walkScaled = scaled;
+    m_walkHeldNext = held;
     m_walkTarget = file;
     memcpy(m_walkOffset, from, sizeof(m_walkOffset));
     m_hasWalkEnd = to != nullptr;
