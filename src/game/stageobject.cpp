@@ -272,7 +272,7 @@ void StageObject::noiseHook()
 
 void StageObject::makeNoise(float loudness)
 {
-    gStageScene->uiState->addNoise(loudness, this, nullptr);
+    gStageScene->noises->addNoise(loudness, this, SceneNoise_Sound);
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -284,7 +284,7 @@ void StageObject::playNamedHeard(const char *name, const float *pos, StageNodeBa
 {
     StageSoundSource *source = gStageScene->sound->addSourceNamed(name, pos, parent);
     if (source != nullptr && source->m_entry->loudness > 0.0f)
-        gStageScene->uiState->addSourceNoise(this, source);
+        gStageScene->noises->addSourceNoise(this, source);
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -377,7 +377,7 @@ StageSoundSource *StageObject::playEntryHeard(const SeEntry *entry, const float 
     if (source == nullptr)
         return nullptr;
     if (source->m_entry->loudness > 0.0f)
-        gStageScene->uiState->addSourceNoise(this, source);
+        gStageScene->noises->addSourceNoise(this, source);
     return source;
 }
 
@@ -391,7 +391,7 @@ StageSoundSource *StageObject::playNamedHeard2(const char *name, const float *po
     if (source == nullptr)
         return nullptr;
     if (source->m_entry->loudness > 0.0f)
-        gStageScene->uiState->addSourceNoise(this, source);
+        gStageScene->noises->addSourceNoise(this, source);
     return source;
 }
 

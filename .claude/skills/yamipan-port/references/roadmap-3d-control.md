@@ -75,6 +75,8 @@ opening is the event d0101") is answered for a first entry into the stage.
 
 **2026-11-05, later still:** the brain is written (game/characterbrain.cpp, `verify`): the class, its eight script slots, its commands and the forwarding runner. Nobody walks by themselves yet: the route 0x22a310..0x22f270 is stubs, and 0x21b9b0 that gives a brain its scripts is unwritten (open-items.md, Next up).
 
+**2026-11-05, later still:** game/stageplayer.cpp, `verify`: `beforeScripts` / `afterScripts`, visibility, sight and hearing are written, and the volumes enter the scene. **The "move" 0x20d8c0 in the table below is `updateVisibility`: it moves nothing.** Nobody looks or listens yet: the route is next for that (open-items.md, Done).
+
 ## The order for control
 
 Each step needs the ones above it. Sizes are the unwritten closure of its roots.

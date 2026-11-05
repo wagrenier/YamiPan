@@ -12563,6 +12563,18 @@
   "was": "FUN_0017e900",
   "why": "answers 0x1c"
  },
+ "0017e950": {
+  "name": "StageVolume::containsObject",
+  "tag": "game-inferred",
+  "was": "FUN_0017e950",
+  "why": "contains (slot +0x24c) of the object's world position"
+ },
+ "0017e9a0": {
+  "name": "BoxVolume::contains",
+  "tag": "game-inferred",
+  "was": "FUN_0017e9a0",
+  "why": "slot +0x24c of vtable 0x312580: the point in the box's own space against +0x200 / +0x210"
+ },
  "0017ea50": {
   "name": "BoxVolume::setSize",
   "tag": "game-inferred",
@@ -12574,6 +12586,18 @@
   "tag": "game-inferred",
   "was": "FUN_0017ea90",
   "why": "base vtable 0x3127f0, then 0x312580, two zero vectors"
+ },
+ "0017eb20": {
+  "name": "BoxVolume::~BoxVolume",
+  "tag": "game-inferred",
+  "was": "FUN_0017eb20",
+  "why": "deleting dtor, vtable 0x312580 family"
+ },
+ "0017eba0": {
+  "name": "SphereVolume::contains",
+  "tag": "game-inferred",
+  "was": "FUN_0017eba0",
+  "why": "slot +0x24c of vtable 0x312a40: distance against +0x200"
  },
  "0017ec20": {
   "name": "SphereVolume::setRadius",
@@ -12604,6 +12628,12 @@
   "tag": "game-inferred",
   "was": "FUN_0017ef90",
   "why": "answers 0x1a"
+ },
+ "0017efa0": {
+  "name": "SphereVolume::~SphereVolume",
+  "tag": "game-inferred",
+  "was": "FUN_0017efa0",
+  "why": "deleting dtor, vtable 0x312a40"
  },
  "0017f040": {
   "name": "SphereVolume::getKind",
@@ -18713,6 +18743,12 @@
   "was": "FUN_0020d820",
   "why": "closed, a key kind, the key works from here"
  },
+ "0020d8c0": {
+  "name": "StageCharacter::updateVisibility",
+  "tag": "game-inferred",
+  "was": "FUN_0020d8c0",
+  "why": "VISIBILITY_ volumes + posture (moveScale) + lamp + light on it give +0x7b8, the scale canSee reads; not a move"
+ },
  "0020e6a0": {
   "name": "StageCharacter::playerEvent",
   "tag": "game-inferred",
@@ -18724,6 +18760,12 @@
   "tag": "game-inferred",
   "was": "FUN_00210720",
   "why": "walks the enemies of its side: a living one whose bite target is this; hasFollower was a guess"
+ },
+ "00210940": {
+  "name": "StageCharacter::canSee",
+  "tag": "game-inferred",
+  "was": "FUN_00210940",
+  "why": "isPointInView on a target's head (a character, by its +0x7b8) or matrix"
  },
  "00210b30": {
   "name": "StageCharacter::isPointInView",
@@ -18808,6 +18850,12 @@
   "tag": "game-inferred",
   "was": "FUN_00214a80",
   "why": "called from the brain; a brief read"
+ },
+ "00214cf0": {
+  "name": "StageCharacter::isAlly",
+  "tag": "game-inferred",
+  "was": "FUN_00214cf0",
+  "why": "neither is the other's enemy"
  },
  "00214d40": {
   "name": "StageCharacter::isEnemyOf",
@@ -18995,6 +19043,12 @@
   "was": "FUN_002176d0",
   "why": "viewLinkedObject() == this"
  },
+ "00217a80": {
+  "name": "StageCharacter::ageSightTable",
+  "tag": "game-inferred",
+  "was": "FUN_00217a80",
+  "why": "a0 = this + 0x468: forgets the table's lines by each character's life state"
+ },
  "002184a0": {
   "name": "StageCharacter::isHeld7a0",
   "tag": "game-inferred",
@@ -19170,16 +19224,22 @@
   "why": "slot +0x30c, native 0x87: wants +0x2cf when allows +0x374 is 1"
  },
  "0021c310": {
-  "name": "StageObject::afterScripts",
+  "name": "StageCharacter::afterScripts",
   "tag": "game-inferred",
   "was": "FUN_0021c310",
-  "why": "clears the per-frame fields of a character"
+  "why": "after the scripts: door bookkeeping, pace copy, a brain state of 0 hides the character"
+ },
+ "0021c3d0": {
+  "name": "StageCharacter::stepStatus",
+  "tag": "game-inferred",
+  "was": "FUN_0021c3d0",
+  "why": "a0 = this + 0x590 (the status block): hears the scene's noise list, counts down +0x68c and +0x690"
  },
  "0021c7c0": {
-  "name": "StageObject::beforeScripts",
+  "name": "StageCharacter::beforeScripts",
   "tag": "game-inferred",
   "was": "FUN_0021c7c0",
-  "why": "a character of the mission list, each frame before the scripts"
+  "why": "mission's character list before the scripts: status step, sight table, visibility, thrown items in view, resets the sight caches"
  },
  "0021cab0": {
   "name": "StageCharacter::setSideBit8",
@@ -19234,6 +19294,12 @@
   "tag": "game-inferred",
   "was": "FUN_0021e050",
   "why": "clears +0x700.., the 0x18 records at +0x468, +0x3d8..+0x3e1; called by reset only"
+ },
+ "0021ec30": {
+  "name": "StageObjIterator::StageObjIterator",
+  "tag": "game-inferred",
+  "was": "FUN_0021ec30",
+  "why": "walks a StageObjArray over the active objects; vtable 0x316060, inline in the host"
  },
  "0022a370": {
   "name": "CharacterRoute::allowPath",
@@ -20382,34 +20448,46 @@
   "why": "setup calls it with STEP60.. and ALLDOOR on brain +0x180 -> +8; adds or removes a name in a set and refreshes"
  },
  "00242e80": {
-  "name": "SceneUiState::pollSoundSources",
+  "name": "SceneNoiseList::pollSoundSources",
   "tag": "game-inferred",
   "was": "FUN_00242e80",
-  "why": "16 entries: StageSound::findSource, pushes into one of two 0x20-entry lists, flips them"
+  "why": "was SceneUiState: scene +0xe0 holds the frame's noises, nothing of the UI"
  },
  "00242fc0": {
-  "name": "SceneUiState::addSourceNoise",
+  "name": "SceneNoiseList::addSourceNoise",
   "tag": "game-inferred",
   "was": "FUN_00242fc0",
-  "why": "the same from a source, entry +0xc the value"
+  "why": "as pollSoundSources"
  },
  "002430a0": {
-  "name": "SceneUiState::addNoise",
+  "name": "SceneNoiseList::addNoise",
   "tag": "game-inferred",
   "was": "FUN_002430a0",
-  "why": "f12, object and extra into the back list of 0x20"
+  "why": "as pollSoundSources"
  },
  "00243100": {
-  "name": "SceneUiState::~SceneUiState",
+  "name": "SceneNoiseList::~SceneNoiseList",
   "tag": "game-inferred",
   "was": "FUN_00243100",
-  "why": "deleting dtor of StageScene +0xe0: only the delete"
+  "why": "as pollSoundSources"
  },
  "00243150": {
-  "name": "SceneUiState::SceneUiState",
+  "name": "SceneNoiseList::SceneNoiseList",
   "tag": "game-inferred",
   "was": "FUN_00243150",
-  "why": "StageScene ctor new(0x3cc) for +0xe0: words +0x180 / +0x304 / +0x308 zero and a table from +0x30c (0, 0, 0xf, 0, 0 per entry); name a guess"
+  "why": "as pollSoundSources"
+ },
+ "002431e0": {
+  "name": "SceneNoise::place",
+  "tag": "game-inferred",
+  "was": "FUN_002431e0",
+  "why": "a character's head for kinds 1..3, else the object's position"
+ },
+ "002432a0": {
+  "name": "SceneNoise::isFromAlly",
+  "tag": "game-inferred",
+  "was": "FUN_002432a0",
+  "why": "the source is a character and an ally of the hearer"
  },
  "00243350": {
   "name": "UiTrack::draw",

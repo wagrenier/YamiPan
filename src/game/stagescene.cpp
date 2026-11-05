@@ -397,7 +397,7 @@ StageObject *StageScene::getTopView()
 // The ROM's +0x124 second array is freed from 0x10 bytes before it
 // (CodeWarrior's array header); the host frees what it allocated.
 // FS2 0x0019bbe0
-// callcheck: ~StageObjectList, ~ScenePairTable, ~SceneRecordBuckets, ~StageNodeTree, ~StageSound, ~DemoStream, ~SceneRender, ~KeepList, ~Clock, ~MenuProgHolder, ~MenuProgSet, ~AreaGrid, ~SceneBufferSet, ~StageParty, ~ScenePool, ~PauseMenuState, ~SceneBoxList, ~SceneUiState, ~StageAlert, ~AreaClip, ~StageMission, ~SceneDirector, ~SceneModel, operator_delete, operator_delete[] (the delete-expressions; the printer through its virtual dtor)
+// callcheck: ~StageObjectList, ~ScenePairTable, ~SceneRecordBuckets, ~StageNodeTree, ~StageSound, ~DemoStream, ~SceneRender, ~KeepList, ~Clock, ~MenuProgHolder, ~MenuProgSet, ~AreaGrid, ~SceneBufferSet, ~StageParty, ~ScenePool, ~PauseMenuState, ~SceneBoxList, ~SceneNoiseList, ~StageAlert, ~AreaClip, ~StageMission, ~SceneDirector, ~SceneModel, operator_delete, operator_delete[] (the delete-expressions; the printer through its virtual dtor)
 
 StageScene::~StageScene()
 {
@@ -453,7 +453,7 @@ StageScene::~StageScene()
     if (menu != nullptr)
         menu->destroy();
     delete boxes;
-    delete uiState;
+    delete noises;
     delete showFlags;
     delete alert;
     if (fade != nullptr)
@@ -503,7 +503,7 @@ StageScene::~StageScene()
 // record. Who / files / the view target and the sequences are set later
 // (stageThread, the scene's update).
 // FS2 0x0019c180
-// callcheck: operator_new, StageObjectList, operator_new, ScenePairTable, operator_new, SceneRecordBuckets, operator_new, StageNodeTree, operator_new, StageSound, resetStageGroupTable, operator_new, DemoStream, setDir, operator_new, SceneRender, operator_new, KeepList, operator_new, operator_new[], createChild, operator_new, ScreenFill, operator_new, WideFontPrinter, operator_new, SceneBoxList, operator_new, StageFade, operator_new, ScenePool, operator_new, PauseMenuState, operator_new, UiItemList, operator_new, StageMenu, operator_new, SceneUiState, operator_new, UiShowFlags, operator_new, StageAlert, operator_new, Rand48, operator_new, StageMission, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, StageParty, drawSysPush
+// callcheck: operator_new, StageObjectList, operator_new, ScenePairTable, operator_new, SceneRecordBuckets, operator_new, StageNodeTree, operator_new, StageSound, resetStageGroupTable, operator_new, DemoStream, setDir, operator_new, SceneRender, operator_new, KeepList, operator_new, operator_new[], createChild, operator_new, ScreenFill, operator_new, WideFontPrinter, operator_new, SceneBoxList, operator_new, StageFade, operator_new, ScenePool, operator_new, PauseMenuState, operator_new, UiItemList, operator_new, StageMenu, operator_new, SceneNoiseList, operator_new, UiShowFlags, operator_new, StageAlert, operator_new, Rand48, operator_new, StageMission, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, StageParty, drawSysPush
 
 StageScene::StageScene(bool isSubScene, StageSound *sound)
 {
@@ -582,7 +582,7 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
         pauseState = new PauseMenuState();
         itemList   = new UiItemList(printer, 0);
         menu       = new StageMenu(printer, 0);
-        uiState    = new SceneUiState();
+        noises    = new SceneNoiseList();
         showFlags  = new UiShowFlags();
         alert      = new StageAlert();
         rng        = new Rand48();
@@ -595,7 +595,7 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
         pauseState = nullptr;
         itemList   = nullptr;
         menu       = nullptr;
-        uiState    = nullptr;
+        noises    = nullptr;
         showFlags  = nullptr;
         alert      = nullptr;
         rng        = nullptr;
@@ -4411,14 +4411,14 @@ void StageScene::runStageScripts()
     if (isSubScene)
         return;
 
-    uiState->pollSoundSources();
+    noises->pollSoundSources();
 
     StageObject **it = currentMission()->characters;
     StageObject **end = currentMission()->charactersEnd();
     for (; it != end; it++) {
         StageObject *character = *it;
         if (character->m_active)
-            character->beforeScripts();
+            static_cast<StageCharacter *>(character)->beforeScripts();
         else if (character->canSpawn())
             character->spawn();
     }
@@ -4447,7 +4447,7 @@ void StageScene::runStageScripts()
     end = currentMission()->charactersEnd();
     for (; it != end; it++) {
         if ((*it)->m_active)
-            (*it)->afterScripts();
+            static_cast<StageCharacter *>(*it)->afterScripts();
     }
 }
 

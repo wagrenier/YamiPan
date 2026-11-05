@@ -620,10 +620,6 @@ public:
     void breakPart(int part, bool withEffect);                           // FS2 0x00175900
     // Of the parts still shown, the one nearest from's head; -1 none.
     int  nearestPart(StageObject *from);                                 // FS2 0x00175700
-    // A character of the mission's list, around the frame's scripts
-    // (StageScene::runStageScripts): what they do is unread.
-    void beforeScripts();                                                // FS2 0x0021c7c0
-    void afterScripts();                                                 // FS2 0x0021c310
     // An inactive character of the list comes back: canSpawn asks (no when
     // its position record +0x66c is valid and +0x6ac is 0), spawn takes the
     // script entry and the position.
@@ -650,7 +646,8 @@ public:
     // +0x5cc above 0: such a character's shadow may come from a light that
     // follows the player (SceneRender::updateLights). A plain stub until its TU.
     bool followsPlayerLight();                                           // FS2 +0x5cc
-    // A character's action as the menus see it (StageScene::playerAction).
+    // A character's action as the menus see it (StageScene::playerAction):
+    // CharacterAction.
     int  getActionState();                                               // FS2 0x00214fc0
 
     // This is the scene's player (gStageScene->player).
@@ -766,6 +763,17 @@ public:
         u_char m_altAction;     // FS2 +0x454: the player's: which alternate action (StageScene::playerAction)
     };
     int    m_ammoA;             // FS2 +0x458: a firearm's (the first)
+};
+
+// StageObject::getActionState. The values between are unread (other callers).
+enum CharacterAction
+{
+    CharacterAction_None    = 0,
+    CharacterAction_Attack  = 2,    // a blow or a shot under way
+    CharacterAction_Scope   = 7,    // looking through camview_zoom
+    CharacterAction_Driving = 9,
+    CharacterAction_Ladder  = 0xd,
+    CharacterAction_Held    = 0x10, // a grab
 };
 
 // The player's +0x224 object (its +0 the player). Guess: the motion set,
@@ -1960,6 +1968,11 @@ public:
     int getKind() override { return StageObject_Volume; }
     // The object list's group 7, then its script by name.
     void addToScene(const char *name);                                   // FS2 0x0017ecb0: StageObjectList::add7
+    // Slot +0x24c: point is inside. Empty in the base's table.
+    virtual bool contains(const float *point) = 0;                       // FS2 vtable +0x24c
+    // The object's world position is inside. Slot +0x260 (data 0x3127e0), its
+    // runner thunk 0x17f130; no caller in the port yet.
+    bool containsObject(StageObject *object);                            // FS2 0x0017e950
 };
 // layout: host
 class SphereVolume : public StageVolume
@@ -1968,7 +1981,11 @@ public:
     // FS2 0x0017f040
     int getKind() override { return StageObject_SphereVolume; }
     SphereVolume();                                                      // FS2 0x0017ec30
+    ~SphereVolume() override;                                            // FS2 0x0017efa0: deleting
     void setRadius(float radius);                                        // FS2 0x0017ec20
+    bool contains(const float *point) override;                          // FS2 0x0017eba0
+private:
+    float m_radius = 0.0f;      // FS2 +0x200
 };
 // layout: host
 class BoxVolume : public StageVolume
@@ -1977,7 +1994,12 @@ public:
     // FS2 0x0017e900
     int getKind() override { return StageObject_BoxVolume; }
     BoxVolume();                                                         // FS2 0x0017ea90
+    ~BoxVolume() override;                                               // FS2 0x0017eb20: deleting
     void setSize(float width, float height, float depth);                // FS2 0x0017ea50
+    bool contains(const float *point) override;                          // FS2 0x0017e9a0
+private:
+    sceVu0FVECTOR m_min = {};   // FS2 +0x200: in the box's own space, z from 0
+    sceVu0FVECTOR m_max = {};   // FS2 +0x210
 };
 
 // The boxes with a number in their name (+0x140; EE 0x180, the vtables
@@ -2337,9 +2359,31 @@ public:
     // The nearest foe: of the enemy candidates, or (foes false) of the
     // mission's characters; sight measures by what it sees, else by distance.
     StageObject *findNearestFoe(bool foes, bool sight);                  // FS2 0x00214a80
-    // point is within halfAngle of its view; distance answers how far. The
-    // arguments past point are read from the one caller so far.
-    bool isPointInView(float halfAngle, float scale, const float *point, float *distance, void *unused); // FS2 0x00210b30
+    // point lies inside its view: within viewAngle (the whole cone; a half
+    // circle up to kCloseViewRange), nearer than scale * m_sight, and no
+    // face between; skip goes to the ray. distance answers how far.
+    bool isPointInView(float viewAngle, float scale, const float *point, float *distance, StageObject *skip); // FS2 0x00210b30
+    // isPointInView on target: a character's head, by how visible it is;
+    // anything else's position at full range.
+    bool canSee(float viewAngle, StageObject *target, float *distance);  // FS2 0x00210940
+    // Neither is the other's enemy.
+    bool isAlly(StageObject *other);                                     // FS2 0x00214cf0
+    // The mission's list runs these around the frame's scripts
+    // (StageScene::runStageScripts): before, what it heard, saw and how
+    // visible it is; after, a brain gone off takes it out of the scene.
+    void beforeScripts();                                                // FS2 0x0021c7c0
+    void afterScripts();                                                 // FS2 0x0021c310
+    // The status block's frame: what it hears of the scene's noises
+    // (m_scriptValues[kScriptValueHeard], m_heardFrom, m_point6e0), and its
+    // two countdowns.
+    void stepStatus();                                                   // FS2 0x0021c3d0
+    // m_sightTable forgets the lines of characters no longer worth seeing.
+    void ageSightTable();                                                // FS2 0x00217a80
+    // m_visibility from the VISIBILITY_ volume it stands in, its posture,
+    // its lamp and the light on it.
+    float updateVisibility();                                            // FS2 0x0020d8c0
+    // The thrown items it sees (m_seenThrown, m_seenFlying, m_followedFlying).
+    void watchThrownItems();                                             // inline in 0x0021c7c0
     // The voice of a found foe (RYO_FIND or the sheet's).
     void sayFound();                                                     // FS2 0x002a46d0
     // +0x38c allows it: the motion's SHOUT at this loudness.
@@ -2581,12 +2625,24 @@ public:
     float  m_attackInterval = 0.0f; // FS2 +0x604: 攻撃間隔 / 30
     float  m_biteInterval = 0.0f;   // FS2 +0x608: 噛みつき間隔 / 30
     float  m_reloadRate = 0.0f;     // FS2 +0x60c: リロード / 100
+    u_char m_610 = 0;           // FS2 +0x610: cleared by afterScripts; no reader found
+    int    m_lastDoorMode = 0;  // FS2 +0x614: afterScripts: StageDoor::m_doorMode of m_doorInUse; no reader found
+    StageDoor *m_doorInUse = nullptr; // FS2 +0x618: afterScripts: m_door while its m_user is this; no reader found
+    int    m_61c = 0;           // FS2 +0x61c: cleared by afterScripts, 0x20eb40 writes it; no reader found
     StageObject *m_lastHitBy = nullptr; // FS2 +0x620: who hit it last (0x20e770, 0x20eb40); the game over's cause
     StageObject *m_biteCandidate = nullptr; // FS2 +0x624: no writer found
+    int    m_628 = 0;           // FS2 +0x628: cleared by afterScripts, the route's tasks write it (0x228670, 0x229f60, 0x22aee0, 0x22b580)
     int    m_62c = 0;           // FS2 +0x62c: 0..9 from a script; the hits 0x20e770, 0x20eb40 write it, 0x1ce3f0 reads it
     int    m_scriptValues[11] = {}; // FS2 +0x630: getScriptValue
+    StageObject *m_heardFrom = nullptr; // FS2 +0x65c: whose noise it heard this frame; read by 0x21b890
+    float  m_lastNoiseRange = 0.0f; // FS2 +0x660: m_noiseRange of the frame before; read by 0x219980
+    float  m_noiseRange = 0.0f; // FS2 +0x664: FLT_MAX each frame; its writer is unread; read by 0x2196f0
     int    m_670 = 0;           // FS2 +0x670: 0 from the block; only the property reads it here
+    StageThrownItem *m_seenFlying = nullptr;     // FS2 +0x67c: the flying thrown item in view
+    StageThrownItem *m_followedFlying = nullptr; // FS2 +0x680: the one m_point740 / m_point760 are about
+    StageThrownItem *m_seenThrown = nullptr;     // FS2 +0x684: the last one in view lying still
     u_char m_bulletFlying = 0;  // FS2 +0x688: set each frame by a bullet of its own
+    u_char m_hitThisFrame = 0;  // FS2 +0x689: PlayerMotion::takeHits sets it; afterScripts clears it
     int    m_68c = 0;           // FS2 +0x68c: 0 or less, the brain's state 5 may sound the alarm (writer unread)
     int    m_meleeScale = 0;    // FS2 +0x6c0: 打撃攻撃力修正値
     int    m_shotScale = 0;     // FS2 +0x6c4: 射撃攻撃力修正値
@@ -2594,14 +2650,18 @@ public:
     int    m_6cc = 0;           // FS2 +0x6cc: the same; 0x228670 reads it
     int    m_6d0 = 0;           // FS2 +0x6d0
     int    m_6d4 = 0;           // FS2 +0x6d4
-    ScriptPoint m_point6e0;     // FS2 +0x6e0: set by 0x21c3d0, the status block's step
+    ScriptPoint m_point6e0;     // FS2 +0x6e0: stepStatus: where the noise it heard came from
     ScriptPoint m_point700;     // FS2 +0x700: where 0x21bfd0 found it, once
     ScriptPoint m_scriptPoint;  // FS2 +0x720: a script's (properties, native 0x94) or the brain's (0x21ab60, 0x219040)
-    ScriptPoint m_point740;     // FS2 +0x740: beforeScripts: a foe's bone +0x450
-    ScriptPoint m_point760;     // FS2 +0x760: beforeScripts: where the foe of +0x680 was last
-    ScriptPoint m_point780;     // FS2 +0x780: beforeScripts: the last foe's place
-    u_char m_7a0 = 0;           // FS2 +0x7a0: cleared here; read 0x21c980, 0x2184a4 (unread)
-    int    m_7c0 = 0;           // FS2 +0x7c0: readers 0x20d988, 0x20dbac (the move, unwritten)
+    ScriptPoint m_point740;     // FS2 +0x740: beforeScripts: the flying item's throw vector (+0x450)
+    ScriptPoint m_point760;     // FS2 +0x760: beforeScripts: where the followed item came down
+    ScriptPoint m_point780;     // FS2 +0x780: beforeScripts: where the item lying still was
+    u_char m_7a0 = 0;           // FS2 +0x7a0: cleared by beforeScripts and resetActionState; read 0x2184a4 (isHeld7a0)
+    int    m_foeCache[4] = {};  // FS2 +0x7a4: 1 each frame, "not asked yet": getBestFoe and the other sight answers, unwritten
+    int    m_foeCacheId = -1;   // FS2 +0x7b4: -1 each frame, the same (0x21a090)
+    float  m_visibility = 0.0f; // FS2 +0x7b8: 0 unseen .. 1 plain to see: scales what canSee reaches
+    float  m_areaDark = 0.0f;   // FS2 +0x7bc: the darkness that gave it; 0x1adaa0 reads it (a native, unread)
+    StageVolume *m_area = nullptr; // FS2 +0x7c0: the VISIBILITY_ volume it stands in
     int    m_7c4 = 0;           // FS2 +0x7c4: readers 0x218528, 0x217ccc (unread)
     CharacterBlock7c8 m_block7c8 = {}; // FS2 +0x7c8
 };
@@ -2982,20 +3042,66 @@ struct SceneBoxList
     void update();                                                       // FS2 0x0023aca0
 };
 
-// +0xe0. layout: host (EE 0x3cc).
-struct SceneUiState
+// What a noise says of who may hear it. A hearer's stepStatus turns it into
+// a bit of m_scriptValues[kScriptValueHeard].
+enum SceneNoiseKind
 {
-    SceneUiState();                                                      // FS2 0x00243150
-    ~SceneUiState();                                                     // FS2 0x00243100: deleting
-    // Sixteen entries look their sound source up (StageSound::findSource)
-    // and fill the back one of two lists; then the lists flip.
+    SceneNoise_Sound = 0,       // a played sound: heard by chance, the loudest's place kept
+    SceneNoise_Any   = 1,       // by everyone in reach
+    SceneNoise_Ally  = 2,       // by its allies
+    SceneNoise_Foe   = 3,       // by the others
+};
+constexpr u_int kSceneNoises     = 0x20;    // more in a frame are lost
+constexpr u_int kSceneSoundWatch = 0x10;
+constexpr int   kSceneWatchDelay = 0xf;     // frames between a watched sound's noises
+
+// layout: host -- EE 0xc.
+struct SceneNoise
+{
+    StageObject *source;        // FS2 +0x0
+    float        loudness;      // FS2 +0x4: how far it reaches
+    int          kind;          // FS2 +0x8: SceneNoiseKind
+
+    // Where it comes from: a character's head, or the object's position.
+    const float *place() const;                                          // FS2 0x002431e0
+    bool isFromAlly(StageObject *hearer) const;                          // FS2 0x002432a0
+};
+// A sound that stays audible while it plays (SeEntry::resumable).
+// layout: host -- EE 0xc.
+struct SceneSoundWatch
+{
+    StageObject      *object;   // FS2 +0x0: null a free entry
+    StageSoundSource *source;   // FS2 +0x4
+    int               delay;    // FS2 +0x8: frames to its next noise
+};
+
+// +0xe0: the frame's noises, in two lists: stepStatus reads the front one,
+// what is made this frame goes to the back one. layout: host (EE 0x3cc).
+struct SceneNoiseList
+{
+    SceneNoiseList();                                                    // FS2 0x00243150
+    ~SceneNoiseList();                                                   // FS2 0x00243100: deleting
+    // The watched sounds make their noises; then the lists flip.
     void pollSoundSources();                                             // FS2 0x00242e80
-    // A noise of an object into the back list: 0x20 entries of {source,
-    // loudness, extra}, more are lost.
-    void addNoise(float loudness, StageObject *object, void *extra);     // FS2 0x002430a0
-    // The same from a playing source (entry +0xc the loudness); a source
-    // with entry +0x1d also takes a free one of the sixteen entries.
+    // A noise of an object into the back list.
+    void addNoise(float loudness, StageObject *object, int kind);        // FS2 0x002430a0
+    // The same from a playing source; a resumable one is watched as well.
     void addSourceNoise(StageObject *object, StageSoundSource *source);  // FS2 0x00242fc0
+
+    // layout: host -- EE 0x184.
+    struct List
+    {
+        SceneNoise noises[kSceneNoises]; // FS2 +0x0
+        u_int      count;                // FS2 +0x180
+    };
+    const List &front() const { return m_lists[m_front]; }
+
+private:
+    List &back() { return m_lists[(m_front + 1) & 1]; }
+
+    List            m_lists[2];          // FS2 +0x0
+    u_int           m_front;             // FS2 +0x308
+    SceneSoundWatch m_watches[kSceneSoundWatch]; // FS2 +0x30c
 };
 
 // +0xe4: a 48-bit LCG (drand48's multiplier 0x5deece66d; the run
