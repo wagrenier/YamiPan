@@ -202,7 +202,7 @@ def find_vcvars():
 def run_msvc(bat, name, files, defines, incs, prefix, permissive=True):
     OUT.mkdir(parents=True, exist_ok=True)
     rsp = OUT / f'{name}.rsp'
-    opts = ['/nologo', '/Zs', '/TP', '/std:c++latest', '/Zc:preprocessor', '/utf-8', '/W1', '/wd4996',
+    opts = ['/nologo', '/MP', '/Zs', '/TP', '/std:c++latest', '/Zc:preprocessor', '/utf-8', '/W1', '/wd4996',
             '/D_CRT_SECURE_NO_WARNINGS', '/EHsc'] + (['/permissive'] if permissive else [])
     opts += [f'/FI"{prefix}"'] if prefix else []
     opts += [f'/D{d}' for d in defines] + [f'/I"{i}"' for i in incs] + [f'"{f}"' for f in files]
@@ -214,13 +214,11 @@ def run_msvc(bat, name, files, defines, incs, prefix, permissive=True):
     return r.returncode, r.stdout + r.stderr
 
 
-def check_msvc(bat):
+def check_msvc(bat, tus):
     """Every cl pass; True when all of them compile."""
-    files = list(game_files())
-    sources = [f for f in files if f.suffix not in ('.h', '.hpp') and f != MAIN]
-    headers = [f for f in OUT.glob('h_*.cpp')]
+    sources = [f for f in game_files() if f.suffix not in ('.h', '.hpp') and f != MAIN]
     defines, incs, prefix = build_flags()
-    passes = [(f'{len(headers)} headers + {len(sources)} sources', headers + sources, defines, incs, prefix, True)]
+    passes = [(f'{len(tus)} headers + {len(sources)} sources', tus + sources, defines, incs, prefix, True)]
     for (permissive, ds, ics, pre), group in platform_groups().items():
         label = f'{len(group)} {"SDK" if permissive else "Pan layer"} sources'
         passes.append((label, group, list(ds), list(ics), pre, permissive))
@@ -258,7 +256,7 @@ def main():
         print('msvc: skipped (--no-msvc)')
     elif not bat:
         print('msvc: skipped - MSVC not found (set YAMIPAN_VCVARS to vcvars64.bat)')
-    elif not check_msvc(bat):
+    elif not check_msvc(bat, tus):
         failed = True
 
     if '--keep' not in sys.argv:

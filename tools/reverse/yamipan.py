@@ -55,7 +55,7 @@ def _which_dir(exe):
     return str(Path(found).parent) if found else ''
 
 
-# Host toolchains: MinGW GCC builds (build.py); MSVC syntax-checks game code here (layoutcheck.py), and Visual
+# Host toolchains: MinGW GCC builds (build.py); MSVC syntax-checks every source here (layoutcheck.py), and Visual
 # Studio builds the whole tree from CMakeLists.txt.
 # MSYS2's ucrt64 holds g++, ninja, cmake and gdb here and is not on PATH, so a scheduled run finds them
 # only through this default.
