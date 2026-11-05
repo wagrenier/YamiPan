@@ -61,6 +61,8 @@ opening is the event d0101") is answered for a first entry into the stage.
 
 **2026-11-05, later still:** doors are written and switched off (`kDoorsEnabled`): with them on a stage run crashes (open-items.md, Done, game/playermotion.cpp fifth run).
 
+**2026-11-05, later still:** the melee stance and blows work in New Game on stage 1 (R1, then Cross); nothing there can be locked or hit yet, and the camera in the stance is not proven (open-items.md, Done, game/playermotion.cpp ninth run).
+
 ## The order for control
 
 Each step needs the ones above it. Sizes are the unwritten closure of its roots.

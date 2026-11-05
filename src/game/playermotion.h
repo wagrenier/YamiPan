@@ -14,9 +14,10 @@
  *  (CharacterWants), then each turns the two into a request, the last one
  *  asking for the idle when nothing else did.
  *
- *  Written so far: the links Walk, Up, Fall, Jump, Ladder, Door; the conditions
- *  Always, QuickTurn, Squat, Turn, Move, Level, LevelLift, Ladder, Jump,
- *  LadderMove, Door, and all of controlStep (what a motion's events do, the feet,
+ *  Written so far: the links Walk, Up, Fall, Jump, Ladder, Door, Pickup, Battle,
+ *  BtAttack; the conditions Always, QuickTurn, Squat, Turn, Move, Level, LevelLift,
+ *  Ladder, Jump, LadderMove, Door, PutItem, PickupItem, Lock, BtOn, BtAttack,
+ *  BtAtkCombo, BtMove, and all of controlStep (what a motion's events do, the feet,
  *  the wind, health, the fidgets). A link or a condition of another name answers null, which
  *  the ROM takes as a motion with no link function; addCondition skips it.
  *  The list 0x1df0b0 fills is not written.
@@ -259,6 +260,28 @@ public:
     u_char     picks = 1;         // FS2 +0x28: 1 PickupItem asked, 0 PutItem
 };
 
+// The fighting stance: bt_on, bt_s, bt_w.., turns, with the conditions Lock,
+// BtAttack and BtMove. Vtable 0x317a70. layout: host.
+class BattleLink : public MotionLink
+{
+public:
+    BattleLink(StageCharacter *owner, PlayerMotion *motion_);            // FS2 0x0027b000
+    void onLeave(MotionLink *next) override;                             // FS2 0x0027af70
+};
+
+// A blow: Lock and BtAtkCombo, the second from the motion's Cancel event on.
+// The blow ends with the motion, at a wall (bumped), or on the part it
+// breaks, and those two hold the next blow off for 0.65 s. Vtable 0x317a40.
+// layout: host.
+class BtAttackLink : public MotionLink
+{
+public:
+    BtAttackLink(StageCharacter *owner, PlayerMotion *motion_);          // FS2 0x0027aea0
+    void onStart() override;                                             // FS2 0x0027adf0
+    void onRun() override;                                               // FS2 0x0027ac60
+    void onLeave(MotionLink *next) override;                             // FS2 0x0027aba0
+};
+
 // The motions of the feet: stand, walk, run, turn. Each frame it looks for
 // a face ahead and what lies behind it: the edge the player may stop at.
 // The main camera rises when the drop is deep, partnerResponds asks the
@@ -344,6 +367,21 @@ struct MotionProbe
     StageDoor *findDoor();                                               // FS2 0x0026a6b0
     // The nearest free item in reach that the head can see.
     StageItem *findItem();                                               // FS2 0x0026a4a0
+    // Something to hit: alive, on, and if a character, an enemy.
+    bool isTargetValid(StageObject *target);                             // FS2 0x0026b5d0
+    // The head sees point, and not more than 60 degrees up or down.
+    bool canSeeTarget(StageObject *target, const float *point);          // FS2 0x0026b690
+    // The best target but m_290 in a cone along angles (x, z) within range:
+    // of group 2 with characters, else of the other groups; nearest, or
+    // nearest to the axis. Nothing found: m_290.
+    StageObject *findTargetAhead(float cone, float range, bool characters, bool nearest,
+                                 const float *angles);                   // FS2 0x0026a8f0
+    // The same to one side: side 1 in (0, span) from facing, 0 in (span, 0);
+    // nearest, or the farthest round.
+    StageObject *findTargetBeside(float facing, float span, float range, bool characters,
+                                  bool nearest, int side);               // FS2 0x0026aec0
+    // A blow is on and m_290's nearest part is within 140: that part; -1 none.
+    int  findBlowPart();                                                 // FS2 0x0026a250
     // A ray from 50 above the feet to just beyond the radius, ahead or
     // behind. out takes the end, back at the feet's height.
     StageCollisionFace *faceAhead(sceVu0FVECTOR out, bool forward);      // FS2 0x0026c4b0

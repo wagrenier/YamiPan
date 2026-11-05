@@ -12149,6 +12149,12 @@
   "was": "FUN_001756b0",
   "why": "side slot +8 through thunk 0x1773d0: ends the one dirty frame"
  },
+ "00175700": {
+  "name": "StageObject::nearestPart",
+  "tag": "game-inferred",
+  "was": "FUN_00175700",
+  "why": "(this, from): of +0x214's shown parts, the nearest from's bn_head"
+ },
  "001758f0": {
   "name": "StageMatrixNode::getWorldMatrix",
   "tag": "game-inferred",
@@ -13576,6 +13582,12 @@
   "tag": "game-inferred",
   "was": "FUN_00186ee0",
   "why": "parseMap's: sets the map file's six section pointers +0..+0x14 from the counts at +0x18.."
+ },
+ "00186f80": {
+  "name": "PartSwitch::partName",
+  "tag": "game-inferred",
+  "was": "FUN_00186f80",
+  "why": "(switch, index): the name of parts[index] in the model's name table"
  },
  "00186fe0": {
   "name": "PartSwitch::show",
@@ -17675,6 +17687,18 @@
   "was": "FUN_0020c0e0",
   "why": "no party or jack, no walk, no queue, no fade: UiItemList::update's gate"
  },
+ "0020c1d0": {
+  "name": "StageCharacter::getLockPoint",
+  "tag": "game-inferred",
+  "was": "FUN_0020c1d0",
+  "why": "getTargetPoint of +0x290"
+ },
+ "0020c1f0": {
+  "name": "StageCharacter::getTargetPoint",
+  "tag": "game-inferred",
+  "was": "FUN_0020c1f0",
+  "why": "(target, out, plain): head, bn_spine1 past 300 with a firearm, nearest of three for sheet kind 0xb, a light's body, a part"
+ },
  "0020c940": {
   "name": "StageCharacter::getSwayMatrix",
   "tag": "game-inferred",
@@ -17747,6 +17771,12 @@
   "was": "FUN_00211430",
   "why": "+0x598 clamped to the sheet's endurance; 0 starts the game over for the player or partner"
  },
+ "00211910": {
+  "name": "StageCharacter::getTakenOverPlayer",
+  "tag": "game-inferred",
+  "was": "FUN_00211910",
+  "why": "scene +0x78 when this is the driver and not the player"
+ },
  "00211970": {
   "name": "StageCharacter::isTakenOver",
   "tag": "game-inferred",
@@ -17776,6 +17806,12 @@
   "tag": "game-inferred",
   "was": "FUN_00214a70",
   "why": "+0x40 = 1, first thing parse does to a character record"
+ },
+ "00214d40": {
+  "name": "StageCharacter::isEnemyOf",
+  "tag": "game-inferred",
+  "was": "FUN_00214d40",
+  "why": "sheet kind to a side bit, tested against getSides; +0x450 wins while on the pad"
  },
  "00214ee0": {
   "name": "StageCharacter::forcedViewChange",
@@ -17855,11 +17891,23 @@
   "was": "FUN_00215ef0",
   "why": "a0 an object: equal to gStageScene->player (+0x78); 76 call sites"
  },
+ "00215f10": {
+  "name": "StageCharacter::getSides",
+  "tag": "game-inferred",
+  "was": "FUN_00215f10",
+  "why": "+0x590, the sheet's PC / NP / corpse / dark bits (copied at 0x21ddf0), the player's while taken over; recursion inlined"
+ },
  "00216140": {
   "name": "StageObject::getCharacterClass",
   "tag": "game-inferred",
   "was": "FUN_00216140",
   "why": "a bit from the character record's kind +0x10, by difficulty"
+ },
+ "002162a0": {
+  "name": "StageCharacter::isBlowActive",
+  "tag": "game-inferred",
+  "was": "FUN_002162a0",
+  "why": "ground +0x1ac indexes the blow bodies +0x198, first byte on"
  },
  "002162d0": {
   "name": "StageCharacter::getTurnRate",
@@ -21311,6 +21359,12 @@
   "was": "FUN_00269da0",
   "why": "this-adjusting thunk in the vtable of the object seen at +0x40, a jump to SubSceneModelObject::~SubSceneModelObject"
  },
+ "0026a250": {
+  "name": "MotionProbe::findBlowPart",
+  "tag": "game-inferred",
+  "was": "FUN_0026a250",
+  "why": "kinds 1..6 not 3, a blow on, the nearest part within 140 on the plane of the feet"
+ },
  "0026a4a0": {
   "name": "MotionProbe::findItem",
   "tag": "game-inferred",
@@ -21322,6 +21376,30 @@
   "tag": "game-inferred",
   "was": "FUN_0026a6b0",
   "why": "walks group 1 for kind 2, isFree, the facing slot, a segment for an open type 2 door"
+ },
+ "0026a8f0": {
+  "name": "MotionProbe::findTargetAhead",
+  "tag": "game-inferred",
+  "was": "FUN_0026a8f0",
+  "why": "(cone, range, characters, nearest, angles): best of the groups in a cone, +0x290 when none"
+ },
+ "0026aec0": {
+  "name": "MotionProbe::findTargetBeside",
+  "tag": "game-inferred",
+  "was": "FUN_0026aec0",
+  "why": "(facing, span, range, characters, nearest, side): the same to one side of facing"
+ },
+ "0026b5d0": {
+  "name": "MotionProbe::isTargetValid",
+  "tag": "game-inferred",
+  "was": "FUN_0026b5d0",
+  "why": "+0x36, +0x34; a character must be an enemy, slot +0x278 set, +0x598 above 0"
+ },
+ "0026b690": {
+  "name": "MotionProbe::canSeeTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0026b690",
+  "why": "segment from bn_head, mask 0x1e42600f, and pitch within pi/3"
  },
  "0026b860": {
   "name": "MotionProbe::pointAhead",
@@ -21442,6 +21520,60 @@
   "tag": "game-inferred",
   "was": "FUN_0026cf40",
   "why": "the dtor on vtables 0x317140 / 0x317164 / 0x31717c, then StageObject's"
+ },
+ "0026df60": {
+  "name": "BtMoveCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_0026df60",
+  "why": "vtable 0x317410: bt_off when ready goes, else stance steps by moveKind, bt_s when nothing asked"
+ },
+ "0026e260": {
+  "name": "BtMoveCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_0026e260",
+  "why": "vtable 0x317410: sets +0x38d, +0x362"
+ },
+ "0026e280": {
+  "name": "BtAtkComboCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_0026e280",
+  "why": "vtable 0x317430: 0x61 to 0x62 to 0x63, 0x64 to 0x65 to 0x5d, 0x66 to 0x67 to 0x60"
+ },
+ "0026e4e0": {
+  "name": "BtAtkComboCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_0026e4e0",
+  "why": "vtable 0x317430: sets +0x38d, +0x38e"
+ },
+ "0026e500": {
+  "name": "BtAttackCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_0026e500",
+  "why": "vtable 0x317450: first blow 0x59.. by weapon kind, the sheet's combos, a coin"
+ },
+ "0026e9e0": {
+  "name": "BtAttackCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_0026e9e0",
+  "why": "vtable 0x317450: not with a firearm, weapon or +0x3c4, +0xba8 run out: +0x38d, +0x38e"
+ },
+ "0026ebe0": {
+  "name": "LockCondition::faceTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0026ebe0",
+  "why": "turns at most 6 degrees a frame to +0x2a0, leans, tool, head and look targets"
+ },
+ "0026ef30": {
+  "name": "LockCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_0026ef30",
+  "why": "vtable 0x317470: keeps +0x290 by reach and the d-pad's sides, aim point +0x2a0"
+ },
+ "0026f8e0": {
+  "name": "LockCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_0026f8e0",
+  "why": "vtable 0x317470: controlled: +0x399 without a target (+0x290), +0x39a with one"
  },
  "0026f970": {
   "name": "LadderMoveCondition::onApply",
@@ -21581,6 +21713,18 @@
   "was": "FUN_00273fa0",
   "why": "name Turn (vtable 0x3176b0); sets +0x361"
  },
+ "00274650": {
+  "name": "BtOnCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00274650",
+  "why": "vtable 0x3176f0 slot +0x10: ready held: pickArmedMotion(0), bt_on"
+ },
+ "00274810": {
+  "name": "BtOnCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00274810",
+  "why": "vtable 0x3176f0 slot +0xc: not with a firearm; ability +0x3c3 allows the stance (+0x38d)"
+ },
  "00274990": {
   "name": "SquatCondition::onApply",
   "tag": "game-inferred",
@@ -21616,6 +21760,42 @@
   "tag": "game-inferred",
   "was": "FUN_002775d0",
   "why": "inserted under DamageDead (0x3057a0), +0xc10, vtable 0x3177a0: 0x2773d0 counts +0x5ec seconds and requests 0xb2 / 0xb1"
+ },
+ "0027aba0": {
+  "name": "BtAttackLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_0027aba0",
+  "why": "switches both conditions on, clears +0x290 unless the next link is Battle"
+ },
+ "0027ac60": {
+  "name": "BtAttackLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_0027ac60",
+  "why": "event 0x2000 opens the combo; breaks a part; ends at motion end or a wall, +0xba8 0.65"
+ },
+ "0027adf0": {
+  "name": "BtAttackLink::onStart",
+  "tag": "game-inferred",
+  "was": "FUN_0027adf0",
+  "why": "switches its two conditions off"
+ },
+ "0027aea0": {
+  "name": "BtAttackLink::BtAttackLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027aea0",
+  "why": "vtable 0x317a40, conditions Lock, BtAtkCombo; the sheet's link BtAttack"
+ },
+ "0027af70": {
+  "name": "BattleLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_0027af70",
+  "why": "clears +0x290 unless the next link is Walk (no +0x3c3) or BtAttack"
+ },
+ "0027b000": {
+  "name": "BattleLink::BattleLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027b000",
+  "why": "vtable 0x317a70, conditions Lock, BtAttack, BtMove; the sheet's link Battle"
  },
  "0027b0f0": {
   "name": "DoorLink::onLeave",

@@ -272,6 +272,7 @@ private:
     friend struct SceneRender;      // game/scenerender.cpp
     friend struct PlayerMotion;     // stepUpper reads m_isTorch2
     friend class AlwaysCondition;   // the lamp changes over
+    friend class LockCondition;     // faceTarget reads the same
     ItemLamp *m_lamp;           // FS2 +0x240
     u_char    m_isTorch2;       // FS2 +0x244: T_TORCH2 (unread)
 };
