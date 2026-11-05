@@ -621,7 +621,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Written: the rest of controlStep cut into stepEvents, stepAim, stepFeet, stepWind, stepHealth, stepFidgets; getLampMatrix; getLampTarget (was getLampAngles); startWalk, startWalkAt (float rate, m_walkRate); findEdge, findFloor; pickGunMotion, pickArmedMotion; isStageDrained, isMotionSlowed; playLadderStep, playStepSound, findStepSound, getSurfaceSound with src/game/stepsounds.inc. m_3f4 is m_winded, m_3f8 is the float m_idleTime, WalkLink +0x40 is edgeObject. Seen: New Game 285 s twice, no crash, F_PC01 whole in the room as before. Not proven: no fidget in a 285 s run with a temporary log (removed), delay 10..20 s, unmeasured why; StageNodeTree::contains not reached; steps, feet, gravity, findEdge and stamina wait on the ground, since floorFace and wallCheck are null. The queue now runs game/characterinput.cpp, then game/characterground.cpp, before this TU (open-items.md Decisions). Left in this TU: the 24 other conditions, the other links, the list 0x1df0b0 with its slots 0x1df030 and 0x1df0a0 and 0x1ec3f0, pickGunMotion and pickArmedMotion have no callers yet, clearNoFlash 0x1dfd90 (really the view switch to camview_snipe; +0xbd8 is written as a float there and the host calls it overlay: open-items.md), who counts m_runTime and m_runDistance. Doubt: walk and run rates still come from the sheet as a PC default.",
+   "notes": "Written: conditions Level, LevelLift, Ladder, Jump, LadderMove; links Up, Fall, Jump, Ladder; levelBlocked, ladderBlocked, walkFileTarget, startWalkTo, pointBehind, isOpeningLead, getLadderRank, playLandSound; StageNodeTree contains and setBoxes; new file game/uiitemlist.cpp (UiItemList, UiPrompt without the button picture, canTakePrompt, canUsePrompt), natives 0xf7 and 0xf8. CharacterAllows useItem, useItem2, useItem6 are now level, ladder, jump. Seen: New Game 290 s, a temporary test (removed) at stage 1's ledge faces: Use at the top plays fal_l then lnd_l, z 831 to 771; Use at the foot plays u_060, z 771 to 831; progress/20261105-level-prompt-down.png shows Down at the top, the label from the stage script; no reference exists for it. Not proven: Ladder, LadderMove, Jump, because stage 1 has no faces of flags 0x2020 or 0x180; LevelLift, because nothing sets wants +0x341 (the brain?); a real pad. Left in this TU: the 19 other conditions (Door first by what a player meets, 0x2710a0 and 0x271630, link 0x27b640, once doors are real objects), the other links, the list 0x1df0b0 with its slots 0x1df030 and 0x1df0a0, clearNoFlash. Left in game/uiitemlist.cpp: the button picture, natives 0xf6 and 0x79. A long teleport in a test is swept by sweepWalls: hazards.md.",
    "ranges": [
     [
      "0017df60",
@@ -735,6 +735,11 @@
      "date": "2026-11-04 23:04",
      "status": "partial",
      "summary": "controlStep whole (events, step sounds, gravity, aim, feet, wind, stamina, fidgets), lamp matrix and target, startWalk and startWalkAt, findEdge: nothing new shows until the ground exists"
+    },
+    {
+     "date": "2026-11-05 01:48",
+     "status": "partial",
+     "summary": "ledges and the Use button: Level, LevelLift, Ladder, Jump, LadderMove, the links Up, Fall, Jump, Ladder, and game/uiitemlist.cpp with its prompt: he climbs and drops 60 units and Down shows on screen"
     }
    ],
    "status": "partial",
@@ -1510,6 +1515,37 @@
    ],
    "status": "verify",
    "why": "Cut out of unassigned@00252840 (the frontier pick, 196 functions): the S2D UI's game side, between the widget classes and their tween helpers (..0x25fa50, vtables 0x316a90..0x316c10) and the stage alert class (0x263b90, every caller passes gStageScene +0xf4). UiFont 0x25fa50, the fMsg message files and TimM sprite sheets (find / relocate, magic checked against ROM.001), the layout's sound / game-value / game-state hooks 0x25ff40.., the tracks' game targets (bindTarget, findSprite over the item tables), the text variables 0x260bc0 / 0x2612c0, the game values 0x262e70 / 0x2633f0 and small hooks to 0x263b90. No source string: the file name and joining the font / message / sheet helpers to the hooks are guesses by position."
+  },
+  "game/uiitemlist.cpp": {
+   "notes": "Written with game/playermotion.cpp's fourth run (2026-11-05): the list and the prompt's label work and show. Left: the button's picture beside the label in UiPrompt::draw, native 0xf6 and 0x79 (post).",
+   "ranges": [
+    [
+     "00208330",
+     "00208380"
+    ],
+    [
+     "00208380",
+     "00208490"
+    ],
+    [
+     "00208bb0",
+     "00208d40"
+    ],
+    [
+     "0020b590",
+     "0020bab0"
+    ],
+    [
+     "0020c0e0",
+     "0020c1d0"
+    ],
+    [
+     "0023e740",
+     "0023f290"
+    ]
+   ],
+   "status": "partial",
+   "why": "the Use button's list and its prompt, what Level, Ladder and Jump ask; the prompt's draw 0x208490 left to a host pass"
   },
   "game/uilayout.cpp": {
    "notes": "Cut from unassigned@0023e740 (473 functions) as game/uilayout.cpp 0x243390..0x246230; batch 038 named these 22 and 28 callees (UiSequence / UiActor / UiAnim / UiTrack, S2dData, UiDrawer, UiWidget::create, the layout game hooks 0x25ff40.., FileJob 0x132a40..). UiLayout moved from gamehooks.h to uilayout.h (gamehooks.h includes it); gamehooks.h gained FileJob. Stand-ins for the rest of the run live in uilayout.h until their TUs are cut. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean with stub SDK headers (screen / stageresult / scene unchanged). Host trap for the S2D TU: S2dData pointer fields are 32-bit offsets relocated in place, they cannot hold host pointers. Doubts: every name is read from the code; op 7 / 8 read as yield / restart; condition kind 16 with a < 0 reads an uninitialised register in the ROM (port: no sequence, true); UiSubLayout +0x14 is never set in this file. Next: the sequence classes 0x246230..0x249550 (UiSequence::draw / advance), then the S2D file and UiDrawer. Ghidra saved by name_ctx.",

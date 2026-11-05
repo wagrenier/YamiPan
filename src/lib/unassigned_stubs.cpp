@@ -244,12 +244,6 @@ void StageNodeTree::addParticleTexture(Tim2Texture *texture)
     YAMIPAN_STUB("StageNodeTree::addParticleTexture", 0x00190aa0);
 }
 
-// stub of FS2 0x00190900
-void StageNodeTree::setBoxes(void *bbx)
-{
-    YAMIPAN_STUB("StageNodeTree::setBoxes", 0x00190900);
-}
-
 // stub of FS2 0x00190b50
 void StageNodeTree::setParticleFileA(void *file)
 {
@@ -320,18 +314,6 @@ bool StageCharacter::isMode1()
 }
 
 // stub of FS2 0x001d3a40
-// stub of FS2 0x0023f0b0
-UiItemList::UiItemList(WideFontPrinter*, int)
-{
-    YAMIPAN_STUB("UiItemList::UiItemList", 0x0023f0b0);
-}
-
-// stub of FS2 address unknown (1 candidates)
-void UiItemList::destroy()
-{
-    YAMIPAN_STUB("UiItemList::destroy", 0x00000000);
-}
-
 // stub of FS2 0x00185af0
 
 // stub of FS2 0x00151290
@@ -800,32 +782,6 @@ void StageCharacter::latchAltAction()
     YAMIPAN_STUB("StageCharacter::latchAltAction", 0x0020b1d0);
 }
 
-// stub of FS2 0x0023e770
-void UiItemList::draw(sceVif1Packet *packet, TexAreaList *texList)
-{
-    YAMIPAN_STUB("UiItemList::draw", 0x0023e770);
-}
-
-// stub of FS2 0x0023ee90
-int UiItemList::pick()
-{
-    YAMIPAN_STUB("UiItemList::pick", 0x0023ee90);
-    return {};
-}
-
-// stub of FS2 0x0023e7b0
-void UiItemList::update()
-{
-    YAMIPAN_STUB("UiItemList::update", 0x0023e7b0);
-}
-
-// stub of FS2 0x0023e740
-bool UiPickSlot::isReady()
-{
-    YAMIPAN_STUB("UiPickSlot::isReady", 0x0023e740);
-    return {};
-}
-
 // stub of FS2 0x0029aae0
 ViewCamera::ViewCamera() : StageCamera(450.0f, 512.0f, 512.0f, 1600.0f)
 {
@@ -991,12 +947,6 @@ void StageParty::addImage(const void *image)
 void StageParty::setImage(const void *image)
 {
     YAMIPAN_STUB("StageParty::setImage", 0x001fe900);
-}
-
-// stub of FS2 0x0023f030
-void UiItemList::setSheet(void *sheet)
-{
-    YAMIPAN_STUB("UiItemList::setSheet", 0x0023f030);
 }
 
 // stub of FS2 0x002ce9d0
@@ -1435,13 +1385,6 @@ void ViewCamera::setZoom(float level)
     YAMIPAN_STUB("ViewCamera::setZoom", 0x0029a840);
 }
 
-// stub of FS2 0x001908d0
-bool StageNodeTree::contains(const sceVu0FVECTOR point)
-{
-    YAMIPAN_STUB("StageNodeTree::contains", 0x001908d0);
-    return {};
-}
-
 // stub of FS2 0x0028ec90
 bool GateParts::isLit()
 {
@@ -1492,13 +1435,6 @@ bool StageCharacter::isCompanionWalking()
 void StageParty::start(StageObject *object)
 {
     YAMIPAN_STUB("StageParty::start", 0x001feba0);
-}
-
-// stub of FS2 0x0023ed10
-u_char UiItemList::offer(StageCharacter *who, int kind)
-{
-    YAMIPAN_STUB("UiItemList::offer", 0x0023ed10);
-    return {};
 }
 
 // stub of FS2 0x0023ce00
@@ -1567,4 +1503,11 @@ int StageCharacter::getHandClass()
 void StageCharacter::playBumpSound(int surface)
 {
     YAMIPAN_STUB("StageCharacter::playBumpSound", 0x002a2b10);
+}
+
+// stub of FS2 0x0028ab90
+bool StageCar::hasSettled()
+{
+    YAMIPAN_STUB("StageCar::hasSettled", 0x0028ab90);
+    return {};
 }

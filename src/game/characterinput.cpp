@@ -403,17 +403,17 @@ void CharacterInput::stepItems()
     StageCharacter *owner = m_owner;
     if (m_pad->actionPressed(PadAction_Use)) {
         UiItemList *list = gStageScene->itemList;
-        if (owner->m_allows.useItem == 1)
-            owner->m_wants.useItem = list->offer(owner, 0);
-        else if (owner->m_allows.useItem == 2)
-            owner->m_wants.useItem = list->offer(owner, 1);
-        // Both values ask for kind 2 in the ROM.
-        if (owner->m_allows.useItem2 == 1 || owner->m_allows.useItem2 == 2)
-            owner->m_wants.useItem2 = list->offer(owner, 2);
-        if (owner->m_allows.useItem6 != 0)
-            owner->m_wants.useItem6 = list->offer(owner, 6);
+        if (owner->m_allows.level == 1)
+            owner->m_wants.useLevel = list->offer(owner, UiUse_LevelUp);
+        else if (owner->m_allows.level == 2)
+            owner->m_wants.useLevel = list->offer(owner, UiUse_LevelDown);
+        // Both values ask for the same kind in the ROM.
+        if (owner->m_allows.ladder == 1 || owner->m_allows.ladder == 2)
+            owner->m_wants.useLadder = list->offer(owner, UiUse_Ladder);
+        if (owner->m_allows.jump != 0)
+            owner->m_wants.useJump = list->offer(owner, UiUse_Jump);
         if (owner->m_allows.useItem5 != 0)
-            owner->m_wants.useItem5 = list->offer(owner, 5);
+            owner->m_wants.useItem5 = list->offer(owner, UiUse_Gate);
     }
     if (m_pad->actionPressed(PadAction_Squat) && owner->m_allows.squatAction != 0)
         owner->m_wants.squatAction = 1;

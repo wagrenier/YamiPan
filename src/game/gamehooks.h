@@ -1240,6 +1240,8 @@ struct StageNodeTree
     // The particles within range of view; arg is 0 here.
     void update(float range, int arg, StageObject *view, StagePlayer *player); // FS2 0x00190a90
     void draw(GamePacketManager *packets, StageObject *camera);          // FS2 0x00190a80
+
+    class BoxGrid *m_boxes = nullptr; // FS2: +0x3c of the inner object at +0, not written
 };
 
 // +0x4c and +0x8c..+0x94: objects with the vptr at +0 (slot 0 their
@@ -1782,6 +1784,10 @@ public:
     // read from the ground's calls only: a kind 3 object.
     float getSpeed();                                                    // FS2 0x00289dd0
     const float *getVelocity();                                          // FS2 0x00289e10
+    // +0x3ac is past 0.3: one may climb on it, and a fall onto it is a fall.
+    bool hasSettled();                                                   // FS2 0x0028ab90
+    // PC: +0x39c, of a class not written: Level keeps off at 1.
+    int  getMode() { return 0; }
     float getAcceleration();                                             // FS2 0x00289e20
     const float *getFrameStep();                                         // FS2 0x00289ea0
     // One of the places beside it (bn_dmg_sr, bn_dmg_sl, ahead, behind), by
@@ -2072,10 +2078,10 @@ struct CharacterWants
     u_char squat;               // FS2 +0x2c8
     u_char quickTurn;           // FS2 +0x2c9
     u_char altAction;           // FS2 +0x2ca: latchAltAction
-    u_char useItem;             // FS2 +0x2cb: the item list took the Use button
-    u_char squatAction;         // FS2 +0x2cc: the squat button, where it does something else
-    u_char useItem2;            // FS2 +0x2cd: the same, kind 2
-    u_char useItem6;            // FS2 +0x2ce: kind 6
+    u_char useLevel;            // FS2 +0x2cb: the item list gave the Use button to Level
+    u_char squatAction;         // FS2 +0x2cc: the squat button, on a ladder: let go
+    u_char useLadder;           // FS2 +0x2cd: the same for Ladder
+    u_char useJump;             // FS2 +0x2ce: for Jump
     u_char _2cf[2];
     u_char useItem5;            // FS2 +0x2d1: kind 5
     u_char _2d2[0x1f];
@@ -2089,7 +2095,9 @@ struct CharacterWants
     u_char aimOn;               // FS2 +0x320: the upper body follows aimAngles
     u_char _321[0xf];
     sceVu0FVECTOR aimAngles;    // FS2 +0x330
-    u_char _340[4];
+    u_char _340;
+    u_char liftPartner;         // FS2 +0x341: LevelLift; the input never sets it: the brain?
+    u_char _342[2];
     int    dpadSide;            // FS2 +0x344: 1 left, 2 right
     int    viewChange;          // FS2 +0x348: 1 into camview, 2 out of it
     u_char zoomOn;              // FS2 +0x34c: into camview_zoom, or out of it
@@ -2109,6 +2117,7 @@ static_assert(offsetof(CharacterWants, aimAngles) == 0x70, "CharacterWants::aimA
 static_assert(offsetof(CharacterWants, lampSwitch) == 0x94, "CharacterWants::lampSwitch");
 static_assert(offsetof(CharacterWants, fire) == 0x34, "CharacterWants::fire");
 static_assert(offsetof(CharacterWants, dpadSide) == 0x84, "CharacterWants::dpadSide");
+static_assert(offsetof(CharacterWants, liftPartner) == 0x81, "CharacterWants::liftPartner");
 static_assert(offsetof(CharacterWants, rightStickY) == 0x98, "CharacterWants::rightStickY");
 
 // What the running motion's conditions allow this frame: +0x360, which the
@@ -2122,10 +2131,10 @@ struct CharacterAllows
     u_char quickTurn;           // FS2 +0x363
     u_char altAction;           // FS2 +0x364: latchAltAction
     u_char _365[3];
-    int    useItem;             // FS2 +0x368: 1, 2: what the Use button may do (CharacterWants::useItem)
-    int    useItem2;            // FS2 +0x36c
-    u_char squatAction;         // FS2 +0x370
-    u_char useItem6;            // FS2 +0x371
+    int    level;               // FS2 +0x368: Level: 1 up a ledge, 2 down it (the Use button, UiUse_Level*)
+    int    ladder;              // FS2 +0x36c: Ladder: 1 from its foot, 2 from its top
+    u_char squatAction;         // FS2 +0x370: LadderMove, at rest on a ladder: the squat button lets go
+    u_char jump;                // FS2 +0x371: Jump
     u_char _372[0xe];
     u_char useItem5;            // FS2 +0x380
     u_char _381[0xd];
@@ -2133,7 +2142,9 @@ struct CharacterAllows
     u_char _38f;
     u_char head;                // FS2 +0x390: the sheet's 頭振り
     u_char aim;                 // FS2 +0x391: the sheet's 上半身振り
-    u_char _392[9];
+    u_char _392[6];
+    u_char liftPartner;         // FS2 +0x398: LevelLift: the partner stands where it can lift
+    u_char _399[2];
     u_char viewSwitch;          // FS2 +0x39b: カメラモード切替
     u_char zoom;                // FS2 +0x39c: 主観ズーム
     u_char lamp;                // FS2 +0x39d: 懐中電灯ON/OFF
@@ -2145,7 +2156,8 @@ struct CharacterAllows
 };
 static_assert(sizeof(CharacterAllows) == 0x44, "CharacterAllows: EE 0x44");
 static_assert(offsetof(CharacterAllows, head) == 0x30, "CharacterAllows::head");
-static_assert(offsetof(CharacterAllows, useItem) == 0x8, "CharacterAllows::useItem");
+static_assert(offsetof(CharacterAllows, level) == 0x8, "CharacterAllows::level");
+static_assert(offsetof(CharacterAllows, liftPartner) == 0x38, "CharacterAllows::liftPartner");
 static_assert(offsetof(CharacterAllows, fire) == 0x2e, "CharacterAllows::fire");
 static_assert(offsetof(CharacterAllows, standing) == 0x41, "CharacterAllows::standing");
 
@@ -2212,6 +2224,15 @@ public:
     void playerEvent(const char *name);                                  // FS2 0x0020e6a0
     // Who the pad moves is this one (the scene's controlled, else player).
     bool isControlled() const;                                           // FS2 0x00215270
+    void playLandSound();                                                // FS2 0x002a2fc0
+    // Free to answer the Use button: no walk, queue or fade under way.
+    bool canTakePrompt();                                                // FS2 0x0020c0e0
+    // The same, and in a motion a script's prompt may interrupt.
+    bool canUsePrompt();                                                 // FS2 0x0020b590
+    // Stage 1 for the sheet's kind 0, stage 2 for its kind 1: no deep drops.
+    bool isOpeningLead();                                                // FS2 0x00215ce0
+    // On a ladder, who gives way: 0 kind 1, 1 kind 0, 2 anyone else.
+    int  getLadderRank();                                                // FS2 0x00271f50
     // It acts for the player (controlled, not the player itself).
     bool isTakenOver() const;                                            // FS2 0x00211970
     // How the view changes by itself: 1 into the view camera, 0 not. For
@@ -2424,23 +2445,73 @@ class WideFontPrinter;          // game/fontdata.h
 
 // +0xcc: a list view over the scene's printer (vtable 0x316530 at +0x88).
 // layout: host (EE 0x8c).
-// One of UiItemList's two slots (front and back). Named from the fields'
-// use only. layout: host -- EE 0x14.
+// The prompt of the Use button: a label over the scene's printer, on a bar
+// from the init pack's sheet. layout: host -- EE 0x38.
+class UiPrompt
+{
+public:
+    UiPrompt(WideFontPrinter *printer, int arg);                         // FS2 0x00208c70
+    // The label to show next; false while a press is playing.
+    bool setLabel(const void *text, int value);                          // FS2 0x00208bb0
+    // Plays the press; answers the label pressed.
+    const void *press();                                                 // FS2 0x00208330
+    void setSheet(void *sheet);                                          // FS2 0x00208380
+    void endFrame();                                                     // FS2 0x00208be0
+    // A press that has played lets the prompt go.
+    void stepPress();                                                    // FS2 0x00208cc0
+    // The fade of the moment and the label, centred at the top. PC: the
+    // button's picture from the sheet is not drawn, its width is kept.
+    void draw(sceVif1Packet *packet);                                    // FS2 0x00208490
+
+    enum State { State_Idle = 0, State_Pressed = 1 };
+
+    int    state = State_Idle;  // FS2 +0x00
+    WideFontPrinter *printer;   // FS2 +0x04
+    int    arg;                 // FS2 +0x08
+    const void *label = nullptr; // FS2 +0x0c
+    const void *shown = nullptr; // FS2 +0x10
+    int    value = -1;          // FS2 +0x14
+    int    lastValue = -1;      // FS2 +0x18
+    void  *sheet = nullptr;     // FS2 +0x1c
+    const struct UiPromptFade *fade = nullptr; // FS2 +0x28: 0x2fa7b0 open, 0x2fa7c0 press, 0x2fa7c8 close
+    int    animFrame = 0;       // FS2 +0x2c
+    int    animKind = 0;        // FS2 +0x30: UiPromptAnim
+    u_char canPress = 1;        // FS2 +0x34: the scene's input is on the prompt
+};
+
+// What the Use button does at the player's feet (CharacterAllows); kinds
+// from 7 up are the scripts' own (UiItemList::post).
+enum UiUseKind
+{
+    UiUse_LevelUp   = 0,
+    UiUse_LevelDown = 1,
+    UiUse_Ladder    = 2,
+    UiUse_Gate      = 5,        // CharacterAllows::useItem5: not read yet
+    UiUse_Jump      = 6,
+    UiUse_Script    = 7,
+};
+
+// One of UiItemList's two slots (front and back), rebuilt each frame.
+// layout: host -- EE 0x14.
 struct UiPickSlot
 {
     // object set and timer past 6.
     bool isReady();                                                      // FS2 0x0023e740
+    void clear();
 
-    void  *object;              // FS2 +0x00
-    int    timer;               // FS2 +0x04
-    int    _08;                 // FS2 +0x08
+    void  *object;              // FS2 +0x00: who the prompt is for
+    int    kind;                // FS2 +0x04: UiUseKind
+    int    priority;            // FS2 +0x08
     const void *label;          // FS2 +0x0c
     u_char enabled;             // FS2 +0x10
 };
-// layout: host
+// +0xcc: the Use button's list (vtable 0x316530 at +0x88). layout: host (EE 0x8c).
 class UiItemList
 {
 public:
+    static constexpr int kKinds = 7;
+    static constexpr int kNoPriority = (int)0x80000000;
+
     UiItemList(WideFontPrinter *printer, int arg);                       // FS2 0x0023f0b0
     void destroy();                                                      // FS2 vtable +0x8 (vptr +0x88)
     void update();                                                       // FS2 0x0023e7b0
@@ -2450,15 +2521,33 @@ public:
     // Whether a press of Use goes to who with the slot of this kind (the
     // slot's user is told when it does).
     u_char offer(StageCharacter *who, int kind);                         // FS2 0x0023ed10
+    // A script's entry: scriptKind 0 is UiUse_Script. False: one with a
+    // higher priority stands this frame.
+    bool post(void *object, int scriptKind, const void *label, int priority, bool enabled); // FS2 0x0023ef40
+    // The natives: a kind on or off, its label and priority.
+    void enableKind(int kind, bool enabled);                             // FS2 0x0023efb0
+    void setKind(int kind, const void *label, int priority);             // FS2 0x0023eff0
     // The init pack's sheet (the ROM asks its size too, and drops it).
     void setSheet(void *sheet);                                          // FS2 0x0023f030
 
     // The slot in front (flip's bit 0 picks it; update fills the other).
     UiPickSlot *frontSlot() { return &slots[flip & 1]; }
 
+    // layout: host -- EE 0xc.
+    struct KindRow
+    {
+        u_char      enabled;    // FS2 +0x0
+        int         priority;   // FS2 +0x4
+        const void *label;      // FS2 +0x8
+    };
+private:
+    void takeKind(UiPickSlot *slot, StageCharacter *who, int kind);
+public:
+    UiPrompt  *prompt;          // FS2 +0x00
+    KindRow    kinds[kKinds];   // FS2 +0x04 (0xc each)
     UiPickSlot slots[2];        // FS2 +0x58 (0x14 each)
     u_int      flip;            // FS2 +0x80
-    int        pendingCount;    // FS2 +0x84: StageScene::getMenuMode; the name is a guess
+    int        pendingCount;    // FS2 +0x84: the script's index just picked, StageScene::getMenuMode
 };
 
 // +0xd0: a menu over the scene's printer (vtable 0x3164b0 at +8; a 0xaa8
