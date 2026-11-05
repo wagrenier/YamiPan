@@ -74,7 +74,7 @@ struct MenuProgSet;
 struct PauseMenuState;
 struct Rand48;
 struct SceneArrayPair;
-struct SceneBoxList;
+struct SceneEffectList;
 struct SceneBlock98;
 struct SceneBufferSet;
 struct SceneDirector;
@@ -603,7 +603,7 @@ struct StageScene
     StageMenu          *menu;            // FS2 +0xd0: a stage's
     StageObject        *rootAny;         // FS2 +0xd4: the last group's first "Root"
     StageObject        *root;            // FS2 +0xd8: group 1's
-    SceneBoxList       *boxes;           // FS2 +0xdc
+    SceneEffectList    *effects;         // FS2 +0xdc
     SceneNoiseList       *noises;         // FS2 +0xe0: a stage's
     Rand48             *rng;             // FS2 +0xe4: a stage's
     StageMission       *mission;         // FS2 +0xe8: a stage's (getMission)

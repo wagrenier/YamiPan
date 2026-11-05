@@ -134,18 +134,6 @@ void RoutePlayer::start(int arg)
     YAMIPAN_STUB("RoutePlayer::start", 0x00252b10);
 }
 
-// stub of FS2 0x0023ad60
-SceneBoxList::SceneBoxList()
-{
-    YAMIPAN_STUB("SceneBoxList::SceneBoxList", 0x0023ad60);
-}
-
-// stub of FS2 0x0023ad10
-SceneBoxList::~SceneBoxList()
-{
-    YAMIPAN_STUB("SceneBoxList::~SceneBoxList", 0x0023ad10);
-}
-
 // stub of FS2 0x002ce5a0
 SceneBufferSet::~SceneBufferSet()
 {
@@ -492,12 +480,6 @@ void MenuProgSet::draw(float zoom)
 void Rand48::seed(u_int value)
 {
     YAMIPAN_STUB("Rand48::seed", 0x00268290);
-}
-
-// stub of FS2 0x0023aca0
-void SceneBoxList::update()
-{
-    YAMIPAN_STUB("SceneBoxList::update", 0x0023aca0);
 }
 
 // stub of FS2 0x002b22d0
@@ -1753,13 +1735,6 @@ void StageCharacter::sayFound()
     YAMIPAN_STUB("StageCharacter::sayFound", 0x002a46d0);
 }
 
-// stub of FS2 0x00216270
-bool StageCharacter::tryShout(float loudness)
-{
-    YAMIPAN_STUB("StageCharacter::tryShout", 0x00216270);
-    return {};
-}
-
 // stub of FS2 0x00218b50
 void StageCharacter::useItem(const char *name, const float *point, int arg)
 {
@@ -1777,4 +1752,24 @@ StageObject * findNumLockTarget()
 {
     YAMIPAN_STUB("findNumLockTarget", 0x0029f440);
     return {};
+}
+
+// stub of FS2 0x00190810
+bool StageNodeTree::isLive(StageParticle *effect)
+{
+    YAMIPAN_STUB("StageNodeTree::isLive", 0x00190810);
+    return {};
+}
+
+// stub of FS2 0x00190990
+StageObject * StageNodeTree::spawnMotes(const float *pos, float range, int kind, int count)
+{
+    YAMIPAN_STUB("StageNodeTree::spawnMotes", 0x00190990);
+    return {};
+}
+
+// stub of FS2 0x001900f0
+void StageParticle::setStopFrames(int frames)
+{
+    YAMIPAN_STUB("StageParticle::setStopFrames", 0x001900f0);
 }

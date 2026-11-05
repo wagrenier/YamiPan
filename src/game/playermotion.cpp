@@ -7783,6 +7783,169 @@ static StageObject **nextFreeItem(StageObject **slot)
     return slot;
 }
 
+// A shout asked for: the frame's action takes it up, with its loudness.
+// FS2 0x00216270
+
+bool StageCharacter::tryShout(float loudness)
+{
+    if (m_allows.call == 0)
+        return false;
+    m_wants.call = 1;
+    m_motion->m_shoutLoudness = loudness;
+    return true;
+}
+
+// FS2 0x00219160
+// callcheck: vecDistance, pathLength
+
+float StageCharacter::measurePath(const float *from, const float *to)
+{
+    constexpr float kShortest = 15.0f;
+    float length = 0.0f;
+    if (vecDistance(from, to) >= kShortest) {
+        // PC: the route's filter is a stub's null until game/characterroute.cpp has it.
+        CharacterRoute *route = m_brain != nullptr ? m_brain->getRoute() : nullptr;
+        if (route == nullptr || route->filter == nullptr)
+            return -1.0f;
+        length = route->filter->pathLength(from, to);
+        if (length < 0.0f)
+            return length;
+    }
+    m_pathLength = length;
+    return length;
+}
+
+// FS2 0x00219200
+// callcheck: stopIfMoving
+
+bool StageCharacter::stopMoving()
+{
+    return m_brain->stopIfMoving();
+}
+
+// FS2 0x00219c50
+// callcheck: strcmp (the name is the weapon's slot +0x21c)
+
+bool StageCharacter::holdsWeapon(const char *name)
+{
+    return m_weapons[0] != nullptr && strcmp(m_weapons[0]->getObjectName(), name) == 0;
+}
+
+// The four script kinds a character takes, into the brain's slots.
+// FS2 0x0021b970: the slot's thunk is 0x0017e7c0.
+// callcheck: setSlotEntry, setSlotEntry, setSlotEntry, setSlotEntry
+
+void StageCharacter::scriptSetBrainEntry(int kind, const ScriptEntry *entry)
+{
+    constexpr int kNoId = -1;
+    // PC: the ROM has no test.
+    if (m_brain == nullptr)
+        return;
+    switch (kind) {
+    case 6: m_brain->setSlotEntry(2, entry, kNoId); break;
+    case 5: m_brain->setSlotEntry(6, entry, kNoId); break;
+    case 2: m_brain->setSlotEntry(4, entry, kNoId); break;
+    case 1: m_brain->setSlotEntry(0, entry, kNoId); break;
+    }
+}
+
+// FS2 0x0021b890: the slot's thunk is 0x0017e7a0.
+// callcheck: getKind, getKind, isPlayer, isEnemyOf, isAlly
+
+int StageCharacter::scriptHeardKind()
+{
+    enum { Heard_None, Heard_Ally, Heard_Other, Heard_Enemy, Heard_Player };
+    if (m_heardFrom == nullptr)
+        return Heard_None;
+    if (m_heardFrom->getKind() == StageObject_Character) {
+        if (m_heardFrom->isPlayer())
+            return Heard_Player;
+        if (isEnemyOf(m_heardFrom))
+            return Heard_Enemy;
+        if (isAlly(m_heardFrom))
+            return Heard_Ally;
+    }
+    return Heard_Other;
+}
+
+// FS2 0x00179bb0: the slot's thunk is 0x0017e660.
+// callcheck: isCrouchMotion (the ROM's own test, the same set)
+
+bool StageCharacter::scriptIsCrouching()
+{
+    return isCrouchMotion(m_motion->motionId);
+}
+
+// FS2 0x00219d70
+// callcheck: distanceTo, atan2Octant, wrapAngle, currentMission, currentMission, sinCos, sinCos, atan2Octant, wrapAngle
+
+bool StageCharacter::isInReachOf(StageObject *object)
+{
+    constexpr float kReach = 180.0f;
+    constexpr float kBelow = -20.0f;
+    constexpr float kAhead = 10.0f;
+    constexpr float kQuarterTurn = 1.5707964f;
+    constexpr float kFacing = 0.5235988f;       // 30 degrees
+
+    const float *at = object->m_xform.position;
+    if (distanceTo(object) > kReach)
+        return false;
+    const float rise = at[2] - m_xform.position[2];
+    if (rise > kReach || rise < kBelow)
+        return false;
+
+    const float x = m_xform.position[0];
+    const float y = m_xform.position[1];
+    const float yaw = m_xform.rotation[2];
+    const float bearing = wrapAngle(yaw + atan2Octant(x - at[0], y - at[1]));
+    if (bearing <= -kQuarterTurn || bearing >= kQuarterTurn)
+        return false;
+
+    const float aheadX = sinCos(-yaw, 0) * kAhead + x;
+    const float aheadY = sinCos(-yaw, 1) * kAhead + y;
+    const float facing = wrapAngle(yaw + atan2Octant(aheadX - at[0], aheadY - at[1]));
+    return facing > -kFacing && facing < kFacing;
+}
+
+// FS2 0x002a6440
+// callcheck: findCue, getTopView, playCue, getTopView, pickCueChannel, stopCue, findSource, stopSource, setCue
+
+bool StageCharacter::playVoice(const char *name)
+{
+    enum { Sound_None = 0, Sound_Source = 1, Sound_Cue = 2 };   // m_soundState
+    StageSound *sound = gStageScene->sound;
+    SeEntry *cue = sound->findCue(name);
+    if (cue == nullptr)
+        return false;
+    if (cue->priority == 0)
+        return sound->playCue(cue, this, gStageScene->getTopView());
+    if (m_soundPriority < cue->priority)
+        return false;
+    const int channel = sound->pickCueChannel(cue, this, gStageScene->getTopView());
+    if (channel < 0)
+        return false;
+
+    if (m_soundState != Sound_None) {
+        if (m_soundState == Sound_Cue) {
+            sound->stopCue(this, (const SeEntry *)m_soundHandle);
+        } else if (m_soundState == Sound_Source) {
+            StageSoundSource *source = sound->findSource((StageSoundSource *)m_soundHandle);
+            if (source != nullptr)
+                sound->stopSource(source);
+        }
+        m_soundState = Sound_None;
+        m_soundPriority = 0x7fffffff;
+        m_soundHandle = nullptr;
+    }
+
+    if (!sound->setCue(cue, this, channel))
+        return false;
+    m_soundPriority = cue->priority;
+    m_soundState = Sound_Cue;
+    m_soundHandle = cue;
+    return true;
+}
+
 // FS2 0x0021bb90
 // callcheck: findAll3, getKind, dropItem, setActive, setShown, giveItem, setActive, setShown, setActive, setShown, giveItem, setActive, setShown
 

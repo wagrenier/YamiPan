@@ -357,9 +357,23 @@ int ScriptProxy::command80()
 
 // FS2 0x001a72f0
 
-int ScriptProxy::command83(void *a, void *b, void *c)
+void ScriptProxy::scriptAddMenuLine(const u_short *text, int kind, bool plain)
 {
-    return getForwardObject()->command83(a, b, c);
+    getForwardObject()->scriptAddMenuLine(text, kind, plain);
+}
+
+// FS2 0x001a75a0
+
+bool ScriptProxy::scriptIsCrouching()
+{
+    return getForwardTarget()->scriptIsCrouching();
+}
+
+// FS2 0x001a70a0
+
+int ScriptProxy::scriptHeardKind()
+{
+    return getForwardTarget()->scriptHeardKind();
 }
 
 // FS2 0x001a78d0

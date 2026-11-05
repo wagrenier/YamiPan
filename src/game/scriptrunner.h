@@ -151,7 +151,8 @@ struct ScriptBlock
 {
     int     magic;              // FS2 +0x0: kScriptMagic
     int     firstTable;         // FS2 +0x4: from the block
-    int     pad8;               // FS2 +0x8
+    u_short versionMajor;       // FS2 +0x8
+    u_short versionMinor;       // FS2 +0xa: from 0.4 labels hold item texts
     u_short tableCount;         // FS2 +0xc
 
     const ScriptTable *firstOf() const { return (const ScriptTable *)((const char *)this + firstTable); }
@@ -415,9 +416,20 @@ public:
     // A tail jump to defaultCommand.
     // FS2 0x0019d050
     virtual int command80() { return defaultCommand(); }
-    // A tail jump to defaultCommand.
+    // ROM vptr +0x154: a line of the stage menu, offered by this object
+    // (native 0x7a). A tail jump to defaultCommand.
     // FS2 0x0019d040
-    virtual int command83(void *, void *, void *) { return defaultCommand(); }
+    virtual void scriptAddMenuLine(const u_short *, int, bool) { defaultCommand(); }
+    // ROM vptr +0xa8: a script for one of the brain's slots (native 0x2f).
+    // FS2 0x00171ce0
+    virtual void scriptSetBrainEntry(int, const ScriptEntry *) { defaultCommand(); }
+    // ROM vptr +0xb0: who was heard: 0 nobody, 1 an ally, 2 another, 3 an
+    // enemy, 4 the player (native 0x31).
+    // FS2 0x00171d00
+    virtual int scriptHeardKind() { return defaultCommand(); }
+    // ROM vptr +0x124: the character is down in one of its crouched motions.
+    // FS2 0x00171f60
+    virtual bool scriptIsCrouching() { return defaultCommand() != 0; }
     // A tail jump to defaultCommand.
     // FS2 0x0019d060
     virtual int command87() { return defaultCommand(); }

@@ -2843,7 +2843,7 @@
 /* 00177420 00000008 */ FUN_00177420(){}
 /* 00177430 00000008 */ FUN_00177430(){}
 /* 00177440 00000008 */ FUN_00177440(){}
-/* 00177450 00000008 */ FUN_00177450(){}
+/* 00177450 00000008 */ StageObject::thunkAddMenuLine(){}  // game
 /* 00177460 00000008 */ FUN_00177460(){}
 /* 00177470 00000008 */ FUN_00177470(){}
 /* 00177480 00000008 */ FUN_00177480(){}
@@ -2935,7 +2935,7 @@
 /* 00179ad0 00000008 */ StageCharacter::setScriptPoint(){}  // game
 /* 00179ae0 00000004 */ FUN_00179ae0(){}
 /* 00179af0 000000b4 */ StageCharacter::isRunningMotion(){}  // game
-/* 00179bb0 00000148 */ FUN_00179bb0(){}
+/* 00179bb0 00000148 */ StageCharacter::isCrouching(){}  // game
 /* 00179d00 00000008 */ FUN_00179d00(){}
 /* 00179d10 00000008 */ FUN_00179d10(){}
 /* 00179d20 00000008 */ FUN_00179d20(){}
@@ -3058,7 +3058,7 @@
 /* 0017e630 00000008 */ FUN_0017e630(){}
 /* 0017e640 00000008 */ FUN_0017e640(){}
 /* 0017e650 00000008 */ FUN_0017e650(){}
-/* 0017e660 00000008 */ FUN_0017e660(){}
+/* 0017e660 00000008 */ StageCharacter::thunkIsCrouching(){}  // game
 /* 0017e670 00000008 */ FUN_0017e670(){}
 /* 0017e680 00000008 */ FUN_0017e680(){}
 /* 0017e690 00000008 */ FUN_0017e690(){}
@@ -3519,7 +3519,7 @@
 // FILE -- game/stageobject.cpp
 // *****************************************************************************
 
-/* 00189ce0 00000258 */ FUN_00189ce0(){}
+/* 00189ce0 00000258 */ StageObject::scriptAddMenuLine(){}  // game
 /* 00189f40 0000066c */ StageObject::setProperty(){}  // game
 /* 0018a5b0 000008b4 */ StageObject::getProperty(){}  // game
 /* 0018ae70 00000004 */ StageObject::noiseHook(){}  // game
@@ -3583,7 +3583,7 @@
 /* 0018fec0 000000d8 */ StageParticle::stopChain(){}  // game
 /* 0018ffa0 00000094 */ FUN_0018ffa0(){}
 /* 00190040 000000ac */ StageParticle::setRangeSquared(){}  // game
-/* 001900f0 0000012c */ FUN_001900f0(){}
+/* 001900f0 0000012c */ StageParticle::setStopFrames(){}  // game
 /* 00190220 000001a0 */ FUN_00190220(){}
 /* 001903c0 00000084 */ FUN_001903c0(){}
 /* 00190450 000000a4 */ FUN_00190450(){}
@@ -3597,7 +3597,7 @@
 /* 00190640 00000008 */ FUN_00190640(){}
 /* 00190650 00000100 */ FUN_00190650(){}
 /* 00190750 000000c0 */ FUN_00190750(){}
-/* 00190810 00000070 */ FUN_00190810(){}
+/* 00190810 00000070 */ StageNodeTree::isLive(){}  // game
 /* 00190890 00000008 */ StageNodeTree::spawn(){}  // game
 /* 001908a0 0000001c */ StageNodeTree::spawnNamed(){}  // game
 /* 001908c0 00000008 */ StageNodeTree::remove(){}  // game
@@ -3613,7 +3613,7 @@
 // *****************************************************************************
 
 /* 00190900 00000088 */ StageNodeTree::setBoxes(){}  // game
-/* 00190990 000000e4 */ FUN_00190990(){}
+/* 00190990 000000e4 */ StageNodeTree::spawnMotes(){}  // game
 /* 00190a80 00000008 */ StageNodeTree::draw(){}  // game
 /* 00190a90 00000008 */ StageNodeTree::update(){}  // game
 /* 00190aa0 0000003c */ StageNodeTree::addParticleTexture(){}  // game
@@ -3995,7 +3995,7 @@
 /* 001a6fe0 00000040 */ ScriptProxy::cmdSetEnabled(){}  // game
 /* 001a7020 00000040 */ ScriptProxy::command34(){}  // game
 /* 001a7060 00000034 */ FUN_001a7060(){}
-/* 001a70a0 00000034 */ FUN_001a70a0(){}
+/* 001a70a0 00000034 */ ScriptProxy::scriptHeardKind(){}  // game
 /* 001a70e0 00000050 */ FUN_001a70e0(){}
 /* 001a7130 00000034 */ FUN_001a7130(){}
 /* 001a7170 00000034 */ FUN_001a7170(){}
@@ -4004,7 +4004,7 @@
 /* 001a7230 00000034 */ FUN_001a7230(){}
 /* 001a7270 00000040 */ ScriptProxy::command58(){}  // game
 /* 001a72b0 00000040 */ ScriptProxy::command59(){}  // game
-/* 001a72f0 00000060 */ ScriptProxy::command83(){}  // game
+/* 001a72f0 00000060 */ ScriptProxy::scriptAddMenuLine(){}  // game
 /* 001a7350 00000050 */ FUN_001a7350(){}
 /* 001a73a0 00000040 */ ScriptProxy::scriptIsFacing(){}  // game
 /* 001a73e0 00000040 */ FUN_001a73e0(){}
@@ -4014,7 +4014,7 @@
 /* 001a74e0 00000034 */ FUN_001a74e0(){}
 /* 001a7520 00000034 */ FUN_001a7520(){}
 /* 001a7560 00000034 */ FUN_001a7560(){}
-/* 001a75a0 00000034 */ FUN_001a75a0(){}
+/* 001a75a0 00000034 */ ScriptProxy::scriptIsCrouching(){}  // game
 /* 001a75e0 00000034 */ FUN_001a75e0(){}
 /* 001a7620 00000040 */ FUN_001a7620(){}
 /* 001a7660 00000060 */ FUN_001a7660(){}
@@ -5261,8 +5261,8 @@
 /* 001fe7b0 0000000c */ FUN_001fe7b0(){}
 /* 001fe7c0 0000003c */ FUN_001fe7c0(){}
 /* 001fe800 0000000c */ StageParty::isRunning(){}  // game
-/* 001fe810 00000034 */ FUN_001fe810(){}
-/* 001fe850 00000034 */ FUN_001fe850(){}
+/* 001fe810 00000034 */ StageParty::setJackAngle(){}  // game
+/* 001fe850 00000034 */ StageParty::setJackRange(){}  // game
 /* 001fe890 0000006c */ StageParty::addImage(){}  // game
 /* 001fe900 000000a4 */ StageParty::setImage(){}  // game
 /* 001fe9b0 0000000c */ StageParty::setFillImage(){}  // game
@@ -5808,8 +5808,8 @@
 /* 00219010 00000028 */ FUN_00219010(){}
 /* 00219040 000000c4 */ FUN_00219040(){}
 /* 00219110 0000004c */ FUN_00219110(){}
-/* 00219160 00000098 */ FUN_00219160(){}
-/* 00219200 00000008 */ FUN_00219200(){}
+/* 00219160 00000098 */ StageCharacter::measurePath(){}  // game
+/* 00219200 00000008 */ StageCharacter::stopMoving(){}  // game
 /* 00219210 000000fc */ FUN_00219210(){}
 /* 00219310 00000104 */ FUN_00219310(){}
 /* 00219420 000000f0 */ FUN_00219420(){}
@@ -5831,9 +5831,9 @@
 // *****************************************************************************
 
 /* 00219be0 0000006c */ FUN_00219be0(){}
-/* 00219c50 00000058 */ FUN_00219c50(){}
+/* 00219c50 00000058 */ StageCharacter::holdsWeapon(){}  // game
 /* 00219cb0 000000b4 */ FUN_00219cb0(){}
-/* 00219d70 000001dc */ FUN_00219d70(){}
+/* 00219d70 000001dc */ StageCharacter::isInReachOf(){}  // game
 /* 00219f50 00000044 */ FUN_00219f50(){}
 /* 00219fa0 00000044 */ FUN_00219fa0(){}
 /* 00219ff0 00000044 */ FUN_00219ff0(){}
@@ -5892,9 +5892,9 @@
 /* 0021b3f0 00000058 */ FUN_0021b3f0(){}
 /* 0021b450 00000238 */ FUN_0021b450(){}
 /* 0021b690 00000200 */ FUN_0021b690(){}
-/* 0021b890 000000cc */ FUN_0021b890(){}
+/* 0021b890 000000cc */ StageCharacter::scriptHeardKind(){}  // game
 /* 0021b960 00000008 */ FUN_0021b960(){}
-/* 0021b970 00000094 */ FUN_0021b970(){}
+/* 0021b970 00000094 */ StageCharacter::scriptSetBrainEntry(){}  // game
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp
@@ -6169,7 +6169,7 @@
 
 /* 002303c0 00000034 */ FUN_002303c0(){}
 /* 00230400 000003f4 */ FUN_00230400(){}
-/* 00230800 00000008 */ FUN_00230800(){}
+/* 00230800 00000008 */ StageMenu::addLine(){}  // game
 /* 00230810 00000008 */ StageMenu::setData(){}  // game
 /* 00230820 00000078 */ FUN_00230820(){}
 /* 002308a0 00000084 */ StageMenu::StageMenu(){}  // game
@@ -6288,16 +6288,16 @@
 /* 00239d50 00000b18 */ CharacterPad::update(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/sceneeffects.cpp
 // *****************************************************************************
 
-/* 0023a870 000000a0 */ FUN_0023a870(){}
-/* 0023a910 000000d8 */ FUN_0023a910(){}
-/* 0023a9f0 000000dc */ FUN_0023a9f0(){}
-/* 0023aad0 000001c8 */ FUN_0023aad0(){}
-/* 0023aca0 00000064 */ SceneBoxList::update(){}  // game
-/* 0023ad10 00000044 */ SceneBoxList::~SceneBoxList(){}  // game
-/* 0023ad60 00000044 */ SceneBoxList::SceneBoxList(){}  // game
+/* 0023a870 000000a0 */ SceneEffectList::setRainEmitting(){}  // game
+/* 0023a910 000000d8 */ SceneEffectList::find(){}  // game
+/* 0023a9f0 000000dc */ SceneEffectList::stop(){}  // game
+/* 0023aad0 000001c8 */ SceneEffectList::spawn(){}  // game
+/* 0023aca0 00000064 */ SceneEffectList::update(){}  // game
+/* 0023ad10 00000044 */ SceneEffectList::~SceneEffectList(){}  // game
+/* 0023ad60 00000044 */ SceneEffectList::SceneEffectList(){}  // game
 
 // *****************************************************************************
 // FILE -- game/stagecollision.cpp
@@ -7985,7 +7985,7 @@
 /* 0029ef70 0000005c */ saveExtraInit(){}  // game
 /* 0029efd0 0000000c */ getSaveExtra(){}  // game
 /* 0029efe0 00000008 */ getNaviMenu(){}  // game
-/* 0029eff0 0000005c */ FUN_0029eff0(){}
+/* 0029eff0 0000005c */ scriptHasLabelTexts(){}  // game
 
 // *****************************************************************************
 // FILE -- game/scriptrunner.cpp
@@ -8145,7 +8145,7 @@
 /* 002a4a40 0000193c */ StageCharacter::updateSounds(){}  // game
 /* 002a6380 000000a4 */ FUN_002a6380(){}
 /* 002a6430 00000010 */ FUN_002a6430(){}
-/* 002a6440 00000174 */ FUN_002a6440(){}
+/* 002a6440 00000174 */ StageCharacter::playVoice(){}  // game
 /* 002a65c0 0000026c */ FUN_002a65c0(){}
 /* 002a6830 000000e0 */ StageCharacter::stopSounds(){}  // game
 /* 002a6910 00000068 */ StageCharacter::initSounds(){}  // game

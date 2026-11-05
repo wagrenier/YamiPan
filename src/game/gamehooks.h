@@ -550,6 +550,7 @@ public:
     virtual void playNamedHeard(const char *name, const float *pos, StageNodeBase *parent); // FS2 0x0018aea0
     // A noise of the given loudness, without a sound.
     virtual void makeNoise(float loudness);                              // FS2 0x0018ae80
+    void scriptAddMenuLine(const u_short *text, int kind, bool plain) override; // FS2 0x00189ce0 (thunk 0x00177450)
     // Empty in the base. What it is called for is unread.
     virtual void noiseHook();                                            // FS2 0x0018ae70
     // FS2 0x00172280
@@ -955,6 +956,8 @@ public:
     // m_running and +0x21d, down the chain.
     void setRunning(bool on);                                            // FS2 0x0018c2d0
     void setRangeSquared(float rangeSquared);                            // FS2 0x00190040
+    // +0x220, down the chain: frames until it stops; the sooner one wins.
+    void setStopFrames(int frames);                                      // FS2 0x001900f0
     // Stops the effect, down the chain (+0x20c).
     void stopChain();                                                    // FS2 0x0018fec0
 
@@ -998,6 +1001,16 @@ struct StageParty
     void createCamera();                                                 // FS2 0x001febb0
     // Mode 4, object the companion.
     void setCompanion(StageObject *object);                              // FS2 0x001fe9c0
+    // The record's +4 and +8: how far the sight-jack reaches and its angle in
+    // radians, neither below 0 (natives 0x13c, 0x13d).
+    // FS2 0x001fe850
+    void setJackRange(float range) { m_jackRange = range > 0.0f ? range : 0.0f; }
+    // FS2 0x001fe810
+    void setJackAngle(float angle) { m_jackAngle = angle > 0.0f ? angle : 0.0f; }
+
+    // PC: here until the record (0x203d70) exists; its ctor's values.
+    float m_jackRange = 10000.0f;     // FS2 record +0x4
+    float m_jackAngle = 0.34906585f;  // FS2 record +0x8: 20 degrees
     // The record runs, seen through object ("camjack": the sight-jack).
     void start(StageObject *object);                                     // FS2 0x001feba0
 };
@@ -1233,6 +1246,12 @@ struct StageNodeTree
     StageParticle *spawnNamed(const char *name, int arg, int arg2);      // FS2 0x001908a0
     // effect stops; null is fine.
     void remove(StageParticle *effect);                                  // FS2 0x001908c0
+    // effect is still in the tree's list.
+    bool isLive(StageParticle *effect);                                  // FS2 0x00190810
+    // A swarm of small sprites (class 0x2b3ef0, vtable 0x319280, EE 0x240) at
+    // pos: kind picks the picture, count the most at once, range how far they
+    // go. Native 0x20f. The name is a guess: the class is unread.
+    StageObject *spawnMotes(const float *pos, float range, int kind, int count); // FS2 0x00190990
     // Replaces the inner object's BoxGrid with a new one over a bbx file.
     void setBoxes(void *bbx);                                            // FS2 0x00190900
     // point is in one of those boxes; false without any.
@@ -2393,6 +2412,21 @@ public:
     void sayFound();                                                     // FS2 0x002a46d0
     // +0x38c allows it: the motion's SHOUT at this loudness.
     bool tryShout(float loudness);                                       // FS2 0x00216270
+    // A cue from the character, as voice: a cue with a priority takes the
+    // place of what plays now only if it counts for at least as much.
+    bool playVoice(const char *name);                                    // FS2 0x002a6440
+    // object stands within 180, above by -20..180, in the front half, and in
+    // 30 degrees of a point 10 ahead.
+    bool isInReachOf(StageObject *object);                               // FS2 0x00219d70
+    // The route's length between two points, kept in m_pathLength; under 15
+    // it counts as 0, below 0 no way.
+    float measurePath(const float *from, const float *to);               // FS2 0x00219160
+    bool stopMoving();                                                   // FS2 0x00219200
+    // The long weapon is the object called name.
+    bool holdsWeapon(const char *name);                                  // FS2 0x00219c50
+    void scriptSetBrainEntry(int kind, const ScriptEntry *entry) override; // FS2 0x0021b970 (thunk 0x0017e7c0)
+    int  scriptHeardKind() override;                                     // FS2 0x0021b890 (thunk 0x0017e7a0)
+    bool scriptIsCrouching() override;                                   // FS2 0x00179bb0 (thunk 0x0017e660)
     // The item called name, at point; unread.
     void useItem(const char *name, const float *point, int arg);         // FS2 0x00218b50
     // A slot of the brain's; unread.
@@ -2585,7 +2619,8 @@ public:
     StageNodeBase *m_footNodes[kCharacterFeet] = {};   // FS2 +0x424: where they stand: the feet, or the character
     u_char m_42c = 0;           // FS2 +0x42c: 0 from the ctor (unread)
     int    m_soundState = 0;    // FS2 +0x430: 0 none, 1 a source, 2 a cue (stopSounds)
-    int    m_soundHandle = 0;   // FS2 +0x434
+    const void *m_soundHandle = nullptr; // FS2 +0x434: the source or the cue
+    int    m_soundPriority = 0x7fffffff; // FS2 +0x438: what plays counts for this; initSounds
     StageSoundSource *m_loopSound = nullptr; // FS2 +0x43c: stopped when it leaves the scene (writer unread)
     u_char m_44c = 0;           // FS2 +0x44c: a script's property; the steps' sounds 0x2a46d0, 0x2a4a40 read it
     float  m_slowStart = 0.0f;  // FS2 +0x458: -1 none; a timed change of the motion rate
@@ -2635,7 +2670,7 @@ public:
     StageDoor *m_doorInUse = nullptr; // FS2 +0x618: afterScripts: m_door while its m_user is this; no reader found
     int    m_61c = 0;           // FS2 +0x61c: cleared by afterScripts, 0x20eb40 writes it; no reader found
     StageObject *m_lastHitBy = nullptr; // FS2 +0x620: who hit it last (0x20e770, 0x20eb40); the game over's cause
-    StageObject *m_biteCandidate = nullptr; // FS2 +0x624: no writer found
+    StageObject *m_biteCandidate = nullptr; // FS2 +0x624: natives 0xbc, 0xbd write it
     int    m_628 = 0;           // FS2 +0x628: cleared by afterScripts, the route's tasks write it (0x228670, 0x229f60, 0x22aee0, 0x22b580)
     int    m_62c = 0;           // FS2 +0x62c: 0..9 from a script; the hits 0x20e770, 0x20eb40 write it, 0x1ce3f0 reads it
     int    m_scriptValues[11] = {}; // FS2 +0x630: getScriptValue
@@ -2643,6 +2678,7 @@ public:
     float  m_lastNoiseRange = 0.0f; // FS2 +0x660: m_noiseRange of the frame before; read by 0x219980
     float  m_noiseRange = 0.0f; // FS2 +0x664: FLT_MAX each frame; its writer is unread; read by 0x2196f0
     int    m_670 = 0;           // FS2 +0x670: 0 from the block; only the property reads it here
+    float  m_pathLength = 0.0f; // FS2 +0x678: measurePath's last
     StageThrownItem *m_seenFlying = nullptr;     // FS2 +0x67c: the flying thrown item in view
     StageThrownItem *m_followedFlying = nullptr; // FS2 +0x680: the one m_point740 / m_point760 are about
     StageThrownItem *m_seenThrown = nullptr;     // FS2 +0x684: the last one in view lying still
@@ -3030,6 +3066,9 @@ public:
     void destroy();                                                      // FS2 0x00230820: slot +0x8, deleting
     void update();                                                       // FS2 0x00230400: slot +0xc
     void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x002303c0: slot +0x10
+    // A line of the list window (0x209d90): the line with that text again,
+    // else a free one.
+    void addLine(const u_short *text, int kind, bool plain);             // FS2 0x00230800
     void setData(void *data);                                            // FS2 0x00230810
 
     int    state = StageMenu_Closed;    // FS2 +0x0: StageMenuState
@@ -3039,12 +3078,34 @@ public:
     u_char pendingOn = 0;               // FS2 +0x14: for one frame, update clears it
 };
 
-// +0xdc: 0xc-byte entries after a count. layout: host (EE 0xc4).
-struct SceneBoxList
+// +0xdc: the effects scripts started, by a handle of their own; an entry frees
+// itself when the tree has let its effect go. layout: host (EE 0xc4).
+struct SceneEffectList
 {
-    SceneBoxList();                                                      // FS2 0x0023ad60
-    ~SceneBoxList();                                                     // FS2 0x0023ad10: deleting
+    SceneEffectList();                                                   // FS2 0x0023ad60
+    ~SceneEffectList();                                                  // FS2 0x0023ad10: deleting
     void update();                                                       // FS2 0x0023aca0
+    // A new effect under parent, at pos / rot (either null: the definition's);
+    // its handle, -1 with no free entry or no such name.
+    int  spawn(const char *name, StageNodeBase *parent, const float *pos, const float *rot); // FS2 0x0023aad0
+    // The effect behind a handle, null when it is gone.
+    StageParticle *find(int handle);                                     // FS2 0x0023a910
+    // Stops it on the next frame; false when it is gone.
+    bool stop(int handle);                                               // FS2 0x0023a9f0
+    // setEmitting on the stage's rain (a name of s??rain).
+    void setRainEmitting(bool on);                                       // FS2 0x0023a870
+
+    // layout: host
+    struct Entry
+    {
+        u_char         isRain = 0;       // FS2 +0x0
+        int            handle = 0;       // FS2 +0x4
+        StageParticle *effect = nullptr; // FS2 +0x8: null free
+    };
+    static constexpr int kEntries = 16;
+
+    int   m_lastHandle = 0;        // FS2 +0x0
+    Entry m_entries[kEntries];     // FS2 +0x4
 };
 
 // What a noise says of who may hear it. A hearer's stepStatus turns it into

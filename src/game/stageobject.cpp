@@ -630,3 +630,48 @@ void StageObject::setTreeScriptFlag(bool on)
 {
     m_tree->setScriptFlag(on);
 }
+
+// A line of the stage menu, from this object. Below 0 the kind comes from what
+// the object is; other objects offer none. Who controls the player matters:
+// a player of record kind 0xb or 0xd has no menu.
+// FS2 0x00189ce0: the slot's thunk is 0x00177450.
+// callcheck: getKind, getStageSelect, getStageSelect, addLine
+
+void StageObject::scriptAddMenuLine(const u_short *text, int kind, bool plain)
+{
+    constexpr int kLineItem = 0x40, kLinePlayer = 0x30, kLinePartner = 0x20, kLineCar = 0x10, kLineDoor = 0;
+    constexpr int kRecordKind11 = 0xb, kRecordKind13 = 0xd;
+
+    if (kind < 0) {
+        switch (getKind()) {
+        case StageObject_Item:
+        case StageObject_ItemE:
+        case StageObject_WeaponItem:
+            kind = kLineItem;
+            break;
+        case StageObject_Character:
+            if (gStageScene->partner == this)
+                kind = kLinePartner;
+            else if (gStageScene->player == this)
+                kind = kLinePlayer;
+            else
+                return;
+            break;
+        case StageObject_Kind3:
+            kind = kLineCar;
+            break;
+        case StageObject_Door:
+            kind = kLineDoor;
+            break;
+        default:
+            return;
+        }
+    }
+
+    // PC: with no player the ROM reads low memory.
+    if (gStageScene->player == nullptr)
+        return;
+    const StageObjRecord *record = stageObjRecord(gStageScene->player->m_itemDef);
+    if (record != nullptr && record->kind != kRecordKind11 && record->kind != kRecordKind13)
+        gStageScene->menu->addLine(text, kind, plain);
+}
