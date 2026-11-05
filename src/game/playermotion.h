@@ -557,6 +557,8 @@ struct PlayerMotion
     // The matrix of the lamp the player aims: at bn_head, turned as the
     // player and the motion are.
     void getLampMatrix(sceVu0FMATRIX out);                               // FS2 0x001e60b0
+    // The same at the eye: the model family's offset past bn_head.
+    void getEyeMatrix(sceVu0FMATRIX out);                                // FS2 0x001e5f70
 
     // The frame's start (StageCharacter's start hook).
     void beginFrame();                                                   // FS2 0x001e5d90

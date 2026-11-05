@@ -2078,6 +2078,22 @@ The GS state of a pass (table 0x310180): opaque ALPHA_1 0x2a, TEST_1 0x5050b (al
 
 **Class:** `StageDoor` on `StageMapObject`, vtable 0x3112f0, EE 0x2c0, kind 2, from `createMapObject` by name: `_dp_%02d` type 2 (R, MODEL_dr_r), `_ds_%02d` type 1 (T, MODEL_dr_t). **Modes** +0x248: 0 closed, 1 opening, 2 open, 3 closing, 4 locked, 5 barred (the script only shows a notice). +0x250 pivot, +0x260 / +0x270 reach points (model 47.5, -35 / 39), reach 75; +0x280 / +0x284 the two yaws; +0x288 user; +0x29c hp, +0x2a0 key kind, +0x2a4 window. **Faces:** groups of the Root's mesh, first = 100 + (type - 1) * 0xb4 + (number - 1) * 4: 0, 1 shut, 2, 3 open; while it moves the door's own mesh collides (`m_collides`). **Motions** 0x43..0x4c: DoorLink plays dr_plo, dr_psc, dr_pso, dr_plc, dr_lcr, dr_lcl, dr_op / dr_cl on the door's pose (group 3 of the character's motions, flags 0x42); events Begin and End on the door's model move it (DR_%02d_OPEN1 / 2, CLOSE1 / 2), Click on the character's turns the key or lands the blow. **The script is the door's brain:** see open-items.md, Done.
 
+## The view camera (game/viewcamera.cpp, 2026-11-05)
+
+**Class:** `ViewCamera`, vtable 0x3185b0, EE 0x440, kind 10, on the kind 8 class that adds `m_linked` (+0x300); three objects, `camview`, `camview_zoom`, `camview_snipe`, off the view stack until pushed. **Vtable offsets:** the tables of an object are laid end to end, and code calls past the first one's end through the vptr at +0: from 0x3185b0, +0x24c `onViewTop`, +0x25c `cameraStep`, +0x260 `onLinkChanged` (0x178020, empty here). `rtti.py` and the brief's slot numbers count from the third table, so "slot 130" and "+0x24c" are the same entry.
+
+**The tree:** character -> `m_mount` (+0x340, a `StageNode`, half a turn round z) -> the camera. `onViewTop` moves the mount under `m_linked`; the ctor hangs the camera from the mount once.
+
+**A step:** rotation from the motion's `m_lampAngles`; position y from `(|m_leanScale[0]| - 1) * 5`, so the eye moves forward with a lean; dirty on the mount's tree, the pose solved when it hangs from something, `m_linked->updateMatrix()`, dirty off; then row 3 of the world matrix is overwritten with `getEyeMatrix` applied to the position. The dirty off is what keeps the row: the `updateMatrix` the scene calls after `cameraStep` rebuilds nothing. It steps twice a frame: `sideHook3` from `ScenePairTable::actionTerminate`, and the scene's camera loop.
+
+**The eye:** `PlayerMotion::getEyeMatrix` 0x1e5f70 is `getLampMatrix` plus row 3 moved by `gMotionModels[m_modelFamily].a` with its lanes reversed, or (0, 11, 11) at 0x305040 with no family. For the family `_li_` the two agree. The field `a` was unread until now: it is this eye offset.
+
+**Who asks for it:** a script sets the show flag ForceView (property 0x56 sub 7, byte 10), or the character on the pad is not the player (`forcedViewChange`); `CharacterInput::stepView` turns that into `wants.viewChange` every frame while `allows.viewSwitch` holds, and `pushView` ignores a camera already on the stack. Stage 1's Root sets the flag.
+
+**What hides what:** `ModelPartRec::drawMode` 0 is drawn, 2 is hidden with all under it. `prepareDrawFlags` clears the two parts of every character each frame, then with a kind 10 or 11 view on top hides the followed character's `m_parts[0]` (the part "head"), or `m_parts[1]`, the whole tree, for `isMode1`. Any other view hides an owned object's target whole.
+
+**Script properties:** `StageObject::setProperty` 0x189f40 is slot +0x1fc of 29 object vtables; `SubSceneModelObject`'s 0x268ae0 is the same list, and now calls it. The numbers are in game/objectproperty.h. A character has its own, unwritten (open-items.md, Done).
+
 ## Motions (game/playermotion.cpp, 2026-11-04)
 
 **`PlayerMotion` (character +0x224, EE 0xc20) is the character's motion state, not the player's:** every character has one. It is the state machine between "something asks for a motion" and `StageModel::playMotion`. A request is a `gMotionDefs` index: `request(id)` 0x1ec7a0 (180 callers) asks unless a request stands, `requestNow(id)` 0x1ec650 (72) takes over and stops a walk. `m_request` (+0x3c) is cleared at the end of every `stepLower`, so a request lasts one frame and **whoever wants a motion asks each frame**; asking for the running motion does nothing unless its 同一リクエスト column or `m_forceStart` (+0x66) is set. `motionId` (+0x40) is what plays.

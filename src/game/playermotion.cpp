@@ -30,6 +30,7 @@
 #include "game/stagelight.h"
 #include "game/stagesound.h"
 #include "game/sysdata.h"
+#include "game/viewcamera.h"
 #include "game/vu0math.h"
 
 constexpr int kMotionStanceSlots = 12;
@@ -3926,6 +3927,25 @@ void PlayerMotion::stepFidgets(const StageObjRecord *record)
     }
     character->m_idleTime = 0.0f;
     character->rollIdleDelay();
+}
+
+// The eye of a body with no family, in the bone's space.
+static const sceVu0FVECTOR kEyeOffsetDefault = { 0.0f, 11.0f, 11.0f, 1.0f }; /* data 0x305040 */
+
+// FS2 0x001e5f70
+// callcheck: identityMatrix, rotateByAngles, rotateByAngles, rotateMatrixZ, find, translateMatrix, applyMatrix, applyMatrix (getLampMatrix inline; the two applyMatrix are the two branches)
+
+void PlayerMotion::getEyeMatrix(sceVu0FMATRIX out)
+{
+    getLampMatrix(out);
+    if (m_modelFamily < 0 || m_modelFamily >= kMotionModelCount) {
+        applyMatrix(out[3], out, kEyeOffsetDefault);
+        return;
+    }
+    // The family's vector has its lanes the other way round.
+    const float *eye = gMotionModels[m_modelFamily].a;
+    const sceVu0FVECTOR offset = { eye[2], eye[1], eye[0], 1.0f };
+    applyMatrix(out[3], out, offset);
 }
 
 // FS2 0x001e60b0

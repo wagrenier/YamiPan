@@ -421,7 +421,7 @@ struct ModelPartRec
     u_char  vcmAlpha;           // FS2 +0xa: 0..0x80 (VcmTable::update)
     u_char  vcmFadeBits;        // FS2 +0xb
     u_char  vcmOffBits;         // FS2 +0xc
-    u_char  drawMode;           // FS2 +0xd: StageScene::prepareDrawFlags (0 off, 2 on)
+    u_char  drawMode;           // FS2 +0xd: 0 drawn, 2 hidden with all under it (drawTree); PartSwitch, StageScene::prepareDrawFlags
     u_char  flagE;              // FS2 +0xe: only the two virtuals (unread)
     bool    hasMesh;            // FS2 +0xf: ModelMesh::parts is set
 };
@@ -518,8 +518,8 @@ public:
     const sceVu0FVECTOR *getWorldMatrix() override { return m_xform.world; }
     void setDirtyTree(bool dirty) override;                              // FS2 0x0018b0d0
 
-    // The object's own slots (the ROM's +0x1f4..+0x248). +0x1f8, +0x1fc and
-    // +0x230 (0x18a5b0, 0x189f40, 0x189ce0) are not written yet.
+    // The object's own slots (the ROM's +0x1f4..+0x248). +0x1f8 and +0x230
+    // (0x18a5b0, 0x189ce0) are not written yet.
 
     // StageObjectKind. Pure in the ROM.
     virtual int getKind() = 0;
@@ -546,6 +546,9 @@ public:
     }
     // FS2 0x00172350
     virtual const char *getObjectName() { return m_name; }
+    // A script's store to a property: the game's global ones, which a class
+    // with properties of its own passes on to.
+    void setProperty(int id, int sub, int value) override;               // FS2 0x00189f40
     // The runner's slots: thunks to the object's (-0x40). FS2 0x00177520,
     // 0x00177f10, 0x00177f00, 0x00177480 are those thunks.
     const char *getName() override { return getObjectName(); }
@@ -746,7 +749,7 @@ public:
     StageItemE *m_lampItem;     // FS2 +0x234: a character's: the lamp it holds (SceneRender::update)
     StageObject *m_weapons[2];  // FS2 +0x238: a character's: long (rW00), short (rW01), null none; StageWeaponItem::fire's report comes from the first
     union {
-        ModelPartRec *m_parts[2]; // FS2 +0x240: a character's; StagePlayer::isMode1 picks which one shows in a view camera
+        ModelPartRec *m_parts[2]; // FS2 +0x240: a character's head, whole body; StagePlayer::isMode1 picks which one a view camera hides
         struct {
             int m_doorType;     // FS2 +0x240: a door's StageDoorType
             int m_doorIndex;    // FS2 +0x244: a door's number from 1 (StageScene::findDoorOfFace)
@@ -1912,20 +1915,7 @@ public:
     u_char m_nearWall;          // FS2 +0x3a0
     u_char m_snap;              // FS2 +0x3a1: the next step jumps instead of easing
 };
-// "camview", "camview_zoom", "camview_snipe" (kind 10; vtable 0x3185b0; run
-// unassigned@00299d90). layout: host -- EE 0x440.
-class ViewCamera : public StageCamera
-{
-public:
-    // FS2 0x0029a830
-    int getKind() override { return StageObject_Kind10; }
-    ViewCamera();                                                        // FS2 0x0029aae0
-    // The zoom of camview_zoom, from the character's zoomLevel.
-    void setZoom(float level);                                           // FS2 0x0029a840
-    // The analog range setZoom spreads over: low, then its width.
-    static constexpr float kZoomLow  = 76.8f;                            // sbss gp-0x7a00: 256 * 30 / 100
-    static constexpr float kZoomSpan = 101.4f;                           // sbss gp-0x79fc: 255 - 2 * low
-};
+// ViewCamera, "camview" and its two variants: game/viewcamera.h.
 // What the event code calls of TUs to come.
 // The film overlay's data: two parts of the parent's party (0x1fea40,
 // 0x1fea30 inline here).
