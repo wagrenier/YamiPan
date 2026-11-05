@@ -147,23 +147,23 @@ void ScriptProxy::setProperty(int id, int sub, int value)
 
 // FS2 0x001a6a90
 
-int ScriptProxy::command10()
+float ScriptProxy::scriptGetPosX()
 {
-    return getForwardTarget()->command10();
+    return getForwardTarget()->scriptGetPosX();
 }
 
 // FS2 0x001a6ad0
 
-int ScriptProxy::command11()
+float ScriptProxy::scriptGetPosY()
 {
-    return getForwardTarget()->command11();
+    return getForwardTarget()->scriptGetPosY();
 }
 
 // FS2 0x001a6b10
 
-int ScriptProxy::command12()
+float ScriptProxy::scriptGetPosZ()
 {
-    return getForwardTarget()->command12();
+    return getForwardTarget()->scriptGetPosZ();
 }
 
 // FS2 0x001a6b90
@@ -339,6 +339,20 @@ float ScriptProxy::command59(void *arg)
 bool ScriptProxy::scriptIsFacing(StageObject *other)
 {
     return getForwardObject()->scriptIsFacing(other);
+}
+
+// FS2 0x001a74a0
+
+bool ScriptProxy::scriptHasLineTo(StageCharacter *other)
+{
+    return getForwardTarget()->scriptHasLineTo(other);
+}
+
+// FS2 0x001a7850
+
+void ScriptProxy::scriptPutWeaponAway()
+{
+    getForwardObject()->scriptPutWeaponAway();
 }
 
 // FS2 0x001a76c0

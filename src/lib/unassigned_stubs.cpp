@@ -1716,13 +1716,6 @@ StageObject * StageCharacter::findNearestFoe(bool foes, bool sight)
     return {};
 }
 
-// stub of FS2 0x0021a380
-StageObject * StageCharacter::getBestFoe()
-{
-    YAMIPAN_STUB("StageCharacter::getBestFoe", 0x0021a380);
-    return {};
-}
-
 // stub of FS2 0x00218850
 void StageCharacter::item218850(int arg)
 {

@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-05 14:52 at commit `0580779` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-05 15:30 at commit `79a6b5a` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-05 14:52 at commit `0580779` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **4098** (62%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3177
-- context-name ledger: 4721 entries; overrides of wrong library matches: 0
+- game functions: **6599**, named **4195** (64%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3274
+- context-name ledger: 4818 entries; overrides of wrong library matches: 0
 - placed in a source file: 4599/6599 in 104 files
 
 Least-named game-code regions (64 KB blocks):
@@ -20,23 +20,23 @@ Least-named game-code regions (64 KB blocks):
 | block | named | inferred files |
 |---|---|---|
 | `00310000` | 0/9 (0%) | - |
-| `001c0000` | 16/233 (7%) | game/scriptrunner.cpp |
-| `001b0000` | 22/242 (9%) | game/scriptrunner.cpp |
+| `001b0000` | 43/242 (18%) | game/scriptrunner.cpp |
 | `002c0000` | 33/173 (19%) | game/packtables.cpp, game/menupack.cpp, game/stagecollision.cpp |
+| `001c0000` | 51/233 (22%) | game/scriptrunner.cpp |
 | `00220000` | 44/167 (26%) | - |
 | `002d0000` | 90/256 (35%) | game/drawsys.cpp, game/fontdata.cpp, game/wstring.cpp |
-| `001a0000` | 110/301 (37%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
 | `00200000` | 47/122 (39%) | game/pausemenustate.cpp, game/playermotion.cpp, game/uiitemlist.cpp |
+| `001a0000` | 119/301 (40%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **3789**; stubs: **294**
+- reconstructed FS2 functions: **3887**; stubs: **295**
 
 | file | reconstructed | stubs |
 |---|---|---|
 | `src/game/areagrid.cpp` | 11 | 0 |
 | `src/game/boxgrid.cpp` | 29 | 0 |
-| `src/game/characterbrain.cpp` | 133 | 0 |
+| `src/game/characterbrain.cpp` | 135 | 0 |
 | `src/game/characterground.cpp` | 20 | 0 |
 | `src/game/characterinput.cpp` | 10 | 0 |
 | `src/game/clock.cpp` | 14 | 0 |
@@ -66,7 +66,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/pakarchive.cpp` | 17 | 0 |
 | `src/game/pausemenustate.cpp` | 12 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
-| `src/game/playermotion.cpp` | 302 | 0 |
+| `src/game/playermotion.cpp` | 335 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rcnttimer.cpp` | 0 | 4 |
@@ -77,11 +77,11 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/scenepool.cpp` | 11 | 0 |
 | `src/game/scenerender.cpp` | 23 | 0 |
 | `src/game/screen.cpp` | 18 | 0 |
-| `src/game/scriptrunner.cpp` | 164 | 2 |
+| `src/game/scriptrunner.cpp` | 227 | 2 |
 | `src/game/seplayer.cpp` | 35 | 0 |
 | `src/game/sldi.cpp` | 1 | 0 |
 | `src/game/spkrom.cpp` | 13 | 0 |
-| `src/game/stagealert.cpp` | 0 | 5 |
+| `src/game/stagealert.cpp` | 0 | 7 |
 | `src/game/stagecamera.cpp` | 19 | 0 |
 | `src/game/stagecharacter.cpp` | 14 | 0 |
 | `src/game/stagecollision.cpp` | 56 | 0 |
@@ -115,7 +115,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/vectortrack.cpp` | 10 | 0 |
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 246 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 245 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -143,16 +143,16 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 219 TUs: todo 106, partial 35, verify 85, done 20
+- 219 TUs: todo 102, partial 38, verify 85, done 21
 - next: **game/scriptrunner.cpp** (pinned in the queue)
 - pinned queue: game/scriptrunner.cpp
 - partial: `game/scenepool.cpp` 11/11 -- Written with game/playermotion.cpp thirteenth run (2026-11-05): all 11. The text shows; the dark strip behind it could not be told apart on the dark room of sta
-- partial: `game/scriptrunner.cpp` 165/652 -- Written: 34 natives, listed in open-items.md Next up, and the character members behind them; SceneBoxList is now SceneEffectList in the new TU game/sceneeffects
+- partial: `game/scriptrunner.cpp` 228/652 -- Written: 63 natives in kAskedNatives, 0x3a on the real pick, and in game/playermotion.cpp the foe weights (SightEntry seen), the four picks of m_foeCache, getBe
 - partial: `game/stageobject.cpp` 43/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
 - partial: `game/uiitemlist.cpp` 19/20 -- Written with game/playermotion.cpp's fourth run (2026-11-05): the list and the prompt's label work and show. Left: the button's picture beside the label in UiPr
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
-- verify: `game/characterbrain.cpp` 131/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
+- verify: `game/characterbrain.cpp` 133/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
 - verify: `game/characterground.cpp` 19/19 -- All code of the TU is written. Seen in a 285 s New Game run, no crash: F_PC01 stands at z 1139.2 on the ray's floor (attr 59, landed) for the 1320 frames logged
 - verify: `game/characterinput.cpp` 10/10 -- All code of the TU is written; the control hook's input half now runs in stageUpdateCharacterMotions. Seen in a 285 s New Game run with the scripted left stick 
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
@@ -238,6 +238,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-05 15:30 `game/scriptrunner.cpp` partial: 63 more natives by use on the disc, the foe weights and picks, the character slots behind them
 - 2026-11-05 14:52 `game/scriptrunner.cpp` partial: All natives of stage 1's object script and 14 of the most used on the disc; sssall.py orders the rest
 - 2026-11-05 14:08 `yamipan/rendering/model_renderer.cpp` verify: Shadow pass read from VU1 and in the host; the pass runs in d0101 by its numbers, no screenshot shows a shadow yet
 - 2026-11-05 13:11 `yamipan/rendering/model_renderer.cpp` partial: Scene point light, the spot's projected pass and back-face culling read from VU1 and in the host; stage 1 lights neither, so seen only with a forced test lamp
@@ -245,22 +246,21 @@ Recent sessions:
 - 2026-11-05 11:47 `game/characterbrain.cpp` verify: the brain: ScriptProxy, CharacterBrain with its eight script slots, 59 commands, the ask family and setState; CharacterRoute stubbed
 - 2026-11-05 10:56 `game/stagecharacter.cpp` verify: re-judged whole, third person; the terminate hook 0x179d30, PlayerMotion::endFrame 0x1e06f0 with the run clock and sound events, releaseAction, isHoldingAction
 - 2026-11-05 10:24 `game/playermotion.cpp` verify: closed: resetActionState whole, ScriptPoint and the sight table, stale call notes fixed; a door opened and crossed with the pad alone
-- 2026-11-05 09:33 `game/playermotion.cpp` partial: stage 1's natives and the notices: 21 natives, PauseMenuState and ScenePool whole, hasBiter, findItem: the game's first tutorial line shows on screen, and the s
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@00135990` | partial | 3/0/33 | 3.1 | 576 | 0 |
 | `unassigned@001eedb0` | partial | 1/0/25 | 4.1 | 129 | 0 |
-| `unassigned@0021e120` | todo | 0/44/195 | 71.5 | 110 | 0 |
-| `unassigned@00176480` | partial | 13/0/69 | 5.3 | 99 | 0 |
+| `unassigned@0021e120` | todo | 0/44/195 | 71.5 | 125 | 3 |
+| `unassigned@00176480` | partial | 13/0/69 | 5.3 | 101 | 0 |
+| `unassigned@001fe6b0` | todo | 0/21/77 | 34.1 | 94 | 9 |
+| `unassigned@0018c050` | todo | 0/9/36 | 17.9 | 75 | 2 |
 | `game/vectortrack.cpp` | partial | 9/0/16 | 2.5 | 68 | 0 |
-| `unassigned@0018c050` | todo | 0/9/36 | 17.9 | 64 | 0 |
-| `game/scriptrunner.cpp` | partial | 165/2/652 | 172.7 | 55 | 0 |
+| `game/scriptrunner.cpp` | partial | 228/2/652 | 172.7 | 55 | 0 |
+| `unassigned@00190900` | partial | 2/8/34 | 11.8 | 53 | 7 |
 | `unassigned@0017e140` | todo | 0/0/78 | 1.4 | 51 | 0 |
-| `unassigned@001fe6b0` | todo | 0/21/77 | 34.1 | 49 | 0 |
 | `unassigned@0027cab0` | partial | 3/2/59 | 13.1 | 45 | 0 |
-| `unassigned@002a31b0` | todo | 0/18/22 | 5.9 | 39 | 0 |
-| `unassigned@002764b0` | todo | 0/0/43 | 7.8 | 33 | 0 |
+| `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 41 | 2 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -268,7 +268,7 @@ Recent sessions:
 |---|---|---|---|---|---|
 | `00136690` | applyMatrix | 116 | game | missing | - |
 | `002c1430` | FUN_002c1430 | 115 | - | missing | game/packtables.cpp |
-| `00177270` | BoneNode::find | 96 | game | missing | - |
+| `00177270` | BoneNode::find | 98 | game | missing | - |
 | `00136490` | scaleVec4 | 70 | game | missing | - |
 | `00184370` | StageNodeList::erase | 58 | game | missing | game/stageitem.cpp |
 | `00136560` | vecNormalize | 53 | game | missing | - |

@@ -3819,9 +3819,9 @@
 /* 0019cc80 0000013c */ StageViewStack::removePriority(){}  // game
 /* 0019cdc0 00000180 */ StageViewStack::push(){}  // game
 /* 0019cf40 0000000c */ DemoExecuter::getName(){}  // game
-/* 0019cf50 00000008 */ ScriptRunner::command10(){}  // game
-/* 0019cf60 00000008 */ ScriptRunner::command11(){}  // game
-/* 0019cf70 00000008 */ ScriptRunner::command12(){}  // game
+/* 0019cf50 00000008 */ ScriptRunner::scriptGetPosX(){}  // game
+/* 0019cf60 00000008 */ ScriptRunner::scriptGetPosY(){}  // game
+/* 0019cf70 00000008 */ ScriptRunner::scriptGetPosZ(){}  // game
 /* 0019cf80 00000004 */ ScriptRunner::scriptSetPosition(){}  // game
 /* 0019cf90 00000004 */ ScriptRunner::scriptSetRotation(){}  // game
 /* 0019cfa0 00000004 */ ScriptRunner::scriptSetYaw(){}  // game
@@ -3971,9 +3971,9 @@
 /* 001a69d0 00000034 */ FUN_001a69d0(){}
 /* 001a6a10 00000034 */ ScriptProxy::getScriptDoor(){}  // game
 /* 001a6a50 00000034 */ ScriptProxy::getScriptObject(){}  // game
-/* 001a6a90 00000034 */ ScriptProxy::command10(){}  // game
-/* 001a6ad0 00000034 */ ScriptProxy::command11(){}  // game
-/* 001a6b10 00000034 */ ScriptProxy::command12(){}  // game
+/* 001a6a90 00000034 */ ScriptProxy::scriptGetPosX(){}  // game
+/* 001a6ad0 00000034 */ ScriptProxy::scriptGetPosY(){}  // game
+/* 001a6b10 00000034 */ ScriptProxy::scriptGetPosZ(){}  // game
 /* 001a6b50 00000034 */ FUN_001a6b50(){}
 /* 001a6b90 00000040 */ ScriptProxy::scriptSetPosition(){}  // game
 /* 001a6bd0 00000040 */ ScriptProxy::scriptSetRotation(){}  // game
@@ -4010,7 +4010,7 @@
 /* 001a73e0 00000040 */ FUN_001a73e0(){}
 /* 001a7420 00000040 */ FUN_001a7420(){}
 /* 001a7460 00000040 */ FUN_001a7460(){}
-/* 001a74a0 00000040 */ FUN_001a74a0(){}
+/* 001a74a0 00000040 */ ScriptProxy::scriptHasLineTo(){}  // game
 /* 001a74e0 00000034 */ FUN_001a74e0(){}
 /* 001a7520 00000034 */ FUN_001a7520(){}
 /* 001a7560 00000034 */ FUN_001a7560(){}
@@ -4023,7 +4023,7 @@
 /* 001a7750 00000070 */ ScriptProxy::command80(){}  // game
 /* 001a77c0 00000040 */ FUN_001a77c0(){}
 /* 001a7800 00000050 */ FUN_001a7800(){}
-/* 001a7850 00000034 */ FUN_001a7850(){}
+/* 001a7850 00000034 */ ScriptProxy::scriptPutWeaponAway(){}  // game
 /* 001a7890 00000034 */ FUN_001a7890(){}
 /* 001a78d0 00000034 */ ScriptProxy::cmdIsLit(){}  // game
 /* 001a7910 00000040 */ ScriptProxy::command87(){}  // game
@@ -4071,7 +4071,7 @@
 /* 001a9d40 0000008c */ FUN_001a9d40(){}
 /* 001a9dd0 0000006c */ FUN_001a9dd0(){}
 /* 001a9e40 000001b8 */ FUN_001a9e40(){}
-/* 001aa000 000000a0 */ FUN_001aa000(){}
+/* 001aa000 000000a0 */ nativeIsFatal(){}  // game
 /* 001aa0b0 000000c4 */ FUN_001aa0b0(){}
 /* 001aa180 000000f4 */ FUN_001aa180(){}
 /* 001aa280 00000110 */ FUN_001aa280(){}
@@ -4079,12 +4079,12 @@
 /* 001aa550 000000ec */ FUN_001aa550(){}
 /* 001aa640 000000d8 */ FUN_001aa640(){}
 /* 001aa720 000001f4 */ nativeLightEnabled(){}  // game
-/* 001aa920 000000b8 */ FUN_001aa920(){}
+/* 001aa920 000000b8 */ nativeIsStanding(){}  // game
 /* 001aa9e0 0000019c */ FUN_001aa9e0(){}
 /* 001aab80 000000ec */ FUN_001aab80(){}
 /* 001aac70 0000013c */ FUN_001aac70(){}
-/* 001aadb0 00000110 */ FUN_001aadb0(){}
-/* 001aaed0 000000f8 */ FUN_001aaed0(){}
+/* 001aadb0 00000110 */ nativeRouteObject(){}  // game
+/* 001aaed0 000000f8 */ nativeCanUseSevenKey(){}  // game
 /* 001aafd0 000000f8 */ FUN_001aafd0(){}
 /* 001ab0d0 000000a8 */ FUN_001ab0d0(){}
 /* 001ab180 000001fc */ nativeLightRadius(){}  // game
@@ -4102,7 +4102,7 @@
 /* 001abe20 00000084 */ FUN_001abe20(){}
 /* 001abeb0 0000009c */ FUN_001abeb0(){}
 /* 001abf50 00000068 */ FUN_001abf50(){}
-/* 001abfc0 00000080 */ FUN_001abfc0(){}
+/* 001abfc0 00000080 */ nativeIsNearViewTarget(){}  // game
 /* 001ac050 00000058 */ FUN_001ac050(){}
 /* 001ac0b0 000000c4 */ FUN_001ac0b0(){}
 /* 001ac180 00000070 */ FUN_001ac180(){}
@@ -4124,8 +4124,8 @@
 /* 001ad720 00000100 */ nativeTransitionSbFrames(){}  // game
 /* 001ad830 0000013c */ nativeModelColorSb(){}  // game
 /* 001ad970 00000120 */ nativeModelAmbientSb(){}  // game
-/* 001adaa0 000000c4 */ FUN_001adaa0(){}
-/* 001adb70 00000044 */ FUN_001adb70(){}
+/* 001adaa0 000000c4 */ nativeDarkness(){}  // game
+/* 001adb70 00000044 */ nativeZero(){}  // game
 /* 001adbc0 0000004c */ FUN_001adbc0(){}
 /* 001adc10 000001ac */ FUN_001adc10(){}
 /* 001addc0 00000094 */ FUN_001addc0(){}
@@ -4160,7 +4160,7 @@
 /* 001afd10 00000010 */ FUN_001afd10(){}
 /* 001afd20 00000138 */ FUN_001afd20(){}
 /* 001afe60 000001d8 */ FUN_001afe60(){}
-/* 001b0040 000000bc */ FUN_001b0040(){}
+/* 001b0040 000000bc */ nativeWasHit(){}  // game
 /* 001b0100 00000100 */ nativeTransitionFrames(){}  // game
 /* 001b0210 00000100 */ nativeTransitionRange(){}  // game
 /* 001b0320 000002d8 */ nativeFarFog0(){}  // game
@@ -4312,7 +4312,7 @@
 /* 001b9e70 00000108 */ FUN_001b9e70(){}
 /* 001b9f80 00000158 */ FUN_001b9f80(){}
 /* 001ba0e0 000000a4 */ FUN_001ba0e0(){}
-/* 001ba190 00000090 */ FUN_001ba190(){}
+/* 001ba190 00000090 */ nativeAlertCry(){}  // game
 /* 001ba230 000000c0 */ FUN_001ba230(){}
 /* 001ba300 000000b0 */ FUN_001ba300(){}
 /* 001ba3c0 00000070 */ FUN_001ba3c0(){}
@@ -4340,8 +4340,8 @@
 /* 001bba50 000000f8 */ FUN_001bba50(){}
 /* 001bbb50 000000f8 */ FUN_001bbb50(){}
 /* 001bbc50 00000164 */ FUN_001bbc50(){}
-/* 001bbdc0 00000088 */ FUN_001bbdc0(){}
-/* 001bbe50 00000070 */ FUN_001bbe50(){}
+/* 001bbdc0 00000088 */ nativePickUp(){}  // game
+/* 001bbe50 00000070 */ nativeDropLongWeapon(){}  // game
 /* 001bbed0 00000110 */ FUN_001bbed0(){}
 /* 001bbff0 000000a4 */ FUN_001bbff0(){}
 /* 001bc0a0 000003f0 */ FUN_001bc0a0(){}
@@ -4358,19 +4358,19 @@
 /* 001bcc90 000000c8 */ FUN_001bcc90(){}
 /* 001bcd60 0000007c */ FUN_001bcd60(){}
 /* 001bcde0 00000038 */ FUN_001bcde0(){}
-/* 001bce20 00000084 */ FUN_001bce20(){}
-/* 001bceb0 00000098 */ FUN_001bceb0(){}
-/* 001bcf50 00000098 */ FUN_001bcf50(){}
-/* 001bcff0 00000084 */ FUN_001bcff0(){}
-/* 001bd080 000001fc */ FUN_001bd080(){}
-/* 001bd280 000000f4 */ FUN_001bd280(){}
-/* 001bd380 00000098 */ FUN_001bd380(){}
-/* 001bd420 00000138 */ FUN_001bd420(){}
+/* 001bce20 00000084 */ nativeTakeUpTrap(){}  // game
+/* 001bceb0 00000098 */ nativeCanTakeUpTrap(){}  // game
+/* 001bcf50 00000098 */ nativeSeesOpenTrap(){}  // game
+/* 001bcff0 00000084 */ nativeSetTrap(){}  // game
+/* 001bd080 000001fc */ nativeBurnerIn(){}  // game
+/* 001bd280 000000f4 */ nativeGoToLyingItem(){}  // game
+/* 001bd380 00000098 */ nativeSeesBurner(){}  // game
+/* 001bd420 00000138 */ nativeGoToLanding(){}  // game
 /* 001bd560 000000f4 */ FUN_001bd560(){}
-/* 001bd660 000000d4 */ FUN_001bd660(){}
-/* 001bd740 00000084 */ FUN_001bd740(){}
-/* 001bd7d0 00000084 */ FUN_001bd7d0(){}
-/* 001bd860 000000ac */ FUN_001bd860(){}
+/* 001bd660 000000d4 */ nativeSeesFlyingItem(){}  // game
+/* 001bd740 00000084 */ nativePutItem(){}  // game
+/* 001bd7d0 00000084 */ nativeUseSmoke(){}  // game
+/* 001bd860 000000ac */ nativeUseItem(){}  // game
 /* 001bd910 0000014c */ FUN_001bd910(){}
 /* 001bda60 00000134 */ FUN_001bda60(){}
 /* 001bdba0 000000e8 */ FUN_001bdba0(){}
@@ -4387,8 +4387,8 @@
 /* 001be770 00000164 */ FUN_001be770(){}
 /* 001be8e0 000000c4 */ FUN_001be8e0(){}
 /* 001be9b0 00000160 */ FUN_001be9b0(){}
-/* 001beb20 000001dc */ FUN_001beb20(){}
-/* 001bed00 00000188 */ FUN_001bed00(){}
+/* 001beb20 000001dc */ nativeAddFoeWeight(){}  // game
+/* 001bed00 00000188 */ nativeAskLift(){}  // game
 /* 001bee90 00000188 */ FUN_001bee90(){}
 /* 001bf020 0000013c */ FUN_001bf020(){}
 /* 001bf160 00000130 */ FUN_001bf160(){}
@@ -4396,21 +4396,21 @@
 /* 001bf400 00000158 */ FUN_001bf400(){}
 /* 001bf560 00000150 */ FUN_001bf560(){}
 /* 001bf6c0 00000158 */ FUN_001bf6c0(){}
-/* 001bf820 0000015c */ FUN_001bf820(){}
+/* 001bf820 0000015c */ nativeHasLineTo(){}  // game
 /* 001bf980 0000015c */ FUN_001bf980(){}
 /* 001bfae0 00000158 */ FUN_001bfae0(){}
 /* 001bfc40 00000158 */ FUN_001bfc40(){}
-/* 001bfda0 00000184 */ FUN_001bfda0(){}
-/* 001bff30 00000164 */ FUN_001bff30(){}
-/* 001c00a0 00000084 */ FUN_001c00a0(){}
+/* 001bfda0 00000184 */ nativePathToXyz(){}  // game
+/* 001bff30 00000164 */ nativeDistanceToNumber(){}  // game
+/* 001c00a0 00000084 */ nativeAttackBite(){}  // game
 /* 001c0130 0000010c */ FUN_001c0130(){}
-/* 001c0240 000000e4 */ FUN_001c0240(){}
-/* 001c0330 00000120 */ FUN_001c0330(){}
+/* 001c0240 000000e4 */ nativeHeardAny(){}  // game
+/* 001c0330 00000120 */ nativeClamp(){}  // game
 /* 001c0460 000000cc */ FUN_001c0460(){}
 /* 001c0530 000000cc */ FUN_001c0530(){}
 /* 001c0600 000000a0 */ FUN_001c0600(){}
 /* 001c06b0 000000a4 */ FUN_001c06b0(){}
-/* 001c0760 000000c4 */ FUN_001c0760(){}
+/* 001c0760 000000c4 */ nativePercentOf(){}  // game
 /* 001c0830 00000170 */ FUN_001c0830(){}
 /* 001c09b0 00000100 */ FUN_001c09b0(){}
 /* 001c0ac0 00000180 */ FUN_001c0ac0(){}
@@ -4430,16 +4430,16 @@
 /* 001c18b0 00000254 */ FUN_001c18b0(){}
 /* 001c1b10 000000d8 */ FUN_001c1b10(){}
 /* 001c1bf0 000002e4 */ FUN_001c1bf0(){}
-/* 001c1ee0 00000144 */ FUN_001c1ee0(){}
-/* 001c2030 000000f0 */ FUN_001c2030(){}
+/* 001c1ee0 00000144 */ nativeAlertOnNumber(){}  // game
+/* 001c2030 000000f0 */ nativeAlertOnName(){}  // game
 /* 001c2130 000001d4 */ FUN_001c2130(){}
 /* 001c2310 000000e4 */ FUN_001c2310(){}
 /* 001c2400 000000f8 */ FUN_001c2400(){}
 /* 001c2500 000000f4 */ FUN_001c2500(){}
 /* 001c2600 00000114 */ FUN_001c2600(){}
-/* 001c2720 00000268 */ FUN_001c2720(){}
-/* 001c2990 00000104 */ FUN_001c2990(){}
-/* 001c2aa0 0000015c */ FUN_001c2aa0(){}
+/* 001c2720 00000268 */ nativeForgetFoe(){}  // game
+/* 001c2990 00000104 */ nativeIsBittenName(){}  // game
+/* 001c2aa0 0000015c */ nativeIsBittenNumber(){}  // game
 /* 001c2c00 000000e4 */ FUN_001c2c00(){}
 /* 001c2cf0 0000015c */ FUN_001c2cf0(){}
 /* 001c2e50 0000017c */ FUN_001c2e50(){}
@@ -4472,13 +4472,13 @@
 /* 001c4780 0000000c */ FUN_001c4780(){}
 /* 001c4790 0000000c */ FUN_001c4790(){}
 /* 001c47a0 00000014 */ FUN_001c47a0(){}
-/* 001c47c0 000000e4 */ FUN_001c47c0(){}
+/* 001c47c0 000000e4 */ nativeHeardFoe(){}  // game
 /* 001c48b0 000001d4 */ FUN_001c48b0(){}
 /* 001c4a90 000001d4 */ FUN_001c4a90(){}
 /* 001c4c70 00000154 */ FUN_001c4c70(){}
 /* 001c4dd0 00000104 */ FUN_001c4dd0(){}
-/* 001c4ee0 000000f8 */ FUN_001c4ee0(){}
-/* 001c4fe0 000000e0 */ FUN_001c4fe0(){}
+/* 001c4ee0 000000f8 */ nativeHeardWithin(){}  // game
+/* 001c4fe0 000000e0 */ nativeNearestCorpse(){}  // game
 /* 001c50d0 000000e8 */ FUN_001c50d0(){}
 /* 001c51c0 00000108 */ FUN_001c51c0(){}
 /* 001c52d0 00000108 */ FUN_001c52d0(){}
@@ -4486,21 +4486,21 @@
 /* 001c5460 00000158 */ FUN_001c5460(){}
 /* 001c55c0 0000023c */ FUN_001c55c0(){}
 /* 001c5800 000000a4 */ FUN_001c5800(){}
-/* 001c58b0 00000184 */ FUN_001c58b0(){}
-/* 001c5a40 00000124 */ FUN_001c5a40(){}
-/* 001c5b70 000000ec */ FUN_001c5b70(){}
-/* 001c5c60 000000d4 */ FUN_001c5c60(){}
-/* 001c5d40 000000d4 */ FUN_001c5d40(){}
-/* 001c5e20 0000038c */ FUN_001c5e20(){}
-/* 001c61b0 00000098 */ FUN_001c61b0(){}
-/* 001c6250 00000098 */ FUN_001c6250(){}
+/* 001c58b0 00000184 */ nativeFoeWeight(){}  // game
+/* 001c5a40 00000124 */ nativeFoeWeightNamed(){}  // game
+/* 001c5b70 000000ec */ nativeBestFoe(){}  // game
+/* 001c5c60 000000d4 */ nativeAddFoeWeightOutOfView(){}  // game
+/* 001c5d40 000000d4 */ nativeAddFoeWeightInView(){}  // game
+/* 001c5e20 0000038c */ nativeAddFoeWeightNamed(){}  // game
+/* 001c61b0 00000098 */ nativeLightReach(){}  // game
+/* 001c6250 00000098 */ nativeTakeCorpse(){}  // game
 /* 001c62f0 000001a8 */ FUN_001c62f0(){}
-/* 001c64a0 000000e8 */ FUN_001c64a0(){}
-/* 001c6590 000000d4 */ FUN_001c6590(){}
-/* 001c6670 0000009c */ FUN_001c6670(){}
+/* 001c64a0 000000e8 */ nativeHeardAlly(){}  // game
+/* 001c6590 000000d4 */ nativeNearestFoe(){}  // game
+/* 001c6670 0000009c */ nativeNearestFoeDistance(){}  // game
 /* 001c6710 00000220 */ FUN_001c6710(){}
-/* 001c6940 000000d4 */ FUN_001c6940(){}
-/* 001c6a20 000000d4 */ FUN_001c6a20(){}
+/* 001c6940 000000d4 */ nativeUnnoticedFoe(){}  // game
+/* 001c6a20 000000d4 */ nativeNearestAllyDistance(){}  // game
 /* 001c6b00 00000098 */ FUN_001c6b00(){}
 /* 001c6ba0 000000c8 */ FUN_001c6ba0(){}
 /* 001c6c70 000000d4 */ FUN_001c6c70(){}
@@ -4514,8 +4514,8 @@
 /* 001c7300 0000011c */ FUN_001c7300(){}
 /* 001c7420 0000009c */ FUN_001c7420(){}
 /* 001c74c0 00000068 */ FUN_001c74c0(){}
-/* 001c7530 00000050 */ FUN_001c7530(){}
-/* 001c7590 0000008c */ FUN_001c7590(){}
+/* 001c7530 00000050 */ nativePutWeaponAway(){}  // game
+/* 001c7590 0000008c */ nativeNothing7f(){}  // game
 /* 001c7620 00000088 */ FUN_001c7620(){}
 /* 001c76b0 000000f0 */ FUN_001c76b0(){}
 /* 001c77b0 00000094 */ FUN_001c77b0(){}
@@ -4574,7 +4574,7 @@
 /* 001cac50 000000ec */ FUN_001cac50(){}
 /* 001cad40 00000098 */ FUN_001cad40(){}
 /* 001cade0 0000014c */ FUN_001cade0(){}
-/* 001caf30 000000dc */ FUN_001caf30(){}
+/* 001caf30 000000dc */ nativeReload(){}  // game
 /* 001cb010 0000009c */ FUN_001cb010(){}
 /* 001cb0b0 0000013c */ FUN_001cb0b0(){}
 /* 001cb1f0 00000130 */ FUN_001cb1f0(){}
@@ -4583,14 +4583,14 @@
 /* 001cb530 0000010c */ FUN_001cb530(){}
 /* 001cb640 000000d4 */ FUN_001cb640(){}
 /* 001cb720 00000080 */ FUN_001cb720(){}
-/* 001cb7b0 00000114 */ FUN_001cb7b0(){}
-/* 001cb8d0 00000164 */ FUN_001cb8d0(){}
+/* 001cb7b0 00000114 */ nativeHeightToName(){}  // game
+/* 001cb8d0 00000164 */ nativeHeightToNumber(){}  // game
 /* 001cba40 000001c8 */ FUN_001cba40(){}
 /* 001cbc10 00000084 */ FUN_001cbc10(){}
 /* 001cbca0 000000e8 */ FUN_001cbca0(){}
 /* 001cbd90 000000f4 */ FUN_001cbd90(){}
 /* 001cbe90 00000084 */ FUN_001cbe90(){}
-/* 001cbf20 0000009c */ FUN_001cbf20(){}
+/* 001cbf20 0000009c */ nativeSeenEnemy(){}  // game
 /* 001cbfc0 000000e4 */ FUN_001cbfc0(){}
 /* 001cc0b0 0000010c */ FUN_001cc0b0(){}
 /* 001cc1c0 00000050 */ FUN_001cc1c0(){}
@@ -4611,10 +4611,10 @@
 /* 001cd810 00000128 */ FUN_001cd810(){}
 /* 001cd940 0000030c */ nativeSetRotation(){}  // game
 /* 001cdc50 000002dc */ nativeSetPosition(){}  // game
-/* 001cdf30 0000008c */ FUN_001cdf30(){}
-/* 001cdfc0 0000008c */ FUN_001cdfc0(){}
-/* 001ce050 0000008c */ FUN_001ce050(){}
-/* 001ce0e0 00000080 */ FUN_001ce0e0(){}
+/* 001cdf30 0000008c */ nativePosZ(){}  // game
+/* 001cdfc0 0000008c */ nativePosY(){}  // game
+/* 001ce050 0000008c */ nativePosX(){}  // game
+/* 001ce0e0 00000080 */ nativeSpawnNamed(){}  // game
 /* 001ce170 00000068 */ FUN_001ce170(){}
 /* 001ce1e0 000000a8 */ FUN_001ce1e0(){}
 /* 001ce290 00000154 */ FUN_001ce290(){}
@@ -5510,7 +5510,7 @@
 /* 002107e0 00000024 */ FUN_002107e0(){}
 /* 00210810 00000100 */ FUN_00210810(){}
 /* 00210910 00000020 */ FUN_00210910(){}
-/* 00210930 00000008 */ FUN_00210930(){}
+/* 00210930 00000008 */ StageCharacter::canSeeThisFrame(){}  // game
 
 // *****************************************************************************
 // FILE -- game/stageplayer.cpp
@@ -5534,7 +5534,7 @@
 // *****************************************************************************
 
 /* 002115e0 00000200 */ FUN_002115e0(){}
-/* 002117e0 00000130 */ FUN_002117e0(){}
+/* 002117e0 00000130 */ StageCharacter::isCorpseGone(){}  // game
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp
@@ -5552,7 +5552,7 @@
 /* 00212160 00000198 */ FUN_00212160(){}
 /* 00212300 000000dc */ FUN_00212300(){}
 /* 002123e0 00000040 */ FUN_002123e0(){}
-/* 00212420 0000003c */ FUN_00212420(){}
+/* 00212420 0000003c */ StageCharacter::isNearViewTarget(){}  // game
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp
@@ -5750,7 +5750,7 @@
 /* 00217920 00000014 */ FUN_00217920(){}
 /* 00217940 0000006c */ FUN_00217940(){}
 /* 002179b0 00000010 */ FUN_002179b0(){}
-/* 002179c0 000000bc */ FUN_002179c0(){}
+/* 002179c0 000000bc */ SightTable::canSeeThisFrame(){}  // game
 
 // *****************************************************************************
 // FILE -- game/stageplayer.cpp
@@ -5762,8 +5762,8 @@
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 00217be0 00000078 */ FUN_00217be0(){}
-/* 00217c60 00000020 */ FUN_00217c60(){}
+/* 00217be0 00000078 */ StageCharacter::getFoeWeight(){}  // game
+/* 00217c60 00000020 */ StageCharacter::setFoeWeight(){}  // game
 /* 00217c80 00000084 */ FUN_00217c80(){}
 /* 00217d10 00000048 */ FUN_00217d10(){}
 /* 00217d60 000003b0 */ FUN_00217d60(){}
@@ -5772,8 +5772,8 @@
 /* 00218190 00000070 */ FUN_00218190(){}
 /* 00218200 0000005c */ FUN_00218200(){}
 /* 00218260 0000005c */ FUN_00218260(){}
-/* 002182c0 00000104 */ FUN_002182c0(){}
-/* 002183d0 00000074 */ FUN_002183d0(){}
+/* 002182c0 00000104 */ StageCharacter::getLightReach(){}  // game
+/* 002183d0 00000074 */ StageCharacter::scriptPutWeaponAway(){}  // game
 /* 00218450 00000020 */ FUN_00218450(){}
 /* 00218470 00000020 */ FUN_00218470(){}
 /* 00218490 00000004 */ FUN_00218490(){}
@@ -5794,20 +5794,20 @@
 /* 00218610 0000001c */ FUN_00218610(){}
 /* 00218630 000001b4 */ StageObject::spawn(){}  // game
 /* 002187f0 0000000c */ FUN_002187f0(){}
-/* 00218800 00000050 */ FUN_00218800(){}
+/* 00218800 00000050 */ StageCharacter::scriptTakeUpTrap(){}  // game
 /* 00218850 00000294 */ StageCharacter::item218850(){}  // game
-/* 00218af0 00000008 */ FUN_00218af0(){}
-/* 00218b00 00000050 */ FUN_00218b00(){}
+/* 00218af0 00000008 */ StageCharacter::scriptPutItem(){}  // game
+/* 00218b00 00000050 */ StageCharacter::scriptSetTrap(){}  // game
 /* 00218b50 000002b0 */ StageCharacter::useItem(){}  // game
 /* 00218e00 00000008 */ FUN_00218e00(){}
-/* 00218e10 00000048 */ FUN_00218e10(){}
-/* 00218e60 00000014 */ FUN_00218e60(){}
-/* 00218e80 000000b4 */ FUN_00218e80(){}
-/* 00218f40 000000b4 */ FUN_00218f40(){}
+/* 00218e10 00000048 */ StageCharacter::scriptUseNamedItem(){}  // game
+/* 00218e60 00000014 */ StageCharacter::scriptUseSmoke(){}  // game
+/* 00218e80 000000b4 */ StageCharacter::seesBurner(){}  // game
+/* 00218f40 000000b4 */ StageCharacter::seesOpenTrap(){}  // game
 /* 00219000 00000008 */ FUN_00219000(){}
 /* 00219010 00000028 */ FUN_00219010(){}
 /* 00219040 000000c4 */ FUN_00219040(){}
-/* 00219110 0000004c */ FUN_00219110(){}
+/* 00219110 0000004c */ StageCharacter::askLift(){}  // game
 /* 00219160 00000098 */ StageCharacter::measurePath(){}  // game
 /* 00219200 00000008 */ StageCharacter::stopMoving(){}  // game
 /* 00219210 000000fc */ FUN_00219210(){}
@@ -5816,7 +5816,7 @@
 /* 00219510 000001d4 */ FUN_00219510(){}
 /* 002196f0 00000284 */ FUN_002196f0(){}
 /* 00219980 00000018 */ FUN_00219980(){}
-/* 002199a0 000000ec */ FUN_002199a0(){}
+/* 002199a0 000000ec */ StageCharacter::findNearestCorpse(){}  // game
 /* 00219a90 00000044 */ FUN_00219a90(){}
 /* 00219ae0 00000044 */ FUN_00219ae0(){}
 
@@ -5834,20 +5834,20 @@
 /* 00219c50 00000058 */ StageCharacter::holdsWeapon(){}  // game
 /* 00219cb0 000000b4 */ FUN_00219cb0(){}
 /* 00219d70 000001dc */ StageCharacter::isInReachOf(){}  // game
-/* 00219f50 00000044 */ FUN_00219f50(){}
-/* 00219fa0 00000044 */ FUN_00219fa0(){}
-/* 00219ff0 00000044 */ FUN_00219ff0(){}
+/* 00219f50 00000044 */ StageCharacter::getNearestFoe(){}  // game
+/* 00219fa0 00000044 */ StageCharacter::getNearestFoeDistance(){}  // game
+/* 00219ff0 00000044 */ StageCharacter::getUnnoticedFoe(){}  // game
 /* 0021a040 00000050 */ StageCharacter::getSeenEnemyId(){}  // game
-/* 0021a090 00000130 */ FUN_0021a090(){}
+/* 0021a090 00000130 */ StageCharacter::pickNearestFoe(){}  // game
 /* 0021a1c0 000001b8 */ StageCharacter::pickSeenEnemies(){}  // game
 /* 0021a380 00000130 */ StageCharacter::getBestFoe(){}  // game
 /* 0021a4b0 00000258 */ FUN_0021a4b0(){}
-/* 0021a710 000001ac */ FUN_0021a710(){}
+/* 0021a710 000001ac */ StageCharacter::addFoeWeight(){}  // game
 /* 0021a8c0 0000000c */ FUN_0021a8c0(){}
 /* 0021a8d0 00000080 */ FUN_0021a8d0(){}
 /* 0021a960 00000130 */ StageCharacter::noteMotion(){}  // game
 /* 0021aa90 00000080 */ FUN_0021aa90(){}
-/* 0021ab10 00000044 */ FUN_0021ab10(){}
+/* 0021ab10 00000044 */ StageCharacter::takeCorpse(){}  // game
 /* 0021ab60 00000048 */ FUN_0021ab60(){}
 
 // *****************************************************************************
@@ -5868,9 +5868,9 @@
 /* 0021ad00 00000020 */ FUN_0021ad00(){}
 /* 0021ad20 00000020 */ FUN_0021ad20(){}
 /* 0021ad40 00000020 */ FUN_0021ad40(){}
-/* 0021ad60 00000030 */ FUN_0021ad60(){}
-/* 0021ada0 00000020 */ FUN_0021ada0(){}
-/* 0021adc0 000000c0 */ FUN_0021adc0(){}
+/* 0021ad60 00000030 */ StageCharacter::isBitten(){}  // game
+/* 0021ada0 00000020 */ StageCharacter::scriptAttackBite(){}  // game
+/* 0021adc0 000000c0 */ StageCharacter::scriptHasLineTo(){}  // game
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp
@@ -5887,10 +5887,10 @@
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 0021b340 0000002c */ FUN_0021b340(){}
-/* 0021b370 00000080 */ FUN_0021b370(){}
+/* 0021b340 0000002c */ StageCharacter::dropLongWeapon(){}  // game
+/* 0021b370 00000080 */ StageCharacter::scriptTakeItem(){}  // game
 /* 0021b3f0 00000058 */ FUN_0021b3f0(){}
-/* 0021b450 00000238 */ FUN_0021b450(){}
+/* 0021b450 00000238 */ StageCharacter::scriptReload(){}  // game
 /* 0021b690 00000200 */ FUN_0021b690(){}
 /* 0021b890 000000cc */ StageCharacter::scriptHeardKind(){}  // game
 /* 0021b960 00000008 */ FUN_0021b960(){}
@@ -6907,8 +6907,8 @@
 /* 00263ba0 00000068 */ StageAlert::draw(){}  // game
 /* 00263c10 000002b8 */ StageAlert::update(){}  // game
 /* 00263ed0 00000038 */ StageAlert::flash(){}  // game
-/* 00263f10 0000006c */ FUN_00263f10(){}
-/* 00263f80 00000078 */ FUN_00263f80(){}
+/* 00263f10 0000006c */ StageAlert::cry(){}  // game
+/* 00263f80 00000078 */ StageAlert::show(){}  // game
 /* 00264000 00000068 */ StageAlert::~StageAlert(){}  // game
 /* 00264070 00000078 */ StageAlert::StageAlert(){}  // game
 
@@ -8097,7 +8097,7 @@
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 002a3100 00000060 */ FUN_002a3100(){}
+/* 002a3100 00000060 */ StageCharacter::playWeaponPickSound(){}  // game
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp

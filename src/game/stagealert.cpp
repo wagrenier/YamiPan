@@ -37,3 +37,16 @@ bool StageAlert::flash()
     YAMIPAN_STUB("StageAlert::flash", 0x00263ed0);
     return {};
 }
+
+// stub of FS2 0x00263f10
+bool StageAlert::cry(StageCharacter *who)
+{
+    YAMIPAN_STUB("StageAlert::cry", 0x00263f10);
+    return {};
+}
+
+// stub of FS2 0x00263f80
+void StageAlert::show(StageObject *who)
+{
+    YAMIPAN_STUB("StageAlert::show", 0x00263f80);
+}
