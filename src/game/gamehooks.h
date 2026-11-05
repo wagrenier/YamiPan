@@ -389,6 +389,7 @@ struct CharacterBrain
     void reset();                                                        // FS2 0x001dd460
     void setEnabled(bool on);                                            // FS2 0x001dd3f0
     // The state of StageCharacter::setBrainState, and what follows from it.
+    // PC: only the state is written (game/playermotion.cpp).
     void setState(int state, int arg);                                   // FS2 0x001dbca0
     // Out of state 7: where it stood, what it was doing.
     void revive();                                                       // FS2 0x001dc950
@@ -518,8 +519,8 @@ public:
     const sceVu0FVECTOR *getWorldMatrix() override { return m_xform.world; }
     void setDirtyTree(bool dirty) override;                              // FS2 0x0018b0d0
 
-    // The object's own slots (the ROM's +0x1f4..+0x248). +0x1f8 and +0x230
-    // (0x18a5b0, 0x189ce0) are not written yet.
+    // The object's own slots (the ROM's +0x1f4..+0x248). +0x230 (0x189ce0)
+    // is not written yet.
 
     // StageObjectKind. Pure in the ROM.
     virtual int getKind() = 0;
@@ -549,6 +550,8 @@ public:
     // A script's store to a property: the game's global ones, which a class
     // with properties of its own passes on to.
     void setProperty(int id, int sub, int value) override;               // FS2 0x00189f40
+    // The reads, the same way.
+    int  getProperty(int id, int sub) override;                          // FS2 0x0018a5b0
     // The runner's slots: thunks to the object's (-0x40). FS2 0x00177520,
     // 0x00177f10, 0x00177f00, 0x00177480 are those thunks.
     const char *getName() override { return getObjectName(); }
@@ -2233,6 +2236,41 @@ public:
     void initAbilities();                                                // FS2 0x0017b3e0
     // The status from the sheet.
     void initStatus();                                                   // FS2 0x0017bd10
+    // The rest of what a character starts with: the block +0x590, from the
+    // sheet, and it tells the brain the sheet's first state.
+    void initStatusBlock();                                              // FS2 0x0021cc70
+    // A script's reads and stores of its properties (CharacterProperty); the
+    // rest go to StageObject's.
+    int  getProperty(int id, int sub) override;                          // FS2 0x002132d0
+    void setProperty(int id, int sub, int value) override;               // FS2 0x00212530
+    // m_sides, for 0..15; the second form sets or clears one bit.
+    void setSides(int sides);                                            // FS2 0x0021cbf0
+    // The sheet's 射撃: m_blanks and m_shotScatter.
+    void setShot(int value);                                             // FS2 0x0021cc10
+    void setSideBit(u_int bit, bool on);                                 // FS2 0x0021cab0..0x0021cba0
+    // The sheet's weapon columns as CharacterWieldSkill bits.
+    u_int getWieldSkills() const;                                        // FS2 0x00210e60
+    // Its long weapon is a firearm and the sheet lets it use one.
+    bool  canFireLongWeapon() const;                                     // FS2 0x0020cc50
+    // The script's number of the weapon in a slot, 0 for an empty one.
+    int   getWeaponClass(int slot) const;                                // FS2 0x0021b280, 0x0021b1c0
+    // The long weapon's rounds, and what it holds.
+    void  setWeaponRounds(int rounds);                                   // FS2 0x0021b140
+    int   getWeaponRounds() const;                                       // FS2 0x0021b1a0
+    int   getWeaponMagazine() const;                                     // FS2 0x0021b120
+    // The rounds it carries for the long firearm; another character says 100.
+    int   getCarriedAmmo();                                              // FS2 0x0020cf90
+    void  setCarriedAmmo(int rounds);                                    // FS2 0x0021ae80
+    // Takes items named so from the stage, free ones, up to count of them.
+    // mode 0 takes stacks too; a weapon goes on the first found, and with
+    // both hands full the long one is put down, in view for mode 2.
+    int   takeNamedItems(const char *name, int count, u_int mode);       // FS2 0x0021bb90
+    // +0x630: a script's own numbers.
+    int   getScriptValue(int index) const;                               // FS2 0x0021bf00
+    void  setScriptValue(int index, int value);                          // FS2 0x0021bf40
+    // The lamp it holds. Slots +0x264, +0x260.
+    bool  isLampOn();                                                    // FS2 0x0021abc0
+    void  setLampOn(bool on);                                            // FS2 0x0021ac00
     // 10..20, from the RNG.
     void rollIdleDelay();                                                // FS2 0x0017bb30
     // The chains of the character's own effects stop (+0x408.., +0x414).
@@ -2415,6 +2453,8 @@ public:
     StageThrownItem *m_throwItem = nullptr; // beside wants.throwItemEe, as m_putItem
     int    m_reloadRounds = 0;  // FS2 +0x3dc: rounds still to load, one by one
     CharacterAllows m_allows = {};  // FS2 +0x360: the start hook clears it, the conditions fill it
+    u_char m_3d8 = 1;           // FS2 +0x3d8: 1 from resetActionState; the links 0x277670.. test it (unread)
+    u_char m_armLost = 0;       // FS2 +0x3d9: the right arm just reached 0 (setRightArm)
     u_char m_fidgets = 1;       // FS2 +0x3e0: resetActionState sets it, a script's property may clear it: stepFidgets' idle0 / idle1
     u_char m_flinched = 0;      // FS2 +0x3e1: flinch went from 0 straight to the sheet's limit (setFlinch; readers unread)
     float  m_flinchClock = 0.0f; // FS2 +0x3e4: 0 from initStatus; sideHook0's seconds
@@ -2435,6 +2475,7 @@ public:
     int    m_soundState = 0;    // FS2 +0x430: 0 none, 1 a source, 2 a cue (stopSounds)
     int    m_soundHandle = 0;   // FS2 +0x434
     StageSoundSource *m_loopSound = nullptr; // FS2 +0x43c: stopped when it leaves the scene (writer unread)
+    u_char m_44c = 0;           // FS2 +0x44c: a script's property; the steps' sounds 0x2a46d0, 0x2a4a40 read it
     float  m_slowStart = 0.0f;  // FS2 +0x458: -1 none; a timed change of the motion rate
     float  m_slowEnd = 0.0f;    // FS2 +0x45c
     float  m_slowFrom = 0.0f;   // FS2 +0x460: the rate at the start
@@ -2448,21 +2489,45 @@ public:
     int    m_leftLeg = 0;       // FS2 +0x5a8: the sheet's 左足
     int    m_flinch = 0;        // FS2 +0x5ac: setFlinch, to the sheet's ひるみ耐性値
     int    m_unarmedMsp = 0;    // FS2 +0x5b0: the sheet's 素手MSP
-    u_char m_biteProof = 0;     // FS2 +0x5b9: it is not bitten, whatever its brain (property setter 0x212530)
-    int    m_enduranceRegen = 0; // FS2 +0x5c8: a second, sideHook0 (only the property setter 0x212530 would give it)
+    int    m_5b4 = 0;           // FS2 +0x5b4: only a script's
+    u_char m_5b8 = 0;           // FS2 +0x5b8: a script's; 0x1e18c0 reads it
+    u_char m_biteProof = 0;     // FS2 +0x5b9: it is not bitten, whatever its brain
+    u_char m_5ba = 0;           // FS2 +0x5ba: a script's; 0x226270 reads it
+    int    m_aiLevel = 0;       // FS2 +0x5bc: the sheet's AILV
+    float  m_sight = 0.0f;      // FS2 +0x5c0: 視界
+    float  m_hearing = 0.0f;    // FS2 +0x5c4: 音感 / 100
+    int    m_enduranceRegen = 0; // FS2 +0x5c8: 回復: a second, sideHook0
+    int    m_lightResist = 0;   // FS2 +0x5cc: 光耐性, 0..2
+    int    m_lightDamage = 0;   // FS2 +0x5d0: 光ﾀﾞﾒｰｼﾞ
+    int    m_lightFlinch = 0;   // FS2 +0x5d4: 光怯み
     int    m_lifeOverride = -1; // FS2 +0x690: getLifeState: >= 0 says 6, or 0 says 7 (writer unread)
-    int    m_doorBlow = 0;      // FS2 +0x5d8: what a forcing takes off a door; only the property setter 0x212530 gives it
-    int    m_biteDamage = 0;    // FS2 +0x5dc: a bite's; only the property setter 0x212530 gives it
-    float  m_walkRate = 1.0f;   // FS2 +0x5e0: 移動速度 / 100 (setProperty)
+    int    m_doorBlow = 0;      // FS2 +0x5d8: 素手攻撃: what a forcing takes off a door
+    int    m_biteDamage = 0;    // FS2 +0x5dc: かみつき: a bite's
+    float  m_walkRate = 1.0f;   // FS2 +0x5e0: 移動速度 / 100
     float  m_runRate = 1.0f;    // FS2 +0x5e4: 走り速度 / 100
-    float  m_turnRate = 1.0f;   // FS2 +0x5e8: 旋回速度 / 100 (setProperty)
+    float  m_turnRate = 1.0f;   // FS2 +0x5e8: 旋回速度 / 100
     float  m_reviveTime = 0.0f; // FS2 +0x5ec: seconds of DamageDead
-    int    m_drainRate = 0;     // FS2 +0x5f0: a script's property: what a drained character loses a frame at 30 Hz, read from whoever the player controls
-    u_char m_blanks = 0;        // FS2 +0x5f8: its shots carry no bullet (no writer read yet)
-    float  m_shotScatter = 0.0f; // FS2 +0x5fc: ShotSpread::amount; 0: a bullet steers after the aim, else straight
+    int    m_drainRate = 0;     // FS2 +0x5f0: 操り耐性: what a drained character loses a frame at 30 Hz, read from whoever the player controls
+    float  m_trapResist = 0.0f; // FS2 +0x5f4: 罠耐性 / 30
+    u_char m_blanks = 0;        // FS2 +0x5f8: 射撃 is 999: its shots carry no bullet
+    float  m_shotScatter = 0.0f; // FS2 +0x5fc: 射撃 / 100: ShotSpread::amount; 0: a bullet steers after the aim, else straight
+    float  m_shotInterval = 0.0f;   // FS2 +0x600: 射撃間隔 / 30
+    float  m_attackInterval = 0.0f; // FS2 +0x604: 攻撃間隔 / 30
+    float  m_biteInterval = 0.0f;   // FS2 +0x608: 噛みつき間隔 / 30
+    float  m_reloadRate = 0.0f;     // FS2 +0x60c: リロード / 100
     StageObject *m_lastHitBy = nullptr; // FS2 +0x620: who hit it last (0x20e770, 0x20eb40); the game over's cause
     StageObject *m_biteCandidate = nullptr; // FS2 +0x624: no writer found
+    int    m_62c = 0;           // FS2 +0x62c: 0..9 from a script; the hits 0x20e770, 0x20eb40 write it, 0x1ce3f0 reads it
+    int    m_scriptValues[11] = {}; // FS2 +0x630: getScriptValue
+    int    m_670 = 0;           // FS2 +0x670: 0 from the block; only the property reads it here
     u_char m_bulletFlying = 0;  // FS2 +0x688: set each frame by a bullet of its own
+    int    m_meleeScale = 0;    // FS2 +0x6c0: 打撃攻撃力修正値
+    int    m_shotScale = 0;     // FS2 +0x6c4: 射撃攻撃力修正値
+    int    m_6c8 = 0;           // FS2 +0x6c8: 0 from the block, then a script's
+    int    m_6cc = 0;           // FS2 +0x6cc: the same; 0x228670 reads it
+    int    m_6d0 = 0;           // FS2 +0x6d0
+    int    m_6d4 = 0;           // FS2 +0x6d4
+    sceVu0FVECTOR m_vector730 = { 0.0f, 0.0f, 0.0f, 1.0f }; // FS2 +0x730: a script's; its set flag +0x720 is unread
     CharacterBlock7c8 m_block7c8 = {}; // FS2 +0x7c8
 };
 
@@ -2991,7 +3056,7 @@ struct StageObjRecord
     u_char shortGun    : 2;     // FS2 +0x38: 短
     u_char rifle       : 2;     // FS2 +0x38: ラ
     u_int  sides;               // FS2 +0x3c: StageObjSide bits
-    int    startMotion;        // FS2 +0x40: 初期M
+    int    startMotion;        // FS2 +0x40: 初期M: the brain's first state (initStatusBlock)
     int    aiType;             // FS2 +0x44: AIﾀｲﾌﾟ
     int    aiLevel;            // FS2 +0x48: AILV
     int    sight;              // FS2 +0x4c: 視界

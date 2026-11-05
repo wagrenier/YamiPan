@@ -7,6 +7,7 @@
  *  the predicates, whose names say what the code does with them.
  */
 #include "game/playermotion.h"
+#include "game/objectproperty.h"
 #include "game/stagedoor.h"
 
 #include "game/boxgrid.h"
@@ -2743,16 +2744,6 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_links["Bite"] = new BiteLink(character, this);
     // The prey's side has no code of its own (vtable 0x315eb0).
     m_links["Bitten"] = new MotionLink(character, this);
-
-    // PC: the ROM's 0x212530 sets these from a script's property; nothing
-    // written sets them yet, so the sheet's.
-    const StageObjRecord *sheet = stageObjRecord(owner->m_itemDef);
-    if (sheet->walkSpeed > 0)
-        character->m_walkRate = sheet->walkSpeed / 100.0f;
-    if (sheet->runSpeed > 0)
-        character->m_runRate = sheet->runSpeed / 100.0f;
-    if (sheet->turnSpeed > 0)
-        character->m_turnRate = sheet->turnSpeed / 100.0f;
 }
 
 // FS2 0x001ed2a0
@@ -4242,7 +4233,7 @@ const SeEntry *getSurfaceSound(int surface)
 }
 
 // FS2 0x001e0e20
-// callcheck: FUN_00215290, FUN_00289eb0 (m_gear and within, inline here)
+// callcheck: hasGear, isNear (m_gear inline here)
 
 void PlayerMotion::applyMovement()
 {
@@ -4324,12 +4315,7 @@ void PlayerMotion::applyMovement()
     u_char near300 = 0;
     if (character->m_gear == nullptr) {
         if (StageViewTarget *target = gStageScene->viewTarget) {
-            const float *where = target->position;
-            const auto within = [&](float range) {
-                const float x = where[0] - character->m_xform.position[0];
-                const float y = where[1] - character->m_xform.position[1];
-                return x * x + y * y < range * range;
-            };
+            const auto within = [&](float range) { return target->isNear(range, character->m_xform.position); };
             near250 = within(250.0f) || motionId == 0xb6 || motionId == 0xb5;
             near300 = within(300.0f);
         }
@@ -7267,4 +7253,592 @@ void StageCharacter::setBrainState(int state, int arg)
         m_motion->m_reviveFrames = (int)(m_reviveTime * (float)(int)(1.0f / m_clock->getDeltaSeconds()));
     if (m_brain != nullptr)
         m_brain->setState(state, arg);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// What the sheet's percent and thirtieths are stored as.
+constexpr float kPercent     = 100.0f;
+constexpr float kThirtieths  = 30.0f;
+constexpr int   kShotBlanks  = 999;     // CharProp_Shot, the sheet's 射撃
+constexpr u_int kSideBitsEnd = 0x10;    // the four StageObjSide bits
+constexpr int   kLightResistLevels   = 3;
+constexpr int   kValue62cLevels      = 10;
+constexpr int   kScriptValues        = 11;
+constexpr int   kScriptValuesCleared = 10; // the block's loop leaves the last one
+constexpr int   kLifeDownInMotion    = 4;  // getLifeState: down, in motions 0xb3 / 0xb4
+
+// PC: the ROM goes on to the brain's script: the slot of 0x1dccb0 and the
+// route's restart by what the state does (0x1dca60 for state 7, the combat
+// count and the Partner call for 5). game/characterbrain.cpp is queued; until
+// then getLifeState and getBrainPace read the state from here.
+// FS2 0x001dbca0
+// callcheck: FUN_001dca60, FUN_001dccb0, FUN_001dd8a0, FUN_001feab0, FUN_0022d810, FUN_0022da50, FUN_0022db80, FUN_0022dc60, FUN_00263ed0, FUN_002a46d0, currentMission, getBiteTarget, getCharacterClass, getGameOptions, getSeconds, getStageResult, getStageSelect, run (none of them yet: only the store of +0x17c)
+
+void CharacterBrain::setState(int newState, int)
+{
+    state = newState;
+}
+
+// FS2 0x00211300
+// callcheck: getStageSelect
+
+void StageCharacter::setRightArm(int value)
+{
+    const int was = m_rightArm;
+    const int limit = stageObjRecord(m_itemDef)->rightArm;
+    if (value < 0)
+        value = 0;
+    m_rightArm = value <= limit ? value : limit;
+    m_armLost = was >= 1 && m_rightArm == 0;
+}
+
+// The sheet's 初期M says what the brain starts as; the sheet's numbers skip one.
+static int firstBrainState(int startMotion)
+{
+    switch (startMotion) {
+    case 4:  return 6;
+    case 3:  return 5;
+    case 2:  return 2;
+    case 1:  return 1;
+    default: return 0;
+    }
+}
+
+// The fields initStatus sets too are set again here, as the ROM does. Left
+// out, nothing here reads them: the byte and two ints at +0x610, the +0x66c
+// group and the record at +0x6a0.
+// FS2 0x0021cc70
+// callcheck: getStageSelect, FUN_001dbca0
+
+void StageCharacter::initStatusBlock()
+{
+    const StageObjRecord *sheet = stageObjRecord(m_itemDef);
+    m_health = (float)sheet->health;
+    m_endurance = sheet->endurance;
+    m_leftArm = sheet->leftArm;
+    m_rightArm = sheet->rightArm;
+    m_rightLeg = sheet->rightLeg;
+    m_leftLeg = sheet->leftLeg;
+    m_aiLevel = sheet->aiLevel;
+    m_sight = (float)sheet->sight;
+    m_hearing = (float)sheet->hearing / kPercent;
+    m_enduranceRegen = sheet->recovery;
+    if (sheet->lightResist >= 0 && sheet->lightResist < kLightResistLevels)
+        m_lightResist = sheet->lightResist;
+    m_lightDamage = sheet->lightDamage;
+    m_lightFlinch = sheet->lightFlinch;
+    m_doorBlow = sheet->unarmedAttack;
+    m_biteDamage = sheet->bite;
+    m_walkRate = (float)sheet->walkSpeed / kPercent;
+    m_runRate = (float)sheet->runSpeed / kPercent;
+    m_turnRate = (float)sheet->turnSpeed / kPercent;
+    m_reviveTime = (float)sheet->reviveTime / kThirtieths;
+    m_drainRate = sheet->controlResist;
+    m_trapResist = (float)sheet->trapResist / kThirtieths;
+    setShot(sheet->shot);
+    m_shotInterval = (float)sheet->shotInterval / kThirtieths;
+    m_attackInterval = (float)sheet->attackInterval / kThirtieths;
+    m_biteInterval = (float)sheet->biteInterval / kThirtieths;
+    m_reloadRate = (float)sheet->reload / kPercent;
+    m_meleeScale = sheet->meleeAttackScale;
+    m_shotScale = sheet->shotAttackScale;
+    m_flinch = 0;
+    m_unarmedMsp = sheet->unarmedMsp;
+    m_5b4 = 0;
+    m_5b8 = 0;
+    m_biteProof = 0;
+    m_5ba = 0;
+    if (m_brain != nullptr)
+        m_brain->setState(firstBrainState(sheet->startMotion), 0);
+    for (int i = 0; i < kScriptValuesCleared; i++)
+        m_scriptValues[i] = 0;
+    m_lastHitBy = nullptr;
+    m_biteCandidate = nullptr;
+    m_62c = 0;
+    m_670 = 0;
+    m_bulletFlying = 0;
+    m_lifeOverride = -1;
+    m_sides = sheet->sides;
+    m_6c8 = 0;
+    m_6cc = 0;
+    m_6d0 = 0;
+    m_6d4 = 0;
+}
+
+// The set flags +0x6e0, +0x700, +0x740, +0x760, +0x780, +0x7a0, the table
+// +0x468 (0x18 x 12 bytes) with its owner +0x588 and +0x7c0 / +0x7c4 stay out
+// until their readers are written.
+// FS2 0x0021e050
+// callcheck: FUN_0020b220, FUN_0021cc70
+
+void StageCharacter::resetActionState()
+{
+    m_vector730[0] = 0.0f;
+    m_vector730[1] = 0.0f;
+    m_vector730[2] = 0.0f;
+    m_vector730[3] = 1.0f;
+    initStatusBlock();
+    m_armLost = 0;
+    m_3d8 = 1;
+    m_flinched = 0;
+    m_fidgets = 1;
+}
+
+// FS2 0x0021cbf0
+void StageCharacter::setSides(int sides)
+{
+    if ((u_int)sides < kSideBitsEnd)
+        m_sides = (u_int)sides;
+}
+
+// 0x0021cab0, 0x0021cb00, 0x0021cb50 and 0x0021cba0, one per bit.
+// FS2 0x0021cab0
+void StageCharacter::setSideBit(u_int bit, bool on)
+{
+    const u_int sides = on ? m_sides | bit : m_sides & ~bit;
+    if (sides < kSideBitsEnd)
+        m_sides = sides;
+}
+
+// FS2 0x00210e60
+// callcheck: getStageSelect, getStageSelect, getStageSelect, getStageSelect
+
+u_int StageCharacter::getWieldSkills() const
+{
+    const StageObjRecord *sheet = stageObjRecord(m_itemDef);
+    u_int skills = sheet->lightWeapon != 0 ? CharacterWieldSkill_Light : 0;
+    if (sheet->heavyWeapon != 0)
+        skills |= CharacterWieldSkill_Heavy;
+    if (sheet->shortGun != 0)
+        skills |= CharacterWieldSkill_ShortGun;
+    if (sheet->rifle != 0)
+        skills |= CharacterWieldSkill_Rifle;
+    return skills;
+}
+
+// FS2 0x0020cc50
+// callcheck: FUN_00210e60, FUN_00210e60
+
+bool StageCharacter::canFireLongWeapon() const
+{
+    if (m_weapons[0] == nullptr)
+        return false;
+    const ItemDef *def = weaponDef(m_weapons[0]);
+    if (def->isPistol())
+        return (getWieldSkills() & CharacterWieldSkill_ShortGun) != 0;
+    if (def->isRifle())
+        return (getWieldSkills() & CharacterWieldSkill_Rifle) != 0;
+    return false;
+}
+
+// FS2 0x0021b280 (the long weapon), 0x0021b1c0 (the short one)
+
+int StageCharacter::getWeaponClass(int slot) const
+{
+    static const int kClassOfItemKind[] = { 1, 2, 4, 3, 5, 6, 7 };
+    if (m_weapons[slot] == nullptr)
+        return 0;
+    const int kind = weaponDef(m_weapons[slot])->kind;
+    return kind >= 0 && kind < (int)(sizeof(kClassOfItemKind) / sizeof(kClassOfItemKind[0])) ? kClassOfItemKind[kind] : 1;
+}
+
+// FS2 0x0021b120
+int StageCharacter::getWeaponMagazine() const
+{
+    return m_weapons[0] != nullptr ? m_weapons[0]->m_ammoB : 0;
+}
+
+// FS2 0x0021b1a0
+int StageCharacter::getWeaponRounds() const
+{
+    return m_weapons[0] != nullptr ? m_weapons[0]->m_ammoA : 0;
+}
+
+// FS2 0x0021b140
+void StageCharacter::setWeaponRounds(int rounds)
+{
+    StageObject *weapon = m_weapons[0];
+    if (weapon == nullptr)
+        return;
+    if (rounds < 0)
+        rounds = 0;
+    weapon->m_ammoA = rounds <= weapon->m_ammoB ? rounds : weapon->m_ammoB;
+}
+
+// FS2 0x0020cf90
+// callcheck: strcmp
+
+int StageCharacter::getCarriedAmmo()
+{
+    constexpr int kOthersAmmo = 100;
+    if (m_weapons[0] == nullptr || !weaponDef(m_weapons[0])->isFirearm())
+        return 0;
+    if (gStageScene->player != this)
+        return kOthersAmmo;
+    const char *ammo = weaponSheet(m_weapons[0]).ammo;
+    int rounds = 0;
+    for (StageList<StageObject *>::Node *node = m_items.head; node != nullptr; node = node->next) {
+        if (strcmp(node->value->m_name, ammo) == 0)
+            rounds += node->value->m_count;
+    }
+    return rounds;
+}
+
+// FS2 0x0021ae80
+// callcheck: isPlayer, findCarried, FUN_0021bb90
+
+void StageCharacter::setCarriedAmmo(int rounds)
+{
+    if (rounds < 0 || !isPlayer())
+        return;
+    if (m_weapons[0] == nullptr || !weaponDef(m_weapons[0])->isFirearm())
+        return;
+    const char *ammo = weaponSheet(m_weapons[0]).ammo;
+    StageObject *carried = findCarried(ammo);
+    if (carried == nullptr) {
+        takeNamedItems(ammo, rounds, 0);
+        return;
+    }
+    StageItem *item = static_cast<StageItem *>(carried);
+    item->m_count = rounds < item->m_maxCount ? rounds : item->m_maxCount;
+}
+
+// The stack's size, within what it may hold.
+static int clampStack(int count, int most)
+{
+    if (count < 0)
+        count = 0;
+    return count < most ? count : most;
+}
+
+// The next free item (m_active clear) from slot on, null at the end.
+static StageObject **nextFreeItem(StageObject **slot)
+{
+    while (slot != nullptr && (*slot)->m_active != 0)
+        slot = StageObjArray::next(slot);
+    return slot;
+}
+
+// FS2 0x0021bb90
+// callcheck: findAll3, getKind, dropItem, setActive, setShown, giveItem, setActive, setShown, setActive, setShown, giveItem, setActive, setShown
+
+int StageCharacter::takeNamedItems(const char *name, int count, u_int mode)
+{
+    mode &= 0xf;
+    if (count < 1)
+        return 0;
+    StageObjArray *items = gStageScene->objects->findAll3(name);
+    if (items == nullptr)
+        return 0;
+    int taken = 0;
+    for (StageObject **slot = nextFreeItem(items->begin()); slot != nullptr;
+         slot = nextFreeItem(StageObjArray::next(slot))) {
+        StageItem *item = static_cast<StageItem *>(*slot);
+        if (item->m_parent != nullptr)
+            continue;
+        if (item->getKind() == kStageObjectKindWeapon) {
+            StageObject *held = m_weapons[0];
+            if (held != nullptr && m_weapons[1] != nullptr) {
+                dropItem(held);
+                held->m_tree->setActive(mode == 2);
+                held->m_tree->setShown(mode == 2);
+            }
+            if (giveItem(item)) {
+                item->m_tree->setActive(true);
+                item->m_tree->setShown(true);
+            }
+            return 1;
+        }
+        if (mode != 0)
+            return 0;
+        const int had = item->m_count;
+        const int kind = gItemDefs[item->m_itemDef < 0 || item->m_itemDef >= kItemDefCount ? 0 : item->m_itemDef].kind;
+        if (kind >= ItemKind_ItemFirst && kind <= ItemKind_StackLast)
+            item->m_count = clampStack(count, item->m_maxCount);
+        item->m_tree->setActive(true);
+        item->m_tree->setShown(true);
+        if (giveItem(item)) {
+            taken += item->m_count;
+            if (count <= taken)
+                return taken;
+        }
+        else {
+            item->m_count = clampStack(had, item->m_maxCount);
+            item->m_tree->setActive(false);
+            item->m_tree->setShown(false);
+        }
+    }
+    return taken;
+}
+
+// FS2 0x0021bf00
+int StageCharacter::getScriptValue(int index) const
+{
+    return index < 0 || index >= kScriptValues ? 0 : m_scriptValues[index];
+}
+
+// FS2 0x0021bf40
+void StageCharacter::setScriptValue(int index, int value)
+{
+    if (index >= 0 && index < kScriptValues)
+        m_scriptValues[index] = value;
+}
+
+// FS2 0x0021abc0
+// callcheck: isSwitchedOn (slot +0x26c of the lamp)
+bool StageCharacter::isLampOn()
+{
+    return m_lampItem != nullptr && m_lampItem->isSwitchedOn();
+}
+
+// FS2 0x0021ac00
+// callcheck: setSwitchedOn (slot +0x268 of the lamp)
+void StageCharacter::setLampOn(bool on)
+{
+    if (m_lampItem != nullptr)
+        m_lampItem->setSwitchedOn(on);
+}
+
+// 999 in the sheet's 射撃: blanks; the same number is the scatter in hundredths.
+// FS2 0x0021cc10
+void StageCharacter::setShot(int value)
+{
+    m_blanks = value == kShotBlanks;
+    m_shotScatter = (float)value / kPercent;
+}
+
+static int clampToSheet(int value, int limit)
+{
+    if (value < 0)
+        value = 0;
+    return value <= limit ? value : limit;
+}
+
+// The ROM repeats StageObject::setProperty's cases here; they fall to it.
+// FS2 0x00212530
+// callcheck: getStageSelect, getSaveData, clearBit, markUnlock468, pickVariant3ac, setEndurance, setBrainState, setResultValue, setScriptVar3e, setScriptVar3f, findCharacterById, setPlayer, currentMission, setResultPaused, setResultHold, setClockFrames, setScoreClock, getLifeState, scriptFramesFrom30, setLightResist, setSideBit1, setSideBit2, setSideBit4 (StageObject::setProperty holds most; setLightResist is inline here, setSideBit one function)
+
+void StageCharacter::setProperty(int id, int sub, int value)
+{
+    const StageObjRecord *sheet = stageObjRecord(m_itemDef);
+    switch (id) {
+    case CharProp_Sides:         setSides(value); break;
+    case CharProp_BrainState:    setBrainState(value, 1); break;
+    case CharProp_AiLevel:       m_aiLevel = value; break;
+    case CharProp_Sight:         m_sight = (float)value; break;
+    case CharProp_Hearing:       m_hearing = (float)value / kPercent; break;
+    case CharProp_Health: {
+        const float health = value > 0 ? (float)value : 0.0f;
+        m_health = health <= (float)sheet->health ? health : (float)sheet->health;
+        break;
+    }
+    case CharProp_Endurance:     setEndurance(value); break;
+    case CharProp_LeftArm:       m_leftArm = clampToSheet(value, sheet->leftArm); break;
+    case CharProp_RightArm:      setRightArm(value); break;
+    case CharProp_RightLeg:      m_rightLeg = clampToSheet(value, sheet->rightLeg); break;
+    case CharProp_LeftLeg:       m_leftLeg = clampToSheet(value, sheet->leftLeg); break;
+    case CharProp_Recovery:      m_enduranceRegen = value; break;
+    case CharProp_LightResist:
+        if (value >= 0 && value < kLightResistLevels)
+            m_lightResist = value;
+        break;
+    case CharProp_LightDamage:   m_lightDamage = value; break;
+    case CharProp_LightFlinch:   m_lightFlinch = value; break;
+    case CharProp_UnarmedAttack: m_doorBlow = value; break;
+    case CharProp_Bite:          m_biteDamage = value; break;
+    case CharProp_WalkRate:      m_walkRate = (float)value / kPercent; break;
+    case CharProp_RunRate:       m_runRate = (float)value / kPercent; break;
+    case CharProp_TurnRate:      m_turnRate = (float)value / kPercent; break;
+    case CharProp_ReviveTime:    m_reviveTime = (float)value / kThirtieths; break;
+    case CharProp_ControlResist: m_drainRate = value; break;
+    case CharProp_TrapResist:    m_trapResist = (float)value / kThirtieths; break;
+    case CharProp_Shot:          setShot(value); break;
+    case CharProp_ShotInterval:  m_shotInterval = (float)value / kThirtieths; break;
+    case CharProp_AttackInterval: m_attackInterval = (float)value / kThirtieths; break;
+    case CharProp_BiteInterval:  m_biteInterval = (float)value / kThirtieths; break;
+    case CharProp_ReloadRate:    m_reloadRate = (float)value / kPercent; break;
+    case CharProp_WeaponShown:
+        if (m_weapons[0] != nullptr)
+            m_weapons[0]->m_model->data->shown = 1;
+        break;
+    case CharProp_WeaponRounds:  setWeaponRounds(value); break;
+    case CharProp_CarriedAmmo:   setCarriedAmmo(value); break;
+    case CharProp_Value5b4:      m_5b4 = value; break;
+    case CharProp_Flag5b8:       m_5b8 = value != 0; break;
+    case CharProp_BiteProof:     m_biteProof = value != 0; break;
+    case CharProp_Flag5ba:       m_5ba = value != 0; break;
+    case CharProp_Value62c:
+        if (value >= 0 && value < kValue62cLevels)
+            m_62c = value;
+        break;
+    case CharProp_SidePlayer:    setSideBit(StageObjSide_Player, value != 0); break;
+    case CharProp_SideNpc:       setSideBit(StageObjSide_Npc, value != 0); break;
+    case CharProp_SideCorpse:    setSideBit(StageObjSide_Corpse, value != 0); break;
+    case CharProp_SideDark:      setSideBit(StageObjSide_Dark, value != 0); break;
+    case CharProp_ScriptValue:   setScriptValue(sub, value); break;
+    case CharProp_Vector0:       m_vector730[0] = (float)value; break;
+    case CharProp_Vector1:       m_vector730[1] = (float)value; break;
+    case CharProp_Vector2:       m_vector730[2] = (float)value; break;
+    case CharProp_ReviveFrames:
+        if (getLifeState() == kLifeDownInMotion)
+            m_motion->m_reviveFrames = scriptFramesFrom30(value);
+        break;
+    case Prop_SwitchedOn:        setLampOn(value != 0); break;
+    case CharProp_Flag3d8:       m_3d8 = value != 0; break;
+    case CharProp_Fidgets:       m_fidgets = value != 0; break;
+    case CharProp_ShotScale:     m_shotScale = value; break;
+    case CharProp_MeleeScale:    m_meleeScale = value; break;
+    case CharProp_Value6c8:      m_6c8 = value; break;
+    case CharProp_Value6cc:      m_6cc = value; break;
+    case CharProp_Value6d0:      m_6d0 = value; break;
+    case CharProp_Value6d4:      m_6d4 = value; break;
+    case CharProp_Flag44c:       m_44c = value != 0; break;
+    default:
+        StageObject::setProperty(id, sub, value);
+        break;
+    }
+}
+
+// What the weapon's reach is: a firearm the sheet lets it fire, a blow's, or bare hands.
+static int attackReachOf(StageCharacter *character)
+{
+    if (character->m_weapons[0] == nullptr)
+        return stageObjRecord(character->m_itemDef)->attackCheck;
+    const WeaponDef &sheet = weaponSheet(character->m_weapons[0]);
+    return character->canFireLongWeapon() ? sheet.range : sheet.param2;
+}
+
+// The frames to its revival, by the DamageDead link's count: down in the
+// motion, and near the view target on anything but a car, at least 5.
+static int reviveFramesLeft(StageCharacter *character)
+{
+    constexpr float kNearViewTarget = 250.0f;
+    constexpr int   kMinFramesNear  = 5;    /* sdata 0x31aa28 */
+    StageScene *scene = gStageScene;
+    if (character->getLifeState() != kLifeDownInMotion)
+        return scriptFramesTo30((int)(character->m_reviveTime * (float)stageFps()));
+    const int frames = character->m_motion->m_reviveFrames;
+    const bool near = scene->viewTarget != nullptr
+                   && scene->viewTarget->isNear(kNearViewTarget, character->m_xform.position);
+    StageObject *floor = character->m_ground->floorObject;
+    if (!near || (floor != nullptr && floor->getKind() == StageObject_Kind3))
+        return scriptFramesTo30(frames);
+    return scriptFramesTo30(frames > kMinFramesNear ? frames : kMinFramesNear);
+}
+
+// Who it rides with: the party's companion, a character, else itself; 0 when
+// it does not ride. The ROM asks getAltSoundFlag's test three times.
+static int ridingWithId(StageCharacter *character)
+{
+    if (character->getAltSoundFlag() == 0)
+        return 0;
+    StageObject *companion = gStageScene->party->getCompanion();
+    if (companion == nullptr || companion->getKind() != StageObject_Character)
+        return character->m_id;
+    return companion->m_id;
+}
+
+// The ROM repeats StageObject::getProperty's cases here; they fall to it.
+// FS2 0x002132d0
+// callcheck: getSaveData, clearBit, testStageFlags, random, getMissionFrames, stageFps, FUN_00210e60, FUN_00210e50, FUN_0021b280, FUN_0021b1c0, FUN_0020cc50, getLifeState, FUN_00289eb0, scriptFramesTo30, FUN_0021b1a0, FUN_0021b120, FUN_0020cf90, FUN_0021abb0, isRunning, getCompanion, canFireLongWeapon, currentMission, getClockFrames, getDeltaSeconds, getHandle, getResultHold, getResultPaused, getResultValue, getScoreClock, getScriptVar3e, getScriptVar3f, getSeconds, getShortWeaponClass, getStageSelect, isNear, onRestore (StageObject::getProperty holds the shared ones; ridingWithId and reviveFramesLeft are the ROM's inline code)
+
+int StageCharacter::getProperty(int id, int sub)
+{
+    const StageObjRecord *sheet = stageObjRecord(m_itemDef);
+    switch (id) {
+    case CharProp_Id:            return m_id;
+    case CharProp_SheetKind:     return sheet->kind;
+    case CharProp_SheetSeType:   return sheet->seType;
+    case CharProp_WieldSkills:   return getWieldSkills();
+    case CharProp_WieldLight:    return (getWieldSkills() & CharacterWieldSkill_Light) != 0;
+    case CharProp_WieldHeavy:    return (getWieldSkills() & CharacterWieldSkill_Heavy) != 0;
+    case CharProp_WieldShortGun: return (getWieldSkills() & CharacterWieldSkill_ShortGun) != 0;
+    case CharProp_WieldRifle:    return (getWieldSkills() & CharacterWieldSkill_Rifle) != 0;
+    case CharProp_Sides:         return getSides();
+    case CharProp_SidePlayer:    return (getSides() & StageObjSide_Player) != 0;
+    case CharProp_SideNpc:       return (getSides() & StageObjSide_Npc) != 0;
+    case CharProp_SideCorpse:    return (getSides() & StageObjSide_Corpse) != 0;
+    case CharProp_SideDark:      return (getSides() & StageObjSide_Dark) != 0;
+    case CharProp_BrainState:    return getBrainPace();
+    case CharProp_SheetAiType:   return sheet->aiType;
+    case CharProp_AiLevel:       return m_aiLevel;
+    case CharProp_LongWeaponKind:  return getWeaponClass(0);
+    case CharProp_ShortWeaponKind: return getWeaponClass(1);
+    case CharProp_Sight:         return (int)m_sight;
+    case CharProp_Hearing:       return (int)(m_hearing * kPercent);
+    case CharProp_Health:        return (int)m_health;
+    case CharProp_HealthMax:     return sheet->health;
+    case CharProp_Endurance:     return m_endurance;
+    case CharProp_EnduranceMax:  return sheet->endurance;
+    case CharProp_LeftArm:       return m_leftArm;
+    case CharProp_LeftArmMax:    return sheet->leftArm;
+    case CharProp_RightArm:      return m_rightArm;
+    case CharProp_RightArmMax:   return sheet->rightArm;
+    case CharProp_RightLeg:      return m_rightLeg;
+    case CharProp_RightLegMax:   return sheet->rightLeg;
+    case CharProp_LeftLeg:       return m_leftLeg;
+    case CharProp_LeftLegMax:    return sheet->leftLeg;
+    case CharProp_Recovery:      return m_enduranceRegen;
+    case CharProp_LightResist:   return m_lightResist;
+    case CharProp_LightDamage:   return m_lightDamage;
+    case CharProp_LightFlinch:   return m_lightFlinch;
+    case CharProp_UnarmedAttack: return m_doorBlow;
+    case CharProp_Bite:          return m_biteDamage;
+    case CharProp_AttackReach:   return attackReachOf(this);
+    case CharProp_WalkRate:      return (int)(m_walkRate * kPercent);
+    case CharProp_RunRate:       return (int)(m_runRate * kPercent);
+    case CharProp_TurnRate:      return (int)(m_turnRate * kPercent);
+    case CharProp_ReviveTime:    return (int)(m_reviveTime * kThirtieths);
+    case CharProp_ControlResist: return m_drainRate;
+    case CharProp_TrapResist:    return (int)(m_trapResist * kThirtieths);
+    case CharProp_Shot:          return m_blanks != 0 ? kShotBlanks : (int)(m_shotScatter * kPercent);
+    case CharProp_ShotInterval:  return (int)(m_shotInterval * kThirtieths);
+    case CharProp_AttackInterval: return (int)(m_attackInterval * kThirtieths);
+    case CharProp_BiteInterval:  return (int)(m_biteInterval * kThirtieths);
+    case CharProp_ReloadRate:    return (int)(m_reloadRate * kPercent);
+    case CharProp_SheetStepLevel: return sheet->stepLevel;
+    case CharProp_SheetLadder:   return sheet->ladder;
+    case CharProp_WeaponShown:
+        return m_weapons[0] != nullptr && m_weapons[0]->m_model->data->shown != 0;
+    case CharProp_WeaponRounds:  return getWeaponRounds();
+    case CharProp_WeaponMagazine: return getWeaponMagazine();
+    case CharProp_CarriedAmmo:   return getCarriedAmmo();
+    case CharProp_BiteTargetId:
+        return getBiteTarget() != nullptr ? getBiteTarget()->m_id : 0;
+    case CharProp_RidingWithId:  return ridingWithId(this);
+    case CharProp_Value5b4:      return m_5b4;
+    case CharProp_Flag5b8:       return m_5b8;
+    case CharProp_BiteProof:     return m_biteProof;
+    case CharProp_Flag5ba:       return m_5ba;
+    case CharProp_Value62c:      return m_62c;
+    case CharProp_ScriptValue:   return getScriptValue(sub);
+    case CharProp_Vector0:       return (int)m_vector730[0];
+    case CharProp_Vector1:       return (int)m_vector730[1];
+    case CharProp_Vector2:       return (int)m_vector730[2];
+    case CharProp_ReviveFrames:  return reviveFramesLeft(this);
+    case Prop_SwitchedOn:        return isLampOn();
+    case CharProp_Value670:      return m_670;
+    case CharProp_Flag3d8:       return m_3d8;
+    case CharProp_Answer3a:
+    case CharProp_Answer3b:      return 3;
+    case CharProp_SheetDecoyResist: return sheet->decoyResist;
+    case CharProp_Fidgets:       return m_fidgets;
+    case CharProp_ShotScale:     return m_shotScale;
+    case CharProp_MeleeScale:    return m_meleeScale;
+    case CharProp_Value6c8:      return m_6c8;
+    case CharProp_Value6cc:      return m_6cc;
+    case CharProp_Value6d0:      return m_6d0;
+    case CharProp_Value6d4:      return m_6d4;
+    case CharProp_MotionFlagged: {
+        constexpr int kMotionFlaggedA = 0x42;
+        constexpr int kMotionFlaggedB = 0x94;
+        constexpr int kMotionFlaggedC = 0x95;
+        const int motion = m_motion->motionId;
+        return m_motion->m_bfc != 0
+            && (motion == kMotionFlaggedA || motion == kMotionFlaggedB || motion == kMotionFlaggedC);
+    }
+    case CharProp_Flag44c:       return m_44c;
+    default:
+        return StageObject::getProperty(id, sub);
+    }
 }

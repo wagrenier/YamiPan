@@ -152,6 +152,15 @@ struct StageViewTarget
     sceVu0FVECTOR position;     // FS2 +0x150: PlayerMotion::applyMovement measures from it
     struct GateParts *gateParts; // FS2 +0x2b0: what SubSceneGateObject copies
     StageObject *character;     // FS2 +0x3c0
+
+    // On the ground plane, nearer than range to pos.
+    // FS2 0x00289eb0
+    bool isNear(float range, const float *pos) const
+    {
+        const float dy = position[1] - pos[1];
+        const float dx = position[0] - pos[0];
+        return dx * dx + dy * dy < range * range;
+    }
 };
 
 // The sizes of the mission's tables.

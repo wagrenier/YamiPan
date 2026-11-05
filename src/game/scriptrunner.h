@@ -369,6 +369,9 @@ public:
     virtual void cmdSetValue2d8(int) {}
     // FS2 0x00171c00
     virtual void cmdSetTreeSwitchedOn(bool) {}
+    // Runner slot 86 (+0x160): StageObject::getProperty's Prop_SwitchedOn.
+    // FS2 0x00172050
+    virtual bool cmdIsLit() { return false; }
     // FS2 0x00171c20
     virtual void cmdSetTreeBroken(bool) {}
     // FS2 0x00171c30

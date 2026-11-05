@@ -330,7 +330,6 @@ void StageCharacter::initStatus()
     m_idleTime = 0.0f;
     rollIdleDelay();
     m_foe = nullptr;
-    m_sides = record->sides;    // PC: the ROM copies it in 0x21cc70 (0x21ddf0), not read yet
     m_altAction = 0;
     if (record->kind == CharacterKind_Yrt && m_ground->pushBody != nullptr)
         m_ground->pushBody->on = 1;

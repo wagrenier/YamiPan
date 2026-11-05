@@ -621,7 +621,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Written: MotionSpecial, MotionSpecialAction, MotionPartnerCall, MotionGadgetSpecial, initList 0x1df0b0, initSlots14 and 18, isSpecialAllowed, setSpecial, Walk's specials, Always's cr_2, BiteCondition, startBite, BiteLink, the plain link Bitten, setFlinch, setEndurance, setBrainState, getAttackReach, natives 0x19f..0x1a2 and 0x1a7. startGameOver now takes two objects. Seen with temporary tests since removed: 19 specials for F_PC01, endurance 100/100 after initStatus, setEndurance(0) sets gameOver with no crash, sp_lock plays motion 197 and sp_hole 196 and both return to 0. sp_rake asks 207, which has no link in the host, and the character stays there for good: write the missing links before scripts can reach such a special. Regression on the final code, New Game 330 s, no crash; last.png shows the room with the boy whole from behind, which the user says is wrong: the first segment is first person. Not proven: the bite (nothing writes +0x624 or wants.bite), cr_1..3, the gadgets, natives 0x19f..0x1a7. Doubt: getLifeState answered 0 at every sample, in Walk, so the clocks of sideHook0 do not run: m_active or a brain stuck at state 0, not measured. Left here: the three car specials, the unwritten links (architecture.md lists them), the brain in sideHook1, native 0x7a and the StageMenu window, the gadget and car natives. The next run is game/viewcamera.cpp, queued at the top by the user: open-items.md Next up has the steps.",
+   "notes": "Written: StageCharacter::setProperty 0x212530, getProperty 0x2132d0, resetActionState 0x21e050 (was a stub), initStatusBlock 0x21cc70, setRightArm, StageObject::getProperty 0x18a5b0 (the sub-scene copy calls it), the weapon, ammo, side and lamp helpers, takeNamedItems. CharacterBrain::setState stores the state only. PC default of the rates gone. Answered: getLifeState was 0 because the brain state stayed 0; F_PC01 starts in state 1 and now says 2. Seen, New Game, no crash: first-person room as before; the stick walks him (207 units in 200 steps, motion 3), and the user, watching live, says he moves and gets stuck on something: not found what. Stage 1 asks only ids 0x29, 0x04, 0x4a..0x4c, 0x36, 0x61 of F_PC01 and 0x3b, 0x3c of Root, so most ids are unproven. F_PC01 now has shot scatter 1.00 from the sheet, so shots spread. The script now reaches natives 0x3a, 0x49, 0xcf, 0x3e, 0x3f and PauseMenuState::hasNotice and addNotice: those are next, then what he gets stuck on, then game/characterbrain.cpp. Left here as the eleventh run lists it, less the properties.",
    "ranges": [
     [
      "00175700",
@@ -657,10 +657,6 @@
     ],
     [
      "001defd0",
-     "001df0b0"
-    ],
-    [
-     "001df0b0",
      "001dfd88"
     ],
     [
@@ -677,10 +673,6 @@
     ],
     [
      "001e5d90",
-     "001e60b0"
-    ],
-    [
-     "001e60b0",
      "001e6d60"
     ],
     [
@@ -708,8 +700,16 @@
      "0020c93c"
     ],
     [
+     "0020cc50",
+     "0020ce08"
+    ],
+    [
      "0020ce80",
      "0020cf88"
+    ],
+    [
+     "0020cf90",
+     "0020d1c0"
     ],
     [
      "0020d390",
@@ -720,8 +720,20 @@
      "0020d8c0"
     ],
     [
+     "00210e50",
+     "00210e54"
+    ],
+    [
+     "00210e60",
+     "00211148"
+    ],
+    [
      "00211150",
      "002112fc"
+    ],
+    [
+     "00211300",
+     "00211428"
     ],
     [
      "00211430",
@@ -734,6 +746,10 @@
     [
      "00212460",
      "0021252c"
+    ],
+    [
+     "00212530",
+     "00214a70"
     ],
     [
      "00214d40",
@@ -780,16 +796,88 @@
      "0021abb8"
     ],
     [
+     "0021abc0",
+     "0021abf8"
+    ],
+    [
+     "0021ac00",
+     "0021ac30"
+    ],
+    [
+     "0021ae80",
+     "0021b114"
+    ],
+    [
+     "0021b120",
+     "0021b134"
+    ],
+    [
+     "0021b140",
+     "0021b194"
+    ],
+    [
+     "0021b1a0",
+     "0021b1b4"
+    ],
+    [
+     "0021b1c0",
+     "0021b270"
+    ],
+    [
+     "0021b280",
+     "0021b330"
+    ],
+    [
      "0021ba10",
      "0021bb64"
     ],
     [
      "0021bb70",
-     "0021bb90"
+     "0021bedc"
+    ],
+    [
+     "0021bf00",
+     "0021bf34"
+    ],
+    [
+     "0021bf40",
+     "0021bf78"
     ],
     [
      "0021c130",
      "0021c290"
+    ],
+    [
+     "0021cab0",
+     "0021caf0"
+    ],
+    [
+     "0021cb00",
+     "0021cb40"
+    ],
+    [
+     "0021cb50",
+     "0021cb90"
+    ],
+    [
+     "0021cba0",
+     "0021cbe0"
+    ],
+    [
+     "0021cbf0",
+     "0021cc00"
+    ],
+    [
+     "0021cc10",
+     "0021cc44"
+    ],
+    [
+     "0021cc50",
+     "0021cc6c"
+    ],
+    [
+     "0021cc70",
+     "0021e118"
     ],
     [
      "00269db0",
@@ -821,10 +909,6 @@
     ],
     [
      "0026fb60",
-     "00270120"
-    ],
-    [
-     "00270120",
      "002701b4"
     ],
     [
@@ -1006,11 +1090,16 @@
      "date": "2026-11-05 07:14",
      "status": "partial",
      "summary": "the special actions, the bite and the status setters: initList, its condition classes, Walk's list, BiteCondition, BiteLink, setFlinch, setEndurance, setBrainState: specials play their motions on stage 1 and the game over is reachable; the bite has not run"
+    },
+    {
+     "date": "2026-11-05 08:47",
+     "status": "partial",
+     "summary": "a character's script properties and its status block: setProperty, getProperty, resetActionState, initStatusBlock, StageObject::getProperty: rates come from the sheet, the brain state is set, stage 1's scripts go on to new natives"
     }
    ],
    "status": "partial",
    "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves.",
-   "why": "the ranges so far, with 0x1e5f70 getEyeMatrix joined: getLampMatrix's code plus the eye offset, beside it"
+   "why": "the ranges so far, with the character's property pair 0x212530 / 0x2132d0, their helpers and resetActionState 0x21e050 with its status block 0x21cc70, which the motion reads"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",

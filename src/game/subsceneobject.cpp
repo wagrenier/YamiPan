@@ -36,9 +36,6 @@ constexpr float kObjectFrameStep = 1.2f;        // what sideHook2 hands StageMod
 constexpr u_int kNamedMotionFlags = 0x50;       // DemoCamera's cuts pass the same
 constexpr float kLightTurn = -1.5707964f;       // a light's axis along the bone
 
-constexpr int   kFramesPerSecond30 = 30;
-constexpr float kRadiansToDegrees  = 57.295776f;
-constexpr int   kFrameStepUnit     = 300;       // Prop_FrameStep: of these, a frame's worth
 
 StageObjectList *parentObjects()
 {
@@ -49,18 +46,6 @@ void hangLight(StageLight *light, StageMatrixNode *parent)
 {
     light->m_xform.setRotation(0.0f, 0.0f, kLightTurn);
     light->setParent(parent);
-}
-
-// A stage's clear state: 0 not, 1 in variant 0, 2 in both.
-int stageClearedState(int stage)
-{
-    int kind = getStageSelect()->kind;
-    SaveData *save = getSaveData();
-    if (!save->testStageFlags(stage, save->clearBit(kind, 0)))
-        return 0;
-    if (!save->testStageFlags(stage, save->clearBit(kind, 1)))
-        return 1;
-    return 2;
 }
 
 } // namespace
@@ -169,88 +154,13 @@ void SubSceneModelObject::setProperty(int id, int sub, int value)
     StageObject::setProperty(id, sub, value);
 }
 
+// The ROM's copy of StageObject::getProperty.
 // FS2 0x00269160 (0x1a68a0 the runner's thunk)
-// callcheck: getStageSelect, isShown, getHandle, getSeconds, currentMission, getScoreClock, getClockFrames, getResultHold, getResultPaused, onRestore, getDeltaSeconds, getScriptVar3f, getScriptVar3e, getResultValue, stageFps, getMissionFrames, random, getSaveData, clearBit, testStageFlags (property 0x6c tests the kind against 0 and 0x13..0x17, then two tables: no class of this family is of those kinds, so it answers 0)
+// callcheck: getStageSelect, isShown, getHandle, getSeconds, currentMission, getScoreClock, getClockFrames, getResultHold, getResultPaused, onRestore, getDeltaSeconds, getScriptVar3f, getScriptVar3e, getResultValue, stageFps, getMissionFrames, random, getSaveData, clearBit, testStageFlags
 
 int SubSceneModelObject::getProperty(int id, int sub)
 {
-    StageScene *scene = gStageScene;
-    switch (id) {
-    case Prop_ViewActive:
-        return m_viewActive;
-    case Prop_Shown:
-        return isShown();
-    case Prop_Handle:
-        return (int)getHandle();
-    case Prop_Group:
-        return 4;
-    case Prop_Frames30: {
-        Clock *clock = m_clock != nullptr ? m_clock : scene->clock;
-        return (int)(clock->getSeconds() * (float)kFramesPerSecond30 + 0.5f);
-    }
-    case Prop_YawDegrees:
-        return (int)(m_xform.rotation[2] * kRadiansToDegrees);
-    case Prop_ScoreClock:
-        return scene->currentMission()->getScoreClock();
-    case Prop_ClockFrames:
-        return scene->currentMission()->getClockFrames();
-    case Prop_ResultHold:
-        return scene->currentMission()->getResultHold();
-    case Prop_ResultPaused:
-        return scene->currentMission()->getResultPaused();
-    case Prop_ShowFlag: {
-        if (sub < 0 || sub >= kShowFlagCount)
-            return 0;
-        UiShowFlags *flags = scene->showFlags;
-        int value = flags->flag[(int)kShowFlagByte[sub]];
-        if (sub == kShowFlagInverted)
-            return value;
-        if (sub == kShowFlagWithFirst)
-            value = value != 0 && flags->flag[0] != 0;
-        return value == 0;
-    }
-    case Prop_Restore:
-        return scene->currentMission()->onRestore();
-    case Prop_ActorId: {
-        StageObject *actor = scene->controlled != nullptr ? scene->controlled : (StageObject *)scene->player;
-        return actor != nullptr ? actor->m_id : 0;
-    }
-    case Prop_PartnerId:
-        return scene->partner != nullptr ? scene->partner->m_id : 0;
-    case Prop_PlayerId:
-        return scene->player != nullptr ? ((StageObject *)scene->player)->m_id : 0;
-    case Prop_FrameStep:
-        return kFrameStepUnit / (int)(1.0f / scene->clock->getDeltaSeconds());
-    case Prop_ScriptVar3f:
-        return scene->getScriptVar3f();
-    case Prop_ScriptVar3e:
-        return scene->getScriptVar3e();
-    case Prop_Result:
-        return scene->getResultValue(sub);
-    case Prop_Fps:
-        return stageFps();
-    case Prop_MissionFrames:
-        return scene->getMissionFrames();
-    case Prop_Random100:
-        return scene->random(100);
-    case Prop_Archive: {
-        int archive = sub + 1;
-        if (archive <= 0 || archive > kArchiveCount)
-            return 0;
-        SaveData *save = getSaveData();
-        if (archive == kArchiveVariantUnlock && save->_3b0 != 0)
-            return kArchiveReported;
-        return save->archive[archive];
-    }
-    case Prop_StageCleared: {
-        int stage = sub + 1;
-        if (stage < 0 || stage >= kStageCount)
-            return 0;
-        return stageClearedState(stage);
-    }
-    default:                    // 0x3d, 0x4f (the runner's 0x172050), 0x5d, 0x6c: 0
-        return 0;
-    }
+    return StageObject::getProperty(id, sub);
 }
 
 // ──────────────────────────────────────────────────────────────────────
