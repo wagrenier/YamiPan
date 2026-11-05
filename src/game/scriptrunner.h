@@ -305,12 +305,13 @@ public:
     // Slot +0x24: the class's name; null here (0x1a7a10).
     virtual const char *getName() { return nullptr; }
 
+    // Slots +0x30..+0x38: where it stands (natives 0x23..0x25).
     // FS2 0x0019cf50
-    virtual int command10() { return 0; }
+    virtual float scriptGetPosX() { return 0.0f; }
     // FS2 0x0019cf60
-    virtual int command11() { return 0; }
+    virtual float scriptGetPosY() { return 0.0f; }
     // FS2 0x0019cf70
-    virtual int command12() { return 0; }
+    virtual float scriptGetPosZ() { return 0.0f; }
     // Slot +0x3c.
     // FS2 0x0019cf80
     virtual void scriptSetPosition(const float *) {}
@@ -427,6 +428,34 @@ public:
     // enemy, 4 the player (native 0x31).
     // FS2 0x00171d00
     virtual int scriptHeardKind() { return defaultCommand(); }
+    // ROM vptr +0xcc: the bite it holds goes in (native 0xe4).
+    // FS2 0x00171da0
+    virtual bool scriptAttackBite() { return defaultCommand() != 0; }
+    // ROM vptr +0x10c: a reload of rounds into the long weapon (0x4a).
+    // FS2 0x00171ea0
+    virtual bool scriptReload(int rounds) { (void)rounds; return defaultCommand() != 0; }
+    // ROM vptr +0x114: nothing stands between the two heads (0xea).
+    // FS2 0x00171ee0
+    virtual bool scriptHasLineTo(StageCharacter *other) { (void)other; return defaultCommand() != 0; }
+    // ROM vptr +0x158: the long weapon goes away (0x80).
+    // FS2 0x00172030
+    virtual void scriptPutWeaponAway() { defaultCommand(); }
+    // ROM vptr +0x16c, +0x170, +0x17c: the item uses (0x105, 0x104, 0x106).
+    // The ROM's natives store what these void calls leave in v0; PC: 0.
+    // FS2 0x00172060
+    virtual void scriptUseSmoke() { defaultCommand(); }
+    // FS2 0x001720a0
+    virtual void scriptUseNamedItem(const char *name) { (void)name; defaultCommand(); }
+    // FS2 0x001720e0
+    virtual void scriptPutItem() { defaultCommand(); }
+    // ROM vptr +0x178, +0x180: the trap (0x10d, 0x110).
+    // FS2 0x001720c0
+    virtual bool scriptSetTrap() { return defaultCommand() != 0; }
+    // FS2 0x00172100
+    virtual bool scriptTakeUpTrap() { return defaultCommand() != 0; }
+    // ROM vptr +0x190: takes what lies in reach (0x122).
+    // FS2 0x00172180
+    virtual StageObject *scriptTakeItem() { defaultCommand(); return nullptr; }
     // ROM vptr +0x124: the character is down in one of its crouched motions.
     // FS2 0x00171f60
     virtual bool scriptIsCrouching() { return defaultCommand() != 0; }

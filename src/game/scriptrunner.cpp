@@ -27,6 +27,7 @@
 #include "game/scenerender.h"
 #include "game/stagelight.h"
 #include "game/stageobjlist.h"
+#include "game/stageitem.h"
 #include "game/stagescene.h"
 #include "game/subsceneobject.h"
 #include "game/sysdata.h"
@@ -2212,14 +2213,13 @@ extern const char *const kSpecialElevatorBxB1 = "ElevatorBxB1";
 // Natives: what F_PC01 and Root ask on stage 1.
 
 // 0x3a seenEnemy(): the number of the nearest enemy the target sees.
-// PC: the pick 0x21a040 / 0x21a1c0 reads the sight table +0x468 the brain
-// fills, which is not written, so nobody is seen.
 // FS2 0x001cbf20
-// callcheck: FUN_0021a040
+// callcheck: getSeenEnemyId
 
-static const int *nativeSeenEnemy(ScriptRunner *, int *acc, const int *code)
+static const int *nativeSeenEnemy(ScriptRunner *self, int *acc, const int *code)
 {
-    *acc = 0;
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr ? who->getSeenEnemyId() : 0;
     return code;
 }
 
@@ -3131,6 +3131,810 @@ static const ScriptNativeBinding kStageNatives[] = {
     { 0x16a, nativeIsPlayerDriving },
 };
 
+// ──────────────────────────────────────────────────────────────────────
+// Natives: what the stages' scripts ask most. A number is 1.. in the
+// mission's character list; the ROM repeats that test in each.
+
+// PC: the ROM reads the answer of a native on a bare runner off low memory;
+// here each answers 0.
+static StageCharacter *scriptCharacterAt(int number)
+{
+    StageMission *mission = gStageScene->currentMission();
+    if (number < 1 || number > mission->characterCount)
+        return nullptr;
+    return static_cast<StageCharacter *>(mission->characters[number - 1]);
+}
+
+// Adds to a foe's weight, never below 0. An inline in the ROM's natives,
+// whose clamp reads a zero from data (0x31a9a8, 0x31a9ac, 0x31a9b0).
+static void addFoeWeightTo(StageCharacter *who, StageCharacter *foe, int amount)
+{
+    const int weight = who->getFoeWeight(foe) + amount;
+    who->setFoeWeight(foe, weight > 0 ? weight : 0);
+}
+
+// A bit of the frame's hearing (stepStatus).
+static int heardBit(ScriptRunner *self, int bit)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    return who != nullptr && (who->m_scriptValues[kScriptValueHeard] & bit) != 0;
+}
+
+// 0x22 spawnNamed(name).
+// FS2 0x001ce0e0
+// callcheck: readNameArg, spawnNamed
+
+static const int *nativeSpawnNamed(ScriptRunner *self, int *, const int *code)
+{
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    gStageScene->nodeTree->spawnNamed(name, 0, 0);
+    return next;
+}
+
+// 0x23, 0x24, 0x25: where the target stands, one axis each.
+// FS2 0x001ce050
+
+static const int *nativePosX(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = (int)self->getTarget()->scriptGetPosX();
+    return code;
+}
+
+// FS2 0x001cdfc0
+static const int *nativePosY(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = (int)self->getTarget()->scriptGetPosY();
+    return code;
+}
+
+// FS2 0x001cdf30
+static const int *nativePosZ(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = (int)self->getTarget()->scriptGetPosZ();
+    return code;
+}
+
+// 0x40 heightTo(number), 0x41 heightTo(name). Runner slot +0xf4.
+// FS2 0x001cb8d0
+// callcheck: readObjectArg, heightDifference, currentMission (scriptCharacterAt)
+
+static const int *nativeHeightToNumber(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *other = scriptCharacterAt(self->popped(1)[0]);
+    StageObject *me = self->getTarget()->getScriptObject();
+    *acc = me != nullptr && other != nullptr ? (int)me->heightDifference(other) : 0;
+    return code;
+}
+
+// FS2 0x001cb7b0
+static const int *nativeHeightToName(ScriptRunner *self, int *acc, const int *code)
+{
+    StageObject *me = self->getTarget()->getScriptObject();
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    StageObject *other = (StageObject *)scriptLabelCell(label);
+    *acc = me != nullptr && other != nullptr ? (int)me->heightDifference(other) : 0;
+    return next;
+}
+
+// 0x4a reload(rounds). Runner slot +0x10c.
+// FS2 0x001caf30
+
+static const int *nativeReload(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = self->getTarget()->scriptReload(self->popped(1)[0]);
+    return code;
+}
+
+// 0x7f: drops its three arguments and its string; nothing else in retail.
+// FS2 0x001c7590
+// callcheck: readStringArg
+
+static const int *nativeNothing7f(ScriptRunner *self, int *, const int *code)
+{
+    self->dropArgs(3);
+    const char *text;
+    return self->readStringArg(&text, code);
+}
+
+// 0x80 putWeaponAway(). Runner slot +0x158.
+// FS2 0x001c7530
+
+static const int *nativePutWeaponAway(ScriptRunner *self, int *, const int *code)
+{
+    self->getTarget()->scriptPutWeaponAway();
+    return code;
+}
+
+// 0x8e distanceToAlly(): to the nearest of its side up, -1 none.
+// FS2 0x001c6a20
+// callcheck: findNearestFoe, distanceTo
+
+static const int *nativeNearestAllyDistance(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    StageObject *ally = who != nullptr ? who->findNearestFoe(false, false) : nullptr;
+    *acc = ally != nullptr ? (int)who->distanceTo(ally) : -1;
+    return code;
+}
+
+// 0x8f unnoticedFoe(): the nearest foe it sees and gives no weight yet.
+// FS2 0x001c6940
+// callcheck: getUnnoticedFoe
+
+static const int *nativeUnnoticedFoe(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    StageObject *foe = who != nullptr ? who->getUnnoticedFoe() : nullptr;
+    *acc = foe != nullptr ? foe->m_id : 0;
+    return code;
+}
+
+// 0x91 nearestFoeDistance(), -1 none. 0x92 nearestFoe(): its number.
+// FS2 0x001c6670
+// callcheck: getNearestFoeDistance, getNearestFoe
+
+static const int *nativeNearestFoeDistance(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr ? who->getNearestFoeDistance() : -1;
+    return code;
+}
+
+// FS2 0x001c6590
+static const int *nativeNearestFoe(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    StageObject *foe = who != nullptr ? who->getNearestFoe() : nullptr;
+    *acc = foe != nullptr ? foe->m_id : 0;
+    return code;
+}
+
+// 0x93 heardAlly(), 0xa9 heardFoe(), 0xe2 heardAny().
+// FS2 0x001c64a0
+
+static const int *nativeHeardAlly(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = heardBit(self, kHeardAlly);
+    return code;
+}
+
+// FS2 0x001c47c0
+static const int *nativeHeardFoe(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = heardBit(self, kHeardFoe);
+    return code;
+}
+
+// FS2 0x001c0240
+static const int *nativeHeardAny(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = heardBit(self, kHeardAny);
+    return code;
+}
+
+// 0x95 takeCorpse(). 0x96 lightReach().
+// FS2 0x001c6250
+// callcheck: takeCorpse, getLightReach
+
+static const int *nativeTakeCorpse(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->takeCorpse();
+    return code;
+}
+
+// FS2 0x001c61b0
+static const int *nativeLightReach(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr ? who->getLightReach() : 0;
+    return code;
+}
+
+// 0x97 addFoeWeight(amount, name): a character by name, NEAR the nearest
+// foe, ALL every enemy up.
+// FS2 0x001c5e20
+// callcheck: readNameArg, strcmp, findNearestFoe, strcmp, currentMission, getLifeState, isEnemyOf, addFoeWeightTo, findCharacter, isEnemyOf, addFoeWeightTo, FUN_00217be0, FUN_00217c60 (addFoeWeightTo: getFoeWeight, setFoeWeight)
+
+static const int *nativeAddFoeWeightNamed(ScriptRunner *self, int *, const int *code)
+{
+    static const char kNearest[] = "NEAR";      /* data 0x304bc0 */
+    static const char kAll[]     = "ALL";       /* data 0x304bc8 */
+    ScriptRunner *target = self->getTarget();
+    const int amount = self->popped(1)[0];
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageCharacter *who = target->getScriptCharacter();
+    if (who == nullptr)
+        return next;
+    StageObject *foe;
+    if (strcmp(kNearest, name) == 0) {
+        foe = who->findNearestFoe(true, false);
+    } else if (strcmp(kAll, name) == 0) {
+        StageMission *mission = gStageScene->currentMission();
+        for (int i = 0; i < mission->characterCount; i++) {
+            StageCharacter *other = static_cast<StageCharacter *>(mission->characters[i]);
+            if (other->m_active != 0 && other->getLifeState() == LifeState_Up && who->isEnemyOf(other))
+                addFoeWeightTo(who, other, amount);
+        }
+        return next;
+    } else {
+        foe = gStageScene->objects->findCharacter(name, 0);
+    }
+    if (foe != nullptr && who->isEnemyOf(foe))
+        addFoeWeightTo(who, static_cast<StageCharacter *>(foe), amount);
+    return next;
+}
+
+// 0x98 addFoeWeightInView(amount, limit), 0x99 the ones out of view.
+// FS2 0x001c5d40
+// callcheck: addFoeWeight
+
+static const int *nativeAddFoeWeightInView(ScriptRunner *self, int *, const int *code)
+{
+    const int *args = self->popped(2);
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    if (who != nullptr)
+        who->addFoeWeight(args[0], args[1], true);
+    return code;
+}
+
+// FS2 0x001c5c60
+static const int *nativeAddFoeWeightOutOfView(ScriptRunner *self, int *, const int *code)
+{
+    const int *args = self->popped(2);
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    if (who != nullptr)
+        who->addFoeWeight(args[0], args[1], false);
+    return code;
+}
+
+// 0x9a bestFoe(): its number.
+// FS2 0x001c5b70
+// callcheck: getBestFoe, getBestFoe
+
+static const int *nativeBestFoe(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    StageObject *foe = who != nullptr ? who->getBestFoe() : nullptr;
+    *acc = foe != nullptr ? foe->m_id : 0;
+    return code;
+}
+
+// 0x9b foeWeight(name), 0x9c foeWeight(number).
+// FS2 0x001c5a40
+// callcheck: readNameArg, findCharacter, getFoeWeight
+
+static const int *nativeFoeWeightNamed(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageObject *foe = gStageScene->objects->findCharacter(name, 0);
+    StageCharacter *who = target->getScriptCharacter();
+    *acc = who != nullptr && foe != nullptr ? who->getFoeWeight(static_cast<StageCharacter *>(foe)) : 0;
+    return next;
+}
+
+// FS2 0x001c58b0
+// callcheck: currentMission (scriptCharacterAt)
+static const int *nativeFoeWeight(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *foe = scriptCharacterAt(self->popped(1)[0]);
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && foe != nullptr ? who->getFoeWeight(foe) : 0;
+    return code;
+}
+
+// 0xa3 nearestCorpse(): its number. 0xa4 heardWithin(range).
+// FS2 0x001c4fe0
+// callcheck: findNearestCorpse
+
+static const int *nativeNearestCorpse(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    StageCharacter *corpse = who != nullptr ? who->findNearestCorpse() : nullptr;
+    *acc = corpse != nullptr ? corpse->m_id : 0;
+    return code;
+}
+
+// FS2 0x001c4ee0
+// callcheck: FUN_00219980 (inline here: m_lastNoiseRange)
+static const int *nativeHeardWithin(ScriptRunner *self, int *acc, const int *code)
+{
+    const float range = (float)self->popped(1)[0];
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->m_lastNoiseRange <= range;
+    return code;
+}
+
+// 0xbf isBitten(number), 0xc0 isBitten(name).
+// FS2 0x001c2aa0
+// callcheck: isBitten, readObjectArg, isBitten, currentMission (scriptCharacterAt)
+
+static const int *nativeIsBittenNumber(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = scriptCharacterAt(self->popped(1)[0]);
+    *acc = who != nullptr && who->isBitten();
+    return code;
+}
+
+// FS2 0x001c2990
+static const int *nativeIsBittenName(ScriptRunner *self, int *acc, const int *code)
+{
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    StageCharacter *who = (StageCharacter *)scriptLabelCell(label);
+    *acc = who != nullptr && who->isBitten();
+    return next;
+}
+
+// 0xc1 forgetFoe(number): 0 every other character up.
+// FS2 0x001c2720
+// callcheck: getScriptCharacter, currentMission, getLifeState, setFoeWeight
+
+static const int *nativeForgetFoe(ScriptRunner *self, int *, const int *code)
+{
+    const int number = self->popped(1)[0];
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    if (who == nullptr)
+        return code;
+    if (number != 0) {
+        StageCharacter *foe = scriptCharacterAt(number);
+        if (foe != nullptr)
+            who->setFoeWeight(foe, 0);
+        return code;
+    }
+    StageMission *mission = gStageScene->currentMission();
+    for (int i = 0; i < mission->characterCount; i++) {
+        StageCharacter *other = static_cast<StageCharacter *>(mission->characters[i]);
+        if (other->m_active != 0 && other->getLifeState() == LifeState_Up && other != who)
+            who->setFoeWeight(other, 0);
+    }
+    return code;
+}
+
+// 0xc7 alertOn(name), 0xc8 alertOn(number).
+// FS2 0x001c2030
+// callcheck: readNameArg, findCharacter, show
+
+static const int *nativeAlertOnName(ScriptRunner *self, int *, const int *code)
+{
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageObject *who = gStageScene->objects->findCharacter(name, 0);
+    if (who != nullptr)
+        gStageScene->alert->show(who);
+    return next;
+}
+
+// FS2 0x001c1ee0
+static const int *nativeAlertOnNumber(ScriptRunner *self, int *, const int *code)
+{
+    StageCharacter *who = scriptCharacterAt(self->popped(1)[0]);
+    if (who != nullptr)
+        gStageScene->alert->show(who);
+    return code;
+}
+
+// 0xdc percentOf(a, b): rounded.
+// FS2 0x001c0760
+
+static const int *nativePercentOf(ScriptRunner *self, int *acc, const int *code)
+{
+    const int *args = self->popped(2);
+    *acc = (args[0] * args[1] + 50) / 100;
+    return code;
+}
+
+// 0xe1 clamp(value, low, high): what the two std::min / max inlines make.
+// FS2 0x001c0330
+
+static const int *nativeClamp(ScriptRunner *self, int *acc, const int *code)
+{
+    const int *args = self->popped(3);
+    const int low = args[0] < args[1] ? args[1] : args[0];
+    *acc = args[2] <= low ? args[2] : low;
+    return code;
+}
+
+// 0xe4 attackBite(). Runner slot +0xcc.
+// FS2 0x001c00a0
+
+static const int *nativeAttackBite(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = self->getTarget()->scriptAttackBite();
+    return code;
+}
+
+// 0xe5 distanceTo(number). Runner slot +0xf0.
+// FS2 0x001bff30
+// callcheck: distanceTo, currentMission (scriptCharacterAt)
+
+static const int *nativeDistanceToNumber(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *other = scriptCharacterAt(self->popped(1)[0]);
+    StageObject *me = self->getTarget()->getScriptObject();
+    *acc = me != nullptr && other != nullptr ? (int)me->distanceTo(other) : 0;
+    return code;
+}
+
+// 0xe6 pathToXyz(x, y, z): 1 a way there, 2 none.
+// FS2 0x001bfda0
+// callcheck: measurePath
+
+static const int *nativePathToXyz(ScriptRunner *self, int *acc, const int *code)
+{
+    enum { kPathFound = 1, kPathNone = 2 };
+    const int *args = self->popped(3);
+    sceVu0FVECTOR place = { (float)args[0], (float)args[1], (float)args[2], 1.0f };
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->measurePath(who->m_xform.position, place) >= 0.0f ? kPathFound : kPathNone;
+    return code;
+}
+
+// 0xea hasLineTo(number). Runner slot +0x114.
+// FS2 0x001bf820
+// callcheck: currentMission (scriptCharacterAt)
+
+static const int *nativeHasLineTo(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *other = scriptCharacterAt(self->popped(1)[0]);
+    // PC: a null other has no head to ask; the base slot's answer.
+    *acc = other != nullptr && self->getTarget()->scriptHasLineTo(other);
+    return code;
+}
+
+// 0xf2 askLift(number): the number is not read past its test.
+// FS2 0x001bed00
+// callcheck: askLift, currentMission (scriptCharacterAt)
+
+static const int *nativeAskLift(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *other = scriptCharacterAt(self->popped(1)[0]);
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && other != nullptr && who->askLift();
+    return code;
+}
+
+// 0xf3 addFoeWeight(number, amount).
+// FS2 0x001beb20
+// callcheck: isEnemyOf, addFoeWeightTo, currentMission (scriptCharacterAt), FUN_00217be0, FUN_00217c60 (addFoeWeightTo)
+
+static const int *nativeAddFoeWeight(ScriptRunner *self, int *, const int *code)
+{
+    const int *args = self->popped(2);
+    const int amount = args[1];
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    StageCharacter *foe = scriptCharacterAt(args[0]);
+    if (who != nullptr && foe != nullptr && who->isEnemyOf(foe))
+        addFoeWeightTo(who, foe, amount);
+    return code;
+}
+
+// 0x104 useItem(name), 0x105 useSmoke(), 0x106 putItem(). Slots +0x170,
+// +0x16c, +0x17c, void in the ROM: their acc is what v0 held.
+// FS2 0x001bd860
+
+static const int *nativeUseItem(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    target->scriptUseNamedItem(name);
+    *acc = 0;
+    return next;
+}
+
+// FS2 0x001bd7d0
+static const int *nativeUseSmoke(ScriptRunner *self, int *acc, const int *code)
+{
+    self->getTarget()->scriptUseSmoke();
+    *acc = 0;
+    return code;
+}
+
+// FS2 0x001bd740
+static const int *nativePutItem(ScriptRunner *self, int *acc, const int *code)
+{
+    self->getTarget()->scriptPutItem();
+    *acc = 0;
+    return code;
+}
+
+// 0x107 seesFlyingItem().
+// FS2 0x001bd660
+
+static const int *nativeSeesFlyingItem(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->m_seenFlying != nullptr;
+    return code;
+}
+
+// 0x108, 0x109, 0x10b: the script's point goes to one of beforeScripts'
+// three: the throw's, the landing, the item lying still.
+// FS2 0x001bd560
+// callcheck: set
+
+static const int *goToWatchedPoint(ScriptRunner *self, int *acc, const int *code,
+                                   ScriptPoint StageCharacter::*member)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    int found = 0;
+    if (who != nullptr && (who->*member).isSet != 0) {
+        who->m_scriptPoint.set((who->*member).point);
+        found = 1;
+    }
+    *acc = found;
+    return code;
+}
+
+static const int *nativeGoToThrow(ScriptRunner *self, int *acc, const int *code)
+{
+    return goToWatchedPoint(self, acc, code, &StageCharacter::m_point740);
+}
+
+// FS2 0x001bd420
+static const int *nativeGoToLanding(ScriptRunner *self, int *acc, const int *code)
+{
+    return goToWatchedPoint(self, acc, code, &StageCharacter::m_point760);
+}
+
+// FS2 0x001bd280
+static const int *nativeGoToLyingItem(ScriptRunner *self, int *acc, const int *code)
+{
+    return goToWatchedPoint(self, acc, code, &StageCharacter::m_point780);
+}
+
+// 0x10a seesBurner(). 0x10e seesOpenTrap().
+// FS2 0x001bd380
+// callcheck: seesBurner, seesOpenTrap
+
+static const int *nativeSeesBurner(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->seesBurner();
+    return code;
+}
+
+// FS2 0x001bcf50
+static const int *nativeSeesOpenTrap(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->seesOpenTrap();
+    return code;
+}
+
+// 0x10c burnerIn(volume): a burner in use stands in the volume called name.
+// FS2 0x001bd080
+// callcheck: readNameArg, find7, currentMission, currentMission, getMatrix, contains
+
+static const int *nativeBurnerIn(ScriptRunner *self, int *acc, const int *code)
+{
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageVolume *volume = static_cast<StageVolume *>(gStageScene->objects->find7(name, 0));
+    *acc = 0;
+    if (volume == nullptr)
+        return next;
+    const MissionObjectList &burners = gStageScene->currentMission()->burners;
+    for (int i = 0; i < burners.count; i++) {
+        StageItem *burner = static_cast<StageItem *>(burners.objects[i]);
+        if (burner->m_active != 0 && burner->m_parent == nullptr && burner->m_inUse != 0
+            && volume->contains(burner->getMatrix()[3])) {
+            *acc = 1;
+            break;
+        }
+    }
+    return next;
+}
+
+// 0x10d setTrap(), 0x110 takeUpTrap(): slots +0x178, +0x180.
+// 0x10f canTakeUpTrap(): the allows.
+// FS2 0x001bcff0
+
+static const int *nativeSetTrap(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = self->getTarget()->scriptSetTrap();
+    return code;
+}
+
+// FS2 0x001bce20
+static const int *nativeTakeUpTrap(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = self->getTarget()->scriptTakeUpTrap();
+    return code;
+}
+
+// FS2 0x001bceb0
+static const int *nativeCanTakeUpTrap(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->m_allows.trapCancel != 0;
+    return code;
+}
+
+// 0x121 dropLongWeapon(). 0x122 pickUp(): slot +0x190.
+// FS2 0x001bbe50
+// callcheck: dropLongWeapon
+
+static const int *nativeDropLongWeapon(ScriptRunner *self, int *, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    if (who != nullptr)
+        who->dropLongWeapon();
+    return code;
+}
+
+// FS2 0x001bbdc0
+static const int *nativePickUp(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = self->getTarget()->scriptTakeItem() != nullptr;
+    return code;
+}
+
+// 0x13e alertCry().
+// FS2 0x001ba190
+// callcheck: cry
+
+static const int *nativeAlertCry(ScriptRunner *self, int *, const int *code)
+{
+    gStageScene->alert->cry(self->getTarget()->getScriptCharacter());
+    return code;
+}
+
+// 0x1bf wasHit(): this frame. 0x1de darkness(): percent of the area's.
+// FS2 0x001b0040
+
+static const int *nativeWasHit(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr ? who->m_hitThisFrame : 0;
+    return code;
+}
+
+// FS2 0x001adaa0
+static const int *nativeDarkness(ScriptRunner *self, int *acc, const int *code)
+{
+    constexpr float kPercent = 100.0f;
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr ? (int)(who->m_areaDark * kPercent) : 0;
+    return code;
+}
+
+// 0x1dd: 0, whatever is asked.
+// FS2 0x001adb70
+
+static const int *nativeZero(ScriptRunner *, int *acc, const int *code)
+{
+    *acc = 0;
+    return code;
+}
+
+// 0x1f4 isNearViewTarget(): of the running script, not its target.
+// FS2 0x001abfc0
+// callcheck: isNearViewTarget
+
+static const int *nativeIsNearViewTarget(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getScriptCharacter();
+    *acc = who != nullptr && who->isNearViewTarget();
+    return code;
+}
+
+// 0x206 canUseSevenKey().
+// FS2 0x001aaed0
+// callcheck: isInputBlocked, isSpecialAllowed
+
+static const int *nativeCanUseSevenKey(ScriptRunner *, int *acc, const int *code)
+{
+    static const char kSevenKey[] = "SevenKey"; /* data 0x304ac8 */
+    StageCharacter *player = static_cast<StageCharacter *>(scenePlayer());
+    *acc = !gStageScene->isInputBlocked() && player->isSpecialAllowed(kSevenKey);
+    return code;
+}
+
+// 0x207: the number of what m_628 holds.
+// FS2 0x001aadb0
+
+static const int *nativeRouteObject(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->m_628 != nullptr ? who->m_628->m_id : 0;
+    return code;
+}
+
+// 0x20b isStanding(): the allows.
+// FS2 0x001aa920
+
+static const int *nativeIsStanding(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr ? who->m_allows.standing : 0;
+    return code;
+}
+
+// 0x213 isFatal(): the life state says so.
+// FS2 0x001aa000
+// callcheck: getLifeState
+
+static const int *nativeIsFatal(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->getLifeState() == LifeState_Fatal;
+    return code;
+}
+
+// By how many scripts call them (sssall.py); the ROM's numbers.
+static const ScriptNativeBinding kAskedNatives[] = {
+    { 0x022, nativeSpawnNamed },
+    { 0x023, nativePosX },
+    { 0x024, nativePosY },
+    { 0x025, nativePosZ },
+    { 0x040, nativeHeightToNumber },
+    { 0x041, nativeHeightToName },
+    { 0x04a, nativeReload },
+    { 0x07f, nativeNothing7f },
+    { 0x080, nativePutWeaponAway },
+    { 0x08e, nativeNearestAllyDistance },
+    { 0x08f, nativeUnnoticedFoe },
+    { 0x091, nativeNearestFoeDistance },
+    { 0x092, nativeNearestFoe },
+    { 0x093, nativeHeardAlly },
+    { 0x095, nativeTakeCorpse },
+    { 0x096, nativeLightReach },
+    { 0x097, nativeAddFoeWeightNamed },
+    { 0x098, nativeAddFoeWeightInView },
+    { 0x099, nativeAddFoeWeightOutOfView },
+    { 0x09a, nativeBestFoe },
+    { 0x09b, nativeFoeWeightNamed },
+    { 0x09c, nativeFoeWeight },
+    { 0x0a3, nativeNearestCorpse },
+    { 0x0a4, nativeHeardWithin },
+    { 0x0a9, nativeHeardFoe },
+    { 0x0bf, nativeIsBittenNumber },
+    { 0x0c0, nativeIsBittenName },
+    { 0x0c1, nativeForgetFoe },
+    { 0x0c7, nativeAlertOnName },
+    { 0x0c8, nativeAlertOnNumber },
+    { 0x0dc, nativePercentOf },
+    { 0x0e1, nativeClamp },
+    { 0x0e2, nativeHeardAny },
+    { 0x0e4, nativeAttackBite },
+    { 0x0e5, nativeDistanceToNumber },
+    { 0x0e6, nativePathToXyz },
+    { 0x0ea, nativeHasLineTo },
+    { 0x0f2, nativeAskLift },
+    { 0x0f3, nativeAddFoeWeight },
+    { 0x104, nativeUseItem },
+    { 0x105, nativeUseSmoke },
+    { 0x106, nativePutItem },
+    { 0x107, nativeSeesFlyingItem },
+    { 0x108, nativeGoToThrow },
+    { 0x109, nativeGoToLanding },
+    { 0x10a, nativeSeesBurner },
+    { 0x10b, nativeGoToLyingItem },
+    { 0x10c, nativeBurnerIn },
+    { 0x10d, nativeSetTrap },
+    { 0x10e, nativeSeesOpenTrap },
+    { 0x10f, nativeCanTakeUpTrap },
+    { 0x110, nativeTakeUpTrap },
+    { 0x121, nativeDropLongWeapon },
+    { 0x122, nativePickUp },
+    { 0x13e, nativeAlertCry },
+    { 0x1bf, nativeWasHit },
+    { 0x1dd, nativeZero },
+    { 0x1de, nativeDarkness },
+    { 0x1f4, nativeIsNearViewTarget },
+    { 0x206, nativeCanUseSevenKey },
+    { 0x207, nativeRouteObject },
+    { 0x20b, nativeIsStanding },
+    { 0x213, nativeIsFatal },
+};
+
 // The ROM indexes table 0x304230 by id - 0x19.
 // FS2 0x001a7a20
 
@@ -3146,6 +3950,8 @@ static const int *callNative(ScriptRunner *self, int id, const int *code, int *a
         for (const ScriptNativeBinding &binding : kDoorNatives)
             table[binding.id - kFirstNative] = binding.native;
         for (const ScriptNativeBinding &binding : kStageNatives)
+            table[binding.id - kFirstNative] = binding.native;
+        for (const ScriptNativeBinding &binding : kAskedNatives)
             table[binding.id - kFirstNative] = binding.native;
     }
 

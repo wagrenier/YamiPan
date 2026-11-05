@@ -501,6 +501,10 @@ public:
     virtual int getKind() = 0;
     // FS2 0x00172340
     virtual float getPosX() { return m_xform.position[0]; }
+    // The runner's slots +0x30..+0x38 (thunks 0x177510, 0x177500, 0x1774f0).
+    float scriptGetPosX() override { return getPosX(); }
+    float scriptGetPosY() override { return getPosY(); }
+    float scriptGetPosZ() override { return getPosZ(); }
     // FS2 0x00172330
     virtual float getPosY() { return m_xform.position[1]; }
     // FS2 0x00172320
@@ -2053,16 +2057,42 @@ struct ScriptPoint
 static_assert(sizeof(ScriptPoint) == 0x20);
 static_assert(offsetof(ScriptPoint, point) == 0x10);
 
-// One line of the table of who a character has seen (EE 0xc). The brain
-// fills it; 0x21a1c0 reads seen, frame is -1 on reset.
+// One line of the table of who a character has seen (EE 0xc). A script adds
+// to seen (natives 0x97..0x9c, 0xf3, 0xc1), the best foe is the highest;
+// the sight's answer is kept for the frame.
 struct SightEntry
 {
-    int seen = 0;       // FS2 +0x0
-    int frame = -1;     // FS2 +0x4: guessed from its reset value
-    int _8 = 0;         // FS2 +0x8: not touched on reset
+    int   seen = 0;     // FS2 +0x0: how much the foe counts
+    int   frame = -1;   // FS2 +0x4: SightEntryAsked: -1 each frame (ageSightTable)
+    float distance = 0.0f; // FS2 +0x8: what canSee measured; not touched on reset
 };
 static_assert(sizeof(SightEntry) == 0xc);
 constexpr u_int kSightEntries = 0x18;
+// SightEntry::frame: what canSee said this frame.
+enum SightEntryAsked
+{
+    SightEntry_NotSeen  = 0,
+    SightEntry_Seen     = 1,
+    SightEntry_NotAsked = -1,   // any other value asks
+};
+// StageCharacter::getLifeState.
+enum CharacterLifeState
+{
+    LifeState_Inactive = 0,
+    LifeState_Up       = 2,
+    LifeState_Down     = 3,
+    LifeState_Corpse   = 4,     // down in the motions 0xb3, 0xb4
+    LifeState_Fatal    = 5,     // up, in the motions 0xb1, 0xb2
+};
+// StageCharacter::m_foeCache: each foe is picked once a frame, on demand.
+enum CharacterFoeCache
+{
+    FoeCache_Best,              // +0x7a4: the highest SightEntry::seen
+    FoeCache_Seen,              // +0x7a8: the nearest it sees
+    FoeCache_Unnoticed,         // +0x7ac: the nearest it sees whose line is still 0
+    FoeCache_Nearest,           // +0x7b0: the nearest, seen or not
+    FoeCache_Count,
+};
 
 // StageObjRecord::kind: the sheet's ctype. What the kinds are is read from
 // what the code gives them; a name is a guess unless a comment says more.
@@ -2188,7 +2218,8 @@ struct CharacterWants
     u_char _357;
     float  rightStickY;         // FS2 +0x358
     u_char padDown;             // FS2 +0x35c: down of the d-pad, allows.padDown
-    u_char _35d[3];
+    u_char putAway;             // FS2 +0x35d: native 0x80, which needs allows.standing
+    u_char _35e[2];
 };
 static_assert(sizeof(CharacterWants) == 0xa0, "CharacterWants: EE 0xa0");
 static_assert(offsetof(CharacterWants, headOn) == 0x40, "CharacterWants::headOn");
@@ -2380,6 +2411,48 @@ public:
     StageObject *getBiteTarget() const { return m_biteCandidate; }       // FS2 0x0021abb0
     // The foe the character knows best (+0x7a4 caches it; +0x468 by id).
     StageObject *getBestFoe();                                           // FS2 0x0021a380
+    // The cells of m_foeCache before the frame's first question.
+    static StageObject *foeNotAsked() { return reinterpret_cast<StageObject *>(intptr_t(1)); }
+    // Whom it can be set on: the characters of its sides' list, every
+    // character while m_foe is set.
+    void getEnemyCandidates(StageObject ***first, StageObject ***last);  // FS2 0x0020b120
+    // The nearest foe, seen or not; the distance, -1 without one.
+    void pickNearestFoe();                                               // FS2 0x0021a090
+    StageObject *getNearestFoe();                                        // FS2 0x00219f50
+    int  getNearestFoeDistance();                                        // FS2 0x00219fa0
+    // FoeCache_Seen and FoeCache_Unnoticed.
+    void pickSeenEnemies();                                              // FS2 0x0021a1c0
+    int  getSeenEnemyId();                                               // FS2 0x0021a040
+    StageObject *getUnnoticedFoe();                                      // FS2 0x00219ff0
+    // canSee through the frame's SightEntry of other.
+    bool canSeeThisFrame(StageCharacter *other, float *distance);        // FS2 0x00210930
+    // The foe's SightEntry::seen; 0 unless it is an enemy and up.
+    int  getFoeWeight(StageCharacter *other);                            // FS2 0x00217be0
+    void setFoeWeight(StageCharacter *other, int weight);                // FS2 0x00217c60
+    // Adds to every enemy up, seen or not as inView says, held under limit.
+    void addFoeWeight(int amount, int limit, bool inView);               // FS2 0x0021a710
+    // The script's lift of the partner, when the player can (allows).
+    bool askLift();                                                      // FS2 0x00219110
+    // It is in one of the two motions of being bitten.
+    bool isBitten();                                                     // FS2 0x0021ad60
+    // Down for good: its count is over, or it is out of the view target's
+    // reach. takeCorpse ends the count as well.
+    bool isCorpseGone();                                                 // FS2 0x002117e0
+    bool takeCorpse();                                                   // FS2 0x0021ab10
+    // The nearest such corpse; null none.
+    StageCharacter *findNearestCorpse();                                 // FS2 0x002199a0
+    // Near the scene's view target (250); false without one.
+    bool isNearViewTarget();                                             // FS2 0x00212420
+    // It sees a burner or an open trap (natives 0x10a, 0x10e).
+    bool seesBurner();                                                   // FS2 0x00218e80
+    bool seesOpenTrap();                                                 // FS2 0x00218f40
+    // 0 no light to work; 1 the one lighting it is out of the player's
+    // reach, 2 within it (native 0x96).
+    int  getLightReach();                                                // FS2 0x002182c0
+    // Lets go of the long weapon.
+    bool dropLongWeapon();                                               // FS2 0x0021b340
+    // The cue of the long weapon, heard around (native 0x80).
+    void playWeaponPickSound();                                          // FS2 0x002a3100
     // The nearest foe: of the enemy candidates, or (foes false) of the
     // mission's characters; sight measures by what it sees, else by distance.
     StageObject *findNearestFoe(bool foes, bool sight);                  // FS2 0x00214a80
@@ -2427,6 +2500,16 @@ public:
     void scriptSetBrainEntry(int kind, const ScriptEntry *entry) override; // FS2 0x0021b970 (thunk 0x0017e7c0)
     int  scriptHeardKind() override;                                     // FS2 0x0021b890 (thunk 0x0017e7a0)
     bool scriptIsCrouching() override;                                   // FS2 0x00179bb0 (thunk 0x0017e660)
+    bool scriptAttackBite() override;                                    // FS2 0x0021ada0 (thunk 0x0017e730)
+    bool scriptReload(int rounds) override;                              // FS2 0x0021b450 (thunk 0x0017e6a0)
+    bool scriptHasLineTo(StageCharacter *other) override;                // FS2 0x0021adc0 (thunk 0x0017e690)
+    void scriptPutWeaponAway() override;                                 // FS2 0x002183d0 (thunk 0x0017e5e0)
+    void scriptUseSmoke() override;                                      // FS2 0x00218e60 (thunk 0x0017e5a0)
+    void scriptUseNamedItem(const char *name) override;                  // FS2 0x00218e10 (thunk 0x0017e580)
+    bool scriptSetTrap() override;                                       // FS2 0x00218b00 (thunk 0x0017e570)
+    void scriptPutItem() override;                                       // FS2 0x00218af0 (thunk 0x0017e560)
+    bool scriptTakeUpTrap() override;                                    // FS2 0x00218800 (thunk 0x0017e550)
+    StageObject *scriptTakeItem() override;                              // FS2 0x0021b370 (thunk 0x0017e510)
     // The item called name, at point; unread.
     void useItem(const char *name, const float *point, int arg);         // FS2 0x00218b50
     // A slot of the brain's; unread.
@@ -2671,7 +2754,7 @@ public:
     int    m_61c = 0;           // FS2 +0x61c: cleared by afterScripts, 0x20eb40 writes it; no reader found
     StageObject *m_lastHitBy = nullptr; // FS2 +0x620: who hit it last (0x20e770, 0x20eb40); the game over's cause
     StageObject *m_biteCandidate = nullptr; // FS2 +0x624: natives 0xbc, 0xbd write it
-    int    m_628 = 0;           // FS2 +0x628: cleared by afterScripts, the route's tasks write it (0x228670, 0x229f60, 0x22aee0, 0x22b580)
+    StageObject *m_628 = nullptr; // FS2 +0x628: native 0x207 asks its number; cleared by afterScripts, the route's tasks write it (0x228670, 0x229f60, 0x22aee0, 0x22b580)
     int    m_62c = 0;           // FS2 +0x62c: 0..9 from a script; the hits 0x20e770, 0x20eb40 write it, 0x1ce3f0 reads it
     int    m_scriptValues[11] = {}; // FS2 +0x630: getScriptValue
     StageObject *m_heardFrom = nullptr; // FS2 +0x65c: whose noise it heard this frame; read by 0x21b890
@@ -2698,8 +2781,9 @@ public:
     ScriptPoint m_point760;     // FS2 +0x760: beforeScripts: where the followed item came down
     ScriptPoint m_point780;     // FS2 +0x780: beforeScripts: where the item lying still was
     u_char m_7a0 = 0;           // FS2 +0x7a0: cleared by beforeScripts and resetActionState; read 0x2184a4 (isHeld7a0)
-    int    m_foeCache[4] = {};  // FS2 +0x7a4: 1 each frame, "not asked yet": getBestFoe and the other sight answers, unwritten
-    int    m_foeCacheId = -1;   // FS2 +0x7b4: -1 each frame, the same (0x21a090)
+    // PC: "not asked yet" is the ROM's 1 as a pointer (foeNotAsked).
+    StageObject *m_foeCache[FoeCache_Count] = {}; // FS2 +0x7a4: 1 each frame, "not asked yet": getBestFoe and the other sight answers, unwritten
+    int    m_nearestFoeDistance = -1; // FS2 +0x7b4: -1 each frame or with no foe (pickNearestFoe)
     float  m_visibility = 0.0f; // FS2 +0x7b8: 0 unseen .. 1 plain to see: scales what canSee reaches
     float  m_areaDark = 0.0f;   // FS2 +0x7bc: the darkness that gave it; 0x1adaa0 reads it (a native, unread)
     StageVolume *m_area = nullptr; // FS2 +0x7c0: the VISIBILITY_ volume it stands in
@@ -3117,6 +3201,13 @@ enum SceneNoiseKind
     SceneNoise_Ally  = 2,       // by its allies
     SceneNoise_Foe   = 3,       // by the others
 };
+// m_scriptValues[10] holds the frame's hearing bits, m_scriptValues being
+// the scripts' window on +0x630..+0x65c. Natives 0xe2, 0x93, 0xa9 read them.
+constexpr int kScriptValueHeard = 10;
+constexpr int kHeardSound = 2;
+constexpr int kHeardAny   = 4;
+constexpr int kHeardAlly  = 8;
+constexpr int kHeardFoe   = 0x10;
 constexpr u_int kSceneNoises     = 0x20;    // more in a frame are lost
 constexpr u_int kSceneSoundWatch = 0x10;
 constexpr int   kSceneWatchDelay = 0xf;     // frames between a watched sound's noises
@@ -3190,6 +3281,10 @@ struct StageAlert
     void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x00263ba0
     // The screen's flash of a foe (the fade at +0x14); answers true.
     bool flash();                                                        // FS2 0x00263ed0
+    // The flash for who, with its cue and the CAUTION sound (native 0x13e).
+    bool cry(StageCharacter *who);                                       // FS2 0x00263f10
+    // Who it shows, with the option on (natives 0xc7, 0xc8).
+    void show(StageObject *who);                                         // FS2 0x00263f80
 };
 
 // +0x118 / +0x11c: the game-over and stage-clear sequences (set outside

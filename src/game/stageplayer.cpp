@@ -62,14 +62,6 @@ constexpr u_int kFaceThin         = 0x400;  // StageCollisionFace::flags: a thin
 constexpr int   kNoiseMuffleWhole = 0x400;
 constexpr int   kNoiseMuffleHalf  = 0x200;
 
-// m_scriptValues[10] holds the frame's hearing bits, m_scriptValues being
-// the scripts' window on +0x630..+0x65c.
-constexpr int kScriptValueHeard = 10;
-constexpr int kHeardSound = 2;
-constexpr int kHeardAny   = 4;
-constexpr int kHeardAlly  = 8;
-constexpr int kHeardFoe   = 0x10;
-
 // beforeScripts: how wide a thrown item is seen. 0x3f860a92: 60 degrees.
 constexpr float kThrownViewAngle = 0x1.0c1524p+0f;
 
@@ -153,9 +145,9 @@ void StageCharacter::beforeScripts()
     updateVisibility();
     if (gStageScene->currentMission()->thrownItems.count >= 1)
         watchThrownItems();
-    for (int i = 0; i < 4; i++)
-        m_foeCache[i] = 1;
-    m_foeCacheId = -1;
+    for (int i = 0; i < FoeCache_Count; i++)
+        m_foeCache[i] = foeNotAsked();
+    m_nearestFoeDistance = -1;
     m_7a0 = 0;
 }
 

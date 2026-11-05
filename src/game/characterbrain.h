@@ -29,8 +29,8 @@ class CharacterRoute;           // game/characterroute.h
 // slots with a host name in ScriptRunner are here; the forwarders 0x1a6920
 // (+0x94), 0x1a69d0 (+0x9c), 0x1a6b50 (+0x104), 0x1a7060, 0x1a70a0, 0x1a70e0,
 // 0x1a7130, 0x1a7170, 0x1a71b0, 0x1a71f0, 0x1a7230, 0x1a7350, 0x1a73e0,
-// 0x1a7420, 0x1a7460, 0x1a74a0, 0x1a74e0, 0x1a7520, 0x1a7560, 0x1a75a0,
-// 0x1a75e0, 0x1a7620, 0x1a7660, 0x1a7700, 0x1a77c0, 0x1a7800, 0x1a7850,
+// 0x1a7420, 0x1a7460, 0x1a74e0, 0x1a7520, 0x1a7560, 0x1a75a0,
+// 0x1a75e0, 0x1a7620, 0x1a7660, 0x1a7700, 0x1a77c0, 0x1a7800,
 // 0x1a7890 wait for the natives that name their slots.
 // layout: host -- EE 0xb8, as ScriptRunner.
 class ScriptProxy : public ScriptRunner
@@ -44,9 +44,9 @@ public:
 
     int  getProperty(int id, int sub) override;                          // FS2 0x001cf130
     void setProperty(int id, int sub, int value) override;               // FS2 0x001cf0b0
-    int  command10() override;                                           // FS2 0x001a6a90
-    int  command11() override;                                           // FS2 0x001a6ad0
-    int  command12() override;                                           // FS2 0x001a6b10
+    float scriptGetPosX() override;                                      // FS2 0x001a6a90
+    float scriptGetPosY() override;                                      // FS2 0x001a6ad0
+    float scriptGetPosZ() override;                                      // FS2 0x001a6b10
     void scriptSetPosition(const float *pos) override;                   // FS2 0x001a6b90
     void scriptSetRotation(const float *rot) override;                   // FS2 0x001a6bd0
     void scriptSetYaw(const float *yaw) override;                        // FS2 0x001a6c10
@@ -76,6 +76,8 @@ public:
     int  command80() override;                                           // FS2 0x001a7750
     void scriptAddMenuLine(const u_short *text, int kind, bool plain) override; // FS2 0x001a72f0
     bool scriptIsCrouching() override;                                   // FS2 0x001a75a0
+    bool scriptHasLineTo(StageCharacter *other) override;                // FS2 0x001a74a0
+    void scriptPutWeaponAway() override;                                 // FS2 0x001a7850
     int  scriptHeardKind() override;                                     // FS2 0x001a70a0
     bool cmdIsLit() override;                                            // FS2 0x001a78d0
     int  command87() override;                                           // FS2 0x001a7910
@@ -233,6 +235,14 @@ public:
     const char *getName() override;                                      // FS2 0x001dd450
     StageCharacter *getScriptCharacter() override { return m_owner; }    // FS2 0x001d85b0
     bool scriptOpenDoor() override;                                      // FS2 0x001d9f90
+    bool scriptAttackBite() override { return attackBite(); }            // FS2 0x001da960
+    bool scriptReload(int rounds) override { (void)rounds; return gunAction(); } // FS2 0x001da650
+    void scriptUseSmoke() override { useSmoke(); }                       // FS2 0x001da110
+    void scriptUseNamedItem(const char *name) override { useNamedItem(name); } // FS2 0x001da0c0
+    void scriptPutItem() override { useItem850(); }                      // FS2 0x001da050
+    bool scriptSetTrap() override { return setTrap(); }                  // FS2 0x001da060
+    bool scriptTakeUpTrap() override { return takeUpTrap(); }            // FS2 0x001da020
+    StageObject *scriptTakeItem() override { return takeItem(); }        // FS2 0x001da5e0
     bool scriptCloseDoor() override;                                     // FS2 0x001d9f50
     bool scriptUseDoorKey(int lock) override;                            // FS2 0x001d9ee0
     void scriptPlayMotion(const char *name) override;                    // FS2 0x001da410

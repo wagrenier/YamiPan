@@ -7831,6 +7831,499 @@ bool StageCharacter::holdsWeapon(const char *name)
     return m_weapons[0] != nullptr && strcmp(m_weapons[0]->getObjectName(), name) == 0;
 }
 
+// ──────────────────────────────────────────────────────────────────────
+// What the scripts ask a character (natives 0x4a.. in game/scriptrunner.cpp).
+
+// How wide a character sees a foe, an item.
+constexpr float kScriptSightCone = 1.0471976f;  // 0x3f860a92: 60 degrees
+
+// FS2 0x0020b120
+// callcheck: currentMission, getSides (the ROM answers the count; no caller reads it)
+
+void StageCharacter::getEnemyCandidates(StageObject ***first, StageObject ***last)
+{
+    StageMission *mission = gStageScene->currentMission();
+    if (m_foe != nullptr) {
+        *first = mission->characters;
+        *last = mission->characters + mission->characterCount;
+        return;
+    }
+    const MissionObjectList &list = mission->byClass[getSides()];
+    *first = list.objects;
+    *last = list.objects + list.count;
+}
+
+// FS2 0x0021a090
+// callcheck: getEnemyCandidates, isEnemyOf, getLifeState, distanceTo
+
+void StageCharacter::pickNearestFoe()
+{
+    float nearest = FLT_MAX;
+    StageObject *foe = nullptr;
+    StageObject **it;
+    StageObject **end;
+    getEnemyCandidates(&it, &end);
+    for (; it != end; ++it) {
+        StageCharacter *other = static_cast<StageCharacter *>(*it);
+        if (other->m_active == 0 || !isEnemyOf(other) || other->getLifeState() != LifeState_Up)
+            continue;
+        const float distance = distanceTo(other);
+        if (distance < nearest) {
+            nearest = distance;
+            foe = other;
+        }
+    }
+    m_foeCache[FoeCache_Nearest] = foe;
+    m_nearestFoeDistance = foe != nullptr ? (int)nearest : -1;
+}
+
+// FS2 0x00219f50
+
+StageObject *StageCharacter::getNearestFoe()
+{
+    if (m_foeCache[FoeCache_Nearest] == foeNotAsked())
+        pickNearestFoe();
+    return m_foeCache[FoeCache_Nearest];
+}
+
+// FS2 0x00219fa0
+
+int StageCharacter::getNearestFoeDistance()
+{
+    if (m_foeCache[FoeCache_Nearest] == foeNotAsked())
+        pickNearestFoe();
+    return m_nearestFoeDistance;
+}
+
+// FS2 0x0021a380
+// callcheck: getEnemyCandidates, getLifeState, isEnemyOf (getFoeWeight, inline in the ROM)
+
+StageObject *StageCharacter::getBestFoe()
+{
+    if (m_foeCache[FoeCache_Best] != foeNotAsked())
+        return m_foeCache[FoeCache_Best];
+    StageObject *best = nullptr;
+    int weight = 0;
+    StageObject **it;
+    StageObject **end;
+    getEnemyCandidates(&it, &end);
+    for (; it != end; ++it) {
+        StageCharacter *other = static_cast<StageCharacter *>(*it);
+        if (other->m_active == 0 || other->getLifeState() != LifeState_Up)
+            continue;
+        const int foeWeight = getFoeWeight(other);
+        if (weight < foeWeight) {
+            weight = foeWeight;
+            best = other;
+        }
+    }
+    m_foeCache[FoeCache_Best] = best;
+    return best;
+}
+
+// FS2 0x0021a1c0
+// callcheck: getEnemyCandidates, isEnemyOf, getLifeState, canSeeThisFrame, getFoeWeight
+
+void StageCharacter::pickSeenEnemies()
+{
+    float nearestSeen = FLT_MAX;
+    float nearestUnnoticed = FLT_MAX;
+    StageObject *seen = nullptr;
+    StageObject *unnoticed = nullptr;
+    StageObject **it;
+    StageObject **end;
+    getEnemyCandidates(&it, &end);
+    for (; it != end; ++it) {
+        StageCharacter *other = static_cast<StageCharacter *>(*it);
+        if (other->m_active == 0 || !isEnemyOf(other) || other->getLifeState() != LifeState_Up)
+            continue;
+        float distance;
+        if (!canSeeThisFrame(other, &distance))
+            continue;
+        if (distance < nearestSeen) {
+            nearestSeen = distance;
+            seen = other;
+        }
+        if (distance < nearestUnnoticed && getFoeWeight(other) == 0) {
+            nearestUnnoticed = distance;
+            unnoticed = other;
+        }
+    }
+    m_foeCache[FoeCache_Seen] = seen;
+    m_foeCache[FoeCache_Unnoticed] = unnoticed;
+}
+
+// FS2 0x0021a040
+
+int StageCharacter::getSeenEnemyId()
+{
+    if (m_foeCache[FoeCache_Seen] == foeNotAsked())
+        pickSeenEnemies();
+    return m_foeCache[FoeCache_Seen] != nullptr ? m_foeCache[FoeCache_Seen]->m_id : 0;
+}
+
+// FS2 0x00219ff0
+
+StageObject *StageCharacter::getUnnoticedFoe()
+{
+    if (m_foeCache[FoeCache_Unnoticed] == foeNotAsked())
+        pickSeenEnemies();
+    return m_foeCache[FoeCache_Unnoticed];
+}
+
+// The ROM's is a tail call to the table's 0x2179c0 (SightEntry[0x18] and the
+// owner at +0x120 are one object, +0x468), which also tests the line's address
+// for null; it never is.
+// FS2 0x00210930
+// callcheck: FUN_002179c0 (this, on the host), canSee
+
+bool StageCharacter::canSeeThisFrame(StageCharacter *other, float *distance)
+{
+    SightEntry *line = &m_sightTable[other->m_id - 1];
+    *distance = line->distance;
+    if (line->frame == SightEntry_NotSeen)
+        return false;
+    if (line->frame == SightEntry_Seen)
+        return true;
+    const bool seen = m_sightOwner->canSee(kScriptSightCone, other, distance);
+    line->frame = seen ? SightEntry_Seen : SightEntry_NotSeen;
+    line->distance = *distance;
+    return seen;
+}
+
+// FS2 0x00217be0
+// callcheck: isEnemyOf, getLifeState
+
+int StageCharacter::getFoeWeight(StageCharacter *other)
+{
+    if (!m_sightOwner->isEnemyOf(other) || other->getLifeState() != LifeState_Up)
+        return 0;
+    return m_sightTable[other->m_id - 1].seen;
+}
+
+// FS2 0x00217c60
+
+void StageCharacter::setFoeWeight(StageCharacter *other, int weight)
+{
+    m_sightTable[other->m_id - 1].seen = weight;
+}
+
+// FS2 0x0021a710
+// callcheck: getEnemyCandidates, isEnemyOf, getLifeState, canSeeThisFrame, getFoeWeight, setFoeWeight
+
+void StageCharacter::addFoeWeight(int amount, int limit, bool inView)
+{
+    StageObject **it;
+    StageObject **end;
+    getEnemyCandidates(&it, &end);
+    for (; it != end; ++it) {
+        StageCharacter *other = static_cast<StageCharacter *>(*it);
+        if (other->m_active == 0 || !isEnemyOf(other) || other->getLifeState() != LifeState_Up)
+            continue;
+        float distance = 0.0f;
+        if (canSeeThisFrame(other, &distance) != inView)
+            continue;
+        int weight = getFoeWeight(other) + amount;
+        if (weight < 0)
+            weight = 0;
+        setFoeWeight(other, weight < limit ? weight : limit);
+    }
+}
+
+// FS2 0x00219110
+// callcheck: isPlayer
+
+bool StageCharacter::askLift()
+{
+    if (!isPlayer() || m_allows.liftPartner == 0)
+        return false;
+    m_wants.liftPartner = 1;
+    return true;
+}
+
+// FS2 0x0021ad60
+
+bool StageCharacter::isBitten()
+{
+    constexpr int kMotionBittenBehind = 0xa0;
+    constexpr int kMotionBittenFront  = 0xa1;
+    return m_motion->motionId == kMotionBittenFront || m_motion->motionId == kMotionBittenBehind;
+}
+
+// The ROM's inline asks the life state again and has a second arm for
+// anything but a corpse (m_reviveTime in frames); the first test leaves it
+// dead here.
+// FS2 0x002117e0
+// callcheck: getLifeState, stageFps (the dead arm), getKind (isNear is inline)
+
+bool StageCharacter::isCorpseGone()
+{
+    constexpr float kCorpseWatchRange = 250.0f;
+    constexpr int   kCorpseWatchedFrames = 5;       // data 0x31aa28
+    if (getLifeState() != LifeState_Corpse)
+        return false;
+    const StageViewTarget *view = gStageScene->viewTarget;
+    int frames = m_motion->m_reviveFrames;
+    if (view != nullptr && view->isNear(kCorpseWatchRange, m_xform.position)) {
+        const StageObject *floor = m_ground->floorObject;
+        if ((floor == nullptr || const_cast<StageObject *>(floor)->getKind() != StageObject_Kind3)
+            && frames <= kCorpseWatchedFrames)
+            frames = kCorpseWatchedFrames;
+    }
+    return frames == 0;
+}
+
+// FS2 0x0021ab10
+
+bool StageCharacter::takeCorpse()
+{
+    const bool gone = isCorpseGone();
+    if (gone)
+        m_motion->m_reviveFrames = -1;
+    return gone;
+}
+
+// FS2 0x002199a0
+// callcheck: currentMission, currentMission, isCorpseGone, distanceTo
+
+StageCharacter *StageCharacter::findNearestCorpse()
+{
+    float nearest = FLT_MAX;
+    StageCharacter *corpse = nullptr;
+    StageMission *mission = gStageScene->currentMission();
+    for (int i = 0; i < mission->characterCount; i++) {
+        StageCharacter *other = static_cast<StageCharacter *>(mission->characters[i]);
+        if (other->m_active == 0 || !other->isCorpseGone())
+            continue;
+        const float distance = distanceTo(other);
+        if (distance < nearest) {
+            nearest = distance;
+            corpse = other;
+        }
+    }
+    return corpse;
+}
+
+// FS2 0x00212420
+
+bool StageCharacter::isNearViewTarget()
+{
+    constexpr float kCorpseWatchRange = 250.0f;
+    return gStageScene->viewTarget != nullptr
+        && gStageScene->viewTarget->isNear(kCorpseWatchRange, m_xform.position);
+}
+
+// One item of list, standing free, in use, in the character's sight. The ROM
+// has a copy per list.
+static bool seesItemInUse(StageCharacter *who, const MissionObjectList &list)
+{
+    for (int i = 0; i < list.count; i++) {
+        StageItem *item = static_cast<StageItem *>(list.objects[i]);
+        if (item->m_active == 0 || item->m_parent != nullptr || item->m_inUse == 0)
+            continue;
+        float distance = 0.0f;
+        if (who->canSee(kScriptSightCone, item, &distance))
+            return true;
+    }
+    return false;
+}
+
+// FS2 0x00218e80
+// callcheck: currentMission, canSee
+
+bool StageCharacter::seesBurner()
+{
+    return seesItemInUse(this, gStageScene->currentMission()->burners);
+}
+
+// FS2 0x00218f40
+// callcheck: currentMission, canSee
+
+bool StageCharacter::seesOpenTrap()
+{
+    return seesItemInUse(this, gStageScene->currentMission()->trapItems);
+}
+
+// FS2 0x002182c0
+// callcheck: isMode1, isOwned0Busy, isLampOn, ownsLight
+
+int StageCharacter::getLightReach()
+{
+    enum { kReachNone = 0, kReachOut = 1, kReachIn = 2 };
+    constexpr int kLightOwned = 2;      // StageLight::m_mode, read here only
+    constexpr int kLightCar   = 3;
+    const StageLight *light = m_shadowLight;
+    if (light == nullptr || light->m_yamLight != 0)
+        return kReachNone;
+    StageObject *object = gStageScene->controlled != nullptr ? gStageScene->controlled : gStageScene->player;
+    if (object == nullptr)
+        return kReachOut;
+    StageCharacter *player = static_cast<StageCharacter *>(object);
+    switch (light->getMode()) {
+    case kLightCar:
+        return player->isMode1() ? kReachIn : kReachOut;
+    case kLightOwned:
+        return gStageScene->isOwned0Busy() ? kReachIn : kReachOut;
+    case StageLight_Hard:
+        return player->isLampOn() && player->m_lampItem->ownsLight(m_shadowLight) ? kReachIn : kReachOut;
+    default:
+        return kReachOut;
+    }
+}
+
+// FS2 0x0021b340
+// callcheck: dropItem
+
+bool StageCharacter::dropLongWeapon()
+{
+    if (m_weapons[0] == nullptr)
+        return false;
+    dropItem(m_weapons[0]);
+    return true;
+}
+
+// FS2 0x002a3100
+// callcheck: getPickSound, getPickSound, playNamedHeard2 (the ROM passes 800.0 too; the sound's own loudness counts)
+
+void StageCharacter::playWeaponPickSound()
+{
+    StageWeaponItem *weapon = static_cast<StageWeaponItem *>(m_weapons[0]);
+    if (weapon != nullptr && weapon->getPickSound() != nullptr)
+        playNamedHeard2(weapon->getPickSound(), m_xform.position, nullptr);
+}
+
+// FS2 0x0021ada0 (thunk 0x0017e730)
+// callcheck: askAttackBite
+
+bool StageCharacter::scriptAttackBite()
+{
+    return m_brain->askAttackBite();
+}
+
+// A pistol or a rifle takes all it holds, the bolted three the rounds asked.
+// FS2 0x0021b450 (thunk 0x0017e6a0)
+// callcheck: isControlled, askGunAction, strcmp, strcmp, strcmp
+
+bool StageCharacter::scriptReload(int rounds)
+{
+    if (m_allows.reload == 0)
+        return false;
+    if (!isControlled())
+        return m_brain->askGunAction();
+    StageObject *weapon = m_weapons[0];
+    if (weapon == nullptr || !weaponDef(weapon)->isFirearm())
+        return false;
+    const bool bolted = strcmp(weapon->m_name, "G_NN38") == 0
+        || strcmp(weapon->m_name, "R_MURATA") == 0
+        || strcmp(weapon->m_name, "G_26NEN") == 0;
+    if (bolted && rounds < 1)
+        return false;
+    m_wants.reload = 1;
+    m_wants.reloadRounds = bolted ? rounds : weapon->m_ammoB;
+    return true;
+}
+
+// The two heads, as a blow's check; what it carries does not block.
+// FS2 0x0021adc0 (thunk 0x0017e690)
+// callcheck: find, getMatrix, find, getMatrix, segmentHitsAny
+
+bool StageCharacter::scriptHasLineTo(StageCharacter *other)
+{
+    static const char kHead[] = "bn_head";      /* data 0x303178 */
+    constexpr u_int kFaceLine     = 0x1e42600f;
+    constexpr u_int kFaceLineSkip = 0x800;
+    StageObject *skip = m_gear != nullptr ? m_gear : other->m_gear;
+    const sceVu0FVECTOR *theirs = other->m_model->boneMap.find(kHead)->value->getMatrix();
+    const sceVu0FVECTOR *mine = m_model->boneMap.find(kHead)->value->getMatrix();
+    return !gStageScene->segmentHitsAny(mine[3], theirs[3], 0, kFaceLine, kFaceLineSkip, skip);
+}
+
+// Only from a stand; else the native waits a frame and asks again.
+// FS2 0x002183d0 (thunk 0x0017e5e0)
+// callcheck: scriptYield, refresh, playWeaponPickSound
+
+void StageCharacter::scriptPutWeaponAway()
+{
+    constexpr int kNativePutAway = 0x80;
+    if (gRunningScript != nullptr)
+        gRunningScript->takeYield();
+    if (m_allows.standing == 0) {
+        scriptYield(kNativePutAway, 0);
+        return;
+    }
+    m_wants.putAway = 1;
+    m_motion->refresh();
+    playWeaponPickSound();
+}
+
+// FS2 0x00218e60 (thunk 0x0017e5a0): slot +0x2f8.
+// callcheck: scriptUseNamedItem
+
+void StageCharacter::scriptUseSmoke()
+{
+    static const char kSmoke[] = "I_HATUEN";    /* data 0x307010 */
+    scriptUseNamedItem(kSmoke);
+}
+
+// FS2 0x00218e10 (thunk 0x0017e580)
+// callcheck: useItem
+
+void StageCharacter::scriptUseNamedItem(const char *name)
+{
+    sceVu0FVECTOR zero = {};
+    useItem(name, zero, 1);
+}
+
+// FS2 0x00218b00 (thunk 0x0017e570)
+// callcheck: isControlled, askSetTrap
+
+bool StageCharacter::scriptSetTrap()
+{
+    if (!isControlled())
+        return m_brain->askSetTrap();
+    if (m_allows.trapSet == 0)
+        return false;
+    m_wants.trapSet = 1;
+    return true;
+}
+
+// FS2 0x00218af0 (thunk 0x0017e560)
+// callcheck: item218850
+
+void StageCharacter::scriptPutItem()
+{
+    item218850(1);
+}
+
+// FS2 0x00218800 (thunk 0x0017e550)
+// callcheck: isControlled, askTakeUpTrap
+
+bool StageCharacter::scriptTakeUpTrap()
+{
+    if (!isControlled())
+        return m_brain->askTakeUpTrap();
+    if (m_allows.trapCancel == 0)
+        return false;
+    m_wants.trapCancel = 1;
+    return true;
+}
+
+// FS2 0x0021b370 (thunk 0x0017e510)
+// callcheck: getKind, isControlled, askTakeItem
+
+StageObject *StageCharacter::scriptTakeItem()
+{
+    if (m_allows.pickup == 0)
+        return nullptr;
+    StageObject *item = m_pickItem;
+    if (item->getKind() != StageObject_WeaponItem)
+        return nullptr;
+    if (!isControlled())
+        return m_brain->askTakeItem() ? item : nullptr;
+    m_wants.pickup = 1;
+    return item;
+}
+
 // The four script kinds a character takes, into the brain's slots.
 // FS2 0x0021b970: the slot's thunk is 0x0017e7c0.
 // callcheck: setSlotEntry, setSlotEntry, setSlotEntry, setSlotEntry

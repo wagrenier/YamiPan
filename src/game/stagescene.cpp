@@ -4915,9 +4915,9 @@ void StageMarker::sideHook3()
 //   FS2 0x001a48d0  SubSceneProp, over 0x269c30 (SubSceneModelObject)
 // The defaults of ScriptRunner's command slots, inline in game/gamehooks.h
 // (CodeWarrior's copy for DemoExecuter's vtable):
-//   FS2 0x0019cf50  ScriptRunner::command10
-//   FS2 0x0019cf60  ScriptRunner::command11
-//   FS2 0x0019cf70  ScriptRunner::command12
+//   FS2 0x0019cf50  ScriptRunner::scriptGetPosX
+//   FS2 0x0019cf60  ScriptRunner::scriptGetPosY
+//   FS2 0x0019cf70  ScriptRunner::scriptGetPosZ
 //   FS2 0x0019cf80  ScriptRunner::scriptSetPosition
 //   FS2 0x0019cf90  ScriptRunner::scriptSetRotation
 //   FS2 0x0019cfa0  ScriptRunner::scriptSetYaw
