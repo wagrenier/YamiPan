@@ -1944,7 +1944,7 @@ void DoorLink::onRequest()
     if (!character->isPlayer() && !character->isPartner()) {
         if (character->getBrainPace() == kBrainPaceFast)
             rate = kDoorFastRate;
-    } else if (character->hasFollower()) {
+    } else if (character->hasBiter()) {
         rate = kDoorFastRate;
     }
 }
@@ -6549,7 +6549,9 @@ StagePlayer *StageCharacter::getTakenOverPlayer() const
 
 // The ROM inlines itself here three levels deep, with the scene's getters
 // 0x216120, 0x216110, 0x2160f0, 0x2160d0 and 0x2160c0 and the side's 0x2160b0, 0x2160a0.
+// 0x210e50 is a jump here.
 // FS2 0x00215f10
+// FS2 0x00210e50
 // callcheck: FUN_00216120, FUN_00216110, FUN_002160f0, isControlled, FUN_002160d0, isTakenOver, FUN_002160c0, getTakenOverPlayer, FUN_002160b0, FUN_002160a0, getSides
 
 u_int StageCharacter::getSides() const
@@ -7391,13 +7393,71 @@ void StageCharacter::setSides(int sides)
         m_sides = (u_int)sides;
 }
 
-// 0x0021cab0, 0x0021cb00, 0x0021cb50 and 0x0021cba0, one per bit.
+// One function in the ROM per bit.
 // FS2 0x0021cab0
+// FS2 0x0021cb00
+// FS2 0x0021cb50
+// FS2 0x0021cba0
 void StageCharacter::setSideBit(u_int bit, bool on)
 {
     const u_int sides = on ? m_sides | bit : m_sides & ~bit;
     if (sides < kSideBitsEnd)
         m_sides = sides;
+}
+
+constexpr int kLifeUp = 2;     // getLifeState
+
+// The enemies the character's side lists, or everyone with a foe of its own.
+// FS2 0x00210720
+// callcheck: getEnemyCandidates, FUN_001b9a60, isEnemyOf, FUN_002107e0, getBiteTarget
+
+bool StageCharacter::hasBiter()
+{
+    StageMission *mission = gStageScene->currentMission();
+    MissionObjectList all = { mission->characters, mission->characterCount };
+    const MissionObjectList &list = m_foe == nullptr ? mission->byClass[getSides()] : all;
+    for (int i = 0; i < list.count; i++) {
+        StageObject *object = list.objects[i];
+        if (object->m_active == 0 || !isEnemyOf(object))
+            continue;
+        StageCharacter *other = static_cast<StageCharacter *>(object);
+        if (other->getLifeState() == kLifeUp && other->getBiteTarget() == this)
+            return true;
+    }
+    return false;
+}
+
+// FS2 0x00216390
+// FS2 0x0021bee0
+// callcheck: strcmp, findItem
+
+StageObject *StageCharacter::findItem(const char *name)
+{
+    for (StageList<StageObject *>::Node *link = m_items.head; link != nullptr; link = link->next) {
+        if (strcmp(link->value->m_name, name) == 0)
+            return link->value;
+    }
+    return nullptr;
+}
+
+// FS2 0x00179af0
+
+bool StageCharacter::isRunningMotion()
+{
+    const int id = m_motion->motionId;
+    return isRunMotion(id) || isCrouchRunMotion(id);
+}
+
+// FS2 0x00179ad0
+// FS2 0x0020b220
+
+void StageCharacter::setScriptPoint(const sceVu0FVECTOR point)
+{
+    m_vector730[0] = point[0];
+    m_vector730[1] = point[1];
+    m_vector730[2] = point[2];
+    m_vector730[3] = point[3];
+    m_vector730Set = 1;
 }
 
 // FS2 0x00210e60
@@ -7431,7 +7491,9 @@ bool StageCharacter::canFireLongWeapon() const
     return false;
 }
 
-// FS2 0x0021b280 (the long weapon), 0x0021b1c0 (the short one)
+// The long weapon, then the short one.
+// FS2 0x0021b280
+// FS2 0x0021b1c0
 
 int StageCharacter::getWeaponClass(int slot) const
 {
@@ -7614,9 +7676,17 @@ static int clampToSheet(int value, int limit)
     return value <= limit ? value : limit;
 }
 
+// FS2 0x0021cc50
+
+void StageCharacter::setLightResist(int value)
+{
+    if (value >= 0 && value < kLightResistLevels)
+        m_lightResist = value;
+}
+
 // The ROM repeats StageObject::setProperty's cases here; they fall to it.
 // FS2 0x00212530
-// callcheck: getStageSelect, getSaveData, clearBit, markUnlock468, pickVariant3ac, setEndurance, setBrainState, setResultValue, setScriptVar3e, setScriptVar3f, findCharacterById, setPlayer, currentMission, setResultPaused, setResultHold, setClockFrames, setScoreClock, getLifeState, scriptFramesFrom30, setLightResist, setSideBit1, setSideBit2, setSideBit4 (StageObject::setProperty holds most; setLightResist is inline here, setSideBit one function)
+// callcheck: getStageSelect, getSaveData, clearBit, markUnlock468, pickVariant3ac, setEndurance, setBrainState, setResultValue, setScriptVar3e, setScriptVar3f, findCharacterById, setPlayer, currentMission, setResultPaused, setResultHold, setClockFrames, setScoreClock, getLifeState, scriptFramesFrom30, setLightResist, setSideBit1, setSideBit2, setSideBit4, setSideBit8 (StageObject::setProperty holds most; setSideBit is one function)
 
 void StageCharacter::setProperty(int id, int sub, int value)
 {
@@ -7638,10 +7708,7 @@ void StageCharacter::setProperty(int id, int sub, int value)
     case CharProp_RightLeg:      m_rightLeg = clampToSheet(value, sheet->rightLeg); break;
     case CharProp_LeftLeg:       m_leftLeg = clampToSheet(value, sheet->leftLeg); break;
     case CharProp_Recovery:      m_enduranceRegen = value; break;
-    case CharProp_LightResist:
-        if (value >= 0 && value < kLightResistLevels)
-            m_lightResist = value;
-        break;
+    case CharProp_LightResist:   setLightResist(value); break;
     case CharProp_LightDamage:   m_lightDamage = value; break;
     case CharProp_LightFlinch:   m_lightFlinch = value; break;
     case CharProp_UnarmedAttack: m_doorBlow = value; break;
@@ -7740,7 +7807,7 @@ static int ridingWithId(StageCharacter *character)
 
 // The ROM repeats StageObject::getProperty's cases here; they fall to it.
 // FS2 0x002132d0
-// callcheck: getSaveData, clearBit, testStageFlags, random, getMissionFrames, stageFps, FUN_00210e60, FUN_00210e50, FUN_0021b280, FUN_0021b1c0, FUN_0020cc50, getLifeState, FUN_00289eb0, scriptFramesTo30, FUN_0021b1a0, FUN_0021b120, FUN_0020cf90, FUN_0021abb0, isRunning, getCompanion, canFireLongWeapon, currentMission, getClockFrames, getDeltaSeconds, getHandle, getResultHold, getResultPaused, getResultValue, getScoreClock, getScriptVar3e, getScriptVar3f, getSeconds, getShortWeaponClass, getStageSelect, isNear, onRestore (StageObject::getProperty holds the shared ones; ridingWithId and reviveFramesLeft are the ROM's inline code)
+// callcheck: getSaveData, clearBit, testStageFlags, random, getMissionFrames, stageFps, FUN_00210e60, FUN_00210e50, FUN_0021b280, getLongWeaponClass, FUN_0021b1c0, FUN_0020cc50, getLifeState, FUN_00289eb0, scriptFramesTo30, FUN_0021b1a0, FUN_0021b120, FUN_0020cf90, FUN_0021abb0, isRunning, getCompanion, canFireLongWeapon, currentMission, getClockFrames, getDeltaSeconds, getHandle, getResultHold, getResultPaused, getResultValue, getScoreClock, getScriptVar3e, getScriptVar3f, getSeconds, getShortWeaponClass, getStageSelect, isNear, onRestore (StageObject::getProperty holds the shared ones; ridingWithId and reviveFramesLeft are the ROM's inline code)
 
 int StageCharacter::getProperty(int id, int sub)
 {

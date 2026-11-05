@@ -92,17 +92,7 @@ MenuProgSet::~MenuProgSet()
 }
 
 // stub of FS2 0x00207ef0
-PauseMenuState::PauseMenuState()
-{
-    YAMIPAN_STUB("PauseMenuState::PauseMenuState", 0x00207ef0);
-}
-
 // stub of FS2 0x00207ea0
-PauseMenuState::~PauseMenuState()
-{
-    YAMIPAN_STUB("PauseMenuState::~PauseMenuState", 0x00207ea0);
-}
-
 // stub of FS2 0x0029e4f0
 PrgScaleNavi::PrgScaleNavi(UiSequence *seq, UiLayout *layout, S2dData *data, S2dWidgetDef *def, int arg)
     : UiWidget(seq, layout, data, def, arg)
@@ -179,17 +169,7 @@ void SceneOwnedObject::destroy()
 }
 
 // stub of FS2 0x00289be0
-ScenePool::ScenePool(unsigned int, int, int)
-{
-    YAMIPAN_STUB("ScenePool::ScenePool", 0x00289be0);
-}
-
 // stub of FS2 0x00289b60
-ScenePool::~ScenePool()
-{
-    YAMIPAN_STUB("ScenePool::~ScenePool", 0x00289b60);
-}
-
 // stub of FS2 0x00243150
 SceneUiState::SceneUiState()
 {
@@ -578,18 +558,7 @@ void MenuProgHolder::draw(float deltaSeconds, GamePacketManager *packets, StageO
 }
 
 // stub of FS2 0x002078d0
-bool PauseMenuState::isActive()
-{
-    YAMIPAN_STUB("PauseMenuState::isActive", 0x002078d0);
-    return {};
-}
-
 // stub of FS2 0x00207500
-void PauseMenuState::update()
-{
-    YAMIPAN_STUB("PauseMenuState::update", 0x00207500);
-}
-
 // stub of FS2 0x002bb260
 void MenuProgSet::draw(float zoom)
 {
@@ -678,18 +647,7 @@ void SceneOwnedObject::update()
 }
 
 // stub of FS2 0x00289800
-void ScenePool::draw(sceVif1Packet *packet, TexAreaList *texList)
-{
-    YAMIPAN_STUB("ScenePool::draw", 0x00289800);
-}
-
 // stub of FS2 0x00289b20
-int ScenePool::setSlot(int index, const u_short *text)
-{
-    YAMIPAN_STUB("ScenePool::setSlot", 0x00289b20);
-    return {};
-}
-
 // stub of FS2 address unknown (1 candidates)
 void ScreenFill::draw(sceVif1Packet *packet, TexAreaList *texList)
 {
@@ -852,17 +810,7 @@ void SceneBufferSet::updateRange(float range, StageObject *linked, SceneRender *
 }
 
 // stub of FS2 0x002894b0
-void ScenePool::setImage(const void *image)
-{
-    YAMIPAN_STUB("ScenePool::setImage", 0x002894b0);
-}
-
 // stub of FS2 0x00289b50
-void ScenePool::setPrinter(WideFontPrinter *printer)
-{
-    YAMIPAN_STUB("ScenePool::setPrinter", 0x00289b50);
-}
-
 // stub of FS2 0x00242e80
 void SceneUiState::pollSoundSources()
 {
@@ -1112,11 +1060,6 @@ void StageCharacter::setGearLightOrder(int order)
 }
 
 // stub of FS2 0x00207440
-void PauseMenuState::clearList()
-{
-    YAMIPAN_STUB("PauseMenuState::clearList", 0x00207440);
-}
-
 // stub of FS2 0x00214f20
 bool StageCharacter::isHoldingAction()
 {
@@ -1213,12 +1156,6 @@ GateParts::~GateParts()
 
 
 // stub of FS2 0x00207aa0
-bool PauseMenuState::addNotice(const u_short *text, int frames, int arg, int level)
-{
-    YAMIPAN_STUB("PauseMenuState::addNotice", 0x00207aa0);
-    return {};
-}
-
 // stub of FS2 0x0023c020
 int ItemPhysics::collisionHook0(CollisionContact *contact, const float *normal, StageCollisionFace *face,
                         float depth)
@@ -1448,19 +1385,7 @@ bool CharacterBrain::askOpenDoor()
 }
 
 // stub of FS2 0x00207e20
-bool PauseMenuState::hasNotice(int kind)
-{
-    YAMIPAN_STUB("PauseMenuState::hasNotice", 0x00207e20);
-    return {};
-}
-
 // stub of FS2 0x00210720
-bool StageCharacter::hasFollower()
-{
-    YAMIPAN_STUB("StageCharacter::hasFollower", 0x00210720);
-    return {};
-}
-
 // stub of FS2 0x0023cf50
 void ItemPhysics::push(const sceVu0FVECTOR velocity, int bone)
 {
