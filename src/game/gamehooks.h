@@ -356,6 +356,7 @@ class ScriptRunner;
 class Pad;                      // game/pad.h
 class StageObject;
 class StageCharacter;
+class StageDoor;           // game/stagedoor.h
 // The scene's player is a character: one class in the ROM (vtable 0x312240).
 typedef StageCharacter StagePlayer;
 struct CharacterInput;          // game/characterinput.h
@@ -387,6 +388,10 @@ struct CharacterBrain
     void setEnabled(bool on);                                            // FS2 0x001dd3f0
     // A frame: its script runs while the flag holds and it has a route.
     void update();                                                       // FS2 0x001dd330
+    // Natives 0x87..0x89 for a character nobody controls.
+    bool askOpenDoor();                                                  // FS2 0x001db470
+    bool askCloseDoor();                                                 // FS2 0x001db3a0
+    bool askDoorKey(int lock);                                           // FS2 0x001db2d0
 
     ScriptRunner   *runner = nullptr; // FS2 +0x000: the character's own, set by its ctor
     CharacterRoute *route = nullptr;  // FS2 +0x180
@@ -638,9 +643,8 @@ public:
     bool canSpawn();                                                     // FS2 0x002185a0
     void spawn();                                                        // FS2 0x00218630
     // Slot +0x270 of the map objects (doors, CAR, Seven_Keys): a motion
-    // list of the bgmotion target. The two flags are unread. A plain stub
-    // until its TU.
-    void setMotionList(void *list, int arg, int arg2);                   // FS2 vtable +0x270
+    // list of the bgmotion target (a StageList<void *>); empty here.
+    virtual void setMotionList(void *list, int arg, int arg2);           // FS2 vtable +0x270
     // A door's fields from gDoorRecords[m_doorRecord].
     void applyDoorRecord();                                              // FS2 0x00173880
     // The object belongs to motion target index (stageMotionTargetName).
@@ -739,7 +743,8 @@ public:
             int m_doorIndex;    // FS2 +0x244: a door's number from 1 (StageScene::findDoorOfFace)
         };
     };
-    int    m_doorMode;          // FS2 +0x248: a door's; 1 and 3 mark atDoor (CharacterGround), unread otherwise
+    // +0x288 StageDoor::m_user, +0x29c.. its record's copies (game/stagedoor.h).
+    int    m_doorMode;          // FS2 +0x248: a door's StageDoorMode (game/stagedoor.h)
     u_char _24c[0x40];
     StageObject *m_doorLight;   // FS2 +0x28c: a door's: the light of its record (SceneRender::setup)
     StageObject *m_290;         // FS2 +0x290: a character's. Set: the main camera goes over the shoulder and looks at m_aimPoint; a kind 1..6 is left out of its rays (StageScene::partnerResponds reads it too)
@@ -2082,7 +2087,8 @@ struct CharacterWants
     u_char squatAction;         // FS2 +0x2cc: the squat button, on a ladder: let go
     u_char useLadder;           // FS2 +0x2cd: the same for Ladder
     u_char useJump;             // FS2 +0x2ce: for Jump
-    u_char _2cf[2];
+    u_char useDoor;             // FS2 +0x2cf: Door: open or close, as allows.doorHand
+    u_char useDoorKey;          // FS2 +0x2d0: Door: as allows.doorKey
     u_char useItem5;            // FS2 +0x2d1: kind 5
     u_char _2d2[0x1f];
     u_char ready;               // FS2 +0x2f1: PadAction_Ready held
@@ -2135,7 +2141,10 @@ struct CharacterAllows
     int    ladder;              // FS2 +0x36c: Ladder: 1 from its foot, 2 from its top
     u_char squatAction;         // FS2 +0x370: LadderMove, at rest on a ladder: the squat button lets go
     u_char jump;                // FS2 +0x371: Jump
-    u_char _372[0xe];
+    u_char _372[2];
+    int    doorHand;            // FS2 +0x374: Door: 1 it can open, 2 close (natives 0x87, 0x88)
+    int    doorKey;             // FS2 +0x378: Door: 1 it can lock, 2 unlock, 3 only force (native 0x89)
+    int    doorEe;              // FS2 +0x37c: its size on the EE; door below holds the pointer
     u_char useItem5;            // FS2 +0x380
     u_char _381[0xd];
     u_char fire;                // FS2 +0x38e
@@ -2226,6 +2235,26 @@ public:
     bool isControlled() const;                                           // FS2 0x00215270
     void playLandSound();                                                // FS2 0x002a2fc0
     // Free to answer the Use button: no walk, queue or fade under way.
+    // The door the Door condition found, as CharacterDoorAction bits.
+    int  doorActions() const;                                            // FS2 0x00219b30
+    // A door's locked side: the key works, or the glass is out and one can
+    // reach through from the front. Its other answers keep to their ROM names.
+    bool canUnlockDoor(StageDoor *door) const;                           // FS2 0x0020d730
+    // Locked, and only force would do.
+    bool canForceDoor(StageDoor *door) const;                            // FS2 0x0020d650
+    bool canLockDoor(StageDoor *door) const;                             // FS2 0x0020d820
+    // Reaches through the broken glass.
+    bool reachesThroughDoor(StageDoor *door) const;                      // FS2 0x0020d6d0
+    // Someone follows it close by, so the door goes faster. Slot +0x2ac.
+    bool hasFollower();                                                  // FS2 0x00210720
+    // The door's pace of a character with a brain. Slot +0x278.
+    int  getBrainPace();                                                 // FS2 0x0021bb70
+    StageCharacter *getScriptCharacter() override { return this; }       // FS2 0x00179d10
+    // Natives 0x87, 0x88, 0x89: the controlled character, by what it may do;
+    // the brain's for the rest. Slots +0x30c, +0x310, +0x314.
+    bool scriptOpenDoor() override;                                      // FS2 0x0021c230
+    bool scriptCloseDoor() override;                                     // FS2 0x0021c1d0
+    bool scriptUseDoorKey(int lock) override;                            // FS2 0x0021c130
     bool canTakePrompt();                                                // FS2 0x0020c0e0
     // The same, and in a motion a script's prompt may interrupt.
     bool canUsePrompt();                                                 // FS2 0x0020b590
@@ -2276,6 +2305,9 @@ public:
     sceVu0FVECTOR m_aimPoint = {}; // FS2 +0x2a0: where its bullets steer
     StageObject *m_lookAt = nullptr; // FS2 +0x2b0: in a car, what the heads turn to (writers unread)
     CharacterWants  m_wants = {};   // FS2 +0x2c0: the start hook clears it, input and brain fill it
+    // CharacterAllows +0x37c: the door in reach. PC: a pointer does not fit
+    // the EE's int there, so it stands beside; the same clear covers both.
+    StageDoor *m_door = nullptr;
     CharacterAllows m_allows = {};  // FS2 +0x360: the start hook clears it, the conditions fill it
     u_char m_fidgets = 1;       // FS2 +0x3e0: resetActionState sets it, a script's property may clear it: stepFidgets' idle0 / idle1
     int    m_3e4 = 0;           // FS2 +0x3e4: 0 from initStatus (unread); so are the next five
@@ -2307,6 +2339,7 @@ public:
     int    m_leftLeg = 0;       // FS2 +0x5a8: the sheet's 左足
     int    m_flinch = 0;        // FS2 +0x5ac: setFlinch, to the sheet's ひるみ耐性値
     int    m_unarmedMsp = 0;    // FS2 +0x5b0: the sheet's 素手MSP
+    int    m_doorBlow = 0;      // FS2 +0x5d8: what a forcing takes off a door; only the property setter 0x212530 gives it
     float  m_walkRate = 1.0f;   // FS2 +0x5e0: 移動速度 / 100 (setProperty)
     float  m_runRate = 1.0f;    // FS2 +0x5e4: 走り速度 / 100
     float  m_turnRate = 1.0f;   // FS2 +0x5e8: 旋回速度 / 100 (setProperty)
@@ -2439,6 +2472,8 @@ struct PauseMenuState
     // A notice for the list: true when a free entry of the 11 took it and
     // no number was negative.
     bool addNotice(const u_short *text, int frames, int arg, int level); // FS2 0x00207aa0
+    // A notice of that kind waits, or that kind's list is full.
+    bool hasNotice(int kind);                                            // FS2 0x00207e20
 };
 
 class WideFontPrinter;          // game/fontdata.h

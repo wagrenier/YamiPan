@@ -11,6 +11,8 @@
 #include "sdk/scetypes.h"
 
 class StageObject;
+class StageCharacter;
+class StageDoor;
 
 enum { kScriptStackSize = 16 };
 
@@ -315,6 +317,42 @@ public:
     // Slot +0x44.
     // FS2 0x0019cfa0
     virtual void scriptSetYaw(const float *) {}
+
+    // ROM vptr +0x98: the character it is, natives 0x79, 0xf6, 0x11b..;
+    // null with the "unsupported" log here.
+    // FS2 0x00171cc0
+    // callcheck: unsupportedCommand
+    virtual StageCharacter *getScriptCharacter()
+    {
+        unsupportedCommand();
+        return nullptr;
+    }
+    // ROM vptr +0xa0: the door it is. The same.
+    // FS2 0x00177160
+    // callcheck: unsupportedCommand
+    virtual StageDoor *getScriptDoor()
+    {
+        unsupportedCommand();
+        return nullptr;
+    }
+    // ROM vptr +0xfc: other stands at it, looking at it. Native 0x44.
+    // FS2 0x00177180
+    // callcheck: defaultCommand
+    virtual bool scriptIsFacing(StageObject *other)
+    {
+        (void)other;
+        return defaultCommand() != 0;
+    }
+    // ROM vptr +0x184, +0x188, +0x18c. Natives 0x87, 0x88, 0x89.
+    // FS2 0x00172120
+    // callcheck: defaultCommand
+    virtual bool scriptOpenDoor() { return defaultCommand() != 0; }
+    // FS2 0x00172140
+    // callcheck: defaultCommand
+    virtual bool scriptCloseDoor() { return defaultCommand() != 0; }
+    // FS2 0x00172160
+    // callcheck: defaultCommand
+    virtual bool scriptUseDoorKey(int lock) { (void)lock; return defaultCommand() != 0; }
 
     // Slots +0x48..+0x8c: the light's commands (game/stagelight.h).
     // FS2 0x00171b90

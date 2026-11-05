@@ -498,6 +498,7 @@ void StageCharacter::setup(const char *name, ModelInstance *instance, StringMap<
     }
 
     memset(&m_allows, 0, sizeof(m_allows));
+    m_door = nullptr;
     if (m_motion != nullptr)
         m_motion->initSlots14();
     memset(&m_wants, 0, sizeof(m_wants));

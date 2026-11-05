@@ -6,16 +6,20 @@
  *  3D picture: the plain object every node gets by default, and the part of
  *  the set-up that puts the model on the stage.
  *
- *  Not written yet: createMapObject's special classes (the doors _dp / _ds
- *  0x174940, 0x28e5a0, 0x295360, 0x2a7340, 0x2b2a60: they come out as plain
- *  objects, so they stand still and open nothing). The string "Root" names
- *  the map's one big model.
+ *  The doors _dp / _ds are game/stagedoor.cpp. Not written yet: the rest of
+ *  createMapObject's special classes (0x28e5a0, 0x295360, 0x2a7340, 0x2b2a60:
+ *  they come out as plain objects). The string "Root" names the map's one big
+ *  model.
  * ======================================================================== */
 #include <stdio.h>
 #include <string.h>
 
 #include "game/clock.h"
 #include "game/gamehooks.h"
+#include "game/mapobject.h"
+#include "game/mathutil.h"
+#include "game/modelpose.h"
+#include "game/stagedoor.h"
 #include "game/stageitem.h"
 #include "game/stagescene.h"
 #include "game/stageloop.h"
@@ -31,68 +35,20 @@ constexpr int kPartBitWords = 8;
 constexpr char kPartName[] = "BKW%02d";     // data 0x303150
 constexpr char kGlassEffect[] = "glass%d_0"; // data 0x303168
 
+constexpr char kMapModelPrefix = 'o';        // a placed model; the rest are never doors
+constexpr char kDoorPartR[] = "_dp";         // data 0x3030c8
+constexpr char kDoorPartT[] = "_ds";         // data 0x3030d0
+constexpr char kDoorScanR[] = "_dp_%02d";    // data 0x303130
+constexpr char kDoorScanT[] = "_ds_%02d";    // data 0x303140
+constexpr char kTopBone[]   = "bn_top";      // data 0x3030b8
+
 // Bits setupMapObject sets on every map model.
 constexpr char kGateModelA[] = "oGK99_01";   // data 0x3030d8
 constexpr char kGateModelB[] = "oDC99_01";   // data 0x3030e8
 constexpr u_short kMapModelFlags = 0x91;    // ModelFlag names none of these bits yet (unread)
 constexpr u_short kMapModelLitBit = 0x80;   // off on a model with its own lights
 
-// The plain map object (vtable 0x3115c0, side table 0x3115e4, the
-// CollisionOwner's 0x31180c at +0x200, whose flag is m_collides). The door
-// class 0x174940 shares its setters and sideHook0.
-// layout: host -- EE 0x240.
-class StageMapObject : public StageObject, public CollisionOwner
-{
-public:
-    // Its placement is the node's matrix, which setModel writes straight into
-    // the world matrix. Left dirty, the first calcmatrix would rebuild that
-    // from position and rotation, both zero, and put the object at the origin.
-    // The ROM takes the number of meshes; every caller read here has one.
-    // FS2 0x001765e0
-    // callcheck: StageObject, operator_new[], setDirtyTree (the base, the collision table, slot +0x1c)
-    StageMapObject()
-    {
-        m_collides = 1;
-        m_collisionCount = 1;
-        m_collisions = new StageCollision *[m_collisionCount];
-        for (u_int i = 0; i < m_collisionCount; i++)
-            m_collisions[i] = nullptr;
-        setDirtyTree(false);
-    }
-    ~StageMapObject() override;                                          // FS2 0x00176480
-
-    int getKind() override { return StageObject_MapObject; }
-
-    void setPosition(const float *pos) override;                         // FS2 0x00174aa0
-    void setRotation(const float *rot) override;                         // FS2 0x00174a40
-    void setYaw(float yaw) override;                                     // FS2 0x00174a10
-
-    void sideHook0() override;                                           // FS2 0x001756b0
-    void sideHook1() override {}                                         // FS2 0x00177260
-    void sideHook2() override;                                           // FS2 0x001771b0
-    void sideHook3() override {}                                         // FS2 0x001771a0
-
-    int  collisionHook0(CollisionContact *contact, const float *normal, StageCollisionFace *face,
-                        float depth) override;                           // FS2 0x001753f0
-    // FS2 0x001753e0
-    int  onCollide(CollisionContact *, const float *, StageCollisionFace *, float, float) override { return 0; }
-    // FS2 0x001755e0
-    void syncBody(CollisionBody *) override {}
-    // FS2 0x001755d0
-    void collisionHook3(CollisionBody *) override {}
-    StageObject *getCollisionObject() override { return this; }          // FS2 0x00172360
-
-private:
-    void markMoved();
-
-    // Who touched it last: a character, or a bullet's shooter.
-    StageObject *m_touchedBy = nullptr; // FS2 +0x210
-
-public:
-    CollisionRecord *m_record = nullptr; // FS2 +0x218: its faces (MapObjectParts)
-    // Its transform is dirty for this frame only (markMoved).
-    u_char m_movedThisFrame = 0;        // FS2 +0x21c
-};
+} // namespace
 
 // FS2 0x00176480
 // callcheck: ~StageCollision, operator_delete[], operator_delete[], __destroy_new_array, operator_delete[], operator_delete, ~StageObject, operator_delete (MapObjectParts' dtor inline)
@@ -199,18 +155,92 @@ void StageMapObject::sideHook2()
     m_touchedBy = nullptr;
 }
 
-} // namespace
-
-// The object for a map model's node, by its name. Every name gets the plain
-// object for now (file header).
+// The object for a map model's node, by its name: _dp_nn and _ds_nn are doors,
+// and every other name gets the plain object for now (file header).
 // FS2 0x001766c0
 // callcheck: strstr, strstr, strcmp, strcmp, heapAllocAligned, FUN_0028e5a0, strcmp, heapAllocAligned, FUN_00295360, strcmp, strcmp, heapAllocAligned, FUN_002a7340, operator_new, FUN_002a89b0, strncmp, heapAllocAligned, FUN_002b2a60, operator_new, FUN_002b2c80, heapAllocAligned, FUN_001765e0, sscanf, heapAllocAligned, FUN_00174940, sscanf, heapAllocAligned, FUN_00174940, heapAllocAligned, FUN_001765e0 (the special classes: file header)
 
 StageObject *createMapObject(const char *name, void *collision)
 {
-    (void)name;
     (void)collision;
+    int number = 0;
+    if (kDoorsEnabled && name[0] == kMapModelPrefix) {
+        const char *door = strstr(name, kDoorPartR);
+        if (door != nullptr)
+            return sscanf(door, kDoorScanR, &number) > 0 ? new StageDoor(StageDoorType_R, number) : nullptr;
+        door = strstr(name, kDoorPartT);
+        if (door != nullptr)
+            return sscanf(door, kDoorScanT, &number) > 0 ? new StageDoor(StageDoorType_T, number) : nullptr;
+    }
     return new StageMapObject;
+}
+
+// The base has no motions of its own.
+// FS2 vtable +0x270
+
+void StageObject::setMotionList(void *, int, int)
+{
+}
+
+// The motion kinds of setBaseMotion by object kind: 6 -> 4, 5 -> 3, 4 -> 2,
+// 3 -> 1, the rest 0. The objects of those kinds keep their own placement.
+static int baseMotionKind(int kind)
+{
+    return kind >= 3 && kind <= 6 ? kind - 2 : 0;
+}
+
+// FS2 0x00175d40
+// callcheck: matrixToRotYXZ, setBaseMotion, setBaseMotion, setBaseMotion, setBaseMotion, setBaseMotion, addMotion, operator_new, MapObjectParts, find, matrixToRotYXZ, translate, updateMatrix, find, setInverseTree, getWorldMatrix
+
+void StageMapObject::setMotionList(void *list, int arg, int arg2)
+{
+    if (!kDoorsEnabled)
+        return;     // PC: stagedoor.h
+    if (arg != 0) {
+        const sceVu0FVECTOR *world = getWorldMatrix();
+        matrixToRotYXZ(m_xform.rotation, (const sceVu0FVECTOR *)world);
+        memcpy(m_xform.position, world[3], sizeof(sceVu0FVECTOR));
+    }
+
+    StageList<void *>::Node *node = static_cast<StageList<void *> *>(list)->head;
+    if (node == nullptr)
+        return;     // PC: the ROM reads through the null node
+    const int kind = getKind();
+    const int baseKind = baseMotionKind(kind);
+    m_model->setBaseMotion(node->value, baseKind);
+    for (node = node->next; node != nullptr; node = node->next)
+        m_model->addMotion(node->value, 0, nullptr);
+
+    m_mapParts = new MapObjectParts(this, m_record, arg2 != 0);
+    if (m_mapParts->switches != nullptr && baseKind != 1)
+        m_lightOn = 1;
+
+    if (arg != 0) {
+        BoneMap::Node *topNode = m_model->boneMap.find(kTopBone);
+        if (baseKind == 0 && topNode != nullptr) {     // PC: a model with no bn_top keeps its placement
+            StageNodeBase *top = topNode->value;
+            const sceVu0FVECTOR *bone = top->getWorldMatrix();
+            sceVu0FVECTOR rotation;
+            matrixToRotYXZ(rotation, bone);
+            for (int i = 0; i < 4; i++) {
+                m_xform.rotation[i] -= rotation[i];
+                m_xform.position[i] -= bone[3][i];
+            }
+        }
+        m_model->pose->translate(m_xform.position);
+        for (BoneMap::Node *bone = m_model->boneMap.first; bone != nullptr; bone = bone->next)
+            bone->value->updateMatrix();
+    }
+
+    StageCollision *mesh = collisionAt(0);
+    BoneMap::Node *topNode = m_model->boneMap.find(kTopBone);
+    if (mesh != nullptr && topNode != nullptr) {
+        // The faces follow the top bone, which needs its inverse for that.
+        StageNodeBase *top = topNode->value;
+        top->setInverseTree(true);
+        mesh->m_matrix = top->getWorldMatrix();
+        mesh->m_inverse = top->m_inverse;
+    }
 }
 
 // A new map object takes its node: the scene's lists, instance, textures.
