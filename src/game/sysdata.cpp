@@ -468,9 +468,9 @@ int GameOptions::equals(const GameOptions *other) const
         return 0;
     if (_10 != other->_10)
         return 0;
-    if (_14 != other->_14)
+    if (invertY != other->invertY)
         return 0;
-    if (_15 != other->_15)
+    if (invertX != other->invertX)
         return 0;
     if (brightness != other->brightness)
         return 0;
@@ -508,8 +508,8 @@ void GameOptions::setDefaults()
     screenX = 0;
     screenY = 0;
     _10 = 2;
-    _14 = 1;
-    _15 = 0;
+    invertY = 1;
+    invertX = 0;
     brightness = 9;
     subtitles = 1;
     wideScreen = 0;

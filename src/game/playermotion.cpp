@@ -8,6 +8,8 @@
  */
 #include "game/playermotion.h"
 
+#include "game/characterinput.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -1059,6 +1061,8 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
         character->m_walkRate = sheet->walkSpeed / 100.0f;
     if (sheet->runSpeed > 0)
         character->m_runRate = sheet->runSpeed / 100.0f;
+    if (sheet->turnSpeed > 0)
+        character->m_turnRate = sheet->turnSpeed / 100.0f;
 }
 
 // FS2 0x001ed2a0
@@ -2770,10 +2774,11 @@ void stageUpdateCharacterMotions()
         StageCharacter *body = static_cast<StageCharacter *>(character);
         // PC: the start hook 0x17a860 and the control hook 0x17a810 are not
         // written, and they run before this in the ROM: this is their order,
-        // with the input (0x236b90) and the brain missing.
+        // with the brain (0x1dd2f0) missing.
         memset(&body->m_allows, 0, sizeof(body->m_allows));
         motion->beginFrame();
         memset(&body->m_wants, 0, sizeof(body->m_wants));
+        character->m_input->update();
         motion->controlStep();
         motion->stepLower(false);
         motion->stepUpper(false);

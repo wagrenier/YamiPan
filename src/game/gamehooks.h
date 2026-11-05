@@ -358,24 +358,7 @@ class StageObject;
 class StageCharacter;
 // The scene's player is a character: one class in the ROM (vtable 0x312240).
 typedef StageCharacter StagePlayer;
-// What drives a character from the pad (+0x21c). layout: host -- EE: +0
-// the flag, +8 the pad.
-struct CharacterInput
-{
-    // EE 0x60. The next items of the queue: stubs until game/characterinput.cpp.
-    explicit CharacterInput(StageObject *owner);                         // FS2 0x00239c60
-    ~CharacterInput();                                                   // FS2 0x00239be0: deleting
-    void reset();                                                        // FS2 0x00239bc0
-    void setActive(bool on);                                             // FS2 0x00239bb0
-    // The pad's +0x12c (a float of the character's pad class, unread): the
-    // main camera leans by it while a swaying motion plays.
-    float padSway() const;                                               // FS2 +0x8 -> +0x12c
-
-    // The push on the view, -1..1: both are written by 0x239d50. Their
-    // signs say which way they turn it (StageMainCamera::cameraStep).
-    float lookPitch = 0.0f;     // FS2 +0x10
-    float lookYaw = 0.0f;       // FS2 +0x18
-};
+struct CharacterInput;          // game/characterinput.h
 // What keeps a character on the ground (+0x228, EE 0x1c0, ctor 0x1f3d20,
 // CollisionOwner at +0; the run unassigned@00171300). Only what the main
 // camera reads. layout: host.
@@ -1057,6 +1040,8 @@ struct StageParty
     void createCamera();                                                 // FS2 0x001febb0
     // Mode 4, object the companion.
     void setCompanion(StageObject *object);                              // FS2 0x001fe9c0
+    // The record runs, seen through object ("camjack": the sight-jack).
+    void start(StageObject *object);                                     // FS2 0x001feba0
 };
 
 // A singly linked list whose nodes {next, flags} carry a keep bit (the
@@ -1825,6 +1810,26 @@ struct GateParts
     void setEffects(bool on);                                            // FS2 0x0028ecb0
     // Takes from's state; null: the closed one.
     void copyFrom(const GateParts *from);                                // FS2 0x0028ed60
+    // Its +0x14's +0x214; 0 without one. A car's lights say whether they are on.
+    bool isLit();                                                        // FS2 0x0028ec90
+};
+
+// The car a character drives (StageObject::m_gear with driving 1; ctor
+// 0x28e5a0, the sounds CAR_*). Only what the wheel writes: nothing sets
+// m_gear yet and createMapObject makes a plain object of it, so this is
+// unreached. layout: host.
+class StageCar : public StageObject
+{
+public:
+    // +0x382, 1 or -1; any other value is ignored.
+    void setDirection(int direction);                                    // FS2 0x0028d810
+    void honk();                                                         // FS2 0x0028d780
+    void setLights(bool on);                                             // FS2 0x0028db80
+
+    GateParts *m_lights;        // FS2 +0x2b0
+    u_char m_throttle;          // FS2 +0x381
+    u_char m_brake;             // FS2 +0x383
+    float  m_steer;             // FS2 +0x384
 };
 
 // What a stage's map file becomes (StageFiles::applyMapTarget). The ROM
@@ -2103,25 +2108,44 @@ struct CharacterWants
     u_char squat;               // FS2 +0x2c8
     u_char quickTurn;           // FS2 +0x2c9
     u_char altAction;           // FS2 +0x2ca: latchAltAction
-    u_char _2cb[0x35];
+    u_char useItem;             // FS2 +0x2cb: the item list took the Use button
+    u_char squatAction;         // FS2 +0x2cc: the squat button, where it does something else
+    u_char useItem2;            // FS2 +0x2cd: the same, kind 2
+    u_char useItem6;            // FS2 +0x2ce: kind 6
+    u_char _2cf[2];
+    u_char useItem5;            // FS2 +0x2d1: kind 5
+    u_char _2d2[0x1f];
+    u_char ready;               // FS2 +0x2f1: PadAction_Ready held
+    u_char _2f2[2];
+    int    fire;                // FS2 +0x2f4: CharacterFire
+    u_char _2f8[8];
     u_char headOn;              // FS2 +0x300: the head follows headAngles
     u_char _301[0xf];
     sceVu0FVECTOR headAngles;   // FS2 +0x310
     u_char aimOn;               // FS2 +0x320: the upper body follows aimAngles
     u_char _321[0xf];
     sceVu0FVECTOR aimAngles;    // FS2 +0x330
-    u_char _340[8];
+    u_char _340[4];
+    int    dpadSide;            // FS2 +0x344: 1 left, 2 right
     int    viewChange;          // FS2 +0x348: 1 into camview, 2 out of it
     u_char zoomOn;              // FS2 +0x34c: into camview_zoom, or out of it
     u_char _34d[3];
     int    zoomLevel;           // FS2 +0x350
     u_char lampSwitch;          // FS2 +0x354: the lamp changes over
-    u_char _355[0xb];
+    u_char padUp;               // FS2 +0x355: up of the d-pad, allows.padUp
+    u_char rightStickOn;        // FS2 +0x356: allows.rightStick
+    u_char _357;
+    float  rightStickY;         // FS2 +0x358
+    u_char padDown;             // FS2 +0x35c: down of the d-pad, allows.padDown
+    u_char _35d[3];
 };
 static_assert(sizeof(CharacterWants) == 0xa0, "CharacterWants: EE 0xa0");
 static_assert(offsetof(CharacterWants, headOn) == 0x40, "CharacterWants::headOn");
 static_assert(offsetof(CharacterWants, aimAngles) == 0x70, "CharacterWants::aimAngles");
 static_assert(offsetof(CharacterWants, lampSwitch) == 0x94, "CharacterWants::lampSwitch");
+static_assert(offsetof(CharacterWants, fire) == 0x34, "CharacterWants::fire");
+static_assert(offsetof(CharacterWants, dpadSide) == 0x84, "CharacterWants::dpadSide");
+static_assert(offsetof(CharacterWants, rightStickY) == 0x98, "CharacterWants::rightStickY");
 
 // What the running motion's conditions allow this frame: +0x360, which the
 // start hook clears. Each byte is a condition's yes. A queued motion keeps
@@ -2133,19 +2157,32 @@ struct CharacterAllows
     u_char move;                // FS2 +0x362
     u_char quickTurn;           // FS2 +0x363
     u_char altAction;           // FS2 +0x364: latchAltAction
-    u_char _365[0x2b];
+    u_char _365[3];
+    int    useItem;             // FS2 +0x368: 1, 2: what the Use button may do (CharacterWants::useItem)
+    int    useItem2;            // FS2 +0x36c
+    u_char squatAction;         // FS2 +0x370
+    u_char useItem6;            // FS2 +0x371
+    u_char _372[0xe];
+    u_char useItem5;            // FS2 +0x380
+    u_char _381[0xd];
+    u_char fire;                // FS2 +0x38e
+    u_char _38f;
     u_char head;                // FS2 +0x390: the sheet's 頭振り
     u_char aim;                 // FS2 +0x391: the sheet's 上半身振り
     u_char _392[9];
     u_char viewSwitch;          // FS2 +0x39b: カメラモード切替
     u_char zoom;                // FS2 +0x39c: 主観ズーム
     u_char lamp;                // FS2 +0x39d: 懐中電灯ON/OFF
-    u_char _39e[3];
+    u_char padUp;               // FS2 +0x39e: also R3 for the view (CharacterInput::stepView)
+    u_char rightStick;          // FS2 +0x39f
+    u_char padDown;             // FS2 +0x3a0
     u_char standing;            // FS2 +0x3a1: a hold or a walk (its reader is unread)
     u_char _3a2[2];
 };
 static_assert(sizeof(CharacterAllows) == 0x44, "CharacterAllows: EE 0x44");
 static_assert(offsetof(CharacterAllows, head) == 0x30, "CharacterAllows::head");
+static_assert(offsetof(CharacterAllows, useItem) == 0x8, "CharacterAllows::useItem");
+static_assert(offsetof(CharacterAllows, fire) == 0x2e, "CharacterAllows::fire");
 static_assert(offsetof(CharacterAllows, standing) == 0x41, "CharacterAllows::standing");
 
 // A character of the map (the F_ and player points), the player and the
@@ -2213,6 +2250,19 @@ public:
     bool isControlled() const;                                           // FS2 0x00215270
     // It acts for the player (controlled, not the player itself).
     bool isTakenOver() const;                                            // FS2 0x00211970
+    // How the view changes by itself: 1 into the view camera, 0 not. For
+    // the one on the pad, when a script says so or it acts for the player.
+    int  forcedViewChange() const;                                       // FS2 0x00214ee0
+    // Radians a 1/30 s frame turns at full stick, by the clock.
+    float getTurnRate();                                                 // FS2 0x002162d0
+    // 0 inactive; 2 up, 3 down, 4 down in motions 0xb3 / 0xb4, 5 in 0xb1 /
+    // 0xb2, 6 and 7 by +0x690. The brain's state 6 says 2, its state 0 says 0.
+    int  getLifeState();                                                 // FS2 0x00212460
+    // Not the partner, the sheet's kind not 0xb, slot +0x278 (the brain's
+    // state, 1 without one) none of 2..5, 7: the player may become it.
+    bool canTakeOver();                                                  // FS2 0x00212020
+    // Kind 0xb in a walking motion (the list is unread past its first half).
+    bool isCompanionWalking();                                           // FS2 0x002119d0
     // The motion rate, 1 outside a timed change.
     float getMotionRate();                                               // FS2 0x0020d400
     // The world matrix the head's sway of kind 2 turns to.
@@ -2232,7 +2282,7 @@ public:
     StageList<StageObject *> m_items; // FS2 +0x22c: what it carries (giveItem)
     int    m_294 = 0;           // FS2 +0x294: 0 from the ctor (unread)
     sceVu0FVECTOR m_aimPoint = {}; // FS2 +0x2a0: where its bullets steer
-    int    m_2b0 = 0;           // FS2 +0x2b0: 0 from the ctor (unread)
+    StageObject *m_lookAt = nullptr; // FS2 +0x2b0: in a car, what the heads turn to (writers unread)
     CharacterWants  m_wants = {};   // FS2 +0x2c0: the start hook clears it, input and brain fill it
     CharacterAllows m_allows = {};  // FS2 +0x360: the start hook clears it, the conditions fill it
     u_char m_fidgets = 1;       // FS2 +0x3e0: resetActionState sets it, a script's property may clear it: stepFidgets' idle0 / idle1
@@ -2267,6 +2317,7 @@ public:
     int    m_unarmedMsp = 0;    // FS2 +0x5b0: the sheet's 素手MSP
     float  m_walkRate = 1.0f;   // FS2 +0x5e0: 移動速度 / 100 (setProperty)
     float  m_runRate = 1.0f;    // FS2 +0x5e4: 走り速度 / 100
+    float  m_turnRate = 1.0f;   // FS2 +0x5e8: 旋回速度 / 100 (setProperty)
     float  m_reviveTime = 0.0f; // FS2 +0x5ec: seconds of DamageDead
     int    m_drainRate = 0;     // FS2 +0x5f0: a script's property: what a drained character loses a frame at 30 Hz, read from whoever the player controls
     float  m_aimLock = 0.0f;    // FS2 +0x5fc: not 0: they fly straight
@@ -2425,6 +2476,9 @@ public:
     void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x0023e770
     // The front slot is used; negative when nothing could be.
     int  pick();                                                         // FS2 0x0023ee90
+    // Whether a press of Use goes to who with the slot of this kind (the
+    // slot's user is told when it does).
+    u_char offer(StageCharacter *who, int kind);                         // FS2 0x0023ed10
     // The init pack's sheet (the ROM asks its size too, and drops it).
     void setSheet(void *sheet);                                          // FS2 0x0023f030
 

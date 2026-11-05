@@ -1565,10 +1565,10 @@ void setGameValue(int kind, int value, int i, int j)
         data->select._10 = value != 0;
         break;
     case GameValue_Option14:
-        options->_14 = value != 0;
+        options->invertY = value != 0;
         break;
     case GameValue_Option15:
-        options->_15 = value != 0;
+        options->invertX = value != 0;
         break;
     case GameValue_Option1c:
         options->subtitles = value != 0;
@@ -1698,9 +1698,9 @@ int getGameValue(int kind, int i, int j, int expected)
             return 1;
         return data->select._10;
     case GameValue_Option14:
-        return options->_14;
+        return options->invertY;
     case GameValue_Option15:
-        return options->_15;
+        return options->invertX;
     case GameValue_Option1c:
         return options->subtitles;
     default:

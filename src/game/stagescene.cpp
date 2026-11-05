@@ -16,6 +16,7 @@
 #include "game/clock.h"
 #include "game/fileloader.h"
 #include "game/fontdata.h"
+#include "game/characterinput.h"
 #include "game/gamehooks.h"
 #include "game/gamepacket.h"
 #include "game/gamesystem.h"

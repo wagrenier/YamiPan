@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/characterinput.cpp",
   "game/characterground.cpp",
   "game/playermotion.cpp",
   "game/stagecharacter.cpp",
@@ -60,7 +59,31 @@
    "task": "The character's ground, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1f3d20.. (EE 0x1c0) and CharacterGround::faceNear 0x1eff00, out of unassigned@001d85b0. The main camera's slope tilt and GroundVolume read this. Needs game/stagecollision.cpp. Ends verify until the character stands on the map."
   },
   "game/characterinput.cpp": {
-   "task": "The pad to the character, step 6 of roadmap-3d-control.md, queued 2026-11-04: CharacterInput 0x239c60 and its reader 0x239d50 (710 i), out of unassigned@00231d40. It reads GamePad, the menus and the scene's input focus; the host pad is ready. lookYaw and lookPitch are named from how the camera uses them, so check that pair here, and write padSway. Ends verify until the player logic moves the character."
+   "notes": "All code of the TU is written; the control hook's input half now runs in stageUpdateCharacterMotions. Seen in a 285 s New Game run with the scripted left stick at reads 5720..6970: F_PC01 runs, turns on the spot, backs and strafes with L1, moved from (7286, 6064) to (4712, 3798), no crash, and idle0 played. progress/20261104-f_pc01-pad-walk.png shows him whole from behind, on black outside the room. He goes through walls and stays at z 1138 until game/characterground.cpp. verify because the right stick, buttons, aim, scope, car and companion were not exercised and no reference exists; offer, StageParty::start, canTakeOver, getLifeState, isCompanionWalking and the car members are stubs. Next: game/characterground.cpp. New names are in batch 124; open-items.md Done and Decisions have the doubts.",
+   "ranges": [
+    [
+     "00214ee0",
+     "00214f20"
+    ],
+    [
+     "002162d0",
+     "00216310"
+    ],
+    [
+     "00236b90",
+     "0023a870"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 23:55",
+     "status": "verify",
+     "summary": "CharacterInput and CharacterPad, all of 0x236b90..0x23a870: the pad fills CharacterWants, the character walks"
+    }
+   ],
+   "status": "verify",
+   "task": "The pad to the character, step 6 of roadmap-3d-control.md, queued 2026-11-04: CharacterInput 0x239c60 and its reader 0x239d50 (710 i), out of unassigned@00231d40. It reads GamePad, the menus and the scene's input focus; the host pad is ready. lookYaw and lookPitch are named from how the camera uses them, so check that pair here, and write padSway. Ends verify until the player logic moves the character.",
+   "why": "the pad to the character: update 0x236b90 cut from stagecollision's tail (0x231d40..0x236b90), up to the particle helpers at 0x23a870; 0x214ee0 and 0x2162d0 are the two small members only the input calls; the file name is the port's"
   },
   "game/clock.cpp": {
    "notes": "Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode whose destructor 0x135550 is the real body (Clock::~Clock 0x1351b0 and MasterClock::~MasterClock 0x135330 only call it and free: Metrowerks one-dtor-with-flags). ROM bugs kept: the destructor detaches only its FIRST child (clearing the slot makes next(child) end the walk), the others keep a dangling parent (harmless while children die first; on the host a later child delete would read freed memory, watch at bootstrap 7); when that child was the last the ROM walks a null list (EE address 4), the port stops. PtrList slots are pointer-sized on the host (EE 4 bytes). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean, host harness (advance with scale 0x80, pause, getSeconds / getDeltaSeconds, delete detaching from the parent and freeing an emptied list). Next: the VU0 run unassigned@00135990 (20 functions; decode the COP2 words from the asm, open-items.md TU 42).",

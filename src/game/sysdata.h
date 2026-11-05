@@ -109,8 +109,8 @@ struct GameOptions
     short     screenX;          // FS2 +0x0a: display offset (gfxSetDisplayOffset), default 0
     short     screenY;          // FS2 +0x0c: default 0
     int       _10;              // FS2 +0x10: default 2
-    u_char    _14;              // FS2 +0x14: default 1
-    u_char    _15;              // FS2 +0x15: default 0
+    u_char    invertY;          // FS2 +0x14: default 1: the sticks' look and aim y the other way
+    u_char    invertX;          // FS2 +0x15: default 0: their x
     int       brightness;       // FS2 +0x18: index into the 19-step table 0x2fac20 (guess: brightness), default 9
     u_char    subtitles;        // FS2 +0x1c: DemoStream draws subtitles when set, default 1
     int       wideScreen;       // FS2 +0x20: 1 the 16:9 screen (the S2D's r16_9), default 0

@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "game/characterinput.h"
 #include "game/gamehooks.h"
 #include "game/heap.h"
 #include "game/modelpose.h"
@@ -603,7 +604,7 @@ StageCharacter::StageCharacter()
     m_parts[1] = nullptr;
     m_290 = nullptr;
     m_294 = 0;
-    m_2b0 = 0;
+    m_lookAt = nullptr;
     m_shadowLight = nullptr;
     m_xform.rotationXyz = 1;
     m_gear = nullptr;
