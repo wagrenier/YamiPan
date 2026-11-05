@@ -12327,7 +12327,7 @@
   "name": "stageUpdateCharacterMotions",
   "tag": "game-inferred",
   "was": "FUN_0017df60",
-  "why": "every character with +0x18: three calls on +0x224"
+  "why": "already named; three steps on +0x224 for each character with m_viewActive"
  },
  "0017e010": {
   "name": "CharacterHidePart::copyFrom",
@@ -16277,6 +16277,18 @@
   "was": "FUN_001df040",
   "why": "a0 = +0x224: slot +0x14 of each entry of the list at +0x30, after setup clears +0x360"
  },
+ "001dfd90": {
+  "name": "PlayerMotion::clearNoFlash",
+  "tag": "game-inferred",
+  "was": "FUN_001dfd90",
+  "why": "reset calls it when +0xbd4 is set, with 0; body unread"
+ },
+ "001e5d90": {
+  "name": "PlayerMotion::beginFrame",
+  "tag": "game-inferred",
+  "was": "FUN_001e5d90",
+  "why": "from the start hook 0x17a860: timers, the queues' open toggle, root scale, Always condition, link update"
+ },
  "001e60b0": {
   "name": "PlayerMotion::getLampMatrix",
   "tag": "game-inferred",
@@ -16288,6 +16300,114 @@
   "tag": "game-inferred",
   "was": "FUN_001e66c0",
   "why": "a0 the player's +0x224 object (its +0 the player): picks names from the 0x210-byte records 0x577b20 (index +0x40, slot +0x6c; '*'-prefixed alternates when the long weapon +0x238's item def kind is 5 or 6) and hands them to 0x216400; guess: the motion set for the weapon carried. stepWeaponPreview in a stage"
+ },
+ "001e6d00": {
+  "name": "PlayerMotion::isQueued",
+  "tag": "game-inferred",
+  "was": "FUN_001e6d00",
+  "why": "+0x5c record motion or last not -1"
+ },
+ "001e6d30": {
+  "name": "PlayerMotion::isWalkBusy",
+  "tag": "game-inferred",
+  "was": "FUN_001e6d30",
+  "why": "+0xa70 or the +0x60 record last not -1"
+ },
+ "001e6d60": {
+  "name": "PlayerMotion::arbitrate",
+  "tag": "game-inferred",
+  "was": "FUN_001e6d60",
+  "why": "turns a request into sq_u / sq_d first, queues it, and waits for the pair at motion 0xfb (u_sp)"
+ },
+ "001e81f0": {
+  "name": "CharacterAction::operator_assign",
+  "tag": "game-inferred",
+  "was": "FUN_001e81f0",
+  "why": "field by field copy of the 0x44 block at character +0x360; MotionQueue::store / restore in the port"
+ },
+ "001e8320": {
+  "name": "PlayerMotion::resolveHold",
+  "tag": "game-inferred",
+  "was": "FUN_001e8320",
+  "why": "the request falls to the holds +0x54 / +0x58, by crouch side; 1, 0 or -1"
+ },
+ "001e8870": {
+  "name": "PlayerMotion::stepFace",
+  "tag": "game-inferred",
+  "was": "FUN_001e8870",
+  "why": "third step of 0x17df60: plays group 2 from the table at +0x70, the talking face at +0x46c"
+ },
+ "001e8a30": {
+  "name": "PlayerMotion::stepUpper",
+  "tag": "game-inferred",
+  "was": "FUN_001e8a30",
+  "why": "second step: group 1 l_torch / l_gun / l_rifle / l_fist / l_def and r_ by the weapon"
+ },
+ "001e9dd0": {
+  "name": "PlayerMotion::stepLower",
+  "tag": "game-inferred",
+  "was": "FUN_001e9dd0",
+  "why": "first step: resolves the request and plays its label (rifle column, upper label) with StageModel::playMotion"
+ },
+ "001ead00": {
+  "name": "PlayerMotion::startWalk",
+  "tag": "game-inferred",
+  "was": "FUN_001ead00",
+  "why": "called from stepLower on +0xa72; ModelPose::startWalk with vectors +0xa90 / +0xab0"
+ },
+ "001eaea0": {
+  "name": "PlayerMotion::startWalkAt",
+  "tag": "game-inferred",
+  "was": "FUN_001eaea0",
+  "why": "stepLower when +0xa73: target +0xac0, offset +0xad0"
+ },
+ "001eb150": {
+  "name": "PlayerMotion::isEnding",
+  "tag": "game-inferred",
+  "was": "FUN_001eb150",
+  "why": "link finished, or \u518d\u751f\u7d42\u4e86\u5f85\u3061 and the first bone ending"
+ },
+ "001eb210": {
+  "name": "PlayerMotion::requestedFile",
+  "tag": "game-inferred",
+  "was": "FUN_001eb210",
+  "why": "file (+4) of the motion of the requested label"
+ },
+ "001eb660": {
+  "name": "PlayerMotion::pickStance",
+  "tag": "game-inferred",
+  "was": "FUN_001eb660",
+  "why": "tables 0x2f7dd0 / e30 / e90: slot to { standing, crouching } motion by +0x3f4 and Yri / Kne"
+ },
+ "001ec080": {
+  "name": "PlayerMotion::noteEnding",
+  "tag": "game-inferred",
+  "was": "FUN_001ec080",
+  "why": "+0x50 = 1, event 2 in the character's history"
+ },
+ "001ec0a0": {
+  "name": "PlayerMotion::noteLeaving",
+  "tag": "game-inferred",
+  "was": "FUN_001ec0a0",
+  "why": "history events 2, 3, 4 and the link's slot +0x24 for the motion that leaves"
+ },
+ "001ec400": {
+  "name": "PlayerMotion::startRequested",
+  "tag": "game-inferred",
+  "was": "FUN_001ec400",
+  "why": "link slot +0x14 and history event 0 for the request, unless it is the running motion's next"
+ },
+ "001ec650": {
+  "name": "PlayerMotion::requestNow",
+  "tag": "game-inferred",
+  "was": "FUN_001ec650",
+  "why": "cancels the standing request, takes id over it, stops a walk; 72 callers"
+ },
+ "001ec7a0": {
+  "name": "PlayerMotion::request",
+  "tag": "game-inferred",
+  "was": "FUN_001ec7a0",
+  "why": "+0x3c = id when -1; 180 callers"
  },
  "001ec7e0": {
   "name": "PlayerMotion::reset",
@@ -16318,6 +16438,12 @@
   "tag": "game-inferred",
   "was": "FUN_001eff00",
   "why": "findFloorFaceExcept from a point of the owner's space"
+ },
+ "001eff80": {
+  "name": "CharacterGround::setContact",
+  "tag": "game-inferred",
+  "was": "FUN_001eff80",
+  "why": "clears or sets the feet's bytes through +0x198, the player's through +0x194"
  },
  "001f3b30": {
   "name": "CharacterGround::reset",
@@ -17039,6 +17165,12 @@
   "was": "FUN_001fe720",
   "why": "memset(0x598b20, -1, 0x10): the four saved character ids; a0 the scene +0x88"
  },
+ "001fe800": {
+  "name": "StageParty::isRunning",
+  "tag": "game-inferred",
+  "was": "FUN_001fe800",
+  "why": "first byte of its record"
+ },
  "001fe890": {
   "name": "StageParty::addImage",
   "tag": "game-inferred",
@@ -17092,6 +17224,12 @@
   "tag": "game-inferred",
   "was": "FUN_001feb80",
   "why": "tail to 0x203240 on the record"
+ },
+ "001feb90": {
+  "name": "StageParty::stop",
+  "tag": "game-inferred",
+  "was": "FUN_001feb90",
+  "why": "clears the record's first byte, hides its objects, removes its view, stops four sounds"
  },
  "001febb0": {
   "name": "StageParty::createCamera",
@@ -17255,6 +17393,12 @@
   "was": "FUN_002152d0",
   "why": "a0 the player: +0x400 non-null and +0x3c8 == 1; StageScene::drawPaused / update then pass sceneFlag 1 to StageSound::update; what mode 1 is is unread"
  },
+ "00215620": {
+  "name": "StageObject::isScenarioLead",
+  "tag": "game-inferred",
+  "was": "FUN_00215620",
+  "why": "SaveData +0x4bc against the sheet kind and name[2]; what the values are is unread"
+ },
  "00215e70": {
   "name": "StageObject::isYriOrKne",
   "tag": "game-inferred",
@@ -17279,6 +17423,12 @@
   "was": "FUN_00216140",
   "why": "a bit from the character record's kind +0x10, by difficulty"
  },
+ "00216400": {
+  "name": "StageCharacter::swapWeapons",
+  "tag": "game-inferred",
+  "was": "FUN_00216400",
+  "why": "exchanges +0x238 and +0x23c and reparents them"
+ },
  "00216aa0": {
   "name": "StageCharacter::giveItem",
   "tag": "game-inferred",
@@ -17302,6 +17452,12 @@
   "tag": "game-inferred",
   "was": "FUN_00218630",
   "why": "script entry from the first script, position from the mission or the saved one"
+ },
+ "0021a960": {
+  "name": "StageCharacter::noteMotion",
+  "tag": "game-inferred",
+  "was": "FUN_0021a960",
+  "why": "ring of four { id, event bits, mission frame } at +0x7c8"
  },
  "0021c310": {
   "name": "StageObject::afterScripts",
@@ -20675,6 +20831,18 @@
   "was": "FUN_0026cf40",
   "why": "the dtor on vtables 0x317140 / 0x317164 / 0x31717c, then StageObject's"
  },
+ "0027cab0": {
+  "name": "MotionLink::rewind",
+  "tag": "game-inferred",
+  "was": "FUN_0027cab0",
+  "why": "+0x14 = 0, +0x18 = 0"
+ },
+ "0027cb60": {
+  "name": "MotionLink::update",
+  "tag": "game-inferred",
+  "was": "FUN_0027cb60",
+  "why": "slot +0xc, then each active condition of the list at +0xc"
+ },
  "0027ef70": {
   "name": "CarPose::CarPose",
   "tag": "game-inferred",
@@ -21436,6 +21604,18 @@
   "tag": "game-inferred",
   "was": "FUN_00293440",
   "why": "a0 the SePlayer: steps the master fade (+0x88 from, +0x8c to, +0x90 frames -1 none, +0x94 frame) into +0x84, then frees the voice records (+0x98 / +0x698 / +0xc98) whose bank voice ended"
+ },
+ "002937e0": {
+  "name": "motionFileLastPosition",
+  "tag": "game-inferred",
+  "was": "FUN_002937e0",
+  "why": "walks a track's keys to the terminator, x y z of the last"
+ },
+ "002938d0": {
+  "name": "motionFileHands",
+  "tag": "game-inferred",
+  "was": "FUN_002938d0",
+  "why": "bits for tracks named ?_finger.. with keys, r 1, l 2"
  },
  "00295470": {
   "name": "runNaviFile",

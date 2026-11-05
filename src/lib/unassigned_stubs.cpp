@@ -11,6 +11,7 @@
 #include "game/gfxtarget.h"
 #include "game/memcard.h"
 #include "game/modelpose.h"
+#include "game/playermotion.h"
 #include "game/stagenode.h"
 #include "game/stageobjlist.h"
 #include "game/stageitem.h"
@@ -100,12 +101,6 @@ PauseMenuState::PauseMenuState()
 PauseMenuState::~PauseMenuState()
 {
     YAMIPAN_STUB("PauseMenuState::~PauseMenuState", 0x00207ea0);
-}
-
-// stub of FS2 0x001e66c0
-void PlayerMotion::refresh()
-{
-    YAMIPAN_STUB("PlayerMotion::refresh", 0x001e66c0);
 }
 
 // stub of FS2 0x0029e4f0
@@ -1408,65 +1403,6 @@ CharacterGround::~CharacterGround()
     YAMIPAN_STUB("CharacterGround::~CharacterGround", 0x001f3c70);
 }
 
-// A bridge until game/playermotion.cpp: what a character needs to stand, a
-// zeroed block with a look state so the main camera can read it. It does not
-// react: activeLook stays null. The ROM's own: 0x1ed410.
-PlayerMotion::PlayerMotion(StageObject *owner_)
-{
-    YAMIPAN_BRIDGE("PlayerMotion::PlayerMotion", 0x001ed410);
-    memset(static_cast<void *>(this), 0, sizeof(*this));
-    owner = owner_;
-    look = new PlayerLookState;
-    memset(look, 0, sizeof(*look));
-}
-
-PlayerMotion::~PlayerMotion()
-{
-    YAMIPAN_BRIDGE("PlayerMotion::~PlayerMotion", 0x001ed2a0);
-    delete look;
-}
-
-// A bridge of 0x17df60 until game/playermotion.cpp: the ROM runs three steps of
-// the motion here. With none of them the pose stands at the world's origin, so
-// each character's pose follows the object, as an event's does (sideHook2).
-void stageUpdateCharacterMotions()
-{
-    YAMIPAN_BRIDGE("stageUpdateCharacterMotions", 0x0017df60);
-    const float kFrameStep = 1.2f;
-    StageObjArray &characters = gStageScene->objects->m_lists[StageObjGroup_Characters];
-    for (StageObject **slot = characters.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
-        StageObject *character = *slot;
-        if (character->m_viewActive)
-            character->m_model->advance(kFrameStep, character->m_xform.position, character->m_xform.rotation, 0);
-    }
-}
-
-// A bridge of 0x1ecda0: the base motion, the bones and the list, the shape the
-// ROM has; not the tables of gMotionDefs it then fills (+0x70.., +0x470..).
-void PlayerMotion::loadMotions(StageList<void *> *motions, StageList<void *> *motions2, void *mdl)
-{
-    YAMIPAN_BRIDGE("PlayerMotion::loadMotions", 0x001ecda0);
-    StageModel *model = owner->m_model;
-    StageList<void *>::Node *node = motions->head;
-    model->setBaseMotion(mdl != nullptr ? mdl : node->value, 0);
-    model->bindBones();
-    model->placeBones(owner);
-    StageList<void *>::Node *second = motions2->head;
-    for (node = node->next; node != nullptr && second != nullptr; node = node->next, second = second->next) {
-        char *file = static_cast<char *>(node->value);
-        int index;
-        switch (file[0x13]) {
-        case 'd': index = 3; break;
-        case 'f': index = 2; break;
-        case 'h': index = 1; break;
-        case '_': index = 0; break;
-        default:  index = 4; break;
-        }
-        model->addMotion(file, index, file + 0x17);
-    }
-    model->balanceMotions();
-}
-
 // stub of FS2 0x001dd460
 void CharacterBrain::reset()
 {
@@ -1483,24 +1419,6 @@ void CharacterGround::reset()
 void CharacterInput::reset()
 {
     YAMIPAN_STUB("CharacterInput::reset", 0x00239bc0);
-}
-
-// stub of FS2 0x001df040
-void PlayerMotion::initSlots14()
-{
-    YAMIPAN_STUB("PlayerMotion::initSlots14", 0x001df040);
-}
-
-// stub of FS2 0x001defd0
-void PlayerMotion::initSlots18()
-{
-    YAMIPAN_STUB("PlayerMotion::initSlots18", 0x001defd0);
-}
-
-// stub of FS2 0x001ec7e0
-void PlayerMotion::reset(int arg)
-{
-    YAMIPAN_STUB("PlayerMotion::reset", 0x001ec7e0);
 }
 
 // stub of FS2 0x0023f310
@@ -1556,4 +1474,54 @@ void StageCharacter::stopSounds()
 void StageParticle::stopChain()
 {
     YAMIPAN_STUB("StageParticle::stopChain", 0x0018fec0);
+}
+
+// stub of FS2 0x001eff80
+void CharacterGround::setContact(int value)
+{
+    YAMIPAN_STUB("CharacterGround::setContact", 0x001eff80);
+}
+
+// stub of FS2 0x001dfd90
+void PlayerMotion::clearNoFlash(int arg)
+{
+    YAMIPAN_STUB("PlayerMotion::clearNoFlash", 0x001dfd90);
+}
+
+// stub of FS2 0x001ead00
+void PlayerMotion::startWalk(int kind, const float *from, const float *to, bool arg, bool arg2)
+{
+    YAMIPAN_STUB("PlayerMotion::startWalk", 0x001ead00);
+}
+
+// stub of FS2 0x001eaea0
+void PlayerMotion::startWalkAt(int kind, void *target, const float *offset, const float *to, bool arg, bool arg2)
+{
+    YAMIPAN_STUB("PlayerMotion::startWalkAt", 0x001eaea0);
+}
+
+// stub of FS2 0x00216400
+void StageCharacter::swapWeapons()
+{
+    YAMIPAN_STUB("StageCharacter::swapWeapons", 0x00216400);
+}
+
+// stub of FS2 0x00215620
+bool StageObject::isScenarioLead()
+{
+    YAMIPAN_STUB("StageObject::isScenarioLead", 0x00215620);
+    return {};
+}
+
+// stub of FS2 0x001fe800
+bool StageParty::isRunning()
+{
+    YAMIPAN_STUB("StageParty::isRunning", 0x001fe800);
+    return {};
+}
+
+// stub of FS2 0x001feb90
+void StageParty::stop()
+{
+    YAMIPAN_STUB("StageParty::stop", 0x001feb90);
 }

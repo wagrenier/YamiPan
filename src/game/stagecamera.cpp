@@ -16,6 +16,7 @@
 #include <stdlib.h>
 
 #include "game/gamehooks.h"
+#include "game/playermotion.h"
 #include "game/mathutil.h"
 #include "game/packtables.h"
 #include "game/scenerender.h"
@@ -468,7 +469,7 @@ void StageMainCamera::cameraStep()
         // Looking back while the look state holds: over the character's head.
         PlayerMotion *playerMotion = linked->m_motion;
         const PlayerLookState *look = playerMotion->look;
-        if (playerMotion->activeLook == look && look->active) {
+        if (static_cast<const void *>(playerMotion->activeLink) == look && look->active) {
             const float angle = look->angle;
             if (angle < -170.0f) {
                 bool partnerFar = false;

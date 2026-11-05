@@ -6,6 +6,7 @@
  *  thunks that close the file are listed at its end. The file name is the
  *  port's.
  * ======================================================================== */
+#include "game/playermotion.h"
 #include "game/stageitem.h"
 
 #include <stdio.h>

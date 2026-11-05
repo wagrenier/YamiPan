@@ -2,6 +2,7 @@
 // message files and TimM sprite sheets, and the hooks the layouts and
 // their tracks call into the game (game/uigame.h).
 
+#include "game/playermotion.h"
 #include "game/uigame.h"
 
 #include <ctype.h>
