@@ -449,59 +449,6 @@ void drawDeferred(sceVif1Packet *packet, const Deferred &entry)
 
 } // namespace
 
-// PC: YAMIPAN_CAMERA=auto, until a character links the main camera: it looks
-// at the biggest part of the map model from above its side, in the model's
-// own axes (y up), once.
-// callcheck: none (host only)
-
-static void aimDebugCamera(DrawSysRecord *record)
-{
-    static bool sDone = false;
-    const char *mode = getenv("YAMIPAN_CAMERA");
-    if (sDone || mode == nullptr || strcmp(mode, "auto") != 0)
-        return;
-    for (ModelInstance *model : record->models) {
-        if (strcmp(model->node->name.get(), "Root") != 0)
-            continue;
-        const ModelMeshPart *best = nullptr;
-        float bestSize = 0.0f;
-        const float (*world)[4] = nullptr;
-        const ModelMesh *meshes = model->node->meshes.get();
-        for (int m = 0; m < model->node->meshCount; m++) {
-            const ModelMeshParts *parts = meshes[m].parts.get();
-            if (parts == nullptr || parts->boneCount != 0)
-                continue;
-            const ModelMeshPart *list = parts->parts.get();
-            for (int p = 0; p < parts->count; p++) {
-                const float *half = partCenter(&list[p]) + 4;
-                const float size = half[0] * half[2];
-                if (size > bestSize) {
-                    bestSize = size;
-                    best = &list[p];
-                    world = meshes[m].bone < 0 ? (const float (*)[4])model->rootBone->matrix
-                                               : (const float (*)[4])model->bones[meshes[m].bone].matrix;
-                }
-            }
-        }
-        if (best == nullptr)
-            return;
-        const float *center = partCenter(best);
-        const float kHeight = 120.0f;
-        const float kBack = 420.0f;
-        const float eyePoint[4] = { center[0], center[1] + kHeight, center[2] - kBack, 1.0f };
-        const float upPoint[4] = { 0.0f, 1.0f, 0.0f, 0.0f };
-        float eye[4];
-        float target[4];
-        float up[4];
-        transformPoint(eye, world, eyePoint);
-        transformPoint(target, world, center);
-        transformPoint(up, world, upPoint);
-        stageCameraDebugLookAt(eye, target, up);
-        sDone = true;
-        return;
-    }
-}
-
 // The VU1 program and the frame's GS state: nothing for the host.
 // FS2 0x002e86b0
 // callcheck: FUN_0010ad90, FUN_0010ae28, FUN_0010b028, FUN_0010b6e0, getDrawTarget, sceVif1PkAddCode, sceVif1PkCloseDmaTag, sceVif1PkCloseGifTag, sceVif1PkCnt, sceVif1PkOpenDirectCode, sceVif1PkOpenGifTag (packets and VU1 state: the draw module's on the host)
@@ -598,7 +545,6 @@ void renaDrawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask)
         pass.fogFarValue = fog->getFarValue();
     }
 
-    aimDebugCamera(record);
     YamiPan_ModelBeginPass(packet, &pass);
     drawModels(packet, record, mask);
 

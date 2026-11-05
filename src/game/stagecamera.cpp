@@ -8,9 +8,8 @@
  *  to come; their slots are stubs.
  *
  *  A camera without a link stays where its object was placed: the world
- *  origin, which on stage 1 is empty space far from the map. So the host hook
- *  below (YAMIPAN_CAMERA) puts it somewhere to look at a map from, until
- *  StageCharacter is written: no character means no link.
+ *  origin, which on stage 1 is empty space far from the map: native 0x70 links
+ *  it to the player.
  * ======================================================================== */
 #include <math.h>
 #include <stdio.h>
@@ -124,85 +123,12 @@ void StageCamera::lookAt(const float *target)
     aimFrom(target, m_xform.position);
 }
 
-// PC: while no character links the main camera (file header) YAMIPAN_CAMERA can
-// place it: "eye x,y,z,target x,y,z" with z up, or "auto", which rena's walk
-// answers by aiming it at the map (rena_draw.cpp).
-static bool  sDebugSet = false;
-static float sDebugEye[3];
-static float sDebugTarget[3];
-static float sDebugUp[3] = { 0.0f, 0.0f, 1.0f };
-
-void stageCameraDebugLookAt(const float *eye, const float *target, const float *up)
-{
-    for (int i = 0; i < 3; i++) {
-        sDebugEye[i] = eye[i];
-        sDebugTarget[i] = target[i];
-        sDebugUp[i] = up[i];
-    }
-    sDebugSet = true;
-}
-
-static void cross(float *out, const float *a, const float *b)
-{
-    out[0] = a[1] * b[2] - a[2] * b[1];
-    out[1] = a[2] * b[0] - a[0] * b[2];
-    out[2] = a[0] * b[1] - a[1] * b[0];
-}
-
-static void normalize(float *v)
-{
-    const float length = sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-    v[0] /= length;
-    v[1] /= length;
-    v[2] /= length;
-}
-
-// The axes are the object's: x right, y ahead, z up. False without a place.
-static bool debugCameraMatrix(sceVu0FMATRIX out)
-{
-    static bool sRead = false;
-    if (!sRead) {
-        sRead = true;
-        const char *text = getenv("YAMIPAN_CAMERA");
-        float values[6];
-        if (text != nullptr
-            && sscanf(text, "%f,%f,%f,%f,%f,%f", &values[0], &values[1], &values[2], &values[3], &values[4],
-                      &values[5]) == 6) {
-            const float up[3] = { 0.0f, 0.0f, 1.0f };
-            stageCameraDebugLookAt(values, values + 3, up);
-        }
-    }
-    if (!sDebugSet)
-        return false;
-
-    float ahead[3] = { sDebugTarget[0] - sDebugEye[0], sDebugTarget[1] - sDebugEye[1], sDebugTarget[2] - sDebugEye[2] };
-    normalize(ahead);
-    float right[3];
-    cross(right, ahead, sDebugUp);
-    normalize(right);
-    float up[3];
-    cross(up, right, ahead);
-    for (int i = 0; i < 3; i++) {
-        out[0][i] = right[i];
-        out[1][i] = ahead[i];
-        out[2][i] = up[i];
-        out[3][i] = sDebugEye[i];
-    }
-    out[0][3] = out[1][3] = out[2][3] = 0.0f;
-    out[3][3] = 1.0f;
-    return true;
-}
-
 // FS2 0x00177810
 // callcheck: invertRigidMatrix, multiplyMatrix
 
 void StageCamera::calcViewMatrix()
 {
-    sceVu0FMATRIX debug;
-    if (debugCameraMatrix(debug))
-        invertRigidMatrix(m_view, debug);
-    else
-        invertRigidMatrix(m_view, getMatrix());
+    invertRigidMatrix(m_view, getMatrix());
     multiplyMatrix(m_viewScreen, m_screen, m_view);
 }
 

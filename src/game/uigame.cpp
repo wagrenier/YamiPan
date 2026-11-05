@@ -15,6 +15,8 @@
 #include "game/mathutil.h"
 #include "game/memcard.h"
 #include "game/progress.h"
+#include "game/stageitem.h"
+#include "game/stagelight.h"
 #include "game/stageresult.h"
 #include "game/sysdata.h"
 #include "game/uilayout.h"
@@ -633,7 +635,7 @@ bool UiLayout::testGameState(const char *name, const char *arg, UiSequence *seq)
     case UiState_WeaponShort:
         if (gStageScene == nullptr)
             return true;
-        return stagePlayer()->weapon[state - UiState_WeaponLong] != nullptr;
+        return stagePlayer()->m_weapons[state - UiState_WeaponLong] != nullptr;
 
     case UiState_CheckPoint:
         if (gStageScene == nullptr)
@@ -1205,8 +1207,8 @@ void getPlayerMapPos(float pos[2])
         pos[0] = kUiTargetDefaultX;
     } else {
         StagePlayer *player = stagePlayer();
-        z = player->posZ;
-        pos[0] = player->posX;
+        z = player->m_xform.position[1];
+        pos[0] = player->m_xform.position[0];
     }
     pos[1] = -z;
     pos[0] = pos[0] * kUiTargetPosScale;
@@ -1228,9 +1230,9 @@ u_char mapShowsPlayer()
     StagePlayer *player = stagePlayer();
     if (player == nullptr)
         return 0;
-    if (player->map == nullptr)
+    if (player->m_lampItem == nullptr)
         return 0;
-    return (*player->map->state)->showsPlayer;
+    return player->m_lampItem->isSpotOn();
 }
 
 // FS2 0x002626f0
@@ -1266,7 +1268,7 @@ float getPlayerHeading()
 {
     if (gStageScene == nullptr)
         return kUiTargetDefaultYaw;
-    return normalizeAngle(-stagePlayer()->yaw + kPi);
+    return normalizeAngle(-stagePlayer()->m_xform.rotation[2] + kPi);
 }
 
 // FS2 0x00262840
@@ -1280,9 +1282,9 @@ int stepWeaponPreview()
     StagePlayer *player = stagePlayer();
     if (player == nullptr)
         return 1;
-    if (player->motion == nullptr)
+    if (player->m_motion == nullptr)
         return 1;
-    player->motion->refresh();
+    player->m_motion->refresh();
     return 0;
 }
 
@@ -1302,8 +1304,8 @@ int scanItems(UiItemSlot slots[kUiItemSlots])
     }
     StagePlayer *player = stagePlayer();
     int kinds = 0;
-    for (StageItemNode *node = player->items; node != nullptr; node = node->next) {
-        StageObject *item = *node->item;
+    for (StageList<StageObject *>::Node *node = player->m_items.head; node != nullptr; node = node->next) {
+        StageObject *item = node->value;
         if (item->getKind() == StageObject_Kind21)
             continue;
         UiItemSlot *slot = nullptr;
@@ -1345,7 +1347,7 @@ int scanWeapons(UiWeaponSlot slots[kUiWeaponSlots])
     }
     StagePlayer *player = stagePlayer();
     for (int i = 0; i < kUiWeaponSlots; i++) {
-        StageObject *weapon = player->weapon[i];
+        StageObject *weapon = player->m_weapons[i];
         slots[i].used = 1;
         if (weapon == nullptr)
             continue;

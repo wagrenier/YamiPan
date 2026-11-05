@@ -117,7 +117,7 @@ int StageMapObject::collisionHook0(CollisionContact *contact, const float *, Sta
     StageObject *toucher;
     if (body->category == kCollisionMelee) {
         StageObject *object = body->owner->getCollisionObject();
-        if (object->m_handNode == nullptr)
+        if (object->m_weapons[0] == nullptr)
             return 0;
         toucher = object;
     } else if (body->category == kCollisionBulletRay) {

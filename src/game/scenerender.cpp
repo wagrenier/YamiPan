@@ -402,7 +402,7 @@ void SceneRender::update()
     // What the player holds outranks the map's lights.
     StageObject *view = viewLinkedObject();
     if (view != nullptr && scene->getTopView()->getKind() != StageObject_Kind9) {
-        StagePlayer *player = reinterpret_cast<StagePlayer *>(view);
+        StagePlayer *player = static_cast<StagePlayer *>(view);
         if (player->isMode1()) {
             player->setGearLightOrder(kHeldLightPriority);
         } else if (view->m_lampItem != nullptr) {
@@ -529,7 +529,7 @@ void SceneRender::lightObject(StageObject *object)
     if (model == nullptr || !object->getShownState() || !model->m_lit)
         return;
 
-    StageObject *place = model->m_lightProxy != nullptr ? model->m_lightProxy : object;
+    StageNodeBase *place = model->m_lightProxy != nullptr ? model->m_lightProxy : static_cast<StageNodeBase *>(object);
     sceVu0FVECTOR pos;
     memcpy(pos, place->getWorldMatrix()[3], sizeof(pos));
 

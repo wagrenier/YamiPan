@@ -2496,16 +2496,16 @@ constexpr float kLookWindowLow  = -190.0f;
 
 bool StageScene::partnerResponds(StageObject *object)
 {
-    if (!object->m_3c0)
+    if (!object->m_abilities.flag3c0)
         return false;
-    if (!object->m_3c3 && object->m_290 != nullptr)
+    if (!object->m_abilities.flag3c3 && object->m_290 != nullptr)
         return false;
     if (!object->isPlayer())
         return false;
     PlayerLookState *look = object->m_motion->look;
     if (!look->active || kLookWindowHigh < look->angle || look->angle < kLookWindowLow)
         return false;
-    return partner != nullptr && partner->m_3c1 != 0;
+    return partner != nullptr && partner->m_abilities.flag3c1 != 0;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -2591,7 +2591,8 @@ constexpr int   kFloorProbeBoxes  = 5;
 
 int StageScene::getFloor(StagePlayer *who)
 {
-    sceVu0FVECTOR pos = { who->posX, who->posZ, who->height + kFloorProbeHeight, who->posW };
+    const float *at = who->m_xform.position;
+    sceVu0FVECTOR pos = { at[0], at[1], at[2] + kFloorProbeHeight, at[3] };
     AreaBox *boxes[kFloorProbeBoxes];
     int count = areas[StageArea_Floor]->collect(pos, boxes, kFloorProbeBoxes);
     if (count < 1)
@@ -3172,9 +3173,7 @@ void StageScene::prepareDrawFlags()
         StageObject *linked = views->topObject()->m_linked;
         if (linked == nullptr)
             return;
-        // PC: the stand-ins keep StagePlayer apart from StageObject; the ROM
-        // passes the character.
-        ModelPartRec *part = reinterpret_cast<StagePlayer *>(linked)->isMode1()
+        ModelPartRec *part = static_cast<StagePlayer *>(linked)->isMode1()
                                   ? linked->m_parts[1] : linked->m_parts[0];
         if (part != nullptr)
             part->drawMode = kPartShow;
@@ -3332,7 +3331,7 @@ void StageScene::draw(StageObject *active)
             owned[i]->draw();
     }
     if (menuProgs != nullptr && player != nullptr)
-        player->motion->overlay->draw();
+        player->m_motion->overlay->draw();
 
     if (!isSubScene) {
         if (printer->m_texture != nullptr) {
@@ -3654,7 +3653,7 @@ void StageScene::setupCameras()
         StageObjArray &characters = objects->m_lists[StageObjGroup_Characters];
         StageObject **first = firstActive(characters.begin());
         if (player == nullptr && first != nullptr && *first != nullptr)
-            setPlayer(reinterpret_cast<StagePlayer *>(*first));
+            setPlayer(static_cast<StagePlayer *>(*first));
         if (partner == nullptr && first != nullptr) {
             StageObject **second = firstActive(StageObjArray::next(first));
             if (second != nullptr && *second != nullptr)

@@ -102,7 +102,8 @@ struct KeepList;                // game/gamehooks.h
 struct LptFile;                 // game/gamehooks.h
 struct StageCollisionFace;      // game/gamehooks.h
 struct StageParty;              // game/gamehooks.h
-struct StagePlayer;             // game/gamehooks.h
+class StageCharacter;           // game/gamehooks.h
+typedef StageCharacter StagePlayer;
 struct StageMapFile;            // game/gamehooks.h
 struct StageScript;             // game/gamehooks.h
 struct StreamTable;             // game/seplayer.h

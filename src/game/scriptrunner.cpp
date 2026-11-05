@@ -67,12 +67,11 @@ void scriptSetLabelCell(const char *label, void *value)
     }
 }
 
-// The player, or what acts for it. PC: StagePlayer is a stand-in for the
-// character class, a StageObject in the ROM.
+// The player, or what acts for it.
 static StageObject *scenePlayer()
 {
     StageObject *object = gStageScene->controlled;
-    return object != nullptr ? object : reinterpret_cast<StageObject *>(gStageScene->player);
+    return object != nullptr ? object : gStageScene->player;
 }
 
 
@@ -1819,7 +1818,7 @@ static const int *nativeSetPlayer(ScriptRunner *self, int *, const int *code)
     if (name == nullptr)
         return next;
     StageObject *who = gStageScene->objects->findCharacter(name, 0);
-    gStageScene->setPlayer(reinterpret_cast<StagePlayer *>(who));
+    gStageScene->setPlayer(static_cast<StagePlayer *>(who));
     return next;
 }
 
