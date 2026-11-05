@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-05 17:36 at commit `c23d7b3` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-05 18:07 at commit `ee6a6f2` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -13,7 +13,7 @@ Generated 2026-11-05 17:36 at commit `c23d7b3` by `tools/reverse/status.py` (`re
 - game functions: **6599**, named **4479** (68%); library functions: 987
 - by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3558
 - context-name ledger: 5102 entries; overrides of wrong library matches: 0
-- placed in a source file: 4604/6599 in 104 files
+- placed in a source file: 4607/6599 in 104 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **4160**; stubs: **308**
+- reconstructed FS2 functions: **4163**; stubs: **305**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -41,7 +41,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/characterinput.cpp` | 10 | 0 |
 | `src/game/clock.cpp` | 14 | 0 |
 | `src/game/datetime.cpp` | 2 | 0 |
-| `src/game/demoevent.cpp` | 94 | 0 |
+| `src/game/demoevent.cpp` | 97 | 0 |
 | `src/game/drawsys.cpp` | 166 | 0 |
 | `src/game/fileloader.cpp` | 53 | 0 |
 | `src/game/fontdata.cpp` | 43 | 0 |
@@ -115,7 +115,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/vectortrack.cpp` | 10 | 0 |
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 258 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 255 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -145,7 +145,7 @@ Least-named game-code regions (64 KB blocks):
 
 - 218 TUs: todo 93, partial 41, verify 86, done 25
 - next: **game/uiitemlist.cpp** (continuing a partial TU)
-- pinned queue: game/stageplayer.cpp
+- pinned queue: (empty)
 - partial: `game/scenepool.cpp` 11/11 -- Written with game/playermotion.cpp thirteenth run (2026-11-05): all 11. The text shows; the dark strip behind it could not be told apart on the dark room of sta
 - partial: `game/stageobject.cpp` 43/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
 - partial: `game/uiitemlist.cpp` 19/20 -- Written with game/playermotion.cpp's fourth run (2026-11-05): the list and the prompt's label work and show. Left: the button's picture beside the label in UiPr
@@ -156,7 +156,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/characterinput.cpp` 10/10 -- All code of the TU is written; the control hook's input half now runs in stageUpdateCharacterMotions. Seen in a 285 s New Game run with the scripted left stick 
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
-- verify: `game/demoevent.cpp` 94/94 -- All of the TU is written or accounted for (batch 116). Added: DemoStream setFont and drawSubtitles, the fsm readers 0x28fa90..0x28ff60 (range added here; the ho
+- verify: `game/demoevent.cpp` 97/97 -- All of the TU is written or accounted for (batch 116). Added: DemoStream setFont and drawSubtitles, the fsm readers 0x28fa90..0x28ff60 (range added here; the ho
 - verify: `game/drawsys.cpp` 164/164 -- All 164 of 0x2d46a0-0x2dac70 are written or listed. New: drawSysAddModel 0x2d5140 (draw group, name flags, wave surfaces, plant textures), drawSysFindKind1Surfa
 - verify: `game/fileloader.cpp` 53/53 -- All 53 functions of 0x1319f0..0x132f20 are in src/game/fileloader.cpp with game/fileloader.h; FileJob / FileLoader / PackFile left gamehooks.h (which includes f
 - verify: `game/fontdata.cpp` 41/41 -- Cut out of unassigned@00171300 and pinned 0x1fcb40-0x1fe6b0 (batch 056, 31 names: the FontData byte variants countLinesMb / lineWidthFixed / lineWidthFixedMb / 
@@ -199,7 +199,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stageloop.cpp` 9/9 -- Cut out of unassigned@00171300 and pinned 0x17f150-0x17fce0 (batch 073, 45 names; Ghidra saved by name_ctx). New src/game/stageloop.h defines gStageScene (exter
 - verify: `game/stagemodel.cpp` 17/19 -- All of StageModel is written (init, bindBones, placeBones, setBaseMotion, advance, applyMotion, the play and find calls, the dtor). BoneNode and ModelLink were 
 - verify: `game/stageobjlist.cpp` 45/45 -- Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector in
-- verify: `game/stageplayer.cpp` 33/33 -- Written, batch 138, 33 functions. New Game 285 s with doorwalk_pad, no crash: F_PC01 stays in the scene, visibility 0.525 walking and 0.500 standing at the defa
+- verify: `game/stageplayer.cpp` 33/33 -- Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was s
 - verify: `game/stageresult.cpp` 32/32 -- All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (add
 - verify: `game/stagescene.cpp` 256/258 -- All 258 written, nothing has run: the smoke run stays on the language screen and the picture is unchanged (no stage loads). Batch 089, 70 names. SubSceneObject 
 - verify: `game/stagesound.cpp` 45/45 -- Batch 077 (31 names: the 18 slice functions, abs 0x121f08, SoundTrack hasSubtitles / getSubtitle / setVolume, SePlayer setTable / setPitch, StageNodeBase ctor 0
@@ -238,6 +238,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-05 18:07 `game/stageplayer.cpp` verify: The stage's end: a box answers native 0x44, ClearSequence is written, New Game's first part ends
 - 2026-11-05 17:36 `game/scriptrunner.cpp` verify: The last 89 natives: every native the disc's scripts call is bound; nothing seen to run
 - 2026-11-05 16:56 `game/scriptrunner.cpp` partial: 52 more natives by use on the disc, takeDamage and getHandClass, scriptHurt, the runner slots behind them
 - 2026-11-05 16:09 `game/scriptrunner.cpp` partial: 56 more natives by use on the disc, the mission spawn picks, canSpawn and spawn, parseSpawnId, search points, the leaves
@@ -245,7 +246,6 @@ Recent sessions:
 - 2026-11-05 14:52 `game/scriptrunner.cpp` partial: All natives of stage 1's object script and 14 of the most used on the disc; sssall.py orders the rest
 - 2026-11-05 14:08 `yamipan/rendering/model_renderer.cpp` verify: Shadow pass read from VU1 and in the host; the pass runs in d0101 by its numbers, no screenshot shows a shadow yet
 - 2026-11-05 13:11 `yamipan/rendering/model_renderer.cpp` partial: Scene point light, the spot's projected pass and back-face culling read from VU1 and in the host; stage 1 lights neither, so seen only with a forced test lamp
-- 2026-11-05 12:24 `game/stageplayer.cpp` verify: The character around the frame's scripts: beforeScripts, afterScripts, stepStatus, ageSightTable, updateVisibility (the roadmap's move, which moves nothing), ca
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|

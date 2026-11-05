@@ -8371,14 +8371,14 @@
 /* 002b1370 00000064 */ DemoStream::setDir(){}  // game
 /* 002b13e0 000000ac */ DemoStream::~DemoStream(){}  // game
 /* 002b1490 00000070 */ DemoStream::DemoStream(){}  // game
+/* 002b1500 00000114 */ ClearSequence::update(){}  // game
+/* 002b1620 00000038 */ ClearSequence::getState(){}  // game
+/* 002b1660 0000000c */ ClearSequence::ClearSequence(){}  // game
 
 // *****************************************************************************
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 002b1500 00000114 */ ClearSequence::update(){}  // game
-/* 002b1620 00000038 */ ClearSequence::getState(){}  // game
-/* 002b1660 0000000c */ ClearSequence::ClearSequence(){}  // game
 /* 002b1670 000002cc */ GameOverSequence::update(){}  // game
 /* 002b1940 00000310 */ FUN_002b1940(){}
 /* 002b1c50 00000058 */ GameOverSequence::getState(){}  // game

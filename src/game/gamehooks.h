@@ -2042,8 +2042,8 @@ public:
     void addToScene(const char *name);                                   // FS2 0x0017ecb0: StageObjectList::add7
     // Slot +0x24c: point is inside. Empty in the base's table.
     virtual bool contains(const float *point) = 0;                       // FS2 vtable +0x24c
-    // The object's world position is inside. Slot +0x260 (data 0x3127e0), its
-    // runner thunk 0x17f130; no caller in the port yet.
+    // The object's world position is inside. Slot +0x260 of the box's table
+    // (data 0x3127e0); the sphere's has no such slot.
     bool containsObject(StageObject *object);                            // FS2 0x0017e950
 };
 // layout: host
@@ -2069,6 +2069,10 @@ public:
     ~BoxVolume() override;                                               // FS2 0x0017eb20: deleting
     void setSize(float width, float height, float depth);                // FS2 0x0017ea50
     bool contains(const float *point) override;                          // FS2 0x0017e9a0
+    // Runner slot +0xfc (table 0x3125bc): native 0x44 on a box asks whether
+    // other stands in it, which is how an AREA_ script hears the player. A
+    // sphere keeps the base's no (table 0x312a7c).
+    bool scriptIsFacing(StageObject *other) override { return containsObject(other); } // FS2 0x0017f130
 private:
     sceVu0FVECTOR m_min = {};   // FS2 +0x200: in the box's own space, z from 0
     sceVu0FVECTOR m_max = {};   // FS2 +0x210
@@ -3442,6 +3446,8 @@ struct StageAlert
 enum
 {
     kGameOverSequenceDone = 5,  // StageScene::isGameOver
+    kClearSequenceStart   = 0,
+    kClearSequenceFading  = 1,
     kClearSequenceDone    = 2,  // StageScene::isCleared
 };
 // layout: host (unread).
@@ -3452,12 +3458,14 @@ struct GameOverSequence
     int getState();                                                      // FS2 0x002b1c50
     void update();                                                       // FS2 0x002b1670
 };
-// layout: host (unread).
+// The stage's end, from native 0x52 (game/demoevent.cpp). layout: host.
 struct ClearSequence
 {
     ClearSequence();                                                     // FS2 0x002b1660
     int getState();                                                      // FS2 0x002b1620
     void update();                                                       // FS2 0x002b1500
+
+    int m_state;                // FS2 +0x0
 };
 
 // +0x120 (StageScene::update deletes it too). layout: host.

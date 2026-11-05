@@ -352,7 +352,8 @@ public:
         unsupportedCommand();
         return nullptr;
     }
-    // ROM vptr +0xfc: other stands at it, looking at it. Native 0x44.
+    // ROM vptr +0xfc: other stands at it, looking at it; a box: other stands
+    // in it. Native 0x44.
     // FS2 0x00177180
     // callcheck: defaultCommand
     virtual bool scriptIsFacing(StageObject *other)

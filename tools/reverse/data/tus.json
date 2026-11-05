@@ -1,7 +1,5 @@
 {
- "queue": [
-  "game/stageplayer.cpp"
- ],
+ "queue": [],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
   "frontier_ignore": [],
@@ -178,7 +176,7 @@
     ],
     [
      "002b0d60",
-     "002b1500"
+     "002b1670"
     ],
     [
      "002eaeb0",
@@ -199,7 +197,7 @@
    ],
    "status": "verify",
    "task": "The opening event, queued by the user 2026-11-04 to come right after the lighting. The game opens on a scripted event, almost perfectly dark, with something circling; none of it shows yet. Needs game/scriptrunner.cpp first. Find the path: mission +0xc8 (the pending event's name, afterScripts 0x286c40 starts it), StageMission setup 0x2870f0 and tickPending 0x286ce0, requestSubScene 0x196060, DemoCamera 0x26ce20 and its step, DemoExecuter, drawOverlay 0x26c920. Unproven that the opening is d0101, the only event with its own filter in StageScene::draw. Done when the picture shows the opening from the event's own camera, without YAMIPAN_CAMERA (open-items.md, The opening event).",
-   "why": "The stage's side of a scripted event: the fade every event waits on, the pack lookup and DemoCamera, StageMission (pending event), StageEvent and its file and script forms, the event voice DemoStream and its subtitle file (fsm), the flat fill gsFillRect. Joined by the event alone; the file name is the port's."
+   "why": "The stage's side of a scripted event, and the stage's end: ClearSequence 0x2b1500..0x2b1670, a fade to black from native 0x52."
   },
   "game/drawsys.cpp": {
    "notes": "All 164 of 0x2d46a0-0x2dac70 are written or listed. New: drawSysAddModel 0x2d5140 (draw group, name flags, wave surfaces, plant textures), drawSysFindKind1Surface 0x2d46a0, parseNameTags 0x2d54a0, the plant search 0x2da220 and drawSysBuildBossShadowTexture 0x2d5e10 with its three blits, batch 098. StageModelData and RenaModel were the same object as ModelInstance: folded, and the model file records are now in gamehooks.h in EE layout (ModelFile, ModelFileNode, ModelMesh, ModelMeshParts, ModelMeshPart, ModelMaterial), so vcmtable.cpp changed with them; ModelSurface is host. New host seam src/yamipan/rendering/yamipan_drawshadow.h with empty bodies in seams.cpp until a 3D host module exists. Checked: build green, layoutcheck OK, callcheck no missing, a scratch harness on parseNameTags, the alpha ramp and the blur chain order. Screen: New Game run of 240 s under the scripted pad, 118 screenshots to frame 7080: the Easy / Normal / Options menu at 3600, black at 6000 and at the last frame, no crash. Black is expected: nothing draws 3D, and drawSysAddModel is not called yet because StageModel::init is a stub. Unproven: nothing here has run on real model data; the boss chain and which channel is the brightness need a real picture. Next: PackTables::parse 0x2bcf10, NodeTransform 0x1d7f20, StageModel::init 0x188b10 (needs a +0xa8 field), ModelFile::createInstance 0x2e5210 with 0x2e4800 and 0x2e3e10, then the rena run unassigned@002e2970 and a 3D host module. Details and doubts: open-items.md Next up, architecture.md The draw system.",
@@ -1691,7 +1689,7 @@
    "why": "Cut out of unassigned@00171300: the stage's name-keyed object registry (gStageScene +0x10, new 0xdc in 0x19c180): nine groups of a name map (AVL tree of StageNameNode by strcmp) and an object list, with their two containers. Bounded below by the BoxGrid vector instances (0x1928f0..0x1938f8) and above by game logic at 0x1953f0 (player state test, no registry use)."
   },
   "game/stageplayer.cpp": {
-   "notes": "Written, batch 138, 33 functions. New Game 285 s with doorwalk_pad, no crash: F_PC01 stays in the scene, visibility 0.525 walking and 0.500 standing at the default dark 0.5, stage 1's three box volumes enter group 7 and contains answers right, a noise reaches the list. The picture is unchanged (dark first-person view at a wall); nothing here draws. Not proven: VISIBILITY_ volumes (stage 1 has none), canSee on a real target, thrown items, the muffling rays: they wait for the route. Left of the task: natives 0x13c, 0x13d (StageParty, class 0x203d70), 0x5b, 0x20f (StageNodeTree). updateSounds 0x2a4a40 would fill the noise list with footsteps. architecture.md section Around the scripts has the facts; open-items.md Done has the doubts.",
+   "notes": "Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was stubs, so native 0x52 never ended the stage. Seen in the user's own playthrough: the cutscene, then mission accomplished, then back to stage 1. That last step is the navigator: runNaviFile and applyNaviAnswer are stubs (open-items.md, Next up). AREA_AC10 and AREA11 now fire too and were not looked at.",
    "ranges": [
     [
      "0017e950",
@@ -1763,6 +1761,11 @@
      "date": "2026-11-05 12:24",
      "status": "verify",
      "summary": "The character around the frame's scripts: beforeScripts, afterScripts, stepStatus, ageSightTable, updateVisibility (the roadmap's move, which moves nothing), canSee, isPointInView, the small answers 0x214f60..0x216140, SceneNoiseList (was SceneUiState) and the scripted volumes. No reached stub is left in 0x20a000..0x21d000."
+    },
+    {
+     "date": "2026-11-05 18:07",
+     "status": "verify",
+     "summary": "The stage's end: a box answers native 0x44, ClearSequence is written, New Game's first part ends"
     }
    ],
    "status": "verify",
