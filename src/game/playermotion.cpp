@@ -3823,6 +3823,32 @@ void StageCharacter::moveStep()
     m_ground->beginFrame();
 }
 
+// The frame's start, before the scripts run: what the character may do is
+// found again, and what it wants starts empty, so a script's request (a door's
+// native 0x87) stands until the control hook below.
+// Not written: the rest of the ROM's hook, the kinds 1 and 9's two flags at
+// +0x3a8 and +0x3ac, the clocks of a live character (flinch, health, endurance)
+// and the player's look-ahead point.
+// FS2 0x0017a860
+
+void StageCharacter::sideHook0()
+{
+    memset(&m_allows, 0, sizeof(m_allows));
+    m_motion->initSlots14();
+    m_motion->beginFrame();
+    memset(&m_wants, 0, sizeof(m_wants));
+    m_motion->initSlots18();
+}
+
+// The brain (0x1dd2f0) is not written.
+// FS2 0x0017a810
+
+void StageCharacter::sideHook1()
+{
+    m_input->update();
+    m_motion->controlStep();
+}
+
 // FS2 0x0017df60
 
 void stageUpdateCharacterMotions()
@@ -3834,14 +3860,6 @@ void stageUpdateCharacterMotions()
             continue;
         PlayerMotion *motion = character->m_motion;
         StageCharacter *body = static_cast<StageCharacter *>(character);
-        // PC: the start hook 0x17a860 and the control hook 0x17a810 are not
-        // written, and they run before this in the ROM: this is their order,
-        // with the brain (0x1dd2f0) missing.
-        memset(&body->m_allows, 0, sizeof(body->m_allows));
-        motion->beginFrame();
-        memset(&body->m_wants, 0, sizeof(body->m_wants));
-        character->m_input->update();
-        motion->controlStep();
         motion->stepLower(false);
         motion->stepUpper(false);
         motion->stepFace(false);

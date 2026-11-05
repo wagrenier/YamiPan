@@ -3967,7 +3967,7 @@ int StageScene::getMenuMode()
         return SceneMenu_Free;
     if (menu->state == StageMenu_Open)
         return SceneMenu_Open;
-    if (menu->pendingOn != 0 && menu->pending != 0)
+    if (menu->pendingOn != 0 && menu->pending != nullptr)
         return SceneMenu_Pending;
     return itemList->pendingCount < 1 ? SceneMenu_None : SceneMenu_ItemList;
 }

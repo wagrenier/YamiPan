@@ -164,7 +164,7 @@ StageObject *createMapObject(const char *name, void *collision)
 {
     (void)collision;
     int number = 0;
-    if (kDoorsEnabled && name[0] == kMapModelPrefix) {
+    if (name[0] == kMapModelPrefix) {
         const char *door = strstr(name, kDoorPartR);
         if (door != nullptr)
             return sscanf(door, kDoorScanR, &number) > 0 ? new StageDoor(StageDoorType_R, number) : nullptr;
@@ -194,8 +194,6 @@ static int baseMotionKind(int kind)
 
 void StageMapObject::setMotionList(void *list, int arg, int arg2)
 {
-    if (!kDoorsEnabled)
-        return;     // PC: stagedoor.h
     if (arg != 0) {
         const sceVu0FVECTOR *world = getWorldMatrix();
         matrixToRotYXZ(m_xform.rotation, (const sceVu0FVECTOR *)world);

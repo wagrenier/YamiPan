@@ -21,11 +21,6 @@
 
 #include "game/mapobject.h"
 
-// PC: off until the stage crash of 2026-11-05 is explained (open-items.md,
-// game/playermotion.cpp fifth run): createMapObject makes plain objects and
-// neither the motion lists nor the door natives are bound, as before this file.
-constexpr bool kDoorsEnabled = false;
-
 // StageObject::m_doorMode; the sheet's 初期状態 starts it.
 enum StageDoorMode
 {

@@ -11,6 +11,7 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_timer.h>
 
+#include "yamipan/core/crash_report.h"
 #include "yamipan/core/logger.h"
 #include "yamipan/ee/kernel.h"
 #include "yamipan/io/disc.h"
@@ -43,6 +44,7 @@ Application::Application(std::span<char *> arguments) : m_arguments(arguments)
     // A smoke run reads stdout through a pipe and is killed at its end: nothing may wait in a buffer.
     std::setvbuf(stdout, nullptr, _IONBF, 0);
 
+    crash::install();
     log::open(m_paths.logFile());
     m_config.load(m_paths.configFile());
     m_paths.discoverDataFolder(m_config.paths.dataFolder);

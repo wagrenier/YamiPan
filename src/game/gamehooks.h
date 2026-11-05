@@ -2250,6 +2250,8 @@ public:
     // The door's pace of a character with a brain. Slot +0x278.
     int  getBrainPace();                                                 // FS2 0x0021bb70
     StageCharacter *getScriptCharacter() override { return this; }       // FS2 0x00179d10
+    void sideHook0() override;                                           // FS2 0x0017a860
+    void sideHook1() override;                                           // FS2 0x0017a810
     // Natives 0x87, 0x88, 0x89: the controlled character, by what it may do;
     // the brain's for the rest. Slots +0x30c, +0x310, +0x314.
     bool scriptOpenDoor() override;                                      // FS2 0x0021c230
@@ -2590,21 +2592,27 @@ public:
 // layout: host -- EE 0x18: +0 state.
 enum StageMenuState
 {
-    StageMenu_Open = 2,         // getOpenMenu's test; the other values unread
+    StageMenu_Closed  = 0,
+    StageMenu_Opening = 1,
+    StageMenu_Open    = 2,      // getOpenMenu's test
+    StageMenu_Closing = 3,
 };
+// The stage's own menu: a state machine around its list window (game/stagemenu.cpp).
+// layout: host (EE 0x18; vptr at +8).
 class StageMenu
 {
 public:
     StageMenu(WideFontPrinter *printer, int arg);                        // FS2 0x002308a0
-    void destroy();                                                      // FS2 vtable +0x8 (vptr +8)
-    void update();                                                       // FS2 vtable +0xc (vptr +8)
-    void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 vtable +0x10 (vptr +8)
+    void destroy();                                                      // FS2 0x00230820: slot +0x8, deleting
+    void update();                                                       // FS2 0x00230400: slot +0xc
+    void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x002303c0: slot +0x10
     void setData(void *data);                                            // FS2 0x00230810
 
-    int    state;               // FS2 +0x0: StageMenuState
-    u_char _04[0xc];
-    int    pending;             // FS2 +0x10: StageScene::getMenuMode; the name is a guess
-    u_char pendingOn;           // FS2 +0x14
+    int    state = StageMenu_Closed;    // FS2 +0x0: StageMenuState
+    int    request = 0;                 // FS2 +0x4: 1 open, 2 close, read by update
+    void  *list = nullptr;              // FS2 +0xc: the 0xaa8-byte window 0x20ac30, not written
+    const u_short *pending = nullptr;   // FS2 +0x10: the picked line's text (isMenuPick, getMenuMode)
+    u_char pendingOn = 0;               // FS2 +0x14: for one frame, update clears it
 };
 
 // +0xdc: 0xc-byte entries after a count. layout: host (EE 0xc4).

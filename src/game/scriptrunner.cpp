@@ -2038,8 +2038,8 @@ static const int *nativeIsMenuPick(ScriptRunner *self, int *acc, const int *code
     void *text;
     const int *next = self->readCellArg(&text, code);
     StageMenu *menu = gStageScene->menu;
-    *acc = menu->pendingOn != 0 && menu->pending != 0
-        && wstrcmp((const u_short *)(intptr_t)menu->pending, (const u_short *)text) == 0;
+    *acc = menu->pendingOn != 0 && menu->pending != nullptr
+        && wstrcmp(menu->pending, (const u_short *)text) == 0;
     return next;
 }
 
@@ -2150,7 +2150,7 @@ static const int *nativeKeyWorksFrom(ScriptRunner *self, int *acc, const int *co
     return next;
 }
 
-// Bound only with kDoorsEnabled (game/stagedoor.h).
+// The doors' (game/stagedoor.h).
 static const ScriptNativeBinding kDoorNatives[] = {
     { 0x044, nativeIsFacedBy },
     { 0x045, nativeIsMenuPick },
@@ -2234,10 +2234,8 @@ static const int *callNative(ScriptRunner *self, int id, const int *code, int *a
         built = true;
         for (const ScriptNativeBinding &binding : kNatives)
             table[binding.id - kFirstNative] = binding.native;
-        if (kDoorsEnabled) {
-            for (const ScriptNativeBinding &binding : kDoorNatives)
-                table[binding.id - kFirstNative] = binding.native;
-        }
+        for (const ScriptNativeBinding &binding : kDoorNatives)
+            table[binding.id - kFirstNative] = binding.native;
     }
 
     // PC: an id off the table would be a wild jump in the ROM.
