@@ -2021,6 +2021,28 @@ public:
     int m_floor = 0;            // FS2 +0x140
 };
 
+// A place with a flag saying it is known (EE 0x20).
+struct ScriptPoint
+{
+    u_char isSet = 0;                                   // FS2 +0x00
+    sceVu0FVECTOR point = { 0.0f, 0.0f, 0.0f, 1.0f };   // FS2 +0x10
+
+    void set(const sceVu0FVECTOR value);                // FS2 0x0020b220
+};
+static_assert(sizeof(ScriptPoint) == 0x20);
+static_assert(offsetof(ScriptPoint, point) == 0x10);
+
+// One line of the table of who a character has seen (EE 0xc). The brain
+// fills it; 0x21a1c0 reads seen, frame is -1 on reset.
+struct SightEntry
+{
+    int seen = 0;       // FS2 +0x0
+    int frame = -1;     // FS2 +0x4: guessed from its reset value
+    int _8 = 0;         // FS2 +0x8: not touched on reset
+};
+static_assert(sizeof(SightEntry) == 0xc);
+constexpr u_int kSightEntries = 0x18;
+
 // StageObjRecord::kind: the sheet's ctype. What the kinds are is read from
 // what the code gives them; a name is a guess unless a comment says more.
 enum CharacterKind
@@ -2466,6 +2488,8 @@ public:
     u_char m_armLost = 0;       // FS2 +0x3d9: the right arm just reached 0 (setRightArm)
     u_char m_fidgets = 1;       // FS2 +0x3e0: resetActionState sets it, a script's property may clear it: stepFidgets' idle0 / idle1
     u_char m_flinched = 0;      // FS2 +0x3e1: flinch went from 0 straight to the sheet's limit (setFlinch; readers unread)
+    SightEntry m_sightTable[kSightEntries] = {}; // FS2 +0x468: one per character id - 1 (0x21a1c0); the brain fills it
+    StageCharacter *m_sightOwner = nullptr;      // FS2 +0x588: this, from resetActionState
     float  m_flinchClock = 0.0f; // FS2 +0x3e4: 0 from initStatus; sideHook0's seconds
     float  m_unarmedClock = 0.0f; // FS2 +0x3e8
     float  m_enduranceClock = 0.0f; // FS2 +0x3ec
@@ -2536,8 +2560,15 @@ public:
     int    m_6cc = 0;           // FS2 +0x6cc: the same; 0x228670 reads it
     int    m_6d0 = 0;           // FS2 +0x6d0
     int    m_6d4 = 0;           // FS2 +0x6d4
-    u_char m_vector730Set = 0;  // FS2 +0x720: unread so far
-    sceVu0FVECTOR m_vector730 = { 0.0f, 0.0f, 0.0f, 1.0f }; // FS2 +0x730: a script's (properties, native 0x94)
+    ScriptPoint m_point6e0;     // FS2 +0x6e0: set by 0x21c3d0, the status block's step
+    ScriptPoint m_point700;     // FS2 +0x700: where 0x21bfd0 found it, once
+    ScriptPoint m_scriptPoint;  // FS2 +0x720: a script's (properties, native 0x94) or the brain's (0x21ab60, 0x219040)
+    ScriptPoint m_point740;     // FS2 +0x740: beforeScripts: a foe's bone +0x450
+    ScriptPoint m_point760;     // FS2 +0x760: beforeScripts: where the foe of +0x680 was last
+    ScriptPoint m_point780;     // FS2 +0x780: beforeScripts: the last foe's place
+    u_char m_7a0 = 0;           // FS2 +0x7a0: cleared here; read 0x21c980, 0x2184a4 (unread)
+    int    m_7c0 = 0;           // FS2 +0x7c0: readers 0x20d988, 0x20dbac (the move, unwritten)
+    int    m_7c4 = 0;           // FS2 +0x7c4: readers 0x218528, 0x217ccc (unread)
     CharacterBlock7c8 m_block7c8 = {}; // FS2 +0x7c8
 };
 

@@ -71,6 +71,8 @@ opening is the event d0101") is answered for a first entry into the stage.
 
 **2026-11-05, later still:** stage 1's natives are written but 0x13c, 0x13d, 0x5b and 0x20f, and the notices show: the first tutorial line is on screen in New Game (open-items.md, Done, game/playermotion.cpp thirteenth run).
 
+**2026-11-05, later still:** he opens a door and walks through it into the next room with the pad alone; game/playermotion.cpp is closed at `verify` (open-items.md, Done, fourteenth run). The queue goes on to game/stagecharacter.cpp, then game/characterbrain.cpp.
+
 ## The order for control
 
 Each step needs the ones above it. Sizes are the unwritten closure of its roots.

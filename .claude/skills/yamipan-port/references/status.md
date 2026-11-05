@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-05 09:33 at commit `8fb7ff0` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-05 10:24 at commit `3bf8c2e` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -140,10 +140,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 211 TUs: todo 113, partial 33, verify 80, done 14
-- next: **game/playermotion.cpp** (pinned in the queue)
-- pinned queue: game/playermotion.cpp, game/stagecharacter.cpp, game/characterbrain.cpp, game/stageplayer.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
-- partial: `game/playermotion.cpp` 244/244 -- All 244 of the TU's functions are written, the slice's folded ones now carry their addresses. Written beside it: natives 0x3a (answers 0 until the sight table +
+- 211 TUs: todo 113, partial 32, verify 81, done 14
+- next: **game/stagecharacter.cpp** (pinned in the queue)
+- pinned queue: game/stagecharacter.cpp, game/characterbrain.cpp, game/stageplayer.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
 - partial: `game/scenepool.cpp` 11/11 -- Written with game/playermotion.cpp thirteenth run (2026-11-05): all 11. The text shows; the dark strip behind it could not be told apart on the dark room of sta
 - partial: `game/scriptrunner.cpp` 132/652 -- VM 0x1d1c40, ScriptRunner, ScriptFrame, relocate, findEntry, scriptPrepare, the arg readers and 30 natives (every one stage 1 bg script calls) are written. All 
 - partial: `game/stagecharacter.cpp` 12/12 -- All of the TU's own code is written (0x17b3e0..0x17df60 less 0x17dcb0, plus isViewLinked 0x2176d0). partial because the picture is wrong: after d0101 the linked
@@ -179,6 +178,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
+- verify: `game/playermotion.cpp` 244/244 -- All 244 functions are written; callcheck is clean, with one call noted as unwritten: sideHook1's brain half 0x1dd2f0 -> 0x22e740, game/characterbrain.cpp. Seen,
 - verify: `game/prgmccard.cpp` 7/7 -- All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide close
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/s2ddata.cpp` 9/9 -- Host: S2dRef<T> (s2ddata.h) is a 32-bit offset from the field itself, 0 null, implicit T* conversion, copy deleted; S2dData, S2dObject, S2dWidgetDef, S2dImage a
@@ -233,6 +233,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-05 10:24 `game/playermotion.cpp` verify: closed: resetActionState whole, ScriptPoint and the sight table, stale call notes fixed; a door opened and crossed with the pad alone
 - 2026-11-05 09:33 `game/playermotion.cpp` partial: stage 1's natives and the notices: 21 natives, PauseMenuState and ScenePool whole, hasBiter, findItem: the game's first tutorial line shows on screen, and the s
 - 2026-11-05 08:47 `game/playermotion.cpp` partial: a character's script properties and its status block: setProperty, getProperty, resetActionState, initStatusBlock, StageObject::getProperty: rates come from the
 - 2026-11-05 07:53 `game/viewcamera.cpp` done: the first-person view: ViewCamera written, stage 1's Root forces it through StageObject::setProperty, the head hides; seen from the eyes with no body, scope not
@@ -240,22 +241,21 @@ Recent sessions:
 - 2026-11-05 06:16 `game/playermotion.cpp` partial: firearms, traps, throws and the start hook: GunOn, GunMove, Snipe, GunAttack, Reload, Showt, Jack, Throw, TrapSet, TrapCancel with their links, the scope, shot 
 - 2026-11-05 05:24 `game/playermotion.cpp` partial: the fight: BtOn, Lock, BtAttack, BtAtkCombo, BtMove and the Battle and BtAttack links: R1 takes the stance and Cross throws blows on stage 1; nothing there to h
 - 2026-11-05 04:37 `game/playermotion.cpp` partial: what a character carries: giveItem, dropItem, swapWeapons, PickupItem, PutItem and the Pickup link written; stage 1 has no items, so none of it has been seen wo
-- 2026-11-05 03:49 `game/playermotion.cpp` partial: door crash found and fixed, doors on: a door opens and closes on Use, with the game's own labels on screen
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@00135990` | partial | 3/0/33 | 3.1 | 566 | 0 |
 | `unassigned@001eedb0` | partial | 1/0/25 | 4.1 | 129 | 0 |
+| `unassigned@001fe6b0` | todo | 0/20/77 | 34.1 | 92 | 9 |
 | `unassigned@00176480` | partial | 13/0/69 | 5.3 | 88 | 0 |
+| `game/scriptrunner.cpp` | partial | 132/2/652 | 172.7 | 74 | 4 |
+| `unassigned@0017e140` | todo | 0/4/110 | 3.2 | 69 | 2 |
 | `game/vectortrack.cpp` | partial | 9/0/16 | 2.5 | 68 | 0 |
-| `unassigned@0017e140` | todo | 0/4/110 | 3.2 | 59 | 0 |
-| `game/scriptrunner.cpp` | partial | 132/2/652 | 172.7 | 54 | 0 |
-| `unassigned@001fe6b0` | todo | 0/20/77 | 34.1 | 47 | 0 |
+| `unassigned@0018c050` | todo | 0/7/36 | 17.9 | 55 | 2 |
+| `unassigned@00190900` | partial | 2/7/34 | 11.8 | 52 | 7 |
 | `unassigned@0027cab0` | partial | 3/2/59 | 13.1 | 45 | 0 |
-| `unassigned@0018c050` | todo | 0/7/36 | 17.9 | 45 | 0 |
-| `unassigned@002764b0` | todo | 0/0/43 | 7.8 | 33 | 0 |
-| `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 31 | 0 |
-| `unassigned@00289cc0` | todo | 0/14/59 | 23.1 | 30 | 0 |
+| `unassigned@001da4f0` | partial | 4/9/85 | 18.0 | 43 | 4 |
+| `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 41 | 2 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

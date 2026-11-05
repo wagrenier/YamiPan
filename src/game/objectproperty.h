@@ -109,7 +109,7 @@ enum CharacterProperty
     CharProp_SideCorpse     = 0x47,
     CharProp_SideDark       = 0x48,
     CharProp_ScriptValue    = 0x49,     // sub: 0..10 of m_scriptValues
-    CharProp_Vector0        = 0x4a,     // x, y, z of m_vector730
+    CharProp_Vector0        = 0x4a,     // x, y, z of m_scriptPoint
     CharProp_Vector1        = 0x4b,
     CharProp_Vector2        = 0x4c,
     CharProp_ReviveFrames   = 0x4e,
