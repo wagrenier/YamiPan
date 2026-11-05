@@ -396,6 +396,7 @@ struct CharacterBrain
     bool askDoorKey(int lock);                                           // FS2 0x001db2d0
 
     ScriptRunner   *runner = nullptr; // FS2 +0x000: the character's own, set by its ctor
+    int             state = 0;        // FS2 +0x17c: 0 from reset; StageCharacter::getBrainPace
     CharacterRoute *route = nullptr;  // FS2 +0x180
 };
 // The model instance's record of each mesh (vtable 0x31a7d0, 0x10 on the EE,
@@ -635,6 +636,8 @@ public:
     // Breaks part (a face group less 1) of a map object or a door: its faces
     // go, the piece hides, withEffect plays the glass.
     void breakPart(int part, bool withEffect);                           // FS2 0x00175900
+    // Of the parts still shown, the one nearest from's head; -1 none.
+    int  nearestPart(StageObject *from);                                 // FS2 0x00175700
     // A character of the mission's list, around the frame's scripts
     // (StageScene::runStageScripts): what they do is unread.
     void beforeScripts();                                                // FS2 0x0021c7c0
@@ -774,7 +777,7 @@ public:
     u_char _404[0x4c];
     union {
         int    m_weaponDef;     // FS2 +0x450: a weapon's gWeaponDefs index (StageFiles::placeItem)
-        int    m_450;           // FS2 +0x450: a character's: 0 from initStatus (unread)
+        StageObject *m_foe;     // FS2 +0x450: a character's: who it may hit whatever its side, while on the pad (isEnemyOf; writers unread); null from initStatus
     };
     union {
         int    m_ammoB;         // FS2 +0x454: a firearm's (findSprite's second number)
@@ -942,6 +945,8 @@ struct PartSwitch
     void init(ModelInstance *partsModel, const char *name, int partCount, int firstShown); // FS2 0x00187060
     // Shows part index; no such index hides them all.
     void show(int index);                                                // FS2 0x00186fe0
+    // The name of part index, null none.
+    const char *partName(int index) const;                               // FS2 0x00186f80
 
     ModelInstance  *model;      // FS2 +0x0
     ModelPartRec **parts;      // FS2 +0x4
@@ -2166,14 +2171,16 @@ struct CharacterAllows
     u_char _381[3];
     int    pickItemEe;          // FS2 +0x384: its size on the EE; StageCharacter::m_pickItem holds the pointer
     u_char putItem;             // FS2 +0x388: PutItem: nothing stands ahead
-    u_char _389[5];
+    u_char _389[4];
+    u_char armed;               // FS2 +0x38d: Lock, BtOn, BtAttack, BtMove: the stance may stand; wants.ready holds it
     u_char fire;                // FS2 +0x38e
     u_char _38f;
     u_char head;                // FS2 +0x390: the sheet's 頭振り
     u_char aim;                 // FS2 +0x391: the sheet's 上半身振り
     u_char _392[6];
     u_char liftPartner;         // FS2 +0x398: LevelLift: the partner stands where it can lift
-    u_char _399[2];
+    u_char lockFind;            // FS2 +0x399: Lock: controlled, no target: it looks for one
+    u_char lockSwitch;          // FS2 +0x39a: Lock: controlled, a target: the d-pad's sides change it
     u_char viewSwitch;          // FS2 +0x39b: カメラモード切替
     u_char zoom;                // FS2 +0x39c: 主観ズーム
     u_char lamp;                // FS2 +0x39d: 懐中電灯ON/OFF
@@ -2188,6 +2195,8 @@ static_assert(offsetof(CharacterAllows, head) == 0x30, "CharacterAllows::head");
 static_assert(offsetof(CharacterAllows, level) == 0x8, "CharacterAllows::level");
 static_assert(offsetof(CharacterAllows, liftPartner) == 0x38, "CharacterAllows::liftPartner");
 static_assert(offsetof(CharacterAllows, fire) == 0x2e, "CharacterAllows::fire");
+static_assert(offsetof(CharacterAllows, armed) == 0x2d, "CharacterAllows::armed");
+static_assert(offsetof(CharacterAllows, lockSwitch) == 0x3a, "CharacterAllows::lockSwitch");
 static_assert(offsetof(CharacterAllows, putItem) == 0x28, "CharacterAllows::putItem");
 static_assert(offsetof(CharacterAllows, standing) == 0x41, "CharacterAllows::standing");
 
@@ -2302,6 +2311,20 @@ public:
     int  getLadderRank();                                                // FS2 0x00271f50
     // It acts for the player (controlled, not the player itself).
     bool isTakenOver() const;                                            // FS2 0x00211970
+    // The player, when this one acts for it; else null.
+    StagePlayer *getTakenOverPlayer() const;                             // FS2 0x00211910
+    // The sides it fights: the player's while it acts for the player.
+    u_int getSides() const;                                              // FS2 0x00215f10
+    // target's sheet kind belongs to a side it fights, or target is m_foe.
+    bool isEnemyOf(StageObject *target);                                 // FS2 0x00214d40
+    // One of its blows' bodies is on now.
+    bool isBlowActive() const;                                           // FS2 0x002162a0
+    // Where it aims at m_290, and at target: the head of a character, or from
+    // past 300 with a firearm its chest when that can be seen (plain: the
+    // head anyway); kind 0xb its nearest of head, pelvis and foot; a map
+    // object's nearest part. False: no such point.
+    bool getLockPoint(float *out, bool plain);                           // FS2 0x0020c1d0
+    bool getTargetPoint(StageObject *target, float *out, bool plain);    // FS2 0x0020c1f0
     // How the view changes by itself: 1 into the view camera, 0 not. For
     // the one on the pad, when a script says so or it acts for the player.
     int  forcedViewChange() const;                                       // FS2 0x00214ee0
@@ -2339,7 +2362,7 @@ public:
     void playBumpSound(int surface);                                     // FS2 0x002a2b10
 
     StageList<StageObject *> m_items; // FS2 +0x22c: what it carries (giveItem)
-    int    m_294 = 0;           // FS2 +0x294: 0 from the ctor (unread)
+    StageObject *m_294 = nullptr; // FS2 +0x294: a target given to a character off the pad: Lock takes it (writers unread)
     sceVu0FVECTOR m_aimPoint = {}; // FS2 +0x2a0: where its bullets steer
     StageObject *m_lookAt = nullptr; // FS2 +0x2b0: in a car, what the heads turn to (writers unread)
     CharacterWants  m_wants = {};   // FS2 +0x2c0: the start hook clears it, input and brain fill it
@@ -2372,6 +2395,7 @@ public:
     float  m_slowEnd = 0.0f;    // FS2 +0x45c
     float  m_slowFrom = 0.0f;   // FS2 +0x460: the rate at the start
     float  m_slowTo = 0.0f;     // FS2 +0x464: at the end
+    u_int  m_sides = 0;         // FS2 +0x590: the sheet's StageObjSide bits: the sides it fights (getSides)
     float  m_health = 0.0f;     // FS2 +0x594: the sheet's 体力: running spends a point a frame at 30 Hz, 5% of the sheet's a second comes back (PlayerMotion::stepHealth)
     int    m_endurance = 0;     // FS2 +0x598: the sheet's 耐久力; setEndurance
     int    m_leftArm = 0;       // FS2 +0x59c: the sheet's 左腕

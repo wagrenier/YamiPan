@@ -1503,13 +1503,6 @@ bool PauseMenuState::hasNotice(int kind)
     return {};
 }
 
-// stub of FS2 0x0021bb70
-int StageCharacter::getBrainPace()
-{
-    YAMIPAN_STUB("StageCharacter::getBrainPace", 0x0021bb70);
-    return {};
-}
-
 // stub of FS2 0x00210720
 bool StageCharacter::hasFollower()
 {
@@ -1527,4 +1520,11 @@ void ItemPhysics::push(const sceVu0FVECTOR velocity, int bone)
 void ItemPhysics::setMoving(bool moving, bool awake)
 {
     YAMIPAN_STUB("ItemPhysics::setMoving", 0x0023cfc0);
+}
+
+// stub of FS2 0x00186f80
+const char * PartSwitch::partName(int index) const
+{
+    YAMIPAN_STUB("PartSwitch::partName", 0x00186f80);
+    return {};
 }

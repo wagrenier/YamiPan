@@ -621,8 +621,12 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Written: giveItem 0x216aa0, swapWeapons, dropItem, dropWeapon, throwItem, canDropWeapon, canWield, playPickSound, noticeItem, MotionProbe::findItem, conditions PickupItem and PutItem, PickupLink. Measured in New Game: stage 1 has no items at all (group 3 empty, F_PC01 sheet columns empty, no ItemDef name has a file group, so placeItem cannot be forced), so giveItem, dropItem, the pickup motions, the click, sound, notice and the chest lamp have never run. Seen: PickupItem::onUpdate runs on the player each frame; three 290 s runs lived, the 15 s smoke ends on the language screen as before. Stubs: ItemPhysics::setMoving and push, so a dropped weapon does not fall. PutItem cannot fire: its writer 0x218850 is unread. Left in the TU: the other conditions (BtOn, GunOn, TrapSet, TrapCancel, Throw, Showt, Reload, Jack, Bite, Lock, BtAttack, BtAtkCombo, BtMove, GunAttack, Snipe, GunMove), the other links, the list 0x1df0b0, clearNoFlash, the rest of 0x17a860, the brain in sideHook1, native 0x7a and the StageMenu window. Still open from the last run: walking through an open door was not tested this run. Next: find a stage with items, or go on to the Lock and BtAttack conditions, which stage 1 can test. Holders of a lamp make m_lampItem non-null for the first time, so SceneRender light code will run: watch the picture. open-items.md Done has all of it.",
+   "notes": "Written: conditions BtOn, Lock with faceTarget, BtAttack, BtAtkCombo, BtMove; links Battle, BtAttack; findTargetAhead, findTargetBeside, isTargetValid, canSeeTarget, findBlowPart, getTargetPoint, getLockPoint, isEnemyOf, getSides, getTakenOverPlayer, isBlowActive, nearestPart, getBrainPace. Stub: PartSwitch::partName answers null (needs the model's part-name table). Seen in New Game, 420 s, work/battle_pad.txt, no crash, by a temporary log since removed: F_PC01 has abilities 3c2 and 3c3 and sides 12; 12 bt_on requests, 22 blows from bt_s on Cross, stance left 33 times. Stage 1 has no target in reach, so the search has found nothing and no blow has met anything. Picture NOT proven: shots show the camera close on his head, shot_922800 with the head filling the frame looking down at the bedding. The camera takes offsets from the motion's row, so the sheet may ask for it, or a bone or lean may be wrong; no reference exists and shots were not keyed to motions. Next: a run with shots keyed to the motion, compare with the sheet's offsets. The stage goes live near pad read 5600, about 300 s into New Game, so a 200 s run ends too early. Doubts: BtAttackLink::onStart always stops Lock because the tests 0x294c70 and 0x294c30 read a floor object of kind 4, a class the host lacks; m_sides is set in initStatus, the ROM sets it in 0x21cc70, unread. The small getters 0x26f720, 0x26f730, 0x26f780, 0x26f8d0 and 0x2160a0..0x216120 are in the code as inlines with no annotation. Left in the TU: BtOn's kin GunOn, TrapSet, TrapCancel, Throw, Showt, Reload, Jack, Bite, GunAttack, Snipe, GunMove, their links, the list 0x1df0b0, clearNoFlash, the rest of 0x17a860, the brain in sideHook1, native 0x7a and the StageMenu window. open-items.md Done has all of it.",
    "ranges": [
+    [
+     "00175700",
+     "001758e4"
+    ],
     [
      "0017df60",
      "0017dfd0"
@@ -672,6 +676,10 @@
      "0020b588"
     ],
     [
+     "0020c1d0",
+     "0020c93c"
+    ],
+    [
      "0020d390",
      "0020d3f4"
     ],
@@ -680,8 +688,24 @@
      "0020d8c0"
     ],
     [
+     "00211910",
+     "0021196c"
+    ],
+    [
+     "00214d40",
+     "00214ee0"
+    ],
+    [
      "00215940",
      "00215ae8"
+    ],
+    [
+     "00215f10",
+     "00216094"
+    ],
+    [
+     "002162a0",
+     "002162cc"
     ],
     [
      "00216400",
@@ -696,12 +720,24 @@
      "00219be0"
     ],
     [
+     "0021bb70",
+     "0021bb90"
+    ],
+    [
      "0021c130",
      "0021c290"
     ],
     [
+     "0026a250",
+     "0026a38c"
+    ],
+    [
      "0026a4a0",
      "0026a8f0"
+    ],
+    [
+     "0026a8f0",
+     "0026b858"
     ],
     [
      "0026b860",
@@ -716,6 +752,10 @@
      "0026c650"
     ],
     [
+     "0026df60",
+     "0026f964"
+    ],
+    [
      "00270260",
      "002702e0"
     ],
@@ -728,12 +768,20 @@
      "00274100"
     ],
     [
+     "00274650",
+     "00274988"
+    ],
+    [
      "00274990",
      "00275160"
     ],
     [
      "00275160",
      "00276200"
+    ],
+    [
+     "0027aba0",
+     "0027b0e8"
     ],
     [
      "0027b0f0",
@@ -799,11 +847,16 @@
      "date": "2026-11-05 04:37",
      "status": "partial",
      "summary": "what a character carries: giveItem, dropItem, swapWeapons, PickupItem, PutItem and the Pickup link written; stage 1 has no items, so none of it has been seen working"
+    },
+    {
+     "date": "2026-11-05 05:24",
+     "status": "partial",
+     "summary": "the fight: BtOn, Lock, BtAttack, BtAtkCombo, BtMove and the Battle and BtAttack links: R1 takes the stance and Cross throws blows on stage 1; nothing there to hit yet"
     }
    ],
    "status": "partial",
    "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves.",
-   "why": "the motion core, the conditions, the links and probes, what controlStep calls alone, and what a character carries: giveItem, dropItem, the Pickup link"
+   "why": "the motion core, the conditions, the links and probes, what controlStep calls alone, what a character carries, and the fight: the stance, the blows, the target search"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",

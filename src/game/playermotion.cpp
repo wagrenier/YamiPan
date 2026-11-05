@@ -14,6 +14,7 @@
 #include "game/characterground.h"
 #include "game/characterinput.h"
 
+#include <float.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -1052,6 +1053,56 @@ private:
 
 // On a ladder: the stick climbs, the squat button lets go. EE vtable 0x317490.
 // layout: host
+// Into the stance, for those who have one. Vtable 0x3176f0. layout: host.
+class BtOnCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x00274810
+    void onApply() override;                                             // FS2 0x00274650
+};
+
+// Keeps m_290, the target, and the character turned to it. Vtable 0x317470.
+// layout: host -- as MotionCondition.
+class LockCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x0026f8e0
+    void onApply() override;                                             // FS2 0x0026ef30
+
+private:
+    void faceTarget();                                                   // FS2 0x0026ebe0
+};
+
+// The first blow, by the hand. Vtable 0x317450. layout: host.
+class BtAttackCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x0026e9e0
+    void onApply() override;                                             // FS2 0x0026e500
+};
+
+// The next blow of a combo. Vtable 0x317430. layout: host.
+class BtAtkComboCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x0026e4e0
+    void onApply() override;                                             // FS2 0x0026e280
+};
+
+// Steps in the stance, and out of it. Vtable 0x317410. layout: host.
+class BtMoveCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x0026e260
+    void onApply() override;                                             // FS2 0x0026df60
+};
+
+// LadderMove. layout: host -- as MotionCondition.
 class LadderMoveCondition : public MotionCondition
 {
 public:
@@ -2078,6 +2129,11 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_conditions["Door"] = new DoorCondition(character, this);
     m_conditions["PutItem"] = new PutItemCondition(character, this);
     m_conditions["PickupItem"] = new PickupItemCondition(character, this);
+    m_conditions["BtOn"] = new BtOnCondition(character, this);
+    m_conditions["Lock"] = new LockCondition(character, this);
+    m_conditions["BtAttack"] = new BtAttackCondition(character, this);
+    m_conditions["BtAtkCombo"] = new BtAtkComboCondition(character, this);
+    m_conditions["BtMove"] = new BtMoveCondition(character, this);
 
     walkLink = new WalkLink(character, this);
     m_links["Walk"] = walkLink;
@@ -2089,6 +2145,8 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_links["Door"] = doorLink;
     pickupLink = new PickupLink(character, this);
     m_links["Pickup"] = pickupLink;
+    m_links["Battle"] = new BattleLink(character, this);
+    m_links["BtAttack"] = new BtAttackLink(character, this);
 
     // PC: the ROM's 0x212530 sets these from a script's property; nothing
     // written sets them yet, so the sheet's.
@@ -4348,4 +4406,857 @@ void PickupLink::onCancel()
         taking = nullptr;
     }
     putting = nullptr;
+}
+
+
+// ── The fight: the stance, the blows, the target ───────────────────────────
+
+namespace {
+
+constexpr float kLockCone60 = 1.0471976f;   // 0x3f860a92
+constexpr float kLockCone30 = 0.5235988f;   // 0x3f060a92
+constexpr float kLockCone15 = 0.2617994f;   // 0x3e860a92
+constexpr float kLockReachDefault = 500.0f;
+constexpr float kLockReachFar = 15000.0f;
+constexpr float kLockTurnLimit = 0.10471976f; // 6 degrees a frame
+constexpr float kLockLookRate = 0.15f;      // 0x3e19999a
+constexpr float kBlowRecovery = 0.65f;      // 0x3f266666
+constexpr float kBlowPartReach = 140.0f;
+constexpr float kChestShotDistance = 300.0f;
+constexpr float kPartPointForward = 10.0f;  // a part's aim point, towards the head's far side
+constexpr float kNoHeadPartHeight = 35.0f;  // oMT18_30 aims above its origin
+constexpr u_int kFaceLockSight = 0x1e42600f;
+constexpr u_int kFaceLockSkip = 0x800;
+constexpr u_int kFaceChestSkip = 0x48000;
+constexpr int   kKindWithThreePoints = 0xb; // a sheet kind aimed at by its nearest of three bones
+
+// The slots of pickArmedMotion.
+enum ArmedSlot
+{
+    ArmedSlot_On = 0,        // bt_on
+    ArmedSlot_Stand = 1,     // bt_s
+    ArmedSlot_Walk = 2,      // bt_w
+    ArmedSlot_Back = 3,      // bt_w_b
+    ArmedSlot_Right = 4,     // bt_w_r
+    ArmedSlot_Left = 5,      // bt_w_l
+    ArmedSlot_TurnRight = 6, // t_r with bt_s
+    ArmedSlot_TurnLeft = 7,  // t_l with bt_s
+    ArmedSlot_Off = 8,       // bt_off
+};
+
+// The blows, gMotionDefs indices with the sheet's labels. 素手コンボ and 武器コンボ
+// on the sheet choose the second row, which chains by BtAtkCombo.
+enum BlowMotion
+{
+    Blow_Unarmed1 = 0x59,    // bt_at0_1
+    Blow_Unarmed2 = 0x5a,    // bt_at0_2
+    Blow_Light1 = 0x5b,      // bt_at1_1
+    Blow_Light2 = 0x5c,      // bt_at1_2
+    Blow_LightHeavy = 0x5d,  // bt_at1_3
+    Blow_Heavy1 = 0x5e,      // bt_at2_1
+    Blow_Heavy2 = 0x5f,      // bt_at2_2
+    Blow_HeavyHeavy = 0x60,  // bt_at2_3
+    Blow_UnarmedChain1 = 0x61, // bt_at0_1
+    Blow_UnarmedChain2 = 0x62, // bt_at0_2
+    Blow_UnarmedChain3 = 0x63, // bt_at0_3
+    Blow_LightChain1 = 0x64, // bt_at1_1
+    Blow_LightChain2 = 0x65, // bt_at1_2
+    Blow_HeavyChain1 = 0x66, // bt_at2_1
+    Blow_HeavyChain2 = 0x67, // bt_at2_2
+    Blow_StanceStand = 0x4f, // bt_s: where a blow ends
+    Blow_StanceStandArmed = 0x50, // bt_s_1
+};
+
+// wants.dpadSide.
+enum DpadSide
+{
+    DpadSide_None = 0,
+    DpadSide_Left = 1,
+    DpadSide_Right = 2,
+};
+
+bool holdsFirearm(const StageCharacter *character)
+{
+    return character->m_weapons[0] != nullptr && defOf(character->m_weapons[0]).isFirearm();
+}
+
+const WeaponDef &weaponSheet(const StageObject *weapon)
+{
+    const int index = weapon->m_weaponDef;
+    return gWeaponDefs[index < 0 || index >= kWeaponDefCount ? 0 : index];
+}
+
+// How far the first look reaches: a melee weapon's own, 500 otherwise.
+float lockReach(const StageCharacter *character)
+{
+    const StageObject *weapon = character->m_weapons[0];
+    if (weapon == nullptr || defOf(weapon).isFirearm())
+        return kLockReachDefault;
+    return (float)weaponSheet(weapon).param5;
+}
+
+// How far a target stays or changes: the weapon's own, a firearm's three
+// times that on Easy.
+// callcheck: getStageSelect
+float lockKeepReach(const StageCharacter *character)
+{
+    const StageObject *weapon = character->m_weapons[0];
+    if (weapon == nullptr)
+        return kLockReachDefault;
+    const float reach = (float)weaponSheet(weapon).param5;
+    if (getStageSelect()->kind == StageKind_Easy && defOf(weapon).isFirearm())
+        return reach * 3.0f;
+    return reach;
+}
+
+bool isOnStageObjectKind(int kind)
+{
+    return kind > 0 && kind < 7;
+}
+
+} // namespace
+
+// FS2 0x00274810
+// callcheck: isFirearm
+
+void BtOnCondition::onUpdate()
+{
+    if (holdsFirearm(character))
+        return;
+    if (character->m_abilities.flag3c3 != 0)
+        character->m_allows.armed = 1;
+}
+
+// FS2 0x00274650
+// callcheck: pickArmedMotion, request
+
+void BtOnCondition::onApply()
+{
+    if (character->m_allows.armed == 0 || character->m_wants.ready == 0 || holdsFirearm(character))
+        return;
+    motion->request(motion->pickArmedMotion(ArmedSlot_On));
+}
+
+// FS2 0x0026f8e0
+// callcheck: isControlled
+
+void LockCondition::onUpdate()
+{
+    if (character->m_abilities.flag3c3 == 0)
+        character->m_allows.armed = 1;
+    if (!character->isControlled() || motion->noFlash != 0)
+        return;
+    if (character->m_290 == nullptr)
+        character->m_allows.lockFind = 1;
+    else
+        character->m_allows.lockSwitch = 1;
+}
+
+// FS2 0x0026ef30
+// callcheck: addAngle, isControlled, getLockPoint, FUN_0026f8d0, FUN_0026f780, FUN_0026f730, findTargetAhead, FUN_0026f720, getStageSelect, vecDistance, findTargetBeside, isTargetValid, canSeeTarget, faceTarget (0x26f8d0 m_weapons[0], 0x26f720 StageSelect::kind, 0x26f730 weaponSheet, 0x26f780 isFirearm)
+
+void LockCondition::onApply()
+{
+    if (character->m_abilities.flag3c3 == 0
+        && (character->m_allows.armed == 0 || character->m_wants.ready == 0)) {
+        character->m_290 = nullptr;
+        return;
+    }
+
+    sceVu0FVECTOR angles = { 0.0f, 0.0f, 0.0f, 0.0f };
+    angles[2] = addAngle(character->m_xform.rotation[2], kMathPi);
+    angles[0] = motion->m_lampAngles[0];
+
+    if (!character->isControlled() && character->m_294 != nullptr) {
+        character->m_290 = character->m_294;
+        character->getLockPoint(character->m_aimPoint, false);
+        faceTarget();
+        return;
+    }
+
+    if (character->m_allows.lockFind != 0) {
+        MotionProbe *probe = motion->probe;
+        character->m_290 = probe->findTargetAhead(kLockCone60, lockReach(character), true, true, angles);
+        if (character->m_290 == nullptr) {
+            StageObject *far = probe->findTargetAhead(kLockCone15, kLockReachFar, true, false, angles);
+            if (far == nullptr) {
+                character->m_290 = probe->findTargetAhead(kLockCone30, kLockReachDefault, false, true, angles);
+            }
+            else if (lockReach(character) < lockKeepReach(character)) {
+                const float keep = lockKeepReach(character);
+                if (vecDistance(far->getMatrix()[3], character->m_xform.position) < keep)
+                    character->m_290 = far;
+            }
+        }
+    }
+
+    const int side = character->m_wants.dpadSide;
+    // PC: the ROM reads the target's slot without a test; lockSwitch was
+    // set with one, but a blow's onLeave may have cleared it since.
+    if (character->m_allows.lockSwitch != 0 && side != DpadSide_None && character->m_290 != nullptr) {
+        MotionProbe *probe = motion->probe;
+        const float reach = lockKeepReach(character);
+        if (side == DpadSide_Right)
+            character->m_290 = probe->findTargetBeside(angles[2], -kLockCone60, reach, true, false, 0);
+        else if (side == DpadSide_Left)
+            character->m_290 = probe->findTargetBeside(angles[2], kLockCone60, reach, true, false, 1);
+        if (character->m_290->getKind() != StageObject_Character) {
+            if (side == DpadSide_Right)
+                character->m_290 = probe->findTargetBeside(angles[2], -kLockCone30, reach, false, false, 0);
+            else if (side == DpadSide_Left)
+                character->m_290 = probe->findTargetBeside(angles[2], kLockCone30, reach, false, false, 1);
+        }
+    }
+
+    if (character->m_290 != nullptr) {
+        if (!motion->probe->isTargetValid(character->m_290))
+            character->m_290 = nullptr;
+        if (character->m_290 != nullptr) {
+            character->getLockPoint(character->m_aimPoint, false);
+            if (!motion->probe->canSeeTarget(character->m_290, character->m_aimPoint))
+                character->m_290 = nullptr;
+        }
+    }
+    faceTarget();
+}
+
+// A sixth of a right angle a frame towards the target, the body leaning to
+// it; head, lamp and upper body look there as the motion's sheet row says.
+// FS2 0x0026ebe0
+// callcheck: atan2Octant, addAngle, addAngle, addAngle, find, getMatrix, atan2Octant, atan2Octant, addAngle, subAngles, leanBody, isLit, isControlled, setToolTarget, setHeadTarget, setLookTarget
+
+void LockCondition::faceTarget()
+{
+    if (character->m_290 == nullptr)
+        return;
+    sceVu0FVECTOR point;
+    memcpy(point, character->m_aimPoint, sizeof(point));
+    const float *position = character->m_xform.position;
+
+    const float bearing = atan2Octant(position[0] - point[0], point[1] - position[1]);
+    const float facing = addAngle(character->m_xform.rotation[2], kMathPi);
+    float turn = addAngle(bearing, -facing) / 4.0f;
+    if (turn > kLockTurnLimit)
+        turn = kLockTurnLimit;
+    else if (turn < -kLockTurnLimit)
+        turn = -kLockTurnLimit;
+    motion->m_turnStep[2] = addAngle(motion->m_turnStep[2], turn);
+
+    const sceVu0FVECTOR *head = bodyBone(character, "bn_head")->getMatrix();
+    const float dx = point[0] - head[3][0];
+    const float dy = point[1] - head[3][1];
+    const float dz = point[2] - head[3][2];
+    sceVu0FVECTOR lean = { 0.0f, 0.0f, 0.0f, 0.0f };
+    lean[0] = atan2Octant(dz, sqrtf(dx * dx + dy * dy));
+    lean[2] = addAngle(-atan2Octant(dx, dy), kMathPi);
+    subAngles(lean, lean, character->m_xform.rotation);
+    motion->leanBody(lean, false, 0);
+
+    bool toolFollows = false;
+    bool headFollows = false;
+    if (const MotionDef *def = motionDef(motion->motionId)) {
+        headFollows = def->headSwayBoneLink != 0;
+        StageItemE *lamp = character->m_lampItem;
+        if (lamp != nullptr && lamp->m_active != 0 && lamp->m_lamp->m_spot->isLit()
+            && (lamp->m_isTorch2 == 0 || character->isControlled()))
+            toolFollows = lamp->m_isTorch2 != 0 || def->flashlightControl != 0;
+    }
+    motion->setToolTarget(toolFollows ? point : nullptr);
+    if (motion->m_kindFlags2 != 0) {
+        motion->setHeadTarget(kLockLookRate, headFollows ? point : nullptr);
+        motion->setLookTarget(kLockLookRate, point);
+    }
+    else if (motion->m_kindFlags1 != 0) {
+        motion->setHeadTarget(kLockLookRate, headFollows ? point : nullptr);
+        motion->setLookTarget(kLockLookRate, nullptr);
+    }
+}
+
+// FS2 0x0026e9e0
+// callcheck: pickArmedMotion
+
+void BtAttackCondition::onUpdate()
+{
+    if (holdsFirearm(character))
+        return;
+    if ((character->m_weapons[0] == nullptr && character->m_abilities.flag3c4 == 0) || motion->m_ba8 > 0.0f)
+        return;
+    character->m_allows.armed = 1;
+    if (motion->motionId != motion->pickArmedMotion(ArmedSlot_On))
+        character->m_allows.fire = 1;
+}
+
+// FS2 0x0026e500
+// callcheck: getStageSelect, randNext, request, getStageSelect, randNext, request, getStageSelect, randNext, request
+
+void BtAttackCondition::onApply()
+{
+    const CharacterWants &wants = character->m_wants;
+    if (character->m_allows.armed == 0 || wants.ready == 0 || character->m_allows.fire == 0)
+        return;
+    const StageObjRecord *sheet = stageObjRecord(character->m_itemDef);
+    const StageObject *weapon = character->m_weapons[0];
+    const bool hit = wants.fire == CharacterFire_Tap || wants.fire == CharacterFire_Hold;
+
+    if (weapon == nullptr) {
+        if (!hit)
+            return;
+        if (sheet->unarmedCombo != 0)
+            motion->request(Blow_UnarmedChain1);
+        else if (character->m_abilities.flag3c5 != 0 && (int)randNext() % 2 == 0)
+            motion->request(Blow_Unarmed2);
+        else
+            motion->request(Blow_Unarmed1);
+        return;
+    }
+
+    const int kind = defOf(weapon).kind;
+    if (kind != ItemKind_MeleeLight && kind != ItemKind_MeleeHeavy)
+        return;
+    const bool light = kind == ItemKind_MeleeLight;
+    if (wants.fire == CharacterFire_Tap
+        || (wants.fire == CharacterFire_Hold && character->m_abilities.flag3c6 == 0)) {
+        if (sheet->weaponCombo != 0)
+            motion->request(light ? Blow_LightChain1 : Blow_HeavyChain1);
+        else if ((int)randNext() % 2 == 0)
+            motion->request(light ? Blow_Light2 : Blow_Heavy2);
+        else
+            motion->request(light ? Blow_Light1 : Blow_Heavy1);
+    }
+    else if (wants.fire == CharacterFire_Hold) {
+        motion->request(light ? Blow_LightHeavy : Blow_HeavyHeavy);
+    }
+}
+
+// FS2 0x0026e4e0
+
+void BtAtkComboCondition::onUpdate()
+{
+    character->m_allows.armed = 1;
+    character->m_allows.fire = 1;
+}
+
+// FS2 0x0026e280
+// callcheck: getStageSelect, request, request, getStageSelect, request, request, request, request
+
+void BtAtkComboCondition::onApply()
+{
+    const CharacterWants &wants = character->m_wants;
+    if (character->m_allows.armed == 0 || wants.ready == 0 || character->m_allows.fire == 0)
+        return;
+    if (wants.fire != CharacterFire_Tap && wants.fire != CharacterFire_Hold)
+        return;
+    const StageObjRecord *sheet = stageObjRecord(character->m_itemDef);
+    if (sheet->unarmedCombo != 0) {
+        if (motion->motionId == Blow_UnarmedChain2)
+            motion->request(Blow_UnarmedChain3);
+        else if (motion->motionId == Blow_UnarmedChain1)
+            motion->request(Blow_UnarmedChain2);
+    }
+    if (sheet->weaponCombo != 0) {
+        switch (motion->motionId) {
+        case Blow_HeavyChain2: motion->request(Blow_HeavyHeavy); break;
+        case Blow_HeavyChain1: motion->request(Blow_HeavyChain2); break;
+        case Blow_LightChain2: motion->request(Blow_LightHeavy); break;
+        case Blow_LightChain1: motion->request(Blow_LightChain2); break;
+        }
+    }
+}
+
+// FS2 0x0026e260
+
+void BtMoveCondition::onUpdate()
+{
+    character->m_allows.armed = 1;
+    character->m_allows.move = 1;
+}
+
+// With a target the walks close on it, without one the stick turns.
+// FS2 0x0026df60
+// callcheck: pickArmedMotion, request, pickArmedMotion, pickArmedMotion, request, pickArmedMotion, request
+
+void BtMoveCondition::onApply()
+{
+    const CharacterWants &wants = character->m_wants;
+    if (character->m_allows.armed == 0 || wants.ready == 0) {
+        motion->request(motion->pickArmedMotion(ArmedSlot_Off));
+        return;
+    }
+    if (motion->motionId == motion->pickArmedMotion(ArmedSlot_On))
+        return;
+
+    int slot = -1;
+    if (character->m_allows.move != 0) {
+        const CharacterAbilities &abilities = character->m_abilities;
+        const bool locked = character->m_290 != nullptr;
+        switch (wants.moveKind) {
+        case CharacterMove_StrafeLeft:
+            if (abilities.strafe != 0)
+                slot = ArmedSlot_Left;
+            break;
+        case CharacterMove_TurnLeft:
+            if (!locked)
+                slot = ArmedSlot_TurnLeft;
+            else if (abilities.strafe != 0)
+                slot = ArmedSlot_Left;
+            break;
+        case CharacterMove_StrafeRight:
+            if (abilities.strafe != 0)
+                slot = ArmedSlot_Right;
+            break;
+        case CharacterMove_TurnRight:
+            if (!locked)
+                slot = ArmedSlot_TurnRight;
+            else if (abilities.strafe != 0)
+                slot = ArmedSlot_Right;
+            break;
+        case CharacterMove_BackTurn:
+            if (abilities.walkBack != 0)
+                slot = ArmedSlot_Back;
+            break;
+        case CharacterMove_Back:
+            if (locked && abilities.walkBack != 0)
+                slot = ArmedSlot_Back;
+            break;
+        case CharacterMove_WalkSlow:
+            slot = ArmedSlot_Walk;
+            break;
+        case CharacterMove_Walk:
+        case CharacterMove_Run:
+            if (locked)
+                slot = ArmedSlot_Walk;
+            break;
+        }
+    }
+    if (slot >= 0)
+        motion->request(motion->pickArmedMotion(slot));
+    if (motion->m_request == Motion_None)
+        motion->request(motion->pickArmedMotion(ArmedSlot_Stand));
+}
+
+// FS2 0x0027b000
+// callcheck: FUN_0027d8d0, operator_new, FUN_001ef590, MotionConditionList::add, FUN_001ef590, MotionConditionList::add, FUN_001ef590, MotionConditionList::add (addCondition)
+
+BattleLink::BattleLink(StageCharacter *owner, PlayerMotion *motion_)
+    : MotionLink(owner, motion_)
+{
+    addCondition("Lock");
+    addCondition("BtAttack");
+    addCondition("BtMove");
+}
+
+// Out of the stance the target goes, but into what keeps it.
+// FS2 0x0027af70
+// callcheck: FUN_001ef260, FUN_001ef260 (m_links.find)
+
+void BattleLink::onLeave(MotionLink *next)
+{
+    const char *keeps = character->m_abilities.flag3c3 == 0 ? "Walk" : "BtAttack";
+    if (next != motion->m_links.find(keeps)->second)
+        character->m_290 = nullptr;
+}
+
+// FS2 0x0027aea0
+// callcheck: FUN_0027d8d0, operator_new, FUN_001ef590, MotionConditionList::add, FUN_001ef590, MotionConditionList::add (addCondition)
+
+BtAttackLink::BtAttackLink(StageCharacter *owner, PlayerMotion *motion_)
+    : MotionLink(owner, motion_)
+{
+    addCondition("Lock");
+    addCondition("BtAtkCombo");
+}
+
+// FS2 0x0027adf0
+// callcheck: getKind, FUN_00294c70, FUN_00294c30, FUN_0027d940, FUN_0027d940 (m_conditions[]; PC: the two read the pose of a floor object of kind 4, a class the host does not make, so Lock always stops)
+
+void BtAttackLink::onStart()
+{
+    m_conditions[0]->active = 0;
+    m_conditions[1]->active = 0;
+}
+
+// FS2 0x0027ac60
+// callcheck: FUN_0027d940, findBlowPart, StageObject::breakPart, isEnding, request, request, request (m_conditions[])
+
+void BtAttackLink::onRun()
+{
+    if (counter == 0 && (character->m_model->m_motionEvents & MotionEvent_Cancel) != 0) {
+        counter = 1;
+        m_conditions[1]->active = 1;
+    }
+    const int part = motion->probe->findBlowPart();
+    const bool broke = part >= 0;
+    if (broke)
+        character->m_290->breakPart(character->m_290->m_mapParts->ids[part], true);
+    const bool bumped = character->m_ground->bumped != 0;
+    if (!motion->isEnding() && !bumped && !broke)
+        return;
+    if (character->m_abilities.flag3c3 == 0)
+        motion->request(Motion_Stand);
+    else
+        motion->request(character->m_weapons[0] == nullptr ? Blow_StanceStand : Blow_StanceStandArmed);
+    if (bumped || broke)
+        motion->m_ba8 = kBlowRecovery;
+}
+
+// FS2 0x0027aba0
+// callcheck: FUN_0027d940, FUN_0027d940, FUN_0027d940, FUN_0027d940, FUN_001ef260 (m_conditions[], m_links.find)
+
+void BtAttackLink::onLeave(MotionLink *next)
+{
+    m_conditions[0]->active = 1;
+    m_conditions[1]->active = 1;
+    if (next != motion->m_links.find("Battle")->second)
+        character->m_290 = nullptr;
+}
+
+// FS2 0x00211910
+// callcheck: isTakenOver (inline)
+
+StagePlayer *StageCharacter::getTakenOverPlayer() const
+{
+    return isTakenOver() ? gStageScene->player : nullptr;
+}
+
+// The ROM inlines itself here three levels deep, with the scene's getters
+// 0x216120, 0x216110, 0x2160f0, 0x2160d0 and 0x2160c0 and the side's 0x2160b0, 0x2160a0.
+// FS2 0x00215f10
+// callcheck: FUN_00216120, FUN_00216110, FUN_002160f0, isControlled, FUN_002160d0, isTakenOver, FUN_002160c0, getTakenOverPlayer, FUN_002160b0, FUN_002160a0, getSides
+
+u_int StageCharacter::getSides() const
+{
+    const StagePlayer *player = getTakenOverPlayer();
+    return player != nullptr ? player->getSides() : m_sides;
+}
+
+// FS2 0x00214d40
+// callcheck: getStageSelect, getSides
+
+bool StageCharacter::isEnemyOf(StageObject *target)
+{
+    if (target == m_foe) {
+        const StageObject *driver = gStageScene->controlled != nullptr
+                                        ? gStageScene->controlled : gStageScene->player;
+        if (driver == target)
+            return true;
+        m_foe = nullptr;
+    }
+    if (target == this)
+        return false;
+    // The side a sheet kind belongs to: StageObjSide, none for 9 and 0xe.
+    static const u_int kSideOfKind[] = {
+        StageObjSide_Player, StageObjSide_Npc, StageObjSide_Corpse, StageObjSide_Corpse,
+        StageObjSide_Dark, StageObjSide_Dark, StageObjSide_Dark, StageObjSide_Dark,
+        StageObjSide_Corpse, 0, StageObjSide_Corpse, StageObjSide_Dark,
+        StageObjSide_Dark, StageObjSide_Corpse, 0, StageObjSide_Npc,
+    };
+    const u_int kind = (u_int)stageObjRecord(target->m_itemDef)->kind;
+    const u_int side = kind < sizeof(kSideOfKind) / sizeof(kSideOfKind[0]) ? kSideOfKind[kind] : 0;
+    return (side & getSides()) != 0;
+}
+
+// FS2 0x002162a0
+
+bool StageCharacter::isBlowActive() const
+{
+    const int bone = m_ground->hitBone;
+    return bone >= 0 && m_ground->blowBodies[bone]->on != 0;
+}
+
+// FS2 0x0020c1d0
+// callcheck: getTargetPoint
+
+bool StageCharacter::getLockPoint(float *out, bool plain)
+{
+    return getTargetPoint(m_290, out, plain);
+}
+
+// FS2 0x0020c1f0
+// callcheck: getKind, getStageSelect, find, getMatrix, find, getWorldMatrix, find, getWorldMatrix, find, getMatrix, vecDistance, find, getMatrix, vecDistance, vecDistance, find, getWorldMatrix, getWorldMatrix, find, getMatrix, segmentHitsAny, find, getMatrix, getKind, getBodyPosition, nearestPart, partName, find, getWorldMatrix, getWorldMatrix, find, getMatrix, vecDirection, scaleVec4, strcmp, getMatrix, getMatrix
+
+bool StageCharacter::getTargetPoint(StageObject *target, float *out, bool plain)
+{
+    const int kind = target->getKind();
+    if (kind == StageObject_Character) {
+        const StageCharacter *other = static_cast<StageCharacter *>(target);
+        if (stageObjRecord(target->m_itemDef)->kind == kKindWithThreePoints) {
+            const float *points[3] = {
+                bodyBone(target, "bn_head")->getMatrix()[3],
+                bodyBone(target, "bn_pelvis")->getWorldMatrix()[3],
+                bodyBone(target, "bn_l_foot")->getWorldMatrix()[3],
+            };
+            const float *head = bodyBone(this, "bn_head")->getMatrix()[3];
+            int best = 0;
+            float bestDistance = vecDistance(head, points[0]);
+            for (int i = 1; i < 3; i++) {
+                const float distance = vecDistance(head, points[i]);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    best = i;
+                }
+            }
+            memcpy(out, points[best], sizeof(sceVu0FVECTOR));
+            return true;
+        }
+        if (!plain && other->m_gear == nullptr && holdsFirearm(this)
+            && kChestShotDistance < vecDistance(target->m_xform.position, m_xform.position)) {
+            BoneMap::Node *spine = target->m_model->boneMap.find("bn_spine1");
+            if (spine != nullptr) {
+                const float *chest = spine->value->getWorldMatrix()[3];
+                const StageObject *driver = gStageScene->controlled != nullptr
+                                                ? gStageScene->controlled : gStageScene->player;
+                if (driver == this
+                    || !gStageScene->segmentHitsAny(bodyBone(this, "bn_head")->getMatrix()[3], chest, 0,
+                                                    kFaceLockSight, kFaceChestSkip, nullptr)) {
+                    memcpy(out, chest, sizeof(sceVu0FVECTOR));
+                    return true;
+                }
+            }
+        }
+        memcpy(out, bodyBone(target, "bn_head")->getMatrix()[3], sizeof(sceVu0FVECTOR));
+        return true;
+    }
+
+    if (kind >= StageObject_Light && kind < StageObject_Item) {
+        memcpy(out, static_cast<StageLight *>(target)->getBodyPosition(), sizeof(sceVu0FVECTOR));
+        return true;
+    }
+
+    // PC: only a map object has m_mapParts; the ROM's objects of these kinds all do.
+    if (isOnStageObjectKind(kind) && kind != StageObject_Kind3 && target->m_mapParts != nullptr
+        && target->m_mapParts->switches != nullptr) {
+        if (m_weapons[0] == nullptr)
+            return false;
+        const int part = target->nearestPart(this);
+        if (part < 0)
+            return false;
+        const MapObjectParts *parts = target->m_mapParts;
+        if (parts->effects[part] != nullptr) {
+            memcpy(out, parts->effects[part]->getWorldMatrix()[3], sizeof(sceVu0FVECTOR));
+        }
+        else {
+            const char *name = parts->switches[part].partName(0);
+            BoneMap::Node *bone = name != nullptr ? target->m_model->boneMap.find(name) : nullptr;
+            if (bone == nullptr)
+                return false;
+            memcpy(out, bone->value->getWorldMatrix()[3], sizeof(sceVu0FVECTOR));
+        }
+        sceVu0FVECTOR direction;
+        vecDirection(direction, bodyBone(this, "bn_head")->getMatrix()[3], out);
+        scaleVec4(kPartPointForward, direction, direction);
+        out[0] += direction[0];
+        out[1] += direction[1];
+        out[2] += direction[2];
+        return true;
+    }
+
+    memcpy(out, target->getMatrix()[3], sizeof(sceVu0FVECTOR));
+    if (isOnStageObjectKind(kind) && strcmp(target->m_name, "oMT18_30") == 0)
+        out[2] += kNoHeadPartHeight;
+    return true;
+}
+
+// FS2 0x00175700
+// callcheck: partName, find, find, getMatrix, getWorldMatrix, vecDistance, find, getMatrix, getWorldMatrix, vecDistance
+
+int StageObject::nearestPart(StageObject *from)
+{
+    const MapObjectParts *parts = m_mapParts;
+    if (parts->switches == nullptr || parts->effects == nullptr)
+        return -1;
+    int best = -1;
+    float bestDistance = FLT_MAX;
+    for (int i = 0; i < parts->count; i++) {
+        if (parts->switches[i].shown == 0)
+            continue;
+        const float *point = nullptr;
+        if (parts->effects[i] != nullptr) {
+            point = parts->effects[i]->getWorldMatrix()[3];
+        }
+        else {
+            const char *name = parts->switches[i].partName(0);
+            BoneMap::Node *bone = name != nullptr ? m_model->boneMap.find(name) : nullptr;
+            if (bone == nullptr || bone->value == nullptr)
+                continue;
+            point = bone->value->getWorldMatrix()[3];
+        }
+        const float distance = vecDistance(bodyBone(from, "bn_head")->getMatrix()[3], point);
+        if (distance < bestDistance) {
+            bestDistance = distance;
+            best = i;
+        }
+    }
+    return best;
+}
+
+// FS2 0x0026a250
+// callcheck: getKind, getKind, getKind, isBlowActive, nearestPart, getWorldMatrix, distanceToPoint
+
+int MotionProbe::findBlowPart()
+{
+    StageObject *target = owner->m_290;
+    if (target == nullptr)
+        return -1;
+    const int kind = target->getKind();
+    // PC: m_mapParts as in getTargetPoint.
+    if (!isOnStageObjectKind(kind) || kind == StageObject_Kind3 || target->m_mapParts == nullptr
+        || target->m_mapParts->switches == nullptr || !owner->isBlowActive())
+        return -1;
+    const int part = target->nearestPart(owner);
+    if (part < 0)
+        return -1;
+    // PC: the ROM calls the effect without a test; nearestPart's way round
+    // a missing one is a bone, which has no distance here.
+    StageParticle *effect = target->m_mapParts->effects[part];
+    if (effect == nullptr)
+        return -1;
+    sceVu0FVECTOR point;
+    memcpy(point, effect->getWorldMatrix()[3], sizeof(point));
+    point[2] = owner->m_xform.position[2];
+    return owner->distanceToPoint(point) < kBlowPartReach ? part : -1;
+}
+
+// FS2 0x0026b5d0
+// callcheck: getKind, isEnemyOf, getBrainPace
+
+bool MotionProbe::isTargetValid(StageObject *target)
+{
+    if (target->m_lightOn == 0 || target->m_active == 0)
+        return false;
+    if (target->getKind() != StageObject_Character)
+        return true;
+    if (target == owner || !owner->isEnemyOf(target))
+        return false;
+    StageCharacter *other = static_cast<StageCharacter *>(target);
+    return other->getBrainPace() != 0 && other->m_endurance > 0;
+}
+
+// FS2 0x0026b690
+// callcheck: getKind, getKind, getKind, find, getMatrix, segmentHitsAny, find, getMatrix, atan2Octant
+
+bool MotionProbe::canSeeTarget(StageObject *target, const float *point)
+{
+    const int kind = target->getKind();
+    StageObject *skip = isOnStageObjectKind(kind) && kind != StageObject_Door && target != gStageScene->root
+                            ? target : nullptr;
+    const float *head = bodyBone(owner, "bn_head")->getMatrix()[3];
+    if (gStageScene->segmentHitsAny(head, point, 0, kFaceLockSight, kFaceLockSkip, skip))
+        return false;
+    const float dx = point[0] - head[0];
+    const float dy = point[1] - head[1];
+    const float pitch = atan2Octant(point[2] - head[2], sqrtf(dx * dx + dy * dy));
+    return fabsf(pitch) <= kLockCone60;
+}
+
+// FS2 0x0026a8f0
+// callcheck: identityMatrix, rotateMatrixX, rotateMatrixZ, applyMatrix, find, getMatrix, getKind, isEnemyOf, getBrainPace, getTargetPoint, vecDot, asinAcos, vecDistance, getKind, getKind, getKind, find, getMatrix, segmentHitsAny, find, getMatrix, atan2Octant (0x26b5d0 and 0x26b690 inline, as isTargetValid and canSeeTarget)
+
+StageObject *MotionProbe::findTargetAhead(float cone, float range, bool characters, bool nearest,
+                                          const float *angles)
+{
+    sceVu0FMATRIX matrix;
+    identityMatrix(matrix);
+    rotateMatrixX(angles[0], matrix, matrix);
+    rotateMatrixZ(angles[2], matrix, matrix);
+    const sceVu0FVECTOR axisLocal = { 0.0f, range, 0.0f, 1.0f };
+    sceVu0FVECTOR axis;
+    applyMatrix(axis, matrix, axisLocal);
+    sceVu0FVECTOR head;
+    memcpy(head, bodyBone(owner, "bn_head")->getMatrix()[3], sizeof(head));
+
+    StageObject *best = nullptr;
+    float bestDistance = 0.0f;
+    float bestAngle = 0.0f;
+    for (int group = 0; group < StageObjGroup_Count; group++) {
+        if ((group == StageObjGroup_Characters) != characters)
+            continue;
+        StageObjArray &list = gStageScene->objects->m_lists[group];
+        for (StageObject **slot = list.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+            StageObject *object = *slot;
+            if (object->m_active == 0 || object == owner->m_290 || !isTargetValid(object))
+                continue;
+            sceVu0FVECTOR point;
+            if (!owner->getTargetPoint(object, point, false))
+                continue;
+            const sceVu0FVECTOR toPoint = { point[0] - head[0], point[1] - head[1], point[2] - head[2], 0.0f };
+            const float axisLength = sqrtf(axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2]);
+            const float pointLength = sqrtf(toPoint[0] * toPoint[0] + toPoint[1] * toPoint[1] + toPoint[2] * toPoint[2]);
+            const float angle = asinAcos(vecDot(axis, toPoint) / (axisLength * pointLength), AsinAcos_Acos);
+            const float distance = vecDistance(point, owner->m_xform.position);
+            if (angle >= cone || distance >= range || !canSeeTarget(object, point))
+                continue;
+            if (best == nullptr) {
+                bestDistance = distance;
+                bestAngle = fabsf(angle);
+                best = object;
+            }
+            else if (nearest) {
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    best = object;
+                }
+            }
+            else if (fabsf(angle) < bestAngle) {
+                bestAngle = fabsf(angle);
+                best = object;
+            }
+        }
+    }
+    return best != nullptr ? best : owner->m_290;
+}
+
+// FS2 0x0026aec0
+// callcheck: getKind, isEnemyOf, getBrainPace, getTargetPoint, atan2Octant, wrapAngle, vecDistance, getKind, getKind, getKind, find, getMatrix, segmentHitsAny, find, getMatrix, atan2Octant, vecDistance, getKind, getKind, getKind, find, getMatrix, segmentHitsAny, find, getMatrix, atan2Octant (0x26b5d0 and 0x26b690 inline)
+
+StageObject *MotionProbe::findTargetBeside(float facing, float span, float range, bool characters,
+                                           bool nearest, int side)
+{
+    StageObject *best = nullptr;
+    float bestDistance = 0.0f;
+    float bestAngle = 0.0f;
+    for (int group = 0; group < StageObjGroup_Count; group++) {
+        if ((group == StageObjGroup_Characters) != characters)
+            continue;
+        StageObjArray &list = gStageScene->objects->m_lists[group];
+        for (StageObject **slot = list.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+            StageObject *object = *slot;
+            if (object->m_active == 0 || object == owner->m_290 || !isTargetValid(object))
+                continue;
+            sceVu0FVECTOR point;
+            if (!owner->getTargetPoint(object, point, false))
+                continue;
+            const float *position = owner->m_xform.position;
+            const float angle = wrapAngle(atan2Octant(position[0] - point[0], point[1] - position[1]) - facing);
+            const bool inSide = side == 0 ? span < angle && angle < 0.0f
+                                          : side == 1 && 0.0f < angle && angle < span;
+            if (!inSide)
+                continue;
+            const float distance = vecDistance(point, position);
+            if (distance >= range || !canSeeTarget(object, point))
+                continue;
+            if (best == nullptr) {
+                bestDistance = distance;
+                bestAngle = angle;
+                best = object;
+            }
+            else if (nearest) {
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    best = object;
+                }
+            }
+            else if (bestAngle < angle) {
+                bestAngle = angle;
+                best = object;
+            }
+        }
+    }
+    return best != nullptr ? best : owner->m_290;
+}
+
+// FS2 0x0021bb70
+
+int StageCharacter::getBrainPace()
+{
+    return m_brain == nullptr ? 1 : m_brain->state;
 }
