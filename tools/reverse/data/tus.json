@@ -601,6 +601,17 @@
    "status": "verify",
    "why": "the PakArchive / PakHeader run between gsutil.cpp (GsTexture ends 0x231410) and scene.cpp (gameSceneThread 0x231bb0); no source strings, named by its class"
   },
+  "game/pausemenustate.cpp": {
+   "notes": "Written with game/playermotion.cpp thirteenth run (2026-11-05): all 12. Seen: Left analog stick: Move shows at the foot of the screen on stage 1, posted by the script.",
+   "ranges": [
+    [
+     "00207110",
+     "002081b0"
+    ]
+   ],
+   "status": "done",
+   "why": "the stage's notices: the queue, the entries, what shows at the foot of the screen"
+  },
   "game/perfmeter.cpp": {
    "notes": "Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, sprintf 0x127bf0, __extendsfdf2 0x11ba00. In retail addBar is empty and nothing allocates the stat tables, so the meter records nothing; it is kept for fidelity. RcntTimer ctor parameter order (tickRate, fieldRate, fieldsPerFrame) is a guess (CodeWarrior passes floats in f12/f13, the int in a1). Bar struct order colour/label is a guess. Bootstrap 6 needs a 3-argument sceOpen in sdk/fileio.h. callcheck.py now accepts brackets in callcheck comments (operator_new[], operator_delete[]). Next: game/rcnttimer.cpp (4 functions) or game/thread.cpp per tus.py next.",
    "ranges": [
@@ -621,7 +632,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Written: StageCharacter::setProperty 0x212530, getProperty 0x2132d0, resetActionState 0x21e050 (was a stub), initStatusBlock 0x21cc70, setRightArm, StageObject::getProperty 0x18a5b0 (the sub-scene copy calls it), the weapon, ammo, side and lamp helpers, takeNamedItems. CharacterBrain::setState stores the state only. PC default of the rates gone. Answered: getLifeState was 0 because the brain state stayed 0; F_PC01 starts in state 1 and now says 2. Seen, New Game, no crash: first-person room as before; the stick walks him (207 units in 200 steps, motion 3), and the user, watching live, says he moves and gets stuck on something: not found what. Stage 1 asks only ids 0x29, 0x04, 0x4a..0x4c, 0x36, 0x61 of F_PC01 and 0x3b, 0x3c of Root, so most ids are unproven. F_PC01 now has shot scatter 1.00 from the sheet, so shots spread. The script now reaches natives 0x3a, 0x49, 0xcf, 0x3e, 0x3f and PauseMenuState::hasNotice and addNotice: those are next, then what he gets stuck on, then game/characterbrain.cpp. Left here as the eleventh run lists it, less the properties.",
+   "notes": "All 244 of the TU's functions are written, the slice's folded ones now carry their addresses. Written beside it: natives 0x3a (answers 0 until the sight table +0x468 exists), 0x3e, 0x3f, 0x46, 0x49, 0x6a, 0x6b, 0x7d, 0x94, 0xac, 0xb1, 0xb5, 0xcf, 0x116, 0x124, 0x125, 0x129, 0x133, 0x1aa, 0x1c7, 0x1fa in game/scriptrunner.cpp; game/pausemenustate.cpp done and game/scenepool.cpp partial, both new TUs. Seen, New Game, work/walklong_pad.txt, 340 s, no crash: Left analog stick: Move at the foot of the screen with the prompt Open at the top. No game capture to compare with; the dark strip behind the text cannot be told apart in that dark room. Stuck: a trace shows him walking freely over a closed room of about 260 x 190 units and stopping at its edges, last in a corner at 7137, 6064, wandering about 10 units in a 9.6 s cycle; the door was not opened. Unproven that the ROM wanders the same way. Stage 1 still asks natives 0x13c, 0x13d (StageParty record) and 0x5b, 0x20f (particles). Next: game/characterbrain.cpp, whose sight table +0x468 also answers native 0x3a. Older callcheck gaps stay in DoorLink::onRun, canUnlockDoor, sideHook1, giveItem, resetActionState.",
    "ranges": [
     [
      "00175700",
@@ -1095,6 +1106,11 @@
      "date": "2026-11-05 08:47",
      "status": "partial",
      "summary": "a character's script properties and its status block: setProperty, getProperty, resetActionState, initStatusBlock, StageObject::getProperty: rates come from the sheet, the brain state is set, stage 1's scripts go on to new natives"
+    },
+    {
+     "date": "2026-11-05 09:33",
+     "status": "partial",
+     "summary": "stage 1's natives and the notices: 21 natives, PauseMenuState and ScenePool whole, hasBiter, findItem: the game's first tutorial line shows on screen, and the stuck is the closed first room"
     }
    ],
    "status": "partial",
@@ -1207,6 +1223,17 @@
    "status": "verify",
    "task": "The frame's action phases, step 3 of roadmap-3d-control.md, queued 2026-11-04: ScenePairTable, 0x171300..0x1718xx: ctor 0x171680, add, actionStart 0x1714e0, actionControl 0x171440, actionMovement 0x1713a0, actionTerminate 0x171300, all stubs that StageScene::update calls. Cut it out of unassigned@00171300 with tus.py define. About 14 functions, 356 i, the smallest step on the list. Without it no character part is ever stepped. Nothing can show it yet, so it ends verify.",
    "why": "ScenePairTable and its list: 0x171300..0x171a10 uses only itself; the first function after it, 0x171a30, is the door class's deleting dtor. The name was the queue's."
+  },
+  "game/scenepool.cpp": {
+   "notes": "Written with game/playermotion.cpp thirteenth run (2026-11-05): all 11. The text shows; the dark strip behind it could not be told apart on the dark room of stage 1, so it is unproven.",
+   "ranges": [
+    [
+     "00288c00",
+     "00289cc0"
+    ]
+   ],
+   "status": "partial",
+   "why": "the four lines of text at the foot of the screen"
   },
   "game/scenerender.cpp": {
    "notes": "The pin is closed: applyDebugAmbient, its call, the README paragraph and SceneRender::isKeyed with its two guards are gone; nothing was brightened. Measured in a New Game run: the record holds ambient 1.37255 1.41176 1.56863, directional 0, fog 1100..1500. Fog was not why the stage is dark: the auto camera stands 437 from its target. The map's vertex colours average 20 of 0x80, so a lit vertex averages 27, 28, 31: dark by its own data. Fixed from VU1 0x22f..0x259: the fog value is clamped to far value..near value (VU address 24), the host only saturated; stage 1's near value 230 now takes 10 percent off everything near. Mean brightness of the auto view: 3.2 unkeyed, 12 lit, 10.9 with the limit, ratio 0.90 = 230/255. Default camera, no YAMIPAN_CAMERA: an alley with walls and ground, work/shot_lights_default_camera.png. No game reference exists for either view, hence verify. No crash in 280 s runs. Left outside this TU: spot, skinned meshes, lamps; the event camera is next, game/demoevent.cpp. Doubt: host W against VU1 W with the scales 0x59b190, 0x59b194 is read from the upload's shape; open-items.md Done has it.",

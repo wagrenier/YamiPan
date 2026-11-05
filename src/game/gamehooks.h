@@ -45,6 +45,7 @@
 #include "sound/sound.h"
 
 class GamePacketManager;        // game/gamepacket.h
+class GsTexture;                // game/gsutil.h
 class TexAreaList;              // game/gsblockmap.h
 
 struct StageSelect;             // game/sysdata.h
@@ -2248,6 +2249,7 @@ public:
     // The sheet's 射撃: m_blanks and m_shotScatter.
     void setShot(int value);                                             // FS2 0x0021cc10
     void setSideBit(u_int bit, bool on);                                 // FS2 0x0021cab0..0x0021cba0
+    void setLightResist(int value);                                      // FS2 0x0021cc50
     // The sheet's weapon columns as CharacterWieldSkill bits.
     u_int getWieldSkills() const;                                        // FS2 0x00210e60
     // Its long weapon is a firearm and the sheet lets it use one.
@@ -2317,6 +2319,12 @@ public:
     // sheet, and what going to zero does is theirs.
     void setEndurance(int value);                                        // FS2 0x00211430
     void setRightArm(int value);                                         // FS2 0x00211300
+    // The carried item called name; null none.
+    StageObject *findItem(const char *name);                             // FS2 0x00216390, 0x0021bee0
+    // Its motion is a run, standing or crouched.
+    bool isRunningMotion();                                              // FS2 0x00179af0
+    // The script point (+0x720) is point: native 0x94.
+    void setScriptPoint(const sceVu0FVECTOR point);                      // FS2 0x00179ad0, 0x0020b220
     void setFlinch(int value);                                           // FS2 0x00211150
     // state 0 takes the character out of the scene, another brings it back;
     // 7 starts the count of DamageDead. The brain follows. arg goes to it.
@@ -2367,7 +2375,8 @@ public:
     // Reaches through the broken glass.
     bool reachesThroughDoor(StageDoor *door) const;                      // FS2 0x0020d6d0
     // Someone follows it close by, so the door goes faster. Slot +0x2ac.
-    bool hasFollower();                                                  // FS2 0x00210720
+    // A living enemy holds it in its bite.
+    bool hasBiter();                                                     // FS2 0x00210720
     // The door's pace of a character with a brain. Slot +0x278.
     int  getBrainPace();                                                 // FS2 0x0021bb70
     StageCharacter *getScriptCharacter() override { return this; }       // FS2 0x00179d10
@@ -2527,7 +2536,8 @@ public:
     int    m_6cc = 0;           // FS2 +0x6cc: the same; 0x228670 reads it
     int    m_6d0 = 0;           // FS2 +0x6d0
     int    m_6d4 = 0;           // FS2 +0x6d4
-    sceVu0FVECTOR m_vector730 = { 0.0f, 0.0f, 0.0f, 1.0f }; // FS2 +0x730: a script's; its set flag +0x720 is unread
+    u_char m_vector730Set = 0;  // FS2 +0x720: unread so far
+    sceVu0FVECTOR m_vector730 = { 0.0f, 0.0f, 0.0f, 1.0f }; // FS2 +0x730: a script's (properties, native 0x94)
     CharacterBlock7c8 m_block7c8 = {}; // FS2 +0x7c8
 };
 
@@ -2648,30 +2658,118 @@ void gsFillRect(sceVif1Packet *packet, int x, int y, int x2, int y2, u_int rgba)
 class WideFontPrinter;          // game/fontdata.h
 struct ScenePool
 {
+    static constexpr int kAllSlots = -1;
+
     ScenePool(u_int count, int size, int size2);                         // FS2 0x00289be0
     ~ScenePool();                                                        // FS2 0x00289b60: deleting
     // Text for slot index; -1 past the last.
     int  setSlot(int index, const u_short *text);                        // FS2 0x00289b20
+    // The colour of a slot, of all with kAllSlots.
+    void setColour(u_int rgba, int index);                               // FS2 0x002896a0
     void setImage(const void *image);                                    // FS2 0x002894b0
     void setPrinter(WideFontPrinter *printer);                           // FS2 0x00289b50
     void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x00289800
+    void drawStrip(sceVif1Packet *packet);                               // FS2 0x00288c00
+
+    int              m_count;    // FS2 +0x14
+    int              m_originX;  // FS2 +0x20: where the printer's lines start, GS window
+    int              m_originY;  // FS2 +0x24
+    GsTexture       *m_image;    // FS2 +0x10: the strip's cells
+    int             *m_widths;   // FS2 +0x00: each line of the frame, pixels
+    WideFontPrinter *m_printer;  // FS2 +0x18
+    const u_short  **m_slots;    // FS2 +0x1c
+    u_int           *m_colours;  // FS2 +0x28
 };
 
-// +0xc4: plain data beside the pause menu's code. layout: host (EE 0x678).
+constexpr int kNoticeLines    = 2;
+constexpr int kNoticeLineSize = 0x40;
+
+// A notice waiting for its kind's entry; free with a null text.
+// layout: host (EE 0x18)
+struct PauseNotice
+{
+    int            kind = 0;     // FS2 +0x00: PauseMenuState::NoticeKind
+    u_int          serial = 0;   // FS2 +0x04: the oldest shows first
+    int            frames = 0;   // FS2 +0x08: how long it shows, of the game's 30 a second
+    int            delay = 0;    // FS2 +0x0c: before it shows
+    int            hold = 0;     // FS2 +0x10: not dismissed before this
+    const u_short *text = nullptr; // FS2 +0x14
+};
+
+enum NoticeState
+{
+    NoticeState_Waiting = 0,     // before its start
+    NoticeState_Showing = 1,
+    NoticeState_Over    = 2,     // free
+};
+
+// What a kind shows now.
+// layout: host (EE 0x114)
+struct NoticeEntry
+{
+    // Takes the notice from now, its text cut at the control characters.
+    void show(float now, const PauseNotice &notice);                     // FS2 0x00207110
+    // Past hold, with an end to come after it.
+    bool canDismiss(float now) const
+    {
+        return state == NoticeState_Showing && end > hold && now > hold;
+    }
+    int stateAt(float now) const
+    {
+        if (now < start)
+            return NoticeState_Waiting;
+        return dismissed != 0 || end < now ? NoticeState_Over : NoticeState_Showing;
+    }
+
+    u_short lines[kNoticeLines][kNoticeLineSize] = {}; // FS2 +0x000
+    float   start = 0.0f;        // FS2 +0x100: seconds of the scene's clock
+    float   end = 0.0f;          // FS2 +0x104
+    float   hold = 0.0f;         // FS2 +0x108
+    u_char  dismissed = 0;       // FS2 +0x10c
+    u_char  pinned = 0;          // FS2 +0x10d: stays until a script clears it (native 0x1aa)
+    int     state = NoticeState_Over; // FS2 +0x110
+};
+
+// +0xc4: the stage's notices (game/pausemenustate.cpp). layout: host (EE 0x678).
 struct PauseMenuState
 {
+    enum NoticeKind
+    {
+        NoticeKind_Purpose = 0,  // shown, it becomes the mission's purpose
+        NoticeKind_Message = 1,
+        NoticeKind_Hint    = 2,
+        NoticeKind_Event   = 3,  // Message while an event runs; the only one shown then
+    };
+    static constexpr int kNoticeKinds = 5;
+    static constexpr int kNoticeSlots = 11;
+
     PauseMenuState();                                                    // FS2 0x00207ef0
     ~PauseMenuState();                                                   // FS2 0x00207ea0: deleting
     void update();                                                       // FS2 0x00207500
-    // One of its five entries is on and holds the scene clock's time.
+    // An entry can be dismissed: the notice holds the input.
     bool isActive();                                                     // FS2 0x002078d0
-    // Every entry off.
+    // The event's entry off.
     void clearList();                                                    // FS2 0x00207440
+    bool clearPinned();                                                  // FS2 0x00207490
     // A notice for the list: true when a free entry of the 11 took it and
     // no number was negative.
     bool addNotice(const u_short *text, int frames, int arg, int level); // FS2 0x00207aa0
-    // A notice of that kind waits, or that kind's list is full.
+    // The same by kind, frames 0 for ever.
+    bool addPurpose(const u_short *text, int frames, int delay);         // FS2 0x00207970
+    bool addMessage(const u_short *text, int frames, int delay);         // FS2 0x00207bc0
+    bool addHint(const u_short *text, int frames, int delay);            // FS2 0x00207cf0
+    // A notice of that kind waits, or that kind's entry shows.
     bool hasNotice(int kind);                                            // FS2 0x00207e20
+
+    bool         m_showing = false;  // FS2 +0x000
+    u_int        m_serial = 0;       // FS2 +0x004
+    PauseNotice  m_notices[kNoticeSlots]; // FS2 +0x008
+    NoticeEntry  m_entries[kNoticeKinds]; // FS2 +0x110
+    u_int        m_colour = 0x80606060;   // FS2 +0x674
+
+private:
+    PauseNotice *freeNotice();
+    bool post(int kind, const u_short *text, int frames, int delay, int hold);
 };
 
 class WideFontPrinter;          // game/fontdata.h

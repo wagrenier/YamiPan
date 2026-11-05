@@ -69,6 +69,8 @@ opening is the event d0101") is answered for a first entry into the stage.
 
 **2026-11-05, later still:** a character's properties and its status block are written, so stage 1's scripts read and store them: Root and F_PC01 go on to natives 0x3a, 0x49, 0xcf, 0x3e, 0x3f (open-items.md, Done, game/playermotion.cpp twelfth run).
 
+**2026-11-05, later still:** stage 1's natives are written but 0x13c, 0x13d, 0x5b and 0x20f, and the notices show: the first tutorial line is on screen in New Game (open-items.md, Done, game/playermotion.cpp thirteenth run).
+
 ## The order for control
 
 Each step needs the ones above it. Sizes are the unwritten closure of its roots.

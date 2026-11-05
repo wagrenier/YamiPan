@@ -12413,6 +12413,18 @@
   "was": "FUN_00179a80",
   "why": "answers 0"
  },
+ "00179ad0": {
+  "name": "StageCharacter::setScriptPoint",
+  "tag": "game-inferred",
+  "was": "FUN_00179ad0",
+  "why": "0x20b220 on +0x720, whose vector +0x730 is properties Vector0..2; native 0x94"
+ },
+ "00179af0": {
+  "name": "StageCharacter::isRunningMotion",
+  "tag": "game-inferred",
+  "was": "FUN_00179af0",
+  "why": "motion +0x40 among the run ids or the crouched runs; runner slot +0x128, native 0xb5"
+ },
  "0017a490": {
   "name": "StageCharacter::moveStep",
   "tag": "game-inferred",
@@ -15803,6 +15815,12 @@
   "was": "FUN_001d0a60",
   "why": "strings PC, NPC, SELF, else StageObjectList::findAny"
  },
+ "001d1150": {
+  "name": "hideActiveNamed",
+  "tag": "game-inferred",
+  "was": "FUN_001d1150",
+  "why": "name map of a group: every active object stops and hides; native 0x133"
+ },
  "001d1260": {
   "name": "findCameraObject",
   "tag": "game-inferred",
@@ -17663,11 +17681,23 @@
   "was": "FUN_002052d0",
   "why": "deleting dtor of the block DemoCamera::~DemoCamera frees"
  },
+ "00207110": {
+  "name": "NoticeEntry::show",
+  "tag": "game-inferred",
+  "was": "FUN_00207110",
+  "why": "copies up to two lines cut at control chars and sets start, end, hold from a notice"
+ },
  "00207440": {
   "name": "PauseMenuState::clearList",
   "tag": "game-inferred",
   "was": "FUN_00207440",
   "why": "zeroes the two counts, state 2; StageEvent's end when not hidesText"
+ },
+ "00207490": {
+  "name": "PauseMenuState::clearPinned",
+  "tag": "game-inferred",
+  "was": "FUN_00207490",
+  "why": "entries showing with +0x21d off; native 0x1aa"
  },
  "00207500": {
   "name": "PauseMenuState::update",
@@ -17681,11 +17711,29 @@
   "was": "FUN_002078d0",
   "why": "an entry in state 1 whose window holds the scene clock"
  },
+ "00207970": {
+  "name": "PauseMenuState::addPurpose",
+  "tag": "game-inferred",
+  "was": "FUN_00207970",
+  "why": "notice of kind 0, which update hands to setPurposeText"
+ },
  "00207aa0": {
   "name": "PauseMenuState::addNotice",
   "tag": "game-inferred",
   "was": "FUN_00207aa0",
   "why": "takes a free entry of 11 at +8: mode, id, frames, arg, level, text"
+ },
+ "00207bc0": {
+  "name": "PauseMenuState::addMessage",
+  "tag": "game-inferred",
+  "was": "FUN_00207bc0",
+  "why": "notice of kind 1, or 3 in an event; frames 0 for ever"
+ },
+ "00207cf0": {
+  "name": "PauseMenuState::addHint",
+  "tag": "game-inferred",
+  "was": "FUN_00207cf0",
+  "why": "notice of kind 2; frames 0 for ever"
  },
  "00207e20": {
   "name": "PauseMenuState::hasNotice",
@@ -17777,11 +17825,23 @@
   "was": "FUN_0020afe0",
   "why": "result gp-0x7a3c = -1, threadSlotCreate(0x20b010, slot 4); stageThread on StageScene::wantsMapMenu"
  },
+ "0020b120": {
+  "name": "StageCharacter::getEnemyCandidates",
+  "tag": "game-inferred",
+  "was": "FUN_0020b120",
+  "why": "mission byClass by its sides, or all characters when it has a foe of its own"
+ },
  "0020b1d0": {
   "name": "StagePlayer::latchAltAction",
   "tag": "game-inferred",
   "was": "FUN_0020b1d0",
   "why": "+0x364 set: +0x2ca = 1; update calls it while the alternate flag holds; the meaning is a guess"
+ },
+ "0020b220": {
+  "name": "ScriptPoint::set",
+  "tag": "game-inferred",
+  "was": "FUN_0020b220",
+  "why": "copies the vector to +0x10 and sets the first byte"
  },
  "0020b240": {
   "name": "StageCharacter::canWield",
@@ -17880,10 +17940,10 @@
   "why": "only the scene's +0x78 character, while +0x30: reports a named event (GUNSHOOT)"
  },
  "00210720": {
-  "name": "StageCharacter::hasFollower",
+  "name": "StageCharacter::hasBiter",
   "tag": "game-inferred",
   "was": "FUN_00210720",
-  "why": "slot +0x2ac: DoorLink's rate; a list of characters near, unread beyond that"
+  "why": "walks the enemies of its side: a living one whose bite target is this; hasFollower was a guess"
  },
  "00210e60": {
   "name": "StageCharacter::getWieldSkills",
@@ -18083,6 +18143,12 @@
   "was": "FUN_00216310",
   "why": "walks +0x22c by name"
  },
+ "00216390": {
+  "name": "StageCharacter::findItem",
+  "tag": "game-inferred",
+  "was": "FUN_00216390",
+  "why": "walks the carried list +0x22c comparing names at item +0x20"
+ },
  "00216400": {
   "name": "StageCharacter::swapWeapons",
   "tag": "game-inferred",
@@ -18148,6 +18214,18 @@
   "tag": "game-inferred",
   "was": "FUN_00219b30",
   "why": "bits of allows +0x374 and +0x378, natives 0x11b.. test them"
+ },
+ "0021a040": {
+  "name": "StageCharacter::getSeenEnemyId",
+  "tag": "game-inferred",
+  "was": "FUN_0021a040",
+  "why": "+0x7a8 stale (1) refreshes through 0x21a1c0, then that character's m_id; native 0x3a"
+ },
+ "0021a1c0": {
+  "name": "StageCharacter::pickSeenEnemies",
+  "tag": "game-inferred",
+  "was": "FUN_0021a1c0",
+  "why": "nearest living enemies by the sight table +0x468 into +0x7a8 and +0x7ac"
  },
  "0021a960": {
   "name": "StageCharacter::noteMotion",
@@ -18226,6 +18304,12 @@
   "tag": "game-inferred",
   "was": "FUN_0021bb90",
   "why": "walks findAll3(name) for free items and gives them"
+ },
+ "0021bee0": {
+  "name": "StageCharacter::carriesItem",
+  "tag": "game-inferred",
+  "was": "FUN_0021bee0",
+  "why": "findItem != 0; runner slot +0x108, native 0x49"
  },
  "0021bf00": {
   "name": "StageCharacter::getScriptValue",
@@ -22985,11 +23069,35 @@
   "was": "FUN_00288bc0",
   "why": "demoEU/s%02d/ with the selected stage"
  },
+ "00288c00": {
+  "name": "ScenePool::drawStrip",
+  "tag": "game-inferred",
+  "was": "FUN_00288c00",
+  "why": "the image in 20-pixel cells behind the widths of the lines"
+ },
  "002894b0": {
   "name": "ScenePool::setImage",
   "tag": "game-inferred",
   "was": "FUN_002894b0",
   "why": "+0x10 a new GsTexture"
+ },
+ "00289530": {
+  "name": "ScenePool::destroyStrip",
+  "tag": "game-inferred",
+  "was": "FUN_00289530",
+  "why": "the destructor's part that frees the texture and width table"
+ },
+ "002895c0": {
+  "name": "ScenePool::initStrip",
+  "tag": "game-inferred",
+  "was": "FUN_002895c0",
+  "why": "the constructor's first part: width table, window 0x800, strip colour"
+ },
+ "002896a0": {
+  "name": "ScenePool::setColour",
+  "tag": "game-inferred",
+  "was": "FUN_002896a0",
+  "why": "+0x28[index], every slot with a negative index"
  },
  "00289800": {
   "name": "ScenePool::draw",
