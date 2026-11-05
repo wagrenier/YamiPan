@@ -1952,7 +1952,30 @@ struct ScriptNativeBinding
     int          id;
     ScriptNative native;
 };
+// 0xf7 setUseKind(kind, priority, label), 0xf8 enableUseKind(kind, on): the
+// built-in kinds of the Use button's list.
+// FS2 0x001be680, 0x001be5b0
+// callcheck: readCellArg, FUN_0023eff0, FUN_0023efb0
+
+static const int *nativeEnableUseKind(ScriptRunner *self, int *, const int *code)
+{
+    const int *args = self->popped(2);
+    gStageScene->itemList->enableKind(args[0], args[1] != 0);
+    return code;
+}
+
+static const int *nativeSetUseKind(ScriptRunner *self, int *, const int *code)
+{
+    const int *args = self->popped(2);
+    void *label;
+    const int *next = self->readCellArg(&label, code);
+    gStageScene->itemList->setKind(args[0], label, args[1]);
+    return next;
+}
+
 static const ScriptNativeBinding kNatives[] = {
+    { 0x0f7, nativeSetUseKind },
+    { 0x0f8, nativeEnableUseKind },
     { 0x04e, nativeFadeIn },
     { 0x053, nativeMenuMode },
     { 0x064, nativeScriptView },

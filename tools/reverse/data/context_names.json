@@ -16325,6 +16325,18 @@
   "was": "FUN_001dfd90",
   "why": "reset calls it when +0xbd4 is set, with 0; body unread"
  },
+ "001dff40": {
+  "name": "PlayerMotion::levelBlocked",
+  "tag": "game-inferred",
+  "was": "FUN_001dff40",
+  "why": "takes the motion in a0; another character near whose next motion is an up or a fall the other way"
+ },
+ "001e0360": {
+  "name": "PlayerMotion::ladderBlocked",
+  "tag": "game-inferred",
+  "was": "FUN_001e0360",
+  "why": "takes the motion in a0; another character near on a ladder motion, by rank 0x271f50"
+ },
  "001e0e20": {
   "name": "PlayerMotion::applyMovement",
   "tag": "game-inferred",
@@ -16438,6 +16450,12 @@
   "tag": "game-inferred",
   "was": "FUN_001eaea0",
   "why": "stepLower when +0xa73: target +0xac0, offset +0xad0"
+ },
+ "001eb090": {
+  "name": "PlayerMotion::walkFileTarget",
+  "tag": "game-inferred",
+  "was": "FUN_001eb090",
+  "why": "the head of startWalkAt 0x1eaea0 alone: ModelPose::getRecordOffset with the turned ahead vector"
  },
  "001eb150": {
   "name": "PlayerMotion::isEnding",
@@ -17399,11 +17417,53 @@
   "was": "FUN_00207ef0",
   "why": "StageScene ctor new(0x678) for +0xc4, beside pauseMenuResult 0x20acb0; plain data (no vptr); name a guess"
  },
+ "00208330": {
+  "name": "UiPrompt::press",
+  "tag": "game-inferred",
+  "was": "FUN_00208330",
+  "why": "state 1, table 0x2fa7c0, frames 12"
+ },
+ "00208380": {
+  "name": "UiPrompt::setSheet",
+  "tag": "game-inferred",
+  "was": "FUN_00208380",
+  "why": "takes a TimM sheet and a Tim2Texture of its first picture"
+ },
+ "00208490": {
+  "name": "UiPrompt::draw",
+  "tag": "game-inferred",
+  "was": "FUN_00208490",
+  "why": "fade tables, sprite by button map, textWidth, print at the top centre"
+ },
  "00208b70": {
   "name": "thunk_WideFontPrinter::print",
   "tag": "game-inferred",
   "was": "FUN_00208b70",
   "why": "vtable 0x319ff0 slot 4, jumps to 0x2d3b30"
+ },
+ "00208bb0": {
+  "name": "UiPrompt::setLabel",
+  "tag": "game-inferred",
+  "was": "FUN_00208bb0",
+  "why": "stores +0xc, +0x14 unless state 1"
+ },
+ "00208be0": {
+  "name": "UiPrompt::endFrame",
+  "tag": "game-inferred",
+  "was": "FUN_00208be0",
+  "why": "clears the label each frame"
+ },
+ "00208c70": {
+  "name": "UiPrompt::UiPrompt",
+  "tag": "game-inferred",
+  "was": "FUN_00208c70",
+  "why": "0x38-byte object at UiItemList +0, printer and arg"
+ },
+ "00208cc0": {
+  "name": "UiPrompt::stepPress",
+  "tag": "game-inferred",
+  "was": "FUN_00208cc0",
+  "why": "ends state 1 when its table has played"
  },
  "0020acb0": {
   "name": "pauseMenuResult",
@@ -17434,6 +17494,18 @@
   "tag": "game-inferred",
   "was": "FUN_0020b1d0",
   "why": "+0x364 set: +0x2ca = 1; update calls it while the alternate flag holds; the meaning is a guess"
+ },
+ "0020b590": {
+  "name": "StageCharacter::canUsePrompt",
+  "tag": "game-inferred",
+  "was": "FUN_0020b590",
+  "why": "canTakePrompt, no armed busy motion, and resting or moving"
+ },
+ "0020c0e0": {
+  "name": "StageCharacter::canTakePrompt",
+  "tag": "game-inferred",
+  "was": "FUN_0020c0e0",
+  "why": "no party or jack, no walk, no queue, no fade: UiItemList::update's gate"
  },
  "0020c940": {
   "name": "StageCharacter::getSwayMatrix",
@@ -17560,6 +17632,12 @@
   "tag": "game-inferred",
   "was": "FUN_00215940",
   "why": "stages 0x19, 0x1b for kind 1 and 0xf, 0x17 for kind 0; controlStep then takes m_health down"
+ },
+ "00215ce0": {
+  "name": "StageCharacter::isOpeningLead",
+  "tag": "game-inferred",
+  "was": "FUN_00215ce0",
+  "why": "stage 2 and sheet kind 1, or stage 1 and kind 0; Level refuses drops past 125 for it"
  },
  "00215e70": {
   "name": "StageObject::isYriOrKne",
@@ -18472,6 +18550,24 @@
   "tag": "game-inferred",
   "was": "FUN_0023ee90",
   "why": "acts on the front slot; update takes a non-negative answer as picked"
+ },
+ "0023ef40": {
+  "name": "UiItemList::post",
+  "tag": "game-inferred",
+  "was": "FUN_0023ef40",
+  "why": "natives 0x79, 0xf6: a script's entry into the back slot, kind + 7, by priority"
+ },
+ "0023efb0": {
+  "name": "UiItemList::enableKind",
+  "tag": "game-inferred",
+  "was": "FUN_0023efb0",
+  "why": "native 0xf8: kinds[i].enabled"
+ },
+ "0023eff0": {
+  "name": "UiItemList::setKind",
+  "tag": "game-inferred",
+  "was": "FUN_0023eff0",
+  "why": "native 0xf7: kinds[i] label and priority"
  },
  "0023f030": {
   "name": "UiItemList::setSheet",
@@ -20963,6 +21059,12 @@
   "was": "FUN_0026c180",
   "why": "raycastObject from f12 above the point, then f13 below, floor mask 0x42400c; the height with its sign into a2, the object into a3; findEdge calls it with 205 and 1000"
  },
+ "0026c2d0": {
+  "name": "MotionProbe::sidesClear",
+  "tag": "game-inferred",
+  "was": "FUN_0026c2d0",
+  "why": "two segments at +-90 degrees from a place; host sidesAreClear"
+ },
  "0026c4b0": {
   "name": "MotionProbe::faceAhead",
   "tag": "game-inferred",
@@ -21059,6 +21161,18 @@
   "was": "FUN_0026cf40",
   "why": "the dtor on vtables 0x317140 / 0x317164 / 0x31717c, then StageObject's"
  },
+ "0026f970": {
+  "name": "LadderMoveCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_0026f970",
+  "why": "slot +0x10 of vtable 0x317490: the stick climbs (ld_u, ld_d, off at either end), else ld_s; the squat button ld_esp"
+ },
+ "0026fb20": {
+  "name": "LadderMoveCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_0026fb20",
+  "why": "slot +0xc of vtable 0x317490: allows move, and squatAction at ld_s"
+ },
  "00270260": {
   "name": "QuickTurnCondition::onApply",
   "tag": "game-inferred",
@@ -21070,6 +21184,60 @@
   "tag": "game-inferred",
   "was": "FUN_002702a0",
   "why": "name QuickTurn (vtable 0x3174f0); ability +0x3a4 sets +0x363"
+ },
+ "00271790": {
+  "name": "JumpCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00271790",
+  "why": "slot +0x10 of vtable 0x317610: jp (0x39) and startWalkFile"
+ },
+ "00271850": {
+  "name": "JumpCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00271850",
+  "why": "slot +0xc of vtable 0x317610: face flags 0x180, ability jump, a raycast and the side test, writes +0x371"
+ },
+ "00271c60": {
+  "name": "LadderCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00271c60",
+  "why": "slot +0x10 of vtable 0x317630: ld_u_b or ld_d_b0 and startWalkFile"
+ },
+ "00271d70": {
+  "name": "LadderCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00271d70",
+  "why": "slot +0xc of vtable 0x317630: wall face of flags 0x2020, ability ladder, findFloor behind it, writes +0x36c"
+ },
+ "00271f50": {
+  "name": "StageCharacter::getLadderRank",
+  "tag": "game-inferred",
+  "was": "FUN_00271f50",
+  "why": "sheet kind 1 is 0, kind 0 is 1, else 2: who gives way on a ladder"
+ },
+ "00272030": {
+  "name": "LevelLiftCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00272030",
+  "why": "slot +0x10 of vtable 0x317650: both characters to u_sp (0x32)"
+ },
+ "002721a0": {
+  "name": "LevelLiftCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_002721a0",
+  "why": "slot +0xc of vtable 0x317650: partnerResponds, copies the edge to +0xbb0 / +0xbc0, partner resting within 30 sets +0x398"
+ },
+ "00272360": {
+  "name": "LevelCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00272360",
+  "why": "slot +0x10 of vtable 0x317670: requests u_060..u_180 or fal_l..fal_h by edgeDrop, then startWalkFile to the edge"
+ },
+ "00272630": {
+  "name": "LevelCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00272630",
+  "why": "slot +0xc of vtable 0x317670: reads WalkLink's edge, stepLevel and the motion heights, writes CharacterAllows +0x368 1 up, 2 down; seen: allows level at a flag 0x40 / 2 face on stage 1"
  },
  "00272d50": {
   "name": "MoveCondition::onApply",
@@ -21130,6 +21298,48 @@
   "tag": "game-inferred",
   "was": "FUN_002775d0",
   "why": "inserted under DamageDead (0x3057a0), +0xc10, vtable 0x3177a0: 0x2773d0 counts +0x5ec seconds and requests 0xb2 / 0xb1"
+ },
+ "0027b6e0": {
+  "name": "LadderLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_0027b6e0",
+  "why": "slot +0x14 of vtable 0x317ad0: copies the Ladder condition's height and z"
+ },
+ "0027b730": {
+  "name": "LadderLink::LadderLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027b730",
+  "why": "vtable 0x317ad0, adds the condition named LadderMove"
+ },
+ "0027b7e0": {
+  "name": "JumpLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_0027b7e0",
+  "why": "slot +0x1c of vtable 0x317b00, the sheet's link Jump: lnd_h on landing"
+ },
+ "0027b860": {
+  "name": "FallLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_0027b860",
+  "why": "slot +0x1c of vtable 0x317b30, the sheet's link Fall: tracks the height, lands by how far; seen fal_l then lnd_l"
+ },
+ "0027bca0": {
+  "name": "UpLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_0027bca0",
+  "why": "slot +0x1c of vtable 0x317b60: keeps the root scale, watches the pair of u_sp"
+ },
+ "0027bdb0": {
+  "name": "UpLink::onStart",
+  "tag": "game-inferred",
+  "was": "FUN_0027bdb0",
+  "why": "slot +0x18 of vtable 0x317b60: rise / 60, 90, 120, 180 into setRootScale; seen scaling a 60 climb"
+ },
+ "0027be70": {
+  "name": "UpLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_0027be70",
+  "why": "slot +0x14 of vtable 0x317b60, the sheet's link Up: the rise from WalkLink's edgeDrop"
  },
  "0027c420": {
   "name": "WalkLink::onUpdate",
@@ -21592,6 +21802,12 @@
   "tag": "game-inferred",
   "was": "FUN_00289be0",
   "why": "StageScene ctor new(0x2c) for +0xc0 with (4, 0x800, 0x878): base 0x2895c0, then count pointers new[] (+0x1c), sizes +0x20 / +0x24; name a guess"
+ },
+ "0028ab90": {
+  "name": "StageCar::hasSettled",
+  "tag": "game-inferred",
+  "was": "FUN_0028ab90",
+  "why": "0.3 <= +0x3ac of a kind 3 object; the meaning of +0x3ac is a guess"
  },
  "0028d780": {
   "name": "StageCar::honk",
@@ -22666,6 +22882,12 @@
   "tag": "game-inferred",
   "was": "FUN_002a2100",
   "why": "PC_LADDER / NPC_LADDER / SBT_LADDER / YBZ_LADDER / RYO_LADDER by the sheet's kind; called on the step events of ladder motions"
+ },
+ "002a2fc0": {
+  "name": "StageCharacter::playLandSound",
+  "tag": "game-inferred",
+  "was": "FUN_002a2fc0",
+  "why": "findStepSound on the floor face's surface with pace 4, playEntryHeard"
  },
  "002a49c0": {
   "name": "StageCharacter::playStepSound",

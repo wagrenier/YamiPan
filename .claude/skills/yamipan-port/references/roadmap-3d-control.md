@@ -57,6 +57,8 @@ opening is the event d0101") is answered for a first entry into the stage.
 
 **2026-11-05:** `game/characterground.cpp` written: he stands on the floor; walls are written and not yet seen working. The rest of the 2026-11-04 text stands.
 
+**2026-11-05, later:** ledges work with the Use button and its prompt (`game/uiitemlist.cpp`, open-items.md); ladders and gaps are written, stage 1 has none to test on.
+
 ## The order for control
 
 Each step needs the ones above it. Sizes are the unwritten closure of its roots.

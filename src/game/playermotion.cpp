@@ -8,6 +8,8 @@
  */
 #include "game/playermotion.h"
 
+#include "game/boxgrid.h"
+
 #include "game/characterground.h"
 #include "game/characterinput.h"
 
@@ -838,6 +840,9 @@ static bool isVehicle(StageObject *object)
 }
 
 // Neither side of the place is against a wall.
+// FS2 0x0026c2d0
+// callcheck: segmentHitsAny, segmentHitsAny, addAngle, addAngle, sinCos, sinCos, addAngle, addAngle, sinCos, sinCos
+
 static bool sidesAreClear(const sceVu0FVECTOR place, float yaw, float reach)
 {
     constexpr float kQuarterTurn = 1.5707964f;
@@ -944,6 +949,73 @@ bool MotionProbe::findFloor(float up, float down, const sceVu0FVECTOR point, flo
     return true;
 }
 
+
+constexpr u_int kFaceGap    = 0x100;   // a ledge one jumps at a run and climbs from standing
+constexpr u_int kFaceJump   = 0x180;   // what Jump goes over
+constexpr u_int kFaceLadder = 0x2020;
+// The sheet's kind whose ledges nobody waits for.
+constexpr int   kKindNoBlock = 3;
+
+// The ledge ahead: the Use button climbs or drops over it. EE vtable 0x317670.
+// layout: host
+class LevelCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x00272630
+    void onApply() override;                                             // FS2 0x00272360
+
+private:
+    bool pathBlocked(int id, float reach, const float *from, u_int flags, StageObject *skip);
+};
+
+// The partner lifts the character up a ledge (Motion_Pair). EE vtable 0x317650.
+// layout: host
+class LevelLiftCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x002721a0
+    void onApply() override;                                             // FS2 0x00272030
+};
+
+// The ladder ahead. EE vtable 0x317630. layout: host -- +0x14 yaw, +0x20
+// point, +0x30 height on the base condition.
+class LadderCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x00271d70
+    void onApply() override;                                             // FS2 0x00271c60
+
+    float yaw = 0.0f;           // FS2 +0x14: facing away from it
+    sceVu0FVECTOR point = {};   // FS2 +0x20: its middle, at the feet's height
+    float height = 0.0f;        // FS2 +0x30: to the floor behind it: above, one is at its foot
+};
+
+// A gap ahead. EE vtable 0x317610. layout: host -- +0x14 yaw, +0x20 point.
+class JumpCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x00271850
+    void onApply() override;                                             // FS2 0x00271790
+
+private:
+    float yaw = 0.0f;           // FS2 +0x14
+    sceVu0FVECTOR point = {};   // FS2 +0x20
+};
+
+// On a ladder: the stick climbs, the squat button lets go. EE vtable 0x317490.
+// layout: host
+class LadderMoveCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x0026fb20
+    void onApply() override;                                             // FS2 0x0026f970
+};
+
 // FS2 0x0026b860
 
 void MotionProbe::pointAhead(float x, float z, sceVu0FVECTOR out)
@@ -958,6 +1030,593 @@ void MotionProbe::pointAhead(float x, float z, sceVu0FVECTOR out)
     const float *head = owner->m_model->boneMap.find("bn_head")->value->getMatrix()[3];
     for (int i = 0; i < 4; i++)
         out[i] += head[i];
+}
+
+// FS2 0x00215ce0
+// callcheck: getSaveData, getStageSelect, getStageSelect (stageObjRecord)
+
+bool StageCharacter::isOpeningLead()
+{
+    const int stage = getStageSelect()->stage;
+    if (stage == 2)
+        return stageObjRecord(m_itemDef)->kind == 1;
+    if (stage == 1)
+        return stageObjRecord(m_itemDef)->kind == 0;
+    return false;
+}
+
+// FS2 0x00271f50
+// callcheck: getStageSelect (stageObjRecord)
+
+int StageCharacter::getLadderRank()
+{
+    const int kind = stageObjRecord(m_itemDef)->kind;
+    if (kind == 1)
+        return 0;
+    return kind == 0 ? 1 : 2;
+}
+
+// The heights of a ledge, what the sheet's up and fall motions are made for.
+static constexpr float kDropFar = -150.0f;
+static constexpr float kDropMid = -75.0f;
+static constexpr float kRiseLow = 75.0f;
+static constexpr float kRiseMid = 105.0f;
+static constexpr float kRiseHigh = 150.0f;
+static constexpr float kLadderWalkRate = 0.35f;
+
+// Walking or running ahead: the way to meet a gap (Jump) and not a ledge (Level).
+static bool isForwardMotion(int id)
+{
+    switch (id) {
+    case Motion_CrouchWalk: case Motion_StairsDown: case Motion_StairsUp: case 5: case 4: case 3:
+    case 0x8a: case 0x7b: case 0x6c: case 0x51:
+    case 0x20:
+        return true;
+    }
+    return isRunMotion(id) || isCrouchRunMotion(id);
+}
+
+// The up or fall motion for a height.
+static int levelMotion(float drop)
+{
+    if (drop < kDropFar)
+        return Motion_FallHigh;
+    if (drop < kDropMid)
+        return Motion_FallMid;
+    if (drop < 0.0f)
+        return Motion_FallLow;
+    if (drop < kRiseLow)
+        return Motion_Up060;
+    if (drop < kRiseMid)
+        return Motion_Up090;
+    return drop < kRiseHigh ? Motion_Up120 : Motion_Up180;
+}
+
+// The floor object is a car: the ROM's kind 3. No such object exists yet.
+static StageCar *asCar(StageObject *object)
+{
+    return object != nullptr && object->getKind() == StageObject_Kind3 ? reinterpret_cast<StageCar *>(object) : nullptr;
+}
+
+// FS2 0x001dff40
+// callcheck: getStageSelect, getStageSelect (stageObjRecord; upcomingMotion; the loop as stageUpdateCharacterMotions')
+
+bool PlayerMotion::levelBlocked(bool up) const
+{
+    constexpr float kNearSquared = 10000.0f;
+    if (stageObjRecord(owner->m_itemDef)->kind == kKindNoBlock)
+        return false;
+    StageObjArray &characters = gStageScene->objects->m_lists[StageObjGroup_Characters];
+    for (StageObject **slot = characters.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        StageObject *other = *slot;
+        if (!other->m_viewActive || other == owner || stageObjRecord(other->m_itemDef)->kind == kKindNoBlock)
+            continue;
+        const float height = fabsf(other->m_xform.position[2] - owner->m_xform.position[2]);
+        if (200.0f < height || height < 20.0f)
+            continue;
+        const float dy = other->m_xform.position[1] - owner->m_xform.position[1];
+        const float dx = other->m_xform.position[0] - owner->m_xform.position[0];
+        if (kNearSquared < dx * dx + dy * dy)
+            continue;
+        const int id = other->m_motion->upcomingMotion();
+        if (!up) {
+            if (id == Motion_Pair || id == Motion_Up180 || id == Motion_Up120 || id == Motion_Up090 || id == Motion_Up060)
+                return true;
+        }
+        else if (id == Motion_LadderLetGo || id == Motion_FallHigh || id == Motion_FallMid || id == Motion_FallLow
+                 || id == Motion_LadderFall || id == 0x95 || id == 0x94) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// FS2 0x001e0360
+// callcheck: FUN_00271f50, FUN_00271f50
+
+bool PlayerMotion::ladderBlocked() const
+{
+    constexpr float kNearSquared = 10000.0f;
+    StageCharacter *self = static_cast<StageCharacter *>(owner);
+    const int rank = self->getLadderRank();
+    StageObjArray &characters = gStageScene->objects->m_lists[StageObjGroup_Characters];
+    for (StageObject **slot = characters.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        StageObject *other = *slot;
+        if (!other->m_viewActive || other == owner)
+            continue;
+        const int id = other->m_motion->upcomingMotion();
+        if (id == 0xae || id == Motion_LadderRest || id == Motion_LadderDown || id == Motion_LadderUp) {
+            if (static_cast<StageCharacter *>(other)->getLadderRank() < rank)
+                continue;
+        }
+        else if (id != Motion_LadderDownOff && id != Motion_LadderDownOn && id != Motion_LadderUpOff
+                 && id != Motion_LadderUpOn) {
+            continue;
+        }
+        const float dy = other->m_xform.position[1] - owner->m_xform.position[1];
+        const float dx = other->m_xform.position[0] - owner->m_xform.position[0];
+        if (dx * dx + dy * dy <= kNearSquared) {
+            const float height = other->m_xform.position[2] - owner->m_xform.position[2];
+            if (height <= 200.0f && -300.0f <= height)
+                return true;
+        }
+    }
+    return false;
+}
+
+// FS2 0x001eb090
+// callcheck: identityMatrix, rotateMatrixZ, applyMatrix, getRecordOffset
+
+void PlayerMotion::walkFileTarget(sceVu0FVECTOR target, sceVu0FVECTOR aimAt, void *file, const float *from,
+                                  const float *angles)
+{
+    sceVu0FVECTOR ahead = { 0.0f, 100.0f, 0.0f, 0.0f };
+    if (angles != nullptr) {
+        sceVu0FMATRIX turn;
+        identityMatrix(turn);
+        rotateMatrixZ(angles[2], turn, turn);
+        applyMatrix(ahead, turn, ahead);
+    }
+    owner->m_model->pose->getRecordOffset(target, aimAt, static_cast<const PoseBoneRecord *>(file), from, ahead);
+}
+
+// FS2 0x00272630
+// callcheck: isControlled, getKind, FUN_0028ab90, getKind, FUN_0028ab90, findMotionFile, walkFileTarget, walkFileTarget, sinCos, sinCos, segmentHitsAny, FUN_00215ce0, findMotionFile, sinCos, sinCos, segmentHitsAny, FUN_001dff40 (the two segment tests are pathBlocked here)
+
+void LevelCondition::onUpdate()
+{
+    WalkLink *walk = motion->walkLink;
+    const StageCollisionFace *face = walk->wallFace;
+    if (face != nullptr && (faceFlags(face) & kFaceGap) != 0 && character->isControlled()
+        && isForwardMotion(motion->motionId))
+        return;
+    if (walk->edgeFound == 0)
+        return;
+    if (StageCar *car = asCar(walk->edgeFloor)) {
+        if (!car->hasSettled() || car->getMode() == 1)
+            return;
+    }
+    else {
+        StageObject *floor = character->m_ground->floorObject;
+        if (floor == nullptr)
+            return;
+        StageCar *standing = asCar(floor);
+        if (standing != nullptr && !standing->hasSettled())
+            return;
+    }
+
+    const float drop = walk->edgeDrop;
+    const int id = levelMotion(drop);
+    if (0.0f <= drop) {
+        const int needed = id == Motion_Up060 ? 1 : id == Motion_Up090 ? 2 : id == Motion_Up120 ? 3 : 4;
+        if (character->m_abilities.stepLevel < needed)
+            return;
+        if (character->m_42c != 0 && pathBlocked(id, 5.0f, walk->edgePoint, 0x40000, walk->edgeObject))
+            return;
+    }
+    else {
+        if (character->isOpeningLead() && walk->edgeDrop < -125.0f)
+            return;
+        // A fall ends where the motion's height says; 5 past that is what must be free.
+        const float reach = -(motion->m_endHeight[id] + 5.0f);
+        if (pathBlocked(id, reach, nullptr, 0x40140, nullptr))
+            return;
+    }
+    if ((character->m_abilities.flag3c3 != 0 || character->m_290 == nullptr) && !motion->levelBlocked(0.0f < drop))
+        character->m_allows.level = drop < 0.0f ? 2 : 1;
+}
+
+// The way from the edge to where motion id ends, 50 over the floor. from:
+// null starts at that end.
+
+bool LevelCondition::pathBlocked(int id, float reach, const float *from, u_int flags, StageObject *skip)
+{
+    WalkLink *walk = motion->walkLink;
+    sceVu0FVECTOR target, aimAt;
+    void *file = character->m_model->findMotionFile(0, gMotionDefs[id].labelText);
+    motion->walkFileTarget(target, aimAt, file, walk->edgePoint, walk->edgeAngles);
+    sceVu0FVECTOR start, end;
+    memcpy(start, from != nullptr ? from : target, sizeof(start));
+    memcpy(end, target, sizeof(end));
+    const float yaw = -walk->edgeAngles[2];
+    end[0] += reach * sinCos(yaw, 0);
+    end[1] += reach * sinCos(yaw, 1);
+    start[2] += 50.0f;
+    end[2] += 50.0f;
+    return gStageScene->segmentHitsAny(start, end, 0, kFaceWall, flags, skip);
+}
+
+// FS2 0x00272360
+// callcheck: FUN_001dff40, getKind, getKind, getKind, getKind, request, requestedFile, startWalkFile (the six other requests: levelMotion)
+
+void LevelCondition::onApply()
+{
+    WalkLink *walk = motion->walkLink;
+    if (character->m_allows.level == 0 || character->m_wants.useLevel == 0
+        || motion->levelBlocked(0.0f < walk->edgeDrop))
+        return;
+    // Onto a car, by whatever height, is the one motion.
+    StageObject *standing = character->m_ground->floorObject;
+    bool ontoCar = false;
+    if (0.0f < walk->edgeDrop && standing != nullptr && walk->edgeFloor != nullptr
+        && walk->edgeFloor->getKind() == StageObject_Kind3) {
+        const int kind = standing->getKind();
+        ontoCar = kind == StageObject_MapObject || kind == StageObject_Kind3;
+    }
+    motion->request(ontoCar ? (int)Motion_Up090 : levelMotion(walk->edgeDrop));
+    motion->startWalkFile(kLadderWalkRate, motion->requestedFile(), walk->edgePoint, walk->edgeAngles, true, false);
+}
+
+// FS2 0x002721a0
+// callcheck: partnerResponds, addAngle, vecDistance
+
+void LevelLiftCondition::onUpdate()
+{
+    if (!gStageScene->partnerResponds(character))
+        return;
+    const WalkLink *walk = motion->walkLink;
+    motion->m_bae = 1;
+    memcpy(motion->position, walk->edgeTarget, sizeof(motion->position));
+    memcpy(motion->m_liftAngles, walk->edgeAngles, sizeof(motion->m_liftAngles));
+    motion->m_liftAngles[2] = addAngle(walk->edgeAngles[2], 3.1415927f);
+    StageObject *partner = gStageScene->partner;
+    if (isRestingMotion(partner->m_motion->motionId)
+        && vecDistance(motion->position, partner->m_xform.position) <= 30.0f)
+        character->m_allows.liftPartner = 1;
+}
+
+// FS2 0x00272030
+// callcheck: request, requestedFile, startWalkFile, requestNow, sinCos, sinCos, requestedFile, startWalkFile
+
+void LevelLiftCondition::onApply()
+{
+    if (character->m_allows.liftPartner == 0 || character->m_wants.liftPartner == 0)
+        return;
+    WalkLink *walk = motion->walkLink;
+    motion->request(Motion_Pair);
+    motion->startWalkFile(kLadderWalkRate, motion->requestedFile(), walk->edgePoint, walk->edgeAngles, false, false);
+
+    PlayerMotion *other = gStageScene->partner->m_motion;
+    other->requestNow(Motion_Pair);
+    sceVu0FVECTOR place;
+    memcpy(place, motion->position, sizeof(place));
+    const float back = character->m_ground->radius2;
+    place[0] -= back * sinCos(-motion->m_liftAngles[2], 0);
+    place[1] -= back * sinCos(-motion->m_liftAngles[2], 1);
+    other->startWalkFile(kLadderWalkRate, other->requestedFile(), place, motion->m_liftAngles, false, false);
+}
+
+// FS2 0x00271d70
+// callcheck: getBox, getNormal, atan2Octant, sinCos, sinCos, findFloor, FUN_001e0360
+
+void LadderCondition::onUpdate()
+{
+    if (character->m_abilities.ladder == 0
+        || (character->m_abilities.flag3c3 == 0 && character->m_290 != nullptr))
+        return;
+    const StageCollisionFace *face = motion->walkLink->wallFace;
+    if (face == nullptr || (faceFlags(face) & kFaceLadder) == 0)
+        return;
+    sceVu0FVECTOR box[2];
+    face->getBox(box);
+    point[0] = (box[0][0] + box[1][0]) / 2.0f;
+    point[1] = (box[0][1] + box[1][1]) / 2.0f;
+    point[2] = character->m_xform.position[2];
+    sceVu0FVECTOR beyond;
+    memcpy(beyond, point, sizeof(beyond));
+    sceVu0FVECTOR normal;
+    face->getNormal(normal);
+    yaw = atan2Octant(normal[0], -normal[1]);
+    const float radius = character->m_ground->radius2;
+    beyond[0] += radius * sinCos(-yaw, 0);
+    beyond[1] += radius * sinCos(-yaw, 1);
+    beyond[2] += 50.0f;
+    if (motion->probe->findFloor(1000.0f, 1000.0f, beyond, &height, nullptr) && !motion->ladderBlocked()) {
+        height += 50.0f;
+        character->m_allows.ladder = height < 0.0f ? 2 : 1;
+    }
+}
+
+// FS2 0x00271c60
+// callcheck: FUN_001e0360, request, request, addAngle, requestedFile, startWalkFile
+
+void LadderCondition::onApply()
+{
+    const int side = character->m_allows.ladder;
+    if (side == 0 || character->m_wants.useLadder == 0 || motion->ladderBlocked())
+        return;
+    if (side == 1)
+        motion->request(Motion_LadderUpOn);
+    else if (side == 2)
+        motion->request(Motion_LadderDownOn);
+    const sceVu0FVECTOR angles = { 0.0f, 0.0f, addAngle(yaw, 3.1415927f), 0.0f };
+    motion->startWalkFile(kLadderWalkRate, motion->requestedFile(), point, angles, true, false);
+}
+
+// FS2 0x00271850
+// callcheck: isControlled, getNormal, atan2Octant, sinCos, sinCos, raycast, getNormal, atan2Octant, sinCos, sinCos, FUN_0026c2d0
+
+void JumpCondition::onUpdate()
+{
+    const StageCollisionFace *face = motion->walkLink->wallFace;
+    if (face == nullptr || (faceFlags(face) & kFaceJump) == 0)
+        return;
+    if ((faceFlags(face) & kFaceGap) != 0 && character->isControlled() && !isForwardMotion(motion->motionId))
+        return;
+    if (character->m_abilities.jump == 0
+        || (character->m_abilities.flag3c3 == 0 && character->m_290 != nullptr))
+        return;
+    sceVu0FVECTOR from, to;
+    memcpy(from, character->m_xform.position, sizeof(from));
+    memcpy(to, character->m_xform.position, sizeof(to));
+    from[2] += 50.0f;
+    to[2] += 50.0f;
+    sceVu0FVECTOR normal;
+    face->getNormal(normal);
+    yaw = atan2Octant(normal[0], -normal[1]);
+    const float reach = character->m_ground->radius + 25.0f;
+    to[0] += reach * sinCos(-yaw, 0);
+    to[1] += reach * sinCos(-yaw, 1);
+    StageCollisionFace *hit = gStageScene->raycast(point, from, to, 0, kFaceJump, 0, nullptr);
+    point[2] -= 50.0f;
+    if (hit == nullptr)
+        return;
+    sceVu0FVECTOR place;
+    memcpy(place, point, sizeof(place));
+    hit->getNormal(normal);
+    yaw = atan2Octant(normal[0], -normal[1]);
+    const float radius = character->m_ground->radius2;
+    place[0] -= radius * sinCos(-yaw, 0);
+    place[1] -= radius * sinCos(-yaw, 1);
+    if (sidesAreClear(place, yaw, radius))
+        character->m_allows.jump = 1;
+}
+
+// FS2 0x00271790
+// callcheck: request, addAngle, requestedFile, startWalkFile
+
+void JumpCondition::onApply()
+{
+    if (character->m_allows.jump == 0 || character->m_wants.useJump == 0)
+        return;
+    motion->request(Motion_Jump);
+    const sceVu0FVECTOR angles = { 0.0f, 0.0f, addAngle(yaw, 3.1415927f), 0.0f };
+    motion->startWalkFile(kLadderWalkRate, motion->requestedFile(), point, angles, true, false);
+}
+
+// FS2 0x0026fb20
+
+void LadderMoveCondition::onUpdate()
+{
+    character->m_allows.move = 1;
+    if (motion->motionId == Motion_LadderRest)
+        character->m_allows.squatAction = 1;
+}
+
+// FS2 0x0026f970
+// callcheck: FUN_001ef260, request, FUN_001e0360, request, request, FUN_001e0360, request, request, request
+
+void LadderMoveCondition::onApply()
+{
+    constexpr float kOffTop = 185.0f;
+    constexpr float kOffFoot = 35.0f;
+    const CharacterWants &wants = character->m_wants;
+    const int kind = wants.moveKind;
+    if (kind == CharacterMove_Back || kind == CharacterMove_Walk || kind == CharacterMove_Run) {
+        const LadderLink *ladder = static_cast<const LadderLink *>(motion->m_links.find("Ladder")->second);
+        float above = ladder->baseHeight - character->m_xform.position[2];
+        if (0.0f < ladder->height)
+            above += ladder->height;
+        if (kind == CharacterMove_Back) {
+            if (fabsf(ladder->height) - kOffFoot < above)
+                motion->request(motion->ladderBlocked() ? Motion_LadderRest : Motion_LadderDownOff);
+            else
+                motion->request(Motion_LadderDown);
+        }
+        else {
+            if (above < kOffTop)
+                motion->request(motion->ladderBlocked() ? Motion_LadderRest : Motion_LadderUpOff);
+            else
+                motion->request(Motion_LadderUp);
+        }
+    }
+    else if (character->m_allows.squatAction == 0 || wants.squatAction == 0) {
+        motion->request(Motion_LadderRest);
+    }
+    else {
+        motion->request(Motion_LadderLetGo);
+    }
+}
+
+// FS2 0x0027b730
+// callcheck: FUN_0027d8d0, operator_new, FUN_001ef590, MotionConditionList::add (addCondition)
+
+LadderLink::LadderLink(StageCharacter *owner, PlayerMotion *motion_)
+    : MotionLink(owner, motion_)
+{
+    addCondition("LadderMove");
+}
+
+// FS2 0x0027b6e0
+// callcheck: FUN_001ef590
+
+void LadderLink::onRequest()
+{
+    const LadderCondition *ladder = static_cast<const LadderCondition *>(motion->m_conditions.find("Ladder")->second);
+    baseHeight = ladder->point[2];
+    height = ladder->height;
+}
+
+// FS2 0x0027be70
+// callcheck: isPlayer
+
+void UpLink::onRequest()
+{
+    if (motion->m_request != Motion_Pair)
+        rise = motion->walkLink->edgeDrop;
+    else if (character->isPlayer())
+        rise = 0.0f;
+    else
+        rise = -gStageScene->player->m_motion->walkLink->edgeDrop;
+}
+
+// FS2 0x0027bdb0
+// callcheck: setRootScale
+
+void UpLink::onStart()
+{
+    // How high the sheet's motion was made for.
+    float made = 1.0f;
+    switch (motion->m_request) {
+    case Motion_Pair:
+    case Motion_Up180:
+        made = 180.0f;
+        break;
+    case Motion_Up120:
+        made = 120.0f;
+        break;
+    case Motion_Up090:
+        made = 90.0f;
+        break;
+    case Motion_Up060:
+        made = 60.0f;
+        break;
+    }
+    scale = rise / made;
+    character->m_model->pose->setRootScale(1.0f, 1.0f, scale, 1.0f);
+}
+
+// FS2 0x0027bca0
+// callcheck: setRootScale, isPlayer, requestNow
+
+void UpLink::onRun()
+{
+    constexpr int kFallBack = 0xa4;
+    character->m_model->pose->setRootScale(1.0f, 1.0f, scale, 1.0f);
+    if (motion->motionId != Motion_Pair)
+        return;
+    StageObject *player = gStageScene->player;
+    StageObject *partner = gStageScene->partner;
+    if (!(10.0f < fabsf(player->m_xform.position[2] - partner->m_xform.position[2])))
+        return;
+    if (!character->isPlayer()) {
+        const PlayerMotion *other = player->m_motion;
+        if (other->motionId != Motion_Pair && other->m_request != Motion_Pair)
+            motion->requestNow(kFallBack);
+    }
+    else {
+        const PlayerMotion *other = partner->m_motion;
+        if (other->motionId != Motion_Pair && other->m_request != Motion_Pair)
+            finished = 1;
+    }
+}
+
+// FS2 0x0027b860
+// callcheck: isEnding, getKind, FUN_0028ab90, getStageSelect, getStageSelect, request, request, request, request, request, request, request, request, request, getStageSelect, getStageSelect, request, request, FUN_002a2fc0 (stageObjRecord: landingMotion)
+
+void FallLink::onRun()
+{
+    constexpr int kLandFatal = 0xaf;
+    constexpr int kFallWeapon = 0xed;
+    constexpr int kFallWeaponLand = 0xee;
+    constexpr float kFootDrop = 25.0f;
+    constexpr float kLowDrop = 75.0f;
+    constexpr float kMidDrop = 150.0f;
+    constexpr float kSafeDrop = 295.0f;
+    constexpr float kSturdyDrop = 395.0f;
+
+    if (counter == 0) {
+        tracking = 1;
+        startHeight = character->m_xform.position[2];
+        counter++;
+    }
+    if (counter == 1 && motion->isEnding()) {
+        fallStep = character->m_model->m_positionStep[2];
+        counter++;
+    }
+    if (counter == 2)
+        motion->m_moveStep[2] = fallStep;
+
+    if ((character->m_model->m_motionEvents & MotionEvent_Click) != 0)
+        tracking = tracking == 0;
+    if (tracking == 0)
+        return;
+    CharacterGround *ground = character->m_ground;
+    if (ground->landed == 0 && ground->hasFloor != 0)
+        return;
+
+    const float depth = startHeight - character->m_xform.position[2];
+    const int sturdiness = stageObjRecord(character->m_itemDef)->stepDown;
+    StageCar *car = asCar(ground->floorObject);
+    if (car != nullptr && !car->hasSettled()) {
+        motion->request(sturdiness == 2 ? (int)Motion_LandHigh : kLandFatal);
+        ground->groundCheck = 1;
+        return;
+    }
+    if (depth < kFootDrop)
+        return;
+    if (motion->motionId == kFallWeapon)
+        motion->request(kFallWeaponLand);
+    else if (depth < kLowDrop)
+        motion->request(Motion_LandLow);
+    else if (depth < kMidDrop)
+        motion->request(Motion_LandMid);
+    else if (depth < kSafeDrop)
+        motion->request(Motion_LandHigh);
+    else if (sturdiness == 2)
+        motion->request(Motion_LandHigh);
+    else if (sturdiness == 1)
+        motion->request(depth < kSturdyDrop ? (int)Motion_LandHigh : kLandFatal);
+    else if (sturdiness == 0)
+        motion->request(kLandFatal);
+    character->playLandSound();
+    ground->groundCheck = 1;
+}
+
+// FS2 0x0027b7e0
+// callcheck: request, FUN_002a2fc0
+
+void JumpLink::onRun()
+{
+    CharacterGround *ground = character->m_ground;
+    if (ground->landed != 0 && ground->wasLanded == 0) {
+        motion->request(Motion_LandHigh);
+        character->playLandSound();
+        ground->groundCheck = 1;
+    }
+}
+
+// FS2 0x002a2fc0
+// callcheck: findStepSound, playEntryHeard
+
+void StageCharacter::playLandSound()
+{
+    constexpr int kPaceLanding = 4;
+    // PC: with no floor (hasFloor 0) the ROM reads through null.
+    if (m_ground->floorFace == nullptr)
+        return;
+    if (const SeEntry *entry = findStepSound(m_ground->floorFace->surface, kPaceLanding))
+        playEntryHeard(entry, m_xform.position, nullptr);
 }
 
 // FS2 0x0027c520
@@ -1049,10 +1708,19 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_conditions["Squat"] = new SquatCondition(character, this);
     m_conditions["Turn"] = new TurnCondition(character, this);
     m_conditions["Move"] = new MoveCondition(character, this);
+    m_conditions["Level"] = new LevelCondition(character, this);
+    m_conditions["LevelLift"] = new LevelLiftCondition(character, this);
+    m_conditions["Ladder"] = new LadderCondition(character, this);
+    m_conditions["Jump"] = new JumpCondition(character, this);
     m_conditions["QuickTurn"] = new QuickTurnCondition(character, this);
+    m_conditions["LadderMove"] = new LadderMoveCondition(character, this);
 
     walkLink = new WalkLink(character, this);
     m_links["Walk"] = walkLink;
+    m_links["Up"] = new UpLink(character, this);
+    m_links["Fall"] = new FallLink(character, this);
+    m_links["Jump"] = new JumpLink(character, this);
+    m_links["Ladder"] = new LadderLink(character, this);
 
     // PC: the ROM's 0x212530 sets these from a script's property; nothing
     // written sets them yet, so the sheet's.
@@ -2712,6 +3380,54 @@ void PlayerMotion::startWalkFile(float rate, void *file, const float *from, cons
     m_hasWalkEnd = to != nullptr;
     if (to != nullptr)
         memcpy(m_walkEnd, to, sizeof(m_walkEnd));
+}
+
+// FS2 0x001eac10
+
+void PlayerMotion::startWalkTo(float rate, const float *from, const float *to, bool scaled, bool held)
+{
+    m_walkPending = 1;
+    m_walkToTarget = 0;
+    m_walkRate = rate;
+    m_walkScaled = scaled;
+    m_walkHeldNext = held;
+    m_hasWalkFrom = from != nullptr;
+    if (from != nullptr)
+        memcpy(m_walkFrom, from, sizeof(m_walkFrom));
+    m_hasWalkTo = to != nullptr;
+    if (to != nullptr)
+        memcpy(m_walkTo, to, sizeof(m_walkTo));
+}
+
+// FS2 0x001eac70
+// callcheck: identityMatrix, rotateMatrixZ, applyMatrix
+
+void PlayerMotion::pointBehind(sceVu0FVECTOR out, const float *place, const float *angles)
+{
+    sceVu0FMATRIX turn;
+    identityMatrix(turn);
+    rotateMatrixZ(angles[2], turn, turn);
+    const sceVu0FVECTOR behind = { 0.0f, -100.0f, 0.0f, 0.0f };
+    applyMatrix(out, turn, behind);
+    for (int i = 0; i < 4; i++)
+        out[i] += place[i];
+}
+
+// FS2 0x00190900
+// callcheck: FUN_001933a0, operator_delete, operator_new, BoxGrid (the ROM's inner object is not written: the tree holds the grid)
+
+void StageNodeTree::setBoxes(void *bbx)
+{
+    delete m_boxes;
+    m_boxes = new BoxGrid(static_cast<const BoxSet *>(bbx), 8);
+}
+
+// FS2 0x001908d0
+// callcheck: contains
+
+bool StageNodeTree::contains(const sceVu0FVECTOR point)
+{
+    return m_boxes != nullptr && m_boxes->contains(point);
 }
 
 // FS2 0x00215270

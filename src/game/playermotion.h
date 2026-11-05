@@ -14,8 +14,9 @@
  *  (CharacterWants), then each turns the two into a request, the last one
  *  asking for the idle when nothing else did.
  *
- *  Written so far: the links Walk; the conditions Always, QuickTurn, Squat,
- *  Turn, Move, and all of controlStep (what a motion's events do, the feet,
+ *  Written so far: the links Walk, Up, Fall, Jump, Ladder; the conditions
+ *  Always, QuickTurn, Squat, Turn, Move, Level, LevelLift, Ladder, Jump,
+ *  LadderMove, and all of controlStep (what a motion's events do, the feet,
  *  the wind, health, the fidgets). A link or a condition of another name answers null, which
  *  the ROM takes as a motion with no link function; addCondition skips it.
  *  The list 0x1df0b0 fills is not written.
@@ -51,7 +52,27 @@ enum MotionId
     Motion_CrouchIdle = 0x2b, // sq_idle0
     Motion_StandUp    = 0x27, // sq_u: from a crouch, before what was asked (arbitrate)
     Motion_CrouchDown = 0x28, // sq_d
+    Motion_Up060      = 0x2e, // u_060: up a ledge, by the height the sheet's motion was made for
+    Motion_Up090      = 0x2f,
+    Motion_Up120      = 0x30,
+    Motion_Up180      = 0x31,
     Motion_Pair       = 0x32, // u_sp: two characters together: both must arrive
+    Motion_FallLow    = 0x33, // fal_l: over an edge
+    Motion_FallMid    = 0x34,
+    Motion_FallHigh   = 0x35,
+    Motion_LandLow    = 0x36, // lnd_l
+    Motion_LandMid    = 0x37,
+    Motion_LandHigh   = 0x38,
+    Motion_Jump       = 0x39, // jp
+    Motion_LadderUpOn = 0x3a, // ld_u_b: onto a ladder from its foot
+    Motion_LadderUp   = 0x3b, // ld_u
+    Motion_LadderUpOff = 0x3c, // ld_u_e: off at the top
+    Motion_LadderDownOn = 0x3d, // ld_d_b0: onto it from the top
+    Motion_LadderDown = 0x3e, // ld_d
+    Motion_LadderRest = 0x3f, // ld_s: the Ladder link's motion
+    Motion_LadderDownOff = 0x40, // ld_d_e
+    Motion_LadderLetGo = 0x41, // ld_esp
+    Motion_LadderFall = 0x42, // ld_fal
     Motion_Crouched   = 0xf7, // a request, resolved through the holds
     Motion_WalkStand  = 0xf9, // waits while the walk runs (stepLower)
     Motion_WalkCrouch = 0xfa,
@@ -167,13 +188,13 @@ public:
     MotionLink(StageCharacter *owner, PlayerMotion *motion_)             // FS2 0x0027cc50
         : character(owner), motion(motion_) {}
     virtual ~MotionLink() {}
-    virtual void onUpdate() {}                                           // FS2 slot +0xc
-    virtual void onApply() {}                                            // FS2 slot +0x10
-    virtual void onRequest() {}                                          // FS2 slot +0x14
-    virtual void onStart() {}                                            // FS2 slot +0x18
-    virtual void onRun() {}                                              // FS2 slot +0x1c
-    virtual void onLeave(MotionLink *next) {}                            // FS2 slot +0x20
-    virtual void onCancel() {}                                           // FS2 slot +0x24
+    virtual void onUpdate() {}                                           // FS2 0x001eee10: slot +0xc
+    virtual void onApply() {}                                            // FS2 0x001eee20: slot +0x10
+    virtual void onRequest() {}                                          // FS2 0x001ec640: slot +0x14
+    virtual void onStart() {}                                            // FS2 0x001eaba0: slot +0x18
+    virtual void onRun() {}                                              // FS2 0x001e5d50: slot +0x1c
+    virtual void onLeave(MotionLink *next) {}                            // FS2 0x001eabb0: slot +0x20
+    virtual void onCancel() {}                                           // FS2 0x001ec3f0: slot +0x24
     // FS2 0x0027cab0
     void rewind()
     {
@@ -217,6 +238,57 @@ public:
     sceVu0FVECTOR edgeAngles = {}; // FS2 +0x80: facing it
     u_char edgeFound = 0;         // FS2 +0x90
     u_char edgeBlocked = 0;       // FS2 +0x91: there is no way over it
+};
+
+// Up: the height of the ledge scales the climb. Vtable 0x317b60.
+// layout: host -- +0x20 rise, +0x24 scale on the base link.
+class UpLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    void onRequest() override;                                           // FS2 0x0027be70
+    void onStart() override;                                             // FS2 0x0027bdb0
+    void onRun() override;                                               // FS2 0x0027bca0
+
+private:
+    float rise = 0.0f;          // FS2 +0x20
+    float scale = 1.0f;         // FS2 +0x24
+};
+
+// Fall: over an edge, or off a ladder, until the floor; the height fallen
+// picks the landing. Vtable 0x317b30.
+// layout: host -- on the base link.
+class FallLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    void onRun() override;                                               // FS2 0x0027b860
+
+private:
+    float  startHeight = 0.0f;  // FS2 +0x20
+    float  fallStep = 0.0f;     // FS2 +0x24: the motion's last step goes on
+    u_char tracking = 0;        // FS2 +0x28: the motion's Click events turn it off and on
+};
+
+// Jump: lands the moment there is a floor. Vtable 0x317b00.
+// layout: host
+class JumpLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    void onRun() override;                                               // FS2 0x0027b7e0
+};
+
+// Ladder: at rest on one; its one condition is LadderMove. Vtable 0x317ad0.
+// layout: host -- on the base link.
+class LadderLink : public MotionLink
+{
+public:
+    LadderLink(StageCharacter *owner, PlayerMotion *motion_);            // FS2 0x0027b730
+    void onRequest() override;                                           // FS2 0x0027b6e0
+
+    float baseHeight = 0.0f;    // FS2 +0x20: where it was got onto
+    float height = 0.0f;        // FS2 +0x24: LadderCondition's
 };
 
 // What PlayerMotion +0xbd0 points at; who sets it is unread. layout: host --
@@ -317,6 +389,26 @@ struct PlayerMotion
     // radius, never nearer than 200 to the lamp. Unchanged without a lamp.
     void getLampTarget(sceVu0FVECTOR out);                               // FS2 0x001e6160
     void clearEnding() { m_b30 = 0; }
+    // Walks from a place to a place (either null: stays) at the next stepLower.
+    void startWalkTo(float rate, const float *from, const float *to, bool scaled, bool held); // FS2 0x001eac10
+    // The point 100 behind place, as angles face.
+    void pointBehind(sceVu0FVECTOR out, const float *place, const float *angles); // FS2 0x001eac70
+    // What is about to play: the queues, the request, then the motion.
+    int  upcomingMotion() const
+    {
+        if (m_queue->motion != Motion_None)
+            return m_queue->motion;
+        if (m_walkQueue->motion != Motion_None)
+            return m_walkQueue->motion;
+        return m_request != Motion_None ? m_request : motionId;
+    }
+    // Someone near is already on the way up (up false) or down this ledge.
+    bool levelBlocked(bool up) const;                                    // FS2 0x001dff40
+    // Someone near holds the ladder.
+    bool ladderBlocked() const;                                          // FS2 0x001e0360
+    // Where startWalkFile would put the pose, and what it would aim at.
+    void walkFileTarget(sceVu0FVECTOR target, sceVu0FVECTOR aimAt, void *file, const float *from,
+                        const float *angles);                            // FS2 0x001eb090
     // Walks to where a motion file ends, from a place (a ledge).
     void startWalkFile(float rate, void *file, const float *from, const float *to, bool scaled, bool held); // FS2 0x001eabc0
 
@@ -434,6 +526,7 @@ public:
     u_char m_wallCheck = 0;     // FS2 +0xbad: the motion's 壁判定
     u_char m_bae = 0;           // FS2 +0xbae
     sceVu0FVECTOR position = {}; // FS2 +0xbb0
+    sceVu0FVECTOR m_liftAngles = {}; // FS2 +0xbc0: LevelLift: how the partner faces
     MotionLookTarget *m_lookObject = nullptr; // FS2 +0xbd0: the head looks at it, cleared each frame
     u_char noFlash = 0;         // FS2 +0xbd4: a shot shows no flash (StageWeaponItem::fire)
     PlayerOverlay *overlay = nullptr; // FS2 +0xbd8: StageScene::draw
