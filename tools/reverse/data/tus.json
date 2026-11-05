@@ -2721,7 +2721,7 @@
   "unassigned@002c42a0": {},
   "unassigned@002d46a0": {},
   "yamipan/rendering/model_renderer.cpp": {
-   "notes": "Written: game/stagecamera.cpp whole base plus StageMainCamera (0x178160 step, 0x179490, 0x179680, ctor). The step has NEVER run: StageCharacter ctor and setup are stubs, so m_linked stays null and it returns at once; the stage still needs YAMIPAN_CAMERA=auto. The light formula now comes from the VU1 program (tools/reverse/vudis.py carried over): vertex colour times (ambient + sum of colour * max(0, dir . normal)), alpha 0x80, ModelMesh vuFlags bit 4 copies the vertex colour. Picture: mean 3.14 at the default ambient 0.1 (old added formula 28.86), 10.92 with YAMIPAN_AMBIENT=1, so the stage is darker than last run and NOT compared with the game; the shot here is the 1.0 one. No crash in a 290 s run. PINNED BY THE USER: game/scenerender.cpp is first in the queue; YAMIPAN_AMBIENT is a temporary stub and that task is not done until real lights drive the picture and the stub is deleted (open-items.md, top of Next up). Left here: back-face culling for ModelFlag_TagC, spotlight 0x545, ghost alpha 0x011, material flag 8, skinned meshes, the rest of the list in open-items.md.",
+   "notes": "Written: addPointLight (VU1 0x545, 0x59a), spotVertex with pipeline and shaders model_spot (0x2eb, ALPHA_1 0x58, projective ST), facesEye (0x128, 0x14f, ModelFlag_TagC); rena side fillPointLight, fillSpotLight, fillEye, renaSetSpotRecord. vudis.py now prints LOI: older notes may have read 255 as a bal. The alpha fringe note was wrong: 0x2fdb60 is the shadow pass state. Picture: with no forcing both lights stay off in stage 1 (5 of 5 samples), picture unchanged. A removed test lamp at the camera lit the room with plausible fall-off; the spot alone adds almost nothing on near-black vertices, and the disc has NOT been seen. No reference exists. Check the disc and repeats outside the cone on the first stage with yami_pl or a held lamp (the cone test 0x66b is left out, CLAMP_1 repeats). Left in this TU: shadows and their state VU 0x98 / 0x9e, material flag 4 (0x4df), Kind1 frames, ghost 0x011 and 0x2e7960, fades, mips, material flag 8, per-model vertex cache (only the triple work on strips is gone). architecture.md has the VU1 detail; open-items.md Done has the doubts.",
    "sessions": [
     {
      "date": "2026-11-04 10:11",
@@ -2732,6 +2732,11 @@
      "date": "2026-11-04 10:49",
      "status": "partial",
      "summary": "Main camera written (never run: no character links it yet), VU1 light formula read and in the host, lighting pinned; map darker, not compared with the game"
+    },
+    {
+     "date": "2026-11-05 13:11",
+     "status": "partial",
+     "summary": "Scene point light, the spot's projected pass and back-face culling read from VU1 and in the host; stage 1 lights neither, so seen only with a forced test lamp"
     }
    ],
    "status": "partial",

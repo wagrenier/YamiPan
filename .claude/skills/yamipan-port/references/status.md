@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-05 12:24 at commit `4944250` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-05 13:11 at commit `bcf48c4` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **3734**; stubs: **294**
+- reconstructed FS2 functions: **3738**; stubs: **294**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -116,7 +116,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/wstring.cpp` | 5 | 0 |
 | `src/lib/unassigned_stubs.cpp` | 0 | 247 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
-| `src/rena/rena_draw.cpp` | 18 | 0 |
+| `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
 | `src/rena/tim2.cpp` | 4 | 0 |
@@ -142,14 +142,14 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 219 TUs: todo 114, partial 30, verify 84, done 18
+- 219 TUs: todo 112, partial 32, verify 84, done 18
 - next: **yamipan/rendering/model_renderer.cpp** (pinned in the queue)
 - pinned queue: yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
 - partial: `game/scenepool.cpp` 11/11 -- Written with game/playermotion.cpp thirteenth run (2026-11-05): all 11. The text shows; the dark strip behind it could not be told apart on the dark room of sta
 - partial: `game/scriptrunner.cpp` 134/652 -- VM 0x1d1c40, ScriptRunner, ScriptFrame, relocate, findEntry, scriptPrepare, the arg readers and 30 natives (every one stage 1 bg script calls) are written. All 
 - partial: `game/stageobject.cpp` 42/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
 - partial: `game/uiitemlist.cpp` 19/20 -- Written with game/playermotion.cpp's fourth run (2026-11-05): the list and the prompt's label work and show. Left: the button's picture beside the label in UiPr
-- partial: `yamipan/rendering/model_renderer.cpp` 0/0 -- Written: game/stagecamera.cpp whole base plus StageMainCamera (0x178160 step, 0x179490, 0x179680, ctor). The step has NEVER run: StageCharacter ctor and setup a
+- partial: `yamipan/rendering/model_renderer.cpp` 0/0 -- Written: addPointLight (VU1 0x545, 0x59a), spotVertex with pipeline and shaders model_spot (0x2eb, ALPHA_1 0x58, projective ST), facesEye (0x128, 0x14f, ModelFl
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 129/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -218,7 +218,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/vcmtable.cpp` 52/52 -- Cut out of unassigned@00296d60 (the frontier pick) as 0x296d60..0x299d90, batches 063-065 (59 names, incl. the binary's std::string instances 0x297fb0.. and new
 - verify: `game/wstring.cpp` 5/5 -- Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds 
 - verify: `rena/rena_2d_texture_tim2.cpp` 7/7 -- All 7 written; class moved to rena/rena_2d_texture_tim2.h. One Tim2Texture per mip level of the first picture; m_image (+0x40) is the TIM2 file itself, not a co
-- verify: `rena/rena_draw.cpp` 18/41 -- Skin written: drawSkinnedMesh 0x2e43e0, skinnedPartOutside 0x2e68a0, buildPalette 0x2e9480, skinVertex in model_renderer.cpp. Seen in New Game runs: the boy of 
+- verify: `rena/rena_draw.cpp` 19/41 -- Skin written: drawSkinnedMesh 0x2e43e0, skinnedPartOutside 0x2e68a0, buildPalette 0x2e9480, skinVertex in model_renderer.cpp. Seen in New Game runs: the boy of 
 - verify: `rena/rena_model.cpp` 34/34 -- Written: createInstance 0x2e5210, ModelInstance::init 0x2e4800, ModelSurface 0x2e3e10, buildPartRecs 0x2e4f50, setFrames, renaStepTexAnim, modelFindPart, findGr
 - verify: `rena/rena_pkt_vif1pktmanage.cpp` 13/17 -- Pinned 0x2eaff0-0x2ec110 under the new src/rena/ with the game's own file name (strings in Reset / AddList); the stale inferred key rena_pkt_vif1pktmanage.cpp r
 - verify: `rx/filecd.c` 35/35 -- All 35 of 0x1565c8..0x157db8 written. rxcmp.py: 34 of 35 identical to RoR with jump targets and data masked; the one difference is rxFileCdFindDir, 0x18 longer 
@@ -237,6 +237,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-05 13:11 `yamipan/rendering/model_renderer.cpp` partial: Scene point light, the spot's projected pass and back-face culling read from VU1 and in the host; stage 1 lights neither, so seen only with a forced test lamp
 - 2026-11-05 12:24 `game/stageplayer.cpp` verify: The character around the frame's scripts: beforeScripts, afterScripts, stepStatus, ageSightTable, updateVisibility (the roadmap's move, which moves nothing), ca
 - 2026-11-05 11:47 `game/characterbrain.cpp` verify: the brain: ScriptProxy, CharacterBrain with its eight script slots, 59 commands, the ask family and setState; CharacterRoute stubbed
 - 2026-11-05 10:56 `game/stagecharacter.cpp` verify: re-judged whole, third person; the terminate hook 0x179d30, PlayerMotion::endFrame 0x1e06f0 with the run clock and sound events, releaseAction, isHoldingAction
@@ -244,7 +245,6 @@ Recent sessions:
 - 2026-11-05 09:33 `game/playermotion.cpp` partial: stage 1's natives and the notices: 21 natives, PauseMenuState and ScenePool whole, hasBiter, findItem: the game's first tutorial line shows on screen, and the s
 - 2026-11-05 08:47 `game/playermotion.cpp` partial: a character's script properties and its status block: setProperty, getProperty, resetActionState, initStatusBlock, StageObject::getProperty: rates come from the
 - 2026-11-05 07:53 `game/viewcamera.cpp` done: the first-person view: ViewCamera written, stage 1's Root forces it through StageObject::setProperty, the head hides; seen from the eyes with no body, scope not
-- 2026-11-05 07:14 `game/playermotion.cpp` partial: the special actions, the bite and the status setters: initList, its condition classes, Walk's list, BiteCondition, BiteLink, setFlinch, setEndurance, setBrainSt
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|

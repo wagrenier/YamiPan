@@ -118,11 +118,11 @@ Grouped by what the picture needs, with what is known about each. Together: 144 
   circling thing. It writes GS passes, so by the user's rule it needs a host pass, not packets.
 
 **Fidelity, left out of the model draw** (open-items.md has the details)
-- Back-face culling (`ModelFlag_TagC`, VU1 0x128); nothing culls.
-- The spotlight (VU1 0x545), the ghost's alpha (0x011) and pass 0x2e7960, the moved vertices of material
+- ~~Back-face culling (`ModelFlag_TagC`, VU1 0x128)~~ **written 2026-11-05**, with the scene's point light and the spot's pass; stage 1 lights neither, so they are unseen with real data (open-items.md).
+- The ghost's alpha (0x011) and pass 0x2e7960, the moved vertices of material
   flag 8 (0x186), fade 0x2e96a0 / 0x2e9220 (226 i together).
-- `ModelMaterial_Kind1`'s two frames, the alpha fringe (0x2fdb60's second pass), mips (0x2e7240),
-  shadows, `m_altClut` for `_s` textures. The record's point and spot lights are filled and unread.
+- `ModelMaterial_Kind1`'s two frames, mips (0x2e7240),
+  shadows, `m_altClut` for `_s` textures.
 
 **Performance, before characters.** Every vertex is transformed and lit on the game thread and uploaded
 whole; a stage ran at about 10 fps in three runs of four (open-items.md). It needs a per-model cache before skinned

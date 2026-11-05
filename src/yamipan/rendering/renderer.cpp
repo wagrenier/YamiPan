@@ -287,6 +287,8 @@ void Renderer::uploadImages(SDL_GPUCopyPass *copy, Frame &frame)
         upload(draw.image.get());
     for (const ModelDraw &draw : frame.modelDraws)
         upload(draw.image.get());
+    for (const ModelPass &pass : frame.modelPasses)
+        upload(pass.spotImage.get());
 }
 
 void Renderer::uploadVertices(SDL_GPUCopyPass *copy, const Frame &frame)

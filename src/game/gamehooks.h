@@ -194,9 +194,11 @@ struct ModelBone
 // Model flags (ModelInstance::flags).
 enum ModelFlag
 {
+    ModelFlag_TakesSpot = 0x1,  // a map model's: VU1 0x2eb draws the scene's spot over it
     ModelFlag_Item   = 0x2,     // every item's, from setupItem
     ModelFlag_CastsShadow = 0x8,  // drawSysBuildShadows takes it (cleared on oXX27_05)
     ModelFlag_Distant     = 0x40, // past a quarter of the squared draw distance, when StageModel::m_mayGoDistant is set
+    ModelFlag_TakesPoint  = 0x80, // a map model's without its own lights: VU1 0x545 adds the scene's point light
     ModelFlag_Ghost  = 0x100,   // the model ext_ghost (drawSysAddModel; what it does is unread)
     ModelFlag_TagC   = 0x200,   // a name tag _c, or oXX27_05 / oXX27_11 (drawSysAddModel): VU1 culls the faces turned from the eye
     ModelFlag_Frozen = 0x400,   // set by drawSysAddModel, clear only while a free item's matrix is dirty (the name is a guess)
@@ -1384,6 +1386,7 @@ enum ModelMaterialFlag
 {
     ModelMaterialFlag_Blended = 0x01,   // drawn after the rest, far to near (rena_draw.cpp)
     ModelMaterialFlag_Wave    = 0x08,   // has a ModelTexAnim_Wave (set by ModelSurface)
+    ModelMaterialFlag_PointFlat = 0x10, // the point light ignores the way a vertex faces (VU1 0x59a)
     ModelMaterialFlag_Foliage = 0x20,   // the texture is a plant's (drawSysAddModel)
 };
 struct ModelMaterialExt
@@ -1636,7 +1639,7 @@ struct ModelInstance
     ModelSurface **surfaceOfMaterial = nullptr; // FS2 +0x40: by the file's material index, null if unused
     ModelSurface **texAnims = nullptr; // FS2 +0x44: texAnimCount records of renaStepTexAnim
     int            texAnimCount = 0;   // FS2 +0x48
-    RenaSpotLight *spot = nullptr; // FS2 +0x4c: the scene's (SceneRender::setup); no host draw reads it yet
+    RenaSpotLight *spot = nullptr; // FS2 +0x4c: the scene's (SceneRender::setup)
     Tim2Texture  **textures = nullptr; // FS2 +0x50: node->textureSlotCount
     char          *block = nullptr; // FS2 +0x54: the one block all those live in
     u_int          blockUsed = 0; // FS2 +0x58

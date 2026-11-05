@@ -2,12 +2,11 @@
  *  game/scenerender.cpp
  *
  *  SceneRender, the stage's lighting, 0x1f6ac0..0x1fa900 (game/scenerender.h);
- *  rena's light records 0x2e04e0..0x2e0840 are written here too, nothing else
- *  uses them yet. The file name is the port's (no source string).
+ *  rena's light records 0x2e04e0..0x2e0840 are written here too. The file name is the port's (no source string).
  *
  *  Left out: the three DrawSysFog setters inside the range are drawsys.h's
- *  inlines; the point and spot records are filled as the ROM does, but no
- *  host draw reads them (VU1's spotlight kernel 0x545 is not in the host).
+ *  inlines. rena/rena_draw.cpp reads the point and spot records for the draw
+ *  module (VU1 0x545, 0x2eb).
  * ======================================================================== */
 #include "game/playermotion.h"
 #include "game/scenerender.h"

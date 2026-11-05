@@ -36,6 +36,7 @@
 #include "game/gfxtarget.h"
 #include "game/gsblockmap.h"
 #include "game/mathutil.h"
+#include "game/scenerender.h"
 #include "game/stagescene.h"
 #include "game/sysdata.h"
 #include "game/vu0math.h"
@@ -567,6 +568,8 @@ void drawSysRender(GamePacketManager *packets, const sceGsDrawEnv1 *env, int fla
         drawSysBuildBossShadowTexture(packet);
     else
         renaSetShadowTexture(packet, sShadowTexture, sShadowBlock);
+
+    renaSetSpotRecord(gStageScene != nullptr && gStageScene->render != nullptr ? gStageScene->render->getSpot() : nullptr);
 
     gDrawSysState.width = getDrawTarget()->width;
     gDrawSysState.height = getDrawTarget()->height;

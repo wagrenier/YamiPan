@@ -124,6 +124,8 @@ struct SceneRender : RenaPointLight
     // loadCommon's spotlight and shadow_00.
     void setSpotlightTexture(Tim2Texture *texture);                      // FS2 0x001fa1c0
     void setShadowTexture(Tim2Texture *texture);                         // FS2 0x001fa150
+    // The spot at +0x80: what the frame's upload 0x2d5710 takes the address of.
+    const RenaSpotLight *getSpot() const { return &m_spot; }
     // The frame: the tracks, the set, the scene's point and spot, the
     // record's lights, the fogs and the cameras' range.
     void update();                                                       // FS2 0x001f73c0

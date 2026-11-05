@@ -16,8 +16,8 @@
  *  CLAMP_1 repeat, TEX1_1 linear: the module's opaque and blended draws).
  *
  *  Not written yet (open-items.md "Next up"): a ModelMaterial_Kind1's frames,
- *  the shadow projections, the spotlight, the ghost's pass 0x2e7960, the fade
- *  0x2e9220 / 0x2e96a0, mips.
+ *  the shadow projections, the ghost's pass 0x2e7960, the fade 0x2e9220 /
+ *  0x2e96a0, mips.
  * ======================================================================== */
 #include "rena/rena_draw.h"
 
@@ -29,6 +29,7 @@
 
 #include "game/drawsys.h"
 #include "game/gamehooks.h"
+#include "game/scenerender.h"
 #include "game/vu0math.h"
 #include "yamipan/rendering/yamipan_drawmodel.h"
 
@@ -43,6 +44,10 @@ struct RecordLights
     sceVu0FVECTOR directions[DrawSysLights::kLightCount];
 };
 RecordLights sLights;
+
+// The frame's spot: the record and its picture (renaSetSpotRecord, renaSetSpotlight).
+const RenaSpotLight *sSpot;
+const Tim2Texture   *sSpotTexture;
 
 // What a skinned mesh's parts share: draw state +0x21c, +0x1f8. layout: host.
 struct Skin
@@ -240,6 +245,9 @@ void setModelLights(sceVif1Packet *packet, const ModelInstance *model)
             copyVector3(lights.directions[i], sLights.directions[i]);
         }
     }
+    lights.takesPoint = (model->flags & ModelFlag_TakesPoint) != 0;
+    lights.takesSpot = (model->flags & ModelFlag_TakesSpot) != 0 && model->spot != nullptr && model->spot->isActive();
+    lights.cullBack = (model->flags & ModelFlag_TagC) != 0;
     YamiPan_ModelSetLights(packet, &lights);
 }
 
@@ -257,6 +265,8 @@ void setSurface(sceVif1Packet *packet, const ModelInstance *model, const ModelSu
             material.texture = model->textures[surface->textureSlot];
         material.scrollU = surface->scrollU;
         material.scrollV = surface->scrollV;
+        material.pointFlat = (surface->material->flags & ModelMaterialFlag_PointFlat) != 0;
+        material.noSpot = (surface->material->flags & ModelMaterialFlag_Foliage) != 0;
     }
     YamiPan_ModelSetMaterial(packet, &material);
 }
@@ -459,13 +469,21 @@ void renaBeginFrame(sceVif1Packet *packet)
 }
 
 // FS2 0x002e87f0
-// callcheck: FUN_0010aef0, FUN_0010af80, FUN_0010b5f0, FUN_002e1b10, sceVif1PkCloseDmaTag, sceVif1PkCnt, upload (the spotlight is not written yet)
+// callcheck: FUN_0010aef0, FUN_0010af80, FUN_0010b5f0, FUN_002e1b10, sceVif1PkCloseDmaTag, sceVif1PkCnt, upload (the GS state and the upload: the module binds the picture itself)
 
 void renaSetSpotlight(sceVif1Packet *packet, Tim2Texture *texture, int block)
 {
     (void)packet;
-    (void)texture;
     (void)block;
+    sSpotTexture = texture;
+}
+
+// FS2 0x002d5710
+// callcheck: FUN_0010aef0, FUN_0010af80, FUN_0010b208, sceVif1PkCloseDmaTag, sceVif1PkCnt (packets: fillSpotLight reads the record in each pass)
+
+void renaSetSpotRecord(const RenaSpotLight *spot)
+{
+    sSpot = spot;
 }
 
 // FS2 0x002e82a0
@@ -513,6 +531,75 @@ void renaSetShadowCount(sceVif1Packet *packet, int count)
     (void)count;
 }
 
+// The point light's constants, VU addresses 176..179; only a pass with a
+// scene's render has them, the ROM zeroes VU 176 otherwise (0x2e5450).
+// FS2 0x002e05f0
+
+static void fillPointLight(YamiPanModelPointLight &out)
+{
+    const SceneRender *render = gDrawSysState.render;
+    if (render == nullptr || !render->isActive())
+        return;
+    out.active = 1;
+    copyVector3(out.position, render->getMatrix()[3]);
+    copyVector3(out.color, render->color);
+    copyVector3(out.shade, render->shade);
+    out.weight = render->weight;
+    out.slope = -render->weight / render->radius;
+}
+
+// The spot's constants. Its box against the cone (the planes 0x2e0100 builds,
+// VU1 0x66b) only saves work, which the host does not need.
+// FS2 0x002e00f0
+// callcheck: FUN_0010b220, FUN_0010b720, FUN_0010b798, FUN_0010b820, tanf (the cone's planes and the packet)
+
+static void fillSpotLight(YamiPanModelSpotLight &out)
+{
+    // The object's axes are x right, y ahead, z up; the light's x, up, ahead.
+    static sceVu0FMATRIX sLightAxes = { { 1, 0, 0, 0 }, { 0, 0, 1, 0 }, { 0, 1, 0, 0 }, { 0, 0, 0, 1 } };
+    constexpr float kReachLimit = 1.2f; // 0x2d578c
+
+    if (sSpot == nullptr || sSpotTexture == nullptr || !sSpot->isActive())
+        return;
+
+    const sceVu0FVECTOR *matrix = sSpot->getMatrix();
+    sceVu0FMATRIX toObject;
+    for (int column = 0; column < 3; column++) {
+        for (int row = 0; row < 3; row++)
+            toObject[column][row] = matrix[row][column];
+        toObject[column][3] = 0.0f;
+    }
+    for (int row = 0; row < 3; row++) {
+        toObject[3][row] = -(matrix[row][0] * matrix[3][0] + matrix[row][1] * matrix[3][1]
+                             + matrix[row][2] * matrix[3][2]);
+    }
+    toObject[3][3] = 1.0f;
+
+    sceVu0FMATRIX toLight;
+    sceVu0MulMatrix(toLight, sLightAxes, toObject);
+
+    out.active = 1;
+    out.texture = sSpotTexture;
+    memcpy(out.worldToLight, toLight, sizeof(out.worldToLight));
+    out.scaleX = (1.0f / sSpot->intensity) / sSpot->tangent;
+    out.scaleY = 1.0f / sSpot->tangent;
+    out.falloff[0] = sSpot->_90[0];
+    out.falloff[1] = sSpot->_90[1] / sSpot->radius;
+    out.falloff[2] = sSpot->_90[2] / (sSpot->radius * sSpot->radius);
+    out.limit = sSpot->reach * kReachLimit;
+}
+
+// The camera in the world, from its matrix: VU address 4, a part of 0x2e5da0.
+// FS2 0x002e5da0
+// callcheck: FUN_0010aef0, FUN_0010af80, FUN_0010b220, FUN_0010b5f0, FUN_002e5fc0, sceVif1PkCloseDmaTag, sceVif1PkCnt (the frame's constants and clip planes: the module's)
+
+static void fillEye(float *out)
+{
+    const sceVu0FVECTOR *view = (const sceVu0FVECTOR *)gDrawSysState.view;
+    for (int axis = 0; axis < 3; axis++)
+        out[axis] = -(view[axis][0] * view[3][0] + view[axis][1] * view[3][1] + view[axis][2] * view[3][2]);
+}
+
 // A pass: every model of the groups in mask, then what blends, far to near
 // (the ROM's own sort is 0x2e8990, a quicksort on the key).
 // FS2 0x002e5450
@@ -535,6 +622,9 @@ void renaDrawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask)
     pass.fogNearValue = 255.0f;     // the ROM's no fog (0x2e5a00)
     pass.fogFarValue = 255.0f;
     pass.clearDepth = (mask & (DrawSysGroup_Far1 | DrawSysGroup_Far2 | DrawSysGroup_Far3)) == 0;
+    fillEye(pass.eye);
+    fillPointLight(pass.point);
+    fillSpotLight(pass.spot);
 
     const DrawSysFog *fog = gDrawSysState.fog;
     if (fog != nullptr && fog->isEnabled()) {

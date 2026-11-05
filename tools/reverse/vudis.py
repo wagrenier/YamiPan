@@ -94,6 +94,13 @@ def lower(lo):
     return f'lo {lo:08x}'
 
 
+def lowerOf(lo, hi):
+    """The upper word's I bit (31) makes the lower word a float for I, not an instruction."""
+    if hi >> 31 & 1:
+        return f'loi {struct.unpack("<f", struct.pack("<I", lo))[0]:g}'
+    return lower(lo)
+
+
 def load(elf, va, qwords):
     """The micro instructions an image's MPG codes load: {address: (lower, upper)}."""
     data = elf.read(va, qwords * 16)
@@ -120,10 +127,10 @@ def show(code, a, follow=True):
     while a in code:
         lo, hi = code[a]
         end = hi >> 30 & 1
-        print(f'{a:#05x}: {upper(hi):36s} | {lower(lo)}{" [E]" if end else ""}')
+        print(f'{a:#05x}: {upper(hi):36s} | {lowerOf(lo, hi)}{" [E]" if end else ""}')
         if follow and end:
             lo, hi = code[a + 1]
-            print(f'{a + 1:#05x}: {upper(hi):36s} | {lower(lo)} (delay)')
+            print(f'{a + 1:#05x}: {upper(hi):36s} | {lowerOf(lo, hi)} (delay)')
             return
         a += 1
 

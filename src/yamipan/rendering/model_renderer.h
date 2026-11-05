@@ -6,6 +6,7 @@
 // into the Frame at the kick. The GPU side runs on the render thread, from what is in the Frame.
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <map>
 #include <memory>
@@ -51,18 +52,36 @@ private:
     struct Layer
     {
         std::vector<ModelVertex> vertices;
+        std::vector<ModelSpotVertex> spotVertices;
         std::vector<ModelDraw> draws;
         std::vector<ModelPass> passes;
+        std::vector<ModelVertex> batch; // one batch's vertices, each once: a strip reuses them
         YamiPanModelLights lights{};
+        YamiPanModelPointLight point{};
+        YamiPanModelSpotLight spot{};
+        std::array<float, 3> eye{};
         std::shared_ptr<Image> image;
         float scrollU = 0.0f;
         float scrollV = 0.0f;
         bool blended = false;
         bool unlit = false;
+        bool pointFlat = false;
+        bool noSpot = false;
         bool open = false;
     };
 
+    // A growing GPU vertex buffer and what fills it.
+    struct VertexStream
+    {
+        gpu::Buffer buffer;
+        gpu::TransferBuffer upload;
+        unsigned capacity = 0;
+    };
+
+    std::shared_ptr<Image> imageOf(const void *texture);
+    void uploadStream(SDL_GPUCopyPass *copy, VertexStream &stream, const void *data, unsigned bytes);
     SDL_GPUGraphicsPipeline *pipelineFor(bool blended);
+    SDL_GPUGraphicsPipeline *spotPipeline();
 
     Renderer &m_renderer;
     gpu::Device &m_device;
@@ -73,13 +92,15 @@ private:
 
     gpu::Shader m_vertexShader;
     gpu::Shader m_fragmentShader;
+    gpu::Shader m_spotVertexShader;
+    gpu::Shader m_spotFragmentShader;
     std::map<bool, gpu::GraphicsPipeline> m_pipelines;
+    gpu::GraphicsPipeline m_spotPipeline;
     gpu::Texture m_depth;
     int m_depthWidth = 0;
     int m_depthHeight = 0;
-    gpu::Buffer m_vertexBuffer;
-    gpu::TransferBuffer m_vertexUpload;
-    unsigned m_vertexCapacity = 0;
+    VertexStream m_vertices;
+    VertexStream m_spotVertices;
 };
 
 } // namespace yamipan::rendering
