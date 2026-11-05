@@ -67,6 +67,8 @@ opening is the event d0101") is answered for a first entry into the stage.
 
 **2026-11-05, later still:** the melee stance and blows work in New Game on stage 1 (R1, then Cross); nothing there can be locked or hit yet, and the camera in the stance is not proven (open-items.md, Done, game/playermotion.cpp ninth run).
 
+**2026-11-05, later still:** a character's properties and its status block are written, so stage 1's scripts read and store them: Root and F_PC01 go on to natives 0x3a, 0x49, 0xcf, 0x3e, 0x3f (open-items.md, Done, game/playermotion.cpp twelfth run).
+
 ## The order for control
 
 Each step needs the ones above it. Sizes are the unwritten closure of its roots.

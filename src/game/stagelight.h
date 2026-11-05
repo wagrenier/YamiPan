@@ -127,7 +127,7 @@ public:
     // Runner slot 86.
     // FS2 0x00184920
     // callcheck: isLit (inline in the ROM)
-    virtual bool cmdIsLit() { return isLit(); }
+    bool cmdIsLit() override { return isLit(); }
     // The tree's setScriptFlag2. Runner slot 25.
     // FS2 0x00184a00
     // callcheck: setScriptFlag2

@@ -4,7 +4,7 @@
  *  The base of the stage's objects (StageObject, gamehooks.h: doors, items,
  *  cameras, lights, characters) and the tree of objects (StageObjectTree),
  *  0x18ae70..0x18c050, with the three script-facing slots before it
- *  (0x189ce0..0x18ae70: setProperty is written, the other two are not). The
+ *  (0x189ce0..0x18ae70: setProperty and getProperty are written). The
  *  node base's dtor 0x1865c0 is here too, since a StageObject is one. The file
  *  name is the port's (no source string).
  * ======================================================================== */
@@ -17,7 +17,12 @@
 #include "game/uiwidget.h"      /* UiShowFlags */
 #include "game/vu0math.h"
 
-constexpr float kDegreesToRadians = 0.017453292f;
+constexpr float kDegreesToRadians  = 0.017453292f;
+constexpr float kRadiansToDegrees  = 57.295776f;
+constexpr int   kFramesPerSecond30 = 30;
+constexpr int   kFrameStepUnit     = 300;       // Prop_FrameStep: of these, a frame's
+constexpr int   kObjectKindItemFirst = 0x13;    // the items and weapons (StageItem), as Prop_ObjectType tests
+constexpr int   kObjectKindItemLast  = 0x17;
 
 // The serial's counter.
 static u_int sObjectSerial;     /* sdata 0x31ae08 (gp-0x7a68) */
@@ -140,6 +145,115 @@ void StageObject::setProperty(int id, int sub, int value)
     }
     default:
         break;
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// A stage's clear state: 0 not, 1 in variant 0, 2 in both.
+static int stageClearedState(int stage)
+{
+    int kind = getStageSelect()->kind;
+    SaveData *save = getSaveData();
+    if (!save->testStageFlags(stage, save->clearBit(kind, 0)))
+        return 0;
+    if (!save->testStageFlags(stage, save->clearBit(kind, 1)))
+        return 1;
+    return 2;
+}
+
+// 0x269160 and the map object's 0x174b00 are copies; the second adds id 0x6b
+// for a kind 6 object, not built yet.
+// FS2 0x0018a5b0
+// callcheck: getStageSelect, isShown, getHandle, getSeconds, currentMission, getScoreClock, getClockFrames, getResultHold, getResultPaused, onRestore, getDeltaSeconds, getScriptVar3f, getScriptVar3e, getResultValue, stageFps, getMissionFrames, random, getSaveData, clearBit, testStageFlags
+
+int StageObject::getProperty(int id, int sub)
+{
+    StageScene *scene = gStageScene;
+    switch (id) {
+    case Prop_ViewActive:
+        return m_viewActive;
+    case Prop_Shown:
+        return isShown();
+    case Prop_Handle:
+        return (int)getHandle();
+    case Prop_Group:
+        return 4;
+    case Prop_Frames30: {
+        Clock *clock = m_clock != nullptr ? m_clock : scene->clock;
+        return (int)(clock->getSeconds() * (float)kFramesPerSecond30 + 0.5f);
+    }
+    case Prop_YawDegrees:
+        return (int)(m_xform.rotation[2] * kRadiansToDegrees);
+    case Prop_ScoreClock:
+        return scene->currentMission()->getScoreClock();
+    case Prop_ClockFrames:
+        return scene->currentMission()->getClockFrames();
+    case Prop_ResultHold:
+        return scene->currentMission()->getResultHold();
+    case Prop_ResultPaused:
+        return scene->currentMission()->getResultPaused();
+    case Prop_ShowFlag: {
+        if (sub < 0 || sub >= kShowFlagCount)
+            return 0;
+        UiShowFlags *flags = scene->showFlags;
+        int value = flags->flag[(int)kShowFlagByte[sub]];
+        if (sub == kShowFlagInverted)
+            return value;
+        if (sub == kShowFlagWithFirst)
+            value = value != 0 && flags->flag[0] != 0;
+        return value == 0;
+    }
+    case Prop_Restore:
+        return scene->currentMission()->onRestore();
+    case Prop_ActorId: {
+        StageObject *actor = scene->controlled != nullptr ? scene->controlled : (StageObject *)scene->player;
+        return actor != nullptr ? actor->m_id : 0;
+    }
+    case Prop_PartnerId:
+        return scene->partner != nullptr ? scene->partner->m_id : 0;
+    case Prop_PlayerId:
+        return scene->player != nullptr ? ((StageObject *)scene->player)->m_id : 0;
+    case Prop_FrameStep:
+        return kFrameStepUnit / (int)(1.0f / scene->clock->getDeltaSeconds());
+    case Prop_ScriptVar3f:
+        return scene->getScriptVar3f();
+    case Prop_ScriptVar3e:
+        return scene->getScriptVar3e();
+    case Prop_Result:
+        return scene->getResultValue(sub);
+    case Prop_Fps:
+        return stageFps();
+    case Prop_MissionFrames:
+        return scene->getMissionFrames();
+    case Prop_Random100:
+        return scene->random(100);
+    case Prop_Archive: {
+        int archive = sub + 1;
+        if (archive <= 0 || archive > kArchiveCount)
+            return 0;
+        SaveData *save = getSaveData();
+        if (archive == kArchiveVariantUnlock && save->_3b0 != 0)
+            return kArchiveReported;
+        return save->archive[archive];
+    }
+    case Prop_StageCleared: {
+        int stage = sub + 1;
+        if (stage < 0 || stage >= kStageCount)
+            return 0;
+        return stageClearedState(stage);
+    }
+    case Prop_SwitchedOn:
+        return cmdIsLit();
+    case Prop_ObjectType: {
+        const int kind = getKind();
+        if (kind == StageObject_Character)
+            return stageObjRecord(m_itemDef)->kind;
+        if (kind >= kObjectKindItemFirst && kind <= kObjectKindItemLast)
+            return gItemDefs[m_itemDef < 0 || m_itemDef >= kItemDefCount ? 0 : m_itemDef].kind;
+        return 0;
+    }
+    default:                    // 0x3d, 0x5d (which asks for the mission and drops it): 0
+        return 0;
     }
 }
 

@@ -1268,18 +1268,6 @@ void StageCharacter::initSounds()
     YAMIPAN_STUB("StageCharacter::initSounds", 0x002a6910);
 }
 
-// stub of FS2 0x0021e050
-void StageCharacter::resetActionState()
-{
-    YAMIPAN_STUB("StageCharacter::resetActionState", 0x0021e050);
-}
-
-// stub of FS2 0x00211300
-void StageCharacter::setRightArm(int value)
-{
-    YAMIPAN_STUB("StageCharacter::setRightArm", 0x00211300);
-}
-
 // stub of FS2 0x002a6830
 void StageCharacter::stopSounds()
 {
@@ -1496,12 +1484,6 @@ const char * PartSwitch::partName(int index) const
 void CharacterBrain::revive()
 {
     YAMIPAN_STUB("CharacterBrain::revive", 0x001dc950);
-}
-
-// stub of FS2 0x001dbca0
-void CharacterBrain::setState(int state, int arg)
-{
-    YAMIPAN_STUB("CharacterBrain::setState", 0x001dbca0);
 }
 
 // stub of FS2 0x0026a010

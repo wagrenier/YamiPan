@@ -12137,6 +12137,12 @@
   "was": "FUN_00174aa0",
   "why": "slot +0x20c: setPosition, then marks a clean transform dirty for one frame (+0x21c)"
  },
+ "00174b00": {
+  "name": "StageMapObject::getProperty",
+  "tag": "game-inferred",
+  "was": "FUN_00174b00",
+  "why": "copy of 0x18a5b0 plus id 0x6b for a kind 6 object"
+ },
  "001753f0": {
   "name": "StageMapObject::collisionHook0",
   "tag": "game-inferred",
@@ -13756,6 +13762,12 @@
   "tag": "game-inferred",
   "was": "FUN_00189f40",
   "why": "slot +0x1fc of 29 object vtables; the script's property store: same list as SubSceneModelObject::setProperty, ids 0x72, 0x59, 0x4f, 3, 0x56 ..."
+ },
+ "0018a5b0": {
+  "name": "StageObject::getProperty",
+  "tag": "game-inferred",
+  "was": "FUN_0018a5b0",
+  "why": "vtable +0x1f8 next to setProperty 0x189f40: the same global ids read back"
  },
  "0018ae70": {
   "name": "StageObject::noiseHook",
@@ -17807,11 +17819,23 @@
   "was": "FUN_0020c940",
   "why": "matrix for the head's sway of kind 2 in AlwaysCondition::onApply"
  },
+ "0020cc50": {
+  "name": "StageCharacter::canFireLongWeapon",
+  "tag": "game-inferred",
+  "was": "FUN_0020cc50",
+  "why": "item kind 2..4 with skill bit 4, or 5..6 with bit 8"
+ },
  "0020ce80": {
   "name": "StageCharacter::getAttackReach",
   "tag": "game-inferred",
   "was": "FUN_0020ce80",
   "why": "the long weapon's parameter 2 else the sheet's +0x98 attackCheck, as a float"
+ },
+ "0020cf90": {
+  "name": "StageCharacter::getCarriedAmmo",
+  "tag": "game-inferred",
+  "was": "FUN_0020cf90",
+  "why": "sums the carried items named as the firearm's ammo; 100 for anyone but the player"
  },
  "0020d390": {
   "name": "StageCharacter::isMotionSlowed",
@@ -17861,6 +17885,12 @@
   "was": "FUN_00210720",
   "why": "slot +0x2ac: DoorLink's rate; a list of characters near, unread beyond that"
  },
+ "00210e60": {
+  "name": "StageCharacter::getWieldSkills",
+  "tag": "game-inferred",
+  "was": "FUN_00210e60",
+  "why": "the four 2-bit columns at sheet +0x38 as bits 1, 2, 4, 8"
+ },
  "00211150": {
   "name": "StageCharacter::setFlinch",
   "tag": "game-inferred",
@@ -17908,6 +17938,18 @@
   "tag": "game-inferred",
   "was": "FUN_00212460",
   "why": "0 inactive, 2..7 from endurance +0x598, motions 0xb1..0xb4 and +0x690; the name is a guess"
+ },
+ "00212530": {
+  "name": "StageCharacter::setProperty",
+  "tag": "game-inferred",
+  "was": "FUN_00212530",
+  "why": "vtable 0x312240 + 0x1fc: stores to the status block +0x590 by script property id, clamped to the sheet"
+ },
+ "002132d0": {
+  "name": "StageCharacter::getProperty",
+  "tag": "game-inferred",
+  "was": "FUN_002132d0",
+  "why": "vtable 0x312240 + 0x1f8: jump table 0x306d50, 0x74 ids, the reads of setProperty's fields"
  },
  "00214a70": {
   "name": "StageObjRecord::init",
@@ -18119,6 +18161,54 @@
   "was": "FUN_0021abb0",
   "why": "getter of +0x624; the name is from Bite's use, other callers are the brain's"
  },
+ "0021abc0": {
+  "name": "StageCharacter::isLampOn",
+  "tag": "game-inferred",
+  "was": "FUN_0021abc0",
+  "why": "vtable +0x264: slot +0x26c of +0x234, the lamp held"
+ },
+ "0021ac00": {
+  "name": "StageCharacter::setLampOn",
+  "tag": "game-inferred",
+  "was": "FUN_0021ac00",
+  "why": "vtable +0x260: slot +0x268 of +0x234"
+ },
+ "0021ae80": {
+  "name": "StageCharacter::setCarriedAmmo",
+  "tag": "game-inferred",
+  "was": "FUN_0021ae80",
+  "why": "the player's firearm: the carried stack clamped, or 0x21bb90 takes it from the stage"
+ },
+ "0021b120": {
+  "name": "StageCharacter::getWeaponMagazine",
+  "tag": "game-inferred",
+  "was": "FUN_0021b120",
+  "why": "+0x454 of +0x238"
+ },
+ "0021b140": {
+  "name": "StageCharacter::setWeaponRounds",
+  "tag": "game-inferred",
+  "was": "FUN_0021b140",
+  "why": "+0x458 of +0x238 clamped to 0..+0x454"
+ },
+ "0021b1a0": {
+  "name": "StageCharacter::getWeaponRounds",
+  "tag": "game-inferred",
+  "was": "FUN_0021b1a0",
+  "why": "+0x458 of +0x238"
+ },
+ "0021b1c0": {
+  "name": "StageCharacter::getShortWeaponClass",
+  "tag": "game-inferred",
+  "was": "FUN_0021b1c0",
+  "why": "the same for +0x23c"
+ },
+ "0021b280": {
+  "name": "StageCharacter::getLongWeaponClass",
+  "tag": "game-inferred",
+  "was": "FUN_0021b280",
+  "why": "+0x238's item kind through a table, 0 with none"
+ },
  "0021ba10": {
   "name": "StageCharacter::setBrainState",
   "tag": "game-inferred",
@@ -18130,6 +18220,24 @@
   "tag": "game-inferred",
   "was": "FUN_0021bb70",
   "why": "slot +0x278: brain +0x17c, 1 with none"
+ },
+ "0021bb90": {
+  "name": "StageCharacter::takeNamedItems",
+  "tag": "game-inferred",
+  "was": "FUN_0021bb90",
+  "why": "walks findAll3(name) for free items and gives them"
+ },
+ "0021bf00": {
+  "name": "StageCharacter::getScriptValue",
+  "tag": "game-inferred",
+  "was": "FUN_0021bf00",
+  "why": "vtable +0x2c0: +0x630 indexed 0..10"
+ },
+ "0021bf40": {
+  "name": "StageCharacter::setScriptValue",
+  "tag": "game-inferred",
+  "was": "FUN_0021bf40",
+  "why": "vtable +0x2bc: the store"
  },
  "0021c130": {
   "name": "StageCharacter::scriptUseDoorKey",
@@ -18160,6 +18268,54 @@
   "tag": "game-inferred",
   "was": "FUN_0021c7c0",
   "why": "a character of the mission list, each frame before the scripts"
+ },
+ "0021cab0": {
+  "name": "StageCharacter::setSideBit8",
+  "tag": "game-inferred",
+  "was": "FUN_0021cab0",
+  "why": "a0 = +0x590: sets or clears bit 8 of the sides, result below 0x10"
+ },
+ "0021cb00": {
+  "name": "StageCharacter::setSideBit4",
+  "tag": "game-inferred",
+  "was": "FUN_0021cb00",
+  "why": "as 0x21cab0, property 0x47"
+ },
+ "0021cb50": {
+  "name": "StageCharacter::setSideBit2",
+  "tag": "game-inferred",
+  "was": "FUN_0021cb50",
+  "why": "as 0x21cab0, property 0x46"
+ },
+ "0021cba0": {
+  "name": "StageCharacter::setSideBit1",
+  "tag": "game-inferred",
+  "was": "FUN_0021cba0",
+  "why": "as 0x21cab0, property 0x45"
+ },
+ "0021cbf0": {
+  "name": "StageCharacter::setSides",
+  "tag": "game-inferred",
+  "was": "FUN_0021cbf0",
+  "why": "a0 = +0x590: stores below 0x10"
+ },
+ "0021cc10": {
+  "name": "StageCharacter::setShot",
+  "tag": "game-inferred",
+  "was": "FUN_0021cc10",
+  "why": "a0 = +0x590: +0x68 byte is value == 999, +0x6c value / 100; the sheet's shot column goes the same way"
+ },
+ "0021cc50": {
+  "name": "StageCharacter::setLightResist",
+  "tag": "game-inferred",
+  "was": "FUN_0021cc50",
+  "why": "a0 = +0x590: +0x3c takes 0..2, property 0x1d"
+ },
+ "0021cc70": {
+  "name": "StageCharacter::initStatusBlock",
+  "tag": "game-inferred",
+  "was": "FUN_0021cc70",
+  "why": "called with a0 = this + 0x590 by resetActionState: fills the block from the sheet, sets the brain's first state from column +0x40"
  },
  "0021e050": {
   "name": "StageCharacter::resetActionState",
@@ -22864,6 +23020,12 @@
   "tag": "game-inferred",
   "was": "FUN_00289be0",
   "why": "StageScene ctor new(0x2c) for +0xc0 with (4, 0x800, 0x878): base 0x2895c0, then count pointers new[] (+0x1c), sizes +0x20 / +0x24; name a guess"
+ },
+ "00289eb0": {
+  "name": "StageViewTarget::isNear",
+  "tag": "game-inferred",
+  "was": "FUN_00289eb0",
+  "why": "squared distance on x, y of +0x150 against a range; the caller passes 250 and the character's position"
  },
  "0028ab90": {
   "name": "StageCar::hasSettled",
