@@ -3,7 +3,7 @@
 
 namespace
 {
-constexpr u_long128 kQwordMask = 0xf;
+constexpr uintptr_t kQwordMask = 0xf;
 constexpr u_long kDmaTagNext = 0x20000000;
 constexpr u_int kAddressMask = 0x9fffffff;
 
@@ -27,8 +27,7 @@ void sceVif1PkCloseDmaTag(sceVif1Packet *packet)
 {
     // Pad to a qword, then fix the open tag's QWC.
     const auto address = reinterpret_cast<uintptr_t>(packet->pCurrent);
-    packet->pCurrent = reinterpret_cast<u_long128 *>((address + static_cast<uintptr_t>(kQwordMask)) &
-                                                     ~static_cast<uintptr_t>(kQwordMask));
+    packet->pCurrent = reinterpret_cast<u_long128 *>((address + kQwordMask) & ~kQwordMask);
     closeOpenTag(packet);
     packet->pDmaTag = nullptr;
 }
