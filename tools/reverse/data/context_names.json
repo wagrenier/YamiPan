@@ -12455,6 +12455,12 @@
   "was": "FUN_0017a860",
   "why": "the character's start hook: allows, beginFrame, wants, the clocks of the living, P_URIEN"
  },
+ "0017af50": {
+  "name": "StageCharacter::rideCar",
+  "tag": "game-inferred",
+  "was": "FUN_0017af50",
+  "why": "bn_dr / bn_pa, motions 0xb9 and 0xba, view target's +0x3c0"
+ },
  "0017b3b0": {
   "name": "StageCharacter::isSpecialAllowed",
   "tag": "game-inferred",
@@ -15869,11 +15875,41 @@
   "was": "FUN_001a7b40",
   "why": "script native 0x234"
  },
+ "001a7fe0": {
+  "name": "nativePlaySoundAtPlace",
+  "tag": "game-inferred",
+  "was": "FUN_001a7fe0",
+  "why": "script native 0x230: runner slot +0x148 at a given point"
+ },
+ "001a8360": {
+  "name": "nativeNumLockScramble",
+  "tag": "game-inferred",
+  "was": "FUN_001a8360",
+  "why": "script native 0x22c"
+ },
+ "001a83a0": {
+  "name": "nativeSpawnEffectOnNumber",
+  "tag": "game-inferred",
+  "was": "FUN_001a83a0",
+  "why": "script native 0x22b: mission character by number, spawnEffectOnBone with a place"
+ },
+ "001a8640": {
+  "name": "nativeMissionFlagD9",
+  "tag": "game-inferred",
+  "was": "FUN_001a8640",
+  "why": "script native 0x22a: mission byte +0xd9"
+ },
  "001a86b0": {
   "name": "nativeLightValue2d8",
   "tag": "game-inferred",
   "was": "FUN_001a86b0",
   "why": "script native 0x229: slot +0x5c"
+ },
+ "001a88b0": {
+  "name": "nativeIsPartAtZero",
+  "tag": "game-inferred",
+  "was": "FUN_001a88b0",
+  "why": "script native 0x228: kinds 1..6, PartSwitch shown is 0"
  },
  "001a8ac0": {
   "name": "nativeBlowNear",
@@ -15881,11 +15917,83 @@
   "was": "FUN_001a8ac0",
   "why": "script native 0x227"
  },
+ "001a8ca0": {
+  "name": "nativeClock2Free",
+  "tag": "game-inferred",
+  "was": "FUN_001a8ca0",
+  "why": "script native 0x226"
+ },
+ "001a8d50": {
+  "name": "nativeClockFree",
+  "tag": "game-inferred",
+  "was": "FUN_001a8d50",
+  "why": "script native 0x225"
+ },
+ "001a8e00": {
+  "name": "nativeStartClock2",
+  "tag": "game-inferred",
+  "was": "FUN_001a8e00",
+  "why": "script native 0x224: StageResult +0xa4 state 1, +0xb0 target"
+ },
+ "001a8ea0": {
+  "name": "nativeAddClock2",
+  "tag": "game-inferred",
+  "was": "FUN_001a8ea0",
+  "why": "script native 0x223: StageResult +0xa8"
+ },
+ "001a8f40": {
+  "name": "nativeStartClock",
+  "tag": "game-inferred",
+  "was": "FUN_001a8f40",
+  "why": "script native 0x222: StageResult +0x94 state 1, +0xa0 target"
+ },
+ "001a90d0": {
+  "name": "nativeNumLockFlag",
+  "tag": "game-inferred",
+  "was": "FUN_001a90d0",
+  "why": "script native 0x220, into 0x2a8920"
+ },
+ "001a9160": {
+  "name": "nativeNearLooseWeapon",
+  "tag": "game-inferred",
+  "was": "FUN_001a9160",
+  "why": "script native 0x21f: findLooseWeapon, script point, handle"
+ },
+ "001a92d0": {
+  "name": "nativeVisionAddB",
+  "tag": "game-inferred",
+  "was": "FUN_001a92d0",
+  "why": "script native 0x21e"
+ },
+ "001a93c0": {
+  "name": "nativeElevatorFloorFree",
+  "tag": "game-inferred",
+  "was": "FUN_001a93c0",
+  "why": "script native 0x21d: bit of the elevator's +0x2fc is clear"
+ },
+ "001a94c0": {
+  "name": "nativeUnmarkWeapons",
+  "tag": "game-inferred",
+  "was": "FUN_001a94c0",
+  "why": "script native 0x21c: byte +0x45c of the weapons called name, active ones"
+ },
+ "001a97b0": {
+  "name": "nativePlayVoiceHeard",
+  "tag": "game-inferred",
+  "was": "FUN_001a97b0",
+  "why": "script native 0x21b, into 0x2a65c0"
+ },
  "001a9850": {
   "name": "nativeSetMotionLabel",
   "tag": "game-inferred",
   "was": "FUN_001a9850",
   "why": "script native 0x21a"
+ },
+ "001a9990": {
+  "name": "nativeSetBroken",
+  "tag": "game-inferred",
+  "was": "FUN_001a9990",
+  "why": "script native 0x218: slot +0x6c, the lights' cmdSetTreeBroken"
  },
  "001a9a40": {
   "name": "nativeFarFog",
@@ -15911,11 +16019,23 @@
   "was": "FUN_001aa0b0",
   "why": "script native 0x212"
  },
+ "001aa180": {
+  "name": "nativeShowHidePart",
+  "tag": "game-inferred",
+  "was": "FUN_001aa180",
+  "why": "script native 0x211: PartSwitch::show of the character's +0x204"
+ },
  "001aa550": {
   "name": "nativeResetTraps",
   "tag": "game-inferred",
   "was": "FUN_001aa550",
   "why": "script native 0x20e"
+ },
+ "001aa640": {
+  "name": "nativeVisionFrames",
+  "tag": "game-inferred",
+  "was": "FUN_001aa640",
+  "why": "script native 0x20d: frames * 5 / 6"
  },
  "001aa720": {
   "name": "nativeLightEnabled",
@@ -15959,17 +16079,65 @@
   "was": "FUN_001aaed0",
   "why": "script native (kAskedNatives, table 0x304230)"
  },
+ "001aafd0": {
+  "name": "nativeSevenKeyNumbers",
+  "tag": "game-inferred",
+  "was": "FUN_001aafd0",
+  "why": "script native 0x205, into 0x2b2b70"
+ },
+ "001ab0d0": {
+  "name": "nativeSevenKeyNames",
+  "tag": "game-inferred",
+  "was": "FUN_001ab0d0",
+  "why": "script native 0x204: owned[2] slot +0x10 with two names"
+ },
  "001ab180": {
   "name": "nativeLightRadius",
   "tag": "game-inferred",
   "was": "FUN_001ab180",
   "why": "script native 0x203: slot +0x54 with value squared"
  },
+ "001ab380": {
+  "name": "nativeNumLockPop",
+  "tag": "game-inferred",
+  "was": "FUN_001ab380",
+  "why": "script native 0x202"
+ },
+ "001ab400": {
+  "name": "nativeNumLockPush",
+  "tag": "game-inferred",
+  "was": "FUN_001ab400",
+  "why": "script native 0x201"
+ },
  "001ab510": {
   "name": "nativeTakeOverState",
   "tag": "game-inferred",
   "was": "FUN_001ab510",
   "why": "script native 0x200"
+ },
+ "001ab5d0": {
+  "name": "nativeVisionAddA",
+  "tag": "game-inferred",
+  "was": "FUN_001ab5d0",
+  "why": "script native 0x1ff"
+ },
+ "001ab6c0": {
+  "name": "nativeVisionOf",
+  "tag": "game-inferred",
+  "was": "FUN_001ab6c0",
+  "why": "script native 0x1fe"
+ },
+ "001ab790": {
+  "name": "nativeAskNumLockClose",
+  "tag": "game-inferred",
+  "was": "FUN_001ab790",
+  "why": "script native 0x1fd: slot +0x1b4 with 1"
+ },
+ "001ab800": {
+  "name": "nativeAskNumLockOpen",
+  "tag": "game-inferred",
+  "was": "FUN_001ab800",
+  "why": "script native 0x1fc: slot +0x1b4 with 0, kNumLockSpecials[0]"
  },
  "001ab870": {
   "name": "nativeMarkWeapons",
@@ -15989,17 +16157,59 @@
   "was": "FUN_001abeb0",
   "why": "script native 0x1f6 (kAskedNatives, table 0x304230)"
  },
+ "001abf50": {
+  "name": "nativeMissionFlagD8",
+  "tag": "game-inferred",
+  "was": "FUN_001abf50",
+  "why": "script native 0x1f5: mission byte +0xd8"
+ },
  "001abfc0": {
   "name": "nativeIsNearViewTarget",
   "tag": "game-inferred",
   "was": "FUN_001abfc0",
   "why": "script native (kAskedNatives, table 0x304230)"
  },
+ "001ac050": {
+  "name": "nativeResetCar",
+  "tag": "game-inferred",
+  "was": "FUN_001ac050",
+  "why": "script native 0x1f3, into 0x28dac0 on the view target"
+ },
+ "001ac200": {
+  "name": "nativePlaceRespawn",
+  "tag": "game-inferred",
+  "was": "FUN_001ac200",
+  "why": "script native 0x1f0: first spawnable character off stage of the sheet class gets the place"
+ },
  "001ac5f0": {
   "name": "nativeNearNamed",
   "tag": "game-inferred",
   "was": "FUN_001ac5f0",
   "why": "script native 0x1ef (kAskedNatives, table 0x304230)"
+ },
+ "001ac750": {
+  "name": "nativeSigLampNames",
+  "tag": "game-inferred",
+  "was": "FUN_001ac750",
+  "why": "script native 0x1ee: owned[0] slot +0x10 with two names"
+ },
+ "001ac800": {
+  "name": "nativeCanUseNumLock",
+  "tag": "game-inferred",
+  "was": "FUN_001ac800",
+  "why": "script native 0x1ed: input free and the special NumLock allowed"
+ },
+ "001ac900": {
+  "name": "nativeNumLockNames",
+  "tag": "game-inferred",
+  "was": "FUN_001ac900",
+  "why": "script native 0x1ec: owned[1] slot +0x10 with two names"
+ },
+ "001ac9b0": {
+  "name": "nativeSigLampSlot44",
+  "tag": "game-inferred",
+  "was": "FUN_001ac9b0",
+  "why": "script native 0x1eb: owned[0] slot +0x44"
  },
  "001aca90": {
   "name": "nativeSigLampHasTarget",
@@ -16018,6 +16228,12 @@
   "tag": "game-inferred",
   "was": "FUN_001acd00",
   "why": "script native 0x1e7"
+ },
+ "001acdf0": {
+  "name": "nativeSigLampSlot2c",
+  "tag": "game-inferred",
+  "was": "FUN_001acdf0",
+  "why": "script native 0x1e6: owned[0] slot +0x2c, null tested"
  },
  "001ace90": {
   "name": "nativeLightCastsShadow",
@@ -16073,11 +16289,47 @@
   "was": "FUN_001adb70",
   "why": "script native (kAskedNatives, table 0x304230)"
  },
+ "001adbc0": {
+  "name": "nativeAskRouteKind11",
+  "tag": "game-inferred",
+  "was": "FUN_001adbc0",
+  "why": "script native 0x1dc: slot +0x1b0 on self"
+ },
+ "001ade60": {
+  "name": "nativeClearSlowMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001ade60",
+  "why": "script native 0x1d9"
+ },
+ "001adf00": {
+  "name": "nativeSetSlowMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001adf00",
+  "why": "script native 0x1d8"
+ },
+ "001ae010": {
+  "name": "nativeIsDraining",
+  "tag": "game-inferred",
+  "was": "FUN_001ae010",
+  "why": "script native 0x1d7: isMotionSlowed of the same character"
+ },
+ "001ae1d0": {
+  "name": "nativeStartDrain",
+  "tag": "game-inferred",
+  "was": "FUN_001ae1d0",
+  "why": "script native 0x1d5: 0x20d2c0 on who plays, or the partner off a drained stage"
+ },
  "001ae310": {
   "name": "nativeIsActive",
   "tag": "game-inferred",
   "was": "FUN_001ae310",
   "why": "script native 0x1d4: label's object exists and +0x34 is set"
+ },
+ "001ae400": {
+  "name": "nativeSetNoticeEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_001ae400",
+  "why": "script native 0x1d3"
  },
  "001ae4c0": {
   "name": "nativeHurtByName",
@@ -16090,6 +16342,54 @@
   "tag": "game-inferred",
   "was": "FUN_001ae610",
   "why": "script native 0x1d1"
+ },
+ "001ae780": {
+  "name": "nativeInCompanionMode",
+  "tag": "game-inferred",
+  "was": "FUN_001ae780",
+  "why": "script native 0x1d0"
+ },
+ "001ae820": {
+  "name": "nativeElevatorPhase",
+  "tag": "game-inferred",
+  "was": "FUN_001ae820",
+  "why": "script native 0x1cf: the pose's four phases as 7, 6, 5, 4"
+ },
+ "001ae900": {
+  "name": "nativeElevatorFloor",
+  "tag": "game-inferred",
+  "was": "FUN_001ae900",
+  "why": "script native 0x1ce"
+ },
+ "001ae9a0": {
+  "name": "nativeElevatorRelease",
+  "tag": "game-inferred",
+  "was": "FUN_001ae9a0",
+  "why": "script native 0x1cd: elevatorCall with 5, which clears the called floors"
+ },
+ "001ae9f0": {
+  "name": "nativeElevatorMove",
+  "tag": "game-inferred",
+  "was": "FUN_001ae9f0",
+  "why": "script native 0x1cc: floor 1 or 3, speed 4 or 5, into 0x294f90"
+ },
+ "001aeb40": {
+  "name": "nativeUseElevator",
+  "tag": "game-inferred",
+  "was": "FUN_001aeb40",
+  "why": "script native 0x1cb: starts that special through slot +0x1ac"
+ },
+ "001aee20": {
+  "name": "nativeElevatorAction",
+  "tag": "game-inferred",
+  "was": "FUN_001aee20",
+  "why": "script native 0x1ca: which Elevator special the character could start"
+ },
+ "001af050": {
+  "name": "nativeSetCarMode",
+  "tag": "game-inferred",
+  "was": "FUN_001af050",
+  "why": "script native 0x1c8: slot +0x9c's word +0x39c, what StageCar getMode reads"
  },
  "001af220": {
   "name": "nativeTimedRecords",
@@ -16211,6 +16511,12 @@
   "was": "FUN_001b1850",
   "why": "script native 0x1b3: slot +0x74"
  },
+ "001b1e60": {
+  "name": "nativeSetCarFlag3a0",
+  "tag": "game-inferred",
+  "was": "FUN_001b1e60",
+  "why": "script native 0x1ac: slot +0x9c's byte +0x3a0"
+ },
  "001b2080": {
   "name": "nativeShowNotice",
   "tag": "game-inferred",
@@ -16247,17 +16553,95 @@
   "was": "FUN_001b2810",
   "why": "native 0x19f"
  },
+ "001b28d0": {
+  "name": "nativeSetCarValue394",
+  "tag": "game-inferred",
+  "was": "FUN_001b28d0",
+  "why": "script native 0x19e: view target's float +0x394, thousandths"
+ },
  "001b2ba0": {
   "name": "nativeIsMotionEnding",
   "tag": "game-inferred",
   "was": "FUN_001b2ba0",
   "why": "script native 0x19b (kAskedNatives, table 0x304230)"
  },
+ "001b2cd0": {
+  "name": "nativeCarMotionEnding",
+  "tag": "game-inferred",
+  "was": "FUN_001b2cd0",
+  "why": "script native 0x19a: slot +0x9c's pose isBoneEnding"
+ },
+ "001b2e80": {
+  "name": "nativeCarPlayMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001b2e80",
+  "why": "script native 0x198: slot +0x9c's model plays a name"
+ },
+ "001b31e0": {
+  "name": "nativeEffectsOff",
+  "tag": "game-inferred",
+  "was": "FUN_001b31e0",
+  "why": "script native 0x195: the effects of a name off"
+ },
+ "001b3240": {
+  "name": "setEffectsOn",
+  "tag": "game-inferred",
+  "was": "FUN_001b3240",
+  "why": "setTreeScriptFlag over a group 5 name; another name is find8's slot +0x264 setLampOn"
+ },
+ "001b3440": {
+  "name": "findEffectGroup",
+  "tag": "game-inferred",
+  "was": "FUN_001b3440",
+  "why": "findAll5, forgiving a bn_ prefix and ENV_%cL%2d digits, recursive"
+ },
+ "001b36c0": {
+  "name": "nativeEffectsOn2",
+  "tag": "game-inferred",
+  "was": "FUN_001b36c0",
+  "why": "script native 0x194: the same code as 0x17c"
+ },
+ "001b3720": {
+  "name": "nativeAttachEffect",
+  "tag": "game-inferred",
+  "was": "FUN_001b3720",
+  "why": "script native 0x193: wraps 0x1b37b0"
+ },
+ "001b37b0": {
+  "name": "attachEffectToObject",
+  "tag": "game-inferred",
+  "was": "FUN_001b37b0",
+  "why": "find8 and find5, hangs the effect under bn_top or the object, on and shown"
+ },
  "001b39a0": {
   "name": "nativeEventEffect",
   "tag": "game-inferred",
   "was": "FUN_001b39a0",
   "why": "script native 0x192 (kAskedNatives, table 0x304230)"
+ },
+ "001b3ae0": {
+  "name": "nativeDemoCutOverlay",
+  "tag": "game-inferred",
+  "was": "FUN_001b3ae0",
+  "why": "script native 0x191: native 0x159 with the overlay SJN or SJE as an argument"
+ },
+ "001b4060": {
+  "name": "nativePlayerCarFlag",
+  "tag": "game-inferred",
+  "was": "FUN_001b4060",
+  "why": "script native 0x18f: the same byte read"
+ },
+ "001b4110": {
+  "name": "nativeSetPlayerCarFlag",
+  "tag": "game-inferred",
+  "was": "FUN_001b4110",
+  "why": "script native 0x18e: byte +0x18 of the special GettingOnCar, player's"
+ },
+ "001b41f0": {
+  "name": "nativeRideCar",
+  "tag": "game-inferred",
+  "was": "FUN_001b41f0",
+  "why": "script native 0x18d, into 0x17af50"
  },
  "001b42f0": {
   "name": "nativeAngleTo",
@@ -16289,6 +16673,18 @@
   "was": "FUN_001b5200",
   "why": "script native 0x17e (kAskedNatives, table 0x304230)"
  },
+ "001b5280": {
+  "name": "nativeEffectsOff2",
+  "tag": "game-inferred",
+  "was": "FUN_001b5280",
+  "why": "script native 0x17d: the same code as 0x195"
+ },
+ "001b52e0": {
+  "name": "nativeEffectsOn",
+  "tag": "game-inferred",
+  "was": "FUN_001b52e0",
+  "why": "script native 0x17c: the effects of a name on"
+ },
  "001b5460": {
   "name": "demoSwitchOn",
   "tag": "game-inferred",
@@ -16307,6 +16703,12 @@
   "was": "FUN_001b56b0",
   "why": "gStageScene->objects->find5(name, 0); both callers pass light names (scr_demo_pl)"
  },
+ "001b56f0": {
+  "name": "nativeSetHoldMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001b56f0",
+  "why": "script native 0x17a: PlayerMotion setHold of number + 0xf4"
+ },
  "001b5800": {
   "name": "nativeReleaseAction",
   "tag": "game-inferred",
@@ -16318,6 +16720,12 @@
   "tag": "game-inferred",
   "was": "FUN_001b5890",
   "why": "script native 0x178"
+ },
+ "001b5980": {
+  "name": "nativeKeepSpawnPointListAll",
+  "tag": "game-inferred",
+  "was": "FUN_001b5980",
+  "why": "script native 0x177: applySpawnPointList, others untouched"
  },
  "001b5a60": {
   "name": "nativeDropSpawnPointRange",
@@ -16354,6 +16762,12 @@
   "tag": "game-inferred",
   "was": "FUN_001b60b0",
   "why": "script native 0x171 (kAskedNatives, table 0x304230)"
+ },
+ "001b6190": {
+  "name": "nativeCarLightsOn",
+  "tag": "game-inferred",
+  "was": "FUN_001b6190",
+  "why": "script native 0x170: GateParts::isLit of the view target's +0x2b0"
  },
  "001b6260": {
   "name": "nativeCarLights",
@@ -16415,6 +16829,36 @@
   "was": "FUN_001b79d0",
   "why": "script native 0x15e"
  },
+ "001b7c20": {
+  "name": "nativeDoorNotUsed",
+  "tag": "game-inferred",
+  "was": "FUN_001b7c20",
+  "why": "script native 0x15c: door noteUse(false)"
+ },
+ "001b7d00": {
+  "name": "nativeUseItemAt",
+  "tag": "game-inferred",
+  "was": "FUN_001b7d00",
+  "why": "script native 0x15a: slot +0x174 with a point built from two percentages"
+ },
+ "001b8520": {
+  "name": "nativeCarFlag3b9",
+  "tag": "game-inferred",
+  "was": "FUN_001b8520",
+  "why": "script native 0x154: view target's byte +0x3b9; the view target is the car in the natives that use it"
+ },
+ "001b8ca0": {
+  "name": "nativeNoticeForArg",
+  "tag": "game-inferred",
+  "was": "FUN_001b8ca0",
+  "why": "script native 0x14e: as 0x14d with an argument"
+ },
+ "001b8e40": {
+  "name": "nativeNoticeFor",
+  "tag": "game-inferred",
+  "was": "FUN_001b8e40",
+  "why": "script native 0x14d: addNotice with frames, 0 forever"
+ },
  "001b9680": {
   "name": "nativeDemoBind",
   "tag": "game-inferred",
@@ -16432,6 +16876,18 @@
   "tag": "game-inferred",
   "was": "FUN_001b9bf0",
   "why": "script native 0x143 (kAskedNatives, table 0x304230)"
+ },
+ "001b9cc0": {
+  "name": "nativeGameOver",
+  "tag": "game-inferred",
+  "was": "FUN_001b9cc0",
+  "why": "script native 0x142: startGameOver once input is free"
+ },
+ "001b9f80": {
+  "name": "nativeBulletFlyingNumber",
+  "tag": "game-inferred",
+  "was": "FUN_001b9f80",
+  "why": "script native 0x140: mission character by number, slot +0x328 reads +0x688"
  },
  "001ba0e0": {
   "name": "nativeBulletFlying",
@@ -16457,17 +16913,41 @@
   "was": "FUN_001ba6f0",
   "why": "script native 0x137 (kAskedNatives, table 0x304230)"
  },
+ "001ba900": {
+  "name": "nativeHideEffect",
+  "tag": "game-inferred",
+  "was": "FUN_001ba900",
+  "why": "script native 0x135: hideActiveNamed on group 5"
+ },
  "001bac20": {
   "name": "nativeShowGroup1",
   "tag": "game-inferred",
   "was": "FUN_001bac20",
   "why": "script native 0x132 (kAskedNatives, table 0x304230)"
  },
+ "001bae60": {
+  "name": "nativeFireAtName",
+  "tag": "game-inferred",
+  "was": "FUN_001bae60",
+  "why": "script native 0x131: findCharacter or find6, slot +0xdc scriptFireAt"
+ },
+ "001bafc0": {
+  "name": "nativeFireAtBite",
+  "tag": "game-inferred",
+  "was": "FUN_001bafc0",
+  "why": "script native 0x130: slot +0xd8, askFireAtBite"
+ },
  "001bb160": {
   "name": "nativeSwing",
   "tag": "game-inferred",
   "was": "FUN_001bb160",
   "why": "script native 0x12e (kAskedNatives, table 0x304230)"
+ },
+ "001bb370": {
+  "name": "nativeSpawnNearPlace",
+  "tag": "game-inferred",
+  "was": "FUN_001bb370",
+  "why": "script native 0x12b: pick, taken test and spawn at a given point"
  },
  "001bb4c0": {
   "name": "nativeSpawnEffectAt",
@@ -16613,6 +17093,12 @@
   "was": "FUN_001bed00",
   "why": "script native (kAskedNatives, table 0x304230)"
  },
+ "001bf400": {
+  "name": "nativeIsCrouchingNumber",
+  "tag": "game-inferred",
+  "was": "FUN_001bf400",
+  "why": "script native 0xed: mission character by number, slot +0x2e4 isCrouching"
+ },
  "001bf820": {
   "name": "nativeHasLineTo",
   "tag": "game-inferred",
@@ -16667,6 +17153,18 @@
   "was": "FUN_001c0760",
   "why": "script native (kAskedNatives, table 0x304230)"
  },
+ "001c1160": {
+  "name": "nativeIsPlayer",
+  "tag": "game-inferred",
+  "was": "FUN_001c1160",
+  "why": "script native 0xd3: the target is the player's runner"
+ },
+ "001c1200": {
+  "name": "nativeIsUpSelf",
+  "tag": "game-inferred",
+  "was": "FUN_001c1200",
+  "why": "script native 0xd2: getLifeState is 2"
+ },
  "001c1430": {
   "name": "nativeIsUp",
   "tag": "game-inferred",
@@ -16702,6 +17200,12 @@
   "tag": "game-inferred",
   "was": "FUN_001c2400",
   "why": "script native 0xc4 (kAskedNatives, table 0x304230)"
+ },
+ "001c2600": {
+  "name": "nativeClearFoeWeight",
+  "tag": "game-inferred",
+  "was": "FUN_001c2600",
+  "why": "script native 0xc2: setFoeWeight to 0"
  },
  "001c2720": {
   "name": "nativeForgetFoe",
@@ -16750,6 +17254,12 @@
   "tag": "game-inferred",
   "was": "FUN_001c3d50",
   "why": "script native 0xb0 (kAskedNatives, table 0x304230)"
+ },
+ "001c3fa0": {
+  "name": "nativeSetMusicVolume",
+  "tag": "game-inferred",
+  "was": "FUN_001c3fa0",
+  "why": "script native 0xae"
  },
  "001c4180": {
   "name": "nativeStopSound",
@@ -16943,6 +17453,12 @@
   "was": "FUN_001c7420",
   "why": "script native 0x82 (kAskedNatives, table 0x304230)"
  },
+ "001c74c0": {
+  "name": "nativePickableItem",
+  "tag": "game-inferred",
+  "was": "FUN_001c74c0",
+  "why": "script native 0x81: slot +0x15c, the handle of what lies in reach"
+ },
  "001c7530": {
   "name": "nativePutWeaponAway",
   "tag": "game-inferred",
@@ -16991,6 +17507,12 @@
   "was": "FUN_001c8f40",
   "why": "strcmp(name, \"NULL\") == 0"
  },
+ "001c8fd0": {
+  "name": "nativeCallOut",
+  "tag": "game-inferred",
+  "was": "FUN_001c8fd0",
+  "why": "script native 0x62: slot +0x1a0, a noise and the action cr_3"
+ },
  "001c90b0": {
   "name": "nativeCrouch",
   "tag": "game-inferred",
@@ -17027,11 +17549,29 @@
   "was": "FUN_001c9fb0",
   "why": "script native 0x59 (kAskedNatives, table 0x304230)"
  },
+ "001ca040": {
+  "name": "nativeIsRunningName",
+  "tag": "game-inferred",
+  "was": "FUN_001ca040",
+  "why": "script native 0x58: findCharacter then slot +0x2e0, isRunningMotion"
+ },
  "001ca150": {
   "name": "nativeIsCrouchingName",
   "tag": "game-inferred",
   "was": "FUN_001ca150",
   "why": "script native 0x57 (kAskedNatives, table 0x304230)"
+ },
+ "001ca260": {
+  "name": "nativeIsBlowActiveOf",
+  "tag": "game-inferred",
+  "was": "FUN_001ca260",
+  "why": "script native 0x56: isBlowActive of an object argument"
+ },
+ "001ca370": {
+  "name": "nativeIsCompanionName",
+  "tag": "game-inferred",
+  "was": "FUN_001ca370",
+  "why": "script native 0x55: findCharacter then object slot +0x2b8, scriptIsCompanion"
  },
  "001ca480": {
   "name": "nativeHasLineToName",
@@ -17057,6 +17597,12 @@
   "was": "FUN_001caf30",
   "why": "script native (kAskedNatives, table 0x304230)"
  },
+ "001cb640": {
+  "name": "nativeAddPlainMenuLine",
+  "tag": "game-inferred",
+  "was": "FUN_001cb640",
+  "why": "script native 0x43: slot +0x154 with the plain flag set"
+ },
  "001cb7b0": {
   "name": "nativeHeightToName",
   "tag": "game-inferred",
@@ -17075,11 +17621,23 @@
   "was": "FUN_001cbca0",
   "why": "script native 0x3d (kAskedNatives, table 0x304230)"
  },
+ "001cbe90": {
+  "name": "nativeSwingAtBite",
+  "tag": "game-inferred",
+  "was": "FUN_001cbe90",
+  "why": "script native 0x3b: slot +0xd0, the character's askSwingAtBite"
+ },
  "001cbf20": {
   "name": "nativeSeenEnemy",
   "tag": "game-inferred",
   "was": "FUN_001cbf20",
   "why": "script native 0x3a"
+ },
+ "001cbfc0": {
+  "name": "nativeHasAllyWithin",
+  "tag": "game-inferred",
+  "was": "FUN_001cbfc0",
+  "why": "script native 0x39: slot +0xc8"
  },
  "001cc2d0": {
   "name": "nativeMarkPlace",
@@ -18497,11 +19055,35 @@
   "was": "FUN_001dec70",
   "why": "the family's limits at +0xb58 into the pose, then ModelPose::setHeadTarget"
  },
+ "001ded30": {
+  "name": "PlayerMotion::setHold",
+  "tag": "game-inferred",
+  "was": "FUN_001ded30",
+  "why": "m_holds[0] when the id is 0..0xff"
+ },
  "001dedb0": {
   "name": "StagePlayer::releaseAction",
   "tag": "game-inferred",
   "was": "FUN_001dedb0",
   "why": "on +0x224, ends the held action; StageSimpleEvent::poll"
+ },
+ "001dee50": {
+  "name": "PlayerMotion::getCarSpecialFlag",
+  "tag": "game-inferred",
+  "was": "FUN_001dee50",
+  "why": "byte +0x18 of the special GettingOnCar"
+ },
+ "001dee90": {
+  "name": "PlayerMotion::setCarSpecialFlag",
+  "tag": "game-inferred",
+  "was": "FUN_001dee90",
+  "why": "the same byte written"
+ },
+ "001deed0": {
+  "name": "PlayerMotion::isSpecialOnly",
+  "tag": "game-inferred",
+  "was": "FUN_001deed0",
+  "why": "not in the map +8, in the map +0x2c"
  },
  "001def60": {
   "name": "PlayerMotion::isSpecialAllowed",
@@ -19523,6 +20105,30 @@
   "was": "FUN_001fe720",
   "why": "memset(0x598b20, -1, 0x10): the four saved character ids; a0 the scene +0x88"
  },
+ "001fe740": {
+  "name": "StageParty::addVisionB",
+  "tag": "game-inferred",
+  "was": "FUN_001fe740",
+  "why": "appends to the record's list +0x110, count +0x13c"
+ },
+ "001fe770": {
+  "name": "StageParty::addVisionA",
+  "tag": "game-inferred",
+  "was": "FUN_001fe770",
+  "why": "appends to the record's list +0xe8, count +0x138"
+ },
+ "001fe7a0": {
+  "name": "StageParty::setVisionTarget",
+  "tag": "game-inferred",
+  "was": "FUN_001fe7a0",
+  "why": "record +0xe4, mode word +0xdc 8, sound KAKOSI (past sight, a guess from the sound)"
+ },
+ "001fe7b0": {
+  "name": "StageParty::setVisionFrames",
+  "tag": "game-inferred",
+  "was": "FUN_001fe7b0",
+  "why": "record +0xe0"
+ },
  "001fe800": {
   "name": "StageParty::isRunning",
   "tag": "game-inferred",
@@ -19564,6 +20170,12 @@
   "tag": "game-inferred",
   "was": "FUN_001fe9c0",
   "why": "mode 4, +0x18 = object: what getCompanion answers in that mode"
+ },
+ "001fe9f0": {
+  "name": "StageParty::isCompanionMode",
+  "tag": "game-inferred",
+  "was": "FUN_001fe9f0",
+  "why": "record +0xb8 is 3 or 4, the modes getCompanion reads +0x18 in"
  },
  "001fea30": {
   "name": "StageParty::getFlecks",
@@ -19865,6 +20477,24 @@
   "was": "FUN_0020cf90",
   "why": "sums the carried items named as the firearm's ammo; 100 for anyone but the player"
  },
+ "0020d1c0": {
+  "name": "StageCharacter::clearSlowChange",
+  "tag": "game-inferred",
+  "was": "FUN_0020d1c0",
+  "why": "+0x458 to -1, lets go of motion 0xd6"
+ },
+ "0020d210": {
+  "name": "StageCharacter::setSlowChange",
+  "tag": "game-inferred",
+  "was": "FUN_0020d210",
+  "why": "fills +0x458..+0x464, what isMotionSlowed and stepSlowChange read"
+ },
+ "0020d2c0": {
+  "name": "StageCharacter::startDrainSlow",
+  "tag": "game-inferred",
+  "was": "FUN_0020d2c0",
+  "why": "the same fields with rate * 1.2 and the action sp_jack"
+ },
  "0020d390": {
   "name": "StageCharacter::isMotionSlowed",
   "tag": "game-inferred",
@@ -19930,6 +20560,12 @@
   "tag": "game-inferred",
   "was": "FUN_00210720",
   "why": "walks the enemies of its side: a living one whose bite target is this; hasFollower was a guess"
+ },
+ "00210810": {
+  "name": "StageCharacter::scriptHasAllyWithin",
+  "tag": "game-inferred",
+  "was": "FUN_00210810",
+  "why": "slot +0xc8 body: walks the mission characters"
  },
  "00210910": {
   "name": "StageCharacter::scriptCanSee",
@@ -20014,6 +20650,12 @@
   "tag": "game-inferred",
   "was": "FUN_00212020",
   "why": "not scene +0x7c, sheet kind not 0xb, slot +0x278 not 2..5 or 7; true leads to requestControl of this character"
+ },
+ "002123e0": {
+  "name": "StageCharacter::isOnElevator",
+  "tag": "game-inferred",
+  "was": "FUN_002123e0",
+  "why": "ground's floor object is of kind 4; used only by the elevator natives"
  },
  "00212420": {
   "name": "StageCharacter::isNearViewTarget",
@@ -20291,11 +20933,23 @@
   "was": "FUN_00218110",
   "why": "brain allowPath behind a null test"
  },
+ "00218140": {
+  "name": "StageCharacter::scriptAskNumLock",
+  "tag": "game-inferred",
+  "was": "FUN_00218140",
+  "why": "slot +0x1b4's body"
+ },
  "00218190": {
   "name": "StageCharacter::scriptUseSpecial",
   "tag": "game-inferred",
   "was": "FUN_00218190",
   "why": "runner slot +0x1ac: askUseSpecial off the pad, setSpecial on it"
+ },
+ "00218200": {
+  "name": "StageCharacter::scriptAskRouteKind11",
+  "tag": "game-inferred",
+  "was": "FUN_00218200",
+  "why": "slot +0x1b0 body"
  },
  "00218260": {
   "name": "StageCharacter::scriptDragOutCar",
@@ -20345,6 +20999,12 @@
   "was": "FUN_002185a0",
   "why": "+0x66c position record valid and +0x6ac 0: no; else yes"
  },
+ "00218610": {
+  "name": "StageCharacter::setRespawnPlace",
+  "tag": "game-inferred",
+  "was": "FUN_00218610",
+  "why": "+0x6a0 position w 1, +0x6b0 rotation"
+ },
  "00218630": {
   "name": "StageObject::spawn",
   "tag": "game-inferred",
@@ -20386,6 +21046,12 @@
   "tag": "game-inferred",
   "was": "FUN_00218b50",
   "why": "called from the brain; a brief read"
+ },
+ "00218e00": {
+  "name": "StageCharacter::scriptUseItemAt",
+  "tag": "game-inferred",
+  "was": "FUN_00218e00",
+  "why": "slot +0x174's body: useItem with 1 in a3"
  },
  "00218e10": {
   "name": "StageCharacter::scriptUseNamedItem",
@@ -20476,6 +21142,12 @@
   "tag": "game-inferred",
   "was": "FUN_00219a90",
   "why": "runner slot +0x1a4: addNoise kind 3, playActionAndRetry cr_1"
+ },
+ "00219ae0": {
+  "name": "StageCharacter::scriptCallOut",
+  "tag": "game-inferred",
+  "was": "FUN_00219ae0",
+  "why": "slot +0x1a0's body: addNoise kind 3, action cr_3"
  },
  "00219b30": {
   "name": "StageCharacter::doorActions",
@@ -20585,17 +21257,35 @@
   "was": "FUN_0021ac00",
   "why": "vtable +0x260: slot +0x268 of +0x234"
  },
+ "0021ac30": {
+  "name": "StageCharacter::scriptPickableHandle",
+  "tag": "game-inferred",
+  "was": "FUN_0021ac30",
+  "why": "slot +0x15c's body: PickupItem byte, then the handle"
+ },
  "0021ace0": {
   "name": "StageCharacter::scriptFireAt",
   "tag": "game-inferred",
   "was": "FUN_0021ace0",
   "why": "runner +0xdc: brain askFireAt"
  },
+ "0021ad00": {
+  "name": "StageCharacter::scriptFireAtBite",
+  "tag": "game-inferred",
+  "was": "FUN_0021ad00",
+  "why": "slot +0xd8's body"
+ },
  "0021ad20": {
   "name": "StageCharacter::scriptSwingAt",
   "tag": "game-inferred",
   "was": "FUN_0021ad20",
   "why": "runner +0xd4: brain askSwingAt"
+ },
+ "0021ad40": {
+  "name": "StageCharacter::scriptSwingAtBite",
+  "tag": "game-inferred",
+  "was": "FUN_0021ad40",
+  "why": "slot +0xd0's body"
  },
  "0021ad60": {
   "name": "StageCharacter::isBitten",
@@ -25937,6 +26627,12 @@
   "was": "FUN_0028d810",
   "why": "stores 1 or -1 at +0x382, other values ignored; the wheel's input calls it, class with CAR_HORN / CAR_EG_ST"
  },
+ "0028dac0": {
+  "name": "StageCar::resetPlace",
+  "tag": "game-inferred",
+  "was": "FUN_0028dac0",
+  "why": "compares the placed position and rotation, then 0x28d850"
+ },
  "0028db80": {
   "name": "StageCar::setLights",
   "tag": "game-inferred",
@@ -26308,6 +27004,60 @@
   "tag": "game-inferred",
   "was": "FUN_002938d0",
   "why": "bits for tracks named ?_finger.. with keys, r 1, l 2"
+ },
+ "00294140": {
+  "name": "elevatorCanCall",
+  "tag": "game-inferred",
+  "was": "FUN_00294140",
+  "why": "gadget motion's test: 150 from the panel, facing it"
+ },
+ "00294280": {
+  "name": "elevatorCall",
+  "tag": "game-inferred",
+  "was": "FUN_00294280",
+  "why": "ELV_BUTTON, floors 1..4, 5 releases"
+ },
+ "00294ad0": {
+  "name": "elevatorIsPhase4",
+  "tag": "game-inferred",
+  "was": "FUN_00294ad0",
+  "why": "pose +0x408 low nibble 4"
+ },
+ "00294b00": {
+  "name": "elevatorIsPhase2",
+  "tag": "game-inferred",
+  "was": "FUN_00294b00",
+  "why": "pose +0x408 low nibble 2"
+ },
+ "00294b30": {
+  "name": "elevatorIsPhase3",
+  "tag": "game-inferred",
+  "was": "FUN_00294b30",
+  "why": "pose +0x408 low nibble 3"
+ },
+ "00294b60": {
+  "name": "elevatorIsPhase1",
+  "tag": "game-inferred",
+  "was": "FUN_00294b60",
+  "why": "pose +0x408 low nibble 1"
+ },
+ "00294c30": {
+  "name": "elevatorIsAtB3",
+  "tag": "game-inferred",
+  "was": "FUN_00294c30",
+  "why": "bit 0x10 clear, nibble not 5; native 0x1ce answers 3 for it, a move to 3 clears the bit (corrects batch 146)"
+ },
+ "00294c70": {
+  "name": "elevatorIsAtB1",
+  "tag": "game-inferred",
+  "was": "FUN_00294c70",
+  "why": "bit 0x10 set, nibble not 6; native 0x1ce answers 1 for it (corrects batch 146)"
+ },
+ "00294f90": {
+  "name": "elevatorMove",
+  "tag": "game-inferred",
+  "was": "FUN_00294f90",
+  "why": "picks the pose's request 2, 4, 8, 10 from two flags and stops the sound"
  },
  "00295470": {
   "name": "runNaviFile",
@@ -27275,6 +28025,12 @@
   "was": "FUN_002a6440",
   "why": "findCue, priority against +0x438, stops what plays by +0x430, setCue; native 0xad"
  },
+ "002a65c0": {
+  "name": "StageCharacter::playVoiceHeard",
+  "tag": "game-inferred",
+  "was": "FUN_002a65c0",
+  "why": "playVoice's sibling: from bn_head, heard, kept as a source in +0x430"
+ },
  "002a6830": {
   "name": "StageCharacter::stopSounds",
   "tag": "game-inferred",
@@ -27293,6 +28049,24 @@
   "was": "FUN_002a6980",
   "why": "sheet kind to the sound kind 1..9"
  },
+ "002a6b70": {
+  "name": "numLockScramble",
+  "tag": "game-inferred",
+  "was": "FUN_002a6b70",
+  "why": "four random dials unlike the code and the current ones"
+ },
+ "002a6c40": {
+  "name": "numLockPopDials",
+  "tag": "game-inferred",
+  "was": "FUN_002a6c40",
+  "why": "restores what 0x2a6cd0 kept and the object's active state"
+ },
+ "002a6cd0": {
+  "name": "numLockPushDials",
+  "tag": "game-inferred",
+  "was": "FUN_002a6cd0",
+  "why": "keeps the four dials of pose +0x3f0 on a stack of one, sets the new ones"
+ },
  "002a7a50": {
   "name": "NmlPose::NmlPose",
   "tag": "game-inferred",
@@ -27304,6 +28078,12 @@
   "tag": "game-inferred",
   "was": "FUN_002a7bf0",
   "why": "vtable 0x314c40, 8 bytes, built by parseEnd's effect target from the texture named siglamp, into StageScene +0x8c"
+ },
+ "002a8920": {
+  "name": "SceneOwnedObject::getRecordFlag31",
+  "tag": "game-inferred",
+  "was": "FUN_002a8920",
+  "why": "the +4 record's byte +0x31; called on owned[1], the number lock"
  },
  "002a9c70": {
   "name": "memcardEnd",
@@ -27988,6 +28768,12 @@
   "tag": "game-inferred",
   "was": "FUN_002b22d0",
   "why": "five words zero; EE 0x14"
+ },
+ "002b2b70": {
+  "name": "SceneOwnedObject::setSevenKeyNumbers",
+  "tag": "game-inferred",
+  "was": "FUN_002b2b70",
+  "why": "called on owned[2] by native 0x205: an object of kind 6 takes two pairs"
  },
  "002b37d0": {
   "name": "SkyPose::SkyPose",

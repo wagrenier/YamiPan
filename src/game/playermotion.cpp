@@ -681,6 +681,27 @@ void PlayerMotion::setSpecial(const char *name, bool on)
         found->second->setEnabled(on);
 }
 
+// FS2 0x001deed0
+// callcheck: FUN_001ef590, FUN_001d1280
+
+bool PlayerMotion::isSpecialOnly(const char *name)
+{
+    if (m_conditions.find(name) != m_conditions.end())
+        return false;
+    return m_specials.find(name) != m_specials.end();
+}
+
+// FS2 0x001ded30
+
+bool PlayerMotion::setHold(int id)
+{
+    constexpr int kLastMotion = 0xff;
+    if (id < 0 || id > kLastMotion)
+        return false;
+    m_holds[0] = id;
+    return true;
+}
+
 // Inline in the ROM (0x1da430): the class is this file's.
 // callcheck: FUN_001d1280, setText
 
@@ -7465,6 +7486,140 @@ void StageCharacter::scriptHurt(StageObject *fromObject, int amount, int reactio
     }
 }
 
+// FS2 0x00210810
+// callcheck: currentMission, currentMission, FUN_001b9a60, isAlly, FUN_002107e0, distanceTo
+
+bool StageCharacter::scriptHasAllyWithin(float range)
+{
+    StageMission *mission = gStageScene->currentMission();
+    for (int i = 0; i < mission->characterCount; i++) {
+        StageCharacter *other = static_cast<StageCharacter *>(mission->characters[i]);
+        if (other->m_active == 0 || other == this || !isAlly(other))
+            continue;
+        if (other->getLifeState() == LifeState_Up && distanceTo(other) <= range)
+            return true;
+    }
+    return false;
+}
+
+// FS2 0x00218200
+// callcheck: isEnabled, askRouteActionKind11
+
+bool StageCharacter::scriptAskRouteKind11()
+{
+    return m_brain != nullptr && m_brain->isEnabled() && m_brain->askRouteActionKind11();
+}
+
+// FS2 0x0021ad40
+// callcheck: askSwingAtBite
+
+bool StageCharacter::scriptSwingAtBite()
+{
+    return m_brain->askSwingAtBite();
+}
+
+// FS2 0x0021ad00
+// callcheck: askFireAtBite
+
+bool StageCharacter::scriptFireAtBite(const char *flags, int frames30)
+{
+    return m_brain->askFireAtBite(flags, frames30);
+}
+
+// FS2 0x0021ac30
+// callcheck: getHandle
+
+int StageCharacter::scriptPickableHandle()
+{
+    return m_allows.pickup != 0 ? (int)m_pickItem->getHandle() : 0;
+}
+
+// FS2 0x00218e00
+// callcheck: useItem
+
+void StageCharacter::scriptUseItemAt(const char *name, const float *point)
+{
+    constexpr int kOnPoint = 1;
+    useItem(name, point, kOnPoint);
+}
+
+// FS2 0x00219ae0
+// callcheck: addNoise, playActionAndRetry
+
+bool StageCharacter::scriptCallOut(float loudness)
+{
+    constexpr int kNoiseCall = 3;
+    gStageScene->noises->addNoise(loudness, this, kNoiseCall);
+    return m_brain->playActionAndRetry("cr_3"); /* data 0x307048 */
+}
+
+// FS2 0x00218140
+// callcheck: isControlled, askNumLock
+
+bool StageCharacter::scriptAskNumLock(int which)
+{
+    if (isControlled())
+        return false;
+    return m_brain->askNumLock(which);
+}
+
+// FS2 0x002123e0
+// callcheck: getKind
+
+bool StageCharacter::isOnElevator()
+{
+    constexpr int kKindElevator = 4;
+    StageObject *floor = m_ground->floorObject;
+    return floor != nullptr && floor->getKind() == kKindElevator;
+}
+
+// FS2 0x0020d1c0
+// callcheck: releaseAction
+
+void StageCharacter::clearSlowChange()
+{
+    constexpr int kMotionDrained = 0xd6;
+    if (m_motion->motionId == kMotionDrained)
+        m_motion->releaseAction();
+    m_slowStart = -1.0f;
+}
+
+// FS2 0x0020d210
+// callcheck: getSeconds, getSeconds
+
+void StageCharacter::setSlowChange(int fromPercent, int frames30, int toPercent)
+{
+    m_slowStart = m_clock->getSeconds();
+    m_slowEnd = (float)frames30 / 30.0f + m_clock->getSeconds();
+    m_slowFrom = (float)fromPercent / 100.0f;
+    m_slowTo = (float)toPercent / 100.0f;
+}
+
+// FS2 0x0020d2c0
+// callcheck: getSeconds, getSeconds, FUN_001deed0, playActionAndRetry
+
+void StageCharacter::startDrainSlow(int frames30, int rate)
+{
+    static const char kJack[] = "sp_jack";  /* data 0x306990 */
+    m_slowStart = m_clock->getSeconds();
+    m_slowEnd = (float)frames30 / 30.0f + m_clock->getSeconds();
+    m_slowInDrain = 0;
+    m_slowFrom = (float)rate * 1.2f;
+    StageObject *player = gStageScene->controlled != nullptr
+        ? gStageScene->controlled : gStageScene->player;
+    if (player != this && m_motion->isSpecialOnly(kJack))
+        m_brain->playActionAndRetry(kJack);
+}
+
+// FS2 0x00218610
+
+void StageCharacter::setRespawnPlace(const float *position, const float *rotation)
+{
+    memcpy(m_respawnPosition, position, sizeof(sceVu0FVECTOR));
+    memcpy(m_respawnRotation, rotation, sizeof(sceVu0FVECTOR));
+    m_respawnPosition[3] = 1.0f;
+}
+
 // FS2 0x00218190
 // callcheck: isControlled, askUseSpecial, isSpecialAllowed, setSpecial
 
@@ -8738,6 +8893,45 @@ bool StageCharacter::playVoice(const char *name)
     m_soundState = Sound_Cue;
     m_soundHandle = cue;
     return true;
+}
+
+// The cue's table is searched inline in the ROM (findCue on its first
+// bank). The volume 800 is playNamedHeard2's.
+// FS2 0x002a65c0
+// callcheck: findCue, BoneMap::find, getMatrix, playNamedHeard2, stopCue, findSource, stopSource, getMatrix, playNamedHeard2
+
+void StageCharacter::playVoiceHeard(const char *name)
+{
+    enum { Sound_None = 0, Sound_Source = 1, Sound_Cue = 2 };   // m_soundState
+    static const char kHead[] = "bn_head";  /* data 0x303178 */
+    StageSound *sound = gStageScene->sound;
+    const SeEntry *cue = sound->findCue(name);
+    if (cue == nullptr)
+        return;
+    if (cue->priority == 0) {
+        playNamedHeard2(name, m_model->boneMap.find(kHead)->value->getMatrix()[3], nullptr);
+        return;
+    }
+    if (m_soundPriority < cue->priority)
+        return;
+    if (m_soundState != Sound_None) {
+        if (m_soundState == Sound_Cue) {
+            sound->stopCue(this, (const SeEntry *)m_soundHandle);
+        } else if (m_soundState == Sound_Source) {
+            StageSoundSource *source = sound->findSource((StageSoundSource *)m_soundHandle);
+            if (source != nullptr)
+                sound->stopSource(source);
+        }
+        m_soundState = Sound_None;
+        m_soundPriority = 0x7fffffff;
+        m_soundHandle = nullptr;
+    }
+    StageSoundSource *source = playNamedHeard2(name, m_model->boneMap.find(kHead)->value->getMatrix()[3], nullptr);
+    if (source != nullptr) {
+        m_soundPriority = cue->priority;
+        m_soundState = Sound_Source;
+        m_soundHandle = source;
+    }
 }
 
 // FS2 0x0021bb90

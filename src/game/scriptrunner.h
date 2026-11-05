@@ -11,6 +11,7 @@
 #include "sdk/scetypes.h"
 
 class StageObject;
+class StageCar;
 class StageCharacter;
 class StageDoor;
 
@@ -331,6 +332,14 @@ public:
         unsupportedCommand();
         return nullptr;
     }
+    // ROM vptr +0x9c: the car it is; anything else logs and answers null.
+    // FS2 0x001775c0
+    // callcheck: unsupportedCommand
+    virtual StageCar *getScriptCar()
+    {
+        unsupportedCommand();
+        return nullptr;
+    }
     // ROM vptr +0x94: the character that acts for it; a plain runner has
     // none, and answers null without the log.
     // FS2 0x00171cb0
@@ -475,6 +484,41 @@ public:
     // FS2 0x00171d30
     // callcheck: defaultCommand
     virtual void scriptMarkPlace() { defaultCommand(); }
+    // ROM vptr +0xc8: an ally up and active is within range (0x39).
+    // FS2 0x00171d80
+    virtual bool scriptHasAllyWithin(float range) { (void)range; return defaultCommand() != 0; }
+    // ROM vptr +0x1b0: what the route asks of kind 11 (0x1dc).
+    // FS2 0x00172220
+    virtual bool scriptAskRouteKind11() { return defaultCommand() != 0; }
+    // ROM vptr +0xd0, +0xd8: the swing and the shot at the bite it holds
+    // (0x3b, 0x130).
+    // FS2 0x00171dc0
+    virtual bool scriptSwingAtBite() { return defaultCommand() != 0; }
+    // FS2 0x00171de0
+    virtual bool scriptFireAtBite(const char *flags, int frames30)
+    {
+        (void)flags;
+        (void)frames30;
+        return defaultCommand() != 0;
+    }
+    // ROM vptr +0x15c: the handle of what lies in reach, 0 none (0x81).
+    // FS2 0x00172040
+    virtual int scriptPickableHandle() { return defaultCommand(); }
+    // ROM vptr +0x174: uses the named item on a point (0x15a). The ROM's
+    // native stores what this void call leaves in v0; PC: 0.
+    // FS2 0x00172080
+    virtual void scriptUseItemAt(const char *name, const float *point)
+    {
+        (void)name;
+        (void)point;
+        defaultCommand();
+    }
+    // ROM vptr +0x1a0: the call cr_3, a noise of that loudness (0x62).
+    // FS2 0x001721a0
+    virtual bool scriptCallOut(float loudness) { (void)loudness; return defaultCommand() != 0; }
+    // ROM vptr +0x1b4: goes to the number lock (0x1fc, 0x1fd).
+    // FS2 0x00172240
+    virtual bool scriptAskNumLock(int which) { (void)which; return defaultCommand() != 0; }
     // ROM vptr +0xd4, +0xdc: the brain's swing and shot (0x12e, 0x214).
     // FS2 0x00171dd0
     // callcheck: defaultCommand

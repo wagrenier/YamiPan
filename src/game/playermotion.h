@@ -548,6 +548,14 @@ struct PlayerMotion
     // The one of that name may start now. PC: a name it lacks answers false.
     bool isSpecialAllowed(const char *name);                             // FS2 0x001def60
     void setSpecial(const char *name, bool on);                          // FS2 0x001def90
+    // Name is a special and no condition (FS2's third argument, a place for
+    // the record, is null at the one caller).
+    bool isSpecialOnly(const char *name);                                // FS2 0x001deed0
+    // m_holds[0] = id when id is 0..0xff; false otherwise.
+    bool setHold(int id);                                                // FS2 0x001ded30
+    // The byte +0x18 of the special GettingOnCar, a class not written.
+    bool getCarSpecialFlag();                                            // FS2 0x001dee50
+    void setCarSpecialFlag(bool on);                                     // FS2 0x001dee90
     // The gadget special called name takes text and turns on; false when
     // it has none. Inline in the ROM (CharacterBrain::useNumLock).
     bool armGadgetSpecial(const char *name, const char *text);
