@@ -583,7 +583,51 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves."
+   "notes": "Motion core written: ctor, dtor, loadMotions, reset, beginFrame, refresh, request, requestNow, stepLower, stepUpper, stepFace, arbitrate, resolveHold, noteLeaving, pickStance (architecture.md Motions has the outline, the sheet's ids and the link slots). New Game runs of 300 and 260 s: no crash, F_PC01 at motion 0 (label s), whole, seen from behind by the main camera, no spikes (progress/20261104-f_pc01-stage-idle.png); no reference exists for this shot. Not written: the links, the conditions and the list of 0x1df0b0, so findLink answers null; startWalk, startWalkAt, clearNoFlash, swapWeapons, isScenarioLead, setContact, StageParty isRunning / stop and getLampMatrix are stubs. stageUpdateCharacterMotions carries three PC bridges: beginFrame, advance and the idle request. Next slice: the Walk link 0x2775d0 (vtable 0x3177a0) with the conditions it reads, then who requests motions (0x20d8c0). Open: shot numbers ran ten times faster than the last run, unmeasured.",
+   "ranges": [
+    [
+     "0017df60",
+     "0017dfd0"
+    ],
+    [
+     "001defd0",
+     "001df0b0"
+    ],
+    [
+     "001e5d90",
+     "001e5f70"
+    ],
+    [
+     "001e66c0",
+     "001e6d60"
+    ],
+    [
+     "001e81f0",
+     "001eaba0"
+    ],
+    [
+     "001eb150",
+     "001eb3b0"
+    ],
+    [
+     "001eb520",
+     "001ec640"
+    ],
+    [
+     "001ec650",
+     "001ed950"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 21:32",
+     "status": "partial",
+     "summary": "motion core written, the character plays its idle and the stretched limbs are gone; links and conditions not yet"
+    }
+   ],
+   "status": "partial",
+   "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves.",
+   "why": "the motion core, read 2026-11-04; the links 0x276000.. and the walk helpers come next"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",

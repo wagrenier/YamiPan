@@ -390,9 +390,16 @@ struct CharacterGround
     // it, down to 85 below that.
     StageCollisionFace *faceNear(const float *localPoint);               // FS2 0x001eff00
 
+    // Clears (0) or sets the contact bytes of the ground's feet; the
+    // player's own byte follows.
+    void setContact(int value);                                          // FS2 0x001eff80
+
     u_char        onGround = 0; // FS2 +0x000: StageCharacter::reset sets it (the name is a guess)
+    int           groundCheck = 0; // FS2 +0x018: the motion's 接地判定 (PlayerMotion::stepLower)
+    int           repelLevel = 0;  // FS2 +0x01c: its キャラ反発LV
     GroundVolume *volume = nullptr; // FS2 +0x184: 0 from the ctor
     u_char       *floats = nullptr; // FS2 +0x18c: F_YRT sets the byte it points at (unread; the name is a guess)
+    u_char       *wallCheck = nullptr; // FS2 +0x190: the motion's 壁判定, when it points anywhere
 };
 // A box a character stands in (0x1f3d20 makes it). What it is is unread:
 // the camera stays above its top.
@@ -697,6 +704,8 @@ public:
     u_int getCharacterClass();                                           // FS2 0x00216140
     // The character's model is called yri or kne.
     bool isYriOrKne();                                                   // FS2 0x00215e70
+    // By the save's scenario (+0x4bc), whether this character leads it.
+    bool isScenarioLead();                                               // FS2 0x00215620
     // +0x5cc above 0: such a character's shadow may come from a light that
     // follows the player (SceneRender::updateLights). A plain stub until its TU.
     bool followsPlayerLight();                                           // FS2 +0x5cc
@@ -825,38 +834,6 @@ struct PlayerLookState;
 struct PlayerOverlay
 {
     void draw();                                                         // FS2 0x002bb260
-};
-struct PlayerMotion
-{
-    // EE 0xc20. Until game/playermotion.cpp: bridges (lib/unassigned_stubs.cpp).
-    explicit PlayerMotion(StageObject *owner);                           // FS2 0x001ed410
-    ~PlayerMotion();                                                     // FS2 0x001ed2a0: deleting
-    // The model's motions: the base from mdl, or the list's first file,
-    // the bones, then the rest of the list.
-    void loadMotions(StageList<void *> *motions, StageList<void *> *motions2, void *mdl); // FS2 0x001ecda0
-    void reset(int arg);                                                 // FS2 0x001ec7e0
-    // Slots +0x14 and +0x18 of each entry of the list at +0x30 (unread):
-    // after StageCharacter::setup cleared +0x360 and +0x2c0.
-    void initSlots14();                                                  // FS2 0x001df040
-    void initSlots18();                                                  // FS2 0x001defd0
-    void refresh();                                                      // FS2 0x001e66c0
-    // The matrix of the lamp the player aims: at bn_head, turned as the
-    // player and the motion are.
-    void getLampMatrix(sceVu0FMATRIX out);                               // FS2 0x001e60b0
-
-    StageObject *owner;         // FS2 +0x000
-    u_char _004[0x3c];
-    int    motionId;            // FS2 +0x040: gMotionDefs index; outside the table none
-    u_char _044[0x24];
-    PlayerLookState *activeLook; // FS2 +0x068: the main camera reacts when this is look
-    u_char _06c[0xb44];
-    sceVu0FVECTOR position;     // FS2 +0xbb0
-    u_char _bc0[0x14];
-    u_char noFlash;             // FS2 +0xbd4: a shot shows no flash (StageWeaponItem::fire)
-    u_char _bd5[0x3];
-    PlayerOverlay *overlay;     // FS2 +0xbd8: StageScene::draw
-    u_char _bdc[0x24];
-    PlayerLookState *look;      // FS2 +0xc00
 };
 // What StageScene::partnerResponds reads of it; the angle's unit and what
 // the -190..-160 window means are unread. EE layout.
@@ -1055,6 +1032,9 @@ struct StageParty
     StageParty();                                                        // FS2 0x001fecf0: +0 = new 0x148-byte record (0x203d70)
     ~StageParty();                                                       // FS2 0x001fec90: deleting
     void resetSaved();                                                   // FS2 0x001fe720: the four ids to -1
+    // Its record's first byte; stop ends what it runs.
+    bool isRunning();                                                    // FS2 0x001fe800
+    void stop();                                                         // FS2 0x001feb90
     void save();                                                         // FS2 0x001fe6d0
     void restore();                                                      // FS2 0x001fe6c0
     // Of the +0 record, by its mode (+0xb8): +0x18 (modes 3, 4), +0x14
@@ -2065,17 +2045,26 @@ enum CharacterKind
     CharacterKind_F     = 0xf,  // muffles a Kind11 listener (StageSound)
     CharacterKind_None  = 0x10, // no abilities at all
 };
-// The block at +0x7c8 (0x38). Only the clear is read.
+// The last four motions a character started (+0x7c8, 0x38; noteMotion), a
+// ring.
+constexpr int kMotionHistory = 4;
+struct MotionHistoryEntry
+{
+    int id;                     // FS2 +0x0
+    u_int events;               // FS2 +0x4: bit 0 started, then 1 << noteMotion's event
+    int frame;                  // FS2 +0x8: StageScene::getMissionFrames
+};
+static_assert(sizeof(MotionHistoryEntry) == 0xc, "MotionHistoryEntry: EE 0xc");
 struct CharacterBlock7c8
 {
     // FS2 0x0021a8c0
-    void clear() { value30 = 0; value34 = 0; }
+    void clear() { next = 0; count = 0; }
 
-    u_char _00[0x30];
-    int    value30;             // FS2 +0x30
-    int    value34;             // FS2 +0x34
+    MotionHistoryEntry entries[kMotionHistory]; // FS2 +0x00
+    int    next;                // FS2 +0x30
+    u_int  count;               // FS2 +0x34
 };
-static_assert(offsetof(CharacterBlock7c8, value34) == 0x34, "CharacterBlock7c8::value34");
+static_assert(offsetof(CharacterBlock7c8, count) == 0x34, "CharacterBlock7c8::count");
 
 constexpr int kBodyEffectCount = 4;     // setupBody's block (+0x414)
 constexpr int kCharacterFeet   = 2;     // +0x41c / +0x424
@@ -2106,6 +2095,11 @@ public:
     void stopBodyEffects();                                              // FS2 0x0017bc60
     // The camera on top of the view stack follows this character.
     bool isViewLinked();                                                 // FS2 0x002176d0
+    // The last four motions (+0x7c8) and what happened to each. event 0
+    // opens an entry; another sets bit event on the newest entry of id.
+    void noteMotion(int id, int event);                                  // FS2 0x0021a960
+    // The long and short weapon change places.
+    void swapWeapons();                                                  // FS2 0x00216400
     // The sound fields' first values, and a stop of all of them.
     void initSounds();                                                   // FS2 0x002a6910
     void stopSounds();                                                   // FS2 0x002a6830

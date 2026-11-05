@@ -17,6 +17,7 @@
 #include "game/heap.h"
 #include "game/modelpose.h"
 #include "game/packtables.h"
+#include "game/playermotion.h"
 #include "game/scenepairs.h"
 #include "game/scriptrunner.h"
 #include "game/stagenode.h"

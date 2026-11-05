@@ -9,6 +9,7 @@
  *  inlines; the point and spot records are filled as the ROM does, but no
  *  host draw reads them (VU1's spotlight kernel 0x545 is not in the host).
  * ======================================================================== */
+#include "game/playermotion.h"
 #include "game/scenerender.h"
 
 #include <math.h>
