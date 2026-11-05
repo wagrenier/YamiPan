@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "game/characterbrain.h"
+#include "game/characterroute.h"
 #include "game/characterground.h"
 #include "game/characterinput.h"
 #include "game/stagecollision.h"
@@ -533,8 +535,8 @@ void StageCharacter::setup(const char *name, ModelInstance *instance, StringMap<
     }
 
     if (m_brain != nullptr) {
-        // PC: null until game/characterbrain.cpp fills the route.
-        RouteFilter *filter = m_brain->route != nullptr ? m_brain->route->filter : nullptr;
+        // PC: null until the route's TU writes CharacterRoute's ctor.
+        RouteFilter *filter = m_brain->getRoute()->filter;
         for (u_int step = (u_int)record->stepLevel; step < kRouteStepCount; step++)
             filter->allow(kRouteSteps[step], true);
         if (record->kind == CharacterKind_C || record->kind == CharacterKind_5
@@ -614,7 +616,7 @@ StageCharacter::StageCharacter()
     m_brain = nullptr;
     if (gStageScene->route != nullptr) {
         m_brain = new CharacterBrain(this);
-        m_brain->runner = this;
+        m_brain->setScriptParent(this);
     }
     m_lampItem = nullptr;
     m_weapons[0] = nullptr;

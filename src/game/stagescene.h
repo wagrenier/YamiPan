@@ -291,7 +291,7 @@ struct StageMission
     float   moveScale[6] = {};  // FS2 +0x90: by action, set in percent by a script command
     float   value = 0.0f;       // FS2 +0xa8: a script command's (0x1ba660); unread otherwise
     float   startTime = 0.0f;   // FS2 +0xac: the scene clock's seconds at markStart
-    int     _b0 = 0;            // FS2 +0xb0: 0x800000 (unread)
+    float   lastFoeAlert = 0.0f; // FS2 +0xb0: the scene clock's seconds of the last one; bits 0x800000 from the ctor
     float   blockRange = 0.0f;  // FS2 +0xb4: SceneBufferSet::updateRange
     void   *restoreArg = nullptr; // FS2 +0xb8: setRestore; 0x29f2a0 tests 1, 2, 3
     StageObject *keptObject = nullptr; // FS2 +0xbc: keeps its flags through restoreObjectFlags

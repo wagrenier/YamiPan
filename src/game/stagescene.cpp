@@ -2,6 +2,8 @@
 // (game/stagescene.h).
 #include "common/yamipan_stub.h"
 
+#include "game/characterbrain.h"
+#include "game/characterroute.h"
 #include "game/playermotion.h"
 #include "game/scenerender.h"
 #include "game/stagescene.h"

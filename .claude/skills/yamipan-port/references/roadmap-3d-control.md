@@ -73,6 +73,8 @@ opening is the event d0101") is answered for a first entry into the stage.
 
 **2026-11-05, later still:** he opens a door and walks through it into the next room with the pad alone; game/playermotion.cpp is closed at `verify` (open-items.md, Done, fourteenth run). The queue goes on to game/stagecharacter.cpp, then game/characterbrain.cpp.
 
+**2026-11-05, later still:** the brain is written (game/characterbrain.cpp, `verify`): the class, its eight script slots, its commands and the forwarding runner. Nobody walks by themselves yet: the route 0x22a310..0x22f270 is stubs, and 0x21b9b0 that gives a brain its scripts is unwritten (open-items.md, Next up).
+
 ## The order for control
 
 Each step needs the ones above it. Sizes are the unwritten closure of its roots.

@@ -6,6 +6,8 @@
  *  The ids of the sheet (gMotionDefs) are the game's own and stay numbers in
  *  the predicates, whose names say what the code does with them.
  */
+#include "game/characterbrain.h"
+#include "game/characterroute.h"
 #include "game/playermotion.h"
 #include "game/objectproperty.h"
 #include "game/stagedoor.h"
@@ -673,6 +675,20 @@ void PlayerMotion::setSpecial(const char *name, bool on)
     auto found = m_specials.find(name);
     if (found != m_specials.end())
         found->second->setEnabled(on);
+}
+
+// Inline in the ROM (0x1da430): the class is this file's.
+// callcheck: FUN_001d1280, setText
+
+bool PlayerMotion::armGadgetSpecial(const char *name, const char *text)
+{
+    auto found = m_specials.find(name);
+    if (found == m_specials.end())
+        return false;
+    MotionGadgetSpecial *gadget = static_cast<MotionGadgetSpecial *>(found->second);
+    gadget->setText(text);
+    gadget->setEnabled(true);
+    return true;
 }
 
 // FS2 0x0017b3b0
@@ -2105,7 +2121,7 @@ bool StageCharacter::canLockDoor(StageDoor *door) const
 }
 
 // FS2 0x0021c230
-// callcheck: isControlled, FUN_001db470, FUN_00172530
+// callcheck: isControlled, askOpenDoor, FUN_00172530
 
 bool StageCharacter::scriptOpenDoor()
 {
@@ -2119,7 +2135,7 @@ bool StageCharacter::scriptOpenDoor()
 }
 
 // FS2 0x0021c1d0
-// callcheck: isControlled, FUN_001db3a0, FUN_00172530
+// callcheck: isControlled, askCloseDoor, FUN_00172530
 
 bool StageCharacter::scriptCloseDoor()
 {
@@ -2133,7 +2149,7 @@ bool StageCharacter::scriptCloseDoor()
 }
 
 // FS2 0x0021c130
-// callcheck: isControlled, FUN_001db2d0, FUN_00172530, FUN_00172530
+// callcheck: isControlled, askDoorKey, FUN_00172530, FUN_00172530
 
 bool StageCharacter::scriptUseDoorKey(int lock)
 {
@@ -4632,9 +4648,9 @@ int StageCharacter::getLifeState()
     if (m_lifeOverride >= 0)
         return m_lifeOverride != 0 ? 6 : 7;
     if (m_brain != nullptr) {
-        if (m_brain->state == kBrainDown)
+        if (m_brain->getState() == kBrainDown)
             return 2;
-        if (m_brain->state == kBrainOff)
+        if (m_brain->getState() == kBrainOff)
             return 0;
     }
     const int id = m_motion->motionId;
@@ -4644,13 +4660,13 @@ int StageCharacter::getLifeState()
     return fatal ? 5 : 2;
 }
 
-// The brain's half, 0x1dd2f0, goes in with game/characterbrain.cpp.
 // FS2 0x0017a810
-// callcheck: FUN_001dd2f0 (not written: game/characterbrain.cpp)
 
 void StageCharacter::sideHook1()
 {
     m_input->update();
+    if (m_brain != nullptr)
+        m_brain->updateRoute();
     m_motion->controlStep();
 }
 
@@ -6890,7 +6906,7 @@ StageObject *MotionProbe::findTargetBeside(float facing, float span, float range
 
 int StageCharacter::getBrainPace()
 {
-    return m_brain == nullptr ? 1 : m_brain->state;
+    return m_brain == nullptr ? 1 : m_brain->getState();
 }
 
 // ───────────────────────────────────────
@@ -7203,7 +7219,7 @@ void StageCharacter::setFlinch(int value)
 // while the input is blocked. At 0 the brain goes to state 7 and, for those
 // two, the game is over; above it, one at state 7 comes back.
 // FS2 0x00211430
-// callcheck: isInputBlocked, getStageSelect, FUN_0021ba10, FUN_001dc950, startGameOver
+// callcheck: isInputBlocked, getStageSelect, FUN_0021ba10, revive, startGameOver
 
 void StageCharacter::setEndurance(int value)
 {
@@ -7227,7 +7243,7 @@ void StageCharacter::setEndurance(int value)
 }
 
 // FS2 0x0021ba10
-// callcheck: setShown, setChildrenActive, FUN_001dbca0, setShown, setChildrenActive, FUN_002a6380, stopSound, getDeltaSeconds
+// callcheck: setShown, setChildrenActive, setState, setShown, setChildrenActive, FUN_002a6380, stopSound, getDeltaSeconds
 
 void StageCharacter::setBrainState(int state, int arg)
 {
@@ -7270,18 +7286,6 @@ constexpr int   kScriptValues        = 11;
 constexpr int   kScriptValuesCleared = 10; // the block's loop leaves the last one
 constexpr int   kLifeDownInMotion    = 4;  // getLifeState: down, in motions 0xb3 / 0xb4
 
-// PC: the ROM goes on to the brain's script: the slot of 0x1dccb0 and the
-// route's restart by what the state does (0x1dca60 for state 7, the combat
-// count and the Partner call for 5). game/characterbrain.cpp is queued; until
-// then getLifeState and getBrainPace read the state from here.
-// FS2 0x001dbca0
-// callcheck: FUN_001dca60, FUN_001dccb0, FUN_001dd8a0, FUN_001feab0, FUN_0022d810, FUN_0022da50, FUN_0022db80, FUN_0022dc60, FUN_00263ed0, FUN_002a46d0, currentMission, getBiteTarget, getCharacterClass, getGameOptions, getSeconds, getStageResult, getStageSelect, run (none of them yet: only the store of +0x17c)
-
-void CharacterBrain::setState(int newState, int)
-{
-    state = newState;
-}
-
 // FS2 0x00211300
 // callcheck: getStageSelect
 
@@ -7311,7 +7315,7 @@ static int firstBrainState(int startMotion)
 // out, nothing here reads them: the byte and two ints at +0x610, the +0x66c
 // group and the record at +0x6a0.
 // FS2 0x0021cc70
-// callcheck: getStageSelect, FUN_001dbca0
+// callcheck: getStageSelect, setState
 
 void StageCharacter::initStatusBlock()
 {

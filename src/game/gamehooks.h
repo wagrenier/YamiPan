@@ -364,46 +364,17 @@ class StageDoor;           // game/stagedoor.h
 typedef StageCharacter StagePlayer;
 struct CharacterInput;          // game/characterinput.h
 class CharacterGround;          // game/characterground.h
-// What drives a character otherwise (+0x220, null without one). The name
-// is a guess: it is switched the other way round from the input. EE: +0x174
-// the flag.
-// layout: host
+// What drives a character otherwise (+0x220, null without one):
+// game/characterbrain.h, game/characterroute.h.
+class CharacterBrain;
+class CharacterRoute;
+// The route's paths this character may use. layout: host
 struct RouteFilter
 {
     // The named paths of the route are open to the character (on) or not.
     void allow(const char *name, bool on);                               // FS2 0x0023f310
-};
-// What +0x180 holds: unread but for the filter at +8.
-// layout: host
-struct CharacterRoute
-{
-    u_char       _00[0x8];
-    RouteFilter *filter = nullptr; // FS2 +0x8
-};
-// layout: host -- EE 0x9b0, the vptr at +0xb4.
-struct CharacterBrain
-{
-    // EE 0x9b0; only where the scene has a route.
-    explicit CharacterBrain(StageObject *owner);                         // FS2 0x001dd680
-    // The vptr is at +0xb4; the deleting dtor its slot +0x18.
-    virtual ~CharacterBrain();
-    void reset();                                                        // FS2 0x001dd460
-    void setEnabled(bool on);                                            // FS2 0x001dd3f0
-    // The state of StageCharacter::setBrainState, and what follows from it.
-    // PC: only the state is written (game/playermotion.cpp).
-    void setState(int state, int arg);                                   // FS2 0x001dbca0
-    // Out of state 7: where it stood, what it was doing.
-    void revive();                                                       // FS2 0x001dc950
-    // A frame: its script runs while the flag holds and it has a route.
-    void update();                                                       // FS2 0x001dd330
-    // Natives 0x87..0x89 for a character nobody controls.
-    bool askOpenDoor();                                                  // FS2 0x001db470
-    bool askCloseDoor();                                                 // FS2 0x001db3a0
-    bool askDoorKey(int lock);                                           // FS2 0x001db2d0
-
-    ScriptRunner   *runner = nullptr; // FS2 +0x000: the character's own, set by its ctor
-    int             state = 0;        // FS2 +0x17c: 0 from reset; StageCharacter::getBrainPace
-    CharacterRoute *route = nullptr;  // FS2 +0x180
+    // How far along the route from one point to another; -1 no way.
+    float pathLength(const float *from, const float *to);                // FS2 0x0023f290
 };
 // The model instance's record of each mesh (vtable 0x31a7d0, 0x10 on the EE,
 // parallel to ModelFileNode::meshes): the mesh tree, threaded through next,
@@ -979,6 +950,8 @@ public:
     u_char m_emitting = 0;      // FS2 +0x271: what setEmitting last said (MapObjectParts::copyShown)
     u_char m_running = 0;       // FS2 +0x273
 };
+// The object of the scene's number lock (the list at +0x90 names it).
+StageObject *findNumLockTarget();                                        // FS2 0x0029f440
 // Every character with m_viewActive: three steps on its motion (+0x224).
 void stageUpdateCharacterMotions();                                      // FS2 0x0017df60
 
@@ -993,6 +966,8 @@ struct StageParty
     // Its record's +0x2c.
     bool isRecordBusy();                                                 // FS2 0x001fe6b0
     void stop();                                                         // FS2 0x001feb90
+    // The foe's warning: the view on who it is, for 0.3 seconds.
+    void warnAttacker(StageCharacter *attacker);                         // FS2 0x001feab0
     void save();                                                         // FS2 0x001fe6d0
     void restore();                                                      // FS2 0x001fe6c0
     // Of the +0 record, by its mode (+0xb8): +0x18 (modes 3, 4), +0x14
@@ -2357,6 +2332,22 @@ public:
     void stopBodySounds();                                               // FS2 0x002a6380
     // What it would bite: the writer of +0x624 was not found.
     StageObject *getBiteTarget() const { return m_biteCandidate; }       // FS2 0x0021abb0
+    // The foe the character knows best (+0x7a4 caches it; +0x468 by id).
+    StageObject *getBestFoe();                                           // FS2 0x0021a380
+    // The nearest foe: of the enemy candidates, or (foes false) of the
+    // mission's characters; sight measures by what it sees, else by distance.
+    StageObject *findNearestFoe(bool foes, bool sight);                  // FS2 0x00214a80
+    // point is within halfAngle of its view; distance answers how far. The
+    // arguments past point are read from the one caller so far.
+    bool isPointInView(float halfAngle, float scale, const float *point, float *distance, void *unused); // FS2 0x00210b30
+    // The voice of a found foe (RYO_FIND or the sheet's).
+    void sayFound();                                                     // FS2 0x002a46d0
+    // +0x38c allows it: the motion's SHOUT at this loudness.
+    bool tryShout(float loudness);                                       // FS2 0x00216270
+    // The item called name, at point; unread.
+    void useItem(const char *name, const float *point, int arg);         // FS2 0x00218b50
+    // A slot of the brain's; unread.
+    void item218850(int arg);                                            // FS2 0x00218850
     // +0x400 holds something.
     bool hasGear() const { return m_gear != nullptr; }                   // FS2 0x00215290
     // How far its blow reaches: the long weapon's, else the sheet's 攻撃判定.
@@ -2596,6 +2587,7 @@ public:
     int    m_scriptValues[11] = {}; // FS2 +0x630: getScriptValue
     int    m_670 = 0;           // FS2 +0x670: 0 from the block; only the property reads it here
     u_char m_bulletFlying = 0;  // FS2 +0x688: set each frame by a bullet of its own
+    int    m_68c = 0;           // FS2 +0x68c: 0 or less, the brain's state 5 may sound the alarm (writer unread)
     int    m_meleeScale = 0;    // FS2 +0x6c0: 打撃攻撃力修正値
     int    m_shotScale = 0;     // FS2 +0x6c4: 射撃攻撃力修正値
     int    m_6c8 = 0;           // FS2 +0x6c8: 0 from the block, then a script's
@@ -3024,6 +3016,8 @@ struct StageAlert
     ~StageAlert();                                                       // FS2 0x00264000: deleting
     u_long update();                                                     // FS2 0x00263c10
     void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x00263ba0
+    // The screen's flash of a foe (the fade at +0x14); answers true.
+    bool flash();                                                        // FS2 0x00263ed0
 };
 
 // +0x118 / +0x11c: the game-over and stage-clear sequences (set outside

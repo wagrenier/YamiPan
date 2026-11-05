@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/characterbrain.cpp",
   "game/stageplayer.cpp",
   "yamipan/rendering/model_renderer.cpp",
   "game/scriptrunner.cpp"
@@ -50,7 +49,31 @@
    "why": "BoxGrid: a 2D n x n grid over a BoxSet's oriented boxes (cell lists built with VU0 box/cell overlap tests, point lookup through boxContainsPoint) and its MSL vector<vector<vector<const Box*>>> template instances, which end at 0x2676e0; 0x2676e0 starts unrelated scene / thread code (getStageSelect, BGMOVIE). No source-path strings: file name descriptive."
   },
   "game/characterbrain.cpp": {
-   "task": "The character's brain, step 5 of roadmap-3d-control.md, queued 2026-11-04: 0x1dbca0..0x1df0b0 out of unassigned@001d85b0: ctor 0x1dd680 (EE 0x9b0), update CharacterBrain::update 0x1dd330. setPlayer turns the player's off, so the player only needs it to exist; do the part the character's ctor and setPlayer reach first. Ends verify."
+   "notes": "All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed in characterbrain.h); 0x1cf0b0 and 0x1cf130 are written here though they sit in scriptrunner.cpp's range. Seen: New Game, 270 s, no crash, the first-person room as before; the real ctor, reset and setState ran. verify, not done: no brain script runs because 0x21b9b0..0x21b9f0 (the four setSlotEntry calls) is unwritten, and CharacterRoute 0x22a310..0x22f270 is stubs with its filter null, so nobody walks. Next for the AI, not queued: the route, then 0x21b9b0 and the character's ask callers (open-items.md Next up). The queue goes on to game/stageplayer.cpp.",
+   "ranges": [
+    [
+     "001a68b0",
+     "001a7a20"
+    ],
+    [
+     "001d85b0",
+     "001da4e0"
+    ],
+    [
+     "001da4f0",
+     "001dec30"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-05 11:47",
+     "status": "verify",
+     "summary": "the brain: ScriptProxy, CharacterBrain with its eight script slots, 59 commands, the ask family and setState; CharacterRoute stubbed"
+    }
+   ],
+   "status": "verify",
+   "task": "The character's brain, step 5 of roadmap-3d-control.md, queued 2026-11-04: 0x1dbca0..0x1df0b0 out of unassigned@001d85b0: ctor 0x1dd680 (EE 0x9b0), update CharacterBrain::update 0x1dd330. setPlayer turns the player's off, so the player only needs it to exist; do the part the character's ctor and setPlayer reach first. Ends verify.",
+   "why": "ScriptProxy and CharacterBrain: vtables 0x315690, 0x315b10, 0x315cf0; the brain ends at PlayerMotion::setToolTarget. 0x1cf0b0 / 0x1cf130 sit inside scriptrunner.cpp's range"
   },
   "game/characterground.cpp": {
    "notes": "All code of the TU is written. Seen in a 285 s New Game run, no crash: F_PC01 stands at z 1139.2 on the ray's floor (attr 59, landed) for the 1320 frames logged; progress/20261105-ground-stands.png shows him upright from behind in the room, no reference exists. vecDistance 0x135f20 was a stub answering 0: written, inline in vu0math.h; it also fixes nearest-of-several-meshes in StageScene::raycast, so camera and sound rays may change. verify because walls were not seen working: the scripted stick did not fire in the run, which reached only 1320 stage frames, so a pad that moves him sooner is the next test (watch wallCount, and that he stops at the walls). Bridge: StageCharacter::sideHook3 stands for the terminate hook 0x179d30 (endFrame and the copy to m_wallCheckNow). Stubs outside the TU: StageCar six at 0x289dd0.., getHandClass, playBumpSound, winsStruggle, getMeanVelocity. No Ghidra names changed in this run: the functions are still FUN_ there. open-items.md Done has the doubts.",

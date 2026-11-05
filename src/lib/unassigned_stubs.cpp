@@ -5,6 +5,8 @@
 #include <string.h>
 
 #include "common/yamipan_stub.h"
+#include "game/characterbrain.h"
+#include "game/characterroute.h"
 #include "game/fontdata.h"
 #include "game/gamehooks.h"
 #include "game/gamesystem.h"
@@ -525,12 +527,6 @@ void AreaClip::update(StageObject *camera)
     YAMIPAN_STUB("AreaClip::update", 0x002dbd10);
 }
 
-// stub of FS2 0x001dd3f0
-void CharacterBrain::setEnabled(bool on)
-{
-    YAMIPAN_STUB("CharacterBrain::setEnabled", 0x001dd3f0);
-}
-
 // stub of FS2 0x00239bb0
 // stub of FS2 0x002b1500
 void ClearSequence::update()
@@ -735,12 +731,6 @@ void gsFrameFilter(sceVif1Packet *packet, const sceGsDrawEnv1 *env, int w, int h
     YAMIPAN_STUB("gsFrameFilter", 0x002849c0);
 }
 
-
-// stub of FS2 0x001dd330
-void CharacterBrain::update()
-{
-    YAMIPAN_STUB("CharacterBrain::update", 0x001dd330);
-}
 
 // stub of FS2 0x002b1660
 ClearSequence::ClearSequence()
@@ -1159,26 +1149,6 @@ void StageObject::breakPart(int part, bool withEffect)
 
 // ---- by hand: the character's parts, until their TUs (next in the queue) ----
 
-// stub of FS2 0x00239c60
-// stub of FS2 0x00239be0
-// stub of FS2 0x001dd680
-CharacterBrain::CharacterBrain(StageObject *owner)
-{
-    YAMIPAN_STUB("CharacterBrain::CharacterBrain", 0x001dd680);
-}
-
-// The deleting dtor behind the vptr at +0xb4: its address is unread.
-CharacterBrain::~CharacterBrain()
-{
-    YAMIPAN_STUB("CharacterBrain::~CharacterBrain", 0x00000000);
-}
-
-// stub of FS2 0x001dd460
-void CharacterBrain::reset()
-{
-    YAMIPAN_STUB("CharacterBrain::reset", 0x001dd460);
-}
-
 // stub of FS2 0x00239bc0
 // stub of FS2 0x0023f310
 void RouteFilter::allow(const char *name, bool on)
@@ -1350,27 +1320,6 @@ bool StageCar::hasSettled()
     return {};
 }
 
-// stub of FS2 0x001db3a0
-bool CharacterBrain::askCloseDoor()
-{
-    YAMIPAN_STUB("CharacterBrain::askCloseDoor", 0x001db3a0);
-    return {};
-}
-
-// stub of FS2 0x001db2d0
-bool CharacterBrain::askDoorKey(int lock)
-{
-    YAMIPAN_STUB("CharacterBrain::askDoorKey", 0x001db2d0);
-    return {};
-}
-
-// stub of FS2 0x001db470
-bool CharacterBrain::askOpenDoor()
-{
-    YAMIPAN_STUB("CharacterBrain::askOpenDoor", 0x001db470);
-    return {};
-}
-
 // stub of FS2 0x00207e20
 // stub of FS2 0x00210720
 // stub of FS2 0x0023cf50
@@ -1390,12 +1339,6 @@ const char * PartSwitch::partName(int index) const
 {
     YAMIPAN_STUB("PartSwitch::partName", 0x00186f80);
     return {};
-}
-
-// stub of FS2 0x001dc950
-void CharacterBrain::revive()
-{
-    YAMIPAN_STUB("CharacterBrain::revive", 0x001dc950);
 }
 
 // stub of FS2 0x0026a010
@@ -1605,4 +1548,375 @@ void StageCharacter::playUntieVoice()
 void StageCharacter::updateSounds()
 {
     YAMIPAN_STUB("StageCharacter::updateSounds", 0x002a4a40);
+}
+
+// stub of FS2 0x0022f270
+CharacterRoute::CharacterRoute(CharacterBrain *brain)
+{
+    (void)brain;
+    YAMIPAN_STUB("CharacterRoute::CharacterRoute", 0x0022f270);
+}
+
+// stub of FS2 0x0022f1b0
+CharacterRoute::~CharacterRoute()
+{
+    YAMIPAN_STUB("CharacterRoute::~CharacterRoute", 0x0022f1b0);
+}
+
+// stub of FS2 0x0022cf90
+bool CharacterRoute::actLeft()
+{
+    YAMIPAN_STUB("CharacterRoute::actLeft", 0x0022cf90);
+    return {};
+}
+
+// stub of FS2 0x0022cde0
+bool CharacterRoute::actLeftRight()
+{
+    YAMIPAN_STUB("CharacterRoute::actLeftRight", 0x0022cde0);
+    return {};
+}
+
+// stub of FS2 0x0022ccf0
+bool CharacterRoute::actOnCharacter(StageObject *character)
+{
+    YAMIPAN_STUB("CharacterRoute::actOnCharacter", 0x0022ccf0);
+    return {};
+}
+
+// stub of FS2 0x0022d220
+bool CharacterRoute::actOnFoe(StageObject *foe)
+{
+    YAMIPAN_STUB("CharacterRoute::actOnFoe", 0x0022d220);
+    return {};
+}
+
+// stub of FS2 0x0022d0f0
+bool CharacterRoute::actOnFoeRight(StageObject *foe)
+{
+    YAMIPAN_STUB("CharacterRoute::actOnFoeRight", 0x0022d0f0);
+    return {};
+}
+
+// stub of FS2 0x0022ab90
+bool CharacterRoute::action22ab90(void *a, void *b)
+{
+    YAMIPAN_STUB("CharacterRoute::action22ab90", 0x0022ab90);
+    return {};
+}
+
+// stub of FS2 0x0022abf0
+bool CharacterRoute::action22abf0()
+{
+    YAMIPAN_STUB("CharacterRoute::action22abf0", 0x0022abf0);
+    return {};
+}
+
+// stub of FS2 0x0022ad60
+bool CharacterRoute::action22ad60()
+{
+    YAMIPAN_STUB("CharacterRoute::action22ad60", 0x0022ad60);
+    return {};
+}
+
+// stub of FS2 0x0022bf60
+bool CharacterRoute::action22bf60()
+{
+    YAMIPAN_STUB("CharacterRoute::action22bf60", 0x0022bf60);
+    return {};
+}
+
+// stub of FS2 0x0022c0f0
+bool CharacterRoute::action22c0f0(int arg)
+{
+    YAMIPAN_STUB("CharacterRoute::action22c0f0", 0x0022c0f0);
+    return {};
+}
+
+// stub of FS2 0x0022c840
+bool CharacterRoute::action22c840(const char *name)
+{
+    YAMIPAN_STUB("CharacterRoute::action22c840", 0x0022c840);
+    return {};
+}
+
+// stub of FS2 0x0022c960
+bool CharacterRoute::action22c960(int arg)
+{
+    YAMIPAN_STUB("CharacterRoute::action22c960", 0x0022c960);
+    return {};
+}
+
+// stub of FS2 0x0022cbe0
+bool CharacterRoute::action22cbe0()
+{
+    YAMIPAN_STUB("CharacterRoute::action22cbe0", 0x0022cbe0);
+    return {};
+}
+
+// stub of FS2 0x0022a370
+void CharacterRoute::allowPath(const char *name, bool on)
+{
+    YAMIPAN_STUB("CharacterRoute::allowPath", 0x0022a370);
+}
+
+// stub of FS2 0x0022d6d0
+bool CharacterRoute::approach(float distance, const float *point)
+{
+    YAMIPAN_STUB("CharacterRoute::approach", 0x0022d6d0);
+    return {};
+}
+
+// stub of FS2 0x0022d350
+bool CharacterRoute::attack(float range, StageObject *target, bool mode)
+{
+    YAMIPAN_STUB("CharacterRoute::attack", 0x0022d350);
+    return {};
+}
+
+// stub of FS2 0x0022b970
+bool CharacterRoute::attackTask(StageObject *target)
+{
+    YAMIPAN_STUB("CharacterRoute::attackTask", 0x0022b970);
+    return {};
+}
+
+// stub of FS2 0x0022e6f0
+bool CharacterRoute::cancelMove()
+{
+    YAMIPAN_STUB("CharacterRoute::cancelMove", 0x0022e6f0);
+    return {};
+}
+
+// stub of FS2 0x0022a4f0
+bool CharacterRoute::dragOutCar()
+{
+    YAMIPAN_STUB("CharacterRoute::dragOutCar", 0x0022a4f0);
+    return {};
+}
+
+// stub of FS2 0x0022e110
+bool CharacterRoute::getMoveGoal(float *out)
+{
+    YAMIPAN_STUB("CharacterRoute::getMoveGoal", 0x0022e110);
+    return {};
+}
+
+// stub of FS2 0x0022a920
+bool CharacterRoute::gunAction()
+{
+    YAMIPAN_STUB("CharacterRoute::gunAction", 0x0022a920);
+    return {};
+}
+
+// stub of FS2 0x0022be10
+bool CharacterRoute::hit(StageObject *target)
+{
+    YAMIPAN_STUB("CharacterRoute::hit", 0x0022be10);
+    return {};
+}
+
+// stub of FS2 0x0022ba80
+bool CharacterRoute::hitInTime(float seconds, StageObject *target)
+{
+    YAMIPAN_STUB("CharacterRoute::hitInTime", 0x0022ba80);
+    return {};
+}
+
+// stub of FS2 0x0022bc50
+bool CharacterRoute::hitRunning(float seconds, StageObject *target)
+{
+    YAMIPAN_STUB("CharacterRoute::hitRunning", 0x0022bc50);
+    return {};
+}
+
+// stub of FS2 0x0022d900
+bool CharacterRoute::lookAtObject(float rate, StageObject *object, int force)
+{
+    YAMIPAN_STUB("CharacterRoute::lookAtObject", 0x0022d900);
+    return {};
+}
+
+// stub of FS2 0x0022da50
+bool CharacterRoute::lookAtPoint(const float *point, int force)
+{
+    YAMIPAN_STUB("CharacterRoute::lookAtPoint", 0x0022da50);
+    return {};
+}
+
+// stub of FS2 0x0022db80
+bool CharacterRoute::lookAtYaw(float yaw, float rate, int force)
+{
+    YAMIPAN_STUB("CharacterRoute::lookAtYaw", 0x0022db80);
+    return {};
+}
+
+// stub of FS2 0x0022e140
+bool CharacterRoute::moveToObject(float reach, StageObject *object, int mode, u_int flags)
+{
+    YAMIPAN_STUB("CharacterRoute::moveToObject", 0x0022e140);
+    return {};
+}
+
+// stub of FS2 0x0022e4a0
+bool CharacterRoute::moveToPoint(float reach, const float *point, int mode, u_int flags)
+{
+    YAMIPAN_STUB("CharacterRoute::moveToPoint", 0x0022e4a0);
+    return {};
+}
+
+// stub of FS2 0x0022cac0
+bool CharacterRoute::playAction(const char *name, StageObject *a, StageObject *b)
+{
+    YAMIPAN_STUB("CharacterRoute::playAction", 0x0022cac0);
+    return {};
+}
+
+// stub of FS2 0x0022a8f0
+bool CharacterRoute::setTrap(StageObject *trap)
+{
+    YAMIPAN_STUB("CharacterRoute::setTrap", 0x0022a8f0);
+    return {};
+}
+
+// stub of FS2 0x0022d810
+bool CharacterRoute::stop()
+{
+    YAMIPAN_STUB("CharacterRoute::stop", 0x0022d810);
+    return {};
+}
+
+// stub of FS2 0x0022dc60
+bool CharacterRoute::stopLook()
+{
+    YAMIPAN_STUB("CharacterRoute::stopLook", 0x0022dc60);
+    return {};
+}
+
+// stub of FS2 0x0022be20
+bool CharacterRoute::swingAt(StageObject *target)
+{
+    YAMIPAN_STUB("CharacterRoute::swingAt", 0x0022be20);
+    return {};
+}
+
+// stub of FS2 0x0022ab50
+bool CharacterRoute::takeItem(StageObject *item)
+{
+    YAMIPAN_STUB("CharacterRoute::takeItem", 0x0022ab50);
+    return {};
+}
+
+// stub of FS2 0x0022a8c0
+bool CharacterRoute::takeUpTrap(int arg)
+{
+    YAMIPAN_STUB("CharacterRoute::takeUpTrap", 0x0022a8c0);
+    return {};
+}
+
+// stub of FS2 0x0022dca0
+bool CharacterRoute::turnToObject(float rate, StageObject *object)
+{
+    YAMIPAN_STUB("CharacterRoute::turnToObject", 0x0022dca0);
+    return {};
+}
+
+// stub of FS2 0x0022de30
+bool CharacterRoute::turnToPoint(float rate, const float *point)
+{
+    YAMIPAN_STUB("CharacterRoute::turnToPoint", 0x0022de30);
+    return {};
+}
+
+// stub of FS2 0x0022dfc0
+bool CharacterRoute::turnToYaw(float yaw, float rate)
+{
+    YAMIPAN_STUB("CharacterRoute::turnToYaw", 0x0022dfc0);
+    return {};
+}
+
+// stub of FS2 0x0022e740
+void CharacterRoute::update()
+{
+    YAMIPAN_STUB("CharacterRoute::update", 0x0022e740);
+}
+
+// stub of FS2 0x0022a710
+bool CharacterRoute::useDoor(bool open)
+{
+    YAMIPAN_STUB("CharacterRoute::useDoor", 0x0022a710);
+    return {};
+}
+
+// stub of FS2 0x0022a550
+bool CharacterRoute::useDoorKey(bool lock)
+{
+    YAMIPAN_STUB("CharacterRoute::useDoorKey", 0x0022a550);
+    return {};
+}
+
+// stub of FS2 0x0023f290
+float RouteFilter::pathLength(const float *from, const float *to)
+{
+    YAMIPAN_STUB("RouteFilter::pathLength", 0x0023f290);
+    return {};
+}
+
+// stub of FS2 0x00214a80
+StageObject * StageCharacter::findNearestFoe(bool foes, bool sight)
+{
+    YAMIPAN_STUB("StageCharacter::findNearestFoe", 0x00214a80);
+    return {};
+}
+
+// stub of FS2 0x0021a380
+StageObject * StageCharacter::getBestFoe()
+{
+    YAMIPAN_STUB("StageCharacter::getBestFoe", 0x0021a380);
+    return {};
+}
+
+// stub of FS2 0x00210b30
+bool StageCharacter::isPointInView(float halfAngle, float scale, const float *point, float *distance, void *unused)
+{
+    YAMIPAN_STUB("StageCharacter::isPointInView", 0x00210b30);
+    return {};
+}
+
+// stub of FS2 0x00218850
+void StageCharacter::item218850(int arg)
+{
+    YAMIPAN_STUB("StageCharacter::item218850", 0x00218850);
+}
+
+// stub of FS2 0x002a46d0
+void StageCharacter::sayFound()
+{
+    YAMIPAN_STUB("StageCharacter::sayFound", 0x002a46d0);
+}
+
+// stub of FS2 0x00216270
+bool StageCharacter::tryShout(float loudness)
+{
+    YAMIPAN_STUB("StageCharacter::tryShout", 0x00216270);
+    return {};
+}
+
+// stub of FS2 0x00218b50
+void StageCharacter::useItem(const char *name, const float *point, int arg)
+{
+    YAMIPAN_STUB("StageCharacter::useItem", 0x00218b50);
+}
+
+// stub of FS2 0x001feab0
+void StageParty::warnAttacker(StageCharacter *attacker)
+{
+    YAMIPAN_STUB("StageParty::warnAttacker", 0x001feab0);
+}
+
+// stub of FS2 0x0029f440
+StageObject * findNumLockTarget()
+{
+    YAMIPAN_STUB("findNumLockTarget", 0x0029f440);
+    return {};
 }

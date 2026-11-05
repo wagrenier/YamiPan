@@ -548,6 +548,9 @@ struct PlayerMotion
     // The one of that name may start now. PC: a name it lacks answers false.
     bool isSpecialAllowed(const char *name);                             // FS2 0x001def60
     void setSpecial(const char *name, bool on);                          // FS2 0x001def90
+    // The gadget special called name takes text and turns on; false when
+    // it has none. Inline in the ROM (CharacterBrain::useNumLock).
+    bool armGadgetSpecial(const char *name, const char *text);
     // owner bites prey: both walk to their places.
     void startBite(StageCharacter *prey);                                // FS2 0x0026fbc0
     void initSlots14();                                                  // FS2 0x001df040
