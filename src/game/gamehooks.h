@@ -197,6 +197,7 @@ enum ModelFlag
     ModelFlag_TakesSpot = 0x1,  // a map model's: VU1 0x2eb draws the scene's spot over it
     ModelFlag_Item   = 0x2,     // every item's, from setupItem
     ModelFlag_CastsShadow = 0x8,  // drawSysBuildShadows takes it (cleared on oXX27_05)
+    ModelFlag_TakesShadow = 0x10, // a map model's: VU1 0x393 lays the frame's shadows over it
     ModelFlag_Distant     = 0x40, // past a quarter of the squared draw distance, when StageModel::m_mayGoDistant is set
     ModelFlag_TakesPoint  = 0x80, // a map model's without its own lights: VU1 0x545 adds the scene's point light
     ModelFlag_Ghost  = 0x100,   // the model ext_ghost (drawSysAddModel; what it does is unread)
@@ -1385,6 +1386,7 @@ enum ModelMaterialKind
 enum ModelMaterialFlag
 {
     ModelMaterialFlag_Blended = 0x01,   // drawn after the rest, far to near (rena_draw.cpp)
+    ModelMaterialFlag_NoShadow = 0x02,  // takes no shadow, like a blended one (VU1 0x39d); nothing else reads it
     ModelMaterialFlag_Wave    = 0x08,   // has a ModelTexAnim_Wave (set by ModelSurface)
     ModelMaterialFlag_PointFlat = 0x10, // the point light ignores the way a vertex faces (VU1 0x59a)
     ModelMaterialFlag_Foliage = 0x20,   // the texture is a plant's (drawSysAddModel)

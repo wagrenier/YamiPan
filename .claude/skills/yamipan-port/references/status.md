@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-05 13:11 at commit `bcf48c4` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-05 14:08 at commit `dd6e181` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -142,14 +142,13 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 219 TUs: todo 112, partial 32, verify 84, done 18
-- next: **yamipan/rendering/model_renderer.cpp** (pinned in the queue)
-- pinned queue: yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
+- 219 TUs: todo 112, partial 31, verify 85, done 18
+- next: **game/scriptrunner.cpp** (pinned in the queue)
+- pinned queue: game/scriptrunner.cpp
 - partial: `game/scenepool.cpp` 11/11 -- Written with game/playermotion.cpp thirteenth run (2026-11-05): all 11. The text shows; the dark strip behind it could not be told apart on the dark room of sta
 - partial: `game/scriptrunner.cpp` 134/652 -- VM 0x1d1c40, ScriptRunner, ScriptFrame, relocate, findEntry, scriptPrepare, the arg readers and 30 natives (every one stage 1 bg script calls) are written. All 
 - partial: `game/stageobject.cpp` 42/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
 - partial: `game/uiitemlist.cpp` 19/20 -- Written with game/playermotion.cpp's fourth run (2026-11-05): the list and the prompt's label work and show. Left: the button's picture beside the label in UiPr
-- partial: `yamipan/rendering/model_renderer.cpp` 0/0 -- Written: addPointLight (VU1 0x545, 0x59a), spotVertex with pipeline and shaders model_spot (0x2eb, ALPHA_1 0x58, projective ST), facesEye (0x128, 0x14f, ModelFl
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 129/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -234,9 +233,11 @@ Least-named game-code regions (64 KB blocks):
 - verify: `sdpr2/sdpr2.c` 36/36 -- All 36 functions written (0x1681c0..0x16c870), no new names, no Ghidra change. sdpr2.h is the full header: Sdpr2Type (19-slot function table, layout host), Sdpr
 - verify: `sound/sound.cpp` 97/98 -- All 98 of 0x144080..0x148db0 written, one file, no Ghidra change (batch 013 names held). New src/sound/sound.h takes the sound stand-ins out of game/gamehooks.h
 - verify: `unassigned@00116fb8` 0/0 -- This key is empty now: its whole run is two lib_ranges (architecture.md Address map, naming table row batch 025). Game code calling __extendsfdf2 / __cmpdf2 / _
+- verify: `yamipan/rendering/model_renderer.cpp` 0/0 -- Written: shadowVertex, outsideShadowBox, shadowPipeline (spot shaders, ALPHA_1 0x44, CLAMP 5, frame alpha written), shadow vertices drawn between a draw and its
 
 Recent sessions:
 
+- 2026-11-05 14:08 `yamipan/rendering/model_renderer.cpp` verify: Shadow pass read from VU1 and in the host; the pass runs in d0101 by its numbers, no screenshot shows a shadow yet
 - 2026-11-05 13:11 `yamipan/rendering/model_renderer.cpp` partial: Scene point light, the spot's projected pass and back-face culling read from VU1 and in the host; stage 1 lights neither, so seen only with a forced test lamp
 - 2026-11-05 12:24 `game/stageplayer.cpp` verify: The character around the frame's scripts: beforeScripts, afterScripts, stepStatus, ageSightTable, updateVisibility (the roadmap's move, which moves nothing), ca
 - 2026-11-05 11:47 `game/characterbrain.cpp` verify: the brain: ScriptProxy, CharacterBrain with its eight script slots, 59 commands, the ask family and setState; CharacterRoute stubbed
@@ -244,7 +245,6 @@ Recent sessions:
 - 2026-11-05 10:24 `game/playermotion.cpp` verify: closed: resetActionState whole, ScriptPoint and the sight table, stale call notes fixed; a door opened and crossed with the pad alone
 - 2026-11-05 09:33 `game/playermotion.cpp` partial: stage 1's natives and the notices: 21 natives, PauseMenuState and ScenePool whole, hasBiter, findItem: the game's first tutorial line shows on screen, and the s
 - 2026-11-05 08:47 `game/playermotion.cpp` partial: a character's script properties and its status block: setProperty, getProperty, resetActionState, initStatusBlock, StageObject::getProperty: rates come from the
-- 2026-11-05 07:53 `game/viewcamera.cpp` done: the first-person view: ViewCamera written, stage 1's Root forces it through StageObject::setProperty, the head hides; seen from the eyes with no body, scope not
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|

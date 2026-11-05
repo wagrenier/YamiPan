@@ -102,6 +102,9 @@ struct ModelSpotVertex
 };
 static_assert(sizeof(ModelSpotVertex) == 28);
 
+// A shadow's pass has the same shape: q 1, colour black, alpha how strong the shadow is here, 0x80 is 1.0.
+using ModelShadowVertex = ModelSpotVertex;
+
 struct ModelDraw
 {
     std::shared_ptr<Image> image; // null: untextured
@@ -110,6 +113,8 @@ struct ModelDraw
     std::uint32_t vertexCount = 0;
     std::uint32_t firstSpotVertex = 0; // into Frame::modelSpotVertices, drawn over this draw
     std::uint32_t spotVertexCount = 0;
+    std::uint32_t firstShadowVertex = 0; // into Frame::modelShadowVertices, drawn over this draw, before the spot
+    std::uint32_t shadowVertexCount = 0;
 };
 
 // One pass of models, drawn in the frame's order among the 2D draws: before draws[uiDrawsBefore].
@@ -129,6 +134,7 @@ struct ModelPass
     float fogFarValue = 255.0f;
     bool clearDepth = true;
     std::shared_ptr<Image> spotImage; // the lamp's picture
+    std::shared_ptr<Image> shadowImage; // shadow_00
     std::uint32_t uiDrawsBefore = 0;
     std::uint32_t firstDraw = 0;
     std::uint32_t drawCount = 0;
@@ -140,6 +146,7 @@ struct Frame
     std::vector<DrawCall> draws;
     std::vector<ModelVertex> modelVertices;
     std::vector<ModelSpotVertex> modelSpotVertices;
+    std::vector<ModelShadowVertex> modelShadowVertices;
     std::vector<ModelDraw> modelDraws;
     std::vector<ModelPass> modelPasses;
     std::uint64_t number = 0;
@@ -150,6 +157,7 @@ struct Frame
         draws.clear();
         modelVertices.clear();
         modelSpotVertices.clear();
+        modelShadowVertices.clear();
         modelDraws.clear();
         modelPasses.clear();
     }

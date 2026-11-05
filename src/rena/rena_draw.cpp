@@ -16,7 +16,7 @@
  *  CLAMP_1 repeat, TEX1_1 linear: the module's opaque and blended draws).
  *
  *  Not written yet (open-items.md "Next up"): a ModelMaterial_Kind1's frames,
- *  the shadow projections, the ghost's pass 0x2e7960, the fade 0x2e9220 /
+ *  the ghost's pass 0x2e7960, the fade 0x2e9220 /
  *  0x2e96a0, mips.
  * ======================================================================== */
 #include "rena/rena_draw.h"
@@ -47,6 +47,7 @@ RecordLights sLights;
 
 // The frame's spot: the record and its picture (renaSetSpotRecord, renaSetSpotlight).
 const RenaSpotLight *sSpot;
+YamiPanModelShadows sShadows;   // what the shadow set-up gave VU1: count, TEX0, addresses 64.. (the pass takes a copy)
 const Tim2Texture   *sSpotTexture;
 
 // What a skinned mesh's parts share: draw state +0x21c, +0x1f8. layout: host.
@@ -247,6 +248,7 @@ void setModelLights(sceVif1Packet *packet, const ModelInstance *model)
     }
     lights.takesPoint = (model->flags & ModelFlag_TakesPoint) != 0;
     lights.takesSpot = (model->flags & ModelFlag_TakesSpot) != 0 && model->spot != nullptr && model->spot->isActive();
+    lights.takesShadow = (model->flags & ModelFlag_TakesShadow) != 0;
     lights.cullBack = (model->flags & ModelFlag_TagC) != 0;
     YamiPan_ModelSetLights(packet, &lights);
 }
@@ -267,6 +269,7 @@ void setSurface(sceVif1Packet *packet, const ModelInstance *model, const ModelSu
         material.scrollV = surface->scrollV;
         material.pointFlat = (surface->material->flags & ModelMaterialFlag_PointFlat) != 0;
         material.noSpot = (surface->material->flags & ModelMaterialFlag_Foliage) != 0;
+        material.noShadow = (surface->material->flags & (ModelMaterialFlag_Blended | ModelMaterialFlag_NoShadow)) != 0;
     }
     YamiPan_ModelSetMaterial(packet, &material);
 }
@@ -466,6 +469,7 @@ void drawDeferred(sceVif1Packet *packet, const Deferred &entry)
 void renaBeginFrame(sceVif1Packet *packet)
 {
     (void)packet;
+    sShadows.texture = nullptr; // PC: the boss stage sets none, its target is not written yet
 }
 
 // FS2 0x002e87f0
@@ -487,13 +491,13 @@ void renaSetSpotRecord(const RenaSpotLight *spot)
 }
 
 // FS2 0x002e82a0
-// callcheck: FUN_002e1b10, upload (shadows are not written yet)
+// callcheck: FUN_002e1b10, upload (the upload and TEX0: the module binds the picture itself)
 
 void renaSetShadowTexture(sceVif1Packet *packet, Tim2Texture *texture, int block)
 {
     (void)packet;
-    (void)texture;
     (void)block;
+    sShadows.texture = texture;
 }
 
 // The record's lights, for the models that have none of their own.
@@ -512,23 +516,24 @@ void renaSetLights(sceVif1Packet *packet, DrawSysLights *lights)
 }
 
 // FS2 0x002e8300
-// callcheck: FUN_0010aef0, FUN_0010af80, FUN_0010b5f0, sceVif1PkCloseDmaTag, sceVif1PkCnt (shadows are not written yet)
+// callcheck: FUN_0010aef0, FUN_0010af80, FUN_0010b5f0, sceVif1PkCloseDmaTag, sceVif1PkCnt (packets: the pass carries them)
 
 void renaSetShadowMatrices(sceVif1Packet *packet, int index, sceVu0FMATRIX projection, sceVu0FMATRIX clip)
 {
     (void)packet;
-    (void)index;
-    (void)projection;
-    (void)clip;
+    if (index < 0 || index >= kYamiPanModelMaxShadows)
+        return;
+    memcpy(sShadows.projection[index], projection, sizeof(sceVu0FMATRIX));
+    memcpy(sShadows.clip[index], clip, sizeof(sceVu0FMATRIX));
 }
 
 // FS2 0x002e8570
-// callcheck: FUN_0010aef0, FUN_0010af80, FUN_0010b288, sceVif1PkCloseDmaTag, sceVif1PkCnt (shadows are not written yet)
+// callcheck: FUN_0010aef0, FUN_0010af80, FUN_0010b288, sceVif1PkCloseDmaTag, sceVif1PkCnt (packets: the pass carries it)
 
 void renaSetShadowCount(sceVif1Packet *packet, int count)
 {
     (void)packet;
-    (void)count;
+    sShadows.count = count;
 }
 
 // The point light's constants, VU addresses 176..179; only a pass with a
@@ -625,6 +630,7 @@ void renaDrawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask)
     fillEye(pass.eye);
     fillPointLight(pass.point);
     fillSpotLight(pass.spot);
+    pass.shadows = sShadows;
 
     const DrawSysFog *fog = gDrawSysState.fog;
     if (fog != nullptr && fog->isEnabled()) {

@@ -206,6 +206,49 @@ ModelSpotVertex spotVertex(const YamiPanModelSpotLight &spot, const ModelVertex 
     return out;
 }
 
+// A vertex of a shadow's pass, VU1 0x3e8..0x3fb. Past the shadow's own plane (the projection's z not negative) it has
+// no alpha, otherwise w, which fades from 0x80 there to nothing at the box's far end.
+ModelShadowVertex shadowVertex(const float *projection, const ModelVertex &vertex)
+{
+    float placed[4];
+    for (int lane = 0; lane < 4; lane++)
+    {
+        placed[lane] = projection[0 + lane] * vertex.x + projection[4 + lane] * vertex.y +
+                       projection[8 + lane] * vertex.z + projection[12 + lane];
+    }
+
+    ModelShadowVertex out;
+    out.x = vertex.x;
+    out.y = vertex.y;
+    out.z = vertex.z;
+    out.s = placed[0];
+    out.t = placed[1];
+    out.q = 1.0f;
+    out.color = placed[2] < 0.0f ? static_cast<std::uint32_t>(std::max(placed[3], 0.0f)) << 24 : 0u;
+    return out;
+}
+
+// Whether every vertex lies beyond one side of a shadow's box: VU1 0x618 asks it of the batch's bounds.
+bool outsideShadowBox(const float *clip, const std::vector<ModelVertex> &batch)
+{
+    unsigned common = 0x3f;
+    for (const ModelVertex &vertex : batch)
+    {
+        unsigned sides = 0;
+        for (int lane = 0; lane < 3; lane++)
+        {
+            const float placed = clip[0 + lane] * vertex.x + clip[4 + lane] * vertex.y + clip[8 + lane] * vertex.z +
+                                 clip[12 + lane];
+            sides |= placed > 1.0f ? 1u << (lane * 2) : 0u;
+            sides |= placed < -1.0f ? 2u << (lane * 2) : 0u;
+        }
+        common &= sides;
+        if (common == 0)
+            return false;
+    }
+    return true;
+}
+
 // Whether a triangle shows its front to the eye, VU1 0x13c..0x147; `flip` for a strip's odd faces (0x171..) and a
 // mirrored mesh, since the ROM measures in the mesh's space.
 bool facesEye(const ModelVertex &a, const ModelVertex &b, const ModelVertex &c, const std::array<float, 3> &eye,
@@ -274,10 +317,15 @@ void ModelRenderer::beginPass(const void *list, const YamiPanModelPass &pass)
     out.firstDraw = static_cast<std::uint32_t>(layer.draws.size());
     if (pass.spot.active != 0)
         out.spotImage = imageOf(pass.spot.texture);
+    if (pass.shadows.count != 0)
+        out.shadowImage = imageOf(pass.shadows.texture);
     std::copy_n(pass.eye, 3, layer.eye.begin());
     layer.point = pass.point;
     layer.spot = pass.spot;
     layer.spot.active = out.spotImage != nullptr;
+    layer.shadows = pass.shadows;
+    if (out.shadowImage == nullptr)
+        layer.shadows.count = 0;
     layer.open = true;
 }
 
@@ -293,6 +341,7 @@ void ModelRenderer::setMaterial(const void *list, const YamiPanModelMaterial &ma
     layer.unlit = material.unlit != 0;
     layer.pointFlat = material.pointFlat != 0;
     layer.noSpot = material.noSpot != 0;
+    layer.noShadow = material.noShadow != 0;
 }
 
 void ModelRenderer::setLights(const void *list, const YamiPanModelLights &lights)
@@ -364,9 +413,13 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
         layer.batch[static_cast<std::size_t>(index)] = vertexAt(index);
 
     const bool spotted = layer.spot.active != 0 && layer.lights.takesSpot != 0 && !layer.unlit && !layer.noSpot;
+    const bool shadowed =
+        layer.shadows.count != 0 && layer.lights.takesShadow != 0 && !layer.unlit && !layer.blended && !layer.noShadow;
     const bool cull = layer.lights.cullBack != 0;
     const auto firstVertex = static_cast<std::uint32_t>(layer.vertices.size());
     const auto firstSpot = static_cast<std::uint32_t>(layer.spotVertices.size());
+    const auto firstShadow = static_cast<std::uint32_t>(layer.shadowVertices.size());
+    layer.triangles.clear();
     const auto emit = [&](int a, int b, int c, bool flip) {
         const ModelVertex &first = layer.batch[static_cast<std::size_t>(a)];
         const ModelVertex &second = layer.batch[static_cast<std::size_t>(b)];
@@ -382,6 +435,8 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
             layer.spotVertices.push_back(spotVertex(layer.spot, second));
             layer.spotVertices.push_back(spotVertex(layer.spot, third));
         }
+        if (shadowed)
+            layer.triangles.insert(layer.triangles.end(), {a, b, c});
     };
 
     if (batch.strip)
@@ -395,22 +450,38 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
             emit(index, index + 1, index + 2, false);
     }
 
+    // Every shadow whose box the batch may touch lays itself over the faces that were kept.
+    for (int shadow = 0; shadowed && !layer.triangles.empty() && shadow < layer.shadows.count; shadow++)
+    {
+        if (outsideShadowBox(&layer.shadows.clip[shadow][0][0], layer.batch))
+            continue;
+        layer.shadowBatch.resize(layer.batch.size());
+        for (std::size_t index = 0; index < layer.batch.size(); index++)
+            layer.shadowBatch[index] = shadowVertex(&layer.shadows.projection[shadow][0][0], layer.batch[index]);
+        for (const int index : layer.triangles)
+            layer.shadowVertices.push_back(layer.shadowBatch[static_cast<std::size_t>(index)]);
+    }
+
     // Runs of one state join into one draw: a mesh is many batches.
     const auto count = static_cast<std::uint32_t>(layer.vertices.size()) - firstVertex;
     const auto spotCount = static_cast<std::uint32_t>(layer.spotVertices.size()) - firstSpot;
+    const auto shadowCount = static_cast<std::uint32_t>(layer.shadowVertices.size()) - firstShadow;
     if (layer.draws.size() > layer.passes.back().firstDraw)
     {
         ModelDraw &last = layer.draws.back();
         if (last.image == layer.image && last.blended == layer.blended &&
             last.firstVertex + last.vertexCount == firstVertex &&
-            last.firstSpotVertex + last.spotVertexCount == firstSpot)
+            last.firstSpotVertex + last.spotVertexCount == firstSpot &&
+            last.firstShadowVertex + last.shadowVertexCount == firstShadow)
         {
             last.vertexCount += count;
             last.spotVertexCount += spotCount;
+            last.shadowVertexCount += shadowCount;
             return;
         }
     }
-    layer.draws.push_back({layer.image, layer.blended, firstVertex, count, firstSpot, spotCount});
+    layer.draws.push_back({layer.image, layer.blended, firstVertex, count, firstSpot, spotCount, firstShadow,
+                           shadowCount});
 }
 
 void ModelRenderer::endPass(const void *list)
@@ -440,13 +511,17 @@ void ModelRenderer::collect(const void *list, Frame &frame)
     Layer &layer = found->second;
     const auto vertexOffset = static_cast<std::uint32_t>(frame.modelVertices.size());
     const auto spotOffset = static_cast<std::uint32_t>(frame.modelSpotVertices.size());
+    const auto shadowOffset = static_cast<std::uint32_t>(frame.modelShadowVertices.size());
     const auto drawOffset = static_cast<std::uint32_t>(frame.modelDraws.size());
     frame.modelVertices.insert(frame.modelVertices.end(), layer.vertices.begin(), layer.vertices.end());
     frame.modelSpotVertices.insert(frame.modelSpotVertices.end(), layer.spotVertices.begin(), layer.spotVertices.end());
+    frame.modelShadowVertices.insert(frame.modelShadowVertices.end(), layer.shadowVertices.begin(),
+                                     layer.shadowVertices.end());
     for (ModelDraw &draw : layer.draws)
     {
         draw.firstVertex += vertexOffset;
         draw.firstSpotVertex += spotOffset;
+        draw.firstShadowVertex += shadowOffset;
         frame.modelDraws.push_back(std::move(draw));
     }
     for (ModelPass &pass : layer.passes)
@@ -457,6 +532,7 @@ void ModelRenderer::collect(const void *list, Frame &frame)
     }
     layer.vertices.clear();
     layer.spotVertices.clear();
+    layer.shadowVertices.clear();
     layer.draws.clear();
     layer.passes.clear();
     layer.open = false;
@@ -478,6 +554,8 @@ void ModelRenderer::uploadVertices(SDL_GPUCopyPass *copy, const Frame &frame)
                  static_cast<unsigned>(frame.modelVertices.size() * sizeof(ModelVertex)));
     uploadStream(copy, m_spotVertices, frame.modelSpotVertices.data(),
                  static_cast<unsigned>(frame.modelSpotVertices.size() * sizeof(ModelSpotVertex)));
+    uploadStream(copy, m_shadowVertices, frame.modelShadowVertices.data(),
+                 static_cast<unsigned>(frame.modelShadowVertices.size() * sizeof(ModelShadowVertex)));
 }
 
 void ModelRenderer::uploadStream(SDL_GPUCopyPass *copy, VertexStream &stream, const void *data, unsigned bytes)
@@ -563,13 +641,9 @@ SDL_GPUGraphicsPipeline *ModelRenderer::pipelineFor(bool blended)
     return pipeline;
 }
 
-// The second GS pass over a lit vertex: ALPHA_1 0x58, the picture * what the first pass left in the frame's alpha
-// added on top, whose own alpha is not written (FBMSK 0xff000000), against the first pass's depth. CLAMP_1 repeats.
-SDL_GPUGraphicsPipeline *ModelRenderer::spotPipeline()
+// A later GS pass over a model's vertices: the same places and shaders, only the blend differs.
+SDL_GPUGraphicsPipeline *ModelRenderer::createProjectedPipeline(const SDL_GPUColorTargetDescription &target)
 {
-    if (m_spotPipeline)
-        return m_spotPipeline.get();
-
     SDL_GPUVertexBufferDescription buffer{};
     buffer.slot = 0;
     buffer.pitch = sizeof(ModelSpotVertex);
@@ -580,19 +654,6 @@ SDL_GPUGraphicsPipeline *ModelRenderer::spotPipeline()
         {1, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(ModelSpotVertex, s)},
         {2, 0, SDL_GPU_VERTEXELEMENTFORMAT_UBYTE4_NORM, offsetof(ModelSpotVertex, color)},
     }};
-
-    SDL_GPUColorTargetDescription target{};
-    target.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-    target.blend_state.enable_blend = true;
-    target.blend_state.enable_color_write_mask = true;
-    target.blend_state.color_write_mask =
-        SDL_GPU_COLORCOMPONENT_R | SDL_GPU_COLORCOMPONENT_G | SDL_GPU_COLORCOMPONENT_B;
-    target.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
-    target.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
-    target.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_DST_ALPHA;
-    target.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-    target.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
-    target.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
 
     SDL_GPUGraphicsPipelineCreateInfo info{};
     info.vertex_shader = m_spotVertexShader.get();
@@ -615,9 +676,54 @@ SDL_GPUGraphicsPipeline *ModelRenderer::spotPipeline()
 
     SDL_GPUGraphicsPipeline *const pipeline = SDL_CreateGPUGraphicsPipeline(m_device.get(), &info);
     if (pipeline == nullptr)
-        gpu::logGpuError("SDL_CreateGPUGraphicsPipeline(model spot)");
-    m_spotPipeline = gpu::GraphicsPipeline(m_device.get(), pipeline);
+        gpu::logGpuError("SDL_CreateGPUGraphicsPipeline(model projected)");
     return pipeline;
+}
+
+// The second GS pass over a lit vertex: ALPHA_1 0x58, the picture * what the last pass left in the frame's alpha
+// added on top, whose own alpha is not written (FBMSK 0xff000000), against the first pass's depth. CLAMP_1 repeats.
+SDL_GPUGraphicsPipeline *ModelRenderer::spotPipeline()
+{
+    if (m_spotPipeline)
+        return m_spotPipeline.get();
+
+    SDL_GPUColorTargetDescription target{};
+    target.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+    target.blend_state.enable_blend = true;
+    target.blend_state.enable_color_write_mask = true;
+    target.blend_state.color_write_mask =
+        SDL_GPU_COLORCOMPONENT_R | SDL_GPU_COLORCOMPONENT_G | SDL_GPU_COLORCOMPONENT_B;
+    target.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+    target.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+    target.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_DST_ALPHA;
+    target.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    target.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+    target.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+
+    m_spotPipeline = gpu::GraphicsPipeline(m_device.get(), createProjectedPipeline(target));
+    return m_spotPipeline.get();
+}
+
+// A shadow's GS pass (0x2fdb60): ALPHA_1 0x44, black over the frame by its alpha; TEST_1 0x50000, no alpha test,
+// the first pass's depth; CLAMP_1 5. The GS does not blend alpha: the frame's alpha takes the shadow's, and the spot
+// that follows reads it (FBMSK is 0 in this pass).
+SDL_GPUGraphicsPipeline *ModelRenderer::shadowPipeline()
+{
+    if (m_shadowPipeline)
+        return m_shadowPipeline.get();
+
+    SDL_GPUColorTargetDescription target{};
+    target.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+    target.blend_state.enable_blend = true;
+    target.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+    target.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+    target.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+    target.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+    target.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    target.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+
+    m_shadowPipeline = gpu::GraphicsPipeline(m_device.get(), createProjectedPipeline(target));
+    return m_shadowPipeline.get();
 }
 
 void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &frame, const ModelPass &pass,
@@ -678,26 +784,37 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
 
             SDL_DrawGPUPrimitives(renderPass, draw.vertexCount, 1, draw.firstVertex, 0);
 
-            SDL_GPUGraphicsPipeline *const spot = draw.spotVertexCount != 0 ? spotPipeline() : nullptr;
-            const Image *const spotImage = pass.spotImage.get();
-            if (spot == nullptr || spotImage == nullptr || spotImage->texture == nullptr)
-                continue;
+            // The passes VU1 kicks after the first one, each from its own stream; neither takes the fog's colour.
+            const auto drawOver = [&](SDL_GPUGraphicsPipeline *over, const Image *picture, const VertexStream &stream,
+                                      bool repeat, float alphaRef, std::uint32_t vertexCount, std::uint32_t first) {
+                if (over == nullptr || picture == nullptr || picture->texture == nullptr)
+                    return;
+                SDL_BindGPUGraphicsPipeline(renderPass, over);
+                SDL_GPUBufferBinding overVertices{};
+                overVertices.buffer = stream.buffer.get();
+                SDL_BindGPUVertexBuffers(renderPass, 0, &overVertices, 1);
 
-            SDL_BindGPUGraphicsPipeline(renderPass, spot);
-            SDL_GPUBufferBinding spotVertices{};
-            spotVertices.buffer = m_spotVertices.buffer.get();
-            SDL_BindGPUVertexBuffers(renderPass, 0, &spotVertices, 1);
+                binding.sampler = m_renderer.samplerFor(true, repeat);
+                SDL_BindGPUFragmentSamplers(renderPass, 0, &binding, 1);
 
-            binding.texture = spotImage->texture->get();
-            SDL_BindGPUFragmentSamplers(renderPass, 0, &binding, 1);
+                ModelFragmentUniforms overUniforms{};
+                overUniforms.params[0] = alphaRef;
+                SDL_PushGPUFragmentUniformData(commands, 0, &overUniforms, sizeof(overUniforms));
 
-            // FOGCOL 0 in the pass's state: far away what it adds fades to nothing.
-            ModelFragmentUniforms spotUniforms{};
-            spotUniforms.params[0] = kSpotAlphaRef;
-            SDL_PushGPUFragmentUniformData(commands, 0, &spotUniforms, sizeof(spotUniforms));
+                SDL_DrawGPUPrimitives(renderPass, vertexCount, 1, first, 0);
+                SDL_BindGPUVertexBuffers(renderPass, 0, &vertices, 1);
+            };
 
-            SDL_DrawGPUPrimitives(renderPass, draw.spotVertexCount, 1, draw.firstSpotVertex, 0);
-            SDL_BindGPUVertexBuffers(renderPass, 0, &vertices, 1);
+            if (draw.shadowVertexCount != 0)
+            {
+                drawOver(shadowPipeline(), pass.shadowImage.get(), m_shadowVertices, false, 0.0f,
+                         draw.shadowVertexCount, draw.firstShadowVertex);
+            }
+            if (draw.spotVertexCount != 0)
+            {
+                drawOver(spotPipeline(), pass.spotImage.get(), m_spotVertices, true, kSpotAlphaRef,
+                         draw.spotVertexCount, draw.firstSpotVertex);
+            }
         }
     }
     SDL_EndGPURenderPass(renderPass);

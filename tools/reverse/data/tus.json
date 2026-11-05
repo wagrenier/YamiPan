@@ -1,6 +1,5 @@
 {
  "queue": [
-  "yamipan/rendering/model_renderer.cpp",
   "game/scriptrunner.cpp"
  ],
  "settings": {
@@ -2721,7 +2720,7 @@
   "unassigned@002c42a0": {},
   "unassigned@002d46a0": {},
   "yamipan/rendering/model_renderer.cpp": {
-   "notes": "Written: addPointLight (VU1 0x545, 0x59a), spotVertex with pipeline and shaders model_spot (0x2eb, ALPHA_1 0x58, projective ST), facesEye (0x128, 0x14f, ModelFlag_TagC); rena side fillPointLight, fillSpotLight, fillEye, renaSetSpotRecord. vudis.py now prints LOI: older notes may have read 255 as a bal. The alpha fringe note was wrong: 0x2fdb60 is the shadow pass state. Picture: with no forcing both lights stay off in stage 1 (5 of 5 samples), picture unchanged. A removed test lamp at the camera lit the room with plausible fall-off; the spot alone adds almost nothing on near-black vertices, and the disc has NOT been seen. No reference exists. Check the disc and repeats outside the cone on the first stage with yami_pl or a held lamp (the cone test 0x66b is left out, CLAMP_1 repeats). Left in this TU: shadows and their state VU 0x98 / 0x9e, material flag 4 (0x4df), Kind1 frames, ghost 0x011 and 0x2e7960, fades, mips, material flag 8, per-model vertex cache (only the triple work on strips is gone). architecture.md has the VU1 detail; open-items.md Done has the doubts.",
+   "notes": "Written: shadowVertex, outsideShadowBox, shadowPipeline (spot shaders, ALPHA_1 0x44, CLAMP 5, frame alpha written), shadow vertices drawn between a draw and its spot; renaSetShadowTexture, Matrices, Count, YamiPanModelPass::shadows, ModelFlag_TakesShadow 0x10 (the old kMapModelFlag10), ModelMaterialFlag_NoShadow 2. Measured with removed probes: stage 1 room has no caster (first-person player out of the main group); d0101 has one, count 1, 78..510 shadow vertices, alpha up to 118, up to 274 vertices in the picture. NOT seen on screen: a red and white test left no red in any shot, event shots looked at aim at the ceiling, so reaching the screen is unproven. Check it on the first visible character on a lit floor and compare with shadow_00, not looked at. VU 180..184 writer not found: fog unknown, shadow stays black. Dead branch 0x3ad, state 0x9e. Left in this TU: material flag 4 (0x4df), 0x77f, Kind1 frames, ghost 0x011 and 0x2e7960, fades, mips, material flag 8, boss shadow target, per-model vertex cache. architecture.md has A shadow in VU1; open-items.md Done has the doubts.",
    "sessions": [
     {
      "date": "2026-11-04 10:11",
@@ -2737,9 +2736,14 @@
      "date": "2026-11-05 13:11",
      "status": "partial",
      "summary": "Scene point light, the spot's projected pass and back-face culling read from VU1 and in the host; stage 1 lights neither, so seen only with a forced test lamp"
+    },
+    {
+     "date": "2026-11-05 14:08",
+     "status": "verify",
+     "summary": "Shadow pass read from VU1 and in the host; the pass runs in d0101 by its numbers, no screenshot shows a shadow yet"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "task": "3D path 5 of 5 (the user's pin): the first milestone is one static map model on screen. A new C++ 3D host module (cpp-port.md) with a depth buffer, and renaBeginFrame, renaDrawModels and renaEndPass reconstructed to feed it, meshes decoded from the model file at the source (no VU1, no GS memory). Flat colour first, then textures through texture_store. The projection must follow the renderer's display aspect, not the fixed 4:3 of drawSysInit (the user's any-aspect rule). Read the VU1 microcode 0x2ec900..0x2f0880 only as far as needed. Success is a picture of the map, compared with the game. Later fill in yamipan_drawshadow.h."
   },
   "yamipan/rendering/texture_store.cpp": {

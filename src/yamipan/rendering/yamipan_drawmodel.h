@@ -38,6 +38,18 @@ struct YamiPanModelSpotLight
     float   limit;              /* no reach at this distance ahead, or past it */
 };
 
+/* The frame's shadows: one picture laid over the models that take them, black with the picture's alpha, a pass per
+ * shadow (VU1 0x393, addresses 64.. a shadow's 8 quadwords, 150 the count; 0x2d7a60 builds the matrices). */
+enum { kYamiPanModelMaxShadows = 7 };
+
+struct YamiPanModelShadows
+{
+    int     count;              /* 0: this pass lays none */
+    const void *texture;        /* a Tim2Texture */
+    float   projection[kYamiPanModelMaxShadows][4][4]; /* sceVu0 layout: x, y the picture's 0..1, z and w the fade */
+    float   clip[kYamiPanModelMaxShadows][4][4];       /* sceVu0 layout: the shadow's box is -1..1 */
+};
+
 /* One pass: the frame's world -> screen matrix (sceVu0 layout, screen units around 2048), its fog as
  * (A + B / z) / 255 with 1 no fog, and whether the pass starts on a fresh depth buffer. */
 struct YamiPanModelPass
@@ -58,6 +70,7 @@ struct YamiPanModelPass
     float   eye[3];             /* the camera in the world: VU address 4, what culling measures from */
     YamiPanModelPointLight point;   /* only the main pass has one */
     YamiPanModelSpotLight  spot;
+    YamiPanModelShadows    shadows;
 };
 
 /* A material as the VU1 program and the GS register set would take it. */
@@ -70,6 +83,7 @@ struct YamiPanModelMaterial
     int     unlit;              /* the vertex colours as they are; otherwise multiplied by the light */
     int     pointFlat;          /* the point light ignores which way a vertex faces (material flag 0x10, 0x59a) */
     int     noSpot;             /* the spot's pass skips it (material flag 0x20, 0x2f1) */
+    int     noShadow;           /* takes no shadow (material flags 1 and 2, 0x39d) */
 };
 
 /* What lights a model: colours 0..1 and each light's direction. */
@@ -80,6 +94,7 @@ struct YamiPanModelLights
     float   directions[3][3];
     int     takesPoint;         /* ModelFlag_TakesPoint */
     int     takesSpot;          /* ModelFlag_TakesSpot, and the model's spot is on (VU address 200) */
+    int     takesShadow;        /* ModelFlag_TakesShadow */
     int     cullBack;           /* ModelFlag_TagC: faces turned from the eye are not drawn (VU1 0x128) */
 };
 
