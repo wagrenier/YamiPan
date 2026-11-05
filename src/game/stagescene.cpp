@@ -2503,8 +2503,8 @@ bool StageScene::partnerResponds(StageObject *object)
         return false;
     if (!object->isPlayer())
         return false;
-    PlayerLookState *look = object->m_motion->look;
-    if (!look->active || kLookWindowHigh < look->angle || look->angle < kLookWindowLow)
+    const WalkLink *walk = object->m_motion->walkLink;
+    if (!walk->edgeFound || kLookWindowHigh < walk->edgeDrop || walk->edgeDrop < kLookWindowLow)
         return false;
     return partner != nullptr && partner->m_abilities.flag3c1 != 0;
 }

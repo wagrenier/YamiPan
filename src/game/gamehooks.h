@@ -397,6 +397,13 @@ struct CharacterGround
     u_char        onGround = 0; // FS2 +0x000: StageCharacter::reset sets it (the name is a guess)
     int           groundCheck = 0; // FS2 +0x018: the motion's 接地判定 (PlayerMotion::stepLower)
     int           repelLevel = 0;  // FS2 +0x01c: its キャラ反発LV
+    StageCollisionFace *floorFace = nullptr; // FS2 +0x024: the face it stands on
+    u_char        nearTarget = 0;  // FS2 +0x055: within 250 of the view target (PlayerMotion::applyMovement)
+    u_char        narrow = 0;      // FS2 +0x0e8: Move walks instead of running
+    float         slideSpeed = 0.0f; // FS2 +0x128: the floor carries it
+    sceVu0FVECTOR slideDirection = {}; // FS2 +0x130
+    float         radius = 0.0f;   // FS2 +0x154
+    float         radius2 = 0.0f;  // FS2 +0x158
     GroundVolume *volume = nullptr; // FS2 +0x184: 0 from the ctor
     u_char       *floats = nullptr; // FS2 +0x18c: F_YRT sets the byte it points at (unread; the name is a guess)
     u_char       *wallCheck = nullptr; // FS2 +0x190: the motion's 壁判定, when it points anywhere
@@ -485,14 +492,14 @@ public:
 // EE layout.
 struct CharacterAbilities
 {
-    u_char flag3a4;             // FS2 +0x3a4
+    u_char quickTurn;           // FS2 +0x3a4: QuickTurn
     u_char flag3a5;             // FS2 +0x3a5
     u_char flag3a6;             // FS2 +0x3a6
-    u_char flag3a7;             // FS2 +0x3a7
-    u_char flag3a8;             // FS2 +0x3a8
-    u_char flag3a9;             // FS2 +0x3a9
-    u_char flag3aa;             // FS2 +0x3aa
-    u_char flag3ab;             // FS2 +0x3ab
+    u_char moveCrouched;        // FS2 +0x3a7: Move and Turn in a crouch
+    u_char strafe;              // FS2 +0x3a8: Move's w_l, w_r
+    u_char walkBack;            // FS2 +0x3a9: Move's w_b
+    u_char runStart;            // FS2 +0x3aa: w_run, sq_ka, sqw_w between the walks
+    u_char stairs;              // FS2 +0x3ab: Move's stair motions
     u_char flag3ac;             // FS2 +0x3ac
     u_char flag3ad;             // FS2 +0x3ad
     u_char _3ae[2];
@@ -827,25 +834,13 @@ public:
 
 // The player's +0x224 object (its +0 the player). Guess: the motion set,
 // picked by the weapon carried.
-// layout: host -- EE: +0xc00 the look state.
-struct PlayerLookState;
+// layout: host -- EE: +0xc00 the Walk link.
 // The record at +0xbd8: a state, 1 or 2 draw something (0x2b9ef0 / 0x2ba8d0,
 // beside PrgMcCard). layout: host -- EE: +0 the state.
 struct PlayerOverlay
 {
     void draw();                                                         // FS2 0x002bb260
 };
-// What StageScene::partnerResponds reads of it; the angle's unit and what
-// the -190..-160 window means are unread. EE layout.
-struct PlayerLookState
-{
-    u_char _00[0x60];
-    float  angle;               // FS2 +0x60
-    u_char _64[0x2c];
-    u_char active;              // FS2 +0x90
-};
-static_assert(offsetof(PlayerLookState, active) == 0x90, "PlayerLookState::active");
-
 // StageObject::m_doorType.
 enum StageDoorType
 {
@@ -1867,6 +1862,8 @@ public:
     // The view matrix (+0x240) and view-screen matrix (+0x280) from the
     // object's matrix; each frame for the active camera.
     void calcViewMatrix();                                               // FS2 0x00177810
+    // The point is inside the cone of the view.
+    bool seesPoint(const sceVu0FVECTOR point);                           // FS2 0x001776d0
 
     sceVu0FMATRIX m_screen;     // FS2 +0x200
     sceVu0FMATRIX m_view;       // FS2 +0x240
@@ -1921,6 +1918,8 @@ public:
     // FS2 0x0029a830
     int getKind() override { return StageObject_Kind10; }
     ViewCamera();                                                        // FS2 0x0029aae0
+    // The zoom of camview_zoom, from the character's zoomLevel.
+    void setZoom(float level);                                           // FS2 0x0029a840
 };
 // What the event code calls of TUs to come.
 // The film overlay's data: two parts of the parent's party (0x1fea40,
@@ -2069,6 +2068,76 @@ static_assert(offsetof(CharacterBlock7c8, count) == 0x34, "CharacterBlock7c8::co
 constexpr int kBodyEffectCount = 4;     // setupBody's block (+0x414)
 constexpr int kCharacterFeet   = 2;     // +0x41c / +0x424
 
+// CharacterWants::moveKind: what the stick says, as Move and Turn read it.
+enum CharacterMoveKind
+{
+    CharacterMove_None        = 0,
+    CharacterMove_StrafeLeft  = 1, // w_l
+    CharacterMove_TurnLeft    = 2, // t_l, standing
+    CharacterMove_StrafeRight = 3, // w_r
+    CharacterMove_TurnRight   = 4, // t_r, standing
+    CharacterMove_Back        = 5, // w_b, moveYaw turns it
+    CharacterMove_BackTurn    = 6, // the same
+    CharacterMove_Walk        = 7, // w, moveYaw turns it
+    CharacterMove_Run         = 8, // run, or w_run into it
+    CharacterMove_WalkSlow    = 9, // w
+};
+
+// What the input or the brain asks of the character this frame: +0x2c0,
+// which the start hook clears. The conditions of the running motion read it
+// and turn it into motions. EE layout.
+struct CharacterWants
+{
+    int    moveKind;            // FS2 +0x2c0: CharacterMoveKind
+    float  moveYaw;             // FS2 +0x2c4: radians this frame
+    u_char squat;               // FS2 +0x2c8
+    u_char quickTurn;           // FS2 +0x2c9
+    u_char altAction;           // FS2 +0x2ca: latchAltAction
+    u_char _2cb[0x35];
+    u_char headOn;              // FS2 +0x300: the head follows headAngles
+    u_char _301[0xf];
+    sceVu0FVECTOR headAngles;   // FS2 +0x310
+    u_char aimOn;               // FS2 +0x320: the upper body follows aimAngles
+    u_char _321[0xf];
+    sceVu0FVECTOR aimAngles;    // FS2 +0x330
+    u_char _340[8];
+    int    viewChange;          // FS2 +0x348: 1 into camview, 2 out of it
+    u_char zoomOn;              // FS2 +0x34c: into camview_zoom, or out of it
+    u_char _34d[3];
+    int    zoomLevel;           // FS2 +0x350
+    u_char lampSwitch;          // FS2 +0x354: the lamp changes over
+    u_char _355[0xb];
+};
+static_assert(sizeof(CharacterWants) == 0xa0, "CharacterWants: EE 0xa0");
+static_assert(offsetof(CharacterWants, headOn) == 0x40, "CharacterWants::headOn");
+static_assert(offsetof(CharacterWants, aimAngles) == 0x70, "CharacterWants::aimAngles");
+static_assert(offsetof(CharacterWants, lampSwitch) == 0x94, "CharacterWants::lampSwitch");
+
+// What the running motion's conditions allow this frame: +0x360, which the
+// start hook clears. Each byte is a condition's yes. A queued motion keeps
+// this block (MotionQueue). EE layout.
+struct CharacterAllows
+{
+    u_char squat;               // FS2 +0x360
+    u_char turn;                // FS2 +0x361
+    u_char move;                // FS2 +0x362
+    u_char quickTurn;           // FS2 +0x363
+    u_char altAction;           // FS2 +0x364: latchAltAction
+    u_char _365[0x2b];
+    u_char head;                // FS2 +0x390: the sheet's 頭振り
+    u_char aim;                 // FS2 +0x391: the sheet's 上半身振り
+    u_char _392[9];
+    u_char viewSwitch;          // FS2 +0x39b: カメラモード切替
+    u_char zoom;                // FS2 +0x39c: 主観ズーム
+    u_char lamp;                // FS2 +0x39d: 懐中電灯ON/OFF
+    u_char _39e[3];
+    u_char standing;            // FS2 +0x3a1: a hold or a walk (its reader is unread)
+    u_char _3a2[2];
+};
+static_assert(sizeof(CharacterAllows) == 0x44, "CharacterAllows: EE 0x44");
+static_assert(offsetof(CharacterAllows, head) == 0x30, "CharacterAllows::head");
+static_assert(offsetof(CharacterAllows, standing) == 0x41, "CharacterAllows::standing");
+
 // A character of the map (the F_ and player points), the player and the
 // partner among them. vtable 0x312240 (0x312264, 0x31227c), game/stagecharacter.cpp.
 // layout: host -- EE 0x800.
@@ -2130,13 +2199,23 @@ public:
     // A named event of the character in the scene's +0x78, while +0x30 is
     // set; what takes it is unread (GUNSHOOT).
     void playerEvent(const char *name);                                  // FS2 0x0020e6a0
+    // Who the pad moves is this one (the scene's controlled, else player).
+    bool isControlled() const;                                           // FS2 0x00215270
+    // It acts for the player (controlled, not the player itself).
+    bool isTakenOver() const;                                            // FS2 0x00211970
+    // The motion rate, 1 outside a timed change.
+    float getMotionRate();                                               // FS2 0x0020d400
+    // The world matrix the head's sway of kind 2 turns to.
+    void getSwayMatrix(sceVu0FMATRIX out);                               // FS2 0x0020c940
+    // The movement hook: the motion's step, then the model.
+    void moveStep();                                                     // FS2 0x0017a490
 
     StageList<StageObject *> m_items; // FS2 +0x22c: what it carries (giveItem)
     int    m_294 = 0;           // FS2 +0x294: 0 from the ctor (unread)
     sceVu0FVECTOR m_aimPoint = {}; // FS2 +0x2a0: where its bullets steer
     int    m_2b0 = 0;           // FS2 +0x2b0: 0 from the ctor (unread)
-    u_char m_2c0[0xa0] = {};    // FS2 +0x2c0: setup clears it, PlayerMotion::initSlots18 fills it (unread)
-    u_char m_360[0x44] = {};    // FS2 +0x360: setup clears it, PlayerMotion::initSlots14 fills it (unread)
+    CharacterWants  m_wants = {};   // FS2 +0x2c0: the start hook clears it, input and brain fill it
+    CharacterAllows m_allows = {};  // FS2 +0x360: the start hook clears it, the conditions fill it
     int    m_3e4 = 0;           // FS2 +0x3e4: 0 from initStatus (unread); so are the next five
     int    m_3e8 = 0;           // FS2 +0x3e8
     int    m_3ec = 0;           // FS2 +0x3ec
@@ -2154,7 +2233,10 @@ public:
     u_char m_42c = 0;           // FS2 +0x42c: 0 from the ctor (unread)
     int    m_soundState = 0;    // FS2 +0x430: 0 none, 1 a source, 2 a cue (stopSounds)
     int    m_soundHandle = 0;   // FS2 +0x434
-    float  m_458 = 0.0f;        // FS2 +0x458: -1 from reset (unread)
+    float  m_slowStart = 0.0f;  // FS2 +0x458: -1 none; a timed change of the motion rate
+    float  m_slowEnd = 0.0f;    // FS2 +0x45c
+    float  m_slowFrom = 0.0f;   // FS2 +0x460: the rate at the start
+    float  m_slowTo = 0.0f;     // FS2 +0x464: at the end
     float  m_health = 0.0f;     // FS2 +0x594: the sheet's 体力
     int    m_endurance = 0;     // FS2 +0x598: the sheet's 耐久力; setEndurance
     int    m_leftArm = 0;       // FS2 +0x59c: the sheet's 左腕
@@ -2163,6 +2245,9 @@ public:
     int    m_leftLeg = 0;       // FS2 +0x5a8: the sheet's 左足
     int    m_flinch = 0;        // FS2 +0x5ac: setFlinch, to the sheet's ひるみ耐性値
     int    m_unarmedMsp = 0;    // FS2 +0x5b0: the sheet's 素手MSP
+    float  m_walkRate = 1.0f;   // FS2 +0x5e0: 移動速度 / 100 (setProperty)
+    float  m_runRate = 1.0f;    // FS2 +0x5e4: 走り速度 / 100
+    float  m_reviveTime = 0.0f; // FS2 +0x5ec: seconds of DamageDead
     float  m_aimLock = 0.0f;    // FS2 +0x5fc: not 0: they fly straight
     u_char m_bulletFlying = 0;  // FS2 +0x688: set each frame by a bullet of its own
     CharacterBlock7c8 m_block7c8 = {}; // FS2 +0x7c8

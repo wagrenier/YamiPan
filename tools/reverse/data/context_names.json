@@ -12125,6 +12125,12 @@
   "was": "FUN_00177640",
   "why": "slot +0x20c"
  },
+ "001776d0": {
+  "name": "StageCamera::seesPoint",
+  "tag": "game-inferred",
+  "was": "FUN_001776d0",
+  "why": "angle between the camera's axis and the point against the half field from +0x2c0..+0x2c8"
+ },
  "00177810": {
   "name": "StageCamera::calcViewMatrix",
   "tag": "game-inferred",
@@ -12244,6 +12250,12 @@
   "tag": "game-inferred",
   "was": "FUN_00179a80",
   "why": "answers 0"
+ },
+ "0017a490": {
+  "name": "StageCharacter::moveStep",
+  "tag": "game-inferred",
+  "was": "FUN_0017a490",
+  "why": "the movement hook: applyMovement, the pace by motion kind, StageModel::advance, the ground's step"
  },
  "0017b3e0": {
   "name": "StageCharacter::initAbilities",
@@ -16259,6 +16271,24 @@
   "was": "FUN_001dd680",
   "why": "operator_new(0x9b0) in the ctor of StageCharacter when the scene has a route, stored at +0x220"
  },
+ "001dec30": {
+  "name": "PlayerMotion::setToolTarget",
+  "tag": "game-inferred",
+  "was": "FUN_001dec30",
+  "why": "ModelPose::setToolTarget at 0.1"
+ },
+ "001dec50": {
+  "name": "PlayerMotion::setLookTarget",
+  "tag": "game-inferred",
+  "was": "FUN_001dec50",
+  "why": "ModelPose::setLookTarget with 1.2566371"
+ },
+ "001dec70": {
+  "name": "PlayerMotion::setHeadTarget",
+  "tag": "game-inferred",
+  "was": "FUN_001dec70",
+  "why": "the family's limits at +0xb58 into the pose, then ModelPose::setHeadTarget"
+ },
  "001dedb0": {
   "name": "StagePlayer::releaseAction",
   "tag": "game-inferred",
@@ -16283,6 +16313,18 @@
   "was": "FUN_001dfd90",
   "why": "reset calls it when +0xbd4 is set, with 0; body unread"
  },
+ "001e0e20": {
+  "name": "PlayerMotion::applyMovement",
+  "tag": "game-inferred",
+  "was": "FUN_001e0e20",
+  "why": "first call of the movement hook 0x17a490: root scale on slopes and at a run's start, +0xb60 into the position, +0xb70 into the rotation"
+ },
+ "001e3e80": {
+  "name": "PlayerMotion::controlStep",
+  "tag": "game-inferred",
+  "was": "FUN_001e3e80",
+  "why": "the third call of the control hook 0x17a810: ground checks, Always apply, link apply, link slot +0x1c, then feet and fidgets"
+ },
  "001e5d90": {
   "name": "PlayerMotion::beginFrame",
   "tag": "game-inferred",
@@ -16294,6 +16336,24 @@
   "tag": "game-inferred",
   "was": "FUN_001e60b0",
   "why": "turned by the motion's angles and the player's, half a turn, at bn_head; SceneRender::update aims 200 ahead of it"
+ },
+ "001e6160": {
+  "name": "PlayerMotion::getLampAngles",
+  "tag": "game-inferred",
+  "was": "FUN_001e6160",
+  "why": "Always aims the tool bone with it while the lamp is controlled"
+ },
+ "001e6400": {
+  "name": "PlayerMotion::leanBody",
+  "tag": "game-inferred",
+  "was": "FUN_001e6400",
+  "why": "0x1e6490 with rate 0.3 and a step by isControlled"
+ },
+ "001e6490": {
+  "name": "PlayerMotion::leanBodyAt",
+  "tag": "game-inferred",
+  "was": "FUN_001e6490",
+  "why": "approachAnglesXZ into +0xb80, limits +-1.134464, slope term, +0xb90, +0xba0"
  },
  "001e66c0": {
   "name": "PlayerMotion::refresh",
@@ -16348,6 +16408,12 @@
   "tag": "game-inferred",
   "was": "FUN_001e9dd0",
   "why": "first step: resolves the request and plays its label (rifle column, upper label) with StageModel::playMotion"
+ },
+ "001eabc0": {
+  "name": "PlayerMotion::startWalkFile",
+  "tag": "game-inferred",
+  "was": "FUN_001eabc0",
+  "why": "stores the pending walk +0xa72.. with a motion file as target; Move's ops at an edge"
  },
  "001ead00": {
   "name": "PlayerMotion::startWalk",
@@ -17333,6 +17399,18 @@
   "was": "FUN_0020b1d0",
   "why": "+0x364 set: +0x2ca = 1; update calls it while the alternate flag holds; the meaning is a guess"
  },
+ "0020c940": {
+  "name": "StageCharacter::getSwayMatrix",
+  "tag": "game-inferred",
+  "was": "FUN_0020c940",
+  "why": "matrix for the head's sway of kind 2 in AlwaysCondition::onApply"
+ },
+ "0020d400": {
+  "name": "StageCharacter::getMotionRate",
+  "tag": "game-inferred",
+  "was": "FUN_0020d400",
+  "why": "times of +0x458..+0x464 between two rates, 1 outside them"
+ },
  "0020e6a0": {
   "name": "StageCharacter::playerEvent",
   "tag": "game-inferred",
@@ -17357,6 +17435,12 @@
   "was": "FUN_00211430",
   "why": "+0x598 clamped to the sheet's endurance; 0 starts the game over for the player or partner"
  },
+ "00211970": {
+  "name": "StageCharacter::isTakenOver",
+  "tag": "game-inferred",
+  "was": "FUN_00211970",
+  "why": "controlled equals this and is not the player"
+ },
  "00214a70": {
   "name": "StageObjRecord::init",
   "tag": "game-inferred",
@@ -17380,6 +17464,12 @@
   "tag": "game-inferred",
   "was": "FUN_00214fc0",
   "why": "a character's action number from its +0x224 record; both menu tests read it"
+ },
+ "00215270": {
+  "name": "StageCharacter::isControlled",
+  "tag": "game-inferred",
+  "was": "FUN_00215270",
+  "why": "scene +0x80, else +0x78, equals this"
  },
  "002152a0": {
   "name": "StageObject::isMode2",
@@ -20747,6 +20837,30 @@
   "was": "FUN_00269da0",
   "why": "this-adjusting thunk in the vtable of the object seen at +0x40, a jump to SubSceneModelObject::~SubSceneModelObject"
  },
+ "0026b860": {
+  "name": "MotionProbe::pointAhead",
+  "tag": "game-inferred",
+  "was": "FUN_0026b860",
+  "why": "(0, 4000, 0) turned by x, z and the character's yaw, from bn_head"
+ },
+ "0026b960": {
+  "name": "MotionProbe::findEdge",
+  "tag": "game-inferred",
+  "was": "FUN_0026b960",
+  "why": "behind a face of flags 0x142: the floor below, its drop, the point to land"
+ },
+ "0026c4b0": {
+  "name": "MotionProbe::faceAhead",
+  "tag": "game-inferred",
+  "was": "FUN_0026c4b0",
+  "why": "ray from 50 above the feet to radius + 25 ahead (or behind), mask 0xe8021f3"
+ },
+ "0026c6b0": {
+  "name": "MotionProbe::MotionProbe",
+  "tag": "game-inferred",
+  "was": "FUN_0026c6b0",
+  "why": "the object at PlayerMotion +4: the character and a { 0, 1, 0 } vector"
+ },
  "0026c700": {
   "name": "SubSceneData::findModel",
   "tag": "game-inferred",
@@ -20831,17 +20945,125 @@
   "was": "FUN_0026cf40",
   "why": "the dtor on vtables 0x317140 / 0x317164 / 0x31717c, then StageObject's"
  },
+ "00270260": {
+  "name": "QuickTurnCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00270260",
+  "why": "+0x363 and +0x2c9 request motion 0xf t_q"
+ },
+ "002702a0": {
+  "name": "QuickTurnCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_002702a0",
+  "why": "name QuickTurn (vtable 0x3174f0); ability +0x3a4 sets +0x363"
+ },
+ "00272d50": {
+  "name": "MoveCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00272d50",
+  "why": "+0x2c0 picks w_l, w_r, w_b, w, run, stairs, ops, wa; with no request left asks for pickStance 0, the idle"
+ },
+ "00273da0": {
+  "name": "MoveCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00273da0",
+  "why": "name Move (vtable 0x317690); sets +0x362"
+ },
+ "00273f10": {
+  "name": "TurnCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00273f10",
+  "why": "+0x2c0 2 and 4 request pickStance 7 and 6, t_l and t_r"
+ },
+ "00273fa0": {
+  "name": "TurnCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00273fa0",
+  "why": "name Turn (vtable 0x3176b0); sets +0x361"
+ },
+ "00274990": {
+  "name": "SquatCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00274990",
+  "why": "+0x360 and +0x2c8 request sq_u, sq_d, ka, run, sqw_w"
+ },
+ "002750f0": {
+  "name": "SquatCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_002750f0",
+  "why": "name Squat (vtable 0x317710); sets +0x360"
+ },
+ "00275160": {
+  "name": "AlwaysCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00275160",
+  "why": "pushes camview, camview_zoom, switches the lamp, leans head and body from +0x300..+0x354 when allowed"
+ },
+ "00275b60": {
+  "name": "AlwaysCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00275b60",
+  "why": "name Always from the ctor (0x3055f0, vtable 0x317730); sets the bytes +0x39b, +0x39c, +0x39d, +0x3a1, +0x390, +0x391 from the motion's sheet row"
+ },
+ "00276510": {
+  "name": "MotionCondition::MotionCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276510",
+  "why": "base of the 29 conditions the PlayerMotion ctor inserts under their names: character, motion, helper, active byte, vptr +0x10 (vtable 0x317750)"
+ },
+ "002775d0": {
+  "name": "DamageDeadLink::DamageDeadLink",
+  "tag": "game-inferred",
+  "was": "FUN_002775d0",
+  "why": "inserted under DamageDead (0x3057a0), +0xc10, vtable 0x3177a0: 0x2773d0 counts +0x5ec seconds and requests 0xb2 / 0xb1"
+ },
+ "0027c420": {
+  "name": "WalkLink::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_0027c420",
+  "why": "slot +0xc: probes the face ahead and the edge behind it"
+ },
+ "0027c4b0": {
+  "name": "WalkLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_0027c4b0",
+  "why": "slot +0x20: clears +0x290 unless leaving for BtAttack, and the probe's results"
+ },
+ "0027c520": {
+  "name": "WalkLink::WalkLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027c520",
+  "why": "inserted under Walk (0x305718) and kept at +0xc00; vtable 0x317bf0; the earlier note had it as the look state and 0x2775d0 as Walk"
+ },
  "0027cab0": {
   "name": "MotionLink::rewind",
   "tag": "game-inferred",
   "was": "FUN_0027cab0",
   "why": "+0x14 = 0, +0x18 = 0"
  },
+ "0027cac0": {
+  "name": "MotionLink::apply",
+  "tag": "game-inferred",
+  "was": "FUN_0027cac0",
+  "why": "slot +0x10, then each active condition's slot +0x10 while PlayerMotion +0x3c is -1; called from the control step"
+ },
  "0027cb60": {
   "name": "MotionLink::update",
   "tag": "game-inferred",
   "was": "FUN_0027cb60",
   "why": "slot +0xc, then each active condition of the list at +0xc"
+ },
+ "0027cc50": {
+  "name": "MotionLink::MotionLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027cc50",
+  "why": "base of the links: character, motion, helper, condition list +0xc, finished, counter, vtable 0x317c20"
+ },
+ "0027da40": {
+  "name": "MotionConditionList::add",
+  "tag": "game-inferred",
+  "was": "FUN_0027da40",
+  "why": "appends to the list at link +0xc; the Walk ctor calls it for each condition name in order"
  },
  "0027ef70": {
   "name": "CarPose::CarPose",
@@ -22186,6 +22408,12 @@
   "tag": "game-inferred",
   "was": "FUN_0029a830",
   "why": "answers 10"
+ },
+ "0029a840": {
+  "name": "ViewCamera::setZoom",
+  "tag": "game-inferred",
+  "was": "FUN_0029a840",
+  "why": "called on camview_zoom with the character's +0x350"
  },
  "0029aae0": {
   "name": "ViewCamera::ViewCamera",

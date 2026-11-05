@@ -7,12 +7,17 @@
  *  the walk or for the pair's other half, and it may need a stand-up or
  *  crouch-down motion first. stepUpper keeps the hands, stepFace the face.
  *  A motion of the sheet may name a link function (MotionLink: Walk, Jack,
- *  Ladder, ...), the code that runs it; the conditions (Always, Squat, ...)
- *  are what the links test.
+ *  Ladder, ...), the code that runs it. A link holds a list of conditions
+ *  (Squat, Move, ...), and those are what ask for the walking motions:
+ *  at the start of the frame each says what the running motion allows
+ *  (CharacterAllows), then input and brain say what they want
+ *  (CharacterWants), then each turns the two into a request, the last one
+ *  asking for the idle when nothing else did.
  *
- *  Not written yet: the links, the conditions and the list 0x1df0b0 fills,
- *  so findLink answers null, which the ROM takes as a motion with no link
- *  function.
+ *  Written so far: the links Walk; the conditions Always, QuickTurn, Squat,
+ *  Turn, Move. A link or a condition of another name answers null, which
+ *  the ROM takes as a motion with no link function; addCondition skips it.
+ *  The list 0x1df0b0 fills is not written.
  */
 #ifndef GAME_PLAYERMOTION_H
 #define GAME_PLAYERMOTION_H
@@ -20,6 +25,7 @@
 #include <string.h>
 
 #include <map>
+#include <vector>
 
 #include "game/gamehooks.h"
 #include "game/packtables.h"
@@ -32,6 +38,13 @@ enum MotionId
     Motion_Stand      = 0x00, // s
     Motion_Idle0      = 0x14, // idle0: a fidget
     Motion_Idle1      = 0x15, // idle1
+    Motion_QuickTurn  = 0x0f, // t_q
+    Motion_StairsUp   = 0x17, // Move, on a stair face
+    Motion_StairsDown = 0x18,
+    Motion_StairsRunUp = 0x19,
+    Motion_StairsRunDown = 0x1a,
+    Motion_Ops        = 0x1b, // ops: stops at an edge
+    Motion_Wa         = 0x1c, // wa: running into a wall
     Motion_CrouchWalk = 0x2c, // sqw_w
     Motion_CrouchIdle = 0x2b, // sq_idle0
     Motion_StandUp    = 0x27, // sq_u: from a crouch, before what was asked (arbitrate)
@@ -48,13 +61,22 @@ enum MotionStanceSlot
 {
     MotionStance_Idle    = 0,  // s, sq_s
     MotionStance_Walk    = 1,  // w, sqw
+    MotionStance_WalkBack = 2, // w_b
+    MotionStance_WalkRight = 3, // w_r
+    MotionStance_WalkLeft = 4, // w_l
     MotionStance_Run     = 5,  // run, ka
+    MotionStance_TurnRight = 6, // t_r
+    MotionStance_TurnLeft = 7, // t_l
     MotionStance_WalkRun = 10, // w_run, sq_ka: walk into run
 };
 
 // The groups of the sheet, as the code tests them (work out a label with
 // the table in architecture.md "Motions").
 bool isCrouchMotion(int id);
+// run, tr_run, w_run and the stairs at a run.
+bool isRunMotion(int id);
+// Melee attacks and the guns' shots: Always leaves the lamp alone in them.
+bool isAttackMotion(int id);
 inline bool isCrouchSide(int id) { return isCrouchMotion(id) || id == Motion_Crouched; }
 // Motions with a place in the world to go to, armed or not.
 bool isMovingMotion(int id);
@@ -102,16 +124,42 @@ struct MotionQueue
 static_assert(sizeof(MotionQueue) == 0x54, "MotionQueue: EE 0x54");
 static_assert(offsetof(MotionQueue, finished) == 0x50, "MotionQueue::finished");
 
+struct PlayerMotion;
+
+// One thing a motion may lead to. onUpdate runs at the start of the frame
+// and says what is allowed; onApply runs after input and brain and asks for
+// the motion. Base 0x276510, vtable 0x317750.
+// layout: host -- EE 0x14: +0 the character, +4 the motion, +8 a helper,
+// +0xc active, +0x10 the vptr.
+class MotionCondition
+{
+public:
+    MotionCondition(StageCharacter *owner, PlayerMotion *motion_)        // FS2 0x00276510
+        : character(owner), motion(motion_) {}
+    virtual ~MotionCondition() {}
+    virtual void onUpdate() = 0;                                         // FS2 slot +0xc
+    virtual void onApply() = 0;                                          // FS2 slot +0x10
+
+    u_char active = 1;          // FS2 +0xc
+protected:
+    StageCharacter *character;  // FS2 +0x0
+    PlayerMotion   *motion;     // FS2 +0x4
+};
+
 // A motion's own code. Every slot of the base (vtable 0x317c20) is empty.
 // layout: host -- EE: +0 the character, +4 the motion, +8 a helper, +0xc a
 // condition list, +0x14 finished, +0x18 a counter, +0x1c the vptr.
 class MotionLink
 {
 public:
+    MotionLink(StageCharacter *owner, PlayerMotion *motion_)             // FS2 0x0027cc50
+        : character(owner), motion(motion_) {}
     virtual ~MotionLink() {}
     virtual void onUpdate() {}                                           // FS2 slot +0xc
+    virtual void onApply() {}                                            // FS2 slot +0x10
     virtual void onRequest() {}                                          // FS2 slot +0x14
     virtual void onStart() {}                                            // FS2 slot +0x18
+    virtual void onRun() {}                                              // FS2 slot +0x1c
     virtual void onLeave(MotionLink *next) {}                            // FS2 slot +0x20
     virtual void onCancel() {}                                           // FS2 slot +0x24
     // FS2 0x0027cab0
@@ -121,9 +169,67 @@ public:
         counter = 0;
     }
     void update();                                                       // FS2 0x0027cb60
+    // Each active condition asks, until one has.
+    void apply();                                                        // FS2 0x0027cac0
+    // The condition of that name joins the list; the ones not written yet
+    // are left out, in their place.
+    void addCondition(const char *name);                                 // FS2 0x0027da40
 
     u_char finished = 0;        // FS2 +0x14
     int    counter = 0;         // FS2 +0x18
+protected:
+    StageCharacter *character;  // FS2 +0x0
+    PlayerMotion   *motion;     // FS2 +0x4
+    std::vector<MotionCondition *> m_conditions; // FS2 +0xc
+};
+
+// The motions of the feet: stand, walk, run, turn. Each frame it looks for
+// a face ahead and what lies behind it: the edge the player may stop at.
+// The main camera rises when the drop is deep, partnerResponds asks the
+// same. The field +0xc00 of PlayerMotion, the map's Walk.
+// layout: host -- EE 0x94, vtable 0x317bf0.
+class WalkLink : public MotionLink
+{
+public:
+    WalkLink(StageCharacter *owner, PlayerMotion *motion_);              // FS2 0x0027c520
+    void onUpdate() override;                                            // FS2 0x0027c420
+    void onLeave(MotionLink *next) override;                             // FS2 0x0027c4b0
+
+    sceVu0FVECTOR wallPoint = {}; // FS2 +0x20: where the ray ended
+    StageCollisionFace *wallFace = nullptr; // FS2 +0x30: the face ahead
+    sceVu0FVECTOR edgeHit = {};   // FS2 +0x40: on the face behind it
+    sceVu0FVECTOR edgeTarget = {}; // FS2 +0x50: where to land
+    float  edgeDrop = 0.0f;       // FS2 +0x60: how far the floor is, negative below
+    StageObject *edgeFloor = nullptr; // FS2 +0x64: whose floor that is
+    sceVu0FVECTOR edgePoint = {}; // FS2 +0x70: on the edge
+    sceVu0FVECTOR edgeAngles = {}; // FS2 +0x80: facing it
+    u_char edgeFound = 0;         // FS2 +0x90
+    u_char edgeBlocked = 0;       // FS2 +0x91: there is no way over it
+};
+
+// What PlayerMotion +0xbd0 points at; who sets it is unread. layout: host --
+// EE: an object, +0x220 a point on it.
+struct MotionLookTarget
+{
+    StageNodeBase *node;        // FS2 +0x0
+    sceVu0FVECTOR  point;       // FS2 +0x220
+};
+
+// What the wall probes share (PlayerMotion +0x4, 0x26c6b0). layout: host --
+// EE 8: +0 the character, +4 a small vector { 0, 1, 0 }.
+struct MotionProbe
+{
+    explicit MotionProbe(StageCharacter *owner_) : owner(owner_) {}      // FS2 0x0026c6b0
+    // A ray from 50 above the feet to just beyond the radius, ahead or
+    // behind. out takes the end, back at the feet's height.
+    StageCollisionFace *faceAhead(sceVu0FVECTOR out, bool forward);      // FS2 0x0026c4b0
+    // The floor behind face, and whether one can get there.
+    bool findEdge(StageCollisionFace *face, sceVu0FVECTOR hit, sceVu0FVECTOR target, float *drop,
+                  StageObject **floor, sceVu0FVECTOR point, sceVu0FVECTOR angles, u_char *blocked); // FS2 0x0026b960
+    // A point 4000 ahead of the head, turned by the angles.
+    void pointAhead(float x, float z, sceVu0FVECTOR out);                // FS2 0x0026b860
+
+    StageCharacter *owner;      // FS2 +0x0
 };
 
 // A byte-ordered name key, as the MSL maps at +0x8, +0x18 and +0x2c.
@@ -166,6 +272,28 @@ struct PlayerMotion
     void requestNow(int id);                                             // FS2 0x001ec650
     // The motion of a locomotion slot, in the character's stance.
     int  pickStance(int slot);                                           // FS2 0x001eb660
+    // The character's control hook: what the ground checks, then the
+    // conditions ask.
+    void controlStep();                                                  // FS2 0x001e3e80
+    // The character's movement hook, before the model runs: how far the
+    // walk goes on this floor, the floor's push, m_moveStep and m_turnStep
+    // into the character, whether the pose's solvers are worth running.
+    void applyMovement();                                                // FS2 0x001e0e20
+    // Turns the body toward angles (limits +-65 degrees); slope: it leans
+    // into the floor.
+    void leanBody(const sceVu0FVECTOR angles, bool slope, u_char flag);  // FS2 0x001e6400
+    void leanBodyAt(float rate, float maxStep, const sceVu0FVECTOR angles, bool slope, u_char flag); // FS2 0x001e6490
+    // The three targets of the pose, null lets go.
+    void setToolTarget(const float *target);                             // FS2 0x001dec30
+    void setLookTarget(float rate, const float *target);                 // FS2 0x001dec50
+    // The head, within the model family's limits.
+    void setHeadTarget(float rate, const float *target);                 // FS2 0x001dec70
+    // The angles of the lamp the player aims.
+    void getLampAngles(sceVu0FVECTOR out);                               // FS2 0x001e6160
+    void clearEnding() { m_b30 = 0; }
+    // Walks to where a motion file ends, from a place (a ledge).
+    void startWalkFile(float kind, void *file, const float *from, const float *to, bool arg, bool arg2); // FS2 0x001eabc0
+
     // The motion ended, or its link says so.
     bool isEnding() const;                                               // FS2 0x001eb150
     void noteEnding();                                                   // FS2 0x001ec080
@@ -183,7 +311,6 @@ private:
     const MotionDef *startable(int id) const;
     // Cancels what the request would have started.
     void cancelRequested();
-    void startRequested();                                               // FS2 0x001ec400
     // Replaces id by the hold it falls to: 1 done, 0 no hold, -1 the holds
     // no longer apply.
     int  resolveHold(int *out, int id) const;                            // FS2 0x001e8320
@@ -191,6 +318,9 @@ private:
     bool arbitrate();                                                    // FS2 0x001e6d60
     // The end of the motion that is leaving.
     void noteLeaving();                                                  // FS2 0x001ec0a0
+public:
+    void startRequested();                                               // FS2 0x001ec400
+private:
     // The list's half of noFlash (the list is not written).
     void clearNoFlash(int arg);                                          // FS2 0x001dfd90
     void startWalk(int kind, const float *from, const float *to, bool arg, bool arg2); // FS2 0x001ead00
@@ -198,8 +328,9 @@ private:
 
 public:
     StageObject *owner;         // FS2 +0x000
-    // +0x004: a small object (0x26c6b0) with { 0, 1, 0 }, unread.
-    // +0x008: the conditions by name; +0x028 Always, stepped each frame.
+    MotionProbe *probe;         // FS2 +0x004
+    std::map<const char *, MotionCondition *, MotionNameLess> m_conditions; // FS2 +0x008
+    MotionCondition *m_always = nullptr; // FS2 +0x028: stepped each frame, whatever runs
     // +0x02c: the list 0x1df0b0 fills.
     std::map<const char *, MotionLink *, MotionNameLess> m_links; // FS2 +0x018
     int    m_request = Motion_None; // FS2 +0x03c
@@ -214,7 +345,7 @@ public:
     u_char m_savedWalk = 0;     // FS2 +0x064: m_walkPending while queued
     u_char m_stepped = 0;       // FS2 +0x065: stepLower ran this frame
     u_char m_forceStart = 0;    // FS2 +0x066: refresh: the same id starts again
-    MotionLink *activeLink = nullptr; // FS2 +0x068: the running motion's; the main camera reacts when this is look
+    MotionLink *activeLink = nullptr; // FS2 +0x068: the running motion's; the main camera reacts when this is walkLink
     int    m_weaponClass = 0;   // FS2 +0x06c: which of rifleLabelText
     const char *m_faces[kMotionDefCount] = {}; // FS2 +0x070
     u_char m_handsBusy[kMotionDefCount][2] = {}; // FS2 +0x470: left, right: the motion moves the fingers itself
@@ -235,14 +366,14 @@ public:
     u_char m_hasWalkEnd = 0;    // FS2 +0xae0
     sceVu0FVECTOR m_walkEnd = {}; // FS2 +0xaf0
     float  m_motionTime = 0.0f; // FS2 +0xb00: seconds in this motion
-    float  m_b04 = 0.0f;        // FS2 +0xb04
-    float  m_b08 = 0.0f;        // FS2 +0xb08
+    float  m_runTime = 0.0f;    // FS2 +0xb04: Move: running that long into a wall trips
+    float  m_runDistance = 0.0f; // FS2 +0xb08: the same, in units
     sceVu0FVECTOR m_lastPosition = {}; // FS2 +0xb10: the character's at reset
     u_char m_stanceFlag = 0;    // FS2 +0xb20: pickStance's third table
     float  m_b24 = 0.0f;        // FS2 +0xb24
     float  m_b28 = 0.0f;        // FS2 +0xb28
     float  m_b2c = 0.0f;        // FS2 +0xb2c: 0 when a motion starts or ends
-    u_char m_b30 = 0;           // FS2 +0xb30
+    u_char m_b30 = 0;           // FS2 +0xb30: a motion event 0x4000 ends an idle: Walk's list runs for it
     // +0xb31..+0xb38: what the character's kind has (the ctor's table).
     u_char m_kindFlags1 = 0;    // FS2 +0xb31
     u_char m_kindFlags2 = 0;    // FS2 +0xb32
@@ -256,22 +387,23 @@ public:
     u_char m_stepsOn[4] = {};   // FS2 +0xb50: [2] stepUpper, [3] stepFace run; reset sets them
     u_char m_b54 = 0;           // FS2 +0xb54
     int    m_modelFamily = -1;  // FS2 +0xb58: gMotionModels index
-    sceVu0FVECTOR m_b60[2] = {}; // FS2 +0xb60
-    sceVu0FVECTOR m_lampAngles = {}; // FS2 +0xb80: getLampMatrix's
-    sceVu0FVECTOR m_b90 = {};   // FS2 +0xb90
-    u_char m_ba0 = 0;           // FS2 +0xba0
+    sceVu0FVECTOR m_moveStep = {}; // FS2 +0xb60: this frame's, into the position (applyMovement)
+    sceVu0FVECTOR m_turnStep = {}; // FS2 +0xb70: this frame's, into the rotation
+    sceVu0FVECTOR m_lampAngles = {}; // FS2 +0xb80: the lean of leanBody; getLampMatrix's
+    sceVu0FVECTOR m_leanScale = {}; // FS2 +0xb90: the lean / 65 degrees, y and w 1
+    u_char m_leanFlag = 0;      // FS2 +0xba0: leanBody's
     float  m_ba4 = 0.0f;        // FS2 +0xba4
     float  m_ba8 = 0.0f;        // FS2 +0xba8: a countdown
     u_char m_wallCheck = 0;     // FS2 +0xbad: the motion's 壁判定
     u_char m_bae = 0;           // FS2 +0xbae
     sceVu0FVECTOR position = {}; // FS2 +0xbb0
-    float  m_bd0 = 0.0f;        // FS2 +0xbd0
+    MotionLookTarget *m_lookObject = nullptr; // FS2 +0xbd0: the head looks at it, cleared each frame
     u_char noFlash = 0;         // FS2 +0xbd4: a shot shows no flash (StageWeaponItem::fire)
     PlayerOverlay *overlay = nullptr; // FS2 +0xbd8: StageScene::draw
     float  m_bf0 = 0.0f;        // FS2 +0xbf0
     float  m_bf4 = 0.0f;        // FS2 +0xbf4
     u_char m_bfc = 0;           // FS2 +0xbfc
-    PlayerLookState *look;      // FS2 +0xc00
+    WalkLink *walkLink = nullptr; // FS2 +0xc00: the map's Walk
 };
 
 #endif // GAME_PLAYERMOTION_H
