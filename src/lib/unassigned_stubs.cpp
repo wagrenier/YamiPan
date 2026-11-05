@@ -12,6 +12,7 @@
 #include "game/memcard.h"
 #include "game/modelpose.h"
 #include "game/stagenode.h"
+#include "game/stageobjlist.h"
 #include "game/stageitem.h"
 #include "game/stagescene.h"
 #include "game/stringlist.h"
@@ -324,9 +325,9 @@ StageParty::~StageParty()
 }
 
 // stub of FS2 0x002152d0
-bool StagePlayer::isMode1()
+bool StageCharacter::isMode1()
 {
-    YAMIPAN_STUB("StagePlayer::isMode1", 0x002152d0);
+    YAMIPAN_STUB("StageCharacter::isMode1", 0x002152d0);
     return {};
 }
 
@@ -521,18 +522,7 @@ void SphereVolume::setRadius(float radius)
 // stub of FS2 0x00185210
 
 // stub of FS2 address unknown (0 candidates)
-// stub of FS2 address unknown (0 candidates)
-StageCharacter::StageCharacter()
-{
-    YAMIPAN_STUB("StageCharacter::StageCharacter", 0x00000000);
-}
 
-// stub of FS2 0x0017c700
-void StageCharacter::setup(const char *name, ModelInstance *instance, StringMap<Tim2Texture *> *textures,
-               StageList<void *> *motions, StageList<void *> *motions2, void *mdl)
-{
-    YAMIPAN_STUB("StageCharacter::setup", 0x0017c700);
-}
 
 // stub of FS2 0x001861b0
 
@@ -836,9 +826,9 @@ void StageParty::update()
 }
 
 // stub of FS2 0x0020b1d0
-void StagePlayer::latchAltAction()
+void StageCharacter::latchAltAction()
 {
-    YAMIPAN_STUB("StagePlayer::latchAltAction", 0x0020b1d0);
+    YAMIPAN_STUB("StageCharacter::latchAltAction", 0x0020b1d0);
 }
 
 // stub of FS2 0x0023e770
@@ -880,11 +870,6 @@ void gsFrameFilter(sceVif1Packet *packet, const sceGsDrawEnv1 *env, int w, int h
     YAMIPAN_STUB("gsFrameFilter", 0x002849c0);
 }
 
-// stub of FS2 0x0017df60
-void stageUpdateCharacterMotions()
-{
-    YAMIPAN_STUB("stageUpdateCharacterMotions", 0x0017df60);
-}
 
 // stub of FS2 0x001dd330
 void CharacterBrain::update()
@@ -1258,9 +1243,9 @@ bool StageObject::isYriOrKne()
 }
 
 // stub of FS2 0x0028ec70
-void StagePlayer::setGearLightOrder(int order)
+void StageCharacter::setGearLightOrder(int order)
 {
-    YAMIPAN_STUB("StagePlayer::setGearLightOrder", 0x0028ec70);
+    YAMIPAN_STUB("StageCharacter::setGearLightOrder", 0x0028ec70);
 }
 
 // stub of FS2 0x00207440
@@ -1270,16 +1255,16 @@ void PauseMenuState::clearList()
 }
 
 // stub of FS2 0x00214f20
-bool StagePlayer::isHoldingAction()
+bool StageCharacter::isHoldingAction()
 {
-    YAMIPAN_STUB("StagePlayer::isHoldingAction", 0x00214f20);
+    YAMIPAN_STUB("StageCharacter::isHoldingAction", 0x00214f20);
     return {};
 }
 
 // stub of FS2 0x001dedb0
-void StagePlayer::releaseAction()
+void StageCharacter::releaseAction()
 {
-    YAMIPAN_STUB("StagePlayer::releaseAction", 0x001dedb0);
+    YAMIPAN_STUB("StageCharacter::releaseAction", 0x001dedb0);
 }
 
 // stub of FS2 0x002052d0
@@ -1363,11 +1348,6 @@ GateParts::~GateParts()
     YAMIPAN_STUB("GateParts::~GateParts", 0x00000000);
 }
 
-// stub of FS2 0x0017d970
-void StageObject::setupBody(bool keep)
-{
-    YAMIPAN_STUB("StageObject::setupBody", 0x0017d970);
-}
 
 // stub of FS2 0x00207aa0
 bool PauseMenuState::addNotice(const u_short *text, int frames, int arg, int level)
@@ -1388,4 +1368,192 @@ int ItemPhysics::collisionHook0(CollisionContact *contact, const float *normal, 
 void StageObject::breakPart(int part, bool withEffect)
 {
     YAMIPAN_STUB("StageObject::breakPart", 0x00175900);
+}
+
+// ---- by hand: the character's parts, until their TUs (next in the queue) ----
+
+// stub of FS2 0x00239c60
+CharacterInput::CharacterInput(StageObject *owner)
+{
+    YAMIPAN_STUB("CharacterInput::CharacterInput", 0x00239c60);
+}
+
+// stub of FS2 0x00239be0
+CharacterInput::~CharacterInput()
+{
+    YAMIPAN_STUB("CharacterInput::~CharacterInput", 0x00239be0);
+}
+
+// stub of FS2 0x001dd680
+CharacterBrain::CharacterBrain(StageObject *owner)
+{
+    YAMIPAN_STUB("CharacterBrain::CharacterBrain", 0x001dd680);
+}
+
+// The deleting dtor behind the vptr at +0xb4: its address is unread.
+CharacterBrain::~CharacterBrain()
+{
+    YAMIPAN_STUB("CharacterBrain::~CharacterBrain", 0x00000000);
+}
+
+// stub of FS2 0x001f3d20
+CharacterGround::CharacterGround(StageObject *owner)
+{
+    YAMIPAN_STUB("CharacterGround::CharacterGround", 0x001f3d20);
+}
+
+// stub of FS2 0x001f3c70
+CharacterGround::~CharacterGround()
+{
+    YAMIPAN_STUB("CharacterGround::~CharacterGround", 0x001f3c70);
+}
+
+// A bridge until game/playermotion.cpp: what a character needs to stand, a
+// zeroed block with a look state so the main camera can read it. It does not
+// react: activeLook stays null. The ROM's own: 0x1ed410.
+PlayerMotion::PlayerMotion(StageObject *owner_)
+{
+    YAMIPAN_BRIDGE("PlayerMotion::PlayerMotion", 0x001ed410);
+    memset(static_cast<void *>(this), 0, sizeof(*this));
+    owner = owner_;
+    look = new PlayerLookState;
+    memset(look, 0, sizeof(*look));
+}
+
+PlayerMotion::~PlayerMotion()
+{
+    YAMIPAN_BRIDGE("PlayerMotion::~PlayerMotion", 0x001ed2a0);
+    delete look;
+}
+
+// A bridge of 0x17df60 until game/playermotion.cpp: the ROM runs three steps of
+// the motion here. With none of them the pose stands at the world's origin, so
+// each character's pose follows the object, as an event's does (sideHook2).
+void stageUpdateCharacterMotions()
+{
+    YAMIPAN_BRIDGE("stageUpdateCharacterMotions", 0x0017df60);
+    const float kFrameStep = 1.2f;
+    StageObjArray &characters = gStageScene->objects->m_lists[StageObjGroup_Characters];
+    for (StageObject **slot = characters.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        StageObject *character = *slot;
+        if (character->m_viewActive)
+            character->m_model->advance(kFrameStep, character->m_xform.position, character->m_xform.rotation, 0);
+    }
+}
+
+// A bridge of 0x1ecda0: the base motion, the bones and the list, the shape the
+// ROM has; not the tables of gMotionDefs it then fills (+0x70.., +0x470..).
+void PlayerMotion::loadMotions(StageList<void *> *motions, StageList<void *> *motions2, void *mdl)
+{
+    YAMIPAN_BRIDGE("PlayerMotion::loadMotions", 0x001ecda0);
+    StageModel *model = owner->m_model;
+    StageList<void *>::Node *node = motions->head;
+    model->setBaseMotion(mdl != nullptr ? mdl : node->value, 0);
+    model->bindBones();
+    model->placeBones(owner);
+    StageList<void *>::Node *second = motions2->head;
+    for (node = node->next; node != nullptr && second != nullptr; node = node->next, second = second->next) {
+        char *file = static_cast<char *>(node->value);
+        int index;
+        switch (file[0x13]) {
+        case 'd': index = 3; break;
+        case 'f': index = 2; break;
+        case 'h': index = 1; break;
+        case '_': index = 0; break;
+        default:  index = 4; break;
+        }
+        model->addMotion(file, index, file + 0x17);
+    }
+    model->balanceMotions();
+}
+
+// stub of FS2 0x001dd460
+void CharacterBrain::reset()
+{
+    YAMIPAN_STUB("CharacterBrain::reset", 0x001dd460);
+}
+
+// stub of FS2 0x001f3b30
+void CharacterGround::reset()
+{
+    YAMIPAN_STUB("CharacterGround::reset", 0x001f3b30);
+}
+
+// stub of FS2 0x00239bc0
+void CharacterInput::reset()
+{
+    YAMIPAN_STUB("CharacterInput::reset", 0x00239bc0);
+}
+
+// stub of FS2 0x001df040
+void PlayerMotion::initSlots14()
+{
+    YAMIPAN_STUB("PlayerMotion::initSlots14", 0x001df040);
+}
+
+// stub of FS2 0x001defd0
+void PlayerMotion::initSlots18()
+{
+    YAMIPAN_STUB("PlayerMotion::initSlots18", 0x001defd0);
+}
+
+// stub of FS2 0x001ec7e0
+void PlayerMotion::reset(int arg)
+{
+    YAMIPAN_STUB("PlayerMotion::reset", 0x001ec7e0);
+}
+
+// stub of FS2 0x0023f310
+void RouteFilter::allow(const char *name, bool on)
+{
+    YAMIPAN_STUB("RouteFilter::allow", 0x0023f310);
+}
+
+// stub of FS2 0x00216aa0
+bool StageCharacter::giveItem(StageObject *item)
+{
+    YAMIPAN_STUB("StageCharacter::giveItem", 0x00216aa0);
+    return {};
+}
+
+// stub of FS2 0x002a6910
+void StageCharacter::initSounds()
+{
+    YAMIPAN_STUB("StageCharacter::initSounds", 0x002a6910);
+}
+
+// stub of FS2 0x0021e050
+void StageCharacter::resetActionState()
+{
+    YAMIPAN_STUB("StageCharacter::resetActionState", 0x0021e050);
+}
+
+// stub of FS2 0x00211430
+void StageCharacter::setEndurance(int value)
+{
+    YAMIPAN_STUB("StageCharacter::setEndurance", 0x00211430);
+}
+
+// stub of FS2 0x00211150
+void StageCharacter::setFlinch(int value)
+{
+    YAMIPAN_STUB("StageCharacter::setFlinch", 0x00211150);
+}
+
+// stub of FS2 0x00211300
+void StageCharacter::setRightArm(int value)
+{
+    YAMIPAN_STUB("StageCharacter::setRightArm", 0x00211300);
+}
+
+// stub of FS2 0x002a6830
+void StageCharacter::stopSounds()
+{
+    YAMIPAN_STUB("StageCharacter::stopSounds", 0x002a6830);
+}
+
+// stub of FS2 0x0018fec0
+void StageParticle::stopChain()
+{
+    YAMIPAN_STUB("StageParticle::stopChain", 0x0018fec0);
 }

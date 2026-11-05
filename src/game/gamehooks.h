@@ -308,7 +308,7 @@ struct StageModel
     u_int      m_motionEvents = 0; // FS2 +0xb0: MotionEvent
     u_char     m_lit = 0;       // FS2 +0xb4: SceneRender::updateLights gives it its own lights (items: StageObject::markModelAsItem)
     u_char     m_ownAmbient = 0; // FS2 +0xb5: and its own ambient
-    StageObject *m_lightProxy = nullptr; // FS2 +0xb8: the lights are worked out at this object's place, not the owner's
+    StageNodeBase *m_lightProxy = nullptr; // FS2 +0xb8: the lights are worked out at this node's place, not the owner's: a character's bn_pelvis
     int        m_lightSet = -1; // FS2 +0xbc: the ENV_CB box's light set it stands in; StageObject::setModelValue
     u_char     m_inSbBox = 0;   // FS2 +0xc0: it stands in an ENV_SB box
     sceVu0FVECTOR m_lightDirs[3] = {};   // FS2 +0xd0
@@ -354,10 +354,18 @@ class StageObjectTree;
 struct PlayerMotion;
 class ScriptRunner;
 class Pad;                      // game/pad.h
+class StageObject;
+class StageCharacter;
+// The scene's player is a character: one class in the ROM (vtable 0x312240).
+typedef StageCharacter StagePlayer;
 // What drives a character from the pad (+0x21c). layout: host -- EE: +0
 // the flag, +8 the pad.
 struct CharacterInput
 {
+    // EE 0x60. The next items of the queue: stubs until game/characterinput.cpp.
+    explicit CharacterInput(StageObject *owner);                         // FS2 0x00239c60
+    ~CharacterInput();                                                   // FS2 0x00239be0: deleting
+    void reset();                                                        // FS2 0x00239bc0
     void setActive(bool on);                                             // FS2 0x00239bb0
     // The pad's +0x12c (a float of the character's pad class, unread): the
     // main camera leans by it while a swaying motion plays.
@@ -375,11 +383,16 @@ struct GroundVolume;
 struct StageCollisionFace;
 struct CharacterGround
 {
+    explicit CharacterGround(StageObject *owner);                        // FS2 0x001f3d20
+    ~CharacterGround();                                                  // FS2 0x001f3c70: deleting
+    void reset();                                                        // FS2 0x001f3b30
     // The floor near a point of the character's own space: from 70 above
     // it, down to 85 below that.
     StageCollisionFace *faceNear(const float *localPoint);               // FS2 0x001eff00
 
-    GroundVolume *volume;       // FS2 +0x184: 0 from the ctor
+    u_char        onGround = 0; // FS2 +0x000: StageCharacter::reset sets it (the name is a guess)
+    GroundVolume *volume = nullptr; // FS2 +0x184: 0 from the ctor
+    u_char       *floats = nullptr; // FS2 +0x18c: F_YRT sets the byte it points at (unread; the name is a guess)
 };
 // A box a character stands in (0x1f3d20 makes it). What it is is unread:
 // the camera stays above its top.
@@ -394,11 +407,32 @@ struct GroundVolume
 // is a guess: it is switched the other way round from the input. EE: +0x174
 // the flag.
 // layout: host
+struct RouteFilter
+{
+    // The named paths of the route are open to the character (on) or not.
+    void allow(const char *name, bool on);                               // FS2 0x0023f310
+};
+// What +0x180 holds: unread but for the filter at +8.
+// layout: host
+struct CharacterRoute
+{
+    u_char       _00[0x8];
+    RouteFilter *filter = nullptr; // FS2 +0x8
+};
+// layout: host -- EE 0x9b0, the vptr at +0xb4.
 struct CharacterBrain
 {
+    // EE 0x9b0; only where the scene has a route.
+    explicit CharacterBrain(StageObject *owner);                         // FS2 0x001dd680
+    // The vptr is at +0xb4; the deleting dtor its slot +0x18.
+    virtual ~CharacterBrain();
+    void reset();                                                        // FS2 0x001dd460
     void setEnabled(bool on);                                            // FS2 0x001dd3f0
     // A frame: its script runs while the flag holds and it has a route.
     void update();                                                       // FS2 0x001dd330
+
+    ScriptRunner   *runner = nullptr; // FS2 +0x000: the character's own, set by its ctor
+    CharacterRoute *route = nullptr;  // FS2 +0x180
 };
 // The model instance's record of each mesh (vtable 0x31a7d0, 0x10 on the EE,
 // parallel to ModelFileNode::meshes): the mesh tree, threaded through next,
@@ -438,6 +472,56 @@ public:
 
     u_char m_viewActive = 1;    // FS2 +0x018: 1 from the ctor; cleared off the view stack and on the map's cameras
 };
+// What a character may do, by its sheet: 0x2c bytes at +0x3a4, every byte 1
+// but what StageCharacter::initAbilities clears. Only the ones named are
+// understood; the sheet's columns give the three that come from it.
+// EE layout.
+struct CharacterAbilities
+{
+    u_char flag3a4;             // FS2 +0x3a4
+    u_char flag3a5;             // FS2 +0x3a5
+    u_char flag3a6;             // FS2 +0x3a6
+    u_char flag3a7;             // FS2 +0x3a7
+    u_char flag3a8;             // FS2 +0x3a8
+    u_char flag3a9;             // FS2 +0x3a9
+    u_char flag3aa;             // FS2 +0x3aa
+    u_char flag3ab;             // FS2 +0x3ab
+    u_char flag3ac;             // FS2 +0x3ac
+    u_char flag3ad;             // FS2 +0x3ad
+    u_char _3ae[2];
+    int    stepLevel;           // FS2 +0x3b0: 0..4, the sheet's 段差Lv
+    u_char ladder;              // FS2 +0x3b4: the sheet's ハシゴ
+    u_char jump;                // FS2 +0x3b5: the sheet's ｼﾞｬﾝﾌﾟLv
+    u_char flag3b6;             // FS2 +0x3b6
+    u_char flag3b7;             // FS2 +0x3b7
+    u_char flag3b8;             // FS2 +0x3b8
+    u_char flag3b9;             // FS2 +0x3b9
+    u_char flag3ba;             // FS2 +0x3ba
+    u_char flag3bb;             // FS2 +0x3bb
+    u_char flag3bc;             // FS2 +0x3bc
+    u_char flag3bd;             // FS2 +0x3bd
+    u_char flag3be;             // FS2 +0x3be
+    u_char flag3bf;             // FS2 +0x3bf
+    u_char flag3c0;             // FS2 +0x3c0: StageScene::partnerResponds
+    u_char flag3c1;             // FS2 +0x3c1: the same, of the partner
+    u_char flag3c2;             // FS2 +0x3c2
+    u_char flag3c3;             // FS2 +0x3c3: the same
+    u_char flag3c4;             // FS2 +0x3c4
+    u_char flag3c5;             // FS2 +0x3c5
+    u_char flag3c6;             // FS2 +0x3c6
+    u_char _3c7;
+    int    driving;             // FS2 +0x3c8: 0..2, the sheet's 運転スキル; isMode1 / isMode2 read it
+    u_char flag3cc;             // FS2 +0x3cc
+    u_char flag3cd;             // FS2 +0x3cd
+    u_char flag3ce;             // FS2 +0x3ce
+    u_char _3cf;
+};
+static_assert(sizeof(CharacterAbilities) == 0x2c, "CharacterAbilities: EE 0x2c");
+static_assert(offsetof(CharacterAbilities, stepLevel) == 0xc, "CharacterAbilities::stepLevel");
+static_assert(offsetof(CharacterAbilities, flag3c0) == 0x1c, "CharacterAbilities::flag3c0");
+static_assert(offsetof(CharacterAbilities, driving) == 0x24, "CharacterAbilities::driving");
+static_assert(offsetof(CharacterAbilities, flag3ce) == 0x2a, "CharacterAbilities::flag3ce");
+
 // layout: host
 class StageObject : public StageNodeBase, public StageSideBase, public ScriptRunner
 {
@@ -565,9 +649,10 @@ public:
     void applyMapModelFlags();                                           // FS2 0x001763e0
     // The same of a character's, by its record's kind.
     void applyCharacterModelFlags(int kind);                             // FS2 0x0017dcb0
-    // The body's links, its shadow box from the table 0x2f8000, and for a
-    // model with no data the effects; keep: the ROM news the block.
-    void setupBody(bool keep);                                           // FS2 0x0017d970
+    // The body's links, its shadow box from gMotionModels, and for a model
+    // with no data the four effects of kBodyEffectCount: keep answers them
+    // in a new block, else they are not kept.
+    StageParticle **setupBody(bool keep);                                // FS2 0x0017d970
     // The model's two item bytes (setupItem; SubSceneItem's and SubSceneProp's
     // setup call it).
     void markModelAsItem();                                              // FS2 0x00183ea0
@@ -687,8 +772,7 @@ public:
     CharacterGround *m_ground;  // FS2 +0x228: a character's
     u_char _22c[0x8];
     StageItemE *m_lampItem;     // FS2 +0x234: a character's: the lamp it holds (SceneRender::update)
-    StageNodeBase *m_handNode;  // FS2 +0x238: a character's: StageWeaponItem::fire's report comes from it
-    u_char _23c[0x4];
+    StageObject *m_weapons[2];  // FS2 +0x238: a character's: long (rW00), short (rW01), null none; StageWeaponItem::fire's report comes from the first
     union {
         ModelPartRec *m_parts[2]; // FS2 +0x240: a character's; StagePlayer::isMode1 picks which one shows in a view camera
         struct {
@@ -714,47 +798,22 @@ public:
     int    m_demoCut;           // FS2 +0x310: a DemoCamera's (StageScene::draw: below 2 the filter runs in d0101)
     u_char _314[0x8d];
     u_char m_canPause;          // FS2 +0x3a1: the player's: clear: no pause menu
-    u_char _3a2[0x1e];
-    u_char m_3c0;               // FS2 +0x3c0: StageScene::partnerResponds (unread)
-    u_char m_3c1;               // FS2 +0x3c1: the same, of the partner
-    u_char _3c2;
-    u_char m_3c3;               // FS2 +0x3c3: the same (unread)
-    u_char _3c4[0xc];
+    u_char _3a2[0x2];
+    CharacterAbilities m_abilities; // FS2 +0x3a4: a character's
     StageLight *m_shadowLight;  // FS2 +0x3d0: a character's: what throws its shadow (SceneRender::updateLights); null none
     float  m_shadowWeight;      // FS2 +0x3d4: how strongly
     u_char _3d8[0x28];
     StageObject *m_gear;        // FS2 +0x400: what the player carries; left out of updateLights' head ray
     u_char _404[0x4c];
-    int    m_weaponDef;         // FS2 +0x450: a weapon's gWeaponDefs index (StageFiles::placeItem)
+    union {
+        int    m_weaponDef;     // FS2 +0x450: a weapon's gWeaponDefs index (StageFiles::placeItem)
+        int    m_450;           // FS2 +0x450: a character's: 0 from initStatus (unread)
+    };
     union {
         int    m_ammoB;         // FS2 +0x454: a firearm's (findSprite's second number)
         u_char m_altAction;     // FS2 +0x454: the player's: which alternate action (StageScene::playerAction)
     };
     int    m_ammoA;             // FS2 +0x458: a firearm's (the first)
-};
-
-// A node of the player's item list (the player's +0x22c): the item through
-// a handle.
-// layout: host -- EE 8 bytes.
-struct StageItemNode
-{
-    StageObject  **item;        // FS2 +0x0
-    StageItemNode *next;        // FS2 +0x4
-};
-
-// The map's holder in the player's equipment: +0x240 -> ** -> +0x214
-// (whether the map shows the player; the S2D's rMapP). Names are guesses.
-// layout: host -- EE: +0x214 the flag.
-struct StageMapState
-{
-    u_char _000[0x214];
-    u_char showsPlayer;         // FS2 +0x214
-};
-// layout: host -- EE: +0x240 the state's handle.
-struct StageMapHolder
-{
-    u_char          _000[0x240];
-    StageMapState **state;      // FS2 +0x240
 };
 
 // The player's +0x224 object (its +0 the player). Guess: the motion set,
@@ -769,12 +828,24 @@ struct PlayerOverlay
 };
 struct PlayerMotion
 {
+    // EE 0xc20. Until game/playermotion.cpp: bridges (lib/unassigned_stubs.cpp).
+    explicit PlayerMotion(StageObject *owner);                           // FS2 0x001ed410
+    ~PlayerMotion();                                                     // FS2 0x001ed2a0: deleting
+    // The model's motions: the base from mdl, or the list's first file,
+    // the bones, then the rest of the list.
+    void loadMotions(StageList<void *> *motions, StageList<void *> *motions2, void *mdl); // FS2 0x001ecda0
+    void reset(int arg);                                                 // FS2 0x001ec7e0
+    // Slots +0x14 and +0x18 of each entry of the list at +0x30 (unread):
+    // after StageCharacter::setup cleared +0x360 and +0x2c0.
+    void initSlots14();                                                  // FS2 0x001df040
+    void initSlots18();                                                  // FS2 0x001defd0
     void refresh();                                                      // FS2 0x001e66c0
     // The matrix of the lamp the player aims: at bn_head, turned as the
     // player and the motion are.
     void getLampMatrix(sceVu0FMATRIX out);                               // FS2 0x001e60b0
 
-    u_char _000[0x40];
+    StageObject *owner;         // FS2 +0x000
+    u_char _004[0x3c];
     int    motionId;            // FS2 +0x040: gMotionDefs index; outside the table none
     u_char _044[0x24];
     PlayerLookState *activeLook; // FS2 +0x068: the main camera reacts when this is look
@@ -807,43 +878,6 @@ enum StageDoorType
 // The name of motion target index 1..8 (CAT, CROW, tonbi, oMT04_04,
 // oZS09_04, oDC07_05, oMK21_09, oMT04_99); UNKNOWN for any other.
 const char *stageMotionTargetName(int index);                            // FS2 0x00175c00
-
-// The player character of a stage (the stage object's +0x78). Only what
-// game/uigame.cpp reads.
-// layout: host -- EE: +0x150 / +0x154 position x / z, +0x168 yaw, +0x22c
-// the items, +0x234 the map's holder, +0x238 / +0x23c the two weapons.
-struct StagePlayer
-{
-    // Its action is 0x11 or 0x2a (+0x224's +0x40), what an event breaks off.
-    bool isHoldingAction();                                              // FS2 0x00214f20
-    void releaseAction();                                                // FS2 0x001dedb0
-    // +0x400 set and +0x3c8 == 1: StageScene::drawPaused / update then
-    // pass StageSound::update sceneFlag 1. What mode 1 is is unread.
-    bool isMode1();                                                      // FS2 0x002152d0
-    // +0x364 set: +0x2ca = 1. What the two bytes are is unread.
-    void latchAltAction();                                               // FS2 0x0020b1d0
-    // +0x400's +0x2b0: the two lights of what the player carries get
-    // m_priority (SceneRender::update).
-    void setGearLightOrder(int order);                                   // FS2 0x0028ec70
-    // The player is a character (a StageObject) in the ROM; the host
-    // stand-ins keep separate layouts until the character TU joins them.
-    StageObject *character() { return reinterpret_cast<StageObject *>(this); }
-
-    u_char _000[0x150];
-    float  posX;                // FS2 +0x150
-    float  posZ;                // FS2 +0x154
-    float  height;              // FS2 +0x158: the world's up axis (StageScene::getFloor)
-    float  posW;                // FS2 +0x15c
-    u_char _160[0x8];
-    float  yaw;                 // FS2 +0x168
-    u_char _16c[0xb8];
-    PlayerMotion   *motion;     // FS2 +0x224
-    u_char _228[0x4];
-    StageItemNode  *items;      // FS2 +0x22c
-    u_char _230[0x4];
-    StageMapHolder *map;        // FS2 +0x234
-    StageObject    *weapon[2];  // FS2 +0x238: long (rW00), short (rW01); null none
-};
 
 // The four characters the stage keeps across a reload (the stage object's
 // +0x88; its +0 holds them at +0x1c..+0x28). save / restore go through the
@@ -1006,6 +1040,8 @@ public:
     // m_running and +0x21d, down the chain.
     void setRunning(bool on);                                            // FS2 0x0018c2d0
     void setRangeSquared(float rangeSquared);                            // FS2 0x00190040
+    // Stops the effect, down the chain (+0x20c).
+    void stopChain();                                                    // FS2 0x0018fec0
 
     u_char m_emitting = 0;      // FS2 +0x271: what setEmitting last said (MapObjectParts::copyShown)
     u_char m_running = 0;       // FS2 +0x273
@@ -1897,8 +1933,6 @@ public:
     u_char m_nearWall;          // FS2 +0x3a0
     u_char m_snap;              // FS2 +0x3a1: the next step jumps instead of easing
 };
-// PC: aims the debug camera (game/stagecamera.cpp).
-void stageCameraDebugLookAt(const float *eye, const float *target, const float *up);
 // "camview", "camview_zoom", "camview_snipe" (kind 10; vtable 0x3185b0; run
 // unassigned@00299d90). layout: host -- EE 0x440.
 class ViewCamera : public StageCamera
@@ -2009,7 +2043,45 @@ public:
     int m_floor = 0;            // FS2 +0x140
 };
 
-// A character of the map (the F_ and player points). vtable at 0x17de30.
+// StageObjRecord::kind: the sheet's ctype. What the kinds are is read from
+// what the code gives them; a name is a guess unless a comment says more.
+enum CharacterKind
+{
+    CharacterKind_0     = 0x0,  // with 1, 9, 0xe: walks, two feet, motion set 0
+    CharacterKind_1     = 0x1,
+    CharacterKind_2     = 0x2,  // with 4, 8, 0xa: two feet, motion set 1
+    CharacterKind_Srt   = 0x3,  // F_SRT shows
+    CharacterKind_4     = 0x4,
+    CharacterKind_5     = 0x5,  // with 0xc: one foot effect, the glow at bn_spine_base
+    CharacterKind_6     = 0x6,
+    CharacterKind_Yrt   = 0x7,  // F_YRT shows
+    CharacterKind_8     = 0x8,
+    CharacterKind_9     = 0x9,
+    CharacterKind_A     = 0xa,
+    CharacterKind_NoShadow = 0xb, // bthamon for a splash
+    CharacterKind_C     = 0xc,
+    CharacterKind_HideD = 0xd,  // otblood for blood; a hide part, as 0xb
+    CharacterKind_E     = 0xe,
+    CharacterKind_F     = 0xf,  // muffles a Kind11 listener (StageSound)
+    CharacterKind_None  = 0x10, // no abilities at all
+};
+// The block at +0x7c8 (0x38). Only the clear is read.
+struct CharacterBlock7c8
+{
+    // FS2 0x0021a8c0
+    void clear() { value30 = 0; value34 = 0; }
+
+    u_char _00[0x30];
+    int    value30;             // FS2 +0x30
+    int    value34;             // FS2 +0x34
+};
+static_assert(offsetof(CharacterBlock7c8, value34) == 0x34, "CharacterBlock7c8::value34");
+
+constexpr int kBodyEffectCount = 4;     // setupBody's block (+0x414)
+constexpr int kCharacterFeet   = 2;     // +0x41c / +0x424
+
+// A character of the map (the F_ and player points), the player and the
+// partner among them. vtable 0x312240 (0x312264, 0x31227c), game/stagecharacter.cpp.
 // layout: host -- EE 0x800.
 class StageCharacter : public StageObject
 {
@@ -2017,16 +2089,89 @@ public:
     // FS2 0x00179a80
     int getKind() override { return StageObject_Character; }
     StageCharacter();                                                    // FS2 0x0017de30
+    ~StageCharacter() override;                                          // FS2 0x0017dd10: deleting
     // Model, textures, the model's two motion lists and mdl.
     void setup(const char *name, ModelInstance *instance, StringMap<Tim2Texture *> *textures,
                StageList<void *> *motions, StageList<void *> *motions2, void *mdl); // FS2 0x0017c700
+    // Back to the sheet's values, as when it first stood there. arg goes to
+    // the motion.
+    void reset(int arg);                                                 // FS2 0x0017c620
+    // m_abilities from the sheet.
+    void initAbilities();                                                // FS2 0x0017b3e0
+    // The status from the sheet.
+    void initStatus();                                                   // FS2 0x0017bd10
+    // 10..20, from the RNG.
+    void rollIdleDelay();                                                // FS2 0x0017bb30
+    // The chains of the character's own effects stop (+0x408.., +0x414).
+    void stopBodyEffects();                                              // FS2 0x0017bc60
+    // The camera on top of the view stack follows this character.
+    bool isViewLinked();                                                 // FS2 0x002176d0
+    // The sound fields' first values, and a stop of all of them.
+    void initSounds();                                                   // FS2 0x002a6910
+    void stopSounds();                                                   // FS2 0x002a6830
+    // The action state: the fields past +0x3d8. Clears them (stageplayer).
+    void resetActionState();                                             // FS2 0x0021e050
+    // Hands item over: lamp, weapon, or the list; false: it has an owner.
+    bool giveItem(StageObject *item);                                    // FS2 0x00216aa0
+    // The three status setters of the player's code: each clamps to the
+    // sheet, and what going to zero does is theirs.
+    void setEndurance(int value);                                        // FS2 0x00211430
+    void setRightArm(int value);                                         // FS2 0x00211300
+    void setFlinch(int value);                                           // FS2 0x00211150
+
+    // The player's.
+    // Its action is 0x11 or 0x2a (+0x224's +0x40), what an event breaks off.
+    bool isHoldingAction();                                              // FS2 0x00214f20
+    void releaseAction();                                                // FS2 0x001dedb0
+    // +0x400 set and +0x3c8 == 1: StageScene::drawPaused / update then
+    // pass StageSound::update sceneFlag 1. What mode 1 is is unread.
+    bool isMode1();                                                      // FS2 0x002152d0
+    // +0x364 set: +0x2ca = 1. What the two bytes are is unread.
+    void latchAltAction();                                               // FS2 0x0020b1d0
+    // +0x400's +0x2b0: the two lights of what the player carries get
+    // m_priority (SceneRender::update).
+    void setGearLightOrder(int order);                                   // FS2 0x0028ec70
+    // The object it is: the callers that hold it as the scene's player.
+    StageObject *character() { return this; }
     // A named event of the character in the scene's +0x78, while +0x30 is
     // set; what takes it is unread (GUNSHOOT).
     void playerEvent(const char *name);                                  // FS2 0x0020e6a0
 
+    StageList<StageObject *> m_items; // FS2 +0x22c: what it carries (giveItem)
+    int    m_294 = 0;           // FS2 +0x294: 0 from the ctor (unread)
     sceVu0FVECTOR m_aimPoint = {}; // FS2 +0x2a0: where its bullets steer
+    int    m_2b0 = 0;           // FS2 +0x2b0: 0 from the ctor (unread)
+    u_char m_2c0[0xa0] = {};    // FS2 +0x2c0: setup clears it, PlayerMotion::initSlots18 fills it (unread)
+    u_char m_360[0x44] = {};    // FS2 +0x360: setup clears it, PlayerMotion::initSlots14 fills it (unread)
+    int    m_3e4 = 0;           // FS2 +0x3e4: 0 from initStatus (unread); so are the next five
+    int    m_3e8 = 0;           // FS2 +0x3e8
+    int    m_3ec = 0;           // FS2 +0x3ec
+    int    m_3f0 = 0;           // FS2 +0x3f0
+    u_char m_3f4 = 0;           // FS2 +0x3f4
+    int    m_3f8 = 0;           // FS2 +0x3f8
+    float  m_idleDelay = 0.0f;  // FS2 +0x3fc: rollIdleDelay (the name is a guess)
+    const char *m_bloodEffect = nullptr; // FS2 +0x404: the effect its blood is
+    StageParticle *m_smoke[2] = {};      // FS2 +0x408: yamismoke1, yamismoke2 (stages 0x11..0x15)
+    StageParticle *m_glow = nullptr;     // FS2 +0x410: koh, at bn_spine_base
+    StageParticle **m_bodyEffects = nullptr; // FS2 +0x414: setupBody's block, kBodyEffectCount
+    StageParticle *m_splash = nullptr;   // FS2 +0x418: bthamon or L_SPLASH
+    StageParticle *m_footEffects[kCharacterFeet] = {}; // FS2 +0x41c: F_HAMON
+    StageNodeBase *m_footNodes[kCharacterFeet] = {};   // FS2 +0x424: where they stand: the feet, or the character
+    u_char m_42c = 0;           // FS2 +0x42c: 0 from the ctor (unread)
+    int    m_soundState = 0;    // FS2 +0x430: 0 none, 1 a source, 2 a cue (stopSounds)
+    int    m_soundHandle = 0;   // FS2 +0x434
+    float  m_458 = 0.0f;        // FS2 +0x458: -1 from reset (unread)
+    float  m_health = 0.0f;     // FS2 +0x594: the sheet's 体力
+    int    m_endurance = 0;     // FS2 +0x598: the sheet's 耐久力; setEndurance
+    int    m_leftArm = 0;       // FS2 +0x59c: the sheet's 左腕
+    int    m_rightArm = 0;      // FS2 +0x5a0: the sheet's 右腕; setRightArm
+    int    m_rightLeg = 0;      // FS2 +0x5a4: the sheet's 右足
+    int    m_leftLeg = 0;       // FS2 +0x5a8: the sheet's 左足
+    int    m_flinch = 0;        // FS2 +0x5ac: setFlinch, to the sheet's ひるみ耐性値
+    int    m_unarmedMsp = 0;    // FS2 +0x5b0: the sheet's 素手MSP
     float  m_aimLock = 0.0f;    // FS2 +0x5fc: not 0: they fly straight
     u_char m_bulletFlying = 0;  // FS2 +0x688: set each frame by a bullet of its own
+    CharacterBlock7c8 m_block7c8 = {}; // FS2 +0x7c8
 };
 
 // What a character's kind 0xb / 0xd hides: the model's part "hide" (EE 4;

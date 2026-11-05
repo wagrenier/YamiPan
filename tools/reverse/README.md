@@ -167,4 +167,3 @@ these hooks:
   stale names behind (stubs at address 0, callcheck "missing" calls).
 - `python -I` drops the script directory from `sys.path`; run the tools as `python tool.py` from here.
 
-`YAMIPAN_CAMERA` (environment, 2026-11-04, until a character links the main camera): `auto` aims the stage's camera at the biggest part of the `Root` model, `ex,ey,ez,tx,ty,tz` places it with z up. Set it before `build.py --run`; a New Game run reaches the stage after about 200 seconds, so use `--run 290 --pad` with work/newgame_pad.txt.

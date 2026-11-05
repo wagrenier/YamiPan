@@ -12245,11 +12245,23 @@
   "was": "FUN_00179a80",
   "why": "answers 0"
  },
+ "0017b3e0": {
+  "name": "StageCharacter::initAbilities",
+  "tag": "game-inferred",
+  "was": "FUN_0017b3e0",
+  "why": "memset(+0x3a4, 1, 0x2c), then the sheet's drivingSkill, stepLevel, ladder and jumpLevel and a clear list per ctype"
+ },
  "0017bb10": {
   "name": "StageObject::cameraBodyHeight",
   "tag": "game-inferred",
   "was": "FUN_0017bb10",
   "why": "table 0x2f7c10 by +0x20c; used by the main camera's stick step"
+ },
+ "0017bb30": {
+  "name": "StageCharacter::rollIdleDelay",
+  "tag": "game-inferred",
+  "was": "FUN_0017bb30",
+  "why": "+0x3fc = rand * 10 / 2^31 + 10; what the delay is for is unread"
  },
  "0017bb80": {
   "name": "StageObject::cameraEyeOffset",
@@ -12262,6 +12274,24 @@
   "tag": "game-inferred",
   "was": "FUN_0017bbf0",
   "why": "the same at +0x110: the point the main camera looks at"
+ },
+ "0017bc60": {
+  "name": "StageCharacter::stopBodyEffects",
+  "tag": "game-inferred",
+  "was": "FUN_0017bc60",
+  "why": "calls 0x18fec0 on +0x408, +0x40c, +0x410 and the four of +0x414"
+ },
+ "0017bd10": {
+  "name": "StageCharacter::initStatus",
+  "tag": "game-inferred",
+  "was": "FUN_0017bd10",
+  "why": "copies the sheet's endurance, arms, legs, health and MSP to +0x594..+0x5b0"
+ },
+ "0017c620": {
+  "name": "StageCharacter::reset",
+  "tag": "game-inferred",
+  "was": "FUN_0017c620",
+  "why": "end of setup: initStatus, motion, ground, input, brain, action state and sounds back to their first values"
  },
  "0017c700": {
   "name": "StageCharacter::setup",
@@ -12280,6 +12310,12 @@
   "tag": "game-inferred",
   "was": "FUN_0017dcb0",
   "why": "model flags 2 or 10 by record kind 0xb, own lights bytes +0xb4 +0xb5"
+ },
+ "0017dd10": {
+  "name": "StageCharacter::~StageCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_0017dd10",
+  "why": "writes the three vtables of 0x17de30, deletes +0x21c..+0x228, +0x204, +0x414; slot 2 of 0x312240"
  },
  "0017de30": {
   "name": "StageCharacter::StageCharacter",
@@ -13696,6 +13732,12 @@
   "tag": "game-inferred",
   "was": "FUN_0018c2d0",
   "why": "+0x21d and +0x273 down the chain +0x20c"
+ },
+ "0018fec0": {
+  "name": "StageParticle::stopChain",
+  "tag": "game-inferred",
+  "was": "FUN_0018fec0",
+  "why": "0x18ffa0 on the particle and down the +0x20c chain, as setEmitting / setRunning walk it"
  },
  "00190040": {
   "name": "StageParticle::setRangeSquared",
@@ -16205,11 +16247,35 @@
   "was": "FUN_001dd3f0",
   "why": "+0x174 = flag, the object +0x220; opposite of the input when a character is taken over"
  },
+ "001dd460": {
+  "name": "CharacterBrain::reset",
+  "tag": "game-inferred",
+  "was": "FUN_001dd460",
+  "why": "called on +0x220 in StageCharacter::reset"
+ },
+ "001dd680": {
+  "name": "CharacterBrain::CharacterBrain",
+  "tag": "game-inferred",
+  "was": "FUN_001dd680",
+  "why": "operator_new(0x9b0) in the ctor of StageCharacter when the scene has a route, stored at +0x220"
+ },
  "001dedb0": {
   "name": "StagePlayer::releaseAction",
   "tag": "game-inferred",
   "was": "FUN_001dedb0",
   "why": "on +0x224, ends the held action; StageSimpleEvent::poll"
+ },
+ "001defd0": {
+  "name": "PlayerMotion::initSlots18",
+  "tag": "game-inferred",
+  "was": "FUN_001defd0",
+  "why": "a0 = +0x224: slot +0x18 of each entry, after setup clears +0x2c0"
+ },
+ "001df040": {
+  "name": "PlayerMotion::initSlots14",
+  "tag": "game-inferred",
+  "was": "FUN_001df040",
+  "why": "a0 = +0x224: slot +0x14 of each entry of the list at +0x30, after setup clears +0x360"
  },
  "001e60b0": {
   "name": "PlayerMotion::getLampMatrix",
@@ -16223,11 +16289,53 @@
   "was": "FUN_001e66c0",
   "why": "a0 the player's +0x224 object (its +0 the player): picks names from the 0x210-byte records 0x577b20 (index +0x40, slot +0x6c; '*'-prefixed alternates when the long weapon +0x238's item def kind is 5 or 6) and hands them to 0x216400; guess: the motion set for the weapon carried. stepWeaponPreview in a stage"
  },
+ "001ec7e0": {
+  "name": "PlayerMotion::reset",
+  "tag": "game-inferred",
+  "was": "FUN_001ec7e0",
+  "why": "called on +0x224 with reset's argument"
+ },
+ "001ecda0": {
+  "name": "PlayerMotion::loadMotions",
+  "tag": "game-inferred",
+  "was": "FUN_001ecda0",
+  "why": "setBaseMotion from mdl or the list's first file, bindBones, placeBones, addMotion for the rest, balanceMotions"
+ },
+ "001ed2a0": {
+  "name": "PlayerMotion::~PlayerMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001ed2a0",
+  "why": "called on +0x224 with 1 in the dtor"
+ },
+ "001ed410": {
+  "name": "PlayerMotion::PlayerMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001ed410",
+  "why": "operator_new(0xc20) in setup, stored at +0x224, its +0 the character"
+ },
  "001eff00": {
   "name": "CharacterGround::faceNear",
   "tag": "game-inferred",
   "was": "FUN_001eff00",
   "why": "findFloorFaceExcept from a point of the owner's space"
+ },
+ "001f3b30": {
+  "name": "CharacterGround::reset",
+  "tag": "game-inferred",
+  "was": "FUN_001f3b30",
+  "why": "called on +0x228 in StageCharacter::reset, whose next store is its +0 = 1"
+ },
+ "001f3c70": {
+  "name": "CharacterGround::~CharacterGround",
+  "tag": "game-inferred",
+  "was": "FUN_001f3c70",
+  "why": "called on +0x228 with 1 in the dtor"
+ },
+ "001f3d20": {
+  "name": "CharacterGround::CharacterGround",
+  "tag": "game-inferred",
+  "was": "FUN_001f3d20",
+  "why": "operator_new(0x1c0) in setup, stored at +0x228"
  },
  "001f5250": {
   "name": "SceneRecordBuckets::collide",
@@ -17093,6 +17201,24 @@
   "was": "FUN_0020e6a0",
   "why": "only the scene's +0x78 character, while +0x30: reports a named event (GUNSHOOT)"
  },
+ "00211150": {
+  "name": "StageCharacter::setFlinch",
+  "tag": "game-inferred",
+  "was": "FUN_00211150",
+  "why": "+0x5ac clamped to the sheet's +0xb0 (flinchResist)"
+ },
+ "00211300": {
+  "name": "StageCharacter::setRightArm",
+  "tag": "game-inferred",
+  "was": "FUN_00211300",
+  "why": "+0x5a0 clamped to the sheet's +0x60; +0x3d9 set when it reaches 0"
+ },
+ "00211430": {
+  "name": "StageCharacter::setEndurance",
+  "tag": "game-inferred",
+  "was": "FUN_00211430",
+  "why": "+0x598 clamped to the sheet's endurance; 0 starts the game over for the player or partner"
+ },
  "00214a70": {
   "name": "StageObjRecord::init",
   "tag": "game-inferred",
@@ -17153,6 +17279,18 @@
   "was": "FUN_00216140",
   "why": "a bit from the character record's kind +0x10, by difficulty"
  },
+ "00216aa0": {
+  "name": "StageCharacter::giveItem",
+  "tag": "game-inferred",
+  "was": "FUN_00216aa0",
+  "why": "takes an unowned item by its kind: 0x14 the lamp +0x234, 0x15 a weapon +0x238, the list +0x22c; setup walks the sheet's items until one takes"
+ },
+ "002176d0": {
+  "name": "StageCharacter::isViewLinked",
+  "tag": "game-inferred",
+  "was": "FUN_002176d0",
+  "why": "viewLinkedObject() == this"
+ },
  "002185a0": {
   "name": "StageObject::canSpawn",
   "tag": "game-inferred",
@@ -17176,6 +17314,12 @@
   "tag": "game-inferred",
   "was": "FUN_0021c7c0",
   "why": "a character of the mission list, each frame before the scripts"
+ },
+ "0021e050": {
+  "name": "StageCharacter::resetActionState",
+  "tag": "game-inferred",
+  "was": "FUN_0021e050",
+  "why": "clears +0x700.., the 0x18 records at +0x468, +0x3d8..+0x3e1; called by reset only"
  },
  "00230810": {
   "name": "StageMenu::setData",
@@ -17621,6 +17765,24 @@
   "was": "FUN_00239bb0",
   "why": "byte +0 and Pad::setListening on +8; the object +0x21c"
  },
+ "00239bc0": {
+  "name": "CharacterInput::reset",
+  "tag": "game-inferred",
+  "was": "FUN_00239bc0",
+  "why": "called on +0x21c in StageCharacter::reset"
+ },
+ "00239be0": {
+  "name": "CharacterInput::~CharacterInput",
+  "tag": "game-inferred",
+  "was": "FUN_00239be0",
+  "why": "called on +0x21c with 1 in the dtor"
+ },
+ "00239c60": {
+  "name": "CharacterInput::CharacterInput",
+  "tag": "game-inferred",
+  "was": "FUN_00239c60",
+  "why": "operator_new(0x60) in the ctor of StageCharacter, stored at +0x21c"
+ },
  "0023aca0": {
   "name": "SceneBoxList::update",
   "tag": "game-inferred",
@@ -17968,6 +18130,12 @@
   "tag": "game-inferred",
   "was": "FUN_0023f0b0",
   "why": "StageScene ctor new(0x8c) for +0xcc with (+0xbc printer, 0): vtable 0x316530 at +0x88, a 0x38 object 0x208c70 at +0, the Japanese string for undefined; name a guess"
+ },
+ "0023f310": {
+  "name": "RouteFilter::allow",
+  "tag": "game-inferred",
+  "was": "FUN_0023f310",
+  "why": "setup calls it with STEP60.. and ALLDOOR on brain +0x180 -> +8; adds or removes a name in a set and refreshes"
  },
  "00242e80": {
   "name": "SceneUiState::pollSoundSources",
@@ -21946,6 +22114,18 @@
   "tag": "game-inferred",
   "was": "FUN_002a11d0",
   "why": "steps 28 and 12 records, drawOverlay before demoFleckDraw"
+ },
+ "002a6830": {
+  "name": "StageCharacter::stopSounds",
+  "tag": "game-inferred",
+  "was": "FUN_002a6830",
+  "why": "by +0x430: stopCue or stopSource; stopCuesOf, stopSound on +0x444 and +0x43c"
+ },
+ "002a6910": {
+  "name": "StageCharacter::initSounds",
+  "tag": "game-inferred",
+  "was": "FUN_002a6910",
+  "why": "first values of +0x430..+0x44c, last call of the ctor"
  },
  "002a7a50": {
   "name": "NmlPose::NmlPose",

@@ -30,8 +30,6 @@ constexpr char kRootObjectName[] = "Root";      // data 0x30b448
 constexpr char kHidePartName[]   = "hide";      // data 0x303360
 constexpr int  kHidePartCount    = 2;
 // StageObjRecord::kind: the two with a hide part; 0xb also casts no shadow.
-constexpr int  kCharacterKindNoShadow = 0xb;
-constexpr int  kCharacterKindHideD    = 0xd;
 
 constexpr float kObjectFrameStep = 1.2f;        // what sideHook2 hands StageModel::advance
 constexpr u_int kNamedMotionFlags = 0x50;       // DemoCamera's cuts pass the same
@@ -269,7 +267,7 @@ void SubSceneModelObject::setProperty(int id, int sub, int value)
         break;
     case Prop_PlayerId:
         if (StageObject *who = scene->objects->findCharacterById(value))
-            scene->setPlayer((StagePlayer *)who);
+            scene->setPlayer(static_cast<StagePlayer *>(who));
         break;
     case Prop_ScriptVar3f:
         scene->setScriptVar3f(value);
@@ -405,8 +403,8 @@ void SubSceneModelObject::sideHook2()
         m_lamp->updateLights();
 }
 
-// PC: the stageSelf test: StageCharacter's ctor and setup are stubs, so a stage
-// has no characters and the pack's file stands in. Delete with StageCharacter.
+// PC: the ROM takes stageSelf with no test. Kept: an effect or part the stage
+// has not placed yet would answer null here; the pack's file stands in.
 // FS2 0x00269a90
 // callcheck: setRotation, findCharacter, getSubSceneBlock, findModel, setBaseMotion, bindBones, placeBones, add, setDirtyTree
 
@@ -539,8 +537,8 @@ void SubSceneCharacter::bindMotion(const char *name)
 }
 
 // PC: the ROM takes the stage's character with no test, and the record's kind
-// from its +0x200; StageCharacter does not exist yet, so a character with no
-// stage self counts as kind 0 and hides nothing. Delete with StageCharacter.
+// from its +0x200. Kept for the same reason as bindMotion's: a character with
+// no stage self counts as kind 0 and hides nothing.
 // FS2 0x002bb870
 // callcheck: attach, findCharacter, operator_new, getStageSelect, CharacterHidePart, copyFrom, getStageSelect, applyCharacterModelFlags (CharacterHidePart; the record's table inline: stageObjRecord)
 
@@ -676,7 +674,7 @@ SubSceneMapObject::SubSceneMapObject(int role)
 void StageObject::applyCharacterModelFlags(int kind)
 {
     if (m_model->data != nullptr)
-        m_model->data->flags |= kind == kCharacterKindNoShadow
+        m_model->data->flags |= kind == CharacterKind_NoShadow
                                     ? ModelFlag_Item
                                     : ModelFlag_Item | ModelFlag_CastsShadow;
     m_model->m_animateSurface = m_model->m_kind1Surface != nullptr;
@@ -707,7 +705,7 @@ CharacterHidePart::~CharacterHidePart()
 CharacterHidePart::CharacterHidePart(StageObject *owner, int kind)
     : m_switch(nullptr)
 {
-    if (kind == kCharacterKindHideD || kind == kCharacterKindNoShadow) {
+    if (kind == CharacterKind_HideD || kind == CharacterKind_NoShadow) {
         m_switch = new PartSwitch;
         m_switch->init(owner->m_model->data, kHidePartName, kHidePartCount, 0);
     }

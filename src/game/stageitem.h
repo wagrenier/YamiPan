@@ -249,6 +249,8 @@ public:
     // Slot +0x26c.
     virtual bool isSwitchedOn();                                         // FS2 0x00184200
 
+    // The lamp's first spot is on: the map shows the player (the S2D's rMapP).
+    bool isSpotOn() const;
     // light is one of the four.
     bool ownsLight(StageObject *light) const;                            // FS2 0x001828b0
     void setShadowOwner(StageObject *owner);                             // FS2 0x00182930

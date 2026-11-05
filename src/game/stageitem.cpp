@@ -1003,7 +1003,7 @@ void StageWeaponItem::fire(StageCharacter *shooter, const sceVu0FVECTOR from, co
 
     const char *sound = getShotSound();
     // The ROM also has 800 in f12 here; nothing reads it.
-    shooter->playNamedHeard2(sound, shooter->m_handNode->getWorldMatrix()[3], nullptr);
+    shooter->playNamedHeard2(sound, shooter->m_weapons[0]->getWorldMatrix()[3], nullptr);
     shooter->playerEvent("GUNSHOOT");
 }
 
@@ -1274,3 +1274,9 @@ void StageItemE::getLightMatrix(sceVu0FMATRIX out)
 //   FS2 0x00184850  -0x240 to StageBullet::collisionHook0
 
 // FS2 0x00180018 is no function: the two nops after StageBullet::onCollide.
+
+// Inline in the ROM (uigame.cpp reads it through the player's +0x234).
+bool StageItemE::isSpotOn() const
+{
+    return m_lamp->m_spot->m_switchedOn != 0;
+}
