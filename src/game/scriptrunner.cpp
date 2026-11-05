@@ -2277,28 +2277,48 @@ static const int *nativeCarries(ScriptRunner *self, int *acc, const int *code)
     return next;
 }
 
-// 0x6b playSoundAt(sound, object): "NULL" plays it flat, an object at its
-// place, and what can hear there reports it. Runner slot +0x148.
-// PC: the sound comes out at the object's own place: the ROM takes bn_top
-// for an object of kinds 1..6 with a model, and a name that is no object
-// from the map's points (0x190650, unwritten: it stays silent here).
+// The sound of natives 0x6b and 0xb6: "NULL" plays it flat, an object at its
+// place (kinds 1..6 with a model hang it on bn_top), and what can hear there
+// reports it. Runner slot +0x148.
+// PC: a name that is no object comes from the effect definitions' places
+// (0x190650, unwritten): it stays silent here.
+static void playSoundFrom(ScriptRunner *target, const char *sound, const char *label, float volume)
+{
+    static const char kTopBone[] = "bn_top";    /* data 0x304b50 */
+    static const sceVu0FVECTOR kOrigin = { 0.0f, 0.0f, 0.0f, 1.0f };    /* data 0x2f7dc0 */
+    constexpr int kModelKindFirst = 1;
+    constexpr int kModelKindLast  = 6;
+    if (strcmp(label, kNoObjectName) == 0) {
+        gStageScene->sound->playNamed(sound, volume);
+        return;
+    }
+    StageObject *me = target->getScriptObject();
+    StageObject *object = (StageObject *)scriptLabelCell(label);
+    if (object == nullptr || me == nullptr)
+        return;
+    const int kind = object->getKind();
+    if (kind >= kModelKindFirst && kind <= kModelKindLast && object->m_model != nullptr) {
+        BoneMap::Node *node = object->m_model->boneMap.find(kTopBone);
+        if (node != nullptr) {
+            me->playNamedHeard(sound, kOrigin, node->value);
+            return;
+        }
+    }
+    me->playNamedHeard(sound, object->getWorldMatrix()[3], nullptr);
+}
+
+// 0x6b playSoundAt(sound, object).
 // FS2 0x001c84b0
 // callcheck: readNameArg, readObjectArg, strcmp, playNamed, getKind, getKind, find, FUN_00190650, getMatrix
 
 static const int *nativePlaySoundAt(ScriptRunner *self, int *, const int *code)
 {
-    StageObject *me = self->getTarget()->getScriptObject();
+    ScriptRunner *target = self->getTarget();
     const char *sound;
     const char *label;
     const int *next = self->readNameArg(&sound, code);
     next = self->readObjectArg(&label, next);
-    if (strcmp(label, kNoObjectName) == 0) {
-        gStageScene->sound->playNamed(sound, 1.0f);
-        return next;
-    }
-    StageObject *object = (StageObject *)scriptLabelCell(label);
-    if (object != nullptr && me != nullptr)
-        me->playNamedHeard(sound, object->getMatrix()[3], nullptr);
+    playSoundFrom(target, sound, label, 1.0f);
     return next;
 }
 
@@ -4786,6 +4806,18 @@ static const int *nativeBlackout(ScriptRunner *self, int *, const int *code)
 // The spawn system of the stage's waiting characters, beside scriptPrepare in
 // the ROM; what the natives above end in.
 
+// The object is near the top view and in it.
+// FS2 0x0029f200
+// callcheck: getTopView, getMissionValue, getWorldMatrix, vecDistance, seesPoint
+
+bool missionObjectInSight(StageObject *object)
+{
+    StageCamera *view = static_cast<StageCamera *>(gStageScene->getTopView());
+    const float reach = gStageScene->getMissionValue();
+    return vecDistance(view->getWorldMatrix()[3], object->m_xform.position) <= reach
+        && view->seesPoint(object->m_xform.position);
+}
+
 // FS2 0x0029fd10
 
 bool missionSpawnPointTaken(int *point)
@@ -4917,6 +4949,1003 @@ StageObject *scriptPickNamed(const char *name, StageCharacter *who, u_int rank, 
     return lastInstead ? found.back().object : nullptr;
 }
 
+static const char kSpawnRandom[] = "RANDOM";    /* data 0x304b28 */
+
+// 0x1d1 hurtBy(number, amount, reaction), 0x1d2 hurtByName(amount, reaction,
+// name): the target takes a blow of that character's.
+// FS2 0x001ae610
+// callcheck: currentMission, FUN_00217d60 (scriptCharacterAt; scriptHurt)
+
+static const int *nativeHurtBy(ScriptRunner *self, int *, const int *code)
+{
+    const int *args = self->popped(3);
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    StageCharacter *from = scriptCharacterAt(args[0]);
+    // PC: the ROM has no test of either.
+    if (who != nullptr && from != nullptr)
+        who->scriptHurt(from, args[1], args[2]);
+    return code;
+}
+
+// FS2 0x001ae4c0
+// callcheck: readNameArg, findCharacter, FUN_00217d60 (scriptHurt)
+
+static const int *nativeHurtByName(ScriptRunner *self, int *, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const int *args = self->popped(2);
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageCharacter *who = target->getScriptCharacter();
+    StageObject *from = gStageScene->objects->findCharacter(name, 0);
+    // PC: the ROM has no test of either.
+    if (who != nullptr && from != nullptr)
+        who->scriptHurt(from, args[0], args[1]);
+    return next;
+}
+
+// 0x61 crouch(loudness): the target goes down, heard that far.
+// FS2 0x001c90b0
+
+static const int *nativeCrouch(ScriptRunner *self, int *acc, const int *code)
+{
+    const int loudness = self->popped(1)[0];
+    *acc = self->getTarget()->scriptCrouch((float)loudness);
+    return code;
+}
+
+// FS2 0x001afcf0
+// FS2 0x001afd00
+// FS2 0x001afd10
+// The three small accessors of 0x1af9e0 are m_xform.position, the label's
+// cell and spawnPoints[i].
+
+// What native 0x1c0 does at once: as native 0x9d, a name RANDOM anywhere.
+// FS2 0x001afe60
+// callcheck: strcmp, parseSpawnId, missionPickSpawnPoint, missionSpawnPointTaken, missionSpawnAt, missionPickSpawnPoint, missionSpawnPointTaken, missionSpawnAt, currentMission, missionPickSpawnPoint, missionSpawnPointTaken, missionSpawnAt (spawnNear)
+
+static bool spawnAtLabel(ScriptRunner *target, int strong, const char *label, int mode)
+{
+    constexpr int kAnyPoint = -1;
+    if (strcmp(label, kSpawnRandom) == 0) {
+        StageCharacter *actor = target->getScriptActor();
+        return spawnNear(actor != nullptr ? static_cast<ScriptRunner *>(actor) : target, strong, kAnyPoint);
+    }
+    const int id = parseSpawnId(label);
+    if (id < 0) {
+        StageObject *object = (StageObject *)scriptLabelCell(label);
+        return object != nullptr && spawnNear(object, strong, mode);
+    }
+    int point = missionPickSpawnPoint(gStageScene->currentMission()->spawnPoints[id].position, mode);
+    return !missionSpawnPointTaken(&point) && missionSpawnAt(&point, strong);
+}
+
+// A timed record at a place, to spawn from when its frames run out.
+static bool addTimedSpawn(const float *place, int strong, int mode, int frames)
+{
+    return gStageScene->currentMission()->addTimedRecord(strong, (int)place[0], (int)place[1], (int)place[2],
+                                                         mode, frames) != 0;
+}
+
+// 0x1c0 spawnAtLater(name, strong, mode, frames): native 0x9d, later.
+// FS2 0x001af9e0
+// callcheck: readObjectArg, FUN_001afe60, strcmp, FUN_001afd20, parseSpawnId, FUN_001afd00, FUN_001afcf0, currentMission, addTimedRecord, currentMission, FUN_001afd10, missionPickSpawnPoint, missionSpawnPointTaken, currentMission, FUN_001afd10, currentMission, addTimedRecord
+
+static const int *nativeSpawnAtLater(ScriptRunner *self, int *acc, const int *code)
+{
+    constexpr int kAnyPoint = -1;
+    ScriptRunner *target = self->getTarget();
+    const int *args = self->popped(3);
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    const int strong = args[0];
+    const int mode = args[1];
+    const int frames = args[2];
+    if (frames < 1) {
+        *acc = spawnAtLabel(target, strong, label, mode);
+        return next;
+    }
+    if (strcmp(label, kSpawnRandom) == 0) {
+        StageCharacter *actor = target->getScriptActor();
+        ScriptRunner *from = actor != nullptr ? static_cast<ScriptRunner *>(actor) : target;
+        const float place[3] = { from->scriptGetPosX(), from->scriptGetPosY(), from->scriptGetPosZ() };
+        *acc = addTimedSpawn(place, strong, kAnyPoint, frames);
+        return next;
+    }
+    const int id = parseSpawnId(label);
+    if (id < 0) {
+        StageObject *object = (StageObject *)scriptLabelCell(label);
+        *acc = object != nullptr && addTimedSpawn(object->m_xform.position, strong, mode, frames);
+        return next;
+    }
+    StageMission *mission = gStageScene->currentMission();
+    int point = missionPickSpawnPoint(mission->spawnPoints[id].position, mode);
+    *acc = !missionSpawnPointTaken(&point) && addTimedSpawn(mission->spawnPoints[point].position, strong, mode, frames);
+    return next;
+}
+
+// 0x20a isBroken(): a light's m_broken, a character that lies a corpse.
+// FS2 0x001aa9e0
+// callcheck: getLifeState
+
+static const int *nativeIsBroken(ScriptRunner *self, int *acc, const int *code)
+{
+    StageObject *object = self->getTarget()->getScriptObject();
+    constexpr int kLightKindFirst = StageObject_Light;
+    constexpr int kLightKindLast  = 0x12;
+    const int kind = object->getKind();
+    if (kind >= kLightKindFirst && kind <= kLightKindLast)
+        *acc = static_cast<StageLight *>(object)->isBroken();
+    else if (kind == StageObject_Character)
+        *acc = static_cast<StageCharacter *>(object)->getLifeState() == LifeState_Corpse;
+    else
+        *acc = 0;
+    return code;
+}
+
+// 0xb2 lightOn(name), 0x127 lightOff(name): the object's m_lightOn.
+// FS2 0x001c3b70
+// callcheck: readObjectArg
+
+static const int *nativeObjectLightOn(ScriptRunner *self, int *, const int *code)
+{
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    // PC: the ROM has no test of the cell.
+    if (StageObject *object = (StageObject *)scriptLabelCell(label))
+        object->m_lightOn = 1;
+    return next;
+}
+
+// FS2 0x001bb850
+// callcheck: readObjectArg
+
+static const int *nativeObjectLightOff(ScriptRunner *self, int *, const int *code)
+{
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    // PC: the ROM has no test of the cell.
+    if (StageObject *object = (StageObject *)scriptLabelCell(label))
+        object->m_lightOn = 0;
+    return next;
+}
+
+// 0x208 isInSight(number): the character numbered, seen from the top view.
+// FS2 0x001aac70
+// callcheck: currentMission, FUN_0029f200 (scriptCharacterAt)
+
+static const int *nativeIsInSight(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *other = scriptCharacterAt(self->popped(1)[0]);
+    // PC: the ROM reads the place of a null.
+    *acc = other != nullptr && missionObjectInSight(other);
+    return code;
+}
+
+// 0xab stopSound(name).
+// FS2 0x001c4180
+// callcheck: readNameArg, stopNamed
+
+static const int *nativeStopSound(ScriptRunner *self, int *, const int *code)
+{
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    gStageScene->sound->stopNamed(name);
+    return next;
+}
+
+// 0x21a setMotionLabel(name).
+// FS2 0x001a9850
+// callcheck: readNameArg, FUN_00217c80 (setMotionByLabel)
+
+static const int *nativeSetMotionLabel(ScriptRunner *self, int *, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    if (StageCharacter *who = target->getScriptCharacter())
+        who->setMotionByLabel(name);
+    return next;
+}
+
+// 0x68 playMotion(name).
+// FS2 0x001c8980
+// callcheck: readNameArg
+
+static const int *nativePlayMotion(ScriptRunner *self, int *, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    target->scriptPlayMotion(name);
+    return next;
+}
+
+// 0xb6 playSoundAtVolume(sound, object, percent): native 0x6b with a volume
+// for the flat case (the heard ones pass it in f12, and nothing reads it).
+// FS2 0x001c34f0
+// callcheck: readNameArg, readObjectArg, strcmp, playNamed, getKind, getKind, find, FUN_00190650, getMatrix (playSoundFrom)
+
+static const int *nativePlaySoundAtVolume(ScriptRunner *self, int *, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const int percent = self->popped(1)[0];
+    const char *sound;
+    const char *label;
+    const int *next = self->readNameArg(&sound, code);
+    next = self->readObjectArg(&label, next);
+    playSoundFrom(target, sound, label, (float)percent / 100.0f);
+    return next;
+}
+
+// 0x5e spawnEffectAt(x, y, z, rx, ry, rz, effect, object, bone): native 0x5d
+// with a place and a turn, in degrees; its handle, -1 none.
+// FS2 0x001c93c0
+// callcheck: readNameArg, readObjectArg, readNameArg, isNullName, isNullName, getTopView, FUN_001c97f0, FUN_001c97e0, spawn, FUN_001c97f0, FUN_001c9780, FUN_001b56a0, FUN_001b5690, FUN_001b5680, FUN_001c97e0, spawn, spawnEffectOnBone, FUN_001c9770
+
+static const int *nativeSpawnEffectPlaced(ScriptRunner *self, int *acc, const int *code)
+{
+    constexpr float kRadians = 0.017453292f;
+    const int *args = self->popped(6);
+    const char *name;
+    const char *label;
+    const char *bone;
+    const int *next = self->readNameArg(&name, code);
+    next = self->readObjectArg(&label, next);
+    next = self->readNameArg(&bone, next);
+    const sceVu0FVECTOR place = { (float)args[0], (float)args[1], (float)args[2], 1.0f };
+    const sceVu0FVECTOR turn = { (float)args[3] * kRadians, (float)args[4] * kRadians, (float)args[5] * kRadians, 1.0f };
+    StageObject *object = (StageObject *)scriptLabelCell(label);
+    int handle = -1;
+    if (isNullName(bone)) {
+        StageObject *parent = isNullName(label) ? gStageScene->getTopView() : object;
+        handle = gStageScene->effects->spawn(name, parent, place, turn);
+    } else if (object != nullptr && object->m_model != nullptr) {
+        // The ROM's two ways, a character's and the rest's, are one lookup.
+        BoneMap::Node *node = object->m_model->boneMap.find(bone);
+        if (node != nullptr && node->value != nullptr)
+            handle = gStageScene->effects->spawn(name, node->value, place, turn);
+    }
+    *acc = handle;
+    return next;
+}
+
+// 0x34 canSeeWithin(degrees, name): native 0x33 with the cone given; a
+// character at 60 degrees goes by the sight table.
+// FS2 0x001cc330
+// callcheck: readObjectArg, canSeeThisFrame, isPointInView, parseSpawnId, currentMission, isPointInView
+
+static const int *nativeCanSeeWithin(ScriptRunner *self, int *acc, const int *code)
+{
+    constexpr float kRadians = 0.017453292f;
+    constexpr float kFullRange = 1.0f;
+    constexpr int kTableDegrees = 60;
+    ScriptRunner *target = self->getTarget();
+    const int degrees = self->popped(1)[0];
+    const float cone = (float)degrees * kRadians;
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    StageObject *object = (StageObject *)scriptLabelCell(label);
+    float distance;
+    if (object == nullptr) {
+        const int id = parseSpawnId(label);
+        StageMission *mission = gStageScene->currentMission();
+        StageCharacter *who = id >= 0 && mission->spawnPoints[id].state != 0 ? target->getScriptCharacter() : nullptr;
+        *acc = who != nullptr && who->isPointInView(cone, kFullRange, mission->spawnPoints[id].position, &distance, nullptr);
+    } else if (object->getKind() == StageObject_Character) {
+        StageCharacter *actor = target->getScriptActor();
+        if (actor == nullptr || degrees != kTableDegrees) {
+            *acc = target->scriptCanSee(cone, object);
+        } else {
+            distance = 0.0f;
+            *acc = actor->canSeeThisFrame(static_cast<StageCharacter *>(object), &distance);
+        }
+    } else {
+        StageCharacter *who = target->getScriptCharacter();
+        *acc = who != nullptr && who->isPointInView(cone, kFullRange, object->m_xform.position, &distance, nullptr);
+    }
+    return next;
+}
+
+// 0x1fb markWeapons(name): the free weapons of that name; findLooseWeapon
+// leaves them.
+// FS2 0x001ab870
+// callcheck: readNameArg, findAll3
+
+static const int *nativeMarkWeapons(ScriptRunner *self, int *, const int *code)
+{
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageObjArray *items = gStageScene->objects->findAll3(name);
+    if (items == nullptr)
+        return next;
+    for (StageObject **slot = items->begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        StageObject *item = *slot;
+        if (item->m_active != 0 && item->getKind() == StageObject_WeaponItem)
+            static_cast<StageWeaponItem *>(item)->m_45c = 1;
+    }
+    return next;
+}
+
+// 0x15e overlayKind(kind, entry): native 0x15d with the overlay's number given.
+// On the running script, not its target.
+// FS2 0x001b79d0
+// callcheck: startOverlay
+
+static const int *nativeOverlayKind(ScriptRunner *self, int *acc, const int *code)
+{
+    const int kind = self->popped(1)[0];
+    StageCharacter *character = self->getScriptCharacter();
+    // PC: the ROM has no test.
+    *acc = character != nullptr && character->m_brain != nullptr
+        && character->m_brain->startOverlay(kind, (const ScriptEntry *)gStageScene->scripts[1]->entry(*code));
+    return code + 1;
+}
+
+// A list of spawn points like "1, 3-7, 12" gets value (the rest other, when
+// other is 0 or more); 0 turns a point off, the rest keep it. How many
+// points changed, 0 at a word that is no number.
+// FS2 0x001d0b50
+// callcheck: strtol, strtol, currentMission
+
+static int applySpawnPointList(const char *text, int value, int other)
+{
+    constexpr int kStateOff = 1;
+    constexpr int kStateKept = 2;
+    constexpr int kNotListed = -1;
+    const auto isSpace = [](char c) {
+        return c == 0x1a || c == '\f' || c == '\r' || c == '\n' || c == '\t' || c == ' ';
+    };
+    int list[kMissionSpawnPoints];
+    std::fill(list, list + kMissionSpawnPoints, other >= 0 ? other : kNotListed);
+
+    char *end;
+    for (;;) {
+        while (*text != '\0' && isSpace(*text))
+            text++;
+        if (*text == '\0')
+            break;
+        const u_int first = (u_int)strtol(text, &end, 10);
+        if (end == text)
+            return 0;
+        text = end;
+        while (*text != '\0' && isSpace(*text))
+            text++;
+        if (*text == '-') {
+            text++;
+            while (*text != '\0' && isSpace(*text))
+                text++;
+            const u_int last = (u_int)strtol(text, &end, 10);
+            if (end == text)
+                return 0;
+            if (first < kMissionSpawnPoints && last < kMissionSpawnPoints) {
+                for (u_int i = first; i <= last; i++)
+                    list[i] = value;
+            }
+            text = end;
+            while (*text != '\0' && isSpace(*text))
+                text++;
+        } else if (first < kMissionSpawnPoints) {
+            list[first] = value;
+        }
+        if (*text == ',')
+            text++;
+    }
+
+    StageMission *mission = gStageScene->currentMission();
+    int changed = 0;
+    for (int i = 0; i < kMissionSpawnPoints; i++) {
+        if (list[i] < 0 || mission->spawnPoints[i].state == 0)
+            continue;
+        mission->spawnPoints[i].state = list[i] == 0 ? kStateOff : kStateKept;
+        changed++;
+    }
+    return changed;
+}
+
+// 0x178 keepSpawnPointList(list, value, other).
+// FS2 0x001b5890
+// callcheck: readStringArg, FUN_001d0b50 (applySpawnPointList)
+
+static const int *nativeKeepSpawnPointList(ScriptRunner *self, int *acc, const int *code)
+{
+    const int *args = self->popped(2);
+    const char *text;
+    const int *next = self->readStringArg(&text, code);
+    *acc = applySpawnPointList(text, args[0], args[1]);
+    return next;
+}
+
+// 0x173 keepAllSpawnPoints().
+// FS2 0x001b5e90
+// callcheck: currentMission
+
+static const int *nativeKeepAllSpawnPoints(ScriptRunner *, int *acc, const int *code)
+{
+    constexpr int kStateKept = 2;
+    StageMission *mission = gStageScene->currentMission();
+    for (int i = 0; i < kMissionSpawnPoints; i++) {
+        if (mission->spawnPoints[i].state != 0)
+            mission->spawnPoints[i].state = kStateKept;
+    }
+    *acc = 0;
+    return code;
+}
+
+// 0x175 keepSpawnPoints(first, last): how many there were.
+// FS2 0x001b5bf0
+// callcheck: currentMission
+
+static const int *nativeKeepSpawnPoints(ScriptRunner *self, int *acc, const int *code)
+{
+    constexpr int kStateKept = 2;
+    const int *args = self->popped(2);
+    StageMission *mission = gStageScene->currentMission();
+    int kept = 0;
+    for (int i = args[0]; i <= args[1]; i++) {
+        if (mission->spawnPoints[i].state != 0) {
+            mission->spawnPoints[i].state = kStateKept;
+            kept++;
+        }
+    }
+    *acc = kept;
+    return code;
+}
+
+// 0x227 blowNear(name): the target's blow with that weapon reaches under 140
+// of its own height.
+// FS2 0x001a8ac0
+// callcheck: readNameArg, isBlowActive, strcmp
+
+static const int *nativeBlowNear(ScriptRunner *self, int *acc, const int *code)
+{
+    constexpr float kReach = 140.0f;
+    ScriptRunner *target = self->getTarget();
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageCharacter *who = target->getScriptCharacter();
+    *acc = 0;
+    if (who != nullptr && who->m_290 != nullptr && who->isBlowActive() && who->m_weapons[0] != nullptr
+        && strcmp(who->m_290->m_name, name) == 0) {
+        const sceVu0FVECTOR *matrix = who->m_290->getMatrix();
+        const sceVu0FVECTOR point = { matrix[3][0], matrix[3][1], who->m_xform.position[2], matrix[3][3] };
+        *acc = who->distanceToPoint(point) < kReach;
+    }
+    return next;
+}
+
+// 0xbe biteTargetNumber().
+// FS2 0x001c2c00
+// callcheck: getBiteTarget, getBiteTarget
+
+static const int *nativeBiteTargetNumber(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    StageObject *bitten = who != nullptr ? who->getBiteTarget() : nullptr;
+    *acc = bitten != nullptr ? bitten->m_id : 0;
+    return code;
+}
+
+// 0x6d isCompanion().
+// FS2 0x001c83c0
+
+static const int *nativeIsCompanion(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = self->getTarget()->scriptIsCompanion();
+    return code;
+}
+
+// 0x179 releaseAction().
+// FS2 0x001b5800
+// callcheck: releaseAction
+
+static const int *nativeReleaseAction(ScriptRunner *self, int *, const int *code)
+{
+    if (StageCharacter *who = self->getTarget()->getScriptCharacter())
+        who->m_motion->releaseAction();
+    return code;
+}
+
+// 0x185 shift(value, count): left by a positive count, right (unsigned) by a
+// negative one.
+// FS2 0x001b4cf0
+
+static const int *nativeShift(ScriptRunner *self, int *acc, const int *code)
+{
+    const int *args = self->popped(2);
+    u_int value = (u_int)args[0];
+    const int count = args[1];
+    if (count > 0)
+        value <<= count & 0x1f;
+    else if (count < 0)
+        value >>= -count & 0x1f;
+    *acc = (int)value;
+    return code;
+}
+
+// 0xf9 pickedItem(): the index the item list just picked, 0 none.
+// FS2 0x001be520
+
+static const int *nativePickedItem(ScriptRunner *, int *acc, const int *code)
+{
+    const int picked = gStageScene->itemList->pendingCount;
+    *acc = picked > 0 ? picked - 1 : picked;
+    return code;
+}
+
+// 0x234 playMusicOn(channel, frames, name), 0x235 stopMusicOn(channel, frames):
+// channels from 1.
+// FS2 0x001a7b40
+// callcheck: readNameArg, playMusic
+
+static const int *nativePlayMusicOn(ScriptRunner *self, int *, const int *code)
+{
+    const int *args = self->popped(2);
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    gStageScene->sound->playMusic(args[0] - 1, name, args[1]);
+    return next;
+}
+
+// FS2 0x001a7a80
+// callcheck: stopMusic
+
+static const int *nativeStopMusicOn(ScriptRunner *self, int *, const int *code)
+{
+    const int *args = self->popped(2);
+    gStageScene->sound->stopMusic(args[0] - 1, args[1]);
+    return code;
+}
+
+// 0x1a9 showNotice(text): held on screen, at the highest level.
+// FS2 0x001b2080
+// callcheck: readCellArg, addNotice
+
+static const int *nativeShowNotice(ScriptRunner *self, int *, const int *code)
+{
+    constexpr int kForever = 0x7fffffff;
+    constexpr int kNoticeArg = 0;
+    void *text;
+    const int *next = self->readCellArg(&text, code);
+    gStageScene->pauseState->addNotice((const u_short *)text, kForever, kNoticeArg, kForever);
+    return next;
+}
+
+// 0xa6 loseItems(count, name): drops that many, and they leave the stage.
+// FS2 0x001c4c70
+// callcheck: readNameArg, findItem, dropItem, setActive, setShown
+
+static const int *nativeLoseItems(ScriptRunner *self, int *, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const int count = self->popped(1)[0];
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageCharacter *who = target->getScriptCharacter();
+    if (who == nullptr)
+        return next;
+    for (int i = 0; i < count; i++) {
+        StageObject *item = who->findItem(name);
+        if (item == nullptr)
+            break;
+        who->dropItem(item);
+        item->m_tree->setActive(false);
+        item->m_tree->setShown(false);
+    }
+    return next;
+}
+
+// 0x200 takeOverState(): 0 no alternate action, 1 on the player, 2 on another.
+// FS2 0x001ab510
+// callcheck: getPlayerAltFlag
+
+static const int *nativeTakeOverState(ScriptRunner *, int *acc, const int *code)
+{
+    constexpr int kOnPlayer = 1;
+    constexpr int kOnOther = 2;
+    StageScene *scene = gStageScene;
+    *acc = 0;
+    if (scene->getPlayerAltFlag() != 0)
+        *acc = scene->controlled == nullptr || scene->controlled == scene->player ? kOnPlayer : kOnOther;
+    return code;
+}
+
+// 0x172 hasOverlayKind(kind).
+// FS2 0x001b5fa0
+// callcheck: hasOverlay
+
+static const int *nativeHasOverlayKind(ScriptRunner *self, int *acc, const int *code)
+{
+    const int kind = self->popped(1)[0];
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    // PC: the ROM has no test.
+    *acc = who != nullptr && who->m_brain != nullptr && who->m_brain->hasOverlay(kind);
+    return code;
+}
+
+// 0x16f carLights(on).
+// FS2 0x001b6260
+// callcheck: setLights
+
+static const int *nativeCarLights(ScriptRunner *self, int *, const int *code)
+{
+    const int on = self->popped(1)[0];
+    reinterpret_cast<StageCar *>(gStageScene->viewTarget)->setLights(on != 0);
+    return code;
+}
+
+// 0xd0 isUp(name).
+// FS2 0x001c1430
+// callcheck: readNameArg, findCharacter, getLifeState
+
+static const int *nativeIsUp(ScriptRunner *self, int *acc, const int *code)
+{
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageObject *found = gStageScene->objects->findCharacter(name, 0);
+    *acc = found != nullptr && static_cast<StageCharacter *>(found)->getLifeState() == LifeState_Up;
+    return next;
+}
+
+static const char kSpecialGetOn[]  = "GettingOnCar";    /* data 0x304b88 */
+static const char kSpecialGetOff[] = "GettingOffCar";   /* data 0x304b78 */
+static const char kSpecialDrag[]   = "DragOutCar";      /* data 0x304b68 */
+
+// 0x168 playerGetOnCar(), 0x169 playerGetOffCar().
+// FS2 0x001b66d0
+// callcheck: setSpecial
+
+static const int *nativePlayerGetOnCar(ScriptRunner *, int *, const int *code)
+{
+    gStageScene->player->setSpecial(true, kSpecialGetOn);
+    return code;
+}
+
+// FS2 0x001b6660
+// callcheck: setSpecial
+
+static const int *nativePlayerGetOffCar(ScriptRunner *, int *, const int *code)
+{
+    gStageScene->player->setSpecial(true, kSpecialGetOff);
+    return code;
+}
+
+// 0x167 canGetOnCar(), 0x16b canGetOffCar(): the player may, and no event runs.
+// FS2 0x001b6740
+// callcheck: isSpecialAllowed
+
+static const int *nativeCanGetOnCar(ScriptRunner *, int *acc, const int *code)
+{
+    *acc = gStageScene->player->isSpecialAllowed(kSpecialGetOn) && gStageScene->event == nullptr;
+    return code;
+}
+
+// FS2 0x001b64d0
+// callcheck: isSpecialAllowed
+
+static const int *nativeCanGetOffCar(ScriptRunner *, int *acc, const int *code)
+{
+    *acc = gStageScene->player->isSpecialAllowed(kSpecialGetOff) && gStageScene->event == nullptr;
+    return code;
+}
+
+// 0x16c canDragOutCar(), 0x16d dragOutCar().
+// FS2 0x001b6420
+// callcheck: isSpecialAllowed
+
+static const int *nativeCanDragOutCar(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->isSpecialAllowed(kSpecialDrag);
+    return code;
+}
+
+// FS2 0x001b63c0
+
+static const int *nativeDragOutCar(ScriptRunner *self, int *, const int *code)
+{
+    self->getTarget()->scriptDragOutCar();
+    return code;
+}
+
+// 0x212 breakWindow(): a door's window, with no effect.
+// FS2 0x001aa0b0
+// callcheck: breakPart
+
+static const int *nativeBreakWindow(ScriptRunner *self, int *, const int *code)
+{
+    StageObject *object = self->getTarget()->getScriptObject();
+    if (object != nullptr && object->getKind() == StageObject_Door
+        && static_cast<StageDoor *>(object)->m_window != 0)
+        object->breakPart(0, false);
+    return code;
+}
+
+// 0x20e resetTraps(name): the free items of that name, unsprung (0x137's undo).
+// FS2 0x001aa550
+// callcheck: readNameArg, FUN_0021eb50, FUN_0021ead0, strcmp
+
+static const int *nativeResetTraps(ScriptRunner *self, int *, const int *code)
+{
+    const char *name;
+    const int *next = self->readNameArg(&name, code);
+    StageObjArray &items = gStageScene->objects->m_lists[StageObjGroup_3];
+    for (StageObject **slot = items.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        StageObject *item = *slot;
+        if (item->m_active != 0 && item->m_parent == nullptr && strcmp(item->m_name, name) == 0)
+            static_cast<StageItem *>(item)->m_sprung = 0;
+    }
+    return next;
+}
+
+// 0x1b5 addGroupColorKey(frame, r, g, b, a), 0x1c4 setGroupColorLoop(loop):
+// every object sharing the target's name.
+// FS2 0x001b13f0
+// callcheck: colorToFloatGs, findAll5
+
+static const int *nativeAddGroupColorKey(ScriptRunner *self, int *, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const int *args = self->popped(5);
+    float color[4];
+    colorToFloatGs(color, &args[1]);
+    const char *name = target->getName();
+    StageObjArray *list = name != nullptr ? gStageScene->objects->findAll5(name) : nullptr;
+    if (list == nullptr)
+        return code;
+    for (StageObject **slot = list->begin(); slot != nullptr; slot = StageObjArray::next(slot))
+        (*slot)->cmdAddColorKey(args[0], color);
+    return code;
+}
+
+// FS2 0x001af4a0
+// callcheck: findAll5
+
+static const int *nativeSetGroupColorLoop(ScriptRunner *self, int *, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const int loop = self->popped(1)[0];
+    const char *name = target->getName();
+    StageObjArray *list = name != nullptr ? gStageScene->objects->findAll5(name) : nullptr;
+    if (list == nullptr)
+        return code;
+    for (StageObject **slot = list->begin(); slot != nullptr; slot = StageObjArray::next(slot))
+        (*slot)->cmdSetColorLoop((u_char)loop);
+    return code;
+}
+
+// 0x18b angleToName(object): degrees from the target to it, 0 the +y axis
+// turned half a circle.
+// FS2 0x001b44a0
+// callcheck: readObjectArg, atan2Octant, addAngle
+
+static const int *nativeAngleToName(ScriptRunner *self, int *acc, const int *code)
+{
+    constexpr float kPi = 3.1415927f;
+    constexpr float kDegrees = 57.295776f;
+    ScriptRunner *target = self->getTarget();
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    StageObject *object = (StageObject *)scriptLabelCell(label);
+    StageObject *me = target->getScriptObject();
+    // PC: the ROM has no test of either.
+    if (object == nullptr || me == nullptr) {
+        *acc = 0;
+        return next;
+    }
+    const sceVu0FVECTOR *mine = me->getWorldMatrix();
+    const sceVu0FVECTOR *theirs = object->getWorldMatrix();
+    const float angle = atan2Octant(theirs[3][0] - mine[3][0], theirs[3][1] - mine[3][1]);
+    *acc = (int)(addAngle(-angle, kPi) * kDegrees);
+    return next;
+}
+
+// Natives 0xaa, 0x1e8: the gadget of the one on the pad takes the text, and
+// the special turns on. Inline in 0x1acb00. True: no such gadget.
+static bool armPadGadgetText(const char *special, const char *text)
+{
+    StageCharacter *onPad = static_cast<StageCharacter *>(scenePlayer());
+    const bool armed = onPad->m_motion->armGadgetSpecial(special, text);
+    if (armed)
+        onPad->setSpecial(true, special);
+    return !armed;
+}
+
+// The same, the text an object's name.
+// FS2 0x001c46d0
+// callcheck: FUN_001d1280, setText, setSpecial
+
+static bool armPadGadget(const char *special, StageObject *object)
+{
+    // PC: the ROM reads +0x20 of a null object: the zero page, an empty text.
+    return armPadGadgetText(special, object != nullptr ? object->m_name : "");
+}
+
+// 0xaa useLockGadget(kind, value, ?, ?): the seven keys (kind 3, value the
+// object) or the number lock (kind 2): waits for the input, arms the
+// gadget, and when the owned screen comes up saves the flags and fades,
+// hides the objects until it ends, and restores them.
+// FS2 0x001c4200
+// callcheck: FUN_001c47a0, FUN_001c4790, FUN_001c4780, isOwned2Busy, isOwned1Busy, restoreObjectFlags, scriptYield, FUN_001c46b0, isFullInMode2, scriptYield, FUN_001c46a0, stageHideObjects, currentMission, FUN_001c4680, currentMission, FUN_001c4680, FUN_0018bf10, scriptYield, scriptObjectOfValue, isOwned2Busy, FUN_001c46d0, saveObjectFlags, findNumLockTarget, isOwned1Busy, FUN_001c46d0, saveObjectFlags, scriptYield, scriptYield, isInputBlocked, FUN_001c46c0, scriptObjectOfValue, FUN_001c46d0, scriptYield, FUN_001c4760, findNumLockTarget, FUN_001c46d0, scriptYield, scriptYield
+
+static const int *nativeUseLockGadget(ScriptRunner *self, int *, const int *code)
+{
+    enum { Native = 0xaa, Start = 0, Armed = 1, Fading = 2, Waiting = 3 };
+    constexpr int kKindNumLock = 2;
+    constexpr int kKindSevenKey = 3;
+    static const char kSevenKey[] = "SevenKey";  /* data 0x304ac8 */
+    static const char kNumLock[]  = "NumLock";   /* data 0x304ad8 */
+
+    const int *args = self->popped(4);
+    const int kind = args[0];
+    const int value = args[1];
+    StageScene *scene = gStageScene;
+    switch (takeScriptYield()) {
+    case Start:
+        if (scene->isInputBlocked()) {
+            scriptYield(Native, Start);
+        } else if (kind == kKindSevenKey) {
+            armPadGadget(kSevenKey, scriptObjectOfValue(value));
+            scriptYield(Native, Armed);
+        } else if (kind == kKindNumLock) {
+            if (StageObject *lock = findNumLockTarget()) {
+                armPadGadget(kNumLock, lock);
+                scriptYield(Native, Armed);
+            }
+        }
+        break;
+    case Armed: {
+        bool busy = false;
+        if (kind == kKindSevenKey) {
+            StageObject *object = scriptObjectOfValue(value);
+            busy = scene->isOwned2Busy();
+            if (busy)
+                scene->saveObjectFlags((void *)(intptr_t)kKindSevenKey, object);
+            else
+                armPadGadget(kSevenKey, object);
+        } else if (kind == kKindNumLock) {
+            StageObject *lock = findNumLockTarget();
+            busy = scene->isOwned1Busy();
+            if (busy)
+                scene->saveObjectFlags((void *)(intptr_t)kKindNumLock, lock);
+            else
+                armPadGadget(kNumLock, lock);
+        }
+        scriptYield(Native, busy ? Fading : Armed);
+        break;
+    }
+    case Fading:
+        if (!scene->fade->isFullInMode2()) {
+            scriptYield(Native, Fading);
+        } else {
+            stageHideObjects();
+            StageObject *kept = scene->currentMission()->keptObject;
+            if (kept != nullptr)
+                kept->m_viewActive = 1;
+            scriptYield(Native, Waiting);
+        }
+        break;
+    case Waiting: {
+        bool done = false;
+        if (kind == kKindSevenKey)
+            done = !scene->isOwned2Busy();
+        else if (kind == kKindNumLock)
+            done = !scene->isOwned1Busy();
+        if (done)
+            scene->restoreObjectFlags();
+        else
+            scriptYield(Native, Waiting);
+        break;
+    }
+    default:
+        break;
+    }
+    return code;
+}
+
+static const char kSpecialSigLamp[] = "SigLamp";       /* data 0x304ae0 */
+
+// 0x1e7 canUseSigLamp(): the one on the pad may, and the input is free.
+// FS2 0x001acd00
+// callcheck: isInputBlocked, isSpecialAllowed
+
+static const int *nativeCanUseSigLamp(ScriptRunner *, int *acc, const int *code)
+{
+    StageCharacter *onPad = static_cast<StageCharacter *>(scenePlayer());
+    *acc = !gStageScene->isInputBlocked() && onPad->isSpecialAllowed(kSpecialSigLamp);
+    return code;
+}
+
+// 0x1e8 useSigLamp(text): the same test, then its gadget takes the text.
+// FS2 0x001acb00
+// callcheck: readNameArg, isInputBlocked, isSpecialAllowed, FUN_001d1280, setText, setSpecial (armPadGadgetText)
+
+static const int *nativeUseSigLamp(ScriptRunner *self, int *acc, const int *code)
+{
+    const char *text;
+    const int *next = self->readNameArg(&text, code);
+    StageCharacter *onPad = static_cast<StageCharacter *>(scenePlayer());
+    *acc = 0;
+    if (!gStageScene->isInputBlocked() && onPad->isSpecialAllowed(kSpecialSigLamp)) {
+        armPadGadgetText(kSpecialSigLamp, text);
+        *acc = 1;
+    }
+    return next;
+}
+
+// 0x1e9 sigLampHasTarget().
+// FS2 0x001aca90
+// callcheck: hasTarget (slot +0x40)
+
+static const int *nativeSigLampHasTarget(ScriptRunner *, int *acc, const int *code)
+{
+    constexpr int kOwnedSigLamp = 0;    // StageScene +0x8c
+    *acc = gStageScene->owned[kOwnedSigLamp]->hasTarget();
+    return code;
+}
+
+// 0x176 dropSpawnPointRange(first, last): how many there were.
+// FS2 0x001b5a60
+// callcheck: currentMission
+
+static const int *nativeDropSpawnPointRange(ScriptRunner *self, int *acc, const int *code)
+{
+    constexpr int kStateOff = 1;
+    const int *args = self->popped(2);
+    StageMission *mission = gStageScene->currentMission();
+    int dropped = 0;
+    for (int i = args[0]; i <= args[1]; i++) {
+        if (mission->spawnPoints[i].state != 0) {
+            mission->spawnPoints[i].state = kStateOff;
+            dropped++;
+        }
+    }
+    *acc = dropped;
+    return code;
+}
+
+// 0x6e isBlowActive().
+// FS2 0x001c8320
+// callcheck: isBlowActive
+
+static const int *nativeIsBlowActive(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->isBlowActive();
+    return code;
+}
+
+// 0x209 isObjectInSight(object).
+// FS2 0x001aab80
+// callcheck: readObjectArg, FUN_0029f200
+
+static const int *nativeIsObjectInSight(ScriptRunner *self, int *acc, const int *code)
+{
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    StageObject *object = (StageObject *)scriptLabelCell(label);
+    // PC: the ROM reads the place of a null.
+    *acc = object != nullptr && missionObjectInSight(object);
+    return next;
+}
+
+// 0x5c spawnEffectOnObject(effect, object): on it, or on the top view for
+// "NULL". The ROM keeps native 0x5d's whole body and tests its bone word
+// against itself, so the other way is dead code.
+// FS2 0x001c9b30
+// callcheck: find, spawnEffectOnBone (the dead way)
+
+static const int *nativeSpawnEffectOnObject(ScriptRunner *self, int *acc, const int *code)
+{
+    const char *name;
+    const char *label;
+    const int *next = self->readNameArg(&name, code);
+    next = self->readObjectArg(&label, next);
+    StageObject *parent = isNullName(label) ? gStageScene->getTopView() : (StageObject *)scriptLabelCell(label);
+    *acc = gStageScene->effects->spawn(name, parent, nullptr, nullptr);
+    return next;
+}
+
 // By how many scripts call them (sssall.py); the ROM's numbers.
 static const ScriptNativeBinding kAskedNatives[] = {
     { 0x022, nativeSpawnNamed },
@@ -4926,6 +5955,7 @@ static const ScriptNativeBinding kAskedNatives[] = {
     { 0x02d, nativeSwitchOn },
     { 0x032, nativeCanSeeNumber },
     { 0x033, nativeCanSeeName },
+    { 0x034, nativeCanSeeWithin },
     { 0x035, nativeMarkPlace },
     { 0x03d, nativeHeardAllyAgain },
     { 0x040, nativeHeightToNumber },
@@ -4937,7 +5967,13 @@ static const ScriptNativeBinding kAskedNatives[] = {
     { 0x057, nativeIsCrouchingName },
     { 0x059, nativeRouteAction12c },
     { 0x05a, nativeRouteAction130 },
+    { 0x05c, nativeSpawnEffectOnObject },
     { 0x05d, nativeSpawnEffectOn },
+    { 0x05e, nativeSpawnEffectPlaced },
+    { 0x061, nativeCrouch },
+    { 0x068, nativePlayMotion },
+    { 0x06d, nativeIsCompanion },
+    { 0x06e, nativeIsBlowActive },
     { 0x07f, nativeNothing7f },
     { 0x080, nativePutWeaponAway },
     { 0x082, nativeWakeBrain },
@@ -4965,10 +6001,16 @@ static const ScriptNativeBinding kAskedNatives[] = {
     { 0x0a3, nativeNearestCorpse },
     { 0x0a4, nativeHeardWithin },
     { 0x0a5, nativeLoseItem },
+    { 0x0a6, nativeLoseItems },
     { 0x0a7, nativeShowItems },
     { 0x0a9, nativeHeardFoe },
+    { 0x0aa, nativeUseLockGadget },
+    { 0x0ab, nativeStopSound },
     { 0x0b0, nativePlayObjectMotion },
+    { 0x0b2, nativeObjectLightOn },
     { 0x0b3, nativeDoorState },
+    { 0x0b6, nativePlaySoundAtVolume },
+    { 0x0be, nativeBiteTargetNumber },
     { 0x0bf, nativeIsBittenNumber },
     { 0x0c0, nativeIsBittenName },
     { 0x0c1, nativeForgetFoe },
@@ -4977,6 +6019,7 @@ static const ScriptNativeBinding kAskedNatives[] = {
     { 0x0c7, nativeAlertOnName },
     { 0x0c8, nativeAlertOnNumber },
     { 0x0ce, nativeIsOnStage },
+    { 0x0d0, nativeIsUp },
     { 0x0dc, nativePercentOf },
     { 0x0dd, nativeAbs },
     { 0x0e1, nativeClamp },
@@ -4988,6 +6031,7 @@ static const ScriptNativeBinding kAskedNatives[] = {
     { 0x0ea, nativeHasLineTo },
     { 0x0f2, nativeAskLift },
     { 0x0f3, nativeAddFoeWeight },
+    { 0x0f9, nativePickedItem },
     { 0x0ff, nativeSearchPointAt },
     { 0x100, nativeSearchPointNext },
     { 0x104, nativeUseItem },
@@ -5007,6 +6051,7 @@ static const ScriptNativeBinding kAskedNatives[] = {
     { 0x121, nativeDropLongWeapon },
     { 0x122, nativePickUp },
     { 0x123, nativeNearWeapon },
+    { 0x127, nativeObjectLightOff },
     { 0x128, nativeSetVisibility },
     { 0x12a, nativeSpawnEffectAt },
     { 0x12e, nativeSwing },
@@ -5016,28 +6061,64 @@ static const ScriptNativeBinding kAskedNatives[] = {
     { 0x13e, nativeAlertCry },
     { 0x13f, nativeBulletFlying },
     { 0x143, nativeIsCorpse },
+    { 0x15e, nativeOverlayKind },
     { 0x166, nativeIsWalking },
+    { 0x167, nativeCanGetOnCar },
+    { 0x168, nativePlayerGetOnCar },
+    { 0x169, nativePlayerGetOffCar },
+    { 0x16b, nativeCanGetOffCar },
+    { 0x16c, nativeCanDragOutCar },
+    { 0x16d, nativeDragOutCar },
+    { 0x16f, nativeCarLights },
     { 0x171, nativeHasOverlay },
+    { 0x172, nativeHasOverlayKind },
+    { 0x173, nativeKeepAllSpawnPoints },
     { 0x174, nativeDropSpawnPoints },
+    { 0x175, nativeKeepSpawnPoints },
+    { 0x176, nativeDropSpawnPointRange },
+    { 0x178, nativeKeepSpawnPointList },
+    { 0x179, nativeReleaseAction },
     { 0x17e, nativeLeave },
     { 0x17f, nativeLeaveAtOnce },
+    { 0x185, nativeShift },
+    { 0x18b, nativeAngleToName },
     { 0x18c, nativeAngleTo },
     { 0x192, nativeEventEffect },
     { 0x19b, nativeIsMotionEnding },
+    { 0x1a9, nativeShowNotice },
+    { 0x1b5, nativeAddGroupColorKey },
     { 0x1bf, nativeWasHit },
+    { 0x1c0, nativeSpawnAtLater },
+    { 0x1c4, nativeSetGroupColorLoop },
     { 0x1c5, nativeSpawnNearLater },
     { 0x1c6, nativeTimedRecords },
+    { 0x1d1, nativeHurtBy },
+    { 0x1d2, nativeHurtByName },
     { 0x1dd, nativeZero },
     { 0x1de, nativeDarkness },
+    { 0x1e7, nativeCanUseSigLamp },
+    { 0x1e8, nativeUseSigLamp },
+    { 0x1e9, nativeSigLampHasTarget },
     { 0x1ef, nativeNearNamed },
     { 0x1f4, nativeIsNearViewTarget },
     { 0x1f6, nativeBlackout },
     { 0x1f9, nativeSmokeNear },
+    { 0x1fb, nativeMarkWeapons },
+    { 0x200, nativeTakeOverState },
     { 0x206, nativeCanUseSevenKey },
     { 0x207, nativeRouteObject },
+    { 0x208, nativeIsInSight },
+    { 0x209, nativeIsObjectInSight },
+    { 0x20a, nativeIsBroken },
     { 0x20b, nativeIsStanding },
+    { 0x20e, nativeResetTraps },
+    { 0x212, nativeBreakWindow },
     { 0x213, nativeIsFatal },
     { 0x214, nativeFireAt },
+    { 0x21a, nativeSetMotionLabel },
+    { 0x227, nativeBlowNear },
+    { 0x234, nativePlayMusicOn },
+    { 0x235, nativeStopMusicOn },
 };
 
 // The ROM indexes table 0x304230 by id - 0x19.

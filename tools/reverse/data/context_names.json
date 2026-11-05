@@ -15791,6 +15791,12 @@
   "was": "FUN_001a74a0",
   "why": "slot or owner named with the natives"
  },
+ "001a74e0": {
+  "name": "ScriptProxy::scriptIsCompanion",
+  "tag": "game-inferred",
+  "was": "FUN_001a74e0",
+  "why": "forwards slot +0x118 to the forward object"
+ },
  "001a75a0": {
   "name": "ScriptProxy::scriptIsCrouching",
   "tag": "game-inferred",
@@ -15851,11 +15857,35 @@
   "was": "FUN_001a7a20",
   "why": "table 0x304230 indexed by id - 0x19, a0 runner, a1 acc address, a2 code; the VM's 0x01000000 words"
  },
+ "001a7a80": {
+  "name": "nativeStopMusicOn",
+  "tag": "game-inferred",
+  "was": "FUN_001a7a80",
+  "why": "script native 0x235"
+ },
+ "001a7b40": {
+  "name": "nativePlayMusicOn",
+  "tag": "game-inferred",
+  "was": "FUN_001a7b40",
+  "why": "script native 0x234"
+ },
  "001a86b0": {
   "name": "nativeLightValue2d8",
   "tag": "game-inferred",
   "was": "FUN_001a86b0",
   "why": "script native 0x229: slot +0x5c"
+ },
+ "001a8ac0": {
+  "name": "nativeBlowNear",
+  "tag": "game-inferred",
+  "was": "FUN_001a8ac0",
+  "why": "script native 0x227"
+ },
+ "001a9850": {
+  "name": "nativeSetMotionLabel",
+  "tag": "game-inferred",
+  "was": "FUN_001a9850",
+  "why": "script native 0x21a"
  },
  "001a9a40": {
   "name": "nativeFarFog",
@@ -15875,6 +15905,18 @@
   "was": "FUN_001aa000",
   "why": "script native (kAskedNatives, table 0x304230)"
  },
+ "001aa0b0": {
+  "name": "nativeBreakWindow",
+  "tag": "game-inferred",
+  "was": "FUN_001aa0b0",
+  "why": "script native 0x212"
+ },
+ "001aa550": {
+  "name": "nativeResetTraps",
+  "tag": "game-inferred",
+  "was": "FUN_001aa550",
+  "why": "script native 0x20e"
+ },
  "001aa720": {
   "name": "nativeLightEnabled",
   "tag": "game-inferred",
@@ -15886,6 +15928,24 @@
   "tag": "game-inferred",
   "was": "FUN_001aa920",
   "why": "script native (kAskedNatives, table 0x304230)"
+ },
+ "001aa9e0": {
+  "name": "nativeIsBroken",
+  "tag": "game-inferred",
+  "was": "FUN_001aa9e0",
+  "why": "script native 0x20a"
+ },
+ "001aab80": {
+  "name": "nativeIsObjectInSight",
+  "tag": "game-inferred",
+  "was": "FUN_001aab80",
+  "why": "script native 0x209"
+ },
+ "001aac70": {
+  "name": "nativeIsInSight",
+  "tag": "game-inferred",
+  "was": "FUN_001aac70",
+  "why": "script native 0x208"
  },
  "001aadb0": {
   "name": "nativeRouteObject",
@@ -15904,6 +15964,18 @@
   "tag": "game-inferred",
   "was": "FUN_001ab180",
   "why": "script native 0x203: slot +0x54 with value squared"
+ },
+ "001ab510": {
+  "name": "nativeTakeOverState",
+  "tag": "game-inferred",
+  "was": "FUN_001ab510",
+  "why": "script native 0x200"
+ },
+ "001ab870": {
+  "name": "nativeMarkWeapons",
+  "tag": "game-inferred",
+  "was": "FUN_001ab870",
+  "why": "script native 0x1fb"
  },
  "001abc00": {
   "name": "nativeSmokeNear",
@@ -15928,6 +16000,24 @@
   "tag": "game-inferred",
   "was": "FUN_001ac5f0",
   "why": "script native 0x1ef (kAskedNatives, table 0x304230)"
+ },
+ "001aca90": {
+  "name": "nativeSigLampHasTarget",
+  "tag": "game-inferred",
+  "was": "FUN_001aca90",
+  "why": "script native 0x1e9"
+ },
+ "001acb00": {
+  "name": "nativeUseSigLamp",
+  "tag": "game-inferred",
+  "was": "FUN_001acb00",
+  "why": "script native 0x1e8"
+ },
+ "001acd00": {
+  "name": "nativeCanUseSigLamp",
+  "tag": "game-inferred",
+  "was": "FUN_001acd00",
+  "why": "script native 0x1e7"
  },
  "001ace90": {
   "name": "nativeLightCastsShadow",
@@ -15989,6 +16079,18 @@
   "was": "FUN_001ae310",
   "why": "script native 0x1d4: label's object exists and +0x34 is set"
  },
+ "001ae4c0": {
+  "name": "nativeHurtByName",
+  "tag": "game-inferred",
+  "was": "FUN_001ae4c0",
+  "why": "script native 0x1d2"
+ },
+ "001ae610": {
+  "name": "nativeHurtBy",
+  "tag": "game-inferred",
+  "was": "FUN_001ae610",
+  "why": "script native 0x1d1"
+ },
  "001af220": {
   "name": "nativeTimedRecords",
   "tag": "game-inferred",
@@ -16001,6 +16103,12 @@
   "was": "FUN_001af290",
   "why": "script native 0x1c5 (kAskedNatives, table 0x304230)"
  },
+ "001af4a0": {
+  "name": "nativeSetGroupColorLoop",
+  "tag": "game-inferred",
+  "was": "FUN_001af4a0",
+  "why": "script native 0x1c4"
+ },
  "001af6a0": {
   "name": "nativeSetSetLoop",
   "tag": "game-inferred",
@@ -16012,6 +16120,18 @@
   "tag": "game-inferred",
   "was": "FUN_001af770",
   "why": "script native 0x1c2"
+ },
+ "001af9e0": {
+  "name": "nativeSpawnAtLater",
+  "tag": "game-inferred",
+  "was": "FUN_001af9e0",
+  "why": "script native 0x1c0"
+ },
+ "001afe60": {
+  "name": "spawnAtLabel",
+  "tag": "game-inferred",
+  "was": "FUN_001afe60",
+  "why": "native 0x1c0 with no delay: the body of 0x9d"
  },
  "001b0040": {
   "name": "nativeWasHit",
@@ -16073,6 +16193,12 @@
   "was": "FUN_001b11d0",
   "why": "script native 0x1b6: SceneRender +0xbcc tracks"
  },
+ "001b13f0": {
+  "name": "nativeAddGroupColorKey",
+  "tag": "game-inferred",
+  "was": "FUN_001b13f0",
+  "why": "script native 0x1b5"
+ },
  "001b1650": {
   "name": "nativeLightFlag248",
   "tag": "game-inferred",
@@ -16084,6 +16210,12 @@
   "tag": "game-inferred",
   "was": "FUN_001b1850",
   "why": "script native 0x1b3: slot +0x74"
+ },
+ "001b2080": {
+  "name": "nativeShowNotice",
+  "tag": "game-inferred",
+  "was": "FUN_001b2080",
+  "why": "script native 0x1a9"
  },
  "001b2280": {
   "name": "nativeSpecialAllowed",
@@ -16133,6 +16265,18 @@
   "was": "FUN_001b42f0",
   "why": "script native 0x18c (kAskedNatives, table 0x304230)"
  },
+ "001b44a0": {
+  "name": "nativeAngleToName",
+  "tag": "game-inferred",
+  "was": "FUN_001b44a0",
+  "why": "script native 0x18b"
+ },
+ "001b4cf0": {
+  "name": "nativeShift",
+  "tag": "game-inferred",
+  "was": "FUN_001b4cf0",
+  "why": "script native 0x185"
+ },
  "001b5180": {
   "name": "nativeLeaveAtOnce",
   "tag": "game-inferred",
@@ -16163,17 +16307,95 @@
   "was": "FUN_001b56b0",
   "why": "gStageScene->objects->find5(name, 0); both callers pass light names (scr_demo_pl)"
  },
+ "001b5800": {
+  "name": "nativeReleaseAction",
+  "tag": "game-inferred",
+  "was": "FUN_001b5800",
+  "why": "script native 0x179"
+ },
+ "001b5890": {
+  "name": "nativeKeepSpawnPointList",
+  "tag": "game-inferred",
+  "was": "FUN_001b5890",
+  "why": "script native 0x178"
+ },
+ "001b5a60": {
+  "name": "nativeDropSpawnPointRange",
+  "tag": "game-inferred",
+  "was": "FUN_001b5a60",
+  "why": "script native 0x176"
+ },
+ "001b5bf0": {
+  "name": "nativeKeepSpawnPoints",
+  "tag": "game-inferred",
+  "was": "FUN_001b5bf0",
+  "why": "script native 0x175"
+ },
  "001b5d80": {
   "name": "nativeDropSpawnPoints",
   "tag": "game-inferred",
   "was": "FUN_001b5d80",
   "why": "script native 0x174 (kAskedNatives, table 0x304230)"
  },
+ "001b5e90": {
+  "name": "nativeKeepAllSpawnPoints",
+  "tag": "game-inferred",
+  "was": "FUN_001b5e90",
+  "why": "script native 0x173"
+ },
+ "001b5fa0": {
+  "name": "nativeHasOverlayKind",
+  "tag": "game-inferred",
+  "was": "FUN_001b5fa0",
+  "why": "script native 0x172"
+ },
  "001b60b0": {
   "name": "nativeHasOverlay",
   "tag": "game-inferred",
   "was": "FUN_001b60b0",
   "why": "script native 0x171 (kAskedNatives, table 0x304230)"
+ },
+ "001b6260": {
+  "name": "nativeCarLights",
+  "tag": "game-inferred",
+  "was": "FUN_001b6260",
+  "why": "script native 0x16f"
+ },
+ "001b63c0": {
+  "name": "nativeDragOutCar",
+  "tag": "game-inferred",
+  "was": "FUN_001b63c0",
+  "why": "script native 0x16d"
+ },
+ "001b6420": {
+  "name": "nativeCanDragOutCar",
+  "tag": "game-inferred",
+  "was": "FUN_001b6420",
+  "why": "script native 0x16c"
+ },
+ "001b64d0": {
+  "name": "nativeCanGetOffCar",
+  "tag": "game-inferred",
+  "was": "FUN_001b64d0",
+  "why": "script native 0x16b"
+ },
+ "001b6660": {
+  "name": "nativePlayerGetOffCar",
+  "tag": "game-inferred",
+  "was": "FUN_001b6660",
+  "why": "script native 0x169"
+ },
+ "001b66d0": {
+  "name": "nativePlayerGetOnCar",
+  "tag": "game-inferred",
+  "was": "FUN_001b66d0",
+  "why": "script native 0x168"
+ },
+ "001b6740": {
+  "name": "nativeCanGetOnCar",
+  "tag": "game-inferred",
+  "was": "FUN_001b6740",
+  "why": "script native 0x167"
  },
  "001b6820": {
   "name": "nativeIsWalking",
@@ -16186,6 +16408,12 @@
   "tag": "game-inferred",
   "was": "FUN_001b6fe0",
   "why": "native 0x163: StageFade colour and start from frames"
+ },
+ "001b79d0": {
+  "name": "nativeOverlayKind",
+  "tag": "game-inferred",
+  "was": "FUN_001b79d0",
+  "why": "script native 0x15e"
  },
  "001b9680": {
   "name": "nativeDemoBind",
@@ -16252,6 +16480,12 @@
   "tag": "game-inferred",
   "was": "FUN_001bb770",
   "why": "script native 0x128 (kAskedNatives, table 0x304230)"
+ },
+ "001bb850": {
+  "name": "nativeObjectLightOff",
+  "tag": "game-inferred",
+  "was": "FUN_001bb850",
+  "why": "script native 0x127"
  },
  "001bbc50": {
   "name": "nativeNearWeapon",
@@ -16361,6 +16595,12 @@
   "was": "FUN_001bde10",
   "why": "script native 0xff (kAskedNatives, table 0x304230)"
  },
+ "001be520": {
+  "name": "nativePickedItem",
+  "tag": "game-inferred",
+  "was": "FUN_001be520",
+  "why": "script native 0xf9"
+ },
  "001beb20": {
   "name": "nativeAddFoeWeight",
   "tag": "game-inferred",
@@ -16427,6 +16667,12 @@
   "was": "FUN_001c0760",
   "why": "script native (kAskedNatives, table 0x304230)"
  },
+ "001c1430": {
+  "name": "nativeIsUp",
+  "tag": "game-inferred",
+  "was": "FUN_001c1430",
+  "why": "script native 0xd0"
+ },
  "001c1590": {
   "name": "nativeIsOnStage",
   "tag": "game-inferred",
@@ -16475,17 +16721,53 @@
   "was": "FUN_001c2aa0",
   "why": "script native (kAskedNatives, table 0x304230)"
  },
+ "001c2c00": {
+  "name": "nativeBiteTargetNumber",
+  "tag": "game-inferred",
+  "was": "FUN_001c2c00",
+  "why": "script native 0xbe"
+ },
+ "001c34f0": {
+  "name": "nativePlaySoundAtVolume",
+  "tag": "game-inferred",
+  "was": "FUN_001c34f0",
+  "why": "script native 0xb6"
+ },
  "001c3a30": {
   "name": "nativeDoorState",
   "tag": "game-inferred",
   "was": "FUN_001c3a30",
   "why": "script native 0xb3 (kAskedNatives, table 0x304230)"
  },
+ "001c3b70": {
+  "name": "nativeObjectLightOn",
+  "tag": "game-inferred",
+  "was": "FUN_001c3b70",
+  "why": "script native 0xb2"
+ },
  "001c3d50": {
   "name": "nativePlayObjectMotion",
   "tag": "game-inferred",
   "was": "FUN_001c3d50",
   "why": "script native 0xb0 (kAskedNatives, table 0x304230)"
+ },
+ "001c4180": {
+  "name": "nativeStopSound",
+  "tag": "game-inferred",
+  "was": "FUN_001c4180",
+  "why": "script native 0xab"
+ },
+ "001c4200": {
+  "name": "nativeUseLockGadget",
+  "tag": "game-inferred",
+  "was": "FUN_001c4200",
+  "why": "script native 0xaa"
+ },
+ "001c46d0": {
+  "name": "armPadGadget",
+  "tag": "game-inferred",
+  "was": "FUN_001c46d0",
+  "why": "native 0xaa: the gadget special text, setSpecial on who is on the pad"
  },
  "001c47c0": {
   "name": "nativeHeardFoe",
@@ -16498,6 +16780,12 @@
   "tag": "game-inferred",
   "was": "FUN_001c4a90",
   "why": "script native 0xa7 (kAskedNatives, table 0x304230)"
+ },
+ "001c4c70": {
+  "name": "nativeLoseItems",
+  "tag": "game-inferred",
+  "was": "FUN_001c4c70",
+  "why": "script native 0xa6"
  },
  "001c4dd0": {
   "name": "nativeLoseItem",
@@ -16673,6 +16961,24 @@
   "was": "FUN_001c81a0",
   "why": "script native 0x70: reads a name, StageObjectList::findCharacter, StageScene::setPlayer"
  },
+ "001c8320": {
+  "name": "nativeIsBlowActive",
+  "tag": "game-inferred",
+  "was": "FUN_001c8320",
+  "why": "script native 0x6e"
+ },
+ "001c83c0": {
+  "name": "nativeIsCompanion",
+  "tag": "game-inferred",
+  "was": "FUN_001c83c0",
+  "why": "script native 0x6d"
+ },
+ "001c8980": {
+  "name": "nativePlayMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001c8980",
+  "why": "script native 0x68"
+ },
  "001c8dc0": {
   "name": "nativeScriptView",
   "tag": "game-inferred",
@@ -16685,11 +16991,29 @@
   "was": "FUN_001c8f40",
   "why": "strcmp(name, \"NULL\") == 0"
  },
+ "001c90b0": {
+  "name": "nativeCrouch",
+  "tag": "game-inferred",
+  "was": "FUN_001c90b0",
+  "why": "script native 0x61"
+ },
+ "001c93c0": {
+  "name": "nativeSpawnEffectPlaced",
+  "tag": "game-inferred",
+  "was": "FUN_001c93c0",
+  "why": "script native 0x5e"
+ },
  "001c9800": {
   "name": "nativeSpawnEffectOn",
   "tag": "game-inferred",
   "was": "FUN_001c9800",
   "why": "script native 0x5d (kAskedNatives, table 0x304230)"
+ },
+ "001c9b30": {
+  "name": "nativeSpawnEffectOnObject",
+  "tag": "game-inferred",
+  "was": "FUN_001c9b30",
+  "why": "script native 0x5c"
  },
  "001c9f20": {
   "name": "nativeRouteAction130",
@@ -16762,6 +17086,12 @@
   "tag": "game-inferred",
   "was": "FUN_001cc2d0",
   "why": "script native 0x35 (kAskedNatives, table 0x304230)"
+ },
+ "001cc330": {
+  "name": "nativeCanSeeWithin",
+  "tag": "game-inferred",
+  "was": "FUN_001cc330",
+  "why": "script native 0x34"
  },
  "001cc710": {
   "name": "nativeCanSeeName",
@@ -16888,6 +17218,12 @@
   "tag": "game-inferred",
   "was": "FUN_001d0a60",
   "why": "strings PC, NPC, SELF, else StageObjectList::findAny"
+ },
+ "001d0b50": {
+  "name": "applySpawnPointList",
+  "tag": "game-inferred",
+  "was": "FUN_001d0b50",
+  "why": "native 0x178: parses 1, 3-7 and sets the spawn point states"
  },
  "001d1150": {
   "name": "hideActiveNamed",
@@ -17682,16 +18018,16 @@
   "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
  },
  "001da2d0": {
-  "name": "CharacterBrain::useSpecial",
+  "name": "CharacterBrain::scriptUseSpecial",
   "tag": "game-inferred",
   "was": "FUN_001da2d0",
-  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+  "why": "brain runner slot +0x1ac; was useSpecial"
  },
  "001da370": {
-  "name": "CharacterBrain::crouch1",
+  "name": "CharacterBrain::scriptCrouch",
   "tag": "game-inferred",
   "was": "FUN_001da370",
-  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+  "why": "brain runner slot +0x1a4; was crouch1"
  },
  "001da3c0": {
   "name": "CharacterBrain::crouch3",
@@ -17724,10 +18060,10 @@
   "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
  },
  "001da5d0": {
-  "name": "CharacterBrain::dragOutCar",
+  "name": "CharacterBrain::scriptDragOutCar",
   "tag": "game-inferred",
   "was": "FUN_001da5d0",
-  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+  "why": "brain runner slot +0x1a8; was dragOutCar"
  },
  "001da5e0": {
   "name": "CharacterBrain::takeItem",
@@ -19577,6 +19913,18 @@
   "was": "FUN_0020e6a0",
   "why": "only the scene's +0x78 character, while +0x30: reports a named event (GUNSHOOT)"
  },
+ "0020eb40": {
+  "name": "StageCharacter::takeDamage",
+  "tag": "game-inferred",
+  "was": "FUN_0020eb40",
+  "why": "the blow: parts, flinch (setFlinch inline), setEndurance, m_lastHitBy, m_hitThisFrameBy, the only writer of the latter"
+ },
+ "00210540": {
+  "name": "StageCharacter::getHandClass",
+  "tag": "game-inferred",
+  "was": "FUN_00210540",
+  "why": "2 at the wheel, 9 bare hands, by the long weapon item kind 3 / 2 / 1"
+ },
  "00210720": {
   "name": "StageCharacter::hasBiter",
   "tag": "game-inferred",
@@ -19919,11 +20267,41 @@
   "was": "FUN_00217c60",
   "why": "behind natives 0x4a.. (game/scriptrunner.cpp)"
  },
+ "00217c80": {
+  "name": "StageCharacter::setMotionByLabel",
+  "tag": "game-inferred",
+  "was": "FUN_00217c80",
+  "why": "native 0x21a: index in gMotionDefs by label into +0x7c4"
+ },
+ "00217d10": {
+  "name": "StageCharacter::scriptIsCompanion",
+  "tag": "game-inferred",
+  "was": "FUN_00217d10",
+  "why": "runner slot +0x118: getPlayerAltFlag and party companion is this"
+ },
+ "00217d60": {
+  "name": "StageCharacter::scriptHurt",
+  "tag": "game-inferred",
+  "was": "FUN_00217d60",
+  "why": "natives 0x1d1, 0x1d2: takeDamage with the hand class on the body, the flinch restored, a hit motion by reaction"
+ },
  "00218110": {
   "name": "StageCharacter::allowPath",
   "tag": "game-inferred",
   "was": "FUN_00218110",
   "why": "brain allowPath behind a null test"
+ },
+ "00218190": {
+  "name": "StageCharacter::scriptUseSpecial",
+  "tag": "game-inferred",
+  "was": "FUN_00218190",
+  "why": "runner slot +0x1ac: askUseSpecial off the pad, setSpecial on it"
+ },
+ "00218260": {
+  "name": "StageCharacter::scriptDragOutCar",
+  "tag": "game-inferred",
+  "was": "FUN_00218260",
+  "why": "runner slot +0x1a8: the brain askDragOutCar"
  },
  "002182c0": {
   "name": "StageCharacter::getLightReach",
@@ -20092,6 +20470,12 @@
   "tag": "game-inferred",
   "was": "FUN_002199a0",
   "why": "behind natives 0x4a.. (game/scriptrunner.cpp)"
+ },
+ "00219a90": {
+  "name": "StageCharacter::scriptCrouch",
+  "tag": "game-inferred",
+  "was": "FUN_00219a90",
+  "why": "runner slot +0x1a4: addNoise kind 3, playActionAndRetry cr_1"
  },
  "00219b30": {
   "name": "StageCharacter::doorActions",
@@ -26590,6 +26974,12 @@
   "tag": "game-inferred",
   "was": "FUN_0029f050",
   "why": "walks a relocated script's chunks 0x1a4c424c, 0x1a525453, 0x1a545353; read only by shape"
+ },
+ "0029f200": {
+  "name": "missionObjectInSight",
+  "tag": "game-inferred",
+  "was": "FUN_0029f200",
+  "why": "native 0x208: near the top view and seesPoint"
  },
  "0029f2a0": {
   "name": "missionRestoreCheck",

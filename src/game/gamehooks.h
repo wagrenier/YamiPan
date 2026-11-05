@@ -768,7 +768,7 @@ public:
     u_char _404[0x4c];
     union {
         int    m_weaponDef;     // FS2 +0x450: a weapon's gWeaponDefs index (StageFiles::placeItem)
-        StageObject *m_foe;     // FS2 +0x450: a character's: who it may hit whatever its side, while on the pad (isEnemyOf; writers unread); null from initStatus
+        StageObject *m_foe;     // FS2 +0x450: a character's: who it may hit whatever its side, while on the pad (isEnemyOf): who took it over and hit it (takeDamage); null from initStatus
     };
     union {
         int    m_ammoB;         // FS2 +0x454: a firearm's (findSprite's second number)
@@ -1947,6 +1947,7 @@ void demoFleckDraw(float level, void *flecks, sceVif1Packet *packet);    // FS2 
 bool missionRestoreCheck();                                              // FS2 0x0029f2a0
 // A kept spawn point out of the view: mode 0.. the mode-th nearest place, or
 // the nearest such around it; below 0 at random; -1 none.
+bool missionObjectInSight(StageObject *object);                          // FS2 0x0029f200
 int  missionPickSpawnPoint(const float *place, int mode);                // FS2 0x0029f810
 // The pick said none. The name is older than the reading: -1, nothing else.
 bool missionSpawnPointTaken(int *point);                                 // FS2 0x0029fd10
@@ -2418,7 +2419,19 @@ public:
     // 7 starts the count of DamageDead. The brain follows. arg goes to it.
     void setBrainState(int state, int arg);                              // FS2 0x0021ba10
     // A hit: from whom, its kind and part, how much. Not written.
-    void takeDamage(StageObject *from, int kind, int part, int amount);  // FS2 0x0020eb40
+    // from's blow: the parts, the flinch, the endurance; what the endurance
+    // lost. kind: getHandClass's, or 4 a shot.
+    int  takeDamage(StageObject *from, int kind, int part, int amount);  // FS2 0x0020eb40
+    // A script's hit: takeDamage on the body, the flinch left as it was, and
+    // the motion the reaction asks for (natives 0x1d1, 0x1d2).
+    void scriptHurt(StageObject *from, int amount, int reaction);        // FS2 0x00217d60
+    // The motion of the sheet labelled name, -1 none; m_7c4 (native 0x21a).
+    void setMotionByLabel(const char *name);                             // FS2 0x00217c80
+    // On the party's companion while the player's alternate action is on.
+    bool scriptIsCompanion() override;                                   // FS2 0x00217d10
+    bool scriptCrouch(float loudness) override;                          // FS2 0x00219a90
+    bool scriptDragOutCar() override;                                    // FS2 0x00218260
+    bool scriptUseSpecial(const char *name) override;                    // FS2 0x00218190
     // Sound state of a character leaving the scene (unread).
     void stopBodySounds();                                               // FS2 0x002a6380
     // What it would bite: the writer of +0x624 was not found.
@@ -2832,7 +2845,7 @@ public:
     StageThrownItem *m_seenThrown = nullptr;     // FS2 +0x684: the last one in view lying still
     u_char m_bulletFlying = 0;  // FS2 +0x688: set each frame by a bullet of its own
     u_char m_hitThisFrame = 0;  // FS2 +0x689: PlayerMotion::takeHits sets it; afterScripts clears it
-    int    m_68c = 0;           // FS2 +0x68c: 0 or less, the brain's state 5 may sound the alarm (writer unread)
+    int    m_68c = 0;           // FS2 +0x68c: 10 when the player hits it (takeDamage); 0 or less, the brain's state 5 may sound the alarm
     sceVu0FVECTOR m_respawnPosition = {}; // FS2 +0x6a0: 0x218610 sets it with w 1; spawn clears it
     sceVu0FVECTOR m_respawnRotation = {}; // FS2 +0x6b0
     int    m_meleeScale = 0;    // FS2 +0x6c0: 打撃攻撃力修正値
@@ -2854,7 +2867,7 @@ public:
     float  m_visibility = 0.0f; // FS2 +0x7b8: 0 unseen .. 1 plain to see: scales what canSee reaches
     float  m_areaDark = 0.0f;   // FS2 +0x7bc: the darkness that gave it; 0x1adaa0 reads it (a native, unread)
     StageVolume *m_area = nullptr; // FS2 +0x7c0: the VISIBILITY_ volume it stands in
-    int    m_7c4 = 0;           // FS2 +0x7c4: readers 0x218528, 0x217ccc (unread)
+    int    m_7c4 = 0;           // FS2 +0x7c4: a motion index, native 0x21a (setMotionByLabel); reader 0x218528 (unread)
     CharacterBlock7c8 m_block7c8 = {}; // FS2 +0x7c8
 };
 

@@ -1107,13 +1107,6 @@ const float * StageCar::getVelocity()
     return {};
 }
 
-// stub of FS2 0x00210540
-int StageCharacter::getHandClass()
-{
-    YAMIPAN_STUB("StageCharacter::getHandClass", 0x00210540);
-    return {};
-}
-
 // stub of FS2 0x002a2b10
 void StageCharacter::playBumpSound(int surface)
 {
@@ -1172,12 +1165,6 @@ bool SceneOwnedObject::start(const char *text)
 void StageCharacter::stopBodySounds()
 {
     YAMIPAN_STUB("StageCharacter::stopBodySounds", 0x002a6380);
-}
-
-// stub of FS2 0x0020eb40
-void StageCharacter::takeDamage(StageObject *from, int kind, int part, int amount)
-{
-    YAMIPAN_STUB("StageCharacter::takeDamage", 0x0020eb40);
 }
 
 // stub of FS2 0x001fe6b0

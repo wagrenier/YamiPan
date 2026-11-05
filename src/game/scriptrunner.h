@@ -496,6 +496,23 @@ public:
     // FS2 0x00171fb0
     // callcheck: defaultCommand
     virtual int scriptRouteAction130() { return defaultCommand(); }
+    // ROM vptr +0x118: it is the party's companion, taken over (0x6d).
+    // FS2 0x00171f00
+    // callcheck: defaultCommand
+    virtual bool scriptIsCompanion() { return defaultCommand() != 0; }
+    // ROM vptr +0x1a4: goes down, a noise of that loudness (0x61). The
+    // ROM's slot has no float in its name, f12 goes through to addNoise.
+    // FS2 0x001721c0
+    // callcheck: defaultCommand
+    virtual bool scriptCrouch(float loudness) { (void)loudness; return defaultCommand() != 0; }
+    // ROM vptr +0x1a8: pulls the driver out (0x16d).
+    // FS2 0x001721e0
+    // callcheck: defaultCommand
+    virtual bool scriptDragOutCar() { return defaultCommand() != 0; }
+    // ROM vptr +0x1ac: starts the gadget special (0x1cb).
+    // FS2 0x00172200
+    // callcheck: defaultCommand
+    virtual bool scriptUseSpecial(const char *name) { (void)name; return defaultCommand() != 0; }
     // ROM vptr +0x124: the character is down in one of its crouched motions.
     // FS2 0x00171f60
     virtual bool scriptIsCrouching() { return defaultCommand() != 0; }

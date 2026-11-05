@@ -32,6 +32,7 @@
 #include "game/stageitem.h"
 #include "game/stagenode.h"
 #include "game/stageobjlist.h"
+#include "game/stageresult.h"
 #include "game/stagescene.h"
 #include "game/stagelight.h"
 #include "game/stagesound.h"
@@ -7200,6 +7201,300 @@ float StageCharacter::getAttackReach()
     if (m_weapons[0] == nullptr)
         return (float)stageObjRecord(m_itemDef)->attackCheck;
     return (float)weaponSheet(m_weapons[0]).param2;
+}
+
+// 2 at the wheel, 9 bare hands; by the kind of the long weapon 3 the firearms
+// and the blades, 2 the clubs, 1 the rest.
+// FS2 0x00210540
+
+int StageCharacter::getHandClass()
+{
+    constexpr int kHandWheel = 2;
+    constexpr int kHandBare  = 9;
+    constexpr int kHandShort = 3;
+    constexpr int kHandClub  = 2;
+    constexpr int kHandOther = 1;
+    constexpr int kItemKindClub = 1;
+    constexpr int kItemKindShortFirst = 2;
+    constexpr int kItemKindShortLast  = 6;
+    if (m_gear != nullptr && m_abilities.driving == 1)
+        return kHandWheel;
+    if (m_weapons[0] == nullptr)
+        return kHandBare;
+    const int index = m_weapons[0]->m_itemDef;
+    const int kind = gItemDefs[index < 0 || index >= kItemDefCount ? 0 : index].kind;
+    if (kind >= kItemKindShortFirst && kind <= kItemKindShortLast)
+        return kHandShort;
+    return kind == kItemKindClub ? kHandClub : kHandOther;
+}
+
+// The sheet's ctype of who hits, as a blow's weight; only "none" is read.
+static int blowWeightOf(int sheetKind)
+{
+    switch (sheetKind) {
+    case 2:
+    case 3:
+    case 8:
+    case 10:
+    case 13:
+        return 4;
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 11:
+    case 12:
+        return 8;
+    default:
+        return 0;
+    }
+}
+
+// PC: a null weapon is the first row; the ROM reads +0x450 of the zero page.
+static const WeaponDef *weaponDefOf(StageObject *weapon)
+{
+    return weapon != nullptr ? &weaponSheet(weapon) : &gWeaponDefs[0];
+}
+
+static int clampToSheet(int value, int limit);
+
+// The part a blow lands on, the flinch it gives, then the endurance. What the
+// lead does to an ally counts a quarter.
+// FS2 0x0020eb40
+// callcheck: getStageSelect, getBrainPace, getStageSelect, isAlly, setEndurance, getSaveData, getSeconds, isPlayer, isScenarioLead, isRunning, stop, getStageResult, randUnit, playVoice (the inline stage kind reads are stageObjRecord; setRightArm, setFlinch inline)
+
+int StageCharacter::takeDamage(StageObject *fromObject, int kind, int part, int amount)
+{
+    constexpr int kHitKind4 = 4;
+    constexpr int kHitBare = 9;
+    constexpr int kMenuRequestClose = 2;
+    constexpr int kHitClassCount = 10;
+    constexpr int kPartHead = 0;
+    constexpr int kPartBody = 1;
+    constexpr int kPartLeftArm = 2;
+    constexpr int kPartRightArm = 3;
+    constexpr int kPartRightLeg = 4;
+    constexpr int kPartLeftLeg = 5;
+    constexpr int kPartCount = 6;
+    constexpr u_int kSheetLeadLast = 1;     // the ctypes above it are the enemies
+    constexpr int kBrainPaceAsleep = 5;
+    constexpr int kMotionTriple = 0x9b;
+    constexpr int kSheetTough1 = 3;
+    constexpr int kSheetTough2 = 7;
+    constexpr int kHeadScale = 3;
+    constexpr int kAllyDivisor = 4;
+    constexpr int kPlayerHitMark = 10;
+    constexpr int kMotionFleeA = 0x11;
+    constexpr int kMotionFleeB = 0x2a;
+    constexpr int kSheetSeven = 0xb;
+    constexpr int kSevenVoiceChance = 4;
+    constexpr int kResultHitsTaken = 2;
+    static const char kSevenVoice[] = "SEVE1_SP04"; /* data 0x306a08 */
+
+    StageCharacter *from = static_cast<StageCharacter *>(fromObject);
+    StageScene *scene = gStageScene;
+    StageObject *const onPad = scene->controlled != nullptr
+        ? scene->controlled : static_cast<StageObject *>(scene->player);
+    const StageObjRecord *sheet = stageObjRecord(m_itemDef);
+    const int sheetKind = sheet->kind;
+    const bool lead = static_cast<StageObject *>(scene->player) == this || scene->partner == this;
+    const bool byLead = from != nullptr
+        && (static_cast<StageObject *>(scene->player) == from || scene->partner == from);
+
+    amount = std::max(amount, 0);
+    // PC: the ROM has no test of the menu: a sub-scene has none.
+    if (onPad == this && scene->menu != nullptr && scene->menu->state != StageMenu_Closed)
+        scene->menu->request = kMenuRequestClose;
+    if ((u_int)sheetKind > kSheetLeadLast && getBrainPace() != kBrainPaceAsleep) {
+        if (from != nullptr && kind != kHitKind4)
+            part = kPartBody;
+        amount *= 3;
+    }
+    if (m_motion->motionId == kMotionTriple)
+        amount *= 3;
+
+    int lost = amount;
+    if (sheetKind != kSheetTough1 && sheetKind != kSheetTough2) {
+        if ((u_int)part >= kPartCount) {
+            lost = 0;
+        } else if (part == kPartHead) {
+            if (!lead || from == nullptr || blowWeightOf(stageObjRecord(from->m_itemDef)->kind) == 0)
+                lost = amount * kHeadScale;
+        } else if (part != kPartBody) {
+            lost = amount / 2;
+        }
+    }
+    if (byLead && isAlly(from)) {
+        amount /= kAllyDivisor;
+        lost /= kAllyDivisor;
+    }
+
+    switch (part) {
+    case kPartLeftArm:
+        m_leftArm = clampToSheet(m_leftArm - amount, sheet->leftArm);
+        break;
+    case kPartRightArm:
+        setRightArm(m_rightArm - amount);
+        break;
+    case kPartRightLeg:
+        m_rightLeg = clampToSheet(m_rightLeg - amount, sheet->rightLeg);
+        break;
+    case kPartLeftLeg:
+        m_leftLeg = clampToSheet(m_leftLeg - amount, sheet->leftLeg);
+        break;
+    default:
+        break;
+    }
+
+    if (from != nullptr) {
+        const StageObjRecord *fromSheet = stageObjRecord(from->m_itemDef);
+        if (from->m_gear != nullptr && from->m_abilities.driving == 1) {
+            setFlinch(sheet->flinchResist);
+        } else if (kind == kHitBare) {
+            setFlinch(m_flinch + from->m_unarmedMsp);
+            from->m_unarmedMsp = clampToSheet(from->m_unarmedMsp - fromSheet->unarmedMspDrop, fromSheet->unarmedMsp);
+        } else if (kind == kHitKind4) {
+            setFlinch(part == kPartHead ? sheet->flinchResist
+                                        : m_flinch + weaponDefOf(from->m_weapons[0])->ammoParam12);
+        } else if (kind >= 1 && kind <= 3) {
+            setFlinch(fromSheet->weaponMspScale + m_flinch + weaponDefOf(from->m_weapons[0])->param12);
+        }
+    }
+
+    m_lastHitBy = from;
+    m_hitThisFrameBy = from;
+    setEndurance(m_endurance - lost);
+    if (kind >= 0 && kind < kHitClassCount)
+        m_62c = kind;
+    if (from != nullptr) {
+        if (static_cast<StageObject *>(scene->player) == from)
+            m_68c = kPlayerHitMark;
+        else if (onPad == from && this != from)
+            m_foe = from;
+    }
+
+    if (onPad == this && static_cast<StageObject *>(scene->player) != onPad) {
+        scene->altLatch = 1;
+    } else {
+        const int stage = getStageSelect()->stage;
+        bool endsSlow = false;
+        if (stage == 0x1b || stage == 0x19)
+            endsSlow = sheetKind == 1;
+        else if (stage == 0x17 || stage == 0xf)
+            endsSlow = sheetKind == 0;
+        if (endsSlow && m_slowStart >= 0.0f
+            && m_clock->getSeconds() - m_slowStart < m_slowEnd - m_slowStart)
+            m_slowStart = -1.0f;
+    }
+
+    if (isPlayer() && isScenarioLead()) {
+        const bool fleeing = static_cast<StageObject *>(scene->player) == this
+            ? scene->party->isRunning()
+            : m_motion->motionId == kMotionFleeA || m_motion->motionId == kMotionFleeB;
+        if (fleeing) {
+            scene->party->stop();
+            if (scene->gameOver != nullptr)
+                m_altAction = 0;
+        }
+    }
+    if (static_cast<StageObject *>(scene->player) == this)
+        getStageResult()->counter[kResultHitsTaken]++;
+    if (from != nullptr && stageObjRecord(from->m_itemDef)->kind == kSheetSeven && lead
+        && (int)(randUnit() * kSevenVoiceChance) == 0)
+        from->playVoice(kSevenVoice);
+    return lost;
+}
+
+// FS2 0x00217c80
+// callcheck: strcmp
+
+void StageCharacter::setMotionByLabel(const char *name)
+{
+    m_7c4 = -1;
+    for (int i = 0; i < kMotionDefCount; i++) {
+        if (gMotionDefs[i].labelText != nullptr && strcmp(gMotionDefs[i].labelText, name) == 0) {
+            m_7c4 = i;
+            return;
+        }
+    }
+}
+
+// FS2 0x00217d10
+// callcheck: getPlayerAltFlag, getCompanion
+
+bool StageCharacter::scriptIsCompanion()
+{
+    return gStageScene->getPlayerAltFlag() != 0 && gStageScene->party->getCompanion() == this;
+}
+
+// The hit of a script: from's hand class, on the body. The motion that takes
+// it follows reaction: 0 the character's own, 1, 2 the two falls.
+// FS2 0x00217d60
+// callcheck: isMode1, takeDamage, setFlinch, getStageSelect, requestNow, requestNow, isPlayer, isPartner, requestNow, requestNow, requestNow (getHandClass inline)
+
+void StageCharacter::scriptHurt(StageObject *fromObject, int amount, int reaction)
+{
+    constexpr int kPartBody = 1;
+    constexpr int kSheetStill = 3;
+    constexpr int kReactionOwn = 0;
+    constexpr int kReactionHeavy = 1;
+    constexpr int kReactionFall = 2;
+    constexpr int kMotionHitHeavy = 0xa4;
+    constexpr int kMotionHitFall = 0xa5;
+    constexpr int kMotionHitCrawl = 0xa8;
+    constexpr int kMotionHitLead = 0xb7;
+
+    StageCharacter *from = static_cast<StageCharacter *>(fromObject);
+    const int flinch = m_flinch;
+    takeDamage(from, from->getHandClass(), kPartBody, amount);
+    setFlinch(flinch);
+    if (stageObjRecord(m_itemDef)->kind == kSheetStill)
+        return;
+    const int motionId = m_motion->motionId;
+    if (gMotionDefs[motionId < 0 || motionId >= kMotionDefCount ? 0 : motionId].damageStep == 0)
+        return;
+    if (reaction == kReactionFall) {
+        m_motion->requestNow(kMotionHitFall);
+    } else if (reaction == kReactionHeavy) {
+        m_motion->requestNow(kMotionHitHeavy);
+    } else if (reaction == kReactionOwn) {
+        if (isPlayer() || isPartner())
+            m_motion->requestNow(kMotionHitLead);
+        else
+            m_motion->requestNow(m_abilities.flag3cc != 0 ? kMotionHitCrawl : kMotionHitHeavy);
+    }
+}
+
+// FS2 0x00218190
+// callcheck: isControlled, askUseSpecial, isSpecialAllowed, setSpecial
+
+bool StageCharacter::scriptUseSpecial(const char *name)
+{
+    if (!isControlled())
+        return m_brain->askUseSpecial(name);
+    if (!isSpecialAllowed(name))
+        return false;
+    setSpecial(true, name);
+    return true;
+}
+
+// FS2 0x00218260
+// callcheck: isEnabled, askDragOutCar
+
+bool StageCharacter::scriptDragOutCar()
+{
+    return m_brain != nullptr && m_brain->isEnabled() && m_brain->askDragOutCar();
+}
+
+// FS2 0x00219a90
+// callcheck: addNoise, playActionAndRetry
+
+bool StageCharacter::scriptCrouch(float loudness)
+{
+    constexpr int kNoiseCrouch = 3;
+    static const char kCrouch1[] = "cr_1";      // data 0x307040
+    gStageScene->noises->addNoise(loudness, this, kNoiseCrouch);
+    return m_brain->playActionAndRetry(kCrouch1);
 }
 
 // Clamped to 0..the sheet's ひるみ耐性値. Going straight from 0 to the limit
