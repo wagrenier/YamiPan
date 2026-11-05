@@ -37,13 +37,6 @@ AreaClip::~AreaClip()
     YAMIPAN_STUB("AreaClip::~AreaClip", 0x002dcab0);
 }
 
-// stub of FS2 0x002b1620
-int ClearSequence::getState()
-{
-    YAMIPAN_STUB("ClearSequence::getState", 0x002b1620);
-    return {};
-}
-
 // stub of FS2 0x002b1c50
 int GameOverSequence::getState()
 {
@@ -436,12 +429,6 @@ void AreaClip::update(StageObject *camera)
 }
 
 // stub of FS2 0x00239bb0
-// stub of FS2 0x002b1500
-void ClearSequence::update()
-{
-    YAMIPAN_STUB("ClearSequence::update", 0x002b1500);
-}
-
 // stub of FS2 0x002b1670
 void GameOverSequence::update()
 {
@@ -626,12 +613,6 @@ void gsFrameFilter(sceVif1Packet *packet, const sceGsDrawEnv1 *env, int w, int h
     YAMIPAN_STUB("gsFrameFilter", 0x002849c0);
 }
 
-
-// stub of FS2 0x002b1660
-ClearSequence::ClearSequence()
-{
-    YAMIPAN_STUB("ClearSequence::ClearSequence", 0x002b1660);
-}
 
 // stub of FS2 0x002b1cb0
 GameOverSequence::GameOverSequence(StageObject *, StageObject *)

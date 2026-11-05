@@ -1208,6 +1208,42 @@ void DemoStream::drawSubtitles(sceVif1Packet *packet)
     m_printer->m_packet = nullptr;
 }
 
+// ──────────────────────────────────────────────────────────────────────
+// The stage's end, from native 0x52: two seconds to black, and the stage
+// loop's isCleared answers yes at full black, whoever started that fade.
+constexpr float kClearFadeSeconds = 2.0f;
+
+// FS2 0x002b1660
+
+ClearSequence::ClearSequence()
+{
+    m_state = kClearSequenceStart;
+}
+
+// FS2 0x002b1620
+// callcheck: isFullInMode2
+
+int ClearSequence::getState()
+{
+    return gStageScene->fade->isFullInMode2() ? kClearSequenceDone : m_state;
+}
+
+// The ROM has the fade's test and start once per state.
+// FS2 0x002b1500
+// callcheck: isFullInMode2, isFullInMode1, isFullInMode2, start, isFullInMode1, isFullInMode2, start
+
+void ClearSequence::update()
+{
+    const int state = getState();
+    if (state == kClearSequenceDone)
+        return;
+    StageFade *fade = gStageScene->fade;
+    if (!fade->isFullInMode1() && !fade->isFullInMode2())
+        fade->start(kClearFadeSeconds, 1.0f, 0.0f);
+    if (state == kClearSequenceStart)
+        m_state = kClearSequenceFading;
+}
+
 // FS2 0x00287af0
 // callcheck: getSaveData, getLanguage
 
