@@ -388,6 +388,10 @@ struct CharacterBrain
     virtual ~CharacterBrain();
     void reset();                                                        // FS2 0x001dd460
     void setEnabled(bool on);                                            // FS2 0x001dd3f0
+    // The state of StageCharacter::setBrainState, and what follows from it.
+    void setState(int state, int arg);                                   // FS2 0x001dbca0
+    // Out of state 7: where it stood, what it was doing.
+    void revive();                                                       // FS2 0x001dc950
     // A frame: its script runs while the flag holds and it has a route.
     void update();                                                       // FS2 0x001dd330
     // Natives 0x87..0x89 for a character nobody controls.
@@ -979,6 +983,8 @@ struct StageParty
     void resetSaved();                                                   // FS2 0x001fe720: the four ids to -1
     // Its record's first byte; stop ends what it runs.
     bool isRunning();                                                    // FS2 0x001fe800
+    // Its record's +0x2c.
+    bool isRecordBusy();                                                 // FS2 0x001fe6b0
     void stop();                                                         // FS2 0x001feb90
     void save();                                                         // FS2 0x001fe6d0
     void restore();                                                      // FS2 0x001fe6c0
@@ -1256,6 +1262,9 @@ class SceneOwnedObject
 {
 public:
     void destroy();                                                      // FS2 vtable +0x8
+    // A character may use it now; the text a script gave it is right.
+    bool canUse();                                                       // FS2 vtable +0x1c
+    bool start(const char *text);                                        // FS2 vtable +0x18
     // Slot +0x3c: it holds the player's actions (StageScene::playerAction).
     bool isBusy();                                                       // FS2 vtable +0x3c
     // The frame: slot +0xc once (setupCameras), +0x30 update, +0x34 draw.
@@ -2128,7 +2137,7 @@ struct CharacterWants
     u_char aimOn;               // FS2 +0x320: the upper body follows aimAngles
     u_char _321[0xf];
     sceVu0FVECTOR aimAngles;    // FS2 +0x330
-    u_char _340;
+    u_char bite;                // FS2 +0x340: Bite; the input never sets it: the brain's
     u_char liftPartner;         // FS2 +0x341: LevelLift; the input never sets it: the brain?
     u_char _342[2];
     int    dpadSide;            // FS2 +0x344: 1 left, 2 right
@@ -2189,7 +2198,9 @@ struct CharacterAllows
     u_char reload;              // FS2 +0x38f: Reload: the magazine is not full
     u_char head;                // FS2 +0x390: the sheet's 頭振り
     u_char aim;                 // FS2 +0x391: the sheet's 上半身振り
-    u_char _392[6];
+    u_char bite;                // FS2 +0x392: Bite: m_biteTarget is in reach
+    u_char _393;
+    int    biteTargetEe;        // FS2 +0x394: its size on the EE; StageCharacter::m_biteTarget holds the pointer
     u_char liftPartner;         // FS2 +0x398: LevelLift: the partner stands where it can lift
     u_char lockFind;            // FS2 +0x399: Lock: controlled, no target: it looks for one
     u_char lockSwitch;          // FS2 +0x39a: Lock: controlled, a target: the d-pad's sides change it
@@ -2279,6 +2290,22 @@ public:
     void setEndurance(int value);                                        // FS2 0x00211430
     void setRightArm(int value);                                         // FS2 0x00211300
     void setFlinch(int value);                                           // FS2 0x00211150
+    // state 0 takes the character out of the scene, another brings it back;
+    // 7 starts the count of DamageDead. The brain follows. arg goes to it.
+    void setBrainState(int state, int arg);                              // FS2 0x0021ba10
+    // A hit: from whom, its kind and part, how much. Not written.
+    void takeDamage(StageObject *from, int kind, int part, int amount);  // FS2 0x0020eb40
+    // Sound state of a character leaving the scene (unread).
+    void stopBodySounds();                                               // FS2 0x002a6380
+    // What it would bite: the writer of +0x624 was not found.
+    StageObject *getBiteTarget() const { return m_biteCandidate; }       // FS2 0x0021abb0
+    // +0x400 holds something.
+    bool hasGear() const { return m_gear != nullptr; }                   // FS2 0x00215290
+    // How far its blow reaches: the long weapon's, else the sheet's 攻撃判定.
+    float getAttackReach();                                              // FS2 0x0020ce80
+    // A special action of the motion (PlayerMotion::m_specials).
+    bool isSpecialAllowed(const char *name);                             // FS2 0x0017b3b0
+    void setSpecial(bool on, const char *name);                          // FS2 0x0017b3c0
 
     // The player's.
     // Its action is 0x11 or 0x2a (+0x224's +0x40), what an event breaks off.
@@ -2386,18 +2413,20 @@ public:
     StageList<StageObject *> m_items; // FS2 +0x22c: what it carries (giveItem)
     StageObject *m_294 = nullptr; // FS2 +0x294: a target given to a character off the pad: Lock takes it (writers unread)
     sceVu0FVECTOR m_aimPoint = {}; // FS2 +0x2a0: where its bullets steer
-    StageObject *m_lookAt = nullptr; // FS2 +0x2b0: in a car, what the heads turn to (writers unread)
+    StageObject *m_lookAt = nullptr; // FS2 +0x2b0: who holds it: a biter (BiteLink); in a car the heads turn to it
     CharacterWants  m_wants = {};   // FS2 +0x2c0: the start hook clears it, input and brain fill it
     // CharacterAllows +0x37c: the door in reach. PC: a pointer does not fit
     // the EE's int there, so it stands beside; the same clear covers both.
     StageDoor *m_door = nullptr;
     // CharacterAllows +0x384 and CharacterWants +0x2d4, the same way.
+    StageCharacter *m_biteTarget = nullptr; // beside CharacterAllows +0x394, the same way
     StageItem *m_pickItem = nullptr;
     StageItem *m_putItem = nullptr;
     StageThrownItem *m_throwItem = nullptr; // beside wants.throwItemEe, as m_putItem
     int    m_reloadRounds = 0;  // FS2 +0x3dc: rounds still to load, one by one
     CharacterAllows m_allows = {};  // FS2 +0x360: the start hook clears it, the conditions fill it
     u_char m_fidgets = 1;       // FS2 +0x3e0: resetActionState sets it, a script's property may clear it: stepFidgets' idle0 / idle1
+    u_char m_flinched = 0;      // FS2 +0x3e1: flinch went from 0 straight to the sheet's limit (setFlinch; readers unread)
     float  m_flinchClock = 0.0f; // FS2 +0x3e4: 0 from initStatus; sideHook0's seconds
     float  m_unarmedClock = 0.0f; // FS2 +0x3e8
     float  m_enduranceClock = 0.0f; // FS2 +0x3ec
@@ -2415,6 +2444,7 @@ public:
     u_char m_42c = 0;           // FS2 +0x42c: 0 from the ctor (unread)
     int    m_soundState = 0;    // FS2 +0x430: 0 none, 1 a source, 2 a cue (stopSounds)
     int    m_soundHandle = 0;   // FS2 +0x434
+    StageSoundSource *m_loopSound = nullptr; // FS2 +0x43c: stopped when it leaves the scene (writer unread)
     float  m_slowStart = 0.0f;  // FS2 +0x458: -1 none; a timed change of the motion rate
     float  m_slowEnd = 0.0f;    // FS2 +0x45c
     float  m_slowFrom = 0.0f;   // FS2 +0x460: the rate at the start
@@ -2428,9 +2458,11 @@ public:
     int    m_leftLeg = 0;       // FS2 +0x5a8: the sheet's 左足
     int    m_flinch = 0;        // FS2 +0x5ac: setFlinch, to the sheet's ひるみ耐性値
     int    m_unarmedMsp = 0;    // FS2 +0x5b0: the sheet's 素手MSP
+    u_char m_biteProof = 0;     // FS2 +0x5b9: it is not bitten, whatever its brain (property setter 0x212530)
     int    m_enduranceRegen = 0; // FS2 +0x5c8: a second, sideHook0 (only the property setter 0x212530 would give it)
     int    m_lifeOverride = -1; // FS2 +0x690: getLifeState: >= 0 says 6, or 0 says 7 (writer unread)
     int    m_doorBlow = 0;      // FS2 +0x5d8: what a forcing takes off a door; only the property setter 0x212530 gives it
+    int    m_biteDamage = 0;    // FS2 +0x5dc: a bite's; only the property setter 0x212530 gives it
     float  m_walkRate = 1.0f;   // FS2 +0x5e0: 移動速度 / 100 (setProperty)
     float  m_runRate = 1.0f;    // FS2 +0x5e4: 走り速度 / 100
     float  m_turnRate = 1.0f;   // FS2 +0x5e8: 旋回速度 / 100 (setProperty)
@@ -2438,6 +2470,8 @@ public:
     int    m_drainRate = 0;     // FS2 +0x5f0: a script's property: what a drained character loses a frame at 30 Hz, read from whoever the player controls
     u_char m_blanks = 0;        // FS2 +0x5f8: its shots carry no bullet (no writer read yet)
     float  m_shotScatter = 0.0f; // FS2 +0x5fc: ShotSpread::amount; 0: a bullet steers after the aim, else straight
+    StageObject *m_lastHitBy = nullptr; // FS2 +0x620: who hit it last (0x20e770, 0x20eb40); the game over's cause
+    StageObject *m_biteCandidate = nullptr; // FS2 +0x624: no writer found
     u_char m_bulletFlying = 0;  // FS2 +0x688: set each frame by a bullet of its own
     CharacterBlock7c8 m_block7c8 = {}; // FS2 +0x7c8
 };
@@ -2459,6 +2493,10 @@ struct CharacterHidePart
 int parseSpawnId(const char *name);                                      // FS2 0x0029fb30
 
 class StageObjectList;          // game/stageobjlist.h
+// The elevator zs9901: it can be called to floor 1..4 by one standing there;
+// the call. Not written.
+bool elevatorCanCall(StageObject *elevator, const float *position, const float *rotation, int floor); // FS2 0x00294140
+void elevatorCall(StageObject *elevator, int floor);                     // FS2 0x00294280
 struct SceneRender;
 // +0x9c: eight blocks from +0x18. layout: host.
 struct SceneBufferSet
@@ -2773,7 +2811,8 @@ enum
 // layout: host (unread).
 struct GameOverSequence
 {
-    GameOverSequence(int arg, int arg2);                                 // FS2 0x002b1cb0
+    // Keeps who fell and what felled it (+0xc, +0x10).
+    GameOverSequence(StageObject *victim, StageObject *cause);           // FS2 0x002b1cb0
     int getState();                                                      // FS2 0x002b1c50
     void update();                                                       // FS2 0x002b1670
 };

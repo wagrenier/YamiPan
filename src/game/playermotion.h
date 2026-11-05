@@ -20,7 +20,7 @@
  *  BtAtkCombo, BtMove, and all of controlStep (what a motion's events do, the feet,
  *  the wind, health, the fidgets). A link or a condition of another name answers null, which
  *  the ROM takes as a motion with no link function; addCondition skips it.
- *  The list 0x1df0b0 fills is not written.
+ *  The special actions of 0x1df0b0 are written but for the cars' three.
  */
 #ifndef GAME_PLAYERMOTION_H
 #define GAME_PLAYERMOTION_H
@@ -224,6 +224,8 @@ public:
     // The condition of that name joins the list; the ones not written yet
     // are left out, in their place.
     void addCondition(const char *name);                                 // FS2 0x0027da40
+    // The same for a special action (PlayerMotion::m_specials), if it has it.
+    void addSpecial(const char *name);
 
     u_char finished = 0;        // FS2 +0x14
     int    counter = 0;         // FS2 +0x18
@@ -304,6 +306,28 @@ public:
 private:
     StageThrownItem *item = nullptr;  // FS2 +0x20
     sceVu0FVECTOR    offset = {};     // FS2 +0x30
+};
+
+// A bite: the biter walks to the prey's front or back and holds on; the
+// prey loses endurance on each of the biter's clicks until one of them gets
+// away. Vtable 0x317860. layout: host.
+class BiteLink : public MotionLink
+{
+public:
+    // FS2 0x00278db0
+    BiteLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_) {}
+    void onRequest() override;                                           // FS2 0x00278d90
+    void onRun() override;                                               // FS2 0x00278640
+    void onLeave(MotionLink *next) override;                             // FS2 0x00278460
+    void onCancel() override;                                            // FS2 0x00278d70
+
+private:
+    // The two stand too far from where the motion puts them, or a wall came
+    // between them, or a timed change of rate is on.
+    bool isBroken();
+
+    StageCharacter *target = nullptr; // FS2 +0x20
+    int    hits = 0;                  // FS2 +0x24
 };
 
 // A door's motion: the Door condition picks it, and the door's own half
@@ -457,6 +481,8 @@ struct MotionProbe
 {
     explicit MotionProbe(StageCharacter *owner_) : owner(owner_) {}      // FS2 0x0026c6b0
     // A trap this character can spring.
+    // Blood on a bone, along direction. Not written.
+    void spawnBlood(float size, StageNodeBase *node, const float *direction, int kind, int arg); // FS2 0x0026a010
     StageTrapItem *findTrap();                                           // FS2 0x0026a390
     // The door within reach, facing it, free. A door of type R that stands
     // open must leave room to walk to its place.
@@ -499,6 +525,8 @@ struct MotionProbe
 
 // A byte-ordered name key, as the MSL maps at +0x8, +0x18 and +0x2c.
 // layout: host
+class MotionSpecial;
+
 struct MotionNameLess
 {
     bool operator()(const char *a, const char *b) const { return strcmp(a, b) < 0; }
@@ -515,6 +543,13 @@ struct PlayerMotion
     void reset(int arg);                                                 // FS2 0x001ec7e0
     // Slots +0x14 and +0x18 of each entry of the list at +0x30 (unread):
     // after StageCharacter::setup cleared +0x360 and +0x2c0.
+    // The special actions this character has, by its sheet and the stage.
+    void initList();                                                     // FS2 0x001df0b0
+    // The one of that name may start now. PC: a name it lacks answers false.
+    bool isSpecialAllowed(const char *name);                             // FS2 0x001def60
+    void setSpecial(const char *name, bool on);                          // FS2 0x001def90
+    // owner bites prey: both walk to their places.
+    void startBite(StageCharacter *prey);                                // FS2 0x0026fbc0
     void initSlots14();                                                  // FS2 0x001df040
     void initSlots18();                                                  // FS2 0x001defd0
     // Swaps the weapons; a motion that looks different now starts again.
@@ -634,7 +669,7 @@ public:
     MotionProbe *probe;         // FS2 +0x004
     std::map<const char *, MotionCondition *, MotionNameLess> m_conditions; // FS2 +0x008
     MotionCondition *m_always = nullptr; // FS2 +0x028: stepped each frame, whatever runs
-    // +0x02c: the list 0x1df0b0 fills.
+    std::map<const char *, MotionSpecial *, MotionNameLess> m_specials; // FS2 +0x02c: initList; scripts and the brain switch them
     std::map<const char *, MotionLink *, MotionNameLess> m_links; // FS2 +0x018
     int    m_request = Motion_None; // FS2 +0x03c
     int    motionId = Motion_None;  // FS2 +0x040: gMotionDefs index; outside the table none
@@ -706,7 +741,8 @@ public:
     u_char scopeOn = 0;         // FS2 +0xbd4: camview_snipe; a shot shows no flash (StageWeaponItem::fire)
     float  scopeZoom = 0.0f;    // FS2 +0xbd8: 0..1, the sight's picture too (MenuProgSet::draw)
     sceVu0FVECTOR scopeRotation = {}; // FS2 +0xbe0: the character's as the scope came up
-    float  m_bf0 = 0.0f;        // FS2 +0xbf0
+    float  m_bf0 = 0.0f;        // FS2 +0xbf0: bitten: the wait before the next press counts
+    int    m_reviveFrames = 0;  // FS2 +0xc10's +0x20: DamageDead's count (the link is not written)
     float  m_bf4 = 0.0f;        // FS2 +0xbf4
     u_char m_bfc = 0;           // FS2 +0xbfc
     WalkLink *walkLink = nullptr; // FS2 +0xc00: the map's Walk

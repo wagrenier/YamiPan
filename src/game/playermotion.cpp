@@ -323,6 +323,442 @@ void MotionLink::addCondition(const char *name)
         m_conditions.push_back(found->second);
 }
 
+// ───────────────────────────────────────
+// The special actions: conditions by name in PlayerMotion::m_specials, which
+// a script or the brain switches on for a frame (setSpecial). Walk carries
+// them after the plain ones. Each frame initSlots14 takes allowed away before
+// the links' onUpdate gives it back, and initSlots18 takes enabled away before
+// input and brain speak, so a switch lasts the frame it was given.
+
+// Base: vtable 0x317d50 (0x317d50 has no onApply). layout: host -- EE: as
+// MotionCondition, then +0x14 allowed, +0x15 enabled.
+// Its map is 0x281730's insert; the first of a name stays.
+class MotionSpecial : public MotionCondition
+{
+public:
+    MotionSpecial(StageCharacter *owner, PlayerMotion *motion_, const char *name)
+        : MotionCondition(owner, motion_)
+    {
+        motion_->m_specials.emplace(name, this);
+    }
+    void onUpdate() override;
+    virtual void clearAllowed();
+    void clearEnabled();
+    virtual void setEnabled(bool on);
+
+    u_char allowed = 0;         // FS2 +0x14
+    u_char enabled = 0;         // FS2 +0x15
+};
+
+// FS2 0x00281540
+
+void MotionSpecial::onUpdate()
+{
+    allowed = 1;
+}
+
+// FS2 0x001df0a0
+
+void MotionSpecial::clearAllowed()
+{
+    allowed = 0;
+}
+
+// FS2 0x001df030
+
+void MotionSpecial::clearEnabled()
+{
+    enabled = 0;
+}
+
+// FS2 0x001da4e0
+
+void MotionSpecial::setEnabled(bool on)
+{
+    enabled = on;
+}
+
+// The row of the sheet whose label is name; -1 none.
+// FS2 0x002813e0
+// callcheck: strcmp
+
+static int motionIdOfLabel(const char *name)
+{
+    for (int id = 0; id < kMotionDefCount; id++) {
+        const char *label = gMotionDefs[id].labelText;
+        if (label != nullptr && strcmp(label, name) == 0)
+            return id;
+    }
+    return -1;
+}
+
+// Asks for a motion of the sheet, by its id or its label. Vtable 0x317d30.
+// layout: host -- EE 0x1c.
+class MotionSpecialAction : public MotionSpecial
+{
+public:
+    // FS2 0x002814a0
+    MotionSpecialAction(StageCharacter *owner, PlayerMotion *motion_, const char *name, int id_ = -1)
+        : MotionSpecial(owner, motion_, name), id(id_ == -1 ? motionIdOfLabel(name) : id_) {}
+    void onApply() override;
+
+    int id;                     // FS2 +0x18
+};
+
+// FS2 0x00281460
+
+void MotionSpecialAction::onApply()
+{
+    if (enabled != 0 && allowed != 0)
+        motion->request(id);
+}
+
+// cr_1, cr_2, cr_3, what the partner answers a call with: the switch stays
+// until the condition has seen it, and only a living partner takes it.
+// Vtable 0x317d10. layout: host -- EE 0x20.
+class MotionPartnerCall : public MotionSpecialAction
+{
+public:
+    // FS2 0x002812e0
+    MotionPartnerCall(StageCharacter *owner, PlayerMotion *motion_, const char *name)
+        : MotionSpecialAction(owner, motion_, name) {}
+    void onUpdate() override;
+    void onApply() override;
+    void setEnabled(bool on) override;
+
+private:
+    u_char pending = 0;         // FS2 +0x1c
+};
+
+// FS2 0x002812c0
+
+void MotionPartnerCall::onUpdate()
+{
+    if (character->m_endurance > 0)
+        allowed = 1;
+}
+
+// FS2 0x002811c0
+
+void MotionPartnerCall::setEnabled(bool on)
+{
+    enabled = on;
+    pending = on;
+}
+
+// In a car the partner has only cr_2 (0xbb for 0xf2) and the voice of cr_3.
+// FS2 0x002811d0
+// callcheck: isPartner, isMode2, request, request, playNamedHeard2
+
+void MotionPartnerCall::onApply()
+{
+    constexpr int kCallMotion      = 0xf2;
+    constexpr int kCallVoiceMotion = 0xf3;
+    constexpr int kCarCallMotion   = 0xbb;
+
+    if (pending == 0 || allowed == 0)
+        return;
+    if (character->isPartner() && motion->motionId != kCarCallMotion && motion->motionId != kCallMotion) {
+        if (!character->isMode2())
+            motion->request(id);
+        else if (id == kCallMotion)
+            motion->request(kCarCallMotion);
+        else if (id == kCallVoiceMotion)
+            character->playNamedHeard2("PC_END", character->m_xform.position, nullptr);
+    }
+    pending = 0;
+}
+
+enum MotionGadget
+{
+    MotionGadget_Elevator = 0,  // Elevator*: the object zs9901; arg the floor
+    MotionGadget_SigLamp  = 1,
+    MotionGadget_NumLock  = 2,  // arg 0 the pad, 1 open, 2 close
+    MotionGadget_SevenKey = 3,
+    MotionGadget_None     = 4,
+};
+
+// StageScene::owned.
+enum SceneOwnedSlot
+{
+    SceneOwned_SigLamp  = 0,
+    SceneOwned_NumLock  = 1,
+    SceneOwned_SevenKey = 2,
+};
+
+// Something of the stage a character stands at: the elevator, the signal lamp
+// and the two locks. Vtable 0x317c90. layout: host -- EE 0x30.
+class MotionGadgetSpecial : public MotionSpecial
+{
+public:
+    MotionGadgetSpecial(StageCharacter *owner, PlayerMotion *motion_, const char *name);
+    void onUpdate() override;
+    void onApply() override;
+    void clearAllowed() override;
+    // What a script asks of the gadget.
+    void setText(const char *text);
+
+private:
+    void askOwned(int index);
+    void applyOwned(int index, int motionId);
+
+    int    kind = MotionGadget_None; // FS2 +0x18
+    int    arg = 0;             // FS2 +0x1c
+    char   text[0x10] = {};     // FS2 +0x20
+};
+
+// FS2 0x00280410
+// callcheck: MotionCondition, FUN_00281730, strncmp, strcmp, strcmp, strcmp, strcmp, strcmp, strncmp, strcmp, strcmp, strcmp
+
+MotionGadgetSpecial::MotionGadgetSpecial(StageCharacter *owner, PlayerMotion *motion_, const char *name)
+    : MotionSpecial(owner, motion_, name)
+{
+    constexpr size_t kElevatorLength = 8;   // "Elevator"
+    constexpr size_t kNumLockLength  = 7;   // "NumLock"
+
+    if (strncmp(name, "Elevator", kElevatorLength) == 0) {
+        const char *floor = name + kElevatorLength;
+        kind = MotionGadget_Elevator;
+        if (strcmp(floor, "B1") == 0)
+            arg = 1;
+        else if (strcmp(floor, "B3") == 0)
+            arg = 2;
+        else if (strcmp(floor, "BxB1") == 0)
+            arg = 3;
+        else if (strcmp(floor, "BxB3") == 0)
+            arg = 4;
+        else
+            kind = MotionGadget_None;
+    }
+    else if (strcmp(name, "SigLamp") == 0) {
+        kind = MotionGadget_SigLamp;
+    }
+    else if (strncmp(name, "NumLock", kNumLockLength) == 0) {
+        const char *action = name + kNumLockLength;
+        kind = MotionGadget_NumLock;
+        if (*action == '\0')
+            arg = 0;
+        else if (strcmp(action, "Open") == 0)
+            arg = 1;
+        else if (strcmp(action, "Close") == 0)
+            arg = 2;
+        else
+            kind = MotionGadget_None;
+    }
+    else if (strcmp(name, "SevenKey") == 0) {
+        kind = MotionGadget_SevenKey;
+    }
+}
+
+// FS2 0x00280400
+// callcheck: strcpy
+
+void MotionGadgetSpecial::setText(const char *text_)
+{
+    strcpy(text, text_);
+}
+
+// FS2 0x00280080
+
+void MotionGadgetSpecial::clearAllowed()
+{
+    text[0] = '\0';
+    allowed = 0;
+}
+
+// The player, with the gadget there and no party under way: the gadget says.
+// PC: one helper for the ROM's three copies.
+void MotionGadgetSpecial::askOwned(int index)
+{
+    SceneOwnedObject *gadget = gStageScene->owned[index];
+    if (character->isPlayer() && gadget != nullptr && !gStageScene->party->isRecordBusy()
+        && !gStageScene->party->isRunning())
+        allowed = gadget->canUse();
+}
+
+// FS2 0x00280230
+// callcheck: isPlayer, FUN_001fe6b0, isRunning, isPlayer, FUN_001fe6b0, isRunning, isPlayer, FUN_001fe6b0, isRunning, getZs9901, FUN_00294140
+
+void MotionGadgetSpecial::onUpdate()
+{
+    switch (kind) {
+    case MotionGadget_SevenKey:
+        askOwned(SceneOwned_SevenKey);
+        break;
+    case MotionGadget_NumLock:
+        if (arg != 0)
+            allowed = 1;
+        else
+            askOwned(SceneOwned_NumLock);
+        break;
+    case MotionGadget_SigLamp:
+        askOwned(SceneOwned_SigLamp);
+        break;
+    case MotionGadget_Elevator:
+        if (StageObject *elevator = gStageScene->getZs9901())
+            allowed = elevatorCanCall(elevator, character->m_xform.position, character->m_xform.rotation, arg);
+        break;
+    default:
+        break;
+    }
+}
+
+// Asks again, and the gadget takes the text or not.
+void MotionGadgetSpecial::applyOwned(int index, int motionId)
+{
+    allowed = 0;
+    onUpdate();
+    if (allowed != 0 && gStageScene->owned[index]->start(text))
+        motion->request(motionId);
+}
+
+// FS2 0x00280090
+// callcheck: request, request, request, request, getZs9901, FUN_00294280
+
+void MotionGadgetSpecial::onApply()
+{
+    constexpr int kMotionSevenKey  = 0xfe;
+    constexpr int kMotionNumLock   = 0xfd;
+    constexpr int kMotionLockHand  = 0xd1;
+    constexpr int kMotionSigLamp   = 0xfc;
+
+    if (enabled == 0 || allowed == 0)
+        return;
+    switch (kind) {
+    case MotionGadget_SevenKey:
+        applyOwned(SceneOwned_SevenKey, kMotionSevenKey);
+        break;
+    case MotionGadget_NumLock:
+        if (arg != 0)
+            motion->request(kMotionLockHand);
+        else
+            applyOwned(SceneOwned_NumLock, kMotionNumLock);
+        break;
+    case MotionGadget_SigLamp:
+        applyOwned(SceneOwned_SigLamp, kMotionSigLamp);
+        break;
+    case MotionGadget_Elevator:
+        elevatorCall(gStageScene->getZs9901(), arg);
+        break;
+    default:
+        break;
+    }
+}
+
+void MotionLink::addSpecial(const char *name)
+{
+    auto found = motion->m_specials.find(name);
+    if (found != motion->m_specials.end())
+        m_conditions.push_back(found->second);
+}
+
+// PC: the ROM reads through the null of a name the character lacks: zero page
+// on the EE; the host says no.
+// FS2 0x001def60
+// callcheck: FUN_001d1280
+
+bool PlayerMotion::isSpecialAllowed(const char *name)
+{
+    auto found = m_specials.find(name);
+    return found != m_specials.end() && found->second->allowed != 0;
+}
+
+// FS2 0x001def90
+// callcheck: FUN_001d1280
+
+void PlayerMotion::setSpecial(const char *name, bool on)
+{
+    auto found = m_specials.find(name);
+    if (found != m_specials.end())
+        found->second->setEnabled(on);
+}
+
+// FS2 0x0017b3b0
+
+bool StageCharacter::isSpecialAllowed(const char *name)
+{
+    return m_motion->isSpecialAllowed(name);
+}
+
+// FS2 0x0017b3c0
+
+void StageCharacter::setSpecial(bool on, const char *name)
+{
+    m_motion->setSpecial(name, on);
+}
+
+// By the sheet's kind, the stage's gadgets and what the character can do.
+// PC: GettingOnCar 0x280f50, GettingOffCar 0x280e20 (driving 1) and DragOutCar
+// 0x280a60 (flag3be) stand first among those here and are left out: their
+// conditions need the car (0x28a..), which the host does not have.
+// FS2 0x001df0b0
+// callcheck: getStageSelect, getStageSelect, getStageSelect, getStageSelect, getZs9901, operator_new, FUN_002812e0, FUN_002814a0, FUN_00280a60, FUN_00280e20, FUN_00280f50 (the cars left out: above)
+
+void PlayerMotion::initList()
+{
+    StageCharacter *character = static_cast<StageCharacter *>(owner);
+    const int kind = stageObjRecord(owner->m_itemDef)->kind;
+    constexpr int kSheetLead = 0xf;
+    constexpr int kSheetSpawn = 0xb;
+    constexpr int kSheetTank = 0xd;
+    constexpr int kSheetDropper = 0x10;
+
+    if (kind == kSheetLead || kind == CharacterKind_9 || kind == CharacterKind_1 || kind == CharacterKind_0) {
+        new MotionPartnerCall(character, this, "cr_1");
+        new MotionPartnerCall(character, this, "cr_2");
+        new MotionPartnerCall(character, this, "cr_3");
+    }
+
+    static const struct { const char *name; int id; } kPlain[] = {
+        { "sp_dig", -1 }, { "sp_hole", -1 }, { "sp_rake", -1 }, { "sp_make", -1 }, { "sp_brkon", -1 },
+        { "sp_ron", -1 }, { "sp_lock", -1 }, { "sp_swich", -1 }, { "sp_fear", -1 }, { "sp_robo", -1 },
+        { "sp_drop", -1 }, { "sp_pu_l", 0xd4 }, { "sp_shut", -1 },
+    };
+    for (const auto &entry : kPlain)
+        new MotionSpecialAction(character, this, entry.name, entry.id);
+    new MotionGadgetSpecial(character, this, "NumLockOpen");
+    new MotionGadgetSpecial(character, this, "NumLockClose");
+    new MotionSpecialAction(character, this, "sp_uryen");
+
+    if (gStageScene->getZs9901() != nullptr) {
+        new MotionGadgetSpecial(character, this, "ElevatorB1");
+        new MotionGadgetSpecial(character, this, "ElevatorB3");
+        new MotionGadgetSpecial(character, this, "ElevatorBxB1");
+        new MotionGadgetSpecial(character, this, "ElevatorBxB3");
+    }
+    if (gStageScene->owned[SceneOwned_SigLamp] != nullptr)
+        new MotionGadgetSpecial(character, this, "SigLamp");
+    if (gStageScene->owned[SceneOwned_NumLock] != nullptr)
+        new MotionGadgetSpecial(character, this, "NumLock");
+    if (gStageScene->owned[SceneOwned_SevenKey] != nullptr)
+        new MotionGadgetSpecial(character, this, "SevenKey");
+
+    if (kind == kSheetSpawn) {
+        static const struct { const char *name; int id; } kSpawn[] = {
+            { "sp_at1_1", 0xd8 }, { "sp_at1_2", 0xd9 }, { "sp_spawn_in", 0xda }, { "sp_spawn_idle", 0xdb },
+            { "sp_spawn_out", 0xdc }, { "sp_spawn_numb", 0xdd }, { "sp_in", 0xde }, { "sp_idle", 0xdf },
+            { "sp_out", 0xe0 }, { "sp_numb1", 0xe1 }, { "sp_land", 0xe3 }, { "sp_fal", 0xe2 },
+            { "sp_flop", 0xe4 }, { "sp_ret", 0xe5 }, { "sp_numb0", 0xe6 },
+        };
+        for (const auto &entry : kSpawn)
+            new MotionSpecialAction(character, this, entry.name, entry.id);
+    }
+    if (kind == kSheetTank) {
+        static const struct { const char *name; int id; } kTank[] = {
+            { "sp_at1_1", 0xe7 }, { "sp_at1_2", 0xe8 }, { "sp_spawn", 0xe9 }, { "sp_tank", 0xea },
+            { "sp_ret", 0xeb }, { "sp_stop", 0xec },
+        };
+        for (const auto &entry : kTank)
+            new MotionSpecialAction(character, this, entry.name, entry.id);
+    }
+    if (kind == kSheetDropper)
+        new MotionSpecialAction(character, this, "sp_t_drp");
+    if (kind == CharacterKind_1)
+        new MotionSpecialAction(character, this, "sp_jack", 0xd6);
+    else if (kind == CharacterKind_A)
+        new MotionSpecialAction(character, this, "sp_jack");
+}
+
 constexpr u_int kMotionEventEndIdle = 0x4000;
 
 // layout: host -- as MotionCondition.
@@ -380,11 +816,17 @@ void AlwaysCondition::onUpdate()
 }
 
 // FS2 0x00275160
-// callcheck: isPartner, getStageSelect, FUN_001def60, FUN_001def90 (stageObjRecord; the partner's cr_2 needs the list of 0x1df0b0)
+// callcheck: isPartner, getStageSelect, FUN_001def60, FUN_001def90 (stageObjRecord)
 
 void AlwaysCondition::onApply()
 {
     PlayerMotion *const m = motion;
+    if (character->isPartner()) {
+        const int kind = stageObjRecord(character->m_itemDef)->kind;
+        if ((kind == 0xf || kind == CharacterKind_9 || kind == CharacterKind_1 || kind == CharacterKind_0)
+            && gStageScene->gameOver != nullptr && m->isSpecialAllowed("cr_2"))
+            m->setSpecial("cr_2", true);
+    }
     if (m->m_b30 != 0 && m->m_request == Motion_None) {
         m->m_canStart = 0;
         m->walkLink->apply();
@@ -1157,6 +1599,15 @@ public:
     using MotionCondition::MotionCondition;
     void onUpdate() override;                                            // FS2 0x002706f0
     void onApply() override;                                             // FS2 0x00270690
+};
+
+// A bite on the character it has in mind. Vtable 0x3174b0. layout: host.
+class BiteCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x0026fd30
+    void onApply() override;                                             // FS2 0x0026fb60
 };
 
 // The alternate action of a player who is not the lead. Vtable 0x3174d0.
@@ -2155,6 +2606,25 @@ WalkLink::WalkLink(StageCharacter *owner, PlayerMotion *motion_)
     };
     for (const char *name : kOrder)
         addCondition(name);
+    static const char *const kSpecials[] = { // data 0x2fb3a0
+        "cr_2", "cr_3", "cr_1", "GettingOnCar", "DragOutCar", "ElevatorB1", "ElevatorB3", "ElevatorBxB1",
+        "ElevatorBxB3", "SigLamp", "NumLock", "SevenKey", "sp_swich", "sp_dig", "sp_hole", "sp_rake",
+        "sp_make", "sp_brkon", "sp_ron", "sp_lock", "sp_fear", "sp_robo", "sp_drop", "sp_pu_l", "sp_shut",
+        "NumLockOpen", "NumLockClose", "sp_t_drp", "sp_jack", "sp_uryen",
+    };
+    for (const char *name : kSpecials)
+        addSpecial(name);
+    const int kind = stageObjRecord(character->m_itemDef)->kind;
+    if (kind == CharacterKind_NoShadow) {
+        static const char *const kSpawnFirst[] = { "sp_at1_2", "sp_spawn_in", "sp_in", "sp_fal", "sp_numb0" }; // data 0x2fb420
+        for (const char *name : kSpawnFirst)
+            addSpecial(name);
+    }
+    if (kind == CharacterKind_HideD) {
+        static const char *const kTankFirst[] = { "sp_at1_1", "sp_at1_2", "sp_spawn", "sp_ret" }; // data 0x2fb440
+        for (const char *name : kTankFirst)
+            addSpecial(name);
+    }
     addCondition("Turn");
     addCondition("Move");
 }
@@ -2245,6 +2715,8 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_conditions["Throw"] = new ThrowCondition(character, this);
     m_conditions["TrapCancel"] = new TrapCancelCondition(character, this);
     m_conditions["TrapSet"] = new TrapSetCondition(character, this);
+    m_conditions["Bite"] = new BiteCondition(character, this);
+    initList();
 
     walkLink = new WalkLink(character, this);
     m_links["Walk"] = walkLink;
@@ -2267,6 +2739,9 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_links["TrapCancel"] = trapCancelLink;
     throwLink = new ThrowLink(character, this);
     m_links["Throw"] = throwLink;
+    m_links["Bite"] = new BiteLink(character, this);
+    // The prey's side has no code of its own (vtable 0x315eb0).
+    m_links["Bitten"] = new MotionLink(character, this);
 
     // PC: the ROM's 0x212530 sets these from a script's property; nothing
     // written sets them yet, so the sheet's.
@@ -2289,6 +2764,8 @@ PlayerMotion::~PlayerMotion()
     for (auto &entry : m_links)
         delete entry.second;
     for (auto &entry : m_conditions)
+        delete entry.second;
+    for (auto &entry : m_specials)
         delete entry.second;
     delete probe;
 }
@@ -2368,14 +2845,16 @@ void PlayerMotion::loadMotions(StageList<void *> *motions, StageList<void *> *mo
 
 void PlayerMotion::initSlots14()
 {
-    // Each entry of the list at +0x30, slot +0x14: the list is not written.
+    for (auto &entry : m_specials)
+        entry.second->clearAllowed();
 }
 
 // FS2 0x001defd0
 
 void PlayerMotion::initSlots18()
 {
-    // Each entry of the list at +0x30, slot +0x18: the list is not written.
+    for (auto &entry : m_specials)
+        entry.second->clearEnabled();
 }
 
 // FS2 0x001ec7e0
@@ -6403,4 +6882,369 @@ StageObject *MotionProbe::findTargetBeside(float facing, float span, float range
 int StageCharacter::getBrainPace()
 {
     return m_brain == nullptr ? 1 : m_brain->state;
+}
+
+// ───────────────────────────────────────
+// The bite, and what a hit does to a character's status.
+
+// Motions of a prey that cannot be bitten: the first group 0x3a..0x40 and
+// 0xae, then 0x41, 0x42, then the rest of the ROM's chain.
+static bool isBiteProofMotion(int id)
+{
+    constexpr int kFirstBlock = 0x3a;
+    constexpr int kLastBlock  = 0x42;
+    constexpr int kLateBlock  = 0xae;
+    if ((id >= kFirstBlock && id <= kLastBlock) || id == kLateBlock)
+        return true;
+    return id == 0x95 || id == 0x94 || id == 0x39 || (id >= 0x2e && id <= 0x35);
+}
+
+// Head to head, nothing between.
+static bool headsSeeEachOther(StageCharacter *from, StageCharacter *to)
+{
+    constexpr u_int kFaceSight     = 0xe002003;
+    constexpr u_int kFaceSightSkip = 0x40000;
+    const sceVu0FVECTOR *theirs = bodyBone(to, "bn_head")->getMatrix();
+    const sceVu0FVECTOR *mine = bodyBone(from, "bn_head")->getMatrix();
+    return !gStageScene->segmentHitsAny(mine[3], theirs[3], 0, kFaceSight, kFaceSightSkip, nullptr);
+}
+
+// Written inline in the headers: the empty slots of a link FS2 0x001eaba0,
+// FS2 0x001eabb0, FS2 0x001ec3f0; the link ctors FS2 0x0027b640,
+// FS2 0x0027c140, FS2 0x00278db0; the getters FS2 0x0021abb0, FS2 0x00215290.
+
+// The prey stands in front, within reach, at its height, in sight, and
+// nothing holds it.
+// FS2 0x0026fd30
+// callcheck: FUN_0021abb0, FUN_00215290, FUN_0020ce80, vecDistance, atan2Octant, addAngle, addAngle, find, find, segmentHitsAny
+
+void BiteCondition::onUpdate()
+{
+    constexpr float kMinReach   = 85.0f;
+    constexpr float kReachSlack = 10.0f;
+    constexpr float kMaxHeight  = 50.0f;
+    constexpr float kFrontArc   = 1.0471976f;
+
+    if (character->m_abilities.flag3be == 0)
+        return;
+    StageObject *candidate = character->getBiteTarget();
+    if (candidate == nullptr || candidate->getKind() != StageObject_Character)
+        return;
+    StageCharacter *prey = static_cast<StageCharacter *>(candidate);
+    if (prey->m_biteProof != 0 || prey->getBrainPace() == 0)
+        return;
+    if (prey->m_lookAt != nullptr || prey->hasGear() || prey->m_abilities.flag3bf == 0 || prey->m_endurance <= 0)
+        return;
+    if (isBiteProofMotion(prey->m_motion->motionId))
+        return;
+
+    float reach = character->getAttackReach() - kReachSlack;
+    if (reach < kMinReach)
+        reach = kMinReach;
+    const float *mine = character->m_xform.position;
+    const float *theirs = prey->m_xform.position;
+    if (vecDistance(mine, theirs) > reach + kReachSlack || fabsf(mine[2] - theirs[2]) > kMaxHeight)
+        return;
+    const float bearing = atan2Octant(mine[0] - theirs[0], -(mine[1] - theirs[1]));
+    const float off = addAngle(addAngle(bearing, -character->m_xform.rotation[2]), -kMathPi);
+    if (fabsf(off) >= kFrontArc)
+        return;
+    if (headsSeeEachOther(character, prey)) {
+        character->m_allows.bite = 1;
+        character->m_biteTarget = prey;
+    }
+}
+
+// FS2 0x0026fb60
+// callcheck: FUN_0026fbc0
+
+void BiteCondition::onApply()
+{
+    if (character->m_allows.bite == 0 || character->m_wants.bite == 0)
+        return;
+    StageCharacter *prey = character->m_biteTarget;
+    if (prey->m_lookAt == nullptr)
+        motion->startBite(prey);
+}
+
+// The biter comes round to face the prey; the prey's motion is 0xa0 when the
+// biter stands at its back, 0xa1 in front, and it turns to match.
+// FS2 0x0026fbc0
+// callcheck: request, atan2Octant, addAngle, requestedFile, startWalkFile, addAngle, addAngle, requestNow, requestNow, requestedFile, startWalkFile
+
+void PlayerMotion::startBite(StageCharacter *prey)
+{
+    constexpr int   kMotionBite         = 0x9e;
+    constexpr int   kMotionBittenBehind = 0xa0;
+    constexpr int   kMotionBittenFront  = 0xa1;
+    constexpr float kBiteWalkRate       = 0.35f;
+    constexpr float kRightAngle         = 1.5707964f;
+
+    const float *mine = owner->m_xform.position;
+    const float *theirs = prey->m_xform.position;
+    const float *turn = prey->m_xform.rotation;
+
+    request(kMotionBite);
+    float face = atan2Octant(mine[0] - theirs[0], -(mine[1] - theirs[1]));
+    face = addAngle(face, -kMathPi);
+    sceVu0FVECTOR angles = { turn[0], turn[1], face, turn[3] };
+    startWalkFile(kBiteWalkRate, requestedFile(), theirs, angles, false, true);
+
+    PlayerMotion *bitten = prey->m_motion;
+    angles[2] = turn[2];
+    if (fabsf(addAngle(face, -turn[2])) >= kRightAngle) {
+        const float behind = addAngle(face, -kMathPi);
+        bitten->requestNow(kMotionBittenBehind);
+        angles[2] = behind;
+    }
+    else {
+        bitten->requestNow(kMotionBittenFront);
+        angles[2] = face;
+    }
+    bitten->startWalkFile(kBiteWalkRate, bitten->requestedFile(), theirs, angles, false, true);
+}
+
+// FS2 0x00278d90
+
+void BiteLink::onRequest()
+{
+    target = character->m_biteTarget;
+    target->m_lookAt = character;
+}
+
+// FS2 0x00278d70
+
+void BiteLink::onCancel()
+{
+    if (target != nullptr) {
+        target->m_lookAt = nullptr;
+        target = nullptr;
+    }
+}
+
+// How far a character's pose may stray from where the walk put it.
+static bool strayedFromWalk(StageCharacter *who)
+{
+    constexpr float kStrayFloor = 10.0f;
+    constexpr float kStrayShare = 3.0f;
+    const float *position = who->m_xform.position;
+    const float *place = who->m_model->pose->walkTarget;
+    float limit = who->m_ground->nearRadius / kStrayShare;
+    if (limit < kStrayFloor)
+        limit = kStrayFloor;
+    const float dx = position[0] - place[0];
+    const float dy = position[1] - place[1];
+    return limit * limit < dy * dy + dx * dx;
+}
+
+bool BiteLink::isBroken()
+{
+    if (character->isMotionSlowed() || (!target->isStageDrained() && target->isMotionSlowed()))
+        return true;
+    if (!headsSeeEachOther(character, target))
+        return true;
+    const bool ownKindHolds = stageObjRecord(character->m_itemDef)->kind == CharacterKind_Srt;
+    if (!ownKindHolds && !character->m_motion->isWalkBusy() && strayedFromWalk(character))
+        return true;
+    return !target->m_motion->isWalkBusy() && strayedFromWalk(target);
+}
+
+// On each click of the biter the prey loses endurance, shared out over the
+// presses it has made; a brain-driven prey may slip free by chance, the
+// player after enough presses. Kind 3 ends by itself.
+// FS2 0x00278640
+// callcheck: getStageSelect, isMotionSlowed, getStageSelect, isControlled, FUN_0020eb40, vecDirection, find, FUN_0026a010, playNamedHeard2, playerEvent, FUN_0020eb40, isStageDrained, isMotionSlowed, find, find, segmentHitsAny, getStageSelect, isWalkBusy, isWalkBusy, requestNow, isControlled, randNext
+
+void BiteLink::onRun()
+{
+    constexpr int   kMotionBittenBehind = 0xa0;
+    constexpr int   kMotionBittenFront  = 0xa1;
+    constexpr int   kMotionHeldA        = 0xa2;
+    constexpr int   kMotionHeldB        = 0xa3;
+    constexpr int   kMotionBiteEnd      = 0xa4;
+    constexpr int   kHitBite            = 7;
+    constexpr int   kHitPartBody        = 1;
+    constexpr float kPressWait          = 0.15f;
+    constexpr float kBloodSize          = 40.0f;
+    constexpr int   kBloodKind          = 4;
+    constexpr int   kPlayerPresses      = 4;
+
+    const bool selfEnds = stageObjRecord(character->m_itemDef)->kind == CharacterKind_Srt;
+    PlayerMotion *bitten = target->m_motion;
+    if (counter == 0) {
+        hits = 0;
+        bitten->m_bf0 = kPressWait;
+        counter++;
+    }
+    else {
+        const int id = bitten->motionId;
+        if (id == kMotionHeldB || id == kMotionHeldA) {
+            if ((target->m_model->m_motionEvents & MotionEvent_Click) == 0)
+                return;
+        }
+        if (id != kMotionBittenFront && id != kMotionBittenBehind) {
+            if (selfEnds)
+                character->takeDamage(character, kHitBite, kHitPartBody, character->m_endurance);
+            finished = 1;
+            return;
+        }
+    }
+
+    if (isBroken()) {
+        if (selfEnds)
+            finished = 1;
+        else
+            motion->requestNow(kMotionBiteEnd);
+        return;
+    }
+
+    if (target->isControlled() && bitten->m_bf0 <= 0.0f) {
+        hits++;
+        bitten->m_bf0 = kPressWait;
+    }
+    if ((character->m_model->m_motionEvents & MotionEvent_Click) == 0)
+        return;
+
+    hits++;
+    int damage = character->m_biteDamage;
+    if (hits > 1)
+        damage /= hits + 1;
+    if (damage == 0)
+        damage = 1;
+    target->takeDamage(character, kHitBite, kHitPartBody, damage);
+    sceVu0FVECTOR direction;
+    vecDirection(direction, target->m_xform.position, character->m_xform.position);
+    bitten->probe->spawnBlood(kBloodSize, bodyBone(target, "bn_neck"), direction, kBloodKind, 0);
+    target->playNamedHeard2("BT_BITE", target->m_xform.position, nullptr);
+    target->playerEvent("BITE");
+
+    bool freed;
+    if (target->m_biteProof != 0 || target->getBrainPace() == 0) {
+        freed = true;
+    }
+    else if (target->isControlled()) {
+        freed = hits > kPlayerPresses;
+    }
+    else {
+        const int roll = (int)(randNext() % 100);
+        switch (hits) {
+        case 1:  freed = roll < 20; break;
+        case 2:  freed = roll < 30; break;
+        case 3:  freed = roll < 50; break;
+        case 4:  freed = roll < 70; break;
+        default: freed = true;      break;
+        }
+    }
+    if (freed)
+        bitten->activeLink->finished = 1;
+}
+
+// The prey's motion ends and its bare hands come back.
+// FS2 0x00278460
+// callcheck: requestNow, requestNow, getStageSelect, getStageSelect
+
+void BiteLink::onLeave(MotionLink *)
+{
+    constexpr int kMotionBittenBehind = 0xa0;
+    constexpr int kMotionBittenFront  = 0xa1;
+    constexpr int kMotionFreedBehind  = 0xa4;
+    constexpr int kMotionFreedFront   = 0xa6;
+
+    if (target == nullptr)      // PC: onCancel came first; the ROM reads through the null
+        return;
+    PlayerMotion *bitten = target->m_motion;
+    if (bitten->motionId == kMotionBittenFront)
+        bitten->requestNow(kMotionFreedFront);
+    else if (bitten->motionId == kMotionBittenBehind)
+        bitten->requestNow(kMotionFreedBehind);
+    int value = stageObjRecord(target->m_itemDef)->unarmedMsp;
+    if (value < 0)
+        value = 0;
+    target->m_unarmedMsp = value;
+}
+
+// The long weapon's parameter 2, else the sheet's 攻撃判定.
+// FS2 0x0020ce80
+// callcheck: getStageSelect
+
+float StageCharacter::getAttackReach()
+{
+    if (m_weapons[0] == nullptr)
+        return (float)stageObjRecord(m_itemDef)->attackCheck;
+    return (float)weaponSheet(m_weapons[0]).param2;
+}
+
+// Clamped to 0..the sheet's ひるみ耐性値. Going straight from 0 to the limit
+// is noted.
+// FS2 0x00211150
+// callcheck: getStageSelect, getStageSelect
+
+void StageCharacter::setFlinch(int value)
+{
+    const int before = m_flinch;
+    const int limit = stageObjRecord(m_itemDef)->flinchResist;
+    if (value < 0)
+        value = 0;
+    m_flinch = value <= limit ? value : limit;
+    if (before == 0 && m_flinch == limit)
+        m_flinched = 1;
+}
+
+// Clamped to 0..the sheet's 耐久力. The lead and the partner keep theirs
+// while the input is blocked. At 0 the brain goes to state 7 and, for those
+// two, the game is over; above it, one at state 7 comes back.
+// FS2 0x00211430
+// callcheck: isInputBlocked, getStageSelect, FUN_0021ba10, FUN_001dc950, startGameOver
+
+void StageCharacter::setEndurance(int value)
+{
+    constexpr int kBrainDownState = 7;
+    StageScene *scene = gStageScene;
+    const bool lead = scene->player == this || scene->partner == this;
+    if (value <= 0 && lead && scene->isInputBlocked())
+        return;
+    const int limit = stageObjRecord(m_itemDef)->endurance;
+    if (value < 0)
+        value = 0;
+    m_endurance = value <= limit ? value : limit;
+    if (m_endurance == 0) {
+        setBrainState(kBrainDownState, 0);
+        if (lead)
+            scene->startGameOver(this, m_lastHitBy);
+    }
+    else if (getBrainPace() == kBrainDownState && m_brain != nullptr) {
+        m_brain->revive();
+    }
+}
+
+// FS2 0x0021ba10
+// callcheck: setShown, setChildrenActive, FUN_001dbca0, setShown, setChildrenActive, FUN_002a6380, stopSound, getDeltaSeconds
+
+void StageCharacter::setBrainState(int state, int arg)
+{
+    constexpr int kBrainStates    = 8;
+    constexpr int kBrainDownState = 7;
+    if (state < 0 || state >= kBrainStates || state == getBrainPace())
+        return;
+    if (state == 0) {
+        m_tree->setShown(false);
+        m_viewActive = 0;
+        m_ground->m_enabled = 0;
+        m_tree->setChildrenActive(false);
+        stopBodySounds();
+        if (m_loopSound != nullptr) {
+            stopSound(m_loopSound);
+            m_loopSound = nullptr;
+        }
+    }
+    else if (getBrainPace() == 0) {
+        m_tree->setShown(true);
+        m_viewActive = 1;
+        m_ground->m_enabled = 1;
+        m_tree->setChildrenActive(true);
+    }
+    if (state == kBrainDownState)
+        m_motion->m_reviveFrames = (int)(m_reviveTime * (float)(int)(1.0f / m_clock->getDeltaSeconds()));
+    if (m_brain != nullptr)
+        m_brain->setState(state, arg);
 }
