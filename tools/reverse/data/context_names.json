@@ -11999,6 +11999,12 @@
   "was": "FUN_00174aa0",
   "why": "slot +0x20c: setPosition, then marks a clean transform dirty for one frame (+0x21c)"
  },
+ "001753f0": {
+  "name": "StageMapObject::collisionHook0",
+  "tag": "game-inferred",
+  "was": "FUN_001753f0",
+  "why": "thunk at slot 0 of 0x31180c; categories 0x40 and 0x100: notes who touched it and breaks the face's group"
+ },
  "001756b0": {
   "name": "StageMapObject::sideHook0",
   "tag": "game-inferred",
@@ -12010,6 +12016,12 @@
   "tag": "game-inferred",
   "was": "FUN_001758f0",
   "why": "vtable 0x315ab0 slot +0x18: the pointer at +0x18"
+ },
+ "00175900": {
+  "name": "StageObject::breakPart",
+  "tag": "game-inferred",
+  "was": "FUN_00175900",
+  "why": "a part index of MapObjectParts: setGroup(part + 1, 0), PartSwitch::show(0), glass%d_1 and BREAK_GLASS; door kind 2 then attachToRoot"
  },
  "00175c00": {
   "name": "stageMotionTargetName",
@@ -16223,6 +16235,18 @@
   "was": "FUN_001f5250",
   "why": "perf label collision after it"
  },
+ "001f5680": {
+  "name": "SceneRecordBuckets::collidePair",
+  "tag": "game-inferred",
+  "was": "FUN_001f5680",
+  "why": "switch on both bodies' +0x40 shape, the only caller is collide; fills the nearest meeting at +0x20.."
+ },
+ "001f5fd0": {
+  "name": "collisionFaceTouched",
+  "tag": "game-inferred",
+  "was": "FUN_001f5fd0",
+  "why": "callback of visitSphere from collidePair: length and direction of the push, slot 0 of both owners"
+ },
  "001f60a0": {
   "name": "SceneRecordBuckets::remove",
   "tag": "game-inferred",
@@ -16264,6 +16288,36 @@
   "tag": "game-inferred",
   "was": "FUN_001f6690",
   "why": "0xe0 record of the buckets: owner +4, bucket +8, category +0xc, mask +0x10, sphere +0x80"
+ },
+ "001f6760": {
+  "name": "CollisionBodyArray::reserve",
+  "tag": "game-inferred",
+  "was": "FUN_001f6760",
+  "why": "same shape as StageObjArray::reserve; SceneRecordBuckets' ctor reserves 0x1fe"
+ },
+ "001f6820": {
+  "name": "CollisionBodyArray::find",
+  "tag": "game-inferred",
+  "was": "FUN_001f6820",
+  "why": "same shape as StageObjArray::find"
+ },
+ "001f6880": {
+  "name": "CollisionBodyArray::erase",
+  "tag": "game-inferred",
+  "was": "FUN_001f6880",
+  "why": "same shape as StageObjArray::erase"
+ },
+ "001f6910": {
+  "name": "CollisionBodyArray::push",
+  "tag": "game-inferred",
+  "was": "FUN_001f6910",
+  "why": "same shape as StageObjArray::push"
+ },
+ "001f6a40": {
+  "name": "CollisionBodyArray::CollisionBodyArray",
+  "tag": "game-inferred",
+  "was": "FUN_001f6a40",
+  "why": "count 0, capacity 14, block on the global heap: CollisionBody +0x14, SceneRecordBuckets' four"
  },
  "001f6ac0": {
   "name": "SceneRender::addSbBox",
@@ -17339,11 +17393,41 @@
   "was": "FUN_00231d40",
   "why": "point inside the two corners, by the VU's sign flags"
  },
+ "00231d80": {
+  "name": "StageCollision::visitSphereNode",
+  "tag": "game-inferred",
+  "was": "FUN_00231d80",
+  "why": "recursive walk of a cell's tree with a callback per touched face; spherePush, the scratchpad seen list at 0x70000000"
+ },
+ "00232190": {
+  "name": "StageCollision::visitSphere",
+  "tag": "game-inferred",
+  "was": "FUN_00232190",
+  "why": "sphere (radius, center +0x10) against the grid, the callback 0x1f5fd0 from collidePair"
+ },
+ "00232460": {
+  "name": "StageCollision::sphereHitsNode",
+  "tag": "game-inferred",
+  "was": "FUN_00232460",
+  "why": "recursion of sphereHits: faces into the out table up to the maximum, seen list at 0x70002000"
+ },
  "00232870": {
   "name": "StageCollision::sphereHits",
   "tag": "game-inferred",
   "was": "FUN_00232870",
   "why": "float radius in f12, position last"
+ },
+ "00232b20": {
+  "name": "StageCollision::segmentHitsNode",
+  "tag": "game-inferred",
+  "was": "FUN_00232b20",
+  "why": "recursion of segmentHits: first face crossed answers 1"
+ },
+ "00232da0": {
+  "name": "StageCollision::raycastNode",
+  "tag": "game-inferred",
+  "was": "FUN_00232da0",
+  "why": "recursion of raycast: the nearest face to from, its point"
  },
  "00233160": {
   "name": "StageCollision::segmentHits",
@@ -17357,11 +17441,71 @@
   "was": "FUN_00233810",
   "why": "a0 one collision mesh of a Root object (+0x20c array), a1 hit out, a2 from, a3 to, t0 mask, t1 flags, t2 arg: the face hit (StageCollisionFace, +0x40 flags) or null; StageScene::raycast keeps the nearest of every mesh"
  },
+ "00233f90": {
+  "name": "StageCollision::heightAtNode",
+  "tag": "game-inferred",
+  "was": "FUN_00233f90",
+  "why": "recursion of heightAt: the highest face under *height, and the next one"
+ },
  "002342c0": {
   "name": "StageCollision::heightAt",
   "tag": "game-inferred",
   "was": "FUN_002342c0",
   "why": "x, y, range in f12..f14: mesh with +0 clear"
+ },
+ "002343c0": {
+  "name": "StageCollision::setGroup",
+  "tag": "game-inferred",
+  "was": "FUN_002343c0",
+  "why": "byte +0x48 + id, below 0x1cc; raycast and friends skip a face whose byte is 0; 0x175900 clears it"
+ },
+ "002343e0": {
+  "name": "StageCollision::~StageCollision",
+  "tag": "game-inferred",
+  "was": "FUN_002343e0",
+  "why": "deleting dtor: destroys the array of nodes at +0x218 with 0x235090"
+ },
+ "00234440": {
+  "name": "StageCollision::StageCollision",
+  "tag": "game-inferred",
+  "was": "FUN_00234440",
+  "why": "operator_new(0x220) before it at setupMapObject; builds planes, box, grid and each cell's tree from the record"
+ },
+ "00234d10": {
+  "name": "CollisionNode::split",
+  "tag": "game-inferred",
+  "was": "FUN_00234d10",
+  "why": "two new 0x30 nodes around the height's middle, faces shared out, kept when each has fewer; recursive"
+ },
+ "00235090": {
+  "name": "CollisionNode::~CollisionNode",
+  "tag": "game-inferred",
+  "was": "FUN_00235090",
+  "why": "frees the face vector at +0x20 and children +0x24, +0x28; two levels of its recursion inline"
+ },
+ "00235390": {
+  "name": "CollisionNode::CollisionNode",
+  "tag": "game-inferred",
+  "was": "FUN_00235390",
+  "why": "+0x20, +0x24, +0x28 zero; passed to the array constructor with 0x235090"
+ },
+ "002353b0": {
+  "name": "StageCollisionFace::spherePush",
+  "tag": "game-inferred",
+  "was": "FUN_002353b0",
+  "why": "in order: along the normal, the three edges, the three vertices; a hit point and a vector out"
+ },
+ "00235740": {
+  "name": "StageCollisionFace::sphereTouches",
+  "tag": "game-inferred",
+  "was": "FUN_00235740",
+  "why": "the same three cases as spherePush, answer only"
+ },
+ "002358e0": {
+  "name": "StageCollisionFace::segmentHit",
+  "tag": "game-inferred",
+  "was": "FUN_002358e0",
+  "why": "plane signs of both ends, side 1 / 2, VU triple products for the triangle, the point at t"
  },
  "00235b00": {
   "name": "StageCollisionFace::inFront",
@@ -17369,11 +17513,35 @@
   "was": "FUN_00235b00",
   "why": "d + normal . point >= 0"
  },
+ "00235b50": {
+  "name": "StageCollisionFace::heightAt",
+  "tag": "game-inferred",
+  "was": "FUN_00235b50",
+  "why": "x, y inside the triangle by cross z signs, height from the plane, clamped to the top vertex"
+ },
+ "00235d20": {
+  "name": "StageCollisionFace::overlapsRect",
+  "tag": "game-inferred",
+  "was": "FUN_00235d20",
+  "why": "the grid's test: a vertex in the rectangle, a corner in the triangle, or corners either side of an edge"
+ },
+ "00235f90": {
+  "name": "StageCollisionFace::getBox",
+  "tag": "game-inferred",
+  "was": "FUN_00235f90",
+  "why": "min and max of the three vertices, two vectors out"
+ },
  "00236030": {
   "name": "StageCollisionFace::getNormal",
   "tag": "game-inferred",
   "was": "FUN_00236030",
   "why": "the plane's normal, w 0, turned by the mesh's matrix when +0x48 has one"
+ },
+ "00236070": {
+  "name": "StageCollisionFace::findExtremes",
+  "tag": "game-inferred",
+  "was": "FUN_00236070",
+  "why": "2-bit vertex indices at +0x4e, +0x4f for min and max x, y, z"
  },
  "002362a0": {
   "name": "boxContainsPoint",
@@ -17387,11 +17555,59 @@
   "was": "FUN_002362f0",
   "why": "VU0: centre minus / plus radius (xyz) into two vectors"
  },
+ "00236310": {
+  "name": "BoundingSphere::hitsCapsule",
+  "tag": "game-inferred",
+  "was": "FUN_00236310",
+  "why": "squared distance to both ends with radius + capsule radius, then hitsSegment with margin 0"
+ },
+ "00236480": {
+  "name": "BoundingSphere::hitsSphere",
+  "tag": "game-inferred",
+  "was": "FUN_00236480",
+  "why": "center less the other, squared distance against the sum of radii, distance in w of the out vector"
+ },
+ "00236570": {
+  "name": "BoundingSphere::edgeTouches",
+  "tag": "game-inferred",
+  "was": "FUN_00236570",
+  "why": "closest point of the edge, inside radiusSq (+4); offset and distance out"
+ },
+ "002366c0": {
+  "name": "BoundingSphere::hitsSegment",
+  "tag": "game-inferred",
+  "was": "FUN_002366c0",
+  "why": "projection on the segment, in its length, squared distance to radius + margin"
+ },
+ "00236800": {
+  "name": "BoundingSphere::hitsSegment0",
+  "tag": "game-inferred",
+  "was": "FUN_00236800",
+  "why": "f12 = 0, a3 = 0, then j 0x2366c0"
+ },
+ "00236810": {
+  "name": "BoundingSphere::fromPoints",
+  "tag": "game-inferred",
+  "was": "FUN_00236810",
+  "why": "mean of the points, largest squared distance into +4, its root into +0"
+ },
  "00236910": {
   "name": "BoundingSphere::BoundingSphere",
   "tag": "game-inferred",
   "was": "FUN_00236910",
   "why": "zeroes radius, its square and the centre +0x10"
+ },
+ "00236930": {
+  "name": "boxHitsSegment",
+  "tag": "game-inferred",
+  "was": "FUN_00236930",
+  "why": "VU box test of the segment's own box, then the line against each face plane; raycast and segmentHits"
+ },
+ "00236ab0": {
+  "name": "boxesOverlap",
+  "tag": "game-inferred",
+  "was": "FUN_00236ab0",
+  "why": "per axis high against low both ways; collidePair's early test"
  },
  "00236b20": {
   "name": "boxHolds",
@@ -22961,6 +23177,12 @@
   "was": "FUN_002cebd0",
   "why": "re-hangs the block node on a bone of the player"
  },
+ "002cedb0": {
+  "name": "useSurfaceOfName",
+  "tag": "game-inferred",
+  "was": "FUN_002cedb0",
+  "why": "surfaceOfName, then a byte set at 0x599830 + id; the result goes to the face's +0x4c"
+ },
  "002cf0b0": {
   "name": "getSurfaceSound",
   "tag": "game-inferred",
@@ -22972,6 +23194,12 @@
   "tag": "game-inferred",
   "was": "FUN_002cf510",
   "why": "called by a stage's StageScene ctor: 44 groups at 0x599830 (a byte each, zero) / 0x599860 (32 words each, one); other users 0x2cedc8 / 0x2cf3d4 unread; name a guess"
+ },
+ "002cf590": {
+  "name": "surfaceOfName",
+  "tag": "game-inferred",
+  "was": "FUN_002cf590",
+  "why": "pure character switch over a name starting with S, id for getSurfaceSound; -1 otherwise"
  },
  "002cff30": {
   "name": "SceneModel::~SceneModel",

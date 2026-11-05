@@ -27,6 +27,7 @@
 #include "game/scenepairs.h"
 #include "game/scriptrunner.h"
 #include "game/seplayer.h"
+#include "game/stagecollision.h"
 #include "game/stageloop.h"
 #include "game/stageobjlist.h"
 #include "game/stagelist.h"
@@ -582,6 +583,9 @@ public:
     virtual void onLinkChanged();                                        // FS2 vtable +0x260
     // A door hangs itself from the Root object's lists.
     void attachToRoot();                                                 // FS2 0x00173cb0
+    // Breaks part (a face group less 1) of a map object or a door: its faces
+    // go, the piece hides, withEffect plays the glass.
+    void breakPart(int part, bool withEffect);                           // FS2 0x00175900
     // A character of the mission's list, around the frame's scripts
     // (StageScene::runStageScripts): what they do is unread.
     void beforeScripts();                                                // FS2 0x0021c7c0
@@ -900,84 +904,6 @@ public:
     StageObject *m_object;                  // FS2 +0xc
 };
 
-// One shape of the collision world (SceneRecordBuckets), EE 0xe0: built by
-// lights, bullets, traps, map objects, cameras. The world pairs up bodies
-// whose category meets the other's mask, so the names are read from add
-// 0x1f6180, not from the collide step.
-// layout: host -- EE offsets in the comments.
-class CollisionOwner;
-struct StageCollisionFace;
-struct CollisionBody
-{
-    // Shape 0 until the owner says; on = 1, the dirty bytes clear.
-    CollisionBody(CollisionOwner *bodyOwner, int bodyBucket, u_int bodyCategory,
-                  u_int bodyMask);                                       // FS2 0x001f6690
-    // Marks it dirty and works out the box.
-    void refresh();                                                      // FS2 0x001f6670
-
-    u_char         on;          // FS2 +0x00: 1 from the ctor; a closed trap clears it
-    CollisionOwner *owner;      // FS2 +0x04
-    int            bucket;      // FS2 +0x08: SceneRecordBuckets' list
-    u_int          category;    // FS2 +0x0c
-    u_int          mask;        // FS2 +0x10
-    int            shape;       // FS2 +0x40: CollisionShape
-    u_int          rayMask;     // FS2 +0x44: a segment's, for StageScene::raycast
-    u_int          rayFlags;    // FS2 +0x48: the same
-    sceVu0FVECTOR  segment[2];  // FS2 +0x60: a segment's ends
-    BoundingSphere sphere;      // FS2 +0x80
-    sceVu0FVECTOR  capsule[2];  // FS2 +0xa0: a capsule's ends
-    float          capsuleRadius; // FS2 +0xc0
-};
-// CollisionBody::shape (0x1f6590): the box comes from the one sphere, or
-// from the list at +0xd4 (unread).
-enum CollisionShape
-{
-    CollisionShape_Camera  = 1, // the main camera's: updateBox gives it no box
-    CollisionShape_Segment = 2,
-    CollisionShape_Sphere  = 3,
-    CollisionShape_Spheres = 4,
-    CollisionShape_Capsule = 5,
-};
-// A body's category, the ones read.
-constexpr u_int kCollisionBulletHit = 0x80;     // a bullet's capsule
-constexpr u_int kCollisionBulletRay = 0x100;    // a bullet's segment
-constexpr u_int kCollisionTrap      = 0x200;
-constexpr u_int kCollisionLight     = 0x2000;
-// What onCollide is given: the two bodies.
-// layout: host -- EE order, 4-byte pointers.
-struct CollisionContact
-{
-    CollisionBody *self;        // FS2 +0x00: the owner's own
-    CollisionBody *body;        // FS2 +0x04: the other side's
-};
-// The base that owns a body (EE +0 a flag, +4 the vptr; +0x200 in the lights
-// and the Root objects, +0x240 in the items). Vtable 0x3115a0: six slots,
-// five of them empty there. Like the object's bases its slots repeat, after
-// the runner's, in the class's own table.
-// layout: host
-class CollisionOwner
-{
-public:
-    // Slot 0. What it asks is unread: a light answers 0.
-    virtual int  collisionHook0() = 0;
-    // Slot 1: contact with something; answers 0 on a light and a bullet. On
-    // a segment: the sweep's vector, the map's face, how far along it (t,
-    // distance from the segment's start).
-    virtual int  onCollide(CollisionContact *contact, const float *sweep,
-                           StageCollisionFace *face, float t, float distance) = 0;
-    // Slot 2: the body follows the owner.
-    virtual void syncBody(CollisionBody *body) = 0;
-    // Slot 3: after the frame's contacts. Empty on a light.
-    virtual void collisionHook3(CollisionBody *body) = 0;
-    // Slot 4 (+0x18): the object behind the body; the world compares these.
-    virtual StageObject *getCollisionObject() = 0;
-    // Slot 5 (+0x1c): an object the body must not meet (add 0x1f6180
-    // compares it with the other's); null here.
-    // FS2 0x00171ad0
-    virtual StageObject *getCollisionParent() { return nullptr; }
-
-    u_char m_enabled = 1;       // FS2 +0x00: 1 from the base's ctor
-};
 // A keyed vector over frames, EE 0x20: the lights' colour, every value of
 // SceneRender. value is the frame's vector; its w the weight (StageLight::
 // getWeight). game/vectortrack.cpp, cut out of the run unassigned@00299d90.
@@ -1081,6 +1007,7 @@ public:
     void setRunning(bool on);                                            // FS2 0x0018c2d0
     void setRangeSquared(float rangeSquared);                            // FS2 0x00190040
 
+    u_char m_emitting = 0;      // FS2 +0x271: what setEmitting last said (MapObjectParts::copyShown)
     u_char m_running = 0;       // FS2 +0x273
 };
 // Every character with m_viewActive: three steps on its motion (+0x224).
@@ -1229,61 +1156,6 @@ private:
 
 class Clock;                    // game/clock.h
 
-// What StageScene::raycast answers (from 0x233810). Only the flag
-// StageSound tests.
-// layout: host -- EE: +0x40 flags.
-enum StageCollisionFlag
-{
-    StageCollision_Thin = 0x400,    // sound passes once (StageSound: twice the distance)
-    StageCollision_Slope = 0x4008,  // either bit: the main camera tilts with the floor
-    StageCollision_Door = 0x4000000, // doorId is a door's (StageScene::isDoorFace)
-    StageCollision_CameraPass = 0x8000000, // the main camera may stand behind it
-};
-struct StageCollisionFace
-{
-    // The plane's normal in the world (a moved mesh's turned by its matrix).
-    void getNormal(sceVu0FVECTOR out) const;                             // FS2 0x00236030
-    // point is on the normal's side of the plane, or on it.
-    bool inFront(const sceVu0FVECTOR point) const;                       // FS2 0x00235b00
-
-    sceVu0FVECTOR plane;        // FS2 +0x00: normal, then the plane's d
-    u_char _10[0x30];
-    u_int  flags;               // FS2 +0x40: StageCollisionFlag
-    u_short attr;               // FS2 +0x44: StageScene::getFloorAttr
-    short  doorId;              // FS2 +0x46: kDoorFaceBase + what StageScene::findDoorOfFace decodes
-    u_char _48[0x4];
-    u_char surface;             // FS2 +0x4c: a bullet's effect and sound (getSurfaceSound)
-};
-static_assert(offsetof(StageCollisionFace, flags) == 0x40, "StageCollisionFace::flags");
-static_assert(offsetof(StageCollisionFace, attr) == 0x44, "StageCollisionFace::attr");
-static_assert(offsetof(StageCollisionFace, doorId) == 0x46, "StageCollisionFace::doorId");
-static_assert(offsetof(StageCollisionFace, surface) == 0x4c, "StageCollisionFace::surface");
-
-// One collision mesh of a Root object (StageObject::m_collisions; the run
-// unassigned@00231c90). Only the ray test StageScene::raycast uses.
-// layout: host -- contents unread.
-class StageCollision
-{
-public:
-    // The face the segment from..to hits (hit: where), null none; mask /
-    // flags / arg select the faces (StageSound's values).
-    StageCollisionFace *raycast(sceVu0FVECTOR hit, const sceVu0FVECTOR from,
-                                const sceVu0FVECTOR to, u_int mask,
-                                u_int flags, int arg);                   // FS2 0x00233810
-    // The sphere at pos touches the mesh. mode 1 at every call read; out
-    // takes a word nobody reads.
-    bool sphereHits(float radius, int mode, void *out, u_int mask, u_int flags,
-                    const float *pos);                                   // FS2 0x00232870
-    // The segment from..to touches the mesh.
-    bool segmentHits(const float *from, const float *to, u_int mask, u_int flags,
-                     int arg);                                           // FS2 0x00233160
-    // A mesh without nodes: the face under x, y, *height its height.
-    StageCollisionFace *heightAt(float x, float y, float range, float *height, u_int mask,
-                                 u_int flags, int arg);                  // FS2 0x002342c0
-
-    void *nodes;                // FS2 +0x0: StageScene::findFloorFace casts a ray through a mesh with nodes
-};
-
 // A sub-scene's demo voice (StageScene +0x28; the run unassigned@002b0d50):
 // a SoundStream with a directory (streamEU/demo/) and what looks like a
 // subtitle colour and position. Only what StageScene calls.
@@ -1386,17 +1258,6 @@ private:
 
 // +0x14: ScenePairTable, game/scenepairs.h.
 
-// +0x18: four arrays of records reserved for 0x1fe each. layout: host (EE 0x70).
-struct SceneRecordBuckets
-{
-    SceneRecordBuckets();                                                // FS2 0x001f6510
-    ~SceneRecordBuckets();                                               // FS2 0x001f63f0: deleting
-    // body joins its bucket, and is paired up with what its category meets.
-    void add(CollisionBody *body);                                       // FS2 0x001f6180
-    void remove(CollisionBody *body);                                    // FS2 0x001f60a0
-    void collide();                                                      // FS2 0x001f5250
-};
-
 // +0x1c: owns one 0x40-byte object (0x192080, built with this). layout: host (EE 4).
 struct StageNodeTree
 {
@@ -1458,17 +1319,6 @@ public:
     explicit SigLamp(Tim2Texture *texture);                              // FS2 0x002a7bf0
 };
 
-
-// A collision file as loaded ("SSS\x1a" first; run unassigned@00231c90).
-// layout: file -- only the magic is read here.
-enum { kCollisionMagic = 0x1a535353 };
-struct CollisionFile
-{
-    void relocate();                                                     // FS2 0x0023ae40
-
-    int magic;                  // FS2 +0x0: kCollisionMagic
-};
-static_assert(sizeof(CollisionFile) == 4, "CollisionFile: only the magic so far");
 
 // +0x58: built over the areaclip keyword's file (setAreaClip): an 8 x 8 grid
 // of index lists (0x2db080 picks the file's 0x40-byte records per cell), a
@@ -1933,7 +1783,7 @@ bool isGateModelName(const char *name);                                  // FS2 
 // layout: host -- EE offsets in the comments.
 struct MapObjectParts
 {
-    MapObjectParts(StageObject *owner, void *collisionRecord, bool withEffects); // FS2 0x00176bc0
+    MapObjectParts(StageObject *owner, CollisionRecord *collisionRecord, bool withEffects); // FS2 0x00176bc0
     ~MapObjectParts();                                                   // FS2 0x00176b30
     // Each part as from shows it, and each effect as from's emits.
     void copyShown(const MapObjectParts *from);                          // FS2 0x00176a40
@@ -1943,10 +1793,6 @@ struct MapObjectParts
     PartSwitch     *switches = nullptr; // FS2 +0x08
     StageParticle **effects = nullptr;  // FS2 +0x0c
 };
-// A collision file's record for the node called name; null none (0x20 bytes
-// each from +4, count at +8). The file is not relocated yet (StageCollision).
-void *collisionFindRecord(void *file, const char *name);                 // FS2 0x0023adb0
-
 // A gate's parts BKW%02di and effects (EE 0x40). Only what the sub-scene's
 // gate calls; "gate" is a guess from isGateModelName.
 // layout: host -- EE offsets in the comments.
@@ -2030,7 +1876,7 @@ public:
     void onLinkChanged() override;                                       // FS2 0x00179680
 
     // FS2 0x00178130
-    int  collisionHook0() override { return 0; }
+    int  collisionHook0(CollisionContact *, const float *, StageCollisionFace *, float) override { return 0; }
     // FS2 0x00178120
     int  onCollide(CollisionContact *, const float *, StageCollisionFace *, float, float) override { return 0; }
     // FS2 0x00178150

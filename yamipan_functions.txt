@@ -2764,14 +2764,14 @@
 /* 00174b00 000008c4 */ FUN_00174b00(){}
 /* 001753d0 00000008 */ FUN_001753d0(){}
 /* 001753e0 00000008 */ FUN_001753e0(){}
-/* 001753f0 000001d8 */ FUN_001753f0(){}
+/* 001753f0 000001d8 */ StageMapObject::collisionHook0(){}  // game
 /* 001755d0 00000004 */ FUN_001755d0(){}
 /* 001755e0 00000004 */ FUN_001755e0(){}
 /* 001755f0 000000b8 */ FUN_001755f0(){}
 /* 001756b0 00000044 */ StageMapObject::sideHook0(){}  // game
 /* 00175700 000001e4 */ FUN_00175700(){}
 /* 001758f0 00000008 */ StageMatrixNode::getWorldMatrix(){}  // game
-/* 00175900 00000300 */ FUN_00175900(){}
+/* 00175900 00000300 */ StageObject::breakPart(){}  // game
 /* 00175c00 00000038 */ stageMotionTargetName(){}  // game
 /* 00175c40 000000f8 */ StageObject::isMotionTarget(){}  // game
 /* 00175d40 00000374 */ FUN_00175d40(){}
@@ -4869,6 +4869,11 @@
 /* 001f3b30 00000140 */ FUN_001f3b30(){}
 /* 001f3c70 000000a8 */ FUN_001f3c70(){}
 /* 001f3d20 00000e8c */ FUN_001f3d20(){}
+
+// *****************************************************************************
+// FILE -- game/stagecollision.cpp
+// *****************************************************************************
+
 /* 001f4bb0 00000010 */ FUN_001f4bb0(){}
 /* 001f4bc0 00000054 */ FUN_001f4bc0(){}
 /* 001f4c20 00000010 */ FUN_001f4c20(){}
@@ -4884,8 +4889,8 @@
 /* 001f5210 00000014 */ FUN_001f5210(){}
 /* 001f5230 00000014 */ FUN_001f5230(){}
 /* 001f5250 0000042c */ SceneRecordBuckets::collide(){}  // game
-/* 001f5680 0000094c */ FUN_001f5680(){}
-/* 001f5fd0 000000d0 */ FUN_001f5fd0(){}
+/* 001f5680 0000094c */ SceneRecordBuckets::collidePair(){}  // game
+/* 001f5fd0 000000d0 */ collisionFaceTouched(){}  // game
 /* 001f60a0 000000e0 */ SceneRecordBuckets::remove(){}  // game
 /* 001f6180 00000270 */ SceneRecordBuckets::add(){}  // game
 /* 001f63f0 00000118 */ SceneRecordBuckets::~SceneRecordBuckets(){}  // game
@@ -4893,11 +4898,11 @@
 /* 001f6590 000000dc */ CollisionBody::updateBox(){}  // game
 /* 001f6670 00000014 */ CollisionBody::refresh(){}  // game
 /* 001f6690 000000c8 */ CollisionBody::CollisionBody(){}  // game
-/* 001f6760 000000bc */ FUN_001f6760(){}
-/* 001f6820 00000050 */ FUN_001f6820(){}
-/* 001f6880 0000008c */ FUN_001f6880(){}
-/* 001f6910 0000012c */ FUN_001f6910(){}
-/* 001f6a40 00000074 */ FUN_001f6a40(){}
+/* 001f6760 000000bc */ CollisionBodyArray::reserve(){}  // game
+/* 001f6820 00000050 */ CollisionBodyArray::find(){}  // game
+/* 001f6880 0000008c */ CollisionBodyArray::erase(){}  // game
+/* 001f6910 0000012c */ CollisionBodyArray::push(){}  // game
+/* 001f6a40 00000074 */ CollisionBodyArray::CollisionBodyArray(){}  // game
 
 // *****************************************************************************
 // FILE -- game/scenerender.cpp
@@ -5644,50 +5649,55 @@
 /* 00231d30 00000004 */ loadingBegin(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/stagecollision.cpp
 // *****************************************************************************
 
 /* 00231d40 0000003c */ boxContains(){}  // game
-/* 00231d80 0000040c */ FUN_00231d80(){}
-/* 00232190 000002c8 */ FUN_00232190(){}
-/* 00232460 00000408 */ FUN_00232460(){}
+/* 00231d80 0000040c */ StageCollision::visitSphereNode(){}  // game
+/* 00232190 000002c8 */ StageCollision::visitSphere(){}  // game
+/* 00232460 00000408 */ StageCollision::sphereHitsNode(){}  // game
 /* 00232870 000002a4 */ StageCollision::sphereHits(){}  // game
-/* 00232b20 00000278 */ FUN_00232b20(){}
-/* 00232da0 000003c0 */ FUN_00232da0(){}
+/* 00232b20 00000278 */ StageCollision::segmentHitsNode(){}  // game
+/* 00232da0 000003c0 */ StageCollision::raycastNode(){}  // game
 /* 00233160 000006a4 */ StageCollision::segmentHits(){}  // game
 /* 00233810 00000780 */ StageCollision::raycast(){}  // game
-/* 00233f90 00000324 */ FUN_00233f90(){}
+/* 00233f90 00000324 */ StageCollision::heightAtNode(){}  // game
 /* 002342c0 000000fc */ StageCollision::heightAt(){}  // game
-/* 002343c0 00000018 */ FUN_002343c0(){}
-/* 002343e0 0000005c */ FUN_002343e0(){}
-/* 00234440 0000085c */ FUN_00234440(){}
+/* 002343c0 00000018 */ StageCollision::setGroup(){}  // game
+/* 002343e0 0000005c */ StageCollision::~StageCollision(){}  // game
+/* 00234440 0000085c */ StageCollision::StageCollision(){}  // game
 /* 00234ca0 00000068 */ FUN_00234ca0(){}
-/* 00234d10 0000037c */ FUN_00234d10(){}
-/* 00235090 00000284 */ FUN_00235090(){}
+/* 00234d10 0000037c */ CollisionNode::split(){}  // game
+/* 00235090 00000284 */ CollisionNode::~CollisionNode(){}  // game
 /* 00235320 00000070 */ FUN_00235320(){}
-/* 00235390 00000014 */ FUN_00235390(){}
-/* 002353b0 00000384 */ FUN_002353b0(){}
-/* 00235740 0000019c */ FUN_00235740(){}
-/* 002358e0 00000220 */ FUN_002358e0(){}
+/* 00235390 00000014 */ CollisionNode::CollisionNode(){}  // game
+/* 002353b0 00000384 */ StageCollisionFace::spherePush(){}  // game
+/* 00235740 0000019c */ StageCollisionFace::sphereTouches(){}  // game
+/* 002358e0 00000220 */ StageCollisionFace::segmentHit(){}  // game
 /* 00235b00 00000044 */ StageCollisionFace::inFront(){}  // game
-/* 00235b50 000001c8 */ FUN_00235b50(){}
-/* 00235d20 00000264 */ FUN_00235d20(){}
-/* 00235f90 00000094 */ FUN_00235f90(){}
+/* 00235b50 000001c8 */ StageCollisionFace::heightAt(){}  // game
+/* 00235d20 00000264 */ StageCollisionFace::overlapsRect(){}  // game
+/* 00235f90 00000094 */ StageCollisionFace::getBox(){}  // game
 /* 00236030 0000003c */ StageCollisionFace::getNormal(){}  // game
-/* 00236070 00000224 */ FUN_00236070(){}
+/* 00236070 00000224 */ StageCollisionFace::findExtremes(){}  // game
 /* 002362a0 00000050 */ boxContainsPoint(){}  // game
 /* 002362f0 00000020 */ BoundingSphere::toBox(){}  // game
-/* 00236310 00000168 */ FUN_00236310(){}
-/* 00236480 000000e4 */ FUN_00236480(){}
-/* 00236570 00000144 */ FUN_00236570(){}
-/* 002366c0 00000140 */ FUN_002366c0(){}
-/* 00236800 00000010 */ FUN_00236800(){}
-/* 00236810 00000100 */ FUN_00236810(){}
+/* 00236310 00000168 */ BoundingSphere::hitsCapsule(){}  // game
+/* 00236480 000000e4 */ BoundingSphere::hitsSphere(){}  // game
+/* 00236570 00000144 */ BoundingSphere::edgeTouches(){}  // game
+/* 002366c0 00000140 */ BoundingSphere::hitsSegment(){}  // game
+/* 00236800 00000010 */ BoundingSphere::hitsSegment0(){}  // game
+/* 00236810 00000100 */ BoundingSphere::fromPoints(){}  // game
 /* 00236910 00000020 */ BoundingSphere::BoundingSphere(){}  // game
-/* 00236930 00000180 */ FUN_00236930(){}
-/* 00236ab0 00000060 */ FUN_00236ab0(){}
+/* 00236930 00000180 */ boxHitsSegment(){}  // game
+/* 00236ab0 00000060 */ boxesOverlap(){}  // game
 /* 00236b20 0000005c */ boxHolds(){}  // game
 /* 00236b80 0000000c */ FUN_00236b80(){}
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 00236b90 00002f00 */ FUN_00236b90(){}
 /* 00239a90 000000fc */ FUN_00239a90(){}
 /* 00239b90 00000018 */ FUN_00239b90(){}
@@ -5703,6 +5713,11 @@
 /* 0023aca0 00000064 */ SceneBoxList::update(){}  // game
 /* 0023ad10 00000044 */ SceneBoxList::~SceneBoxList(){}  // game
 /* 0023ad60 00000044 */ SceneBoxList::SceneBoxList(){}  // game
+
+// *****************************************************************************
+// FILE -- game/stagecollision.cpp
+// *****************************************************************************
+
 /* 0023adb0 00000090 */ collisionFindRecord(){}  // game
 /* 0023ae40 000000ec */ CollisionFile::relocate(){}  // game
 
@@ -7921,13 +7936,33 @@
 /* 002ce9d0 000001a0 */ SceneBlock98::createFor(){}  // game
 /* 002ceb70 00000060 */ SceneBlock98::setActive(){}  // game
 /* 002cebd0 000001e0 */ SceneBlock98::attachTo(){}  // game
-/* 002cedb0 00000030 */ FUN_002cedb0(){}
+
+// *****************************************************************************
+// FILE -- game/stagecollision.cpp
+// *****************************************************************************
+
+/* 002cedb0 00000030 */ useSurfaceOfName(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 002cede0 00000168 */ FUN_002cede0(){}
 /* 002cef50 00000158 */ FUN_002cef50(){}
 /* 002cf0b0 00000158 */ getSurfaceSound(){}  // game
 /* 002cf210 00000300 */ FUN_002cf210(){}
 /* 002cf510 00000070 */ resetStageGroupTable(){}  // game
-/* 002cf590 000002e0 */ FUN_002cf590(){}
+
+// *****************************************************************************
+// FILE -- game/stagecollision.cpp
+// *****************************************************************************
+
+/* 002cf590 000002e0 */ surfaceOfName(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 002cf880 000002a0 */ FUN_002cf880(){}
 /* 002cfb20 000002fc */ FUN_002cfb20(){}
 /* 002cfe20 00000110 */ FUN_002cfe20(){}
