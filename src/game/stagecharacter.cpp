@@ -163,7 +163,7 @@ void StageCharacter::initAbilities()
         a->moveCrouched = 0;
         a->strafe = 0;
         a->runStart = 0;
-        a->flag3ac = 0;
+        a->gunMove = 0;
         a->flag3bf = 0;
         a->flag3c0 = 0;
         a->flag3c1 = 0;
@@ -188,15 +188,15 @@ void StageCharacter::initAbilities()
     case CharacterKind_HideD:
     case CharacterKind_F:
         a->quickTurn = 0;
-        a->flag3a5 = 0;
+        a->jack = 0;
         a->flag3a6 = 0;
         a->moveCrouched = 0;
         a->runStart = 0;
-        a->flag3ac = 0;
+        a->gunMove = 0;
         a->flag3ad = 0;
         a->flag3b9 = 0;
-        a->flag3ba = 0;
-        a->flag3bb = 0;
+        a->traps = 0;
+        a->throwing = 0;
         a->flag3bf = 0;
         a->flag3c0 = 0;
         a->flag3c1 = 0;
@@ -209,8 +209,8 @@ void StageCharacter::initAbilities()
             a->flag3b6 = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
-            a->flag3bc = 0;
-            a->flag3bd = 0;
+            a->call = 0;
+            a->reload = 0;
             a->flag3be = 0;
             a->flag3c2 = 0;
             a->flag3c3 = 0;
@@ -224,8 +224,8 @@ void StageCharacter::initAbilities()
             a->flag3b6 = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
-            a->flag3bc = 0;
-            a->flag3bd = 0;
+            a->call = 0;
+            a->reload = 0;
             a->flag3be = 0;
             a->flag3cc = 0;
             a->flag3cd = 0;
@@ -237,15 +237,15 @@ void StageCharacter::initAbilities()
             a->flag3b6 = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
-            a->flag3bc = 0;
-            a->flag3bd = 0;
+            a->call = 0;
+            a->reload = 0;
         }
         else if (record->kind == CharacterKind_Yrt) {
             a->strafe = 0;
             a->walkBack = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
-            a->flag3bd = 0;
+            a->reload = 0;
             a->flag3be = 0;
             a->flag3c5 = 0;
         }
@@ -255,8 +255,8 @@ void StageCharacter::initAbilities()
             a->flag3b6 = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
-            a->flag3bc = 0;
-            a->flag3bd = 0;
+            a->call = 0;
+            a->reload = 0;
             a->flag3be = 0;
             a->flag3c5 = 0;
         }
@@ -264,7 +264,7 @@ void StageCharacter::initAbilities()
             a->strafe = 0;
             a->flag3b6 = 0;
             a->flag3b9 = 0;
-            a->flag3bd = 0;
+            a->reload = 0;
         }
         else if (record->kind == CharacterKind_C || record->kind == CharacterKind_5) {
             a->flag3b6 = 0;
@@ -322,10 +322,10 @@ void StageCharacter::initStatus()
     m_health = (float)record->health;
     setFlinch(0);
     m_unarmedMsp = record->unarmedMsp;
-    m_3e4 = 0;
-    m_3e8 = 0;
-    m_3ec = 0;
-    m_3f0 = 0;
+    m_flinchClock = 0.0f;
+    m_unarmedClock = 0.0f;
+    m_enduranceClock = 0.0f;
+    m_3f0 = 0.0f;
     m_winded = 0;
     m_idleTime = 0.0f;
     rollIdleDelay();

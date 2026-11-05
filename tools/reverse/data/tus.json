@@ -621,11 +621,19 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Written: conditions BtOn, Lock with faceTarget, BtAttack, BtAtkCombo, BtMove; links Battle, BtAttack; findTargetAhead, findTargetBeside, isTargetValid, canSeeTarget, findBlowPart, getTargetPoint, getLockPoint, isEnemyOf, getSides, getTakenOverPlayer, isBlowActive, nearestPart, getBrainPace. Stub: PartSwitch::partName answers null (needs the model's part-name table). Seen in New Game, 420 s, work/battle_pad.txt, no crash, by a temporary log since removed: F_PC01 has abilities 3c2 and 3c3 and sides 12; 12 bt_on requests, 22 blows from bt_s on Cross, stance left 33 times. Stage 1 has no target in reach, so the search has found nothing and no blow has met anything. Picture NOT proven: shots show the camera close on his head, shot_922800 with the head filling the frame looking down at the bedding. The camera takes offsets from the motion's row, so the sheet may ask for it, or a bone or lean may be wrong; no reference exists and shots were not keyed to motions. Next: a run with shots keyed to the motion, compare with the sheet's offsets. The stage goes live near pad read 5600, about 300 s into New Game, so a 200 s run ends too early. Doubts: BtAttackLink::onStart always stops Lock because the tests 0x294c70 and 0x294c30 read a floor object of kind 4, a class the host lacks; m_sides is set in initStatus, the ROM sets it in 0x21cc70, unread. The small getters 0x26f720, 0x26f730, 0x26f780, 0x26f8d0 and 0x2160a0..0x216120 are in the code as inlines with no annotation. Left in the TU: BtOn's kin GunOn, TrapSet, TrapCancel, Throw, Showt, Reload, Jack, Bite, GunAttack, Snipe, GunMove, their links, the list 0x1df0b0, clearNoFlash, the rest of 0x17a860, the brain in sideHook1, native 0x7a and the StageMenu window. open-items.md Done has all of it.",
+   "notes": "Written: conditions GunOn, GunMove, Snipe, GunAttack, Reload, Showt, Jack, Throw, TrapCancel, TrapSet; links Gun, GunAttack, Reload, TrapSet, TrapCancel, Throw; setScope (was clearNoFlash), ViewCamera::setZoom, StageCamera::setProjection, ShotSpread::scatter, findTrap, findCarried, all of sideHook0, getLifeState. Fixed: StageScene::draw called overlay->draw on a pointer nobody set; the ROM is menuProgs->draw(scopeZoom), and +0xbd8 is a float. MenuProgSet::draw stays a stub, so no sight is drawn. Seen, 400 s, temporary test since removed (bare R_89, no model, work/gun_pad.txt), no crash: rf_aon, rf_aim, two rf_fire with ammo 2 to 0, scope on and off, rf_aoff. scatter measured over 20000 draws: 99.50 unsettled, 49.94 settled at range 1000. Regression with no test weapon, 340 s, battle_pad, no crash. Picture NOT proven: no reference for the stance or aim; both show the room's corner from below with the top of his head at the foot of the frame, so the open question about the stance camera stands. The scope frame is pure black: ViewCamera has no frame step (unassigned@00299d90), which is the next blocker for scope, camview and camview_zoom. Not proven: ReloadLink (F_PC01 has no reload motion, so no Click), bullets and hits, the butt, TrapSet, TrapCancel, Throw, Showt, Jack (wants have no writer read yet: 0x218850, the brain), P_URIEN. Left in the TU: Bite, the brain in sideHook1, setFlinch, setEndurance, native 0x7a, the StageMenu window, and the list 0x1df0b0 with 0x1df030, 0x1df0a0: start by finding who calls slot +0x1c. open-items.md Done has all of it.",
    "ranges": [
     [
      "00175700",
      "001758e4"
+    ],
+    [
+     "00177be0",
+     "00177cf4"
+    ],
+    [
+     "0017a860",
+     "0017af50"
     ],
     [
      "0017df60",
@@ -638,6 +646,10 @@
     [
      "001defd0",
      "001df0b0"
+    ],
+    [
+     "001dfd90",
+     "001dff34"
     ],
     [
      "001e0e20",
@@ -692,8 +704,16 @@
      "0021196c"
     ],
     [
+     "00212460",
+     "0021252c"
+    ],
+    [
      "00214d40",
      "00214ee0"
+    ],
+    [
+     "00215340",
+     "00215370"
     ],
     [
      "00215940",
@@ -706,6 +726,10 @@
     [
      "002162a0",
      "002162cc"
+    ],
+    [
+     "00216310",
+     "00216384"
     ],
     [
      "00216400",
@@ -728,19 +752,11 @@
      "0021c290"
     ],
     [
+     "00269db0",
+     "0026a004"
+    ],
+    [
      "0026a250",
-     "0026a38c"
-    ],
-    [
-     "0026a4a0",
-     "0026a8f0"
-    ],
-    [
-     "0026a8f0",
-     "0026b858"
-    ],
-    [
-     "0026b860",
      "0026c170"
     ],
     [
@@ -752,12 +768,32 @@
      "0026c650"
     ],
     [
-     "0026df60",
+     "0026d090",
+     "0026d664"
+    ],
+    [
+     "0026d670",
+     "0026d690"
+    ],
+    [
+     "0026d6a0",
      "0026f964"
     ],
     [
-     "00270260",
-     "002702e0"
+     "00270120",
+     "002701b4"
+    ],
+    [
+     "002701c0",
+     "00270684"
+    ],
+    [
+     "00270690",
+     "00270774"
+    ],
+    [
+     "00270780",
+     "00270c44"
     ],
     [
      "00270c50",
@@ -768,23 +804,39 @@
      "00274100"
     ],
     [
+     "002741d0",
+     "00274644"
+    ],
+    [
      "00274650",
-     "00274988"
-    ],
-    [
-     "00274990",
-     "00275160"
-    ],
-    [
-     "00275160",
      "00276200"
     ],
     [
-     "0027aba0",
-     "0027b0e8"
+     "00278e40",
+     "00278ec4"
     ],
     [
-     "0027b0f0",
+     "00278ed0",
+     "00278f68"
+    ],
+    [
+     "00279190",
+     "00279204"
+    ],
+    [
+     "00279210",
+     "002792bc"
+    ],
+    [
+     "0027a140",
+     "0027a834"
+    ],
+    [
+     "0027a840",
+     "0027a8b4"
+    ],
+    [
+     "0027a8c0",
      "0027b6e0"
     ],
     [
@@ -796,8 +848,28 @@
      "0027c6d0"
     ],
     [
+     "0029a840",
+     "0029a8b8"
+    ],
+    [
      "002a2100",
      "002a2274"
+    ],
+    [
+     "002a2ad0",
+     "002a2b0c"
+    ],
+    [
+     "002a3010",
+     "002a3054"
+    ],
+    [
+     "002a3060",
+     "002a30a4"
+    ],
+    [
+     "002a30b0",
+     "002a30f4"
     ],
     [
      "002a3160",
@@ -852,11 +924,16 @@
      "date": "2026-11-05 05:24",
      "status": "partial",
      "summary": "the fight: BtOn, Lock, BtAttack, BtAtkCombo, BtMove and the Battle and BtAttack links: R1 takes the stance and Cross throws blows on stage 1; nothing there to hit yet"
+    },
+    {
+     "date": "2026-11-05 06:16",
+     "status": "partial",
+     "summary": "firearms, traps, throws and the start hook: GunOn, GunMove, Snipe, GunAttack, Reload, Showt, Jack, Throw, TrapSet, TrapCancel with their links, the scope, shot spread, sideHook0, getLifeState: a test rifle comes up, aims, fires and scopes on stage 1; the scope view is black"
     }
    ],
    "status": "partial",
    "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves.",
-   "why": "the motion core, the conditions, the links and probes, what controlStep calls alone, what a character carries, and the fight: the stance, the blows, the target search"
+   "why": "the motion core, the conditions, the links and probes, what controlStep calls alone, what a character carries, the fight, the firearms, traps and throws, the character's start hook"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",

@@ -62,6 +62,7 @@ enum CharacterFire
     CharacterFire_None = 0,
     CharacterFire_Tap  = 1,     // let go early
     CharacterFire_Hold = 2,     // held kFireHoldFrames
+    CharacterFire_Single = 3,   // a shot that gives up the lock (a brain's: the input never sets it)
     CharacterFire_Auto = 4,     // a firearm's first trigger
 };
 
@@ -159,7 +160,7 @@ private:
     StickHistory   *m_history;          // FS2 +0x0c
     sceVu0FVECTOR   m_look = {};        // FS2 +0x10: eases to the frame's target; [0] pitch, [2] yaw
     u_char m_stickLatch = 0;            // FS2 +0x20: an aim ended: the stick aims again once let go
-    // The scope (PlayerMotion::noFlash): not set by the ctor in the ROM.
+    // The scope (PlayerMotion::scopeOn): not set by the ctor in the ROM.
     float  m_scopePitch = 0.0f;         // FS2 +0x24: where the stick has it, -1..1
     float  m_scopeYaw = 0.0f;           // FS2 +0x28
     float  m_scopePitchNow = 0.0f;      // FS2 +0x2c: eased after them by the sheet's 狙撃補間率
@@ -168,7 +169,7 @@ private:
     float  m_recoil = 0.0f;             // FS2 +0x38: a shot's kick, wearing off
     float  m_swayPhase[2] = {};         // FS2 +0x3c: pitch, yaw
     float  m_swayStep[2] = {};          // FS2 +0x44: a frame's, rolled on each start
-    u_char m_scopeWas = 0;              // FS2 +0x4c: last frame's noFlash
+    u_char m_scopeWas = 0;              // FS2 +0x4c: last frame's scopeOn
     int    m_fireButton = -1;           // FS2 +0x50: the button readFire counts
     u_int  m_fireFrames = 0;            // FS2 +0x54: held so far
 };

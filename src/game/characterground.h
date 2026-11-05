@@ -29,7 +29,7 @@ constexpr int kGroundWallAngles = 8;    // +0xf4
 // (the ctor's; kCollisionMelee is the sixth).
 constexpr u_int kGroundHitBody  = 2;    // what is hit: +0x184
 constexpr u_int kGroundBlowBody = 4;    // what hits, one per hand or foot: +0x198
-constexpr u_int kGroundNearBody = 8;    // a sphere around it, only with flag3ba: +0x188
+constexpr u_int kGroundNearBody = 8;    // a sphere around it, only with traps: +0x188
 constexpr u_int kGroundPushBody = 0x10; // character against character: +0x18c
 constexpr u_int kGroundWallBody = 0x20; // character against the map: +0x190
 

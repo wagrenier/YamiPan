@@ -362,9 +362,9 @@ void AlwaysCondition::onUpdate()
     }
     CharacterAllows &allows = character->m_allows;
     if (character->isPlayer()) {
-        if (motion->noFlash == 0 && viewSwitch != 0)
+        if (motion->scopeOn == 0 && viewSwitch != 0)
             allows.viewSwitch = 1;
-        if (motion->noFlash == 0 && zoom != 0)
+        if (motion->scopeOn == 0 && zoom != 0)
             allows.zoom = 1;
     }
     if (character->m_lampItem != nullptr && character->m_lampItem->m_active != 0 && lamp != 0)
@@ -373,7 +373,7 @@ void AlwaysCondition::onUpdate()
         allows.standing = 1;
     if (headSway != 0 && character->m_290 == nullptr)
         allows.head = 1;
-    if (motion->noFlash != 0)
+    if (motion->scopeOn != 0)
         allows.aim = 1;
     else if (upperSway != 0 && character->m_290 == nullptr && !isAttackMotion(id))
         allows.aim = 1;
@@ -486,7 +486,7 @@ void AlwaysCondition::onApply()
     if (allows.aim != 0) {
         const bool controlled = character->isControlled();
         const bool slope = !controlled && wants.aimOn == 0;
-        if (m->noFlash == 0) {
+        if (m->scopeOn == 0) {
             m->leanBody(wants.aimAngles, slope, 0);
         }
         else {
@@ -1100,6 +1100,107 @@ public:
     using MotionCondition::MotionCondition;
     void onUpdate() override;                                            // FS2 0x0026e260
     void onApply() override;                                             // FS2 0x0026df60
+};
+
+// The gun up, for who holds a firearm and has room ahead. Vtable 0x3176d0.
+// layout: host.
+class GunOnCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x00274390
+    void onApply() override;                                             // FS2 0x002741d0
+};
+
+// Steps with the gun up, and out of it. Vtable 0x3173b0. layout: host.
+class GunMoveCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x0026d670
+    void onApply() override;                                             // FS2 0x0026d090
+};
+
+// The scope: up of the d-pad into it, the right stick zooms, down out of it.
+// Vtable 0x3173d0. layout: host.
+class SnipeCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x0026d7f0
+    void onApply() override;                                             // FS2 0x0026d6a0
+};
+
+// A shot, or the butt. Vtable 0x3173f0. layout: host.
+class GunAttackCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x0026dee0
+    void onApply() override;                                             // FS2 0x0026d950
+};
+
+// Rounds into the gun: asked, or at the end of two seconds' standing.
+// Vtable 0x317510. layout: host.
+class ReloadCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x002704c0
+    void onApply() override;                                             // FS2 0x002702e0
+};
+
+// The motion call. Vtable 0x317530. layout: host.
+class ShowtCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x002706f0
+    void onApply() override;                                             // FS2 0x00270690
+};
+
+// The alternate action of a player who is not the lead. Vtable 0x3174d0.
+// layout: host.
+class JackCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x002701c0
+    void onApply() override;                                             // FS2 0x00270120
+};
+
+// Room ahead of the head to throw. Vtable 0x317550. layout: host.
+class ThrowCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x00270780
+    void onApply() override;                                             // FS2 0x00270710
+};
+
+// A trap taken up. Vtable 0x317570. layout: host.
+class TrapCancelCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x00270980
+    void onApply() override;                                             // FS2 0x002708c0
+
+private:
+    StageTrapItem *trap = nullptr; // FS2 +0x14
+};
+
+// A trap laid, on a floor 60 ahead. Vtable 0x317590. layout: host.
+class TrapSetCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x00270a70
+    void onApply() override;                                             // FS2 0x00270a00
+
+private:
+    sceVu0FVECTOR place = {};      // FS2 +0x20
+    StageTrapItem *trap = nullptr; // FS2 +0x30
 };
 
 // LadderMove. layout: host -- as MotionCondition.
@@ -2134,6 +2235,16 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_conditions["BtAttack"] = new BtAttackCondition(character, this);
     m_conditions["BtAtkCombo"] = new BtAtkComboCondition(character, this);
     m_conditions["BtMove"] = new BtMoveCondition(character, this);
+    m_conditions["GunOn"] = new GunOnCondition(character, this);
+    m_conditions["GunMove"] = new GunMoveCondition(character, this);
+    m_conditions["Snipe"] = new SnipeCondition(character, this);
+    m_conditions["GunAttack"] = new GunAttackCondition(character, this);
+    m_conditions["Reload"] = new ReloadCondition(character, this);
+    m_conditions["Showt"] = new ShowtCondition(character, this);
+    m_conditions["Jack"] = new JackCondition(character, this);
+    m_conditions["Throw"] = new ThrowCondition(character, this);
+    m_conditions["TrapCancel"] = new TrapCancelCondition(character, this);
+    m_conditions["TrapSet"] = new TrapSetCondition(character, this);
 
     walkLink = new WalkLink(character, this);
     m_links["Walk"] = walkLink;
@@ -2147,6 +2258,15 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_links["Pickup"] = pickupLink;
     m_links["Battle"] = new BattleLink(character, this);
     m_links["BtAttack"] = new BtAttackLink(character, this);
+    m_links["Gun"] = new GunLink(character, this);
+    m_links["GunAttack"] = new GunAttackLink(character, this);
+    m_links["Reload"] = new ReloadLink(character, this);
+    trapSetLink = new TrapSetLink(character, this);
+    m_links["TrapSet"] = trapSetLink;
+    trapCancelLink = new TrapCancelLink(character, this);
+    m_links["TrapCancel"] = trapCancelLink;
+    throwLink = new ThrowLink(character, this);
+    m_links["Throw"] = throwLink;
 
     // PC: the ROM's 0x212530 sets these from a script's property; nothing
     // written sets them yet, so the sheet's.
@@ -2333,8 +2453,8 @@ void PlayerMotion::reset(int arg)
 
     m_fallSpeed = 0.0f;
     m_ba8 = 0.0f;
-    if (noFlash != 0)
-        clearNoFlash(0);
+    if (scopeOn != 0)
+        setScope(false);
     m_bf0 = 0.0f;
     m_bf4 = 0.0f;
     if (character->getAltSoundFlag() != 0 && gStageScene->party->isRunning())
@@ -3908,18 +4028,135 @@ void StageCharacter::moveStep()
 // The frame's start, before the scripts run: what the character may do is
 // found again, and what it wants starts empty, so a script's request (a door's
 // native 0x87) stands until the control hook below.
-// Not written: the rest of the ROM's hook, the kinds 1 and 9's two flags at
-// +0x3a8 and +0x3ac, the clocks of a live character (flinch, health, endurance)
-// and the player's look-ahead point.
+// Kinds 1 and 9 strafe and walk with a gun only as the player. A live
+// character's clocks run in seconds of the scene: flinch falls by 10, the
+// unarmed MSP climbs back by 10 and endurance by m_enduranceRegen, not while
+// bitten. Last, the player on a kyo model carries the point P_URIEN 400
+// ahead on the floor, and the script's uryenchu says it is in motion 0xf0.
 // FS2 0x0017a860
+// callcheck: memset, initSlots14, isPlayer, beginFrame, memset, initSlots18, getLifeState, setFlinch, setEndurance, isPlayer, FUN_00215340, find6, sinCos, sinCos, raycast, vecDirection, scaleVec4, raycast, setPosition, setPosition, setNamed, setNamed, getStageSelect, getDeltaSeconds, getDeltaSeconds, getDeltaSeconds, getDeltaSeconds
 
 void StageCharacter::sideHook0()
 {
+    constexpr int   kSheetKindCompanion = 1;
+    constexpr int   kSheetKindWalker    = 9;
+    constexpr int   kLifeStateAlive     = 2;
+    constexpr int   kClockStep          = 10;
+    constexpr int   kMotionBittenFirst  = 0xa0;
+    constexpr int   kMotionBittenSecond = 0xa1;
+    constexpr int   kMotionUrien        = 0xf0;
+    constexpr float kUrienReach         = 400.0f;
+    constexpr float kUrienHeight        = 50.0f;
+    constexpr float kUrienBackOff       = 40.0f;
+    constexpr float kUrienDrop          = 1000.0f;
+    constexpr u_int kFaceUrienStop      = 0xec261ff;
+
     memset(&m_allows, 0, sizeof(m_allows));
     m_motion->initSlots14();
+    const StageObjRecord *sheet = stageObjRecord(m_itemDef);
+    if (sheet->kind == kSheetKindWalker || sheet->kind == kSheetKindCompanion) {
+        const u_char on = isPlayer() ? 1 : 0;
+        m_abilities.strafe = on;
+        m_abilities.gunMove = on;
+    }
     m_motion->beginFrame();
     memset(&m_wants, 0, sizeof(m_wants));
     m_motion->initSlots18();
+
+    if (getLifeState() == kLifeStateAlive) {
+        Clock *clock = gStageScene->clock;
+        if (m_flinch > 0) {
+            m_flinchClock += clock->getDeltaSeconds();
+            if (m_flinchClock >= 1.0f) {
+                setFlinch(m_flinch - kClockStep);
+                m_flinchClock -= 1.0f;
+            }
+        }
+        if (m_unarmedMsp < sheet->unarmedMsp) {
+            m_unarmedClock += clock->getDeltaSeconds();
+            if (m_unarmedClock >= 1.0f) {
+                int value = m_unarmedMsp + kClockStep;
+                if (value < 0)
+                    value = 0;
+                m_unarmedMsp = value <= sheet->unarmedMsp ? value : sheet->unarmedMsp;
+                m_unarmedClock -= 1.0f;
+            }
+        }
+        const int id = m_motion->motionId;
+        if (id != kMotionBittenFirst && id != kMotionBittenSecond && m_endurance < sheet->endurance) {
+            m_enduranceClock += clock->getDeltaSeconds();
+            if (m_enduranceClock >= 1.0f) {
+                setEndurance(m_endurance + m_enduranceRegen);
+                m_enduranceClock -= 1.0f;
+            }
+        }
+        if (m_3f0 > 0.0f)
+            m_3f0 -= clock->getDeltaSeconds();
+    }
+
+    if (!isPlayer() || !hasKyoModel())
+        return;
+    if (StageObject *mark = gStageScene->objects->find6("P_URIEN", 0)) {
+        const float *feet = m_xform.position;
+        sceVu0FVECTOR from = { feet[0], feet[1], feet[2] + kUrienHeight, feet[3] };
+        sceVu0FVECTOR to = { feet[0], feet[1], feet[2] + kUrienHeight, feet[3] };
+        const float yaw = -m_xform.rotation[2];
+        to[0] = sinCos(yaw, 0) * -kUrienReach + to[0] + 0.0f;
+        to[1] = sinCos(yaw, 1) * -kUrienReach + to[1] + 0.0f;
+        sceVu0FVECTOR hit;
+        if (gStageScene->raycast(hit, from, to, 0, kFaceUrienStop, 0x40000, nullptr) != nullptr) {
+            sceVu0FVECTOR back;
+            vecDirection(back, from, hit);
+            scaleVec4(-kUrienBackOff, back, back);
+            for (int i = 0; i < 4; i++)
+                to[i] = hit[i] - back[i];
+        }
+        memcpy(from, to, sizeof(from));
+        to[2] -= kUrienDrop;
+        if (gStageScene->raycast(hit, from, to, 0, kFaceFloor, 0x40000, nullptr) != nullptr)
+            mark->m_xform.setPosition(hit);
+        else
+            mark->m_xform.setPosition(m_xform.position);
+        mark->setDirty(true);
+    }
+    scriptRunner()->setNamed("uryenchu", m_motion->motionId == kMotionUrien ? 1 : 0);
+}
+
+// The model's name holds kyo.
+// FS2 0x00215340
+// callcheck: strstr
+
+bool StageCharacter::hasKyoModel()
+{
+    return strstr(m_model->pose->name, "kyo") != nullptr;
+}
+
+// 0 off or at the brain's state 0, 2 alive or at its state 6, 3 down, 4 in
+// the motions 0xb3, 0xb4, 5 in 0xb1, 0xb2; m_lifeOverride 6, or 7 at 0.
+// FS2 0x00212460
+
+int StageCharacter::getLifeState()
+{
+    constexpr int kMotionDownFirst  = 0xb3;
+    constexpr int kMotionDownSecond = 0xb4;
+    constexpr int kMotionFatalFirst = 0xb1;
+    constexpr int kBrainDown        = 6;
+    constexpr int kBrainOff         = 0;
+    if (m_active == 0)
+        return 0;
+    if (m_lifeOverride >= 0)
+        return m_lifeOverride != 0 ? 6 : 7;
+    if (m_brain != nullptr) {
+        if (m_brain->state == kBrainDown)
+            return 2;
+        if (m_brain->state == kBrainOff)
+            return 0;
+    }
+    const int id = m_motion->motionId;
+    if (m_endurance == 0)
+        return id == kMotionDownFirst || id == kMotionDownSecond ? 4 : 3;
+    const bool fatal = (u_int)(id - kMotionFatalFirst) < 2u || (u_int)(m_motion->m_request - kMotionFatalFirst) < 2u;
+    return fatal ? 5 : 2;
 }
 
 // The brain (0x1dd2f0) is not written.
@@ -4475,10 +4712,33 @@ enum DpadSide
     DpadSide_Right = 2,
 };
 
+// FS2 0x0026f8d0
+
+StageObject *longWeapon(const StageCharacter *character)
+{
+    return character->m_weapons[0];
+}
+
+// FS2 0x0026f780
+
+bool isFirearmItem(const StageObject *weapon)
+{
+    return defOf(weapon).isFirearm();
+}
+
 bool holdsFirearm(const StageCharacter *character)
 {
-    return character->m_weapons[0] != nullptr && defOf(character->m_weapons[0]).isFirearm();
+    return longWeapon(character) != nullptr && isFirearmItem(longWeapon(character));
 }
+
+// FS2 0x0026f720
+
+int stageKindOf(const StageSelect *select)
+{
+    return select->kind;
+}
+
+// FS2 0x0026f730
 
 const WeaponDef &weaponSheet(const StageObject *weapon)
 {
@@ -4504,7 +4764,7 @@ float lockKeepReach(const StageCharacter *character)
     if (weapon == nullptr)
         return kLockReachDefault;
     const float reach = (float)weaponSheet(weapon).param5;
-    if (getStageSelect()->kind == StageKind_Easy && defOf(weapon).isFirearm())
+    if (stageKindOf(getStageSelect()) == StageKind_Easy && isFirearmItem(weapon))
         return reach * 3.0f;
     return reach;
 }
@@ -4544,7 +4804,7 @@ void LockCondition::onUpdate()
 {
     if (character->m_abilities.flag3c3 == 0)
         character->m_allows.armed = 1;
-    if (!character->isControlled() || motion->noFlash != 0)
+    if (!character->isControlled() || motion->scopeOn != 0)
         return;
     if (character->m_290 == nullptr)
         character->m_allows.lockFind = 1;
@@ -4553,7 +4813,7 @@ void LockCondition::onUpdate()
 }
 
 // FS2 0x0026ef30
-// callcheck: addAngle, isControlled, getLockPoint, FUN_0026f8d0, FUN_0026f780, FUN_0026f730, findTargetAhead, FUN_0026f720, getStageSelect, vecDistance, findTargetBeside, isTargetValid, canSeeTarget, faceTarget (0x26f8d0 m_weapons[0], 0x26f720 StageSelect::kind, 0x26f730 weaponSheet, 0x26f780 isFirearm)
+// callcheck: addAngle, isControlled, getLockPoint, longWeapon, isFirearmItem, weaponSheet, findTargetAhead, stageKindOf, getStageSelect, vecDistance, findTargetBeside, isTargetValid, canSeeTarget, faceTarget
 
 void LockCondition::onApply()
 {
@@ -4832,6 +5092,890 @@ void BtMoveCondition::onApply()
         motion->request(motion->pickArmedMotion(slot));
     if (motion->m_request == Motion_None)
         motion->request(motion->pickArmedMotion(ArmedSlot_Stand));
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Firearms, and what else a hand does: the call, the alternate action, traps
+// and throws.
+
+namespace {
+
+// pickGunMotion's slots (table 0x2f7ef0; the labels of the pistol's column).
+enum GunSlot
+{
+    GunSlot_On          = 0,    // gn_on
+    GunSlot_Walk        = 1,    // gn_bt_w
+    GunSlot_Back        = 2,    // gn_bt_wb
+    GunSlot_Right       = 3,    // gn_bt_wr
+    GunSlot_Left        = 4,    // gn_bt_wl
+    GunSlot_TurnRight   = 5,    // t_r over gn_aim
+    GunSlot_TurnLeft    = 6,    // t_l over gn_aim
+    GunSlot_Aim         = 7,    // gn_aim
+    GunSlot_Fire        = 8,    // gn_fire
+    GunSlot_ReloadBegin = 9,    // gn_rl_b: a gun loaded round by round
+    GunSlot_ReloadRound = 10,   // gn_rl
+    GunSlot_ReloadEnd   = 11,   // gn_rl_e
+    GunSlot_ReloadAll   = 12,   // gn_rl_a: the magazine at once
+    GunSlot_Butt        = 13,   // gn_at_01
+    GunSlot_Off         = 14,   // gn_off
+};
+
+constexpr int   kMotionIdle        = 0;
+constexpr int   kMotionTrapSet     = 0x98;
+constexpr int   kMotionTrapCancel  = 0x99;
+constexpr int   kMotionThrow       = 0x9d;
+constexpr float kReloadIdleSeconds = 2.0f;  // standing this long loads the gun
+constexpr float kGunOnReach        = 75.0f; // room the gun needs ahead to come up
+constexpr float kGunKeepReach      = 70.0f; // to stay up
+constexpr float kThrowReach        = 100.0f;
+constexpr float kTrapReach         = 60.0f; // a trap goes this far ahead
+constexpr float kTrapChestHeight   = 50.0f; // the ray that looks for room
+constexpr float kTrapFloorDrop     = 70.0f; // .. and from there down to a floor
+constexpr float kTrapFloorStep     = 20.0f; // no further than this from the feet
+constexpr float kTrapWalkRate      = 0.35f;
+constexpr float kThrowDefaultY     = -20.0f; // the default throw
+constexpr float kThrowDefaultZ     = 5.0f;
+constexpr float kScopeZoomStart    = 0.3f;
+constexpr float kHalfPi            = 1.5707964f;
+constexpr float kPi                = 3.1415927f;
+constexpr float kViewNear          = 350.0f; // scrZ of camview_zoom at its widest
+
+const float *headPoint(StageCharacter *character)
+{
+    return bodyBone(character, "bn_head")->getMatrix()[3];
+}
+
+// A wall one trips on, from the feet's x, y at the head's height to reach
+// ahead of it.
+// callcheck: find, find, sinCos, sinCos, segmentHitsAny
+bool wallAhead(StageCharacter *character, float reach)
+{
+    sceVu0FVECTOR from, to;
+    memcpy(from, character->m_xform.position, sizeof(from));
+    memcpy(to, character->m_xform.position, sizeof(to));
+    from[2] = headPoint(character)[2];
+    to[2] = from[2];
+    const float yaw = -character->m_xform.rotation[2];
+    to[0] = sinCos(yaw, 0) * -reach + to[0] + 0.0f;
+    to[1] = sinCos(yaw, 1) * -reach + to[1] + 0.0f;
+    return gStageScene->segmentHitsAny(from, to, 0, kFaceSolid, kFaceFlagsTrip, nullptr);
+}
+
+// G_NN38, R_MURATA and G_26NEN load round by round (the ROM's three
+// strcmp, inline; StageWeaponItem::loadsByMagazine is the same test).
+bool loadsByRound(const StageObject *weapon)
+{
+    return strcmp(weapon->m_name, "G_NN38") == 0 || strcmp(weapon->m_name, "R_MURATA") == 0
+        || strcmp(weapon->m_name, "G_26NEN") == 0;
+}
+
+// The two chains of itemDef compares (kind 5 or 6): a rifle.
+bool isRifleItem(const StageObject *weapon)
+{
+    const int kind = defOf(weapon).kind;
+    return kind == ItemKind_RifleFirst || kind == ItemKind_FirearmLast;
+}
+
+int clampRounds(int value, int high)
+{
+    if (value < 0)
+        value = 0;
+    return value < high ? value : high;
+}
+
+// Out of the gun: the target goes, the scope, and the pose's aim.
+void dropGun(StageCharacter *character, PlayerMotion *motion)
+{
+    character->m_290 = nullptr;
+    if (motion->scopeOn != 0)
+        motion->setScope(false);
+    character->m_model->pose->lookBone = nullptr;
+}
+
+} // namespace
+
+// FS2 0x00216310
+// callcheck: FUN_00217700, strcmp
+
+StageObject *StageCharacter::findCarried(const char *name)
+{
+    for (StageList<StageObject *>::Node *node = m_items.head; node != nullptr; node = node->next) {
+        if (strcmp(node->value->m_name, name) == 0)
+            return node->value;
+    }
+    return nullptr;
+}
+
+// FS2 0x002a3010
+// callcheck: getMagazineSetSound, playNamedHeard2
+
+void StageCharacter::playMagazineSetSound()
+{
+    playNamedHeard2(static_cast<StageWeaponItem *>(m_weapons[0])->getMagazineSetSound(), m_xform.position, nullptr);
+}
+
+// FS2 0x002a3060
+// callcheck: getReloadSetSound, playNamedHeard2
+
+void StageCharacter::playReloadSetSound()
+{
+    playNamedHeard2(static_cast<StageWeaponItem *>(m_weapons[0])->getReloadSetSound(), m_xform.position, nullptr);
+}
+
+// FS2 0x002a30b0
+// callcheck: getMagazineOutSound, playNamedHeard2
+
+void StageCharacter::playMagazineOutSound()
+{
+    playNamedHeard2(static_cast<StageWeaponItem *>(m_weapons[0])->getMagazineOutSound(), m_xform.position, nullptr);
+}
+
+// FS2 0x002a2ad0
+// callcheck: playNamedHeard2
+
+void StageCharacter::playTrapOffSound()
+{
+    playNamedHeard2("TRAP_OFF", m_xform.position, nullptr);
+}
+
+// FS2 0x002a2af0
+// callcheck: playNamedHeard2
+
+void StageCharacter::playTrapSetSound()
+{
+    playNamedHeard2("TRAP_SET", m_xform.position, nullptr);
+}
+
+// Up: the zoom starts low, the body hides (the view is from inside it), the
+// sight comes on, and camview_snipe takes the top of the view stack, one
+// place lower for a character taken over.
+// FS2 0x001dfd90
+// callcheck: find0, setShown, removeView, copyVec4, setShown, strcmp, isTakenOver, pushView, pushView, setZoom
+
+void PlayerMotion::setScope(bool on)
+{
+    ViewCamera *view = static_cast<ViewCamera *>(gStageScene->objects->find0("camview_snipe", 0));
+    if (!on) {
+        scopeOn = 0;
+        owner->m_tree->setShown(true);
+        if (gStageScene->menuProgs != nullptr)
+            gStageScene->menuProgs->state = MenuProgSight_None;
+        gStageScene->removeView(view);
+        return;
+    }
+    scopeOn = 1;
+    scopeZoom = kScopeZoomStart;
+    memcpy(scopeRotation, owner->m_xform.rotation, sizeof(scopeRotation));
+    owner->m_290 = nullptr;
+    owner->m_tree->setShown(false);
+    if (gStageScene->menuProgs != nullptr) {
+        const StageObject *weapon = owner->m_weapons[0];
+        gStageScene->menuProgs->state = weapon != nullptr && strcmp(weapon->m_name, "R_64C") == 0
+            ? MenuProgSight_R64C : MenuProgSight_Scope;
+    }
+    view->m_linked = owner;
+    view->onLinkChanged();
+    gStageScene->pushView(view, static_cast<StageCharacter *>(owner)->isTakenOver() ? 2 : 1, 1);
+    view->setZoom(ViewCamera::kZoomSpan * scopeZoom + ViewCamera::kZoomLow + 0.0f);
+}
+
+// level above the low end, over the span, moves the view's near half.
+// FS2 0x0029a840
+// callcheck: setProjection
+
+void ViewCamera::setZoom(float level)
+{
+    constexpr float kScreenSize = 512.0f;
+    float over = level - kZoomLow;
+    if (over < 0.0f)
+        over = 0.0f;
+    else if (kZoomSpan < over)
+        over = kZoomSpan;
+    m_range2 = (over * (m_range - kViewNear)) / kZoomSpan;
+    setProjection(m_range2 + kViewNear, kScreenSize, kScreenSize, m_range);
+}
+
+// A random line in a cone round from .. to, as wide at the target as the
+// spread says. The angles: yaw and pitch of the line, a turn round it, and
+// the cone's own, out to rand / 2047 of it.
+// FS2 0x00269db0
+// callcheck: atan2Octant, randNext, atan2Octant, identityMatrix, rotateMatrixZ, applyMatrix, atan2Octant, randNext, identityMatrix, rotateMatrixX, rotateMatrixY, rotateMatrixX, rotateMatrixZ, applyMatrix
+
+void ShotSpread::scatter(float range, sceVu0FVECTOR out, const sceVu0FVECTOR from,
+                         const sceVu0FVECTOR to) const
+{
+    constexpr float kRandToAngle = 2.9258362e-09f;      // 2 pi / 2^31
+    constexpr float kRandEdge = 2047.0f;
+
+    sceVu0FVECTOR way = { to[0] - from[0], to[1] - from[1], to[2] - from[2], 1.0f };
+    const float length = sqrtf(way[0] * way[0] + way[1] * way[1] + way[2] * way[2]);
+    const float wide = length / 10.0f * amount;
+    const float cone = atan2Octant((wide + 0.0f) - (wide / 2.0f) * settled, length);
+    const float around = (float)(int)randNext() * kRandToAngle - kPi;
+
+    const float yaw = -atan2Octant(way[0], way[1]);
+    sceVu0FMATRIX turn;
+    identityMatrix(turn);
+    rotateMatrixZ(-yaw, turn, turn);
+    sceVu0FVECTOR level;
+    applyMatrix(level, turn, way);
+    const float pitch = -atan2Octant(-level[2], level[1]);
+
+    const float edge = (float)((int)randNext() >> 20);
+    identityMatrix(turn);
+    rotateMatrixX((cone / kRandEdge) * edge, turn, turn);
+    rotateMatrixY(around, turn, turn);
+    rotateMatrixX(pitch, turn, turn);
+    rotateMatrixZ(yaw, turn, turn);
+    sceVu0FVECTOR line = { 0.0f, range, 0.0f, 0.0f };
+    applyMatrix(line, turn, line);
+    for (int i = 0; i < 4; i++)
+        out[i] = line[i] + from[i];
+}
+
+// FS2 0x0026a390
+// callcheck: getKind, canSpring
+
+StageTrapItem *MotionProbe::findTrap()
+{
+    StageObjArray &items = gStageScene->objects->m_lists[StageObjGroup_3];
+    for (StageObject **slot = items.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        if ((*slot)->m_active == 0 || (*slot)->getKind() != StageObject_TrapItem)
+            continue;
+        StageTrapItem *trap = static_cast<StageTrapItem *>(*slot);
+        if (trap->canSpring(owner))
+            return trap;
+    }
+    return nullptr;
+}
+
+// FS2 0x00274390
+// callcheck: isFirearm, isControlled, find, find, sinCos, sinCos, segmentHitsAny (wallAhead)
+
+void GunOnCondition::onUpdate()
+{
+    if (!holdsFirearm(character))
+        return;
+    if (character->isControlled() && wallAhead(character, kGunOnReach))
+        return;
+    character->m_allows.armed = 1;
+}
+
+// FS2 0x002741d0
+// callcheck: isFirearm, pickGunMotion, request
+
+void GunOnCondition::onApply()
+{
+    if (character->m_allows.armed == 0 || character->m_wants.ready == 0 || !holdsFirearm(character))
+        return;
+    motion->request(motion->pickGunMotion(GunSlot_On));
+}
+
+// FS2 0x0026d670
+
+void GunMoveCondition::onUpdate()
+{
+    character->m_allows.armed = 1;
+    if (character->m_abilities.gunMove != 0)
+        character->m_allows.move = 1;
+}
+
+// FS2 0x0026d090
+// callcheck: pickGunMotion, request, pickGunMotion, pickGunMotion, find, find, sinCos, sinCos, segmentHitsAny, pickGunMotion, request, pickGunMotion, request, pickGunMotion, request, pickGunMotion, request, pickGunMotion, request, pickGunMotion, request, pickGunMotion, request, pickGunMotion, request, pickGunMotion, request, pickGunMotion, request, pickGunMotion, request, getStageSelect (wallAhead; the switch has one request per case)
+
+void GunMoveCondition::onApply()
+{
+    if (character->m_allows.armed == 0 || character->m_wants.ready == 0) {
+        motion->request(motion->pickGunMotion(GunSlot_Off));
+        return;
+    }
+    if (motion->motionId == motion->pickGunMotion(GunSlot_On))
+        return;
+
+    const bool scope = motion->scopeOn != 0;
+    if (!scope && motion->motionId != motion->pickGunMotion(GunSlot_Aim)
+        && wallAhead(character, kGunKeepReach)) {
+        motion->request(motion->pickGunMotion(GunSlot_Off));
+    }
+
+    const CharacterAbilities &abilities = character->m_abilities;
+    const bool target = character->m_290 != nullptr;
+    const int kind = character->m_wants.moveKind;
+    if (kind == CharacterMove_TurnLeft) {
+        if (!target)
+            motion->request(motion->pickGunMotion(GunSlot_TurnLeft));
+        else if (abilities.strafe != 0)
+            motion->request(motion->pickGunMotion(GunSlot_Left));
+    }
+    else if (kind == CharacterMove_TurnRight) {
+        if (!target)
+            motion->request(motion->pickGunMotion(GunSlot_TurnRight));
+        else if (abilities.strafe != 0)
+            motion->request(motion->pickGunMotion(GunSlot_Right));
+    }
+
+    if (character->m_allows.move != 0) {
+        switch (kind) {
+        case CharacterMove_StrafeLeft:
+            if (!scope && abilities.strafe != 0)
+                motion->request(motion->pickGunMotion(GunSlot_Left));
+            break;
+        case CharacterMove_StrafeRight:
+            if (!scope && abilities.strafe != 0)
+                motion->request(motion->pickGunMotion(GunSlot_Right));
+            break;
+        case CharacterMove_BackTurn:
+            if (!scope && abilities.walkBack != 0)
+                motion->request(motion->pickGunMotion(GunSlot_Back));
+            break;
+        case CharacterMove_Back:
+            if (target && abilities.walkBack != 0)
+                motion->request(motion->pickGunMotion(GunSlot_Back));
+            break;
+        case CharacterMove_WalkSlow:
+            if (!scope)
+                motion->request(motion->pickGunMotion(GunSlot_Walk));
+            break;
+        case CharacterMove_Walk:
+        case CharacterMove_Run:
+            if (target)
+                motion->request(motion->pickGunMotion(GunSlot_Walk));
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (motion->m_request == Motion_None)
+        motion->request(motion->pickGunMotion(GunSlot_Aim));
+
+    ModelPose *pose = character->m_model->pose;
+    if (pose->lookBone == nullptr) {
+        // A sheet of ctype 10 holds firearms left (giveItem).
+        pose->lookBone = stageObjRecord(character->m_itemDef)->kind == kSheetKindTwoHands
+            ? pose->leftTool : pose->rightTool;
+    }
+}
+
+// FS2 0x0026d7f0
+// callcheck: isControlled
+
+void SnipeCondition::onUpdate()
+{
+    const bool rifle = isRifleItem(character->m_weapons[0]);
+    if (!character->isControlled())
+        return;
+    if (rifle && weaponSheet(character->m_weapons[0]).param4 != 0 && motion->scopeOn == 0)
+        character->m_allows.padUp = 1;
+    if (motion->scopeOn != 0) {
+        character->m_allows.rightStick = 1;
+        character->m_allows.padDown = 1;
+    }
+}
+
+// FS2 0x0026d6a0
+// callcheck: setScope, find0, setZoom, setScope
+
+void SnipeCondition::onApply()
+{
+    CharacterAllows &allows = character->m_allows;
+    const CharacterWants &wants = character->m_wants;
+    if (allows.armed == 0 || wants.ready == 0)
+        return;
+    if (allows.padUp != 0 && wants.padUp != 0)
+        motion->setScope(true);
+    if (allows.rightStick != 0 && wants.rightStickOn != 0) {
+        float zoom = motion->scopeZoom - wants.rightStickY / 30.0f;
+        if (zoom > 1.0f)
+            zoom = 1.0f;
+        if (zoom < 0.0f)
+            zoom = 0.0f;
+        motion->scopeZoom = zoom;
+        static_cast<ViewCamera *>(gStageScene->objects->find0("camview_snipe", 0))
+            ->setZoom(ViewCamera::kZoomSpan * zoom + ViewCamera::kZoomLow + 0.0f);
+    }
+    if (allows.padDown != 0 && wants.padDown != 0)
+        motion->setScope(false);
+}
+
+// FS2 0x0026dee0
+// callcheck: pickGunMotion
+
+void GunAttackCondition::onUpdate()
+{
+    if (motion->m_ba8 > 0.0f)
+        return;
+    character->m_allows.armed = 1;
+    if (motion->motionId != motion->pickGunMotion(GunSlot_On))
+        character->m_allows.fire = 1;
+}
+
+// Aim settles while the trigger can pull; the shot leaves the gun, from the
+// scope's eye through a scope, at the target or ahead, and a magazine that
+// has run out only clicks. A wall between head and gun makes a blank.
+// FS2 0x0026d950
+// callcheck: isControlled, getDeltaSeconds, pickGunMotion, request, getWorldMatrix, playNamedHeard2, getWorldMatrix, find, getMatrix, segmentHitsAny, getLampMatrix, applyMatrix, getWorldMatrix, find0, getWorldMatrix, getWorldMatrix, applyMatrix, isControlled, find, getMatrix, getWorldMatrix, find, getMatrix, segmentHitsAny, getKind, scatter, fire, pickGunMotion, request
+
+void GunAttackCondition::onApply()
+{
+    const CharacterWants &wants = character->m_wants;
+    if (character->m_allows.armed == 0 || wants.ready == 0 || character->m_allows.fire == 0)
+        return;
+
+    ShotSpread &spread = motion->probe->spread;
+    spread.amount = character->m_shotScatter;
+    if (!character->isControlled())
+        spread.rate = 1.0f;
+    else
+        spread.rate = 1.0f / (float)((int)(1.0f / character->m_clock->getDeltaSeconds()) * 3);
+    if (spread.settled < 1.0f)
+        spread.settled += spread.rate;
+    else
+        spread.settled = 1.0f;
+
+    if (wants.fire != CharacterFire_Single && wants.fire != CharacterFire_Auto) {
+        if ((wants.fire == CharacterFire_Tap || wants.fire == CharacterFire_Hold) && motion->scopeOn == 0) {
+            motion->request(motion->pickGunMotion(GunSlot_Butt));
+            character->m_model->pose->lookBone = nullptr;
+        }
+        return;
+    }
+
+    StageWeaponItem *weapon = static_cast<StageWeaponItem *>(character->m_weapons[0]);
+    if (weapon->m_ammoA < 1) {
+        character->playNamedHeard2("NO_BULLET", weapon->getWorldMatrix()[3], nullptr);
+        return;
+    }
+
+    const float range = (float)weaponSheet(weapon).range;
+    StageObject *target = character->m_290;
+    sceVu0FVECTOR from, to;
+    bool blocked = false;
+    if (target == nullptr) {
+        if (motion->scopeOn == 0) {
+            memcpy(from, weapon->getWorldMatrix()[3], sizeof(from));
+            blocked = gStageScene->segmentHitsAny(headPoint(character), from, 0, kFaceSolid, kFaceFlagsTrip, nullptr);
+            sceVu0FMATRIX lamp;
+            motion->getLampMatrix(lamp);
+            sceVu0FVECTOR ahead = { 0.0f, range, 0.0f, 0.0f };
+            applyMatrix(ahead, lamp, ahead);
+            for (int i = 0; i < 4; i++)
+                to[i] = ahead[i] + from[i];
+        }
+        else {
+            StageObject *view = gStageScene->objects->find0("camview_snipe", 0);
+            memcpy(from, view->getWorldMatrix()[3], sizeof(from));
+            const sceVu0FVECTOR ahead = { 0.0f, range, 0.0f, 1.0f };
+            applyMatrix(to, view->getWorldMatrix(), ahead);
+        }
+    }
+    else {
+        if (!character->isControlled()) {
+            memcpy(from, headPoint(character), sizeof(from));
+        }
+        else {
+            memcpy(from, weapon->getWorldMatrix()[3], sizeof(from));
+            blocked = gStageScene->segmentHitsAny(headPoint(character), from, 0, kFaceSolid, kFaceFlagsTrip, nullptr);
+        }
+        memcpy(to, character->m_aimPoint, sizeof(to));
+        if (target->getKind() == StageObject_Character && character->m_shotScatter != 0.0f)
+            spread.scatter(range, to, from, to);
+    }
+
+    weapon->fire(character, from, to, blocked || character->m_blanks != 0);
+    motion->request(motion->pickGunMotion(GunSlot_Fire));
+}
+
+// FS2 0x002704c0
+// callcheck: isFirearm, strcmp
+
+void ReloadCondition::onUpdate()
+{
+    if (character->m_abilities.reload == 0 || !holdsFirearm(character))
+        return;
+    const StageObject *weapon = character->m_weapons[0];
+    if (weapon->m_ammoA != weapon->m_ammoB && strcmp(weapon->m_name, "R_MINIMI") != 0)
+        character->m_allows.reload = 1;
+}
+
+// A player needs rounds to carry.
+// FS2 0x002702e0
+// callcheck: isPlayer, findCarried, strcmp, strcmp, strcmp, pickGunMotion, request, pickGunMotion, request
+
+void ReloadCondition::onApply()
+{
+    const CharacterWants &wants = character->m_wants;
+    if (character->m_allows.reload == 0)
+        return;
+    const bool idle = motion->motionId == kMotionIdle && motion->m_motionTime >= kReloadIdleSeconds;
+    StageObject *weapon = character->m_weapons[0];
+    if ((wants.reload == 0 && !idle) || weapon == nullptr)
+        return;
+    character->m_reloadRounds = wants.reload != 0 ? wants.reloadRounds : weapon->m_ammoB;
+    if (character->isPlayer()) {
+        const StageObject *rounds = character->findCarried(weaponSheet(weapon).ammo);
+        if (rounds == nullptr || rounds->m_count == 0)
+            return;
+    }
+    motion->request(motion->pickGunMotion(loadsByRound(weapon) ? GunSlot_ReloadBegin : GunSlot_ReloadAll));
+}
+
+// FS2 0x002706f0
+
+void ShowtCondition::onUpdate()
+{
+    if (character->m_abilities.call != 0)
+        character->m_allows.call = 1;
+}
+
+// FS2 0x00270690
+// callcheck: pickStance, request
+
+void ShowtCondition::onApply()
+{
+    if (character->m_allows.call != 0 && character->m_wants.call != 0)
+        motion->request(motion->pickStance(MotionStance_Call));
+}
+
+// FS2 0x002701c0
+// callcheck: isPlayer, isScenarioLead, isPlayer
+
+void JackCondition::onUpdate()
+{
+    if (character->m_abilities.jack == 0)
+        return;
+    if (character->isPlayer() && character->isScenarioLead())
+        return;
+    if ((character->m_abilities.flag3c3 != 0 || character->m_290 == nullptr) && character->isPlayer())
+        character->m_allows.altAction = 1;
+}
+
+// FS2 0x00270120
+// callcheck: isRunning, pickStance, request, pickStance, request
+
+void JackCondition::onApply()
+{
+    if (character->m_allows.altAction == 0 || character->m_wants.altAction == 0)
+        return;
+    motion->request(motion->pickStance(gStageScene->party->isRunning() ? MotionStance_Idle : MotionStance_Jack));
+}
+
+// FS2 0x00270780
+// callcheck: find, find, sinCos, sinCos, segmentHitsAny
+
+void ThrowCondition::onUpdate()
+{
+    if (character->m_abilities.throwing == 0)
+        return;
+    sceVu0FVECTOR from, to;
+    memcpy(from, headPoint(character), sizeof(from));
+    memcpy(to, from, sizeof(to));
+    const float yaw = -character->m_xform.rotation[2];
+    to[0] = sinCos(yaw, 0) * -kThrowReach + to[0] + 0.0f;
+    to[1] = sinCos(yaw, 1) * -kThrowReach + to[1] + 0.0f;
+    if (!gStageScene->segmentHitsAny(from, to, 0, kFaceSolid, kFaceFlagsTrip, nullptr))
+        character->m_allows.throwItem = 1;
+}
+
+// FS2 0x00270710
+// callcheck: setThrow, request
+
+void ThrowCondition::onApply()
+{
+    if (character->m_allows.throwItem == 0 || character->m_wants.throwItem == 0)
+        return;
+    motion->throwLink->setThrow(character->m_throwItem, character->m_wants.throwVector);
+    motion->request(kMotionThrow);
+}
+
+// FS2 0x00270980
+// callcheck: findTrap
+
+void TrapCancelCondition::onUpdate()
+{
+    if (character->m_abilities.traps == 0)
+        return;
+    if (character->m_abilities.flag3c3 == 0 && character->m_290 != nullptr)
+        return;
+    trap = motion->probe->findTrap();
+    if (trap != nullptr)
+        character->m_allows.trapCancel = 1;
+}
+
+// FS2 0x002708c0
+// callcheck: request, getWorkPlace, FUN_001eac70, FUN_001eac10 (pointBehind, startWalkTo)
+
+void TrapCancelCondition::onApply()
+{
+    if (character->m_allows.trapCancel == 0 || character->m_wants.trapCancel == 0)
+        return;
+    motion->request(kMotionTrapCancel);
+    motion->trapCancelLink->trap = trap;
+    sceVu0FVECTOR pos, rot, lift, stand;
+    trap->getWorkPlace(pos, rot, lift, character);
+    motion->pointBehind(stand, character->m_xform.position, rot);
+    motion->startWalkTo(kTrapWalkRate, nullptr, stand, true, true);
+}
+
+// FS2 0x00270a70
+// callcheck: findCarried, sinCos, sinCos, segmentHitsAny, raycast
+
+void TrapSetCondition::onUpdate()
+{
+    if (character->m_abilities.traps == 0)
+        return;
+    if (character->m_abilities.flag3c3 == 0 && character->m_290 != nullptr)
+        return;
+    trap = static_cast<StageTrapItem *>(character->findCarried("I_WANA"));
+    if (trap == nullptr)
+        return;
+    const float *feet = character->m_xform.position;
+    sceVu0FVECTOR from = { feet[0], feet[1], feet[2] + kTrapChestHeight, feet[3] };
+    sceVu0FVECTOR to = { feet[0], feet[1], feet[2] + kTrapChestHeight, feet[3] };
+    const float yaw = -character->m_xform.rotation[2];
+    to[0] = sinCos(yaw, 0) * -kTrapReach + to[0] + 0.0f;
+    to[1] = sinCos(yaw, 1) * -kTrapReach + to[1] + 0.0f;
+    if (gStageScene->segmentHitsAny(from, to, 0, kFaceWall, kFaceFlagsTrip, nullptr))
+        return;
+    memcpy(from, to, sizeof(from));
+    to[2] -= kTrapFloorDrop;
+    if (gStageScene->raycast(place, from, to, 0, kFaceFloor, kFaceFlagsTrip, nullptr) != nullptr
+        && fabsf(feet[2] - place[2]) <= kTrapFloorStep) {
+        character->m_allows.trapSet = 1;
+    }
+}
+
+// FS2 0x00270a00
+// callcheck: request
+
+void TrapSetCondition::onApply()
+{
+    if (character->m_allows.trapSet == 0 || character->m_wants.trapSet == 0)
+        return;
+    motion->trapSetLink->trap = trap;
+    motion->request(kMotionTrapSet);
+    memcpy(motion->trapSetLink->place, place, sizeof(place));
+}
+
+// FS2 0x0027aa90
+// callcheck: FUN_0027d8d0, operator_new, FUN_001ef590, MotionConditionList::add, FUN_001ef590, MotionConditionList::add, FUN_001ef590, MotionConditionList::add, FUN_001ef590, MotionConditionList::add (addCondition)
+
+GunLink::GunLink(StageCharacter *owner, PlayerMotion *motion_)
+    : MotionLink(owner, motion_)
+{
+    addCondition("Lock");
+    addCondition("Snipe");
+    addCondition("GunAttack");
+    addCondition("GunMove");
+}
+
+// FS2 0x0027aa70
+
+void GunLink::onStart()
+{
+    motion->probe->spread.settled = 0.0f;
+}
+
+// FS2 0x0027a9e0
+// callcheck: FUN_001ef260, setScope (m_links.find)
+
+void GunLink::onLeave(MotionLink *next)
+{
+    if (next != motion->m_links.find("GunAttack")->second)
+        dropGun(character, motion);
+}
+
+// FS2 0x0027a910
+// callcheck: FUN_0027d8d0, operator_new, FUN_001ef590, MotionConditionList::add, FUN_001ef590, MotionConditionList::add (addCondition)
+
+GunAttackLink::GunAttackLink(StageCharacter *owner, PlayerMotion *motion_)
+    : MotionLink(owner, motion_)
+{
+    addCondition("Lock");
+    addCondition("GunAttack");
+}
+
+// FS2 0x0027a8c0
+
+void GunAttackLink::onRequest()
+{
+    const int fire = character->m_wants.fire;
+    keepsLock = fire == CharacterFire_Auto;
+    isShot = fire == CharacterFire_Auto || fire == CharacterFire_Single;
+}
+
+// FS2 0x0027a840
+// callcheck: FUN_0027d940, FUN_0027d940 (m_conditions[])
+
+void GunAttackLink::onStart()
+{
+    if (keepsLock == 0)
+        m_conditions[0]->active = 0;
+    m_conditions[1]->active = 0;
+    motion->probe->spread.settled = 0.0f;
+}
+
+// The butt lands like a blow; after a shot the next may come when the
+// sheet's frames have passed: parameter 9, through the scope parameter 4.
+// FS2 0x0027a650
+// callcheck: findBlowPart, breakPart, FUN_0027d940 (m_conditions[])
+
+void GunAttackLink::onRun()
+{
+    if (isShot == 0) {
+        const int part = motion->probe->findBlowPart();
+        if (part >= 0)
+            character->m_290->breakPart(character->m_290->m_mapParts->ids[part], true);
+        if (character->m_ground->bumped != 0 || part >= 0) {
+            motion->m_ba8 = kBlowRecovery;
+            finished = 1;
+        }
+    }
+    else if (counter == 0) {
+        const WeaponDef &sheet = weaponSheet(character->m_weapons[0]);
+        const int frames = motion->scopeOn == 0 ? sheet.param9 : sheet.param4;
+        if (((float)frames + 0.5f) / 30.0f <= motion->m_motionTime) {
+            counter++;
+            m_conditions[1]->active = 1;
+        }
+    }
+}
+
+// FS2 0x0027a580
+// callcheck: FUN_0027d940, FUN_0027d940, FUN_001ef260, setScope (m_conditions[], m_links.find)
+
+void GunAttackLink::onLeave(MotionLink *next)
+{
+    if (keepsLock == 0)
+        m_conditions[0]->active = 1;
+    m_conditions[1]->active = 1;
+    if (next != motion->m_links.find("Gun")->second)
+        dropGun(character, motion);
+}
+
+// The click is a round's: all at once, or one by one until the gun is full
+// or the rounds asked for are in. A player's come out of what it carries.
+// FS2 0x0027a140
+// callcheck: pickGunMotion, playMagazineSetSound, isPlayer, findCarried, noteEnding, pickGunMotion, playMagazineOutSound, pickGunMotion, playReloadSetSound, isPlayer, findCarried, pickGunMotion, request, pickGunMotion, request, pickGunMotion, playMagazineSetSound, noteEnding
+
+void ReloadLink::onRun()
+{
+    if ((character->m_model->m_motionEvents & MotionEvent_Click) == 0)
+        return;
+    StageObject *weapon = character->m_weapons[0];
+    const char *ammo = weaponSheet(weapon).ammo;
+
+    if (motion->motionId == motion->pickGunMotion(GunSlot_ReloadAll)) {
+        character->playMagazineSetSound();
+        int rounds = weapon->m_ammoB - weapon->m_ammoA;
+        if (character->isPlayer()) {
+            StageItem *carried = static_cast<StageItem *>(character->findCarried(ammo));
+            if (carried->m_count < rounds)
+                rounds = carried->m_count;
+            carried->m_count = clampRounds(carried->m_count - rounds, carried->m_maxCount);
+        }
+        motion->noteEnding();
+        weapon->m_ammoA = clampRounds(rounds + weapon->m_ammoA, weapon->m_ammoB);
+    }
+    else if (motion->motionId == motion->pickGunMotion(GunSlot_ReloadBegin)) {
+        character->playMagazineOutSound();
+    }
+    else if (motion->motionId == motion->pickGunMotion(GunSlot_ReloadRound)) {
+        if (weapon->m_ammoA < weapon->m_ammoB && character->m_reloadRounds > 0) {
+            character->playReloadSetSound();
+            StageItem *carried = nullptr;
+            int taken = 1;
+            if (character->isPlayer()) {
+                carried = static_cast<StageItem *>(character->findCarried(ammo));
+                taken = carried->m_count != 0 ? 1 : 0;
+                carried->m_count = clampRounds(carried->m_count - 1, carried->m_maxCount);
+            }
+            weapon->m_ammoA = clampRounds(taken + weapon->m_ammoA, weapon->m_ammoB);
+            int left = character->m_reloadRounds - 1;
+            if (carried != nullptr && carried->m_count < left)
+                left = carried->m_count;
+            character->m_reloadRounds = left;
+        }
+        const bool more = weapon->m_ammoA < weapon->m_ammoB && character->m_reloadRounds > 0;
+        motion->request(motion->pickGunMotion(more ? GunSlot_ReloadRound : GunSlot_ReloadEnd));
+    }
+    else if (motion->motionId == motion->pickGunMotion(GunSlot_ReloadEnd)) {
+        character->playMagazineSetSound();
+        motion->noteEnding();
+    }
+}
+
+// FS2 0x00279210
+// callcheck: dropItem, setPosition, addAngle, setRotation, arm, playTrapSetSound, noteEnding
+
+void TrapSetLink::onRun()
+{
+    if ((character->m_model->m_motionEvents & MotionEvent_Click) == 0)
+        return;
+    character->dropItem(trap);
+    trap->m_xform.setPosition(place);
+    const float *turn = character->m_xform.rotation;
+    trap->m_xform.setRotation(turn[0], turn[1], addAngle(turn[2], -kHalfPi));
+    trap->arm();
+    character->playTrapSetSound();
+    motion->noteEnding();
+}
+
+// FS2 0x00279190
+// callcheck: disarm, playTrapOffSound, giveItem, playPickSound, noteEnding
+
+void TrapCancelLink::onRun()
+{
+    if ((character->m_model->m_motionEvents & MotionEvent_Click) == 0)
+        return;
+    trap->disarm();
+    character->playTrapOffSound();
+    character->giveItem(trap);
+    character->playPickSound(trap);
+    motion->noteEnding();
+}
+
+// FS2 0x00278ed0
+// callcheck: throwItem, noteEnding
+
+void ThrowLink::onRun()
+{
+    if (counter == 0) {
+        if (character->m_weapons[0] != nullptr)
+            character->m_weapons[0]->m_model->data->shown = 0;
+        counter++;
+    }
+    if ((character->m_model->m_motionEvents & MotionEvent_Click) != 0) {
+        sceVu0FVECTOR push;
+        memcpy(push, offset, sizeof(push));
+        character->throwItem(item, push);
+        motion->noteEnding();
+    }
+}
+
+// FS2 0x00278ea0
+
+void ThrowLink::onLeave(MotionLink *next)
+{
+    if (character->m_weapons[0] != nullptr)
+        character->m_weapons[0]->m_model->data->shown = 1;
+}
+
+// FS2 0x00278e40
+
+void ThrowLink::setThrow(StageThrownItem *item_, const sceVu0FVECTOR vector)
+{
+    item = item_;
+    if (vector[2] + vector[0] + vector[1] == 0.0f) {
+        offset[0] = 0.0f;
+        offset[1] = kThrowDefaultY;
+        offset[2] = kThrowDefaultZ;
+        offset[3] = 0.0f;
+    }
+    else {
+        memcpy(offset, vector, sizeof(offset));
+        offset[3] = 0.0f;
+    }
 }
 
 // FS2 0x0027b000

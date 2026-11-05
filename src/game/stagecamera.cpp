@@ -87,6 +87,25 @@ void StageCamera::setRange(float range)
     sceVu0MulMatrix(m_screen, m_screen, axes);
 }
 
+// FS2 0x00177be0
+// callcheck: identityMatrix, rotateMatrixX, sceVu0ViewScreenMatrix, sceVu0MulMatrix
+
+void StageCamera::setProjection(float scrZ, float width, float height, float range)
+{
+    sceVu0FMATRIX axes;
+    identityMatrix(axes);
+    rotateMatrixX(kHalfPi, axes, axes);
+
+    m_scrZ = scrZ;
+    m_screenWidth = width;
+    m_screenHeight = height;
+    m_range = range;
+    sceVu0ViewScreenMatrix(m_screen, m_scrZ, 1.0f, m_screenHeight / ((m_screenWidth * 3.0f) / 4.0f),
+                           kCameraScreenCenter, kCameraScreenCenter, kCameraZMin, kCameraZMax, kCameraNear,
+                           m_range + m_range2 + kCameraFarMargin);
+    sceVu0MulMatrix(m_screen, m_screen, axes);
+}
+
 // FS2 0x00177ac0
 // callcheck: identityMatrix, rotateMatrixX, sceVu0ViewScreenMatrix, sceVu0MulMatrix
 

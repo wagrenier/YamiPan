@@ -444,14 +444,14 @@ public:
 struct CharacterAbilities
 {
     u_char quickTurn;           // FS2 +0x3a4: QuickTurn
-    u_char flag3a5;             // FS2 +0x3a5
+    u_char jack;                // FS2 +0x3a5: Jack: the alternate action, others than the lead
     u_char flag3a6;             // FS2 +0x3a6
     u_char moveCrouched;        // FS2 +0x3a7: Move and Turn in a crouch
     u_char strafe;              // FS2 +0x3a8: Move's w_l, w_r
     u_char walkBack;            // FS2 +0x3a9: Move's w_b
     u_char runStart;            // FS2 +0x3aa: w_run, sq_ka, sqw_w between the walks
     u_char stairs;              // FS2 +0x3ab: Move's stair motions
-    u_char flag3ac;             // FS2 +0x3ac
+    u_char gunMove;             // FS2 +0x3ac: GunMove: it walks with the gun up
     u_char flag3ad;             // FS2 +0x3ad
     u_char _3ae[2];
     int    stepLevel;           // FS2 +0x3b0: 0..4, the sheet's 段差Lv
@@ -461,10 +461,10 @@ struct CharacterAbilities
     u_char flag3b7;             // FS2 +0x3b7
     u_char flag3b8;             // FS2 +0x3b8
     u_char flag3b9;             // FS2 +0x3b9
-    u_char flag3ba;             // FS2 +0x3ba
-    u_char flag3bb;             // FS2 +0x3bb
-    u_char flag3bc;             // FS2 +0x3bc
-    u_char flag3bd;             // FS2 +0x3bd
+    u_char traps;               // FS2 +0x3ba: TrapSet, TrapCancel; the near body (CharacterGround)
+    u_char throwing;            // FS2 +0x3bb: Throw
+    u_char call;                // FS2 +0x3bc: Showt
+    u_char reload;              // FS2 +0x3bd: Reload
     u_char flag3be;             // FS2 +0x3be
     u_char flag3bf;             // FS2 +0x3bf
     u_char flag3c0;             // FS2 +0x3c0: StageScene::partnerResponds
@@ -789,12 +789,6 @@ public:
 // The player's +0x224 object (its +0 the player). Guess: the motion set,
 // picked by the weapon carried.
 // layout: host -- EE: +0xc00 the Walk link.
-// The record at +0xbd8: a state, 1 or 2 draw something (0x2b9ef0 / 0x2ba8d0,
-// beside PrgMcCard). layout: host -- EE: +0 the state.
-struct PlayerOverlay
-{
-    void draw();                                                         // FS2 0x002bb260
-};
 // StageObject::m_doorType.
 enum StageDoorType
 {
@@ -1853,6 +1847,8 @@ public:
     void aimFrom(const float *target, const float *eye);                 // FS2 0x00177860
     // A new view-screen distance (zooms); the screen matrix follows.
     void setScrZ(float scrZ);                                            // FS2 0x00177ac0
+    // All four at once; the screen matrix follows.
+    void setProjection(float scrZ, float width, float height, float range); // FS2 0x00177be0
     // The far range, what SceneRender::update gives every camera; the same.
     void setRange(float range);                                          // FS2 0x001779a0
     void onViewTop() override;                                           // FS2 0x00177d00
@@ -1917,6 +1913,9 @@ public:
     ViewCamera();                                                        // FS2 0x0029aae0
     // The zoom of camview_zoom, from the character's zoomLevel.
     void setZoom(float level);                                           // FS2 0x0029a840
+    // The analog range setZoom spreads over: low, then its width.
+    static constexpr float kZoomLow  = 76.8f;                            // sbss gp-0x7a00: 256 * 30 / 100
+    static constexpr float kZoomSpan = 101.4f;                           // sbss gp-0x79fc: 255 - 2 * low
 };
 // What the event code calls of TUs to come.
 // The film overlay's data: two parts of the parent's party (0x1fea40,
@@ -2110,11 +2109,19 @@ struct CharacterWants
     u_char putItem;             // FS2 +0x2d2: put down m_putItem (the writer 0x218850 is unread)
     u_char _2d3;
     int    putItemEe;           // FS2 +0x2d4: its size on the EE; StageCharacter::m_putItem holds the pointer
-    u_char _2d8[0x19];
+    u_char trapSet;             // FS2 +0x2d8: lay the trap (no writer read yet)
+    u_char trapCancel;          // FS2 +0x2d9: take it up
+    u_char throwItem;           // FS2 +0x2da: throw m_throwItem
+    u_char _2db;
+    int    throwItemEe;         // FS2 +0x2dc: its size on the EE; StageCharacter::m_throwItem holds the pointer
+    sceVu0FVECTOR throwVector;  // FS2 +0x2e0: zero: the default throw
+    u_char call;                // FS2 +0x2f0: Showt
     u_char ready;               // FS2 +0x2f1: PadAction_Ready held
     u_char _2f2[2];
     int    fire;                // FS2 +0x2f4: CharacterFire
-    u_char _2f8[8];
+    u_char reload;              // FS2 +0x2f8: reloadRounds into the gun (no writer read yet)
+    u_char _2f9[3];
+    int    reloadRounds;        // FS2 +0x2fc
     u_char headOn;              // FS2 +0x300: the head follows headAngles
     u_char _301[0xf];
     sceVu0FVECTOR headAngles;   // FS2 +0x310
@@ -2142,6 +2149,8 @@ static_assert(offsetof(CharacterWants, headOn) == 0x40, "CharacterWants::headOn"
 static_assert(offsetof(CharacterWants, aimAngles) == 0x70, "CharacterWants::aimAngles");
 static_assert(offsetof(CharacterWants, lampSwitch) == 0x94, "CharacterWants::lampSwitch");
 static_assert(offsetof(CharacterWants, fire) == 0x34, "CharacterWants::fire");
+static_assert(offsetof(CharacterWants, throwVector) == 0x20, "CharacterWants::throwVector");
+static_assert(offsetof(CharacterWants, reloadRounds) == 0x3c, "CharacterWants::reloadRounds");
 static_assert(offsetof(CharacterWants, ready) == 0x31, "CharacterWants::ready");
 static_assert(offsetof(CharacterWants, putItemEe) == 0x14, "CharacterWants::putItemEe");
 static_assert(offsetof(CharacterWants, dpadSide) == 0x84, "CharacterWants::dpadSide");
@@ -2171,10 +2180,13 @@ struct CharacterAllows
     u_char _381[3];
     int    pickItemEe;          // FS2 +0x384: its size on the EE; StageCharacter::m_pickItem holds the pointer
     u_char putItem;             // FS2 +0x388: PutItem: nothing stands ahead
-    u_char _389[4];
+    u_char trapSet;             // FS2 +0x389: TrapSet: a trap in hand and floor ahead
+    u_char trapCancel;          // FS2 +0x38a: TrapCancel: a trap here to take up
+    u_char throwItem;           // FS2 +0x38b: Throw: room ahead
+    u_char call;                // FS2 +0x38c: Showt
     u_char armed;               // FS2 +0x38d: Lock, BtOn, BtAttack, BtMove: the stance may stand; wants.ready holds it
     u_char fire;                // FS2 +0x38e
-    u_char _38f;
+    u_char reload;              // FS2 +0x38f: Reload: the magazine is not full
     u_char head;                // FS2 +0x390: the sheet's 頭振り
     u_char aim;                 // FS2 +0x391: the sheet's 上半身振り
     u_char _392[6];
@@ -2251,6 +2263,15 @@ public:
     // WieldClass bits asked about.
     bool canWield(StageObject *item, u_int mask);                        // FS2 0x0020b240
     void playPickSound(StageItem *item);                                 // FS2 0x002a3160
+    // The sound names of the long weapon (0x2a30b0 opens a gun, 0x2a3060 a
+    // round, 0x2a3010 closes it), and of a trap.
+    void playMagazineSetSound();                                         // FS2 0x002a3010
+    void playReloadSetSound();                                           // FS2 0x002a3060
+    void playMagazineOutSound();                                         // FS2 0x002a30b0
+    void playTrapOffSound();                                             // FS2 0x002a2ad0
+    void playTrapSetSound();                                             // FS2 0x002a2af0
+    // What it carries of that name.
+    StageObject *findCarried(const char *name);                          // FS2 0x00216310
     // The mission's notice with the item's name.
     void noticeItem(StageItem *item);                                    // FS2 0x002184b0
     // The three status setters of the player's code: each clamps to the
@@ -2333,6 +2354,7 @@ public:
     // 0 inactive; 2 up, 3 down, 4 down in motions 0xb3 / 0xb4, 5 in 0xb1 /
     // 0xb2, 6 and 7 by +0x690. The brain's state 6 says 2, its state 0 says 0.
     int  getLifeState();                                                 // FS2 0x00212460
+    bool hasKyoModel();                                                  // FS2 0x00215340
     // Not the partner, the sheet's kind not 0xb, slot +0x278 (the brain's
     // state, 1 without one) none of 2..5, 7: the player may become it.
     bool canTakeOver();                                                  // FS2 0x00212020
@@ -2372,12 +2394,14 @@ public:
     // CharacterAllows +0x384 and CharacterWants +0x2d4, the same way.
     StageItem *m_pickItem = nullptr;
     StageItem *m_putItem = nullptr;
+    StageThrownItem *m_throwItem = nullptr; // beside wants.throwItemEe, as m_putItem
+    int    m_reloadRounds = 0;  // FS2 +0x3dc: rounds still to load, one by one
     CharacterAllows m_allows = {};  // FS2 +0x360: the start hook clears it, the conditions fill it
     u_char m_fidgets = 1;       // FS2 +0x3e0: resetActionState sets it, a script's property may clear it: stepFidgets' idle0 / idle1
-    int    m_3e4 = 0;           // FS2 +0x3e4: 0 from initStatus (unread); so are the next five
-    int    m_3e8 = 0;           // FS2 +0x3e8
-    int    m_3ec = 0;           // FS2 +0x3ec
-    int    m_3f0 = 0;           // FS2 +0x3f0
+    float  m_flinchClock = 0.0f; // FS2 +0x3e4: 0 from initStatus; sideHook0's seconds
+    float  m_unarmedClock = 0.0f; // FS2 +0x3e8
+    float  m_enduranceClock = 0.0f; // FS2 +0x3ec
+    float  m_3f0 = 0.0f;        // FS2 +0x3f0: a countdown (its setter and readers are unread)
     u_char m_winded = 0;        // FS2 +0x3f4: m_health ran out, until it is back at 40%: the stance tables' second row, no running
     float  m_idleTime = 0.0f;   // FS2 +0x3f8: seconds standing, for the next fidget
     float  m_idleDelay = 0.0f;  // FS2 +0x3fc: the wait for a fidget (rollIdleDelay)
@@ -2404,13 +2428,16 @@ public:
     int    m_leftLeg = 0;       // FS2 +0x5a8: the sheet's 左足
     int    m_flinch = 0;        // FS2 +0x5ac: setFlinch, to the sheet's ひるみ耐性値
     int    m_unarmedMsp = 0;    // FS2 +0x5b0: the sheet's 素手MSP
+    int    m_enduranceRegen = 0; // FS2 +0x5c8: a second, sideHook0 (only the property setter 0x212530 would give it)
+    int    m_lifeOverride = -1; // FS2 +0x690: getLifeState: >= 0 says 6, or 0 says 7 (writer unread)
     int    m_doorBlow = 0;      // FS2 +0x5d8: what a forcing takes off a door; only the property setter 0x212530 gives it
     float  m_walkRate = 1.0f;   // FS2 +0x5e0: 移動速度 / 100 (setProperty)
     float  m_runRate = 1.0f;    // FS2 +0x5e4: 走り速度 / 100
     float  m_turnRate = 1.0f;   // FS2 +0x5e8: 旋回速度 / 100 (setProperty)
     float  m_reviveTime = 0.0f; // FS2 +0x5ec: seconds of DamageDead
     int    m_drainRate = 0;     // FS2 +0x5f0: a script's property: what a drained character loses a frame at 30 Hz, read from whoever the player controls
-    float  m_aimLock = 0.0f;    // FS2 +0x5fc: not 0: they fly straight
+    u_char m_blanks = 0;        // FS2 +0x5f8: its shots carry no bullet (no writer read yet)
+    float  m_shotScatter = 0.0f; // FS2 +0x5fc: ShotSpread::amount; 0: a bullet steers after the aim, else straight
     u_char m_bulletFlying = 0;  // FS2 +0x688: set each frame by a bullet of its own
     CharacterBlock7c8 m_block7c8 = {}; // FS2 +0x7c8
 };
@@ -2494,6 +2521,14 @@ struct MenuProgHolder
     void draw(float deltaSeconds, GamePacketManager *packets, StageObject *camera); // FS2 0x002ad030
 };
 // layout: host
+// MenuProgSet::state: the sight drawn.
+enum MenuProgSight
+{
+    MenuProgSight_None  = 0,
+    MenuProgSight_Scope = 1,    // a rifle's
+    MenuProgSight_R64C  = 2,    // R_64C's
+};
+// layout: host -- EE 0x1c: the state, then six textures.
 struct MenuProgSet
 {
     MenuProgSet();                                                       // FS2 0x002bb4e0: seven words zero
@@ -2501,6 +2536,11 @@ struct MenuProgSet
     // Six textures over the init pack's images.
     void load(void *image0, void *image1, void *image2, void *image3, void *image4,
               void *image5);                                             // FS2 0x002bb2b0
+    // The sight over the frame, at PlayerMotion::scopeZoom: state 1
+    // 0x2ba8d0, state 2 0x2b9ef0.
+    void draw(float zoom);                                               // FS2 0x002bb260
+
+    int state = MenuProgSight_None; // FS2 +0x0: PlayerMotion::setScope
 };
 
 // The frame-buffer filter of the view cameras and event d0101: passes

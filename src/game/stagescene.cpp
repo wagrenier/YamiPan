@@ -3333,7 +3333,7 @@ void StageScene::draw(StageObject *active)
             owned[i]->draw();
     }
     if (menuProgs != nullptr && player != nullptr)
-        player->m_motion->overlay->draw();
+        menuProgs->draw(player->m_motion->scopeZoom);
 
     if (!isSubScene) {
         if (printer->m_texture != nullptr) {
