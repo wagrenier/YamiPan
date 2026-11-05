@@ -101,6 +101,8 @@ enum MotionStanceSlot
     MotionStance_Run     = 5,  // run, ka
     MotionStance_TurnRight = 6, // t_r
     MotionStance_TurnLeft = 7, // t_l
+    MotionStance_Call    = 8,  // call, sq_call
+    MotionStance_Jack    = 9,  // jack, sq_jack
     MotionStance_WalkRun = 10, // w_run, sq_ka: walk into run
 };
 
@@ -169,6 +171,7 @@ static_assert(sizeof(MotionQueue) == 0x54, "MotionQueue: EE 0x54");
 static_assert(offsetof(MotionQueue, finished) == 0x50, "MotionQueue::finished");
 
 struct PlayerMotion;
+class StageTrapItem;
 
 // One thing a motion may lead to. onUpdate runs at the start of the frame
 // and says what is allowed; onApply runs after input and brain and asks for
@@ -202,10 +205,13 @@ public:
     virtual void onUpdate() {}                                           // FS2 0x001eee10: slot +0xc
     virtual void onApply() {}                                            // FS2 0x001eee20: slot +0x10
     virtual void onRequest() {}                                          // FS2 0x001ec640: slot +0x14
-    virtual void onStart() {}                                            // FS2 0x001eaba0: slot +0x18
+    // FS2 0x001eaba0
+    virtual void onStart() {}
     virtual void onRun() {}                                              // FS2 0x001e5d50: slot +0x1c
-    virtual void onLeave(MotionLink *next) {}                            // FS2 0x001eabb0: slot +0x20
-    virtual void onCancel() {}                                           // FS2 0x001ec3f0: slot +0x24
+    // FS2 0x001eabb0
+    virtual void onLeave(MotionLink *next) {}
+    // FS2 0x001ec3f0
+    virtual void onCancel() {}
     // FS2 0x0027cab0
     void rewind()
     {
@@ -227,13 +233,87 @@ protected:
     std::vector<MotionCondition *> m_conditions; // FS2 +0xc
 };
 
+// Gun up: Lock, Snipe, GunAttack, GunMove. Vtable 0x317a10. layout: host.
+class GunLink : public MotionLink
+{
+public:
+    GunLink(StageCharacter *owner, PlayerMotion *motion_);               // FS2 0x0027aa90
+    void onStart() override;                                             // FS2 0x0027aa70
+    void onLeave(MotionLink *next) override;                             // FS2 0x0027a9e0
+};
+
+// A shot, or the butt of the gun: Lock and GunAttack. A shot may be followed
+// by the next when the sheet's frames have gone by. Vtable 0x3179e0.
+// layout: host.
+class GunAttackLink : public MotionLink
+{
+public:
+    GunAttackLink(StageCharacter *owner, PlayerMotion *motion_);         // FS2 0x0027a910
+    void onRequest() override;                                           // FS2 0x0027a8c0
+    void onStart() override;                                             // FS2 0x0027a840
+    void onRun() override;                                               // FS2 0x0027a650
+    void onLeave(MotionLink *next) override;                             // FS2 0x0027a580
+
+private:
+    u_char keepsLock = 0;       // FS2 +0x20: CharacterFire_Auto
+    u_char isShot = 0;          // FS2 +0x21: else the butt
+};
+
+// Rounds move on the motion's clicks. Vtable 0x3179b0. layout: host.
+class ReloadLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    void onRun() override;                                               // FS2 0x0027a140
+};
+
+// A trap goes down on the click. Vtable 0x317920, +0xc14 of PlayerMotion.
+// layout: host.
+class TrapSetLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    void onRun() override;                                               // FS2 0x00279210
+
+    StageTrapItem *trap = nullptr;    // FS2 +0x20
+    sceVu0FVECTOR  place = {};        // FS2 +0x30
+};
+
+// A trap comes up on the click. Vtable 0x3178f0, +0xc18 of PlayerMotion.
+// layout: host.
+class TrapCancelLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    void onRun() override;                                               // FS2 0x00279190
+
+    StageTrapItem *trap = nullptr;    // FS2 +0x20
+};
+
+// An item leaves the hand on the click; the long weapon hides meanwhile.
+// Vtable 0x317890, +0xc1c of PlayerMotion. layout: host.
+class ThrowLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    void onRun() override;                                               // FS2 0x00278ed0
+    void onLeave(MotionLink *next) override;                             // FS2 0x00278ea0
+    // What goes and how; a zero vector: the default throw.
+    void setThrow(StageThrownItem *item_, const sceVu0FVECTOR vector);   // FS2 0x00278e40
+
+private:
+    StageThrownItem *item = nullptr;  // FS2 +0x20
+    sceVu0FVECTOR    offset = {};     // FS2 +0x30
+};
+
 // A door's motion: the Door condition picks it, and the door's own half
 // plays on the door. EE 0x28, vtable 0x317aa0, the field +0xc0c of
 // PlayerMotion. layout: host.
 class DoorLink : public MotionLink
 {
 public:
-    using MotionLink::MotionLink;
+    // FS2 0x0027b640
+    DoorLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_) {}
     void onRequest() override;                                           // FS2 0x0027b590
     void onStart() override;                                             // FS2 0x0027b3d0
     void onRun() override;                                               // FS2 0x0027b140
@@ -250,7 +330,8 @@ public:
 class PickupLink : public MotionLink
 {
 public:
-    using MotionLink::MotionLink;                                        // FS2 0x0027c140
+    // FS2 0x0027c140
+    PickupLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_) {}
     void onRequest() override;                                           // FS2 0x0027c100
     void onRun() override;                                               // FS2 0x0027bef0
     void onCancel() override;                                            // FS2 0x0027c0e0
@@ -359,9 +440,24 @@ public:
 
 // What the wall probes share (PlayerMotion +0x4, 0x26c6b0). layout: host --
 // EE 8: +0 the character, +4 a small vector { 0, 1, 0 }.
+// How far shots stray: a character's m_shotScatter, less as the aim settles
+// over three seconds of frames (the controlled one; others at once).
+struct ShotSpread
+{
+    float amount = 0.0f;        // FS2 +0x0: at 10 units of distance
+    float rate = 1.0f;          // FS2 +0x4: of settled, a frame
+    float settled = 0.0f;       // FS2 +0x8: 0..1
+    // out: range along a line strayed from from .. to.
+    void scatter(float range, sceVu0FVECTOR out, const sceVu0FVECTOR from,
+                 const sceVu0FVECTOR to) const;                          // FS2 0x00269db0
+};
+
+// layout: host -- EE: +0 the owner, +4 a pointer to the spread.
 struct MotionProbe
 {
     explicit MotionProbe(StageCharacter *owner_) : owner(owner_) {}      // FS2 0x0026c6b0
+    // A trap this character can spring.
+    StageTrapItem *findTrap();                                           // FS2 0x0026a390
     // The door within reach, facing it, free. A door of type R that stands
     // open must leave room to walk to its place.
     StageDoor *findDoor();                                               // FS2 0x0026a6b0
@@ -398,6 +494,7 @@ struct MotionProbe
     void pointAhead(float x, float z, sceVu0FVECTOR out);                // FS2 0x0026b860
 
     StageCharacter *owner;      // FS2 +0x0
+    ShotSpread spread;          // FS2 +0x4: a block of its own on the EE
 };
 
 // A byte-ordered name key, as the MSL maps at +0x8, +0x18 and +0x2c.
@@ -516,9 +613,9 @@ private:
     void noteLeaving();                                                  // FS2 0x001ec0a0
 public:
     void startRequested();                                               // FS2 0x001ec400
+    // Into the scope (camview_snipe, the body hidden) or out of it.
+    void setScope(bool on);                                              // FS2 0x001dfd90
 private:
-    // The list's half of noFlash (the list is not written).
-    void clearNoFlash(int arg);                                          // FS2 0x001dfd90
     // The pose walks to from, turning to aim at to, or where the file puts it.
     // scaled: rate grows with what there is to cross, at least 4 frames' worth.
     void startWalk(float rate, const float *from, const float *to, bool scaled, bool held); // FS2 0x001ead00
@@ -606,14 +703,18 @@ public:
     sceVu0FVECTOR position = {}; // FS2 +0xbb0
     sceVu0FVECTOR m_liftAngles = {}; // FS2 +0xbc0: LevelLift: how the partner faces
     StageItem *m_lookObject = nullptr; // FS2 +0xbd0: the item in reach: the head looks at its pick point, cleared each frame
-    u_char noFlash = 0;         // FS2 +0xbd4: a shot shows no flash (StageWeaponItem::fire)
-    PlayerOverlay *overlay = nullptr; // FS2 +0xbd8: StageScene::draw
+    u_char scopeOn = 0;         // FS2 +0xbd4: camview_snipe; a shot shows no flash (StageWeaponItem::fire)
+    float  scopeZoom = 0.0f;    // FS2 +0xbd8: 0..1, the sight's picture too (MenuProgSet::draw)
+    sceVu0FVECTOR scopeRotation = {}; // FS2 +0xbe0: the character's as the scope came up
     float  m_bf0 = 0.0f;        // FS2 +0xbf0
     float  m_bf4 = 0.0f;        // FS2 +0xbf4
     u_char m_bfc = 0;           // FS2 +0xbfc
     WalkLink *walkLink = nullptr; // FS2 +0xc00: the map's Walk
     PickupLink *pickupLink = nullptr; // FS2 +0xc08: the map's Pickup
     DoorLink *doorLink = nullptr; // FS2 +0xc0c: the map's Door
+    TrapSetLink *trapSetLink = nullptr; // FS2 +0xc14: the map's TrapSet
+    TrapCancelLink *trapCancelLink = nullptr; // FS2 +0xc18: the map's TrapCancel
+    ThrowLink *throwLink = nullptr; // FS2 +0xc1c: the map's Throw
 };
 
 #endif // GAME_PLAYERMOTION_H

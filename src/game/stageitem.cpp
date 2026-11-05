@@ -262,7 +262,7 @@ void StageBullet::syncBody(CollisionBody *body)
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// The frame. A shooter with no aim lock (m_aimLock 0) keeps steering it at
+// The frame. A shooter with no scatter (m_shotScatter 0) keeps steering it at
 // its aim point.
 // FS2 0x001801c0
 // callcheck: vecNormalize, scaleVec4
@@ -270,7 +270,7 @@ void StageBullet::syncBody(CollisionBody *body)
 void StageBullet::sideHook2()
 {
     // PC: the bullet setupCameras makes has no owner (and never runs).
-    if (m_owner != nullptr && m_owner->m_aimLock == 0.0f) {
+    if (m_owner != nullptr && m_owner->m_shotScatter == 0.0f) {
         for (int i = 0; i < 4; i++)
             m_velocity[i] = m_owner->m_aimPoint[i] - m_xform.position[i];
         vecNormalize(m_velocity, m_velocity);
@@ -986,7 +986,7 @@ void StageWeaponItem::fire(StageCharacter *shooter, const sceVu0FVECTOR from, co
         bullet->propagate();
     }
 
-    if (!shooter->m_motion->noFlash) {
+    if (!shooter->m_motion->scopeOn) {
         static const sceVu0FVECTOR kFlashTurn = { 0.0f, 1.5707964f, 0.0f, 0.0f }; /* sdata 0x2f7c90 */
         gStageScene->nodeTree->spawn("M_Flash", this, m_firePoint, kFlashTurn, 0, 0);
         if (loadsByMagazine())

@@ -591,9 +591,9 @@ void PauseMenuState::update()
 }
 
 // stub of FS2 0x002bb260
-void PlayerOverlay::draw()
+void MenuProgSet::draw(float zoom)
 {
-    YAMIPAN_STUB("PlayerOverlay::draw", 0x002bb260);
+    YAMIPAN_STUB("MenuProgSet::draw", 0x002bb260);
 }
 
 // stub of FS2 0x00268290
@@ -1310,12 +1310,6 @@ void StageParticle::stopChain()
     YAMIPAN_STUB("StageParticle::stopChain", 0x0018fec0);
 }
 
-// stub of FS2 0x001dfd90
-void PlayerMotion::clearNoFlash(int arg)
-{
-    YAMIPAN_STUB("PlayerMotion::clearNoFlash", 0x001dfd90);
-}
-
 // stub of FS2 0x00215620
 bool StageObject::isScenarioLead()
 {
@@ -1340,12 +1334,6 @@ void StageParty::stop()
 void StageCharacter::getSwayMatrix(sceVu0FMATRIX out)
 {
     YAMIPAN_STUB("StageCharacter::getSwayMatrix", 0x0020c940);
-}
-
-// stub of FS2 0x0029a840
-void ViewCamera::setZoom(float level)
-{
-    YAMIPAN_STUB("ViewCamera::setZoom", 0x0029a840);
 }
 
 // stub of FS2 0x0028ec90
@@ -1377,13 +1365,6 @@ void StageCar::setLights(bool on)
 bool StageCharacter::canTakeOver()
 {
     YAMIPAN_STUB("StageCharacter::canTakeOver", 0x00212020);
-    return {};
-}
-
-// stub of FS2 0x00212460
-int StageCharacter::getLifeState()
-{
-    YAMIPAN_STUB("StageCharacter::getLifeState", 0x00212460);
     return {};
 }
 

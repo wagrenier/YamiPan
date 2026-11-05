@@ -318,7 +318,7 @@ CharacterGround::CharacterGround(StageObject *ownerObject)
             if (nearRadius < height + table.rows[i].radius)
                 nearRadius = height + table.rows[i].radius;
         }
-        if (owner->m_abilities.flag3ba != 0) {
+        if (owner->m_abilities.traps != 0) {
             nearBody = new CollisionBody(this, 0, kGroundNearBody, 0);
             gStageScene->records->add(nearBody);
             nearBody->shape = CollisionShape_Sphere;

@@ -307,7 +307,7 @@ int CharacterInput::readFire(int button)
 // ──────────────────────────────────────────────────────────────────────
 // The stick while walking. Past 90 degrees of the stick it backs, inside the
 // bands around 90 it turns on the spot or, with Strafe, strafes; the bands
-// widen with Ready. A scope (noFlash) does not turn on the spot.
+// widen with Ready. A scope (scopeOn) does not turn on the spot.
 
 void CharacterInput::stepMove(float angle, float length)
 {
@@ -329,7 +329,7 @@ void CharacterInput::stepMove(float angle, float length)
                 wants.moveKind = CharacterMove_StrafeLeft;
             else if (angle < 0.0f)
                 wants.moveKind = CharacterMove_StrafeRight;
-        } else if (owner->m_motion->noFlash == 0) {
+        } else if (owner->m_motion->scopeOn == 0) {
             if (angle > 0.0f)
                 wants.moveKind = CharacterMove_TurnLeft;
             else if (angle < 0.0f)
@@ -609,7 +609,7 @@ void CharacterInput::stepAim(float length, sceVu0FVECTOR lookTarget)
     if (m_stickLatch != 0 && length < kLetGo)
         m_stickLatch = 0;
 
-    if (motion->noFlash != 0) {
+    if (motion->scopeOn != 0) {
         stepScope(length, lookTarget);
     } else if (!m_pad->actionHeld(PadAction_Strafe) && isAimStanceMotion(motion->motionId) && m_stickLatch == 0) {
         owner->m_wants.aimAngles[0] = -m_pad->m_stick[3] * kAimRange;
@@ -684,9 +684,9 @@ void CharacterInput::stepOnFoot(sceVu0FVECTOR lookTarget)
     stepHead(lookTarget);
 
     PlayerMotion *motion = owner->m_motion;
-    if (m_scopeWas == 0 && motion->noFlash != 0)
+    if (m_scopeWas == 0 && motion->scopeOn != 0)
         startScope();
-    m_scopeWas = motion->noFlash;
+    m_scopeWas = motion->scopeOn;
     stepAim(length, lookTarget);
     stepView();
 }
