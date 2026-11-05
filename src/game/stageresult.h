@@ -108,7 +108,7 @@ struct StageResult
     // pause bytes and the counters.
     void resetPlay();
 
-    int        counter[4];      // FS2 +0x00: [0] continues; getPerfectBits
+    int        counter[4];      // FS2 +0x00: [0] continues, [2] hits on the player (takeDamage); getPerfectBits
     int        attempt[16];     // FS2 +0x10: cleared by restart; 0x17f7c0 reads [15]
     int        stage[16];       // FS2 +0x50: cleared by begin only
     int        _90;             // FS2 +0x90: cleared by begin

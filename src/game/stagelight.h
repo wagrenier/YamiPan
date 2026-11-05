@@ -86,6 +86,7 @@ public:
     // Runner slot 24: broken, no light at all.
     // FS2 0x00184a10
     void setScriptFlag2(bool on) override { m_broken = on; }
+    bool isBroken() const { return m_broken != 0; }
 
     // The light shows: not broken, some brightness, on or still fading.
     bool  isLit() const;                                                 // FS2 0x00185fd0

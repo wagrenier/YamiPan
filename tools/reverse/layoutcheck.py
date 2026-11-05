@@ -9,7 +9,11 @@ Layouts are checked by the compilers themselves: every game struct carries
 - MinGW GCC (-fsyntax-only) on one generated TU per game header: catches headers no .c includes yet
   and headers that are not self-contained (the build already covers the .c files).
 - MSVC (cl /Zs, through vcvars64.bat found with vswhere, or YAMIPAN_VCVARS) on the same header TUs and
-  every game .c file: the build only ever runs GCC, and MSVC lays out bitfields and aligns differently.
+  every game .c file: build.py only ever runs GCC, and MSVC lays out bitfields and aligns differently.
+  Then src/sdk and the Pan layer (src/yamipan, src/main.cpp), which have no layouts to check but which
+  nothing else compiles with cl: a Visual Studio build must not be the first to find what breaks there.
+  Each takes the file's defines and includes from the build, and the /permissive of its CMake target.
+  The cl options are written here, so this does not catch a bad flag in CMakeLists.txt itself.
   Skipped with a note when MSVC is not installed or --no-msvc is given.
 
 Lint (game files only, comments ignored):
@@ -24,6 +28,7 @@ import json
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 import yamipan
 
@@ -32,6 +37,7 @@ sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 OUT = yamipan.WORK / 'layoutcheck'
 BDIR = yamipan.REPO / 'cmake-build-relwithdebinfo'
 GAME_EXT = ('.c', '.cpp', '.cc', '.h', '.hpp')
+MAIN = yamipan.SRC / 'main.cpp'                  # the host's entry, though it sits outside PLATFORM_DIRS
 
 
 def game_files():
@@ -100,21 +106,49 @@ def lint(path):
     return out
 
 
-def build_flags():
+def build_commands():
     db = BDIR / 'compile_commands.json'
     if not db.exists():
         raise SystemExit(f'{db} missing: run build.py first')
-    for e in json.loads(db.read_text(encoding='utf-8')):
-        f = e['file'].replace('\\', '/')
-        if '/src/' in f and f.split('/src/', 1)[1].split('/')[0] not in yamipan.PLATFORM_DIRS:
-            cmd = e.get('command') or ' '.join(e['arguments'])
-            break
-    else:
-        raise SystemExit('no game file in compile_commands.json')
+    return json.loads(db.read_text(encoding='utf-8'))
+
+
+def command_of(entry):
+    return entry.get('command') or ' '.join(entry['arguments'])
+
+
+def flags_of(cmd):
     defines = re.findall(r'(?:^|\s)-D(\S+)', cmd)
     incs = re.findall(r'(?:^|\s)-I(\S+)', cmd) + re.findall(r'-isystem\s+(\S+)', cmd)
     prefix = re.search(r'-include\s+(\S+)', cmd)      # YamiPan force-includes nothing (cpp-port.md)
     return defines, incs, prefix.group(1) if prefix else None
+
+
+def build_flags():
+    for e in build_commands():
+        f = e['file'].replace('\\', '/')
+        if '/src/' in f and f.split('/src/', 1)[1].split('/')[0] not in yamipan.PLATFORM_DIRS:
+            return flags_of(command_of(e))
+    raise SystemExit('no game file in compile_commands.json')
+
+
+def platform_groups():
+    """src/sdk and the Pan layer as the build compiles them: (permissive, defines, incs, prefix) -> files.
+
+    Files sharing their flags share a cl run; logger.cpp has its commit stamp, so it runs on its own.
+    """
+    groups = {}
+    for e in build_commands():
+        path = Path(e['file'])
+        if not path.is_relative_to(yamipan.SRC):
+            continue
+        top = path.relative_to(yamipan.SRC).parts[0]
+        if top not in yamipan.PLATFORM_DIRS and path != MAIN:
+            continue
+        defines, incs, prefix = flags_of(command_of(e))
+        # SDK sources are in yamipan_game, permissive like the game; the Pan layer's target is not.
+        groups.setdefault((top == 'sdk', tuple(defines), tuple(incs), prefix), []).append(path)
+    return groups
 
 
 def header_tus(headers):
@@ -165,26 +199,44 @@ def find_vcvars():
     return bat if bat and __import__('os').path.exists(bat) else ''
 
 
-def run_msvc(files, defines, incs, prefix):
-    bat = find_vcvars()
-    if not bat:
-        return None, 'MSVC not found (set YAMIPAN_VCVARS to vcvars64.bat)'
-    rsp = OUT / 'msvc.rsp'
-    opts = ['/nologo', '/Zs', '/TP', '/std:c++latest', '/permissive', '/Zc:preprocessor', '/W1', '/wd4996',
-            '/D_CRT_SECURE_NO_WARNINGS', '/EHsc'] + ([f'/FI"{prefix}"'] if prefix else [])
+def run_msvc(bat, name, files, defines, incs, prefix, permissive=True):
+    OUT.mkdir(parents=True, exist_ok=True)
+    rsp = OUT / f'{name}.rsp'
+    opts = ['/nologo', '/Zs', '/TP', '/std:c++latest', '/Zc:preprocessor', '/utf-8', '/W1', '/wd4996',
+            '/D_CRT_SECURE_NO_WARNINGS', '/EHsc'] + (['/permissive'] if permissive else [])
+    opts += [f'/FI"{prefix}"'] if prefix else []
     opts += [f'/D{d}' for d in defines] + [f'/I"{i}"' for i in incs] + [f'"{f}"' for f in files]
     rsp.write_text('\n'.join(opts) + '\n', encoding='utf-8')
-    bat_cmd = OUT / 'msvc.bat'
+    bat_cmd = OUT / f'{name}.bat'
     bat_cmd.write_text(f'@call "{bat}" >nul\r\n@cl @"{rsp}"\r\n', encoding='utf-8')
     r = subprocess.run(['cmd', '/c', str(bat_cmd)], capture_output=True, text=True, encoding='utf-8',
                        errors='replace')
     return r.returncode, r.stdout + r.stderr
 
 
+def check_msvc(bat):
+    """Every cl pass; True when all of them compile."""
+    files = list(game_files())
+    sources = [f for f in files if f.suffix not in ('.h', '.hpp') and f != MAIN]
+    headers = [f for f in OUT.glob('h_*.cpp')]
+    defines, incs, prefix = build_flags()
+    passes = [(f'{len(headers)} headers + {len(sources)} sources', headers + sources, defines, incs, prefix, True)]
+    for (permissive, ds, ics, pre), group in platform_groups().items():
+        label = f'{len(group)} {"SDK" if permissive else "Pan layer"} sources'
+        passes.append((label, group, list(ds), list(ics), pre, permissive))
+    clean = True
+    for i, (label, group, ds, ics, pre, permissive) in enumerate(passes):
+        rc, out = run_msvc(bat, f'msvc_{i}', group, ds, ics, pre, permissive)
+        print(f'msvc: {label}: {"OK" if rc == 0 else "FAILED"}')
+        if rc:
+            print('\n'.join(errors_of(out)[:40]) or out[-3000:])
+            clean = False
+    return clean
+
+
 def main():
     files = list(game_files())
     headers = [f for f in files if f.suffix in ('.h', '.hpp')]
-    sources = [f for f in files if f.suffix not in ('.h', '.hpp')]
     failed = False
 
     warnings = [w for f in files for w in lint(f)]
@@ -201,17 +253,13 @@ def main():
         print('\n'.join(errors_of(out)[:40]) or out[-3000:])
         failed = True
 
+    bat = find_vcvars()
     if '--no-msvc' in sys.argv:
         print('msvc: skipped (--no-msvc)')
-    else:
-        rc, out = run_msvc(tus + sources, defines, incs, prefix)
-        if rc is None:
-            print('msvc: skipped -', out)
-        else:
-            print(f'msvc: {len(tus)} headers + {len(sources)} sources: {"OK" if rc == 0 else "FAILED"}')
-            if rc:
-                print('\n'.join(errors_of(out)[:40]) or out[-3000:])
-                failed = True
+    elif not bat:
+        print('msvc: skipped - MSVC not found (set YAMIPAN_VCVARS to vcvars64.bat)')
+    elif not check_msvc(bat):
+        failed = True
 
     if '--keep' not in sys.argv:
         for t in tus:

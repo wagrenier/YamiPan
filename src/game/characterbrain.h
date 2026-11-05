@@ -79,6 +79,7 @@ public:
     int  command80() override;                                           // FS2 0x001a7750
     void scriptAddMenuLine(const u_short *text, int kind, bool plain) override; // FS2 0x001a72f0
     bool scriptIsCrouching() override;                                   // FS2 0x001a75a0
+    bool scriptIsCompanion() override;                                   // FS2 0x001a74e0
     bool scriptHasLineTo(StageCharacter *other) override;                // FS2 0x001a74a0
     void scriptPutWeaponAway() override;                                 // FS2 0x001a7850
     int  scriptHeardKind() override;                                     // FS2 0x001a70a0
@@ -272,9 +273,9 @@ public:
     bool takeUpTrap();                                                   // FS2 0x001da020
     StageObject *takeItem();                                             // FS2 0x001da5e0
     void crouch3();                                                      // FS2 0x001da3c0
-    void crouch1();                                                      // FS2 0x001da370
-    bool dragOutCar();                                                   // FS2 0x001da5d0
-    bool useSpecial(const char *name);                                   // FS2 0x001da2d0
+    bool scriptCrouch(float loudness) override;                          // FS2 0x001da370
+    bool scriptDragOutCar() override;                                    // FS2 0x001da5d0
+    bool scriptUseSpecial(const char *name) override;                    // FS2 0x001da2d0
     bool routeActionKind11();                                            // FS2 0x001da4f0
     bool useNumLock(int which);                                          // FS2 0x001da430
     int  msToFrames(int ms);                                             // FS2 0x001dd400
@@ -306,7 +307,7 @@ public:
     // The route, for the character.
     void allowPath(const char *name, bool on);                           // FS2 0x001daab0
     void stopAndRetry();                                                 // FS2 0x001daac0
-    void playActionAndRetry(const char *name);                           // FS2 0x001dab80
+    bool playActionAndRetry(const char *name);                           // FS2 0x001dab80
     bool getMoveGoal(float *out);                                        // FS2 0x001dac50
     bool stopIfMoving();                                                 // FS2 0x001da170
     void walkToAndRetry(const float *point, bool run);                   // FS2 0x001da1b0

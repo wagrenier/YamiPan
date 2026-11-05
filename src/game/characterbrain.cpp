@@ -404,6 +404,13 @@ bool ScriptProxy::scriptIsCrouching()
     return getForwardTarget()->scriptIsCrouching();
 }
 
+// FS2 0x001a74e0
+
+bool ScriptProxy::scriptIsCompanion()
+{
+    return getForwardObject()->scriptIsCompanion();
+}
+
 // FS2 0x001a70a0
 
 int ScriptProxy::scriptHeardKind()
@@ -1809,7 +1816,7 @@ void CharacterBrain::walkToAndRetry(const float *point, bool runs)
 // FS2 0x001da2d0
 // callcheck: isSpecialAllowed, setSpecial
 
-bool CharacterBrain::useSpecial(const char *name)
+bool CharacterBrain::scriptUseSpecial(const char *name)
 {
     if (!m_route->isIdle() || !m_owner->isSpecialAllowed(name))
         return false;
@@ -1817,14 +1824,13 @@ bool CharacterBrain::useSpecial(const char *name)
     return true;
 }
 
-// PC: f12 reaches addNoise as the caller left it.
 // FS2 0x001da370
 // callcheck: addNoise, playAction
 
-void CharacterBrain::crouch1()
+bool CharacterBrain::scriptCrouch(float loudness)
 {
-    gStageScene->noises->addNoise(0.0f, m_owner, kBrainNoiseCrouch);
-    m_route->playAction(kCrouch1, nullptr, nullptr);
+    gStageScene->noises->addNoise(loudness, m_owner, kBrainNoiseCrouch);
+    return m_route->playAction(kCrouch1, nullptr, nullptr);
 }
 
 // PC: as crouch1.
@@ -1864,7 +1870,7 @@ bool CharacterBrain::routeActionKind11()
 
 // FS2 0x001da5d0
 
-bool CharacterBrain::dragOutCar()
+bool CharacterBrain::scriptDragOutCar()
 {
     return m_route->dragOutCar();
 }
@@ -1970,9 +1976,9 @@ void CharacterBrain::stopAndRetry()
 // FS2 0x001dab80
 // callcheck: playAction
 
-void CharacterBrain::playActionAndRetry(const char *name)
+bool CharacterBrain::playActionAndRetry(const char *name)
 {
-    retryIf(m_route->playAction(name, nullptr, nullptr));
+    return retryIf(m_route->playAction(name, nullptr, nullptr));
 }
 
 // FS2 0x001dac50
@@ -1991,7 +1997,7 @@ bool CharacterBrain::getMoveGoal(float *out)
 
 bool CharacterBrain::askUseSpecial(const char *name)
 {
-    return retryIf(useSpecial(name));
+    return retryIf(scriptUseSpecial(name));
 }
 
 // FS2 0x001dad30
@@ -2015,7 +2021,7 @@ bool CharacterBrain::askRouteActionKind11()
 
 bool CharacterBrain::askDragOutCar()
 {
-    return retryIf(dragOutCar());
+    return retryIf(scriptDragOutCar());
 }
 
 // FS2 0x001dafa0
