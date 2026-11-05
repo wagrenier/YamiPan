@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/playermotion.cpp",
   "game/stagecharacter.cpp",
   "game/characterbrain.cpp",
   "game/stageplayer.cpp",
@@ -632,7 +631,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "All 244 of the TU's functions are written, the slice's folded ones now carry their addresses. Written beside it: natives 0x3a (answers 0 until the sight table +0x468 exists), 0x3e, 0x3f, 0x46, 0x49, 0x6a, 0x6b, 0x7d, 0x94, 0xac, 0xb1, 0xb5, 0xcf, 0x116, 0x124, 0x125, 0x129, 0x133, 0x1aa, 0x1c7, 0x1fa in game/scriptrunner.cpp; game/pausemenustate.cpp done and game/scenepool.cpp partial, both new TUs. Seen, New Game, work/walklong_pad.txt, 340 s, no crash: Left analog stick: Move at the foot of the screen with the prompt Open at the top. No game capture to compare with; the dark strip behind the text cannot be told apart in that dark room. Stuck: a trace shows him walking freely over a closed room of about 260 x 190 units and stopping at its edges, last in a corner at 7137, 6064, wandering about 10 units in a 9.6 s cycle; the door was not opened. Unproven that the ROM wanders the same way. Stage 1 still asks natives 0x13c, 0x13d (StageParty record) and 0x5b, 0x20f (particles). Next: game/characterbrain.cpp, whose sight table +0x468 also answers native 0x3a. Older callcheck gaps stay in DoorLink::onRun, canUnlockDoor, sideHook1, giveItem, resetActionState.",
+   "notes": "All 244 functions are written; callcheck is clean, with one call noted as unwritten: sideHook1's brain half 0x1dd2f0 -> 0x22e740, game/characterbrain.cpp. Seen, New Game, temporary test (removed), F_PC01 put at oMK99_ds_05's use place, then only the pad: motion 73, door modes 0 -> 1 -> 2, then walk, x 7177 -> 7035 past the old room edge at 7134, next wall at (7035, 5862). So the door's faces go off when open. Picture: the door slid aside with the next room behind it; no reference exists. After the crossing the view is nearly black, not told apart: a dark surface at the eye or an unlit room. Pushing a wall he swings 10 to 12 units along his walking direction, period 27 frames; the reading, not proven, is the leading foot's bone sphere pushing him back; no fault found in the code and no capture to compare, so it may be the ROM's own (open-items.md Done, fourteenth run). Final code, 265 s, no crash: first-person at the door with the wall switch plate in view. Not seen working: keys, locks, forced doors, type R doors, items, the bite. Left outside this file: natives 0x13c, 0x13d, 0x5b, 0x20f; native 0x3a answers 0 until the brain fills the sight table; beforeScripts 0x21c7c0 and afterScripts 0x21c310 belong to game/stageplayer.cpp. Next in the queue: game/stagecharacter.cpp (12 of 12 written, partial: its limbs problem was the missing motion, so it needs a look and a status), then game/characterbrain.cpp.",
    "ranges": [
     [
      "00175700",
@@ -1053,11 +1052,6 @@
    ],
    "sessions": [
     {
-     "date": "2026-11-04 21:32",
-     "status": "partial",
-     "summary": "motion core written, the character plays its idle and the stretched limbs are gone; links and conditions not yet"
-    },
-    {
      "date": "2026-11-04 22:18",
      "status": "partial",
      "summary": "conditions Always, QuickTurn, Squat, Turn, Move and the Walk link written: the character walks, runs and turns when CharacterWants asks, and Move now asks for the idle; input and ground not yet"
@@ -1111,9 +1105,14 @@
      "date": "2026-11-05 09:33",
      "status": "partial",
      "summary": "stage 1's natives and the notices: 21 natives, PauseMenuState and ScenePool whole, hasBiter, findItem: the game's first tutorial line shows on screen, and the stuck is the closed first room"
+    },
+    {
+     "date": "2026-11-05 10:24",
+     "status": "verify",
+     "summary": "closed: resetActionState whole, ScriptPoint and the sight table, stale call notes fixed; a door opened and crossed with the pad alone"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves.",
    "why": "the ranges so far, with the character's property pair 0x212530 / 0x2132d0, their helpers and resetActionState 0x21e050 with its status block 0x21cc70, which the motion reads"
   },

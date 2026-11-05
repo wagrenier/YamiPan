@@ -1981,7 +1981,7 @@ void DoorLink::onStart()
 
 // The motion's Click: the key turns, or the blow lands.
 // FS2 0x0027b140
-// callcheck: FUN_001736e0, FUN_00173750, FUN_001737c0, playNamedHeard2, breakPart, FUN_00173fb0, FUN_00173fb0, FUN_00173fb0, FUN_00173fb0, FUN_00173fb0, FUN_00173fb0, FUN_00173fb0, isControlled, FUN_00172530
+// callcheck: attackSoundName, lockSoundName, unlockSoundName, playNamedHeard2, breakPart, isControlled (three names, one soundName with the format)
 
 void DoorLink::onRun()
 {
@@ -2067,7 +2067,7 @@ bool StageCharacter::reachesThroughDoor(StageDoor *door) const
 }
 
 // FS2 0x0020d730
-// callcheck: FUN_001739f0, FUN_00173c30, FUN_00173830, FUN_001739f0
+// callcheck: isInFront, canReachThrough (the ROM has reachesThroughDoor inline here)
 
 bool StageCharacter::canUnlockDoor(StageDoor *door) const
 {
@@ -4644,8 +4644,9 @@ int StageCharacter::getLifeState()
     return fatal ? 5 : 2;
 }
 
-// The brain (0x1dd2f0) is not written.
+// The brain's half, 0x1dd2f0, goes in with game/characterbrain.cpp.
 // FS2 0x0017a810
+// callcheck: FUN_001dd2f0 (not written: game/characterbrain.cpp)
 
 void StageCharacter::sideHook1()
 {
@@ -4846,7 +4847,7 @@ bool StageCharacter::canWield(StageObject *item, u_int mask)
 }
 
 // FS2 0x00216aa0
-// callcheck: FUN_0017e1b0, FUN_0017e260, erase (the trees, setParent and detach inline), setMoving, setPositionXyz, setRotation, find, swapWeapons, dropItem, setPosition, setRotation, attachTo, setShadowOwner, strcmp, strcmp, setActive, setShown, FUN_00217700, FUN_00217770, getStageSelect
+// callcheck: FUN_0017e1b0, FUN_0017e260, erase, find, FUN_00217700, FUN_00217770, getStageSelect, setMoving, setPositionXyz, setRotation, swapWeapons, dropItem, setPosition, attachTo, setShadowOwner, strcmp, setActive, setShown (the trees, setParent and bodyBone inline; the list tail and push_back are pushBack; getStageSelect is in stageObjRecord)
 
 bool StageCharacter::giveItem(StageObject *item)
 {
@@ -7367,23 +7368,32 @@ void StageCharacter::initStatusBlock()
     m_6d4 = 0;
 }
 
-// The set flags +0x6e0, +0x700, +0x740, +0x760, +0x780, +0x7a0, the table
-// +0x468 (0x18 x 12 bytes) with its owner +0x588 and +0x7c0 / +0x7c4 stay out
-// until their readers are written.
+// Back to the state a character has on entering the stage: no point known,
+// nobody seen.
 // FS2 0x0021e050
-// callcheck: FUN_0020b220, FUN_0021cc70
 
 void StageCharacter::resetActionState()
 {
-    m_vector730[0] = 0.0f;
-    m_vector730[1] = 0.0f;
-    m_vector730[2] = 0.0f;
-    m_vector730[3] = 1.0f;
+    m_point700.isSet = 0;
+    m_point6e0.isSet = 0;
+    static const sceVu0FVECTOR kNoPoint = { 0.0f, 0.0f, 0.0f, 1.0f };   // data 0x2fa7e0
+    m_scriptPoint.set(kNoPoint);
+    m_point740.isSet = 0;
+    m_point760.isSet = 0;
+    m_point780.isSet = 0;
     initStatusBlock();
+    m_sightOwner = this;
+    for (u_int i = 0; i < kSightEntries; i++) {
+        m_sightTable[i].seen = 0;
+        m_sightTable[i].frame = -1;
+    }
     m_armLost = 0;
     m_3d8 = 1;
     m_flinched = 0;
     m_fidgets = 1;
+    m_7a0 = 0;
+    m_7c0 = 0;
+    m_7c4 = 0;
 }
 
 // FS2 0x0021cbf0
@@ -7448,16 +7458,22 @@ bool StageCharacter::isRunningMotion()
     return isRunMotion(id) || isCrouchRunMotion(id);
 }
 
-// FS2 0x00179ad0
 // FS2 0x0020b220
+
+void ScriptPoint::set(const sceVu0FVECTOR value)
+{
+    point[0] = value[0];
+    point[1] = value[1];
+    point[2] = value[2];
+    point[3] = value[3];
+    isSet = 1;
+}
+
+// FS2 0x00179ad0
 
 void StageCharacter::setScriptPoint(const sceVu0FVECTOR point)
 {
-    m_vector730[0] = point[0];
-    m_vector730[1] = point[1];
-    m_vector730[2] = point[2];
-    m_vector730[3] = point[3];
-    m_vector730Set = 1;
+    m_scriptPoint.set(point);
 }
 
 // FS2 0x00210e60
@@ -7743,9 +7759,9 @@ void StageCharacter::setProperty(int id, int sub, int value)
     case CharProp_SideCorpse:    setSideBit(StageObjSide_Corpse, value != 0); break;
     case CharProp_SideDark:      setSideBit(StageObjSide_Dark, value != 0); break;
     case CharProp_ScriptValue:   setScriptValue(sub, value); break;
-    case CharProp_Vector0:       m_vector730[0] = (float)value; break;
-    case CharProp_Vector1:       m_vector730[1] = (float)value; break;
-    case CharProp_Vector2:       m_vector730[2] = (float)value; break;
+    case CharProp_Vector0:       m_scriptPoint.point[0] = (float)value; break;
+    case CharProp_Vector1:       m_scriptPoint.point[1] = (float)value; break;
+    case CharProp_Vector2:       m_scriptPoint.point[2] = (float)value; break;
     case CharProp_ReviveFrames:
         if (getLifeState() == kLifeDownInMotion)
             m_motion->m_reviveFrames = scriptFramesFrom30(value);
@@ -7879,9 +7895,9 @@ int StageCharacter::getProperty(int id, int sub)
     case CharProp_Flag5ba:       return m_5ba;
     case CharProp_Value62c:      return m_62c;
     case CharProp_ScriptValue:   return getScriptValue(sub);
-    case CharProp_Vector0:       return (int)m_vector730[0];
-    case CharProp_Vector1:       return (int)m_vector730[1];
-    case CharProp_Vector2:       return (int)m_vector730[2];
+    case CharProp_Vector0:       return (int)m_scriptPoint.point[0];
+    case CharProp_Vector1:       return (int)m_scriptPoint.point[1];
+    case CharProp_Vector2:       return (int)m_scriptPoint.point[2];
     case CharProp_ReviveFrames:  return reviveFramesLeft(this);
     case Prop_SwitchedOn:        return isLampOn();
     case CharProp_Value670:      return m_670;
