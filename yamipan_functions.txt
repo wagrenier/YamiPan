@@ -2939,7 +2939,17 @@
 /* 00179d00 00000008 */ FUN_00179d00(){}
 /* 00179d10 00000008 */ FUN_00179d10(){}
 /* 00179d20 00000008 */ FUN_00179d20(){}
-/* 00179d30 00000754 */ FUN_00179d30(){}
+
+// *****************************************************************************
+// FILE -- game/stagecharacter.cpp
+// *****************************************************************************
+
+/* 00179d30 00000754 */ StageCharacter::sideHook3(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 0017a490 00000374 */ StageCharacter::moveStep(){}  // game
 /* 0017a810 00000044 */ FUN_0017a810(){}
 
@@ -4844,7 +4854,17 @@
 /* 001dec70 000000b4 */ PlayerMotion::setHeadTarget(){}  // game
 /* 001ded30 0000002c */ FUN_001ded30(){}
 /* 001ded60 00000040 */ FUN_001ded60(){}
+
+// *****************************************************************************
+// FILE -- game/playermotion.cpp
+// *****************************************************************************
+
 /* 001dedb0 000000a0 */ StagePlayer::releaseAction(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 001dee50 00000034 */ FUN_001dee50(){}
 /* 001dee90 00000040 */ FUN_001dee90(){}
 /* 001deed0 00000088 */ FUN_001deed0(){}
@@ -4869,19 +4889,19 @@
 /* 001dff40 00000414 */ PlayerMotion::levelBlocked(){}  // game
 /* 001e0360 0000024c */ PlayerMotion::ladderBlocked(){}  // game
 /* 001e05b0 00000134 */ FUN_001e05b0(){}
-/* 001e06f0 00000730 */ FUN_001e06f0(){}
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp
 // *****************************************************************************
 
+/* 001e06f0 00000730 */ PlayerMotion::endFrame(){}  // game
 /* 001e0e20 00000aa0 */ PlayerMotion::applyMovement(){}  // game
 
 // *****************************************************************************
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 001e18c0 000025c0 */ FUN_001e18c0(){}
+/* 001e18c0 000025c0 */ PlayerMotion::takeHits(){}  // game
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp
@@ -5518,10 +5538,15 @@
 /* 00214ee0 0000003c */ StageCharacter::forcedViewChange(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/stagecharacter.cpp
 // *****************************************************************************
 
 /* 00214f20 00000030 */ StagePlayer::isHoldingAction(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 00214f60 0000005c */ StageObject::getAltSoundFlag(){}  // game
 /* 00214fc0 000002a4 */ StageObject::getActionState(){}  // game
 /* 00215270 0000001c */ StageCharacter::isControlled(){}  // game
@@ -5566,7 +5591,7 @@
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 00215af0 000001e8 */ FUN_00215af0(){}
+/* 00215af0 000001e8 */ StageCharacter::hasAlteredVoice(){}  // game
 /* 00215ce0 00000190 */ StageCharacter::isOpeningLead(){}  // game
 /* 00215e70 00000060 */ StageObject::isYriOrKne(){}  // game
 /* 00215ed0 00000014 */ StageObject::isPartner(){}  // game
@@ -7920,7 +7945,7 @@
 /* 002a1ca0 00000204 */ FUN_002a1ca0(){}
 /* 002a1eb0 00000194 */ FUN_002a1eb0(){}
 /* 002a2050 00000014 */ FUN_002a2050(){}
-/* 002a2070 00000090 */ FUN_002a2070(){}
+/* 002a2070 00000090 */ StageCharacter::playMotionSound(){}  // game
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp
@@ -7934,7 +7959,7 @@
 
 /* 002a2280 00000328 */ FUN_002a2280(){}
 /* 002a25b0 00000438 */ FUN_002a25b0(){}
-/* 002a29f0 000000dc */ FUN_002a29f0(){}
+/* 002a29f0 000000dc */ StageCharacter::playFallDownSound(){}  // game
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp
@@ -7948,11 +7973,11 @@
 // *****************************************************************************
 
 /* 002a2b10 0000004c */ FUN_002a2b10(){}
-/* 002a2b60 00000058 */ FUN_002a2b60(){}
-/* 002a2bc0 000000c0 */ FUN_002a2bc0(){}
-/* 002a2c80 00000078 */ FUN_002a2c80(){}
-/* 002a2d00 00000130 */ FUN_002a2d00(){}
-/* 002a2e30 00000188 */ FUN_002a2e30(){}
+/* 002a2b60 00000058 */ StageCharacter::playJobSound(){}  // game
+/* 002a2bc0 000000c0 */ StageCharacter::playIdleVoice(){}  // game
+/* 002a2c80 00000078 */ StageCharacter::playPanicVoice(){}  // game
+/* 002a2d00 00000130 */ StageCharacter::playGetUpVoice(){}  // game
+/* 002a2e30 00000188 */ StageCharacter::playDieVoice(){}  // game
 /* 002a2fc0 00000050 */ StageCharacter::playLandSound(){}  // game
 
 // *****************************************************************************
@@ -7981,26 +8006,26 @@
 
 /* 002a31b0 00000070 */ FUN_002a31b0(){}
 /* 002a3220 00000060 */ FUN_002a3220(){}
-/* 002a3280 00000058 */ FUN_002a3280(){}
-/* 002a32e0 000000f4 */ FUN_002a32e0(){}
-/* 002a33e0 000000fc */ FUN_002a33e0(){}
-/* 002a34e0 000000fc */ FUN_002a34e0(){}
-/* 002a35e0 000000fc */ FUN_002a35e0(){}
+/* 002a3280 00000058 */ StageCharacter::playSwingSound(){}  // game
+/* 002a32e0 000000f4 */ StageCharacter::playClashVoice(){}  // game
+/* 002a33e0 000000fc */ StageCharacter::playEndVoice(){}  // game
+/* 002a34e0 000000fc */ StageCharacter::playSurpriseVoice(){}  // game
+/* 002a35e0 000000fc */ StageCharacter::playTrapVoice(){}  // game
 /* 002a36e0 0000030c */ FUN_002a36e0(){}
-/* 002a39f0 000000fc */ FUN_002a39f0(){}
-/* 002a3af0 000000fc */ FUN_002a3af0(){}
-/* 002a3bf0 000000fc */ FUN_002a3bf0(){}
-/* 002a3cf0 00000128 */ FUN_002a3cf0(){}
-/* 002a3e20 00000128 */ FUN_002a3e20(){}
-/* 002a3f50 000000fc */ FUN_002a3f50(){}
-/* 002a4050 000000fc */ FUN_002a4050(){}
-/* 002a4150 000000fc */ FUN_002a4150(){}
-/* 002a4250 000000f0 */ FUN_002a4250(){}
+/* 002a39f0 000000fc */ StageCharacter::playUntieVoice(){}  // game
+/* 002a3af0 000000fc */ StageCharacter::playBittenVoice(){}  // game
+/* 002a3bf0 000000fc */ StageCharacter::playJumpVoice(){}  // game
+/* 002a3cf0 00000128 */ StageCharacter::playBreathDown(){}  // game
+/* 002a3e20 00000128 */ StageCharacter::playBreathUp(){}  // game
+/* 002a3f50 000000fc */ StageCharacter::playHardDownVoice(){}  // game
+/* 002a4050 000000fc */ StageCharacter::playDownVoice(){}  // game
+/* 002a4150 000000fc */ StageCharacter::playThrowVoice(){}  // game
+/* 002a4250 000000f0 */ StageCharacter::playBiteVoice(){}  // game
 /* 002a4340 00000110 */ FUN_002a4340(){}
-/* 002a4450 00000230 */ FUN_002a4450(){}
-/* 002a4680 00000044 */ FUN_002a4680(){}
+/* 002a4450 00000230 */ StageCharacter::playDamageVoice(){}  // game
+/* 002a4680 00000044 */ StageCharacter::playAttackVoice(){}  // game
 /* 002a46d0 00000124 */ FUN_002a46d0(){}
-/* 002a4800 000001c0 */ FUN_002a4800(){}
+/* 002a4800 000001c0 */ StageCharacter::playShout(){}  // game
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp
@@ -8012,7 +8037,7 @@
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 002a4a40 0000193c */ FUN_002a4a40(){}
+/* 002a4a40 0000193c */ StageCharacter::updateSounds(){}  // game
 /* 002a6380 000000a4 */ FUN_002a6380(){}
 /* 002a6430 00000010 */ FUN_002a6430(){}
 /* 002a6440 00000174 */ FUN_002a6440(){}

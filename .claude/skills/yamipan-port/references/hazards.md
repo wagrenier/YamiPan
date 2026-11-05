@@ -320,6 +320,8 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **A run without the scripted pad** sits in the first menu: a trace in later code prints nothing.
 - **A smoke run can write the user's ini**: runs pass their own settings.
 
+- **A long Python edit in a Bash heredoc breaks (2026-11-05).** Symptom: `unexpected EOF while looking for matching '`, or a `\n` meant for C code arrives as a real newline and the file no longer compiles. Cause: the text passes through the shell tool first. Fix: write the edit script to the scratchpad with Write and run that file; in a temporary probe use `putchar(10)`.
+
 ## Platform layer (MioPan's, through ReiPan and RosePan)
 
 - **`sceGsSyncV` hung at boot** (2026-11-03): `gameInit` waits two vblanks before anything starts the

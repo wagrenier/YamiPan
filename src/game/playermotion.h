@@ -586,6 +586,15 @@ struct PlayerMotion
     // walk goes on this floor, the floor's push, m_moveStep and m_turnStep
     // into the character, whether the pose's solvers are worth running.
     void applyMovement();                                                // FS2 0x001e0e20
+    // The terminate hook's half: the hits taken, how long it has run, a Yri
+    // or Kne's stance, the motion's sound events.
+    void endFrame();                                                     // FS2 0x001e06f0
+    // The frame's hits: the reaction, the flinch (only the first line is
+    // written: the rest needs the hit 0x20eb40 and its enemies).
+    void takeHits();                                                     // FS2 0x001e18c0
+    // What an event breaks off: the idle, or the link ends where the motion
+    // has a next one.
+    void releaseAction();                                                // FS2 0x001dedb0
     // Two characters in a struggle: this one comes out on top.
     bool winsStruggle(StageObject *other);                               // FS2 0x001e05b0
     // Turns the body toward angles (limits +-65 degrees); slope: it leans
@@ -658,6 +667,10 @@ private:
     void startWalk(float rate, const float *from, const float *to, bool scaled, bool held); // FS2 0x001ead00
     void startWalkAt(float rate, void *target, const float *offset, const float *to, bool scaled, bool held); // FS2 0x001eaea0
     void walkPoseTo(float rate, const float *target, const float *aimAt, bool scaled); // the tail of both, inline in the ROM
+    // The parts of endFrame, one function in the ROM.
+    void stepRunClock(StageCharacter *character);
+    void stepAltStance(StageCharacter *character);
+    void stepSoundEvents(StageCharacter *character);
     // The parts of controlStep, one function in the ROM.
     bool stepEvents();
     void stepAim();
@@ -709,10 +722,10 @@ public:
     float  m_runTime = 0.0f;    // FS2 +0xb04: Move: running that long into a wall trips
     float  m_runDistance = 0.0f; // FS2 +0xb08: the same, in units
     sceVu0FVECTOR m_lastPosition = {}; // FS2 +0xb10: the character's at reset
-    u_char m_stanceFlag = 0;    // FS2 +0xb20: pickStance's third table
-    float  m_b24 = 0.0f;        // FS2 +0xb24
-    float  m_b28 = 0.0f;        // FS2 +0xb28
-    float  m_b2c = 0.0f;        // FS2 +0xb2c: 0 when a motion starts or ends
+    u_char m_stanceFlag = 0;    // FS2 +0xb20: pickStance's third table; endFrame sets it half a second after a Yri or Kne's YAM_ light went
+    float  m_stanceTime = 0.0f; // FS2 +0xb24: endFrame's half second
+    float  m_hitTime = 0.0f;    // FS2 +0xb28: 0x1e18c0: the wait, 0.15 s, between two hits' effects
+    int    m_soundEvent = 0;    // FS2 +0xb2c: the next of the sheet's S0..S3; 0 when a motion starts or ends
     u_char m_b30 = 0;           // FS2 +0xb30: a motion event 0x4000 ends an idle: Walk's list runs for it
     // +0xb31..+0xb38: what the character's kind has (the ctor's table).
     u_char m_kindFlags1 = 0;    // FS2 +0xb31
@@ -746,6 +759,7 @@ public:
     float  m_bf0 = 0.0f;        // FS2 +0xbf0: bitten: the wait before the next press counts
     int    m_reviveFrames = 0;  // FS2 +0xc10's +0x20: DamageDead's count (the link is not written)
     float  m_bf4 = 0.0f;        // FS2 +0xbf4
+    float  m_shoutLoudness = 0.0f; // FS2 +0xbf8: a motion event SHOUT's; 0x216280 sets it
     u_char m_bfc = 0;           // FS2 +0xbfc
     WalkLink *walkLink = nullptr; // FS2 +0xc00: the map's Walk
     PickupLink *pickupLink = nullptr; // FS2 +0xc08: the map's Pickup

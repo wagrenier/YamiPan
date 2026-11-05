@@ -2368,7 +2368,6 @@ public:
     // The player's.
     // Its action is 0x11 or 0x2a (+0x224's +0x40), what an event breaks off.
     bool isHoldingAction();                                              // FS2 0x00214f20
-    void releaseAction();                                                // FS2 0x001dedb0
     // +0x400 set and +0x3c8 == 1: StageScene::drawPaused / update then
     // pass StageSound::update sceneFlag 1. What mode 1 is is unread.
     bool isMode1();                                                      // FS2 0x002152d0
@@ -2461,8 +2460,48 @@ public:
     const SeEntry *findStepSound(int surface, int pace) const;           // FS2 0x002cf210
     // The movement hook: the motion's step, then the model.
     void moveStep();                                                     // FS2 0x0017a490
-    // PC: the part of the terminate hook 0x179d30 that is written.
-    void sideHook3() override;
+    // The terminate hook: the ground's and the motion's end of frame, then
+    // what follows the character: its effects, its lamp, its sounds, the end
+    // of a timed change of the motion rate, the light on what it carries.
+    void sideHook3() override;                                           // FS2 0x00179d30
+    // The parts of the hook, one function in the ROM.
+    void stepSmoke();
+    void stepSplash();
+    void stepFootEffects();
+    void stepLampOwner();
+    void stepSlowChange();
+    void lightCarriedItems();
+    // Each frame: what it says and what its steps sound like (not written).
+    void updateSounds();                                                 // FS2 0x002a4a40
+    // What a motion event asks for (MotionEvent_HitSwing, MotionEvent_Sound
+    // through the sheet's S0..S3); the 0x2a2070..0x2a4680 family, not written.
+    void playSwingSound(bool light);                                     // FS2 0x002a3280
+    void playShout(float loudness, int kind, const float *pos);          // FS2 0x002a4800
+    void playIdleVoice(int which);                                       // FS2 0x002a2bc0
+    void playDownVoice();                                                // FS2 0x002a4050
+    void playClashVoice();                                               // FS2 0x002a32e0
+    void playBreathUp(int level);                                        // FS2 0x002a3e20
+    void playBreathDown(int level);                                      // FS2 0x002a3cf0
+    void playJumpVoice();                                                // FS2 0x002a3bf0
+    void playAttackVoice(int second, bool altered);                      // FS2 0x002a4680
+    void playHardDownVoice();                                            // FS2 0x002a3f50
+    void playTrapVoice();                                                // FS2 0x002a35e0
+    void playThrowVoice();                                               // FS2 0x002a4150
+    void playBiteVoice();                                                // FS2 0x002a4250
+    void playBittenVoice();                                              // FS2 0x002a3af0
+    void playUntieVoice();                                               // FS2 0x002a39f0
+    void playDamageVoice(bool light);                                    // FS2 0x002a4450
+    void playDieVoice();                                                 // FS2 0x002a2e30
+    void playGetUpVoice();                                               // FS2 0x002a2d00
+    void playSurpriseVoice();                                            // FS2 0x002a34e0
+    void playPanicVoice();                                               // FS2 0x002a2c80
+    void playEndVoice();                                                 // FS2 0x002a33e0
+    void playFallDownSound(int surface);                                 // FS2 0x002a29f0
+    void playJobSound(int job);                                          // FS2 0x002a2b60
+    void playMotionSound(const char *name, const float *pos);            // FS2 0x002a2070
+    // Stages 0x1c, 0x18, 0x11, 0xe and 5 and the record or kind each names:
+    // read only as the attack voices' argument (not written).
+    bool hasAlteredVoice();                                              // FS2 0x00215af0
     // 2 at the wheel, 3 the short weapons, 9 bare hands; the rest of the
     // table is unread.
     int  getHandClass();                                                 // FS2 0x00210540
@@ -2513,6 +2552,9 @@ public:
     float  m_slowEnd = 0.0f;    // FS2 +0x45c
     float  m_slowFrom = 0.0f;   // FS2 +0x460: the rate at the start
     float  m_slowTo = 0.0f;     // FS2 +0x464: at the end
+    // FS2 +0x464: the terminate hook keeps "it is in motion 0xd6" in the low
+    // byte of m_slowTo; PC: a byte of its own.
+    u_char m_slowInDrain = 0;
     u_int  m_sides = 0;         // FS2 +0x590: the sheet's StageObjSide bits: the sides it fights (getSides)
     float  m_health = 0.0f;     // FS2 +0x594: the sheet's 体力: running spends a point a frame at 30 Hz, 5% of the sheet's a second comes back (PlayerMotion::stepHealth)
     int    m_endurance = 0;     // FS2 +0x598: the sheet's 耐久力; setEndurance

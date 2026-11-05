@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/stagecharacter.cpp",
   "game/characterbrain.cpp",
   "game/stageplayer.cpp",
   "yamipan/rendering/model_renderer.cpp",
@@ -662,6 +661,10 @@
      "001da4e8"
     ],
     [
+     "001dedb0",
+     "001dee50"
+    ],
+    [
      "001def60",
      "001defcc"
     ],
@@ -672,6 +675,10 @@
     [
      "001dfd90",
      "001dff34"
+    ],
+    [
+     "001e06f0",
+     "001e0e20"
     ],
     [
      "001e0e20",
@@ -1401,8 +1408,12 @@
    "task": "The two natives that choose the view, queued by the user 2026-11-04. A host task: the code goes in kNatives in src/game/scriptrunner.cpp and both addresses are that TU's, but it is 84 of 652 and would hold this place in the queue for many runs, so they have their own key. Native 0x70 (0x1c81a0, 56 i, one code word): find the character by label, then StageScene::setPlayer. Stage 1's Root calls it with F_PC01 straight after its test of menuMode == 1, the block that also requests d0101, and a New Game run reaches the stub today (scriptNative_70), so the main camera never links without it, even with a character. Native 0x64 (0x1c8dc0, 94 i, one code word): 0x1c8f40 tests the name (the script passes NULL) and removes view priority 3, any other name is found (0x1d1260) and pushed at priority 3, and an active event takes a further step (0x1b56b0, 0x1b54a0, 0x1b5460). sd_MK01_10 calls it with CAM_EV10, then NULL. StageCharacter does not exist yet, so the character lookup answers null: make sure setPlayer survives that. The other route to setPlayer is property 0x50 (0x172620 and its twins 0x189f40, 0x212530, 0x268ae0), behind the setProperty stubs; native 0xef is unused on stage 1. Nothing can show the link until a character exists, so this ends verify."
   },
   "game/stagecharacter.cpp": {
-   "notes": "All of the TU's own code is written (0x17b3e0..0x17df60 less 0x17dcb0, plus isViewLinked 0x2176d0). partial because the picture is wrong: after d0101 the linked main camera shows the room with no YAMIPAN_CAMERA (the black after the event is fixed) and the boy F_PC01 at (7286, 6064, 1138), hair and pajamas right, limbs stretched into long spikes (progress/20261104-f_pc01-stage-stretched.png). No shot of the real game exists, so nothing is compared with it. Cause not measured; the guess is that no motion plays. PlayerMotion ctor, dtor, loadMotions and stageUpdateCharacterMotions are bridges in lib/unassigned_stubs.cpp, input, brain, ground and giveItem are stubs. Next: game/playermotion.cpp, moved ahead of this TU in the queue (open-items.md Decisions): play the sheet's startMotion in PlayerMotion::reset first and see if the spikes go; if not, look at StageModel::advance with no motion and at bindBones for a pose placed after binding. Then re-judge this TU.",
+   "notes": "All of the TU's code is written, the terminate hook included (0x179d30 joined the ranges; 0x214f20 too). Stretched limbs do not return: a temporary third-person view (removed) shows F_PC01 whole from behind with the main camera linked, isViewLinked 1 (progress/20261105-f_pc01-third-person.png); no reference exists for that view. First person with the final code: his view, no crash in 285 s, the scripted pad walks him to the door wall. verify, not done: smokes, splash, ripples, lamp, the timed motion rate, carried items' lights and the run clock's trip cannot show on stage 1 (nothing there, Run refused). Outside this file and still open: PlayerMotion::takeHits 0x1e18c0 past its first line, updateSounds 0x2a4a40 and the voice family 0x2a2070..0x2a4680 are stubs, one TU of their own, not queued (open-items.md Done). Next in the queue: game/characterbrain.cpp.",
    "ranges": [
+    [
+     "00179d30",
+     "0017a484"
+    ],
     [
      "0017b3e0",
      "0017dcb0"
@@ -1410,6 +1421,10 @@
     [
      "0017dd10",
      "0017df60"
+    ],
+    [
+     "00214f20",
+     "00214f54"
     ]
    ],
    "sessions": [
@@ -1417,11 +1432,16 @@
      "date": "2026-11-04 20:47",
      "status": "partial",
      "summary": "StageCharacter built: ctor, dtor, setup, setupBody, reset, initAbilities, initStatus; StagePlayer stand-in joined to it; main camera links, debug camera removed; F_PC01 at its mark with stretched limbs"
+    },
+    {
+     "date": "2026-11-05 10:56",
+     "status": "verify",
+     "summary": "re-judged whole, third person; the terminate hook 0x179d30, PlayerMotion::endFrame 0x1e06f0 with the run clock and sound events, releaseAction, isHoldingAction"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "task": "The character, built, step 4 of roadmap-3d-control.md, queued 2026-11-04: StageCharacter ctor 0x17de30 and setup 0x17c700, the parameter tables 0x17b3e0 and 0x17bd10, the run 0x17b3e0..0x17df60 out of unassigned@00171300. placeCharacter already passes the map's position and turn. The parts it news are the next three items of the queue: stub them first. With this and native 0x70 (game/stagecamera.cpp) the main camera links, and YAMIPAN_CAMERA, stageCameraDebugLookAt and aimDebugCamera go (open-items.md). Check onLinkChanged: it looks up bn_head with no null test. Done when F_PC01 stands in the scene at (7286, 6064, 1138) and the main camera's step runs on it.",
-   "why": "The character's build: parameter tables, setup, setupBody, ctor and dtor (roadmap step 4); from the run unassigned@00171300; 0x17dcb0 is already written in subsceneobject.cpp; no source-path string, the file name is the port's guess"
+   "why": "The character's build: parameter tables, setup, setupBody, ctor and dtor (roadmap step 4); from the run unassigned@00171300; 0x17dcb0 is already written in subsceneobject.cpp; no source-path string, the file name is the port's guess; the terminate hook 0x179d30 joined 2026-11-05"
   },
   "game/stagecollision.cpp": {
    "notes": "All of the TU's functions are written or mapped to StageList and the host vector. Seen on stage 1's data in a New Game run: against brute force over all 8165 faces of Root, rays 0 wrong, segments 0, spheres 0, heights 1 of 3000; hit points on their plane and in their triangle; down rays agree with heightAt. No crash, d0101 still draws. Nothing on screen shows collision until a character stands (step 4 of roadmap-3d-control.md), so verify. Untested: moved meshes, the world's pairs, spherePush. Left: StageObject::breakPart 0x175900 and ItemPhysics::collisionHook0 0x23c020 are stubs, the doors' effect in MapObjectParts is null, FUN_00295010 unwritten. Next in the queue: game/stagecharacter.cpp. A probe at stage load needs a run of 230 s: the stage's arrival varies. open-items.md has the doubts.",
