@@ -727,12 +727,6 @@ void StageNodeTree::update(float range, int arg, StageObject *view, StagePlayer 
     YAMIPAN_STUB("StageNodeTree::update", 0x00190a90);
 }
 
-// stub of FS2 0x00173cb0
-void StageObject::attachToRoot()
-{
-    YAMIPAN_STUB("StageObject::attachToRoot", 0x00173cb0);
-}
-
 // stub of FS2 address unknown (1 candidates)
 void StageObject::cameraStep()
 {
@@ -899,12 +893,6 @@ void StageObject::afterScripts()
     YAMIPAN_STUB("StageObject::afterScripts", 0x0021c310);
 }
 
-// stub of FS2 0x00173880
-void StageObject::applyDoorRecord()
-{
-    YAMIPAN_STUB("StageObject::applyDoorRecord", 0x00173880);
-}
-
 // stub of FS2 0x0021c7c0
 void StageObject::beforeScripts()
 {
@@ -923,12 +911,6 @@ bool StageObject::isMotionTarget(int index)
 {
     YAMIPAN_STUB("StageObject::isMotionTarget", 0x00175c40);
     return {};
-}
-
-// stub of FS2 address unknown (1 candidates)
-void StageObject::setMotionList(void *list, int arg, int arg2)
-{
-    YAMIPAN_STUB("StageObject::setMotionList", 0x00000000);
 }
 
 // stub of FS2 0x00218630
@@ -1509,5 +1491,47 @@ void StageCharacter::playBumpSound(int surface)
 bool StageCar::hasSettled()
 {
     YAMIPAN_STUB("StageCar::hasSettled", 0x0028ab90);
+    return {};
+}
+
+// stub of FS2 0x001db3a0
+bool CharacterBrain::askCloseDoor()
+{
+    YAMIPAN_STUB("CharacterBrain::askCloseDoor", 0x001db3a0);
+    return {};
+}
+
+// stub of FS2 0x001db2d0
+bool CharacterBrain::askDoorKey(int lock)
+{
+    YAMIPAN_STUB("CharacterBrain::askDoorKey", 0x001db2d0);
+    return {};
+}
+
+// stub of FS2 0x001db470
+bool CharacterBrain::askOpenDoor()
+{
+    YAMIPAN_STUB("CharacterBrain::askOpenDoor", 0x001db470);
+    return {};
+}
+
+// stub of FS2 0x00207e20
+bool PauseMenuState::hasNotice(int kind)
+{
+    YAMIPAN_STUB("PauseMenuState::hasNotice", 0x00207e20);
+    return {};
+}
+
+// stub of FS2 0x0021bb70
+int StageCharacter::getBrainPace()
+{
+    YAMIPAN_STUB("StageCharacter::getBrainPace", 0x0021bb70);
+    return {};
+}
+
+// stub of FS2 0x00210720
+bool StageCharacter::hasFollower()
+{
+    YAMIPAN_STUB("StageCharacter::hasFollower", 0x00210720);
     return {};
 }

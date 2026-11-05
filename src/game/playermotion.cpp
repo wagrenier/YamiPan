@@ -7,6 +7,7 @@
  *  the predicates, whose names say what the code does with them.
  */
 #include "game/playermotion.h"
+#include "game/stagedoor.h"
 
 #include "game/boxgrid.h"
 
@@ -956,6 +957,15 @@ constexpr u_int kFaceLadder = 0x2020;
 // The sheet's kind whose ledges nobody waits for.
 constexpr int   kKindNoBlock = 3;
 
+constexpr float kDoorWalkRate = 0.35f;       // to its place (0x3eb33333)
+constexpr float kDoorPathHeight = 50.0f;     // the ray of findDoor, above the feet
+constexpr u_int kDoorPathFlags = 0x2040000;
+constexpr float kDoorFastRate = 1.2f;        // 0x3f99999a
+constexpr int   kBrainPaceFast = 5;
+constexpr int   kKindForcesDoors = 6;        // StageObjRecord::kind
+constexpr int   kDoorMotionGroup = 3;
+constexpr u_int kDoorPoseFlags = 0x42;
+
 // The ledge ahead: the Use button climbs or drops over it. EE vtable 0x317670.
 // layout: host
 class LevelCondition : public MotionCondition
@@ -967,6 +977,20 @@ public:
 
 private:
     bool pathBlocked(int id, float reach, const float *from, u_int flags, StageObject *skip);
+};
+
+// The door within reach: what it allows; the door's script reads that, shows
+// it on the Use button, and answers through wants. EE vtable 0x3175f0.
+// layout: host
+class DoorCondition : public MotionCondition
+{
+public:
+    using MotionCondition::MotionCondition;
+    void onUpdate() override;                                            // FS2 0x00271630
+    void onApply() override;                                             // FS2 0x002710a0
+
+private:
+    int forceOr(int id) const;
 };
 
 // The partner lifts the character up a ledge (Motion_Pair). EE vtable 0x317650.
@@ -1178,6 +1202,323 @@ void PlayerMotion::walkFileTarget(sceVu0FVECTOR target, sceVu0FVECTOR aimAt, voi
         applyMatrix(ahead, turn, ahead);
     }
     owner->m_model->pose->getRecordOffset(target, aimAt, static_cast<const PoseBoneRecord *>(file), from, ahead);
+}
+
+// FS2 0x00271630
+// callcheck: FUN_002179b0, FUN_0026a6b0, FUN_0020d730, FUN_0020d650, FUN_0020d820
+
+void DoorCondition::onUpdate()
+{
+    if (character->m_abilities.flag3b7 == 0 || motion->doorLink->door != nullptr
+        || (character->m_abilities.flag3c3 == 0 && character->m_290 != nullptr))
+        return;
+    StageDoor *door = motion->probe->findDoor();
+    if (door == nullptr)
+        return;
+    CharacterAllows &allows = character->m_allows;
+    character->m_door = door;
+    allows.doorHand = DoorHand_None;
+    allows.doorKey = DoorKey_None;
+    if (door->m_doorMode == StageDoorMode_Locked) {
+        if (character->canUnlockDoor(door))
+            allows.doorKey = DoorKey_Unlock;
+        else if (character->canForceDoor(door) && character->m_abilities.flag3b8 != 0)
+            allows.doorKey = DoorKey_Force;
+    } else if (door->m_doorMode == StageDoorMode_Closed) {
+        allows.doorHand = DoorHand_Open;
+        if (character->canLockDoor(door))
+            allows.doorKey = DoorKey_Lock;
+    } else if (door->m_doorMode == StageDoorMode_Open) {
+        allows.doorHand = DoorHand_Close;
+    }
+}
+
+// A character of the sheet's kind 6 has no key to turn: it forces the door.
+int DoorCondition::forceOr(int id) const
+{
+    return stageObjRecord(character->m_itemDef)->kind == kKindForcesDoors ? (int)Motion_DoorForce : id;
+}
+
+// FS2 0x002710a0
+// callcheck: request, request, FUN_0020d6d0, FUN_00173c30, request, getStageSelect, request, request, FUN_00173c30, request, getStageSelect, request, request, getStageSelect, request, request, FUN_00173c30, request, request, FUN_00173c30, request, request, FUN_00173c30, request, request, FUN_00173c30, request, request, FUN_00173b30, requestedFile, startWalkFile (the sheet's kind is forceOr; the two door types each pick their pair)
+
+void DoorCondition::onApply()
+{
+    StageDoor *door = character->m_door;
+    const CharacterAllows &allows = character->m_allows;
+    const CharacterWants &wants = character->m_wants;
+    if (door == nullptr || door->m_user != nullptr
+        || (allows.doorHand == DoorHand_None && allows.doorKey == DoorKey_None)
+        || (wants.useDoor == 0 && wants.useDoorKey == 0))
+        return;
+
+    const float *position = character->m_xform.position;
+    const bool front = door->isInFront(position);
+    const bool typeT = door->m_doorType == StageDoorType_T;
+    if (wants.useDoor == 0) {
+        if (allows.doorKey == DoorKey_Force) {
+            motion->request(Motion_DoorForce);
+        } else if (allows.doorKey == DoorKey_Unlock || allows.doorKey == DoorKey_Lock) {
+            if (character->reachesThroughDoor(door))
+                motion->request(forceOr(Motion_DoorReachKey));
+            else if (door->m_doorType == StageDoorType_T || door->m_doorType == StageDoorType_R)
+                motion->request(front ? forceOr(Motion_DoorKeyFront) : (int)Motion_DoorKeyBack);
+        }
+    } else if (allows.doorHand == DoorHand_Close) {
+        if (typeT)
+            motion->request(front ? Motion_DoorSlideB : Motion_DoorSlideA);
+        else if (door->m_doorType == StageDoorType_R)
+            motion->request(front ? Motion_DoorPushClose : Motion_DoorPullClose);
+    } else if (allows.doorHand == DoorHand_Open) {
+        if (typeT)
+            motion->request(front ? Motion_DoorSlideA : Motion_DoorSlideB);
+        else if (door->m_doorType == StageDoorType_R)
+            motion->request(front ? Motion_DoorPullOpen : Motion_DoorPushOpen);
+    }
+
+    sceVu0FVECTOR place, angles;
+    door->getUsePlace(place, angles, character);
+    motion->startWalkFile(kDoorWalkRate, motion->requestedFile(), place, angles, true, false);
+}
+
+// FS2 0x0026a6b0
+// callcheck: getKind, FUN_001739b0, FUN_001723c0, FUN_001725e0, FUN_00173b30, segmentHits (the ROM calls the two middle ones by slot)
+
+StageDoor *MotionProbe::findDoor()
+{
+    StageObjArray &roots = gStageScene->objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = roots.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        if ((*slot)->m_active == 0 || (*slot)->getKind() != StageObject_Door)
+            continue;
+        StageDoor *door = static_cast<StageDoor *>(*slot);
+        if (!door->isFree() || !door->scriptIsFacing(owner))
+            continue;
+        if (door->m_doorType == StageDoorType_R && !door->isShut()) {
+            sceVu0FVECTOR from, angles, to;
+            door->getUsePlace(from, angles, owner);
+            from[2] += kDoorPathHeight;
+            memcpy(to, owner->m_xform.position, sizeof(sceVu0FVECTOR));
+            to[2] += kDoorPathHeight;
+            for (u_int i = 0; door->collisionAt(i) != nullptr; i++) {
+                if (door->collisionAt(i)->segmentHits(from, to, 1, kDoorPathFlags, 1))
+                    return nullptr;
+            }
+        }
+        return door;
+    }
+    return nullptr;
+}
+
+// FS2 0x0027b590
+// callcheck: isPlayer, isPartner, FUN_00210720 (slots +0x278 and +0x2ac are getBrainPace and hasFollower)
+
+void DoorLink::onRequest()
+{
+    door = character->m_door;
+    door->m_user = character;
+    if (!character->isPlayer() && !character->isPartner()) {
+        if (character->getBrainPace() == kBrainPaceFast)
+            rate = kDoorFastRate;
+    } else if (character->hasFollower()) {
+        rate = kDoorFastRate;
+    }
+}
+
+// The door plays its half of the motion on its own pose. The third group of
+// the character's motions holds them, by these names.
+// FS2 0x0027b3d0
+// callcheck: findMotion, findMotion, findMotion, findMotion, findMotion, findMotion, findMotion, findMotion, playFile
+
+void DoorLink::onStart()
+{
+    const char *name = nullptr;
+    switch (motion->m_request) {
+    case Motion_DoorPullOpen:  name = "dr_plo"; break;  // data 0x308d58
+    case Motion_DoorPushClose: name = "dr_psc"; break;  // data 0x308d60
+    case Motion_DoorPushOpen:  name = "dr_pso"; break;  // data 0x308d68
+    case Motion_DoorPullClose: name = "dr_plc"; break;  // data 0x308d70
+    case Motion_DoorKeyFront:  name = "dr_lcr"; break;  // data 0x308d78
+    case Motion_DoorKeyBack:   name = "dr_lcl"; break;  // data 0x308d80
+    case Motion_DoorSlideA:
+    case Motion_DoorSlideB:
+        if (door->m_doorMode == StageDoorMode_Closed)
+            name = "dr_op";                             // data 0x308d90
+        else if (door->m_doorMode == StageDoorMode_Open)
+            name = "dr_cl";                             // data 0x308d88
+        break;
+    }
+    if (name == nullptr)
+        return;
+    ModelMotion *found = character->m_model->findMotion(kDoorMotionGroup, name);
+    if (found != nullptr)
+        door->m_model->pose->playFile(found->file, kDoorPoseFlags, 0);
+}
+
+// The motion's Click: the key turns, or the blow lands.
+// FS2 0x0027b140
+// callcheck: FUN_001736e0, FUN_00173750, FUN_001737c0, playNamedHeard2, breakPart, FUN_00173fb0, FUN_00173fb0, FUN_00173fb0, FUN_00173fb0, FUN_00173fb0, FUN_00173fb0, FUN_00173fb0, isControlled, FUN_00172530
+
+void DoorLink::onRun()
+{
+    if ((character->m_model->m_motionEvents & MotionEvent_Click) == 0)
+        return;
+    const int id = motion->motionId;
+    const bool turnsKey = id == Motion_DoorReachKey || id == Motion_DoorKeyBack || id == Motion_DoorKeyFront;
+    char buffer[0x20];
+    const char *sound = nullptr;
+    if (id == Motion_DoorForce)
+        sound = door->soundName(buffer, "DR_%02d_AT");           // data 0x302e68
+    else if (turnsKey && door->m_doorMode == StageDoorMode_Closed)
+        sound = door->soundName(buffer, "DR_%02d_LOCK");         // data 0x302e78
+    else if (turnsKey && door->m_doorMode == StageDoorMode_Locked)
+        sound = door->soundName(buffer, "DR_%02d_ULOCK");        // the third of the ROM's formats
+    if (sound != nullptr)
+        door->playNamedHeard2(sound, door->m_xform.position, nullptr);
+
+    if (id == Motion_DoorForce) {
+        door->m_hp -= character->m_doorBlow;
+        if (door->m_hp < 0)
+            door->m_hp = 0;
+        if (door->m_hp == 0) {
+            if (door->m_window == StageDoorWindow_Whole)
+                door->breakPart(0, false);
+            else
+                door->setMode(StageDoorMode_Closed);
+            finished = 1;
+        }
+    } else if (turnsKey) {
+        if (door->m_doorMode == StageDoorMode_Closed)
+            door->setMode(StageDoorMode_Locked);
+        else if (door->m_doorMode == StageDoorMode_Locked)
+            door->setMode(StageDoorMode_Closed);
+    }
+    if (character->isControlled())
+        door->noteUse(true);
+}
+
+// FS2 0x0027b0f0
+// callcheck: FUN_00173fb0
+
+void DoorLink::onLeave(MotionLink *)
+{
+    if (door->m_doorMode == StageDoorMode_Open || door->m_doorMode == StageDoorMode_Closed)
+        door->setMode(door->m_doorMode);
+}
+
+// FS2 0x0027b570
+
+void DoorLink::onCancel()
+{
+    if (door != nullptr) {
+        door->m_user = nullptr;
+        door = nullptr;
+    }
+    rate = 1.0f;
+}
+
+// FS2 0x00219b30
+
+int StageCharacter::doorActions() const
+{
+    if (m_door == nullptr)
+        return 0;
+    const int hand = m_allows.doorHand, key = m_allows.doorKey;
+    int actions = hand == DoorHand_Close ? CharacterDoor_Close : hand == DoorHand_Open ? CharacterDoor_Open : 0;
+    if (key == DoorKey_Unlock)
+        actions |= CharacterDoor_Unlock;
+    else if (key == DoorKey_Lock)
+        actions |= CharacterDoor_Lock;
+    if (hand == DoorHand_None && key == DoorKey_None)
+        actions |= CharacterDoor_Nothing;
+    return actions;
+}
+
+// FS2 0x0020d6d0
+// callcheck: FUN_00173c30, FUN_00173830
+
+bool StageCharacter::reachesThroughDoor(StageDoor *door) const
+{
+    return door->isInFront(m_xform.position) && door->m_window == StageDoorWindow_Broken && door->canReachThrough();
+}
+
+// FS2 0x0020d730
+// callcheck: FUN_001739f0, FUN_00173c30, FUN_00173830, FUN_001739f0
+
+bool StageCharacter::canUnlockDoor(StageDoor *door) const
+{
+    if (door->m_doorMode != StageDoorMode_Locked)
+        return false;
+    switch (door->m_keyKind) {
+    case 1:
+    case 2:
+        return door->keyWorksFrom(m_xform.position) || reachesThroughDoor(door);
+    case 3:
+    case 4:
+    case kDoorKeyBothSides:
+        return door->keyWorksFrom(m_xform.position);
+    }
+    return false;
+}
+
+// FS2 0x0020d650
+// callcheck: FUN_001739f0
+
+bool StageCharacter::canForceDoor(StageDoor *door) const
+{
+    if (door->m_doorMode != StageDoorMode_Locked || (door->m_keyKind != 1 && door->m_keyKind != 2))
+        return false;
+    return !door->keyWorksFrom(m_xform.position);
+}
+
+// FS2 0x0020d820
+// callcheck: FUN_001739f0, FUN_001739f0
+
+bool StageCharacter::canLockDoor(StageDoor *door) const
+{
+    return door->m_doorMode == StageDoorMode_Closed && door->m_keyKind != 0
+        && door->keyWorksFrom(m_xform.position);
+}
+
+// FS2 0x0021c230
+// callcheck: isControlled, FUN_001db470, FUN_00172530
+
+bool StageCharacter::scriptOpenDoor()
+{
+    if (!isControlled())
+        return m_brain->askOpenDoor();
+    if (m_allows.doorHand != DoorHand_Open)
+        return false;
+    m_door->noteUse(true);
+    m_wants.useDoor = 1;
+    return true;
+}
+
+// FS2 0x0021c1d0
+// callcheck: isControlled, FUN_001db3a0, FUN_00172530
+
+bool StageCharacter::scriptCloseDoor()
+{
+    if (!isControlled())
+        return m_brain->askCloseDoor();
+    if (m_allows.doorHand != DoorHand_Close)
+        return false;
+    m_door->noteUse(true);
+    m_wants.useDoor = 1;
+    return true;
+}
+
+// FS2 0x0021c130
+// callcheck: isControlled, FUN_001db2d0, FUN_00172530, FUN_00172530
+
+bool StageCharacter::scriptUseDoorKey(int lock)
+{
+    if (!isControlled())
+        return m_brain->askDoorKey(lock);
+    if (m_allows.doorKey != (lock == 0 ? DoorKey_Unlock : DoorKey_Lock))
+        return false;
+    m_door->noteUse(true);
+    m_wants.useDoorKey = 1;
+    return true;
 }
 
 // FS2 0x00272630
@@ -1714,6 +2055,7 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_conditions["Jump"] = new JumpCondition(character, this);
     m_conditions["QuickTurn"] = new QuickTurnCondition(character, this);
     m_conditions["LadderMove"] = new LadderMoveCondition(character, this);
+    m_conditions["Door"] = new DoorCondition(character, this);
 
     walkLink = new WalkLink(character, this);
     m_links["Walk"] = walkLink;
@@ -1721,6 +2063,8 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_links["Fall"] = new FallLink(character, this);
     m_links["Jump"] = new JumpLink(character, this);
     m_links["Ladder"] = new LadderLink(character, this);
+    doorLink = new DoorLink(character, this);
+    m_links["Door"] = doorLink;
 
     // PC: the ROM's 0x212530 sets these from a script's property; nothing
     // written sets them yet, so the sheet's.
@@ -3472,7 +3816,8 @@ void StageCharacter::moveStep()
         rate = m_walkRate;
     else if (isRunMotion(id) || id == 0x2d || id == 0x24)
         rate = m_runRate;
-    // A door's motion takes its rate from the Door link (+0xc0c +0x24): not written.
+    else if (id >= Motion_DoorPullOpen && id <= Motion_DoorForce)
+        rate = m_motion->doorLink->rate;
     const float frames = m_clock->getDeltaSeconds() / 0.033333335f;
     m_model->advance(rate * getMotionRate() * frames, m_xform.position, m_xform.rotation, 0);
     m_ground->beginFrame();

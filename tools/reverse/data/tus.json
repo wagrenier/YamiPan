@@ -621,7 +621,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Written: conditions Level, LevelLift, Ladder, Jump, LadderMove; links Up, Fall, Jump, Ladder; levelBlocked, ladderBlocked, walkFileTarget, startWalkTo, pointBehind, isOpeningLead, getLadderRank, playLandSound; StageNodeTree contains and setBoxes; new file game/uiitemlist.cpp (UiItemList, UiPrompt without the button picture, canTakePrompt, canUsePrompt), natives 0xf7 and 0xf8. CharacterAllows useItem, useItem2, useItem6 are now level, ladder, jump. Seen: New Game 290 s, a temporary test (removed) at stage 1's ledge faces: Use at the top plays fal_l then lnd_l, z 831 to 771; Use at the foot plays u_060, z 771 to 831; progress/20261105-level-prompt-down.png shows Down at the top, the label from the stage script; no reference exists for it. Not proven: Ladder, LadderMove, Jump, because stage 1 has no faces of flags 0x2020 or 0x180; LevelLift, because nothing sets wants +0x341 (the brain?); a real pad. Left in this TU: the 19 other conditions (Door first by what a player meets, 0x2710a0 and 0x271630, link 0x27b640, once doors are real objects), the other links, the list 0x1df0b0 with its slots 0x1df030 and 0x1df0a0, clearNoFlash. Left in game/uiitemlist.cpp: the button picture, natives 0xf6 and 0x79. A long teleport in a test is swept by sweepWalls: hazards.md.",
+   "notes": "Written: game/stagedoor.cpp and .h (StageDoor, all of 0x1723c0..0x174a10 and 0x171a30), game/mapobject.h, StageMapObject::setMotionList 0x175d40, DoorCondition 0x2710a0 and 0x271630, DoorLink 0x27b0f0..0x27b640, MotionProbe::findDoor 0x26a6b0, doorActions and the door helpers, natives 0x44, 0x45, 0x79, 0x87, 0x88, 0x89, 0xf6, 0x11b, 0x11c, 0x11d, 0x12c, 0x136, 0x14f, 0x15b, 0x231. kDoorsEnabled in game/stagedoor.h is FALSE: with it true a plain New Game run hits an access violation just after the stage starts (3 of 4 runs), while 2 runs under gdb did not fault, so the cause is unknown; null guards did not cure it. Next run: find that crash first, one piece at a time, with fflush on every print (a plain run needs about 285 s to reach the stage). Seen with it true under gdb, temporary test removed: the 10 doors of stage 1 build, findDoor finds oMK99_ds_05, the door script posts its label, pick answers 108. Not seen: a door opening: motion 0 and mode 0 after a pick made from the start hook, so test the real press in StageScene::update. No picture exists. With it false only the 15 s smoke ran, no stage run: out of time. Left: native 0x7a, the shared property ids, the 18 other conditions, the other links, the list 0x1df0b0, clearNoFlash. open-items.md Done has all of it.",
    "ranges": [
     [
      "0017df60",
@@ -672,8 +672,24 @@
      "0020d3f4"
     ],
     [
+     "0020d650",
+     "0020d8c0"
+    ],
+    [
      "00215940",
      "00215ae8"
+    ],
+    [
+     "00219b30",
+     "00219be0"
+    ],
+    [
+     "0021c130",
+     "0021c290"
+    ],
+    [
+     "0026a6b0",
+     "0026a8f0"
     ],
     [
      "0026b860",
@@ -692,6 +708,10 @@
      "002702e0"
     ],
     [
+     "002710a0",
+     "00271790"
+    ],
+    [
      "00272d50",
      "00274100"
     ],
@@ -702,6 +722,10 @@
     [
      "00275160",
      "00276200"
+    ],
+    [
+     "0027b0f0",
+     "0027b6e0"
     ],
     [
      "0027c420",
@@ -740,6 +764,11 @@
      "date": "2026-11-05 01:48",
      "status": "partial",
      "summary": "ledges and the Use button: Level, LevelLift, Ladder, Jump, LadderMove, the links Up, Fall, Jump, Ladder, and game/uiitemlist.cpp with its prompt: he climbs and drops 60 units and Down shows on screen"
+    },
+    {
+     "date": "2026-11-05 02:55",
+     "status": "partial",
+     "summary": "doors written and switched off: StageDoor, Door condition and link, natives; with them on a stage run crashes, cause not found in time"
     }
    ],
    "status": "partial",
@@ -1076,6 +1105,27 @@
    "status": "verify",
    "task": "Collision, step 2 of roadmap-3d-control.md, queued 2026-11-04: StageCollision::sphereHits 0x232870, segmentHits, raycast 0x233810, heightAt 0x2342c0, getNormal 0x236030, CollisionFile::relocate 0x23ae40, CollisionBody 0x1f6690, SceneRecordBuckets::collide 0x1f5250: about 32 functions, 4,533 i, in unassigned@00231d40 and unassigned@001d85b0. Also setupMapObject's collision half, left out so far (0x23adb0, 0x234440, 0x176bc0, CollisionBody). The main camera's rays stop on this: without it nothing pulls the eye out of a wall. Nothing can show it until a character stands, so it ends verify.",
    "why": "The collision file: StageCollision (map meshes) 0x231d40..0x236b90 with boxContains .. boxHolds, the world of bodies 0x1f4bb0..0x1f6ac0 (CollisionBody, SceneRecordBuckets and its list instances), collisionFindRecord and CollisionFile::relocate, and the two surface name helpers the mesh ctor calls. Pieces by position: the file name is the port's, no string names it."
+  },
+  "game/stagedoor.cpp": {
+   "ranges": [
+    [
+     "00171a30",
+     "00171ad0"
+    ],
+    [
+     "001723c0",
+     "00172620"
+    ],
+    [
+     "00172620",
+     "001736e0"
+    ],
+    [
+     "001736e0",
+     "00174a10"
+    ]
+   ],
+   "why": "the door class 0x3112f0 and its helpers; the file is the port's, cut out of the unassigned run so that the Door condition has something to find"
   },
   "game/stageitem.cpp": {
    "notes": "All of 0x17fce0..0x184860 written or mapped (thunks listed, 0x180018 is padding). New Game run under gdb: StageBullet's ctor ran from setupCameras with no fault, 113 stubs reached, the stop is unchanged: SIGSEGV in StageScene::draw (stagescene.cpp:3272), drawSysCurrent 0x2d4fd0 a stub answering null, black last shot, so no stage picture and nothing here is on screen. Default smoke run rests on the language screen, unchanged. Host-pass only: no item is placed yet (PackTables::parse and StageModel::init are stubs), ScenePairTable::add is a stub, so no frame or collision hook has run and nothing was compared with the ROM by running it. CollisionOwner::onCollide and collisionHook3 changed signature for all owners; sysDataReturnZero 0x23c010 was a mislabel and is gone (ItemPhysics::onCollide). Next pinned: unassigned@002d46a0 for drawSysCurrent, then NodeTransform and updateMatrix. Details and doubts: open-items.md, architecture.md The bullet and the items.",

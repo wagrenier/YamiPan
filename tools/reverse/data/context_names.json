@@ -11867,6 +11867,18 @@
   "was": "FUN_00171a10",
   "why": "value, next 0, prev 0; 0xc bytes"
  },
+ "00171a30": {
+  "name": "StageDoor::~StageDoor",
+  "tag": "game-inferred",
+  "was": "FUN_00171a30",
+  "why": "sets vtable 0x3112f0 and calls the map object's dtor"
+ },
+ "00171ac0": {
+  "name": "StageDoor::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_00171ac0",
+  "why": "slot +0x1f4 of vtable 0x3112f0, answers 2"
+ },
  "00171ae0": {
   "name": "StageObject::setDirty",
   "tag": "game-inferred",
@@ -11975,17 +11987,137 @@
   "was": "FUN_001723b0",
   "why": "+0x10 = arg; parse passes the door sheet's key column"
  },
+ "001723c0": {
+  "name": "StageDoor::scriptIsFacing",
+  "tag": "game-inferred",
+  "was": "FUN_001723c0",
+  "why": "within reach and the object's yaw looks at the pivot within 60 degrees"
+ },
+ "00172480": {
+  "name": "StageDoor::isWithinReach",
+  "tag": "game-inferred",
+  "was": "FUN_00172480",
+  "why": "squared distance to +0x260 or +0x270 under 5625"
+ },
+ "00172530": {
+  "name": "StageDoor::noteUse",
+  "tag": "game-inferred",
+  "was": "FUN_00172530",
+  "why": "sets +0x2a8, the state the S2D asks for, from the mode"
+ },
+ "001725e0": {
+  "name": "StageDoor::isShut",
+  "tag": "game-inferred",
+  "was": "FUN_001725e0",
+  "why": "mode 0, 4 or 5"
+ },
+ "00172620": {
+  "name": "StageDoor::setProperty",
+  "tag": "game-inferred",
+  "was": "FUN_00172620",
+  "why": "thunk 0x177540 of the runner's setProperty slot; 0x53 sets the mode, 0x12 the hit points"
+ },
+ "00172d80": {
+  "name": "StageDoor::getProperty",
+  "tag": "game-inferred",
+  "was": "FUN_00172d80",
+  "why": "thunk 0x177550; 0x53 mode, 0x12 hp, 0x13 record hp, 6 se index, 0x5c window"
+ },
+ "001736e0": {
+  "name": "StageDoor::attackSoundName",
+  "tag": "game-inferred",
+  "was": "FUN_001736e0",
+  "why": "sprintf DR_%02d_AT with the record's se index"
+ },
+ "00173750": {
+  "name": "StageDoor::lockSoundName",
+  "tag": "game-inferred",
+  "was": "FUN_00173750",
+  "why": "sprintf DR_%02d_LOCK"
+ },
+ "001737c0": {
+  "name": "StageDoor::unlockSoundName",
+  "tag": "game-inferred",
+  "was": "FUN_001737c0",
+  "why": "sprintf DR_%02d_ULOCK"
+ },
+ "00173830": {
+  "name": "StageDoor::canReachThrough",
+  "tag": "game-inferred",
+  "was": "FUN_00173830",
+  "why": "key kind 2, 4 or 5, read with the broken window"
+ },
  "00173880": {
   "name": "StageObject::applyDoorRecord",
   "tag": "game-inferred",
   "was": "FUN_00173880",
   "why": "door: fields from gDoorRecords[m_doorRecord]"
  },
+ "001739b0": {
+  "name": "StageDoor::isFree",
+  "tag": "game-inferred",
+  "was": "FUN_001739b0",
+  "why": "no user and mode not 1 or 3"
+ },
+ "001739f0": {
+  "name": "StageDoor::keyWorksFrom",
+  "tag": "game-inferred",
+  "was": "FUN_001739f0",
+  "why": "the point's side of the yaw against the key kind's sides"
+ },
+ "00173b30": {
+  "name": "StageDoor::getUsePlace",
+  "tag": "game-inferred",
+  "was": "FUN_00173b30",
+  "why": "pivot and the yaw of the character's side, turned by pi: DoorCondition walks there"
+ },
+ "00173c30": {
+  "name": "StageDoor::isInFront",
+  "tag": "game-inferred",
+  "was": "FUN_00173c30",
+  "why": "the same side test, a bool"
+ },
  "00173cb0": {
   "name": "StageObject::attachToRoot",
   "tag": "game-inferred",
   "was": "FUN_00173cb0",
   "why": "doors (kind 2) reach the Root object +0xd8"
+ },
+ "00173fb0": {
+  "name": "StageDoor::setMode",
+  "tag": "game-inferred",
+  "was": "FUN_00173fb0",
+  "why": "plays MODEL_dr_t/r_cl or _op to the end, sets +0x248 and attachToRoot; called 19 times"
+ },
+ "00174180": {
+  "name": "StageDoor::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_00174180",
+  "why": "slot +0x34 of the collision table: the glass part gone turns window 1 into 2"
+ },
+ "001741c0": {
+  "name": "StageDoor::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_001741c0",
+  "why": "advances the model at the Door link's rate, and the light's fade"
+ },
+ "00174390": {
+  "name": "StageDoor::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_00174390",
+  "why": "Begin and End motion events start and rest the door, with DR_%02d_OPEN1 etc"
+ },
+ "001747b0": {
+  "name": "StageDoor::setMotionList",
+  "tag": "game-inferred",
+  "was": "FUN_001747b0",
+  "why": "slot +0x270: the map object's, the record's mode, the three points from data 0x2f7ad0, the yaws"
+ },
+ "00174940": {
+  "name": "StageDoor::StageDoor",
+  "tag": "game-inferred",
+  "was": "FUN_00174940",
+  "why": "createMapObject builds it for _dp_%02d (type 2) and _ds_%02d (type 1), vtable 0x3112f0, kind 2"
  },
  "00174a10": {
   "name": "StageMapObject::setYaw",
@@ -12040,6 +12172,12 @@
   "tag": "game-inferred",
   "was": "FUN_00175c40",
   "why": "the object belongs to motion target i, by name"
+ },
+ "00175d40": {
+  "name": "StageMapObject::setMotionList",
+  "tag": "game-inferred",
+  "was": "FUN_00175d40",
+  "why": "slot +0x270 of vtable 0x3115c0: setBaseMotion, addMotion, MapObjectParts, the mesh follows bn_top"
  },
  "001760c0": {
   "name": "StageObject::setupMapObject",
@@ -16259,6 +16397,24 @@
   "was": "FUN_001d85a0",
   "why": "zeroes head and count; StageNodeBase's ctor calls it on +8"
  },
+ "001db2d0": {
+  "name": "CharacterBrain::askDoorKey",
+  "tag": "game-inferred",
+  "was": "FUN_001db2d0",
+  "why": "the brain's half of scriptUseDoorKey"
+ },
+ "001db3a0": {
+  "name": "CharacterBrain::askCloseDoor",
+  "tag": "game-inferred",
+  "was": "FUN_001db3a0",
+  "why": "the brain's half of scriptCloseDoor"
+ },
+ "001db470": {
+  "name": "CharacterBrain::askOpenDoor",
+  "tag": "game-inferred",
+  "was": "FUN_001db470",
+  "why": "the brain's half of scriptOpenDoor"
+ },
  "001dd330": {
   "name": "CharacterBrain::update",
   "tag": "game-inferred",
@@ -17405,6 +17561,12 @@
   "was": "FUN_00207aa0",
   "why": "takes a free entry of 11 at +8: mode, id, frames, arg, level, text"
  },
+ "00207e20": {
+  "name": "PauseMenuState::hasNotice",
+  "tag": "game-inferred",
+  "was": "FUN_00207e20",
+  "why": "counts the list's entries of a kind; native 0x136 asks it"
+ },
  "00207ea0": {
   "name": "PauseMenuState::~PauseMenuState",
   "tag": "game-inferred",
@@ -17525,11 +17687,41 @@
   "was": "FUN_0020d400",
   "why": "times of +0x458..+0x464 between two rates, 1 outside them"
  },
+ "0020d650": {
+  "name": "StageCharacter::canForceDoor",
+  "tag": "game-inferred",
+  "was": "FUN_0020d650",
+  "why": "locked, key kind 1 or 2, the key does not work from here"
+ },
+ "0020d6d0": {
+  "name": "StageCharacter::reachesThroughDoor",
+  "tag": "game-inferred",
+  "was": "FUN_0020d6d0",
+  "why": "in front, window 2, canReachThrough"
+ },
+ "0020d730": {
+  "name": "StageCharacter::canUnlockDoor",
+  "tag": "game-inferred",
+  "was": "FUN_0020d730",
+  "why": "locked and the key works from here or through the glass"
+ },
+ "0020d820": {
+  "name": "StageCharacter::canLockDoor",
+  "tag": "game-inferred",
+  "was": "FUN_0020d820",
+  "why": "closed, a key kind, the key works from here"
+ },
  "0020e6a0": {
   "name": "StageCharacter::playerEvent",
   "tag": "game-inferred",
   "was": "FUN_0020e6a0",
   "why": "only the scene's +0x78 character, while +0x30: reports a named event (GUNSHOOT)"
+ },
+ "00210720": {
+  "name": "StageCharacter::hasFollower",
+  "tag": "game-inferred",
+  "was": "FUN_00210720",
+  "why": "slot +0x2ac: DoorLink's rate; a list of characters near, unread beyond that"
  },
  "00211150": {
   "name": "StageCharacter::setFlinch",
@@ -17699,11 +17891,41 @@
   "was": "FUN_00218630",
   "why": "script entry from the first script, position from the mission or the saved one"
  },
+ "00219b30": {
+  "name": "StageCharacter::doorActions",
+  "tag": "game-inferred",
+  "was": "FUN_00219b30",
+  "why": "bits of allows +0x374 and +0x378, natives 0x11b.. test them"
+ },
  "0021a960": {
   "name": "StageCharacter::noteMotion",
   "tag": "game-inferred",
   "was": "FUN_0021a960",
   "why": "ring of four { id, event bits, mission frame } at +0x7c8"
+ },
+ "0021bb70": {
+  "name": "StageCharacter::getBrainPace",
+  "tag": "game-inferred",
+  "was": "FUN_0021bb70",
+  "why": "slot +0x278: brain +0x17c, 1 with none"
+ },
+ "0021c130": {
+  "name": "StageCharacter::scriptUseDoorKey",
+  "tag": "game-inferred",
+  "was": "FUN_0021c130",
+  "why": "slot +0x314, native 0x89: wants +0x2d0 or the brain"
+ },
+ "0021c1d0": {
+  "name": "StageCharacter::scriptCloseDoor",
+  "tag": "game-inferred",
+  "was": "FUN_0021c1d0",
+  "why": "slot +0x310, native 0x88: wants +0x2cf when allows +0x374 is 2"
+ },
+ "0021c230": {
+  "name": "StageCharacter::scriptOpenDoor",
+  "tag": "game-inferred",
+  "was": "FUN_0021c230",
+  "why": "slot +0x30c, native 0x87: wants +0x2cf when allows +0x374 is 1"
  },
  "0021c310": {
   "name": "StageObject::afterScripts",
@@ -21041,6 +21263,12 @@
   "was": "FUN_00269da0",
   "why": "this-adjusting thunk in the vtable of the object seen at +0x40, a jump to SubSceneModelObject::~SubSceneModelObject"
  },
+ "0026a6b0": {
+  "name": "MotionProbe::findDoor",
+  "tag": "game-inferred",
+  "was": "FUN_0026a6b0",
+  "why": "walks group 1 for kind 2, isFree, the facing slot, a segment for an open type 2 door"
+ },
  "0026b860": {
   "name": "MotionProbe::pointAhead",
   "tag": "game-inferred",
@@ -21185,6 +21413,18 @@
   "was": "FUN_002702a0",
   "why": "name QuickTurn (vtable 0x3174f0); ability +0x3a4 sets +0x363"
  },
+ "002710a0": {
+  "name": "DoorCondition::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_002710a0",
+  "why": "slot +0x10 of vtable 0x3175f0: requests 0x43..0x4c by the wants and the door's type, startWalkFile to getUsePlace"
+ },
+ "00271630": {
+  "name": "DoorCondition::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00271630",
+  "why": "slot +0xc of vtable 0x3175f0: findDoor, fills allows +0x374..+0x37c by the mode"
+ },
  "00271790": {
   "name": "JumpCondition::onApply",
   "tag": "game-inferred",
@@ -21298,6 +21538,42 @@
   "tag": "game-inferred",
   "was": "FUN_002775d0",
   "why": "inserted under DamageDead (0x3057a0), +0xc10, vtable 0x3177a0: 0x2773d0 counts +0x5ec seconds and requests 0xb2 / 0xb1"
+ },
+ "0027b0f0": {
+  "name": "DoorLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_0027b0f0",
+  "why": "slot +0x20: an open or shut door snaps to its pose"
+ },
+ "0027b140": {
+  "name": "DoorLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_0027b140",
+  "why": "on Click: sound, the key turns or the blow lands"
+ },
+ "0027b3d0": {
+  "name": "DoorLink::onStart",
+  "tag": "game-inferred",
+  "was": "FUN_0027b3d0",
+  "why": "finds dr_plo.. in group 3 and plays it on the door's pose"
+ },
+ "0027b570": {
+  "name": "DoorLink::onCancel",
+  "tag": "game-inferred",
+  "was": "FUN_0027b570",
+  "why": "slot +0x24: clears the door's user and the rate"
+ },
+ "0027b590": {
+  "name": "DoorLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_0027b590",
+  "why": "takes allows +0x37c as the door, sets its user, the rate 1.2"
+ },
+ "0027b640": {
+  "name": "DoorLink::DoorLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027b640",
+  "why": "vtable 0x317aa0, +0x24 = 1, the map's Door, +0xc0c"
  },
  "0027b6e0": {
   "name": "LadderLink::onRequest",

@@ -14,9 +14,9 @@
  *  (CharacterWants), then each turns the two into a request, the last one
  *  asking for the idle when nothing else did.
  *
- *  Written so far: the links Walk, Up, Fall, Jump, Ladder; the conditions
+ *  Written so far: the links Walk, Up, Fall, Jump, Ladder, Door; the conditions
  *  Always, QuickTurn, Squat, Turn, Move, Level, LevelLift, Ladder, Jump,
- *  LadderMove, and all of controlStep (what a motion's events do, the feet,
+ *  LadderMove, Door, and all of controlStep (what a motion's events do, the feet,
  *  the wind, health, the fidgets). A link or a condition of another name answers null, which
  *  the ROM takes as a motion with no link function; addCondition skips it.
  *  The list 0x1df0b0 fills is not written.
@@ -73,6 +73,16 @@ enum MotionId
     Motion_LadderDownOff = 0x40, // ld_d_e
     Motion_LadderLetGo = 0x41, // ld_esp
     Motion_LadderFall = 0x42, // ld_fal
+    Motion_DoorPullOpen = 0x43, // the door's half is dr_plo
+    Motion_DoorPushClose = 0x44, // dr_psc
+    Motion_DoorPushOpen = 0x45, // dr_pso
+    Motion_DoorPullClose = 0x46, // dr_plc
+    Motion_DoorKeyFront = 0x47, // dr_lcr: lock or unlock
+    Motion_DoorKeyBack = 0x48,  // dr_lcl
+    Motion_DoorSlideA = 0x49,   // dr_op or dr_cl, as the door stands
+    Motion_DoorSlideB = 0x4a,
+    Motion_DoorReachKey = 0x4b, // through the broken glass
+    Motion_DoorForce  = 0x4c,   // spends its hit points
     Motion_Crouched   = 0xf7, // a request, resolved through the holds
     Motion_WalkStand  = 0xf9, // waits while the walk runs (stepLower)
     Motion_WalkCrouch = 0xfa,
@@ -216,6 +226,23 @@ protected:
     std::vector<MotionCondition *> m_conditions; // FS2 +0xc
 };
 
+// A door's motion: the Door condition picks it, and the door's own half
+// plays on the door. EE 0x28, vtable 0x317aa0, the field +0xc0c of
+// PlayerMotion. layout: host.
+class DoorLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    void onRequest() override;                                           // FS2 0x0027b590
+    void onStart() override;                                             // FS2 0x0027b3d0
+    void onRun() override;                                               // FS2 0x0027b140
+    void onLeave(MotionLink *next) override;                             // FS2 0x0027b0f0
+    void onCancel() override;                                            // FS2 0x0027b570
+
+    StageDoor *door = nullptr;  // FS2 +0x20: while it runs
+    float  rate = 1.0f;         // FS2 +0x24: of the motion and of the door
+};
+
 // The motions of the feet: stand, walk, run, turn. Each frame it looks for
 // a face ahead and what lies behind it: the edge the player may stop at.
 // The main camera rises when the drop is deep, partnerResponds asks the
@@ -304,6 +331,9 @@ struct MotionLookTarget
 struct MotionProbe
 {
     explicit MotionProbe(StageCharacter *owner_) : owner(owner_) {}      // FS2 0x0026c6b0
+    // The door within reach, facing it, free. A door of type R that stands
+    // open must leave room to walk to its place.
+    StageDoor *findDoor();                                               // FS2 0x0026a6b0
     // A ray from 50 above the feet to just beyond the radius, ahead or
     // behind. out takes the end, back at the feet's height.
     StageCollisionFace *faceAhead(sceVu0FVECTOR out, bool forward);      // FS2 0x0026c4b0
@@ -534,6 +564,7 @@ public:
     float  m_bf4 = 0.0f;        // FS2 +0xbf4
     u_char m_bfc = 0;           // FS2 +0xbfc
     WalkLink *walkLink = nullptr; // FS2 +0xc00: the map's Walk
+    DoorLink *doorLink = nullptr; // FS2 +0xc0c: the map's Door
 };
 
 #endif // GAME_PLAYERMOTION_H

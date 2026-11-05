@@ -9,6 +9,8 @@
 // still pops its count and skips its words (scriptnatives.inc, generated from the ROM), so a script
 // runs straight through it and the [stub] log names it.
 #include "game/scriptrunner.h"
+#include "game/stagedoor.h"
+#include "game/wstring.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -1935,6 +1937,10 @@ enum { kFirstNative = 0x19, kLastNative = 0x235, kNativeCount = kLastNative - kF
 
 // What the VM does for a native nobody wrote yet.
 // layout: host
+constexpr int kScriptUseKindLast = 0x7531;    // natives 0x79, 0xf6
+constexpr int kNoticeForever = 0x7fffffff;    // native 0x14f
+constexpr int kNoticeLeastLevel = 5;          // sdata 0x31a99c, 0x31a9a0
+
 struct ScriptNativeInfo
 {
     u_char pops;
@@ -1972,6 +1978,196 @@ static const int *nativeSetUseKind(ScriptRunner *self, int *, const int *code)
     gStageScene->itemList->setKind(args[0], label, args[1]);
     return next;
 }
+
+// A script's door: what it asks of the character it targets (game/stagedoor.h).
+// 0x79 offerUse(kind, label), 0xf6 offerUseIf(kind, enabled, label): the Use
+// button's label, for the target character.
+// FS2 0x001c79b0, 0x001be770
+// callcheck: readCellArg, FUN_0023ef40, readCellArg, FUN_0023ef40 (the slot is getScriptCharacter)
+
+static int scriptUseKind(int value)
+{
+    const int kind = value + 1;
+    return kind < 1 ? 1 : kind > kScriptUseKindLast ? kScriptUseKindLast : kind;
+}
+
+static const int *nativeOfferUse(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const int kind = self->popped(1)[0];
+    void *label;
+    const int *next = self->readCellArg(&label, code);
+    gStageScene->itemList->post(target->getScriptCharacter(), scriptUseKind(kind), label, 0, true);
+    *acc = 0;
+    return next;
+}
+
+static const int *nativeOfferUseIf(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const int *args = self->popped(2);
+    const int kind = args[0], enabled = args[1];
+    void *label;
+    const int *next = self->readCellArg(&label, code);
+    gStageScene->itemList->post(target->getScriptCharacter(), scriptUseKind(kind), label, 0, enabled != 0);
+    *acc = 0;
+    return next;
+}
+
+// 0x44 isFacedBy(object).
+// FS2 0x001cb530
+// callcheck: readObjectArg
+
+static const int *nativeIsFacedBy(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    // PC: with no player yet the ROM reads low memory and answers no.
+    StageObject *object = (StageObject *)scriptLabelCell(label);
+    *acc = object != nullptr && target->scriptIsFacing(object);
+    return next;
+}
+
+// 0x45 isMenuPick(text): the menu's pending answer is text.
+// FS2 0x001cb3e0
+// callcheck: readCellArg, wstrcmp
+
+static const int *nativeIsMenuPick(ScriptRunner *self, int *acc, const int *code)
+{
+    void *text;
+    const int *next = self->readCellArg(&text, code);
+    StageMenu *menu = gStageScene->menu;
+    *acc = menu->pendingOn != 0 && menu->pending != 0
+        && wstrcmp((const u_short *)(intptr_t)menu->pending, (const u_short *)text) == 0;
+    return next;
+}
+
+// 0x87 openDoor(), 0x88 closeDoor(), 0x89 useDoorKey(lock): on the character.
+// FS2 0x001c6f90, 0x001c6f00, 0x001c6e20
+
+static const int *nativeOpenDoor(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = self->getTarget()->scriptOpenDoor();
+    return code;
+}
+
+static const int *nativeCloseDoor(ScriptRunner *self, int *acc, const int *code)
+{
+    *acc = self->getTarget()->scriptCloseDoor();
+    return code;
+}
+
+static const int *nativeUseDoorKey(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    *acc = target->scriptUseDoorKey(self->popped(1)[0]);
+    return code;
+}
+
+// 0x11b canOpenDoor(), 0x11c canCloseDoor(), 0x11d canLockDoor(),
+// 0x12c canUnlockDoor(): the character's doorActions.
+// FS2 0x001bc620, 0x001bc560, 0x001bc4a0, 0x001bb2b0
+// callcheck: FUN_00219b30
+
+static const int *answerDoorAction(ScriptRunner *self, int *acc, const int *code, int action)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && (who->doorActions() & action) != 0;
+    return code;
+}
+
+static const int *nativeCanOpenDoor(ScriptRunner *self, int *acc, const int *code)
+{
+    return answerDoorAction(self, acc, code, CharacterDoor_Open);
+}
+
+static const int *nativeCanCloseDoor(ScriptRunner *self, int *acc, const int *code)
+{
+    return answerDoorAction(self, acc, code, CharacterDoor_Close);
+}
+
+static const int *nativeCanLockDoor(ScriptRunner *self, int *acc, const int *code)
+{
+    return answerDoorAction(self, acc, code, CharacterDoor_Lock);
+}
+
+static const int *nativeCanUnlockDoor(ScriptRunner *self, int *acc, const int *code)
+{
+    return answerDoorAction(self, acc, code, CharacterDoor_Unlock);
+}
+
+// 0x136 canUse(): no notice stands in the way of the Use button's answer.
+// FS2 0x001ba7e0
+// callcheck: isEventActive, FUN_00207e20, FUN_00207e20, FUN_00207e20
+
+static const int *nativeCanUse(ScriptRunner *, int *acc, const int *code)
+{
+    PauseMenuState *state = gStageScene->pauseState;
+    const bool busy = gStageScene->isEventActive() ? state->hasNotice(3)
+                                                   : state->hasNotice(1) || state->hasNotice(0);
+    *acc = !busy;
+    return code;
+}
+
+// 0x14f notice(frames, arg, level, text): frames 0 stands for ever.
+// FS2 0x001b8b00
+// callcheck: readCellArg, addNotice
+
+static const int *nativeNotice(ScriptRunner *self, int *, const int *code)
+{
+    const int *args = self->popped(3);
+    const int frames = args[0], arg = args[1], level = args[2];
+    void *text;
+    const int *next = self->readCellArg(&text, code);
+    gStageScene->pauseState->addNotice((const u_short *)text, frames == 0 ? kNoticeForever : frames, arg,
+                                       level < kNoticeLeastLevel ? kNoticeLeastLevel : level);
+    return next;
+}
+
+// 0x15b doorUsed(): the running door's state for the S2D.
+// FS2 0x001b7c90
+// callcheck: FUN_00172530
+
+static const int *nativeDoorUsed(ScriptRunner *self, int *, const int *code)
+{
+    self->getTarget()->getScriptDoor()->noteUse(true);
+    return code;
+}
+
+// 0x231 keyWorksFrom(object).
+// FS2 0x001a7ea0
+// callcheck: readObjectArg, FUN_001739f0
+
+static const int *nativeKeyWorksFrom(ScriptRunner *self, int *acc, const int *code)
+{
+    ScriptRunner *target = self->getTarget();
+    const char *label;
+    const int *next = self->readObjectArg(&label, code);
+    StageObject *object = (StageObject *)scriptLabelCell(label);
+    // PC: the same as nativeIsFacedBy.
+    *acc = object != nullptr && target->getScriptDoor()->keyWorksFrom(object->m_xform.position);
+    return next;
+}
+
+// Bound only with kDoorsEnabled (game/stagedoor.h).
+static const ScriptNativeBinding kDoorNatives[] = {
+    { 0x044, nativeIsFacedBy },
+    { 0x045, nativeIsMenuPick },
+    { 0x079, nativeOfferUse },
+    { 0x087, nativeOpenDoor },
+    { 0x088, nativeCloseDoor },
+    { 0x089, nativeUseDoorKey },
+    { 0x0f6, nativeOfferUseIf },
+    { 0x11b, nativeCanOpenDoor },
+    { 0x11c, nativeCanCloseDoor },
+    { 0x11d, nativeCanLockDoor },
+    { 0x12c, nativeCanUnlockDoor },
+    { 0x136, nativeCanUse },
+    { 0x14f, nativeNotice },
+    { 0x15b, nativeDoorUsed },
+    { 0x231, nativeKeyWorksFrom },
+};
 
 static const ScriptNativeBinding kNatives[] = {
     { 0x0f7, nativeSetUseKind },
@@ -2038,6 +2234,10 @@ static const int *callNative(ScriptRunner *self, int id, const int *code, int *a
         built = true;
         for (const ScriptNativeBinding &binding : kNatives)
             table[binding.id - kFirstNative] = binding.native;
+        if (kDoorsEnabled) {
+            for (const ScriptNativeBinding &binding : kDoorNatives)
+                table[binding.id - kFirstNative] = binding.native;
+        }
     }
 
     // PC: an id off the table would be a wild jump in the ROM.

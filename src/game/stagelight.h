@@ -47,6 +47,7 @@ class StageLight : public StageObject, public CollisionOwner
     friend class ItemLamp;          // game/stageitem.cpp
     friend class StageItemE;
     friend class SubSceneLamp;      // game/subsceneobject.cpp
+    friend class StageDoor;         // game/stagedoor.cpp: its light follows it
     friend struct SceneRender;      // game/scenerender.cpp
     friend class StageWeaponItem;
 
@@ -211,6 +212,7 @@ class SpotLight : public StageLight
 {
     friend class ItemLamp;          // game/stageitem.cpp
     friend class SubSceneLamp;      // game/subsceneobject.cpp
+    friend class StageDoor;         // game/stagedoor.cpp: its light follows it
     friend struct SceneRender;      // game/scenerender.cpp
 
 public:

@@ -59,6 +59,8 @@ opening is the event d0101") is answered for a first entry into the stage.
 
 **2026-11-05, later:** ledges work with the Use button and its prompt (`game/uiitemlist.cpp`, open-items.md); ladders and gaps are written, stage 1 has none to test on.
 
+**2026-11-05, later still:** doors are written and switched off (`kDoorsEnabled`): with them on a stage run crashes (open-items.md, Done, game/playermotion.cpp fifth run).
+
 ## The order for control
 
 Each step needs the ones above it. Sizes are the unwritten closure of its roots.
