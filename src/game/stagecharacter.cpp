@@ -324,8 +324,8 @@ void StageCharacter::initStatus()
     m_3e8 = 0;
     m_3ec = 0;
     m_3f0 = 0;
-    m_3f4 = 0;
-    m_3f8 = 0;
+    m_winded = 0;
+    m_idleTime = 0.0f;
     rollIdleDelay();
     m_450 = 0;
     m_altAction = 0;

@@ -369,6 +369,8 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 ## Harness and shell (2026-11-04)
 
+- **A long Bash heredoc dies on an apostrophe; a heredoc's backslash can come out as a real newline** (2026-11-04, game/playermotion.cpp). Symptom: "unexpected EOF while looking for matching" before anything ran, or a C string in the source cut in two. Fix: write the edit script with the Write tool into the scratchpad and run it with `py`. Also, `cd` in one Bash call carries to the next: use absolute paths.
+- **A stub remover that stops at the first closing brace eats half of a return-brace stub** (2026-11-04). `return {};` holds a brace: search for the closing one after it. tools/reverse has no script for this yet.
 - **"RM2" inside other data.** Symptom: a disc harness crashes in `relocateNode` with a null node on
   ROM.006. Cause: 4 16-aligned hits of the magic in a pack are not models (base 0x324d46: odd). Fix:
   only a file whose base +0x30 is 0 on the disc is a model. The game itself never scans, so this is

@@ -3677,6 +3677,12 @@
   "was": "FUN_00135860",
   "why": "(list {u16 capacity, u16 count, void **data}, p, grow): grows the array by grow slots (Heap::alloc / Heap::realloc, zeroed) when full, stores p in the first empty slot, returns the count"
  },
+ "00135990": {
+  "name": "rotateByAngles",
+  "tag": "game-inferred",
+  "was": "FUN_00135990",
+  "why": "0x135a90 (rotationMatrixXyz) of a2, then each row of a1 through it into a0: PlayerMotion::getLampMatrix turns by the lean and the rotation with it"
+ },
  "001359f0": {
   "name": "rotationMatrixZxy",
   "tag": "game-inferred",
@@ -13775,6 +13781,12 @@
   "was": "FUN_001908c0",
   "why": "stops the effect and its two chained ones"
  },
+ "001908d0": {
+  "name": "StageNodeTree::contains",
+  "tag": "game-inferred",
+  "was": "FUN_001908d0",
+  "why": "inner object's +0x3c BoxGrid::contains, false without one; controlStep's wind test on StageScene +0x1c"
+ },
  "00190900": {
   "name": "StageNodeTree::setBoxes",
   "tag": "game-inferred",
@@ -16338,10 +16350,10 @@
   "why": "turned by the motion's angles and the player's, half a turn, at bn_head; SceneRender::update aims 200 ahead of it"
  },
  "001e6160": {
-  "name": "PlayerMotion::getLampAngles",
+  "name": "PlayerMotion::getLampTarget",
   "tag": "game-inferred",
   "was": "FUN_001e6160",
-  "why": "Always aims the tool bone with it while the lamp is controlled"
+  "why": "was getLampAngles: it answers a point, the raycast along the lamp's radius from the head or view camera, pushed to 200 at least"
  },
  "001e6400": {
   "name": "PlayerMotion::leanBody",
@@ -16439,6 +16451,18 @@
   "was": "FUN_001eb210",
   "why": "file (+4) of the motion of the requested label"
  },
+ "001eb520": {
+  "name": "PlayerMotion::pickArmedMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001eb520",
+  "why": "table 0x2f7fb0 of pairs by slot, indexed by whether m_weapons[0] is set; motions 77..105"
+ },
+ "001eb550": {
+  "name": "PlayerMotion::pickGunMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001eb550",
+  "why": "table 0x2f7ef0 of triples by slot, indexed by the long gun's kind 5/6 and R_MINIMI; -1 without a gun"
+ },
  "001eb660": {
   "name": "PlayerMotion::pickStance",
   "tag": "game-inferred",
@@ -16510,6 +16534,12 @@
   "tag": "game-inferred",
   "was": "FUN_001eff80",
   "why": "clears or sets the feet's bytes through +0x198, the player's through +0x194"
+ },
+ "001f00a0": {
+  "name": "CharacterGround::setHitBone",
+  "tag": "game-inferred",
+  "was": "FUN_001f00a0",
+  "why": "strcmp of the name through the family's list 0x2f9c00 / counts 0x2f9c30, index into +0x1ac; controlStep passes bn_r_hand etc. from the Hit motion events"
  },
  "001f3b30": {
   "name": "CharacterGround::reset",
@@ -17405,6 +17435,12 @@
   "was": "FUN_0020c940",
   "why": "matrix for the head's sway of kind 2 in AlwaysCondition::onApply"
  },
+ "0020d390": {
+  "name": "StageCharacter::isMotionSlowed",
+  "tag": "game-inferred",
+  "was": "FUN_0020d390",
+  "why": "+0x458 not negative and the clock inside +0x458..+0x45c, the same window as getMotionRate"
+ },
  "0020d400": {
   "name": "StageCharacter::getMotionRate",
   "tag": "game-inferred",
@@ -17488,6 +17524,12 @@
   "tag": "game-inferred",
   "was": "FUN_00215620",
   "why": "SaveData +0x4bc against the sheet kind and name[2]; what the values are is unread"
+ },
+ "00215940": {
+  "name": "StageCharacter::isStageDrained",
+  "tag": "game-inferred",
+  "was": "FUN_00215940",
+  "why": "stages 0x19, 0x1b for kind 1 and 0xf, 0x17 for kind 0; controlStep then takes m_health down"
  },
  "00215e70": {
   "name": "StageObject::isYriOrKne",
@@ -20849,6 +20891,12 @@
   "was": "FUN_0026b960",
   "why": "behind a face of flags 0x142: the floor below, its drop, the point to land"
  },
+ "0026c180": {
+  "name": "MotionProbe::findFloor",
+  "tag": "game-inferred",
+  "was": "FUN_0026c180",
+  "why": "raycastObject from f12 above the point, then f13 below, floor mask 0x42400c; the height with its sign into a2, the object into a3; findEdge calls it with 205 and 1000"
+ },
  "0026c4b0": {
   "name": "MotionProbe::faceAhead",
   "tag": "game-inferred",
@@ -22523,6 +22571,18 @@
   "was": "FUN_002a11d0",
   "why": "steps 28 and 12 records, drawOverlay before demoFleckDraw"
  },
+ "002a2100": {
+  "name": "StageCharacter::playLadderStep",
+  "tag": "game-inferred",
+  "was": "FUN_002a2100",
+  "why": "PC_LADDER / NPC_LADDER / SBT_LADDER / YBZ_LADDER / RYO_LADDER by the sheet's kind; called on the step events of ladder motions"
+ },
+ "002a49c0": {
+  "name": "StageCharacter::playStepSound",
+  "tag": "game-inferred",
+  "was": "FUN_002a49c0",
+  "why": "0x2cf210's entry played at a foot, heard unless the partner"
+ },
  "002a6830": {
   "name": "StageCharacter::stopSounds",
   "tag": "game-inferred",
@@ -23776,6 +23836,12 @@
   "tag": "game-inferred",
   "was": "FUN_002cf0b0",
   "why": "takes a face's surface byte +0x4c, answers the SeEntry for playEntryHeard"
+ },
+ "002cf210": {
+  "name": "StageCharacter::findStepSound",
+  "tag": "game-inferred",
+  "was": "FUN_002cf210",
+  "why": "the PC_GND01_W style column of table 0x2fc3b0 by surface, family and pace, cached in bss 0x599860"
  },
  "002cf510": {
   "name": "resetStageGroupTable",

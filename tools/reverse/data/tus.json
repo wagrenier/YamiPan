@@ -1,10 +1,10 @@
 {
  "queue": [
+  "game/characterinput.cpp",
+  "game/characterground.cpp",
   "game/playermotion.cpp",
   "game/stagecharacter.cpp",
-  "game/characterground.cpp",
   "game/characterbrain.cpp",
-  "game/characterinput.cpp",
   "game/stageplayer.cpp",
   "yamipan/rendering/model_renderer.cpp",
   "game/scriptrunner.cpp"
@@ -583,11 +583,15 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Written: MotionCondition with Always, QuickTurn, Squat, Turn, Move; MotionLink apply and addCondition; WalkLink (replaces PlayerLookState, the old note had Walk at 0x2775d0, which is DamageDead); MotionProbe faceAhead and pointAhead; controlStep 0x1e3e80, head only; applyMovement 0x1e0e20; leanBody; moveStep 0x17a490; StageCamera seesPoint. CharacterWants (+0x2c0) and CharacterAllows (+0x360) are now structs, architecture.md Motions has the whole frame. The idle bridge is gone: Move asks for the idle. Seen in a 285 s New Game: idle through the Walk link, no crash; with a temporary test, removed before this commit, filling moveKind: w, w_run, run, t_l and sq_s all played and he moved, whole, main camera following (progress/20261104-f_pc01-run-test.png), through the walls at a constant height since the ground step 0x1f3930 is unwritten. The final build without the test ran only the 15 s smoke (language screen). A New Game needs 200+ s to reach the stage and pad reads, not shot numbers, count (hazards.md Testing a run). Next for control: the input 0x236b90 (0x2f00 bytes, fills CharacterWants; game/characterinput.cpp), then CharacterGround; the sideHooks 0x17a860 and 0x17a810 are still bridged in stageUpdateCharacterMotions (game/stagecharacter.cpp). Left in this TU: the rest of controlStep (motion events and setContact, step sounds, aim, feet, wind, fidgets), findEdge 0x26b960, getLampAngles 0x1e6160, the 24 other conditions and the other links, the list of 0x1df0b0, who counts m_runTime and m_runDistance. Doubt: walk and run rates come from the sheet as a PC default, since only the script property setter 0x212530 writes them (open-items.md).",
+   "notes": "Written: the rest of controlStep cut into stepEvents, stepAim, stepFeet, stepWind, stepHealth, stepFidgets; getLampMatrix; getLampTarget (was getLampAngles); startWalk, startWalkAt (float rate, m_walkRate); findEdge, findFloor; pickGunMotion, pickArmedMotion; isStageDrained, isMotionSlowed; playLadderStep, playStepSound, findStepSound, getSurfaceSound with src/game/stepsounds.inc. m_3f4 is m_winded, m_3f8 is the float m_idleTime, WalkLink +0x40 is edgeObject. Seen: New Game 285 s twice, no crash, F_PC01 whole in the room as before. Not proven: no fidget in a 285 s run with a temporary log (removed), delay 10..20 s, unmeasured why; StageNodeTree::contains not reached; steps, feet, gravity, findEdge and stamina wait on the ground, since floorFace and wallCheck are null. The queue now runs game/characterinput.cpp, then game/characterground.cpp, before this TU (open-items.md Decisions). Left in this TU: the 24 other conditions, the other links, the list 0x1df0b0 with its slots 0x1df030 and 0x1df0a0 and 0x1ec3f0, pickGunMotion and pickArmedMotion have no callers yet, clearNoFlash 0x1dfd90 (really the view switch to camview_snipe; +0xbd8 is written as a float there and the host calls it overlay: open-items.md), who counts m_runTime and m_runDistance. Doubt: walk and run rates still come from the sheet as a PC default.",
    "ranges": [
     [
      "0017df60",
      "0017dfd0"
+    ],
+    [
+     "001908d0",
+     "00190900"
     ],
     [
      "001defd0",
@@ -606,12 +610,12 @@
      "001e5f70"
     ],
     [
-     "001e6400",
+     "001e60b0",
      "001e6d60"
     ],
     [
      "001e81f0",
-     "001eaba0"
+     "001eb090"
     ],
     [
      "001eb150",
@@ -626,8 +630,20 @@
      "001ed950"
     ],
     [
+     "0020d390",
+     "0020d3f4"
+    ],
+    [
+     "00215940",
+     "00215ae8"
+    ],
+    [
      "0026b860",
-     "0026b960"
+     "0026c170"
+    ],
+    [
+     "0026c180",
+     "0026c2c8"
     ],
     [
      "0026c4b0",
@@ -652,6 +668,18 @@
     [
      "0027c420",
      "0027c6d0"
+    ],
+    [
+     "002a2100",
+     "002a2274"
+    ],
+    [
+     "002a49c0",
+     "002a4a40"
+    ],
+    [
+     "002cf0b0",
+     "002cf510"
     ]
    ],
    "sessions": [
@@ -664,11 +692,16 @@
      "date": "2026-11-04 22:18",
      "status": "partial",
      "summary": "conditions Always, QuickTurn, Squat, Turn, Move and the Walk link written: the character walks, runs and turns when CharacterWants asks, and Move now asks for the idle; input and ground not yet"
+    },
+    {
+     "date": "2026-11-04 23:04",
+     "status": "partial",
+     "summary": "controlStep whole (events, step sounds, gravity, aim, feet, wind, stamina, fidgets), lamp matrix and target, startWalk and startWalkAt, findEdge: nothing new shows until the ground exists"
     }
    ],
    "status": "partial",
    "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves.",
-   "why": "the motion core, then the conditions Always, QuickTurn, Squat, Turn, Move, the Walk link and the probes: no second TU yet; a later cut may give the conditions and links 0x26d020..0x27d8d0 their own file"
+   "why": "the motion core, then the conditions Always, QuickTurn, Squat, Turn, Move, the Walk link and the probes, then what controlStep calls alone: the step sounds and the health tests: no second TU yet; a later cut may give the conditions and links 0x26d020..0x27d8d0 their own file"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
