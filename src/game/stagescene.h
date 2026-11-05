@@ -169,7 +169,7 @@ constexpr int kMissionVisibilities  = 4;    // VISIBILITY_MASK, VISIBILITY_01..0
 constexpr int kMissionTextBuffers   = 4;    // +0x288, by turns
 constexpr int kMissionTextSize      = 0x80; // 16-bit chars each
 constexpr int kMissionClassLists    = 16;   // by the low four bits of getCharacterClass
-constexpr int kMissionSpawnPoints   = 0x60;
+constexpr int kMissionSpawnPoints   = 100;   // to the mission's end, 0x13d0; native 0x174 walks 100
 constexpr int kMissionEventName     = 0x10;
 
 // A waiting record of 0x286f30: tickPending counts it down and plays a

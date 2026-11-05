@@ -322,9 +322,30 @@ StageObject *ScriptProxy::getScriptObject()
 
 // FS2 0x001a7270
 
-float ScriptProxy::command58(void *arg)
+float ScriptProxy::scriptDistanceTo(StageObject *other)
 {
-    return getForwardTarget()->command58(arg);
+    return getForwardTarget()->scriptDistanceTo(other);
+}
+
+// FS2 0x001a6920
+
+StageCharacter *ScriptProxy::getScriptActor()
+{
+    return getForwardObject()->getScriptActor();
+}
+
+// FS2 0x001a7130
+
+void ScriptProxy::scriptMarkPlace()
+{
+    getForwardObject()->scriptMarkPlace();
+}
+
+// FS2 0x001a70e0
+
+bool ScriptProxy::scriptCanSee(float viewAngle, StageObject *other)
+{
+    return getForwardTarget()->scriptCanSee(viewAngle, other);
 }
 
 // FS2 0x001a72b0

@@ -331,6 +331,10 @@ public:
         unsupportedCommand();
         return nullptr;
     }
+    // ROM vptr +0x94: the character that acts for it; a plain runner has
+    // none, and answers null without the log.
+    // FS2 0x00171cb0
+    virtual StageCharacter *getScriptActor() { return nullptr; }
     // ROM vptr +0xa0: the door it is. The same.
     // FS2 0x00177160
     // callcheck: unsupportedCommand
@@ -405,9 +409,10 @@ public:
         unsupportedCommand();
         return nullptr;
     }
+    // Slot +0xf0: how far other is (native 0x1f9).
     // FS2 0x0019cfe0
     // callcheck: defaultCommand
-    virtual float command58(void *) { return (float)defaultCommand(); }
+    virtual float scriptDistanceTo(StageObject *) { return (float)defaultCommand(); }
     // FS2 0x0019d010
     // callcheck: defaultCommand
     virtual float command59(void *) { return (float)defaultCommand(); }
@@ -456,6 +461,41 @@ public:
     // ROM vptr +0x190: takes what lies in reach (0x122).
     // FS2 0x00172180
     virtual StageObject *scriptTakeItem() { defaultCommand(); return nullptr; }
+    // ROM vptr +0xb4: it sees other within viewAngle (natives 0x32, 0x33, for
+    // a runner with no actor).
+    // FS2 0x00171d10
+    // callcheck: defaultCommand
+    virtual bool scriptCanSee(float viewAngle, StageObject *other)
+    {
+        (void)viewAngle;
+        (void)other;
+        return defaultCommand() != 0;
+    }
+    // ROM vptr +0xb8: keeps where it stands, once (0x35).
+    // FS2 0x00171d30
+    // callcheck: defaultCommand
+    virtual void scriptMarkPlace() { defaultCommand(); }
+    // ROM vptr +0xd4, +0xdc: the brain's swing and shot (0x12e, 0x214).
+    // FS2 0x00171dd0
+    // callcheck: defaultCommand
+    virtual bool scriptSwingAt(StageObject *target) { (void)target; return defaultCommand() != 0; }
+    // FS2 0x00171df0
+    // callcheck: defaultCommand
+    virtual bool scriptFireAt(StageObject *target, const char *flags, int frames30)
+    {
+        (void)target;
+        (void)flags;
+        (void)frames30;
+        return defaultCommand() != 0;
+    }
+    // ROM vptr +0x12c, +0x130: what the route asks now (0x59, 0x5a). Tail
+    // jumps to defaultCommand.
+    // FS2 0x00171fa0
+    // callcheck: defaultCommand
+    virtual int scriptRouteAction12c() { return defaultCommand(); }
+    // FS2 0x00171fb0
+    // callcheck: defaultCommand
+    virtual int scriptRouteAction130() { return defaultCommand(); }
     // ROM vptr +0x124: the character is down in one of its crouched motions.
     // FS2 0x00171f60
     virtual bool scriptIsCrouching() { return defaultCommand() != 0; }

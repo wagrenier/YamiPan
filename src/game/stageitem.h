@@ -316,7 +316,9 @@ private:
     // A samurai's blade: kind 0 LW_SAMURAI_B, kind 1 LW_SAMURAI_B2.
     bool isSamuraiBlade() const;
 
-    u_char        m_45c;        // FS2 +0x45c: 0 after setupItem (unread)
+public:
+    u_char        m_45c;        // FS2 +0x45c: 0 after setupItem; set, findLooseWeapon leaves it
+private:
     sceVu0FVECTOR m_aimPoint;   // FS2 +0x460: bn_point in the motion
     sceVu0FVECTOR m_firePoint;  // FS2 +0x470: bn_fire in the motion
 };

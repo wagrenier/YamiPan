@@ -341,6 +341,7 @@ enum StageDoorState
     StageDoor_Open2    = 2,
     StageDoor_Locked   = 3,
     StageDoor_Blocked  = 4,
+    StageDoor_None     = 5,     // native 0xb3's script state 3
 };
 
 class StageCollision;
@@ -537,6 +538,8 @@ public:
     void scriptSetPosition(const float *pos) override { setPosition(pos); }
     void scriptSetRotation(const float *rot) override { setRotation(rot); }
     StageObject *getScriptObject() override { return this; }
+    // Thunk 0x00177470 to distanceTo.
+    float scriptDistanceTo(StageObject *other) override { return distanceTo(other); }
     // The object as a target; a class that stands for another overrides it.
     // FS2 0x001722d0
     virtual StageObject *getSelf() { return this; }
@@ -628,11 +631,12 @@ public:
     void breakPart(int part, bool withEffect);                           // FS2 0x00175900
     // Of the parts still shown, the one nearest from's head; -1 none.
     int  nearestPart(StageObject *from);                                 // FS2 0x00175700
-    // An inactive character of the list comes back: canSpawn asks (no when
-    // its position record +0x66c is valid and +0x6ac is 0), spawn takes the
-    // script entry and the position.
-    bool canSpawn();                                                     // FS2 0x002185a0
-    void spawn();                                                        // FS2 0x00218630
+    // P_SRC<group>_<n>, the map's search points. The object's group, -1 for
+    // any other name; index answers n. The highest n of its group (9..1), 0
+    // unless this is n 0; the point n of its group.
+    int  getSearchGroup(int *index);                                     // FS2 0x0017eeb0
+    int  getSearchLastIndex();                                           // FS2 0x0017ed30
+    StageObject *findSearchPoint(int index);                             // FS2 0x0017ee30
     // Slot +0x270 of the map objects (doors, CAR, Seven_Keys): a motion
     // list of the bgmotion target (a StageList<void *>); empty here.
     virtual void setMotionList(void *list, int arg, int arg2);           // FS2 vtable +0x270
@@ -1941,9 +1945,17 @@ void demoFleckStep(void *flecks);                                        // FS2 
 void demoFleckDraw(float level, void *flecks, sceVif1Packet *packet);    // FS2 0x002a11c0
 // The mission's script helpers beside scriptPrepare.
 bool missionRestoreCheck();                                              // FS2 0x0029f2a0
-int  missionPickSpawnPoint(const float *place, int mode);                 // FS2 0x0029f810
+// A kept spawn point out of the view: mode 0.. the mode-th nearest place, or
+// the nearest such around it; below 0 at random; -1 none.
+int  missionPickSpawnPoint(const float *place, int mode);                // FS2 0x0029f810
+// The pick said none. The name is older than the reading: -1, nothing else.
 bool missionSpawnPointTaken(int *point);                                 // FS2 0x0029fd10
-void missionSpawnAt(int *point, int id);                                 // FS2 0x0029fb60
+// The first character of its class waiting off stage gets the point: strong
+// says which class. false: none waits.
+bool missionSpawnAt(int *point, int strong);                             // FS2 0x0029fb60
+// The rank-th nearest of group 6's objects called name, from who: by the
+// straight line, or by the route. lastInstead: past the end, the farthest.
+StageObject *scriptPickNamed(const char *name, StageCharacter *who, u_int rank, bool straight, bool lastInstead); // FS2 0x0029f5c0
 
 // A DemoCamera's overlay (+0x300): what drawOverlay adds after the 3D frame.
 enum DemoOverlay
@@ -2083,6 +2095,8 @@ enum CharacterLifeState
     LifeState_Down     = 3,
     LifeState_Corpse   = 4,     // down in the motions 0xb3, 0xb4
     LifeState_Fatal    = 5,     // up, in the motions 0xb1, 0xb2
+    LifeState_Leaving  = 6,     // m_lifeOverride above 0: a script's natives 0x13b, 0x17e
+    LifeState_Left     = 7,     // m_lifeOverride 0
 };
 // StageCharacter::m_foeCache: each foe is picked once a frame, on demand.
 enum CharacterFoeCache
@@ -2453,6 +2467,41 @@ public:
     bool dropLongWeapon();                                               // FS2 0x0021b340
     // The cue of the long weapon, heard around (native 0x80).
     void playWeaponPickSound();                                          // FS2 0x002a3100
+    // Off stage, it comes back: canSpawn asks (no while m_spawnPoint is none
+    // and the respawn record has no w), spawn takes the script entry and the
+    // place, and starts it; on stages 0x1a, 0x1b, 0x1d in the motion 0xed.
+    bool canSpawn();                                                     // FS2 0x002185a0
+    void spawn();                                                        // FS2 0x00218630
+    // The spawn point missionSpawnAt gave it.
+    // FS2 0x002187f0
+    void setSpawnPoint(const int *point) { m_spawnPoint = *point; }
+    // Its name is F_YRT or F_SRT and its sheet kind 3 or 7: it may be sent.
+    bool isSpawnable();                                                  // FS2 0x002115e0
+    // The sheet kind as the sound tables have it (1..9), 0 unknown.
+    int  getSoundKind();                                                 // FS2 0x002a6980
+    // The YRT_VANISH / SRT_VANISH cry, heard around.
+    void playVanishSound();                                              // FS2 0x002a31b0
+    // A script ends it: its life state says leaving, with the effect of
+    // sheet kind 3 and the cry; the quiet form without. In the two motions
+    // of 0x9e, 0x9f they wait, the running script yields.
+    void leaveLoud();                                                    // FS2 0x00219510
+    void leaveQuiet();                                                   // FS2 0x00219420
+    // leaveLoud, and the corpses around note how far it was.
+    void leaveNoticed();                                                 // FS2 0x002196f0
+    // Off with no fuss: reset, and the brain off.
+    void leaveAtOnce();                                                  // FS2 0x00219310
+    // The brain back at its first state; false with no brain or brain off.
+    bool wakeBrain();                                                    // FS2 0x00219cb0
+    void allowPath(const char *name, bool on);                           // FS2 0x00218110
+    // The motion's ledge point, for the player above other: 0 none, 1 far,
+    // 2 at it; the script point goes there.
+    int  getClimbPoint(StageObject *other);                              // FS2 0x00219040
+    // The nearest weapon lying free that it can wield, under range.
+    StageObject *findLooseWeapon(float range, u_int mask);               // FS2 0x0021b690
+    // The first point of the nearest search group within 50, kept.
+    StageObject *getNearSearchPoint();                                   // FS2 0x0021c010
+    // The rank-th nearest search group from point; null past the end.
+    StageObject *pickSearchPoint(const sceVu0FVECTOR point, u_int rank); // FS2 0x00219210
     // The nearest foe: of the enemy candidates, or (foes false) of the
     // mission's characters; sight measures by what it sees, else by distance.
     StageObject *findNearestFoe(bool foes, bool sight);                  // FS2 0x00214a80
@@ -2500,6 +2549,20 @@ public:
     void scriptSetBrainEntry(int kind, const ScriptEntry *entry) override; // FS2 0x0021b970 (thunk 0x0017e7c0)
     int  scriptHeardKind() override;                                     // FS2 0x0021b890 (thunk 0x0017e7a0)
     bool scriptIsCrouching() override;                                   // FS2 0x00179bb0 (thunk 0x0017e660)
+    // FS2 0x00179d20 (thunk 0x0017e7e0)
+    StageCharacter *getScriptActor() override { return this; }
+    // The lamp it holds (thunk 0x0017e7f0).
+    // callcheck: setLampOn
+    void cmdSetTreeSwitchedOn(bool on) override { setLampOn(on); }
+    // It has other in reach of its weapon: the blow's, and a bullet's when
+    // that is shorter.
+    bool scriptIsFacing(StageObject *other) override;                    // FS2 0x0020ca80 (thunk 0x0017e6c0)
+    bool scriptCanSee(float viewAngle, StageObject *other) override;     // FS2 0x00210910 (thunk 0x0017e790)
+    bool scriptSwingAt(StageObject *target) override;                    // FS2 0x0021ad20 (thunk 0x0017e710)
+    bool scriptFireAt(StageObject *target, const char *flags, int frames30) override; // FS2 0x0021ace0 (thunk 0x0017e6f0)
+    int  scriptRouteAction12c() override;                                // FS2 0x00218470 (thunk 0x0017e640)
+    int  scriptRouteAction130() override;                                // FS2 0x00218450 (thunk 0x0017e630)
+    void scriptMarkPlace() override;                                     // FS2 0x0021bfd0 (thunk 0x0017e780)
     bool scriptAttackBite() override;                                    // FS2 0x0021ada0 (thunk 0x0017e730)
     bool scriptReload(int rounds) override;                              // FS2 0x0021b450 (thunk 0x0017e6a0)
     bool scriptHasLineTo(StageCharacter *other) override;                // FS2 0x0021adc0 (thunk 0x0017e690)
@@ -2751,7 +2814,7 @@ public:
     u_char m_610 = 0;           // FS2 +0x610: cleared by afterScripts; no reader found
     int    m_lastDoorMode = 0;  // FS2 +0x614: afterScripts: StageDoor::m_doorMode of m_doorInUse; no reader found
     StageDoor *m_doorInUse = nullptr; // FS2 +0x618: afterScripts: m_door while its m_user is this; no reader found
-    int    m_61c = 0;           // FS2 +0x61c: cleared by afterScripts, 0x20eb40 writes it; no reader found
+    StageObject *m_hitThisFrameBy = nullptr; // FS2 +0x61c: cleared by afterScripts, 0x20eb40 writes it; native 0x90 reads its number
     StageObject *m_lastHitBy = nullptr; // FS2 +0x620: who hit it last (0x20e770, 0x20eb40); the game over's cause
     StageObject *m_biteCandidate = nullptr; // FS2 +0x624: natives 0xbc, 0xbd write it
     StageObject *m_628 = nullptr; // FS2 +0x628: native 0x207 asks its number; cleared by afterScripts, the route's tasks write it (0x228670, 0x229f60, 0x22aee0, 0x22b580)
@@ -2759,7 +2822,9 @@ public:
     int    m_scriptValues[11] = {}; // FS2 +0x630: getScriptValue
     StageObject *m_heardFrom = nullptr; // FS2 +0x65c: whose noise it heard this frame; read by 0x21b890
     float  m_lastNoiseRange = 0.0f; // FS2 +0x660: m_noiseRange of the frame before; read by 0x219980
-    float  m_noiseRange = 0.0f; // FS2 +0x664: FLT_MAX each frame; its writer is unread; read by 0x2196f0
+    float  m_noiseRange = 0.0f; // FS2 +0x664: FLT_MAX each frame; leaveNoticed lowers it on the corpses around
+    StageObject *m_nearSearchPoint = nullptr; // FS2 +0x668: getNearSearchPoint's last
+    int    m_spawnPoint = -1;   // FS2 +0x66c: missionSpawnAt's, -1 from the status block
     int    m_670 = 0;           // FS2 +0x670: 0 from the block; only the property reads it here
     float  m_pathLength = 0.0f; // FS2 +0x678: measurePath's last
     StageThrownItem *m_seenFlying = nullptr;     // FS2 +0x67c: the flying thrown item in view
@@ -2768,6 +2833,8 @@ public:
     u_char m_bulletFlying = 0;  // FS2 +0x688: set each frame by a bullet of its own
     u_char m_hitThisFrame = 0;  // FS2 +0x689: PlayerMotion::takeHits sets it; afterScripts clears it
     int    m_68c = 0;           // FS2 +0x68c: 0 or less, the brain's state 5 may sound the alarm (writer unread)
+    sceVu0FVECTOR m_respawnPosition = {}; // FS2 +0x6a0: 0x218610 sets it with w 1; spawn clears it
+    sceVu0FVECTOR m_respawnRotation = {}; // FS2 +0x6b0
     int    m_meleeScale = 0;    // FS2 +0x6c0: 打撃攻撃力修正値
     int    m_shotScale = 0;     // FS2 +0x6c4: 射撃攻撃力修正値
     int    m_6c8 = 0;           // FS2 +0x6c8: 0 from the block, then a script's

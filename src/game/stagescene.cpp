@@ -4416,9 +4416,9 @@ void StageScene::runStageScripts()
     StageObject **it = currentMission()->characters;
     StageObject **end = currentMission()->charactersEnd();
     for (; it != end; it++) {
-        StageObject *character = *it;
+        StageCharacter *character = static_cast<StageCharacter *>(*it);
         if (character->m_active)
-            static_cast<StageCharacter *>(character)->beforeScripts();
+            character->beforeScripts();
         else if (character->canSpawn())
             character->spawn();
     }
