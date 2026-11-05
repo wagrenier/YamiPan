@@ -14,12 +14,15 @@
 #include "sdk/libvu0.h"
 
 class DrawSysLights;            // game/drawsys.h
+struct RenaSpotLight;           // game/scenerender.h
 struct ModelSurface;            // game/gamehooks.h
 class Tim2Texture;              // game/gsutil.h
 struct DrawSysRecord;           // game/drawsys.h
 
 void renaBeginFrame(sceVif1Packet *packet);                              // FS2 0x002e86b0
 void renaSetSpotlight(sceVif1Packet *packet, Tim2Texture *texture, int block); // FS2 0x002e87f0
+// The scene's spot for this frame's passes, null with no scene: VU addresses 201..211 and 171.
+void renaSetSpotRecord(const RenaSpotLight *spot);                       // FS2 0x002d5710 (inline in drawSysRender)
 void renaSetShadowTexture(sceVif1Packet *packet, Tim2Texture *texture, int block); // FS2 0x002e82a0
 // The record's ambient, directional colours and directions.
 void renaSetLights(sceVif1Packet *packet, DrawSysLights *lights);        // FS2 0x002e8080

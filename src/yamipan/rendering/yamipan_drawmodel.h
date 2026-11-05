@@ -13,6 +13,31 @@
 
 #include <stdint.h>
 
+/* The scene's point light as VU1 takes it at addresses 176..179 (0x2e05f0). It adds to a vertex's colour, in the
+ * colour's own units, before the lights multiply it: kernel 0x545. */
+struct YamiPanModelPointLight
+{
+    int     active;
+    float   position[3];
+    float   color[3];           /* times how far the vertex faces it */
+    float   shade[3];           /* whatever way the vertex faces */
+    float   weight;             /* the strength at the light: weight + slope * distance, above 0 */
+    float   slope;              /* -weight / radius */
+};
+
+/* The scene's spot: the picture a lamp throws, a second pass over the lit vertices (VU1 0x2eb, addresses 171,
+ * 201..204, 210, 211; 0x2e00f0). */
+struct YamiPanModelSpotLight
+{
+    int     active;
+    const void *texture;        /* a Tim2Texture */
+    float   worldToLight[4][4]; /* sceVu0 layout; the light's x, up, ahead */
+    float   scaleX;             /* how much of the picture a unit of x / ahead crosses */
+    float   scaleY;
+    float   falloff[3];         /* reach = 255 / (0 + 1 * ahead + 2 * ahead * ahead), 255 at most */
+    float   limit;              /* no reach at this distance ahead, or past it */
+};
+
 /* One pass: the frame's world -> screen matrix (sceVu0 layout, screen units around 2048), its fog as
  * (A + B / z) / 255 with 1 no fog, and whether the pass starts on a fresh depth buffer. */
 struct YamiPanModelPass
@@ -30,6 +55,9 @@ struct YamiPanModelPass
     float   fogNearValue;   /* the value stays between these two (VU address 24 y, z) */
     float   fogFarValue;
     int     clearDepth;
+    float   eye[3];             /* the camera in the world: VU address 4, what culling measures from */
+    YamiPanModelPointLight point;   /* only the main pass has one */
+    YamiPanModelSpotLight  spot;
 };
 
 /* A material as the VU1 program and the GS register set would take it. */
@@ -40,6 +68,8 @@ struct YamiPanModelMaterial
     int     scrollV;
     int     blended;            /* over what is drawn, no depth written; otherwise opaque with an alpha test */
     int     unlit;              /* the vertex colours as they are; otherwise multiplied by the light */
+    int     pointFlat;          /* the point light ignores which way a vertex faces (material flag 0x10, 0x59a) */
+    int     noSpot;             /* the spot's pass skips it (material flag 0x20, 0x2f1) */
 };
 
 /* What lights a model: colours 0..1 and each light's direction. */
@@ -48,6 +78,9 @@ struct YamiPanModelLights
     float   ambient[3];
     float   colors[3][3];
     float   directions[3][3];
+    int     takesPoint;         /* ModelFlag_TakesPoint */
+    int     takesSpot;          /* ModelFlag_TakesSpot, and the model's spot is on (VU address 200) */
+    int     cullBack;           /* ModelFlag_TagC: faces turned from the eye are not drawn (VU1 0x128) */
 };
 
 /* One batch, in place in the model file: all `count` long. With a palette the positions and normals go

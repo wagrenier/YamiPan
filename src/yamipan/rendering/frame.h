@@ -93,12 +93,23 @@ struct ModelVertex
 };
 static_assert(sizeof(ModelVertex) == 24);
 
+// A vertex of the spot's pass: the same place, its picture projected from the light.
+struct ModelSpotVertex
+{
+    float x, y, z;
+    float s, t, q;
+    std::uint32_t color; // the vertex's lit colour; alpha is how much the light reaches it, 0x80 is 1.0
+};
+static_assert(sizeof(ModelSpotVertex) == 28);
+
 struct ModelDraw
 {
     std::shared_ptr<Image> image; // null: untextured
     bool blended = false;
     std::uint32_t firstVertex = 0;
     std::uint32_t vertexCount = 0;
+    std::uint32_t firstSpotVertex = 0; // into Frame::modelSpotVertices, drawn over this draw
+    std::uint32_t spotVertexCount = 0;
 };
 
 // One pass of models, drawn in the frame's order among the 2D draws: before draws[uiDrawsBefore].
@@ -117,6 +128,7 @@ struct ModelPass
     float fogNearValue = 255.0f;
     float fogFarValue = 255.0f;
     bool clearDepth = true;
+    std::shared_ptr<Image> spotImage; // the lamp's picture
     std::uint32_t uiDrawsBefore = 0;
     std::uint32_t firstDraw = 0;
     std::uint32_t drawCount = 0;
@@ -127,6 +139,7 @@ struct Frame
     std::vector<Vertex> vertices;
     std::vector<DrawCall> draws;
     std::vector<ModelVertex> modelVertices;
+    std::vector<ModelSpotVertex> modelSpotVertices;
     std::vector<ModelDraw> modelDraws;
     std::vector<ModelPass> modelPasses;
     std::uint64_t number = 0;
@@ -136,6 +149,7 @@ struct Frame
         vertices.clear();
         draws.clear();
         modelVertices.clear();
+        modelSpotVertices.clear();
         modelDraws.clear();
         modelPasses.clear();
     }
