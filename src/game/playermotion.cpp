@@ -8,6 +8,7 @@
  */
 #include "game/playermotion.h"
 
+#include "game/characterground.h"
 #include "game/characterinput.h"
 
 #include <stdlib.h>
@@ -196,8 +197,7 @@ bool isAttackMotion(int id)
     return false;
 }
 
-// The walks, armed or not: what 移動速度 sets the pace of (moveStep).
-static bool isWalkMotion(int id)
+bool isWalkMotion(int id)
 {
     switch (id) {
     case 0x2c: case 0x18: case 0x17: case 5: case 4: case 3:
@@ -991,7 +991,7 @@ WalkLink::WalkLink(StageCharacter *owner, PlayerMotion *motion_)
 
 void WalkLink::onUpdate()
 {
-    if (character->m_ground->wallCheck == nullptr)
+    if (character->m_ground->wallBody == nullptr)
         return;
     wallFace = motion->probe->faceAhead(wallPoint, true);
     edgeFound = motion->probe->findEdge(wallFace, &edgeObject, edgeTarget, &edgeDrop, &edgeFloor, edgePoint,
@@ -1708,8 +1708,8 @@ void PlayerMotion::stepLower(bool immediate)
             wall = motionDef(m_walkQueue->motion);
         m_wallCheck = wall->wallCheck;
         CharacterGround *ground = character->m_ground;
-        if (ground->wallCheck != nullptr)
-            *ground->wallCheck = wall->wallCheck;
+        if (ground->wallBody != nullptr)
+            ground->wallBody->on = wall->wallCheck;
         ground->groundCheck = shown->groundCheck;
         ground->repelLevel = wall->repelLevel;
     }
@@ -1935,8 +1935,8 @@ void PlayerMotion::controlStep()
         if (m_walkQueue->motion != Motion_None)
             wall = motionDef(m_walkQueue->motion);
         m_wallCheck = wall->wallCheck;
-        if (ground->wallCheck != nullptr)
-            *ground->wallCheck = wall->wallCheck;
+        if (ground->wallBody != nullptr)
+            ground->wallBody->on = wall->wallCheck;
         ground->groundCheck = current->groundCheck;
         ground->repelLevel = wall->repelLevel;
         m_always->onApply();
@@ -2745,7 +2745,7 @@ float StageCharacter::getMotionRate()
 }
 
 // FS2 0x0017a490
-// callcheck: FUN_001f3930, getDeltaSeconds, FUN_001e0e20, FUN_0020d400, advance (the ground's step comes with game/characterground.cpp)
+// callcheck: FUN_001f3930, getDeltaSeconds, FUN_001e0e20, FUN_0020d400, advance
 
 void StageCharacter::moveStep()
 {
@@ -2759,6 +2759,7 @@ void StageCharacter::moveStep()
     // A door's motion takes its rate from the Door link (+0xc0c +0x24): not written.
     const float frames = m_clock->getDeltaSeconds() / 0.033333335f;
     m_model->advance(rate * getMotionRate() * frames, m_xform.position, m_xform.rotation, 0);
+    m_ground->beginFrame();
 }
 
 // FS2 0x0017df60

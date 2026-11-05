@@ -55,6 +55,8 @@ opening is the event d0101") is answered for a first entry into the stage.
 5. `gsFrameFilter` 0x2849c0, `demoFilmDraw`, `demoFleckDraw`: the event's look, each needing a host pass. Subtitles are done (2026-11-04, the file's own text and times on the event's picture).
 
 
+**2026-11-05:** `game/characterground.cpp` written: he stands on the floor; walls are written and not yet seen working. The rest of the 2026-11-04 text stands.
+
 ## The order for control
 
 Each step needs the ones above it. Sizes are the unwritten closure of its roots.

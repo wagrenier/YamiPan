@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "game/characterground.h"
 #include "game/characterinput.h"
 #include "game/gamehooks.h"
 #include "game/heap.h"
@@ -90,7 +91,7 @@ constexpr float kRandRange      = 2.1474836e+09f;
 
 constexpr float kNoValue = -1.0f;       // reset's +0x458
 
-constexpr u_char kOnGround = 1;
+constexpr u_char kGroundEnabled = 1;
 
 // The named bone; the ROM takes it with no test.
 // PC: a model with no such bone would read address 0 on the EE and carry on.
@@ -330,9 +331,8 @@ void StageCharacter::initStatus()
     rollIdleDelay();
     m_450 = 0;
     m_altAction = 0;
-    // PC: null until game/characterground.cpp: its ctor sets the pointer.
-    if (record->kind == CharacterKind_Yrt && m_ground->floats != nullptr)
-        *m_ground->floats = 1;
+    if (record->kind == CharacterKind_Yrt && m_ground->pushBody != nullptr)
+        m_ground->pushBody->on = 1;
 }
 
 // FS2 0x002176d0
@@ -353,7 +353,7 @@ void StageCharacter::reset(int arg)
     initStatus();
     m_motion->reset(arg);
     m_ground->reset();
-    m_ground->onGround = kOnGround;
+    m_ground->m_enabled = kGroundEnabled;
     if (isViewLinked())
         gStageScene->getTopView()->onViewTop();
     if (m_input != nullptr)
@@ -610,4 +610,30 @@ StageCharacter::StageCharacter()
     m_gear = nullptr;
     m_42c = 0;
     initSounds();
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// PC: the terminate hook 0x179d30 is not written. Its first calls are the
+// ground's end of the frame and the motion's 0x1e06f0, whose 0x1e18c0 opens
+// with the copy of the motion's wall flag; the rest (the character's
+// effects) waits for its TU.
+
+void StageCharacter::sideHook3()
+{
+    m_ground->endFrame();
+    m_motion->m_wallCheckNow = m_motion->m_wallCheck;
+}
+
+// FS2 0x00215ef0
+
+bool StageObject::isPlayer()
+{
+    return gStageScene->player == this;
+}
+
+// FS2 0x00215ed0
+
+bool StageObject::isPartner()
+{
+    return gStageScene->partner == this;
 }

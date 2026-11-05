@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/characterground.cpp",
   "game/playermotion.cpp",
   "game/stagecharacter.cpp",
   "game/characterbrain.cpp",
@@ -56,7 +55,23 @@
    "task": "The character's brain, step 5 of roadmap-3d-control.md, queued 2026-11-04: 0x1dbca0..0x1df0b0 out of unassigned@001d85b0: ctor 0x1dd680 (EE 0x9b0), update CharacterBrain::update 0x1dd330. setPlayer turns the player's off, so the player only needs it to exist; do the part the character's ctor and setPlayer reach first. Ends verify."
   },
   "game/characterground.cpp": {
-   "task": "The character's ground, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1f3d20.. (EE 0x1c0) and CharacterGround::faceNear 0x1eff00, out of unassigned@001d85b0. The main camera's slope tilt and GroundVolume read this. Needs game/stagecollision.cpp. Ends verify until the character stands on the map."
+   "notes": "All code of the TU is written. Seen in a 285 s New Game run, no crash: F_PC01 stands at z 1139.2 on the ray's floor (attr 59, landed) for the 1320 frames logged; progress/20261105-ground-stands.png shows him upright from behind in the room, no reference exists. vecDistance 0x135f20 was a stub answering 0: written, inline in vu0math.h; it also fixes nearest-of-several-meshes in StageScene::raycast, so camera and sound rays may change. verify because walls were not seen working: the scripted stick did not fire in the run, which reached only 1320 stage frames, so a pad that moves him sooner is the next test (watch wallCount, and that he stops at the walls). Bridge: StageCharacter::sideHook3 stands for the terminate hook 0x179d30 (endFrame and the copy to m_wallCheckNow). Stubs outside the TU: StageCar six at 0x289dd0.., getHandClass, playBumpSound, winsStruggle, getMeanVelocity. No Ghidra names changed in this run: the functions are still FUN_ there. open-items.md Done has the doubts.",
+   "ranges": [
+    [
+     "001eff00",
+     "001f4bb0"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-05 00:57",
+     "status": "verify",
+     "summary": "CharacterGround, all 19 of 0x1eff00..0x1f4bb0, plus vecDistance, isPlayer, isPartner: he stands on the map"
+    }
+   ],
+   "status": "verify",
+   "task": "The character's ground, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1f3d20.. (EE 0x1c0) and CharacterGround::faceNear 0x1eff00, out of unassigned@001d85b0. The main camera's slope tilt and GroundVolume read this. Needs game/stagecollision.cpp. Ends verify until the character stands on the map.",
+   "why": "the character's ground: faceNear 0x1eff00 up to the small helpers 0x1f4bb0, which stagecollision.cpp already owns; 0x1f4bb0..0x1f5250 are CollisionBody vectors (read there); the file name is the port's"
   },
   "game/characterinput.cpp": {
    "notes": "All code of the TU is written; the control hook's input half now runs in stageUpdateCharacterMotions. Seen in a 285 s New Game run with the scripted left stick at reads 5720..6970: F_PC01 runs, turns on the spot, backs and strafes with L1, moved from (7286, 6064) to (4712, 3798), no crash, and idle0 played. progress/20261104-f_pc01-pad-walk.png shows him whole from behind, on black outside the room. He goes through walls and stays at z 1138 until game/characterground.cpp. verify because the right stick, buttons, aim, scope, car and companion were not exercised and no reference exists; offer, StageParty::start, canTakeOver, getLifeState, isCompanionWalking and the car members are stubs. Next: game/characterground.cpp. New names are in batch 124; open-items.md Done and Decisions have the doubts.",
