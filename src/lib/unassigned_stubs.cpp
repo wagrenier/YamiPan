@@ -590,11 +590,6 @@ void CharacterBrain::setEnabled(bool on)
 }
 
 // stub of FS2 0x00239bb0
-void CharacterInput::setActive(bool on)
-{
-    YAMIPAN_STUB("CharacterInput::setActive", 0x00239bb0);
-}
-
 // stub of FS2 0x002b1500
 void ClearSequence::update()
 {
@@ -1197,12 +1192,6 @@ StageCollisionFace * CharacterGround::faceNear(const float *localPoint)
 }
 
 // stub of FS2 address unknown (1 candidates)
-float CharacterInput::padSway() const
-{
-    YAMIPAN_STUB("CharacterInput::padSway", 0x00000000);
-    return {};
-}
-
 // stub of FS2 address unknown (1 candidates)
 bool StageObject::followsPlayerLight()
 {
@@ -1355,17 +1344,7 @@ void StageObject::breakPart(int part, bool withEffect)
 // ---- by hand: the character's parts, until their TUs (next in the queue) ----
 
 // stub of FS2 0x00239c60
-CharacterInput::CharacterInput(StageObject *owner)
-{
-    YAMIPAN_STUB("CharacterInput::CharacterInput", 0x00239c60);
-}
-
 // stub of FS2 0x00239be0
-CharacterInput::~CharacterInput()
-{
-    YAMIPAN_STUB("CharacterInput::~CharacterInput", 0x00239be0);
-}
-
 // stub of FS2 0x001dd680
 CharacterBrain::CharacterBrain(StageObject *owner)
 {
@@ -1403,11 +1382,6 @@ void CharacterGround::reset()
 }
 
 // stub of FS2 0x00239bc0
-void CharacterInput::reset()
-{
-    YAMIPAN_STUB("CharacterInput::reset", 0x00239bc0);
-}
-
 // stub of FS2 0x0023f310
 void RouteFilter::allow(const char *name, bool on)
 {
@@ -1523,5 +1497,64 @@ void CharacterGround::setHitBone(const char *name)
 bool StageNodeTree::contains(const sceVu0FVECTOR point)
 {
     YAMIPAN_STUB("StageNodeTree::contains", 0x001908d0);
+    return {};
+}
+
+// stub of FS2 0x0028ec90
+bool GateParts::isLit()
+{
+    YAMIPAN_STUB("GateParts::isLit", 0x0028ec90);
+    return {};
+}
+
+// stub of FS2 0x0028d780
+void StageCar::honk()
+{
+    YAMIPAN_STUB("StageCar::honk", 0x0028d780);
+}
+
+// stub of FS2 0x0028d810
+void StageCar::setDirection(int direction)
+{
+    YAMIPAN_STUB("StageCar::setDirection", 0x0028d810);
+}
+
+// stub of FS2 0x0028db80
+void StageCar::setLights(bool on)
+{
+    YAMIPAN_STUB("StageCar::setLights", 0x0028db80);
+}
+
+// stub of FS2 0x00212020
+bool StageCharacter::canTakeOver()
+{
+    YAMIPAN_STUB("StageCharacter::canTakeOver", 0x00212020);
+    return {};
+}
+
+// stub of FS2 0x00212460
+int StageCharacter::getLifeState()
+{
+    YAMIPAN_STUB("StageCharacter::getLifeState", 0x00212460);
+    return {};
+}
+
+// stub of FS2 0x002119d0
+bool StageCharacter::isCompanionWalking()
+{
+    YAMIPAN_STUB("StageCharacter::isCompanionWalking", 0x002119d0);
+    return {};
+}
+
+// stub of FS2 0x001feba0
+void StageParty::start(StageObject *object)
+{
+    YAMIPAN_STUB("StageParty::start", 0x001feba0);
+}
+
+// stub of FS2 0x0023ed10
+u_char UiItemList::offer(StageCharacter *who, int kind)
+{
+    YAMIPAN_STUB("UiItemList::offer", 0x0023ed10);
     return {};
 }

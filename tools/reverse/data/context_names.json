@@ -17327,6 +17327,12 @@
   "was": "FUN_001feb90",
   "why": "clears the record's first byte, hides its objects, removes its view, stops four sounds"
  },
+ "001feba0": {
+  "name": "StageParty::start",
+  "tag": "game-inferred",
+  "was": "FUN_001feba0",
+  "why": "sets the record's first byte (isRunning), its object +0x10, pushes the view, sound; the pair of stop"
+ },
  "001febb0": {
   "name": "StageParty::createCamera",
   "tag": "game-inferred",
@@ -17477,11 +17483,35 @@
   "was": "FUN_00211970",
   "why": "controlled equals this and is not the player"
  },
+ "002119d0": {
+  "name": "StageCharacter::isCompanionWalking",
+  "tag": "game-inferred",
+  "was": "FUN_002119d0",
+  "why": "sheet kind 0xb and a motion of the walking lists; its result sets mission +0xd8 instead of the refusal sound"
+ },
+ "00212020": {
+  "name": "StageCharacter::canTakeOver",
+  "tag": "game-inferred",
+  "was": "FUN_00212020",
+  "why": "not scene +0x7c, sheet kind not 0xb, slot +0x278 not 2..5 or 7; true leads to requestControl of this character"
+ },
+ "00212460": {
+  "name": "StageCharacter::getLifeState",
+  "tag": "game-inferred",
+  "was": "FUN_00212460",
+  "why": "0 inactive, 2..7 from endurance +0x598, motions 0xb1..0xb4 and +0x690; the name is a guess"
+ },
  "00214a70": {
   "name": "StageObjRecord::init",
   "tag": "game-inferred",
   "was": "FUN_00214a70",
   "why": "+0x40 = 1, first thing parse does to a character record"
+ },
+ "00214ee0": {
+  "name": "StageCharacter::forcedViewChange",
+  "tag": "game-inferred",
+  "was": "FUN_00214ee0",
+  "why": "for the scene's controlled or player: 1 when UiShowFlags byte 10 is set or it is not the player; goes straight to wants.viewChange"
  },
  "00214f20": {
   "name": "StagePlayer::isHoldingAction",
@@ -17554,6 +17584,12 @@
   "tag": "game-inferred",
   "was": "FUN_00216140",
   "why": "a bit from the character record's kind +0x10, by difficulty"
+ },
+ "002162d0": {
+  "name": "StageCharacter::getTurnRate",
+  "tag": "game-inferred",
+  "was": "FUN_002162d0",
+  "why": "+0x5e8 (setProperty: turn speed / 100) * dt * 1.9634955; scales wants.moveYaw"
  },
  "00216400": {
   "name": "StageCharacter::swapWeapons",
@@ -18047,6 +18083,24 @@
   "was": "FUN_00236b20",
   "why": "min, max at the first argument: point inside with the margin vector on each side"
  },
+ "00236b90": {
+  "name": "CharacterInput::update",
+  "tag": "game-inferred",
+  "was": "FUN_00236b90",
+  "why": "first step of the control hook 0x17a810 on the object at +0x21c: reads its pad through GameOptions::buttonMap and fills CharacterWants (+0x2c0)"
+ },
+ "00239a90": {
+  "name": "CharacterInput::readFire",
+  "tag": "game-inferred",
+  "was": "FUN_00239a90",
+  "why": "a press, or with hasAutoFire a tap (let go inside 6 frames, Pad::m_repeatState count) or a hold; the result goes to wants +0x2f4"
+ },
+ "00239b90": {
+  "name": "CharacterInput::hasAutoFire",
+  "tag": "game-inferred",
+  "was": "FUN_00239b90",
+  "why": "owner +0x238 set: the owner's ability byte +0x3c6; selects readFire's held mode"
+ },
  "00239bb0": {
   "name": "CharacterInput::setActive",
   "tag": "game-inferred",
@@ -18070,6 +18124,12 @@
   "tag": "game-inferred",
   "was": "FUN_00239c60",
   "why": "operator_new(0x60) in the ctor of StageCharacter, stored at +0x21c"
+ },
+ "00239d50": {
+  "name": "CharacterPad::update",
+  "tag": "game-inferred",
+  "was": "FUN_00239d50",
+  "why": "the one slot of vtable 0x3164f8 (the GamePad made in CharacterInput's ctor): GamePad::read, then clears buttons and sticks by menu, game over, event, input focus and UiShowFlags"
  },
  "0023aca0": {
   "name": "SceneBoxList::update",
@@ -18400,6 +18460,12 @@
   "tag": "game-inferred",
   "was": "FUN_0023e7b0",
   "why": "fills the back slot from the character each frame"
+ },
+ "0023ed10": {
+  "name": "UiItemList::offer",
+  "tag": "game-inferred",
+  "was": "FUN_0023ed10",
+  "why": "whether the front slot (flip & 1) with kind a2 goes to the character a1, and when it does runs the slot's use; called for each kind CharacterAllows names"
  },
  "0023ee90": {
   "name": "UiItemList::pick",
@@ -21527,11 +21593,35 @@
   "was": "FUN_00289be0",
   "why": "StageScene ctor new(0x2c) for +0xc0 with (4, 0x800, 0x878): base 0x2895c0, then count pointers new[] (+0x1c), sizes +0x20 / +0x24; name a guess"
  },
+ "0028d780": {
+  "name": "StageCar::honk",
+  "tag": "game-inferred",
+  "was": "FUN_0028d780",
+  "why": "plays CAR_HORN and adds a noise for its driver +0x3c0"
+ },
+ "0028d810": {
+  "name": "StageCar::setDirection",
+  "tag": "game-inferred",
+  "was": "FUN_0028d810",
+  "why": "stores 1 or -1 at +0x382, other values ignored; the wheel's input calls it, class with CAR_HORN / CAR_EG_ST"
+ },
+ "0028db80": {
+  "name": "StageCar::setLights",
+  "tag": "game-inferred",
+  "was": "FUN_0028db80",
+  "why": "GateParts::setEffects on +0x2b0 and the two particles +0x2b4 on or off; the Lamp action toggles it"
+ },
  "0028ec70": {
   "name": "PlayerGear::setLightOrder",
   "tag": "game-inferred",
   "was": "FUN_0028ec70",
   "why": "writes +0x2b0 of the two lights at +0x14 and +0x20"
+ },
+ "0028ec90": {
+  "name": "GateParts::isLit",
+  "tag": "game-inferred",
+  "was": "FUN_0028ec90",
+  "why": "+0x14's byte +0x214, 0 without one; argument of StageCar::setLights' toggle"
  },
  "0028ecb0": {
   "name": "GateParts::setEffects",

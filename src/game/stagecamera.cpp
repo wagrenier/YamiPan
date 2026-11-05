@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "game/characterinput.h"
 #include "game/gamehooks.h"
 #include "game/playermotion.h"
 #include "game/mathutil.h"
@@ -434,7 +435,7 @@ void StageMainCamera::cameraStep()
             if (motionSways(linked->m_motion->motionId)) {
                 // The ROM does this one in double (the soft-float calls).
                 const double side = linked->m_input->padSway() * kSwayScale;
-                eye[0] += (float)(side * (1.0 - fabsf(linked->m_input->lookYaw)));
+                eye[0] += (float)(side * (1.0 - fabsf(linked->m_input->lookYaw())));
             }
             const float rate = 1.0f / (followDivisor * kOffsetEaseScale);
             approachVec3(rate, kFollowMaxStep, m_focusOffset, m_focusOffset, focus);
@@ -499,8 +500,8 @@ void StageMainCamera::cameraStep()
         }
 
         // The stick pulls the eye round the character.
-        yawStick = linked->m_input->lookYaw;
-        pitchStick = linked->m_input->lookPitch;
+        yawStick = linked->m_input->lookYaw();
+        pitchStick = linked->m_input->lookPitch();
         const float yawSize = fabsf(yawStick);
         const float stickSize = fabsf(pitchStick) <= yawSize ? yawSize : fabsf(pitchStick);
         float rise;

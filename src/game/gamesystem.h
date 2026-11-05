@@ -49,6 +49,11 @@ public:
     int  read();                                                         // FS2 0x0012d4f0
     void computeSticks();                                                // FS2 0x0012d2c0
     void setButtonMap(ButtonMap *map);                                   // FS2 0x0012d2b0
+    // The button an action is on: inline at every use in the ROM.
+    int  actionButton(int action) const
+    {
+        return m_optionsMap != nullptr ? m_optionsMap->button[action] : m_buttonMap.button[action];
+    }
 
     // The constructors' common part: the own map's defaults, no options map,
     // sticks cleared.

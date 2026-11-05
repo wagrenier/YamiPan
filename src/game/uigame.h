@@ -301,8 +301,8 @@ enum GameValueKind
     GameValue_StageClock = 29,      // StageSelect::_10 (the count-up clock); stage 29 reads 1
     GameValue_NaviFlagF0 = 30,      // NaviMenu::flagsF0[i] != 0
     GameValue_NaviFlagE0 = 31,      // NaviMenu::flagsE0[i] != 0
-    GameValue_Option14 = 32,        // GameOptions::_14 (bool)
-    GameValue_Option15 = 33,        // GameOptions::_15 (bool)
+    GameValue_Option14 = 32,        // GameOptions::invertY (bool)
+    GameValue_Option15 = 33,        // GameOptions::invertX (bool)
     GameValue_BeatsRecord = 34,     // StageResult::beatsRecord
     GameValue_Option1c = 35,        // GameOptions::_1c (bool)
     GameValue_Clock2Amount = 36,    // StageResult::clock2's pending amount (kGameValueClock*)
