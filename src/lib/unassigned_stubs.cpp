@@ -220,16 +220,10 @@ SigLamp::SigLamp(Tim2Texture*)
     YAMIPAN_STUB("SigLamp::SigLamp", 0x002a7bf0);
 }
 
-// stub of FS2 0x002308a0
-StageMenu::StageMenu(WideFontPrinter*, int)
-{
-    YAMIPAN_STUB("StageMenu::StageMenu", 0x002308a0);
-}
-
 // stub of FS2 address unknown (1 candidates)
 void StageMenu::destroy()
 {
-    YAMIPAN_STUB("StageMenu::destroy", 0x00000000);
+    YAMIPAN_STUB("StageMenu::destroy", 0x00230820);
 }
 
 // stub of FS2 0x00190c20
@@ -706,13 +700,13 @@ void ScreenFill::draw(sceVif1Packet *packet, TexAreaList *texList)
 // stub of FS2 address unknown (1 candidates)
 void StageMenu::draw(sceVif1Packet *packet, TexAreaList *texList)
 {
-    YAMIPAN_STUB("StageMenu::draw", 0x00000000);
+    YAMIPAN_STUB("StageMenu::draw", 0x002303c0);
 }
 
 // stub of FS2 address unknown (1 candidates)
 void StageMenu::update()
 {
-    YAMIPAN_STUB("StageMenu::update", 0x00000000);
+    YAMIPAN_STUB("StageMenu::update", 0x00230400);
 }
 
 // stub of FS2 0x00190a80

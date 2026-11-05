@@ -112,6 +112,7 @@ The API, how the plugin behaves, the setup and the traps: the skill's `reference
 | `callcheck.py` | Calls in each `FS2 0x...`-annotated function vs FS2's callees (jal + tail jumps), by name's last component or the source definition at that address; `// callcheck: A, B (why)` explains invisible calls. |
 | `layoutcheck.py` | Every game header on its own under MinGW GCC and MSVC so both evaluate the `static_assert` layouts; lints structs without asserts (or a `layout: host` note), plain `long`, `wchar_t`, `packed`. |
 | `gdbrun.py` / `gdbdrive.py` | The game under MinGW's gdb: a fault holds it and writes `work/gdb/crash.txt`; `--cmd` inspects, `--break` stops a hang. |
+| `crashsym.py [log]` | The `[crash]` lines a plain run prints on a fault (`yamipan::crash`, `core/crash_report.cpp`) as functions and source lines, through addr2line; default log `work/run_relwithdebinfo.log`. Try this before gdb: a fault that depends on memory or timing can vanish there. |
 
 ## Provenance tags
 

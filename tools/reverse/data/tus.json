@@ -621,7 +621,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Written: game/stagedoor.cpp and .h (StageDoor, all of 0x1723c0..0x174a10 and 0x171a30), game/mapobject.h, StageMapObject::setMotionList 0x175d40, DoorCondition 0x2710a0 and 0x271630, DoorLink 0x27b0f0..0x27b640, MotionProbe::findDoor 0x26a6b0, doorActions and the door helpers, natives 0x44, 0x45, 0x79, 0x87, 0x88, 0x89, 0xf6, 0x11b, 0x11c, 0x11d, 0x12c, 0x136, 0x14f, 0x15b, 0x231. kDoorsEnabled in game/stagedoor.h is FALSE: with it true a plain New Game run hits an access violation just after the stage starts (3 of 4 runs), while 2 runs under gdb did not fault, so the cause is unknown; null guards did not cure it. Next run: find that crash first, one piece at a time, with fflush on every print (a plain run needs about 285 s to reach the stage). Seen with it true under gdb, temporary test removed: the 10 doors of stage 1 build, findDoor finds oMK99_ds_05, the door script posts its label, pick answers 108. Not seen: a door opening: motion 0 and mode 0 after a pick made from the start hook, so test the real press in StageScene::update. No picture exists. With it false only the 15 s smoke ran, no stage run: out of time. Left: native 0x7a, the shared property ids, the 18 other conditions, the other links, the list 0x1df0b0, clearNoFlash. open-items.md Done has all of it.",
+   "notes": "Crash: StageMenu::StageMenu was a stub, so state, pending and pendingOn were host heap garbage and native 0x45 passed them to wstrcmp; it depended on heap contents, which is why gdb never saw it. Fixed by the ctor in new game/stagemenu.cpp (ctor only: update, draw and destroy stay stubs on purpose, with update and no window the menu button would open an invisible menu holding the input focus). Door not opening: the start hook ran after the scripts and wiped wants; now StageCharacter::sideHook0 0x17a860 runs in actionStart and sideHook1 0x17a810 in actionControl. kDoorsEnabled is gone. New: yamipan::crash prints [crash] lines on stdout, py crashsym.py names them; try it before gdb. Seen: oMK99_ds_05 (type T) opened by Use at the game's own place, motion 73, modes 0-1-2; the pad's own CROSS closed it (motion 74) and reopened it. Pictures: progress/20261105-door-shut.png, progress/20261105-door-open.png; no reference exists. After the fix 7 of 7 runs lived, no [crash] line. Not proven: walking through the open door, walking on the final build (the walking-pad run shows the same room with a small shift), keys, locks, forcing, type R doors, the door sounds. Left: the rest of 0x17a860 (flags +0x3a8, +0x3ac, the live clocks, the look-ahead point), the brain in sideHook1, native 0x7a and the StageMenu window 0x20ac30, the shared property ids, hasNotice, hasFollower, the 18 other conditions, the other links, the list 0x1df0b0, clearNoFlash. Next: walk through the open door. open-items.md Done has all of it.",
    "ranges": [
     [
      "0017df60",
@@ -769,6 +769,11 @@
      "date": "2026-11-05 02:55",
      "status": "partial",
      "summary": "doors written and switched off: StageDoor, Door condition and link, natives; with them on a stage run crashes, cause not found in time"
+    },
+    {
+     "date": "2026-11-05 03:49",
+     "status": "partial",
+     "summary": "door crash found and fixed, doors on: a door opens and closes on Use, with the game's own labels on screen"
     }
    ],
    "status": "partial",
@@ -1193,6 +1198,15 @@
    ],
    "status": "verify",
    "why": "Cut out of unassigned@00171300 (the frontier pick for getStageFiles 0x17f150): one object file between the adjustor thunks 0x17f090..0x17f150 (the previous file's last code) and 0x17fce0 (answers 25: slot 108 of the bullet class vtable 0x312cdc, so the next file's inline virtuals): getStageFiles, stageThread 0x17f160 (slot 3, started by 0x2b60b0), its clear / game-over / pause / restart helpers, stageLoad 0x17fb90, setStageLoader 0x17fc90 and the handler-table stub 0x17f7b0. The file name is the port's (no strings)."
+  },
+  "game/stagemenu.cpp": {
+   "ranges": [
+    [
+     "002303c0",
+     "00230980"
+    ]
+   ],
+   "why": "StageMenu: the ctor is written with game/playermotion.cpp's sixth run, because a stubbed ctor left its fields as heap garbage; the vtable 0x3164b0 holds 0x230820, 0x230400, 0x2303c0"
   },
   "game/stagemodel.cpp": {
    "notes": "All of StageModel is written (init, bindBones, placeBones, setBaseMotion, advance, applyMotion, the play and find calls, the dtor). BoneNode and ModelLink were one StringMap, now boneMap. game/modelpose.h holds the pose as a stand-in: short accessors written, load / update / solve / play and the ctors are stubs, so a pose has no bones yet. Pose +0x150 is a matrix pointer, not a count (was called pending). New Game run: reaches the stage, no crash, black at the last frame; nothing tests this on screen yet because createInstance answers null and no pose was built. StringMap::balance passed a scratch test on 3000 trees. Next, rena/rena_model.cpp: createInstance must fill rootBone +0x10, bones with node at ModelNodeBone records, inverseBinds +0x20, bindMatrices +0x24, rootMatrix +0x28 and textures +0x50, and allocate with plain new (delete data in ~StageModel). open-items.md has the doubts.",
