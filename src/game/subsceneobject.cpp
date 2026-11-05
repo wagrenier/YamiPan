@@ -4,8 +4,7 @@
  *  An event's objects (game/subsceneobject.h): 0x268310..0x269da0 the base,
  *  0x2bb600..0x2bc100 the classes on it. The file name is the port's.
  *
- *  Their frame is ScenePairTable's third step (sideHook2): until that table
- *  exists the motions bound here stand on their first frame.
+ *  Their frame is ScenePairTable's third step (sideHook2).
  *
  *  Left out: 0x2689a0 (a sound on a named bone, through the scene's +0xdc):
  *  no vtable holds it and nothing written calls it.
@@ -426,7 +425,7 @@ void SubSceneModelObject::bindMotion(const char *name)
         m_model->setBaseMotion(file, 0);
         m_model->bindBones();
         m_model->placeBones(this);
-        gStageScene->pairs->add(this, 1);
+        gStageScene->pairs->add(this, ScenePairList_Objects);
         setDirtyTree(true);
     }
 }

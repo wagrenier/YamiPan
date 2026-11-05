@@ -11801,6 +11801,66 @@
   "was": "FUN_00171680",
   "why": "StageScene ctor new(0x2c) for +0x14: __construct_array of 5 elements of 8 bytes ({0, 0}, 0x1716c0); class name a guess, contents unread"
  },
+ "001716c0": {
+  "name": "ScenePairList::ScenePairList",
+  "tag": "game-inferred",
+  "was": "FUN_001716c0",
+  "why": "head and count 0; ScenePairTable's ctor constructs five of them, 8 bytes each"
+ },
+ "001716d0": {
+  "name": "ScenePairList::~ScenePairList",
+  "tag": "game-inferred",
+  "was": "FUN_001716d0",
+  "why": "deleting dtor of the same array, calls 0x171870"
+ },
+ "00171730": {
+  "name": "ScenePairList::find",
+  "tag": "game-inferred",
+  "was": "FUN_00171730",
+  "why": "walks next (+4) for the node whose boxed value equals the key; ScenePairTable::remove"
+ },
+ "00171770": {
+  "name": "ScenePairList::pushBack",
+  "tag": "game-inferred",
+  "was": "FUN_00171770",
+  "why": "new box + node after the tail, count + 1; ScenePairTable::add"
+ },
+ "00171820": {
+  "name": "ScenePairList::erase",
+  "tag": "game-inferred",
+  "was": "FUN_00171820",
+  "why": "moves head off the node, unlinks it, count - 1; ScenePairTable::remove"
+ },
+ "00171870": {
+  "name": "ScenePairList::clear",
+  "tag": "game-inferred",
+  "was": "FUN_00171870",
+  "why": "frees every box and node, head and count 0"
+ },
+ "001718e0": {
+  "name": "ScenePairList::pushFront",
+  "tag": "game-inferred",
+  "was": "FUN_001718e0",
+  "why": "new node becomes head, the old head follows it; pushBack on an empty list"
+ },
+ "00171970": {
+  "name": "ScenePairList::tail",
+  "tag": "game-inferred",
+  "was": "FUN_00171970",
+  "why": "last node by next"
+ },
+ "001719a0": {
+  "name": "ScenePairList::unlink",
+  "tag": "game-inferred",
+  "was": "FUN_001719a0",
+  "why": "joins the node's neighbours, frees its box and the node"
+ },
+ "00171a10": {
+  "name": "ScenePairNode::ScenePairNode",
+  "tag": "game-inferred",
+  "was": "FUN_00171a10",
+  "why": "value, next 0, prev 0; 0xc bytes"
+ },
  "00171ae0": {
   "name": "StageObject::setDirty",
   "tag": "game-inferred",
@@ -11921,6 +11981,30 @@
   "was": "FUN_00173cb0",
   "why": "doors (kind 2) reach the Root object +0xd8"
  },
+ "00174a10": {
+  "name": "StageMapObject::setYaw",
+  "tag": "game-inferred",
+  "was": "FUN_00174a10",
+  "why": "slot +0x214 of 0x3115c0 and the door's: copies the rotation with a new z and calls slot +0x210"
+ },
+ "00174a40": {
+  "name": "StageMapObject::setRotation",
+  "tag": "game-inferred",
+  "was": "FUN_00174a40",
+  "why": "slot +0x210: setRotationVec, then marks a clean transform dirty for one frame (+0x21c)"
+ },
+ "00174aa0": {
+  "name": "StageMapObject::setPosition",
+  "tag": "game-inferred",
+  "was": "FUN_00174aa0",
+  "why": "slot +0x20c: setPosition, then marks a clean transform dirty for one frame (+0x21c)"
+ },
+ "001756b0": {
+  "name": "StageMapObject::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_001756b0",
+  "why": "side slot +8 through thunk 0x1773d0: ends the one dirty frame"
+ },
  "001758f0": {
   "name": "StageMatrixNode::getWorldMatrix",
   "tag": "game-inferred",
@@ -11980,6 +12064,24 @@
   "tag": "game-inferred",
   "was": "FUN_00176bc0",
   "why": "0x14 block: distinct part ids from a collision record's faces +0x46, a PartSwitch for each, effects"
+ },
+ "001771a0": {
+  "name": "StageMapObject::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_001771a0",
+  "why": "side slot +0x14 through thunk 0x177340: empty"
+ },
+ "001771b0": {
+  "name": "StageMapObject::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_001771b0",
+  "why": "side slot +0x10 through thunk 0x177350: advances the model, updateMatrix on its bone nodes, clears +0x210"
+ },
+ "00177260": {
+  "name": "StageMapObject::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_00177260",
+  "why": "side slot +0xc through thunk 0x177360: empty"
  },
  "00177270": {
   "name": "BoneNode::find",

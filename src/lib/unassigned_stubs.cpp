@@ -188,18 +188,6 @@ void SceneOwnedObject::destroy()
     YAMIPAN_STUB("SceneOwnedObject::destroy", 0x00000000);
 }
 
-// stub of FS2 0x00171680
-ScenePairTable::ScenePairTable()
-{
-    YAMIPAN_STUB("ScenePairTable::ScenePairTable", 0x00171680);
-}
-
-// stub of FS2 0x00171620
-ScenePairTable::~ScenePairTable()
-{
-    YAMIPAN_STUB("ScenePairTable::~ScenePairTable", 0x00171620);
-}
-
 // stub of FS2 0x00289be0
 ScenePool::ScenePool(unsigned int, int, int)
 {
@@ -781,30 +769,6 @@ void SceneOwnedObject::update()
     YAMIPAN_STUB("SceneOwnedObject::update", 0x00000000);
 }
 
-// stub of FS2 0x00171440
-void ScenePairTable::actionControl()
-{
-    YAMIPAN_STUB("ScenePairTable::actionControl", 0x00171440);
-}
-
-// stub of FS2 0x001713a0
-void ScenePairTable::actionMovement()
-{
-    YAMIPAN_STUB("ScenePairTable::actionMovement", 0x001713a0);
-}
-
-// stub of FS2 0x001714e0
-void ScenePairTable::actionStart()
-{
-    YAMIPAN_STUB("ScenePairTable::actionStart", 0x001714e0);
-}
-
-// stub of FS2 0x00171300
-void ScenePairTable::actionTerminate()
-{
-    YAMIPAN_STUB("ScenePairTable::actionTerminate", 0x00171300);
-}
-
 // stub of FS2 0x00289800
 void ScenePool::draw(sceVif1Packet *packet, TexAreaList *texList)
 {
@@ -1207,18 +1171,6 @@ void PartSwitch::init(ModelInstance *partsModel, const char *name, int partCount
 void PartSwitch::show(int index)
 {
     YAMIPAN_STUB("PartSwitch::show", 0x00186fe0);
-}
-
-// stub of FS2 0x001715f0
-void ScenePairTable::add(StageSideBase *entry, int list)
-{
-    YAMIPAN_STUB("ScenePairTable::add", 0x001715f0);
-}
-
-// stub of FS2 0x00171580
-void ScenePairTable::remove(StageSideBase *entry)
-{
-    YAMIPAN_STUB("ScenePairTable::remove", 0x00171580);
 }
 
 // stub of FS2 0x001f6180

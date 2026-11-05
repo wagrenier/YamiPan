@@ -24,6 +24,7 @@
 #include "game/gamepaths.h"
 #include "game/layoutpaths.h"
 #include "game/menupack.h"
+#include "game/scenepairs.h"
 #include "game/scriptrunner.h"
 #include "game/seplayer.h"
 #include "game/stageloop.h"
@@ -423,7 +424,8 @@ struct ModelPartRec
 // The object's second base (EE +0x18): the view flag, then a vtable of four
 // slots (empty in the base's table): an entry of ScenePairTable, whose four
 // action steps call them. StageMarker's are empty; a light's third is its
-// frame (StageLight::sideHook2), a spot's fourth trims it against the map.
+// frame (StageLight::sideHook2), a spot's fourth trims it against the map; a
+// map object's third advances its model (mapobject.cpp).
 // layout: host -- EE: +0 the flag, +4 the vptr.
 class StageSideBase
 {
@@ -1382,22 +1384,7 @@ private:
 // The ones the ROM deletes through a vtable get a plain `destroy()` stub
 // (the deleting dtor's slot) until their TU, like StageObject's.
 
-// +0x14: five {0, 0} pairs (0x1716c0); contents unread. layout: host (EE 0x2c).
-struct ScenePairTable
-{
-    ScenePairTable();                                                    // FS2 0x00171680
-    ~ScenePairTable();                                                   // FS2 0x00171620: deleting
-    // entry joins list; every action step reaches it.
-    void add(StageSideBase *entry, int list);                            // FS2 0x001715f0
-    // entry leaves whichever of the five lists holds it.
-    void remove(StageSideBase *entry);                                   // FS2 0x00171580
-    // The frame's action steps over the five lists: slots +8, +0xc, +0x10,
-    // +0x14 of every entry that is on (the perf bars' names).
-    void actionStart();                                                  // FS2 0x001714e0
-    void actionControl();                                                // FS2 0x00171440
-    void actionMovement();                                               // FS2 0x001713a0
-    void actionTerminate();                                              // FS2 0x00171300
-};
+// +0x14: ScenePairTable, game/scenepairs.h.
 
 // +0x18: four arrays of records reserved for 0x1fe each. layout: host (EE 0x70).
 struct SceneRecordBuckets
