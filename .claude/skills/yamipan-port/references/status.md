@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-04 18:40 at commit `5289e28` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-04 19:02 at commit `781b7ce` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-04 18:40 at commit `5289e28` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **3400** (52%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 2480
-- context-name ledger: 4024 entries; overrides of wrong library matches: 0
-- placed in a source file: 3930/6599 in 89 files
+- game functions: **6599**, named **3417** (52%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 2497
+- context-name ledger: 4041 entries; overrides of wrong library matches: 0
+- placed in a source file: 3948/6599 in 90 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **3042**; stubs: **255**
+- reconstructed FS2 functions: **3067**; stubs: **247**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -50,7 +50,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/gsutil.cpp` | 12 | 0 |
 | `src/game/heap.cpp` | 17 | 0 |
 | `src/game/layoutpaths.cpp` | 24 | 0 |
-| `src/game/mapobject.cpp` | 5 | 0 |
+| `src/game/mapobject.cpp` | 12 | 0 |
 | `src/game/mathutil.cpp` | 18 | 0 |
 | `src/game/memcard.cpp` | 55 | 0 |
 | `src/game/menupack.cpp` | 9 | 0 |
@@ -67,6 +67,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/rcnttimer.cpp` | 0 | 4 |
 | `src/game/s2ddata.cpp` | 9 | 0 |
 | `src/game/scene.cpp` | 1 | 0 |
+| `src/game/scenepairs.cpp` | 18 | 0 |
 | `src/game/scenerender.cpp` | 23 | 0 |
 | `src/game/screen.cpp` | 18 | 0 |
 | `src/game/scriptrunner.cpp` | 95 | 2 |
@@ -100,7 +101,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/vectortrack.cpp` | 10 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 212 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 204 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 18 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -128,9 +129,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 137 TUs: todo 80, partial 12, verify 76, done 2
-- next: **game/scenepairs.cpp** (pinned in the queue)
-- pinned queue: game/scenepairs.cpp, game/stagecollision.cpp, game/stagecharacter.cpp, game/playermotion.cpp, game/characterground.cpp, game/characterbrain.cpp, game/characterinput.cpp, game/stageplayer.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
+- 138 TUs: todo 80, partial 12, verify 77, done 2
+- next: **game/stagecollision.cpp** (pinned in the queue)
+- pinned queue: game/stagecollision.cpp, game/stagecharacter.cpp, game/playermotion.cpp, game/characterground.cpp, game/characterbrain.cpp, game/characterinput.cpp, game/stageplayer.cpp, yamipan/rendering/model_renderer.cpp, game/scriptrunner.cpp
 - partial: `game/scriptrunner.cpp` 95/652 -- VM 0x1d1c40, ScriptRunner, ScriptFrame, relocate, findEntry, scriptPrepare, the arg readers and 30 natives (every one stage 1 bg script calls) are written. All 
 - partial: `game/stageobject.cpp` 40/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
 - partial: `yamipan/rendering/model_renderer.cpp` 0/0 -- Written: game/stagecamera.cpp whole base plus StageMainCamera (0x178160 step, 0x179490, 0x179680, ctor). The step has NEVER run: StageCharacter ctor and setup a
@@ -165,6 +166,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/s2ddata.cpp` 9/9 -- Host: S2dRef<T> (s2ddata.h) is a 32-bit offset from the field itself, 0 null, implicit T* conversion, copy deleted; S2dData, S2dObject, S2dWidgetDef, S2dImage a
 - verify: `game/scene.cpp` 1/1 -- gameSceneThread written in full: loadInitPack, runStartupSequence, overlayThreadStart, then forever loadMenuPack, the scene from sScenes (one retail entry, Menu
+- verify: `game/scenepairs.cpp` 18/18 -- All 18 of 0x171300..0x171a30 written, batch 117, plus StageMapObject's sideHook0..3 and setPosition, setRotation, setYaw in mapobject.cpp (0x174a10..0x174aa0, 0
 - verify: `game/scenerender.cpp` 24/34 -- The pin is closed: applyDebugAmbient, its call, the README paragraph and SceneRender::isKeyed with its two guards are gone; nothing was brightened. Measured in 
 - verify: `game/screen.cpp` 18/18 -- All 18 functions of 0x2676e0..0x2681e0 written (batch 037, 33 names, Ghidra saved). Overlay thread slot 6 draws the BG movie screen layout (init pack file 2dEU/
 - verify: `game/seplayer.cpp` 35/35 -- Cut from unassigned@002908d0: game/seplayer.cpp is 0x2908d0..0x2937e0 (SoundTrack 17, SePlayer 18, batch 078: fsmFindTrack, fsmTrackHasText, seDistanceVolume, s
@@ -213,6 +215,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-04 19:02 `game/scenepairs.cpp` verify: the frame's action lists run; the plain map object's hooks and setters; the opening's characters move
 - 2026-11-04 18:40 `game/demoevent.cpp` verify: The opening event shows its subtitles: fsm files, WideFontPrinter, setFont, drawSubtitles and the mission notices written; the event picture has no reference
 - 2026-11-04 18:06 `game/stagecamera.cpp` verify: Natives 0x70 setPlayer and 0x64 script view written; CAM_EV10 shows in a test build
 - 2026-11-04 17:37 `rena/rena_draw.cpp` verify: Skinned meshes: palette, part box, the VU1 weights in the host module; the boy of d0101 and the sea of stage 1 draw
@@ -220,7 +223,6 @@ Recent sessions:
 - 2026-11-04 16:10 `game/subsceneobject.cpp` partial: The event's objects and natives 0x144, 0x145, 0x148, 0x163, 0x164: first pictures of the opening from its own camera
 - 2026-11-04 15:18 `game/modelpose.cpp` verify: The solvers, the leg IK and the sw bones swing written; TU complete, not seen on screen
 - 2026-11-04 14:50 `game/modelpose.cpp` partial: ModelPose, ModelPoseBone, ModelMotion and the quaternions written, native 0x159, solvers left as stubs
-- 2026-11-04 14:04 `game/demoevent.cpp` partial: The opening event starts: mission, events, fade, demo camera and voice written, d0101 proven from the script and its own script runs; nothing of it shows yet
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
@@ -231,10 +233,10 @@ Recent sessions:
 | `unassigned@0018c050` | todo | 0/14/71 | 29.7 | 41 | 0 |
 | `unassigned@00231d40` | partial | 2/12/58 | 36.1 | 34 | 0 |
 | `unassigned@001d85b0` | todo | 0/13/239 | 119.7 | 30 | 0 |
-| `unassigned@00171300` | partial | 3/11/169 | 19.0 | 28 | 0 |
 | `unassigned@0017e140` | todo | 0/4/110 | 3.2 | 27 | 0 |
-| `unassigned@00176480` | partial | 18/3/134 | 29.0 | 23 | 0 |
+| `unassigned@00176480` | partial | 21/3/134 | 29.0 | 23 | 0 |
 | `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
+| `unassigned@00186ee0` | partial | 1/2/6 | 0.8 | 18 | 0 |
 | `unassigned@002c42a0` | todo | 0/18/123 | 49.1 | 18 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
@@ -267,7 +269,6 @@ Recent sessions:
 | `00214f60` | StageObject::getAltSoundFlag | 10 | game | stub | - |
 | `00177270` | BoneNode::find | 10 | game | missing | - |
 | `002c0d80` | FUN_002c0d80 | 10 | - | missing | game/packtables.cpp |
-| `001715f0` | ScenePairTable::add | 9 | game | stub | - |
 | `00135b90` | rotationMatrixXyz | 9 | game | missing | - |
 | `00136020` | vecDirection | 9 | game | missing | - |
 | `00136460` | translateMatrix | 8 | game | missing | - |
@@ -281,4 +282,5 @@ Recent sessions:
 | `001f6690` | CollisionBody::CollisionBody | 6 | game | stub | - |
 | `001f6180` | SceneRecordBuckets::add | 6 | game | stub | - |
 | `00233810` | StageCollision::raycast | 6 | game | stub | - |
+| `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
 

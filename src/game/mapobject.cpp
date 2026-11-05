@@ -14,6 +14,7 @@
  * ======================================================================== */
 #include <string.h>
 
+#include "game/clock.h"
 #include "game/gamehooks.h"
 #include "game/stagescene.h"
 #include "game/stageloop.h"
@@ -22,6 +23,7 @@
 namespace {
 
 constexpr char kRootModelName[] = "Root";   // data 0x3030c0
+constexpr float kFrameSeconds = 0.033333335f;   // 1/30 s: a motion frame
 
 // Bits setupMapObject sets on every map model.
 constexpr char kGateModelA[] = "oGK99_01";   // data 0x3030d8
@@ -29,8 +31,9 @@ constexpr char kGateModelB[] = "oDC99_01";   // data 0x3030e8
 constexpr u_short kMapModelFlags = 0x91;    // ModelFlag names none of these bits yet (unread)
 constexpr u_short kMapModelLitBit = 0x80;   // off on a model with its own lights
 
-// The plain map object (vtable 0x3115c0): the ROM's ctor also makes a table
-// of collision slots, which waits for setupMapObject's collision half.
+// The plain map object (vtable 0x3115c0, side table 0x3115e4): the ROM's ctor
+// also makes a table of collision slots, which waits for setupMapObject's
+// collision half. The door class 0x174940 shares its setters and sideHook0.
 // layout: host -- EE 0x240.
 class StageMapObject : public StageObject
 {
@@ -43,7 +46,83 @@ public:
     StageMapObject() { setDirtyTree(false); }
 
     int getKind() override { return StageObject_MapObject; }
+
+    void setPosition(const float *pos) override;                         // FS2 0x00174aa0
+    void setRotation(const float *rot) override;                         // FS2 0x00174a40
+    void setYaw(float yaw) override;                                     // FS2 0x00174a10
+
+    void sideHook0() override;                                           // FS2 0x001756b0
+    void sideHook1() override {}                                         // FS2 0x00177260
+    void sideHook2() override;                                           // FS2 0x001771b0
+    void sideHook3() override {}                                         // FS2 0x001771a0
+
+private:
+    void markMoved();
+
+    // Who touched it this frame: only setupMapObject's collision half (not
+    // written, file header) sets it.
+    StageObject *m_touchedBy = nullptr; // FS2 +0x210
+    // Its transform is dirty for this frame only (markMoved).
+    u_char m_movedThisFrame = 0;        // FS2 +0x21c
 };
+
+// A map object rests with a clean transform, so a move has to ask for its one
+// rebuild; sideHook0 takes it back on the next frame. Inline in the ROM.
+void StageMapObject::markMoved()
+{
+    if (!m_xform.dirty) {
+        setDirty(true);
+        m_movedThisFrame = 1;
+    }
+}
+
+// FS2 0x00174aa0
+// callcheck: setPosition
+
+void StageMapObject::setPosition(const float *pos)
+{
+    m_xform.setPosition(pos);
+    markMoved();
+}
+
+// FS2 0x00174a40
+// callcheck: setRotationVec
+
+void StageMapObject::setRotation(const float *rot)
+{
+    m_xform.setRotationVec(rot);
+    markMoved();
+}
+
+// FS2 0x00174a10
+
+void StageMapObject::setYaw(float yaw)
+{
+    sceVu0FVECTOR rotation = { m_xform.rotation[0], m_xform.rotation[1], yaw, m_xform.rotation[3] };
+    setRotation(rotation);
+}
+
+// FS2 0x001756b0
+
+void StageMapObject::sideHook0()
+{
+    if (m_movedThisFrame) {
+        setDirty(false);
+        m_movedThisFrame = 0;
+    }
+}
+
+// FS2 0x001771b0
+// callcheck: getDeltaSeconds, advance
+
+void StageMapObject::sideHook2()
+{
+    m_model->advance(gStageScene->clock->getDeltaSeconds() / kFrameSeconds,
+                     m_xform.position, m_xform.rotation, 0);
+    for (BoneMap::Node *node = m_model->boneMap.first; node != nullptr; node = node->next)
+        node->value->updateMatrix();
+    m_touchedBy = nullptr;
+}
 
 } // namespace
 
@@ -69,7 +148,7 @@ void StageObject::setupMapObject(const char *name, ModelInstance *instance,
     (void)collision;
     setName(name);
     gStageScene->objects->add1(this);
-    gStageScene->pairs->add(this, 1);
+    gStageScene->pairs->add(this, ScenePairList_Objects);
     scriptRunner()->setEntry(gStageScene->scripts[0]->findEntry(m_name));
     setModel(instance, textures);
     m_model->_180 = strcmp(name, kRootModelName) != 0;

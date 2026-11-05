@@ -63,7 +63,7 @@ Each step needs the ones above it. Sizes are the unwritten closure of its roots.
 |---|---|---|---|---|
 | 1 | **Pose**: bones, motion files, playback, the solver | `ModelPose::load` 0x14ff90, `update` 0x14f4b0, `play` / `playFile`, `solve` 0x14e4d0, ctor, `ModelMotion` | 57 functions, 6,640 i | The camera's bones, the bone map (`bn_head`, on which `StageSound` and `onLinkChanged` depend), every animated object |
 | 2 | **Collision**: map faces, spheres, segments, heights | `StageCollision::sphereHits` 0x232870, `segmentHits`, `raycast` 0x233810, `heightAt` 0x2342c0, `getNormal`, `CollisionFile::relocate` 0x23ae40, `CollisionBody` 0x1f6690, `SceneRecordBuckets::collide` 0x1f5250 | 32 functions, 4,533 i | Standing on the map. Also `setupMapObject`'s collision half, left out so far |
-| 3 | **The frame's phases** | `ScenePairTable` 0x171300..0x1718xx: `add`, `actionStart` / `Control` / `Movement` / `Terminate`, called by `StageScene::update` and stubbed | 14 functions, 356 i | Without it no character part is ever stepped, whatever else is written. The smallest step on this list |
+| 3 | ~~**The frame's phases**~~ **written 2026-11-04** | `ScenePairTable` 0x171300..0x1718xx: `add`, `actionStart` / `Control` / `Movement` / `Terminate`, called by `StageScene::update` and stubbed | 14 functions, 356 i | Without it no character part is ever stepped, whatever else is written. The smallest step on this list |
 | 4 | **The character, built** | `StageCharacter` ctor 0x17de30, `setup` 0x17c700 (under it: the motion 0x1ed410, 1,638 i; the ground 0x1f3d20; the parameter tables 0x17b3e0, 0x17bd10; the gear 0x216aa0) | 223 functions, 24,586 i | A character in the scene. **Native 0x70 must come with it:** `Root` calls it with `F_PC01`, and that is what reaches `setPlayer` and links the main camera; `setupCameras` does so only in a scene with no script. Then `YAMIPAN_CAMERA` can go |
 | 5 | **The character, each frame** | `beforeScripts` 0x21c7c0, `afterScripts` 0x21c310, `canSpawn`, `spawn` 0x218630, `stageUpdateCharacterMotions` 0x17df60, `PlayerMotion::refresh` 0x1e66c0, `CharacterBrain::update` 0x1dd330 | with 4: 274 functions, 28,501 i | It stands, turns and animates |
 | 6 | **The player**: pad to action | `CharacterInput` 0x239c60 and its reader 0x239d50 (710 i), the move 0x20d8c0 (887 i), the action states 0x21cc70, 0x1e6d60 | 19 functions, 3,495 i for the input half | **Control.** 0x239d50 reads `GamePad`, the menus and the scene's input focus; 0x20d8c0 applies `getMoveScale` |
@@ -71,7 +71,7 @@ Each step needs the ones above it. Sizes are the unwritten closure of its roots.
 | 8 | **Everything the character's vtable reaches** | `reach.py --slots 0x31227c 180` | 513 functions, 44,878 i; with 4..6, 646 functions, 59,794 i | The honest floor: it holds steps 4..6 and, by their position, probably the AI, weapons and sight-jacking (not read) |
 
 Steps 4..6 are unnamed code: 246 of the 274 functions have no name yet, so each run names as it goes.
-**The first run that can show anything is step 4 with its draw, so steps 1..3 go by on `verify`.**
+**Step 3 did show on screen, against this file's first guess: d0101's characters move since `game/scenepairs.cpp`. For the map's collision (step 2) nothing shows until step 4 with its draw.**
 
 ## The 3D list
 
@@ -80,7 +80,7 @@ Grouped by what the picture needs, with what is known about each. Together: 144 
 
 **Needed to see characters at all**
 - ~~**Skinned meshes**~~ **written 2026-11-04** (`rena/rena_draw.cpp`): the boy of d0101 and the sea of stage 1
-  are on screen, still until `game/scenepairs.cpp` moves them (architecture.md "Skinning").
+  are on screen, and `game/scenepairs.cpp` moves them (architecture.md "Skinning").
 - **The per-object draw**: `StageNodeTree::draw` 0x190a80 (4,502 i with its callees) and `update` 0x190a90
   (3,457 i). Particles, smoke, lamps. Today every object draws by the map walk only.
 - **`SceneModelHolder::draw`** 0x2d0550 (2,009 i).

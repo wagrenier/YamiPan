@@ -125,7 +125,7 @@ StageBulletBase::~StageBulletBase()
 StageBullet::StageBullet(StageCharacter *owner, StageItem *weapon)
     : StageBulletBase(owner, weapon)
 {
-    gStageScene->pairs->add(this, 0);
+    gStageScene->pairs->add(this, ScenePairList_Items);
     float dt = gStageScene->clock->getDeltaSeconds();
     m_speed = kBulletUnitsPerSecond / (float)(int)(1.0f / dt);
     if (weapon != nullptr)
@@ -293,7 +293,7 @@ void StageBullet::sideHook2()
 StageItem::StageItem()
 {
     m_sprung = 0;
-    gStageScene->pairs->add(this, 0);
+    gStageScene->pairs->add(this, ScenePairList_Items);
     m_itemDef = -1;
     m_holder = nullptr;
     m_inUse = 0;

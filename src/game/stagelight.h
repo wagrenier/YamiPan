@@ -26,8 +26,6 @@ enum StageLightMode
     StageLight_Keyed = 4,   // gets a colour track though it is no ENV_ light
 };
 
-// The ScenePairTable list of the lights.
-constexpr int kScenePairLights = 2;
 // fade frames until a switched light is full.
 constexpr int kLightFadeFrames = 10;
 // StageLight_Hard's reach: 800 units, squared.

@@ -478,7 +478,7 @@ void StageLight::addToScene(const char *name, bool withEffect)
 {
     setName(name);
     gStageScene->objects->add5(this);
-    gStageScene->pairs->add(this, kScenePairLights);
+    gStageScene->pairs->add(this, ScenePairList_Lights);
     setEntry(gStageScene->scripts[0]->findEntry(m_name));
     if (withEffect)
         attachEffect();

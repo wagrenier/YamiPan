@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/scenepairs.cpp",
   "game/stagecollision.cpp",
   "game/stagecharacter.cpp",
   "game/playermotion.cpp",
@@ -676,7 +675,23 @@
    "why": "gameSceneThread alone: the next function 0x231c90 (menu step helper over 0x267c00, called by the menu flow 0x2b5770) and the pak parser 0x231660..0x231bb0 before it share no data or callers with it; the scene table 0x2fabd0 is read only here. A one-function file until a source string or link order says otherwise"
   },
   "game/scenepairs.cpp": {
-   "task": "The frame's action phases, step 3 of roadmap-3d-control.md, queued 2026-11-04: ScenePairTable, 0x171300..0x1718xx: ctor 0x171680, add, actionStart 0x1714e0, actionControl 0x171440, actionMovement 0x1713a0, actionTerminate 0x171300, all stubs that StageScene::update calls. Cut it out of unassigned@00171300 with tus.py define. About 14 functions, 356 i, the smallest step on the list. Without it no character part is ever stepped. Nothing can show it yet, so it ends verify."
+   "notes": "All 18 of 0x171300..0x171a30 written, batch 117, plus StageMapObject's sideHook0..3 and setPosition, setRotation, setYaw in mapobject.cpp (0x174a10..0x174aa0, 0x1756b0, 0x1771a0..0x177260). Seen: New Game run of 240 s with work/newgame_pad.txt, 7440 frames, no crash: d0101's father and boy move within a cut (shots 4260 and 4320, progress/20261104-d0101-motion-a.png and -b.png). No shot of the real game exists, so speed and pose are unchecked: verify, not done. Not seen: the sea, the map setters, items and bullets. After the event the screen is black as before: no player. Door class 0x174940 still comes out as a plain object. Next in the queue: game/stagecollision.cpp.",
+   "ranges": [
+    [
+     "00171300",
+     "00171a30"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-04 19:02",
+     "status": "verify",
+     "summary": "the frame's action lists run; the plain map object's hooks and setters; the opening's characters move"
+    }
+   ],
+   "status": "verify",
+   "task": "The frame's action phases, step 3 of roadmap-3d-control.md, queued 2026-11-04: ScenePairTable, 0x171300..0x1718xx: ctor 0x171680, add, actionStart 0x1714e0, actionControl 0x171440, actionMovement 0x1713a0, actionTerminate 0x171300, all stubs that StageScene::update calls. Cut it out of unassigned@00171300 with tus.py define. About 14 functions, 356 i, the smallest step on the list. Without it no character part is ever stepped. Nothing can show it yet, so it ends verify.",
+   "why": "ScenePairTable and its list: 0x171300..0x171a10 uses only itself; the first function after it, 0x171a30, is the door class's deleting dtor. The name was the queue's."
   },
   "game/scenerender.cpp": {
    "notes": "The pin is closed: applyDebugAmbient, its call, the README paragraph and SceneRender::isKeyed with its two guards are gone; nothing was brightened. Measured in a New Game run: the record holds ambient 1.37255 1.41176 1.56863, directional 0, fog 1100..1500. Fog was not why the stage is dark: the auto camera stands 437 from its target. The map's vertex colours average 20 of 0x80, so a lit vertex averages 27, 28, 31: dark by its own data. Fixed from VU1 0x22f..0x259: the fog value is clamped to far value..near value (VU address 24), the host only saturated; stage 1's near value 230 now takes 10 percent off everything near. Mean brightness of the auto view: 3.2 unkeyed, 12 lit, 10.9 with the limit, ratio 0.90 = 230/255. Default camera, no YAMIPAN_CAMERA: an alley with walls and ground, work/shot_lights_default_camera.png. No game reference exists for either view, hence verify. No crash in 280 s runs. Left outside this TU: spot, skinned meshes, lamps; the event camera is next, game/demoevent.cpp. Doubt: host W against VU1 W with the scales 0x59b190, 0x59b194 is read from the upload's shape; open-items.md Done has it.",
