@@ -20,6 +20,7 @@ __pycache__/
 
 # IDE state (Visual Studio keeps its index files locked; tus.py finish runs git add -A)
 .vs/
+enc_temp_folder/
 .idea/
 
 # Build trees

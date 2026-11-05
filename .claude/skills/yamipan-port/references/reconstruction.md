@@ -223,7 +223,8 @@ it, and make the compilers prove its layout.
    parenthesis last, all on the `callcheck:` line). *Extra* calls are informational. Write the
    names unqualified (`set`, `~UiDrawer`, not `UiVec4::set`): the names after a `Class::name` token
    no longer count (2026-11-03, game/uilayout.cpp).
-3. `layoutcheck.py`: headers alone under MinGW GCC and MSVC with their asserts, sources under MSVC,
+3. `layoutcheck.py`: headers alone under MinGW GCC and MSVC with their asserts, every source under
+   MSVC (the game, `src/sdk`, the Pan layer),
    every struct asserted or `layout: host`, no host types.
 4. Smoke run with the scripted pad: reached stubs listed and ranked. **Look at the screen**
    (`work/shots/last.png`, `shot_*.png`, Read tool) and compare with the game's own assets

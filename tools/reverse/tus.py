@@ -591,7 +591,7 @@ def cmd_check(args):
         pad = opt(args, '--pad') or os.environ.get('YAMIPAN_AUTOPAD') or M.db['settings'].get('smoke_pad')
         run([sys.executable, 'build.py', '--run', secs] + (['--pad', pad] if pad else []))
     print(f'check {key}: build OK, callcheck {"clean" if cc == 0 else "has MISSING calls (fix or explain)"}, '
-          f'layoutcheck {"OK" if lc == 0 else "FAILED (asserts, missing asserts or host types; finish refuses)"}')
+          f'layoutcheck {"OK" if lc == 0 else "FAILED (asserts, missing asserts, host types or code cl rejects; finish refuses)"}')
     return 0
 
 
@@ -616,7 +616,8 @@ def cmd_finish(args):
                              'finish with --status blocked and notes saying what is missing.')
         if run([sys.executable, 'layoutcheck.py']).returncode:
             raise SystemExit('layoutcheck failed: a type does not keep its layout on GCC or MSVC, lacks its '
-                             'static_asserts, or uses a host-dependent type (see its output).')
+                             'static_asserts, uses a host-dependent type, or has code cl rejects, in the game, src/sdk or the '
+                             'Pan layer (see its output).')
     else:
         # Source-only mode: nothing is compiled or seen, so 'done' (the picture is the test) is impossible.
         if status == 'done':
