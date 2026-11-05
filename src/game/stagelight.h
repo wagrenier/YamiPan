@@ -88,6 +88,7 @@ public:
 
     // The light shows: not broken, some brightness, on or still fading.
     bool  isLit() const;                                                 // FS2 0x00185fd0
+    bool  isSwitchedOn() const { return m_switchedOn != 0; }
     // isLit times the fade (or the track's weight), times the brightness.
     float getWeight() const;                                             // FS2 0x00185af0
 

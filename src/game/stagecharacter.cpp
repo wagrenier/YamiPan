@@ -157,10 +157,10 @@ void StageCharacter::initAbilities()
     case CharacterKind_4:
     case CharacterKind_8:
     case CharacterKind_A:
-        a->flag3a4 = 0;
-        a->flag3a7 = 0;
-        a->flag3a8 = 0;
-        a->flag3aa = 0;
+        a->quickTurn = 0;
+        a->moveCrouched = 0;
+        a->strafe = 0;
+        a->runStart = 0;
         a->flag3ac = 0;
         a->flag3bf = 0;
         a->flag3c0 = 0;
@@ -185,11 +185,11 @@ void StageCharacter::initAbilities()
     case CharacterKind_C:
     case CharacterKind_HideD:
     case CharacterKind_F:
-        a->flag3a4 = 0;
+        a->quickTurn = 0;
         a->flag3a5 = 0;
         a->flag3a6 = 0;
-        a->flag3a7 = 0;
-        a->flag3aa = 0;
+        a->moveCrouched = 0;
+        a->runStart = 0;
         a->flag3ac = 0;
         a->flag3ad = 0;
         a->flag3b9 = 0;
@@ -201,9 +201,9 @@ void StageCharacter::initAbilities()
         a->flag3c3 = 0;
         a->flag3ce = 0;
         if (record->kind == CharacterKind_NoShadow) {
-            a->flag3a8 = 0;
-            a->flag3a9 = 0;
-            a->flag3ab = 0;
+            a->strafe = 0;
+            a->walkBack = 0;
+            a->stairs = 0;
             a->flag3b6 = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
@@ -216,9 +216,9 @@ void StageCharacter::initAbilities()
             a->flag3cd = 0;
         }
         else if (record->kind == CharacterKind_HideD) {
-            a->flag3a8 = 0;
-            a->flag3a9 = 0;
-            a->flag3ab = 0;
+            a->strafe = 0;
+            a->walkBack = 0;
+            a->stairs = 0;
             a->flag3b6 = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
@@ -229,9 +229,9 @@ void StageCharacter::initAbilities()
             a->flag3cd = 0;
         }
         else if (record->kind == CharacterKind_Srt) {
-            a->flag3a8 = 0;
-            a->flag3a9 = 0;
-            a->flag3ab = 0;
+            a->strafe = 0;
+            a->walkBack = 0;
+            a->stairs = 0;
             a->flag3b6 = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
@@ -239,8 +239,8 @@ void StageCharacter::initAbilities()
             a->flag3bd = 0;
         }
         else if (record->kind == CharacterKind_Yrt) {
-            a->flag3a8 = 0;
-            a->flag3a9 = 0;
+            a->strafe = 0;
+            a->walkBack = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
             a->flag3bd = 0;
@@ -248,8 +248,8 @@ void StageCharacter::initAbilities()
             a->flag3c5 = 0;
         }
         else if (record->kind == CharacterKind_F) {
-            a->flag3a8 = 0;
-            a->flag3ab = 0;
+            a->strafe = 0;
+            a->stairs = 0;
             a->flag3b6 = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
@@ -259,7 +259,7 @@ void StageCharacter::initAbilities()
             a->flag3c5 = 0;
         }
         else if (record->kind == CharacterKind_6) {
-            a->flag3a8 = 0;
+            a->strafe = 0;
             a->flag3b6 = 0;
             a->flag3b9 = 0;
             a->flag3bd = 0;
@@ -361,7 +361,7 @@ void StageCharacter::reset(int arg)
         m_brain->reset();
     resetActionState();
     stopSounds();
-    m_458 = kNoValue;
+    m_slowStart = kNoValue;
 }
 
 // The items of the sheet's column, last placed first, until one takes.
@@ -496,10 +496,10 @@ void StageCharacter::setup(const char *name, ModelInstance *instance, StringMap<
             holdEffect(m_footEffects[i], this);
     }
 
-    memset(m_360, 0, sizeof(m_360));
+    memset(&m_allows, 0, sizeof(m_allows));
     if (m_motion != nullptr)
         m_motion->initSlots14();
-    memset(m_2c0, 0, sizeof(m_2c0));
+    memset(&m_wants, 0, sizeof(m_wants));
     if (m_motion != nullptr)
         m_motion->initSlots18();
 

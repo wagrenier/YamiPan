@@ -149,6 +149,7 @@ struct StageModel;              // game/gamehooks.h
 struct StageViewTarget
 {
     StageModel  *model;         // FS2 +0x30: prepareDrawFlags marks it
+    sceVu0FVECTOR position;     // FS2 +0x150: PlayerMotion::applyMovement measures from it
     struct GateParts *gateParts; // FS2 +0x2b0: what SubSceneGateObject copies
     StageObject *character;     // FS2 +0x3c0
 };

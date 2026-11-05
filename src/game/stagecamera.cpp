@@ -466,12 +466,12 @@ void StageMainCamera::cameraStep()
             applyMatrix(eye, tilt, eye);
         }
 
-        // Looking back while the look state holds: over the character's head.
+        // At an edge with a deep drop: over the character's head.
         PlayerMotion *playerMotion = linked->m_motion;
-        const PlayerLookState *look = playerMotion->look;
-        if (static_cast<const void *>(playerMotion->activeLink) == look && look->active) {
-            const float angle = look->angle;
-            if (angle < -170.0f) {
+        const WalkLink *walk = playerMotion->walkLink;
+        if (playerMotion->activeLink == walk && walk->edgeFound) {
+            const float drop = walk->edgeDrop;
+            if (drop < -170.0f) {
                 bool partnerFar = false;
                 if (scene->partnerResponds(linked)
                     && vecDistanceSq(playerMotion->position, scene->partner->m_xform.position) > kPartnerFarSq)
@@ -486,8 +486,8 @@ void StageMainCamera::cameraStep()
                     eye[1] *= 0.6f;
                 }
             }
-            else if (angle >= -110.0f || angle <= -130.0f) {
-                if (angle < -80.0f && angle > -100.0f) {
+            else if (drop >= -110.0f || drop <= -130.0f) {
+                if (drop < -80.0f && drop > -100.0f) {
                     eye[2] += 30.0f;
                     eye[1] *= 0.7f;
                 }
@@ -721,4 +721,19 @@ void StageMainCamera::cameraStep()
         addAngles(m_xform.rotation, m_xform.rotation, m_turn);
     }
     m_snap = 0;
+}
+
+// FS2 0x001776d0
+// callcheck: acosf (vecDot)
+
+bool StageCamera::seesPoint(const sceVu0FVECTOR point)
+{
+    sceVu0FVECTOR ahead = { 0.0f, 1.0f, 0.0f, 1.0f };   /* data 0x2f7b00 */
+    applyMatrix(ahead, getMatrix(), ahead);
+    vecDirection(ahead, ahead, getMatrix()[3]);
+    sceVu0FVECTOR toPoint;
+    vecDirection(toPoint, point, getMatrix()[3]);
+    const float angle = acosf(vecDot(toPoint, ahead));
+    const float side = m_screenWidth < m_screenHeight ? m_screenHeight : m_screenWidth;
+    return angle <= atan2Octant(m_scrZ, side / 2.0f);
 }

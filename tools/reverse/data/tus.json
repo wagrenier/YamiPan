@@ -583,7 +583,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Motion core written: ctor, dtor, loadMotions, reset, beginFrame, refresh, request, requestNow, stepLower, stepUpper, stepFace, arbitrate, resolveHold, noteLeaving, pickStance (architecture.md Motions has the outline, the sheet's ids and the link slots). New Game runs of 300 and 260 s: no crash, F_PC01 at motion 0 (label s), whole, seen from behind by the main camera, no spikes (progress/20261104-f_pc01-stage-idle.png); no reference exists for this shot. Not written: the links, the conditions and the list of 0x1df0b0, so findLink answers null; startWalk, startWalkAt, clearNoFlash, swapWeapons, isScenarioLead, setContact, StageParty isRunning / stop and getLampMatrix are stubs. stageUpdateCharacterMotions carries three PC bridges: beginFrame, advance and the idle request. Next slice: the Walk link 0x2775d0 (vtable 0x3177a0) with the conditions it reads, then who requests motions (0x20d8c0). Open: shot numbers ran ten times faster than the last run, unmeasured.",
+   "notes": "Written: MotionCondition with Always, QuickTurn, Squat, Turn, Move; MotionLink apply and addCondition; WalkLink (replaces PlayerLookState, the old note had Walk at 0x2775d0, which is DamageDead); MotionProbe faceAhead and pointAhead; controlStep 0x1e3e80, head only; applyMovement 0x1e0e20; leanBody; moveStep 0x17a490; StageCamera seesPoint. CharacterWants (+0x2c0) and CharacterAllows (+0x360) are now structs, architecture.md Motions has the whole frame. The idle bridge is gone: Move asks for the idle. Seen in a 285 s New Game: idle through the Walk link, no crash; with a temporary test, removed before this commit, filling moveKind: w, w_run, run, t_l and sq_s all played and he moved, whole, main camera following (progress/20261104-f_pc01-run-test.png), through the walls at a constant height since the ground step 0x1f3930 is unwritten. The final build without the test ran only the 15 s smoke (language screen). A New Game needs 200+ s to reach the stage and pad reads, not shot numbers, count (hazards.md Testing a run). Next for control: the input 0x236b90 (0x2f00 bytes, fills CharacterWants; game/characterinput.cpp), then CharacterGround; the sideHooks 0x17a860 and 0x17a810 are still bridged in stageUpdateCharacterMotions (game/stagecharacter.cpp). Left in this TU: the rest of controlStep (motion events and setContact, step sounds, aim, feet, wind, fidgets), findEdge 0x26b960, getLampAngles 0x1e6160, the 24 other conditions and the other links, the list of 0x1df0b0, who counts m_runTime and m_runDistance. Doubt: walk and run rates come from the sheet as a PC default, since only the script property setter 0x212530 writes them (open-items.md).",
    "ranges": [
     [
      "0017df60",
@@ -594,11 +594,19 @@
      "001df0b0"
     ],
     [
+     "001e0e20",
+     "001e18c0"
+    ],
+    [
+     "001e3e80",
+     "001e5d50"
+    ],
+    [
      "001e5d90",
      "001e5f70"
     ],
     [
-     "001e66c0",
+     "001e6400",
      "001e6d60"
     ],
     [
@@ -616,6 +624,34 @@
     [
      "001ec650",
      "001ed950"
+    ],
+    [
+     "0026b860",
+     "0026b960"
+    ],
+    [
+     "0026c4b0",
+     "0026c650"
+    ],
+    [
+     "00270260",
+     "002702e0"
+    ],
+    [
+     "00272d50",
+     "00274100"
+    ],
+    [
+     "00274990",
+     "00275160"
+    ],
+    [
+     "00275160",
+     "00276200"
+    ],
+    [
+     "0027c420",
+     "0027c6d0"
     ]
    ],
    "sessions": [
@@ -623,11 +659,16 @@
      "date": "2026-11-04 21:32",
      "status": "partial",
      "summary": "motion core written, the character plays its idle and the stretched limbs are gone; links and conditions not yet"
+    },
+    {
+     "date": "2026-11-04 22:18",
+     "status": "partial",
+     "summary": "conditions Always, QuickTurn, Squat, Turn, Move and the Walk link written: the character walks, runs and turns when CharacterWants asks, and Move now asks for the idle; input and ground not yet"
     }
    ],
    "status": "partial",
    "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves.",
-   "why": "the motion core, read 2026-11-04; the links 0x276000.. and the walk helpers come next"
+   "why": "the motion core, then the conditions Always, QuickTurn, Squat, Turn, Move, the Walk link and the probes: no second TU yet; a later cut may give the conditions and links 0x26d020..0x27d8d0 their own file"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",

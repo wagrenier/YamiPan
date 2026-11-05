@@ -1525,3 +1525,29 @@ void StageParty::stop()
 {
     YAMIPAN_STUB("StageParty::stop", 0x001feb90);
 }
+
+// stub of FS2 0x0026b960
+bool MotionProbe::findEdge(StageCollisionFace *face, sceVu0FVECTOR hit, sceVu0FVECTOR target, float *drop,
+                  StageObject **floor, sceVu0FVECTOR point, sceVu0FVECTOR angles, u_char *blocked)
+{
+    YAMIPAN_STUB("MotionProbe::findEdge", 0x0026b960);
+    return {};
+}
+
+// stub of FS2 0x001e6160
+void PlayerMotion::getLampAngles(sceVu0FVECTOR out)
+{
+    YAMIPAN_STUB("PlayerMotion::getLampAngles", 0x001e6160);
+}
+
+// stub of FS2 0x0020c940
+void StageCharacter::getSwayMatrix(sceVu0FMATRIX out)
+{
+    YAMIPAN_STUB("StageCharacter::getSwayMatrix", 0x0020c940);
+}
+
+// stub of FS2 0x0029a840
+void ViewCamera::setZoom(float level)
+{
+    YAMIPAN_STUB("ViewCamera::setZoom", 0x0029a840);
+}
