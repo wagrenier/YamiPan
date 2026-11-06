@@ -4307,17 +4307,17 @@ StageCollisionFace *StageScene::raycastObject(StageObject **object, sceVu0FVECTO
 constexpr u_int   kFloorMask       = 0x42400c;
 constexpr float   kFloorProbeAbove = 50.0f;
 constexpr float   kFloorProbeRange = -1.0f;
-constexpr u_short kFloorAttrNone   = 0xffff;
+constexpr short   kFloorAttrNone   = -1;
 
 // FS2 0x001970f0
 // callcheck: findFloorFace
 
-u_short StageScene::getFloorAttr(const float *pos)
+short StageScene::getFloorAttr(const float *pos)
 {
     float height = pos[2] + kFloorProbeAbove;
     StageCollisionFace *face = findFloorFace(pos[0], pos[1], kFloorProbeRange, &height, kFloorMask,
                                              0, viewTargets, viewTargetCount);
-    return face != nullptr ? face->attr : kFloorAttrNone;
+    return face != nullptr ? (short)face->attr : kFloorAttrNone;
 }
 
 // ──────────────────────────────────────────────────────────────────────

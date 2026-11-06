@@ -430,7 +430,7 @@ struct StageScene
                         StageObject *skip);                              // FS2 0x00197a90
     // The attr of the floor under pos (the view targets left out); 0xffff
     // none.
-    u_short getFloorAttr(const float *pos);                              // FS2 0x001970f0
+    short getFloorAttr(const float *pos);                                // FS2 0x001970f0
     // The highest face below *height at x, y, range under it (negative:
     // 10000), *height its height; null none (*height = -FLT_MAX).
     StageCollisionFace *findFloorFace(float x, float y, float range, float *height, u_int mask,

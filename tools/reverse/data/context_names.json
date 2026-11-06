@@ -23195,11 +23195,173 @@
   "was": "FUN_0023f380",
   "why": "deleting dtor of the 4-byte handle: frees its 0x60 record"
  },
+ "0023f420": {
+  "name": "RouteNodeList::~RouteNodeList",
+  "tag": "game-inferred",
+  "was": "FUN_0023f420",
+  "why": "MSL vector dtor of RouteSearch +0x28"
+ },
+ "0023f490": {
+  "name": "RouteNameList::~RouteNameList",
+  "tag": "game-inferred",
+  "was": "FUN_0023f490",
+  "why": "MSL vector dtor of RouteSearch +0x40 and +0x4c"
+ },
  "0023f500": {
   "name": "RouteFilter::RouteFilter",
   "tag": "game-inferred",
   "was": "FUN_0023f500",
   "why": "the 4-byte handle: a new 0x60 record over the route player and the owner"
+ },
+ "0023f560": {
+  "name": "RouteSearch::advance",
+  "tag": "game-inferred",
+  "was": "FUN_0023f560",
+  "why": "the record method RouteFilter::advance tail-jumps to: moves the step and node cursors from where the owner stands"
+ },
+ "0023fde0": {
+  "name": "RouteSearch::hasReached",
+  "tag": "game-inferred",
+  "was": "FUN_0023fde0",
+  "why": "has the position come to a step pair: end node, area between gates, or stretch between steps"
+ },
+ "002400c0": {
+  "name": "isInsideQuad",
+  "tag": "game-inferred",
+  "was": "FUN_002400c0",
+  "why": "sign test of four corners against a point, xy"
+ },
+ "002403f0": {
+  "name": "isInsideTriangle",
+  "tag": "game-inferred",
+  "was": "FUN_002403f0",
+  "why": "sign test of three corners against a point, xy"
+ },
+ "00240550": {
+  "name": "RouteSearch::nextPair",
+  "tag": "game-inferred",
+  "was": "FUN_00240550",
+  "why": "scans steps for the next link or two gates of different crossings"
+ },
+ "00240710": {
+  "name": "RouteSearch::firstPair",
+  "tag": "game-inferred",
+  "was": "FUN_00240710",
+  "why": "sets +0x18 from the first step when it is kind 1 or 3"
+ },
+ "002407f0": {
+  "name": "RouteSearch::buildNodes",
+  "tag": "game-inferred",
+  "was": "FUN_002407f0",
+  "why": "walks the steps by kind pushing node pointers; sums the length; gates go through the funnel"
+ },
+ "00240d40": {
+  "name": "pullThroughGates",
+  "tag": "game-inferred",
+  "was": "FUN_00240d40",
+  "why": "funnel over a vector of two-corner gates: left and right edges, restarts at a corner it turned at"
+ },
+ "002411a0": {
+  "name": "RouteSearch::pathLength",
+  "tag": "game-inferred",
+  "was": "FUN_002411a0",
+  "why": "RouteFilter::pathLength tail-jumps here: floor areas of both points, search, length"
+ },
+ "00241310": {
+  "name": "RouteLegList::~RouteLegList",
+  "tag": "game-inferred",
+  "was": "FUN_00241310",
+  "why": "MSL vector dtor of 4-byte steps, used by the rute search 0x253420"
+ },
+ "00241380": {
+  "name": "RouteSearch::findPath",
+  "tag": "game-inferred",
+  "was": "FUN_00241380",
+  "why": "RouteFilter::findPath tail-jumps here: search kept in the record, cursors reset"
+ },
+ "002414c0": {
+  "name": "RouteSearch::search",
+  "tag": "game-inferred",
+  "was": "FUN_002414c0",
+  "why": "cheapest of the crossings between two areas: head + way + reversed tail"
+ },
+ "00241960": {
+  "name": "RouteSearch::stepDistance",
+  "tag": "game-inferred",
+  "was": "FUN_00241960",
+  "why": "xy distance from a point to the middle of a gate, link or node step"
+ },
+ "00241a40": {
+  "name": "RouteSearch::allow",
+  "tag": "game-inferred",
+  "was": "FUN_00241a40",
+  "why": "RouteFilter::allow tail-jumps here: adds or removes a name, looks the set up in the file"
+ },
+ "00241c20": {
+  "name": "RouteSearch::RouteSearch",
+  "tag": "game-inferred",
+  "was": "FUN_00241c20",
+  "why": "operator_new(0x60) in RouteFilter::RouteFilter; fills the record"
+ },
+ "00241d10": {
+  "name": "RouteLegList::resize",
+  "tag": "game-inferred",
+  "was": "FUN_00241d10",
+  "why": "MSL vector: insert or erase to a size, 4-byte elements, default 0 / -1"
+ },
+ "00241da0": {
+  "name": "RouteNameList::reserve",
+  "tag": "game-inferred",
+  "was": "FUN_00241da0",
+  "why": "MSL vector reserve of 4-byte pointers; also used by drawSysInit"
+ },
+ "00241f80": {
+  "name": "RouteNameList::RouteNameList",
+  "tag": "game-inferred",
+  "was": "FUN_00241f80",
+  "why": "MSL vector copy ctor"
+ },
+ "00241fd0": {
+  "name": "RouteLegList::erase",
+  "tag": "game-inferred",
+  "was": "FUN_00241fd0",
+  "why": "MSL vector erase(first, last), 4-byte elements"
+ },
+ "00242170": {
+  "name": "RouteLegList::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00242170",
+  "why": "MSL vector insert(pos, n, value), vector::insert length error"
+ },
+ "002425c0": {
+  "name": "RouteLegList::reserve",
+  "tag": "game-inferred",
+  "was": "FUN_002425c0",
+  "why": "MSL vector reserve, vector::reserve length error"
+ },
+ "00242740": {
+  "name": "RouteSpanList::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00242740",
+  "why": "MSL vector insert(pos, n, value) of 0xc-byte spans"
+ },
+ "00242c10": {
+  "name": "RouteSpanList::clear",
+  "tag": "game-inferred",
+  "was": "FUN_00242c10",
+  "why": "size = 0"
+ },
+ "00242c20": {
+  "name": "RouteSpanList::~RouteSpanList",
+  "tag": "game-inferred",
+  "was": "FUN_00242c20",
+  "why": "MSL vector dtor"
+ },
+ "00242c90": {
+  "name": "RouteNameList::assign",
+  "tag": "game-inferred",
+  "was": "FUN_00242c90",
+  "why": "MSL vector range init of 4-byte pointers"
  },
  "00242e80": {
   "name": "SceneNoiseList::pollSoundSources",
@@ -24581,11 +24743,41 @@
   "was": "FUN_00252680",
   "why": "(drawer, verts xy, count, 0): untextured vertices in one colour (after setPrimColor)"
  },
+ "00252840": {
+  "name": "RoutePlayer::endNode",
+  "tag": "game-inferred",
+  "was": "FUN_00252840",
+  "why": "last node of a step: node, chain tail, link second"
+ },
+ "002529a0": {
+  "name": "RoutePlayer::startNode",
+  "tag": "game-inferred",
+  "was": "FUN_002529a0",
+  "why": "first node of a step: node, chain head, link first"
+ },
+ "00252ac0": {
+  "name": "RoutePlayer::maxStepCount",
+  "tag": "game-inferred",
+  "was": "FUN_00252ac0",
+  "why": "largest sum of step sizes over the table at +0x20"
+ },
  "00252b10": {
   "name": "RoutePlayer::start",
   "tag": "game-inferred",
   "was": "FUN_00252b10",
   "why": "called once after the ctor with 0; empty in this build"
+ },
+ "00252b20": {
+  "name": "RoutePlayer::pathNames",
+  "tag": "game-inferred",
+  "was": "FUN_00252b20",
+  "why": "copies the vector of names at the core +0x18"
+ },
+ "00252b70": {
+  "name": "RoutePlayer::reversePath",
+  "tag": "game-inferred",
+  "was": "FUN_00252b70",
+  "why": "forwards to 0x257360, which rebuilds a step list back to front as nodes"
  },
  "00252bc0": {
   "name": "RoutePlayer::isListedArea",
@@ -24593,11 +24785,89 @@
   "was": "FUN_00252bc0",
   "why": "binary search of the area in the sorted list of the rute header"
  },
+ "00252c80": {
+  "name": "RoutePlayer::chainLength",
+  "tag": "game-inferred",
+  "was": "FUN_00252c80",
+  "why": "float at table +0x14 entry +4"
+ },
+ "00252cd0": {
+  "name": "RoutePlayer::chainNode",
+  "tag": "game-inferred",
+  "was": "FUN_00252cd0",
+  "why": "node pointer at index in a chain"
+ },
+ "00252d30": {
+  "name": "RoutePlayer::chainNodeCount",
+  "tag": "game-inferred",
+  "was": "FUN_00252d30",
+  "why": "count at the head of a chain"
+ },
+ "00252d80": {
+  "name": "RoutePlayer::link",
+  "tag": "game-inferred",
+  "was": "FUN_00252d80",
+  "why": "record of the table +0x10, 0xc each after a count"
+ },
+ "00252dd0": {
+  "name": "RoutePlayer::gate",
+  "tag": "game-inferred",
+  "was": "FUN_00252dd0",
+  "why": "record of the table +0xc, 0xc each after a count"
+ },
+ "00252e20": {
+  "name": "RoutePlayer::node",
+  "tag": "game-inferred",
+  "was": "FUN_00252e20",
+  "why": "record of the table +4, 0x20 each"
+ },
+ "00252e70": {
+  "name": "RoutePlayer::pathSetIndex",
+  "tag": "game-inferred",
+  "was": "FUN_00252e70",
+  "why": "forwards to 0x257020: 1-based index of the set with exactly these names"
+ },
+ "00252f10": {
+  "name": "RoutePlayer::areaCrossings",
+  "tag": "game-inferred",
+  "was": "FUN_00252f10",
+  "why": "forwards to 0x257db0: shorts of the from-to entry of the table +0x1c"
+ },
+ "00252f70": {
+  "name": "RoutePlayer::areaPath",
+  "tag": "game-inferred",
+  "was": "FUN_00252f70",
+  "why": "forwards to 0x253420 with the area"
+ },
+ "00252fd0": {
+  "name": "RoutePlayer::wayToCrossing",
+  "tag": "game-inferred",
+  "was": "FUN_00252fd0",
+  "why": "forwards to 0x257680 with position, area, crossing"
+ },
+ "00253030": {
+  "name": "RoutePlayer::crossingPath",
+  "tag": "game-inferred",
+  "was": "FUN_00253030",
+  "why": "forwards to 0x2578f0: copies the stored path of from, to, crossing and set"
+ },
  "00253180": {
   "name": "RoutePlayer::RoutePlayer",
   "tag": "game-inferred",
   "was": "FUN_00253180",
   "why": "vtable 0x316a78, 0xc bytes, built over the rute file by StageScene::setRoute; what it plays is unread"
+ },
+ "00258870": {
+  "name": "RoutePath::append",
+  "tag": "game-inferred",
+  "was": "FUN_00258870",
+  "why": "adds the length, reserves, inserts the steps"
+ },
+ "00258b80": {
+  "name": "planarDistance",
+  "tag": "game-inferred",
+  "was": "FUN_00258b80",
+  "why": "sqrt of dx2 + dy2"
  },
  "0025a850": {
   "name": "mslTreeIncrement",
