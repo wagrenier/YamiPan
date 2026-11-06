@@ -1,6 +1,6 @@
 {
  "queue": [
-  "game/routefilter.cpp",
+  "game/routeplayer.cpp",
   "game/characterroute.cpp"
  ],
  "settings": {
@@ -1254,13 +1254,31 @@
    "why": "RcntTimer (reset, ctor, dtor) and rcnt1Start (batches 003-004); file name a guess."
   },
   "game/routefilter.cpp": {
+   "notes": "All of 0x23f290..0x242e80 is written (batch 153). It cannot run yet: every RoutePlayer method it calls is a stub, so findPath and pathLength answer -1 and a walk ends at once, as before. Next: game/routeplayer.cpp 0x252840..0x25b8e0, pinned and queued first; gamehooks.h has the 16 prototypes, routefilter.h the host records (RouteNode, RouteSpan, RouteLeg, RoutePath). RoutePath::append 0x258870 and planarDistance 0x258b80 sit in that extent but are written here. Seen: scratch harness on the funnel (corridor, L both windings, S, gate behind the start, 20000 random corridors, no bad result); New Game doorwalk pad 240 s: no crash, dark first-person wall as before, ctor runs. isInsideQuad and isInsideTriangle keep the ROM's x*x - y*y, which is not a cross product (hazards.md). stepDistance on a chain leg reads stale registers in the ROM, 0 here.",
    "ranges": [
     [
      "0023f290",
      "00242e80"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-05 23:22",
+     "status": "verify",
+     "summary": "RouteFilter and its RouteSearch record: all 36 written or mapped to the host vector; findPath, pathLength, advance, the funnel; getFloorAttr signed as in the ROM"
+    }
+   ],
+   "status": "verify",
    "why": "RouteFilter::pathLength 0x23f290 on: the path search of game/characterroute.cpp, up to game/stageplayer.cpp at 0x242e80; RoutePlayer 0x252840.. is not in it yet"
+  },
+  "game/routeplayer.cpp": {
+   "ranges": [
+    [
+     "00252840",
+     "0025b8e0"
+    ]
+   ],
+   "why": "RoutePlayer::endNode 0x252840 on: the rute file's accessors, its core 0x257fa0 and searches 0x253420.. and their MSL tree instances, up to game/uiwidget.cpp at 0x25b8e0; no source string, the class is the evidence"
   },
   "game/s2ddata.cpp": {
    "notes": "Host: S2dRef<T> (s2ddata.h) is a 32-bit offset from the field itself, 0 null, implicit T* conversion, copy deleted; S2dData, S2dObject, S2dWidgetDef, S2dImage and the uitrack.h records with names (textured +8 label, sheet +0x14, pin +0x14, rotate +0xc) are EE layout and asserted. S2dImage +4 is the image name (was read as an id): UiTex*Track m_imageId is now m_imageName, the text track keys are const char pointers. Header counts at +0x20/+0x28/+0x30/+0x38 named. The ROM never relocates kind 0x22's +0x14 name (only kind 6's); no disc S2D has a 0x22 record. Checked: g++ -fsyntax-only -Wall clean on s2ddata/uitrack/uisequence/uilayout/scene/stageresult with RosePan SDK headers + stubs; a scratch harness relocated 1,764 S2D files from ROM.000..ROMD.010, all pointers in range, names readable. Next in the run: UiMatrix / UiDrawer 0x24dfa0..0x252840 (frontier top), then the widget classes from 0x252840.",

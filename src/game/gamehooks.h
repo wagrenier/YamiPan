@@ -24,6 +24,7 @@
 #include "game/gamepaths.h"
 #include "game/layoutpaths.h"
 #include "game/menupack.h"
+#include "game/routefilter.h"
 #include "game/scenepairs.h"
 #include "game/scriptrunner.h"
 #include "game/seplayer.h"
@@ -373,41 +374,6 @@ class CharacterGround;          // game/characterground.h
 // game/characterbrain.h, game/characterroute.h.
 class CharacterBrain;
 class CharacterRoute;
-// A node of a found path: an EE record of the route player. The path search
-// is not written; only what the walk reads is declared.
-enum RouteNodeFlag
-{
-    RouteNodeFlag_Open = 0x1,   // no corner: the walk may cut toward it
-};
-struct RouteNode
-{
-    u_short _0;
-    u_short flags;              // FS2 +0x02: RouteNodeFlag
-    u_char  _4[0x10];
-    float   position[3];        // FS2 +0x14
-};
-static_assert(offsetof(RouteNode, position) == 0x14, "RouteNode::position");
-// The route's paths this character may use. layout: host: the EE's is a
-// 4-byte handle on a 0x60 record.
-class RoutePlayer;
-struct RouteFilter
-{
-    RouteFilter(RoutePlayer *routes, StageCharacter *owner);             // FS2 0x0023f500
-    ~RouteFilter();                                                      // FS2 0x0023f380
-    // The named paths of the route are open to the character (on) or not.
-    void allow(const char *name, bool on);                               // FS2 0x0023f310
-    // How far along the route from one point to another; -1 no way.
-    float pathLength(const float *from, const float *to);                // FS2 0x0023f290
-    void clearPath();                                                    // FS2 0x0023f320
-    // A path from the owner to goal: its length, or -1.
-    float findPath(const float *goal);                                   // FS2 0x0023f370
-    // Along the path from where the owner stands; false at its end.
-    bool advance();                                                      // FS2 0x0023f2b0
-    // The node it heads for; null past the end.
-    RouteNode *currentNode();                                            // FS2 0x0023f2c0
-    // Set by advance: a corner to walk to at a walk; null none.
-    RouteNode *junctionNode();                                           // FS2 0x0023f2a0
-};
 // The model instance's record of each mesh (vtable 0x31a7d0, 0x10 on the EE,
 // parallel to ModelFileNode::meshes): the mesh tree, threaded through next,
 // and what the game switches per part. modelFindPart hands them out: a
@@ -1358,6 +1324,32 @@ public:
     explicit RoutePlayer(void *rute);                                    // FS2 0x00253180
     // The area is in the sorted list of the rute header.
     bool isListedArea(short area);                                       // FS2 0x00252bc0
+    // What a leg names (game/routefilter.h).
+    RouteNode *endNode(const RouteLeg &step);                           // FS2 0x00252840
+    RouteNode *startNode(const RouteLeg &step);                         // FS2 0x002529a0
+    RouteNode *node(short index);                                        // FS2 0x00252e20
+    const RouteSpan *link(short index);                                  // FS2 0x00252d80
+    const RouteSpan *gate(short index);                                  // FS2 0x00252dd0
+    float chainLength(short index);                                      // FS2 0x00252c80
+    RouteNode *chainNode(short index, int at);                           // FS2 0x00252cd0
+    int chainNodeCount(short index);                                     // FS2 0x00252d30
+    // The most steps a path of the file has.
+    int maxStepCount();                                                  // FS2 0x00252ac0
+    // Every path the file names.
+    void pathNames(std::vector<const char *> &out);                      // FS2 0x00252b20
+    // Which set of the file is exactly these paths: from 1, 0 none, -1
+    // when the file has no sets.
+    int pathSetIndex(const std::vector<const char *> &names);            // FS2 0x00252e70
+    // The crossings between two areas.
+    void areaCrossings(std::vector<short> &out, short fromArea, short toArea); // FS2 0x00252f10
+    // Over one crossing, by the set of paths.
+    float crossingPath(RoutePath &out, short fromArea, short toArea, short crossing, int pathSet); // FS2 0x00253030
+    // Inside one area.
+    float areaPath(RoutePath &out, const float *from, const float *to, short area); // FS2 0x00252f70
+    // From a point of the area to a crossing of it.
+    float wayToCrossing(RoutePath &out, const float *pos, short area, short crossing); // FS2 0x00252fd0
+    // Turns the path around, its spans and chains into nodes.
+    void reversePath(RoutePath &path);                                   // FS2 0x00252b70
     void start(int arg);                                                 // FS2 0x00252b10: empty here
 };
 

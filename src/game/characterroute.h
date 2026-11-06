@@ -11,9 +11,9 @@
  *  0x3160a0..0x316498: one file. The classes' and the actions' names are the
  *  port's (open-items.md).
  *
- *  Not written: the path search behind RouteFilter (game/gamehooks.h) and
- *  the actions marked below. A walk finds no path until the search exists:
- *  RouteFilter::findPath answers 0 and the walk ends at once.
+ *  Not written: the actions marked below, and RoutePlayer's tables behind
+ *  RouteFilter (game/routefilter.h): until they exist findPath answers -1
+ *  and a walk ends at once.
  * ======================================================================== */
 #ifndef _GAME_CHARACTERROUTE_H
 #define _GAME_CHARACTERROUTE_H
@@ -27,8 +27,8 @@ class StageCar;
 class StageCharacter;
 class StageDoor;
 class StageObject;
-struct RouteFilter;             // game/gamehooks.h
-struct RouteNode;               // game/gamehooks.h
+struct RouteFilter;             // game/routefilter.h
+struct RouteNode;               // game/routefilter.h
 
 // moveToObject / moveToPoint's flags, the letters of BrainWait::moveTo.
 enum RouteMoveFlag

@@ -154,6 +154,9 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   two TUs. Fix: decode every A+D register number and GIF tag (NREG / FLG / REGS nibbles) with
   RosePan's `sdk/libgraph.h` before naming what a function writes.
 
+- **A test that looks like a cross product and is not** (2026-11-05). `isInsideQuad` 0x2400c0 / `isInsideTriangle` 0x2403f0 read as a sign test of cross products, but the asm at 0x2404a8 is `mula.s` x, x then `msub.s` y, y: ax * bx - ay * by. Ghidra printed the indices faithfully; only the reader corrected them. Copy what the code does and say so in a comment (`insideTerm`). It only moves the leg cursor, which nothing reads, so the bug never showed in the ROM.
+- **A host return type narrower in meaning than the ROM** (2026-11-05). `getFloorAttr` was `u_short` with 0xffff for none; the ROM loads with `lh` and answers -1, and callers test `< 0`. An int field filled from it was 65535, so the test never fired. Before writing a "none" constant, read the load at the end of the function.
+
 ## Stubs and bookkeeping
 
 - **Stubs return `{}`**: null buffers, zero counts, "not ready". A getter stub's null crashes the first
@@ -417,6 +420,7 @@ Symptom: a loader "ran", instances were counted, yet nothing appears and the stu
 - **A SceneRender set with no keys is all zero** (2026-11-04). Symptom: writing `update` as the ROM has it would turn every light off and give every camera range 0, so nothing draws. Cause: only script natives key the tracks; the ROM has no default. Fix: the entries of the stage's script key them (`game/scriptrunner.cpp`); the `isKeyed` guards that stood in are gone, so a stage whose script does not key a set really is dark. A one-key track never writes `value` either: `VectorTrack::step` needs count 2 (the scripts always make keys 0 and 1).
 
 ## Bash heredocs in the harness (2026-11-05)
+A Bash call carrying a whole source file fails with ENAMETOOLONG (uv_spawn), and nothing has run: write big files with the Write tool (2026-11-05).
 
 - **Symptom:** a long `cat <<EOF` or `py - <<E` in the Bash tool stops with "unexpected EOF while looking for matching" although the delimiter is quoted. **Cause:** not found; both failures held long bodies with apostrophes. **Fix:** write the file with the Write tool, and a patch script to the scratchpad, then run it.
 - **Symptom:** a first write to src/game/gamehooks.h from Python failed with PermissionError, a second a moment later worked. **Cause:** not found, the file was free by then. **Fix:** retry once before looking further.
