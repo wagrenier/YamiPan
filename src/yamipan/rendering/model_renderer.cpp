@@ -207,6 +207,40 @@ ModelSpotVertex spotVertex(const YamiPanModelSpotLight &spot, const ModelVertex 
     return out;
 }
 
+// Whether a batch's box lies wholly past one of the spot's planes, VU1 0x66b, which then skips its pass: the picture
+// repeats (CLAMP_1), so this is all that keeps its copies off a batch out of the cone. The box is the batch's own, in
+// `matrix`'s space; a plane takes it by its centre and how far its half sizes reach along the plane's normal.
+bool outsideSpotCone(const YamiPanModelSpotLight &spot, const float *matrix, const float *low, const float *high)
+{
+    float center[3];
+    float half[3];
+    for (int axis = 0; axis < 3; axis++)
+    {
+        center[axis] = (low[axis] + high[axis]) * 0.5f;
+        half[axis] = (high[axis] - low[axis]) * 0.5f;
+    }
+
+    float placed[3];
+    for (int axis = 0; axis < 3; axis++)
+    {
+        placed[axis] = matrix[0 + axis] * center[0] + matrix[4 + axis] * center[1] + matrix[8 + axis] * center[2] +
+                       matrix[12 + axis];
+    }
+
+    for (const auto &plane : spot.planes)
+    {
+        float radius = 0.0f;
+        for (int column = 0; column < 3; column++)
+        {
+            const float *const axis = matrix + column * 4;
+            radius += std::abs(half[column] * (axis[0] * plane[0] + axis[1] * plane[1] + axis[2] * plane[2]));
+        }
+        if (placed[0] * plane[0] + placed[1] * plane[1] + placed[2] * plane[2] + plane[3] < -radius)
+            return true;
+    }
+    return false;
+}
+
 // A vertex of a shadow's pass, VU1 0x3e8..0x3fb. Past the shadow's own plane (the projection's z not negative) it has
 // no alpha, otherwise w, which fades from 0x80 there to nothing at the box's far end.
 ModelShadowVertex shadowVertex(const float *projection, const ModelVertex &vertex)
@@ -345,6 +379,7 @@ void ModelRenderer::setMaterial(const void *list, const YamiPanModelMaterial &ma
     layer.pointFlat = material.pointFlat != 0;
     layer.noSpot = material.noSpot != 0;
     layer.noShadow = material.noShadow != 0;
+    layer.writesDepth = material.noDepthWrite == 0;
 }
 
 void ModelRenderer::setEffect(const void *list, const YamiPanModelEffect &effect)
@@ -401,6 +436,7 @@ void ModelRenderer::drawQuad(const void *list, const YamiPanModelQuad &quad)
     draw.firstShadowVertex = static_cast<std::uint32_t>(layer.shadowVertices.size());
     draw.blend = layer.blend;
     draw.fixedFog = layer.fixedFog;
+    draw.writesDepth = false;
 }
 
 void ModelRenderer::setLights(const void *list, const YamiPanModelLights &lights)
@@ -473,7 +509,28 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
     for (int index = 0; index < batch.count; index++)
         layer.batch[static_cast<std::size_t>(index)] = vertexAt(index);
 
-    const bool spotted = layer.spot.active != 0 && layer.lights.takesSpot != 0 && !layer.unlit && !layer.noSpot;
+    bool spotted = layer.spot.active != 0 && layer.lights.takesSpot != 0 && !layer.unlit && !layer.noSpot;
+    if (spotted)
+    {
+        // VU1's box is the batch's positions as they stand: the mesh's, or the world's after a palette.
+        constexpr float kUnit[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+        float low[3] = {INFINITY, INFINITY, INFINITY};
+        float high[3] = {-INFINITY, -INFINITY, -INFINITY};
+        for (int index = 0; index < batch.count; index++)
+        {
+            const ModelVertex &placed = layer.batch[static_cast<std::size_t>(index)];
+            const float *const position = batch.positions + index * 3;
+            const float point[3] = {batch.palette != nullptr ? placed.x : position[0],
+                                    batch.palette != nullptr ? placed.y : position[1],
+                                    batch.palette != nullptr ? placed.z : position[2]};
+            for (int axis = 0; axis < 3; axis++)
+            {
+                low[axis] = std::min(low[axis], point[axis]);
+                high[axis] = std::max(high[axis], point[axis]);
+            }
+        }
+        spotted = !outsideSpotCone(layer.spot, batch.palette != nullptr ? kUnit : matrix, low, high);
+    }
     const bool shadowed =
         layer.shadows.count != 0 && layer.lights.takesShadow != 0 && !layer.unlit && !layer.blended && !layer.noShadow;
     const bool cull = layer.lights.cullBack != 0;
@@ -530,7 +587,7 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
     if (layer.draws.size() > layer.passes.back().firstDraw)
     {
         ModelDraw &last = layer.draws.back();
-        if (last.image == layer.image && last.blended == layer.blended &&
+        if (last.image == layer.image && last.blended == layer.blended && last.writesDepth == layer.writesDepth &&
             last.firstVertex + last.vertexCount == firstVertex &&
             last.firstSpotVertex + last.spotVertexCount == firstSpot &&
             last.firstShadowVertex + last.shadowVertexCount == firstShadow)
@@ -541,8 +598,16 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
             return;
         }
     }
-    layer.draws.push_back({layer.image, layer.blended, firstVertex, count, firstSpot, spotCount, firstShadow,
-                           shadowCount});
+    ModelDraw &draw = layer.draws.emplace_back();
+    draw.image = layer.image;
+    draw.blended = layer.blended;
+    draw.firstVertex = firstVertex;
+    draw.vertexCount = count;
+    draw.firstSpotVertex = firstSpot;
+    draw.spotVertexCount = spotCount;
+    draw.firstShadowVertex = firstShadow;
+    draw.shadowVertexCount = shadowCount;
+    draw.writesDepth = layer.writesDepth;
 }
 
 void ModelRenderer::endPass(const void *list)
@@ -647,11 +712,14 @@ void ModelRenderer::uploadStream(SDL_GPUCopyPass *copy, VertexStream &stream, co
     SDL_UploadToGPUBuffer(copy, &source, &destination, true);
 }
 
-SDL_GPUGraphicsPipeline *ModelRenderer::pipelineFor(BlendMode blend)
+// What blends sits on the GS's ZBUF like everything else: 0x2e7e90 sends the same value for the opaque pass and the
+// blended one, and only the ghost pass masks it (0x2e7960, ZMSK). So a blended surface hides what is drawn after it,
+// which is what keeps the far side of a see-through model from showing over its near side.
+SDL_GPUGraphicsPipeline *ModelRenderer::pipelineFor(BlendMode blend, bool writesDepth)
 {
-    if (const auto found = m_pipelines.find(blend); found != m_pipelines.end())
+    const std::pair<BlendMode, bool> key{blend, writesDepth};
+    if (const auto found = m_pipelines.find(key); found != m_pipelines.end())
         return found->second.get();
-    const bool blended = blend != BlendMode::None;
 
     SDL_GPUVertexBufferDescription buffer{};
     buffer.slot = 0;
@@ -680,7 +748,7 @@ SDL_GPUGraphicsPipeline *ModelRenderer::pipelineFor(BlendMode blend)
     info.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
     info.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
     info.depth_stencil_state.enable_depth_test = true;
-    info.depth_stencil_state.enable_depth_write = !blended;
+    info.depth_stencil_state.enable_depth_write = writesDepth;
     info.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL;
     info.target_info.color_target_descriptions = &target;
     info.target_info.num_color_targets = 1;
@@ -690,7 +758,7 @@ SDL_GPUGraphicsPipeline *ModelRenderer::pipelineFor(BlendMode blend)
     SDL_GPUGraphicsPipeline *const pipeline = SDL_CreateGPUGraphicsPipeline(m_device.get(), &info);
     if (pipeline == nullptr)
         gpu::logGpuError("SDL_CreateGPUGraphicsPipeline(model)");
-    m_pipelines.emplace(blend, gpu::GraphicsPipeline(m_device.get(), pipeline));
+    m_pipelines.emplace(key, gpu::GraphicsPipeline(m_device.get(), pipeline));
     return pipeline;
 }
 
@@ -820,7 +888,8 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
         for (std::uint32_t index = 0; index < pass.drawCount; index++)
         {
             const ModelDraw &draw = frame.modelDraws[pass.firstDraw + index];
-            SDL_GPUGraphicsPipeline *const pipeline = pipelineFor(draw.blended ? draw.blend : BlendMode::None);
+            SDL_GPUGraphicsPipeline *const pipeline =
+                pipelineFor(draw.blended ? draw.blend : BlendMode::None, draw.writesDepth);
             if (pipeline == nullptr || draw.vertexCount == 0)
                 continue;
             SDL_BindGPUGraphicsPipeline(renderPass, pipeline);
@@ -860,6 +929,7 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
                 overVertices.buffer = stream.buffer.get();
                 SDL_BindGPUVertexBuffers(renderPass, 0, &overVertices, 1);
 
+                binding.texture = picture->texture->get();
                 binding.sampler = m_renderer.samplerFor(true, repeat);
                 SDL_BindGPUFragmentSamplers(renderPass, 0, &binding, 1);
 

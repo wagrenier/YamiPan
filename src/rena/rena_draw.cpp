@@ -22,6 +22,7 @@
 #include "rena/rena_draw.h"
 
 #include <algorithm>
+#include <math.h>
 #include <memory>
 #include <stdlib.h>
 #include <string.h>
@@ -271,6 +272,7 @@ void setSurface(sceVif1Packet *packet, const ModelInstance *model, const ModelSu
         material.noSpot = (surface->material->flags & ModelMaterialFlag_Foliage) != 0;
         material.noShadow = (surface->material->flags & (ModelMaterialFlag_Blended | ModelMaterialFlag_NoShadow)) != 0;
     }
+    material.noDepthWrite = (model->flags & ModelFlag_Ghost) != 0;
     YamiPan_ModelSetMaterial(packet, &material);
 }
 
@@ -553,10 +555,10 @@ static void fillPointLight(YamiPanModelPointLight &out)
     out.slope = -render->weight / render->radius;
 }
 
-// The spot's constants. Its box against the cone (the planes 0x2e0100 builds,
-// VU1 0x66b) only saves work, which the host does not need.
+// The spot's constants, and the planes VU1 0x66b holds each batch's box against:
+// the far one, then the cone's four sides through the lamp, normals inwards.
 // FS2 0x002e00f0
-// callcheck: FUN_0010b220, sceVu0ApplyMatrix, sceVu0OuterProduct, FUN_0010b820, tanf (the cone's planes and the packet)
+// callcheck: FUN_0010b220, sceVu0ApplyMatrix, sceVu0OuterProduct, FUN_0010b820 (the packet and the transposes: the planes are worked out in the world here)
 
 static void fillSpotLight(YamiPanModelSpotLight &out)
 {
@@ -592,6 +594,33 @@ static void fillSpotLight(YamiPanModelSpotLight &out)
     out.falloff[1] = sSpot->_90[1] / sSpot->radius;
     out.falloff[2] = sSpot->_90[2] / (sSpot->radius * sSpot->radius);
     out.limit = sSpot->reach * kReachLimit;
+
+    constexpr float kDefaultReach = 1200.0f;
+    const float halfTangent = tanf(sSpot->angle * 0.5f);
+    const float side = halfTangent * sSpot->intensity;
+    const float *ahead = matrix[1];
+    const float *place = matrix[3];
+    const float aheadAtLamp = ahead[0] * place[0] + ahead[1] * place[1] + ahead[2] * place[2];
+    out.planes[0][0] = -ahead[0];
+    out.planes[0][1] = -ahead[1];
+    out.planes[0][2] = -ahead[2];
+    out.planes[0][3] = (sSpot->reach != 0.0f ? out.limit : kDefaultReach) + aheadAtLamp;
+
+    const float corners[4][3] = {
+        { side, 1.0f, halfTangent },
+        { side, 1.0f, -halfTangent },
+        { -side, 1.0f, -halfTangent },
+        { -side, 1.0f, halfTangent },
+    };
+    for (int i = 0; i < 4; i++) {
+        const float *a = corners[i];
+        const float *b = corners[(i + 1) % 4];
+        const float normal[3] = { a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0] };
+        float *plane = out.planes[i + 1];
+        for (int axis = 0; axis < 3; axis++)
+            plane[axis] = matrix[0][axis] * normal[0] + matrix[1][axis] * normal[1] + matrix[2][axis] * normal[2];
+        plane[3] = -(plane[0] * place[0] + plane[1] * place[1] + plane[2] * place[2]);
+    }
 }
 
 // The camera in the world, from its matrix: VU address 4, a part of 0x2e5da0.

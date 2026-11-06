@@ -9,6 +9,7 @@
 #include <format>
 #include <fstream>
 #include <span>
+#include <vector>
 
 #include "game/gsutil.h"
 #include "rena/rena_2d_texture_tim2.h"
@@ -147,6 +148,8 @@ public:
           m_pixels(static_cast<const std::uint8_t *>(texture.m_pixels)),
           m_clut(static_cast<const std::uint8_t *>(texture.m_clut)),
           m_pixelBytes(static_cast<std::size_t>(texture.m_imageQwords) * kQwordBytes),
+          m_frameWidth(std::max(m_width, 1 << texture.m_tex0.TW)),
+          m_frameHeight(std::max(m_height, 1 << texture.m_tex0.TH)),
           m_opaque(texture.m_tex0.TCC == 0)
     {
         if (texture.m_image != nullptr)
@@ -170,14 +173,43 @@ public:
         return hash.value();
     }
 
+    // The GS reads a picture through TEX0's frame, its size rounded up to a power of two (TW, TH): a UV of 1 is the
+    // far side of that frame, wherever the file's pixels end, and a repeat wraps there, and a model's UVs count in it.
+    // So the Image is the frame, the picture in its corner. The GS would read on into whatever follows in its memory;
+    // here the picture's last row and column run on, which keeps a filtered edge as it is.
     std::shared_ptr<Image> decode() const
     {
+        const auto frameWidth = static_cast<std::size_t>(m_frameWidth);
+        const auto frameHeight = static_cast<std::size_t>(m_frameHeight);
         auto image = std::make_shared<Image>();
-        image->width = m_width;
-        image->height = m_height;
-        image->pixels.resize(pixelCount() * sizeof(Rgba));
+        image->width = m_frameWidth;
+        image->height = m_frameHeight;
+        image->pixels.resize(frameWidth * frameHeight * sizeof(Rgba));
 
-        const std::span<Rgba> out(reinterpret_cast<Rgba *>(image->pixels.data()), pixelCount());
+        const std::span<Rgba> frame(reinterpret_cast<Rgba *>(image->pixels.data()), frameWidth * frameHeight);
+        if (m_frameWidth == m_width && m_frameHeight == m_height)
+        {
+            decodePicture(frame);
+            return image;
+        }
+
+        std::vector<Rgba> picture(pixelCount());
+        decodePicture(picture);
+        const auto width = static_cast<std::size_t>(m_width);
+        const auto height = static_cast<std::size_t>(m_height);
+        for (std::size_t row = 0; row < frameHeight; row++)
+        {
+            const Rgba *const source = picture.data() + std::min(row, height - 1) * width;
+            Rgba *const target = frame.data() + row * frameWidth;
+            std::copy_n(source, width, target);
+            std::fill_n(target + width, frameWidth - width, source[width - 1]);
+        }
+        return image;
+    }
+
+private:
+    void decodePicture(std::span<Rgba> out) const
+    {
         if (indexed())
             decodeIndexed(out);
         else
@@ -188,10 +220,8 @@ public:
             for (Rgba &pixel : out)
                 pixel.a = kOpaque;
         }
-        return image;
     }
 
-private:
     std::size_t pixelCount() const
     {
         return static_cast<std::size_t>(m_width) * static_cast<std::size_t>(m_height);
@@ -258,6 +288,8 @@ private:
     const std::uint8_t *m_pixels;
     const std::uint8_t *m_clut;
     std::size_t m_pixelBytes;
+    int m_frameWidth;
+    int m_frameHeight;
     bool m_opaque;
     const TIM2_PICTUREHEADER *m_header = nullptr;
 };

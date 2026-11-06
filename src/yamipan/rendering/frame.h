@@ -136,7 +136,7 @@ using ModelShadowVertex = ModelSpotVertex;
 struct ModelDraw
 {
     std::shared_ptr<Image> image; // null: untextured
-    bool blended = false; // over what is drawn, no depth written, by `blend`; otherwise opaque
+    bool blended = false; // over what is drawn, by `blend`; otherwise opaque
     std::uint32_t firstVertex = 0;
     std::uint32_t vertexCount = 0;
     std::uint32_t firstSpotVertex = 0; // into Frame::modelSpotVertices, drawn over this draw
@@ -145,6 +145,7 @@ struct ModelDraw
     std::uint32_t shadowVertexCount = 0;
     BlendMode blend = BlendMode::Alpha;
     int fixedFog = -1; // an effect's GS FOG, 0..255, for all it draws; -1 the pass's fog by depth
+    bool writesDepth = true; // ZBUF's ZMSK clear: a material's, blended or not; not an effect's or a ghost's
 };
 
 // One pass of models, drawn in the frame's order among the 2D draws: before draws[uiDrawsBefore].

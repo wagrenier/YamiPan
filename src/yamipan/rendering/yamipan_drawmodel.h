@@ -36,6 +36,7 @@ struct YamiPanModelSpotLight
     float   scaleY;
     float   falloff[3];         /* reach = 255 / (0 + 1 * ahead + 2 * ahead * ahead), 255 at most */
     float   limit;              /* no reach at this distance ahead, or past it */
+    float   planes[5][4];       /* VU 205..209: far, then the cone's sides, n . p + w below 0 is outside */
 };
 
 /* The frame's shadows: one picture laid over the models that take them, black with the picture's alpha, a pass per
@@ -84,6 +85,7 @@ struct YamiPanModelMaterial
     int     pointFlat;          /* the point light ignores which way a vertex faces (material flag 0x10, 0x59a) */
     int     noSpot;             /* the spot's pass skips it (material flag 0x20, 0x2f1) */
     int     noShadow;           /* takes no shadow (material flags 1 and 2, 0x39d) */
+    int     noDepthWrite;       /* ZMSK: only a ghost model's pass (0x2e7960); what blends writes depth otherwise */
 };
 
 /* What lights a model: colours 0..1 and each light's direction. */
