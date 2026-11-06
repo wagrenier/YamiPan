@@ -21563,11 +21563,281 @@
   "was": "FUN_0021ee40",
   "why": "iterator, vtable 0x316080: active objects of group 6"
  },
+ "0021efa0": {
+  "name": "RouteLookObject::update",
+  "tag": "game-inferred",
+  "was": "FUN_0021efa0",
+  "why": "slot 0 of vtable 0x3160a0: aims again at the object while it can be seen, then the point look"
+ },
+ "0021f1a0": {
+  "name": "RouteLookObject::RouteLookObject",
+  "tag": "game-inferred",
+  "was": "FUN_0021f1a0",
+  "why": "stores vtable 0x3160a0 over 0x316110; called only by lookAtObject"
+ },
+ "0021f340": {
+  "name": "RouteLookPoint::update",
+  "tag": "game-inferred",
+  "was": "FUN_0021f340",
+  "why": "slot 0 of vtable 0x316100: pitch and yaw from the sway matrix to the point"
+ },
+ "0021f410": {
+  "name": "RouteLook::update",
+  "tag": "game-inferred",
+  "was": "FUN_0021f410",
+  "why": "slot 0 of vtable 0x316110: clamps to 65 degrees and writes wants.headAngles, wants.headOn"
+ },
+ "0021f610": {
+  "name": "RouteRoll::update",
+  "tag": "game-inferred",
+  "was": "FUN_0021f610",
+  "why": "slot 1 of 0x316120: sp_at1_1, the rolling effect at bn_pelvis, phases 0..2"
+ },
+ "0021f7b0": {
+  "name": "RouteRoll::~RouteRoll",
+  "tag": "game-inferred",
+  "was": "FUN_0021f7b0",
+  "why": "deleting dtor of 0x316120"
+ },
+ "0021f860": {
+  "name": "RouteStep::~RouteStep",
+  "tag": "game-inferred",
+  "was": "FUN_0021f860",
+  "why": "deleting dtor of the base 0x3160f0"
+ },
+ "0021f8b0": {
+  "name": "RouteElevator::update",
+  "tag": "game-inferred",
+  "was": "FUN_0021f8b0",
+  "why": "slot 1 of 0x316130: to the elevator door, call, ride, out, by getZs9901"
+ },
+ "0021ff60": {
+  "name": "RouteTurn::~RouteTurn",
+  "tag": "game-inferred",
+  "was": "FUN_0021ff60",
+  "why": "deleting dtor of 0x3161d0"
+ },
+ "0021ffc0": {
+  "name": "RouteElevator::~RouteElevator",
+  "tag": "game-inferred",
+  "was": "FUN_0021ffc0",
+  "why": "deleting dtor of 0x316130: deletes the sub step"
+ },
+ "00220050": {
+  "name": "RouteDoorStep::update",
+  "tag": "game-inferred",
+  "was": "FUN_00220050",
+  "why": "slot 1 of 0x316140: backs to a door behind it and shuts it, optionally locks it"
+ },
+ "00220610": {
+  "name": "RouteDoorStep::~RouteDoorStep",
+  "tag": "game-inferred",
+  "was": "FUN_00220610",
+  "why": "deleting dtor of 0x316140"
+ },
+ "002206a0": {
+  "name": "RouteAvoidCharacter::update",
+  "tag": "game-inferred",
+  "was": "FUN_002206a0",
+  "why": "slot 1 of 0x316150: steers 80 degrees past a character in the way"
+ },
+ "00220ae0": {
+  "name": "RouteAvoidWall::update",
+  "tag": "game-inferred",
+  "was": "FUN_00220ae0",
+  "why": "slot 1 of 0x316160: steers along the wall the ground reported"
+ },
+ "00220c90": {
+  "name": "RouteAvoidDoor::update",
+  "tag": "game-inferred",
+  "was": "FUN_00220c90",
+  "why": "slot 1 of 0x316170: steers past an open door leaf"
+ },
+ "002210f0": {
+  "name": "RouteAvoidTrap::update",
+  "tag": "game-inferred",
+  "was": "FUN_002210f0",
+  "why": "slot 1 of 0x316180: steers 95 degrees past an open trap"
+ },
+ "002214a0": {
+  "name": "RouteAvoidTrap::~RouteAvoidTrap",
+  "tag": "game-inferred",
+  "was": "FUN_002214a0",
+  "why": "deleting dtor of 0x316180"
+ },
+ "00221510": {
+  "name": "RouteLadderStep::update",
+  "tag": "game-inferred",
+  "was": "FUN_00221510",
+  "why": "slot 1 of 0x316190: uses the ladder and climbs while a ladder motion runs"
+ },
+ "00221720": {
+  "name": "RouteFollowNode::update",
+  "tag": "game-inferred",
+  "was": "FUN_00221720",
+  "why": "slot 1 of 0x3161a0: walks to a junction node for a second"
+ },
+ "00221880": {
+  "name": "RouteTurnObject::update",
+  "tag": "game-inferred",
+  "was": "FUN_00221880",
+  "why": "slot 1 of 0x3161b0: the object position, then the yaw turn"
+ },
+ "002218f0": {
+  "name": "RouteTurnPoint::~RouteTurnPoint",
+  "tag": "game-inferred",
+  "was": "FUN_002218f0",
+  "why": "deleting dtor of 0x3161c0"
+ },
+ "00221960": {
+  "name": "RouteTurnPoint::update",
+  "tag": "game-inferred",
+  "was": "FUN_00221960",
+  "why": "slot 1 of 0x3161c0: yaw to the point, then the yaw turn"
+ },
+ "002219d0": {
+  "name": "RouteTurn::update",
+  "tag": "game-inferred",
+  "was": "FUN_002219d0",
+  "why": "slot 1 of 0x3161d0: wants the turn left or right until the yaw is reached, then the rest as moveYaw"
+ },
+ "00221e70": {
+  "name": "RouteMoveTurn::update",
+  "tag": "game-inferred",
+  "was": "FUN_00221e70",
+  "why": "slot 1 of 0x3161e0: forwards to the held step"
+ },
+ "00221e90": {
+  "name": "RouteMoveTurn::~RouteMoveTurn",
+  "tag": "game-inferred",
+  "was": "FUN_00221e90",
+  "why": "deleting dtor of 0x3161e0"
+ },
+ "00221f20": {
+  "name": "RouteMove::~RouteMove",
+  "tag": "game-inferred",
+  "was": "FUN_00221f20",
+  "why": "deleting dtor of the base 0x3160d0"
+ },
+ "00221f70": {
+  "name": "RouteMoveCar::getGoal",
+  "tag": "game-inferred",
+  "was": "FUN_00221f70",
+  "why": "slot 2 of 0x316200: the point or the object place"
+ },
+ "00222040": {
+  "name": "RouteMoveCar::update",
+  "tag": "game-inferred",
+  "was": "FUN_00222040",
+  "why": "slot 1 of 0x316200: steers and pedals the car at the goal"
+ },
+ "00222310": {
+  "name": "RouteWalk::avoidCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_00222310",
+  "why": "makes a RouteAvoidCharacter 0x316150 for a live character within reach ahead"
+ },
+ "00222830": {
+  "name": "RouteWalk::avoidWall",
+  "tag": "game-inferred",
+  "was": "FUN_00222830",
+  "why": "makes a RouteAvoidWall 0x316160 from the ground wall angle"
+ },
+ "002229a0": {
+  "name": "RouteWalk::avoidDoor",
+  "tag": "game-inferred",
+  "was": "FUN_002229a0",
+  "why": "makes a RouteAvoidDoor 0x316170 for an open door on the segment"
+ },
+ "00222b80": {
+  "name": "RouteWalk::avoidTrap",
+  "tag": "game-inferred",
+  "was": "FUN_00222b80",
+  "why": "makes a RouteAvoidTrap 0x316180 for an open trap, aiLevel above 0"
+ },
+ "00222e60": {
+  "name": "RouteWalk::avoid",
+  "tag": "game-inferred",
+  "was": "FUN_00222e60",
+  "why": "trap, then what the segment to the goal hits: door, wall, character"
+ },
+ "00222fb0": {
+  "name": "RouteWalk::getGoal",
+  "tag": "game-inferred",
+  "was": "FUN_00222fb0",
+  "why": "slot 2 of 0x316220: the point or the object place"
+ },
+ "00223080": {
+  "name": "RouteWalk::update",
+  "tag": "game-inferred",
+  "was": "FUN_00223080",
+  "why": "slot 1 of 0x316220: the walk"
+ },
+ "00224b10": {
+  "name": "RouteWalk::~RouteWalk",
+  "tag": "game-inferred",
+  "was": "FUN_00224b10",
+  "why": "deleting dtor of 0x316220: deletes the step"
+ },
+ "00224ba0": {
+  "name": "RouteWalk::RouteWalkObject",
+  "tag": "game-inferred",
+  "was": "FUN_00224ba0",
+  "why": "ctor of 0x316220 from an object, moveToObject"
+ },
+ "00224ce0": {
+  "name": "RouteWalk::RouteWalkPoint",
+  "tag": "game-inferred",
+  "was": "FUN_00224ce0",
+  "why": "ctor of 0x316220 from a point, moveToPoint"
+ },
+ "00224da0": {
+  "name": "RouteHoldAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_00224da0",
+  "why": "slot 2 of 0x316240: health falls while motion 0x11 or 0x2a holds"
+ },
+ "00224f30": {
+  "name": "RouteHoldAction::~RouteHoldAction",
+  "tag": "game-inferred",
+  "was": "FUN_00224f30",
+  "why": "deleting dtor of 0x316240: releases the action"
+ },
+ "00224fe0": {
+  "name": "RouteAction::~RouteAction",
+  "tag": "game-inferred",
+  "was": "FUN_00224fe0",
+  "why": "deleting dtor of the base 0x3160b0"
+ },
+ "00229f60": {
+  "name": "RouteBiteAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_00229f60",
+  "why": "slot 2 of 0x316440: the bite task of attackTask"
+ },
+ "00229fe0": {
+  "name": "RouteShootAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_00229fe0",
+  "why": "slot 2 of 0x316460: the hitInTime and hitRunning task"
+ },
+ "0022a310": {
+  "name": "RouteSwingAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_0022a310",
+  "why": "slot 2 of 0x316480: wants.ready until fire is allowed, then a tap"
+ },
  "0022a370": {
   "name": "CharacterRoute::allowPath",
   "tag": "game-inferred",
   "was": "FUN_0022a370",
   "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022a3c0": {
+  "name": "CharacterRoute::useElevator",
+  "tag": "game-inferred",
+  "was": "FUN_0022a3c0",
+  "why": "specials ElevatorB1, B3, BxB1, BxB3 by 1..4"
  },
  "0022a4f0": {
   "name": "CharacterRoute::dragOutCar",
@@ -21628,6 +21898,24 @@
   "tag": "game-inferred",
   "was": "FUN_0022ad60",
   "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022aee0": {
+  "name": "CharacterRoute::shoot",
+  "tag": "game-inferred",
+  "was": "FUN_0022aee0",
+  "why": "the body of CharacterRoute::hit, a thunk 0x22be10; also called from hitInTime and hitRunning"
+ },
+ "0022b340": {
+  "name": "StageWeaponItem::allyInLine",
+  "tag": "game-inferred",
+  "was": "FUN_0022b340",
+  "why": "an ally stands within 80 of the gun line short of the aim point"
+ },
+ "0022b580": {
+  "name": "CharacterRoute::melee",
+  "tag": "game-inferred",
+  "was": "FUN_0022b580",
+  "why": "a blow at a character: door or attack special, the fire wants"
  },
  "0022b970": {
   "name": "CharacterRoute::attackTask",
@@ -21826,6 +22114,132 @@
   "tag": "game-inferred",
   "was": "FUN_0022f270",
   "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+ },
+ "0022f320": {
+  "name": "RouteAvoidCharacter::~RouteAvoidCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_0022f320",
+  "why": "deleting dtor of 0x316150"
+ },
+ "0022f380": {
+  "name": "RouteAvoidWall::~RouteAvoidWall",
+  "tag": "game-inferred",
+  "was": "FUN_0022f380",
+  "why": "deleting dtor of 0x316160"
+ },
+ "0022f3e0": {
+  "name": "RouteAvoidDoor::~RouteAvoidDoor",
+  "tag": "game-inferred",
+  "was": "FUN_0022f3e0",
+  "why": "deleting dtor of 0x316170"
+ },
+ "0022f440": {
+  "name": "RouteLadderStep::~RouteLadderStep",
+  "tag": "game-inferred",
+  "was": "FUN_0022f440",
+  "why": "deleting dtor of 0x316190"
+ },
+ "0022f4a0": {
+  "name": "RouteFollowNode::~RouteFollowNode",
+  "tag": "game-inferred",
+  "was": "FUN_0022f4a0",
+  "why": "deleting dtor of 0x3161a0"
+ },
+ "0022f500": {
+  "name": "RouteTurnObject::~RouteTurnObject",
+  "tag": "game-inferred",
+  "was": "FUN_0022f500",
+  "why": "deleting dtor of 0x3161b0"
+ },
+ "0022f580": {
+  "name": "RouteMoveTurn::getGoal",
+  "tag": "game-inferred",
+  "was": "FUN_0022f580",
+  "why": "slot 2 of 0x3161e0: none"
+ },
+ "0022f590": {
+  "name": "RouteMoveTurn::getTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0022f590",
+  "why": "slot 3 of 0x3161e0: none"
+ },
+ "0022f5a0": {
+  "name": "RouteMoveTurn::pathsChanged",
+  "tag": "game-inferred",
+  "was": "FUN_0022f5a0",
+  "why": "slot 4 of 0x3161e0: nothing"
+ },
+ "0022f5b0": {
+  "name": "RouteMoveCar::~RouteMoveCar",
+  "tag": "game-inferred",
+  "was": "FUN_0022f5b0",
+  "why": "deleting dtor of 0x316200"
+ },
+ "0022f610": {
+  "name": "RouteMoveCar::getTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0022f610",
+  "why": "slot 3 of 0x316200: +0x20"
+ },
+ "0022f620": {
+  "name": "RouteMoveCar::pathsChanged",
+  "tag": "game-inferred",
+  "was": "FUN_0022f620",
+  "why": "slot 4 of 0x316200: nothing"
+ },
+ "0022f630": {
+  "name": "RouteWalk::getTarget",
+  "tag": "game-inferred",
+  "was": "FUN_0022f630",
+  "why": "slot 3 of 0x316220: +0x20"
+ },
+ "0022f640": {
+  "name": "RouteWalk::pathsChanged",
+  "tag": "game-inferred",
+  "was": "FUN_0022f640",
+  "why": "slot 4 of 0x316220: repath flag +0x50, what allowPath calls"
+ },
+ "0022f650": {
+  "name": "RouteHoldAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022f650",
+  "why": "slot 1 of 0x316240: 2"
+ },
+ "0022fb00": {
+  "name": "RouteBiteAction::~RouteBiteAction",
+  "tag": "game-inferred",
+  "was": "FUN_0022fb00",
+  "why": "deleting dtor of 0x316440"
+ },
+ "0022fb60": {
+  "name": "RouteBiteAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022fb60",
+  "why": "slot 1 of 0x316440"
+ },
+ "0022fb70": {
+  "name": "RouteShootAction::~RouteShootAction",
+  "tag": "game-inferred",
+  "was": "FUN_0022fb70",
+  "why": "deleting dtor of 0x316460"
+ },
+ "0022fbd0": {
+  "name": "RouteShootAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022fbd0",
+  "why": "slot 1 of 0x316460"
+ },
+ "0022fbe0": {
+  "name": "RouteSwingAction::~RouteSwingAction",
+  "tag": "game-inferred",
+  "was": "FUN_0022fbe0",
+  "why": "deleting dtor of 0x316480"
+ },
+ "0022fc40": {
+  "name": "RouteSwingAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022fc40",
+  "why": "slot 1 of 0x316480"
  },
  "00230800": {
   "name": "StageMenu::addLine",
@@ -22739,11 +23153,53 @@
   "was": "FUN_0023f290",
   "why": "called from the brain; a brief read"
  },
+ "0023f2a0": {
+  "name": "RouteFilter::junctionNode",
+  "tag": "game-inferred",
+  "was": "FUN_0023f2a0",
+  "why": "+0x38 of the filter: the node to walk to now, set by advance"
+ },
+ "0023f2b0": {
+  "name": "RouteFilter::advance",
+  "tag": "game-inferred",
+  "was": "FUN_0023f2b0",
+  "why": "steps along the found path from the owner position"
+ },
+ "0023f2c0": {
+  "name": "RouteFilter::currentNode",
+  "tag": "game-inferred",
+  "was": "FUN_0023f2c0",
+  "why": "the node at the path cursor +0x34; null past the end"
+ },
  "0023f310": {
   "name": "RouteFilter::allow",
   "tag": "game-inferred",
   "was": "FUN_0023f310",
   "why": "setup calls it with STEP60.. and ALLDOOR on brain +0x180 -> +8; adds or removes a name in a set and refreshes"
+ },
+ "0023f320": {
+  "name": "RouteFilter::clearPath",
+  "tag": "game-inferred",
+  "was": "FUN_0023f320",
+  "why": "empties the area list and the nodes, length -1"
+ },
+ "0023f370": {
+  "name": "RouteFilter::findPath",
+  "tag": "game-inferred",
+  "was": "FUN_0023f370",
+  "why": "areas then nodes from the owner to the point; the length or -1"
+ },
+ "0023f380": {
+  "name": "RouteFilter::~RouteFilter",
+  "tag": "game-inferred",
+  "was": "FUN_0023f380",
+  "why": "deleting dtor of the 4-byte handle: frees its 0x60 record"
+ },
+ "0023f500": {
+  "name": "RouteFilter::RouteFilter",
+  "tag": "game-inferred",
+  "was": "FUN_0023f500",
+  "why": "the 4-byte handle: a new 0x60 record over the route player and the owner"
  },
  "00242e80": {
   "name": "SceneNoiseList::pollSoundSources",
@@ -24130,6 +24586,12 @@
   "tag": "game-inferred",
   "was": "FUN_00252b10",
   "why": "called once after the ctor with 0; empty in this build"
+ },
+ "00252bc0": {
+  "name": "RoutePlayer::isListedArea",
+  "tag": "game-inferred",
+  "was": "FUN_00252bc0",
+  "why": "binary search of the area in the sorted list of the rute header"
  },
  "00253180": {
   "name": "RoutePlayer::RoutePlayer",
@@ -26633,6 +27095,18 @@
   "was": "FUN_00289eb0",
   "why": "squared distance on x, y of +0x150 against a range; the caller passes 250 and the character's position"
  },
+ "00289ef0": {
+  "name": "StageCar::getCenter",
+  "tag": "game-inferred",
+  "was": "FUN_00289ef0",
+  "why": "what moveToPoint measures to in a car; update too"
+ },
+ "0028a250": {
+  "name": "StageCar::getSeatPlace",
+  "tag": "game-inferred",
+  "was": "FUN_0028a250",
+  "why": "given the character: where a character in it counts as being"
+ },
  "0028ab90": {
   "name": "StageCar::hasSettled",
   "tag": "game-inferred",
@@ -27029,6 +27503,18 @@
   "was": "FUN_002938d0",
   "why": "bits for tracks named ?_finger.. with keys, r 1, l 2"
  },
+ "00293c60": {
+  "name": "elevatorSwitchPlace",
+  "tag": "game-inferred",
+  "was": "FUN_00293c60",
+  "why": "place and direction of switch 1..4"
+ },
+ "00293fd0": {
+  "name": "elevatorDoorPlace",
+  "tag": "game-inferred",
+  "was": "FUN_00293fd0",
+  "why": "the door point of a floor"
+ },
  "00294140": {
   "name": "elevatorCanCall",
   "tag": "game-inferred",
@@ -27064,6 +27550,18 @@
   "tag": "game-inferred",
   "was": "FUN_00294b60",
   "why": "pose +0x408 low nibble 1"
+ },
+ "00294b90": {
+  "name": "elevatorOpenAtB3",
+  "tag": "game-inferred",
+  "was": "FUN_00294b90",
+  "why": "route step: floor 1 is open"
+ },
+ "00294be0": {
+  "name": "elevatorOpenAtB1",
+  "tag": "game-inferred",
+  "was": "FUN_00294be0",
+  "why": "route step: floor 0 is open"
  },
  "00294c30": {
   "name": "elevatorIsAtB3",
