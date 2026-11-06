@@ -115,11 +115,30 @@ struct YamiPanModelBatch
     int            firstBoneOnly;  /* ModelFlag_Distant: every vertex takes its first bone, unweighted */
 };
 
+/* A particle effect's state (StageParticle::draw): its picture, ALPHA_1 as the game has it, and the GS's FOG register,
+ * one value for all it draws, 255 no fog. It stays until the next effect or material. */
+struct YamiPanModelEffect
+{
+    const void   *texture;      /* a Tim2Texture; null: untextured */
+    unsigned long long alpha1;
+    int           fog;
+};
+
+/* A quad, drawn with the effect: corners in the pass's space, as a strip; uv in the GS's 1 / 16 texel. */
+struct YamiPanModelQuad
+{
+    float    position[4][3];
+    float    uv[4][2];
+    uint32_t color;             /* r g b a, 0x80 = 1.0 */
+};
+
 void YamiPan_ModelBeginPass(const void *list, const YamiPanModelPass *pass);
 void YamiPan_ModelSetMaterial(const void *list, const YamiPanModelMaterial *material);
 void YamiPan_ModelSetLights(const void *list, const YamiPanModelLights *lights);
 /* `world` takes the batch's positions to the world (sceVu0 layout). */
 void YamiPan_ModelDrawBatch(const void *list, const float world[4][4], const YamiPanModelBatch *batch);
+void YamiPan_ModelSetEffect(const void *list, const YamiPanModelEffect *effect);
+void YamiPan_ModelDrawQuad(const void *list, const YamiPanModelQuad *quad);
 void YamiPan_ModelEndPass(const void *list);
 
 /* A model took a texture: the module's lookups by texture object start over. */

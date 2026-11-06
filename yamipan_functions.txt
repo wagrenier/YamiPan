@@ -3562,32 +3562,32 @@
 /* 0018c040 00000008 */ FUN_0018c040(){}
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/stageparticle.cpp
 // *****************************************************************************
 
-/* 0018c050 00000008 */ FUN_0018c050(){}
-/* 0018c060 00000004 */ FUN_0018c060(){}
-/* 0018c070 00000004 */ FUN_0018c070(){}
-/* 0018c080 00000004 */ FUN_0018c080(){}
-/* 0018c090 00000004 */ FUN_0018c090(){}
-/* 0018c0a0 0000000c */ FUN_0018c0a0(){}
-/* 0018c0b0 00000010 */ FUN_0018c0b0(){}
-/* 0018c0c0 000000b0 */ FUN_0018c0c0(){}
-/* 0018c170 000000b0 */ FUN_0018c170(){}
+/* 0018c050 00000008 */ StageParticle::getKind(){}  // game
+/* 0018c060 00000004 */ StageParticle::sideHook0(){}  // game
+/* 0018c070 00000004 */ StageParticle::sideHook1(){}  // game
+/* 0018c080 00000004 */ StageParticle::sideHook2(){}  // game
+/* 0018c090 00000004 */ StageParticle::sideHook3(){}  // game
+/* 0018c0a0 0000000c */ StageParticle::setShown(){}  // game
+/* 0018c0b0 00000010 */ StageParticle::isShown(){}  // game
+/* 0018c0c0 000000b0 */ StageParticle::setHidden(){}  // game
+/* 0018c170 000000b0 */ StageParticle::setVisible(){}  // game
 /* 0018c220 000000b0 */ StageParticle::setEmitting(){}  // game
 /* 0018c2d0 000000d4 */ StageParticle::setRunning(){}  // game
-/* 0018c3b0 0000104c */ FUN_0018c3b0(){}
-/* 0018d400 00000e74 */ FUN_0018d400(){}
-/* 0018e280 00001740 */ FUN_0018e280(){}
-/* 0018f9c0 000004f8 */ FUN_0018f9c0(){}
-/* 0018fec0 000000d8 */ StageParticle::stopChain(){}  // game
-/* 0018ffa0 00000094 */ FUN_0018ffa0(){}
+/* 0018c3b0 0000104c */ StageParticle::drawCells(){}  // game
+/* 0018d400 00000e74 */ StageParticle::draw(){}  // game
+/* 0018e280 00001740 */ StageParticle::update(){}  // game
+/* 0018f9c0 000004f8 */ StageParticle::emitAt(){}  // game
+/* 0018fec0 000000d8 */ StageParticle::restartChain(){}  // game
+/* 0018ffa0 00000094 */ StageParticle::restart(){}  // game
 /* 00190040 000000ac */ StageParticle::setRangeSquared(){}  // game
 /* 001900f0 0000012c */ StageParticle::setStopFrames(){}  // game
-/* 00190220 000001a0 */ FUN_00190220(){}
-/* 001903c0 00000084 */ FUN_001903c0(){}
-/* 00190450 000000a4 */ FUN_00190450(){}
-/* 00190500 000000d4 */ FUN_00190500(){}
+/* 00190220 000001a0 */ StageParticle::init(){}  // game
+/* 001903c0 00000084 */ StageParticle::~StageParticle(){}  // game
+/* 00190450 000000a4 */ StageParticle::StageParticleCount(){}  // game
+/* 00190500 000000d4 */ StageParticle::StageParticle(){}  // game
 /* 001905e0 00000008 */ FUN_001905e0(){}
 /* 001905f0 00000008 */ FUN_001905f0(){}
 /* 00190600 00000008 */ FUN_00190600(){}
@@ -3595,8 +3595,8 @@
 /* 00190620 00000008 */ FUN_00190620(){}
 /* 00190630 00000008 */ FUN_00190630(){}
 /* 00190640 00000008 */ FUN_00190640(){}
-/* 00190650 00000100 */ FUN_00190650(){}
-/* 00190750 000000c0 */ FUN_00190750(){}
+/* 00190650 00000100 */ StageNodeTree::effectOffset(){}  // game
+/* 00190750 000000c0 */ StageNodeTree::findLive(){}  // game
 /* 00190810 00000070 */ StageNodeTree::isLive(){}  // game
 /* 00190890 00000008 */ StageNodeTree::spawn(){}  // game
 /* 001908a0 0000001c */ StageNodeTree::spawnNamed(){}  // game
@@ -3614,6 +3614,11 @@
 
 /* 00190900 00000088 */ StageNodeTree::setBoxes(){}  // game
 /* 00190990 000000e4 */ StageNodeTree::spawnMotes(){}  // game
+
+// *****************************************************************************
+// FILE -- game/stageparticle.cpp
+// *****************************************************************************
+
 /* 00190a80 00000008 */ StageNodeTree::draw(){}  // game
 /* 00190a90 00000008 */ StageNodeTree::update(){}  // game
 /* 00190aa0 0000003c */ StageNodeTree::addParticleTexture(){}  // game
@@ -3621,14 +3626,19 @@
 /* 00190b50 00000070 */ StageNodeTree::setParticleFileA(){}  // game
 /* 00190bc0 00000058 */ StageNodeTree::~StageNodeTree(){}  // game
 /* 00190c20 00000044 */ StageNodeTree::StageNodeTree(){}  // game
-/* 00190c70 0000084c */ FUN_00190c70(){}
-/* 001914c0 00000228 */ FUN_001914c0(){}
-/* 001916f0 000001b8 */ FUN_001916f0(){}
+/* 00190c70 0000084c */ StageNodeTree::drawEffects(){}  // game
+/* 001914c0 00000228 */ StageNodeTree::updateEffects(){}  // game
+/* 001916f0 000001b8 */ StageNodeTree::stopEffect(){}  // game
 /* 001918b0 00000010 */ FUN_001918b0(){}
 /* 001918c0 00000008 */ FUN_001918c0(){}
-/* 001918d0 000005b4 */ FUN_001918d0(){}
-/* 00191e90 000001e4 */ FUN_00191e90(){}
-/* 00192080 00000048 */ FUN_00192080(){}
+/* 001918d0 000005b4 */ StageNodeTree::createEffect(){}  // game
+/* 00191e90 000001e4 */ StageNodeTree::Inner::~Inner(){}  // game
+/* 00192080 00000048 */ StageNodeTree::Inner::Inner(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 001920d0 00000074 */ FUN_001920d0(){}
 /* 00192150 00000510 */ FUN_00192150(){}
 /* 00192660 00000148 */ FUN_00192660(){}

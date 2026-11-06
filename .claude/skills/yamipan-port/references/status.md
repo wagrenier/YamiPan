@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 07:59 at commit `335acd5` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 08:53 at commit `f590ae3` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-06 07:59 at commit `335acd5` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **4905** (74%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1547, game-inferred 3981
-- context-name ledger: 5528 entries; overrides of wrong library matches: 0
-- placed in a source file: 5224/6599 in 116 files
+- game functions: **6599**, named **4931** (75%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1547, game-inferred 4007
+- context-name ledger: 5554 entries; overrides of wrong library matches: 0
+- placed in a source file: 5275/6599 in 117 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **4684**; stubs: **209**
+- reconstructed FS2 functions: **4722**; stubs: **193**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -101,6 +101,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stagemodel.cpp` | 16 | 0 |
 | `src/game/stageobject.cpp` | 44 | 0 |
 | `src/game/stageobjlist.cpp` | 45 | 0 |
+| `src/game/stageparticle.cpp` | 38 | 0 |
 | `src/game/stageparty.cpp` | 85 | 0 |
 | `src/game/stageplayer.cpp` | 33 | 0 |
 | `src/game/stageresult.cpp` | 32 | 0 |
@@ -125,7 +126,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 159 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 143 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -153,9 +154,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 221 TUs: todo 86, partial 35, verify 98, done 31
-- next: **unassigned@0018c050** (frontier score 83)
+- 222 TUs: todo 86, partial 37, verify 98, done 31
+- next: **game/stageparticle.cpp** (continuing a partial TU)
 - pinned queue: (empty)
+- partial: `game/stageparticle.cpp` 38/51 -- Written: StageParticle (ctors, setters, update 0x18e280, emitAt, draw 0x18d400 and drawCells 0x18c3b0 as one host quad), StageNodeTree spawn, remove, isLive, fi
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -257,6 +259,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 08:53 `game/stageparticle.cpp` partial: the stage's particle effects: StageParticle and the particle system, spawn to host quads; runs, not yet seen on screen
 - 2026-11-06 07:59 `game/mapobject.cpp` verify: The map object's file closed: breakPart, getProperty and advanceMotion written, script slot +0x9c corrected to answer every map object, 70 of 70 functions, no s
 - 2026-11-06 07:07 `game/playermotion.cpp` verify: the three motion maps are the ROM's own LiteralMap, compared with its code; conditions and links in the ROM's order
 - 2026-11-06 06:42 `game/vu0math.cpp` verify: All 33 functions cut out of unassigned@00135990 and pinned 0x135990-0x1366c0: the game's vector and rotation helpers, then libvu0 in reverse order. rotateByAngl
@@ -264,40 +267,37 @@ Recent sessions:
 - 2026-11-06 06:08 `game/stageparty.cpp` verify: marked partial -> verify: drawLive has no gap left: the ripple sheet is game/ripplesheet.cpp; the stage 0x1b object at +0xb4 is built and drawn
 - 2026-11-06 05:26 `game/rumblelist.cpp` verify: the pad's rumble: KeepList was RumbleList, written and compared with the ROM
 - 2026-11-06 05:02 `game/stageparty.cpp` partial: StageDaylight written (was SceneModelHolder); the real sight-jack seen on stage 2
-- 2026-11-06 04:29 `game/demofleck.cpp` verify: the flecks: DemoFleck and FleckSet, all 13 functions, a host blend DestinationFade and YamiPan_DrawUiSqueezeFactor
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@0018c050` | todo | 0/9/36 | 17.9 | 83 | 2 |
 | `game/vectortrack.cpp` | partial | 9/0/16 | 2.5 | 68 | 0 |
-| `unassigned@0017e140` | todo | 0/0/78 | 1.4 | 51 | 0 |
+| `unassigned@0017e140` | todo | 0/0/78 | 1.4 | 54 | 0 |
 | `unassigned@00289cc0` | todo | 0/17/59 | 23.1 | 47 | 0 |
 | `unassigned@0027cab0` | partial | 3/2/59 | 13.1 | 47 | 0 |
-| `unassigned@00190900` | partial | 2/8/34 | 11.8 | 45 | 5 |
-| `unassigned@002a31b0` | partial | 1/18/22 | 5.9 | 39 | 0 |
 | `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 39 | 1 |
-| `unassigned@0022fc50` | todo | 0/0/8 | 1.8 | 33 | 0 |
+| `unassigned@002a31b0` | partial | 1/18/22 | 5.9 | 39 | 0 |
 | `unassigned@002764b0` | todo | 0/0/43 | 7.8 | 33 | 0 |
+| `unassigned@0022fc50` | todo | 0/0/8 | 1.8 | 33 | 0 |
 | `unassigned@002937e0` | partial | 2/13/29 | 6.9 | 30 | 0 |
 | `rx/rxsndstradpcm.c` | todo | 0/8/10 | 2.6 | 25 | 5 |
+| `unassigned@002a4a40` | partial | 4/10/90 | 19.9 | 25 | 2 |
+| `game/stagealert.cpp` | todo | 0/7/8 | 1.3 | 24 | 3 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
 | `002c1430` | FUN_002c1430 | 115 | - | missing | game/packtables.cpp |
-| `00184370` | StageNodeList::erase | 58 | game | missing | game/stageitem.cpp |
-| `0017e260` | FUN_0017e260 | 34 | - | missing | - |
-| `00190890` | StageNodeTree::spawn | 33 | game | stub | - |
+| `00184370` | StageNodeList::erase | 64 | game | missing | game/stageitem.cpp |
+| `0017e260` | FUN_0017e260 | 36 | - | missing | - |
 | `00276510` | MotionCondition::MotionCondition | 32 | game | missing | - |
-| `001842c0` | StageNodeList::pushBack | 26 | game | missing | game/stageitem.cpp |
+| `001842c0` | StageNodeList::pushBack | 29 | game | missing | game/stageitem.cpp |
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `0027cc50` | MotionLink::MotionLink | 19 | game | missing | - |
 | `00296cb0` | VectorFade::setFrom | 18 | game | missing | game/vectortrack.cpp |
-| `0018c2d0` | StageParticle::setRunning | 18 | game | stub | - |
 | `002c0d90` | FUN_002c0d90 | 18 | - | missing | game/packtables.cpp |
+| `0017e1b0` | FUN_0017e1b0 | 16 | - | missing | - |
 | `00296ca0` | VectorFade::setTo | 16 | game | missing | game/vectortrack.cpp |
-| `0017e1b0` | FUN_0017e1b0 | 15 | - | missing | - |
 | `0029a700` | FUN_0029a700 | 15 | - | missing | game/vectortrack.cpp |
 | `001d1a00` | ScriptRunner::getEntry | 14 | game | missing | game/scriptrunner.cpp |
 | `0022fe10` | FUN_0022fe10 | 14 | - | missing | - |
@@ -325,4 +325,6 @@ Recent sessions:
 | `001871c0` | PartSwitch::~PartSwitch | 6 | game | missing | - |
 | `0029f440` | findNumLockTarget | 6 | game | stub | - |
 | `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
+| `00206f80` | FUN_00206f80 | 6 | - | missing | - |
+| `001d1c20` | ScriptRunner::getParent2 | 6 | game | missing | game/scriptrunner.cpp |
 

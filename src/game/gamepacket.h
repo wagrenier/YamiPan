@@ -22,8 +22,10 @@ enum PacketList
     PacketList_None = -1,       // GamePacketManager: no list open
     PacketList_RenaFrame = 0,   // drawSysRender: the frame's set-up (VU1 program, textures, lights)
     PacketList_RenaFar0  = 2,   // drawSysRender: the far_ models
+    PacketList_ParticlesFar = 3, // StageNodeTree::draw: ParticleFlag_FarWorld, after the far_ models
     PacketList_RenaFar   = 4,   // drawSysRender: the far_1..3 models
     PacketList_RenaMain  = 5,   // drawSysRender: the depth clear and the frame's models
+    PacketList_Particles = 6,   // StageNodeTree::draw: the effects, over the main models
     PacketList_RenaTarget = 7,  // drawSysRender: what the view target looks at, over a new depth
     PacketList_SceneModel = 8,  // StageScene::draw: StageDaylight, the jack's frame
     PacketList_Scene2d    = 9,  // StageScene::draw: filters, fades and the fill over the 3D frame

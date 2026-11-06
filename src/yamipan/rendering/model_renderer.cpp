@@ -68,6 +68,7 @@ void buildWorldToClip(const ModelPass &pass, const PictureLayout &layout, float 
 }
 
 constexpr std::uint32_t kVertexAlpha = 0x80;
+constexpr float kGsTexelUnit = 16.0f; // the GS's UV register
 
 // A vertex's colour in the GS's scale (0x80 = 1.0): what the VU1 program does, 0x2a9 and 0x2bb. The light is
 // ambient + each light's colour * max(0, its direction . the turned normal), the vertex colour is multiplied by
@@ -338,10 +339,68 @@ void ModelRenderer::setMaterial(const void *list, const YamiPanModelMaterial &ma
     layer.scrollU = static_cast<float>(material.scrollU) / kUvUnit;
     layer.scrollV = static_cast<float>(material.scrollV) / kUvUnit;
     layer.blended = material.blended != 0;
+    layer.blend = BlendMode::Alpha;
+    layer.fixedFog = -1;
     layer.unlit = material.unlit != 0;
     layer.pointFlat = material.pointFlat != 0;
     layer.noSpot = material.noSpot != 0;
     layer.noShadow = material.noShadow != 0;
+}
+
+void ModelRenderer::setEffect(const void *list, const YamiPanModelEffect &effect)
+{
+    std::scoped_lock lock(m_lock);
+    Layer &layer = m_layers[list];
+
+    layer.image = imageOf(effect.texture);
+    layer.blended = true;
+    layer.blend = blendModeOf(effect.alpha1);
+    layer.fixedFog = effect.fog;
+}
+
+// The strip's two triangles, in the batch's vertex stream: an effect is a run of these.
+void ModelRenderer::drawQuad(const void *list, const YamiPanModelQuad &quad)
+{
+    std::scoped_lock lock(m_lock);
+    Layer &layer = m_layers[list];
+    if (layer.passes.empty())
+        return;
+
+    const Image *const image = layer.image.get();
+    const float scaleU = image != nullptr ? 1.0f / (kGsTexelUnit * static_cast<float>(image->width)) : 0.0f;
+    const float scaleV = image != nullptr ? 1.0f / (kGsTexelUnit * static_cast<float>(image->height)) : 0.0f;
+    const auto firstVertex = static_cast<std::uint32_t>(layer.vertices.size());
+    for (const int corner : {0, 1, 2, 2, 1, 3})
+    {
+        ModelVertex &vertex = layer.vertices.emplace_back();
+        vertex.x = quad.position[corner][0];
+        vertex.y = quad.position[corner][1];
+        vertex.z = quad.position[corner][2];
+        vertex.u = quad.uv[corner][0] * scaleU;
+        vertex.v = quad.uv[corner][1] * scaleV;
+        vertex.color = quad.color;
+    }
+
+    constexpr std::uint32_t kQuadVertices = 6;
+    if (layer.draws.size() > layer.passes.back().firstDraw)
+    {
+        ModelDraw &last = layer.draws.back();
+        if (last.image == layer.image && last.blended && last.blend == layer.blend &&
+            last.fixedFog == layer.fixedFog && last.firstVertex + last.vertexCount == firstVertex)
+        {
+            last.vertexCount += kQuadVertices;
+            return;
+        }
+    }
+    ModelDraw &draw = layer.draws.emplace_back();
+    draw.image = layer.image;
+    draw.blended = true;
+    draw.firstVertex = firstVertex;
+    draw.vertexCount = kQuadVertices;
+    draw.firstSpotVertex = static_cast<std::uint32_t>(layer.spotVertices.size());
+    draw.firstShadowVertex = static_cast<std::uint32_t>(layer.shadowVertices.size());
+    draw.blend = layer.blend;
+    draw.fixedFog = layer.fixedFog;
 }
 
 void ModelRenderer::setLights(const void *list, const YamiPanModelLights &lights)
@@ -588,10 +647,11 @@ void ModelRenderer::uploadStream(SDL_GPUCopyPass *copy, VertexStream &stream, co
     SDL_UploadToGPUBuffer(copy, &source, &destination, true);
 }
 
-SDL_GPUGraphicsPipeline *ModelRenderer::pipelineFor(bool blended)
+SDL_GPUGraphicsPipeline *ModelRenderer::pipelineFor(BlendMode blend)
 {
-    if (const auto found = m_pipelines.find(blended); found != m_pipelines.end())
+    if (const auto found = m_pipelines.find(blend); found != m_pipelines.end())
         return found->second.get();
+    const bool blended = blend != BlendMode::None;
 
     SDL_GPUVertexBufferDescription buffer{};
     buffer.slot = 0;
@@ -606,16 +666,7 @@ SDL_GPUGraphicsPipeline *ModelRenderer::pipelineFor(bool blended)
 
     SDL_GPUColorTargetDescription target{};
     target.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-    if (blended)
-    {
-        target.blend_state.enable_blend = true;
-        target.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
-        target.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
-        target.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
-        target.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-        target.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-        target.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
-    }
+    target.blend_state = blendStateOf(PipelineKey{blend, ColorMask::All});
 
     SDL_GPUGraphicsPipelineCreateInfo info{};
     info.vertex_shader = m_vertexShader.get();
@@ -639,7 +690,7 @@ SDL_GPUGraphicsPipeline *ModelRenderer::pipelineFor(bool blended)
     SDL_GPUGraphicsPipeline *const pipeline = SDL_CreateGPUGraphicsPipeline(m_device.get(), &info);
     if (pipeline == nullptr)
         gpu::logGpuError("SDL_CreateGPUGraphicsPipeline(model)");
-    m_pipelines.emplace(blended, gpu::GraphicsPipeline(m_device.get(), pipeline));
+    m_pipelines.emplace(blend, gpu::GraphicsPipeline(m_device.get(), pipeline));
     return pipeline;
 }
 
@@ -765,13 +816,26 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
         vertexUniforms.fog[3] = pass.fogFarValue;
         SDL_PushGPUVertexUniformData(commands, 0, &vertexUniforms, sizeof(vertexUniforms));
 
+        int pushedFog = -1;
         for (std::uint32_t index = 0; index < pass.drawCount; index++)
         {
             const ModelDraw &draw = frame.modelDraws[pass.firstDraw + index];
-            SDL_GPUGraphicsPipeline *const pipeline = pipelineFor(draw.blended);
+            SDL_GPUGraphicsPipeline *const pipeline = pipelineFor(draw.blended ? draw.blend : BlendMode::None);
             if (pipeline == nullptr || draw.vertexCount == 0)
                 continue;
             SDL_BindGPUGraphicsPipeline(renderPass, pipeline);
+
+            if (draw.fixedFog != pushedFog)
+            {
+                // An effect has one fog for all it draws: the same value at either limit.
+                const float fog = static_cast<float>(draw.fixedFog);
+                vertexUniforms.fog[0] = draw.fixedFog >= 0 ? fog : pass.fogA;
+                vertexUniforms.fog[1] = draw.fixedFog >= 0 ? 0.0f : pass.fogB;
+                vertexUniforms.fog[2] = draw.fixedFog >= 0 ? fog : pass.fogNearValue;
+                vertexUniforms.fog[3] = draw.fixedFog >= 0 ? fog : pass.fogFarValue;
+                SDL_PushGPUVertexUniformData(commands, 0, &vertexUniforms, sizeof(vertexUniforms));
+                pushedFog = draw.fixedFog;
+            }
 
             const Image *const image = draw.image.get();
             SDL_GPUTextureSamplerBinding binding{};

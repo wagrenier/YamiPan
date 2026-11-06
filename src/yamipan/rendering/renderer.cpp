@@ -53,6 +53,8 @@ SDL_GPUPresentMode sdlPresentMode(PresentMode mode)
     return SDL_GPU_PRESENTMODE_VSYNC;
 }
 
+} // namespace
+
 SDL_GPUColorTargetBlendState blendStateOf(PipelineKey key)
 {
     SDL_GPUColorTargetBlendState state{};
@@ -114,8 +116,6 @@ SDL_GPUColorTargetBlendState blendStateOf(PipelineKey key)
     }
     return state;
 }
-
-} // namespace
 
 Renderer::Renderer(Window &window, gpu::Device &device, Config &config, EventQueue &events, ui::Overlay &overlay)
     : m_window(window), m_device(device), m_config(config), m_events(events), m_overlay(overlay), m_canvas(*this),

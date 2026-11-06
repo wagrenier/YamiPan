@@ -652,6 +652,28 @@ void renaDrawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask)
     sDeferredSkins.clear();
 }
 
+void renaBeginEffects(sceVif1Packet *packet, const sceVu0FVECTOR *screen)
+{
+    YamiPanModelPass pass = {};
+    for (int row = 0; row < 4; row++) {
+        for (int column = 0; column < 4; column++)
+            pass.viewScreen[row][column] = screen[row][column];
+    }
+    pass.screenCenterX = gDrawSysState.centerX;
+    pass.screenCenterY = gDrawSysState.centerY;
+    pass.screenHalfWidth = (float)gDrawSysState.width / 2.0f;
+    pass.screenHalfHeight = (float)gDrawSysState.height / 2.0f;
+    pass.depthMin = 1.0f;
+    pass.depthMax = 16777215.0f;
+    pass.fogA = 255.0f;
+    pass.fogNearValue = 255.0f;
+    pass.fogFarValue = 255.0f;
+    const DrawSysFog *fog = drawSysCurrent()->lights->getFog();
+    if (fog != nullptr)
+        copyVector3(pass.fogColor, fog->getColor());
+    YamiPan_ModelBeginPass(packet, &pass);
+}
+
 // FS2 0x002e85e0
 // callcheck: FUN_0010ad90, FUN_0010b028, FUN_0010b6e0, getDrawTarget, sceVif1PkAddGsAD, sceVif1PkCloseDmaTag, sceVif1PkCloseGifTag, sceVif1PkCnt, sceVif1PkOpenDirectCode, sceVif1PkOpenGifTag (packets and VU1 state: the draw module's on the host)
 

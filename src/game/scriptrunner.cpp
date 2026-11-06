@@ -10,6 +10,7 @@
 // runs straight through it and the [stub] log names it.
 #include "game/scriptrunner.h"
 #include "game/stagedoor.h"
+#include "game/stageparticle.h"
 #include "game/wstring.h"
 
 #include <algorithm>

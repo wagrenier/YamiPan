@@ -34,6 +34,9 @@ void renaSetShadowCount(sceVif1Packet *packet, int count);               // FS2 
 // The record's models whose draw group is in mask.
 void renaDrawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask); // FS2 0x002e5450
 void renaEndPass(sceVif1Packet *packet);                                 // FS2 0x002e85e0
+// PC: a pass of the stage's effects, in the list's place: vertices in view space, over the depth so far. The ROM's
+// GS state (TEST_1 no depth write, FOGCOL) as the host's. renaEndPass ends it.
+void renaBeginEffects(sceVif1Packet *packet, const sceVu0FVECTOR *screen);
 // One step of a texture animation (ModelInstance::texAnims).
 void renaStepTexAnim(ModelSurface *surface, int ticks);                             // FS2 0x002e3bf0
 

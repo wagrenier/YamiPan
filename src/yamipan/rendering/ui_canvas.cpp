@@ -46,28 +46,6 @@ constexpr int kSourceAlpha = 0;
 constexpr int kDestinationAlpha = 1;
 constexpr int kFixedAlpha = 2;
 
-BlendMode blendModeOf(std::uint64_t alpha)
-{
-    const int a = static_cast<int>(alpha & 3);
-    const int b = static_cast<int>((alpha >> 2) & 3);
-    const int c = static_cast<int>((alpha >> 4) & 3);
-    const int d = static_cast<int>((alpha >> 6) & 3);
-
-    if (a == kSourceColor && b == kDestinationColor && d == kDestinationColor)
-    {
-        if (c == kDestinationAlpha)
-            return BlendMode::DestinationAlpha;
-        return c == kFixedAlpha ? BlendMode::FixedAlpha : BlendMode::Alpha;
-    }
-    if (a == kSourceColor && b == kZero && d == kDestinationColor)
-        return c == kFixedAlpha ? BlendMode::FixedAdditive : BlendMode::Additive;
-    if (a == kZero && b == kSourceColor && d == kDestinationColor && c == kSourceAlpha)
-        return BlendMode::Subtractive;
-    if (a == kZero && b == kDestinationColor && d == kDestinationColor && c == kSourceAlpha)
-        return BlendMode::DestinationFade;
-    return BlendMode::Alpha;
-}
-
 ColorMask colorMaskOf(std::uint64_t frame)
 {
     const auto mask = static_cast<std::uint32_t>(frame >> 32);
@@ -100,6 +78,31 @@ std::uint8_t alphaTestRefOf(std::uint64_t test)
 }
 
 } // namespace
+
+BlendMode blendModeOf(std::uint64_t alpha)
+{
+    const int a = static_cast<int>(alpha & 3);
+    const int b = static_cast<int>((alpha >> 2) & 3);
+    const int c = static_cast<int>((alpha >> 4) & 3);
+    const int d = static_cast<int>((alpha >> 6) & 3);
+
+    if (a == kSourceColor && b == kDestinationColor && d == kDestinationColor)
+    {
+        if (c == kDestinationAlpha)
+            return BlendMode::DestinationAlpha;
+        return c == kFixedAlpha ? BlendMode::FixedAlpha : BlendMode::Alpha;
+    }
+    if (a == kSourceColor && b == kZero && d == kDestinationColor)
+        return c == kFixedAlpha ? BlendMode::FixedAdditive : BlendMode::Additive;
+    if (a == kZero && b == kSourceColor && d == kDestinationColor && c == kSourceAlpha)
+        return BlendMode::Subtractive;
+    if (a == kZero && b == kDestinationColor && d == kDestinationColor && c == kSourceAlpha)
+        return BlendMode::DestinationFade;
+    // Cd * As + Cd, the effects' brightening (0x49): the host multiplies by the colour, not the alpha.
+    if (a == kDestinationColor && b == kZero && d == kDestinationColor && c == kSourceAlpha)
+        return BlendMode::DestinationBoost;
+    return BlendMode::Alpha;
+}
 
 UiCanvas::UiCanvas(Renderer &renderer) : m_renderer(renderer) {}
 

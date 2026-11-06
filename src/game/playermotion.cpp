@@ -32,6 +32,7 @@
 #include "game/stageitem.h"
 #include "game/stagenode.h"
 #include "game/stageobjlist.h"
+#include "game/stageparticle.h"
 #include "game/stageresult.h"
 #include "game/stagescene.h"
 #include "game/stagelight.h"

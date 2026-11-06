@@ -50,6 +50,16 @@ void YamiPan_ModelDrawBatch(const void *list, const float world[4][4], const Yam
     models().drawBatch(list, world, *batch);
 }
 
+void YamiPan_ModelSetEffect(const void *list, const YamiPanModelEffect *effect)
+{
+    models().setEffect(list, *effect);
+}
+
+void YamiPan_ModelDrawQuad(const void *list, const YamiPanModelQuad *quad)
+{
+    models().drawQuad(list, *quad);
+}
+
 void YamiPan_ModelEndPass(const void *list)
 {
     models().endPass(list);

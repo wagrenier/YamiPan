@@ -6,6 +6,7 @@
  *  come: see SightJack::draw.
  * ======================================================================== */
 
+#include "game/stageparticle.h"
 #include "game/stageparty.h"
 
 #include <math.h>

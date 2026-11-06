@@ -116,6 +116,7 @@ The API, how the plugin behaves, the setup and the traps: the skill's `reference
 | `tm2png.py` | TIM2 -> PNG (4/8-bit indexed with CSM1 CLUTs, 16/24/32-bit, PS2 alpha scaled): files, or `--scan` to carve every embedded TIM2 out of an archive (`ROM.00x`). The reference a drawn screen is checked against. |
 | `restore_names.py` | `--snapshot` every name before bulk writes; restore from a snapshot. |
 | `shotscan.py` | Brightness of three rows of each `work/shots` PNG in numeric order (`LOW HIGH STEP`), to find bars, fades and scene changes: shot numbers are presents, not game frames. |
+| `ptcdump.py` | Lists a particle file dumped from memory: one line a definition, the flags and blends in use, or every field of one |
 | `build.py` | Build (MinGW + ninja, configures on first use, reuses a sibling's fetched deps), `--run N [--pad S] [--shot-every F] [--env K=V]` smoke run with screenshots and stub hits. Needs the bootstrapped PC project (bootstrap 6) and a toolchain (none on this machine yet). |
 | `stubgen.py` | Undefined references -> `YAMIPAN_STUB` definitions in their TU's file (address from a trailing `// FS2 0x...` on the declaration, else the Ghidra name, also `Class::Method`). |
 | `callcheck.py` | Calls in each `FS2 0x...`-annotated function vs FS2's callees (jal + tail jumps), by name's last component or the source definition at that address; `// callcheck: A, B (why)` explains invisible calls. |

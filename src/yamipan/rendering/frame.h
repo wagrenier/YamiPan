@@ -29,6 +29,9 @@ enum class BlendMode : std::uint8_t
     DestinationFade, // (0 - Cd) * As + Cd
 };
 
+// ALPHA_1's selectors as the blend above.
+BlendMode blendModeOf(std::uint64_t alpha);
+
 // FRAME_1's FBMSK as the two halves the game's presets use.
 enum class ColorMask : std::uint8_t
 {
@@ -133,13 +136,15 @@ using ModelShadowVertex = ModelSpotVertex;
 struct ModelDraw
 {
     std::shared_ptr<Image> image; // null: untextured
-    bool blended = false;
+    bool blended = false; // over what is drawn, no depth written, by `blend`; otherwise opaque
     std::uint32_t firstVertex = 0;
     std::uint32_t vertexCount = 0;
     std::uint32_t firstSpotVertex = 0; // into Frame::modelSpotVertices, drawn over this draw
     std::uint32_t spotVertexCount = 0;
     std::uint32_t firstShadowVertex = 0; // into Frame::modelShadowVertices, drawn over this draw, before the spot
     std::uint32_t shadowVertexCount = 0;
+    BlendMode blend = BlendMode::Alpha;
+    int fixedFog = -1; // an effect's GS FOG, 0..255, for all it draws; -1 the pass's fog by depth
 };
 
 // One pass of models, drawn in the frame's order among the 2D draws: before draws[uiDrawsBefore].

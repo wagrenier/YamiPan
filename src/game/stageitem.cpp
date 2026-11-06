@@ -19,6 +19,7 @@
 #include "game/modelpose.h"
 #include "game/stagelight.h"
 #include "game/stageobjlist.h"
+#include "game/stageparticle.h"
 #include "game/stagescene.h"
 #include "game/stagesound.h"
 #include "game/sysdata.h"

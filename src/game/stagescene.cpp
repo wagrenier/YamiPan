@@ -6,6 +6,7 @@
 #include "game/characterroute.h"
 #include "game/playermotion.h"
 #include "game/scenerender.h"
+#include "game/stageparticle.h"
 #include "game/stageparty.h"
 #include "game/stagescene.h"
 

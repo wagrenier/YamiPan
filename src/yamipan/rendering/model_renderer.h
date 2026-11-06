@@ -36,6 +36,8 @@ public:
     void setMaterial(const void *list, const YamiPanModelMaterial &material);
     void setLights(const void *list, const YamiPanModelLights &lights);
     void drawBatch(const void *list, const float world[4][4], const YamiPanModelBatch &batch);
+    void setEffect(const void *list, const YamiPanModelEffect &effect);
+    void drawQuad(const void *list, const YamiPanModelQuad &quad);
     void endPass(const void *list);
     void forgetTextures();
 
@@ -68,6 +70,8 @@ private:
         float scrollU = 0.0f;
         float scrollV = 0.0f;
         bool blended = false;
+        BlendMode blend = BlendMode::Alpha;
+        int fixedFog = -1;
         bool unlit = false;
         bool pointFlat = false;
         bool noSpot = false;
@@ -85,7 +89,7 @@ private:
 
     std::shared_ptr<Image> imageOf(const void *texture);
     void uploadStream(SDL_GPUCopyPass *copy, VertexStream &stream, const void *data, unsigned bytes);
-    SDL_GPUGraphicsPipeline *pipelineFor(bool blended);
+    SDL_GPUGraphicsPipeline *pipelineFor(BlendMode blend); // None: opaque, writes depth
     SDL_GPUGraphicsPipeline *createProjectedPipeline(const SDL_GPUColorTargetDescription &target);
     SDL_GPUGraphicsPipeline *spotPipeline();
     SDL_GPUGraphicsPipeline *shadowPipeline();
@@ -101,7 +105,7 @@ private:
     gpu::Shader m_fragmentShader;
     gpu::Shader m_spotVertexShader;
     gpu::Shader m_spotFragmentShader;
-    std::map<bool, gpu::GraphicsPipeline> m_pipelines;
+    std::map<BlendMode, gpu::GraphicsPipeline> m_pipelines;
     gpu::GraphicsPipeline m_spotPipeline;
     gpu::GraphicsPipeline m_shadowPipeline;
     gpu::Texture m_depth;
