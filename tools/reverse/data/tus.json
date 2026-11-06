@@ -2529,6 +2529,7 @@
    "why": "VcmTable: the VCM__ part-visibility table of a rena model (strings VCM__ / __ 0x309c90 / 0x309c98, used only here), its ctor / dtor / update / attach and the file-local tag helpers 0x2976a0..0x297c90, then its MSL string / set / map instances to 0x299d90 (CodeWarrior emits them after the file's code; the string ones are the binary's only copies, called from 129 sites). Before: game/progress.cpp ends at 0x296d60 (stageDefaultRecord); after: 0x299d90.. VU0 vector helpers called from 15+ sites, another file. No source-path string: the file name is the port's."
   },
   "game/vectortrack.cpp": {
+   "notes": "All 16 functions written in src/game/vectortrack.cpp; the seven that lived inline in gamehooks.h, where the tools do not count them, moved to the .cpp, and the classes to game/vectortrack.h. FUN_0029a700 named VectorKey::VectorKey_frames (batch 170). Proof: tools/reverse/vectorcmp.py runs random op scripts on eerun.py beside the host, 60 scripts, 20155 ops, 968131 words compared as bits, 0 differ, on eerun's float model. It reached every instruction except 14 words of setTime for a key with a next key, which addKey, its only caller, cannot take; those were read by eye and agree. Fixed from it: the Bezier middle weights and the control points were up to 48 ulp off (float order), the first control point now goes through divideVec4, pointAlong scales then adds. PC: the track ctor zeroes value and done, the ROM leaves them. Seen: New Game, doorwalk pad, 285 s, no crash: dark first-person wall as in earlier runs, not compared pixel by pixel. No visible change expected from rounding, so verify, not done. Doubt: VectorFade::step guard for frames 0 is not tested by vectorcmp.py; the source comment says nothing asks for it, not checked this run. Next: StageAlert, then the car (open-items.md).",
    "ranges": [
     [
      "00296c10",
@@ -2539,6 +2540,14 @@
      "0029a730"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-06 09:59",
+     "status": "verify",
+     "summary": "VectorFade, VectorKey and VectorTrack proven against the ROM; last 7 functions in the .cpp, classes in vectortrack.h"
+    }
+   ],
+   "status": "verify",
    "why": "VectorTrack, VectorKey, VectorFade; needed by SceneRender"
   },
   "game/viewcamera.cpp": {

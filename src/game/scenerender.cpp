@@ -200,7 +200,7 @@ void SceneRender::setSetLoop(int set, bool loop)
 }
 
 // FS2 0x001f6c30
-// callcheck: operator_new, VectorKey, FUN_0029a700, addKey (one for each track; forEachTrack holds the repeats)
+// callcheck: operator_new, VectorKey, VectorKey_frames, addKey (one for each track; forEachTrack holds the repeats)
 
 void SceneRender::addSetKeys(int set, int time)
 {

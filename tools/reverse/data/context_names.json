@@ -29927,6 +29927,12 @@
   "was": "FUN_0029a6e0",
   "why": "copies the vector, frames +0x30, links +0x38 / +0x3c"
  },
+ "0029a700": {
+  "name": "VectorKey::VectorKey_frames",
+  "tag": "game-inferred",
+  "was": "FUN_0029a700",
+  "why": "the zero-value overload of 0x29a6e0: value 0, prev and next null, +0x30 frames; addSetKeys uses it for every track but the transition"
+ },
  "0029a730": {
   "name": "ViewCamera::~ViewCamera",
   "tag": "game-inferred",
