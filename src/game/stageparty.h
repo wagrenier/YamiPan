@@ -12,6 +12,8 @@
  *  Names of the class, its modes and its methods are the port's, read from
  *  the code and the sounds JAK_IN, JAK_MODE, JAK_NOISE, JAK_TUNING.
  *
+ *  StageDaylight, at the end of the file's range, is the film's other user.
+ *
  *  Not written yet, in this file's range: the frame of stage 0x1b's boss.
  * ======================================================================== */
 #ifndef _GAME_STAGEPARTY_H
@@ -238,5 +240,75 @@ void gsFrameScale(sceVif1Packet *packet, int level);                     // FS2 
 void gsFrameContrast(sceVif1Packet *packet, u_int rgba);                 // FS2 0x002cf880
 void gsFrameAdd(sceVif1Packet *packet, u_int rgba);                      // FS2 0x002058e0
 void jackMarker(sceVif1Packet *packet, StageObject *object, StageObject *view, u_int rgba); // FS2 0x00205f50
+
+// What StageDaylight fades by, one row of the ROM's tables for each of its
+// kinds. Colours are RGBAQ words. The name is the port's reading: on a few
+// stages, away from the stage's boxes, a light is added over the frame,
+// strongest at first; going into a box the film closes in and opens again, as
+// eyes taking to the dark.
+struct DaylightGradient
+{
+    u_int top;              // FS2 +0x0: reached at peakAt, the frame's top edge
+    u_int topSettled;       // FS2 +0x4: reached at settledAt
+    u_int bottom;           // FS2 +0x8: the frame's bottom edge
+    u_int bottomSettled;    // FS2 +0xc
+    int   blend;            // FS2 +0x10: index of kDaylightBlend
+    float peakAt;           // FS2 +0x14: seconds
+    float settledAt;        // FS2 +0x18
+    float fadeSeconds;      // FS2 +0x1c: gone again this long after going in
+
+    // The light rising and settling, t seconds after coming out.
+    void drawRise(float t, sceVif1Packet *packet) const;                 // FS2 0x002d0040
+    // The settled light going, t seconds after going in.
+    void drawFade(float t, sceVif1Packet *packet) const;                 // FS2 0x002cff90
+    void fill(sceVif1Packet *packet, u_int topRgba, u_int bottomRgba) const; // FS2 0x002d0170
+};
+static_assert(sizeof(DaylightGradient) == 0x20, "DaylightGradient: EE 0x20");
+
+struct DaylightFilmSettings
+{
+    float peak;             // FS2 +0x0: the film's level at peakAt
+    float settled;          // FS2 +0x4: at settledAt; below 0 it has opened
+    int   band;             // FS2 +0x8: JackFilm::band from the first draw on
+    float peakAt;           // FS2 +0xc: seconds
+    float settledAt;        // FS2 +0x10
+    float fadeSeconds;      // FS2 +0x14: what is left of it going, on the way out
+};
+static_assert(sizeof(DaylightFilmSettings) == 0x18, "DaylightFilmSettings: EE 0x18");
+
+// layout: host -- EE 0x1c: the settings, then the film at +0x18.
+struct DaylightFilm
+{
+    ~DaylightFilm();                                                     // FS2 0x002cff30
+    // The film closing in and opening, t seconds after going in.
+    void draw(float t, sceVif1Packet *packet);                           // FS2 0x002cfe20
+
+    DaylightFilmSettings settings;
+    JackFilm *film = nullptr;   // FS2 +0x18: the jack's, cloned; band 0x100, levels 0..1
+};
+
+// StageScene::daylight. layout: host -- EE 0x54, offsets in the comments.
+class StageDaylight
+{
+public:
+    StageDaylight(StageNodeTree *tree, int stage);                       // FS2 0x002d07a0
+
+    // A frame over packet, seen from camera.
+    void draw(float deltaSeconds, sceVif1Packet *packet, StageObject *camera); // FS2 0x002d0550
+    // No transition: the state at position, the ramps already over (the
+    // sight-jack moves its view with it).
+    void setPlace(const float *position);                                // FS2 0x002d0750
+
+private:
+    bool             m_active = false;      // FS2 +0x0: a stage in the switch
+    DaylightGradient m_gradient;            // FS2 +0x4
+    DaylightFilm     m_film;                // FS2 +0x24, its film at +0x3c
+    StageNodeTree   *m_tree = nullptr;      // FS2 +0x40
+    float            m_insideSeconds = 0.0f;  // FS2 +0x44
+    float            m_outsideSeconds = 0.0f; // FS2 +0x48
+    bool             m_inside = false;      // FS2 +0x4c: in one of the tree's boxes
+    bool             m_placed = false;      // FS2 +0x4d, inverted: set up by the first draw
+    StageObject     *m_camera = nullptr;    // FS2 +0x50: last draw's
+};
 
 #endif // _GAME_STAGEPARTY_H

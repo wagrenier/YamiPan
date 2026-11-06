@@ -1823,7 +1823,7 @@
    "why": "Cut out of unassigned@00171300: the stage's name-keyed object registry (gStageScene +0x10, new 0xdc in 0x19c180): nine groups of a name map (AVL tree of StageNameNode by strcmp) and an object list, with their two containers. Bounded below by the BoxGrid vector instances (0x1928f0..0x1938f8) and above by game logic at 0x1953f0 (player state test, no registry use)."
   },
   "game/stageparty.cpp": {
-   "notes": "Written, batches 159, 160: SightJack::drawPaletteView 0x1ff010 (FramePalettePass, a gradient map at half the render size, the ROM's three ramps in the source), JackFilm::draw 0x204550 with drawCorner, ~JackFilm, clone (FilmOverlayPass), the sound KAKOSI in setVisionTarget, restoreBinds, getFilm, getFlecks, demoFleckRandNext. The film range joined this TU: pinned 001fe6b0-002067d0, it lies between this file's functions. demoFilmDraw and demoFilmDestroy are gone: DemoCamera calls JackFilm. Seen only in a temporary build, removed: passes forced over the first room on a timer, doorwalk pad, 245 s and 280 s, no crash. Sepia and grey on the wall, negative in progress/20261106-jack-negative-ramp.png with the ROM's jump to pale blue at index 0x10, film in a temporary white at four levels in progress/20261106-jack-film-test-white.png: a ring closing in from the edges, mirrored about the centre. No reference picture: the film frames were not extracted, and no real jack shows any of this (byte 9 stays 0 in node 4). The 15 s check is the language menu, unchanged. Left partial: drawLive still lacks stage 0x1b's boss film 0x2d10f0, FUN_002d3080 and the object at +0xb4: that is callcheck's MISSING on drawLive, explained. Next: game/demofleck.cpp is queued, then which script sets byte 9, then SceneModelHolder. open-items.md Next up has the order and the doubts.",
+   "notes": "Batch 162. SceneModelHolder was no model: it is StageDaylight, 0x2cfe20..0x2d0a10, range joined to this TU, StageScene::model renamed daylight. On stages 3, 0x11, 0x12, 0x14, 0x16, 0x19, 0x5d, 0x1b: outside the stage's bbx boxes an additive gradient rises and settles, inside it fades and a clone of the jack's film closes in and opens. Seen in a temporary build, removed: stage 3 forced, the box answer forced on a timer, progress/20261106-daylight-forced-peak.png and -settled.png. Unforced, stage 3's first room is inside all the way, so nothing shows there. Byte 9 is answered: E01, E04, E05 scripts only lock the jack, E02 and others never touch it, so node 4 is by design. Seen, temporary build, removed: New Game forced to stage 2, jack2 pad, 290 s, no crash, no flag forced: noise with the black film ring, then a tuned view through a character, progress/20261106-stage2-real-jack-view.png. No game reference judges the levels. Left partial: drawLive lacks stage 0x1b's boss film 0x2d10f0, FUN_002d3080 and the object at +0xb4, callcheck's MISSING on drawLive, explained. Next: KeepList 0x2bc100..0x2bcd20, misnamed, reads like a track player of three varint channels, another TU, its addNamed is what the jack's warning calls; then the boss film. open-items.md Next up has it. The 15 s check is the language menu, unchanged.",
    "ranges": [
     [
      "001fe6b0",
@@ -1831,7 +1831,7 @@
     ],
     [
      "002cf880",
-     "002cfe20"
+     "002d0a10"
     ]
    ],
    "sessions": [
@@ -1854,10 +1854,15 @@
      "date": "2026-11-06 03:54",
      "status": "partial",
      "summary": "the jack's palette views and film as host passes"
+    },
+    {
+     "date": "2026-11-06 05:02",
+     "status": "partial",
+     "summary": "StageDaylight written (was SceneModelHolder); the real sight-jack seen on stage 2"
     }
    ],
    "status": "partial",
-   "why": "The film 0x204550..0x2058e0 and 0x205b80 lie between this file's own functions (0x204250 JackFilm::clone before them, gsFrameAdd and jackMarker after) and JackFilm is this file's; contiguous, so one object file"
+   "why": "The film 0x204550..0x2058e0 and 0x205b80 lie between this file's own functions; 0x2cfe20..0x2d0a10 (StageDaylight, the JackFilm's other user: it clones and draws it) follows the gsFrame passes with no gap, and sldiDecompress starts a different subject after it"
   },
   "game/stageplayer.cpp": {
    "notes": "Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was stubs, so native 0x52 never ended the stage. Seen in the user's own playthrough: the cutscene, then mission accomplished, then back to stage 1. That last step is the navigator: runNaviFile and applyNaviAnswer are stubs (open-items.md, Next up). AREA_AC10 and AREA11 now fire too and were not looked at.",

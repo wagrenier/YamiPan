@@ -3512,21 +3512,6 @@ struct SceneArrayPair
 };
 
 // +0x12c: an object with a member at +0x24 the dtor destroys in place.
-// layout: host.
-struct SceneModel
-{
-    ~SceneModel();                                                       // FS2 0x002cff30 (in place: flag -1)
-};
-struct SceneModelHolder
-{
-    SceneModelHolder(StageNodeTree *tree, int stage);                    // FS2 0x002d07a0
-    void draw(float deltaSeconds, sceVif1Packet *packet, StageObject *camera); // FS2 0x002d0550
-    // Where it stands (the sight-jack moves it to the camera).
-    void setPlace(const float *position);                                // FS2 0x002d0750
-
-    u_char     _00[0x24];
-    SceneModel model;           // FS2 +0x24
-};
 
 // 44 groups at 0x599830 / 0x599860 reset (a byte zero, 32 words one each):
 // a stage's ctor. What the groups are is unread.

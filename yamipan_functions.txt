@@ -8810,20 +8810,15 @@
 
 /* 002cf880 000002a0 */ gsFrameContrast(){}  // game
 /* 002cfb20 000002fc */ gsFrameScale(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 002cfe20 00000110 */ FUN_002cfe20(){}
-/* 002cff30 00000058 */ SceneModel::~SceneModel(){}  // game
-/* 002cff90 000000a4 */ FUN_002cff90(){}
-/* 002d0040 00000128 */ FUN_002d0040(){}
-/* 002d0170 000001f4 */ FUN_002d0170(){}
-/* 002d0370 000001d8 */ FUN_002d0370(){}
-/* 002d0550 00000200 */ SceneModelHolder::draw(){}  // game
-/* 002d0750 0000004c */ SceneModelHolder::setPlace(){}  // game
-/* 002d07a0 00000268 */ SceneModelHolder::SceneModelHolder(){}  // game
+/* 002cfe20 00000110 */ DaylightFilm::draw(){}  // game
+/* 002cff30 00000058 */ DaylightFilm::~DaylightFilm(){}  // game
+/* 002cff90 000000a4 */ DaylightGradient::drawFade(){}  // game
+/* 002d0040 00000128 */ DaylightGradient::drawRise(){}  // game
+/* 002d0170 000001f4 */ DaylightGradient::fill(){}  // game
+/* 002d0370 000001d8 */ daylightMix(){}  // game
+/* 002d0550 00000200 */ StageDaylight::draw(){}  // game
+/* 002d0750 0000004c */ StageDaylight::setPlace(){}  // game
+/* 002d07a0 00000268 */ StageDaylight::StageDaylight(){}  // game
 
 // *****************************************************************************
 // FILE -- game/sldi.cpp

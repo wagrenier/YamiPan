@@ -31229,29 +31229,59 @@
   "was": "FUN_002cfb20",
   "why": "eight flat sprites with ALPHA_1 0xa9 (Cd * FIX) or, past 0xff, 0x69 (Cd * FIX + Cd)"
  },
+ "002cfe20": {
+  "name": "DaylightFilm::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002cfe20",
+  "why": "level ramp from -band/255 to peak to settled over the row's two times, stores the row's band, JackFilm::draw"
+ },
  "002cff30": {
-  "name": "SceneModel::~SceneModel",
+  "name": "DaylightFilm::~DaylightFilm",
   "tag": "game-inferred",
   "was": "FUN_002cff30",
-  "why": "StageScene dtor calls it on (+0x12c object) + 0x24 with flag -1 (in place): destroys its +0x18 (0x2052d0); name a guess"
+  "why": "this is the holder's +0x24: JackFilm dtor on +0x18; was SceneModel::~SceneModel"
+ },
+ "002cff90": {
+  "name": "DaylightGradient::drawFade",
+  "tag": "game-inferred",
+  "was": "FUN_002cff90",
+  "why": "the settled colours' alpha to 0 over row +0x1c seconds"
+ },
+ "002d0040": {
+  "name": "DaylightGradient::drawRise",
+  "tag": "game-inferred",
+  "was": "FUN_002d0040",
+  "why": "from no alpha to rows +0/+8 by +0x14, on to +4/+c by +0x18, then held"
+ },
+ "002d0170": {
+  "name": "DaylightGradient::fill",
+  "tag": "game-inferred",
+  "was": "FUN_002d0170",
+  "why": "ALPHA_1 from 0x2fd9b0[row +0x10], TEST_1, eight gouraud tristrips over the 512 frame, top colour above, bottom colour below"
+ },
+ "002d0370": {
+  "name": "daylightMix",
+  "tag": "game-inferred",
+  "was": "FUN_002d0370",
+  "why": "RGBA byte lerp with four clamps 0..255 (0x31acd8..): f12 t, a0 from, a1 to; only this file's callers"
  },
  "002d0550": {
-  "name": "SceneModelHolder::draw",
+  "name": "StageDaylight::draw",
   "tag": "game-inferred",
   "was": "FUN_002d0550",
-  "why": "+0x12c on list 8 with frame time and camera"
+  "why": "per frame: is the camera in the StageNodeTree's boxes; outside an additive gradient rises and settles, inside it fades and the film closes in and opens. Daylight is a reading from the colours, no reference"
  },
  "002d0750": {
-  "name": "SceneModelHolder::setPlace",
+  "name": "StageDaylight::setPlace",
   "tag": "game-inferred",
   "was": "FUN_002d0750",
-  "why": "given the camera's row 3 or the far vector; unread"
+  "why": "the inside flag at the position, both timers at their settled ends: no transition"
  },
  "002d07a0": {
-  "name": "SceneModelHolder::SceneModelHolder",
+  "name": "StageDaylight::StageDaylight",
   "tag": "game-inferred",
   "was": "FUN_002d07a0",
-  "why": "EE 0x54, takes the node tree and the stage number"
+  "why": "was SceneModelHolder: no model in it. Stage switch 3,0x11,0x12,0x14,0x16 / 0x19,0x5d / 0x1b picks a row of a gradient table 0x30f930 and a film table 0x30f990; clones the jack's film"
  },
  "002d0a10": {
   "name": "sldiDecompress",

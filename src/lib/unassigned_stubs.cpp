@@ -100,12 +100,6 @@ SceneBufferSet::~SceneBufferSet()
     YAMIPAN_STUB("SceneBufferSet::~SceneBufferSet", 0x002ce5a0);
 }
 
-// stub of FS2 0x002cff30
-SceneModel::~SceneModel()
-{
-    YAMIPAN_STUB("SceneModel::~SceneModel", 0x002cff30);
-}
-
 // stub of FS2 address unknown (1 candidates)
 void SceneOwnedObject::destroy()
 {
@@ -313,18 +307,6 @@ void MenuProgSet::draw(float zoom)
 void Rand48::seed(u_int value)
 {
     YAMIPAN_STUB("Rand48::seed", 0x00268290);
-}
-
-// stub of FS2 0x002d07a0
-SceneModelHolder::SceneModelHolder(StageNodeTree*, int)
-{
-    YAMIPAN_STUB("SceneModelHolder::SceneModelHolder", 0x002d07a0);
-}
-
-// stub of FS2 0x002d0550
-void SceneModelHolder::draw(float deltaSeconds, sceVif1Packet *packet, StageObject *camera)
-{
-    YAMIPAN_STUB("SceneModelHolder::draw", 0x002d0550);
 }
 
 // stub of FS2 address unknown (1 candidates)
@@ -1264,11 +1246,5 @@ void elevatorSwitchPlace(StageObject *elevator, float *place, float *direction, 
 void KeepList::addNamed(const char *name, int arg)
 {
     YAMIPAN_STUB("KeepList::addNamed", 0x002bc3c0);
-}
-
-// stub of FS2 0x002d0750
-void SceneModelHolder::setPlace(const float *position)
-{
-    YAMIPAN_STUB("SceneModelHolder::setPlace", 0x002d0750);
 }
 
