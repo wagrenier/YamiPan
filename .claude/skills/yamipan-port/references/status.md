@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-05 21:18 at commit `54752bb` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-05 21:26 at commit `23611c3` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -13,7 +13,7 @@ Generated 2026-11-05 21:18 at commit `54752bb` by `tools/reverse/status.py` (`re
 - game functions: **6599**, named **4502** (68%); library functions: 987
 - by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3581
 - context-name ledger: 5125 entries; overrides of wrong library matches: 0
-- placed in a source file: 4637/6599 in 105 files
+- placed in a source file: 4702/6599 in 107 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -21,7 +21,7 @@ Least-named game-code regions (64 KB blocks):
 |---|---|---|
 | `00310000` | 0/9 (0%) | - |
 | `002c0000` | 33/173 (19%) | game/packtables.cpp, game/menupack.cpp, game/stagecollision.cpp |
-| `00220000` | 44/167 (26%) | - |
+| `00220000` | 44/167 (26%) | game/characterroute.cpp |
 | `002d0000` | 90/256 (35%) | game/drawsys.cpp, game/fontdata.cpp, game/wstring.cpp |
 | `00200000` | 53/122 (43%) | game/pausemenustate.cpp, game/playermotion.cpp, game/uiitemlist.cpp |
 | `00280000` | 102/232 (44%) | game/demoevent.cpp, game/playermotion.cpp, game/areagrid.cpp |
@@ -144,10 +144,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 219 TUs: todo 93, partial 38, verify 88, done 27
-- next: **game/stageobject.cpp** (continuing a partial TU)
-- pinned queue: (empty)
-- partial: `game/stageobject.cpp` 43/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
+- 222 TUs: todo 96, partial 37, verify 89, done 27
+- next: **game/gameoversequence.cpp** (pinned in the queue)
+- pinned queue: game/gameoversequence.cpp, game/characterroute.cpp
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -199,6 +198,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stagelight.cpp` 64/101 -- All of 0x184860..0x186ee0 written. New Game run: lights build and join the scene with no fault, 114 stubs reached, the stop is unchanged (drawSysCurrent null in
 - verify: `game/stageloop.cpp` 9/9 -- Cut out of unassigned@00171300 and pinned 0x17f150-0x17fce0 (batch 073, 45 names; Ghidra saved by name_ctx). New src/game/stageloop.h defines gStageScene (exter
 - verify: `game/stagemodel.cpp` 17/19 -- All of StageModel is written (init, bindBones, placeBones, setBaseMotion, advance, applyMotion, the play and find calls, the dtor). BoneNode and ModelLink were 
+- verify: `game/stageobject.cpp` 43/43 -- All 43 functions are written, no stubs; the old partial status was stale, which is why tus.py next picked it. This run compared setProperty 0x189f40, getPropert
 - verify: `game/stageobjlist.cpp` 45/45 -- Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector in
 - verify: `game/stageplayer.cpp` 33/33 -- Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was s
 - verify: `game/stageresult.cpp` 32/32 -- All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (add
@@ -239,6 +239,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-05 21:26 `game/stageobject.cpp` verify: closed: all 43 written; setProperty, getProperty and scriptAddMenuLine compared with the ROM, stale notes fixed, queue refilled
 - 2026-11-05 21:17 `game/scenepool.cpp` verify: The strip behind the foot-of-screen text proven against its asset; flat 2D draws no longer doubled
 - 2026-11-05 20:46 `game/uiitemlist.cpp` done: the Use prompt's button picture and UiPrompt's destructor; all 20 functions written
 - 2026-11-05 20:23 `yamipan/rendering/model_renderer.cpp` verify: A batch with no UVs draws instead of crashing
@@ -246,13 +247,12 @@ Recent sessions:
 - 2026-11-05 18:57 `game/navimenu.cpp` verify: The navigator: the screen after a stage, its two widgets and the answer
 - 2026-11-05 18:07 `game/stageplayer.cpp` verify: The stage's end: a box answers native 0x44, ClearSequence is written, New Game's first part ends
 - 2026-11-05 17:36 `game/scriptrunner.cpp` verify: The last 89 natives: every native the disc's scripts call is bound; nothing seen to run
-- 2026-11-05 16:56 `game/scriptrunner.cpp` partial: 52 more natives by use on the disc, takeDamage and getHandClass, scriptHurt, the runner slots behind them
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@00135990` | partial | 3/0/33 | 3.1 | 579 | 0 |
-| `unassigned@0021e120` | partial | 4/44/195 | 71.5 | 131 | 3 |
 | `unassigned@001eedb0` | partial | 1/0/25 | 4.1 | 130 | 0 |
+| `game/characterroute.cpp` | todo | 0/43/48 | 19.5 | 117 | 2 |
 | `unassigned@00176480` | partial | 13/0/69 | 5.3 | 110 | 0 |
 | `unassigned@001fe6b0` | todo | 0/26/77 | 34.1 | 87 | 6 |
 | `unassigned@0018c050` | todo | 0/9/36 | 17.9 | 78 | 2 |

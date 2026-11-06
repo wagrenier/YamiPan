@@ -495,8 +495,7 @@ public:
     const sceVu0FVECTOR *getWorldMatrix() override { return m_xform.world; }
     void setDirtyTree(bool dirty) override;                              // FS2 0x0018b0d0
 
-    // The object's own slots (the ROM's +0x1f4..+0x248). +0x230 (0x189ce0)
-    // is not written yet.
+    // The object's own slots (the ROM's +0x1f4..+0x248).
 
     // StageObjectKind. Pure in the ROM.
     virtual int getKind() = 0;

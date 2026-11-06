@@ -4,7 +4,7 @@
  *  The base of the stage's objects (StageObject, gamehooks.h: doors, items,
  *  cameras, lights, characters) and the tree of objects (StageObjectTree),
  *  0x18ae70..0x18c050, with the three script-facing slots before it
- *  (0x189ce0..0x18ae70: setProperty and getProperty are written). The
+ *  (0x189ce0..0x18ae70: scriptAddMenuLine, setProperty, getProperty). The
  *  node base's dtor 0x1865c0 is here too, since a StageObject is one. The file
  *  name is the port's (no source string).
  * ======================================================================== */
@@ -515,9 +515,10 @@ StageObjectTree::~StageObjectTree()
 
 StageObject::StageObject()
 {
-    // PC: the fields past the transform belong to subclasses whose ctors are
-    // still stubs (a camera's m_linked, read by StageSound::update): zero
-    // until those are written, not heap garbage.
+    // PC: the ROM leaves these to the subclasses' ctors. On the host they are
+    // one flat block (gamehooks.h) that each ctor fills only as far as its
+    // TU has read, and CarPose, ElevatorPose and the car's own are stubs: zero,
+    // not heap garbage (a camera's m_linked, read by StageSound::update).
     memset(&m_itemDef, 0, (char *)(&m_ammoA + 1) - (char *)&m_itemDef);
     memset(m_name, 0, sizeof(m_name));
     m_model = nullptr;
