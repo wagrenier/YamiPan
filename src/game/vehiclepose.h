@@ -8,8 +8,8 @@
  *  contacts each frame; the elevator runs a small queue of door and ride
  *  steps, played as motion files of the model oZS99_01.
  *
- *  What drives them is not written yet: the car object 0x28a890..0x28e5a0
- *  and the elevator object (elevatorCall 0x294280, 0x294cb0, 0x295010).
+ *  The car object is game/stagecar.cpp; the elevator object is not written
+ *  yet (elevatorCall 0x294280, 0x294cb0, 0x295010).
  *
  *  The file is the port's name: no source string says what the ROM called it.
  * ======================================================================== */

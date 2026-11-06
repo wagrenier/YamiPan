@@ -11,6 +11,7 @@
 #include "game/playermotion.h"
 #include "game/objectproperty.h"
 #include "game/stagedoor.h"
+#include "game/stagecar.h"
 
 #include "game/boxgrid.h"
 
@@ -4606,7 +4607,7 @@ void PlayerMotion::applyMovement()
     bool near250 = false;
     u_char near300 = 0;
     if (character->m_gear == nullptr) {
-        if (StageViewTarget *target = gStageScene->viewTarget) {
+        if (StageCar *target = gStageScene->car) {
             const auto within = [&](float range) { return target->isNear(range, character->m_xform.position); };
             near250 = within(250.0f) || motionId == 0xb6 || motionId == 0xb5;
             near300 = within(300.0f);
@@ -8855,7 +8856,7 @@ bool StageCharacter::isCorpseGone()
     constexpr int   kCorpseWatchedFrames = 5;       // data 0x31aa28
     if (getLifeState() != LifeState_Corpse)
         return false;
-    const StageViewTarget *view = gStageScene->viewTarget;
+    const StageCar *view = gStageScene->car;
     int frames = m_motion->m_reviveFrames;
     if (view != nullptr && view->isNear(kCorpseWatchRange, m_xform.position)) {
         const StageObject *floor = m_ground->floorObject;
@@ -8902,8 +8903,8 @@ StageCharacter *StageCharacter::findNearestCorpse()
 bool StageCharacter::isNearViewTarget()
 {
     constexpr float kCorpseWatchRange = 250.0f;
-    return gStageScene->viewTarget != nullptr
-        && gStageScene->viewTarget->isNear(kCorpseWatchRange, m_xform.position);
+    return gStageScene->car != nullptr
+        && gStageScene->car->isNear(kCorpseWatchRange, m_xform.position);
 }
 
 // One item of list, standing free, in use, in the character's sight. The ROM
@@ -9551,8 +9552,8 @@ static int reviveFramesLeft(StageCharacter *character)
     if (character->getLifeState() != kLifeDownInMotion)
         return scriptFramesTo30((int)(character->m_reviveTime * (float)stageFps()));
     const int frames = character->m_motion->m_reviveFrames;
-    const bool near = scene->viewTarget != nullptr
-                   && scene->viewTarget->isNear(kNearViewTarget, character->m_xform.position);
+    const bool near = scene->car != nullptr
+                   && scene->car->isNear(kNearViewTarget, character->m_xform.position);
     StageObject *floor = character->m_ground->floorObject;
     if (!near || (floor != nullptr && floor->getKind() == StageObject_Car))
         return scriptFramesTo30(frames);

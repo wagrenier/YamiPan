@@ -37,6 +37,7 @@
 #include "game/stageresult.h"
 #include "game/stagescene.h"
 #include "game/subsceneobject.h"
+#include "game/stagecar.h"
 #include "game/sysdata.h"
 
 ScriptRunner *gRunningScript;           /* sbss 0x31ae18 (gp-0x7a58) */
@@ -5599,7 +5600,7 @@ static const int *nativeHasOverlayKind(ScriptRunner *self, int *acc, const int *
 static const int *nativeCarLights(ScriptRunner *self, int *, const int *code)
 {
     const int on = self->popped(1)[0];
-    reinterpret_cast<StageCar *>(gStageScene->viewTarget)->setLights(on != 0);
+    gStageScene->car->setLights(on != 0);
     return code;
 }
 
@@ -6212,9 +6213,8 @@ static const int *nativeNoticeForArg(ScriptRunner *self, int *, const int *code)
 
 static const int *nativeCarFlag3b9(ScriptRunner *, int *acc, const int *code)
 {
-    // PC: no car stands in the view target yet.
-    StageViewTarget *car = gStageScene->viewTarget;
-    *acc = car != nullptr ? car->flag3b9 : 0;
+    StageCar *car = gStageScene->car;
+    *acc = car != nullptr ? car->m_honked : 0;
     return code;
 }
 
@@ -6253,9 +6253,8 @@ static const int *nativeDoorNotUsed(ScriptRunner *self, int *, const int *code)
 
 static const int *nativeCarLightsOn(ScriptRunner *, int *acc, const int *code)
 {
-    // PC: no car stands in the view target yet.
-    StageViewTarget *car = gStageScene->viewTarget;
-    *acc = car != nullptr && car->gateParts->isLit();
+    StageCar *car = gStageScene->car;
+    *acc = car != nullptr && car->m_lights->isLit();
     return code;
 }
 
@@ -6416,7 +6415,7 @@ static const int *nativeAttachEffect(ScriptRunner *self, int *, const int *code)
 // The script's motion natives work on any map object: slot +0x9c answers the
 // object itself on each of them (ScriptRunner::getScriptMapObject), not only
 // on a car. PC: its pose can be missing where the ROM's never is: the host
-// makes a plain object of the car, and that one takes no motion list.
+// makes a plain object of the elevator, and that one takes no motion list.
 static StageObject *scriptMotionObject(ScriptRunner *target)
 {
     StageObject *object = target->getScriptMapObject();
@@ -6425,8 +6424,7 @@ static StageObject *scriptMotionObject(ScriptRunner *target)
 }
 
 // The car behind the same slot. The ROM writes through whatever answers it, and
-// only cars are ever asked. PC: null for anything else, which is every object
-// for now: createMapObject does not build the class yet.
+// only cars are ever asked. PC: null for anything else.
 static StageCar *scriptCar(ScriptRunner *target)
 {
     StageObject *object = target->getScriptMapObject();
@@ -6465,8 +6463,8 @@ static const int *nativeCarMotionEnding(ScriptRunner *self, int *acc, const int 
 static const int *nativeSetCarValue394(ScriptRunner *self, int *, const int *code)
 {
     const int thousandths = self->popped(1)[0];
-    if (gStageScene->viewTarget != nullptr)
-        gStageScene->viewTarget->value394 = (float)thousandths / 1000.0f;
+    if (gStageScene->car != nullptr)
+        gStageScene->car->m_steerRate = (float)thousandths / 1000.0f;
     return code;
 }
 
@@ -6478,7 +6476,7 @@ static const int *nativeSetCarFlag3a0(ScriptRunner *self, int *, const int *code
 {
     const int on = self->popped(1)[0];
     if (StageCar *car = scriptCar(self->getTarget()))
-        car->m_flag3a0 = on != 0;
+        car->m_onGround = on != 0;
     return code;
 }
 
@@ -6835,9 +6833,8 @@ static const int *nativePlaceRespawn(ScriptRunner *self, int *acc, const int *co
 
 static const int *nativeResetCar(ScriptRunner *, int *, const int *code)
 {
-    // PC: no car stands in the view target yet.
-    if (gStageScene->viewTarget != nullptr)
-        reinterpret_cast<StageCar *>(gStageScene->viewTarget)->resetPlace();
+    if (gStageScene->car != nullptr)
+        gStageScene->car->resetPlace();
     return code;
 }
 

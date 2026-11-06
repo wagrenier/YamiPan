@@ -28,6 +28,7 @@
 #include "game/sysdata.h"
 #include "game/thread.h"
 #include "game/uiwidget.h"
+#include "game/stagecar.h"
 
 
 

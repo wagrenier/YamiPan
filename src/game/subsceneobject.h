@@ -134,7 +134,7 @@ public:
     void setup(const char *name, ModelInstance *instance,
                StringMap<Tim2Texture *> *textures, void *collision);     // FS2 0x002bbc10
 
-    GateParts *m_gate = nullptr;        // FS2 +0x280
+    CarParts *m_gate = nullptr;        // FS2 +0x280
 };
 
 // A _dp / _ds node (a door's parts). Its constructor is inline in the ROM:
