@@ -1,8 +1,9 @@
 /* ==========================================================================
  *  game/stagemodel.cpp
  *
- *  StageModel (0x187230..0x188d60; declared in game/gamehooks.h, the file
- *  name is the port's): what an object of the stage holds of its model: the
+ *  PartSwitch (0x186f80..0x187230) and StageModel (0x187230..0x188d60), both
+ *  declared in game/gamehooks.h; the file name is the port's. StageModel:
+ *  what an object of the stage holds of its model: the
  *  rena instance (+0), its VCM table, the pose that plays motions, and two
  *  node arrays that tie the instance's bones into the scene tree.
  *
@@ -16,6 +17,8 @@
  *  game/stagelist.h. The pose is game/modelpose.h, mostly still stubs.
  * ======================================================================== */
 #include <new>
+#include <stdio.h>
+#include <string.h>
 
 #include "game/drawsys.h"
 #include "game/gamehooks.h"
@@ -104,6 +107,46 @@ static u_int motionEventFlag(const char *event)
 bool StageModel::poseOwnsBone(int bone) const
 {
     return pose != nullptr && pose->getBoneMatrix(bone) != nullptr;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// PartSwitch: parts of a model of which one shows.
+
+// FS2 0x00186f80
+
+const char *PartSwitch::partName(int index) const
+{
+    const ModelPartRec *part = parts[index];
+    if (part == nullptr)
+        return nullptr;
+    return model->node->meshes.get()[part - model->partRecs].name;
+}
+
+// FS2 0x00186fe0
+
+void PartSwitch::show(int index)
+{
+    shown = index;
+    for (int i = 0; i < count; i++) {
+        if (parts[i] != nullptr)
+            parts[i]->drawMode = i == shown ? kPartShown : kPartHidden;
+    }
+}
+
+// FS2 0x00187060
+// callcheck: operator_new[], sprintf, strlen, modelFindPart (show's loop is inline in the ROM)
+
+void PartSwitch::init(ModelInstance *partsModel, const char *name, int partCount, int firstShown)
+{
+    count = partCount;
+    model = partsModel;
+    parts = new ModelPartRec *[count];
+    for (int i = 0; i < count; i++) {
+        char label[0x80];
+        sprintf(label, "bn_%s_%d", name, i);
+        parts[i] = modelFindPart(partsModel, label, strlen(label), 0);
+    }
+    show(firstShown);
 }
 
 // ──────────────────────────────────────────────────────────────────────

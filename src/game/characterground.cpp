@@ -46,6 +46,7 @@ struct GroundBoneTable
 };
 
 #include "game/groundbones.inc"
+#include "game/stagecar.h"
 
 namespace {
 
@@ -175,11 +176,10 @@ void bonePosition(sceVu0FVECTOR out, StageNodeBase *bone)
     copyTo(out, bone->getWorldMatrix()[3]);
 }
 
-// The view target as the object it is. PC: it is not a StageObject on the
-// host yet (StageViewTarget), and nothing sets it.
+// The scene's car.
 StageCar *viewCar()
 {
-    return reinterpret_cast<StageCar *>(gStageScene->viewTarget);
+    return gStageScene->car;
 }
 
 // FS2 0x001f22a0: qsort's order, the shorter vectors first.
@@ -557,7 +557,7 @@ void CharacterGround::checkFloor()
     // target is not a floor.
     StageObject *skip = nullptr;
     if (isDown(owner) && (floorObject == nullptr || floorObject->getKind() != StageObject_Car))
-        skip = reinterpret_cast<StageObject *>(gStageScene->viewTarget);
+        skip = gStageScene->car;
     landed = 0;
     floorFace = nullptr;
     floorObject = nullptr;

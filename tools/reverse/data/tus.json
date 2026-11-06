@@ -768,10 +768,6 @@
     ],
     [
      "0017a860",
-     "0017af50"
-    ],
-    [
-     "0017b3b0",
      "0017b3d4"
     ],
     [
@@ -804,10 +800,6 @@
     ],
     [
      "001e06f0",
-     "001e0e20"
-    ],
-    [
-     "001e0e20",
      "001e18c0"
     ],
     [
@@ -1251,7 +1243,7 @@
    ],
    "status": "verify",
    "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves.",
-   "why": "the ranges so far, with the character's property pair 0x212530 / 0x2132d0, their helpers and resetActionState 0x21e050 with its status block 0x21cc70, which the motion reads; 0x1eedb0..0x1efef0: BittenLink's dtor, the base link's empty slots and the three NameMap instances the object emits after PlayerMotion::PlayerMotion (the third's insert 0x281730.. stays in its run, tagged in game/stagelist.h); 0x27c6d0..0x27dc40 and 0x280010..0x280080: the base link, the links' dtors, the condition list and MotionGadgetSpecial's dtor, joined from unassigned@0027cab0"
+   "why": "the ranges so far, with the character's property pair 0x212530 / 0x2132d0, their helpers and resetActionState 0x21e050 with its status block 0x21cc70, which the motion reads; 0x1eedb0..0x1efef0: BittenLink's dtor, the base link's empty slots and the three NameMap instances the object emits after PlayerMotion::PlayerMotion (the third's insert 0x281730.. stays in its run, tagged in game/stagelist.h); 0x27c6d0..0x27dc40 and 0x280010..0x280080: the base link, the links' dtors, the condition list and MotionGadgetSpecial's dtor, joined from unassigned@0027cab0 0x17af50 rideCar joined: it stands between two runs of this file."
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -1658,6 +1650,39 @@
    "task": "The two natives that choose the view, queued by the user 2026-11-04. A host task: the code goes in kNatives in src/game/scriptrunner.cpp and both addresses are that TU's, but it is 84 of 652 and would hold this place in the queue for many runs, so they have their own key. Native 0x70 (0x1c81a0, 56 i, one code word): find the character by label, then StageScene::setPlayer. Stage 1's Root calls it with F_PC01 straight after its test of menuMode == 1, the block that also requests d0101, and a New Game run reaches the stub today (scriptNative_70), so the main camera never links without it, even with a character. Native 0x64 (0x1c8dc0, 94 i, one code word): 0x1c8f40 tests the name (the script passes NULL) and removes view priority 3, any other name is found (0x1d1260) and pushed at priority 3, and an active event takes a further step (0x1b56b0, 0x1b54a0, 0x1b5460). sd_MK01_10 calls it with CAM_EV10, then NULL. StageCharacter does not exist yet, so the character lookup answers null: make sure setPlayer survives that. The other route to setPlayer is property 0x50 (0x172620 and its twins 0x189f40, 0x212530, 0x268ae0), behind the setProperty stubs; native 0xef is unused on stage 1. Nothing can show the link until a character exists, so this ends verify.",
    "why": "The base camera's getKind, its four empty side hooks, the setters StageObject keeps at the head of this object, its dtor and the view functions. 0x177be0 setProjection is written here too but pinned in game/playermotion.cpp; 0x177d00 on is not pinned yet."
   },
+  "game/stagecar.cpp": {
+   "notes": "No code changed this run; door and drive proven on a temporary build, removed (New Game forced to stage 7, 300 s, no crash). The old pad pressed X every 80 reads and missed the 45 frames the item list held the focus; X every 37 reads got in: pick, native 0x168, motion 0xbc, then 0xb9 in the seat. R1 gave throttle 255, 23 units a frame, (7387, 2739) to (6464, 3180), then the game's own veranda film and the hint to point the lights at the enemies. Shots: progress/20261106-car-drive-*.png. NOT seen: the headlights on the foes (the Square run is void: build.py --run rebuilt from the restored source and played stage 1), getting out, a collision with a driver, steering. Next: forced stage 7, the pad in open-items.md, Square at about read 6800 and 7300. Restore temporary code only after a run ends. Doubts in open-items.md: the black box at the top left of the driver's view, why the car read speed 0 when the film began. 0x2103d0 still unwritten.",
+   "ranges": [
+    [
+     "00289cc0",
+     "0028fa90"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-06 12:05",
+     "status": "partial",
+     "summary": "the car: StageCar, CarParts, 58 of 59 functions; StageScene::car replaces StageViewTarget; createMapObject builds it"
+    },
+    {
+     "date": "2026-11-06 12:56",
+     "status": "partial",
+     "summary": "the car: every function written; PartSwitch and rideCar added: the player sits in the car; the truck's picture is still wrong"
+    },
+    {
+     "date": "2026-11-06 13:47",
+     "status": "partial",
+     "summary": "the door: GettingOnCar, GettingOffCar, DragOutCar and the car's links written; the truck's fan is proven to be the lamp's spot pass, cause in the ROM not found; X has not yet got the player in"
+    },
+    {
+     "date": "2026-11-06 14:51",
+     "status": "verify",
+     "summary": "the door and the drive work from the stage's real start: X at the door was the pad script's timing, no game code changed; the truck drove with the player at the wheel and the mission went on to the veranda"
+    }
+   ],
+   "status": "verify",
+   "why": "StageCar, CarParts and their thunks: the run past ScenePool, up to the fsm tracks of game/demoevent.cpp; no source string names it"
+  },
   "game/stagecharacter.cpp": {
    "notes": "unassigned@0017e140 was the tail of this file: StageList<StageObject *> 0x17e140..0x17e400 and 63 thunks 0x17e470..0x17e860, now listed at the end of stagecharacter.cpp; 0x17e860..0x17e950 joined game/stageplayer.cpp. Volume dtors corrected: 0x17eb20 is StageVolume, 0x17e860 is BoxVolume. New overrides on StageCharacter: setPosition 0x218500, onScriptExit 0x219010, scriptPlayMotion 0x21ac60, cmdIsLit; plain members for slots no script reaches. m_7a0 is now m_placedThisFrame, m_7c4 m_placeMotion. New tool slotcheck.py. Seen: temporary build, removed, New Game, doorwalk pad, 285 s, no crash, forced on the player: warp exact, motion 0. Not tested: an uncontrolled character (stopAndRetry, playActionAndRetry). Unforced stage 1 reaches none of them; screen is the dark first-person wall, not compared pixel by pixel. Next look: StageItem slot +0xfc 0x184770, open-items.md.",
    "ranges": [
@@ -1839,7 +1864,7 @@
    "notes": "All of StageModel is written (init, bindBones, placeBones, setBaseMotion, advance, applyMotion, the play and find calls, the dtor). BoneNode and ModelLink were one StringMap, now boneMap. game/modelpose.h holds the pose as a stand-in: short accessors written, load / update / solve / play and the ctors are stubs, so a pose has no bones yet. Pose +0x150 is a matrix pointer, not a count (was called pending). New Game run: reaches the stage, no crash, black at the last frame; nothing tests this on screen yet because createInstance answers null and no pose was built. StringMap::balance passed a scratch test on 3000 trees. Next, rena/rena_model.cpp: createInstance must fill rootBone +0x10, bones with node at ModelNodeBone records, inverseBinds +0x20, bindMatrices +0x24, rootMatrix +0x28 and textures +0x50, and allocate with plain new (delete data in ~StageModel). open-items.md has the doubts.",
    "ranges": [
     [
-     "00187230",
+     "00186f80",
      "00188d60"
     ]
    ],
@@ -1852,7 +1877,7 @@
    ],
    "status": "verify",
    "task": "3D path 3 of 5 (the user's pin). StageModel::init 0x188b10 and the neighbours it needs: it calls drawSysAddModel and drawSysFindKind1Surface (both written in drawsys.cpp) and needs a host field for +0xa8. Pin the real extent with tus.py define under this key.",
-   "why": "StageModel: first method updateVcm 0x187230 (after PartSwitch), through init 0x188b10; first cut, tails (MSL instances) to follow"
+   "why": "PartSwitch 0x186f80..0x187230 stands right before StageModel and its users are model parts; added from the frontier's unassigned@00186ee0 (StageMapFile::relocate 0x186ee0 is game/stagescene.cpp's). StageModel: first method updateVcm 0x187230, through init 0x188b10."
   },
   "game/stageobject.cpp": {
    "notes": "All 43 functions are written, no stubs; the old partial status was stale, which is why tus.py next picked it. This run compared setProperty 0x189f40, getProperty 0x18a5b0 and scriptAddMenuLine 0x189ce0 with the ROM case by case: no difference (getProperty read to the show-flag cases; those and its ids match the enum). Comments only in the code. Kept on purpose: the memset in StageObject::StageObject, because the host keeps the subclass fields in one flat block and the car and elevator pose ctors are stubs. No Ghidra change. The 15 s smoke run stops at the language screen, which is right for 15 s and shows no stage object; the TU's own picture is the stage, seen in earlier runs. Queue refilled for the next runs: game/gameoversequence.cpp 0x2b1670..0x2b22f0, then game/characterroute.cpp 0x22a310..0x22f270 (open-items.md Next up).",
@@ -2031,7 +2056,7 @@
     ],
     [
      "002152a0",
-     "00215300"
+     "00215320"
     ],
     [
      "00215620",
@@ -2072,7 +2097,7 @@
    ],
    "status": "verify",
    "task": "TOP PRIORITY, the user 2026-11-05: New Game's first part cannot end, the kid reaches downstairs and nothing starts. open-items.md 'Next up' first entry has the three blockers: (1) BoxVolume needs script slot +0xfc = containsObject (0x17e950 by thunk 0x17f130), or no AREA_* script fires; (2) ClearSequence 0x2b1500..0x2b1660 is stubs, native 0x52 never ends the stage; (3) the navigator after a clear: runNaviFile 0x295470 and its widgets. Test: warp into AREA01 (6959, 6342, 811) with a temporary --env hook, removed before the commit.",
-   "why": "The character around the frame's scripts, what it hears and sees, the noise list, the volumes: read 2026-11-05; extents by function, the file name is the port's"
+   "why": "The character around the frame's scripts, what it hears and sees, the noise list, the volumes: read 2026-11-05; extents by function, the file name is the port's 0x215310 isDriver joined."
   },
   "game/stageresult.cpp": {
    "notes": "All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (addContinue), getPerfectBits one bit per zero counter, clocks at +0x94/+0xa4 {state, value, step, target}, mode +0xbc (0 none, 1 count-up, 2 countdown 7500 with SYS_COUNT1/2 cues), layout +0xb8 from getLangPackItem(4/5). runStartupSequence renamed loadGamePack: it parses packgameEU.pak into PackTables (0x2bcf10, columns label/ctype/SEtype) and frees it, no screens. StageResult moved from gamehooks.h to stageresult.h; sysdata.cpp now reads clock.value/clock2.value/mode; SaveData::_000 is playTime (StageResult::tick counts it). New stand-ins in gamehooks.h: PackFile, PackTables, UiLayout, StageSound, StageScene/gStageScene (gp-0x7a7c, data the build must define), getInitPackItem/getLangPackItem. Guesses: the file name; 0x2afc20/0x2afcd0 joined by position; counters 1..3, attempt/stage blocks, clock state bits 0x14 and PackTables element types read from shapes only. Not compiled (no toolchain here); callcheck clean, layout lint OK. Next in the run: 0x2acff0..0x2afc20 (drawing cluster around 0x2adc70).",

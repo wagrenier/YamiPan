@@ -60,6 +60,8 @@ private:
         std::vector<ModelDraw> draws;
         std::vector<ModelPass> passes;
         std::vector<ModelVertex> batch; // one batch's vertices, each once: a strip reuses them
+        std::vector<ModelVertex> reflectionBatch;    // the same for the reflection's pass
+        std::vector<ModelVertex> reflectionVertices; // the faces kept of the material so far
         std::vector<int> triangles;     // the batch's faces that were kept, as indices into batch
         std::vector<ModelShadowVertex> shadowBatch; // the same for a shadow
         YamiPanModelLights lights{};
@@ -68,6 +70,8 @@ private:
         YamiPanModelShadows shadows{};
         std::array<float, 3> eye{};
         std::shared_ptr<Image> image;
+        std::shared_ptr<Image> reflection;
+        float reflectionScale = 0.0f;
         float scrollU = 0.0f;
         float scrollV = 0.0f;
         bool blended = false;
@@ -90,6 +94,8 @@ private:
     };
 
     std::shared_ptr<Image> imageOf(const void *texture);
+    // The material's reflection goes in as one draw over its faces.
+    static void endReflection(Layer &layer);
     void uploadStream(SDL_GPUCopyPass *copy, VertexStream &stream, const void *data, unsigned bytes);
     SDL_GPUGraphicsPipeline *pipelineFor(BlendMode blend, bool writesDepth); // None: opaque
     SDL_GPUGraphicsPipeline *createProjectedPipeline(const SDL_GPUColorTargetDescription &target);

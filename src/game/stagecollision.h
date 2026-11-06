@@ -307,6 +307,7 @@ enum CollisionShape
 };
 // A body's category, the ones read.
 constexpr u_int kCollisionMesh      = 1;        // a map object's mesh
+constexpr u_int kCollisionCarSpheres = 0x20;      // StageCar's, the ones that hit the map
 constexpr u_int kCollisionMelee     = 0x40;     // a hand or a blade: a map object breaks like under a bullet (a guess)
 constexpr u_int kCollisionBulletHit = 0x80;     // a bullet's capsule
 constexpr u_int kCollisionBulletRay = 0x100;    // a bullet's segment

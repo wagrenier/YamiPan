@@ -415,18 +415,6 @@ SceneBufferSet * SceneBufferSet::createFor(StageObject *owner, StageNodeTree *tr
     return {};
 }
 
-// stub of FS2 0x00187060
-void PartSwitch::init(ModelInstance *partsModel, const char *name, int partCount, int firstShown)
-{
-    YAMIPAN_STUB("PartSwitch::init", 0x00187060);
-}
-
-// stub of FS2 0x00186fe0
-void PartSwitch::show(int index)
-{
-    YAMIPAN_STUB("PartSwitch::show", 0x00186fe0);
-}
-
 // stub of FS2 0x001d3d20
 // stub of FS2 0x0023db50
 ItemPhysics::ItemPhysics(bool, bool)
@@ -496,42 +484,12 @@ bool StageObject::followsPlayerLight()
     return {};
 }
 
-// stub of FS2 0x0028ec70
-void StageCharacter::setGearLightOrder(int order)
-{
-    YAMIPAN_STUB("StageCharacter::setGearLightOrder", 0x0028ec70);
-}
-
 // stub of FS2 0x00207440
 // stub of FS2 0x0029f2a0
 bool missionRestoreCheck()
 {
     YAMIPAN_STUB("missionRestoreCheck", 0x0029f2a0);
     return {};
-}
-
-// stub of FS2 address unknown (0 candidates)
-GateParts::GateParts(StageObject*, PartSwitch*, int*, int, GateParts*)
-{
-    YAMIPAN_STUB("GateParts::GateParts", 0x00000000);
-}
-
-// stub of FS2 0x0028ed60
-void GateParts::copyFrom(const GateParts *from)
-{
-    YAMIPAN_STUB("GateParts::copyFrom", 0x0028ed60);
-}
-
-// stub of FS2 0x0028ecb0
-void GateParts::setEffects(bool on)
-{
-    YAMIPAN_STUB("GateParts::setEffects", 0x0028ecb0);
-}
-
-// stub of FS2 address unknown (0 candidates)
-GateParts::~GateParts()
-{
-    YAMIPAN_STUB("GateParts::~GateParts", 0x00000000);
 }
 
 
@@ -565,31 +523,6 @@ void StageCharacter::getSwayMatrix(sceVu0FMATRIX out)
     YAMIPAN_STUB("StageCharacter::getSwayMatrix", 0x0020c940);
 }
 
-// stub of FS2 0x0028ec90
-bool GateParts::isLit()
-{
-    YAMIPAN_STUB("GateParts::isLit", 0x0028ec90);
-    return {};
-}
-
-// stub of FS2 0x0028d780
-void StageCar::honk()
-{
-    YAMIPAN_STUB("StageCar::honk", 0x0028d780);
-}
-
-// stub of FS2 0x0028d810
-void StageCar::setDirection(int direction)
-{
-    YAMIPAN_STUB("StageCar::setDirection", 0x0028d810);
-}
-
-// stub of FS2 0x0028db80
-void StageCar::setLights(bool on)
-{
-    YAMIPAN_STUB("StageCar::setLights", 0x0028db80);
-}
-
 // stub of FS2 0x00212020
 bool StageCharacter::canTakeOver()
 {
@@ -617,59 +550,10 @@ bool PlayerMotion::winsStruggle(StageObject *other)
     return {};
 }
 
-// stub of FS2 0x00289e20
-float StageCar::getAcceleration()
-{
-    YAMIPAN_STUB("StageCar::getAcceleration", 0x00289e20);
-    return {};
-}
-
-// stub of FS2 0x00289f70
-float StageCar::getDoorPoint(sceVu0FVECTOR out, int side, int index)
-{
-    YAMIPAN_STUB("StageCar::getDoorPoint", 0x00289f70);
-    return {};
-}
-
-// stub of FS2 0x00289ea0
-const float * StageCar::getFrameStep()
-{
-    YAMIPAN_STUB("StageCar::getFrameStep", 0x00289ea0);
-    return {};
-}
-
-// stub of FS2 0x0028abf0
-int StageCar::getHitLevel(const float *position)
-{
-    YAMIPAN_STUB("StageCar::getHitLevel", 0x0028abf0);
-    return {};
-}
-
-// stub of FS2 0x00289dd0
-float StageCar::getSpeed()
-{
-    YAMIPAN_STUB("StageCar::getSpeed", 0x00289dd0);
-    return {};
-}
-
-// stub of FS2 0x00289e10
-const float * StageCar::getVelocity()
-{
-    YAMIPAN_STUB("StageCar::getVelocity", 0x00289e10);
-    return {};
-}
-
 // stub of FS2 0x002a2b10
 void StageCharacter::playBumpSound(int surface)
 {
     YAMIPAN_STUB("StageCharacter::playBumpSound", 0x002a2b10);
-}
-
-// stub of FS2 0x0028ab90
-bool StageCar::hasSettled()
-{
-    YAMIPAN_STUB("StageCar::hasSettled", 0x0028ab90);
-    return {};
 }
 
 // stub of FS2 0x00207e20
@@ -684,13 +568,6 @@ void ItemPhysics::push(const sceVu0FVECTOR velocity, int bone)
 void ItemPhysics::setMoving(bool moving, bool awake)
 {
     YAMIPAN_STUB("ItemPhysics::setMoving", 0x0023cfc0);
-}
-
-// stub of FS2 0x00186f80
-const char * PartSwitch::partName(int index) const
-{
-    YAMIPAN_STUB("PartSwitch::partName", 0x00186f80);
-    return {};
 }
 
 // stub of FS2 0x0026a010
@@ -922,18 +799,7 @@ StageObject * findNumLockTarget()
 }
 
 // stub of FS2 0x001dee50
-bool PlayerMotion::getCarSpecialFlag()
-{
-    YAMIPAN_STUB("PlayerMotion::getCarSpecialFlag", 0x001dee50);
-    return {};
-}
-
 // stub of FS2 0x001dee90
-void PlayerMotion::setCarSpecialFlag(bool on)
-{
-    YAMIPAN_STUB("PlayerMotion::setCarSpecialFlag", 0x001dee90);
-}
-
 // stub of FS2 0x002a8920
 bool SceneOwnedObject::getRecordFlag31()
 {
@@ -959,19 +825,6 @@ bool SceneOwnedObject::isSlot44()
 void SceneOwnedObject::setNames(const char *first, const char *second)
 {
     YAMIPAN_STUB("SceneOwnedObject::setNames", 0x00000000);
-}
-
-// stub of FS2 0x0028dac0
-void StageCar::resetPlace()
-{
-    YAMIPAN_STUB("StageCar::resetPlace", 0x0028dac0);
-}
-
-// stub of FS2 0x0017af50
-bool StageCharacter::rideCar(int off, int side)
-{
-    YAMIPAN_STUB("StageCharacter::rideCar", 0x0017af50);
-    return {};
 }
 
 // stub of FS2 address unknown (0 candidates)
@@ -1053,18 +906,6 @@ void numLockScramble(StageObject *lock)
 void SceneOwnedObject::setSevenKeyNumbers(const char *name, int a, int b, int c, int d)
 {
     YAMIPAN_STUB("SceneOwnedObject::setSevenKeyNumbers", 0x002b2b70);
-}
-
-// stub of FS2 0x00289ef0
-void StageCar::getCenter(float *out)
-{
-    YAMIPAN_STUB("StageCar::getCenter", 0x00289ef0);
-}
-
-// stub of FS2 0x0028a250
-void StageCar::getSeatPlace(float *out, StageCharacter *who)
-{
-    YAMIPAN_STUB("StageCar::getSeatPlace", 0x0028a250);
 }
 
 // stub of FS2 0x00293fd0

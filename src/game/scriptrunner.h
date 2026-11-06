@@ -335,8 +335,7 @@ public:
     }
     // ROM vptr +0x9c: the map object it is, a car, a door or a plain one
     // (StageMapObject, thunk 0x1774a0 to 0x1722f0 in all six of their tables);
-    // anything else logs and answers null. PC: typed StageObject, because
-    // StageCar does not stand on StageMapObject here yet.
+    // anything else logs and answers null.
     // FS2 0x001775c0
     // callcheck: unsupportedCommand
     virtual StageObject *getScriptMapObject()

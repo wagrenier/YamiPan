@@ -550,6 +550,12 @@ bool StageCharacter::isMode1()
     return m_gear != nullptr && m_abilities.driving == 1;
 }
 
+// FS2 0x00215310
+bool StageCharacter::isDriver()
+{
+    return m_abilities.driving == 1;
+}
+
 // FS2 0x00215620
 // callcheck: getSaveData (getStageSelect, the same word), getStageSelect (stageObjRecord, inline at each branch)
 
