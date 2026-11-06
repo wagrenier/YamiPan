@@ -20261,6 +20261,12 @@
   "was": "FUN_001e3e80",
   "why": "the third call of the control hook 0x17a810: ground checks, Always apply, link apply, link slot +0x1c, then feet and fidgets"
  },
+ "001e5d60": {
+  "name": "PlayerMotion::setWallCheck",
+  "tag": "game-inferred",
+  "was": "FUN_001e5d60",
+  "why": "swaps +0xbad and the ground's wall body's first byte; returns the old value"
+ },
  "001e5d90": {
   "name": "PlayerMotion::beginFrame",
   "tag": "game-inferred",
@@ -20386,6 +20392,12 @@
   "tag": "game-inferred",
   "was": "FUN_001eb210",
   "why": "file (+4) of the motion of the requested label"
+ },
+ "001eb3b0": {
+  "name": "PlayerMotion::lowerLabel",
+  "tag": "game-inferred",
+  "was": "FUN_001eb3b0",
+  "why": "a rifle's label from +0x6c else labelText; the host's lowerLabel, same tests"
  },
  "001eb520": {
   "name": "PlayerMotion::pickArmedMotion",
@@ -28601,17 +28613,263 @@
   "was": "FUN_00275b60",
   "why": "name Always from the ctor (0x3055f0, vtable 0x317730); sets the bytes +0x39b, +0x39c, +0x39d, +0x3a1, +0x390, +0x391 from the motion's sheet row"
  },
+ "002764b0": {
+  "name": "MotionCondition::~MotionCondition",
+  "tag": "game-inferred",
+  "was": "FUN_002764b0",
+  "why": "deleting dtor: stores vtable 0x317750, frees the +8 block; seven car and special conditions' dtors call it"
+ },
  "00276510": {
   "name": "MotionCondition::MotionCondition",
   "tag": "game-inferred",
   "was": "FUN_00276510",
   "why": "base of the 29 conditions the PlayerMotion ctor inserts under their names: character, motion, helper, active byte, vptr +0x10 (vtable 0x317750)"
  },
+ "00276570": {
+  "name": "SnipeCondition::~SnipeCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276570",
+  "why": "slot 0 of the vtable whose slots 1, 2 are SnipeCondition::onUpdate, onApply"
+ },
+ "002765e0": {
+  "name": "GunAttackCondition::~GunAttackCondition",
+  "tag": "game-inferred",
+  "was": "FUN_002765e0",
+  "why": "slot 0 of the vtable whose slots 1, 2 are GunAttackCondition::onUpdate, onApply"
+ },
+ "00276650": {
+  "name": "BtMoveCondition::~BtMoveCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276650",
+  "why": "slot 0 of the vtable whose slots 1, 2 are BtMoveCondition::onUpdate, onApply"
+ },
+ "002766c0": {
+  "name": "BtAtkComboCondition::~BtAtkComboCondition",
+  "tag": "game-inferred",
+  "was": "FUN_002766c0",
+  "why": "slot 0 of the vtable whose slots 1, 2 are BtAtkComboCondition::onUpdate, onApply"
+ },
+ "00276730": {
+  "name": "BtAttackCondition::~BtAttackCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276730",
+  "why": "slot 0 of the vtable whose slots 1, 2 are BtAttackCondition::onUpdate, onApply"
+ },
+ "002767a0": {
+  "name": "LockCondition::~LockCondition",
+  "tag": "game-inferred",
+  "was": "FUN_002767a0",
+  "why": "slot 0 of the vtable whose slots 1, 2 are LockCondition::onUpdate, onApply"
+ },
+ "00276810": {
+  "name": "LadderMoveCondition::~LadderMoveCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276810",
+  "why": "slot 0 of the vtable whose slots 1, 2 are LadderMoveCondition::onUpdate, onApply"
+ },
+ "00276880": {
+  "name": "BiteCondition::~BiteCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276880",
+  "why": "slot 0 of the vtable whose slots 1, 2 are BiteCondition::onUpdate, onApply"
+ },
+ "002768f0": {
+  "name": "JackCondition::~JackCondition",
+  "tag": "game-inferred",
+  "was": "FUN_002768f0",
+  "why": "slot 0 of the vtable whose slots 1, 2 are JackCondition::onUpdate, onApply"
+ },
+ "00276960": {
+  "name": "QuickTurnCondition::~QuickTurnCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276960",
+  "why": "slot 0 of the vtable whose slots 1, 2 are QuickTurnCondition::onUpdate, onApply"
+ },
+ "002769d0": {
+  "name": "ReloadCondition::~ReloadCondition",
+  "tag": "game-inferred",
+  "was": "FUN_002769d0",
+  "why": "slot 0 of the vtable whose slots 1, 2 are ReloadCondition::onUpdate, onApply"
+ },
+ "00276a40": {
+  "name": "ShowtCondition::~ShowtCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276a40",
+  "why": "slot 0 of the vtable whose slots 1, 2 are ShowtCondition::onUpdate, onApply"
+ },
+ "00276ab0": {
+  "name": "ThrowCondition::~ThrowCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276ab0",
+  "why": "slot 0 of the vtable whose slots 1, 2 are ThrowCondition::onUpdate, onApply"
+ },
+ "00276b20": {
+  "name": "TrapCancelCondition::~TrapCancelCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276b20",
+  "why": "slot 0 of the vtable whose slots 1, 2 are TrapCancelCondition::onUpdate, onApply"
+ },
+ "00276b90": {
+  "name": "TrapSetCondition::~TrapSetCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276b90",
+  "why": "slot 0 of the vtable whose slots 1, 2 are TrapSetCondition::onUpdate, onApply"
+ },
+ "00276c00": {
+  "name": "PickupItemCondition::~PickupItemCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276c00",
+  "why": "slot 0 of the vtable whose slots 1, 2 are PickupItemCondition::onUpdate, onApply"
+ },
+ "00276c70": {
+  "name": "PutItemCondition::~PutItemCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276c70",
+  "why": "slot 0 of the vtable whose slots 1, 2 are PutItemCondition::onUpdate, onApply"
+ },
+ "00276ce0": {
+  "name": "DoorCondition::~DoorCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276ce0",
+  "why": "slot 0 of the vtable whose slots 1, 2 are DoorCondition::onUpdate, onApply"
+ },
+ "00276d50": {
+  "name": "JumpCondition::~JumpCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276d50",
+  "why": "slot 0 of the vtable whose slots 1, 2 are JumpCondition::onUpdate, onApply"
+ },
+ "00276dc0": {
+  "name": "LadderCondition::~LadderCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276dc0",
+  "why": "slot 0 of the vtable whose slots 1, 2 are LadderCondition::onUpdate, onApply"
+ },
+ "00276e30": {
+  "name": "LevelLiftCondition::~LevelLiftCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276e30",
+  "why": "slot 0 of the vtable whose slots 1, 2 are LevelLiftCondition::onUpdate, onApply"
+ },
+ "00276ea0": {
+  "name": "LevelCondition::~LevelCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276ea0",
+  "why": "slot 0 of the vtable whose slots 1, 2 are LevelCondition::onUpdate, onApply"
+ },
+ "00276f10": {
+  "name": "MoveCondition::~MoveCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276f10",
+  "why": "slot 0 of the vtable whose slots 1, 2 are MoveCondition::onUpdate, onApply"
+ },
+ "00276f80": {
+  "name": "TurnCondition::~TurnCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276f80",
+  "why": "slot 0 of the vtable whose slots 1, 2 are TurnCondition::onUpdate, onApply"
+ },
+ "00276ff0": {
+  "name": "GunOnCondition::~GunOnCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00276ff0",
+  "why": "slot 0 of the vtable whose slots 1, 2 are GunOnCondition::onUpdate, onApply"
+ },
+ "00277060": {
+  "name": "BtOnCondition::~BtOnCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00277060",
+  "why": "slot 0 of the vtable whose slots 1, 2 are BtOnCondition::onUpdate, onApply"
+ },
+ "002770d0": {
+  "name": "SquatCondition::~SquatCondition",
+  "tag": "game-inferred",
+  "was": "FUN_002770d0",
+  "why": "slot 0 of the vtable whose slots 1, 2 are SquatCondition::onUpdate, onApply"
+ },
+ "00277140": {
+  "name": "AlwaysCondition::~AlwaysCondition",
+  "tag": "game-inferred",
+  "was": "FUN_00277140",
+  "why": "slot 0 of the vtable whose slots 1, 2 are AlwaysCondition::onUpdate, onApply"
+ },
+ "002771b0": {
+  "name": "ReviveLink::~ReviveLink",
+  "tag": "game-inferred",
+  "was": "FUN_002771b0",
+  "why": "slot 0 of vtable 0x317770, the map's Revive in the ctor; sheet: motion 0xb2 dm_rev"
+ },
+ "00277230": {
+  "name": "ReviveLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_00277230",
+  "why": "slot +0x20 of 0x317770: clears +0xb54 under +0xb37"
+ },
+ "00277250": {
+  "name": "ReviveLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_00277250",
+  "why": "slot +0x1c of 0x317770: clears +0xb54 at 2 s or on the Click event"
+ },
+ "002773b0": {
+  "name": "DamageDeadLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_002773b0",
+  "why": "slot +0x20 of 0x3177a0: clears the model's +0xac"
+ },
+ "002773d0": {
+  "name": "DamageDeadLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_002773d0",
+  "why": "slot +0x1c of 0x3177a0: counts +0x20 from m_reviveTime, below 0 asks dm_rev, dm_rev_b and initStatus"
+ },
+ "002775c0": {
+  "name": "DamageDeadLink::onStart",
+  "tag": "game-inferred",
+  "was": "FUN_002775c0",
+  "why": "slot +0x18 of 0x3177a0: empty"
+ },
  "002775d0": {
   "name": "DamageDeadLink::DamageDeadLink",
   "tag": "game-inferred",
   "was": "FUN_002775d0",
   "why": "inserted under DamageDead (0x3057a0), +0xc10, vtable 0x3177a0: 0x2773d0 counts +0x5ec seconds and requests 0xb2 / 0xb1"
+ },
+ "00277660": {
+  "name": "DamageFatalLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_00277660",
+  "why": "slot +0x20 of 0x3177d0: empty"
+ },
+ "00277670": {
+  "name": "DamageFatalLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_00277670",
+  "why": "slot +0x1c of 0x3177d0: dm_c, dm_car_f, dm_car_b; drops the weapon, shiryodead or yamidead at bn_pelvis"
+ },
+ "00277cc0": {
+  "name": "DamageFatalLink::onCancel",
+  "tag": "game-inferred",
+  "was": "FUN_00277cc0",
+  "why": "slot +0x24 of 0x3177d0: clears 0x200000 of the wall body's rayMask"
+ },
+ "00277cf0": {
+  "name": "DamageFatalLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_00277cf0",
+  "why": "slot +0x14 of 0x3177d0: sets 0x200000 of the wall body's rayMask"
+ },
+ "00277d60": {
+  "name": "DamageLandLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_00277d60",
+  "why": "slot +0x1c of 0x317800: at the end dm_ded with endurance 0, else dm_rev; sheet: 0xaf dm_lnd"
+ },
+ "00277dd0": {
+  "name": "DamageLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_00277dd0",
+  "why": "slot +0x1c of 0x317830: arm-lost weapon drop, edge search, dv_f or dv_b"
  },
  "00278460": {
   "name": "BiteLink::onLeave",

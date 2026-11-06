@@ -193,7 +193,9 @@ class Model:
     def pick(self):
         """(key, reason) of the next TU to work on, or (None, reason)."""
         explicit = {k: self.stats(k) for k in self.db['tus']}
-        active = [s for s in explicit.values() if s['status'] == 'active' and s['explicit']]
+        # A claim whose range has since joined a file holds no functions: not a session to resume.
+        active = [s for s in explicit.values() if s['status'] == 'active' and s['explicit']
+                  and (self.members.get(s['key']) or self.entry(s['key']).get('task'))]
         if active:
             return active[0]['key'], 'resuming an unfinished session'
         # The pinned queue is the user's priority: it goes before partial TUs (a queued TU left

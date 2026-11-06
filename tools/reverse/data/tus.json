@@ -1,5 +1,7 @@
 {
- "queue": [],
+ "queue": [
+  "game/playermotion.cpp"
+ ],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
   "frontier_ignore": [],
@@ -778,7 +780,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "unassigned@001eedb0 was BittenLink's dtor 0x1eedb0 and three instances of one map, now LiteralMap<T> (StringMap<T, false>) in game/stagelist.h, replacing std::map in PlayerMotion. Range 0x1eedb0..0x1efef0 joined this file, 0x1efef0 joined game/characterground.cpp. literalmapcmp.py: 10890 ops on the ROM's three instances beside the host, 0 differ, tree shape compared. New Game, work/doorwalk_pad.txt, 290 s, no crash, the dark first-person wall as before; the insertion-order walk of the specials is not proven to matter or not. Open: the ctor has 18 of the ROM's 43 link names; 25 are unwritten and a motion naming one has no link (open-items Next up). Callcheck still lists 10 unrelated misses, none about the maps.",
+   "notes": "Written: the five links of 0x277230..0x278460, 29 MotionCondition dtors, setWallCheck 0x1e5d60; lowerLabel is 0x1eb3b0; reviveFrames now lives in DamageDeadLink (+0xc10). findEdge takes a ninth stack argument here, the blocked flag at +0x21, which the decompiler drops. Seen in a log, temporary build, removed (YAMIPAN_TELEPORT=2, 150 s, no crash, forced on kind 8 foes): dm_c to dm_ded, 1250 frames down, takeCorpse -1, into dm_rev; dm_car_b and dm_lnd with endurance to dm_rev then idle. Not judged on screen: no shot frames a lying foe. Never ran: the edge dive, weapon throw, shiryodead, yamidead. NEXT: PlayerMotion::takeHits 0x1e18c0..0x1e3e80, 0x25c0 bytes, is still its first line; it is what requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice, so no real blow fells anything yet. Then DiveFall, DiveLand, TrapHit. Pinned top of the queue for this. References: architecture.md Being hit, lying down and getting up; open-items.md top of Next up.",
    "ranges": [
     [
      "00175700",
@@ -829,7 +831,7 @@
      "001e5d50"
     ],
     [
-     "001e5d90",
+     "001e5d60",
      "001e6d60"
     ],
     [
@@ -838,10 +840,6 @@
     ],
     [
      "001eb150",
-     "001eb3b0"
-    ],
-    [
-     "001eb520",
      "001ec640"
     ],
     [
@@ -1101,7 +1099,7 @@
      "00276200"
     ],
     [
-     "00278460",
+     "002764b0",
      "00278e34"
     ],
     [
@@ -1203,11 +1201,6 @@
    ],
    "sessions": [
     {
-     "date": "2026-11-04 23:04",
-     "status": "partial",
-     "summary": "controlStep whole (events, step sounds, gravity, aim, feet, wind, stamina, fidgets), lamp matrix and target, startWalk and startWalkAt, findEdge: nothing new shows until the ground exists"
-    },
-    {
      "date": "2026-11-05 01:48",
      "status": "partial",
      "summary": "ledges and the Use button: Level, LevelLift, Ladder, Jump, LadderMove, the links Up, Fall, Jump, Ladder, and game/uiitemlist.cpp with its prompt: he climbs and drops 60 units and Down shows on screen"
@@ -1261,11 +1254,16 @@
      "date": "2026-11-06 07:07",
      "status": "verify",
      "summary": "the three motion maps are the ROM's own LiteralMap, compared with its code; conditions and links in the ROM's order"
+    },
+    {
+     "date": "2026-11-06 17:15",
+     "status": "partial",
+     "summary": "Damage, DamageLand, DamageFatal, DamageDead and Revive links, the conditions' dtors, setWallCheck"
     }
    ],
-   "status": "verify",
-   "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves.",
-   "why": "the ranges so far, with the character's property pair 0x212530 / 0x2132d0, their helpers and resetActionState 0x21e050 with its status block 0x21cc70, which the motion reads; 0x1eedb0..0x1efef0: BittenLink's dtor, the base link's empty slots and the three NameMap instances the object emits after PlayerMotion::PlayerMotion (the third's insert 0x281730.. stays in its run, tagged in game/stagelist.h); 0x27c6d0..0x27dc40 and 0x280010..0x280080: the base link, the links' dtors, the condition list and MotionGadgetSpecial's dtor, joined from unassigned@0027cab0 0x17af50 rideCar joined: it stands between two runs of this file."
+   "status": "partial",
+   "task": "PlayerMotion::takeHits 0x1e18c0..0x1e3e80 past its first line: it requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice",
+   "why": "0x2764b0..0x278460: the conditions base and dtors and the links Damage, DamageLand, DamageFatal, DamageDead, Revive; 0x1e5d60 setWallCheck, 0x1eb3b0 lowerLabel"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -3156,13 +3154,10 @@
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
   "unassigned@002681e0": {},
+  "unassigned@002764b0": {},
   "unassigned@0027cab0": {},
   "unassigned@002908d0": {},
   "unassigned@00296d60": {},
-  "unassigned@002a31b0": {
-   "claimed": "2026-11-06 16:04",
-   "status": "active"
-  },
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {},
   "unassigned@002c42a0": {},

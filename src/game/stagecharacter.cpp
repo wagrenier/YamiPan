@@ -192,7 +192,7 @@ void StageCharacter::initAbilities()
         a->flag3c6 = 0;
         a->flag3ce = 0;
         if (record->kind == CharacterKind_A) {
-            a->flag3b6 = 0;
+            a->divesOverEdges = 0;
             a->flag3c4 = 0;
         }
         else if (record->kind == CharacterKind_8 || record->kind == CharacterKind_2) {
@@ -227,7 +227,7 @@ void StageCharacter::initAbilities()
             a->strafe = 0;
             a->walkBack = 0;
             a->stairs = 0;
-            a->flag3b6 = 0;
+            a->divesOverEdges = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
             a->call = 0;
@@ -242,7 +242,7 @@ void StageCharacter::initAbilities()
             a->strafe = 0;
             a->walkBack = 0;
             a->stairs = 0;
-            a->flag3b6 = 0;
+            a->divesOverEdges = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
             a->call = 0;
@@ -255,7 +255,7 @@ void StageCharacter::initAbilities()
             a->strafe = 0;
             a->walkBack = 0;
             a->stairs = 0;
-            a->flag3b6 = 0;
+            a->divesOverEdges = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
             a->call = 0;
@@ -273,7 +273,7 @@ void StageCharacter::initAbilities()
         else if (record->kind == CharacterKind_F) {
             a->strafe = 0;
             a->stairs = 0;
-            a->flag3b6 = 0;
+            a->divesOverEdges = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
             a->call = 0;
@@ -283,12 +283,12 @@ void StageCharacter::initAbilities()
         }
         else if (record->kind == CharacterKind_6) {
             a->strafe = 0;
-            a->flag3b6 = 0;
+            a->divesOverEdges = 0;
             a->flag3b9 = 0;
             a->reload = 0;
         }
         else if (record->kind == CharacterKind_C || record->kind == CharacterKind_5) {
-            a->flag3b6 = 0;
+            a->divesOverEdges = 0;
             a->flag3b7 = 0;
             a->flag3b8 = 0;
         }
