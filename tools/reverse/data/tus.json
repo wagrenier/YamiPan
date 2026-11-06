@@ -1651,7 +1651,7 @@
    "why": "The base camera's getKind, its four empty side hooks, the setters StageObject keeps at the head of this object, its dtor and the view functions. 0x177be0 setProjection is written here too but pinned in game/playermotion.cpp; 0x177d00 on is not pinned yet."
   },
   "game/stagecar.cpp": {
-   "notes": "Batch 176. Written in game/playermotion.cpp (ranges joined): MotionGetOnCar, MotionGetOffCar, MotionDragOutCar, ApproachCarLink, ApproachOutLink, ApproachBiteLink, DriveLink, NpcReactionLink, SpWait plain, findCarDoor 0x280fd0, isPassenger 0x215300, get and setCarSpecialFlag. Seen, temporary build, removed (New Game forced to stage 7): at the door allowed is 1 and the item list shows Get in, but in two logged runs reaching the door the special was never enabled, so these links have not run. Next there: log UiItemList::pick, pressed at stagescene.cpp 3074 and native 0x168 at the door, and check getInputFocus; work/car3_pad.txt reaches the door from the real start (8250, 2658). Picture: with the spot pass off the cab is clean, progress/20261106-car-no-spot-pass.png, so the fan is the lamp's pass, not a reflection layer; the pass is back on, so the truck is still wrong in a normal run, hence partial. VU1 0x32d..0x347 treats a vertex behind the lamp as spotVertex does, so look at the part-box test VU1 0x66b and alpha next. The reflection pass in model_renderer.cpp, VU1 0x77f, is written and has never drawn: no material on stage 7 has texture2. open-items.md has the rest. 0x2103d0 still unwritten.",
+   "notes": "No code changed this run; door and drive proven on a temporary build, removed (New Game forced to stage 7, 300 s, no crash). The old pad pressed X every 80 reads and missed the 45 frames the item list held the focus; X every 37 reads got in: pick, native 0x168, motion 0xbc, then 0xb9 in the seat. R1 gave throttle 255, 23 units a frame, (7387, 2739) to (6464, 3180), then the game's own veranda film and the hint to point the lights at the enemies. Shots: progress/20261106-car-drive-*.png. NOT seen: the headlights on the foes (the Square run is void: build.py --run rebuilt from the restored source and played stage 1), getting out, a collision with a driver, steering. Next: forced stage 7, the pad in open-items.md, Square at about read 6800 and 7300. Restore temporary code only after a run ends. Doubts in open-items.md: the black box at the top left of the driver's view, why the car read speed 0 when the film began. 0x2103d0 still unwritten.",
    "ranges": [
     [
      "00289cc0",
@@ -1673,9 +1673,14 @@
      "date": "2026-11-06 13:47",
      "status": "partial",
      "summary": "the door: GettingOnCar, GettingOffCar, DragOutCar and the car's links written; the truck's fan is proven to be the lamp's spot pass, cause in the ROM not found; X has not yet got the player in"
+    },
+    {
+     "date": "2026-11-06 14:51",
+     "status": "verify",
+     "summary": "the door and the drive work from the stage's real start: X at the door was the pad script's timing, no game code changed; the truck drove with the player at the wheel and the mission went on to the veranda"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "why": "StageCar, CarParts and their thunks: the run past ScenePool, up to the fsm tracks of game/demoevent.cpp; no source string names it"
   },
   "game/stagecharacter.cpp": {
