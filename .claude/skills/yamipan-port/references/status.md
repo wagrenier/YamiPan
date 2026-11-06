@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 13:47 at commit `367bb66` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 14:51 at commit `a0e4580` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -156,10 +156,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 220 TUs: todo 84, partial 31, verify 101, done 36
-- next: **game/stagecar.cpp** (continuing a partial TU)
+- 220 TUs: todo 84, partial 30, verify 102, done 36
+- next: **unassigned@002a31b0** (frontier score 39)
 - pinned queue: (empty)
-- partial: `game/stagecar.cpp` 59/59 -- Batch 176. Written in game/playermotion.cpp (ranges joined): MotionGetOnCar, MotionGetOffCar, MotionDragOutCar, ApproachCarLink, ApproachOutLink, ApproachBiteLi
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -212,6 +211,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/sldi.cpp` 1/1 -- Cut out of unassigned@002c42a0 and pinned 0x2d0a10-0x2d0d10; no new names, no Ghidra change. Scratch test: all 114 SLDI files on the disc unpack to the header s
 - verify: `game/spkrom.cpp` 13/13 -- All 13 of 0x152730..0x153108 written. The entries keep offsets on the host (the ROM relocates them to pointers in place), strings through spkString. Host: argv[
 - verify: `game/stagecamera.cpp` 16/16 -- Written in src/game/scriptrunner.cpp: nativeSetPlayer 0x1c81a0, nativeScriptView 0x1c8dc0, isNullName 0x1c8f40, findCameraObject 0x1d1260, findLightObject 0x1b5
+- verify: `game/stagecar.cpp` 59/59 -- No code changed this run; door and drive proven on a temporary build, removed (New Game forced to stage 7, 300 s, no crash). The old pad pressed X every 80 read
 - verify: `game/stagecharacter.cpp` 77/86 -- unassigned@0017e140 was the tail of this file: StageList<StageObject *> 0x17e140..0x17e400 and 63 thunks 0x17e470..0x17e860, now listed at the end of stagechara
 - verify: `game/stagecollision.cpp` 56/74 -- All of the TU's functions are written or mapped to StageList and the host vector. Seen on stage 1's data in a New Game run: against brute force over all 8165 fa
 - verify: `game/stageitem.cpp` 108/139 -- All of 0x17fce0..0x184860 written or mapped (thunks listed, 0x180018 is padding). New Game run under gdb: StageBullet's ctor ran from setupCameras with no fault
@@ -264,6 +264,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 14:51 `game/stagecar.cpp` verify: the door and the drive work from the stage's real start: X at the door was the pad script's timing, no game code changed; the truck drove with the player at the
 - 2026-11-06 13:47 `game/stagecar.cpp` partial: the door: GettingOnCar, GettingOffCar, DragOutCar and the car's links written; the truck's fan is proven to be the lamp's spot pass, cause in the ROM not found;
 - 2026-11-06 12:56 `game/stagecar.cpp` partial: the car: every function written; PartSwitch and rideCar added: the player sits in the car; the truck's picture is still wrong
 - 2026-11-06 12:05 `game/stagecar.cpp` partial: the car: StageCar, CarParts, 58 of 59 functions; StageScene::car replaces StageViewTarget; createMapObject builds it
@@ -271,17 +272,16 @@ Recent sessions:
 - 2026-11-06 10:42 `game/stagecharacter.cpp` verify: the file's tail: list instance and 63 adjustor thunks, and the four runner slots a character had left on the default (setPosition, onScriptExit, scriptPlayMotio
 - 2026-11-06 09:59 `game/vectortrack.cpp` verify: VectorFade, VectorKey and VectorTrack proven against the ROM; last 7 functions in the .cpp, classes in vectortrack.h
 - 2026-11-06 09:40 `game/stageparticle.cpp` verify: the particles are seen on screen (stage 2's rain), and the motes were critters: CritterNest, CritterRat, CritterCrawler written, spawnCritters live
-- 2026-11-06 08:53 `game/stageparticle.cpp` partial: the stage's particle effects: StageParticle and the particle system, spawn to host quads; runs, not yet seen on screen
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@002a31b0` | partial | 1/18/22 | 5.9 | 39 | 0 |
 | `unassigned@002764b0` | todo | 0/0/43 | 7.8 | 37 | 0 |
 | `unassigned@0022fc50` | todo | 0/0/8 | 1.8 | 33 | 0 |
-| `unassigned@0020e6a0` | partial | 6/1/11 | 8.6 | 30 | 0 |
 | `unassigned@002937e0` | partial | 2/13/29 | 6.9 | 30 | 0 |
-| `rx/rxsndstradpcm.c` | todo | 0/8/10 | 2.6 | 25 | 5 |
+| `unassigned@0020e6a0` | partial | 6/1/11 | 8.6 | 30 | 0 |
 | `unassigned@002a4a40` | partial | 4/10/90 | 19.9 | 25 | 2 |
+| `rx/rxsndstradpcm.c` | todo | 0/8/10 | 2.6 | 25 | 5 |
 | `unassigned@001920d0` | partial | 1/0/17 | 5.9 | 24 | 0 |
 | `game/stagealert.cpp` | todo | 0/7/8 | 1.3 | 24 | 3 |
 | `unassigned@002b9ef0` | todo | 0/4/11 | 5.7 | 21 | 3 |
