@@ -933,6 +933,7 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
                 overVertices.buffer = stream.buffer.get();
                 SDL_BindGPUVertexBuffers(renderPass, 0, &overVertices, 1);
 
+                binding.texture = picture->texture->get();
                 binding.sampler = m_renderer.samplerFor(true, repeat);
                 SDL_BindGPUFragmentSamplers(renderPass, 0, &binding, 1);
 
