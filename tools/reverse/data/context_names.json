@@ -22067,11 +22067,29 @@
   "was": "FUN_0020e6a0",
   "why": "only the scene's +0x78 character, while +0x30: reports a named event (GUNSHOOT)"
  },
+ "0020e6e0": {
+  "name": "StageCharacter::rumbleHit",
+  "tag": "game-inferred",
+  "was": "FUN_0020e6e0",
+  "why": "adds rumble DAMAGE1 or DAMAGE2 when the character is the player or the rumble source"
+ },
+ "0020e770": {
+  "name": "StageCharacter::takeFallDamage",
+  "tag": "game-inferred",
+  "was": "FUN_0020e770",
+  "why": "takeHits' landing: twice the amount off each leg, the amount off the endurance, cause 8"
+ },
  "0020eb40": {
   "name": "StageCharacter::takeDamage",
   "tag": "game-inferred",
   "was": "FUN_0020eb40",
   "why": "the blow: parts, flinch (setFlinch inline), setEndurance, m_lastHitBy, m_hitThisFrameBy, the only writer of the latter"
+ },
+ "002103d0": {
+  "name": "StageCharacter::takeBlow",
+  "tag": "game-inferred",
+  "was": "FUN_002103d0",
+  "why": "takeDamage with the striker's hand class, weapon or unarmed attack, random part, or the car's run-over table"
  },
  "00210540": {
   "name": "StageCharacter::getHandClass",
@@ -28054,6 +28072,12 @@
   "tag": "game-inferred",
   "was": "FUN_00269db0",
   "why": "a0 the block of MotionProbe +4; random line in a cone"
+ },
+ "0026a010": {
+  "name": "MotionProbe::spawnBlood",
+  "tag": "game-inferred",
+  "was": "FUN_0026a010",
+  "why": "spawns count effects at a bone along the hit direction; owner's +0x404 effect, or three of damage"
  },
  "0026a250": {
   "name": "MotionProbe::findBlowPart",

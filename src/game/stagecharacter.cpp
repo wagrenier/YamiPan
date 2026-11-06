@@ -346,7 +346,7 @@ void StageCharacter::initStatus()
     m_flinchClock = 0.0f;
     m_unarmedClock = 0.0f;
     m_enduranceClock = 0.0f;
-    m_3f0 = 0.0f;
+    m_lightHurtWait = 0.0f;
     m_winded = 0;
     m_idleTime = 0.0f;
     rollIdleDelay();

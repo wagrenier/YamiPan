@@ -34,6 +34,7 @@
 #include "game/stagenode.h"
 #include "game/stageobjlist.h"
 #include "game/stageparticle.h"
+#include "game/rumblelist.h"
 #include "game/stageresult.h"
 #include "game/stagescene.h"
 #include "game/stagelight.h"
@@ -2674,7 +2675,7 @@ void DoorLink::onRun()
         door->playNamedHeard2(sound, door->m_xform.position, nullptr);
 
     if (id == Motion_DoorForce) {
-        door->m_hp -= character->m_doorBlow;
+        door->m_hp -= character->m_unarmedAttack;
         if (door->m_hp < 0)
             door->m_hp = 0;
         if (door->m_hp == 0) {
@@ -3839,7 +3840,7 @@ void PlayerMotion::reset(int arg)
     if (scopeOn != 0)
         setScope(false);
     m_bf0 = 0.0f;
-    m_bf4 = 0.0f;
+    m_sprungTrap = nullptr;
     if (character->getAltSoundFlag() != 0 && gStageScene->party->isRunning())
         gStageScene->party->stop();
     character->m_altAction = 0;
@@ -5529,8 +5530,8 @@ void StageCharacter::sideHook0()
                 m_enduranceClock -= 1.0f;
             }
         }
-        if (m_3f0 > 0.0f)
-            m_3f0 -= clock->getDeltaSeconds();
+        if (m_lightHurtWait > 0.0f)
+            m_lightHurtWait -= clock->getDeltaSeconds();
     }
 
     if (!isPlayer() || !hasKyoModel())
@@ -8353,7 +8354,7 @@ void BiteLink::onRun()
     constexpr int   kHitPartBody        = 1;
     constexpr float kPressWait          = 0.15f;
     constexpr float kBloodSize          = 40.0f;
-    constexpr int   kBloodKind          = 4;
+    constexpr int   kBloodCount         = 4;
     constexpr int   kPlayerPresses      = 4;
 
     const bool selfEnds = stageObjRecord(character->m_itemDef)->kind == CharacterKind_Srt;
@@ -8401,7 +8402,7 @@ void BiteLink::onRun()
     target->takeDamage(character, kHitBite, kHitPartBody, damage);
     sceVu0FVECTOR direction;
     vecDirection(direction, target->m_xform.position, character->m_xform.position);
-    bitten->probe->spawnBlood(kBloodSize, bodyBone(target, "bn_neck"), direction, kBloodKind, 0);
+    bitten->probe->spawnBlood(kBloodSize, bodyBone(target, "bn_neck"), direction, kBloodCount, nullptr);
     target->playNamedHeard2("BT_BITE", target->m_xform.position, nullptr);
     target->playerEvent("BITE");
 
@@ -8515,6 +8516,7 @@ static const WeaponDef *weaponDefOf(StageObject *weapon)
 }
 
 static int clampToSheet(int value, int limit);
+static void stopFleeing(StageCharacter *character);
 
 // The part a blow lands on, the flinch it gives, then the endurance. What the
 // lead does to an ally counts a quarter.
@@ -8542,8 +8544,6 @@ int StageCharacter::takeDamage(StageObject *fromObject, int kind, int part, int 
     constexpr int kHeadScale = 3;
     constexpr int kAllyDivisor = 4;
     constexpr int kPlayerHitMark = 10;
-    constexpr int kMotionFleeA = 0x11;
-    constexpr int kMotionFleeB = 0x2a;
     constexpr int kSheetSeven = 0xb;
     constexpr int kSevenVoiceChance = 4;
     constexpr int kResultHitsTaken = 2;
@@ -8645,16 +8645,7 @@ int StageCharacter::takeDamage(StageObject *fromObject, int kind, int part, int 
             m_slowStart = -1.0f;
     }
 
-    if (isPlayer() && isScenarioLead()) {
-        const bool fleeing = static_cast<StageObject *>(scene->player) == this
-            ? scene->party->isRunning()
-            : m_motion->motionId == kMotionFleeA || m_motion->motionId == kMotionFleeB;
-        if (fleeing) {
-            scene->party->stop();
-            if (scene->gameOver != nullptr)
-                m_altAction = 0;
-        }
-    }
+    stopFleeing(this);
     if (static_cast<StageObject *>(scene->player) == this)
         getStageResult()->counter[kResultHitsTaken]++;
     if (from != nullptr && stageObjRecord(from->m_itemDef)->kind == kSheetSeven && lead
@@ -9023,7 +9014,7 @@ void StageCharacter::initStatusBlock()
         m_lightResist = sheet->lightResist;
     m_lightDamage = sheet->lightDamage;
     m_lightFlinch = sheet->lightFlinch;
-    m_doorBlow = sheet->unarmedAttack;
+    m_unarmedAttack = sheet->unarmedAttack;
     m_biteDamage = sheet->bite;
     m_walkRate = (float)sheet->walkSpeed / kPercent;
     m_runRate = (float)sheet->runSpeed / kPercent;
@@ -9041,7 +9032,7 @@ void StageCharacter::initStatusBlock()
     m_flinch = 0;
     m_unarmedMsp = sheet->unarmedMsp;
     m_5b4 = 0;
-    m_5b8 = 0;
+    m_shrugsHits = 0;
     m_biteProof = 0;
     m_5ba = 0;
     if (m_brain != nullptr)
@@ -9161,15 +9152,574 @@ void PlayerMotion::releaseAction()
         request(kMotionIdle);
 }
 
-// The frame's hits. PC: only the first line of 0x1e18c0 is written. The rest
-// (0x25c0 bytes) reads what hit it from the ground, plays the reaction, and
-// needs StageCharacter's hit 0x20eb40, the blood 0x26a010, 0x2103d0, 0x20e6e0
-// and something that can hit: stage 1 has nothing.
+// layout: host -- what part of the body a bone is, for a shot (data 0x2f8650, 0x19 rows of 8 bytes).
+struct BoneHitPart
+{
+    const char *bone;
+    int         part;
+};
+static const BoneHitPart kBoneHitParts[] = {
+    { "bn_pelvis", 1 },       { "bn_spine0", 1 },       { "bn_spine1", 1 },
+    { "bn_spine2", 1 },       { "bn_neck", 0 },         { "bn_head", 0 },
+    { "bn_l_clavicle", 1 },   { "bn_l_upperarm", 1 },   { "bn_l_foretwist0", 2 },
+    { "bn_l_foretwist1", 2 }, { "bn_l_hand", 2 },       { "bn_l_thigh", 4 },
+    { "bn_l_calf", 4 },       { "bn_l_foot", 4 },       { "bn_r_clavicle", 1 },
+    { "bn_r_upperarm", 1 },   { "bn_r_foretwist0", 3 }, { "bn_r_foretwist1", 3 },
+    { "bn_r_hand", 3 },       { "bn_r_thigh", 5 },      { "bn_r_calf", 5 },
+    { "bn_r_foot", 5 },       { "bn_l_toe0", 1 },       { "bn_l_toe1", 1 },
+    { "bn_l_toe2", 1 },
+};
+
+// The part hit by a shot on that bone. PC: the ROM leaves a bone outside the
+// table on whatever s3 held; the body is the plain answer.
+static int shotPart(const char *bone)
+{
+    constexpr int kPartBody = 1;
+    for (const BoneHitPart &row : kBoneHitParts) {
+        if (strcmp(row.bone, bone) == 0)
+            return row.part;
+    }
+    return kPartBody;
+}
+
+// The reaction of who has those abilities to a blow of that kind; Motion_None
+// a kind with none.
+static int blowMotion(int kind, const CharacterAbilities &abilities, bool inBack)
+{
+    if (abilities.flag3cc != 0) {
+        switch (kind) {
+        case MotionDamage_Side1:
+            return inBack ? Motion_DamageSide2 : Motion_DamageSide1;
+        case MotionDamage_Side2:
+            return inBack ? Motion_DamageSide1 : Motion_DamageSide2;
+        case MotionDamage_HardSide1:
+            return inBack ? Motion_DamageSide4 : Motion_DamageSide3;
+        case MotionDamage_HardSide2:
+            return inBack ? Motion_DamageSide3 : Motion_DamageSide4;
+        default:
+            break;
+        }
+    }
+    const int plain = inBack ? Motion_DamageRear : Motion_DamageFront;
+    const int hard = inBack ? Motion_DamageRearHeavy : Motion_DamageFrontHeavy;
+    switch (kind) {
+    case MotionDamage_Plain:
+    case MotionDamage_Side1:
+    case MotionDamage_Side2:
+        return plain;
+    case MotionDamage_Hard:
+    case MotionDamage_HardSide1:
+    case MotionDamage_HardSide2:
+        return abilities.flag3cd != 0 ? hard : plain;
+    default:
+        return Motion_None;
+    }
+}
+
+// How near a trap has to be to catch who plays this motion: a longer stride
+// reaches it sooner.
+static float trapReach(int id)
+{
+    constexpr float kReachRun = 50.0f;
+    constexpr float kReachDash = 40.0f;
+    constexpr float kReachWalk = 25.0f;
+    constexpr float kReachStill = 10.0f;
+    switch (id) {
+    case 9: case 10: case 0x16: case Motion_StairsRunUp: case Motion_StairsRunDown:
+        return kReachRun;
+    case 0x24: case 0x2d:
+        return kReachDash;
+    case 3: case 4: case 5: case 6: case 7: case 8:
+    case Motion_StairsUp: case Motion_StairsDown: case Motion_CrouchWalk:
+    case 0x51: case 0x52: case 0x53: case 0x54:
+    case 0x6c: case 0x6d: case 0x6e: case 0x6f:
+    case 0x7b: case 0x7c: case 0x7d: case 0x7e:
+    case 0x8a: case 0x8b: case 0x8c: case 0x8d:
+        return kReachWalk;
+    default:
+        return kReachStill;
+    }
+}
+
+// What is asked for, else what plays.
+const MotionDef *PlayerMotion::upcomingDef() const
+{
+    const MotionDef *def = motionDef(m_request);
+    return def != nullptr ? def : motionDef(motionId);
+}
+
+// The motion that is on takes a hit, for one who shows it.
+bool PlayerMotion::reactsToHit(StageCharacter *character) const
+{
+    constexpr int kSheetStill = 3;
+    constexpr int kDamageStepOn = 1;
+    const MotionDef *def = upcomingDef();
+    return def != nullptr && def->damageStep == kDamageStepOn && character->m_shrugsHits == 0
+        && stageObjRecord(character->m_itemDef)->kind != kSheetStill;
+}
+
+// A light that hurts it: a hurt every so often, by its sheet.
+void PlayerMotion::takeLightHit(StageCharacter *character)
+{
+    constexpr int kHitHardLight = 5;
+    constexpr int kHitSoftLight = 6;
+    constexpr int kPartBody = 1;
+    constexpr float kFlinchFps = 30.0f;
+    constexpr u_int kWaitJitter = 20;       // up to this many percent more
+    constexpr float kPercent = 100.0f;
+    constexpr int kDamageStepOn = 1;
+
+    StageLight *light = character->m_shadowLight;
+    if (character->m_lightDamage <= 0 || light == nullptr || light->m_yamLight != 0
+        || character->m_lightHurtWait > 0.0f)
+        return;
+    character->takeDamage(nullptr, light->getMode() == StageLight_Hard ? kHitHardLight : kHitSoftLight,
+                          kPartBody, stageObjRecord(character->m_itemDef)->lightDamage);
+    const float wait = (float)character->m_lightFlinch / kFlinchFps;
+    character->m_lightHurtWait = wait + wait * (float)(randNext() % kWaitJitter) / kPercent;
+    if (character->m_shrugsHits == 0)
+        character->m_hitThisFrame = 1;
+    const MotionDef *def = motionDef(motionId);
+    if (def != nullptr && def->damageStep == kDamageStepOn && character->m_shrugsHits == 0)
+        requestNow(Motion_Burn);
+}
+
+// The damage and the effect of what reached it. False: it was shrugged off. A
+// sleeper of kinds 5, 6, 0xc takes nothing from the front unless the blow's
+// owner has the Kyo model; "kikanai" (効かない, it does not work) shows instead
+// of blood, and nothing reacts.
+bool PlayerMotion::landBlow(StageCharacter *character, CharacterGround *ground, bool &headShot)
+{
+    constexpr int kSheetSleeperA = 0xc;
+    constexpr int kSheetSleeperB = 6;
+    constexpr int kSheetSleeperC = 5;
+    constexpr int kBrainPaceAsleep = 5;
+    constexpr int kHitShot = 4;
+    constexpr int kShotBlood = 4;
+    constexpr int kShruggedCount = 1;
+    constexpr float kRadiusNoBone = 40.0f;
+    constexpr float kEffectWait = 0.15f;    /* data 0x31a9d8 */
+    static const char kShrugged[] = "kikanai"; /* data 0x3054c0 */
+
+    const int sheetKind = stageObjRecord(character->m_itemDef)->kind;
+    StageObject *by = ground->hitBy;
+    bool shrugged = false;
+    if (ground->hitInBack == 0
+        && (sheetKind == kSheetSleeperA || sheetKind == kSheetSleeperB || sheetKind == kSheetSleeperC)
+        && character->getBrainPace() == kBrainPaceAsleep) {
+        StageCharacter *striker = nullptr;
+        if (by->getKind() == StageObject_Bullet)
+            striker = static_cast<StageBullet *>(by)->shooter();
+        else if (by->getKind() == StageObject_Character)
+            striker = static_cast<StageCharacter *>(by);
+        shrugged = striker != nullptr && !striker->hasKyoModel();
+    }
+
+    const int byKind = by->getKind();
+    if (byKind == StageObject_Bullet) {
+        StageBullet *bullet = static_cast<StageBullet *>(by);
+        if (!shrugged) {
+            const int part = shotPart(ground->hitRow->name);
+            headShot = part == 0;
+            StageCharacter *shooter = bullet->shooter();
+            character->takeDamage(shooter, kHitShot, part,
+                                  weaponDefOf(bullet->weapon())->ammoParam1 + shooter->m_shotScale);
+        }
+        if (m_hitTime <= 0.0f) {
+            const float radius = ground->hitRow != nullptr ? ground->hitRow->radius : kRadiusNoBone;
+            probe->spawnBlood(radius, ground->hitNode, ground->hitDirection,
+                              shrugged ? kShruggedCount : kShotBlood, shrugged ? kShrugged : nullptr);
+            m_hitTime = kEffectWait;
+        }
+        character->playHitSound(nullptr);
+    } else if (byKind == StageObject_Car) {
+        StageCar *car = static_cast<StageCar *>(by);
+        if (!shrugged && car->m_driver != nullptr)
+            character->takeBlow(car->m_driver);
+    } else if (byKind == StageObject_Character) {
+        StageCharacter *striker = static_cast<StageCharacter *>(by);
+        const MotionDef *def = motionDef(striker->m_motion->motionId);
+        if (def != nullptr) {
+            if (!shrugged)
+                character->takeBlow(striker);
+            StageObject *weapon = striker->m_weapons[0];
+            if (m_hitTime <= 0.0f) {
+                const int count = weapon != nullptr ? weaponSheet(weapon).param11
+                                                    : stageObjRecord(striker->m_itemDef)->bloodSpray;
+                const float radius = ground->hitRow != nullptr ? ground->hitRow->radius : kRadiusNoBone;
+                probe->spawnBlood(radius, ground->hitNode, ground->hitDirection,
+                                  shrugged ? kShruggedCount : count, shrugged ? kShrugged : nullptr);
+                m_hitTime = kEffectWait;
+            }
+            if (def->damageKind >= MotionDamage_Plain && def->damageKind <= MotionDamage_HardSide2)
+                character->playHitSound(static_cast<StageWeaponItem *>(weapon));
+        }
+    }
+    return !shrugged;
+}
+
+// The motion a blow that got through asks for, and the pad.
+void PlayerMotion::reactToBlow(StageCharacter *character, CharacterGround *ground, bool headShot)
+{
+    constexpr float kFarHeight = 200.0f;
+    constexpr float kFarDistance = 800.0f;
+    constexpr int kSheetDriven = 7;
+    constexpr int kSheetBounces = 10;
+
+    const bool inBack = ground->hitInBack != 0;
+    const int heavy = inBack ? Motion_DamageRearHeavy : Motion_DamageFrontHeavy;
+    const int plain = inBack ? Motion_DamageRear : Motion_DamageFront;
+    StageObject *by = ground->hitBy;
+    const int byKind = by->getKind();
+
+    if (byKind == StageObject_Character) {
+        const MotionDef *def = motionDef(static_cast<StageCharacter *>(by)->m_motion->motionId);
+        if (def == nullptr)
+            return;
+        const int id = blowMotion(def->damageKind, character->m_abilities, inBack);
+        if (id != Motion_None)
+            requestNow(id);
+        character->rumbleHit(false);
+    } else if (byKind == StageObject_Bullet) {
+        if (character->hasGear()) {
+            requestNow(Motion_CarDamage);
+        } else {
+            // A shot from far off, for who is made to feel the distance
+            // (flag3ce), is its own motion.
+            StageCharacter *shooter = static_cast<StageBullet *>(by)->shooter();
+            const float *theirs = shooter->m_model->boneMap.find("bn_head")->value->getMatrix()[3];
+            const float *ours = character->m_model->boneMap.find("bn_head")->value->getMatrix()[3];
+            const bool closeBy = character->m_abilities.flag3ce == 0
+                || (fabsf(theirs[2] - ours[2]) < kFarHeight && vecDistance(ours, theirs) < kFarDistance);
+            if (headShot)
+                requestNow(heavy);
+            else if (closeBy)
+                requestNow(plain);
+            else
+                requestNow(inBack ? Motion_DamageHitRear : Motion_DamageHitFront);
+        }
+        character->rumbleHit(headShot);
+    } else if (byKind != StageObject_Car) {
+        requestNow(plain);
+        character->rumbleHit(false);
+    } else {
+        const int level = character->m_ground->slideLevel;
+        const bool lead = character->isPlayer() || character->isPartner();
+        const int sheetKind = stageObjRecord(character->m_itemDef)->kind;
+        const bool worst = level == GroundSlide_Worst
+            || (level == GroundSlide_Heavy && !lead && sheetKind != kSheetDriven && sheetKind != kSheetBounces);
+        if (worst) {
+            if (lead) {
+                requestNow(character->m_endurance == 0 ? Motion_Collapse : heavy);
+            } else if (sheetKind == kSheetDriven) {
+                requestNow(Motion_Collapse);
+            } else {
+                requestNow(inBack ? Motion_CarHitBack : Motion_CarHitFront);
+            }
+        } else if (level == GroundSlide_Heavy || level == GroundSlide_Light) {
+            requestNow(heavy);
+        }
+        character->rumbleHit(true);
+    }
+}
+
+// What reached it this frame: the damage, then, for who feels it, the
+// reaction, and the flinch starts over.
+void PlayerMotion::takeBlowHit(StageCharacter *character, CharacterGround *ground)
+{
+    bool headShot = false;
+    const bool gotThrough = landBlow(character, ground, headShot);
+    if (!reactsToHit(character) || !gotThrough)
+        return;
+    const StageObjRecord *sheet = stageObjRecord(character->m_itemDef);
+    if (character->m_flinch < sheet->flinchResist && !character->isPlayer() && !character->isPartner())
+        return;
+    if (isLadderMotion(motionId)) {
+        requestNow(Motion_DamageLadder);
+        character->rumbleHit(false);
+    } else {
+        reactToBlow(character, ground, headShot);
+    }
+    character->setFlinch(0);
+    character->m_unarmedMsp = clampToSheet(sheet->unarmedMsp, sheet->unarmedMsp);
+}
+
+// A trap in reach of a low-level character catches it.
+void PlayerMotion::takeTrapHit(StageCharacter *character, CharacterGround *ground)
+{
+    constexpr int kTrapAiLevelLast = 1;
+    constexpr float kTrapWalkRate = 0.15f;
+    if (ground->nearSomeone == 0 || ground->nearObject->getKind() != StageObject_TrapItem)
+        return;
+    if (stageObjRecord(character->m_itemDef)->aiLevel > kTrapAiLevelLast)
+        return;
+    StageTrapItem *trap = static_cast<StageTrapItem *>(ground->nearObject);
+    if (vecDistance(character->m_xform.position, trap->m_xform.position) > trapReach(motionId))
+        return;
+    requestNow(Motion_TrapHit);
+    character->playNamedHeard2("TRAP_ON", character->m_xform.position, nullptr);
+    character->playTrapHitVoice();
+    character->rumbleHit(true);
+    startWalkFile(kTrapWalkRate, requestedFile(), trap->m_xform.position, character->m_xform.rotation,
+                  false, true);
+    m_sprungTrap = trap;
+    trap->spring();
+}
+
+// The first frame on a floor: what the drop cost.
+void PlayerMotion::takeLanding(StageCharacter *character, CharacterGround *ground)
+{
+    constexpr int kSheetDriven = 7;
+    constexpr int kSheetStill = 3;
+    constexpr float kFallSafe = 305.0f;
+    constexpr float kFallBase = 300.0f;
+    constexpr float kFallSteady = 395.0f;   // for a stepDown of 1
+    constexpr float kDropSafe = 10.0f;
+    constexpr float kPerMetre = 100.0f;
+    constexpr float kDamagePerMetre = 10.0f;
+    constexpr int kFallDamageBase = 10;
+    constexpr int kStepDownNone = 0;
+    constexpr int kStepDownSteady = 1;
+
+    const StageObjRecord *sheet = stageObjRecord(character->m_itemDef);
+    if (sheet->kind == kSheetDriven || sheet->kind == kSheetStill)
+        return;
+    if (ground->landed == 0 || ground->wasLanded != 0)
+        return;
+    int damage = 0;
+    const float drop = ground->floorHeight - character->m_xform.position[2];
+    if (motionId == Motion_LadderLetGo || motionId == Motion_FallLow || motionId == Motion_FallMid
+        || motionId == Motion_FallHigh) {
+        if (drop > kFallSafe
+            && (sheet->stepDown == kStepDownNone
+                || (sheet->stepDown == kStepDownSteady && drop >= kFallSteady))) {
+            damage = (int)((drop - kFallBase) / kPerMetre * kDamagePerMetre) + kFallDamageBase;
+        }
+    } else if (motionId == Motion_LadderFall || motionId == Motion_DiveFront || motionId == Motion_DiveBack) {
+        if (m_bfc != 0) {
+            if (character->isPlayer() || character->isPartner())
+                character->playerEvent("DMGLND");
+            else
+                damage = character->m_endurance;
+        } else if (drop > kDropSafe) {
+            damage = (int)(drop / kPerMetre * kDamagePerMetre) + kFallDamageBase;
+        }
+    }
+    if (damage > 0) {
+        character->takeFallDamage(damage);
+        character->playerEvent("DMGLND");
+    } else if (motionId == Motion_FallHigh) {
+        character->playerEvent("LNDH");
+    }
+}
+
+// Who climbs over it, and the door that comes at it.
+void PlayerMotion::takeShoves(StageCharacter *character, CharacterGround *ground)
+{
+    constexpr int kHitBare = 9;
+    constexpr int kPartBody = 1;
+    if (ground->climbedOver != 0 && motionId != Motion_DamageLadder && motionId != Motion_DamageFrontHeavy) {
+        character->takeDamage(nullptr, kHitBare, kPartBody, 1);
+        if (reactsToHit(character)) {
+            requestNow(isLadderMotion(motionId) ? Motion_DamageLadder : Motion_DamageFrontHeavy);
+            character->rumbleHit(true);
+        }
+    }
+    if (ground->atDoor != 0 && reactsToHit(character)) {
+        requestNow(isLadderMotion(motionId) ? Motion_DamageLadder : Motion_DamageFront);
+        character->rumbleHit(false);
+    }
+}
+
+// The frame's hits. While a deadly fall goes on (m_bfc) nothing counts until
+// it lands. One who cannot be hit (m_biteProof, brain pace 0) still falls when
+// its endurance is gone.
 // FS2 0x001e18c0
+// callcheck: requestNow, rumbleHit, spawnBlood, takeBlow, takeFallDamage (in the parts: takeLightHit, takeBlowHit, landBlow, reactToBlow, takeTrapHit, takeLanding, takeShoves; the inline stage kind reads are stageObjRecord; startWalkFile inline)
 
 void PlayerMotion::takeHits()
 {
     m_wallCheckNow = m_wallCheck;
+
+    StageCharacter *character = static_cast<StageCharacter *>(owner);
+    CharacterGround *ground = character->m_ground;
+    if (m_bfc != 0 && (motionId == Motion_LadderFall || motionId == Motion_DiveBack || motionId == Motion_DiveFront)
+        && !(ground->landed != 0 && ground->wasLanded == 0))
+        return;
+    if (ground->wonStruggle != 0)
+        requestNow(Motion_LadderLetGo);
+
+    if (character->m_biteProof == 0 && character->getBrainPace() != 0) {
+        takeLightHit(character);
+        if (ground->wasHit != 0)
+            takeBlowHit(character, ground);
+        takeTrapHit(character, ground);
+        takeLanding(character, ground);
+        takeShoves(character, ground);
+    }
+
+    const MotionDef *def = upcomingDef();
+    if (def != nullptr && def->damageStep > 0 && character->m_endurance == 0) {
+        if (isLadderMotion(motionId))
+            requestNow(Motion_LadderFall);
+        else
+            requestNow(character->hasGear() ? Motion_CarCollapse : Motion_Collapse);
+    }
+    if (m_hitTime > 0.0f)
+        m_hitTime -= character->m_clock->getDeltaSeconds();
+}
+
+// count effects where a blow along direction enters a body of that radius,
+// the rest within 20 across and 15 up of the first.
+// FS2 0x0026a010
+// callcheck: atan2Octant, getWorldMatrix, scaleVec4, spawn, randNext, randNext, randNext, spawn
+
+void MotionProbe::spawnBlood(float radius, StageNodeBase *node, const float *direction, int count,
+                             const char *effect)
+{
+    constexpr float kHalfTurn = 1.5707964f;
+    constexpr float kInset = 10.0f;
+    constexpr float kScatterWide = 20.0f;
+    constexpr float kScatterTall = 15.0f;
+    constexpr float kRandRange = 2147483648.0f; // randNext's
+    constexpr int kFallbackCount = 3;
+    static const char kFallbackEffect[] = "damage"; /* data 0x3089f8 */
+
+    const sceVu0FVECTOR rotation = { kHalfTurn, 0.0f, atan2Octant(-direction[0], direction[1]), 0.0f };
+    sceVu0FVECTOR place;
+    sceVu0FVECTOR inset;
+    memcpy(place, node->getWorldMatrix()[3], sizeof(place));
+    scaleVec4(-(radius - kInset), inset, direction);
+    for (int i = 0; i < 4; i++)
+        place[i] += inset[i];
+    if (effect == nullptr) {
+        effect = owner->m_bloodEffect;
+        if (count == 0) {
+            count = kFallbackCount;
+            effect = kFallbackEffect;
+        }
+    }
+    StageNodeTree *tree = gStageScene->nodeTree;
+    tree->spawn(effect, nullptr, place, rotation, 0, 0);
+    for (int i = 1; i < count; i++) {
+        const float x = (float)randNext() * (2.0f * kScatterWide / kRandRange) - kScatterWide;
+        const float y = (float)randNext() * (2.0f * kScatterWide / kRandRange) - kScatterWide;
+        const float z = (float)randNext() * (2.0f * kScatterTall / kRandRange) - kScatterTall;
+        const sceVu0FVECTOR spot = { place[0] + x, place[1] + y, place[2] + z, 0.0f };
+        tree->spawn(effect, nullptr, spot, rotation, 0, 0);
+    }
+}
+
+// The party's stop, for a lead running with it, when it gets hurt.
+static void stopFleeing(StageCharacter *character)
+{
+    constexpr int kMotionFleeA = 0x11;
+    constexpr int kMotionFleeB = 0x2a;
+    StageScene *scene = gStageScene;
+    if (!character->isPlayer() || !character->isScenarioLead())
+        return;
+    const bool fleeing = static_cast<StageObject *>(scene->player) == character
+        ? scene->party->isRunning()
+        : character->m_motion->motionId == kMotionFleeA || character->m_motion->motionId == kMotionFleeB;
+    if (fleeing) {
+        scene->party->stop();
+        if (scene->gameOver != nullptr)
+            character->m_altAction = 0;
+    }
+}
+
+// Off a ladder or over an edge it is its own doing: the game over's cause.
+// FS2 0x0020e770
+// callcheck: getStageSelect, getStageSelect, setEndurance, isPlayer, isScenarioLead, isRunning, stop, getStageResult
+
+int StageCharacter::takeFallDamage(int amount)
+{
+    constexpr int kFallCause = 8;
+    constexpr int kResultHitsTaken = 2;
+    constexpr int kLegScale = 2;
+    StageScene *scene = gStageScene;
+    const int id = m_motion->motionId;
+    if (id == Motion_LadderLetGo || id == Motion_FallHigh || id == Motion_FallMid || id == Motion_FallLow)
+        m_lastHitBy = this;
+    amount = std::max(amount, 0);
+    const StageObjRecord *sheet = stageObjRecord(m_itemDef);
+    m_rightLeg = clampToSheet(m_rightLeg - amount * kLegScale, sheet->rightLeg);
+    m_leftLeg = clampToSheet(m_leftLeg - amount * kLegScale, sheet->leftLeg);
+    setEndurance(m_endurance - amount);
+    m_62c = kFallCause;
+    StageObject *const onPad = scene->controlled != nullptr
+        ? scene->controlled : static_cast<StageObject *>(scene->player);
+    if (onPad == this && static_cast<StageObject *>(scene->player) != onPad)
+        scene->altLatch = 1;
+    stopFleeing(this);
+    if (static_cast<StageObject *>(scene->player) == this)
+        getStageResult()->counter[kResultHitsTaken]++;
+    return amount;
+}
+
+// The victim's own 打撃攻撃力修正値 goes on a weapon's blow (0x6c0(s4), the
+// victim, not from): it is what the ROM reads.
+// FS2 0x002103d0
+// callcheck: getHandClass, randNext2, at, takeDamage
+
+void StageCharacter::takeBlow(StageCharacter *from)
+{
+    constexpr u_int kPartPercent = 100;
+    constexpr u_int kBodyBelow = 60;
+    constexpr u_int kLeftArmBelow = 70;
+    constexpr u_int kRightArmBelow = 80;
+    constexpr u_int kRightLegBelow = 90;
+    constexpr int kPartBody = 1;
+    constexpr int kPartLeftArm = 2;
+    constexpr int kPartRightArm = 3;
+    constexpr int kPartRightLeg = 4;
+    constexpr int kPartLeftLeg = 5;
+    constexpr int kWorstScale = 4;
+    constexpr int kDriving = 1;
+
+    const int kind = from->getHandClass();
+    int part = kPartBody;
+    int amount;
+    if (from->m_gear != nullptr && from->m_abilities.driving == kDriving) {
+        const int level = m_ground->slideLevel;
+        amount = level == GroundSlide_Worst ? m_endurance * kWorstScale
+                                            : *static_cast<StageCar *>(from->m_gear)->runOverDamage(level);
+    } else {
+        amount = from->m_weapons[0] == nullptr ? from->m_unarmedAttack
+                                               : weaponDefOf(from->m_weapons[0])->param1 + m_meleeScale;
+        const u_int roll = randNext2() % kPartPercent;
+        if (roll >= kRightLegBelow)
+            part = kPartLeftLeg;
+        else if (roll >= kRightArmBelow)
+            part = kPartRightLeg;
+        else if (roll >= kLeftArmBelow)
+            part = kPartRightArm;
+        else if (roll >= kBodyBelow)
+            part = kPartLeftArm;
+    }
+    takeDamage(from, kind, part, amount);
+}
+
+// A rumble by name, for the player alone.
+// FS2 0x0020e6a0
+// callcheck: addNamed
+
+void StageCharacter::playerEvent(const char *name)
+{
+    StageScene *scene = gStageScene;
+    if (scene->rumble != nullptr && static_cast<StageObject *>(scene->player) == this)
+        scene->rumble->addNamed(name, this);
+}
+
+// FS2 0x0020e6e0
+// callcheck: getRumbleSource, addNamed
+
+void StageCharacter::rumbleHit(bool hard)
+{
+    StageScene *scene = gStageScene;
+    if (scene->rumble != nullptr
+        && (static_cast<StageObject *>(scene->player) == this || scene->getRumbleSource() == this))
+        scene->rumble->addNamed(hard ? "DAMAGE2" : "DAMAGE1", this);
 }
 
 // A run's time and distance, which Move reads to trip it on a wall.
@@ -10379,7 +10929,7 @@ void StageCharacter::setProperty(int id, int sub, int value)
     case CharProp_LightResist:   setLightResist(value); break;
     case CharProp_LightDamage:   m_lightDamage = value; break;
     case CharProp_LightFlinch:   m_lightFlinch = value; break;
-    case CharProp_UnarmedAttack: m_doorBlow = value; break;
+    case CharProp_UnarmedAttack: m_unarmedAttack = value; break;
     case CharProp_Bite:          m_biteDamage = value; break;
     case CharProp_WalkRate:      m_walkRate = (float)value / kPercent; break;
     case CharProp_RunRate:       m_runRate = (float)value / kPercent; break;
@@ -10399,7 +10949,7 @@ void StageCharacter::setProperty(int id, int sub, int value)
     case CharProp_WeaponRounds:  setWeaponRounds(value); break;
     case CharProp_CarriedAmmo:   setCarriedAmmo(value); break;
     case CharProp_Value5b4:      m_5b4 = value; break;
-    case CharProp_Flag5b8:       m_5b8 = value != 0; break;
+    case CharProp_Flag5b8:       m_shrugsHits = value != 0; break;
     case CharProp_BiteProof:     m_biteProof = value != 0; break;
     case CharProp_Flag5ba:       m_5ba = value != 0; break;
     case CharProp_Value62c:
@@ -10517,7 +11067,7 @@ int StageCharacter::getProperty(int id, int sub)
     case CharProp_LightResist:   return m_lightResist;
     case CharProp_LightDamage:   return m_lightDamage;
     case CharProp_LightFlinch:   return m_lightFlinch;
-    case CharProp_UnarmedAttack: return m_doorBlow;
+    case CharProp_UnarmedAttack: return m_unarmedAttack;
     case CharProp_Bite:          return m_biteDamage;
     case CharProp_AttackReach:   return attackReachOf(this);
     case CharProp_WalkRate:      return (int)(m_walkRate * kPercent);
@@ -10542,7 +11092,7 @@ int StageCharacter::getProperty(int id, int sub)
         return getBiteTarget() != nullptr ? getBiteTarget()->m_id : 0;
     case CharProp_RidingWithId:  return ridingWithId(this);
     case CharProp_Value5b4:      return m_5b4;
-    case CharProp_Flag5b8:       return m_5b8;
+    case CharProp_Flag5b8:       return m_shrugsHits;
     case CharProp_BiteProof:     return m_biteProof;
     case CharProp_Flag5ba:       return m_5ba;
     case CharProp_Value62c:      return m_62c;

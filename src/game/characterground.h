@@ -17,8 +17,16 @@
 class StageCar;
 class StageNodeBase;
 class StageObject;
-struct GroundBone;
 struct StageCollisionFace;
+
+// layout: host -- a bone a body hangs from (game/groundbones.inc). EE 0x20: +0 name, +4 second
+// bone, +8 radius, +0x10 an offset, zero in every row of the ROM (left out; the ROM still turns it).
+struct GroundBone
+{
+    const char *name;           // FS2 +0x0
+    const char *second;         // FS2 +0x4: blows only: the bone the arm or leg starts from
+    float       radius;         // FS2 +0x8
+};
 
 constexpr int kGroundFamilies = 10;     // the rows of the bone tables
 constexpr int kGroundMaxBlows = 5;      // +0x198..+0x1ab

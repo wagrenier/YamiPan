@@ -34,6 +34,19 @@
 
 // gMotionDefs indices the code names, with the sheet's label. The other
 // values stay numbers inside the predicates below.
+// MotionDef::damageKind, the sheet's ダメージ種別: how the blow of this motion
+// lands. The sides are for those whose abilities have them (flag3cc), the
+// hard ones for those with flag3cd.
+enum MotionDamageKind
+{
+    MotionDamage_Plain     = 1,
+    MotionDamage_Hard      = 2,
+    MotionDamage_Side1     = 3,
+    MotionDamage_Side2     = 4,
+    MotionDamage_HardSide1 = 5,
+    MotionDamage_HardSide2 = 6,
+};
+
 enum MotionId
 {
     Motion_None       = -1,
@@ -85,10 +98,17 @@ enum MotionId
     Motion_DoorForce  = 0x4c,   // spends its hit points
     Motion_DiveFront  = 0x94, // dv_f: link DiveFall
     Motion_DiveBack   = 0x95, // dv_b
+    Motion_TrapHit    = 0x9b, // trp_s: caught; blows count three times (takeDamage)
     Motion_DamageFront = 0xa4, // dm_f: link Damage, as 0xa5..0xa7, 0xb7, 0xb8
     Motion_DamageFrontHeavy = 0xa5, // dm_f_h
     Motion_DamageRear = 0xa6, // dm_r
     Motion_DamageRearHeavy = 0xa7, // dm_r_h
+    Motion_DamageSide1 = 0xa8, // dm_0_1..4: MotionDamageKind's sides, for those who have them
+    Motion_DamageSide2 = 0xa9,
+    Motion_DamageSide3 = 0xaa,
+    Motion_DamageSide4 = 0xab,
+    Motion_Burn       = 0xad, // burn: a light that hurts
+    Motion_DamageLadder = 0xae, // dm_ld
     Motion_Collapse   = 0xb0, // dm_c: link DamageFatal
     Motion_ReviveBack = 0xb1, // dm_rev_b: no link
     Motion_Revive     = 0xb2, // dm_rev: link Revive
@@ -104,6 +124,8 @@ enum MotionId
     Motion_CarGetIn   = 0xbc, // link ApproachCar
     Motion_CarGetOut  = 0xbd, // link ApproachOut
     Motion_CarDragOut = 0xbe, // link ApproachBite
+    Motion_CarDamage  = 0xbf, // a blow on someone in the car
+    Motion_CarCollapse = 0xc0, // its last one
     Motion_Crouched   = 0xf7, // a request, resolved through the holds
     Motion_WalkStand  = 0xf9, // waits while the walk runs (stepLower)
     Motion_WalkCrouch = 0xfa,
@@ -192,6 +214,7 @@ static_assert(offsetof(MotionQueue, finished) == 0x50, "MotionQueue::finished");
 
 struct PlayerMotion;
 class StageTrapItem;
+struct MotionDef;
 
 // One thing a motion may lead to. onUpdate runs at the start of the frame
 // and says what is allowed; onApply runs after input and brain and asks for
@@ -735,8 +758,11 @@ struct MotionProbe
 {
     explicit MotionProbe(StageCharacter *owner_) : owner(owner_) {}      // FS2 0x0026c6b0
     // A trap this character can spring.
-    // Blood on a bone, along direction. Not written.
-    void spawnBlood(float size, StageNodeBase *node, const float *direction, int kind, int arg); // FS2 0x0026a010
+    // count effects on a bone, where a blow along direction enters a body
+    // of that radius, the rest scattered about the first. No effect named:
+    // the owner's blood, or with count 0 three of "damage".
+    void spawnBlood(float radius, StageNodeBase *node, const float *direction, int count,
+                    const char *effect);                                 // FS2 0x0026a010
     StageTrapItem *findTrap();                                           // FS2 0x0026a390
     // The door within reach, facing it, free. A door of type R that stands
     // open must leave room to walk to its place.
@@ -851,8 +877,8 @@ struct PlayerMotion
     // The terminate hook's half: the hits taken, how long it has run, a Yri
     // or Kne's stance, the motion's sound events.
     void endFrame();                                                     // FS2 0x001e06f0
-    // The frame's hits: the reaction, the flinch (only the first line is
-    // written: the rest needs the hit 0x20eb40 and its enemies).
+    // The frame's hits: lights, blows, traps, the landing, who climbs on it
+    // and doors; the reaction to each, and the fall when no endurance is left.
     void takeHits();                                                     // FS2 0x001e18c0
     // The motion's 壁判定 and the wall body's on, what it was before.
     u_char setWallCheck(u_char on);                                      // FS2 0x001e5d60
@@ -933,6 +959,16 @@ private:
     void walkPoseTo(float rate, const float *target, const float *aimAt, bool scaled); // the tail of both, inline in the ROM
     // The parts of endFrame, one function in the ROM.
     void stepRunClock(StageCharacter *character);
+    // The parts of takeHits, one function in the ROM.
+    const MotionDef *upcomingDef() const;
+    bool reactsToHit(StageCharacter *character) const;
+    void takeLightHit(StageCharacter *character);
+    void takeBlowHit(StageCharacter *character, CharacterGround *ground);
+    bool landBlow(StageCharacter *character, CharacterGround *ground, bool &headShot);
+    void reactToBlow(StageCharacter *character, CharacterGround *ground, bool headShot);
+    void takeTrapHit(StageCharacter *character, CharacterGround *ground);
+    void takeLanding(StageCharacter *character, CharacterGround *ground);
+    void takeShoves(StageCharacter *character, CharacterGround *ground);
     void stepAltStance(StageCharacter *character);
     void stepSoundEvents(StageCharacter *character);
     // The parts of controlStep, one function in the ROM.
@@ -1021,7 +1057,7 @@ public:
     float  scopeZoom = 0.0f;    // FS2 +0xbd8: 0..1, the sight's picture too (MenuProgSet::draw)
     sceVu0FVECTOR scopeRotation = {}; // FS2 +0xbe0: the character's as the scope came up
     float  m_bf0 = 0.0f;        // FS2 +0xbf0: bitten: the wait before the next press counts
-    float  m_bf4 = 0.0f;        // FS2 +0xbf4
+    StageTrapItem *m_sprungTrap = nullptr; // FS2 +0xbf4: what caught it (takeHits)
     float  m_shoutLoudness = 0.0f; // FS2 +0xbf8: a motion event SHOUT's; 0x216280 sets it
     u_char m_bfc = 0;           // FS2 +0xbfc
     WalkLink *walkLink = nullptr; // FS2 +0xc00: the map's Walk

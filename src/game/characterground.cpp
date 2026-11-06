@@ -30,14 +30,6 @@
 #include "game/stagescene.h"
 #include "game/vu0math.h"
 
-// layout: host -- a bone a body hangs from. EE 0x20: +0 name, +4 second bone, +8 radius, +0x10
-// an offset, zero in every row of the ROM (left out; the ROM still turns it).
-struct GroundBone
-{
-    const char *name;           // FS2 +0x0
-    const char *second;         // FS2 +0x4: blows only: the bone the arm or leg starts from
-    float       radius;         // FS2 +0x8
-};
 // layout: host -- a row of a table with its count (the ROM keeps the counts apart).
 struct GroundBoneTable
 {
@@ -1114,7 +1106,10 @@ int CharacterGround::meetWall(CollisionContact *contact, const float *normal,
                         side[1] = -side[1];
                         side[2] = -side[2];
                     }
-                    const float sine = sqrtf((1.0f + 0.0f) - dot * dot);
+                    // sqrt.s takes the absolute value: two faces dead against
+                    // each other give a dot just past -1, and sqrtf a NaN that
+                    // goes into the character's position.
+                    const float sine = sqrtf(fabsf((1.0f + 0.0f) - dot * dot));
                     const float limit = node->value.radius / 8.0f;
                     float amount;
                     if (sine < 0.2f) {
