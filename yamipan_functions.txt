@@ -4636,7 +4636,7 @@
 /* 001d0b50 000005fc */ applySpawnPointList(){}  // game
 /* 001d1150 0000010c */ hideActiveNamed(){}  // game
 /* 001d1260 00000014 */ findCameraObject(){}  // game
-/* 001d1280 000000ac */ FUN_001d1280(){}
+/* 001d1280 000000ac */ LiteralMap<MotionSpecial>::find(){}  // game
 /* 001d1330 00000008 */ ScriptRunner::runCommand(){}  // game
 /* 001d1340 00000138 */ ScriptFrame::prepare(){}  // game
 /* 001d1480 000000c4 */ ScriptFrame::restoreTo(){}  // game
@@ -5030,41 +5030,36 @@
 /* 001ecda0 000004fc */ PlayerMotion::loadMotions(){}  // game
 /* 001ed2a0 00000170 */ PlayerMotion::~PlayerMotion(){}  // game
 /* 001ed410 00001998 */ PlayerMotion::PlayerMotion(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 001eedb0 00000060 */ FUN_001eedb0(){}
-/* 001eee10 00000004 */ FUN_001eee10(){}
-/* 001eee20 00000004 */ FUN_001eee20(){}
-/* 001eee30 00000018 */ FUN_001eee30(){}
-/* 001eee50 00000084 */ FUN_001eee50(){}
-/* 001eeee0 00000018 */ FUN_001eeee0(){}
-/* 001eef00 00000084 */ FUN_001eef00(){}
-/* 001eef90 000000b0 */ FUN_001eef90(){}
-/* 001ef040 00000018 */ FUN_001ef040(){}
-/* 001ef060 00000084 */ FUN_001ef060(){}
-/* 001ef0f0 000000b0 */ FUN_001ef0f0(){}
-/* 001ef1a0 00000044 */ FUN_001ef1a0(){}
-/* 001ef1f0 00000020 */ FUN_001ef1f0(){}
-/* 001ef210 00000044 */ FUN_001ef210(){}
-/* 001ef260 0000007c */ FUN_001ef260(){}
-/* 001ef2e0 00000238 */ FUN_001ef2e0(){}
-/* 001ef520 00000020 */ FUN_001ef520(){}
-/* 001ef540 00000044 */ FUN_001ef540(){}
-/* 001ef590 0000007c */ FUN_001ef590(){}
-/* 001ef610 00000238 */ FUN_001ef610(){}
-/* 001ef850 00000138 */ FUN_001ef850(){}
-/* 001ef990 00000138 */ FUN_001ef990(){}
-/* 001efad0 00000204 */ FUN_001efad0(){}
-/* 001efce0 00000204 */ FUN_001efce0(){}
-/* 001efef0 00000008 */ FUN_001efef0(){}
+/* 001eedb0 00000060 */ BittenLink::~BittenLink(){}  // game
+/* 001eee10 00000004 */ MotionLink::onUpdate(){}  // game
+/* 001eee20 00000004 */ MotionLink::onApply(){}  // game
+/* 001eee30 00000018 */ LiteralMap<MotionLink>::LiteralMap(){}  // game
+/* 001eee50 00000084 */ LiteralMap<MotionLink>::~LiteralMap(){}  // game
+/* 001eeee0 00000018 */ LiteralMap<MotionSpecial>::LiteralMap(){}  // game
+/* 001eef00 00000084 */ LiteralMap<MotionSpecial>::~LiteralMap(){}  // game
+/* 001eef90 000000b0 */ LiteralMap<MotionLink>::insert(){}  // game
+/* 001ef040 00000018 */ LiteralMap<MotionCondition>::LiteralMap(){}  // game
+/* 001ef060 00000084 */ LiteralMap<MotionCondition>::~LiteralMap(){}  // game
+/* 001ef0f0 000000b0 */ LiteralMap<MotionCondition>::insert(){}  // game
+/* 001ef1a0 00000044 */ LiteralMap<MotionLink>::Node::~Node(){}  // game
+/* 001ef1f0 00000020 */ LiteralMap<MotionLink>::Node::Node(){}  // game
+/* 001ef210 00000044 */ LiteralMap<MotionSpecial>::Node::~Node(){}  // game
+/* 001ef260 0000007c */ LiteralMap<MotionLink>::find(){}  // game
+/* 001ef2e0 00000238 */ LiteralMap<MotionLink>::Node::insert(){}  // game
+/* 001ef520 00000020 */ LiteralMap<MotionCondition>::Node::Node(){}  // game
+/* 001ef540 00000044 */ LiteralMap<MotionCondition>::Node::~Node(){}  // game
+/* 001ef590 0000007c */ LiteralMap<MotionCondition>::find(){}  // game
+/* 001ef610 00000238 */ LiteralMap<MotionCondition>::Node::insert(){}  // game
+/* 001ef850 00000138 */ LiteralMap<MotionCondition>::Node::balance(){}  // game
+/* 001ef990 00000138 */ LiteralMap<MotionLink>::Node::balance(){}  // game
+/* 001efad0 00000204 */ LiteralMap<MotionLink>::Node::height(){}  // game
+/* 001efce0 00000204 */ LiteralMap<MotionCondition>::Node::height(){}  // game
 
 // *****************************************************************************
 // FILE -- game/characterground.cpp
 // *****************************************************************************
 
+/* 001efef0 00000008 */ CharacterGround::getCollisionObject(){}  // game
 /* 001eff00 00000080 */ CharacterGround::faceNear(){}  // game
 /* 001eff80 0000011c */ CharacterGround::setContact(){}  // game
 /* 001f00a0 000000cc */ CharacterGround::setHitBone(){}  // game
@@ -7491,9 +7486,9 @@
 /* 00281630 0000000c */ FUN_00281630(){}
 /* 00281640 00000070 */ FUN_00281640(){}
 /* 002816b0 00000080 */ FUN_002816b0(){}
-/* 00281730 000000b0 */ FUN_00281730(){}
-/* 002817e0 00000020 */ FUN_002817e0(){}
-/* 00281800 00000238 */ FUN_00281800(){}
+/* 00281730 000000b0 */ LiteralMap<MotionSpecial>::insert(){}  // game
+/* 002817e0 00000020 */ LiteralMap<MotionSpecial>::Node::Node(){}  // game
+/* 00281800 00000238 */ LiteralMap<MotionSpecial>::Node::insert(){}  // game
 /* 00281a40 00000060 */ FUN_00281a40(){}
 /* 00281aa0 00000084 */ FUN_00281aa0(){}
 /* 00281b30 00000080 */ FUN_00281b30(){}

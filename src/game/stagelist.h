@@ -8,7 +8,10 @@
  *  - StageList<T>: a doubly linked list with no tail pointer (pushBack walks
  *    to the end);
  *  - StringMap<T>: a binary tree on strcmp, unbalanced until balance is
- *    called, its nodes also chained in insertion order, the keys owned.
+ *    called, its nodes also chained in insertion order, the keys owned;
+ *  - LiteralMap<T>: the same with keys that stay the caller's (literals), the
+ *    three maps of PlayerMotion, emitted after it, 0x1eee30..0x1efee4, and
+ *    0x1d1280, 0x281730.. for the third.
  *  The classes' real names are unknown (no RTTI strings, no symbols).
  * ======================================================================== */
 #ifndef _GAME_STAGELIST_H
@@ -111,8 +114,10 @@ private:
 };
 
 // layout: host -- EE 0x10: +0 root, +4 first, +8 last, +0xc count. A node is
-// EE 0x14, the fields below. Values stay the owner's.
-template <class T>
+// EE 0x14, the fields below. Values stay the owner's. CopiesKeys is the one
+// difference between the ROM's two templates: its node's constructor and
+// destructor. The tree is the same code.
+template <class T, bool CopiesKeys = true>
 class StringMap
 {
 public:
@@ -120,22 +125,27 @@ public:
     struct Node
     {
         T     value;            // FS2 +0x00
-        char *key;              // FS2 +0x04: new[]'d copy
+        const char *key;        // FS2 +0x04: new[]'d copy, or the caller's (LiteralMap)
         Node *left;             // FS2 +0x08: strcmp < 0
         Node *right;            // FS2 +0x0c
         Node *next;             // FS2 +0x10: insertion order
     };
 
     // FS2 0x001a4c20, 0x001a4ac0, 0x001a4960
+    // LiteralMap's: FS2 0x001eee30, FS2 0x001eeee0, FS2 0x001ef040
     StringMap() : root(NULL), first(NULL), last(NULL), count(0) {}
 
-    // The nodes' destructors (0x1a55c0, 0x1a51f0, 0x1a4e20) free the keys.
+    // The nodes' destructors (0x1a55c0, 0x1a51f0, 0x1a4e20) free the keys;
+    // LiteralMap's free nothing: FS2 0x001ef1a0, FS2 0x001ef210, FS2 0x001ef540.
+    // The ROM's also zero root, first and last, not count.
     // FS2 0x001a4c40, 0x001a4ae0, 0x001a4980
+    // LiteralMap's: FS2 0x001eee50, FS2 0x001eef00, FS2 0x001ef060
     ~StringMap()
     {
         for (Node *node = first; node != NULL;) {
             Node *next = node->next;
-            delete[] node->key;
+            if (CopiesKeys)
+                delete[] node->key;
             delete node;
             node = next;
         }
@@ -143,6 +153,7 @@ public:
 
     // The node of key; null without one or when its value is null.
     // FS2 0x00189840, 0x001a5250
+    // LiteralMap's, handed the root: FS2 0x001ef260, FS2 0x001ef590, FS2 0x001d1280
     Node *find(const char *key) const
     {
         Node *node = root;
@@ -158,6 +169,9 @@ public:
     // The new node, chained last; null (nothing added) when key is taken.
     // The ROM's search recurses, with one level inlined (0x1a52d0, 0x1a5620).
     // FS2 0x001a4b70, 0x001a4cd0, 0x001a5180, 0x001a5550
+    // LiteralMap's: FS2 0x001eef90, FS2 0x001ef0f0, FS2 0x00281730; their
+    // searches FS2 0x001ef2e0, FS2 0x001ef610, FS2 0x00281800; their nodes'
+    // constructors, value then key, FS2 0x001ef1f0, FS2 0x001ef520, FS2 0x002817e0.
     Node *insert(const char *key, const T &value)
     {
         Node **link = &root;
@@ -169,8 +183,7 @@ public:
         }
         Node *node = new Node;
         node->value = value;
-        node->key = new char[strlen(key) + 1];
-        strcpy(node->key, key);
+        node->key = copyKey(key);
         node->left = NULL;
         node->right = NULL;
         node->next = NULL;
@@ -194,7 +207,8 @@ public:
         return node;
     }
 
-    // Evens the tree out, once the map is full (bones, motions).
+    // Evens the tree out, once the map is full (bones, motions; of LiteralMap's
+    // the conditions and the links, not the specials).
     void balance() { root = balanceFrom(root); }
 
     Node *root;                 // FS2 +0x0
@@ -203,7 +217,17 @@ public:
     int   count;                // FS2 +0xc
 
 private:
+    static const char *copyKey(const char *key)
+    {
+        if (!CopiesKeys)
+            return key;
+        char *copy = new char[strlen(key) + 1];
+        strcpy(copy, key);
+        return copy;
+    }
+
     // FS2 0x00189ad0, 0x001898c0
+    // LiteralMap's, two levels inlined: FS2 0x001efad0, FS2 0x001efce0
     static int height(const Node *node)
     {
         if (node == NULL)
@@ -216,6 +240,7 @@ private:
 
     // Rotations from the leaves up, until no node leans by more than one.
     // FS2 0x001895c0, 0x00189700
+    // LiteralMap's: FS2 0x001ef850, FS2 0x001ef990
     static Node *balanceFrom(Node *node)
     {
         Node *top;
@@ -251,5 +276,8 @@ private:
     StringMap(const StringMap &);
     StringMap &operator=(const StringMap &);
 };
+
+template <class T>
+using LiteralMap = StringMap<T, false>;
 
 #endif /* _GAME_STAGELIST_H */
