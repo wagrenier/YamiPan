@@ -23,6 +23,7 @@
 #include "game/mathutil.h"
 #include "game/modelpose.h"
 #include "game/vcmtable.h"
+#include "game/vehiclepose.h"
 #include "game/vu0math.h"
 
 static const float kPi2 = 1.5707964f;           /* 0x3fc90fdb */

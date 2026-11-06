@@ -1124,10 +1124,10 @@
     ],
     [
      "0027c420",
-     "0027c6d0"
+     "0027dc40"
     ],
     [
-     "00280080",
+     "00280010",
      "00280618"
     ],
     [
@@ -1251,7 +1251,7 @@
    ],
    "status": "verify",
    "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves.",
-   "why": "the ranges so far, with the character's property pair 0x212530 / 0x2132d0, their helpers and resetActionState 0x21e050 with its status block 0x21cc70, which the motion reads; 0x1eedb0..0x1efef0: BittenLink's dtor, the base link's empty slots and the three NameMap instances the object emits after PlayerMotion::PlayerMotion (the third's insert 0x281730.. stays in its run, tagged in game/stagelist.h)"
+   "why": "the ranges so far, with the character's property pair 0x212530 / 0x2132d0, their helpers and resetActionState 0x21e050 with its status block 0x21cc70, which the motion reads; 0x1eedb0..0x1efef0: BittenLink's dtor, the base link's empty slots and the three NameMap instances the object emits after PlayerMotion::PlayerMotion (the third's insert 0x281730.. stays in its run, tagged in game/stagelist.h); 0x27c6d0..0x27dc40 and 0x280010..0x280080: the base link, the links' dtors, the condition list and MotionGadgetSpecial's dtor, joined from unassigned@0027cab0"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -2563,6 +2563,24 @@
    "status": "verify",
    "why": "VectorTrack, VectorKey, VectorFade; needed by SceneRender"
   },
+  "game/vehiclepose.cpp": {
+   "notes": "21 of 21 functions, no stub. unassigned@0027cab0 split: 0x27dc40..0x280010 is this file, the rest joined game/playermotion.cpp. vehiclecmp.py: 40 scripts, 6040 ops, 515686 words; elevator 0 differ; car 670 differ, worst 208 ulp, all in rootOffset[1] and the body's aim target (rounding of heights near 500, not looked into further). Not covered: both update functions, which need real bones, and powf, Python's on the ROM side. Nothing reaches these poses yet: the car object 0x28a890..0x28e5a0 and the elevator object (0x294280, 0x294cb0, 0x295010) make them, and createMapObject builds neither, so the picture says nothing about them: New Game, doorwalk pad, 285 s, no crash, the dark first-person wall as in earlier runs. The ROM's last loop in followGround drops wrapAngleLane's answer; kept. sdk/libvu0.h gained sceVu0SinCos and sceVu0RotMatrixZ, the library's own sine (hazards.md). Seven link dtors wait in game/playermotion.cpp's range for their links: DamageDead, DamageFatal, DamageLand, Damage, TrapHit, DiveLand, DiveFall. Next for these poses: the elevator and car objects.",
+   "ranges": [
+    [
+     "0027dc40",
+     "00280010"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-06 11:18",
+     "status": "verify",
+     "summary": "CarPose and ElevatorPose written and compared with the ROM; the links' base, 17 link dtors and the ROM's condition list joined game/playermotion.cpp"
+    }
+   ],
+   "status": "verify",
+   "why": "CarPose and ElevatorPose, the two ModelPose subclasses between the links and the gadget specials: 0x27dc40..0x280010, one vtable pair 0x317c50 / 0x317c70, no source string, so the file is the port's name"
+  },
   "game/viewcamera.cpp": {
    "notes": "All 6 functions written, plus PlayerMotion::getEyeMatrix 0x1e5f70 and StageObject::setProperty 0x189f40 (outside the ranges: the view needs it). Root stores property 0x56 sub 7 = 1, ForceView; the store used to end in the ScriptRunner stub. drawMode 2 means hidden: prepareDrawFlags hides the head of the followed character, the names were backwards and are fixed. Seen in New Game: room from eye height, no body; a temporary probe showed top=camview, head part hidden, and with setScope by hand top=camview_snipe with a zoomed room, not black. Stage 1 now refuses Run, Ready, Alt and the pause and map menus until Root clears them: that is the ROM. Not proven: that the character's 200 units of movement came from the scripted pad, the right stick turning the view, the head coming back in the third-person view. Next: StageCharacter's own property slots 0x2132d0 / 0x212530 and StageObject::getProperty 0x18a5b0 are unwritten (open-items.md, Done).",
    "ranges": [
@@ -3091,6 +3109,7 @@
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
   "unassigned@002681e0": {},
+  "unassigned@0027cab0": {},
   "unassigned@002908d0": {},
   "unassigned@00296d60": {},
   "unassigned@002acff0": {},

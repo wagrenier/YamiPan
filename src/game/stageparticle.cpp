@@ -539,7 +539,7 @@ void StageParticle::respawn(Particle &particle, StageNodeTree *tree, StageObject
 // frame's place and this one. The ROM has it all in one 0x1740-byte function;
 // the host cuts out stepHeld, stepParticle, respawn and stepColor.
 // FS2 0x0018e280
-// callcheck: FUN_0010b940, applyMatrix, atan2Octant, contains, emitAt, erase, findFloorFaceExcept, getDrawDistance, identityMatrix, multiplyMatrix, pushBack, randNext, rotateMatrixX, rotateMatrixY, rotateMatrixZ, scaleVec3, scaleVec4, segmentHitsAny, setPosition, setVecLength, spawnNamed, vecDirection, vecDistanceSq (in stepHeld, stepParticle, respawn, and setParent's list calls; 0x10b940 is addVector3)
+// callcheck: sceVu0AddVector, applyMatrix, atan2Octant, contains, emitAt, erase, findFloorFaceExcept, getDrawDistance, identityMatrix, multiplyMatrix, pushBack, randNext, rotateMatrixX, rotateMatrixY, rotateMatrixZ, scaleVec3, scaleVec4, segmentHitsAny, setPosition, setVecLength, spawnNamed, vecDirection, vecDistanceSq (in stepHeld, stepParticle, respawn, and setParent's list calls; 0x10b940 is addVector3)
 
 void StageParticle::update(StageNodeTree *tree, StageObject *view)
 {
@@ -773,7 +773,7 @@ void StageParticle::drawQuad(const Particle &particle, const sceVu0FVECTOR *view
 // the frame's own pixels: no definition on the disc has it (ptcall.py), so the
 // host has no such pass.
 // FS2 0x0018d400
-// callcheck: FUN_0010afd0, FUN_0010b028, FUN_0010b720, FUN_0010b7b8, FUN_0010b988, FUN_0010b9a0, FUN_0010ba18, FUN_0010bae8, FUN_0010bc38, FUN_0010c218, asinAcos, copyMatrix, drawCells, drawSysCurrent, getDrawDistance, multiplyMatrix, sceVif1PkAddGsAD, sceVif1PkCloseDmaTag, sceVif1PkCloseGifTag, sceVif1PkCnt, sceVif1PkOpenGifTag, sceVu0RotMatrixX, sceVu0UnitMatrix, vecDirection, vecDot, applyMatrix (the packets are YamiPan_ModelSetEffect and YamiPan_ModelDrawQuad; drawCells is drawQuad; 0x10b720 sums as applyMatrix, 0x10bae8 and 0x10bc38 turn as rotateMatrixZ and Y, 0x10b9a0 adds to row 3, 0x10b988 scales, 0x10c218 projects, 0x10ba18 is the int cast)
+// callcheck: FUN_0010afd0, FUN_0010b028, sceVu0ApplyMatrix, sceVu0InnerProduct, sceVu0ScaleVector, FUN_0010b9a0, FUN_0010ba18, FUN_0010bae8, FUN_0010bc38, FUN_0010c218, asinAcos, copyMatrix, drawCells, drawSysCurrent, getDrawDistance, multiplyMatrix, sceVif1PkAddGsAD, sceVif1PkCloseDmaTag, sceVif1PkCloseGifTag, sceVif1PkCnt, sceVif1PkOpenGifTag, sceVu0RotMatrixX, sceVu0UnitMatrix, vecDirection, vecDot, applyMatrix (the packets are YamiPan_ModelSetEffect and YamiPan_ModelDrawQuad; drawCells is drawQuad; 0x10b720 sums as applyMatrix, 0x10bae8 and 0x10bc38 turn as rotateMatrixZ and Y, 0x10b9a0 adds to row 3, 0x10b988 scales, 0x10c218 projects, 0x10ba18 is the int cast)
 
 void StageParticle::draw(const sceVu0FVECTOR *view, const sceVu0FVECTOR *screen, const sceVu0FVECTOR *camera,
                          Tim2Texture *texture, sceVif1Packet *packet)

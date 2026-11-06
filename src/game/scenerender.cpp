@@ -138,7 +138,7 @@ RenaLight::RenaLight()
 }
 
 // FS2 0x002e0810
-// callcheck: FUN_0010b9e0 (the matrix copy, memcpy here)
+// callcheck: sceVu0CopyMatrix (the matrix copy, memcpy here)
 
 void RenaLight::setMatrix(const sceVu0FVECTOR *from)
 {

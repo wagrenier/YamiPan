@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 10:42 at commit `08e4549` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 11:18 at commit `d146d67` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-06 10:42 at commit `08e4549` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **5032** (76%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1547, game-inferred 4108
-- context-name ledger: 5655 entries; overrides of wrong library matches: 0
-- placed in a source file: 5371/6599 in 117 files
+- game functions: **6599**, named **5083** (77%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1558, game-inferred 4160
+- context-name ledger: 5718 entries; overrides of wrong library matches: 0
+- placed in a source file: 5430/6599 in 118 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -22,15 +22,15 @@ Least-named game-code regions (64 KB blocks):
 | `00310000` | 0/9 (0%) | - |
 | `002c0000` | 37/173 (21%) | game/packtables.cpp, game/menupack.cpp, game/stageparty.cpp |
 | `002d0000` | 104/256 (41%) | game/drawsys.cpp, game/ripplesheet.cpp, game/fontdata.cpp |
-| `00280000` | 107/232 (46%) | game/demoevent.cpp, game/playermotion.cpp, game/areagrid.cpp |
 | `001c0000` | 108/233 (46%) | game/scriptrunner.cpp |
+| `00280000` | 108/232 (47%) | game/demoevent.cpp, game/playermotion.cpp, game/areagrid.cpp |
 | `001b0000` | 115/242 (48%) | game/scriptrunner.cpp |
-| `00270000` | 100/202 (50%) | game/playermotion.cpp |
 | `002a0000` | 129/241 (54%) | game/memcard.cpp, game/demofleck.cpp, game/playermotion.cpp |
+| `001a0000` | 194/301 (64%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **4809**; stubs: **192**
+- reconstructed FS2 functions: **4858**; stubs: **190**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -70,7 +70,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/pakarchive.cpp` | 17 | 0 |
 | `src/game/pausemenustate.cpp` | 12 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
-| `src/game/playermotion.cpp` | 429 | 0 |
+| `src/game/playermotion.cpp` | 457 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rcnttimer.cpp` | 0 | 4 |
@@ -123,10 +123,11 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/uiworkarea.cpp` | 4 | 0 |
 | `src/game/vcmtable.cpp` | 52 | 0 |
 | `src/game/vectortrack.cpp` | 16 | 0 |
+| `src/game/vehiclepose.cpp` | 21 | 0 |
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 142 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 140 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -154,8 +155,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 221 TUs: todo 86, partial 32, verify 100, done 34
-- next: **unassigned@0027cab0** (frontier score 47)
+- 221 TUs: todo 87, partial 31, verify 101, done 34
+- next: **unassigned@00289cc0** (frontier score 47)
 - pinned queue: (empty)
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -192,7 +193,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
-- verify: `game/playermotion.cpp` 268/270 -- unassigned@001eedb0 was BittenLink's dtor 0x1eedb0 and three instances of one map, now LiteralMap<T> (StringMap<T, false>) in game/stagelist.h, replacing std::m
+- verify: `game/playermotion.cpp` 299/308 -- unassigned@001eedb0 was BittenLink's dtor 0x1eedb0 and three instances of one map, now LiteralMap<T> (StringMap<T, false>) in game/stagelist.h, replacing std::m
 - verify: `game/prgmccard.cpp` 7/7 -- All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide close
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/ripplesheet.cpp` 7/10 -- Batch 164. What the notes called stage 0x1b's boss film is a 15 by 15 ripple sheet, 0x2d10f0..0x2d3700, SightJack +0xb4: the frame bent, pushed from a tint, cre
@@ -237,6 +238,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/uiworkarea.cpp` 4/4 -- All 4 of 0x243350..0x243390 written. Released unassigned@0017fce0 untouched (third time) because New Game was the untried road into a stage and these were on it
 - verify: `game/vcmtable.cpp` 52/52 -- Cut out of unassigned@00296d60 (the frontier pick) as 0x296d60..0x299d90, batches 063-065 (59 names, incl. the binary's std::string instances 0x297fb0.. and new
 - verify: `game/vectortrack.cpp` 16/16 -- All 16 functions written in src/game/vectortrack.cpp; the seven that lived inline in gamehooks.h, where the tools do not count them, moved to the .cpp, and the 
+- verify: `game/vehiclepose.cpp` 21/21 -- 21 of 21 functions, no stub. unassigned@0027cab0 split: 0x27dc40..0x280010 is this file, the rest joined game/playermotion.cpp. vehiclecmp.py: 40 scripts, 6040 
 - verify: `game/vu0math.cpp` 33/33 -- All 33 functions of 0x135990-0x1366c0 written from the asm (the decompiler loses VU0 field masks), in src/game/vu0math.cpp; vu0math.h is prototypes plus invertA
 - verify: `game/wstring.cpp` 5/5 -- Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds 
 - verify: `rena/rena_2d_texture_tim2.cpp` 7/7 -- All 7 written; class moved to rena/rena_2d_texture_tim2.h. One Tim2Texture per mip level of the first picture; m_image (+0x40) is the TIM2 file itself, not a co
@@ -260,6 +262,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 11:18 `game/vehiclepose.cpp` verify: CarPose and ElevatorPose written and compared with the ROM; the links' base, 17 link dtors and the ROM's condition list joined game/playermotion.cpp
 - 2026-11-06 10:42 `game/stagecharacter.cpp` verify: the file's tail: list instance and 63 adjustor thunks, and the four runner slots a character had left on the default (setPosition, onScriptExit, scriptPlayMotio
 - 2026-11-06 09:59 `game/vectortrack.cpp` verify: VectorFade, VectorKey and VectorTrack proven against the ROM; last 7 functions in the .cpp, classes in vectortrack.h
 - 2026-11-06 09:40 `game/stageparticle.cpp` verify: the particles are seen on screen (stage 2's rain), and the motes were critters: CritterNest, CritterRat, CritterCrawler written, spawnCritters live
@@ -267,21 +270,20 @@ Recent sessions:
 - 2026-11-06 07:59 `game/mapobject.cpp` verify: The map object's file closed: breakPart, getProperty and advanceMotion written, script slot +0x9c corrected to answer every map object, 70 of 70 functions, no s
 - 2026-11-06 07:07 `game/playermotion.cpp` verify: the three motion maps are the ROM's own LiteralMap, compared with its code; conditions and links in the ROM's order
 - 2026-11-06 06:42 `game/vu0math.cpp` verify: All 33 functions cut out of unassigned@00135990 and pinned 0x135990-0x1366c0: the game's vector and rotation helpers, then libvu0 in reverse order. rotateByAngl
-- 2026-11-06 06:10 `game/ripplesheet.cpp` verify: the boss view's water: RippleSheet and its host pass, compared with the ROM
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@00289cc0` | todo | 0/17/59 | 23.1 | 47 | 0 |
-| `unassigned@0027cab0` | partial | 3/2/59 | 13.1 | 47 | 0 |
 | `unassigned@002a31b0` | partial | 1/18/22 | 5.9 | 39 | 0 |
 | `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 39 | 1 |
-| `unassigned@002764b0` | todo | 0/0/43 | 7.8 | 33 | 0 |
+| `unassigned@002764b0` | todo | 0/0/43 | 7.8 | 34 | 0 |
 | `unassigned@0022fc50` | todo | 0/0/8 | 1.8 | 33 | 0 |
 | `unassigned@002937e0` | partial | 2/13/29 | 6.9 | 30 | 0 |
-| `rx/rxsndstradpcm.c` | todo | 0/8/10 | 2.6 | 25 | 5 |
 | `unassigned@002a4a40` | partial | 4/10/90 | 19.9 | 25 | 2 |
+| `rx/rxsndstradpcm.c` | todo | 0/8/10 | 2.6 | 25 | 5 |
 | `unassigned@001920d0` | partial | 1/0/17 | 5.9 | 24 | 0 |
 | `game/stagealert.cpp` | todo | 0/7/8 | 1.3 | 24 | 3 |
+| `unassigned@002b9ef0` | todo | 0/4/11 | 5.7 | 21 | 3 |
 | `unassigned@0020e6a0` | partial | 6/1/11 | 8.6 | 21 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
@@ -294,14 +296,11 @@ Recent sessions:
 | `00276510` | MotionCondition::MotionCondition | 32 | game | missing | - |
 | `001842c0` | StageNodeList::pushBack | 29 | game | missing | game/stageitem.cpp |
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
-| `0027cc50` | MotionLink::MotionLink | 19 | game | missing | - |
 | `002c0d90` | FUN_002c0d90 | 18 | - | missing | game/packtables.cpp |
 | `0017e1b0` | StageList<StageObject*>::pushBack | 16 | game | missing | game/stagecharacter.cpp |
 | `001d1a00` | ScriptRunner::getEntry | 14 | game | missing | game/scriptrunner.cpp |
 | `0022fe10` | FUN_0022fe10 | 14 | - | missing | - |
 | `002c0d40` | FUN_002c0d40 | 12 | - | missing | game/packtables.cpp |
-| `0027d940` | FUN_0027d940 | 11 | - | missing | - |
-| `0027d8d0` | FUN_0027d8d0 | 10 | - | missing | - |
 | `002c0d80` | FUN_002c0d80 | 10 | - | missing | game/packtables.cpp |
 | `00228610` | FUN_00228610 | 9 | - | missing | game/characterroute.cpp |
 | `00186fe0` | PartSwitch::show | 8 | game | stub | - |
@@ -328,4 +327,7 @@ Recent sessions:
 | `002c0db0` | FUN_002c0db0 | 6 | - | missing | game/packtables.cpp |
 | `0020c940` | StageCharacter::getSwayMatrix | 6 | game | stub | - |
 | `00258ea0` | FUN_00258ea0 | 6 | - | missing | game/routeplayer.cpp |
+| `001b36b0` | FUN_001b36b0 | 6 | - | missing | game/scriptrunner.cpp |
+| `001dd3f0` | CharacterBrain::setEnabled | 6 | game | missing | game/characterbrain.cpp |
+| `001f4f20` | FUN_001f4f20 | 6 | - | missing | game/stagecollision.cpp |
 
