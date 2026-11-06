@@ -367,6 +367,8 @@ class CharacterRoute;
 // character's +0x240 / +0x244, a light's PartSwitch, VcmTable.
 // layout: host -- the EE's +0 is the vptr; the virtuals are trivial here.
 struct ModelMesh;
+constexpr u_char kPartShown = 0;        // ModelPartRec::drawMode
+constexpr u_char kPartHidden = 2;       // with all under it (drawTree)
 struct ModelPartRec
 {
     ModelPartRec(const ModelMesh *mesh, u_short next);                   // FS2 0x002e3ba0
@@ -2436,8 +2438,9 @@ public:
     float getAttackReach();                                              // FS2 0x0020ce80
     // A special action of the motion (PlayerMotion::m_specials).
     bool isSpecialAllowed(const char *name);                             // FS2 0x0017b3b0
-    // Gets into (off false) or out of the view target's car; side picks the
-    // door. The class it needs is not written.
+    // Into the scene's car (off 0), or out of it (the other values: the ways
+    // out, playermotion.cpp). side picks the door. One who cannot drive at
+    // all answers false and nothing happens.
     bool rideCar(int off, int side);                                     // FS2 0x0017af50
     // It stands on the elevator: the floor's object is of kind 4.
     bool isOnElevator();                                                 // FS2 0x002123e0
@@ -2467,6 +2470,8 @@ public:
     // +0x400 set and +0x3c8 == 1: StageScene::drawPaused / update then
     // pass StageSound::update sceneFlag 1. What mode 1 is is unread.
     bool isMode1();                                                      // FS2 0x002152d0
+    // The sheet's 運転スキル makes it a driver, in a car or not.
+    bool isDriver();                                                     // FS2 0x00215310
     // +0x364 set: +0x2ca = 1. What the two bytes are is unread.
     void latchAltAction();                                               // FS2 0x0020b1d0
     // The object it is: the callers that hold it as the scene's player.

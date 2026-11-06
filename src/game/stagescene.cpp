@@ -3150,8 +3150,6 @@ void StageScene::update()
 // the whole body of an owned object's target.
 constexpr u_char kDrawGroupNormal = 1;
 constexpr u_char kDrawGroupTarget = 0x20;
-constexpr u_char kPartDrawn  = 0;
-constexpr u_char kPartHidden = 2;
 
 // FS2 0x00198560
 // callcheck: isPlayer, getCompanion, getKind, drawSysClearTargetView, drawSysSetTargetView, isMode2, getKind, getKind, hasTarget, getTarget, isMode1 (targetInView holds the first ones)
@@ -3163,7 +3161,7 @@ void StageScene::prepareDrawFlags()
          slot = firstActive(StageObjArray::next(slot))) {
         for (int i = 0; i < 2; i++) {
             if ((*slot)->m_parts[i] != nullptr)
-                (*slot)->m_parts[i]->drawMode = kPartDrawn;
+                (*slot)->m_parts[i]->drawMode = kPartShown;
         }
     }
 
