@@ -9793,3 +9793,15 @@ StageObject *StageCharacter::pickSearchPoint(const sceVu0FVECTOR point, u_int ra
                      [](const Candidate &a, const Candidate &b) { return a.distance < b.distance; });
     return found[rank].object;
 }
+
+// Written in headers; tools/reverse reads tags from .cpp files only:
+// BittenLink::~BittenLink (game/playermotion.h): FS2 0x001eedb0
+// LiteralMap() (game/stagelist.h): FS2 0x001eee30, FS2 0x001eeee0, FS2 0x001ef040
+// ~LiteralMap(): FS2 0x001eee50, FS2 0x001eef00, FS2 0x001ef060
+// the nodes' destructors: FS2 0x001ef1a0, FS2 0x001ef210, FS2 0x001ef540
+// the nodes' constructors: FS2 0x001ef1f0, FS2 0x001ef520, FS2 0x002817e0
+// insert: FS2 0x001eef90, FS2 0x001ef0f0, FS2 0x00281730
+// insert's searches: FS2 0x001ef2e0, FS2 0x001ef610, FS2 0x00281800
+// find: FS2 0x001ef260, FS2 0x001ef590, FS2 0x001d1280
+// balance: FS2 0x001ef850, FS2 0x001ef990
+// height: FS2 0x001efad0, FS2 0x001efce0

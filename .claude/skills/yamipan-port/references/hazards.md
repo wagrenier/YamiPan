@@ -578,3 +578,5 @@ and broadcasts (hazards "Decompiler"), and identity or single-axis inputs hide a
 read in `ghidra.py asm`, never from the decompilation, and proved with a compare tool (vu0cmp.py); test
 composition with two turns that do not commute. In eerun, a 64-bit move through qmtc2 leaves sign bits in the
 upper lanes, NaN in Python and harmless on a VU: clear the vf's between calls.
+
+- **Finished template code still counted as unwritten (2026-11-06).** Symptom: `status.py` stayed at the same reconstructed count after a TU written in a header. Cause: `yamipan.game_sources()` scans .c / .cpp only, and `ANNOT_RE` needs `FS2` before each address, so the StringMap tags in game/stagelist.h and the second address of any `FS2 0x1, 0x2` list are invisible too. Fix: list the addresses at the end of the TU's .cpp, each with its own `FS2 0x`, as game/playermotion.cpp does for `LiteralMap`. The older StringMap and StageList tags have not been moved.

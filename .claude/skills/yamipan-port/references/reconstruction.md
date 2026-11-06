@@ -21,6 +21,8 @@ proves wrong or incomplete, fix this file.
   recorded with `define --why` and in architecture.md.
 - Inline methods and template instances (linkonce sections, singleton getters) have no file of their
   own: write them in their class's header (inline, as the original was) or its .cpp, annotated either way.
+  **A tag in a header does not count:** `yamipan.reconstructed()` reads .c / .cpp only, so also list the
+  addresses at the end of the TU's .cpp, each with its own `FS2 0x`; `FS2 0x1, 0x2` counts the first only.
 - Library code (`data/layout.json` lib_ranges: Sony SDK, kernel stubs, libgcc, newlib, the C++ runtime)
   is never reconstructed: `src/sdk/` replaces the SDK, the host libc the rest. Its names matter only so
   callers read right.
