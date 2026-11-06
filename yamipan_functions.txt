@@ -978,12 +978,12 @@
 /* 00135860 0000012c */ PtrList::add(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/vu0math.cpp
 // *****************************************************************************
 
 /* 00135990 00000060 */ rotateByAngles(){}  // game
 /* 001359f0 000000a0 */ rotationMatrixZxy(){}  // game
-/* 00135a90 000000f4 */ FUN_00135a90(){}
+/* 00135a90 000000f4 */ rotationMatrixXyzRegs(){}  // game
 /* 00135b90 000000a0 */ rotationMatrixXyz(){}  // game
 /* 00135c30 00000114 */ sinCosVec(){}  // game
 /* 00135d50 000000c4 */ sinCosPair(){}  // game
@@ -996,16 +996,16 @@
 /* 00135fe0 0000003c */ setVecLength(){}  // game
 /* 00136020 00000044 */ vecDirection(){}  // game
 /* 00136070 0000001c */ scaleVec3(){}  // game
-/* 00136090 00000044 */ FUN_00136090(){}
+/* 00136090 00000044 */ rotTransPers(){}  // lib-ctx
 /* 001360e0 000000dc */ rotateMatrixY(){}  // game
 /* 001361c0 000000dc */ rotateMatrixX(){}  // game
 /* 001362a0 000000d8 */ rotateMatrixZ(){}  // game
-/* 00136380 00000070 */ FUN_00136380(){}
+/* 00136380 00000070 */ ecossin(){}  // lib-ctx
 /* 00136400 00000024 */ identityMatrix(){}  // game
 /* 00136430 00000024 */ copyMatrix(){}  // game
 /* 00136460 0000002c */ translateMatrix(){}  // game
 /* 00136490 0000001c */ scaleVec4(){}  // game
-/* 001364b0 00000024 */ lerpVec4b(){}  // game
+/* 001364b0 00000024 */ blendVec4(){}  // lib-ctx
 /* 001364e0 00000020 */ divideVec4(){}  // game
 /* 00136500 0000005c */ invertRigidMatrix(){}  // game
 /* 00136560 0000003c */ vecNormalize(){}  // game

@@ -2491,6 +2491,24 @@
    "status": "done",
    "why": "the first-person view, camview, camview_zoom, camview_snipe: queued by the user 2026-11-05 as needed for gameplay; open-items.md top of Next up has the steps"
   },
+  "game/vu0math.cpp": {
+   "notes": "All 33 functions of 0x135990-0x1366c0 written from the asm (the decompiler loses VU0 field masks), in src/game/vu0math.cpp; vu0math.h is prototypes plus invertAffineMatrix, boxContains and BoundingSphere, which wait for their own TU. Moved in: rotateByAngles (from playermotion.cpp and stageparty.cpp), multiplyTurn (modelpose.cpp), addScaledVec4 and addScaledVec3 (vectortrack.cpp). From rotateMatrixY on it is libvu0 in reverse order. Proof: tools/reverse/vu0cmp.py runs every function on eerun.py beside the host, 49 cases, 19600 calls, 0 differ, 0 ulp, on eerun's float model (eerun gained the VU macro and MMI ops it needed). Fixed from the stand-ins: rotateByAngles multiplied the other way round, so the lamp and eye matrices and SightJack::aimAt composed look and body wrongly whenever both turn; vecDirection of equal points was NaN and kept a w; vecNormalize and addScaledVec3 had the wrong w; invertRigidMatrix broke in place; sinf and cosf replaced by the two series of the ROM. Seen: New Game, doorwalk pad, 290 s, no crash: language screen, title, dark first-person wall, reading like earlier runs but not compared pixel by pixel. Not judged: a fight or aim stance, the place where the composition fix would show (open-items.md, the odd upward view). Doubts: past -pi..pi the host now drifts as the ROM does, so a host caller passing an unwrapped angle would show; vecCross w is stale in the ROM, 0 here. Batch 165.",
+   "ranges": [
+    [
+     "00135990",
+     "001366c0"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-06 06:42",
+     "status": "verify",
+     "summary": "All 33 functions cut out of unassigned@00135990 and pinned 0x135990-0x1366c0: the game's vector and rotation helpers, then libvu0 in reverse order. rotateByAngles order, vecDirection, vecNormalize, addScaledVec3 and invertRigidMatrix corrected; vu0cmp.py 0 differ over 19600 calls."
+    }
+   ],
+   "status": "verify",
+   "why": "The VU0 math: the game's own helpers, then libvu0 in reverse order from rotateMatrixY 0x1360e0 to applyMatrix 0x136690, the last before the libraries; vu0math.h already held the stand-ins. Name is the port's."
+  },
   "game/wstring.cpp": {
    "notes": "Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds all five; the three prototypes left uitrack.h, uitrack.cpp and uigame.cpp include wstring.h. Semantics from the asm: null or odd pointers answer 0 or null, a null source answers dst untouched, the copies answer the end of the copy (the 0 unit), dst == src copies through new[] first; wstrcmp compares only wstrlen(a) units (a prefix of b answers 0; callers test == 0); wstrstr answers hay for an empty needle. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on wstring, uitrack, uigame (RosePan SDK headers + a libvifpk stub), host harness passed. Doubt: the file name (no strings). Next in the run: getSaveResource 0x2c3d70 / getSaveResourceAux 0x2c3d30 / loadMenuPack 0x2c3e10 / getSePlayer 0x2c4140, PackTables::PackTables 0x2c0dc0, the SoundStream user 0x2b0d50..0x2b3890.",
    "ranges": [
@@ -2939,7 +2957,10 @@
   "unassigned@00121b80": {},
   "unassigned@001319f0": {},
   "unassigned@00133800": {},
-  "unassigned@00135990": {},
+  "unassigned@00135990": {
+   "claimed": "2026-11-06 06:11",
+   "status": "active"
+  },
   "unassigned@00142dd0": {},
   "unassigned@00148db0": {},
   "unassigned@00171300": {},

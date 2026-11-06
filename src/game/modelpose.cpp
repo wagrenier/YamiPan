@@ -212,18 +212,6 @@ void boneBasis(sceVu0FMATRIX out, const sceVu0FVECTOR *m)
     }
 }
 
-// out's rows 0..2 = b's through the turn of a; row 3 stays.
-// FS2 0x001365f0
-void multiplyTurn(sceVu0FMATRIX out, const sceVu0FVECTOR *a, const sceVu0FVECTOR *b)
-{
-    sceVu0FMATRIX result;
-    for (int row = 0; row < 3; row++) {
-        for (int lane = 0; lane < 4; lane++)
-            result[row][lane] = a[0][lane] * b[row][0] + a[1][lane] * b[row][1] + a[2][lane] * b[row][2];
-    }
-    memcpy(out, result, 3 * sizeof(sceVu0FVECTOR));
-}
-
 } // namespace
 
 // ──────────────────────────────────────────────────────────────────────
@@ -451,7 +439,7 @@ bool ModelPoseBone::buildMatrix(float frames, int slot, int record)
 // a towards b into slot. The ROM counts a key with a span of 0 or less as
 // nothing to do.
 // FS2 0x0014b9a0
-// callcheck: lerpVec4b, quatSlerp, lerpVec4b, lerpVec4b
+// callcheck: blendVec4, quatSlerp, blendVec4, blendVec4
 bool ModelPoseBone::interpolate(float t, int slot, int a, int b)
 {
     if (keySpan <= 0.0f)
@@ -921,7 +909,7 @@ void ModelPose::translate(const float *delta)
 }
 
 // FS2 0x0014e4d0
-// callcheck: rotationMatrixXyz, lerpVec4b, aimAxis, quatFromAxisAngle, quatToMatrix, multiplyMatrix, multiplyMatrix, boneBasis, multiplyMatrix, strcmp, buildMatrix
+// callcheck: rotationMatrixXyz, blendVec4, aimAxis, quatFromAxisAngle, quatToMatrix, multiplyMatrix, multiplyMatrix, boneBasis, multiplyMatrix, strcmp, buildMatrix
 void ModelPose::solve(int slot, int count, int flaggedOnly)
 {
     if (count < 0)
@@ -1768,7 +1756,7 @@ void ModelPoseBone::swingAhead(bool windy)
 
 // Letter C, a skirt's middle: two thirds of the way down to between the calves.
 // FS2 0x00149950
-// callcheck: applyMatrix, identityMatrix, invertRigidMatrix, lerpVec4b, multiplyMatrix, quatMultiply, quatToMatrix, setVecLength, sinCos, translateMatrix (held by placeSwingAtSpring; lerpVec4b is blendVec4)
+// callcheck: applyMatrix, identityMatrix, invertRigidMatrix, blendVec4, multiplyMatrix, quatMultiply, quatToMatrix, setVecLength, sinCos, translateMatrix (held by placeSwingAtSpring)
 void ModelPoseBone::swingBetweenCalves(bool windy)
 {
     constexpr float kCalfReach = 0.66f;

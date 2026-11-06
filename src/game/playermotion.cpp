@@ -3660,15 +3660,6 @@ static StageNodeBase *findFoot(StageModel *model, const char *name)
     return node->value;
 }
 
-// in = in * R(angles), row by row. FS2 0x00135990
-// callcheck: FUN_00135a90 (rotationMatrixXyz)
-static void rotateByAngles(sceVu0FMATRIX out, const sceVu0FVECTOR *in, const sceVu0FVECTOR angles)
-{
-    sceVu0FMATRIX turn;
-    rotationMatrixXyz(turn, angles);
-    multiplyMatrix(out, in, turn);
-}
-
 // FS2 0x001e3e80
 // callcheck: applyMatrix, randNext, vecCross, vecDirection, setHitBone, playLadderStep, playStepSound, setAimDirection, getNormal, segmentHitsAny, raycastObject, setFootTargets, getFootPositions, raycast, getLowerNames, contains, setWindOn, getDeltaSeconds, requestNow, rollIdleDelay, isStageDrained, isMotionSlowed, getAltSoundFlag, isPlayer, getTopView, setContact, find, getStageSelect (stepEvents, stepAim, stepFeet, stepWind, stepHealth, stepFidgets: one function in the ROM)
 

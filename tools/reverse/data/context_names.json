@@ -3689,6 +3689,12 @@
   "was": "FUN_001359f0",
   "why": "VU0 helper: from sinCosVec builds Rz Rx Ry in column form with row 3 (0,0,0,1); read term by term, NodeTransform::update's default order"
  },
+ "00135a90": {
+  "name": "rotationMatrixXyzRegs",
+  "tag": "game-inferred",
+  "was": "FUN_00135a90",
+  "why": "the matrix of rotationMatrixXyz 0x135b90 from sinCosVec, left in vf4..vf7 for rotateByAngles instead of stored"
+ },
  "00135b90": {
   "name": "rotationMatrixXyz",
   "tag": "game-inferred",
@@ -3761,6 +3767,12 @@
   "was": "FUN_00136070",
   "why": "VMULx dest xyz: in * s, out's w untouched by the register's in"
  },
+ "00136090": {
+  "name": "rotTransPers",
+  "tag": "lib-context",
+  "was": "FUN_00136090",
+  "why": "sceVu0RotTransPers: v through m, Q = 1 / w, vftoi4, vftoi0 on zw when the mode is set"
+ },
  "001360e0": {
   "name": "rotateMatrixY",
   "tag": "game-inferred",
@@ -3778,6 +3790,12 @@
   "tag": "game-inferred",
   "was": "FUN_001362a0",
   "why": "VU0 macro: out rows = in rows times R, R[0] = (c,s,0,0), R[1] = (-s,c,0,0)"
+ },
+ "00136380": {
+  "name": "ecossin",
+  "tag": "lib-context",
+  "was": "FUN_00136380",
+  "why": "libvu0's _ecossin: the fitted series at 0x2f3930 on the complement in vf6, sqrt(1 - c^2), sign from a3; called by rotateMatrixX / Y / Z only"
  },
  "00136400": {
   "name": "identityMatrix",
@@ -3804,10 +3822,10 @@
   "why": "(s f12, out, in): VU0 vmulx with s in vf5.x, dest xyzw: out = in * s; lerpVec4 scales the difference with it; 66 callers"
  },
  "001364b0": {
-  "name": "lerpVec4b",
-  "tag": "game-inferred",
+  "name": "blendVec4",
+  "tag": "lib-context",
   "was": "FUN_001364b0",
-  "why": "second copy with the other order: to + (from - to) * t"
+  "why": "sceVu0InterVector: b + a * t - b * t, the name the source has used so far"
  },
  "001364e0": {
   "name": "divideVec4",

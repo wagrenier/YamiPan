@@ -568,3 +568,13 @@ A Bash call carrying a whole source file fails with ENAMETOOLONG (uv_spawn), and
 
 - **One long Bash call that writes several files can fail whole.** Symptom: "unexpected EOF while looking for matching" and nothing ran, not even the first line. Fix: write each file with the Write tool, and the edits as a Python script in the scratchpad.
 - **CodeWarrior moves a 128-bit register with `paddub rd, rs, zero` (.word 0x70xx..28) and uses the second pipeline's `div1` / `mflo1` / `mult1`.** eerun.py has those and `pcpyld` since ripplecmp.py; the ROM's scratchpad (0x70000000) lands on low memory in eerun's mask, so a comparison reads it at that address.
+
+## A stand-in that works is not the ROM's (2026-11-06)
+
+Symptom: game/vu0math.h carried 30 stand-ins for weeks, written from the decompiler, and the game ran. Read
+against the asm, five were wrong: `rotateByAngles` multiplied the other way round, `vecDirection` of equal points
+was NaN and its w wrong, `vecNormalize` and `addScaledVec3` had the wrong w, `invertRigidMatrix` broke in place. Cause: the decompiler drops VU0 field masks
+and broadcasts (hazards "Decompiler"), and identity or single-axis inputs hide a wrong order. Fix: VU0 code is
+read in `ghidra.py asm`, never from the decompilation, and proved with a compare tool (vu0cmp.py); test
+composition with two turns that do not commute. In eerun, a 64-bit move through qmtc2 leaves sign bits in the
+upper lanes, NaN in Python and harmless on a VU: clear the vf's between calls.

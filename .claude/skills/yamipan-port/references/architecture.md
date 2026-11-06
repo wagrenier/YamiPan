@@ -586,9 +586,7 @@ distance, capped), `getBounds` 0x133d20, `subAngles` / `addAngles` / `addAngle` 
 callers), and **the game's own Cody & Waite libm**: `asinAcos(x, mode)` 0x1344a0, `atan2Cw(y, x)`
 0x1346a0, `atan2Octant(y, x)` 0x134940 (the usual atan2: 66 callers), `sinCos(x, mode)` 0x134a90
 (sin 0 / cos 1; 38 callers), tables 0x300b90..0x300e48, errno EDOM through newlib's `__errno`
-0x123528. Newlib's float libm 0x116fb8 is linked beside it. The VU0 helpers after the clocks
-(0x135990..0x1366c0: `setVecLength` 0x135fe0, `scaleVec4` 0x136490, matrices, distances) are the
-next TU; `game/vu0math.h` is their stand-in header.
+0x123528. Newlib's float libm 0x116fb8 is linked beside it. The VU0 math after the clocks, 0x135990..0x1366c0, is game/vu0math.cpp ("The VU0 math" below).
 
 **`game/sysdata.cpp` 0x23af30..0x23c020 (TU 5, 2026-11-02, batch 026)**: one 0x920-byte block
 `gSystemData` at 0x598b30 = `SaveData` (+0, 0x4bc: 69 stage flag bytes +0x69 holding clear bits
@@ -2240,3 +2238,24 @@ Conditions (vptr +0x10; slots +0xc onUpdate, +0x10 onApply; byte +0xc active; ba
 
 `menuPlayLoop` runs it between stages. `runNaviFile` 0x295470 loads `2dEU/navi<lang>.d2b` and runs it modal with `currentNaviAnswer` as the layout's arg: the record's node, negated after a clear. `PrgScaleNavi` (EE 0x628) is the map: a 16 by 52 grid of 69 nodes, each column 74 pixels and each row 25. A negative arg makes the ctor jump along the cleared node's link, which is how the cursor lands on the next node by itself. The layout and the widget talk through 34 consecutive variables (`NaviVar`): the layout sets the request, the widget clears it and leaves a result. The route, the nodes walked, lives on the widget and in `SaveExtra` 0x5995e0, which the save keeps. The answer is a node with bits, and `applyNaviAnswer` puts it in the record: `select.stage`, `.variant`, `._10`.
 
+## The VU0 math
+
+0x135990..0x1366c0, game/vu0math.cpp, the last game code before klib.s. Two parts, one hand: the game's own
+helpers up to 0x1360d0, then **libvu0 in reverse order**: rotateMatrixY / X / Z 0x1360e0.. are sceVu0RotMatrixY /
+X / Z, 0x136380 `_ecossin`, then UnitMatrix, CopyMatrix, TransMatrix, ScaleVector, InterVector, DivVector,
+InversMatrix, Normalize, InnerProduct, OuterProduct, a three-row MulMatrix, MulMatrix, ApplyMatrix; 0x136090 is
+sceVu0RotTransPers. The identification is by behaviour and size: ApplyMatrix 0x2c, OuterProduct 0x1c and
+Normalize 0x3c equal ReiPan's named list (ff3_functions.txt, in forward order there); the rotations here are
+longer (0xdc against FF3's 0xa0), so this is a different libvu0 build. Names stay the port's.
+
+- **Two sine series.** The game's (`sinCosVec`, `sinCosPair`) is Taylor, data 0x300e60 and the same four again
+  at 0x300e50, on the angle folded to -pi/2..pi/2 for the sine and on pi/2 - |a| for the cosine. libvu0's is
+  fitted, data 0x2f3930: it gives the cosine from pi/2 -+ a, the sine is sqrt(1 - c^2) with the sign of the
+  angle. So past -pi..pi the three `rotateMatrix*` mirror and both series drift: callers wrap first.
+- **Composition.** `applyMatrix(m, v)` sums m's rows weighted by v's lanes, so `multiplyMatrix(a, b)` applies b
+  first and `rotateByAngles(out, in, angles)` is R * in: `in` first, then the turn. `getLampMatrix` is
+  R(rotation) * R(lamp): the look inside the body.
+- **w.** `vecDirection` and `vecNormalize` answer w 0 (vf6 cleared first); `setVecLength`, `scaleVec3` keep in's;
+  `addScaledVec3` has b's; `vecCross` leaves vf6's stale w, read by nothing found.
+- **Zero.** The VU's 1 / 0 is the largest float, so a zero vector stays zero through all of them: `vuInverse`.
+- `wrapAngleVec` tests pi + a and pi - a through the sticky sign flag, status 0x80, over all four lanes.
