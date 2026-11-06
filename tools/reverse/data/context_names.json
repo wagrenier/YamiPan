@@ -12347,6 +12347,12 @@
   "was": "FUN_00177d60",
   "why": "vtable 0x311860, sceVu0ViewScreenMatrix-shaped call on the scrZ, width, height arguments; 450, 512, 512, 1600 from the map"
  },
+ "00178030": {
+  "name": "JackCamera::onViewTop",
+  "tag": "game-inferred",
+  "was": "FUN_00178030",
+  "why": "slot +0x24c of vtable 0x311ac0, camjack"
+ },
  "00178120": {
   "name": "StageMainCamera::onCollide",
   "tag": "game-inferred",
@@ -20093,6 +20099,12 @@
   "was": "FUN_001fe5b0",
   "why": "nextGlyph 0x1fe4d0 for byte text: a byte < 0x20 (signed: also >= 0x80) and the next make code b0 << 8 | b1, any other byte code b << 8; binary search of the sorted entries, the fallback entry when missing; answers the next character, null at the terminator"
  },
+ "001fe6b0": {
+  "name": "StageParty::isRecordBusy",
+  "tag": "game-inferred",
+  "was": "FUN_001fe6b0",
+  "why": "the record's +0x2c, the foe of warnAttacker"
+ },
  "001fe6c0": {
   "name": "StageParty::restore",
   "tag": "game-inferred",
@@ -20255,6 +20267,120 @@
   "was": "FUN_001fecf0",
   "why": "StageScene ctor new(4) for +0x88 (StageParty): its +0 = new(0x148) 0x203d70"
  },
+ "001fede0": {
+  "name": "SightJack::beginVision",
+  "tag": "game-inferred",
+  "was": "FUN_001fede0",
+  "why": "hides the scene, shows the two lists and the vision's object"
+ },
+ "001fff00": {
+  "name": "SightJack::pickBearing",
+  "tag": "game-inferred",
+  "was": "FUN_001fff00",
+  "why": "least off the stick's line within the record's angle"
+ },
+ "00200150": {
+  "name": "SightJack::aimAt",
+  "tag": "game-inferred",
+  "was": "FUN_00200150",
+  "why": "the camjack to a character's eyes or an object's matrix"
+ },
+ "00200400": {
+  "name": "SightJack::anyShoulderHeld",
+  "tag": "game-inferred",
+  "was": "FUN_00200400",
+  "why": "actions 6, 4, 5 of the button map held"
+ },
+ "002004c0": {
+  "name": "SightJack::keep",
+  "tag": "game-inferred",
+  "was": "FUN_002004c0",
+  "why": "binds the object to the button pressed and keeps it"
+ },
+ "00200580": {
+  "name": "SightJack::stepAlertedFoe",
+  "tag": "game-inferred",
+  "was": "FUN_00200580",
+  "why": "next alerted foe farther or nearer than the kept one"
+ },
+ "00200a50": {
+  "name": "SightJack::keepNearestFoe",
+  "tag": "game-inferred",
+  "was": "FUN_00200a50",
+  "why": "the nearest foe not a corpse"
+ },
+ "00200d10": {
+  "name": "SightJack::canView",
+  "tag": "game-inferred",
+  "was": "FUN_00200d10",
+  "why": "in range, brain on, kind not 3 or 7"
+ },
+ "00200fe0": {
+  "name": "SightJack::recall",
+  "tag": "game-inferred",
+  "was": "FUN_00200fe0",
+  "why": "the bound object of the button pressed"
+ },
+ "00201080": {
+  "name": "SightJack::tune",
+  "tag": "game-inferred",
+  "was": "FUN_00201080",
+  "why": "the stick picks among the viewable characters"
+ },
+ "002024c0": {
+  "name": "SightJack::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002024c0",
+  "why": "the frame's gate over the overlays"
+ },
+ "00202c70": {
+  "name": "SightJack::pollButtons",
+  "tag": "game-inferred",
+  "was": "FUN_00202c70",
+  "why": "the hold state +0xbc over the shoulder buttons"
+ },
+ "00202f50": {
+  "name": "SightJack::stepMode",
+  "tag": "game-inferred",
+  "was": "FUN_00202f50",
+  "why": "the mode +0xb8 of the frame"
+ },
+ "00203240": {
+  "name": "SightJack::update",
+  "tag": "game-inferred",
+  "was": "FUN_00203240",
+  "why": "the frame: game over view, warning, buttons, mode, sounds"
+ },
+ "00203840": {
+  "name": "SightJack::stop",
+  "tag": "game-inferred",
+  "was": "FUN_00203840",
+  "why": "StageParty::stop's body: stops the JAK_ sounds, removes the view"
+ },
+ "002039b0": {
+  "name": "SightJack::start",
+  "tag": "game-inferred",
+  "was": "FUN_002039b0",
+  "why": "StageParty::start's body: JAK_IN, pushes the camjack"
+ },
+ "00203ae0": {
+  "name": "SightJack::reset",
+  "tag": "game-inferred",
+  "was": "FUN_00203ae0",
+  "why": "mode 2, no binds, no viewer; from createCamera and a change of viewer"
+ },
+ "00203be0": {
+  "name": "SightJack::~SightJack",
+  "tag": "game-inferred",
+  "was": "FUN_00203be0",
+  "why": "deletes what the ctor and setImage made"
+ },
+ "00203d70": {
+  "name": "SightJack::SightJack",
+  "tag": "game-inferred",
+  "was": "FUN_00203d70",
+  "why": "StageParty's record of 0x148 bytes: range, angle, fill, the film by stage"
+ },
  "00204550": {
   "name": "demoFilmDraw",
   "tag": "game-inferred",
@@ -20266,6 +20392,12 @@
   "tag": "game-inferred",
   "was": "FUN_002052d0",
   "why": "deleting dtor of the block DemoCamera::~DemoCamera frees"
+ },
+ "002067d0": {
+  "name": "CharacterPad::pressedBind",
+  "tag": "game-inferred",
+  "was": "FUN_002067d0",
+  "why": "which of the four face buttons is pressed; 4 none"
  },
  "00207110": {
   "name": "NoticeEntry::show",
@@ -20338,6 +20470,12 @@
   "tag": "game-inferred",
   "was": "FUN_00207ef0",
   "why": "StageScene ctor new(0x678) for +0xc4, beside pauseMenuResult 0x20acb0; plain data (no vptr); name a guess"
+ },
+ "002082e0": {
+  "name": "JackFill::JackFill",
+  "tag": "game-inferred",
+  "was": "FUN_002082e0",
+  "why": "ScreenFill with a level +0x24 and a colour +0x28, vtable 0x316030"
  },
  "00208330": {
   "name": "UiPrompt::press",
@@ -20788,6 +20926,12 @@
   "tag": "game-inferred",
   "was": "FUN_00215340",
   "why": "strstr of the pose's name with kyo; sideHook0's P_URIEN"
+ },
+ "00215480": {
+  "name": "StageCharacter::canSeeVisions",
+  "tag": "game-inferred",
+  "was": "FUN_00215480",
+  "why": "canView's test on the viewer for the vision target; read in part"
  },
  "00215620": {
   "name": "StageObject::isScenarioLead",
@@ -29219,6 +29363,12 @@
   "was": "FUN_002a11d0",
   "why": "steps 28 and 12 records, drawOverlay before demoFleckDraw"
  },
+ "002a1240": {
+  "name": "demoFleckCreate",
+  "tag": "game-inferred",
+  "was": "FUN_002a1240",
+  "why": "the 8-byte object at the record's +0x44 over a texture"
+ },
  "002a2070": {
   "name": "StageCharacter::playMotionSound",
   "tag": "game-inferred",
@@ -30593,6 +30743,12 @@
   "was": "FUN_002bc100",
   "why": "each node values into two motor bytes, flags and tags, for the nodes of one object"
  },
+ "002bc3c0": {
+  "name": "KeepList::addNamed",
+  "tag": "game-inferred",
+  "was": "FUN_002bc3c0",
+  "why": "called with PETITJACK by warnAttacker; unread"
+ },
  "002bc5d0": {
   "name": "KeepList::removeUnkept",
   "tag": "game-inferred",
@@ -30832,6 +30988,12 @@
   "tag": "game-inferred",
   "was": "FUN_002d0550",
   "why": "+0x12c on list 8 with frame time and camera"
+ },
+ "002d0750": {
+  "name": "SceneModelHolder::setPlace",
+  "tag": "game-inferred",
+  "was": "FUN_002d0750",
+  "why": "given the camera's row 3 or the far vector; unread"
  },
  "002d07a0": {
   "name": "SceneModelHolder::SceneModelHolder",

@@ -1021,16 +1021,11 @@ struct StageParty
     void setCompanion(StageObject *object);                              // FS2 0x001fe9c0
     // The record's +4 and +8: how far the sight-jack reaches and its angle in
     // radians, neither below 0 (natives 0x13c, 0x13d).
-    // FS2 0x001fe850
-    void setJackRange(float range) { m_jackRange = range > 0.0f ? range : 0.0f; }
-    // FS2 0x001fe810
-    void setJackAngle(float angle) { m_jackAngle = angle > 0.0f ? angle : 0.0f; }
-
-    // PC: here until the record (0x203d70) exists; its ctor's values.
-    float m_jackRange = 10000.0f;     // FS2 record +0x4
-    float m_jackAngle = 0.34906585f;  // FS2 record +0x8: 20 degrees
+    void setJackRange(float range);                                      // FS2 0x001fe850
+    void setJackAngle(float angle);                                      // FS2 0x001fe810
     // The record runs, seen through object ("camjack": the sight-jack).
     void start(StageObject *object);                                     // FS2 0x001feba0
+    class SightJack *m_jack;    // FS2 +0x0: game/stageparty.h
 };
 
 // A singly linked list whose nodes {next, flags} carry a keep bit (the
@@ -1043,6 +1038,8 @@ struct KeepList
     ~KeepList();                                                         // FS2 0x002bc6f0: deleting; deletes every node
     // Unlinks and deletes every node whose flags bit 0 is clear.
     void removeUnkept();                                                 // FS2 0x002bc5d0
+    // A node by name (the sight-jack warning: "PETITJACK").
+    void addNamed(const char *name, int arg);                            // FS2 0x002bc3c0
     // Advances the nodes by frames; the nodes of source (null all) give the
     // two motors' values and up to max flags and tags.
     void update(float frames, u_char *motorA, u_char *motorB, char *flags, int *tags,
@@ -1966,6 +1963,9 @@ void demoFilmDestroy(void *film);                                        // FS2 
 void demoFilmDraw(float level, void *film, sceVif1Packet *packet);       // FS2 0x00204550
 void demoFleckStep(void *flecks);                                        // FS2 0x002a11d0
 void demoFleckDraw(float level, void *flecks, sceVif1Packet *packet);    // FS2 0x002a11c0
+// The flecks over a texture, and their end (vtable +8).
+void *demoFleckCreate(Tim2Texture *texture);                             // FS2 0x002a1240
+void demoFleckDestroy(void *flecks);
 // The mission's script helpers beside scriptPrepare.
 bool missionRestoreCheck();                                              // FS2 0x0029f2a0
 // A kept spawn point out of the view: mode 0.. the mode-th nearest place, or
@@ -2742,6 +2742,8 @@ public:
     // A brain not at 0, the sheet's kind not 3 or 7, not the scene's player:
     // the party's view may look through its eyes. The name is a guess.
     bool canBeJacked();                                                  // FS2 0x00212160
+    // The sight-jack may show this viewer a vision (read in part).
+    bool canSeeVisions();                                                // FS2 0x00215480
     // Not the partner, the sheet's kind not 0xb, slot +0x278 (the brain's
     // state, 1 without one) none of 2..5, 7: the player may become it.
     bool canTakeOver();                                                  // FS2 0x00212020
@@ -3506,6 +3508,8 @@ struct SceneModelHolder
 {
     SceneModelHolder(StageNodeTree *tree, int stage);                    // FS2 0x002d07a0
     void draw(float deltaSeconds, sceVif1Packet *packet, StageObject *camera); // FS2 0x002d0550
+    // Where it stands (the sight-jack moves it to the camera).
+    void setPlace(const float *position);                                // FS2 0x002d0750
 
     u_char     _00[0x24];
     SceneModel model;           // FS2 +0x24
