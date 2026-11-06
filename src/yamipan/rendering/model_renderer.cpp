@@ -390,8 +390,10 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
                     matrix[0 + axis] * normal[0] + matrix[4 + axis] * normal[1] + matrix[8 + axis] * normal[2];
             }
         }
-        vertex.u = static_cast<float>(batch.uvs[index * 2]) / kUvUnit + layer.scrollU;
-        vertex.v = static_cast<float>(batch.uvs[index * 2 + 1]) / kUvUnit + layer.scrollV;
+        // A batch can come with no UVs (node 4 has a triangle of 3 vertices, on the plain path, no
+        // list): the ROM sends none and its VU keeps the last batch's. The host has none to keep.
+        vertex.u = (batch.uvs != nullptr ? static_cast<float>(batch.uvs[index * 2]) / kUvUnit : 0.0f) + layer.scrollU;
+        vertex.v = (batch.uvs != nullptr ? static_cast<float>(batch.uvs[index * 2 + 1]) / kUvUnit : 0.0f) + layer.scrollV;
         if (layer.unlit)
         {
             vertex.color = rawColor(batch.colors + index * 4);

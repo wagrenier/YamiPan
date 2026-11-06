@@ -105,7 +105,7 @@ struct YamiPanModelBatch
     const float   *positions;   /* x y z */
     const float   *normals;     /* x y z */
     const uint8_t *colors;      /* r g b a, 0x80 = 1.0 */
-    const int16_t *uvs;         /* u v, 4096 = 1.0 */
+    const int16_t *uvs;         /* u v, 4096 = 1.0; null: the model has none for this batch */
     int            count;
     int            strip;       /* a strip; otherwise a list of triangles */
     const float   *palette;     /* null: rigid; otherwise 4 x 4 floats per palette bone (sceVu0 layout) */

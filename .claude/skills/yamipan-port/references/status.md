@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-05 19:49 at commit `ea08c25` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-05 20:23 at commit `4f8675b` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -236,10 +236,11 @@ Least-named game-code regions (64 KB blocks):
 - verify: `sdpr2/sdpr2.c` 36/36 -- All 36 functions written (0x1681c0..0x16c870), no new names, no Ghidra change. sdpr2.h is the full header: Sdpr2Type (19-slot function table, layout host), Sdpr
 - verify: `sound/sound.cpp` 97/98 -- All 98 of 0x144080..0x148db0 written, one file, no Ghidra change (batch 013 names held). New src/sound/sound.h takes the sound stand-ins out of game/gamehooks.h
 - verify: `unassigned@00116fb8` 0/0 -- This key is empty now: its whole run is two lib_ranges (architecture.md Address map, naming table row batch 025). Game code calling __extendsfdf2 / __cmpdf2 / _
-- verify: `yamipan/rendering/model_renderer.cpp` 0/0 -- Written: shadowVertex, outsideShadowBox, shadowPipeline (spot shaders, ALPHA_1 0x44, CLAMP 5, frame alpha written), shadow vertices drawn between a draw and its
+- verify: `yamipan/rendering/model_renderer.cpp` 0/0 -- Fix for the user's crash on turning left in node 4, confirmed fixed by the user's play. drawBatch read batch.uvs unchecked. The batch is a single unskinned tria
 
 Recent sessions:
 
+- 2026-11-05 20:23 `yamipan/rendering/model_renderer.cpp` verify: A batch with no UVs draws instead of crashing
 - 2026-11-05 19:49 `game/stagescene.cpp` verify: The next mission starts: isMotionTarget, so the shared animals get their motions and a pose
 - 2026-11-05 18:57 `game/navimenu.cpp` verify: The navigator: the screen after a stage, its two widgets and the answer
 - 2026-11-05 18:07 `game/stageplayer.cpp` verify: The stage's end: a box answers native 0x44, ClearSequence is written, New Game's first part ends
@@ -247,7 +248,6 @@ Recent sessions:
 - 2026-11-05 16:56 `game/scriptrunner.cpp` partial: 52 more natives by use on the disc, takeDamage and getHandClass, scriptHurt, the runner slots behind them
 - 2026-11-05 16:09 `game/scriptrunner.cpp` partial: 56 more natives by use on the disc, the mission spawn picks, canSpawn and spawn, parseSpawnId, search points, the leaves
 - 2026-11-05 15:30 `game/scriptrunner.cpp` partial: 63 more natives by use on the disc, the foe weights and picks, the character slots behind them
-- 2026-11-05 14:52 `game/scriptrunner.cpp` partial: All natives of stage 1's object script and 14 of the most used on the disc; sssall.py orders the rest
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
