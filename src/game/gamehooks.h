@@ -185,6 +185,8 @@ struct StageNodeTree;
 struct MapObjectParts;
 struct CharacterHidePart;
 class StageLight;               // game/stagelight.h
+class StageCar;                 // game/stagecar.h
+struct CarParts;
 struct RenaSpotLight;           // game/scenerender.h
 class VcmTable;                 // game/vcmtable.h
 struct ModelNodeBone;
@@ -1654,65 +1656,6 @@ struct MapObjectParts
     PartSwitch     *switches = nullptr; // FS2 +0x08
     StageParticle **effects = nullptr;  // FS2 +0x0c
 };
-// A gate's parts BKW%02di and effects (EE 0x40). Only what the sub-scene's
-// gate calls. Its names are read from isCarModelName, so this "gate" is the
-// sub-scene's car (open-items.md).
-// layout: host -- EE offsets in the comments.
-struct GateParts
-{
-    GateParts(StageObject *owner, PartSwitch *switches, int *ids, int count, GateParts *from); // FS2 0x0028f890
-    ~GateParts();                                                        // FS2 0x0028f820
-    // The effects' objects and particles on or off.
-    void setEffects(bool on);                                            // FS2 0x0028ecb0
-    // Takes from's state; null: the closed one.
-    void copyFrom(const GateParts *from);                                // FS2 0x0028ed60
-    // Its +0x14's +0x214; 0 without one. A car's lights say whether they are on.
-    bool isLit();                                                        // FS2 0x0028ec90
-};
-
-// The car a character drives (StageObject::m_gear with driving 1; ctor
-// 0x28e5a0, the sounds CAR_*). Only what the wheel writes: nothing sets
-// m_gear yet and createMapObject makes a plain object of it, so this is
-// unreached. layout: host.
-class StageCar : public StageObject
-{
-public:
-    // +0x382, 1 or -1; any other value is ignored.
-    void setDirection(int direction);                                    // FS2 0x0028d810
-    void honk();                                                         // FS2 0x0028d780
-    void setLights(bool on);                                             // FS2 0x0028db80
-    // What the character's ground asks. The owner of 0x289dd0..0x28abf0 is
-    // read from the ground's calls only: a kind 3 object.
-    float getSpeed();                                                    // FS2 0x00289dd0
-    // Where it stands, and where a character in it counts as being.
-    void getCenter(float *out);                                          // FS2 0x00289ef0
-    void getSeatPlace(float *out, StageCharacter *who);                  // FS2 0x0028a250
-    const float *getVelocity();                                          // FS2 0x00289e10
-    // +0x3ac is past 0.3: one may climb on it, and a fall onto it is a fall.
-    bool hasSettled();                                                   // FS2 0x0028ab90
-    // FS2 0x001774a0: slot +0x9c, this object (0x1722f0 behind the thunk).
-    StageObject *getScriptMapObject() override { return this; }
-    // Back to where it was placed, by what moved (0x28d850 behind it).
-    void resetPlace();                                                   // FS2 0x0028dac0
-    // Level keeps off at 1; native 0x1c8 sets it.
-    int  getMode() { return m_mode; }
-    float getAcceleration();                                             // FS2 0x00289e20
-    const float *getFrameStep();                                         // FS2 0x00289ea0
-    // One of the places beside it (bn_dmg_sr, bn_dmg_sl, ahead, behind), by
-    // the side and the index; answers 40.
-    float getDoorPoint(sceVu0FVECTOR out, int side, int index);          // FS2 0x00289f70
-    // How hard it hits something at position: GroundSlide.
-    int  getHitLevel(const float *position);                             // FS2 0x0028abf0
-
-    GateParts *m_lights;        // FS2 +0x2b0
-    u_char m_throttle;          // FS2 +0x381
-    u_char m_brake;             // FS2 +0x383
-    float  m_steer;             // FS2 +0x384
-    float  m_steerRate;         // FS2 +0x394: radians a second (RouteMoveCar reads it)
-    int    m_mode = 0;          // FS2 +0x39c
-    u_char m_flag3a0 = 0;       // FS2 +0x3a0: native 0x1ac
-};
-
 // What a stage's map file becomes (StageFiles::applyMapTarget). The ROM
 // news each with operator new aligned 0x40; the sizes are in the comments.
 // All names but ENV_ / YAM_ / P_SPW are the port's. The classes' virtuals
@@ -2526,9 +2469,6 @@ public:
     bool isMode1();                                                      // FS2 0x002152d0
     // +0x364 set: +0x2ca = 1. What the two bytes are is unread.
     void latchAltAction();                                               // FS2 0x0020b1d0
-    // +0x400's +0x2b0: the two lights of what the player carries get
-    // m_priority (SceneRender::update).
-    void setGearLightOrder(int order);                                   // FS2 0x0028ec70
     // The object it is: the callers that hold it as the scene's player.
     StageObject *character() { return this; }
     // A named event of the character in the scene's +0x78, while +0x30 is
@@ -3576,6 +3516,7 @@ extern ItemDef gItemDefs[kItemDefCount];  /* bss 0x574c10 */
 constexpr int kStageObjRecordSets  = 3;
 constexpr int kStageObjRecordCount = 0x140;
 constexpr int kStageObjRecordMuffles = 0xf;
+constexpr int kStageObjRecordCarProof = 3;  // a car neither hurts it nor is hurt by it
 struct StageObjRecord
 {
     char   name[0x10];          // FS2 +0x00: ラベル: a map point's (StageFiles::placeCharacter)

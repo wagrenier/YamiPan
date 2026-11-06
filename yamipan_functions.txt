@@ -7660,58 +7660,58 @@
 /* 00289be0 000000dc */ ScenePool::ScenePool(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/stagecar.cpp
 // *****************************************************************************
 
-/* 00289cc0 00000008 */ FUN_00289cc0(){}
-/* 00289cd0 00000004 */ FUN_00289cd0(){}
-/* 00289ce0 00000054 */ FUN_00289ce0(){}
-/* 00289d40 0000008c */ FUN_00289d40(){}
-/* 00289dd0 00000030 */ FUN_00289dd0(){}
-/* 00289e10 00000010 */ FUN_00289e10(){}
-/* 00289e20 00000074 */ FUN_00289e20(){}
-/* 00289ea0 00000008 */ FUN_00289ea0(){}
-/* 00289eb0 00000038 */ StageViewTarget::isNear(){}  // game
+/* 00289cc0 00000008 */ StageCar::getKind(){}  // game
+/* 00289cd0 00000004 */ StageCar::sideHook0(){}  // game
+/* 00289ce0 00000054 */ StageCar::setProperty(){}  // game
+/* 00289d40 0000008c */ StageCar::getProperty(){}  // game
+/* 00289dd0 00000030 */ StageCar::getSpeed(){}  // game
+/* 00289e10 00000010 */ StageCar::getVelocity(){}  // game
+/* 00289e20 00000074 */ StageCar::getAcceleration(){}  // game
+/* 00289ea0 00000008 */ StageCar::getFrameStep(){}  // game
+/* 00289eb0 00000038 */ StageCar::isNear(){}  // game
 /* 00289ef0 00000074 */ StageCar::getCenter(){}  // game
-/* 00289f70 000002e0 */ FUN_00289f70(){}
+/* 00289f70 000002e0 */ StageCar::getDoorPoint(){}  // game
 /* 0028a250 00000634 */ StageCar::getSeatPlace(){}  // game
-/* 0028a890 0000010c */ FUN_0028a890(){}
-/* 0028a9a0 000000b4 */ FUN_0028a9a0(){}
-/* 0028aa60 000000a0 */ FUN_0028aa60(){}
-/* 0028ab00 0000006c */ FUN_0028ab00(){}
-/* 0028ab70 0000001c */ FUN_0028ab70(){}
+/* 0028a890 0000010c */ StageCar::getDoorPlace(){}  // game
+/* 0028a9a0 000000b4 */ StageCar::getSeatPoint(){}  // game
+/* 0028aa60 000000a0 */ StageCar::getSillPoint(){}  // game
+/* 0028ab00 0000006c */ StageCar::getDoorBone(){}  // game
+/* 0028ab70 0000001c */ StageCar::hasSteerRested(){}  // game
 /* 0028ab90 0000001c */ StageCar::hasSettled(){}  // game
-/* 0028abb0 0000001c */ FUN_0028abb0(){}
-/* 0028abd0 0000001c */ FUN_0028abd0(){}
-/* 0028abf0 00000160 */ FUN_0028abf0(){}
-/* 0028ad50 0000021c */ FUN_0028ad50(){}
-/* 0028af70 000004fc */ FUN_0028af70(){}
-/* 0028b470 00000c94 */ FUN_0028b470(){}
-/* 0028c110 000001fc */ FUN_0028c110(){}
-/* 0028c310 00000130 */ FUN_0028c310(){}
-/* 0028c440 000004f0 */ FUN_0028c440(){}
-/* 0028c930 00000470 */ FUN_0028c930(){}
-/* 0028cda0 000004e8 */ FUN_0028cda0(){}
-/* 0028d290 000004f0 */ FUN_0028d290(){}
+/* 0028abb0 0000001c */ StageCar::isCrawling(){}  // game
+/* 0028abd0 0000001c */ StageCar::isCreeping(){}  // game
+/* 0028abf0 00000160 */ StageCar::getHitLevel(){}  // game
+/* 0028ad50 0000021c */ StageCar::snapToGround(){}  // game
+/* 0028af70 000004fc */ StageCar::scrape(){}  // game
+/* 0028b470 00000c94 */ StageCar::collisionHook0(){}  // game
+/* 0028c110 000001fc */ StageCar::breakWindow(){}  // game
+/* 0028c310 00000130 */ StageCar::collisionHook3(){}  // game
+/* 0028c440 000004f0 */ StageCar::syncBody(){}  // game
+/* 0028c930 00000470 */ StageCar::sideHook3(){}  // game
+/* 0028cda0 000004e8 */ StageCar::sideHook2(){}  // game
+/* 0028d290 000004f0 */ StageCar::sideHook1(){}  // game
 /* 0028d780 0000008c */ StageCar::honk(){}  // game
 /* 0028d810 00000034 */ StageCar::setDirection(){}  // game
-/* 0028d850 00000264 */ FUN_0028d850(){}
+/* 0028d850 00000264 */ StageCar::startOver(){}  // game
 /* 0028dac0 000000b4 */ StageCar::resetPlace(){}  // game
 /* 0028db80 00000080 */ StageCar::setLights(){}  // game
-/* 0028dc00 00000400 */ FUN_0028dc00(){}
-/* 0028e000 000004ac */ FUN_0028e000(){}
-/* 0028e4b0 000000f0 */ FUN_0028e4b0(){}
-/* 0028e5a0 000002a8 */ FUN_0028e5a0(){}
+/* 0028dc00 00000400 */ StageCar::updateSounds(){}  // game
+/* 0028e000 000004ac */ StageCar::setMotionList(){}  // game
+/* 0028e4b0 000000f0 */ StageCar::~StageCar(){}  // game
+/* 0028e5a0 000002a8 */ StageCar::StageCar(){}  // game
 /* 0028e850 0000002c */ FUN_0028e850(){}
-/* 0028e880 00000310 */ FUN_0028e880(){}
-/* 0028eb90 000000e0 */ FUN_0028eb90(){}
-/* 0028ec70 0000001c */ PlayerGear::setLightOrder(){}  // game
-/* 0028ec90 00000014 */ GateParts::isLit(){}  // game
-/* 0028ecb0 000000a8 */ GateParts::setEffects(){}  // game
-/* 0028ed60 00000104 */ GateParts::copyFrom(){}  // game
-/* 0028ee70 000009a4 */ FUN_0028ee70(){}
-/* 0028f820 00000064 */ GateParts::~GateParts(){}  // game
-/* 0028f890 00000158 */ GateParts::GateParts(){}  // game
+/* 0028e880 00000310 */ CarParts::showDamage(){}  // game
+/* 0028eb90 000000e0 */ CarParts::showWindows(){}  // game
+/* 0028ec70 0000001c */ CarParts::setLightOrder(){}  // game
+/* 0028ec90 00000014 */ CarParts::isLit(){}  // game
+/* 0028ecb0 000000a8 */ CarParts::setEffects(){}  // game
+/* 0028ed60 00000104 */ CarParts::copyFrom(){}  // game
+/* 0028ee70 000009a4 */ CarParts::buildLights(){}  // game
+/* 0028f820 00000064 */ CarParts::~CarParts(){}  // game
+/* 0028f890 00000158 */ CarParts::CarParts(){}  // game
 /* 0028f9f0 00000008 */ FUN_0028f9f0(){}
 /* 0028fa00 00000008 */ FUN_0028fa00(){}
 /* 0028fa10 00000008 */ FUN_0028fa10(){}

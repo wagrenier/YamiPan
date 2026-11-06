@@ -47,6 +47,7 @@
 #include "game/uiwidget.h"
 #include "game/viewcamera.h"
 #include "game/vu0math.h"
+#include "game/stagecar.h"
 #include "sdk/libgraph.h"       /* SCE_GS_ALPHA_1, SCE_GS_TEST_1 */
 #include "sdk/libpad.h"         /* SCE_PADstart, SCE_PADselect */
 #include "sdk/libvu0.h"
@@ -515,7 +516,7 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
     this->isSubScene = isSubScene;
     mission    = nullptr;
     event      = nullptr;
-    viewTarget = nullptr;
+    car = nullptr;
     zs9901Sought = 0;
     zs9901     = nullptr;
     gameOver   = nullptr;
@@ -2764,12 +2765,12 @@ void StageScene::updateVcms()
 // FS2 0x0019b820
 // callcheck: getKind, isPlayer, getCompanion
 
-bool StageScene::isInView(StageViewTarget *target)
+bool StageScene::isInView(StageCar *target)
 {
     if (target == nullptr)
-        target = viewTarget;
+        target = car;
     StageObject *character;
-    if (target == nullptr || (character = target->character) == nullptr)
+    if (target == nullptr || (character = target->m_driver) == nullptr)
         return false;
     bool camjack = views->topObject()->getKind() == StageObject_Kind11;
     if (character->isPlayer())
@@ -2781,7 +2782,7 @@ bool StageScene::isInView(StageViewTarget *target)
 // gStageScene) and playerOrTargetInView.
 bool StageScene::targetInView()
 {
-    return isInView(viewTarget);
+    return isInView(car);
 }
 
 // FS2 0x0019b900
@@ -3168,13 +3169,13 @@ void StageScene::prepareDrawFlags()
 
     if (gStageScene->targetInView()) {
         drawSysSetTargetView();
-        viewTarget->model->data->drawGroup = kDrawGroupTarget;
+        car->m_model->data->drawGroup = kDrawGroupTarget;
         if (partner != nullptr && partner->isMode2())
             partner->m_model->data->drawGroup = kDrawGroupTarget;
     } else {
         drawSysClearTargetView();
-        if (viewTarget != nullptr)
-            viewTarget->model->data->drawGroup = kDrawGroupNormal;
+        if (car != nullptr)
+            car->m_model->data->drawGroup = kDrawGroupNormal;
         if (partner != nullptr)
             partner->m_model->data->drawGroup = kDrawGroupNormal;
     }
@@ -3384,7 +3385,7 @@ static const char *const kSightObjects[2] = {   /* data 0x31a920 */
 
 void StageScene::collectViewTargets()
 {
-    if (viewTarget != nullptr)
+    if (car != nullptr)
         viewTargetCount++;
     for (u_int i = 0; i < 2; i++) {
         if (objects->find1(kSightObjects[i], 0) != nullptr)
@@ -3393,8 +3394,8 @@ void StageScene::collectViewTargets()
 
     viewTargets = new StageObject *[viewTargetCount];
     int index = 0;
-    if (viewTarget != nullptr)
-        viewTargets[index++] = reinterpret_cast<StageObject *>(viewTarget);
+    if (car != nullptr)
+        viewTargets[index++] = car;
     for (u_int i = 0; i < 2; i++) {
         StageObject *object = objects->find1(kSightObjects[i], 0);
         if (object != nullptr)

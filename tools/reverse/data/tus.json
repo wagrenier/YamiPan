@@ -1658,6 +1658,24 @@
    "task": "The two natives that choose the view, queued by the user 2026-11-04. A host task: the code goes in kNatives in src/game/scriptrunner.cpp and both addresses are that TU's, but it is 84 of 652 and would hold this place in the queue for many runs, so they have their own key. Native 0x70 (0x1c81a0, 56 i, one code word): find the character by label, then StageScene::setPlayer. Stage 1's Root calls it with F_PC01 straight after its test of menuMode == 1, the block that also requests d0101, and a New Game run reaches the stub today (scriptNative_70), so the main camera never links without it, even with a character. Native 0x64 (0x1c8dc0, 94 i, one code word): 0x1c8f40 tests the name (the script passes NULL) and removes view priority 3, any other name is found (0x1d1260) and pushed at priority 3, and an active event takes a further step (0x1b56b0, 0x1b54a0, 0x1b5460). sd_MK01_10 calls it with CAM_EV10, then NULL. StageCharacter does not exist yet, so the character lookup answers null: make sure setPlayer survives that. The other route to setPlayer is property 0x50 (0x172620 and its twins 0x189f40, 0x212530, 0x268ae0), behind the setProperty stubs; native 0xef is unused on stage 1. Nothing can show the link until a character exists, so this ends verify.",
    "why": "The base camera's getKind, its four empty side hooks, the setters StageObject keeps at the head of this object, its dtor and the view functions. 0x177be0 setProjection is written here too but pinned in game/playermotion.cpp; 0x177d00 on is not pinned yet."
   },
+  "game/stagecar.cpp": {
+   "notes": "Written from 0x289cc0 to 0x28fa90, batch 174; only 0x28e850 is left, an index clamp whose caller 0x2103d0 is unread. Seen, temporary build, removed: New Game forced to stage 7, doorwalk pad, 300 s, no crash: the truck stands where the map puts it with the prompt Get in the car by pressing X, progress/20261106-car-stage7-away.png. The picture is wrong: a close view shows a smeared fanned texture on the body. Guess, not proven: PartSwitch::init 0x187060 and show 0x186fe0 are reached stubs, so every part shows. Forced drive, no driver so no collisions: it pulls away, turns, brakes to 0 at about 32 km/h; off the road the contacts sank past the ground ray and never came back while the position held. Nothing is compared with the ROM by a tool yet. Next: the PartSwitch stubs, then StageCharacter::rideCar 0x17af50, which is the only writer of m_driver and what the stage 7 prompt waits on. open-items.md has the doubts.",
+   "ranges": [
+    [
+     "00289cc0",
+     "0028fa90"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-06 12:05",
+     "status": "partial",
+     "summary": "the car: StageCar, CarParts, 58 of 59 functions; StageScene::car replaces StageViewTarget; createMapObject builds it"
+    }
+   ],
+   "status": "partial",
+   "why": "StageCar, CarParts and their thunks: the run past ScenePool, up to the fsm tracks of game/demoevent.cpp; no source string names it"
+  },
   "game/stagecharacter.cpp": {
    "notes": "unassigned@0017e140 was the tail of this file: StageList<StageObject *> 0x17e140..0x17e400 and 63 thunks 0x17e470..0x17e860, now listed at the end of stagecharacter.cpp; 0x17e860..0x17e950 joined game/stageplayer.cpp. Volume dtors corrected: 0x17eb20 is StageVolume, 0x17e860 is BoxVolume. New overrides on StageCharacter: setPosition 0x218500, onScriptExit 0x219010, scriptPlayMotion 0x21ac60, cmdIsLit; plain members for slots no script reaches. m_7a0 is now m_placedThisFrame, m_7c4 m_placeMotion. New tool slotcheck.py. Seen: temporary build, removed, New Game, doorwalk pad, 285 s, no crash, forced on the player: warp exact, motion 0. Not tested: an uncontrolled character (stopAndRetry, playActionAndRetry). Unforced stage 1 reaches none of them; screen is the dark first-person wall, not compared pixel by pixel. Next look: StageItem slot +0xfc 0x184770, open-items.md.",
    "ranges": [

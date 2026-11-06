@@ -23,6 +23,7 @@
 #include "game/stagescene.h"
 #include "game/sysdata.h"
 #include "game/uiwidget.h"      /* UiShowFlags */
+#include "game/stagecar.h"
 
 namespace {
 
@@ -353,7 +354,7 @@ void SubSceneGateObject::setLampOn(bool on)
 
 // PC: the stageSelf and view target tests (the same stand-ins as the map's).
 // FS2 0x002bbb10
-// callcheck: bindMotion, find1, operator_new, getKind, MapObjectParts, copyShown, operator_new, GateParts, copyFrom
+// callcheck: bindMotion, find1, operator_new, getKind, MapObjectParts, copyShown, operator_new, CarParts, copyFrom
 
 void SubSceneGateObject::bindMotion(const char *name)
 {
@@ -361,9 +362,9 @@ void SubSceneGateObject::bindMotion(const char *name)
     StageObject *stageSelf = parentObjects()->find1(m_name, 0);
     m_parts = new MapObjectParts(this, m_collisionRecord, getKind() == StageObject_SubSceneMap);
     m_parts->copyShown(stageSelf != nullptr ? stageSelf->m_mapParts : nullptr);
-    m_gate = new GateParts(this, m_parts->switches, m_parts->ids, m_parts->count, nullptr);
-    StageViewTarget *target = gStageScene->parent->viewTarget;
-    m_gate->copyFrom(target != nullptr ? target->gateParts : nullptr);
+    m_gate = new CarParts(this, m_parts->switches, m_parts->ids, m_parts->count, nullptr);
+    StageCar *target = gStageScene->parent->car;
+    m_gate->copyFrom(target != nullptr ? target->m_lights : nullptr);
 }
 
 // FS2 0x002bbc10
@@ -376,7 +377,7 @@ void SubSceneGateObject::setup(const char *name, ModelInstance *instance,
 }
 
 // FS2 0x002bbcf0 (0x2bc0c0 the thunk)
-// callcheck: ~GateParts, ~MapObjectParts, ~SubSceneModelObject, operator_delete (the two bases inline)
+// callcheck: ~CarParts, ~MapObjectParts, ~SubSceneModelObject, operator_delete (the two bases inline)
 
 SubSceneGateObject::~SubSceneGateObject()
 {
