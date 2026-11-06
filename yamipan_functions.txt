@@ -7948,7 +7948,7 @@
 /* 0029a580 00000024 */ VectorTrack::VectorTrack(){}  // game
 /* 0029a5b0 00000120 */ VectorKey::setTime(){}  // game
 /* 0029a6e0 0000001c */ VectorKey::VectorKey(){}  // game
-/* 0029a700 00000024 */ FUN_0029a700(){}
+/* 0029a700 00000024 */ VectorKey::VectorKey_frames(){}  // game
 
 // *****************************************************************************
 // FILE -- game/viewcamera.cpp

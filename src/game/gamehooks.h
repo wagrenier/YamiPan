@@ -37,6 +37,7 @@
 #include "game/streamring.h"
 #include "game/uilayout.h"
 #include "game/uiworkarea.h"
+#include "game/vectortrack.h"
 #include "game/vu0math.h"
 #include "rx/rxfile.h"
 #include "sdk/libgraph.h"     /* sceGsDrawEnv1 */
@@ -243,26 +244,6 @@ constexpr int kModelSlots = 7;  // 0x1c0 aligned 0x40: three, three and one in t
 constexpr int kModelFadeColor = 3;   // StageModel::m_lightFades: after the three directions
 constexpr int kModelFadeAmbient = 6;
 constexpr int kMotionFileName = 0x10; // a motion file's name
-// A vector moving from one value to another over a number of frames: the
-// seven at StageModel +0x140 (EE 0x38 in 0x40) and SceneRender's own.
-// setFrom, frames and frame are set first; each frame setTo, then step.
-struct alignas(0x40) VectorFade
-{
-    // FS2 0x00296cc0
-    VectorFade() : from{}, to{}, value{}, frames(0), frame(0) {}
-    // FS2 0x00296cb0
-    void setFrom(const sceVu0FVECTOR v) { memcpy(from, v, sizeof(from)); }
-    // FS2 0x00296ca0
-    void setTo(const sceVu0FVECTOR v) { memcpy(to, v, sizeof(to)); }
-    void step();                                                         // FS2 0x00296c10
-
-    sceVu0FVECTOR from;         // FS2 +0x00
-    sceVu0FVECTOR to;           // FS2 +0x10
-    sceVu0FVECTOR value;        // FS2 +0x20
-    int           frames;       // FS2 +0x30
-    int           frame;        // FS2 +0x34
-};
-static_assert(sizeof(VectorFade) == 0x40, "VectorFade: EE 0x40");
 typedef StringMap<StageNodeBase *> BoneMap;
 typedef StringMap<ModelMotion *> MotionMap;
 // What an object holds of its model: game/stagemodel.cpp. The ROM's ctor is
@@ -857,73 +838,6 @@ public:
     StageObject *m_object;                  // FS2 +0xc
 };
 
-// A keyed vector over frames, EE 0x20: the lights' colour, every value of
-// SceneRender. value is the frame's vector; its w the weight (StageLight::
-// getWeight). game/vectortrack.cpp, cut out of the run unassigned@00299d90.
-// layout: host -- EE offsets in the comments; a key is EE 0x40.
-struct VectorKey
-{
-    // FS2 0x0029a6e0
-    VectorKey(const float *from, int keyFrames)
-        : ctrlOut{}, ctrlIn{}, frames(keyFrames), prev(nullptr), next(nullptr)
-    {
-        memcpy(value, from, sizeof(value));
-    }
-    // FS2 0x0029a700
-    explicit VectorKey(int keyFrames)
-        : value{}, ctrlOut{}, ctrlIn{}, frames(keyFrames), prev(nullptr), next(nullptr) {}
-    // The key moves to time frames from the start, trading frames with its
-    // neighbours; below 0 it stays.
-    void setTime(int time);                                              // FS2 0x0029a5b0
-
-    sceVu0FVECTOR value;        // FS2 +0x00
-    sceVu0FVECTOR ctrlOut;      // FS2 +0x10: the Bezier point after the key
-    sceVu0FVECTOR ctrlIn;       // FS2 +0x20: the Bezier point before it
-    int           frames;       // FS2 +0x30: to the next key
-    VectorKey    *prev;         // FS2 +0x38
-    VectorKey    *next;         // FS2 +0x3c
-};
-// layout: host -- EE 0x20.
-struct VectorTrack
-{
-    // FS2 0x0029a580
-    VectorTrack()
-        : linear(0), loop(0), done(0), curve(0), frame(0), count(0), index(0), keys(nullptr) {}
-    // FS2 0x0029a500
-    // callcheck: operator_delete
-    ~VectorTrack()
-    {
-        for (VectorKey *key = keys; key != nullptr;) {
-            VectorKey *next = key->next;
-            delete key;
-            key = next;
-        }
-    }
-    // One frame: index and frame move, value is worked out.
-    void step();                                                         // FS2 0x00299d90
-    // Back to the start; with two keys or more the first key's value.
-    void reset();                                                        // FS2 0x00299f40
-    // Chains key last; time places it, computeFrames (1 here) makes the
-    // frames from the distance when the key has none.
-    void addKey(VectorKey *key, int time, bool computeFrames);           // FS2 0x0029a370
-    // The index-th key, null past the last.
-    VectorKey *keyAt(int index);                                         // FS2 0x0029a4c0
-
-    sceVu0FVECTOR value;        // FS2 +0x00: w the weight (+0xc)
-    u_char     linear;          // FS2 +0x10: 1 linear (SceneRender's), 0 a Bezier
-    u_char     loop;            // FS2 +0x11
-    u_char     done;            // FS2 +0x12
-    u_char     curve;           // FS2 +0x13: 2 wraps the values as angles
-    int        frame;           // FS2 +0x14
-    short      count;           // FS2 +0x18: keys
-    short      index;           // FS2 +0x1a: the key playing
-    VectorKey *keys;            // FS2 +0x1c
-
-private:
-    void sample(VectorKey *key);                                         // FS2 0x00299f90
-    void append(VectorKey *key, bool computeFrames);                     // FS2 0x0029a3b0
-    void computeControls();                                              // FS2 0x0029a160
-};
 // Model parts named bn_<name>_<i>, of which one shows: the rest get
 // ModelPartRec::drawMode 2. A light's lit and dark pieces; a character's too.
 // layout: host -- EE 0x10.

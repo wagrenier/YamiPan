@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 09:41 at commit `091cc98` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 10:00 at commit `c600b3f` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-06 09:41 at commit `091cc98` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **4944** (75%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1547, game-inferred 4020
-- context-name ledger: 5567 entries; overrides of wrong library matches: 0
+- game functions: **6599**, named **4945** (75%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1547, game-inferred 4021
+- context-name ledger: 5568 entries; overrides of wrong library matches: 0
 - placed in a source file: 5293/6599 in 117 files
 
 Least-named game-code regions (64 KB blocks):
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **4732**; stubs: **192**
+- reconstructed FS2 functions: **4739**; stubs: **192**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -122,7 +122,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/uiwidget.cpp` | 56 | 0 |
 | `src/game/uiworkarea.cpp` | 4 | 0 |
 | `src/game/vcmtable.cpp` | 52 | 0 |
-| `src/game/vectortrack.cpp` | 9 | 0 |
+| `src/game/vectortrack.cpp` | 16 | 0 |
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
@@ -154,8 +154,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 222 TUs: todo 86, partial 35, verify 99, done 32
-- next: **game/vectortrack.cpp** (frontier score 68)
+- 222 TUs: todo 86, partial 34, verify 100, done 32
+- next: **unassigned@0017e140** (frontier score 54)
 - pinned queue: (empty)
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -236,6 +236,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/uiwidget.cpp` 56/56 -- Cut out of unassigned@00252840 (the frontier pick) as 0x25b8e0..0x25fa50, batch 066 (74 names: the widget classes by their type strings from the class table 0x2
 - verify: `game/uiworkarea.cpp` 4/4 -- All 4 of 0x243350..0x243390 written. Released unassigned@0017fce0 untouched (third time) because New Game was the untried road into a stage and these were on it
 - verify: `game/vcmtable.cpp` 52/52 -- Cut out of unassigned@00296d60 (the frontier pick) as 0x296d60..0x299d90, batches 063-065 (59 names, incl. the binary's std::string instances 0x297fb0.. and new
+- verify: `game/vectortrack.cpp` 16/16 -- All 16 functions written in src/game/vectortrack.cpp; the seven that lived inline in gamehooks.h, where the tools do not count them, moved to the .cpp, and the 
 - verify: `game/vu0math.cpp` 33/33 -- All 33 functions of 0x135990-0x1366c0 written from the asm (the decompiler loses VU0 field masks), in src/game/vu0math.cpp; vu0math.h is prototypes plus invertA
 - verify: `game/wstring.cpp` 5/5 -- Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds 
 - verify: `rena/rena_2d_texture_tim2.cpp` 7/7 -- All 7 written; class moved to rena/rena_2d_texture_tim2.h. One Tim2Texture per mip level of the first picture; m_image (+0x40) is the TIM2 file itself, not a co
@@ -259,6 +260,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 09:59 `game/vectortrack.cpp` verify: VectorFade, VectorKey and VectorTrack proven against the ROM; last 7 functions in the .cpp, classes in vectortrack.h
 - 2026-11-06 09:40 `game/stageparticle.cpp` verify: the particles are seen on screen (stage 2's rain), and the motes were critters: CritterNest, CritterRat, CritterCrawler written, spawnCritters live
 - 2026-11-06 08:53 `game/stageparticle.cpp` partial: the stage's particle effects: StageParticle and the particle system, spawn to host quads; runs, not yet seen on screen
 - 2026-11-06 07:59 `game/mapobject.cpp` verify: The map object's file closed: breakPart, getProperty and advanceMotion written, script slot +0x9c corrected to answer every map object, 70 of 70 functions, no s
@@ -266,22 +268,21 @@ Recent sessions:
 - 2026-11-06 06:42 `game/vu0math.cpp` verify: All 33 functions cut out of unassigned@00135990 and pinned 0x135990-0x1366c0: the game's vector and rotation helpers, then libvu0 in reverse order. rotateByAngl
 - 2026-11-06 06:10 `game/ripplesheet.cpp` verify: the boss view's water: RippleSheet and its host pass, compared with the ROM
 - 2026-11-06 06:08 `game/stageparty.cpp` verify: marked partial -> verify: drawLive has no gap left: the ripple sheet is game/ripplesheet.cpp; the stage 0x1b object at +0xb4 is built and drawn
-- 2026-11-06 05:26 `game/rumblelist.cpp` verify: the pad's rumble: KeepList was RumbleList, written and compared with the ROM
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `game/vectortrack.cpp` | partial | 9/0/16 | 2.5 | 68 | 0 |
 | `unassigned@0017e140` | todo | 0/0/78 | 1.4 | 54 | 0 |
 | `unassigned@00289cc0` | todo | 0/17/59 | 23.1 | 47 | 0 |
 | `unassigned@0027cab0` | partial | 3/2/59 | 13.1 | 47 | 0 |
+| `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 44 | 2 |
 | `unassigned@002a31b0` | partial | 1/18/22 | 5.9 | 39 | 0 |
-| `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 39 | 1 |
 | `unassigned@002764b0` | todo | 0/0/43 | 7.8 | 33 | 0 |
 | `unassigned@0022fc50` | todo | 0/0/8 | 1.8 | 33 | 0 |
+| `unassigned@002a4a40` | partial | 4/10/90 | 19.9 | 30 | 3 |
 | `unassigned@002937e0` | partial | 2/13/29 | 6.9 | 30 | 0 |
-| `unassigned@002a4a40` | partial | 4/10/90 | 19.9 | 25 | 2 |
 | `rx/rxsndstradpcm.c` | todo | 0/8/10 | 2.6 | 25 | 5 |
-| `game/stagealert.cpp` | todo | 0/7/8 | 1.3 | 24 | 3 |
+| `unassigned@001920d0` | partial | 1/0/17 | 5.9 | 24 | 0 |
+| `unassigned@002dac70` | partial | 1/4/63 | 21.7 | 24 | 4 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -294,14 +295,10 @@ Recent sessions:
 | `001842c0` | StageNodeList::pushBack | 29 | game | missing | game/stageitem.cpp |
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `0027cc50` | MotionLink::MotionLink | 19 | game | missing | - |
-| `00296cb0` | VectorFade::setFrom | 18 | game | missing | game/vectortrack.cpp |
 | `002c0d90` | FUN_002c0d90 | 18 | - | missing | game/packtables.cpp |
 | `0017e1b0` | FUN_0017e1b0 | 16 | - | missing | - |
-| `00296ca0` | VectorFade::setTo | 16 | game | missing | game/vectortrack.cpp |
-| `0029a700` | FUN_0029a700 | 15 | - | missing | game/vectortrack.cpp |
 | `001d1a00` | ScriptRunner::getEntry | 14 | game | missing | game/scriptrunner.cpp |
 | `0022fe10` | FUN_0022fe10 | 14 | - | missing | - |
-| `00296cc0` | VectorFade::VectorFade | 12 | game | missing | game/vectortrack.cpp |
 | `002c0d40` | FUN_002c0d40 | 12 | - | missing | game/packtables.cpp |
 | `0027d940` | FUN_0027d940 | 11 | - | missing | - |
 | `0027d8d0` | FUN_0027d8d0 | 10 | - | missing | - |
@@ -327,4 +324,8 @@ Recent sessions:
 | `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
 | `00206f80` | FUN_00206f80 | 6 | - | missing | - |
 | `001d1c20` | ScriptRunner::getParent2 | 6 | game | missing | game/scriptrunner.cpp |
+| `00189840` | FUN_00189840 | 6 | - | missing | - |
+| `002c0db0` | FUN_002c0db0 | 6 | - | missing | game/packtables.cpp |
+| `0020c940` | StageCharacter::getSwayMatrix | 6 | game | stub | - |
+| `00258ea0` | FUN_00258ea0 | 6 | - | missing | game/routeplayer.cpp |
 

@@ -1,15 +1,16 @@
 /* ==========================================================================
  *  game/vectortrack.cpp
  *
- *  VectorTrack, VectorKey and VectorFade (game/gamehooks.h): keyed vectors,
+ *  VectorTrack, VectorKey and VectorFade (game/vectortrack.h): keyed vectors,
  *  0x299d90..0x29a730, cut out of the run unassigned@00299d90, and the fade
  *  0x296c10..0x296d00 beside them. The file name is the port's. SceneRender's
  *  tracks are linear; the lights' colour tracks are Bezier curves, whose
  *  control points computeControls works out from the neighbouring keys.
+ *  tools/reverse/vectorcmp.py plays them on the ROM's own code beside this.
  * ======================================================================== */
 #include <string.h>
 
-#include "game/gamehooks.h"
+#include "game/vectortrack.h"
 #include "game/vu0math.h"
 
 // FS2 0x00296c10
@@ -24,6 +25,29 @@ void VectorFade::step()
         value[lane] = from[lane] + (to[lane] - from[lane]) * t;
     if (frame < frames)
         frame++;
+}
+
+// FS2 0x00296ca0
+// callcheck: none
+
+void VectorFade::setTo(const sceVu0FVECTOR v)
+{
+    memcpy(to, v, sizeof(to));
+}
+
+// FS2 0x00296cb0
+// callcheck: none
+
+void VectorFade::setFrom(const sceVu0FVECTOR v)
+{
+    memcpy(from, v, sizeof(from));
+}
+
+// FS2 0x00296cc0
+// callcheck: none
+
+VectorFade::VectorFade() : from{}, to{}, value{}, frames(0), frame(0)
+{
 }
 
 // FS2 0x00299d90
@@ -94,27 +118,31 @@ void VectorTrack::sample(VectorKey *key)
     }
 
     const float u = 1.0f - t;
+    const float thriceU = 3.0f * u;
     scaleVec4(u * u * u, value, key->value);
     if (curve == 1) {
         addScaledVec4(t * t * t, value, value, next->value);
-        addScaledVec4(t * u * 3.0f * u, value, value, key->ctrlOut);
-        addScaledVec4(t * u * 3.0f * t, value, value, next->ctrlIn);
+        addScaledVec4(t * (thriceU * u), value, value, key->ctrlOut);
+        addScaledVec4(t * (thriceU * t), value, value, next->ctrlIn);
     } else {
         addScaledVec3(t * t * t, value, value, next->value);
-        addScaledVec3(t * u * 3.0f * u, value, value, key->ctrlOut);
-        addScaledVec3(t * u * 3.0f * t, value, value, next->ctrlIn);
+        addScaledVec3(t * (thriceU * u), value, value, key->ctrlOut);
+        addScaledVec3(t * (thriceU * t), value, value, next->ctrlIn);
         value[3] = 1.0f;
     }
 }
 
-// a + dir * s, all four lanes.
+// a + dir * s, all four lanes: the ROM scales first, then adds.
 static inline void pointAlong(sceVu0FVECTOR out, const sceVu0FVECTOR a, const sceVu0FVECTOR dir, float s)
 {
-    addScaledVec4(s, out, a, dir);
+    sceVu0FVECTOR scaled;
+    scaleVec4(s, scaled, dir);
+    for (int lane = 0; lane < 4; lane++)
+        out[lane] = a[lane] + scaled[lane];
 }
 
 // FS2 0x0029a160
-// callcheck: divideVec4, vecDirection, vecDirection, vecDistance, scaleVec4, vecDirection, vecDistance, scaleVec4, vecDistance, scaleVec4, vecDirection, vecDistance, scaleVec4 (divideVec4 and scaleVec4 inside pointAlong)
+// callcheck: divideVec4, vecDirection, vecDirection, vecDistance, scaleVec4, vecDirection, vecDistance, scaleVec4, vecDistance, scaleVec4, vecDirection, vecDistance, scaleVec4 (scaleVec4 inside pointAlong)
 
 void VectorTrack::computeControls()
 {
@@ -127,7 +155,10 @@ void VectorTrack::computeControls()
     for (VectorKey *key = keys; key != nullptr; key = key->next) {
         if (key->prev == nullptr) {
             for (int lane = 0; lane < 4; lane++)
-                key->ctrlOut[lane] = key->value[lane] + (key->next->value[lane] - key->value[lane]) / kThird;
+                dir[lane] = key->next->value[lane] - key->value[lane];
+            divideVec4(kThird, dir, dir);
+            for (int lane = 0; lane < 4; lane++)
+                key->ctrlOut[lane] = dir[lane] + key->value[lane];
         }
         if (key->next == nullptr) {
             VectorKey *prev = key->prev;
@@ -198,6 +229,28 @@ VectorKey *VectorTrack::keyAt(int keyIndex)
     return key;
 }
 
+// FS2 0x0029a500
+// callcheck: operator_delete
+
+VectorTrack::~VectorTrack()
+{
+    for (VectorKey *key = keys; key != nullptr;) {
+        VectorKey *next = key->next;
+        delete key;
+        key = next;
+    }
+}
+
+// FS2 0x0029a580
+// callcheck: none
+
+// PC: the ROM leaves value and done as the heap had them, and a track with
+// under two keys never writes value (step and reset). Zero is a fixed start.
+VectorTrack::VectorTrack()
+    : value{}, linear(0), loop(0), done(0), curve(0), frame(0), count(0), index(0), keys(nullptr)
+{
+}
+
 // FS2 0x0029a5b0
 // callcheck: none
 
@@ -236,4 +289,21 @@ void VectorKey::setTime(int time)
         prev->frames += frames - 1;
         frames = 1;
     }
+}
+
+// FS2 0x0029a6e0
+// callcheck: none
+
+VectorKey::VectorKey(const float *from, int keyFrames)
+    : ctrlOut{}, ctrlIn{}, frames(keyFrames), prev(nullptr), next(nullptr)
+{
+    memcpy(value, from, sizeof(value));
+}
+
+// FS2 0x0029a700
+// callcheck: none
+
+VectorKey::VectorKey(int keyFrames)
+    : value{}, ctrlOut{}, ctrlIn{}, frames(keyFrames), prev(nullptr), next(nullptr)
+{
 }
