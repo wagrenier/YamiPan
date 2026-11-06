@@ -146,12 +146,44 @@
    "notes": "All of 0x2a31b0..0x2a49c0 plus getAttackVoice 0x2a25b0. New names playHitSound, playTrapHitVoice, playQuestionVoice, enum SoundKind. Bug fixed in game/playermotion.cpp: playVoiceHeard looked names up with findCue (stream table); the ROM binary-searches the stage's SE table, so every call dropped out. Seen in a temporary log, removed (YAMIPAN_TELEPORT=2, 200 s, no crash): E18_DMG_L 39 times, E18_FIND once, null before the fix, found after. Stage 2's SE table has 28 of the 69 names this file can ask for; taken to be per-stage cast, only stage 2 listed. Not heard: nobody listened. No PC or NPC voice fired, so sayPartyVoice has not run. Not compared with the ROM by a tool. Waiting: takeHits past its first line calls playHitSound and playTrapHitVoice, the stub StageAlert::cry calls playQuestionVoice, hasAlteredVoice 0x215af0 is a reached stub. Left of the family: stubs 0x2a2b60..0x2a2e30, playMotionSound, playFallDownSound can join this file.",
    "ranges": [
     [
-     "002a25b0",
+     "00212300",
+     "002123dc"
+    ],
+    [
+     "00215320",
+     "00215338"
+    ],
+    [
+     "00215af0",
+     "00215cd8"
+    ],
+    [
+     "002a2070",
+     "002a2100"
+    ],
+    [
+     "002a2280",
      "002a29f0"
+    ],
+    [
+     "002a29f0",
+     "002a2ad0"
+    ],
+    [
+     "002a2b10",
+     "002a2fc0"
     ],
     [
      "002a31b0",
      "002a49c0"
+    ],
+    [
+     "002a4a40",
+     "002a6430"
+    ],
+    [
+     "002a6830",
+     "002a6980"
     ]
    ],
    "sessions": [
@@ -162,7 +194,7 @@
     }
    ],
    "status": "verify",
-   "why": "the character's voices: one run in the ROM between playPickSound and playStepSound, 0x2a25b0 is what playAttackVoice builds its name with; the rest of 0x2a2070..0x2a6980 is the same family and can join"
+   "why": "the sound family: the frame's updateSounds with its breath and move sounds, stop and init, the motion events' cues, the fall and get-up, batch 181"
   },
   "game/clock.cpp": {
    "notes": "Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode whose destructor 0x135550 is the real body (Clock::~Clock 0x1351b0 and MasterClock::~MasterClock 0x135330 only call it and free: Metrowerks one-dtor-with-flags). ROM bugs kept: the destructor detaches only its FIRST child (clearing the slot makes next(child) end the walk), the others keep a dangling parent (harmless while children die first; on the host a later child delete would read freed memory, watch at bootstrap 7); when that child was the last the ROM walks a null list (EE address 4), the port stops. PtrList slots are pointer-sized on the host (EE 4 bytes). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean, host harness (advance with scale 0x80, pause, getSeconds / getDeltaSeconds, delete detaching from the parent and freeing an emptied list). Next: the VU0 run unassigned@00135990 (20 functions; decode the COP2 words from the asm, open-items.md TU 42).",
@@ -780,7 +812,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Written: DiveFallLink (0x27a0b0, onRequest, onStart, onRun 0x279a60, onLeave, onCancel, startCamera 0x279780, stepCamera 0x2794e0), DiveLandLink::onRun 0x2792c0, TrapHitLink onRun 0x278f80, onLeave 0x278f70, the three dtors; 32 of 43 link names exist. Ranges 0x278f70..0x279190 and 0x2792c0..0x27a140 joined. The dtors and empty slots of the slice moved from the header to the .cpp, where the tools count them. Forced with a temporary harness, removed (YAMIPAN_TELEPORT=2, a request on the lifted player, no real edge): deadly 450 up: 0x94, 0x96, dm_rev, idle; deadly 4000 up: endurance 0 after the flight, dm_ded, the game own Mission failed, cam_dive took the view (progress/20261106-dive-camdive-forced.png); back dive: 0x95, 0x97, dm_rev_b, idle; trap with no object: 0x9b held 293 calls, 0x9c, idle. No crash in 5 runs. The plain 15 s check run stops at the boot, so it says nothing about these. Never ran: a real edge (findDive from a blow), a real trap, the shaken stick, the turn round bn_pelvis, the partner camera, the ladder fall. callcheck MISSING lines are the earlier ones (takeHits parts, leave*, search points), none in the new links. NEXT: the stubs this opened, StageCharacter::playGetUpVoice 0x2a2d00 and playFallDownSound 0x2a29f0, then a real blow at an edge. References: architecture.md Falling over an edge and being caught; open-items.md top of Next up, with five doubts.",
+   "notes": "Written in game/charactersound.cpp (ranges joined, 39 functions): updateSounds 0x2a4a40, getBreathName, stopBodySounds, stopSounds, initSounds, playFallDownSound, playGetUpVoice, playBumpSound, playJobSound, playIdleVoice, playPanicVoice, playMotionSound, hasAlteredVoice, isViewedThrough, plus getSurfaceMoveSound and getSurfaceWallSound here. Bug closed: with updateSounds a stub nothing cleared m_soundState, so later voices dropped at the priority test for the rest of the stage; initSounds a stub left m_voiceOn 0. Temporary harness, removed (walks Root meshes for faces of flags 0x142, stands the player where faceAhead and findEdge answer, forces dm_r or dm_f): stage 2 drop 180: 0xa6, findDive, 0x94, 0x96, endurance 60 to 33, FALLDW3, dm_rev, SPC_GETUP, idle; from behind 0xa4, 0x95, 0x97, 0xb1, idle; d2303 100 to 73; d2303 with no floor below: blocked, cam_dive, the game own Mission failed. No crash in 12 runs. The plain 15 s check run stops at the boot, so it says nothing about these. Nobody listened. Never ran: BOSS1, SRT_MOVE, YRT_MOVE, surface move sound, the _J breaths, playBumpSound, playJobSound, playMotionSound, a foe's own blow at an edge, the turn round bn_pelvis, the partner camera, the ladder fall. callcheck MISSING lines are the earlier ones, none in charactersound.cpp. NEXT: the 11 links left (SigLamp, NumLock, SevenKey, SpFear, SpRing, SpRobo, SpDrop, SpPadlock, SpNumLock, BossAttack, BossIdle) as stages reach them; StageAlert and ItemPhysics are their own TUs and both run on a plain fight now. References: architecture.md What a character sounds like each frame; open-items.md top of Next up, six doubts; hazards.md A stub can jam what is already written.",
    "ranges": [
     [
      "00175700",
@@ -1189,11 +1221,6 @@
    ],
    "sessions": [
     {
-     "date": "2026-11-05 03:49",
-     "status": "partial",
-     "summary": "door crash found and fixed, doors on: a door opens and closes on Use, with the game's own labels on screen"
-    },
-    {
      "date": "2026-11-05 04:37",
      "status": "partial",
      "summary": "what a character carries: giveItem, dropItem, swapWeapons, PickupItem, PutItem and the Pickup link written; stage 1 has no items, so none of it has been seen working"
@@ -1247,6 +1274,11 @@
      "date": "2026-11-06 18:18",
      "status": "partial",
      "summary": "The links DiveFall, DiveLand and TrapHit: a fall over an edge runs to Mission failed, a trap holds and lets go; forced, no real edge or trap yet"
+    },
+    {
+     "date": "2026-11-06 18:49",
+     "status": "partial",
+     "summary": "A real edge works, the voices no longer jam: updateSounds and the sound family written"
     }
    ],
    "status": "partial",

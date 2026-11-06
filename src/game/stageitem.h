@@ -50,6 +50,9 @@ constexpr float kFlareBurnSeconds  = 20.0f;
 // A surface's sound (StageCollisionFace::surface); null none. The run
 // unassigned@002c42a0.
 const SeEntry *getSurfaceSound(int surface);                             // FS2 0x002cf0b0
+// What goes over a surface (sheet kind 0xd), what bumps into it as a wall.
+const SeEntry *getSurfaceMoveSound(int surface);                         // FS2 0x002cede0
+const SeEntry *getSurfaceWallSound(int surface);                         // FS2 0x002cef50
 
 // The first class of the bullet's two, kind 0x18 (vtables 0x312f40 / 0x312f64
 // / 0x312f7c; its ctor is inline in StageBullet's). layout: host -- EE: the

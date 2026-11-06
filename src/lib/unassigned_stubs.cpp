@@ -499,18 +499,6 @@ int ItemPhysics::collisionHook0(CollisionContact *contact, const float *normal, 
 // ---- by hand: the character's parts, until their TUs (next in the queue) ----
 
 // stub of FS2 0x00239bc0
-// stub of FS2 0x002a6910
-void StageCharacter::initSounds()
-{
-    YAMIPAN_STUB("StageCharacter::initSounds", 0x002a6910);
-}
-
-// stub of FS2 0x002a6830
-void StageCharacter::stopSounds()
-{
-    YAMIPAN_STUB("StageCharacter::stopSounds", 0x002a6830);
-}
-
 // stub of FS2 0x0020c940
 void StageCharacter::getSwayMatrix(sceVu0FMATRIX out)
 {
@@ -544,12 +532,6 @@ bool PlayerMotion::winsStruggle(StageObject *other)
     return {};
 }
 
-// stub of FS2 0x002a2b10
-void StageCharacter::playBumpSound(int surface)
-{
-    YAMIPAN_STUB("StageCharacter::playBumpSound", 0x002a2b10);
-}
-
 // stub of FS2 0x00207e20
 // stub of FS2 0x00210720
 // stub of FS2 0x0023cf50
@@ -578,12 +560,6 @@ bool SceneOwnedObject::start(const char *text)
     return {};
 }
 
-// stub of FS2 0x002a6380
-void StageCharacter::stopBodySounds()
-{
-    YAMIPAN_STUB("StageCharacter::stopBodySounds", 0x002a6380);
-}
-
 // stub of FS2 0x00294280
 void elevatorCall(StageObject *elevator, int floor)
 {
@@ -595,55 +571,6 @@ bool elevatorCanCall(StageObject *elevator, const float *position, const float *
 {
     YAMIPAN_STUB("elevatorCanCall", 0x00294140);
     return {};
-}
-
-// stub of FS2 0x00215af0
-bool StageCharacter::hasAlteredVoice()
-{
-    YAMIPAN_STUB("StageCharacter::hasAlteredVoice", 0x00215af0);
-    return {};
-}
-
-// stub of FS2 0x002a29f0
-void StageCharacter::playFallDownSound(int surface)
-{
-    YAMIPAN_STUB("StageCharacter::playFallDownSound", 0x002a29f0);
-}
-
-// stub of FS2 0x002a2d00
-void StageCharacter::playGetUpVoice()
-{
-    YAMIPAN_STUB("StageCharacter::playGetUpVoice", 0x002a2d00);
-}
-
-// stub of FS2 0x002a2bc0
-void StageCharacter::playIdleVoice(int which)
-{
-    YAMIPAN_STUB("StageCharacter::playIdleVoice", 0x002a2bc0);
-}
-
-// stub of FS2 0x002a2b60
-void StageCharacter::playJobSound(int job)
-{
-    YAMIPAN_STUB("StageCharacter::playJobSound", 0x002a2b60);
-}
-
-// stub of FS2 0x002a2070
-void StageCharacter::playMotionSound(const char *name, const float *pos)
-{
-    YAMIPAN_STUB("StageCharacter::playMotionSound", 0x002a2070);
-}
-
-// stub of FS2 0x002a2c80
-void StageCharacter::playPanicVoice()
-{
-    YAMIPAN_STUB("StageCharacter::playPanicVoice", 0x002a2c80);
-}
-
-// stub of FS2 0x002a4a40
-void StageCharacter::updateSounds()
-{
-    YAMIPAN_STUB("StageCharacter::updateSounds", 0x002a4a40);
 }
 
 // stub of FS2 0x00214a80

@@ -5153,6 +5153,8 @@ void StageCharacter::playStepSound(int surface, int pace, const float *pos)
 // The sound names by surface: 0 the surface's own, 1..29 the steps, 30 and
 // 31 what hits it.
 constexpr int kStepSoundColumns = 32;
+constexpr int kSurfaceMoveColumn = 29;  /* data 0x30f870: the ninth family's, one sound */
+constexpr int kSurfaceWallColumn = 30;
 constexpr int kSurfaceHitColumn = 31;
 static const char *const kStepSounds[][kStepSoundColumns] = {   /* data 0x2fc3b0 */
 #include "game/stepsounds.inc"
@@ -5235,6 +5237,26 @@ const SeEntry *getSurfaceSound(int surface)
     if (surface < 0)
         return nullptr;
     return findSurfaceEntry(surface, kSurfaceHitColumn);
+}
+
+// FS2 0x002cede0
+// callcheck: strcmp (findSurfaceEntry: the sound table's find, inline)
+
+const SeEntry *getSurfaceMoveSound(int surface)
+{
+    if (surface < 0)
+        return nullptr;
+    return findSurfaceEntry(surface, kSurfaceMoveColumn);
+}
+
+// FS2 0x002cef50
+// callcheck: strcmp (findSurfaceEntry: the sound table's find, inline)
+
+const SeEntry *getSurfaceWallSound(int surface)
+{
+    if (surface < 0)
+        return nullptr;
+    return findSurfaceEntry(surface, kSurfaceWallColumn);
 }
 
 // FS2 0x001e0e20
@@ -9344,9 +9366,9 @@ void StageCharacter::setBrainState(int state, int arg)
         m_ground->m_enabled = 0;
         m_tree->setChildrenActive(false);
         stopBodySounds();
-        if (m_loopSound != nullptr) {
-            stopSound(m_loopSound);
-            m_loopSound = nullptr;
+        if (m_breathSound != nullptr) {
+            stopSound(m_breathSound);
+            m_breathSound = nullptr;
         }
     }
     else if (getBrainPace() == 0) {
@@ -11383,7 +11405,7 @@ void StageCharacter::setProperty(int id, int sub, int value)
     case CharProp_Value6cc:      m_6cc = value; break;
     case CharProp_Value6d0:      m_6d0 = value; break;
     case CharProp_Value6d4:      m_6d4 = value; break;
-    case CharProp_Flag44c:       m_44c = value != 0; break;
+    case CharProp_Flag44c:       m_voiceOn = value != 0; break;
     default:
         StageObject::setProperty(id, sub, value);
         break;
@@ -11528,7 +11550,7 @@ int StageCharacter::getProperty(int id, int sub)
         return m_motion->m_bfc != 0
             && (motion == kMotionFlaggedA || motion == kMotionFlaggedB || motion == kMotionFlaggedC);
     }
-    case CharProp_Flag44c:       return m_44c;
+    case CharProp_Flag44c:       return m_voiceOn;
     default:
         return StageObject::getProperty(id, sub);
     }
