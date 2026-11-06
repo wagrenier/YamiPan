@@ -1107,6 +1107,9 @@ template <class Fn> static void forEachNamed(ScriptRunner *target, Fn fn)
     if (target == nullptr || target->getName() == nullptr)
         return;
     StageObjArray *list = gStageScene->objects->findAll5(target->getName());
+    // PC: the ROM has no test of the list.
+    if (list == nullptr)
+        return;
     for (StageObject **slot = list->begin(); slot != nullptr; slot = StageObjArray::next(slot))
         fn(*slot);
 }
@@ -2854,6 +2857,9 @@ static const int *nativeHideLoose(ScriptRunner *self, int *, const int *code)
     const char *name;
     const int *next = self->readNameArg(&name, code);
     StageObjArray *list = gStageScene->objects->findAll3(name);
+    // PC: the ROM has no test of the list.
+    if (list == nullptr)
+        return next;
     for (StageObject **slot = list->begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
         StageObject *object = *slot;
         if (object->m_parent == nullptr && object->m_active != 0) {
@@ -7586,4 +7592,114 @@ static const int *callNative(ScriptRunner *self, int id, const int *code, int *a
     }
     self->dropArgs(info.pops);
     return code + info.words;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// PC: the teleport (game/teleport.h). A walk over an entry's code, instruction
+// by instruction: a native's inline words are in the ROM's table, and a
+// command's are read by a brain only, whose code is not walked here.
+
+static int scriptWordsAt(const int *pc)
+{
+    u_int word = (u_int)*pc;
+    u_int kind = word & kScriptCallMask;
+    if (kind == kScriptCallNative) {
+        int id = (int)(word & kScriptCallId);
+        return id < kFirstNative || id > kLastNative ? 1 : 1 + kNativeInfo[id - kFirstNative].words;
+    }
+    if (kind != kScriptCallNone)
+        return 1;
+
+    switch (word) {
+    case ScriptOp_JumpIfZero:
+    case ScriptOp_Jump:
+    case ScriptOp_TargetName:
+    case ScriptOp_LoadVar:
+    case ScriptOp_LoadConst:
+    case ScriptOp_StoreVar:
+    case ScriptOp_LoadNamed:
+    case ScriptOp_StoreNamed:
+    case ScriptOp_LoadParent:
+    case ScriptOp_StoreParent:
+    case ScriptOp_Skip:
+    case ScriptOp_LoadGrand:
+    case ScriptOp_StoreGrand:
+    case ScriptOp_TargetRaw:
+    case ScriptOp_LoadLocal:
+    case ScriptOp_LoadProperty:
+    case ScriptOp_LoadPropertySub:
+    case ScriptOp_LoadGlobal:
+    case ScriptOp_ConstEqual:
+    case ScriptOp_ConstLess:
+    case ScriptOp_ConstGreater:
+    case ScriptOp_ConstLessEq:
+    case ScriptOp_ConstGreaterEq:
+    case ScriptOp_ConstNotEqual:
+        return 2;
+    default:
+        return 1;
+    }
+}
+
+// The natives with the event's name as their code word. 0x155 and 0x1f2 are
+// not here: they only work on a stage's first frame.
+static bool startsEvent(u_int word)
+{
+    if ((word & kScriptCallMask) != kScriptCallNative)
+        return false;
+    switch (word & kScriptCallId) {
+    case 0x15f:     // fileEvent
+    case 0x160:     // fileEventDelayed
+    case 0x161:     // simpleEvent
+    case 0x162:     // simpleEventDelayed
+        return true;
+    default:
+        return false;
+    }
+}
+
+const int *ScriptRunner::findEventBlock(const char *name)
+{
+    const ScriptTable *labels = m_entry != nullptr ? getLabels() : nullptr;
+    if (labels == nullptr)
+        return nullptr;
+
+    const int *begin = m_entry->code();
+    const int *end = begin + (m_entry->codeSize() - kScriptTrailerSize) / sizeof(int);
+    const int *call = nullptr;
+    for (const int *pc = begin; pc < end && call == nullptr; pc += scriptWordsAt(pc)) {
+        if (!startsEvent((u_int)*pc))
+            continue;
+        int label = pc[1];
+        if (label >= ScriptLabel_First && label < labels->count && strcmp(labels->label(label), name) == 0)
+            call = pc;
+    }
+    if (call == nullptr)
+        return nullptr;
+
+    // A jump past the call is a condition around it; one that lands before it
+    // closes a block the call is not in.
+    const int *block = begin;
+    for (const int *pc = begin; pc < call; pc += scriptWordsAt(pc)) {
+        if (*pc != ScriptOp_JumpIfZero && *pc != ScriptOp_Jump)
+            continue;
+        const int *target = pc + 1 + pc[1];
+        if (target <= call) {
+            if (target > block)
+                block = target;
+        } else if (*pc == ScriptOp_JumpIfZero) {
+            block = pc + 2;
+        }
+    }
+    return block;
+}
+
+void ScriptRunner::jumpTo(const int *block)
+{
+    m_pc = block;
+    m_sp = 0;
+    m_wait = 0;
+    m_target = this;
+    m_yieldA = 0;
+    m_yieldB = 0;
 }

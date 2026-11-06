@@ -97,6 +97,9 @@ private:
         ImGui::Combo("Difficulty", &m_difficulty, kDifficulties, IM_ARRAYSIZE(kDifficulties));
         ImGui::SameLine();
         ImGui::Checkbox("Skip the opening movie and briefing", &m_skipIntro);
+        ImGui::Checkbox("Run events from their trigger", &m_fromTrigger);
+        ImGui::SetItemTooltip("Puts the player on what starts the event and runs that script, so what it does "
+                              "after the event runs too. Off: the event just plays on the new stage.");
 
         // F2, a name, Enter. The last name stays, selected: F2, Enter plays it again.
         if (ImGui::IsWindowAppearing())
@@ -223,6 +226,7 @@ private:
         request.difficulty = m_difficulty - 1; // kTeleportKeepDifficulty is -1
         request.branch = branch;
         request.skipIntro = m_skipIntro;
+        request.fromTrigger = m_fromTrigger;
         std::snprintf(request.event, sizeof(request.event), "%s", event);
         teleportRequest(request);
         m_visible = false;
@@ -233,6 +237,7 @@ private:
     bool m_visible = false;
     int m_difficulty = 0;
     bool m_skipIntro = true;
+    bool m_fromTrigger = true;
     ImGuiTextFilter m_filter;
 };
 

@@ -242,6 +242,12 @@ public:
     void run(int arg = 0);                                               // FS2 0x001d27e0
 
     bool isRunning() const { return m_entry != nullptr; }
+    // PC, for game/teleport.h: the block of this entry that starts the event
+    // called name, null without one: the code after the last condition around
+    // the call, so whatever the script does after the event still runs.
+    const int *findEventBlock(const char *name);
+    // PC: on from there at the next run, whatever it was doing.
+    void jumpTo(const int *block);
     // What the last yield left for the native waiting here, cleared; 0 with
     // none. Inline in the ROM's waiting natives.
     int takeYield()

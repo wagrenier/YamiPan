@@ -9,11 +9,14 @@
  *    does (runLayout), a stage the way the pause menu's navigator jump does
  *    (stageThread: StageExit_Navi), and menuFlow treats the title as a new
  *    game. menuPlayLoop then calls teleportTake, which writes the play record
- *    as the navigator's answer would, and plays the stage. On the stage's
- *    frame teleportStageFrame starts the event the way a script would.
+ *    as the navigator's answer would, and plays the stage.
  *
- *  An event plays on a stage that has just started, not at the moment of the
- *  story that would start it: whatever a script does around it does not run.
+ *  An event goes on the stage's first frame. The object whose script starts
+ *  it is found in the script as loaded, the player is put on it, and that
+ *  script runs from the block that starts the event: its conditions are
+ *  skipped, not what it does after the event (the story's next state, who
+ *  stands where, the fade back). Without such an object the event just starts.
+ *  What the stage's earlier steps would have set stays unset.
  *
  *  The tables come from the disc: tools/reverse/eventscan.py --write.
  * ======================================================================== */
@@ -63,6 +66,7 @@ struct TeleportRequest
     int  difficulty;            // a StageKind, or kTeleportKeepDifficulty
     int  branch;
     bool skipIntro;             // no opening movie, no e / h screens
+    bool fromTrigger;           // through its script, the player on its trigger
     char event[0x10];           // kMissionEventName
 };
 
