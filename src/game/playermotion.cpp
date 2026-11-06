@@ -437,9 +437,7 @@ MotionConditionList::Node *MotionConditionList::nodeAt(int index) const
 // ──────────────────────────────────────────────────────────────────────
 // The links' dtors. Each stores its vtable, runs the base's body inlined and
 // frees the object under a flag; the links not written yet keep theirs in the
-// ROM: DamageDeadLink 0x27ccd0, DamageFatalLink 0x27cd50, DamageLandLink
-// 0x27cdd0, DamageLink 0x27ce50, TrapHitLink 0x27cfd0, DiveLandLink 0x27d150,
-// DiveFallLink 0x27d1d0.
+// ROM: TrapHitLink 0x27cfd0, DiveLandLink 0x27d150, DiveFallLink 0x27d1d0.
 
 // FS2 0x0027ced0
 // callcheck: operator_delete, ~MotionConditionList, operator_delete
@@ -1050,7 +1048,7 @@ MotionGadgetSpecial::MotionGadgetSpecial(StageCharacter *owner, PlayerMotion *mo
 }
 
 // FS2 0x00280010
-// callcheck: FUN_002764b0, operator_delete (the base's body)
+// callcheck: ~MotionCondition, operator_delete (the base's body)
 
 MotionGadgetSpecial::~MotionGadgetSpecial()
 {
@@ -1418,6 +1416,7 @@ class AlwaysCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~AlwaysCondition() override {}                                       // FS2 0x00277140
     void onUpdate() override;                                            // FS2 0x00275b60
     void onApply() override;                                             // FS2 0x00275160
 };
@@ -1599,6 +1598,7 @@ class QuickTurnCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~QuickTurnCondition() override {}                                    // FS2 0x00276960
     void onUpdate() override;                                            // FS2 0x002702a0
     void onApply() override;                                             // FS2 0x00270260
 };
@@ -1626,6 +1626,7 @@ class SquatCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~SquatCondition() override {}                                        // FS2 0x002770d0
     void onUpdate() override;                                            // FS2 0x002750f0
     void onApply() override;                                             // FS2 0x00274990
 };
@@ -1667,6 +1668,7 @@ class TurnCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~TurnCondition() override {}                                         // FS2 0x00276f80
     void onUpdate() override;                                            // FS2 0x00273fa0
     void onApply() override;                                             // FS2 0x00273f10
 };
@@ -1704,6 +1706,7 @@ class MoveCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~MoveCondition() override {}                                         // FS2 0x00276f10
     void onUpdate() override;                                            // FS2 0x00273da0
     void onApply() override;                                             // FS2 0x00272d50
 private:
@@ -2064,6 +2067,7 @@ class LevelCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~LevelCondition() override {}                                        // FS2 0x00276ea0
     void onUpdate() override;                                            // FS2 0x00272630
     void onApply() override;                                             // FS2 0x00272360
 
@@ -2078,6 +2082,7 @@ class DoorCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~DoorCondition() override {}                                         // FS2 0x00276ce0
     void onUpdate() override;                                            // FS2 0x00271630
     void onApply() override;                                             // FS2 0x002710a0
 
@@ -2091,6 +2096,7 @@ class PutItemCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~PutItemCondition() override {}                                      // FS2 0x00276c70
     void onUpdate() override;                                            // FS2 0x00271070
     void onApply() override;                                             // FS2 0x00271020
 };
@@ -2101,6 +2107,7 @@ class PickupItemCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~PickupItemCondition() override {}                                   // FS2 0x00276c00
     void onUpdate() override;                                            // FS2 0x00270e90
     void onApply() override;                                             // FS2 0x00270c50
 };
@@ -2111,6 +2118,7 @@ class LevelLiftCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~LevelLiftCondition() override {}                                    // FS2 0x00276e30
     void onUpdate() override;                                            // FS2 0x002721a0
     void onApply() override;                                             // FS2 0x00272030
 };
@@ -2121,6 +2129,7 @@ class LadderCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~LadderCondition() override {}                                       // FS2 0x00276dc0
     void onUpdate() override;                                            // FS2 0x00271d70
     void onApply() override;                                             // FS2 0x00271c60
 
@@ -2134,6 +2143,7 @@ class JumpCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~JumpCondition() override {}                                         // FS2 0x00276d50
     void onUpdate() override;                                            // FS2 0x00271850
     void onApply() override;                                             // FS2 0x00271790
 
@@ -2149,6 +2159,7 @@ class BtOnCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~BtOnCondition() override {}                                         // FS2 0x00277060
     void onUpdate() override;                                            // FS2 0x00274810
     void onApply() override;                                             // FS2 0x00274650
 };
@@ -2159,6 +2170,7 @@ class LockCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~LockCondition() override {}                                         // FS2 0x002767a0
     void onUpdate() override;                                            // FS2 0x0026f8e0
     void onApply() override;                                             // FS2 0x0026ef30
 
@@ -2171,6 +2183,7 @@ class BtAttackCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~BtAttackCondition() override {}                                     // FS2 0x00276730
     void onUpdate() override;                                            // FS2 0x0026e9e0
     void onApply() override;                                             // FS2 0x0026e500
 };
@@ -2180,6 +2193,7 @@ class BtAtkComboCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~BtAtkComboCondition() override {}                                   // FS2 0x002766c0
     void onUpdate() override;                                            // FS2 0x0026e4e0
     void onApply() override;                                             // FS2 0x0026e280
 };
@@ -2189,6 +2203,7 @@ class BtMoveCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~BtMoveCondition() override {}                                       // FS2 0x00276650
     void onUpdate() override;                                            // FS2 0x0026e260
     void onApply() override;                                             // FS2 0x0026df60
 };
@@ -2199,6 +2214,7 @@ class GunOnCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~GunOnCondition() override {}                                        // FS2 0x00276ff0
     void onUpdate() override;                                            // FS2 0x00274390
     void onApply() override;                                             // FS2 0x002741d0
 };
@@ -2218,6 +2234,7 @@ class SnipeCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~SnipeCondition() override {}                                        // FS2 0x00276570
     void onUpdate() override;                                            // FS2 0x0026d7f0
     void onApply() override;                                             // FS2 0x0026d6a0
 };
@@ -2227,6 +2244,7 @@ class GunAttackCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~GunAttackCondition() override {}                                    // FS2 0x002765e0
     void onUpdate() override;                                            // FS2 0x0026dee0
     void onApply() override;                                             // FS2 0x0026d950
 };
@@ -2237,6 +2255,7 @@ class ReloadCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~ReloadCondition() override {}                                       // FS2 0x002769d0
     void onUpdate() override;                                            // FS2 0x002704c0
     void onApply() override;                                             // FS2 0x002702e0
 };
@@ -2246,6 +2265,7 @@ class ShowtCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~ShowtCondition() override {}                                        // FS2 0x00276a40
     void onUpdate() override;                                            // FS2 0x002706f0
     void onApply() override;                                             // FS2 0x00270690
 };
@@ -2255,6 +2275,7 @@ class BiteCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~BiteCondition() override {}                                         // FS2 0x00276880
     void onUpdate() override;                                            // FS2 0x0026fd30
     void onApply() override;                                             // FS2 0x0026fb60
 };
@@ -2265,6 +2286,7 @@ class JackCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~JackCondition() override {}                                         // FS2 0x002768f0
     void onUpdate() override;                                            // FS2 0x002701c0
     void onApply() override;                                             // FS2 0x00270120
 };
@@ -2274,6 +2296,7 @@ class ThrowCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~ThrowCondition() override {}                                        // FS2 0x00276ab0
     void onUpdate() override;                                            // FS2 0x00270780
     void onApply() override;                                             // FS2 0x00270710
 };
@@ -2283,6 +2306,7 @@ class TrapCancelCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~TrapCancelCondition() override {}                                   // FS2 0x00276b20
     void onUpdate() override;                                            // FS2 0x00270980
     void onApply() override;                                             // FS2 0x002708c0
 
@@ -2295,6 +2319,7 @@ class TrapSetCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~TrapSetCondition() override {}                                      // FS2 0x00276b90
     void onUpdate() override;                                            // FS2 0x00270a70
     void onApply() override;                                             // FS2 0x00270a00
 
@@ -2308,6 +2333,7 @@ class LadderMoveCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~LadderMoveCondition() override {}                                   // FS2 0x00276810
     void onUpdate() override;                                            // FS2 0x0026fb20
     void onApply() override;                                             // FS2 0x0026f970
 };
@@ -3587,8 +3613,9 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_conditions.balance();
     initList();
 
-    // The links, in the ROM's order: the 24 written of its 43 names (architecture.md
+    // The links, in the ROM's order: the 29 written of its 43 names (architecture.md
     // "The links of the ROM's ctor"). A motion naming another has no link.
+    damageDeadLink = new DamageDeadLink(character, this);
     walkLink = new WalkLink(character, this);
     m_links.insert("Walk", walkLink);
     m_links.insert("Jack", new JackLink(character, this));
@@ -3613,6 +3640,11 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_links.insert("Throw", throwLink);
     m_links.insert("Bite", new BiteLink(character, this));
     m_links.insert("Bitten", new BittenLink(character, this));
+    m_links.insert("Damage", new DamageLink(character, this));
+    m_links.insert("DamageLand", new DamageLandLink(character, this));
+    m_links.insert("DamageFatal", new DamageFatalLink(character, this));
+    m_links.insert("DamageDead", damageDeadLink);
+    m_links.insert("Revive", new ReviveLink(character, this));
     if (character->m_abilities.driving == 1) {
         m_links.insert("ApproachCar", new ApproachCarLink(character, this));
         m_links.insert("ApproachOut", new ApproachOutLink(character, this));
@@ -3822,6 +3854,18 @@ void PlayerMotion::reset(int arg)
         character->m_idleTime = 0.0f;
     }
     character->stopBodyEffects();
+}
+
+// FS2 0x001e5d60
+
+u_char PlayerMotion::setWallCheck(u_char on)
+{
+    const u_char was = m_wallCheck;
+    m_wallCheck = on;
+    CollisionBody *body = owner->m_ground->wallBody;
+    if (body != nullptr)
+        body->on = on;
+    return was;
 }
 
 // FS2 0x001e5d90
@@ -4114,6 +4158,8 @@ void PlayerMotion::stepUpper(bool immediate)
         m_handNames[i] = names[i];
     }
 }
+
+// FS2 0x001eb3b0
 
 const char *PlayerMotion::lowerLabel(int id) const
 {
@@ -7970,6 +8016,281 @@ void PlayerMotion::startBite(StageCharacter *prey)
     bitten->startWalkFile(kBiteWalkRate, bitten->requestedFile(), theirs, angles, false, true);
 }
 
+// ──────────────────────────────────────────────────────────────────────
+// Hit, down and up again: the five links of 0x277230..0x278460.
+
+constexpr u_int kWallRayFallen      = 0x200000;  // CollisionBody::rayMask: what a falling body's wall ray meets too
+constexpr float kBodyOnFloorSeconds = 2.0f;
+
+// dm_car_f, dm_car_b.
+static bool isCarHitMotion(int id)
+{
+    return id == Motion_CarHitFront || id == Motion_CarHitBack;
+}
+
+// What 0x277250 and 0x277670 open with, inline: kinds 0, 1, 9, 0xa lie on the
+// floor by the clock, the others on a click of their motion.
+static bool isBodyOnFloor(StageCharacter *character, const PlayerMotion *motion)
+{
+    const int kind = stageObjRecord(character->m_itemDef)->kind;
+    if (kind == CharacterKind_A || kind == CharacterKind_9 || kind == CharacterKind_1 || kind == CharacterKind_0)
+        return kBodyOnFloorSeconds < motion->m_motionTime;
+    return (character->m_model->m_motionEvents & MotionEvent_Click) != 0;
+}
+
+// Kinds 5, 6, 0xc end dm_car_f and dm_car_b in the plain dm_rev and dm_ded.
+static bool fallsStraightDown(StageCharacter *character)
+{
+    const int kind = stageObjRecord(character->m_itemDef)->kind;
+    return kind == CharacterKind_C || kind == CharacterKind_6 || kind == CharacterKind_5;
+}
+
+// FS2 0x00277230
+
+void ReviveLink::onLeave(MotionLink *)
+{
+    if (motion->m_kindFlags7 != 0)
+        motion->m_b54 = 0;
+}
+
+// FS2 0x00277250
+// callcheck: getStageSelect (stageObjRecord)
+
+void ReviveLink::onRun()
+{
+    if (isBodyOnFloor(character, motion) && motion->m_kindFlags7 != 0)
+        motion->m_b54 = 0;
+}
+
+// FS2 0x002773b0
+
+void DamageDeadLink::onLeave(MotionLink *)
+{
+    if (character->m_model->m_loop != 0)
+        character->m_model->m_loop = 0;
+}
+
+// FS2 0x002773d0
+// callcheck: getDeltaSeconds, request, request, initStatus, isPlayer, isPartner, getStageSelect (stageObjRecord)
+
+void DamageDeadLink::onRun()
+{
+    constexpr float kPoseFrozenAfter = 2.0f;
+    if (counter == 0) {
+        reviveFrames = (int)(character->m_reviveTime * (float)(int)(1.0f / character->m_clock->getDeltaSeconds()));
+        counter++;
+    }
+    if (counter == 1) {
+        if (0 < reviveFrames)
+            reviveFrames--;
+        if (reviveFrames < 0) {
+            if (motion->motionId == Motion_Dead)
+                motion->request(Motion_Revive);
+            else if (motion->motionId == Motion_DeadBack)
+                motion->request(Motion_ReviveBack);
+            character->initStatus();
+        }
+    }
+    if (!character->isPlayer() && !character->isPartner()
+        && stageObjRecord(character->m_itemDef)->kind != CharacterKind_Yrt
+        && kPoseFrozenAfter < motion->m_motionTime)
+        character->m_model->m_loop = 1;
+}
+
+// FS2 0x00277670
+// callcheck: getStageSelect, isEnding, getStageSelect, request, request, request, isEnding, getStageSelect, request, getStageSelect, canDropWeapon, dropWeapon, getStageSelect, find, spawn, getCharacterClass, find, spawn
+
+void DamageFatalLink::onRun()
+{
+    constexpr float kYrtBodyGoesAfter = 1.2f;
+    constexpr u_int kClassEnemy = 8;
+    if (isBodyOnFloor(character, motion) && motion->m_kindFlags7 != 0)
+        motion->m_b54 = 1;
+    if (isCarHitMotion(motion->motionId)) {
+        if (0 < character->m_endurance) {
+            if (!motion->isEnding())
+                return;
+            if (fallsStraightDown(character))
+                motion->request(Motion_Revive);
+            else if (motion->motionId == Motion_CarHitFront)
+                motion->request(Motion_ReviveBack);
+            else if (motion->motionId == Motion_CarHitBack)
+                motion->request(Motion_Revive);
+            return;
+        }
+        if (motion->isEnding() && fallsStraightDown(character))
+            motion->request(Motion_Dead);
+    }
+    if (counter == 1) {
+        if (stageObjRecord(character->m_itemDef)->kind == CharacterKind_Yrt && kYrtBodyGoesAfter < motion->m_motionTime) {
+            if (CollisionBody *body = character->m_ground->pushBody)     // PC: the ROM writes through a null
+                body->on = 0;
+            counter++;
+        }
+    }
+    else if (counter == 0) {
+        StageObject *weapon = character->m_weapons[0];
+        if (character->m_dropsWeapon != 0 && weapon != nullptr && character->canDropWeapon(weapon))
+            character->dropWeapon(weapon, nullptr);
+        if (stageObjRecord(character->m_itemDef)->kind == CharacterKind_Srt) {
+            BoneMap::Node *pelvis = character->m_model->boneMap.find("bn_pelvis");
+            gStageScene->nodeTree->spawn("shiryodead", pelvis->value, nullptr, nullptr, 0, 0);
+        }
+        else if ((character->getCharacterClass() & kClassEnemy) != 0) {
+            BoneMap::Node *pelvis = character->m_model->boneMap.find("bn_pelvis");
+            gStageScene->nodeTree->spawn("yamidead", pelvis->value, nullptr, nullptr, 0, 0);
+        }
+        counter++;
+    }
+}
+
+// FS2 0x00277cc0
+
+void DamageFatalLink::onCancel()
+{
+    if (CollisionBody *body = character->m_ground->wallBody)             // PC: the ROM writes through a null
+        body->rayMask &= ~kWallRayFallen;
+}
+
+// FS2 0x00277cf0
+
+void DamageFatalLink::onRequest()
+{
+    if (isCarHitMotion(motion->motionId) && 0 < character->m_endurance)
+        return;
+    if (CollisionBody *body = character->m_ground->wallBody)             // PC: the ROM writes through a null
+        body->rayMask |= kWallRayFallen;
+}
+
+// FS2 0x00277d60
+
+void DamageLandLink::onRun()
+{
+    if (motion->isEnding())
+        motion->request(character->m_endurance == 0 ? Motion_Dead : Motion_Revive);
+}
+
+// The head's reach past the edge, a car's floor and what stands on it: the
+// middle of 0x277dd0.
+
+void DamageLink::findDive(bool forward)
+{
+    constexpr float kEdgeRayHeight   = 50.0f;
+    constexpr float kHeadMargin      = 20.0f;
+    constexpr float kHeadDefault     = 170.0f;
+    constexpr float kDiveWalkRate    = 0.35f;
+    constexpr u_int kCarFloorSkip    = 0x40140;
+    constexpr u_int kPosePlayRootOff = 0x40;
+
+    sceVu0FVECTOR wallPoint, target, point, angles;
+    float drop = 0.0f;
+    StageObject *floor = nullptr;
+    StageCollisionFace *face = motion->probe->faceAhead(wallPoint, forward);
+    const bool found = motion->probe->findEdge(face, nullptr, target, &drop, &floor, point, angles, &edgeBlocked);
+    if (!(found && drop < 0.0f) && edgeBlocked == 0)
+        return;
+    edgeFound = 1;
+    if (edgeBlocked != 0) {
+        edgeClear = 1;
+    }
+    else {
+        sceVu0FVECTOR from, to;
+        memcpy(from, target, sizeof(from));
+        from[2] += kEdgeRayHeight;
+        memcpy(to, from, sizeof(to));
+        const float away = addAngle(angles[2], kMathPi);
+        float reach = kHeadDefault;
+        BoneMap::Node *head = character->m_model->boneMap.find("bn_head");
+        if (head != nullptr && head->value != nullptr)
+            reach = head->value->getMatrix()[3][2] - character->m_xform.position[2] + kHeadMargin;
+        to[0] += reach * sinCos(-away, 0);
+        to[1] += reach * sinCos(-away, 1);
+        edgeClear = !gStageScene->segmentHitsAny(from, to, 0, kFaceWall, 0, nullptr);
+
+        StageObject *standsOn = character->m_ground->floorObject;
+        const bool onCar = standsOn != nullptr && standsOn->getKind() == StageObject_Car;
+        const bool edgeOnCar = floor != nullptr && floor->getKind() == StageObject_Car;
+        if (edgeClear != 0) {
+            if (onCar && !edgeOnCar) {
+                memcpy(from, point, sizeof(from));
+                from[2] += kEdgeRayHeight;
+                to[2] = from[2];
+                if (gStageScene->segmentHitsAny(from, to, 0, kFaceWall, kCarFloorSkip, nullptr))
+                    edgeFound = 0;
+            }
+        }
+        else if (onCar) {
+            if (edgeOnCar)
+                edgeClear = 1;
+            else
+                edgeFound = 0;
+        }
+    }
+    if (edgeFound == 0)
+        return;
+    ModelMotion *dive = character->m_model->findMotion(0, motion->lowerLabel(forward ? Motion_DiveFront : Motion_DiveBack));
+    if (dive == nullptr) {
+        edgeFound = 0;
+        return;
+    }
+    if (!forward)
+        angles[2] = addAngle(angles[2], kMathPi);
+    motion->startWalkFile(kDiveWalkRate, dive->file, point, angles, true, true);
+    character->m_model->pose->flags &= ~kPosePlayRootOff;
+}
+
+// FS2 0x00277dd0
+// callcheck: randNext, randNext, randNext, randNext, canDropWeapon, dropWeapon, isEnding, request, request, setWallCheck, faceAhead, findEdge, addAngle, find, sinCos, sinCos, segmentHitsAny, segmentHitsAny, lowerLabel, findMotion, addAngle, startWalkFile (findDive)
+
+void DamageLink::onRun()
+{
+    constexpr int   kDropSpreadSide = 50;
+    constexpr int   kDropSpreadUp   = 80;
+    constexpr float kDropTenths     = 10.0f;
+    constexpr float kDropAway       = 15.0f;
+    constexpr float kDiveWithin     = 25.0f;   // squared
+    constexpr float kDiveSeconds    = 1.0f;
+    constexpr int   kRepelInDive    = 2;
+
+    const int id = motion->motionId;
+    const bool forward = id != Motion_DamageFront && id != Motion_DamageFrontHeavy && id != Motion_DamageHitFront; // thrown back by the others
+    if (counter == 0) {
+        edgeFound = 0;
+        edgeBlocked = 0;
+        edgeClear = 0;
+        if (character->m_dropsWeapon != 0 && character->m_armLost != 0) {
+            if (StageObject *weapon = character->m_weapons[0]) {
+                sceVu0FVECTOR offset;
+                offset[0] = (float)((int)randNext() % kDropSpreadSide) / kDropTenths;
+                offset[1] = forward ? -kDropAway : kDropAway;
+                offset[2] = (float)((int)randNext() % kDropSpreadUp) / kDropTenths;
+                offset[3] = 0.0f;
+                if (character->canDropWeapon(weapon))
+                    character->dropWeapon(weapon, offset);
+            }
+            character->m_armLost = 0;
+        }
+        counter++;
+    }
+    if (character->m_abilities.divesOverEdges == 0)
+        return;
+    if (edgeFound != 0 && (!(motion->m_walking != 0 && motion->m_walkHeld != 0) || motion->isEnding())) {
+        const float *walkTo = character->m_model->pose->walkTarget;
+        const float x = character->m_xform.position[0] - walkTo[0];
+        const float y = character->m_xform.position[1] - walkTo[1];
+        if (kDiveWithin < x * x + y * y)
+            edgeFound = 0;
+        else
+            motion->request(forward ? Motion_DiveFront : Motion_DiveBack);
+    }
+    if (edgeFound == 0 && motion->m_motionTime < kDiveSeconds)
+        findDive(forward);
+    if (edgeFound != 0) {
+        motion->setWallCheck(0);
+        character->m_ground->repelLevel = kRepelInDive;
+    }
+}
+
 // FS2 0x00278d90
 
 void BiteLink::onRequest()
@@ -8638,7 +8959,7 @@ void StageCharacter::setBrainState(int state, int arg)
         m_tree->setChildrenActive(true);
     }
     if (state == kBrainDownState)
-        m_motion->m_reviveFrames = (int)(m_reviveTime * (float)(int)(1.0f / m_clock->getDeltaSeconds()));
+        m_motion->damageDeadLink->reviveFrames = (int)(m_reviveTime * (float)(int)(1.0f / m_clock->getDeltaSeconds()));
     if (m_brain != nullptr)
         m_brain->setState(state, arg);
 }
@@ -8764,7 +9085,7 @@ void StageCharacter::resetActionState()
         m_sightTable[i].frame = -1;
     }
     m_armLost = 0;
-    m_3d8 = 1;
+    m_dropsWeapon = 1;
     m_flinched = 0;
     m_fidgets = 1;
     m_placedThisFrame = 0;
@@ -9435,7 +9756,7 @@ bool StageCharacter::isCorpseGone()
     if (getLifeState() != LifeState_Corpse)
         return false;
     const StageCar *view = gStageScene->car;
-    int frames = m_motion->m_reviveFrames;
+    int frames = m_motion->damageDeadLink->reviveFrames;
     if (view != nullptr && view->isNear(kCorpseWatchRange, m_xform.position)) {
         const StageObject *floor = m_ground->floorObject;
         if ((floor == nullptr || const_cast<StageObject *>(floor)->getKind() != StageObject_Car)
@@ -9451,7 +9772,7 @@ bool StageCharacter::takeCorpse()
 {
     const bool gone = isCorpseGone();
     if (gone)
-        m_motion->m_reviveFrames = -1;
+        m_motion->damageDeadLink->reviveFrames = -1;
     return gone;
 }
 
@@ -10095,10 +10416,10 @@ void StageCharacter::setProperty(int id, int sub, int value)
     case CharProp_Vector2:       m_scriptPoint.point[2] = (float)value; break;
     case CharProp_ReviveFrames:
         if (getLifeState() == kLifeDownInMotion)
-            m_motion->m_reviveFrames = scriptFramesFrom30(value);
+            m_motion->damageDeadLink->reviveFrames = scriptFramesFrom30(value);
         break;
     case Prop_SwitchedOn:        setLampOn(value != 0); break;
-    case CharProp_Flag3d8:       m_3d8 = value != 0; break;
+    case CharProp_Flag3d8:       m_dropsWeapon = value != 0; break;
     case CharProp_Fidgets:       m_fidgets = value != 0; break;
     case CharProp_ShotScale:     m_shotScale = value; break;
     case CharProp_MeleeScale:    m_meleeScale = value; break;
@@ -10131,7 +10452,7 @@ static int reviveFramesLeft(StageCharacter *character)
     StageScene *scene = gStageScene;
     if (character->getLifeState() != kLifeDownInMotion)
         return scriptFramesTo30((int)(character->m_reviveTime * (float)stageFps()));
-    const int frames = character->m_motion->m_reviveFrames;
+    const int frames = character->m_motion->damageDeadLink->reviveFrames;
     const bool near = scene->car != nullptr
                    && scene->car->isNear(kNearViewTarget, character->m_xform.position);
     StageObject *floor = character->m_ground->floorObject;
@@ -10232,7 +10553,7 @@ int StageCharacter::getProperty(int id, int sub)
     case CharProp_ReviveFrames:  return reviveFramesLeft(this);
     case Prop_SwitchedOn:        return isLampOn();
     case CharProp_Value670:      return m_670;
-    case CharProp_Flag3d8:       return m_3d8;
+    case CharProp_Flag3d8:       return m_dropsWeapon;
     case CharProp_Answer3a:
     case CharProp_Answer3b:      return 3;
     case CharProp_SheetDecoyResist: return sheet->decoyResist;

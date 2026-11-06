@@ -422,7 +422,7 @@ struct CharacterAbilities
     int    stepLevel;           // FS2 +0x3b0: 0..4, the sheet's 段差Lv
     u_char ladder;              // FS2 +0x3b4: the sheet's ハシゴ
     u_char jump;                // FS2 +0x3b5: the sheet's ｼﾞｬﾝﾌﾟLv
-    u_char flag3b6;             // FS2 +0x3b6
+    u_char divesOverEdges;      // FS2 +0x3b6: DamageLink looks for an edge to go over
     u_char flag3b7;             // FS2 +0x3b7
     u_char flag3b8;             // FS2 +0x3b8
     u_char flag3b9;             // FS2 +0x3b9
@@ -2684,7 +2684,7 @@ public:
     StageThrownItem *m_throwItem = nullptr; // beside wants.throwItemEe, as m_putItem
     int    m_reloadRounds = 0;  // FS2 +0x3dc: rounds still to load, one by one
     CharacterAllows m_allows = {};  // FS2 +0x360: the start hook clears it, the conditions fill it
-    u_char m_3d8 = 1;           // FS2 +0x3d8: 1 from resetActionState; the links 0x277670.. test it (unread)
+    u_char m_dropsWeapon = 1;   // FS2 +0x3d8: 1 from resetActionState; Damage and DamageFatal let the long weapon go
     u_char m_armLost = 0;       // FS2 +0x3d9: the right arm just reached 0 (setRightArm)
     u_char m_fidgets = 1;       // FS2 +0x3e0: resetActionState sets it, a script's property may clear it: stepFidgets' idle0 / idle1
     u_char m_flinched = 0;      // FS2 +0x3e1: flinch went from 0 straight to the sheet's limit (setFlinch; readers unread)
