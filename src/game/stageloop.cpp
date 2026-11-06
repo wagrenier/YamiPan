@@ -16,6 +16,7 @@
 #include "game/stageobjlist.h"
 #include "game/stageresult.h"
 #include "game/sysdata.h"
+#include "game/teleport.h"
 #include "game/thread.h"
 #include "sdk/scetypes.h"
 
@@ -83,6 +84,8 @@ static inline void stageLeaveMenu()
 // stageRestart).
 static inline void stageRunScreens(bool skipE)
 {
+    if (teleportSkipsIntro())   // PC
+        return;
     if (!skipE) {
         runStageScreenE();
         threadYield(2);
@@ -105,6 +108,7 @@ static inline void stageFinish()
 static void stageCleared();
 static bool stageGameOverMenu();
 static int  stagePauseMenu();
+static bool stageTeleportOut();
 static void stageRestart(const char *scriptPath);
 static void stageLoad(const char *scriptPath);
 
@@ -141,6 +145,7 @@ void stageThread(void *arg)
     sStageSound = new StageSound();
     stageLoad(scriptPath);
     stageRunScreens(false);
+    teleportIntroDone();        // PC
     gStageScene->beginPlay();
     threadYield(1);
     gStageScene->party->resetSaved();
@@ -206,7 +211,15 @@ void stageThread(void *arg)
             gStageScene->sound->resume();
             stageLeaveMenu();
         }
-    } while (threadYield(1) == 0);
+    } while (threadYield(1) == 0 && !stageTeleportOut());
+
+    // PC: a teleport can leave in the middle of an event, with the stage
+    // waiting behind it. Only then: the ROM always ends on the stage.
+    if (sParentScene != nullptr) {
+        delete gStageScene;
+        gStageScene = sParentScene;
+        sParentScene = nullptr;
+    }
 
     setFrameBrightness(kFrameBrightnessFull);
     gGameSystem->m_perfMeter.m_recording = false;
@@ -317,6 +330,19 @@ static int stagePauseMenu()
         return 0;
     }
     return -1;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// PC: leaves the stage for a teleport the way the pause menu's navigator jump
+// does. The menu thread takes it from there.
+
+static bool stageTeleportOut()
+{
+    teleportNoteFrame();
+    if (!teleportPending())
+        return false;
+    setStageExit(StageExit_Navi);
+    return true;
 }
 
 // ──────────────────────────────────────────────────────────────────────

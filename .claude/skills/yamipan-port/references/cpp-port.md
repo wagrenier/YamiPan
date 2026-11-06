@@ -71,6 +71,7 @@ src/yamipan/
   media/   MpegStream, MpegDecoder  libmpeg on the host: PSS demux, FFmpeg MPEG-2
   io/      InputSystem           keyboard + gamepad -> a DualShock 2 report, bindings
   ui/      Overlay, Panel        the ImGui menu bar and its panels
+                                 (teleport_panel.cpp: F2, game/teleport.h, the one panel calling into the game)
 ```
 
 ## Threads

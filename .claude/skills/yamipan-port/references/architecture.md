@@ -2117,6 +2117,12 @@ The GS state of a pass (table 0x310180): opaque ALPHA_1 0x2a, TEST_1 0x5050b (al
 
 **Script properties:** `StageObject::setProperty` 0x189f40 is slot +0x1fc of 29 object vtables; `SubSceneModelObject`'s 0x268ae0 is the same list, and now calls it. The numbers are in game/objectproperty.h. A character has its own, unwritten (open-items.md, Done).
 
+## Teleport (game/teleport.cpp, yamipan/ui/teleport_panel.cpp, 2026-11-06; not in the ROM)
+
+**What an event is, from the disc (`tools/reverse/eventscan.py`).** 30 stages with 57 parts (a part is `StageSelect::variant`, a pack `pks<stage>c<part>EU.enc`; stages 0, 27 and 29 have one), 39 films (the navigator's single-part nodes, 30..68). 144 file events `demoEU/s<stage>/<name>.edp`, 13 event movies (`kStageMovies`: every number a `d` file skips, EV0102 fills d0102), 165 scripted events `sd_*`, which have no file: each is an entry of `scripts[0]`, and **its name is case-sensitive** (`findEntry`, `sd_MT04_08`; `StageSimpleEvent::begin` ends at once and silently without it). d1608 and 22_06 are on the disc and no script starts them. What starts an event says where it happens: `Root` the stage's start, `AREA*` a trigger volume, `F_*` a character, `o*` an object.
+
+**The roads it takes are the game's own.** `teleportPending` cuts what runs: `runLayout` as a cancel, `runNaviLayout` as its message, `stageThread` as the pause menu's navigator jump (StageExit_Navi), and `menuFlow` reads the title as New Game. `menuPlayLoop` calls `teleportTake`, which fills the record as `applyNaviAnswer` does, and `StageMission::afterScripts` starts the event as native 0x1f2 / 0x155 would. New in the ROM's flow: leaving in the middle of an event, so `stageThread` deletes the sub-scene and takes the parent back first; and a fade back after the event, which a script does in the game.
+
 ## The car and elevator poses (game/vehiclepose.cpp 0x27dc40..0x280010, 2026-11-06, batch 172, `verify`)
 
 Two `ModelPose` subclasses, made by `StageModel::setBaseMotion` for kinds `ModelPose_Car` and `ModelPose_Elevator`. No source string names the file. The car object is game/stagecar.cpp (next section); the elevator object (`elevatorCall` 0x294280, 0x294cb0, 0x295010) is not written, and `createMapObject` still makes a plain object of it. `tools/reverse/vehiclecmp.py` is the proof so far.

@@ -11,6 +11,7 @@
 #include "game/pad.h"
 #include "game/stageresult.h"
 #include "game/sysdata.h"
+#include "game/teleport.h"
 #include "game/thread.h"
 #include "sdk/scetypes.h"
 
@@ -191,6 +192,11 @@ int runLayout(void *item, int arg, bool cancelable, const char *baseDir)
         layout.draw(packet, texList);
         gGameSystem->m_packets.closeList();
         if (cancelable && (sys->m_pad0.m_pressed & kLayoutCancelButton)) {
+            result = kLayoutCancelled;
+            break;
+        }
+        // PC: a teleport leaves any screen the way a cancel does.
+        if (teleportPending()) {
             result = kLayoutCancelled;
             break;
         }

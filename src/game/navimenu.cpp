@@ -23,6 +23,7 @@
 #include "game/pad.h"
 #include "game/screen.h"
 #include "game/sysdata.h"
+#include "game/teleport.h"
 #include "game/thread.h"
 #include "game/uigame.h"
 #include "game/uilayout.h"
@@ -101,7 +102,7 @@ static int runNaviLayout(int arg, void *data)
     layout.setData(data, arg);
     overlayShowScreen();
     do {
-        if (threadYield(1) != 0)
+        if (threadYield(1) != 0 || teleportPending())   // PC: the second
             return NaviAnswer_Leave;
         layout.advance();
         layout.update();
