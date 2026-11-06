@@ -95,6 +95,11 @@ void YamiPan_DrawUiTexture(const void *list, const void *owner)
     renderer.canvas().bindImage(list, renderer.textures().imageOf(*static_cast<const Tim2Texture *>(owner)));
 }
 
+void YamiPan_DrawUiSqueeze(const void *list, int on)
+{
+    canvas().setSqueezed(list, on != 0);
+}
+
 void YamiPan_DrawUiBegin(const void *list, int format)
 {
     canvas().begin(list, format);

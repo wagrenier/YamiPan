@@ -1515,10 +1515,11 @@ questions. Resolve items here when they are settled (move them to "Done" with th
        run, 2026-11-05): no game file reads the aspect yet, and what draws in raw window coordinates,
        with no matrix (ScenePool's strip, WideFontPrinter, gsFillRect), comes out 4/3 wider at 16:9:
        a strip cell is 26.7 pixels of a 683-wide window and 35.5 of a 910-wide one at the same height.
-       The user's rule says never stretched, so the 2D layer needs one answer for these: for the user
-       to decide, or a run of its own. A squeeze about the frame's centre in UiCanvas, turned on per
-       element, would serve the centred ones; left-anchored and right-anchored elements need more.
-       `game/scenepool.cpp` stays `verify` for this alone;
+       **The user decided, 2026-11-05: squeeze about the centre.** `YamiPan_DrawUiSqueeze(list, on)`
+       (UiCanvas::setSqueezed), per element, factor (4/3) / aspect from PictureLayout, 1 at 4:3 and
+       narrower. In use: ScenePool, DemoStream::drawSubtitles, UiPrompt. Everything else in raw window
+       coordinates still stretches: left- or right-anchored elements need an anchor of their own, and
+       full-screen fades and fills must not be squeezed;
    (d) placeholders to replace: `sdk/libmc.cpp` (the empty slot: a real card under `memcard/`),
        ~~`sdk/libmpeg.cpp`~~ (done 2026-11-03: above), `sdk/sif.cpp` (no IOP: the audio
        milestone brings RosePan's IOP host and `iop/rxsnddrv`);
@@ -1853,6 +1854,8 @@ apply here):
   ledger learns to merge.
 
 ## Done
+
+- **The squeeze about the centre, 2026-11-05, game/scenepool.cpp done (the user's decision).** New seam `YamiPan_DrawUiSqueeze`; ScenePool's strip and text, the subtitles of DemoStream and the Use prompt go through it. **Seen, New Game, 240 s, the same temporary panel and forced widths, removed after:** against the strip composed from the asset, 77,160 pixels, at 4:3 (window 960 x 720) mean 0.27, worst 5 of 255, at 16:9 (1280 x 720) mean 0.28, worst 7, none over 12 at either. progress/20261105-strip-squeezed-16x9.png. A short test text measured 50 x 17 pixels, centred, at both (the numbers are in the commit's report). Not seen with the squeeze: a real subtitle and the real prompt, which use the same call; their 4:3 is unchanged by construction. The user resized the window during a run; every shot of that run was still 910 x 512, so the numbers stand. **A second host fix found on the way:** at a render size where a pixel centre falls exactly on a sprite's edge (960 x 720: 156 x 1.875 = 292.5) the UV rounded into the next cell of the sheet, one-pixel ticks at cell seams, absent at 683 wide. UiCanvas pulls a sprite's UVs in by 1/64 texel.
 
 - **game/scenepool.cpp, 2026-11-05, verify: the strip proven, and flat draws fixed.** The code was complete; this run read all of it against the ROM (ctor, draw, drawStrip, the row marks, the table 0x2fb4b0, colour 0x80101010: no difference) and looked at the picture. Test, removed afterwards: a flat panel under the strip and forced widths 150, 330, 0, 90, which use the concave corners and the empty line. The expected frame was composed from the asset and the table: **New Game, 300 s, shot against composed strip, 78,720 pixels: mean difference 0.18, worst 6 of 255 at 4:3 (683 x 512), mean 0.26, worst 5 at 16:9 (910 x 512), no pixel over 12.** progress/20261105-strip-16x9.png has the 16:9 one. No capture of the real game exists, so the reference is the asset and the ROM's table. `verify`, not `done`: at 16:9 the strip is right but stretched, like all the raw 2D ("Next up", item (c) of the Pan layer list). **Host fix found by this test:** ui.frag scaled every colour by 255/128, GS MODULATE, on flat draws too, where the GS has no MODULATE: a backdrop of (0xc0, 0x90, 0x40) showed as (255, 255, 127), and shows (192, 144, 64) now. The fragment uniform's y is the scale: 255/128 on a texture, 1 flat. Alpha stays on the 0x80 scale. So every flat fill is half as bright as before, as the ROM has it: gsFillRect, the dark fill of events, StageFade, ScreenFill. Not looked at after the fix: an event's dark fill or a fade on screen. The first notice did not come up in a 345 s run of work/walklong_pad.txt with this build: the pad's timing has drifted, so that script is no way to reach it now.
 

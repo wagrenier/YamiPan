@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-05 21:26 at commit `23611c3` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-05 21:53 at commit `6f798e8` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -144,7 +144,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 222 TUs: todo 96, partial 37, verify 89, done 27
+- 222 TUs: todo 96, partial 37, verify 88, done 28
 - next: **game/gameoversequence.cpp** (pinned in the queue)
 - pinned queue: game/gameoversequence.cpp, game/characterroute.cpp
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -184,7 +184,6 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/s2ddata.cpp` 9/9 -- Host: S2dRef<T> (s2ddata.h) is a 32-bit offset from the field itself, 0 null, implicit T* conversion, copy deleted; S2dData, S2dObject, S2dWidgetDef, S2dImage a
 - verify: `game/scene.cpp` 1/1 -- gameSceneThread written in full: loadInitPack, runStartupSequence, overlayThreadStart, then forever loadMenuPack, the scene from sScenes (one retail entry, Menu
 - verify: `game/scenepairs.cpp` 18/18 -- All 18 of 0x171300..0x171a30 written, batch 117, plus StageMapObject's sideHook0..3 and setPosition, setRotation, setYaw in mapobject.cpp (0x174a10..0x174aa0, 0
-- verify: `game/scenepool.cpp` 11/11 -- All 11 read against the ROM again, no difference. Strip proven with a temporary flat panel and forced widths (removed): 78,720 pixels against the strip composed
 - verify: `game/scenerender.cpp` 24/34 -- The pin is closed: applyDebugAmbient, its call, the README paragraph and SceneRender::isKeyed with its two guards are gone; nothing was brightened. Measured in 
 - verify: `game/screen.cpp` 18/18 -- All 18 functions of 0x2676e0..0x2681e0 written (batch 037, 33 names, Ghidra saved). Overlay thread slot 6 draws the BG movie screen layout (init pack file 2dEU/
 - verify: `game/scriptrunner.cpp` 439/657 -- All 364 natives the scan finds a script calling are bound; py sssall.py --unwritten lists none called, 160 never called stay unwritten (the scan reads version 0
@@ -239,6 +238,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-05 21:53 `game/scenepool.cpp` done: Squeeze about the centre: the strip, subtitles and prompt keep their shape at any aspect; sprite UVs inset
 - 2026-11-05 21:26 `game/stageobject.cpp` verify: closed: all 43 written; setProperty, getProperty and scriptAddMenuLine compared with the ROM, stale notes fixed, queue refilled
 - 2026-11-05 21:17 `game/scenepool.cpp` verify: The strip behind the foot-of-screen text proven against its asset; flat 2D draws no longer doubled
 - 2026-11-05 20:46 `game/uiitemlist.cpp` done: the Use prompt's button picture and UiPrompt's destructor; all 20 functions written
@@ -246,7 +246,6 @@ Recent sessions:
 - 2026-11-05 19:49 `game/stagescene.cpp` verify: The next mission starts: isMotionTarget, so the shared animals get their motions and a pose
 - 2026-11-05 18:57 `game/navimenu.cpp` verify: The navigator: the screen after a stage, its two widgets and the answer
 - 2026-11-05 18:07 `game/stageplayer.cpp` verify: The stage's end: a box answers native 0x44, ClearSequence is written, New Game's first part ends
-- 2026-11-05 17:36 `game/scriptrunner.cpp` verify: The last 89 natives: every native the disc's scripts call is bound; nothing seen to run
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|

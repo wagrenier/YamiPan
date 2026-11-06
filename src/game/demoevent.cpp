@@ -1204,7 +1204,9 @@ void DemoStream::drawSubtitles(sceVif1Packet *packet)
     m_printer->m_packet = packet;
     m_printer->setDrawState(packet, false);
     m_printer->m_rgba = m_colour;
+    YamiPan_DrawUiSqueeze(packet, 1);   // PC: the lines keep their shape at any aspect
     m_printer->printText(m_textX, m_textY - (lines - 1) * lineHeight, text);
+    YamiPan_DrawUiSqueeze(packet, 0);
     m_printer->m_packet = nullptr;
 }
 

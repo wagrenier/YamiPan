@@ -216,6 +216,7 @@ void ScenePool::draw(sceVif1Packet *packet, TexAreaList *texList)
         for (int line = 0; line < lines && i + line < m_count; line++)
             m_widths[i + line] = widths[line];
     }
+    YamiPan_DrawUiSqueeze(packet, 1);   // PC: the lines keep their shape at any aspect
     drawStrip(packet);
 
     const u_int flags = m_printer->m_flags;
@@ -231,6 +232,7 @@ void ScenePool::draw(sceVif1Packet *packet, TexAreaList *texList)
         m_printer->m_rgba = m_colours[i];
         m_printer->printText(0, i * m_printer->lineHeight(), m_slots[i]);
     }
+    YamiPan_DrawUiSqueeze(packet, 0);
     m_printer->m_packet = nullptr;
     m_printer->m_originX = kPrinterRestingOrigin;
     m_printer->m_originY = kPrinterRestingOrigin;

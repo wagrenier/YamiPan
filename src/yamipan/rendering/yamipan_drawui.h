@@ -55,6 +55,13 @@ void YamiPan_DrawUiPrim(const void *list, uint64_t prim, const uint8_t *rgbaq);
 /* Binds the texture of `owner` (a GsTexture; null keeps the bound one). */
 void YamiPan_DrawUiTexture(const void *list, const void *owner);
 
+/* Non-zero: the vertices that follow are pulled towards the frame's
+ * centre, by as much as the display is wider than the 4:3 set the 2D was
+ * composed for, so that what is drawn centred in raw window coordinates
+ * (text, its strip, a prompt) keeps its shape at any aspect. Zero ends it.
+ * The factor is 1 at 4:3 and on anything narrower. */
+void YamiPan_DrawUiSqueeze(const void *list, int on);
+
 /* Starts a vertex run of `format`; YamiPan_DrawUiVertex adds to it. */
 void YamiPan_DrawUiBegin(const void *list, int format);
 void YamiPan_DrawUiVertex(const void *list, const YamiPanUiVertex *vertex);

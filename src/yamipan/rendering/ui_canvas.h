@@ -31,6 +31,9 @@ public:
     void setRegister(const void *list, int reg, std::uint64_t value);
     void setPrimitive(const void *list, std::uint64_t prim, const std::uint8_t *sharedColor);
     void bindImage(const void *list, std::shared_ptr<Image> image);
+    // The vertices that follow keep their shape at a display wider than 4:3: x is pulled towards the
+    // frame's centre. For what is drawn centred; the factor comes from the display's PictureLayout.
+    void setSqueezed(const void *list, bool squeezed);
     void begin(const void *list, int format);
     void addVertex(const void *list, const YamiPanUiVertex &vertex);
 
@@ -79,6 +82,7 @@ private:
         int format = 0;
         std::vector<Vertex> run; // the vertices of the open primitive
         unsigned runCount = 0;
+        float squeeze = 1.0f; // of x about the frame's centre
 
         std::vector<Vertex> vertices;
         std::vector<DrawCall> draws;
