@@ -98,7 +98,7 @@ BlendMode blendModeOf(std::uint64_t alpha)
         return BlendMode::Subtractive;
     if (a == kZero && b == kDestinationColor && d == kDestinationColor && c == kSourceAlpha)
         return BlendMode::DestinationFade;
-    // Cd * As + Cd, the effects' brightening (0x49): the host multiplies by the colour, not the alpha.
+    // Cd * As + Cd, the effects' brightening (0x49). The blend multiplies by the colour: model.frag gives it As.
     if (a == kDestinationColor && b == kZero && d == kDestinationColor && c == kSourceAlpha)
         return BlendMode::DestinationBoost;
     return BlendMode::Alpha;
