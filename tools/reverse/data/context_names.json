@@ -20291,6 +20291,12 @@
   "was": "FUN_001fede0",
   "why": "hides the scene, shows the two lists and the vision's object"
  },
+ "001ffcd0": {
+  "name": "SightJack::drawBindFlash",
+  "tag": "game-inferred",
+  "was": "FUN_001ffcd0",
+  "why": "patches 0x2fa650, an additive strip over the half of the frame of bind 0..3, alpha from +0xd0, not for 4"
+ },
  "001fff00": {
   "name": "SightJack::pickBearing",
   "tag": "game-inferred",
@@ -20345,23 +20351,41 @@
   "was": "FUN_00201080",
   "why": "the stick picks among the viewable characters"
  },
+ "00201380": {
+  "name": "SightJack::drawFadingMarker",
+  "tag": "game-inferred",
+  "was": "FUN_00201380",
+  "why": "off the jack, the kept character's cross with alpha from +0xc8 over 0x15e frames, if its brain is in state 5"
+ },
+ "00201520": {
+  "name": "SightJack::drawFoeMarkers",
+  "tag": "game-inferred",
+  "was": "FUN_00201520",
+  "why": "walks the character list: canView, brain state 5, not viewer, partner or viewed: 0x205f50 in red"
+ },
  "002016d0": {
   "name": "SightJack::drawCorpse",
   "tag": "game-inferred",
   "was": "FUN_002016d0",
-  "why": "black, grain, film, flecks"
+  "why": "black under the fill as it stands, for life state 4"
+ },
+ "00201840": {
+  "name": "SightJack::drawWarning",
+  "tag": "game-inferred",
+  "was": "FUN_00201840",
+  "why": "the gate's branch while +0x2c is set: crosses, film, a red wash 0x20000080, list 8's bright frame"
  },
  "00201a40": {
   "name": "SightJack::drawNobody",
   "tag": "game-inferred",
   "was": "FUN_00201a40",
-  "why": "black, grain at level 1, film, flecks"
+  "why": "black under the fill at level 1 when no one is viewed"
  },
  "00201bc0": {
   "name": "SightJack::drawLive",
   "tag": "game-inferred",
   "was": "FUN_00201bc0",
-  "why": "film, grain, markers, flecks, frame, signal"
+  "why": "film, fill, crosses on list 9, bright frame and the character's tint on list 8"
  },
  "002024c0": {
   "name": "SightJack::draw",
@@ -20428,6 +20452,18 @@
   "tag": "game-inferred",
   "was": "FUN_002052d0",
   "why": "deleting dtor of the block DemoCamera::~DemoCamera frees"
+ },
+ "002058e0": {
+  "name": "gsFrameAdd",
+  "tag": "game-inferred",
+  "was": "FUN_002058e0",
+  "why": "eight 64 wide flat sprites over the frame with ALPHA_1 0x48: rgba added"
+ },
+ "00205f50": {
+  "name": "jackMarker",
+  "tag": "game-inferred",
+  "was": "FUN_00205f50",
+  "why": "projects bn_head (plus gMotionModels .b) through the view's +0x280: lines, rays and glow from the static packets 0x2fa450, 0x2fa560"
  },
  "002067d0": {
   "name": "CharacterPad::pressedBind",
@@ -29441,6 +29477,12 @@
   "was": "FUN_002a1240",
   "why": "the 8-byte object at the record's +0x44 over a texture"
  },
+ "002a2050": {
+  "name": "demoFleckRandNext",
+  "tag": "game-inferred",
+  "was": "FUN_002a2050",
+  "why": "x * 0x15a4e35 + 1, the linear generator demoFilmDraw and the flecks step by hand"
+ },
  "002a2070": {
   "name": "StageCharacter::playMotionSound",
   "tag": "game-inferred",
@@ -31048,6 +31090,18 @@
   "tag": "game-inferred",
   "was": "FUN_002cf590",
   "why": "pure character switch over a name starting with S, id for getSurfaceSound; -1 otherwise"
+ },
+ "002cf880": {
+  "name": "gsFrameContrast",
+  "tag": "game-inferred",
+  "was": "FUN_002cf880",
+  "why": "eight flat sprites with ALPHA_1 0x41: (Cd - Cs) * As + Cd"
+ },
+ "002cfb20": {
+  "name": "gsFrameScale",
+  "tag": "game-inferred",
+  "was": "FUN_002cfb20",
+  "why": "eight flat sprites with ALPHA_1 0xa9 (Cd * FIX) or, past 0xff, 0x69 (Cd * FIX + Cd)"
  },
  "002cff30": {
   "name": "SceneModel::~SceneModel",

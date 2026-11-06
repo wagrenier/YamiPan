@@ -1805,11 +1805,23 @@
    "why": "Cut out of unassigned@00171300: the stage's name-keyed object registry (gStageScene +0x10, new 0xdc in 0x19c180): nine groups of a name map (AVL tree of StageNameNode by strcmp) and an object list, with their two containers. Bounded below by the BoxGrid vector instances (0x1928f0..0x1938f8) and above by game logic at 0x1953f0 (player state test, no registry use)."
   },
   "game/stageparty.cpp": {
-   "notes": "Written, batch 157: JackLink 0x27c370 (the class that starts the party for everyone but a scenario's lead; the host had none, so L2 never reached SightJack::start), ScreenFill 0x1518a0..0x151f60 in game/demoevent.cpp (range added; it was all stubs, and it now also lays the ROM's alpha 4 grain over every stage frame), JackFill::draw, SightJack::draw with drawNobody, drawCorpse, drawLive. Seen in a temporary build that forced UiShowFlags byte 9, node 4, 290 s: SightJack::start fires, no crash, lilac-blue static over black with nobody tuned; no in-game reference to compare it with. In a normal run L2 still does nothing in node 4 because the script leaves byte 9 at 0 (log: controlled=1 flag=0). Not seen: the view through a character: gatherBearings finds F_NPC04 and F_E04_SB1 but the mode stayed 2 in every sample, the stick pushes were 30 reads long. Next: force byte 9, start at about read 5000, hold LSLEFT and LSRIGHT 300 reads each, look at drawLive. Not drawn: markers 0x205f50 0x201520 0x201380, bind arrow 0x1ffcd0, list 8 (frame 0x2cfb20, 0x1ff010, signal 0x2cf880, 0x2d10f0), warning 0x201840, demoFilmDraw, flecks. New stub: StageCharacter::isJackBlank 0x215370. callcheck MISSING on drawLive and draw is exactly that list. The check's 15 s boot picture is the language menu, unchanged. 23 other motion links are missing the same way: open-items.md Next up.",
+   "notes": "Written, batch 158: gsFrameScale 0x2cfb20, gsFrameContrast 0x2cf880, gsFrameAdd 0x2058e0 as host passes (YamiPan_DrawUiFrameScale, YamiPan_DrawUiFrameContrast, blend modes DestinationScale, DestinationBoost), jackMarker 0x205f50, drawBindFlash 0x1ffcd0, drawFoeMarkers 0x201520, drawFadingMarker 0x201380, drawWarning 0x201840, the game over lists, canBeJacked, isJackBlank, canSeeVisions (in game/playermotion.cpp). Seen in a temporary build, removed (New Game forced to stage 4, byte 9 set to 1, tuned fill forced to 0.08, pad work/jack2_pad.txt, 290 s, no crash): progress/20261106-jack-view-sb1.png, the street through the eyes of F_E04_SB1, brightened, grain over it. No in-game reference exists to compare it with. At the real tuned levels 0.57 and 0.70 the grain hides nearly all of it. Not judged: no cross came on screen in the shots looked at, so jackMarker, the bind flash, tints, warning and fading cross ran at most. A real run still cannot start the jack in node 4: byte 9 stays 0, which both stops stepAlt and blanks the stick while the party runs; which script sets it was not looked for. Next: demoFilmDraw 0x204550, a new TU, then the flecks, then the palette views 0x1ff010 (a luminance gradient map, this TU), SceneModelHolder::setPlace, KeepList::addNamed. open-items.md Next up has how each works. callcheck MISSING on drawLive and draw is exactly those unwritten: FUN_001ff010 and the boss film. The 15 s check is the language menu, unchanged; its last.png was empty, killed while writing, so the last whole shot was copied over it.",
    "ranges": [
     [
      "001fe6b0",
      "00204550"
+    ],
+    [
+     "002058e0",
+     "00205b80"
+    ],
+    [
+     "00205f50",
+     "002067d0"
+    ],
+    [
+     "002cf880",
+     "002cfe20"
     ]
    ],
    "sessions": [
@@ -1822,10 +1834,15 @@
      "date": "2026-11-06 02:24",
      "status": "partial",
      "summary": "the sight-jack starts and shows its noise: JackLink, ScreenFill, the draw gate"
+    },
+    {
+     "date": "2026-11-06 03:11",
+     "status": "partial",
+     "summary": "the sight-jack shows the view through a character: frame passes, markers, bind flash, warning"
     }
    ],
    "status": "partial",
-   "why": "StageParty and its view record: facade 0x1fe6b0..0x1fed30, vtable classes after it up to demoFilmDraw"
+   "why": "StageParty and its view record; the jack's frame passes gsFrameAdd, gsFrameContrast, gsFrameScale and jackMarker, each called only from SightJack"
   },
   "game/stageplayer.cpp": {
    "notes": "Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was stubs, so native 0x52 never ended the stage. Seen in the user's own playthrough: the cutscene, then mission accomplished, then back to stage 1. That last step is the navigator: runNaviFile and applyNaviAnswer are stubs (open-items.md, Next up). AREA_AC10 and AREA11 now fire too and were not looked at.",

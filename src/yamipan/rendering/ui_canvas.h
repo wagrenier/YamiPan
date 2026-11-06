@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <span>
 #include <unordered_map>
 #include <vector>
@@ -34,6 +35,10 @@ public:
     // The vertices that follow keep their shape at a display wider than 4:3: x is pulled towards the
     // frame's centre. For what is drawn centred; the factor comes from the display's PictureLayout.
     void setSqueezed(const void *list, bool squeezed);
+    // The whole frame times factor, 0..4: what the GS does with Cd as its A and FIX as its C.
+    void scaleFrame(const void *list, float factor);
+    // The whole frame pushed away from a colour: (Cd - Cs) * As + Cd, as ALPHA_1 0x41 does.
+    void contrastFrame(const void *list, std::uint32_t rgba);
     void begin(const void *list, int format);
     void addVertex(const void *list, const YamiPanUiVertex &vertex);
 
@@ -83,6 +88,7 @@ private:
         std::vector<Vertex> run; // the vertices of the open primitive
         unsigned runCount = 0;
         float squeeze = 1.0f; // of x about the frame's centre
+        std::optional<BlendMode> forcedBlend; // a whole-frame pass's, past what the GS context says
 
         std::vector<Vertex> vertices;
         std::vector<DrawCall> draws;
@@ -91,6 +97,7 @@ private:
     Layer &layer(const void *list);
     void emit(Layer &target, std::initializer_list<Vertex> triangleVertices);
     void assemble(Layer &target, const Vertex &vertex);
+    void fillFrame(Layer &target, BlendMode blend, std::uint32_t color, std::uint8_t fixedAlpha);
     static DrawCall stateOf(const Layer &layer);
 
     Renderer &m_renderer;

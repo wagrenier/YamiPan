@@ -88,6 +88,14 @@ SDL_GPUColorTargetBlendState blendStateOf(PipelineKey key)
         state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_CONSTANT_COLOR;
         state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
         break;
+    case BlendMode::DestinationScale:
+        state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+        state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_CONSTANT_COLOR;
+        break;
+    case BlendMode::DestinationBoost:
+        state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_DST_COLOR;
+        state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+        break;
     }
 
     if (key.mask != ColorMask::All)

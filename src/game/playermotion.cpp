@@ -4533,6 +4533,43 @@ bool StageCharacter::isControlled() const
     return driver == this;
 }
 
+// FS2 0x00212160
+// callcheck: getBrainPace, getStageSelect, getStageSelect (stageObjRecord)
+
+bool StageCharacter::canBeJacked()
+{
+    const int kind = stageObjRecord(m_itemDef)->kind;
+    return getBrainPace() != BrainState_Off && kind != CharacterKind_Srt && kind != CharacterKind_Yrt
+        && gStageScene->player != this;
+}
+
+// FS2 0x00215370
+// callcheck: getSaveData, getStageSelect (stageObjRecord; the ROM tests s1 unset off stage 0x12: here no)
+
+bool StageCharacter::isJackBlank()
+{
+    constexpr int kMotionJackBlank = 0xf8;
+    constexpr int kStageJackBlank = 0x12;
+    return getStageSelect()->stage == kStageJackBlank && stageObjRecord(m_itemDef)->kind == CharacterKind_1
+        && m_motion->motionId == kMotionJackBlank;
+}
+
+// FS2 0x00215480
+// callcheck: getSaveData, getStageSelect, getStageSelect (stageObjRecord)
+
+bool StageCharacter::canSeeVisions()
+{
+    constexpr int kStageVisionKind1 = 0x12;
+    constexpr int kStageVisionKind0a = 0x15;
+    constexpr int kStageVisionKind0b = 7;
+    const int stage = getStageSelect()->stage;
+    if (stage == kStageVisionKind1)
+        return stageObjRecord(m_itemDef)->kind == CharacterKind_1;
+    if (stage == kStageVisionKind0a || stage == kStageVisionKind0b)
+        return stageObjRecord(m_itemDef)->kind == CharacterKind_0;
+    return false;
+}
+
 // FS2 0x00211970
 
 bool StageCharacter::isTakenOver() const

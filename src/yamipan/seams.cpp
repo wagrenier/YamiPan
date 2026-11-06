@@ -100,6 +100,16 @@ void YamiPan_DrawUiSqueeze(const void *list, int on)
     canvas().setSqueezed(list, on != 0);
 }
 
+void YamiPan_DrawUiFrameScale(const void *list, float factor)
+{
+    canvas().scaleFrame(list, factor);
+}
+
+void YamiPan_DrawUiFrameContrast(const void *list, uint32_t rgba)
+{
+    canvas().contrastFrame(list, rgba);
+}
+
 void YamiPan_DrawUiBegin(const void *list, int format)
 {
     canvas().begin(list, format);

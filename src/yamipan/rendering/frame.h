@@ -24,6 +24,8 @@ enum class BlendMode : std::uint8_t
     DestinationAlpha, // (Cs - Cd) * Ad + Cd
     FixedAlpha,     // (Cs - Cd) * FIX + Cd
     FixedAdditive,  // Cs * FIX + Cd
+    DestinationScale, // Cd * FIX, FIX up to 1
+    DestinationBoost, // Cs * Cd + Cd
 };
 
 // FRAME_1's FBMSK as the two halves the game's presets use.
