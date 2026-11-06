@@ -5491,10 +5491,10 @@
 // *****************************************************************************
 
 /* 0020e6a0 0000003c */ StageCharacter::playerEvent(){}  // game
-/* 0020e6e0 0000008c */ FUN_0020e6e0(){}
-/* 0020e770 000003c4 */ FUN_0020e770(){}
+/* 0020e6e0 0000008c */ StageCharacter::rumbleHit(){}  // game
+/* 0020e770 000003c4 */ StageCharacter::takeFallDamage(){}  // game
 /* 0020eb40 0000188c */ StageCharacter::takeDamage(){}  // game
-/* 002103d0 00000170 */ FUN_002103d0(){}
+/* 002103d0 00000170 */ StageCharacter::takeBlow(){}  // game
 /* 00210540 000001d8 */ StageCharacter::getHandClass(){}  // game
 /* 00210720 000000c0 */ StageCharacter::hasBiter(){}  // game
 /* 002107e0 00000024 */ FUN_002107e0(){}
@@ -7049,7 +7049,7 @@
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 0026a010 00000234 */ FUN_0026a010(){}
+/* 0026a010 00000234 */ MotionProbe::spawnBlood(){}  // game
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp

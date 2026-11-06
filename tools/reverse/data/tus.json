@@ -780,7 +780,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Written: the five links of 0x277230..0x278460, 29 MotionCondition dtors, setWallCheck 0x1e5d60; lowerLabel is 0x1eb3b0; reviveFrames now lives in DamageDeadLink (+0xc10). findEdge takes a ninth stack argument here, the blocked flag at +0x21, which the decompiler drops. Seen in a log, temporary build, removed (YAMIPAN_TELEPORT=2, 150 s, no crash, forced on kind 8 foes): dm_c to dm_ded, 1250 frames down, takeCorpse -1, into dm_rev; dm_car_b and dm_lnd with endurance to dm_rev then idle. Not judged on screen: no shot frames a lying foe. Never ran: the edge dive, weapon throw, shiryodead, yamidead. NEXT: PlayerMotion::takeHits 0x1e18c0..0x1e3e80, 0x25c0 bytes, is still its first line; it is what requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice, so no real blow fells anything yet. Then DiveFall, DiveLand, TrapHit. Pinned top of the queue for this. References: architecture.md Being hit, lying down and getting up; open-items.md top of Next up.",
+   "notes": "Written: PlayerMotion::takeHits 0x1e18c0 whole (split into takeLightHit, takeBlowHit, landBlow, reactToBlow, takeTrapHit, takeLanding, takeShoves), takeBlow 0x2103d0, takeFallDamage 0x20e770, rumbleHit 0x20e6e0, playerEvent 0x20e6a0, MotionProbe::spawnBlood 0x26a010, playDieVoice 0x2a2e30. Fixed: the NaN position of d2303 was CharacterGround::meetWall taking sqrtf where the ROM has sqrt.s, which takes the absolute value (hazards.md). Seen, YAMIPAN_TELEPORT=d2303, temporary log removed: seven blows of F_E23_YO1 on F_PC23, blood each time, dm_r, endurance 100 to 0, dm_c, the game own Mission failed screen. No crash in 4 d2303 runs and 1 stage 1 run. The stage 1 picture was not looked at, so whether a door hurts the walker (atDoor) is unknown. Never ran: shots at a character, car blows, light hurting, trap catching, landing damage, the climber hit. callcheck lists takeHits as MISSING only because its calls live in the seven parts. Stubs still reached here: ItemPhysics::setMoving 0x23cfc0 (needs 0x23d0c0), hasAlteredVoice. NEXT: the links DiveFall, DiveLand, TrapHit, which takeHits and Damage can now ask for. References: architecture.md What a hit does; hazards.md sqrt.s is not sqrtf; open-items.md top of Next up, with five doubts.",
    "ranges": [
     [
      "00175700",
@@ -1201,11 +1201,6 @@
    ],
    "sessions": [
     {
-     "date": "2026-11-05 01:48",
-     "status": "partial",
-     "summary": "ledges and the Use button: Level, LevelLift, Ladder, Jump, LadderMove, the links Up, Fall, Jump, Ladder, and game/uiitemlist.cpp with its prompt: he climbs and drops 60 units and Down shows on screen"
-    },
-    {
      "date": "2026-11-05 02:55",
      "status": "partial",
      "summary": "doors written and switched off: StageDoor, Door condition and link, natives; with them on a stage run crashes, cause not found in time"
@@ -1259,6 +1254,11 @@
      "date": "2026-11-06 17:15",
      "status": "partial",
      "summary": "Damage, DamageLand, DamageFatal, DamageDead and Revive links, the conditions' dtors, setWallCheck"
+    },
+    {
+     "date": "2026-11-06 17:52",
+     "status": "partial",
+     "summary": "takeHits whole: a blow that lands fells what it hits, the first real fight runs to Mission failed; the NaN position is fixed (sqrt.s)"
     }
    ],
    "status": "partial",

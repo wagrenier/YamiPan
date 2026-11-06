@@ -61,6 +61,7 @@ public:
     ~StageBulletBase() override;                                         // FS2 0x00180670
 
     StageCharacter *shooter() const { return m_owner; }
+    StageItem *weapon() const { return m_weapon; }
 
     // FS2 0x00183fd0
     int getKind() override { return StageObject_BulletBase; }

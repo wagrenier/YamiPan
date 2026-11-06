@@ -458,12 +458,6 @@ ItemPhysics::~ItemPhysics()
     YAMIPAN_STUB("ItemPhysics::~ItemPhysics", 0x0023db00);
 }
 
-// stub of FS2 0x0020e6a0
-void StageCharacter::playerEvent(const char *name)
-{
-    YAMIPAN_STUB("StageCharacter::playerEvent", 0x0020e6a0);
-}
-
 // stub of FS2 0x002a7a50
 NmlPose::NmlPose(int, int, int, int)
 {
@@ -570,12 +564,6 @@ void ItemPhysics::setMoving(bool moving, bool awake)
     YAMIPAN_STUB("ItemPhysics::setMoving", 0x0023cfc0);
 }
 
-// stub of FS2 0x0026a010
-void MotionProbe::spawnBlood(float size, StageNodeBase *node, const float *direction, int kind, int arg)
-{
-    YAMIPAN_STUB("MotionProbe::spawnBlood", 0x0026a010);
-}
-
 // stub of FS2 address unknown (1 candidates)
 bool SceneOwnedObject::canUse()
 {
@@ -614,12 +602,6 @@ bool StageCharacter::hasAlteredVoice()
 {
     YAMIPAN_STUB("StageCharacter::hasAlteredVoice", 0x00215af0);
     return {};
-}
-
-// stub of FS2 0x002a2e30
-void StageCharacter::playDieVoice()
-{
-    YAMIPAN_STUB("StageCharacter::playDieVoice", 0x002a2e30);
 }
 
 // stub of FS2 0x002a29f0

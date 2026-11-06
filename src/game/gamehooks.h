@@ -2273,10 +2273,17 @@ public:
     // state 0 takes the character out of the scene, another brings it back;
     // 7 starts the count of DamageDead. The brain follows. arg goes to it.
     void setBrainState(int state, int arg);                              // FS2 0x0021ba10
-    // A hit: from whom, its kind and part, how much. Not written.
     // from's blow: the parts, the flinch, the endurance; what the endurance
     // lost. kind: getHandClass's, or 4 a shot.
     int  takeDamage(StageObject *from, int kind, int part, int amount);  // FS2 0x0020eb40
+    // A blow of from's hand or weapon on a part drawn at random, or the car
+    // from drives.
+    void takeBlow(StageCharacter *from);                                 // FS2 0x002103d0
+    // A fall: twice the amount off each leg, the amount off the endurance.
+    // What it lost.
+    int  takeFallDamage(int amount);                                     // FS2 0x0020e770
+    // The pad shakes when this is who it feels for.
+    void rumbleHit(bool hard);                                           // FS2 0x0020e6e0
     // A script's hit: takeDamage on the body, the flinch left as it was, and
     // the motion the reaction asks for (natives 0x1d1, 0x1d2).
     void scriptHurt(StageObject *from, int amount, int reaction);        // FS2 0x00217d60
@@ -2693,7 +2700,7 @@ public:
     float  m_flinchClock = 0.0f; // FS2 +0x3e4: 0 from initStatus; sideHook0's seconds
     float  m_unarmedClock = 0.0f; // FS2 +0x3e8
     float  m_enduranceClock = 0.0f; // FS2 +0x3ec
-    float  m_3f0 = 0.0f;        // FS2 +0x3f0: a countdown (its setter and readers are unread)
+    float  m_lightHurtWait = 0.0f; // FS2 +0x3f0: seconds until a light can hurt it again (PlayerMotion::takeLightHit)
     u_char m_winded = 0;        // FS2 +0x3f4: m_health ran out, until it is back at 40%: the stance tables' second row, no running
     float  m_idleTime = 0.0f;   // FS2 +0x3f8: seconds standing, for the next fidget
     float  m_idleDelay = 0.0f;  // FS2 +0x3fc: the wait for a fidget (rollIdleDelay)
@@ -2727,8 +2734,8 @@ public:
     int    m_flinch = 0;        // FS2 +0x5ac: setFlinch, to the sheet's ひるみ耐性値
     int    m_unarmedMsp = 0;    // FS2 +0x5b0: the sheet's 素手MSP
     int    m_5b4 = 0;           // FS2 +0x5b4: only a script's
-    u_char m_5b8 = 0;           // FS2 +0x5b8: a script's; 0x1e18c0 reads it
-    u_char m_biteProof = 0;     // FS2 +0x5b9: it is not bitten, whatever its brain
+    u_char m_shrugsHits = 0;    // FS2 +0x5b8: a script's: hits take endurance and it plays no reaction
+    u_char m_biteProof = 0;     // FS2 +0x5b9: it is not bitten and nothing hits it, whatever its brain
     u_char m_5ba = 0;           // FS2 +0x5ba: a script's; 0x226270 reads it
     int    m_aiLevel = 0;       // FS2 +0x5bc: the sheet's AILV
     float  m_sight = 0.0f;      // FS2 +0x5c0: 視界
@@ -2738,7 +2745,7 @@ public:
     int    m_lightDamage = 0;   // FS2 +0x5d0: 光ﾀﾞﾒｰｼﾞ
     int    m_lightFlinch = 0;   // FS2 +0x5d4: 光怯み
     int    m_lifeOverride = -1; // FS2 +0x690: getLifeState: >= 0 says 6, or 0 says 7 (writer unread)
-    int    m_doorBlow = 0;      // FS2 +0x5d8: 素手攻撃: what a forcing takes off a door
+    int    m_unarmedAttack = 0;      // FS2 +0x5d8: 素手攻撃: a blow, and what a forcing takes off a door
     int    m_biteDamage = 0;    // FS2 +0x5dc: かみつき: a bite's
     float  m_walkRate = 1.0f;   // FS2 +0x5e0: 移動速度 / 100
     float  m_runRate = 1.0f;    // FS2 +0x5e4: 走り速度 / 100

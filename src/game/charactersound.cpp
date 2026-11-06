@@ -203,6 +203,41 @@ void StageCharacter::playBreathDown(int level)
     sayPartyVoice(this, kBreaths[level]);
 }
 
+// Two of the kinds vanish rather than die, and those are heard.
+// FS2 0x002a2e30
+// callcheck: getSoundKind, getStageSelect, sprintf, playVoiceHeard, playVoice
+
+void StageCharacter::playDieVoice()
+{
+    char buffer[kVoiceNameSize];
+    const char *stream = nullptr;
+    const char *voice = nullptr;
+    switch (getSoundKind()) {
+    case SoundKind_Yrt:
+        voice = "YRT_VANISH";
+        break;
+    case SoundKind_Srt:
+        voice = "SRT_VANISH";
+        break;
+    case SoundKind_Enemy:
+        sprintf(buffer, "SE%02d_DIE", stageObjRecord(m_itemDef)->seType);
+        stream = buffer;
+        break;
+    case SoundKind_Npc:
+        stream = "SNPC_DIE";
+        break;
+    case SoundKind_Pc:
+        stream = "SPC_DIE";
+        break;
+    default:
+        break;
+    }
+    if (stream != nullptr)
+        playVoice(stream);
+    else if (voice != nullptr)
+        playVoiceHeard(voice);
+}
+
 // FS2 0x002a3e20
 // callcheck: getStageSelect, playVoiceHeard (sayPartyVoice)
 

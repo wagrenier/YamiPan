@@ -186,6 +186,8 @@ public:
     void resetPlace();                                                   // FS2 0x0028dac0
     // Level keeps off at 1; native 0x1c8 sets it.
     int  getMode() { return m_mode; }
+    // What a character it hits at that GroundSlide loses (StageCharacter::takeBlow).
+    int *runOverDamage(int level) { return m_runOver.at(level); }
 
     CarParts *m_lights = nullptr;   // FS2 +0x2b0
     StageCharacter *m_driver = nullptr; // FS2 +0x3c0
