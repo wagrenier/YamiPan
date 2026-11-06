@@ -111,15 +111,6 @@ float wrapPi(float angle)
 
 const sceVu0FVECTOR kNowhere = { -1e7f, -1e7f, -1e7f, 1.0f };               // data 0x306780
 
-// in = in * R(angles). Inline here; FS2 0x00135990.
-// callcheck: FUN_00135a90 (rotationMatrixXyz)
-void rotateByAngles(sceVu0FMATRIX out, const sceVu0FVECTOR *in, const sceVu0FVECTOR angles)
-{
-    sceVu0FMATRIX turn;
-    rotationMatrixXyz(turn, angles);
-    multiplyMatrix(out, in, turn);
-}
-
 } // namespace
 
 // ──────────────────────────────────────────────────────────────────────

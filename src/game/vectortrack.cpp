@@ -79,18 +79,6 @@ void VectorTrack::reset()
         sample(keys);
 }
 
-// out = a + b * s; xyz keeps a's w.
-// FS2 0x00135fa0, 0x00135fc0
-
-static inline void addScaled(int lanes, float s, sceVu0FVECTOR out, const sceVu0FVECTOR a,
-                             const sceVu0FVECTOR b)
-{
-    for (int lane = 0; lane < lanes; lane++)
-        out[lane] = a[lane] + b[lane] * s;
-    for (int lane = lanes; lane < 4; lane++)
-        out[lane] = a[lane];
-}
-
 // FS2 0x00299f90
 // callcheck: scaleVec4, addScaledVec4, addScaledVec4, addScaledVec4, scaleVec4, addScaledVec3, addScaledVec3, addScaledVec3, scaleVec4
 
@@ -106,19 +94,23 @@ void VectorTrack::sample(VectorKey *key)
     }
 
     const float u = 1.0f - t;
-    const int lanes = curve == 1 ? 4 : 3;
     scaleVec4(u * u * u, value, key->value);
-    addScaled(lanes, t * t * t, value, value, next->value);
-    addScaled(lanes, t * u * 3.0f * u, value, value, key->ctrlOut);
-    addScaled(lanes, t * u * 3.0f * t, value, value, next->ctrlIn);
-    if (curve != 1)
+    if (curve == 1) {
+        addScaledVec4(t * t * t, value, value, next->value);
+        addScaledVec4(t * u * 3.0f * u, value, value, key->ctrlOut);
+        addScaledVec4(t * u * 3.0f * t, value, value, next->ctrlIn);
+    } else {
+        addScaledVec3(t * t * t, value, value, next->value);
+        addScaledVec3(t * u * 3.0f * u, value, value, key->ctrlOut);
+        addScaledVec3(t * u * 3.0f * t, value, value, next->ctrlIn);
         value[3] = 1.0f;
+    }
 }
 
 // a + dir * s, all four lanes.
 static inline void pointAlong(sceVu0FVECTOR out, const sceVu0FVECTOR a, const sceVu0FVECTOR dir, float s)
 {
-    addScaled(4, s, out, a, dir);
+    addScaledVec4(s, out, a, dir);
 }
 
 // FS2 0x0029a160

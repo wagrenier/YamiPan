@@ -60,6 +60,14 @@ def round32(value):
     return f32(b32(value))
 
 
+def vudiv(top, bottom):
+    """The VU's div: by zero, the largest float of the two signs."""
+    if bottom == 0.0:
+        negative = (b32(top) ^ b32(bottom)) >> 31
+        return f32(0xff7fffff if negative else 0x7f7fffff)
+    return round32(top / bottom)
+
+
 class Ee:
     def __init__(self, size=0x2000000):
         self.m = bytearray(size)
@@ -74,6 +82,8 @@ class Ee:
         self.vf = [[0.0, 0.0, 0.0, 0.0] for _ in range(32)]
         self.vf[0][3] = 1.0
         self.acc = 0.0
+        self.vacc = [0.0, 0.0, 0.0, 0.0]
+        self.vstatus = 0        # the sticky flags that are kept: 0x80 sign
         self.q = 0.0
         self.cc = False
         self.hi = 0
@@ -205,6 +215,7 @@ class Ee:
         imm = lambda x: int(x, 0)
         if op == 'nop': return
         if op == 'lui': s(a[0], s32(imm(a[1]) << 16))
+        elif op == 'addi': s(a[0], s32(g(a[1]) + imm(a[2])))
         elif op == 'move': s(a[0], g(a[1]))
         elif op == 'andi': s(a[0], g(a[1]) & imm(a[2]))
         elif op == 'ori': s(a[0], g(a[1]) | imm(a[2]))
@@ -285,6 +296,10 @@ class Ee:
         elif op == '.word' and int(a[0], 16) & 0xfc1f07ff == 0x70000628:     # paddub rd, rs, zero: a 128-bit move
             word = int(a[0], 16)
             s(GPR[(word >> 11) & 0x1f], g(GPR[(word >> 21) & 0x1f]))
+        elif op == '.word' and int(a[0], 16) >> 26 == 0x1c:
+            self.mmi(int(a[0], 16), pc)
+        elif op == 'pref':
+            pass
         elif op == 'div1':
             n, d = s32(g(a[1])), s32(g(a[2]))
             q = abs(n) // abs(d) if d else 0
@@ -300,6 +315,8 @@ class Ee:
         elif op == 'sqrt.s': setf(a[0], math.sqrt(abs(F(a[1]))))
         elif op == 'mula.s': self.acc = round32(F(a[0]) * F(a[1]))
         elif op == 'adda.s': self.acc = round32(F(a[0]) + F(a[1]))
+        elif op == 'suba.s': self.acc = round32(F(a[0]) - F(a[1]))
+        elif op == 'madda.s': self.acc = round32(self.acc + round32(F(a[0]) * F(a[1])))
         elif op == 'madd.s': setf(a[0], self.acc + round32(F(a[1]) * F(a[2])))
         elif op == 'msub.s': setf(a[0], self.acc - round32(F(a[1]) * F(a[2])))
         elif op == 'c.lt.s': self.cc = F(a[0]) < F(a[1])
@@ -322,10 +339,17 @@ class Ee:
             bits = g(a[0]) & M128
             self.vf[self.vnum(a[1])] = [f32(bits >> (i * 32)) for i in range(4)]
         elif op == 'vrsqrt':
-            top = self.vcomp(a[1])
-            self.q = round32(top / math.sqrt(abs(self.vcomp(a[2]))))
-        elif op == 'vwaitq':
+            self.q = vudiv(self.vcomp(a[1]), math.sqrt(abs(self.vcomp(a[2]))))
+        elif op == 'vdiv':
+            self.q = vudiv(self.vcomp(a[1]), self.vcomp(a[2]))
+        elif op == 'vsqrt':
+            self.q = round32(math.sqrt(abs(self.vcomp(a[2]))))
+        elif op in ('vwaitq', 'vnop'):
             pass
+        elif op == 'ctc2':
+            self.vstatus = g(a[0]) & 0xfff
+        elif op == 'cfc2':
+            s(a[0], self.vstatus)
         elif op.startswith('v'):
             self.vop(op, a, pc)
         else:
@@ -337,20 +361,80 @@ class Ee:
     def vcomp(self, name):
         return self.vf[self.vnum(name)][FIELD[name[-1]]]
 
+    def mmi(self, word, pc):
+        """The 128-bit MMI ops seen so far: mipsdis prints them as .word."""
+        rs, rt, rd = (GPR[(word >> shift) & 0x1f] for shift in (21, 16, 11))
+        key = (word & 0x3f, (word >> 6) & 0x1f)
+        a, b = self.g(rs) & M128, self.g(rt) & M128
+        lanes = lambda v: [(v >> (i * 32)) & M32 for i in range(4)]
+        join = lambda w: sum(x << (i * 32) for i, x in enumerate(w))
+        la, lb = lanes(a), lanes(b)
+        if key == (0x08, 0x02):                 # pcgtw
+            out = join([M32 if s32(x) > s32(y) else 0 for x, y in zip(la, lb)])
+        elif key == (0x09, 0x12):               # pand
+            out = a & b
+        elif key == (0x29, 0x12):               # por
+            out = a | b
+        elif key == (0x29, 0x13):               # pnor
+            out = ~(a | b) & M128
+        elif key == (0x08, 0x12):               # pextlw
+            out = join([lb[0], la[0], lb[1], la[1]])
+        elif key == (0x28, 0x12):               # pextuw
+            out = join([lb[2], la[2], lb[3], la[3]])
+        elif key == (0x29, 0x0e):               # pcpyud
+            out = (a >> 64) | ((b >> 64) << 64)
+        else:
+            raise RuntimeError('unsupported MMI word 0x%08x at 0x%x' % (word, pc))
+        self.s(rd, out)
+
+    def vset(self, dest, fields, values):
+        fd = list(self.vacc if dest == 'acc' else self.vf[self.vnum(dest)])
+        for field in fields:
+            i = FIELD[field]
+            fd[i] = values[i]
+            if dest != 'acc' and b32(values[i]) >> 31:
+                self.vstatus |= 0x80
+        if dest == 'acc':
+            self.vacc = fd
+        elif dest != 'vf0':
+            self.vf[self.vnum(dest)] = fd
+
+    def vbroad(self, name, form):
+        """What a VU op's ft is: a register, one lane of it broadcast, or Q."""
+        if form == 'q':
+            return [self.q] * 4
+        return [self.vcomp(name)] * 4 if form else self.vf[self.vnum(name)]
+
     def vop(self, op, a, pc):
-        m = re.fullmatch(r'v(add|sub|mul)(x|y|z|w|q)?\.([xyzw]+)', op)
+        m = re.fullmatch(r'v(msub|madd|mul|add|sub)(a)?(x|y|z|w|q)?\.([xyzw]+)', op)
+        if m is not None:
+            kind, _, form, fields = m.groups()
+            fs, ft = self.vf[self.vnum(a[1])], self.vbroad(a[2], form)
+            acc = self.vacc
+            do = {'add': lambda i: fs[i] + ft[i], 'sub': lambda i: fs[i] - ft[i], 'mul': lambda i: fs[i] * ft[i],
+                  'madd': lambda i: acc[i] + round32(fs[i] * ft[i]),
+                  'msub': lambda i: acc[i] - round32(fs[i] * ft[i])}[kind]
+            self.vset(a[0], fields, [round32(do(i)) if 'xyzw'[i] in fields else 0.0 for i in range(4)])
+            return
+        m = re.fullmatch(r'v(move|mr32|max|ftoi0|ftoi4|itof0|opmula|opmsub)\.([xyzw]+)', op)
         if m is None:
             raise RuntimeError('unsupported VU op %s at 0x%x' % (op, pc))
+        kind, fields = m.groups()
         fs = self.vf[self.vnum(a[1])]
-        if m.group(2) == 'q':
-            ft = [self.q] * 4
-        elif m.group(2):
-            ft = [self.vcomp(a[2])] * 4
+        if kind == 'move':
+            out = list(fs)
+        elif kind == 'mr32':
+            out = [fs[1], fs[2], fs[3], fs[0]]
+        elif kind == 'max':
+            out = [max(x, y) for x, y in zip(fs, self.vf[self.vnum(a[2])])]
+        elif kind in ('ftoi0', 'ftoi4'):
+            # An integer in a vf is kept as the float with its bits.
+            scale = 16.0 if kind == 'ftoi4' else 1.0
+            out = [f32(max(-0x80000000, min(0x7fffffff, int(x * scale))) & M32) for x in fs]
+        elif kind == 'itof0':
+            out = [round32(float(s32(b32(x)))) for x in fs]
         else:
             ft = self.vf[self.vnum(a[2])]
-        fd = list(self.vf[self.vnum(a[0])])
-        for field in m.group(3):
-            i = FIELD[field]
-            fd[i] = round32({'add': fs[i] + ft[i], 'sub': fs[i] - ft[i], 'mul': fs[i] * ft[i]}[m.group(1)])
-        if a[0] != 'vf0':
-            self.vf[self.vnum(a[0])] = fd
+            cross = [round32(fs[1] * ft[2]), round32(fs[2] * ft[0]), round32(fs[0] * ft[1]), 0.0]
+            out = cross if kind == 'opmula' else [round32(self.vacc[i] - cross[i]) for i in range(4)]
+        self.vset(a[0], fields, out)

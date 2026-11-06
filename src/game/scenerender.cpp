@@ -719,7 +719,7 @@ void SceneRender::lightObject(StageObject *object)
 }
 
 // FS2 0x001f8620
-// callcheck: sceneGroupIsLit, getShownState, contains, setFrom, boxContains, inBoxes, isYriOrKne, isPlayer, find, segmentHitsAny, setTo, getModelAmbient, step, vecNormalize, scaleVec4, setLight, setAmbient, vecDirection, lerpVec4b (lightObject holds them; lerpVec4b is blendVec4)
+// callcheck: sceneGroupIsLit, getShownState, contains, setFrom, boxContains, inBoxes, isYriOrKne, isPlayer, find, segmentHitsAny, setTo, getModelAmbient, step, vecNormalize, scaleVec4, setLight, setAmbient, vecDirection, blendVec4 (lightObject holds them)
 
 void SceneRender::updateLights()
 {
