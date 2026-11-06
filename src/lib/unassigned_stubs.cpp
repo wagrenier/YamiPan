@@ -626,13 +626,6 @@ void StageMenu::setData(void *data)
     YAMIPAN_STUB("StageMenu::setData", 0x00230810);
 }
 
-// stub of FS2 0x00175c40
-bool StageObject::isMotionTarget(int index)
-{
-    YAMIPAN_STUB("StageObject::isMotionTarget", 0x00175c40);
-    return {};
-}
-
 // stub of FS2 0x001fe890
 void StageParty::addImage(const void *image)
 {
