@@ -1,5 +1,7 @@
 {
- "queue": [],
+ "queue": [
+  "game/demofleck.cpp"
+ ],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
   "frontier_ignore": [],
@@ -221,6 +223,15 @@
    "status": "verify",
    "task": "The opening event, queued by the user 2026-11-04 to come right after the lighting. The game opens on a scripted event, almost perfectly dark, with something circling; none of it shows yet. Needs game/scriptrunner.cpp first. Find the path: mission +0xc8 (the pending event's name, afterScripts 0x286c40 starts it), StageMission setup 0x2870f0 and tickPending 0x286ce0, requestSubScene 0x196060, DemoCamera 0x26ce20 and its step, DemoExecuter, drawOverlay 0x26c920. Unproven that the opening is d0101, the only event with its own filter in StageScene::draw. Done when the picture shows the opening from the event's own camera, without YAMIPAN_CAMERA (open-items.md, The opening event).",
    "why": "ScreenFill 0x1516f0..0x151f70 sits right after StageFade in the binary; same base vtable 0x311260"
+  },
+  "game/demofleck.cpp": {
+   "ranges": [
+    [
+     "002a11c0",
+     "002a2070"
+    ]
+   ],
+   "why": "The flecks over the jack and the event: demoFleckCreate, Draw, Step and their helpers up to the generator, next to StageCharacter's sound code"
   },
   "game/drawsys.cpp": {
    "notes": "All 164 of 0x2d46a0-0x2dac70 are written or listed. New: drawSysAddModel 0x2d5140 (draw group, name flags, wave surfaces, plant textures), drawSysFindKind1Surface 0x2d46a0, parseNameTags 0x2d54a0, the plant search 0x2da220 and drawSysBuildBossShadowTexture 0x2d5e10 with its three blits, batch 098. StageModelData and RenaModel were the same object as ModelInstance: folded, and the model file records are now in gamehooks.h in EE layout (ModelFile, ModelFileNode, ModelMesh, ModelMeshParts, ModelMeshPart, ModelMaterial), so vcmtable.cpp changed with them; ModelSurface is host. New host seam src/yamipan/rendering/yamipan_drawshadow.h with empty bodies in seams.cpp until a 3D host module exists. Checked: build green, layoutcheck OK, callcheck no missing, a scratch harness on parseNameTags, the alpha ramp and the blur chain order. Screen: New Game run of 240 s under the scripted pad, 118 screenshots to frame 7080: the Easy / Normal / Options menu at 3600, black at 6000 and at the last frame, no crash. Black is expected: nothing draws 3D, and drawSysAddModel is not called yet because StageModel::init is a stub. Unproven: nothing here has run on real model data; the boss chain and which channel is the brightness need a real picture. Next: PackTables::parse 0x2bcf10, NodeTransform 0x1d7f20, StageModel::init 0x188b10 (needs a +0xa8 field), ModelFile::createInstance 0x2e5210 with 0x2e4800 and 0x2e3e10, then the rena run unassigned@002e2970 and a 3D host module. Details and doubts: open-items.md Next up, architecture.md The draw system.",
@@ -1805,18 +1816,10 @@
    "why": "Cut out of unassigned@00171300: the stage's name-keyed object registry (gStageScene +0x10, new 0xdc in 0x19c180): nine groups of a name map (AVL tree of StageNameNode by strcmp) and an object list, with their two containers. Bounded below by the BoxGrid vector instances (0x1928f0..0x1938f8) and above by game logic at 0x1953f0 (player state test, no registry use)."
   },
   "game/stageparty.cpp": {
-   "notes": "Written, batch 158: gsFrameScale 0x2cfb20, gsFrameContrast 0x2cf880, gsFrameAdd 0x2058e0 as host passes (YamiPan_DrawUiFrameScale, YamiPan_DrawUiFrameContrast, blend modes DestinationScale, DestinationBoost), jackMarker 0x205f50, drawBindFlash 0x1ffcd0, drawFoeMarkers 0x201520, drawFadingMarker 0x201380, drawWarning 0x201840, the game over lists, canBeJacked, isJackBlank, canSeeVisions (in game/playermotion.cpp). Seen in a temporary build, removed (New Game forced to stage 4, byte 9 set to 1, tuned fill forced to 0.08, pad work/jack2_pad.txt, 290 s, no crash): progress/20261106-jack-view-sb1.png, the street through the eyes of F_E04_SB1, brightened, grain over it. No in-game reference exists to compare it with. At the real tuned levels 0.57 and 0.70 the grain hides nearly all of it. Not judged: no cross came on screen in the shots looked at, so jackMarker, the bind flash, tints, warning and fading cross ran at most. A real run still cannot start the jack in node 4: byte 9 stays 0, which both stops stepAlt and blanks the stick while the party runs; which script sets it was not looked for. Next: demoFilmDraw 0x204550, a new TU, then the flecks, then the palette views 0x1ff010 (a luminance gradient map, this TU), SceneModelHolder::setPlace, KeepList::addNamed. open-items.md Next up has how each works. callcheck MISSING on drawLive and draw is exactly those unwritten: FUN_001ff010 and the boss film. The 15 s check is the language menu, unchanged; its last.png was empty, killed while writing, so the last whole shot was copied over it.",
+   "notes": "Written, batches 159, 160: SightJack::drawPaletteView 0x1ff010 (FramePalettePass, a gradient map at half the render size, the ROM's three ramps in the source), JackFilm::draw 0x204550 with drawCorner, ~JackFilm, clone (FilmOverlayPass), the sound KAKOSI in setVisionTarget, restoreBinds, getFilm, getFlecks, demoFleckRandNext. The film range joined this TU: pinned 001fe6b0-002067d0, it lies between this file's functions. demoFilmDraw and demoFilmDestroy are gone: DemoCamera calls JackFilm. Seen only in a temporary build, removed: passes forced over the first room on a timer, doorwalk pad, 245 s and 280 s, no crash. Sepia and grey on the wall, negative in progress/20261106-jack-negative-ramp.png with the ROM's jump to pale blue at index 0x10, film in a temporary white at four levels in progress/20261106-jack-film-test-white.png: a ring closing in from the edges, mirrored about the centre. No reference picture: the film frames were not extracted, and no real jack shows any of this (byte 9 stays 0 in node 4). The 15 s check is the language menu, unchanged. Left partial: drawLive still lacks stage 0x1b's boss film 0x2d10f0, FUN_002d3080 and the object at +0xb4: that is callcheck's MISSING on drawLive, explained. Next: game/demofleck.cpp is queued, then which script sets byte 9, then SceneModelHolder. open-items.md Next up has the order and the doubts.",
    "ranges": [
     [
      "001fe6b0",
-     "00204550"
-    ],
-    [
-     "002058e0",
-     "00205b80"
-    ],
-    [
-     "00205f50",
      "002067d0"
     ],
     [
@@ -1839,10 +1842,15 @@
      "date": "2026-11-06 03:11",
      "status": "partial",
      "summary": "the sight-jack shows the view through a character: frame passes, markers, bind flash, warning"
+    },
+    {
+     "date": "2026-11-06 03:54",
+     "status": "partial",
+     "summary": "the jack's palette views and film as host passes"
     }
    ],
    "status": "partial",
-   "why": "StageParty and its view record; the jack's frame passes gsFrameAdd, gsFrameContrast, gsFrameScale and jackMarker, each called only from SightJack"
+   "why": "The film 0x204550..0x2058e0 and 0x205b80 lie between this file's own functions (0x204250 JackFilm::clone before them, gsFrameAdd and jackMarker after) and JackFilm is this file's; contiguous, so one object file"
   },
   "game/stageplayer.cpp": {
    "notes": "Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was stubs, so native 0x52 never ended the stage. Seen in the user's own playthrough: the cutscene, then mission accomplished, then back to stage 1. That last step is the navigator: runNaviFile and applyNaviAnswer are stubs (open-items.md, Next up). AREA_AC10 and AREA11 now fire too and were not looked at.",

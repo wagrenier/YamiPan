@@ -41,6 +41,7 @@
 #include "game/scriptrunner.h"
 #include "game/stageloop.h"
 #include "game/stageobjlist.h"
+#include "game/stageparty.h"
 #include "game/stageresult.h"
 #include "game/stagescene.h"
 #include "game/stagesound.h"
@@ -403,7 +404,7 @@ DemoCamera::DemoCamera() : StageCamera(kDemoScrZ, kDemoScreen, kDemoScreen, kDem
 DemoCamera::~DemoCamera()
 {
     if (m_ownsFilm)
-        demoFilmDestroy(m_film);
+        delete m_film;
 }
 
 // FS2 0x0026cb70
@@ -459,12 +460,15 @@ void DemoCamera::cameraStep()
 
 // The film data's two parts, from the parent's party.
 // FS2 0x0026cab0
-// callcheck: 0x1fea40, 0x1fea30
+// callcheck: getFilm, getFlecks
 
 void DemoCamera::setOverlay(int overlay)
 {
-    if ((overlay == DemoOverlay_Film || overlay == DemoOverlay_FilmDark) && m_film == nullptr)
-        demoFilmTake(gStageScene->parent->party, &m_film, &m_flecks);
+    if ((overlay == DemoOverlay_Film || overlay == DemoOverlay_FilmDark) && m_film == nullptr) {
+        StageParty *party = gStageScene->parent->party;
+        m_film = party->getFilm();
+        m_flecks = party->getFlecks();
+    }
     m_overlay = overlay;
 }
 
@@ -485,7 +489,7 @@ void DemoCamera::drawOverlay()
         demoFleckStep(m_flecks);
         demoFleckDraw(kFilmLevel, m_flecks, packet);
     }
-    demoFilmDraw(kFilmLevel, m_film, packet);
+    m_film->draw(kFilmLevel, packet);
     if (m_overlay == DemoOverlay_FilmDark) {
         YamiPan_DrawUiReg(packet, SCE_GS_TEST_1, kDarkTest);
         gsFillRect(packet, 0, 0, kFrame, kFrame, kDarkFill);

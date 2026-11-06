@@ -52,7 +52,7 @@ opening is the event d0101") is answered for a first entry into the stage.
 3. ~~The event's natives, by reach: 0x144, 0x145, 0x159, 0x163 first (0x163 is a fade).~~ All five written; `[stub] scriptNative_` no longer shows in a run of the first cuts.
 4. The voice: the host's `rxSndStr*` streams are stubs, so the wait in `enterSubScene` gives up after 60 frames (a `PC:` bound). **Since 2026-11-04 a silent bridge in `rx/rxsndstradpcm.c` ends the stream after the voice's length**: before it the event never ended, because it waits for its voice. d0101 now ends at frame 1276 (51.02 s) and the stage comes back.
    **After the event the screen is black for one reason: no player, so no linked camera (step 4 below; native 0x70 is written, the character is what is missing).** The fade is right: `Root` fades in on the third frame. With `YAMIPAN_CAMERA` the room shows there (open-items.md).
-5. `gsFrameFilter` 0x2849c0, `demoFilmDraw`, `demoFleckDraw`: the event's look, each needing a host pass. Subtitles are done (2026-11-04, the file's own text and times on the event's picture).
+5. `gsFrameFilter` 0x2849c0, `demoFleckDraw`: the event's look, each needing a host pass. Subtitles are done (2026-11-04, the file's own text and times on the event's picture).
 
 
 **2026-11-05:** `game/characterground.cpp` written: he stands on the floor; walls are written and not yet seen working. The rest of the 2026-11-04 text stands.

@@ -42,6 +42,8 @@ class Overlay;
 namespace yamipan::rendering
 {
 
+class FilmOverlayPass;
+class FramePalettePass;
 class PresentPass;
 class Screenshotter;
 
@@ -92,6 +94,8 @@ private:
     void recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout);
     void recordUi(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout, std::size_t first,
                   std::size_t last, bool clear);
+    void recordDraws(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout,
+                     std::size_t first, std::size_t last, bool clear);
     void recordOutput(SDL_GPUCommandBuffer *commands, const PictureLayout &layout);
     SDL_GPUGraphicsPipeline *pipelineFor(PipelineKey key);
     void updateStats(bool newFrame);
@@ -127,6 +131,8 @@ private:
     bool m_whiteUploaded = false;
 
     std::unique_ptr<PresentPass> m_present;
+    std::unique_ptr<FramePalettePass> m_framePalette;
+    std::unique_ptr<FilmOverlayPass> m_filmOverlay;
     std::unique_ptr<Screenshotter> m_screenshots;
 
     // The frame on screen, kept to draw again when the scene target changes size.

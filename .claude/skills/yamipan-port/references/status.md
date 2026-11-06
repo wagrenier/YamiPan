@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 03:11 at commit `7db1bff` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 03:55 at commit `b9a6334` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-06 03:11 at commit `7db1bff` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **4774** (72%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3853
-- context-name ledger: 5397 entries; overrides of wrong library matches: 0
-- placed in a source file: 5032/6599 in 110 files
+- game functions: **6599**, named **4785** (73%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3864
+- context-name ledger: 5408 entries; overrides of wrong library matches: 0
+- placed in a source file: 5051/6599 in 111 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **4509**; stubs: **223**
+- reconstructed FS2 functions: **4522**; stubs: **223**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -98,7 +98,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stagemodel.cpp` | 16 | 0 |
 | `src/game/stageobject.cpp` | 44 | 0 |
 | `src/game/stageobjlist.cpp` | 45 | 0 |
-| `src/game/stageparty.cpp` | 60 | 0 |
+| `src/game/stageparty.cpp` | 73 | 2 |
 | `src/game/stageplayer.cpp` | 33 | 0 |
 | `src/game/stageresult.cpp` | 32 | 0 |
 | `src/game/stagescene.cpp` | 259 | 0 |
@@ -121,7 +121,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/vectortrack.cpp` | 10 | 0 |
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 173 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 171 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -149,10 +149,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 224 TUs: todo 90, partial 39, verify 92, done 31
-- next: **game/stageparty.cpp** (continuing a partial TU)
-- pinned queue: (empty)
-- partial: `game/stageparty.cpp` 57/64 -- Written, batch 158: gsFrameScale 0x2cfb20, gsFrameContrast 0x2cf880, gsFrameAdd 0x2058e0 as host passes (YamiPan_DrawUiFrameScale, YamiPan_DrawUiFrameContrast, 
+- 224 TUs: todo 88, partial 41, verify 92, done 31
+- next: **game/demofleck.cpp** (pinned in the queue)
+- pinned queue: game/demofleck.cpp
+- partial: `game/stageparty.cpp` 68/70 -- Written, batches 159, 160: SightJack::drawPaletteView 0x1ff010 (FramePalettePass, a gradient map at half the render size, the ROM's three ramps in the source), 
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -248,6 +248,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 03:54 `game/stageparty.cpp` partial: the jack's palette views and film as host passes
 - 2026-11-06 03:11 `game/stageparty.cpp` partial: the sight-jack shows the view through a character: frame passes, markers, bind flash, warning
 - 2026-11-06 02:24 `game/stageparty.cpp` partial: the sight-jack starts and shows its noise: JackLink, ScreenFill, the draw gate
 - 2026-11-06 01:34 `game/stageparty.cpp` partial: the sight-jack without its drawing: StageParty and SightJack logic
@@ -255,7 +256,6 @@ Recent sessions:
 - 2026-11-05 23:59 `game/routeplayer.cpp` verify: the rute file: RoutePlayer, RouteFile, RouteAreaSearch, all non-MSL functions of 0x252840..0x25b8e0
 - 2026-11-05 23:22 `game/routefilter.cpp` verify: RouteFilter and its RouteSearch record: all 36 written or mapped to the host vector; findPath, pathLength, advance, the funnel; getFloorAttr signed as in the RO
 - 2026-11-05 22:56 `game/characterroute.cpp` partial: the route, its looks, turns, walk, car and 21 actions; path search and 12 actions left
-- 2026-11-05 22:21 `game/gameoversequence.cpp` verify: GameOverSequence, DeathCamera (CAM_DEAD) and SceneDirector, all 17 functions; the game over runs to Mission failed
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|

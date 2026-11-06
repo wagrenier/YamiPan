@@ -12,8 +12,7 @@
  *  Names of the class, its modes and its methods are the port's, read from
  *  the code and the sounds JAK_IN, JAK_MODE, JAK_NOISE, JAK_TUNING.
  *
- *  Not written yet, in this file's range: the palette views 0x1ff010..0x1ffcd0
- *  (a host pass through a 256-entry table), the frame of stage 0x1b's boss.
+ *  Not written yet, in this file's range: the frame of stage 0x1b's boss.
  * ======================================================================== */
 #ifndef _GAME_STAGEPARTY_H
 #define _GAME_STAGEPARTY_H
@@ -80,25 +79,35 @@ public:
     u_int m_rgba;               // FS2 +0x28
 };
 
-// The film's state, what demoFilmDraw is given (a pointer to +0x54 of the
-// record). layout: host
+// The film over a character's eyes (DemoCamera shows it too, EE 0x60). Its
+// frames are pictures of grain: four of them, mirrored into the four corners
+// of the frame, each corner fading from one random frame to the next; where
+// they are bright enough, the colour lies over the picture, the more of them
+// the further away the character is.
+// layout: host
+enum { kJackFilmCorners = 4 };
 struct JackFilm
 {
-    struct Scratch
+    struct Corner
     {
-        float a = 1.0f;
-        int   b = 0;
-        int   c = -1;
-        int   d = -1;
+        float progress = 1.0f;  // FS2 +0x0: at 1 the next frame is picked
+        float step = 0.0f;      // FS2 +0x4: of progress, each draw
+        int   shown = -1;       // FS2 +0x8
+        int   leaving = -1;     // FS2 +0xc: fades out over shown
     };
+
+    ~JackFilm();                                                         // FS2 0x002052d0
+    JackFilm *clone() const;                                             // FS2 0x00204250
+    // level 0..1: how much of the frames covers the picture.
+    void draw(float level, sceVif1Packet *packet);                       // FS2 0x00204550
+
     std::vector<Tim2Texture *> frames;  // FS2 +0x54: size +0x58, data +0x5c
-    u_int  rate = 0x100;        // FS2 +0x60
-    int    _64 = 0;             // FS2 +0x64
-    float  _68 = 0.2f;          // FS2 +0x68
-    float  _6c = 0.84f;         // FS2 +0x6c
-    Scratch first;              // FS2 +0x70
-    Scratch rest[3];            // FS2 +0x80
-    u_int  _b0 = 0x44444444;    // FS2 +0xb0
+    u_int  band = 0x100;        // FS2 +0x60: brightnesses from clear to solid
+    u_int  color = 0;           // FS2 +0x64: RGB
+    float  levelLow = 0.2f;     // FS2 +0x68: of the brightness, at level 0
+    float  levelHigh = 0.84f;   // FS2 +0x6c: at level 1
+    Corner corners[kJackFilmCorners]; // FS2 +0x70
+    u_int  seed = 0x44444444;   // FS2 +0xb0: demoFleckRandNext's
 };
 
 // layout: host -- EE 0x148, offsets in the comments.
@@ -108,6 +117,10 @@ public:
     SightJack();                                                         // FS2 0x00203d70
     ~SightJack();                                                        // FS2 0x00203be0
 
+    // The saved ids back to characters on the binds.
+    void restoreBinds();                                                 // FS2 0x001fed30
+    // The old vision's character leaves the view and the binds.
+    void setVisionTarget(StageObject *object);                           // FS2 0x001fef50
     // Everything back to no view, the bindings too.
     void reset();                                                        // FS2 0x00203ae0
     void start(StageObject *viewer);                                     // FS2 0x002039b0
@@ -123,6 +136,8 @@ public:
     // The film and the flecks of the frame's list; four times in the ROM.
     void drawFilm(float filmLevel, sceVif1Packet *packet);
 
+    // The frame through a ramp of 256 colours, by its brightness.
+    void drawPaletteView(sceVif1Packet *packet, const u_int *ramp);      // FS2 0x001ff010
     // A bind's side of the frame lights.
     void drawBindFlash(sceVif1Packet *packet) const;                     // FS2 0x001ffcd0
     // The viewer's cross and the partner's. Inline three times in the ROM.

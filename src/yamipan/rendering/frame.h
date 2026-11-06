@@ -54,6 +54,24 @@ struct Image
     std::shared_ptr<gpu::Texture> texture;
 };
 
+// What FilmOverlayPass lays over the frame: yamipan_drawui.h has the meaning of each number.
+struct FilmCorner
+{
+    std::shared_ptr<Image> shown;
+    std::shared_ptr<Image> leaving;
+    float leavingAlpha = 0.0f;
+};
+
+struct FilmOverlay
+{
+    std::array<FilmCorner, 4> corners;
+    int bandStart = 0;
+    int bandLength = 1;
+    int clearBelow = 0;
+    int solidAbove = 0;
+    std::uint32_t color = 0;
+};
+
 // In frame units; vertices in texels.
 struct Vertex
 {
@@ -82,6 +100,8 @@ struct DrawCall
     bool repeat = false;
     std::uint8_t alphaTestRef = 0; // fragments below it are dropped; 0 keeps them all
     std::uint8_t fixedAlpha = 0x80;
+    std::shared_ptr<Image> framePalette; // not null: no draw, the frame so far goes through this 256 x 1 ramp
+    std::shared_ptr<FilmOverlay> film; // not null: no draw, this goes over the frame so far
     std::uint32_t firstVertex = 0;
     std::uint32_t vertexCount = 0;
 };
