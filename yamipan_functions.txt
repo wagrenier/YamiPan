@@ -8578,19 +8578,19 @@
 /* 002bc0f0 00000008 */ SubSceneItem::~SubSceneItem_thunk(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/rumblelist.cpp
 // *****************************************************************************
 
-/* 002bc100 000002b4 */ KeepList::update(){}  // game
-/* 002bc3c0 00000128 */ KeepList::addNamed(){}  // game
-/* 002bc4f0 000000e0 */ FUN_002bc4f0(){}
-/* 002bc5d0 000000b4 */ KeepList::removeUnkept(){}  // game
-/* 002bc690 00000058 */ FUN_002bc690(){}
-/* 002bc6f0 00000078 */ KeepList::~KeepList(){}  // game
-/* 002bc770 00000014 */ KeepList::KeepList(){}  // game
-/* 002bc790 00000204 */ FUN_002bc790(){}
-/* 002bc9a0 00000178 */ FUN_002bc9a0(){}
-/* 002bcb20 000001f4 */ FUN_002bcb20(){}
+/* 002bc100 000002b4 */ RumbleList::update(){}  // game
+/* 002bc3c0 00000128 */ RumbleList::addNamed(){}  // game
+/* 002bc4f0 000000e0 */ RumbleList::removeNamed(){}  // game
+/* 002bc5d0 000000b4 */ RumbleList::removeUnlooped(){}  // game
+/* 002bc690 00000058 */ RumbleList::isPlaying(){}  // game
+/* 002bc6f0 00000078 */ RumbleList::~RumbleList(){}  // game
+/* 002bc770 00000014 */ RumbleList::RumbleList(){}  // game
+/* 002bc790 00000204 */ RumbleTrack::play(){}  // game
+/* 002bc9a0 00000178 */ RumbleTrack::RumbleTrack(){}  // game
+/* 002bcb20 000001f4 */ RumbleChannel::advance(){}  // game
 
 // *****************************************************************************
 // FILE -- game/packtables.cpp

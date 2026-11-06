@@ -15,7 +15,7 @@
  *    +0x18 0x1f6510 (0x70; 0x1f63f0)    +0x1c 0x190c20 (4; 0x190bc0)
  *    +0x20 ownsSound: +0x24 made here   +0x24 StageSound (stage; given or new)
  *    +0x28 DemoStream (sub, "streamEU/demo/"), and 0x2cf510() for a stage
- *    +0x2c 0x1fa4a0 (0xe70; 0x1fa230)   +0x30 KeepList (stage; 0x2bc770)
+ *    +0x2c 0x1fa4a0 (0xe70; 0x1fa230)   +0x30 RumbleList (stage; 0x2bc770)
  *    +0x34 StageViewStack (8 entries)   +0x38..+0x5c zero; +0x44 / +0x54
  *          arrays, +0x4c an object (vptr +0), +0x58 0x2dcab0's (dtor only)
  *    +0x60 a Clock under gGameSystem +0x510
@@ -98,7 +98,7 @@ class StageFiles;
 class StageObject;              // game/gamehooks.h
 class StageObjectList;          // game/stageobjlist.h
 class StageSound;               // game/stagesound.h
-struct KeepList;                // game/gamehooks.h
+struct RumbleList;              // game/rumblelist.h
 struct LptFile;                 // game/gamehooks.h
 struct StageCollisionFace;      // game/gamehooks.h
 struct StageParty;              // game/gamehooks.h
@@ -543,7 +543,7 @@ struct StageScene
     void propagateNodes();                                               // FS2 0x0019aa30
     void updateVcms();                                                   // FS2 0x0019a710
     void updateRumble(float frames);                                     // FS2 0x00199130
-    // Whose KeepList entries rumble.
+    // Whose rumble tracks are felt.
     StageObject *getRumbleSource();                                      // FS2 0x00199250
     void collectViewTargets();                                           // FS2 0x00197160
     void prepareDrawFlags();                                             // FS2 0x00198560
@@ -567,7 +567,7 @@ struct StageScene
     StageSound         *sound;           // FS2 +0x24: a stage's (null in a sub-scene)
     DemoStream         *demoStream;      // FS2 +0x28: a sub-scene's (null in a stage)
     SceneRender        *render;          // FS2 +0x2c
-    KeepList           *keepList;        // FS2 +0x30: a stage's
+    RumbleList         *rumble;          // FS2 +0x30: a stage's
     StageViewStack     *views;           // FS2 +0x34
     StageScript        *bgScript;        // FS2 +0x38: the bg target's last script (unread)
     StageScript        *scripts[2];      // FS2 +0x3c, +0x40: setScripts

@@ -221,6 +221,7 @@ class Ee:
         elif op == 'dsubu': s(a[0], s64(g(a[1]) - g(a[2])))
         elif op == 'negu': s(a[0], s32(-g(a[1])))
         elif op == 'sll': s(a[0], s32(g(a[1]) << imm(a[2])))
+        elif op == 'sllv': s(a[0], s32(g(a[1]) << (g(a[2]) & 31)))
         elif op == 'sra': s(a[0], s32(g(a[1])) >> imm(a[2]))
         elif op == 'srl': s(a[0], s32((g(a[1]) & M32) >> imm(a[2])))
         elif op == 'dsll': s(a[0], s64(g(a[1]) << imm(a[2])))
@@ -275,6 +276,7 @@ class Ee:
         elif op == 'mtc1': self.f[int(a[1][1:])] = g(a[0]) & M32
         elif op == 'mfc1': s(a[0], s32(self.f[int(a[1][1:])]))
         elif op == 'mov.s': self.f[int(a[0][1:])] = self.f[int(a[1][1:])]
+        elif op == 'cvt.s.w': setf(a[0], float(s32(self.f[int(a[1][1:])])))
         elif op == 'neg.s': self.f[int(a[0][1:])] = self.f[int(a[1][1:])] ^ 0x80000000
         elif op == 'abs.s': self.f[int(a[0][1:])] = self.f[int(a[1][1:])] & 0x7fffffff
         elif op == 'add.s': setf(a[0], F(a[1]) + F(a[2]))

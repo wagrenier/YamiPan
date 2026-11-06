@@ -49,24 +49,6 @@ GsRegionAlloc::GsRegionAlloc(int, int)
     YAMIPAN_STUB("GsRegionAlloc::GsRegionAlloc", 0x002e14d0);
 }
 
-// stub of FS2 0x002bc770
-KeepList::KeepList()
-{
-    YAMIPAN_STUB("KeepList::KeepList", 0x002bc770);
-}
-
-// stub of FS2 0x002bc5d0
-void KeepList::removeUnkept()
-{
-    YAMIPAN_STUB("KeepList::removeUnkept", 0x002bc5d0);
-}
-
-// stub of FS2 0x002bc6f0
-KeepList::~KeepList()
-{
-    YAMIPAN_STUB("KeepList::~KeepList", 0x002bc6f0);
-}
-
 // stub of FS2 0x002ad070
 MenuProgHolder::~MenuProgHolder()
 {
@@ -282,13 +264,6 @@ void AreaClip::update(StageObject *camera)
 }
 
 // stub of FS2 0x00239bb0
-// stub of FS2 0x002bc100
-void KeepList::update(float frames, u_char *motorA, u_char *motorB, char *flags, int *tags,
-                int max, StageObject *source)
-{
-    YAMIPAN_STUB("KeepList::update", 0x002bc100);
-}
-
 // stub of FS2 0x002ad030
 void MenuProgHolder::draw(float deltaSeconds, GamePacketManager *packets, StageObject *camera)
 {
@@ -1240,11 +1215,5 @@ bool elevatorOpenAtB3(StageObject *elevator)
 void elevatorSwitchPlace(StageObject *elevator, float *place, float *direction, int which)
 {
     YAMIPAN_STUB("elevatorSwitchPlace", 0x00293c60);
-}
-
-// stub of FS2 0x002bc3c0
-void KeepList::addNamed(const char *name, int arg)
-{
-    YAMIPAN_STUB("KeepList::addNamed", 0x002bc3c0);
 }
 

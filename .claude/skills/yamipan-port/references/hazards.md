@@ -558,3 +558,8 @@ A Bash call carrying a whole source file fails with ENAMETOOLONG (uv_spawn), and
 
 - **A field's note can be wrong in what it stores.** Symptom: open-items.md called +0x10 of the film "colour (0x44444444)" and `_b0` an unknown word, and 0x305b80 "blue". Cause: read from the constructor's constants, not from who reads them; +0x5c is the seed of `demoFleckRandNext`, +0x10 the colour (0), and a CLUT word's bytes are 0xAABBGGRR, so 0x331c00 is brown. Fix: name a field from its reader, and print a table's colours as RGB before describing them.
 - **`git checkout` hands a file back with CRLF** under autocrlf, whatever it was in the working copy (`.claude/` and some of src are CRLF already). An edit script matching text with bare LF then finds nothing. Fix: load, turn CRLF to LF, edit, turn back.
+
+## A parameter called small (2026-11-06)
+
+- **`small` is a Windows macro.** Symptom: "expected ')' before 'const'" or "invalid use of incomplete type" in a header that looks right. Cause: rpcndr.h defines `small` as `char`, so a parameter of that name breaks in any unit that sees windows.h. Fix: `motorSmall`. `near`, `far`, `min`, `max`, `interface` go the same way.
+- **eerun.py runs the libc only through hooks.** The ROM's memset and memcpy use MMI ops eerun does not have ("unsupported op .word"): hook them by name as rumblecmp.py does, in Python, with `ee.hook`.
