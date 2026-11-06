@@ -104,6 +104,9 @@ public:
     bool actionHeld(int action) const;
     bool actionPressed(int action) const;
     u_char actionPressure(int action) const;
+    // Of the four bind buttons (the options' map +8, +0, +4, +c), the one
+    // pressed now, in that order: its number; 4 none.
+    int pressedBind() const;                                             // FS2 0x002067d0
 
 private:
     void clearButton(int button);       // inline in update, 16 times over
@@ -124,6 +127,7 @@ struct CharacterInput
 
     // The left stick's x squared to the circle: the main camera leans by it
     // while a swaying motion plays.
+    CharacterPad *pad() const { return m_pad; }
     float padSway() const;                                               // FS2 +0x8 -> +0x12c
     // The push on the view, -1..1, from the right stick (the left one's y
     // in an aim); the camera reads them. Their signs say which way they turn it

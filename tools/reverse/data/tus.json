@@ -1804,6 +1804,24 @@
    "status": "verify",
    "why": "Cut out of unassigned@00171300: the stage's name-keyed object registry (gStageScene +0x10, new 0xdc in 0x19c180): nine groups of a name map (AVL tree of StageNameNode by strcmp) and an object list, with their two containers. Bounded below by the BoxGrid vector instances (0x1928f0..0x1938f8) and above by game logic at 0x1953f0 (player state test, no registry use)."
   },
+  "game/stageparty.cpp": {
+   "notes": "Written, batch 156: all of StageParty 0x1fe6b0..0x1fed30, and in SightJack ctor, dtor, reset, start, stop, update, aimAt, tune, pickBearing, keep, recall, canView, keepNearestFoe, stepAlertedFoe, pollButtons, stepMode, beginVision; CharacterPad::pressedBind, JackCamera, JackFill. Left: SightJack::draw 0x2024c0 is only the gate's counters, its passes 0x201380, 0x201a40, 0x2016d0, 0x201bc0, 0x1ffcd0, 0x1ff010 and 0x1fed30..0x2024c0 need a host pass. New stubs: demoFleckCreate, demoFleckDestroy, KeepList::addNamed, SceneModelHolder::setPlace, StageCharacter::canSeeVisions. Not seen: a node 4 run of 235 s with L2 pressed never reached SightJack::start, and its shots were not looked at, so next is why: a log in CharacterInput::stepAlt and the shots. Only the 15 s boot picture was looked at: the language menu, as before. The same run settled that brains do get their scripts, open-items.md Next up.",
+   "ranges": [
+    [
+     "001fe6b0",
+     "00204550"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-06 01:34",
+     "status": "partial",
+     "summary": "the sight-jack without its drawing: StageParty and SightJack logic"
+    }
+   ],
+   "status": "partial",
+   "why": "StageParty and its view record: facade 0x1fe6b0..0x1fed30, vtable classes after it up to demoFilmDraw"
+  },
   "game/stageplayer.cpp": {
    "notes": "Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was stubs, so native 0x52 never ended the stage. Seen in the user's own playthrough: the cutscene, then mission accomplished, then back to stage 1. That last step is the navigator: runNaviFile and applyNaviAnswer are stubs (open-items.md, Next up). AREA_AC10 and AREA11 now fire too and were not looked at.",
    "ranges": [
@@ -2838,6 +2856,7 @@
   "unassigned@00121b80": {},
   "unassigned@001319f0": {},
   "unassigned@00133800": {},
+  "unassigned@00135990": {},
   "unassigned@00142dd0": {},
   "unassigned@00148db0": {},
   "unassigned@00171300": {},

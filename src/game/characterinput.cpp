@@ -145,6 +145,22 @@ bool CharacterPad::actionPressed(int action) const
     return (m_pressed & bitMask(actionButton(action))) != 0;
 }
 
+// FS2 0x002067d0
+// callcheck: bitMask, bitMask, bitMask, bitMask
+
+int CharacterPad::pressedBind() const
+{
+    if (actionPressed(PadAction_Unused))
+        return 0;
+    if (actionPressed(PadAction_Use))
+        return 1;
+    if (actionPressed(PadAction_Squat))
+        return 2;
+    if (actionPressed(PadAction_Lamp))
+        return 3;
+    return 4;
+}
+
 u_char CharacterPad::actionPressure(int action) const
 {
     return m_pressure[actionButton(action)];

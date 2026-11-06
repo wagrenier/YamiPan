@@ -166,43 +166,6 @@ StageNodeTree::~StageNodeTree()
     YAMIPAN_STUB("StageNodeTree::~StageNodeTree", 0x00190bc0);
 }
 
-// stub of FS2 0x001fecf0
-StageParty::StageParty()
-{
-    YAMIPAN_STUB("StageParty::StageParty", 0x001fecf0);
-}
-
-// stub of FS2 0x001fea50
-StageObject * StageParty::getCompanion()
-{
-    YAMIPAN_STUB("StageParty::getCompanion", 0x001fea50);
-    return {};
-}
-
-// stub of FS2 0x001fe720
-void StageParty::resetSaved()
-{
-    YAMIPAN_STUB("StageParty::resetSaved", 0x001fe720);
-}
-
-// stub of FS2 0x001fe6c0
-void StageParty::restore()
-{
-    YAMIPAN_STUB("StageParty::restore", 0x001fe6c0);
-}
-
-// stub of FS2 0x001fe6d0
-void StageParty::save()
-{
-    YAMIPAN_STUB("StageParty::save", 0x001fe6d0);
-}
-
-// stub of FS2 0x001fec90
-StageParty::~StageParty()
-{
-    YAMIPAN_STUB("StageParty::~StageParty", 0x001fec90);
-}
-
 // stub of FS2 0x001d3a40
 // stub of FS2 0x00185af0
 
@@ -324,12 +287,6 @@ void ScreenFill::setImage(const void *image)
 void StageObject::onViewTop()
 {
     YAMIPAN_STUB("StageObject::onViewTop", 0x00000000);
-}
-
-// stub of FS2 0x001fe9b0
-void StageParty::setFillImage(const void *image)
-{
-    YAMIPAN_STUB("StageParty::setFillImage", 0x001fe9b0);
 }
 
 // stub of FS2 0x0029f050
@@ -465,30 +422,6 @@ void StageObject::onLinkChanged()
     YAMIPAN_STUB("StageObject::onLinkChanged", 0x00000000);
 }
 
-// stub of FS2 0x001febb0
-void StageParty::createCamera()
-{
-    YAMIPAN_STUB("StageParty::createCamera", 0x001febb0);
-}
-
-// stub of FS2 0x001feb70
-void StageParty::draw()
-{
-    YAMIPAN_STUB("StageParty::draw", 0x001feb70);
-}
-
-// stub of FS2 0x001fe9c0
-void StageParty::setCompanion(StageObject *object)
-{
-    YAMIPAN_STUB("StageParty::setCompanion", 0x001fe9c0);
-}
-
-// stub of FS2 0x001feb80
-void StageParty::update()
-{
-    YAMIPAN_STUB("StageParty::update", 0x001feb80);
-}
-
 // stub of FS2 0x0020b1d0
 void StageCharacter::latchAltAction()
 {
@@ -562,18 +495,6 @@ void SceneBufferSet::updateRange(float range, StageObject *linked, SceneRender *
 void StageMenu::setData(void *data)
 {
     YAMIPAN_STUB("StageMenu::setData", 0x00230810);
-}
-
-// stub of FS2 0x001fe890
-void StageParty::addImage(const void *image)
-{
-    YAMIPAN_STUB("StageParty::addImage", 0x001fe890);
-}
-
-// stub of FS2 0x001fe900
-void StageParty::setImage(const void *image)
-{
-    YAMIPAN_STUB("StageParty::setImage", 0x001fe900);
 }
 
 // stub of FS2 0x002ce9d0
@@ -753,12 +674,6 @@ void demoFilmDraw(float level, void *film, sceVif1Packet *packet)
     YAMIPAN_STUB("demoFilmDraw", 0x00204550);
 }
 
-// stub of FS2 0x001fea40
-void demoFilmTake(StageParty *party, void **film, void **flecks)
-{
-    YAMIPAN_STUB("demoFilmTake", 0x001fea40);
-}
-
 // stub of FS2 0x002a11c0
 void demoFleckDraw(float level, void *flecks, sceVif1Packet *packet)
 {
@@ -839,19 +754,6 @@ void StageParticle::stopChain()
     YAMIPAN_STUB("StageParticle::stopChain", 0x0018fec0);
 }
 
-// stub of FS2 0x001fe800
-bool StageParty::isRunning()
-{
-    YAMIPAN_STUB("StageParty::isRunning", 0x001fe800);
-    return {};
-}
-
-// stub of FS2 0x001feb90
-void StageParty::stop()
-{
-    YAMIPAN_STUB("StageParty::stop", 0x001feb90);
-}
-
 // stub of FS2 0x0020c940
 void StageCharacter::getSwayMatrix(sceVu0FMATRIX out)
 {
@@ -895,12 +797,6 @@ bool StageCharacter::isCompanionWalking()
 {
     YAMIPAN_STUB("StageCharacter::isCompanionWalking", 0x002119d0);
     return {};
-}
-
-// stub of FS2 0x001feba0
-void StageParty::start(StageObject *object)
-{
-    YAMIPAN_STUB("StageParty::start", 0x001feba0);
 }
 
 // stub of FS2 0x0023ce00
@@ -1016,13 +912,6 @@ bool SceneOwnedObject::start(const char *text)
 void StageCharacter::stopBodySounds()
 {
     YAMIPAN_STUB("StageCharacter::stopBodySounds", 0x002a6380);
-}
-
-// stub of FS2 0x001fe6b0
-bool StageParty::isRecordBusy()
-{
-    YAMIPAN_STUB("StageParty::isRecordBusy", 0x001fe6b0);
-    return {};
 }
 
 // stub of FS2 0x00294280
@@ -1220,12 +1109,6 @@ void StageCharacter::useItem(const char *name, const float *point, int arg)
     YAMIPAN_STUB("StageCharacter::useItem", 0x00218b50);
 }
 
-// stub of FS2 0x001feab0
-void StageParty::warnAttacker(StageCharacter *attacker)
-{
-    YAMIPAN_STUB("StageParty::warnAttacker", 0x001feab0);
-}
-
 // stub of FS2 0x0029f440
 StageObject * findNumLockTarget()
 {
@@ -1304,37 +1187,6 @@ bool StageCharacter::rideCar(int off, int side)
 {
     YAMIPAN_STUB("StageCharacter::rideCar", 0x0017af50);
     return {};
-}
-
-// stub of FS2 0x001fe770
-void StageParty::addVisionA(StageObject *object)
-{
-    YAMIPAN_STUB("StageParty::addVisionA", 0x001fe770);
-}
-
-// stub of FS2 0x001fe740
-void StageParty::addVisionB(StageObject *object)
-{
-    YAMIPAN_STUB("StageParty::addVisionB", 0x001fe740);
-}
-
-// stub of FS2 0x001fe9f0
-bool StageParty::isCompanionMode()
-{
-    YAMIPAN_STUB("StageParty::isCompanionMode", 0x001fe9f0);
-    return {};
-}
-
-// stub of FS2 0x001fe7b0
-void StageParty::setVisionFrames(int frames)
-{
-    YAMIPAN_STUB("StageParty::setVisionFrames", 0x001fe7b0);
-}
-
-// stub of FS2 0x001fe7a0
-void StageParty::setVisionTarget(StageObject *object)
-{
-    YAMIPAN_STUB("StageParty::setVisionTarget", 0x001fe7a0);
 }
 
 // stub of FS2 address unknown (0 candidates)
@@ -1425,12 +1277,6 @@ bool StageCharacter::canBeJacked()
     return {};
 }
 
-// stub of FS2 0x001fe7c0
-void StageParty::startGameOverView(StageObject *who)
-{
-    YAMIPAN_STUB("StageParty::startGameOverView", 0x001fe7c0);
-}
-
 // stub of FS2 0x00289ef0
 void StageCar::getCenter(float *out)
 {
@@ -1467,4 +1313,36 @@ bool elevatorOpenAtB3(StageObject *elevator)
 void elevatorSwitchPlace(StageObject *elevator, float *place, float *direction, int which)
 {
     YAMIPAN_STUB("elevatorSwitchPlace", 0x00293c60);
+}
+
+// stub of FS2 0x002bc3c0
+void KeepList::addNamed(const char *name, int arg)
+{
+    YAMIPAN_STUB("KeepList::addNamed", 0x002bc3c0);
+}
+
+// stub of FS2 0x002d0750
+void SceneModelHolder::setPlace(const float *position)
+{
+    YAMIPAN_STUB("SceneModelHolder::setPlace", 0x002d0750);
+}
+
+// stub of FS2 0x00215480
+bool StageCharacter::canSeeVisions()
+{
+    YAMIPAN_STUB("StageCharacter::canSeeVisions", 0x00215480);
+    return {};
+}
+
+// stub of FS2 0x002a1240
+void * demoFleckCreate(Tim2Texture *texture)
+{
+    YAMIPAN_STUB("demoFleckCreate", 0x002a1240);
+    return {};
+}
+
+// stub of FS2 address unknown (0 candidates)
+void demoFleckDestroy(void *flecks)
+{
+    YAMIPAN_STUB("demoFleckDestroy", 0x00000000);
 }
