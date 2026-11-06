@@ -556,7 +556,7 @@ void CharacterGround::checkFloor()
     // A character down on a car's floor stands on it; otherwise the view
     // target is not a floor.
     StageObject *skip = nullptr;
-    if (isDown(owner) && (floorObject == nullptr || floorObject->getKind() != StageObject_Kind3))
+    if (isDown(owner) && (floorObject == nullptr || floorObject->getKind() != StageObject_Car))
         skip = reinterpret_cast<StageObject *>(gStageScene->viewTarget);
     landed = 0;
     floorFace = nullptr;
@@ -647,7 +647,7 @@ void CharacterGround::sweepWalls()
                                                                 exceptList, exceptCount);
     if (face == nullptr) {
         // PC: the ROM reads the view target with no test.
-        if (car != nullptr && floorObject != nullptr && floorObject->getKind() == StageObject_Kind3) {
+        if (car != nullptr && floorObject != nullptr && floorObject->getKind() == StageObject_Car) {
             StageCollisionFace *wall = car->collisionAt(0)->raycast(hit, from, to, kFaceWall,
                                                                     kFaceWallSkip, FaceSide_Front);
             if (wall != nullptr) {
@@ -867,7 +867,7 @@ void CharacterGround::syncWall(CollisionBody *body)
         doorsBlock = !gStageScene->segmentHitsAny(first->value.center, second->value.center, 0,
                                                   StageCollision_Door, 0, nullptr);
     }
-    if (floorObject != nullptr && floorObject->getKind() == StageObject_Kind3 && owner->m_gear == nullptr) {
+    if (floorObject != nullptr && floorObject->getKind() == StageObject_Car && owner->m_gear == nullptr) {
         StageCar *car = static_cast<StageCar *>(floorObject);
         StageCharacter *character = static_cast<StageCharacter *>(owner);
         if (car->getSpeed() > 0.0f && character->m_endurance > 0) {
@@ -974,14 +974,14 @@ void CharacterGround::updateInBack()
 bool CharacterGround::wallCounts(CollisionContact *contact, StageCollisionFace *face)
 {
     StageObject *object = contact->body->owner->getCollisionObject();
-    if (object->getKind() != StageObject_Kind3)
+    if (object->getKind() != StageObject_Car)
         return true;
     if (owner->m_gear != nullptr)
         return false;
     StageCar *car = static_cast<StageCar *>(object);
     StageCharacter *character = static_cast<StageCharacter *>(owner);
 
-    if (floorObject != nullptr && floorObject->getKind() == StageObject_Kind3) {
+    if (floorObject != nullptr && floorObject->getKind() == StageObject_Car) {
         // On the car: only the edge one can step off does not count.
         sceVu0FVECTOR target, point, angles;
         float drop = 0.0f;

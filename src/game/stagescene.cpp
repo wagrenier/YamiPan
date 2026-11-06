@@ -1822,7 +1822,7 @@ bool StageFiles::applyBgTarget()
                 if (record >= 0)
                     object->m_recordValue = gDoorRecords[record].value;
             }
-            else if (isGateModelName(objectName)) {
+            else if (isCarModelName(objectName)) {
                 SubSceneGateObject *object = new SubSceneGateObject(1);
                 object->setup(objectName, instance, &textures, collisionFile);
             }
@@ -4572,7 +4572,7 @@ bool StageFiles::applyBgMotionTarget()
         }
 
         if (strcmp(name, kMotionCar) == 0) {
-            setKindMotion(StageObject_Kind3, list->value);
+            setKindMotion(StageObject_Car, list->value);
         } else if (strcmp(name, kMotionSevenKeys) == 0) {
             setKindMotion(StageObject_Kind6, list->value);
         } else {

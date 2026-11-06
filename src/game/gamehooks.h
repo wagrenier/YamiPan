@@ -140,7 +140,7 @@ enum StageObjectKind
     StageObject_Character = 0,  // StageCharacter; the player and the partner are ones
     StageObject_MapObject = 1,  // a plain map object (game/mapobject.cpp)
     StageObject_Door   = 2,     // StageObject::m_doorState is read
-    StageObject_Kind3  = 3,     // takes the motion named CAR (StageFiles::applyBgMotionTarget)
+    StageObject_Car    = 3,     // StageCar: getKind 0x289cc0; takes the motion named CAR (StageFiles::applyBgMotionTarget)
     StageObject_Kind6  = 6,     // takes the motion named Seven_Keys
     StageObject_Camera = 7,     // StageCamera
     StageObject_Kind8  = 8,     // a camera, vtable 0x311d30 (no host class yet)
@@ -1765,8 +1765,11 @@ extern DoorRecord gDoorRecords[kDoorRecords];   /* bss 0x537d80 */
 // The stage's map object for a model's node called name; null none. The
 // class comes from the name.
 StageObject *createMapObject(const char *name, void *collision);         // FS2 0x001766c0
-// oGK99_01 and oDC99_01 ("gate" is a guess).
-bool isGateModelName(const char *name);                                  // FS2 0x001769e0
+// oGK99_01 and oDC99_01: createMapObject gives them the car (0x28e5a0, kind 3).
+bool isCarModelName(const char *name);                                   // FS2 0x001769e0
+// A value of a kind 6 object's pose (+0x3d0, sub floats, as an int). Its class,
+// 0x2b2a60, is not written.
+int sevenKeysPoseValue(StageObject *object, int sub);                    // FS2 0x002b23b0
 
 // The sub-scene's copies of these: game/subsceneobject.h.
 
@@ -1788,7 +1791,8 @@ struct MapObjectParts
     StageParticle **effects = nullptr;  // FS2 +0x0c
 };
 // A gate's parts BKW%02di and effects (EE 0x40). Only what the sub-scene's
-// gate calls; "gate" is a guess from isGateModelName.
+// gate calls. Its names are read from isCarModelName, so this "gate" is the
+// sub-scene's car (open-items.md).
 // layout: host -- EE offsets in the comments.
 struct GateParts
 {
@@ -1823,7 +1827,7 @@ public:
     // +0x3ac is past 0.3: one may climb on it, and a fall onto it is a fall.
     bool hasSettled();                                                   // FS2 0x0028ab90
     // FS2 0x001774a0: slot +0x9c, this object (0x1722f0 behind the thunk).
-    StageCar *getScriptCar() override { return this; }
+    StageObject *getScriptMapObject() override { return this; }
     // Back to where it was placed, by what moved (0x28d850 behind it).
     void resetPlace();                                                   // FS2 0x0028dac0
     // Level keeps off at 1; native 0x1c8 sets it.

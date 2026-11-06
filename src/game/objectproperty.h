@@ -33,6 +33,7 @@ enum ObjectProperty
     Prop_Restore        = 0x55,
     Prop_ShowFlag       = 0x56,     // sub: an index of kShowFlagByte
     Prop_Shown          = 0x59,
+    Prop_KeyValue       = 0x6b,     // a kind 6 object (Seven_Keys) only: StageMapObject
     Prop_ObjectType     = 0x6c,     // the sheet's type of a character or an item, else 0
     Prop_ResultPaused   = 0x6d,
     Prop_ResultHold     = 0x6e,

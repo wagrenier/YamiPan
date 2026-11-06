@@ -2721,14 +2721,14 @@
 /* 00172290 00000014 */ StageObject::heightDifference(){}  // game
 /* 001722b0 00000010 */ StageObject::distanceTo(){}  // game
 /* 001722d0 00000008 */ StageObject::getSelf(){}  // game
-/* 001722e0 00000008 */ FUN_001722e0(){}
-/* 001722f0 00000008 */ FUN_001722f0(){}
+/* 001722e0 00000008 */ StageDoor::getScriptDoor(){}  // game
+/* 001722f0 00000008 */ StageMapObject::getScriptMapObject(){}  // game
 /* 00172300 00000014 */ StageObject::setModelValue(){}  // game
 /* 00172320 00000008 */ StageObject::getPosZ(){}  // game
 /* 00172330 00000008 */ StageObject::getPosY(){}  // game
 /* 00172340 00000008 */ StageObject::getPosX(){}  // game
 /* 00172350 00000008 */ StageObject::getObjectName(){}  // game
-/* 00172360 00000008 */ FUN_00172360(){}
+/* 00172360 00000008 */ StageObject::getCollisionObject(){}  // game
 /* 00172370 0000000c */ DoorRecord::setSeIndex(){}  // game
 /* 00172380 0000000c */ DoorRecord::setHp(){}  // game
 /* 00172390 0000000c */ DoorRecord::setWindowState(){}  // game
@@ -2765,19 +2765,19 @@
 /* 00174940 000000cc */ StageDoor::StageDoor(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/mapobject.cpp
 // *****************************************************************************
 
 /* 00174a10 00000030 */ StageMapObject::setYaw(){}  // game
 /* 00174a40 00000054 */ StageMapObject::setRotation(){}  // game
 /* 00174aa0 00000054 */ StageMapObject::setPosition(){}  // game
 /* 00174b00 000008c4 */ StageMapObject::getProperty(){}  // game
-/* 001753d0 00000008 */ FUN_001753d0(){}
-/* 001753e0 00000008 */ FUN_001753e0(){}
+/* 001753d0 00000008 */ StageMapObject::getKind(){}  // game
+/* 001753e0 00000008 */ StageMapObject::onCollide(){}  // game
 /* 001753f0 000001d8 */ StageMapObject::collisionHook0(){}  // game
-/* 001755d0 00000004 */ FUN_001755d0(){}
-/* 001755e0 00000004 */ FUN_001755e0(){}
-/* 001755f0 000000b8 */ FUN_001755f0(){}
+/* 001755d0 00000004 */ StageMapObject::collisionHook3(){}  // game
+/* 001755e0 00000004 */ StageMapObject::syncBody(){}  // game
+/* 001755f0 000000b8 */ StageMapObject::advanceMotion(){}  // game
 /* 001756b0 00000044 */ StageMapObject::sideHook0(){}  // game
 
 // *****************************************************************************
@@ -2787,7 +2787,7 @@
 /* 00175700 000001e4 */ StageObject::nearestPart(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/mapobject.cpp
 // *****************************************************************************
 
 /* 001758f0 00000008 */ StageMatrixNode::getWorldMatrix(){}  // game
@@ -2804,72 +2804,77 @@
 /* 001763e0 000000a0 */ StageObject::applyMapModelFlags(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/mapobject.cpp
 // *****************************************************************************
 
-/* 00176480 00000154 */ FUN_00176480(){}
-/* 001765e0 000000e0 */ FUN_001765e0(){}
+/* 00176480 00000154 */ StageMapObject::~StageMapObject(){}  // game
+/* 001765e0 000000e0 */ StageMapObject::StageMapObject(){}  // game
 /* 001766c0 00000318 */ createMapObject(){}  // game
-/* 001769e0 00000054 */ isGateModelName(){}  // game
+/* 001769e0 00000054 */ isCarModelName(){}  // game
 /* 00176a40 000000e8 */ MapObjectParts::copyShown(){}  // game
 /* 00176b30 0000008c */ MapObjectParts::~MapObjectParts(){}  // game
 /* 00176bc0 00000594 */ MapObjectParts::MapObjectParts(){}  // game
-/* 00177160 00000020 */ FUN_00177160(){}
-/* 00177180 00000020 */ FUN_00177180(){}
+/* 00177160 00000020 */ ScriptRunner::getScriptDoor(){}  // game
+/* 00177180 00000020 */ ScriptRunner::scriptIsFacing(){}  // game
 /* 001771a0 00000004 */ StageMapObject::sideHook3(){}  // game
 /* 001771b0 000000b0 */ StageMapObject::sideHook2(){}  // game
 /* 00177260 00000004 */ StageMapObject::sideHook1(){}  // game
-/* 00177270 0000007c */ BoneNode::find(){}  // game
-/* 001772f0 00000050 */ FUN_001772f0(){}
-/* 00177340 00000008 */ FUN_00177340(){}
-/* 00177350 00000008 */ FUN_00177350(){}
-/* 00177360 00000008 */ FUN_00177360(){}
-/* 00177370 00000008 */ FUN_00177370(){}
-/* 00177380 00000008 */ FUN_00177380(){}
-/* 00177390 00000008 */ FUN_00177390(){}
-/* 001773a0 00000008 */ FUN_001773a0(){}
-/* 001773b0 00000008 */ FUN_001773b0(){}
-/* 001773c0 00000008 */ FUN_001773c0(){}
-/* 001773d0 00000008 */ FUN_001773d0(){}
-/* 001773e0 00000008 */ FUN_001773e0(){}
-/* 001773f0 00000008 */ FUN_001773f0(){}
-/* 00177400 00000008 */ FUN_00177400(){}
-/* 00177410 00000008 */ FUN_00177410(){}
-/* 00177420 00000008 */ FUN_00177420(){}
-/* 00177430 00000008 */ FUN_00177430(){}
-/* 00177440 00000008 */ FUN_00177440(){}
-/* 00177450 00000008 */ StageObject::thunkAddMenuLine(){}  // game
-/* 00177460 00000008 */ FUN_00177460(){}
-/* 00177470 00000008 */ FUN_00177470(){}
-/* 00177480 00000008 */ FUN_00177480(){}
-/* 00177490 00000008 */ FUN_00177490(){}
-/* 001774a0 00000008 */ FUN_001774a0(){}
-/* 001774b0 00000008 */ FUN_001774b0(){}
-/* 001774c0 00000008 */ FUN_001774c0(){}
-/* 001774d0 00000008 */ FUN_001774d0(){}
-/* 001774e0 00000008 */ FUN_001774e0(){}
-/* 001774f0 00000008 */ FUN_001774f0(){}
-/* 00177500 00000008 */ FUN_00177500(){}
-/* 00177510 00000008 */ FUN_00177510(){}
-/* 00177520 00000008 */ FUN_00177520(){}
-/* 00177530 00000008 */ FUN_00177530(){}
-/* 00177540 00000008 */ FUN_00177540(){}
-/* 00177550 00000008 */ FUN_00177550(){}
-/* 00177560 00000008 */ FUN_00177560(){}
-/* 00177570 00000008 */ FUN_00177570(){}
-/* 00177580 00000008 */ FUN_00177580(){}
-/* 00177590 00000008 */ FUN_00177590(){}
-/* 001775a0 00000008 */ FUN_001775a0(){}
+/* 00177270 0000007c */ StringMap<StageNodeBase>::find(){}  // game
+/* 001772f0 00000050 */ DoorRecord::DoorRecord(){}  // game
+/* 00177340 00000008 */ StageMapObject::sideHook3_thunk(){}  // game
+/* 00177350 00000008 */ StageMapObject::sideHook2_thunk(){}  // game
+/* 00177360 00000008 */ StageMapObject::sideHook1_thunk(){}  // game
+/* 00177370 00000008 */ StageMapObject::~StageMapObject_thunk(){}  // game
+/* 00177380 00000008 */ StageObject::setProperty_thunk(){}  // game
+/* 00177390 00000008 */ StageMapObject::getProperty_thunk(){}  // game
+/* 001773a0 00000008 */ StageDoor::sideHook3_thunk(){}  // game
+/* 001773b0 00000008 */ StageDoor::sideHook2_thunk(){}  // game
+/* 001773c0 00000008 */ StageDoor::sideHook1_thunk(){}  // game
+/* 001773d0 00000008 */ StageMapObject::sideHook0_thunk(){}  // game
+/* 001773e0 00000008 */ StageObject::setTreeShown_thunk(){}  // game
+/* 001773f0 00000008 */ StageObject::setShownState_thunk(){}  // game
+/* 00177400 00000008 */ StageObject::getShownState_thunk(){}  // game
+/* 00177410 00000008 */ StageObject::noiseHook_thunk(){}  // game
+/* 00177420 00000008 */ StageObject::makeNoise_thunk(){}  // game
+/* 00177430 00000008 */ StageObject::playNamedHeard_thunk(){}  // game
+/* 00177440 00000008 */ StageDoor::scriptIsFacing_thunk(){}  // game
+/* 00177450 00000008 */ StageObject::scriptAddMenuLine_thunk(){}  // game
+/* 00177460 00000008 */ StageObject::heightDifference_thunk(){}  // game
+/* 00177470 00000008 */ StageObject::distanceTo_thunk(){}  // game
+/* 00177480 00000008 */ StageObject::getSelf_thunk(){}  // game
+/* 00177490 00000008 */ StageDoor::getScriptDoor_thunk(){}  // game
+/* 001774a0 00000008 */ StageMapObject::getScriptMapObject_thunk(){}  // game
+/* 001774b0 00000008 */ StageObject::setModelValue_thunk(){}  // game
+/* 001774c0 00000008 */ StageMapObject::setYaw_thunk(){}  // game
+/* 001774d0 00000008 */ StageMapObject::setRotation_thunk(){}  // game
+/* 001774e0 00000008 */ StageMapObject::setPosition_thunk(){}  // game
+/* 001774f0 00000008 */ StageObject::getPosZ_thunk(){}  // game
+/* 00177500 00000008 */ StageObject::getPosY_thunk(){}  // game
+/* 00177510 00000008 */ StageObject::getPosX_thunk(){}  // game
+/* 00177520 00000008 */ StageObject::getObjectName_thunk(){}  // game
+/* 00177530 00000008 */ StageDoor::~StageDoor_thunk(){}  // game
+/* 00177540 00000008 */ StageDoor::setProperty_thunk(){}  // game
+/* 00177550 00000008 */ StageDoor::getProperty_thunk(){}  // game
+/* 00177560 00000008 */ StageObject::getCollisionObject_thunk(){}  // game
+/* 00177570 00000008 */ StageMapObject::collisionHook3_thunk(){}  // game
+/* 00177580 00000008 */ StageMapObject::syncBody_thunk(){}  // game
+/* 00177590 00000008 */ StageMapObject::onCollide_thunk(){}  // game
+/* 001775a0 00000008 */ StageMapObject::collisionHook0_thunk(){}  // game
+
+// *****************************************************************************
+// FILE -- game/stagecamera.cpp
+// *****************************************************************************
+
 /* 001775b0 00000008 */ StageCamera::getKind(){}  // game
-/* 001775c0 00000020 */ FUN_001775c0(){}
-/* 001775e0 00000004 */ FUN_001775e0(){}
-/* 001775f0 00000004 */ FUN_001775f0(){}
-/* 00177600 00000004 */ FUN_00177600(){}
-/* 00177610 00000004 */ FUN_00177610(){}
+/* 001775c0 00000020 */ ScriptRunner::getScriptMapObject(){}  // game
+/* 001775e0 00000004 */ StageCamera::sideHook3(){}  // game
+/* 001775f0 00000004 */ StageCamera::sideHook2(){}  // game
+/* 00177600 00000004 */ StageCamera::sideHook1(){}  // game
+/* 00177610 00000004 */ StageCamera::sideHook0(){}  // game
 /* 00177620 00000008 */ StageObject::setYaw(){}  // game
 /* 00177630 00000008 */ StageObject::setRotation(){}  // game
 /* 00177640 00000008 */ StageObject::setPosition(){}  // game
-/* 00177650 00000078 */ FUN_00177650(){}
+/* 00177650 00000078 */ StageCamera::~StageCamera(){}  // game
 /* 001776d0 00000134 */ StageCamera::seesPoint(){}  // game
 /* 00177810 00000048 */ StageCamera::calcViewMatrix(){}  // game
 /* 00177860 00000094 */ StageCamera::aimFrom(){}  // game
@@ -8430,7 +8435,7 @@
 /* 002b2380 00000008 */ FUN_002b2380(){}
 /* 002b2390 00000004 */ FUN_002b2390(){}
 /* 002b23a0 00000004 */ FUN_002b23a0(){}
-/* 002b23b0 00000028 */ FUN_002b23b0(){}
+/* 002b23b0 00000028 */ sevenKeysPoseValue(){}  // game
 /* 002b23e0 00000034 */ FUN_002b23e0(){}
 /* 002b2420 00000080 */ FUN_002b2420(){}
 /* 002b24a0 000000b4 */ FUN_002b24a0(){}

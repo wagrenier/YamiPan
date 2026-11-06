@@ -6386,12 +6386,29 @@ static const int *nativeAttachEffect(ScriptRunner *self, int *, const int *code)
     return next;
 }
 
-// The car a script runs on. PC: null when the target is none (the ROM reads
-// through the unsupported answer's null).
+// The script's motion natives work on any map object: slot +0x9c answers the
+// object itself on each of them (ScriptRunner::getScriptMapObject), not only
+// on a car. PC: its pose can be missing where the ROM's never is: the host
+// makes a plain object of the car, and that one takes no motion list.
+static StageObject *scriptMotionObject(ScriptRunner *target)
+{
+    StageObject *object = target->getScriptMapObject();
+    return object != nullptr && object->m_model != nullptr && object->m_model->pose != nullptr ? object
+                                                                                               : nullptr;
+}
+
+// The car behind the same slot. The ROM writes through whatever answers it, and
+// only cars are ever asked. PC: null for anything else, which is every object
+// for now: createMapObject does not build the class yet.
+static StageCar *scriptCar(ScriptRunner *target)
+{
+    StageObject *object = target->getScriptMapObject();
+    return object != nullptr && object->getKind() == StageObject_Car ? static_cast<StageCar *>(object) : nullptr;
+}
 
 // 0x198 carPlayMotion(name).
 // FS2 0x001b2e80
-// callcheck: readNameArg, getScriptCar, playNamed
+// callcheck: readNameArg, getScriptMapObject, playNamed
 
 static const int *nativeCarPlayMotion(ScriptRunner *self, int *, const int *code)
 {
@@ -6399,19 +6416,19 @@ static const int *nativeCarPlayMotion(ScriptRunner *self, int *, const int *code
     ScriptRunner *target = self->getTarget();
     const char *name;
     const int *next = self->readNameArg(&name, code);
-    if (StageCar *car = target->getScriptCar())
-        car->m_model->playNamed(0, name, false, false, kCarMotionFlags, 0);
+    if (StageObject *object = scriptMotionObject(target))
+        object->m_model->playNamed(0, name, false, false, kCarMotionFlags, 0);
     return next;
 }
 
 // 0x19a carMotionEnding().
 // FS2 0x001b2cd0
-// callcheck: getScriptCar, isBoneEnding
+// callcheck: getScriptMapObject, isBoneEnding
 
 static const int *nativeCarMotionEnding(ScriptRunner *self, int *acc, const int *code)
 {
-    StageCar *car = self->getTarget()->getScriptCar();
-    *acc = car != nullptr && car->m_model->pose->isBoneEnding(nullptr);
+    StageObject *object = scriptMotionObject(self->getTarget());
+    *acc = object != nullptr && object->m_model->pose->isBoneEnding(nullptr);
     return code;
 }
 
@@ -6428,24 +6445,24 @@ static const int *nativeSetCarValue394(ScriptRunner *self, int *, const int *cod
 
 // 0x1ac setCarFlag3a0(on).
 // FS2 0x001b1e60
-// callcheck: getScriptCar
+// callcheck: getScriptMapObject
 
 static const int *nativeSetCarFlag3a0(ScriptRunner *self, int *, const int *code)
 {
     const int on = self->popped(1)[0];
-    if (StageCar *car = self->getTarget()->getScriptCar())
+    if (StageCar *car = scriptCar(self->getTarget()))
         car->m_flag3a0 = on != 0;
     return code;
 }
 
 // 0x1c8 setCarMode(mode).
 // FS2 0x001af050
-// callcheck: getScriptCar
+// callcheck: getScriptMapObject
 
 static const int *nativeSetCarMode(ScriptRunner *self, int *, const int *code)
 {
     const int mode = self->popped(1)[0];
-    if (StageCar *car = self->getTarget()->getScriptCar())
+    if (StageCar *car = scriptCar(self->getTarget()))
         car->m_mode = mode;
     return code;
 }

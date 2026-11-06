@@ -15,25 +15,19 @@
 class StageMapObject : public StageObject, public CollisionOwner
 {
 public:
-    // Its placement is the node's matrix, which setModel writes straight into
-    // the world matrix. Left dirty, the first calcmatrix would rebuild that
-    // from position and rotation, both zero, and put the object at the origin.
-    // The ROM takes the number of meshes; every caller read here has one.
-    // FS2 0x001765e0
-    // callcheck: StageObject, operator_new[], setDirtyTree (the base, the collision table, slot +0x1c)
-    StageMapObject()
-    {
-        m_collides = 1;
-        m_collisionCount = 1;
-        m_collisions = new StageCollision *[m_collisionCount];
-        for (u_int i = 0; i < m_collisionCount; i++)
-            m_collisions[i] = nullptr;
-        setDirtyTree(false);
-    }
+    // meshes: how many collision meshes it may hold; one on all but the
+    // class of 0x295360, which takes five.
+    explicit StageMapObject(int meshes);                                 // FS2 0x001765e0
     ~StageMapObject() override;                                          // FS2 0x00176480
 
     int getKind() override { return StageObject_MapObject; }
 
+    // Every class on this one is its own map object for a script (ROM: a slot
+    // of the CollisionOwner side, 0x1722f0, behind the thunk 0x1774a0).
+    StageObject *getScriptMapObject() override { return this; }
+
+    // The object's list, which the ROM copies here, and one id more.
+    int  getProperty(int id, int sub) override;                          // FS2 0x00174b00
     void setPosition(const float *pos) override;                         // FS2 0x00174aa0
     void setRotation(const float *rot) override;                         // FS2 0x00174a40
     void setYaw(float yaw) override;                                     // FS2 0x00174a10
@@ -59,6 +53,8 @@ public:
     void setMotionList(void *list, int arg, int arg2) override;          // FS2 0x00175d40
     // Native 0x90.
     StageObject *getTouchedBy() const { return m_touchedBy; }
+    // sideHook2 at rate times the clock: the car's, 0x28cda0.
+    void advanceMotion(float rate);                                      // FS2 0x001755f0
 
 private:
     void markMoved();

@@ -11969,6 +11969,18 @@
   "was": "FUN_001722d0",
   "why": "slot +0x220: this"
  },
+ "001722e0": {
+  "name": "StageDoor::getScriptDoor",
+  "tag": "game-inferred",
+  "was": "FUN_001722e0",
+  "why": "returns this; behind the thunk 0x177490 in the door table slot 38"
+ },
+ "001722f0": {
+  "name": "StageMapObject::getScriptMapObject",
+  "tag": "game-inferred",
+  "was": "FUN_001722f0",
+  "why": "returns this; behind the thunk 0x1774a0, slot 37 of every class on StageMapObject"
+ },
  "00172300": {
   "name": "StageObject::setModelValue",
   "tag": "game-inferred",
@@ -11998,6 +12010,12 @@
   "tag": "game-inferred",
   "was": "FUN_00172350",
   "why": "slot +0x21c: this + 0x20"
+ },
+ "00172360": {
+  "name": "StageObject::getCollisionObject",
+  "tag": "game-inferred",
+  "was": "FUN_00172360",
+  "why": "returns this; CollisionOwner slot 6, thunk 0x177560"
  },
  "00172370": {
   "name": "DoorRecord::setSeIndex",
@@ -12185,11 +12203,41 @@
   "was": "FUN_00174b00",
   "why": "copy of 0x18a5b0 plus id 0x6b for a kind 6 object"
  },
+ "001753d0": {
+  "name": "StageMapObject::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_001753d0",
+  "why": "slot 108 of 0x3115fc, returns 1"
+ },
+ "001753e0": {
+  "name": "StageMapObject::onCollide",
+  "tag": "game-inferred",
+  "was": "FUN_001753e0",
+  "why": "CollisionOwner slot 13 of 0x31180c, returns 0"
+ },
  "001753f0": {
   "name": "StageMapObject::collisionHook0",
   "tag": "game-inferred",
   "was": "FUN_001753f0",
   "why": "thunk at slot 0 of 0x31180c; categories 0x40 and 0x100: notes who touched it and breaks the face's group"
+ },
+ "001755d0": {
+  "name": "StageMapObject::collisionHook3",
+  "tag": "game-inferred",
+  "was": "FUN_001755d0",
+  "why": "CollisionOwner slot 15 of 0x31180c, empty"
+ },
+ "001755e0": {
+  "name": "StageMapObject::syncBody",
+  "tag": "game-inferred",
+  "was": "FUN_001755e0",
+  "why": "CollisionOwner slot 14 of 0x31180c, empty"
+ },
+ "001755f0": {
+  "name": "StageMapObject::advanceMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001755f0",
+  "why": "sideHook2 with f12 scaling the frames; the car 0x28cda0 calls it"
  },
  "001756b0": {
   "name": "StageMapObject::sideHook0",
@@ -12245,6 +12293,18 @@
   "was": "FUN_001763e0",
   "why": "the model flags block inline in setupMapObject, called on its own by the sub-scene's map setup"
  },
+ "00176480": {
+  "name": "StageMapObject::~StageMapObject",
+  "tag": "game-inferred",
+  "was": "FUN_00176480",
+  "why": "stores the vtables 0x3115c0 / 0x3115e4 / 0x3115fc / 0x31180c, deletes the collision table and the parts, then ~StageObject"
+ },
+ "001765e0": {
+  "name": "StageMapObject::StageMapObject",
+  "tag": "game-inferred",
+  "was": "FUN_001765e0",
+  "why": "a1 the number of collision meshes: new[] of that many pointers; createMapObject, StageDoor and the four classes behind createMapObject pass it"
+ },
  "001766c0": {
   "name": "createMapObject",
   "tag": "game-inferred",
@@ -12252,10 +12312,10 @@
   "why": "picks the class of a map node by its name (o..., _dp, _ds, oGK99_01, oDC99_01)"
  },
  "001769e0": {
-  "name": "isGateModelName",
+  "name": "isCarModelName",
   "tag": "game-inferred",
   "was": "FUN_001769e0",
-  "why": "strcmp with oGK99_01 and oDC99_01; gate is a guess"
+  "why": "the two strcmp of createMapObject that build the class 0x28e5a0 (kind 3, sounds CAR_*): oGK99_01, oDC99_01"
  },
  "00176a40": {
   "name": "MapObjectParts::copyShown",
@@ -12274,6 +12334,18 @@
   "tag": "game-inferred",
   "was": "FUN_00176bc0",
   "why": "0x14 block: distinct part ids from a collision record's faces +0x46, a PartSwitch for each, effects"
+ },
+ "00177160": {
+  "name": "ScriptRunner::getScriptDoor",
+  "tag": "game-inferred",
+  "was": "FUN_00177160",
+  "why": "slot 38 (+0xa0): the unsupported log, then null; the door overrides it through 0x177490"
+ },
+ "00177180": {
+  "name": "ScriptRunner::scriptIsFacing",
+  "tag": "game-inferred",
+  "was": "FUN_00177180",
+  "why": "slot 61 (+0xfc): the default command as a bool; native 0x44"
  },
  "001771a0": {
   "name": "StageMapObject::sideHook3",
@@ -12294,22 +12366,286 @@
   "why": "side slot +0xc through thunk 0x177360: empty"
  },
  "00177270": {
-  "name": "BoneNode::find",
+  "name": "StringMap<StageNodeBase>::find",
   "tag": "game-inferred",
   "was": "FUN_00177270",
-  "why": "a0 a node {object +0, name +4, left +8, right +0xc}, a1 a name: binary search by strcmp; the node whose object is set, null none. StageSound::update finds bn_head (0x303178) under model +0x14"
+  "why": "the bone map instance of the tree search: root in a0, key in a1, strcmp, a node whose value is set; architecture.md says the map is one StringMap"
+ },
+ "001772f0": {
+  "name": "DoorRecord::DoorRecord",
+  "tag": "game-inferred",
+  "was": "FUN_001772f0",
+  "why": "run by 0x310a00 through __construct_array over 0x537d80, 0x87 elements of 0x38: zeroes the fields of DoorRecord"
+ },
+ "00177340": {
+  "name": "StageMapObject::sideHook3_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177340",
+  "why": "j 0x1771a0 with a0 -0x18: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177350": {
+  "name": "StageMapObject::sideHook2_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177350",
+  "why": "j 0x1771b0 with a0 -0x18: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177360": {
+  "name": "StageMapObject::sideHook1_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177360",
+  "why": "j 0x177260 with a0 -0x18: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177370": {
+  "name": "StageMapObject::~StageMapObject_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177370",
+  "why": "j 0x176480 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177380": {
+  "name": "StageObject::setProperty_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177380",
+  "why": "j 0x189f40 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177390": {
+  "name": "StageMapObject::getProperty_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177390",
+  "why": "j 0x174b00 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "001773a0": {
+  "name": "StageDoor::sideHook3_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_001773a0",
+  "why": "j 0x174180 with a0 -0x18: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "001773b0": {
+  "name": "StageDoor::sideHook2_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_001773b0",
+  "why": "j 0x1741c0 with a0 -0x18: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "001773c0": {
+  "name": "StageDoor::sideHook1_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_001773c0",
+  "why": "j 0x174390 with a0 -0x18: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "001773d0": {
+  "name": "StageMapObject::sideHook0_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_001773d0",
+  "why": "j 0x1756b0 with a0 -0x18: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "001773e0": {
+  "name": "StageObject::setTreeShown_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_001773e0",
+  "why": "j 0x172260 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "001773f0": {
+  "name": "StageObject::setShownState_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_001773f0",
+  "why": "j 0x172270 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177400": {
+  "name": "StageObject::getShownState_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177400",
+  "why": "j 0x172280 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177410": {
+  "name": "StageObject::noiseHook_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177410",
+  "why": "j 0x18ae70 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177420": {
+  "name": "StageObject::makeNoise_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177420",
+  "why": "j 0x18ae80 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177430": {
+  "name": "StageObject::playNamedHeard_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177430",
+  "why": "j 0x18aea0 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177440": {
+  "name": "StageDoor::scriptIsFacing_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177440",
+  "why": "j 0x1723c0 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
  },
  "00177450": {
-  "name": "StageObject::thunkAddMenuLine",
+  "name": "StageObject::scriptAddMenuLine_thunk",
   "tag": "game-inferred",
   "was": "FUN_00177450",
-  "why": "runner side thunk of 0x189ce0, this - 0x40"
+  "why": "j 0x189ce0 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177460": {
+  "name": "StageObject::heightDifference_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177460",
+  "why": "j 0x172290 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177470": {
+  "name": "StageObject::distanceTo_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177470",
+  "why": "j 0x1722b0 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177480": {
+  "name": "StageObject::getSelf_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177480",
+  "why": "j 0x1722d0 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177490": {
+  "name": "StageDoor::getScriptDoor_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177490",
+  "why": "j 0x1722e0 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "001774a0": {
+  "name": "StageMapObject::getScriptMapObject_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_001774a0",
+  "why": "j 0x1722f0 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "001774b0": {
+  "name": "StageObject::setModelValue_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_001774b0",
+  "why": "j 0x172300 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "001774c0": {
+  "name": "StageMapObject::setYaw_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_001774c0",
+  "why": "j 0x174a10 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "001774d0": {
+  "name": "StageMapObject::setRotation_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_001774d0",
+  "why": "j 0x174a40 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "001774e0": {
+  "name": "StageMapObject::setPosition_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_001774e0",
+  "why": "j 0x174aa0 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "001774f0": {
+  "name": "StageObject::getPosZ_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_001774f0",
+  "why": "j 0x172320 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177500": {
+  "name": "StageObject::getPosY_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177500",
+  "why": "j 0x172330 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177510": {
+  "name": "StageObject::getPosX_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177510",
+  "why": "j 0x172340 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177520": {
+  "name": "StageObject::getObjectName_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177520",
+  "why": "j 0x172350 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177530": {
+  "name": "StageDoor::~StageDoor_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177530",
+  "why": "j 0x171a30 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177540": {
+  "name": "StageDoor::setProperty_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177540",
+  "why": "j 0x172620 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177550": {
+  "name": "StageDoor::getProperty_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177550",
+  "why": "j 0x172d80 with a0 -0x40: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177560": {
+  "name": "StageObject::getCollisionObject_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177560",
+  "why": "j 0x172360 with a0 -0x200: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177570": {
+  "name": "StageMapObject::collisionHook3_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177570",
+  "why": "j 0x1755d0 with a0 -0x200: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177580": {
+  "name": "StageMapObject::syncBody_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177580",
+  "why": "j 0x1755e0 with a0 -0x200: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "00177590": {
+  "name": "StageMapObject::onCollide_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177590",
+  "why": "j 0x1753e0 with a0 -0x200: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
+ },
+ "001775a0": {
+  "name": "StageMapObject::collisionHook0_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_001775a0",
+  "why": "j 0x1753f0 with a0 -0x200: the adjustor of that slot, in the side tables of StageMapObject and the classes on it"
  },
  "001775b0": {
   "name": "StageCamera::getKind",
   "tag": "game-inferred",
   "was": "FUN_001775b0",
   "why": "answers 7"
+ },
+ "001775c0": {
+  "name": "ScriptRunner::getScriptMapObject",
+  "tag": "game-inferred",
+  "was": "FUN_001775c0",
+  "why": "slot 37 (+0x9c): the unsupported log, then null; each StageMapObject answers itself through 0x1774a0"
+ },
+ "001775e0": {
+  "name": "StageCamera::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_001775e0",
+  "why": "slot 134 of 0x31189c, empty; thunk 0x177eb0 in the side table 0x311884"
+ },
+ "001775f0": {
+  "name": "StageCamera::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_001775f0",
+  "why": "slot 133 of 0x31189c, empty; thunk 0x177ec0"
+ },
+ "00177600": {
+  "name": "StageCamera::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_00177600",
+  "why": "slot 132 of 0x31189c, empty; thunk 0x177ed0"
+ },
+ "00177610": {
+  "name": "StageCamera::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_00177610",
+  "why": "slot 131 of 0x31189c, empty; thunk 0x177ee0"
  },
  "00177620": {
   "name": "StageObject::setYaw",
@@ -12328,6 +12664,12 @@
   "tag": "game-inferred",
   "was": "FUN_00177640",
   "why": "slot +0x20c"
+ },
+ "00177650": {
+  "name": "StageCamera::~StageCamera",
+  "tag": "game-inferred",
+  "was": "FUN_00177650",
+  "why": "stores the vtables 0x311860 / 0x311884 / 0x31189c, runs ~StageObject, deletes when asked"
  },
  "001776d0": {
   "name": "StageCamera::seesPoint",
@@ -30826,6 +31168,12 @@
   "tag": "game-inferred",
   "was": "FUN_002b22d0",
   "why": "five words zero; EE 0x14"
+ },
+ "002b23b0": {
+  "name": "sevenKeysPoseValue",
+  "tag": "game-inferred",
+  "was": "FUN_002b23b0",
+  "why": "the object +0x30 model +0xc pose, 0x2b3640 reads float +0x3d0 + sub * 4 as an int; StageMapObject::getProperty id 0x6b on a kind 6 object"
  },
  "002b2b70": {
   "name": "SceneOwnedObject::setSevenKeyNumbers",

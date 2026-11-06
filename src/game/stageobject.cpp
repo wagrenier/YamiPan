@@ -69,7 +69,7 @@ void StageObject::setProperty(int id, int sub, int value)
     StageScene *scene = gStageScene;
     switch (id) {
     case Prop_ViewActive:
-        if (getKind() == StageObject_Kind3)
+        if (getKind() == StageObject_Car)
             m_viewActive = value != 0;
         break;
     case Prop_Shown:
@@ -658,7 +658,7 @@ void StageObject::scriptAddMenuLine(const u_short *text, int kind, bool plain)
             else
                 return;
             break;
-        case StageObject_Kind3:
+        case StageObject_Car:
             kind = kLineCar;
             break;
         case StageObject_Door:

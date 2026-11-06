@@ -2,8 +2,8 @@
  *  game/stagedoor.cpp -- a door of the map (game/stagedoor.h says how one
  *  works). The file name is the port's.
  *
- *  What getProperty shares with the plain map object (0x174b00: position,
- *  motions, the mission's clocks) falls to StageObject::getProperty.
+ *  What getProperty shares with the plain map object (position, motions, the
+ *  mission's clocks) falls to StageMapObject::getProperty.
  * ======================================================================== */
 #include <math.h>
 #include <stdio.h>
@@ -32,6 +32,7 @@ constexpr char kSoundOpenEnd[]    = "DR_%02d_OPEN2";   // data 0x302ea8
 constexpr char kSoundCloseEnd[]   = "DR_%02d_CLOSE2";  // data 0x302e98
 
 // Faces (kDoorFaceBase is StageScene's): shut, then open, two groups each.
+constexpr int kDoorMeshes = 1;                 // StageMapObject's collision meshes
 constexpr int kFaceBase = 100;
 constexpr int kFacesPerType = 0xb4;
 constexpr int kFacesPerDoor = 4;
@@ -69,7 +70,7 @@ const DoorRecord *doorRecord(int index)
 // FS2 0x00174940
 // callcheck: FUN_001765e0
 
-StageDoor::StageDoor(int type, int number)
+StageDoor::StageDoor(int type, int number) : StageMapObject(kDoorMeshes)
 {
     m_doorType = type;
     m_doorIndex = number;
