@@ -18,6 +18,7 @@
 #include "game/gfxtarget.h"
 #include "game/packtables.h"
 #include "game/playermotion.h"
+#include "game/ripplesheet.h"
 #include "game/rumblelist.h"
 #include "game/scenerender.h"
 #include "game/stageobjlist.h"
@@ -124,6 +125,16 @@ void rotateByAngles(sceVu0FMATRIX out, const sceVu0FVECTOR *in, const sceVu0FVEC
 // ──────────────────────────────────────────────────────────────────────
 // The camera and the fill.
 
+constexpr int    kStageBoss = 0x1b;
+constexpr u_int  kRippleColumns = 15;       // the boss's water, ripplesheet.h
+constexpr u_int  kRippleRows = 15;
+constexpr u_int  kRippleWaves = 1;
+constexpr float  kRippleSpeedMin = 0.3f;
+constexpr float  kRippleSpeedMax = 3.0f;
+constexpr float  kRipplePeak = 8.0f;
+constexpr float  kRippleCameraAbove = 195.0f;
+constexpr u_int  kRippleTint = 0x1e004050;  // the frame is pushed away from this brown
+
 // callcheck: StageCamera (createCamera's inline ctor)
 JackCamera::JackCamera() : StageCamera(kCameraScrZ, kCameraWidth, kCameraHeight, kCameraFar)
 {
@@ -174,8 +185,14 @@ SightJack::SightJack()
     m_film.band = tuning.band;
     m_film.levelLow = tuning.levelLow;
     m_film.levelHigh = tuning.levelHigh;
-    // PC: stage 0x1b also builds an object at +0xb4 (0x2d31d0, 15 by 15). It
-    // is the draw's, which is not written.
+    if (stage == kStageBoss) {
+        m_ripples = new RippleSheet(kRippleColumns, kRippleRows, kRippleWaves);
+        RippleSpec &spec = m_ripples->spec();
+        spec.speedMin = kRippleSpeedMin;
+        spec.speedMax = kRippleSpeedMax;
+        spec.setPeak(kRipplePeak);
+        m_ripples->restart();
+    }
 }
 
 // FS2 0x00203be0
@@ -187,6 +204,7 @@ SightJack::~SightJack()
         m_fill->destroy();
     delete m_fleckTexture;
     delete m_flecks;
+    delete m_ripples;
 }
 
 // FS2 0x00203ae0
@@ -822,7 +840,6 @@ constexpr u_int  kTintSearching = 0x16503200; // brain states 2..4
 constexpr int    kStagePartnerPalette = 6;
 constexpr int    kStageE21 = 0x15;
 constexpr int    kStagePaletteA = 0x18;
-constexpr int    kStageBoss = 0x1b;
 
 // The frame goes black, depth untouched.
 static void fillBlack(sceVif1Packet *packet)
@@ -1250,9 +1267,9 @@ void SightJack::drawCorpse(float filmLevel)
 // FS2 0x00201bc0
 // The film and the grain over the eyes' picture, the crosses; under them on
 // list 8 the bright frame and the tint of what the character is.
-// PC: not drawn: stage 0x1b's boss film 0x2d10f0, with its object at +0xb4
-// not built.
-// callcheck: openList, demoFilmDraw, gfxGetTexArea, getList, getTopView, jackMarker, canBeJacked, jackMarker, step, draw, drawBindFlash, closeList, openList, gsFrameScale, getStageSelect, strcmp, strcmp, getStageSelect, gsFrameAdd, getStageSelect, strcmp, strcmp, gsFrameContrast, getStageSelect, drawFoeMarkers, strcmp, strcmp, strcmp, getStageSelect, strcmp, strcmp, strcmp, getStageSelect, isTakenOver, strcmp, strcmp, closeList (FUN_002d10f0, FUN_002d3080, gfxGetDrawEnv, gsFillRect, getDeltaSeconds, unwritten as above)
+// Through the boss with the camera above 195, last of all the water
+// (ripplesheet.h).
+// callcheck: openList, demoFilmDraw, gfxGetTexArea, getList, getTopView, jackMarker, canBeJacked, jackMarker, step, draw, drawBindFlash, closeList, openList, gsFrameScale, getStageSelect, strcmp, strcmp, getStageSelect, gsFrameAdd, getStageSelect, strcmp, strcmp, gsFrameContrast, getStageSelect, drawFoeMarkers, strcmp, strcmp, strcmp, getStageSelect, strcmp, strcmp, strcmp, getStageSelect, isTakenOver, strcmp, strcmp, closeList, draw, advance, getDeltaSeconds (PC: gfxGetDrawEnv, gsFrameContrast and gsFillRect are in RippleSheet::draw's host pass)
 
 void SightJack::drawLive(float filmLevel)
 {
@@ -1306,6 +1323,11 @@ void SightJack::drawLive(float filmLevel)
         }
         if (tint != 0)
             gsFrameContrast(packet, tint);
+    }
+
+    if (boss && m_camera->getMatrix()[3][2] > kRippleCameraAbove) {
+        m_ripples->draw(packet, kRippleTint);
+        m_ripples->advance(gStageScene->clock->getDeltaSeconds());
     }
     packets->closeList();
 }

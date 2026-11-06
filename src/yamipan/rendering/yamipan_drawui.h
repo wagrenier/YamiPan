@@ -106,6 +106,32 @@ typedef struct YamiPanFilm
 
 void YamiPan_DrawUiFilm(const void *list, const YamiPanFilm *film);
 
+/* The frame so far seen through moving water, at any aspect (game/ripplesheet.cpp).
+ * `points` are `columns` x `rows` RippleSheet points, row by row, inside a
+ * sheet of (columns + 1) x (rows + 1) cells laid over the 512 x 512 frame. Each
+ * bends the frame by x, y in 1/16 of a frame unit; the sheet's edge stays. Then
+ * the frame is pushed away from `tint`, as YamiPan_DrawUiFrameContrast, and
+ * where the height at a pixel, the low byte of `height` between the points
+ * (0x80 at the edge), is 0x80 or over, it is scaled by height / 128 twice,
+ * clamping each time. Leaves the frame's alpha, where the GS leaves the
+ * height. */
+typedef struct YamiPanRipplePoint
+{
+    int x;
+    int y;
+    int height;
+} YamiPanRipplePoint;
+
+typedef struct YamiPanRipple
+{
+    const YamiPanRipplePoint *points;
+    int columns;
+    int rows;
+    uint32_t tint;
+} YamiPanRipple;
+
+void YamiPan_DrawUiFrameRipple(const void *list, const YamiPanRipple *ripple);
+
 /* Starts a vertex run of `format`; YamiPan_DrawUiVertex adds to it. */
 void YamiPan_DrawUiBegin(const void *list, int format);
 void YamiPan_DrawUiVertex(const void *list, const YamiPanUiVertex *vertex);

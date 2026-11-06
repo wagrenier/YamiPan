@@ -1273,6 +1273,24 @@
    ],
    "why": "RcntTimer (reset, ctor, dtor) and rcnt1Start (batches 003-004); file name a guess."
   },
+  "game/ripplesheet.cpp": {
+   "notes": "Batch 164. What the notes called stage 0x1b's boss film is a 15 by 15 ripple sheet, 0x2d10f0..0x2d3700, SightJack +0xb4: the frame bent, pushed from a tint, crests brightened through destination alpha. FrameRipplePass does the three GS steps in one shader. ripplecmp.py: 200 frames, 45,000 points, one differs by 1/16 pixel, every packet corner fits the host's rule including the ROM's slip of one corner. Seen forced over stage 1's first room, temporary build removed: progress/20261106-ripple-forced-a.png, -b.png. Stage 0x1b forced, 560 s, no crash: the player in a red cave, noise on L2, a log showed the real branch taken once with F_E27_BOSS and camera z 895.3, but no shot caught it: the real boss view is not judged. game/stageparty.cpp marked verify. Next: StageAlert, then the car. Remember build.py --pad takes the script text, not a path.",
+   "ranges": [
+    [
+     "002d10f0",
+     "002d3700"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-06 06:10",
+     "status": "verify",
+     "summary": "the boss view's water: RippleSheet and its host pass, compared with the ROM"
+    }
+   ],
+   "status": "verify",
+   "why": "0x2d10f0..0x2d3700 is one object after ModelMotion and before WideFontPrinter: the ripple sheet SightJack keeps at +0xb4, its waves and their std::vector inlines"
+  },
   "game/routefilter.cpp": {
    "notes": "All of 0x23f290..0x242e80 is written (batch 153). It cannot run yet: every RoutePlayer method it calls is a stub, so findPath and pathLength answer -1 and a walk ends at once, as before. Next: game/routeplayer.cpp 0x252840..0x25b8e0, pinned and queued first; gamehooks.h has the 16 prototypes, routefilter.h the host records (RouteNode, RouteSpan, RouteLeg, RoutePath). RoutePath::append 0x258870 and planarDistance 0x258b80 sit in that extent but are written here. Seen: scratch harness on the funnel (corridor, L both windings, S, gate behind the start, 20000 random corridors, no bad result); New Game doorwalk pad 240 s: no crash, dark first-person wall as before, ctor runs. isInsideQuad and isInsideTriangle keep the ROM's x*x - y*y, which is not a cross product (hazards.md). stepDistance on a chain leg reads stale registers in the ROM, 0 here.",
    "ranges": [
@@ -1877,9 +1895,14 @@
      "date": "2026-11-06 05:02",
      "status": "partial",
      "summary": "StageDaylight written (was SceneModelHolder); the real sight-jack seen on stage 2"
+    },
+    {
+     "date": "2026-11-06 06:08",
+     "status": "verify",
+     "summary": "marked partial -> verify: drawLive has no gap left: the ripple sheet is game/ripplesheet.cpp; the stage 0x1b object at +0xb4 is built and drawn"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "why": "The film 0x204550..0x2058e0 and 0x205b80 lie between this file's own functions; 0x2cfe20..0x2d0a10 (StageDaylight, the JackFilm's other user: it clones and draws it) follows the gsFrame passes with no gap, and sldiDecompress starts a different subject after it"
   },
   "game/stageplayer.cpp": {

@@ -277,6 +277,20 @@ class Ee:
         elif op == 'mfc1': s(a[0], s32(self.f[int(a[1][1:])]))
         elif op == 'mov.s': self.f[int(a[0][1:])] = self.f[int(a[1][1:])]
         elif op == 'cvt.s.w': setf(a[0], float(s32(self.f[int(a[1][1:])])))
+        elif op == 'cvt.w.s': self.f[int(a[0][1:])] = max(-0x80000000, min(0x7fffffff, int(F(a[1])))) & M32
+        elif op == '.word' and int(a[0], 16) & 0xfc0007ff == 0x70000389:     # pcpyld: mipsdis has no MMI
+            word = int(a[0], 16)
+            rs, rt, rd = (GPR[(word >> shift) & 0x1f] for shift in (21, 16, 11))
+            s(rd, (g(rs) & M64) << 64 | (g(rt) & M64))
+        elif op == '.word' and int(a[0], 16) & 0xfc1f07ff == 0x70000628:     # paddub rd, rs, zero: a 128-bit move
+            word = int(a[0], 16)
+            s(GPR[(word >> 11) & 0x1f], g(GPR[(word >> 21) & 0x1f]))
+        elif op == 'div1':
+            n, d = s32(g(a[1])), s32(g(a[2]))
+            q = abs(n) // abs(d) if d else 0
+            self.lo1 = -q if (n < 0) != (d < 0) else q
+        elif op == 'mflo1': s(a[0], self.lo1)
+        elif op == 'mult1': s(a[0], s32(s32(g(a[1])) * s32(g(a[2]))))
         elif op == 'neg.s': self.f[int(a[0][1:])] = self.f[int(a[1][1:])] ^ 0x80000000
         elif op == 'abs.s': self.f[int(a[0][1:])] = self.f[int(a[1][1:])] & 0x7fffffff
         elif op == 'add.s': setf(a[0], F(a[1]) + F(a[2]))

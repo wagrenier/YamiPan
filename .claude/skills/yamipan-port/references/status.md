@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 05:26 at commit `21bd07d` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 06:10 at commit `5605d36` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-06 05:26 at commit `21bd07d` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **4805** (73%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3884
-- context-name ledger: 5428 entries; overrides of wrong library matches: 0
-- placed in a source file: 5070/6599 in 112 files
+- game functions: **6599**, named **4815** (73%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3894
+- context-name ledger: 5438 entries; overrides of wrong library matches: 0
+- placed in a source file: 5080/6599 in 113 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -21,7 +21,7 @@ Least-named game-code regions (64 KB blocks):
 |---|---|---|
 | `00310000` | 0/9 (0%) | - |
 | `002c0000` | 37/173 (21%) | game/packtables.cpp, game/menupack.cpp, game/stageparty.cpp |
-| `002d0000` | 94/256 (37%) | game/drawsys.cpp, game/fontdata.cpp, game/stageparty.cpp |
+| `002d0000` | 104/256 (41%) | game/drawsys.cpp, game/ripplesheet.cpp, game/fontdata.cpp |
 | `00280000` | 104/232 (45%) | game/demoevent.cpp, game/playermotion.cpp, game/areagrid.cpp |
 | `001c0000` | 108/233 (46%) | game/scriptrunner.cpp |
 | `001b0000` | 115/242 (48%) | game/scriptrunner.cpp |
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **4557**; stubs: **209**
+- reconstructed FS2 functions: **4564**; stubs: **209**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -74,6 +74,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rcnttimer.cpp` | 0 | 4 |
+| `src/game/ripplesheet.cpp` | 7 | 0 |
 | `src/game/routefilter.cpp` | 38 | 0 |
 | `src/game/routeplayer.cpp` | 45 | 0 |
 | `src/game/rumblelist.cpp` | 10 | 0 |
@@ -151,10 +152,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 223 TUs: todo 86, partial 40, verify 94, done 31
-- next: **game/stageparty.cpp** (continuing a partial TU)
+- 223 TUs: todo 85, partial 39, verify 96, done 31
+- next: **unassigned@00135990** (frontier score 632)
 - pinned queue: (empty)
-- partial: `game/stageparty.cpp` 79/79 -- Batch 162. SceneModelHolder was no model: it is StageDaylight, 0x2cfe20..0x2d0a10, range joined to this TU, StageScene::model renamed daylight. On stages 3, 0x1
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -192,6 +192,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/playermotion.cpp` 246/246 -- All 244 functions are written; callcheck is clean, with one call noted as unwritten: sideHook1's brain half 0x1dd2f0 -> 0x22e740, game/characterbrain.cpp. Seen,
 - verify: `game/prgmccard.cpp` 7/7 -- All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide close
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
+- verify: `game/ripplesheet.cpp` 7/10 -- Batch 164. What the notes called stage 0x1b's boss film is a 15 by 15 ripple sheet, 0x2d10f0..0x2d3700, SightJack +0xb4: the frame bent, pushed from a tint, cre
 - verify: `game/routefilter.cpp` 36/36 -- All of 0x23f290..0x242e80 is written (batch 153). It cannot run yet: every RoutePlayer method it calls is a stub, so findPath and pathLength answer -1 and a wal
 - verify: `game/routeplayer.cpp` 47/100 -- Complete and compared with the ROM: rutecmp.py runs the ROM's code on eerun.py beside the host over 12 stages' rute files, 3840 questions, 0 differences. The fi
 - verify: `game/rumblelist.cpp` 10/10 -- Batch 163. KeepList 0x2bc100..0x2bcd20 is the pad's rumble: RumbleList at scene +0x30 plays named tracks of init pack item 0x14 (ALERT, PETITJACK, DAMAGE1, KAKO
@@ -213,6 +214,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stagemodel.cpp` 17/19 -- All of StageModel is written (init, bindBones, placeBones, setBaseMotion, advance, applyMotion, the play and find calls, the dtor). BoneNode and ModelLink were 
 - verify: `game/stageobject.cpp` 43/43 -- All 43 functions are written, no stubs; the old partial status was stale, which is why tus.py next picked it. This run compared setProperty 0x189f40, getPropert
 - verify: `game/stageobjlist.cpp` 45/45 -- Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector in
+- verify: `game/stageparty.cpp` 79/79 -- Batch 162. SceneModelHolder was no model: it is StageDaylight, 0x2cfe20..0x2d0a10, range joined to this TU, StageScene::model renamed daylight. On stages 3, 0x1
 - verify: `game/stageplayer.cpp` 33/33 -- Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was s
 - verify: `game/stageresult.cpp` 32/32 -- All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (add
 - verify: `game/stagescene.cpp` 256/258 -- Fix for the user's crash at the start of the mission after stage 1. isMotionTarget 0x175c40 was a stub, so node 4's crow oCM99_20 had no pose and native 0xb1 fa
@@ -252,14 +254,14 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 06:10 `game/ripplesheet.cpp` verify: the boss view's water: RippleSheet and its host pass, compared with the ROM
+- 2026-11-06 06:08 `game/stageparty.cpp` verify: marked partial -> verify: drawLive has no gap left: the ripple sheet is game/ripplesheet.cpp; the stage 0x1b object at +0xb4 is built and drawn
 - 2026-11-06 05:26 `game/rumblelist.cpp` verify: the pad's rumble: KeepList was RumbleList, written and compared with the ROM
 - 2026-11-06 05:02 `game/stageparty.cpp` partial: StageDaylight written (was SceneModelHolder); the real sight-jack seen on stage 2
 - 2026-11-06 04:29 `game/demofleck.cpp` verify: the flecks: DemoFleck and FleckSet, all 13 functions, a host blend DestinationFade and YamiPan_DrawUiSqueezeFactor
 - 2026-11-06 03:54 `game/stageparty.cpp` partial: the jack's palette views and film as host passes
 - 2026-11-06 03:11 `game/stageparty.cpp` partial: the sight-jack shows the view through a character: frame passes, markers, bind flash, warning
 - 2026-11-06 02:24 `game/stageparty.cpp` partial: the sight-jack starts and shows its noise: JackLink, ScreenFill, the draw gate
-- 2026-11-06 01:34 `game/stageparty.cpp` partial: the sight-jack without its drawing: StageParty and SightJack logic
-- 2026-11-06 00:46 `game/characterroute.cpp` verify: the 12 actions and their task classes, the TU is whole
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
@@ -274,7 +276,7 @@ Recent sessions:
 | `unassigned@00190900` | partial | 2/8/34 | 11.8 | 45 | 5 |
 | `unassigned@002a31b0` | partial | 1/18/22 | 5.9 | 39 | 0 |
 | `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 37 | 1 |
-| `unassigned@0022fc50` | todo | 0/0/8 | 1.8 | 33 | 0 |
+| `unassigned@002764b0` | todo | 0/0/43 | 7.8 | 33 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

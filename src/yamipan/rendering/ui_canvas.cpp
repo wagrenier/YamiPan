@@ -239,7 +239,8 @@ void UiCanvas::emit(Layer &target, std::initializer_list<Vertex> triangleVertice
     const bool continues =
         !target.draws.empty() && [&] {
             const DrawCall &last = target.draws.back();
-            return last.framePalette == nullptr && last.film == nullptr && last.pipeline == state.pipeline &&
+            return last.framePalette == nullptr && last.film == nullptr && !last.frameRipple &&
+                   last.pipeline == state.pipeline &&
                    last.image == state.image &&
                    last.scissor == state.scissor &&
                    last.linearFilter == state.linearFilter && last.repeat == state.repeat &&
@@ -465,6 +466,62 @@ void UiCanvas::filmOverlay(const void *list, FilmOverlay film)
     DrawCall draw;
     draw.film = std::make_shared<FilmOverlay>(std::move(film));
     draw.firstVertex = static_cast<std::uint32_t>(target.vertices.size());
+    target.draws.push_back(std::move(draw));
+}
+
+void UiCanvas::rippleFrame(const void *list, const YamiPanRipple &ripple)
+{
+    constexpr int kFrameUnits = 512 * 16; // the GS's 1/16 pixels
+    constexpr float kUnitsPerPixel = 16.0f;
+    constexpr std::uint32_t kLevel = 0x80;
+    constexpr std::uint32_t kGrey = 0x808080;
+
+    const int across = ripple.columns + 1;
+    const int down = ripple.rows + 1;
+    const int stepX = kFrameUnits / across;
+    const int stepY = kFrameUnits / down;
+
+    // The sheet's edge stays where it is, at the level height; the points are inside it.
+    const auto corner = [&](int column, int row) {
+        const int x = column * stepX;
+        const int y = row * stepY;
+        int pushX = 0;
+        int pushY = 0;
+        std::uint32_t height = kLevel;
+        if (column > 0 && column < across && row > 0 && row < down)
+        {
+            const YamiPanRipplePoint &point = ripple.points[(row - 1) * ripple.columns + (column - 1)];
+            pushX = point.x;
+            pushY = point.y;
+            height = static_cast<std::uint32_t>(point.height) & 0xff;
+        }
+        return Vertex{static_cast<float>(x + pushX) / kUnitsPerPixel, static_cast<float>(y + pushY) / kUnitsPerPixel,
+                      static_cast<float>(x) / kFrameUnits, static_cast<float>(y) / kFrameUnits, kGrey | height << 24};
+    };
+
+    std::scoped_lock lock(m_lock);
+    Layer &target = layer(list);
+
+    DrawCall draw;
+    draw.frameRipple = true;
+    draw.rippleTint = ripple.tint;
+    draw.firstVertex = static_cast<std::uint32_t>(target.vertices.size());
+    for (int row = 0; row < down; row++)
+    {
+        for (int column = 0; column < across; column++)
+        {
+            const Vertex topLeft = corner(column, row);
+            const Vertex topRight = corner(column + 1, row);
+            Vertex bottomLeft = corner(column, row + 1);
+            // The ROM's own slip: this one corner of the top right cell is 0x80 higher, wrapping.
+            if (row == 0 && column == ripple.columns)
+                bottomLeft.color += kLevel << 24;
+            const Vertex bottomRight = corner(column + 1, row + 1);
+            target.vertices.insert(target.vertices.end(),
+                                   {topLeft, topRight, bottomLeft, topRight, bottomLeft, bottomRight});
+        }
+    }
+    draw.vertexCount = static_cast<std::uint32_t>(target.vertices.size()) - draw.firstVertex;
     target.draws.push_back(std::move(draw));
 }
 

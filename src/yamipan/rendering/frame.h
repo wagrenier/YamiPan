@@ -103,6 +103,8 @@ struct DrawCall
     std::uint8_t fixedAlpha = 0x80;
     std::shared_ptr<Image> framePalette; // not null: no draw, the frame so far goes through this 256 x 1 ramp
     std::shared_ptr<FilmOverlay> film; // not null: no draw, this goes over the frame so far
+    bool frameRipple = false; // this draw's vertices are FrameRipplePass's sheet, not drawn as they are
+    std::uint32_t rippleTint = 0;
     std::uint32_t firstVertex = 0;
     std::uint32_t vertexCount = 0;
 };
