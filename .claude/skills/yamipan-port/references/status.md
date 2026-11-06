@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 08:53 at commit `f590ae3` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 09:41 at commit `091cc98` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-06 08:53 at commit `f590ae3` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **4931** (75%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1547, game-inferred 4007
-- context-name ledger: 5554 entries; overrides of wrong library matches: 0
-- placed in a source file: 5275/6599 in 117 files
+- game functions: **6599**, named **4944** (75%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1547, game-inferred 4020
+- context-name ledger: 5567 entries; overrides of wrong library matches: 0
+- placed in a source file: 5293/6599 in 117 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **4722**; stubs: **193**
+- reconstructed FS2 functions: **4732**; stubs: **192**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -101,7 +101,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stagemodel.cpp` | 16 | 0 |
 | `src/game/stageobject.cpp` | 44 | 0 |
 | `src/game/stageobjlist.cpp` | 45 | 0 |
-| `src/game/stageparticle.cpp` | 38 | 0 |
+| `src/game/stageparticle.cpp` | 48 | 0 |
 | `src/game/stageparty.cpp` | 85 | 0 |
 | `src/game/stageplayer.cpp` | 33 | 0 |
 | `src/game/stageresult.cpp` | 32 | 0 |
@@ -126,7 +126,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 143 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 142 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -154,10 +154,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 222 TUs: todo 86, partial 37, verify 98, done 31
-- next: **game/stageparticle.cpp** (continuing a partial TU)
+- 222 TUs: todo 86, partial 35, verify 99, done 32
+- next: **game/vectortrack.cpp** (frontier score 68)
 - pinned queue: (empty)
-- partial: `game/stageparticle.cpp` 38/51 -- Written: StageParticle (ctors, setters, update 0x18e280, emitAt, draw 0x18d400 and drawCells 0x18c3b0 as one host quad), StageNodeTree spawn, remove, isLive, fi
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -218,6 +217,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stagemodel.cpp` 17/19 -- All of StageModel is written (init, bindBones, placeBones, setBaseMotion, advance, applyMotion, the play and find calls, the dtor). BoneNode and ModelLink were 
 - verify: `game/stageobject.cpp` 43/43 -- All 43 functions are written, no stubs; the old partial status was stale, which is why tus.py next picked it. This run compared setProperty 0x189f40, getPropert
 - verify: `game/stageobjlist.cpp` 45/45 -- Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector in
+- verify: `game/stageparticle.cpp` 48/69 -- Seen with temporary builds, removed, New Game forced to stage 2, work/doorwalk_pad.txt, 285 s, no crash: rain over the woods with effects on, none with them off
 - verify: `game/stageparty.cpp` 79/79 -- Batch 162. SceneModelHolder was no model: it is StageDaylight, 0x2cfe20..0x2d0a10, range joined to this TU, StageScene::model renamed daylight. On stages 3, 0x1
 - verify: `game/stageplayer.cpp` 33/33 -- Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was s
 - verify: `game/stageresult.cpp` 32/32 -- All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (add
@@ -259,6 +259,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 09:40 `game/stageparticle.cpp` verify: the particles are seen on screen (stage 2's rain), and the motes were critters: CritterNest, CritterRat, CritterCrawler written, spawnCritters live
 - 2026-11-06 08:53 `game/stageparticle.cpp` partial: the stage's particle effects: StageParticle and the particle system, spawn to host quads; runs, not yet seen on screen
 - 2026-11-06 07:59 `game/mapobject.cpp` verify: The map object's file closed: breakPart, getProperty and advanceMotion written, script slot +0x9c corrected to answer every map object, 70 of 70 functions, no s
 - 2026-11-06 07:07 `game/playermotion.cpp` verify: the three motion maps are the ROM's own LiteralMap, compared with its code; conditions and links in the ROM's order
@@ -266,7 +267,6 @@ Recent sessions:
 - 2026-11-06 06:10 `game/ripplesheet.cpp` verify: the boss view's water: RippleSheet and its host pass, compared with the ROM
 - 2026-11-06 06:08 `game/stageparty.cpp` verify: marked partial -> verify: drawLive has no gap left: the ripple sheet is game/ripplesheet.cpp; the stage 0x1b object at +0xb4 is built and drawn
 - 2026-11-06 05:26 `game/rumblelist.cpp` verify: the pad's rumble: KeepList was RumbleList, written and compared with the ROM
-- 2026-11-06 05:02 `game/stageparty.cpp` partial: StageDaylight written (was SceneModelHolder); the real sight-jack seen on stage 2
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
@@ -274,13 +274,13 @@ Recent sessions:
 | `unassigned@0017e140` | todo | 0/0/78 | 1.4 | 54 | 0 |
 | `unassigned@00289cc0` | todo | 0/17/59 | 23.1 | 47 | 0 |
 | `unassigned@0027cab0` | partial | 3/2/59 | 13.1 | 47 | 0 |
-| `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 39 | 1 |
 | `unassigned@002a31b0` | partial | 1/18/22 | 5.9 | 39 | 0 |
+| `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 39 | 1 |
 | `unassigned@002764b0` | todo | 0/0/43 | 7.8 | 33 | 0 |
 | `unassigned@0022fc50` | todo | 0/0/8 | 1.8 | 33 | 0 |
 | `unassigned@002937e0` | partial | 2/13/29 | 6.9 | 30 | 0 |
-| `rx/rxsndstradpcm.c` | todo | 0/8/10 | 2.6 | 25 | 5 |
 | `unassigned@002a4a40` | partial | 4/10/90 | 19.9 | 25 | 2 |
+| `rx/rxsndstradpcm.c` | todo | 0/8/10 | 2.6 | 25 | 5 |
 | `game/stagealert.cpp` | todo | 0/7/8 | 1.3 | 24 | 3 |
 
 ## Frontier (called by reconstructed code, not written yet)

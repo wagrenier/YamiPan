@@ -3613,12 +3613,12 @@
 // *****************************************************************************
 
 /* 00190900 00000088 */ StageNodeTree::setBoxes(){}  // game
-/* 00190990 000000e4 */ StageNodeTree::spawnMotes(){}  // game
 
 // *****************************************************************************
 // FILE -- game/stageparticle.cpp
 // *****************************************************************************
 
+/* 00190990 000000e4 */ StageNodeTree::spawnCritters(){}  // game
 /* 00190a80 00000008 */ StageNodeTree::draw(){}  // game
 /* 00190a90 00000008 */ StageNodeTree::update(){}  // game
 /* 00190aa0 0000003c */ StageNodeTree::addParticleTexture(){}  // game
@@ -8476,18 +8476,23 @@
 /* 002b36b0 000000c0 */ FUN_002b36b0(){}
 /* 002b3770 00000060 */ FUN_002b3770(){}
 /* 002b37d0 0000008c */ SkyPose::SkyPose(){}  // game
-/* 002b3860 00000008 */ FUN_002b3860(){}
-/* 002b3870 00000004 */ FUN_002b3870(){}
-/* 002b3880 00000004 */ FUN_002b3880(){}
-/* 002b3890 00000004 */ FUN_002b3890(){}
-/* 002b38a0 00000004 */ FUN_002b38a0(){}
-/* 002b38b0 00000130 */ FUN_002b38b0(){}
-/* 002b39e0 000003dc */ FUN_002b39e0(){}
-/* 002b3dc0 00000128 */ FUN_002b3dc0(){}
-/* 002b3ef0 00000180 */ FUN_002b3ef0(){}
-/* 002b4070 000008d8 */ FUN_002b4070(){}
-/* 002b4950 00000970 */ FUN_002b4950(){}
-/* 002b52c0 0000042c */ FUN_002b52c0(){}
+
+// *****************************************************************************
+// FILE -- game/stageparticle.cpp
+// *****************************************************************************
+
+/* 002b3860 00000008 */ CritterNest::getKind(){}  // game
+/* 002b3870 00000004 */ CritterNest::sideHook0(){}  // game
+/* 002b3880 00000004 */ CritterNest::sideHook1(){}  // game
+/* 002b3890 00000004 */ CritterNest::sideHook2(){}  // game
+/* 002b38a0 00000004 */ CritterNest::sideHook3(){}  // game
+/* 002b38b0 00000130 */ CritterNest::draw(){}  // game
+/* 002b39e0 000003dc */ CritterNest::update(){}  // game
+/* 002b3dc0 00000128 */ CritterNest::~CritterNest(){}  // game
+/* 002b3ef0 00000180 */ CritterNest::CritterNest(){}  // game
+/* 002b4070 000008d8 */ CritterRat::update(){}  // game
+/* 002b4950 00000970 */ CritterCrawler::update(){}  // game
+/* 002b52c0 0000042c */ Critter::draw(){}  // game
 /* 002b56f0 00000008 */ FUN_002b56f0(){}
 /* 002b5700 00000008 */ FUN_002b5700(){}
 /* 002b5710 00000008 */ FUN_002b5710(){}
@@ -8551,7 +8556,7 @@
 /* 002bb2b0 0000012c */ MenuProgSet::load(){}  // game
 /* 002bb3e0 000000f4 */ MenuProgSet::~MenuProgSet(){}  // game
 /* 002bb4e0 00000024 */ MenuProgSet::MenuProgSet(){}  // game
-/* 002bb510 000000f0 */ FUN_002bb510(){}
+/* 002bb510 000000f0 */ quatBetween(){}  // game
 
 // *****************************************************************************
 // FILE -- game/subsceneobject.cpp

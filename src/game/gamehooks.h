@@ -165,6 +165,7 @@ enum StageObjectKind
     StageObject_SphereVolume = 0x1b,
     StageObject_BoxVolume = 0x1c,
     StageObject_Particle = 0x1d, // StageParticle
+    StageObject_CritterNest = 0x1e, // game/stageparticle.h
     StageObject_SubSceneModel = 0x1f, // game/subsceneobject.h, as the next six
     StageObject_SubSceneMap  = 0x20,
     StageObject_SubSceneDoor = 0x21,

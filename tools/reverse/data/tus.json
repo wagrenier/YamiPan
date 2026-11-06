@@ -1896,15 +1896,23 @@
    "why": "Cut out of unassigned@00171300: the stage's name-keyed object registry (gStageScene +0x10, new 0xdc in 0x19c180): nine groups of a name map (AVL tree of StageNameNode by strcmp) and an object list, with their two containers. Bounded below by the BoxGrid vector instances (0x1928f0..0x1938f8) and above by game logic at 0x1953f0 (player state test, no registry use)."
   },
   "game/stageparticle.cpp": {
-   "notes": "Written: StageParticle (ctors, setters, update 0x18e280, emitAt, draw 0x18d400 and drawCells 0x18c3b0 as one host quad), StageNodeTree spawn, remove, isLive, files, textures, update, draw; host path renaBeginEffects, YamiPan_ModelSetEffect, YamiPan_ModelDrawQuad with pipelines per BlendMode and a per-draw fog. Run: New Game, work/doorwalk_pad.txt, 285 s, no crash, 55 live effects in the first room, ages advancing. NOT seen: no particle on any screenshot; that view is a dark wall with no lamp. A temporary build forcing light, heyasmoke, lightbreak 120 units ahead showed nothing, possibly behind the wall; the 30-unit test with quad counts ran 175 s and the room needs about 230 s, so it proved nothing. Next: repeat at 30 units for 280 s with counts in drawQuad, then a stage with lamps in view. Left out: motes (class 0x2b3ef0), Refract quads (flag 0x40, unused in stage 1), the ROM bytes that stop spawn, update and draw. Approximate: ALPHA_1 0x49 as DestinationBoost, 0x41 as Alpha. stopChain renamed restartChain. open-items.md has the doubts (a) to (h).",
+   "notes": "Seen with temporary builds, removed, New Game forced to stage 2, work/doorwalk_pad.txt, 285 s, no crash: rain over the woods with effects on, none with them off (progress/20261106-particles-rain-on.png, -stage2-off.png); forced nests ahead of the camera show small brown shapes flat on the path (progress/20261106-critters-forced.png). Stage 1's first room had simply nothing in view. No picture of the real game to compare, so verify. Not seen: a critter fleeing and hiding on screen, a script's own nest (only AREA01 and ALERT01, 02, 04 scripts call native 0x20f), the sheet (texture index 12) itself. Refract needs no code: ptcall.py finds it on 0 of 766 definitions. playSoundFrom got the ROM's branch for a label with no object; not run. The critters are pinned to this TU though the ROM has them apart. Approximate: ALPHA_1 0x49 as DestinationBoost (67 definitions), 0x41 as Alpha, a critter's ALPHA_1 taken as 0x44. open-items.md has the doubts (a) to (h).",
    "ranges": [
     [
      "0018c050",
      "001908d0"
     ],
     [
+     "00190990",
+     "00190a80"
+    ],
+    [
      "00190a80",
      "001920c8"
+    ],
+    [
+     "002b3860",
+     "002b5740"
     ]
    ],
    "sessions": [
@@ -1912,10 +1920,15 @@
      "date": "2026-11-06 08:53",
      "status": "partial",
      "summary": "the stage's particle effects: StageParticle and the particle system, spawn to host quads; runs, not yet seen on screen"
+    },
+    {
+     "date": "2026-11-06 09:40",
+     "status": "verify",
+     "summary": "the particles are seen on screen (stage 2's rain), and the motes were critters: CritterNest, CritterRat, CritterCrawler written, spawnCritters live"
     }
    ],
-   "status": "partial",
-   "why": "the stage's particle effects and the system that owns them: StageParticle's class (vtables 0x3149e0..) and the StageNodeTree methods around its spawn; no source-path string, the name is the port's"
+   "status": "verify",
+   "why": "the stage's particle effects and the system that owns them: StageParticle's class (vtables 0x3149e0..) and the StageNodeTree methods around its spawn; plus the critters 0x2b3860..0x2b5740 and spawnCritters 0x190990: the tree alone makes, moves and draws them, so they are kept here though the ROM has them apart; no source-path string, the name is the port's"
   },
   "game/stageparty.cpp": {
    "notes": "Batch 162. SceneModelHolder was no model: it is StageDaylight, 0x2cfe20..0x2d0a10, range joined to this TU, StageScene::model renamed daylight. On stages 3, 0x11, 0x12, 0x14, 0x16, 0x19, 0x5d, 0x1b: outside the stage's bbx boxes an additive gradient rises and settles, inside it fades and a clone of the jack's film closes in and opens. Seen in a temporary build, removed: stage 3 forced, the box answer forced on a timer, progress/20261106-daylight-forced-peak.png and -settled.png. Unforced, stage 3's first room is inside all the way, so nothing shows there. Byte 9 is answered: E01, E04, E05 scripts only lock the jack, E02 and others never touch it, so node 4 is by design. Seen, temporary build, removed: New Game forced to stage 2, jack2 pad, 290 s, no crash, no flag forced: noise with the black film ring, then a tuned view through a character, progress/20261106-stage2-real-jack-view.png. No game reference judges the levels. Left partial: drawLive lacks stage 0x1b's boss film 0x2d10f0, FUN_002d3080 and the object at +0xb4, callcheck's MISSING on drawLive, explained. Next: KeepList 0x2bc100..0x2bcd20, misnamed, reads like a track player of three varint channels, another TU, its addNamed is what the jack's warning calls; then the boss film. open-items.md Next up has it. The 15 s check is the language menu, unchanged.",

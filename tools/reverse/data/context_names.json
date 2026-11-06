@@ -14604,10 +14604,10 @@
   "why": "a0 StageScene +0x1c: replaces the inner object's +0x3c with a new BoxGrid over the bbx file (size 8)"
  },
  "00190990": {
-  "name": "StageNodeTree::spawnMotes",
+  "name": "StageNodeTree::spawnCritters",
   "tag": "game-inferred",
   "was": "FUN_00190990",
-  "why": "new 0x240 object of class 0x2b3ef0 at a place, joins the tree's list; native 0x20f; name a guess, class unread"
+  "why": "was spawnMotes: the class it makes walks on the map's faces, runs from the player and hides, it is no effect"
  },
  "00190a80": {
   "name": "StageNodeTree::draw",
@@ -31343,6 +31343,78 @@
   "was": "FUN_002b37d0",
   "why": "ModelPose ctor, vtable 0x319260, tag sky"
  },
+ "002b3860": {
+  "name": "CritterNest::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_002b3860",
+  "why": "returns 0x1e, slot of vtable 0x319280"
+ },
+ "002b3870": {
+  "name": "CritterNest::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_002b3870",
+  "why": "empty, side table 0x3194d0, thunk 0x2b56f0"
+ },
+ "002b3880": {
+  "name": "CritterNest::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_002b3880",
+  "why": "empty, side table 0x3194d0, thunk 0x2b5700"
+ },
+ "002b3890": {
+  "name": "CritterNest::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_002b3890",
+  "why": "empty, side table 0x3194d0, thunk 0x2b5710"
+ },
+ "002b38a0": {
+  "name": "CritterNest::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_002b38a0",
+  "why": "empty, thunk 0x2b5720"
+ },
+ "002b38b0": {
+  "name": "CritterNest::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002b38b0",
+  "why": "walks the vector at +0x22c, skips state 3, depth 0..1000, draws each"
+ },
+ "002b39e0": {
+  "name": "CritterNest::update",
+  "tag": "game-inferred",
+  "was": "FUN_002b39e0",
+  "why": "makes one every +0x20c frames up to +0x204, by kind +0x200, then each critter's update slot"
+ },
+ "002b3dc0": {
+  "name": "CritterNest::~CritterNest",
+  "tag": "game-inferred",
+  "was": "FUN_002b3dc0",
+  "why": "vtable 0x319280 slot 2, deletes the vector"
+ },
+ "002b3ef0": {
+  "name": "CritterNest::CritterNest",
+  "tag": "game-inferred",
+  "was": "FUN_002b3ef0",
+  "why": "the kind's cell of the sheet at +0x218, 300 updates, delay 150"
+ },
+ "002b4070": {
+  "name": "CritterRat::update",
+  "tag": "game-inferred",
+  "was": "FUN_002b4070",
+  "why": "class 0x319500, kind 1: walks forwards and back, a face over 0.7 of its surface stops it, flees within 100 units, hides"
+ },
+ "002b4950": {
+  "name": "CritterCrawler::update",
+  "tag": "game-inferred",
+  "was": "FUN_002b4950",
+  "why": "classes 0x319510 and 0x3194e0: lands on any face it runs into, goes round edges"
+ },
+ "002b52c0": {
+  "name": "Critter::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002b52c0",
+  "why": "a textured strip of four GS vertices from the critter's matrix at +0x30, cell frame +0x94"
+ },
  "002b5740": {
   "name": "menuSceneThread",
   "tag": "game-inferred",
@@ -31498,6 +31570,12 @@
   "tag": "game-inferred",
   "was": "FUN_002bb4e0",
   "why": "seven words zero"
+ },
+ "002bb510": {
+  "name": "quatBetween",
+  "tag": "game-inferred",
+  "was": "FUN_002bb510",
+  "why": "half-angle quaternion from the cross and dot of two vectors, normalising them unless a3 says they are"
  },
  "002bb600": {
   "name": "SubSceneItem::getKind",

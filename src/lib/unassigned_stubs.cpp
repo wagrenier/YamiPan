@@ -933,13 +933,6 @@ StageObject * findNumLockTarget()
     return {};
 }
 
-// stub of FS2 0x00190990
-StageObject * StageNodeTree::spawnMotes(const float *pos, float range, int kind, int count)
-{
-    YAMIPAN_STUB("StageNodeTree::spawnMotes", 0x00190990);
-    return {};
-}
-
 // stub of FS2 0x001dee50
 bool PlayerMotion::getCarSpecialFlag()
 {

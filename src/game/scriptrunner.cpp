@@ -2296,8 +2296,17 @@ static void playSoundFrom(ScriptRunner *target, const char *sound, const char *l
     }
     StageObject *me = target->getScriptObject();
     StageObject *object = (StageObject *)scriptLabelCell(label);
-    if (object == nullptr || me == nullptr)
+    if (me == nullptr)
         return;
+    if (object == nullptr) {
+        // No object by that name: an effect's definition may give the place.
+        const float *offset = gStageScene->nodeTree->effectOffset(label);
+        if (offset != nullptr) {
+            const sceVu0FVECTOR place = {offset[0], offset[1], offset[2], kOrigin[3]};
+            me->playNamedHeard(sound, place, nullptr);
+        }
+        return;
+    }
     const int kind = object->getKind();
     if (kind >= kModelKindFirst && kind <= kModelKindLast && object->m_model != nullptr) {
         BoneMap::Node *node = object->m_model->boneMap.find(kTopBone);
@@ -2914,11 +2923,11 @@ static const int *nativeJackAngle(ScriptRunner *self, int *, const int *code)
     return code;
 }
 
-// 0x20f motesAt(kind, count, range, object).
+// 0x20f crittersAt(kind, count, range, object).
 // FS2 0x001aa3a0
-// callcheck: readObjectArg, spawnMotes
+// callcheck: readObjectArg, spawnCritters
 
-static const int *nativeMotesAt(ScriptRunner *self, int *, const int *code)
+static const int *nativeCrittersAt(ScriptRunner *self, int *, const int *code)
 {
     const int *args = self->popped(3);
     const char *label;
@@ -2926,7 +2935,7 @@ static const int *nativeMotesAt(ScriptRunner *self, int *, const int *code)
     StageObject *object = (StageObject *)scriptLabelCell(label);
     // PC: as nativePlaceAt.
     if (object != nullptr)
-        gStageScene->nodeTree->spawnMotes(object->m_xform.position, (float)args[2], args[0], args[1]);
+        gStageScene->nodeTree->spawnCritters(object->m_xform.position, (float)args[2], args[0], args[1]);
     return next;
 }
 
@@ -3141,7 +3150,7 @@ static const ScriptNativeBinding kStageNatives[] = {
     { 0x126, nativePurpose },
     { 0x13c, nativeJackRange },
     { 0x13d, nativeJackAngle },
-    { 0x20f, nativeMotesAt },
+    { 0x20f, nativeCrittersAt },
     { 0x02f, nativeSetBrainEntry },
     { 0x031, nativeHeardKind },
     { 0x03c, nativeShoutNow },
