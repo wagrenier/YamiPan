@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-05 23:59 at commit `6ad2c97` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 00:46 at commit `0fd2100` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-05 23:59 at commit `6ad2c97` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **4667** (71%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3746
-- context-name ledger: 5290 entries; overrides of wrong library matches: 0
+- game functions: **6599**, named **4726** (72%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3805
+- context-name ledger: 5349 entries; overrides of wrong library matches: 0
 - placed in a source file: 4959/6599 in 109 files
 
 Least-named game-code regions (64 KB blocks):
@@ -22,7 +22,7 @@ Least-named game-code regions (64 KB blocks):
 | `00310000` | 0/9 (0%) | - |
 | `002c0000` | 33/173 (19%) | game/packtables.cpp, game/menupack.cpp, game/stagecollision.cpp |
 | `002d0000` | 90/256 (35%) | game/drawsys.cpp, game/fontdata.cpp, game/wstring.cpp |
-| `00200000` | 53/122 (43%) | game/pausemenustate.cpp, game/playermotion.cpp, game/uiitemlist.cpp |
+| `00200000` | 54/122 (44%) | game/pausemenustate.cpp, game/playermotion.cpp, game/uiitemlist.cpp |
 | `00280000` | 104/232 (45%) | game/demoevent.cpp, game/playermotion.cpp, game/areagrid.cpp |
 | `001c0000` | 108/233 (46%) | game/scriptrunner.cpp |
 | `001b0000` | 115/242 (48%) | game/scriptrunner.cpp |
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **4375**; stubs: **260**
+- reconstructed FS2 functions: **4436**; stubs: **248**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -39,7 +39,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/characterbrain.cpp` | 142 | 0 |
 | `src/game/characterground.cpp` | 20 | 0 |
 | `src/game/characterinput.cpp` | 10 | 0 |
-| `src/game/characterroute.cpp` | 85 | 0 |
+| `src/game/characterroute.cpp` | 144 | 0 |
 | `src/game/clock.cpp` | 14 | 0 |
 | `src/game/datetime.cpp` | 2 | 0 |
 | `src/game/demoevent.cpp` | 97 | 0 |
@@ -69,7 +69,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/pakarchive.cpp` | 17 | 0 |
 | `src/game/pausemenustate.cpp` | 12 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
-| `src/game/playermotion.cpp` | 388 | 0 |
+| `src/game/playermotion.cpp` | 390 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rcnttimer.cpp` | 0 | 4 |
@@ -120,7 +120,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/vectortrack.cpp` | 10 | 0 |
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 210 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 198 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -148,15 +148,15 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 222 TUs: todo 93, partial 38, verify 91, done 28
-- next: **game/characterroute.cpp** (pinned in the queue)
-- pinned queue: game/characterroute.cpp
-- partial: `game/characterroute.cpp` 85/169 -- Written: everything in game/characterroute.h not marked not written, 0x21efa0..0x224fe0 and 0x229f60..0x22fc50. Left: 12 action stubs in src/lib/unassigned_stub
+- 222 TUs: todo 93, partial 36, verify 92, done 29
+- next: **unassigned@00135990** (frontier score 621)
+- pinned queue: (empty)
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
 - verify: `game/characterground.cpp` 19/19 -- All code of the TU is written. Seen in a 285 s New Game run, no crash: F_PC01 stands at z 1139.2 on the ray's floor (attr 59, landed) for the 1320 frames logged
 - verify: `game/characterinput.cpp` 10/10 -- All code of the TU is written; the control hook's input half now runs in stageUpdateCharacterMotions. Seen in a 285 s New Game run with the scripted left stick 
+- verify: `game/characterroute.cpp` 144/169 -- All of 0x21efa0..0x22fc50 is written (batch 155). Proved: wayoutcmp.py ran the ROM 0x227f30 beside the host findWayOut on 12 stages rute files, 1800 questions, 
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
 - verify: `game/demoevent.cpp` 97/97 -- All of the TU is written or accounted for (batch 116). Added: DemoStream setFont and drawSubtitles, the fsm readers 0x28fa90..0x28ff60 (range added here; the ho
@@ -246,6 +246,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 00:46 `game/characterroute.cpp` verify: the 12 actions and their task classes, the TU is whole
 - 2026-11-05 23:59 `game/routeplayer.cpp` verify: the rute file: RoutePlayer, RouteFile, RouteAreaSearch, all non-MSL functions of 0x252840..0x25b8e0
 - 2026-11-05 23:22 `game/routefilter.cpp` verify: RouteFilter and its RouteSearch record: all 36 written or mapped to the host vector; findPath, pathLength, advance, the funnel; getFloorAttr signed as in the RO
 - 2026-11-05 22:56 `game/characterroute.cpp` partial: the route, its looks, turns, walk, car and 21 actions; path search and 12 actions left
@@ -253,35 +254,34 @@ Recent sessions:
 - 2026-11-05 21:53 `game/scenepool.cpp` done: Squeeze about the centre: the strip, subtitles and prompt keep their shape at any aspect; sprite UVs inset
 - 2026-11-05 21:26 `game/stageobject.cpp` verify: closed: all 43 written; setProperty, getProperty and scriptAddMenuLine compared with the ROM, stale notes fixed, queue refilled
 - 2026-11-05 21:17 `game/scenepool.cpp` verify: The strip behind the foot-of-screen text proven against its asset; flat 2D draws no longer doubled
-- 2026-11-05 20:46 `game/uiitemlist.cpp` done: the Use prompt's button picture and UiPrompt's destructor; all 20 functions written
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@00135990` | partial | 3/0/33 | 3.1 | 612 | 0 |
+| `unassigned@00135990` | partial | 3/0/33 | 3.1 | 621 | 0 |
 | `unassigned@001eedb0` | partial | 1/0/25 | 4.1 | 130 | 0 |
-| `unassigned@00176480` | partial | 13/0/69 | 5.3 | 112 | 0 |
+| `unassigned@00176480` | partial | 13/0/69 | 5.3 | 114 | 0 |
 | `unassigned@001fe6b0` | todo | 0/27/77 | 34.1 | 91 | 6 |
 | `unassigned@0018c050` | todo | 0/9/36 | 17.9 | 80 | 2 |
 | `game/vectortrack.cpp` | partial | 9/0/16 | 2.5 | 68 | 0 |
 | `unassigned@0017e140` | todo | 0/0/78 | 1.4 | 51 | 0 |
 | `unassigned@00289cc0` | todo | 0/17/59 | 23.1 | 47 | 0 |
-| `unassigned@0027cab0` | partial | 3/2/59 | 13.1 | 45 | 0 |
 | `unassigned@00190900` | partial | 2/8/34 | 11.8 | 45 | 5 |
+| `unassigned@0027cab0` | partial | 3/2/59 | 13.1 | 45 | 0 |
 | `unassigned@002a31b0` | partial | 1/18/22 | 5.9 | 39 | 0 |
-| `game/characterroute.cpp` | partial | 85/12/169 | 66.2 | 39 | 0 |
+| `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 37 | 1 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
-| `00136690` | applyMatrix | 119 | game | missing | - |
+| `00136690` | applyMatrix | 120 | game | missing | - |
 | `002c1430` | FUN_002c1430 | 115 | - | missing | game/packtables.cpp |
-| `00177270` | BoneNode::find | 109 | game | missing | - |
-| `00135f20` | vecDistance | 72 | game | missing | - |
+| `00177270` | BoneNode::find | 111 | game | missing | - |
+| `00135f20` | vecDistance | 78 | game | missing | - |
 | `00136490` | scaleVec4 | 70 | game | missing | - |
 | `00184370` | StageNodeList::erase | 58 | game | missing | game/stageitem.cpp |
 | `001365a0` | vecDot | 56 | game | missing | - |
-| `00136560` | vecNormalize | 53 | game | missing | - |
+| `00136560` | vecNormalize | 55 | game | missing | - |
 | `001eef90` | FUN_001eef90 | 44 | - | missing | - |
 | `00136400` | identityMatrix | 40 | game | missing | - |
 | `001ef590` | FUN_001ef590 | 36 | - | missing | - |
@@ -305,13 +305,13 @@ Recent sessions:
 | `0017e1b0` | FUN_0017e1b0 | 15 | - | missing | - |
 | `0029a700` | FUN_0029a700 | 15 | - | missing | game/vectortrack.cpp |
 | `001d1a00` | ScriptRunner::getEntry | 14 | game | missing | game/scriptrunner.cpp |
+| `0022fe10` | FUN_0022fe10 | 14 | - | missing | - |
 | `001ef260` | FUN_001ef260 | 13 | - | missing | - |
 | `001fe800` | StageParty::isRunning | 13 | game | stub | - |
+| `001d1280` | FUN_001d1280 | 13 | - | missing | game/scriptrunner.cpp |
 | `001361c0` | rotateMatrixX | 12 | game | missing | - |
 | `00135f70` | vecDistanceSq | 12 | game | missing | - |
-| `001d1280` | FUN_001d1280 | 12 | - | missing | game/scriptrunner.cpp |
 | `00296cc0` | VectorFade::VectorFade | 12 | game | missing | game/vectortrack.cpp |
 | `001fea50` | StageParty::getCompanion | 12 | game | stub | - |
 | `00136430` | copyMatrix | 12 | game | missing | - |
-| `002c0d40` | FUN_002c0d40 | 12 | - | missing | game/packtables.cpp |
 

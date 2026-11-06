@@ -353,6 +353,8 @@ public:
     virtual void clearAllowed();
     void clearEnabled();
     virtual void setEnabled(bool on);
+    // What PlayerMotion::specialMotion answers.
+    virtual int motionId() const { return Motion_None; }
 
     u_char allowed = 0;         // FS2 +0x14
     u_char enabled = 0;         // FS2 +0x15
@@ -409,6 +411,7 @@ public:
     MotionSpecialAction(StageCharacter *owner, PlayerMotion *motion_, const char *name, int id_ = -1)
         : MotionSpecial(owner, motion_, name), id(id_ == -1 ? motionIdOfLabel(name) : id_) {}
     void onApply() override;
+    int motionId() const override { return id; }
 
     int id;                     // FS2 +0x18
 };
@@ -700,6 +703,25 @@ bool PlayerMotion::setHold(int id)
         return false;
     m_holds[0] = id;
     return true;
+}
+
+// FS2 0x001ded60
+
+bool PlayerMotion::setHoldIfFree(int id)
+{
+    constexpr int kLastMotion = 0xff;
+    if (id < 0 || id > kLastMotion || m_holds[0] != Motion_None)
+        return false;
+    m_holds[0] = id;
+    return true;
+}
+
+// The ROM reads +0x18 of whatever special it finds: MotionSpecialAction::id.
+
+int PlayerMotion::specialMotion(const char *name)
+{
+    auto found = m_specials.find(name);
+    return found != m_specials.end() ? found->second->motionId() : Motion_None;
 }
 
 // Inline in the ROM (0x1da430): the class is this file's.
@@ -8854,6 +8876,14 @@ bool StageCharacter::isInReachOf(StageObject *object)
     const float aheadY = sinCos(-yaw, 1) * kAhead + y;
     const float facing = wrapAngle(yaw + atan2Octant(aheadX - at[0], aheadY - at[1]));
     return facing > -kFacing && facing < kFacing;
+}
+
+// FS2 0x002a6430
+// callcheck: isCuePlaying
+
+bool StageCharacter::isVoicePlaying(const char *name)
+{
+    return gStageScene->sound->isCuePlaying(name, this);
 }
 
 // FS2 0x002a6440

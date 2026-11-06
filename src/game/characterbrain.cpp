@@ -108,7 +108,7 @@ constexpr int   kGameOptionFlashAlert = 1;
 constexpr int   kBrainSlotSearch   = 2;
 constexpr int   kBrainNoiseCrouch  = 3;
 constexpr int   kItemKindKind11    = CharacterKind_NoShadow;
-constexpr int   kAction22c0f0Arg   = 10;
+constexpr int   kNumbSeconds   = 10;
 
 static const char kItemTrap[]  = "I_WANA";      // data 0x304f20
 static const char kItemSmoke[] = "I_HATUEN";    // data 0x304f28
@@ -1319,7 +1319,7 @@ int CharacterBrain::msToFrames(int ms)
 // set, and BrainWait_None means carry on at the next word next frame.
 
 // FS2 0x001d8630
-// callcheck: getBiteTarget, readNameArg, popArgs, readStringArg, moveTo, turnTo, addAngle, turnToYaw, getDeltaSeconds, attack, findCharacter, actOnCharacter, findNearestFoe, actOnFoe, playAction, useDoor, action22cbe0, setScriptValue, setBrainState, endOverlay, getBrainPace, clear, strchr, actOnFoeRight, actLeftRight, actLeft, lookAt, action22c840, stopLook, stop, action22c960, lookAtYaw, find6, approach, setEntry, lookAtPoint, findCharacterById, action22bf60
+// callcheck: getBiteTarget, readNameArg, popArgs, readStringArg, moveTo, turnTo, addAngle, turnToYaw, getDeltaSeconds, attack, findCharacter, followCharacter, findNearestFoe, backFromFoe, playAction, useDoor, quickTurn, setScriptValue, setBrainState, endOverlay, getBrainPace, clear, strchr, fleeFoe, fleeLight, backFromLight, lookAt, speak, stopLook, stop, restIn, lookAtYaw, find6, wanderNear, setEntry, lookAtPoint, findCharacterById, action22bf60
 
 const int *CharacterBrain::runCommand(int id, const int *code)
 {
@@ -1368,10 +1368,10 @@ const int *CharacterBrain::runCommand(int id, const int *code)
         break;
     case BrainCmd_ActOnName:
         code = readNameArg(&name, code);
-        waitIf(m_route->actOnCharacter(gStageScene->objects->findCharacter(name, 0)));
+        waitIf(m_route->followCharacter(gStageScene->objects->findCharacter(name, 0)));
         break;
     case BrainCmd_ActOnFoe:
-        waitIf(m_route->actOnFoe(m_owner->findNearestFoe(true, false)));
+        waitIf(m_route->backFromFoe(m_owner->findNearestFoe(true, false)));
         break;
     case BrainCmd_PlayAction:
         code = readNameArg(&name, code);
@@ -1387,7 +1387,7 @@ const int *CharacterBrain::runCommand(int id, const int *code)
         waitIf(m_route->useDoor(true));
         break;
     case BrainCmd_Action27:
-        waitIf(m_route->action22cbe0());
+        waitIf(m_route->quickTurn());
         break;
     case BrainCmd_SetValue:
         popArgs(args, 2);
@@ -1434,13 +1434,13 @@ const int *CharacterBrain::runCommand(int id, const int *code)
         if (strchr(flags, 'l') == nullptr) {
             StageObject *foe = m_owner->findNearestFoe(true, false);
             if (strchr(flags, 'r') == nullptr)
-                waitIf(m_route->actOnFoe(foe));
+                waitIf(m_route->backFromFoe(foe));
             else
-                waitIf(m_route->actOnFoeRight(foe));
+                waitIf(m_route->fleeFoe(foe));
         } else if (strchr(flags, 'r') == nullptr) {
-            waitIf(m_route->actLeft());
+            waitIf(m_route->backFromLight());
         } else {
-            waitIf(m_route->actLeftRight());
+            waitIf(m_route->fleeLight());
         }
         break;
     case BrainCmd_LookAtNameFlags:
@@ -1498,7 +1498,7 @@ const int *CharacterBrain::runCommand(int id, const int *code)
         break;
     case BrainCmd_Action35:
         code = readNameArg(&name, code);
-        m_route->action22c840(name);
+        m_route->speak(name);
         m_wait->kind = BrainWait_RouteIdle;
         break;
     case BrainCmd_Stop:
@@ -1524,7 +1524,7 @@ const int *CharacterBrain::runCommand(int id, const int *code)
         break;
     case BrainCmd_Action39:
         popArgs(args, 1);
-        waitIf(m_route->action22c960(args[0]));
+        waitIf(m_route->restIn(args[0]));
         break;
     case BrainCmd_WalkFlags:
         code = readStringArg(&flags, code);
@@ -1557,7 +1557,7 @@ const int *CharacterBrain::runCommand(int id, const int *code)
     case BrainCmd_ApproachName: {
         code = readNameArg(&name, code);
         StageObject *object = gStageScene->objects->find6(name, 0);
-        if (object == nullptr || !m_route->approach(kApproachDistance, object->m_xform.position))
+        if (object == nullptr || !m_route->wanderNear(kApproachDistance, object->m_xform.position))
             m_wait->kind = BrainWait_None;
         break;
     }
@@ -1567,7 +1567,7 @@ const int *CharacterBrain::runCommand(int id, const int *code)
     case BrainCmd_ApproachPoint: {
         popArgs(args, 3);
         sceVu0FVECTOR point = { (float)args[0], (float)args[1], (float)args[2], 1.0f };
-        waitIf(m_route->approach(kApproachDistance, point));
+        waitIf(m_route->wanderNear(kApproachDistance, point));
         break;
     }
     case BrainCmd_Next:
@@ -1667,19 +1667,19 @@ const int *CharacterBrain::runCommand(int id, const int *code)
         popArgs(args, 1);
         code = readNameArg(&name, code);
         StageObject *object = gStageScene->objects->find6(name, 0);
-        if (object == nullptr || !m_route->approach((float)args[0], object->m_xform.position))
+        if (object == nullptr || !m_route->wanderNear((float)args[0], object->m_xform.position))
             m_wait->kind = BrainWait_None;
         break;
     }
     case BrainCmd_ApproachPointWithin: {
         popArgs(args, 4);
         sceVu0FVECTOR point = { (float)args[0], (float)args[1], (float)args[2], 1.0f };
-        waitIf(m_route->approach((float)args[3], point));
+        waitIf(m_route->wanderNear((float)args[3], point));
         break;
     }
     case BrainCmd_ActOnId:
         popArgs(args, 1);
-        waitIf(m_route->actOnCharacter(gStageScene->objects->findCharacterById(args[0])));
+        waitIf(m_route->followCharacter(gStageScene->objects->findCharacterById(args[0])));
         break;
     case BrainCmd_AttackFoe2:
         waitIf(m_wait->attackFoe(0.0f, true));
@@ -1883,13 +1883,13 @@ bool CharacterBrain::useNumLock(int which)
 }
 
 // FS2 0x001da4f0
-// callcheck: getStageSelect, action22c0f0
+// callcheck: getStageSelect, goNumb
 
 bool CharacterBrain::routeActionKind11()
 {
     if (stageObjRecord(m_owner->m_itemDef)->kind != kItemKindKind11)
         return false;
-    return m_route->action22c0f0(kAction22c0f0Arg);
+    return m_route->goNumb(kNumbSeconds);
 }
 
 // FS2 0x001da5d0
