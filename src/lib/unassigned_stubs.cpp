@@ -799,18 +799,7 @@ StageObject * findNumLockTarget()
 }
 
 // stub of FS2 0x001dee50
-bool PlayerMotion::getCarSpecialFlag()
-{
-    YAMIPAN_STUB("PlayerMotion::getCarSpecialFlag", 0x001dee50);
-    return {};
-}
-
 // stub of FS2 0x001dee90
-void PlayerMotion::setCarSpecialFlag(bool on)
-{
-    YAMIPAN_STUB("PlayerMotion::setCarSpecialFlag", 0x001dee90);
-}
-
 // stub of FS2 0x002a8920
 bool SceneOwnedObject::getRecordFlag31()
 {

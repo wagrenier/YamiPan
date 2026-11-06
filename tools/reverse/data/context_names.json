@@ -22271,6 +22271,12 @@
   "was": "FUN_002152d0",
   "why": "a0 the player: +0x400 non-null and +0x3c8 == 1; StageScene::drawPaused / update then pass sceneFlag 1 to StageSound::update; what mode 1 is is unread"
  },
+ "00215300": {
+  "name": "StageCharacter::isPassenger",
+  "tag": "game-inferred",
+  "was": "FUN_00215300",
+  "why": "answers +0x3c8 (driving) == 1 for isDriver's neighbour: this one == 2; without the gear test of isMode2"
+ },
  "00215310": {
   "name": "StageCharacter::isDriver",
   "tag": "game-inferred",
@@ -29285,6 +29291,72 @@
   "was": "FUN_00280410",
   "why": "parses Elevator*, SigLamp, NumLock*, SevenKey into kind and arg"
  },
+ "00280620": {
+  "name": "MotionDragOutCar::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00280620",
+  "why": "slot +0x10 of vtable 0x317cb0: enabled and allowed, asks onUpdate again, resetPlace on the prey's car, request 0xbe"
+ },
+ "00280690": {
+  "name": "MotionDragOutCar::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00280690",
+  "why": "slot +0xc of 0x317cb0: flag3be, the bite candidate a character in a car at crawl speed, nobody holding it; door reach then sill and door place clear"
+ },
+ "00280a60": {
+  "name": "MotionDragOutCar::MotionDragOutCar",
+  "tag": "game-inferred",
+  "was": "FUN_00280a60",
+  "why": "initList under flag3be, name DragOutCar 0x3052a0, vtable 0x317cb0, adds the victim +0x1c"
+ },
+ "00280af0": {
+  "name": "MotionGetOffCar::~MotionGetOffCar",
+  "tag": "game-inferred",
+  "was": "FUN_00280af0",
+  "why": "deleting dtor, slot 0 of 0x317cd0"
+ },
+ "00280b60": {
+  "name": "MotionGetOffCar::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00280b60",
+  "why": "slot +0x10 of 0x317cd0: enabled and allowed, onUpdate again, resetPlace, request 0xbd"
+ },
+ "00280bd0": {
+  "name": "MotionGetOffCar::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00280bd0",
+  "why": "slot +0xc of 0x317cd0: the car creeping, nobody holding; picks the first side whose sill (and door place, with a partner aboard) is clear"
+ },
+ "00280e20": {
+  "name": "MotionGetOffCar::MotionGetOffCar",
+  "tag": "game-inferred",
+  "was": "FUN_00280e20",
+  "why": "initList for driving 1, name GettingOffCar, vtable 0x317cd0, side +0x18 = 1"
+ },
+ "00280ea0": {
+  "name": "MotionGetOnCar::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_00280ea0",
+  "why": "slot +0x10 of 0x317cf0: enabled and allowed, request 0xbc"
+ },
+ "00280ee0": {
+  "name": "MotionGetOnCar::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_00280ee0",
+  "why": "slot +0xc of 0x317cf0: the scene's car has a door in reach, facing it"
+ },
+ "00280f50": {
+  "name": "MotionGetOnCar::MotionGetOnCar",
+  "tag": "game-inferred",
+  "was": "FUN_00280f50",
+  "why": "initList for driving 1, name GettingOnCar 0x3051d0, vtable 0x317cf0, +0x18 = 0: the partner comes along, get/setCarSpecialFlag"
+ },
+ "00280fd0": {
+  "name": "StageCharacter::findCarDoor",
+  "tag": "game-inferred",
+  "was": "FUN_00280fd0",
+  "why": "a0 the character, a1 the car, a2 facing: the door within its bone's reach, 50 in height, clear; 0, 1 or -1; both car conditions call it"
+ },
  "002811c0": {
   "name": "MotionPartnerCall::setEnabled",
   "tag": "game-inferred",
@@ -29333,6 +29405,24 @@
   "was": "FUN_00281540",
   "why": "vtable 0x317d50 slot +0xc: sets +0x14"
  },
+ "002815b0": {
+  "name": "MotionDragOutCar::~MotionDragOutCar",
+  "tag": "game-inferred",
+  "was": "FUN_002815b0",
+  "why": "deleting dtor, slot 0 of 0x317cb0"
+ },
+ "00281630": {
+  "name": "MotionDragOutCar::clearAllowed",
+  "tag": "game-inferred",
+  "was": "FUN_00281630",
+  "why": "slot +0x14 of 0x317cb0: clears the victim +0x1c as well as allowed"
+ },
+ "00281640": {
+  "name": "MotionGetOnCar::~MotionGetOnCar",
+  "tag": "game-inferred",
+  "was": "FUN_00281640",
+  "why": "deleting dtor, slot 0 of 0x317cf0"
+ },
  "00281730": {
   "name": "LiteralMap<MotionSpecial>::insert",
   "tag": "game-inferred",
@@ -29350,6 +29440,132 @@
   "tag": "game-inferred",
   "was": "FUN_00281800",
   "why": "as 0x1ef2e0"
+ },
+ "00282da0": {
+  "name": "NpcReactionLink::NpcReactionLink",
+  "tag": "game-inferred",
+  "was": "FUN_00282da0",
+  "why": "the ctor's link NPCReaction: names of 0x2fb460 cr_2, cr_3, cr_1; vtable 0x317da0"
+ },
+ "00282e30": {
+  "name": "DriveLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_00282e30",
+  "why": "slot +0x1c of 0x317f50: a character at the wheel asks 0xb9 at rest, 0xba while the car moves or the wheel turns"
+ },
+ "00282fa0": {
+  "name": "DriveLink::DriveLink",
+  "tag": "game-inferred",
+  "was": "FUN_00282fa0",
+  "why": "the ctor's link Drive: names of 0x2fb450 cr_2, cr_3, cr_1, GettingOffCar; vtable 0x317f50"
+ },
+ "00283030": {
+  "name": "ApproachBiteLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_00283030",
+  "why": "slot +0x20 of 0x317f80: the fade back from black"
+ },
+ "00283060": {
+  "name": "ApproachBiteLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_00283060",
+  "why": "slot +0x1c of 0x317f80: CAR_PLOUT, at full fade the prey comes out of the car by rideCar 2, the partner by 3, the biter stands at the door and startBite"
+ },
+ "00283490": {
+  "name": "ApproachBiteLink::onStart",
+  "tag": "game-inferred",
+  "was": "FUN_00283490",
+  "why": "slot +0x18 of 0x317f80: fade to black"
+ },
+ "002834c0": {
+  "name": "ApproachBiteLink::onCancel",
+  "tag": "game-inferred",
+  "was": "FUN_002834c0",
+  "why": "slot +0x24 of 0x317f80: lets the prey go unless it is already bitten, 0xa0 or 0xa1"
+ },
+ "00283500": {
+  "name": "ApproachBiteLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_00283500",
+  "why": "slot +0x14 of 0x317f80: side and prey from the special DragOutCar, holds the prey at +0x2b0"
+ },
+ "00283560": {
+  "name": "ApproachBiteLink::ApproachBiteLink",
+  "tag": "game-inferred",
+  "was": "FUN_00283560",
+  "why": "the ctor's link ApproachBite under flag3be, vtable 0x317f80, EE 0x28"
+ },
+ "002835a0": {
+  "name": "ApproachCarLink::~ApproachCarLink",
+  "tag": "game-inferred",
+  "was": "FUN_002835a0",
+  "why": "deleting dtor, slot 0 of 0x317fe0"
+ },
+ "00283600": {
+  "name": "ApproachOutLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_00283600",
+  "why": "slot +0x1c of 0x317fb0: CAR_DROP, at full fade rideCar 1, the partner too, CAR_DRCL"
+ },
+ "00283700": {
+  "name": "ApproachOutLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_00283700",
+  "why": "slot +0x14 of 0x317fb0: the side from the special GettingOffCar"
+ },
+ "00283740": {
+  "name": "ApproachOutLink::ApproachOutLink",
+  "tag": "game-inferred",
+  "was": "FUN_00283740",
+  "why": "the ctor's link ApproachOut, vtable 0x317fb0, EE 0x24"
+ },
+ "00283780": {
+  "name": "CarDoorLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_00283780",
+  "why": "slot +0x20 of 0x317fb0 and 0x317fe0: the fade back, the pad on"
+ },
+ "002837d0": {
+  "name": "ApproachCarLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_002837d0",
+  "why": "slot +0x1c of 0x317fe0: CAR_DROP, at full fade rideCar 0, the partner too if GettingOnCar's flag says so, CAR_IN, CAR_DRCL"
+ },
+ "00283910": {
+  "name": "CarDoorLink::onStart",
+  "tag": "game-inferred",
+  "was": "FUN_00283910",
+  "why": "slot +0x18 of 0x317fb0 and 0x317fe0: the pad off, fade to black"
+ },
+ "00283960": {
+  "name": "ApproachCarLink::ApproachCarLink",
+  "tag": "game-inferred",
+  "was": "FUN_00283960",
+  "why": "the ctor's link ApproachCar, vtable 0x317fe0, EE 0x20"
+ },
+ "002839a0": {
+  "name": "NpcReactionLink::~NpcReactionLink",
+  "tag": "game-inferred",
+  "was": "FUN_002839a0",
+  "why": "deleting dtor, slot 0 of 0x317da0"
+ },
+ "00283cb0": {
+  "name": "DriveLink::~DriveLink",
+  "tag": "game-inferred",
+  "was": "FUN_00283cb0",
+  "why": "deleting dtor, slot 0 of 0x317f50"
+ },
+ "00283d10": {
+  "name": "ApproachBiteLink::~ApproachBiteLink",
+  "tag": "game-inferred",
+  "was": "FUN_00283d10",
+  "why": "deleting dtor, slot 0 of 0x317f80"
+ },
+ "00283d80": {
+  "name": "ApproachOutLink::~ApproachOutLink",
+  "tag": "game-inferred",
+  "was": "FUN_00283d80",
+  "why": "deleting dtor, slot 0 of 0x317fb0"
  },
  "00283df0": {
   "name": "seDistanceVolume",
