@@ -6,6 +6,7 @@
 #include "game/characterroute.h"
 #include "game/playermotion.h"
 #include "game/scenerender.h"
+#include "game/stageparty.h"
 #include "game/stagescene.h"
 
 #include <ctype.h>
@@ -399,7 +400,7 @@ StageObject *StageScene::getTopView()
 // The ROM's +0x124 second array is freed from 0x10 bytes before it
 // (CodeWarrior's array header); the host frees what it allocated.
 // FS2 0x0019bbe0
-// callcheck: ~StageObjectList, ~ScenePairTable, ~SceneRecordBuckets, ~StageNodeTree, ~StageSound, ~DemoStream, ~SceneRender, ~KeepList, ~Clock, ~MenuProgHolder, ~MenuProgSet, ~AreaGrid, ~SceneBufferSet, ~StageParty, ~ScenePool, ~PauseMenuState, ~SceneBoxList, ~SceneNoiseList, ~StageAlert, ~AreaClip, ~StageMission, ~SceneDirector, ~SceneModel, operator_delete, operator_delete[] (the delete-expressions; the printer through its virtual dtor)
+// callcheck: ~StageObjectList, ~ScenePairTable, ~SceneRecordBuckets, ~StageNodeTree, ~StageSound, ~DemoStream, ~SceneRender, ~KeepList, ~Clock, ~MenuProgHolder, ~MenuProgSet, ~AreaGrid, ~SceneBufferSet, ~StageParty, ~ScenePool, ~PauseMenuState, ~SceneBoxList, ~SceneNoiseList, ~StageAlert, ~AreaClip, ~StageMission, ~SceneDirector, ~DaylightFilm, operator_delete, operator_delete[] (the delete-expressions; the printer through its virtual dtor)
 
 StageScene::~StageScene()
 {
@@ -496,7 +497,7 @@ StageScene::~StageScene()
         delete[] arrays->second;
         delete arrays;
     }
-    delete model;
+    delete daylight;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -518,7 +519,7 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
     gameOver   = nullptr;
     clear      = nullptr;
     arrays     = nullptr;
-    model      = nullptr;
+    daylight   = nullptr;
     director   = nullptr;   // PC: the ROM leaves +0x120 to whoever made the scene's memory
     camerasReady = 0;
 
@@ -3315,9 +3316,9 @@ void StageScene::draw(StageObject *active)
         }
     }
 
-    if (model != nullptr) {
+    if (daylight != nullptr) {
         sceVif1Packet *packet = packets->openList(PacketList_SceneModel);
-        model->draw(clock->getDeltaSeconds(), packet, active);
+        daylight->draw(clock->getDeltaSeconds(), packet, active);
         packets->closeList();
     }
 
@@ -3544,7 +3545,7 @@ constexpr int   kViewPriorityDemo = 4;
 constexpr char  kScriptSkipMark = 'm';
 
 // FS2 0x00199f00
-// callcheck: prepare, operator_new, StageMainCamera, addToScene, push, operator_new, ViewCamera, addToScene, operator_new, ViewCamera, addToScene, operator_new, ViewCamera, addToScene, operator_new, StageCamera, addToScene, operator_new, StageBullet, setActive, setShown, operator_new, PointLight, addToScene, setActive, setShown, currentMission, setup, scriptPrepare, operator_new, DemoCamera, addToScene, push, createCamera, strcmp, getKind, attachToRoot, setup, setup, scriptPrepare, strlen, operator_new, ScriptRunner, setEntry, run, bindBones, placeBones, calcMatrices, propagateNodes, setPlayer, build, build, build, build, GetTimerSystemTime, seed, operator_new, operator_new[], operator_new[], FUN_00104d90, operator_new, getStageSelect, SceneModelHolder, collectViewTargets, operator_delete, operator_delete (the array's ctor is SceneArrayPair's; m_name stands for the virtual +0x21c)
+// callcheck: prepare, operator_new, StageMainCamera, addToScene, push, operator_new, ViewCamera, addToScene, operator_new, ViewCamera, addToScene, operator_new, ViewCamera, addToScene, operator_new, StageCamera, addToScene, operator_new, StageBullet, setActive, setShown, operator_new, PointLight, addToScene, setActive, setShown, currentMission, setup, scriptPrepare, operator_new, DemoCamera, addToScene, push, createCamera, strcmp, getKind, attachToRoot, setup, setup, scriptPrepare, strlen, operator_new, ScriptRunner, setEntry, run, bindBones, placeBones, calcMatrices, propagateNodes, setPlayer, build, build, build, build, GetTimerSystemTime, seed, operator_new, operator_new[], operator_new[], FUN_00104d90, operator_new, getStageSelect, StageDaylight, collectViewTargets, operator_delete, operator_delete (the array's ctor is SceneArrayPair's; m_name stands for the virtual +0x21c)
 
 void StageScene::setupCameras()
 {
@@ -3665,7 +3666,7 @@ void StageScene::setupCameras()
             areas[i]->build();
         rng->seed((u_int)GetTimerSystemTime());
         arrays = new SceneArrayPair;
-        model  = new SceneModelHolder(nodeTree, getStageSelect()->stage);
+        daylight = new StageDaylight(nodeTree, getStageSelect()->stage);
         collectViewTargets();
     }
     director = nullptr;

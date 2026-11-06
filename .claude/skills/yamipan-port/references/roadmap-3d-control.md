@@ -105,7 +105,7 @@ Grouped by what the picture needs, with what is known about each. Together: 144 
   are on screen, and `game/scenepairs.cpp` moves them (architecture.md "Skinning").
 - **The per-object draw**: `StageNodeTree::draw` 0x190a80 (4,502 i with its callees) and `update` 0x190a90
   (3,457 i). Particles, smoke, lamps. Today every object draws by the map walk only.
-- **`SceneModelHolder::draw`** 0x2d0550 (2,009 i).
+- ~~**`SceneModelHolder::draw`**~~ **written 2026-11-06**: it was `StageDaylight::draw`, an overlay, not a model (architecture.md).
 - **`SceneBlock98` / `SceneBufferSet`** 0x2ce0c0..0x2cebd0 (about 1,300 i): per-character blocks; setup
   needs `createBlock98`.
 

@@ -763,9 +763,9 @@ void SightJack::update()
 
     if (m_viewChanged) {
         if (viewed() == nullptr) {
-            gStageScene->model->setPlace(kNowhere);
+            gStageScene->daylight->setPlace(kNowhere);
         } else {
-            gStageScene->model->setPlace(m_camera->getWorldMatrix()[3]);
+            gStageScene->daylight->setPlace(m_camera->getWorldMatrix()[3]);
             m_camera->onViewTop();
             aimAt(viewed());
         }
@@ -1693,4 +1693,243 @@ void StageParty::createCamera()
     jack->m_camera->addToScene("camjack");
     jack->m_camera->setDirtyTree(false);
     jack->reset();
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// StageDaylight.
+
+// ALPHA_1 by DaylightGradient::blend (0x2fd9b0): the table runs into other
+// data after these, and every row here says 0.
+constexpr u_long kDaylightBlend[] = { 0x48, 0x49 };
+constexpr u_int  kDaylightPrim = 0x14c;     // TRISTRIP, IIP, ABE, FST
+constexpr u_int  kDaylightOrigin = 0x700;   // gsFillRect's: the window's corner
+constexpr u_int  kDaylightZ = 0xff0fffff;
+constexpr u_int  kRgbMask = 0xffffff;       // RGBAQ with no alpha
+constexpr float  kFilmBrightest = 255.0f;   // a band's size as a level
+
+enum DaylightKind
+{
+    DaylightKind_None   = -1,
+    DaylightKind_Pale   = 0,
+    DaylightKind_Blue   = 1,
+    DaylightKind_Bright = 2,
+};
+
+// FS2 0x0030f930
+static const DaylightGradient kDaylightGradients[] = {
+    { 0x40696e80, 0x18787880, 0x20696e80, 0x00787880, 0, 0.6f, 3.0f,   2.0f },
+    { 0x46647d96, 0x32646e7d, 0x14000000, 0x00000000, 0, 0.5f, 1.57f,  2.0f },
+    { 0x96696e96, 0x1423285a, 0x285f6478, 0x0a787880, 0, 0.6f, 5.034f, 3.0f },
+};
+
+// FS2 0x0030f990
+static const DaylightFilmSettings kDaylightFilms[] = {
+    { 0.3f, -0.5f, 700, 0.6f, 2.0f, 2.0f },
+    { 0.3f, -0.5f, 400, 0.6f, 2.0f, 2.0f },
+    { 0.3f, -0.5f, 400, 0.6f, 2.0f, 2.0f },
+};
+
+static inline float daylightLerp(float from, float to, float t) { return t * (to - from) + from + 0.0f; }
+
+// t of the way from a to b, RGBA byte by byte.
+// FS2 0x002d0370
+static u_int daylightMix(float t, u_int a, u_int b)
+{
+    const auto channel = [t, a, b](int shift) {
+        const int from = (int)(a >> shift & 0xff);
+        const int to = (int)(b >> shift & 0xff);
+        const int value = (int)(t * (float)(to - from) + (float)from + 0.0f);
+        return (u_int)(value < 0 ? 0 : value > 0xff ? 0xff : value);
+    };
+    return channel(24) << 24 | channel(16) << 16 | channel(8) << 8 | channel(0);
+}
+
+static void daylightVertex(sceVif1Packet *packet, int x, int y, u_int rgba)
+{
+    YamiPanUiVertex vertex = {};
+    vertex.rgba[0] = (u_char)rgba;
+    vertex.rgba[1] = (u_char)(rgba >> 8);
+    vertex.rgba[2] = (u_char)(rgba >> 16);
+    vertex.rgba[3] = (u_char)(rgba >> 24);
+    vertex.x = (u_short)((x + kDaylightOrigin) * 0x10);
+    vertex.y = (u_short)((y + kDaylightOrigin) * 0x10);
+    vertex.z = kDaylightZ;
+    YamiPan_DrawUiVertex(packet, &vertex);
+}
+
+// FS2 0x002d0170
+// The ROM's eight strips across are one here: only y shades.
+// callcheck: gfxGetDrawEnv (PC: YamiPan_DrawUiPrim, YamiPan_DrawUiVertex)
+
+void DaylightGradient::fill(sceVif1Packet *packet, u_int topRgba, u_int bottomRgba) const
+{
+    YamiPan_DrawUiReg(packet, SCE_GS_ALPHA_1, kDaylightBlend[blend]);
+    YamiPan_DrawUiReg(packet, SCE_GS_TEST_1, kJackBlackTest);
+    YamiPan_DrawUiPrim(packet, kDaylightPrim, nullptr);
+    YamiPan_DrawUiBegin(packet, YAMIPAN_UIV_RGBAQ);
+    daylightVertex(packet, 0, 0, topRgba);
+    daylightVertex(packet, kJackFrame, 0, topRgba);
+    daylightVertex(packet, 0, kJackFrame, bottomRgba);
+    daylightVertex(packet, kJackFrame, kJackFrame, bottomRgba);
+}
+
+// FS2 0x002cff90
+// callcheck: daylightMix, daylightMix, DaylightGradient::fill
+
+void DaylightGradient::drawFade(float t, sceVif1Packet *packet) const
+{
+    if (fadeSeconds > 0.0f && t < fadeSeconds) {
+        const float done = t / fadeSeconds;
+        u_int topRgba = daylightMix(done, topSettled, topSettled & kRgbMask);
+        u_int bottomRgba = daylightMix(done, bottomSettled, bottomSettled & kRgbMask);
+        fill(packet, topRgba, bottomRgba);
+    }
+}
+
+// FS2 0x002d0040
+// callcheck: daylightMix, daylightMix, daylightMix, daylightMix, fill
+
+void DaylightGradient::drawRise(float t, sceVif1Packet *packet) const
+{
+    u_int topRgba, bottomRgba;
+    if (t <= peakAt) {
+        const float done = peakAt <= 0.0f ? 1.0f : t / peakAt;
+        topRgba = daylightMix(done, top & kRgbMask, top);
+        bottomRgba = daylightMix(done, bottom & kRgbMask, bottom);
+    } else if (t <= settledAt) {
+        const float span = settledAt - peakAt;
+        const float done = span <= 0.0f ? 0.0f : (t - peakAt) / span;
+        topRgba = daylightMix(done, top, topSettled);
+        bottomRgba = daylightMix(done, bottom, bottomSettled);
+    } else {
+        topRgba = topSettled;
+        bottomRgba = bottomSettled;
+    }
+    fill(packet, topRgba, bottomRgba);
+}
+
+// FS2 0x002cfe20
+// callcheck: draw
+
+void DaylightFilm::draw(float t, sceVif1Packet *packet)
+{
+    if (film == nullptr)
+        return;
+    const float clear = (float)-(int)film->band / kFilmBrightest;
+    float level;
+    if (t <= settings.peakAt) {
+        const float done = settings.peakAt <= 0.0f ? 1.0f : t / settings.peakAt;
+        level = daylightLerp(clear, settings.peak, done);
+    } else if (t <= settings.settledAt) {
+        const float span = settings.settledAt - settings.peakAt;
+        const float done = span <= 0.0f ? 0.0f : (t - settings.peakAt) / span;
+        level = daylightLerp(settings.peak, settings.settled, done);
+    } else {
+        level = settings.settled;
+    }
+    film->band = (u_int)settings.band;
+    film->draw(level, packet);
+}
+
+// FS2 0x002cff30
+// callcheck: ~JackFilm, operator_delete
+
+DaylightFilm::~DaylightFilm()
+{
+    delete film;
+}
+
+// FS2 0x002d07a0
+// callcheck: getFilm, clone
+
+StageDaylight::StageDaylight(StageNodeTree *tree, int stage)
+{
+    constexpr u_int kFilmBand = 0x100;
+    constexpr float kFilmHighest = 1.0f;
+
+    JackFilm *jackFilm = gStageScene != nullptr && gStageScene->party != nullptr
+        ? gStageScene->party->getFilm() : nullptr;
+    if (jackFilm != nullptr) {
+        m_film.film = jackFilm->clone();
+        m_film.film->band = kFilmBand;
+        m_film.film->levelLow = 0.0f;
+        m_film.film->levelHigh = kFilmHighest;
+    }
+    m_tree = tree;
+
+    int kind;
+    switch (stage) {
+    case 0x1b:
+        kind = DaylightKind_Bright;
+        break;
+    case 0x5d:
+    case 0x19:
+        kind = DaylightKind_Blue;
+        break;
+    case 0x16:
+    case 0x14:
+    case 0x12:
+    case 0x11:
+    case 3:
+        kind = DaylightKind_Pale;
+        break;
+    default:
+        kind = DaylightKind_None;
+        break;
+    }
+    m_active = kind != DaylightKind_None;
+    if (kind == DaylightKind_None)
+        kind = DaylightKind_Pale;
+    m_gradient = kDaylightGradients[kind];
+    m_film.settings = kDaylightFilms[kind];
+}
+
+// FS2 0x002d0750
+// callcheck: contains
+
+void StageDaylight::setPlace(const float *position)
+{
+    m_inside = m_tree != nullptr && m_tree->contains(position);
+    m_insideSeconds = m_film.settings.settledAt;
+    m_outsideSeconds = m_gradient.settledAt;
+}
+
+// FS2 0x002d0550
+// The ROM holds setPlace's body twice here, inline.
+// callcheck: contains, contains, contains, draw, drawRise, drawFade, draw
+
+void StageDaylight::draw(float deltaSeconds, sceVif1Packet *packet, StageObject *camera)
+{
+    if (m_tree == nullptr || camera == nullptr || !m_active)
+        return;
+    const float *eye = camera->getMatrix()[3];
+    if (!m_placed) {
+        m_placed = true;
+        setPlace(eye);
+    }
+    if (camera != m_camera)
+        setPlace(eye);
+    m_camera = camera;
+
+    bool inside = m_tree->contains(eye);
+    if (inside != m_inside) {
+        m_insideSeconds = 0.0f;
+        m_outsideSeconds = 0.0f;
+    }
+    m_inside = inside;
+
+    if (m_inside) {
+        m_insideSeconds += deltaSeconds;
+        m_gradient.drawFade(m_insideSeconds, packet);
+        m_film.draw(m_insideSeconds, packet);
+        return;
+    }
+    m_outsideSeconds += deltaSeconds;
+    JackFilm *film = m_film.film;
+    const float fade = m_film.settings.fadeSeconds;
+    if (film != nullptr && fade > 0.0f && m_outsideSeconds < fade) {
+        const float clear = (float)-(int)film->band / kFilmBrightest;
+        film->draw(daylightLerp(m_film.settings.settled, clear, m_outsideSeconds / fade), packet);
+    }
+    m_gradient.drawRise(m_outsideSeconds, packet);
 }

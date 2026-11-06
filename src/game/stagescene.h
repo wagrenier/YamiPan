@@ -78,7 +78,7 @@ struct SceneEffectList;
 struct SceneBlock98;
 struct SceneBufferSet;
 struct SceneDirector;
-struct SceneModelHolder;
+class StageDaylight;
 struct ScenePairTable;
 struct ScenePool;
 struct SceneRecordBuckets;
@@ -625,7 +625,7 @@ struct StageScene
     SceneDirector      *director;        // FS2 +0x120
     SceneArrayPair     *arrays;          // FS2 +0x124
     u_char              altLatch;        // FS2 +0x128: while set, update latches the player's alternate action; not set by the ctor
-    SceneModelHolder   *model;           // FS2 +0x12c
+    StageDaylight      *daylight;        // FS2 +0x12c
 };
 
 // The path kinds that can read from a debug or a proof tree
