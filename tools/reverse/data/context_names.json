@@ -19061,6 +19061,12 @@
   "was": "FUN_001ded30",
   "why": "m_holds[0] when the id is 0..0xff"
  },
+ "001ded60": {
+  "name": "PlayerMotion::setHoldIfFree",
+  "tag": "game-inferred",
+  "was": "FUN_001ded60",
+  "why": "m_holds[0] only when it is -1"
+ },
  "001dedb0": {
   "name": "StagePlayer::releaseAction",
   "tag": "game-inferred",
@@ -20477,6 +20483,12 @@
   "was": "FUN_0020cc50",
   "why": "item kind 2..4 with skill bit 4, or 5..6 with bit 8"
  },
+ "0020ce10": {
+  "name": "StageCharacter::getWeaponRange",
+  "tag": "game-inferred",
+  "was": "FUN_0020ce10",
+  "why": "gWeaponDefs range of the long weapon"
+ },
  "0020ce80": {
   "name": "StageCharacter::getAttackReach",
   "tag": "game-inferred",
@@ -21239,6 +21251,12 @@
   "was": "FUN_0021a710",
   "why": "behind natives 0x4a.. (game/scriptrunner.cpp)"
  },
+ "0021a8d0": {
+  "name": "CharacterBlock7c8::find",
+  "tag": "game-inferred",
+  "was": "FUN_0021a8d0",
+  "why": "the newest history entry of a motion"
+ },
  "0021a960": {
   "name": "StageCharacter::noteMotion",
   "tag": "game-inferred",
@@ -21809,6 +21827,210 @@
   "was": "FUN_00224fe0",
   "why": "deleting dtor of the base 0x3160b0"
  },
+ "00225030": {
+  "name": "RouteNumbAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_00225030",
+  "why": "ends once the numb motion 0xe6, 0xe1 or 0xdd is over or the time is out"
+ },
+ "00225130": {
+  "name": "RouteNumbAction::~RouteNumbAction",
+  "tag": "game-inferred",
+  "was": "FUN_00225130",
+  "why": "releases the action when still in a numb motion"
+ },
+ "002251f0": {
+  "name": "RouteNumbAction::RouteNumbAction",
+  "tag": "game-inferred",
+  "was": "FUN_002251f0",
+  "why": "sets sp_numb1, sp_spawn_numb or sp_numb0 by the running motion"
+ },
+ "002257b0": {
+  "name": "RouteVoiceAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_002257b0",
+  "why": "tail jump to the cue test"
+ },
+ "002257c0": {
+  "name": "RoutePlayAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_002257c0",
+  "why": "walks to a, faces b, startWalkTo, then the special, until it ends"
+ },
+ "00225fc0": {
+  "name": "RoutePlayAction::RoutePlayAction",
+  "tag": "game-inferred",
+  "was": "FUN_00225fc0",
+  "why": "name NULL releases the action; else the special by name"
+ },
+ "002260f0": {
+  "name": "RouteQuickTurnAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_002260f0",
+  "why": "wants.quickTurn, then waits on motion 0xf"
+ },
+ "00226270": {
+  "name": "RouteFollowAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_00226270",
+  "why": "keeps with a character: walks, backs off, leaves the light, watches attackers"
+ },
+ "00226c60": {
+  "name": "RouteFollowAction::~RouteFollowAction",
+  "tag": "game-inferred",
+  "was": "FUN_00226c60",
+  "why": "frees the sub action, ends move and look"
+ },
+ "00226d40": {
+  "name": "RouteFollowAction::RouteFollowAction",
+  "tag": "game-inferred",
+  "was": "FUN_00226d40",
+  "why": "stores the target, looks at it"
+ },
+ "00226da0": {
+  "name": "RouteFleeLightAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_00226da0",
+  "why": "walks 95 degrees off a point 30 along the light"
+ },
+ "00226fd0": {
+  "name": "RouteFleeLightAction::threatStands",
+  "tag": "game-inferred",
+  "was": "FUN_00226fd0",
+  "why": "m_shadowLight is still the light"
+ },
+ "00226ff0": {
+  "name": "RouteFleeFoeAction::cower",
+  "tag": "game-inferred",
+  "was": "FUN_00226ff0",
+  "why": "special cr_3"
+ },
+ "00227050": {
+  "name": "RouteFleeFoeAction::RouteFleeFoeAction",
+  "tag": "game-inferred",
+  "was": "FUN_00227050",
+  "why": "moveToPoint to the way out, or cowers"
+ },
+ "00227170": {
+  "name": "RouteFleeAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_00227170",
+  "why": "ends with its move or the time; cowering until at rest"
+ },
+ "002272f0": {
+  "name": "RouteFleeAction::~RouteFleeAction",
+  "tag": "game-inferred",
+  "was": "FUN_002272f0",
+  "why": "ends the move"
+ },
+ "00227390": {
+  "name": "RouteBackFromLightAction::getThreat",
+  "tag": "game-inferred",
+  "was": "FUN_00227390",
+  "why": "the light position"
+ },
+ "002273f0": {
+  "name": "RouteBackFromFoeAction::cower",
+  "tag": "game-inferred",
+  "was": "FUN_002273f0",
+  "why": "special cr_3"
+ },
+ "00227450": {
+  "name": "RouteBackFromFoeAction::getThreat",
+  "tag": "game-inferred",
+  "was": "FUN_00227450",
+  "why": "the foe position"
+ },
+ "00227470": {
+  "name": "RouteBackFromFoeAction::RouteBackFromFoeAction",
+  "tag": "game-inferred",
+  "was": "FUN_00227470",
+  "why": "looks at the foe"
+ },
+ "00227510": {
+  "name": "RouteBackAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_00227510",
+  "why": "w_b from the point until a wall, then cowers"
+ },
+ "00227790": {
+  "name": "RouteBackAction::~RouteBackAction",
+  "tag": "game-inferred",
+  "was": "FUN_00227790",
+  "why": "ends the look"
+ },
+ "00227820": {
+  "name": "RouteSwoopAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_00227820",
+  "why": "a flyer runs at the target, turns and flies 1000 past the range"
+ },
+ "00227ac0": {
+  "name": "RouteSwoopAction::~RouteSwoopAction",
+  "tag": "game-inferred",
+  "was": "FUN_00227ac0",
+  "why": "frees the turn, ends the move"
+ },
+ "00227b80": {
+  "name": "RouteStalkAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_00227b80",
+  "why": "holds 0.8 to 1.2 of the range from the target, leaves when seen"
+ },
+ "00227e10": {
+  "name": "RouteStalkAction::~RouteStalkAction",
+  "tag": "game-inferred",
+  "was": "FUN_00227e10",
+  "why": "ends move and look"
+ },
+ "00227ed0": {
+  "name": "RouteStalkAction::RouteStalkAction",
+  "tag": "game-inferred",
+  "was": "FUN_00227ed0",
+  "why": "looks at the target"
+ },
+ "00227f30": {
+  "name": "findWayOut",
+  "tag": "game-inferred",
+  "was": "FUN_00227f30",
+  "why": "of the area list, the path end most against a point"
+ },
+ "002285a0": {
+  "name": "RoutePath::~RoutePath",
+  "tag": "game-inferred",
+  "was": "FUN_002285a0",
+  "why": "deleting; the vector at +4"
+ },
+ "00228670": {
+  "name": "RouteHuntAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_00228670",
+  "why": "bite, burst, shot or blow at the target, then after it"
+ },
+ "002298d0": {
+  "name": "RouteHuntAction::~RouteHuntAction",
+  "tag": "game-inferred",
+  "was": "FUN_002298d0",
+  "why": "frees the task, ends move and look"
+ },
+ "002299b0": {
+  "name": "RouteHuntAction::RouteHuntAction",
+  "tag": "game-inferred",
+  "was": "FUN_002299b0",
+  "why": "moves to the target, within gun range when it sees it"
+ },
+ "00229c20": {
+  "name": "RouteWanderAction::update",
+  "tag": "game-inferred",
+  "was": "FUN_00229c20",
+  "why": "pauses 3..6 s, then turns or strolls near the point"
+ },
+ "00229ec0": {
+  "name": "RouteWanderAction::~RouteWanderAction",
+  "tag": "game-inferred",
+  "was": "FUN_00229ec0",
+  "why": "ends the move"
+ },
  "00229f60": {
   "name": "RouteBiteAction::update",
   "tag": "game-inferred",
@@ -21954,22 +22176,22 @@
   "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
  },
  "0022c0f0": {
-  "name": "CharacterRoute::action22c0f0",
+  "name": "CharacterRoute::goNumb",
   "tag": "game-inferred",
   "was": "FUN_0022c0f0",
-  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+  "why": "starts RouteNumbAction, sp_numb"
  },
  "0022c840": {
-  "name": "CharacterRoute::action22c840",
+  "name": "CharacterRoute::speak",
   "tag": "game-inferred",
   "was": "FUN_0022c840",
-  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+  "why": "plays a voice cue, holds the action slot while it lasts"
  },
  "0022c960": {
-  "name": "CharacterRoute::action22c960",
+  "name": "CharacterRoute::restIn",
   "tag": "game-inferred",
   "was": "FUN_0022c960",
-  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+  "why": "stops all, setHoldIfFree(0xf4 + arg)"
  },
  "0022cac0": {
   "name": "CharacterRoute::playAction",
@@ -21978,40 +22200,40 @@
   "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
  },
  "0022cbe0": {
-  "name": "CharacterRoute::action22cbe0",
+  "name": "CharacterRoute::quickTurn",
   "tag": "game-inferred",
   "was": "FUN_0022cbe0",
-  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+  "why": "starts RouteQuickTurnAction"
  },
  "0022ccf0": {
-  "name": "CharacterRoute::actOnCharacter",
+  "name": "CharacterRoute::followCharacter",
   "tag": "game-inferred",
   "was": "FUN_0022ccf0",
-  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+  "why": "starts RouteFollowAction"
  },
  "0022cde0": {
-  "name": "CharacterRoute::actLeftRight",
+  "name": "CharacterRoute::fleeLight",
   "tag": "game-inferred",
   "was": "FUN_0022cde0",
-  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+  "why": "starts RouteFleeLightAction"
  },
  "0022cf90": {
-  "name": "CharacterRoute::actLeft",
+  "name": "CharacterRoute::backFromLight",
   "tag": "game-inferred",
   "was": "FUN_0022cf90",
-  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+  "why": "starts RouteBackFromLightAction"
  },
  "0022d0f0": {
-  "name": "CharacterRoute::actOnFoeRight",
+  "name": "CharacterRoute::fleeFoe",
   "tag": "game-inferred",
   "was": "FUN_0022d0f0",
-  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+  "why": "starts RouteFleeFoeAction"
  },
  "0022d220": {
-  "name": "CharacterRoute::actOnFoe",
+  "name": "CharacterRoute::backFromFoe",
   "tag": "game-inferred",
   "was": "FUN_0022d220",
-  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+  "why": "starts RouteBackFromFoeAction"
  },
  "0022d350": {
   "name": "CharacterRoute::attack",
@@ -22020,10 +22242,10 @@
   "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
  },
  "0022d6d0": {
-  "name": "CharacterRoute::approach",
+  "name": "CharacterRoute::wanderNear",
   "tag": "game-inferred",
   "was": "FUN_0022d6d0",
-  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+  "why": "starts RouteWanderAction"
  },
  "0022d810": {
   "name": "CharacterRoute::stop",
@@ -22204,6 +22426,132 @@
   "tag": "game-inferred",
   "was": "FUN_0022f650",
   "why": "slot 1 of 0x316240: 2"
+ },
+ "0022f660": {
+  "name": "RouteNumbAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022f660",
+  "why": "2"
+ },
+ "0022f670": {
+  "name": "RouteVoiceAction::~RouteVoiceAction",
+  "tag": "game-inferred",
+  "was": "FUN_0022f670",
+  "why": "deleting, stores vtable 0x316280"
+ },
+ "0022f6d0": {
+  "name": "RouteVoiceAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022f6d0",
+  "why": "0"
+ },
+ "0022f6e0": {
+  "name": "RoutePlayAction::~RoutePlayAction",
+  "tag": "game-inferred",
+  "was": "FUN_0022f6e0",
+  "why": "deleting, stores vtable 0x3162a0"
+ },
+ "0022f740": {
+  "name": "RoutePlayAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022f740",
+  "why": "0"
+ },
+ "0022f750": {
+  "name": "RouteQuickTurnAction::~RouteQuickTurnAction",
+  "tag": "game-inferred",
+  "was": "FUN_0022f750",
+  "why": "deleting, stores vtable 0x3162c0"
+ },
+ "0022f7b0": {
+  "name": "RouteQuickTurnAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022f7b0",
+  "why": "0"
+ },
+ "0022f7c0": {
+  "name": "RouteFollowAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022f7c0",
+  "why": "0"
+ },
+ "0022f7d0": {
+  "name": "RouteFleeLightAction::~RouteFleeLightAction",
+  "tag": "game-inferred",
+  "was": "FUN_0022f7d0",
+  "why": "deleting, stores vtable 0x316300"
+ },
+ "0022f880": {
+  "name": "RouteFleeLightAction::cower",
+  "tag": "game-inferred",
+  "was": "FUN_0022f880",
+  "why": "1"
+ },
+ "0022f890": {
+  "name": "RouteFleeAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022f890",
+  "why": "0"
+ },
+ "0022f8a0": {
+  "name": "RouteFleeFoeAction::~RouteFleeFoeAction",
+  "tag": "game-inferred",
+  "was": "FUN_0022f8a0",
+  "why": "deleting, stores vtable 0x316320"
+ },
+ "0022f950": {
+  "name": "RouteFleeFoeAction::threatStands",
+  "tag": "game-inferred",
+  "was": "FUN_0022f950",
+  "why": "1"
+ },
+ "0022f960": {
+  "name": "RouteBackFromLightAction::~RouteBackFromLightAction",
+  "tag": "game-inferred",
+  "was": "FUN_0022f960",
+  "why": "deleting, stores vtable 0x316360"
+ },
+ "0022fa00": {
+  "name": "RouteBackFromLightAction::cower",
+  "tag": "game-inferred",
+  "was": "FUN_0022fa00",
+  "why": "1"
+ },
+ "0022fa10": {
+  "name": "RouteBackAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022fa10",
+  "why": "0"
+ },
+ "0022fa20": {
+  "name": "RouteBackFromFoeAction::~RouteBackFromFoeAction",
+  "tag": "game-inferred",
+  "was": "FUN_0022fa20",
+  "why": "deleting, stores vtable 0x316380"
+ },
+ "0022fac0": {
+  "name": "RouteSwoopAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022fac0",
+  "why": "0"
+ },
+ "0022fad0": {
+  "name": "RouteStalkAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022fad0",
+  "why": "0"
+ },
+ "0022fae0": {
+  "name": "RouteHuntAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022fae0",
+  "why": "0"
+ },
+ "0022faf0": {
+  "name": "RouteWanderAction::priority",
+  "tag": "game-inferred",
+  "was": "FUN_0022faf0",
+  "why": "0"
  },
  "0022fb00": {
   "name": "RouteBiteAction::~RouteBiteAction",
@@ -29092,6 +29440,12 @@
   "tag": "game-inferred",
   "was": "FUN_002a4a40",
   "why": "each frame from the terminate hook, drives m_soundState +0x430 and the handle +0x434"
+ },
+ "002a6430": {
+  "name": "StageCharacter::isVoicePlaying",
+  "tag": "game-inferred",
+  "was": "FUN_002a6430",
+  "why": "tail jump to StageSound::isCuePlaying"
  },
  "002a6440": {
   "name": "StageCharacter::playVoice",

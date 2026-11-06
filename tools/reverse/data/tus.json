@@ -1,7 +1,5 @@
 {
- "queue": [
-  "game/characterroute.cpp"
- ],
+ "queue": [],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
   "frontier_ignore": [],
@@ -120,7 +118,7 @@
    "why": "the pad to the character: update 0x236b90 cut from stagecollision's tail (0x231d40..0x236b90), up to the particle helpers at 0x23a870; 0x214ee0 and 0x2162d0 are the two small members only the input calls; the file name is the port's"
   },
   "game/characterroute.cpp": {
-   "notes": "Written: everything in game/characterroute.h not marked not written, 0x21efa0..0x224fe0 and 0x229f60..0x22fc50. Left: 12 action stubs in src/lib/unassigned_stubs.cpp and their task classes 0x2251f0..0x229ec0 (open-items.md Next up lists each with its addresses). Nobody walks yet: RouteFilter::findPath is a stub answering 0, so a RouteWalk ends the frame it starts; game/routefilter.cpp is queued first. RouteFilter::pathLength answers -1 by hand. Seen: New Game, doorwalk pad, 300 s, no crash, RouteFilter ctor and allow reached, picture unchanged, the dark first-person wall. No brain asked to move in those rooms, so the walk and every step are untested: the first stage with a walking foe is the test. Names: batch 152. The car class is unwritten, so RouteMoveCar never runs: m_gear is never set.",
+   "notes": "All of 0x21efa0..0x22fc50 is written (batch 155). Proved: wayoutcmp.py ran the ROM 0x227f30 beside the host findWayOut on 12 stages rute files, 1800 questions, 0 differences. Seen: node 4, 280 s, no crash, with a temporary driver (removed) that gave F_E04_SRT1 one command every 7 s: wanderNear, followCharacter, attack both ways, fleeFoe, backFromFoe, playAction NULL and restIn took, and the Srt walked by RouteWalk and the rute file, the first character the route has moved. Not run: the update of the light flights, RouteSwoopAction, the bite and shots of RouteHuntAction, RoutePlayAction with a real special. No screenshot shows it, the foe stays out of view; the shots show the boy on the bridge as before. Without the driver nothing asks a brain to move: next is what gives a brain its scripts, 0x21b9b0..0x21b9f0 and the ask family 0x218124..0x21b428, open-items.md Next up. Doubts there too: names, chainNode one past the list, flag3be, m_6c8, m_6d0, m_6d4.",
    "ranges": [
     [
      "0021efa0",
@@ -132,9 +130,14 @@
      "date": "2026-11-05 22:56",
      "status": "partial",
      "summary": "the route, its looks, turns, walk, car and 21 actions; path search and 12 actions left"
+    },
+    {
+     "date": "2026-11-06 00:46",
+     "status": "verify",
+     "summary": "the 12 actions and their task classes, the TU is whole"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "why": "the route and its task classes: the look, turn, walk and action tasks 0x21efa0..0x22a310 (vtables 0x3160a0..0x316480), the route 0x22a310..0x22f270, its ctor and the classes' deleting dtors and trivial slots ..0x22fc50; vtable order runs through all of it, 0x22fc50 on are the route's std containers"
   },
   "game/clock.cpp": {

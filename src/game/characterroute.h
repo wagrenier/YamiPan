@@ -11,9 +11,8 @@
  *  0x3160a0..0x316498: one file. The classes' and the actions' names are the
  *  port's (open-items.md).
  *
- *  Not written: the actions marked below, and RoutePlayer's tables behind
- *  RouteFilter (game/routefilter.h): until they exist findPath answers -1
- *  and a walk ends at once.
+ *  Nothing of it is left unwritten; what no run has shown yet is in
+ *  open-items.md.
  * ======================================================================== */
 #ifndef _GAME_CHARACTERROUTE_H
 #define _GAME_CHARACTERROUTE_H
@@ -177,9 +176,14 @@ public:
     bool cancelMove();                                                   // FS2 0x0022e6f0
 
     // Actions.
-    bool playAction(const char *name, StageObject *a, StageObject *b);   // FS2 0x0022cac0: not written
-    bool attack(float range, StageObject *target, bool mode);            // FS2 0x0022d350: not written
-    bool approach(float distance, const float *point);                   // FS2 0x0022d6d0: not written
+    // The special called name. With a, b: first to a, facing b, and the
+    // pose walks from one to the other. "NULL" ends what plays.
+    bool playAction(const char *name, StageObject *a, StageObject *b);   // FS2 0x0022cac0
+    // range 0: hunts it down, fighting too when fights. Above 0: holds that
+    // far off it; a flyer (CharacterKind_NoShadow) swoops by that close.
+    bool attack(float range, StageObject *target, bool fights);          // FS2 0x0022d350
+    // Stays about the point, within distance of it, turning and strolling.
+    bool wanderNear(float distance, const float *point);                 // FS2 0x0022d6d0
     bool useDoor(bool open);                                             // FS2 0x0022a710
     // false locks, true unlocks or forces it.
     bool useDoorKey(bool unlock);                                        // FS2 0x0022a550
@@ -203,15 +207,22 @@ public:
     bool swingAt(StageObject *target);                                   // FS2 0x0022be20
     bool attackTask(StageObject *target);                                // FS2 0x0022b970
     bool action22bf60();                                                 // FS2 0x0022bf60
-    bool action22c0f0(int arg);                                          // FS2 0x0022c0f0: not written
-    bool action22c840(const char *name);                                 // FS2 0x0022c840: not written
-    bool action22c960(int arg);                                          // FS2 0x0022c960: not written
-    bool action22cbe0();                                                 // FS2 0x0022cbe0: not written
-    bool actOnCharacter(StageObject *character);                         // FS2 0x0022ccf0: not written
-    bool actLeftRight();                                                 // FS2 0x0022cde0: not written
-    bool actLeft();                                                      // FS2 0x0022cf90: not written
-    bool actOnFoeRight(StageObject *foe);                                // FS2 0x0022d0f0: not written
-    bool actOnFoe(StageObject *foe);                                     // FS2 0x0022d220: not written
+    // A flyer goes numb for seconds; 0 ends it.
+    bool goNumb(int seconds);                                            // FS2 0x0022c0f0
+    // Plays a voice cue, and holds the action slot while it lasts.
+    bool speak(const char *name);                                        // FS2 0x0022c840
+    // Stops everything; variant of the rest motions 0xf4.. stands in the hold.
+    bool restIn(int variant);                                            // FS2 0x0022c960
+    bool quickTurn();                                                    // FS2 0x0022cbe0
+    // Goes along with a character, out of its way and out of the light.
+    bool followCharacter(StageObject *character);                        // FS2 0x0022ccf0
+    // From the light that lights it: away at an angle, or backing off it.
+    bool fleeLight();                                                    // FS2 0x0022cde0
+    bool backFromLight();                                                // FS2 0x0022cf90
+    // From a foe: by the way out that leads furthest from it, or backing
+    // off it; cornered it cowers.
+    bool fleeFoe(StageObject *foe);                                      // FS2 0x0022d0f0
+    bool backFromFoe(StageObject *foe);                                  // FS2 0x0022d220
 
     // What the tasks share, inline at every use in the ROM.
     // A turn this frame toward delta radians, no faster than the character turns.

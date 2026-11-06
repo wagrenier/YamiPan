@@ -2167,11 +2167,23 @@ struct MotionHistoryEntry
     u_int events;               // FS2 +0x4: bit 0 started, then 1 << noteMotion's event
     int frame;                  // FS2 +0x8: StageScene::getMissionFrames
 };
+constexpr u_int kMotionEventsOver = 0x18;   // MotionHistoryEntry::events: noteMotion's 3 and 4, it ended or gave way
 static_assert(sizeof(MotionHistoryEntry) == 0xc, "MotionHistoryEntry: EE 0xc");
 struct CharacterBlock7c8
 {
     // FS2 0x0021a8c0
     void clear() { next = 0; count = 0; }
+    // The newest entry of the motion; null none.
+    // FS2 0x0021a8d0
+    const MotionHistoryEntry *find(int id) const
+    {
+        for (u_int i = 0; i < count; i++) {
+            const MotionHistoryEntry &entry = entries[(next - i + kMotionHistory - 1) & (kMotionHistory - 1)];
+            if (entry.id == id)
+                return &entry;
+        }
+        return nullptr;
+    }
 
     MotionHistoryEntry entries[kMotionHistory]; // FS2 +0x00
     int    next;                // FS2 +0x30
@@ -2577,6 +2589,10 @@ public:
     // A cue from the character, as voice: a cue with a priority takes the
     // place of what plays now only if it counts for at least as much.
     bool playVoice(const char *name);                                    // FS2 0x002a6440
+    // The cue plays, from this character.
+    bool isVoicePlaying(const char *name);                               // FS2 0x002a6430
+    // How far its long weapon reaches; 0 without one.
+    inline float getWeaponRange() const;                                 // FS2 0x0020ce10
     // object stands within 180, above by -20..180, in the front half, and in
     // 30 degrees of a point 10 ahead.
     bool isInReachOf(StageObject *object);                               // FS2 0x00219d70
@@ -3794,6 +3810,13 @@ struct WeaponDef
 static_assert(sizeof(WeaponDef) == 0x54, "WeaponDef: EE 0x54");
 static_assert(offsetof(WeaponDef, magazine) == 0x24, "WeaponDef::magazine");
 extern WeaponDef gWeaponDefs[kWeaponDefCount];  /* bss 0x576010 */
+inline float StageCharacter::getWeaponRange() const
+{
+    if (m_weapons[0] == nullptr)
+        return 0.0f;
+    const int index = m_weapons[0]->m_weaponDef;
+    return (float)gWeaponDefs[index < 0 || index >= kWeaponDefCount ? 0 : index].range;
+}
 
 // ──────────────────────────────────────────────────────────────────────
 // The sound players are game/seplayer.h; the one outside a stage is

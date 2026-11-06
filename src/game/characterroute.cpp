@@ -7,9 +7,10 @@
  *  destructors and trivial slots ..0x22fc50. The ROM's inlined comparisons
  *  of the motion id are the predicates of game/playermotion.h here.
  *
- *  Left in src/lib/unassigned_stubs.cpp: the actions with their own task
- *  classes 0x2251f0..0x229ec0 (the header marks them), and the path search
- *  behind RouteFilter.
+ *  The actions with a task of their own run 0x2251f0..0x229ec0, the commands
+ *  that start them 0x22c0f0..0x22d810. Which class is what is read from the
+ *  code: Yri, Kne, Srt and Yrt keep out of the light, the rest is
+ *  open-items.md.
  * ======================================================================== */
 #include "game/characterroute.h"
 
@@ -21,12 +22,15 @@
 #include "game/characterinput.h"
 #include "game/clock.h"
 #include "game/gamehooks.h"
+#include "game/heap.h"
 #include "game/mathutil.h"
 #include "game/modelpose.h"
 #include "game/playermotion.h"
 #include "game/routeplayer.h"
+#include "game/stagecollision.h"
 #include "game/stagedoor.h"
 #include "game/stageitem.h"
+#include "game/stagelight.h"
 #include "game/stageobjlist.h"
 #include "game/stagescene.h"
 #include "game/sysdata.h"
@@ -58,6 +62,25 @@ constexpr int kMotionHoldA = 0x11;
 constexpr int kMotionHoldB = 0x2a;
 // The motion a roll ends in.
 constexpr int kMotionRoll = 0xe7;
+constexpr int kMotionQuickTurn = 0xf;
+constexpr int kMotionRestFirst = 0xf4;      // what CharacterRoute::restIn counts from
+constexpr int kMotionStunned = 0xdf;        // sp_numb1 goes on from it
+constexpr int kMotionSpawning = 0xdb;       // sp_spawn_numb
+// A target being bitten: a second bite does not come.
+constexpr int kMotionBittenA = 0xa0;
+constexpr int kMotionBittenB = 0xa1;
+
+constexpr float kLookRate = 3.0f;           // the rate the tasks look at their target
+constexpr float kShootFrom = 0.9f;          // of the weapon's range
+constexpr float kBurstSeconds = 0.5f;       // at least
+const char kEndAction[] = "NULL";           /* data 0x307118 */
+const char kCower[] = "cr_3";               /* data 0x307120 */
+
+// The numb motions, the three RouteNumbAction waits for.
+inline bool isNumbMotion(int id) { return id == 0xe6 || id == 0xe1 || id == 0xdd; }
+inline bool isBittenMotion(int id) { return id == kMotionBittenA || id == kMotionBittenB; }
+// Resting or on the way: a special may take over.
+inline bool isFreeMotion(int id) { return isHoldableMotion(id) || isMovingMotion(id); }
 
 inline bool isHoldMotion(int id) { return id == kMotionHoldA || id == kMotionHoldB; }
 
@@ -92,6 +115,51 @@ bool isFirearm(const StageObject *weapon)
 {
     const int index = weapon->m_itemDef;
     return gItemDefs[index < 0 || index >= kItemDefCount ? 0 : index].isFirearm();
+}
+
+inline bool isRifle(const StageObject *weapon)
+{
+    const int index = weapon->m_itemDef;
+    return gItemDefs[index < 0 || index >= kItemDefCount ? 0 : index].isRifle();
+}
+
+inline const WeaponDef &weaponDefOf(const StageObject *weapon)
+{
+    const int index = weapon->m_weaponDef;
+    return gWeaponDefs[index < 0 || index >= kWeaponDefCount ? 0 : index];
+}
+
+// 0 .. 1, from randNext's low 15 bits.
+inline float randomUnit()
+{
+    return (float)(randNext() & 0x7fff) * 3.0517578e-05f;
+}
+
+// The room between two characters' bodies.
+inline float gapBetween(StageCharacter *a, StageCharacter *b)
+{
+    return vecDistance(a->m_xform.position, b->m_xform.position)
+         - (a->m_ground->nearRadius + b->m_ground->nearRadius);
+}
+
+// What lights the character, a YAM_ light not counted.
+inline StageLight *shiningLight(StageCharacter *who)
+{
+    StageLight *light = who->m_shadowLight;
+    return light == nullptr || light->m_yamLight != 0 ? nullptr : light;
+}
+
+inline const float *headOf(StageCharacter *who)
+{
+    return who->m_model->boneMap.find("bn_head")->value->getMatrix()[3];
+}
+
+inline bool cowerSpecial(StageCharacter *who)
+{
+    const bool allowed = who->isSpecialAllowed(kCower);
+    if (allowed)
+        who->setSpecial(true, kCower);
+    return allowed;
 }
 
 // The yaw from who to the point, and what that is from where it faces.
@@ -1518,6 +1586,278 @@ private:
     CharacterRoute *m_route;    // FS2 +0x08
 };
 
+// A flyer numb for a while: sp_numb0 down, sp_numb1 or sp_spawn_numb when it
+// is in the motion before.
+// layout: host -- EE 0x18, vtable 0x316260.
+class RouteNumbAction : public RouteAction
+{
+public:
+    RouteNumbAction(float seconds, StageCharacter *owner, CharacterRoute *route); // FS2 0x002251f0
+    ~RouteNumbAction() override;                                         // FS2 0x00225130
+    int priority() override { return 2; }                                // FS2 0x0022f660
+    bool update() override;                                              // FS2 0x00225030
+
+private:
+    float m_until;              // FS2 +0x0c
+    // FS2 +0x10: the ROM keeps the motion in a block of its own.
+    PlayerMotion *m_motion;
+    bool m_numb = false;        // FS2 +0x14: the numb motion has been reached, or the time is out
+};
+
+// While a voice cue plays. layout: host -- EE 0x18, vtable 0x316280.
+class RouteVoiceAction : public RouteAction
+{
+public:
+    RouteVoiceAction(StageCharacter *owner, const char *name);
+    int priority() override { return 0; }                                // FS2 0x0022f6d0
+    bool update() override;                                              // FS2 0x002257b0
+
+private:
+    char m_name[0x10];          // FS2 +0x08
+};
+
+// layout: host -- EE 0x2c, vtable 0x3162a0.
+class RoutePlayAction : public RouteAction
+{
+public:
+    RoutePlayAction(StageCharacter *owner, CharacterRoute *route, const char *name,
+                    StageObject *from, StageObject *to);                 // FS2 0x00225fc0
+    int priority() override { return 0; }                                // FS2 0x0022f740
+    bool update() override;                                              // FS2 0x002257c0
+
+private:
+    enum State
+    {
+        State_Place = 0,        // to from, facing to
+        State_Start = 1,        // the pose walks there; the special goes when it may
+        State_Play  = 2,
+        State_End   = 3,        // only until it rests
+    };
+
+    CharacterRoute *m_route;    // FS2 +0x08
+    char m_name[0x10];          // FS2 +0x0c
+    StageObject *m_from = nullptr; // FS2 +0x1c
+    StageObject *m_to = nullptr;   // FS2 +0x20
+    int m_motionId;             // FS2 +0x24: the special's; -1 none
+    int m_state;                // FS2 +0x28
+};
+
+// layout: host -- EE 0xc, vtable 0x3162c0.
+class RouteQuickTurnAction : public RouteAction
+{
+public:
+    explicit RouteQuickTurnAction(StageCharacter *owner) : RouteAction(owner) {}
+    int priority() override { return 0; }                                // FS2 0x0022f7b0
+    bool update() override;                                              // FS2 0x002260f0
+
+private:
+    int m_state = 0;            // FS2 +0x08: 1 once it is asked for
+};
+
+// What flees: ends with its move or after a time. vtable 0x316340; its last
+// two slots are empty there. layout: host -- EE 0x14.
+class RouteFleeAction : public RouteAction
+{
+public:
+    RouteFleeAction(StageCharacter *owner, CharacterRoute *route);
+    ~RouteFleeAction() override;                                         // FS2 0x002272f0
+    int priority() override { return 0; }                                // FS2 0x0022f890
+    bool update() override;                                              // FS2 0x00227170
+    // What it flees still stands.
+    virtual bool threatStands() = 0;
+    // No way to go: false when it cannot do that either.
+    virtual bool cower() = 0;
+
+protected:
+    CharacterRoute *m_route;    // FS2 +0x08
+    float m_until;              // FS2 +0x0c
+    int m_state = 0;            // FS2 +0x10: 0 fleeing, 1 cowering, 2 a last second of it
+};
+
+// Out of a light, turning 95 degrees off it. layout: host -- EE 0x18, vtable 0x316300.
+class RouteFleeLightAction : public RouteFleeAction
+{
+public:
+    RouteFleeLightAction(StageCharacter *owner, CharacterRoute *route, StageLight *light);
+    bool update() override;                                              // FS2 0x00226da0
+    bool threatStands() override;                                        // FS2 0x00226fd0
+    bool cower() override { return true; }                               // FS2 0x0022f880
+
+private:
+    StageLight *m_light;        // FS2 +0x14
+};
+
+// layout: host -- EE 0x14, vtable 0x316320.
+class RouteFleeFoeAction : public RouteFleeAction
+{
+public:
+    RouteFleeFoeAction(StageCharacter *owner, CharacterRoute *route, StageObject *foe); // FS2 0x00227050
+    bool threatStands() override { return true; }                        // FS2 0x0022f950
+    bool cower() override;                                               // FS2 0x00226ff0
+};
+
+// Walks backwards from a point, facing it, until a wall. vtable 0x3163a0, its
+// last two slots empty. layout: host -- EE 0x10.
+class RouteBackAction : public RouteAction
+{
+public:
+    RouteBackAction(StageCharacter *owner, CharacterRoute *route);
+    ~RouteBackAction() override;                                         // FS2 0x00227790
+    int priority() override { return 0; }                                // FS2 0x0022fa10
+    bool update() override;                                              // FS2 0x00227510
+    // Where what it backs from is; false: gone.
+    virtual bool getThreat(float *out) = 0;
+    virtual bool cower() = 0;
+
+protected:
+    CharacterRoute *m_route;    // FS2 +0x08
+    int m_state = 0;            // FS2 +0x0c: 1 once it cowers
+};
+
+// layout: host -- EE 0x10, vtable 0x316360.
+class RouteBackFromLightAction : public RouteBackAction
+{
+public:
+    RouteBackFromLightAction(StageCharacter *owner, CharacterRoute *route);
+    bool getThreat(float *out) override;                                 // FS2 0x00227390
+    bool cower() override { return true; }                               // FS2 0x0022fa00
+};
+
+// layout: host -- EE 0x14, vtable 0x316380.
+class RouteBackFromFoeAction : public RouteBackAction
+{
+public:
+    RouteBackFromFoeAction(StageCharacter *owner, CharacterRoute *route, StageObject *foe); // FS2 0x00227470
+    bool getThreat(float *out) override;                                 // FS2 0x00227450
+    bool cower() override;                                               // FS2 0x002273f0
+
+private:
+    StageObject *m_foe;         // FS2 +0x10
+};
+
+// layout: host -- EE 0x20, vtable 0x3162e0.
+class RouteFollowAction : public RouteAction
+{
+public:
+    RouteFollowAction(StageCharacter *owner, CharacterRoute *route, StageCharacter *target); // FS2 0x00226d40
+    ~RouteFollowAction() override;                                       // FS2 0x00226c60
+    int priority() override { return 0; }                                // FS2 0x0022f7c0
+    bool update() override;                                              // FS2 0x00226270
+
+private:
+    enum State
+    {
+        State_Stand  = 0,
+        State_Walk   = 1,
+        State_Close  = 2,       // too near: it backs off
+        State_Step   = 3,       // walks off it
+        State_Watch  = 4,       // turned to someone coming at them
+    };
+
+    CharacterRoute *m_route;    // FS2 +0x08
+    StageCharacter *m_target;   // FS2 +0x0c
+    float m_inLight = 0.0f;     // FS2 +0x10: seconds a Yri or Kne has stood in the light
+    float m_watchUntil = 0.0f;  // FS2 +0x14
+    int m_state = State_Stand;  // FS2 +0x18
+    RouteAction *m_flee = nullptr; // FS2 +0x1c: it comes first
+};
+
+// A flyer's run at the target: past it, away, and back. layout: host -- EE 0x1c, vtable 0x3163c0.
+class RouteSwoopAction : public RouteAction
+{
+public:
+    RouteSwoopAction(StageCharacter *owner, CharacterRoute *route, StageObject *target, float range)
+        : RouteAction(owner), m_route(route), m_target(target), m_range(range) {}
+    ~RouteSwoopAction() override;                                        // FS2 0x00227ac0
+    int priority() override { return 0; }                                // FS2 0x0022fac0
+    bool update() override;                                              // FS2 0x00227820
+
+private:
+    enum State
+    {
+        State_Start  = 0,
+        State_Charge = 1,
+        State_Away   = 2,
+    };
+
+    CharacterRoute *m_route;    // FS2 +0x08
+    StageObject *m_target;      // FS2 +0x0c
+    float m_range;              // FS2 +0x10
+    int m_state = State_Start;  // FS2 +0x14
+    RouteStep *m_turn = nullptr; // FS2 +0x18
+};
+
+// Holds the distance from the target, in sight of it. layout: host -- EE 0x18, vtable 0x3163e0.
+class RouteStalkAction : public RouteAction
+{
+public:
+    RouteStalkAction(float range, StageCharacter *owner, CharacterRoute *route, StageObject *target); // FS2 0x00227ed0
+    ~RouteStalkAction() override;                                        // FS2 0x00227e10
+    int priority() override { return 0; }                                // FS2 0x0022fad0
+    bool update() override;                                              // FS2 0x00227b80
+
+private:
+    enum State
+    {
+        State_Hold  = 0,
+        State_Close = 1,
+        State_Leave = 2,
+    };
+
+    CharacterRoute *m_route;    // FS2 +0x08
+    StageObject *m_target;      // FS2 +0x0c
+    float m_range;              // FS2 +0x10
+    int m_state = State_Hold;   // FS2 +0x14
+};
+
+// After the target, and at it. layout: host -- EE 0x20, vtable 0x316400.
+class RouteHuntAction : public RouteAction
+{
+public:
+    RouteHuntAction(StageCharacter *owner, CharacterRoute *route, StageObject *target, bool fights); // FS2 0x002299b0
+    ~RouteHuntAction() override;                                         // FS2 0x002298d0
+    int priority() override { return 0; }                                // FS2 0x0022fae0
+    bool update() override;                                              // FS2 0x00228670
+
+private:
+    bool runFrom();
+    bool tryBite();
+    void goAfter(StageObject *weapon, bool seen);
+
+    CharacterRoute *m_route;    // FS2 +0x08
+    StageCharacter *m_target;   // FS2 +0x0c
+    bool m_fights;              // FS2 +0x10: without it, it only comes after the target
+    bool m_wantsBite = false;   // FS2 +0x11
+    float m_nextThought;        // FS2 +0x14: when it may set its mind on a bite
+    RouteAction *m_task = nullptr; // FS2 +0x18: a bite, a burst, a flight from the light
+    float m_biteUntil = 0.0f;   // FS2 +0x1c
+};
+
+// layout: host -- EE 0x30, vtable 0x316420.
+class RouteWanderAction : public RouteAction
+{
+public:
+    RouteWanderAction(float distance, StageCharacter *owner, CharacterRoute *route, const float *point);
+    ~RouteWanderAction() override;                                       // FS2 0x00229ec0
+    int priority() override { return 0; }                                // FS2 0x0022faf0
+    bool update() override;                                              // FS2 0x00229c20
+
+private:
+    enum State
+    {
+        State_Going = 0,        // a stroll, ended at the time
+        State_Pause = 1,        // until the next one
+    };
+
+    CharacterRoute *m_route;    // FS2 +0x08
+    sceVu0FVECTOR m_point;      // FS2 +0x10
+    float m_distance;           // FS2 +0x20
+    float m_until;              // FS2 +0x24
+    int m_state = State_Going;  // FS2 +0x28
+};
+
+bool findWayOut(float *out, StageCharacter *who, const float *threat, const float *last);
+
 } // namespace
 
 RouteHoldAction::RouteHoldAction(StageCharacter *owner, CharacterRoute *route) : RouteAction(owner)
@@ -1556,6 +1896,908 @@ bool RouteHoldAction::update()
 RouteBiteAction::RouteBiteAction(StageCharacter *owner) : RouteAction(owner)
 {
     m_at = m_owner->m_clock->getSeconds() + m_owner->m_biteInterval;
+}
+
+// FS2 0x00225030
+// callcheck: getSeconds
+bool RouteNumbAction::update()
+{
+    const float now = m_owner->m_clock->getSeconds();
+    if (m_numb)
+        return isNumbMotion(m_motion->motionId) && now <= m_until;
+    if (isNumbMotion(m_motion->motionId) || m_until < now)
+        m_numb = true;
+    return true;
+}
+
+// FS2 0x00225130
+// callcheck: operator_delete, operator_delete, releaseAction
+RouteNumbAction::~RouteNumbAction()
+{
+    if (isNumbMotion(m_motion->motionId))
+        m_motion->releaseAction();
+}
+
+// FS2 0x002251f0
+// callcheck: getSeconds, operator_new, setSpecial, setSpecial, setSpecial
+RouteNumbAction::RouteNumbAction(float seconds, StageCharacter *owner, CharacterRoute *route) : RouteAction(owner)
+{
+    m_until = seconds + m_owner->m_clock->getSeconds();
+    m_motion = m_owner->m_motion;
+    route->cancelMove();
+    if (m_motion->motionId == kMotionStunned)
+        m_owner->setSpecial(true, "sp_numb1");
+    else if (m_motion->motionId == kMotionSpawning)
+        m_owner->setSpecial(true, "sp_spawn_numb");
+    else if (isFreeMotion(m_motion->motionId))
+        m_owner->setSpecial(true, "sp_numb0");
+}
+
+RouteVoiceAction::RouteVoiceAction(StageCharacter *owner, const char *name) : RouteAction(owner)
+{
+    strcpy(m_name, name);
+}
+
+// FS2 0x002257b0
+// callcheck: isVoicePlaying
+bool RouteVoiceAction::update()
+{
+    return m_owner->isVoicePlaying(m_name);
+}
+
+// FS2 0x002257c0
+// callcheck: vecDistance, atan2Octant, addAngle, addAngle, startWalkTo, turnToObject, moveToObject, isWalkBusy, isSpecialAllowed, setSpecial, find
+bool RoutePlayAction::update()
+{
+    constexpr float kOnThePlace = 20.0f;
+    constexpr float kWalkRate = 0.35f;
+
+    PlayerMotion *motion = m_owner->m_motion;
+    switch (m_state) {
+    case State_Place: {
+        const float distance = m_from != nullptr
+            ? vecDistance(m_owner->m_xform.position, m_from->getMatrix()[3]) : 0.0f;
+        const float yaw = m_to != nullptr ? turnTo(m_owner, m_to->getMatrix()[3]) : 0.0f;
+        if (kOnThePlace <= distance) {
+            if (m_route->move == nullptr)
+                m_route->moveToObject(0.0f, m_from, 1, 0);
+            return true;
+        }
+        if (kOneDegree <= yaw) {
+            if (m_route->move == nullptr)
+                m_route->turnToObject(0.0f, m_to);
+            return true;
+        }
+        if (isFreeMotion(motion->motionId)) {
+            motion->startWalkTo(kWalkRate, m_from != nullptr ? m_from->getMatrix()[3] : nullptr,
+                                m_to != nullptr ? m_to->getMatrix()[3] : nullptr, true, false);
+            m_state = State_Start;
+        }
+        return true;
+    }
+    case State_Start:
+        if (!motion->isWalkBusy() && m_owner->isSpecialAllowed(m_name)) {
+            m_owner->setSpecial(true, m_name);
+            m_state = State_Play;
+        }
+        return true;
+    case State_Play:
+        if (0 <= m_motionId) {
+            const MotionHistoryEntry *entry = m_owner->m_block7c8.find(m_motionId);
+            if (entry != nullptr && (entry->events & kMotionEventsOver) != 0)
+                return false;
+        }
+        // fall through
+    case State_End:
+        return !isHoldableMotion(motion->motionId);
+    }
+    return true;
+}
+
+// FS2 0x00225fc0
+// callcheck: strcmp, strcpy, FUN_001d1280, releaseAction
+RoutePlayAction::RoutePlayAction(StageCharacter *owner, CharacterRoute *route, const char *name,
+                                 StageObject *from, StageObject *to)
+    : RouteAction(owner), m_route(route)
+{
+    if (strcmp(name, kEndAction) == 0) {
+        m_owner->m_motion->releaseAction();
+        m_motionId = Motion_None;
+        m_state = State_End;
+    } else {
+        strcpy(m_name, name);
+        m_from = from;
+        m_to = to;
+        m_motionId = m_owner->m_motion->specialMotion(m_name);
+        m_state = m_from == nullptr && m_to == nullptr ? State_Start : State_Place;
+    }
+    m_route->cancelMove();
+}
+
+// FS2 0x002260f0
+// callcheck: find
+bool RouteQuickTurnAction::update()
+{
+    if (m_state == 1) {
+        const MotionHistoryEntry *entry = m_owner->m_block7c8.find(kMotionQuickTurn);
+        if (isHoldableMotion(m_owner->m_motion->motionId)
+            || (entry != nullptr && (entry->events & kMotionEventsOver) != 0))
+            return false;
+    } else if (m_state == 0 && m_owner->m_allows.quickTurn != 0) {
+        m_owner->m_wants.quickTurn = 1;
+        m_state = 1;
+    }
+    return true;
+}
+
+// FS2 0x00226270
+// callcheck: lookAtObject, getSeconds, canSee, vecDistance, atan2Octant, addAngle, addAngle, moveToObject, turnToObject, isYriOrKne, find, vecDistance, getDeltaSeconds, operator_new, getSeconds, operator_delete, getSeconds, getViewBottom, getTopView, turnToObject, turnToObject, findWayOut, moveToPoint, getDeltaSeconds, getTurnRate, turnToObject, turnToObject, lookAtObject, getLifeState, getBiteTarget, getBiteTarget, turnToObject, lookAtObject
+bool RouteFollowAction::update()
+{
+    constexpr float kFollowAt = 100.0f;     // nearer it need not walk
+    constexpr float kRunAt = 200.0f;
+    constexpr float kTooClose = 20.0f;
+    constexpr float kRoomEnough = 50.0f;
+    constexpr float kViewBesideRange = 100.0f;
+    constexpr float kViewAboveRange = 200.0f;
+    constexpr float kLightReach = 200.0f;
+    constexpr float kLightSeconds = 1.0f;
+    constexpr float kAttackerRange = 300.0f;
+    constexpr float kWatchSeconds = 3.0f;
+    constexpr u_int kStepAwayFlags = RouteMoveFlag_StopAtDoor | RouteMoveFlag_DropLimit;
+
+    if (m_flee != nullptr) {
+        if (m_flee->update())
+            return true;
+        delete m_flee;
+        m_flee = nullptr;
+        m_route->lookAtObject(kLookRate, m_target, 0);
+    }
+
+    const float now = m_owner->m_clock->getSeconds();
+    float sightDistance = 0.0f;
+    const bool unseen = !m_owner->canSee(kSightAngle, m_target, &sightDistance);
+    const float gap = gapBetween(m_owner, m_target);
+    const float yaw = turnTo(m_owner, m_target->m_xform.position);
+    const int mode = kRunAt < gap || unseen ? 2 : 1;
+
+    switch (m_state) {
+    case State_Watch:
+        if (m_watchUntil < now) {
+            m_route->cancelMove();
+            m_route->turnToObject(0.0f, m_target);
+            m_route->lookAtObject(kLookRate, m_target, 0);
+            m_state = State_Stand;
+        }
+        break;
+    case State_Step:
+        if (m_route->move == nullptr || kRoomEnough < gap) {
+            m_route->cancelMove();
+            m_route->turnToObject(0.0f, m_target);
+            m_state = State_Stand;
+        }
+        break;
+    case State_Close:
+        if (kRoomEnough < gap) {
+            m_state = State_Stand;
+        } else {
+            const bool canBack = (m_owner->m_ground->wallCount < 1 || 0.0f <= gap)
+                              && m_owner->m_abilities.walkBack != 0;
+            sceVu0FVECTOR way = {};
+            if (canBack || !findWayOut(way, m_owner, m_target->m_xform.position, m_route->stoppedAt)) {
+                wantMove(m_owner, CharacterMove_Back);
+                m_route->steer(yaw);
+            } else {
+                m_route->moveToPoint(0.0f, way, 2, kStepAwayFlags);
+                m_state = State_Step;
+            }
+        }
+        break;
+    case State_Walk: {
+        StageObject *view = gStageScene->getViewBottom();
+        if (view != nullptr && view == gStageScene->getTopView()) {
+            sceVu0FVECTOR off;
+            subVector(off, view->m_xform.position, m_owner->m_xform.position);
+            if (sqrtf(off[0] * off[0] + off[1] * off[1]) < kViewBesideRange && fabsf(off[2]) < kViewAboveRange) {
+                m_route->cancelMove();
+                m_route->turnToObject(0.0f, m_target);
+                break;
+            }
+        }
+        if (m_route->move == nullptr || (gap < kRoomEnough && !unseen)) {
+            m_route->cancelMove();
+            m_route->turnToObject(0.0f, m_target);
+            m_state = State_Stand;
+        } else if (mode == 2) {
+            m_route->moveMode = 2;
+        }
+        break;
+    }
+    case State_Stand: {
+        bool walk = kFollowAt < gap;
+        if (!walk && unseen && m_route->move == nullptr) {
+            const int id = m_owner->m_motion->motionId;
+            walk = id != Motion_Idle1 && id != Motion_Idle0 && id != Motion_CrouchIdle;
+        }
+        if (walk) {
+            m_route->moveToObject(0.0f, m_target, mode, RouteMoveFlag_KeepPath);
+            if (m_route->move == nullptr)
+                m_route->turnToObject(0.0f, m_target);
+            else
+                m_state = State_Walk;
+        } else if (m_owner->m_5ba == 0) {
+            if (gap < kTooClose) {
+                m_route->cancelMove();
+                m_state = State_Close;
+            } else if (m_owner->isYriOrKne()) {
+                StageLight *light = shiningLight(m_owner);
+                if (light == nullptr || kLightReach <= vecDistance(headOf(m_owner), light->getMatrix()[3])) {
+                    m_inLight = 0.0f;
+                } else {
+                    m_inLight += m_owner->m_clock->getDeltaSeconds();
+                    if (kLightSeconds < m_inLight) {
+                        m_inLight = 0.0f;
+                        m_flee = new RouteFleeLightAction(m_owner, m_route, light);
+                        return true;
+                    }
+                }
+            }
+        }
+        break;
+    }
+    }
+
+    // Someone coming at the two of them comes before everything.
+    if ((u_int)m_state < State_Close) {
+        for (StageObject **slot = firstActive(StageObjGroup_Characters); slot != nullptr; slot = nextActive(slot)) {
+            StageCharacter *other = static_cast<StageCharacter *>(*slot);
+            if (other != m_owner && other != m_target && other->getLifeState() == LifeState_Up
+                && (other->getBiteTarget() == m_owner || other->getBiteTarget() == m_target)
+                && m_owner->distanceTo(other) < kAttackerRange && m_target->distanceTo(other) < kAttackerRange) {
+                m_route->cancelMove();
+                m_route->turnToObject(0.0f, other);
+                m_route->lookAtObject(kLookRate, other, 0);
+                m_state = State_Watch;
+                m_watchUntil = now + kWatchSeconds;
+                return true;
+            }
+        }
+    }
+    return true;
+}
+
+// FS2 0x00226c60
+// callcheck: operator_delete, operator_delete
+RouteFollowAction::~RouteFollowAction()
+{
+    delete m_flee;
+    m_route->cancelMove();
+    m_route->stopLook();
+}
+
+// FS2 0x00226d40
+// callcheck: lookAtObject
+RouteFollowAction::RouteFollowAction(StageCharacter *owner, CharacterRoute *route, StageCharacter *target)
+    : RouteAction(owner), m_route(route), m_target(target)
+{
+    m_route->lookAtObject(kLookRate, m_target, 0);
+}
+
+RouteFleeAction::RouteFleeAction(StageCharacter *owner, CharacterRoute *route)
+    : RouteAction(owner), m_route(route)
+{
+    constexpr float kFleeSeconds = 10.0f;
+
+    m_until = m_owner->m_clock->getSeconds() + kFleeSeconds;
+    m_route->stopLook();
+}
+
+RouteFleeLightAction::RouteFleeLightAction(StageCharacter *owner, CharacterRoute *route, StageLight *light)
+    : RouteFleeAction(owner, route), m_light(light)
+{
+    constexpr float kFleeSeconds = 5.0f;
+
+    m_until = m_owner->m_clock->getSeconds() + kFleeSeconds;
+    m_route->cancelMove();
+}
+
+// FS2 0x00226da0
+// callcheck: getSeconds, applyMatrix, atan2Octant, addAngle, addAngle, getDeltaSeconds, getTurnRate, isYriOrKne
+bool RouteFleeLightAction::update()
+{
+    constexpr float kLastSecond = 1.0f;
+    constexpr int kStateLeaving = 2;
+    static const sceVu0FVECTOR kInTheBeam = {0.0f, 30.0f, 0.0f, 1.0f};  /* data 0x2fa810 */
+
+    const float now = m_owner->m_clock->getSeconds();
+    if (m_until < now)
+        return false;
+    if (m_state == 0 && !threatStands()) {
+        m_until = now + kLastSecond;
+        m_state = kStateLeaving;
+    }
+
+    sceVu0FVECTOR beam;
+    applyMatrix(beam, m_light->getMatrix(), kInTheBeam);
+    float yaw = turnTo(m_owner, beam);
+    if (yaw < 0.0f)
+        yaw += kNinetyFiveDeg;
+    else
+        yaw -= kNinetyFiveDeg;
+    m_route->steer(yaw);
+    if (m_owner->m_allows.move != 0)
+        m_owner->m_wants.moveKind = m_owner->isYriOrKne() ? CharacterMove_Walk : CharacterMove_Run;
+    return true;
+}
+
+// FS2 0x00226fd0
+bool RouteFleeLightAction::threatStands()
+{
+    return m_owner->m_shadowLight == m_light;
+}
+
+// FS2 0x00226ff0
+// callcheck: isSpecialAllowed, setSpecial
+bool RouteFleeFoeAction::cower()
+{
+    return cowerSpecial(m_owner);
+}
+
+// FS2 0x00227050
+// callcheck: getSeconds, operator_delete, findWayOut, moveToPoint
+RouteFleeFoeAction::RouteFleeFoeAction(StageCharacter *owner, CharacterRoute *route, StageObject *foe)
+    : RouteFleeAction(owner, route)
+{
+    sceVu0FVECTOR way = {};
+    if (findWayOut(way, m_owner, foe->m_xform.position, m_route->stoppedAt)) {
+        m_route->moveToPoint(0.0f, way, 2, RouteMoveFlag_DropLimit);
+        m_state = 0;
+    } else {
+        m_route->cancelMove();
+        cower();
+        m_state = 1;
+    }
+}
+
+// FS2 0x00227170
+// callcheck: getSeconds
+bool RouteFleeAction::update()
+{
+    const float now = m_owner->m_clock->getSeconds();
+    if (m_state == 1)
+        return !isHoldableMotion(m_owner->m_motion->motionId);
+    if (m_state != 0)
+        return true;
+    return m_route->move != nullptr && now <= m_until;
+}
+
+// FS2 0x002272f0
+// callcheck: operator_delete
+RouteFleeAction::~RouteFleeAction()
+{
+    m_route->cancelMove();
+}
+
+RouteBackAction::RouteBackAction(StageCharacter *owner, CharacterRoute *route)
+    : RouteAction(owner), m_route(route)
+{
+    m_route->cancelMove();
+}
+
+RouteBackFromLightAction::RouteBackFromLightAction(StageCharacter *owner, CharacterRoute *route)
+    : RouteBackAction(owner, route)
+{
+    m_route->stopLook();
+}
+
+// FS2 0x00227390
+bool RouteBackFromLightAction::getThreat(float *out)
+{
+    StageLight *light = shiningLight(m_owner);
+    if (light == nullptr)
+        return false;
+    copyVector(out, light->getMatrix()[3]);
+    return true;
+}
+
+// FS2 0x002273f0
+// callcheck: isSpecialAllowed, setSpecial
+bool RouteBackFromFoeAction::cower()
+{
+    return cowerSpecial(m_owner);
+}
+
+// FS2 0x00227450
+bool RouteBackFromFoeAction::getThreat(float *out)
+{
+    copyVector(out, m_foe->m_xform.position);
+    return true;
+}
+
+// FS2 0x00227470
+// callcheck: lookAtObject
+RouteBackFromFoeAction::RouteBackFromFoeAction(StageCharacter *owner, CharacterRoute *route, StageObject *foe)
+    : RouteBackAction(owner, route), m_foe(foe)
+{
+    m_route->lookAtObject(0.0f, m_foe, 0);
+}
+
+// FS2 0x00227510
+// callcheck: atan2Octant, addAngle, addAngle, getDeltaSeconds, getTurnRate
+bool RouteBackAction::update()
+{
+    sceVu0FVECTOR threat;
+    if (!getThreat(threat))
+        return false;
+    if (m_state == 1) {
+        if (isHoldableMotion(m_owner->m_motion->motionId))
+            return false;
+    } else if (m_state == 0) {
+        const float yaw = turnTo(m_owner, threat);
+        if (m_owner->m_ground->wallCount < 1 && m_owner->m_abilities.walkBack != 0) {
+            wantMove(m_owner, CharacterMove_Back);
+            m_route->steer(yaw);
+        } else if (cower()) {
+            m_state = 1;
+        }
+    }
+    return true;
+}
+
+// FS2 0x00227790
+// callcheck: operator_delete, operator_delete
+RouteBackAction::~RouteBackAction()
+{
+    m_route->stopLook();
+}
+
+// FS2 0x00227820
+// callcheck: getBiteTarget, operator_new, moveToObject, addAngle
+bool RouteSwoopAction::update()
+{
+    constexpr float kFlyOutBy = 1000.0f;
+
+    if (m_target != m_owner->getBiteTarget())
+        return false;
+    if (m_turn != nullptr) {
+        if (m_turn->update())
+            return true;
+        delete m_turn;
+        m_turn = nullptr;
+    }
+
+    const float dx = m_target->m_xform.position[0] - m_owner->m_xform.position[0];
+    const float dy = m_target->m_xform.position[1] - m_owner->m_xform.position[1];
+    const float distance = sqrtf(dx * dx + dy * dy);
+    switch (m_state) {
+    case State_Away:
+        if (m_range + kFlyOutBy < distance) {
+            m_route->cancelMove();
+            m_state = State_Start;
+        } else {
+            wantMove(m_owner, CharacterMove_Run);
+        }
+        break;
+    case State_Charge:
+        if (m_route->move == nullptr || distance < m_range) {
+            m_route->cancelMove();
+            m_state = State_Start;
+        }
+        break;
+    case State_Start:
+        if (distance < m_range) {
+            m_route->cancelMove();
+            m_turn = new RouteTurn(m_owner, addAngle(kMathPi, m_owner->m_xform.rotation[2]));
+            m_state = State_Away;
+        } else {
+            m_route->moveToObject(0.0f, m_target, 2, RouteMoveFlag_Straight);
+            m_state = State_Charge;
+        }
+        break;
+    }
+    return true;
+}
+
+// FS2 0x00227ac0
+// callcheck: operator_delete
+RouteSwoopAction::~RouteSwoopAction()
+{
+    delete m_turn;
+    m_route->cancelMove();
+}
+
+// FS2 0x00227b80
+// callcheck: getBiteTarget, canSee, vecDistance, findWayOut, moveToPoint, moveToObject, turnToObject, canSee, turnToObject, turnToObject
+bool RouteStalkAction::update()
+{
+    constexpr float kTooFar = 1.2f;
+    constexpr float kTooNear = 0.8f;
+
+    if (m_target != m_owner->getBiteTarget())
+        return false;
+    StageCharacter *target = static_cast<StageCharacter *>(m_target);
+    float sightDistance = 0.0f;
+    const bool sees = m_owner->canSee(kSightAngle, target, &sightDistance);
+    const float distance = vecDistance(m_owner->m_xform.position, target->m_xform.position);
+    switch (m_state) {
+    case State_Leave:
+        if (m_route->move == nullptr || m_range < distance) {
+            m_route->cancelMove();
+            m_route->turnToObject(0.0f, m_target);
+            m_state = State_Hold;
+        }
+        break;
+    case State_Close:
+        if (m_route->move == nullptr || (distance < m_range && sees)) {
+            m_route->cancelMove();
+            m_route->turnToObject(0.0f, m_target);
+            m_state = State_Hold;
+        }
+        break;
+    case State_Hold:
+        if (m_range * kTooFar < distance || (!sees && m_route->move == nullptr)) {
+            m_route->moveToObject(0.0f, m_target, 2, 0);
+            if (m_route->move == nullptr)
+                m_route->turnToObject(0.0f, m_target);
+            else
+                m_state = State_Close;
+        } else {
+            if (!(distance < m_range * kTooNear)) {
+                float seenFrom = 0.0f;
+                if (!target->canSee(kSightAngle, m_owner, &seenFrom))
+                    return true;
+            }
+            sceVu0FVECTOR way = {};
+            if (findWayOut(way, m_owner, target->m_xform.position, m_route->stoppedAt)) {
+                m_route->moveToPoint(0.0f, way, 2, 0);
+                m_state = State_Leave;
+            }
+        }
+        break;
+    }
+    return true;
+}
+
+// FS2 0x00227e10
+// callcheck: operator_delete, operator_delete
+RouteStalkAction::~RouteStalkAction()
+{
+    m_route->cancelMove();
+    m_route->stopLook();
+}
+
+// FS2 0x00227ed0
+// callcheck: lookAtObject
+RouteStalkAction::RouteStalkAction(float range, StageCharacter *owner, CharacterRoute *route, StageObject *target)
+    : RouteAction(owner), m_route(route), m_target(target), m_range(range)
+{
+    m_route->lookAtObject(kLookRate, m_target, 0);
+}
+
+// The way out of the area whose end lies most against the point, not the one
+// it last stopped at; last is CharacterRoute::stoppedAt. A stored path ending
+// in a chain: the ROM asks for the node one past the last, which reads what
+// follows the list; the host takes the last one (open-items.md).
+// FS2 0x00227f30
+// callcheck: FUN_0022fda0, FUN_0022fc50, areaList, FUN_0022fc50, crossingPath, FUN_0022fe10, FUN_0022fda0, FUN_0022fc60, vecNormalize, FUN_0022fc50, crossingPath, FUN_0022fe10, link, gate, node, node, node, chainNodeCount, chainNode, FUN_0022fe10, FUN_0022fda0, FUN_0022fda0, vecNormalize, FUN_0022fe10
+namespace {
+
+bool findWayOut(float *out, StageCharacter *who, const float *threat, const float *last)
+{
+    constexpr float kNothingYet = 6.2831855f;
+
+    RoutePlayer *routes = gStageScene->routePlayer;
+    const int area = who->m_ground->floorAttr;
+    if (area < 0)
+        return false;
+
+    std::vector<short> ends;
+    routes->areaList(ends, (short)area);
+    for (auto end = ends.begin(); end != ends.end();) {
+        RoutePath path;
+        if (routes->crossingPath(path, (short)area, *end, *end, 0) < 0.0f)
+            end = ends.erase(end);
+        else
+            ++end;
+    }
+    if (ends.empty())
+        return false;
+
+    sceVu0FVECTOR toThreat = {threat[0] - who->m_xform.position[0], threat[1] - who->m_xform.position[1], 0.0f, 1.0f};
+    vecNormalize(toThreat, toThreat);
+
+    float best = kNothingYet;
+    float place[3] = {};        // a leg of none of the four kinds keeps the one before
+    for (short end : ends) {
+        RoutePath path;
+        if (routes->crossingPath(path, (short)area, end, end, 0) <= 0.0f || path.steps.empty())
+            continue;
+        const RouteLeg &leg = path.steps.back();
+        if (leg.kind == RouteLeg_Chain) {
+            const RouteNode *node = routes->chainNode(leg.index, routes->chainNodeCount(leg.index) - 1);
+            place[0] = node->position[0];
+            place[1] = node->position[1];
+            place[2] = node->position[2];
+        } else if (leg.kind == RouteLeg_Node) {
+            const RouteNode *node = routes->node(leg.index);
+            place[0] = node->position[0];
+            place[1] = node->position[1];
+            place[2] = node->position[2];
+        } else if (leg.kind == RouteLeg_Gate) {
+            const RouteSpan *gate = routes->gate(leg.index);
+            place[0] = (gate->first->position[0] + gate->second->position[0]) / 2.0f;
+            place[1] = (gate->first->position[1] + gate->second->position[1]) / 2.0f;
+            place[2] = (gate->first->position[2] + gate->second->position[2]) / 2.0f;
+        } else if (leg.kind == RouteLeg_Link) {
+            const RouteSpan *link = routes->link(leg.index);
+            const RouteNode *node = (leg.index & kRouteLinkReversed) == 0 ? link->second : link->first;
+            place[0] = node->position[0];
+            place[1] = node->position[1];
+            place[2] = node->position[2];
+        }
+        if (place[0] == last[0] && place[1] == last[1] && place[2] == last[2])
+            continue;
+        sceVu0FVECTOR toPlace = {place[0] - who->m_xform.position[0], place[1] - who->m_xform.position[1], 0.0f, 1.0f};
+        vecNormalize(toPlace, toPlace);
+        const float along = toThreat[0] * toPlace[0] + toThreat[1] * toPlace[1];
+        if (along < best) {
+            out[0] = place[0];
+            out[1] = place[1];
+            out[2] = place[2];
+            best = along;
+        }
+    }
+    return best <= kMathPi;
+}
+
+} // namespace
+
+// Inline in the ROM: the character's own bite, in 0x228670.
+bool RouteHuntAction::tryBite()
+{
+    if (m_owner->m_abilities.flag3be == 0 || m_owner->m_allows.bite == 0)
+        return false;
+    m_owner->m_wants.bite = 1;
+    if (StageObject *target = m_owner->getBiteTarget())
+        m_owner->m_628 = target;
+    m_route->skipUpdate = 1;
+    return true;
+}
+
+// Inline in the ROM: Srt and Yrt keep out of a light near their head.
+bool RouteHuntAction::runFrom()
+{
+    constexpr float kLightReach = 300.0f;
+
+    const int kind = stageObjRecord(m_owner->m_itemDef)->kind;
+    if (kind != CharacterKind_Srt && kind != CharacterKind_Yrt)
+        return false;
+    StageLight *light = shiningLight(m_owner);
+    if (light == nullptr || kLightReach <= vecDistance(headOf(m_owner), light->getMatrix()[3]))
+        return false;
+    m_task = new RouteFleeLightAction(m_owner, m_route, light);
+    return true;
+}
+
+// The end of 0x228670, and the same in the ctor without the test of ready.
+// callcheck: getWeaponRange, moveToObject, turnToObject
+void RouteHuntAction::goAfter(StageObject *weapon, bool seen)
+{
+    float reach = 0.0f;
+    if (weapon != nullptr && isFirearm(weapon) && seen)
+        reach = m_owner->getWeaponRange() * kShootFrom;
+    if (m_owner->m_6d4 != 0)
+        m_route->moveToObject(reach, m_target, 2, 0);
+    if (m_route->move == nullptr)
+        m_route->turnToObject(0.0f, m_target);
+}
+
+// FS2 0x00228670
+// callcheck: lookAtObject, getLifeState, getLifeState, getBiteTarget, canSee, getSeconds, getStageSelect, find, vecDistance, operator_new, vecDistance, getStageSelect, getStageSelect, getStageSelect, getStageSelect, operator_new, shoot, randNext, operator_new, melee, getStageSelect, getSeconds, operator_delete, getSeconds, getBiteTarget, getSeconds, getSeconds, getSeconds, getWeaponRange, shoot, melee, isPlayer, randNext, randNext, isPartner, operator_new, getSeconds, getWeaponRange, turnToObject, moveToObject
+bool RouteHuntAction::update()
+{
+    constexpr float kBiteRange = 10.0f;
+    constexpr float kBlowRange = 15.0f;
+    constexpr float kYrtExtraRange = 45.0f;
+    constexpr float kSrtExtraRange = 15.0f;
+    constexpr float kOnASlope = 10.0f;      // what a tilted floor takes off the blow's reach
+    constexpr float kTackleRange = 50.0f;
+    constexpr float kFriendsRange = 500.0f;
+    constexpr int kBiteChanceWithFriends = 80;
+    constexpr int kBiteChanceAlone = 40;
+    constexpr int kBurstMagazine = 0x13;    // a magazine above this fires bursts
+    constexpr float kBiteMindSeconds = 10.0f;
+    constexpr float kThoughtSeconds = 10.0f;
+    constexpr float kThoughtSpread = 20.0f;
+    constexpr int kScriptBite = 1;          // m_6c8
+    constexpr int kScriptBurst = 2;
+
+    if (m_task != nullptr) {
+        if (m_task->update())
+            return true;
+        delete m_task;
+        m_task = nullptr;
+        m_route->lookAtObject(kLookRate, m_target, 0);
+    }
+
+    const int life = m_target->getLifeState();
+    if (!(1 < life && life < 6))
+        return false;
+    if (m_target != m_owner->getBiteTarget())
+        return false;
+
+    StageObject *weapon = m_owner->m_weapons[0];
+    float sightDistance = 0.0f;
+    const bool seen = m_owner->canSee(kSightAngle, m_target, &sightDistance);
+    const float now = m_owner->m_clock->getSeconds();
+
+    if (m_fights) {
+        if (runFrom())
+            return true;
+
+        const float gap = gapBetween(m_owner, m_target);
+        const int kind = stageObjRecord(m_owner->m_itemDef)->kind;
+        const StageCollisionFace *floor = m_owner->m_ground->floorFace;
+        const float slope = kind != CharacterKind_Yrt && floor != nullptr
+            && (floor->flags & StageCollision_Slope) != 0 ? kOnASlope : 0.0f;
+        float blowRange = kBlowRange;
+        if (kind == CharacterKind_Yrt)
+            blowRange += kYrtExtraRange;
+        if (stageObjRecord(m_target->m_itemDef)->kind == CharacterKind_Yrt && m_target->getBiteTarget() == m_owner)
+            blowRange += kYrtExtraRange;
+        if (kind == CharacterKind_Srt)
+            blowRange += kSrtExtraRange;
+
+        const int targetMotion = m_target->m_motion->motionId;
+        const bool tackles = m_owner->m_abilities.flag3be != 0 && m_owner->m_6cc == 0 && m_owner->m_6d0 == 0
+                          && gap < kTackleRange
+                          && (isRunMotion(targetMotion) || isCrouchRunMotion(targetMotion))
+                          && (weapon == nullptr || !isRifle(weapon));
+        if (tackles) {
+            if (tryBite())
+                return true;
+        } else if (m_owner->m_6d0 == 0
+                   && (m_owner->m_6c8 == kScriptBite || (weapon == nullptr && m_owner->m_abilities.flag3c4 == 0))) {
+            if (gap < kBiteRange && m_owner->m_allows.bite != 0) {
+                m_task = new RouteBiteAction(m_owner);
+                return true;
+            }
+        } else if (m_owner->m_6c8 == kScriptBurst && weapon != nullptr
+                   && kBurstMagazine < weaponDefOf(weapon).magazine) {
+            if (m_route->shoot(m_target)) {
+                const float seconds = randomUnit() + kBurstSeconds;
+                m_task = new RouteShootAction(seconds, m_owner, m_route, m_target);
+                return true;
+            }
+        } else if (weapon != nullptr && isFirearm(weapon)) {
+            if (blowRange - slope <= gap || m_owner->m_aiLevel < 1) {
+                if (gap < m_owner->getWeaponRange() * kShootFrom && 0 < weapon->m_ammoA && m_route->shoot(m_target))
+                    return true;
+            } else if (m_route->melee(m_target, true)) {
+                return true;
+            }
+        } else if (!m_wantsBite && gap < blowRange - slope && m_route->melee(m_target, true)) {
+            return true;
+        }
+
+        // A foe with bare hands sets its mind on the player's throat now and then.
+        if (m_owner->m_6d0 == 0 && !(weapon != nullptr && isFirearm(weapon))
+            && (m_target->isPlayer() || m_target->isPartner())) {
+            if (!m_wantsBite) {
+                if (m_nextThought < now) {
+                    const int chance = m_owner->scriptHasAllyWithin(kFriendsRange) ? kBiteChanceWithFriends
+                                                                                   : kBiteChanceAlone;
+                    if ((int)randNext() % 100 < chance) {
+                        m_wantsBite = true;
+                        m_biteUntil = now + kBiteMindSeconds;
+                    }
+                    m_nextThought = randomUnit() * kThoughtSpread + now + kThoughtSeconds;
+                }
+            } else if (m_biteUntil < now || isBittenMotion(targetMotion)) {
+                m_wantsBite = false;
+            } else if (gap < kBiteRange) {
+                if (m_owner->m_allows.bite != 0) {
+                    m_task = new RouteBiteAction(m_owner);
+                    return true;
+                }
+                m_wantsBite = false;
+            }
+        }
+    }
+
+    if (m_route->move == nullptr && m_owner->m_wants.ready == 0)
+        goAfter(weapon, seen);
+    return true;
+}
+
+// FS2 0x002298d0
+// callcheck: operator_delete, operator_delete
+RouteHuntAction::~RouteHuntAction()
+{
+    delete m_task;
+    m_route->cancelMove();
+    m_route->stopLook();
+}
+
+// FS2 0x002299b0
+// callcheck: getSeconds, canSee, getWeaponRange, lookAtObject, moveToObject, turnToObject
+RouteHuntAction::RouteHuntAction(StageCharacter *owner, CharacterRoute *route, StageObject *target, bool fights)
+    : RouteAction(owner), m_route(route), m_target(static_cast<StageCharacter *>(target)), m_fights(fights)
+{
+    m_nextThought = m_owner->m_clock->getSeconds();
+    StageObject *weapon = m_owner->m_weapons[0];
+    bool seen = false;
+    if (weapon != nullptr && isFirearm(weapon)) {
+        float sightDistance = 0.0f;
+        seen = m_owner->canSee(kSightAngle, m_target, &sightDistance);
+    }
+    goAfter(weapon, seen);
+    m_route->lookAtObject(kLookRate, m_target, 0);
+}
+
+// FS2 0x00229c20
+// callcheck: getSeconds, randNext, randNext, randNext, turnToYaw, getSeconds, randNext, sinCos, sinCos, findFloorFaceExcept, moveToPoint
+bool RouteWanderAction::update()
+{
+    constexpr float kTwoPi = 6.2831855f;
+    constexpr u_int kTurnChance = 0x5999;   // of 0x8000: it turns; else it strolls
+    constexpr float kWalkHeight = 50.0f;
+    constexpr float kFloorRange = -1.0f;
+    constexpr u_int kFaceFloor = 0x42400c;
+    constexpr u_int kFaceFloorSkip = 0x40000;
+    constexpr float kStrollSeconds = 10.0f;
+    constexpr float kPauseSeconds = 3.0f;
+
+    const float now = m_owner->m_clock->getSeconds();
+    if (m_state == State_Pause) {
+        if (m_until < now) {
+            const float yaw = randomUnit() * kTwoPi - kMathPi;
+            if ((randNext() & 0x7fff) < kTurnChance) {
+                m_route->turnToYaw(yaw, 0.0f);
+            } else {
+                const float half = m_distance * 0.5f;
+                const float reach = half * randomUnit() + half + 0.0f;
+                sceVu0FVECTOR goal;
+                copyVector(goal, m_point);
+                goal[0] = reach * sinCos(yaw, SinCos_Sin) + goal[0] + 0.0f;
+                goal[1] = reach * sinCos(yaw, SinCos_Cos) + goal[1] + 0.0f;
+                goal[2] += kWalkHeight;
+                const StageCollisionFace *face = gStageScene->findFloorFaceExcept(
+                    goal[0], goal[1], kFloorRange, &goal[2], kFaceFloor, kFaceFloorSkip,
+                    reinterpret_cast<StageObject *>(gStageScene->viewTarget));
+                if (face == nullptr || (short)face->attr < 0)
+                    return true;
+                m_route->moveToPoint(0.0f, goal, 1, 0);
+            }
+            m_until = m_owner->m_clock->getSeconds() + kStrollSeconds;
+            m_state = State_Going;
+        }
+    } else if (m_state == State_Going) {
+        if (m_until < now)
+            m_route->cancelMove();
+        if (m_route->move == nullptr) {
+            m_until = randomUnit() * kPauseSeconds + now + 0.0f + kPauseSeconds;
+            m_state = State_Pause;
+        }
+    }
+    return true;
+}
+
+// FS2 0x00229ec0
+// callcheck: operator_delete
+RouteWanderAction::~RouteWanderAction()
+{
+    m_route->cancelMove();
+}
+
+RouteWanderAction::RouteWanderAction(float distance, StageCharacter *owner, CharacterRoute *route, const float *point)
+    : RouteAction(owner), m_route(route), m_distance(distance)
+{
+    constexpr float kFirstStrollSeconds = 10.0f;
+
+    copyVector(m_point, point);
+    m_until = m_owner->m_clock->getSeconds() + kFirstStrollSeconds;
+    m_route->stopLook();
 }
 
 // FS2 0x00229f60
@@ -2018,6 +3260,148 @@ bool CharacterRoute::action22bf60()
     if (!actionYields(2) || !isHoldMotion(owner->m_motion->motionId))
         return false;
     setAction(new RouteHoldAction(owner, this));
+    return true;
+}
+
+// FS2 0x0022c0f0
+// callcheck: getStageSelect, operator_new, operator_delete (stageObjRecord, RouteNumbAction)
+bool CharacterRoute::goNumb(int seconds)
+{
+    if (seconds == 0) {
+        setAction(nullptr);
+        return true;
+    }
+    if (!actionYields(2) || stageObjRecord(owner->m_itemDef)->kind != CharacterKind_NoShadow)
+        return false;
+    const int id = owner->m_motion->motionId;
+    if (id != kMotionStunned && id != kMotionSpawning && !isFreeMotion(id))
+        return false;
+    setAction(new RouteNumbAction((float)seconds, owner, this));
+    return true;
+}
+
+// FS2 0x0022c840
+// callcheck: isVoicePlaying, playVoice, operator_new, strcpy, operator_delete
+bool CharacterRoute::speak(const char *name)
+{
+    if (!actionYields(0))
+        return false;
+    if (!owner->isVoicePlaying(name) && !owner->playVoice(name))
+        return false;
+    setAction(new RouteVoiceAction(owner, name));
+    return true;
+}
+
+// FS2 0x0022c960
+// callcheck: operator_delete, setHoldIfFree
+bool CharacterRoute::restIn(int variant)
+{
+    if (!actionYields(0))
+        return false;
+    setAction(nullptr);
+    setMove(nullptr);
+    setLook(nullptr);
+    owner->m_motion->setHoldIfFree(variant + kMotionRestFirst);
+    skipUpdate = 1;
+    return true;
+}
+
+// FS2 0x0022cac0
+// callcheck: strcmp, operator_new, operator_delete
+bool CharacterRoute::playAction(const char *name, StageObject *a, StageObject *b)
+{
+    if (!actionYields(0) && strcmp(name, kEndAction) != 0)
+        return false;
+    setAction(new RoutePlayAction(owner, this, name, a, b));
+    return true;
+}
+
+// FS2 0x0022cbe0
+// callcheck: operator_new, operator_delete
+bool CharacterRoute::quickTurn()
+{
+    if (!actionYields(0) || owner->m_abilities.quickTurn == 0)
+        return false;
+    setMove(nullptr);
+    setAction(new RouteQuickTurnAction(owner));
+    return true;
+}
+
+// FS2 0x0022ccf0
+// callcheck: operator_new, operator_delete
+bool CharacterRoute::followCharacter(StageObject *character)
+{
+    if (!actionYields(0) || character == nullptr)
+        return false;
+    setAction(new RouteFollowAction(owner, this, static_cast<StageCharacter *>(character)));
+    return true;
+}
+
+// FS2 0x0022cde0
+// callcheck: operator_new, getSeconds, operator_delete, getSeconds
+bool CharacterRoute::fleeLight()
+{
+    if (!actionYields(0))
+        return false;
+    StageLight *light = shiningLight(owner);
+    if (light == nullptr)
+        return false;
+    setAction(new RouteFleeLightAction(owner, this, light));
+    return true;
+}
+
+// FS2 0x0022cf90
+// callcheck: operator_new, operator_delete
+bool CharacterRoute::backFromLight()
+{
+    if (!actionYields(0) || shiningLight(owner) == nullptr)
+        return false;
+    setAction(new RouteBackFromLightAction(owner, this));
+    return true;
+}
+
+// FS2 0x0022d0f0
+// callcheck: operator_new, operator_delete
+bool CharacterRoute::fleeFoe(StageObject *foe)
+{
+    if (!actionYields(0) || foe == nullptr || foe->getKind() != StageObject_Character)
+        return false;
+    setAction(new RouteFleeFoeAction(owner, this, foe));
+    return true;
+}
+
+// FS2 0x0022d220
+// callcheck: operator_new, operator_delete
+bool CharacterRoute::backFromFoe(StageObject *foe)
+{
+    if (!actionYields(0) || foe == nullptr || foe->getKind() != StageObject_Character)
+        return false;
+    setAction(new RouteBackFromFoeAction(owner, this, foe));
+    return true;
+}
+
+// FS2 0x0022d350
+// callcheck: getStageSelect, operator_new, operator_new, operator_new, operator_delete
+bool CharacterRoute::attack(float range, StageObject *target, bool fights)
+{
+    if (target == nullptr || target->getKind() != StageObject_Character || !actionYields(0))
+        return false;
+    if (range <= 0.0f)
+        setAction(new RouteHuntAction(owner, this, target, fights));
+    else if (stageObjRecord(owner->m_itemDef)->kind == CharacterKind_NoShadow)
+        setAction(new RouteSwoopAction(owner, this, target, range));
+    else
+        setAction(new RouteStalkAction(range, owner, this, target));
+    return true;
+}
+
+// FS2 0x0022d6d0
+// callcheck: operator_new, getSeconds, operator_delete
+bool CharacterRoute::wanderNear(float distance, const float *point)
+{
+    if (!actionYields(0))
+        return false;
+    setAction(new RouteWanderAction(distance, owner, this, point));
     return true;
 }
 

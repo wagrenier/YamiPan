@@ -553,6 +553,10 @@ struct PlayerMotion
     bool isSpecialOnly(const char *name);                                // FS2 0x001deed0
     // m_holds[0] = id when id is 0..0xff; false otherwise.
     bool setHold(int id);                                                // FS2 0x001ded30
+    // The same, only when no hold stands.
+    bool setHoldIfFree(int id);                                          // FS2 0x001ded60
+    // The motion a special plays; -1 no such special, or one that plays none.
+    int  specialMotion(const char *name);                                // inline in the ROM (0x225fc0)
     // The byte +0x18 of the special GettingOnCar, a class not written.
     bool getCarSpecialFlag();                                            // FS2 0x001dee50
     void setCarSpecialFlag(bool on);                                     // FS2 0x001dee90
