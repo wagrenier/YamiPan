@@ -1651,7 +1651,7 @@
    "why": "The base camera's getKind, its four empty side hooks, the setters StageObject keeps at the head of this object, its dtor and the view functions. 0x177be0 setProjection is written here too but pinned in game/playermotion.cpp; 0x177d00 on is not pinned yet."
   },
   "game/stagecar.cpp": {
-   "notes": "59 of 59 functions, batch 175: CarRunOver::at 0x28e850 (the table at +0x240; its caller 0x2103d0 is unwritten). Written with it because the car's picture and driver waited on them: PartSwitch::partName, show, init (range joined game/stagemodel.cpp), StageCharacter::rideCar 0x17af50 (joined game/playermotion.cpp), isDriver 0x215310. Seen, temporary build, removed: stage 7, doorwalk pad, 300 s, no crash, rideCar and throttle forced: driver's view with wheel and dash and the game's text Use R1 to go forward, progress/20261106-car-seat-forced.png; the car moved with the player in it; out by the seat. Reference: the stage's hint page, progress/20261106-car-hints.png, Hints 3 is the same cabin view, the shape agrees. Still wrong, hence partial: the cab's rounded panels keep a scaled glossy pattern, progress/20261106-car-close-after-partswitch.png, and the inside pillar a bright smear where Hints 3 is dark. So the part switch was not the cause; the new guess, not proven, is a reflection layer (a mesh's second texture) in yamipan/rendering/model_renderer.cpp. A run with nothing forced never seats the player: no button gets in yet. Next: GettingOnCar 0x280f50, GettingOffCar 0x280e20, DragOutCar 0x280a60 and their links 0x283060.., left out of PlayerMotion::initList; the reflection layer; 0x2103d0. Unexplained items are in open-items.md: the forced car stopped dead at (7026, 3002), something seated the player later in the forced run, and the player is placed back at (7410.8, 2840) about every 480 ticks.",
+   "notes": "Batch 176. Written in game/playermotion.cpp (ranges joined): MotionGetOnCar, MotionGetOffCar, MotionDragOutCar, ApproachCarLink, ApproachOutLink, ApproachBiteLink, DriveLink, NpcReactionLink, SpWait plain, findCarDoor 0x280fd0, isPassenger 0x215300, get and setCarSpecialFlag. Seen, temporary build, removed (New Game forced to stage 7): at the door allowed is 1 and the item list shows Get in, but in two logged runs reaching the door the special was never enabled, so these links have not run. Next there: log UiItemList::pick, pressed at stagescene.cpp 3074 and native 0x168 at the door, and check getInputFocus; work/car3_pad.txt reaches the door from the real start (8250, 2658). Picture: with the spot pass off the cab is clean, progress/20261106-car-no-spot-pass.png, so the fan is the lamp's pass, not a reflection layer; the pass is back on, so the truck is still wrong in a normal run, hence partial. VU1 0x32d..0x347 treats a vertex behind the lamp as spotVertex does, so look at the part-box test VU1 0x66b and alpha next. The reflection pass in model_renderer.cpp, VU1 0x77f, is written and has never drawn: no material on stage 7 has texture2. open-items.md has the rest. 0x2103d0 still unwritten.",
    "ranges": [
     [
      "00289cc0",
@@ -1668,6 +1668,11 @@
      "date": "2026-11-06 12:56",
      "status": "partial",
      "summary": "the car: every function written; PartSwitch and rideCar added: the player sits in the car; the truck's picture is still wrong"
+    },
+    {
+     "date": "2026-11-06 13:47",
+     "status": "partial",
+     "summary": "the door: GettingOnCar, GettingOffCar, DragOutCar and the car's links written; the truck's fan is proven to be the lamp's spot pass, cause in the ROM not found; X has not yet got the player in"
     }
    ],
    "status": "partial",

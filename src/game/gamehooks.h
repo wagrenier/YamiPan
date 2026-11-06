@@ -2472,6 +2472,10 @@ public:
     bool isMode1();                                                      // FS2 0x002152d0
     // The sheet's 運転スキル makes it a driver, in a car or not.
     bool isDriver();                                                     // FS2 0x00215310
+    // The sheet's 運転スキル is 2: rides beside the driver.
+    bool isPassenger();                                                  // FS2 0x00215300
+    // The door of car in reach, 0 or 1, or -1. facing: looking at it.
+    int  findCarDoor(StageCar *car, bool facing);                        // FS2 0x00280fd0
     // +0x364 set: +0x2ca = 1. What the two bytes are is unread.
     void latchAltAction();                                               // FS2 0x0020b1d0
     // The object it is: the callers that hold it as the scene's player.

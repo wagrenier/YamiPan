@@ -85,6 +85,10 @@ enum MotionId
     Motion_DoorForce  = 0x4c,   // spends its hit points
     Motion_CarSit     = 0xb9, // car_s
     Motion_CarDrive   = 0xba, // car_dv
+    Motion_CarCall    = 0xbb, // a passenger's answer to a call
+    Motion_CarGetIn   = 0xbc, // link ApproachCar
+    Motion_CarGetOut  = 0xbd, // link ApproachOut
+    Motion_CarDragOut = 0xbe, // link ApproachBite
     Motion_Crouched   = 0xf7, // a request, resolved through the holds
     Motion_WalkStand  = 0xf9, // waits while the walk runs (stepLower)
     Motion_WalkCrouch = 0xfa,
@@ -292,6 +296,85 @@ class BittenLink : public MotionLink
 public:
     using MotionLink::MotionLink;
     ~BittenLink() override {}                                            // FS2 0x001eedb0
+};
+
+// What the two links of the player's door have in common: slots +0x18 and
+// +0x20 of vtables 0x317fb0, 0x317fe0. layout: host.
+class CarDoorLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    void onStart() override;
+    void onLeave(MotionLink *next) override;
+};
+
+// Motion_CarGetIn. Vtable 0x317fe0. layout: host -- EE 0x20.
+class ApproachCarLink : public CarDoorLink
+{
+public:
+    using CarDoorLink::CarDoorLink;                                      // FS2 0x00283960
+    ~ApproachCarLink() override {}                                       // FS2 0x002835a0
+    void onRun() override;
+};
+
+// Motion_CarGetOut. Vtable 0x317fb0. layout: host -- EE 0x24.
+class ApproachOutLink : public CarDoorLink
+{
+public:
+    using CarDoorLink::CarDoorLink;                                      // FS2 0x00283740
+    ~ApproachOutLink() override {}                                       // FS2 0x00283d80
+    void onRequest() override;
+    void onRun() override;
+
+private:
+    u_char side = 1;            // FS2 +0x20
+};
+
+// Motion_CarDragOut: the foe pulls its prey out of the car, then bites.
+// Vtable 0x317f80. layout: host -- EE 0x28.
+class ApproachBiteLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;                                        // FS2 0x00283560
+    ~ApproachBiteLink() override {}                                      // FS2 0x00283d10
+    void onRequest() override;
+    void onStart() override;
+    void onRun() override;
+    void onLeave(MotionLink *next) override;
+    void onCancel() override;
+
+private:
+    u_char side = 1;            // FS2 +0x20
+    StageCharacter *prey = nullptr; // FS2 +0x24
+};
+
+// The seats: 0xb9, 0xba. Vtable 0x317f50. layout: host -- EE 0x20.
+class DriveLink : public MotionLink
+{
+public:
+    // cr_2, cr_3, cr_1, GettingOffCar: data 0x2fb450.
+    // FS2 0x00282fa0
+    DriveLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
+    {
+        for (const char *name : { "cr_2", "cr_3", "cr_1", "GettingOffCar" })
+            addSpecial(name);
+    }
+    ~DriveLink() override {}                                             // FS2 0x00283cb0
+    void onRun() override;
+};
+
+// Vtable 0x317da0: only the calls. layout: host -- EE 0x20.
+class NpcReactionLink : public MotionLink
+{
+public:
+    // cr_2, cr_3, cr_1: data 0x2fb460.
+    // FS2 0x00282da0
+    NpcReactionLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
+    {
+        for (const char *name : { "cr_2", "cr_3", "cr_1" })
+            addSpecial(name);
+    }
+    ~NpcReactionLink() override {}                                       // FS2 0x002839a0
 };
 
 // Gun up: Lock, Snipe, GunAttack, GunMove. Vtable 0x317a10. layout: host.
@@ -641,7 +724,7 @@ struct PlayerMotion
     bool setHoldIfFree(int id);                                          // FS2 0x001ded60
     // The motion a special plays; -1 no such special, or one that plays none.
     int  specialMotion(const char *name);                                // inline in the ROM (0x225fc0)
-    // The byte +0x18 of the special GettingOnCar, a class not written.
+    // The byte +0x18 of the special GettingOnCar: the partner comes along.
     bool getCarSpecialFlag();                                            // FS2 0x001dee50
     void setCarSpecialFlag(bool on);                                     // FS2 0x001dee90
     // The gadget special called name takes text and turns on; false when

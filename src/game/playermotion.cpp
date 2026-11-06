@@ -710,6 +710,263 @@ void MotionPartnerCall::onApply()
     pending = 0;
 }
 
+// The stage's car, seen from a character. Walls a place beside it must keep
+// clear of (the same masks as a walk's, the car itself left out).
+constexpr u_int kCarWall       = 0xe8021f3;
+constexpr u_int kCarPathSkip   = 0x2040000;
+constexpr u_int kCarBodySkip   = 0x40000;
+constexpr float kCarPlaceLift  = 50.0f;     // above the ground, for the rays
+constexpr float kCarDoorHeight = 50.0f;     // between the car and the character
+constexpr float kCarDoorArc    = 0.7853982f; // the character faces the door within this
+
+// A way out of center to place is clear, and a sphere of radius fits there.
+static bool carPlaceClear(StageCar *car, const float *center, float radius, const float *place)
+{
+    sceVu0FVECTOR raised = { place[0], place[1], place[2] + kCarPlaceLift, place[3] };
+    return !gStageScene->segmentHitsAny(center, raised, 0, kCarWall, kCarPathSkip, car)
+        && !gStageScene->sphereHitsAny(radius, place, kCarWall, kCarBodySkip, car);
+}
+
+// The door of car this character can reach, 0 or 1; -1 none. The side the
+// car's points take is door == 0. facing: it must look at the door.
+// FS2 0x00280fd0
+// callcheck: getDoorBone, vecDistance, atan2Octant, addAngle, addAngle, segmentHitsAny
+
+int StageCharacter::findCarDoor(StageCar *car, bool facing)
+{
+    const float *mine = m_xform.position;
+    sceVu0FVECTOR from = { mine[0], mine[1], mine[2] + kCarPlaceLift, mine[3] };
+
+    for (int door = 0; door < 2; door++) {
+        sceVu0FVECTOR bone;
+        const float reach = car->getDoorBone(bone, door == 0);
+        bone[2] += kCarPlaceLift;
+        if (vecDistance(from, bone) > reach || fabsf(car->m_xform.position[2] - mine[2]) > kCarDoorHeight)
+            continue;
+        if (facing) {
+            const float bearing = atan2Octant(from[0] - bone[0], -(from[1] - bone[1]));
+            const float off = addAngle(addAngle(bearing, -m_xform.rotation[2]), -kMathPi);
+            if (fabsf(off) >= kCarDoorArc)
+                continue;
+        }
+        if (!gStageScene->segmentHitsAny(from, bone, 0, kCarWall, kCarBodySkip, car))
+            return door;
+    }
+    return -1;
+}
+
+// FS2 0x00215300
+
+bool StageCharacter::isPassenger()
+{
+    return m_abilities.driving == 2;
+}
+
+// The player at a door of the scene's car. Vtable 0x317cf0. layout: host --
+// EE 0x1c, +0x18 bringPartner (getCarSpecialFlag; scripts set it).
+class MotionGetOnCar : public MotionSpecial
+{
+public:
+    // FS2 0x00280f50
+    MotionGetOnCar(StageCharacter *owner, PlayerMotion *motion_, const char *name)
+        : MotionSpecial(owner, motion_, name) {}
+    void onUpdate() override;
+    void onApply() override;
+
+    u_char bringPartner = 0;    // FS2 +0x18
+};
+
+// FS2 0x00280ee0
+// callcheck: isNotRunning, findCarDoor
+
+void MotionGetOnCar::onUpdate()
+{
+    StageCar *car = gStageScene->car;
+    if (gStageScene->fade->isNotRunning() && car != nullptr && character->findCarDoor(car, true) != -1)
+        allowed = 1;
+}
+
+// FS2 0x00280ea0
+// callcheck: request
+
+void MotionGetOnCar::onApply()
+{
+    if (enabled != 0 && allowed != 0)
+        motion->request(Motion_CarGetIn);
+}
+
+// FS2 0x001dee50
+// callcheck: find
+
+bool PlayerMotion::getCarSpecialFlag()
+{
+    auto *found = m_specials.find("GettingOnCar");
+    return found != nullptr && static_cast<MotionGetOnCar *>(found->value)->bringPartner != 0;
+}
+
+// FS2 0x001dee90
+// callcheck: find
+
+void PlayerMotion::setCarSpecialFlag(bool on)
+{
+    auto *found = m_specials.find("GettingOnCar");
+    if (found != nullptr)
+        static_cast<MotionGetOnCar *>(found->value)->bringPartner = on;
+}
+
+// The character at the wheel, the car all but stopped. Vtable 0x317cd0.
+// layout: host -- EE 0x1c, +0x18 side.
+class MotionGetOffCar : public MotionSpecial
+{
+public:
+    // FS2 0x00280e20
+    MotionGetOffCar(StageCharacter *owner, PlayerMotion *motion_, const char *name)
+        : MotionSpecial(owner, motion_, name) {}
+    void onUpdate() override;
+    void onApply() override;
+
+    u_char side = 1;            // FS2 +0x18: which side was found clear
+};
+
+// With a partner aboard the door's place must be clear as well as the sill.
+// FS2 0x00280bd0
+// callcheck: isNotRunning, isCreeping, isMode2, getCenter, getSillPoint, segmentHitsAny, sphereHitsAny, getDoorPlace, segmentHitsAny, sphereHitsAny
+
+void MotionGetOffCar::onUpdate()
+{
+    if (!gStageScene->fade->isNotRunning())
+        return;
+    StageCar *car = static_cast<StageCar *>(character->m_gear);
+    if (car == nullptr || !car->isCreeping() || character->m_lookAt != nullptr)
+        return;
+    StageCharacter *partner = static_cast<StageCharacter *>(gStageScene->partner);
+    const bool aboard = partner != nullptr && partner->isMode2();
+    if (aboard && partner->m_lookAt != nullptr)
+        return;
+
+    sceVu0FVECTOR center;
+    car->getCenter(center);
+    center[2] += kCarPlaceLift;
+    for (int door = 0; door < 2; door++) {
+        const bool first = door == 0;
+        sceVu0FVECTOR place;
+        float radius = car->getSillPoint(place, first);
+        if (!carPlaceClear(car, center, radius, place))
+            continue;
+        if (aboard) {
+            radius = car->getDoorPlace(place, first);
+            if (!carPlaceClear(car, center, radius, place))
+                continue;
+        }
+        allowed = 1;
+        side = first;
+        return;
+    }
+}
+
+// FS2 0x00280b60
+// callcheck: resetPlace, request
+
+void MotionGetOffCar::onApply()
+{
+    if (enabled == 0 || allowed == 0)
+        return;
+    allowed = 0;
+    onUpdate();
+    if (allowed != 0) {
+        static_cast<StageCar *>(character->m_gear)->resetPlace();
+        motion->request(Motion_CarGetOut);
+    }
+}
+
+// A foe at the door of a car all but stopped, its bite candidate inside.
+// The side is the door it stands at. Vtable 0x317cb0. layout: host -- EE 0x20.
+class MotionDragOutCar : public MotionGetOffCar
+{
+public:
+    // FS2 0x00280a60
+    MotionDragOutCar(StageCharacter *owner, PlayerMotion *motion_, const char *name)
+        : MotionGetOffCar(owner, motion_, name) {}
+    void onUpdate() override;
+    void onApply() override;
+    void clearAllowed() override;
+
+    StageCharacter *victim = nullptr; // FS2 +0x1c
+};
+
+// FS2 0x00281630
+
+void MotionDragOutCar::clearAllowed()
+{
+    victim = nullptr;
+    allowed = 0;
+}
+
+// FS2 0x00280690
+// callcheck: isNotRunning, getStageSelect, getBiteTarget, isCrawling, isMode2, findCarDoor, getCenter, getSillPoint, segmentHitsAny, sphereHitsAny, getDoorPlace, segmentHitsAny, sphereHitsAny
+
+void MotionDragOutCar::onUpdate()
+{
+    if (!gStageScene->fade->isNotRunning() || character->m_abilities.flag3be == 0)
+        return;
+    if (stageObjRecord(character->m_itemDef)->kind == CharacterKind_Srt)
+        return;
+    StageObject *candidate = character->getBiteTarget();
+    if (candidate == nullptr || candidate->getKind() != StageObject_Character)
+        return;
+    if (victim == nullptr)
+        victim = static_cast<StageCharacter *>(candidate);
+    else if (victim != candidate)
+        return;
+    if (victim->m_biteProof != 0 || victim->getBrainPace() == 0 || victim->m_endurance <= 0)
+        return;
+    StageCar *car = static_cast<StageCar *>(victim->m_gear);
+    if (car == nullptr || !car->isCrawling() || victim->m_lookAt != nullptr)
+        return;
+
+    // Whoever sits beside the victim must be free too.
+    StageCharacter *partner = static_cast<StageCharacter *>(gStageScene->partner);
+    if (victim == partner) {
+        if (gStageScene->player->m_lookAt != nullptr)
+            return;
+    }
+    else if (partner != nullptr && partner->isMode2() && partner->m_lookAt != nullptr) {
+        return;
+    }
+
+    const int door = character->findCarDoor(car, false);
+    if (door == -1)
+        return;
+    const bool first = door == 0;
+    sceVu0FVECTOR center;
+    car->getCenter(center);
+    center[2] += kCarPlaceLift;
+    sceVu0FVECTOR place;
+    float radius = car->getSillPoint(place, first);
+    if (!carPlaceClear(car, center, radius, place))
+        return;
+    radius = car->getDoorPlace(place, first);
+    if (!carPlaceClear(car, center, radius, place))
+        return;
+    allowed = 1;
+    side = first;
+}
+
+// FS2 0x00280620
+// callcheck: resetPlace, request
+
+void MotionDragOutCar::onApply()
+{
+    if (enabled == 0 || allowed == 0)
+        return;
+    allowed = 0;
+    onUpdate();
+    if (allowed != 0) {
+        static_cast<StageCar *>(victim->m_gear)->resetPlace();
+        motion->request(Motion_CarDragOut);
+    }
+}
+
 enum MotionGadget
 {
     MotionGadget_Elevator = 0,  // Elevator*: the object zs9901; arg the floor
@@ -978,6 +1235,7 @@ namespace {
 
 // rideCar's off: 0 gets in, these get out, any other by the door or, a
 // driver, as CarExit_Turned.
+constexpr int CarExit_Door = 1;     // at the door's place, the driver as CarExit_Turned
 constexpr int CarExit_Turned = 2;   // at the seat, turned round
 constexpr int CarExit_Seat = 3;     // at the seat, facing as the car
 
@@ -1075,11 +1333,8 @@ void StageCharacter::setSpecial(bool on, const char *name)
 }
 
 // By the sheet's kind, the stage's gadgets and what the character can do.
-// PC: GettingOnCar 0x280f50, GettingOffCar 0x280e20 (driving 1) and DragOutCar
-// 0x280a60 (flag3be) stand first among those here and are left out: their
-// conditions and their links (0x283060..) are not written.
 // FS2 0x001df0b0
-// callcheck: getStageSelect, getStageSelect, getStageSelect, getStageSelect, getZs9901, operator_new, FUN_002812e0, FUN_002814a0, FUN_00280a60, FUN_00280e20, FUN_00280f50 (the cars left out: above)
+// callcheck: getStageSelect, getStageSelect, getStageSelect, getStageSelect, getZs9901, operator_new, FUN_002812e0, FUN_002814a0
 
 void PlayerMotion::initList()
 {
@@ -1106,6 +1361,13 @@ void PlayerMotion::initList()
     new MotionGadgetSpecial(character, this, "NumLockOpen");
     new MotionGadgetSpecial(character, this, "NumLockClose");
     new MotionSpecialAction(character, this, "sp_uryen");
+
+    if (character->m_abilities.driving == 1) {
+        new MotionGetOnCar(character, this, "GettingOnCar");
+        new MotionGetOffCar(character, this, "GettingOffCar");
+    }
+    if (character->m_abilities.flag3be != 0)
+        new MotionDragOutCar(character, this, "DragOutCar");
 
     if (gStageScene->getZs9901() != nullptr) {
         new MotionGadgetSpecial(character, this, "ElevatorB1");
@@ -3044,6 +3306,226 @@ void WalkLink::onLeave(MotionLink *next)
 // FS2 0x001ed410
 // callcheck: DamageDeadLink, MotionCondition, MotionLink, memset, find, FUN_00278db0, FUN_0027a0b0, FUN_0027a910, FUN_0027aa90, FUN_0027aea0, FUN_0027b000, FUN_0027b730, FUN_00281aa0, FUN_00281b30, FUN_002820e0, FUN_00282200, FUN_002822d0, FUN_002825f0, FUN_00282b30, FUN_00282da0, FUN_00282fa0, FUN_00283560, FUN_00283740, FUN_00283960, getStageSelect, operator_new, LiteralMap, LiteralMap, LiteralMap, FUN_0026c6b0, FUN_00276510, insert, balance, FUN_001df0b0, FUN_0027c520, FUN_0027c140, FUN_0027b640, FUN_0027cc50, FUN_002775d0, insert, FUN_0027c370, balance (the links, the conditions and their maps: game/playermotion.h)
 
+// The car's links. Each of the door ones works behind a fade: to black, the
+// change of seat at full black (rideCar's reset leaves the link), the fade back.
+
+constexpr float kCarFadeSeconds = 0.5f;
+constexpr float kFadeFromHere   = -1.0f; // StageFade::start: from where it stands
+
+// The pad goes off while the fade runs.
+// FS2 0x00283910
+// callcheck: setActive, start
+
+void CarDoorLink::onStart()
+{
+    character->m_input->setActive(false);
+    gStageScene->fade->start(kCarFadeSeconds, 1.0f, kFadeFromHere);
+}
+
+// FS2 0x00283780
+// callcheck: start, setActive
+
+void CarDoorLink::onLeave(MotionLink *)
+{
+    gStageScene->fade->start(kCarFadeSeconds, 0.0f, kFadeFromHere);
+    character->m_input->setActive(true);
+}
+
+// FS2 0x002837d0
+// callcheck: playNamedHeard2, isFullInMode2, rideCar, requestNow, getCarSpecialFlag, isPassenger, rideCar, playNamedHeard2, playNamedHeard2
+
+void ApproachCarLink::onRun()
+{
+    StageCar *car = gStageScene->car;
+    if (counter == 0) {
+        car->playNamedHeard2("CAR_DROP", car->m_xform.position, nullptr);
+        counter++;
+    }
+    if (!gStageScene->fade->isFullInMode2())
+        return;
+    if (!character->rideCar(0, 0)) {
+        motion->requestNow(Motion_Stand);
+        return;
+    }
+    StageCharacter *partner = static_cast<StageCharacter *>(gStageScene->partner);
+    if (motion->getCarSpecialFlag() && partner != nullptr && partner->isPassenger())
+        partner->rideCar(0, 0);
+    StageObject *gear = character->m_gear;
+    gear->playNamedHeard2("CAR_IN", gear->m_xform.position, nullptr);
+    gear->playNamedHeard2("CAR_DRCL", gear->m_xform.position, nullptr);
+}
+
+// FS2 0x00283700
+// callcheck: find
+
+void ApproachOutLink::onRequest()
+{
+    side = static_cast<MotionGetOffCar *>(motion->m_specials.find("GettingOffCar")->value)->side;
+}
+
+// FS2 0x00283600
+// callcheck: playNamedHeard2, isFullInMode2, rideCar, requestNow, isMode2, rideCar, playNamedHeard2
+
+void ApproachOutLink::onRun()
+{
+    if (counter == 0) {
+        StageObject *gear = character->m_gear;
+        gear->playNamedHeard2("CAR_DROP", gear->m_xform.position, nullptr);
+        counter++;
+    }
+    if (!gStageScene->fade->isFullInMode2())
+        return;
+    if (!character->rideCar(CarExit_Door, side)) {
+        motion->requestNow(Motion_CarSit);
+        return;
+    }
+    StageCharacter *partner = static_cast<StageCharacter *>(gStageScene->partner);
+    if (partner != nullptr && partner->isMode2())
+        partner->rideCar(CarExit_Door, side);
+    StageCar *car = gStageScene->car;
+    car->playNamedHeard2("CAR_DRCL", car->m_xform.position, nullptr);
+}
+
+// who, just put at place, turns its back on the one pulled out, and everything
+// that follows a character is told.
+// callcheck: setPosition, atan2Octant, addAngle, updateMatrix, applyMotion, reset, isViewLinked, getTopView, onViewTop
+
+static void standBesideCar(StageCharacter *who, const float *place, const StageCharacter *pulled)
+{
+    who->m_xform.setPosition(place);
+    const float *at = who->m_xform.position;
+    const float *theirs = pulled->m_xform.position;
+    const float bearing = atan2Octant(at[0] - theirs[0], -(at[1] - theirs[1]));
+    memcpy(who->m_xform.rotation, pulled->m_xform.rotation, sizeof(sceVu0FVECTOR));
+    who->m_xform.rotation[2] = addAngle(bearing, -kMathPi);
+    who->updateMatrix();
+    who->m_model->applyMotion(who->m_xform.position, who->m_xform.rotation);
+    who->m_ground->reset();
+    if (who->isViewLinked())
+        gStageScene->getTopView()->onViewTop();
+}
+
+// FS2 0x00283500
+// callcheck: find
+
+void ApproachBiteLink::onRequest()
+{
+    auto *special = static_cast<MotionDragOutCar *>(motion->m_specials.find("DragOutCar")->value);
+    side = special->side;
+    prey = special->victim;
+    prey->m_lookAt = character;
+}
+
+// FS2 0x00283490
+// callcheck: start
+
+void ApproachBiteLink::onStart()
+{
+    gStageScene->fade->start(kCarFadeSeconds, 1.0f, kFadeFromHere);
+}
+
+// FS2 0x00283060
+// callcheck: getBiteTarget, playNamedHeard2, isMode2, isFullInMode2, rideCar, request, requestNow, rideCar, getCenter, getDoorPoint, segmentHitsAny, sphereHitsAny, getDoorPlace, startBite (standBesideCar's inside)
+
+void ApproachBiteLink::onRun()
+{
+    constexpr int kExitTries = 5;
+
+    const bool held = prey != nullptr && prey == character->getBiteTarget();
+    const bool inCar = held && prey->m_gear != nullptr;
+    if (counter == 0 && inCar) {
+        character->playNamedHeard2("CAR_PLOUT", character->m_xform.position, nullptr);
+        counter++;
+    }
+
+    // Whoever else sits in the car comes out with the prey.
+    StageCharacter *other = gStageScene->player;
+    if (prey == other) {
+        other = static_cast<StageCharacter *>(gStageScene->partner);
+        if (other != nullptr && !other->isMode2())
+            other = nullptr;
+    }
+
+    if (!gStageScene->fade->isFullInMode2())
+        return;
+    if (!inCar) {
+        motion->request(Motion_Stand);
+        return;
+    }
+    StageCar *car = static_cast<StageCar *>(prey->m_gear);
+    PlayerMotion *preyMotion = prey->m_motion;
+    if (!prey->rideCar(CarExit_Turned, side)) {
+        motion->request(Motion_Stand);
+        preyMotion->requestNow(Motion_CarSit);
+        return;
+    }
+
+    sceVu0FVECTOR place;
+    if (other != nullptr) {
+        other->rideCar(CarExit_Seat, side);
+        sceVu0FVECTOR center;
+        car->getCenter(center);
+        center[2] += kCarPlaceLift;
+        for (int i = 0; i < kExitTries; i++) {
+            const float radius = car->getDoorPoint(place, side, i);
+            if (carPlaceClear(car, center, radius, place))
+                break;
+        }
+        standBesideCar(other, place, prey);
+    }
+    car->getDoorPlace(place, side);
+    standBesideCar(character, place, prey);
+
+    character->m_biteTarget = prey;
+    character->m_allows.bite = 1;
+    prey->m_lookAt = nullptr;
+    motion->startBite(prey);
+}
+
+// FS2 0x00283030
+// callcheck: start
+
+void ApproachBiteLink::onLeave(MotionLink *)
+{
+    gStageScene->fade->start(kCarFadeSeconds, 0.0f, kFadeFromHere);
+}
+
+// Unless it is bitten by now, the prey goes free.
+// FS2 0x002834c0
+
+void ApproachBiteLink::onCancel()
+{
+    constexpr int kMotionBittenBehind = 0xa0;
+    constexpr int kMotionBittenFront  = 0xa1;
+
+    if (prey == nullptr)
+        return;
+    const int request = prey->m_motion->m_request;
+    if (request != kMotionBittenFront && request != kMotionBittenBehind)
+        prey->m_lookAt = nullptr;
+    prey = nullptr;
+}
+
+// A driver who sits still at rest and works the pedals and the wheel otherwise.
+// FS2 0x00282e30
+// callcheck: getStageSelect, isMode1, hasSettled, request, hasSteerRested, request
+
+void DriveLink::onRun()
+{
+    const int kind = stageObjRecord(character->m_itemDef)->kind;
+    if (kind == CharacterKind_4 || kind == CharacterKind_A || kind == CharacterKind_8 || kind == CharacterKind_2)
+        return;
+    StageCar *car = static_cast<StageCar *>(character->m_gear);
+    if (car == nullptr)
+        return;
+    const int running = motion->motionId;
+    if (!character->isMode1())
+        return;
+    const int wanted = car->hasSettled() && car->hasSteerRested() ? Motion_CarSit : Motion_CarDrive;
+    if (running != wanted)
+        motion->request(wanted);
+}
+
 PlayerMotion::PlayerMotion(StageObject *owner_)
     : owner(owner_)
 {
@@ -3105,7 +3587,7 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_conditions.balance();
     initList();
 
-    // The links, in the ROM's order: the 18 written of its 43 names (architecture.md
+    // The links, in the ROM's order: the 24 written of its 43 names (architecture.md
     // "The links of the ROM's ctor"). A motion naming another has no link.
     walkLink = new WalkLink(character, this);
     m_links.insert("Walk", walkLink);
@@ -3131,6 +3613,16 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_links.insert("Throw", throwLink);
     m_links.insert("Bite", new BiteLink(character, this));
     m_links.insert("Bitten", new BittenLink(character, this));
+    if (character->m_abilities.driving == 1) {
+        m_links.insert("ApproachCar", new ApproachCarLink(character, this));
+        m_links.insert("ApproachOut", new ApproachOutLink(character, this));
+    }
+    if (character->m_abilities.driving == 1 || character->m_abilities.driving == 2)
+        m_links.insert("Drive", new DriveLink(character, this));
+    m_links.insert("SpWait", new MotionLink(character, this));
+    m_links.insert("NPCReaction", new NpcReactionLink(character, this));
+    if (character->m_abilities.flag3be != 0)
+        m_links.insert("ApproachBite", new ApproachBiteLink(character, this));
     m_links.balance();
 }
 
