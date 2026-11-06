@@ -98,7 +98,10 @@ enum MotionId
     Motion_DoorForce  = 0x4c,   // spends its hit points
     Motion_DiveFront  = 0x94, // dv_f: link DiveFall
     Motion_DiveBack   = 0x95, // dv_b
+    Motion_DiveLandFront = 0x96, // link DiveLand: ends in dm_rev or dm_ded
+    Motion_DiveLandBack = 0x97, // the same on the back
     Motion_TrapHit    = 0x9b, // trp_s: caught; blows count three times (takeDamage)
+    Motion_TrapOut    = 0x9c, // out of the trap again
     Motion_DamageFront = 0xa4, // dm_f: link Damage, as 0xa5..0xa7, 0xb7, 0xb8
     Motion_DamageFrontHeavy = 0xa5, // dm_f_h
     Motion_DamageRear = 0xa6, // dm_r
@@ -224,9 +227,8 @@ struct MotionDef;
 class MotionCondition
 {
 public:
-    MotionCondition(StageCharacter *owner, PlayerMotion *motion_)        // FS2 0x00276510
-        : character(owner), motion(motion_) {}
-    virtual ~MotionCondition() {}                                        // FS2 0x002764b0: deleting
+    MotionCondition(StageCharacter *owner, PlayerMotion *motion_);       // FS2 0x00276510
+    virtual ~MotionCondition();                                          // FS2 0x002764b0: deleting
     virtual void onUpdate() = 0;                                         // FS2 slot +0xc
     virtual void onApply() = 0;                                          // FS2 slot +0x10
 
@@ -294,8 +296,8 @@ class MotionLink
 public:
     MotionLink(StageCharacter *owner, PlayerMotion *motion_);            // FS2 0x0027cc50
     virtual ~MotionLink();                                               // FS2 0x0027cbe0: slot 0, deleting
-    virtual void onUpdate() {}                                           // FS2 0x001eee10: slot +0xc
-    virtual void onApply() {}                                            // FS2 0x001eee20: slot +0x10
+    virtual void onUpdate();                                             // FS2 0x001eee10: slot +0xc
+    virtual void onApply();                                              // FS2 0x001eee20: slot +0x10
     virtual void onRequest() {}                                          // FS2 0x001ec640: slot +0x14
     // FS2 0x001eaba0
     virtual void onStart() {}
@@ -340,9 +342,10 @@ public:
 // edge goes over it, dv_f or dv_b. Vtable 0x317830. layout: host -- EE 0x24.
 class DamageLink : public MotionLink
 {
+    friend class DiveFallLink;  // it reads what the edge search found
 public:
     using MotionLink::MotionLink;
-    ~DamageLink() override {}                                            // FS2 0x0027ce50
+    ~DamageLink() override;                                              // FS2 0x0027ce50
     void onRun() override;                                               // FS2 0x00277dd0
 
 private:
@@ -359,7 +362,7 @@ class DamageLandLink : public MotionLink
 {
 public:
     using MotionLink::MotionLink;
-    ~DamageLandLink() override {}                                        // FS2 0x0027cdd0
+    ~DamageLandLink() override;                                          // FS2 0x0027cdd0
     void onRun() override;                                               // FS2 0x00277d60
 };
 
@@ -369,10 +372,10 @@ class DamageFatalLink : public MotionLink
 {
 public:
     using MotionLink::MotionLink;
-    ~DamageFatalLink() override {}                                       // FS2 0x0027cd50
+    ~DamageFatalLink() override;                                         // FS2 0x0027cd50
     void onRequest() override;                                           // FS2 0x00277cf0
     void onRun() override;                                               // FS2 0x00277670
-    void onLeave(MotionLink *next) override {}                           // FS2 0x00277660
+    void onLeave(MotionLink *next) override;                             // FS2 0x00277660
     void onCancel() override;                                            // FS2 0x00277cc0
 };
 
@@ -382,9 +385,9 @@ public:
 class DamageDeadLink : public MotionLink
 {
 public:
-    using MotionLink::MotionLink;                                        // FS2 0x002775d0
-    ~DamageDeadLink() override {}                                        // FS2 0x0027ccd0
-    void onStart() override {}                                           // FS2 0x002775c0
+    DamageDeadLink(StageCharacter *owner, PlayerMotion *motion_);        // FS2 0x002775d0
+    ~DamageDeadLink() override;                                          // FS2 0x0027ccd0
+    void onStart() override;                                             // FS2 0x002775c0
     void onRun() override;                                               // FS2 0x002773d0
     void onLeave(MotionLink *next) override;                             // FS2 0x002773b0
 
@@ -396,9 +399,67 @@ class ReviveLink : public MotionLink
 {
 public:
     using MotionLink::MotionLink;
-    ~ReviveLink() override {}                                            // FS2 0x002771b0
+    ~ReviveLink() override;                                              // FS2 0x002771b0
     void onRun() override;                                               // FS2 0x00277250
     void onLeave(MotionLink *next) override;                             // FS2 0x00277230
+};
+
+// dv_f, dv_b and the ladder's fall: over an edge, down to the floor. Damage
+// (findDive) says what the edge was. Where there is no way back (m_bfc) the
+// player and partner watch it from cam_dive, and the fall ends them. Vtable
+// 0x317980. layout: host -- EE 0x80.
+class DiveFallLink : public MotionLink
+{
+public:
+    DiveFallLink(StageCharacter *owner, PlayerMotion *motion_);          // FS2 0x0027a0b0
+    ~DiveFallLink() override;                                            // FS2 0x0027d1d0
+    void onRequest() override;                                           // FS2 0x0027a060
+    void onStart() override;                                             // FS2 0x00279f90
+    void onRun() override;                                               // FS2 0x00279a60
+    void onLeave(MotionLink *next) override;                             // FS2 0x00279ed0
+    void onCancel() override;                                            // FS2 0x0027a020
+
+private:
+    // m_bfc, in one of the motions that can carry it.
+    bool isDeadly() const;
+    void startCamera();                                                  // FS2 0x00279780
+    void stepCamera();                                                   // FS2 0x002794e0
+
+    float startHeight = 0.0f;   // FS2 +0x20: z as the fall began
+    float endStep = 0.0f;       // FS2 +0x24: the motion's last step down, kept up once it ends
+    float twistTo = 0.0f;       // FS2 +0x28: a body with no room for its head turns to this
+    u_char headClear = 0;       // FS2 +0x2c: Damage's edgeClear
+    StageCamera *camera = nullptr; // FS2 +0x30: cam_dive
+    float flyFrames = 0.0f;     // FS2 +0x34: left of the flight from the view the player had
+    sceVu0FVECTOR eye = {};     // FS2 +0x40: where the camera ends
+    sceVu0FVECTOR target = {};  // FS2 +0x50: what it looks at
+    sceVu0FVECTOR look = {};    // FS2 +0x60: what it looks at on the way
+    float deathFrames = 0.0f;   // FS2 +0x70: after the flight, to the fall's damage
+};
+
+// The landing of a dive: up again, or dead, on the same side. Vtable 0x317950.
+// layout: host -- EE 0x20.
+class DiveLandLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    ~DiveLandLink() override;                                            // FS2 0x0027d150
+    void onRun() override;                                               // FS2 0x002792c0
+};
+
+// trp_s: held by a trap for the sheet's 罠耐性, plus up to a fifth by chance;
+// the left stick shaken takes time off (CharacterInput ticks m_bf0). Vtable
+// 0x3178c0. layout: host -- EE 0x24.
+class TrapHitLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    ~TrapHitLink() override;                                             // FS2 0x0027cfd0
+    void onRun() override;                                               // FS2 0x00278f80
+    void onLeave(MotionLink *next) override;                             // FS2 0x00278f70
+
+private:
+    float heldFor = 0.0f;       // FS2 +0x20: seconds
 };
 
 // What the two links of the player's door have in common: slots +0x18 and

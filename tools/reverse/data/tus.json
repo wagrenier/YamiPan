@@ -780,7 +780,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Written: PlayerMotion::takeHits 0x1e18c0 whole (split into takeLightHit, takeBlowHit, landBlow, reactToBlow, takeTrapHit, takeLanding, takeShoves), takeBlow 0x2103d0, takeFallDamage 0x20e770, rumbleHit 0x20e6e0, playerEvent 0x20e6a0, MotionProbe::spawnBlood 0x26a010, playDieVoice 0x2a2e30. Fixed: the NaN position of d2303 was CharacterGround::meetWall taking sqrtf where the ROM has sqrt.s, which takes the absolute value (hazards.md). Seen, YAMIPAN_TELEPORT=d2303, temporary log removed: seven blows of F_E23_YO1 on F_PC23, blood each time, dm_r, endurance 100 to 0, dm_c, the game own Mission failed screen. No crash in 4 d2303 runs and 1 stage 1 run. The stage 1 picture was not looked at, so whether a door hurts the walker (atDoor) is unknown. Never ran: shots at a character, car blows, light hurting, trap catching, landing damage, the climber hit. callcheck lists takeHits as MISSING only because its calls live in the seven parts. Stubs still reached here: ItemPhysics::setMoving 0x23cfc0 (needs 0x23d0c0), hasAlteredVoice. NEXT: the links DiveFall, DiveLand, TrapHit, which takeHits and Damage can now ask for. References: architecture.md What a hit does; hazards.md sqrt.s is not sqrtf; open-items.md top of Next up, with five doubts.",
+   "notes": "Written: DiveFallLink (0x27a0b0, onRequest, onStart, onRun 0x279a60, onLeave, onCancel, startCamera 0x279780, stepCamera 0x2794e0), DiveLandLink::onRun 0x2792c0, TrapHitLink onRun 0x278f80, onLeave 0x278f70, the three dtors; 32 of 43 link names exist. Ranges 0x278f70..0x279190 and 0x2792c0..0x27a140 joined. The dtors and empty slots of the slice moved from the header to the .cpp, where the tools count them. Forced with a temporary harness, removed (YAMIPAN_TELEPORT=2, a request on the lifted player, no real edge): deadly 450 up: 0x94, 0x96, dm_rev, idle; deadly 4000 up: endurance 0 after the flight, dm_ded, the game own Mission failed, cam_dive took the view (progress/20261106-dive-camdive-forced.png); back dive: 0x95, 0x97, dm_rev_b, idle; trap with no object: 0x9b held 293 calls, 0x9c, idle. No crash in 5 runs. The plain 15 s check run stops at the boot, so it says nothing about these. Never ran: a real edge (findDive from a blow), a real trap, the shaken stick, the turn round bn_pelvis, the partner camera, the ladder fall. callcheck MISSING lines are the earlier ones (takeHits parts, leave*, search points), none in the new links. NEXT: the stubs this opened, StageCharacter::playGetUpVoice 0x2a2d00 and playFallDownSound 0x2a29f0, then a real blow at an edge. References: architecture.md Falling over an edge and being caught; open-items.md top of Next up, with five doubts.",
    "ranges": [
     [
      "00175700",
@@ -1108,18 +1108,6 @@
     ],
     [
      "00278ed0",
-     "00278f68"
-    ],
-    [
-     "00279190",
-     "00279204"
-    ],
-    [
-     "00279210",
-     "002792bc"
-    ],
-    [
-     "0027a140",
      "0027a834"
     ],
     [
@@ -1201,11 +1189,6 @@
    ],
    "sessions": [
     {
-     "date": "2026-11-05 02:55",
-     "status": "partial",
-     "summary": "doors written and switched off: StageDoor, Door condition and link, natives; with them on a stage run crashes, cause not found in time"
-    },
-    {
      "date": "2026-11-05 03:49",
      "status": "partial",
      "summary": "door crash found and fixed, doors on: a door opens and closes on Use, with the game's own labels on screen"
@@ -1259,11 +1242,16 @@
      "date": "2026-11-06 17:52",
      "status": "partial",
      "summary": "takeHits whole: a blow that lands fells what it hits, the first real fight runs to Mission failed; the NaN position is fixed (sqrt.s)"
+    },
+    {
+     "date": "2026-11-06 18:18",
+     "status": "partial",
+     "summary": "The links DiveFall, DiveLand and TrapHit: a fall over an edge runs to Mission failed, a trap holds and lets go; forced, no real edge or trap yet"
     }
    ],
    "status": "partial",
    "task": "PlayerMotion::takeHits 0x1e18c0..0x1e3e80 past its first line: it requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice",
-   "why": "0x2764b0..0x278460: the conditions base and dtors and the links Damage, DamageLand, DamageFatal, DamageDead, Revive; 0x1e5d60 setWallCheck, 0x1eb3b0 lowerLabel"
+   "why": "the links DiveFall, DiveLand, TrapHit joined: 0x278f70..0x279190, 0x2792c0..0x27a140"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
