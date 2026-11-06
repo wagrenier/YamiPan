@@ -1309,6 +1309,24 @@
    "status": "verify",
    "why": "RoutePlayer::endNode 0x252840 on: the rute file's accessors, its core 0x257fa0 and searches 0x253420.. and their MSL tree instances, up to game/uiwidget.cpp at 0x25b8e0; no source string, the class is the evidence"
   },
+  "game/rumblelist.cpp": {
+   "notes": "Batch 163. KeepList 0x2bc100..0x2bcd20 is the pad's rumble: RumbleList at scene +0x30 plays named tracks of init pack item 0x14 (ALERT, PETITJACK, DAMAGE1, KAKOSI.., 23), channels large motor, small motor, events. All 10 functions written, stubs gone, removeUnkept is removeUnlooped, StageScene::rumble. New tool rumblecmp.py: random op scripts on the ROM's own code and the host's, the disc's file, 40 scripts, 24,000 ops, 2,547 updates with events, 0 differences; eerun.py gained sllv and cvt.s.w. Temporary build, removed: New Game, doorwalk pad, 250 s, no crash, ALERT forced: motors 70 and 1 and the event byte reach updateRumble with the vibration option on. Nothing on screen shows this, the 15 s check is the language menu, unchanged. Not felt: no pad in hand, and no track started by the game's own call in a run. StageAlert, all stubs, is the first caller that would start ALERT itself. game/stageparty.cpp stays partial for stage 0x1b's boss film 0x2d10f0, which is next there. Doubts q..t in open-items.md.",
+   "ranges": [
+    [
+     "002bc100",
+     "002bcd20"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-06 05:26",
+     "status": "verify",
+     "summary": "the pad's rumble: KeepList was RumbleList, written and compared with the ROM"
+    }
+   ],
+   "status": "verify",
+   "why": "KeepList 0x2bc770 and its nodes: 10 functions between subsceneobject (ends 0x2bc100) and packtables (0x2bcd20), one class; the file name is the port's: the frame's rumble drives it"
+  },
   "game/s2ddata.cpp": {
    "notes": "Host: S2dRef<T> (s2ddata.h) is a 32-bit offset from the field itself, 0 null, implicit T* conversion, copy deleted; S2dData, S2dObject, S2dWidgetDef, S2dImage and the uitrack.h records with names (textured +8 label, sheet +0x14, pin +0x14, rotate +0xc) are EE layout and asserted. S2dImage +4 is the image name (was read as an id): UiTex*Track m_imageId is now m_imageName, the text track keys are const char pointers. Header counts at +0x20/+0x28/+0x30/+0x38 named. The ROM never relocates kind 0x22's +0x14 name (only kind 6's); no disc S2D has a 0x22 record. Checked: g++ -fsyntax-only -Wall clean on s2ddata/uitrack/uisequence/uilayout/scene/stageresult with RosePan SDK headers + stubs; a scratch harness relocated 1,764 S2D files from ROM.000..ROMD.010, all pointers in range, names readable. Next in the run: UiMatrix / UiDrawer 0x24dfa0..0x252840 (frontier top), then the widget classes from 0x252840.",
    "ranges": [

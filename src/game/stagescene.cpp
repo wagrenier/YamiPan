@@ -32,6 +32,7 @@
 #include "game/modelpose.h"
 #include "game/pakarchive.h"
 #include "game/routeplayer.h"
+#include "game/rumblelist.h"
 #include "game/seplayer.h"      /* StreamTable */
 #include "game/stageitem.h"
 #include "game/stagelight.h"
@@ -400,7 +401,7 @@ StageObject *StageScene::getTopView()
 // The ROM's +0x124 second array is freed from 0x10 bytes before it
 // (CodeWarrior's array header); the host frees what it allocated.
 // FS2 0x0019bbe0
-// callcheck: ~StageObjectList, ~ScenePairTable, ~SceneRecordBuckets, ~StageNodeTree, ~StageSound, ~DemoStream, ~SceneRender, ~KeepList, ~Clock, ~MenuProgHolder, ~MenuProgSet, ~AreaGrid, ~SceneBufferSet, ~StageParty, ~ScenePool, ~PauseMenuState, ~SceneBoxList, ~SceneNoiseList, ~StageAlert, ~AreaClip, ~StageMission, ~SceneDirector, ~DaylightFilm, operator_delete, operator_delete[] (the delete-expressions; the printer through its virtual dtor)
+// callcheck: ~StageObjectList, ~ScenePairTable, ~SceneRecordBuckets, ~StageNodeTree, ~StageSound, ~DemoStream, ~SceneRender, ~RumbleList, ~Clock, ~MenuProgHolder, ~MenuProgSet, ~AreaGrid, ~SceneBufferSet, ~StageParty, ~ScenePool, ~PauseMenuState, ~SceneBoxList, ~SceneNoiseList, ~StageAlert, ~AreaClip, ~StageMission, ~SceneDirector, ~DaylightFilm, operator_delete, operator_delete[] (the delete-expressions; the printer through its virtual dtor)
 
 StageScene::~StageScene()
 {
@@ -426,7 +427,7 @@ StageScene::~StageScene()
         demoStream = nullptr;
     }
     delete render;
-    delete keepList;
+    delete rumble;
     delete clock;
     if (screenFill != nullptr)
         screenFill->destroy();
@@ -506,7 +507,7 @@ StageScene::~StageScene()
 // record. Who / files / the view target and the sequences are set later
 // (stageThread, the scene's update).
 // FS2 0x0019c180
-// callcheck: operator_new, StageObjectList, operator_new, ScenePairTable, operator_new, SceneRecordBuckets, operator_new, StageNodeTree, operator_new, StageSound, resetStageGroupTable, operator_new, DemoStream, setDir, operator_new, SceneRender, operator_new, KeepList, operator_new, operator_new[], createChild, operator_new, ScreenFill, operator_new, WideFontPrinter, operator_new, SceneBoxList, operator_new, StageFade, operator_new, ScenePool, operator_new, PauseMenuState, operator_new, UiItemList, operator_new, StageMenu, operator_new, SceneNoiseList, operator_new, UiShowFlags, operator_new, StageAlert, operator_new, Rand48, operator_new, StageMission, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, StageParty, drawSysPush
+// callcheck: operator_new, StageObjectList, operator_new, ScenePairTable, operator_new, SceneRecordBuckets, operator_new, StageNodeTree, operator_new, StageSound, resetStageGroupTable, operator_new, DemoStream, setDir, operator_new, SceneRender, operator_new, RumbleList, operator_new, operator_new[], createChild, operator_new, ScreenFill, operator_new, WideFontPrinter, operator_new, SceneBoxList, operator_new, StageFade, operator_new, ScenePool, operator_new, PauseMenuState, operator_new, UiItemList, operator_new, StageMenu, operator_new, SceneNoiseList, operator_new, UiShowFlags, operator_new, StageAlert, operator_new, Rand48, operator_new, StageMission, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, StageParty, drawSysPush
 
 StageScene::StageScene(bool isSubScene, StageSound *sound)
 {
@@ -546,7 +547,7 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
     }
 
     render   = new SceneRender();
-    keepList = this->isSubScene ? nullptr : new KeepList();
+    rumble = this->isSubScene ? nullptr : new RumbleList();
 
     views           = new StageViewStack;
     views->capacity = kViewStackSize;
@@ -2899,7 +2900,7 @@ void StageScene::setPlayer(StagePlayer *who)
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// The frame's rumble: the KeepList's nodes of the source give the two
+// The frame's rumble: the tracks of the source give the two
 // motors (when the option is on), and a node that fires an alert sounds it.
 static const char kRumbleAlert[] = "ALERT2";    /* data 0x303bf8 */
 constexpr int   kRumbleFlags  = 8;
@@ -2924,21 +2925,21 @@ StageObject *StageScene::getRumbleSource()
 }
 
 // FS2 0x00199130
-// callcheck: removeUnkept, getRumbleSource, update, getGameOptions, setVibration, setVibration, playNamed
+// callcheck: removeUnlooped, getRumbleSource, update, getGameOptions, setVibration, setVibration, playNamed
 
 void StageScene::updateRumble(float frames)
 {
-    if (keepList == nullptr)
+    if (rumble == nullptr)
         return;
     if (event != nullptr) {
-        keepList->removeUnkept();
+        rumble->removeUnlooped();
         return;
     }
 
     u_char motorLarge, motorSmall;
     char   flags[kRumbleFlags];
-    int    tags[kRumbleFlags];
-    keepList->update(frames, &motorLarge, &motorSmall, flags, tags, kRumbleFlags,
+    StageObject *sources[kRumbleFlags];
+    rumble->update(frames, &motorLarge, &motorSmall, flags, sources, kRumbleFlags,
                      getRumbleSource());
     // _08: the vibration option (read here for the first time).
     if (getGameOptions()->_08) {
@@ -4702,8 +4703,8 @@ constexpr int kPartyImages  = 4;
 void StageFiles::loadList()
 {
     StageScene *scene = gStageScene;
-    if (scene->keepList != nullptr)
-        scene->keepList->data = getInitPackItem(InitItem_KeepData);
+    if (scene->rumble != nullptr)
+        scene->rumble->data = (const RumbleFile *)getInitPackItem(InitItem_Rumble);
 
     bool missing = false;
     void *images[kMenuImages];

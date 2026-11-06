@@ -18,6 +18,7 @@
 #include "game/gfxtarget.h"
 #include "game/packtables.h"
 #include "game/playermotion.h"
+#include "game/rumblelist.h"
 #include "game/scenerender.h"
 #include "game/stageobjlist.h"
 #include "game/stageresult.h"
@@ -1484,8 +1485,8 @@ void SightJack::setVisionTarget(StageObject *object)
     m_vision = object;
     if (object != nullptr) {
         m_visionFade = 8;
-        if (gStageScene->keepList != nullptr)
-            gStageScene->keepList->addNamed(kSoundVision, 0);
+        if (gStageScene->rumble != nullptr)
+            gStageScene->rumble->addNamed(kSoundVision, nullptr);
     }
 }
 
@@ -1670,8 +1671,8 @@ void StageParty::warnAttacker(StageCharacter *attacker)
     }
     jack->m_warner = attacker;
     jack->m_warnEnd = attacker->m_clock->getSeconds() + kWarnSeconds;
-    if (gStageScene->keepList != nullptr)
-        gStageScene->keepList->addNamed(kSoundPetit, 0);
+    if (gStageScene->rumble != nullptr)
+        gStageScene->rumble->addNamed(kSoundPetit, nullptr);
 }
 
 // FS2 0x001feb70

@@ -106,6 +106,7 @@ The API, how the plugin behaves, the setup and the traps: the skill's `reference
 | `eerun.py` | A fuller EE interpreter than mipsemu: byte memory holding the ELF, 128-bit registers, FPU, the VU0 macro ops seen so far, real calls, a bump heap behind operator_new. Runs the ROM's own non-leaf functions from Python. |
 | `wayoutcmp.py` | `wayoutcmp.py [files] [questions]`: `findWayOut` of game/characterroute.cpp against the ROM's 0x227f30 on rute files from the disc; the host function is cut out of the source and compiled with routeplayer.cpp; 0x136560 is hooked, `eerun.py` has no vsqrt. |
 | `rutecmp.py` | `rutecmp.py <dir> [queries] [--files N]`: game/routeplayer.cpp against the ROM over rute files from the disc (magic `ord `, raw and in SLDI packs), questions and answers on both sides, prints the differences and which kinds of answer it covered. The pattern for any function a smoke run cannot reach. |
+| `rumblecmp.py [scripts] [ops]` | game/rumblelist.cpp against the ROM, offline: random op scripts on eerun.py and a small exe, every result and the list compared |
 | `mipsemu.py` | A tiny EE integer interpreter: run a leaf function over every input to check a C rewrite of a switch-table function; `Emu` with load / call hooks for non-leaf ones. |
 | `sinit.py` | Run a static initializer's straight-line stores symbolically and dump the table it fills. |
 | `datadump.py` | `python datadump.py <addr> <count> "<fields>"` -- a data table as host C++ initializers (pointers printed as the symbols they point at). |

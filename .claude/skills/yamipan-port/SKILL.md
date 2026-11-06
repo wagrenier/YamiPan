@@ -207,7 +207,7 @@ what degrades while Ghidra is down.
 | classes | `rtti.py --class / --vtable` |
 | TU identity | `tuid.py <TU>` (in the brief) |
 | game data | `datadump.py`, `tm2png.py`, game-specific readers written as needed |
-| prove code no smoke run reaches | `eerun.py` (the ROM's own functions, offline), `rutecmp.py` (the pattern: ROM and host answer the same questions on the disc's data), `wayoutcmp.py` |
+| prove code no smoke run reaches | `eerun.py` (the ROM's own functions, offline), `rutecmp.py` (the pattern: ROM and host answer the same questions on the disc's data), `rumblecmp.py` (the same for stateful code: one random op script on both, state compared after each op), `wayoutcmp.py` |
 | frontier, layouts, crashes | `build.py`, `stubgen.py`, `callcheck.py`, `layoutcheck.py`, `crashsym.py` (a plain run's `[crash]` lines), `gdbrun.py` |
 
 Naming exists to make reconstruction possible; it is not the goal. Name what the slice needs, then

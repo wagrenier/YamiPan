@@ -30978,34 +30978,64 @@
   "why": "this-adjusting thunk in the vtable of the object seen at +0x40, a jump to SubSceneItem::~SubSceneItem"
  },
  "002bc100": {
-  "name": "KeepList::update",
+  "name": "RumbleList::update",
   "tag": "game-inferred",
   "was": "FUN_002bc100",
-  "why": "each node values into two motor bytes, flags and tags, for the nodes of one object"
+  "why": "plays every track, keeps the strongest of the two motors of the source's tracks and those with flag 2, collects the event bytes; drops finished tracks. StageScene::updateRumble's only callee of it"
  },
  "002bc3c0": {
-  "name": "KeepList::addNamed",
+  "name": "RumbleList::addNamed",
   "tag": "game-inferred",
   "was": "FUN_002bc3c0",
-  "why": "called with PETITJACK by warnAttacker; unread"
+  "why": "finds the entry by name at +8 in the file, new 0x5c node, appended"
+ },
+ "002bc4f0": {
+  "name": "RumbleList::removeNamed",
+  "tag": "game-inferred",
+  "was": "FUN_002bc4f0",
+  "why": "unlinks and deletes every node whose name matches; returns how many"
  },
  "002bc5d0": {
-  "name": "KeepList::removeUnkept",
+  "name": "RumbleList::removeUnlooped",
   "tag": "game-inferred",
   "was": "FUN_002bc5d0",
-  "why": "list {+4 head, +8 tail} of nodes {next, flags}: unlinks and deletes every node whose flags bit 0 is clear; stageThread on the scene +0x30 before each menu"
+  "why": "was removeUnkept: flags bit 0 clear is the same bit that makes a channel start over, RumbleChannel::advance"
+ },
+ "002bc690": {
+  "name": "RumbleList::isPlaying",
+  "tag": "game-inferred",
+  "was": "FUN_002bc690",
+  "why": "1 when a node has that name"
  },
  "002bc6f0": {
-  "name": "KeepList::~KeepList",
+  "name": "RumbleList::~RumbleList",
   "tag": "game-inferred",
   "was": "FUN_002bc6f0",
-  "why": "deleting dtor of StageScene +0x30: unlinks and deletes every node from +4, tail +8 zero"
+  "why": "deleting; deletes every node"
  },
  "002bc770": {
-  "name": "KeepList::KeepList",
+  "name": "RumbleList::RumbleList",
   "tag": "game-inferred",
   "was": "FUN_002bc770",
-  "why": "StageScene ctor new(0xc) for +0x30 (KeepList, removeUnkept 0x2bc5d0): three words zero"
+  "why": "was KeepList: three words zero; the list of playing rumble tracks of the init pack's item 0x14 (ALERT, PETITJACK, DAMAGE1, BITE..)"
+ },
+ "002bc790": {
+  "name": "RumbleTrack::play",
+  "tag": "game-inferred",
+  "was": "FUN_002bc790",
+  "why": "a node's frame: writes channel values as the two motors and the events, then advances three channels; finished writes 0"
+ },
+ "002bc9a0": {
+  "name": "RumbleTrack::RumbleTrack",
+  "tag": "game-inferred",
+  "was": "FUN_002bc9a0",
+  "why": "ctor from the file's entry: 3 channels at +0x10 of 0x18, first varint step read"
+ },
+ "002bcb20": {
+  "name": "RumbleChannel::advance",
+  "tag": "game-inferred",
+  "was": "FUN_002bcb20",
+  "why": "timer minus frames, reads varint length + value steps when due; length 0 ends or loops by flag 1; kind 1 pulses up to 4 values for one frame"
  },
  "002bcd20": {
   "name": "PackTables::clear",

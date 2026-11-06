@@ -11,6 +11,7 @@
 #include "game/gamesystem.h"
 #include "game/gfxtarget.h"
 #include "game/gsblockmap.h"
+#include "game/rumblelist.h"
 #include "game/screen.h"
 #include "game/stageobjlist.h"
 #include "game/stageresult.h"
@@ -59,8 +60,8 @@ static inline bool stageHasClock(const StageSelect *select)
 // (four copies in stageThread).
 static inline void stageEnterMenu()
 {
-    if (gStageScene->keepList != nullptr)
-        gStageScene->keepList->removeUnkept();
+    if (gStageScene->rumble != nullptr)
+        gStageScene->rumble->removeUnlooped();
     getStageResult()->paused = 1;
     gGameSystem->m_perfMeter.m_recording = false;
     setFrameBrightness(kFrameBrightnessFull);
@@ -122,7 +123,7 @@ StageFiles *getStageFiles()
 // sub-scene that ended, the pause menu (start), the map menu (select).
 // FS2 0x0017f160
 // callcheck: operator_new, ~StageFiles, ~StageScene, ~StageSound (new StageSound / StageScene; the delete-expressions' deleting destructors)
-// callcheck: removeUnkept, gfxGetCurrentCopyPacket, setPaused, runStageScreenE, runStageScreenH (the inline stageEnterMenu / stageLeaveMenu / setFrameBrightness / stageRunScreens)
+// callcheck: removeUnlooped, gfxGetCurrentCopyPacket, setPaused, runStageScreenE, runStageScreenH (the inline stageEnterMenu / stageLeaveMenu / setFrameBrightness / stageRunScreens)
 
 void stageThread(void *arg)
 {

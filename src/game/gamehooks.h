@@ -109,7 +109,7 @@ enum InitPackItem
     InitItem_ItemSheet = 0x11,  // UiItemList::setSheet
     InitItem_MenuData  = 0x12,  // StageMenu::setData
     InitItem_PoolImage = 0x13,  // ScenePool::setImage
-    InitItem_KeepData  = 0x14,  // KeepList's +0
+    InitItem_Rumble    = 0x14,  // RumbleList's +0
     InitItem_21     = 0x15,     // getInitItem21
     InitItem_LangDE = 0x16,
     InitItem_LangEN = 0x17,     // every language but the four below
@@ -1030,24 +1030,6 @@ struct StageParty
     // The record runs, seen through object ("camjack": the sight-jack).
     void start(StageObject *object);                                     // FS2 0x001feba0
     class SightJack *m_jack;    // FS2 +0x0: game/stageparty.h
-};
-
-// A singly linked list whose nodes {next, flags} carry a keep bit (the
-// stage object's +0x30). Only what stageThread calls.
-// layout: host -- EE: +0x4 head, +0x8 tail.
-struct KeepList
-{
-    KeepList();                                                          // FS2 0x002bc770: three words zero
-    void *data;                 // FS2 +0x0: the init pack's item (StageFiles::loadList)
-    ~KeepList();                                                         // FS2 0x002bc6f0: deleting; deletes every node
-    // Unlinks and deletes every node whose flags bit 0 is clear.
-    void removeUnkept();                                                 // FS2 0x002bc5d0
-    // A node by name (the sight-jack warning: "PETITJACK").
-    void addNamed(const char *name, int arg);                            // FS2 0x002bc3c0
-    // Advances the nodes by frames; the nodes of source (null all) give the
-    // two motors' values and up to max flags and tags.
-    void update(float frames, u_char *motorA, u_char *motorB, char *flags, int *tags,
-                int max, StageObject *source);                           // FS2 0x002bc100
 };
 
 // The stage object's +0xec: what a sub-scene starts from (the 0x287xxx
