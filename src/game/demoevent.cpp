@@ -46,6 +46,7 @@
 #include "game/stagescene.h"
 #include "game/stagesound.h"
 #include "game/sysdata.h"
+#include "game/teleport.h"
 #include "game/thread.h"
 #include "game/vu0math.h"
 #include "game/wstring.h"
@@ -653,6 +654,7 @@ void StageMission::setMessages(void *file)
 void StageMission::afterScripts()
 {
     StageScene *scene = gStageScene;
+    teleportStageFrame(this);   // PC
     if (scene->getMenuMode() == 1) {
         if (pendingEvent[0] != '\0') {
             scene->sound->setMuted(true);

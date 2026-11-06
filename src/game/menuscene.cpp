@@ -15,6 +15,7 @@
 #include "game/stageloop.h"
 #include "game/stageresult.h"
 #include "game/sysdata.h"
+#include "game/teleport.h"
 #include "game/thread.h"
 #include "game/titlescreen.h"
 #include "sdk/scetypes.h"
@@ -126,6 +127,7 @@ void menuSceneThread(void *arg)
 
 static void menuFlow(bool usePackFile)
 {
+    teleportBootRequest();      // PC
     menuBootScreens(true);
     threadYield(1);
     loadLangPack();
@@ -140,6 +142,9 @@ static void menuFlow(bool usePackFile)
         int answer;
         for (;;) {
             answer = runTitleScreen(intro);
+            // PC: a teleport from the title is a new game with no questions.
+            if (teleportPending())
+                answer = TitleAnswer_NewGame;
             if (answer == TitleAnswer_NewGame || answer == TitleAnswer_LoadGame)
                 break;
             intro = runAttractDemo() != 0;
@@ -234,11 +239,14 @@ static void menuPlayLoop(bool usePackFile, bool newGame)
 {
     for (;;) {
         currentNaviAnswer();    // the answer is dropped
+        teleportTake();         // PC: into the record, as the navi's jump
         if (newGame) {
             saveExtraInit();
             newGame = false;
         } else if (savedSystem()->select.exitKind != StageExit_Navi) {
             int answer = runNaviFile();
+            if (teleportPending())      // PC
+                continue;
             if (answer == NaviAnswer_Leave)
                 return;
             if (answer == NaviAnswer_Help) {
@@ -250,6 +258,14 @@ static void menuPlayLoop(bool usePackFile, bool newGame)
 
         savedSystem()->select.exitKind = StageExit_None;
         overlayReleaseScreen();
+
+        // PC: a teleport's event movie plays alone, then the navi.
+        int movieBranch;
+        if (teleportTakeMovie(&movieBranch)) {
+            menuPlayMovie(1, movieBranch, nullptr, nullptr);
+            continue;
+        }
+
         bool wasCleared = recordStageCleared();
         bool played = menuPlayStage(usePackFile);
         if (savedSystem()->select.exitKind == StageExit_Navi)
@@ -311,13 +327,14 @@ static bool menuPlayStage(bool usePackFile)
         void *buffer;
         PackFile *pack = newStagePack(kStagePackAlignMovie, &buffer);
         threadYield(2);
-        if (stageMoviePath(getStageSelect(), 0, 0) == nullptr)
+        if (teleportSkipsIntro() || stageMoviePath(getStageSelect(), 0, 0) == nullptr) // PC: skip
             pack->start();
         else
             menuPlayMovie(0, 0, buffer, pack);
         menuRunStage(false, pack);
     } else {
-        menuPlayMovie(0, 0, nullptr, nullptr);
+        if (!teleportSkipsIntro())      // PC
+            menuPlayMovie(0, 0, nullptr, nullptr);
         threadYield(2);
         // The record over itself: the ROM's three copies, kept.
         int variant = savedSystem()->select.variant;
@@ -386,6 +403,8 @@ static bool menuTopMenu()
 {
     for (;;) {
         int answer = runMenuLayoutFile(topMenuLayoutPath(), kLayoutNoArg);
+        if (teleportPending())          // PC: as Play
+            return true;
         if (answer == TopMenuAnswer_Extra) {
             overlayReleaseScreen();
             int changed = runExtraMode(0);
@@ -441,7 +460,7 @@ static int runMenuLayoutFile(const char *path, int arg)
         threadYield(1);
         layout.advance();
         layout.update();
-        if (layout.m_done)
+        if (layout.m_done || teleportPending())     // PC: the second
             break;
         sceVif1Packet *packet = gGameSystem->m_packets.openList(PacketList_Screen);
         TexAreaList *texList = gfxGetTexArea()->getList(PacketList_Screen);
@@ -463,6 +482,8 @@ static bool menuChooseKind()
         getSaveData()->markUnlock468();
     for (;;) {
         int answer = runLayoutFile(newGameLayoutPath(), kLayoutNoArg, false, nullptr, true);
+        if (teleportPending())          // PC: the record's kind stands
+            return true;
         if (answer == NewGameAnswer_Options) {
             runOptionScreen(0);
         } else if (answer == NewGameAnswer_Kind2) {
@@ -551,7 +572,7 @@ static void menuCheckCard()
             answer = runLayout(loader->getData(path), kMemAltNoCard, false, nullptr);
         else
             answer = runLayout(loader->getData(path), kMemAltNoRoom, false, nullptr);
-    } while (answer != kMemAltContinue);
+    } while (answer != kMemAltContinue && !teleportPending());  // PC: the second
     delete card;
     delete loader;
 }

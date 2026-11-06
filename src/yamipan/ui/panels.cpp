@@ -21,6 +21,7 @@
 #include "yamipan/core/window.h"
 #include "yamipan/io/input_system.h"
 #include "yamipan/rendering/renderer.h"
+#include "yamipan/ui/teleport_panel.h"
 
 namespace yamipan::ui
 {
@@ -654,6 +655,7 @@ std::vector<std::unique_ptr<Panel>> createPanels(Application &application)
     panels.push_back(std::make_unique<SettingsPanel>(application));
     panels.push_back(std::make_unique<ControlsPanel>(application));
     panels.push_back(std::make_unique<PerformancePanel>(application));
+    panels.push_back(createTeleportPanel());
     return panels;
 }
 
