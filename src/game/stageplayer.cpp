@@ -490,7 +490,7 @@ bool StageCharacter::isPointInView(float viewAngle, float scale, const float *po
     applyMatrix(forward, lamp, forward);
     vecDirection(forward, forward, eye);
     vecNormalize(toPoint, toPoint);
-    const float angle = acosf(vecDot(toPoint, forward)) * 2.0f;
+    const float angle = eeAcosf(vecDot(toPoint, forward)) * 2.0f;
     if (angle > viewAngle && (angle > kCloseViewAngle || *distance > kCloseViewRange))
         return false;
     return !gStageScene->segmentHitsAny(eye, point, 0, kViewRayMask, kViewRayFlags, skip);

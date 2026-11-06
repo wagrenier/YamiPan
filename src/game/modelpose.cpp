@@ -657,7 +657,9 @@ bool ModelPoseBone::advance(float frames)
         if (parent == nullptr && (owner->flags & PosePlay_NoBlend)) {
             stepRoot(frames, 0);
         } else {
-            float t = keyTime / keySpan;
+            // PC: a key with no length is over. The ROM's 0 / 0 is the largest
+            // float, which here would come out of interpolate as a NaN pose.
+            float t = keySpan != 0.0f ? keyTime / keySpan : 1.0f;
             if (playFlags & PosePlay_Ease)
                 t = easeKey(t);
             interpolate(t, PoseSlot_Current, PoseSlot_From, PoseSlot_To);
@@ -792,6 +794,10 @@ void ModelPoseBone::setup(const PoseBoneRecord *record)
 ModelPoseBone::ModelPoseBone()
 {
     identityMatrix(matrix);
+    // PC: the ROM leaves it as the heap has it. buildMatrix stops before it on an
+    // event or value bone, and their children multiply by it: garbage there
+    // overflows to the NaN the EE cannot make.
+    identityMatrix(rawMatrix);
 }
 
 // ──────────────────────────────────────────────────────────────────────

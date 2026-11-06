@@ -1468,7 +1468,8 @@ void Critter::endFrame(float range, const sceVu0FVECTOR nest, bool moved)
             vecNormalize(tilt, tilt);
             tilt[3] = 0.0f;
         } else {
-            const float scale = sqrtf((cosine + 1.0f) * 2.0f);
+            // sqrt.s takes the absolute value: a cosine just past -1 is not -1.
+            const float scale = sqrtf(fabsf((cosine + 1.0f) * 2.0f));
             for (int axis = 0; axis < kAxes; axis++)
                 tilt[axis] /= scale;
             tilt[3] = scale / 2.0f;

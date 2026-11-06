@@ -15,12 +15,31 @@
 #ifndef _GAME_MATHUTIL_H
 #define _GAME_MATHUTIL_H
 
+#include <math.h>
+#include <float.h>
 #include "sdk/libvu0.h"     /* sceVu0FVECTOR / sceVu0FMATRIX */
 #include "sdk/scetypes.h"
 
 constexpr float kMathPi     = 3.14159265f;  // 0x40490fdb
 constexpr float kMathHalfPi = 1.57079633f;  // 0x3fc90fdb
 constexpr float kMathTwoPi  = 6.28318531f;  // 0x40c90fdb
+
+// The EE's FPU has no infinity and no NaN; the host's would spread through a
+// frame and pass every test as "not less, not greater". hazards.md "sqrt.s is
+// not sqrtf". div.s: anything over zero is the largest float, signed.
+inline float eeDivide(float a, float b)
+{
+    if (b != 0.0f)
+        return a / b;
+    return signbit(a) != signbit(b) ? -FLT_MAX : FLT_MAX;
+}
+
+// acosf past +-1: the ROM's fdlibm answers (x - x) / (x - x), so the largest
+// float. The dot of two unit vectors gets there when they line up.
+inline float eeAcosf(float x)
+{
+    return fabsf(x) > 1.0f ? FLT_MAX : acosf(x);
+}
 
 // asinAcos's second argument.
 enum AsinAcosMode
