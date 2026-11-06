@@ -12,6 +12,7 @@
 #include <memory>
 #include <mutex>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <SDL3/SDL_gpu.h>
@@ -76,6 +77,7 @@ private:
         bool pointFlat = false;
         bool noSpot = false;
         bool noShadow = false;
+        bool writesDepth = true;
         bool open = false;
     };
 
@@ -89,7 +91,7 @@ private:
 
     std::shared_ptr<Image> imageOf(const void *texture);
     void uploadStream(SDL_GPUCopyPass *copy, VertexStream &stream, const void *data, unsigned bytes);
-    SDL_GPUGraphicsPipeline *pipelineFor(BlendMode blend); // None: opaque, writes depth
+    SDL_GPUGraphicsPipeline *pipelineFor(BlendMode blend, bool writesDepth); // None: opaque
     SDL_GPUGraphicsPipeline *createProjectedPipeline(const SDL_GPUColorTargetDescription &target);
     SDL_GPUGraphicsPipeline *spotPipeline();
     SDL_GPUGraphicsPipeline *shadowPipeline();
@@ -105,7 +107,7 @@ private:
     gpu::Shader m_fragmentShader;
     gpu::Shader m_spotVertexShader;
     gpu::Shader m_spotFragmentShader;
-    std::map<BlendMode, gpu::GraphicsPipeline> m_pipelines;
+    std::map<std::pair<BlendMode, bool>, gpu::GraphicsPipeline> m_pipelines; // by blend and depth writing
     gpu::GraphicsPipeline m_spotPipeline;
     gpu::GraphicsPipeline m_shadowPipeline;
     gpu::Texture m_depth;
