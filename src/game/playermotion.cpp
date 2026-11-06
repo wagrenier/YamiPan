@@ -322,13 +322,12 @@ void MotionLink::apply()
 }
 
 // FS2 0x0027da40
-// callcheck: FUN_0027db60, FUN_0027dbf0, operator_new, FUN_0027dc20 (a std::vector here; FUN_001ef590 is the map's find)
+// callcheck: FUN_0027db60, FUN_0027dbf0, operator_new, FUN_0027dc20 (a std::vector here; find is the map's find)
 
 void MotionLink::addCondition(const char *name)
 {
-    auto found = motion->m_conditions.find(name);
-    if (found != motion->m_conditions.end())
-        m_conditions.push_back(found->second);
+    if (auto *found = motion->m_conditions.find(name))
+        m_conditions.push_back(found->value);
 }
 
 // ───────────────────────────────────────
@@ -347,7 +346,7 @@ public:
     MotionSpecial(StageCharacter *owner, PlayerMotion *motion_, const char *name)
         : MotionCondition(owner, motion_)
     {
-        motion_->m_specials.emplace(name, this);
+        motion_->m_specials.insert(name, this);
     }
     void onUpdate() override;
     virtual void clearAllowed();
@@ -519,7 +518,7 @@ private:
 };
 
 // FS2 0x00280410
-// callcheck: MotionCondition, FUN_00281730, strncmp, strcmp, strcmp, strcmp, strcmp, strcmp, strncmp, strcmp, strcmp, strcmp
+// callcheck: MotionCondition, insert, strncmp, strcmp, strcmp, strcmp, strcmp, strcmp, strncmp, strcmp, strcmp, strcmp
 
 MotionGadgetSpecial::MotionGadgetSpecial(StageCharacter *owner, PlayerMotion *motion_, const char *name)
     : MotionSpecial(owner, motion_, name)
@@ -658,40 +657,38 @@ void MotionGadgetSpecial::onApply()
 
 void MotionLink::addSpecial(const char *name)
 {
-    auto found = motion->m_specials.find(name);
-    if (found != motion->m_specials.end())
-        m_conditions.push_back(found->second);
+    if (auto *found = motion->m_specials.find(name))
+        m_conditions.push_back(found->value);
 }
 
 // PC: the ROM reads through the null of a name the character lacks: zero page
 // on the EE; the host says no.
 // FS2 0x001def60
-// callcheck: FUN_001d1280
+// callcheck: find
 
 bool PlayerMotion::isSpecialAllowed(const char *name)
 {
-    auto found = m_specials.find(name);
-    return found != m_specials.end() && found->second->allowed != 0;
+    auto *found = m_specials.find(name);
+    return found != nullptr && found->value->allowed != 0;
 }
 
 // FS2 0x001def90
-// callcheck: FUN_001d1280
+// callcheck: find
 
 void PlayerMotion::setSpecial(const char *name, bool on)
 {
-    auto found = m_specials.find(name);
-    if (found != m_specials.end())
-        found->second->setEnabled(on);
+    if (auto *found = m_specials.find(name))
+        found->value->setEnabled(on);
 }
 
 // FS2 0x001deed0
-// callcheck: FUN_001ef590, FUN_001d1280
+// callcheck: find, find
 
 bool PlayerMotion::isSpecialOnly(const char *name)
 {
-    if (m_conditions.find(name) != m_conditions.end())
+    if (m_conditions.find(name) != nullptr)
         return false;
-    return m_specials.find(name) != m_specials.end();
+    return m_specials.find(name) != nullptr;
 }
 
 // FS2 0x001ded30
@@ -720,19 +717,19 @@ bool PlayerMotion::setHoldIfFree(int id)
 
 int PlayerMotion::specialMotion(const char *name)
 {
-    auto found = m_specials.find(name);
-    return found != m_specials.end() ? found->second->motionId() : Motion_None;
+    auto *found = m_specials.find(name);
+    return found != nullptr ? found->value->motionId() : Motion_None;
 }
 
 // Inline in the ROM (0x1da430): the class is this file's.
-// callcheck: FUN_001d1280, setText
+// callcheck: find, setText
 
 bool PlayerMotion::armGadgetSpecial(const char *name, const char *text)
 {
-    auto found = m_specials.find(name);
-    if (found == m_specials.end())
+    auto *found = m_specials.find(name);
+    if (found == nullptr)
         return false;
-    MotionGadgetSpecial *gadget = static_cast<MotionGadgetSpecial *>(found->second);
+    MotionGadgetSpecial *gadget = static_cast<MotionGadgetSpecial *>(found->value);
     gadget->setText(text);
     gadget->setEnabled(true);
     return true;
@@ -2443,7 +2440,7 @@ void LadderMoveCondition::onUpdate()
 }
 
 // FS2 0x0026f970
-// callcheck: FUN_001ef260, request, FUN_001e0360, request, request, FUN_001e0360, request, request, request
+// callcheck: find, request, FUN_001e0360, request, request, FUN_001e0360, request, request, request
 
 void LadderMoveCondition::onApply()
 {
@@ -2452,7 +2449,7 @@ void LadderMoveCondition::onApply()
     const CharacterWants &wants = character->m_wants;
     const int kind = wants.moveKind;
     if (kind == CharacterMove_Back || kind == CharacterMove_Walk || kind == CharacterMove_Run) {
-        const LadderLink *ladder = static_cast<const LadderLink *>(motion->m_links.find("Ladder")->second);
+        const LadderLink *ladder = static_cast<const LadderLink *>(motion->m_links.find("Ladder")->value);
         float above = ladder->baseHeight - character->m_xform.position[2];
         if (0.0f < ladder->height)
             above += ladder->height;
@@ -2478,7 +2475,7 @@ void LadderMoveCondition::onApply()
 }
 
 // FS2 0x0027b730
-// callcheck: FUN_0027d8d0, operator_new, FUN_001ef590, MotionConditionList::add (addCondition)
+// callcheck: FUN_0027d8d0, operator_new, find, MotionConditionList::add (addCondition)
 
 LadderLink::LadderLink(StageCharacter *owner, PlayerMotion *motion_)
     : MotionLink(owner, motion_)
@@ -2487,11 +2484,11 @@ LadderLink::LadderLink(StageCharacter *owner, PlayerMotion *motion_)
 }
 
 // FS2 0x0027b6e0
-// callcheck: FUN_001ef590
+// callcheck: find
 
 void LadderLink::onRequest()
 {
-    const LadderCondition *ladder = static_cast<const LadderCondition *>(motion->m_conditions.find("Ladder")->second);
+    const LadderCondition *ladder = static_cast<const LadderCondition *>(motion->m_conditions.find("Ladder")->value);
     baseHeight = ladder->point[2];
     height = ladder->height;
 }
@@ -2649,7 +2646,7 @@ void StageCharacter::playLandSound()
 }
 
 // FS2 0x0027c520
-// callcheck: FUN_0027d8d0, operator_new, FUN_001ef590, FUN_0027da40, getStageSelect, getStageSelect, FUN_001d1280 (addCondition; the list of 0x1df0b0 is not written, so the sp_ names of data 0x2fb3a0 stay out)
+// callcheck: FUN_0027d8d0, operator_new, find, FUN_0027da40, getStageSelect, getStageSelect, find (addCondition; the list of 0x1df0b0 is not written, so the sp_ names of data 0x2fb3a0 stay out)
 
 WalkLink::WalkLink(StageCharacter *owner, PlayerMotion *motion_)
     : MotionLink(owner, motion_)
@@ -2706,13 +2703,13 @@ void WalkLink::onUpdate()
 }
 
 // FS2 0x0027c4b0
-// callcheck: FUN_001ef260 (m_links.find)
+// callcheck: find (m_links.find)
 
 void WalkLink::onLeave(MotionLink *next)
 {
     if (character->m_abilities.flag3c3 == 0) {
-        auto attack = motion->m_links.find("BtAttack");
-        if (attack == motion->m_links.end() || next != attack->second)
+        auto *attack = motion->m_links.find("BtAttack");
+        if (attack == nullptr || next != attack->value)
             character->m_290 = nullptr;
     }
     wallFace = nullptr;
@@ -2720,7 +2717,7 @@ void WalkLink::onLeave(MotionLink *next)
 }
 
 // FS2 0x001ed410
-// callcheck: DamageDeadLink, MotionCondition, MotionLink, memset, FUN_001d1280, FUN_00278db0, FUN_0027a0b0, FUN_0027a910, FUN_0027aa90, FUN_0027aea0, FUN_0027b000, FUN_0027b730, FUN_00281aa0, FUN_00281b30, FUN_002820e0, FUN_00282200, FUN_002822d0, FUN_002825f0, FUN_00282b30, FUN_00282da0, FUN_00282fa0, FUN_00283560, FUN_00283740, FUN_00283960, getStageSelect, operator_new, FUN_001ef040, FUN_001eeee0, FUN_001eee30, FUN_0026c6b0, FUN_00276510, FUN_001ef0f0, FUN_001ef850, FUN_001df0b0, FUN_0027c520, FUN_0027c140, FUN_0027b640, FUN_0027cc50, FUN_002775d0, FUN_001eef90, FUN_0027c370, FUN_001ef990 (the links, the conditions and their maps: game/playermotion.h)
+// callcheck: DamageDeadLink, MotionCondition, MotionLink, memset, find, FUN_00278db0, FUN_0027a0b0, FUN_0027a910, FUN_0027aa90, FUN_0027aea0, FUN_0027b000, FUN_0027b730, FUN_00281aa0, FUN_00281b30, FUN_002820e0, FUN_00282200, FUN_002822d0, FUN_002825f0, FUN_00282b30, FUN_00282da0, FUN_00282fa0, FUN_00283560, FUN_00283740, FUN_00283960, getStageSelect, operator_new, LiteralMap, LiteralMap, LiteralMap, FUN_0026c6b0, FUN_00276510, insert, balance, FUN_001df0b0, FUN_0027c520, FUN_0027c140, FUN_0027b640, FUN_0027cc50, FUN_002775d0, insert, FUN_0027c370, balance (the links, the conditions and their maps: game/playermotion.h)
 
 PlayerMotion::PlayerMotion(StageObject *owner_)
     : owner(owner_)
@@ -2747,82 +2744,84 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_queue = new MotionQueue;
     m_walkQueue = new MotionQueue;
 
-    // The conditions: the ROM's order is the 29 of architecture.md "Motions";
-    // here the ones written.
+    // The conditions, in the ROM's order.
     StageCharacter *character = static_cast<StageCharacter *>(owner);
     probe = new MotionProbe(character);
     m_always = new AlwaysCondition(character, this);
-    m_conditions["Always"] = m_always;
-    m_conditions["Squat"] = new SquatCondition(character, this);
-    m_conditions["Turn"] = new TurnCondition(character, this);
-    m_conditions["Move"] = new MoveCondition(character, this);
-    m_conditions["Level"] = new LevelCondition(character, this);
-    m_conditions["LevelLift"] = new LevelLiftCondition(character, this);
-    m_conditions["Ladder"] = new LadderCondition(character, this);
-    m_conditions["Jump"] = new JumpCondition(character, this);
-    m_conditions["QuickTurn"] = new QuickTurnCondition(character, this);
-    m_conditions["LadderMove"] = new LadderMoveCondition(character, this);
-    m_conditions["Door"] = new DoorCondition(character, this);
-    m_conditions["PutItem"] = new PutItemCondition(character, this);
-    m_conditions["PickupItem"] = new PickupItemCondition(character, this);
-    m_conditions["BtOn"] = new BtOnCondition(character, this);
-    m_conditions["Lock"] = new LockCondition(character, this);
-    m_conditions["BtAttack"] = new BtAttackCondition(character, this);
-    m_conditions["BtAtkCombo"] = new BtAtkComboCondition(character, this);
-    m_conditions["BtMove"] = new BtMoveCondition(character, this);
-    m_conditions["GunOn"] = new GunOnCondition(character, this);
-    m_conditions["GunMove"] = new GunMoveCondition(character, this);
-    m_conditions["Snipe"] = new SnipeCondition(character, this);
-    m_conditions["GunAttack"] = new GunAttackCondition(character, this);
-    m_conditions["Reload"] = new ReloadCondition(character, this);
-    m_conditions["Showt"] = new ShowtCondition(character, this);
-    m_conditions["Jack"] = new JackCondition(character, this);
-    m_conditions["Throw"] = new ThrowCondition(character, this);
-    m_conditions["TrapCancel"] = new TrapCancelCondition(character, this);
-    m_conditions["TrapSet"] = new TrapSetCondition(character, this);
-    m_conditions["Bite"] = new BiteCondition(character, this);
+    m_conditions.insert("Always", m_always);
+    m_conditions.insert("Squat", new SquatCondition(character, this));
+    m_conditions.insert("BtOn", new BtOnCondition(character, this));
+    m_conditions.insert("GunOn", new GunOnCondition(character, this));
+    m_conditions.insert("Turn", new TurnCondition(character, this));
+    m_conditions.insert("Move", new MoveCondition(character, this));
+    m_conditions.insert("Level", new LevelCondition(character, this));
+    m_conditions.insert("LevelLift", new LevelLiftCondition(character, this));
+    m_conditions.insert("Ladder", new LadderCondition(character, this));
+    m_conditions.insert("Jump", new JumpCondition(character, this));
+    m_conditions.insert("Door", new DoorCondition(character, this));
+    m_conditions.insert("PutItem", new PutItemCondition(character, this));
+    m_conditions.insert("PickupItem", new PickupItemCondition(character, this));
+    m_conditions.insert("TrapSet", new TrapSetCondition(character, this));
+    m_conditions.insert("TrapCancel", new TrapCancelCondition(character, this));
+    m_conditions.insert("Throw", new ThrowCondition(character, this));
+    m_conditions.insert("Showt", new ShowtCondition(character, this));
+    m_conditions.insert("Reload", new ReloadCondition(character, this));
+    m_conditions.insert("QuickTurn", new QuickTurnCondition(character, this));
+    m_conditions.insert("Jack", new JackCondition(character, this));
+    m_conditions.insert("Bite", new BiteCondition(character, this));
+    m_conditions.insert("LadderMove", new LadderMoveCondition(character, this));
+    m_conditions.insert("Lock", new LockCondition(character, this));
+    m_conditions.insert("BtAttack", new BtAttackCondition(character, this));
+    m_conditions.insert("BtAtkCombo", new BtAtkComboCondition(character, this));
+    m_conditions.insert("BtMove", new BtMoveCondition(character, this));
+    m_conditions.insert("GunAttack", new GunAttackCondition(character, this));
+    m_conditions.insert("Snipe", new SnipeCondition(character, this));
+    m_conditions.insert("GunMove", new GunMoveCondition(character, this));
+    m_conditions.balance();
     initList();
 
+    // The links, in the ROM's order: the 18 written of its 43 names (architecture.md
+    // "The links of the ROM's ctor"). A motion naming another has no link.
     walkLink = new WalkLink(character, this);
-    m_links["Walk"] = walkLink;
-    m_links["Jack"] = new JackLink(character, this);
-    m_links["Up"] = new UpLink(character, this);
-    m_links["Fall"] = new FallLink(character, this);
-    m_links["Jump"] = new JumpLink(character, this);
-    m_links["Ladder"] = new LadderLink(character, this);
-    doorLink = new DoorLink(character, this);
-    m_links["Door"] = doorLink;
+    m_links.insert("Walk", walkLink);
+    m_links.insert("Jack", new JackLink(character, this));
     pickupLink = new PickupLink(character, this);
-    m_links["Pickup"] = pickupLink;
-    m_links["Battle"] = new BattleLink(character, this);
-    m_links["BtAttack"] = new BtAttackLink(character, this);
-    m_links["Gun"] = new GunLink(character, this);
-    m_links["GunAttack"] = new GunAttackLink(character, this);
-    m_links["Reload"] = new ReloadLink(character, this);
+    m_links.insert("Pickup", pickupLink);
+    m_links.insert("Up", new UpLink(character, this));
+    m_links.insert("Fall", new FallLink(character, this));
+    m_links.insert("Jump", new JumpLink(character, this));
+    m_links.insert("Ladder", new LadderLink(character, this));
+    doorLink = new DoorLink(character, this);
+    m_links.insert("Door", doorLink);
+    m_links.insert("Battle", new BattleLink(character, this));
+    m_links.insert("BtAttack", new BtAttackLink(character, this));
+    m_links.insert("Gun", new GunLink(character, this));
+    m_links.insert("GunAttack", new GunAttackLink(character, this));
+    m_links.insert("Reload", new ReloadLink(character, this));
     trapSetLink = new TrapSetLink(character, this);
-    m_links["TrapSet"] = trapSetLink;
+    m_links.insert("TrapSet", trapSetLink);
     trapCancelLink = new TrapCancelLink(character, this);
-    m_links["TrapCancel"] = trapCancelLink;
+    m_links.insert("TrapCancel", trapCancelLink);
     throwLink = new ThrowLink(character, this);
-    m_links["Throw"] = throwLink;
-    m_links["Bite"] = new BiteLink(character, this);
-    // The prey's side has no code of its own (vtable 0x315eb0).
-    m_links["Bitten"] = new MotionLink(character, this);
+    m_links.insert("Throw", throwLink);
+    m_links.insert("Bite", new BiteLink(character, this));
+    m_links.insert("Bitten", new BittenLink(character, this));
+    m_links.balance();
 }
 
 // FS2 0x001ed2a0
-// callcheck: operator_delete, FUN_0026c650, FUN_001eee50, FUN_001eef00, FUN_001ef060 (the host deletes; the maps of the ctor)
+// callcheck: operator_delete, FUN_0026c650, ~LiteralMap, ~LiteralMap, ~LiteralMap (the host deletes; the maps of the ctor)
 
 PlayerMotion::~PlayerMotion()
 {
     delete m_queue;
     delete m_walkQueue;
-    for (auto &entry : m_links)
-        delete entry.second;
-    for (auto &entry : m_conditions)
-        delete entry.second;
-    for (auto &entry : m_specials)
-        delete entry.second;
+    for (auto *node = m_links.first; node != nullptr; node = node->next)
+        delete node->value;
+    for (auto *node = m_conditions.first; node != nullptr; node = node->next)
+        delete node->value;
+    for (auto *node = m_specials.first; node != nullptr; node = node->next)
+        delete node->value;
     delete probe;
 }
 
@@ -2901,20 +2900,20 @@ void PlayerMotion::loadMotions(StageList<void *> *motions, StageList<void *> *mo
 
 void PlayerMotion::initSlots14()
 {
-    for (auto &entry : m_specials)
-        entry.second->clearAllowed();
+    for (auto *node = m_specials.first; node != nullptr; node = node->next)
+        node->value->clearAllowed();
 }
 
 // FS2 0x001defd0
 
 void PlayerMotion::initSlots18()
 {
-    for (auto &entry : m_specials)
-        entry.second->clearEnabled();
+    for (auto *node = m_specials.first; node != nullptr; node = node->next)
+        node->value->clearEnabled();
 }
 
 // FS2 0x001ec7e0
-// callcheck: FUN_001ef260, getStageSelect, noteMotion, resolveHold, findLink (cancelRequested, stageObjRecord)
+// callcheck: find, getStageSelect, noteMotion, resolveHold, findLink (cancelRequested, stageObjRecord)
 
 void PlayerMotion::reset(int arg)
 {
@@ -3327,8 +3326,8 @@ MotionLink *PlayerMotion::findLink(const MotionDef *def) const
 {
     if (def == nullptr || def->linkFunctionText == nullptr)
         return nullptr;
-    auto found = m_links.find(def->linkFunctionText);
-    return found != m_links.end() ? found->second : nullptr;
+    auto *found = m_links.find(def->linkFunctionText);
+    return found != nullptr ? found->value : nullptr;
 }
 
 const MotionDef *PlayerMotion::startable(int id) const
@@ -3351,7 +3350,7 @@ void PlayerMotion::cancelRequested()
 }
 
 // FS2 0x001e9dd0
-// callcheck: FUN_001ef260, getStageSelect, isBoneEnding (stageObjRecord, isEnding)
+// callcheck: find, getStageSelect, isBoneEnding (stageObjRecord, isEnding)
 
 void PlayerMotion::stepLower(bool immediate)
 {
@@ -3472,7 +3471,7 @@ void PlayerMotion::stepLower(bool immediate)
 }
 
 // FS2 0x001ec0a0
-// callcheck: FUN_001ef260, isBoneEnding (isEnding)
+// callcheck: find, isBoneEnding (isEnding)
 
 void PlayerMotion::noteLeaving()
 {
@@ -3533,7 +3532,7 @@ void PlayerMotion::noteEnding()
 }
 
 // FS2 0x001ec400
-// callcheck: FUN_001ef260, isBoneEnding (isEnding)
+// callcheck: find, isBoneEnding (isEnding)
 
 void PlayerMotion::startRequested()
 {
@@ -3554,7 +3553,7 @@ void PlayerMotion::startRequested()
 }
 
 // FS2 0x001ec650
-// callcheck: FUN_001ef260, noteMotion, resolveHold (cancelRequested)
+// callcheck: find, noteMotion, resolveHold (cancelRequested)
 
 void PlayerMotion::requestNow(int id)
 {
@@ -5225,7 +5224,7 @@ void PickupLink::onCancel()
 
 
 // FS2 0x0027c370
-// callcheck: operator_new, FUN_0027d8d0, FUN_001ef590, MotionConditionList__add (the base's list; addCondition)
+// callcheck: operator_new, FUN_0027d8d0, find, MotionConditionList__add (the base's list; addCondition)
 
 JackLink::JackLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
 {
@@ -6385,7 +6384,7 @@ void TrapSetCondition::onApply()
 }
 
 // FS2 0x0027aa90
-// callcheck: FUN_0027d8d0, operator_new, FUN_001ef590, MotionConditionList::add, FUN_001ef590, MotionConditionList::add, FUN_001ef590, MotionConditionList::add, FUN_001ef590, MotionConditionList::add (addCondition)
+// callcheck: FUN_0027d8d0, operator_new, find, MotionConditionList::add, find, MotionConditionList::add, find, MotionConditionList::add, find, MotionConditionList::add (addCondition)
 
 GunLink::GunLink(StageCharacter *owner, PlayerMotion *motion_)
     : MotionLink(owner, motion_)
@@ -6404,16 +6403,16 @@ void GunLink::onStart()
 }
 
 // FS2 0x0027a9e0
-// callcheck: FUN_001ef260, setScope (m_links.find)
+// callcheck: find, setScope (m_links.find)
 
 void GunLink::onLeave(MotionLink *next)
 {
-    if (next != motion->m_links.find("GunAttack")->second)
+    if (next != motion->m_links.find("GunAttack")->value)
         dropGun(character, motion);
 }
 
 // FS2 0x0027a910
-// callcheck: FUN_0027d8d0, operator_new, FUN_001ef590, MotionConditionList::add, FUN_001ef590, MotionConditionList::add (addCondition)
+// callcheck: FUN_0027d8d0, operator_new, find, MotionConditionList::add, find, MotionConditionList::add (addCondition)
 
 GunAttackLink::GunAttackLink(StageCharacter *owner, PlayerMotion *motion_)
     : MotionLink(owner, motion_)
@@ -6469,14 +6468,14 @@ void GunAttackLink::onRun()
 }
 
 // FS2 0x0027a580
-// callcheck: FUN_0027d940, FUN_0027d940, FUN_001ef260, setScope (m_conditions[], m_links.find)
+// callcheck: FUN_0027d940, FUN_0027d940, find, setScope (m_conditions[], m_links.find)
 
 void GunAttackLink::onLeave(MotionLink *next)
 {
     if (keepsLock == 0)
         m_conditions[0]->active = 1;
     m_conditions[1]->active = 1;
-    if (next != motion->m_links.find("Gun")->second)
+    if (next != motion->m_links.find("Gun")->value)
         dropGun(character, motion);
 }
 
@@ -6606,7 +6605,7 @@ void ThrowLink::setThrow(StageThrownItem *item_, const sceVu0FVECTOR vector)
 }
 
 // FS2 0x0027b000
-// callcheck: FUN_0027d8d0, operator_new, FUN_001ef590, MotionConditionList::add, FUN_001ef590, MotionConditionList::add, FUN_001ef590, MotionConditionList::add (addCondition)
+// callcheck: FUN_0027d8d0, operator_new, find, MotionConditionList::add, find, MotionConditionList::add, find, MotionConditionList::add (addCondition)
 
 BattleLink::BattleLink(StageCharacter *owner, PlayerMotion *motion_)
     : MotionLink(owner, motion_)
@@ -6618,17 +6617,17 @@ BattleLink::BattleLink(StageCharacter *owner, PlayerMotion *motion_)
 
 // Out of the stance the target goes, but into what keeps it.
 // FS2 0x0027af70
-// callcheck: FUN_001ef260, FUN_001ef260 (m_links.find)
+// callcheck: find, find (m_links.find)
 
 void BattleLink::onLeave(MotionLink *next)
 {
     const char *keeps = character->m_abilities.flag3c3 == 0 ? "Walk" : "BtAttack";
-    if (next != motion->m_links.find(keeps)->second)
+    if (next != motion->m_links.find(keeps)->value)
         character->m_290 = nullptr;
 }
 
 // FS2 0x0027aea0
-// callcheck: FUN_0027d8d0, operator_new, FUN_001ef590, MotionConditionList::add, FUN_001ef590, MotionConditionList::add (addCondition)
+// callcheck: FUN_0027d8d0, operator_new, find, MotionConditionList::add, find, MotionConditionList::add (addCondition)
 
 BtAttackLink::BtAttackLink(StageCharacter *owner, PlayerMotion *motion_)
     : MotionLink(owner, motion_)
@@ -6671,13 +6670,13 @@ void BtAttackLink::onRun()
 }
 
 // FS2 0x0027aba0
-// callcheck: FUN_0027d940, FUN_0027d940, FUN_0027d940, FUN_0027d940, FUN_001ef260 (m_conditions[], m_links.find)
+// callcheck: FUN_0027d940, FUN_0027d940, FUN_0027d940, FUN_0027d940, find (m_conditions[], m_links.find)
 
 void BtAttackLink::onLeave(MotionLink *next)
 {
     m_conditions[0]->active = 1;
     m_conditions[1]->active = 1;
-    if (next != motion->m_links.find("Battle")->second)
+    if (next != motion->m_links.find("Battle")->value)
         character->m_290 = nullptr;
 }
 

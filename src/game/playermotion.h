@@ -27,7 +27,7 @@
 
 #include <string.h>
 
-#include <map>
+#include "game/stagelist.h"
 #include <vector>
 
 #include "game/gamehooks.h"
@@ -233,6 +233,14 @@ protected:
     StageCharacter *character;  // FS2 +0x0
     PlayerMotion   *motion;     // FS2 +0x4
     std::vector<MotionCondition *> m_conditions; // FS2 +0xc
+};
+
+// The prey's side of a bite has no code of its own. Vtable 0x315eb0. layout: host.
+class BittenLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    ~BittenLink() override {}                                            // FS2 0x001eedb0
 };
 
 // Gun up: Lock, Snipe, GunAttack, GunMove. Vtable 0x317a10. layout: host.
@@ -538,14 +546,7 @@ struct MotionProbe
     ShotSpread spread;          // FS2 +0x4: a block of its own on the EE
 };
 
-// A byte-ordered name key, as the MSL maps at +0x8, +0x18 and +0x2c.
-// layout: host
 class MotionSpecial;
-
-struct MotionNameLess
-{
-    bool operator()(const char *a, const char *b) const { return strcmp(a, b) < 0; }
-};
 
 // layout: host -- EE 0xc20; the offsets are the ROM's.
 struct PlayerMotion
@@ -712,10 +713,10 @@ private:
 public:
     StageObject *owner;         // FS2 +0x000
     MotionProbe *probe;         // FS2 +0x004
-    std::map<const char *, MotionCondition *, MotionNameLess> m_conditions; // FS2 +0x008
+    LiteralMap<MotionCondition *> m_conditions; // FS2 +0x008
+    LiteralMap<MotionLink *> m_links; // FS2 +0x018
     MotionCondition *m_always = nullptr; // FS2 +0x028: stepped each frame, whatever runs
-    std::map<const char *, MotionSpecial *, MotionNameLess> m_specials; // FS2 +0x02c: initList; scripts and the brain switch them
-    std::map<const char *, MotionLink *, MotionNameLess> m_links; // FS2 +0x018
+    LiteralMap<MotionSpecial *> m_specials; // FS2 +0x02c: initList; scripts and the brain switch them
     int    m_request = Motion_None; // FS2 +0x03c
     int    motionId = Motion_None;  // FS2 +0x040: gMotionDefs index; outside the table none
     const char *m_handNames[2] = {}; // FS2 +0x044: left, right, as stepUpper last played them

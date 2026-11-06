@@ -17843,6 +17843,12 @@
   "was": "FUN_001d1260",
   "why": "one caller, the view native: gStageScene->objects->find0(name, 0)"
  },
+ "001d1280": {
+  "name": "LiteralMap<MotionSpecial>::find",
+  "tag": "game-inferred",
+  "was": "FUN_001d1280",
+  "why": "as 0x1ef260; callers isSpecialAllowed and setSpecial"
+ },
  "001d1330": {
   "name": "ScriptRunner::runCommand",
   "tag": "game-inferred",
@@ -19420,6 +19426,156 @@
   "tag": "game-inferred",
   "was": "FUN_001ed410",
   "why": "operator_new(0xc20) in setup, stored at +0x224, its +0 the character"
+ },
+ "001eedb0": {
+  "name": "BittenLink::~BittenLink",
+  "tag": "game-inferred",
+  "was": "FUN_001eedb0",
+  "why": "stores vtable 0x315eb0, runs the base's dtor 0x27cbe0, deletes when asked; the ctor hands out 0x315eb0 for the link named Bitten"
+ },
+ "001eee10": {
+  "name": "MotionLink::onUpdate",
+  "tag": "game-inferred",
+  "was": "FUN_001eee10",
+  "why": "slot +0xc of the base vtable 0x317c20 and of most links: empty"
+ },
+ "001eee20": {
+  "name": "MotionLink::onApply",
+  "tag": "game-inferred",
+  "was": "FUN_001eee20",
+  "why": "slot +0x10 of the base vtable 0x317c20 and of most links: empty"
+ },
+ "001eee30": {
+  "name": "LiteralMap<MotionLink>::LiteralMap",
+  "tag": "game-inferred",
+  "was": "FUN_001eee30",
+  "why": "zeroes root, first, last, count at PlayerMotion +0x18; shape of StringMap 0x1a4c20"
+ },
+ "001eee50": {
+  "name": "LiteralMap<MotionLink>::~LiteralMap",
+  "tag": "game-inferred",
+  "was": "FUN_001eee50",
+  "why": "walks the insertion chain +0x10 deleting nodes, the keys are not freed: they are the caller's literals"
+ },
+ "001eeee0": {
+  "name": "LiteralMap<MotionSpecial>::LiteralMap",
+  "tag": "game-inferred",
+  "was": "FUN_001eeee0",
+  "why": "the third instance, PlayerMotion +0x2c"
+ },
+ "001eef00": {
+  "name": "LiteralMap<MotionSpecial>::~LiteralMap",
+  "tag": "game-inferred",
+  "was": "FUN_001eef00",
+  "why": "as 0x1eee50, node dtor 0x1ef210"
+ },
+ "001eef90": {
+  "name": "LiteralMap<MotionLink>::insert",
+  "tag": "game-inferred",
+  "was": "FUN_001eef90",
+  "why": "empty map: the root; else the node search 0x1ef2e0, chains the new node last; null when the key is taken"
+ },
+ "001ef040": {
+  "name": "LiteralMap<MotionCondition>::LiteralMap",
+  "tag": "game-inferred",
+  "was": "FUN_001ef040",
+  "why": "PlayerMotion +0x8, first call of the ctor"
+ },
+ "001ef060": {
+  "name": "LiteralMap<MotionCondition>::~LiteralMap",
+  "tag": "game-inferred",
+  "was": "FUN_001ef060",
+  "why": "as 0x1eee50, node dtor 0x1ef540"
+ },
+ "001ef0f0": {
+  "name": "LiteralMap<MotionCondition>::insert",
+  "tag": "game-inferred",
+  "was": "FUN_001ef0f0",
+  "why": "as 0x1eef90; the ctor's 29 calls with the condition names"
+ },
+ "001ef1a0": {
+  "name": "LiteralMap<MotionLink>::Node::~Node",
+  "tag": "game-inferred",
+  "was": "FUN_001ef1a0",
+  "why": "only deletes: nothing is owned"
+ },
+ "001ef1f0": {
+  "name": "LiteralMap<MotionLink>::Node::Node",
+  "tag": "game-inferred",
+  "was": "FUN_001ef1f0",
+  "why": "value +0, key +4 kept as passed, left, right, next zero"
+ },
+ "001ef210": {
+  "name": "LiteralMap<MotionSpecial>::Node::~Node",
+  "tag": "game-inferred",
+  "was": "FUN_001ef210",
+  "why": "only deletes"
+ },
+ "001ef260": {
+  "name": "LiteralMap<MotionLink>::find",
+  "tag": "game-inferred",
+  "was": "FUN_001ef260",
+  "why": "strcmp walk from the root in a0; null when the value is null; callers pass PlayerMotion +0x18's root"
+ },
+ "001ef2e0": {
+  "name": "LiteralMap<MotionLink>::Node::insert",
+  "tag": "game-inferred",
+  "was": "FUN_001ef2e0",
+  "why": "recursive search for the slot with one level inlined; null when the key is there"
+ },
+ "001ef520": {
+  "name": "LiteralMap<MotionCondition>::Node::Node",
+  "tag": "game-inferred",
+  "was": "FUN_001ef520",
+  "why": "as 0x1ef1f0"
+ },
+ "001ef540": {
+  "name": "LiteralMap<MotionCondition>::Node::~Node",
+  "tag": "game-inferred",
+  "was": "FUN_001ef540",
+  "why": "only deletes"
+ },
+ "001ef590": {
+  "name": "LiteralMap<MotionCondition>::find",
+  "tag": "game-inferred",
+  "was": "FUN_001ef590",
+  "why": "as 0x1ef260; callers name conditions"
+ },
+ "001ef610": {
+  "name": "LiteralMap<MotionCondition>::Node::insert",
+  "tag": "game-inferred",
+  "was": "FUN_001ef610",
+  "why": "as 0x1ef2e0"
+ },
+ "001ef850": {
+  "name": "LiteralMap<MotionCondition>::Node::balance",
+  "tag": "game-inferred",
+  "was": "FUN_001ef850",
+  "why": "the ctor's call on +0x8's root; rotations as StringMap 0x1895c0"
+ },
+ "001ef990": {
+  "name": "LiteralMap<MotionLink>::Node::balance",
+  "tag": "game-inferred",
+  "was": "FUN_001ef990",
+  "why": "the ctor's call on +0x18's root"
+ },
+ "001efad0": {
+  "name": "LiteralMap<MotionLink>::Node::height",
+  "tag": "game-inferred",
+  "was": "FUN_001efad0",
+  "why": "max of the two sides + 1, two levels inlined"
+ },
+ "001efce0": {
+  "name": "LiteralMap<MotionCondition>::Node::height",
+  "tag": "game-inferred",
+  "was": "FUN_001efce0",
+  "why": "as 0x1efad0"
+ },
+ "001efef0": {
+  "name": "CharacterGround::getCollisionObject",
+  "tag": "game-inferred",
+  "was": "FUN_001efef0",
+  "why": "vtable 0x315ee0 slot +0x18: returns +0x8"
  },
  "001eff00": {
   "name": "CharacterGround::faceNear",
@@ -27772,6 +27928,24 @@
   "tag": "game-inferred",
   "was": "FUN_00281540",
   "why": "vtable 0x317d50 slot +0xc: sets +0x14"
+ },
+ "00281730": {
+  "name": "LiteralMap<MotionSpecial>::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00281730",
+  "why": "as 0x1eef90; the special actions' ctors"
+ },
+ "002817e0": {
+  "name": "LiteralMap<MotionSpecial>::Node::Node",
+  "tag": "game-inferred",
+  "was": "FUN_002817e0",
+  "why": "as 0x1ef1f0"
+ },
+ "00281800": {
+  "name": "LiteralMap<MotionSpecial>::Node::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00281800",
+  "why": "as 0x1ef2e0"
  },
  "00283df0": {
   "name": "seDistanceVolume",
