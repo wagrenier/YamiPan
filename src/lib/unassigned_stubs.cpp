@@ -636,12 +636,6 @@ int ItemPhysics::collisionHook0(CollisionContact *contact, const float *normal, 
     return {};
 }
 
-// stub of FS2 0x00175900
-void StageObject::breakPart(int part, bool withEffect)
-{
-    YAMIPAN_STUB("StageObject::breakPart", 0x00175900);
-}
-
 // ---- by hand: the character's parts, until their TUs (next in the queue) ----
 
 // stub of FS2 0x00239bc0
@@ -1217,3 +1211,10 @@ void elevatorSwitchPlace(StageObject *elevator, float *place, float *direction, 
     YAMIPAN_STUB("elevatorSwitchPlace", 0x00293c60);
 }
 
+
+// stub of FS2 0x002b23b0
+int sevenKeysPoseValue(StageObject *object, int sub)
+{
+    YAMIPAN_STUB("sevenKeysPoseValue", 0x002b23b0);
+    return {};
+}

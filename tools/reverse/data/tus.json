@@ -474,6 +474,32 @@
    "status": "verify",
    "why": "One sprintf each: 13 event movie and 11 layout paths into static 0x20 buffers, 0x5a5460.. and 0x5a5300.., bss descending with the code. No file string, so the name is descriptive. 0x2ec110 (the draw state singleton behind drawSys) is left out: its users are 0x2d46a0.."
   },
+  "game/mapobject.cpp": {
+   "notes": "unassigned@00176480 turned out to be this file; pinned with 0x174a10 on, and game/stagecamera.cpp pinned to 0x1775b0..0x177be0. Written: StageObject::breakPart 0x175900 (was a stub), StageMapObject::getProperty 0x174b00, advanceMotion 0x1755f0, the ctor's mesh count. getScriptCar is now getScriptMapObject, so natives 0x198 and 0x19a work on any map object; 0x1ac and 0x1c8 stay on a kind 3 object. Kind 3 is named StageObject_Car, isGateModelName is isCarModelName. NOT PROVEN BY A RUN: a temporary build forced breakPart over every object at stage frames 300 and 600 of New Game (doorwalk pad, 285 s, no crash) and found 43 objects, none with parts, so breakPart never ran; picture unchanged. The test is the first stage with glass. Natives 0x198 and 0x19a are only in six ALERT01 scripts and did not run either. Next: sevenKeysPoseValue 0x2b23b0 is a new stub of the unwritten class 0x2b2a60; StageCar should stand on StageMapObject when the car is written, then the slot can be typed StageMapObject. Doubts in open-items.md (p), (q), (r).",
+   "ranges": [
+    [
+     "00174a10",
+     "00175700"
+    ],
+    [
+     "001758f0",
+     "001763e0"
+    ],
+    [
+     "00176480",
+     "001775b0"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-06 07:59",
+     "status": "verify",
+     "summary": "The map object's file closed: breakPart, getProperty and advanceMotion written, script slot +0x9c corrected to answer every map object, 70 of 70 functions, no stub"
+    }
+   ],
+   "status": "verify",
+   "why": "The object a map model becomes, the port's file name: StageMapObject's setters 0x174a10 on, its dtor and ctor, createMapObject, MapObjectParts, the side hooks, the bone map's find instance, DoorRecord's ctor and the run of adjustor thunks that ends the object file (they target these classes and the door). The door's own code before it is game/stagedoor.cpp; StageCamera starts at its getKind 0x1775b0. 0x175700 nearestPart stays where game/playermotion.cpp pinned it, 0x1763e0 where game/subsceneobject.cpp did, both wrong by file but outside this TU."
+  },
   "game/mathutil.cpp": {
    "notes": "Source only. New mathutil.h (normalizeAngle moved there from gamehooks.h; uigame.cpp includes it; pi constants are kMath* to avoid uigame / uiwidget locals) and stand-in vu0math.h for the next TU (0x135990-0x1366c0). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean, and a host harness: sinCos / asinAcos / atan2Cw / atan2Octant within 3.2e-7 of libm over 200,000 arguments, both Euler extractors round-trip (0.3, -1.1, 2). Float exponents / mantissas are read by hand (floatBits) so the branches match the ROM; the huge-x sin / cos reduction is in double as the ROM (soft-float calls). ROM quirks kept: getBounds starts the maximum at FLT_MIN (not -FLT_MAX); matrixToRotYXZ's pole case reads m[2][2]; approachVec3's step is rate times the SQUARED distance. Doubts: file name and every name are the port's (no strings); the Euler order names follow sce's m[i] = image of axis i.",
    "ranges": [
@@ -1615,6 +1641,12 @@
   },
   "game/stagecamera.cpp": {
    "notes": "Written in src/game/scriptrunner.cpp: nativeSetPlayer 0x1c81a0, nativeScriptView 0x1c8dc0, isNullName 0x1c8f40, findCameraObject 0x1d1260, findLightObject 0x1b56b0 (batch 115, saved); 0x1b54a0 is StageNodeBase::setParent out of line. 0x70: New Game run of 200 s, no crash, its stub line is gone, setPlayer(null) survives, the link itself not seen because no character exists. 0x64: nothing reaches sd_MK01_10 yet, so a temporary build (removed) held native 0x1f2 off and drove it: top view CAM_EV10 kind 7 then camera kind 9, shots show tatami, picture book and bedding, then black (unlinked main camera at the empty origin), progress/20261104-script-view-cam-ev10.png. Not compared with the game, no reference exists. The event branch (scr_demo_pl on the view) has not run. YAMIPAN_CAMERA overrides every StageCamera, so test view switches without it (hazards.md).",
+   "ranges": [
+    [
+     "001775b0",
+     "00177be0"
+    ]
+   ],
    "sessions": [
     {
      "date": "2026-11-04 18:06",
@@ -1623,7 +1655,8 @@
     }
    ],
    "status": "verify",
-   "task": "The two natives that choose the view, queued by the user 2026-11-04. A host task: the code goes in kNatives in src/game/scriptrunner.cpp and both addresses are that TU's, but it is 84 of 652 and would hold this place in the queue for many runs, so they have their own key. Native 0x70 (0x1c81a0, 56 i, one code word): find the character by label, then StageScene::setPlayer. Stage 1's Root calls it with F_PC01 straight after its test of menuMode == 1, the block that also requests d0101, and a New Game run reaches the stub today (scriptNative_70), so the main camera never links without it, even with a character. Native 0x64 (0x1c8dc0, 94 i, one code word): 0x1c8f40 tests the name (the script passes NULL) and removes view priority 3, any other name is found (0x1d1260) and pushed at priority 3, and an active event takes a further step (0x1b56b0, 0x1b54a0, 0x1b5460). sd_MK01_10 calls it with CAM_EV10, then NULL. StageCharacter does not exist yet, so the character lookup answers null: make sure setPlayer survives that. The other route to setPlayer is property 0x50 (0x172620 and its twins 0x189f40, 0x212530, 0x268ae0), behind the setProperty stubs; native 0xef is unused on stage 1. Nothing can show the link until a character exists, so this ends verify."
+   "task": "The two natives that choose the view, queued by the user 2026-11-04. A host task: the code goes in kNatives in src/game/scriptrunner.cpp and both addresses are that TU's, but it is 84 of 652 and would hold this place in the queue for many runs, so they have their own key. Native 0x70 (0x1c81a0, 56 i, one code word): find the character by label, then StageScene::setPlayer. Stage 1's Root calls it with F_PC01 straight after its test of menuMode == 1, the block that also requests d0101, and a New Game run reaches the stub today (scriptNative_70), so the main camera never links without it, even with a character. Native 0x64 (0x1c8dc0, 94 i, one code word): 0x1c8f40 tests the name (the script passes NULL) and removes view priority 3, any other name is found (0x1d1260) and pushed at priority 3, and an active event takes a further step (0x1b56b0, 0x1b54a0, 0x1b5460). sd_MK01_10 calls it with CAM_EV10, then NULL. StageCharacter does not exist yet, so the character lookup answers null: make sure setPlayer survives that. The other route to setPlayer is property 0x50 (0x172620 and its twins 0x189f40, 0x212530, 0x268ae0), behind the setProperty stubs; native 0xef is unused on stage 1. Nothing can show the link until a character exists, so this ends verify.",
+   "why": "The base camera's getKind, its four empty side hooks, the setters StageObject keeps at the head of this object, its dtor and the view functions. 0x177be0 setProjection is written here too but pinned in game/playermotion.cpp; 0x177d00 on is not pinned yet."
   },
   "game/stagecharacter.cpp": {
    "notes": "All of the TU's code is written, the terminate hook included (0x179d30 joined the ranges; 0x214f20 too). Stretched limbs do not return: a temporary third-person view (removed) shows F_PC01 whole from behind with the main camera linked, isViewLinked 1 (progress/20261105-f_pc01-third-person.png); no reference exists for that view. First person with the final code: his view, no crash in 285 s, the scripted pad walks him to the door wall. verify, not done: smokes, splash, ripples, lamp, the timed motion rate, carried items' lights and the run clock's trip cannot show on stage 1 (nothing there, Run refused). Outside this file and still open: PlayerMotion::takeHits 0x1e18c0 past its first line, updateSounds 0x2a4a40 and the voice family 0x2a2070..0x2a4680 are stubs, one TU of their own, not queued (open-items.md Done). Next in the queue: game/characterbrain.cpp.",
@@ -2965,6 +2998,7 @@
   "unassigned@00142dd0": {},
   "unassigned@00148db0": {},
   "unassigned@00171300": {},
+  "unassigned@00176480": {},
   "unassigned@0017fce0": {
    "sessions": [
     {

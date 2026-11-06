@@ -1342,7 +1342,7 @@ StageCollisionFace *MotionProbe::faceAhead(sceVu0FVECTOR out, bool forward)
 // A car's roof and the like: an edge on one is not a dead end.
 static bool isVehicle(StageObject *object)
 {
-    return object != nullptr && object->getKind() == StageObject_Kind3;
+    return object != nullptr && object->getKind() == StageObject_Car;
 }
 
 // Neither side of the place is against a wall.
@@ -1429,7 +1429,7 @@ bool MotionProbe::findEdge(StageCollisionFace *face, StageObject **object, sceVu
     target[1] += sinCos(back, 1) * kOverEdge;
     const sceVu0FVECTOR center = { target[0], target[1], target[2] + kEyeHeight, target[3] };
     return onVehicle ? !gStageScene->sphereHitsAny(ground->radius2, center, kFaceWall, 0, nullptr)
-                     : !gStageScene->sphereHitsKind(ground->radius2, center, StageObject_Kind3, kFaceWall, 0, nullptr);
+                     : !gStageScene->sphereHitsKind(ground->radius2, center, StageObject_Car, kFaceWall, 0, nullptr);
 }
 
 // FS2 0x0026c180
@@ -1804,7 +1804,7 @@ static int levelMotion(float drop)
 // The floor object is a car: the ROM's kind 3. No such object exists yet.
 static StageCar *asCar(StageObject *object)
 {
-    return object != nullptr && object->getKind() == StageObject_Kind3 ? reinterpret_cast<StageCar *>(object) : nullptr;
+    return object != nullptr && object->getKind() == StageObject_Car ? reinterpret_cast<StageCar *>(object) : nullptr;
 }
 
 // FS2 0x001dff40
@@ -2285,9 +2285,9 @@ void LevelCondition::onApply()
     StageObject *standing = character->m_ground->floorObject;
     bool ontoCar = false;
     if (0.0f < walk->edgeDrop && standing != nullptr && walk->edgeFloor != nullptr
-        && walk->edgeFloor->getKind() == StageObject_Kind3) {
+        && walk->edgeFloor->getKind() == StageObject_Car) {
         const int kind = standing->getKind();
-        ontoCar = kind == StageObject_MapObject || kind == StageObject_Kind3;
+        ontoCar = kind == StageObject_MapObject || kind == StageObject_Car;
     }
     motion->request(ontoCar ? (int)Motion_Up090 : levelMotion(walk->edgeDrop));
     motion->startWalkFile(kLadderWalkRate, motion->requestedFile(), walk->edgePoint, walk->edgeAngles, true, false);
@@ -6795,7 +6795,7 @@ bool StageCharacter::getTargetPoint(StageObject *target, float *out, bool plain)
     }
 
     // PC: only a map object has m_mapParts; the ROM's objects of these kinds all do.
-    if (isOnStageObjectKind(kind) && kind != StageObject_Kind3 && target->m_mapParts != nullptr
+    if (isOnStageObjectKind(kind) && kind != StageObject_Car && target->m_mapParts != nullptr
         && target->m_mapParts->switches != nullptr) {
         if (m_weapons[0] == nullptr)
             return false;
@@ -6871,7 +6871,7 @@ int MotionProbe::findBlowPart()
         return -1;
     const int kind = target->getKind();
     // PC: m_mapParts as in getTargetPoint.
-    if (!isOnStageObjectKind(kind) || kind == StageObject_Kind3 || target->m_mapParts == nullptr
+    if (!isOnStageObjectKind(kind) || kind == StageObject_Car || target->m_mapParts == nullptr
         || target->m_mapParts->switches == nullptr || !owner->isBlowActive())
         return -1;
     const int part = target->nearestPart(owner);
@@ -8621,7 +8621,7 @@ bool StageCharacter::isCorpseGone()
     int frames = m_motion->m_reviveFrames;
     if (view != nullptr && view->isNear(kCorpseWatchRange, m_xform.position)) {
         const StageObject *floor = m_ground->floorObject;
-        if ((floor == nullptr || const_cast<StageObject *>(floor)->getKind() != StageObject_Kind3)
+        if ((floor == nullptr || const_cast<StageObject *>(floor)->getKind() != StageObject_Car)
             && frames <= kCorpseWatchedFrames)
             frames = kCorpseWatchedFrames;
     }
@@ -9248,7 +9248,7 @@ static int reviveFramesLeft(StageCharacter *character)
     const bool near = scene->viewTarget != nullptr
                    && scene->viewTarget->isNear(kNearViewTarget, character->m_xform.position);
     StageObject *floor = character->m_ground->floorObject;
-    if (!near || (floor != nullptr && floor->getKind() == StageObject_Kind3))
+    if (!near || (floor != nullptr && floor->getKind() == StageObject_Car))
         return scriptFramesTo30(frames);
     return scriptFramesTo30(frames > kMinFramesNear ? frames : kMinFramesNear);
 }

@@ -19,6 +19,7 @@
 #include "game/mapobject.h"
 #include "game/mathutil.h"
 #include "game/modelpose.h"
+#include "game/objectproperty.h"
 #include "game/stagedoor.h"
 #include "game/stageitem.h"
 #include "game/stagescene.h"
@@ -32,8 +33,13 @@ constexpr float kFrameSeconds = 0.033333335f;   // 1/30 s: a motion frame
 constexpr int kMapCellSize = 0x96;          // StageCollision's grid on a map
 constexpr short kRootPartLimit = 100;       // the Root's groups from here on are the doors'
 constexpr int kPartBitWords = 8;
+constexpr int kMapObjectMeshes = 1;         // createMapObject's plain object
 constexpr char kPartName[] = "BKW%02d";     // data 0x303150
 constexpr char kGlassEffect[] = "glass%d_0"; // data 0x303168
+constexpr char kBrokenGlassEffect[] = "glass%d_1";   // data 0x303068
+constexpr char kDoorGlassEffect[] = "doaglass%d_1";  // data 0x303048: the door record's value
+constexpr char kBreakGlassSound[] = "BREAK_GLASS";   // data 0x303058
+constexpr int kBrokenGlassShown = 0;         // the switch's piece that stays: PartSwitch::show
 
 constexpr char kMapModelPrefix = 'o';        // a placed model; the rest are never doors
 constexpr char kDoorPartR[] = "_dp";         // data 0x3030c8
@@ -43,12 +49,28 @@ constexpr char kDoorScanT[] = "_ds_%02d";    // data 0x303140
 constexpr char kTopBone[]   = "bn_top";      // data 0x3030b8
 
 // Bits setupMapObject sets on every map model.
-constexpr char kGateModelA[] = "oGK99_01";   // data 0x3030d8
-constexpr char kGateModelB[] = "oDC99_01";   // data 0x3030e8
+constexpr char kCarModelA[] = "oGK99_01";   // data 0x3030d8
+constexpr char kCarModelB[] = "oDC99_01";   // data 0x3030e8
 constexpr u_short kMapModelFlags = ModelFlag_TakesSpot | ModelFlag_TakesPoint | ModelFlag_TakesShadow;
 constexpr u_short kMapModelLitBit = ModelFlag_TakesPoint;   // off on a model with its own lights
 
 } // namespace
+
+// Its placement is the node's matrix, which setModel writes straight into
+// the world matrix. Left dirty, the first calcmatrix would rebuild that
+// from position and rotation, both zero, and put the object at the origin.
+// FS2 0x001765e0
+// callcheck: StageObject, operator_new[], setDirtyTree (the base, the collision table, slot +0x1c)
+
+StageMapObject::StageMapObject(int meshes)
+{
+    m_collides = 1;
+    m_collisionCount = meshes;
+    m_collisions = new StageCollision *[m_collisionCount];
+    for (u_int i = 0; i < m_collisionCount; i++)
+        m_collisions[i] = nullptr;
+    setDirtyTree(false);
+}
 
 // FS2 0x00176480
 // callcheck: ~StageCollision, operator_delete[], operator_delete[], __destroy_new_array, operator_delete[], operator_delete, ~StageObject, operator_delete (MapObjectParts' dtor inline)
@@ -107,6 +129,74 @@ void StageMapObject::markMoved()
     }
 }
 
+// The ROM's is a copy of StageObject::getProperty's whole list, id for id, with
+// Prop_KeyValue in front; a door falls here too.
+// FS2 0x00174b00
+// callcheck: getKind, sevenKeysPoseValue, getProperty (the list of 0x18a5b0 calls the rest)
+// callcheck: clearBit, currentMission, getClockFrames, getDeltaSeconds, getHandle, getMissionFrames, getResultHold, getResultPaused, getResultValue, getSaveData, getScoreClock, getScriptVar3e, getScriptVar3f, getSeconds, getStageSelect, onRestore, random, stageFps, testStageFlags
+
+int StageMapObject::getProperty(int id, int sub)
+{
+    if (id == Prop_KeyValue)
+        return getKind() == StageObject_Kind6 ? sevenKeysPoseValue(this, sub) : 0;
+    return StageObject::getProperty(id, sub);
+}
+
+// Part goes: its faces stop colliding, the switch shows its broken piece and
+// the part's effect stops. With withEffect the glass falls and is heard, from
+// the door's bone or from the map's own effect. A door then refreshes its faces
+// on the Root, broken glass or not. The last part gone turns m_lightOn off.
+// The ROM loads 800.0 into f12 for both sounds; nothing on that path reads it.
+// FS2 0x00175900
+// callcheck: setGroup, show, setEmitting, getKind, partName, find, sprintf, spawn, getWorldMatrix, playNamedHeard2, sprintf, spawn, playNamedHeard2, getKind, attachToRoot
+
+void StageObject::breakPart(int part, bool withEffect)
+{
+    // PC: a door whose motion never came has no parts; the ROM reads low memory.
+    MapObjectParts *parts = m_mapParts;
+    if (parts != nullptr && parts->switches != nullptr) {
+        int index = 0;
+        while (index < parts->count && parts->ids[index] != part)
+            index++;
+        if (index == parts->count)
+            return;
+        // PC: the ROM goes on with a null mesh.
+        if (StageCollision *mesh = collisionAt(0))
+            mesh->setGroup(part + 1, false);
+        parts->switches[index].show(kBrokenGlassShown);
+        if (parts->effects != nullptr && parts->effects[index] != nullptr)
+            parts->effects[index]->setEmitting(false);
+
+        if (withEffect) {
+            char name[0x20];    // the ROM's are 0x10
+            if (getKind() == StageObject_Door) {
+                BoneMap::Node *bone = m_model->boneMap.find(parts->switches[index].partName(0));
+                if (bone != nullptr) {
+                    // PC: the ROM reads the record of a door without one through null.
+                    const bool hasRecord = m_doorRecord >= 0 && m_doorRecord < kDoorRecords;
+                    sprintf(name, kDoorGlassEffect, hasRecord ? gDoorRecords[m_doorRecord].value : 0);
+                    gStageScene->nodeTree->spawn(name, bone->value, nullptr, nullptr, 0, 0);
+                    playNamedHeard2(kBreakGlassSound, bone->value->getWorldMatrix()[3], nullptr);
+                }
+            } else {
+                sprintf(name, kBrokenGlassEffect, parts->ids[index] + 1);
+                StageParticle *effect = gStageScene->nodeTree->spawn(name, nullptr, nullptr, nullptr, 0, 0);
+                // PC: a name the tree lacks gives null; the ROM reads +0x150 of it.
+                if (effect != nullptr)
+                    playNamedHeard2(kBreakGlassSound, effect->m_xform.position, nullptr);
+            }
+        }
+
+        int left = 0;
+        while (left < parts->count && parts->switches[left].shown == kBrokenGlassShown)
+            left++;
+        if (left == parts->count)
+            m_lightOn = 0;
+    }
+    if (getKind() == StageObject_Door)
+        attachToRoot();
+}
+
 // FS2 0x00174aa0
 // callcheck: setPosition
 
@@ -143,6 +233,18 @@ void StageMapObject::sideHook0()
     }
 }
 
+// FS2 0x001755f0
+// callcheck: getDeltaSeconds, advance
+
+void StageMapObject::advanceMotion(float rate)
+{
+    m_model->advance(rate * (gStageScene->clock->getDeltaSeconds() / kFrameSeconds),
+                     m_xform.position, m_xform.rotation, 0);
+    for (BoneMap::Node *node = m_model->boneMap.first; node != nullptr; node = node->next)
+        node->value->updateMatrix();
+    m_touchedBy = nullptr;
+}
+
 // FS2 0x001771b0
 // callcheck: getDeltaSeconds, advance
 
@@ -172,7 +274,7 @@ StageObject *createMapObject(const char *name, void *collision)
         if (door != nullptr)
             return sscanf(door, kDoorScanT, &number) > 0 ? new StageDoor(StageDoorType_T, number) : nullptr;
     }
-    return new StageMapObject;
+    return new StageMapObject(kMapObjectMeshes);
 }
 
 // The base has no motions of its own.
@@ -256,8 +358,8 @@ void StageObject::setupMapObject(const char *name, ModelInstance *instance,
     const bool isRoot = strcmp(name, kRootModelName) == 0;
     m_model->_180 = !isRoot;
 
-    // PC: the door classes are not written, so every map object is this class
-    // (createMapObject); the ROM reaches the base at +0x200.
+    // Every object that comes here stands on this class: the ROM reaches the
+    // base at +0x200.
     StageMapObject *self = static_cast<StageMapObject *>(this);
     CollisionRecord *record = collisionFindRecord(collision, name);
     self->m_record = record;
@@ -296,7 +398,7 @@ void StageObject::setupMapObject(const char *name, ModelInstance *instance,
 // count. The doors' effect (kinds 2, 0x21: a bone's name and the door's table)
 // waits for those classes and stays null.
 // FS2 0x00176bc0
-// callcheck: strcmp, memset, operator_new[], memset, operator_new[], FUN_00104d90, sprintf, init, sprintf, init, operator_new[], FUN_00186f80, find, sprintf, sprintf, spawn, sprintf, spawn
+// callcheck: strcmp, memset, operator_new[], memset, operator_new[], FUN_00104d90, sprintf, init, sprintf, init, operator_new[], partName, find, sprintf, sprintf, spawn, sprintf, spawn
 
 MapObjectParts::MapObjectParts(StageObject *owner, CollisionRecord *record, bool withEffects)
 {
@@ -336,7 +438,7 @@ MapObjectParts::MapObjectParts(StageObject *owner, CollisionRecord *record, bool
 
         switches = new PartSwitch[count];
         int kind = owner->getKind();
-        const bool hasStates = kind == StageObject_Kind3 || kind == StageObject_SubSceneGate;
+        const bool hasStates = kind == StageObject_Car || kind == StageObject_SubSceneGate;
         for (int i = 0; i < count; i++) {
             char name[0x80];
             sprintf(name, kPartName, ids[i] + 1);
@@ -390,9 +492,9 @@ void MapObjectParts::copyShown(const MapObjectParts *from)
 // FS2 0x001769e0
 // callcheck: strcmp, strcmp
 
-bool isGateModelName(const char *name)
+bool isCarModelName(const char *name)
 {
-    return strcmp(name, kGateModelA) == 0 || strcmp(name, kGateModelB) == 0;
+    return strcmp(name, kCarModelA) == 0 || strcmp(name, kCarModelB) == 0;
 }
 
 // PC: the data test: a sub-scene's node may have no model data. The ROM has none.
@@ -405,9 +507,63 @@ void StageObject::applyMapModelFlags()
         return;
     m_model->data->flags |= kMapModelFlags;
     int kind = getKind();
-    if (kind == StageObject_Kind3 || kind == StageObject_SubSceneGate) {
+    if (kind == StageObject_Car || kind == StageObject_SubSceneGate) {
         m_model->data->flags &= ~kMapModelLitBit;
         m_model->m_ownAmbient = 1;
         m_model->m_lit = 1;
     }
 }
+
+// Written in headers or left to the host; tools/reverse reads tags from .cpp files only:
+//   FS2 0x001753d0  StageMapObject::getKind (mapobject.h)
+//   FS2 0x001753e0  StageMapObject::onCollide (mapobject.h)
+//   FS2 0x001755d0  StageMapObject::collisionHook3 (mapobject.h)
+//   FS2 0x001755e0  StageMapObject::syncBody (mapobject.h)
+//   FS2 0x001758f0  StageMatrixNode::getWorldMatrix (stagenode.h)
+//   FS2 0x00177160  ScriptRunner::getScriptDoor (scriptrunner.h)
+//   FS2 0x00177180  ScriptRunner::scriptIsFacing (scriptrunner.h)
+//   FS2 0x001771a0  StageMapObject::sideHook3 (mapobject.h)
+//   FS2 0x00177260  StageMapObject::sideHook1 (mapobject.h)
+//   FS2 0x00177270  StringMap<StageNodeBase *>::find (stagelist.h), the bone map's: it takes the root
+//   FS2 0x001772f0  DoorRecord's ctor, run over gDoorRecords by 0x310a00: the host's bss is zero already
+
+// The adjustor thunks that end the file (the host's compiler makes its own):
+//   FS2 0x00177340  StageMapObject::sideHook3, -0x18
+//   FS2 0x00177350  StageMapObject::sideHook2, -0x18
+//   FS2 0x00177360  StageMapObject::sideHook1, -0x18
+//   FS2 0x00177370  StageMapObject::~StageMapObject, -0x40
+//   FS2 0x00177380  StageObject::setProperty, -0x40
+//   FS2 0x00177390  StageMapObject::getProperty, -0x40
+//   FS2 0x001773a0  StageDoor::sideHook3, -0x18
+//   FS2 0x001773b0  StageDoor::sideHook2, -0x18
+//   FS2 0x001773c0  StageDoor::sideHook1, -0x18
+//   FS2 0x001773d0  StageMapObject::sideHook0, -0x18
+//   FS2 0x001773e0  StageObject::setTreeShown, -0x40
+//   FS2 0x001773f0  StageObject::setShownState, -0x40
+//   FS2 0x00177400  StageObject::getShownState, -0x40
+//   FS2 0x00177410  StageObject::noiseHook, -0x40
+//   FS2 0x00177420  StageObject::makeNoise, -0x40
+//   FS2 0x00177430  StageObject::playNamedHeard, -0x40
+//   FS2 0x00177440  StageDoor::scriptIsFacing, -0x40
+//   FS2 0x00177450  StageObject::scriptAddMenuLine, -0x40
+//   FS2 0x00177460  StageObject::heightDifference, -0x40
+//   FS2 0x00177470  StageObject::distanceTo, -0x40
+//   FS2 0x00177480  StageObject::getSelf, -0x40
+//   FS2 0x00177490  StageDoor::getScriptDoor, -0x40
+//   FS2 0x001774a0  StageMapObject::getScriptMapObject, -0x40
+//   FS2 0x001774b0  StageObject::setModelValue, -0x40
+//   FS2 0x001774c0  StageMapObject::setYaw, -0x40
+//   FS2 0x001774d0  StageMapObject::setRotation, -0x40
+//   FS2 0x001774e0  StageMapObject::setPosition, -0x40
+//   FS2 0x001774f0  StageObject::getPosZ, -0x40
+//   FS2 0x00177500  StageObject::getPosY, -0x40
+//   FS2 0x00177510  StageObject::getPosX, -0x40
+//   FS2 0x00177520  StageObject::getObjectName, -0x40
+//   FS2 0x00177530  StageDoor::~StageDoor, -0x40
+//   FS2 0x00177540  StageDoor::setProperty, -0x40
+//   FS2 0x00177550  StageDoor::getProperty, -0x40
+//   FS2 0x00177560  StageObject::getCollisionObject, -0x200
+//   FS2 0x00177570  StageMapObject::collisionHook3, -0x200
+//   FS2 0x00177580  StageMapObject::syncBody, -0x200
+//   FS2 0x00177590  StageMapObject::onCollide, -0x200
+//   FS2 0x001775a0  StageMapObject::collisionHook0, -0x200

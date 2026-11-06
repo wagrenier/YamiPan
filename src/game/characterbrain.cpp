@@ -335,11 +335,11 @@ StageCharacter *ScriptProxy::getScriptActor()
 }
 
 // FS2 0x001a69d0
-// callcheck: getForwardObject, getScriptCar
+// callcheck: getForwardObject, getScriptMapObject
 
-StageCar *ScriptProxy::getScriptCar()
+StageObject *ScriptProxy::getScriptMapObject()
 {
-    return getForwardObject()->getScriptCar();
+    return getForwardObject()->getScriptMapObject();
 }
 
 // FS2 0x001a7890

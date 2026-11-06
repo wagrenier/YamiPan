@@ -758,3 +758,15 @@ bool StageCamera::seesPoint(const sceVu0FVECTOR point)
     const float side = m_screenWidth < m_screenHeight ? m_screenHeight : m_screenWidth;
     return angle <= atan2Octant(m_scrZ, side / 2.0f);
 }
+
+// Written in headers or left to the host; tools/reverse reads tags from .cpp files only:
+//   FS2 0x001775b0  StageCamera::getKind (gamehooks.h)
+//   FS2 0x001775c0  ScriptRunner::getScriptMapObject (scriptrunner.h), the base's answer
+//   FS2 0x001775e0  StageCamera::sideHook3, empty as the base's
+//   FS2 0x001775f0  StageCamera::sideHook2, empty as the base's
+//   FS2 0x00177600  StageCamera::sideHook1, empty as the base's
+//   FS2 0x00177610  StageCamera::sideHook0, empty as the base's
+//   FS2 0x00177620  StageObject::setYaw (gamehooks.h)
+//   FS2 0x00177630  StageObject::setRotation (gamehooks.h)
+//   FS2 0x00177640  StageObject::setPosition (gamehooks.h)
+//   FS2 0x00177650  StageCamera's dtor: the compiler's
