@@ -22,13 +22,16 @@ struct main0_in
 fragment main0_out main0(main0_in in [[stage_in]], constant type_UiFragmentUniforms& UiFragmentUniforms [[buffer(0)]], texture2d<float> uTexture [[texture(0)]], sampler uTextureSampler [[sampler(0)]])
 {
     main0_out out = {};
-    float4 _39 = uTexture.sample(uTextureSampler, in.in_var_TEXCOORD0);
-    float4 _42 = fast::clamp((_39 * in.in_var_TEXCOORD1) * 1.9921875, float4(0.0), float4(1.0));
-    if (_42.w < UiFragmentUniforms.uParams.x)
+    float4 _42 = uTexture.sample(uTextureSampler, in.in_var_TEXCOORD0) * in.in_var_TEXCOORD1;
+    float3 _46 = _42.xyz * UiFragmentUniforms.uParams.y;
+    float4 _47 = float4(_46.x, _46.y, _46.z, _42.w);
+    _47.w = _42.w * 1.9921875;
+    float4 _51 = fast::clamp(_47, float4(0.0), float4(1.0));
+    if (_51.w < UiFragmentUniforms.uParams.x)
     {
         discard_fragment();
     }
-    out.out_var_SV_Target0 = _42;
+    out.out_var_SV_Target0 = _51;
     return out;
 }
 
