@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-05 20:23 at commit `4f8675b` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-05 20:46 at commit `0b2ab17` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-05 20:23 at commit `4f8675b` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **4500** (68%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3579
-- context-name ledger: 5123 entries; overrides of wrong library matches: 0
+- game functions: **6599**, named **4502** (68%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3581
+- context-name ledger: 5125 entries; overrides of wrong library matches: 0
 - placed in a source file: 4637/6599 in 105 files
 
 Least-named game-code regions (64 KB blocks):
@@ -23,14 +23,14 @@ Least-named game-code regions (64 KB blocks):
 | `002c0000` | 33/173 (19%) | game/packtables.cpp, game/menupack.cpp, game/stagecollision.cpp |
 | `00220000` | 44/167 (26%) | - |
 | `002d0000` | 90/256 (35%) | game/drawsys.cpp, game/fontdata.cpp, game/wstring.cpp |
-| `00200000` | 52/122 (43%) | game/pausemenustate.cpp, game/playermotion.cpp, game/uiitemlist.cpp |
+| `00200000` | 53/122 (43%) | game/pausemenustate.cpp, game/playermotion.cpp, game/uiitemlist.cpp |
 | `00280000` | 102/232 (44%) | game/demoevent.cpp, game/playermotion.cpp, game/areagrid.cpp |
 | `00250000` | 81/178 (46%) | game/uiwidget.cpp, game/uidrawer.cpp, game/uigame.cpp |
 | `001c0000` | 108/233 (46%) | game/scriptrunner.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **4194**; stubs: **296**
+- reconstructed FS2 functions: **4195**; stubs: **296**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -106,7 +106,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/titlescreen.cpp` | 3 | 0 |
 | `src/game/uidrawer.cpp` | 50 | 0 |
 | `src/game/uigame.cpp` | 32 | 0 |
-| `src/game/uiitemlist.cpp` | 20 | 0 |
+| `src/game/uiitemlist.cpp` | 21 | 0 |
 | `src/game/uilayout.cpp` | 22 | 0 |
 | `src/game/uisequence.cpp` | 29 | 0 |
 | `src/game/uitrack.cpp` | 99 | 0 |
@@ -144,12 +144,11 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 219 TUs: todo 93, partial 40, verify 87, done 26
-- next: **game/uiitemlist.cpp** (continuing a partial TU)
+- 219 TUs: todo 93, partial 39, verify 87, done 27
+- next: **game/scenepool.cpp** (continuing a partial TU)
 - pinned queue: (empty)
 - partial: `game/scenepool.cpp` 11/11 -- Written with game/playermotion.cpp thirteenth run (2026-11-05): all 11. The text shows; the dark strip behind it could not be told apart on the dark room of sta
 - partial: `game/stageobject.cpp` 43/43 -- Stage update now finishes its first frame: the listenerFacing crash is gone, 111 stubs reached. Stops at an access violation in StageScene::draw (stagescene.cpp
-- partial: `game/uiitemlist.cpp` 19/20 -- Written with game/playermotion.cpp's fourth run (2026-11-05): the list and the prompt's label work and show. Left: the button's picture beside the label in UiPr
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -240,6 +239,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-05 20:46 `game/uiitemlist.cpp` done: the Use prompt's button picture and UiPrompt's destructor; all 20 functions written
 - 2026-11-05 20:23 `yamipan/rendering/model_renderer.cpp` verify: A batch with no UVs draws instead of crashing
 - 2026-11-05 19:49 `game/stagescene.cpp` verify: The next mission starts: isMotionTarget, so the shared animals get their motions and a pose
 - 2026-11-05 18:57 `game/navimenu.cpp` verify: The navigator: the screen after a stage, its two widgets and the answer
@@ -247,22 +247,21 @@ Recent sessions:
 - 2026-11-05 17:36 `game/scriptrunner.cpp` verify: The last 89 natives: every native the disc's scripts call is bound; nothing seen to run
 - 2026-11-05 16:56 `game/scriptrunner.cpp` partial: 52 more natives by use on the disc, takeDamage and getHandClass, scriptHurt, the runner slots behind them
 - 2026-11-05 16:09 `game/scriptrunner.cpp` partial: 56 more natives by use on the disc, the mission spawn picks, canSpawn and spawn, parseSpawnId, search points, the leaves
-- 2026-11-05 15:30 `game/scriptrunner.cpp` partial: 63 more natives by use on the disc, the foe weights and picks, the character slots behind them
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@00135990` | partial | 3/0/33 | 3.1 | 579 | 0 |
-| `unassigned@0021e120` | partial | 4/44/195 | 71.5 | 141 | 5 |
+| `unassigned@0021e120` | partial | 4/44/195 | 71.5 | 131 | 3 |
 | `unassigned@001eedb0` | partial | 1/0/25 | 4.1 | 130 | 0 |
 | `unassigned@00176480` | partial | 13/0/69 | 5.3 | 110 | 0 |
-| `unassigned@001fe6b0` | todo | 0/26/77 | 34.1 | 102 | 9 |
+| `unassigned@001fe6b0` | todo | 0/26/77 | 34.1 | 87 | 6 |
 | `unassigned@0018c050` | todo | 0/9/36 | 17.9 | 78 | 2 |
 | `game/vectortrack.cpp` | partial | 9/0/16 | 2.5 | 68 | 0 |
-| `unassigned@00190900` | partial | 2/8/34 | 11.8 | 58 | 8 |
 | `unassigned@0017e140` | todo | 0/0/78 | 1.4 | 51 | 0 |
 | `unassigned@0027cab0` | partial | 3/2/59 | 13.1 | 45 | 0 |
+| `unassigned@00190900` | partial | 2/8/34 | 11.8 | 43 | 5 |
 | `unassigned@002a31b0` | partial | 1/18/22 | 5.9 | 39 | 0 |
-| `unassigned@0023c010` | todo | 0/11/15 | 7.4 | 37 | 4 |
+| `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 37 | 1 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

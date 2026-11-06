@@ -3185,6 +3185,7 @@ class UiPrompt
 {
 public:
     UiPrompt(WideFontPrinter *printer, int arg);                         // FS2 0x00208c70
+    ~UiPrompt();                                                         // FS2 0x00208c00
     // The label to show next; false while a press is playing.
     bool setLabel(const void *text, int value);                          // FS2 0x00208bb0
     // Plays the press; answers the label pressed.
@@ -3193,9 +3194,10 @@ public:
     void endFrame();                                                     // FS2 0x00208be0
     // A press that has played lets the prompt go.
     void stepPress();                                                    // FS2 0x00208cc0
-    // The fade of the moment and the label, centred at the top. PC: the
-    // button's picture from the sheet is not drawn, its width is kept.
+    // The fade of the moment, the button's picture and the label, centred
+    // at the top.
     void draw(sceVif1Packet *packet);                                    // FS2 0x00208490
+    void drawButton(sceVif1Packet *packet, const struct TimSheetSprite *sprite, u_int rgba, int x, int y);
 
     enum State { State_Idle = 0, State_Pressed = 1 };
 
@@ -3207,6 +3209,8 @@ public:
     int    value = -1;          // FS2 +0x14
     int    lastValue = -1;      // FS2 +0x18
     void  *sheet = nullptr;     // FS2 +0x1c
+    Tim2Texture *texture = nullptr; // FS2 +0x20: the picture of the sheet's first sprite
+    struct TimSheet *buttons = nullptr; // FS2 +0x24: sheet, when it is a TimM sheet
     const struct UiPromptFade *fade = nullptr; // FS2 +0x28: 0x2fa7b0 open, 0x2fa7c0 press, 0x2fa7c8 close
     int    animFrame = 0;       // FS2 +0x2c
     int    animKind = 0;        // FS2 +0x30: UiPromptAnim
