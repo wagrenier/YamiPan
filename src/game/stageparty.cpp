@@ -185,8 +185,7 @@ SightJack::~SightJack()
     if (m_fill != nullptr)
         m_fill->destroy();
     delete m_fleckTexture;
-    if (m_flecks != nullptr)
-        demoFleckDestroy(m_flecks);
+    delete m_flecks;
 }
 
 // FS2 0x00203ae0
@@ -1184,7 +1183,7 @@ void SightJack::drawFadingMarker()
 
 // FS2 0x00201840
 // While a foe attacks: the own crosses, the film, a red wash, the bright frame.
-// callcheck: openList, getTopView, jackMarker, canBeJacked, jackMarker, demoFleckStep, demoFleckDraw, demoFilmDraw, gsFillRect, closeList, openList, gsFrameScale, closeList
+// callcheck: openList, getTopView, jackMarker, canBeJacked, jackMarker, step, draw, demoFilmDraw, gsFillRect, closeList, openList, gsFrameScale, closeList
 
 void SightJack::drawWarning(float filmLevel)
 {
@@ -1192,8 +1191,8 @@ void SightJack::drawWarning(float filmLevel)
     sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
     drawOwnMarkers(packet);
     if (m_flecks != nullptr) {
-        demoFleckStep(m_flecks);
-        demoFleckDraw(m_fill != nullptr ? m_fill->m_level : 0.0f, m_flecks, packet);
+        m_flecks->step();
+        m_flecks->draw(packet);
     }
     m_film.draw(filmLevel, packet);
     // PC: the ROM leaves ALPHA_1 as the film set it.
@@ -1207,19 +1206,19 @@ void SightJack::drawWarning(float filmLevel)
     packets->closeList();
 }
 
-// callcheck: demoFilmDraw, demoFleckStep, demoFleckDraw
+// callcheck: demoFilmDraw, step, draw
 
 void SightJack::drawFilm(float filmLevel, sceVif1Packet *packet)
 {
     m_film.draw(filmLevel, packet);
     if (m_flecks != nullptr) {
-        demoFleckStep(m_flecks);
-        demoFleckDraw(m_fill != nullptr ? m_fill->m_level : 0.0f, m_flecks, packet);
+        m_flecks->step();
+        m_flecks->draw(packet);
     }
 }
 
 // FS2 0x00201a40
-// callcheck: openList, gsFillRect, gfxGetTexArea, getList, demoFilmDraw, demoFleckStep, demoFleckDraw, drawBindFlash, closeList
+// callcheck: openList, gsFillRect, gfxGetTexArea, getList, demoFilmDraw, step, draw, drawBindFlash, closeList
 
 void SightJack::drawNobody(float filmLevel)
 {
@@ -1234,7 +1233,7 @@ void SightJack::drawNobody(float filmLevel)
 }
 
 // FS2 0x002016d0
-// callcheck: openList, gsFillRect, gfxGetTexArea, getList, demoFilmDraw, demoFleckStep, demoFleckDraw, drawBindFlash, closeList
+// callcheck: openList, gsFillRect, gfxGetTexArea, getList, demoFilmDraw, step, draw, drawBindFlash, closeList
 
 void SightJack::drawCorpse(float filmLevel)
 {
@@ -1252,7 +1251,7 @@ void SightJack::drawCorpse(float filmLevel)
 // list 8 the bright frame and the tint of what the character is.
 // PC: not drawn: stage 0x1b's boss film 0x2d10f0, with its object at +0xb4
 // not built.
-// callcheck: openList, demoFilmDraw, gfxGetTexArea, getList, getTopView, jackMarker, canBeJacked, jackMarker, demoFleckStep, demoFleckDraw, drawBindFlash, closeList, openList, gsFrameScale, getStageSelect, strcmp, strcmp, getStageSelect, gsFrameAdd, getStageSelect, strcmp, strcmp, gsFrameContrast, getStageSelect, drawFoeMarkers, strcmp, strcmp, strcmp, getStageSelect, strcmp, strcmp, strcmp, getStageSelect, isTakenOver, strcmp, strcmp, closeList (FUN_002d10f0, FUN_002d3080, gfxGetDrawEnv, gsFillRect, getDeltaSeconds, unwritten as above)
+// callcheck: openList, demoFilmDraw, gfxGetTexArea, getList, getTopView, jackMarker, canBeJacked, jackMarker, step, draw, drawBindFlash, closeList, openList, gsFrameScale, getStageSelect, strcmp, strcmp, getStageSelect, gsFrameAdd, getStageSelect, strcmp, strcmp, gsFrameContrast, getStageSelect, drawFoeMarkers, strcmp, strcmp, strcmp, getStageSelect, strcmp, strcmp, strcmp, getStageSelect, isTakenOver, strcmp, strcmp, closeList (FUN_002d10f0, FUN_002d3080, gfxGetDrawEnv, gsFillRect, getDeltaSeconds, unwritten as above)
 
 void SightJack::drawLive(float filmLevel)
 {
@@ -1264,8 +1263,8 @@ void SightJack::drawLive(float filmLevel)
     if (m_mode == JackMode_KeptTurn || m_mode == JackMode_Kept)
         drawFoeMarkers(packet);
     if (m_flecks != nullptr) {
-        demoFleckStep(m_flecks);
-        demoFleckDraw(m_fill->m_level, m_flecks, packet);
+        m_flecks->step();
+        m_flecks->draw(packet);
     }
     drawBindFlash(packet);
     packets->closeList();
@@ -1312,7 +1311,7 @@ void SightJack::drawLive(float filmLevel)
 
 // FS2 0x002024c0
 // The frame's gate.
-// callcheck: vecDistance, openList, demoFilmDraw, demoFleckStep, demoFleckDraw, closeList, openList, gsFrameScale, closeList, openList, getTopView, jackMarker, canBeJacked, jackMarker, closeList, openList, gsFillRect, gfxGetTexArea, getList, FUN_001518a0, gfxGetTexArea, getList, FUN_001518a0, demoFilmDraw, demoFleckStep, demoFleckDraw, drawBindFlash, closeList, drawWarning, openList, gfxGetTexArea, getList, FUN_001518a0, gfxGetTexArea, getList, FUN_001518a0, closeList, drawFadingMarker, openList, gfxGetTexArea, getList, demoFilmDraw, demoFleckStep, demoFleckDraw, drawBindFlash, closeList, openList, gsFrameScale, closeList, getAltSoundFlag, getLifeState, FUN_00215370, FUN_00201bc0, FUN_00201a40, FUN_002016d0
+// callcheck: vecDistance, openList, demoFilmDraw, step, draw, closeList, openList, gsFrameScale, closeList, openList, getTopView, jackMarker, canBeJacked, jackMarker, closeList, openList, gsFillRect, gfxGetTexArea, getList, FUN_001518a0, gfxGetTexArea, getList, FUN_001518a0, demoFilmDraw, step, draw, drawBindFlash, closeList, drawWarning, openList, gfxGetTexArea, getList, FUN_001518a0, gfxGetTexArea, getList, FUN_001518a0, closeList, drawFadingMarker, openList, gfxGetTexArea, getList, demoFilmDraw, step, draw, drawBindFlash, closeList, openList, gsFrameScale, closeList, getAltSoundFlag, getLifeState, FUN_00215370, FUN_00201bc0, FUN_00201a40, FUN_002016d0
 
 void SightJack::draw()
 {
@@ -1527,16 +1526,15 @@ void StageParty::addImage(const void *image)
 }
 
 // FS2 0x001fe900
-// callcheck: operator_new, Tim2Texture, operator_new, FUN_002a1240
+// callcheck: operator_new, Tim2Texture, operator_new, DemoFleck
 
 void StageParty::setImage(const void *image)
 {
     SightJack *jack = m_jack;
-    if (jack->m_flecks != nullptr)
-        demoFleckDestroy(jack->m_flecks);
+    delete jack->m_flecks;
     delete jack->m_fleckTexture;
     jack->m_fleckTexture = new Tim2Texture(image);
-    jack->m_flecks = demoFleckCreate(jack->m_fleckTexture);
+    jack->m_flecks = new DemoFleck(jack->m_fleckTexture);
 }
 
 // FS2 0x001fe9b0
@@ -1566,7 +1564,7 @@ bool StageParty::isCompanionMode()
 StageObject *StageParty::getCompanion() { return m_jack->viewed(); }
 
 // FS2 0x001fea30
-void *StageParty::getFlecks() { return m_jack->m_flecks; }
+DemoFleck *StageParty::getFlecks() { return m_jack->m_flecks; }
 // FS2 0x001fea40
 JackFilm *StageParty::getFilm() { return &m_jack->m_film; }
 
@@ -1595,9 +1593,6 @@ JackFilm::~JackFilm()
     for (Tim2Texture *frame : frames)
         delete frame;
 }
-
-// FS2 0x002a2050
-u_int demoFleckRandNext(u_int seed) { return seed * 0x15a4e35 + 1; }
 
 // FS2 0x00204550
 // FS2 0x00205070 drawCorner, FS2 0x002053a0 gsGreenToAlpha, FS2 0x00205670

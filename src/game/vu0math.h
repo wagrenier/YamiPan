@@ -311,6 +311,15 @@ inline void sinCosVec(float *sines, float *cosines, const sceVu0FVECTOR angles)
         cosines[lane] = cosf(angles[lane]);
     }
 }
+// The sine and cosine of one angle, at out[0] and out[1]: the same series, on
+// the angle folded to -pi/2..pi/2 and on pi/2 - |angle|, in the ROM.
+// FS2 0x00135d50
+inline void sinCosPair(float angle, float *out)
+{
+    out[0] = sinf(angle);
+    out[1] = cosf(angle);
+}
+
 // out = the turns of rotation (radians), Rz Rx Ry for applyMatrix's vectors:
 // around y first, z last. Row 3 = (0, 0, 0, 1).
 // FS2 0x001359f0

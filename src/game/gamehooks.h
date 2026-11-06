@@ -48,6 +48,7 @@
 class GamePacketManager;        // game/gamepacket.h
 class GsTexture;                // game/gsutil.h
 class TexAreaList;              // game/gsblockmap.h
+class DemoFleck;                // game/demofleck.h
 
 struct StageSelect;             // game/sysdata.h
 
@@ -1009,7 +1010,7 @@ struct StageParty
     // ScreenFill::setImage on the record's +0x3c.
     void setFillImage(const void *image);                                // FS2 0x001fe9b0
     // The film overlay's data: two parts of the record.
-    void *getFlecks();                                                   // FS2 0x001fea30
+    DemoFleck *getFlecks();                                              // FS2 0x001fea30
     struct JackFilm *getFilm();                                          // FS2 0x001fea40
     // A new Tim2Texture of image joins the record's list (+0x54).
     void addImage(const void *image);                                    // FS2 0x001fe890
@@ -1960,12 +1961,7 @@ public:
 // ViewCamera, "camview" and its two variants: game/viewcamera.h.
 // What the event code calls of TUs to come.
 // The generator of the film and the flecks: the next seed; its bits 16..30 are the draw.
-u_int demoFleckRandNext(u_int seed);                                     // FS2 0x002a2050
-void demoFleckStep(void *flecks);                                        // FS2 0x002a11d0
-void demoFleckDraw(float level, void *flecks, sceVif1Packet *packet);    // FS2 0x002a11c0
 // The flecks over a texture, and their end (vtable +8).
-void *demoFleckCreate(Tim2Texture *texture);                             // FS2 0x002a1240
-void demoFleckDestroy(void *flecks);
 // The mission's script helpers beside scriptPrepare.
 bool missionRestoreCheck();                                              // FS2 0x0029f2a0
 // A kept spawn point out of the view: mode 0.. the mode-th nearest place, or
@@ -2016,7 +2012,7 @@ public:
     int   m_overlay = DemoOverlay_None;   // FS2 +0x300
     bool  m_ownsFilm = false;   // FS2 +0x304: the dtor deletes m_film (never set here)
     struct JackFilm *m_film = nullptr; // FS2 +0x308
-    void *m_flecks = nullptr;   // FS2 +0x30c
+    DemoFleck *m_flecks = nullptr; // FS2 +0x30c
 };
 // The bullet and the items: game/stageitem.h.
 

@@ -98,6 +98,10 @@ SDL_GPUColorTargetBlendState blendStateOf(PipelineKey key)
         state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_DST_COLOR;
         state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
         break;
+    case BlendMode::DestinationFade:
+        state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+        state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+        break;
     }
 
     if (key.mask != ColorMask::All)

@@ -19,6 +19,7 @@
 
 #include <vector>
 
+#include "game/demofleck.h"
 #include "game/gamehooks.h"
 
 // SightJack::m_mode.
@@ -206,7 +207,7 @@ public:
     StageObject *m_gameOverOn = nullptr; // FS2 +0x38
     JackFill    *m_fill = nullptr;      // FS2 +0x3c
     Tim2Texture *m_fleckTexture = nullptr; // FS2 +0x40
-    void        *m_flecks = nullptr;    // FS2 +0x44
+    DemoFleck   *m_flecks = nullptr;    // FS2 +0x44
     int          m_screenLevel = 0xfa;  // FS2 +0x48: FUN_002cfb20's
     float        m_filmNear = 400.0f;   // FS2 +0x4c: the film starts past it
     float        m_filmFar = 5500.0f;   // FS2 +0x50: full past it

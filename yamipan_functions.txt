@@ -986,7 +986,7 @@
 /* 00135a90 000000f4 */ FUN_00135a90(){}
 /* 00135b90 000000a0 */ rotationMatrixXyz(){}  // game
 /* 00135c30 00000114 */ sinCosVec(){}  // game
-/* 00135d50 000000c4 */ FUN_00135d50(){}
+/* 00135d50 000000c4 */ sinCosPair(){}  // game
 /* 00135e20 0000009c */ wrapAngleVec(){}  // game
 /* 00135ec0 00000054 */ wrapAngleLane(){}  // game
 /* 00135f20 00000040 */ vecDistance(){}  // game
@@ -8052,18 +8052,18 @@
 // FILE -- game/demofleck.cpp
 // *****************************************************************************
 
-/* 002a11c0 00000008 */ demoFleckDraw(){}  // game
-/* 002a11d0 00000008 */ demoFleckStep(){}  // game
-/* 002a11e0 00000060 */ FUN_002a11e0(){}
-/* 002a1240 00000304 */ demoFleckCreate(){}  // game
-/* 002a1550 0000007c */ FUN_002a1550(){}
-/* 002a15d0 000000a0 */ FUN_002a15d0(){}
-/* 002a1670 000000ec */ FUN_002a1670(){}
-/* 002a1760 00000160 */ FUN_002a1760(){}
-/* 002a18c0 000001f4 */ FUN_002a18c0(){}
-/* 002a1ac0 000001d4 */ FUN_002a1ac0(){}
-/* 002a1ca0 00000204 */ FUN_002a1ca0(){}
-/* 002a1eb0 00000194 */ FUN_002a1eb0(){}
+/* 002a11c0 00000008 */ DemoFleck::draw(){}  // game
+/* 002a11d0 00000008 */ DemoFleck::step(){}  // game
+/* 002a11e0 00000060 */ DemoFleck::~DemoFleck(){}  // game
+/* 002a1240 00000304 */ DemoFleck::DemoFleck(){}  // game
+/* 002a1550 0000007c */ FleckSet::drawSmall(){}  // game
+/* 002a15d0 000000a0 */ FleckSet::drawLarge(){}  // game
+/* 002a1670 000000ec */ fleckStripsBegin(){}  // game
+/* 002a1760 00000160 */ FleckSet::putQuad(){}  // game
+/* 002a18c0 000001f4 */ FleckSet::draw(){}  // game
+/* 002a1ac0 000001d4 */ FleckSet::spawnSmall(){}  // game
+/* 002a1ca0 00000204 */ FleckSet::spawnLarge(){}  // game
+/* 002a1eb0 00000194 */ FleckSet::step(){}  // game
 /* 002a2050 00000014 */ demoFleckRandNext(){}  // game
 
 // *****************************************************************************

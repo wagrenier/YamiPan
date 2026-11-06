@@ -3701,6 +3701,12 @@
   "was": "FUN_00135c30",
   "why": "folds the vector into -pi/2..pi/2, one Taylor series (table 0x300e60) on all lanes; answers sin in f1,f3,f5 and cos in f2,f4,f6"
  },
+ "00135d50": {
+  "name": "sinCosPair",
+  "tag": "game-inferred",
+  "was": "FUN_00135d50",
+  "why": "VU0 Taylor series on x = the angle folded to -pi/2..pi/2, y = pi/2 - |angle|: writes sin, cos at a0"
+ },
  "00135e20": {
   "name": "wrapAngleVec",
   "tag": "game-inferred",
@@ -29520,22 +29526,76 @@
   "why": "trailer words and block magic checked"
  },
  "002a11c0": {
-  "name": "demoFleckDraw",
+  "name": "DemoFleck::draw",
   "tag": "game-inferred",
   "was": "FUN_002a11c0",
-  "why": "uploads its texture, draws the records stepped by demoFleckStep"
+  "why": "thunk: a0 = the set at +4, then FleckSet::draw; was demoFleckDraw. No float read, f12 is only what the caller left"
  },
  "002a11d0": {
-  "name": "demoFleckStep",
+  "name": "DemoFleck::step",
   "tag": "game-inferred",
   "was": "FUN_002a11d0",
-  "why": "steps 28 and 12 records, drawOverlay before demoFleckDraw"
+  "why": "thunk: a0 = the set at +4, then FleckSet::step; was demoFleckStep"
+ },
+ "002a11e0": {
+  "name": "DemoFleck::~DemoFleck",
+  "tag": "game-inferred",
+  "was": "FUN_002a11e0",
+  "why": "vtable 0x318860 slot 0: deletes the set at +4, a1 > 0 deletes the object"
  },
  "002a1240": {
-  "name": "demoFleckCreate",
+  "name": "DemoFleck::DemoFleck",
   "tag": "game-inferred",
   "was": "FUN_002a1240",
-  "why": "the 8-byte object at the record's +0x44 over a texture"
+  "why": "stores vtable 0x318860, allocates the 0x1f0 set: texture, seed 1, 28 + 12 records cleared; was demoFleckCreate"
+ },
+ "002a1550": {
+  "name": "FleckSet::drawSmall",
+  "tag": "game-inferred",
+  "was": "FUN_002a1550",
+  "why": "colour alpha 2 * 10 grey 0x808080, then putQuad with the cells 0x2fb6a0 / 0x2fb6b0"
+ },
+ "002a15d0": {
+  "name": "FleckSet::drawLarge",
+  "tag": "game-inferred",
+  "was": "FUN_002a15d0",
+  "why": "alpha = level * the fade table row by life, column by age; putQuad with the cells 0x2fb678 / 0x2fb688"
+ },
+ "002a1670": {
+  "name": "fleckStripsBegin",
+  "tag": "game-inferred",
+  "was": "FUN_002a1670",
+  "why": "TEST_1 0x30000, PRIM 0x954 and a REGLIST tag of n * 9 regs: RGBAQ then four UV / XYZ pairs"
+ },
+ "002a1760": {
+  "name": "FleckSet::putQuad",
+  "tag": "game-inferred",
+  "was": "FUN_002a1760",
+  "why": "four UV + XY pairs of a square turned by (+4, +6) around (+0, +2), cell by the record's +0xa"
+ },
+ "002a18c0": {
+  "name": "FleckSet::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002a18c0",
+  "why": "binds the texture, ALPHA_1 0x8000000046 (Cd darkened by As), strips, 28 large then 12 small records with an age"
+ },
+ "002a1ac0": {
+  "name": "FleckSet::spawnSmall",
+  "tag": "game-inferred",
+  "was": "FUN_002a1ac0",
+  "why": "life 3, one of 4 cells, size 20..31, random place and turn"
+ },
+ "002a1ca0": {
+  "name": "FleckSet::spawnLarge",
+  "tag": "game-inferred",
+  "was": "FUN_002a1ca0",
+  "why": "life 4 or 5, one of 3 cells, size 112..223, random place and turn"
+ },
+ "002a1eb0": {
+  "name": "FleckSet::step",
+  "tag": "game-inferred",
+  "was": "FUN_002a1eb0",
+  "why": "ages every record, ends those at their life, respawns up to 9 large and 4 small a frame, counts them at +0x1e8, +0x1ec"
  },
  "002a2050": {
   "name": "demoFleckRandNext",
