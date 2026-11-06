@@ -183,7 +183,7 @@
    "ranges": [
     [
      "001512a0",
-     "001516f0"
+     "00151f70"
     ],
     [
      "0026c700",
@@ -220,7 +220,7 @@
    ],
    "status": "verify",
    "task": "The opening event, queued by the user 2026-11-04 to come right after the lighting. The game opens on a scripted event, almost perfectly dark, with something circling; none of it shows yet. Needs game/scriptrunner.cpp first. Find the path: mission +0xc8 (the pending event's name, afterScripts 0x286c40 starts it), StageMission setup 0x2870f0 and tickPending 0x286ce0, requestSubScene 0x196060, DemoCamera 0x26ce20 and its step, DemoExecuter, drawOverlay 0x26c920. Unproven that the opening is d0101, the only event with its own filter in StageScene::draw. Done when the picture shows the opening from the event's own camera, without YAMIPAN_CAMERA (open-items.md, The opening event).",
-   "why": "The stage's side of a scripted event, and the stage's end: ClearSequence 0x2b1500..0x2b1670, a fade to black from native 0x52."
+   "why": "ScreenFill 0x1516f0..0x151f70 sits right after StageFade in the binary; same base vtable 0x311260"
   },
   "game/drawsys.cpp": {
    "notes": "All 164 of 0x2d46a0-0x2dac70 are written or listed. New: drawSysAddModel 0x2d5140 (draw group, name flags, wave surfaces, plant textures), drawSysFindKind1Surface 0x2d46a0, parseNameTags 0x2d54a0, the plant search 0x2da220 and drawSysBuildBossShadowTexture 0x2d5e10 with its three blits, batch 098. StageModelData and RenaModel were the same object as ModelInstance: folded, and the model file records are now in gamehooks.h in EE layout (ModelFile, ModelFileNode, ModelMesh, ModelMeshParts, ModelMeshPart, ModelMaterial), so vcmtable.cpp changed with them; ModelSurface is host. New host seam src/yamipan/rendering/yamipan_drawshadow.h with empty bodies in seams.cpp until a 3D host module exists. Checked: build green, layoutcheck OK, callcheck no missing, a scratch harness on parseNameTags, the alpha ramp and the blur chain order. Screen: New Game run of 240 s under the scripted pad, 118 screenshots to frame 7080: the Easy / Normal / Options menu at 3600, black at 6000 and at the last frame, no crash. Black is expected: nothing draws 3D, and drawSysAddModel is not called yet because StageModel::init is a stub. Unproven: nothing here has run on real model data; the boss chain and which channel is the brightness need a real picture. Next: PackTables::parse 0x2bcf10, NodeTransform 0x1d7f20, StageModel::init 0x188b10 (needs a +0xa8 field), ModelFile::createInstance 0x2e5210 with 0x2e4800 and 0x2e3e10, then the rena run unassigned@002e2970 and a 3D host module. Details and doubts: open-items.md Next up, architecture.md The draw system.",
@@ -1805,7 +1805,7 @@
    "why": "Cut out of unassigned@00171300: the stage's name-keyed object registry (gStageScene +0x10, new 0xdc in 0x19c180): nine groups of a name map (AVL tree of StageNameNode by strcmp) and an object list, with their two containers. Bounded below by the BoxGrid vector instances (0x1928f0..0x1938f8) and above by game logic at 0x1953f0 (player state test, no registry use)."
   },
   "game/stageparty.cpp": {
-   "notes": "Written, batch 156: all of StageParty 0x1fe6b0..0x1fed30, and in SightJack ctor, dtor, reset, start, stop, update, aimAt, tune, pickBearing, keep, recall, canView, keepNearestFoe, stepAlertedFoe, pollButtons, stepMode, beginVision; CharacterPad::pressedBind, JackCamera, JackFill. Left: SightJack::draw 0x2024c0 is only the gate's counters, its passes 0x201380, 0x201a40, 0x2016d0, 0x201bc0, 0x1ffcd0, 0x1ff010 and 0x1fed30..0x2024c0 need a host pass. New stubs: demoFleckCreate, demoFleckDestroy, KeepList::addNamed, SceneModelHolder::setPlace, StageCharacter::canSeeVisions. Not seen: a node 4 run of 235 s with L2 pressed never reached SightJack::start, and its shots were not looked at, so next is why: a log in CharacterInput::stepAlt and the shots. Only the 15 s boot picture was looked at: the language menu, as before. The same run settled that brains do get their scripts, open-items.md Next up.",
+   "notes": "Written, batch 157: JackLink 0x27c370 (the class that starts the party for everyone but a scenario's lead; the host had none, so L2 never reached SightJack::start), ScreenFill 0x1518a0..0x151f60 in game/demoevent.cpp (range added; it was all stubs, and it now also lays the ROM's alpha 4 grain over every stage frame), JackFill::draw, SightJack::draw with drawNobody, drawCorpse, drawLive. Seen in a temporary build that forced UiShowFlags byte 9, node 4, 290 s: SightJack::start fires, no crash, lilac-blue static over black with nobody tuned; no in-game reference to compare it with. In a normal run L2 still does nothing in node 4 because the script leaves byte 9 at 0 (log: controlled=1 flag=0). Not seen: the view through a character: gatherBearings finds F_NPC04 and F_E04_SB1 but the mode stayed 2 in every sample, the stick pushes were 30 reads long. Next: force byte 9, start at about read 5000, hold LSLEFT and LSRIGHT 300 reads each, look at drawLive. Not drawn: markers 0x205f50 0x201520 0x201380, bind arrow 0x1ffcd0, list 8 (frame 0x2cfb20, 0x1ff010, signal 0x2cf880, 0x2d10f0), warning 0x201840, demoFilmDraw, flecks. New stub: StageCharacter::isJackBlank 0x215370. callcheck MISSING on drawLive and draw is exactly that list. The check's 15 s boot picture is the language menu, unchanged. 23 other motion links are missing the same way: open-items.md Next up.",
    "ranges": [
     [
      "001fe6b0",
@@ -1817,6 +1817,11 @@
      "date": "2026-11-06 01:34",
      "status": "partial",
      "summary": "the sight-jack without its drawing: StageParty and SightJack logic"
+    },
+    {
+     "date": "2026-11-06 02:24",
+     "status": "partial",
+     "summary": "the sight-jack starts and shows its noise: JackLink, ScreenFill, the draw gate"
     }
    ],
    "status": "partial",

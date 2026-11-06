@@ -365,6 +365,21 @@ public:
     u_char     picks = 1;         // FS2 +0x28: 1 PickupItem asked, 0 PutItem
 };
 
+// The sight-jack's stance (jack, sq_jack, for everyone but a scenario's lead,
+// who starts it straight from the pad): the scene's player holds the party's
+// view open for as long as the motion lasts. Its one condition is Jack, which
+// also asks out of it. EE 0x24, vtable 0x317bc0. layout: host.
+class JackLink : public MotionLink
+{
+public:
+    JackLink(StageCharacter *owner, PlayerMotion *motion_);              // FS2 0x0027c370
+    void onRequest() override;                                           // FS2 0x0027c300
+    void onRun() override;                                               // FS2 0x0027c1e0
+    void onCancel() override;                                            // FS2 0x0027c2c0
+
+    u_char started = 0;         // FS2 +0x20: this link started the party's view
+};
+
 // The fighting stance: bt_on, bt_s, bt_w.., turns, with the conditions Lock,
 // BtAttack and BtMove. Vtable 0x317a70. layout: host.
 class BattleLink : public MotionLink

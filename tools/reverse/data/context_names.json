@@ -7223,11 +7223,29 @@
   "was": "FUN_00151600",
   "why": "StageScene ctor new(0x3c) for +0xfc (StageFade) with 0x700, 0x700, 0x200, 0x200, 0: vtable 0x311270 over 0x311260 at +4, a Clock child"
  },
+ "001518a0": {
+  "name": "ScreenFill::drawGrain",
+  "tag": "game-inferred",
+  "was": "FUN_001518a0",
+  "why": "64-pixel tiles of the image, each at a random uv and turn"
+ },
+ "00151de0": {
+  "name": "ScreenFill::draw",
+  "tag": "game-inferred",
+  "was": "FUN_00151de0",
+  "why": "slot +0xc of vtable 0x311280: the grain in its own colour"
+ },
  "00151e10": {
   "name": "ScreenFill::setImage",
   "tag": "game-inferred",
   "was": "FUN_00151e10",
   "why": "a new Tim2Texture at +8, the old one deleted"
+ },
+ "00151e90": {
+  "name": "ScreenFill::~ScreenFill",
+  "tag": "game-inferred",
+  "was": "FUN_00151e90",
+  "why": "deleting dtor, slot +8 of vtable 0x311280"
  },
  "00151f20": {
   "name": "ScreenFill::ScreenFill",
@@ -20327,11 +20345,29 @@
   "was": "FUN_00201080",
   "why": "the stick picks among the viewable characters"
  },
+ "002016d0": {
+  "name": "SightJack::drawCorpse",
+  "tag": "game-inferred",
+  "was": "FUN_002016d0",
+  "why": "black, grain, film, flecks"
+ },
+ "00201a40": {
+  "name": "SightJack::drawNobody",
+  "tag": "game-inferred",
+  "was": "FUN_00201a40",
+  "why": "black, grain at level 1, film, flecks"
+ },
+ "00201bc0": {
+  "name": "SightJack::drawLive",
+  "tag": "game-inferred",
+  "was": "FUN_00201bc0",
+  "why": "film, grain, markers, flecks, frame, signal"
+ },
  "002024c0": {
   "name": "SightJack::draw",
   "tag": "game-inferred",
   "was": "FUN_002024c0",
-  "why": "the frame's gate over the overlays"
+  "why": "the frame's gate over the passes"
  },
  "00202c70": {
   "name": "SightJack::pollButtons",
@@ -20470,6 +20506,12 @@
   "tag": "game-inferred",
   "was": "FUN_00207ef0",
   "why": "StageScene ctor new(0x678) for +0xc4, beside pauseMenuResult 0x20acb0; plain data (no vptr); name a guess"
+ },
+ "002081b0": {
+  "name": "JackFill::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002081b0",
+  "why": "the grain twice, colour then black, alpha from the level +0x24"
  },
  "002082e0": {
   "name": "JackFill::JackFill",
@@ -20926,6 +20968,12 @@
   "tag": "game-inferred",
   "was": "FUN_00215340",
   "why": "strstr of the pose's name with kyo; sideHook0's P_URIEN"
+ },
+ "00215370": {
+  "name": "StageCharacter::isJackBlank",
+  "tag": "game-inferred",
+  "was": "FUN_00215370",
+  "why": "read by the draw gate beside the corpse test; stage 0x12"
  },
  "00215480": {
   "name": "StageCharacter::canSeeVisions",
@@ -27442,6 +27490,30 @@
   "tag": "game-inferred",
   "was": "FUN_0027c140",
   "why": "sets vtable 0x317b90, stored at motion +0xc08, map key Pickup"
+ },
+ "0027c1e0": {
+  "name": "JackLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_0027c1e0",
+  "why": "requests or cancels by whether the character is the scene's player; ends on the partner in a flagged motion"
+ },
+ "0027c2c0": {
+  "name": "JackLink::onCancel",
+  "tag": "game-inferred",
+  "was": "FUN_0027c2c0",
+  "why": "stops the party if the flag says this link started it"
+ },
+ "0027c300": {
+  "name": "JackLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_0027c300",
+  "why": "starts the party unless it runs, with the flag +0x20"
+ },
+ "0027c370": {
+  "name": "JackLink::JackLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027c370",
+  "why": "MotionLink with the condition Jack, vtable 0x317bc0, key \"Jack\" of PlayerMotion's link map"
  },
  "0027c420": {
   "name": "WalkLink::onUpdate",
