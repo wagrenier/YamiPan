@@ -310,20 +310,20 @@
 /* 0010b5f0 00000070 */ FUN_0010b5f0(){}
 /* 0010b668 00000070 */ FUN_0010b668(){}
 /* 0010b6e0 0000003c */ FUN_0010b6e0(){}
-/* 0010b720 0000002c */ FUN_0010b720(){}
+/* 0010b720 0000002c */ sceVu0ApplyMatrix(){}  // lib-ctx
 /* 0010b750 00000040 */ sceVu0MulMatrix(){}  // lib-ctx
-/* 0010b798 0000001c */ FUN_0010b798(){}
-/* 0010b7b8 00000020 */ FUN_0010b7b8(){}
-/* 0010b7e0 0000003c */ FUN_0010b7e0(){}
+/* 0010b798 0000001c */ sceVu0OuterProduct(){}  // lib-ctx
+/* 0010b7b8 00000020 */ sceVu0InnerProduct(){}  // lib-ctx
+/* 0010b7e0 0000003c */ sceVu0Normalize(){}  // lib-ctx
 /* 0010b820 00000044 */ FUN_0010b820(){}
 /* 0010b868 000000b0 */ sceVu0InversMatrix(){}  // lib-ctx
-/* 0010b918 00000028 */ FUN_0010b918(){}
-/* 0010b940 00000014 */ FUN_0010b940(){}
-/* 0010b958 0000002c */ FUN_0010b958(){}
-/* 0010b988 00000018 */ FUN_0010b988(){}
+/* 0010b918 00000028 */ sceVu0InterVector(){}  // lib-ctx
+/* 0010b940 00000014 */ sceVu0AddVector(){}  // lib-ctx
+/* 0010b958 0000002c */ sceVu0SubVector(){}  // lib-ctx
+/* 0010b988 00000018 */ sceVu0ScaleVector(){}  // lib-ctx
 /* 0010b9a0 0000002c */ FUN_0010b9a0(){}
-/* 0010b9d0 0000000c */ FUN_0010b9d0(){}
-/* 0010b9e0 00000024 */ FUN_0010b9e0(){}
+/* 0010b9d0 0000000c */ sceVu0CopyVector(){}  // lib-ctx
+/* 0010b9e0 00000024 */ sceVu0CopyMatrix(){}  // lib-ctx
 /* 0010ba08 00000010 */ FUN_0010ba08(){}
 /* 0010ba18 00000030 */ FUN_0010ba18(){}
 /* 0010ba48 00000028 */ sceVu0UnitMatrix(){}  // lib-ctx
@@ -331,7 +331,7 @@
 /* 0010bae8 000000a0 */ FUN_0010bae8(){}
 /* 0010bb90 000000a4 */ sceVu0RotMatrixX(){}  // lib-ctx
 /* 0010bc38 000000a4 */ FUN_0010bc38(){}
-/* 0010bce0 00000074 */ FUN_0010bce0(){}
+/* 0010bce0 00000074 */ sceVu0RotMatrix(){}  // lib-ctx
 /* 0010bd58 000000b0 */ FUN_0010bd58(){}
 /* 0010be08 000000c0 */ FUN_0010be08(){}
 /* 0010bec8 00000068 */ FUN_0010bec8(){}
@@ -7377,75 +7377,75 @@
 /* 0027c420 0000008c */ WalkLink::onUpdate(){}  // game
 /* 0027c4b0 00000070 */ WalkLink::onLeave(){}  // game
 /* 0027c520 00000590 */ WalkLink::WalkLink(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
 /* 0027cab0 0000000c */ MotionLink::rewind(){}  // game
 /* 0027cac0 0000009c */ MotionLink::apply(){}  // game
 /* 0027cb60 00000080 */ MotionLink::update(){}  // game
-/* 0027cbe0 0000006c */ FUN_0027cbe0(){}
+/* 0027cbe0 0000006c */ MotionLink::~MotionLink(){}  // game
 /* 0027cc50 0000007c */ MotionLink::MotionLink(){}  // game
-/* 0027ccd0 0000007c */ FUN_0027ccd0(){}
-/* 0027cd50 0000007c */ FUN_0027cd50(){}
-/* 0027cdd0 0000007c */ FUN_0027cdd0(){}
-/* 0027ce50 0000007c */ FUN_0027ce50(){}
-/* 0027ced0 0000007c */ FUN_0027ced0(){}
-/* 0027cf50 0000007c */ FUN_0027cf50(){}
-/* 0027cfd0 0000007c */ FUN_0027cfd0(){}
-/* 0027d050 0000007c */ FUN_0027d050(){}
-/* 0027d0d0 0000007c */ FUN_0027d0d0(){}
-/* 0027d150 0000007c */ FUN_0027d150(){}
-/* 0027d1d0 0000007c */ FUN_0027d1d0(){}
-/* 0027d250 0000007c */ FUN_0027d250(){}
-/* 0027d2d0 0000007c */ FUN_0027d2d0(){}
-/* 0027d350 0000007c */ FUN_0027d350(){}
-/* 0027d3d0 0000007c */ FUN_0027d3d0(){}
-/* 0027d450 0000007c */ FUN_0027d450(){}
-/* 0027d4d0 0000007c */ FUN_0027d4d0(){}
-/* 0027d550 0000007c */ FUN_0027d550(){}
-/* 0027d5d0 0000007c */ FUN_0027d5d0(){}
-/* 0027d650 0000007c */ FUN_0027d650(){}
-/* 0027d6d0 0000007c */ FUN_0027d6d0(){}
-/* 0027d750 0000007c */ FUN_0027d750(){}
-/* 0027d7d0 0000007c */ FUN_0027d7d0(){}
-/* 0027d850 0000007c */ FUN_0027d850(){}
-/* 0027d8d0 00000010 */ FUN_0027d8d0(){}
-/* 0027d8e0 00000054 */ FUN_0027d8e0(){}
-/* 0027d940 000000f4 */ FUN_0027d940(){}
+/* 0027ccd0 0000007c */ DamageDeadLink::~DamageDeadLink(){}  // game
+/* 0027cd50 0000007c */ DamageFatalLink::~DamageFatalLink(){}  // game
+/* 0027cdd0 0000007c */ DamageLandLink::~DamageLandLink(){}  // game
+/* 0027ce50 0000007c */ DamageLink::~DamageLink(){}  // game
+/* 0027ced0 0000007c */ BiteLink::~BiteLink(){}  // game
+/* 0027cf50 0000007c */ ThrowLink::~ThrowLink(){}  // game
+/* 0027cfd0 0000007c */ TrapHitLink::~TrapHitLink(){}  // game
+/* 0027d050 0000007c */ TrapCancelLink::~TrapCancelLink(){}  // game
+/* 0027d0d0 0000007c */ TrapSetLink::~TrapSetLink(){}  // game
+/* 0027d150 0000007c */ DiveLandLink::~DiveLandLink(){}  // game
+/* 0027d1d0 0000007c */ DiveFallLink::~DiveFallLink(){}  // game
+/* 0027d250 0000007c */ ReloadLink::~ReloadLink(){}  // game
+/* 0027d2d0 0000007c */ GunAttackLink::~GunAttackLink(){}  // game
+/* 0027d350 0000007c */ GunLink::~GunLink(){}  // game
+/* 0027d3d0 0000007c */ BtAttackLink::~BtAttackLink(){}  // game
+/* 0027d450 0000007c */ BattleLink::~BattleLink(){}  // game
+/* 0027d4d0 0000007c */ DoorLink::~DoorLink(){}  // game
+/* 0027d550 0000007c */ LadderLink::~LadderLink(){}  // game
+/* 0027d5d0 0000007c */ JumpLink::~JumpLink(){}  // game
+/* 0027d650 0000007c */ FallLink::~FallLink(){}  // game
+/* 0027d6d0 0000007c */ UpLink::~UpLink(){}  // game
+/* 0027d750 0000007c */ PickupLink::~PickupLink(){}  // game
+/* 0027d7d0 0000007c */ JackLink::~JackLink(){}  // game
+/* 0027d850 0000007c */ WalkLink::~WalkLink(){}  // game
+/* 0027d8d0 00000010 */ MotionConditionList::MotionConditionList(){}  // game
+/* 0027d8e0 00000054 */ MotionConditionList::~MotionConditionList(){}  // game
+/* 0027d940 000000f4 */ MotionConditionList::nodeAt(){}  // game
 /* 0027da40 000000a4 */ MotionConditionList::add(){}  // game
-/* 0027daf0 00000070 */ FUN_0027daf0(){}
-/* 0027db60 00000090 */ FUN_0027db60(){}
-/* 0027dbf0 0000002c */ FUN_0027dbf0(){}
-/* 0027dc20 00000014 */ FUN_0027dc20(){}
-/* 0027dc40 000001d4 */ FUN_0027dc40(){}
-/* 0027de20 00000824 */ FUN_0027de20(){}
-/* 0027e650 00000630 */ FUN_0027e650(){}
-/* 0027ec80 000000e8 */ FUN_0027ec80(){}
-/* 0027ed70 00000088 */ FUN_0027ed70(){}
-/* 0027ee00 00000108 */ FUN_0027ee00(){}
-/* 0027ef10 00000060 */ FUN_0027ef10(){}
+/* 0027daf0 00000070 */ MotionConditionList::clear(){}  // game
+/* 0027db60 00000090 */ MotionConditionList::addFirst(){}  // game
+/* 0027dbf0 0000002c */ MotionConditionList::last(){}  // game
+/* 0027dc20 00000014 */ MotionConditionList::Node::Node(){}  // game
+
+// *****************************************************************************
+// FILE -- game/vehiclepose.cpp
+// *****************************************************************************
+
+/* 0027dc40 000001d4 */ CarPose::update(){}  // game
+/* 0027de20 00000824 */ CarPose::followGround(){}  // game
+/* 0027e650 00000630 */ CarPose::drive(){}  // game
+/* 0027ec80 000000e8 */ CarPose::getWheelPoints(){}  // game
+/* 0027ed70 00000088 */ CarPose::setDrive(){}  // game
+/* 0027ee00 00000108 */ CarPose::load(){}  // game
+/* 0027ef10 00000060 */ CarPose::~CarPose(){}  // game
 /* 0027ef70 000000c4 */ CarPose::CarPose(){}  // game
-/* 0027f040 0000026c */ FUN_0027f040(){}
-/* 0027f2b0 000002f0 */ FUN_0027f2b0(){}
-/* 0027f5a0 00000228 */ FUN_0027f5a0(){}
-/* 0027f7d0 000000b0 */ FUN_0027f7d0(){}
-/* 0027f880 00000114 */ FUN_0027f880(){}
-/* 0027f9a0 00000114 */ FUN_0027f9a0(){}
-/* 0027fac0 00000174 */ FUN_0027fac0(){}
-/* 0027fc40 00000178 */ FUN_0027fc40(){}
-/* 0027fdc0 0000014c */ FUN_0027fdc0(){}
-/* 0027ff10 00000024 */ FUN_0027ff10(){}
-/* 0027ff40 00000004 */ ModelPose::load(){}  // native
-/* 0027ff50 00000060 */ FUN_0027ff50(){}
+/* 0027f040 0000026c */ ElevatorPose::update(){}  // game
+/* 0027f2b0 000002f0 */ ElevatorPose::stepQueue(){}  // game
+/* 0027f5a0 00000228 */ ElevatorPose::reopenDoors(){}  // game
+/* 0027f7d0 000000b0 */ ElevatorPose::release(){}  // game
+/* 0027f880 00000114 */ ElevatorPose::callInsideB3(){}  // game
+/* 0027f9a0 00000114 */ ElevatorPose::callInsideB1(){}  // game
+/* 0027fac0 00000174 */ ElevatorPose::callFloorB3(){}  // game
+/* 0027fc40 00000178 */ ElevatorPose::callFloorB1(){}  // game
+/* 0027fdc0 0000014c */ ElevatorPose::setScene(){}  // game
+/* 0027ff10 00000024 */ ElevatorPose::setMotionFile(){}  // game
+/* 0027ff40 00000004 */ ElevatorPose::load(){}  // game
+/* 0027ff50 00000060 */ ElevatorPose::~ElevatorPose(){}  // game
 /* 0027ffb0 0000005c */ ElevatorPose::ElevatorPose(){}  // game
-/* 00280010 00000070 */ FUN_00280010(){}
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp
 // *****************************************************************************
 
+/* 00280010 00000070 */ MotionGadgetSpecial::~MotionGadgetSpecial(){}  // game
 /* 00280080 0000000c */ MotionGadgetSpecial::clearAllowed(){}  // game
 /* 00280090 000001a0 */ MotionGadgetSpecial::onApply(){}  // game
 /* 00280230 000001d0 */ MotionGadgetSpecial::onUpdate(){}  // game

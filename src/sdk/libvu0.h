@@ -56,6 +56,53 @@ inline void sceVu0InversMatrix(sceVu0FMATRIX m0, sceVu0FMATRIX m1)
     m0[3][3] = m1[3][3];
 }
 
+// The library's sine and cosine: a series for the cosine, the sine from it by sqrt(1 - c * c), so a small
+// angle's sine comes out a little off (sin 0.047 = 0.0469817, truly 0.0469827). FS2 0x10ba70 and the
+// head of its callers; the four terms at data 0x2f1110.
+inline void sceVu0SinCos(float angle, float *sine, float *cosine)
+{
+    const float halfPi = 1.57079637f;   // 0x3fc90fdb
+    const float x = angle < 0.0f ? halfPi + angle : halfPi - angle;
+    const float xx = x * x;
+    float t9 = 2.60188699e-06f * x;     // 0x362e9c14
+    float t7 = -0.000198074136f * x;    // 0xb94fb21f
+    float t5 = 0.0083330255f * x;       // 0x3c08873e
+    float t3 = -0.166666567f * x;       // 0xbe2aaaa4
+    t9 *= xx;
+    t7 *= xx;
+    t5 *= xx;
+    t3 *= xx;
+    t9 *= xx;
+    t7 *= xx;
+    t5 *= xx;
+    float c = x + t3;
+    t9 *= xx;
+    t7 *= xx;
+    c += t5;
+    t9 *= xx;
+    c += t7;
+    c += t9;
+    const float s = sqrtf(fabsf(1.0f - c * c));
+    *sine = angle < 0.0f ? 0.0f - s : s;
+    *cosine = c;
+}
+
+// m0's rows = m1's rows through a turn of rz around z: R[0] = (c, s, 0, 0), R[1] = (-s, c, 0, 0). The
+// library's sine and cosine: FS2 0x10bae8.
+inline void sceVu0RotMatrixZ(sceVu0FMATRIX m0, sceVu0FMATRIX m1, float rz)
+{
+    float s, c;
+    sceVu0SinCos(rz, &s, &c);
+    for (int row = 0; row < 4; row++) {
+        float x = m1[row][0];
+        float y = m1[row][1];
+        m0[row][0] = c * x - s * y;
+        m0[row][1] = s * x + c * y;
+        m0[row][2] = m1[row][2];
+        m0[row][3] = m1[row][3];
+    }
+}
+
 // m0's rows = m1's rows through a turn of rx around x: R[1] = (0, c, s, 0), R[2] = (0, -s, c, 0).
 inline void sceVu0RotMatrixX(sceVu0FMATRIX m0, sceVu0FMATRIX m1, float rx)
 {

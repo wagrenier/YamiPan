@@ -476,18 +476,6 @@ void StageCharacter::playerEvent(const char *name)
     YAMIPAN_STUB("StageCharacter::playerEvent", 0x0020e6a0);
 }
 
-// stub of FS2 0x0027ef70
-CarPose::CarPose()
-{
-    YAMIPAN_STUB("CarPose::CarPose", 0x0027ef70);
-}
-
-// stub of FS2 0x0027ffb0
-ElevatorPose::ElevatorPose()
-{
-    YAMIPAN_STUB("ElevatorPose::ElevatorPose", 0x0027ffb0);
-}
-
 // stub of FS2 0x002a7a50
 NmlPose::NmlPose(int, int, int, int)
 {

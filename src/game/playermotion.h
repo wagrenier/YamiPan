@@ -28,7 +28,6 @@
 #include <string.h>
 
 #include "game/stagelist.h"
-#include <vector>
 
 #include "game/gamehooks.h"
 #include "game/packtables.h"
@@ -193,15 +192,64 @@ protected:
     PlayerMotion   *motion;     // FS2 +0x4
 };
 
+// What a link's conditions sit in: the ROM's list (EE 8: +0 head, +4 count). A
+// node keeps its value in a block of its own.
+// layout: host -- EE 8 bytes, a node 0xc: +0 the value's block, +4 next, +8 previous.
+class MotionConditionList
+{
+public:
+    // layout: host -- see above.
+    struct Node
+    {
+        // FS2 0x0027dc20
+        explicit Node(MotionCondition **value_) : value(value_) {}
+        MotionCondition **value;    // FS2 +0x0
+        Node *next = nullptr;       // FS2 +0x4
+        Node *previous = nullptr;   // FS2 +0x8
+    };
+    // layout: host -- a cursor, not in the ROM (it walks the nodes by hand).
+    class Iterator
+    {
+    public:
+        explicit Iterator(const Node *node_) : node(node_) {}
+        MotionCondition *operator*() const { return *node->value; }
+        Iterator &operator++() { node = node->next; return *this; }
+        bool operator!=(const Iterator &other) const { return node != other.node; }
+    private:
+        const Node *node;
+    };
+
+    MotionConditionList();                                               // FS2 0x0027d8d0
+    ~MotionConditionList();                                              // FS2 0x0027d8e0
+    MotionConditionList(const MotionConditionList &) = delete;
+    MotionConditionList &operator=(const MotionConditionList &) = delete;
+
+    void clear();                                                        // FS2 0x0027daf0
+    // At the end.
+    void add(MotionCondition *const &value);                             // FS2 0x0027da40
+    void addFirst(MotionCondition *const &value);                        // FS2 0x0027db60
+    Node *last() const;                                                  // FS2 0x0027dbf0
+    // The node at index; the head for one out of range.
+    Node *nodeAt(int index) const;                                       // FS2 0x0027d940
+
+    MotionCondition *operator[](int index) const { return *nodeAt(index)->value; }
+    Iterator begin() const { return Iterator(head); }
+    Iterator end() const { return Iterator(nullptr); }
+
+private:
+    Node *head;                 // FS2 +0x0
+    int   count;                // FS2 +0x4
+};
+
 // A motion's own code. Every slot of the base (vtable 0x317c20) is empty.
-// layout: host -- EE: +0 the character, +4 the motion, +8 a helper, +0xc a
-// condition list, +0x14 finished, +0x18 a counter, +0x1c the vptr.
+// layout: host -- EE: +0 the character, +4 the motion, +8 a block holding the
+// motion again, +0xc a condition list, +0x14 finished, +0x18 a counter, +0x1c
+// the vptr.
 class MotionLink
 {
 public:
-    MotionLink(StageCharacter *owner, PlayerMotion *motion_)             // FS2 0x0027cc50
-        : character(owner), motion(motion_) {}
-    virtual ~MotionLink() {}
+    MotionLink(StageCharacter *owner, PlayerMotion *motion_);            // FS2 0x0027cc50
+    virtual ~MotionLink();                                               // FS2 0x0027cbe0: slot 0, deleting
     virtual void onUpdate() {}                                           // FS2 0x001eee10: slot +0xc
     virtual void onApply() {}                                            // FS2 0x001eee20: slot +0x10
     virtual void onRequest() {}                                          // FS2 0x001ec640: slot +0x14
@@ -232,7 +280,8 @@ public:
 protected:
     StageCharacter *character;  // FS2 +0x0
     PlayerMotion   *motion;     // FS2 +0x4
-    std::vector<MotionCondition *> m_conditions; // FS2 +0xc
+    PlayerMotion  **m_motionBlock; // FS2 +0x8
+    MotionConditionList m_conditions; // FS2 +0xc
 };
 
 // The prey's side of a bite has no code of its own. Vtable 0x315eb0. layout: host.
@@ -247,6 +296,7 @@ public:
 class GunLink : public MotionLink
 {
 public:
+    ~GunLink() override;                                                 // FS2 0x0027d350: slot 0, deleting
     GunLink(StageCharacter *owner, PlayerMotion *motion_);               // FS2 0x0027aa90
     void onStart() override;                                             // FS2 0x0027aa70
     void onLeave(MotionLink *next) override;                             // FS2 0x0027a9e0
@@ -258,6 +308,7 @@ public:
 class GunAttackLink : public MotionLink
 {
 public:
+    ~GunAttackLink() override;                                           // FS2 0x0027d2d0: slot 0, deleting
     GunAttackLink(StageCharacter *owner, PlayerMotion *motion_);         // FS2 0x0027a910
     void onRequest() override;                                           // FS2 0x0027a8c0
     void onStart() override;                                             // FS2 0x0027a840
@@ -273,6 +324,7 @@ private:
 class ReloadLink : public MotionLink
 {
 public:
+    ~ReloadLink() override;                                              // FS2 0x0027d250: slot 0, deleting
     using MotionLink::MotionLink;
     void onRun() override;                                               // FS2 0x0027a140
 };
@@ -282,6 +334,7 @@ public:
 class TrapSetLink : public MotionLink
 {
 public:
+    ~TrapSetLink() override;                                             // FS2 0x0027d0d0: slot 0, deleting
     using MotionLink::MotionLink;
     void onRun() override;                                               // FS2 0x00279210
 
@@ -294,6 +347,7 @@ public:
 class TrapCancelLink : public MotionLink
 {
 public:
+    ~TrapCancelLink() override;                                          // FS2 0x0027d050: slot 0, deleting
     using MotionLink::MotionLink;
     void onRun() override;                                               // FS2 0x00279190
 
@@ -305,6 +359,7 @@ public:
 class ThrowLink : public MotionLink
 {
 public:
+    ~ThrowLink() override;                                               // FS2 0x0027cf50: slot 0, deleting
     using MotionLink::MotionLink;
     void onRun() override;                                               // FS2 0x00278ed0
     void onLeave(MotionLink *next) override;                             // FS2 0x00278ea0
@@ -322,6 +377,7 @@ private:
 class BiteLink : public MotionLink
 {
 public:
+    ~BiteLink() override;                                                // FS2 0x0027ced0: slot 0, deleting
     // FS2 0x00278db0
     BiteLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_) {}
     void onRequest() override;                                           // FS2 0x00278d90
@@ -344,6 +400,7 @@ private:
 class DoorLink : public MotionLink
 {
 public:
+    ~DoorLink() override;                                                // FS2 0x0027d4d0: slot 0, deleting
     // FS2 0x0027b640
     DoorLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_) {}
     void onRequest() override;                                           // FS2 0x0027b590
@@ -362,6 +419,7 @@ public:
 class PickupLink : public MotionLink
 {
 public:
+    ~PickupLink() override;                                              // FS2 0x0027d750: slot 0, deleting
     // FS2 0x0027c140
     PickupLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_) {}
     void onRequest() override;                                           // FS2 0x0027c100
@@ -380,6 +438,7 @@ public:
 class JackLink : public MotionLink
 {
 public:
+    ~JackLink() override;                                                // FS2 0x0027d7d0: slot 0, deleting
     JackLink(StageCharacter *owner, PlayerMotion *motion_);              // FS2 0x0027c370
     void onRequest() override;                                           // FS2 0x0027c300
     void onRun() override;                                               // FS2 0x0027c1e0
@@ -393,6 +452,7 @@ public:
 class BattleLink : public MotionLink
 {
 public:
+    ~BattleLink() override;                                              // FS2 0x0027d450: slot 0, deleting
     BattleLink(StageCharacter *owner, PlayerMotion *motion_);            // FS2 0x0027b000
     void onLeave(MotionLink *next) override;                             // FS2 0x0027af70
 };
@@ -404,6 +464,7 @@ public:
 class BtAttackLink : public MotionLink
 {
 public:
+    ~BtAttackLink() override;                                            // FS2 0x0027d3d0: slot 0, deleting
     BtAttackLink(StageCharacter *owner, PlayerMotion *motion_);          // FS2 0x0027aea0
     void onStart() override;                                             // FS2 0x0027adf0
     void onRun() override;                                               // FS2 0x0027ac60
@@ -418,6 +479,7 @@ public:
 class WalkLink : public MotionLink
 {
 public:
+    ~WalkLink() override;                                                // FS2 0x0027d850: slot 0, deleting
     WalkLink(StageCharacter *owner, PlayerMotion *motion_);              // FS2 0x0027c520
     void onUpdate() override;                                            // FS2 0x0027c420
     void onLeave(MotionLink *next) override;                             // FS2 0x0027c4b0
@@ -439,6 +501,7 @@ public:
 class UpLink : public MotionLink
 {
 public:
+    ~UpLink() override;                                                  // FS2 0x0027d6d0: slot 0, deleting
     using MotionLink::MotionLink;
     void onRequest() override;                                           // FS2 0x0027be70
     void onStart() override;                                             // FS2 0x0027bdb0
@@ -455,6 +518,7 @@ private:
 class FallLink : public MotionLink
 {
 public:
+    ~FallLink() override;                                                // FS2 0x0027d650: slot 0, deleting
     using MotionLink::MotionLink;
     void onRun() override;                                               // FS2 0x0027b860
 
@@ -469,6 +533,7 @@ private:
 class JumpLink : public MotionLink
 {
 public:
+    ~JumpLink() override;                                                // FS2 0x0027d5d0: slot 0, deleting
     using MotionLink::MotionLink;
     void onRun() override;                                               // FS2 0x0027b7e0
 };
@@ -478,6 +543,7 @@ public:
 class LadderLink : public MotionLink
 {
 public:
+    ~LadderLink() override;                                              // FS2 0x0027d550: slot 0, deleting
     LadderLink(StageCharacter *owner, PlayerMotion *motion_);            // FS2 0x0027b730
     void onRequest() override;                                           // FS2 0x0027b6e0
 

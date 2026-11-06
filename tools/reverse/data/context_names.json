@@ -1265,17 +1265,77 @@
   "was": "FUN_0010b5c0",
   "why": "(pkt): fills the open DIRECT code's qword count"
  },
+ "0010b720": {
+  "name": "sceVu0ApplyMatrix",
+  "tag": "lib-context",
+  "was": "FUN_0010b720",
+  "why": "vmula/vmadd of a vector through four rows"
+ },
  "0010b750": {
   "name": "sceVu0MulMatrix",
   "tag": "lib-context",
   "was": "FUN_0010b750",
   "why": "libvu0: m0 rows = m2 rows times m1"
  },
+ "0010b798": {
+  "name": "sceVu0OuterProduct",
+  "tag": "lib-context",
+  "was": "FUN_0010b798",
+  "why": "vopmula, vopmsub, w 0"
+ },
+ "0010b7b8": {
+  "name": "sceVu0InnerProduct",
+  "tag": "lib-context",
+  "was": "FUN_0010b7b8",
+  "why": "vmul.xyz, sums, answer in f0"
+ },
+ "0010b7e0": {
+  "name": "sceVu0Normalize",
+  "tag": "lib-context",
+  "was": "FUN_0010b7e0",
+  "why": "vsqrt, vdiv, xyz by Q, w 0"
+ },
  "0010b868": {
   "name": "sceVu0InversMatrix",
   "tag": "lib-context",
   "was": "FUN_0010b868",
   "why": "libvu0: transpose and negated translation, keeps w"
+ },
+ "0010b918": {
+  "name": "sceVu0InterVector",
+  "tag": "lib-context",
+  "was": "FUN_0010b918",
+  "why": "a * t + b * (1 - t)"
+ },
+ "0010b940": {
+  "name": "sceVu0AddVector",
+  "tag": "lib-context",
+  "was": "FUN_0010b940",
+  "why": "vadd.xyzw"
+ },
+ "0010b958": {
+  "name": "sceVu0SubVector",
+  "tag": "lib-context",
+  "was": "FUN_0010b958",
+  "why": "vsub.xyzw"
+ },
+ "0010b988": {
+  "name": "sceVu0ScaleVector",
+  "tag": "lib-context",
+  "was": "FUN_0010b988",
+  "why": "vmulx.xyzw by f12"
+ },
+ "0010b9d0": {
+  "name": "sceVu0CopyVector",
+  "tag": "lib-context",
+  "was": "FUN_0010b9d0",
+  "why": "lq, sq"
+ },
+ "0010b9e0": {
+  "name": "sceVu0CopyMatrix",
+  "tag": "lib-context",
+  "was": "FUN_0010b9e0",
+  "why": "four lq, sq"
  },
  "0010ba48": {
   "name": "sceVu0UnitMatrix",
@@ -1288,6 +1348,12 @@
   "tag": "lib-context",
   "was": "FUN_0010bb90",
   "why": "libvu0: same shape as 0x1361c0"
+ },
+ "0010bce0": {
+  "name": "sceVu0RotMatrix",
+  "tag": "lib-context",
+  "was": "FUN_0010bce0",
+  "why": "turns around z, y, x in that order"
  },
  "0010bf30": {
   "name": "sceVu0ViewScreenMatrix",
@@ -28847,11 +28913,179 @@
   "was": "FUN_0027cb60",
   "why": "slot +0xc, then each active condition of the list at +0xc"
  },
+ "0027cbe0": {
+  "name": "MotionLink::~MotionLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027cbe0",
+  "why": "stores vtable 0x317c20, frees the helper and the list; deleting dtor"
+ },
  "0027cc50": {
   "name": "MotionLink::MotionLink",
   "tag": "game-inferred",
   "was": "FUN_0027cc50",
   "why": "base of the links: character, motion, helper, condition list +0xc, finished, counter, vtable 0x317c20"
+ },
+ "0027ccd0": {
+  "name": "DamageDeadLink::~DamageDeadLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027ccd0",
+  "why": "dtor of vtable 0x3177a0, built by DamageDeadLink::DamageDeadLink"
+ },
+ "0027cd50": {
+  "name": "DamageFatalLink::~DamageFatalLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027cd50",
+  "why": "dtor of vtable 0x3177d0, inserted under 'DamageFatal' in PlayerMotion's ctor"
+ },
+ "0027cdd0": {
+  "name": "DamageLandLink::~DamageLandLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027cdd0",
+  "why": "dtor of vtable 0x317800, inserted under 'DamageLand'"
+ },
+ "0027ce50": {
+  "name": "DamageLink::~DamageLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027ce50",
+  "why": "dtor of vtable 0x317830, inserted under 'Damage'"
+ },
+ "0027ced0": {
+  "name": "BiteLink::~BiteLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027ced0",
+  "why": "dtor of vtable 0x317860"
+ },
+ "0027cf50": {
+  "name": "ThrowLink::~ThrowLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027cf50",
+  "why": "dtor of vtable 0x317890"
+ },
+ "0027cfd0": {
+  "name": "TrapHitLink::~TrapHitLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027cfd0",
+  "why": "dtor of vtable 0x3178c0, inserted under 'TrapHit'"
+ },
+ "0027d050": {
+  "name": "TrapCancelLink::~TrapCancelLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d050",
+  "why": "dtor of vtable 0x3178f0"
+ },
+ "0027d0d0": {
+  "name": "TrapSetLink::~TrapSetLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d0d0",
+  "why": "dtor of vtable 0x317920"
+ },
+ "0027d150": {
+  "name": "DiveLandLink::~DiveLandLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d150",
+  "why": "dtor of vtable 0x317950, inserted under 'DiveLand'"
+ },
+ "0027d1d0": {
+  "name": "DiveFallLink::~DiveFallLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d1d0",
+  "why": "dtor of vtable 0x317980, inserted under 'DiveFall'"
+ },
+ "0027d250": {
+  "name": "ReloadLink::~ReloadLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d250",
+  "why": "dtor of vtable 0x3179b0"
+ },
+ "0027d2d0": {
+  "name": "GunAttackLink::~GunAttackLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d2d0",
+  "why": "dtor of vtable 0x3179e0"
+ },
+ "0027d350": {
+  "name": "GunLink::~GunLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d350",
+  "why": "dtor of vtable 0x317a10"
+ },
+ "0027d3d0": {
+  "name": "BtAttackLink::~BtAttackLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d3d0",
+  "why": "dtor of vtable 0x317a40"
+ },
+ "0027d450": {
+  "name": "BattleLink::~BattleLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d450",
+  "why": "dtor of vtable 0x317a70"
+ },
+ "0027d4d0": {
+  "name": "DoorLink::~DoorLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d4d0",
+  "why": "dtor of vtable 0x317aa0"
+ },
+ "0027d550": {
+  "name": "LadderLink::~LadderLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d550",
+  "why": "dtor of vtable 0x317ad0"
+ },
+ "0027d5d0": {
+  "name": "JumpLink::~JumpLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d5d0",
+  "why": "dtor of vtable 0x317b00"
+ },
+ "0027d650": {
+  "name": "FallLink::~FallLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d650",
+  "why": "dtor of vtable 0x317b30"
+ },
+ "0027d6d0": {
+  "name": "UpLink::~UpLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d6d0",
+  "why": "dtor of vtable 0x317b60"
+ },
+ "0027d750": {
+  "name": "PickupLink::~PickupLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d750",
+  "why": "dtor of vtable 0x317b90"
+ },
+ "0027d7d0": {
+  "name": "JackLink::~JackLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d7d0",
+  "why": "dtor of vtable 0x317bc0"
+ },
+ "0027d850": {
+  "name": "WalkLink::~WalkLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027d850",
+  "why": "dtor of vtable 0x317bf0"
+ },
+ "0027d8d0": {
+  "name": "MotionConditionList::MotionConditionList",
+  "tag": "game-inferred",
+  "was": "FUN_0027d8d0",
+  "why": "head and count zero; every link's ctor"
+ },
+ "0027d8e0": {
+  "name": "MotionConditionList::~MotionConditionList",
+  "tag": "game-inferred",
+  "was": "FUN_0027d8e0",
+  "why": "clear, then deleting flag"
+ },
+ "0027d940": {
+  "name": "MotionConditionList::nodeAt",
+  "tag": "game-inferred",
+  "was": "FUN_0027d940",
+  "why": "walks index next pointers; out of range or 0 answers the head"
  },
  "0027da40": {
   "name": "MotionConditionList::add",
@@ -28859,17 +29093,161 @@
   "was": "FUN_0027da40",
   "why": "appends to the list at link +0xc; the Walk ctor calls it for each condition name in order"
  },
+ "0027daf0": {
+  "name": "MotionConditionList::clear",
+  "tag": "game-inferred",
+  "was": "FUN_0027daf0",
+  "why": "frees each node and its value cell, zero head and count"
+ },
+ "0027db60": {
+  "name": "MotionConditionList::addFirst",
+  "tag": "game-inferred",
+  "was": "FUN_0027db60",
+  "why": "new node at the head; add's path for an empty list"
+ },
+ "0027dbf0": {
+  "name": "MotionConditionList::last",
+  "tag": "game-inferred",
+  "was": "FUN_0027dbf0",
+  "why": "walks next to the tail"
+ },
+ "0027dc20": {
+  "name": "MotionConditionList::Node::Node",
+  "tag": "game-inferred",
+  "was": "FUN_0027dc20",
+  "why": "value, next 0, previous 0; 0xc bytes"
+ },
+ "0027dc40": {
+  "name": "CarPose::update",
+  "tag": "game-inferred",
+  "was": "FUN_0027dc40",
+  "why": "slot 2 of vtable 0x317c50: ModelPose::update's shape with followGround after the solve"
+ },
+ "0027de20": {
+  "name": "CarPose::followGround",
+  "tag": "game-inferred",
+  "was": "FUN_0027de20",
+  "why": "lays the body and wheels on the four contacts, spins the wheels, leans the car"
+ },
+ "0027e650": {
+  "name": "CarPose::drive",
+  "tag": "game-inferred",
+  "was": "FUN_0027e650",
+  "why": "eases speed, brake and steer towards setDrive's targets; takes four ground contacts, null clears all"
+ },
+ "0027ec80": {
+  "name": "CarPose::getWheelPoints",
+  "tag": "game-inferred",
+  "was": "FUN_0027ec80",
+  "why": "four fixed corners through the body matrix +0x470"
+ },
+ "0027ed70": {
+  "name": "CarPose::setDrive",
+  "tag": "game-inferred",
+  "was": "FUN_0027ed70",
+  "why": "clamps and stores the three targets +0x454, +0x45c, +0x464"
+ },
+ "0027ee00": {
+  "name": "CarPose::load",
+  "tag": "game-inferred",
+  "was": "FUN_0027ee00",
+  "why": "slot 1: ModelPose::load then finds bn_body, the accel and wheel bones, bn_str_w"
+ },
+ "0027ef10": {
+  "name": "CarPose::~CarPose",
+  "tag": "game-inferred",
+  "was": "FUN_0027ef10",
+  "why": "slot 0 of vtable 0x317c50"
+ },
  "0027ef70": {
   "name": "CarPose::CarPose",
   "tag": "game-inferred",
   "was": "FUN_0027ef70",
   "why": "ModelPose ctor, vtable 0x317c50, tag car"
  },
+ "0027f040": {
+  "name": "ElevatorPose::update",
+  "tag": "game-inferred",
+  "was": "FUN_0027f040",
+  "why": "slot 2 of vtable 0x317c70: stepQueue, then ModelPose::update's shape"
+ },
+ "0027f2b0": {
+  "name": "ElevatorPose::stepQueue",
+  "tag": "game-inferred",
+  "was": "FUN_0027f2b0",
+  "why": "when the motion ends: lamps off, next step of the queue +0x410"
+ },
+ "0027f5a0": {
+  "name": "ElevatorPose::reopenDoors",
+  "tag": "game-inferred",
+  "was": "FUN_0027f5a0",
+  "why": "doors open again and the queue takes open, close: the caller plays ELV_DR_REOP"
+ },
+ "0027f7d0": {
+  "name": "ElevatorPose::release",
+  "tag": "game-inferred",
+  "was": "FUN_0027f7d0",
+  "why": "all four lamps off, open doors queue a close; elevatorCall's kFloorRelease"
+ },
+ "0027f880": {
+  "name": "ElevatorPose::callInsideB3",
+  "tag": "game-inferred",
+  "was": "FUN_0027f880",
+  "why": "lamp oZS99_01_bb3_on, queues the ride to B3"
+ },
+ "0027f9a0": {
+  "name": "ElevatorPose::callInsideB1",
+  "tag": "game-inferred",
+  "was": "FUN_0027f9a0",
+  "why": "lamp oZS99_01_bb1_on, queues the ride to B1"
+ },
+ "0027fac0": {
+  "name": "ElevatorPose::callFloorB3",
+  "tag": "game-inferred",
+  "was": "FUN_0027fac0",
+  "why": "lamp oZS99_01_fb3_on, queues the ride to B3 and an open"
+ },
+ "0027fc40": {
+  "name": "ElevatorPose::callFloorB1",
+  "tag": "game-inferred",
+  "was": "FUN_0027fc40",
+  "why": "lamp oZS99_01_fb1_on, queues the ride to B1 and an open"
+ },
+ "0027fdc0": {
+  "name": "ElevatorPose::setScene",
+  "tag": "game-inferred",
+  "was": "FUN_0027fdc0",
+  "why": "puts the elevator in one of six states at once: script native and setup"
+ },
+ "0027ff10": {
+  "name": "ElevatorPose::setMotionFile",
+  "tag": "game-inferred",
+  "was": "FUN_0027ff10",
+  "why": "stores one of the 18 motion files of table 0x2fb630"
+ },
+ "0027ff40": {
+  "name": "ElevatorPose::load",
+  "tag": "game-inferred",
+  "was": "ModelPose::load",
+  "why": "slot 1 of vtable 0x317c70: a jump to ModelPose::load"
+ },
+ "0027ff50": {
+  "name": "ElevatorPose::~ElevatorPose",
+  "tag": "game-inferred",
+  "was": "FUN_0027ff50",
+  "why": "slot 0 of vtable 0x317c70"
+ },
  "0027ffb0": {
   "name": "ElevatorPose::ElevatorPose",
   "tag": "game-inferred",
   "was": "FUN_0027ffb0",
   "why": "ModelPose ctor, vtable 0x317c70, tag elv"
+ },
+ "00280010": {
+  "name": "MotionGadgetSpecial::~MotionGadgetSpecial",
+  "tag": "game-inferred",
+  "was": "FUN_00280010",
+  "why": "slot 0 of vtable 0x317c90"
  },
  "00280080": {
   "name": "MotionGadgetSpecial::clearAllowed",

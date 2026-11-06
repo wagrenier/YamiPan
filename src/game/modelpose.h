@@ -564,19 +564,8 @@ private:
     bool beginMotion(const PoseMotionFile *file, u_int playFlags, u_short groups);
 };
 
-// The subclasses, in the runs that use them (a kind of setBaseMotion).
-// layout: host.
-class CarPose : public ModelPose        // vtable 0x317c50, EE 0x4e0
-{
-public:
-    CarPose();                                                           // FS2 0x0027ef70
-};
-// layout: host.
-class ElevatorPose : public ModelPose   // vtable 0x317c70, EE 0x460
-{
-public:
-    ElevatorPose();                                                      // FS2 0x0027ffb0
-};
+// The subclasses, in the runs that use them (a kind of setBaseMotion). CarPose
+// and ElevatorPose are in game/vehiclepose.h.
 // layout: host.
 class NmlPose : public ModelPose        // vtable 0x318b10, EE 0x410
 {

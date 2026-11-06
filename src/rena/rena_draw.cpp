@@ -556,7 +556,7 @@ static void fillPointLight(YamiPanModelPointLight &out)
 // The spot's constants. Its box against the cone (the planes 0x2e0100 builds,
 // VU1 0x66b) only saves work, which the host does not need.
 // FS2 0x002e00f0
-// callcheck: FUN_0010b220, FUN_0010b720, FUN_0010b798, FUN_0010b820, tanf (the cone's planes and the packet)
+// callcheck: FUN_0010b220, sceVu0ApplyMatrix, sceVu0OuterProduct, FUN_0010b820, tanf (the cone's planes and the packet)
 
 static void fillSpotLight(YamiPanModelSpotLight &out)
 {
