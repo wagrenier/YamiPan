@@ -18,6 +18,7 @@
 #include "yamipan/rendering/frame.h"
 
 struct YamiPanUiVertex;
+struct YamiPanRipple;
 
 namespace yamipan::rendering
 {
@@ -45,6 +46,8 @@ public:
     void paletteFrame(const void *list, const std::uint32_t *ramp);
     // The sight-jack's film over the frame so far: FilmOverlayPass's work.
     void filmOverlay(const void *list, FilmOverlay film);
+    // The frame through the ripple sheet: FrameRipplePass's work.
+    void rippleFrame(const void *list, const YamiPanRipple &ripple);
     void begin(const void *list, int format);
     void addVertex(const void *list, const YamiPanUiVertex &vertex);
 

@@ -8836,19 +8836,19 @@
 /* 002d0fa0 00000150 */ ModelMotion::ModelMotion(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/ripplesheet.cpp
 // *****************************************************************************
 
-/* 002d10f0 00001b30 */ FUN_002d10f0(){}
-/* 002d2c20 0000006c */ FUN_002d2c20(){}
-/* 002d2c90 00000178 */ FUN_002d2c90(){}
-/* 002d2e10 00000140 */ FUN_002d2e10(){}
-/* 002d2f50 00000124 */ FUN_002d2f50(){}
-/* 002d3080 00000144 */ FUN_002d3080(){}
-/* 002d31d0 00000164 */ FUN_002d31d0(){}
-/* 002d3340 00000128 */ FUN_002d3340(){}
-/* 002d3470 00000140 */ FUN_002d3470(){}
-/* 002d35b0 0000014c */ FUN_002d35b0(){}
+/* 002d10f0 00001b30 */ RippleSheet::draw(){}  // game
+/* 002d2c20 0000006c */ RippleSpec::setPeak(){}  // game
+/* 002d2c90 00000178 */ advanceWaves(){}  // game
+/* 002d2e10 00000140 */ restartWaves(){}  // game
+/* 002d2f50 00000124 */ RippleSheet::restart(){}  // game
+/* 002d3080 00000144 */ RippleSheet::advance(){}  // game
+/* 002d31d0 00000164 */ RippleSheet::RippleSheet(){}  // game
+/* 002d3340 00000128 */ RippleWaves::RippleWaves(){}  // game
+/* 002d3470 00000140 */ RippleLists::RippleLists(){}  // game
+/* 002d35b0 0000014c */ RippleWaves::assignRange(){}  // game
 
 // *****************************************************************************
 // FILE -- game/fontdata.cpp

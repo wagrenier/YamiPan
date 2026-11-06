@@ -120,6 +120,11 @@ void YamiPan_DrawUiFramePalette(const void *list, const uint32_t *ramp)
     canvas().paletteFrame(list, ramp);
 }
 
+void YamiPan_DrawUiFrameRipple(const void *list, const YamiPanRipple *ripple)
+{
+    canvas().rippleFrame(list, *ripple);
+}
+
 void YamiPan_DrawUiFilm(const void *list, const YamiPanFilm *film)
 {
     yamipan::rendering::Renderer &renderer = yamipan::Application::instance().renderer();

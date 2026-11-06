@@ -563,3 +563,8 @@ A Bash call carrying a whole source file fails with ENAMETOOLONG (uv_spawn), and
 
 - **`small` is a Windows macro.** Symptom: "expected ')' before 'const'" or "invalid use of incomplete type" in a header that looks right. Cause: rpcndr.h defines `small` as `char`, so a parameter of that name breaks in any unit that sees windows.h. Fix: `motorSmall`. `near`, `far`, `min`, `max`, `interface` go the same way.
 - **eerun.py runs the libc only through hooks.** The ROM's memset and memcpy use MMI ops eerun does not have ("unsupported op .word"): hook them by name as rumblecmp.py does, in Python, with `ee.hook`.
+
+## A heredoc with apostrophes and game code that moves registers (2026-11-06)
+
+- **One long Bash call that writes several files can fail whole.** Symptom: "unexpected EOF while looking for matching" and nothing ran, not even the first line. Fix: write each file with the Write tool, and the edits as a Python script in the scratchpad.
+- **CodeWarrior moves a 128-bit register with `paddub rd, rs, zero` (.word 0x70xx..28) and uses the second pipeline's `div1` / `mflo1` / `mult1`.** eerun.py has those and `pcpyld` since ripplecmp.py; the ROM's scratchpad (0x70000000) lands on low memory in eerun's mask, so a comparison reads it at that address.

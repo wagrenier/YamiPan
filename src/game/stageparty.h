@@ -58,6 +58,8 @@ enum { kJackBinds = 4, kJackNoBind = kJackBinds, kJackVisionObjects = 10 };
 // "camjack" (kind 11, vtable 0x311ac0, EE 0x340; the kind 8 class under it,
 // vtable 0x311d30, adds m_linked).
 // layout: host
+class RippleSheet;
+
 class JackCamera : public StageCamera
 {
 public:
@@ -214,6 +216,7 @@ public:
     float        m_filmNear = 400.0f;   // FS2 +0x4c: the film starts past it
     float        m_filmFar = 5500.0f;   // FS2 +0x50: full past it
     JackFilm     m_film;                // FS2 +0x54
+    RippleSheet *m_ripples = nullptr;   // FS2 +0xb4: stage 0x1b only
     int          m_mode = JackMode_None; // FS2 +0xb8
     int          m_holdState = JackHold_None; // FS2 +0xbc
     int          m_holdFrames = 0;      // FS2 +0xc0

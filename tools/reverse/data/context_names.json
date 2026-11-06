@@ -31343,6 +31343,66 @@
   "was": "FUN_002d0fa0",
   "why": "0x14 bytes from StageModel::addMotion: pose, file, per-bone tracks by name"
  },
+ "002d10f0": {
+  "name": "RippleSheet::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002d10f0",
+  "why": "a 15 x 15 grid of points pushed by waves: the frame drawn bent into the other buffer, height in its alpha, copied back in 64-wide sprites; only SightJack::drawLive on F_E27_BOSS, camera above 195"
+ },
+ "002d2c20": {
+  "name": "RippleSpec::setPeak",
+  "tag": "game-inferred",
+  "was": "FUN_002d2c20",
+  "why": "from speedMin +8, speedMax +c and the argument (8): the two terms of push + pushOverSpeed / speed, a0 is the sheet's +0x18"
+ },
+ "002d2c90": {
+  "name": "advanceWaves",
+  "tag": "game-inferred",
+  "was": "FUN_002d2c90",
+  "why": "age += step on each wave of a list; at life, age 0 and new life, speed, phase from the spec"
+ },
+ "002d2e10": {
+  "name": "restartWaves",
+  "tag": "game-inferred",
+  "was": "FUN_002d2e10",
+  "why": "every wave of a list age 0 and new life, speed, phase by randNext"
+ },
+ "002d2f50": {
+  "name": "RippleSheet::restart",
+  "tag": "game-inferred",
+  "was": "FUN_002d2f50",
+  "why": "restartWaves over both vectors of lists"
+ },
+ "002d3080": {
+  "name": "RippleSheet::advance",
+  "tag": "game-inferred",
+  "was": "FUN_002d3080",
+  "why": "advanceWaves over both vectors with seconds * pi; called with getDeltaSeconds after the draw"
+ },
+ "002d31d0": {
+  "name": "RippleSheet::RippleSheet",
+  "tag": "game-inferred",
+  "was": "FUN_002d31d0",
+  "why": "0x30 object: two vectors of vectors of 0x10 waves, spec 0, 1, .3, 8, .5, 10; new at SightJack's +0xb4 on stage 0x1b"
+ },
+ "002d3340": {
+  "name": "RippleWaves::RippleWaves",
+  "tag": "game-inferred",
+  "was": "FUN_002d3340",
+  "why": "std::vector fill ctor of 0x10 elements, 'vector length error'"
+ },
+ "002d3470": {
+  "name": "RippleLists::RippleLists",
+  "tag": "game-inferred",
+  "was": "FUN_002d3470",
+  "why": "std::vector fill ctor of 0xc elements, each copied from a RippleWaves"
+ },
+ "002d35b0": {
+  "name": "RippleWaves::assignRange",
+  "tag": "game-inferred",
+  "was": "FUN_002d35b0",
+  "why": "std::vector range construction of 0x10 elements, from 0x2d3470's copy"
+ },
  "002d3700": {
   "name": "WideFontPrinter::nextGlyph",
   "tag": "game-inferred",
