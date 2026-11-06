@@ -25,7 +25,7 @@ enum class BlendMode : std::uint8_t
     FixedAlpha,     // (Cs - Cd) * FIX + Cd
     FixedAdditive,  // Cs * FIX + Cd
     DestinationScale, // Cd * FIX, FIX up to 1
-    DestinationBoost, // Cs * Cd + Cd
+    DestinationBoost, // Cs * Cd + Cd; ALPHA_1 0x49, Cd * As + Cd, when the fragment hands As over as Cs
     DestinationFade, // (0 - Cd) * As + Cd
 };
 

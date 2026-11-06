@@ -989,6 +989,7 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
             ModelFragmentUniforms fragmentUniforms{};
             std::copy_n(pass.fogColor.begin(), 3, fragmentUniforms.fogColor);
             fragmentUniforms.params[0] = draw.blended ? 0.0f : kOpaqueAlphaRef;
+            fragmentUniforms.params[1] = draw.blended && draw.blend == BlendMode::DestinationBoost ? 1.0f : 0.0f;
             SDL_PushGPUFragmentUniformData(commands, 0, &fragmentUniforms, sizeof(fragmentUniforms));
 
             SDL_DrawGPUPrimitives(renderPass, draw.vertexCount, 1, draw.firstVertex, 0);
