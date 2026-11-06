@@ -2639,7 +2639,8 @@ public:
     void stepLampOwner();
     void stepSlowChange();
     void lightCarriedItems();
-    // Each frame: what it says and what its steps sound like (not written).
+    // Each frame: a finished voice lets go, then its breath, how it moves and
+    // what it says by itself.
     void updateSounds();                                                 // FS2 0x002a4a40
     // What a motion event asks for (MotionEvent_HitSwing, MotionEvent_Sound
     // through the sheet's S0..S3); the 0x2a2070..0x2a4800 family, game/charactersound.cpp.
@@ -2667,8 +2668,8 @@ public:
     void playFallDownSound(int surface);                                 // FS2 0x002a29f0
     void playJobSound(int job);                                          // FS2 0x002a2b60
     void playMotionSound(const char *name, const float *pos);            // FS2 0x002a2070
-    // Stages 0x1c, 0x18, 0x11, 0xe and 5 and the record or kind each names:
-    // read only as the attack voices' argument (not written).
+    // The attack voices' other set: F_E.._TKA on stages 0x1c and 0x18, the
+    // sheet's kind 0 on 0x11 and 0xe, kind 1 on 5.
     bool hasAlteredVoice();                                              // FS2 0x00215af0
     // 2 at the wheel, 3 the short weapons, 9 bare hands; the rest of the
     // table is unread.
@@ -2715,8 +2716,11 @@ public:
     int    m_soundState = 0;    // FS2 +0x430: 0 none, 1 a source, 2 a cue (stopSounds)
     const void *m_soundHandle = nullptr; // FS2 +0x434: the source or the cue
     int    m_soundPriority = 0x7fffffff; // FS2 +0x438: what plays counts for this; initSounds
-    StageSoundSource *m_loopSound = nullptr; // FS2 +0x43c: stopped when it leaves the scene (writer unread)
-    u_char m_44c = 0;           // FS2 +0x44c: a script's property; the steps' sounds 0x2a46d0, 0x2a4a40 read it
+    StageSoundSource *m_breathSound = nullptr; // FS2 +0x43c: its breath at the head; updateSounds, stopped when it leaves the scene
+    int    m_moveSoundState = 0;   // FS2 +0x440: what m_moveSound is, by the sheet's kind; above 4 a motion's own sound, the motion id + 5
+    StageSoundSource *m_moveSound = nullptr; // FS2 +0x444: the sound of how it moves, or of its motion (playMotionSound)
+    int    m_voiceDelay = 0;    // FS2 +0x448: frames to its next word (updateSounds)
+    u_char m_voiceOn = 0;       // FS2 +0x44c: a script's property; 1 from initSounds: it says things by itself
     float  m_slowStart = 0.0f;  // FS2 +0x458: -1 none; a timed change of the motion rate
     float  m_slowEnd = 0.0f;    // FS2 +0x45c
     float  m_slowFrom = 0.0f;   // FS2 +0x460: the rate at the start

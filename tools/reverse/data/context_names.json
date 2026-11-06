@@ -22199,6 +22199,12 @@
   "was": "FUN_00212160",
   "why": "brain state not 0, sheet kind not 3 or 7, not the scene's player; its callers are the party's and the game over's pick of whose eyes to show. Name is a guess from camjack"
  },
+ "00212300": {
+  "name": "StageCharacter::isViewedThrough",
+  "tag": "game-inferred",
+  "was": "FUN_00212300",
+  "why": "the party runs and its companion, a character, is this one: the jack's _J breaths"
+ },
  "002123e0": {
   "name": "StageCharacter::isOnElevator",
   "tag": "game-inferred",
@@ -22312,6 +22318,12 @@
   "tag": "game-inferred",
   "was": "FUN_00215310",
   "why": "answers +0x3c8 (driving) == 1 without the gear test of isMode1; rideCar uses it to resetPlace the car and to pick the seat over the door on the way out"
+ },
+ "00215320": {
+  "name": "StageCharacter::hasMaleModel",
+  "tag": "game-inferred",
+  "was": "FUN_00215320",
+  "why": "the pose's name[4] is m; only playJobSound asks: JOB00..04, else JOB05..09; the sex is a reading"
  },
  "00215340": {
   "name": "StageCharacter::hasKyoModel",
@@ -31991,6 +32003,12 @@
   "was": "FUN_002a2100",
   "why": "PC_LADDER / NPC_LADDER / SBT_LADDER / YBZ_LADDER / RYO_LADDER by the sheet's kind; called on the step events of ladder motions"
  },
+ "002a2280": {
+  "name": "StageCharacter::getBreathName",
+  "tag": "game-inferred",
+  "was": "FUN_002a2280",
+  "why": "the breath cue that fits: winded PC or NPC, or seen through the party's view (_J names, N C B by brain pace); called only from updateSounds"
+ },
  "002a25b0": {
   "name": "StageCharacter::getAttackVoice",
   "tag": "game-inferred",
@@ -32014,6 +32032,12 @@
   "tag": "game-inferred",
   "was": "FUN_002a2af0",
   "why": "TRAP_SET"
+ },
+ "002a2b10": {
+  "name": "StageCharacter::playBumpSound",
+  "tag": "game-inferred",
+  "was": "FUN_002a2b10",
+  "why": "with a long weapon, the surface's wall column of the sound table (WALLHIT..)"
  },
  "002a2b60": {
   "name": "StageCharacter::playJobSound",
@@ -32224,6 +32248,12 @@
   "tag": "game-inferred",
   "was": "FUN_002a4a40",
   "why": "each frame from the terminate hook, drives m_soundState +0x430 and the handle +0x434"
+ },
+ "002a6380": {
+  "name": "StageCharacter::stopBodySounds",
+  "tag": "game-inferred",
+  "was": "FUN_002a6380",
+  "why": "stops the character's voice by m_soundState and clears it: the first half of stopSounds"
  },
  "002a6430": {
   "name": "StageCharacter::isVoicePlaying",
@@ -33706,6 +33736,18 @@
   "tag": "game-inferred",
   "was": "FUN_002cedb0",
   "why": "surfaceOfName, then a byte set at 0x599830 + id; the result goes to the face's +0x4c"
+ },
+ "002cede0": {
+  "name": "getSurfaceMoveSound",
+  "tag": "game-inferred",
+  "was": "FUN_002cede0",
+  "why": "sound table column 29 (data 0x30f870), the one family with one sound: sheet kind 0xd going over a surface"
+ },
+ "002cef50": {
+  "name": "getSurfaceWallSound",
+  "tag": "game-inferred",
+  "was": "FUN_002cef50",
+  "why": "sound table column 30, WALLHIT..: playBumpSound"
  },
  "002cf0b0": {
   "name": "getSurfaceSound",
