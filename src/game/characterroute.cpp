@@ -36,6 +36,7 @@
 #include "game/stagescene.h"
 #include "game/sysdata.h"
 #include "game/vu0math.h"
+#include "game/stagecar.h"
 
 namespace {
 
@@ -2765,7 +2766,7 @@ bool RouteWanderAction::update()
                 goal[2] += kWalkHeight;
                 const StageCollisionFace *face = gStageScene->findFloorFaceExcept(
                     goal[0], goal[1], kFloorRange, &goal[2], kFaceFloor, kFaceFloorSkip,
-                    reinterpret_cast<StageObject *>(gStageScene->viewTarget));
+                    gStageScene->car);
                 if (face == nullptr || (short)face->attr < 0)
                     return true;
                 m_route->moveToPoint(0.0f, goal, 1, 0);

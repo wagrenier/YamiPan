@@ -271,6 +271,9 @@ void setSurface(sceVif1Packet *packet, const ModelInstance *model, const ModelSu
         material.pointFlat = (surface->material->flags & ModelMaterialFlag_PointFlat) != 0;
         material.noSpot = (surface->material->flags & ModelMaterialFlag_Foliage) != 0;
         material.noShadow = (surface->material->flags & (ModelMaterialFlag_Blended | ModelMaterialFlag_NoShadow)) != 0;
+        if (surface->texture2Slot >= 0)
+            material.reflection = model->textures[surface->texture2Slot];
+        material.reflectionScale = surface->levelScale;
     }
     material.noDepthWrite = (model->flags & ModelFlag_Ghost) != 0;
     YamiPan_ModelSetMaterial(packet, &material);

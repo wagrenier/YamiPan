@@ -2958,17 +2958,7 @@
 // *****************************************************************************
 
 /* 0017a860 000006f0 */ StageCharacter::sideHook0(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
 /* 0017af50 0000045c */ StageCharacter::rideCar(){}  // game
-
-// *****************************************************************************
-// FILE -- game/playermotion.cpp
-// *****************************************************************************
-
 /* 0017b3b0 00000008 */ StageCharacter::isSpecialAllowed(){}  // game
 /* 0017b3c0 00000014 */ StageCharacter::setSpecial(){}  // game
 
@@ -3464,16 +3454,16 @@
 // *****************************************************************************
 
 /* 00186ee0 00000094 */ StageMapFile::relocate(){}  // game
-/* 00186f80 00000054 */ PartSwitch::partName(){}  // game
-/* 00186fe0 0000007c */ PartSwitch::show(){}  // game
-/* 00187060 00000158 */ PartSwitch::init(){}  // game
-/* 001871c0 00000060 */ PartSwitch::~PartSwitch(){}  // game
-/* 00187220 0000000c */ PartSwitch::PartSwitch(){}  // game
 
 // *****************************************************************************
 // FILE -- game/stagemodel.cpp
 // *****************************************************************************
 
+/* 00186f80 00000054 */ PartSwitch::partName(){}  // game
+/* 00186fe0 0000007c */ PartSwitch::show(){}  // game
+/* 00187060 00000158 */ PartSwitch::init(){}  // game
+/* 001871c0 00000060 */ PartSwitch::~PartSwitch(){}  // game
+/* 00187220 0000000c */ PartSwitch::PartSwitch(){}  // game
 /* 00187230 00000028 */ StageModel::updateVcm(){}  // game
 /* 00187260 000004b4 */ StageModel::advance(){}  // game
 /* 00187720 00000048 */ StageModel::playMotion(){}  // game
@@ -5628,13 +5618,13 @@
 
 /* 002152a0 00000020 */ StageObject::isMode2(){}  // game
 /* 002152d0 00000020 */ StagePlayer::isMode1(){}  // game
+/* 00215300 00000010 */ StageCharacter::isPassenger(){}  // game
+/* 00215310 00000010 */ StageCharacter::isDriver(){}  // game
 
 // *****************************************************************************
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 00215300 00000010 */ FUN_00215300(){}
-/* 00215310 00000010 */ FUN_00215310(){}
 /* 00215320 00000018 */ FUN_00215320(){}
 
 // *****************************************************************************
@@ -7456,17 +7446,17 @@
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 00280620 00000070 */ FUN_00280620(){}
-/* 00280690 000003cc */ FUN_00280690(){}
-/* 00280a60 0000008c */ FUN_00280a60(){}
-/* 00280af0 00000070 */ FUN_00280af0(){}
-/* 00280b60 00000070 */ FUN_00280b60(){}
-/* 00280bd0 0000024c */ FUN_00280bd0(){}
-/* 00280e20 0000007c */ FUN_00280e20(){}
-/* 00280ea0 0000003c */ FUN_00280ea0(){}
-/* 00280ee0 00000070 */ FUN_00280ee0(){}
-/* 00280f50 00000078 */ FUN_00280f50(){}
-/* 00280fd0 000001ec */ FUN_00280fd0(){}
+/* 00280620 00000070 */ MotionDragOutCar::onApply(){}  // game
+/* 00280690 000003cc */ MotionDragOutCar::onUpdate(){}  // game
+/* 00280a60 0000008c */ MotionDragOutCar::MotionDragOutCar(){}  // game
+/* 00280af0 00000070 */ MotionGetOffCar::~MotionGetOffCar(){}  // game
+/* 00280b60 00000070 */ MotionGetOffCar::onApply(){}  // game
+/* 00280bd0 0000024c */ MotionGetOffCar::onUpdate(){}  // game
+/* 00280e20 0000007c */ MotionGetOffCar::MotionGetOffCar(){}  // game
+/* 00280ea0 0000003c */ MotionGetOnCar::onApply(){}  // game
+/* 00280ee0 00000070 */ MotionGetOnCar::onUpdate(){}  // game
+/* 00280f50 00000078 */ MotionGetOnCar::MotionGetOnCar(){}  // game
+/* 00280fd0 000001ec */ StageCharacter::findCarDoor(){}  // game
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp
@@ -7497,9 +7487,9 @@
 // *****************************************************************************
 
 /* 00281550 00000060 */ FUN_00281550(){}
-/* 002815b0 00000080 */ FUN_002815b0(){}
-/* 00281630 0000000c */ FUN_00281630(){}
-/* 00281640 00000070 */ FUN_00281640(){}
+/* 002815b0 00000080 */ MotionDragOutCar::~MotionDragOutCar(){}  // game
+/* 00281630 0000000c */ MotionDragOutCar::clearAllowed(){}  // game
+/* 00281640 00000070 */ MotionGetOnCar::~MotionGetOnCar(){}  // game
 /* 002816b0 00000080 */ FUN_002816b0(){}
 /* 00281730 000000b0 */ LiteralMap<MotionSpecial>::insert(){}  // game
 /* 002817e0 00000020 */ LiteralMap<MotionSpecial>::Node::Node(){}  // game
@@ -7533,24 +7523,24 @@
 /* 00282d10 00000048 */ FUN_00282d10(){}
 /* 00282d60 00000014 */ FUN_00282d60(){}
 /* 00282d80 00000018 */ FUN_00282d80(){}
-/* 00282da0 00000084 */ FUN_00282da0(){}
-/* 00282e30 0000016c */ FUN_00282e30(){}
-/* 00282fa0 00000084 */ FUN_00282fa0(){}
-/* 00283030 00000024 */ FUN_00283030(){}
-/* 00283060 00000430 */ FUN_00283060(){}
-/* 00283490 00000028 */ FUN_00283490(){}
-/* 002834c0 00000038 */ FUN_002834c0(){}
-/* 00283500 00000054 */ FUN_00283500(){}
-/* 00283560 00000040 */ FUN_00283560(){}
-/* 002835a0 00000060 */ FUN_002835a0(){}
-/* 00283600 000000fc */ FUN_00283600(){}
-/* 00283700 00000040 */ FUN_00283700(){}
-/* 00283740 0000003c */ FUN_00283740(){}
-/* 00283780 00000050 */ FUN_00283780(){}
-/* 002837d0 00000134 */ FUN_002837d0(){}
-/* 00283910 00000048 */ FUN_00283910(){}
-/* 00283960 00000034 */ FUN_00283960(){}
-/* 002839a0 00000060 */ FUN_002839a0(){}
+/* 00282da0 00000084 */ NpcReactionLink::NpcReactionLink(){}  // game
+/* 00282e30 0000016c */ DriveLink::onRun(){}  // game
+/* 00282fa0 00000084 */ DriveLink::DriveLink(){}  // game
+/* 00283030 00000024 */ ApproachBiteLink::onLeave(){}  // game
+/* 00283060 00000430 */ ApproachBiteLink::onRun(){}  // game
+/* 00283490 00000028 */ ApproachBiteLink::onStart(){}  // game
+/* 002834c0 00000038 */ ApproachBiteLink::onCancel(){}  // game
+/* 00283500 00000054 */ ApproachBiteLink::onRequest(){}  // game
+/* 00283560 00000040 */ ApproachBiteLink::ApproachBiteLink(){}  // game
+/* 002835a0 00000060 */ ApproachCarLink::~ApproachCarLink(){}  // game
+/* 00283600 000000fc */ ApproachOutLink::onRun(){}  // game
+/* 00283700 00000040 */ ApproachOutLink::onRequest(){}  // game
+/* 00283740 0000003c */ ApproachOutLink::ApproachOutLink(){}  // game
+/* 00283780 00000050 */ CarDoorLink::onLeave(){}  // game
+/* 002837d0 00000134 */ ApproachCarLink::onRun(){}  // game
+/* 00283910 00000048 */ CarDoorLink::onStart(){}  // game
+/* 00283960 00000034 */ ApproachCarLink::ApproachCarLink(){}  // game
+/* 002839a0 00000060 */ NpcReactionLink::~NpcReactionLink(){}  // game
 /* 00283a00 00000060 */ FUN_00283a00(){}
 /* 00283a60 00000060 */ FUN_00283a60(){}
 /* 00283ac0 00000060 */ FUN_00283ac0(){}
@@ -7558,9 +7548,9 @@
 /* 00283b90 00000060 */ FUN_00283b90(){}
 /* 00283bf0 00000060 */ FUN_00283bf0(){}
 /* 00283c50 00000060 */ FUN_00283c50(){}
-/* 00283cb0 00000060 */ FUN_00283cb0(){}
-/* 00283d10 00000070 */ FUN_00283d10(){}
-/* 00283d80 00000070 */ FUN_00283d80(){}
+/* 00283cb0 00000060 */ DriveLink::~DriveLink(){}  // game
+/* 00283d10 00000070 */ ApproachBiteLink::~ApproachBiteLink(){}  // game
+/* 00283d80 00000070 */ ApproachOutLink::~ApproachOutLink(){}  // game
 
 // *****************************************************************************
 // FILE -- game/areagrid.cpp
@@ -7660,58 +7650,58 @@
 /* 00289be0 000000dc */ ScenePool::ScenePool(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/stagecar.cpp
 // *****************************************************************************
 
-/* 00289cc0 00000008 */ FUN_00289cc0(){}
-/* 00289cd0 00000004 */ FUN_00289cd0(){}
-/* 00289ce0 00000054 */ FUN_00289ce0(){}
-/* 00289d40 0000008c */ FUN_00289d40(){}
-/* 00289dd0 00000030 */ FUN_00289dd0(){}
-/* 00289e10 00000010 */ FUN_00289e10(){}
-/* 00289e20 00000074 */ FUN_00289e20(){}
-/* 00289ea0 00000008 */ FUN_00289ea0(){}
-/* 00289eb0 00000038 */ StageViewTarget::isNear(){}  // game
+/* 00289cc0 00000008 */ StageCar::getKind(){}  // game
+/* 00289cd0 00000004 */ StageCar::sideHook0(){}  // game
+/* 00289ce0 00000054 */ StageCar::setProperty(){}  // game
+/* 00289d40 0000008c */ StageCar::getProperty(){}  // game
+/* 00289dd0 00000030 */ StageCar::getSpeed(){}  // game
+/* 00289e10 00000010 */ StageCar::getVelocity(){}  // game
+/* 00289e20 00000074 */ StageCar::getAcceleration(){}  // game
+/* 00289ea0 00000008 */ StageCar::getFrameStep(){}  // game
+/* 00289eb0 00000038 */ StageCar::isNear(){}  // game
 /* 00289ef0 00000074 */ StageCar::getCenter(){}  // game
-/* 00289f70 000002e0 */ FUN_00289f70(){}
+/* 00289f70 000002e0 */ StageCar::getDoorPoint(){}  // game
 /* 0028a250 00000634 */ StageCar::getSeatPlace(){}  // game
-/* 0028a890 0000010c */ FUN_0028a890(){}
-/* 0028a9a0 000000b4 */ FUN_0028a9a0(){}
-/* 0028aa60 000000a0 */ FUN_0028aa60(){}
-/* 0028ab00 0000006c */ FUN_0028ab00(){}
-/* 0028ab70 0000001c */ FUN_0028ab70(){}
+/* 0028a890 0000010c */ StageCar::getDoorPlace(){}  // game
+/* 0028a9a0 000000b4 */ StageCar::getSeatPoint(){}  // game
+/* 0028aa60 000000a0 */ StageCar::getSillPoint(){}  // game
+/* 0028ab00 0000006c */ StageCar::getDoorBone(){}  // game
+/* 0028ab70 0000001c */ StageCar::hasSteerRested(){}  // game
 /* 0028ab90 0000001c */ StageCar::hasSettled(){}  // game
-/* 0028abb0 0000001c */ FUN_0028abb0(){}
-/* 0028abd0 0000001c */ FUN_0028abd0(){}
-/* 0028abf0 00000160 */ FUN_0028abf0(){}
-/* 0028ad50 0000021c */ FUN_0028ad50(){}
-/* 0028af70 000004fc */ FUN_0028af70(){}
-/* 0028b470 00000c94 */ FUN_0028b470(){}
-/* 0028c110 000001fc */ FUN_0028c110(){}
-/* 0028c310 00000130 */ FUN_0028c310(){}
-/* 0028c440 000004f0 */ FUN_0028c440(){}
-/* 0028c930 00000470 */ FUN_0028c930(){}
-/* 0028cda0 000004e8 */ FUN_0028cda0(){}
-/* 0028d290 000004f0 */ FUN_0028d290(){}
+/* 0028abb0 0000001c */ StageCar::isCrawling(){}  // game
+/* 0028abd0 0000001c */ StageCar::isCreeping(){}  // game
+/* 0028abf0 00000160 */ StageCar::getHitLevel(){}  // game
+/* 0028ad50 0000021c */ StageCar::snapToGround(){}  // game
+/* 0028af70 000004fc */ StageCar::scrape(){}  // game
+/* 0028b470 00000c94 */ StageCar::collisionHook0(){}  // game
+/* 0028c110 000001fc */ StageCar::breakWindow(){}  // game
+/* 0028c310 00000130 */ StageCar::collisionHook3(){}  // game
+/* 0028c440 000004f0 */ StageCar::syncBody(){}  // game
+/* 0028c930 00000470 */ StageCar::sideHook3(){}  // game
+/* 0028cda0 000004e8 */ StageCar::sideHook2(){}  // game
+/* 0028d290 000004f0 */ StageCar::sideHook1(){}  // game
 /* 0028d780 0000008c */ StageCar::honk(){}  // game
 /* 0028d810 00000034 */ StageCar::setDirection(){}  // game
-/* 0028d850 00000264 */ FUN_0028d850(){}
+/* 0028d850 00000264 */ StageCar::startOver(){}  // game
 /* 0028dac0 000000b4 */ StageCar::resetPlace(){}  // game
 /* 0028db80 00000080 */ StageCar::setLights(){}  // game
-/* 0028dc00 00000400 */ FUN_0028dc00(){}
-/* 0028e000 000004ac */ FUN_0028e000(){}
-/* 0028e4b0 000000f0 */ FUN_0028e4b0(){}
-/* 0028e5a0 000002a8 */ FUN_0028e5a0(){}
-/* 0028e850 0000002c */ FUN_0028e850(){}
-/* 0028e880 00000310 */ FUN_0028e880(){}
-/* 0028eb90 000000e0 */ FUN_0028eb90(){}
-/* 0028ec70 0000001c */ PlayerGear::setLightOrder(){}  // game
-/* 0028ec90 00000014 */ GateParts::isLit(){}  // game
-/* 0028ecb0 000000a8 */ GateParts::setEffects(){}  // game
-/* 0028ed60 00000104 */ GateParts::copyFrom(){}  // game
-/* 0028ee70 000009a4 */ FUN_0028ee70(){}
-/* 0028f820 00000064 */ GateParts::~GateParts(){}  // game
-/* 0028f890 00000158 */ GateParts::GateParts(){}  // game
+/* 0028dc00 00000400 */ StageCar::updateSounds(){}  // game
+/* 0028e000 000004ac */ StageCar::setMotionList(){}  // game
+/* 0028e4b0 000000f0 */ StageCar::~StageCar(){}  // game
+/* 0028e5a0 000002a8 */ StageCar::StageCar(){}  // game
+/* 0028e850 0000002c */ CarRunOver::at(){}  // game
+/* 0028e880 00000310 */ CarParts::showDamage(){}  // game
+/* 0028eb90 000000e0 */ CarParts::showWindows(){}  // game
+/* 0028ec70 0000001c */ CarParts::setLightOrder(){}  // game
+/* 0028ec90 00000014 */ CarParts::isLit(){}  // game
+/* 0028ecb0 000000a8 */ CarParts::setEffects(){}  // game
+/* 0028ed60 00000104 */ CarParts::copyFrom(){}  // game
+/* 0028ee70 000009a4 */ CarParts::buildLights(){}  // game
+/* 0028f820 00000064 */ CarParts::~CarParts(){}  // game
+/* 0028f890 00000158 */ CarParts::CarParts(){}  // game
 /* 0028f9f0 00000008 */ FUN_0028f9f0(){}
 /* 0028fa00 00000008 */ FUN_0028fa00(){}
 /* 0028fa10 00000008 */ FUN_0028fa10(){}

@@ -23,6 +23,7 @@ enum StageLightMode
 {
     StageLight_Soft  = 0,
     StageLight_Hard  = 1,   // reaches kHardLightRangeSq at most; no falloff in shadowAt
+    StageLight_Car   = 3,   // the car's four; nothing reads it as more than not Hard or Keyed
     StageLight_Keyed = 4,   // gets a colour track though it is no ENV_ light
 };
 
@@ -50,6 +51,8 @@ class StageLight : public StageObject, public CollisionOwner
     friend class StageDoor;         // game/stagedoor.cpp: its light follows it
     friend struct SceneRender;      // game/scenerender.cpp
     friend class StageWeaponItem;
+    friend class StageCar;          // game/stagecar.cpp
+    friend struct CarParts;
 
 public:
     StageLight();                                                        // FS2 0x001866f0
@@ -216,6 +219,7 @@ class SpotLight : public StageLight
     friend class SubSceneLamp;      // game/subsceneobject.cpp
     friend class StageDoor;         // game/stagedoor.cpp: its light follows it
     friend struct SceneRender;      // game/scenerender.cpp
+    friend struct CarParts;         // game/stagecar.cpp
 
 public:
     SpotLight();                                                         // FS2 0x00185260

@@ -86,6 +86,8 @@ struct YamiPanModelMaterial
     int     noSpot;             /* the spot's pass skips it (material flag 0x20, 0x2f1) */
     int     noShadow;           /* takes no shadow (material flags 1 and 2, 0x39d) */
     int     noDepthWrite;       /* ZMSK: only a ghost model's pass (0x2e7960); what blends writes depth otherwise */
+    const void *reflection;     /* a Tim2Texture added over it, mapped by the reflected eye (VU1 0x77f); null none */
+    float   reflectionScale;    /* of the first light's colour, ModelSurface::levelScale */
 };
 
 /* What lights a model: colours 0..1 and each light's direction. */

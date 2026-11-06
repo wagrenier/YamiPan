@@ -78,6 +78,7 @@ struct SceneEffectList;
 struct SceneBlock98;
 struct SceneBufferSet;
 struct SceneDirector;
+class StageCar;                 // game/stagecar.h
 class StageDaylight;
 struct ScenePairTable;
 struct ScenePool;
@@ -140,29 +141,6 @@ struct StageViewStack
     int             capacity;   // FS2 +0x0: 8
     int             top;        // FS2 +0x4: -1 empty
     StageViewEntry *entries;    // FS2 +0x8
-};
-
-// The object at StageScene +0x100 (set outside the constructor). Only the
-// character at +0x3c0 is read (drawPaused); the name is a guess.
-// layout: host -- EE: +0x3c0 the character.
-struct StageModel;              // game/gamehooks.h
-struct StageViewTarget
-{
-    StageModel  *model;         // FS2 +0x30: prepareDrawFlags marks it
-    sceVu0FVECTOR position;     // FS2 +0x150: PlayerMotion::applyMovement measures from it
-    struct GateParts *gateParts; // FS2 +0x2b0: what SubSceneGateObject copies
-    float value394;             // FS2 +0x394: native 0x19e
-    u_char flag3b9;             // FS2 +0x3b9: native 0x154
-    StageObject *character;     // FS2 +0x3c0
-
-    // On the ground plane, nearer than range to pos.
-    // FS2 0x00289eb0
-    bool isNear(float range, const float *pos) const
-    {
-        const float dy = position[1] - pos[1];
-        const float dx = position[0] - pos[0];
-        return dx * dx + dy * dy < range * range;
-    }
 };
 
 // The sizes of the mission's tables.
@@ -464,7 +442,7 @@ struct StageScene
     // The object oZS99_01 of the stage, sought once.
     StageObject *getZs9901();                                            // FS2 0x0019b4e0
     // targetInView for target; null: the view target.
-    bool isInView(StageViewTarget *target);                              // FS2 0x0019b820
+    bool isInView(StageCar *target);                              // FS2 0x0019b820
     // The player is in mode 1, or targetInView (the scene flag of update
     // and drawPaused).
     bool playerOrTargetInView();                                         // FS2 0x0019b900
@@ -614,7 +592,7 @@ struct StageScene
     StageAlert         *alert;           // FS2 +0xf4: a stage's
     void               *focus;           // FS2 +0xf8: getInputFocus's cache, cleared each frame; not set by the ctor
     StageFade          *fade;            // FS2 +0xfc
-    StageViewTarget    *viewTarget;      // FS2 +0x100
+    StageCar           *car;             // FS2 +0x100: StageCar's ctor; null without one
     u_char              zs9901Sought;    // FS2 +0x104: getZs9901 looked
     StageObject        *zs9901;          // FS2 +0x108: what it found
     StageScene         *parent;          // FS2 +0x10c: a sub-scene's (stageThread)

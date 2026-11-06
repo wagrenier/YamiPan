@@ -96,6 +96,43 @@ std::uint32_t litColor(const YamiPanModelLights &lights, const float *worldNorma
     return out;
 }
 
+// The same place in the reflection's pass, VU1 0x77f: the texture is looked up by the eye's ray bounced off the
+// normal, in the world's x, y (z is up), and it takes the first light's colour, none on a face turned from that light.
+// Only y and z of the light count: the ROM has loaded the level over the row with x (the integer reads as 0).
+ModelVertex reflectionVertex(const ModelVertex &vertex, const float *worldNormal, const std::array<float, 3> &eye,
+                             const YamiPanModelLights &lights, float scale)
+{
+    float normal[3];
+    std::copy_n(worldNormal, 3, normal);
+    const float normalLength =
+        std::sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
+    if (normalLength > 0.0f)
+    {
+        for (float &axis : normal)
+            axis /= normalLength;
+    }
+    const float toEye[3] = {eye[0] - vertex.x, eye[1] - vertex.y, eye[2] - vertex.z};
+    const float along = toEye[0] * normal[0] + toEye[1] * normal[1] + toEye[2] * normal[2];
+    const float ray[3] = {toEye[0] - 2.0f * along * normal[0], toEye[1] - 2.0f * along * normal[1],
+                          toEye[2] - 2.0f * along * normal[2]};
+    const float length = std::sqrt(ray[0] * ray[0] + ray[1] * ray[1] + ray[2] * ray[2]);
+
+    ModelVertex out = vertex;
+    out.u = length > 0.0f ? ray[0] / length * 0.5f + 0.5f : 0.5f;
+    out.v = length > 0.0f ? ray[1] / length * 0.5f + 0.5f : 0.5f;
+    out.color = static_cast<std::uint32_t>(kVertexAlpha) << 24;
+    const float facing = lights.directions[0][1] * normal[1] + lights.directions[0][2] * normal[2];
+    if (facing > 0.0f)
+    {
+        for (int channel = 0; channel < 3; channel++)
+        {
+            const float lit = 128.0f * lights.colors[0][channel] * scale; // loi 128
+            out.color |= static_cast<std::uint32_t>(std::clamp(lit, 0.0f, 255.0f)) << (channel * 8);
+        }
+    }
+    return out;
+}
+
 // A vertex through its bones, VU1 0x08a (four), 0x0bd (two), 0x0e1 (three), 0x113 (one): the sum of each bone's
 // matrix times the weight. Weights are floats, used as they stand; a bone id counts VU quadwords (signed). The normal
 // goes through the same sum and is normalised, except with one bone, which only turns it.
@@ -369,7 +406,10 @@ void ModelRenderer::setMaterial(const void *list, const YamiPanModelMaterial &ma
     std::scoped_lock lock(m_lock);
     Layer &layer = m_layers[list];
 
+    endReflection(layer);
     layer.image = imageOf(material.texture);
+    layer.reflection = imageOf(material.reflection);
+    layer.reflectionScale = material.reflectionScale;
     layer.scrollU = static_cast<float>(material.scrollU) / kUvUnit;
     layer.scrollV = static_cast<float>(material.scrollV) / kUvUnit;
     layer.blended = material.blended != 0;
@@ -387,6 +427,8 @@ void ModelRenderer::setEffect(const void *list, const YamiPanModelEffect &effect
     std::scoped_lock lock(m_lock);
     Layer &layer = m_layers[list];
 
+    endReflection(layer);
+    layer.reflection = nullptr;
     layer.image = imageOf(effect.texture);
     layer.blended = true;
     layer.blend = blendModeOf(effect.alpha1);
@@ -454,6 +496,8 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
 
     const float *const matrix = &world[0][0];
     const bool pointLit = layer.point.active != 0 && layer.lights.takesPoint != 0;
+    const bool reflecting = layer.reflection != nullptr && !layer.unlit;
+    layer.reflectionBatch.resize(reflecting ? static_cast<std::size_t>(batch.count) : 0);
 
     // The ROM measures a face in the mesh's space, so a mirroring matrix turns its front around in the world.
     const float determinant = matrix[0] * (matrix[5] * matrix[10] - matrix[6] * matrix[9]) -
@@ -493,6 +537,11 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
         {
             vertex.color = rawColor(batch.colors + index * 4);
             return vertex;
+        }
+        if (reflecting)
+        {
+            layer.reflectionBatch[static_cast<std::size_t>(index)] =
+                reflectionVertex(vertex, worldNormal, layer.eye, layer.lights, layer.reflectionScale);
         }
         const std::uint8_t *const source = batch.colors + index * 4;
         float color[3] = {static_cast<float>(source[0]), static_cast<float>(source[1]), static_cast<float>(source[2])};
@@ -547,6 +596,12 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
         layer.vertices.push_back(first);
         layer.vertices.push_back(second);
         layer.vertices.push_back(third);
+        if (reflecting)
+        {
+            layer.reflectionVertices.push_back(layer.reflectionBatch[static_cast<std::size_t>(a)]);
+            layer.reflectionVertices.push_back(layer.reflectionBatch[static_cast<std::size_t>(b)]);
+            layer.reflectionVertices.push_back(layer.reflectionBatch[static_cast<std::size_t>(c)]);
+        }
         if (spotted)
         {
             layer.spotVertices.push_back(spotVertex(layer.spot, first));
@@ -610,12 +665,31 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
     draw.writesDepth = layer.writesDepth;
 }
 
+void ModelRenderer::endReflection(Layer &layer)
+{
+    if (layer.reflectionVertices.empty())
+        return;
+    ModelDraw draw;
+    draw.image = layer.reflection;
+    draw.blended = true;
+    draw.firstVertex = static_cast<std::uint32_t>(layer.vertices.size());
+    draw.vertexCount = static_cast<std::uint32_t>(layer.reflectionVertices.size());
+    draw.firstSpotVertex = static_cast<std::uint32_t>(layer.spotVertices.size());
+    draw.firstShadowVertex = static_cast<std::uint32_t>(layer.shadowVertices.size());
+    draw.blend = BlendMode::Additive;
+    draw.writesDepth = layer.writesDepth;
+    layer.vertices.insert(layer.vertices.end(), layer.reflectionVertices.begin(), layer.reflectionVertices.end());
+    layer.reflectionVertices.clear();
+    layer.draws.push_back(std::move(draw));
+}
+
 void ModelRenderer::endPass(const void *list)
 {
     std::scoped_lock lock(m_lock);
     Layer &layer = m_layers[list];
     if (!layer.open)
         return;
+    endReflection(layer);
     ModelPass &pass = layer.passes.back();
     pass.drawCount = static_cast<std::uint32_t>(layer.draws.size()) - pass.firstDraw;
     layer.open = false;

@@ -29,6 +29,7 @@
 #include "game/stageparticle.h"
 #include "game/stagescene.h"
 #include "game/vu0math.h"
+#include "game/stagecar.h"
 
 // PC: the ROM's libc strcasecmp (0x127ea0); MSVC has no such name.
 #ifdef _MSC_VER
@@ -405,7 +406,7 @@ void SceneRender::update()
     if (view != nullptr && scene->getTopView()->getKind() != StageObject_Kind9) {
         StagePlayer *player = static_cast<StagePlayer *>(view);
         if (player->isMode1()) {
-            player->setGearLightOrder(kHeldLightPriority);
+            static_cast<StageCar *>(player->m_gear)->m_lights->setLightOrder(kHeldLightPriority);
         } else if (view->m_lampItem != nullptr) {
             view->m_lampItem->m_lamp->setValue2b0(kHeldLightPriority);
         }
