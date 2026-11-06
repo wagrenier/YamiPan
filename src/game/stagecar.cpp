@@ -134,10 +134,8 @@ constexpr float kSteerRest = 0.001f;
 constexpr float kFrameSeconds = 0.033333335f;
 constexpr int   kSettleSteps = 0x10;        // the body finds the ground after a warp
 
-// The switch's parts and ModelPartRec::drawMode.
+// The switch's parts.
 constexpr int kNoPart = -1;
-constexpr u_char kPartShown = 0;
-constexpr u_char kPartHidden = 2;
 constexpr int kCarLightOrder = 1;
 constexpr int kCarBodyBucket = 1;
 constexpr int kCharacterHeavyHit = 2;       // a slide level above this makes a noise
@@ -1378,6 +1376,15 @@ StageCar::StageCar() : StageMapObject(1)
     m_maxBrake = 2.0f;
     m_steerRate = 0.62831855f;
     m_noiseRange = 2400.0f;
+}
+
+// FS2 0x0028e850
+
+int *CarRunOver::at(int level)
+{
+    if (level < 0 || level > GroundSlide_Worst)
+        level = GroundSlide_Worst;
+    return &damage[level];
 }
 
 // ──────────────────────────────────────────────────────────────────────

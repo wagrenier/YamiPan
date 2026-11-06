@@ -974,6 +974,92 @@ bool PlayerMotion::armGadgetSpecial(const char *name, const char *text)
     return true;
 }
 
+namespace {
+
+// rideCar's off: 0 gets in, these get out, any other by the door or, a
+// driver, as CarExit_Turned.
+constexpr int CarExit_Turned = 2;   // at the seat, turned round
+constexpr int CarExit_Seat = 3;     // at the seat, facing as the car
+
+}  // namespace
+
+// FS2 0x0017af50
+// callcheck: isDriver, resetPlace, isMode1, setLights, setChildrenShown, setChildrenActive, setRotationVec, getSeatPoint, addAngle, getSeatPoint, isDriver, getDoorPlace, setPosition, updateMatrix, reset, reset, isViewLinked, getTopView, onViewTop, isMode1, isMode1, find, getWorldMatrix, getStageSelect, isMode1, reset, reset, reset, isViewLinked, getTopView, onViewTop, setChildrenShown, setChildrenActive, isPlayer, find0, getTopView, onLinkChanged, pushView, getTopView, removeView (stageObjRecord)
+
+bool StageCharacter::rideCar(int off, int side)
+{
+    if (m_abilities.driving == 0)
+        return false;
+
+    StageCar *car = gStageScene->car;
+    if (isDriver())
+        car->resetPlace();
+
+    if (off != 0) {
+        if (isMode1()) {
+            car->m_driver = nullptr;
+            car->setLights(false);
+        }
+        m_gear = nullptr;
+        m_tree->setChildrenShown(true);
+        m_tree->setChildrenActive(true);
+        m_model->data->flags |= ModelFlag_CastsShadow;
+        m_model->pose->parentMatrix = nullptr;
+        m_xform.setRotationVec(car->m_xform.rotation);
+
+        sceVu0FVECTOR place;
+        if (off == CarExit_Seat) {
+            car->getSeatPoint(place, side);
+        }
+        else if (off == CarExit_Turned || isDriver()) {
+            car->getSeatPoint(place, side);
+            m_xform.rotation[2] = addAngle(m_xform.rotation[2], 3.1415927f);
+        }
+        else {
+            car->getDoorPlace(place, side);
+        }
+        m_xform.setPosition(place);
+        updateMatrix();
+        m_motion->reset(Motion_Stand);
+        m_ground->reset();
+        if (isViewLinked())
+            gStageScene->getTopView()->onViewTop();
+    }
+    else {
+        m_gear = car;
+        if (isMode1())
+            car->m_driver = this;
+        const char *seat = isMode1() ? "bn_dr" : "bn_pa";
+        m_model->pose->parentMatrix = car->m_model->boneMap.find(seat)->value->getWorldMatrix();
+
+        const int kind = stageObjRecord(m_itemDef)->kind;
+        const bool drivesAtWheel = kind == CharacterKind_4 || kind == CharacterKind_A
+            || kind == CharacterKind_8 || kind == CharacterKind_2;
+        m_motion->reset(drivesAtWheel && isMode1() ? Motion_CarDrive : Motion_CarSit);
+        m_ground->reset();
+        if (isViewLinked())
+            gStageScene->getTopView()->onViewTop();
+        m_model->data->flags &= ~ModelFlag_CastsShadow;
+        m_tree->setChildrenShown(false);
+        m_tree->setChildrenActive(false);
+    }
+
+    if (isPlayer()) {
+        StageObject *camera = gStageScene->objects->find0("camview", 0);
+        if (off == 0) {
+            if (gStageScene->getTopView() != camera) {
+                camera->m_linked = this;
+                camera->onLinkChanged();
+                gStageScene->pushView(camera, 1, 1);
+            }
+        }
+        else if (gStageScene->getTopView() == camera) {
+            gStageScene->removeView(camera);
+        }
+    }
+    return true;
+}
+
 // FS2 0x0017b3b0
 
 bool StageCharacter::isSpecialAllowed(const char *name)
@@ -991,7 +1077,7 @@ void StageCharacter::setSpecial(bool on, const char *name)
 // By the sheet's kind, the stage's gadgets and what the character can do.
 // PC: GettingOnCar 0x280f50, GettingOffCar 0x280e20 (driving 1) and DragOutCar
 // 0x280a60 (flag3be) stand first among those here and are left out: their
-// conditions need the car (0x28a..), which the host does not have.
+// conditions and their links (0x283060..) are not written.
 // FS2 0x001df0b0
 // callcheck: getStageSelect, getStageSelect, getStageSelect, getStageSelect, getZs9901, operator_new, FUN_002812e0, FUN_002814a0, FUN_00280a60, FUN_00280e20, FUN_00280f50 (the cars left out: above)
 

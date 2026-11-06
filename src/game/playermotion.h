@@ -83,6 +83,8 @@ enum MotionId
     Motion_DoorSlideB = 0x4a,
     Motion_DoorReachKey = 0x4b, // through the broken glass
     Motion_DoorForce  = 0x4c,   // spends its hit points
+    Motion_CarSit     = 0xb9, // car_s
+    Motion_CarDrive   = 0xba, // car_dv
     Motion_Crouched   = 0xf7, // a request, resolved through the holds
     Motion_WalkStand  = 0xf9, // waits while the walk runs (stepLower)
     Motion_WalkCrouch = 0xfa,

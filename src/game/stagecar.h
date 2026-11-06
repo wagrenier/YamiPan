@@ -29,6 +29,7 @@ constexpr int kCarDamageSlots = 10;     // StageCar::m_health
 constexpr int kCarSounds = 2;           // StageCar::m_sounds
 constexpr int kCarThrottleLog = 10;     // StageCar::m_throttleLog
 constexpr int kCarSpheres = 0x28;       // the spheres of m_body
+constexpr int kCarRunOverLevels = 5;    // CarRunOver: GroundSlide, 0..GroundSlide_Worst
 
 // CarParts::damaged and the first slots of StageCar::m_health: what shows
 // when it is gone. The names are the bones'.
@@ -104,6 +105,17 @@ private:
     // The lights and the effects on the bones, off.
     void buildLights(StageObject *owner);                                // FS2 0x0028ee70
 };
+
+// What a character hit by a car loses (0x2103d0, not written), by how hard
+// it was hit. The worst stands for any other level.
+// EE layout.
+struct CarRunOver
+{
+    int *at(int level);                                                  // FS2 0x0028e850
+
+    int damage[kCarRunOverLevels];      // FS2 +0x0: 0, 0, 20, 80, 1000 from the car's ctor
+};
+static_assert(sizeof(CarRunOver) == 0x14, "CarRunOver: EE 0x14");
 
 // layout: host -- EE offsets in the comments. Vtables 0x318070, 0x318094 at
 // +0x1c, 0x3180ac at +0xf4, 0x3182bc at +0x204.
@@ -212,6 +224,7 @@ private:
     void startOver(bool moved, bool turned);                             // FS2 0x0028d850
     void updateSounds();                                                 // FS2 0x0028dc00
 
+    CarRunOver m_runOver = {{0, 0, 20, 80, 1000}}; // FS2 +0x240
     u_char m_hurt = 0;              // FS2 +0x254: a hit took something this frame
     int    m_damage[kCarDamageSlots] = {}; // FS2 +0x258: the frame's
     int    m_health[kCarDamageSlots];      // FS2 +0x280: 100 from the ctor

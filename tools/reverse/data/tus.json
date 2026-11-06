@@ -768,10 +768,6 @@
     ],
     [
      "0017a860",
-     "0017af50"
-    ],
-    [
-     "0017b3b0",
      "0017b3d4"
     ],
     [
@@ -804,10 +800,6 @@
     ],
     [
      "001e06f0",
-     "001e0e20"
-    ],
-    [
-     "001e0e20",
      "001e18c0"
     ],
     [
@@ -1251,7 +1243,7 @@
    ],
    "status": "verify",
    "task": "The character's motion, step 4 of roadmap-3d-control.md, queued 2026-11-04: 0x1e0000..0x1f0000 out of unassigned@001d85b0: new 0x1ed410 (1,638 i), PlayerMotion::refresh 0x1e66c0, the action states 0x1e6d60. The main camera reads its motionId and offsets. Most of this code has no names yet, so name as you go. Ends verify until the character moves.",
-   "why": "the ranges so far, with the character's property pair 0x212530 / 0x2132d0, their helpers and resetActionState 0x21e050 with its status block 0x21cc70, which the motion reads; 0x1eedb0..0x1efef0: BittenLink's dtor, the base link's empty slots and the three NameMap instances the object emits after PlayerMotion::PlayerMotion (the third's insert 0x281730.. stays in its run, tagged in game/stagelist.h); 0x27c6d0..0x27dc40 and 0x280010..0x280080: the base link, the links' dtors, the condition list and MotionGadgetSpecial's dtor, joined from unassigned@0027cab0"
+   "why": "the ranges so far, with the character's property pair 0x212530 / 0x2132d0, their helpers and resetActionState 0x21e050 with its status block 0x21cc70, which the motion reads; 0x1eedb0..0x1efef0: BittenLink's dtor, the base link's empty slots and the three NameMap instances the object emits after PlayerMotion::PlayerMotion (the third's insert 0x281730.. stays in its run, tagged in game/stagelist.h); 0x27c6d0..0x27dc40 and 0x280010..0x280080: the base link, the links' dtors, the condition list and MotionGadgetSpecial's dtor, joined from unassigned@0027cab0 0x17af50 rideCar joined: it stands between two runs of this file."
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -1659,7 +1651,7 @@
    "why": "The base camera's getKind, its four empty side hooks, the setters StageObject keeps at the head of this object, its dtor and the view functions. 0x177be0 setProjection is written here too but pinned in game/playermotion.cpp; 0x177d00 on is not pinned yet."
   },
   "game/stagecar.cpp": {
-   "notes": "Written from 0x289cc0 to 0x28fa90, batch 174; only 0x28e850 is left, an index clamp whose caller 0x2103d0 is unread. Seen, temporary build, removed: New Game forced to stage 7, doorwalk pad, 300 s, no crash: the truck stands where the map puts it with the prompt Get in the car by pressing X, progress/20261106-car-stage7-away.png. The picture is wrong: a close view shows a smeared fanned texture on the body. Guess, not proven: PartSwitch::init 0x187060 and show 0x186fe0 are reached stubs, so every part shows. Forced drive, no driver so no collisions: it pulls away, turns, brakes to 0 at about 32 km/h; off the road the contacts sank past the ground ray and never came back while the position held. Nothing is compared with the ROM by a tool yet. Next: the PartSwitch stubs, then StageCharacter::rideCar 0x17af50, which is the only writer of m_driver and what the stage 7 prompt waits on. open-items.md has the doubts.",
+   "notes": "59 of 59 functions, batch 175: CarRunOver::at 0x28e850 (the table at +0x240; its caller 0x2103d0 is unwritten). Written with it because the car's picture and driver waited on them: PartSwitch::partName, show, init (range joined game/stagemodel.cpp), StageCharacter::rideCar 0x17af50 (joined game/playermotion.cpp), isDriver 0x215310. Seen, temporary build, removed: stage 7, doorwalk pad, 300 s, no crash, rideCar and throttle forced: driver's view with wheel and dash and the game's text Use R1 to go forward, progress/20261106-car-seat-forced.png; the car moved with the player in it; out by the seat. Reference: the stage's hint page, progress/20261106-car-hints.png, Hints 3 is the same cabin view, the shape agrees. Still wrong, hence partial: the cab's rounded panels keep a scaled glossy pattern, progress/20261106-car-close-after-partswitch.png, and the inside pillar a bright smear where Hints 3 is dark. So the part switch was not the cause; the new guess, not proven, is a reflection layer (a mesh's second texture) in yamipan/rendering/model_renderer.cpp. A run with nothing forced never seats the player: no button gets in yet. Next: GettingOnCar 0x280f50, GettingOffCar 0x280e20, DragOutCar 0x280a60 and their links 0x283060.., left out of PlayerMotion::initList; the reflection layer; 0x2103d0. Unexplained items are in open-items.md: the forced car stopped dead at (7026, 3002), something seated the player later in the forced run, and the player is placed back at (7410.8, 2840) about every 480 ticks.",
    "ranges": [
     [
      "00289cc0",
@@ -1671,6 +1663,11 @@
      "date": "2026-11-06 12:05",
      "status": "partial",
      "summary": "the car: StageCar, CarParts, 58 of 59 functions; StageScene::car replaces StageViewTarget; createMapObject builds it"
+    },
+    {
+     "date": "2026-11-06 12:56",
+     "status": "partial",
+     "summary": "the car: every function written; PartSwitch and rideCar added: the player sits in the car; the truck's picture is still wrong"
     }
    ],
    "status": "partial",
@@ -1857,7 +1854,7 @@
    "notes": "All of StageModel is written (init, bindBones, placeBones, setBaseMotion, advance, applyMotion, the play and find calls, the dtor). BoneNode and ModelLink were one StringMap, now boneMap. game/modelpose.h holds the pose as a stand-in: short accessors written, load / update / solve / play and the ctors are stubs, so a pose has no bones yet. Pose +0x150 is a matrix pointer, not a count (was called pending). New Game run: reaches the stage, no crash, black at the last frame; nothing tests this on screen yet because createInstance answers null and no pose was built. StringMap::balance passed a scratch test on 3000 trees. Next, rena/rena_model.cpp: createInstance must fill rootBone +0x10, bones with node at ModelNodeBone records, inverseBinds +0x20, bindMatrices +0x24, rootMatrix +0x28 and textures +0x50, and allocate with plain new (delete data in ~StageModel). open-items.md has the doubts.",
    "ranges": [
     [
-     "00187230",
+     "00186f80",
      "00188d60"
     ]
    ],
@@ -1870,7 +1867,7 @@
    ],
    "status": "verify",
    "task": "3D path 3 of 5 (the user's pin). StageModel::init 0x188b10 and the neighbours it needs: it calls drawSysAddModel and drawSysFindKind1Surface (both written in drawsys.cpp) and needs a host field for +0xa8. Pin the real extent with tus.py define under this key.",
-   "why": "StageModel: first method updateVcm 0x187230 (after PartSwitch), through init 0x188b10; first cut, tails (MSL instances) to follow"
+   "why": "PartSwitch 0x186f80..0x187230 stands right before StageModel and its users are model parts; added from the frontier's unassigned@00186ee0 (StageMapFile::relocate 0x186ee0 is game/stagescene.cpp's). StageModel: first method updateVcm 0x187230, through init 0x188b10."
   },
   "game/stageobject.cpp": {
    "notes": "All 43 functions are written, no stubs; the old partial status was stale, which is why tus.py next picked it. This run compared setProperty 0x189f40, getProperty 0x18a5b0 and scriptAddMenuLine 0x189ce0 with the ROM case by case: no difference (getProperty read to the show-flag cases; those and its ids match the enum). Comments only in the code. Kept on purpose: the memset in StageObject::StageObject, because the host keeps the subclass fields in one flat block and the car and elevator pose ctors are stubs. No Ghidra change. The 15 s smoke run stops at the language screen, which is right for 15 s and shows no stage object; the TU's own picture is the stage, seen in earlier runs. Queue refilled for the next runs: game/gameoversequence.cpp 0x2b1670..0x2b22f0, then game/characterroute.cpp 0x22a310..0x22f270 (open-items.md Next up).",
@@ -2049,7 +2046,7 @@
     ],
     [
      "002152a0",
-     "00215300"
+     "00215320"
     ],
     [
      "00215620",
@@ -2090,7 +2087,7 @@
    ],
    "status": "verify",
    "task": "TOP PRIORITY, the user 2026-11-05: New Game's first part cannot end, the kid reaches downstairs and nothing starts. open-items.md 'Next up' first entry has the three blockers: (1) BoxVolume needs script slot +0xfc = containsObject (0x17e950 by thunk 0x17f130), or no AREA_* script fires; (2) ClearSequence 0x2b1500..0x2b1660 is stubs, native 0x52 never ends the stage; (3) the navigator after a clear: runNaviFile 0x295470 and its widgets. Test: warp into AREA01 (6959, 6342, 811) with a temporary --env hook, removed before the commit.",
-   "why": "The character around the frame's scripts, what it hears and sees, the noise list, the volumes: read 2026-11-05; extents by function, the file name is the port's"
+   "why": "The character around the frame's scripts, what it hears and sees, the noise list, the volumes: read 2026-11-05; extents by function, the file name is the port's 0x215310 isDriver joined."
   },
   "game/stageresult.cpp": {
    "notes": "All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (addContinue), getPerfectBits one bit per zero counter, clocks at +0x94/+0xa4 {state, value, step, target}, mode +0xbc (0 none, 1 count-up, 2 countdown 7500 with SYS_COUNT1/2 cues), layout +0xb8 from getLangPackItem(4/5). runStartupSequence renamed loadGamePack: it parses packgameEU.pak into PackTables (0x2bcf10, columns label/ctype/SEtype) and frees it, no screens. StageResult moved from gamehooks.h to stageresult.h; sysdata.cpp now reads clock.value/clock2.value/mode; SaveData::_000 is playTime (StageResult::tick counts it). New stand-ins in gamehooks.h: PackFile, PackTables, UiLayout, StageSound, StageScene/gStageScene (gp-0x7a7c, data the build must define), getInitPackItem/getLangPackItem. Guesses: the file name; 0x2afc20/0x2afcd0 joined by position; counters 1..3, attempt/stage blocks, clock state bits 0x14 and PackTables element types read from shapes only. Not compiled (no toolchain here); callcheck clean, layout lint OK. Next in the run: 0x2acff0..0x2afc20 (drawing cluster around 0x2adc70).",

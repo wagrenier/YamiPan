@@ -22271,6 +22271,12 @@
   "was": "FUN_002152d0",
   "why": "a0 the player: +0x400 non-null and +0x3c8 == 1; StageScene::drawPaused / update then pass sceneFlag 1 to StageSound::update; what mode 1 is is unread"
  },
+ "00215310": {
+  "name": "StageCharacter::isDriver",
+  "tag": "game-inferred",
+  "was": "FUN_00215310",
+  "why": "answers +0x3c8 (driving) == 1 without the gear test of isMode1; rideCar uses it to resetPlace the car and to pick the seat over the door on the way out"
+ },
  "00215340": {
   "name": "StageCharacter::hasKyoModel",
   "tag": "game-inferred",
@@ -30004,6 +30010,12 @@
   "tag": "game-inferred",
   "was": "FUN_0028e5a0",
   "why": "sets StageScene +0x100; 40 spheres, 2400 noise range"
+ },
+ "0028e850": {
+  "name": "CarRunOver::at",
+  "tag": "game-inferred",
+  "was": "FUN_0028e850",
+  "why": "a0 is car +0x240, five ints set in the ctor 0,0,20,80,1000; the index clamps to 4; 0x2103d0 passes the victim's CharacterGround::slideLevel and takes the word as damage"
  },
  "0028e880": {
   "name": "CarParts::showDamage",

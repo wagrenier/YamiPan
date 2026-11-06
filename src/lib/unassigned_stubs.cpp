@@ -415,18 +415,6 @@ SceneBufferSet * SceneBufferSet::createFor(StageObject *owner, StageNodeTree *tr
     return {};
 }
 
-// stub of FS2 0x00187060
-void PartSwitch::init(ModelInstance *partsModel, const char *name, int partCount, int firstShown)
-{
-    YAMIPAN_STUB("PartSwitch::init", 0x00187060);
-}
-
-// stub of FS2 0x00186fe0
-void PartSwitch::show(int index)
-{
-    YAMIPAN_STUB("PartSwitch::show", 0x00186fe0);
-}
-
 // stub of FS2 0x001d3d20
 // stub of FS2 0x0023db50
 ItemPhysics::ItemPhysics(bool, bool)
@@ -580,13 +568,6 @@ void ItemPhysics::push(const sceVu0FVECTOR velocity, int bone)
 void ItemPhysics::setMoving(bool moving, bool awake)
 {
     YAMIPAN_STUB("ItemPhysics::setMoving", 0x0023cfc0);
-}
-
-// stub of FS2 0x00186f80
-const char * PartSwitch::partName(int index) const
-{
-    YAMIPAN_STUB("PartSwitch::partName", 0x00186f80);
-    return {};
 }
 
 // stub of FS2 0x0026a010
@@ -855,13 +836,6 @@ bool SceneOwnedObject::isSlot44()
 void SceneOwnedObject::setNames(const char *first, const char *second)
 {
     YAMIPAN_STUB("SceneOwnedObject::setNames", 0x00000000);
-}
-
-// stub of FS2 0x0017af50
-bool StageCharacter::rideCar(int off, int side)
-{
-    YAMIPAN_STUB("StageCharacter::rideCar", 0x0017af50);
-    return {};
 }
 
 // stub of FS2 address unknown (0 candidates)
