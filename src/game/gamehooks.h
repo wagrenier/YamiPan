@@ -1316,42 +1316,7 @@ public:
     bool getRecordFlag31();                                              // FS2 0x002a8920
 };
 
-// +0x4c: what runs the stage's rute file (vtable 0x316a78; run
-// unassigned@00252840); what it does is unread. layout: host (EE 0xc).
-class RoutePlayer : public SceneOwnedObject
-{
-public:
-    explicit RoutePlayer(void *rute);                                    // FS2 0x00253180
-    // The area is in the sorted list of the rute header.
-    bool isListedArea(short area);                                       // FS2 0x00252bc0
-    // What a leg names (game/routefilter.h).
-    RouteNode *endNode(const RouteLeg &step);                           // FS2 0x00252840
-    RouteNode *startNode(const RouteLeg &step);                         // FS2 0x002529a0
-    RouteNode *node(short index);                                        // FS2 0x00252e20
-    const RouteSpan *link(short index);                                  // FS2 0x00252d80
-    const RouteSpan *gate(short index);                                  // FS2 0x00252dd0
-    float chainLength(short index);                                      // FS2 0x00252c80
-    RouteNode *chainNode(short index, int at);                           // FS2 0x00252cd0
-    int chainNodeCount(short index);                                     // FS2 0x00252d30
-    // The most steps a path of the file has.
-    int maxStepCount();                                                  // FS2 0x00252ac0
-    // Every path the file names.
-    void pathNames(std::vector<const char *> &out);                      // FS2 0x00252b20
-    // Which set of the file is exactly these paths: from 1, 0 none, -1
-    // when the file has no sets.
-    int pathSetIndex(const std::vector<const char *> &names);            // FS2 0x00252e70
-    // The crossings between two areas.
-    void areaCrossings(std::vector<short> &out, short fromArea, short toArea); // FS2 0x00252f10
-    // Over one crossing, by the set of paths.
-    float crossingPath(RoutePath &out, short fromArea, short toArea, short crossing, int pathSet); // FS2 0x00253030
-    // Inside one area.
-    float areaPath(RoutePath &out, const float *from, const float *to, short area); // FS2 0x00252f70
-    // From a point of the area to a crossing of it.
-    float wayToCrossing(RoutePath &out, const float *pos, short area, short crossing); // FS2 0x00252fd0
-    // Turns the path around, its spans and chains into nodes.
-    void reversePath(RoutePath &path);                                   // FS2 0x00252b70
-    void start(int arg);                                                 // FS2 0x00252b10: empty here
-};
+class RoutePlayer;              // game/routeplayer.h: +0x4c, the stage's rute file
 
 class Tim2Texture;              // game/gsutil.h
 

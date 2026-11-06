@@ -30,6 +30,7 @@
 #include "game/heap.h"          /* randNext */
 #include "game/modelpose.h"
 #include "game/pakarchive.h"
+#include "game/routeplayer.h"
 #include "game/seplayer.h"      /* StreamTable */
 #include "game/stageitem.h"
 #include "game/stagelight.h"

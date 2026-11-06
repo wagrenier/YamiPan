@@ -94,18 +94,6 @@ int Rand48::next(int n)
     return {};
 }
 
-// stub of FS2 0x00253180
-RoutePlayer::RoutePlayer(void*)
-{
-    YAMIPAN_STUB("RoutePlayer::RoutePlayer", 0x00253180);
-}
-
-// stub of FS2 0x00252b10
-void RoutePlayer::start(int arg)
-{
-    YAMIPAN_STUB("RoutePlayer::start", 0x00252b10);
-}
-
 // stub of FS2 0x002ce5a0
 SceneBufferSet::~SceneBufferSet()
 {
@@ -1527,13 +1515,6 @@ void StageParty::startGameOverView(StageObject *who)
     YAMIPAN_STUB("StageParty::startGameOverView", 0x001fe7c0);
 }
 
-// stub of FS2 0x00252bc0
-bool RoutePlayer::isListedArea(short area)
-{
-    YAMIPAN_STUB("RoutePlayer::isListedArea", 0x00252bc0);
-    return {};
-}
-
 // stub of FS2 0x00289ef0
 void StageCar::getCenter(float *out)
 {
@@ -1570,113 +1551,4 @@ bool elevatorOpenAtB3(StageObject *elevator)
 void elevatorSwitchPlace(StageObject *elevator, float *place, float *direction, int which)
 {
     YAMIPAN_STUB("elevatorSwitchPlace", 0x00293c60);
-}
-
-// stub of FS2 0x00252f10
-void RoutePlayer::areaCrossings(std::vector<short> &out, short fromArea, short toArea)
-{
-    YAMIPAN_STUB("RoutePlayer::areaCrossings", 0x00252f10);
-}
-
-// stub of FS2 0x00252f70
-float RoutePlayer::areaPath(RoutePath &out, const float *from, const float *to, short area)
-{
-    YAMIPAN_STUB("RoutePlayer::areaPath", 0x00252f70);
-    return {};
-}
-
-// stub of FS2 0x00252c80
-float RoutePlayer::chainLength(short index)
-{
-    YAMIPAN_STUB("RoutePlayer::chainLength", 0x00252c80);
-    return {};
-}
-
-// stub of FS2 0x00252cd0
-RouteNode * RoutePlayer::chainNode(short index, int at)
-{
-    YAMIPAN_STUB("RoutePlayer::chainNode", 0x00252cd0);
-    return {};
-}
-
-// stub of FS2 0x00252d30
-int RoutePlayer::chainNodeCount(short index)
-{
-    YAMIPAN_STUB("RoutePlayer::chainNodeCount", 0x00252d30);
-    return {};
-}
-
-// stub of FS2 0x00253030
-float RoutePlayer::crossingPath(RoutePath &out, short fromArea, short toArea, short crossing, int pathSet)
-{
-    YAMIPAN_STUB("RoutePlayer::crossingPath", 0x00253030);
-    return {};
-}
-
-// stub of FS2 0x00252840
-RouteNode * RoutePlayer::endNode(const RouteLeg &step)
-{
-    YAMIPAN_STUB("RoutePlayer::endNode", 0x00252840);
-    return {};
-}
-
-// stub of FS2 0x00252dd0
-const RouteSpan * RoutePlayer::gate(short index)
-{
-    YAMIPAN_STUB("RoutePlayer::gate", 0x00252dd0);
-    return {};
-}
-
-// stub of FS2 0x00252d80
-const RouteSpan * RoutePlayer::link(short index)
-{
-    YAMIPAN_STUB("RoutePlayer::link", 0x00252d80);
-    return {};
-}
-
-// stub of FS2 0x00252ac0
-int RoutePlayer::maxStepCount()
-{
-    YAMIPAN_STUB("RoutePlayer::maxStepCount", 0x00252ac0);
-    return {};
-}
-
-// stub of FS2 0x00252e20
-RouteNode * RoutePlayer::node(short index)
-{
-    YAMIPAN_STUB("RoutePlayer::node", 0x00252e20);
-    return {};
-}
-
-// stub of FS2 0x00252b20
-void RoutePlayer::pathNames(std::vector<const char *> &out)
-{
-    YAMIPAN_STUB("RoutePlayer::pathNames", 0x00252b20);
-}
-
-// stub of FS2 0x00252e70
-int RoutePlayer::pathSetIndex(const std::vector<const char *> &names)
-{
-    YAMIPAN_STUB("RoutePlayer::pathSetIndex", 0x00252e70);
-    return {};
-}
-
-// stub of FS2 0x00252b70
-void RoutePlayer::reversePath(RoutePath &path)
-{
-    YAMIPAN_STUB("RoutePlayer::reversePath", 0x00252b70);
-}
-
-// stub of FS2 0x002529a0
-RouteNode * RoutePlayer::startNode(const RouteLeg &step)
-{
-    YAMIPAN_STUB("RoutePlayer::startNode", 0x002529a0);
-    return {};
-}
-
-// stub of FS2 0x00252fd0
-float RoutePlayer::wayToCrossing(RoutePath &out, const float *pos, short area, short crossing)
-{
-    YAMIPAN_STUB("RoutePlayer::wayToCrossing", 0x00252fd0);
-    return {};
 }

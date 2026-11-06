@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-05 23:22 at commit `8374555` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-05 23:59 at commit `6ad2c97` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-05 23:22 at commit `8374555` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **4641** (70%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3720
-- context-name ledger: 5264 entries; overrides of wrong library matches: 0
+- game functions: **6599**, named **4667** (71%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3746
+- context-name ledger: 5290 entries; overrides of wrong library matches: 0
 - placed in a source file: 4959/6599 in 109 files
 
 Least-named game-code regions (64 KB blocks):
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **4330**; stubs: **279**
+- reconstructed FS2 functions: **4375**; stubs: **260**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -74,6 +74,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rcnttimer.cpp` | 0 | 4 |
 | `src/game/routefilter.cpp` | 38 | 0 |
+| `src/game/routeplayer.cpp` | 45 | 0 |
 | `src/game/s2ddata.cpp` | 9 | 0 |
 | `src/game/scene.cpp` | 1 | 0 |
 | `src/game/sceneeffects.cpp` | 7 | 0 |
@@ -119,7 +120,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/vectortrack.cpp` | 10 | 0 |
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 229 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 210 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -147,9 +148,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 222 TUs: todo 93, partial 39, verify 90, done 28
-- next: **game/routeplayer.cpp** (pinned in the queue)
-- pinned queue: game/routeplayer.cpp, game/characterroute.cpp
+- 222 TUs: todo 93, partial 38, verify 91, done 28
+- next: **game/characterroute.cpp** (pinned in the queue)
+- pinned queue: game/characterroute.cpp
 - partial: `game/characterroute.cpp` 85/169 -- Written: everything in game/characterroute.h not marked not written, 0x21efa0..0x224fe0 and 0x229f60..0x22fc50. Left: 12 action stubs in src/lib/unassigned_stub
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -187,6 +188,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/prgmccard.cpp` 7/7 -- All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide close
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/routefilter.cpp` 36/36 -- All of 0x23f290..0x242e80 is written (batch 153). It cannot run yet: every RoutePlayer method it calls is a stub, so findPath and pathLength answer -1 and a wal
+- verify: `game/routeplayer.cpp` 47/100 -- Complete and compared with the ROM: rutecmp.py runs the ROM's code on eerun.py beside the host over 12 stages' rute files, 3840 questions, 0 differences. The fi
 - verify: `game/s2ddata.cpp` 9/9 -- Host: S2dRef<T> (s2ddata.h) is a 32-bit offset from the field itself, 0 null, implicit T* conversion, copy deleted; S2dData, S2dObject, S2dWidgetDef, S2dImage a
 - verify: `game/scene.cpp` 1/1 -- gameSceneThread written in full: loadInitPack, runStartupSequence, overlayThreadStart, then forever loadMenuPack, the scene from sScenes (one retail entry, Menu
 - verify: `game/scenepairs.cpp` 18/18 -- All 18 of 0x171300..0x171a30 written, batch 117, plus StageMapObject's sideHook0..3 and setPosition, setRotation, setYaw in mapobject.cpp (0x174a10..0x174aa0, 0
@@ -244,6 +246,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-05 23:59 `game/routeplayer.cpp` verify: the rute file: RoutePlayer, RouteFile, RouteAreaSearch, all non-MSL functions of 0x252840..0x25b8e0
 - 2026-11-05 23:22 `game/routefilter.cpp` verify: RouteFilter and its RouteSearch record: all 36 written or mapped to the host vector; findPath, pathLength, advance, the funnel; getFloorAttr signed as in the RO
 - 2026-11-05 22:56 `game/characterroute.cpp` partial: the route, its looks, turns, walk, car and 21 actions; path search and 12 actions left
 - 2026-11-05 22:21 `game/gameoversequence.cpp` verify: GameOverSequence, DeathCamera (CAM_DEAD) and SceneDirector, all 17 functions; the game over runs to Mission failed
@@ -251,22 +254,21 @@ Recent sessions:
 - 2026-11-05 21:26 `game/stageobject.cpp` verify: closed: all 43 written; setProperty, getProperty and scriptAddMenuLine compared with the ROM, stale notes fixed, queue refilled
 - 2026-11-05 21:17 `game/scenepool.cpp` verify: The strip behind the foot-of-screen text proven against its asset; flat 2D draws no longer doubled
 - 2026-11-05 20:46 `game/uiitemlist.cpp` done: the Use prompt's button picture and UiPrompt's destructor; all 20 functions written
-- 2026-11-05 20:23 `yamipan/rendering/model_renderer.cpp` verify: A batch with no UVs draws instead of crashing
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@00135990` | partial | 3/0/33 | 3.1 | 612 | 0 |
 | `unassigned@001eedb0` | partial | 1/0/25 | 4.1 | 130 | 0 |
 | `unassigned@00176480` | partial | 13/0/69 | 5.3 | 112 | 0 |
-| `unassigned@001fe6b0` | todo | 0/27/77 | 34.1 | 106 | 9 |
+| `unassigned@001fe6b0` | todo | 0/27/77 | 34.1 | 91 | 6 |
 | `unassigned@0018c050` | todo | 0/9/36 | 17.9 | 80 | 2 |
-| `game/routeplayer.cpp` | partial | 2/19/100 | 35.5 | 69 | 4 |
 | `game/vectortrack.cpp` | partial | 9/0/16 | 2.5 | 68 | 0 |
-| `unassigned@00190900` | partial | 2/8/34 | 11.8 | 60 | 8 |
 | `unassigned@0017e140` | todo | 0/0/78 | 1.4 | 51 | 0 |
 | `unassigned@00289cc0` | todo | 0/17/59 | 23.1 | 47 | 0 |
 | `unassigned@0027cab0` | partial | 3/2/59 | 13.1 | 45 | 0 |
-| `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 42 | 2 |
+| `unassigned@00190900` | partial | 2/8/34 | 11.8 | 45 | 5 |
+| `unassigned@002a31b0` | partial | 1/18/22 | 5.9 | 39 | 0 |
+| `game/characterroute.cpp` | partial | 85/12/169 | 66.2 | 39 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

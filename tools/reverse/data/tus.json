@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/routeplayer.cpp",
   "game/characterroute.cpp"
  ],
  "settings": {
@@ -1272,12 +1271,21 @@
    "why": "RouteFilter::pathLength 0x23f290 on: the path search of game/characterroute.cpp, up to game/stageplayer.cpp at 0x242e80; RoutePlayer 0x252840.. is not in it yet"
   },
   "game/routeplayer.cpp": {
+   "notes": "Complete and compared with the ROM: rutecmp.py runs the ROM's code on eerun.py beside the host over 12 stages' rute files, 3840 questions, 0 differences. The file is read into host records (buildTables), not relocated; RouteNode pointers still point into it. New Game with work/doorwalk_pad.txt for 300 s: the stage builds the RoutePlayer, no crash, picture unchanged (dark first-person wall), nothing on screen can show a route yet. Not exercised: pathSetIndex, and the route on a walking character; that needs a stage with a foe that walks. areaList waits for FUN_00227f30. Next: game/characterroute.cpp, its 12 stubs, queued. Doubts in open-items.md Next up.",
    "ranges": [
     [
      "00252840",
      "0025b8e0"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-05 23:59",
+     "status": "verify",
+     "summary": "the rute file: RoutePlayer, RouteFile, RouteAreaSearch, all non-MSL functions of 0x252840..0x25b8e0"
+    }
+   ],
+   "status": "verify",
    "why": "RoutePlayer::endNode 0x252840 on: the rute file's accessors, its core 0x257fa0 and searches 0x253420.. and their MSL tree instances, up to game/uiwidget.cpp at 0x25b8e0; no source string, the class is the evidence"
   },
   "game/s2ddata.cpp": {
