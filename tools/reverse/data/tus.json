@@ -1,5 +1,6 @@
 {
  "queue": [
+  "game/routefilter.cpp",
   "game/characterroute.cpp"
  ],
  "settings": {
@@ -120,13 +121,22 @@
    "why": "the pad to the character: update 0x236b90 cut from stagecollision's tail (0x231d40..0x236b90), up to the particle helpers at 0x23a870; 0x214ee0 and 0x2162d0 are the two small members only the input calls; the file name is the port's"
   },
   "game/characterroute.cpp": {
+   "notes": "Written: everything in game/characterroute.h not marked not written, 0x21efa0..0x224fe0 and 0x229f60..0x22fc50. Left: 12 action stubs in src/lib/unassigned_stubs.cpp and their task classes 0x2251f0..0x229ec0 (open-items.md Next up lists each with its addresses). Nobody walks yet: RouteFilter::findPath is a stub answering 0, so a RouteWalk ends the frame it starts; game/routefilter.cpp is queued first. RouteFilter::pathLength answers -1 by hand. Seen: New Game, doorwalk pad, 300 s, no crash, RouteFilter ctor and allow reached, picture unchanged, the dark first-person wall. No brain asked to move in those rooms, so the walk and every step are untested: the first stage with a walking foe is the test. Names: batch 152. The car class is unwritten, so RouteMoveCar never runs: m_gear is never set.",
    "ranges": [
     [
-     "0022a310",
-     "0022f270"
+     "0021efa0",
+     "0022fc50"
     ]
    ],
-   "why": "the route: game/characterroute.h lists what the brain calls, update 0x22e740; extent from open-items.md Next up, its task classes 0x224ba0.. and 0x22f320.. are not in it yet"
+   "sessions": [
+    {
+     "date": "2026-11-05 22:56",
+     "status": "partial",
+     "summary": "the route, its looks, turns, walk, car and 21 actions; path search and 12 actions left"
+    }
+   ],
+   "status": "partial",
+   "why": "the route and its task classes: the look, turn, walk and action tasks 0x21efa0..0x22a310 (vtables 0x3160a0..0x316480), the route 0x22a310..0x22f270, its ctor and the classes' deleting dtors and trivial slots ..0x22fc50; vtable order runs through all of it, 0x22fc50 on are the route's std containers"
   },
   "game/clock.cpp": {
    "notes": "Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode whose destructor 0x135550 is the real body (Clock::~Clock 0x1351b0 and MasterClock::~MasterClock 0x135330 only call it and free: Metrowerks one-dtor-with-flags). ROM bugs kept: the destructor detaches only its FIRST child (clearing the slot makes next(child) end the walk), the others keep a dangling parent (harmless while children die first; on the host a later child delete would read freed memory, watch at bootstrap 7); when that child was the last the ROM walks a null list (EE address 4), the port stops. PtrList slots are pointer-sized on the host (EE 4 bytes). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean, host harness (advance with scale 0x80, pause, getSeconds / getDeltaSeconds, delete detaching from the parent and freeing an emptied list). Next: the VU0 run unassigned@00135990 (20 functions; decode the COP2 words from the asm, open-items.md TU 42).",

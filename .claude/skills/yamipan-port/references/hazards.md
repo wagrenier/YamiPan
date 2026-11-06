@@ -416,6 +416,12 @@ Symptom: a loader "ran", instances were counted, yet nothing appears and the stu
 - **A runner slot's default answers no without a word** (2026-11-05). Symptom: a stage's trigger never fires, and no stub or warning shows in the log. Cause: `ScriptRunner`'s virtuals are written as the ROM's defaults, so a class with no override, here `BoxVolume` on native 0x44, answers false silently; only stubs print. Fix: when a script waits forever, list what its natives call on its target and read that class's own table at the slot, not the base's.
 - **A SceneRender set with no keys is all zero** (2026-11-04). Symptom: writing `update` as the ROM has it would turn every light off and give every camera range 0, so nothing draws. Cause: only script natives key the tracks; the ROM has no default. Fix: the entries of the stage's script key them (`game/scriptrunner.cpp`); the `isKeyed` guards that stood in are gone, so a stage whose script does not key a set really is dark. A one-key track never writes `value` either: `VectorTrack::step` needs count 2 (the scripts always make keys 0 and 1).
 
+## Bash heredocs in the harness (2026-11-05)
+
+- **Symptom:** a long `cat <<EOF` or `py - <<E` in the Bash tool stops with "unexpected EOF while looking for matching" although the delimiter is quoted. **Cause:** not found; both failures held long bodies with apostrophes. **Fix:** write the file with the Write tool, and a patch script to the scratchpad, then run it.
+- **Symptom:** a first write to src/game/gamehooks.h from Python failed with PermissionError, a second a moment later worked. **Cause:** not found, the file was free by then. **Fix:** retry once before looking further.
+- **Symptom:** `stubgen.py` printed nothing and left stubs whose declaration changed, so the build failed with no declaration matches. **Fix:** delete a written TU's stubs from src/lib/unassigned_stubs.cpp by hand first, as the protocol says; the build then adds the new prototypes' stubs.
+
 ## Debugging a run (2026-11-04)
 
 - **`build.py --run` loses stderr when the run hits its limit.** Symptom: a trace with `fprintf(stderr, ...)` never appears in `work/run_relwithdebinfo.log` though the code ran. Cause: on timeout only stdout is kept, and a game run always ends by timeout. Fix: trace with `printf`, like `YAMIPAN_STUB`.

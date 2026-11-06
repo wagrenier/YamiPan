@@ -373,13 +373,40 @@ class CharacterGround;          // game/characterground.h
 // game/characterbrain.h, game/characterroute.h.
 class CharacterBrain;
 class CharacterRoute;
-// The route's paths this character may use. layout: host
+// A node of a found path: an EE record of the route player. The path search
+// is not written; only what the walk reads is declared.
+enum RouteNodeFlag
+{
+    RouteNodeFlag_Open = 0x1,   // no corner: the walk may cut toward it
+};
+struct RouteNode
+{
+    u_short _0;
+    u_short flags;              // FS2 +0x02: RouteNodeFlag
+    u_char  _4[0x10];
+    float   position[3];        // FS2 +0x14
+};
+static_assert(offsetof(RouteNode, position) == 0x14, "RouteNode::position");
+// The route's paths this character may use. layout: host: the EE's is a
+// 4-byte handle on a 0x60 record.
+class RoutePlayer;
 struct RouteFilter
 {
+    RouteFilter(RoutePlayer *routes, StageCharacter *owner);             // FS2 0x0023f500
+    ~RouteFilter();                                                      // FS2 0x0023f380
     // The named paths of the route are open to the character (on) or not.
     void allow(const char *name, bool on);                               // FS2 0x0023f310
     // How far along the route from one point to another; -1 no way.
     float pathLength(const float *from, const float *to);                // FS2 0x0023f290
+    void clearPath();                                                    // FS2 0x0023f320
+    // A path from the owner to goal: its length, or -1.
+    float findPath(const float *goal);                                   // FS2 0x0023f370
+    // Along the path from where the owner stands; false at its end.
+    bool advance();                                                      // FS2 0x0023f2b0
+    // The node it heads for; null past the end.
+    RouteNode *currentNode();                                            // FS2 0x0023f2c0
+    // Set by advance: a corner to walk to at a walk; null none.
+    RouteNode *junctionNode();                                           // FS2 0x0023f2a0
 };
 // The model instance's record of each mesh (vtable 0x31a7d0, 0x10 on the EE,
 // parallel to ModelFileNode::meshes): the mesh tree, threaded through next,
@@ -1329,6 +1356,8 @@ class RoutePlayer : public SceneOwnedObject
 {
 public:
     explicit RoutePlayer(void *rute);                                    // FS2 0x00253180
+    // The area is in the sorted list of the rute header.
+    bool isListedArea(short area);                                       // FS2 0x00252bc0
     void start(int arg);                                                 // FS2 0x00252b10: empty here
 };
 
@@ -1847,6 +1876,9 @@ public:
     // What the character's ground asks. The owner of 0x289dd0..0x28abf0 is
     // read from the ground's calls only: a kind 3 object.
     float getSpeed();                                                    // FS2 0x00289dd0
+    // Where it stands, and where a character in it counts as being.
+    void getCenter(float *out);                                          // FS2 0x00289ef0
+    void getSeatPlace(float *out, StageCharacter *who);                  // FS2 0x0028a250
     const float *getVelocity();                                          // FS2 0x00289e10
     // +0x3ac is past 0.3: one may climb on it, and a fall onto it is a fall.
     bool hasSettled();                                                   // FS2 0x0028ab90
@@ -1868,6 +1900,7 @@ public:
     u_char m_throttle;          // FS2 +0x381
     u_char m_brake;             // FS2 +0x383
     float  m_steer;             // FS2 +0x384
+    float  m_steerRate;         // FS2 +0x394: radians a second (RouteMoveCar reads it)
     int    m_mode = 0;          // FS2 +0x39c
     u_char m_flag3a0 = 0;       // FS2 +0x3a0: native 0x1ac
 };
@@ -2964,6 +2997,12 @@ bool elevatorIsPhase1(StageObject *elevator);                            // FS2 
 bool elevatorIsPhase2(StageObject *elevator);                            // FS2 0x00294b00
 bool elevatorIsPhase3(StageObject *elevator);                            // FS2 0x00294b30
 bool elevatorIsPhase4(StageObject *elevator);                            // FS2 0x00294ad0
+// The route's: the door point of a floor, a switch's place and direction
+// (1..4, CharacterRoute::useElevator), a floor is open.
+void elevatorDoorPlace(StageObject *elevator, float *out, int floor);    // FS2 0x00293fd0
+void elevatorSwitchPlace(StageObject *elevator, float *place, float *direction, int which); // FS2 0x00293c60
+bool elevatorOpenAtB1(StageObject *elevator);                            // FS2 0x00294be0
+bool elevatorOpenAtB3(StageObject *elevator);                            // FS2 0x00294b90
 bool elevatorIsAtB1(StageObject *elevator);                              // FS2 0x00294c70
 bool elevatorIsAtB3(StageObject *elevator);                              // FS2 0x00294c30
 // second picks the pose's other motion file of the two (what differs is unread).

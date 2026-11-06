@@ -1213,19 +1213,6 @@ void StageCharacter::updateSounds()
     YAMIPAN_STUB("StageCharacter::updateSounds", 0x002a4a40);
 }
 
-// stub of FS2 0x0022f270
-CharacterRoute::CharacterRoute(CharacterBrain *brain)
-{
-    (void)brain;
-    YAMIPAN_STUB("CharacterRoute::CharacterRoute", 0x0022f270);
-}
-
-// stub of FS2 0x0022f1b0
-CharacterRoute::~CharacterRoute()
-{
-    YAMIPAN_STUB("CharacterRoute::~CharacterRoute", 0x0022f1b0);
-}
-
 // stub of FS2 0x0022cf90
 bool CharacterRoute::actLeft()
 {
@@ -1261,34 +1248,6 @@ bool CharacterRoute::actOnFoeRight(StageObject *foe)
     return {};
 }
 
-// stub of FS2 0x0022ab90
-bool CharacterRoute::action22ab90(void *a, void *b)
-{
-    YAMIPAN_STUB("CharacterRoute::action22ab90", 0x0022ab90);
-    return {};
-}
-
-// stub of FS2 0x0022abf0
-bool CharacterRoute::action22abf0()
-{
-    YAMIPAN_STUB("CharacterRoute::action22abf0", 0x0022abf0);
-    return {};
-}
-
-// stub of FS2 0x0022ad60
-bool CharacterRoute::action22ad60()
-{
-    YAMIPAN_STUB("CharacterRoute::action22ad60", 0x0022ad60);
-    return {};
-}
-
-// stub of FS2 0x0022bf60
-bool CharacterRoute::action22bf60()
-{
-    YAMIPAN_STUB("CharacterRoute::action22bf60", 0x0022bf60);
-    return {};
-}
-
 // stub of FS2 0x0022c0f0
 bool CharacterRoute::action22c0f0(int arg)
 {
@@ -1317,12 +1276,6 @@ bool CharacterRoute::action22cbe0()
     return {};
 }
 
-// stub of FS2 0x0022a370
-void CharacterRoute::allowPath(const char *name, bool on)
-{
-    YAMIPAN_STUB("CharacterRoute::allowPath", 0x0022a370);
-}
-
 // stub of FS2 0x0022d6d0
 bool CharacterRoute::approach(float distance, const float *point)
 {
@@ -1337,97 +1290,6 @@ bool CharacterRoute::attack(float range, StageObject *target, bool mode)
     return {};
 }
 
-// stub of FS2 0x0022b970
-bool CharacterRoute::attackTask(StageObject *target)
-{
-    YAMIPAN_STUB("CharacterRoute::attackTask", 0x0022b970);
-    return {};
-}
-
-// stub of FS2 0x0022e6f0
-bool CharacterRoute::cancelMove()
-{
-    YAMIPAN_STUB("CharacterRoute::cancelMove", 0x0022e6f0);
-    return {};
-}
-
-// stub of FS2 0x0022a4f0
-bool CharacterRoute::dragOutCar()
-{
-    YAMIPAN_STUB("CharacterRoute::dragOutCar", 0x0022a4f0);
-    return {};
-}
-
-// stub of FS2 0x0022e110
-bool CharacterRoute::getMoveGoal(float *out)
-{
-    YAMIPAN_STUB("CharacterRoute::getMoveGoal", 0x0022e110);
-    return {};
-}
-
-// stub of FS2 0x0022a920
-bool CharacterRoute::gunAction()
-{
-    YAMIPAN_STUB("CharacterRoute::gunAction", 0x0022a920);
-    return {};
-}
-
-// stub of FS2 0x0022be10
-bool CharacterRoute::hit(StageObject *target)
-{
-    YAMIPAN_STUB("CharacterRoute::hit", 0x0022be10);
-    return {};
-}
-
-// stub of FS2 0x0022ba80
-bool CharacterRoute::hitInTime(float seconds, StageObject *target)
-{
-    YAMIPAN_STUB("CharacterRoute::hitInTime", 0x0022ba80);
-    return {};
-}
-
-// stub of FS2 0x0022bc50
-bool CharacterRoute::hitRunning(float seconds, StageObject *target)
-{
-    YAMIPAN_STUB("CharacterRoute::hitRunning", 0x0022bc50);
-    return {};
-}
-
-// stub of FS2 0x0022d900
-bool CharacterRoute::lookAtObject(float rate, StageObject *object, int force)
-{
-    YAMIPAN_STUB("CharacterRoute::lookAtObject", 0x0022d900);
-    return {};
-}
-
-// stub of FS2 0x0022da50
-bool CharacterRoute::lookAtPoint(const float *point, int force)
-{
-    YAMIPAN_STUB("CharacterRoute::lookAtPoint", 0x0022da50);
-    return {};
-}
-
-// stub of FS2 0x0022db80
-bool CharacterRoute::lookAtYaw(float yaw, float rate, int force)
-{
-    YAMIPAN_STUB("CharacterRoute::lookAtYaw", 0x0022db80);
-    return {};
-}
-
-// stub of FS2 0x0022e140
-bool CharacterRoute::moveToObject(float reach, StageObject *object, int mode, u_int flags)
-{
-    YAMIPAN_STUB("CharacterRoute::moveToObject", 0x0022e140);
-    return {};
-}
-
-// stub of FS2 0x0022e4a0
-bool CharacterRoute::moveToPoint(float reach, const float *point, int mode, u_int flags)
-{
-    YAMIPAN_STUB("CharacterRoute::moveToPoint", 0x0022e4a0);
-    return {};
-}
-
 // stub of FS2 0x0022cac0
 bool CharacterRoute::playAction(const char *name, StageObject *a, StageObject *b)
 {
@@ -1435,94 +1297,11 @@ bool CharacterRoute::playAction(const char *name, StageObject *a, StageObject *b
     return {};
 }
 
-// stub of FS2 0x0022a8f0
-bool CharacterRoute::setTrap(StageObject *trap)
-{
-    YAMIPAN_STUB("CharacterRoute::setTrap", 0x0022a8f0);
-    return {};
-}
-
-// stub of FS2 0x0022d810
-bool CharacterRoute::stop()
-{
-    YAMIPAN_STUB("CharacterRoute::stop", 0x0022d810);
-    return {};
-}
-
-// stub of FS2 0x0022dc60
-bool CharacterRoute::stopLook()
-{
-    YAMIPAN_STUB("CharacterRoute::stopLook", 0x0022dc60);
-    return {};
-}
-
-// stub of FS2 0x0022be20
-bool CharacterRoute::swingAt(StageObject *target)
-{
-    YAMIPAN_STUB("CharacterRoute::swingAt", 0x0022be20);
-    return {};
-}
-
-// stub of FS2 0x0022ab50
-bool CharacterRoute::takeItem(StageObject *item)
-{
-    YAMIPAN_STUB("CharacterRoute::takeItem", 0x0022ab50);
-    return {};
-}
-
-// stub of FS2 0x0022a8c0
-bool CharacterRoute::takeUpTrap(int arg)
-{
-    YAMIPAN_STUB("CharacterRoute::takeUpTrap", 0x0022a8c0);
-    return {};
-}
-
-// stub of FS2 0x0022dca0
-bool CharacterRoute::turnToObject(float rate, StageObject *object)
-{
-    YAMIPAN_STUB("CharacterRoute::turnToObject", 0x0022dca0);
-    return {};
-}
-
-// stub of FS2 0x0022de30
-bool CharacterRoute::turnToPoint(float rate, const float *point)
-{
-    YAMIPAN_STUB("CharacterRoute::turnToPoint", 0x0022de30);
-    return {};
-}
-
-// stub of FS2 0x0022dfc0
-bool CharacterRoute::turnToYaw(float yaw, float rate)
-{
-    YAMIPAN_STUB("CharacterRoute::turnToYaw", 0x0022dfc0);
-    return {};
-}
-
-// stub of FS2 0x0022e740
-void CharacterRoute::update()
-{
-    YAMIPAN_STUB("CharacterRoute::update", 0x0022e740);
-}
-
-// stub of FS2 0x0022a710
-bool CharacterRoute::useDoor(bool open)
-{
-    YAMIPAN_STUB("CharacterRoute::useDoor", 0x0022a710);
-    return {};
-}
-
-// stub of FS2 0x0022a550
-bool CharacterRoute::useDoorKey(bool lock)
-{
-    YAMIPAN_STUB("CharacterRoute::useDoorKey", 0x0022a550);
-    return {};
-}
-
 // stub of FS2 0x0023f290
 float RouteFilter::pathLength(const float *from, const float *to)
 {
     YAMIPAN_STUB("RouteFilter::pathLength", 0x0023f290);
-    return {};
+    return -1.0f;      // no way, until the search exists
 }
 
 // stub of FS2 0x00214a80
@@ -1759,4 +1538,95 @@ bool StageCharacter::canBeJacked()
 void StageParty::startGameOverView(StageObject *who)
 {
     YAMIPAN_STUB("StageParty::startGameOverView", 0x001fe7c0);
+}
+
+// stub of FS2 0x0023f500
+RouteFilter::RouteFilter(RoutePlayer*, StageCharacter*)
+{
+    YAMIPAN_STUB("RouteFilter::RouteFilter", 0x0023f500);
+}
+
+// stub of FS2 0x0023f2b0
+bool RouteFilter::advance()
+{
+    YAMIPAN_STUB("RouteFilter::advance", 0x0023f2b0);
+    return {};
+}
+
+// stub of FS2 0x0023f320
+void RouteFilter::clearPath()
+{
+    YAMIPAN_STUB("RouteFilter::clearPath", 0x0023f320);
+}
+
+// stub of FS2 0x0023f2c0
+RouteNode * RouteFilter::currentNode()
+{
+    YAMIPAN_STUB("RouteFilter::currentNode", 0x0023f2c0);
+    return {};
+}
+
+// stub of FS2 0x0023f370
+float RouteFilter::findPath(const float *goal)
+{
+    YAMIPAN_STUB("RouteFilter::findPath", 0x0023f370);
+    return {};
+}
+
+// stub of FS2 0x0023f2a0
+RouteNode * RouteFilter::junctionNode()
+{
+    YAMIPAN_STUB("RouteFilter::junctionNode", 0x0023f2a0);
+    return {};
+}
+
+// stub of FS2 0x0023f380
+RouteFilter::~RouteFilter()
+{
+    YAMIPAN_STUB("RouteFilter::~RouteFilter", 0x0023f380);
+}
+
+// stub of FS2 0x00252bc0
+bool RoutePlayer::isListedArea(short area)
+{
+    YAMIPAN_STUB("RoutePlayer::isListedArea", 0x00252bc0);
+    return {};
+}
+
+// stub of FS2 0x00289ef0
+void StageCar::getCenter(float *out)
+{
+    YAMIPAN_STUB("StageCar::getCenter", 0x00289ef0);
+}
+
+// stub of FS2 0x0028a250
+void StageCar::getSeatPlace(float *out, StageCharacter *who)
+{
+    YAMIPAN_STUB("StageCar::getSeatPlace", 0x0028a250);
+}
+
+// stub of FS2 0x00293fd0
+void elevatorDoorPlace(StageObject *elevator, float *out, int floor)
+{
+    YAMIPAN_STUB("elevatorDoorPlace", 0x00293fd0);
+}
+
+// stub of FS2 0x00294be0
+bool elevatorOpenAtB1(StageObject *elevator)
+{
+    YAMIPAN_STUB("elevatorOpenAtB1", 0x00294be0);
+    return {};
+}
+
+// stub of FS2 0x00294b90
+bool elevatorOpenAtB3(StageObject *elevator)
+{
+    YAMIPAN_STUB("elevatorOpenAtB3", 0x00294b90);
+    return {};
+}
+
+// stub of FS2 0x00293c60
+void elevatorSwitchPlace(StageObject *elevator, float *place, float *direction, int which)
+{
+    YAMIPAN_STUB("elevatorSwitchPlace", 0x00293c60);
 }

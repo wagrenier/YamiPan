@@ -102,6 +102,9 @@ public:
     // Its sound of that name (DR_%02d_...), in buffer.
     const char *soundName(char *buffer, const char *format) const;       // 0x1736e0, 0x173750, 0x1737c0 and inline
 
+    // Where one stands (m_pivot): the route steers by it.
+    const float *getPivot() const { return m_pivot; }
+
     int              m_hp = 0;       // FS2 +0x29c: ドアHP
     int              m_keyKind = 0;  // FS2 +0x2a0: 鍵属性
     int              m_window = 0;   // FS2 +0x2a4: StageDoorWindow
