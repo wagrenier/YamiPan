@@ -37,13 +37,6 @@ AreaClip::~AreaClip()
     YAMIPAN_STUB("AreaClip::~AreaClip", 0x002dcab0);
 }
 
-// stub of FS2 0x002b1c50
-int GameOverSequence::getState()
-{
-    YAMIPAN_STUB("GameOverSequence::getState", 0x002b1c50);
-    return {};
-}
-
 // stub of FS2 0x0012cce0
 void GameSystem::beginStage()
 {
@@ -117,12 +110,6 @@ void RoutePlayer::start(int arg)
 SceneBufferSet::~SceneBufferSet()
 {
     YAMIPAN_STUB("SceneBufferSet::~SceneBufferSet", 0x002ce5a0);
-}
-
-// stub of FS2 0x002b2280
-SceneDirector::~SceneDirector()
-{
-    YAMIPAN_STUB("SceneDirector::~SceneDirector", 0x002b2280);
 }
 
 // stub of FS2 0x002cff30
@@ -374,12 +361,6 @@ void AreaClip::update(StageObject *camera)
 }
 
 // stub of FS2 0x00239bb0
-// stub of FS2 0x002b1670
-void GameOverSequence::update()
-{
-    YAMIPAN_STUB("GameOverSequence::update", 0x002b1670);
-}
-
 // stub of FS2 0x002bc100
 void KeepList::update(float frames, u_char *motorA, u_char *motorB, char *flags, int *tags,
                 int max, StageObject *source)
@@ -405,31 +386,6 @@ void MenuProgSet::draw(float zoom)
 void Rand48::seed(u_int value)
 {
     YAMIPAN_STUB("Rand48::seed", 0x00268290);
-}
-
-// stub of FS2 0x002b22d0
-SceneDirector::SceneDirector()
-{
-    YAMIPAN_STUB("SceneDirector::SceneDirector", 0x002b22d0);
-}
-
-// stub of FS2 0x002b20a0
-void SceneDirector::draw(sceVif1Packet *packet)
-{
-    YAMIPAN_STUB("SceneDirector::draw", 0x002b20a0);
-}
-
-// stub of FS2 0x002b2270
-bool SceneDirector::isRunning()
-{
-    YAMIPAN_STUB("SceneDirector::isRunning", 0x002b2270);
-    return {};
-}
-
-// stub of FS2 0x002b2250
-void SceneDirector::start(int frames, u_int from, u_int to)
-{
-    YAMIPAN_STUB("SceneDirector::start", 0x002b2250);
 }
 
 // stub of FS2 0x002d07a0
@@ -558,12 +514,6 @@ void gsFrameFilter(sceVif1Packet *packet, const sceGsDrawEnv1 *env, int w, int h
     YAMIPAN_STUB("gsFrameFilter", 0x002849c0);
 }
 
-
-// stub of FS2 0x002b1cb0
-GameOverSequence::GameOverSequence(StageObject *, StageObject *)
-{
-    YAMIPAN_STUB("GameOverSequence::GameOverSequence", 0x002b1cb0);
-}
 
 // stub of FS2 0x002bb4e0
 MenuProgSet::MenuProgSet()
@@ -1796,4 +1746,17 @@ void numLockScramble(StageObject *lock)
 void SceneOwnedObject::setSevenKeyNumbers(const char *name, int a, int b, int c, int d)
 {
     YAMIPAN_STUB("SceneOwnedObject::setSevenKeyNumbers", 0x002b2b70);
+}
+
+// stub of FS2 0x00212160
+bool StageCharacter::canBeJacked()
+{
+    YAMIPAN_STUB("StageCharacter::canBeJacked", 0x00212160);
+    return {};
+}
+
+// stub of FS2 0x001fe7c0
+void StageParty::startGameOverView(StageObject *who)
+{
+    YAMIPAN_STUB("StageParty::startGameOverView", 0x001fe7c0);
 }

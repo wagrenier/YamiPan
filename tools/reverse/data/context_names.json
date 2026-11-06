@@ -20129,6 +20129,12 @@
   "was": "FUN_001fe7b0",
   "why": "record +0xe0"
  },
+ "001fe7c0": {
+  "name": "StageParty::startGameOverView",
+  "tag": "game-inferred",
+  "was": "FUN_001fe7c0",
+  "why": "writes the party record: running, +0x38 who, mode +0xb8 4, +0x10 the player; only GameOverSequence::setState calls it"
+ },
  "001fe800": {
   "name": "StageParty::isRunning",
   "tag": "game-inferred",
@@ -20656,6 +20662,12 @@
   "tag": "game-inferred",
   "was": "FUN_00212020",
   "why": "not scene +0x7c, sheet kind not 0xb, slot +0x278 not 2..5 or 7; true leads to requestControl of this character"
+ },
+ "00212160": {
+  "name": "StageCharacter::canBeJacked",
+  "tag": "game-inferred",
+  "was": "FUN_00212160",
+  "why": "brain state not 0, sheet kind not 3 or 7, not the scene's player; its callers are the party's and the game over's pick of whose eyes to show. Name is a guess from camjack"
  },
  "002123e0": {
   "name": "StageCharacter::isOnElevator",
@@ -28865,6 +28877,12 @@
   "was": "FUN_002b1670",
   "why": "start skips; state machine on the scene fade"
  },
+ "002b1940": {
+  "name": "GameOverSequence::setState",
+  "tag": "game-inferred",
+  "was": "FUN_002b1940",
+  "why": "only update calls it with the next state; state 2 pushes CAM_DEAD at priority 3, state 3 takes the party view, state 4 starts the 2 s fade"
+ },
  "002b1c50": {
   "name": "GameOverSequence::getState",
   "tag": "game-inferred",
@@ -28876,6 +28894,54 @@
   "tag": "game-inferred",
   "was": "FUN_002b1cb0",
   "why": "+0 = 1, two arguments at +0xc, +0x10"
+ },
+ "002b1ce0": {
+  "name": "DeathCamera::~DeathCamera",
+  "tag": "game-inferred",
+  "was": "FUN_002b1ce0",
+  "why": "deleting dtor of the class with vtable 0x318cf0; the camera GameOverSequence::setState news as CAM_DEAD"
+ },
+ "002b1db0": {
+  "name": "DeathCamera::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_002b1db0",
+  "why": "slot +0x1f4 in the object's frame, the kind slot of the other cameras; answers 12"
+ },
+ "002b1dc0": {
+  "name": "DeathCamera::cameraStep",
+  "tag": "game-inferred",
+  "was": "FUN_002b1dc0",
+  "why": "slot +0x25c: the eye swung round the linked character over 60 steps, ray back to the focus, aimFrom"
+ },
+ "002b1f50": {
+  "name": "DeathCamera::resetShot",
+  "tag": "game-inferred",
+  "was": "FUN_002b1f50",
+  "why": "class's own new slot +0x264: StageCamera::onViewTop and the shot's offsets and swing, called from ctor and onLinkChanged"
+ },
+ "002b1fd0": {
+  "name": "DeathCamera::onLinkChanged",
+  "tag": "game-inferred",
+  "was": "FUN_002b1fd0",
+  "why": "slot +0x260, tail call to slot +0x264"
+ },
+ "002b1fe0": {
+  "name": "DeathCamera::DeathCamera",
+  "tag": "game-inferred",
+  "was": "FUN_002b1fe0",
+  "why": "StageCamera 450, 512, 512, 1600, the vtable sets of the kind 8 class then 0x318cf0"
+ },
+ "002b2080": {
+  "name": "DeathCamera::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_002b2080",
+  "why": "vtable 0x318d14 slot 3 thunk falling into cameraStep, as ViewCamera's 0x29ac90"
+ },
+ "002b2090": {
+  "name": "DeathCamera::~DeathCamera_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_002b2090",
+  "why": "vtable 0x318d2c slot 4: this - 0x40 into the deleting dtor"
  },
  "002b20a0": {
   "name": "SceneDirector::draw",

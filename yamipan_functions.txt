@@ -5259,7 +5259,7 @@
 /* 001fe770 00000024 */ StageParty::addVisionA(){}  // game
 /* 001fe7a0 00000008 */ StageParty::setVisionTarget(){}  // game
 /* 001fe7b0 0000000c */ StageParty::setVisionFrames(){}  // game
-/* 001fe7c0 0000003c */ FUN_001fe7c0(){}
+/* 001fe7c0 0000003c */ StageParty::startGameOverView(){}  // game
 /* 001fe800 0000000c */ StageParty::isRunning(){}  // game
 /* 001fe810 00000034 */ StageParty::setJackAngle(){}  // game
 /* 001fe850 00000034 */ StageParty::setJackRange(){}  // game
@@ -5549,7 +5549,7 @@
 /* 00211970 00000050 */ StageCharacter::isTakenOver(){}  // game
 /* 002119d0 00000644 */ StageCharacter::isCompanionWalking(){}  // game
 /* 00212020 00000134 */ StageCharacter::canTakeOver(){}  // game
-/* 00212160 00000198 */ FUN_00212160(){}
+/* 00212160 00000198 */ StageCharacter::canBeJacked(){}  // game
 /* 00212300 000000dc */ FUN_00212300(){}
 /* 002123e0 00000040 */ StageCharacter::isOnElevator(){}  // game
 /* 00212420 0000003c */ StageCharacter::isNearViewTarget(){}  // game
@@ -8400,17 +8400,17 @@
 // *****************************************************************************
 
 /* 002b1670 000002cc */ GameOverSequence::update(){}  // game
-/* 002b1940 00000310 */ FUN_002b1940(){}
+/* 002b1940 00000310 */ GameOverSequence::setState(){}  // game
 /* 002b1c50 00000058 */ GameOverSequence::getState(){}  // game
 /* 002b1cb0 00000024 */ GameOverSequence::GameOverSequence(){}  // game
-/* 002b1ce0 000000c8 */ FUN_002b1ce0(){}
-/* 002b1db0 00000008 */ FUN_002b1db0(){}
-/* 002b1dc0 00000188 */ FUN_002b1dc0(){}
-/* 002b1f50 00000080 */ FUN_002b1f50(){}
-/* 002b1fd0 0000000c */ FUN_002b1fd0(){}
-/* 002b1fe0 000000a0 */ FUN_002b1fe0(){}
-/* 002b2080 00000008 */ FUN_002b2080(){}
-/* 002b2090 00000008 */ FUN_002b2090(){}
+/* 002b1ce0 000000c8 */ DeathCamera::~DeathCamera(){}  // game
+/* 002b1db0 00000008 */ DeathCamera::getKind(){}  // game
+/* 002b1dc0 00000188 */ DeathCamera::cameraStep(){}  // game
+/* 002b1f50 00000080 */ DeathCamera::resetShot(){}  // game
+/* 002b1fd0 0000000c */ DeathCamera::onLinkChanged(){}  // game
+/* 002b1fe0 000000a0 */ DeathCamera::DeathCamera(){}  // game
+/* 002b2080 00000008 */ DeathCamera::sideHook3(){}  // game
+/* 002b2090 00000008 */ DeathCamera::~DeathCamera_thunk(){}  // game
 /* 002b20a0 000001b0 */ SceneDirector::draw(){}  // game
 /* 002b2250 00000014 */ SceneDirector::start(){}  // game
 /* 002b2270 0000000c */ SceneDirector::isRunning(){}  // game

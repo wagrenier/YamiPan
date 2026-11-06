@@ -145,6 +145,7 @@ enum StageObjectKind
     StageObject_Kind9  = 9,     // the main camera "camera" (StageMainCamera): hears from its m_linked's head
     StageObject_Kind10 = 0xa,   // the camera "camview" and its two variants (ViewCamera)
     StageObject_Kind11 = 0xb,   // the party's "camjack" camera: its m_linked record may muffle
+    StageObject_Kind12 = 0xc,   // "CAM_DEAD" (DeathCamera)
     StageObject_Kind13 = 0xd,   // a sub-scene's "camera_demo" (DemoCamera)
     StageObject_Kind21 = 0x15,  // left out of the inventory (unidentified)
     StageObject_Light  = 0xf,   // StageLight
@@ -993,6 +994,8 @@ struct StageParty
     // Its record's +0x2c.
     bool isRecordBusy();                                                 // FS2 0x001fe6b0
     void stop();                                                         // FS2 0x001feb90
+    // The game over's view: the record runs in mode 4 on who.
+    void startGameOverView(StageObject *who);                            // FS2 0x001fe7c0
     // The foe's warning: the view on who it is, for 0.3 seconds.
     void warnAttacker(StageCharacter *attacker);                         // FS2 0x001feab0
     void save();                                                         // FS2 0x001fe6d0
@@ -2730,6 +2733,9 @@ public:
     // 0xb2, 6 and 7 by +0x690. The brain's state 6 says 2, its state 0 says 0.
     int  getLifeState();                                                 // FS2 0x00212460
     bool hasKyoModel();                                                  // FS2 0x00215340
+    // A brain not at 0, the sheet's kind not 3 or 7, not the scene's player:
+    // the party's view may look through its eyes. The name is a guess.
+    bool canBeJacked();                                                  // FS2 0x00212160
     // Not the partner, the sheet's kind not 0xb, slot +0x278 (the brain's
     // state, 1 without one) none of 2..5, 7: the player may become it.
     bool canTakeOver();                                                  // FS2 0x00212020
@@ -3443,23 +3449,13 @@ struct StageAlert
     void show(StageObject *who);                                         // FS2 0x00263f80
 };
 
-// +0x118 / +0x11c: the game-over and stage-clear sequences (set outside
-// the ctor, beside DemoStream). Their state reads as done (5 / 2) once
-// the scene's fade is full in mode 2. layout: host -- EE: +0 the state.
+// +0x11c: the stage-clear sequence (+0x118, the game over: game/gameoversequence.h).
+// Its state reads as done once the scene's fade is full in mode 2.
 enum
 {
-    kGameOverSequenceDone = 5,  // StageScene::isGameOver
     kClearSequenceStart   = 0,
     kClearSequenceFading  = 1,
     kClearSequenceDone    = 2,  // StageScene::isCleared
-};
-// layout: host (unread).
-struct GameOverSequence
-{
-    // Keeps who fell and what felled it (+0xc, +0x10).
-    GameOverSequence(StageObject *victim, StageObject *cause);           // FS2 0x002b1cb0
-    int getState();                                                      // FS2 0x002b1c50
-    void update();                                                       // FS2 0x002b1670
 };
 // The stage's end, from native 0x52 (game/demoevent.cpp). layout: host.
 struct ClearSequence
@@ -3469,21 +3465,6 @@ struct ClearSequence
     void update();                                                       // FS2 0x002b1500
 
     int m_state;                // FS2 +0x0
-};
-
-// +0x120 (StageScene::update deletes it too). layout: host.
-struct SceneDirector
-{
-    SceneDirector();                                                     // FS2 0x002b22d0
-    ~SceneDirector();                                                    // FS2 0x002b2280: deleting
-    // A colour ramp still has frames to go.
-    bool isRunning();                                                    // FS2 0x002b2270
-    // From colour from to colour to over frames frames.
-    void start(int frames, u_int from, u_int to);                        // FS2 0x002b2250
-    // Ramps the colour and fills the screen with it.
-    void draw(sceVif1Packet *packet);                                    // FS2 0x002b20a0
-
-    u_int colour;               // FS2 +0x0: the ramp's colour now
 };
 
 // +0x124: a record of two arrays. The ROM frees the second as an array

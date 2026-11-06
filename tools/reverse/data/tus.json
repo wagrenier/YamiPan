@@ -1,6 +1,5 @@
 {
  "queue": [
-  "game/gameoversequence.cpp",
   "game/characterroute.cpp"
  ],
  "settings": {
@@ -277,12 +276,21 @@
    "why": "Cut out of unassigned@00171300 (frontier pick): the font class on vtables 0x315fb0 / 0x315ff0, its glyph table FontData and its draws, and WideFontPrinter 0x2d3700..0x2d4150 (vtable 0x319ff0: the same printer for 16-bit text, its slots 4 and 7 thunks at 0x208b70, 0x208ba0)."
   },
   "game/gameoversequence.cpp": {
+   "notes": "All 17 written, batch 151. Forced on node 4 by a temporary hook (removed): letterbox bars ramp in and out and reach both edges at 4:3 and 21:9; CAM_DEAD swings round the boy; states 1, 2, 3, 4 in order; 2 s fade; Mission failed with Retry / Give Up. Not seen: a real death (fall motion, culprit, gear in hand). State 3 shows nothing new because StageParty::start and startGameOverView 0x1fe7c0 are stubs. No reference picture of the shot. What was called blackout is the letterbox: StageMission::letterbox +0xda, native 0x1f6. drawLetterbox is shared with the sub-scene's bars. New tool shotscan.py: shot numbers are presents, not game frames. Guesses: canBeJacked, DeathCamera, the file name.",
    "ranges": [
     [
      "002b1670",
      "002b22f0"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-05 22:21",
+     "status": "verify",
+     "summary": "GameOverSequence, DeathCamera (CAM_DEAD) and SceneDirector, all 17 functions; the game over runs to Mission failed"
+    }
+   ],
+   "status": "verify",
    "why": "GameOverSequence 0x2b1670.. follows ClearSequence (demoevent.cpp ends at 0x2b1670); SceneDirector 0x2b20a0..0x2b22d0 is the same run's tail, both new'd by StageScene. Between them 0x2b1ce0..0x2b2090, a class with a slot at vtable 0x318f4c, read with GameOverSequence since FUN_002b1940 (called by update) calls into it. Name and extent are the port's guess: no string"
   },
   "game/gamepacket.cpp": {

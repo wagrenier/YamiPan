@@ -431,7 +431,7 @@ void StageMission::reset()
     pendingEvent[0] = '\0';
     _d8 = 0;
     _d9 = 0;
-    blackout = 0;
+    letterbox = 0;
     blockRange = kBlockRange;
     delete messages;
     messages = new MessageTable;
