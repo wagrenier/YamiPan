@@ -22,6 +22,7 @@
 #include "game/objectproperty.h"
 #include "game/stagedoor.h"
 #include "game/stageitem.h"
+#include "game/stageparticle.h"
 #include "game/stagescene.h"
 #include "game/stageloop.h"
 #include "game/stageobjlist.h"

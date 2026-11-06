@@ -164,6 +164,7 @@ enum StageObjectKind
     StageObject_Volume = 0x1a,  // StageVolume: the same number as StageMarker
     StageObject_SphereVolume = 0x1b,
     StageObject_BoxVolume = 0x1c,
+    StageObject_Particle = 0x1d, // StageParticle
     StageObject_SubSceneModel = 0x1f, // game/subsceneobject.h, as the next six
     StageObject_SubSceneMap  = 0x20,
     StageObject_SubSceneDoor = 0x21,
@@ -178,6 +179,7 @@ class StageItem;                 // game/stageitem.h
 class StageItemE;                // game/stageitem.h
 class StageThrownItem;           // game/stageitem.h
 class StageParticle;
+struct StageNodeTree;
 struct MapObjectParts;
 struct CharacterHidePart;
 class StageLight;               // game/stagelight.h
@@ -945,27 +947,7 @@ struct PartSwitch
 };
 // The model's part called name (length: strlen), null none.
 ModelPartRec *modelFindPart(ModelInstance *model, const char *name, size_t length, int arg); // FS2 0x002e4610
-// A particle effect of the stage (EE 0x280, kind 0x1d, vtable 0x3149e0; ctors
-// 0x190500 / 0x190450, built by StageNodeTree::spawn). A stand-in: what the
-// lights call. Effects hang from each other through +0x20c, and both calls
-// walk that chain.
-// layout: host
-class StageParticle : public StageObject
-{
-public:
-    // On or off, down the chain.
-    void setEmitting(bool on);                                           // FS2 0x0018c220
-    // m_running and +0x21d, down the chain.
-    void setRunning(bool on);                                            // FS2 0x0018c2d0
-    void setRangeSquared(float rangeSquared);                            // FS2 0x00190040
-    // +0x220, down the chain: frames until it stops; the sooner one wins.
-    void setStopFrames(int frames);                                      // FS2 0x001900f0
-    // Stops the effect, down the chain (+0x20c).
-    void stopChain();                                                    // FS2 0x0018fec0
-
-    u_char m_emitting = 0;      // FS2 +0x271: what setEmitting last said (MapObjectParts::copyShown)
-    u_char m_running = 0;       // FS2 +0x273
-};
+// StageParticle: game/stageparticle.h.
 // The object of the scene's number lock (the list at +0x90 names it).
 StageObject *findNumLockTarget();                                        // FS2 0x0029f440
 // Its four dials, kept on a stack of one: push (a negative dial keeps its
@@ -1234,40 +1216,7 @@ private:
 
 // +0x14: ScenePairTable, game/scenepairs.h.
 
-// +0x1c: owns one 0x40-byte object (0x192080, built with this). layout: host (EE 4).
-struct StageNodeTree
-{
-    StageNodeTree();                                                     // FS2 0x00190c20
-    ~StageNodeTree();                                                    // FS2 0x00190bc0: deleting
-    // A new effect by its definition's name, under parent, at pos / rot
-    // (either null: the definition's); null no such name. arg goes to +0x25c.
-    StageParticle *spawn(const char *name, StageNodeBase *parent, const float *pos,
-                         const float *rot, int arg, int arg2);             // FS2 0x00190890
-    // The same with no parent, place or rotation.
-    StageParticle *spawnNamed(const char *name, int arg, int arg2);      // FS2 0x001908a0
-    // effect stops; null is fine.
-    void remove(StageParticle *effect);                                  // FS2 0x001908c0
-    // effect is still in the tree's list.
-    bool isLive(StageParticle *effect);                                  // FS2 0x00190810
-    // A swarm of small sprites (class 0x2b3ef0, vtable 0x319280, EE 0x240) at
-    // pos: kind picks the picture, count the most at once, range how far they
-    // go. Native 0x20f. The name is a guess: the class is unread.
-    StageObject *spawnMotes(const float *pos, float range, int kind, int count); // FS2 0x00190990
-    // Replaces the inner object's BoxGrid with a new one over a bbx file.
-    void setBoxes(void *bbx);                                            // FS2 0x00190900
-    // point is in one of those boxes; false without any.
-    bool contains(const sceVu0FVECTOR point);                            // FS2 0x001908d0
-    // The particle target's: the 16 textures from common01, then its first
-    // two particle files (which is which is unread).
-    void addParticleTexture(Tim2Texture *texture);                       // FS2 0x00190aa0
-    void setParticleFileA(void *file);                                   // FS2 0x00190b50
-    void setParticleFileB(void *file);                                   // FS2 0x00190ae0
-    // The particles within range of view; arg is 0 here.
-    void update(float range, int arg, StageObject *view, StagePlayer *player); // FS2 0x00190a90
-    void draw(GamePacketManager *packets, StageObject *camera);          // FS2 0x00190a80
-
-    class BoxGrid *m_boxes = nullptr; // FS2: +0x3c of the inner object at +0, not written
-};
+// +0x1c: StageNodeTree, game/stageparticle.h.
 
 // +0x4c and +0x8c..+0x94: objects with the vptr at +0 (slot 0 their
 // deleting dtor), set outside the ctor; unread. layout: host (unread).

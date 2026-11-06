@@ -206,7 +206,7 @@ what degrades while Ghidra is down.
 | carried-over libraries (rx) | `rxcmp.py` (FS2 vs RoR word for word, `--data` for the data map) |
 | classes | `rtti.py --class / --vtable` |
 | TU identity | `tuid.py <TU>` (in the brief) |
-| game data | `datadump.py`, `tm2png.py`, game-specific readers written as needed |
+| game data | `datadump.py`, `tm2png.py`, `ptcdump.py`, game-specific readers written as needed |
 | prove code no smoke run reaches | `eerun.py` (the ROM's own functions, offline), `rutecmp.py` (the pattern: ROM and host answer the same questions on the disc's data), `rumblecmp.py` (the same for stateful code: one random op script on both, state compared after each op), `ripplecmp.py` (the same for a draw: the ROM's packet walked against the host's rule), `literalmapcmp.py` (the same for a template: every ROM instance beside the host, tree shape compared), `vu0cmp.py` (the same for pure math, lane by lane in ulps), `wayoutcmp.py` |
 | frontier, layouts, crashes | `build.py`, `stubgen.py`, `callcheck.py`, `layoutcheck.py`, `crashsym.py` (a plain run's `[crash]` lines), `gdbrun.py` |
 

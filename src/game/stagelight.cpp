@@ -13,6 +13,7 @@
 
 #include "game/clock.h"
 #include "game/stageobjlist.h"
+#include "game/stageparticle.h"
 #include "game/stagescene.h"
 #include "game/vu0math.h"
 

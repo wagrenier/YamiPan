@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "game/gamehooks.h"
+#include "game/stageparticle.h"
 #include "game/stagescene.h"
 
 static const char kRainName[] = "rain";     // data 0x307340

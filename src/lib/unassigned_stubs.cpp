@@ -16,6 +16,7 @@
 #include "game/playermotion.h"
 #include "game/stagenode.h"
 #include "game/stageobjlist.h"
+#include "game/stageparticle.h"
 #include "game/stageitem.h"
 #include "game/stagescene.h"
 #include "game/stringlist.h"
@@ -98,36 +99,6 @@ SigLamp::SigLamp(Tim2Texture*)
 void StageMenu::destroy()
 {
     YAMIPAN_STUB("StageMenu::destroy", 0x00230820);
-}
-
-// stub of FS2 0x00190c20
-StageNodeTree::StageNodeTree()
-{
-    YAMIPAN_STUB("StageNodeTree::StageNodeTree", 0x00190c20);
-}
-
-// stub of FS2 0x00190aa0
-void StageNodeTree::addParticleTexture(Tim2Texture *texture)
-{
-    YAMIPAN_STUB("StageNodeTree::addParticleTexture", 0x00190aa0);
-}
-
-// stub of FS2 0x00190b50
-void StageNodeTree::setParticleFileA(void *file)
-{
-    YAMIPAN_STUB("StageNodeTree::setParticleFileA", 0x00190b50);
-}
-
-// stub of FS2 0x00190ae0
-void StageNodeTree::setParticleFileB(void *file)
-{
-    YAMIPAN_STUB("StageNodeTree::setParticleFileB", 0x00190ae0);
-}
-
-// stub of FS2 0x00190bc0
-StageNodeTree::~StageNodeTree()
-{
-    YAMIPAN_STUB("StageNodeTree::~StageNodeTree", 0x00190bc0);
 }
 
 // stub of FS2 0x001d3a40
@@ -331,18 +302,6 @@ void StageMenu::update()
     YAMIPAN_STUB("StageMenu::update", 0x00230400);
 }
 
-// stub of FS2 0x00190a80
-void StageNodeTree::draw(GamePacketManager *packets, StageObject *camera)
-{
-    YAMIPAN_STUB("StageNodeTree::draw", 0x00190a80);
-}
-
-// stub of FS2 0x00190a90
-void StageNodeTree::update(float range, int arg, StageObject *view, StagePlayer *player)
-{
-    YAMIPAN_STUB("StageNodeTree::update", 0x00190a90);
-}
-
 // stub of FS2 address unknown (1 candidates)
 void StageObject::cameraStep()
 {
@@ -468,39 +427,6 @@ void PartSwitch::show(int index)
     YAMIPAN_STUB("PartSwitch::show", 0x00186fe0);
 }
 
-// stub of FS2 0x001908c0
-void StageNodeTree::remove(StageParticle *effect)
-{
-    YAMIPAN_STUB("StageNodeTree::remove", 0x001908c0);
-}
-
-// stub of FS2 0x00190890
-StageParticle * StageNodeTree::spawn(const char *name, StageNodeBase *parent, const float *pos,
-                         const float *rot, int arg, int arg2)
-{
-    YAMIPAN_STUB("StageNodeTree::spawn", 0x00190890);
-    return {};
-}
-
-// stub of FS2 0x001908a0
-StageParticle * StageNodeTree::spawnNamed(const char *name, int arg, int arg2)
-{
-    YAMIPAN_STUB("StageNodeTree::spawnNamed", 0x001908a0);
-    return {};
-}
-
-// stub of FS2 0x0018c220
-void StageParticle::setEmitting(bool on)
-{
-    YAMIPAN_STUB("StageParticle::setEmitting", 0x0018c220);
-}
-
-// stub of FS2 0x00190040
-void StageParticle::setRangeSquared(float rangeSquared)
-{
-    YAMIPAN_STUB("StageParticle::setRangeSquared", 0x00190040);
-}
-
 // stub of FS2 0x001d3d20
 // stub of FS2 0x0023db50
 ItemPhysics::ItemPhysics(bool, bool)
@@ -548,12 +474,6 @@ ItemPhysics::~ItemPhysics()
 void StageCharacter::playerEvent(const char *name)
 {
     YAMIPAN_STUB("StageCharacter::playerEvent", 0x0020e6a0);
-}
-
-// stub of FS2 0x0018c2d0
-void StageParticle::setRunning(bool on)
-{
-    YAMIPAN_STUB("StageParticle::setRunning", 0x0018c2d0);
 }
 
 // stub of FS2 0x0027ef70
@@ -649,12 +569,6 @@ void StageCharacter::initSounds()
 void StageCharacter::stopSounds()
 {
     YAMIPAN_STUB("StageCharacter::stopSounds", 0x002a6830);
-}
-
-// stub of FS2 0x0018fec0
-void StageParticle::stopChain()
-{
-    YAMIPAN_STUB("StageParticle::stopChain", 0x0018fec0);
 }
 
 // stub of FS2 0x0020c940
@@ -1019,24 +933,11 @@ StageObject * findNumLockTarget()
     return {};
 }
 
-// stub of FS2 0x00190810
-bool StageNodeTree::isLive(StageParticle *effect)
-{
-    YAMIPAN_STUB("StageNodeTree::isLive", 0x00190810);
-    return {};
-}
-
 // stub of FS2 0x00190990
 StageObject * StageNodeTree::spawnMotes(const float *pos, float range, int kind, int count)
 {
     YAMIPAN_STUB("StageNodeTree::spawnMotes", 0x00190990);
     return {};
-}
-
-// stub of FS2 0x001900f0
-void StageParticle::setStopFrames(int frames)
-{
-    YAMIPAN_STUB("StageParticle::setStopFrames", 0x001900f0);
 }
 
 // stub of FS2 0x001dee50

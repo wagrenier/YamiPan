@@ -30,6 +30,7 @@
 #include "game/scriptrunner.h"
 #include "game/stagenode.h"
 #include "game/stageobjlist.h"
+#include "game/stageparticle.h"
 #include "game/stagescene.h"
 #include "game/sysdata.h"
 
@@ -308,20 +309,20 @@ void StageCharacter::rollIdleDelay()
 }
 
 // FS2 0x0017bc60
-// callcheck: stopChain
+// callcheck: restartChain
 
 void StageCharacter::stopBodyEffects()
 {
     if (m_smoke[0] != nullptr)
-        m_smoke[0]->stopChain();
+        m_smoke[0]->restartChain();
     if (m_smoke[1] != nullptr)
-        m_smoke[1]->stopChain();
+        m_smoke[1]->restartChain();
     if (m_glow != nullptr)
-        m_glow->stopChain();
+        m_glow->restartChain();
     if (m_bodyEffects != nullptr) {
         for (int i = 0; i < kBodyEffectCount; i++) {
             if (m_bodyEffects[i] != nullptr)
-                m_bodyEffects[i]->stopChain();
+                m_bodyEffects[i]->restartChain();
         }
     }
 }

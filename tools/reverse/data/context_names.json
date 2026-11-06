@@ -14417,6 +14417,60 @@
   "was": "FUN_0018bdc0",
   "why": "walks the node tree writing the objects' +0x34 and +0x18"
  },
+ "0018c050": {
+  "name": "StageParticle::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_0018c050",
+  "why": "returns 0x1d, first in the class's run"
+ },
+ "0018c060": {
+  "name": "StageParticle::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_0018c060",
+  "why": "empty, behind the thunk 0x190610 of vtable 0x314a04"
+ },
+ "0018c070": {
+  "name": "StageParticle::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_0018c070",
+  "why": "empty, behind the thunk 0x190600"
+ },
+ "0018c080": {
+  "name": "StageParticle::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_0018c080",
+  "why": "empty, behind the thunk 0x1905f0"
+ },
+ "0018c090": {
+  "name": "StageParticle::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_0018c090",
+  "why": "empty, behind the thunk 0x1905e0"
+ },
+ "0018c0a0": {
+  "name": "StageParticle::setShown",
+  "tag": "game-inferred",
+  "was": "FUN_0018c0a0",
+  "why": "slot +0x208 of the runner's table: setHidden(on == 0)"
+ },
+ "0018c0b0": {
+  "name": "StageParticle::isShown",
+  "tag": "game-inferred",
+  "was": "FUN_0018c0b0",
+  "why": "slot +0x204: +0x275 == 0"
+ },
+ "0018c0c0": {
+  "name": "StageParticle::setHidden",
+  "tag": "game-inferred",
+  "was": "FUN_0018c0c0",
+  "why": "+0x275 down the chain +0x20c; update and draw stop at it"
+ },
+ "0018c170": {
+  "name": "StageParticle::setVisible",
+  "tag": "game-inferred",
+  "was": "FUN_0018c170",
+  "why": "+0x274 down the chain; only draw reads it"
+ },
  "0018c220": {
   "name": "StageParticle::setEmitting",
   "tag": "game-inferred",
@@ -14429,11 +14483,41 @@
   "was": "FUN_0018c2d0",
   "why": "+0x21d and +0x273 down the chain +0x20c"
  },
+ "0018c3b0": {
+  "name": "StageParticle::drawCells",
+  "tag": "game-inferred",
+  "was": "FUN_0018c3b0",
+  "why": "draw's branch for definition +0x7a above 0: the same quad cut into (n + 1) squared cells"
+ },
+ "0018d400": {
+  "name": "StageParticle::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0018d400",
+  "why": "an effect's particles as GS sprites with TEST_1, ALPHA_1 of the definition, FOG; called per effect by 0x190c70"
+ },
+ "0018e280": {
+  "name": "StageParticle::update",
+  "tag": "game-inferred",
+  "was": "FUN_0018e280",
+  "why": "the effect's frame: steps, emission, each particle's motion, colour, life; called per effect by 0x1914c0"
+ },
+ "0018f9c0": {
+  "name": "StageParticle::emitAt",
+  "tag": "game-inferred",
+  "was": "FUN_0018f9c0",
+  "why": "a free particle at a given place, from the definition; update calls it on +0x210, the splash, on water"
+ },
  "0018fec0": {
-  "name": "StageParticle::stopChain",
+  "name": "StageParticle::restartChain",
   "tag": "game-inferred",
   "was": "FUN_0018fec0",
-  "why": "0x18ffa0 on the particle and down the +0x20c chain, as setEmitting / setRunning walk it"
+  "why": "was stopChain: it calls restart down +0x20c, and restart sets +0x21d to 1 and every life to 0"
+ },
+ "0018ffa0": {
+  "name": "StageParticle::restart",
+  "tag": "game-inferred",
+  "was": "FUN_0018ffa0",
+  "why": "emitting again from frame 0, counters and spreads from the definition, every life 0; spawn calls it"
  },
  "00190040": {
   "name": "StageParticle::setRangeSquared",
@@ -14446,6 +14530,42 @@
   "tag": "game-inferred",
   "was": "FUN_001900f0",
   "why": "+0x220 takes the smaller nonzero value, down the +0x20c chain"
+ },
+ "00190220": {
+  "name": "StageParticle::init",
+  "tag": "game-inferred",
+  "was": "FUN_00190220",
+  "why": "shared body of the two ctors: new[] (count + 1) * 0x60, state, name, the definition's turn and place"
+ },
+ "001903c0": {
+  "name": "StageParticle::~StageParticle",
+  "tag": "game-inferred",
+  "was": "FUN_001903c0",
+  "why": "stores the three vtables, frees +0x200, calls StageObject's dtor"
+ },
+ "00190450": {
+  "name": "StageParticle::StageParticleCount",
+  "tag": "game-inferred",
+  "was": "FUN_00190450",
+  "why": "ctor with a particle count; 0 takes life * burst"
+ },
+ "00190500": {
+  "name": "StageParticle::StageParticle",
+  "tag": "game-inferred",
+  "was": "FUN_00190500",
+  "why": "ctor sizing the particles from delay, life and steps"
+ },
+ "00190650": {
+  "name": "StageNodeTree::effectOffset",
+  "tag": "game-inferred",
+  "was": "FUN_00190650",
+  "why": "the definition by name, file B first, answers its +0xf8"
+ },
+ "00190750": {
+  "name": "StageNodeTree::findLive",
+  "tag": "game-inferred",
+  "was": "FUN_00190750",
+  "why": "strcmp of the name at +0x20 over the live list"
  },
  "00190810": {
   "name": "StageNodeTree::isLive",
@@ -14530,6 +14650,42 @@
   "tag": "game-inferred",
   "was": "FUN_00190c20",
   "why": "StageScene ctor new(4) for +0x1c: holds one 0x40 object built by 0x192080 with this (beside the StageObjectList code); name a guess"
+ },
+ "00190c70": {
+  "name": "StageNodeTree::drawEffects",
+  "tag": "game-inferred",
+  "was": "FUN_00190c70",
+  "why": "the motes into list 5, then the live effects sorted by depth into lists 3 and 6; the body of draw"
+ },
+ "001914c0": {
+  "name": "StageNodeTree::updateEffects",
+  "tag": "game-inferred",
+  "was": "FUN_001914c0",
+  "why": "the motes in range, then each live effect: its frame, or the two steps of ending; the body of update"
+ },
+ "001916f0": {
+  "name": "StageNodeTree::stopEffect",
+  "tag": "game-inferred",
+  "was": "FUN_001916f0",
+  "why": "clears +0x21d, +0x21c of a live effect, recursing into +0x20c and +0x210"
+ },
+ "001918d0": {
+  "name": "StageNodeTree::createEffect",
+  "tag": "game-inferred",
+  "was": "FUN_001918d0",
+  "why": "finds the definition, allocates 0x280, chain by +0x10 and splash by +0x30"
+ },
+ "00191e90": {
+  "name": "StageNodeTree::Inner::~Inner",
+  "tag": "game-inferred",
+  "was": "FUN_00191e90",
+  "why": "deletes the live effects, the motes, the box grid and the three vectors of the 0x40-byte object"
+ },
+ "00192080": {
+  "name": "StageNodeTree::Inner::Inner",
+  "tag": "game-inferred",
+  "was": "FUN_00192080",
+  "why": "the 0x40-byte object's zeroes, +0x38 back to the tree"
  },
  "00193900": {
   "name": "StageObjectList::findAll7",
