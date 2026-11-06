@@ -1281,14 +1281,21 @@
    "why": "ScenePairTable and its list: 0x171300..0x171a10 uses only itself; the first function after it, 0x171a30, is the door class's deleting dtor. The name was the queue's."
   },
   "game/scenepool.cpp": {
-   "notes": "Written with game/playermotion.cpp thirteenth run (2026-11-05): all 11. The text shows; the dark strip behind it could not be told apart on the dark room of stage 1, so it is unproven.",
+   "notes": "All 11 read against the ROM again, no difference. Strip proven with a temporary flat panel and forced widths (removed): 78,720 pixels against the strip composed from the asset and the table 0x2fb4b0, mean 0.18, worst 6 of 255 at 4:3, mean 0.26, worst 5 at 16:9, none over 12. The reference is the asset, no capture of the game exists. verify, not done: at 16:9 the strip is right but 4/3 wider, as all raw-window 2D is (no game file reads the aspect yet): open-items.md Pan layer item (c) needs an answer for the whole 2D layer. Host fix found by the test: ui.frag doubled flat draws, MODULATE applies to textures only; uParams.y is the colour scale now, so flat fills are half as bright as before. Not looked at since: an event dark fill or a fade on screen. work/walklong_pad.txt no longer reaches the first notice in 345 s, the pad timing has drifted.",
    "ranges": [
     [
      "00288c00",
      "00289cc0"
     ]
    ],
-   "status": "partial",
+   "sessions": [
+    {
+     "date": "2026-11-05 21:17",
+     "status": "verify",
+     "summary": "The strip behind the foot-of-screen text proven against its asset; flat 2D draws no longer doubled"
+    }
+   ],
+   "status": "verify",
    "why": "the four lines of text at the foot of the screen"
   },
   "game/scenerender.cpp": {

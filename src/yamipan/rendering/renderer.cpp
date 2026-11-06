@@ -388,7 +388,10 @@ void Renderer::recordUi(SDL_GPUCommandBuffer *commands, const Frame &frame, cons
                                               {texelWidth, texelHeight, 0.0f, 0.0f}};
         SDL_PushGPUVertexUniformData(commands, 0, &vertexUniforms, sizeof(vertexUniforms));
 
-        const UiFragmentUniforms fragmentUniforms{{static_cast<float>(draw.alphaTestRef) / 128.0f, 0.0f, 0.0f, 0.0f}};
+        // A texture modulates on the GS's scale, 0x80 as 1.0; a flat colour goes out as it is.
+        const float colourScale = image != nullptr ? 255.0f / 128.0f : 1.0f;
+        const UiFragmentUniforms fragmentUniforms{
+            {static_cast<float>(draw.alphaTestRef) / 128.0f, colourScale, 0.0f, 0.0f}};
         SDL_PushGPUFragmentUniformData(commands, 0, &fragmentUniforms, sizeof(fragmentUniforms));
 
         const float fixed = static_cast<float>(draw.fixedAlpha) / 128.0f;
