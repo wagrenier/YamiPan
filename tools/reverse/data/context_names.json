@@ -28943,6 +28943,18 @@
   "was": "FUN_00278ed0",
   "why": "vtable 0x317890: throwItem on Click, long weapon hidden"
  },
+ "00278f70": {
+  "name": "TrapHitLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_00278f70",
+  "why": "slot +0x20 of vtable 0x3178c0: starts the sprung trap's linger"
+ },
+ "00278f80": {
+  "name": "TrapHitLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_00278f80",
+  "why": "slot +0x1c: holds trp_s for the sheet's trap resist plus chance, m_bf0 takes 2 s off, else asks 0x9c"
+ },
  "00279190": {
   "name": "TrapCancelLink::onRun",
   "tag": "game-inferred",
@@ -28954,6 +28966,60 @@
   "tag": "game-inferred",
   "was": "FUN_00279210",
   "why": "vtable 0x317920: dropItem, place, arm on Click"
+ },
+ "002792c0": {
+  "name": "DiveLandLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_002792c0",
+  "why": "slot +0x1c of vtable 0x317950: at the end of 0x96, 0x97 asks revive or dead, Yrt the front ones"
+ },
+ "002794e0": {
+  "name": "DiveFallLink::stepCamera",
+  "tag": "game-inferred",
+  "was": "FUN_002794e0",
+  "why": "flies cam_dive round the look point, then counts to takeFallDamage of the endurance"
+ },
+ "00279780": {
+  "name": "DiveFallLink::startCamera",
+  "tag": "game-inferred",
+  "was": "FUN_00279780",
+  "why": "finds cam_dive, works out eye and target from the face ahead, pushes the view; others drop their weapon"
+ },
+ "00279a60": {
+  "name": "DiveFallLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_00279a60",
+  "why": "slot +0x1c of vtable 0x317980: first frame, keeps the last step, turns round bn_pelvis, asks 0x96, 0x97 on the ground"
+ },
+ "00279ed0": {
+  "name": "DiveFallLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_00279ed0",
+  "why": "slot +0x20: show flag 3 on again after a deadly fall of player or partner"
+ },
+ "00279f90": {
+  "name": "DiveFallLink::onStart",
+  "tag": "game-inferred",
+  "was": "FUN_00279f90",
+  "why": "slot +0x18: show flag 3 off when Damage found the edge deadly"
+ },
+ "0027a020": {
+  "name": "DiveFallLink::onCancel",
+  "tag": "game-inferred",
+  "was": "FUN_0027a020",
+  "why": "slot +0x24: clears +0xbfc and removes the view"
+ },
+ "0027a060": {
+  "name": "DiveFallLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_0027a060",
+  "why": "slot +0x14: copies Damage +0x21 to +0xbfc and +0x22 to its own +0x2c"
+ },
+ "0027a0b0": {
+  "name": "DiveFallLink::DiveFallLink",
+  "tag": "game-inferred",
+  "was": "FUN_0027a0b0",
+  "why": "stores vtable 0x317980, clears +0x30, +0x34"
  },
  "0027a140": {
   "name": "ReloadLink::onRun",

@@ -40,6 +40,7 @@
 #include "game/stagelight.h"
 #include "game/stagesound.h"
 #include "game/sysdata.h"
+#include "game/uiwidget.h"
 #include "game/viewcamera.h"
 #include "game/vu0math.h"
 
@@ -332,6 +333,34 @@ void MotionLink::addCondition(const char *name)
         m_conditions.add(found->value);
 }
 
+// The conditions' base: the host keeps the ROM's two calls.
+
+// FS2 0x00276510
+
+MotionCondition::MotionCondition(StageCharacter *owner, PlayerMotion *motion_)
+    : character(owner), motion(motion_)
+{
+}
+
+// FS2 0x002764b0
+// callcheck: operator_delete
+
+MotionCondition::~MotionCondition()
+{
+}
+
+// FS2 0x001eee10
+
+void MotionLink::onUpdate()
+{
+}
+
+// FS2 0x001eee20
+
+void MotionLink::onApply()
+{
+}
+
 // The block at +8 is only ever freed: no reader found.
 // FS2 0x0027cc50
 // callcheck: MotionConditionList, operator_new
@@ -437,8 +466,7 @@ MotionConditionList::Node *MotionConditionList::nodeAt(int index) const
 
 // ──────────────────────────────────────────────────────────────────────
 // The links' dtors. Each stores its vtable, runs the base's body inlined and
-// frees the object under a flag; the links not written yet keep theirs in the
-// ROM: TrapHitLink 0x27cfd0, DiveLandLink 0x27d150, DiveFallLink 0x27d1d0.
+// frees the object under a flag.
 
 // FS2 0x0027ced0
 // callcheck: operator_delete, ~MotionConditionList, operator_delete
@@ -458,6 +486,62 @@ ThrowLink::~ThrowLink()
 // callcheck: operator_delete, ~MotionConditionList, operator_delete
 
 TrapCancelLink::~TrapCancelLink()
+{
+}
+
+// FS2 0x002771b0
+// callcheck: operator_delete, ~MotionConditionList, operator_delete
+
+ReviveLink::~ReviveLink()
+{
+}
+
+// FS2 0x0027ccd0
+// callcheck: operator_delete, ~MotionConditionList, operator_delete
+
+DamageDeadLink::~DamageDeadLink()
+{
+}
+
+// FS2 0x0027cd50
+// callcheck: operator_delete, ~MotionConditionList, operator_delete
+
+DamageFatalLink::~DamageFatalLink()
+{
+}
+
+// FS2 0x0027cdd0
+// callcheck: operator_delete, ~MotionConditionList, operator_delete
+
+DamageLandLink::~DamageLandLink()
+{
+}
+
+// FS2 0x0027ce50
+// callcheck: operator_delete, ~MotionConditionList, operator_delete
+
+DamageLink::~DamageLink()
+{
+}
+
+// FS2 0x0027cfd0
+// callcheck: operator_delete, ~MotionConditionList, operator_delete
+
+TrapHitLink::~TrapHitLink()
+{
+}
+
+// FS2 0x0027d150
+// callcheck: operator_delete, ~MotionConditionList, operator_delete
+
+DiveLandLink::~DiveLandLink()
+{
+}
+
+// FS2 0x0027d1d0
+// callcheck: operator_delete, ~MotionConditionList, operator_delete
+
+DiveFallLink::~DiveFallLink()
 {
 }
 
@@ -3614,7 +3698,7 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_conditions.balance();
     initList();
 
-    // The links, in the ROM's order: the 29 written of its 43 names (architecture.md
+    // The links, in the ROM's order: the 32 written of its 43 names (architecture.md
     // "The links of the ROM's ctor"). A motion naming another has no link.
     damageDeadLink = new DamageDeadLink(character, this);
     walkLink = new WalkLink(character, this);
@@ -3633,10 +3717,13 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_links.insert("Gun", new GunLink(character, this));
     m_links.insert("GunAttack", new GunAttackLink(character, this));
     m_links.insert("Reload", new ReloadLink(character, this));
+    m_links.insert("DiveFall", new DiveFallLink(character, this));
+    m_links.insert("DiveLand", new DiveLandLink(character, this));
     trapSetLink = new TrapSetLink(character, this);
     m_links.insert("TrapSet", trapSetLink);
     trapCancelLink = new TrapCancelLink(character, this);
     m_links.insert("TrapCancel", trapCancelLink);
+    m_links.insert("TrapHit", new TrapHitLink(character, this));
     throwLink = new ThrowLink(character, this);
     m_links.insert("Throw", throwLink);
     m_links.insert("Bite", new BiteLink(character, this));
@@ -7345,6 +7432,268 @@ void GunAttackLink::onLeave(MotionLink *next)
 
 // The click is a round's: all at once, or one by one until the gun is full
 // or the rounds asked for are in. A player's come out of what it carries.
+// FS2 0x002792c0
+// callcheck: isEnding, getStageSelect, request, getStageSelect, request, request, request (stageObjRecord)
+
+void DiveLandLink::onRun()
+{
+    if (!motion->isEnding())
+        return;
+    const bool alive = character->m_endurance != 0;
+    if (motion->motionId == Motion_DiveLandFront) {
+        motion->request(alive ? Motion_Revive : Motion_Dead);
+    } else if (motion->motionId == Motion_DiveLandBack) {
+        // Yrt has one way of lying.
+        const bool sameSide = stageObjRecord(character->m_itemDef)->kind == CharacterKind_Yrt;
+        if (alive)
+            motion->request(sameSide ? Motion_Revive : Motion_ReviveBack);
+        else
+            motion->request(sameSide ? Motion_Dead : Motion_DeadBack);
+    }
+}
+
+// The show flag a deadly fall turns off for its watcher. Only the script's
+// property and 0x230400 read it.
+static constexpr int kShowFlagNotFalling = 3;
+
+bool DiveFallLink::isDeadly() const
+{
+    const int id = motion->motionId;
+    return motion->m_bfc != 0
+        && (id == Motion_LadderFall || id == Motion_DiveBack || id == Motion_DiveFront);
+}
+
+// FS2 0x002794e0
+// callcheck: getDeltaSeconds, takeFallDamage, getDeltaSeconds, setPosition, lookAt, atan2Octant, atan2Octant, addAngle, sinf, cosf, approachVec3, lookAt
+
+void DiveFallLink::stepCamera()
+{
+    constexpr float kFrame       = 0.033333335f;
+    constexpr float kFrameDone   = 0.01f;
+    constexpr float kLookFrom    = 30.0f;   // frames: the look eases over only at the end
+    constexpr float kLookMaxStep = 25.0f;
+
+    if (camera == nullptr)
+        return;
+    if (flyFrames == 0.0f) {
+        if (deathFrames != 0.0f) {
+            deathFrames -= gStageScene->clock->getDeltaSeconds() / kFrame;
+            if (deathFrames < kFrameDone) {
+                deathFrames = 0.0f;
+                character->takeFallDamage(character->m_endurance);
+            }
+        }
+        return;
+    }
+    flyFrames -= gStageScene->clock->getDeltaSeconds() / kFrame;
+    if (flyFrames < kFrameDone) {
+        flyFrames = 0.0f;
+        camera->m_xform.setPosition(eye);
+        camera->lookAt(target);
+        return;
+    }
+    // Round the point looked at, in the ground plane, the rest of the way.
+    const float fromX = camera->m_xform.position[0] - look[0];
+    const float fromY = camera->m_xform.position[1] - look[1];
+    const float toX = eye[0] - look[0];
+    const float toY = eye[1] - look[1];
+    const float fromLength = sqrtf(fromX * fromX + fromY * fromY);
+    const float toLength = sqrtf(toX * toX + toY * toY);
+    const float length = fromLength + (toLength - fromLength) / flyFrames;
+    float angle = 0.0f;
+    if (toLength != 0.0f) {
+        angle = atan2Octant(fromX, fromY);
+        angle -= addAngle(angle, -atan2Octant(toX, toY)) / flyFrames;
+    }
+    camera->m_xform.position[0] = length * sinf(angle) + look[0] + 0.0f;
+    camera->m_xform.position[1] = length * cosf(angle) + look[1] + 0.0f;
+    camera->m_xform.position[2] += (eye[2] - camera->m_xform.position[2]) / flyFrames;
+    if (flyFrames < kLookFrom)
+        approachVec3(1.0f / flyFrames, kLookMaxStep, look, look, target);
+    camera->lookAt(look);
+}
+
+// FS2 0x00279780
+// callcheck: isPlayer, getTopView, getTopView, isPartner, find0, faceAhead, vecNormalize, getSwayMatrix, getTopView, setPosition, lookAt, setPosition, lookAt, pushView, canDropWeapon, dropWeapon (the view's kind is its slot +0x1f4)
+
+void DiveFallLink::startCamera()
+{
+    constexpr float kEyeBack    = 100.0f;
+    constexpr float kEyeUp      = 100.0f;
+    constexpr float kLookPast   = 60.0f;
+    constexpr float kLookBelow  = -30.0f;
+    constexpr float kFlightFrames = 60.0f;
+    constexpr float kFallFrames = 90.0f;   // from the fall's start to its damage
+    constexpr int   kViewPriorityDive = 1;
+
+    bool flies = false;
+    bool watched = false;
+    if (character->isPlayer()) {
+        StageObject *top = gStageScene->getTopView();
+        if (top != nullptr && top->getKind() == StageObject_Kind9)
+            flies = true;
+        watched = true;
+    } else if (character->isPartner()) {
+        watched = true;
+    }
+    if (!watched) {
+        StageObject *weapon = character->m_weapons[0];
+        if (character->m_dropsWeapon != 0 && weapon != nullptr && character->canDropWeapon(weapon))
+            character->dropWeapon(weapon, nullptr);
+        return;
+    }
+
+    camera = static_cast<StageCamera *>(gStageScene->objects->find0("cam_dive", 0));
+    if (camera == nullptr)
+        return;
+    sceVu0FVECTOR edge;
+    if (motion->probe->faceAhead(edge, motion->motionId == Motion_DiveFront) == nullptr)
+        memcpy(edge, motion->walkLink->wallPoint, sizeof(edge));
+    sceVu0FVECTOR away = { edge[0] - character->m_xform.position[0], edge[1] - character->m_xform.position[1], 0.0f, 1.0f };
+    vecNormalize(away, away);
+
+    sceVu0FMATRIX sway;
+    character->getSwayMatrix(sway);
+    const sceVu0FVECTOR eyeStep = { away[0] * -kEyeBack, away[1] * -kEyeBack, kEyeUp, 1.0f };
+    const sceVu0FVECTOR lookStep = { away[0] * kLookPast, away[1] * kLookPast, kLookBelow, 1.0f };
+    for (int i = 0; i < 4; i++) {
+        eye[i] = sway[3][i] + eyeStep[i];
+        target[i] = edge[i] + lookStep[i];
+    }
+
+    if (flies) {
+        flyFrames = kFlightFrames;
+        StageMainCamera *top = static_cast<StageMainCamera *>(gStageScene->getTopView());
+        camera->m_xform.setPosition(top->m_xform.position);
+        memcpy(look, top->m_lookTarget, sizeof(look));
+        camera->lookAt(look);
+    } else {
+        flyFrames = 0.0f;
+        camera->m_xform.setPosition(eye);
+        camera->lookAt(target);
+    }
+    deathFrames = kFallFrames - flyFrames;
+    gStageScene->pushView(camera, kViewPriorityDive, 1);
+}
+
+// FS2 0x00279a60
+// callcheck: addAngle, startCamera, isEnding, find, addAngle, sinCos, sinCos, addAngle, raycast, vecDistance, vecDirection, scaleVec4, setWallCheck, stepCamera, request, request, request
+
+void DiveFallLink::onRun()
+{
+    constexpr float kTwistTurn  = kMathPi / 4.0f;
+    constexpr float kTwistStep  = 0.017453292f;     // one degree: less is not worth it
+    constexpr float kTwistAfter = 50.0f;            // units fallen
+    constexpr float kLandAfter  = 25.0f;
+    constexpr u_int kTwistWall  = 0xe8021f3;
+    constexpr u_int kTwistSkip  = 0x2040000;
+
+    StageCharacter *const body = character;
+    float *const position = body->m_xform.position;
+    if (counter == 0) {
+        if (headClear == 0)
+            twistTo = addAngle(body->m_xform.rotation[2], kTwistTurn);
+        if (isDeadly())
+            startCamera();
+        startHeight = position[2];
+        counter++;
+    }
+    if (counter == 1 && motion->isEnding()) {
+        endStep = body->m_model->m_positionStep[2];
+        counter++;
+    }
+    if (counter == 2)
+        motion->m_moveStep[2] = endStep;
+
+    const float fallen = startHeight - position[2];
+    if (headClear == 0 && kTwistAfter < fallen) {
+        BoneMap::Node *node = body->m_model->boneMap.find("bn_pelvis");
+        if (node != nullptr && node->value != nullptr) {
+            StageNodeBase *pelvis = node->value;
+            // Half of what is left, round the pelvis.
+            const float turn = addAngle(twistTo, -body->m_xform.rotation[2]) / 2.0f;
+            if (kTwistStep < turn || turn < -kTwistStep) {
+                const float dx = position[0] - pelvis->getMatrix()[3][0];
+                const float dy = position[1] - pelvis->getMatrix()[3][1];
+                const float s = sinCos(-turn, 0);
+                const float c = sinCos(-turn, 1);
+                position[0] = c * dx + s * dy + pelvis->getMatrix()[3][0];
+                position[1] = -s * dx + c * dy + pelvis->getMatrix()[3][1];
+                body->m_xform.rotation[2] = addAngle(body->m_xform.rotation[2], turn);
+            }
+            // A wall between the feet and the pelvis: out by as much.
+            sceVu0FVECTOR hit;
+            if (gStageScene->raycast(hit, position, pelvis->getMatrix()[3], 0, kTwistWall, kTwistSkip, nullptr) != nullptr) {
+                const float depth = vecDistance(hit, pelvis->getMatrix()[3]);
+                sceVu0FVECTOR direction, step;
+                vecDirection(direction, position, pelvis->getMatrix()[3]);
+                scaleVec4(depth, step, direction);
+                for (int i = 0; i < 4; i++)
+                    position[i] += step[i];
+            }
+        }
+        motion->setWallCheck(1);
+    }
+
+    stepCamera();
+
+    if (body->m_ground->isGrounded() && kLandAfter < fallen) {
+        const int id = motion->motionId;
+        if (id == Motion_DiveFront)
+            motion->request(Motion_DiveLandFront);
+        else if (id == Motion_DiveBack || id == Motion_LadderFall)
+            motion->request(Motion_DiveLandBack);
+        body->m_ground->groundCheck = 1;
+    }
+}
+
+// FS2 0x00279ed0
+// callcheck: isPlayer, isPartner
+
+void DiveFallLink::onLeave(MotionLink *)
+{
+    if (isDeadly() && (character->isPlayer() || character->isPartner()))
+        gStageScene->showFlags->flag[kShowFlagNotFalling] = 1;
+}
+
+// FS2 0x00279f90
+// callcheck: find, isPlayer, isPartner
+
+void DiveFallLink::onStart()
+{
+    const DamageLink *damage = static_cast<const DamageLink *>(motion->m_links.find("Damage")->value);
+    if (damage->edgeBlocked != 0 && (character->isPlayer() || character->isPartner()))
+        gStageScene->showFlags->flag[kShowFlagNotFalling] = 0;
+}
+
+// FS2 0x0027a020
+// callcheck: removeView
+
+void DiveFallLink::onCancel()
+{
+    motion->m_bfc = 0;
+    gStageScene->removeView(camera);
+    camera = nullptr;
+}
+
+// FS2 0x0027a060
+// callcheck: find
+
+void DiveFallLink::onRequest()
+{
+    const DamageLink *damage = static_cast<const DamageLink *>(motion->m_links.find("Damage")->value);
+    motion->m_bfc = damage->edgeBlocked;
+    headClear = damage->edgeClear;
+}
+
+// FS2 0x0027a0b0
+// callcheck: MotionConditionList, operator_new
+
+DiveFallLink::DiveFallLink(StageCharacter *owner, PlayerMotion *motion_)
+    : MotionLink(owner, motion_)
+{
+}
+
 // FS2 0x0027a140
 // callcheck: pickGunMotion, playMagazineSetSound, isPlayer, findCarried, noteEnding, pickGunMotion, playMagazineOutSound, pickGunMotion, playReloadSetSound, isPlayer, findCarried, pickGunMotion, request, pickGunMotion, request, pickGunMotion, playMagazineSetSound, noteEnding
 
@@ -7409,6 +7758,43 @@ void TrapSetLink::onRun()
     trap->arm();
     character->playTrapSetSound();
     motion->noteEnding();
+}
+
+// FS2 0x00278f70
+// callcheck: startLinger
+
+void TrapHitLink::onLeave(MotionLink *)
+{
+    // The ROM has no test; a script's own trp_s would have no trap here.
+    if (motion->m_sprungTrap != nullptr)
+        motion->m_sprungTrap->startLinger();
+}
+
+// FS2 0x00278f80
+// callcheck: canDropWeapon, dropWeapon, randNext, request, request, getStageSelect (stageObjRecord)
+
+void TrapHitLink::onRun()
+{
+    constexpr float kThirtieths = 30.0f;
+    constexpr int   kChance     = 20;       // percent, added at most
+    constexpr float kPercent    = 100.0f;
+    constexpr float kShakeWait  = 0.15f;    // the shaken stick's m_bf0
+    constexpr float kShakeTakes = 2.0f;     // seconds
+
+    if (counter == 0) {
+        StageObject *weapon = character->m_weapons[0];
+        if (character->m_dropsWeapon != 0 && weapon != nullptr && character->canDropWeapon(weapon))
+            character->dropWeapon(weapon, nullptr);
+        heldFor = (float)stageObjRecord(character->m_itemDef)->trapResist / kThirtieths;
+        heldFor += heldFor * (float)((int)randNext() % kChance) / kPercent;
+        counter++;
+        motion->m_bf0 = kShakeWait;
+    }
+    if (motion->m_bf0 <= 0.0f) {
+        heldFor -= kShakeTakes;
+        motion->m_bf0 = kShakeWait;
+    }
+    motion->request(motion->m_motionTime < heldFor ? Motion_TrapHit : Motion_TrapOut);
 }
 
 // FS2 0x00279190
@@ -8096,6 +8482,26 @@ void DamageDeadLink::onRun()
         && stageObjRecord(character->m_itemDef)->kind != CharacterKind_Yrt
         && kPoseFrozenAfter < motion->m_motionTime)
         character->m_model->m_loop = 1;
+}
+
+// FS2 0x002775c0
+
+void DamageDeadLink::onStart()
+{
+}
+
+// FS2 0x002775d0
+// callcheck: MotionConditionList, operator_new
+
+DamageDeadLink::DamageDeadLink(StageCharacter *owner, PlayerMotion *motion_)
+    : MotionLink(owner, motion_)
+{
+}
+
+// FS2 0x00277660
+
+void DamageFatalLink::onLeave(MotionLink *)
+{
 }
 
 // FS2 0x00277670

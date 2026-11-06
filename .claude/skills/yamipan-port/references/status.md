@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 17:52 at commit `3cb2927` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 18:18 at commit `7e34f39` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-06 17:52 at commit `3cb2927` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **5206** (79%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1558, game-inferred 4283
-- context-name ledger: 5841 entries; overrides of wrong library matches: 0
-- placed in a source file: 5565/6599 in 120 files
+- game functions: **6599**, named **5217** (79%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1558, game-inferred 4294
+- context-name ledger: 5852 entries; overrides of wrong library matches: 0
+- placed in a source file: 5576/6599 in 120 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5014**; stubs: **146**
+- reconstructed FS2 functions: **5040**; stubs: **146**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -71,7 +71,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/pakarchive.cpp` | 17 | 0 |
 | `src/game/pausemenustate.cpp` | 12 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
-| `src/game/playermotion.cpp` | 526 | 0 |
+| `src/game/playermotion.cpp` | 552 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rcnttimer.cpp` | 0 | 4 |
@@ -157,10 +157,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 219 TUs: todo 83, partial 30, verify 102, done 37
+- 217 TUs: todo 81, partial 30, verify 102, done 37
 - next: **game/playermotion.cpp** (pinned in the queue)
 - pinned queue: game/playermotion.cpp
-- partial: `game/playermotion.cpp` 339/354 -- Written: PlayerMotion::takeHits 0x1e18c0 whole (split into takeLightHit, takeBlowHit, landBlow, reactToBlow, takeTrapHit, takeLanding, takeShoves), takeBlow 0x2
+- partial: `game/playermotion.cpp` 365/365 -- Written: DiveFallLink (0x27a0b0, onRequest, onStart, onRun 0x279a60, onLeave, onCancel, startCamera 0x279780, stepCamera 0x2794e0), DiveLandLink::onRun 0x2792c0
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -266,6 +266,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 18:18 `game/playermotion.cpp` partial: The links DiveFall, DiveLand and TrapHit: a fall over an edge runs to Mission failed, a trap holds and lets go; forced, no real edge or trap yet
 - 2026-11-06 17:52 `game/playermotion.cpp` partial: takeHits whole: a blow that lands fells what it hits, the first real fight runs to Mission failed; the NaN position is fixed (sqrt.s)
 - 2026-11-06 17:15 `game/playermotion.cpp` partial: Damage, DamageLand, DamageFatal, DamageDead and Revive links, the conditions' dtors, setWallCheck
 - 2026-11-06 16:40 `game/charactersound.cpp` verify: A character's voices written, 23 functions; playVoiceHeard now searches the SE table, as the ROM does, instead of the stream table, so it stops being silent.
@@ -273,22 +274,21 @@ Recent sessions:
 - 2026-11-06 13:47 `game/stagecar.cpp` partial: the door: GettingOnCar, GettingOffCar, DragOutCar and the car's links written; the truck's fan is proven to be the lamp's spot pass, cause in the ROM not found;
 - 2026-11-06 12:56 `game/stagecar.cpp` partial: the car: every function written; PartSwitch and rideCar added: the player sits in the car; the truck's picture is still wrong
 - 2026-11-06 12:05 `game/stagecar.cpp` partial: the car: StageCar, CarParts, 58 of 59 functions; StageScene::car replaces StageViewTarget; createMapObject builds it
-- 2026-11-06 11:18 `game/vehiclepose.cpp` verify: CarPose and ElevatorPose written and compared with the ROM; the links' base, 17 link dtors and the ROM's condition list joined game/playermotion.cpp
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@0023c010` | todo | 0/11/15 | 7.4 | 42 | 5 |
-| `game/playermotion.cpp` | partial | 339/0/354 | 152.0 | 37 | 0 |
 | `unassigned@0022fc50` | todo | 0/0/8 | 1.8 | 33 | 0 |
 | `unassigned@002937e0` | partial | 2/13/29 | 6.9 | 30 | 0 |
-| `unassigned@002a4a40` | partial | 4/10/90 | 19.9 | 30 | 3 |
-| `game/stagealert.cpp` | todo | 0/7/8 | 1.3 | 29 | 4 |
+| `unassigned@002a4a40` | partial | 4/10/90 | 19.9 | 25 | 2 |
 | `rx/rxsndstradpcm.c` | todo | 0/8/10 | 2.6 | 25 | 5 |
-| `unassigned@002dac70` | partial | 1/4/63 | 21.7 | 24 | 4 |
+| `game/stagealert.cpp` | todo | 0/7/8 | 1.3 | 24 | 3 |
 | `unassigned@001920d0` | partial | 1/0/17 | 5.9 | 24 | 0 |
 | `unassigned@002b9ef0` | todo | 0/4/11 | 5.7 | 21 | 3 |
 | `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
+| `unassigned@002dac70` | partial | 1/4/63 | 21.7 | 19 | 3 |
+| `unassigned@00171ad0` | partial | 1/0/107 | 1.5 | 18 | 0 |
 | `unassigned@002c42a0` | todo | 0/13/105 | 42.1 | 18 | 1 |
+| `game/stagemenu.cpp` | partial | 1/5/7 | 1.4 | 17 | 3 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -297,7 +297,6 @@ Recent sessions:
 | `002c1430` | FUN_002c1430 | 115 | - | missing | game/packtables.cpp |
 | `00184370` | StageNodeList::erase | 72 | game | missing | game/stageitem.cpp |
 | `0017e260` | StageList<StageObject*>::erase | 52 | game | missing | game/stagecharacter.cpp |
-| `00276510` | MotionCondition::MotionCondition | 35 | game | missing | game/playermotion.cpp |
 | `001842c0` | StageNodeList::pushBack | 33 | game | missing | game/stageitem.cpp |
 | `0017e1b0` | StageList<StageObject*>::pushBack | 24 | game | missing | game/stagecharacter.cpp |
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
@@ -315,6 +314,7 @@ Recent sessions:
 | `00215af0` | StageCharacter::hasAlteredVoice | 7 | game | stub | - |
 | `0022fe90` | FUN_0022fe90 | 7 | - | missing | - |
 | `0022fda0` | FUN_0022fda0 | 7 | - | missing | - |
+| `0020c940` | StageCharacter::getSwayMatrix | 7 | game | stub | - |
 | `0029f440` | findNumLockTarget | 6 | game | stub | - |
 | `00206f80` | FUN_00206f80 | 6 | - | missing | - |
 | `00189840` | FUN_00189840 | 6 | - | missing | - |
@@ -326,7 +326,6 @@ Recent sessions:
 | `00258ea0` | FUN_00258ea0 | 6 | - | missing | game/routeplayer.cpp |
 | `001f4f20` | FUN_001f4f20 | 6 | - | missing | game/stagecollision.cpp |
 | `002c0db0` | FUN_002c0db0 | 6 | - | missing | game/packtables.cpp |
-| `0020c940` | StageCharacter::getSwayMatrix | 6 | game | stub | - |
 | `00218b50` | StageCharacter::useItem | 5 | game | stub | - |
 | `00187220` | PartSwitch::PartSwitch | 5 | game | missing | game/stagemodel.cpp |
 | `00258f10` | FUN_00258f10 | 5 | - | missing | game/routeplayer.cpp |
@@ -334,4 +333,5 @@ Recent sessions:
 | `001f4bb0` | FUN_001f4bb0 | 5 | - | missing | game/stagecollision.cpp |
 | `001f4d30` | FUN_001f4d30 | 5 | - | missing | game/stagecollision.cpp |
 | `002c1670` | FUN_002c1670 | 5 | - | missing | game/packtables.cpp |
+| `002c16d0` | FUN_002c16d0 | 5 | - | missing | game/packtables.cpp |
 
