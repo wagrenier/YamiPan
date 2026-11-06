@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 03:55 at commit `b9a6334` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 04:29 at commit `d513d77` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-06 03:55 at commit `b9a6334` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **4785** (73%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3864
-- context-name ledger: 5408 entries; overrides of wrong library matches: 0
+- game functions: **6599**, named **4795** (73%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3874
+- context-name ledger: 5418 entries; overrides of wrong library matches: 0
 - placed in a source file: 5051/6599 in 111 files
 
 Least-named game-code regions (64 KB blocks):
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **4522**; stubs: **223**
+- reconstructed FS2 functions: **4536**; stubs: **218**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -43,6 +43,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/clock.cpp` | 14 | 0 |
 | `src/game/datetime.cpp` | 2 | 0 |
 | `src/game/demoevent.cpp` | 102 | 0 |
+| `src/game/demofleck.cpp` | 13 | 0 |
 | `src/game/drawsys.cpp` | 166 | 0 |
 | `src/game/fileloader.cpp` | 53 | 0 |
 | `src/game/fontdata.cpp` | 43 | 0 |
@@ -98,7 +99,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stagemodel.cpp` | 16 | 0 |
 | `src/game/stageobject.cpp` | 44 | 0 |
 | `src/game/stageobjlist.cpp` | 45 | 0 |
-| `src/game/stageparty.cpp` | 73 | 2 |
+| `src/game/stageparty.cpp` | 74 | 0 |
 | `src/game/stageplayer.cpp` | 33 | 0 |
 | `src/game/stageresult.cpp` | 32 | 0 |
 | `src/game/stagescene.cpp` | 259 | 0 |
@@ -121,7 +122,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/vectortrack.cpp` | 10 | 0 |
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 171 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 168 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -149,10 +150,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 224 TUs: todo 88, partial 41, verify 92, done 31
-- next: **game/demofleck.cpp** (pinned in the queue)
-- pinned queue: game/demofleck.cpp
-- partial: `game/stageparty.cpp` 68/70 -- Written, batches 159, 160: SightJack::drawPaletteView 0x1ff010 (FramePalettePass, a gradient map at half the render size, the ROM's three ramps in the source), 
+- 224 TUs: todo 88, partial 40, verify 93, done 31
+- next: **game/stageparty.cpp** (continuing a partial TU)
+- pinned queue: (empty)
+- partial: `game/stageparty.cpp` 70/70 -- Written, batches 159, 160: SightJack::drawPaletteView 0x1ff010 (FramePalettePass, a gradient map at half the render size, the ROM's three ramps in the source), 
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -162,6 +163,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
 - verify: `game/demoevent.cpp` 102/106 -- All of the TU is written or accounted for (batch 116). Added: DemoStream setFont and drawSubtitles, the fsm readers 0x28fa90..0x28ff60 (range added here; the ho
+- verify: `game/demofleck.cpp` 13/13 -- All of the TU is written (batch 161): DemoFleck 0x2a1240, its dtor, thunks draw and step; FleckSet draw 0x2a18c0, step 0x2a1eb0, spawnLarge, spawnSmall, drawLar
 - verify: `game/drawsys.cpp` 164/164 -- All 164 of 0x2d46a0-0x2dac70 are written or listed. New: drawSysAddModel 0x2d5140 (draw group, name flags, wave surfaces, plant textures), drawSysFindKind1Surfa
 - verify: `game/fileloader.cpp` 53/53 -- All 53 functions of 0x1319f0..0x132f20 are in src/game/fileloader.cpp with game/fileloader.h; FileJob / FileLoader / PackFile left gamehooks.h (which includes f
 - verify: `game/fontdata.cpp` 41/41 -- Cut out of unassigned@00171300 and pinned 0x1fcb40-0x1fe6b0 (batch 056, 31 names: the FontData byte variants countLinesMb / lineWidthFixed / lineWidthFixedMb / 
@@ -248,6 +250,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 04:29 `game/demofleck.cpp` verify: the flecks: DemoFleck and FleckSet, all 13 functions, a host blend DestinationFade and YamiPan_DrawUiSqueezeFactor
 - 2026-11-06 03:54 `game/stageparty.cpp` partial: the jack's palette views and film as host passes
 - 2026-11-06 03:11 `game/stageparty.cpp` partial: the sight-jack shows the view through a character: frame passes, markers, bind flash, warning
 - 2026-11-06 02:24 `game/stageparty.cpp` partial: the sight-jack starts and shows its noise: JackLink, ScreenFill, the draw gate
@@ -255,11 +258,10 @@ Recent sessions:
 - 2026-11-06 00:46 `game/characterroute.cpp` verify: the 12 actions and their task classes, the TU is whole
 - 2026-11-05 23:59 `game/routeplayer.cpp` verify: the rute file: RoutePlayer, RouteFile, RouteAreaSearch, all non-MSL functions of 0x252840..0x25b8e0
 - 2026-11-05 23:22 `game/routefilter.cpp` verify: RouteFilter and its RouteSearch record: all 36 written or mapped to the host vector; findPath, pathLength, advance, the funnel; getFloorAttr signed as in the RO
-- 2026-11-05 22:56 `game/characterroute.cpp` partial: the route, its looks, turns, walk, car and 21 actions; path search and 12 actions left
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@00135990` | partial | 3/0/33 | 3.1 | 630 | 0 |
+| `unassigned@00135990` | partial | 3/0/33 | 3.1 | 632 | 0 |
 | `unassigned@001eedb0` | partial | 1/0/25 | 4.1 | 131 | 0 |
 | `unassigned@00176480` | partial | 13/0/69 | 5.3 | 116 | 0 |
 | `unassigned@0018c050` | todo | 0/9/36 | 17.9 | 80 | 2 |
@@ -270,7 +272,7 @@ Recent sessions:
 | `unassigned@00190900` | partial | 2/8/34 | 11.8 | 45 | 5 |
 | `unassigned@002a31b0` | partial | 1/18/22 | 5.9 | 39 | 0 |
 | `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 37 | 1 |
-| `unassigned@0022fc50` | todo | 0/0/8 | 1.8 | 33 | 0 |
+| `unassigned@002764b0` | todo | 0/0/43 | 7.8 | 33 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

@@ -638,30 +638,6 @@ void StageCharacter::setGearLightOrder(int order)
 }
 
 // stub of FS2 0x00207440
-// stub of FS2 0x002052d0
-void demoFilmDestroy(void *film)
-{
-    YAMIPAN_STUB("demoFilmDestroy", 0x002052d0);
-}
-
-// stub of FS2 0x00204550
-void demoFilmDraw(float level, void *film, sceVif1Packet *packet)
-{
-    YAMIPAN_STUB("demoFilmDraw", 0x00204550);
-}
-
-// stub of FS2 0x002a11c0
-void demoFleckDraw(float level, void *flecks, sceVif1Packet *packet)
-{
-    YAMIPAN_STUB("demoFleckDraw", 0x002a11c0);
-}
-
-// stub of FS2 0x002a11d0
-void demoFleckStep(void *flecks)
-{
-    YAMIPAN_STUB("demoFleckStep", 0x002a11d0);
-}
-
 // stub of FS2 0x0029f2a0
 bool missionRestoreCheck()
 {
@@ -1296,15 +1272,3 @@ void SceneModelHolder::setPlace(const float *position)
     YAMIPAN_STUB("SceneModelHolder::setPlace", 0x002d0750);
 }
 
-// stub of FS2 0x002a1240
-void * demoFleckCreate(Tim2Texture *texture)
-{
-    YAMIPAN_STUB("demoFleckCreate", 0x002a1240);
-    return {};
-}
-
-// stub of FS2 address unknown (0 candidates)
-void demoFleckDestroy(void *flecks)
-{
-    YAMIPAN_STUB("demoFleckDestroy", 0x00000000);
-}

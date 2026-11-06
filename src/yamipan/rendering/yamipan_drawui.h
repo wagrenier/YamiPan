@@ -62,6 +62,11 @@ void YamiPan_DrawUiTexture(const void *list, const void *owner);
  * The factor is 1 at 4:3 and on anything narrower. */
 void YamiPan_DrawUiSqueeze(const void *list, int on);
 
+/* What YamiPan_DrawUiSqueeze pulls by: 1 at 4:3 and narrower, under 1 wider.
+ * For a shape placed anywhere over the frame: its own width times this keeps
+ * its shape where its place still spreads over the whole display. */
+float YamiPan_DrawUiSqueezeFactor(void);
+
 /* Passes over the whole frame so far, at any aspect: the colour buffer
  * times `factor`, 0..4 (the GS's A = Cd, C = FIX), and pushed away from a
  * colour, (Cd - Cs) * As + Cd (ALPHA_1 0x41, `rgba` as RGBAQ, As on the

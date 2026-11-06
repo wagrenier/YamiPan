@@ -100,6 +100,11 @@ void YamiPan_DrawUiSqueeze(const void *list, int on)
     canvas().setSqueezed(list, on != 0);
 }
 
+float YamiPan_DrawUiSqueezeFactor(void)
+{
+    return canvas().squeezeFactor();
+}
+
 void YamiPan_DrawUiFrameScale(const void *list, float factor)
 {
     canvas().scaleFrame(list, factor);

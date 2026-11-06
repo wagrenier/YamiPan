@@ -473,7 +473,7 @@ void DemoCamera::setOverlay(int overlay)
 }
 
 // FS2 0x0026c920
-// callcheck: openList, 0x2a11d0, 0x2a11c0, 0x204550, closeList, gsFillRect
+// callcheck: openList, step, draw, 0x204550, closeList, gsFillRect
 
 void DemoCamera::drawOverlay()
 {
@@ -486,8 +486,8 @@ void DemoCamera::drawOverlay()
 
     sceVif1Packet *packet = gGameSystem->m_packets.openList(PacketList_Scene2d);
     if (m_flecks != nullptr) {
-        demoFleckStep(m_flecks);
-        demoFleckDraw(kFilmLevel, m_flecks, packet);
+        m_flecks->step();
+        m_flecks->draw(packet);
     }
     m_film->draw(kFilmLevel, packet);
     if (m_overlay == DemoOverlay_FilmDark) {

@@ -63,6 +63,8 @@ BlendMode blendModeOf(std::uint64_t alpha)
         return c == kFixedAlpha ? BlendMode::FixedAdditive : BlendMode::Additive;
     if (a == kZero && b == kSourceColor && d == kDestinationColor && c == kSourceAlpha)
         return BlendMode::Subtractive;
+    if (a == kZero && b == kDestinationColor && d == kDestinationColor && c == kSourceAlpha)
+        return BlendMode::DestinationFade;
     return BlendMode::Alpha;
 }
 
@@ -161,12 +163,18 @@ void UiCanvas::bindImage(const void *list, std::shared_ptr<Image> image)
     layer(list).image = std::move(image);
 }
 
+float UiCanvas::squeezeFactor() const
+{
+    const float wider = m_renderer.layout().aspect / kFrameDisplayAspect;
+    return wider > 1.0f ? 1.0f / wider : 1.0f;
+}
+
 void UiCanvas::setSqueezed(const void *list, bool squeezed)
 {
     // Read before the canvas's lock: the renderer has its own.
-    const float wider = m_renderer.layout().aspect / kFrameDisplayAspect;
+    const float factor = squeezeFactor();
     std::scoped_lock lock(m_lock);
-    layer(list).squeeze = squeezed && wider > 1.0f ? 1.0f / wider : 1.0f;
+    layer(list).squeeze = squeezed ? factor : 1.0f;
 }
 
 void UiCanvas::begin(const void *list, int format)

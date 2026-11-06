@@ -35,6 +35,7 @@ public:
     // The vertices that follow keep their shape at a display wider than 4:3: x is pulled towards the
     // frame's centre. For what is drawn centred; the factor comes from the display's PictureLayout.
     void setSqueezed(const void *list, bool squeezed);
+    float squeezeFactor() const; // 1 at 4:3 and narrower, under 1 wider
     // The whole frame times factor, 0..4: what the GS does with Cd as its A and FIX as its C.
     void scaleFrame(const void *list, float factor);
     // The whole frame pushed away from a colour: (Cd - Cs) * As + Cd, as ALPHA_1 0x41 does.
