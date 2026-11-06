@@ -110,6 +110,32 @@ void YamiPan_DrawUiFrameContrast(const void *list, uint32_t rgba)
     canvas().contrastFrame(list, rgba);
 }
 
+void YamiPan_DrawUiFramePalette(const void *list, const uint32_t *ramp)
+{
+    canvas().paletteFrame(list, ramp);
+}
+
+void YamiPan_DrawUiFilm(const void *list, const YamiPanFilm *film)
+{
+    yamipan::rendering::Renderer &renderer = yamipan::Application::instance().renderer();
+    const auto imageOf = [&renderer](const void *owner) {
+        return renderer.textures().imageOf(*static_cast<const Tim2Texture *>(owner));
+    };
+
+    yamipan::rendering::FilmOverlay overlay;
+    for (std::size_t index = 0; index < overlay.corners.size(); index++)
+    {
+        const YamiPanFilmCorner &corner = film->corners[index];
+        overlay.corners[index] = {imageOf(corner.shown), imageOf(corner.leaving), corner.leavingAlpha};
+    }
+    overlay.bandStart = film->bandStart;
+    overlay.bandLength = film->bandLength;
+    overlay.clearBelow = film->clearBelow;
+    overlay.solidAbove = film->solidAbove;
+    overlay.color = film->color;
+    renderer.canvas().filmOverlay(list, std::move(overlay));
+}
+
 void YamiPan_DrawUiBegin(const void *list, int format)
 {
     canvas().begin(list, format);

@@ -69,6 +69,38 @@ void YamiPan_DrawUiSqueeze(const void *list, int on);
 void YamiPan_DrawUiFrameScale(const void *list, float factor);
 void YamiPan_DrawUiFrameContrast(const void *list, uint32_t rgba);
 
+/* The whole frame so far through a ramp, at any aspect: halved, each pixel's
+ * brightness picks one of the 256 colours of `ramp`, and that is stretched
+ * back with no blend. `ramp` is RGBA words in a GS CLUT's order (PSMCT32,
+ * CSM1: 8..f and 0x10..0x17 of each 0x20 swapped), the game's own table: the
+ * module keeps a picture of it by its address. Leaves the frame's alpha. */
+void YamiPan_DrawUiFramePalette(const void *list, const uint32_t *ramp);
+
+/* The sight-jack's film over the frame so far, at any aspect: the frame's
+ * four corners each `shown` (a Tim2Texture) with `leaving` over it at
+ * `leavingAlpha`, the right and bottom ones mirrored about the frame's centre.
+ * The green of that, 0..255, is how much of `color` (RGB) lies on the frame:
+ * none below `clearBelow`, all above `solidAbove`, between them
+ * (green - bandStart) / bandLength, in 128ths. */
+typedef struct YamiPanFilmCorner
+{
+    const void *shown;
+    const void *leaving;
+    float leavingAlpha;
+} YamiPanFilmCorner;
+
+typedef struct YamiPanFilm
+{
+    YamiPanFilmCorner corners[4];
+    int bandStart;
+    int bandLength;
+    int clearBelow;
+    int solidAbove;
+    uint32_t color;
+} YamiPanFilm;
+
+void YamiPan_DrawUiFilm(const void *list, const YamiPanFilm *film);
+
 /* Starts a vertex run of `format`; YamiPan_DrawUiVertex adds to it. */
 void YamiPan_DrawUiBegin(const void *list, int format);
 void YamiPan_DrawUiVertex(const void *list, const YamiPanUiVertex *vertex);

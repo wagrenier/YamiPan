@@ -68,16 +68,17 @@ const char kSoundTuning[] = "JAK_TUNING";   // data 0x306818
 const char kSoundIn[]     = "JAK_IN";       // data 0x306828
 const char kSoundMode[]   = "JAK_MODE";     // data 0x306830
 const char kSoundPetit[]  = "PETITJACK";    // data 0x306790
+const char kSoundVision[] = "KAKOSI";       // data 0x3067a8
 
 // Saved over a stage's restart: the bindings' character ids.
 int sSavedBinds[kJackBinds];                // bss 0x598b20
 
-// The film's rate and sizes, by stage. layout: host
+// The film's band and levels, by stage. layout: host
 struct JackTuning
 {
-    u_int rate;
-    float _68;
-    float _6c;
+    u_int band;
+    float levelLow;
+    float levelHigh;
     float filmNear;
     float filmFar;
 };
@@ -169,9 +170,9 @@ SightJack::SightJack()
     const JackTuning &tuning = stageIsLight(stage) ? kTuningLight : kTuningDark;
     m_filmNear = tuning.filmNear;
     m_filmFar = tuning.filmFar;
-    m_film.rate = tuning.rate;
-    m_film._68 = tuning._68;
-    m_film._6c = tuning._6c;
+    m_film.band = tuning.band;
+    m_film.levelLow = tuning.levelLow;
+    m_film.levelHigh = tuning.levelHigh;
     // PC: stage 0x1b also builds an object at +0xb4 (0x2d31d0, 15 by 15). It
     // is the draw's, which is not written.
 }
@@ -186,8 +187,6 @@ SightJack::~SightJack()
     delete m_fleckTexture;
     if (m_flecks != nullptr)
         demoFleckDestroy(m_flecks);
-    for (Tim2Texture *frame : m_film.frames)
-        delete frame;
 }
 
 // FS2 0x00203ae0
@@ -838,6 +837,115 @@ static TexAreaList *scene2dTexList()
     return gfxGetTexArea()->getList(PacketList_Scene2d);
 }
 
+// What SightJack::drawPaletteView maps the frame's brightness through, in
+// the order the ROM has them: a GS CLUT's, with entries 8..f and 0x10..0x17
+// of each 0x20 swapped. Each entry's top byte is its index; nothing reads it.
+// data 0x305b80: a vision of the past.
+const u_int kRampSepia[256] = {
+    0x00001c33, 0x01001c35, 0x02001d36, 0x03001e37, 0x04001e38, 0x05001f39, 0x0600203a, 0x0700203b,
+    0x10022645, 0x11022746, 0x12022848, 0x13022849, 0x1402294a, 0x15032a4b, 0x16032a4c, 0x17032b4d,
+    0x0800213c, 0x0901223e, 0x0a01223f, 0x0b012340, 0x0c012441, 0x0d012442, 0x0e012543, 0x0f022644,
+    0x18032c4e, 0x19042c4f, 0x1a042d50, 0x1b042e51, 0x1c042e52, 0x1d042f53, 0x1e053054, 0x1f053156,
+    0x20053157, 0x21053258, 0x22063359, 0x2306335a, 0x2406345b, 0x2507355c, 0x2607355d, 0x2707365e,
+    0x300a3c67, 0x310a3d68, 0x320b3e69, 0x330b3e6a, 0x340b3f6b, 0x350c406c, 0x360c406d, 0x370c416e,
+    0x2807375f, 0x29083760, 0x2a083861, 0x2b083962, 0x2c093a63, 0x2d093a64, 0x2e093b65, 0x2f0a3c66,
+    0x380d426f, 0x390d4370, 0x3a0d4371, 0x3b0e4472, 0x3c0e4573, 0x3d0f4574, 0x3e0f4675, 0x3f0f4776,
+    0x40104777, 0x41104878, 0x42114979, 0x43114a7a, 0x44114a7b, 0x45124b7b, 0x46124c7c, 0x47134c7d,
+    0x50175386, 0x51175487, 0x52185487, 0x53185588, 0x54195689, 0x5519568a, 0x561a578b, 0x571a588c,
+    0x48134d7e, 0x49144e7f, 0x4a144f80, 0x4b154f81, 0x4c155082, 0x4d155183, 0x4e165184, 0x4f165285,
+    0x581b598d, 0x591b598e, 0x5a1c5a8f, 0x5b1c5b8f, 0x5c1d5b90, 0x5d1e5c91, 0x5e1e5d92, 0x5f1f5e93,
+    0x601f5e94, 0x61205f95, 0x62206096, 0x63216096, 0x64216197, 0x65226298, 0x66236399, 0x6723639a,
+    0x70296aa1, 0x71296ba2, 0x722a6ba3, 0x732b6ca4, 0x742b6da4, 0x752c6ea5, 0x762d6ea6, 0x772d6fa7,
+    0x6824649b, 0x6924659b, 0x6a25669c, 0x6b26669d, 0x6c26679e, 0x6d27689f, 0x6e2769a0, 0x6f2869a0,
+    0x782e70a8, 0x792f71a8, 0x7a2f71a9, 0x7b3072aa, 0x7c3173ab, 0x7d3174ac, 0x7e3274ac, 0x7f3375ad,
+    0x803376ae, 0x813476af, 0x823577af, 0x833678b0, 0x843679b1, 0x853779b2, 0x86387ab2, 0x87397bb3,
+    0x903f82ba, 0x914082bb, 0x924183bb, 0x934284bc, 0x944385bd, 0x954385bd, 0x964486be, 0x974587bf,
+    0x88397cb4, 0x893a7cb5, 0x8a3b7db5, 0x8b3c7eb6, 0x8c3c7fb7, 0x8d3d7fb8, 0x8e3e80b8, 0x8f3f81b9,
+    0x984688c0, 0x994788c0, 0x9a4889c1, 0x9b488ac2, 0x9c498bc2, 0x9d4a8cc3, 0x9e4b8cc4, 0x9f4c8dc4,
+    0xa04d8ec5, 0xa14e8fc6, 0xa24e8fc6, 0xa34f90c7, 0xa45091c8, 0xa55192c8, 0xa65292c9, 0xa75393ca,
+    0xb05b9acf, 0xb15c9bd0, 0xb25d9cd1, 0xb35e9cd1, 0xb45f9dd2, 0xb5609ed2, 0xb6619fd3, 0xb7629fd4,
+    0xa85494ca, 0xa95595cb, 0xaa5695cc, 0xab5696cc, 0xac5797cd, 0xad5898ce, 0xae5998ce, 0xaf5a99cf,
+    0xb863a0d4, 0xb964a1d5, 0xba65a2d6, 0xbb66a3d6, 0xbc67a3d7, 0xbd68a4d7, 0xbe69a5d8, 0xbf6aa6d8,
+    0xc06ba6d9, 0xc16ca7da, 0xc26da8da, 0xc36ea9db, 0xc46faadb, 0xc570aadc, 0xc671abdc, 0xc772acdd,
+    0xd07cb3e2, 0xd17db4e2, 0xd27eb5e3, 0xd37fb5e4, 0xd480b6e4, 0xd581b7e5, 0xd682b8e5, 0xd783b8e6,
+    0xc873adde, 0xc974adde, 0xca75aedf, 0xcb76afdf, 0xcc77b0e0, 0xcd78b1e0, 0xce79b1e1, 0xcf7ab2e1,
+    0xd884b9e6, 0xd986bae7, 0xda87bbe7, 0xdb88bce8, 0xdc89bce8, 0xdd8abde9, 0xde8bbee9, 0xdf8cbfea,
+    0xe08ec0ea, 0xe18fc0eb, 0xe290c1eb, 0xe391c2eb, 0xe492c3ec, 0xe594c4ec, 0xe695c4ed, 0xe796c5ed,
+    0xf0a1ccf1, 0xf1a2cdf2, 0xf2a3cef2, 0xf3a5cff3, 0xf4a6d0f3, 0xf5a7d1f4, 0xf6a8d1f4, 0xf7aad2f4,
+    0xe897c6ee, 0xe998c7ee, 0xea9ac8ef, 0xeb9bc8ef, 0xec9cc9f0, 0xed9dcaf0, 0xee9ecbf1, 0xefa0ccf1,
+    0xf8abd3f5, 0xf9acd4f5, 0xfaaed5f6, 0xfbafd5f6, 0xfcb0d6f6, 0xfdb1d7f7, 0xfeb3d8f7, 0xffb4d9f8,
+};
+// data 0x305f80: the plain brightness, black to white.
+const u_int kRampGrey[256] = {
+    0x00000000, 0x01000000, 0x02010101, 0x03020202, 0x04030303, 0x05040404, 0x06050505, 0x07060606,
+    0x100f0f0f, 0x11101010, 0x12111111, 0x13121212, 0x14131313, 0x15141414, 0x16151515, 0x17161616,
+    0x08070707, 0x09080808, 0x0a090909, 0x0b0a0a0a, 0x0c0b0b0b, 0x0d0c0c0c, 0x0e0d0d0d, 0x0f0e0e0e,
+    0x18171717, 0x19181818, 0x1a191919, 0x1b1a1a1a, 0x1c1b1b1b, 0x1d1c1c1c, 0x1e1d1d1d, 0x1f1e1e1e,
+    0x201f1f1f, 0x21202020, 0x22212121, 0x23222222, 0x24232323, 0x25242424, 0x26252525, 0x27262626,
+    0x302f2f2f, 0x31303030, 0x32313131, 0x33323232, 0x34333333, 0x35343434, 0x36353535, 0x37363636,
+    0x28272727, 0x29282828, 0x2a292929, 0x2b2a2a2a, 0x2c2b2b2b, 0x2d2c2c2c, 0x2e2d2d2d, 0x2f2e2e2e,
+    0x38373737, 0x39383838, 0x3a393939, 0x3b3a3a3a, 0x3c3b3b3b, 0x3d3c3c3c, 0x3e3d3d3d, 0x3f3e3e3e,
+    0x403f3f3f, 0x41404040, 0x42414141, 0x43424242, 0x44434343, 0x45444444, 0x46454545, 0x47464646,
+    0x504f4f4f, 0x51505050, 0x52515151, 0x53525252, 0x54535353, 0x55545454, 0x56555555, 0x57565656,
+    0x48474747, 0x49484848, 0x4a494949, 0x4b4a4a4a, 0x4c4b4b4b, 0x4d4c4c4c, 0x4e4d4d4d, 0x4f4e4e4e,
+    0x58575757, 0x59585858, 0x5a595959, 0x5b5a5a5a, 0x5c5b5b5b, 0x5d5c5c5c, 0x5e5d5d5d, 0x5f5e5e5e,
+    0x605f5f5f, 0x61606060, 0x62616161, 0x63626262, 0x64636363, 0x65646464, 0x66656565, 0x67666666,
+    0x706f6f6f, 0x71707070, 0x72717171, 0x73727272, 0x74737373, 0x75747474, 0x76757575, 0x77767676,
+    0x68676767, 0x69686868, 0x6a696969, 0x6b6a6a6a, 0x6c6b6b6b, 0x6d6c6c6c, 0x6e6d6d6d, 0x6f6e6e6e,
+    0x78777777, 0x79787878, 0x7a797979, 0x7b7a7a7a, 0x7c7b7b7b, 0x7d7c7c7c, 0x7e7d7d7d, 0x7f7e7e7e,
+    0x807f7f7f, 0x81808080, 0x82818181, 0x83828282, 0x84838383, 0x85848484, 0x86858585, 0x87868686,
+    0x908f8f8f, 0x91909090, 0x92919191, 0x93929292, 0x94939393, 0x95949494, 0x96959595, 0x97969696,
+    0x88878787, 0x89888888, 0x8a898989, 0x8b8a8a8a, 0x8c8b8b8b, 0x8d8c8c8c, 0x8e8d8d8d, 0x8f8e8e8e,
+    0x98979797, 0x99989898, 0x9a999999, 0x9b9a9a9a, 0x9c9b9b9b, 0x9d9c9c9c, 0x9e9d9d9d, 0x9f9e9e9e,
+    0xa09f9f9f, 0xa1a0a0a0, 0xa2a1a1a1, 0xa3a2a2a2, 0xa4a3a3a3, 0xa5a4a4a4, 0xa6a5a5a5, 0xa7a6a6a6,
+    0xb0afafaf, 0xb1b0b0b0, 0xb2b1b1b1, 0xb3b2b2b2, 0xb4b3b3b3, 0xb5b4b4b4, 0xb6b5b5b5, 0xb7b6b6b6,
+    0xa8a7a7a7, 0xa9a8a8a8, 0xaaa9a9a9, 0xabaaaaaa, 0xacababab, 0xadacacac, 0xaeadadad, 0xafaeaeae,
+    0xb8b7b7b7, 0xb9b8b8b8, 0xbab9b9b9, 0xbbbababa, 0xbcbbbbbb, 0xbdbcbcbc, 0xbebdbdbd, 0xbfbebebe,
+    0xc0bfbfbf, 0xc1c0c0c0, 0xc2c1c1c1, 0xc3c2c2c2, 0xc4c3c3c3, 0xc5c4c4c4, 0xc6c5c5c5, 0xc7c6c6c6,
+    0xd0cfcfcf, 0xd1d0d0d0, 0xd2d1d1d1, 0xd3d2d2d2, 0xd4d3d3d3, 0xd5d4d4d4, 0xd6d5d5d5, 0xd7d6d6d6,
+    0xc8c7c7c7, 0xc9c8c8c8, 0xcac9c9c9, 0xcbcacaca, 0xcccbcbcb, 0xcdcccccc, 0xcecdcdcd, 0xcfcecece,
+    0xd8d7d7d7, 0xd9d8d8d8, 0xdad9d9d9, 0xdbdadada, 0xdcdbdbdb, 0xdddcdcdc, 0xdedddddd, 0xdfdedede,
+    0xe0dfdfdf, 0xe1e0e0e0, 0xe2e1e1e1, 0xe3e2e2e2, 0xe4e3e3e3, 0xe5e4e4e4, 0xe6e5e5e5, 0xe7e6e6e6,
+    0xf0efefef, 0xf1f0f0f0, 0xf2f1f1f1, 0xf3f2f2f2, 0xf4f3f3f3, 0xf5f4f4f4, 0xf6f5f5f5, 0xf7f6f6f6,
+    0xe8e7e7e7, 0xe9e8e8e8, 0xeae9e9e9, 0xebeaeaea, 0xecebebeb, 0xedececec, 0xeeededed, 0xefeeeeee,
+    0xf8f7f7f7, 0xf9f8f8f8, 0xfaf9f9f9, 0xfbfafafa, 0xfcfbfbfb, 0xfdfcfcfc, 0xfefdfdfd, 0xfffefefe,
+};
+// data 0x306380: the picture negative: dark goes white, through pale blue, bright goes dark red.
+const u_int kRampNegative[256] = {
+    0x00ffffff, 0x01fdfdfd, 0x02fbfbfb, 0x03f9f9f9, 0x04f7f7f7, 0x05f5f5f5, 0x06f3f3f3, 0x07f1f1f1,
+    0x10fddede, 0x11fbdcdc, 0x12f9dada, 0x13f7d8d8, 0x14f5d6d6, 0x15f3d4d4, 0x16f1d2d2, 0x17f0d0d0,
+    0x08eeeeee, 0x09ececec, 0x0aeaeaea, 0x0be8e8e8, 0x0ce6e6e6, 0x0de4e4e4, 0x0ee2e2e2, 0x0fe0e0e0,
+    0x18eecece, 0x19eccccc, 0x1aeacaca, 0x1be8c8c8, 0x1ce6c6c6, 0x1de4c4c4, 0x1ee2c2c2, 0x1fe0c0c0,
+    0x20dfbfbf, 0x21debebe, 0x22ddbdbd, 0x23dcbcbc, 0x24dbbbbb, 0x25dababa, 0x26d9b9b9, 0x27d8b8b8,
+    0x30cfafaf, 0x31ceaeae, 0x32cdadad, 0x33ccacac, 0x34cbabab, 0x35caaaaa, 0x36c9a9a9, 0x37c8a8a8,
+    0x28d7b7b7, 0x29d6b6b6, 0x2ad5b5b5, 0x2bd4b4b4, 0x2cd3b3b3, 0x2dd2b2b2, 0x2ed1b1b1, 0x2fd0b0b0,
+    0x38c7a7a7, 0x39c6a6a6, 0x3ac5a5a5, 0x3bc4a4a4, 0x3cc3a3a3, 0x3dc2a2a2, 0x3ec1a1a1, 0x3fc0a0a0,
+    0x40c0a0a0, 0x41bf9f9f, 0x42bf9f9f, 0x43be9e9e, 0x44be9e9e, 0x45bd9d9d, 0x46bd9d9d, 0x47bc9c9c,
+    0x50b89898, 0x51b79797, 0x52b79797, 0x53b69696, 0x54b69696, 0x55b59595, 0x56b59595, 0x57b49494,
+    0x48bc9c9c, 0x49bb9b9b, 0x4abb9b9b, 0x4bba9a9a, 0x4cba9a9a, 0x4db99999, 0x4eb99999, 0x4fb89898,
+    0x58b49494, 0x59b39393, 0x5ab39393, 0x5bb29292, 0x5cb29292, 0x5db19191, 0x5eb19191, 0x5fb09090,
+    0x60b09090, 0x61af8f8f, 0x62af8f8f, 0x63ae8e8e, 0x64ae8e8e, 0x65ad8d8d, 0x66ad8d8d, 0x67ac8c8c,
+    0x70a88888, 0x71a78787, 0x72a78787, 0x73a68686, 0x74a68686, 0x75a58585, 0x76a58585, 0x77a48484,
+    0x68ac8c8c, 0x69ab8b8b, 0x6aab8b8b, 0x6baa8a8a, 0x6caa8a8a, 0x6da98989, 0x6ea98989, 0x6fa88888,
+    0x78a48484, 0x79a38383, 0x7aa38383, 0x7ba28282, 0x7ca28282, 0x7da18181, 0x7ea18181, 0x7fa08080,
+    0x809f7f7f, 0x819e7e7f, 0x829c7d7e, 0x839b7c7e, 0x849a7b7d, 0x85997a7c, 0x8697797c, 0x8796787b,
+    0x908b6f75, 0x918a6e75, 0x92886d74, 0x93876c74, 0x94866b73, 0x95856a72, 0x96836972, 0x97826871,
+    0x8895777a, 0x8994767a, 0x8a927579, 0x8b917479, 0x8c907378, 0x8d8f7277, 0x8e8d7177, 0x8f8c7076,
+    0x98816770, 0x99806670, 0x9a7e656f, 0x9b7d646f, 0x9c7c636e, 0x9d7b626d, 0x9e79616d, 0x9f78606c,
+    0xa0775f6b, 0xa1765e6b, 0xa2745d6a, 0xa3735c6a, 0xa4725b69, 0xa5715a68, 0xa66f5968, 0xa76e5867,
+    0xb0634f61, 0xb1624e61, 0xb2604d60, 0xb35f4c60, 0xb45e4b5f, 0xb55d4a5e, 0xb65b495e, 0xb75a485d,
+    0xa86d5766, 0xa96c5666, 0xaa6a5565, 0xab695465, 0xac685364, 0xad675263, 0xae655163, 0xaf645062,
+    0xb859475c, 0xb958465c, 0xba56455b, 0xbb55445b, 0xbc54435a, 0xbd534259, 0xbe514159, 0xbf504058,
+    0xc04f3f57, 0xc14e3e57, 0xc24c3d56, 0xc34b3c56, 0xc44a3b55, 0xc5493a54, 0xc6473954, 0xc7463853,
+    0xd03b2f4d, 0xd13a2e4d, 0xd2382d4c, 0xd3372c4c, 0xd4362b4b, 0xd5352a4a, 0xd633294a, 0xd7322849,
+    0xc8453752, 0xc9443652, 0xca423551, 0xcb413451, 0xcc403350, 0xcd3f324f, 0xce3d314f, 0xcf3c304e,
+    0xd8312748, 0xd9302648, 0xda2e2547, 0xdb2d2447, 0xdc2c2346, 0xdd2b2245, 0xde292145, 0xdf282044,
+    0xe0271f43, 0xe1261e43, 0xe2241d42, 0xe3231c42, 0xe4221b41, 0xe5211a40, 0xe61f1940, 0xe71e183f,
+    0xf0130f39, 0xf1120e39, 0xf2100d38, 0xf30f0c38, 0xf40e0b37, 0xf50d0a36, 0xf60b0936, 0xf70a0835,
+    0xe81d173e, 0xe91c163e, 0xea1a153d, 0xeb19143d, 0xec18133c, 0xed17123b, 0xee15113b, 0xef14103a,
+    0xf8090734, 0xf9080634, 0xfa060533, 0xfb050433, 0xfc040332, 0xfd030231, 0xfe010131, 0xff000030,
+};
+
 // ──────────────────────────────────────────────────────────────────────
 // What lies over the frame.
 
@@ -861,6 +969,21 @@ void gsFrameScale(sceVif1Packet *packet, int level)
 // callcheck: gfxGetDrawEnv (PC: YamiPan_DrawUiFrameContrast)
 
 void gsFrameContrast(sceVif1Packet *packet, u_int rgba) { YamiPan_DrawUiFrameContrast(packet, rgba); }
+
+// FS2 0x001ff010
+// FS2 0x001ff460 gsShrinkFrame, FS2 0x002b6b90 gsLuminance and
+// FS2 0x001ffb30 gsUploadClut256 are inside the host's pass.
+// The frame goes through a ramp: halved with a bilinear filter, its brightness
+// (R * 0x26 + G * 0x4b + B * 0xe, each over 128) picks a colour of ramp, and
+// that is stretched back over the frame, with no blend. The ROM's a2 is how
+// many times to halve; all three calls pass 1, which is what the host does.
+// PC: a host pass in place of the buffers past the frame, with no GS memory.
+// callcheck: gfxGetDrawEnv, FUN_001ff460, FUN_001ff460, FUN_002b6b90, FUN_001ffb30, gfxGetDrawEnv (PC: YamiPan_DrawUiFramePalette)
+
+void SightJack::drawPaletteView(sceVif1Packet *packet, const u_int *ramp)
+{
+    YamiPan_DrawUiFramePalette(packet, ramp);
+}
 
 // FS2 0x002058e0
 // rgba added over the frame. The ROM's eight sprites are one fill here.
@@ -1072,7 +1195,7 @@ void SightJack::drawWarning(float filmLevel)
         demoFleckStep(m_flecks);
         demoFleckDraw(m_fill != nullptr ? m_fill->m_level : 0.0f, m_flecks, packet);
     }
-    demoFilmDraw(filmLevel, &m_film, packet);
+    m_film.draw(filmLevel, packet);
     // PC: the ROM leaves ALPHA_1 as the film set it.
     YamiPan_DrawUiReg(packet, SCE_GS_ALPHA_1, kJackAlpha);
     YamiPan_DrawUiReg(packet, SCE_GS_TEST_1, kJackBlackTest);
@@ -1088,7 +1211,7 @@ void SightJack::drawWarning(float filmLevel)
 
 void SightJack::drawFilm(float filmLevel, sceVif1Packet *packet)
 {
-    demoFilmDraw(filmLevel, &m_film, packet);
+    m_film.draw(filmLevel, packet);
     if (m_flecks != nullptr) {
         demoFleckStep(m_flecks);
         demoFleckDraw(m_fill != nullptr ? m_fill->m_level : 0.0f, m_flecks, packet);
@@ -1127,15 +1250,15 @@ void SightJack::drawCorpse(float filmLevel)
 // FS2 0x00201bc0
 // The film and the grain over the eyes' picture, the crosses; under them on
 // list 8 the bright frame and the tint of what the character is.
-// PC: not drawn: the palette views 0x1ff010 (0x305f80, 0x306380) and stage
-// 0x1b's boss film 0x2d10f0, with its object at +0xb4 not built.
-// callcheck: openList, demoFilmDraw, gfxGetTexArea, getList, getTopView, jackMarker, canBeJacked, jackMarker, demoFleckStep, demoFleckDraw, drawBindFlash, closeList, openList, gsFrameScale, getStageSelect, strcmp, strcmp, getStageSelect, gsFrameAdd, getStageSelect, strcmp, strcmp, gsFrameContrast, getStageSelect, drawFoeMarkers, strcmp, strcmp, strcmp, getStageSelect, strcmp, strcmp, strcmp, getStageSelect, isTakenOver, strcmp, strcmp, closeList (FUN_001ff010, FUN_002d10f0, FUN_002d3080, gfxGetDrawEnv, gsFillRect, getDeltaSeconds, unwritten as above)
+// PC: not drawn: stage 0x1b's boss film 0x2d10f0, with its object at +0xb4
+// not built.
+// callcheck: openList, demoFilmDraw, gfxGetTexArea, getList, getTopView, jackMarker, canBeJacked, jackMarker, demoFleckStep, demoFleckDraw, drawBindFlash, closeList, openList, gsFrameScale, getStageSelect, strcmp, strcmp, getStageSelect, gsFrameAdd, getStageSelect, strcmp, strcmp, gsFrameContrast, getStageSelect, drawFoeMarkers, strcmp, strcmp, strcmp, getStageSelect, strcmp, strcmp, strcmp, getStageSelect, isTakenOver, strcmp, strcmp, closeList (FUN_002d10f0, FUN_002d3080, gfxGetDrawEnv, gsFillRect, getDeltaSeconds, unwritten as above)
 
 void SightJack::drawLive(float filmLevel)
 {
     GamePacketManager *packets = &gGameSystem->m_packets;
     sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
-    demoFilmDraw(filmLevel, &m_film, packet);
+    m_film.draw(filmLevel, packet);
     m_fill->draw(packet, scene2dTexList());
     drawOwnMarkers(packet);
     if (m_mode == JackMode_KeptTurn || m_mode == JackMode_Kept)
@@ -1161,6 +1284,11 @@ void SightJack::drawLive(float filmLevel)
                        || (stage == kStageBoss && strcmp(target->m_name, "F_SNPC2") == 0);
     const bool boss = stage == kStageBoss && strcmp(target->m_name, "F_E27_BOSS") == 0;
 
+    if (paletteA)
+        drawPaletteView(packet, kRampGrey);
+    else if (paletteB)
+        drawPaletteView(packet, kRampNegative);
+
     if (m_viewer->m_altAction != 0) {
         gsFrameAdd(packet, kAltActionWash);
     } else if (!paletteA && !paletteB && !boss) {
@@ -1183,9 +1311,8 @@ void SightJack::drawLive(float filmLevel)
 }
 
 // FS2 0x002024c0
-// The frame's gate. PC: the vision's palette view 0x1ff010 (0x305b80) is not
-// drawn: its frame is the bright one alone.
-// callcheck: vecDistance, openList, demoFilmDraw, demoFleckStep, demoFleckDraw, closeList, openList, gsFrameScale, closeList, openList, getTopView, jackMarker, canBeJacked, jackMarker, closeList, openList, gsFillRect, gfxGetTexArea, getList, FUN_001518a0, gfxGetTexArea, getList, FUN_001518a0, demoFilmDraw, demoFleckStep, demoFleckDraw, drawBindFlash, closeList, drawWarning, openList, gfxGetTexArea, getList, FUN_001518a0, gfxGetTexArea, getList, FUN_001518a0, closeList, drawFadingMarker, openList, gfxGetTexArea, getList, demoFilmDraw, demoFleckStep, demoFleckDraw, drawBindFlash, closeList, openList, gsFrameScale, closeList, getAltSoundFlag, getLifeState, FUN_00215370, FUN_00201bc0, FUN_00201a40, FUN_002016d0 (FUN_001ff010 as above)
+// The frame's gate.
+// callcheck: vecDistance, openList, demoFilmDraw, demoFleckStep, demoFleckDraw, closeList, openList, gsFrameScale, closeList, openList, getTopView, jackMarker, canBeJacked, jackMarker, closeList, openList, gsFillRect, gfxGetTexArea, getList, FUN_001518a0, gfxGetTexArea, getList, FUN_001518a0, demoFilmDraw, demoFleckStep, demoFleckDraw, drawBindFlash, closeList, drawWarning, openList, gfxGetTexArea, getList, FUN_001518a0, gfxGetTexArea, getList, FUN_001518a0, closeList, drawFadingMarker, openList, gfxGetTexArea, getList, demoFilmDraw, demoFleckStep, demoFleckDraw, drawBindFlash, closeList, openList, gsFrameScale, closeList, getAltSoundFlag, getLifeState, FUN_00215370, FUN_00201bc0, FUN_00201a40, FUN_002016d0
 
 void SightJack::draw()
 {
@@ -1252,6 +1379,7 @@ void SightJack::draw()
         packets->closeList();
         packet = packets->openList(PacketList_SceneModel);
         gsFrameScale(packet, m_screenLevel);
+        drawPaletteView(packet, kRampSepia);
         packets->closeList();
     } else {
         m_visionFrames--;
@@ -1284,20 +1412,23 @@ StageParty::~StageParty() { delete m_jack; }
 bool StageParty::isRecordBusy() { return m_jack->m_warner != nullptr; }
 
 // FS2 0x001fe6c0
-// A jump to its body, FUN_001fed30.
 // callcheck: FUN_001fed30
 
-void StageParty::restore()
+void StageParty::restore() { m_jack->restoreBinds(); }
+
+// FS2 0x001fed30
+
+void SightJack::restoreBinds()
 {
     for (int i = 0; i < kJackBinds; i++) {
         if (sSavedBinds[i] == -1) {
-            m_jack->m_binds[i] = nullptr;
+            m_binds[i] = nullptr;
             continue;
         }
         StageObjArray &list = gStageScene->objects->m_lists[StageObjGroup_Characters];
         for (StageObject **slot = list.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
             if (*slot != nullptr && sSavedBinds[i] == (*slot)->m_id)
-                m_jack->m_binds[i] = *slot;
+                m_binds[i] = *slot;
         }
     }
 }
@@ -1329,28 +1460,34 @@ void StageParty::addVisionA(StageObject *object)
     m_jack->m_visionShow[m_jack->m_visionShowCount++] = object;
 }
 
-// A jump to its body, FUN_001fef50.
 // FS2 0x001fe7a0
 // callcheck: FUN_001fef50
 
-void StageParty::setVisionTarget(StageObject *object)
+void StageParty::setVisionTarget(StageObject *object) { m_jack->setVisionTarget(object); }
+
+// FS2 0x001fef50
+// callcheck: addNamed
+
+void SightJack::setVisionTarget(StageObject *object)
 {
-    SightJack *jack = m_jack;
-    if (jack->m_tuned == jack->m_vision)
-        jack->m_tuned = nullptr;
-    if (jack->m_kept == jack->m_vision)
-        jack->m_kept = nullptr;
+    if (m_tuned == m_vision)
+        m_tuned = nullptr;
+    if (m_kept == m_vision)
+        m_kept = nullptr;
     for (int i = 0; i < kJackBinds; i++) {
-        if (jack->m_binds[i] == jack->m_vision)
-            jack->m_binds[i] = nullptr;
+        if (m_binds[i] == m_vision)
+            m_binds[i] = nullptr;
     }
     if (object == nullptr) {
-        jack->m_visionShowCount = 0;
-        jack->m_visionHideCount = 0;
+        m_visionShowCount = 0;
+        m_visionHideCount = 0;
     }
-    jack->m_vision = object;
-    if (object != nullptr)
-        jack->m_visionFade = 8;
+    m_vision = object;
+    if (object != nullptr) {
+        m_visionFade = 8;
+        if (gStageScene->keepList != nullptr)
+            gStageScene->keepList->addNamed(kSoundVision, 0);
+    }
 }
 
 // FS2 0x001fe7b0
@@ -1428,11 +1565,102 @@ bool StageParty::isCompanionMode()
 // FS2 0x001fea50
 StageObject *StageParty::getCompanion() { return m_jack->viewed(); }
 
-// FS2 0x001fea40 (the film), 0x001fea30 (the flecks): inline in the event's code.
-void demoFilmTake(StageParty *party, void **film, void **flecks)
+// FS2 0x001fea30
+void *StageParty::getFlecks() { return m_jack->m_flecks; }
+// FS2 0x001fea40
+JackFilm *StageParty::getFilm() { return &m_jack->m_film; }
+
+// FS2 0x00204250
+// A copy of the film: its own textures of the same files, the same settings.
+// callcheck: operator_new, operator_new, Tim2Texture, FUN_001928f0
+
+JackFilm *JackFilm::clone() const
 {
-    *film = &party->m_jack->m_film;
-    *flecks = party->m_jack->m_flecks;
+    JackFilm *copy = new JackFilm;
+    for (const Tim2Texture *frame : frames)
+        copy->frames.push_back(new Tim2Texture(frame->m_image));
+    copy->band = band;
+    copy->color = color;
+    copy->levelLow = levelLow;
+    copy->levelHigh = levelHigh;
+    return copy;
+}
+
+// FS2 0x002052d0
+// The ROM's second argument says if the record goes too; here delete does.
+// callcheck: operator_delete
+
+JackFilm::~JackFilm()
+{
+    for (Tim2Texture *frame : frames)
+        delete frame;
+}
+
+// FS2 0x002a2050
+u_int demoFleckRandNext(u_int seed) { return seed * 0x15a4e35 + 1; }
+
+// FS2 0x00204550
+// FS2 0x00205070 drawCorner, FS2 0x002053a0 gsGreenToAlpha, FS2 0x00205670
+// gsUploadClutOrdered and FS2 0x00205b80 gsStripSprite are the GS's side,
+// inside the host's pass.
+// Each corner steps, then the ROM composes the frames at twice their size
+// (right and bottom corners mirrored), each corner its shown frame with the
+// leaving one at 1 - progress over it, turns the composition's green into an
+// 8-bit image and draws that over the whole frame through a table of 256:
+// clear up to the band, solid colour past it, alpha rising across it.
+// PC: the table's numbers go to the host's pass; no GS memory, no scratchpad.
+// callcheck: demoFleckRandNext, demoFleckRandNext, demoFleckRandNext, gfxGetVramBlock, FUN_00205670, gfxGetDrawEnv, gfxGetVramBlock, getVramBlocks, FUN_00205070, FUN_00205070, FUN_00205070, FUN_00205070, gfxGetVramBlock, getVramBlocks, FUN_002053a0, gfxGetVramBlock, getVramBlocks, FUN_00205b80, __fixunssfdi (PC: YamiPan_DrawUiFilm)
+
+void JackFilm::draw(float level, sceVif1Packet *packet)
+{
+    constexpr float kOne = 1.0f;
+    constexpr u_int kRandShift = 0x10;
+    constexpr u_int kRandMask = 0x7fff;
+    constexpr u_int kRandBits = 15;
+    constexpr u_int kStepShift = 12;    // the draw's top three bits
+    constexpr float kStepFrames = 16.0f; // 16..23 frames to a fade
+    constexpr float kBrightest = 255.0f;
+    constexpr int   kTableSize = 0x100;
+    constexpr float kGsOne = 128.0f;
+
+    if (frames.empty())
+        return;
+
+    const u_int count = (u_int)frames.size();
+    const auto nextDraw = [this]() {
+        seed = demoFleckRandNext(seed);
+        return seed >> kRandShift & kRandMask;
+    };
+
+    YamiPanFilm film{};
+    for (int i = 0; i < kJackFilmCorners; i++) {
+        Corner &corner = corners[i];
+        corner.progress += corner.step;
+        if (corner.progress >= kOne) {
+            corner.step = kOne / ((float)(nextDraw() >> kStepShift) + kStepFrames);
+            corner.progress = 0.0f;
+            int leaving = corner.shown;
+            if (leaving == -1)
+                leaving = (int)(count * nextDraw() >> kRandBits);
+            corner.leaving = leaving;
+            corner.shown = (int)(count * nextDraw() >> kRandBits);
+            if (corner.shown == corner.leaving && (u_int)++corner.shown >= count)
+                corner.shown = 0;
+        }
+        film.corners[i].shown = frames[corner.shown];
+        film.corners[i].leaving = frames[corner.leaving];
+        film.corners[i].leavingAlpha = (float)(int)((kOne - corner.progress) * kGsOne) / kGsOne;
+    }
+
+    const int centre = (int)(kBrightest - (level * (levelHigh - levelLow) + levelLow) * kBrightest);
+    const int halfBand = (int)band / 2;
+    const auto inTable = [](int entry) { return entry > kTableSize ? kTableSize : entry < 0 ? 0 : entry; };
+    film.bandStart = centre - halfBand;
+    film.bandLength = (int)band;
+    film.clearBelow = inTable(centre - halfBand);
+    film.solidAbove = inTable(centre + halfBand);
+    film.color = color;
+    YamiPan_DrawUiFilm(packet, &film);
 }
 
 // FS2 0x001feab0

@@ -231,7 +231,9 @@ void UiCanvas::emit(Layer &target, std::initializer_list<Vertex> triangleVertice
     const bool continues =
         !target.draws.empty() && [&] {
             const DrawCall &last = target.draws.back();
-            return last.pipeline == state.pipeline && last.image == state.image && last.scissor == state.scissor &&
+            return last.framePalette == nullptr && last.film == nullptr && last.pipeline == state.pipeline &&
+                   last.image == state.image &&
+                   last.scissor == state.scissor &&
                    last.linearFilter == state.linearFilter && last.repeat == state.repeat &&
                    last.alphaTestRef == state.alphaTestRef && last.fixedAlpha == state.fixedAlpha;
         }();
@@ -409,6 +411,53 @@ void UiCanvas::contrastFrame(const void *list, std::uint32_t rgba)
     // Cd * (1 + As), then Cs * As off it: no fixed-function blend does both at once.
     fillFrame(target, BlendMode::DestinationBoost, grey | grey << 8 | grey << 16 | 0xff000000u, 0);
     fillFrame(target, BlendMode::Subtractive, rgba, 0);
+}
+
+std::shared_ptr<Image> UiCanvas::rampImage(const std::uint32_t *ramp)
+{
+    constexpr int kRampSize = 256;
+    constexpr std::uint32_t kOpaque = 0xff000000u;
+    constexpr int kCsm1Swapped = 0x18; // the two index bits CSM1 exchanges
+
+    std::shared_ptr<Image> &image = m_ramps[ramp];
+    if (image != nullptr)
+        return image;
+
+    image = std::make_shared<Image>();
+    image->width = kRampSize;
+    image->height = 1;
+    image->pixels.resize(kRampSize * sizeof(std::uint32_t));
+    for (int index = 0; index < kRampSize; index++)
+    {
+        const int bits = index & kCsm1Swapped;
+        const int stored = bits == 0 || bits == kCsm1Swapped ? index : index ^ kCsm1Swapped;
+        const std::uint32_t color = ramp[stored] | kOpaque;
+        std::memcpy(image->pixels.data() + index * sizeof(color), &color, sizeof(color));
+    }
+    return image;
+}
+
+void UiCanvas::paletteFrame(const void *list, const std::uint32_t *ramp)
+{
+    std::scoped_lock lock(m_lock);
+    Layer &target = layer(list);
+
+    // No vertices: the renderer knows the whole frame. It ends the draw that came before.
+    DrawCall draw;
+    draw.framePalette = rampImage(ramp);
+    draw.firstVertex = static_cast<std::uint32_t>(target.vertices.size());
+    target.draws.push_back(std::move(draw));
+}
+
+void UiCanvas::filmOverlay(const void *list, FilmOverlay film)
+{
+    std::scoped_lock lock(m_lock);
+    Layer &target = layer(list);
+
+    DrawCall draw;
+    draw.film = std::make_shared<FilmOverlay>(std::move(film));
+    draw.firstVertex = static_cast<std::uint32_t>(target.vertices.size());
+    target.draws.push_back(std::move(draw));
 }
 
 void UiCanvas::drawImage(const void *list, std::shared_ptr<Image> image, float x, float y)

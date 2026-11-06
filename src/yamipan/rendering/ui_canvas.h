@@ -39,6 +39,11 @@ public:
     void scaleFrame(const void *list, float factor);
     // The whole frame pushed away from a colour: (Cd - Cs) * As + Cd, as ALPHA_1 0x41 does.
     void contrastFrame(const void *list, std::uint32_t rgba);
+    // The whole frame through a 256-colour ramp by its brightness: FramePalettePass's work. `ramp` is the
+    // game's table in a GS CLUT's order; it never moves, so it is decoded once.
+    void paletteFrame(const void *list, const std::uint32_t *ramp);
+    // The sight-jack's film over the frame so far: FilmOverlayPass's work.
+    void filmOverlay(const void *list, FilmOverlay film);
     void begin(const void *list, int format);
     void addVertex(const void *list, const YamiPanUiVertex &vertex);
 
@@ -99,6 +104,7 @@ private:
     void assemble(Layer &target, const Vertex &vertex);
     void fillFrame(Layer &target, BlendMode blend, std::uint32_t color, std::uint8_t fixedAlpha);
     static DrawCall stateOf(const Layer &layer);
+    std::shared_ptr<Image> rampImage(const std::uint32_t *ramp);
 
     Renderer &m_renderer;
     const void *m_movieOwner = nullptr;
@@ -106,6 +112,7 @@ private:
     std::shared_ptr<Image> m_movieImage;
     std::mutex m_lock;
     std::unordered_map<const void *, Layer> m_layers;
+    std::unordered_map<const std::uint32_t *, std::shared_ptr<Image>> m_ramps;
     std::uint64_t m_frames = 0;
 };
 

@@ -10,6 +10,8 @@
 #include "yamipan/core/event_queue.h"
 #include "yamipan/core/logger.h"
 #include "yamipan/core/window.h"
+#include "yamipan/rendering/film_overlay_pass.h"
+#include "yamipan/rendering/frame_palette_pass.h"
 #include "yamipan/rendering/present_pass.h"
 #include "yamipan/rendering/screenshotter.h"
 #include "yamipan/ui/overlay.h"
@@ -139,6 +141,8 @@ Renderer::Renderer(Window &window, gpu::Device &device, Config &config, EventQue
 
     m_white = m_device.createTexture(1, 1, SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER);
     m_present = std::make_unique<PresentPass>(m_device, m_window, m_config);
+    m_framePalette = std::make_unique<FramePalettePass>(m_device, m_sceneFormat);
+    m_filmOverlay = std::make_unique<FilmOverlayPass>(m_device, m_sceneFormat);
     m_screenshots = std::make_unique<Screenshotter>(m_device);
     applyPresentMode();
 }
@@ -292,7 +296,18 @@ void Renderer::uploadImages(SDL_GPUCopyPass *copy, Frame &frame)
     };
 
     for (const DrawCall &draw : frame.draws)
+    {
         upload(draw.image.get());
+        upload(draw.framePalette.get());
+        if (draw.film != nullptr)
+        {
+            for (const FilmCorner &corner : draw.film->corners)
+            {
+                upload(corner.shown.get());
+                upload(corner.leaving.get());
+            }
+        }
+    }
     for (const ModelDraw &draw : frame.modelDraws)
         upload(draw.image.get());
     for (const ModelPass &pass : frame.modelPasses)
@@ -346,6 +361,30 @@ void Renderer::recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, c
 
 void Renderer::recordUi(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout,
                         std::size_t first, std::size_t last, bool clear)
+{
+    // A pass over the frame reads the scene target, so it stands between render passes.
+    std::size_t next = first;
+    for (std::size_t index = first; index < last; index++)
+    {
+        const DrawCall &draw = frame.draws[index];
+        if (draw.framePalette == nullptr && draw.film == nullptr)
+            continue;
+        recordDraws(commands, frame, layout, next, index, clear);
+        clear = false;
+        next = index + 1;
+
+        const auto width = static_cast<unsigned>(layout.renderWidth);
+        const auto height = static_cast<unsigned>(layout.renderHeight);
+        if (draw.film != nullptr)
+            m_filmOverlay->record(commands, m_scene.get(), *draw.film, width, height);
+        else if (draw.framePalette->texture != nullptr)
+            m_framePalette->record(commands, m_scene.get(), draw.framePalette->texture->get(), width, height);
+    }
+    recordDraws(commands, frame, layout, next, last, clear);
+}
+
+void Renderer::recordDraws(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout,
+                           std::size_t first, std::size_t last, bool clear)
 {
     if (first == last && !clear)
         return;
