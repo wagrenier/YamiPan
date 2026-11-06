@@ -24,6 +24,7 @@
 #include "game/mathutil.h"
 #include "game/modelpose.h"
 #include "game/playermotion.h"
+#include "game/routeplayer.h"
 #include "game/stagedoor.h"
 #include "game/stageitem.h"
 #include "game/stageobjlist.h"

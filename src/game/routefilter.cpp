@@ -1,7 +1,6 @@
 /* ========================================================================
  *  game/routefilter.cpp -- the path search of a character's route.
- *  See game/routefilter.h. Nothing here runs in earnest until RoutePlayer's
- *  tables exist: its stubs give no ways, so a search answers -1.
+ *  See game/routefilter.h.
  * ======================================================================== */
 #include "game/routefilter.h"
 
@@ -11,6 +10,7 @@
 #include "game/characterground.h"
 #include "game/gamehooks.h"
 #include "game/playermotion.h"
+#include "game/routeplayer.h"
 #include "game/stagescene.h"
 #include "game/vu0math.h"
 

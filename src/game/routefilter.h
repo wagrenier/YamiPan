@@ -1,7 +1,7 @@
 /* ========================================================================
  *  game/routefilter.h -- the path search of a character's route.
  *
- *  A stage's rute file (RoutePlayer, game/gamehooks.h) is a graph over the
+ *  A stage's rute file (RoutePlayer, game/routeplayer.h) is a graph over the
  *  map: nodes, spans between two nodes (links to walk along, gates to walk
  *  through), chains of nodes, and tables of the ways between two floor areas
  *  (StageScene::getFloorAttr). The search asks those tables for a list of
@@ -35,19 +35,21 @@ struct RouteNode
 {
     short   crossing;           // FS2 +0x00: the crossing between two areas it belongs to
     u_short flags;              // FS2 +0x02: RouteNodeFlag
-    u_char  _4[0x10];
+    char    name[0x10];         // FS2 +0x04: "Flag_094_s1s3"; read by nothing
     float   position[3];        // FS2 +0x14
 };
 static_assert(offsetof(RouteNode, position) == 0x14, "RouteNode::position");
 static_assert(sizeof(RouteNode) == 0x20, "RouteNode");
 
 // Two nodes: a link walked from one to the other, or a gate walked through
-// between them. layout: host: on the EE two pointers and a short, 0xc.
+// between them. layout: host: on the EE two pointers and a word, 0xc: a
+// gate's is a short, a link's a third node.
 struct RouteSpan
 {
     RouteNode *first;           // FS2 +0x00
     RouteNode *second;          // FS2 +0x04
-    short      _8;              // FS2 +0x08: copied, not read
+    short      _8 = 0;          // FS2 +0x08: a gate's: copied, not read
+    RouteNode *third = nullptr; // FS2 +0x08: a link's: relocated, not read
 };
 
 enum RouteLegKind
@@ -79,7 +81,8 @@ struct RouteLegPair
 };
 static_assert(sizeof(RouteLegPair) == 8, "RouteLegPair");
 
-// A path. layout: host: EE 0x10, the vector's cap / size / data at +4;
+// A path; a stored path of the file too, where the vector is a pointer to
+// a count and the legs. layout: host: EE 0x10, the vector's cap / size / data at +4;
 // FUN_002285a0 is its destructor.
 struct RoutePath
 {

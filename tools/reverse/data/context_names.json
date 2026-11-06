@@ -24827,6 +24827,12 @@
   "was": "FUN_00252e70",
   "why": "forwards to 0x257020: 1-based index of the set with exactly these names"
  },
+ "00252ec0": {
+  "name": "RoutePlayer::areaList",
+  "tag": "game-inferred",
+  "was": "FUN_00252ec0",
+  "why": "the file's list for an area, header +0x34"
+ },
  "00252f10": {
   "name": "RoutePlayer::areaCrossings",
   "tag": "game-inferred",
@@ -24851,11 +24857,149 @@
   "was": "FUN_00253030",
   "why": "forwards to 0x2578f0: copies the stored path of from, to, crossing and set"
  },
+ "002530a0": {
+  "name": "RoutePlayer::~RoutePlayer",
+  "tag": "game-inferred",
+  "was": "FUN_002530a0",
+  "why": "stores vtable 0x316a78, frees the core"
+ },
  "00253180": {
   "name": "RoutePlayer::RoutePlayer",
   "tag": "game-inferred",
   "was": "FUN_00253180",
   "why": "vtable 0x316a78, 0xc bytes, built over the rute file by StageScene::setRoute; what it plays is unread"
+ },
+ "00253210": {
+  "name": "RouteAreaSearch::chainRun",
+  "tag": "game-inferred",
+  "was": "FUN_00253210",
+  "why": "stored chain legs between two chain ends, table +0x28"
+ },
+ "00253420": {
+  "name": "RouteAreaSearch::areaPath",
+  "tag": "game-inferred",
+  "was": "FUN_00253420",
+  "why": "from a point to a point of one area along its chains"
+ },
+ "00255040": {
+  "name": "distanceToNode",
+  "tag": "game-inferred",
+  "was": "FUN_00255040",
+  "why": "planar distance from a point to a node"
+ },
+ "002550a0": {
+  "name": "RouteAreaSearch::nodeIndex",
+  "tag": "game-inferred",
+  "was": "FUN_002550a0",
+  "why": "a node's index in the file's node table"
+ },
+ "002550d0": {
+  "name": "RouteAreaSearch::chainOf",
+  "tag": "game-inferred",
+  "was": "FUN_002550d0",
+  "why": "the chain a segment lies on"
+ },
+ "00255330": {
+  "name": "RouteAreaSearch::wayAlongChains",
+  "tag": "game-inferred",
+  "was": "FUN_00255330",
+  "why": "from a node to a crossing over the chains of its area"
+ },
+ "002569e0": {
+  "name": "RouteAreaSearch::wayFromSegment",
+  "tag": "game-inferred",
+  "was": "FUN_002569e0",
+  "why": "from a segment to a crossing, dropping its first node when passed anyway"
+ },
+ "00256b60": {
+  "name": "RouteAreaSearch::wayFromPoint",
+  "tag": "game-inferred",
+  "was": "FUN_00256b60",
+  "why": "from a point to a crossing; prints the sonna baka na string"
+ },
+ "00256db0": {
+  "name": "RouteAreaSearch::nearestSegment",
+  "tag": "game-inferred",
+  "was": "FUN_00256db0",
+  "why": "nearest chain segment of an area to a point"
+ },
+ "00257020": {
+  "name": "RouteFile::pathSetIndex",
+  "tag": "game-inferred",
+  "was": "FUN_00257020",
+  "why": "which set of header +0x2c is exactly these names"
+ },
+ "002571e0": {
+  "name": "RouteFile::collectNames",
+  "tag": "game-inferred",
+  "was": "FUN_002571e0",
+  "why": "every name of the sets once, through a tree of pointers"
+ },
+ "00257360": {
+  "name": "RouteFile::reversePath",
+  "tag": "game-inferred",
+  "was": "FUN_00257360",
+  "why": "the path backwards, links and chains expanded to nodes"
+ },
+ "00257680": {
+  "name": "RouteFile::wayToCrossing",
+  "tag": "game-inferred",
+  "was": "FUN_00257680",
+  "why": "by what the stored path over the crossing starts with"
+ },
+ "002578f0": {
+  "name": "RouteFile::crossingPath",
+  "tag": "game-inferred",
+  "was": "FUN_002578f0",
+  "why": "copies the stored path into a RoutePath"
+ },
+ "002579d0": {
+  "name": "RouteFile::findWay",
+  "tag": "game-inferred",
+  "was": "FUN_002579d0",
+  "why": "the set's table, then the file's"
+ },
+ "00257ad0": {
+  "name": "RouteFile::findWayIn",
+  "tag": "game-inferred",
+  "was": "FUN_00257ad0",
+  "why": "three lower_bounds: area, area, crossing, then +0x20"
+ },
+ "00257cb0": {
+  "name": "RouteFile::areaList",
+  "tag": "game-inferred",
+  "was": "FUN_00257cb0",
+  "why": "lookup in header +0x34"
+ },
+ "00257db0": {
+  "name": "RouteFile::areaCrossings",
+  "tag": "game-inferred",
+  "was": "FUN_00257db0",
+  "why": "the crossings between two areas, header +0x1c"
+ },
+ "00257f50": {
+  "name": "RouteFile::firstLeg",
+  "tag": "game-inferred",
+  "was": "FUN_00257f50",
+  "why": "first leg of the stored way out of an area"
+ },
+ "00257fa0": {
+  "name": "RouteFile::RouteFile",
+  "tag": "game-inferred",
+  "was": "FUN_00257fa0",
+  "why": "the 0x24 core of RoutePlayer"
+ },
+ "00258110": {
+  "name": "RouteFile::maxStepCount",
+  "tag": "game-inferred",
+  "was": "FUN_00258110",
+  "why": "most steps of a stored path once expanded"
+ },
+ "00258260": {
+  "name": "RouteFile::fixUp",
+  "tag": "game-inferred",
+  "was": "FUN_00258260",
+  "why": "relocates the rute file, magic ord to ORD"
  },
  "00258870": {
   "name": "RoutePath::append",
@@ -24863,11 +25007,23 @@
   "was": "FUN_00258870",
   "why": "adds the length, reserves, inserts the steps"
  },
+ "00258900": {
+  "name": "distanceToSegment",
+  "tag": "game-inferred",
+  "was": "FUN_00258900",
+  "why": "point to segment in 3D with which end is nearest, VU0 macro"
+ },
  "00258b80": {
   "name": "planarDistance",
   "tag": "game-inferred",
   "was": "FUN_00258b80",
   "why": "sqrt of dx2 + dy2"
+ },
+ "00259230": {
+  "name": "RouteFile::legsLength",
+  "tag": "game-inferred",
+  "was": "FUN_00259230",
+  "why": "planar length of a path of node legs"
  },
  "0025a850": {
   "name": "mslTreeIncrement",

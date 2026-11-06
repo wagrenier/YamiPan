@@ -6724,15 +6724,15 @@
 /* 00252dd0 0000004c */ RoutePlayer::gate(){}  // game
 /* 00252e20 00000044 */ RoutePlayer::node(){}  // game
 /* 00252e70 00000044 */ RoutePlayer::pathSetIndex(){}  // game
-/* 00252ec0 00000050 */ FUN_00252ec0(){}
+/* 00252ec0 00000050 */ RoutePlayer::areaList(){}  // game
 /* 00252f10 00000058 */ RoutePlayer::areaCrossings(){}  // game
 /* 00252f70 00000058 */ RoutePlayer::areaPath(){}  // game
 /* 00252fd0 0000005c */ RoutePlayer::wayToCrossing(){}  // game
 /* 00253030 00000064 */ RoutePlayer::crossingPath(){}  // game
-/* 002530a0 000000d4 */ FUN_002530a0(){}
+/* 002530a0 000000d4 */ RoutePlayer::~RoutePlayer(){}  // game
 /* 00253180 00000090 */ RoutePlayer::RoutePlayer(){}  // game
-/* 00253210 0000020c */ FUN_00253210(){}
-/* 00253420 000019e8 */ FUN_00253420(){}
+/* 00253210 0000020c */ RouteAreaSearch::chainRun(){}  // game
+/* 00253420 000019e8 */ RouteAreaSearch::areaPath(){}  // game
 /* 00254e10 00000014 */ FUN_00254e10(){}
 /* 00254e30 00000010 */ FUN_00254e30(){}
 /* 00254e40 00000018 */ FUN_00254e40(){}
@@ -6750,29 +6750,29 @@
 /* 00254fc0 00000008 */ FUN_00254fc0(){}
 /* 00254fd0 00000014 */ FUN_00254fd0(){}
 /* 00254ff0 00000048 */ FUN_00254ff0(){}
-/* 00255040 0000003c */ FUN_00255040(){}
+/* 00255040 0000003c */ distanceToNode(){}  // game
 /* 00255080 00000014 */ FUN_00255080(){}
-/* 002550a0 0000002c */ FUN_002550a0(){}
-/* 002550d0 00000260 */ FUN_002550d0(){}
-/* 00255330 000016b0 */ FUN_00255330(){}
-/* 002569e0 00000174 */ FUN_002569e0(){}
-/* 00256b60 00000244 */ FUN_00256b60(){}
-/* 00256db0 00000270 */ FUN_00256db0(){}
-/* 00257020 000001bc */ FUN_00257020(){}
-/* 002571e0 00000180 */ FUN_002571e0(){}
-/* 00257360 0000031c */ FUN_00257360(){}
-/* 00257680 00000270 */ FUN_00257680(){}
-/* 002578f0 000000d8 */ FUN_002578f0(){}
-/* 002579d0 000000f8 */ FUN_002579d0(){}
-/* 00257ad0 000001d4 */ FUN_00257ad0(){}
-/* 00257cb0 000000fc */ FUN_00257cb0(){}
-/* 00257db0 0000019c */ FUN_00257db0(){}
-/* 00257f50 00000050 */ FUN_00257f50(){}
-/* 00257fa0 00000164 */ FUN_00257fa0(){}
-/* 00258110 00000150 */ FUN_00258110(){}
-/* 00258260 0000060c */ FUN_00258260(){}
+/* 002550a0 0000002c */ RouteAreaSearch::nodeIndex(){}  // game
+/* 002550d0 00000260 */ RouteAreaSearch::chainOf(){}  // game
+/* 00255330 000016b0 */ RouteAreaSearch::wayAlongChains(){}  // game
+/* 002569e0 00000174 */ RouteAreaSearch::wayFromSegment(){}  // game
+/* 00256b60 00000244 */ RouteAreaSearch::wayFromPoint(){}  // game
+/* 00256db0 00000270 */ RouteAreaSearch::nearestSegment(){}  // game
+/* 00257020 000001bc */ RouteFile::pathSetIndex(){}  // game
+/* 002571e0 00000180 */ RouteFile::collectNames(){}  // game
+/* 00257360 0000031c */ RouteFile::reversePath(){}  // game
+/* 00257680 00000270 */ RouteFile::wayToCrossing(){}  // game
+/* 002578f0 000000d8 */ RouteFile::crossingPath(){}  // game
+/* 002579d0 000000f8 */ RouteFile::findWay(){}  // game
+/* 00257ad0 000001d4 */ RouteFile::findWayIn(){}  // game
+/* 00257cb0 000000fc */ RouteFile::areaList(){}  // game
+/* 00257db0 0000019c */ RouteFile::areaCrossings(){}  // game
+/* 00257f50 00000050 */ RouteFile::firstLeg(){}  // game
+/* 00257fa0 00000164 */ RouteFile::RouteFile(){}  // game
+/* 00258110 00000150 */ RouteFile::maxStepCount(){}  // game
+/* 00258260 0000060c */ RouteFile::fixUp(){}  // game
 /* 00258870 0000008c */ RoutePath::append(){}  // game
-/* 00258900 00000278 */ FUN_00258900(){}
+/* 00258900 00000278 */ distanceToSegment(){}  // game
 /* 00258b80 0000003c */ planarDistance(){}  // game
 /* 00258bc0 000000a4 */ FUN_00258bc0(){}
 /* 00258c70 0000006c */ FUN_00258c70(){}
@@ -6783,7 +6783,7 @@
 /* 00258ea0 0000006c */ FUN_00258ea0(){}
 /* 00258f10 0000006c */ FUN_00258f10(){}
 /* 00258f80 000002a4 */ FUN_00258f80(){}
-/* 00259230 000000bc */ FUN_00259230(){}
+/* 00259230 000000bc */ RouteFile::legsLength(){}  // game
 /* 002592f0 0000013c */ FUN_002592f0(){}
 /* 00259430 00000328 */ FUN_00259430(){}
 /* 00259760 000005fc */ FUN_00259760(){}
