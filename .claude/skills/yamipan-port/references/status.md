@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 01:34 at commit `0289656` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 02:24 at commit `a8937a2` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-06 01:34 at commit `0289656` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **4753** (72%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3832
-- context-name ledger: 5376 entries; overrides of wrong library matches: 0
-- placed in a source file: 5019/6599 in 110 files
+- game functions: **6599**, named **4765** (72%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1544, game-inferred 3844
+- context-name ledger: 5388 entries; overrides of wrong library matches: 0
+- placed in a source file: 5028/6599 in 110 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -25,12 +25,12 @@ Least-named game-code regions (64 KB blocks):
 | `00280000` | 104/232 (45%) | game/demoevent.cpp, game/playermotion.cpp, game/areagrid.cpp |
 | `001c0000` | 108/233 (46%) | game/scriptrunner.cpp |
 | `001b0000` | 115/242 (48%) | game/scriptrunner.cpp |
-| `00270000` | 96/202 (48%) | game/playermotion.cpp |
 | `00170000` | 228/466 (49%) | sdpr2/sdpr2drv.c, game/stagedoor.cpp, game/scenepairs.cpp |
+| `002a0000` | 119/241 (49%) | game/memcard.cpp, game/playermotion.cpp, game/stageresult.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **4485**; stubs: **227**
+- reconstructed FS2 functions: **4498**; stubs: **226**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -42,7 +42,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/characterroute.cpp` | 144 | 0 |
 | `src/game/clock.cpp` | 14 | 0 |
 | `src/game/datetime.cpp` | 2 | 0 |
-| `src/game/demoevent.cpp` | 97 | 0 |
+| `src/game/demoevent.cpp` | 102 | 0 |
 | `src/game/drawsys.cpp` | 166 | 0 |
 | `src/game/fileloader.cpp` | 53 | 0 |
 | `src/game/fontdata.cpp` | 43 | 0 |
@@ -69,7 +69,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/pakarchive.cpp` | 17 | 0 |
 | `src/game/pausemenustate.cpp` | 12 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
-| `src/game/playermotion.cpp` | 390 | 0 |
+| `src/game/playermotion.cpp` | 394 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rcnttimer.cpp` | 0 | 4 |
@@ -98,7 +98,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stagemodel.cpp` | 16 | 0 |
 | `src/game/stageobject.cpp` | 44 | 0 |
 | `src/game/stageobjlist.cpp` | 45 | 0 |
-| `src/game/stageparty.cpp` | 48 | 0 |
+| `src/game/stageparty.cpp` | 52 | 0 |
 | `src/game/stageplayer.cpp` | 33 | 0 |
 | `src/game/stageresult.cpp` | 32 | 0 |
 | `src/game/stagescene.cpp` | 259 | 0 |
@@ -121,7 +121,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/vectortrack.cpp` | 10 | 0 |
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 177 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 176 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -149,10 +149,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 223 TUs: todo 91, partial 39, verify 92, done 29
+- 222 TUs: todo 89, partial 39, verify 92, done 30
 - next: **game/stageparty.cpp** (continuing a partial TU)
 - pinned queue: (empty)
-- partial: `game/stageparty.cpp` 46/60 -- Written, batch 156: all of StageParty 0x1fe6b0..0x1fed30, and in SightJack ctor, dtor, reset, start, stop, update, aimAt, tune, pickBearing, keep, recall, canVi
+- partial: `game/stageparty.cpp` 49/60 -- Written, batch 157: JackLink 0x27c370 (the class that starts the party for everyone but a scenario's lead; the host had none, so L2 never reached SightJack::sta
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -161,7 +161,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/characterroute.cpp` 144/169 -- All of 0x21efa0..0x22fc50 is written (batch 155). Proved: wayoutcmp.py ran the ROM 0x227f30 beside the host findWayOut on 12 stages rute files, 1800 questions, 
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
-- verify: `game/demoevent.cpp` 97/97 -- All of the TU is written or accounted for (batch 116). Added: DemoStream setFont and drawSubtitles, the fsm readers 0x28fa90..0x28ff60 (range added here; the ho
+- verify: `game/demoevent.cpp` 102/106 -- All of the TU is written or accounted for (batch 116). Added: DemoStream setFont and drawSubtitles, the fsm readers 0x28fa90..0x28ff60 (range added here; the ho
 - verify: `game/drawsys.cpp` 164/164 -- All 164 of 0x2d46a0-0x2dac70 are written or listed. New: drawSysAddModel 0x2d5140 (draw group, name flags, wave surfaces, plant textures), drawSysFindKind1Surfa
 - verify: `game/fileloader.cpp` 53/53 -- All 53 functions of 0x1319f0..0x132f20 are in src/game/fileloader.cpp with game/fileloader.h; FileJob / FileLoader / PackFile left gamehooks.h (which includes f
 - verify: `game/fontdata.cpp` 41/41 -- Cut out of unassigned@00171300 and pinned 0x1fcb40-0x1fe6b0 (batch 056, 31 names: the FontData byte variants countLinesMb / lineWidthFixed / lineWidthFixedMb / 
@@ -248,6 +248,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 02:24 `game/stageparty.cpp` partial: the sight-jack starts and shows its noise: JackLink, ScreenFill, the draw gate
 - 2026-11-06 01:34 `game/stageparty.cpp` partial: the sight-jack without its drawing: StageParty and SightJack logic
 - 2026-11-06 00:46 `game/characterroute.cpp` verify: the 12 actions and their task classes, the TU is whole
 - 2026-11-05 23:59 `game/routeplayer.cpp` verify: the rute file: RoutePlayer, RouteFile, RouteAreaSearch, all non-MSL functions of 0x252840..0x25b8e0
@@ -255,18 +256,17 @@ Recent sessions:
 - 2026-11-05 22:56 `game/characterroute.cpp` partial: the route, its looks, turns, walk, car and 21 actions; path search and 12 actions left
 - 2026-11-05 22:21 `game/gameoversequence.cpp` verify: GameOverSequence, DeathCamera (CAM_DEAD) and SceneDirector, all 17 functions; the game over runs to Mission failed
 - 2026-11-05 21:53 `game/scenepool.cpp` done: Squeeze about the centre: the strip, subtitles and prompt keep their shape at any aspect; sprite UVs inset
-- 2026-11-05 21:26 `game/stageobject.cpp` verify: closed: all 43 written; setProperty, getProperty and scriptAddMenuLine compared with the ROM, stale notes fixed, queue refilled
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@00135990` | partial | 3/0/33 | 3.1 | 628 | 0 |
-| `unassigned@001eedb0` | partial | 1/0/25 | 4.1 | 130 | 0 |
+| `unassigned@001eedb0` | partial | 1/0/25 | 4.1 | 131 | 0 |
 | `unassigned@00176480` | partial | 13/0/69 | 5.3 | 115 | 0 |
 | `unassigned@0018c050` | todo | 0/9/36 | 17.9 | 80 | 2 |
 | `game/vectortrack.cpp` | partial | 9/0/16 | 2.5 | 68 | 0 |
 | `unassigned@0017e140` | todo | 0/0/78 | 1.4 | 51 | 0 |
 | `unassigned@00289cc0` | todo | 0/17/59 | 23.1 | 47 | 0 |
-| `unassigned@0027cab0` | partial | 3/2/59 | 13.1 | 45 | 0 |
+| `unassigned@0027cab0` | partial | 3/2/59 | 13.1 | 46 | 0 |
 | `unassigned@00190900` | partial | 2/8/34 | 11.8 | 45 | 5 |
 | `unassigned@002a31b0` | partial | 1/18/22 | 5.9 | 39 | 0 |
 | `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 37 | 1 |
@@ -286,7 +286,7 @@ Recent sessions:
 | `00136560` | vecNormalize | 55 | game | missing | - |
 | `001eef90` | FUN_001eef90 | 44 | - | missing | - |
 | `00136400` | identityMatrix | 41 | game | missing | - |
-| `001ef590` | FUN_001ef590 | 36 | - | missing | - |
+| `001ef590` | FUN_001ef590 | 37 | - | missing | - |
 | `0017e260` | FUN_0017e260 | 34 | - | missing | - |
 | `00276510` | MotionCondition::MotionCondition | 32 | game | missing | - |
 | `00190890` | StageNodeTree::spawn | 31 | game | stub | - |

@@ -112,18 +112,6 @@ void SceneOwnedObject::destroy()
     YAMIPAN_STUB("SceneOwnedObject::destroy", 0x00000000);
 }
 
-// stub of FS2 0x00151f20
-ScreenFill::ScreenFill(unsigned int, int, int, int, int)
-{
-    YAMIPAN_STUB("ScreenFill::ScreenFill", 0x00151f20);
-}
-
-// stub of FS2 address unknown (1 candidates)
-void ScreenFill::destroy()
-{
-    YAMIPAN_STUB("ScreenFill::destroy", 0x00000000);
-}
-
 // stub of FS2 0x002a7bf0
 SigLamp::SigLamp(Tim2Texture*)
 {
@@ -260,12 +248,6 @@ bool SceneOwnedObject::isBusy()
     return {};
 }
 
-// stub of FS2 0x00151e10
-void ScreenFill::setImage(const void *image)
-{
-    YAMIPAN_STUB("ScreenFill::setImage", 0x00151e10);
-}
-
 // stub of FS2 address unknown (0 candidates)
 
 // stub of FS2 0x00185210
@@ -379,12 +361,6 @@ void SceneOwnedObject::update()
 
 // stub of FS2 0x00289800
 // stub of FS2 0x00289b20
-// stub of FS2 address unknown (1 candidates)
-void ScreenFill::draw(sceVif1Packet *packet, TexAreaList *texList)
-{
-    YAMIPAN_STUB("ScreenFill::draw", 0x00000000);
-}
-
 // stub of FS2 address unknown (1 candidates)
 // stub of FS2 address unknown (1 candidates)
 void StageMenu::draw(sceVif1Packet *packet, TexAreaList *texList)
@@ -1345,4 +1321,11 @@ void * demoFleckCreate(Tim2Texture *texture)
 void demoFleckDestroy(void *flecks)
 {
     YAMIPAN_STUB("demoFleckDestroy", 0x00000000);
+}
+
+// stub of FS2 0x00215370
+bool StageCharacter::isJackBlank()
+{
+    YAMIPAN_STUB("StageCharacter::isJackBlank", 0x00215370);
+    return {};
 }

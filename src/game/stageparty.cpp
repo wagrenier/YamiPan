@@ -15,6 +15,7 @@
 #include "game/characterbrain.h"
 #include "game/characterinput.h"
 #include "game/gamesystem.h"
+#include "game/gfxtarget.h"
 #include "game/playermotion.h"
 #include "game/scenerender.h"
 #include "game/stageobjlist.h"
@@ -23,6 +24,9 @@
 #include "game/stagesound.h"
 #include "game/sysdata.h"
 #include "game/vu0math.h"
+#include "sdk/libgraph.h"
+#include "yamipan/rendering/yamipan_drawui.h"
+#include "game/gamepacket.h"
 #include "game/gsutil.h"
 #include "game/mathutil.h"
 
@@ -36,6 +40,8 @@ constexpr float kCameraFar    = 1600.0f;
 
 // The fill's corner and size, in GS units. Its colour.
 constexpr u_int kFillRgba = 0x00745759;
+constexpr float kFillLevelRange = 108.0f;   // JackFill::draw: alpha at level 1,
+constexpr float kFillLevelBase  = 12.0f;    // over what shows at level 0
 constexpr int   kFillX = 0x700, kFillY = 0x700, kFillW = 0x200, kFillH = 0x200;
 
 constexpr float kStickRest      = 40.0f;   // a stick's bytes from centre
@@ -139,6 +145,16 @@ JackFill::JackFill(u_int rgba, int x, int y, int w, int h)
 {
 }
 
+// FS2 0x002081b0
+// callcheck: FUN_001518a0, FUN_001518a0
+
+void JackFill::draw(sceVif1Packet *packet, TexAreaList *texList)
+{
+    const u_int alpha = (u_int)(m_level * kFillLevelRange + kFillLevelBase) << 24;
+    drawGrain(packet, texList, alpha | (m_rgba & 0xffffff));
+    drawGrain(packet, texList, alpha);
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // The record.
 
@@ -193,7 +209,7 @@ void SightJack::reset()
     m_flashFrames = 0;
     m_visionFade = 0;
     m_visionFrames = 0;
-    m_uiColor = 0;
+    m_markerFrames = 0;
     m_viewChanged = 0;
     m_vision = nullptr;
     m_visionShowCount = 0;
@@ -757,29 +773,157 @@ void SightJack::update()
     }
 }
 
+// The frame's passes share these.
+
+constexpr u_long kJackAlpha = 0x44;         // ALPHA_1: over the frame
+constexpr u_long kJackBlackTest = 0x30000;  // TEST_1: past any depth
+constexpr int    kJackFrame = 0x200;
+constexpr u_int  kJackBlack = 0x80000000;
+constexpr int    kMarkerFrames = 0x15e;     // m_markerFrames each running frame
+constexpr int    kVisionFadeScale = 0x20;   // m_visionFade to alpha, over 8
+constexpr u_int  kVisionTintA = 0x00b4d9f8; // a vision's fade: the two tints
+constexpr u_int  kVisionTintB = 0x00001c33;
+constexpr u_int  kVisionWaitTintA = 0x804688c0; // while it waits to start
+constexpr u_int  kVisionWaitTintB = 0x80001c33;
+constexpr float  kFlashFramesScale = 5.0f;  // m_flashFrames to the fill's level
+
+// The frame goes black, depth untouched.
+static void fillBlack(sceVif1Packet *packet)
+{
+    YamiPan_DrawUiReg(packet, SCE_GS_ALPHA_1, kJackAlpha);
+    YamiPan_DrawUiReg(packet, SCE_GS_TEST_1, kJackBlackTest);
+    gsFillRect(packet, 0, 0, kJackFrame, kJackFrame, kJackBlack);
+}
+
+static TexAreaList *scene2dTexList()
+{
+    return gfxGetTexArea()->getList(PacketList_Scene2d);
+}
+
+// callcheck: demoFilmDraw, demoFleckStep, demoFleckDraw
+
+void SightJack::drawFilm(float filmLevel, sceVif1Packet *packet)
+{
+    demoFilmDraw(filmLevel, &m_film, packet);
+    if (m_flecks != nullptr) {
+        demoFleckStep(m_flecks);
+        demoFleckDraw(m_fill != nullptr ? m_fill->m_level : 0.0f, m_flecks, packet);
+    }
+}
+
+// FS2 0x00201a40
+// callcheck: openList, gsFillRect, gfxGetTexArea, getList, demoFilmDraw, demoFleckStep, demoFleckDraw, FUN_001ffcd0, closeList (FUN_001ffcd0, the bind's arrow, is not drawn)
+
+void SightJack::drawNobody(float filmLevel)
+{
+    GamePacketManager *packets = &gGameSystem->m_packets;
+    sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
+    fillBlack(packet);
+    m_fill->m_level = 1.0f;
+    m_fill->draw(packet, scene2dTexList());
+    drawFilm(filmLevel, packet);
+    packets->closeList();
+}
+
+// FS2 0x002016d0
+// callcheck: openList, gsFillRect, gfxGetTexArea, getList, demoFilmDraw, demoFleckStep, demoFleckDraw, FUN_001ffcd0, closeList (FUN_001ffcd0, the bind's arrow, is not drawn)
+
+void SightJack::drawCorpse(float filmLevel)
+{
+    GamePacketManager *packets = &gGameSystem->m_packets;
+    sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
+    fillBlack(packet);
+    m_fill->draw(packet, scene2dTexList());
+    drawFilm(filmLevel, packet);
+    packets->closeList();
+}
+
+// FS2 0x00201bc0
+// PC: the film, the grain and the flecks over the view. The markers 0x205f50,
+// 0x201520, the bind's arrow 0x1ffcd0 and all of list 8 (the frame 0x2cfb20,
+// 0x1ff010, the signal 0x2cf880 and 0x2d10f0) are not drawn yet.
+// callcheck: openList, demoFilmDraw, gfxGetTexArea, getList, demoFleckStep, demoFleckDraw, closeList (the unwritten ones above)
+
+void SightJack::drawLive(float filmLevel)
+{
+    GamePacketManager *packets = &gGameSystem->m_packets;
+    sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
+    demoFilmDraw(filmLevel, &m_film, packet);
+    m_fill->draw(packet, scene2dTexList());
+    if (m_flecks != nullptr) {
+        demoFleckStep(m_flecks);
+        demoFleckDraw(m_fill->m_level, m_flecks, packet);
+    }
+    packets->closeList();
+}
+
 // FS2 0x002024c0
-// The frame's gate; every branch writes packets. The host pass does not
-// exist yet, so only what the gate keeps as state is here: the viewer of the
-// frame, the two countdowns and the tuning colour.
-// callcheck: none written: the packet branches wait for the host pass: FUN_001518a0, FUN_001ff010, FUN_001ffcd0, FUN_00201380, FUN_002016d0, FUN_00201840, FUN_00201a40, FUN_00201bc0, FUN_00205f50, FUN_00215370, FUN_002cfb20, canBeJacked, closeList, demoFilmDraw, demoFleckDraw, demoFleckStep, getAltSoundFlag, getLifeState, getTexArea, getTopView, gfxGetTexArea, gsFillRect, openList, vecDistance
+// The frame's gate. PC: the warning's pass 0x201840, the markers 0x201380 and
+// 0x205f50 and the frame 0x2cfb20 are not drawn yet, so a warning and a game
+// over show their view alone (drawLive has the rest of the list).
+// callcheck: vecDistance, openList, demoFilmDraw, demoFleckStep, demoFleckDraw, closeList, openList, gfxGetTexArea, getList, FUN_001518a0, gfxGetTexArea, getList, FUN_001518a0, closeList, getAltSoundFlag, getLifeState, FUN_00215370, FUN_00201bc0, FUN_00201a40, FUN_002016d0 (and those not drawn: FUN_002cfb20, getTopView, FUN_00205f50, canBeJacked, FUN_00201840, FUN_001ffcd0, FUN_001ff010, FUN_00201380)
 
 void SightJack::draw()
 {
     m_viewer = gStageScene->player;
-    if (m_gameOverOn != nullptr || m_warner != nullptr)
+    GamePacketManager *packets = &gGameSystem->m_packets;
+
+    StageObject *target = viewed();
+    float filmLevel = 0.0f;
+    if (target != nullptr) {
+        const float distance = vecDistance(m_viewer->m_xform.position, target->m_xform.position);
+        if (distance > m_filmNear)
+            filmLevel = distance < m_filmFar ? (distance - m_filmNear) / (m_filmFar - m_filmNear) : 1.0f;
+    }
+
+    if (m_gameOverOn != nullptr) {
+        sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
+        drawFilm(filmLevel, packet);
+        packets->closeList();
+        return;
+    }
+    if (m_warner != nullptr)
         return;
     if (m_visionFade > 0) {
+        sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
+        const u_int alpha = (u_int)(m_visionFade * kVisionFadeScale / 8) << 24;
+        m_fill->drawGrain(packet, scene2dTexList(), alpha | kVisionTintA);
+        m_fill->drawGrain(packet, scene2dTexList(), alpha | kVisionTintB);
+        packets->closeList();
         m_visionFade--;
         return;
     }
     if (!m_running)
         return;
+
+    m_markerFrames = kMarkerFrames;
     if (m_flashFrames >= 0) {
-        m_fill->m_level = (float)m_flashFrames / 5.0f;
+        m_fill->m_level = (float)m_flashFrames / kFlashFramesScale;
         m_flashFrames--;
     }
-    if (m_visionOn && m_visionFrames > 0)
+
+    if (!m_visionOn) {
+        if (target == nullptr || target->getAltSoundFlag() != 0)
+            drawNobody(filmLevel);
+        else if (static_cast<StageCharacter *>(target)->getLifeState() == LifeState_Corpse
+                 || static_cast<StageCharacter *>(target)->isJackBlank())
+            drawCorpse(filmLevel);
+        else
+            drawLive(filmLevel);
+    } else if (m_visionFrames < 1) {
+        sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
+        m_fill->draw(packet, scene2dTexList());
+        drawFilm(filmLevel, packet);
+        packets->closeList();
+    } else {
         m_visionFrames--;
+        sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
+        fillBlack(packet);
+        m_fill->drawGrain(packet, scene2dTexList(), kVisionWaitTintA);
+        m_fill->drawGrain(packet, scene2dTexList(), kVisionWaitTintB);
+        drawFilm(filmLevel, packet);
+        packets->closeList();
+    }
     if (m_bindFlash > 0)
         m_bindFlash--;
 }

@@ -34,6 +34,8 @@
 #include "game/playermotion.h"
 #include "game/gamepacket.h"
 #include "game/gamesystem.h"
+#include "game/gsutil.h"
+#include "game/heap.h"
 #include "game/menupack.h"
 #include "game/modelpose.h"
 #include "game/scriptrunner.h"
@@ -177,6 +179,118 @@ void StageFade::draw(sceVif1Packet *packet, TexAreaList *)
         YamiPan_DrawUiReg(packet, SCE_GS_ALPHA_1, kFadeAlpha);
         gsFillRect(packet, m_x, m_y, m_x + m_w, m_y + m_h,
                    m_colour | ((u_int)(level * kFadeAlphaScale) << 24));
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The grain.
+
+constexpr u_long kGrainTest  = 0x33001; // TEST_1: colour only, past any depth
+constexpr u_long kGrainAlpha = 0x44;    // ALPHA_1: over the frame
+constexpr u_long kGrainClamp = 0;       // CLAMP_1: the image repeats
+constexpr u_long kGrainTex1  = 1;       // TEX1_1
+constexpr u_int  kGrainPrim  = 0x154;   // TRISTRIP, TME, ABE, FST
+constexpr int    kGrainTile  = 0x40;
+constexpr int    kGrainUvBase = 0x1010; // 1/16 texel; a tile starts up to
+constexpr u_int  kGrainUvMask = 0x3ff;  // 64 texels on from here
+constexpr float  kGrainTexels = 64.0f;
+constexpr float  kGrainSpread = 0.8f;   // how much a tile may be enlarged
+constexpr u_int  kGrainZNear = 0xff0fffff;
+constexpr u_int  kGrainZFar  = 0xffffffff;
+
+// 24 random bits as 0..1.
+static float grainUnit()
+{
+    return (float)(randNext2() & 0xffffff) * 5.9604645e-08f;
+}
+
+// FS2 0x00151f20
+
+ScreenFill::ScreenFill(u_int rgba, int x, int y, int w, int h)
+    : m_rgba(rgba), m_x(x), m_y(y), m_w(w), m_h(h)
+{
+}
+
+// FS2 0x00151e90
+// callcheck: operator_delete (the texture's slot +8)
+
+ScreenFill::~ScreenFill()
+{
+    delete m_texture;
+}
+
+// FS2 vtable +0x8 (vptr +4)
+
+void ScreenFill::destroy()
+{
+    delete this;
+}
+
+// FS2 0x00151e10
+// callcheck: operator_new, Tim2Texture (the old texture's slot +8)
+
+void ScreenFill::setImage(const void *image)
+{
+    delete m_texture;
+    m_texture = new Tim2Texture(image);
+    m_hasImage = 1;
+}
+
+// FS2 0x00151de0
+// callcheck: FUN_001518a0
+
+void ScreenFill::draw(sceVif1Packet *packet, TexAreaList *texList)
+{
+    drawGrain(packet, texList, m_rgba);
+}
+
+// FS2 0x001518a0
+// PC: TexAreaList::place, upload and putTex0: no GS memory, the host binds
+// the texture by its owner; the ROM's GS packets are the register calls.
+// callcheck: randNext2, randNext2, randNext2, randNext2, randNext2, randNext2 (the rest are the packet calls the host module replaces)
+
+void ScreenFill::drawGrain(sceVif1Packet *packet, TexAreaList *, u_int rgba)
+{
+    if (m_hasImage == 0 || m_texture == nullptr)
+        return;
+    YamiPan_DrawUiReg(packet, SCE_GS_TEST_1, kGrainTest);
+    YamiPan_DrawUiReg(packet, SCE_GS_ALPHA_1, kGrainAlpha);
+    YamiPan_DrawUiReg(packet, SCE_GS_CLAMP_1, kGrainClamp);
+    YamiPan_DrawUiReg(packet, SCE_GS_TEX1_1, kGrainTex1);
+    YamiPan_DrawUiTexture(packet, m_texture);
+
+    const u_char rgbaq[4] = {
+        (u_char)rgba, (u_char)(rgba >> 8), (u_char)(rgba >> 16), (u_char)(rgba >> 24),
+    };
+    for (int i = 0; i < m_w; i += kGrainTile) {
+        for (int j = 0; j < m_h; j += kGrainTile) {
+            const int u = (int)(randNext2() & kGrainUvMask) + kGrainUvBase;
+            const int v = (int)(randNext2() & kGrainUvMask) + kGrainUvBase;
+            float sine = grainUnit();
+            float cosine = sqrtf(1.0f - sine * sine);
+            if ((randNext2() & 1) == 0)
+                sine = -sine;
+            if ((randNext2() & 1) == 0)
+                cosine = -cosine;
+            const float scale = grainUnit() * kGrainSpread + 1.0f;
+            const int du = (int)(cosine * kGrainTexels * scale * 16.0f);
+            const int dv = (int)(sine * kGrainTexels * scale * 16.0f);
+
+            const int left = (m_x + i) * 0x10;
+            const int right = (i + kGrainTile + m_x) * 0x10;
+            const int top = (m_y + j) * 0x10;
+            const int bottom = (j + kGrainTile + m_y) * 0x10;
+            const YamiPanUiVertex corners[4] = {
+                { {}, (uint16_t)u, (uint16_t)v, (uint16_t)left, (uint16_t)top, kGrainZNear },
+                { {}, (uint16_t)(u + dv), (uint16_t)(v + du), (uint16_t)right, (uint16_t)top, kGrainZNear },
+                { {}, (uint16_t)(u - du), (uint16_t)(v + dv), (uint16_t)left, (uint16_t)bottom, kGrainZFar },
+                { {}, (uint16_t)(u - dv), (uint16_t)(v - du), (uint16_t)right, (uint16_t)bottom, kGrainZFar },
+            };
+            YamiPan_DrawUiPrim(packet, kGrainPrim, rgbaq);
+            YamiPan_DrawUiBegin(packet, YAMIPAN_UIV_UV);
+            for (const YamiPanUiVertex &corner : corners)
+                YamiPan_DrawUiVertex(packet, &corner);
+        }
     }
 }
 

@@ -2785,6 +2785,7 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
 
     walkLink = new WalkLink(character, this);
     m_links["Walk"] = walkLink;
+    m_links["Jack"] = new JackLink(character, this);
     m_links["Up"] = new UpLink(character, this);
     m_links["Fall"] = new FallLink(character, this);
     m_links["Jump"] = new JumpLink(character, this);
@@ -5194,6 +5195,55 @@ void PickupLink::onCancel()
     putting = nullptr;
 }
 
+
+// FS2 0x0027c370
+// callcheck: operator_new, FUN_0027d8d0, FUN_001ef590, MotionConditionList__add (the base's list; addCondition)
+
+JackLink::JackLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
+{
+    addCondition("Jack");
+}
+
+// FS2 0x0027c300
+// callcheck: isRunning, start
+
+void JackLink::onRequest()
+{
+    if (started == 0 && !gStageScene->party->isRunning()) {
+        started = 1;
+        gStageScene->party->start(character);
+    }
+}
+
+// FS2 0x0027c2c0
+// callcheck: stop
+
+void JackLink::onCancel()
+{
+    if (started != 0) {
+        gStageScene->party->stop();
+        started = 0;
+    }
+}
+
+// Only the scene's player keeps the view; it is let go when the player changes.
+// The partner felled in one of the motions the party cannot be seen through
+// ends the stance.
+//
+// FS2 0x0027c1e0
+// callcheck: isPlayer
+
+void JackLink::onRun()
+{
+    StageScene *scene = gStageScene;
+    if (static_cast<StageObject *>(scene->player) == character)
+        onRequest();
+    else
+        onCancel();
+    if (character->isPlayer() && scene->partner != nullptr
+        && static_cast<StageCharacter *>(scene->partner)->getProperty(CharProp_MotionFlagged, 0) != 0)
+        finished = 1;
+}
 
 // ── The fight: the stance, the blows, the target ───────────────────────────
 

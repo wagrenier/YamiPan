@@ -2742,6 +2742,8 @@ public:
     // A brain not at 0, the sheet's kind not 3 or 7, not the scene's player:
     // the party's view may look through its eyes. The name is a guess.
     bool canBeJacked();                                                  // FS2 0x00212160
+    // The sight-jack shows it as it shows a corpse (stage 0x12's; unread).
+    bool isJackBlank();                                                  // FS2 0x00215370
     // The sight-jack may show this viewer a vision (read in part).
     bool canSeeVisions();                                                // FS2 0x00215480
     // Not the partner, the sheet's kind not 0xb, slot +0x278 (the brain's
@@ -3023,16 +3025,31 @@ struct SceneBlock98
     u_char dirty;               // FS2 +0xc
 };
 
-// +0xa0: a colour and a screen rect (vtable 0x311280 over StageFade's base
-// 0x311260, vptr +4). layout: host (EE 0x24).
+// +0xa0: the grain over a frame: the init pack's image as a grid of 64-pixel
+// tiles, each from a random place and turn of it (vtable 0x311280 over
+// StageFade's base 0x311260, vptr +4). The party's fill is one too.
+// layout: host (EE 0x24).
 class ScreenFill
 {
 public:
     ScreenFill(u_int rgba, int x, int y, int w, int h);                  // FS2 0x00151f20
+    virtual ~ScreenFill();                                               // FS2 0x00151e90
     // A new Tim2Texture of image at +8, the old one deleted.
     void setImage(const void *image);                                    // FS2 0x00151e10
     void destroy();                                                      // FS2 vtable +0x8 (vptr +4)
-    void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 vtable +0xc (vptr +4)
+    virtual void draw(sceVif1Packet *packet, TexAreaList *texList);      // FS2 0x00151de0: slot +0xc
+    // The tiles, in rgba (0x80 in the top byte is opaque); nothing until an
+    // image is set.
+    void drawGrain(sceVif1Packet *packet, TexAreaList *texList, u_int rgba); // FS2 0x001518a0
+
+protected:
+    Tim2Texture *m_texture = nullptr; // FS2 +0x8
+    u_int  m_rgba;              // FS2 +0xc
+    int    m_x;                 // FS2 +0x10
+    int    m_y;                 // FS2 +0x14
+    int    m_w;                 // FS2 +0x18
+    int    m_h;                 // FS2 +0x1c
+    u_char m_hasImage = 0;      // FS2 +0x20
 };
 
 // +0xa4 / +0xa8: menu program holders (beside PrgMcCard), set outside the

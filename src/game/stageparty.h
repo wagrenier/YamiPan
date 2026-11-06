@@ -74,6 +74,8 @@ class JackFill : public ScreenFill
 {
 public:
     JackFill(u_int rgba, int x, int y, int w, int h);                    // FS2 0x002082e0
+    // The grain in the fill's colour, then in black, as thick as m_level.
+    void draw(sceVif1Packet *packet, TexAreaList *texList) override;     // FS2 0x002081b0
     float m_level = 0.0f;       // FS2 +0x24: 0 clear, 1 noise
     u_int m_rgba;               // FS2 +0x28
 };
@@ -112,6 +114,14 @@ public:
     void stop();                                                         // FS2 0x00203840
     void update();                                                       // FS2 0x00203240
     void draw();                                                         // FS2 0x002024c0
+    // Nobody to look through: black under the grain at its thickest.
+    void drawNobody(float filmLevel);                                    // FS2 0x00201a40
+    // A corpse: black under the grain as it stands.
+    void drawCorpse(float filmLevel);                                    // FS2 0x002016d0
+    // A live character's eyes, seen through the grain.
+    void drawLive(float filmLevel);                                      // FS2 0x00201bc0
+    // The film and the flecks of the frame's list; four times in the ROM.
+    void drawFilm(float filmLevel, sceVif1Packet *packet);
 
     // Whom the view is on: m_kept, m_tuned or nobody, by the mode. Inline
     // everywhere in the ROM.
@@ -179,7 +189,7 @@ public:
     int          m_holdState = JackHold_None; // FS2 +0xbc
     int          m_holdFrames = 0;      // FS2 +0xc0
     int          m_heldButtons = 0;     // FS2 +0xc4: JackButton bits
-    int          m_uiColor = 0;         // FS2 +0xc8: the draw's, four bytes
+    int          m_markerFrames = 0;    // FS2 +0xc8: 0x201380: the kept one's marker fades over them
     int          m_bindShown = 0;       // FS2 +0xcc
     int          m_bindFlash = 0;       // FS2 +0xd0
     int          m_flashFrames = 0;     // FS2 +0xd4
