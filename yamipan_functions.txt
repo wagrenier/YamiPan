@@ -4949,12 +4949,12 @@
 // *****************************************************************************
 
 /* 001e5d50 00000004 */ FUN_001e5d50(){}
-/* 001e5d60 00000024 */ FUN_001e5d60(){}
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp
 // *****************************************************************************
 
+/* 001e5d60 00000024 */ PlayerMotion::setWallCheck(){}  // game
 /* 001e5d90 000001e0 */ PlayerMotion::beginFrame(){}  // game
 /* 001e5f70 0000013c */ PlayerMotion::getEyeMatrix(){}  // game
 /* 001e60b0 000000ac */ PlayerMotion::getLampMatrix(){}  // game
@@ -5000,17 +5000,7 @@
 
 /* 001eb150 000000bc */ PlayerMotion::isEnding(){}  // game
 /* 001eb210 00000194 */ PlayerMotion::requestedFile(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 001eb3b0 00000168 */ FUN_001eb3b0(){}
-
-// *****************************************************************************
-// FILE -- game/playermotion.cpp
-// *****************************************************************************
-
+/* 001eb3b0 00000168 */ PlayerMotion::lowerLabel(){}  // game
 /* 001eb520 0000002c */ PlayerMotion::pickArmedMotion(){}  // game
 /* 001eb550 00000104 */ PlayerMotion::pickGunMotion(){}  // game
 /* 001eb660 00000a20 */ PlayerMotion::pickStance(){}  // game
@@ -7214,59 +7204,49 @@
 /* 002750f0 0000006c */ SquatCondition::onUpdate(){}  // game
 /* 00275160 000009f4 */ AlwaysCondition::onApply(){}  // game
 /* 00275b60 00000948 */ AlwaysCondition::onUpdate(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 002764b0 00000060 */ FUN_002764b0(){}
+/* 002764b0 00000060 */ MotionCondition::~MotionCondition(){}  // game
 /* 00276510 0000005c */ MotionCondition::MotionCondition(){}  // game
-/* 00276570 00000070 */ FUN_00276570(){}
-/* 002765e0 00000070 */ FUN_002765e0(){}
-/* 00276650 00000070 */ FUN_00276650(){}
-/* 002766c0 00000070 */ FUN_002766c0(){}
-/* 00276730 00000070 */ FUN_00276730(){}
-/* 002767a0 00000070 */ FUN_002767a0(){}
-/* 00276810 00000070 */ FUN_00276810(){}
-/* 00276880 00000070 */ FUN_00276880(){}
-/* 002768f0 00000070 */ FUN_002768f0(){}
-/* 00276960 00000070 */ FUN_00276960(){}
-/* 002769d0 00000070 */ FUN_002769d0(){}
-/* 00276a40 00000070 */ FUN_00276a40(){}
-/* 00276ab0 00000070 */ FUN_00276ab0(){}
-/* 00276b20 00000070 */ FUN_00276b20(){}
-/* 00276b90 00000070 */ FUN_00276b90(){}
-/* 00276c00 00000070 */ FUN_00276c00(){}
-/* 00276c70 00000070 */ FUN_00276c70(){}
-/* 00276ce0 00000070 */ FUN_00276ce0(){}
-/* 00276d50 00000070 */ FUN_00276d50(){}
-/* 00276dc0 00000070 */ FUN_00276dc0(){}
-/* 00276e30 00000070 */ FUN_00276e30(){}
-/* 00276ea0 00000070 */ FUN_00276ea0(){}
-/* 00276f10 00000070 */ FUN_00276f10(){}
-/* 00276f80 00000070 */ FUN_00276f80(){}
-/* 00276ff0 00000070 */ FUN_00276ff0(){}
-/* 00277060 00000070 */ FUN_00277060(){}
-/* 002770d0 00000070 */ FUN_002770d0(){}
-/* 00277140 00000070 */ FUN_00277140(){}
-/* 002771b0 0000007c */ FUN_002771b0(){}
-/* 00277230 00000018 */ FUN_00277230(){}
-/* 00277250 00000154 */ FUN_00277250(){}
-/* 002773b0 00000018 */ FUN_002773b0(){}
-/* 002773d0 000001ec */ FUN_002773d0(){}
-/* 002775c0 00000004 */ FUN_002775c0(){}
+/* 00276570 00000070 */ SnipeCondition::~SnipeCondition(){}  // game
+/* 002765e0 00000070 */ GunAttackCondition::~GunAttackCondition(){}  // game
+/* 00276650 00000070 */ BtMoveCondition::~BtMoveCondition(){}  // game
+/* 002766c0 00000070 */ BtAtkComboCondition::~BtAtkComboCondition(){}  // game
+/* 00276730 00000070 */ BtAttackCondition::~BtAttackCondition(){}  // game
+/* 002767a0 00000070 */ LockCondition::~LockCondition(){}  // game
+/* 00276810 00000070 */ LadderMoveCondition::~LadderMoveCondition(){}  // game
+/* 00276880 00000070 */ BiteCondition::~BiteCondition(){}  // game
+/* 002768f0 00000070 */ JackCondition::~JackCondition(){}  // game
+/* 00276960 00000070 */ QuickTurnCondition::~QuickTurnCondition(){}  // game
+/* 002769d0 00000070 */ ReloadCondition::~ReloadCondition(){}  // game
+/* 00276a40 00000070 */ ShowtCondition::~ShowtCondition(){}  // game
+/* 00276ab0 00000070 */ ThrowCondition::~ThrowCondition(){}  // game
+/* 00276b20 00000070 */ TrapCancelCondition::~TrapCancelCondition(){}  // game
+/* 00276b90 00000070 */ TrapSetCondition::~TrapSetCondition(){}  // game
+/* 00276c00 00000070 */ PickupItemCondition::~PickupItemCondition(){}  // game
+/* 00276c70 00000070 */ PutItemCondition::~PutItemCondition(){}  // game
+/* 00276ce0 00000070 */ DoorCondition::~DoorCondition(){}  // game
+/* 00276d50 00000070 */ JumpCondition::~JumpCondition(){}  // game
+/* 00276dc0 00000070 */ LadderCondition::~LadderCondition(){}  // game
+/* 00276e30 00000070 */ LevelLiftCondition::~LevelLiftCondition(){}  // game
+/* 00276ea0 00000070 */ LevelCondition::~LevelCondition(){}  // game
+/* 00276f10 00000070 */ MoveCondition::~MoveCondition(){}  // game
+/* 00276f80 00000070 */ TurnCondition::~TurnCondition(){}  // game
+/* 00276ff0 00000070 */ GunOnCondition::~GunOnCondition(){}  // game
+/* 00277060 00000070 */ BtOnCondition::~BtOnCondition(){}  // game
+/* 002770d0 00000070 */ SquatCondition::~SquatCondition(){}  // game
+/* 00277140 00000070 */ AlwaysCondition::~AlwaysCondition(){}  // game
+/* 002771b0 0000007c */ ReviveLink::~ReviveLink(){}  // game
+/* 00277230 00000018 */ ReviveLink::onLeave(){}  // game
+/* 00277250 00000154 */ ReviveLink::onRun(){}  // game
+/* 002773b0 00000018 */ DamageDeadLink::onLeave(){}  // game
+/* 002773d0 000001ec */ DamageDeadLink::onRun(){}  // game
+/* 002775c0 00000004 */ DamageDeadLink::onStart(){}  // game
 /* 002775d0 0000008c */ DamageDeadLink::DamageDeadLink(){}  // game
-/* 00277660 00000004 */ FUN_00277660(){}
-/* 00277670 00000650 */ FUN_00277670(){}
-/* 00277cc0 00000024 */ FUN_00277cc0(){}
-/* 00277cf0 00000064 */ FUN_00277cf0(){}
-/* 00277d60 00000068 */ FUN_00277d60(){}
-/* 00277dd0 0000068c */ FUN_00277dd0(){}
-
-// *****************************************************************************
-// FILE -- game/playermotion.cpp
-// *****************************************************************************
-
+/* 00277660 00000004 */ DamageFatalLink::onLeave(){}  // game
+/* 00277670 00000650 */ DamageFatalLink::onRun(){}  // game
+/* 00277cc0 00000024 */ DamageFatalLink::onCancel(){}  // game
+/* 00277cf0 00000064 */ DamageFatalLink::onRequest(){}  // game
+/* 00277d60 00000068 */ DamageLandLink::onRun(){}  // game
+/* 00277dd0 0000068c */ DamageLink::onRun(){}  // game
 /* 00278460 000001d4 */ BiteLink::onLeave(){}  // game
 /* 00278640 00000724 */ BiteLink::onRun(){}  // game
 /* 00278d70 00000018 */ BiteLink::onCancel(){}  // game

@@ -83,6 +83,21 @@ enum MotionId
     Motion_DoorSlideB = 0x4a,
     Motion_DoorReachKey = 0x4b, // through the broken glass
     Motion_DoorForce  = 0x4c,   // spends its hit points
+    Motion_DiveFront  = 0x94, // dv_f: link DiveFall
+    Motion_DiveBack   = 0x95, // dv_b
+    Motion_DamageFront = 0xa4, // dm_f: link Damage, as 0xa5..0xa7, 0xb7, 0xb8
+    Motion_DamageFrontHeavy = 0xa5, // dm_f_h
+    Motion_DamageRear = 0xa6, // dm_r
+    Motion_DamageRearHeavy = 0xa7, // dm_r_h
+    Motion_Collapse   = 0xb0, // dm_c: link DamageFatal
+    Motion_ReviveBack = 0xb1, // dm_rev_b: no link
+    Motion_Revive     = 0xb2, // dm_rev: link Revive
+    Motion_Dead       = 0xb3, // dm_ded: link DamageDead
+    Motion_DeadBack   = 0xb4, // dm_ded_b
+    Motion_CarHitFront = 0xb5, // dm_car_f: link DamageFatal, then dm_ded_b
+    Motion_CarHitBack = 0xb6, // dm_car_b: link DamageFatal, then dm_ded
+    Motion_DamageHitFront = 0xb7, // dm_hit_f
+    Motion_DamageHitRear = 0xb8, // dm_hit_b
     Motion_CarSit     = 0xb9, // car_s
     Motion_CarDrive   = 0xba, // car_dv
     Motion_CarCall    = 0xbb, // a passenger's answer to a call
@@ -188,7 +203,7 @@ class MotionCondition
 public:
     MotionCondition(StageCharacter *owner, PlayerMotion *motion_)        // FS2 0x00276510
         : character(owner), motion(motion_) {}
-    virtual ~MotionCondition() {}
+    virtual ~MotionCondition() {}                                        // FS2 0x002764b0: deleting
     virtual void onUpdate() = 0;                                         // FS2 slot +0xc
     virtual void onApply() = 0;                                          // FS2 slot +0x10
 
@@ -296,6 +311,71 @@ class BittenLink : public MotionLink
 public:
     using MotionLink::MotionLink;
     ~BittenLink() override {}                                            // FS2 0x001eedb0
+};
+
+// A blow lands: dm_f, dm_r, dm_hit_f and their sisters. A body knocked to an
+// edge goes over it, dv_f or dv_b. Vtable 0x317830. layout: host -- EE 0x24.
+class DamageLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    ~DamageLink() override {}                                            // FS2 0x0027ce50
+    void onRun() override;                                               // FS2 0x00277dd0
+
+private:
+    // The part of onRun that looks for the edge.
+    void findDive(bool forward);
+
+    u_char edgeFound = 0;       // FS2 +0x20: dives when the walk there ends
+    u_char edgeBlocked = 0;     // FS2 +0x21: findEdge's: nothing is there or ever could be
+    u_char edgeClear = 0;       // FS2 +0x22: the head's way over it is free
+};
+
+// dm_lnd: down from a height. Vtable 0x317800. layout: host -- EE 0x20.
+class DamageLandLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    ~DamageLandLink() override {}                                        // FS2 0x0027cdd0
+    void onRun() override;                                               // FS2 0x00277d60
+};
+
+// dm_c and a car's blow, dm_car_f, dm_car_b: what comes of the fall. Vtable
+// 0x3177d0. layout: host -- EE 0x20.
+class DamageFatalLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    ~DamageFatalLink() override {}                                       // FS2 0x0027cd50
+    void onRequest() override;                                           // FS2 0x00277cf0
+    void onRun() override;                                               // FS2 0x00277670
+    void onLeave(MotionLink *next) override {}                           // FS2 0x00277660
+    void onCancel() override;                                            // FS2 0x00277cc0
+};
+
+// dm_ded, dm_ded_b: lying there, m_reviveTime seconds, then until takeCorpse
+// says -1. The script and the corpse's checks read the count. Vtable 0x3177a0,
+// +0xc10 of PlayerMotion. layout: host -- EE 0x24.
+class DamageDeadLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;                                        // FS2 0x002775d0
+    ~DamageDeadLink() override {}                                        // FS2 0x0027ccd0
+    void onStart() override {}                                           // FS2 0x002775c0
+    void onRun() override;                                               // FS2 0x002773d0
+    void onLeave(MotionLink *next) override;                             // FS2 0x002773b0
+
+    int reviveFrames = 0;       // FS2 +0x20: to the revival; -1 taken as a corpse
+};
+
+// dm_rev, getting up. Vtable 0x317770. layout: host -- EE 0x20.
+class ReviveLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    ~ReviveLink() override {}                                            // FS2 0x002771b0
+    void onRun() override;                                               // FS2 0x00277250
+    void onLeave(MotionLink *next) override;                             // FS2 0x00277230
 };
 
 // What the two links of the player's door have in common: slots +0x18 and
@@ -774,6 +854,8 @@ struct PlayerMotion
     // The frame's hits: the reaction, the flinch (only the first line is
     // written: the rest needs the hit 0x20eb40 and its enemies).
     void takeHits();                                                     // FS2 0x001e18c0
+    // The motion's 壁判定 and the wall body's on, what it was before.
+    u_char setWallCheck(u_char on);                                      // FS2 0x001e5d60
     // What an event breaks off: the idle, or the link ends where the motion
     // has a next one.
     void releaseAction();                                                // FS2 0x001dedb0
@@ -824,8 +906,8 @@ struct PlayerMotion
     bool isQueued() const;                                               // FS2 0x001e6d00
     bool isWalkBusy() const;                                             // FS2 0x001e6d30
 
-private:
     const char *lowerLabel(int id) const;
+private:
     const char *upperLabel(int id) const;
     MotionLink *findLink(const MotionDef *def) const;
     // The def when id would start now: new, or allowed to repeat.
@@ -939,12 +1021,12 @@ public:
     float  scopeZoom = 0.0f;    // FS2 +0xbd8: 0..1, the sight's picture too (MenuProgSet::draw)
     sceVu0FVECTOR scopeRotation = {}; // FS2 +0xbe0: the character's as the scope came up
     float  m_bf0 = 0.0f;        // FS2 +0xbf0: bitten: the wait before the next press counts
-    int    m_reviveFrames = 0;  // FS2 +0xc10's +0x20: DamageDead's count (the link is not written)
     float  m_bf4 = 0.0f;        // FS2 +0xbf4
     float  m_shoutLoudness = 0.0f; // FS2 +0xbf8: a motion event SHOUT's; 0x216280 sets it
     u_char m_bfc = 0;           // FS2 +0xbfc
     WalkLink *walkLink = nullptr; // FS2 +0xc00: the map's Walk
     PickupLink *pickupLink = nullptr; // FS2 +0xc08: the map's Pickup
+    DamageDeadLink *damageDeadLink = nullptr; // FS2 +0xc10: the map's DamageDead
     DoorLink *doorLink = nullptr; // FS2 +0xc0c: the map's Door
     TrapSetLink *trapSetLink = nullptr; // FS2 +0xc14: the map's TrapSet
     TrapCancelLink *trapCancelLink = nullptr; // FS2 +0xc18: the map's TrapCancel
