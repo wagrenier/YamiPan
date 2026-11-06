@@ -2105,7 +2105,7 @@
    "why": "Cut out of unassigned@00252840 (the frontier pick, 196 functions): the S2D UI's game side, between the widget classes and their tween helpers (..0x25fa50, vtables 0x316a90..0x316c10) and the stage alert class (0x263b90, every caller passes gStageScene +0xf4). UiFont 0x25fa50, the fMsg message files and TimM sprite sheets (find / relocate, magic checked against ROM.001), the layout's sound / game-value / game-state hooks 0x25ff40.., the tracks' game targets (bindTarget, findSprite over the item tables), the text variables 0x260bc0 / 0x2612c0, the game values 0x262e70 / 0x2633f0 and small hooks to 0x263b90. No source string: the file name and joining the font / message / sheet helpers to the hooks are guesses by position."
   },
   "game/uiitemlist.cpp": {
-   "notes": "Written with game/playermotion.cpp's fourth run (2026-11-05): the list and the prompt's label work and show. Left: the button's picture beside the label in UiPrompt::draw, native 0xf6 and 0x79 (post).",
+   "notes": "UiPrompt::setSheet keeps the sheet at +0x24 and a Tim2Texture of its first picture at +0x20; draw puts the button's sprite left of the label through the host UI module, in the ROM's state (TEST 0x33001, ALPHA 0x44, CLAMP 0). Seen with work/walklong_pad.txt at 340 s, shot_07800: amber cross beside Open at the top, centred with the label. Natives 0x79 and 0xf6 were already written. Not looked at: the press blink, the blocked dim state and the other buttons of the map.",
    "ranges": [
     [
      "00208330",
@@ -2132,7 +2132,14 @@
      "0023f290"
     ]
    ],
-   "status": "partial",
+   "sessions": [
+    {
+     "date": "2026-11-05 20:46",
+     "status": "done",
+     "summary": "the Use prompt's button picture and UiPrompt's destructor; all 20 functions written"
+    }
+   ],
+   "status": "done",
    "why": "the Use button's list and its prompt, what Level, Ladder and Jump ask; the prompt's draw 0x208490 left to a host pass"
   },
   "game/uilayout.cpp": {

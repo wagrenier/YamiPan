@@ -20363,6 +20363,12 @@
   "was": "FUN_00208be0",
   "why": "clears the label each frame"
  },
+ "00208c00": {
+  "name": "UiPrompt::~UiPrompt",
+  "tag": "game-inferred",
+  "was": "FUN_00208c00",
+  "why": "deleting dtor (flag in a1): deletes the Tim2Texture at +0x20 that setSheet made; its only caller is the list's dtor with its +0 prompt"
+ },
  "00208c70": {
   "name": "UiPrompt::UiPrompt",
   "tag": "game-inferred",
@@ -22702,6 +22708,12 @@
   "tag": "game-inferred",
   "was": "FUN_0023f030",
   "why": "+0x1c, +0x24 the sheet, relocated; a texture over it"
+ },
+ "0023f040": {
+  "name": "UiItemList::~UiItemList",
+  "tag": "game-inferred",
+  "was": "FUN_0023f040",
+  "why": "vtable 0x316530 slot 0: deleting dtor, destroys the prompt at +0"
  },
  "0023f0b0": {
   "name": "UiItemList::UiItemList",

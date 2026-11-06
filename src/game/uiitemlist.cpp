@@ -11,8 +11,12 @@
  *  0xf8), and a kind no script touched still works, with the ROM's label
  *  "未定義".
  *
- *  Not drawn: the button's picture beside the label (the init pack's sheet,
- *  a sprite per button of the options' map).
+ *  The prompt shows the Use button's picture beside the label: the init
+ *  pack's sheet has two sprites per button of the options' map, dim and lit.
+ *
+ *  PC: the ROM uploads the sheet's picture and writes the sprite as GIF
+ *  packets; here the same values go to the host UI draw module, the texture
+ *  bound by its owner.
  */
 #include "game/gamehooks.h"
 #include "game/fontdata.h"
@@ -21,6 +25,9 @@
 #include "game/sysdata.h"
 #include "game/uigame.h"
 #include "game/uiwidget.h"
+#include "rena/rena_2d_texture_tim2.h"
+#include "sdk/libgraph.h"
+#include "yamipan/rendering/yamipan_drawui.h"
 
 // The ROM's labels: data 0x307400 (none) and 0x307408, 未定義 (undefined).
 static const char kNoLabel[] = "";
@@ -69,11 +76,32 @@ static const UiPromptKey kBlockedKey = { 0x7f7f7f7f, 0 };   // data 0x31aa08
 // Which sprite of the sheet shows each button of the map.
 static const int kButtonSprites[] = { 10, 14, 8, 12, 0, 2, 4, 6 };
 
+// The button's sprite: blended, UV in texels, textured when the sheet gave
+// a picture. The state is the ROM's three A+D writes: normal blend, RGB
+// written and destination alpha kept, depth always, texture repeat.
+static constexpr u_long kButtonPrim = SCE_GS_SET_PRIM(6, 0, 0, 0, 1, 0, 1, 0, 0);
+static constexpr u_long kButtonPrimTextured = SCE_GS_SET_PRIM(6, 0, 1, 0, 1, 0, 1, 0, 0);
+static constexpr u_long kButtonTest = SCE_GS_SET_TEST(1, 0, 0, 3, 0, 0, 1, 1);
+static constexpr u_long kButtonAlpha = SCE_GS_SET_ALPHA(0, 1, 0, 1, 0);
+static constexpr u_long kButtonClamp = 0;
+static constexpr u_int kButtonZ0 = 0xff0fffff;
+static constexpr u_int kButtonZ1 = 0xffffffff;
+static constexpr int kGsCenter = 0x800;  // the draw env's origin
+static constexpr int kGsSubpixels = 16;  // UV and XY are 12.4
+
 // FS2 0x00208c70
 
 UiPrompt::UiPrompt(WideFontPrinter *printer_, int arg_)
     : printer(printer_), arg(arg_)
 {
+}
+
+// FS2 0x00208c00
+// callcheck: operator_delete (the deleting destructor's delete; the texture's is a call through its vtable)
+
+UiPrompt::~UiPrompt()
+{
+    delete texture;
 }
 
 // FS2 0x00208bb0
@@ -103,16 +131,55 @@ const void *UiPrompt::press()
 }
 
 // FS2 0x00208380
-// callcheck: operator_new, timSheetRelocate, timSheetRelocate, Tim2Texture (the bar's texture is the host pass's, not written)
+// callcheck: timSheetRelocate, operator_new, timSheetRelocate, Tim2Texture (the second relocate is in timSheetSprite)
 
 void UiPrompt::setSheet(void *sheet_)
 {
-    if (sheet_ != nullptr)
-        sheet = sheet_;
+    if (sheet_ == nullptr)
+        return;
+    sheet = sheet_;
+    delete texture;
+    texture = nullptr;
+    buttons = static_cast<TimSheet *>(sheet_);
+    if (!timSheetRelocate(buttons)) {
+        buttons = nullptr;
+        return;
+    }
+    const TimSheetSprite *first = timSheetSprite(buttons, 0);
+    texture = new Tim2Texture(first != nullptr ? buttons->images.get()[first->image].image.get() : nullptr);
+}
+
+// Inline in the ROM's draw: one sprite of the sheet, (x, y) from the screen's
+// centre, the fade's colour on it.
+
+void UiPrompt::drawButton(sceVif1Packet *packet, const TimSheetSprite *sprite, u_int rgba, int x, int y)
+{
+    YamiPan_DrawUiReg(packet, SCE_GS_TEST_1, kButtonTest);
+    YamiPan_DrawUiReg(packet, SCE_GS_ALPHA_1, kButtonAlpha);
+    YamiPan_DrawUiReg(packet, SCE_GS_CLAMP_1, kButtonClamp);
+    YamiPan_DrawUiTexture(packet, texture);
+
+    const u_char rgbaq[4] = { (u_char)rgba, (u_char)(rgba >> 8), (u_char)(rgba >> 16),
+                              (u_char)(rgba >> 24) };
+    YamiPan_DrawUiPrim(packet, texture != nullptr ? kButtonPrimTextured : kButtonPrim, rgbaq);
+    YamiPan_DrawUiBegin(packet, YAMIPAN_UIV_UV);
+    YamiPanUiVertex corner = {};
+    corner.u = (uint16_t)(sprite->u * kGsSubpixels);
+    corner.v = (uint16_t)(sprite->v * kGsSubpixels);
+    corner.x = (uint16_t)((x + kGsCenter) * kGsSubpixels);
+    corner.y = (uint16_t)((y + kGsCenter) * kGsSubpixels);
+    corner.z = kButtonZ0;
+    YamiPan_DrawUiVertex(packet, &corner);
+    corner.u = (uint16_t)((sprite->u + sprite->w) * kGsSubpixels);
+    corner.v = (uint16_t)((sprite->v + sprite->h) * kGsSubpixels);
+    corner.x = (uint16_t)((x + kGsCenter + sprite->w) * kGsSubpixels);
+    corner.y = (uint16_t)((y + kGsCenter + sprite->h) * kGsSubpixels);
+    corner.z = kButtonZ1;
+    YamiPan_DrawUiVertex(packet, &corner);
 }
 
 // FS2 0x00208490
-// callcheck: getGameOptions, timSheetRelocate, timSheetRelocate, place, upload, putTex0, sceVif1PkAddCode, sceVif1PkAddGsData, sceVif1PkAlign, sceVif1PkCloseDirectCode, sceVif1PkCloseDmaTag, sceVif1PkCloseGifTag, sceVif1PkCnt, sceVif1PkOpenDirectCode, sceVif1PkOpenGifTag (the button's picture and the ROM's packets are not drawn; the text goes through the printer)
+// callcheck: getGameOptions, timSheetRelocate, timSheetRelocate, place, upload, putTex0, sceVif1PkAddCode, sceVif1PkAddGsData, sceVif1PkAlign, sceVif1PkCloseDirectCode, sceVif1PkCloseDmaTag, sceVif1PkCloseGifTag, sceVif1PkCnt, sceVif1PkOpenDirectCode, sceVif1PkOpenGifTag (PC: YamiPan_DrawUi*; the texture by its owner, no place, upload or TEX0; the text goes through the printer)
 
 void UiPrompt::draw(sceVif1Packet *packet)
 {
@@ -154,7 +221,7 @@ void UiPrompt::draw(sceVif1Packet *packet)
     int spriteIndex = 0 <= button && button < 8 ? kButtonSprites[button] : 0;
     if (key->lit != 0)
         spriteIndex++;
-    const TimSheetSprite *sprite = sheet != nullptr ? timSheetSprite(static_cast<TimSheet *>(sheet), spriteIndex) : nullptr;
+    const TimSheetSprite *sprite = buttons != nullptr ? timSheetSprite(buttons, spriteIndex) : nullptr;
     const int buttonWidth = sprite != nullptr ? sprite->w : 0;
 
     const u_short *text = static_cast<const u_short *>(shown);
@@ -162,6 +229,9 @@ void UiPrompt::draw(sceVif1Packet *packet)
     int x = -((width + buttonWidth) / 2);
     if (x < kLeftLimit)
         x = kLeftLimit;
+
+    if (sprite != nullptr)
+        drawButton(packet, sprite, key->rgba, x, kPromptY - kScreenCenter);
 
     printer->uploadTexture(packet);
     printer->m_packet = packet;
@@ -231,7 +301,7 @@ UiItemList::UiItemList(WideFontPrinter *printer, int arg)
 }
 
 // FS2 0x0023f040
-// callcheck: FUN_00208c00, operator_delete (the host deletes)
+// callcheck: ~UiPrompt, operator_delete (the deleting destructor; here destroy)
 
 void UiItemList::destroy()
 {

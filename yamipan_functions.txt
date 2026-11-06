@@ -5375,7 +5375,7 @@
 
 /* 00208bb0 00000020 */ UiPrompt::setLabel(){}  // game
 /* 00208be0 00000018 */ UiPrompt::endFrame(){}  // game
-/* 00208c00 00000070 */ FUN_00208c00(){}
+/* 00208c00 00000070 */ UiPrompt::~UiPrompt(){}  // game
 /* 00208c70 00000048 */ UiPrompt::UiPrompt(){}  // game
 /* 00208cc0 0000007c */ UiPrompt::stepPress(){}  // game
 
@@ -6387,7 +6387,7 @@
 /* 0023efb0 00000034 */ UiItemList::enableKind(){}  // game
 /* 0023eff0 00000038 */ UiItemList::setKind(){}  // game
 /* 0023f030 00000008 */ UiItemList::setSheet(){}  // game
-/* 0023f040 00000064 */ FUN_0023f040(){}
+/* 0023f040 00000064 */ UiItemList::~UiItemList(){}  // game
 /* 0023f0b0 000001dc */ UiItemList::UiItemList(){}  // game
 
 // *****************************************************************************
