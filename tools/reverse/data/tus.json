@@ -1253,6 +1253,15 @@
    ],
    "why": "RcntTimer (reset, ctor, dtor) and rcnt1Start (batches 003-004); file name a guess."
   },
+  "game/routefilter.cpp": {
+   "ranges": [
+    [
+     "0023f290",
+     "00242e80"
+    ]
+   ],
+   "why": "RouteFilter::pathLength 0x23f290 on: the path search of game/characterroute.cpp, up to game/stageplayer.cpp at 0x242e80; RoutePlayer 0x252840.. is not in it yet"
+  },
   "game/s2ddata.cpp": {
    "notes": "Host: S2dRef<T> (s2ddata.h) is a 32-bit offset from the field itself, 0 null, implicit T* conversion, copy deleted; S2dData, S2dObject, S2dWidgetDef, S2dImage and the uitrack.h records with names (textured +8 label, sheet +0x14, pin +0x14, rotate +0xc) are EE layout and asserted. S2dImage +4 is the image name (was read as an id): UiTex*Track m_imageId is now m_imageName, the text track keys are const char pointers. Header counts at +0x20/+0x28/+0x30/+0x38 named. The ROM never relocates kind 0x22's +0x14 name (only kind 6's); no disc S2D has a 0x22 record. Checked: g++ -fsyntax-only -Wall clean on s2ddata/uitrack/uisequence/uilayout/scene/stageresult with RosePan SDK headers + stubs; a scratch harness relocated 1,764 S2D files from ROM.000..ROMD.010, all pointers in range, names readable. Next in the run: UiMatrix / UiDrawer 0x24dfa0..0x252840 (frontier top), then the widget classes from 0x252840.",
    "ranges": [
