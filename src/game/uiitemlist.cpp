@@ -230,6 +230,7 @@ void UiPrompt::draw(sceVif1Packet *packet)
     if (x < kLeftLimit)
         x = kLeftLimit;
 
+    YamiPan_DrawUiSqueeze(packet, 1);   // PC: the prompt keeps its shape at any aspect
     if (sprite != nullptr)
         drawButton(packet, sprite, key->rgba, x, kPromptY - kScreenCenter);
 
@@ -241,6 +242,7 @@ void UiPrompt::draw(sceVif1Packet *packet)
     printer->m_rgba = (key->rgba & 0xff000000) | kTextRgb;
     printer->m_flags = 0;
     printer->printText(x + buttonWidth + kScreenCenter, kPromptY, text);
+    YamiPan_DrawUiSqueeze(packet, 0);
     printer->m_packet = nullptr;
 }
 

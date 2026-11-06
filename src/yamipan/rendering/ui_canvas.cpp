@@ -31,6 +31,7 @@ constexpr std::uint64_t kPrimBlended = 1 << 6;
 constexpr float kWindowUnit = 16.0f;
 constexpr float kWindowOrigin = 2048.0f - kFrameWidth / 2.0f;
 constexpr float kTexelUnit = 16.0f;
+constexpr float kSpriteUvInset = 1.0f / 64.0f; // texels
 
 constexpr std::uint64_t kScissorMask = 0x7ff;
 constexpr std::uint32_t kFbmskRgb = 0x00ffffff;
@@ -159,6 +160,14 @@ void UiCanvas::bindImage(const void *list, std::shared_ptr<Image> image)
     layer(list).image = std::move(image);
 }
 
+void UiCanvas::setSqueezed(const void *list, bool squeezed)
+{
+    // Read before the canvas's lock: the renderer has its own.
+    const float wider = m_renderer.layout().aspect / kFrameDisplayAspect;
+    std::scoped_lock lock(m_lock);
+    layer(list).squeeze = squeezed && wider > 1.0f ? 1.0f / wider : 1.0f;
+}
+
 void UiCanvas::begin(const void *list, int format)
 {
     std::scoped_lock lock(m_lock);
@@ -174,7 +183,8 @@ void UiCanvas::addVertex(const void *list, const YamiPanUiVertex &vertex)
     Layer &target = layer(list);
 
     Vertex converted{};
-    converted.x = static_cast<float>(vertex.x) / kWindowUnit - kWindowOrigin;
+    converted.x = kFrameWidth / 2.0f +
+                  (static_cast<float>(vertex.x) / kWindowUnit - kWindowOrigin - kFrameWidth / 2.0f) * target.squeeze;
     converted.y = static_cast<float>(vertex.y) / kWindowUnit - kWindowOrigin;
     if ((target.format & YAMIPAN_UIV_UV) != 0)
     {
@@ -289,9 +299,15 @@ void UiCanvas::assemble(Layer &target, const Vertex &vertex)
             Vertex bottomRight = b;
             topLeft.color = topRight.color = bottomLeft.color = b.color;
             topRight.x = b.x;
-            topRight.u = b.u;
             bottomLeft.y = b.y;
-            bottomLeft.v = b.v;
+            // A pixel centre can fall exactly on a sprite's edge at some render sizes: pulled in by a hair,
+            // its texel stays this sprite's and not the next one's on the sheet.
+            const float insetU = std::copysign(kSpriteUvInset, b.u - a.u);
+            const float insetV = std::copysign(kSpriteUvInset, b.v - a.v);
+            topLeft.u = bottomLeft.u = a.u + insetU;
+            topRight.u = bottomRight.u = b.u - insetU;
+            topLeft.v = topRight.v = a.v + insetV;
+            bottomLeft.v = bottomRight.v = b.v - insetV;
             emit(target, {topLeft, topRight, bottomLeft, topRight, bottomRight, bottomLeft});
             run.clear();
         }
