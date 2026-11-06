@@ -18,6 +18,7 @@
 #include "game/gsutil.h"
 #include "game/heap.h"
 #include "game/mathutil.h"
+#include "game/modelpose.h"
 #include "game/stagecollision.h"
 #include "game/stagescene.h"
 #include "game/vu0math.h"
@@ -52,6 +53,22 @@ constexpr float kScreenCenter = 2048.0f;        // 0x8000 in the GS's 1 / 16 pix
 constexpr float kScreenLimit = 4096.0f;
 constexpr float kFrameHalfWidth = 256.0f;       // 0x1000: the ROM's test for a quad on the frame
 constexpr float kFrameHalfHeight = 256.0f;
+
+constexpr int kCritterWarmFrames = 300;
+constexpr int kCritterSpawnDelay = 150;
+constexpr float kCritterFar = 1000.0f;
+constexpr float kCritterScareDistanceSq = 10000.0f; // 100 units
+constexpr float kCritterTurnStep = 0.10471976f;     // 6 degrees a frame
+constexpr float kCritterFleeSpeed = 3.0f;
+constexpr float kCritterRatClimb = 0.7f;            // cosine: what a rat still walks up
+constexpr float kCritterHomeRatSq = 25.0f;
+constexpr float kCritterHomeCrawlerSq = 100.0f;
+constexpr int kCritterFleeFrames = 0x385;
+constexpr float kCritterEdgeDepth = 2.0f;
+constexpr float kCritterEdgeBack = 5.0f;
+constexpr int kCritterFrameTicks = 4;
+constexpr u_int kCritterColor = 0x80ffffffu;        // the ROM's RGBAQ: a, b, g, r
+constexpr unsigned long long kCritterAlpha1 = 0x44; // (Cs - Cd) * As + Cd; the ROM leaves the list's
 
 const sceVu0FVECTOR kAxisY = {0.0f, 1.0f, 0.0f, 0.0f}; // data 0x2f7d30, 0x2f7d40
 const sceVu0FVECTOR kAxisZ = {0.0f, 0.0f, 1.0f, 0.0f}; // data 0x2f7d20
@@ -753,8 +770,8 @@ void StageParticle::drawQuad(const Particle &particle, const sceVu0FVECTOR *view
 // The effect's quads. The ROM's two functions differ in the cells (drawQuad)
 // and in three tests, kept here by flat: the near limit, and which flags spare
 // the effect the far test. ParticleFlag_Refract's quads draw the frame through
-// the frame's own pixels: not on the host yet (open-items.md), so they are left
-// out.
+// the frame's own pixels: no definition on the disc has it (ptcall.py), so the
+// host has no such pass.
 // FS2 0x0018d400
 // callcheck: FUN_0010afd0, FUN_0010b028, FUN_0010b720, FUN_0010b7b8, FUN_0010b988, FUN_0010b9a0, FUN_0010ba18, FUN_0010bae8, FUN_0010bc38, FUN_0010c218, asinAcos, copyMatrix, drawCells, drawSysCurrent, getDrawDistance, multiplyMatrix, sceVif1PkAddGsAD, sceVif1PkCloseDmaTag, sceVif1PkCloseGifTag, sceVif1PkCnt, sceVif1PkOpenGifTag, sceVu0RotMatrixX, sceVu0UnitMatrix, vecDirection, vecDot, applyMatrix (the packets are YamiPan_ModelSetEffect and YamiPan_ModelDrawQuad; drawCells is drawQuad; 0x10b720 sums as applyMatrix, 0x10bae8 and 0x10bc38 turn as rotateMatrixZ and Y, 0x10b9a0 adds to row 3, 0x10b988 scales, 0x10c218 projects, 0x10ba18 is the int cast)
 
@@ -899,6 +916,9 @@ StageNodeTree::~StageNodeTree()
     for (StageParticle *effect : m_effects)
         delete effect;
     m_effects.clear();
+    for (CritterNest *nest : m_nests)
+        delete nest;
+    m_nests.clear();
     delete m_boxes;
 }
 
@@ -1089,16 +1109,21 @@ void StageNodeTree::forgetEffect(StageParticle *effect)
     }
 }
 
-// An effect that stopped drawing and emitting gets one more frame, then goes;
-// one that does not run stays for whoever holds it. The motes come first in
-// the ROM (their class is unread: spawnMotes makes none yet).
+// The nests within range of view, then the effects. An effect that stopped
+// drawing and emitting gets one more frame, then goes; one that does not run
+// stays for whoever holds it.
 // FS2 0x00190a90
-// callcheck: updateEffects (0x1914c0 is this body: the motes, its FUN_002b39e0, wait for their class)
+// callcheck: updateEffects (0x1914c0 is this body)
 
 void StageNodeTree::update(float range, int arg, StageObject *view, StagePlayer *player)
 {
-    (void)range;
-    (void)player;
+    const float *scare = player != nullptr ? reinterpret_cast<StageObject *>(player)->m_xform.position : nullptr;
+    const sceVu0FVECTOR *viewer = view->getWorldMatrix();
+    for (CritterNest *nest : m_nests) {
+        if (vecDistanceSq(nest->m_xform.world[3], viewer[3]) < range * range)
+            nest->update(scare);
+    }
+
     for (size_t index = 0; index < m_effects.size(); index++) {
         StageParticle *effect = m_effects[index];
         if (arg != 0) {
@@ -1132,11 +1157,11 @@ struct SortedEffect
 };
 } // namespace
 
-// The frame's effects: the far world's with the far models, the rest over the
-// main models, each list nearest first, as the ROM's sort leaves them (a key
-// is the depth less the index; ParticleFlag_NoFarLimit's is 0). The ROM's
-// VRAM placement goes: a texture is the host's, by its record. The motes draw
-// first in the ROM (unread).
+// The critters at the end of the main models' list, then the frame's effects:
+// the far world's with the far models, the rest over the main models, each
+// list nearest first, as the ROM's sort leaves them (a key is the depth less
+// the index; ParticleFlag_NoFarLimit's is 0). The ROM's VRAM placement goes: a
+// texture is the host's, by its record.
 // FS2 0x00190a80
 // callcheck: drawEffects (0x190c70 is this body)
 
@@ -1145,6 +1170,24 @@ void StageNodeTree::draw(GamePacketManager *packets, StageObject *camera)
     const StageCamera *lens = static_cast<StageCamera *>(camera);
     const sceVu0FVECTOR *cameraMatrix = camera->getMatrix();
     const sceVu0FVECTOR *view = lens->m_view;
+
+    if (!m_nests.empty()) {
+        // The ROM's list holds no ALPHA_1 of its own here and its TEST writes
+        // colour without depth; its RGBAQ is white at alpha 0x80.
+        sceVif1Packet *packet = packets->openList(PacketList_RenaMain);
+        renaBeginEffects(packet, lens->m_screen);
+        for (const CritterNest *nest : m_nests) {
+            YamiPanModelEffect effect = {};
+            const size_t texture = (size_t)nest->textureIndex();
+            effect.texture = texture < m_textures.size() ? m_textures[texture] : nullptr;
+            effect.alpha1 = kCritterAlpha1;
+            effect.fog = kFogNone;
+            YamiPan_ModelSetEffect(packet, &effect);
+            nest->draw(view, lens->m_screen, packet);
+        }
+        renaEndPass(packet);
+        packets->closeList();
+    }
 
     sceVu0FMATRIX farView;
     for (int row = 0; row < 4; row++) {
@@ -1192,7 +1235,506 @@ void StageNodeTree::draw(GamePacketManager *packets, StageObject *camera)
     }
 }
 
+// ──────────────────────────────────────────────────────────────────────
+// The critters, 0x2b3870..0x2b5740. Far from the rest of the file in the ROM,
+// but the tree alone makes, moves and draws them.
+
+// A nest in the tree. The ctor runs with the nest still at the origin, so what
+// it makes starts there; the first frames take them home.
+// FS2 0x00190990
+// callcheck: heapAllocAligned, FUN_002b3ef0, setPositionXyz, FUN_001928f0 (new and the vector on the host)
+
+StageObject *StageNodeTree::spawnCritters(const float *pos, float range, int kind, int count)
+{
+    CritterNest *nest = new CritterNest(range, kind, count);
+    nest->m_xform.setPositionXyz(pos[0], pos[1], pos[2]);
+    nest->rebuildMatrix();
+    m_nests.push_back(nest);
+    return nest;
+}
+
+// The cells of the sheet are fixed per kind. Three hundred frames with no delay
+// fill it before anybody looks.
+// FS2 0x002b3ef0
+// callcheck: StageObject, FUN_002b39e0
+
+CritterNest::CritterNest(float range, int kind, int most)
+    : m_kind(kind), m_most(most), m_range(range)
+{
+    static const int kCells[4][4] = {
+        {0, 0, 0x210, 0x210},           // CritterKind_Small
+        {0, 0x610, 0x400, 0x820},       // CritterKind_Rat
+        {0x410, 0, 0x610, 0x200},       // CritterKind_Side
+        {0, 0x210, 0x210, 0x610},       // CritterKind_Long
+    };
+    const int *cell = kCells[kind >= 0 && kind < 4 ? kind : (int)CritterKind_Small];
+    memcpy(m_cell, cell, sizeof(m_cell));
+    m_turned = kind == CritterKind_Rat;
+
+    for (int frame = 0; frame < kCritterWarmFrames; frame++)
+        update(nullptr);
+    m_spawnDelay = kCritterSpawnDelay;
+}
+
+// FS2 0x002b3dc0
+// callcheck: operator_delete, ~StageObject, operator_delete
+
+CritterNest::~CritterNest()
+{
+    for (Critter *critter : m_critters)
+        delete critter;
+    m_critters.clear();
+}
+
+// FS2 0x002b39e0
+// callcheck: operator_delete, FUN_001927b0, operator_new, operator_new, operator_new, operator_new, FUN_001928f0 (the vector and new on the host; the ROM's delete on a 0 from a critter is never taken)
+
+void CritterNest::update(const float *scare)
+{
+    if ((u_int)m_critters.size() < (u_int)m_most && m_spawnDelay < ++m_spawnTimer) {
+        m_spawnTimer = 0;
+        Critter *critter;
+        if (m_kind == CritterKind_Long)
+            critter = new CritterCrawler(10.0f, 5.0f);
+        else if (m_kind == CritterKind_Rat)
+            critter = new CritterRat();
+        else
+            critter = new CritterCrawler(5.0f, 5.0f);
+        copyVector(critter->m_position, m_xform.position);
+        critter->m_position[2] += 1.0f;
+        m_critters.push_back(critter);
+    }
+    for (Critter *critter : m_critters)
+        critter->update(m_range, m_xform.position, scare);
+}
+
+// FS2 0x002b38b0
+// callcheck: applyMatrix, FUN_002b52c0
+
+void CritterNest::draw(const sceVu0FVECTOR *view, const sceVu0FVECTOR *screen, sceVif1Packet *packet) const
+{
+    for (const Critter *critter : m_critters) {
+        if (critter->m_state == CritterState_Hidden)
+            continue;
+        sceVu0FVECTOR place;
+        applyMatrix(place, view, critter->m_position);
+        if (place[1] > 0.0f && place[1] < kCritterFar)
+            critter->draw(view, screen, m_cell, m_turned, packet);
+    }
+}
+
+Critter::Critter(float half74, float half78) : m_half{half74, half78}
+{
+    static const sceVu0FVECTOR kUp = {0.0f, 0.0f, 1.0f, 1.0f};
+    copyVector(m_normal, kUp);
+    memset(m_ahead, 0, sizeof(m_ahead)); // PC: the ROM's first frame always sets it
+    identityMatrix(m_matrix);
+}
+
+// The sprite in the surface's plane, its two cells side by side. The test for
+// being on the frame takes the display's width, as StageParticle::drawQuad.
+// FS2 0x002b52c0
+// callcheck: multiplyMatrix, rotTransPers, sceVif1PkCnt, FUN_0010afd0, sceVif1PkOpenGifTag, sceVif1PkAddGsData, sceVif1PkAddGsData, sceVif1PkAddGsData, sceVif1PkAddGsData, sceVif1PkAddGsData, sceVif1PkAddGsData, sceVif1PkAddGsData, sceVif1PkAddGsData, sceVif1PkAddGsData, sceVif1PkCloseGifTag, FUN_0010b028, sceVif1PkCloseDmaTag (rotTransPers is the two applyMatrix; the packets are YamiPan_ModelDrawQuad)
+
+void Critter::draw(const sceVu0FVECTOR *view, const sceVu0FVECTOR *screen, const int *cell, bool turned,
+                   sceVif1Packet *packet) const
+{
+    sceVu0FMATRIX toView;
+    multiplyMatrix(toView, view, m_matrix);
+
+    const float halfX = m_half[turned ? 0 : 1];
+    const float halfY = m_half[turned ? 1 : 0];
+    const sceVu0FVECTOR corners[4] = {
+        {-halfX, halfY, 0.0f, 1.0f},
+        {halfX, halfY, 0.0f, 1.0f},
+        {-halfX, -halfY, 0.0f, 1.0f},
+        {halfX, -halfY, 0.0f, 1.0f},
+    };
+
+    YamiPanModelQuad quad;
+    bool onFrame = false;
+    const float frameHalfWidth = kFrameHalfWidth / YamiPan_DrawUiSqueezeFactor();
+    for (int corner = 0; corner < 4; corner++) {
+        sceVu0FVECTOR place;
+        sceVu0FVECTOR onScreen;
+        applyMatrix(place, toView, corners[corner]);
+        applyMatrix(onScreen, screen, place);
+        if (onScreen[3] <= 0.0f)
+            return;
+        const float x = onScreen[0] / onScreen[3];
+        const float y = onScreen[1] / onScreen[3];
+        if (x < 0.0f || x >= kScreenLimit || y < 0.0f || y >= kScreenLimit || onScreen[2] < 0.0f)
+            return;
+        if (fabsf(x - kScreenCenter) <= frameHalfWidth && fabsf(y - kScreenCenter) <= kFrameHalfHeight)
+            onFrame = true;
+        for (int axis = 0; axis < kAxes; axis++)
+            quad.position[corner][axis] = place[axis];
+    }
+    if (!onFrame)
+        return;
+
+    const int across = m_frame * (cell[2] - cell[0]);
+    const int left = cell[0] + across;
+    const int right = cell[2] + across;
+    const int top = cell[1];
+    const int bottom = cell[3];
+    const int us[2][4] = {{left, right, left, right}, {left, left, right, right}};
+    const int vs[2][4] = {{top, top, bottom, bottom}, {bottom, top, bottom, top}};
+    for (int corner = 0; corner < 4; corner++) {
+        quad.uv[corner][0] = (float)us[turned ? 1 : 0][corner];
+        quad.uv[corner][1] = (float)vs[turned ? 1 : 0][corner];
+    }
+    quad.color = kCritterColor;
+    YamiPan_ModelDrawQuad(packet, &quad);
+}
+
+void Critter::addToPlace(const sceVu0FVECTOR step)
+{
+    addVector3(m_position, step);
+}
+
+// One point of the surface's normal off the face it hit.
+void Critter::land(const StageCollisionFace *face, const sceVu0FVECTOR hit)
+{
+    copyVector(m_normal, face->plane);
+    m_normal[3] = 1.0f;
+    copyVector(m_position, hit);
+    addVector3(m_position, m_normal);
+}
+
+// Shared by both classes' updates: the turn takes 6 degrees a frame, then it
+// stands or walks.
+void Critter::stepTurn(int walkFrames)
+{
+    if (kCritterTurnStep < m_turnLeft) {
+        m_heading += kCritterTurnStep;
+        m_turnLeft -= kCritterTurnStep;
+    } else if (m_turnLeft < -kCritterTurnStep) {
+        m_heading -= kCritterTurnStep;
+        m_turnLeft += kCritterTurnStep;
+    } else {
+        m_heading += m_turnLeft;
+        m_turnLeft = 0.0f;
+        if ((int)randNext() % 100 < 50) {
+            m_state = CritterState_Idle;
+            m_timer = ((int)randNext() % 30) * 9 + 30;
+        } else {
+            m_state = CritterState_Walk;
+            m_speed = 1.0f;
+            m_speed += (float)((int)randNext() % 40 - 20) / 100.0f;
+            m_timer = ((int)randNext() % 30) * 3 + walkFrames;
+        }
+    }
+    m_heading = wrapAngle(m_heading);
+}
+
+// What both classes end a frame with: it feels for the surface under it unless
+// it stands, then the matrix if it moved, then the walk's two cells. The two
+// update functions of the ROM repeat this.
+void Critter::endFrame(float range, const sceVu0FVECTOR nest, bool moved)
+{
+    sceVu0FVECTOR below = {0.0f, 0.0f, -reach(), 1.0f};
+    if (m_surface != nullptr)
+        scaleVec4(-reach(), below, m_normal);
+    sceVu0FVECTOR to;
+    copyVector(to, m_position);
+    addVector3(to, below);
+
+    if (m_surface == nullptr || m_state != CritterState_Idle) {
+        sceVu0FVECTOR hit;
+        const StageCollisionFace *face = gStageScene->raycast(hit, m_position, to, 0, kFaceSolid, kFaceSkip, nullptr);
+        if (face != nullptr) {
+            land(face, hit);
+        } else if (m_surface == nullptr) {
+            m_position[2] -= fallSpeed();
+            if (range < nest[2] - m_position[2])
+                copyVector(m_position, nest);
+        } else {
+            face = leftSurface();
+        }
+        m_surface = face;
+        moved = true;
+    }
+
+    if (moved) {
+        static const sceVu0FVECTOR kUp = {0.0f, 0.0f, 1.0f, 1.0f};
+        static const sceVu0FVECTOR kForward = {0.0f, 1.0f, 0.0f, 0.0f};
+        // The turn from straight up to the normal: the ROM's 0x2bb510, both
+        // already of length 1.
+        sceVu0FVECTOR tilt;
+        vecCross(tilt, kUp, m_normal);
+        const float cosine = vecDot(kUp, m_normal);
+        if (cosine == -1.0f) {
+            vecNormalize(tilt, tilt);
+            tilt[3] = 0.0f;
+        } else {
+            const float scale = sqrtf((cosine + 1.0f) * 2.0f);
+            for (int axis = 0; axis < kAxes; axis++)
+                tilt[axis] /= scale;
+            tilt[3] = scale / 2.0f;
+        }
+        sceVu0FVECTOR axisAngle;
+        copyVector(axisAngle, m_normal);
+        axisAngle[3] = m_heading;
+        sceVu0FVECTOR turn;
+        quatFromAxisAngle(turn, axisAngle);
+        quatMultiply(turn, turn, tilt);
+        quatToMatrix(m_matrix, turn);
+        translateMatrix(m_matrix, m_matrix, m_position);
+        applyMatrix(m_ahead, m_matrix, kForward);
+    }
+
+    if (m_lastFrame > 0 && m_state != CritterState_Idle && ++m_frameTicks > kCritterFrameTicks) {
+        m_frameTicks = 0;
+        if (m_lastFrame < ++m_frame)
+            m_frame = 0;
+    }
+}
+
+void Critter::update(float range, const sceVu0FVECTOR nest, const float *scare)
+{
+    if (scare != nullptr && m_state != CritterState_Fleeing && m_state != CritterState_Hidden &&
+        vecDistanceSq(scare, m_position) < kCritterScareDistanceSq) {
+        m_state = CritterState_Scared;
+    }
+    bool moved = true;
+    if (m_surface != nullptr)
+        moved = step(range, nest, scare);
+    endFrame(range, nest, moved);
+}
+
+// A step along the heading; a wall a step ahead takes it only if it is nearly
+// the same surface, otherwise it stops.
+void CritterRat::walk()
+{
+    sceVu0FVECTOR stride;
+    scaleVec4(m_forward ? m_speed : -m_speed, stride, m_ahead);
+    sceVu0FVECTOR to;
+    copyVector(to, m_position);
+    addVector3(to, stride);
+    to[3] = 1.0f;
+
+    sceVu0FVECTOR hit;
+    const StageCollisionFace *face = gStageScene->raycast(hit, m_position, to, 0, kFaceSolid, kFaceSkip, nullptr);
+    if (face == nullptr) {
+        addToPlace(stride);
+    } else if (kCritterRatClimb < vecDot(m_normal, face->plane)) {
+        land(face, hit);
+        m_surface = face;
+    } else {
+        m_state = CritterState_Idle;
+        m_timer = ((int)randNext() % 30) * 3 + 1;
+    }
+    if (m_state == CritterState_Walk && --m_timer < 1) {
+        m_state = CritterState_Idle;
+        m_timer = ((int)randNext() % 30) * 6 + 60;
+    }
+}
+
+void CritterRat::faceAwayFrom(const sceVu0FVECTOR nest)
+{
+    static const sceVu0FVECTOR kNorth = {0.0f, 1.0f, 0.0f, 1.0f};
+    sceVu0FVECTOR away;
+    for (int axis = 0; axis < kAxes; axis++)
+        away[axis] = m_position[axis] - nest[axis];
+    away[3] = 0.0f;
+    vecNormalize(away, away);
+    const float cosine = vecDot(kNorth, away);
+    const float side = away[0] >= 0.0f ? -1.0f : 1.0f;
+    m_heading = wrapAngle(side * asinAcos(cosine, AsinAcos_Acos) - kPi);
+}
+
+// FS2 0x002b4070
+// callcheck: vecDistanceSq, vecNormalize, vecDot, asinAcos, wrapAngle, randNext, scaleVec4, raycast, quatBetween, quatFromAxisAngle, quatMultiply, quatToMatrix, translateMatrix, applyMatrix (the rest in endFrame, Critter::update, walk, faceAwayFrom; 0x2bb510 in endFrame)
+
+bool CritterRat::step(float range, const sceVu0FVECTOR nest, const float *scare)
+{
+    (void)scare;
+    switch (m_state) {
+    case CritterState_Walk:
+        walk();
+        break;
+    case CritterState_Fleeing:
+        if (kCritterHomeRatSq < vecDistanceSq(m_position, nest)) {
+            faceAwayFrom(nest);
+            walk();
+        } else {
+            m_state = CritterState_Hidden;
+            m_timer = ((int)randNext() % 30) * 10 + 150;
+        }
+        break;
+    case CritterState_Turn:
+        stepTurn(30);
+        break;
+    case CritterState_Scared:
+        faceAwayFrom(nest);
+        m_forward = 1;
+        m_speed = kCritterFleeSpeed;
+        m_state = CritterState_Fleeing;
+        break;
+    default:
+        if (--m_timer >= 1)
+            return false;
+        m_state = CritterState_Turn;
+        if (vecDistanceSq(m_position, nest) < range * range) {
+            m_turnLeft = (float)((int)randNext() % 360 - 180) * kPi / 180.0f;
+        } else {
+            sceVu0FVECTOR home;
+            for (int axis = 0; axis < kAxes; axis++)
+                home[axis] = nest[axis] - m_position[axis];
+            home[3] = 0.0f;
+            vecNormalize(home, home);
+            m_turnLeft = asinAcos(vecDot(home, m_ahead), AsinAcos_Acos);
+            m_turnLeft += (float)((int)randNext() % 20 - 10) * kPi / 180.0f;
+            m_turnLeft = wrapAngle(m_turnLeft);
+        }
+        if (kPi / 2.0f < m_turnLeft) {
+            m_turnLeft = wrapAngle(m_turnLeft - kPi);
+            m_forward = !m_forward;
+        } else if (m_turnLeft < -kPi / 2.0f) {
+            m_turnLeft = wrapAngle(m_turnLeft + kPi);
+            m_forward = !m_forward;
+        }
+        break;
+    }
+    return true;
+}
+
+const StageCollisionFace *CritterRat::leftSurface()
+{
+    m_state = CritterState_Idle;
+    m_timer = ((int)randNext() % 30) * 3 + 1;
+    return nullptr;
+}
+
+// A step along the heading; whatever it runs into, it stands on.
+void CritterCrawler::walk()
+{
+    sceVu0FVECTOR stride;
+    scaleVec4(m_speed, stride, m_ahead);
+    sceVu0FVECTOR to;
+    copyVector(to, m_position);
+    addVector3(to, stride);
+    to[3] = 1.0f;
+
+    sceVu0FVECTOR hit;
+    const StageCollisionFace *face = gStageScene->raycast(hit, m_position, to, 0, kFaceSolid, kFaceSkip, nullptr);
+    if (face == nullptr) {
+        addToPlace(stride);
+    } else {
+        land(face, hit);
+        m_surface = face;
+    }
+    if (m_state == CritterState_Walk && --m_timer < 1) {
+        m_state = CritterState_Idle;
+        m_timer = ((int)randNext() % 30) * 5 + 60;
+    }
+}
+
+// The signed turn that points it at the nest, within the surface.
+float CritterCrawler::angleTo(const sceVu0FVECTOR nest) const
+{
+    sceVu0FVECTOR home;
+    for (int axis = 0; axis < kAxes; axis++)
+        home[axis] = nest[axis] - m_position[axis];
+    home[3] = 0.0f;
+    vecNormalize(home, home);
+    sceVu0FVECTOR into;
+    scaleVec4(-vecDot(home, m_normal), into, m_normal);
+    addVector3(home, into);
+    vecNormalize(home, home);
+
+    float angle = asinAcos(vecDot(m_ahead, home), AsinAcos_Acos);
+    sceVu0FVECTOR across;
+    vecCross(across, m_ahead, home);
+    if (vecDot(m_normal, across) < 0.0f)
+        angle = -angle;
+    return angle;
+}
+
+// false: the wait goes on and nothing moved.
+bool CritterCrawler::waitOrTurn(float range, const sceVu0FVECTOR nest)
+{
+    if (--m_timer >= 1)
+        return false;
+    m_state = CritterState_Turn;
+    if (vecDistanceSq(m_position, nest) < range * range) {
+        m_turnLeft = (float)((int)randNext() % 360 - 180) * kPi / 180.0f;
+    } else {
+        m_turnLeft = angleTo(nest);
+        m_turnLeft += (float)((int)randNext() % 30 - 15) * kPi / 180.0f;
+        m_turnLeft = wrapAngle(m_turnLeft);
+    }
+    return true;
+}
+
+// FS2 0x002b4950
+// callcheck: vecDistanceSq, vecNormalize, vecDot, scaleVec4, asinAcos, vecCross, wrapAngle, randNext, raycast, quatBetween, quatFromAxisAngle, quatMultiply, quatToMatrix, translateMatrix, applyMatrix (the rest in endFrame, Critter::update, walk, angleTo, waitOrTurn; 0x2bb510 in endFrame)
+
+bool CritterCrawler::step(float range, const sceVu0FVECTOR nest, const float *scare)
+{
+    switch (m_state) {
+    case CritterState_Hidden:
+        // PC: the ROM reads through a null scare; nothing near then.
+        if (scare != nullptr && vecDistanceSq(scare, m_position) < kCritterScareDistanceSq)
+            break;
+        return waitOrTurn(range, nest);
+    case CritterState_Walk:
+        walk();
+        break;
+    case CritterState_Fleeing:
+        if (kCritterHomeCrawlerSq < vecDistanceSq(m_position, nest)) {
+            if (m_timer % 30 == 0)
+                m_heading = wrapAngle(m_heading + angleTo(nest));
+            if (++m_timer < kCritterFleeFrames) {
+                walk();
+            } else {
+                m_state = CritterState_Hidden;
+                m_timer = 1;
+            }
+        } else {
+            m_state = CritterState_Hidden;
+            m_timer = ((int)randNext() % 30) * 10 + 30;
+        }
+        break;
+    case CritterState_Turn:
+        stepTurn(15);
+        break;
+    case CritterState_Scared:
+        m_heading = wrapAngle(m_heading + angleTo(nest));
+        m_speed = kCritterFleeSpeed;
+        m_state = CritterState_Fleeing;
+        m_timer = 0;
+        break;
+    default:
+        return waitOrTurn(range, nest);
+    }
+    return true;
+}
+
+// Round the edge: back under the face, then towards where it came from.
+const StageCollisionFace *CritterCrawler::leftSurface()
+{
+    sceVu0FVECTOR under;
+    scaleVec4(-kCritterEdgeDepth, under, m_normal);
+    addVector3(under, m_position);
+    under[3] = m_position[3];
+    sceVu0FVECTOR back;
+    scaleVec4(-kCritterEdgeBack, back, m_ahead);
+    sceVu0FVECTOR to;
+    copyVector(to, under);
+    addVector3(to, back);
+
+    sceVu0FVECTOR hit;
+    const StageCollisionFace *face = gStageScene->raycast(hit, under, to, 0, kFaceSolid, kFaceSkip, nullptr);
+    if (face != nullptr)
+        land(face, hit);
+    return face;
+}
+
 // FS2 0x0018c060, 0x0018c070, 0x0018c080, 0x0018c090: the side base's hooks, empty.
+// FS2 0x002b3870, 0x002b3880, 0x002b3890, 0x002b38a0: the nest's, empty.
+// FS2 0x002b56f0, 0x002b5700, 0x002b5710, 0x002b5720, 0x002b5730: thunks.
 // FS2 0x001905e0, 0x001905f0, 0x00190600, 0x00190610, 0x00190620, 0x00190630, 0x00190640: thunks.
 // FS2 0x0018c3b0: StageParticle::drawCells, drawQuad's cells.
 // FS2 0x00191e90: the 0x40-byte object's dtor, ~StageNodeTree.

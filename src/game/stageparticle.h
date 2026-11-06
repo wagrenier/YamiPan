@@ -231,6 +231,143 @@ private:
     friend struct StageNodeTree;
 };
 
+// What a critter is doing (+0x80).
+enum CritterState
+{
+    CritterState_Idle = 0,
+    CritterState_Turn = 1,
+    CritterState_Walk = 2,
+    CritterState_Hidden = 3,        // at the nest, not drawn
+    CritterState_Scared = 4,        // a frame: the player came close
+    CritterState_Fleeing = 5,       // back to the nest, fast
+};
+
+// The nest's picture (+0x200): which cell of the sheet, and who lives there.
+enum CritterKind
+{
+    CritterKind_Small = 0,
+    CritterKind_Rat = 1,            // the other class, its cells a quarter turn round
+    CritterKind_Side = 2,
+    CritterKind_Long = 3,
+};
+
+constexpr int kCritterTexture = 12; // FS2: the nest's +0x214, among the system's textures
+
+// One flat sprite that walks on the map. The class names are readings of the
+// code: nothing in the ROM names them.
+// layout: host -- EE 0xb0, vptr at +0xa0; +0x7c is a pointer. The ROM's base
+// 0x3194f0 has an empty update slot and a class of its own per size; the host
+// passes the sizes to the ctor.
+class Critter
+{
+public:
+    Critter(float half74, float half78);
+    virtual ~Critter() {}
+
+    // A frame. range and nest are the nest's, scare is the player's place or
+    // null. The ROM's answers 1 and its caller deletes a critter on 0: never.
+    void update(float range, const sceVu0FVECTOR nest, const float *scare);
+    // The quad, into the open pass, unless it is off the frame.
+    void draw(const sceVu0FVECTOR *view, const sceVu0FVECTOR *screen, const int *cell, bool turned,
+              sceVif1Packet *packet) const;                              // FS2 0x002b52c0
+
+    sceVu0FVECTOR m_position;                   // FS2 +0x00
+    int    m_state = CritterState_Idle;         // FS2 +0x80
+
+protected:
+    // The state's work; false nothing moved, so the matrix stays.
+    virtual bool step(float range, const sceVu0FVECTOR nest, const float *scare) = 0;
+    // The floor ended under it: what it holds on to now, null nothing.
+    virtual const StageCollisionFace *leftSurface() = 0;
+    virtual float reach() const = 0;            // how far down it feels for the surface
+    virtual float fallSpeed() const = 0;
+
+    void land(const StageCollisionFace *face, const sceVu0FVECTOR hit);
+    void stepTurn(int walkFrames);
+    void addToPlace(const sceVu0FVECTOR step);
+    void endFrame(float range, const sceVu0FVECTOR nest, bool moved);
+
+    sceVu0FVECTOR m_normal;                     // FS2 +0x10: of the surface, w 1
+    sceVu0FVECTOR m_ahead;                      // FS2 +0x20
+    sceVu0FMATRIX m_matrix;                     // FS2 +0x30
+    float  m_heading = 0.0f;                    // FS2 +0x70: about the normal
+    float  m_half[2];                           // FS2 +0x74, +0x78: half sizes, along and across its heading on a plain cell
+    const StageCollisionFace *m_surface = nullptr; // FS2 +0x7c: null it falls
+    int    m_timer = 0;                         // FS2 +0x84
+    float  m_turnLeft = 0.0f;                   // FS2 +0x88
+    float  m_speed = 0.0f;                      // FS2 +0x8c
+    int    m_lastFrame = 1;                     // FS2 +0x90: the two cells of the walk
+    int    m_frame = 0;                         // FS2 +0x94
+    int    m_frameTicks = 0;                    // FS2 +0x98
+    u_char m_forward = 1;                       // FS2 +0x9c: walks backwards on 0
+};
+
+// Walks on what is near flat, runs from the player and hides at the nest.
+// layout: host
+class CritterRat : public Critter
+{
+public:
+    CritterRat() : Critter(4.0f, 8.0f) {}
+
+protected:
+    bool step(float range, const sceVu0FVECTOR nest, const float *scare) override; // FS2 0x002b4070
+    const StageCollisionFace *leftSurface() override;
+    float reach() const override { return 4.0f; }
+    float fallSpeed() const override { return 3.0f; }
+
+private:
+    void walk();
+    void faceAwayFrom(const sceVu0FVECTOR nest);
+};
+
+// Walks on any face, walls too, and round an edge.
+// layout: host
+class CritterCrawler : public Critter
+{
+public:
+    CritterCrawler(float half74, float half78) : Critter(half74, half78) {}
+
+protected:
+    bool step(float range, const sceVu0FVECTOR nest, const float *scare) override; // FS2 0x002b4950
+    const StageCollisionFace *leftSurface() override;
+    float reach() const override { return 3.0f; }
+    float fallSpeed() const override { return 2.0f; }
+
+private:
+    void walk();
+    float angleTo(const sceVu0FVECTOR nest) const;
+    bool waitOrTurn(float range, const sceVu0FVECTOR nest);
+};
+
+// Where critters come from (EE 0x240, vtable 0x319280), kept by the tree.
+// layout: host -- the ROM's vector at +0x22c.
+class CritterNest : public StageObject
+{
+public:
+    CritterNest(float range, int kind, int most);                        // FS2 0x002b3ef0
+    ~CritterNest() override;                                             // FS2 0x002b3dc0
+
+    // FS2 0x002b3860
+    int getKind() override { return StageObject_CritterNest; }
+    // The side base's four hooks are the empty 0x2b3870..0x2b38a0, the base's.
+
+    void update(const float *scare);                                     // FS2 0x002b39e0
+    void draw(const sceVu0FVECTOR *view, const sceVu0FVECTOR *screen, sceVif1Packet *packet) const; // FS2 0x002b38b0
+
+    int    textureIndex() const { return m_texture; }
+
+private:
+    int    m_kind;                  // FS2 +0x200
+    int    m_most;                  // FS2 +0x204
+    float  m_range;                 // FS2 +0x208: how far they wander
+    int    m_spawnDelay = 0;        // FS2 +0x20c: frames between new ones
+    int    m_spawnTimer = 0;        // FS2 +0x210
+    int    m_texture = kCritterTexture; // FS2 +0x214
+    int    m_cell[4];               // FS2 +0x218: u0, v0, u1, v1 in 1 / 16 texel
+    bool   m_turned = false;        // FS2 +0x228: the cell lies a quarter turn round
+    std::vector<Critter *> m_critters; // FS2 +0x22c: capacity, +0x230 count, +0x234 data
+};
+
 // The particle system (+0x1c of the scene; EE: this holds only a pointer to a
 // 0x40-byte object, here flattened).
 // layout: host
@@ -252,10 +389,9 @@ struct StageNodeTree
     const float *effectOffset(const char *name);                         // FS2 0x00190650
     // The first live effect of that name.
     StageParticle *findLive(const char *name);                           // FS2 0x00190750
-    // A swarm of small sprites (class 0x2b3ef0, vtable 0x319280, EE 0x240) at
-    // pos: kind picks the picture, count the most at once, range how far they
-    // go. Native 0x20f. The name is a guess: the class is unread.
-    StageObject *spawnMotes(const float *pos, float range, int kind, int count); // FS2 0x00190990
+    // A nest of critters at pos: kind picks them (CritterKind), count the most
+    // at once, range how far they wander. Native 0x20f.
+    StageObject *spawnCritters(const float *pos, float range, int kind, int count); // FS2 0x00190990
     // Replaces the inner object's BoxGrid with a new one over a bbx file.
     void setBoxes(void *bbx);                                            // FS2 0x00190900
     // point is in one of those boxes; false without any.
@@ -265,8 +401,8 @@ struct StageNodeTree
     // The stage's particle files: B is searched first.
     void setParticleFileA(void *file);                                   // FS2 0x00190b50
     void setParticleFileB(void *file);                                   // FS2 0x00190ae0
-    // The effects' frame; arg asks them all to end. The motes within range of
-    // view take theirs too once they exist.
+    // The effects' frame; arg asks them all to end. The nests within range of
+    // view take theirs first.
     void update(float range, int arg, StageObject *view, StagePlayer *player); // FS2 0x00190a90
     void draw(GamePacketManager *packets, StageObject *camera);          // FS2 0x00190a80
 
@@ -285,6 +421,7 @@ private:
     const ParticleDef *m_defsB = nullptr;   // FS2 +0x18
     int    m_defCountB = 0;                 // FS2 +0x1c
     std::vector<StageParticle *> m_effects; // FS2 +0x20: capacity, +0x24 count, +0x28 data
+    std::vector<CritterNest *> m_nests;     // FS2 +0x2c: capacity, +0x30 count, +0x34 data
 };
 
 #endif /* _GAME_STAGEPARTICLE_H */

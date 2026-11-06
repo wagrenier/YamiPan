@@ -178,3 +178,4 @@ these hooks:
   stale names behind (stubs at address 0, callcheck "missing" calls).
 - `python -I` drops the script directory from `sys.path`; run the tools as `python tool.py` from here.
 
+- `ptcall.py [flag]`: every particle definition in the SLDI packs: flags and ALPHA_1 in use, offline (ptcdump.py lists one file).
