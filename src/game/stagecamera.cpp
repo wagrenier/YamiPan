@@ -754,7 +754,7 @@ bool StageCamera::seesPoint(const sceVu0FVECTOR point)
     vecDirection(ahead, ahead, getMatrix()[3]);
     sceVu0FVECTOR toPoint;
     vecDirection(toPoint, point, getMatrix()[3]);
-    const float angle = acosf(vecDot(toPoint, ahead));
+    const float angle = eeAcosf(vecDot(toPoint, ahead));
     const float side = m_screenWidth < m_screenHeight ? m_screenHeight : m_screenWidth;
     return angle <= atan2Octant(m_scrZ, side / 2.0f);
 }

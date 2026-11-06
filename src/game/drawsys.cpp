@@ -1001,15 +1001,16 @@ DrawSysFog::DrawSysFog()
 
 float DrawSysFog::getCoefficientA() const
 {
+    // PC: eeDivide: a fog with nothing set has far and near both 0.
     return (m_farValue + m_nearValue
-            + ((m_farValue - m_nearValue) * (m_far + m_near)) / (m_far - m_near)) / 2.0f;
+            + eeDivide((m_farValue - m_nearValue) * (m_far + m_near), m_far - m_near)) / 2.0f;
 }
 
 // FS2 0x002d9c30
 
 float DrawSysFog::getCoefficientB() const
 {
-    return (m_far * m_near * (m_nearValue - m_farValue)) / (m_far - m_near);
+    return eeDivide(m_far * m_near * (m_nearValue - m_farValue), m_far - m_near);
 }
 
 // FS2 0x002d9c70

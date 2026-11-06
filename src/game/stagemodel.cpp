@@ -240,6 +240,10 @@ void StageModel::playNamed(int index, const char *name, bool arg0, bool layered,
 {
     MotionMap::Node *node = motions[index].find(name);
     ModelMotion *motion = node != nullptr ? node->value : nullptr;
+    // PC: the ROM reads through the null, a script asking for a motion the
+    // object does not have.
+    if (motion == nullptr)
+        return;
     u_int play = (arg0 ? (MotionPlay_Arg0 | MotionPlay_Base) : MotionPlay_Base) | flags;
     if (!layered)
         pose->play(motion, play, arg);
