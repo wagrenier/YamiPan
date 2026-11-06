@@ -616,64 +616,10 @@ bool StageCharacter::hasAlteredVoice()
     return {};
 }
 
-// stub of FS2 0x002a4680
-void StageCharacter::playAttackVoice(int second, bool altered)
-{
-    YAMIPAN_STUB("StageCharacter::playAttackVoice", 0x002a4680);
-}
-
-// stub of FS2 0x002a4250
-void StageCharacter::playBiteVoice()
-{
-    YAMIPAN_STUB("StageCharacter::playBiteVoice", 0x002a4250);
-}
-
-// stub of FS2 0x002a3af0
-void StageCharacter::playBittenVoice()
-{
-    YAMIPAN_STUB("StageCharacter::playBittenVoice", 0x002a3af0);
-}
-
-// stub of FS2 0x002a3cf0
-void StageCharacter::playBreathDown(int level)
-{
-    YAMIPAN_STUB("StageCharacter::playBreathDown", 0x002a3cf0);
-}
-
-// stub of FS2 0x002a3e20
-void StageCharacter::playBreathUp(int level)
-{
-    YAMIPAN_STUB("StageCharacter::playBreathUp", 0x002a3e20);
-}
-
-// stub of FS2 0x002a32e0
-void StageCharacter::playClashVoice()
-{
-    YAMIPAN_STUB("StageCharacter::playClashVoice", 0x002a32e0);
-}
-
-// stub of FS2 0x002a4450
-void StageCharacter::playDamageVoice(bool light)
-{
-    YAMIPAN_STUB("StageCharacter::playDamageVoice", 0x002a4450);
-}
-
 // stub of FS2 0x002a2e30
 void StageCharacter::playDieVoice()
 {
     YAMIPAN_STUB("StageCharacter::playDieVoice", 0x002a2e30);
-}
-
-// stub of FS2 0x002a4050
-void StageCharacter::playDownVoice()
-{
-    YAMIPAN_STUB("StageCharacter::playDownVoice", 0x002a4050);
-}
-
-// stub of FS2 0x002a33e0
-void StageCharacter::playEndVoice()
-{
-    YAMIPAN_STUB("StageCharacter::playEndVoice", 0x002a33e0);
 }
 
 // stub of FS2 0x002a29f0
@@ -688,12 +634,6 @@ void StageCharacter::playGetUpVoice()
     YAMIPAN_STUB("StageCharacter::playGetUpVoice", 0x002a2d00);
 }
 
-// stub of FS2 0x002a3f50
-void StageCharacter::playHardDownVoice()
-{
-    YAMIPAN_STUB("StageCharacter::playHardDownVoice", 0x002a3f50);
-}
-
 // stub of FS2 0x002a2bc0
 void StageCharacter::playIdleVoice(int which)
 {
@@ -706,12 +646,6 @@ void StageCharacter::playJobSound(int job)
     YAMIPAN_STUB("StageCharacter::playJobSound", 0x002a2b60);
 }
 
-// stub of FS2 0x002a3bf0
-void StageCharacter::playJumpVoice()
-{
-    YAMIPAN_STUB("StageCharacter::playJumpVoice", 0x002a3bf0);
-}
-
 // stub of FS2 0x002a2070
 void StageCharacter::playMotionSound(const char *name, const float *pos)
 {
@@ -722,42 +656,6 @@ void StageCharacter::playMotionSound(const char *name, const float *pos)
 void StageCharacter::playPanicVoice()
 {
     YAMIPAN_STUB("StageCharacter::playPanicVoice", 0x002a2c80);
-}
-
-// stub of FS2 0x002a4800
-void StageCharacter::playShout(float loudness, int kind, const float *pos)
-{
-    YAMIPAN_STUB("StageCharacter::playShout", 0x002a4800);
-}
-
-// stub of FS2 0x002a34e0
-void StageCharacter::playSurpriseVoice()
-{
-    YAMIPAN_STUB("StageCharacter::playSurpriseVoice", 0x002a34e0);
-}
-
-// stub of FS2 0x002a3280
-void StageCharacter::playSwingSound(bool light)
-{
-    YAMIPAN_STUB("StageCharacter::playSwingSound", 0x002a3280);
-}
-
-// stub of FS2 0x002a4150
-void StageCharacter::playThrowVoice()
-{
-    YAMIPAN_STUB("StageCharacter::playThrowVoice", 0x002a4150);
-}
-
-// stub of FS2 0x002a35e0
-void StageCharacter::playTrapVoice()
-{
-    YAMIPAN_STUB("StageCharacter::playTrapVoice", 0x002a35e0);
-}
-
-// stub of FS2 0x002a39f0
-void StageCharacter::playUntieVoice()
-{
-    YAMIPAN_STUB("StageCharacter::playUntieVoice", 0x002a39f0);
 }
 
 // stub of FS2 0x002a4a40
@@ -777,12 +675,6 @@ StageObject * StageCharacter::findNearestFoe(bool foes, bool sight)
 void StageCharacter::item218850(int arg)
 {
     YAMIPAN_STUB("StageCharacter::item218850", 0x00218850);
-}
-
-// stub of FS2 0x002a46d0
-void StageCharacter::sayFound()
-{
-    YAMIPAN_STUB("StageCharacter::sayFound", 0x002a46d0);
 }
 
 // stub of FS2 0x00218b50

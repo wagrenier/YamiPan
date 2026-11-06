@@ -180,6 +180,7 @@ class StageNode;
 class StageItem;                 // game/stageitem.h
 class StageItemE;                // game/stageitem.h
 class StageThrownItem;           // game/stageitem.h
+class StageWeaponItem;           // game/stageitem.h
 class StageParticle;
 struct StageNodeTree;
 struct MapObjectParts;
@@ -1935,6 +1936,22 @@ enum CharacterFoeCache
     FoeCache_Count,
 };
 
+// What StageCharacter::getSoundKind answers: who a cue's name belongs to, in
+// the order of the ROM's name table 0x30a058 (the names say which is which).
+enum SoundKind
+{
+    SoundKind_None  = 0,
+    SoundKind_Pc    = 1,        // sheet kind 0
+    SoundKind_Npc   = 2,        // sheet kind 1
+    SoundKind_Enemy = 3,        // E%02d, the sheet's SEtype; kinds 2, 4, 5, 6, 8, 0xa, 0xc
+    SoundKind_Umi   = 4,        // sheet kind 0xd
+    SoundKind_Srt   = 5,        // sheet kind 3
+    SoundKind_Yrt   = 6,        // sheet kind 7
+    SoundKind_Ryo   = 7,        // has names; getSoundKind never answers it
+    SoundKind_Tks   = 8,        // sheet kind 0xf
+    SoundKind_Boss1 = 9,        // sheet kind 0xb
+};
+
 // StageObjRecord::kind: the sheet's ctype. What the kinds are is read from
 // what the code gives them; a name is a guess unless a comment says more.
 enum CharacterKind
@@ -2328,10 +2345,18 @@ public:
     void setSpawnPoint(const int *point) { m_spawnPoint = *point; }
     // Its name is F_YRT or F_SRT and its sheet kind 3 or 7: it may be sent.
     bool isSpawnable();                                                  // FS2 0x002115e0
-    // The sheet kind as the sound tables have it (1..9), 0 unknown.
+    // The sheet kind as the sound tables have it: SoundKind.
     int  getSoundKind();                                                 // FS2 0x002a6980
     // The YRT_VANISH / SRT_VANISH cry, heard around.
     void playVanishSound();                                              // FS2 0x002a31b0
+    // The weapon's hit sound, a bare hand's with none; heard around.
+    void playHitSound(StageWeaponItem *weapon);                          // FS2 0x002a3220
+    // What it cries as a trap takes it (NPC_TRP_I, a shibito's heavy damage).
+    void playTrapHitVoice();                                             // FS2 0x002a36e0
+    // E%02d_Q or RYO_Q: StageAlert::cry.
+    void playQuestionVoice();                                            // FS2 0x002a4340
+    // The cue of an attack, in buffer (0x20) when it has to be built; null none.
+    const char *getAttackVoice(char *buffer, int second, bool altered);  // FS2 0x002a25b0
     // A script ends it: its life state says leaving, with the effect of
     // sheet kind 3 and the cry; the quiet form without. In the two motions
     // of 0x9e, 0x9f they wait, the running script yields.
@@ -2610,9 +2635,9 @@ public:
     // Each frame: what it says and what its steps sound like (not written).
     void updateSounds();                                                 // FS2 0x002a4a40
     // What a motion event asks for (MotionEvent_HitSwing, MotionEvent_Sound
-    // through the sheet's S0..S3); the 0x2a2070..0x2a4680 family, not written.
+    // through the sheet's S0..S3); the 0x2a2070..0x2a4800 family, game/charactersound.cpp.
     void playSwingSound(bool light);                                     // FS2 0x002a3280
-    void playShout(float loudness, int kind, const float *pos);          // FS2 0x002a4800
+    void playShout(float loudness, int unused, const float *pos);        // FS2 0x002a4800
     void playIdleVoice(int which);                                       // FS2 0x002a2bc0
     void playDownVoice();                                                // FS2 0x002a4050
     void playClashVoice();                                               // FS2 0x002a32e0

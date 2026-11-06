@@ -140,6 +140,28 @@
    "status": "verify",
    "why": "the route and its task classes: the look, turn, walk and action tasks 0x21efa0..0x22a310 (vtables 0x3160a0..0x316480), the route 0x22a310..0x22f270, its ctor and the classes' deleting dtors and trivial slots ..0x22fc50; vtable order runs through all of it, 0x22fc50 on are the route's std containers"
   },
+  "game/charactersound.cpp": {
+   "notes": "All of 0x2a31b0..0x2a49c0 plus getAttackVoice 0x2a25b0. New names playHitSound, playTrapHitVoice, playQuestionVoice, enum SoundKind. Bug fixed in game/playermotion.cpp: playVoiceHeard looked names up with findCue (stream table); the ROM binary-searches the stage's SE table, so every call dropped out. Seen in a temporary log, removed (YAMIPAN_TELEPORT=2, 200 s, no crash): E18_DMG_L 39 times, E18_FIND once, null before the fix, found after. Stage 2's SE table has 28 of the 69 names this file can ask for; taken to be per-stage cast, only stage 2 listed. Not heard: nobody listened. No PC or NPC voice fired, so sayPartyVoice has not run. Not compared with the ROM by a tool. Waiting: takeHits past its first line calls playHitSound and playTrapHitVoice, the stub StageAlert::cry calls playQuestionVoice, hasAlteredVoice 0x215af0 is a reached stub. Left of the family: stubs 0x2a2b60..0x2a2e30, playMotionSound, playFallDownSound can join this file.",
+   "ranges": [
+    [
+     "002a25b0",
+     "002a29f0"
+    ],
+    [
+     "002a31b0",
+     "002a49c0"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-06 16:40",
+     "status": "verify",
+     "summary": "A character's voices written, 23 functions; playVoiceHeard now searches the SE table, as the ROM does, instead of the stream table, so it stops being silent."
+    }
+   ],
+   "status": "verify",
+   "why": "the character's voices: one run in the ROM between playPickSound and playStepSound, 0x2a25b0 is what playAttackVoice builds its name with; the rest of 0x2a2070..0x2a6980 is the same family and can join"
+  },
   "game/clock.cpp": {
    "notes": "Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode whose destructor 0x135550 is the real body (Clock::~Clock 0x1351b0 and MasterClock::~MasterClock 0x135330 only call it and free: Metrowerks one-dtor-with-flags). ROM bugs kept: the destructor detaches only its FIRST child (clearing the slot makes next(child) end the walk), the others keep a dangling parent (harmless while children die first; on the host a later child delete would read freed memory, watch at bootstrap 7); when that child was the last the ROM walks a null list (EE address 4), the port stops. PtrList slots are pointer-sized on the host (EE 4 bytes). Checked: callcheck clean, layout lint OK, g++ -fsyntax-only clean, host harness (advance with scale 0x80, pause, getSeconds / getDeltaSeconds, delete detaching from the parent and freeing an emptied list). Next: the VU0 run unassigned@00135990 (20 functions; decode the COP2 words from the asm, open-items.md TU 42).",
    "ranges": [
@@ -3137,6 +3159,10 @@
   "unassigned@0027cab0": {},
   "unassigned@002908d0": {},
   "unassigned@00296d60": {},
+  "unassigned@002a31b0": {
+   "claimed": "2026-11-06 16:04",
+   "status": "active"
+  },
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {},
   "unassigned@002c42a0": {},
