@@ -2780,7 +2780,7 @@
   "unassigned@002c42a0": {},
   "unassigned@002d46a0": {},
   "yamipan/rendering/model_renderer.cpp": {
-   "notes": "Written: shadowVertex, outsideShadowBox, shadowPipeline (spot shaders, ALPHA_1 0x44, CLAMP 5, frame alpha written), shadow vertices drawn between a draw and its spot; renaSetShadowTexture, Matrices, Count, YamiPanModelPass::shadows, ModelFlag_TakesShadow 0x10 (the old kMapModelFlag10), ModelMaterialFlag_NoShadow 2. Measured with removed probes: stage 1 room has no caster (first-person player out of the main group); d0101 has one, count 1, 78..510 shadow vertices, alpha up to 118, up to 274 vertices in the picture. NOT seen on screen: a red and white test left no red in any shot, event shots looked at aim at the ceiling, so reaching the screen is unproven. Check it on the first visible character on a lit floor and compare with shadow_00, not looked at. VU 180..184 writer not found: fog unknown, shadow stays black. Dead branch 0x3ad, state 0x9e. Left in this TU: material flag 4 (0x4df), 0x77f, Kind1 frames, ghost 0x011 and 0x2e7960, fades, mips, material flag 8, boss shadow target, per-model vertex cache. architecture.md has A shadow in VU1; open-items.md Done has the doubts.",
+   "notes": "Fix for the user's crash on turning left in node 4, confirmed fixed by the user's play. drawBatch read batch.uvs unchecked. The batch is a single unskinned triangle on the plain path, listFlags 0, colours present. It draws with zero UVs plus the scroll; which model it is and how it looks were not looked at. The committed build is this fix alone: the test hooks and two unproven changes came out after the user's test.",
    "sessions": [
     {
      "date": "2026-11-04 10:11",
@@ -2801,6 +2801,11 @@
      "date": "2026-11-05 14:08",
      "status": "verify",
      "summary": "Shadow pass read from VU1 and in the host; the pass runs in d0101 by its numbers, no screenshot shows a shadow yet"
+    },
+    {
+     "date": "2026-11-05 20:23",
+     "status": "verify",
+     "summary": "A batch with no UVs draws instead of crashing"
     }
    ],
    "status": "verify",
