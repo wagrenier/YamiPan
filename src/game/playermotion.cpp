@@ -9819,17 +9819,19 @@ bool StageCharacter::playVoice(const char *name)
     return true;
 }
 
-// The cue's table is searched inline in the ROM (findCue on its first
-// bank). The volume 800 is playNamedHeard2's.
+// Unlike playVoice this is an effect, not a stream: the name is looked up in
+// the stage's SE table (inline in the ROM), where the unprefixed names are.
+// The volume 800 is playNamedHeard2's.
 // FS2 0x002a65c0
-// callcheck: findCue, BoneMap::find, getMatrix, playNamedHeard2, stopCue, findSource, stopSource, getMatrix, playNamedHeard2
+// callcheck: strcmp, BoneMap::find, getMatrix, playNamedHeard2, stopCue, findSource, stopSource, getMatrix, playNamedHeard2 (the inline SeTable::find)
 
 void StageCharacter::playVoiceHeard(const char *name)
 {
     enum { Sound_None = 0, Sound_Source = 1, Sound_Cue = 2 };   // m_soundState
     static const char kHead[] = "bn_head";  /* data 0x303178 */
     StageSound *sound = gStageScene->sound;
-    const SeEntry *cue = sound->findCue(name);
+    SeTable *table = sound->m_player->m_table;
+    const SeEntry *cue = table != nullptr ? table->find(name) : nullptr;
     if (cue == nullptr)
         return;
     if (cue->priority == 0) {
@@ -10386,29 +10388,17 @@ bool StageCharacter::isSpawnable()
 int StageCharacter::getSoundKind()
 {
     switch (stageObjRecord(m_itemDef)->kind) {
-    case 0:   return 1;
-    case 1:   return 2;
+    case 0:   return SoundKind_Pc;
+    case 1:   return SoundKind_Npc;
     case 2: case 4: case 5: case 6: case 8: case 10: case 12:
-              return 3;
-    case 3:   return 5;
-    case 7:   return 6;
-    case 11:  return 9;
-    case 13:  return 4;
-    case 15:  return 8;
-    default:  return 0;
+              return SoundKind_Enemy;
+    case 3:   return SoundKind_Srt;
+    case 7:   return SoundKind_Yrt;
+    case 11:  return SoundKind_Boss1;
+    case 13:  return SoundKind_Umi;
+    case 15:  return SoundKind_Tks;
+    default:  return SoundKind_None;
     }
-}
-
-// The ROM's call passes 800 in a float register that playNamedHeard2 never reads.
-// FS2 0x002a31b0
-// callcheck: FUN_002a6980, playNamedHeard2 (getSoundKind)
-
-void StageCharacter::playVanishSound()
-{
-    enum { kSoundShiryo = 5, kSoundYami = 6 };
-    const int kind = getSoundKind();
-    const char *name = kind == kSoundYami ? "YRT_VANISH" : kind == kSoundShiryo ? "SRT_VANISH" : nullptr;
-    playNamedHeard2(name, m_xform.position, nullptr);
 }
 
 // The head of the four leaves: not when it is leaving already; in the two

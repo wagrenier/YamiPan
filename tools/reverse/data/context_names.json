@@ -31643,6 +31643,12 @@
   "was": "FUN_002a2100",
   "why": "PC_LADDER / NPC_LADDER / SBT_LADDER / YBZ_LADDER / RYO_LADDER by the sheet's kind; called on the step events of ladder motions"
  },
+ "002a25b0": {
+  "name": "StageCharacter::getAttackVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a25b0",
+  "why": "builds the cue name of an attack by sound kind and the weapon's ItemDef kind; playAttackVoice's only work"
+ },
  "002a29f0": {
   "name": "StageCharacter::playFallDownSound",
   "tag": "game-inferred",
@@ -31733,6 +31739,12 @@
   "was": "FUN_002a31b0",
   "why": "YRT_VANISH / SRT_VANISH"
  },
+ "002a3220": {
+  "name": "StageCharacter::playHitSound",
+  "tag": "game-inferred",
+  "was": "FUN_002a3220",
+  "why": "a1 null BT_HT_L_AT else StageWeaponItem::getHitSound, playNamedHeard2 at +0x150; PlayerMotion::takeHits calls it with the attacker's weapon"
+ },
  "002a3280": {
   "name": "StageCharacter::playSwingSound",
   "tag": "game-inferred",
@@ -31762,6 +31774,12 @@
   "tag": "game-inferred",
   "was": "FUN_002a35e0",
   "why": "event TRP_O"
+ },
+ "002a36e0": {
+  "name": "StageCharacter::playTrapHitVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a36e0",
+  "why": "NPC_TRP_I / PC_TRP_I by sheet kind, a shibito's %s_DMG_H; called from PlayerMotion::takeHits once; playTrapVoice is the _O of the pair"
  },
  "002a39f0": {
   "name": "StageCharacter::playUntieVoice",
@@ -31816,6 +31834,12 @@
   "tag": "game-inferred",
   "was": "FUN_002a4250",
   "why": "event BITE"
+ },
+ "002a4340": {
+  "name": "StageCharacter::playQuestionVoice",
+  "tag": "game-inferred",
+  "was": "FUN_002a4340",
+  "why": "RYO_Q / E%02d_Q through playVoiceHeard; only caller StageAlert::cry"
  },
  "002a4450": {
   "name": "StageCharacter::playDamageVoice",

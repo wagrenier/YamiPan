@@ -8083,7 +8083,17 @@
 // *****************************************************************************
 
 /* 002a2280 00000328 */ FUN_002a2280(){}
-/* 002a25b0 00000438 */ FUN_002a25b0(){}
+
+// *****************************************************************************
+// FILE -- game/charactersound.cpp
+// *****************************************************************************
+
+/* 002a25b0 00000438 */ StageCharacter::getAttackVoice(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 002a29f0 000000dc */ StageCharacter::playFallDownSound(){}  // game
 
 // *****************************************************************************
@@ -8126,17 +8136,17 @@
 /* 002a3160 00000044 */ StageCharacter::playPickSound(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/charactersound.cpp
 // *****************************************************************************
 
 /* 002a31b0 00000070 */ StageCharacter::playVanishSound(){}  // game
-/* 002a3220 00000060 */ FUN_002a3220(){}
+/* 002a3220 00000060 */ StageCharacter::playHitSound(){}  // game
 /* 002a3280 00000058 */ StageCharacter::playSwingSound(){}  // game
 /* 002a32e0 000000f4 */ StageCharacter::playClashVoice(){}  // game
 /* 002a33e0 000000fc */ StageCharacter::playEndVoice(){}  // game
 /* 002a34e0 000000fc */ StageCharacter::playSurpriseVoice(){}  // game
 /* 002a35e0 000000fc */ StageCharacter::playTrapVoice(){}  // game
-/* 002a36e0 0000030c */ FUN_002a36e0(){}
+/* 002a36e0 0000030c */ StageCharacter::playTrapHitVoice(){}  // game
 /* 002a39f0 000000fc */ StageCharacter::playUntieVoice(){}  // game
 /* 002a3af0 000000fc */ StageCharacter::playBittenVoice(){}  // game
 /* 002a3bf0 000000fc */ StageCharacter::playJumpVoice(){}  // game
@@ -8146,7 +8156,7 @@
 /* 002a4050 000000fc */ StageCharacter::playDownVoice(){}  // game
 /* 002a4150 000000fc */ StageCharacter::playThrowVoice(){}  // game
 /* 002a4250 000000f0 */ StageCharacter::playBiteVoice(){}  // game
-/* 002a4340 00000110 */ FUN_002a4340(){}
+/* 002a4340 00000110 */ StageCharacter::playQuestionVoice(){}  // game
 /* 002a4450 00000230 */ StageCharacter::playDamageVoice(){}  // game
 /* 002a4680 00000044 */ StageCharacter::playAttackVoice(){}  // game
 /* 002a46d0 00000124 */ StageCharacter::sayFound(){}  // game
