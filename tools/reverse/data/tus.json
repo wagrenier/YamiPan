@@ -1659,7 +1659,7 @@
    "why": "The base camera's getKind, its four empty side hooks, the setters StageObject keeps at the head of this object, its dtor and the view functions. 0x177be0 setProjection is written here too but pinned in game/playermotion.cpp; 0x177d00 on is not pinned yet."
   },
   "game/stagecharacter.cpp": {
-   "notes": "All of the TU's code is written, the terminate hook included (0x179d30 joined the ranges; 0x214f20 too). Stretched limbs do not return: a temporary third-person view (removed) shows F_PC01 whole from behind with the main camera linked, isViewLinked 1 (progress/20261105-f_pc01-third-person.png); no reference exists for that view. First person with the final code: his view, no crash in 285 s, the scripted pad walks him to the door wall. verify, not done: smokes, splash, ripples, lamp, the timed motion rate, carried items' lights and the run clock's trip cannot show on stage 1 (nothing there, Run refused). Outside this file and still open: PlayerMotion::takeHits 0x1e18c0 past its first line, updateSounds 0x2a4a40 and the voice family 0x2a2070..0x2a4680 are stubs, one TU of their own, not queued (open-items.md Done). Next in the queue: game/characterbrain.cpp.",
+   "notes": "unassigned@0017e140 was the tail of this file: StageList<StageObject *> 0x17e140..0x17e400 and 63 thunks 0x17e470..0x17e860, now listed at the end of stagecharacter.cpp; 0x17e860..0x17e950 joined game/stageplayer.cpp. Volume dtors corrected: 0x17eb20 is StageVolume, 0x17e860 is BoxVolume. New overrides on StageCharacter: setPosition 0x218500, onScriptExit 0x219010, scriptPlayMotion 0x21ac60, cmdIsLit; plain members for slots no script reaches. m_7a0 is now m_placedThisFrame, m_7c4 m_placeMotion. New tool slotcheck.py. Seen: temporary build, removed, New Game, doorwalk pad, 285 s, no crash, forced on the player: warp exact, motion 0. Not tested: an uncontrolled character (stopAndRetry, playActionAndRetry). Unforced stage 1 reaches none of them; screen is the dark first-person wall, not compared pixel by pixel. Next look: StageItem slot +0xfc 0x184770, open-items.md.",
    "ranges": [
     [
      "00179d30",
@@ -1672,6 +1672,10 @@
     [
      "0017dd10",
      "0017df60"
+    ],
+    [
+     "0017e140",
+     "0017e860"
     ],
     [
      "00214f20",
@@ -1688,11 +1692,16 @@
      "date": "2026-11-05 10:56",
      "status": "verify",
      "summary": "re-judged whole, third person; the terminate hook 0x179d30, PlayerMotion::endFrame 0x1e06f0 with the run clock and sound events, releaseAction, isHoldingAction"
+    },
+    {
+     "date": "2026-11-06 10:42",
+     "status": "verify",
+     "summary": "the file's tail: list instance and 63 adjustor thunks, and the four runner slots a character had left on the default (setPosition, onScriptExit, scriptPlayMotion, cmdIsLit)"
     }
    ],
    "status": "verify",
    "task": "The character, built, step 4 of roadmap-3d-control.md, queued 2026-11-04: StageCharacter ctor 0x17de30 and setup 0x17c700, the parameter tables 0x17b3e0 and 0x17bd10, the run 0x17b3e0..0x17df60 out of unassigned@00171300. placeCharacter already passes the map's position and turn. The parts it news are the next three items of the queue: stub them first. With this and native 0x70 (game/stagecamera.cpp) the main camera links, and YAMIPAN_CAMERA, stageCameraDebugLookAt and aimDebugCamera go (open-items.md). Check onLinkChanged: it looks up bn_head with no null test. Done when F_PC01 stands in the scene at (7286, 6064, 1138) and the main camera's step runs on it.",
-   "why": "The character's build: parameter tables, setup, setupBody, ctor and dtor (roadmap step 4); from the run unassigned@00171300; 0x17dcb0 is already written in subsceneobject.cpp; no source-path string, the file name is the port's guess; the terminate hook 0x179d30 joined 2026-11-05"
+   "why": "The character's build: parameter tables, setup, setupBody, ctor and dtor (roadmap step 4); from the run unassigned@00171300; 0x17dcb0 is already written in subsceneobject.cpp; no source-path string, the file name is the port's guess; the terminate hook 0x179d30 joined 2026-11-05; the file's tail 0x17e140..0x17e860, the list template's instance (in game/stagelist.h) and the adjustor thunks, joined 2026-11-06"
   },
   "game/stagecollision.cpp": {
    "notes": "All of the TU's functions are written or mapped to StageList and the host vector. Seen on stage 1's data in a New Game run: against brute force over all 8165 faces of Root, rays 0 wrong, segments 0, spheres 0, heights 1 of 3000; hit points on their plane and in their triangle; down rays agree with heightAt. No crash, d0101 still draws. Nothing on screen shows collision until a character stands (step 4 of roadmap-3d-control.md), so verify. Untested: moved meshes, the world's pairs, spherePush. Left: StageObject::breakPart 0x175900 and ItemPhysics::collisionHook0 0x23c020 are stubs, the doors' effect in MapObjectParts is null, FUN_00295010 unwritten. Next in the queue: game/stagecharacter.cpp. A probe at stage load needs a run of 230 s: the stage's arrival varies. open-items.md has the doubts.",
@@ -1980,6 +1989,10 @@
   "game/stageplayer.cpp": {
    "notes": "Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was stubs, so native 0x52 never ended the stage. Seen in the user's own playthrough: the cutscene, then mission accomplished, then back to stage 1. That last step is the navigator: runNaviFile and applyNaviAnswer are stubs (open-items.md, Next up). AREA_AC10 and AREA11 now fire too and were not looked at.",
    "ranges": [
+    [
+     "0017e860",
+     "0017e950"
+    ],
     [
      "0017e950",
      "0017ea50"
@@ -3043,6 +3056,7 @@
   "unassigned@00148db0": {},
   "unassigned@00171300": {},
   "unassigned@00176480": {},
+  "unassigned@0017e140": {},
   "unassigned@0017fce0": {
    "sessions": [
     {

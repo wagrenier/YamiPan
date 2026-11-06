@@ -1243,7 +1243,7 @@ void CharacterBrain::reset()
 
 void CharacterBrain::update()
 {
-    if (gStageScene->route == nullptr || !m_enabled || m_owner->m_7a0)
+    if (gStageScene->route == nullptr || !m_enabled || m_owner->m_placedThisFrame)
         return;
     if (m_wait->isDone()) {
         m_subRunner = nullptr;

@@ -1952,6 +1952,15 @@ Effects: a spot named TORCH takes `dento1`, SigLamp `siglight`, both at the ligh
 
 **The scene's point and spot** (+0 base, +0x80 member, rena's records 0x2e0xxx; every lit model's `ModelInstance::spot`): of group 5, the highest `m_priority` (never -1) of each class, nearest wins a tie. `yami_pl` (priority 4) hangs under a character of class 8, `scr_demo_pl` / `demo_pl` priority 5. What holds a lamp gets priority 4 for it. The host renders neither record yet (VU1 0x545).
 
+**What a character answers on the runner's slots (batch 171, 2026-11-06).** The tail of the character's object file, 0x17e470..0x17e860, is 63 adjustor thunks in the order of the tables 0x31227c (runner, -0x40) and 0x312264 (the four side hooks, -0x18): game/stagecharacter.cpp lists each one with its target. The list before them, 0x17e140..0x17e400, is `StageList<StageObject *>`. Read against the host, four slots had no override and fell to the default:
+- +0x3c `setPosition` 0x218500 (also slot +0x1d0): moves, `updateMatrix`, `PlayerMotion::reset(m_placeMotion)` (then 0), `CharacterGround::reset`, `onViewTop` on the top view when the view is linked, `CharacterBrain::stopAndRetry`, `m_placedThisFrame` = 1, which holds the brain for a frame. Natives 0x26, 0x47, 0x48, 0x144.
+- +0x14 `onScriptExit` 0x219010: the brain's `resetScripts`.
+- +0x140 `scriptPlayMotion` 0x21ac60: `setSpecial` when controlled and allowed, the brain's `playActionAndRetry` otherwise. Native 0x68.
+- +0x160 `cmdIsLit`: `isLampOn`, the property Prop_SwitchedOn.
+Slots +0xbc, +0xc0, +0xc4, +0xe4, +0x104, +0x134, +0x168 have no caller that a script reaches: natives 0x36, 0x37, 0x63, 0x6c, 0x84 are on no script of the disc and +0xe4's only site is the brain's own table. They are written as plain members. `tools/reverse/slotcheck.py` does this comparison.
+
+**The volumes' tables, corrected (batch 171).** 0x3127f0 is `StageVolume`'s base table and 0x17eb20 its dtor; the box's table is 0x312580 and its dtor 0x17e860. The old name had them one class off. A box's four side hooks, 0x17e910..0x17e940, are empty.
+
 ## Scripted events (game/demoevent.cpp, 2026-11-04)
 
 **How an event starts.** A script native asks: 0x1f2 `pendingEvent(name)` (black at once; `StageMission::afterScripts` 0x286c40 starts it after the frame's scripts), 0x15f / 0x160 file event, waiting for its end, 0x161 / 0x162 and 0x155 script event. The waiting natives yield with `scriptYield` and take the state back from the runner's +0xac / +0xb0 (`ScriptRunner::takeYield`). `StageScene::runStageScripts` polls `event` first and runs nothing else of the stage while one exists; a finished one is deleted there.

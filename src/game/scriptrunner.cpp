@@ -512,6 +512,23 @@ void scriptYield(int a, int b)
     }
 }
 
+void scriptYieldWhile(int value)
+{
+    enum { NativeWaitMotion = 0x63 };
+    ScriptRunner *run = gRunningScript;
+    // PC: the ROM reads low memory with no script running.
+    if (run == nullptr)
+        return;
+    if (run->m_yieldA == 0) {
+        scriptYield(NativeWaitMotion, value);
+    } else if (run->m_yieldB == value) {
+        sScriptYield = 1;
+    } else {
+        run->m_yieldA = 0;
+        run->m_yieldB = 0;
+    }
+}
+
 // FS2 0x001d3740
 // callcheck: getDeltaSeconds
 

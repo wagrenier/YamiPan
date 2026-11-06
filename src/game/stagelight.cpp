@@ -393,7 +393,7 @@ void StageLight::setVector(float x, float y, float z)
 
 // ──────────────────────────────────────────────────────────────────────────
 // FS2 0x00185c60
-// callcheck: strstr, strstr, spawn, spawnNamed, spawn, strcasecmp, FUN_0017e260, FUN_0017e260, FUN_0017e1b0, getKind (virtual; setParent is the erases and the push, inline in the ROM)
+// callcheck: strstr, strstr, spawn, spawnNamed, spawn, strcasecmp, erase, erase, pushBack, getKind (virtual; setParent is the erases and the push, inline in the ROM)
 
 void StageLight::attachEffect()
 {
