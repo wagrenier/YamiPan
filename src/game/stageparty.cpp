@@ -16,6 +16,7 @@
 #include "game/characterinput.h"
 #include "game/gamesystem.h"
 #include "game/gfxtarget.h"
+#include "game/packtables.h"
 #include "game/playermotion.h"
 #include "game/scenerender.h"
 #include "game/stageobjlist.h"
@@ -786,6 +787,43 @@ constexpr u_int  kVisionTintB = 0x00001c33;
 constexpr u_int  kVisionWaitTintA = 0x804688c0; // while it waits to start
 constexpr u_int  kVisionWaitTintB = 0x80001c33;
 constexpr float  kFlashFramesScale = 5.0f;  // m_flashFrames to the fill's level
+constexpr u_long kJackAdd = 0x48;           // ALPHA_1: added to the frame
+constexpr u_long kMarkerTest = 0x33001;     // TEST_1: past any depth, the frame's alpha kept
+constexpr float  kGsOne = 128.0f;           // RGBAQ's and FIX's 1.0
+constexpr int    kFrameScaleOne = 0xff;     // gsFrameScale: past it the frame is added on
+constexpr int    kFrameScaleBoost = 0x80;
+// The GS window, 12.4: what the frame covers.
+constexpr int    kWindowMin = 0x7000;
+constexpr int    kWindowCentre = 0x8000;
+constexpr int    kWindowMax = 0x9000;
+constexpr u_long kMarkerLines = 0x49;       // PRIM: LINE, Gouraud, blended
+constexpr u_long kMarkerGlow = 0x4d;        // PRIM: TRIFAN, Gouraud, blended
+constexpr u_long kBindFlashStrip = 0x4c;    // PRIM: TRISTRIP, Gouraud, blended
+constexpr u_int  kMarkerWhite = 0x00ffffff;
+constexpr u_int  kMarkerRgb = 0x00ffffff;
+constexpr u_int  kMarkerViewer = 0x80e03050;
+constexpr u_int  kMarkerPartner = 0x8030e050;
+constexpr u_int  kMarkerFoe = 0x805030e0;
+constexpr float  kMarkerNear = 8.0f;        // of a projected w
+constexpr float  kMarkerFar = 8388592.0f;
+constexpr float  kMarkerFade = 2000.0f;     // data 0x306840: the rays are longest at 0
+constexpr float  kMarkerRaySpan = 192.0f;
+constexpr float  kMarkerRayMin = 48.0f;
+constexpr float  kMarkerGlowDepth = 1000.0f;
+constexpr float  kMarkerGlowSpan = 11.0f;
+constexpr int    kBindFlashAlpha = 0xc0;    // m_bindFlash to alpha, over 16
+constexpr u_int  kBindFlashGrey = 0x00808080;
+constexpr u_int  kWarningWash = 0x20000080;
+constexpr u_int  kAltActionWash = 0x80200000;
+constexpr u_int  kTintPartner = 0x1e0a1e14;
+constexpr u_int  kTintTakenOver = 0x1e004050;
+constexpr u_int  kTintFoe = 0x1e505000;     // has found a foe
+constexpr u_int  kTintSearching = 0x16503200; // brain states 2..4
+// The stages with a view of their own (StageSelect::stage).
+constexpr int    kStagePartnerPalette = 6;
+constexpr int    kStageE21 = 0x15;
+constexpr int    kStagePaletteA = 0x18;
+constexpr int    kStageBoss = 0x1b;
 
 // The frame goes black, depth untouched.
 static void fillBlack(sceVif1Packet *packet)
@@ -800,6 +838,252 @@ static TexAreaList *scene2dTexList()
     return gfxGetTexArea()->getList(PacketList_Scene2d);
 }
 
+// ──────────────────────────────────────────────────────────────────────
+// What lies over the frame.
+
+// FS2 0x002cfb20
+// The whole frame times level / 128; past 0xff, level - 0x80 on top of the
+// frame as it stands. PC: a host pass in place of eight sprites of Cd * FIX.
+// callcheck: gfxGetDrawEnv (PC: YamiPan_DrawUiFrameScale)
+
+void gsFrameScale(sceVif1Packet *packet, int level)
+{
+    if (level > kFrameScaleOne) {
+        level -= kFrameScaleBoost;
+        YamiPan_DrawUiFrameScale(packet, 1.0f + (float)(level > kFrameScaleOne ? kFrameScaleOne : level) / kGsOne);
+    } else {
+        YamiPan_DrawUiFrameScale(packet, (float)level / kGsOne);
+    }
+}
+
+// FS2 0x002cf880
+// The frame pushed away from rgba, as far as its alpha says. PC: a host pass.
+// callcheck: gfxGetDrawEnv (PC: YamiPan_DrawUiFrameContrast)
+
+void gsFrameContrast(sceVif1Packet *packet, u_int rgba) { YamiPan_DrawUiFrameContrast(packet, rgba); }
+
+// FS2 0x002058e0
+// rgba added over the frame. The ROM's eight sprites are one fill here.
+// callcheck: gfxGetDrawEnv (PC: gsFillRect)
+
+void gsFrameAdd(sceVif1Packet *packet, u_int rgba)
+{
+    YamiPan_DrawUiReg(packet, SCE_GS_ALPHA_1, kJackAdd);
+    YamiPan_DrawUiReg(packet, SCE_GS_TEST_1, kJackBlackTest);
+    gsFillRect(packet, 0, 0, kJackFrame, kJackFrame, rgba);
+}
+
+static void markerVertex(sceVif1Packet *packet, int x, int y, u_int rgba)
+{
+    YamiPanUiVertex vertex = {};
+    vertex.rgba[0] = (u_char)rgba;
+    vertex.rgba[1] = (u_char)(rgba >> 8);
+    vertex.rgba[2] = (u_char)(rgba >> 16);
+    vertex.rgba[3] = (u_char)(rgba >> 24);
+    vertex.x = (u_short)x;
+    vertex.y = (u_short)y;
+    YamiPan_DrawUiVertex(packet, &vertex);
+}
+
+static void markerRay(sceVif1Packet *packet, int x, int y, int endX, int endY, u_int rgb, u_int centre)
+{
+    markerVertex(packet, x, y, centre);
+    markerVertex(packet, endX, endY, rgb);
+}
+
+// FS2 0x00205f50
+// A cross over object's head as view sees it: two white lines across the
+// frame, brightest on the side it is on, four rays of rgba and, within
+// kMarkerGlowDepth, a glow. The ROM patches vertices into two static packets
+// (0x2fa450, 0x2fa560); a row out of the window goes to 0 there and is left
+// out here.
+// PC: the 3D widens with the display, so what sits on a projected point is
+// pulled in by as much (YamiPan_DrawUiSqueeze); the line across stays whole.
+// callcheck: find, getMatrix, getMatrix, applyMatrix, applyMatrix, sceVif1PkCnt, sceVif1PkAddCode, sceVif1PkAddCode, FUN_0010b1c8, sceVif1PkCloseDmaTag, sceVif1PkCnt, sceVif1PkAddCode, sceVif1PkAddCode, FUN_0010b1c8, sceVif1PkCloseDmaTag
+
+void jackMarker(sceVif1Packet *packet, StageObject *object, StageObject *view, u_int rgba)
+{
+    if (object == nullptr)
+        return;
+
+    sceVu0FVECTOR head;
+    if (auto *bone = object->m_model->boneMap.find("bn_head")->value) {
+        const int family = object->m_motion->m_modelFamily;
+        // The ROM reads address 0x20 for a family out of range.
+        static const sceVu0FVECTOR kNoOffset = { 0.0f, 0.0f, 0.0f, 1.0f };
+        applyMatrix(head, bone->getMatrix(),
+                    family < 0 || family >= kMotionModelCount ? kNoOffset : gMotionModels[family].b);
+    } else {
+        const sceVu0FVECTOR *matrix = object->getMatrix();
+        head[0] = matrix[3][0];
+        head[1] = matrix[3][1];
+        head[2] = matrix[3][2];
+        head[3] = matrix[3][3];
+    }
+
+    sceVu0FVECTOR screen;
+    applyMatrix(screen, static_cast<StageCamera *>(view)->m_viewScreen, head);
+    const float depth = screen[3];
+    if (depth < kMarkerNear || depth > kMarkerFar)
+        return;
+
+    const float strength = (float)(rgba >> 24) / kGsOne;
+    const int x = (int)(screen[0] / depth * 16.0f);
+    const int y = (int)(screen[1] / depth * 16.0f);
+    const float closeness = 1.0f - (depth > kMarkerFade ? kMarkerFade : depth) / kMarkerFade;
+
+    const u_int lineOn = ((u_int)(int)(strength * 16.0f) << 24) | kMarkerWhite;
+    const int rayX = (int)((closeness * kMarkerRaySpan + kMarkerRayMin) * 16.0f);
+    const int rayY = rayX * 4 / 3;
+    const bool inReach = x > kWindowMin - rayX && x < kWindowMax + rayX
+                      && y > kWindowMin - rayY && y < kWindowMax + rayY;
+    const u_int rgb = rgba & kMarkerRgb;
+
+    YamiPan_DrawUiReg(packet, SCE_GS_ALPHA_1, kJackAlpha);
+    YamiPan_DrawUiReg(packet, SCE_GS_TEST_1, kMarkerTest);
+    YamiPan_DrawUiPrim(packet, kMarkerLines, nullptr);
+    YamiPan_DrawUiBegin(packet, YAMIPAN_UIV_RGBAQ);
+    if (y > kWindowMin && y < kWindowMax) {
+        markerVertex(packet, kWindowMin, y, x < kWindowCentre ? lineOn : kMarkerWhite);
+        markerVertex(packet, kWindowMax, y, x < kWindowCentre ? kMarkerWhite : lineOn);
+    }
+    YamiPan_DrawUiSqueeze(packet, 1);
+    if (x > kWindowMin && x < kWindowMax) {
+        markerVertex(packet, x, kWindowMin, y < kWindowCentre ? lineOn : kMarkerWhite);
+        markerVertex(packet, x, kWindowMax, y < kWindowCentre ? kMarkerWhite : lineOn);
+    }
+    if (inReach) {
+        const u_int centre = ((u_int)(int)(strength * kGsOne) << 24) | rgb;
+        markerRay(packet, x, y, x, y - rayY, rgb, centre);
+        markerRay(packet, x, y, x, y + rayY, rgb, centre);
+        markerRay(packet, x, y, x + rayX, y, rgb, centre);
+        markerRay(packet, x, y, x - rayX, y, rgb, centre);
+    }
+    if (depth <= kMarkerGlowDepth && inReach) {
+        const int reach = (int)((closeness * kMarkerGlowSpan + 1.0f) * 16.0f);
+        YamiPan_DrawUiPrim(packet, kMarkerGlow, nullptr);
+        YamiPan_DrawUiBegin(packet, YAMIPAN_UIV_RGBAQ);
+        markerVertex(packet, x, y, ((u_int)(int)(strength * 32.0f) << 24) | rgb);
+        markerVertex(packet, x, y - rayY, rgb);
+        markerVertex(packet, x + reach, y - reach, rgb);
+        markerVertex(packet, x + rayX, y, rgb);
+        markerVertex(packet, x + reach, y + reach, rgb);
+        markerVertex(packet, x, y + rayY, rgb);
+        markerVertex(packet, x - reach, y + reach, rgb);
+        markerVertex(packet, x - rayX, y, rgb);
+        markerVertex(packet, x - reach, y - reach, rgb);
+        markerVertex(packet, x, y - rayY, rgb);
+    }
+    YamiPan_DrawUiSqueeze(packet, 0);
+}
+
+// FS2 0x001ffcd0
+// A bound button's side of the frame lights and fades to the middle. The
+// ROM patches the static packet 0x2fa650.
+// callcheck: sceVif1PkCnt, sceVif1PkAddCode, sceVif1PkAddCode, FUN_0010b1c8, sceVif1PkCloseDmaTag
+
+void SightJack::drawBindFlash(sceVif1Packet *packet) const
+{
+    if (m_bindFlash <= 0 || m_bindShown == kJackNoBind)
+        return;
+    // layout: host -- the four corners, read from the ROM's patches.
+    struct Side { int x0, y0, x1, y1, x2, y2, x3, y3; };
+    static const Side kSides[kJackBinds] = {
+        { kWindowMin, kWindowMin, kWindowMax, kWindowMin, kWindowMin, kWindowCentre, kWindowMax, kWindowCentre },
+        { kWindowMax, kWindowMin, kWindowMax, kWindowMax, kWindowCentre, kWindowMin, kWindowCentre, kWindowMax },
+        { kWindowMin, kWindowMax, kWindowMax, kWindowMax, kWindowMin, kWindowCentre, kWindowMax, kWindowCentre },
+        { kWindowMin, kWindowMin, kWindowMin, kWindowMax, kWindowCentre, kWindowMin, kWindowCentre, kWindowMax },
+    };
+    const Side &side = kSides[m_bindShown];
+    const u_int lit = ((u_int)(m_bindFlash * kBindFlashAlpha >> 4) << 24) | kBindFlashGrey;
+
+    YamiPan_DrawUiReg(packet, SCE_GS_ALPHA_1, kJackAdd);
+    YamiPan_DrawUiReg(packet, SCE_GS_TEST_1, kMarkerTest);
+    YamiPan_DrawUiPrim(packet, kBindFlashStrip, nullptr);
+    YamiPan_DrawUiBegin(packet, YAMIPAN_UIV_RGBAQ);
+    markerVertex(packet, side.x0, side.y0, lit);
+    markerVertex(packet, side.x1, side.y1, lit);
+    markerVertex(packet, side.x2, side.y2, kBindFlashGrey);
+    markerVertex(packet, side.x3, side.y3, kBindFlashGrey);
+}
+
+// Inline three times in the ROM: the viewer's cross, then the partner's
+// unless it is the one looked through.
+// callcheck: getTopView, jackMarker, canBeJacked, jackMarker
+
+void SightJack::drawOwnMarkers(sceVif1Packet *packet)
+{
+    StageObject *view = gStageScene->getTopView();
+    jackMarker(packet, m_viewer, view, kMarkerViewer);
+    StageObject *partner = gStageScene->partner;
+    if (partner != nullptr && static_cast<StageCharacter *>(partner)->canBeJacked() && viewed() != partner)
+        jackMarker(packet, partner, view, kMarkerPartner);
+}
+
+// FS2 0x00201520
+// Everyone viewable who has found a foe.
+// callcheck: getTopView, FUN_00200d10, jackMarker
+
+void SightJack::drawFoeMarkers(sceVif1Packet *packet)
+{
+    StageObject *view = gStageScene->getTopView();
+    StageObjArray &list = gStageScene->objects->m_lists[StageObjGroup_Characters];
+    for (StageObject **slot = list.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        StageObject *object = *slot;
+        if (canView(object) && object->m_brain != nullptr && static_cast<StageCharacter *>(object)->getBrainPace() == BrainState_Foe
+            && object != m_viewer && object != gStageScene->partner && object != viewed())
+            jackMarker(packet, object, view, kMarkerFoe);
+    }
+}
+
+// FS2 0x00201380
+// After the jack: the kept one's cross, while it has found a foe, fades.
+// callcheck: FUN_00200d10, getTopView, openList, jackMarker, closeList
+
+void SightJack::drawFadingMarker()
+{
+    if (m_markerFrames <= 0 || (m_mode != JackMode_KeptTurn && m_mode != JackMode_Kept))
+        return;
+    StageObject *kept = m_kept;
+    if (!canView(kept))
+        return;
+    StageObject *view = gStageScene->getTopView();
+    GamePacketManager *packets = &gGameSystem->m_packets;
+    sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
+    if (kept != gStageScene->partner && kept->m_brain != nullptr && static_cast<StageCharacter *>(kept)->getBrainPace() == BrainState_Foe
+        && kept != m_viewer) {
+        const u_int alpha = (u_int)((m_markerFrames << 7) / kMarkerFrames) << 24;
+        jackMarker(packet, kept, view, alpha | (kMarkerFoe & kMarkerRgb));
+    }
+    packets->closeList();
+    m_markerFrames--;
+}
+
+// FS2 0x00201840
+// While a foe attacks: the own crosses, the film, a red wash, the bright frame.
+// callcheck: openList, getTopView, jackMarker, canBeJacked, jackMarker, demoFleckStep, demoFleckDraw, demoFilmDraw, gsFillRect, closeList, openList, gsFrameScale, closeList
+
+void SightJack::drawWarning(float filmLevel)
+{
+    GamePacketManager *packets = &gGameSystem->m_packets;
+    sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
+    drawOwnMarkers(packet);
+    if (m_flecks != nullptr) {
+        demoFleckStep(m_flecks);
+        demoFleckDraw(m_fill != nullptr ? m_fill->m_level : 0.0f, m_flecks, packet);
+    }
+    demoFilmDraw(filmLevel, &m_film, packet);
+    // PC: the ROM leaves ALPHA_1 as the film set it.
+    YamiPan_DrawUiReg(packet, SCE_GS_ALPHA_1, kJackAlpha);
+    YamiPan_DrawUiReg(packet, SCE_GS_TEST_1, kJackBlackTest);
+    gsFillRect(packet, 0, 0, kJackFrame, kJackFrame, kWarningWash);
+    packets->closeList();
+
+    packet = packets->openList(PacketList_SceneModel);
+    gsFrameScale(packet, m_screenLevel);
+    packets->closeList();
+}
+
 // callcheck: demoFilmDraw, demoFleckStep, demoFleckDraw
 
 void SightJack::drawFilm(float filmLevel, sceVif1Packet *packet)
@@ -812,7 +1096,7 @@ void SightJack::drawFilm(float filmLevel, sceVif1Packet *packet)
 }
 
 // FS2 0x00201a40
-// callcheck: openList, gsFillRect, gfxGetTexArea, getList, demoFilmDraw, demoFleckStep, demoFleckDraw, FUN_001ffcd0, closeList (FUN_001ffcd0, the bind's arrow, is not drawn)
+// callcheck: openList, gsFillRect, gfxGetTexArea, getList, demoFilmDraw, demoFleckStep, demoFleckDraw, drawBindFlash, closeList
 
 void SightJack::drawNobody(float filmLevel)
 {
@@ -822,11 +1106,12 @@ void SightJack::drawNobody(float filmLevel)
     m_fill->m_level = 1.0f;
     m_fill->draw(packet, scene2dTexList());
     drawFilm(filmLevel, packet);
+    drawBindFlash(packet);
     packets->closeList();
 }
 
 // FS2 0x002016d0
-// callcheck: openList, gsFillRect, gfxGetTexArea, getList, demoFilmDraw, demoFleckStep, demoFleckDraw, FUN_001ffcd0, closeList (FUN_001ffcd0, the bind's arrow, is not drawn)
+// callcheck: openList, gsFillRect, gfxGetTexArea, getList, demoFilmDraw, demoFleckStep, demoFleckDraw, drawBindFlash, closeList
 
 void SightJack::drawCorpse(float filmLevel)
 {
@@ -835,14 +1120,16 @@ void SightJack::drawCorpse(float filmLevel)
     fillBlack(packet);
     m_fill->draw(packet, scene2dTexList());
     drawFilm(filmLevel, packet);
+    drawBindFlash(packet);
     packets->closeList();
 }
 
 // FS2 0x00201bc0
-// PC: the film, the grain and the flecks over the view. The markers 0x205f50,
-// 0x201520, the bind's arrow 0x1ffcd0 and all of list 8 (the frame 0x2cfb20,
-// 0x1ff010, the signal 0x2cf880 and 0x2d10f0) are not drawn yet.
-// callcheck: openList, demoFilmDraw, gfxGetTexArea, getList, demoFleckStep, demoFleckDraw, closeList (the unwritten ones above)
+// The film and the grain over the eyes' picture, the crosses; under them on
+// list 8 the bright frame and the tint of what the character is.
+// PC: not drawn: the palette views 0x1ff010 (0x305f80, 0x306380) and stage
+// 0x1b's boss film 0x2d10f0, with its object at +0xb4 not built.
+// callcheck: openList, demoFilmDraw, gfxGetTexArea, getList, getTopView, jackMarker, canBeJacked, jackMarker, demoFleckStep, demoFleckDraw, drawBindFlash, closeList, openList, gsFrameScale, getStageSelect, strcmp, strcmp, getStageSelect, gsFrameAdd, getStageSelect, strcmp, strcmp, gsFrameContrast, getStageSelect, drawFoeMarkers, strcmp, strcmp, strcmp, getStageSelect, strcmp, strcmp, strcmp, getStageSelect, isTakenOver, strcmp, strcmp, closeList (FUN_001ff010, FUN_002d10f0, FUN_002d3080, gfxGetDrawEnv, gsFillRect, getDeltaSeconds, unwritten as above)
 
 void SightJack::drawLive(float filmLevel)
 {
@@ -850,18 +1137,55 @@ void SightJack::drawLive(float filmLevel)
     sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
     demoFilmDraw(filmLevel, &m_film, packet);
     m_fill->draw(packet, scene2dTexList());
+    drawOwnMarkers(packet);
+    if (m_mode == JackMode_KeptTurn || m_mode == JackMode_Kept)
+        drawFoeMarkers(packet);
     if (m_flecks != nullptr) {
         demoFleckStep(m_flecks);
         demoFleckDraw(m_fill->m_level, m_flecks, packet);
+    }
+    drawBindFlash(packet);
+    packets->closeList();
+
+    packet = packets->openList(PacketList_SceneModel);
+    gsFrameScale(packet, m_screenLevel);
+
+    StageObject *target = viewed();
+    const int stage = getStageSelect()->stage;
+    const bool isPartner = target == gStageScene->partner;
+    // The ROM also compares the name with F_E08_YPR here and drops the answer.
+    const bool paletteA = (isPartner && stage == kStagePartnerPalette)
+                       || (stage == kStagePaletteA && strcmp(target->m_name, "F_E24_SNPC1") == 0);
+    const bool paletteB = (stage == kStageE21 && strcmp(target->m_name, "F_E21_SNPC1") == 0)
+                       || (stage == kStagePaletteA && strcmp(target->m_name, "F_E24_SNPC2") == 0)
+                       || (stage == kStageBoss && strcmp(target->m_name, "F_SNPC2") == 0);
+    const bool boss = stage == kStageBoss && strcmp(target->m_name, "F_E27_BOSS") == 0;
+
+    if (m_viewer->m_altAction != 0) {
+        gsFrameAdd(packet, kAltActionWash);
+    } else if (!paletteA && !paletteB && !boss) {
+        u_int tint = 0;
+        if (isPartner) {
+            tint = kTintPartner;
+        } else if (static_cast<StageCharacter *>(target)->isTakenOver()) {
+            tint = kTintTakenOver;
+        } else if (target->m_brain != nullptr) {
+            const int state = static_cast<StageCharacter *>(target)->getBrainPace();
+            if (state == BrainState_Foe)
+                tint = kTintFoe;
+            else if (state == BrainState_Slot4a || state == BrainState_Slot4b || state == BrainState_Slot4c)
+                tint = kTintSearching;
+        }
+        if (tint != 0)
+            gsFrameContrast(packet, tint);
     }
     packets->closeList();
 }
 
 // FS2 0x002024c0
-// The frame's gate. PC: the warning's pass 0x201840, the markers 0x201380 and
-// 0x205f50 and the frame 0x2cfb20 are not drawn yet, so a warning and a game
-// over show their view alone (drawLive has the rest of the list).
-// callcheck: vecDistance, openList, demoFilmDraw, demoFleckStep, demoFleckDraw, closeList, openList, gfxGetTexArea, getList, FUN_001518a0, gfxGetTexArea, getList, FUN_001518a0, closeList, getAltSoundFlag, getLifeState, FUN_00215370, FUN_00201bc0, FUN_00201a40, FUN_002016d0 (and those not drawn: FUN_002cfb20, getTopView, FUN_00205f50, canBeJacked, FUN_00201840, FUN_001ffcd0, FUN_001ff010, FUN_00201380)
+// The frame's gate. PC: the vision's palette view 0x1ff010 (0x305b80) is not
+// drawn: its frame is the bright one alone.
+// callcheck: vecDistance, openList, demoFilmDraw, demoFleckStep, demoFleckDraw, closeList, openList, gsFrameScale, closeList, openList, getTopView, jackMarker, canBeJacked, jackMarker, closeList, openList, gsFillRect, gfxGetTexArea, getList, FUN_001518a0, gfxGetTexArea, getList, FUN_001518a0, demoFilmDraw, demoFleckStep, demoFleckDraw, drawBindFlash, closeList, drawWarning, openList, gfxGetTexArea, getList, FUN_001518a0, gfxGetTexArea, getList, FUN_001518a0, closeList, drawFadingMarker, openList, gfxGetTexArea, getList, demoFilmDraw, demoFleckStep, demoFleckDraw, drawBindFlash, closeList, openList, gsFrameScale, closeList, getAltSoundFlag, getLifeState, FUN_00215370, FUN_00201bc0, FUN_00201a40, FUN_002016d0 (FUN_001ff010 as above)
 
 void SightJack::draw()
 {
@@ -880,10 +1204,18 @@ void SightJack::draw()
         sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
         drawFilm(filmLevel, packet);
         packets->closeList();
+        packet = packets->openList(PacketList_SceneModel);
+        gsFrameScale(packet, m_screenLevel);
+        packets->closeList();
+        packet = packets->openList(PacketList_Screen);
+        drawOwnMarkers(packet);
+        packets->closeList();
         return;
     }
-    if (m_warner != nullptr)
+    if (m_warner != nullptr) {
+        drawWarning(filmLevel);
         return;
+    }
     if (m_visionFade > 0) {
         sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
         const u_int alpha = (u_int)(m_visionFade * kVisionFadeScale / 8) << 24;
@@ -893,8 +1225,10 @@ void SightJack::draw()
         m_visionFade--;
         return;
     }
-    if (!m_running)
+    if (!m_running) {
+        drawFadingMarker();
         return;
+    }
 
     m_markerFrames = kMarkerFrames;
     if (m_flashFrames >= 0) {
@@ -914,6 +1248,10 @@ void SightJack::draw()
         sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
         m_fill->draw(packet, scene2dTexList());
         drawFilm(filmLevel, packet);
+        drawBindFlash(packet);
+        packets->closeList();
+        packet = packets->openList(PacketList_SceneModel);
+        gsFrameScale(packet, m_screenLevel);
         packets->closeList();
     } else {
         m_visionFrames--;
@@ -922,6 +1260,7 @@ void SightJack::draw()
         m_fill->drawGrain(packet, scene2dTexList(), kVisionWaitTintA);
         m_fill->drawGrain(packet, scene2dTexList(), kVisionWaitTintB);
         drawFilm(filmLevel, packet);
+        drawBindFlash(packet);
         packets->closeList();
     }
     if (m_bindFlash > 0)

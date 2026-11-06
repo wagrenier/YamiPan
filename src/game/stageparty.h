@@ -12,8 +12,8 @@
  *  Names of the class, its modes and its methods are the port's, read from
  *  the code and the sounds JAK_IN, JAK_MODE, JAK_NOISE, JAK_TUNING.
  *
- *  Not written yet, in this file's range: the draw's overlays, the rest of
- *  0x1fed30..0x2024c0: they need the host's jack pass.
+ *  Not written yet, in this file's range: the palette views 0x1ff010..0x1ffcd0
+ *  (a host pass through a 256-entry table), the frame of stage 0x1b's boss.
  * ======================================================================== */
 #ifndef _GAME_STAGEPARTY_H
 #define _GAME_STAGEPARTY_H
@@ -123,6 +123,17 @@ public:
     // The film and the flecks of the frame's list; four times in the ROM.
     void drawFilm(float filmLevel, sceVif1Packet *packet);
 
+    // A bind's side of the frame lights.
+    void drawBindFlash(sceVif1Packet *packet) const;                     // FS2 0x001ffcd0
+    // The viewer's cross and the partner's. Inline three times in the ROM.
+    void drawOwnMarkers(sceVif1Packet *packet);
+    // The crosses of those who have found a foe.
+    void drawFoeMarkers(sceVif1Packet *packet);                          // FS2 0x00201520
+    // Off the jack, the kept one's cross fades.
+    void drawFadingMarker();                                             // FS2 0x00201380
+    // What a foe's attack lays over the frame.
+    void drawWarning(float filmLevel);                                   // FS2 0x00201840
+
     // Whom the view is on: m_kept, m_tuned or nobody, by the mode. Inline
     // everywhere in the ROM.
     StageObject *viewed() const;                                         // FS2 0x001fea50
@@ -205,5 +216,11 @@ public:
     u_char       m_visionOn = 0;        // FS2 +0x140
     u_int        m_startTime = 0;       // FS2 +0x144: playTime at start
 };
+
+// The jack's passes over the frame, and its cross on a character's head.
+void gsFrameScale(sceVif1Packet *packet, int level);                     // FS2 0x002cfb20
+void gsFrameContrast(sceVif1Packet *packet, u_int rgba);                 // FS2 0x002cf880
+void gsFrameAdd(sceVif1Packet *packet, u_int rgba);                      // FS2 0x002058e0
+void jackMarker(sceVif1Packet *packet, StageObject *object, StageObject *view, u_int rgba); // FS2 0x00205f50
 
 #endif // _GAME_STAGEPARTY_H

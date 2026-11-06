@@ -1246,13 +1246,6 @@ void SceneOwnedObject::setSevenKeyNumbers(const char *name, int a, int b, int c,
     YAMIPAN_STUB("SceneOwnedObject::setSevenKeyNumbers", 0x002b2b70);
 }
 
-// stub of FS2 0x00212160
-bool StageCharacter::canBeJacked()
-{
-    YAMIPAN_STUB("StageCharacter::canBeJacked", 0x00212160);
-    return {};
-}
-
 // stub of FS2 0x00289ef0
 void StageCar::getCenter(float *out)
 {
@@ -1303,13 +1296,6 @@ void SceneModelHolder::setPlace(const float *position)
     YAMIPAN_STUB("SceneModelHolder::setPlace", 0x002d0750);
 }
 
-// stub of FS2 0x00215480
-bool StageCharacter::canSeeVisions()
-{
-    YAMIPAN_STUB("StageCharacter::canSeeVisions", 0x00215480);
-    return {};
-}
-
 // stub of FS2 0x002a1240
 void * demoFleckCreate(Tim2Texture *texture)
 {
@@ -1321,11 +1307,4 @@ void * demoFleckCreate(Tim2Texture *texture)
 void demoFleckDestroy(void *flecks)
 {
     YAMIPAN_STUB("demoFleckDestroy", 0x00000000);
-}
-
-// stub of FS2 0x00215370
-bool StageCharacter::isJackBlank()
-{
-    YAMIPAN_STUB("StageCharacter::isJackBlank", 0x00215370);
-    return {};
 }

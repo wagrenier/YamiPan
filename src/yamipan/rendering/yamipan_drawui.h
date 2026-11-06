@@ -62,6 +62,13 @@ void YamiPan_DrawUiTexture(const void *list, const void *owner);
  * The factor is 1 at 4:3 and on anything narrower. */
 void YamiPan_DrawUiSqueeze(const void *list, int on);
 
+/* Passes over the whole frame so far, at any aspect: the colour buffer
+ * times `factor`, 0..4 (the GS's A = Cd, C = FIX), and pushed away from a
+ * colour, (Cd - Cs) * As + Cd (ALPHA_1 0x41, `rgba` as RGBAQ, As on the
+ * 0x80 scale). Neither touches the frame's alpha. */
+void YamiPan_DrawUiFrameScale(const void *list, float factor);
+void YamiPan_DrawUiFrameContrast(const void *list, uint32_t rgba);
+
 /* Starts a vertex run of `format`; YamiPan_DrawUiVertex adds to it. */
 void YamiPan_DrawUiBegin(const void *list, int format);
 void YamiPan_DrawUiVertex(const void *list, const YamiPanUiVertex *vertex);

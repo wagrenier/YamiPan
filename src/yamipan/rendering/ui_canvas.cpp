@@ -1,5 +1,6 @@
 #include "yamipan/rendering/ui_canvas.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <utility>
@@ -208,7 +209,7 @@ void UiCanvas::addVertex(const void *list, const YamiPanUiVertex &vertex)
 DrawCall UiCanvas::stateOf(const Layer &source)
 {
     DrawCall draw;
-    draw.pipeline.blend = source.blended ? blendModeOf(source.alpha) : BlendMode::None;
+    draw.pipeline.blend = source.forcedBlend.value_or(source.blended ? blendModeOf(source.alpha) : BlendMode::None);
     draw.pipeline.mask = colorMaskOf(source.frame);
     draw.image = source.textured ? source.image : nullptr;
     draw.scissor = source.scissor;
@@ -347,6 +348,67 @@ void UiCanvas::assemble(Layer &target, const Vertex &vertex)
         break;
     }
     }
+}
+
+void UiCanvas::fillFrame(Layer &target, BlendMode blend, std::uint32_t color, std::uint8_t fixedAlpha)
+{
+    constexpr std::uint64_t kNoAlphaTest = 0;
+    const Primitive previousPrimitive = std::exchange(target.primitive, Primitive::Sprite);
+    const bool previousTextured = std::exchange(target.textured, false);
+    const std::uint64_t previousAlpha = std::exchange(target.alpha, static_cast<std::uint64_t>(fixedAlpha) << 32);
+    const std::uint64_t previousTest = std::exchange(target.test, kNoAlphaTest);
+    const std::uint64_t previousFrame = std::exchange(target.frame, static_cast<std::uint64_t>(kFbmskAlpha) << 32);
+    target.forcedBlend = blend;
+
+    const Vertex a{0.0f, 0.0f, 0.0f, 0.0f, color};
+    const Vertex b{kFrameWidth, kFrameHeight, 0.0f, 0.0f, color};
+    target.run.clear();
+    assemble(target, a);
+    assemble(target, b);
+
+    target.forcedBlend.reset();
+    target.frame = previousFrame;
+    target.test = previousTest;
+    target.alpha = previousAlpha;
+    target.textured = previousTextured;
+    target.primitive = previousPrimitive;
+}
+
+void UiCanvas::scaleFrame(const void *list, float factor)
+{
+    constexpr float kFixedOne = 128.0f;
+    const auto boost = [](float amount) {
+        const auto grey = static_cast<std::uint32_t>(std::clamp(amount, 0.0f, 1.0f) * 255.0f);
+        return grey | grey << 8 | grey << 16 | 0xff000000u;
+    };
+
+    std::scoped_lock lock(m_lock);
+    Layer &target = layer(list);
+    if (factor <= 1.0f)
+    {
+        fillFrame(target, BlendMode::DestinationScale, 0, static_cast<std::uint8_t>(std::max(factor, 0.0f) * kFixedOne));
+        return;
+    }
+    // A blend constant clamps at 1 on this target, so a boost goes through the source colour, twice past 2.
+    if (factor > 2.0f)
+    {
+        fillFrame(target, BlendMode::DestinationBoost, boost(1.0f), 0);
+        factor /= 2.0f;
+    }
+    fillFrame(target, BlendMode::DestinationBoost, boost(factor - 1.0f), 0);
+}
+
+void UiCanvas::contrastFrame(const void *list, std::uint32_t rgba)
+{
+    constexpr float kGsOne = 128.0f;
+    const std::uint32_t alpha = rgba >> 24;
+    const auto grey = static_cast<std::uint32_t>(std::min(static_cast<float>(alpha) / kGsOne, 1.0f) * 255.0f);
+
+    std::scoped_lock lock(m_lock);
+    Layer &target = layer(list);
+    // Cd * (1 + As), then Cs * As off it: no fixed-function blend does both at once.
+    fillFrame(target, BlendMode::DestinationBoost, grey | grey << 8 | grey << 16 | 0xff000000u, 0);
+    fillFrame(target, BlendMode::Subtractive, rgba, 0);
 }
 
 void UiCanvas::drawImage(const void *list, std::shared_ptr<Image> image, float x, float y)
