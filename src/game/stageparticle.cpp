@@ -1005,7 +1005,7 @@ bool StageNodeTree::isLive(StageParticle *effect)
 
 // A new effect, its chain and its splash.
 // FS2 0x001918d0
-// callcheck: heapAllocAligned, FUN_00190450, heapAllocAligned, StageParticleCount, StageParticle, erase, erase, pushBack, restart, FUN_001928f0, createEffect, createEffect, createEffect, erase, FUN_0017e260, FUN_0017e260, FUN_0017e1b0, strcmp, strcmp, strcmp, strcmp (new on the host; setParent and the vector hold the list calls; strcmp in findDef)
+// callcheck: heapAllocAligned, FUN_00190450, heapAllocAligned, StageParticleCount, StageParticle, erase, erase, pushBack, restart, FUN_001928f0, createEffect, createEffect, createEffect, erase, erase, erase, pushBack, strcmp, strcmp, strcmp, strcmp (new on the host; setParent and the vector hold the list calls; strcmp in findDef)
 
 StageParticle *StageNodeTree::create(const char *name, StageNodeBase *parent, const float *pos, const float *rot,
                                      int arg, int arg2)

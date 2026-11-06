@@ -148,7 +148,7 @@ void StageCharacter::beforeScripts()
     for (int i = 0; i < FoeCache_Count; i++)
         m_foeCache[i] = foeNotAsked();
     m_nearestFoeDistance = -1;
-    m_7a0 = 0;
+    m_placedThisFrame = 0;
 }
 
 // The middle of 0x21c7c0.
@@ -741,7 +741,7 @@ BoxVolume::BoxVolume()
 {
 }
 
-// FS2 0x0017eb20
+// FS2 0x0017e860
 // callcheck: operator_delete, ~StageObject (the compiler's)
 BoxVolume::~BoxVolume()
 {

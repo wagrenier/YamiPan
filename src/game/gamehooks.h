@@ -1876,6 +1876,9 @@ class StageVolume : public StageObject
 public:
     // FS2 0x0017ef90
     int getKind() override { return StageObject_Volume; }
+    // FS2 0x0017eb20
+    // callcheck: operator_delete, ~StageObject (the compiler's)
+    ~StageVolume() override {}
     // The object list's group 7, then its script by name.
     void addToScene(const char *name);                                   // FS2 0x0017ecb0: StageObjectList::add7
     // Slot +0x24c: point is inside. Empty in the base's table.
@@ -1904,7 +1907,12 @@ public:
     // FS2 0x0017e900
     int getKind() override { return StageObject_BoxVolume; }
     BoxVolume();                                                         // FS2 0x0017ea90
-    ~BoxVolume() override;                                               // FS2 0x0017eb20: deleting
+    ~BoxVolume() override;                                               // FS2 0x0017e860: deleting
+    // The frame's four steps pass a box by.
+    void sideHook0() override {}                                         // FS2 0x0017e940
+    void sideHook1() override {}                                         // FS2 0x0017e930
+    void sideHook2() override {}                                         // FS2 0x0017e920
+    void sideHook3() override {}                                         // FS2 0x0017e910
     void setSize(float width, float height, float depth);                // FS2 0x0017ea50
     bool contains(const float *point) override;                          // FS2 0x0017e9a0
     // Runner slot +0xfc (table 0x3125bc): native 0x44 on a box asks whether
@@ -2310,7 +2318,7 @@ public:
     // A script's hit: takeDamage on the body, the flinch left as it was, and
     // the motion the reaction asks for (natives 0x1d1, 0x1d2).
     void scriptHurt(StageObject *from, int amount, int reaction);        // FS2 0x00217d60
-    // The motion of the sheet labelled name, -1 none; m_7c4 (native 0x21a).
+    // The motion of the sheet labelled name, -1 none; m_placeMotion (native 0x21a).
     void setMotionByLabel(const char *name);                             // FS2 0x00217c80
     // On the party's companion while the player's alternate action is on.
     bool scriptIsCompanion() override;                                   // FS2 0x00217d10
@@ -2546,6 +2554,33 @@ public:
     // The door's pace of a character with a brain. Slot +0x278.
     int  getBrainPace();                                                 // FS2 0x0021bb70
     StageCharacter *getScriptCharacter() override { return this; }       // FS2 0x00179d10
+    // A character put somewhere starts over there: its motion, the ground
+    // and the brain, and the view when it looks through this character.
+    // Runner slot +0x3c, natives 0x26, 0x47, 0x144.
+    void setPosition(const float *pos) override;                         // FS2 0x00218500
+    // Runner slot +0x14: its script ended, so the brain's start over.
+    void onScriptExit() override;                                        // FS2 0x00219010
+    // Runner slot +0x140, native 0x68: a special when it is controlled, the
+    // brain's action otherwise.
+    void scriptPlayMotion(const char *name) override;                    // FS2 0x0021ac60
+    // Runner slot +0x160: Prop_SwitchedOn on a character is its lamp.
+    bool cmdIsLit() override { return isLampOn(); }
+    // Empty, as the base's.
+    void noiseHook() override {}                                         // FS2 0x00179ae0
+    // Runner slots no script reaches: natives 0x36, 0x37, 0x63, 0x6c and
+    // 0x84 are on no script of the disc (sssall.py), and slot +0xe4 of a
+    // character has no caller (the brain answers its own).
+    bool shout(float loudness);                                          // FS2 0x0021b3f0
+    void walkToMarkedPlace(bool run);                                    // FS2 0x0021bf90
+    void forgetMarkedPlace();                                            // FS2 0x0021bf80
+    // Holds the script in its native until the motion changes.
+    void waitMotionChange();                                             // FS2 0x00219be0
+    // FS2 0x0021b960
+    int  answerNo() { return 0; }
+    // FS2 0x00218490
+    void doNothing() {}
+    // FS2 0x00179d00
+    bool isBulletFlying() const { return m_bulletFlying != 0; }
     void sideHook0() override;                                           // FS2 0x0017a860
     void sideHook1() override;                                           // FS2 0x0017a810
     // Natives 0x87, 0x88, 0x89: the controlled character, by what it may do;
@@ -2779,14 +2814,14 @@ public:
     ScriptPoint m_point740;     // FS2 +0x740: beforeScripts: the flying item's throw vector (+0x450)
     ScriptPoint m_point760;     // FS2 +0x760: beforeScripts: where the followed item came down
     ScriptPoint m_point780;     // FS2 +0x780: beforeScripts: where the item lying still was
-    u_char m_7a0 = 0;           // FS2 +0x7a0: cleared by beforeScripts and resetActionState; read 0x2184a4 (isHeld7a0)
+    u_char m_placedThisFrame = 0; // FS2 +0x7a0: setPosition and the placing set it, beforeScripts and resetActionState clear it; the brain waits a frame (0x2184a0)
     // PC: "not asked yet" is the ROM's 1 as a pointer (foeNotAsked).
     StageObject *m_foeCache[FoeCache_Count] = {}; // FS2 +0x7a4: 1 each frame, "not asked yet": getBestFoe and the other sight answers, unwritten
     int    m_nearestFoeDistance = -1; // FS2 +0x7b4: -1 each frame or with no foe (pickNearestFoe)
     float  m_visibility = 0.0f; // FS2 +0x7b8: 0 unseen .. 1 plain to see: scales what canSee reaches
     float  m_areaDark = 0.0f;   // FS2 +0x7bc: the darkness that gave it; 0x1adaa0 reads it (a native, unread)
     StageVolume *m_area = nullptr; // FS2 +0x7c0: the VISIBILITY_ volume it stands in
-    int    m_7c4 = 0;           // FS2 +0x7c4: a motion index, native 0x21a (setMotionByLabel); reader 0x218528 (unread)
+    int    m_placeMotion = 0;   // FS2 +0x7c4: the motion setPosition starts it in, once; native 0x21a (setMotionByLabel)
     CharacterBlock7c8 m_block7c8 = {}; // FS2 +0x7c8
 };
 

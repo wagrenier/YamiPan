@@ -476,7 +476,7 @@ void StageObject::setName(const char *name)
 // Frees the model, the clock and the tree node; the ROM's ~ScriptRunner and
 // the node's dtor follow as the bases'.
 // FS2 0x0018b4e0
-// callcheck: ~StageModel, ~Clock, FUN_0017e260, FUN_0018bf70, operator_delete, ~ScriptRunner, free, erase, FUN_00186b80 (delete of the members, the bases' dtors)
+// callcheck: ~StageModel, ~Clock, erase, FUN_0018bf70, operator_delete, ~ScriptRunner, free, erase, FUN_00186b80 (delete of the members, the bases' dtors)
 
 StageObject::~StageObject()
 {

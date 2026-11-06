@@ -12815,6 +12815,12 @@
   "was": "FUN_00179ad0",
   "why": "0x20b220 on +0x720, whose vector +0x730 is properties Vector0..2; native 0x94"
  },
+ "00179ae0": {
+  "name": "StageCharacter::noiseHook",
+  "tag": "game-inferred",
+  "was": "FUN_00179ae0",
+  "why": "empty override of slot +0x200"
+ },
  "00179af0": {
   "name": "StageCharacter::isRunningMotion",
   "tag": "game-inferred",
@@ -12826,6 +12832,12 @@
   "tag": "game-inferred",
   "was": "FUN_00179bb0",
   "why": "the crouched motion ids of isCrouchMotion against the motion's +0x40"
+ },
+ "00179d00": {
+  "name": "StageCharacter::isBulletFlying",
+  "tag": "game-inferred",
+  "was": "FUN_00179d00",
+  "why": "reads +0x688; runner slot +0x120"
  },
  "00179d30": {
   "name": "StageCharacter::sideHook3",
@@ -12965,17 +12977,473 @@
   "was": "FUN_0017e0b0",
   "why": "for record kinds 0xb and 0xd: a PartSwitch on the model's part hide, 2 parts"
  },
+ "0017e140": {
+  "name": "StageList<StageObject*>::StageList",
+  "tag": "game-inferred",
+  "was": "FUN_0017e140",
+  "why": "the instance on StageObject pointers: head and count zeroed, StageCharacter ctor on +0x22c"
+ },
+ "0017e150": {
+  "name": "StageList<StageObject*>::dtor",
+  "tag": "game-inferred",
+  "was": "FUN_0017e150",
+  "why": "clear, then delete by the flag; ~StageCharacter"
+ },
+ "0017e1b0": {
+  "name": "StageList<StageObject*>::pushBack",
+  "tag": "game-inferred",
+  "was": "FUN_0017e1b0",
+  "why": "same code as the other instances of StageList::pushBack"
+ },
+ "0017e260": {
+  "name": "StageList<StageObject*>::erase",
+  "tag": "game-inferred",
+  "was": "FUN_0017e260",
+  "why": "head fix, node unlink, count down"
+ },
+ "0017e2b0": {
+  "name": "StageList<StageObject*>::clear",
+  "tag": "game-inferred",
+  "was": "FUN_0017e2b0",
+  "why": "deletes the boxes and the nodes"
+ },
+ "0017e320": {
+  "name": "StageList<StageObject*>::pushFront",
+  "tag": "game-inferred",
+  "was": "FUN_0017e320",
+  "why": "pushBack empty case: new node at the head"
+ },
+ "0017e3b0": {
+  "name": "StageList<StageObject*>::getTail",
+  "tag": "game-inferred",
+  "was": "FUN_0017e3b0",
+  "why": "walks next to the last node"
+ },
+ "0017e3e0": {
+  "name": "StageList<StageObject*>::Node::Node",
+  "tag": "game-inferred",
+  "was": "FUN_0017e3e0",
+  "why": "value box, next and prev null"
+ },
+ "0017e400": {
+  "name": "StageList<StageObject*>::Node::unlink",
+  "tag": "game-inferred",
+  "was": "FUN_0017e400",
+  "why": "unlinks, frees box and node"
+ },
+ "0017e470": {
+  "name": "StageCharacter::sideHook3_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e470",
+  "why": "adjustor -0x18 in the table of its slot"
+ },
+ "0017e480": {
+  "name": "StageCharacter::sideHook2_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e480",
+  "why": "adjustor -0x18 in the table of its slot"
+ },
+ "0017e490": {
+  "name": "StageCharacter::sideHook1_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e490",
+  "why": "adjustor -0x18 in the table of its slot"
+ },
+ "0017e4a0": {
+  "name": "StageCharacter::sideHook0_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e4a0",
+  "why": "adjustor -0x18 in the table of its slot"
+ },
+ "0017e4b0": {
+  "name": "StageCharacter::scriptAskNumLock_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e4b0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e4c0": {
+  "name": "StageCharacter::scriptAskRouteKind11_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e4c0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e4d0": {
+  "name": "StageCharacter::scriptUseSpecial_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e4d0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e4e0": {
+  "name": "StageCharacter::scriptDragOutCar_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e4e0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e4f0": {
+  "name": "StageCharacter::scriptCrouch_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e4f0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e500": {
+  "name": "StageCharacter::scriptCallOut_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e500",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e510": {
+  "name": "StageCharacter::scriptTakeItem_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e510",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e520": {
+  "name": "StageCharacter::scriptUseDoorKey_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e520",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e530": {
+  "name": "StageCharacter::scriptCloseDoor_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e530",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e540": {
+  "name": "StageCharacter::scriptOpenDoor_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e540",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e550": {
+  "name": "StageCharacter::scriptTakeUpTrap_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e550",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e560": {
+  "name": "StageCharacter::scriptPutItem_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e560",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e570": {
+  "name": "StageCharacter::scriptSetTrap_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e570",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e580": {
+  "name": "StageCharacter::scriptUseNamedItem_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e580",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e590": {
+  "name": "StageCharacter::scriptUseItemAt_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e590",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e5a0": {
+  "name": "StageCharacter::scriptUseSmoke_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e5a0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e5b0": {
+  "name": "StageCharacter::noiseHook_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e5b0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e5c0": {
+  "name": "StageCharacter::isLampOn_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e5c0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e5d0": {
+  "name": "StageCharacter::scriptPickableHandle_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e5d0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e5e0": {
+  "name": "StageCharacter::scriptPutWeaponAway_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e5e0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e5f0": {
+  "name": "StageCharacter::setScriptValue_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e5f0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e600": {
+  "name": "StageCharacter::getScriptValue_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e600",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e610": {
+  "name": "StageCharacter::scriptPlayMotion_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e610",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e620": {
+  "name": "StageCharacter::waitMotionChange_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e620",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e630": {
+  "name": "StageCharacter::scriptRouteAction130_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e630",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e640": {
+  "name": "StageCharacter::scriptRouteAction12c_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e640",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e650": {
+  "name": "StageCharacter::isRunningMotion_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e650",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
  "0017e660": {
   "name": "StageCharacter::thunkIsCrouching",
   "tag": "game-inferred",
   "was": "FUN_0017e660",
   "why": "runner side thunk of 0x179bb0, this - 0x40"
  },
+ "0017e670": {
+  "name": "StageCharacter::isBulletFlying_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e670",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e680": {
+  "name": "StageCharacter::scriptIsCompanion_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e680",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e690": {
+  "name": "StageCharacter::scriptHasLineTo_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e690",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e6a0": {
+  "name": "StageCharacter::scriptReload_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e6a0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e6b0": {
+  "name": "StageCharacter::carriesItem_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e6b0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e6c0": {
+  "name": "StageCharacter::scriptIsFacing_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e6c0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e6d0": {
+  "name": "StageCharacter::hasBiter_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e6d0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e6e0": {
+  "name": "StageCharacter::shout_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e6e0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e6f0": {
+  "name": "StageCharacter::scriptFireAt_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e6f0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e700": {
+  "name": "StageCharacter::scriptFireAtBite_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e700",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e710": {
+  "name": "StageCharacter::scriptSwingAt_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e710",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e720": {
+  "name": "StageCharacter::scriptSwingAtBite_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e720",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e730": {
+  "name": "StageCharacter::scriptAttackBite_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e730",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e740": {
+  "name": "StageCharacter::scriptHasAllyWithin_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e740",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e750": {
+  "name": "StageCharacter::answerNo_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e750",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e760": {
+  "name": "StageCharacter::forgetMarkedPlace_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e760",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e770": {
+  "name": "StageCharacter::walkToMarkedPlace_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e770",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e780": {
+  "name": "StageCharacter::scriptMarkPlace_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e780",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e790": {
+  "name": "StageCharacter::scriptCanSee_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e790",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e7a0": {
+  "name": "StageCharacter::scriptHeardKind_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e7a0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e7b0": {
+  "name": "StageCharacter::getBrainPace_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e7b0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e7c0": {
+  "name": "StageCharacter::scriptSetBrainEntry_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e7c0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e7d0": {
+  "name": "StageCharacter::getScriptCharacter_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e7d0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e7e0": {
+  "name": "StageCharacter::getScriptActor_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e7e0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e7f0": {
+  "name": "StageCharacter::setLampOn_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e7f0",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e800": {
+  "name": "StageCharacter::setPosition_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e800",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e810": {
+  "name": "StageCharacter::doNothing_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e810",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e820": {
+  "name": "StageCharacter::dtor_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e820",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e830": {
+  "name": "StageCharacter::onScriptExit_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e830",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e840": {
+  "name": "StageCharacter::setProperty_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e840",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e850": {
+  "name": "StageCharacter::getProperty_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017e850",
+  "why": "adjustor -0x40 in the table of its slot"
+ },
+ "0017e860": {
+  "name": "BoxVolume::~BoxVolume",
+  "tag": "game-inferred",
+  "was": "FUN_0017e860",
+  "why": "stores the box tables 0x312580 then the base, slot +0x10 of 0x312580"
+ },
  "0017e900": {
   "name": "BoxVolume::getKind",
   "tag": "game-inferred",
   "was": "FUN_0017e900",
   "why": "answers 0x1c"
+ },
+ "0017e910": {
+  "name": "BoxVolume::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_0017e910",
+  "why": "empty; side thunk 0x17f0f0"
+ },
+ "0017e920": {
+  "name": "BoxVolume::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_0017e920",
+  "why": "empty; side thunk 0x17f100"
+ },
+ "0017e930": {
+  "name": "BoxVolume::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_0017e930",
+  "why": "empty; side thunk 0x17f110"
+ },
+ "0017e940": {
+  "name": "BoxVolume::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_0017e940",
+  "why": "empty; side thunk 0x17f120"
  },
  "0017e950": {
   "name": "StageVolume::containsObject",
@@ -13002,10 +13470,10 @@
   "why": "base vtable 0x3127f0, then 0x312580, two zero vectors"
  },
  "0017eb20": {
-  "name": "BoxVolume::~BoxVolume",
+  "name": "StageVolume::~StageVolume",
   "tag": "game-inferred",
   "was": "FUN_0017eb20",
-  "why": "deleting dtor, vtable 0x312580 family"
+  "why": "stores 0x3127f0, the base table, not the box: the old name was wrong"
  },
  "0017eba0": {
   "name": "SphereVolume::contains",
@@ -21977,17 +22445,29 @@
   "was": "FUN_00218470",
   "why": "runner +0x12c: brain askRouteAction12c"
  },
+ "00218490": {
+  "name": "StageCharacter::doNothing",
+  "tag": "game-inferred",
+  "was": "FUN_00218490",
+  "why": "empty; runner slot +0x104, native 0x6c"
+ },
  "002184a0": {
-  "name": "StageCharacter::isHeld7a0",
+  "name": "StageCharacter::wasPlacedThisFrame",
   "tag": "game-inferred",
   "was": "FUN_002184a0",
-  "why": "called from the brain; a brief read"
+  "why": "reads +0x7a0"
  },
  "002184b0": {
   "name": "StageCharacter::noticeItem",
   "tag": "game-inferred",
   "was": "FUN_002184b0",
   "why": "mission showNotice 0 with the item's display name"
+ },
+ "00218500": {
+  "name": "StageCharacter::setPosition",
+  "tag": "game-inferred",
+  "was": "FUN_00218500",
+  "why": "moves, then resets motion and ground, tells the linked view, stops the brain; runner slot +0x3c"
  },
  "002185a0": {
   "name": "StageObject::canSpawn",
@@ -22073,6 +22553,12 @@
   "was": "FUN_00218f40",
   "why": "behind natives 0x4a.. (game/scriptrunner.cpp)"
  },
+ "00219010": {
+  "name": "StageCharacter::onScriptExit",
+  "tag": "game-inferred",
+  "was": "FUN_00219010",
+  "why": "brain resetScripts; runner slot +0x14"
+ },
  "00219040": {
   "name": "StageCharacter::getClimbPoint",
   "tag": "game-inferred",
@@ -22150,6 +22636,12 @@
   "tag": "game-inferred",
   "was": "FUN_00219b30",
   "why": "bits of allows +0x374 and +0x378, natives 0x11b.. test them"
+ },
+ "00219be0": {
+  "name": "StageCharacter::waitMotionChange",
+  "tag": "game-inferred",
+  "was": "FUN_00219be0",
+  "why": "yields as native 0x63 until motion id changes; runner slot +0x134"
  },
  "00219c50": {
   "name": "StageCharacter::holdsWeapon",
@@ -22265,6 +22757,12 @@
   "was": "FUN_0021ac30",
   "why": "slot +0x15c's body: PickupItem byte, then the handle"
  },
+ "0021ac60": {
+  "name": "StageCharacter::scriptPlayMotion",
+  "tag": "game-inferred",
+  "was": "FUN_0021ac60",
+  "why": "special when controlled, brain action otherwise; runner slot +0x140, native 0x68"
+ },
  "0021ace0": {
   "name": "StageCharacter::scriptFireAt",
   "tag": "game-inferred",
@@ -22355,6 +22853,12 @@
   "was": "FUN_0021b370",
   "why": "behind natives 0x4a.. (game/scriptrunner.cpp)"
  },
+ "0021b3f0": {
+  "name": "StageCharacter::shout",
+  "tag": "game-inferred",
+  "was": "FUN_0021b3f0",
+  "why": "tryShout when controlled, brain askShout otherwise; runner slot +0xe4"
+ },
  "0021b450": {
   "name": "StageCharacter::scriptReload",
   "tag": "game-inferred",
@@ -22372,6 +22876,12 @@
   "tag": "game-inferred",
   "was": "FUN_0021b890",
   "why": "sorts +0x65c: player 4, enemy 3, ally 1, else 2, none 0; runner slot +0xb0, native 0x31"
+ },
+ "0021b960": {
+  "name": "StageCharacter::answerNo",
+  "tag": "game-inferred",
+  "was": "FUN_0021b960",
+  "why": "returns 0; runner slot +0xc4"
  },
  "0021b970": {
   "name": "StageCharacter::scriptSetBrainEntry",
@@ -22414,6 +22924,18 @@
   "tag": "game-inferred",
   "was": "FUN_0021bf40",
   "why": "vtable +0x2bc: the store"
+ },
+ "0021bf80": {
+  "name": "StageCharacter::forgetMarkedPlace",
+  "tag": "game-inferred",
+  "was": "FUN_0021bf80",
+  "why": "clears +0x700; runner slot +0xc0, native 0x37"
+ },
+ "0021bf90": {
+  "name": "StageCharacter::walkToMarkedPlace",
+  "tag": "game-inferred",
+  "was": "FUN_0021bf90",
+  "why": "brain walks to +0x700 when it is set; runner slot +0xbc, native 0x36"
  },
  "0021bfd0": {
   "name": "StageCharacter::scriptMarkPlace",

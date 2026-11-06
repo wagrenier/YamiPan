@@ -403,7 +403,7 @@ static void giveItemsNamed(StageCharacter *character, const char *name)
 }
 
 // FS2 0x0017c700
-// callcheck: setName, addCharacter, add, findEntry, setEntry, setModel, getStageSelect, operator_new, operator_new, PartSwitch, init, initAbilities, createBlock98, operator_new, PlayerMotion, loadMotions, setupBody, strstr, operator_new, CharacterGround, findAll3, giveItem, modelFindPart, getCharacterClass, find, spawn, setRunning, FUN_0017e260, FUN_0017e1b0, memset, initSlots14, initSlots18, strcmp, setActive, setShown, allow, reset (stageObjRecord, applyCharacterModelFlags, CharacterHidePart and the object tree's setParent are inline there)
+// callcheck: setName, addCharacter, add, findEntry, setEntry, setModel, getStageSelect, operator_new, operator_new, PartSwitch, init, initAbilities, createBlock98, operator_new, PlayerMotion, loadMotions, setupBody, strstr, operator_new, CharacterGround, findAll3, giveItem, modelFindPart, getCharacterClass, find, spawn, setRunning, erase, pushBack, memset, initSlots14, initSlots18, strcmp, setActive, setShown, allow, reset (stageObjRecord, applyCharacterModelFlags, CharacterHidePart and the object tree's setParent are inline there)
 
 void StageCharacter::setup(const char *name, ModelInstance *instance, StringMap<Tim2Texture *> *textures,
                            StageList<void *> *motions, StageList<void *> *motions2, void *mdl)
@@ -551,7 +551,7 @@ void StageCharacter::setup(const char *name, ModelInstance *instance, StringMap<
 // The record's size and centre of what the model's name says, and the two
 // parts of a body with no mesh (the ROM's "shiryotai", 死霊体: a spirit).
 // FS2 0x0017d970
-// callcheck: find, strstr, operator_new[], find, spawn, find, spawn, find, spawn, find, spawn, FUN_0017e260, FUN_0017e1b0
+// callcheck: find, strstr, operator_new[], find, spawn, find, spawn, find, spawn, find, spawn, erase, pushBack
 
 StageParticle **StageObject::setupBody(bool keep)
 {
@@ -592,7 +592,7 @@ StageParticle **StageObject::setupBody(bool keep)
 
 // The character's parts are gone before the object's own destructor runs.
 // FS2 0x0017dd10
-// callcheck: ~CharacterInput, ~PlayerMotion, ~CharacterGround, ~PartSwitch, operator_delete, operator_delete[], FUN_0017e150, ~StageObject (the brain's dtor through its vptr at +0xb4; the hide part inline: CharacterHidePart)
+// callcheck: ~CharacterInput, ~PlayerMotion, ~CharacterGround, ~PartSwitch, operator_delete, operator_delete[], dtor, ~StageObject (the brain's dtor through its vptr at +0xb4; the hide part inline: CharacterHidePart)
 
 StageCharacter::~StageCharacter()
 {
@@ -605,7 +605,7 @@ StageCharacter::~StageCharacter()
 }
 
 // FS2 0x0017de30
-// callcheck: StageObject, FUN_0017e140, setClock, operator_new, CharacterInput, alloc, operator_new, CharacterBrain, initSounds
+// callcheck: StageObject, StageList, setClock, operator_new, CharacterInput, alloc, operator_new, CharacterBrain, initSounds
 
 StageCharacter::StageCharacter()
 {
@@ -822,3 +822,69 @@ bool StageObject::isPartner()
 {
     return gStageScene->partner == this;
 }
+
+// ───────────────────────────────────────
+// The adjustor thunks that end the file (the host's compiler makes its own):
+//   FS2 0x0017e470  StageCharacter::sideHook3, -0x18
+//   FS2 0x0017e480  StageCharacter::moveStep, -0x18
+//   FS2 0x0017e490  StageCharacter::sideHook1, -0x18
+//   FS2 0x0017e4a0  StageCharacter::sideHook0, -0x18
+//   FS2 0x0017e4b0  StageCharacter::scriptAskNumLock, -0x40
+//   FS2 0x0017e4c0  StageCharacter::scriptAskRouteKind11, -0x40
+//   FS2 0x0017e4d0  StageCharacter::scriptUseSpecial, -0x40
+//   FS2 0x0017e4e0  StageCharacter::scriptDragOutCar, -0x40
+//   FS2 0x0017e4f0  StageCharacter::scriptCrouch, -0x40
+//   FS2 0x0017e500  StageCharacter::scriptCallOut, -0x40
+//   FS2 0x0017e510  StageCharacter::scriptTakeItem, -0x40
+//   FS2 0x0017e520  StageCharacter::scriptUseDoorKey, -0x40
+//   FS2 0x0017e530  StageCharacter::scriptCloseDoor, -0x40
+//   FS2 0x0017e540  StageCharacter::scriptOpenDoor, -0x40
+//   FS2 0x0017e550  StageCharacter::scriptTakeUpTrap, -0x40
+//   FS2 0x0017e560  StageCharacter::scriptPutItem, -0x40
+//   FS2 0x0017e570  StageCharacter::scriptSetTrap, -0x40
+//   FS2 0x0017e580  StageCharacter::scriptUseNamedItem, -0x40
+//   FS2 0x0017e590  StageCharacter::scriptUseItemAt, -0x40
+//   FS2 0x0017e5a0  StageCharacter::scriptUseSmoke, -0x40
+//   FS2 0x0017e5b0  StageCharacter::noiseHook, -0x40
+//   FS2 0x0017e5c0  StageCharacter::isLampOn, -0x40
+//   FS2 0x0017e5d0  StageCharacter::scriptPickableHandle, -0x40
+//   FS2 0x0017e5e0  StageCharacter::scriptPutWeaponAway, -0x40
+//   FS2 0x0017e5f0  StageCharacter::setScriptValue, -0x40
+//   FS2 0x0017e600  StageCharacter::getScriptValue, -0x40
+//   FS2 0x0017e610  StageCharacter::scriptPlayMotion, -0x40
+//   FS2 0x0017e620  StageCharacter::waitMotionChange, -0x40
+//   FS2 0x0017e630  StageCharacter::scriptRouteAction130, -0x40
+//   FS2 0x0017e640  StageCharacter::scriptRouteAction12c, -0x40
+//   FS2 0x0017e650  StageCharacter::isRunningMotion, -0x40
+//   FS2 0x0017e660  StageCharacter::scriptIsCrouching, -0x40
+//   FS2 0x0017e670  StageCharacter::isBulletFlying, -0x40
+//   FS2 0x0017e680  StageCharacter::scriptIsCompanion, -0x40
+//   FS2 0x0017e690  StageCharacter::scriptHasLineTo, -0x40
+//   FS2 0x0017e6a0  StageCharacter::scriptReload, -0x40
+//   FS2 0x0017e6b0  StageCharacter::carriesItem, -0x40
+//   FS2 0x0017e6c0  StageCharacter::scriptIsFacing, -0x40
+//   FS2 0x0017e6d0  StageCharacter::hasBiter, -0x40
+//   FS2 0x0017e6e0  StageCharacter::shout, -0x40
+//   FS2 0x0017e6f0  StageCharacter::scriptFireAt, -0x40
+//   FS2 0x0017e700  StageCharacter::scriptFireAtBite, -0x40
+//   FS2 0x0017e710  StageCharacter::scriptSwingAt, -0x40
+//   FS2 0x0017e720  StageCharacter::scriptSwingAtBite, -0x40
+//   FS2 0x0017e730  StageCharacter::scriptAttackBite, -0x40
+//   FS2 0x0017e740  StageCharacter::scriptHasAllyWithin, -0x40
+//   FS2 0x0017e750  StageCharacter::answerNo, -0x40
+//   FS2 0x0017e760  StageCharacter::forgetMarkedPlace, -0x40
+//   FS2 0x0017e770  StageCharacter::walkToMarkedPlace, -0x40
+//   FS2 0x0017e780  StageCharacter::scriptMarkPlace, -0x40
+//   FS2 0x0017e790  StageCharacter::scriptCanSee, -0x40
+//   FS2 0x0017e7a0  StageCharacter::scriptHeardKind, -0x40
+//   FS2 0x0017e7b0  StageCharacter::getBrainPace, -0x40
+//   FS2 0x0017e7c0  StageCharacter::scriptSetBrainEntry, -0x40
+//   FS2 0x0017e7d0  StageCharacter::getScriptCharacter, -0x40
+//   FS2 0x0017e7e0  StageCharacter::getScriptActor, -0x40
+//   FS2 0x0017e7f0  StageCharacter::setLampOn, -0x40
+//   FS2 0x0017e800  StageCharacter::setPosition, -0x40
+//   FS2 0x0017e810  StageCharacter::doNothing, -0x40
+//   FS2 0x0017e820  StageCharacter::~StageCharacter, -0x40
+//   FS2 0x0017e830  StageCharacter::onScriptExit, -0x40
+//   FS2 0x0017e840  StageCharacter::setProperty, -0x40
+//   FS2 0x0017e850  StageCharacter::getProperty, -0x40

@@ -745,7 +745,7 @@ bool sceneGroupIsLit(int group)
 }
 
 // FS2 0x001f94c0
-// callcheck: operator_new, PointLight, addToScene, setActive, setShown, build, sprintf, attachVcm, strlen, modelFindPart, bindParts, strncpy, find5, FUN_0017e260, FUN_0017e1b0, getKind, strcasecmp, spawn, getStageFiles, strcpy, strcat, heapAllocAligned, Tim2Texture, start (setParent is the erases and the push; heapAllocAligned is Tim2Texture new)
+// callcheck: operator_new, PointLight, addToScene, setActive, setShown, build, sprintf, attachVcm, strlen, modelFindPart, bindParts, strncpy, find5, erase, pushBack, getKind, strcasecmp, spawn, getStageFiles, strcpy, strcat, heapAllocAligned, Tim2Texture, start (setParent is the erases and the push; heapAllocAligned is Tim2Texture new)
 
 void SceneRender::setup()
 {

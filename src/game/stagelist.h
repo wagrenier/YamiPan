@@ -20,6 +20,17 @@
 #include <stddef.h>
 #include <string.h>
 
+// The instance on StageObject *, what a character carries (+0x22c) and the
+// objects hung on a light or a block, emitted after game/stagecharacter.cpp:
+//   FS2 0x0017e140  StageList<StageObject *>::StageList
+//   FS2 0x0017e150  StageList<StageObject *>::~StageList, deleting
+//   FS2 0x0017e1b0  StageList<StageObject *>::pushBack
+//   FS2 0x0017e260  StageList<StageObject *>::erase
+//   FS2 0x0017e2b0  StageList<StageObject *>::clear
+//   FS2 0x0017e320  StageList<StageObject *>::pushFront, pushBack's empty case
+//   FS2 0x0017e3b0  StageList<StageObject *>::getTail, pushBack's walk
+//   FS2 0x0017e3e0  StageList<StageObject *>::Node::Node
+//   FS2 0x0017e400  StageList<StageObject *>::Node::unlink, erase's tail and delete
 // layout: host -- EE 8: +0 head, +4 count. An EE node is 0xc: +0 a new'd
 // 4-byte box holding the value, +4 next, +8 prev; the host keeps the value
 // in the node. Elements stay the owner's: clear deletes only the nodes.

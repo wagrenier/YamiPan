@@ -4815,7 +4815,7 @@ const ItemDef &defOf(const StageObject *item)
 } // namespace
 
 // FS2 0x00216400
-// callcheck: FUN_0017e260, FUN_0017e1b0, getStageSelect (setParent, detach, stageObjRecord, inline)
+// callcheck: erase, pushBack, getStageSelect (setParent, detach, stageObjRecord, inline)
 
 void StageCharacter::swapWeapons()
 {
@@ -4833,7 +4833,7 @@ void StageCharacter::swapWeapons()
 }
 
 // FS2 0x00216920
-// callcheck: FUN_00217730, setShadowOwner, setPosition, StageNodeList__erase, FUN_0017e260, FUN_00217840
+// callcheck: FUN_00217730, setShadowOwner, setPosition, StageNodeList__erase, erase, FUN_00217840
 
 bool StageCharacter::dropItem(StageObject *item)
 {
@@ -4939,7 +4939,7 @@ bool StageCharacter::canWield(StageObject *item, u_int mask)
 }
 
 // FS2 0x00216aa0
-// callcheck: FUN_0017e1b0, FUN_0017e260, erase, find, FUN_00217700, FUN_00217770, getStageSelect, setMoving, setPositionXyz, setRotation, swapWeapons, dropItem, setPosition, attachTo, setShadowOwner, strcmp, setActive, setShown (the trees, setParent and bodyBone inline; the list tail and push_back are pushBack; getStageSelect is in stageObjRecord)
+// callcheck: pushBack, erase, erase, find, FUN_00217700, FUN_00217770, getStageSelect, setMoving, setPositionXyz, setRotation, swapWeapons, dropItem, setPosition, attachTo, setShadowOwner, strcmp, setActive, setShown (the trees, setParent and bodyBone inline; the list tail and push_back are pushBack; getStageSelect is in stageObjRecord)
 
 bool StageCharacter::giveItem(StageObject *item)
 {
@@ -7531,10 +7531,10 @@ int StageCharacter::takeDamage(StageObject *fromObject, int kind, int part, int 
 
 void StageCharacter::setMotionByLabel(const char *name)
 {
-    m_7c4 = -1;
+    m_placeMotion = -1;
     for (int i = 0; i < kMotionDefCount; i++) {
         if (gMotionDefs[i].labelText != nullptr && strcmp(gMotionDefs[i].labelText, name) == 0) {
-            m_7c4 = i;
+            m_placeMotion = i;
             return;
         }
     }
@@ -7951,9 +7951,9 @@ void StageCharacter::resetActionState()
     m_3d8 = 1;
     m_flinched = 0;
     m_fidgets = 1;
-    m_7a0 = 0;
+    m_placedThisFrame = 0;
     m_area = nullptr;
-    m_7c4 = 0;
+    m_placeMotion = 0;
 }
 
 // FS2 0x0021cbf0
@@ -9107,6 +9107,74 @@ void StageCharacter::setScriptValue(int index, int value)
         m_scriptValues[index] = value;
 }
 
+// FS2 0x00218500
+// callcheck: setPosition, updateMatrix, reset, reset, isViewLinked, getTopView, onViewTop, stopAndRetry
+void StageCharacter::setPosition(const float *pos)
+{
+    m_xform.setPosition(pos);
+    updateMatrix();
+    m_motion->reset(m_placeMotion);
+    m_placeMotion = 0;
+    m_ground->reset();
+    if (isViewLinked())
+        gStageScene->getTopView()->onViewTop();
+    if (m_brain != nullptr)
+        m_brain->stopAndRetry();
+    m_placedThisFrame = 1;
+}
+
+// FS2 0x00219010
+// callcheck: resetScripts
+void StageCharacter::onScriptExit()
+{
+    if (m_brain != nullptr)
+        m_brain->resetScripts();
+}
+
+// FS2 0x0021ac60
+// callcheck: isControlled, isSpecialAllowed, setSpecial, playActionAndRetry
+void StageCharacter::scriptPlayMotion(const char *name)
+{
+    if (!isControlled()) {
+        // PC: the ROM calls through a null brain here.
+        if (m_brain != nullptr)
+            m_brain->playActionAndRetry(name);
+        return;
+    }
+    if (isSpecialAllowed(name))
+        setSpecial(true, name);
+}
+
+// FS2 0x0021b3f0
+// callcheck: isControlled, tryShout, askShout
+bool StageCharacter::shout(float loudness)
+{
+    if (isControlled())
+        return tryShout(loudness);
+    return m_brain->askShout(loudness);
+}
+
+// FS2 0x0021bf90
+// callcheck: walkToAndRetry
+void StageCharacter::walkToMarkedPlace(bool run)
+{
+    if (m_point700.isSet)
+        m_brain->walkToAndRetry(m_point700.point, run);
+}
+
+// FS2 0x0021bf80
+void StageCharacter::forgetMarkedPlace()
+{
+    m_point700.isSet = 0;
+}
+
+// FS2 0x00219be0
+// callcheck: scriptYield
+void StageCharacter::waitMotionChange()
+{
+    scriptYieldWhile(m_motion->motionId);
+}
+
 // FS2 0x0021abc0
 // callcheck: isSwitchedOn (slot +0x26c of the lamp)
 bool StageCharacter::isLampOn()
@@ -9479,7 +9547,7 @@ void StageCharacter::spawn()
     m_tree->setActive(true);
     m_tree->setShown(true);
     assignSerial();
-    m_7a0 = 1;
+    m_placedThisFrame = 1;
 }
 
 // FS2 0x002115e0

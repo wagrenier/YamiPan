@@ -1023,7 +1023,7 @@ static void hangLight(StageLight *light, StageObject *owner)
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x00182f40
-// callcheck: sprintf, operator_new, SpotLight, addToScene, setRotation, erase, pushBack, FUN_0017e260, FUN_0017e1b0, setVector, setRadiusSquared, setConeAngle, PointLight, PartSwitch, init (the parent links inline; the node's and the tree's list instances)
+// callcheck: sprintf, operator_new, SpotLight, addToScene, setRotation, erase, pushBack, erase, pushBack, setVector, setRadiusSquared, setConeAngle, PointLight, PartSwitch, init (the parent links inline; the node's and the tree's list instances)
 
 ItemLamp::ItemLamp(StageObject *owner)
     : m_owner(owner)

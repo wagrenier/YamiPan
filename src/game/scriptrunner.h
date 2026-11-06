@@ -230,6 +230,7 @@ class ScriptRunner
     friend class ScriptFrame;
     friend class CharacterBrain;
     friend void scriptYield(int a, int b);
+    friend void scriptYieldWhile(int value);
 
 public:
     ScriptRunner();                                                      // FS2 0x001d3130
@@ -615,6 +616,9 @@ extern ScriptRunner *gRunningScript;    /* sbss 0x31ae18 (gp-0x7a58) */
 // The running native waits: the VM stops, and runs the same word again next
 // frame with the stack as it was (a and b stay on the runner).
 void scriptYield(int a, int b);                                          // FS2 0x001d3710
+// Holds the running script in native 0x63 while value stays what it was on
+// the first call, then lets it go. Inline in StageCharacter::waitMotionChange.
+void scriptYieldWhile(int value);
 // n of the game's frames in the 30ths the scripts count, and back.
 int  scriptFramesTo30(int frames);                                       // FS2 0x001d3740
 int  scriptFramesFrom30(int frames30);                                   // FS2 0x001d37c0
