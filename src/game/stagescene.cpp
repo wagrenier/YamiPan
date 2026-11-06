@@ -4492,6 +4492,28 @@ static const char kMotionCar[]      = "CAR";           /* data 0x303fd8 */
 static const char kMotionSevenKeys[] = "Seven_Keys";   /* data 0x303fe0 */
 constexpr int kMotionTargetFirst = 1;
 constexpr int kMotionTargetLast  = 8;
+// CAT, CROW and tonbi: the shared animals, on the map as oCM99_<index><digit>.
+constexpr int kMotionTargetLastAnimal = 3;
+constexpr int kAnimalPrefixSize = 7;
+constexpr int kAnimalNameSize = 8;
+
+// Without this the object never gets its motions, and so has no pose: a
+// script's crow then faults in ModelPose.
+// FS2 0x00175c40
+// callcheck: sprintf, strncmp, strcmp
+
+bool StageObject::isMotionTarget(int index)
+{
+    if (index < kMotionTargetFirst || index > kMotionTargetLast)
+        return false;
+    if (index <= kMotionTargetLastAnimal) {
+        char prefix[0x10];
+        sprintf(prefix, "oCM99_%d", index);
+        return m_name[kAnimalNameSize] == '\0' && isdigit((unsigned char)m_name[kAnimalPrefixSize])
+            && strncmp(m_name, prefix, kAnimalPrefixSize) == 0;
+    }
+    return strcmp(m_name, stageMotionTargetName(index)) == 0;
+}
 
 // The doors of type take list (inline twice).
 static void setDoorMotion(int type, void *list)

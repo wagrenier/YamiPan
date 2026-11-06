@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-05 18:57 at commit `cfa751a` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-05 19:49 at commit `ea08c25` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **4193**; stubs: **297**
+- reconstructed FS2 functions: **4194**; stubs: **296**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -96,7 +96,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stageobjlist.cpp` | 45 | 0 |
 | `src/game/stageplayer.cpp` | 33 | 0 |
 | `src/game/stageresult.cpp` | 32 | 0 |
-| `src/game/stagescene.cpp` | 258 | 0 |
+| `src/game/stagescene.cpp` | 259 | 0 |
 | `src/game/stagesound.cpp` | 45 | 0 |
 | `src/game/streamring.cpp` | 17 | 0 |
 | `src/game/stringlist.cpp` | 14 | 0 |
@@ -116,7 +116,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/vectortrack.cpp` | 10 | 0 |
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 247 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 246 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -203,7 +203,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stageobjlist.cpp` 45/45 -- Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector in
 - verify: `game/stageplayer.cpp` 33/33 -- Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was s
 - verify: `game/stageresult.cpp` 32/32 -- All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (add
-- verify: `game/stagescene.cpp` 256/258 -- All 258 written, nothing has run: the smoke run stays on the language screen and the picture is unchanged (no stage loads). Batch 089, 70 names. SubSceneObject 
+- verify: `game/stagescene.cpp` 256/258 -- Fix for the user's crash at the start of the mission after stage 1. isMotionTarget 0x175c40 was a stub, so node 4's crow oCM99_20 had no pose and native 0xb1 fa
 - verify: `game/stagesound.cpp` 45/45 -- Batch 077 (31 names: the 18 slice functions, abs 0x121f08, SoundTrack hasSubtitles / getSubtitle / setVolume, SePlayer setTable / setPitch, StageNodeBase ctor 0
 - verify: `game/streamring.cpp` 17/21 -- All 21 functions accounted for: the 17 ring functions written, the thunks 0x151f70 / 0x151f80 / 0x152730 / 0x152740 call the rx functions directly. The classes 
 - verify: `game/subsceneobject.cpp` 50/50 -- All 50 written or recorded: the last 14 were header getKinds, empty hooks and thunks (ledger block at the end of the cpp; batch 113 named the thunks, saved). St
@@ -240,6 +240,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-05 19:49 `game/stagescene.cpp` verify: The next mission starts: isMotionTarget, so the shared animals get their motions and a pose
 - 2026-11-05 18:57 `game/navimenu.cpp` verify: The navigator: the screen after a stage, its two widgets and the answer
 - 2026-11-05 18:07 `game/stageplayer.cpp` verify: The stage's end: a box answers native 0x44, ClearSequence is written, New Game's first part ends
 - 2026-11-05 17:36 `game/scriptrunner.cpp` verify: The last 89 natives: every native the disc's scripts call is bound; nothing seen to run
@@ -247,12 +248,11 @@ Recent sessions:
 - 2026-11-05 16:09 `game/scriptrunner.cpp` partial: 56 more natives by use on the disc, the mission spawn picks, canSpawn and spawn, parseSpawnId, search points, the leaves
 - 2026-11-05 15:30 `game/scriptrunner.cpp` partial: 63 more natives by use on the disc, the foe weights and picks, the character slots behind them
 - 2026-11-05 14:52 `game/scriptrunner.cpp` partial: All natives of stage 1's object script and 14 of the most used on the disc; sssall.py orders the rest
-- 2026-11-05 14:08 `yamipan/rendering/model_renderer.cpp` verify: Shadow pass read from VU1 and in the host; the pass runs in d0101 by its numbers, no screenshot shows a shadow yet
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@00135990` | partial | 3/0/33 | 3.1 | 579 | 0 |
-| `unassigned@0021e120` | partial | 4/44/195 | 71.5 | 131 | 3 |
+| `unassigned@0021e120` | partial | 4/44/195 | 71.5 | 141 | 5 |
 | `unassigned@001eedb0` | partial | 1/0/25 | 4.1 | 130 | 0 |
 | `unassigned@00176480` | partial | 13/0/69 | 5.3 | 110 | 0 |
 | `unassigned@001fe6b0` | todo | 0/26/77 | 34.1 | 102 | 9 |
@@ -261,8 +261,8 @@ Recent sessions:
 | `unassigned@00190900` | partial | 2/8/34 | 11.8 | 58 | 8 |
 | `unassigned@0017e140` | todo | 0/0/78 | 1.4 | 51 | 0 |
 | `unassigned@0027cab0` | partial | 3/2/59 | 13.1 | 45 | 0 |
-| `unassigned@00186ee0` | partial | 1/3/6 | 0.8 | 42 | 2 |
 | `unassigned@002a31b0` | partial | 1/18/22 | 5.9 | 39 | 0 |
+| `unassigned@0023c010` | todo | 0/11/15 | 7.4 | 37 | 4 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

@@ -1814,7 +1814,7 @@
    "why": "StageResult (0x599700, static init 0x310f60: begin(0) + __register_global_object with the destructor 0x2b0cf0) and the game-pack loader 0x2afd00..0x2aff80: the MSL map instances 0x2b0590..0x2b0cf0 serve the loader's tables and sit between getStageResult and StageResult's static destructor, so one object file; 0x2afc20/0x2afcd0 (init-pack items by language) joined by position (guess); 0x2af9a0 before is the 0x2adc70 drawing cluster, 0x2b0d50 after is a SoundStream thunk"
   },
   "game/stagescene.cpp": {
-   "notes": "All 258 written, nothing has run: the smoke run stays on the language screen and the picture is unchanged (no stage loads). Batch 089, 70 names. SubSceneObject is now DemoExecuter, the name the ROM gives in slot 7. ScriptRunner has a host vptr and a virtual dtor, so destroy became delete. Before a stage runs: StageObject scriptRunner() still casts padding at +0x40 to a now polymorphic ScriptRunner, so a virtual call on it would crash; the character TU must give it a real member. Only 20 of 108 ScriptRunner slots are declared, in host order, and nothing calls one. command10..101 and sideHook0..3 are placeholder names. getKind of SubSceneDoorObject, StageMarker and SubSceneProp are plain members nothing reaches until StageObject getKind becomes virtual in the objects TU. Comment-only at the end of stagescene.cpp: 15 this-adjust thunks and 9 deleting dtors the host compiler makes; 17 ScriptRunner defaults are inline in gamehooks.h. The queue is now empty: re-assess from the menu blockers in open-items.md. Doubts: open-items.md Eighth run.",
+   "notes": "Fix for the user's crash at the start of the mission after stage 1. isMotionTarget 0x175c40 was a stub, so node 4's crow oCM99_20 had no pose and native 0xb1 faulted in ModelPose::play. Node 4 ran 330 s in a scripted run from a temporary start on that node, no crash, the pier on screen with the boy in third person. Nobody has played it yet. ~SceneEffectList in ~StageScene is a callcheck item left from an earlier run, not this one.",
    "ranges": [
     [
      "001953f0",
@@ -1865,6 +1865,11 @@
      "date": "2026-11-03 20:24",
      "status": "verify",
      "summary": "the last 67 functions: collision finders, scene accessors, script command defaults, DemoExecuter; all 258 written"
+    },
+    {
+     "date": "2026-11-05 19:49",
+     "status": "verify",
+     "summary": "The next mission starts: isMotionTarget, so the shared animals get their motions and a pose"
     }
    ],
    "status": "verify",
