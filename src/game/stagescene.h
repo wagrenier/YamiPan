@@ -302,7 +302,7 @@ struct StageMission
     char    pendingEvent[kMissionEventName] = {}; // FS2 +0xc8: the event afterScripts starts, empty none (StageScene::isBusy)
     u_char  _d8 = 0;            // FS2 +0xd8: cleared by afterScripts (writers unread); native 0x1f5 answers it
     u_char  _d9 = 0;            // FS2 +0xd9: the same; native 0x22a answers it
-    u_char  blackout = 0;       // FS2 +0xda: set: StageScene::update fades the screen to black, clear: back
+    u_char  letterbox = 0;       // FS2 +0xda: set: StageScene::update ramps the bars in (SceneDirector), clear: out
     MissionTimedRecord timed[kMissionTimedRecords]; // FS2 +0xe0
     int     timedCount = 0;     // FS2 +0x260
     MissionVisibility visibility[kMissionVisibilities] = {}; // FS2 +0x264

@@ -131,7 +131,7 @@ meshes multiply it, as the model_renderer notes say.
 ## What stays outside
 
 Sound streams (`rxSndStrMem`/`Stream`/`Pcm`/`Adpcm`, SDPR2) are stubs, so the voice of an event is silent.
-The game-over and clear sequences (79 functions, 6,346 i with `GameOverSequence::update`), the pause menu
+The game-over and clear sequences are written (game/gameoversequence.cpp, game/demoevent.cpp); the pause menu
 state (0x207440..0x207ef0), `PlayerOverlay` (1,255 i) and the item list are needed to finish a stage, not
 to walk in it.
 

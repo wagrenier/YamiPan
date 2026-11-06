@@ -20,6 +20,7 @@
 #include "game/fontdata.h"
 #include "game/characterinput.h"
 #include "game/gamehooks.h"
+#include "game/gameoversequence.h"
 #include "game/gamepacket.h"
 #include "game/gamesystem.h"
 #include "game/gfxtarget.h"
@@ -2955,7 +2956,7 @@ void StageScene::updateRumble(float frames)
 constexpr float kParticleRangeScale = 1.2f;     // of the draw distance
 constexpr float kFrameSeconds = 0.033333335f;   // 1/30 s: updateRumble counts in these
 constexpr float kDrawSysTicksPerSecond = 300.0f;
-constexpr int   kBlackoutFrames = 0xf;
+constexpr int   kLetterboxFrames = 0xf;
 constexpr u_int kBlack = 0x80000000;
 
 // FS2 0x00199400
@@ -3069,17 +3070,17 @@ void StageScene::update()
             alert->update();
         }
 
-        if (currentMission()->blackout) {
+        if (currentMission()->letterbox) {
             if (director == nullptr) {
                 director = new SceneDirector;
-                director->start(kBlackoutFrames, 0, kBlack);
+                director->start(kLetterboxFrames, 0, kBlack);
             }
         } else if (director != nullptr && !director->isRunning()) {
             if (director->colour == 0) {
                 delete director;
                 director = nullptr;
             } else {
-                director->start(kBlackoutFrames, kBlack, 0);
+                director->start(kLetterboxFrames, kBlack, 0);
             }
         }
     }
@@ -3269,15 +3270,8 @@ static const char kEventD0101[] = "d0101";      /* data 0x303be8 */
 constexpr int kD0101FilterCuts = 2;
 constexpr int kD0101FilterPasses = 1;
 constexpr int kD0101FilterArg = 5;
-// A sub-scene's letterbox: black bars over the 512-tall frame. ALPHA
-// (Cs - Cd) * As + Cd, TEST: depth always, no alpha test.
-constexpr u_long kLetterboxAlpha = 0x44;
-constexpr u_long kLetterboxTest  = 0x30000;
-constexpr int kLetterboxTop    = 0x40;
-constexpr int kLetterboxBottom = 0x1c0;
-
 // FS2 0x00198970
-// callcheck: applyClearColor, prepareDrawFlags, calcViewMatrix, drawSysCurrent, drawSysCurrent, setDrawDistance, update, gfxGetCurrentDrawEnv, drawSysRender, addBar, draw, getDeltaSeconds, draw, drawViewFilter, draw, getKind, strcmp, openList, gfxGetDrawEnv, gfxGetVramBlock, gsFrameFilter, closeList, drawOverlay, openList, getDeltaSeconds, draw, closeList, openList, gfxGetTexArea, getList, closeList, draw, openList, gfxGetTexArea, getList, draw, gfxGetTexArea, getList, closeList, openList, gfxGetTexArea, getList, draw, closeList, openList, drawSubtitles, closeList, openList, gfxGetTexArea, getList, draw, gfxGetTexArea, getList, draw, gfxGetTexArea, getList, gsFillRect, gsFillRect, closeList, addBar (perfMark holds addBar; the two GS register packets are YamiPan_DrawUiReg here)
+// callcheck: applyClearColor, prepareDrawFlags, calcViewMatrix, drawSysCurrent, drawSysCurrent, setDrawDistance, update, gfxGetCurrentDrawEnv, drawSysRender, addBar, draw, getDeltaSeconds, draw, drawViewFilter, draw, getKind, strcmp, openList, gfxGetDrawEnv, gfxGetVramBlock, gsFrameFilter, closeList, drawOverlay, openList, getDeltaSeconds, draw, closeList, openList, gfxGetTexArea, getList, closeList, draw, openList, gfxGetTexArea, getList, draw, gfxGetTexArea, getList, closeList, openList, gfxGetTexArea, getList, draw, closeList, openList, drawSubtitles, closeList, openList, gfxGetTexArea, getList, draw, gfxGetTexArea, getList, draw, gfxGetTexArea, getList, gsFillRect, gsFillRect, closeList, addBar (perfMark holds addBar; drawLetterbox holds the two fills and the GS register packets)
 
 void StageScene::draw(StageObject *active)
 {
@@ -3367,10 +3361,7 @@ void StageScene::draw(StageObject *active)
             director->draw(packet);
     } else {
         fade->draw(packet, gfxGetTexArea()->getList(PacketList_Overlay));
-        YamiPan_DrawUiReg(packet, SCE_GS_ALPHA_1, kLetterboxAlpha);
-        YamiPan_DrawUiReg(packet, SCE_GS_TEST_1, kLetterboxTest);
-        gsFillRect(packet, 0, 0, kSceneFrameSize, kLetterboxTop, kBlack);
-        gsFillRect(packet, 0, kLetterboxBottom, kSceneFrameSize, kSceneFrameSize, kBlack);
+        drawLetterbox(packet, kBlack);
     }
     packets->closeList();
     perfMark(PerfMeterColour_White, "2d draw");

@@ -4794,14 +4794,14 @@ static const int *nativeTimedRecords(ScriptRunner *, int *acc, const int *code)
     return code;
 }
 
-// 0x1f6 blackout(on).
+// 0x1f6 letterbox(on): the mission's +0xda.
 // FS2 0x001abeb0
 // callcheck: currentMission
 
-static const int *nativeBlackout(ScriptRunner *self, int *, const int *code)
+static const int *nativeLetterbox(ScriptRunner *self, int *, const int *code)
 {
     const int on = self->popped(1)[0];
-    gStageScene->currentMission()->blackout = on != 0;
+    gStageScene->currentMission()->letterbox = on != 0;
     return code;
 }
 
@@ -7490,7 +7490,7 @@ static const ScriptNativeBinding kAskedNatives[] = {
     { 0x1e9, nativeSigLampHasTarget },
     { 0x1ef, nativeNearNamed },
     { 0x1f4, nativeIsNearViewTarget },
-    { 0x1f6, nativeBlackout },
+    { 0x1f6, nativeLetterbox },
     { 0x1f9, nativeSmokeNear },
     { 0x1fb, nativeMarkWeapons },
     { 0x200, nativeTakeOverState },
