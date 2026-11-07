@@ -510,6 +510,24 @@
    "status": "verify",
    "why": "One object file: the global heap allocator (Heap 0x1037c0..0x1046b0) and the game RNG (0x1046b0..0x104b40). Their data sit together too: sdata 0x31a880..0x31a88c (the image-end / stack / heap-size words only initGlobalHeap reads, then the LCG state), bss 0x329970 (gGlobalHeap, 0x44) then 0x3299c0 (the 97-word RNG table), sbss 0x31ad80 (the RNG index). 0x104b40 / 0x104be0 are MSL __destroy_new_array / __destroy_arr: the MSL lib_range now starts at 0x104b40 (batch 031)."
   },
+  "game/itemphysics.cpp": {
+   "notes": "All of 0x23c010..0x23de20, batch 187 (draw renamed endFrame; getNodeFrame, getMeanVelocity, keepsMoving, placeNodes). New file game/itemphysics.h holds the class. Proved by new itemcmp.py: 20 lives, 6046 ops, 8946 rays, 115 landings, 12 rests, 0 differences; plant 1158. Seen with a temporary harness, removed: YAMIPAN_TELEPORT=2, LW_HOCHO forced 90 over the path falls from z 122.8 to 37.8, rests, lies flat, progress/20261106-item-knife-landed.png; beside the player the game's Pick up appears. Not seen: a real throw or drop, a thrown item (stage 2 loads none), its touch sphere, the landing sound. Next: a stage with a thrown item and the throw from ThrowLink. One deviation: endFrame returns early when link 0 is null (under two nodes), where the ROM reads through null. README.md line 110 holds a NUL byte, older than this run.",
+   "ranges": [
+    [
+     "0023c010",
+     "0023de20"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-06 23:33",
+     "status": "verify",
+     "summary": "ItemPhysics written: thrown items and dropped weapons fall, all 15 functions, bit-identical to the ROM on itemcmp.py; a forced knife lands flat on stage 2"
+    }
+   ],
+   "status": "verify",
+   "why": "The ItemPhysics class whole: slots 0x23c010..0x23c300, the rest to the ctor at 0x23db50, which ends at 0x23de14; sysdata ends before it, getLocalDateTime 0x23de20 starts datetime.cpp"
+  },
   "game/layoutpaths.cpp": {
    "notes": "All 24 functions of 0x2ec160..0x2ec8e0 written, no new names, Ghidra untouched. Prototypes moved from gamehooks.h to layoutpaths.h, which gamehooks.h includes. Seen on screen with a scripted pad (LEFT and CROSS by turns every 200 reads, build.py --run 40): language, no-card dialog, SCE Europe logo, then the loop on the stub runTitleScreen. Dialog and logo equal their TIM2 assets from YAMIPAN_TEX_DUMP. The default smoke run still rests on the language screen. verify, not done: 22 of the 24 paths have not been seen opening a file. Not written: FUN_002ec110, the drawSys singleton just before the range, left for that TU. Released unassigned@0017fce0 untouched and queued unassigned@00231c90 for runTitleScreen; open-items.md has why and the doubts.",
    "ranges": [
@@ -3251,6 +3269,10 @@
   "unassigned@0022fc50": {},
   "unassigned@00231410": {},
   "unassigned@00231c90": {},
+  "unassigned@0023c010": {
+   "claimed": "2026-11-06 22:51",
+   "status": "active"
+  },
   "unassigned@0023c020": {},
   "unassigned@0023e740": {},
   "unassigned@00246230": {},

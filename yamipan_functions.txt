@@ -6358,21 +6358,21 @@
 /* 0023bff0 00000018 */ GameOptions::getBrightnessValue(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/itemphysics.cpp
 // *****************************************************************************
 
 /* 0023c010 00000008 */ ItemPhysics::onCollide(){}  // game
 /* 0023c020 000002cc */ ItemPhysics::collisionHook0(){}  // game
 /* 0023c2f0 00000004 */ ItemPhysics::collisionHook3(){}  // game
 /* 0023c300 000004e8 */ ItemPhysics::syncBody(){}  // game
-/* 0023c7f0 00000114 */ FUN_0023c7f0(){}
-/* 0023c910 00000138 */ ItemPhysics::draw(){}  // game
+/* 0023c7f0 00000114 */ ItemPhysics::getNodeFrame(){}  // game
+/* 0023c910 00000138 */ ItemPhysics::endFrame(){}  // game
 /* 0023ca50 000003ac */ ItemPhysics::update(){}  // game
-/* 0023ce00 00000060 */ FUN_0023ce00(){}
-/* 0023ce60 000000ec */ FUN_0023ce60(){}
+/* 0023ce00 00000060 */ ItemPhysics::getMeanVelocity(){}  // game
+/* 0023ce60 000000ec */ ItemPhysics::keepsMoving(){}  // game
 /* 0023cf50 00000064 */ ItemPhysics::push(){}  // game
 /* 0023cfc0 000000f8 */ ItemPhysics::setMoving(){}  // game
-/* 0023d0c0 00000534 */ FUN_0023d0c0(){}
+/* 0023d0c0 00000534 */ ItemPhysics::placeNodes(){}  // game
 /* 0023d600 000004f8 */ ItemPhysics::setup(){}  // game
 /* 0023db00 0000004c */ ItemPhysics::~ItemPhysics(){}  // game
 /* 0023db50 000002c4 */ ItemPhysics::ItemPhysics(){}  // game
