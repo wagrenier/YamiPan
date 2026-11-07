@@ -1904,9 +1904,12 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   +0x1c moved by 4, mix sizes 0x20 -> 0x2c and 0x40 -> 0x58, PCM offsets up by 0x18..0x1c (0x3c -> 0x54, 0x4c -> 0x68),
   which fits the larger `.bss`.
 - Ghidra: `python iop.py elf <MODULES>/RXSNDDRV.IRX` writes `work/iop/elf/rxsnddrv.elf` (base 0, `_start`,
-  `_gp` and 40 named import stubs as symbols). A throwaway headless import (2026-11-06) gives
+  `_gp` and 40 named import stubs as symbols). **Imported 2026-11-06 as program `rxsnddrv.elf`** in `CLaude
+  Decomp`, open beside SCES_538.51 (read it with `YAMIPAN_PROGRAM=rxsnddrv.elf py dec.py <addr>`):
   `MIPS:LE:32:default`, 234 functions (40 import stubs and 194 others), all decompile with no bad
-  instruction data. The 194 are 190 of the table's 192 addresses and the 4 new functions; the other two are
+  instruction data in a headless import of the same file, whose function list this one matches address for
+  address. The loader also adds read-only blocks for the PS2's RAM mirrors and BIOS (0x20000000 up, 66 MB
+  of the program's reported size): placeholders, not the module. The 194 are 190 of the table's 192 addresses and the 4 new functions; the other two are
   `=` functions Ghidra did not split off (0x243c, 0xb770). `_start` reads FlushDcache, sceSdInit(0), sceSifInitRpc(0), the
   subsystem inits; 0x360 reads as RosePan's dispatcher. ghidra.md "Hazards" has the traps.
 

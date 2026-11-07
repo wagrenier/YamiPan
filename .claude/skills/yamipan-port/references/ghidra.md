@@ -110,7 +110,13 @@ groups (67 tools) on connect; `search_tools` / `load_tool_group` add the rest; `
   types, p-code errors and real functions missing. `iop.py` writes `E_MIPS_ABI_O32 | EF_MIPS_NOREORDER`
   (0x1001), which selects `MIPS:LE:32:default`. Check an import's `Using Language` line, not its function
   count. RosePan's `iop.py` still writes 0.
-- **The IOP program and the EE caches** (RosePan's hazard, for when `rxsnddrv.elf` is imported). The caches
+- **`import_file` with `language` is a raw import** (2026-11-06). Passing `language` loads any file as a
+  raw binary, an ELF too, and the answer still says success with the right language. Signs: every address
+  off by the ELF's file offset (+0x1000 for `rxsnddrv.elf`), `memory_size` the file's size, no symbols, no
+  `.bss`, a function count that makes no sense (381 for 234). For an ELF leave `language` out. The tool
+  reopens a file of the same name instead of importing, so delete the bad one first (`delete_file`, in the
+  tool group `project`).
+- **The IOP program and the EE caches** (RosePan's hazard; `rxsnddrv.elf` was imported 2026-11-06). The caches
   and the name ledger are keyed by address alone: with `YAMIPAN_PROGRAM=rxsnddrv.elf` only `dec.py` and
   `ghidra.py` are safe; `name_ctx.py`, `fetch.py`, `features.py`, `export.py`, `refresh.py` and `tus.py
   check / finish` would mix IOP addresses into the EE's data. It loads at 0, so small constants look like
