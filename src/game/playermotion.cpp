@@ -2591,11 +2591,11 @@ void PlayerMotion::walkFileTarget(sceVu0FVECTOR target, sceVu0FVECTOR aimAt, voi
 }
 
 // FS2 0x00271630
-// callcheck: FUN_002179b0, FUN_0026a6b0, FUN_0020d730, FUN_0020d650, FUN_0020d820
+// callcheck: getMotionDoor, FUN_0026a6b0, FUN_0020d730, FUN_0020d650, FUN_0020d820
 
 void DoorCondition::onUpdate()
 {
-    if (character->m_abilities.flag3b7 == 0 || motion->doorLink->door != nullptr
+    if (character->m_abilities.flag3b7 == 0 || character->getMotionDoor() != nullptr
         || (character->m_abilities.flag3c3 == 0 && character->m_290 != nullptr))
         return;
     StageDoor *door = motion->probe->findDoor();
@@ -6295,13 +6295,11 @@ void StageCharacter::swapWeapons()
 }
 
 // FS2 0x00216920
-// callcheck: FUN_00217730, setShadowOwner, setPosition, StageNodeList__erase, erase, FUN_00217840
+// callcheck: find, setShadowOwner, setPosition, StageNodeList__erase, erase, erase
 
 bool StageCharacter::dropItem(StageObject *item)
 {
-    StageList<StageObject *>::Node *node = m_items.head;
-    while (node != nullptr && node->value != item)
-        node = node->next;
+    StageList<StageObject *>::Node *node = m_items.find(item);
     if (node == nullptr)
         return false;
     if (m_lampItem == item) {
@@ -6401,7 +6399,7 @@ bool StageCharacter::canWield(StageObject *item, u_int mask)
 }
 
 // FS2 0x00216aa0
-// callcheck: pushBack, erase, erase, find, FUN_00217700, FUN_00217770, getStageSelect, setMoving, setPositionXyz, setRotation, swapWeapons, dropItem, setPosition, attachTo, setShadowOwner, strcmp, setActive, setShown (the trees, setParent and bodyBone inline; the list tail and push_back are pushBack; getStageSelect is in stageObjRecord)
+// callcheck: pushBack, erase, erase, find, getTail, pushBack, getStageSelect, setMoving, setPositionXyz, setRotation, swapWeapons, dropItem, setPosition, attachTo, setShadowOwner, strcmp, setActive, setShown (the trees, setParent and bodyBone inline; the list tail and push_back are pushBack; getStageSelect is in stageObjRecord)
 
 bool StageCharacter::giveItem(StageObject *item)
 {
@@ -6454,10 +6452,10 @@ bool StageCharacter::giveItem(StageObject *item)
     }
     else {
         // What stacks goes into the count of the same name, and the new one
-        // is gone. The ROM walks the list from its tail.
+        // is gone. The search goes from the tail, as findCarried's.
         StageObject *same = nullptr;
-        for (StageList<StageObject *>::Node *node = m_items.head; node != nullptr && same == nullptr;
-             node = node->next) {
+        for (StageList<StageObject *>::Node *node = m_items.getTail(); node != nullptr && same == nullptr;
+             node = node->prev) {
             if (strcmp(node->value->m_name, item->m_name) == 0)
                 same = node->value;
         }
@@ -7284,15 +7282,24 @@ void dropGun(StageCharacter *character, PlayerMotion *motion)
 } // namespace
 
 // FS2 0x00216310
-// callcheck: FUN_00217700, strcmp
+// callcheck: getTail, strcmp
 
+// From the tail: of two with the same name, the one carried last.
 StageObject *StageCharacter::findCarried(const char *name)
 {
-    for (StageList<StageObject *>::Node *node = m_items.head; node != nullptr; node = node->next) {
+    for (StageList<StageObject *>::Node *node = m_items.getTail(); node != nullptr; node = node->prev) {
         if (strcmp(node->value->m_name, name) == 0)
             return node->value;
     }
     return nullptr;
+}
+
+// Emitted after the carried list's second instance (stagelist.h), 0x2179b0.
+// FS2 0x002179b0
+
+StageDoor *StageCharacter::getMotionDoor()
+{
+    return m_motion->doorLink->door;
 }
 
 // FS2 0x002a3010
@@ -11132,9 +11139,11 @@ StageObject *StageCharacter::getUnnoticedFoe()
 
 // The ROM's is a tail call to the table's 0x2179c0 (SightEntry[0x18] and the
 // owner at +0x120 are one object, +0x468), which also tests the line's address
-// for null; it never is.
+// for null; it never is. The table's function, SightTable::canSeeThisFrame,
+// is written here too (cone kScriptSightCone, 1.0472):
+// FS2 0x002179c0
 // FS2 0x00210930
-// callcheck: FUN_002179c0, canSee (this, on the host)
+// callcheck: canSeeThisFrame, canSee (this, on the host)
 
 bool StageCharacter::canSeeThisFrame(StageCharacter *other, float *distance)
 {

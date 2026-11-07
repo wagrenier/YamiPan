@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 05:12 at commit `bdb1592` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 05:34 at commit `42b75d5` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 05:12 at commit `bdb1592` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6594**, named **5510** (84%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1593, game-inferred 4591
-- context-name ledger: 6184 entries; overrides of wrong library matches: 0
-- placed in a source file: 6009/6594 in 130 files
+- game functions: **6594**, named **5512** (84%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1593, game-inferred 4593
+- context-name ledger: 6186 entries; overrides of wrong library matches: 0
+- placed in a source file: 6019/6594 in 130 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5421**; stubs: **57**
+- reconstructed FS2 functions: **5423**; stubs: **57**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -76,7 +76,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/pakarchive.cpp` | 17 | 0 |
 | `src/game/pausemenustate.cpp` | 12 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
-| `src/game/playermotion.cpp` | 589 | 0 |
+| `src/game/playermotion.cpp` | 591 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rand48.cpp` | 3 | 0 |
@@ -166,8 +166,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 215 TUs: todo 75, partial 20, verify 117, done 46
-- next: **unassigned@002176d0** (frontier score 11)
+- 214 TUs: todo 75, partial 19, verify 118, done 46
+- next: **rx/rxsndstrpcm.c** (frontier score 10)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -209,7 +209,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
-- verify: `game/playermotion.cpp` 426/433 -- Written: StageCharacter::throwCarried 0x218b50 (was useItem), putSmoke 0x218850 (was item218850), wantThrow 0x20b200, canTakeUpTrap 0x219000, heardWithin 0x2199
+- verify: `game/playermotion.cpp` 428/442 -- Written: StageCharacter::throwCarried 0x218b50 (was useItem), putSmoke 0x218850 (was item218850), wantThrow 0x20b200, canTakeUpTrap 0x219000, heardWithin 0x2199
 - verify: `game/prgmccard.cpp` 7/7 -- All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide close
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/ripplesheet.cpp` 7/10 -- Batch 164. What the notes called stage 0x1b's boss film is a 15 by 15 ripple sheet, 0x2d10f0..0x2d3700, SightJack +0xb4: the frame bent, pushed from a tint, cre
@@ -228,7 +228,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stagealert.cpp` 8/8 -- All 8 of 0x263b90..0x2640e8 written, class moved to game/stagealert.h, GameOptions::_10 is alertMode (GameAlertMode), 0x263b90 is beforeFileEvent and queueFiles
 - verify: `game/stagecamera.cpp` 16/16 -- Written in src/game/scriptrunner.cpp: nativeSetPlayer 0x1c81a0, nativeScriptView 0x1c8dc0, isNullName 0x1c8f40, findCameraObject 0x1d1260, findLightObject 0x1b5
 - verify: `game/stagecar.cpp` 59/59 -- No code changed this run; door and drive proven on a temporary build, removed (New Game forced to stage 7, 300 s, no crash). The old pad pressed X every 80 read
-- verify: `game/stagecharacter.cpp` 77/86 -- unassigned@0017e140 was the tail of this file: StageList<StageObject *> 0x17e140..0x17e400 and 63 thunks 0x17e470..0x17e860, now listed at the end of stagechara
+- verify: `game/stagecharacter.cpp` 78/87 -- unassigned@0017e140 was the tail of this file: StageList<StageObject *> 0x17e140..0x17e400 and 63 thunks 0x17e470..0x17e860, now listed at the end of stagechara
 - verify: `game/stagecollision.cpp` 56/74 -- All of the TU's functions are written or mapped to StageList and the host vector. Seen on stage 1's data in a New Game run: against brute force over all 8165 fa
 - verify: `game/stagedoor.cpp` 126/133 -- unassigned@00171ad0 turned out to be inline functions of this object file: runner table defaults, StageObject accessors, DoorRecord setters; pinned here and lis
 - verify: `game/stageelevator.cpp` 14/27 -- 27 functions 0x2939b0..0x295470, batch 184; the free elevator functions are members now and getZs9901 answers StageElevator; the two motion file readers 0x2937e
@@ -285,10 +285,12 @@ Least-named game-code regions (64 KB blocks):
 - verify: `sound/sound.cpp` 97/98 -- All 98 of 0x144080..0x148db0 written, one file, no Ghidra change (batch 013 names held). New src/sound/sound.h takes the sound stand-ins out of game/gamehooks.h
 - verify: `unassigned@00116fb8` 0/0 -- This key is empty now: its whole run is two lib_ranges (architecture.md Address map, naming table row batch 025). Game code calling __extendsfdf2 / __cmpdf2 / _
 - verify: `unassigned@0012c9b8` 0/0 -- This key is empty now: 0x12c9b8..0x12cce0 is newlib (layout.json lib_ranges libc row, architecture.md libc bullet, batch 199 also names __sinit 0x123910, __sfvw
+- verify: `unassigned@002176d0` 0/0 -- This key is empty now. 0x2176d0 isViewLinked was already written in src/game/stagecharacter.cpp, now in its range; 0x217700..0x217a80 joined game/playermotion.c
 - verify: `yamipan/rendering/model_renderer.cpp` 0/0 -- Fix for the user's crash on turning left in node 4, confirmed fixed by the user's play. drawBatch read batch.uvs unchecked. The batch is a single unskinned tria
 
 Recent sessions:
 
+- 2026-11-07 05:34 `unassigned@002176d0` verify: Placed the run 0x2176d0..0x217a80: isViewLinked to game/stagecharacter.cpp, the second StageList<StageObject*> instance (getTail, find, pushBack, erase, pushFro
 - 2026-11-07 05:12 `unassigned@0012c9b8` verify: Resolved: newlib stdio tail 0x12c9b8..0x12cce0 (__sccl, vsprintf, _vsprintf_r, _write_r, __swsetup) is libc, the libc lib_range now ends at 0x12cce0; GameSystem
 - 2026-11-07 05:10 `game/gamesystem.cpp` verify: marked verify -> verify: gained GameSystem::beginStage 0x12cce0 (range now 0x12cce0..0x12dd30, 18 functions) from TU unassigned@0012c9b8; not reached by the smo
 - 2026-11-07 04:58 `rena/rena_2d_texture_vram.cpp` verify: GsRegionAlloc, rena's texture VRAM region allocator, all 11 functions; boot unchanged
@@ -296,22 +298,21 @@ Recent sessions:
 - 2026-11-07 04:22 `game/numlock.cpp` verify: the number lock: NumLock map object and NmlPose dial pose, 29 functions of 0x2a6ab0..0x2a7b10
 - 2026-11-07 03:53 `game/stageparty.cpp` verify: Pin the jack's and the ripple sheet's std::vector instances, 8 functions of 0x206890..0x207108; bearingvectorcmp.py proves the promise
 - 2026-11-07 03:42 `game/rand48.cpp` done: game/rand48.cpp: Rand48, the stage's random numbers (java.util.Random without the increment); all 3 functions written, proven against the ROM
-- 2026-11-07 03:17 `game/stagemodel.cpp` verify: the map instances after StageModel: BoneMap and MotionMap are LiteralMap
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002176d0` | partial | 1/0/10 | 0.9 | 11 | 0 |
-| `rx/rxsndstrpcm.c` | todo | 0/8/10 | 2.1 | 10 | 2 |
 | `unassigned@002acff0` | todo | 0/3/24 | 10.9 | 10 | 1 |
+| `rx/rxsndstrpcm.c` | todo | 0/8/10 | 2.1 | 10 | 2 |
 | `sdpr2/sdpr2single.c` | todo | 0/2/24 | 7.0 | 9 | 1 |
 | `unassigned@0021e120` | partial | 4/0/18 | 3.5 | 8 | 0 |
 | `unassigned@002a7b10` | todo | 0/3/53 | 7.9 | 8 | 0 |
-| `unassigned@002849c0` | todo | 0/1/5 | 7.4 | 7 | 1 |
-| `sdpr2/sdpr2pair.c` | todo | 0/1/21 | 7.0 | 7 | 1 |
-| `unassigned@0029f2a0` | todo | 0/2/2 | 0.6 | 7 | 0 |
-| `rx/filehost.c` | todo | 0/2/12 | 1.3 | 7 | 1 |
+| `unassigned@002b6b90` | partial | 1/0/7 | 6.5 | 7 | 0 |
 | `rx/filehdd.c` | todo | 0/2/13 | 1.5 | 7 | 1 |
 | `unassigned@002160a0` | todo | 0/0/7 | 0.1 | 7 | 0 |
+| `sdpr2/sdpr2pair.c` | todo | 0/1/21 | 7.0 | 7 | 1 |
+| `sdpr2/sdpr2drv.c` | todo | 0/1/27 | 4.5 | 7 | 1 |
+| `unassigned@002ec110` | todo | 0/0/1 | 0.1 | 7 | 0 |
+| `unassigned@002849c0` | todo | 0/1/5 | 7.4 | 7 | 1 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -356,5 +357,5 @@ Recent sessions:
 | `002c16d0` | FUN_002c16d0 | 5 | - | missing | game/packtables.cpp |
 | `002c0d50` | FUN_002c0d50 | 5 | - | missing | game/packtables.cpp |
 | `002e7e90` | FUN_002e7e90 | 5 | - | missing | rena/rena_draw.cpp |
-| `00217770` | FUN_00217770 | 5 | - | missing | - |
+| `00217770` | FUN_00217770 | 5 | - | missing | game/playermotion.cpp |
 

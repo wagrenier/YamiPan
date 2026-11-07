@@ -2243,6 +2243,8 @@ public:
     void stopBodyEffects();                                              // FS2 0x0017bc60
     // The camera on top of the view stack follows this character.
     bool isViewLinked();                                                 // FS2 0x002176d0
+    // The door its door motion plays on; null when none runs.
+    StageDoor *getMotionDoor();                                          // FS2 0x002179b0
     // The last four motions (+0x7c8) and what happened to each. event 0
     // opens an entry; another sets bit event on the newest entry of id.
     void noteMotion(int id, int event);                                  // FS2 0x0021a960
