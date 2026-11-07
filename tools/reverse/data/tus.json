@@ -2981,12 +2981,21 @@
    "why": "XWS bank layer rxSndStrBank* (own slot table 0x514780; batch 008); one file per layer is a guess."
   },
   "rx/rxsndstrmem.c": {
+   "notes": "All 16 functions of 0x1660e0..0x166b50 written, no Ghidra change. The stream record and the pools are host layout, private to the file; SetMarkers and SetTags return the count taken, as the ROM does, so the header changed from void to int. Two callerless Enable functions added to the header. Proved offline with the new strmemcmp.py (ROM on eerun.py against the host in a small exe): 22,805 ops, 498 callbacks, 0 differences; planted bugs in the pass limit and in the position re-read after a callback were both caught. eerun.py gained ldl, ldr, sdl, sdr. Not seen in the game: temporary logs, removed, showed no stream bank and no memory stream opened in 60 to 70 s of YAMIPAN_TELEPORT=d0101, 5 or d0401. Only SePlayer::openStreamBank leads here, always to the IOP. ROM quirk kept: Seek does not clear the end flag. Smoke run picture: the language screen, as before; nothing on screen depends on this TU. Next: rx/rxsndstrpcm.c, then the audio milestone.",
    "ranges": [
     [
      "001660e0",
      "00166b50"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-06 21:59",
+     "status": "verify",
+     "summary": "reconstruct 16 functions, ROM comparison clean"
+    }
+   ],
+   "status": "verify",
    "why": "memory stream rxSndStrMem* (slot table 0x523a00; batch 008); file cut a guess."
   },
   "rx/rxsndstrpcm.c": {

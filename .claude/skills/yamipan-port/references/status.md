@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 21:34 at commit `879702f` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 21:59 at commit `c5d26df` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5165**; stubs: **132**
+- reconstructed FS2 functions: **5181**; stubs: **118**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -144,7 +144,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/rx/rxsndstr.c` | 38 | 0 |
 | `src/rx/rxsndstradpcm.c` | 10 | 0 |
 | `src/rx/rxsndstrbank.c` | 48 | 0 |
-| `src/rx/rxsndstrmem.c` | 0 | 14 |
+| `src/rx/rxsndstrmem.c` | 16 | 0 |
 | `src/rx/rxsndstrpcm.c` | 0 | 8 |
 | `src/rx/rxsndstrstream.c` | 18 | 0 |
 | `src/rx/rxsndut.c` | 6 | 0 |
@@ -158,8 +158,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 216 TUs: todo 76, partial 26, verify 107, done 42
-- next: **rx/rxsndstrmem.c** (frontier score 27)
+- 216 TUs: todo 75, partial 26, verify 108, done 42
+- next: **game/stagealert.cpp** (frontier score 24)
 - pinned queue: (empty)
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -258,6 +258,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `rx/rxsndstr.c` 38/38 -- All 38 of 0x1634b8..0x164398 written, no Ghidra change. rxsndstr.h now has RxSndStrSlot (EE 0x9c, layout host), RxSndStrFormat (the 8-entry format table), RxSnd
 - verify: `rx/rxsndstradpcm.c` 10/10 -- Complete code, no sound: rxSndStrAdpcmOpen opens a real rxSndAdpcm stream; the block the drivers silent side in the same file reports each open stream from the 
 - verify: `rx/rxsndstrbank.c` 48/48 -- Complete in source-only mode (no build yet, so not compiled: check it compiles once bootstrap 7 lands). Bank slot is layout host (pointers); RXWS file records (
+- verify: `rx/rxsndstrmem.c` 16/16 -- All 16 functions of 0x1660e0..0x166b50 written, no Ghidra change. The stream record and the pools are host layout, private to the file; SetMarkers and SetTags r
 - verify: `rx/rxsndstrstream.c` 18/18 -- All 18 functions of 0x1656e8..0x1660e0 written, no Ghidra change. Sources are host layout (a pointer), private to the file; rxSndStrStreamOpen joins the header.
 - verify: `rx/rxsndut.c` 6/6 -- All 6 written in src/rx/rxsndut.c. Data: debug flags 0x2f5f10 (boot value 7 = error / BG-call / register prints) and the format tables 0x2f5f18 PCM (id 1) / 0x2
 - verify: `rx/rxsys.c` 126/126 -- rxsys is RoR's prebuilt rx: rxcmp.py '^rxSys' finds 126 of 126 identical (jumps, lui and gp offsets masked) and the data words and console font equal RoR's at +
@@ -271,6 +272,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 21:59 `rx/rxsndstrmem.c` verify: reconstruct 16 functions, ROM comparison clean
 - 2026-11-06 21:34 `rx/rxsndstrstream.c` verify: reconstruct 18 functions
 - 2026-11-06 21:12 `rx/rxsndstradpcm.c` verify: All 10 functions of 0x164c38..0x1656e8 written; the 2026-11-04 bridge replaced by a silent stand-in for the driver feeding rxSndAdpcmUpdate
 - 2026-11-06 20:51 `game/stageelevator.cpp` verify: The elevator: StageElevator for oZS99_01, a call brings it, the doors work, a rider goes up with it, a door closing on someone opens again
@@ -278,22 +280,21 @@ Recent sessions:
 - 2026-11-06 19:35 `game/playermotion.cpp` verify: The last eleven links written (GadgetLink, SpFear, SpRing, SpRobo, SpDrop, SpPadlock, SpNumLock, BossAttack, BossIdle): every link name of the ROM now exists; n
 - 2026-11-06 18:49 `game/playermotion.cpp` partial: A real edge works, the voices no longer jam: updateSounds and the sound family written
 - 2026-11-06 18:18 `game/playermotion.cpp` partial: The links DiveFall, DiveLand and TrapHit: a fall over an edge runs to Mission failed, a trap holds and lets go; forced, no real edge or trap yet
-- 2026-11-06 17:52 `game/playermotion.cpp` partial: takeHits whole: a blow that lands fells what it hits, the first real fight runs to Mission failed; the NaN position is fixed (sqrt.s)
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `rx/rxsndstrmem.c` | todo | 0/14/16 | 2.6 | 27 | 2 |
-| `game/stagealert.cpp` | todo | 0/7/8 | 1.3 | 24 | 3 |
 | `unassigned@001920d0` | partial | 1/0/17 | 5.9 | 24 | 0 |
+| `game/stagealert.cpp` | todo | 0/7/8 | 1.3 | 24 | 3 |
 | `unassigned@002b9ef0` | todo | 0/4/11 | 5.7 | 21 | 3 |
-| `unassigned@002dac70` | partial | 1/4/63 | 21.7 | 19 | 3 |
 | `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
+| `unassigned@002dac70` | partial | 1/4/63 | 21.7 | 19 | 3 |
 | `unassigned@002c42a0` | todo | 0/13/105 | 42.1 | 18 | 1 |
 | `unassigned@00171ad0` | partial | 1/0/107 | 1.5 | 18 | 0 |
 | `unassigned@002a6980` | partial | 1/11/83 | 12.1 | 17 | 0 |
 | `unassigned@002067d0` | partial | 1/0/9 | 2.2 | 17 | 0 |
-| `unassigned@00188d60` | todo | 0/0/16 | 3.8 | 17 | 0 |
 | `unassigned@0023c010` | todo | 0/11/15 | 7.4 | 17 | 0 |
+| `unassigned@00188d60` | todo | 0/0/16 | 3.8 | 17 | 0 |
+| `unassigned@00151270` | todo | 0/3/3 | 0.0 | 13 | 2 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
