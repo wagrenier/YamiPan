@@ -11,6 +11,7 @@
 #include "game/gamesystem.h"
 #include "game/gfxtarget.h"
 #include "game/gsblockmap.h"
+#include "game/pausemenu.h"
 #include "game/rumblelist.h"
 #include "game/screen.h"
 #include "game/stageobjlist.h"

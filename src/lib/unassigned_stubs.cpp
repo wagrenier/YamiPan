@@ -34,32 +34,6 @@
 // stub of FS2 0x001d3a40
 // stub of FS2 0x00185af0
 
-// stub of FS2 0x0020afa0
-int mapMenuResult()
-{
-    YAMIPAN_STUB("mapMenuResult", 0x0020afa0);
-    return {};
-}
-
-// stub of FS2 0x0020afe0
-void mapMenuStart()
-{
-    YAMIPAN_STUB("mapMenuStart", 0x0020afe0);
-}
-
-// stub of FS2 0x0020acb0
-int pauseMenuResult()
-{
-    YAMIPAN_STUB("pauseMenuResult", 0x0020acb0);
-    return {};
-}
-
-// stub of FS2 0x0020acf0
-void pauseMenuStart()
-{
-    YAMIPAN_STUB("pauseMenuStart", 0x0020acf0);
-}
-
 // stub of FS2 0x002c42c0
 int runExtraMode(int arg)
 {
@@ -118,12 +92,6 @@ void StageObject::cameraStep()
 void StageObject::onLinkChanged()
 {
     YAMIPAN_STUB("StageObject::onLinkChanged", 0x00000000);
-}
-
-// stub of FS2 0x0020b1d0
-void StageCharacter::latchAltAction()
-{
-    YAMIPAN_STUB("StageCharacter::latchAltAction", 0x0020b1d0);
 }
 
 

@@ -665,3 +665,13 @@ walks +8 prev: of two carried objects with the same name the ROM finds the one c
 found the first. Fix: when a callee of a written function is a template helper (FUN_ in a callcheck
 line), read the loop's step field (+4 next or +8 prev) before inlining it; stagelist.h now has getTail
 and find.
+
+## Two host fields for one EE byte: the pause menu never opened (2026-11-07)
+
+Symptom: Start in a stage did nothing, with the pause menu code written. Cause: `wantsPauseMenu` read
+`StageObject::m_canPause` (+0x3a1, named from the reader alone) while the ROM's writer,
+`AlwaysCondition::onUpdate` 0x276468, stores the same EE offset of the character, which the host knows
+as `CharacterAllows::standing` inside `StageCharacter::m_allows`. On the host they are two bytes; only
+one was written. Fix: read `player->m_allows.standing`; `m_canPause` is padding again. When a field is
+named from its reader only, scan the ROM for stores to that offset (a byte loop over the text segment
+for `sb/sh/sw ..., 0x<off>(...)` takes a second) before trusting nobody writes it.

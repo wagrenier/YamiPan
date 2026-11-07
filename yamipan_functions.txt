@@ -5378,25 +5378,25 @@
 /* 0020ac30 00000074 */ StageMenuList::StageMenuList(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/pausemenu.cpp
 // *****************************************************************************
 
 /* 0020acb0 0000003c */ pauseMenuResult(){}  // game
 /* 0020acf0 00000028 */ pauseMenuStart(){}  // game
-/* 0020ad20 00000048 */ FUN_0020ad20(){}
-/* 0020ad70 00000228 */ FUN_0020ad70(){}
+/* 0020ad20 00000048 */ pauseMenuThread(){}  // game
+/* 0020ad70 00000228 */ runPauseMenu(){}  // game
 /* 0020afa0 0000003c */ mapMenuResult(){}  // game
 /* 0020afe0 00000028 */ mapMenuStart(){}  // game
-/* 0020b010 0000010c */ FUN_0020b010(){}
-/* 0020b120 000000ac */ StageCharacter::getEnemyCandidates(){}  // game
-/* 0020b1d0 00000020 */ StagePlayer::latchAltAction(){}  // game
-/* 0020b200 00000014 */ StageCharacter::wantThrow(){}  // game
-/* 0020b220 00000014 */ ScriptPoint::set(){}  // game
+/* 0020b010 0000010c */ mapMenuThread(){}  // game
 
 // *****************************************************************************
 // FILE -- game/playermotion.cpp
 // *****************************************************************************
 
+/* 0020b120 000000ac */ StageCharacter::getEnemyCandidates(){}  // game
+/* 0020b1d0 00000020 */ StagePlayer::latchAltAction(){}  // game
+/* 0020b200 00000014 */ StageCharacter::wantThrow(){}  // game
+/* 0020b220 00000014 */ ScriptPoint::set(){}  // game
 /* 0020b240 00000348 */ StageCharacter::canWield(){}  // game
 
 // *****************************************************************************

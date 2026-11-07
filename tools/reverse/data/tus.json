@@ -950,6 +950,24 @@
    "status": "verify",
    "why": "the PakArchive / PakHeader run between gsutil.cpp (GsTexture ends 0x231410) and scene.cpp (gameSceneThread 0x231bb0); no source strings, named by its class"
   },
+  "game/pausemenu.cpp": {
+   "notes": "New game/pausemenu.cpp and .h (PauseMenuChoice moved from gamehooks.h, PauseMenuScreen for answers 4..9, help pages 0 and 7). Fix outside the file: StageScene::wantsPauseMenu read StageObject::m_canPause (+0x3a1), which nothing wrote; the ROM writer AlwaysCondition::onUpdate 0x276468 stores the character's m_allows.standing, so the host now reads that and m_canPause is padding (hazards.md). Seen with YAMIPAN_TELEPORT=7 and pad 300:START,450:START,600:SELECT: Akiko's pause page with six lines and the mission text, Down moves the cursor, Start resumes (answer 0 on 2dEU/s07m1EN.d2b), Select shows the map grid, the player cross and the compass, no crash in 75 s; progress/20261107-pause-menu-stage7.png and -map-menu-stage7.png. Not seen: a map drawing under the grid, Triangle or Circle in the menu (Triangle did nothing), answers 4..9, Quit, Restart, the alt b layout. Port difference: playerHasAltScreen answers false for a bad sheet index where the ROM reads EE address 0x10. verify because no reference picture of the real menus was compared.",
+   "ranges": [
+    [
+     "0020acb0",
+     "0020b120"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-07 11:46",
+     "status": "verify",
+     "summary": "The stage's pause menu and map menu: their start, result and thread functions and runPauseMenu, all 7 functions of 0x20acb0..0x20b120 (batch 212); StageCharacter::latchAltAction 0x20b1d0 into game/playermotion.cpp; wantsPauseMenu fixed to read m_allows.standing, so Start pauses now"
+    }
+   ],
+   "status": "verify",
+   "why": "The stage's pause menu (start) and map menu (select): their threads in ThreadSlot_Dialog, polled by the stage loop's stagePauseMenu and stageThread; between StageMenuList (game/stagemenu.cpp) and StageCharacter members (game/playermotion.cpp). No source string: the file name is the port's."
+  },
   "game/pausemenustate.cpp": {
    "notes": "Written with game/playermotion.cpp thirteenth run (2026-11-05): all 12. Seen: Left analog stick: Move shows at the foot of the screen on stage 1, posted by the script.",
    "ranges": [
@@ -1050,6 +1068,10 @@
     [
      "001eedb0",
      "001efef0"
+    ],
+    [
+     "0020b120",
+     "0020b240"
     ],
     [
      "0020b240",
@@ -3640,6 +3662,7 @@
   "unassigned@00188d60": {},
   "unassigned@0018c050": {},
   "unassigned@001953f0": {},
+  "unassigned@0020acb0": {},
   "unassigned@0020c940": {},
   "unassigned@002160a0": {},
   "unassigned@002176d0": {
@@ -3693,10 +3716,7 @@
   "unassigned@002b6b90": {},
   "unassigned@002b9ef0": {},
   "unassigned@002c42a0": {},
-  "unassigned@002cf510": {
-   "claimed": "2026-11-07 11:04",
-   "status": "active"
-  },
+  "unassigned@002cf510": {},
   "unassigned@002d46a0": {},
   "unassigned@002dac70": {},
   "unassigned@002e0820": {},

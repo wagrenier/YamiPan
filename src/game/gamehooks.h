@@ -755,7 +755,7 @@ public:
     u_char _304[0xc];
     int    m_demoCut;           // FS2 +0x310: a DemoCamera's (StageScene::draw: below 2 the filter runs in d0101)
     u_char _314[0x8d];
-    u_char m_canPause;          // FS2 +0x3a1: the player's: clear: no pause menu
+    u_char _3a1;                // FS2 +0x3a1: a character's m_allows.standing (StageScene::wantsPauseMenu)
     u_char _3a2[0x2];
     CharacterAbilities m_abilities; // FS2 +0x3a4: a character's
     StageLight *m_shadowLight;  // FS2 +0x3d0: a character's: what throws its shadow (SceneRender::updateLights); null none
@@ -2133,7 +2133,7 @@ struct CharacterAllows
     u_char padUp;               // FS2 +0x39e: also R3 for the view (CharacterInput::stepView)
     u_char rightStick;          // FS2 +0x39f
     u_char padDown;             // FS2 +0x3a0
-    u_char standing;            // FS2 +0x3a1: a hold or a walk (its reader is unread)
+    u_char standing;            // FS2 +0x3a1: a hold or a walk (AlwaysCondition); the player's clear: no pause menu (StageScene::wantsPauseMenu)
     u_char _3a2[2];
 };
 static_assert(sizeof(CharacterAllows) == 0x44, "CharacterAllows: EE 0x44");
@@ -2512,7 +2512,7 @@ public:
     bool isPassenger();                                                  // FS2 0x00215300
     // The door of car in reach, 0 or 1, or -1. facing: looking at it.
     int  findCarDoor(StageCar *car, bool facing);                        // FS2 0x00280fd0
-    // +0x364 set: +0x2ca = 1. What the two bytes are is unread.
+    // m_allows.altAction set: m_wants.altAction = 1 (it is never cleared here).
     void latchAltAction();                                               // FS2 0x0020b1d0
     // The object it is: the callers that hold it as the scene's player.
     StageObject *character() { return this; }
@@ -3415,23 +3415,7 @@ NaviMenu *getNaviMenu();                                                 // FS2 
 class Memcard;                  // game/memcard.h
 extern Memcard *gMenuMemcard;
 
-// The stage's pause menu (start: a thread in ThreadSlot_Dialog running the
-// stage screen layout, 0x20ad20) and map menu (select: 0x20b010), polled
-// by the stage loop while StageScene::drawPaused keeps the stage on screen.
-// What the pause menu's layout answered (pauseMenuResult).
-enum PauseMenuChoice
-{
-    PauseMenu_Running  = -1,
-    PauseMenu_Resume   = 0,
-    PauseMenu_Restart  = 1,     // the stage loop: StageResult::restart
-    PauseMenu_Continue = 2,     // the stage loop: StageResult::addContinue
-    PauseMenu_Quit     = 3,     // keeps the BG movie screen up
-    PauseMenu_Navi     = 4,     // a stage picked in the navigator
-};
-void pauseMenuStart();                                                   // FS2 0x0020acf0
-int  pauseMenuResult();                                                  // FS2 0x0020acb0: PauseMenuChoice
-void mapMenuStart();                                                     // FS2 0x0020afe0
-int  mapMenuResult();                                                    // FS2 0x0020afa0: -1 while open
+// The stage's pause menu and map menu are game/pausemenu.h.
 
 // The item definitions (bss 0x574c10, 160 x 0x20; the pack's item sheet,
 // PackTables::parse). The names not from a column are guesses from

@@ -11084,6 +11084,17 @@ void StageCharacter::getEnemyCandidates(StageObject ***first, StageObject ***las
     *last = list.objects + list.count;
 }
 
+// ──────────────────────────────────────────────────────────────────────
+// The frame's conditions allowed the alternative action: the character
+// wants it (StageScene::update, on the player only).
+// FS2 0x0020b1d0
+
+void StageCharacter::latchAltAction()
+{
+    if (m_allows.altAction != 0)
+        m_wants.altAction = 1;
+}
+
 // FS2 0x0021a090
 // callcheck: getEnemyCandidates, isEnemyOf, getLifeState, distanceTo
 
