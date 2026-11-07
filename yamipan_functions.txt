@@ -5783,11 +5783,6 @@
 /* 00219a90 00000044 */ StageCharacter::scriptCrouch(){}  // game
 /* 00219ae0 00000044 */ StageCharacter::scriptCallOut(){}  // game
 /* 00219b30 000000ac */ StageCharacter::doorActions(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
 /* 00219be0 0000006c */ StageCharacter::waitMotionChange(){}  // game
 /* 00219c50 00000058 */ StageCharacter::holdsWeapon(){}  // game
 /* 00219cb0 000000b4 */ StageCharacter::wakeBrain(){}  // game
@@ -5799,19 +5794,14 @@
 /* 0021a090 00000130 */ StageCharacter::pickNearestFoe(){}  // game
 /* 0021a1c0 000001b8 */ StageCharacter::pickSeenEnemies(){}  // game
 /* 0021a380 00000130 */ StageCharacter::getBestFoe(){}  // game
-/* 0021a4b0 00000258 */ FUN_0021a4b0(){}
+/* 0021a4b0 00000258 */ StageCharacter::addFoeWeightBySight(){}  // game
 /* 0021a710 000001ac */ StageCharacter::addFoeWeight(){}  // game
 /* 0021a8c0 0000000c */ CharacterBlock7c8::clear(){}  // game
 /* 0021a8d0 00000080 */ CharacterBlock7c8::find(){}  // game
 /* 0021a960 00000130 */ StageCharacter::noteMotion(){}  // game
 /* 0021aa90 00000080 */ StageCharacter::spawnEffectOnBone(){}  // game
 /* 0021ab10 00000044 */ StageCharacter::takeCorpse(){}  // game
-/* 0021ab60 00000048 */ FUN_0021ab60(){}
-
-// *****************************************************************************
-// FILE -- game/playermotion.cpp
-// *****************************************************************************
-
+/* 0021ab60 00000048 */ StageCharacter::setScriptPointToMoveGoal(){}  // game
 /* 0021abb0 00000008 */ StageCharacter::getBiteTarget(){}  // game
 /* 0021abc0 00000038 */ StageCharacter::isLampOn(){}  // game
 /* 0021ac00 00000030 */ StageCharacter::setLampOn(){}  // game

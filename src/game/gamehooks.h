@@ -2322,6 +2322,11 @@ public:
     void setFoeWeight(StageCharacter *other, int weight);                // FS2 0x00217c60
     // Adds to every enemy up, seen or not as inView says, held under limit.
     void addFoeWeight(int amount, int limit, bool inView);               // FS2 0x0021a710
+    // The same for every enemy up, seen or not: seen adds seenAmount, the
+    // others unseenAmount, each held in 0..limit.
+    void addFoeWeightBySight(int seenAmount, int unseenAmount, int limit); // FS2 0x0021a4b0
+    // m_scriptPoint is the brain's move goal, when it has one (whether).
+    bool setScriptPointToMoveGoal();                                     // FS2 0x0021ab60
     // The script's lift of the partner, when the player can (allows).
     bool askLift();                                                      // FS2 0x00219110
     // It is in one of the two motions of being bitten.

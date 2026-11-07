@@ -11423,6 +11423,38 @@ void StageCharacter::addFoeWeight(int amount, int limit, bool inView)
     }
 }
 
+// FS2 0x0021a4b0
+// callcheck: getFoeWeight, setFoeWeight (inlined in the ROM; MSL's std::max / std::min by reference,
+// the 0 a literal at sdata gp-0x7e18 / gp-0x7e14, one per branch)
+
+void StageCharacter::addFoeWeightBySight(int seenAmount, int unseenAmount, int limit)
+{
+    StageObject **it;
+    StageObject **end;
+    getEnemyCandidates(&it, &end);
+    for (; it != end; ++it) {
+        StageCharacter *other = static_cast<StageCharacter *>(*it);
+        if (other->m_active == 0 || !isEnemyOf(other) || other->getLifeState() != LifeState_Up)
+            continue;
+        float distance = 0.0f;
+        const int amount = canSeeThisFrame(other, &distance) ? seenAmount : unseenAmount;
+        const int weight = std::max(getFoeWeight(other) + amount, 0);
+        setFoeWeight(other, std::min(weight, limit));
+    }
+}
+
+// FS2 0x0021ab60
+// callcheck: set
+
+bool StageCharacter::setScriptPointToMoveGoal()
+{
+    sceVu0FVECTOR goal;
+    const bool has = m_brain->getMoveGoal(goal);
+    if (has)
+        m_scriptPoint.set(goal);
+    return has;
+}
+
 // FS2 0x00219110
 // callcheck: isPlayer
 

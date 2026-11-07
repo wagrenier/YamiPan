@@ -999,7 +999,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "getWeaponRange returns the long weapon's WeaponDef range (parameter 3) as a float, 0 without a long weapon; callers RouteHuntAction ctor and update in characterroute.cpp. The ROM inlines weaponSheet: an index outside 0..0x4f reads through a null row, the host takes row 0 as weaponSheet 0x26f730 does. Smoke run unchanged: language select at boot; nothing on screen reaches stage AI yet. The 10 callcheck MISSING lines in this file predate this run.",
+   "notes": "The run 0x219be0..0x21aba8 (was unassigned@00219be0) is pinned into game/playermotion.cpp: 15 of its 19 functions were already written here and CharacterBlock7c8::clear / find are inline in gamehooks.h. New: StageCharacter::addFoeWeightBySight 0x21a4b0 (addFoeWeight with a seen and an unseen amount, getFoeWeight / setFoeWeight inlined in the ROM, clamp std::max with the 0 literals at sdata gp-0x7e18 / gp-0x7e14, both 0, then std::min with limit) and StageCharacter::setScriptPointToMoveGoal 0x21ab60 (m_brain->getMoveGoal into m_scriptPoint, no null test of m_brain as in the ROM). Their only callers are script natives in game/scriptrunner.cpp still unwritten: 0x1a8270 pops three ints (seen, unseen, limit) and calls the first on the script character (vtable +0x98 of the runner's +0xa4 +0xb4 object); 0x1c3070 stores the second's bool in its result. Smoke run unchanged: language select at boot, nothing reaches stage AI. CharacterBlock7c8 is the motion history at +0x7c8: worth renaming MotionHistory one day, but itemwaitcmp.py extracts it by that name, so rename both together. The 10 callcheck MISSING lines in this file predate this run.",
    "ranges": [
     [
      "00175700",
@@ -1184,6 +1184,10 @@
     [
      "002184b0",
      "00219be0"
+    ],
+    [
+     "00219be0",
+     "0021aba8"
     ],
     [
      "0021abb0",
@@ -1436,11 +1440,6 @@
    ],
    "sessions": [
     {
-     "date": "2026-11-06 17:52",
-     "status": "partial",
-     "summary": "takeHits whole: a blow that lands fells what it hits, the first real fight runs to Mission failed; the NaN position is fixed (sqrt.s)"
-    },
-    {
      "date": "2026-11-06 18:18",
      "status": "partial",
      "summary": "The links DiveFall, DiveLand and TrapHit: a fall over an edge runs to Mission failed, a trap holds and lets go; forced, no real edge or trap yet"
@@ -1494,11 +1493,16 @@
      "date": "2026-11-07 13:12",
      "status": "verify",
      "summary": "StageCharacter::getWeaponRange 0x20ce10 joined playermotion.cpp (was unassigned@0020ce10): out of line beside getAttackReach, no longer an inline in gamehooks.h"
+    },
+    {
+     "date": "2026-11-07 13:33",
+     "status": "verify",
+     "summary": "unassigned@00219be0 joined playermotion.cpp; addFoeWeightBySight and setScriptPointToMoveGoal reconstructed"
     }
    ],
    "status": "verify",
    "task": "PlayerMotion::takeHits 0x1e18c0..0x1e3e80 past its first line: it requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice",
-   "why": "0x20ce10..0x20ce70 joined 2026-11-07 (was unassigned@0020ce10): StageCharacter::getWeaponRange, between canFireLongWeapon 0x20cc50 and getAttackReach 0x20ce80, both here; before that: 0x20e6a0..0x210938 joined 2026-11-07 (was unassigned@0020e6a0): playerEvent .. canSeeThisFrame, 11 StageCharacter members already reconstructed here (takeDamage, hasBiter, isUp, ...), between canLockDoor's 0x20d650 run and canSee 0x210940; before that: 0x214a70..0x214ce8 joined 2026-11-07 (was unassigned@00214a70): StageObjRecord::init and StageCharacter::findNearestFoe, between this file's 0x212530 run and isEnemyOf 0x214d40, which findNearestFoe calls; before that: 0x2160a0..0x216130 joined 2026-11-07 (was unassigned@002160a0): the out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level, placed by CodeWarrior right after getSides"
+   "why": "0x219be0..0x21aba8 joined 2026-11-07 (was unassigned@00219be0): StageCharacter::waitMotionChange .. setScriptPointToMoveGoal, 15 of its 19 functions already reconstructed here (pickNearestFoe, addFoeWeight, noteMotion, ...), between doorActions 0x219b30 and getBiteTarget 0x21abb0, both here; before that: 0x20ce10..0x20ce70 joined 2026-11-07 (was unassigned@0020ce10): StageCharacter::getWeaponRange, between canFireLongWeapon 0x20cc50 and getAttackReach 0x20ce80, both here; before that: 0x20e6a0..0x210938 joined 2026-11-07 (was unassigned@0020e6a0): playerEvent .. canSeeThisFrame, 11 StageCharacter members already reconstructed here (takeDamage, hasBiter, isUp, ...), between canLockDoor's 0x20d650 run and canSee 0x210940; before that: 0x214a70..0x214ce8 joined 2026-11-07 (was unassigned@00214a70): StageObjRecord::init and StageCharacter::findNearestFoe, between this file's 0x212530 run and isEnemyOf 0x214d40, which findNearestFoe calls; before that: 0x2160a0..0x216130 joined 2026-11-07 (was unassigned@002160a0): the out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level, placed by CodeWarrior right after getSides"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -3687,10 +3691,7 @@
   "unassigned@001953f0": {},
   "unassigned@0020acb0": {},
   "unassigned@0020c940": {},
-  "unassigned@0020ce10": {
-   "claimed": "2026-11-07 13:04",
-   "status": "active"
-  },
+  "unassigned@0020ce10": {},
   "unassigned@0020e6a0": {},
   "unassigned@00214a70": {},
   "unassigned@002160a0": {},
@@ -3705,6 +3706,7 @@
    ],
    "status": "verify"
   },
+  "unassigned@00219be0": {},
   "unassigned@0021e120": {},
   "unassigned@0022fc50": {},
   "unassigned@00231410": {},

@@ -24047,6 +24047,12 @@
   "was": "FUN_0021a380",
   "why": "behind natives 0x4a.. (game/scriptrunner.cpp)"
  },
+ "0021a4b0": {
+  "name": "StageCharacter::addFoeWeightBySight",
+  "tag": "game-inferred",
+  "was": "FUN_0021a4b0",
+  "why": "addFoeWeight's sibling: for every active enemy candidate that isEnemyOf this and is up, canSeeThisFrame picks a1 (seen) or a2 (unseen), getFoeWeight + it clamped to 0..a3 (limit) and stored with setFoeWeight, both inlined; called only by the script native 0x1a8270 with three popped ints"
+ },
  "0021a710": {
   "name": "StageCharacter::addFoeWeight",
   "tag": "game-inferred",
@@ -24082,6 +24088,12 @@
   "tag": "game-inferred",
   "was": "FUN_0021ab10",
   "why": "behind natives 0x4a.. (game/scriptrunner.cpp)"
+ },
+ "0021ab60": {
+  "name": "StageCharacter::setScriptPointToMoveGoal",
+  "tag": "game-inferred",
+  "was": "FUN_0021ab60",
+  "why": "m_brain (+0x220) getMoveGoal into a stack vector; if it has one, m_scriptPoint (+0x720) set to it; returns whether; called only by the script native 0x1c3070"
  },
  "0021abb0": {
   "name": "StageCharacter::getBiteTarget",
