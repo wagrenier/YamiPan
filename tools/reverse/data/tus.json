@@ -399,6 +399,24 @@
    "status": "verify",
    "why": "Cut out of unassigned@00171300 (frontier pick): the font class on vtables 0x315fb0 / 0x315ff0, its glyph table FontData and its draws, and WideFontPrinter 0x2d3700..0x2d4150 (vtable 0x319ff0: the same printer for 16-bit text, its slots 4 and 7 thunks at 0x208b70, 0x208ba0)."
   },
+  "game/framefilter.cpp": {
+   "notes": "All 5 functions of 0x2849c0..0x286790 written (batch 207: gsPageWidth, gsFrameHalve, gsFrameTap, gsFrameDouble; was unassigned@002849c0). The game code keeps every decision (halves, ping-pong buffers, when to blur, the taps' shifts and alphas 0x80 / 0x40 / 0x2a, the order) and hands each sprite to YamiPan_DrawUiFrameFilterStep after YamiPan_DrawUiFrameFilterBegin; FrameFilterPass (src/yamipan/rendering/frame_filter_pass.cpp, shader frame_filter.frag) keeps the game's VRAM blocks as scratch textures at the render size, no GS memory. The two debug bytes 0x31ac10 / 0x31ac14 (both 1, never written) are file statics. Seen: New Game with work/newgame_pad.txt, 240 s, no crash: event d0101's ceiling lamp is soft with the filter, sharp without (a second run with the filter forced off, removed), progress/20261107-d0101-frame-filter-on.png and -off.png, mean brightness unchanged. Not seen: the camview / camjack view filters (stage 6 player, stage 12 partner, F_E24_SNPC2 / F_E21_SNPC1). No game reference picture, so verify. Doubts (open-items.md): bilinear taps at the render size where the GS samples nearest at its own size; scratch buffers at the render size, not 256 and less; the halve's UV starts at texel 1 in the ROM. The blur is a static helper (gsFrameBlur) where the ROM has the body inline twice.",
+   "ranges": [
+    [
+     "002849c0",
+     "00286790"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-07 09:50",
+     "status": "verify",
+     "summary": "the frame filter: gsFrameFilter and its 4 helpers, a host FrameFilterPass; d0101's opening is soft"
+    }
+   ],
+   "status": "verify",
+   "why": "gsFrameFilter and its helpers gsFrameTap / gsFrameDouble / gsFrameHalve / gsPageWidth, 0x2849c0..0x286790, between AreaBox (game/areagrid.cpp) and StageMission (game/demoevent.cpp); the name is the port's (no source string)"
+  },
   "game/gadgetview.cpp": {
    "notes": "Split from unassigned@002a7b10, batch 205. Handle SceneOwnedObject (vtable 0x318ca0, body at +4, slots 1..15 jump to the body's same slot) and body GadgetView (vtable 0x318c40): pairs object/camera named by scripts, states 1 Selected, 2 FadeOut, 3 Looking, 4 FadeBack with the scene fade, pushCamera at priority 4. SigLampView: spot SigLamp_sl and point SigLamp_pl under the camera, Lamp held lights them, stick turns the camera, a ray places the point light; draw puts the siglamp texture as four mirrored quarters over the frame on list 9. NumLockView: numlock effect on bn_key, pad turns and picks dials, Use leaves as a try, a right code plays NLOCK_UL and hides the lock. Renamed guesses: start is hasObject, hasTarget isInView, getTarget getUser, isSlot2c cancel, isSlot44 isLooking, setNames addPair. RoutePlayer no longer derives from SceneOwnedObject. Seen: nothing (smoke stays at the language screen; New Game doorwalk 280 s no crash, dark wall as before). Doubts in open-items.md: the beam length is 0 unless a script moves SigLamp_pl; the mask stretches over wide displays; dial bits not checked against the lock's facing. Next: findNumLockTarget 0x29f440 and the seven-key view 0x2b2c80, which now has its base here.",
    "ranges": [
@@ -3568,10 +3586,7 @@
   "unassigned@0018c050": {},
   "unassigned@001953f0": {},
   "unassigned@0020c940": {},
-  "unassigned@002160a0": {
-   "claimed": "2026-11-07 09:04",
-   "status": "active"
-  },
+  "unassigned@002160a0": {},
   "unassigned@002176d0": {
    "notes": "This key is empty now. 0x2176d0 isViewLinked was already written in src/game/stagecharacter.cpp, now in its range; 0x217700..0x217a80 joined game/playermotion.cpp (template instance emitted after giveItem, as 0x17e140 follows stagecharacter.cpp). Batch 200 names 8 functions. stagelist.h gained getTail and find (0x217700, 0x217730) and lists the instance; dropItem uses find, DoorCondition::onUpdate calls the new StageCharacter::getMotionDoor (m_motion->doorLink->door, 0x2179b0) as the ROM does; SightTable::canSeeThisFrame 0x2179c0 stays inline in StageCharacter::canSeeThisFrame (tag added). Fix found: findCarried 0x216310 and giveItem's stack search walk getTail then +8 prev in the ROM; the host walked from the head, so of two carried objects with one name it found the first instead of the last carried (hazards.md). Picture: the 15 s smoke run stays at the language select, English highlighted, as before; nothing on screen reaches carried items yet: verify. A teleport run with two same-named items in the inventory would show the fix.",
    "sessions": [
@@ -3600,6 +3615,7 @@
   "unassigned@002681e0": {},
   "unassigned@002764b0": {},
   "unassigned@0027cab0": {},
+  "unassigned@002849c0": {},
   "unassigned@002908d0": {},
   "unassigned@002937e0": {},
   "unassigned@00296d60": {},

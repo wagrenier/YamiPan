@@ -66,7 +66,9 @@ src/yamipan/
                                  places batches, draws them with a depth buffer
            TextureStore          TIM2 pictures decoded to RGBA8, cached by content
            FramePalettePass      the frame through a 256-colour ramp, FilmOverlayPass the jack's
-                                 film: whole-frame passes between the frame's render passes
+                                 film: whole-frame passes between the frame's render passes;
+                                 FrameFilterPass the game's shrink / blur / grow (gsFrameFilter),
+                                 its VRAM blocks as scratch textures
            PresentPass           grade + HDR output, Screenshotter the smoke shots
   media/   MpegStream, MpegDecoder  libmpeg on the host: PSS demux, FFmpeg MPEG-2
   io/      InputSystem           keyboard + gamepad -> a DualShock 2 report, bindings

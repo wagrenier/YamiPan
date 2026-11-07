@@ -76,6 +76,30 @@ struct FilmOverlay
     std::uint32_t color = 0;
 };
 
+// One sprite of the game's frame filter (game/framefilter.cpp): a buffer, shown over `sourceWidth` x
+// `sourceHeight` of it, drawn at (x, y) as `width` x `height`, kept inside 0..width x 0..height, all in
+// pixels of the 512 x 512 frame. `alpha` 0x80 replaces, below it blends (Cs - Cd) * alpha / 128 + Cd.
+// Buffers are the game's VRAM blocks: FrameFilter::frameBlock is the frame so far, any other a scratch
+// buffer of the host's.
+struct FrameFilterStep
+{
+    int source = 0;
+    int target = 0;
+    int x = 0;
+    int y = 0;
+    int width = 0;
+    int height = 0;
+    int sourceWidth = 0;
+    int sourceHeight = 0;
+    int alpha = 0x80;
+};
+
+struct FrameFilter
+{
+    int frameBlock = 0;
+    std::vector<FrameFilterStep> steps;
+};
+
 // In frame units; vertices in texels.
 struct Vertex
 {
@@ -107,6 +131,7 @@ struct DrawCall
     std::shared_ptr<Image> framePalette; // not null: no draw, the frame so far goes through this 256 x 1 ramp
     std::shared_ptr<FilmOverlay> film; // not null: no draw, this goes over the frame so far
     bool frameRipple = false; // this draw's vertices are FrameRipplePass's sheet, not drawn as they are
+    std::shared_ptr<FrameFilter> frameFilter; // not null: no draw, FrameFilterPass's sprites over the frame
     std::uint32_t rippleTint = 0;
     std::uint32_t firstVertex = 0;
     std::uint32_t vertexCount = 0;

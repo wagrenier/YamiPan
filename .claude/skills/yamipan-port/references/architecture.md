@@ -2649,3 +2649,27 @@ the radius always comes back as v + 2 radius; kept as written. **Seen (stage 7, 
 removed):** 116..123 puffs and 3..4 wisps alive; about 0.4 puffs a frame pass the tests in the
 default view (eye 8414, 2633, 289), and the frames with and without the mist (and with the colour forced
 bright) look the same: the puffs that pass lie above the frame.
+
+**The frame filter (2026-11-07, game/framefilter.cpp 0x2849c0..0x286790, batch 207, `verify`; the
+names are the port's, FS2's own gs* prefix kept).** `gsFrameFilter(packet, env, w, h, block, passes,
+arg)` is what `StageScene::drawViewFilter` (camview / camjack, by who the camera follows: `passes` 3 /
+`arg` 1 for the player on stage 6 and the partner on stage 12, 1 / 1 for F_E24_SNPC2 / F_E21_SNPC1) and
+`StageScene::draw` (event d0101 while the demo camera's cut is below 2: 1 / 5) call over the 512 x 512
+frame, `block` GsVram area 4 >> 5. It halves the picture `passes` times (`gsFrameHalve` 0x286070,
+bilinear by TEX1_1 0x60, UV from texel 1: each pixel the mean of four), ping-ponging between two scratch
+buffers (`block`, and `block` + (w/2) / `gsPageWidth` 0x2866f0 pages, which stands in for the frame), and
+stops early after a size of 2 mod 4. After each half, when the debug byte 0x31ac10 (gp-0x7c60, 1, never
+written) is set and the size is 256 or less, `arg` times a 3-tap box blur along x then y: three
+`gsFrameTap` 0x285450 sprites, the whole picture moved by 0, then -1, then +1 pixel, blended by
+ALPHA_1 0x44 with alpha 0x80 / 0x40 / 0x2a (replace, half, a third: the mean of three), TEX1_1 0 for
+the taps. Then `passes` - 1 doubles back (`gsFrameDouble` 0x2859b0, bilinear), stopping short of half
+the frame, each blurred the same way (taps +1 first, then -1) when 0x31ac14 (gp-0x7c5c, 1) is set; the
+last double lands in the frame. TEST_1 0x33001 first; CLAMP_1 0, TEST_1 0x50000 and the frame's FRAME_1
+back last. Every sprite is cut into page-wide strips (gsPageWidth: 128 for PSMT8 / PSMT4, 64 for the
+other colour and Z formats). **Host:** each sprite is a step of `YamiPan_DrawUiFrameFilterStep` after
+`YamiPan_DrawUiFrameFilterBegin` (yamipan_drawui.h), drawn by `FrameFilterPass`
+(src/yamipan/rendering/frame_filter_pass.cpp, shader frame_filter.frag): the game's blocks become
+scratch textures at the render size, sizes and shifts are in the 512 frame's pixels scaled to it, so the
+softness goes with the picture at any size or aspect. **Seen:** d0101's ceiling lamp, filter on and off
+in the same New Game run (progress/20261107-d0101-frame-filter-on.png / -off.png): the planks and the
+lamp's ring go soft, the mean brightness is unchanged.
