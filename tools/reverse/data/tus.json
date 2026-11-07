@@ -3152,12 +3152,21 @@
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. the HDD driver rxFileHddInit .. rxFileHddSetRoot; its own file by analogy with filehost.c: a guess."
   },
   "rx/filehost.c": {
+   "notes": "All 12 written from the FS2 decompilation; identical to RosePan rxfile.cpp host section except the open-failure printf: fmt 0x3018d8 with filehost.c and lines 125/157/188/234, then path and fd (Create passes no fd in source but t0 holds it, so the port passes fd). Data: root default ptr 0x2f5aa8, flags 0x2f5aac, root bss 0x4d5a20. Smoke run: boot reaches the language select (unchanged) and stops at the sdpr2PairInit stub. Not a drawing TU, so verify. No Ghidra changes.",
    "ranges": [
     [
      "00156060",
      "001565c8"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-07 08:10",
+     "status": "verify",
+     "summary": "rx host0: driver: all 12 functions reconstructed from FS2 (RosePan's host driver, FS2's file/line open-failure message)"
+    }
+   ],
+   "status": "verify",
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. the host device driver rxFileHostInit .. rxFileHostSetRoot; rxFileHostGetSize / Create / Read / Write reference the string filehost.c."
   },
   "rx/rxfile.c": {
