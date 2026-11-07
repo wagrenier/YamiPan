@@ -667,6 +667,7 @@ public:
     {
         motion_->m_specials.insert(name, this);
     }
+    ~MotionSpecial() override;
     void onUpdate() override;
     virtual void clearAllowed();
     void clearEnabled();
@@ -677,6 +678,15 @@ public:
     u_char allowed = 0;         // FS2 +0x14
     u_char enabled = 0;         // FS2 +0x15
 };
+
+// The special-motion classes have nothing of their own to free: each deleting
+// dtor puts its vtables back down the chain at +0x10 and runs the base's.
+// FS2 0x00281550
+// callcheck: ~MotionCondition, operator_delete (the base's body)
+
+MotionSpecial::~MotionSpecial()
+{
+}
 
 // FS2 0x00281540
 
@@ -728,11 +738,19 @@ public:
     // FS2 0x002814a0
     MotionSpecialAction(StageCharacter *owner, PlayerMotion *motion_, const char *name, int id_ = -1)
         : MotionSpecial(owner, motion_, name), id(id_ == -1 ? motionIdOfLabel(name) : id_) {}
+    ~MotionSpecialAction() override;
     void onApply() override;
     int motionId() const override { return id; }
 
     int id;                     // FS2 +0x18
 };
+
+// FS2 0x00281370
+// callcheck: ~MotionCondition, operator_delete (the base's body)
+
+MotionSpecialAction::~MotionSpecialAction()
+{
+}
 
 // FS2 0x00281460
 
@@ -751,6 +769,7 @@ public:
     // FS2 0x002812e0
     MotionPartnerCall(StageCharacter *owner, PlayerMotion *motion_, const char *name)
         : MotionSpecialAction(owner, motion_, name) {}
+    ~MotionPartnerCall() override;
     void onUpdate() override;
     void onApply() override;
     void setEnabled(bool on) override;
@@ -758,6 +777,13 @@ public:
 private:
     u_char pending = 0;         // FS2 +0x1c
 };
+
+// FS2 0x002816b0
+// callcheck: ~MotionCondition, operator_delete (the base's body)
+
+MotionPartnerCall::~MotionPartnerCall()
+{
+}
 
 // FS2 0x002812c0
 
@@ -858,11 +884,19 @@ public:
     // FS2 0x00280f50
     MotionGetOnCar(StageCharacter *owner, PlayerMotion *motion_, const char *name)
         : MotionSpecial(owner, motion_, name) {}
+    ~MotionGetOnCar() override;
     void onUpdate() override;
     void onApply() override;
 
     u_char bringPartner = 0;    // FS2 +0x18
 };
+
+// FS2 0x00281640
+// callcheck: ~MotionCondition, operator_delete (the base's body)
+
+MotionGetOnCar::~MotionGetOnCar()
+{
+}
 
 // FS2 0x00280ee0
 // callcheck: isNotRunning, findCarDoor
@@ -910,11 +944,19 @@ public:
     // FS2 0x00280e20
     MotionGetOffCar(StageCharacter *owner, PlayerMotion *motion_, const char *name)
         : MotionSpecial(owner, motion_, name) {}
+    ~MotionGetOffCar() override;
     void onUpdate() override;
     void onApply() override;
 
     u_char side = 1;            // FS2 +0x18: which side was found clear
 };
+
+// FS2 0x00280af0
+// callcheck: ~MotionCondition, operator_delete (the base's body)
+
+MotionGetOffCar::~MotionGetOffCar()
+{
+}
 
 // With a partner aboard the door's place must be clear as well as the sill.
 // FS2 0x00280bd0
@@ -975,12 +1017,20 @@ public:
     // FS2 0x00280a60
     MotionDragOutCar(StageCharacter *owner, PlayerMotion *motion_, const char *name)
         : MotionGetOffCar(owner, motion_, name) {}
+    ~MotionDragOutCar() override;
     void onUpdate() override;
     void onApply() override;
     void clearAllowed() override;
 
     StageCharacter *victim = nullptr; // FS2 +0x1c
 };
+
+// FS2 0x002815b0
+// callcheck: ~MotionCondition, operator_delete (the base's body)
+
+MotionDragOutCar::~MotionDragOutCar()
+{
+}
 
 // FS2 0x00281630
 

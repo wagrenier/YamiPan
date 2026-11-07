@@ -7315,11 +7315,6 @@
 /* 00280230 000001d0 */ MotionGadgetSpecial::onUpdate(){}  // game
 /* 00280400 00000008 */ MotionGadgetSpecial::setText(){}  // game
 /* 00280410 0000020c */ MotionGadgetSpecial::MotionGadgetSpecial(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
 /* 00280620 00000070 */ MotionDragOutCar::onApply(){}  // game
 /* 00280690 000003cc */ MotionDragOutCar::onUpdate(){}  // game
 /* 00280a60 0000008c */ MotionDragOutCar::MotionDragOutCar(){}  // game
@@ -7331,48 +7326,23 @@
 /* 00280ee0 00000070 */ MotionGetOnCar::onUpdate(){}  // game
 /* 00280f50 00000078 */ MotionGetOnCar::MotionGetOnCar(){}  // game
 /* 00280fd0 000001ec */ StageCharacter::findCarDoor(){}  // game
-
-// *****************************************************************************
-// FILE -- game/playermotion.cpp
-// *****************************************************************************
-
 /* 002811c0 0000000c */ MotionPartnerCall::setEnabled(){}  // game
 /* 002811d0 000000e8 */ MotionPartnerCall::onApply(){}  // game
 /* 002812c0 0000001c */ MotionPartnerCall::onUpdate(){}  // game
 /* 002812e0 00000090 */ MotionPartnerCall::MotionPartnerCall(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 00281370 00000070 */ FUN_00281370(){}
-
-// *****************************************************************************
-// FILE -- game/playermotion.cpp
-// *****************************************************************************
-
+/* 00281370 00000070 */ MotionSpecialAction::~MotionSpecialAction(){}  // game
 /* 002813e0 00000074 */ motionIdOfLabel(){}  // game
 /* 00281460 0000003c */ MotionSpecialAction::onApply(){}  // game
 /* 002814a0 000000a0 */ MotionSpecialAction::MotionSpecialAction(){}  // game
 /* 00281540 0000000c */ MotionSpecial::onUpdate(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 00281550 00000060 */ FUN_00281550(){}
+/* 00281550 00000060 */ MotionSpecial::~MotionSpecial(){}  // game
 /* 002815b0 00000080 */ MotionDragOutCar::~MotionDragOutCar(){}  // game
 /* 00281630 0000000c */ MotionDragOutCar::clearAllowed(){}  // game
 /* 00281640 00000070 */ MotionGetOnCar::~MotionGetOnCar(){}  // game
-/* 002816b0 00000080 */ FUN_002816b0(){}
+/* 002816b0 00000080 */ MotionPartnerCall::~MotionPartnerCall(){}  // game
 /* 00281730 000000b0 */ LiteralMap<MotionSpecial>::insert(){}  // game
 /* 002817e0 00000020 */ LiteralMap<MotionSpecial>::Node::Node(){}  // game
 /* 00281800 00000238 */ LiteralMap<MotionSpecial>::Node::insert(){}  // game
-
-// *****************************************************************************
-// FILE -- game/playermotion.cpp
-// *****************************************************************************
-
 /* 00281a40 00000060 */ SpNumLockLink::~SpNumLockLink(){}  // game
 /* 00281aa0 00000084 */ BossIdleLink::BossIdleLink(){}  // game
 /* 00281b30 00000080 */ BossAttackLink::BossAttackLink(){}  // game

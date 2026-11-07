@@ -1042,7 +1042,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "The two functions of unassigned@0026c650 are the probe's own ctor and deleting dtor, joined into this TU (range 0x26c4b0..0x26c6fc). The ROM news a 0xc spread block at MotionProbe +4 and deletes it in the dtor; the host keeps ShotSpread a member (layout: host), so the bodies are empty and say so; ShotSpread now has a sizeof 0xc static_assert. FUN_0026c650 named MotionProbe::~MotionProbe (batch 216). Callcheck: both pass; the 10 MISSING lines in this file are older (MotionCondition, MotionGadgetSpecial::onUpdate, ApproachBiteLink::onRun, dropItem, giveItem, findCarried). Not reached by the 15 s smoke run (language select), hence verify.",
+   "notes": "The queue and the frontier were empty; this run took the partial unassigned@00280620. Its code (MotionDragOutCar, MotionGetOffCar, MotionGetOnCar, findCarDoor, MotionPartnerCall, MotionSpecialAction) was already in playermotion.cpp; only the ranges and the dtors were missing. Named 0x281370 MotionSpecialAction dtor, 0x281550 MotionSpecial dtor, 0x2816b0 MotionPartnerCall dtor: each is the deleting dtor in slot +8 of its vtable (0x317d30, 0x317d50, 0x317d10), restoring vtables down the chain at +0x10 then MotionCondition dtor 0x2764b0. All six dtors have empty bodies. Callcheck: the same 10 older MISSING lines, none new. Smoke 15 s: the language screen as before; nothing on screen shows a dtor. Next in this file: FUN_00217700, FUN_00217770, FUN_00217840, FUN_00217890, FUN_00217920, FUN_00217940 (the carried-item helpers behind dropItem, giveItem, findCarried) and CharacterBlock7c8::find 0x21a8d0.",
    "ranges": [
     [
      "00175700",
@@ -1433,12 +1433,20 @@
      "00280618"
     ],
     [
+     "00280620",
+     "002811c0"
+    ],
+    [
      "002811c0",
      "002812dc"
     ],
     [
      "002812e0",
      "00281370"
+    ],
+    [
+     "00281370",
+     "002813e0"
     ],
     [
      "002813e0",
@@ -1451,6 +1459,10 @@
     [
      "002814a0",
      "00281548"
+    ],
+    [
+     "00281548",
+     "00281a40"
     ],
     [
      "00281a40",
@@ -1498,11 +1510,6 @@
     ]
    ],
    "sessions": [
-    {
-     "date": "2026-11-07 02:12",
-     "status": "verify",
-     "summary": "the item waits: throwCarried and putSmoke, the two script natives behind Throw and Set Smoke Candle; 0 differences with the ROM, and on stage 17 the real menu throws and sets a burning flare"
-    },
     {
      "date": "2026-11-07 07:12",
      "status": "verify",
@@ -1557,11 +1564,16 @@
      "date": "2026-11-07 14:34",
      "status": "verify",
      "summary": "MotionProbe ctor 0x26c6b0 and deleting dtor 0x26c650 out of line; 0x26c650..0x26c6fc joined from unassigned@0026c650"
+    },
+    {
+     "date": "2026-11-07 18:33",
+     "status": "verify",
+     "summary": "The car motions run 0x280620..0x2811c0, 0x281370..0x2813e0, 0x281548..0x281a40 joined playermotion.cpp (was unassigned@00280620 and unassigned@00281550); the six special-motion deleting dtors written out of line, three named (batch 231)"
     }
    ],
    "status": "verify",
    "task": "PlayerMotion::takeHits 0x1e18c0..0x1e3e80 past its first line: it requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice",
-   "why": "0x21b340..0x21ba04 joined 2026-11-07 (was unassigned@0021b340): StageCharacter::dropLongWeapon .. scriptSetBrainEntry (takeItem, shout, reload, findLooseWeapon, heardKind, answerNo), all reconstructed here, between getLongWeaponClass 0x21b280 and setBrainState 0x21ba10, both here; before that: 0x26c650..0x26c6fc joined 2026-11-07 (was unassigned@0026c650): MotionProbe::~MotionProbe and MotionProbe::MotionProbe, the probe's own dtor and ctor, right after MotionProbe::faceAhead 0x26c4b0 (here) and before SubSceneData::findModel 0x26c700 (game/demoevent.cpp); PlayerMotion's ctor and dtor (here) are their only callers; before that: 0x217be0..0x2184a8 joined 2026-11-07 (was unassigned@00217be0): StageCharacter::getFoeWeight .. wasPlacedThisFrame, 14 of its 16 functions already reconstructed here (setMotionByLabel, scriptHurt, allowPath, getLightReach, ...) and doNothing inline in gamehooks.h, between ageSightTable 0x217a80 (stageplayer.cpp) and noticeItem 0x2184b0 (here); before that: 0x219be0..0x21aba8 joined 2026-11-07 (was unassigned@00219be0): StageCharacter::waitMotionChange .. setScriptPointToMoveGoal, 15 of its 19 functions already reconstructed here (pickNearestFoe, addFoeWeight, noteMotion, ...), between doorActions 0x219b30 and getBiteTarget 0x21abb0, both here; before that: 0x20ce10..0x20ce70 joined 2026-11-07 (was unassigned@0020ce10): StageCharacter::getWeaponRange, between canFireLongWeapon 0x20cc50 and getAttackReach 0x20ce80, both here; before that: 0x20e6a0..0x210938 joined 2026-11-07 (was unassigned@0020e6a0): playerEvent .. canSeeThisFrame, 11 StageCharacter members already reconstructed here (takeDamage, hasBiter, isUp, ...), between canLockDoor's 0x20d650 run and canSee 0x210940; before that: 0x214a70..0x214ce8 joined 2026-11-07 (was unassigned@00214a70): StageObjRecord::init and StageCharacter::findNearestFoe, between this file's 0x212530 run and isEnemyOf 0x214d40, which findNearestFoe calls; before that: 0x2160a0..0x216130 joined 2026-11-07 (was unassigned@002160a0): the out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level, placed by CodeWarrior right after getSides 0x211970..0x2122f8 (was unassigned@00211970): StageCharacter predicates between getTakenOverPlayer and isViewedThrough, isTakenOver and canBeJacked already here. 0x1dff40..0x1e06e4 (levelBlocked, ladderBlocked, winsStruggle: PlayerMotion's ladder and ledge checks) sits between PlayerMotion::setScope and PlayerMotion::endFrame."
+   "why": "0x280620..0x2811c0, 0x281370..0x2813e0 and 0x281548..0x281a40 joined 2026-11-07 (were unassigned@00280620 and unassigned@00281550): the car's special motions (MotionDragOutCar, MotionGetOffCar, MotionGetOnCar, findCarDoor) and the dtors of the special-motion classes, all written here beside MotionPartnerCall 0x2811c0 and SpNumLockLink 0x281a40; before that: 0x21b340..0x21ba04 joined 2026-11-07 (was unassigned@0021b340): StageCharacter::dropLongWeapon .. scriptSetBrainEntry (takeItem, shout, reload, findLooseWeapon, heardKind, answerNo), all reconstructed here, between getLongWeaponClass 0x21b280 and setBrainState 0x21ba10, both here; before that: 0x26c650..0x26c6fc joined 2026-11-07 (was unassigned@0026c650): MotionProbe::~MotionProbe and MotionProbe::MotionProbe, the probe's own dtor and ctor, right after MotionProbe::faceAhead 0x26c4b0 (here) and before SubSceneData::findModel 0x26c700 (game/demoevent.cpp); PlayerMotion's ctor and dtor (here) are their only callers; before that: 0x217be0..0x2184a8 joined 2026-11-07 (was unassigned@00217be0): StageCharacter::getFoeWeight .. wasPlacedThisFrame, 14 of its 16 functions already reconstructed here (setMotionByLabel, scriptHurt, allowPath, getLightReach, ...) and doNothing inline in gamehooks.h, between ageSightTable 0x217a80 (stageplayer.cpp) and noticeItem 0x2184b0 (here); before that: 0x219be0..0x21aba8 joined 2026-11-07 (was unassigned@00219be0): StageCharacter::waitMotionChange .. setScriptPointToMoveGoal, 15 of its 19 functions already reconstructed here (pickNearestFoe, addFoeWeight, noteMotion, ...), between doorActions 0x219b30 and getBiteTarget 0x21abb0, both here; before that: 0x20ce10..0x20ce70 joined 2026-11-07 (was unassigned@0020ce10): StageCharacter::getWeaponRange, between canFireLongWeapon 0x20cc50 and getAttackReach 0x20ce80, both here; before that: 0x20e6a0..0x210938 joined 2026-11-07 (was unassigned@0020e6a0): playerEvent .. canSeeThisFrame, 11 StageCharacter members already reconstructed here (takeDamage, hasBiter, isUp, ...), between canLockDoor's 0x20d650 run and canSee 0x210940; before that: 0x214a70..0x214ce8 joined 2026-11-07 (was unassigned@00214a70): StageObjRecord::init and StageCharacter::findNearestFoe, between this file's 0x212530 run and isEnemyOf 0x214d40, which findNearestFoe calls; before that: 0x2160a0..0x216130 joined 2026-11-07 (was unassigned@002160a0): the out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level, placed by CodeWarrior right after getSides 0x211970..0x2122f8 (was unassigned@00211970): StageCharacter predicates between getTakenOverPlayer and isViewedThrough, isTakenOver and canBeJacked already here. 0x1dff40..0x1e06e4 (levelBlocked, ladderBlocked, winsStruggle: PlayerMotion's ladder and ledge checks) sits between PlayerMotion::setScope and PlayerMotion::endFrame."
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -3875,10 +3887,7 @@
   "unassigned@002d46a0": {},
   "unassigned@002dac70": {},
   "unassigned@002e0820": {},
-  "unassigned@002e2970": {
-   "claimed": "2026-11-07 18:06",
-   "status": "active"
-  },
+  "unassigned@002e2970": {},
   "unassigned@002ec110": {},
   "yamipan/rendering/model_renderer.cpp": {
    "notes": "Fix for the user's crash on turning left in node 4, confirmed fixed by the user's play. drawBatch read batch.uvs unchecked. The batch is a single unskinned triangle on the plain path, listFlags 0, colours present. It draws with zero UVs plus the scroll; which model it is and how it looks were not looked at. The committed build is this fix alone: the test hooks and two unproven changes came out after the user's test.",

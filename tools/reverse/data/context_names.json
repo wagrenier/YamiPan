@@ -31181,6 +31181,12 @@
   "was": "FUN_002812e0",
   "why": "stores vtable 0x317d10; built for cr_1, cr_2, cr_3"
  },
+ "00281370": {
+  "name": "MotionSpecialAction::~MotionSpecialAction",
+  "tag": "game-inferred",
+  "was": "FUN_00281370",
+  "why": "deleting dtor in slot +8 of vtable 0x317d30 (MotionSpecialAction): stores 0x317d30 then 0x317d50 at +0x10, MotionCondition::~MotionCondition 0x2764b0, operator_delete when a1 > 0"
+ },
  "002813e0": {
   "name": "motionIdOfLabel",
   "tag": "game-inferred",
@@ -31205,6 +31211,12 @@
   "was": "FUN_00281540",
   "why": "vtable 0x317d50 slot +0xc: sets +0x14"
  },
+ "00281550": {
+  "name": "MotionSpecial::~MotionSpecial",
+  "tag": "game-inferred",
+  "was": "FUN_00281550",
+  "why": "deleting dtor in slot +8 of vtable 0x317d50 (MotionSpecial): stores 0x317d50 at +0x10, MotionCondition::~MotionCondition 0x2764b0, operator_delete when a1 > 0"
+ },
  "002815b0": {
   "name": "MotionDragOutCar::~MotionDragOutCar",
   "tag": "game-inferred",
@@ -31222,6 +31234,12 @@
   "tag": "game-inferred",
   "was": "FUN_00281640",
   "why": "deleting dtor, slot 0 of 0x317cf0"
+ },
+ "002816b0": {
+  "name": "MotionPartnerCall::~MotionPartnerCall",
+  "tag": "game-inferred",
+  "was": "FUN_002816b0",
+  "why": "deleting dtor in slot +8 of vtable 0x317d10 (MotionPartnerCall): stores 0x317d10, 0x317d30, 0x317d50 at +0x10, MotionCondition::~MotionCondition 0x2764b0, operator_delete when a1 > 0"
  },
  "00281730": {
   "name": "LiteralMap<MotionSpecial>::insert",
