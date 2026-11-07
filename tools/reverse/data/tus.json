@@ -2999,12 +2999,21 @@
    "why": "PCM stream format (table 0x2f5f18; batch 008); file cut a guess."
   },
   "rx/rxsndstrstream.c": {
+   "notes": "All 18 functions of 0x1656e8..0x1660e0 written, no Ghidra change. Sources are host layout (a pointer), private to the file; rxSndStrStreamOpen joins the header. rxsndstrmem.h gains the 11 prototypes this file calls, so stubgen stubbed them: memory bodies still read nothing. Seen with YAMIPAN_TELEPORT=d0101, temporary logs, removed: streamEU/demo/EV01_01_e.xwb opens on source 63, ring read to its end by about 23 s, closed when the silent timer ends at about 58 s, streamEU/amb/st01amb1_e.xwb opens and runs, room on screen, no crash in 110 s. Nothing audible yet. The silent driver gives no backpressure, so bytes run ahead of the voice: a ring empty at state 9 for 30 s is the file read to its end, not a stall. Not proved: no branch or mark callback fired in 100 s, unknown whether d0101 has any or whether the ambience reached its loop. Next: rx/rxsndstrmem.c, rx/rxsndstrpcm.c.",
    "ranges": [
     [
      "001656e8",
      "001660e0"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-06 21:34",
+     "status": "verify",
+     "summary": "reconstruct 18 functions"
+    }
+   ],
+   "status": "verify",
    "why": "stream source rxSndStrStream* (slot table 0x5226e0; batch 008); file cut a guess."
   },
   "rx/rxsndut.c": {
