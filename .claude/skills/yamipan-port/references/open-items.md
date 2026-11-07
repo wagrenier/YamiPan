@@ -1849,12 +1849,12 @@ apply here):
 ## Open questions
 - 2026-11-06 (user, `tools/reverse/iop.py`): **RXSNDDRV, FS2's IOP code, is extracted and decompiles**
   (architecture.md "The IOP side"): `python iop.py elf <MODULES>/RXSNDDRV.IRX` ->
-  `work/iop/elf/rxsnddrv.elf`, proven in a throwaway headless Ghidra project. **Not imported into
-  `CLaude Decomp` yet**: a scheduled run was using that Ghidra, so the import waits for the user (name it
-  `rxsnddrv.elf`; ghidra.md "Hazards" first). Open: how the audio milestone brings the driver. It is
+  `work/iop/elf/rxsnddrv.elf`. **Imported 2026-11-06 as program `rxsnddrv.elf`** in `CLaude Decomp`, open
+  beside SCES_538.51 (ghidra.md "Hazards" before pointing tools at it). Open: how the audio milestone
+  brings the driver. It is
   RoR's, revised, so the proposal is RosePan's `src/iop/rxsnddrv` plus FS2's changes as `python iop.py cmp`
   lists them: 152 of its 192 functions stand as they are, 38 changed and 2 moved need reading, and 4
-  functions are FS2's own (0x2d9c, 0x3660, 0x4454, 0xd1dc). Once imported, the dispatcher 0x360 also
+  functions are FS2's own (0x2d9c, 0x3660, 0x4454, 0xd1dc). The dispatcher 0x360 also
   settles what the EE's commands do where "Next up" says the IOP module would tell.
 
 - 2026-11-03 (scheduled run, game/gamepacket.cpp): `GamePacketManager` +0x34 (skip the next
