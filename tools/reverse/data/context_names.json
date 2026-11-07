@@ -35189,11 +35189,119 @@
   "was": "FUN_002b22d0",
   "why": "five words zero; EE 0x14"
  },
+ "002b22f0": {
+  "name": "SevenKeys::~SevenKeys",
+  "tag": "game-inferred",
+  "was": "FUN_002b22f0",
+  "why": "deleting dtor: stores the four vtables 0x318f60/0x318f84/0x318f9c/0x3191ac, ~StageMapObject, delete when flag > 0; as NumLock 0x2a6ab0"
+ },
+ "002b2380": {
+  "name": "SevenKeys::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_002b2380",
+  "why": "slot 108 of 0x318f9c returns 6: StageObject kind 6 (the motion Seven_Keys)"
+ },
+ "002b2390": {
+  "name": "SevenKeys::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_002b2390",
+  "why": "empty, behind the side-base thunk at 0x2b2ad0 (slot 3 of 0x318f84); NumLock's twin (game/numlock.h): NumLock::sideHook3"
+ },
+ "002b23a0": {
+  "name": "SevenKeys::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_002b23a0",
+  "why": "empty, behind the thunk at 0x2b2af0 (slot 0 of 0x318f84); NumLock's twin (game/numlock.h): NumLock::sideHook0"
+ },
  "002b23b0": {
   "name": "sevenKeysPoseValue",
   "tag": "game-inferred",
   "was": "FUN_002b23b0",
   "why": "the object +0x30 model +0xc pose, 0x2b3640 reads float +0x3d0 + sub * 4 as an int; StageMapObject::getProperty id 0x6b on a kind 6 object"
+ },
+ "002b23e0": {
+  "name": "SevenKeys::setCode",
+  "tag": "game-inferred",
+  "was": "FUN_002b23e0",
+  "why": "stores +0x240 / +0x241 when each arg is 0..3; called by setSevenKeyNumbers with native 0x205's last two args; isOpen compares them to the dials"
+ },
+ "002b2420": {
+  "name": "SevenKeys::setKeys",
+  "tag": "game-inferred",
+  "was": "FUN_002b2420",
+  "why": "pose (+0x30 -> +0xc) setDials(a, b), a negative arg keeps its dial (getDial); NumLock's twin (game/numlock.h): NumLock::pushDials' tail"
+ },
+ "002b24a0": {
+  "name": "SevenKeys::keyDown",
+  "tag": "game-inferred",
+  "was": "FUN_002b24a0",
+  "why": "dial = (dial + 3) % 4 and, for dial 1, dial 0 too; frame calls it on PADLright; NumLock's twin (game/numlock.h): NumLock::dialDown"
+ },
+ "002b2560": {
+  "name": "SevenKeys::keyUp",
+  "tag": "game-inferred",
+  "was": "FUN_002b2560",
+  "why": "dial = (dial + 1) % 4 and, for dial 1, dial 0 too; frame calls it on PADLleft; NumLock's twin (game/numlock.h): NumLock::dialUp"
+ },
+ "002b2620": {
+  "name": "SevenKeys::keysOpen",
+  "tag": "game-inferred",
+  "was": "FUN_002b2620",
+  "why": "no dial within 0.01 rad of off its position (keysTurning inline) and +0x240/+0x241 equal both dials; isSevenKeyOpen's answer; NumLock's twin (game/numlock.h): NumLock::dialsRight"
+ },
+ "002b27c0": {
+  "name": "SevenKeys::keysTurning",
+  "tag": "game-inferred",
+  "was": "FUN_002b27c0",
+  "why": "a dial's angle (pose +0x3c8) is 0.01 rad or more off -pos*2pi/4; NumLock's twin (game/numlock.h): NumLock::dialsTurning"
+ },
+ "002b2910": {
+  "name": "SevenKeys::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_002b2910",
+  "why": "empty, behind the thunk at 0x2b2ae0 (slot 1 of 0x318f84); NumLock's twin (game/numlock.h): NumLock::sideHook1"
+ },
+ "002b2920": {
+  "name": "SevenKeys::setMotionList",
+  "tag": "game-inferred",
+  "was": "FUN_002b2920",
+  "why": "StageMapObject::setMotionList(list, 1), then mesh 0's matrix = world turned pi/2 about z (+0x250) and its inverse (+0x290); code cleared"
+ },
+ "002b2a60": {
+  "name": "SevenKeys::SevenKeys",
+  "tag": "game-inferred",
+  "was": "FUN_002b2a60",
+  "why": "ctor: StageMapObject(1), the four vtables, setDirtyTree(1) (slot +0x1c); createMapObject's for oYC11_2[1-7]"
+ },
+ "002b2ad0": {
+  "name": "SevenKeys::sideHook3_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_002b2ad0",
+  "why": "adjustor -0x18 to 0x2b2390, slot 3 of the side vtable 0x318f84"
+ },
+ "002b2ae0": {
+  "name": "SevenKeys::sideHook1_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_002b2ae0",
+  "why": "adjustor -0x18 to 0x2b2910, slot 1 of 0x318f84"
+ },
+ "002b2af0": {
+  "name": "SevenKeys::sideHook0_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_002b2af0",
+  "why": "adjustor -0x18 to 0x2b23a0, slot 0 of 0x318f84"
+ },
+ "002b2b00": {
+  "name": "SevenKeys::~SevenKeys_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_002b2b00",
+  "why": "adjustor -0x40 to the deleting dtor 0x2b22f0, slot 4 of 0x318f9c"
+ },
+ "002b2b10": {
+  "name": "SevenKeysView::~SevenKeysView",
+  "tag": "game-inferred",
+  "was": "FUN_002b2b10",
+  "why": "deleting dtor of the view (vtable 0x319200), ~GadgetView; as NumLockView 0x2a88b0"
  },
  "002b2b70": {
   "name": "SceneOwnedObject::setSevenKeyNumbers",
@@ -35206,6 +35314,84 @@
   "tag": "game-inferred",
   "was": "FUN_002b2c10",
   "why": "a0 is the seven-key handle (StageScene +0x94, from missionRestoreCheck): the body's findObject(name), kind 6 (vtable +500), then 0x2b2620 (the keys turned to the code and the two numbers the pad set); false otherwise"
+ },
+ "002b2c80": {
+  "name": "SevenKeysGadget::SevenKeysGadget",
+  "tag": "game-inferred",
+  "was": "FUN_002b2c80",
+  "why": "handle ctor (vtable 0x314ce0): new GadgetView(7) aligned 0x40 size 0x30 with vtable 0x319200 at +4; createMapObject's scene +0x94"
+ },
+ "002b2cf0": {
+  "name": "SevenKeysView::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002b2cf0",
+  "why": "empty slot 11 of 0x319200; as NumLockView::draw"
+ },
+ "002b2d00": {
+  "name": "SevenKeysView::leaveView",
+  "tag": "game-inferred",
+  "was": "FUN_002b2d00",
+  "why": "slot 18: popCamera, kind 6: sparkle off and detached, rain on, model drawMode 0; as NumLockView::leaveView"
+ },
+ "002b2dd0": {
+  "name": "SevenKeysView::enterView",
+  "tag": "game-inferred",
+  "was": "FUN_002b2dd0",
+  "why": "slot 17: pushCamera, kind 6: sparkle on and under bn_top, +0x28 = 0, rain off, 3 lights (0,pi/2,0)/(1,1,1) and ambient; as NumLockView::enterView"
+ },
+ "002b2f90": {
+  "name": "SevenKeysView::frame",
+  "tag": "game-inferred",
+  "was": "FUN_002b2f90",
+  "why": "slot 16: pad of the user; Squat/Use cancel while still, Lleft keyUp / Lright keyDown with EVE_S11_01, Lup/Ldown pick dial 0..1, sparkle x 10 - 20*dial"
+ },
+ "002b31f0": {
+  "name": "SevenKeysView::prepare",
+  "tag": "game-inferred",
+  "was": "FUN_002b31f0",
+  "why": "slot 1: +0x28 = 0, spawn the effect mon, not emitting; as NumLockView::prepare"
+ },
+ "002b32c0": {
+  "name": "SkyPose::update",
+  "tag": "game-inferred",
+  "was": "FUN_002b32c0",
+  "why": "slot 2 of 0x319260: advance, solve(5), easeDials 5 or 1 (snap), bones copied to slot Final; as NmlPose::update"
+ },
+ "002b3470": {
+  "name": "SkyPose::easeDials",
+  "tag": "game-inferred",
+  "was": "FUN_002b3470",
+  "why": "two dials (+0x3c8 angles to -pos*2pi/4 a 1/frames step) and quatFromAxisAngle x on bones +0x3c0/+0x3c4; as NmlPose::easeDials"
+ },
+ "002b3640": {
+  "name": "SkyPose::getDial",
+  "tag": "game-inferred",
+  "was": "FUN_002b3640",
+  "why": "(int) of float +0x3d0[dial]"
+ },
+ "002b3660": {
+  "name": "SkyPose::setDial",
+  "tag": "game-inferred",
+  "was": "FUN_002b3660",
+  "why": "float +0x3d0[dial] = position"
+ },
+ "002b3680": {
+  "name": "SkyPose::setDials",
+  "tag": "game-inferred",
+  "was": "FUN_002b3680",
+  "why": "+0x3d0, +0x3d4 = the two positions, +0x3d8 snap = 1; as NmlPose::setDials"
+ },
+ "002b36b0": {
+  "name": "SkyPose::load",
+  "tag": "game-inferred",
+  "was": "FUN_002b36b0",
+  "why": "slot 1: ModelPose::load, bones bn_k02 -> +0x3c0, bn_k01 -> +0x3c4, easeDials(1); as NmlPose::load"
+ },
+ "002b3770": {
+  "name": "SkyPose::~SkyPose",
+  "tag": "game-inferred",
+  "was": "FUN_002b3770",
+  "why": "deleting dtor (vtable 0x319260), ~ModelPose"
  },
  "002b37d0": {
   "name": "SkyPose::SkyPose",

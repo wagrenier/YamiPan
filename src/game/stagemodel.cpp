@@ -27,6 +27,7 @@
 #include "game/mathutil.h"
 #include "game/modelpose.h"
 #include "game/numlock.h"
+#include "game/sevenkeys.h"
 #include "game/vcmtable.h"
 #include "game/vehiclepose.h"
 #include "game/vu0math.h"

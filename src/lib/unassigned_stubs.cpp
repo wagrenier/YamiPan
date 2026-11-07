@@ -134,12 +134,6 @@ void StageCharacter::latchAltAction()
 
 
 // stub of FS2 0x001d3d20
-// stub of FS2 0x002b37d0
-SkyPose::SkyPose(int, int)
-{
-    YAMIPAN_STUB("SkyPose::SkyPose", 0x002b37d0);
-}
-
 // stub of FS2 address unknown (1 candidates)
 // stub of FS2 address unknown (1 candidates)
 bool StageObject::followsPlayerLight()
@@ -252,12 +246,6 @@ void elevatorMove(StageObject *elevator, bool toB3, bool fast)
     YAMIPAN_STUB("elevatorMove", 0x00294f90);
 }
 
-// stub of FS2 0x002b2b70
-void SceneOwnedObject::setSevenKeyNumbers(const char *name, int a, int b, int c, int d)
-{
-    YAMIPAN_STUB("SceneOwnedObject::setSevenKeyNumbers", 0x002b2b70);
-}
-
 // stub of FS2 0x00293fd0
 void elevatorDoorPlace(StageObject *elevator, float *out, int floor)
 {
@@ -285,22 +273,9 @@ void elevatorSwitchPlace(StageObject *elevator, float *place, float *direction, 
 }
 
 
-// stub of FS2 0x002b23b0
-int sevenKeysPoseValue(StageObject *object, int sub)
-{
-    YAMIPAN_STUB("sevenKeysPoseValue", 0x002b23b0);
-    return {};
-}
-
 // stub of FS2 0x002e1b10 (unassigned@002e1b10; belongs in rena/rena_2d_texture_tim2.cpp)
 void Tim2Texture::getTex0(sceGsTex0 *out, int block)
 {
     YAMIPAN_STUB("Tim2Texture::getTex0", 0x002e1b10);
 }
 
-// stub of FS2 0x002b2c10
-bool SceneOwnedObject::isSevenKeyOpen(const char *objectName)
-{
-    YAMIPAN_STUB("SceneOwnedObject::isSevenKeyOpen", 0x002b2c10);
-    return {};
-}

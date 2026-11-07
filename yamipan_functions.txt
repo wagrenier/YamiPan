@@ -8411,43 +8411,43 @@
 /* 002b22d0 0000001c */ SceneDirector::SceneDirector(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/sevenkeys.cpp
 // *****************************************************************************
 
-/* 002b22f0 00000084 */ FUN_002b22f0(){}
-/* 002b2380 00000008 */ FUN_002b2380(){}
-/* 002b2390 00000004 */ FUN_002b2390(){}
-/* 002b23a0 00000004 */ FUN_002b23a0(){}
+/* 002b22f0 00000084 */ SevenKeys::~SevenKeys(){}  // game
+/* 002b2380 00000008 */ SevenKeys::getKind(){}  // game
+/* 002b2390 00000004 */ SevenKeys::sideHook3(){}  // game
+/* 002b23a0 00000004 */ SevenKeys::sideHook0(){}  // game
 /* 002b23b0 00000028 */ sevenKeysPoseValue(){}  // game
-/* 002b23e0 00000034 */ FUN_002b23e0(){}
-/* 002b2420 00000080 */ FUN_002b2420(){}
-/* 002b24a0 000000b4 */ FUN_002b24a0(){}
-/* 002b2560 000000b4 */ FUN_002b2560(){}
-/* 002b2620 0000019c */ FUN_002b2620(){}
-/* 002b27c0 00000144 */ FUN_002b27c0(){}
-/* 002b2910 00000004 */ FUN_002b2910(){}
-/* 002b2920 00000134 */ FUN_002b2920(){}
-/* 002b2a60 00000070 */ FUN_002b2a60(){}
-/* 002b2ad0 00000008 */ FUN_002b2ad0(){}
-/* 002b2ae0 00000008 */ FUN_002b2ae0(){}
-/* 002b2af0 00000008 */ FUN_002b2af0(){}
-/* 002b2b00 00000008 */ FUN_002b2b00(){}
-/* 002b2b10 00000060 */ FUN_002b2b10(){}
+/* 002b23e0 00000034 */ SevenKeys::setCode(){}  // game
+/* 002b2420 00000080 */ SevenKeys::setKeys(){}  // game
+/* 002b24a0 000000b4 */ SevenKeys::keyDown(){}  // game
+/* 002b2560 000000b4 */ SevenKeys::keyUp(){}  // game
+/* 002b2620 0000019c */ SevenKeys::keysOpen(){}  // game
+/* 002b27c0 00000144 */ SevenKeys::keysTurning(){}  // game
+/* 002b2910 00000004 */ SevenKeys::sideHook1(){}  // game
+/* 002b2920 00000134 */ SevenKeys::setMotionList(){}  // game
+/* 002b2a60 00000070 */ SevenKeys::SevenKeys(){}  // game
+/* 002b2ad0 00000008 */ SevenKeys::sideHook3_thunk(){}  // game
+/* 002b2ae0 00000008 */ SevenKeys::sideHook1_thunk(){}  // game
+/* 002b2af0 00000008 */ SevenKeys::sideHook0_thunk(){}  // game
+/* 002b2b00 00000008 */ SevenKeys::~SevenKeys_thunk(){}  // game
+/* 002b2b10 00000060 */ SevenKeysView::~SevenKeysView(){}  // game
 /* 002b2b70 0000009c */ SceneOwnedObject::setSevenKeyNumbers(){}  // game
 /* 002b2c10 00000064 */ SceneOwnedObject::isSevenKeyOpen(){}  // game
-/* 002b2c80 00000070 */ FUN_002b2c80(){}
-/* 002b2cf0 00000004 */ FUN_002b2cf0(){}
-/* 002b2d00 000000c4 */ FUN_002b2d00(){}
-/* 002b2dd0 000001b4 */ FUN_002b2dd0(){}
-/* 002b2f90 0000025c */ FUN_002b2f90(){}
-/* 002b31f0 000000c4 */ FUN_002b31f0(){}
-/* 002b32c0 000001a8 */ FUN_002b32c0(){}
-/* 002b3470 000001d0 */ FUN_002b3470(){}
-/* 002b3640 00000018 */ FUN_002b3640(){}
-/* 002b3660 00000018 */ FUN_002b3660(){}
-/* 002b3680 00000028 */ FUN_002b3680(){}
-/* 002b36b0 000000c0 */ FUN_002b36b0(){}
-/* 002b3770 00000060 */ FUN_002b3770(){}
+/* 002b2c80 00000070 */ SevenKeysGadget::SevenKeysGadget(){}  // game
+/* 002b2cf0 00000004 */ SevenKeysView::draw(){}  // game
+/* 002b2d00 000000c4 */ SevenKeysView::leaveView(){}  // game
+/* 002b2dd0 000001b4 */ SevenKeysView::enterView(){}  // game
+/* 002b2f90 0000025c */ SevenKeysView::frame(){}  // game
+/* 002b31f0 000000c4 */ SevenKeysView::prepare(){}  // game
+/* 002b32c0 000001a8 */ SkyPose::update(){}  // game
+/* 002b3470 000001d0 */ SkyPose::easeDials(){}  // game
+/* 002b3640 00000018 */ SkyPose::getDial(){}  // game
+/* 002b3660 00000018 */ SkyPose::setDial(){}  // game
+/* 002b3680 00000028 */ SkyPose::setDials(){}  // game
+/* 002b36b0 000000c0 */ SkyPose::load(){}  // game
+/* 002b3770 00000060 */ SkyPose::~SkyPose(){}  // game
 /* 002b37d0 0000008c */ SkyPose::SkyPose(){}  // game
 
 // *****************************************************************************

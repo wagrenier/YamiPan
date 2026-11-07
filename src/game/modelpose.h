@@ -565,13 +565,8 @@ private:
 };
 
 // The subclasses, in the runs that use them (a kind of setBaseMotion). CarPose
-// and ElevatorPose are in game/vehiclepose.h, NmlPose in game/numlock.h.
-// layout: host.
-class SkyPose : public ModelPose        // vtable 0x319260, EE 0x3e0
-{
-public:
-    SkyPose(int a, int b);                                               // FS2 0x002b37d0
-};
+// and ElevatorPose are in game/vehiclepose.h, NmlPose in game/numlock.h,
+// SkyPose in game/sevenkeys.h.
 
 // A bone's matrix in the bind pose of a bone file, through its parents; the
 // number of bones walked. prefix: the name need only start with bone.

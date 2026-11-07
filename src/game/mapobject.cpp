@@ -21,6 +21,7 @@
 #include "game/mathutil.h"
 #include "game/modelpose.h"
 #include "game/numlock.h"
+#include "game/sevenkeys.h"
 #include "game/objectproperty.h"
 #include "game/stagedoor.h"
 #include "game/stageitem.h"
@@ -41,6 +42,9 @@ constexpr int kPartBitWords = 8;
 constexpr char kElevatorModel[] = "oZS99_01";   // data 0x3030f8
 constexpr char kNumLockModelA[] = "oMK21_06";   // data 0x303108
 constexpr char kNumLockModelB[] = "oSJ08_07";   // data 0x303118
+// The seven keys: "oYC11_2" and a digit 1..7 (oYC11_21 .. oYC11_27).
+constexpr char kSevenKeysModel[] = "oYC11_2";    // data 0x303128
+constexpr size_t kSevenKeysModelLength = sizeof(kSevenKeysModel) - 1;
 constexpr int kMapObjectMeshes = 1;         // createMapObject's plain object
 constexpr char kPartName[] = "BKW%02d";     // data 0x303150
 constexpr char kGlassEffect[] = "glass%d_0"; // data 0x303168
@@ -146,7 +150,7 @@ void StageMapObject::markMoved()
 int StageMapObject::getProperty(int id, int sub)
 {
     if (id == Prop_KeyValue)
-        return getKind() == StageObject_Kind6 ? sevenKeysPoseValue(this, sub) : 0;
+        return getKind() == StageObject_SevenKeys ? sevenKeysPoseValue(this, sub) : 0;
     return StageObject::getProperty(id, sub);
 }
 
@@ -268,7 +272,7 @@ void StageMapObject::sideHook2()
 // The object for a map model's node, by its name: _dp_nn and _ds_nn are doors,
 // the car's models the car, oZS99_01 the elevator, oMK21_06 and oSJ08_07 the number lock, and every other name gets the plain object for now (file header).
 // FS2 0x001766c0
-// callcheck: strstr, strstr, strcmp, strcmp, heapAllocAligned, FUN_0028e5a0, strcmp, heapAllocAligned, StageElevator, strcmp, strcmp, heapAllocAligned, FUN_002a7340, operator_new, FUN_002a89b0, strncmp, heapAllocAligned, FUN_002b2a60, operator_new, FUN_002b2c80, heapAllocAligned, FUN_001765e0, sscanf, heapAllocAligned, FUN_00174940, sscanf, heapAllocAligned, FUN_00174940, heapAllocAligned, FUN_001765e0 (the special classes: file header)
+// callcheck: strstr, strstr, strcmp, strcmp, heapAllocAligned, FUN_0028e5a0, strcmp, heapAllocAligned, StageElevator, strcmp, strcmp, heapAllocAligned, FUN_002a7340, operator_new, FUN_002a89b0, strncmp, heapAllocAligned, SevenKeys, operator_new, SevenKeysGadget, heapAllocAligned, FUN_001765e0, sscanf, heapAllocAligned, FUN_00174940, sscanf, heapAllocAligned, FUN_00174940, heapAllocAligned, FUN_001765e0 (the special classes: file header)
 
 StageObject *createMapObject(const char *name, void *collision)
 {
@@ -282,6 +286,14 @@ StageObject *createMapObject(const char *name, void *collision)
         if (gStageScene->owned[GadgetSlot_NumLock] == nullptr)
             gStageScene->owned[GadgetSlot_NumLock] = new NumLockGadget();
         return lock;
+    }
+    if (strncmp(name, kSevenKeysModel, kSevenKeysModelLength) == 0
+        && name[kSevenKeysModelLength] > '0' && name[kSevenKeysModelLength] < '8') {
+        SevenKeys *keys = new SevenKeys();
+        // The first key also gives the scene its seven-key view.
+        if (gStageScene->owned[GadgetSlot_SevenKey] == nullptr)
+            gStageScene->owned[GadgetSlot_SevenKey] = new SevenKeysGadget();
+        return keys;
     }
     int number = 0;
     if (name[0] == kMapModelPrefix) {

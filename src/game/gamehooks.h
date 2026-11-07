@@ -142,7 +142,7 @@ enum StageObjectKind
     StageObject_Car    = 3,     // StageCar: getKind 0x289cc0; takes the motion named CAR (StageFiles::applyBgMotionTarget)
     StageObject_Elevator = 4,   // StageElevator: the model oZS99_01; takes the base motion ElevatorPose
     StageObject_NumLock = 5,    // the number lock, vtable 0x318870, NumLock (game/numlock.h)
-    StageObject_Kind6  = 6,     // takes the motion named Seven_Keys
+    StageObject_SevenKeys = 6, // one of the seven keys oYC11_21..27 (SevenKeys, game/sevenkeys.h); takes the motion named Seven_Keys
     StageObject_Camera = 7,     // StageCamera
     StageObject_Kind8  = 8,     // a camera, vtable 0x311d30 (no host class yet)
     StageObject_Kind9  = 9,     // the main camera "camera" (StageMainCamera): hears from its m_linked's head
