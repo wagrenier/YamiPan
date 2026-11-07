@@ -1284,6 +1284,22 @@ black. Getters: `gfxGetCurrentDisplay` 0x12e050, `gfxGetCurrentDrawEnv` 0x12e080
 0x2d7cf0(0x700, 0x700, 512, 512, alloc) (unread: about nine draw-system objects). Release deletes the
 region allocator and the block map, never the TexArea.
 
+**`rena/rena_2d_texture_vram.cpp` 0x2e0840..0x2e1700 (2026-11-07, batch 198, all 11 written, `verify`;
+the file name is a guess)**: **`GsRegionAlloc`** = {+0 base block, +4 size, +8 used list, +0x618 free
+list, +0xc28 the first region, +0xc2c the texture last bound, +0xc30 128 `GsRegion` records, +0x1830
+spare records (linked through +4), vptr +0x1834}. Both lists are one inlined template, a list of
+pointers over a fixed pool of 128 nodes {count, head, tail, spare, nodes of {next, prev, value}}.
+**`GsRegion`** (0x18): {+0 lower neighbour, +4 higher neighbour, +8 first block, +0xc blocks, +0x10
+pinned, +0x12 state 0 free / 1 to send / 2 sent / 3 released, +0x14 the Tim2Texture}. `assign`
+0x2e0a10(tex, pinned) -> `alloc` 0x2e10c0 = best fit (`findFree` 0x2e0a90, smallest size >= wanted),
+else free the oldest unpinned used region and retry (hangs if all are pinned), split the rest into a
+new free region above; `freeRegion` 0x2e0b80 merges free neighbours and frees released ones first;
+`GsRegion::release` 0x2e0840 (Tim2Texture's dtor) only marks it released. `upload` 0x2e09b0 sends a
+to-send region's pixels; `bind` 0x2e0850(cursor, tex, flags) writes TEX0_1 (1), TEX0_2 (2) or a VIF
+UNPACK of {TEX0, TEX0 with CBP + 4 = the second CLUT} to VU1 0x26 (4). rena_draw 0x2e7240 does
+assign(tex, 1), upload, bind, then unpins; it picks the mip with `Tim2Texture::getLodScale` 0x2e16c0
+(the float at +8 of the TIM2 file, the header's reserved bytes) and `getMip` 0x2e16d0.
+
 **`game/gsblockmap.cpp` 0x142dd0..0x144080 (TU 31, 2026-11-03, batch 062 with 8 names, all 14
 written, `verify`)**: the GS allocators, the whole run between the SIF library and
 `sound/sound.cpp`. **`GsBlockMap`** slots: 0 `mark` (0x12ea60, in gfxtarget), 1 **`alloc`**

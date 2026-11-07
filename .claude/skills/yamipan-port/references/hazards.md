@@ -646,3 +646,12 @@ Symptom: picking Set Smoke Candle did nothing and the wait gave up after one fra
 Symptom: a probe in `StageScene::update` or `updateSmokeFog` prints twice and then nothing for 30 s, while shots change and the stage thread sits in its normal `threadYield`. Cause: a stage's opening runs as a sub-scene, and the `if (!isSubScene)` block of the main scene does not run under it; it looks like a hang and is not. Fix: give a run 60 to 100 s before judging, and count frames from inside the block. With five instances at once the scene ran about 5 frames a second.
 
 **A stub hides a null `this` (2026-11-07).** `Rand48`'s stubs never touched the object, so `rng->next` on a sub-scene (rng null, gStageScene during an event) looked fine; the real body would crash. When a stub becomes code, look at who can hold a null: the ctor's sub-scene branch in stagescene.cpp leaves about ten members null.
+
+## stubgen's file for an unplaced function lacks the directory (2026-11-07)
+
+Symptom: `tus.py check` stays red on one undefined reference although stubgen says "1 stubs (new
+file)". Cause: for a function in an unassigned run whose inferred file in yamipan_functions.txt has no
+directory (here `rena_2d_texture_tim2.cpp` for 0x2e1b10), stubgen writes `src/<file>` at the root of
+src/, which no target builds, and the loop repeats. Fix: delete that file and put the stub in
+src/lib/unassigned_stubs.cpp by hand (or pin the address to its real TU first). Also: `callcheck.py`
+takes a path relative to tools/reverse (`../../src/...`), not the TU key.

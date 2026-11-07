@@ -36299,6 +36299,42 @@
   "was": "FUN_002e0840",
   "why": "state +0x12 = 3 and owner +0x14 = 0 on the region a Tim2Texture holds at +8 (given by 0x2e0a10 from the allocator, state 1 waiting for upload, 2 uploaded)"
  },
+ "002e0850": {
+  "name": "GsRegionAlloc::bind",
+  "tag": "game-inferred",
+  "was": "FUN_002e0850",
+  "why": "this +0xc2c is the last texture bound (ctor zeroes it, freeRegion clears it): unless it is a1's texture, writes TEX0_1 (flag 1) / TEX0_2 (flag 2) through Tim2Texture::putTex0 at the region's block, and with flag 4 a VIF UNPACK of the TEX0 and its CBP+4 twin to VU1 0x26"
+ },
+ "002e09b0": {
+  "name": "GsRegionAlloc::upload",
+  "tag": "game-inferred",
+  "was": "FUN_002e09b0",
+  "why": "a texture whose region is in state 1: Tim2Texture::upload at the region's block, state 2; rena_draw 0x2e7240 calls it after assign"
+ },
+ "002e0a10": {
+  "name": "GsRegionAlloc::assign",
+  "tag": "game-inferred",
+  "was": "FUN_002e0a10",
+  "why": "a texture with no region (+0x8 == 0): alloc(getVramBlocks), region +0x14 = texture, texture +0x8 = region, +0x10 = a2 (lock), +0x12 = 1"
+ },
+ "002e0a90": {
+  "name": "GsRegionAlloc::findFree",
+  "tag": "game-inferred",
+  "was": "FUN_002e0a90",
+  "why": "best fit over the free list +0x618: the smallest region of size >= a1 and <= size +4; a region whose lower neighbour is released (state 3) frees that one first and starts again"
+ },
+ "002e0b80": {
+  "name": "GsRegionAlloc::freeRegion",
+  "tag": "game-inferred",
+  "was": "FUN_002e0b80",
+  "why": "out of the used list +0x8 into the free list +0x618, state 0, the texture's region cleared, then merged with free neighbours (+0 lower, +4 higher), released ones freed first, merged records back to the pool +0x1830"
+ },
+ "002e10c0": {
+  "name": "GsRegionAlloc::alloc",
+  "tag": "game-inferred",
+  "was": "FUN_002e10c0",
+  "why": "findFree(a1), else frees the first used region with lock 0 and retries; splits the rest off into a new free record; moves the region to the used list and returns it"
+ },
  "002e1440": {
   "name": "GsRegionAlloc::~GsRegionAlloc",
   "tag": "game-inferred",
@@ -36311,11 +36347,29 @@
   "was": "FUN_002e14d0",
   "why": "(base, size): vptr +0x1834 = 0x31a7b0, base / size +0 / +4, two pools of 0x80 list nodes and 0x80 region records, one free region {base, size}; gfxInitRenderTargets news 0x1838 bytes for (0x2800, 0xf00): GS blocks 0x2800..0x3700, VRAM areas 3..4; kept in gp-0x7ad8"
  },
+ "002e16c0": {
+  "name": "Tim2Texture::getLodScale",
+  "tag": "game-inferred",
+  "was": "FUN_002e16c0",
+  "why": "the float at +8 of the TIM2 file (+0x40, the header's reserved bytes); rena_draw 0x2e7240 divides the distance by it before logf / ln 2 to pick the mip"
+ },
+ "002e16d0": {
+  "name": "Tim2Texture::getMip",
+  "tag": "game-inferred",
+  "was": "FUN_002e16d0",
+  "why": "m_mips[a1] (+0xc) when a1 < m_mipCount (+0x10) and the list exists, else 0"
+ },
  "002e1700": {
   "name": "modelTexturePremultiplyPalette",
   "tag": "game-inferred",
   "was": "FUN_002e1700",
   "why": "copies the palette +0x38 to a new block +0x3c with rgb * a >> 7 and alpha 0x80"
+ },
+ "002e1b10": {
+  "name": "Tim2Texture::getTex0",
+  "tag": "game-inferred",
+  "was": "FUN_002e1b10",
+  "why": "*a1 = TEX0 template (+0x0) with TBP0 = a2 and CBP = a2 + m_imageBlocks (+0x20): putTex0's value without the packet; GsRegionAlloc::bind's flag 4"
  },
  "002e1b70": {
   "name": "Tim2Texture::putTex0",

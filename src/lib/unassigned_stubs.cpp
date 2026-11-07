@@ -1,6 +1,7 @@
 // lib/unassigned_stubs.cpp -- Forbidden Siren 2 module (file from the inference in yamipan_functions.txt).
 // Functions below are stubs until reconstructed; see tools/reverse/stage.py.
 #include "rena/rena_draw.h"
+#include "rena/rena_2d_texture_tim2.h"
 
 #include <string.h>
 
@@ -30,12 +31,6 @@
 void GameSystem::beginStage()
 {
     YAMIPAN_STUB("GameSystem::beginStage", 0x0012cce0);
-}
-
-// stub of FS2 0x002e14d0
-GsRegionAlloc::GsRegionAlloc(int, int)
-{
-    YAMIPAN_STUB("GsRegionAlloc::GsRegionAlloc", 0x002e14d0);
 }
 
 // stub of FS2 0x002ad070
@@ -94,12 +89,6 @@ void resetStageGroupTable()
     YAMIPAN_STUB("resetStageGroupTable", 0x002cf510);
 }
 
-// stub of FS2 0x002e1440
-GsRegionAlloc::~GsRegionAlloc()
-{
-    YAMIPAN_STUB("GsRegionAlloc::~GsRegionAlloc", 0x002e1440);
-}
-
 // stub of FS2 0x002c42c0
 int runExtraMode(int arg)
 {
@@ -112,12 +101,6 @@ int runHelpScreen(int page)
 {
     YAMIPAN_STUB("runHelpScreen", 0x002acff0);
     return {};
-}
-
-// stub of FS2 0x002e0840
-void GsRegion::release()
-{
-    YAMIPAN_STUB("GsRegion::release", 0x002e0840);
 }
 
 // stub of FS2 address unknown (0 candidates)
@@ -474,3 +457,8 @@ void SceneOwnedObject::takeMotionUser(StageObject *user)
     YAMIPAN_STUB("SceneOwnedObject::takeMotionUser", 0x00000000);
 }
 
+// stub of FS2 0x002e1b10 (unassigned@002e1b10; belongs in rena/rena_2d_texture_tim2.cpp)
+void Tim2Texture::getTex0(sceGsTex0 *out, int block)
+{
+    YAMIPAN_STUB("Tim2Texture::getTex0", 0x002e1b10);
+}

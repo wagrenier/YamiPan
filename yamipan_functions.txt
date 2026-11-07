@@ -9173,17 +9173,22 @@
 
 /* 002e0820 00000008 */ FUN_002e0820(){}
 /* 002e0830 0000000c */ FUN_002e0830(){}
+
+// *****************************************************************************
+// FILE -- rena/rena_2d_texture_vram.cpp
+// *****************************************************************************
+
 /* 002e0840 00000010 */ GsRegion::release(){}  // game
-/* 002e0850 0000015c */ FUN_002e0850(){}
-/* 002e09b0 0000005c */ FUN_002e09b0(){}
-/* 002e0a10 0000007c */ FUN_002e0a10(){}
-/* 002e0a90 000000e4 */ FUN_002e0a90(){}
-/* 002e0b80 0000053c */ FUN_002e0b80(){}
-/* 002e10c0 0000037c */ FUN_002e10c0(){}
+/* 002e0850 0000015c */ GsRegionAlloc::bind(){}  // game
+/* 002e09b0 0000005c */ GsRegionAlloc::upload(){}  // game
+/* 002e0a10 0000007c */ GsRegionAlloc::assign(){}  // game
+/* 002e0a90 000000e4 */ GsRegionAlloc::findFree(){}  // game
+/* 002e0b80 0000053c */ GsRegionAlloc::freeRegion(){}  // game
+/* 002e10c0 0000037c */ GsRegionAlloc::alloc(){}  // game
 /* 002e1440 00000084 */ GsRegionAlloc::~GsRegionAlloc(){}  // game
 /* 002e14d0 000001ec */ GsRegionAlloc::GsRegionAlloc(){}  // game
-/* 002e16c0 0000000c */ FUN_002e16c0(){}
-/* 002e16d0 0000002c */ FUN_002e16d0(){}
+/* 002e16c0 0000000c */ Tim2Texture::getLodScale(){}  // game
+/* 002e16d0 0000002c */ Tim2Texture::getMip(){}  // game
 
 // *****************************************************************************
 // FILE -- rena/rena_model.cpp
@@ -9192,10 +9197,10 @@
 /* 002e1700 00000404 */ modelTexturePremultiplyPalette(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- rena_2d_texture_tim2.cpp
 // *****************************************************************************
 
-/* 002e1b10 00000060 */ FUN_002e1b10(){}
+/* 002e1b10 00000060 */ Tim2Texture::getTex0(){}  // game
 
 // *****************************************************************************
 // FILE -- rena/rena_2d_texture_tim2.cpp

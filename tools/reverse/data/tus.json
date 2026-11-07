@@ -2944,6 +2944,24 @@
    "status": "verify",
    "why": "The game's own file name from its strings (rena_2d_texture_tim2.cpp: ...); pinned at bootstrap 6 so the stubs land in src/rena/."
   },
+  "rena/rena_2d_texture_vram.cpp": {
+   "notes": "Cut out of unassigned@002e0820 as rena/rena_2d_texture_vram.cpp 0x2e0840..0x2e1700 (name a guess, no path string). GsRegionAlloc and GsRegion moved from the stand-ins in game/gfxtarget.h to rena/rena_2d_texture_vram.h; both lists are one inlined pooled-list template (GsPoolList). Written: GsRegion::release, assign, upload, bind, findFree, freeRegion, alloc, ctor, dtor, Tim2Texture::getLodScale and getMip. The 15 s smoke run builds the real allocator in gfxInitRenderTargets and reaches the language select as before, no crash. Nothing on screen can show it: the host draw module binds textures by owner and rena_draw's setSurface leaves assign / upload / bind out, so verify. Left: Tim2Texture::getTex0 0x2e1b10 is a hand stub in src/lib/unassigned_stubs.cpp (belongs in rena/rena_2d_texture_tim2.cpp); RenaPointLight slots 0x2e0820 and 0x2e0830 unplaced; alloc hangs like the ROM if every used region is pinned. open-items.md Open questions has these. Ghidra batch 198 saved by name_ctx.",
+   "ranges": [
+    [
+     "002e0840",
+     "002e1700"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-07 04:58",
+     "status": "verify",
+     "summary": "GsRegionAlloc, rena's texture VRAM region allocator, all 11 functions; boot unchanged"
+    }
+   ],
+   "status": "verify",
+   "why": "GsRegionAlloc, rena's texture VRAM region allocator (0x2e0840 GsRegion::release .. 0x2e16d0 Tim2Texture::getMip), cut out of unassigned@002e0820: bounded by RenaPointLight's virtuals 0x2e0820 / 0x2e0830 before (scenerender's class, left out) and rena_model's modelTexturePremultiplyPalette 0x2e1700 after. No path string: the name is a guess in the rena_2d_texture family."
+  },
   "rena/rena_draw.cpp": {
    "notes": "Skin written: drawSkinnedMesh 0x2e43e0, skinnedPartOutside 0x2e68a0, buildPalette 0x2e9480, skinVertex in model_renderer.cpp. Seen in New Game runs: the boy of d0101 whole on the bedding from the event camera, and the sea of oMK01_01 meeting the quay (progress/20261104-skinned-*.png). No shot of the real game exists, so neither is compared with the game: verify, not done. Both ran with temporary logging, since removed; the final build ran the 15 s check only. Not moving until game/scenepairs.cpp. Still unwritten in the pinned range: shadows, spotlight, ghost pass, fades, tracked with yamipan/rendering/model_renderer.cpp. open-items.md has the doubts.",
    "ranges": [
@@ -3439,6 +3457,7 @@
   "unassigned@002c42a0": {},
   "unassigned@002d46a0": {},
   "unassigned@002dac70": {},
+  "unassigned@002e0820": {},
   "yamipan/rendering/model_renderer.cpp": {
    "notes": "Fix for the user's crash on turning left in node 4, confirmed fixed by the user's play. drawBatch read batch.uvs unchecked. The batch is a single unskinned triangle on the plain path, listFlags 0, colours present. It draws with zero UVs plus the scroll; which model it is and how it looks were not looked at. The committed build is this fix alone: the test hooks and two unproven changes came out after the user's test.",
    "sessions": [
