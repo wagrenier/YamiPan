@@ -2585,6 +2585,35 @@ bool PlayerMotion::ladderBlocked() const
     return false;
 }
 
+// FS2 0x001e05b0
+// callcheck: getLadderRank, getLadderRank
+
+// Two characters pushing on one ladder (CharacterGround::collisionHook0, both
+// at repel level 2): this one keeps its place while it climbs, rests or goes
+// down and the other is anywhere on the ladder, if it ranks first
+// (getLadderRank: the lower wins) or, ranked alike, is the higher of the two.
+// The motions read are the ones playing now, not upcomingMotion.
+bool PlayerMotion::winsStruggle(StageObject *other)
+{
+    const int mine = motionId;
+    if (mine != Motion_LadderRest && mine != Motion_LadderDown && mine != Motion_LadderUp)
+        return false;
+    const int theirs = other->m_motion->motionId;
+    const bool onLadder = theirs == Motion_DamageLadder || theirs == Motion_LadderDownOff
+                          || theirs == Motion_LadderRest || theirs == Motion_LadderDown
+                          || theirs == Motion_LadderDownOn || theirs == Motion_LadderUpOff
+                          || theirs == Motion_LadderUp || theirs == Motion_LadderUpOn;
+    if (!onLadder)
+        return false;
+    const int myRank = static_cast<StageCharacter *>(owner)->getLadderRank();
+    const int theirRank = static_cast<StageCharacter *>(other)->getLadderRank();
+    if (myRank < theirRank)
+        return true;
+    if (myRank == theirRank)
+        return other->m_xform.position[2] < owner->m_xform.position[2];
+    return false;
+}
+
 // FS2 0x001eb090
 // callcheck: identityMatrix, rotateMatrixZ, applyMatrix, getRecordOffset
 

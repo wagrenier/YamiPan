@@ -4894,19 +4894,9 @@
 /* 001df0a0 00000008 */ MotionSpecial::clearAllowed(){}  // game
 /* 001df0b0 00000cd8 */ PlayerMotion::initList(){}  // game
 /* 001dfd90 000001a4 */ PlayerMotion::setScope(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
 /* 001dff40 00000414 */ PlayerMotion::levelBlocked(){}  // game
 /* 001e0360 0000024c */ PlayerMotion::ladderBlocked(){}  // game
-/* 001e05b0 00000134 */ FUN_001e05b0(){}
-
-// *****************************************************************************
-// FILE -- game/playermotion.cpp
-// *****************************************************************************
-
+/* 001e05b0 00000134 */ PlayerMotion::winsStruggle(){}  // game
 /* 001e06f0 00000730 */ PlayerMotion::endFrame(){}  // game
 /* 001e0e20 00000aa0 */ PlayerMotion::applyMovement(){}  // game
 

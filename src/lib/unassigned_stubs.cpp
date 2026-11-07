@@ -111,13 +111,6 @@ bool StageObject::followsPlayerLight()
 // ---- by hand: the character's parts, until their TUs (next in the queue) ----
 
 // stub of FS2 0x00239bc0
-// stub of FS2 0x001e05b0
-bool PlayerMotion::winsStruggle(StageObject *other)
-{
-    YAMIPAN_STUB("PlayerMotion::winsStruggle", 0x001e05b0);
-    return {};
-}
-
 // stub of FS2 0x00294280
 void elevatorCall(StageObject *elevator, int floor)
 {

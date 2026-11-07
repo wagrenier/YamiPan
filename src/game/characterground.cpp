@@ -1245,7 +1245,7 @@ int CharacterGround::meetHit(CollisionContact *contact)
 }
 
 // FS2 0x001f0a20
-// callcheck: FUN_001f4e20, getKind, getCollisionObject, getMeanVelocity, getMeanVelocity, vecNormalize, sinCos, sinCos, vecDot, isPlayer, isPlayer, isPlayer, FUN_001e05b0, scaleVec4, translate, getNamed, FUN_001f0170, isDoorFace, scaleVec4, sphereHits, getNormal, getNormal, vecDot, vecCross, vecNormalize, vecDot, applyMatrix, vecDot, scaleVec4, translate, atan2Octant, addAngle, getNormal, atan2Octant, wrapAngle, wrapAngle, playerEvent, FUN_002a2b10
+// callcheck: FUN_001f4e20, getKind, getCollisionObject, getMeanVelocity, getMeanVelocity, vecNormalize, sinCos, sinCos, vecDot, isPlayer, isPlayer, isPlayer, winsStruggle, scaleVec4, translate, getNamed, FUN_001f0170, isDoorFace, scaleVec4, sphereHits, getNormal, getNormal, vecDot, vecCross, vecNormalize, vecDot, applyMatrix, vecDot, scaleVec4, translate, atan2Octant, addAngle, getNormal, atan2Octant, wrapAngle, wrapAngle, playerEvent, FUN_002a2b10
 
 int CharacterGround::collisionHook0(CollisionContact *contact, const float *normal,
                                     StageCollisionFace *face, float depth)
