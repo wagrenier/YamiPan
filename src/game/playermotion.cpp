@@ -9682,10 +9682,10 @@ int StageCharacter::scriptPickableHandle()
 // FS2 0x00218e00
 // callcheck: useItem
 
-void StageCharacter::scriptUseItemAt(const char *name, const float *point)
+bool StageCharacter::scriptUseItemAt(const char *name, const float *point)
 {
     constexpr int kOnPoint = 1;
-    useItem(name, point, kOnPoint);
+    return useItem(name, point, kOnPoint);
 }
 
 // FS2 0x00219ae0
@@ -11418,19 +11418,19 @@ void StageCharacter::scriptPutWeaponAway()
 // FS2 0x00218e60 (thunk 0x0017e5a0): slot +0x2f8.
 // callcheck: scriptUseNamedItem
 
-void StageCharacter::scriptUseSmoke()
+bool StageCharacter::scriptUseSmoke()
 {
     static const char kSmoke[] = "I_HATUEN";    /* data 0x307010 */
-    scriptUseNamedItem(kSmoke);
+    return scriptUseNamedItem(kSmoke);
 }
 
 // FS2 0x00218e10 (thunk 0x0017e580)
 // callcheck: useItem
 
-void StageCharacter::scriptUseNamedItem(const char *name)
+bool StageCharacter::scriptUseNamedItem(const char *name)
 {
     sceVu0FVECTOR zero = {};
-    useItem(name, zero, 1);
+    return useItem(name, zero, 1);
 }
 
 // FS2 0x00218b00 (thunk 0x0017e570)
@@ -11449,9 +11449,9 @@ bool StageCharacter::scriptSetTrap()
 // FS2 0x00218af0 (thunk 0x0017e560)
 // callcheck: item218850
 
-void StageCharacter::scriptPutItem()
+bool StageCharacter::scriptPutItem()
 {
-    item218850(1);
+    return item218850(1);
 }
 
 // FS2 0x00218800 (thunk 0x0017e550)

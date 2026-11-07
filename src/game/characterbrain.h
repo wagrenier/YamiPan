@@ -244,9 +244,9 @@ public:
     bool scriptOpenDoor() override;                                      // FS2 0x001d9f90
     bool scriptAttackBite() override { return attackBite(); }            // FS2 0x001da960
     bool scriptReload(int rounds) override { (void)rounds; return gunAction(); } // FS2 0x001da650
-    void scriptUseSmoke() override { useSmoke(); }                       // FS2 0x001da110
-    void scriptUseNamedItem(const char *name) override { useNamedItem(name); } // FS2 0x001da0c0
-    void scriptPutItem() override { useItem850(); }                      // FS2 0x001da050
+    bool scriptUseSmoke() override { return useSmoke(); }                       // FS2 0x001da110
+    bool scriptUseNamedItem(const char *name) override { return useNamedItem(name); } // FS2 0x001da0c0
+    bool scriptPutItem() override { return useItem850(); }                      // FS2 0x001da050
     bool scriptSetTrap() override { return setTrap(); }                  // FS2 0x001da060
     bool scriptTakeUpTrap() override { return takeUpTrap(); }            // FS2 0x001da020
     StageObject *scriptTakeItem() override { return takeItem(); }        // FS2 0x001da5e0
@@ -268,11 +268,11 @@ public:
     bool gunAction();                                                    // FS2 0x001da650
     bool routeAction12c();                                               // FS2 0x001d9ec0
     bool routeAction130();                                               // FS2 0x001d9ea0
-    void useSmoke();                                                     // FS2 0x001da110
-    void useNamedItem(const char *name);                                 // FS2 0x001da0c0
-    void useItemAt(const char *name, const float *point);                // FS2 0x001da0b0
+    bool useSmoke();                                                     // FS2 0x001da110
+    bool useNamedItem(const char *name);                                 // FS2 0x001da0c0
+    bool useItemAt(const char *name, const float *point);                // FS2 0x001da0b0
     bool setTrap();                                                      // FS2 0x001da060
-    void useItem850();                                                   // FS2 0x001da050
+    bool useItem850();                                                   // FS2 0x001da050
     bool takeUpTrap();                                                   // FS2 0x001da020
     StageObject *takeItem();                                             // FS2 0x001da5e0
     void crouch3();                                                      // FS2 0x001da3c0

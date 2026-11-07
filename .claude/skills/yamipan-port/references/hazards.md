@@ -628,3 +628,7 @@ upper lanes, NaN in Python and harmless on a VU: clear the vf's between calls.
 - **`callcheck:` lists stop at the first parenthesis.** Symptom: MISSING calls that the comment plainly names. Cause: what follows a `(` is taken as a remark. Fix: remarks go at the end of the list.
 - **`--log` is the build's log.** The game's output is in work/run_<config>.log; a temporary print is there, not in the file `--log` names.
 - **A run killed by its limit leaves a cut-off shot.** last.png can be empty and the newest shot_*.png unreadable: read the third newest.
+
+## A default's shape says the virtual's type (2026-11-07)
+
+**Symptom:** natives 0x104, 0x105, 0x106, 0x15a stored 0 on 159 scripts, with a comment that explained it ("void in the ROM: their acc is what v0 held"). **Cause:** the base's bodies were never read for the type: the writer saw void-looking calls and a stored v0, and took the store for a leak. A native that keeps `andi v0,0xff` has a bool in hand, and a default ending `sltu v0,zero,v0` declares one. **Fix:** a comment that excuses a store is a claim, check it against the default's body; `py defaultcmp.py` does for scriptrunner.h.

@@ -1,5 +1,7 @@
 {
- "queue": [],
+ "queue": [
+  "game/playermotion.cpp"
+ ],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
   "frontier_ignore": [],
@@ -1886,10 +1888,15 @@
    "why": "The collision file: StageCollision (map meshes) 0x231d40..0x236b90 with boxContains .. boxHolds, the world of bodies 0x1f4bb0..0x1f6ac0 (CollisionBody, SceneRecordBuckets and its list instances), collisionFindRecord and CollisionFile::relocate, and the two surface name helpers the mesh ctor calls. Pieces by position: the file name is the port's, no string names it."
   },
   "game/stagedoor.cpp": {
+   "notes": "unassigned@00171ad0 turned out to be inline functions of this object file: runner table defaults, StageObject accessors, DoorRecord setters; pinned here and listed at the end of stagedoor.cpp, bodies in the headers. Added 27 ScriptRunner virtuals and 13 StageCharacter overrides, batch 191 named 87 functions and saved. Bug fixed: slots +0x16c +0x170 +0x174 +0x17c were void and natives 0x104 0x105 0x106 0x15a stored 0; the ROM's are bool. Still no change on screen: StageCharacter::useItem 0x218b50 and item218850 0x218850 are stubs answering false, and 0x105 and 0x106 are on 159 scripts, so game/playermotion.cpp is queued for those two. Proved: defaultcmp.py 84 defaults, 0 differences, plant 1, 5 notes for slots 49..53 (tail jump in the ROM, bool here, 0 either way; overrides not re-read). The new slots are unreachable: their natives are on no script. Left: ScriptProxy's 17 forwards of those slots, listed by slotcheck.py Vt_00315690 ScriptProxy. Smoke run 15 s stops at the language screen, right for 15 s and showing nothing of this TU.",
    "ranges": [
     [
      "00171a30",
      "00171ad0"
+    ],
+    [
+     "00171ad0",
+     "001723c0"
     ],
     [
      "001723c0",
@@ -1904,7 +1911,15 @@
      "00174a10"
     ]
    ],
-   "why": "the door class 0x3112f0 and its helpers; the file is the port's, cut out of the unassigned run so that the Door condition has something to find"
+   "sessions": [
+    {
+     "date": "2026-11-07 01:41",
+     "status": "verify",
+     "summary": "the door object file's 106 inline defaults 0x171ad0..0x1723c0 accounted for, 27 runner slots added, item natives answer the ROM's bool"
+    }
+   ],
+   "status": "verify",
+   "why": "the door class 0x3112f0 and its helpers, and the inline defaults its object file carries between them (0x171ad0..0x1723c0: runner slots, StageObject accessors, the door record's setters); the file is the port's"
   },
   "game/stageelevator.cpp": {
    "notes": "27 functions 0x2939b0..0x295470, batch 184; the free elevator functions are members now and getZs9901 answers StageElevator; the two motion file readers 0x2937e0..0x2939b0 joined game/playermotion.cpp. Seen on stage 9 (YAMIPAN_TELEPORT=9, temporary probes, removed, three runs, no crash): Cross at the B3 panel with the pad alone brought the car (state 5, 2, 1, lamp out on arrival); canCall true facing the panel and false with the back to it; a player put in the car and press(InsideB1) rode from z -1080 to -480 with floorObject the elevator; a player put in the closing doors at B1 reopened them the next frame. Not seen: a ride started by Cross inside the car, another character as rider, 0x1cd release, the sounds and rumble as such, a wide display. No picture of the real game, so verify. progress/20261106-elevator-b3-panel.png. Doubts in open-items.md (r), (s), (t).",
@@ -3287,6 +3302,7 @@
   "unassigned@00142dd0": {},
   "unassigned@00148db0": {},
   "unassigned@00171300": {},
+  "unassigned@00171ad0": {},
   "unassigned@00176480": {},
   "unassigned@0017e140": {},
   "unassigned@0017fce0": {
