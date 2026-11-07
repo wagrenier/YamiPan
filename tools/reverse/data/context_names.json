@@ -35201,6 +35201,12 @@
   "was": "FUN_002b2b70",
   "why": "called on owned[2] by native 0x205: an object of kind 6 takes two pairs"
  },
+ "002b2c10": {
+  "name": "SceneOwnedObject::isSevenKeyOpen",
+  "tag": "game-inferred",
+  "was": "FUN_002b2c10",
+  "why": "a0 is the seven-key handle (StageScene +0x94, from missionRestoreCheck): the body's findObject(name), kind 6 (vtable +500), then 0x2b2620 (the keys turned to the code and the two numbers the pad set); false otherwise"
+ },
  "002b37d0": {
   "name": "SkyPose::SkyPose",
   "tag": "game-inferred",

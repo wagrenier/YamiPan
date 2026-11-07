@@ -199,6 +199,31 @@ struct MissionObjectList
     int           count;        // FS2 +0x4
 };
 
+// StageScene::owned: the three gadget handles.
+enum SceneOwnedSlot
+{
+    SceneOwned_SigLamp  = 0,    // +0x8c
+    SceneOwned_NumLock  = 1,    // +0x90
+    SceneOwned_SevenKey = 2,    // +0x94
+};
+
+// The lock gadget a script's useLockGadget (native 0xaa) works: its first
+// argument, and what saveObjectFlags leaves in StageMission::restoreKind.
+// missionRestoreCheck also tests 1 and answers nothing for it.
+enum LockGadgetKind
+{
+    LockGadget_None     = 0,
+    LockGadget_NumLock  = 2,
+    LockGadget_SevenKey = 3,
+};
+
+// missionRestoreCheck's answer (StageMission::onRestore): bits.
+enum LockRestoreBits
+{
+    LockRestore_Open  = 0x1,    // the lock's code is right
+    LockRestore_Tried = 0x2,    // the number lock's Use left the view (NumLockView::m_tried)
+};
+
 // A place setSpawnPoint keeps. EE 0x20.
 // layout: host
 struct MissionSpawnPoint
@@ -231,8 +256,9 @@ struct StageMission
     void setPendingEvent(const char *name);                              // FS2 0x002868b0
     // The script's own range for one of the VISIBILITY_ lists, by name.
     void setVisibilityRange(float range, const char *name);              // FS2 0x00286820
-    // restoreObjectFlags keeps object's flags; what arg is is unread.
-    void setRestore(void *arg, StageObject *object);                     // FS2 0x00286910
+    // restoreObjectFlags keeps object's flags; kind (LockGadgetKind) is
+    // the gadget whose screen hid the stage: a kind asks onRestore again.
+    void setRestore(int kind, StageObject *object);                      // FS2 0x00286910
     // StageResult +0x10[index].
     void setResultValue(int index, int value);                           // FS2 0x00287050
     int  getResultValue(int index);                                      // FS2 0x00287090
@@ -275,7 +301,7 @@ struct StageMission
     float   startTime = 0.0f;   // FS2 +0xac: the scene clock's seconds at markStart
     float   lastFoeAlert = 0.0f; // FS2 +0xb0: the scene clock's seconds of the last one; bits 0x800000 from the ctor
     float   smokeRange = 0.0f;  // FS2 +0xb4: how near a flare is smoke (SmokeFog::updateRange, nativeSmokeNear)
-    void   *restoreArg = nullptr; // FS2 +0xb8: setRestore; 0x29f2a0 tests 1, 2, 3
+    int     restoreKind = LockGadget_None; // FS2 +0xb8: setRestore's LockGadgetKind; missionRestoreCheck reads it
     StageObject *keptObject = nullptr; // FS2 +0xbc: keeps its flags through restoreObjectFlags
     bool    restoreAsked = false;  // FS2 +0xc0: onRestore has answered
     int     restoreAnswer = 0;   // FS2 +0xc4
@@ -372,7 +398,7 @@ struct StageScene
     void removeViewPriority(int priority);                               // FS2 0x0019bb70
     // Every object's flags and transform go into arrays; the mission keeps
     // the two arguments for restoreObjectFlags.
-    void saveObjectFlags(void *arg, StageObject *object);                // FS2 0x001955e0
+    void saveObjectFlags(int kind, StageObject *object);                 // FS2 0x001955e0
     // The stage's end sequences, unless the stage is busy.
     void startClear();                                                   // FS2 0x00195690
     void startGameOver(StageObject *victim, StageObject *cause);         // FS2 0x00195730

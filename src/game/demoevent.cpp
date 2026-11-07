@@ -625,11 +625,11 @@ int StageMission::onRestore()
 
 // FS2 0x00286910
 
-void StageMission::setRestore(void *arg, StageObject *object)
+void StageMission::setRestore(int kind, StageObject *object)
 {
-    if (arg != nullptr)
+    if (kind != LockGadget_None)
         restoreAsked = false;
-    restoreArg = arg;
+    restoreKind = kind;
     keptObject = object;
 }
 

@@ -882,7 +882,8 @@ struct PartSwitch
 // The model's part called name (length: strlen), null none.
 ModelPartRec *modelFindPart(ModelInstance *model, const char *name, size_t length, int arg); // FS2 0x002e4610
 // StageParticle: game/stageparticle.h.
-// The object of the scene's number lock (the list at +0x90 names it).
+// The first object of group 1 the number lock's handle (StageScene +0x90)
+// has a pair for; null none.
 StageObject *findNumLockTarget();                                        // FS2 0x0029f440
 // Its dials: NumLock, game/numlock.h.
 // Every character with m_viewActive: three steps on its motion (+0x224).
@@ -1735,7 +1736,8 @@ public:
 // The generator of the film and the flecks: the next seed; its bits 16..30 are the draw.
 // The flecks over a texture, and their end (vtable +8).
 // The mission's script helpers beside scriptPrepare.
-bool missionRestoreCheck();                                              // FS2 0x0029f2a0
+// After a lock gadget's screen (StageMission::restoreKind): LockRestoreBits.
+int  missionRestoreCheck();                                              // FS2 0x0029f2a0
 // A kept spawn point out of the view: mode 0.. the mode-th nearest place, or
 // the nearest such around it; below 0 at random; -1 none.
 bool missionObjectInSight(StageObject *object);                          // FS2 0x0029f200

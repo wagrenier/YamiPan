@@ -149,12 +149,6 @@ bool StageObject::followsPlayerLight()
 }
 
 // stub of FS2 0x00207440
-// stub of FS2 0x0029f2a0
-bool missionRestoreCheck()
-{
-    YAMIPAN_STUB("missionRestoreCheck", 0x0029f2a0);
-    return {};
-}
 
 
 // stub of FS2 0x00207aa0
@@ -202,12 +196,6 @@ StageObject * StageCharacter::findNearestFoe(bool foes, bool sight)
     return {};
 }
 
-// stub of FS2 0x0029f440
-StageObject * findNumLockTarget()
-{
-    YAMIPAN_STUB("findNumLockTarget", 0x0029f440);
-    return {};
-}
 
 // stub of FS2 address unknown (0 candidates)
 u_int elevatorCalledFloors(StageObject *elevator)
@@ -308,4 +296,11 @@ int sevenKeysPoseValue(StageObject *object, int sub)
 void Tim2Texture::getTex0(sceGsTex0 *out, int block)
 {
     YAMIPAN_STUB("Tim2Texture::getTex0", 0x002e1b10);
+}
+
+// stub of FS2 0x002b2c10
+bool SceneOwnedObject::isSevenKeyOpen(const char *objectName)
+{
+    YAMIPAN_STUB("SceneOwnedObject::isSevenKeyOpen", 0x002b2c10);
+    return {};
 }
