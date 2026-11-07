@@ -179,7 +179,7 @@ void skinMatrix(sceVu0FMATRIX out, const ModelInstance *model, int bone, const f
 // answers 1, so a part wholly in frame sorts by the last one that did; the
 // host's test has no such answer and always stores it.
 // FS2 0x002e68a0
-// callcheck: boxClipTest (packets and VU1 state: the draw module's on the host)
+// callcheck: boxClipTest (rena_camera.cpp: it needs the planes 0x2e5bb0 builds, not built on the host; boxOutside stands in)
 
 bool skinnedPartOutside(float *center, const ModelInstance *model, const Skin &skin, const ModelMeshPart *part,
                         int boneCount)
