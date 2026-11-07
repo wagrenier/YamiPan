@@ -1373,12 +1373,21 @@
    "why": "getNaviTable 0x2955d0 (the NaviTable from the init pack) heads the NaviTable run; progress.h already declares it"
   },
   "game/rcnttimer.cpp": {
+   "notes": "All 4 functions of 0x12f190..0x12f290, compared with the ROM by reading (the code is 5 short routines' worth of loads and stores). Reached in the smoke run with no stub line and no crash: rcnt1Start from gameInit, the constructor from PerfMeter, reset each frame. RcntTimer now has EE layout with asserts, size 0x20. A stopwatch nobody reads: no retail code reads T1_COUNT outside this file, and +0x00 and +0x08 are never read back, so m_08 keeps its offset name. The constructor's parameter order stays a guess (f12, f13, a1). s_rcnt1Started at gp-0x7ac4 is named in the source only, not in Ghidra. Screen unchanged: shot_25260.png is byte for byte the previous run's language screen. last.png came out empty (the run was stopped during the write), so it was replaced by shot_25260.png before finish. Open: REG_RCNT0_MODE and REG_RCNT1_MODE do not reach setTimerMode (open-items.md, top of Next up).",
    "ranges": [
     [
      "0012f190",
      "0012f290"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-07 00:09",
+     "status": "done",
+     "summary": "RcntTimer and rcnt1Start, all 4 functions; was stubs"
+    }
+   ],
+   "status": "done",
    "why": "RcntTimer (reset, ctor, dtor) and rcnt1Start (batches 003-004); file name a guess."
   },
   "game/ripplesheet.cpp": {
@@ -3305,10 +3314,7 @@
   "unassigned@00296d60": {},
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {},
-  "unassigned@002b9ef0": {
-   "claimed": "2026-11-06 23:35",
-   "status": "active"
-  },
+  "unassigned@002b9ef0": {},
   "unassigned@002c42a0": {},
   "unassigned@002d46a0": {},
   "yamipan/rendering/model_renderer.cpp": {

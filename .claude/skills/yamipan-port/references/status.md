@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 00:01 at commit `38739db` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 00:09 at commit `c93e2ae` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5215**; stubs: **96**
+- reconstructed FS2 functions: **5219**; stubs: **92**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -76,7 +76,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/playermotion.cpp` | 586 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
-| `src/game/rcnttimer.cpp` | 0 | 4 |
+| `src/game/rcnttimer.cpp` | 4 | 0 |
 | `src/game/ripplesheet.cpp` | 7 | 0 |
 | `src/game/routefilter.cpp` | 38 | 0 |
 | `src/game/routeplayer.cpp` | 45 | 0 |
@@ -160,10 +160,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 215 TUs: todo 73, active 1, partial 25, verify 111, done 42
-- next: **game/rcnttimer.cpp** (frontier score 19)
+- 215 TUs: todo 73, partial 25, verify 111, done 43
+- next: **unassigned@002dac70** (frontier score 19)
 - pinned queue: (empty)
-- active: `unassigned@002b9ef0` 0/0
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -278,6 +277,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 00:09 `game/rcnttimer.cpp` done: RcntTimer and rcnt1Start, all 4 functions; was stubs
 - 2026-11-07 00:01 `game/menuprogset.cpp` verify: The gun sights: MenuProgSet, its packet helpers and quatBetween, all 11 functions of 0x2b9ef0..0x2bb600; was stubs
 - 2026-11-06 23:33 `game/itemphysics.cpp` verify: ItemPhysics written: thrown items and dropped weapons fall, all 15 functions, bit-identical to the ROM on itemcmp.py; a forced knife lands flat on stage 2
 - 2026-11-06 22:50 `game/stageparticle.cpp` verify: the MSL vector and sort instances 0x1920d0..0x193900 pinned here and named; the ROM's own unstable sort replaces std::stable_sort in drawEffects, far list first
@@ -285,22 +285,21 @@ Recent sessions:
 - 2026-11-06 21:59 `rx/rxsndstrmem.c` verify: reconstruct 16 functions, ROM comparison clean
 - 2026-11-06 21:34 `rx/rxsndstrstream.c` verify: reconstruct 18 functions
 - 2026-11-06 21:12 `rx/rxsndstradpcm.c` verify: All 10 functions of 0x164c38..0x1656e8 written; the 2026-11-04 bridge replaced by a silent stand-in for the driver feeding rxSndAdpcmUpdate
-- 2026-11-06 20:51 `game/stageelevator.cpp` verify: The elevator: StageElevator for oZS99_01, a call brings it, the doors work, a rider goes up with it, a door closing on someone opens again
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
 | `unassigned@002dac70` | partial | 1/4/63 | 21.7 | 19 | 3 |
-| `unassigned@00171ad0` | partial | 1/0/107 | 1.5 | 18 | 0 |
 | `unassigned@002c42a0` | todo | 0/13/105 | 42.1 | 18 | 1 |
+| `unassigned@00171ad0` | partial | 1/0/107 | 1.5 | 18 | 0 |
 | `unassigned@002067d0` | partial | 1/0/9 | 2.2 | 17 | 0 |
 | `unassigned@002a6980` | partial | 1/11/83 | 12.1 | 17 | 0 |
 | `unassigned@00188d60` | todo | 0/0/16 | 3.8 | 17 | 0 |
 | `unassigned@002e0820` | todo | 0/3/13 | 3.7 | 13 | 1 |
-| `unassigned@002681e0` | todo | 0/3/3 | 0.3 | 13 | 2 |
 | `unassigned@00151270` | todo | 0/3/3 | 0.0 | 13 | 2 |
+| `unassigned@002681e0` | todo | 0/3/3 | 0.3 | 13 | 2 |
 | `unassigned@0012c9b8` | todo | 0/1/6 | 0.8 | 12 | 1 |
 | `unassigned@002176d0` | partial | 1/0/10 | 0.9 | 11 | 0 |
+| `rx/rxsndstrpcm.c` | todo | 0/8/10 | 2.1 | 10 | 2 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

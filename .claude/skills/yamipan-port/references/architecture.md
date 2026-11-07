@@ -550,7 +550,10 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
     alloc align 0x10 / realloc), `next` 0x1357c0 (null also when `after` is no longer in the list).
   - **Debug meter** (`src/game/perfmeter.cpp`, 0x132f20..0x133800, written 2026-11-02):
     `RcntTimer(tickRate 15625, fieldRate 50, fieldsPerFrame 2)` 0x12f200 (usPerTick = 1e6 / tickRate at
-    +0x10; the first one sets T1_MODE 0x83, a gp byte -0x7ac4 remembers it) / reset 0x12f190;
+    +0x10; the first one sets T1_MODE 0x83, a gp byte -0x7ac4 remembers it) / reset 0x12f190
+    (`src/game/rcnttimer.cpp`, EE size 0x20, written 2026-11-07). A stopwatch nobody reads: the only
+    T1_COUNT reads in the ELF are in reset and the constructor (their inlined reset), the only T1_MODE
+    writes in the constructor and `rcnt1Start`, and no retail code reads +0x00 or +0x08 back;
     `PerfMeter` beginFrame 0x133620, collectStats 0x133350, resetStats 0x133590, writeCsv 0x132f90
     (`host:la_%d_%d.csv`, min / max / mean x100 per cell), dumpGroups 0x132f30 (its print compiled out);
     its bar / draw calls `addBar` 0x133610 (returns 0, also called by 0x198970 / 0x199400 with group 4,
