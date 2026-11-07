@@ -5950,29 +5950,24 @@
 /* 0021cc50 0000001c */ StageCharacter::setLightResist(){}  // game
 /* 0021cc70 000013e0 */ StageCharacter::initStatusBlock(){}  // game
 /* 0021e050 000000c8 */ StageCharacter::resetActionState(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 0021e120 00000230 */ FUN_0021e120(){}
-/* 0021e350 0000013c */ FUN_0021e350(){}
-/* 0021e490 00000268 */ FUN_0021e490(){}
-/* 0021e700 000002a0 */ FUN_0021e700(){}
-/* 0021e9b0 000000a8 */ FUN_0021e9b0(){}
-/* 0021ea60 00000068 */ FUN_0021ea60(){}
-/* 0021ead0 00000018 */ FUN_0021ead0(){}
-/* 0021eaf0 00000058 */ FUN_0021eaf0(){}
-/* 0021eb50 00000074 */ FUN_0021eb50(){}
-/* 0021ebd0 00000058 */ FUN_0021ebd0(){}
+/* 0021e120 00000230 */ mslSort_SearchPoints(){}  // game
+/* 0021e350 0000013c */ mslMedianToEnd_SearchPoints(){}  // game
+/* 0021e490 00000268 */ mslPartitionBelow_SearchPoints(){}  // game
+/* 0021e700 000002a0 */ mslPartitionUpTo_SearchPoints(){}  // game
+/* 0021e9b0 000000a8 */ mslSelectionSort_SearchPoints(){}  // game
+/* 0021ea60 00000068 */ FreeObjectWalk::next(){}  // game
+/* 0021ead0 00000018 */ FreeObjectWalk::FreeObjectWalk(){}  // game
+/* 0021eaf0 00000058 */ ItemWalk::next(){}  // game
+/* 0021eb50 00000074 */ ItemWalk::ItemWalk(){}  // game
+/* 0021ebd0 00000058 */ StageObjIterator::next(){}  // game
 /* 0021ec30 00000068 */ StageObjIterator::StageObjIterator(){}  // game
-/* 0021eca0 00000074 */ FUN_0021eca0(){}
+/* 0021eca0 00000074 */ StageObjIterator::StageObjIterator_Group7(){}  // game
 /* 0021ed20 00000098 */ SearchGroupWalk::next(){}  // game
 /* 0021edc0 00000018 */ SearchGroupWalk::SearchGroupWalk(){}  // game
 /* 0021ede0 00000058 */ SearchObjectWalk::next(){}  // game
 /* 0021ee40 00000074 */ SearchObjectWalk::SearchObjectWalk(){}  // game
-/* 0021eec0 00000058 */ FUN_0021eec0(){}
-/* 0021ef20 00000074 */ FUN_0021ef20(){}
+/* 0021eec0 00000058 */ OffStageCharWalk::next(){}  // game
+/* 0021ef20 00000074 */ OffStageCharWalk::OffStageCharWalk(){}  // game
 
 // *****************************************************************************
 // FILE -- game/characterroute.cpp

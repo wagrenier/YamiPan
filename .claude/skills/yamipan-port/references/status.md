@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 07:01 at commit `3f3f96b` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 07:12 at commit `d203fb8` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 07:01 at commit `3f3f96b` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6597**, named **5535** (84%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4613
-- context-name ledger: 6209 entries; overrides of wrong library matches: 0
-- placed in a source file: 6046/6597 in 132 files
+- game functions: **6597**, named **5548** (84%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4626
+- context-name ledger: 6222 entries; overrides of wrong library matches: 0
+- placed in a source file: 6064/6597 in 132 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5505**; stubs: **43**
+- reconstructed FS2 functions: **5519**; stubs: **43**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -77,7 +77,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/pakarchive.cpp` | 17 | 0 |
 | `src/game/pausemenustate.cpp` | 12 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
-| `src/game/playermotion.cpp` | 591 | 0 |
+| `src/game/playermotion.cpp` | 605 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rand48.cpp` | 3 | 0 |
@@ -168,8 +168,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 215 TUs: todo 72, partial 19, verify 123, done 46
-- next: **unassigned@0021e120** (frontier score 8)
+- 214 TUs: todo 73, partial 18, verify 123, done 46
+- next: **unassigned@002a7b10** (frontier score 8)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -212,7 +212,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
-- verify: `game/playermotion.cpp` 428/442 -- Written: StageCharacter::throwCarried 0x218b50 (was useItem), putSmoke 0x218850 (was item218850), wantThrow 0x20b200, canTakeUpTrap 0x219000, heardWithin 0x2199
+- verify: `game/playermotion.cpp` 446/460 -- 0x21e120..0x21efa0 pinned to game/playermotion.cpp (batch 204 names all 13 functions). mslSort_SearchPoints 0x21e120 with median 0x21e350, partitions 0x21e490 /
 - verify: `game/prgmccard.cpp` 7/7 -- All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide close
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/ripplesheet.cpp` 7/10 -- Batch 164. What the notes called stage 0x1b's boss film is a 15 by 15 ripple sheet, 0x2d10f0..0x2d3700, SightJack +0xb4: the frame bent, pushed from a tint, cre
@@ -297,6 +297,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 07:12 `game/playermotion.cpp` verify: unassigned@0021e120 joined playermotion.cpp: its out-of-line tail, the MSL sort instance over the search points and the six one-slot stage-object walks; pickSea
 - 2026-11-07 07:00 `sdpr2/sdpr2drv.c` verify: reconstruct 30 functions: the SDPR2 driver layer and the SE driver (verify)
 - 2026-11-07 06:49 `sdpr2/sdpr2single.c` verify: SDPR2 one-voice type and the shared pan maths: all 24 functions, the pan / spread tables from the ROM
 - 2026-11-07 06:35 `game/helpscreen.cpp` verify: runHelpScreen alone: help<lang>.d2b through runLayoutFile, always 0 (written in the sky mist's commit)
@@ -304,22 +305,21 @@ Recent sessions:
 - 2026-11-07 05:52 `rx/rxsndstrpcm.c` verify: PCM stream format: all 10 functions written, the ADPCM twin cut down, with a silent driver reply on PC
 - 2026-11-07 05:34 `unassigned@002176d0` verify: Placed the run 0x2176d0..0x217a80: isViewLinked to game/stagecharacter.cpp, the second StageList<StageObject*> instance (getTail, find, pushBack, erase, pushFro
 - 2026-11-07 05:12 `unassigned@0012c9b8` verify: Resolved: newlib stdio tail 0x12c9b8..0x12cce0 (__sccl, vsprintf, _vsprintf_r, _write_r, __swsetup) is libc, the libc lib_range now ends at 0x12cce0; GameSystem
-- 2026-11-07 05:10 `game/gamesystem.cpp` verify: marked verify -> verify: gained GameSystem::beginStage 0x12cce0 (range now 0x12cce0..0x12dd30, 18 functions) from TU unassigned@0012c9b8; not reached by the smo
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@0021e120` | partial | 4/0/18 | 3.5 | 8 | 0 |
 | `unassigned@002a7b10` | todo | 0/3/53 | 7.9 | 8 | 0 |
-| `unassigned@0029f2a0` | todo | 0/2/2 | 0.6 | 7 | 0 |
-| `unassigned@0020c940` | partial | 1/1/2 | 0.8 | 7 | 0 |
 | `rx/filehost.c` | todo | 0/2/12 | 1.3 | 7 | 1 |
-| `unassigned@002160a0` | todo | 0/0/7 | 0.1 | 7 | 0 |
-| `unassigned@002849c0` | todo | 0/1/5 | 7.4 | 7 | 1 |
 | `sdpr2/sdpr2pair.c` | todo | 0/1/21 | 7.0 | 7 | 1 |
-| `unassigned@002b6b90` | partial | 1/0/7 | 6.5 | 7 | 0 |
 | `rx/filehdd.c` | todo | 0/2/13 | 1.5 | 7 | 1 |
+| `unassigned@0029f2a0` | todo | 0/2/2 | 0.6 | 7 | 0 |
+| `unassigned@002160a0` | todo | 0/0/7 | 0.1 | 7 | 0 |
+| `unassigned@002b6b90` | partial | 1/0/7 | 6.5 | 7 | 0 |
+| `unassigned@002849c0` | todo | 0/1/5 | 7.4 | 7 | 1 |
 | `unassigned@002ec110` | todo | 0/0/1 | 0.1 | 7 | 0 |
+| `unassigned@0020c940` | partial | 1/1/2 | 0.8 | 7 | 0 |
 | `unassigned@002cf510` | todo | 0/1/1 | 0.1 | 6 | 1 |
+| `unassigned@00214a70` | todo | 0/1/2 | 0.6 | 5 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

@@ -4783,7 +4783,7 @@ static const int *nativeSpawnEffectAt(ScriptRunner *self, int *acc, const int *c
 
 // 0x137 springTraps(name): the free items of that name read as sprung.
 // FS2 0x001ba6f0
-// callcheck: readNameArg, FUN_0021eb50, FUN_0021ead0, strcmp
+// callcheck: readNameArg, ItemWalk, FreeObjectWalk, strcmp (the walks inline as a StageObjArray loop)
 
 static const int *nativeSpringTraps(ScriptRunner *self, int *, const int *code)
 {
@@ -5701,7 +5701,7 @@ static const int *nativeBreakWindow(ScriptRunner *self, int *, const int *code)
 
 // 0x20e resetTraps(name): the free items of that name, unsprung (0x137's undo).
 // FS2 0x001aa550
-// callcheck: readNameArg, FUN_0021eb50, FUN_0021ead0, strcmp
+// callcheck: readNameArg, ItemWalk, FreeObjectWalk, strcmp (the walks inline as a StageObjArray loop)
 
 static const int *nativeResetTraps(ScriptRunner *self, int *, const int *code)
 {
@@ -6807,7 +6807,7 @@ static const int *nativeCanUseNumLock(ScriptRunner *, int *acc, const int *code)
 // 0x1f0 placeRespawn(strong, x, y, z, degrees): the first character off stage
 // of that sheet class who may come back returns there.
 // FS2 0x001ac200
-// callcheck: FUN_0021ef20, getStageSelect, canSpawn, isSpawnable, FUN_00218610
+// callcheck: OffStageCharWalk, getStageSelect, canSpawn, isSpawnable, FUN_00218610
 
 static const int *nativePlaceRespawn(ScriptRunner *self, int *acc, const int *code)
 {

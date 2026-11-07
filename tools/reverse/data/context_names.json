@@ -24161,11 +24161,77 @@
   "was": "FUN_0021e050",
   "why": "clears +0x700.., the 0x18 records at +0x468, +0x3d8..+0x3e1; called by reset only"
  },
+ "0021e120": {
+  "name": "mslSort_SearchPoints",
+  "tag": "game-inferred",
+  "was": "FUN_0021e120",
+  "why": "MSL std::sort over pickSearchPoint's {object, distance} pairs (8 bytes, by distance): selection sort under 21, two samples moved by its own counter gp-0x7e10, median to the end, partition, recurse on the smaller side; same algorithm as mslSort_Effects 0x192150"
+ },
+ "0021e350": {
+  "name": "mslMedianToEnd_SearchPoints",
+  "tag": "game-inferred",
+  "was": "FUN_0021e350",
+  "why": "median of three into the third, compared on +4 (float); same body as mslMedianToEnd_Effects 0x193480"
+ },
+ "0021e490": {
+  "name": "mslPartitionBelow_SearchPoints",
+  "tag": "game-inferred",
+  "was": "FUN_0021e490",
+  "why": "std::partition of [a0, a1) by pair.distance < (*a2)->distance, answers the split; inline in mslSort_Effects"
+ },
+ "0021e700": {
+  "name": "mslPartitionUpTo_SearchPoints",
+  "tag": "game-inferred",
+  "was": "FUN_0021e700",
+  "why": "std::partition of [a0, a1) by pair.distance <= (*a2)->distance: the equal-to-pivot run after a pivot nothing is below; inline in mslSort_Effects"
+ },
+ "0021e9b0": {
+  "name": "mslSelectionSort_SearchPoints",
+  "tag": "game-inferred",
+  "was": "FUN_0021e9b0",
+  "why": "selection sort of the 8-byte pairs by +4; same body as mslSelectionSort_Effects 0x1935b0"
+ },
+ "0021ea60": {
+  "name": "FreeObjectWalk::next",
+  "tag": "game-inferred",
+  "was": "FUN_0021ea60",
+  "why": "vtable 0x316040 slot: asks the inner walk (+4) until an object with no parent (+4 == 0); springTraps / resetTraps"
+ },
+ "0021ead0": {
+  "name": "FreeObjectWalk::FreeObjectWalk",
+  "tag": "game-inferred",
+  "was": "FUN_0021ead0",
+  "why": "stores vtable 0x316040 and the inner walk at +4; called by nativeSpringTraps / nativeResetTraps after ItemWalk's ctor"
+ },
+ "0021eaf0": {
+  "name": "ItemWalk::next",
+  "tag": "game-inferred",
+  "was": "FUN_0021eaf0",
+  "why": "vtable 0x316050 slot: answers the slot's object, steps to the next active one (+0x34)"
+ },
+ "0021eb50": {
+  "name": "ItemWalk::ItemWalk",
+  "tag": "game-inferred",
+  "was": "FUN_0021eb50",
+  "why": "vtable 0x316050: the active objects of group 3 (objects +0xa8)"
+ },
+ "0021ebd0": {
+  "name": "StageObjIterator::next",
+  "tag": "game-inferred",
+  "was": "FUN_0021ebd0",
+  "why": "vtable 0x316060 slot: answers the slot's object, steps to the next active one (+0x34)"
+ },
  "0021ec30": {
   "name": "StageObjIterator::StageObjIterator",
   "tag": "game-inferred",
   "was": "FUN_0021ec30",
   "why": "walks a StageObjArray over the active objects; vtable 0x316060, inline in the host"
+ },
+ "0021eca0": {
+  "name": "StageObjIterator::StageObjIterator_Group7",
+  "tag": "game-inferred",
+  "was": "FUN_0021eca0",
+  "why": "vtable 0x316060 over group 7 (objects +0xc8), the active ones; only caller FUN_001c1bf0"
  },
  "0021ed20": {
   "name": "SearchGroupWalk::next",
@@ -24190,6 +24256,18 @@
   "tag": "game-inferred",
   "was": "FUN_0021ee40",
   "why": "iterator, vtable 0x316080: active objects of group 6"
+ },
+ "0021eec0": {
+  "name": "OffStageCharWalk::next",
+  "tag": "game-inferred",
+  "was": "FUN_0021eec0",
+  "why": "vtable 0x316090 slot: answers the slot's object, steps to the next inactive one (+0x34 == 0)"
+ },
+ "0021ef20": {
+  "name": "OffStageCharWalk::OffStageCharWalk",
+  "tag": "game-inferred",
+  "was": "FUN_0021ef20",
+  "why": "vtable 0x316090: the inactive characters (objects +0xa0, group 2); nativePlaceRespawn"
  },
  "0021efa0": {
   "name": "RouteLookObject::update",
