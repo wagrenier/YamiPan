@@ -1,10 +1,10 @@
 /* ==========================================================================
  *  rx/filehdd.h
  *
- *  rx's HDD device driver (0x157db8..0x158400: the host0:
- *  driver's shape plus an I/O error hook).
- *  Not written yet (its own TU, rx/filehdd.c): the prototypes rx/rxfile.c
- *  calls, from RosePan's src/rx/rxfile.h. See rxfile.h.
+ *  rx's HDD device driver (0x157db8..0x158400): the host0: driver's shape
+ *  (a root prefix joined to every name, plain sceOpen / sceRead) plus an
+ *  I/O error hook that moves the HDD device onto its fallback. Written in
+ *  rx/filehdd.c, from RosePan's src/rx/rxfile.cpp. See rxfile.h.
  * ======================================================================== */
 #ifndef _RX_FILEHDD_H
 #define _RX_FILEHDD_H
