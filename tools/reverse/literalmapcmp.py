@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
-"""LiteralMap<T> (game/stagelist.h) against the ROM's three instances (offline).
+"""LiteralMap<T> (game/stagelist.h) against the ROM's instances (offline).
 
-python literalmapcmp.py [scripts] [ops]
+python literalmapcmp.py [scripts] [ops] [--plant]
 
 Plays random scripts of insert, find and balance on the ROM's own code (eerun.py) and on the host's
 template in a small exe (work/literalmapcmp/). The keys are the names the game really uses plus random
 ones, repeats and values of 0 (find answers null for those) included. After each op both print what it
 returned and the whole tree: value and key of every node in pre-order with its shape, then the
-insertion chain and the count. The first differences and a count go out. The specials' instance has
-no balance in the ROM, so its scripts have none.
+insertion chain and the count. The first differences and a count go out. An instance with no balance
+in the ROM has none in its scripts. StageModel's two maps have no ctor of their own (inline in
+StageObject::setModel, three zeros and a count). The texture map copies its keys, which only its
+print cannot see; it is here for its find 0x189840. --plant skips the host's balance: the run must
+then differ, or this tool sees nothing.
 """
 import os
 import random
@@ -23,11 +26,14 @@ HERE = Path(__file__).parent
 WORK = HERE / 'work' / 'literalmapcmp'
 SRC = yamipan.REPO / 'src'
 
-# ctor, dtor, insert, find, balance
+# ctor (None: inline in the ROM), dtor, insert, find, balance
 INSTANCES = {
     'links': (0x1eee30, 0x1eee50, 0x1eef90, 0x1ef260, 0x1ef990),
     'conditions': (0x1ef040, 0x1ef060, 0x1ef0f0, 0x1ef590, 0x1ef850),
     'specials': (0x1eeee0, 0x1eef00, 0x281730, 0x1d1280, None),
+    'motions': (None, 0x188d60, 0x188df0, 0x189050, 0x189700),
+    'bones': (None, 0x188ea0, 0x188f30, 0x177270, 0x1895c0),
+    'textures': (0x1a4c20, 0x1a4c40, 0x1a4cd0, 0x189840, None),
 }
 
 NAMES = ('Always Squat BtOn GunOn Turn Move Level LevelLift Ladder Jump Door PutItem PickupItem TrapSet '
@@ -85,7 +91,9 @@ int main(int, char **argv)
             printf("fnd %d", n != NULL ? n->value : -1);
             dump(m);
         } else {
+#ifndef PLANT
             m->balance();
+#endif
             printf("bal");
             dump(m);
         }
@@ -95,13 +103,13 @@ int main(int, char **argv)
 '''
 
 
-def build():
+def build(plant):
     WORK.mkdir(parents=True, exist_ok=True)
     (WORK / 'host.cpp').write_text(HOST)
     exe = WORK / 'host.exe'
     os.environ['PATH'] = yamipan.MINGW_BIN + os.pathsep + os.environ['PATH']
-    subprocess.run([str(Path(yamipan.MINGW_BIN) / 'g++.exe'), '-std=c++17', '-O1', '-w', '-I', str(SRC),
-                    str(WORK / 'host.cpp'), '-o', str(exe)], check=True)
+    subprocess.run([str(Path(yamipan.MINGW_BIN) / 'g++.exe'), '-std=c++17', '-O1', '-w', '-I', str(SRC)]
+                   + (['-DPLANT'] if plant else []) + [str(WORK / 'host.cpp'), '-o', str(exe)], check=True)
     return exe
 
 
@@ -110,9 +118,36 @@ class Rom:
         self.ctor, self.dtor, self.ins, self.fnd, self.bal = INSTANCES[instance]
         ee = self.ee = eerun.Ee()
         ee.hook('strcmp', self.strcmp)      # the libc's use MMI ops eerun does not have
+        ee.hook('strlen', self.strlen)
+        ee.hook('strcpy', self.strcpy)
         self.map = ee.alloc(0x10)
-        ee.call(self.ctor, self.map)
+        self.construct()
         self.box = ee.alloc(4)
+
+    def construct(self):
+        if self.ctor is not None:
+            self.ee.call(self.ctor, self.map)
+        else:
+            self.ee.write(self.map, bytes(0x10))
+
+    @staticmethod
+    def strlen(ee):
+        at = ee.g('a0')
+        n = 0
+        while ee.rd(at + n, 1):
+            n += 1
+        return n
+
+    @staticmethod
+    def strcpy(ee):
+        to, at = ee.g('a0'), ee.g('a1')
+        n = 0
+        while True:
+            c = ee.rd(at + n, 1)
+            ee.wr(to + n, 1, c)
+            if c == 0:
+                return to
+            n += 1
 
     @staticmethod
     def strcmp(ee):
@@ -161,7 +196,7 @@ class Rom:
         if w[0] == 'new':
             ee.call(self.dtor, self.map, 0)
             # The ROM's dtor keeps count; a new map is the ctor's.
-            ee.call(self.ctor, self.map)
+            self.construct()
             head = 'new'
         elif w[0] == 'ins':
             ee.wr(self.box, 4, int(w[2]))
@@ -199,9 +234,11 @@ def script(rng, ops, balances):
 
 
 def main():
-    scripts = int(sys.argv[1]) if len(sys.argv) > 1 else 30
-    ops = int(sys.argv[2]) if len(sys.argv) > 2 else 120
-    exe = build()
+    plant = '--plant' in sys.argv
+    args = [a for a in sys.argv[1:] if a != '--plant']
+    scripts = int(args[0]) if len(args) > 0 else 30
+    ops = int(args[1]) if len(args) > 1 else 120
+    exe = build(plant)
     total = differ = 0
     for instance, row in INSTANCES.items():
         rng = random.Random(instance)

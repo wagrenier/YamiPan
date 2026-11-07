@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 03:02 at commit `3a628a1` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 03:17 at commit `a34907f` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 03:02 at commit `3a628a1` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **5457** (83%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1575, game-inferred 4545
-- context-name ledger: 6120 entries; overrides of wrong library matches: 0
-- placed in a source file: 5936/6599 in 125 files
+- game functions: **6599**, named **5473** (83%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1575, game-inferred 4561
+- context-name ledger: 6136 entries; overrides of wrong library matches: 0
+- placed in a source file: 5952/6599 in 125 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -26,11 +26,11 @@ Least-named game-code regions (64 KB blocks):
 | `002a0000` | 141/241 (59%) | game/memcard.cpp, game/charactersound.cpp, game/demofleck.cpp |
 | `002d0000` | 156/256 (61%) | game/drawsys.cpp, game/areaclip.cpp, game/ripplesheet.cpp |
 | `001a0000` | 195/301 (65%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
-| `00180000` | 224/336 (67%) | game/stageitem.cpp, game/stagelight.cpp, game/stageobject.cpp |
+| `002e0000` | 124/178 (70%) | rena/rena_draw.cpp, rena/rena_model.cpp, game/layoutpaths.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5358**; stubs: **74**
+- reconstructed FS2 functions: **5374**; stubs: **74**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -105,7 +105,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stagelight.cpp` | 64 | 0 |
 | `src/game/stageloop.cpp` | 9 | 0 |
 | `src/game/stagemenu.cpp` | 29 | 0 |
-| `src/game/stagemodel.cpp` | 19 | 0 |
+| `src/game/stagemodel.cpp` | 35 | 0 |
 | `src/game/stageobject.cpp` | 44 | 0 |
 | `src/game/stageobjlist.cpp` | 45 | 0 |
 | `src/game/stageparticle.cpp` | 50 | 0 |
@@ -162,8 +162,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 215 TUs: todo 75, partial 22, verify 114, done 43
-- next: **unassigned@00188d60** (frontier score 17)
+- 214 TUs: todo 75, partial 22, verify 114, done 43
+- next: **unassigned@002681e0** (frontier score 18)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -232,7 +232,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stagelight.cpp` 64/101 -- All of 0x184860..0x186ee0 written. New Game run: lights build and join the scene with no fault, 114 stubs reached, the stop is unchanged (drawSysCurrent null in
 - verify: `game/stageloop.cpp` 9/9 -- Cut out of unassigned@00171300 and pinned 0x17f150-0x17fce0 (batch 073, 45 names; Ghidra saved by name_ctx). New src/game/stageloop.h defines gStageScene (exter
 - verify: `game/stagemenu.cpp` 29/29 -- All 29 functions written (batch 183); the frontier unassigned@0022fc50 was six MSL vector helpers, now listed in game/characterroute.cpp, and StageMenuFade. Pro
-- verify: `game/stagemodel.cpp` 20/24 -- All of StageModel is written (init, bindBones, placeBones, setBaseMotion, advance, applyMotion, the play and find calls, the dtor). BoneNode and ModelLink were 
+- verify: `game/stagemodel.cpp` 36/40 -- Run 0x188d60..0x189cd4 joined this TU (16 functions, batch 195, all game-inferred): MotionMap and BoneMap dtor, insert, its recursion, node ctor and dtor, find,
 - verify: `game/stageobject.cpp` 43/43 -- All 43 functions are written, no stubs; the old partial status was stale, which is why tus.py next picked it. This run compared setProperty 0x189f40, getPropert
 - verify: `game/stageobjlist.cpp` 45/45 -- Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector in
 - verify: `game/stageparticle.cpp` 51/86 -- unassigned@001920d0 was no file: the object's template instances, 17 functions, batch 186, record removed, range pinned to this TU. Written: game/mslsort.h (0x1
@@ -282,6 +282,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 03:17 `game/stagemodel.cpp` verify: the map instances after StageModel: BoneMap and MotionMap are LiteralMap
 - 2026-11-07 03:01 `game/stagefog.cpp` verify: The smoke candle's fog and the glow's fog written and proved against the ROM (0 differences); not seen on screen
 - 2026-11-07 02:12 `game/playermotion.cpp` verify: the item waits: throwCarried and putSmoke, the two script natives behind Throw and Set Smoke Candle; 0 differences with the ROM, and on stage 17 the real menu t
 - 2026-11-07 01:41 `game/stagedoor.cpp` verify: the door object file's 106 inline defaults 0x171ad0..0x1723c0 accounted for, 27 runner slots added, item natives answer the ROM's bool
@@ -289,21 +290,20 @@ Recent sessions:
 - 2026-11-07 00:09 `game/rcnttimer.cpp` done: RcntTimer and rcnt1Start, all 4 functions; was stubs
 - 2026-11-07 00:01 `game/menuprogset.cpp` verify: The gun sights: MenuProgSet, its packet helpers and quatBetween, all 11 functions of 0x2b9ef0..0x2bb600; was stubs
 - 2026-11-06 23:33 `game/itemphysics.cpp` verify: ItemPhysics written: thrown items and dropped weapons fall, all 15 functions, bit-identical to the ROM on itemcmp.py; a forced knife lands flat on stage 2
-- 2026-11-06 22:50 `game/stageparticle.cpp` verify: the MSL vector and sort instances 0x1920d0..0x193900 pinned here and named; the ROM's own unstable sort replaces std::stable_sort in drawEffects, far list first
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@00188d60` | todo | 0/0/16 | 3.8 | 17 | 0 |
+| `unassigned@002681e0` | todo | 0/3/3 | 0.3 | 18 | 3 |
 | `unassigned@002067d0` | partial | 1/0/9 | 2.2 | 17 | 0 |
 | `unassigned@002a6980` | partial | 1/11/83 | 12.1 | 17 | 0 |
-| `unassigned@00151270` | todo | 0/3/3 | 0.0 | 13 | 2 |
-| `unassigned@002681e0` | todo | 0/3/3 | 0.3 | 13 | 2 |
+| `unassigned@002acff0` | todo | 0/3/24 | 10.9 | 15 | 2 |
+| `sdpr2/sdpr2single.c` | todo | 0/2/24 | 7.0 | 14 | 2 |
 | `unassigned@002e0820` | todo | 0/3/13 | 3.7 | 13 | 1 |
+| `unassigned@00151270` | todo | 0/3/3 | 0.0 | 13 | 2 |
+| `unassigned@0020c940` | partial | 1/1/2 | 0.8 | 12 | 1 |
 | `unassigned@0012c9b8` | todo | 0/1/6 | 0.8 | 12 | 1 |
 | `unassigned@002176d0` | partial | 1/0/10 | 0.9 | 11 | 0 |
-| `unassigned@002acff0` | todo | 0/3/24 | 10.9 | 10 | 1 |
 | `rx/rxsndstrpcm.c` | todo | 0/8/10 | 2.1 | 10 | 2 |
-| `sdpr2/sdpr2single.c` | todo | 0/2/24 | 7.0 | 9 | 1 |
 | `unassigned@0021e120` | partial | 4/0/18 | 3.5 | 8 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
@@ -331,7 +331,6 @@ Recent sessions:
 | `001f4d30` | FUN_001f4d30 | 7 | - | missing | game/stagecollision.cpp |
 | `0029f440` | findNumLockTarget | 6 | game | stub | - |
 | `00206f80` | FUN_00206f80 | 6 | - | missing | - |
-| `00189840` | FUN_00189840 | 6 | - | missing | - |
 | `001dd3f0` | CharacterBrain::setEnabled | 6 | game | missing | game/characterbrain.cpp |
 | `001b36b0` | FUN_001b36b0 | 6 | - | missing | game/scriptrunner.cpp |
 | `001d1c20` | ScriptRunner::getParent2 | 6 | game | missing | game/scriptrunner.cpp |
@@ -350,4 +349,5 @@ Recent sessions:
 | `002c16d0` | FUN_002c16d0 | 5 | - | missing | game/packtables.cpp |
 | `002c0d50` | FUN_002c0d50 | 5 | - | missing | game/packtables.cpp |
 | `002e7e90` | FUN_002e7e90 | 5 | - | missing | rena/rena_draw.cpp |
+| `00217770` | FUN_00217770 | 5 | - | missing | - |
 

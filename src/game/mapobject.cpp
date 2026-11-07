@@ -531,7 +531,7 @@ void StageObject::applyMapModelFlags()
 //   FS2 0x00177180  ScriptRunner::scriptIsFacing (scriptrunner.h)
 //   FS2 0x001771a0  StageMapObject::sideHook3 (mapobject.h)
 //   FS2 0x00177260  StageMapObject::sideHook1 (mapobject.h)
-//   FS2 0x00177270  StringMap<StageNodeBase *>::find (stagelist.h), the bone map's: it takes the root
+//   FS2 0x00177270  LiteralMap<StageNodeBase *>::find (stagelist.h), the bone map's: it takes the root
 //   FS2 0x001772f0  DoorRecord's ctor, run over gDoorRecords by 0x310a00: the host's bss is zero already
 
 // The adjustor thunks that end the file (the host's compiler makes its own):

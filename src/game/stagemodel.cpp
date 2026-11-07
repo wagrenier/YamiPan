@@ -13,8 +13,9 @@
  *  bone gets a StageBoneNode (bindBones): a bind matrix under its parent's
  *  node, so a rigid part follows the object or the bone it hangs from.
  *
- *  The MSL map instances after 0x188d60 (0x188d60..0x189ce0) are StringMap:
- *  game/stagelist.h. The pose is game/modelpose.h, mostly still stubs.
+ *  The map instances after it (0x188d60..0x189cd4, end of this file) are
+ *  game/stagelist.h's: BoneMap and MotionMap, both LiteralMap, and the
+ *  texture map's find. The pose is game/modelpose.h, mostly still stubs.
  * ======================================================================== */
 #include <new>
 #include <stdio.h>
@@ -234,7 +235,7 @@ void StageModel::playMotion(ModelMotion *motion, bool arg0, bool layered, u_int 
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x00187770
-// callcheck: FUN_00189050, find, play, playLayered (StringMap::find)
+// callcheck: find, play, playLayered
 
 void StageModel::playNamed(int index, const char *name, bool arg0, bool layered, u_int flags, int arg)
 {
@@ -299,7 +300,6 @@ void StageModel::applyMotion(const sceVu0FVECTOR position, const sceVu0FVECTOR r
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x001879b0
-// callcheck: FUN_00189050, find (StringMap::find)
 
 ModelMotion *StageModel::findMotion(int index, const char *name)
 {
@@ -309,7 +309,6 @@ ModelMotion *StageModel::findMotion(int index, const char *name)
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x001879f0
-// callcheck: FUN_00189050, find (StringMap::find)
 
 void *StageModel::findMotionFile(int index, const char *name)
 {
@@ -319,7 +318,6 @@ void *StageModel::findMotionFile(int index, const char *name)
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x00187a30
-// callcheck: FUN_00189700, balance (StringMap::balance)
 
 void StageModel::balanceMotions()
 {
@@ -330,7 +328,7 @@ void StageModel::balanceMotions()
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x00187a90
-// callcheck: heapAllocAligned, ModelMotion, FUN_00188df0, insert (the aligned new; FUN_00188df0 is StringMap::insert)
+// callcheck: heapAllocAligned, ModelMotion (the aligned new)
 
 ModelMotion *StageModel::addMotion(void *file, int index, const char *key)
 {
@@ -432,7 +430,7 @@ void StageModel::bindBones()
 // per pose bone in boneMap, and the instance's bones repointed at the pose's.
 // Kinds outside the five leave no pose: the ROM goes on through null.
 // FS2 0x00188140
-// callcheck: operator_new[], memset, strlen, strcpy, memcpy, operator_delete[], strncasecmp, strncasecmp, strcmp, strncasecmp, alloc, StageNodeBase, FUN_00188f30, FUN_001895c0, insert, balance, load, getBoneMatrix, heapAllocAligned, ModelPose, heapAllocAligned, CarPose, heapAllocAligned, ElevatorPose, heapAllocAligned, NmlPose, heapAllocAligned, SkyPose, nameCompareNoCase (the aligned new; FUN_00188f30, FUN_001895c0 are StringMap::insert and balance)
+// callcheck: operator_new[], memset, strlen, strcpy, memcpy, operator_delete[], strncasecmp, strncasecmp, strcmp, strncasecmp, alloc, StageNodeBase, insert, balance, load, getBoneMatrix, heapAllocAligned, ModelPose, heapAllocAligned, CarPose, heapAllocAligned, ElevatorPose, heapAllocAligned, NmlPose, heapAllocAligned, SkyPose, nameCompareNoCase (the aligned new; FUN_00188f30, FUN_001895c0 are StringMap::insert and balance)
 
 void StageModel::setBaseMotion(void *file, int kind)
 {
@@ -512,7 +510,7 @@ void StageModel::setBaseMotion(void *file, int kind)
 // ──────────────────────────────────────────────────────────────────────
 // PC: the ROM's deleting dtor; the maps go as members.
 // FS2 0x00188690
-// callcheck: drawSysRemoveModel, operator_delete, ~VcmTable, ~ModelMotion, free, free, __destroy_arr, FUN_00188ea0, operator_delete, ~StageBoneNode, ~StageMatrixNode (the slot dtors with -1)
+// callcheck: drawSysRemoveModel, operator_delete, ~VcmTable, ~ModelMotion, free, free, __destroy_arr, ~LiteralMap, operator_delete, ~StageBoneNode, ~StageMatrixNode (the slot dtors with -1)
 
 StageModel::~StageModel()
 {
@@ -541,7 +539,7 @@ StageModel::~StageModel()
 // its textures by name, the VCM table, the draw system's list; the root bone
 // follows the owner's matrix.
 // FS2 0x00188b10
-// callcheck: getTextureName, FUN_00189840, find, setTexture, operator_new, VcmTable, drawSysAddModel, heapAllocAligned, FUN_00296cc0, FUN_00296cc0, FUN_00296cc0, drawSysFindKind1Surface (the array's ctor is VectorFade's)
+// callcheck: getTextureName, find, setTexture, operator_new, VcmTable, drawSysAddModel, heapAllocAligned, VectorFade, drawSysFindKind1Surface (the array ctor runs it)
 
 void StageModel::init(ModelInstance *instance, StringMap<Tim2Texture *> *textures,
                       const sceVu0FVECTOR *matrix)
@@ -563,3 +561,20 @@ void StageModel::init(ModelInstance *instance, StringMap<Tim2Texture *> *texture
     m_lightFades = new VectorFade[kModelSlots]();
     m_kind1Surface = drawSysFindKind1Surface(data);
 }
+
+// The map instances that end the file, written once in game/stagelist.h;
+// tools/reverse reads tags from .cpp files only.
+// MotionMap (LiteralMap<ModelMotion *>):
+//   ~LiteralMap, for the array's dtor: FS2 0x00188d60
+//   insert: FS2 0x00188df0
+//   its node's ctor, dtor: FS2 0x00188fe0, FS2 0x00189000
+//   find: FS2 0x00189050
+//   insert's search: FS2 0x001890d0
+//   balance, height: FS2 0x00189700, FS2 0x001898c0
+// BoneMap (LiteralMap<StageNodeBase *>; its find is 0x177270, game/mapobject.cpp's):
+//   ~LiteralMap: FS2 0x00188ea0
+//   insert: FS2 0x00188f30
+//   its node's ctor, dtor: FS2 0x00189310, FS2 0x00189330
+//   insert's search: FS2 0x00189380
+//   balance, height: FS2 0x001895c0, FS2 0x00189ad0
+// StringMap<Tim2Texture *>::find: FS2 0x00189840

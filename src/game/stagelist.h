@@ -9,9 +9,10 @@
  *    to the end);
  *  - StringMap<T>: a binary tree on strcmp, unbalanced until balance is
  *    called, its nodes also chained in insertion order, the keys owned;
- *  - LiteralMap<T>: the same with keys that stay the caller's (literals), the
- *    three maps of PlayerMotion, emitted after it, 0x1eee30..0x1efee4, and
- *    0x1d1280, 0x281730.. for the third.
+ *  - LiteralMap<T>: the same with keys that stay the caller's (literals or a
+ *    file's own bytes): the three maps of PlayerMotion, emitted after it,
+ *    0x1eee30..0x1efee4, and 0x1d1280, 0x281730.. for the third; StageModel's
+ *    BoneMap and MotionMap, emitted after it, 0x188d60..0x189cd4.
  *  The classes' real names are unknown (no RTTI strings, no symbols).
  * ======================================================================== */
 #ifndef _GAME_STAGELIST_H
@@ -147,10 +148,12 @@ public:
     StringMap() : root(NULL), first(NULL), last(NULL), count(0) {}
 
     // The nodes' destructors (0x1a55c0, 0x1a51f0, 0x1a4e20) free the keys;
-    // LiteralMap's free nothing: FS2 0x001ef1a0, FS2 0x001ef210, FS2 0x001ef540.
+    // LiteralMap's free nothing: FS2 0x001ef1a0, FS2 0x001ef210, FS2 0x001ef540,
+    // FS2 0x00189000, FS2 0x00189330.
     // The ROM's also zero root, first and last, not count.
     // FS2 0x001a4c40, 0x001a4ae0, 0x001a4980
-    // LiteralMap's: FS2 0x001eee50, FS2 0x001eef00, FS2 0x001ef060
+    // LiteralMap's: FS2 0x001eee50, FS2 0x001eef00, FS2 0x001ef060,
+    // FS2 0x00188d60, FS2 0x00188ea0
     ~StringMap()
     {
         for (Node *node = first; node != NULL;) {
@@ -164,7 +167,8 @@ public:
 
     // The node of key; null without one or when its value is null.
     // FS2 0x00189840, 0x001a5250
-    // LiteralMap's, handed the root: FS2 0x001ef260, FS2 0x001ef590, FS2 0x001d1280
+    // LiteralMap's, handed the root: FS2 0x001ef260, FS2 0x001ef590, FS2 0x001d1280,
+    // FS2 0x00189050, FS2 0x00177270
     Node *find(const char *key) const
     {
         Node *node = root;
@@ -183,6 +187,8 @@ public:
     // LiteralMap's: FS2 0x001eef90, FS2 0x001ef0f0, FS2 0x00281730; their
     // searches FS2 0x001ef2e0, FS2 0x001ef610, FS2 0x00281800; their nodes'
     // constructors, value then key, FS2 0x001ef1f0, FS2 0x001ef520, FS2 0x002817e0.
+    // StageModel's: FS2 0x00188df0, FS2 0x00188f30; searches FS2 0x001890d0,
+    // FS2 0x00189380; nodes' constructors FS2 0x00188fe0, FS2 0x00189310.
     Node *insert(const char *key, const T &value)
     {
         Node **link = &root;
@@ -237,8 +243,8 @@ private:
         return copy;
     }
 
-    // FS2 0x00189ad0, 0x001898c0
-    // LiteralMap's, two levels inlined: FS2 0x001efad0, FS2 0x001efce0
+    // LiteralMap's, two levels inlined: FS2 0x001efad0, FS2 0x001efce0,
+    // FS2 0x001898c0, FS2 0x00189ad0
     static int height(const Node *node)
     {
         if (node == NULL)
@@ -250,8 +256,7 @@ private:
     static int lean(const Node *node) { return height(node->right) - height(node->left); }
 
     // Rotations from the leaves up, until no node leans by more than one.
-    // FS2 0x001895c0, 0x00189700
-    // LiteralMap's: FS2 0x001ef850, FS2 0x001ef990
+    // LiteralMap's: FS2 0x001ef850, FS2 0x001ef990, FS2 0x00189700, FS2 0x001895c0
     static Node *balanceFrom(Node *node)
     {
         Node *top;

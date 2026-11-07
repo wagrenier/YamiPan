@@ -2809,7 +2809,7 @@
 /* 001771a0 00000004 */ StageMapObject::sideHook3(){}  // game
 /* 001771b0 000000b0 */ StageMapObject::sideHook2(){}  // game
 /* 00177260 00000004 */ StageMapObject::sideHook1(){}  // game
-/* 00177270 0000007c */ StringMap<StageNodeBase>::find(){}  // game
+/* 00177270 0000007c */ LiteralMap<StageNodeBase>::find(){}  // game
 /* 001772f0 00000050 */ DoorRecord::DoorRecord(){}  // game
 /* 00177340 00000008 */ StageMapObject::sideHook3_thunk(){}  // game
 /* 00177350 00000008 */ StageMapObject::sideHook2_thunk(){}  // game
@@ -3473,27 +3473,22 @@
 /* 00188890 00000138 */ StageBoneNode::~StageBoneNode(){}  // game
 /* 001889d0 00000138 */ StageMatrixNode::~StageMatrixNode(){}  // game
 /* 00188b10 00000248 */ StageModel::init(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 00188d60 00000084 */ FUN_00188d60(){}
-/* 00188df0 000000b0 */ FUN_00188df0(){}
-/* 00188ea0 00000084 */ FUN_00188ea0(){}
-/* 00188f30 000000b0 */ FUN_00188f30(){}
-/* 00188fe0 00000020 */ FUN_00188fe0(){}
-/* 00189000 00000044 */ FUN_00189000(){}
-/* 00189050 0000007c */ FUN_00189050(){}
-/* 001890d0 00000238 */ FUN_001890d0(){}
-/* 00189310 00000020 */ FUN_00189310(){}
-/* 00189330 00000044 */ FUN_00189330(){}
-/* 00189380 00000238 */ FUN_00189380(){}
-/* 001895c0 00000138 */ FUN_001895c0(){}
-/* 00189700 00000138 */ FUN_00189700(){}
-/* 00189840 0000007c */ FUN_00189840(){}
-/* 001898c0 00000204 */ FUN_001898c0(){}
-/* 00189ad0 00000204 */ FUN_00189ad0(){}
+/* 00188d60 00000084 */ LiteralMap<ModelMotion>::~LiteralMap(){}  // game
+/* 00188df0 000000b0 */ LiteralMap<ModelMotion>::insert(){}  // game
+/* 00188ea0 00000084 */ LiteralMap<StageNodeBase>::~LiteralMap(){}  // game
+/* 00188f30 000000b0 */ LiteralMap<StageNodeBase>::insert(){}  // game
+/* 00188fe0 00000020 */ LiteralMap<ModelMotion>::Node::Node(){}  // game
+/* 00189000 00000044 */ LiteralMap<ModelMotion>::Node::~Node(){}  // game
+/* 00189050 0000007c */ LiteralMap<ModelMotion>::find(){}  // game
+/* 001890d0 00000238 */ LiteralMap<ModelMotion>::Node::insert(){}  // game
+/* 00189310 00000020 */ LiteralMap<StageNodeBase>::Node::Node(){}  // game
+/* 00189330 00000044 */ LiteralMap<StageNodeBase>::Node::~Node(){}  // game
+/* 00189380 00000238 */ LiteralMap<StageNodeBase>::Node::insert(){}  // game
+/* 001895c0 00000138 */ LiteralMap<StageNodeBase>::Node::balance(){}  // game
+/* 00189700 00000138 */ LiteralMap<ModelMotion>::Node::balance(){}  // game
+/* 00189840 0000007c */ StringMap<Tim2Texture>::find(){}  // game
+/* 001898c0 00000204 */ LiteralMap<ModelMotion>::Node::height(){}  // game
+/* 00189ad0 00000204 */ LiteralMap<StageNodeBase>::Node::height(){}  // game
 
 // *****************************************************************************
 // FILE -- game/stageobject.cpp

@@ -249,8 +249,10 @@ constexpr int kModelSlots = 7;  // 0x1c0 aligned 0x40: three, three and one in t
 constexpr int kModelFadeColor = 3;   // StageModel::m_lightFades: after the three directions
 constexpr int kModelFadeAmbient = 6;
 constexpr int kMotionFileName = 0x10; // a motion file's name
-typedef StringMap<StageNodeBase *> BoneMap;
-typedef StringMap<ModelMotion *> MotionMap;
+// Both keep the caller's keys (the node ctors 0x189310, 0x188fe0 store the
+// pointer): the pose's bone names, the motion file's own.
+typedef LiteralMap<StageNodeBase *> BoneMap;
+typedef LiteralMap<ModelMotion *> MotionMap;
 // What an object holds of its model: game/stagemodel.cpp. The ROM's ctor is
 // inline in StageObject::setModel, and init clears everything again.
 // layout: host -- EE offsets in the comments.
