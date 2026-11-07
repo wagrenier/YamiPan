@@ -779,4 +779,7 @@ int  stdtEntryCount(const StreamTable *table);                           // FS2 
 // The stage clock's frames per second.
 int stageFps();                                                          // FS2 0x00196300
 
+// An action that leaves the player free for a menu (wantsMapMenu, StageMenu).
+bool actionAllowsMenu(int action);
+
 #endif /* _GAME_STAGESCENE_H */

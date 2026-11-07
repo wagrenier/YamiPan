@@ -151,7 +151,7 @@ bool CharacterPad::actionPressed(int action) const
 
 int CharacterPad::pressedBind() const
 {
-    if (actionPressed(PadAction_Unused))
+    if (actionPressed(PadAction_Menu))
         return 0;
     if (actionPressed(PadAction_Use))
         return 1;

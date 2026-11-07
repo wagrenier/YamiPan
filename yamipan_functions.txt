@@ -5370,29 +5370,34 @@
 /* 00208cc0 0000007c */ UiPrompt::stepPress(){}  // game
 
 // *****************************************************************************
+// FILE -- game/stagemenu.cpp
+// *****************************************************************************
+
+/* 00208d40 000001f4 */ StageMenuList::closeDone(){}  // game
+/* 00208f40 00000134 */ StageMenuList::close(){}  // game
+/* 00209080 000001dc */ StageMenuList::draw(){}  // game
+/* 00209260 0000045c */ StageMenuList::drawLines(){}  // game
+/* 002096c0 0000004c */ StageMenuList::usedLines(){}  // game
+/* 00209710 00000158 */ StageMenuList::pick(){}  // game
+/* 00209870 0000028c */ StageMenuList::selectNext(){}  // game
+/* 00209b00 00000288 */ StageMenuList::selectPrev(){}  // game
+/* 00209d90 000001f4 */ StageMenuList::addLine(){}  // game
+/* 00209f90 0000074c */ StageMenuList::layout(){}  // game
+/* 0020a6e0 00000024 */ StageMenuFade::settle(){}  // game
+/* 0020a710 0000000c */ StageMenuFade::startMove(){}  // game
+/* 0020a720 00000014 */ StageMenuColor::frames(){}  // game
+/* 0020a740 00000084 */ StageMenuFade::aimAtRow(){}  // game
+/* 0020a7d0 00000090 */ StageMenuFade::placeAtRow(){}  // game
+/* 0020a870 0000022c */ StageMenuList::sort(){}  // game
+/* 0020aaa0 00000048 */ StageMenuList::setData(){}  // game
+/* 0020aaf0 000000a4 */ StageMenuList::reset(){}  // game
+/* 0020aba0 00000090 */ StageMenuList::~StageMenuList(){}  // game
+/* 0020ac30 00000074 */ StageMenuList::StageMenuList(){}  // game
+
+// *****************************************************************************
 // FILE -- (unassigned)
 // *****************************************************************************
 
-/* 00208d40 000001f4 */ FUN_00208d40(){}
-/* 00208f40 00000134 */ FUN_00208f40(){}
-/* 00209080 000001dc */ FUN_00209080(){}
-/* 00209260 0000045c */ FUN_00209260(){}
-/* 002096c0 0000004c */ FUN_002096c0(){}
-/* 00209710 00000158 */ FUN_00209710(){}
-/* 00209870 0000028c */ FUN_00209870(){}
-/* 00209b00 00000288 */ FUN_00209b00(){}
-/* 00209d90 000001f4 */ FUN_00209d90(){}
-/* 00209f90 0000074c */ FUN_00209f90(){}
-/* 0020a6e0 00000024 */ FUN_0020a6e0(){}
-/* 0020a710 0000000c */ FUN_0020a710(){}
-/* 0020a720 00000014 */ FUN_0020a720(){}
-/* 0020a740 00000084 */ FUN_0020a740(){}
-/* 0020a7d0 00000090 */ FUN_0020a7d0(){}
-/* 0020a870 0000022c */ FUN_0020a870(){}
-/* 0020aaa0 00000048 */ FUN_0020aaa0(){}
-/* 0020aaf0 000000a4 */ FUN_0020aaf0(){}
-/* 0020aba0 00000090 */ FUN_0020aba0(){}
-/* 0020ac30 00000074 */ FUN_0020ac30(){}
 /* 0020acb0 0000003c */ pauseMenuResult(){}  // game
 /* 0020acf0 00000028 */ pauseMenuStart(){}  // game
 /* 0020ad20 00000048 */ FUN_0020ad20(){}
@@ -6164,31 +6169,26 @@
 /* 0022fbd0 00000008 */ RouteShootAction::priority(){}  // game
 /* 0022fbe0 00000060 */ RouteSwingAction::~RouteSwingAction(){}  // game
 /* 0022fc40 00000008 */ RouteSwingAction::priority(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 0022fc50 0000000c */ FUN_0022fc50(){}
-/* 0022fc60 0000013c */ FUN_0022fc60(){}
-/* 0022fda0 00000068 */ FUN_0022fda0(){}
-/* 0022fe10 00000068 */ FUN_0022fe10(){}
-/* 0022fe80 00000008 */ FUN_0022fe80(){}
-/* 0022fe90 00000008 */ FUN_0022fe90(){}
-/* 0022fea0 0000012c */ FUN_0022fea0(){}
-/* 0022ffd0 000003f0 */ FUN_0022ffd0(){}
+/* 0022fc50 0000000c */ vector<short>::constructAt(){}  // game
+/* 0022fc60 0000013c */ vector<short>::erase(){}  // game
+/* 0022fda0 00000068 */ vector<short>::~vector(){}  // game
+/* 0022fe10 00000068 */ vector<RouteLeg>::~vector(){}  // game
+/* 0022fe80 00000008 */ vector<short>::clear(){}  // game
+/* 0022fe90 00000008 */ vector<RouteLeg>::clear(){}  // game
 
 // *****************************************************************************
 // FILE -- game/stagemenu.cpp
 // *****************************************************************************
 
-/* 002303c0 00000034 */ FUN_002303c0(){}
-/* 00230400 000003f4 */ FUN_00230400(){}
+/* 0022fea0 0000012c */ StageMenuFade::setLook(){}  // game
+/* 0022ffd0 000003f0 */ StageMenuFade::draw(){}  // game
+/* 002303c0 00000034 */ StageMenu::draw(){}  // game
+/* 00230400 000003f4 */ StageMenu::update(){}  // game
 /* 00230800 00000008 */ StageMenu::addLine(){}  // game
 /* 00230810 00000008 */ StageMenu::setData(){}  // game
-/* 00230820 00000078 */ FUN_00230820(){}
+/* 00230820 00000078 */ StageMenu::~StageMenu(){}  // game
 /* 002308a0 00000084 */ StageMenu::StageMenu(){}  // game
-/* 00230930 0000004c */ FUN_00230930(){}
+/* 00230930 0000004c */ StageMenuBase::~StageMenuBase(){}  // game
 
 // *****************************************************************************
 // FILE -- game/gsutil.cpp

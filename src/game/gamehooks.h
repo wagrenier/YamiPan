@@ -3212,6 +3212,14 @@ enum StageMenuState
     StageMenu_Open    = 2,      // getOpenMenu's test
     StageMenu_Closing = 3,
 };
+// StageMenu::request.
+enum StageMenuRequest
+{
+    StageMenuRequest_None  = 0,
+    StageMenuRequest_Open  = 1,
+    StageMenuRequest_Close = 2,
+};
+class StageMenuList;            // game/stagemenu.h
 // The stage's own menu: a state machine around its list window (game/stagemenu.cpp).
 // layout: host (EE 0x18; vptr at +8).
 class StageMenu
@@ -3222,13 +3230,13 @@ public:
     void update();                                                       // FS2 0x00230400: slot +0xc
     void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x002303c0: slot +0x10
     // A line of the list window (0x209d90): the line with that text again,
-    // else a free one.
-    void addLine(const u_short *text, int kind, bool plain);             // FS2 0x00230800
+    // else a free one. Lower orders are higher up.
+    void addLine(const u_short *text, int order, bool enabled);          // FS2 0x00230800
     void setData(void *data);                                            // FS2 0x00230810
 
     int    state = StageMenu_Closed;    // FS2 +0x0: StageMenuState
-    int    request = 0;                 // FS2 +0x4: 1 open, 2 close, read by update
-    void  *list = nullptr;              // FS2 +0xc: the 0xaa8-byte window 0x20ac30, not written
+    int    request = StageMenuRequest_None; // FS2 +0x4: read by update
+    StageMenuList *list = nullptr;      // FS2 +0xc: game/stagemenu.h
     const u_short *pending = nullptr;   // FS2 +0x10: the picked line's text (isMenuPick, getMenuMode)
     u_char pendingOn = 0;               // FS2 +0x14: for one frame, update clears it
 };
