@@ -1,9 +1,9 @@
-// sdk/sif.cpp -- the EE's side of the IOP. No IOP runs yet: until the sound driver comes with the audio
-// milestone, modules "load", memory is handed out as bare IOP addresses, and every RPC answers at once
-// with an empty reply. Game code cannot tell, which is the point: the boot goes through.
+// sdk/sif.cpp -- the EE's side of the IOP. No IOP runs yet: the sound driver is in src/iop/rxsnddrv but
+// nothing boots it until the IOP host comes, so modules "load", memory is handed out as bare IOP
+// addresses, and every RPC answers at once with an empty reply. Game code cannot tell, which is the
+// point: the boot goes through.
 #include <atomic>
 
-#include "iop/rxsnddrv/rxsnddrv.h"
 #include "sif.h"
 #include "sifcmd.h"
 #include "sifdev.h"
@@ -92,5 +92,3 @@ int sceSifFreeSysMemory(void *)
 {
     return 0;
 }
-
-void YamiPan_RxSndNoteEeAddress(const void *, size_t) {}

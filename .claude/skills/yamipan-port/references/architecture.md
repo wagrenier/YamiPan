@@ -1995,6 +1995,15 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   of the program's reported size): placeholders, not the module. The 194 are 190 of the table's 192 addresses and the 4 new functions; the other two are
   `=` functions Ghidra did not split off (0x243c, 0xb770). `_start` reads FlushDcache, sceSdInit(0), sceSifInitRpc(0), the
   subsystem inits; 0x360 reads as RosePan's dispatcher. ghidra.md "Hazards" has the traps.
+- **In the tree since 2026-11-07** (the user's call): RosePan's reconstruction is `src/iop/rxsnddrv/`, 14
+  files, each function re-addressed to FS2 with RoR's address and the match beside it (`// IOP 0x00000b90
+  (RoR 0x00000b08, word for word)`, or "N% of it aligned: FS2 differs, unread", or "moved in FS2").
+  Addresses the map cannot place stay RoR's (`RoR IOP 0x...`), and so do the struct layouts. It compiles
+  and links, but **nothing boots it**: its 40 imports are placeholders in `sdk/iop.cpp` that warn once if
+  called (`thbase.h` and the other shims are macros onto `YamiPan_Iop*`, as in RosePan, since the EE
+  kernel and Win32 have a CreateThread of their own), and `sdk/sif.cpp` still answers the EE's RPCs itself.
+  Its `dma.cpp` now owns `YamiPan_RxSndNoteEeAddress`, which rx/rxsnd.c calls on each DMA: a 64-entry
+  ring of EE blocks, harmless while nothing reads it.
 
 ## Disc and data files
 
