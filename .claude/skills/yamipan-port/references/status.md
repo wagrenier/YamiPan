@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 15:32 at commit `22a8112` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 15:54 at commit `378dc8b` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 15:32 at commit `22a8112` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6598**, named **5683** (86%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4762
-- context-name ledger: 6358 entries; overrides of wrong library matches: 0
-- placed in a source file: 6321/6598 in 137 files
+- game functions: **6598**, named **5693** (86%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4772
+- context-name ledger: 6368 entries; overrides of wrong library matches: 0
+- placed in a source file: 6330/6598 in 137 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5720**; stubs: **17**
+- reconstructed FS2 functions: **5730**; stubs: **17**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -97,7 +97,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/scenepool.cpp` | 11 | 0 |
 | `src/game/scenerender.cpp` | 23 | 0 |
 | `src/game/screen.cpp` | 18 | 0 |
-| `src/game/scriptrunner.cpp` | 442 | 2 |
+| `src/game/scriptrunner.cpp` | 452 | 2 |
 | `src/game/seplayer.cpp` | 35 | 0 |
 | `src/game/sevenkeys.cpp` | 32 | 0 |
 | `src/game/skymist.cpp` | 17 | 0 |
@@ -174,8 +174,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 197 TUs: todo 76, partial 7, verify 136, done 46
-- next: **unassigned@002a0040** (frontier score 1)
+- 196 TUs: todo 75, partial 7, verify 137, done 46
+- next: **unassigned@002c42a0** (frontier score 1)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -234,7 +234,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/scenepairs.cpp` 18/18 -- All 18 of 0x171300..0x171a30 written, batch 117, plus StageMapObject's sideHook0..3 and setPosition, setRotation, setYaw in mapobject.cpp (0x174a10..0x174aa0, 0
 - verify: `game/scenerender.cpp` 24/34 -- The pin is closed: applyDebugAmbient, its call, the README paragraph and SceneRender::isKeyed with its two guards are gone; nothing was brightened. Measured in 
 - verify: `game/screen.cpp` 18/18 -- All 18 functions of 0x2676e0..0x2681e0 written (batch 037, 33 names, Ghidra saved). Overlay thread slot 6 draws the BG movie screen layout (init pack file 2dEU/
-- verify: `game/scriptrunner.cpp` 442/659 -- All 364 natives the scan finds a script calling are bound; py sssall.py --unwritten lists none called, 160 never called stay unwritten (the scan reads version 0
+- verify: `game/scriptrunner.cpp` 452/668 -- All 364 natives the scan finds a script calling are bound; py sssall.py --unwritten lists none called, 160 never called stay unwritten (the scan reads version 0
 - verify: `game/seplayer.cpp` 35/35 -- Cut from unassigned@002908d0: game/seplayer.cpp is 0x2908d0..0x2937e0 (SoundTrack 17, SePlayer 18, batch 078: fsmFindTrack, fsmTrackHasText, seDistanceVolume, s
 - verify: `game/sevenkeys.cpp` 32/35 -- All 35 functions written (thunks by the host's inheritance). Two dials of four positions; turning dial 1 turns dial 0 too. Not visible yet: the keys are a mid-g
 - verify: `game/skymist.cpp` 17/23 -- Was the frontier's unassigned@002acff0 (split: game/helpscreen.cpp holds runHelpScreen). Batches 201-202. Drawn through renaBeginEffects and YamiPan_ModelDrawQu
@@ -311,11 +311,13 @@ Least-named game-code regions (64 KB blocks):
 - verify: `unassigned@002176d0` 0/0 -- This key is empty now. 0x2176d0 isViewLinked was already written in src/game/stagecharacter.cpp, now in its range; 0x217700..0x217a80 joined game/playermotion.c
 - verify: `unassigned@0021b340` 0/0 -- 0x21b340..0x21ba04 joined game/playermotion.cpp: all 8 functions reconstructed there (dropLongWeapon, takeItem, shout, reload, findLooseWeapon, heardKind, answe
 - verify: `unassigned@0029f2a0` 0/0 -- Both written from the ROM. findNumLockTarget: first object of StageObjectList group 1 whose name the number-lock handle (StageScene owned[1], +0x90) has a pair 
+- verify: `unassigned@002a0040` 0/0 -- 0x29fdb0..0x2a11b8 joined game/scriptrunner.cpp (batch 220, 10 names, saved in Ghidra): the sort, median, two partitions and selection sort of each instance, th
 - verify: `unassigned@002b0d50` 0/0 -- The run was one instruction: j 0x1441a0 (SoundStream::getDataWritten) with a0 unchanged, the out-of-line copy of an inline forward, the first function before De
 - verify: `yamipan/rendering/model_renderer.cpp` 0/0 -- Fix for the user's crash on turning left in node 4, confirmed fixed by the user's play. drawBatch read batch.uvs unchecked. The batch is a single unskinned tria
 
 Recent sessions:
 
+- 2026-11-07 15:54 `unassigned@002a0040` verify: the two MSL std::sort instances behind the script picks, mslSort_PickNamed 0x2a0040 and mslSort_SpawnPoints 0x29fdb0, named and pinned to game/scriptrunner.cpp;
 - 2026-11-07 15:32 `unassigned@0021b340` verify: StageCharacter::answerNo forwards to its brain: 0x1dd2e0, a return 0 folded into the tail of CharacterBrain::dropSlots, created and named CharacterBrain::answer
 - 2026-11-07 15:13 `unassigned@001dff40` verify: 0x1e05b0 is PlayerMotion::winsStruggle, who keeps a ladder when two characters push on it; the run pinned to game/playermotion.cpp
 - 2026-11-07 14:52 `unassigned@002b0d50` verify: 0x2b0d50 is DemoStream::getDataWritten, one jump to SoundStream::getDataWritten; pinned to game/demoevent.cpp
@@ -323,13 +325,11 @@ Recent sessions:
 - 2026-11-07 14:11 `game/playermotion.cpp` verify: unassigned@00217be0 joined playermotion.cpp; StageCharacter::wasPlacedThisFrame 0x2184a0 written, doNothing 0x218490 already inline
 - 2026-11-07 13:52 `game/playermotion.cpp` verify: StageCharacter::isCompanionWalking 0x2119d0 and canTakeOver 0x212020; run 0x211970..0x2122f8 (was unassigned@00211970) pinned into this file
 - 2026-11-07 13:33 `game/playermotion.cpp` verify: unassigned@00219be0 joined playermotion.cpp; addFoeWeightBySight and setScriptPointToMoveGoal reconstructed
-- 2026-11-07 13:12 `game/playermotion.cpp` verify: StageCharacter::getWeaponRange 0x20ce10 joined playermotion.cpp (was unassigned@0020ce10): out of line beside getAttackReach, no longer an inline in gamehooks.h
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002a0040` | todo | 0/0/9 | 4.3 | 1 | 0 |
-| `unassigned@002c42a0` | todo | 0/1/93 | 39.0 | 1 | 0 |
 | `unassigned@002e2970` | partial | 1/0/2 | 0.9 | 1 | 0 |
+| `unassigned@002c42a0` | todo | 0/1/93 | 39.0 | 1 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

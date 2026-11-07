@@ -32,6 +32,7 @@
 #include "game/stagealert.h"
 #include "game/mathutil.h"
 #include "game/modelpose.h"
+#include "game/mslsort.h"
 #include "game/playermotion.h"
 #include "game/scenerender.h"
 #include "game/stagelight.h"
@@ -4919,8 +4920,11 @@ bool missionSpawnPointTaken(int *point)
     return *point == -1;
 }
 
+// The sort is MSL's (mslSort_SpawnPoints 0x29fdb0, its own counter gp-0x7c1c
+// = 0x31ac54, from -4): not stable, so two points at the same distance come
+// in the ROM's order only through it.
 // FS2 0x0029f810
-// callcheck: getMissionValue, getTopView, currentMission, getWorldMatrix, vecDistance, seesPoint, vecDistance, randNext2, FUN_0029fdb0 (std::stable_sort)
+// callcheck: getMissionValue, getTopView, currentMission, getWorldMatrix, vecDistance, seesPoint, vecDistance, randNext2, mslSort_SpawnPoints (mslSort)
 
 int missionPickSpawnPoint(const float *place, int mode)
 {
@@ -4955,9 +4959,10 @@ int missionPickSpawnPoint(const float *place, int mode)
     if (mode < 0) {
         from = (int)(randNext2() % (u_int)count);
     } else {
-        // The ROM's sort is unstable; ties are the file's order here.
-        std::stable_sort(found.begin(), found.end(),
-                         [](const Candidate &a, const Candidate &b) { return a.distance < b.distance; });
+        // This lambda's type is this call's own template instance, so its
+        // counter is the ROM instance's alone.
+        mslSort(found.data(), found.data() + found.size(),
+                [](const Candidate &a, const Candidate &b) { return a.distance < b.distance; });
         from = mode;
     }
     for (int i = from; i < count; i++) {
@@ -4991,8 +4996,11 @@ bool missionSpawnAt(int *point, int strong)
     return false;
 }
 
+// The sort is MSL's (mslSort_PickNamed 0x2a0040, its own counter 0x31ac50,
+// from -4): not stable, so two objects at the same distance come in the
+// ROM's order only through it.
 // FS2 0x0029f5c0
-// callcheck: findAll6, pathLength, FUN_002a0040 (std::stable_sort)
+// callcheck: findAll6, pathLength, mslSort_PickNamed (mslSort)
 
 StageObject *scriptPickNamed(const char *name, StageCharacter *who, u_int rank, bool straight, bool lastInstead)
 {
@@ -5036,12 +5044,21 @@ StageObject *scriptPickNamed(const char *name, StageCharacter *who, u_int rank, 
         return nullptr;
     if (found.size() == 1)
         return rank == 0 ? found[0].object : nullptr;
-    std::stable_sort(found.begin(), found.end(),
-                     [](const Candidate &a, const Candidate &b) { return a.distance < b.distance; });
+    mslSort(found.data(), found.data() + found.size(),
+            [](const Candidate &a, const Candidate &b) { return a.distance < b.distance; });
     if (rank < found.size())
         return found[rank].object;
     return lastInstead ? found.back().object : nullptr;
 }
+
+// Written in headers; tools/reverse reads tags from .cpp files only:
+// mslSort over missionPickSpawnPoint's records (game/mslsort.h; the two
+// partitions are inline in its loop): sort FS2 0x0029fdb0, median
+// FS2 0x002a0270, partitions FS2 0x002a0a70 (below the pivot) and
+// FS2 0x002a0d40 (up to it), selection sort FS2 0x002a10f0
+// mslSort over scriptPickNamed's pairs: sort FS2 0x002a0040, median
+// FS2 0x002a0410, partitions FS2 0x002a0550 (below the pivot) and
+// FS2 0x002a07c0 (up to it), selection sort FS2 0x002a1040
 
 static const char kSpawnRandom[] = "RANDOM";    /* data 0x304b28 */
 
