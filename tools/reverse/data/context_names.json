@@ -22871,6 +22871,18 @@
   "was": "FUN_0020acf0",
   "why": "result gp-0x7a40 = -1, threadSlotCreate(0x20ad20, slot 4); stagePauseMenu"
  },
+ "0020ad20": {
+  "name": "pauseMenuThread",
+  "tag": "game-inferred",
+  "was": "FUN_0020ad20",
+  "why": "the function pauseMenuStart hands threadSlotCreate (slot 4): runs runPauseMenu, releases the BG movie screen unless the answer is 3 (quit), yields a frame, stores the answer where pauseMenuResult reads it, exits"
+ },
+ "0020ad70": {
+  "name": "runPauseMenu",
+  "tag": "game-inferred",
+  "was": "FUN_0020ad70",
+  "why": "shows the BG movie screen, then loops on the stage's screen layout (stageScreenPath, alt when the player's character sheet ctype is set) passing the last answer back: 0..3 leave, 4 the navigator (runNaviFile / applyNaviAnswer, help page 8), 5 the archive (help page 9), 6 runStageScreenH, 7 help, 8 options, 9 help page 7"
+ },
  "0020afa0": {
   "name": "mapMenuResult",
   "tag": "game-inferred",
@@ -22882,6 +22894,12 @@
   "tag": "game-inferred",
   "was": "FUN_0020afe0",
   "why": "result gp-0x7a3c = -1, threadSlotCreate(0x20b010, slot 4); stageThread on StageScene::wantsMapMenu"
+ },
+ "0020b010": {
+  "name": "mapMenuThread",
+  "tag": "game-inferred",
+  "was": "FUN_0020b010",
+  "why": "the function mapMenuStart hands threadSlotCreate (slot 4): the stage's map layout (stageScreenPathMp) from the stage loader's files, run until it answers other than 1 (1 shows help page 7), the BG movie screen released twice, then 0 where mapMenuResult reads it"
  },
  "0020b120": {
   "name": "StageCharacter::getEnemyCandidates",

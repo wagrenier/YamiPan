@@ -2692,3 +2692,34 @@ scratch textures at the render size, sizes and shifts are in the 512 frame's pix
 softness goes with the picture at any size or aspect. **Seen:** d0101's ceiling lamp, filter on and off
 in the same New Game run (progress/20261107-d0101-frame-filter-on.png / -off.png): the planks and the
 lamp's ring go soft, the mean brightness is unchanged.
+
+## The pause menu and the map menu (game/pausemenu.cpp, 0x20acb0..0x20b120, 2026-11-07)
+
+Start and Select in a stage (`StageScene::wantsPauseMenu` / `wantsMapMenu`) make the stage loop pause
+the sound and call `pauseMenuStart` / `mapMenuStart`: each clears its answer (sbss 0x31ae30 /
+0x31ae34) to -1 and starts a thread in ThreadSlot_Dialog (`pauseMenuThread` 0x20ad20, `mapMenuThread`
+0x20b010); the loop polls `pauseMenuResult` / `mapMenuResult` each frame under `drawPaused`. Both show
+the BG movie screen (opaque red, `overlayShowScreen`) and release it with the answer.
+
+- **Pause** (`runPauseMenu` 0x20ad70): the stage screen `2dEU/s<stage>m<variant + 1>[b]<lang>.d2b`
+  (`stageScreenPath`; alt, the "b" layout of stages 22 / 27, when the player's character sheet
+  `StageObjRecord::kind`, ctype, is non-zero; the ROM's inline lookup answers no record for a bad
+  index), run with `runLayoutFile(path, lastAnswer, false, ...)` so the cursor comes back where it
+  was. Answers 0 resume, 1 restart, 2 continue, 3 quit (the BG screen stays up), else a screen and the
+  layout again: 4 the navigator (exitKind reset to -1 first; Leave back to the menu, Help page 8, a
+  pick: `applyNaviAnswer`, PauseMenu_Navi), 5 the archive (help page 9 while it answers 1 or 3; the
+  save change is not saved from here), 6 `runStageScreenH`, 7 help page 0, 8 options, 9 help page 7.
+- **Map** (`mapMenuThread`): `stageScreenPathMp`'s layout taken from the stage loader
+  (`getStageFiles()->loader->getData`, slot 5), `runLayout(data, -1, false, null)` until it answers
+  other than 1 (1: help page 7); the BG screen is released twice, the answer is 0.
+- **Pausing needs the player's `m_allows.standing` (+0x3a1)**, set by `AlwaysCondition::onUpdate`
+  (0x276468). The port read a separate `StageObject::m_canPause` nobody wrote, so no pause menu ever
+  opened; fixed with this file (hazards.md).
+
+**Seen (YAMIPAN_TELEPORT=7, scripted Start / Down / Start / Select, 75 s, no crash):** Akiko Kiyota's
+page (portrait, profile, Mission / Item / Stage / Map / Other / Quit, the mission text "Reach the road
+to Uryuga Forest with Soji Abe", Down moves to Item with its help line), Start resumes (answer 0 on
+2dEU/s07m1EN.d2b), Select shows the map: the orange grid, the player's blue cross, the compass, the
+control hints. progress/20261107-pause-menu-stage7.png, -map-menu-stage7.png. **Not seen:** a map
+drawing under the grid (none in this run: whether stage 7 part 1 has one is unread), Triangle / Circle
+in the menu (Triangle did nothing), the screens 4..9, Quit, Restart, the alt layout.

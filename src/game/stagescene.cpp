@@ -2502,7 +2502,8 @@ bool StageScene::wantsPauseMenu()
 {
     if ((gGameSystem->m_pad0.m_pressed & SCE_PADstart) == 0 || isInputBlocked())
         return false;
-    if (player != nullptr && !player->character()->m_canPause)
+    // The ROM's lbu 0x3a1(player): the frame's conditions let it stand.
+    if (player != nullptr && player->m_allows.standing == 0)
         return false;
     if (isSubScene || !gStageScene->showFlags->flag[kShowFlagPauseMenu])
         return false;

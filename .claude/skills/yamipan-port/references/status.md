@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 11:12 at commit `f430230` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 11:46 at commit `6198ad6` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 11:12 at commit `f430230` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6597**, named **5647** (86%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4725
-- context-name ledger: 6321 entries; overrides of wrong library matches: 0
-- placed in a source file: 6177/6597 in 137 files
+- game functions: **6597**, named **5650** (86%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4728
+- context-name ledger: 6324 entries; overrides of wrong library matches: 0
+- placed in a source file: 6188/6597 in 138 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5651**; stubs: **27**
+- reconstructed FS2 functions: **5659**; stubs: **22**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -78,9 +78,10 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/packtables.cpp` | 8 | 0 |
 | `src/game/pad.cpp` | 14 | 0 |
 | `src/game/pakarchive.cpp` | 17 | 0 |
+| `src/game/pausemenu.cpp` | 7 | 0 |
 | `src/game/pausemenustate.cpp` | 12 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
-| `src/game/playermotion.cpp` | 613 | 0 |
+| `src/game/playermotion.cpp` | 614 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rand48.cpp` | 3 | 0 |
@@ -143,7 +144,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 11 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 6 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_2d_texture_vram.cpp` | 11 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
@@ -173,10 +174,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 210 TUs: todo 70, active 1, partial 16, verify 132, done 46
-- next: **unassigned@0020acb0** (frontier score 5)
+- 210 TUs: todo 72, partial 15, verify 133, done 46
+- next: **unassigned@00214a70** (frontier score 5)
 - pinned queue: (empty)
-- active: `unassigned@002cf510` 0/0
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -220,8 +220,9 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/packtables.cpp` 8/51 -- 3D path 1 of 5. Root cause: String and StringList were stubs, so every stage script split into zero lines. Written here: game/stringlist.cpp (marked done), Pack
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
+- verify: `game/pausemenu.cpp` 7/7 -- New game/pausemenu.cpp and .h (PauseMenuChoice moved from gamehooks.h, PauseMenuScreen for answers 4..9, help pages 0 and 7). Fix outside the file: StageScene::
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
-- verify: `game/playermotion.cpp` 455/469 -- Joined 0x2160a0..0x216130 to game/playermotion.cpp: CodeWarrior placed the copies right after getSides 0x215f10. m_sides (+0x590) is now a one-word StageSideMas
+- verify: `game/playermotion.cpp` 459/473 -- Joined 0x2160a0..0x216130 to game/playermotion.cpp: CodeWarrior placed the copies right after getSides 0x215f10. m_sides (+0x590) is now a one-word StageSideMas
 - verify: `game/prgmccard.cpp` 7/7 -- All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide close
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/ripplesheet.cpp` 7/10 -- Batch 164. What the notes called stage 0x1b's boss film is a 15 by 15 ripple sheet, 0x2d10f0..0x2d3700, SightJack +0xb4: the frame bent, pushed from a tint, cre
@@ -312,6 +313,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 11:46 `game/pausemenu.cpp` verify: The stage's pause menu and map menu: their start, result and thread functions and runPauseMenu, all 7 functions of 0x20acb0..0x20b120 (batch 212); StageCharacte
 - 2026-11-07 11:12 `game/stagecollision.cpp` verify: resetSurfaceTables 0x2cf510 joined from unassigned@002cf510: clears the per-surface used bytes each new stage
 - 2026-11-07 10:57 `game/sevenkeys.cpp` verify: The seven keys oYC11_21..27 (SevenKeys, object kind 6), their gadget view SevenKeysView/SevenKeysGadget and SkyPose named (batch 210), pinned as game/sevenkeys.
 - 2026-11-07 10:32 `rena/rena_drawtarget.cpp` verify: Placed getDrawTarget 0x2ec110 (was unassigned@002ec110) in its own file rena/rena_drawtarget.cpp: the guarded function-local DrawTarget at bss 0x5a52d0 moved ou
@@ -319,22 +321,21 @@ Recent sessions:
 - 2026-11-07 10:01 `unassigned@0029f2a0` verify: Placed the run 0x29f2a0..0x29f4f8 in game/scriptrunner.cpp: missionRestoreCheck and findNumLockTarget; StageMission +0xb8 is a LockGadgetKind (restoreKind, was 
 - 2026-11-07 09:50 `game/framefilter.cpp` verify: the frame filter: gsFrameFilter and its 4 helpers, a host FrameFilterPass; d0101's opening is soft
 - 2026-11-07 09:15 `game/playermotion.cpp` verify: The out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level (0x2160a0..0x216130, was unassigned@002160a0): StageSideMa
-- 2026-11-07 08:51 `game/playermotion.cpp` verify: unassigned@0020c940 joined playermotion.cpp: StageCharacter::getSwayMatrix, bn_head's matrix turned a quarter about its own y and placed at the model family's g
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@00214a70` | todo | 0/1/2 | 0.6 | 5 | 0 |
-| `unassigned@0020acb0` | partial | 3/5/11 | 1.3 | 5 | 0 |
 | `unassigned@00282da0` | partial | 11/0/18 | 3.0 | 5 | 0 |
+| `unassigned@00214a70` | todo | 0/1/2 | 0.6 | 5 | 0 |
 | `unassigned@00177d00` | partial | 11/0/47 | 7.7 | 4 | 0 |
-| `unassigned@0020ce10` | todo | 0/0/1 | 0.1 | 3 | 0 |
 | `rena_2d_texture_tim2.cpp` | todo | 0/1/1 | 0.1 | 3 | 0 |
 | `unassigned@00219be0` | partial | 15/0/19 | 3.8 | 3 | 0 |
+| `unassigned@0020ce10` | todo | 0/0/1 | 0.1 | 3 | 0 |
+| `unassigned@0020e6a0` | partial | 10/0/11 | 8.6 | 2 | 0 |
+| `unassigned@0026c650` | todo | 0/0/2 | 0.2 | 2 | 0 |
 | `unassigned@00211970` | partial | 2/2/4 | 2.3 | 2 | 0 |
 | `unassigned@00217be0` | partial | 14/0/16 | 2.1 | 2 | 0 |
 | `unassigned@002b0d50` | todo | 0/0/1 | 0.0 | 2 | 0 |
-| `unassigned@0026c650` | todo | 0/0/2 | 0.2 | 2 | 0 |
-| `unassigned@0020e6a0` | partial | 10/0/11 | 8.6 | 2 | 0 |
+| `unassigned@002c42a0` | todo | 0/1/93 | 39.0 | 1 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
