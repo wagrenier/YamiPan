@@ -105,9 +105,9 @@ int sdpr2Init(const void *config)
         s_slots[i].voice[0] = SDPR2_VOICE_FREE;
         s_slots[i].voice[1] = SDPR2_VOICE_FREE;
         s_slots[i].flip = 0;
-        s_slots[i]._10 = 0;
+        s_slots[i].levelAngle = 0;
         s_slots[i].angle = 0;
-        s_slots[i]._18 = 0;
+        s_slots[i].panAngle = 0;
         s_slots[i].volume = 0;
         s_slots[i].pitch = SDPR2_PITCH_ONE;
         s_slots[i].spread = 0;

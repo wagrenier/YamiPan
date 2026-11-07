@@ -347,6 +347,24 @@ Layers:
   The checks are a macro evaluated twice (`if (CHECK(x) == -1) return CHECK(x);`): failed checks
   print twice and a failed `sdpr2DrvInit` / `PairInit` / `SingleInit` runs a second time
   (`src/sdpr2/sdpr2check.h`). `sdpr2PairInit` / `sdpr2SingleInit` take no argument.
+- **sdpr2single.c as written (2026-11-07, all 24, `verify`)**: data 0x2f5fb8..0x2f7a58 is this
+  file's (after the pair's mode table 0x2f5fa0): `sdpr2SinData` 0x2f5fb8 / `sdpr2CosData` 0x2f6af8
+  (720 half degrees, 2048 = 1.0, **-0x1000 = a zero with phase sign -1**: sin at 180, cos at 90),
+  `sdpr2SpreadMainData` 0x2f7638 / `sdpr2SpreadBackData` 0x2f7840 (129 by spread: 1448 = cos 45 up
+  to 2048 / down to 0), a zero word, then the four **pointer globals** 0x2f7a48..54 (cos = left,
+  sin = right, spread main, spread back; the pair reads them too, plus 0x2f7638 / 0x2f7840
+  directly). **Angles: 0 ahead, clockwise, 90 right.** The pan is constant power read at
+  (angle + 90) over **two turns**: `sdpr2UnwrapAngle` 0x16fb68 moves 0..359 to the nearest of
+  0..719 next to the previous pan angle, so the phase sign does not jump crossing the back
+  (`slot.panAngle` +0x18 keeps it; `sdpr2CalcPanDeg`'s state is the same thing for `sound.cpp`).
+  Gains come out volume x |table| / 2048 (0..0x80) plus a sign; without surround both signs are
+  +1. `sdpr2CalcLevels` 0x16fbd0: five speakers **[0] centre 0, [1] left 330, [2] right 30, [3]
+  rear left 240, [4] rear right 120**; the two around deg get cos / sin of the sector (cos table
+  0..180), times the spread gain (which 0 = main, 1 = the pair's back voice at deg + 180). The
+  single type ignores spread (stores 0x80), plays voice[0] only (voice[1] = -1), and its
+  `Update` frees slots whose driver status is 0, stopping them first (mode 1) only when config
+  word 0 (0x537d10) is 1 (the game passes 0). `GetStatus` checks quietly; the others print.
+  Sdpr2Slot +0x10 is now `levelAngle`, +0x18 `panAngle`.
 The six ranges (FS2 lo hi, RoR lo hi) for `rxalign.py`: `100350 1037b0 23ff80 2433e0`,
 `153108 153518 2433e8 2437f8`, `153518 159928 2437f8 249b88`, `159928 159bc0 24b1f8 24b48c`,
 `159928 162178 237ce8 23ff58` (rxsnd, as batch 007 ran it: its first six FS2 functions are the
