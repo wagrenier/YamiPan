@@ -13,6 +13,7 @@ must do and why, then write it as a class here.
 |---|---|---|
 | `src/yamipan/` | the Pan layer | modern OO C++ throughout: everything below applies in full |
 | `src/sdk/` | SCE's API on the host | SCE's names and structs stay, they are the game's API. `.cpp` files are thin: state lives in `yamipan::` classes. Pan layer behind the names |
+| `src/iop/` | the IOP's game code: RXSNDDRV (`src/iop/rxsnddrv/`, RosePan's reconstruction re-addressed to FS2) | authentic, as the game layer below; functions carry `IOP 0x<addr>`, never `FS2 0x` |
 | `src/game/`, `src/rena/`, `src/sound/`, `src/rx/`, `src/sdpr2/` | the game layer | **stays authentic**: reconstruction.md, the ROM's shapes, the game's file names (`rxfile.c`). This file does not apply. No game file is restyled for the host's sake |
 
 Where game code reaches the host it does so through a few seams it already includes
@@ -47,6 +48,8 @@ keep their `YamiPan_*` functions: thin forwarders onto the classes, so the game 
 src/main.cpp                     the process entry: Application(args).run()
 src/common/yamipan_stub.h        YAMIPAN_STUB / YAMIPAN_BRIDGE (the tools' contract)
 src/sdk/                         libgraph, libdma, libpad, ... : SCE's API, forwarding to the classes
+         iop.cpp, iop_host.h,    the IOP libraries RXSNDDRV imports (thbase.h & co are macros onto
+         libsd.h, thbase.h ...   YamiPan_Iop*): placeholders that warn once, until the IOP host
 src/yamipan/
   core/    Application           owns everything; the service locator
            Logger (log::)        yamipan.log + stdout, [W] / [E], SDL's messages captured

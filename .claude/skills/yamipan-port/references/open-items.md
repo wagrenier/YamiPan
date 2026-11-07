@@ -1745,6 +1745,15 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
 
 ## Decisions
 
+- 2026-11-07 (the user): **RoR's RXSNDDRV reconstruction comes into YamiPan** as `src/iop/rxsnddrv/`, since
+  FS2's driver is the same source, revised (architecture.md "The IOP side"). Done the same day for the
+  driver itself (compiled, linked, re-addressed, not booted). Left, in order: (1) the IOP host as yamipan::
+  classes (cpp-port.md: RosePan's sdk/iop_host, iop_sif, iop_libsd, iop_voice and iop_reverb, about 5,000
+  lines: threads, SIF RPC, the SPU2 register model, the voice engine, reverb) and an audio device, which
+  YamiPan has none of; (2) boot the driver and let sif.cpp's sceSifCallRpc reach its server, retiring the
+  silent stand-ins (rx/rxsndstradpcm.c's "driver's silent side"); (3) FS2's 38 changed, 2 moved and 4 new
+  functions and the grown records, read in Ghidra's rxsnddrv.elf before the driver's answers are trusted.
+
 - 2026-11-05 (Claude's call, a scheduled run, for the user to overrule): **doors are on, and `kDoorsEnabled` is gone.** The stage crash that switched them off is explained and fixed (Done, game/playermotion.cpp sixth run). `StageMenu::update`, `draw` and `destroy` stay stubs on purpose: with `update` written and no list window, the menu button would open a menu nobody sees that holds the input focus. `game/stagemenu.cpp` is a second file in a one-TU run, like `game/uiitemlist.cpp`: its stubbed ctor was the crash.
 
 - 2026-11-04 (Claude's call, a scheduled run, for the user to overrule): **`CharacterInput` went from `gamehooks.h` to its own `game/characterinput.h`, with `CharacterPad` (vtable 0x3164f8), `StickHistory`, `PadAction`, `ControlFlag` and `CharacterFire`.** `CharacterInput::update` 0x236b90, one ROM function of 0x2f00 bytes, is cut into `step*` sections; `lookPitch` / `lookYaw` became accessors on one vector, since `lerpVec4` writes the four lanes. `UiShowFlags` is really the script's control switches (17 bytes: walk, run, sticks, lamp, car), so the name is wrong; it stays until the UI side is read. `GameOptions::_14` / `_15` are `invertY` / `invertX` (default 1, 0). `m_turnRate` comes from the sheet as a PC default, as walk and run do, until `setProperty` 0x212530.
@@ -1896,9 +1905,8 @@ apply here):
 - 2026-11-06 (user, `tools/reverse/iop.py`): **RXSNDDRV, FS2's IOP code, is extracted and decompiles**
   (architecture.md "The IOP side"): `python iop.py elf <MODULES>/RXSNDDRV.IRX` ->
   `work/iop/elf/rxsnddrv.elf`. **Imported 2026-11-06 as program `rxsnddrv.elf`** in `CLaude Decomp`, open
-  beside SCES_538.51 (ghidra.md "Hazards" before pointing tools at it). Open: how the audio milestone
-  brings the driver. It is
-  RoR's, revised, so the proposal is RosePan's `src/iop/rxsnddrv` plus FS2's changes as `python iop.py cmp`
+  beside SCES_538.51 (ghidra.md "Hazards" before pointing tools at it). **Settled 2026-11-07** (Decisions):
+  RosePan's driver is `src/iop/rxsnddrv`, with FS2's changes as `python iop.py cmp`
   lists them: 152 of its 192 functions stand as they are, 38 changed and 2 moved need reading, and 4
   functions are FS2's own (0x2d9c, 0x3660, 0x4454, 0xd1dc). The dispatcher 0x360 also
   settles what the EE's commands do where "Next up" says the IOP module would tell.
