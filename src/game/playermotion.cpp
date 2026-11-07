@@ -3881,8 +3881,94 @@ BossIdleLink::~BossIdleLink()
 {
 }
 
+// The ctors PlayerMotion's builds out of line, and two of the dtors between
+// them. Fields the ROM leaves as they come (SpNumLockLink's waited and saved
+// rotation, SpRoboLink's saved place) start at zero here.
+
+// FS2 0x002820e0
+// callcheck: MotionLink
+
+SpNumLockLink::SpNumLockLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
+{
+}
+
+// SpRoboLink's ctor is inline here in the ROM.
+// FS2 0x002822d0
+// callcheck: MotionLink
+
+SpDropLink::SpDropLink(StageCharacter *owner, PlayerMotion *motion_) : SpRoboLink(owner, motion_)
+{
+}
+
+// FS2 0x002825f0
+// callcheck: MotionLink
+
+SpRoboLink::SpRoboLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
+{
+}
+
+// FS2 0x00282b30
+// callcheck: MotionLink
+
+SpRingLink::SpRingLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
+{
+}
+
+// FS2 0x00282da0
+// callcheck: MotionLink, find, add (addSpecial)
+
+NpcReactionLink::NpcReactionLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
+{
+    for (const char *name : { "cr_2", "cr_3", "cr_1" }) // data 0x2fb460
+        addSpecial(name);
+}
+
+// FS2 0x00282fa0
+// callcheck: MotionLink, find, add (addSpecial)
+
+DriveLink::DriveLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
+{
+    for (const char *name : { "cr_2", "cr_3", "cr_1", "GettingOffCar" }) // data 0x2fb450
+        addSpecial(name);
+}
+
+// FS2 0x00283560
+// callcheck: MotionLink
+
+ApproachBiteLink::ApproachBiteLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
+{
+}
+
+// FS2 0x002835a0
+// callcheck: ~MotionLink, operator_delete
+
+ApproachCarLink::~ApproachCarLink()
+{
+}
+
+// FS2 0x00283740
+// callcheck: MotionLink
+
+ApproachOutLink::ApproachOutLink(StageCharacter *owner, PlayerMotion *motion_) : CarDoorLink(owner, motion_)
+{
+}
+
+// FS2 0x00283960
+// callcheck: MotionLink
+
+ApproachCarLink::ApproachCarLink(StageCharacter *owner, PlayerMotion *motion_) : CarDoorLink(owner, motion_)
+{
+}
+
+// FS2 0x002839a0
+// callcheck: ~MotionLink, operator_delete
+
+NpcReactionLink::~NpcReactionLink()
+{
+}
+
 // FS2 0x001ed410
-// callcheck: DamageDeadLink, MotionCondition, MotionLink, memset, find, FUN_00278db0, FUN_0027a0b0, FUN_0027a910, FUN_0027aa90, FUN_0027aea0, FUN_0027b000, FUN_0027b730, BossIdleLink, BossAttackLink, SpNumLockLink, SpPadlockLink, SpDropLink, SpRoboLink, SpRingLink, FUN_00282da0, FUN_00282fa0, FUN_00283560, FUN_00283740, FUN_00283960, getStageSelect, operator_new, LiteralMap, LiteralMap, LiteralMap, FUN_0026c6b0, FUN_00276510, insert, balance, FUN_001df0b0, FUN_0027c520, FUN_0027c140, FUN_0027b640, FUN_0027cc50, FUN_002775d0, insert, FUN_0027c370, balance (the links, the conditions and their maps: game/playermotion.h)
+// callcheck: DamageDeadLink, MotionCondition, MotionLink, memset, find, FUN_00278db0, FUN_0027a0b0, FUN_0027a910, FUN_0027aa90, FUN_0027aea0, FUN_0027b000, FUN_0027b730, BossIdleLink, BossAttackLink, SpNumLockLink, SpPadlockLink, SpDropLink, SpRoboLink, SpRingLink, NpcReactionLink, DriveLink, ApproachBiteLink, ApproachOutLink, ApproachCarLink, getStageSelect, operator_new, LiteralMap, LiteralMap, LiteralMap, FUN_0026c6b0, FUN_00276510, insert, balance, FUN_001df0b0, FUN_0027c520, FUN_0027c140, FUN_0027b640, FUN_0027cc50, FUN_002775d0, insert, FUN_0027c370, balance (the links, the conditions and their maps: game/playermotion.h)
 
 // The car's links. Each of the door ones works behind a fade: to black, the
 // change of seat at full black (rideCar's reset leaves the link), the fade back.

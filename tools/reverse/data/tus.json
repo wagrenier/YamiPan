@@ -999,7 +999,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "findNearestFoe(false, ...) answers the nearest ALLY (isAlly, not itself), which is what nativeNearestAllyDistance wants; the Ghidra name is kept for its callers. The ROM has two copies of the loop (one per list); the host walks one range with the filter chosen by foes, same order of tests (m_active, not self, isAlly / isEnemyOf, then life up). With sight a candidate canSeeThisFrame refuses is dropped, the distance is the one it answers. Not reached in the 15 s smoke run (language select), so verify; the 10 MISSING callcheck entries in playermotion.cpp predate this session.",
+   "notes": "The run 0x282da0..0x283a00 lay between this file's 0x281a40 and 0x283a00 ranges: link ctors and dtors PlayerMotion's build calls, so the two ranges are one now, 0x281a40..0x283cb0. They were already written inline in playermotion.h, where tus.py does not see a tag; now defined in playermotion.cpp after BossIdleLink's dtor: SpNumLockLink 0x2820e0, SpDropLink 0x2822d0 (SpRoboLink's ctor inline in the ROM), SpRoboLink 0x2825f0, SpRingLink 0x282b30, NpcReactionLink 0x282da0 (cr_2 cr_3 cr_1, data 0x2fb460), DriveLink 0x282fa0 (plus GettingOffCar, data 0x2fb450, both read from the ELF), ApproachBiteLink 0x283560, ApproachCarLink dtor 0x2835a0 and ctor 0x283960, ApproachOutLink 0x283740, NpcReactionLink dtor 0x2839a0. Each read against the decompilation: vptr, the fields it sets, the specials. Host zeroes fields the ROM leaves (SpNumLockLink waited and savedRotation, SpRoboLink saved place). The 0x1ed410 callcheck listing now names the five ctors instead of FUN_. No behaviour change. Seen: 15 s smoke at the language select as before; YAMIPAN_TELEPORT=2 30 s, the girl on the rainy path, no crash. Not seen: a car or an NPC reaction link run. The 10 MISSING callcheck entries predate this run. Left in the TU's todo: 0x283cb0 on (DriveLink, ApproachBiteLink, ApproachOutLink dtors) are outside the pinned ranges.",
    "ranges": [
     [
      "00175700",
@@ -1383,10 +1383,6 @@
     ],
     [
      "00281a40",
-     "00282d98"
-    ],
-    [
-     "00283a00",
      "00283cb0"
     ],
     [
@@ -1431,11 +1427,6 @@
     ]
    ],
    "sessions": [
-    {
-     "date": "2026-11-05 10:24",
-     "status": "verify",
-     "summary": "closed: resetActionState whole, ScriptPoint and the sight table, stale call notes fixed; a door opened and crossed with the pad alone"
-    },
     {
      "date": "2026-11-06 07:07",
      "status": "verify",
@@ -1490,6 +1481,11 @@
      "date": "2026-11-07 11:57",
      "status": "verify",
      "summary": "0x214a70..0x214ce8 joined (was unassigned@00214a70): StageObjRecord::init (the sheet row's default startMotion, now called by PackTables::parseCharacters) and StageCharacter::findNearestFoe (nearest enemy up among the enemy candidates, or with foes false the nearest ally up among the mission's characters; by canSeeThisFrame's distance with sight, else distanceTo); stub removed; the inline helpers 0x1b9a60 / 0x2107e0 named StageObject::isActive / StageCharacter::isUp (batch 213)"
+    },
+    {
+     "date": "2026-11-07 12:14",
+     "status": "verify",
+     "summary": "unassigned@00282da0 joined playermotion.cpp: the NpcReactionLink, DriveLink and car links' ctors and two dtors, and the four Sp link ctors, moved out of the header into the cpp so they count; all 11 match the ROM"
     }
    ],
    "status": "verify",
@@ -3668,10 +3664,7 @@
   "unassigned@001953f0": {},
   "unassigned@0020acb0": {},
   "unassigned@0020c940": {},
-  "unassigned@00214a70": {
-   "claimed": "2026-11-07 11:47",
-   "status": "active"
-  },
+  "unassigned@00214a70": {},
   "unassigned@002160a0": {},
   "unassigned@002176d0": {
    "notes": "This key is empty now. 0x2176d0 isViewLinked was already written in src/game/stagecharacter.cpp, now in its range; 0x217700..0x217a80 joined game/playermotion.cpp (template instance emitted after giveItem, as 0x17e140 follows stagecharacter.cpp). Batch 200 names 8 functions. stagelist.h gained getTail and find (0x217700, 0x217730) and lists the instance; dropItem uses find, DoorCondition::onUpdate calls the new StageCharacter::getMotionDoor (m_motion->doorLink->door, 0x2179b0) as the ROM does; SightTable::canSeeThisFrame 0x2179c0 stays inline in StageCharacter::canSeeThisFrame (tag added). Fix found: findCarried 0x216310 and giveItem's stack search walk getTail then +8 prev in the ROM; the host walked from the head, so of two carried objects with one name it found the first instead of the last carried (hazards.md). Picture: the 15 s smoke run stays at the language select, English highlighted, as before; nothing on screen reaches carried items yet: verify. A teleport run with two same-named items in the inventory would show the fix.",
@@ -3701,6 +3694,10 @@
   "unassigned@002681e0": {},
   "unassigned@002764b0": {},
   "unassigned@0027cab0": {},
+  "unassigned@00282da0": {
+   "claimed": "2026-11-07 12:05",
+   "status": "active"
+  },
   "unassigned@002849c0": {},
   "unassigned@002908d0": {},
   "unassigned@002937e0": {},
