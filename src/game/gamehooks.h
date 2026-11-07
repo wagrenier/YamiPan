@@ -1044,7 +1044,7 @@ private:
 
 class Clock;                    // game/clock.h
 
-// A sub-scene's demo voice (StageScene +0x28; the run unassigned@002b0d50):
+// A sub-scene's demo voice (StageScene +0x28; game/demoevent.cpp):
 // a SoundStream with a directory (streamEU/demo/) and what looks like a
 // subtitle colour and position. Only what StageScene calls.
 // layout: host -- EE 0x80: SoundStream's 0x60, +0x60..+0x70 zero (+0x64
@@ -1064,6 +1064,8 @@ public:
     int  stop();                                                         // FS2 0x002b1170
     // A jump to SoundStream::update: once a frame.
     void update();                                                       // FS2 0x002b1100
+    // A jump to SoundStream::getDataWritten: -1 with no stream open.
+    int  getDataWritten();                                               // FS2 0x002b0d50
     // The subtitle of the stream's time.
     void drawSubtitles(sceVif1Packet *packet);                           // FS2 0x002b0d60
     // The subtitles' fsm file, relocated; false when it is not one.

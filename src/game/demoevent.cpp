@@ -1295,6 +1295,15 @@ bool DemoStream::setFont(const void *font, const void *image)
     return true;
 }
 
+// The bytes the stream has buffered, -1 when none is open: SoundStream's
+// own, reached through one jump (the out-of-line copy of an inline forward;
+// the base sits at +0, so a0 passes unchanged).
+// FS2 0x002b0d50
+int DemoStream::getDataWritten()
+{
+    return SoundStream::getDataWritten();
+}
+
 // The text of the voice's time, centred on (m_textX, m_textY): that is the
 // last line's place, more lines stand above it.
 // FS2 0x002b0d60
