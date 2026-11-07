@@ -31,6 +31,7 @@
 #include "game/clock.h"
 #include "game/mathutil.h"
 #include "game/modelpose.h"
+#include "game/mslsort.h"
 #include "game/packtables.h"
 #include "game/scenepairs.h"
 #include "game/stageitem.h"
@@ -12549,7 +12550,7 @@ StageObject *StageObject::findSearchPoint(int index)
 
 // FS2 0x0021c010
 // PC: the ROM's first half is on the status block (a0 + 0xd8), a1 the character.
-// callcheck: FUN_0021ee40, FUN_0021edc0 (nextSearchGroup)
+// callcheck: SearchObjectWalk, SearchGroupWalk (nextSearchGroup)
 
 StageObject *StageCharacter::getNearSearchPoint()
 {
@@ -12568,12 +12569,15 @@ StageObject *StageCharacter::getNearSearchPoint()
     return point;
 }
 
+// The sort is MSL's (mslSort_SearchPoints 0x21e120, its own counter gp-0x7e10
+// = 0x31aa60, from -4): not stable, so two points at the same distance come
+// in the ROM's order only through it.
 // FS2 0x00219210
-// callcheck: FUN_0021ee40, FUN_0021edc0, FUN_0021e120 (nextSearchGroup, std::stable_sort)
+// callcheck: SearchObjectWalk, SearchGroupWalk, mslSort_SearchPoints (nextSearchGroup, mslSort)
 
 StageObject *StageCharacter::pickSearchPoint(const sceVu0FVECTOR point, u_int rank)
 {
-    // layout: host -- the ROM keeps these on its stack.
+    // layout: host -- the ROM keeps these on its stack (EE 8 bytes).
     struct Candidate
     {
         StageObject *object;
@@ -12585,12 +12589,31 @@ StageObject *StageCharacter::pickSearchPoint(const sceVu0FVECTOR point, u_int ra
         found.push_back({ group, group->distanceToPoint(point) });
     if (rank >= found.size())
         return nullptr;
-    std::stable_sort(found.begin(), found.end(),
-                     [](const Candidate &a, const Candidate &b) { return a.distance < b.distance; });
+    // This lambda's type is this call's own template instance, so its counter
+    // is the ROM instance's alone.
+    mslSort(found.data(), found.data() + found.size(),
+            [](const Candidate &a, const Candidate &b) { return a.distance < b.distance; });
     return found[rank].object;
 }
 
 // Written in headers; tools/reverse reads tags from .cpp files only:
+// mslSort over pickSearchPoint's pairs (game/mslsort.h; the two partitions
+// are inline in its loop): sort FS2 0x0021e120, median FS2 0x0021e350,
+// partitions FS2 0x0021e490 (below the pivot) and FS2 0x0021e700 (up to it),
+// selection sort FS2 0x0021e9b0
+// The one-slot stage-object walks (vtables 0x316040..0x316090, a list +4
+// and its slot +8, next answering null past the end) are StageObjArray loops
+// at their callers, as the search walks above are nextSearchGroup:
+// FreeObjectWalk (wraps another walk, skips objects with a parent;
+// nativeSpringTraps / nativeResetTraps in game/scriptrunner.cpp):
+// FS2 0x0021ead0, next FS2 0x0021ea60
+// ItemWalk (group 3's active objects, the same two natives): FS2 0x0021eb50,
+// next FS2 0x0021eaf0
+// StageObjIterator (a list's active objects; findVolume in
+// game/stageplayer.cpp): FS2 0x0021ec30, next FS2 0x0021ebd0; its group 7
+// ctor FS2 0x0021eca0 is called only by FUN_001c1bf0, not written yet
+// OffStageCharWalk (the inactive characters; nativePlaceRespawn in
+// game/scriptrunner.cpp): FS2 0x0021ef20, next FS2 0x0021eec0
 // BittenLink::~BittenLink (game/playermotion.h): FS2 0x001eedb0
 // LiteralMap() (game/stagelist.h): FS2 0x001eee30, FS2 0x001eeee0, FS2 0x001ef040
 // ~LiteralMap(): FS2 0x001eee50, FS2 0x001eef00, FS2 0x001ef060

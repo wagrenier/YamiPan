@@ -927,7 +927,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Written: StageCharacter::throwCarried 0x218b50 (was useItem), putSmoke 0x218850 (was item218850), wantThrow 0x20b200, canTakeUpTrap 0x219000, heardWithin 0x219980; brain askThrow and putSmoke, route throwAt renamed, batch 192 saved. Range 0x218500..0x219b30 joined this file. Proved: itemwaitcmp.py 61205 ops 0 differences, every state reached, plant 2572. Seen on stage 17 with temporary probes, removed, through the game's own menu and F_PC17, no forced state: Throw: Ask, Asked at 0x4e0, 20 Playing, flare in flight with its trail, then burning; Set after walking from the ledge: Ask, Asked at 0, 19 Playing, smoke column at the feet. progress/20261107-flare-*-stage17.png. Default part of stages 1..30, 24 s each, no crash. Not seen: a brain path, native 0x15a, an I_NUT throw, the true answer as such. Kept from the ROM: putSmoke never stamps the frame; a brain asked to put smoke yields for ever while it carries one. No PS2 reference for the picture, so verify. Next: the flare gives no light: SceneBufferSet::createFor 0x2ce620 is a stub, in unassigned@002c42a0. tus.py next gave that TU this run since it skips a queued verify; this run claimed by hand, hazards.md, and tus.py queue now warns. Queue empty. Smoke run 15 s stops at the language screen, right for 15 s. callcheck MISSING lines are the earlier 10.",
+   "notes": "0x21e120..0x21efa0 pinned to game/playermotion.cpp (batch 204 names all 13 functions). mslSort_SearchPoints 0x21e120 with median 0x21e350, partitions 0x21e490 / 0x21e700 and selection sort 0x21e9b0 read the same as game/mslsort.h (checked branch by branch against the template; its counter 0x31aa60 starts at -4 like the effects one), so pickSearchPoint calls mslSort and its lambda gives it its own counter; sortcmp.py could prove this instance too if it learns a second address. The walks (FreeObjectWalk, ItemWalk, StageObjIterator, SearchGroupWalk, SearchObjectWalk, OffStageCharWalk; vtables 0x316040..0x316090) stay inline StageObjArray loops at their callers, their tags in playermotion.cpp's list of header-written functions; callcheck lines in scriptrunner.cpp now name them. StageObjIterator's group 7 ctor 0x21eca0 is used only by FUN_001c1bf0, not written yet: inline it there as a loop over m_lists[StageObjGroup_7] active objects. The smoke run reaches the language select only; search points are never reached, hence verify.",
    "ranges": [
     [
      "00175700",
@@ -1186,6 +1186,10 @@
      "0021e118"
     ],
     [
+     "0021e120",
+     "0021efa0"
+    ],
+    [
      "00269db0",
      "0026a004"
     ],
@@ -1348,11 +1352,6 @@
    ],
    "sessions": [
     {
-     "date": "2026-11-05 06:16",
-     "status": "partial",
-     "summary": "firearms, traps, throws and the start hook: GunOn, GunMove, Snipe, GunAttack, Reload, Showt, Jack, Throw, TrapSet, TrapCancel with their links, the scope, shot spread, sideHook0, getLifeState: a test rifle comes up, aims, fires and scopes on stage 1; the scope view is black"
-    },
-    {
      "date": "2026-11-05 07:14",
      "status": "partial",
      "summary": "the special actions, the bite and the status setters: initList, its condition classes, Walk's list, BiteCondition, BiteLink, setFlinch, setEndurance, setBrainState: specials play their motions on stage 1 and the game over is reachable; the bite has not run"
@@ -1406,11 +1405,16 @@
      "date": "2026-11-07 02:12",
      "status": "verify",
      "summary": "the item waits: throwCarried and putSmoke, the two script natives behind Throw and Set Smoke Candle; 0 differences with the ROM, and on stage 17 the real menu throws and sets a burning flare"
+    },
+    {
+     "date": "2026-11-07 07:12",
+     "status": "verify",
+     "summary": "unassigned@0021e120 joined playermotion.cpp: its out-of-line tail, the MSL sort instance over the search points and the six one-slot stage-object walks; pickSearchPoint now sorts with mslSort, not std::stable_sort"
     }
    ],
    "status": "verify",
    "task": "PlayerMotion::takeHits 0x1e18c0..0x1e3e80 past its first line: it requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice",
-   "why": "the last links of the ROM ctor: 0x281a40..0x282d98 and their dtors 0x283a00..0x283cb0, vtables 0x317d70..0x317f20; 0x218500..0x219b30 joined: the rest of the StageCharacter script slots, among them throwCarried and putSmoke; 0x217700..0x217a80 joined 2026-11-07: the carried list's second StageList<StageObject*> instance (in stagelist.h), getMotionDoor and SightTable::canSeeThisFrame, emitted after giveItem"
+   "why": "the last links of the ROM ctor: 0x281a40..0x282d98 and their dtors 0x283a00..0x283cb0, vtables 0x317d70..0x317f20; 0x218500..0x219b30 joined: the rest of the StageCharacter script slots, among them throwCarried and putSmoke; 0x217700..0x217a80 joined 2026-11-07: the carried list's second StageList<StageObject*> instance (in stagelist.h), getMotionDoor and SightTable::canSeeThisFrame, emitted after giveItem; 0x21e120..0x21efa0 joined 2026-11-07: the out-of-line tail after resetActionState -- the MSL std::sort instance pickSearchPoint calls (sort, median, two partitions, selection sort) and the six one-slot stage-object walks (vtables 0x316040..0x316090) whose users are inline loops"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -3529,6 +3533,7 @@
    ],
    "status": "verify"
   },
+  "unassigned@0021e120": {},
   "unassigned@0022fc50": {},
   "unassigned@00231410": {},
   "unassigned@00231c90": {},
