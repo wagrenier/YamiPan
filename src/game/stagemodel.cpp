@@ -26,6 +26,7 @@
 #include "game/heap.h"
 #include "game/mathutil.h"
 #include "game/modelpose.h"
+#include "game/numlock.h"
 #include "game/vcmtable.h"
 #include "game/vehiclepose.h"
 #include "game/vu0math.h"

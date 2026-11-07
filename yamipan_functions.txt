@@ -8165,35 +8165,45 @@
 // *****************************************************************************
 
 /* 002a6980 00000128 */ StageCharacter::getSoundKind(){}  // game
-/* 002a6ab0 00000084 */ FUN_002a6ab0(){}
-/* 002a6b40 00000008 */ FUN_002a6b40(){}
-/* 002a6b50 00000004 */ FUN_002a6b50(){}
-/* 002a6b60 00000004 */ FUN_002a6b60(){}
-/* 002a6b70 000000c4 */ numLockScramble(){}  // game
-/* 002a6c40 00000090 */ numLockPopDials(){}  // game
-/* 002a6cd0 0000015c */ numLockPushDials(){}  // game
-/* 002a6e30 00000004 */ FUN_002a6e30(){}
-/* 002a6e40 0000009c */ numLockSpinDial(){}  // game
-/* 002a6ee0 00000014 */ numLockSetDial(){}  // game
-/* 002a6f00 0000005c */ FUN_002a6f00(){}
-/* 002a6f60 0000005c */ FUN_002a6f60(){}
-/* 002a6fc0 000000a8 */ numLockDialsRight(){}  // game
-/* 002a7070 00000144 */ numLockDialsTurning(){}  // game
-/* 002a71c0 00000004 */ FUN_002a71c0(){}
-/* 002a71d0 00000170 */ FUN_002a71d0(){}
-/* 002a7340 000000a0 */ FUN_002a7340(){}
-/* 002a73e0 00000008 */ FUN_002a73e0(){}
-/* 002a73f0 00000008 */ FUN_002a73f0(){}
-/* 002a7400 00000008 */ FUN_002a7400(){}
-/* 002a7410 00000008 */ FUN_002a7410(){}
-/* 002a7420 000001a8 */ FUN_002a7420(){}
-/* 002a75d0 00000230 */ FUN_002a75d0(){}
-/* 002a7800 00000018 */ FUN_002a7800(){}
-/* 002a7820 00000018 */ FUN_002a7820(){}
-/* 002a7840 00000044 */ FUN_002a7840(){}
-/* 002a7890 00000160 */ FUN_002a7890(){}
-/* 002a79f0 00000060 */ FUN_002a79f0(){}
+
+// *****************************************************************************
+// FILE -- game/numlock.cpp
+// *****************************************************************************
+
+/* 002a6ab0 00000084 */ NumLock::~NumLock(){}  // game
+/* 002a6b40 00000008 */ NumLock::getKind(){}  // game
+/* 002a6b50 00000004 */ NumLock::sideHook3(){}  // game
+/* 002a6b60 00000004 */ NumLock::sideHook0(){}  // game
+/* 002a6b70 000000c4 */ NumLock::scramble(){}  // game
+/* 002a6c40 00000090 */ NumLock::popDials(){}  // game
+/* 002a6cd0 0000015c */ NumLock::pushDials(){}  // game
+/* 002a6e30 00000004 */ NumLock::setInView(){}  // game
+/* 002a6e40 0000009c */ NumLock::spinDial(){}  // game
+/* 002a6ee0 00000014 */ NumLock::setDial(){}  // game
+/* 002a6f00 0000005c */ NumLock::dialDown(){}  // game
+/* 002a6f60 0000005c */ NumLock::dialUp(){}  // game
+/* 002a6fc0 000000a8 */ NumLock::dialsRight(){}  // game
+/* 002a7070 00000144 */ NumLock::dialsTurning(){}  // game
+/* 002a71c0 00000004 */ NumLock::sideHook1(){}  // game
+/* 002a71d0 00000170 */ NumLock::setMotionList(){}  // game
+/* 002a7340 000000a0 */ NumLock::NumLock(){}  // game
+/* 002a73e0 00000008 */ NumLock::sideHook3_thunk(){}  // game
+/* 002a73f0 00000008 */ NumLock::sideHook1_thunk(){}  // game
+/* 002a7400 00000008 */ NumLock::sideHook0_thunk(){}  // game
+/* 002a7410 00000008 */ NumLock::~NumLock_thunk(){}  // game
+/* 002a7420 000001a8 */ NmlPose::update(){}  // game
+/* 002a75d0 00000230 */ NmlPose::easeDials(){}  // game
+/* 002a7800 00000018 */ NmlPose::getDial(){}  // game
+/* 002a7820 00000018 */ NmlPose::setDial(){}  // game
+/* 002a7840 00000044 */ NmlPose::setDials(){}  // game
+/* 002a7890 00000160 */ NmlPose::load(){}  // game
+/* 002a79f0 00000060 */ NmlPose::~NmlPose(){}  // game
 /* 002a7a50 000000c0 */ NmlPose::NmlPose(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 002a7b10 00000060 */ FUN_002a7b10(){}
 /* 002a7b70 0000000c */ FUN_002a7b70(){}
 /* 002a7b80 00000008 */ FUN_002a7b80(){}

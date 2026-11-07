@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 03:53 at commit `74ee7fd` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 04:22 at commit `70da618` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 03:53 at commit `74ee7fd` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **5481** (83%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1583, game-inferred 4561
-- context-name ledger: 6144 entries; overrides of wrong library matches: 0
-- placed in a source file: 5964/6599 in 126 files
+- game functions: **6599**, named **5502** (83%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1583, game-inferred 4582
+- context-name ledger: 6165 entries; overrides of wrong library matches: 0
+- placed in a source file: 5993/6599 in 127 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -23,14 +23,14 @@ Least-named game-code regions (64 KB blocks):
 | `002c0000` | 39/173 (23%) | game/packtables.cpp, game/stagefog.cpp, game/menupack.cpp |
 | `001c0000` | 108/233 (46%) | game/scriptrunner.cpp |
 | `001b0000` | 115/242 (48%) | game/scriptrunner.cpp |
-| `002a0000` | 141/241 (59%) | game/memcard.cpp, game/charactersound.cpp, game/demofleck.cpp |
 | `002d0000` | 156/256 (61%) | game/drawsys.cpp, game/areaclip.cpp, game/ripplesheet.cpp |
 | `001a0000` | 195/301 (65%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
+| `002a0000` | 162/241 (67%) | game/memcard.cpp, game/charactersound.cpp, game/numlock.cpp |
 | `002e0000` | 124/178 (70%) | rena/rena_draw.cpp, rena/rena_model.cpp, game/layoutpaths.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5379**; stubs: **71**
+- reconstructed FS2 functions: **5406**; stubs: **63**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -69,6 +69,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/movieplayer.cpp` | 41 | 0 |
 | `src/game/navimenu.cpp` | 30 | 0 |
 | `src/game/nodetransform.cpp` | 17 | 0 |
+| `src/game/numlock.cpp` | 27 | 0 |
 | `src/game/packtables.cpp` | 8 | 0 |
 | `src/game/pad.cpp` | 14 | 0 |
 | `src/game/pakarchive.cpp` | 17 | 0 |
@@ -135,7 +136,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 39 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 31 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -163,8 +164,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 213 TUs: todo 75, partial 21, verify 114, done 44
-- next: **unassigned@002a6980** (frontier score 17)
+- 215 TUs: todo 76, partial 20, verify 115, done 45
+- next: **unassigned@00151270** (frontier score 13)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -201,6 +202,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/movieplayer.cpp` 41/41 -- Cut out of unassigned@001953f0 (its tail 0x1faa30..0x1fcb40; the rest of that run is still unassigned). New game/movieplayer.h; gamehooks.h lost MoviePlayer and
 - verify: `game/navimenu.cpp` 30/30 -- Seen in the user's own playthrough: after stage 1 the navigator appears, the cursor moves and picking the next node starts that stage. Not looked at: the overvi
 - verify: `game/nodetransform.cpp` 16/26 -- All of 0x1d7c50..0x1d85b0 written (batches 100, 101); rotation, translate and multiply helpers in vu0math.h. New Game run: 31,560 frames with no crash, the open
+- verify: `game/numlock.cpp` 27/29 -- Split off unassigned@002a6980 (batch 197). NumLock: map object of oMK21_06 / oSJ08_07, now built by createMapObject; kind 5; code from StageResult +0x90 (rename
 - verify: `game/packtables.cpp` 8/51 -- 3D path 1 of 5. Root cause: String and StringList were stubs, so every stage script split into zero lines. Written here: game/stringlist.cpp (marked done), Pack
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
@@ -283,6 +285,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 04:22 `game/numlock.cpp` verify: the number lock: NumLock map object and NmlPose dial pose, 29 functions of 0x2a6ab0..0x2a7b10
 - 2026-11-07 03:53 `game/stageparty.cpp` verify: Pin the jack's and the ripple sheet's std::vector instances, 8 functions of 0x206890..0x207108; bearingvectorcmp.py proves the promise
 - 2026-11-07 03:42 `game/rand48.cpp` done: game/rand48.cpp: Rand48, the stage's random numbers (java.util.Random without the increment); all 3 functions written, proven against the ROM
 - 2026-11-07 03:17 `game/stagemodel.cpp` verify: the map instances after StageModel: BoneMap and MotionMap are LiteralMap
@@ -290,22 +293,21 @@ Recent sessions:
 - 2026-11-07 02:12 `game/playermotion.cpp` verify: the item waits: throwCarried and putSmoke, the two script natives behind Throw and Set Smoke Candle; 0 differences with the ROM, and on stage 17 the real menu t
 - 2026-11-07 01:41 `game/stagedoor.cpp` verify: the door object file's 106 inline defaults 0x171ad0..0x1723c0 accounted for, 27 runner slots added, item natives answer the ROM's bool
 - 2026-11-07 01:10 `game/areaclip.cpp` verify: AreaClip written: the camera's place hides the map's far parts; 59 functions of 0x2dac70..0x2e00c0, agrees with the ROM on all 20 ac1 files of the disc
-- 2026-11-07 00:09 `game/rcnttimer.cpp` done: RcntTimer and rcnt1Start, all 4 functions; was stubs
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002a6980` | partial | 1/11/83 | 12.1 | 17 | 0 |
-| `unassigned@002e0820` | todo | 0/3/13 | 3.7 | 13 | 1 |
 | `unassigned@00151270` | todo | 0/3/3 | 0.0 | 13 | 2 |
+| `unassigned@002e0820` | todo | 0/3/13 | 3.7 | 13 | 1 |
 | `unassigned@0012c9b8` | todo | 0/1/6 | 0.8 | 12 | 1 |
 | `unassigned@002176d0` | partial | 1/0/10 | 0.9 | 11 | 0 |
-| `unassigned@002acff0` | todo | 0/3/24 | 10.9 | 10 | 1 |
 | `rx/rxsndstrpcm.c` | todo | 0/8/10 | 2.1 | 10 | 2 |
+| `unassigned@002acff0` | todo | 0/3/24 | 10.9 | 10 | 1 |
 | `sdpr2/sdpr2single.c` | todo | 0/2/24 | 7.0 | 9 | 1 |
 | `unassigned@0021e120` | partial | 4/0/18 | 3.5 | 8 | 0 |
-| `unassigned@002849c0` | todo | 0/1/5 | 7.4 | 7 | 1 |
-| `unassigned@0020c940` | partial | 1/1/2 | 0.8 | 7 | 0 |
-| `unassigned@002b6b90` | partial | 1/0/7 | 6.5 | 7 | 0 |
+| `unassigned@002a7b10` | todo | 0/3/53 | 7.9 | 8 | 0 |
+| `sdpr2/sdpr2pair.c` | todo | 0/1/21 | 7.0 | 7 | 1 |
+| `rx/filehdd.c` | todo | 0/2/13 | 1.5 | 7 | 1 |
+| `sdpr2/sdpr2drv.c` | todo | 0/1/27 | 4.5 | 7 | 1 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -319,6 +321,7 @@ Recent sessions:
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `002c0d90` | FUN_002c0d90 | 18 | - | missing | game/packtables.cpp |
 | `001d1a00` | ScriptRunner::getEntry | 14 | game | missing | game/scriptrunner.cpp |
+| `002a7800` | NmlPose::getDial | 14 | game | missing | game/numlock.cpp |
 | `002c0d40` | FUN_002c0d40 | 12 | - | missing | game/packtables.cpp |
 | `002c0d80` | FUN_002c0d80 | 10 | - | missing | game/packtables.cpp |
 | `00228610` | FUN_00228610 | 9 | - | missing | game/characterroute.cpp |
@@ -350,5 +353,4 @@ Recent sessions:
 | `002c16d0` | FUN_002c16d0 | 5 | - | missing | game/packtables.cpp |
 | `002c0d50` | FUN_002c0d50 | 5 | - | missing | game/packtables.cpp |
 | `002e7e90` | FUN_002e7e90 | 5 | - | missing | rena/rena_draw.cpp |
-| `00217770` | FUN_00217770 | 5 | - | missing | - |
 

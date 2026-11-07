@@ -6,9 +6,9 @@
  *  3D picture: the plain object every node gets by default, and the part of
  *  the set-up that puts the model on the stage.
  *
- *  The doors _dp / _ds are game/stagedoor.cpp. Not written yet: the rest of
- *  createMapObject's special classes (0x2a7340, 0x2b2a60:
- *  they come out as plain objects). The string "Root" names the map's one big
+ *  The doors _dp / _ds are game/stagedoor.cpp, the number lock
+ *  game/numlock.cpp. Not written yet: the seven-key pad (0x2b2a60: it comes
+ *  out as a plain object) and the scene's views of the two (0x2a89b0, 0x2b2c80). The string "Root" names the map's one big
  *  model.
  * ======================================================================== */
 #include <stdio.h>
@@ -19,6 +19,7 @@
 #include "game/mapobject.h"
 #include "game/mathutil.h"
 #include "game/modelpose.h"
+#include "game/numlock.h"
 #include "game/objectproperty.h"
 #include "game/stagedoor.h"
 #include "game/stageitem.h"
@@ -37,6 +38,8 @@ constexpr int kMapCellSize = 0x96;          // StageCollision's grid on a map
 constexpr short kRootPartLimit = 100;       // the Root's groups from here on are the doors'
 constexpr int kPartBitWords = 8;
 constexpr char kElevatorModel[] = "oZS99_01";   // data 0x3030f8
+constexpr char kNumLockModelA[] = "oMK21_06";   // data 0x303108
+constexpr char kNumLockModelB[] = "oSJ08_07";   // data 0x303118
 constexpr int kMapObjectMeshes = 1;         // createMapObject's plain object
 constexpr char kPartName[] = "BKW%02d";     // data 0x303150
 constexpr char kGlassEffect[] = "glass%d_0"; // data 0x303168
@@ -262,7 +265,7 @@ void StageMapObject::sideHook2()
 }
 
 // The object for a map model's node, by its name: _dp_nn and _ds_nn are doors,
-// the car's models the car, oZS99_01 the elevator, and every other name gets the plain object for now (file header).
+// the car's models the car, oZS99_01 the elevator, oMK21_06 and oSJ08_07 the number lock, and every other name gets the plain object for now (file header).
 // FS2 0x001766c0
 // callcheck: strstr, strstr, strcmp, strcmp, heapAllocAligned, FUN_0028e5a0, strcmp, heapAllocAligned, StageElevator, strcmp, strcmp, heapAllocAligned, FUN_002a7340, operator_new, FUN_002a89b0, strncmp, heapAllocAligned, FUN_002b2a60, operator_new, FUN_002b2c80, heapAllocAligned, FUN_001765e0, sscanf, heapAllocAligned, FUN_00174940, sscanf, heapAllocAligned, FUN_00174940, heapAllocAligned, FUN_001765e0 (the special classes: file header)
 
@@ -272,6 +275,10 @@ StageObject *createMapObject(const char *name, void *collision)
         return new StageCar();
     if (strcmp(name, kElevatorModel) == 0)
         return new StageElevator(collision);
+    // PC: the ROM also builds the scene's number-lock view here (0x2a89b0 into
+    // StageScene +0x90) when there is none; not written yet.
+    if (strcmp(name, kNumLockModelA) == 0 || strcmp(name, kNumLockModelB) == 0)
+        return new NumLock();
     int number = 0;
     if (name[0] == kMapModelPrefix) {
         const char *door = strstr(name, kDoorPartR);

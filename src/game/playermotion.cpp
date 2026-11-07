@@ -9,6 +9,7 @@
 #include "game/characterbrain.h"
 #include "game/characterroute.h"
 #include "game/menuprogset.h"
+#include "game/numlock.h"
 #include "game/playermotion.h"
 #include "game/objectproperty.h"
 #include "game/stagedoor.h"
@@ -3760,7 +3761,7 @@ void SpNumLockLink::runTurn()
         }
         if (clicked) {
             lock->playNamedHeard2("NLOCK_REV", lock->m_xform.position, nullptr);
-            numLockSpinDial(lock, counter - 1);
+            static_cast<NumLock *>(lock)->spinDial(counter - 1);
             counter++;
         }
         return;
@@ -3771,9 +3772,9 @@ void SpNumLockLink::runTurn()
     }
     if (!clicked)
         return;
-    if (!numLockDialsRight(lock)) {
+    if (!static_cast<NumLock *>(lock)->dialsRight()) {
         lock->playNamedHeard2("NLOCK_REV", lock->m_xform.position, nullptr);
-        numLockSetDial(lock, counter);
+        static_cast<NumLock *>(lock)->setDial(counter);
         counter++;
     }
     else if (waited >= kSettleSeconds) {
@@ -3796,7 +3797,7 @@ void SpNumLockLink::runTurn()
 void SpNumLockLink::runSettle()
 {
     constexpr float kSettleSeconds = 3.0f;
-    if (numLockDialsTurning(lock))
+    if (static_cast<NumLock *>(lock)->dialsTurning())
         return;
     waited += gStageScene->clock->getDeltaSeconds();
     if (waited >= kSettleSeconds)
@@ -3820,7 +3821,7 @@ void SpNumLockLink::runReach()
 }
 
 // FS2 0x00281bb0
-// callcheck: isBoneEnding, playNamedHeard2, setActive, setShown, numLockSpinDial, isBoneEnding, numLockDialsRight, playNamedHeard2, numLockSetDial, playNamedHeard2, setActive, setShown, request, request, numLockDialsTurning, getDeltaSeconds, request, isBoneEnding, find6, find6, request (runTurn, runSettle, runReach; slot +0x1f4 getKind)
+// callcheck: isBoneEnding, playNamedHeard2, setActive, setShown, spinDial, isBoneEnding, dialsRight, playNamedHeard2, setDial, playNamedHeard2, setActive, setShown, request, request, dialsTurning, getDeltaSeconds, request, isBoneEnding, find6, find6, request (runTurn, runSettle, runReach; slot +0x1f4 getKind)
 
 void SpNumLockLink::onRun()
 {

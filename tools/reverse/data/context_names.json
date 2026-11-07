@@ -33605,47 +33605,173 @@
   "was": "FUN_002a6980",
   "why": "sheet kind to the sound kind 1..9"
  },
+ "002a6ab0": {
+  "name": "NumLock::~NumLock",
+  "tag": "game-inferred",
+  "was": "FUN_002a6ab0",
+  "why": "deleting dtor of the 0x280 object createMapObject builds for oMK21_06 / oSJ08_07: sets the four vtables 0x318870.. then ~StageMapObject"
+ },
+ "002a6b40": {
+  "name": "NumLock::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_002a6b40",
+  "why": "returns 5 in the getKind slot (+0x1b8): StageObject_NumLock, which the number-lock view tests through slot +0x1f4"
+ },
+ "002a6b50": {
+  "name": "NumLock::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_002a6b50",
+  "why": "empty, in sideHook3's slot of the collision side table (slot 11, after sideHook2 0x1771b0)"
+ },
+ "002a6b60": {
+  "name": "NumLock::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_002a6b60",
+  "why": "empty, in sideHook0's slot (slot 8): unlike the base's it keeps no moved flag, like StageElevator's"
+ },
  "002a6b70": {
-  "name": "numLockScramble",
+  "name": "NumLock::scramble",
   "tag": "game-inferred",
   "was": "FUN_002a6b70",
-  "why": "four random dials unlike the code and the current ones"
+  "why": "was numLockScramble: the object in a0, four random dials each neither the code's digit nor the one it shows, then NmlPose::setDials"
  },
  "002a6c40": {
-  "name": "numLockPopDials",
+  "name": "NumLock::popDials",
   "tag": "game-inferred",
   "was": "FUN_002a6c40",
-  "why": "restores what 0x2a6cd0 kept and the object's active state"
+  "why": "was numLockPopDials: stack of one at +0x244, restores the tree's active / shown and the four dials, answers the depth or -1"
  },
  "002a6cd0": {
-  "name": "numLockPushDials",
+  "name": "NumLock::pushDials",
   "tag": "game-inferred",
   "was": "FUN_002a6cd0",
-  "why": "keeps the four dials of pose +0x3f0 on a stack of one, sets the new ones"
+  "why": "was numLockPushDials: saves m_active and the four dials, a negative argument keeps its dial, answers the depth or -1 when full"
+ },
+ "002a6e30": {
+  "name": "NumLock::setInView",
+  "tag": "game-inferred",
+  "was": "FUN_002a6e30",
+  "why": "empty member: the number-lock view 0x2a8a30 calls it on its lock with 0 as it closes, 0x2a8b60 as it opens; purpose unknown"
  },
  "002a6e40": {
-  "name": "numLockSpinDial",
+  "name": "NumLock::spinDial",
   "tag": "game-inferred",
   "was": "FUN_002a6e40",
-  "why": "a dial of the NmlPose to a random number, not the code's (+0x240) nor the shown one"
+  "why": "was numLockSpinDial: one dial to a random number that is neither the code's digit nor the one shown"
  },
  "002a6ee0": {
-  "name": "numLockSetDial",
+  "name": "NumLock::setDial",
   "tag": "game-inferred",
   "was": "FUN_002a6ee0",
-  "why": "a dial of the NmlPose to the code's number"
+  "why": "was numLockSetDial: NmlPose::setDial(dial, code[dial])"
+ },
+ "002a6f00": {
+  "name": "NumLock::dialDown",
+  "tag": "game-inferred",
+  "was": "FUN_002a6f00",
+  "why": "dial a1 to (number + 7) mod 8 through NmlPose::getDial / setDial; the NLOCK_REV branch of the view 0x2a8d00 calls it"
+ },
+ "002a6f60": {
+  "name": "NumLock::dialUp",
+  "tag": "game-inferred",
+  "was": "FUN_002a6f60",
+  "why": "dial a1 to (number + 1) mod 8, the twin of 0x2a6f00 in the view 0x2a8d00"
  },
  "002a6fc0": {
-  "name": "numLockDialsRight",
+  "name": "NumLock::dialsRight",
   "tag": "game-inferred",
   "was": "FUN_002a6fc0",
-  "why": "the four dials show the code at +0x240"
+  "why": "was numLockDialsRight: the four dials equal the code at +0x240"
  },
  "002a7070": {
-  "name": "numLockDialsTurning",
+  "name": "NumLock::dialsTurning",
   "tag": "game-inferred",
   "was": "FUN_002a7070",
-  "why": "a dial's angle at pose +0x3e0 is off its number by 0.01 or more"
+  "why": "was numLockDialsTurning: a dial's angle (pose +0x3e0) is 0.01 or more from its number's"
+ },
+ "002a71c0": {
+  "name": "NumLock::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_002a71c0",
+  "why": "empty, in sideHook1's slot (slot 9)"
+ },
+ "002a71d0": {
+  "name": "NumLock::setMotionList",
+  "tag": "game-inferred",
+  "was": "FUN_002a71d0",
+  "why": "slot of StageMapObject::setMotionList: calls it with arg 1, then takes the code from StageResult +0x90, four random digits not all zero when none"
+ },
+ "002a7340": {
+  "name": "NumLock::NumLock",
+  "tag": "game-inferred",
+  "was": "FUN_002a7340",
+  "why": "ctor: StageMapObject(1), the four vtables, setDirtyTree(1), depth 0, the light (0, pi/2, 0) and (1, 1, 1) the view hands ModelInstance::setLight"
+ },
+ "002a73e0": {
+  "name": "NumLock::sideHook3_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_002a73e0",
+  "why": "adjustor thunk to 0x2a6b50 in the side table 0x318894"
+ },
+ "002a73f0": {
+  "name": "NumLock::sideHook1_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_002a73f0",
+  "why": "adjustor thunk to 0x2a71c0 in the side table 0x318894"
+ },
+ "002a7400": {
+  "name": "NumLock::sideHook0_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_002a7400",
+  "why": "adjustor thunk to 0x2a6b60 in the side table 0x318894"
+ },
+ "002a7410": {
+  "name": "NumLock::~NumLock_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_002a7410",
+  "why": "adjustor thunk -0x40 to the deleting dtor 0x2a6ab0 (ScriptRunner side)"
+ },
+ "002a7420": {
+  "name": "NmlPose::update",
+  "tag": "game-inferred",
+  "was": "FUN_002a7420",
+  "why": "slot 2 of NmlPose's vtable 0x318b10: ModelPose::update's shape (advance, solve 5, Final from Current) with easeDials on the dial bones"
+ },
+ "002a75d0": {
+  "name": "NmlPose::easeDials",
+  "tag": "game-inferred",
+  "was": "FUN_002a75d0",
+  "why": "each dial angle (+0x3e0) a 1/frames step towards -number * 2pi / 8 the short way, then quatFromAxisAngle about x into the dial bone's Current rotation"
+ },
+ "002a7800": {
+  "name": "NmlPose::getDial",
+  "tag": "game-inferred",
+  "was": "FUN_002a7800",
+  "why": "(int) of the float at +0x3f0 + 4 * a1, 14 callers in the number lock"
+ },
+ "002a7820": {
+  "name": "NmlPose::setDial",
+  "tag": "game-inferred",
+  "was": "FUN_002a7820",
+  "why": "the float at +0x3f0 + 4 * a1 = a2"
+ },
+ "002a7840": {
+  "name": "NmlPose::setDials",
+  "tag": "game-inferred",
+  "was": "FUN_002a7840",
+  "why": "the four floats at +0x3f0 from a1..a4 and the snap flag +0x400 = 1"
+ },
+ "002a7890": {
+  "name": "NmlPose::load",
+  "tag": "game-inferred",
+  "was": "FUN_002a7890",
+  "why": "slot 1: ModelPose::load, then the bone indices of bn_kanagu, bn_key, bn_k04..bn_k01, easeDials at once; returns 1"
+ },
+ "002a79f0": {
+  "name": "NmlPose::~NmlPose",
+  "tag": "game-inferred",
+  "was": "FUN_002a79f0",
+  "why": "slot 0, deleting dtor: vtable 0x318b10 then ~ModelPose"
  },
  "002a7a50": {
   "name": "NmlPose::NmlPose",

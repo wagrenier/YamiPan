@@ -253,12 +253,6 @@ void gsFrameFilter(sceVif1Packet *packet, const sceGsDrawEnv1 *env, int w, int h
 
 
 // stub of FS2 0x001d3d20
-// stub of FS2 0x002a7a50
-NmlPose::NmlPose(int, int, int, int)
-{
-    YAMIPAN_STUB("NmlPose::NmlPose", 0x002a7a50);
-}
-
 // stub of FS2 0x002b37d0
 SkyPose::SkyPose(int, int)
 {
@@ -440,26 +434,6 @@ void elevatorMove(StageObject *elevator, bool toB3, bool fast)
     YAMIPAN_STUB("elevatorMove", 0x00294f90);
 }
 
-// stub of FS2 0x002a6c40
-int numLockPopDials(StageObject *lock)
-{
-    YAMIPAN_STUB("numLockPopDials", 0x002a6c40);
-    return {};
-}
-
-// stub of FS2 0x002a6cd0
-int numLockPushDials(StageObject *lock, int a, int b, int c, int d)
-{
-    YAMIPAN_STUB("numLockPushDials", 0x002a6cd0);
-    return {};
-}
-
-// stub of FS2 0x002a6b70
-void numLockScramble(StageObject *lock)
-{
-    YAMIPAN_STUB("numLockScramble", 0x002a6b70);
-}
-
 // stub of FS2 0x002b2b70
 void SceneOwnedObject::setSevenKeyNumbers(const char *name, int a, int b, int c, int d)
 {
@@ -518,28 +492,3 @@ void SceneOwnedObject::takeMotionUser(StageObject *user)
     YAMIPAN_STUB("SceneOwnedObject::takeMotionUser", 0x00000000);
 }
 
-// stub of FS2 0x002a6fc0
-bool numLockDialsRight(StageObject *lock)
-{
-    YAMIPAN_STUB("numLockDialsRight", 0x002a6fc0);
-    return {};
-}
-
-// stub of FS2 0x002a7070
-bool numLockDialsTurning(StageObject *lock)
-{
-    YAMIPAN_STUB("numLockDialsTurning", 0x002a7070);
-    return {};
-}
-
-// stub of FS2 0x002a6ee0
-void numLockSetDial(StageObject *lock, int dial)
-{
-    YAMIPAN_STUB("numLockSetDial", 0x002a6ee0);
-}
-
-// stub of FS2 0x002a6e40
-void numLockSpinDial(StageObject *lock, int dial)
-{
-    YAMIPAN_STUB("numLockSpinDial", 0x002a6e40);
-}
