@@ -4831,7 +4831,8 @@
 /* 001dc950 00000108 */ CharacterBrain::revive(){}  // game
 /* 001dca60 00000250 */ CharacterBrain::suspend(){}  // game
 /* 001dccb0 000004c4 */ CharacterBrain::switchSlot(){}  // game
-/* 001dd180 00000168 */ CharacterBrain::dropSlots(){}  // game
+/* 001dd180 00000160 */ CharacterBrain::dropSlots(){}  // game
+/* 001dd2e0 00000008 */ CharacterBrain::answerNo(){}  // game
 /* 001dd2f0 00000040 */ CharacterBrain::updateRoute(){}  // game
 /* 001dd330 000000b0 */ CharacterBrain::update(){}  // game
 /* 001dd3e0 00000008 */ CharacterBrain::isEnabled(){}  // game
@@ -5810,11 +5811,6 @@
 /* 0021b1a0 00000014 */ StageCharacter::getWeaponRounds(){}  // game
 /* 0021b1c0 000000b0 */ StageCharacter::getShortWeaponClass(){}  // game
 /* 0021b280 000000b0 */ StageCharacter::getLongWeaponClass(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
 /* 0021b340 0000002c */ StageCharacter::dropLongWeapon(){}  // game
 /* 0021b370 00000080 */ StageCharacter::scriptTakeItem(){}  // game
 /* 0021b3f0 00000058 */ StageCharacter::shout(){}  // game
@@ -5823,11 +5819,6 @@
 /* 0021b890 000000cc */ StageCharacter::scriptHeardKind(){}  // game
 /* 0021b960 00000008 */ StageCharacter::answerNo(){}  // game
 /* 0021b970 00000094 */ StageCharacter::scriptSetBrainEntry(){}  // game
-
-// *****************************************************************************
-// FILE -- game/playermotion.cpp
-// *****************************************************************************
-
 /* 0021ba10 00000154 */ StageCharacter::setBrainState(){}  // game
 /* 0021bb70 00000014 */ StageCharacter::getBrainPace(){}  // game
 /* 0021bb90 0000034c */ StageCharacter::takeNamedItems(){}  // game

@@ -1238,6 +1238,10 @@
      "0021b330"
     ],
     [
+     "0021b340",
+     "0021ba04"
+    ],
+    [
      "0021ba10",
      "0021bb64"
     ],
@@ -1514,7 +1518,7 @@
    ],
    "status": "verify",
    "task": "PlayerMotion::takeHits 0x1e18c0..0x1e3e80 past its first line: it requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice",
-   "why": "0x26c650..0x26c6fc joined 2026-11-07 (was unassigned@0026c650): MotionProbe::~MotionProbe and MotionProbe::MotionProbe, the probe's own dtor and ctor, right after MotionProbe::faceAhead 0x26c4b0 (here) and before SubSceneData::findModel 0x26c700 (game/demoevent.cpp); PlayerMotion's ctor and dtor (here) are their only callers; before that: 0x217be0..0x2184a8 joined 2026-11-07 (was unassigned@00217be0): StageCharacter::getFoeWeight .. wasPlacedThisFrame, 14 of its 16 functions already reconstructed here (setMotionByLabel, scriptHurt, allowPath, getLightReach, ...) and doNothing inline in gamehooks.h, between ageSightTable 0x217a80 (stageplayer.cpp) and noticeItem 0x2184b0 (here); before that: 0x219be0..0x21aba8 joined 2026-11-07 (was unassigned@00219be0): StageCharacter::waitMotionChange .. setScriptPointToMoveGoal, 15 of its 19 functions already reconstructed here (pickNearestFoe, addFoeWeight, noteMotion, ...), between doorActions 0x219b30 and getBiteTarget 0x21abb0, both here; before that: 0x20ce10..0x20ce70 joined 2026-11-07 (was unassigned@0020ce10): StageCharacter::getWeaponRange, between canFireLongWeapon 0x20cc50 and getAttackReach 0x20ce80, both here; before that: 0x20e6a0..0x210938 joined 2026-11-07 (was unassigned@0020e6a0): playerEvent .. canSeeThisFrame, 11 StageCharacter members already reconstructed here (takeDamage, hasBiter, isUp, ...), between canLockDoor's 0x20d650 run and canSee 0x210940; before that: 0x214a70..0x214ce8 joined 2026-11-07 (was unassigned@00214a70): StageObjRecord::init and StageCharacter::findNearestFoe, between this file's 0x212530 run and isEnemyOf 0x214d40, which findNearestFoe calls; before that: 0x2160a0..0x216130 joined 2026-11-07 (was unassigned@002160a0): the out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level, placed by CodeWarrior right after getSides 0x211970..0x2122f8 (was unassigned@00211970): StageCharacter predicates between getTakenOverPlayer and isViewedThrough, isTakenOver and canBeJacked already here. 0x1dff40..0x1e06e4 (levelBlocked, ladderBlocked, winsStruggle: PlayerMotion's ladder and ledge checks) sits between PlayerMotion::setScope and PlayerMotion::endFrame."
+   "why": "0x21b340..0x21ba04 joined 2026-11-07 (was unassigned@0021b340): StageCharacter::dropLongWeapon .. scriptSetBrainEntry (takeItem, shout, reload, findLooseWeapon, heardKind, answerNo), all reconstructed here, between getLongWeaponClass 0x21b280 and setBrainState 0x21ba10, both here; before that: 0x26c650..0x26c6fc joined 2026-11-07 (was unassigned@0026c650): MotionProbe::~MotionProbe and MotionProbe::MotionProbe, the probe's own dtor and ctor, right after MotionProbe::faceAhead 0x26c4b0 (here) and before SubSceneData::findModel 0x26c700 (game/demoevent.cpp); PlayerMotion's ctor and dtor (here) are their only callers; before that: 0x217be0..0x2184a8 joined 2026-11-07 (was unassigned@00217be0): StageCharacter::getFoeWeight .. wasPlacedThisFrame, 14 of its 16 functions already reconstructed here (setMotionByLabel, scriptHurt, allowPath, getLightReach, ...) and doNothing inline in gamehooks.h, between ageSightTable 0x217a80 (stageplayer.cpp) and noticeItem 0x2184b0 (here); before that: 0x219be0..0x21aba8 joined 2026-11-07 (was unassigned@00219be0): StageCharacter::waitMotionChange .. setScriptPointToMoveGoal, 15 of its 19 functions already reconstructed here (pickNearestFoe, addFoeWeight, noteMotion, ...), between doorActions 0x219b30 and getBiteTarget 0x21abb0, both here; before that: 0x20ce10..0x20ce70 joined 2026-11-07 (was unassigned@0020ce10): StageCharacter::getWeaponRange, between canFireLongWeapon 0x20cc50 and getAttackReach 0x20ce80, both here; before that: 0x20e6a0..0x210938 joined 2026-11-07 (was unassigned@0020e6a0): playerEvent .. canSeeThisFrame, 11 StageCharacter members already reconstructed here (takeDamage, hasBiter, isUp, ...), between canLockDoor's 0x20d650 run and canSee 0x210940; before that: 0x214a70..0x214ce8 joined 2026-11-07 (was unassigned@00214a70): StageObjRecord::init and StageCharacter::findNearestFoe, between this file's 0x212530 run and isEnemyOf 0x214d40, which findNearestFoe calls; before that: 0x2160a0..0x216130 joined 2026-11-07 (was unassigned@002160a0): the out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level, placed by CodeWarrior right after getSides 0x211970..0x2122f8 (was unassigned@00211970): StageCharacter predicates between getTakenOverPlayer and isViewedThrough, isTakenOver and canBeJacked already here. 0x1dff40..0x1e06e4 (levelBlocked, ladderBlocked, winsStruggle: PlayerMotion's ladder and ledge checks) sits between PlayerMotion::setScope and PlayerMotion::endFrame."
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -3732,6 +3736,17 @@
   },
   "unassigned@00217be0": {},
   "unassigned@00219be0": {},
+  "unassigned@0021b340": {
+   "notes": "0x21b340..0x21ba04 joined game/playermotion.cpp: all 8 functions reconstructed there (dropLongWeapon, takeItem, shout, reload, findLooseWeapon, heardKind, answerNo, scriptSetBrainEntry). answerNo was an inline return 0 in gamehooks.h; the ROM tail-jumps to 0x1dd2e0 with a0 = m_brain (+0x220), now CharacterBrain::answerNo (always 0, never reads this; batch 219, function created with ghidra.py mkfunc and saved). The host guards a null brain. Nothing on screen shows it: no script on the disc reaches the slot. Smoke run unchanged: the language select. hazards.md has the trap (a j-only callee folded after an epilogue).",
+   "sessions": [
+    {
+     "date": "2026-11-07 15:32",
+     "status": "verify",
+     "summary": "StageCharacter::answerNo forwards to its brain: 0x1dd2e0, a return 0 folded into the tail of CharacterBrain::dropSlots, created and named CharacterBrain::answerNo; the run pinned to game/playermotion.cpp"
+    }
+   ],
+   "status": "verify"
+  },
   "unassigned@0021e120": {},
   "unassigned@0022fc50": {},
   "unassigned@00231410": {},

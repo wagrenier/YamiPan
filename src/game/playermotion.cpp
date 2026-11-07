@@ -11946,6 +11946,17 @@ StageObject *StageCharacter::scriptTakeItem()
     return item;
 }
 
+// FS2 0x0021b960: the slot's thunk is 0x0017e750 (stagecharacter.cpp).
+// callcheck: answerNo
+
+int StageCharacter::answerNo()
+{
+    // PC: the ROM jumps with a null brain too; the body never reads it.
+    if (m_brain == nullptr)
+        return 0;
+    return m_brain->answerNo();
+}
+
 // The four script kinds a character takes, into the brain's slots.
 // FS2 0x0021b970: the slot's thunk is 0x0017e7c0.
 // callcheck: setSlotEntry, setSlotEntry, setSlotEntry, setSlotEntry

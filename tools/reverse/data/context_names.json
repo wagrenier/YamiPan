@@ -20963,6 +20963,12 @@
   "was": "FUN_001dd180",
   "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
  },
+ "001dd2e0": {
+  "name": "CharacterBrain::answerNo",
+  "tag": "game-inferred",
+  "was": "FUN_001dd2e0",
+  "why": "jr ra / move v0,zero: always 0; its only caller StageCharacter::answerNo 0x21b960 tail-jumps here with a0 = the character's brain (+0x220); folded into the tail of CharacterBrain::dropSlots until created 2026-11-07"
+ },
  "001dd2f0": {
   "name": "CharacterBrain::updateRoute",
   "tag": "game-inferred",

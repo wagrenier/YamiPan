@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 15:13 at commit `0b198f0` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 15:32 at commit `22a8112` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 15:13 at commit `0b198f0` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6597**, named **5682** (86%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4761
-- context-name ledger: 6357 entries; overrides of wrong library matches: 0
-- placed in a source file: 6312/6597 in 137 files
+- game functions: **6598**, named **5683** (86%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4762
+- context-name ledger: 6358 entries; overrides of wrong library matches: 0
+- placed in a source file: 6321/6598 in 137 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5719**; stubs: **17**
+- reconstructed FS2 functions: **5720**; stubs: **17**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -81,7 +81,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/pausemenu.cpp` | 7 | 0 |
 | `src/game/pausemenustate.cpp` | 12 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
-| `src/game/playermotion.cpp` | 636 | 0 |
+| `src/game/playermotion.cpp` | 637 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rand48.cpp` | 3 | 0 |
@@ -174,13 +174,13 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 198 TUs: todo 76, partial 8, verify 135, done 46
-- next: **unassigned@0021b340** (frontier score 1)
+- 197 TUs: todo 76, partial 7, verify 136, done 46
+- next: **unassigned@002a0040** (frontier score 1)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
-- verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
+- verify: `game/characterbrain.cpp` 140/167 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
 - verify: `game/characterground.cpp` 20/20 -- All code of the TU is written. Seen in a 285 s New Game run, no crash: F_PC01 stands at z 1139.2 on the ray's floor (attr 59, landed) for the 1320 frames logged
 - verify: `game/characterinput.cpp` 11/11 -- All code of the TU is written; the control hook's input half now runs in stageUpdateCharacterMotions. Seen in a 285 s New Game run with the scripted left stick 
 - verify: `game/characterroute.cpp` 150/175 -- All of 0x21efa0..0x22fc50 is written (batch 155). Proved: wayoutcmp.py ran the ROM 0x227f30 beside the host findWayOut on 12 stages rute files, 1800 questions, 
@@ -222,7 +222,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
 - verify: `game/pausemenu.cpp` 7/7 -- New game/pausemenu.cpp and .h (PauseMenuChoice moved from gamehooks.h, PauseMenuScreen for answers 4..9, help pages 0 and 7). Fix outside the file: StageScene::
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
-- verify: `game/playermotion.cpp` 535/549 -- The two functions of unassigned@0026c650 are the probe's own ctor and deleting dtor, joined into this TU (range 0x26c4b0..0x26c6fc). The ROM news a 0xc spread b
+- verify: `game/playermotion.cpp` 543/557 -- The two functions of unassigned@0026c650 are the probe's own ctor and deleting dtor, joined into this TU (range 0x26c4b0..0x26c6fc). The ROM news a 0xc spread b
 - verify: `game/prgmccard.cpp` 7/7 -- All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide close
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/ripplesheet.cpp` 7/10 -- Batch 164. What the notes called stage 0x1b's boss film is a 15 by 15 ripple sheet, 0x2d10f0..0x2d3700, SightJack +0xb4: the frame bent, pushed from a tint, cre
@@ -309,12 +309,14 @@ Least-named game-code regions (64 KB blocks):
 - verify: `unassigned@0012c9b8` 0/0 -- This key is empty now: 0x12c9b8..0x12cce0 is newlib (layout.json lib_ranges libc row, architecture.md libc bullet, batch 199 also names __sinit 0x123910, __sfvw
 - verify: `unassigned@001dff40` 0/0 -- The run 0x1dff40..0x1e06e4 held levelBlocked and ladderBlocked (already written) and 0x1e05b0, now PlayerMotion::winsStruggle (batch 218): true when this motion
 - verify: `unassigned@002176d0` 0/0 -- This key is empty now. 0x2176d0 isViewLinked was already written in src/game/stagecharacter.cpp, now in its range; 0x217700..0x217a80 joined game/playermotion.c
+- verify: `unassigned@0021b340` 0/0 -- 0x21b340..0x21ba04 joined game/playermotion.cpp: all 8 functions reconstructed there (dropLongWeapon, takeItem, shout, reload, findLooseWeapon, heardKind, answe
 - verify: `unassigned@0029f2a0` 0/0 -- Both written from the ROM. findNumLockTarget: first object of StageObjectList group 1 whose name the number-lock handle (StageScene owned[1], +0x90) has a pair 
 - verify: `unassigned@002b0d50` 0/0 -- The run was one instruction: j 0x1441a0 (SoundStream::getDataWritten) with a0 unchanged, the out-of-line copy of an inline forward, the first function before De
 - verify: `yamipan/rendering/model_renderer.cpp` 0/0 -- Fix for the user's crash on turning left in node 4, confirmed fixed by the user's play. drawBatch read batch.uvs unchecked. The batch is a single unskinned tria
 
 Recent sessions:
 
+- 2026-11-07 15:32 `unassigned@0021b340` verify: StageCharacter::answerNo forwards to its brain: 0x1dd2e0, a return 0 folded into the tail of CharacterBrain::dropSlots, created and named CharacterBrain::answer
 - 2026-11-07 15:13 `unassigned@001dff40` verify: 0x1e05b0 is PlayerMotion::winsStruggle, who keeps a ladder when two characters push on it; the run pinned to game/playermotion.cpp
 - 2026-11-07 14:52 `unassigned@002b0d50` verify: 0x2b0d50 is DemoStream::getDataWritten, one jump to SoundStream::getDataWritten; pinned to game/demoevent.cpp
 - 2026-11-07 14:34 `game/playermotion.cpp` verify: MotionProbe ctor 0x26c6b0 and deleting dtor 0x26c650 out of line; 0x26c650..0x26c6fc joined from unassigned@0026c650
@@ -322,14 +324,12 @@ Recent sessions:
 - 2026-11-07 13:52 `game/playermotion.cpp` verify: StageCharacter::isCompanionWalking 0x2119d0 and canTakeOver 0x212020; run 0x211970..0x2122f8 (was unassigned@00211970) pinned into this file
 - 2026-11-07 13:33 `game/playermotion.cpp` verify: unassigned@00219be0 joined playermotion.cpp; addFoeWeightBySight and setScriptPointToMoveGoal reconstructed
 - 2026-11-07 13:12 `game/playermotion.cpp` verify: StageCharacter::getWeaponRange 0x20ce10 joined playermotion.cpp (was unassigned@0020ce10): out of line beside getAttackReach, no longer an inline in gamehooks.h
-- 2026-11-07 12:58 `rena/rena_2d_texture_tim2.cpp` verify: Tim2Texture::getTex0 0x2e1b10 written; the file now starts there, hand stub gone
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002e2970` | partial | 1/0/2 | 0.9 | 1 | 0 |
-| `unassigned@0021b340` | partial | 7/0/8 | 1.7 | 1 | 0 |
-| `unassigned@002c42a0` | todo | 0/1/93 | 39.0 | 1 | 0 |
 | `unassigned@002a0040` | todo | 0/0/9 | 4.3 | 1 | 0 |
+| `unassigned@002c42a0` | todo | 0/1/93 | 39.0 | 1 | 0 |
+| `unassigned@002e2970` | partial | 1/0/2 | 0.9 | 1 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

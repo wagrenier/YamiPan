@@ -232,6 +232,9 @@ public:
     int  overlayMark() const;                                            // FS2 0x001dc900
     // Back to slot 0 of the normal state, dropping the slots; all: every one.
     void dropSlots(bool all);                                            // FS2 0x001dd180
+    // Always 0; StageCharacter::answerNo tail-jumps here with its brain,
+    // which the ROM never tests (this is not read).
+    int  answerNo() const { return 0; }                                  // FS2 0x001dd2e0
     // Clears the slots; a live brain goes back to the normal state's.
     void resetScripts();                                                 // FS2 0x001d85d0
 
