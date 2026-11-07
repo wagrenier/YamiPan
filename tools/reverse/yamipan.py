@@ -39,6 +39,8 @@ REIPAN = Path(os.environ.get('YAMIPAN_REIPAN', REPO.parent / 'ReiPan'))
 MIOPAN = Path(os.environ.get('YAMIPAN_MIOPAN') or next(
     (p for p in (REPO.parent / 'MioPan', REPO.parent / 'MioPan-Mikompilation') if p.exists()), REPO.parent / 'MioPan'))
 ROSEPAN = Path(os.environ.get('YAMIPAN_ROSEPAN', REPO.parent / 'RosePan'))
+# IOP import names (read-only, optional): PCSX2's table of Sony IOP library exports by index (iop.py).
+PCSX2 = Path(os.environ.get('YAMIPAN_PCSX2', REPO.parent / 'pcsx2'))
 REFERENCES = (
     # (label, ELF, function list, note)
     ('ff3', REIPAN / 'SLES_538.25', REIPAN / 'ff3_functions.txt', 'Sony SDK 3.0 libraries (same versions as FS2)'),

@@ -32,9 +32,10 @@ Serial, region, build date, entry, gp (`.reginfo`), compiler family and ABI, sym
 - **Sony libraries: SDK 3.0** (`PsIIlib<name><ver>` strings): libgraph 3000 0x2f1080, libdma 3000,
   libipu 3000, libcdvd 3000, libpad 3020, libmc 3030, libkernl 3000, libscf 3000; IOP replacement
   `ioprp300.img`. Sony's libc/stdio semaphores (`SceStdio*Sema`, `SceKernelLibc`) are present.
-- **IOP modules** (`MODULES\`, `IOPCONF.CNF`): IOPRP300.IMG, SIO2MAN, PADMAN, MCMAN, MCSERV, LIBSD,
-  SDRDRV and the game's own **RXSNDDRV.IRX** (the rx sound driver). The ELF also names cdvdfsv,
-  cdvdman, fileio, sifcmd, usbd. `SYSTEM.CNF`: `VER = 1.00`, `VMODE = PAL`.
+- **IOP modules** (`MODULES\`, `IOPCONF.CNF`; "The IOP side" has all of it): IOPRP300.IMG, SIO2MAN,
+  PADMAN, MCMAN, MCSERV, LIBSD and the game's own **RXSNDDRV.IRX** (the rx sound driver, RoR's, revised);
+  SDRDRV.IRX is on the disc and unloaded. The ELF also names cdvdfsv, cdvdman, fileio, sifcmd, usbd.
+  `SYSTEM.CNF`: `VER = 1.00`, `VMODE = PAL`.
 - **Middleware: "rx"** (SCE's in-house runtime; `$RX_SCE_LIBRARY_VERSION:4` at 0x2f088d): rxsys
   (IOP module binding), rxfile (`rxfile.c` 0x3016c0, `filehost.c` 0x301908; disc / host / HDD devices,
   a request-queue thread), rxsnd / rxsndstr / rxsndut (XVAB banks, XSEQ, BGM / SE / PCM / ADPCM
@@ -1867,6 +1868,50 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
 - **The game's movie player is FS2's own, not RoR's rxMpeg** (batch 012; written at TU 34, `game/movieplayer.cpp` in "Modules" supersedes the guesses here): RoR's `RxMpeg` / `rxMpeg*` (snd/rxmpeg.cpp, RoR game code) has no counterpart by size (`rxalign.py 1fa800 1fd000 1810f4 1830fc`: 3 chance pairs). FS2's player is a C++ class at ~0x1fa880..~0x1fcbf0 (vtables 0x315f50 / 0x315f80 without type_info): 0x1fc7b0 initialises it (CreateSema, `sceMpegInit` once behind the flag 0x31ae28, 4 x volume 0x80), 0x1fb9d0 opens a stream (rx stream ring 0x152400, `sceMpegCreate`, `sceMpegAddStrCallback` x4, `sceMpegAddCallback`), 0x1fb630 gets pictures (`sceMpegGetPicture`), 0x1fab50 is the decode thread side (WaitSema, `sceMpegIsEnd`); 0x1fbe00 / 0x1fbe20 wrap `sceIpuRestartDMA` / `sceIpuStopDMA` (the libmpeg stop / restart DMA callbacks). Callers: 0x25bd30, 0x25e260 (the movie scenes: `movieEU/ev*.d2b`). Name it at its TU.
 - **libc** (Sony's newlib): `strlen` 0x128498, `strcpy` 0x128380 (R5900 quadword scans), `raise`
   0x127a68 / `_raise_r` 0x1278f8, `_impure_ptr` 0x2f3398.
+
+## The IOP side (`MODULES\`, 2026-11-06, `tools/reverse/iop.py`)
+
+- **It is all in `MODULES\`.** A raw scan of ROM.000..ROMD.010, SPK.ROM and the ELF finds no ELF and no
+  ROMDIR image inside them (compressed packs were not opened; the game loads modules by name from
+  `modules/`, `IOPCONF.CNF`). `python iop.py extract` unpacks the image to `work/iop/ioprp300/`, `python
+  iop.py report` lists everything; none of it is ever committed.
+- `IOPRP300.IMG` (278,305 bytes, built 2004-08-20) is a ROMDIR image (the IOP boot ROM's layout: RESET,
+  ROMDIR, EXTINFO, then the files 16-aligned) holding **Sony's** 16 replacement modules and no game code:
+  SYSMEM 2.03, LOADCORE 2.06, SIFCMD 2.08, SIFMAN 2.04, THREADMAN 2.03, IOMAN 2.03, MODLOAD 2.09, FILEIO
+  2.12, CDVDMAN 2.26, CDVDFSV 2.26, LOADFILE 2.02, TIMEMANI 2.02, ROMDRV 2.01, EESYNC 2.02, SYSCLIB 2.03,
+  STDIO 2.03. The extracted pieces rebuild the image byte for byte.
+- Loose, loaded by `IOPCONF.CNF` in this order: sio2man 3.11, padman 4.22, mcman 2.30, mcserv 2.10, libsd
+  3.03 (Sony's) and rxsnddrv 1.01. `SDRDRV.IRX` (sdr_driver 4.01) is on the disc, but neither
+  `IOPCONF.CNF` nor the ELF names it: nothing loads it.
+- **`RXSNDDRV.IRX` is the only game IOP code**, the server of the RPC `rx/rxsnd.c` calls: "Sound driver
+  version 1.00", iopmod version 1.01, no symbols. Linked at 0: `.text` 0..0xd520, `.rodata` ..0xe190,
+  `.data` ..0xe920, `.bss` ..0x3f210, gp 0x16910, entry `_start` 0. 40 imports (libsd 15, sysmem 5, sifcmd
+  5, thevent 4, thbase 3, intrman 2, sifman 2, loadcore, stdio, sysclib, vblank), no exports. The
+  dispatcher is 0x360.
+- **It is RoR's driver, revised.** `python iop.py cmp` (table in `work/iop/rxsnddrv_cmp.txt`) compares the
+  two with relocated fields and gp immediates masked: same version strings, the same 40 imports at the same
+  indexes, the same 50 strings, `.rodata` and `.data` the same size; `.text` +0x430, `.bss` +0x6470 (RoR:
+  `.text` ..0xd0f0, `.bss` ..0x38970, gp 0x164e0). 12,794 of RoR's 13,372 words align (95.7%). Of the 192
+  functions of RosePan's `src/iop/rxsnddrv`, **152 are in FS2 word for word** (69% of the code by size), 38
+  changed in place, 2 moved (RxSndDrvXvabGetUsers 0x2d14 -> 0x2e80, RxSndDrvPcmInit 0xb4a0 -> 0xcbd4: the
+  same slot of `_start`'s init calls). **4 functions are FS2's own**: 0x2d9c, 0x3660, 0x4454, 0xd1dc,
+  unread. Most other addresses moved by a growing delta: read FS2's address from the table, never from
+  RosePan's `IOP 0x...` comments.
+- **Not the game's compiler.** FS2's game code is CodeWarrior and RoR's GCC, but this module goes through
+  neither game's build: 152 functions word for word, in the same order with the same register allocation,
+  means one toolchain and one source tree. So every difference is a change in the source, never compiler
+  noise, and RosePan's reconstruction carries over where the table says `=`.
+- What changed, as read from the one-word differences (144 of the 256 differing runs; the field names are
+  still to be proven): `RxSndDrvCommand` grew by 0x88 (the next function moved 0xb08 -> 0xb90, and its switch's branch offsets changed), voice code indexes a
+  table by 16 where RoR has 8 (`sll 4` for `sll 3`), a voice stride 0x38 -> 0x3c with field offsets past
+  +0x1c moved by 4, mix sizes 0x20 -> 0x2c and 0x40 -> 0x58, PCM offsets up by 0x18..0x1c (0x3c -> 0x54, 0x4c -> 0x68),
+  which fits the larger `.bss`.
+- Ghidra: `python iop.py elf <MODULES>/RXSNDDRV.IRX` writes `work/iop/elf/rxsnddrv.elf` (base 0, `_start`,
+  `_gp` and 40 named import stubs as symbols). A throwaway headless import (2026-11-06) gives
+  `MIPS:LE:32:default`, 234 functions (40 import stubs and 194 others), all decompile with no bad
+  instruction data. The 194 are 190 of the table's 192 addresses and the 4 new functions; the other two are
+  `=` functions Ghidra did not split off (0x243c, 0xb770). `_start` reads FlushDcache, sceSdInit(0), sceSifInitRpc(0), the
+  subsystem inits; 0x360 reads as RosePan's dispatcher. ghidra.md "Hazards" has the traps.
 
 ## Disc and data files
 

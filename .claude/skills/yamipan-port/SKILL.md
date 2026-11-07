@@ -203,6 +203,7 @@ what degrades while Ghidra is down.
 | map code | `modview.py range\|tree`, `yamipan_functions.txt`, `stage.py class:Name` |
 | name | `ctxcard.py`, `name_ctx.py`; seeding `sections.py --apply`, `libmatch.py --apply`, `rxalign.py` (rx and SDK libs from RosePan), `codeptrs.py` (missing starts behind code pointers) |
 | read code | `stage.py`, `dec.py`, `ghidra.py` (asm, refs, mkfunc), `hidden.py`, `mipsdis.py`, `vudis.py`, `mipsemu.py`, `sinit.py` |
+| IOP modules | `iop.py` (unpack `IOPRP300.IMG`, identify every `.irx`, write a Ghidra-ready ELF of `RXSNDDRV.IRX`, the game's only IOP code; `cmp` places RosePan's reconstruction in FS2's build: architecture.md "The IOP side") |
 | carried-over libraries (rx) | `rxcmp.py` (FS2 vs RoR word for word, `--data` for the data map) |
 | classes | `rtti.py --class / --vtable`, `slotcheck.py` (ROM overrides of the runner's slots the host left on the default) |
 | TU identity | `tuid.py <TU>` (in the brief) |
