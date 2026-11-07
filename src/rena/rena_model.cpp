@@ -475,23 +475,23 @@ int ModelFileNode::countTexAnims() const
 
 ModelPartRec::ModelPartRec(const ModelMesh *mesh, u_short nextRec)
     : firstChild(mesh->firstChild), next(nextRec), childCount(mesh->childCount),
-      vcmAlpha(0), vcmFadeBits(0), vcmOffBits(0), drawMode(0), flagE(0),
+      vcmAlpha(0), vcmFadeBits(0), vcmOffBits(0), drawMode(0), clipped(0),
       hasMesh(mesh->parts.rel != 0)
 {
 }
 
 // FS2 0x002e3b50
 
-void ModelPartRec::setFlagE(u_char value)
+void ModelPartRec::setClipped(u_char value)
 {
-    flagE = value;
+    clipped = value;
 }
 
 // FS2 0x002e3b60
 
-u_char ModelPartRec::getFlagE() const
+u_char ModelPartRec::getClipped() const
 {
-    return flagE;
+    return clipped;
 }
 
 // The ROM unrolls one level of this recursion.
@@ -548,16 +548,16 @@ ModelBone::ModelBone(const ModelNodeBone *rec)
 
 // FS2 0x002e40e0
 
-void ModelInstance::setDistant(u_char value)
+void ModelInstance::setClipped(u_char value)
 {
-    distant = value;
+    clipped = value;
 }
 
 // FS2 0x002e40f0
 
-u_char ModelInstance::getDistant() const
+u_char ModelInstance::getClipped() const
 {
-    return distant;
+    return clipped;
 }
 
 // FS2 0x002e44e0
@@ -603,7 +603,7 @@ void ModelInstance::init(ModelFileNode *fileNode)
 {
     shown = 1;
     flags = 0;
-    distant = 0;
+    clipped = 0;
     ModelFile *file = fileNode->file;
     file->userCount++;
     node = fileNode;

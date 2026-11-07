@@ -113,7 +113,7 @@ Grouped by what the picture needs, with what is known about each. Together: 144 
 - **Doors and special map objects**: `createMapObject`'s classes 0x174940, 0x28e5a0, 0x295360, 0x2a7340,
   0x2b2a60 come out as plain objects, which stand in their places but do not open; `applyDoorRecord` 0x173880, `attachToRoot` 0x173cb0. 19 functions,
   1,166 i.
-- **`AreaClip`** 0x2dbd10 (2,483 i): reached every frame, a stub.
+- **`AreaClip`** 0x2dbd10: written 2026-11-07, game/areaclip.cpp (architecture.md "The area clip").
 - **`gsFrameFilter`** 0x2849c0 (1,903 i, a GS frame effect): the filter of d0101 and the candidate for the
   circling thing. It writes GS passes, so by the user's rule it needs a host pass, not packets.
 

@@ -417,7 +417,7 @@ void drawTree(sceVif1Packet *packet, ModelInstance *model, bool ghost)
     u_int index = 0;
     do {
         const ModelPartRec *rec = &model->partRecs[index];
-        if (rec->flagE != 0 || (rec->drawMode & 2) != 0) {
+        if (rec->clipped != 0 || (rec->drawMode & 2) != 0) {
             index = rec->next;
             continue;
         }
@@ -448,7 +448,7 @@ void drawTree(sceVif1Packet *packet, ModelInstance *model, bool ghost)
 void drawModels(sceVif1Packet *packet, DrawSysRecord *record, int mask)
 {
     for (ModelInstance *model : record->models) {
-        if ((mask & model->drawGroup) == 0 || model->distant != 0 || model->shown == 0)
+        if ((mask & model->drawGroup) == 0 || model->clipped != 0 || model->shown == 0)
             continue;
         setModelLights(packet, model);
         drawTree(packet, model, (model->flags & ModelFlag_Ghost) != 0);

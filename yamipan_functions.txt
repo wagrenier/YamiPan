@@ -9065,68 +9065,73 @@
 /* 002dac60 00000008 */ FUN_002dac60(){}
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/areaclip.cpp
 // *****************************************************************************
 
-/* 002dac70 00000050 */ FUN_002dac70(){}
-/* 002dacc0 00000368 */ FUN_002dacc0(){}
-/* 002db030 0000004c */ FUN_002db030(){}
-/* 002db080 000004b4 */ FUN_002db080(){}
-/* 002db540 0000049c */ FUN_002db540(){}
-/* 002db9e0 00000008 */ FUN_002db9e0(){}
-/* 002db9f0 00000320 */ FUN_002db9f0(){}
+/* 002dac70 00000050 */ clipBoxContains(){}  // game
+/* 002dacc0 00000368 */ AreaClip::findTarget(){}  // game
+/* 002db030 0000004c */ ClipTarget::~ClipTarget(){}  // game
+/* 002db080 000004b4 */ AreaClip::boxTouchesCell(){}  // game
+/* 002db540 0000049c */ clipQuadCrossesSegment(){}  // game
+/* 002db9e0 00000008 */ std::abs(float)(){}  // game
+/* 002db9f0 00000320 */ clipQuadContains(){}  // game
 /* 002dbd10 00000da0 */ AreaClip::update(){}  // game
 /* 002dcab0 00000174 */ AreaClip::~AreaClip(){}  // game
 /* 002dcc30 000000b4 */ AreaClip::setup(){}  // game
 /* 002dccf0 000001b8 */ AreaClip::AreaClip(){}  // game
-/* 002dceb0 00000134 */ FUN_002dceb0(){}
-/* 002dcff0 00000060 */ FUN_002dcff0(){}
-/* 002dd050 00000058 */ FUN_002dd050(){}
-/* 002dd0b0 00000008 */ FUN_002dd0b0(){}
-/* 002dd0c0 00000074 */ FUN_002dd0c0(){}
-/* 002dd140 00000114 */ FUN_002dd140(){}
-/* 002dd260 00000098 */ FUN_002dd260(){}
-/* 002dd300 000002a4 */ FUN_002dd300(){}
-/* 002dd5b0 00000074 */ FUN_002dd5b0(){}
-/* 002dd630 000000ac */ FUN_002dd630(){}
-/* 002dd6e0 00000308 */ FUN_002dd6e0(){}
-/* 002dd9f0 0000011c */ FUN_002dd9f0(){}
-/* 002ddb10 000000c0 */ FUN_002ddb10(){}
-/* 002ddbd0 000000ac */ FUN_002ddbd0(){}
-/* 002ddc80 00000068 */ FUN_002ddc80(){}
-/* 002ddcf0 00000208 */ FUN_002ddcf0(){}
-/* 002ddf00 00000008 */ FUN_002ddf00(){}
-/* 002ddf10 00000008 */ FUN_002ddf10(){}
-/* 002ddf20 00000004 */ FUN_002ddf20(){}
-/* 002ddf30 00000008 */ FUN_002ddf30(){}
-/* 002ddf40 000000bc */ FUN_002ddf40(){}
-/* 002de000 00000020 */ FUN_002de000(){}
-/* 002de020 000000dc */ FUN_002de020(){}
-/* 002de100 000000a4 */ FUN_002de100(){}
-/* 002de1b0 00000260 */ FUN_002de1b0(){}
-/* 002de420 00000268 */ FUN_002de420(){}
-/* 002de690 0000011c */ FUN_002de690(){}
-/* 002de7b0 00000164 */ FUN_002de7b0(){}
-/* 002de920 00000480 */ FUN_002de920(){}
-/* 002deda0 0000018c */ FUN_002deda0(){}
-/* 002def30 00000618 */ FUN_002def30(){}
-/* 002df550 00000008 */ FUN_002df550(){}
-/* 002df560 00000008 */ FUN_002df560(){}
-/* 002df570 00000068 */ FUN_002df570(){}
-/* 002df5e0 000000a4 */ FUN_002df5e0(){}
-/* 002df690 00000130 */ FUN_002df690(){}
-/* 002df7c0 0000009c */ FUN_002df7c0(){}
-/* 002df860 0000004c */ FUN_002df860(){}
-/* 002df8b0 00000048 */ FUN_002df8b0(){}
-/* 002df900 0000012c */ FUN_002df900(){}
-/* 002dfa30 00000150 */ FUN_002dfa30(){}
-/* 002dfb80 0000015c */ FUN_002dfb80(){}
-/* 002dfce0 00000040 */ FUN_002dfce0(){}
-/* 002dfd20 00000008 */ FUN_002dfd20(){}
-/* 002dfd30 00000338 */ FUN_002dfd30(){}
-/* 002e0070 00000008 */ FUN_002e0070(){}
-/* 002e0080 00000008 */ FUN_002e0080(){}
-/* 002e0090 00000028 */ FUN_002e0090(){}
+/* 002dceb0 00000134 */ AreaClipFile::relocate(){}  // game
+/* 002dcff0 00000060 */ ClipEffect::~ClipEffect(){}  // game
+/* 002dd050 00000058 */ ClipEffect::setClipped(){}  // game
+/* 002dd0b0 00000008 */ ClipEffect::getClipped(){}  // game
+/* 002dd0c0 00000074 */ ClipIndexList::resize(){}  // game
+/* 002dd140 00000114 */ std::unique(u_short)(){}  // game
+/* 002dd260 00000098 */ std::lower_bound(u_short)(){}  // game
+/* 002dd300 000002a4 */ std::sort(u_short)(){}  // game
+/* 002dd5b0 00000074 */ ClipSet::find(){}  // game
+/* 002dd630 000000ac */ ClipIndexList::erase(){}  // game
+/* 002dd6e0 00000308 */ ClipIndexList::insert(){}  // game
+/* 002dd9f0 0000011c */ ClipIndexList::reserve(){}  // game
+/* 002ddb10 000000c0 */ ClipColumn::resize(){}  // game
+/* 002ddbd0 000000ac */ ClipGrid::resize(){}  // game
+/* 002ddc80 00000068 */ ClipGrid::~ClipGrid(){}  // game
+/* 002ddcf0 00000208 */ ClipSet::eraseTree(){}  // game
+/* 002ddf00 00000008 */ ClipSetAlloc::deallocate(){}  // game
+/* 002ddf10 00000008 */ ClipSetAlloc::header(){}  // game
+/* 002ddf20 00000004 */ ClipSetAlloc::destroy(){}  // game
+/* 002ddf30 00000008 */ ClipSetAlloc::address(){}  // game
+/* 002ddf40 000000bc */ ClipSet::insert(){}  // game
+/* 002de000 00000020 */ ClipSet::ClipSet(){}  // game
+/* 002de020 000000dc */ std::sortPartition(u_short)(){}  // game
+/* 002de100 000000a4 */ std::uniqueCopy(u_short)(){}  // game
+/* 002de1b0 00000260 */ std::sortMedian(u_short)(){}  // game
+/* 002de420 00000268 */ std::sortSmall(u_short)(){}  // game
+/* 002de690 0000011c */ std::sortInsertion(u_short)(){}  // game
+/* 002de7b0 00000164 */ ClipColumn::erase(){}  // game
+/* 002de920 00000480 */ ClipColumn::insert(){}  // game
+/* 002deda0 0000018c */ ClipGrid::erase(){}  // game
+/* 002def30 00000618 */ ClipGrid::insert(){}  // game
+/* 002df550 00000008 */ ClipGridAlloc::address(){}  // game
+/* 002df560 00000008 */ ClipGridAlloc::constAddress(){}  // game
+/* 002df570 00000068 */ ClipColumn::~ClipColumn(){}  // game
+/* 002df5e0 000000a4 */ ClipGrid::clear(){}  // game
+/* 002df690 00000130 */ ClipSet::insertNode(){}  // game
+/* 002df7c0 0000009c */ ClipColumn::clear(){}  // game
+/* 002df860 0000004c */ ClipIndexList::ClipIndexList(){}  // game
+/* 002df8b0 00000048 */ ClipIndexList::operator=(){}  // game
+/* 002df900 0000012c */ ClipIndexList::initRange(){}  // game
+/* 002dfa30 00000150 */ ClipIndexList::assign(){}  // game
+/* 002dfb80 0000015c */ ClipColumn::initRange(){}  // game
+/* 002dfce0 00000040 */ ClipColumn::ClipColumn(){}  // game
+/* 002dfd20 00000008 */ ClipColumnAlloc::copy(){}  // game
+/* 002dfd30 00000338 */ ClipColumn::assign(){}  // game
+/* 002e0070 00000008 */ ClipColumnAlloc::address(){}  // game
+/* 002e0080 00000008 */ ClipColumnAlloc::constAddress(){}  // game
+/* 002e0090 00000028 */ ClipColumn::operator=(){}  // game
+
+// *****************************************************************************
+// FILE -- (unassigned)
+// *****************************************************************************
+
 /* 002e00c0 00000008 */ FUN_002e00c0(){}
 /* 002e00d0 00000008 */ FUN_002e00d0(){}
 /* 002e00e0 00000008 */ FUN_002e00e0(){}
@@ -9230,15 +9235,15 @@
 /* 002e37d0 0000012c */ modelRelocatePrim(){}  // game
 /* 002e3900 00000104 */ modelRelocateBatch(){}  // game
 /* 002e3a10 00000134 */ modelRelocateLongBatch(){}  // game
-/* 002e3b50 00000008 */ ModelPartRec::setFlagE(){}  // game
-/* 002e3b60 00000008 */ ModelPartRec::getFlagE(){}  // game
+/* 002e3b50 00000008 */ ModelPartRec::setClipped(){}  // game
+/* 002e3b60 00000008 */ ModelPartRec::getClipped(){}  // game
 /* 002e3b70 0000002c */ ModelPartRec::~ModelPartRec(){}  // game
 /* 002e3ba0 00000048 */ ModelPartRec::ModelPartRec(){}  // game
 /* 002e3bf0 00000198 */ renaStepTexAnim(){}  // game
 /* 002e3d90 00000074 */ ModelSurface::setFrames(){}  // game
 /* 002e3e10 000002d0 */ ModelSurface::ModelSurface(){}  // game
-/* 002e40e0 00000008 */ ModelInstance::setDistant(){}  // game
-/* 002e40f0 00000008 */ ModelInstance::getDistant(){}  // game
+/* 002e40e0 00000008 */ ModelInstance::setClipped(){}  // game
+/* 002e40f0 00000008 */ ModelInstance::getClipped(){}  // game
 /* 002e4100 00000090 */ ModelInstance::findGroup(){}  // game
 
 // *****************************************************************************

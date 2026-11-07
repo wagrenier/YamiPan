@@ -68,7 +68,7 @@ class RoutePlayer;
 class Tim2Texture;              // game/gsutil.h
 struct AreaGrid;
 struct ClearSequence;
-struct AreaClip;
+class AreaClip;
 struct GameOverSequence;
 struct MenuProgHolder;
 struct MenuProgSet;

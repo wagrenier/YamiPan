@@ -22,6 +22,7 @@
 #include "game/fileloader.h"
 #include "game/fontdata.h"
 #include "game/characterinput.h"
+#include "game/areaclip.h"
 #include "game/gamehooks.h"
 #include "game/stagealert.h"
 #include "game/gameoversequence.h"

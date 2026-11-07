@@ -35093,6 +35093,48 @@
   "was": "FUN_002da220",
   "why": "MSL lower_bound instance over const char * with strcmp, used only on the plant texture table 0x2fd9c0"
  },
+ "002dac70": {
+  "name": "clipBoxContains",
+  "tag": "game-inferred",
+  "was": "FUN_002dac70",
+  "why": "Matrix in a0 times the vector in a1, VCLIP against vf0w: true when x, y, z of the result are all within -1..1. Only caller AreaClip::update, with the file's 0x40-byte boxes. boxContains is taken at 0x231d40."
+ },
+ "002dacc0": {
+  "name": "AreaClip::findTarget",
+  "tag": "game-inferred",
+  "was": "FUN_002dacc0",
+  "why": "From AreaClip::setup per name of the file: looks in rootAny's model and meshes, models named far.., findCharacter, all models, then effectOffset and a new 8-byte vtable 0x31a6e0 object stored in the vector at +0x28."
+ },
+ "002db030": {
+  "name": "ClipTarget::~ClipTarget",
+  "tag": "game-inferred",
+  "was": "FUN_002db030",
+  "why": "Deleting dtor of the base 0x31a700 of ModelInstance 0x31a7f0, ModelPartRec 0x31a7d0 and ClipEffect 0x31a6e0; AreaClip::update calls slot +0xc on them."
+ },
+ "002db080": {
+  "name": "AreaClip::boxTouchesCell",
+  "tag": "game-inferred",
+  "was": "FUN_002db080",
+  "why": "Inverts the box matrix, makes its 8 corners, tests them in cell (a2, a3) of the map rect, cell corners in its 6 faces, cell edges against face edges. Only the ctor calls it, per box and cell."
+ },
+ "002db540": {
+  "name": "clipQuadCrossesSegment",
+  "tag": "game-inferred",
+  "was": "FUN_002db540",
+  "why": "Quad as 4 float pointers, segment a1-a2: line against each edge in slope form with 0.0001 tolerance, true on any crossing. quadCrossesSegment is taken at 0x264d40."
+ },
+ "002db9e0": {
+  "name": "std::abs(float)",
+  "tag": "game-inferred",
+  "was": "FUN_002db9e0",
+  "why": "abs.s of f12, used only by quadCrossesSegment; MSL inline instance."
+ },
+ "002db9f0": {
+  "name": "clipQuadContains",
+  "tag": "game-inferred",
+  "was": "FUN_002db9f0",
+  "why": "(f12, f13) against the 4 edges of a quad of 4 float pointers: all cross products the same sign."
+ },
  "002dbd10": {
   "name": "AreaClip::update",
   "tag": "game-inferred",
@@ -35116,6 +35158,294 @@
   "tag": "game-inferred",
   "was": "FUN_002dccf0",
   "why": "built over the areaclip keyword's file: an 8 x 8 grid of index lists; was the guess DrawLayerList"
+ },
+ "002dceb0": {
+  "name": "AreaClipFile::relocate",
+  "tag": "game-inferred",
+  "was": "FUN_002dceb0",
+  "why": "magic | 0x202020 == ac1 and magic != AC1: sets AC1, relocates +0x30, +0x34 with its count at +8, +0x38 with its count at +4, optional +0x3c. Only the ctor."
+ },
+ "002dcff0": {
+  "name": "ClipEffect::~ClipEffect",
+  "tag": "game-inferred",
+  "was": "FUN_002dcff0",
+  "why": "Deleting dtor of vtable 0x31a6e0, stores it then the base 0x31a700."
+ },
+ "002dd050": {
+  "name": "ClipEffect::setClipped",
+  "tag": "game-inferred",
+  "was": "FUN_002dd050",
+  "why": "Slot +0xc: nodeTree findLive of the name at +4, setEmitting(arg == 0)."
+ },
+ "002dd0b0": {
+  "name": "ClipEffect::getClipped",
+  "tag": "game-inferred",
+  "was": "FUN_002dd0b0",
+  "why": "Slot +0x10: answers 0."
+ },
+ "002dd0c0": {
+  "name": "ClipIndexList::resize",
+  "tag": "game-inferred",
+  "was": "FUN_002dd0c0",
+  "why": "MSL vector<u_short>: erase or insert to a size, with the fill value at 0x31ad18."
+ },
+ "002dd140": {
+  "name": "std::unique(u_short)",
+  "tag": "game-inferred",
+  "was": "FUN_002dd140",
+  "why": "MSL unique over u_short; update drops repeats of the hidden boxes."
+ },
+ "002dd260": {
+  "name": "std::lower_bound(u_short)",
+  "tag": "game-inferred",
+  "was": "FUN_002dd260",
+  "why": "Binary search in a sorted u_short range, answers through a0."
+ },
+ "002dd300": {
+  "name": "std::sort(u_short)",
+  "tag": "game-inferred",
+  "was": "FUN_002dd300",
+  "why": "MSL sort over u_short: partition helpers, recursion, small-list sorts. Equal u_shorts cannot be told apart, so std::sort answers the same."
+ },
+ "002dd5b0": {
+  "name": "ClipSet::find",
+  "tag": "game-inferred",
+  "was": "FUN_002dd5b0",
+  "why": "Tree lookup of a u_short key at node +0xc, header at +4."
+ },
+ "002dd630": {
+  "name": "ClipIndexList::erase",
+  "tag": "game-inferred",
+  "was": "FUN_002dd630",
+  "why": "memcpy of the tail down, size at +4 reduced; update's unique tail."
+ },
+ "002dd6e0": {
+  "name": "ClipIndexList::insert",
+  "tag": "game-inferred",
+  "was": "FUN_002dd6e0",
+  "why": "vector::insert length error string, element size 2."
+ },
+ "002dd9f0": {
+  "name": "ClipIndexList::reserve",
+  "tag": "game-inferred",
+  "was": "FUN_002dd9f0",
+  "why": "vector::reserve length error string, element size 2."
+ },
+ "002ddb10": {
+  "name": "ClipColumn::resize",
+  "tag": "game-inferred",
+  "was": "FUN_002ddb10",
+  "why": "Calls the erase and insert of 0xc-byte vectors; the ctor sizes a column of the grid to 8."
+ },
+ "002ddbd0": {
+  "name": "ClipGrid::resize",
+  "tag": "game-inferred",
+  "was": "FUN_002ddbd0",
+  "why": "Same one level up: the ctor sizes the grid to 8 columns."
+ },
+ "002ddc80": {
+  "name": "ClipGrid::~ClipGrid",
+  "tag": "game-inferred",
+  "was": "FUN_002ddc80",
+  "why": "Destroys the columns, deletes the array; called with the object at AreaClip +4."
+ },
+ "002ddcf0": {
+  "name": "ClipSet::eraseTree",
+  "tag": "game-inferred",
+  "was": "FUN_002ddcf0",
+  "why": "Recursive tree delete, from the end of update."
+ },
+ "002ddf00": {
+  "name": "ClipSetAlloc::deallocate",
+  "tag": "game-inferred",
+  "was": "FUN_002ddf00",
+  "why": "operator_delete of a node, MSL allocator instance."
+ },
+ "002ddf10": {
+  "name": "ClipSetAlloc::header",
+  "tag": "game-inferred",
+  "was": "FUN_002ddf10",
+  "why": "Answers a0 + 4."
+ },
+ "002ddf20": {
+  "name": "ClipSetAlloc::destroy",
+  "tag": "game-inferred",
+  "was": "FUN_002ddf20",
+  "why": "Empty, MSL allocator instance."
+ },
+ "002ddf30": {
+  "name": "ClipSetAlloc::address",
+  "tag": "game-inferred",
+  "was": "FUN_002ddf30",
+  "why": "Answers a0, MSL allocator instance."
+ },
+ "002ddf40": {
+  "name": "ClipSet::insert",
+  "tag": "game-inferred",
+  "was": "FUN_002ddf40",
+  "why": "Tree insert of a u_short key, answers the iterator through a0."
+ },
+ "002de000": {
+  "name": "ClipSet::ClipSet",
+  "tag": "game-inferred",
+  "was": "FUN_002de000",
+  "why": "Empty tree: root and count 0, begin at the header."
+ },
+ "002de020": {
+  "name": "std::sortPartition(u_short)",
+  "tag": "game-inferred",
+  "was": "FUN_002de020",
+  "why": "A part of the u_short sort, called by 0x2dd300."
+ },
+ "002de100": {
+  "name": "std::uniqueCopy(u_short)",
+  "tag": "game-inferred",
+  "was": "FUN_002de100",
+  "why": "The loop of std::unique over u_short, called by 0x2dd140."
+ },
+ "002de1b0": {
+  "name": "std::sortMedian(u_short)",
+  "tag": "game-inferred",
+  "was": "FUN_002de1b0",
+  "why": "A part of the u_short sort, called by 0x2dd300."
+ },
+ "002de420": {
+  "name": "std::sortSmall(u_short)",
+  "tag": "game-inferred",
+  "was": "FUN_002de420",
+  "why": "A part of the u_short sort, called by 0x2dd300."
+ },
+ "002de690": {
+  "name": "std::sortInsertion(u_short)",
+  "tag": "game-inferred",
+  "was": "FUN_002de690",
+  "why": "A part of the u_short sort, called by 0x2dd300."
+ },
+ "002de7b0": {
+  "name": "ClipColumn::erase",
+  "tag": "game-inferred",
+  "was": "FUN_002de7b0",
+  "why": "Assigns cells down, destroys the tail; from ClipColumn::resize."
+ },
+ "002de920": {
+  "name": "ClipColumn::insert",
+  "tag": "game-inferred",
+  "was": "FUN_002de920",
+  "why": "vector::insert length error string, 0xc-byte elements of vectors."
+ },
+ "002deda0": {
+  "name": "ClipGrid::erase",
+  "tag": "game-inferred",
+  "was": "FUN_002deda0",
+  "why": "Same for 0xc-byte columns; from ClipGrid::resize."
+ },
+ "002def30": {
+  "name": "ClipGrid::insert",
+  "tag": "game-inferred",
+  "was": "FUN_002def30",
+  "why": "vector::insert length error string, 0xc-byte columns."
+ },
+ "002df550": {
+  "name": "ClipGridAlloc::address",
+  "tag": "game-inferred",
+  "was": "FUN_002df550",
+  "why": "Answers a0."
+ },
+ "002df560": {
+  "name": "ClipGridAlloc::constAddress",
+  "tag": "game-inferred",
+  "was": "FUN_002df560",
+  "why": "Answers a0."
+ },
+ "002df570": {
+  "name": "ClipColumn::~ClipColumn",
+  "tag": "game-inferred",
+  "was": "FUN_002df570",
+  "why": "Destroys the cells, deletes the array, deleting flag."
+ },
+ "002df5e0": {
+  "name": "ClipGrid::clear",
+  "tag": "game-inferred",
+  "was": "FUN_002df5e0",
+  "why": "Destroys the columns from the end, size 0."
+ },
+ "002df690": {
+  "name": "ClipSet::insertNode",
+  "tag": "game-inferred",
+  "was": "FUN_002df690",
+  "why": "tree::insert length error string, new node, then the balance at 0x25b590."
+ },
+ "002df7c0": {
+  "name": "ClipColumn::clear",
+  "tag": "game-inferred",
+  "was": "FUN_002df7c0",
+  "why": "Destroys the cells from the end, size 0."
+ },
+ "002df860": {
+  "name": "ClipIndexList::ClipIndexList",
+  "tag": "game-inferred",
+  "was": "FUN_002df860",
+  "why": "Copy ctor: zero, then the range init."
+ },
+ "002df8b0": {
+  "name": "ClipIndexList::operator=",
+  "tag": "game-inferred",
+  "was": "FUN_002df8b0",
+  "why": "Self check, then assign of the source's range."
+ },
+ "002df900": {
+  "name": "ClipIndexList::initRange",
+  "tag": "game-inferred",
+  "was": "FUN_002df900",
+  "why": "vector length error string, allocates and copies a u_short range."
+ },
+ "002dfa30": {
+  "name": "ClipIndexList::assign",
+  "tag": "game-inferred",
+  "was": "FUN_002dfa30",
+  "why": "vector::assign length error string, a u_short range."
+ },
+ "002dfb80": {
+  "name": "ClipColumn::initRange",
+  "tag": "game-inferred",
+  "was": "FUN_002dfb80",
+  "why": "vector length error string, copy-constructs 0xc-byte cells."
+ },
+ "002dfce0": {
+  "name": "ClipColumn::ClipColumn",
+  "tag": "game-inferred",
+  "was": "FUN_002dfce0",
+  "why": "Copy ctor over the vector at +0 with an empty allocator at +0xc."
+ },
+ "002dfd20": {
+  "name": "ClipColumnAlloc::copy",
+  "tag": "game-inferred",
+  "was": "FUN_002dfd20",
+  "why": "Answers a0."
+ },
+ "002dfd30": {
+  "name": "ClipColumn::assign",
+  "tag": "game-inferred",
+  "was": "FUN_002dfd30",
+  "why": "vector::assign length error string, 0xc-byte cells."
+ },
+ "002e0070": {
+  "name": "ClipColumnAlloc::address",
+  "tag": "game-inferred",
+  "was": "FUN_002e0070",
+  "why": "Answers a0."
+ },
+ "002e0080": {
+  "name": "ClipColumnAlloc::constAddress",
+  "tag": "game-inferred",
+  "was": "FUN_002e0080",
+  "why": "Answers a0."
+ },
+ "002e0090": {
+  "name": "ClipColumn::operator=",
+  "tag": "game-inferred",
+  "was": "FUN_002e0090",
+  "why": "Calls ClipIndexList::operator= on the vector part and answers a0."
  },
  "002e04e0": {
   "name": "RenaSpotLight::RenaSpotLight",
@@ -35280,16 +35610,16 @@
   "why": "fixes the addresses of seven tags and, flagged, two lists"
  },
  "002e3b50": {
-  "name": "ModelPartRec::setFlagE",
+  "name": "ModelPartRec::setClipped",
   "tag": "game-inferred",
   "was": "FUN_002e3b50",
-  "why": "sets byte +0xe of the part record"
+  "why": "Slot +0xc of 0x31a7d0, stores +0xe, which drawTree skips on; AreaClip::update calls it."
  },
  "002e3b60": {
-  "name": "ModelPartRec::getFlagE",
+  "name": "ModelPartRec::getClipped",
   "tag": "game-inferred",
   "was": "FUN_002e3b60",
-  "why": "reads byte +0xe of the part record"
+  "why": "Slot +0x10 of 0x31a7d0, answers +0xe."
  },
  "002e3b70": {
   "name": "ModelPartRec::~ModelPartRec",
@@ -35322,16 +35652,16 @@
   "why": "built per node surface by ModelInstance::init: material, texture slots, wave start, level"
  },
  "002e40e0": {
-  "name": "ModelInstance::setDistant",
+  "name": "ModelInstance::setClipped",
   "tag": "game-inferred",
   "was": "FUN_002e40e0",
-  "why": "vtable 0x31a7f0 slot: sets byte +4, the distant flag"
+  "why": "Slot +0xc of 0x31a7f0, stores +4, which drawModels skips on; AreaClip::update calls it."
  },
  "002e40f0": {
-  "name": "ModelInstance::getDistant",
+  "name": "ModelInstance::getClipped",
   "tag": "game-inferred",
   "was": "FUN_002e40f0",
-  "why": "vtable 0x31a7f0 slot: reads byte +4"
+  "why": "Slot +0x10 of 0x31a7f0, answers +4."
  },
  "002e4100": {
   "name": "ModelInstance::findGroup",
