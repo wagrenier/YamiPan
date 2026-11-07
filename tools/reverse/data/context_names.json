@@ -36401,6 +36401,18 @@
   "was": "FUN_002c7a40",
   "why": "deleting dtor of 0x319f90, KunitorisActor's body inline"
  },
+ "002c7b70": {
+  "name": "KunitorisDrawable::~KunitorisDrawable",
+  "tag": "game-inferred",
+  "was": "FUN_002c7b70",
+  "why": "0x319f50 slot 0: vptr (+0) back to 0x319f50, delete by flag; the base of KunitorisSprite (0x319fc0)"
+ },
+ "002c7bc0": {
+  "name": "KunitorisMover::~KunitorisMover",
+  "tag": "game-inferred",
+  "was": "FUN_002c7bc0",
+  "why": "0x319f20 slot 0: vptr (+8) back to 0x319f20, delete by flag; the base of KunitorisSlide (0x319fb0)"
+ },
  "002c7c10": {
   "name": "KunitorisGroup::scroll",
   "tag": "game-inferred",
@@ -36418,6 +36430,12 @@
   "tag": "game-inferred",
   "was": "FUN_002c7dc0",
   "why": "(group, move): state 2 forces move; m_cell +0xc += m_step +0x14, wrap 0x2c7f00, +0x1c = step (else 0), then every block's update and the state rules of the set"
+ },
+ "002c7ee0": {
+  "name": "KunitorisGroup::copyPair",
+  "tag": "game-inferred",
+  "was": "FUN_002c7ee0",
+  "why": "(dst, src): two words copied, dst returned; KunitorisGroup::step's m_moved (+0x1c) = m_step (+0x14), an out-of-line int[2] copy"
  },
  "002c7f00": {
   "name": "KunitorisGroup::wrap",
@@ -36448,6 +36466,12 @@
   "tag": "game-inferred",
   "was": "FUN_002c8090",
   "why": "a KunitorisBlock on the group's cell +0xc at offset *a1 (lift 4) unless a block already has that offset; the shapes' cells 0x2fbe10 / 0x2fbef0"
+ },
+ "002c81b0": {
+  "name": "kunitorisRandom",
+  "tag": "game-inferred",
+  "was": "randNext2",
+  "why": "j randNext2 0x1047f0: a file-local out-of-line wrapper; only the inline spawnGroup in KunitorisGame's ctor and update calls it (shape, x, y, side), every other caller here calls randNext2 directly"
  },
  "002c81c0": {
   "name": "KunitorisGame::drawBoard",
@@ -36532,6 +36556,12 @@
   "tag": "game-inferred",
   "was": "FUN_002ca870",
   "why": "slot 2 of 0x319f00: pass 0 the sprite in the shadow colour 0x2fc030, else translated by -lift * 8 in its colour"
+ },
+ "002cab50": {
+  "name": "KunitorisDrawable::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002cab50",
+  "why": "0x319f50 slot 1: jr ra, the base's draw does nothing"
  },
  "002cab60": {
   "name": "KunitorisCursor::~KunitorisCursor",
@@ -36676,6 +36706,12 @@
   "tag": "game-inferred",
   "was": "FUN_002cc8c0",
   "why": "slot 1 of 0x319f30 (thunk 0x2cdbc0): steps the mover into +0/+4 and the fader into the colour +8..+0x14, deleting each when its step answers 0; answers 1"
+ },
+ "002cc9c0": {
+  "name": "KunitorisMover::step",
+  "tag": "game-inferred",
+  "was": "FUN_002cc9c0",
+  "why": "0x319f20 slot 1: returns 1, the base mover never ends (KunitorisActor::update keeps it)"
  },
  "002cc9d0": {
   "name": "KunitorisSprite::draw",

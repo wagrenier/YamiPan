@@ -8588,18 +8588,18 @@
 /* 002c64d0 0000155c */ KunitorisGame::update(){}  // game
 /* 002c7a30 00000004 */ thunk_KunitorisBlock::update(){}  // game
 /* 002c7a40 00000130 */ KunitorisBlock::~KunitorisBlock(){}  // game
-/* 002c7b70 0000004c */ FUN_002c7b70(){}
-/* 002c7bc0 0000004c */ FUN_002c7bc0(){}
+/* 002c7b70 0000004c */ KunitorisDrawable::~KunitorisDrawable(){}  // game
+/* 002c7bc0 0000004c */ KunitorisMover::~KunitorisMover(){}  // game
 /* 002c7c10 00000198 */ KunitorisGroup::scroll(){}  // game
 /* 002c7db0 00000010 */ KunitorisCells::isGone(){}  // game
 /* 002c7dc0 00000114 */ KunitorisGroup::step(){}  // game
-/* 002c7ee0 00000018 */ FUN_002c7ee0(){}
+/* 002c7ee0 00000018 */ KunitorisGroup::copyPair(){}  // game
 /* 002c7f00 0000015c */ KunitorisGroup::wrap(){}  // game
 /* 002c8060 00000010 */ KunitorisCells::isEmpty(){}  // game
 /* 002c8070 0000000c */ KunitorisGroup::setCell(){}  // game
 /* 002c8080 0000000c */ KunitorisGroup::setStep(){}  // game
 /* 002c8090 00000118 */ KunitorisGroup::addCell(){}  // game
-/* 002c81b0 00000004 */ randNext2(){}  // native
+/* 002c81b0 00000004 */ kunitorisRandom(){}  // game
 /* 002c81c0 000001e0 */ KunitorisGame::drawBoard(){}  // game
 /* 002c83a0 00000168 */ KunitorisGame::drawBlinkBar(){}  // game
 /* 002c8510 00000128 */ KunitorisGame::drawLivesBar(){}  // game
@@ -8614,7 +8614,7 @@
 /* 002ca330 00000460 */ KunitorisEnding::drawIntro(){}  // game
 /* 002ca790 000000dc */ KunitorisEnding::setTiles(){}  // game
 /* 002ca870 000002e0 */ KunitorisCursor::draw(){}  // game
-/* 002cab50 00000004 */ FUN_002cab50(){}
+/* 002cab50 00000004 */ KunitorisDrawable::draw(){}  // game
 /* 002cab60 00000158 */ KunitorisCursor::~KunitorisCursor(){}  // game
 /* 002cacc0 00000178 */ KunitorisCursor::KunitorisCursor(){}  // game
 /* 002cae40 000000cc */ KunitorisActor::~KunitorisActor(){}  // game
@@ -8639,7 +8639,7 @@
 /* 002cc740 000000ec */ KunitorisSlide::step(){}  // game
 /* 002cc830 00000090 */ KunitorisSlide::KunitorisSlide(){}  // game
 /* 002cc8c0 000000f4 */ KunitorisActor::update(){}  // game
-/* 002cc9c0 00000008 */ FUN_002cc9c0(){}
+/* 002cc9c0 00000008 */ KunitorisMover::step(){}  // game
 /* 002cc9d0 00000070 */ KunitorisSprite::draw(){}  // game
 /* 002cca40 000006dc */ KunitorisBoard::selectPiece(){}  // game
 /* 002cd120 00000154 */ KunitorisBoard::litPieces(){}  // game
