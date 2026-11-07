@@ -3134,12 +3134,21 @@
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. the CD driver rxFileCdWait .. rxFileCdGetLayerMode; its own file by analogy with filehost.c (same driver shape, no string of its own): a guess."
   },
   "rx/filehdd.c": {
+   "notes": "All 13 functions of the HDD device driver written: driver table fill, root prefix join and set, busy flag, size / create / read / write through rxSys file calls, and the I/O error hook that moves RX_SYS_DEVICE_HDD to its fallback. FS2's decompilation matches RosePan's HDD section word for word; data s_hddRootDefault 0x2f5b10 -> host0: string at 0x3019b8, s_hddFlags 0x2f5b14, s_hddRoot bss 0x4e7d80 (0x100). Error codes named: EIO -5, ENXIO -6, ENODEV -19, and -0xfffb taken as the HDD driver's own drive error (name is a guess). Status verify: the smoke run reaches only rxFileHddInit (no stub hit now) and nothing maps a device onto HDD on the boot path; the screen still shows the language select. Next reached stubs: rxFileHostInit (rx/filehost.c, the same shape as this driver: copy this file's pattern) and sdpr2PairInit.",
    "ranges": [
     [
      "00157db8",
      "00158400"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-07 07:59",
+     "status": "verify",
+     "summary": "rx HDD driver: all 13 functions reconstructed from FS2 (identical to RosePan's rxfile.cpp HDD section)"
+    }
+   ],
+   "status": "verify",
    "why": "FS2 links Rule of Rose's prebuilt rx (rxalign.py, architecture.md rx); ../RosePan/src/rx/ is the reference. the HDD driver rxFileHddInit .. rxFileHddSetRoot; its own file by analogy with filehost.c: a guess."
   },
   "rx/filehost.c": {
@@ -3572,10 +3581,7 @@
   "unassigned@002937e0": {},
   "unassigned@00296d60": {},
   "unassigned@002a6980": {},
-  "unassigned@002a7b10": {
-   "claimed": "2026-11-07 07:24",
-   "status": "active"
-  },
+  "unassigned@002a7b10": {},
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {},
   "unassigned@002b9ef0": {},
