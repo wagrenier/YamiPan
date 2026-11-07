@@ -1708,6 +1708,9 @@ public:
     void onViewTop() override;                                           // FS2 0x00179490
     void cameraStep() override;                                          // FS2 0x00178160
     void onLinkChanged() override;                                       // FS2 0x00179680
+    // The step after the action's (ScenePairTable's fourth): the ROM's thunk
+    // 0x1799f0 falls into cameraStep, as ViewCamera's does.
+    void sideHook3() override { cameraStep(); }
 
     // FS2 0x00178130
     int  collisionHook0(CollisionContact *, const float *, StageCollisionFace *, float) override { return 0; }
@@ -2163,6 +2166,9 @@ class StageCharacter : public StageObject
 public:
     // FS2 0x00179a80
     int getKind() override { return StageObject_Character; }
+    // The cameras' slot: the brain's runner starts over and re-enters its
+    // state. Only group 0 (the cameras) is stepped, so no ROM path reaches it.
+    void cameraStep() override;                                          // FS2 0x00179a90
     StageCharacter();                                                    // FS2 0x0017de30
     ~StageCharacter() override;                                          // FS2 0x0017dd10: deleting
     // Model, textures, the model's two motion lists and mdl.

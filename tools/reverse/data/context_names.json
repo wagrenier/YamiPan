@@ -13391,6 +13391,78 @@
   "was": "FUN_00177d60",
   "why": "vtable 0x311860, sceVu0ViewScreenMatrix-shaped call on the scrZ, width, height arguments; 450, 512, 512, 1600 from the map"
  },
+ "00177eb0": {
+  "name": "StageCamera::sideHook3_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177eb0",
+  "why": "adjustor thunk -0x18 of slot 3 of the second base's table (vptr +0x1c) of StageCamera and the cameras under it, into 0x1775e0"
+ },
+ "00177ec0": {
+  "name": "StageCamera::sideHook2_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177ec0",
+  "why": "adjustor thunk -0x18, side table slot 2 of StageCamera and its derived cameras"
+ },
+ "00177ed0": {
+  "name": "StageCamera::sideHook1_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177ed0",
+  "why": "adjustor thunk -0x18, side table slot 1 of StageCamera and its derived cameras"
+ },
+ "00177ee0": {
+  "name": "StageCamera::sideHook0_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177ee0",
+  "why": "adjustor thunk -0x18, side table slot 0 of StageCamera and its derived cameras"
+ },
+ "00177ef0": {
+  "name": "StageCamera::setYaw_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177ef0",
+  "why": "adjustor thunk -0x40 into StageObject::setYaw, slot 15 of the ScriptRunner table of StageCamera and 32 others; first emitted in the camera file"
+ },
+ "00177f00": {
+  "name": "StageCamera::setRotation_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177f00",
+  "why": "adjustor thunk -0x40 into StageObject::setRotation, slot 14 of the ScriptRunner table of StageCamera and others"
+ },
+ "00177f10": {
+  "name": "StageCamera::setPosition_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177f10",
+  "why": "adjustor thunk -0x40 into StageObject::setPosition, slot 13 of the ScriptRunner table of StageCamera and others"
+ },
+ "00177f20": {
+  "name": "StageCamera::~StageCamera_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177f20",
+  "why": "adjustor thunk -0x40 into StageCamera's deleting dtor 0x177650, slot 4 of table 0x31189c"
+ },
+ "00177f30": {
+  "name": "StageCamera::getProperty_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00177f30",
+  "why": "adjustor thunk -0x40 into StageObject::getProperty, slot 1 of the ScriptRunner table of StageCamera and others"
+ },
+ "00177f40": {
+  "name": "JackCamera::~JackCamera",
+  "tag": "game-inferred",
+  "was": "FUN_00177f40",
+  "why": "deleting dtor: stores vtables 0x311ac0 (camjack, kind 11), then 0x311d30 (LinkedCamera, kind 8), then 0x311860 (StageCamera), ~StageObject, delete if flag > 0; slot 2 of 0x311ac0"
+ },
+ "00178010": {
+  "name": "JackCamera::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_00178010",
+  "why": "returns 0xb (StageObject_Kind11), slot 108 of the camjack's table 0x311afc"
+ },
+ "00178020": {
+  "name": "LinkedCamera::onLinkChanged",
+  "tag": "game-inferred",
+  "was": "FUN_00178020",
+  "why": "empty; slot 135 (vtable +0x260, onLinkChanged) of the kind 8 camera 0x311d6c, the camjack 0x311afc and 0x3185ec; stageparty.h already called it the base's empty onLinkChanged"
+ },
  "00178030": {
   "name": "JackCamera::onViewTop",
   "tag": "game-inferred",
@@ -13446,10 +13518,22 @@
   "why": "EE 0x3c0; camera; kind 9"
  },
  "00179840": {
-  "name": "StageMainCamera::~StageMainCamera",
+  "name": "LinkedCamera::~LinkedCamera",
   "tag": "game-inferred",
   "was": "FUN_00179840",
-  "why": "writes the vtables back 0x311d30, 0x311860, then ~StageObject"
+  "why": "was StageMainCamera::~StageMainCamera: it stores 0x311d30 first (the kind 8 class that adds m_linked, the port names it LinkedCamera), then 0x311860; slot 2 of 0x311d30. StageMainCamera's own dtor is 0x1798f0"
+ },
+ "001798e0": {
+  "name": "LinkedCamera::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_001798e0",
+  "why": "returns 8 (StageObject_Kind8), slot 108 of 0x311d6c"
+ },
+ "001798f0": {
+  "name": "StageMainCamera::~StageMainCamera",
+  "tag": "game-inferred",
+  "was": "FUN_001798f0",
+  "why": "deleting dtor: stores 0x311fa0 / 0x311fc4 / 0x311fdc / 0x312204 (CollisionOwner at +0x340), then LinkedCamera's, then StageCamera's, ~StageObject; slot 2 of 0x311fa0"
  },
  "001799d0": {
   "name": "StageMainCamera::getKind",
@@ -13463,11 +13547,71 @@
   "was": "FUN_001799e0",
   "why": "vtable 0x312204 slot 4, through thunk 0x179a10: answers this"
  },
+ "001799f0": {
+  "name": "StageMainCamera::sideHook3_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_001799f0",
+  "why": "adjustor thunk -0x18, side table 0x311fc4 slot 3, falls into StageMainCamera::cameraStep 0x178160 (as ViewCamera's does)"
+ },
+ "00179a00": {
+  "name": "StageMainCamera::~StageMainCamera_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00179a00",
+  "why": "adjustor thunk -0x40 into 0x1798f0, slot 4 of 0x311fdc"
+ },
+ "00179a10": {
+  "name": "StageMainCamera::getCollisionObject_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00179a10",
+  "why": "adjustor thunk -0x340 (CollisionOwner base) into 0x1799e0, slot 4 of 0x312204"
+ },
+ "00179a20": {
+  "name": "StageMainCamera::collisionHook3_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00179a20",
+  "why": "adjustor thunk -0x340 into 0x178140, slot 3 of 0x312204"
+ },
+ "00179a30": {
+  "name": "StageMainCamera::syncBody_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00179a30",
+  "why": "adjustor thunk -0x340 into 0x178150, slot 2 of 0x312204"
+ },
+ "00179a40": {
+  "name": "StageMainCamera::onCollide_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00179a40",
+  "why": "adjustor thunk -0x340 into 0x178120, slot 1 of 0x312204"
+ },
+ "00179a50": {
+  "name": "StageMainCamera::collisionHook0_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00179a50",
+  "why": "adjustor thunk -0x340 into 0x178130, slot 0 of 0x312204"
+ },
+ "00179a60": {
+  "name": "LinkedCamera::~LinkedCamera_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00179a60",
+  "why": "adjustor thunk -0x40 into 0x179840, slot 4 of 0x311d6c"
+ },
+ "00179a70": {
+  "name": "JackCamera::~JackCamera_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00179a70",
+  "why": "adjustor thunk -0x40 into 0x177f40, slot 4 of 0x311afc"
+ },
  "00179a80": {
   "name": "StageCharacter::getKind",
   "tag": "game-inferred",
   "was": "FUN_00179a80",
   "why": "answers 0"
+ },
+ "00179a90": {
+  "name": "StageCharacter::cameraStep",
+  "tag": "game-inferred",
+  "was": "FUN_00179a90",
+  "why": "slot 134 (vtable +0x25c from the object's vptr, cameraStep) of 0x31227c: m_brain->setEntry(a1 as passed) then m_brain->setState(m_brain->m_state, 1); the three callers of +0x25c (0x17964c, 0x199d2c, 0x29aab4) never set a1"
  },
  "00179ad0": {
   "name": "StageCharacter::setScriptPoint",
@@ -13498,6 +13642,18 @@
   "tag": "game-inferred",
   "was": "FUN_00179d00",
   "why": "reads +0x688; runner slot +0x120"
+ },
+ "00179d10": {
+  "name": "StageCharacter::getScriptCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_00179d10",
+  "why": "returns this; slot 138 of 0x31227c, ScriptRunner's getScriptCharacter (gamehooks.h already tagged 0x179d10)"
+ },
+ "00179d20": {
+  "name": "StageCharacter::getScriptActor",
+  "tag": "game-inferred",
+  "was": "FUN_00179d20",
+  "why": "returns this; slot 139 of 0x31227c, ScriptRunner's getScriptActor, as gamehooks.h writes it"
  },
  "00179d30": {
   "name": "StageCharacter::sideHook3",

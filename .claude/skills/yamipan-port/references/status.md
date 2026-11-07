@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 12:14 at commit `06bcd10` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 12:40 at commit `ee6bee3` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 12:14 at commit `06bcd10` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6597**, named **5652** (86%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4730
-- context-name ledger: 6326 entries; overrides of wrong library matches: 0
-- placed in a source file: 6208/6597 in 138 files
+- game functions: **6597**, named **5678** (86%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4756
+- context-name ledger: 6352 entries; overrides of wrong library matches: 0
+- placed in a source file: 6255/6597 in 138 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5672**; stubs: **21**
+- reconstructed FS2 functions: **5708**; stubs: **21**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -104,9 +104,9 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/sldi.cpp` | 1 | 0 |
 | `src/game/spkrom.cpp` | 13 | 0 |
 | `src/game/stagealert.cpp` | 8 | 0 |
-| `src/game/stagecamera.cpp` | 29 | 0 |
+| `src/game/stagecamera.cpp` | 59 | 0 |
 | `src/game/stagecar.cpp` | 59 | 0 |
-| `src/game/stagecharacter.cpp` | 77 | 0 |
+| `src/game/stagecharacter.cpp` | 83 | 0 |
 | `src/game/stagecollision.cpp` | 57 | 0 |
 | `src/game/stagedoor.cpp` | 125 | 0 |
 | `src/game/stageelevator.cpp` | 14 | 13 |
@@ -174,10 +174,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 208 TUs: todo 72, active 1, partial 14, verify 133, done 46
-- next: **unassigned@00177d00** (frontier score 4)
+- 207 TUs: todo 73, active 1, partial 13, verify 133, done 46
+- next: **unassigned@0020e6a0** (frontier score 4)
 - pinned queue: (empty)
-- active: `unassigned@00282da0` 0/0
+- active: `unassigned@00177d00` 0/0
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -242,9 +242,9 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/sldi.cpp` 1/1 -- Cut out of unassigned@002c42a0 and pinned 0x2d0a10-0x2d0d10; no new names, no Ghidra change. Scratch test: all 114 SLDI files on the disc unpack to the header s
 - verify: `game/spkrom.cpp` 13/13 -- All 13 of 0x152730..0x153108 written. The entries keep offsets on the host (the ROM relocates them to pointers in place), strings through spkString. Host: argv[
 - verify: `game/stagealert.cpp` 8/8 -- All 8 of 0x263b90..0x2640e8 written, class moved to game/stagealert.h, GameOptions::_10 is alertMode (GameAlertMode), 0x263b90 is beforeFileEvent and queueFiles
-- verify: `game/stagecamera.cpp` 16/16 -- Written in src/game/scriptrunner.cpp: nativeSetPlayer 0x1c81a0, nativeScriptView 0x1c8dc0, isNullName 0x1c8f40, findCameraObject 0x1d1260, findLightObject 0x1b5
+- verify: `game/stagecamera.cpp` 54/54 -- unassigned@00177d00 (47 functions) was the tail of the camera file and the head of the character file. Pinned: stagecamera.cpp gets 0x177d00..0x179a80 (StageCam
 - verify: `game/stagecar.cpp` 59/59 -- No code changed this run; door and drive proven on a temporary build, removed (New Game forced to stage 7, 300 s, no crash). The old pad pressed X every 80 read
-- verify: `game/stagecharacter.cpp` 78/87 -- unassigned@0017e140 was the tail of this file: StageList<StageObject *> 0x17e140..0x17e400 and 63 thunks 0x17e470..0x17e860, now listed at the end of stagechara
+- verify: `game/stagecharacter.cpp` 87/96 -- unassigned@0017e140 was the tail of this file: StageList<StageObject *> 0x17e140..0x17e400 and 63 thunks 0x17e470..0x17e860, now listed at the end of stagechara
 - verify: `game/stagecollision.cpp` 57/75 -- unassigned@002cf510 (resetStageGroupTable, a reached stub) is resetSurfaceTables, renamed in Ghidra (batch 211) and pinned into game/stagecollision.cpp beside s
 - verify: `game/stagedoor.cpp` 126/133 -- unassigned@00171ad0 turned out to be inline functions of this object file: runner table defaults, StageObject accessors, DoorRecord setters; pinned here and lis
 - verify: `game/stageelevator.cpp` 14/27 -- 27 functions 0x2939b0..0x295470, batch 184; the free elevator functions are members now and getZs9901 answers StageElevator; the two motion file readers 0x2937e
@@ -314,6 +314,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 12:40 `game/stagecamera.cpp` verify: unassigned@00177d00 placed: camera file tail 0x177d00..0x179a80 joined stagecamera.cpp, 0x179a80..0x179d30 joined stagecharacter.cpp; StageCharacter::cameraStep
 - 2026-11-07 12:14 `game/playermotion.cpp` verify: unassigned@00282da0 joined playermotion.cpp: the NpcReactionLink, DriveLink and car links' ctors and two dtors, and the four Sp link ctors, moved out of the hea
 - 2026-11-07 11:57 `game/playermotion.cpp` verify: 0x214a70..0x214ce8 joined (was unassigned@00214a70): StageObjRecord::init (the sheet row's default startMotion, now called by PackTables::parseCharacters) and S
 - 2026-11-07 11:46 `game/pausemenu.cpp` verify: The stage's pause menu and map menu: their start, result and thread functions and runPauseMenu, all 7 functions of 0x20acb0..0x20b120 (batch 212); StageCharacte
@@ -321,22 +322,21 @@ Recent sessions:
 - 2026-11-07 10:57 `game/sevenkeys.cpp` verify: The seven keys oYC11_21..27 (SevenKeys, object kind 6), their gadget view SevenKeysView/SevenKeysGadget and SkyPose named (batch 210), pinned as game/sevenkeys.
 - 2026-11-07 10:32 `rena/rena_drawtarget.cpp` verify: Placed getDrawTarget 0x2ec110 (was unassigned@002ec110) in its own file rena/rena_drawtarget.cpp: the guarded function-local DrawTarget at bss 0x5a52d0 moved ou
 - 2026-11-07 10:12 `game/gsluminance.cpp` verify: gsLuminance and its six GS packet steps named (batch 209), pinned as their own object 0x2b6b90-0x2b85a0, documented in game/gsluminance.cpp; on PC the host pale
-- 2026-11-07 10:01 `unassigned@0029f2a0` verify: Placed the run 0x29f2a0..0x29f4f8 in game/scriptrunner.cpp: missionRestoreCheck and findNumLockTarget; StageMission +0xb8 is a LockGadgetKind (restoreKind, was 
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@0020e6a0` | partial | 10/0/11 | 8.6 | 4 | 0 |
-| `unassigned@00177d00` | partial | 11/0/47 | 7.7 | 4 | 0 |
-| `unassigned@00219be0` | partial | 15/0/19 | 3.8 | 3 | 0 |
-| `rena_2d_texture_tim2.cpp` | todo | 0/1/1 | 0.1 | 3 | 0 |
 | `unassigned@0020ce10` | todo | 0/0/1 | 0.1 | 3 | 0 |
+| `rena_2d_texture_tim2.cpp` | todo | 0/1/1 | 0.1 | 3 | 0 |
+| `unassigned@00219be0` | partial | 15/0/19 | 3.8 | 3 | 0 |
+| `unassigned@00211970` | partial | 2/2/4 | 2.3 | 2 | 0 |
 | `unassigned@0026c650` | todo | 0/0/2 | 0.2 | 2 | 0 |
 | `unassigned@002b0d50` | todo | 0/0/1 | 0.0 | 2 | 0 |
 | `unassigned@00217be0` | partial | 14/0/16 | 2.1 | 2 | 0 |
-| `unassigned@00211970` | partial | 2/2/4 | 2.3 | 2 | 0 |
 | `unassigned@002c42a0` | todo | 0/1/93 | 39.0 | 1 | 0 |
-| `unassigned@002a0040` | todo | 0/0/9 | 4.3 | 1 | 0 |
 | `unassigned@001dff40` | partial | 2/1/3 | 1.9 | 1 | 0 |
+| `unassigned@002a0040` | todo | 0/0/9 | 4.3 | 1 | 0 |
+| `unassigned@002e2970` | partial | 1/0/2 | 0.9 | 1 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

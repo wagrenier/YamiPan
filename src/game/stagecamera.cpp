@@ -770,3 +770,37 @@ bool StageCamera::seesPoint(const sceVu0FVECTOR point)
 //   FS2 0x00177630  StageObject::setRotation (gamehooks.h)
 //   FS2 0x00177640  StageObject::setPosition (gamehooks.h)
 //   FS2 0x00177650  StageCamera's dtor: the compiler's
+//   FS2 0x00177f40  JackCamera's deleting dtor (stageparty.h): the compiler's
+//   FS2 0x00178010  JackCamera::getKind (stageparty.h), kind 11
+//   FS2 0x00178020  LinkedCamera::onLinkChanged, empty: the kind 8 class (vtable 0x311d30)
+//                   has no host class; JackCamera's empty override stands for it (stageparty.h)
+//   FS2 0x00178120  StageMainCamera::onCollide (gamehooks.h)
+//   FS2 0x00178130  StageMainCamera::collisionHook0 (gamehooks.h)
+//   FS2 0x00178140  StageMainCamera::collisionHook3 (gamehooks.h)
+//   FS2 0x00178150  StageMainCamera::syncBody (gamehooks.h)
+//   FS2 0x00179840  LinkedCamera's deleting dtor: the compiler's
+//   FS2 0x001798e0  LinkedCamera::getKind, kind 8: no host class, so no host object answers 8
+//   FS2 0x001798f0  StageMainCamera's deleting dtor: the compiler's
+//   FS2 0x001799d0  StageMainCamera::getKind (gamehooks.h), kind 9
+//   FS2 0x001799e0  StageMainCamera::getCollisionObject (gamehooks.h)
+
+// The adjustor thunks (the host's compiler makes its own). The second base's
+// slot 3 of StageMainCamera falls into cameraStep: gamehooks.h writes it.
+//   FS2 0x00177eb0  StageCamera::sideHook3, -0x18 (into 0x1775e0, empty)
+//   FS2 0x00177ec0  StageCamera::sideHook2, -0x18
+//   FS2 0x00177ed0  StageCamera::sideHook1, -0x18
+//   FS2 0x00177ee0  StageCamera::sideHook0, -0x18
+//   FS2 0x00177ef0  StageObject::setYaw, -0x40
+//   FS2 0x00177f00  StageObject::setRotation, -0x40
+//   FS2 0x00177f10  StageObject::setPosition, -0x40
+//   FS2 0x00177f20  StageCamera::~StageCamera, -0x40
+//   FS2 0x00177f30  StageObject::getProperty, -0x40
+//   FS2 0x001799f0  StageMainCamera::cameraStep, -0x18 (the second base's slot 3)
+//   FS2 0x00179a00  StageMainCamera::~StageMainCamera, -0x40
+//   FS2 0x00179a10  StageMainCamera::getCollisionObject, -0x340
+//   FS2 0x00179a20  StageMainCamera::collisionHook3, -0x340
+//   FS2 0x00179a30  StageMainCamera::syncBody, -0x340
+//   FS2 0x00179a40  StageMainCamera::onCollide, -0x340
+//   FS2 0x00179a50  StageMainCamera::collisionHook0, -0x340
+//   FS2 0x00179a60  LinkedCamera::~LinkedCamera, -0x40
+//   FS2 0x00179a70  JackCamera::~JackCamera, -0x40

@@ -2877,24 +2877,24 @@
 /* 00177be0 00000114 */ StageCamera::setProjection(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/stagecamera.cpp
 // *****************************************************************************
 
 /* 00177d00 00000014 */ StageCamera::onViewTop(){}  // game
 /* 00177d20 00000034 */ StageCamera::addToScene(){}  // game
 /* 00177d60 00000144 */ StageCamera::StageCamera(){}  // game
-/* 00177eb0 00000008 */ FUN_00177eb0(){}
-/* 00177ec0 00000008 */ FUN_00177ec0(){}
-/* 00177ed0 00000008 */ FUN_00177ed0(){}
-/* 00177ee0 00000008 */ FUN_00177ee0(){}
-/* 00177ef0 00000008 */ FUN_00177ef0(){}
-/* 00177f00 00000008 */ FUN_00177f00(){}
-/* 00177f10 00000008 */ FUN_00177f10(){}
-/* 00177f20 00000008 */ FUN_00177f20(){}
-/* 00177f30 00000008 */ FUN_00177f30(){}
-/* 00177f40 000000c8 */ FUN_00177f40(){}
-/* 00178010 00000008 */ FUN_00178010(){}
-/* 00178020 00000004 */ FUN_00178020(){}
+/* 00177eb0 00000008 */ StageCamera::sideHook3_thunk(){}  // game
+/* 00177ec0 00000008 */ StageCamera::sideHook2_thunk(){}  // game
+/* 00177ed0 00000008 */ StageCamera::sideHook1_thunk(){}  // game
+/* 00177ee0 00000008 */ StageCamera::sideHook0_thunk(){}  // game
+/* 00177ef0 00000008 */ StageCamera::setYaw_thunk(){}  // game
+/* 00177f00 00000008 */ StageCamera::setRotation_thunk(){}  // game
+/* 00177f10 00000008 */ StageCamera::setPosition_thunk(){}  // game
+/* 00177f20 00000008 */ StageCamera::~StageCamera_thunk(){}  // game
+/* 00177f30 00000008 */ StageCamera::getProperty_thunk(){}  // game
+/* 00177f40 000000c8 */ JackCamera::~JackCamera(){}  // game
+/* 00178010 00000008 */ JackCamera::getKind(){}  // game
+/* 00178020 00000004 */ LinkedCamera::onLinkChanged(){}  // game
 /* 00178030 000000e4 */ JackCamera::onViewTop(){}  // game
 /* 00178120 00000008 */ StageMainCamera::onCollide(){}  // game
 /* 00178130 00000008 */ StageMainCamera::collisionHook0(){}  // game
@@ -2904,34 +2904,34 @@
 /* 00179490 000001ec */ StageMainCamera::onViewTop(){}  // game
 /* 00179680 00000078 */ StageMainCamera::onLinkChanged(){}  // game
 /* 00179700 0000013c */ StageMainCamera::StageMainCamera(){}  // game
-/* 00179840 000000a0 */ StageMainCamera::~StageMainCamera(){}  // game
-/* 001798e0 00000008 */ FUN_001798e0(){}
-/* 001798f0 000000d4 */ FUN_001798f0(){}
+/* 00179840 000000a0 */ LinkedCamera::~LinkedCamera(){}  // game
+/* 001798e0 00000008 */ LinkedCamera::getKind(){}  // game
+/* 001798f0 000000d4 */ StageMainCamera::~StageMainCamera(){}  // game
 /* 001799d0 00000008 */ StageMainCamera::getKind(){}  // game
 /* 001799e0 00000008 */ StageMainCamera::getCollisionObject(){}  // game
-/* 001799f0 00000008 */ FUN_001799f0(){}
-/* 00179a00 00000008 */ FUN_00179a00(){}
-/* 00179a10 00000008 */ FUN_00179a10(){}
-/* 00179a20 00000008 */ FUN_00179a20(){}
-/* 00179a30 00000008 */ FUN_00179a30(){}
-/* 00179a40 00000008 */ FUN_00179a40(){}
-/* 00179a50 00000008 */ FUN_00179a50(){}
-/* 00179a60 00000008 */ FUN_00179a60(){}
-/* 00179a70 00000008 */ FUN_00179a70(){}
-/* 00179a80 00000008 */ StageCharacter::getKind(){}  // game
-/* 00179a90 00000038 */ FUN_00179a90(){}
-/* 00179ad0 00000008 */ StageCharacter::setScriptPoint(){}  // game
-/* 00179ae0 00000004 */ StageCharacter::noiseHook(){}  // game
-/* 00179af0 000000b4 */ StageCharacter::isRunningMotion(){}  // game
-/* 00179bb0 00000148 */ StageCharacter::isCrouching(){}  // game
-/* 00179d00 00000008 */ StageCharacter::isBulletFlying(){}  // game
-/* 00179d10 00000008 */ FUN_00179d10(){}
-/* 00179d20 00000008 */ FUN_00179d20(){}
+/* 001799f0 00000008 */ StageMainCamera::sideHook3_thunk(){}  // game
+/* 00179a00 00000008 */ StageMainCamera::~StageMainCamera_thunk(){}  // game
+/* 00179a10 00000008 */ StageMainCamera::getCollisionObject_thunk(){}  // game
+/* 00179a20 00000008 */ StageMainCamera::collisionHook3_thunk(){}  // game
+/* 00179a30 00000008 */ StageMainCamera::syncBody_thunk(){}  // game
+/* 00179a40 00000008 */ StageMainCamera::onCollide_thunk(){}  // game
+/* 00179a50 00000008 */ StageMainCamera::collisionHook0_thunk(){}  // game
+/* 00179a60 00000008 */ LinkedCamera::~LinkedCamera_thunk(){}  // game
+/* 00179a70 00000008 */ JackCamera::~JackCamera_thunk(){}  // game
 
 // *****************************************************************************
 // FILE -- game/stagecharacter.cpp
 // *****************************************************************************
 
+/* 00179a80 00000008 */ StageCharacter::getKind(){}  // game
+/* 00179a90 00000038 */ StageCharacter::cameraStep(){}  // game
+/* 00179ad0 00000008 */ StageCharacter::setScriptPoint(){}  // game
+/* 00179ae0 00000004 */ StageCharacter::noiseHook(){}  // game
+/* 00179af0 000000b4 */ StageCharacter::isRunningMotion(){}  // game
+/* 00179bb0 00000148 */ StageCharacter::isCrouching(){}  // game
+/* 00179d00 00000008 */ StageCharacter::isBulletFlying(){}  // game
+/* 00179d10 00000008 */ StageCharacter::getScriptCharacter(){}  // game
+/* 00179d20 00000008 */ StageCharacter::getScriptActor(){}  // game
 /* 00179d30 00000754 */ StageCharacter::sideHook3(){}  // game
 
 // *****************************************************************************

@@ -1891,6 +1891,14 @@ apply here):
 - 2026-11-05 (the user, live, during the eleventh game/playermotion.cpp run): **the first-person view goes to the top of the queue, "since it is needed for gameplay".** `game/viewcamera.cpp`, top of "Next up".
 
 ## Open questions
+- 2026-11-07 (game/stagecamera.cpp tail, batch 214): **StageCharacter's slot +0x25c (0x179a90) passes
+  an a1 its callers never set.** ROM: m_brain->setEntry(a1), then setState(m_brain->m_state, 1). The
+  only callers of +0x25c (0x17964c, 0x199d2c, 0x29aab4) are camera paths that leave a1 alone, so in
+  the source the slot likely has no argument and the value is an unset local. The host passes null
+  (setState's switchSlot binds the entry again). Not reached: only group 0 objects are stepped. Also
+  added: StageMainCamera::sideHook3 -> cameraStep (the ROM thunk 0x1799f0); a 40 s teleport run to
+  stage 1 showed the camera behind the girl as before, but whether the pair table steps the main
+  camera (so it now steps twice a frame, as in the ROM) was not traced.
 - 2026-11-07 (game/gsluminance.cpp): **file name and the PSMT4 shift are guesses.** No strings in
   0x2b6b90..0x2b85a0: the name is the port's. That gsLumShiftPages (0x2b7b00) leaves R in G and B in
   alpha is read from how the next two steps use scratch, not from the PSMT4 swizzle; the host shader
