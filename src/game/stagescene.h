@@ -58,6 +58,7 @@ class Clock;                    // game/clock.h
 class DemoStream;
 class SceneOwnedObject;
 class ScreenFill;
+class StageElevator;
 class StageMenu;
 class DemoExecuter;
 class UiItemList;
@@ -440,7 +441,7 @@ struct StageScene
     void updateBlock98For(StageObject *object);                          // FS2 0x0019b470
     void createBlock98(StageObject *owner);                              // FS2 0x0019b4a0
     // The object oZS99_01 of the stage, sought once.
-    StageObject *getZs9901();                                            // FS2 0x0019b4e0
+    StageElevator *getZs9901();                                            // FS2 0x0019b4e0
     // targetInView for target; null: the view target.
     bool isInView(StageCar *target);                              // FS2 0x0019b820
     // The player is in mode 1, or targetInView (the scene flag of update
@@ -594,7 +595,7 @@ struct StageScene
     StageFade          *fade;            // FS2 +0xfc
     StageCar           *car;             // FS2 +0x100: StageCar's ctor; null without one
     u_char              zs9901Sought;    // FS2 +0x104: getZs9901 looked
-    StageObject        *zs9901;          // FS2 +0x108: what it found
+    StageElevator      *zs9901;          // FS2 +0x108: what it found
     StageScene         *parent;          // FS2 +0x10c: a sub-scene's (stageThread)
     StageFiles         *files;           // FS2 +0x110: a sub-scene's (stageThread)
     u_char              camerasReady;    // FS2 +0x114: setupCameras ran

@@ -142,6 +142,7 @@ enum StageObjectKind
     StageObject_MapObject = 1,  // a plain map object (game/mapobject.cpp)
     StageObject_Door   = 2,     // StageObject::m_doorState is read
     StageObject_Car    = 3,     // StageCar: getKind 0x289cc0; takes the motion named CAR (StageFiles::applyBgMotionTarget)
+    StageObject_Elevator = 4,   // StageElevator: the model oZS99_01; takes the base motion ElevatorPose
     StageObject_NumLock = 5,    // the number lock, vtable 0x318870, on StageMapObject (no host class yet)
     StageObject_Kind6  = 6,     // takes the motion named Seven_Keys
     StageObject_Camera = 7,     // StageCamera
@@ -2839,31 +2840,6 @@ struct CharacterHidePart
 int parseSpawnId(const char *name);                                      // FS2 0x0029fb30
 
 class StageObjectList;          // game/stageobjlist.h
-// The elevator zs9901: it can be called to floor 1..4 by one standing there;
-// the call. Not written.
-bool elevatorCanCall(StageObject *elevator, const float *position, const float *rotation, int floor); // FS2 0x00294140
-void elevatorCall(StageObject *elevator, int floor);                     // FS2 0x00294280
-// The rest of what scripts ask of it. The state is its pose's +0x408, a
-// pose class not written: phase the low nibble, 0x10 the direction (a move
-// to B3 clears it). At B1 / at B3 are the phases of each direction but the
-// last (6, 5): native 0x1ce answers those floors, and the special that
-// leaves a floor is named for the other one (at B1, ElevatorBxB3).
-bool elevatorIsPhase1(StageObject *elevator);                            // FS2 0x00294b60
-bool elevatorIsPhase2(StageObject *elevator);                            // FS2 0x00294b00
-bool elevatorIsPhase3(StageObject *elevator);                            // FS2 0x00294b30
-bool elevatorIsPhase4(StageObject *elevator);                            // FS2 0x00294ad0
-// The route's: the door point of a floor, a switch's place and direction
-// (1..4, CharacterRoute::useElevator), a floor is open.
-void elevatorDoorPlace(StageObject *elevator, float *out, int floor);    // FS2 0x00293fd0
-void elevatorSwitchPlace(StageObject *elevator, float *place, float *direction, int which); // FS2 0x00293c60
-bool elevatorOpenAtB1(StageObject *elevator);                            // FS2 0x00294be0
-bool elevatorOpenAtB3(StageObject *elevator);                            // FS2 0x00294b90
-bool elevatorIsAtB1(StageObject *elevator);                              // FS2 0x00294c70
-bool elevatorIsAtB3(StageObject *elevator);                              // FS2 0x00294c30
-// second picks the pose's other motion file of the two (what differs is unread).
-void elevatorMove(StageObject *elevator, bool toB3, bool second);        // FS2 0x00294f90
-// Its +0x2fc: the floors already called, a bit each. Inline in the ROM.
-u_int elevatorCalledFloors(StageObject *elevator);                       // FS2 vtable +0x2fc
 struct SceneRender;
 // +0x9c: eight blocks from +0x18. layout: host.
 struct SceneBufferSet

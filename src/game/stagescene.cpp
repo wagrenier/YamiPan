@@ -36,6 +36,7 @@
 #include "game/rumblelist.h"
 #include "game/seplayer.h"      /* StreamTable */
 #include "game/stageitem.h"
+#include "game/stageelevator.h"
 #include "game/stagelight.h"
 #include "game/stageobjlist.h"
 #include "game/stageresult.h"   /* getInitItemForLanguage */
@@ -4820,10 +4821,10 @@ static const char kObjectZs9901[] = "oZS99_01";
 // FS2 0x0019b4e0
 // callcheck: find1
 
-StageObject *StageScene::getZs9901()
+StageElevator *StageScene::getZs9901()
 {
     if (!zs9901Sought) {
-        zs9901 = objects->find1(kObjectZs9901, 0);
+        zs9901 = static_cast<StageElevator *>(objects->find1(kObjectZs9901, 0));
         zs9901Sought = 1;
     }
     return zs9901;

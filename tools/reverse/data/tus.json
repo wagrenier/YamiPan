@@ -1189,6 +1189,10 @@
      "00283cb0"
     ],
     [
+     "002937e0",
+     "002939b0"
+    ],
+    [
      "0029a840",
      "0029a8b8"
     ],
@@ -1829,6 +1833,24 @@
     ]
    ],
    "why": "the door class 0x3112f0 and its helpers; the file is the port's, cut out of the unassigned run so that the Door condition has something to find"
+  },
+  "game/stageelevator.cpp": {
+   "notes": "27 functions 0x2939b0..0x295470, batch 184; the free elevator functions are members now and getZs9901 answers StageElevator; the two motion file readers 0x2937e0..0x2939b0 joined game/playermotion.cpp. Seen on stage 9 (YAMIPAN_TELEPORT=9, temporary probes, removed, three runs, no crash): Cross at the B3 panel with the pad alone brought the car (state 5, 2, 1, lamp out on arrival); canCall true facing the panel and false with the back to it; a player put in the car and press(InsideB1) rode from z -1080 to -480 with floorObject the elevator; a player put in the closing doors at B1 reopened them the next frame. Not seen: a ride started by Cross inside the car, another character as rider, 0x1cd release, the sounds and rumble as such, a wide display. No picture of the real game, so verify. progress/20261106-elevator-b3-panel.png. Doubts in open-items.md (r), (s), (t).",
+   "ranges": [
+    [
+     "002939b0",
+     "00295470"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-06 20:51",
+     "status": "verify",
+     "summary": "The elevator: StageElevator for oZS99_01, a call brings it, the doors work, a rider goes up with it, a door closing on someone opens again"
+    }
+   ],
+   "status": "verify",
+   "why": "the object oZS99_01: ctor 0x295360, dtor 0x2952b0, vtables 0x318310.., 27 functions; the two motion file readers before it are PlayerMotion's"
   },
   "game/stageitem.cpp": {
    "notes": "All of 0x17fce0..0x184860 written or mapped (thunks listed, 0x180018 is padding). New Game run under gdb: StageBullet's ctor ran from setupCameras with no fault, 113 stubs reached, the stop is unchanged: SIGSEGV in StageScene::draw (stagescene.cpp:3272), drawSysCurrent 0x2d4fd0 a stub answering null, black last shot, so no stage picture and nothing here is on screen. Default smoke run rests on the language screen, unchanged. Host-pass only: no item is placed yet (PackTables::parse and StageModel::init are stubs), ScenePairTable::add is a stub, so no frame or collision hook has run and nothing was compared with the ROM by running it. CollisionOwner::onCollide and collisionHook3 changed signature for all owners; sysDataReturnZero 0x23c010 was a mislabel and is gone (ItemPhysics::onCollide). Next pinned: unassigned@002d46a0 for drawSysCurrent, then NodeTransform and updateMatrix. Details and doubts: open-items.md, architecture.md The bullet and the items.",
@@ -3197,6 +3219,10 @@
   "unassigned@002764b0": {},
   "unassigned@0027cab0": {},
   "unassigned@002908d0": {},
+  "unassigned@002937e0": {
+   "claimed": "2026-11-06 20:24",
+   "status": "active"
+  },
   "unassigned@00296d60": {},
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {},

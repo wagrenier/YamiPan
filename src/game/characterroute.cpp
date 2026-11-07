@@ -28,6 +28,7 @@
 #include "game/playermotion.h"
 #include "game/routeplayer.h"
 #include "game/stagecollision.h"
+#include "game/stageelevator.h"
 #include "game/stagedoor.h"
 #include "game/stageitem.h"
 #include "game/stagelight.h"
@@ -431,7 +432,7 @@ public:
     bool update() override;                                              // FS2 0x0021f8b0
 
 private:
-    void useSwitch(StageObject *elevator, int which);
+    void useSwitch(StageElevator *elevator, int which);
     void setTurn(RouteStep *turn);
 
     CharacterRoute *m_route;    // FS2 +0x08
@@ -657,11 +658,11 @@ void RouteElevator::setTurn(RouteStep *turn)
 }
 
 // To the switch and at it; inline twice in update, with elevator's door on the way.
-void RouteElevator::useSwitch(StageObject *elevator, int which)
+void RouteElevator::useSwitch(StageElevator *elevator, int which)
 {
     sceVu0FVECTOR place;
     sceVu0FVECTOR direction;
-    elevatorSwitchPlace(elevator, place, direction, which);
+    elevator->getSwitchPlace(place, direction, which);
     if (vecDistance(place, m_owner->m_xform.position) < kMinReach) {
         setTurn(new RouteTurn(m_owner, atan2Octant(direction[1], direction[0]) + kNinetyDeg));
     } else if (kFifteenDeg < fabsf(turnTo(m_owner, place))) {
@@ -672,17 +673,17 @@ void RouteElevator::useSwitch(StageObject *elevator, int which)
 }
 
 // FS2 0x0021f8b0
-// callcheck: getSeconds, getZs9901, isOnElevator, elevatorOpenAtB1, elevatorOpenAtB3, isOnElevator, elevatorDoorPlace, useElevator, elevatorSwitchPlace, atan2Octant, addAngle, operator_new (useSwitch, turnTo, the ROM's two inlined copies)
+// callcheck: getSeconds, getZs9901, isOnElevator, isOpenAtB1, isOpenAtB3, isOnElevator, getDoorPlace, useElevator, getSwitchPlace, atan2Octant, addAngle, operator_new (useSwitch, turnTo, the ROM's two inlined copies)
 bool RouteElevator::update()
 {
     if (m_until < m_owner->m_clock->getSeconds())
         return false;
-    StageObject *elevator = gStageScene->getZs9901();
+    StageElevator *elevator = gStageScene->getZs9901();
     if (elevator == nullptr)
         return false;
 
     if (m_owner->isOnElevator()
-        && ((m_goingDown == 0 && elevatorOpenAtB1(elevator)) || (m_goingDown == 1 && elevatorOpenAtB3(elevator))))
+        && ((m_goingDown == 0 && elevator->isOpenAtB1()) || (m_goingDown == 1 && elevator->isOpenAtB3())))
         return false;
 
     if (m_turn != nullptr) {
@@ -693,7 +694,7 @@ bool RouteElevator::update()
 
     const float radius = m_owner->m_ground->nearRadius;
     if (!m_owner->isOnElevator()) {
-        if ((m_floor == 0 && elevatorOpenAtB1(elevator)) || (m_floor == 1 && elevatorOpenAtB3(elevator))) {
+        if ((m_floor == 0 && elevator->isOpenAtB1()) || (m_floor == 1 && elevator->isOpenAtB3())) {
             if (kFifteenDeg < fabsf(turnTo(m_owner, elevator->m_xform.position)))
                 setTurn(new RouteTurnPoint(m_owner, elevator->m_xform.position));
             else
@@ -705,7 +706,7 @@ bool RouteElevator::update()
         }
     } else {
         sceVu0FVECTOR door;
-        elevatorDoorPlace(elevator, door, m_floor);
+        elevator->getDoorPlace(door, m_floor);
         const float distance = vecDistance(door, m_owner->m_xform.position);
         if (fabsf(turnTo(m_owner, door)) <= kNinetyDeg || radius + 20.0f <= distance) {
             if (!m_route->useElevator(m_goingDown != 0 ? 4 : 3))
@@ -1372,7 +1373,7 @@ bool RouteWalk::useElevator(float rise)
 {
     constexpr float kFloorRise = 30.0f;
 
-    StageObject *elevator = gStageScene->getZs9901();
+    StageElevator *elevator = gStageScene->getZs9901();
     if (elevator == nullptr)
         return false;
     if (stageObjRecord(m_owner->m_itemDef)->kind == CharacterKind_Srt || (m_flags & RouteMoveFlag_StopAtDoor) != 0)
@@ -1381,22 +1382,22 @@ bool RouteWalk::useElevator(float rise)
     if (!m_owner->isOnElevator()) {
         const float reach = m_owner->m_ground->nearRadius + 20.0f;
         sceVu0FVECTOR door;
-        elevatorDoorPlace(elevator, door, 0);
+        elevator->getDoorPlace(door, 0);
         if (vecDistance(door, m_owner->m_xform.position) < reach
-            && fabsf(turnTo(m_owner, door)) < kThirtyDeg && !elevatorOpenAtB1(elevator)) {
+            && fabsf(turnTo(m_owner, door)) < kThirtyDeg && !elevator->isOpenAtB1()) {
             setStep(new RouteElevator(m_owner, m_route, 0, rise < -kFloorRise));
             return true;
         }
-        elevatorDoorPlace(elevator, door, 1);
+        elevator->getDoorPlace(door, 1);
         if (vecDistance(door, m_owner->m_xform.position) < reach
-            && fabsf(turnTo(m_owner, door)) < kThirtyDeg && !elevatorOpenAtB3(elevator)) {
+            && fabsf(turnTo(m_owner, door)) < kThirtyDeg && !elevator->isOpenAtB3()) {
             setStep(new RouteElevator(m_owner, m_route, 1, rise <= kFloorRise));
             return true;
         }
-    } else if (rise < -kFloorRise && !elevatorOpenAtB3(elevator)) {
+    } else if (rise < -kFloorRise && !elevator->isOpenAtB3()) {
         setStep(new RouteElevator(m_owner, m_route, 0, true));
         return true;
-    } else if (kFloorRise < rise && !elevatorOpenAtB1(elevator)) {
+    } else if (kFloorRise < rise && !elevator->isOpenAtB1()) {
         setStep(new RouteElevator(m_owner, m_route, 1, false));
         return true;
     }
@@ -1407,7 +1408,7 @@ bool RouteWalk::useElevator(float rise)
 // the path's next node, the wants of the walk, and what the place asks for:
 // a ledge, a ladder, a door, the elevator, a detour.
 // FS2 0x00223080
-// callcheck: getSeconds, vecDistance, isListedArea, pathLength, findPath, advance, operator_new, getSeconds, junctionNode, junctionNode, operator_new, getSeconds, currentNode, vecDot, clearPath, atan2Octant, addAngle, addAngle, addAngle, startWalkTo, getDeltaSeconds, getTurnRate, operator_new, getSeconds, getStageSelect, constructAt, elevatorDoorPlace, elevatorOpenAtB1, elevatorOpenAtB3, getZs9901, isOnElevator (the rest in updatePath, useLedge, useDoors, useElevator, avoid; constructAt wraps a short)
+// callcheck: getSeconds, vecDistance, isListedArea, pathLength, findPath, advance, operator_new, getSeconds, junctionNode, junctionNode, operator_new, getSeconds, currentNode, vecDot, clearPath, atan2Octant, addAngle, addAngle, addAngle, startWalkTo, getDeltaSeconds, getTurnRate, operator_new, getSeconds, getStageSelect, constructAt, getDoorPlace, isOpenAtB1, isOpenAtB3, getZs9901, isOnElevator (the rest in updatePath, useLedge, useDoors, useElevator, avoid; constructAt wraps a short)
 bool RouteWalk::update()
 {
     constexpr float kCutCornerNear = 30.0f;
