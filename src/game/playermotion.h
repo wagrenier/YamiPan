@@ -932,8 +932,6 @@ public:
     float height = 0.0f;        // FS2 +0x24: LadderCondition's
 };
 
-// What the wall probes share (PlayerMotion +0x4, 0x26c6b0). layout: host --
-// EE 8: +0 the character, +4 a small vector { 0, 1, 0 }.
 // How far shots stray: a character's m_shotScatter, less as the aim settles
 // over three seconds of frames (the controlled one; others at once).
 struct ShotSpread
@@ -945,11 +943,15 @@ struct ShotSpread
     void scatter(float range, sceVu0FVECTOR out, const sceVu0FVECTOR from,
                  const sceVu0FVECTOR to) const;                          // FS2 0x00269db0
 };
+static_assert(sizeof(ShotSpread) == 0xc, "ShotSpread: the EE's 0xc block");
 
-// layout: host -- EE: +0 the owner, +4 a pointer to the spread.
+// What the wall probes share (PlayerMotion +0x4). layout: host -- EE 8:
+// +0 the owner, +4 a pointer to a 0xc block of its own holding the spread
+// (new'd by the ctor, deleted by the dtor); the host keeps it a member.
 struct MotionProbe
 {
-    explicit MotionProbe(StageCharacter *owner_) : owner(owner_) {}      // FS2 0x0026c6b0
+    explicit MotionProbe(StageCharacter *owner_);                        // FS2 0x0026c6b0
+    ~MotionProbe();                                                      // FS2 0x0026c650: deleting
     // A trap this character can spring.
     // count effects on a bone, where a blow along direction enters a body
     // of that radius, the rest scattered about the first. No effect named:

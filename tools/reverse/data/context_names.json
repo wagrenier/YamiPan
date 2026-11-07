@@ -29591,6 +29591,12 @@
   "was": "FUN_0026c4b0",
   "why": "ray from 50 above the feet to radius + 25 ahead (or behind), mask 0xe8021f3"
  },
+ "0026c650": {
+  "name": "MotionProbe::~MotionProbe",
+  "tag": "game-inferred",
+  "was": "FUN_0026c650",
+  "why": "CodeWarrior deleting dtor (a1 > 0 frees this): deletes the 0xc-byte spread block at +4 that MotionProbe::MotionProbe 0x26c6b0 allocates; called only by PlayerMotion::~PlayerMotion on PlayerMotion +4"
+ },
  "0026c6b0": {
   "name": "MotionProbe::MotionProbe",
   "tag": "game-inferred",
