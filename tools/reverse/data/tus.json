@@ -3088,6 +3088,24 @@
    "task": "Skinned meshes, queued by the user 2026-11-04 to come after the sub-scene's objects: 0x2e43e0 (524 i, in unassigned@002e41a0) and 0x2e68a0 (335 i, in unassigned@002e5450), skipped today at parts->boneCount != 0 in drawTree. Pin them with tus.py define. Palette: bone world * inverseBinds[b] * M, M = boneBinds[mesh.bone] or unit; the 7-tag batches carry bone ids and weights (architecture.md, The batches of a model). Needs game/modelpose.cpp. First test on stage 1: oMK01_01, its only skinned map object, 3,952 vertices, then the characters. Done when a skinned model stands on screen where its bones say.",
    "why": "The draw walk: 0x2e41a0..0x2e44e0 between rena_model's ranges, 0x2e5450..0x2e9790 up to ModelBone (rena_model). No path strings; by who calls whom. Shadows, spotlight, ghost and fade inside it are not written, they stay on yamipan/rendering/model_renderer.cpp"
   },
+  "rena/rena_drawtarget.cpp": {
+   "notes": "One function, written from the ROM asm: guard byte gp-0x7940 (sbss 0x31af30); first call stores 100, 100, 100 at 0x5a52d0..d8 and 1.0f at 0x5a52e0, sets the guard, answers 0x5a52d0. Host: static DrawTarget with member initialisers, layout host (a pointer at +0x14). Was an inline in game/drawsys.h, which the annotation scanner does not read; drawsys.h now includes rena/rena_drawtarget.h. File name is the port's (no file string), under rena/ by link order between rena_pkt_vif1pktmanage.cpp and game/layoutpaths.cpp. Verify, not done: nothing on screen can show it; the 15 s smoke run ends on the language screen as before.",
+   "ranges": [
+    [
+     "002ec110",
+     "002ec160"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-07 10:32",
+     "status": "verify",
+     "summary": "Placed getDrawTarget 0x2ec110 (was unassigned@002ec110) in its own file rena/rena_drawtarget.cpp: the guarded function-local DrawTarget at bss 0x5a52d0 moved out of drawsys.h into rena/rena_drawtarget.h"
+    }
+   ],
+   "status": "verify",
+   "why": "getDrawTarget alone: a guarded function-local static (bss 0x5a52d0, guard sbss 0x31af30) between rena_pkt_vif1pktmanage.cpp (ends 0x2ec110) and game/layoutpaths.cpp (0x2ec160). Users drawSys* and rena_draw's pass setup; no file string, so the name is the port's; under rena/ by link order (the last of rena's run 0x2e2970..0x2ec160)."
+  },
   "rena/rena_model.cpp": {
    "notes": "Written: createInstance 0x2e5210, ModelInstance::init 0x2e4800, ModelSurface 0x2e3e10, buildPartRecs 0x2e4f50, setFrames, renaStepTexAnim, modelFindPart, findGroup, setAmbient, setLight, ~ModelInstance, modelTexturePremultiplyPalette. CharacterPart was ModelPartRec. Checked by a host harness over every RM2 in the 114 SLDI packs (1,768 models, 4,702 nodes, 0 bad) and a New Game run: 22 real instances including the map node Root, no crash. The screen is black because no 3D host module exists yet, so status verify, not done. Next: TU 5 yamipan/rendering/model_renderer.cpp; open-items.md has what it must read. Also this run: the user's Japanese text rule, in reconstruction.md, and printed Shift-JIS messages became UTF-8 literals; strings compared or written out keep their escaped bytes.",
    "ranges": [
@@ -3648,15 +3666,13 @@
   "unassigned@002a7b10": {},
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {},
-  "unassigned@002b6b90": {
-   "claimed": "2026-11-07 10:02",
-   "status": "active"
-  },
+  "unassigned@002b6b90": {},
   "unassigned@002b9ef0": {},
   "unassigned@002c42a0": {},
   "unassigned@002d46a0": {},
   "unassigned@002dac70": {},
   "unassigned@002e0820": {},
+  "unassigned@002ec110": {},
   "yamipan/rendering/model_renderer.cpp": {
    "notes": "Fix for the user's crash on turning left in node 4, confirmed fixed by the user's play. drawBatch read batch.uvs unchecked. The batch is a single unskinned triangle on the plain path, listFlags 0, colours present. It draws with zero UVs plus the scroll; which model it is and how it looks were not looked at. The committed build is this fix alone: the test hooks and two unproven changes came out after the user's test.",
    "sessions": [
