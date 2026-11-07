@@ -21893,6 +21893,126 @@
   "was": "FUN_00208cc0",
   "why": "ends state 1 when its table has played"
  },
+ "00208d40": {
+  "name": "StageMenuList::closeDone",
+  "tag": "game-inferred",
+  "was": "FUN_00208d40",
+  "why": "steps +4: 1 the picked line's blink ending, 2 every fade ended, 3 done; 0x209080 resets the window when it answers true"
+ },
+ "00208f40": {
+  "name": "StageMenuList::close",
+  "tag": "game-inferred",
+  "was": "FUN_00208f40",
+  "why": "param 1 blinks the selected line, 0 fades all lines to look 1"
+ },
+ "00209080": {
+  "name": "StageMenuList::draw",
+  "tag": "game-inferred",
+  "was": "FUN_00209080",
+  "why": "called by the menu's draw 0x2303c0: draws, counts lines, flips +0x14 copying 16 lines of 0x54"
+ },
+ "00209260": {
+  "name": "StageMenuList::drawLines",
+  "tag": "game-inferred",
+  "was": "FUN_00209260",
+  "why": "moves each line, draws plates 0x22ffd0, then the text through the printer +0x10 slot 11 at scale 0.75 with the track's alpha"
+ },
+ "002096c0": {
+  "name": "StageMenuList::usedLines",
+  "tag": "game-inferred",
+  "was": "FUN_002096c0",
+  "why": "counts the page's lines with a state"
+ },
+ "00209710": {
+  "name": "StageMenuList::pick",
+  "tag": "game-inferred",
+  "was": "FUN_00209710",
+  "why": "the selected line's text if enabled, and closes with the blink; the menu's first button"
+ },
+ "00209870": {
+  "name": "StageMenuList::selectNext",
+  "tag": "game-inferred",
+  "was": "FUN_00209870",
+  "why": "selection to the next shown line, wrapping at 16; down on the pad"
+ },
+ "00209b00": {
+  "name": "StageMenuList::selectPrev",
+  "tag": "game-inferred",
+  "was": "FUN_00209b00",
+  "why": "selection to the previous shown line; up on the pad"
+ },
+ "00209d90": {
+  "name": "StageMenuList::addLine",
+  "tag": "game-inferred",
+  "was": "FUN_00209d90",
+  "why": "StageMenu::addLine's body: finds the line by wstrcmp on +4 or a free one"
+ },
+ "00209f90": {
+  "name": "StageMenuList::layout",
+  "tag": "game-inferred",
+  "was": "FUN_00209f90",
+  "why": "once a frame: sort, each line's state by whether addLine asked for it, rows and moves, a default selection"
+ },
+ "0020a6e0": {
+  "name": "StageMenuFade::settle",
+  "tag": "game-inferred",
+  "was": "FUN_0020a6e0",
+  "why": "from and current = target"
+ },
+ "0020a710": {
+  "name": "StageMenuFade::startMove",
+  "tag": "game-inferred",
+  "was": "FUN_0020a710",
+  "why": "+0x18 = 0, +0x1c = frames"
+ },
+ "0020a720": {
+  "name": "StageMenuColor::frames",
+  "tag": "game-inferred",
+  "was": "FUN_0020a720",
+  "why": "the track's count, 0 with none"
+ },
+ "0020a740": {
+  "name": "StageMenuFade::aimAtRow",
+  "tag": "game-inferred",
+  "was": "FUN_0020a740",
+  "why": "target x -89, y from row and rows, step 28.05"
+ },
+ "0020a7d0": {
+  "name": "StageMenuFade::placeAtRow",
+  "tag": "game-inferred",
+  "was": "FUN_0020a7d0",
+  "why": "from and current at the row"
+ },
+ "0020a870": {
+  "name": "StageMenuList::sort",
+  "tag": "game-inferred",
+  "was": "FUN_0020a870",
+  "why": "exchange sort of the 16 lines by +8, free lines last"
+ },
+ "0020aaa0": {
+  "name": "StageMenuList::setData",
+  "tag": "game-inferred",
+  "was": "FUN_0020aaa0",
+  "why": "keeps the file at +0xa9c, a Tim2Texture of it at +0xaa0; StageMenu::setData"
+ },
+ "0020aaf0": {
+  "name": "StageMenuList::reset",
+  "tag": "game-inferred",
+  "was": "FUN_0020aaf0",
+  "why": "both pages' 16 lines cleared"
+ },
+ "0020aba0": {
+  "name": "StageMenuList::~StageMenuList",
+  "tag": "game-inferred",
+  "was": "FUN_0020aba0",
+  "why": "deletes the texture and the clock"
+ },
+ "0020ac30": {
+  "name": "StageMenuList::StageMenuList",
+  "tag": "game-inferred",
+  "was": "FUN_0020ac30",
+  "why": "built by StageMenu's ctor at 0xaa8 bytes"
+ },
  "0020acb0": {
   "name": "pauseMenuResult",
   "tag": "game-inferred",
@@ -24197,6 +24317,66 @@
   "was": "FUN_0022fc40",
   "why": "slot 1 of 0x316480"
  },
+ "0022fc50": {
+  "name": "vector<short>::constructAt",
+  "tag": "game-inferred",
+  "was": "FUN_0022fc50",
+  "why": "MSL placement of one short: *p = v, returns p; findWayOut's and RouteWalk::update's push_back"
+ },
+ "0022fc60": {
+  "name": "vector<short>::erase",
+  "tag": "game-inferred",
+  "was": "FUN_0022fc60",
+  "why": "MSL erase(pos) on 2-byte elements: moves the tail down in runs of 8, count-1"
+ },
+ "0022fda0": {
+  "name": "vector<short>::~vector",
+  "tag": "game-inferred",
+  "was": "FUN_0022fda0",
+  "why": "MSL dtor: clear 0x22fe80, delete +8, flag-deleting; used on areaList's vector"
+ },
+ "0022fe10": {
+  "name": "vector<RouteLeg>::~vector",
+  "tag": "game-inferred",
+  "was": "FUN_0022fe10",
+  "why": "MSL dtor: clear 0x22fe90, delete +8; RoutePath::~RoutePath's steps"
+ },
+ "0022fe80": {
+  "name": "vector<short>::clear",
+  "tag": "game-inferred",
+  "was": "FUN_0022fe80",
+  "why": "count +4 = 0"
+ },
+ "0022fe90": {
+  "name": "vector<RouteLeg>::clear",
+  "tag": "game-inferred",
+  "was": "FUN_0022fe90",
+  "why": "count +4 = 0, called on paths before they are filled"
+ },
+ "0022fea0": {
+  "name": "StageMenuFade::setLook",
+  "tag": "game-inferred",
+  "was": "FUN_0022fea0",
+  "why": "picks a colour track from table 0x2fab40 by (from, to) look; -2 the picked line's blink 0x2fab20"
+ },
+ "0022ffd0": {
+  "name": "StageMenuFade::draw",
+  "tag": "game-inferred",
+  "was": "FUN_0022ffd0",
+  "why": "one textured sprite at (x, y) at scale 0.75, 12.4 UV 0x10.. size 0xe60 x 0x1d0 from data 0x307178, colour of the track's frame"
+ },
+ "002303c0": {
+  "name": "StageMenu::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002303c0",
+  "why": "vtable 0x3164b0 slot +0x10: the window's draw while the state is not 0"
+ },
+ "00230400": {
+  "name": "StageMenu::update",
+  "tag": "game-inferred",
+  "was": "FUN_00230400",
+  "why": "vtable 0x3164b0 slot +0xc: requests, then the pad"
+ },
  "00230800": {
   "name": "StageMenu::addLine",
   "tag": "game-inferred",
@@ -24209,11 +24389,23 @@
   "was": "FUN_00230810",
   "why": "to 0x20aaa0 on +0xc"
  },
+ "00230820": {
+  "name": "StageMenu::~StageMenu",
+  "tag": "game-inferred",
+  "was": "FUN_00230820",
+  "why": "vtable 0x3164b0 slot +0x8, deleting"
+ },
  "002308a0": {
   "name": "StageMenu::StageMenu",
   "tag": "game-inferred",
   "was": "FUN_002308a0",
   "why": "StageScene ctor new(0x18) for +0xd0 with (+0xbc printer, 0): vtable 0x3164b0 at +8, a 0xaa8 object 0x20ac30 at +0xc; StageScene::getOpenMenu tests its +0 for 2; name a guess"
+ },
+ "00230930": {
+  "name": "StageMenuBase::~StageMenuBase",
+  "tag": "game-inferred",
+  "was": "FUN_00230930",
+  "why": "vtable 0x3164d0, the base: deleting, nothing else"
  },
  "00230980": {
   "name": "gfxUiPresetRgbOnly5",

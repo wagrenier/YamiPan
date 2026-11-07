@@ -538,7 +538,7 @@ float RouteSearch::buildNodes(std::vector<RouteNode *> &out, const std::vector<R
 
 // The way between two points, without keeping it.
 // FS2 0x002411a0
-// callcheck: FUN_0022fe10, FUN_0022fe90, operator_delete (the host RoutePath and vector)
+// callcheck: ~vector, clear, operator_delete (the host RoutePath and vector)
 
 float RouteSearch::pathLength(const float *from, const float *to)
 {
@@ -558,7 +558,7 @@ float RouteSearch::pathLength(const float *from, const float *to)
 
 // A path from the owner to goal, kept to be walked.
 // FS2 0x00241380
-// callcheck: FUN_0022fe90 (steps.clear)
+// callcheck: clear (steps.clear)
 
 float RouteSearch::findPath(const float *goal)
 {
@@ -585,7 +585,7 @@ float RouteSearch::findPath(const float *goal)
 // The cheapest way between two areas: over each crossing the file lists for
 // them, from from to the crossing's start, along it, and on to to.
 // FS2 0x002414c0
-// callcheck: FUN_0022fda0, FUN_0022fe10, FUN_0022fe90 (the host RoutePath and vector)
+// callcheck: ~vector, ~vector, clear (the host RoutePath and vector)
 
 float RouteSearch::search(RoutePath &best, const float *from, const float *to, short fromArea,
                           short toArea)

@@ -343,7 +343,7 @@ float RouteAreaSearch::chainRun(RoutePath &out, RouteNode *from, RouteNode *to)
 // and what it answers then is the run's alone; both are the ROM's. The
 // callers read out.length.
 // FS2 0x00253420
-// callcheck: FUN_0022fe90, FUN_00254fd0, ~RouteLegList, FUN_00255080, FUN_001928f0, FUN_00254f10, FUN_00254fc0, FUN_00254fa0, FUN_00254f90, FUN_00254f40, FUN_00254f30, FUN_00254f00, reserve, insert, FUN_00254ff0, FUN_00228610, FUN_00254e40, FUN_00254ef0, FUN_00254ed0, FUN_00254ec0, FUN_00254e70, FUN_00254e60, FUN_00254e30, FUN_00254e10, FUN_0022fe10, FUN_00253210 (the host vector and its reversed copies)
+// callcheck: clear, FUN_00254fd0, ~RouteLegList, FUN_00255080, FUN_001928f0, FUN_00254f10, FUN_00254fc0, FUN_00254fa0, FUN_00254f90, FUN_00254f40, FUN_00254f30, FUN_00254f00, reserve, insert, FUN_00254ff0, FUN_00228610, FUN_00254e40, FUN_00254ef0, FUN_00254ed0, FUN_00254ec0, FUN_00254e70, FUN_00254e60, FUN_00254e30, FUN_00254e10, ~vector, FUN_00253210 (the host vector and its reversed copies)
 
 float RouteAreaSearch::areaPath(RoutePath &out, const float *from, const float *to, short area)
 {
@@ -869,7 +869,7 @@ void RouteFile::collectNames()
 
 // The path walked the other way, its links and chains made nodes.
 // FS2 0x00257360
-// callcheck: FUN_002592f0, FUN_0022fe90, insert, FUN_0022fe10 (the host vector)
+// callcheck: FUN_002592f0, clear, insert, ~vector (the host vector)
 
 void RouteFile::reversePath(RoutePath &path)
 {
@@ -902,7 +902,7 @@ void RouteFile::reversePath(RoutePath &path)
 // path over it starts with: a gate is right there, a link's start without
 // a corner is walked to straight, the rest goes along the chains.
 // FS2 0x00257680
-// callcheck: FUN_0022fe90, insert (the host vector)
+// callcheck: clear, insert (the host vector)
 
 float RouteFile::wayToCrossing(RoutePath &out, const float *pos, short area, short crossing)
 {
@@ -937,7 +937,7 @@ float RouteFile::wayToCrossing(RoutePath &out, const float *pos, short area, sho
 
 // The stored path, into out.
 // FS2 0x002578f0
-// callcheck: resize, FUN_0022fe90 (the host vector)
+// callcheck: resize, clear (the host vector)
 
 float RouteFile::crossingPath(RoutePath &out, short fromArea, short toArea, short crossing, int pathSet)
 {

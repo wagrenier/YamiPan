@@ -1407,7 +1407,7 @@ bool RouteWalk::useElevator(float rise)
 // the path's next node, the wants of the walk, and what the place asks for:
 // a ledge, a ladder, a door, the elevator, a detour.
 // FS2 0x00223080
-// callcheck: getSeconds, vecDistance, isListedArea, pathLength, findPath, advance, operator_new, getSeconds, junctionNode, junctionNode, operator_new, getSeconds, currentNode, vecDot, clearPath, atan2Octant, addAngle, addAngle, addAngle, startWalkTo, getDeltaSeconds, getTurnRate, operator_new, getSeconds, getStageSelect, FUN_0022fc50, elevatorDoorPlace, elevatorOpenAtB1, elevatorOpenAtB3, getZs9901, isOnElevator (the rest in updatePath, useLedge, useDoors, useElevator, avoid; FUN_0022fc50 wraps a short)
+// callcheck: getSeconds, vecDistance, isListedArea, pathLength, findPath, advance, operator_new, getSeconds, junctionNode, junctionNode, operator_new, getSeconds, currentNode, vecDot, clearPath, atan2Octant, addAngle, addAngle, addAngle, startWalkTo, getDeltaSeconds, getTurnRate, operator_new, getSeconds, getStageSelect, constructAt, elevatorDoorPlace, elevatorOpenAtB1, elevatorOpenAtB3, getZs9901, isOnElevator (the rest in updatePath, useLedge, useDoors, useElevator, avoid; constructAt wraps a short)
 bool RouteWalk::update()
 {
     constexpr float kCutCornerNear = 30.0f;
@@ -2481,7 +2481,7 @@ RouteStalkAction::RouteStalkAction(float range, StageCharacter *owner, Character
 // in a chain: the ROM asks for the node one past the last, which reads what
 // follows the list; the host takes the last one (open-items.md).
 // FS2 0x00227f30
-// callcheck: FUN_0022fda0, FUN_0022fc50, areaList, FUN_0022fc50, crossingPath, FUN_0022fe10, FUN_0022fda0, FUN_0022fc60, vecNormalize, FUN_0022fc50, crossingPath, FUN_0022fe10, link, gate, node, node, node, chainNodeCount, chainNode, FUN_0022fe10, FUN_0022fda0, FUN_0022fda0, vecNormalize, FUN_0022fe10
+// callcheck: ~vector, constructAt, areaList, constructAt, crossingPath, ~vector, ~vector, erase, vecNormalize, constructAt, crossingPath, ~vector, link, gate, node, node, node, chainNodeCount, chainNode, ~vector, ~vector, ~vector, vecNormalize, ~vector
 namespace {
 
 bool findWayOut(float *out, StageCharacter *who, const float *threat, const float *last)
@@ -3629,3 +3629,12 @@ void CharacterRoute::update()
     if (look != nullptr && !look->update())
         setLook(nullptr);
 }
+
+// The MSL std::vector instances of the file, out of line in the ROM after the
+// code above; the host <vector> provides them.
+//   FS2 0x0022fc50  vector<short>::constructAt (one element, placement)
+//   FS2 0x0022fc60  vector<short>::erase (pos)
+//   FS2 0x0022fda0  vector<short>::~vector
+//   FS2 0x0022fe10  vector<RouteLeg>::~vector
+//   FS2 0x0022fe80  vector<short>::clear
+//   FS2 0x0022fe90  vector<RouteLeg>::clear

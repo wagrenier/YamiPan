@@ -28,7 +28,7 @@ enum PadAction
 {
     PadAction_Use    = 0,       // Cross: the item list, the first trigger
     PadAction_Squat  = 1,       // Circle: also a firearm's second trigger
-    PadAction_Unused = 2,       // Triangle: nothing here
+    PadAction_Menu   = 2,       // Triangle: the stage's menu (StageMenu::update)
     PadAction_Lamp   = 3,       // Square
     PadAction_Ready  = 4,       // R1: held, the stick's bands widen (wants.ready)
     PadAction_Zoom   = 5,       // R2: held, with its pressure

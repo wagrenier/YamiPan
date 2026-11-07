@@ -96,11 +96,6 @@ SigLamp::SigLamp(Tim2Texture*)
 }
 
 // stub of FS2 address unknown (1 candidates)
-void StageMenu::destroy()
-{
-    YAMIPAN_STUB("StageMenu::destroy", 0x00230820);
-}
-
 // stub of FS2 0x001d3a40
 // stub of FS2 0x00185af0
 
@@ -291,17 +286,7 @@ void SceneOwnedObject::update()
 // stub of FS2 0x00289b20
 // stub of FS2 address unknown (1 candidates)
 // stub of FS2 address unknown (1 candidates)
-void StageMenu::draw(sceVif1Packet *packet, TexAreaList *texList)
-{
-    YAMIPAN_STUB("StageMenu::draw", 0x002303c0);
-}
-
 // stub of FS2 address unknown (1 candidates)
-void StageMenu::update()
-{
-    YAMIPAN_STUB("StageMenu::update", 0x00230400);
-}
-
 // stub of FS2 address unknown (1 candidates)
 void StageObject::cameraStep()
 {
@@ -381,12 +366,6 @@ void SceneBufferSet::storeActive(StageObject *linked)
 void SceneBufferSet::updateRange(float range, StageObject *linked, SceneRender *render)
 {
     YAMIPAN_STUB("SceneBufferSet::updateRange", 0x002ce1c0);
-}
-
-// stub of FS2 0x00230810
-void StageMenu::setData(void *data)
-{
-    YAMIPAN_STUB("StageMenu::setData", 0x00230810);
 }
 
 // stub of FS2 0x002ce9d0

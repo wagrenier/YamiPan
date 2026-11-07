@@ -122,7 +122,7 @@
    "ranges": [
     [
      "0021efa0",
-     "0022fc50"
+     "0022fea0"
     ]
    ],
    "sessions": [
@@ -138,7 +138,7 @@
     }
    ],
    "status": "verify",
-   "why": "the route and its task classes: the look, turn, walk and action tasks 0x21efa0..0x22a310 (vtables 0x3160a0..0x316480), the route 0x22a310..0x22f270, its ctor and the classes' deleting dtors and trivial slots ..0x22fc50; vtable order runs through all of it, 0x22fc50 on are the route's std containers"
+   "why": "the route and its task classes, then the MSL vector<short> / vector<RouteLeg> instances 0x22fc50..0x22fea0 the file uses"
   },
   "game/charactersound.cpp": {
    "notes": "All of 0x2a31b0..0x2a49c0 plus getAttackVoice 0x2a25b0. New names playHitSound, playTrapHitVoice, playQuestionVoice, enum SoundKind. Bug fixed in game/playermotion.cpp: playVoiceHeard looked names up with findCue (stream table); the ROM binary-searches the stage's SE table, so every call dropped out. Seen in a temporary log, removed (YAMIPAN_TELEPORT=2, 200 s, no crash): E18_DMG_L 39 times, E18_FIND once, null before the fix, found after. Stage 2's SE table has 28 of the 69 names this file can ask for; taken to be per-stage cast, only stage 2 listed. Not heard: nobody listened. No PC or NPC voice fired, so sayPartyVoice has not run. Not compared with the ROM by a tool. Waiting: takeHits past its first line calls playHitSound and playTrapHitVoice, the stub StageAlert::cry calls playQuestionVoice, hasAlteredVoice 0x215af0 is a reached stub. Left of the family: stubs 0x2a2b60..0x2a2e30, playMotionSound, playFallDownSound can join this file.",
@@ -1898,13 +1898,26 @@
    "why": "Cut out of unassigned@00171300 (the frontier pick for getStageFiles 0x17f150): one object file between the adjustor thunks 0x17f090..0x17f150 (the previous file's last code) and 0x17fce0 (answers 25: slot 108 of the bullet class vtable 0x312cdc, so the next file's inline virtuals): getStageFiles, stageThread 0x17f160 (slot 3, started by 0x2b60b0), its clear / game-over / pause / restart helpers, stageLoad 0x17fb90, setStageLoader 0x17fc90 and the handler-table stub 0x17f7b0. The file name is the port's (no strings)."
   },
   "game/stagemenu.cpp": {
+   "notes": "All 29 functions written (batch 183); the frontier unassigned@0022fc50 was six MSL vector helpers, now listed in game/characterroute.cpp, and StageMenuFade. Proved: menucmp.py, 16 scripts, 355157 lines, 10689 plates, 9967 texts, 62 picks, 0 differ, the window only; StageMenu::update is read from the code. Seen: YAMIPAN_TELEPORT=2 and 7, scripted Triangle, the orange Shout plate with black text, progress/20261106-stage-menu-shout.png; closes, reopens, Cross picks. Not seen: what the script does with the pick, two or more lines in a run, grey plates in a run, a wide display, a real pad. No picture of the real game, so verify. Doubts in open-items.md Next up: look names, and show flag 3 is also kShowFlagNotFalling in playermotion.cpp.",
    "ranges": [
     [
-     "002303c0",
+     "00208d40",
+     "0020acb0"
+    ],
+    [
+     "0022fea0",
      "00230980"
     ]
    ],
-   "why": "StageMenu: the ctor is written with game/playermotion.cpp's sixth run, because a stubbed ctor left its fields as heap garbage; the vtable 0x3164b0 holds 0x230820, 0x230400, 0x2303c0"
+   "sessions": [
+    {
+     "date": "2026-11-06 20:19",
+     "status": "verify",
+     "summary": "the stage menu whole: the list window, its fades, update, draw; six vector helpers joined game/characterroute.cpp; menucmp.py"
+    }
+   ],
+   "status": "verify",
+   "why": "StageMenu 0x2303c0.. and its list window: the class 0x208d40..0x20acb0 and its fades 0x22fea0..0x2303c0, which CodeWarrior laid out apart; the vtable 0x3164b0 holds 0x230820, 0x230400, 0x2303c0"
   },
   "game/stagemodel.cpp": {
    "notes": "All of StageModel is written (init, bindBones, placeBones, setBaseMotion, advance, applyMotion, the play and find calls, the dtor). BoneNode and ModelLink were one StringMap, now boneMap. game/modelpose.h holds the pose as a stand-in: short accessors written, load / update / solve / play and the ctors are stubs, so a pose has no bones yet. Pose +0x150 is a matrix pointer, not a count (was called pending). New Game run: reaches the stage, no crash, black at the last frame; nothing tests this on screen yet because createInstance answers null and no pose was built. StringMap::balance passed a scratch test on 3000 trees. Next, rena/rena_model.cpp: createInstance must fill rootBone +0x10, bones with node at ModelNodeBone records, inverseBinds +0x20, bindMatrices +0x24, rootMatrix +0x28 and textures +0x50, and allocate with plain new (delete data in ~StageModel). open-items.md has the doubts.",
@@ -3168,6 +3181,7 @@
   },
   "unassigned@0018c050": {},
   "unassigned@001953f0": {},
+  "unassigned@0022fc50": {},
   "unassigned@00231410": {},
   "unassigned@00231c90": {},
   "unassigned@0023c020": {},

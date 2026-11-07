@@ -2445,7 +2445,7 @@ enum PlayerAction
 constexpr int kShowFlagPauseMenu = 1;
 constexpr int kShowFlagMapMenu   = 2;
 
-static bool actionAllowsMenu(int action)
+bool actionAllowsMenu(int action)
 {
     return action == PlayerAction_20 || action == PlayerAction_AltB || action == PlayerAction_9
         || action == PlayerAction_1 || action == PlayerAction_None;
