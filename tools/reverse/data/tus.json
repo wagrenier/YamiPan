@@ -3415,12 +3415,21 @@
    "why": "SDPR2 two-voice type sdpr2Pair*: the second message copy (0x302920); batch 011."
   },
   "sdpr2/sdpr2single.c": {
+   "notes": "All 24 functions written (sdpr2Single* type table filled in sdpr2SingleInit, sdpr2CalcPan / CalcPanDeg / CalcPanVolumes / UnwrapAngle / CalcLevels) plus data 0x2f5fb8..0x2f7a58 (sin / cos 720 half-degree tables, two 129-entry spread tables, four pointer globals the pair also reads) dumped from the ELF. Audio only: nothing on screen shows it (the smoke run still ends on the language menu), so verify. Sdpr2Slot fields renamed: +0x10 levelAngle, +0x18 panAngle. sdpr2drv.h now declares the 10 driver calls this file makes (stubs in sdpr2drv.c). CalcLevels: the ROM leaves the gain unset for a which other than 0 / 1; the port sets 0 (no caller passes another). Not proven against the ROM yet: a rutecmp-style run of sdpr2UnwrapAngle / CalcPanVolumes / CalcLevels over all angles and spreads would settle it cheaply. Next for sound: sdpr2/sdpr2pair.c (reads the same tables) and sdpr2/sdpr2drv.c (sdpr2DrvInit and GetConfig are reached stubs).",
    "ranges": [
     [
      "0016e498",
      "00170088"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-07 06:49",
+     "status": "verify",
+     "summary": "SDPR2 one-voice type and the shared pan maths: all 24 functions, the pan / spread tables from the ROM"
+    }
+   ],
+   "status": "verify",
    "why": "SDPR2 one-voice type sdpr2Single* + pan math: the third message copy (0x302a88); batch 011."
   },
   "sound/sound.cpp": {

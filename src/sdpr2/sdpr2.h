@@ -85,9 +85,9 @@ typedef struct Sdpr2Slot
     const Sdpr2Type *type;  /* +0x00: null while free                   */
     int voice[2];           /* +0x04: SE voice ids, SDPR2_VOICE_FREE    */
     int flip;               /* +0x0c                                    */
-    int _10;                /* +0x10: an angle (unread here)            */
+    int levelAngle;         /* +0x10: degrees, the levels' angle (single: = angle) */
     int angle;              /* +0x14: degrees, sdpr2GetAngle            */
-    int _18;                /* +0x18: an angle (unread here)            */
+    int panAngle;           /* +0x18: 0..719, the unwrapped pan angle   */
     int volume;             /* +0x1c                                    */
     int pitch;              /* +0x20: SDPR2_PITCH_ONE = 1.0             */
     int spread;             /* +0x24                                    */
