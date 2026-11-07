@@ -13,6 +13,7 @@
 #define _GAME_STAGEITEM_H
 
 #include "game/gamehooks.h"
+#include "game/itemphysics.h"
 #include "game/seplayer.h"
 
 class PointLight;
@@ -119,41 +120,6 @@ private:
     sceVu0FVECTOR m_hitPoint;   // FS2 +0x270
     float  m_hitDistance = 0.0f; // FS2 +0x280
     StageCollisionFace *m_hitFace = nullptr; // FS2 +0x284
-};
-
-// What throws, drops and shows a carried item (class of vtable 0x316510, a
-// CollisionOwner at +0x240 in the thrown items and the weapons; the run
-// unassigned@0023c020). Read here only as far as its users.
-// layout: host -- EE: the owner's fields at +0x240, 0x210 bytes.
-class ItemPhysics : public CollisionOwner
-{
-public:
-    ItemPhysics(bool arg0, bool arg1);                                   // FS2 0x0023db50
-    ~ItemPhysics();                                                      // FS2 0x0023db00
-
-    // The bones of motion, which is owner's.
-    void setup(StageItem *owner, void *motion);                          // FS2 0x0023d600
-    void update();                                                       // FS2 0x0023ca50
-    void draw();                                                         // FS2 0x0023c910
-    // The mean of the bones' velocities.
-    void getMeanVelocity(sceVu0FVECTOR out);                             // FS2 0x0023ce00
-    // Falls again (moving) or comes to rest; awake: at rest, the body takes
-    // the root bone's place.
-    void setMoving(bool moving, bool awake);                             // FS2 0x0023cfc0
-    // Adds to a bone's velocity, every bone's with -1.
-    void push(const sceVu0FVECTOR velocity, int bone);                   // FS2 0x0023cf50
-
-    int  collisionHook0(CollisionContact *contact, const float *normal, StageCollisionFace *face,
-                        float depth) override;                                      // FS2 0x0023c020
-    // FS2 0x0023c010
-    int  onCollide(CollisionContact *, const float *, StageCollisionFace *, float, float) override { return 0; }
-    void syncBody(CollisionBody *body) override;                         // FS2 0x0023c300
-    void collisionHook3(CollisionBody *body) override;                   // FS2 0x0023c2f0
-    // FS2 0x001840b0
-    StageObject *getCollisionParent() override { return m_parent; }
-
-    u_char       m_moving = 0;  // FS2 +0x1fc (the owner's +0x43c): still falling or thrown
-    StageObject *m_parent = nullptr; // FS2 +0x200 (the owner's +0x440)
 };
 
 // The item classes (StageFiles::placeItem, by ItemDef::kind and name). The

@@ -312,6 +312,9 @@ constexpr u_int kCollisionMelee     = 0x40;     // a hand or a blade: a map obje
 constexpr u_int kCollisionBulletHit = 0x80;     // a bullet's capsule
 constexpr u_int kCollisionBulletRay = 0x100;    // a bullet's segment
 constexpr u_int kCollisionTrap      = 0x200;
+constexpr u_int kCollisionItemTouch = 0x400;    // ItemPhysics: the sphere around a thrown item's nodes
+constexpr u_int kCollisionItemWall  = 0x800;    // ItemPhysics: a node's sphere, against walls
+constexpr u_int kCollisionItemFloor = 0x1000;   // ItemPhysics: a node's sphere, against floors
 constexpr u_int kCollisionLight     = 0x2000;
 
 // One shape of the collision world (SceneRecordBuckets), EE 0xe0: built by

@@ -576,12 +576,12 @@ bool StageThrownItem::isSmoking()
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x001808b0
-// callcheck: draw, addBufferObject
+// callcheck: endFrame, addBufferObject
 
 void StageThrownItem::sideHook3()
 {
     if (m_itemMotion != nullptr)
-        ItemPhysics::draw();
+        ItemPhysics::endFrame();
     gStageScene->addBufferObject(this);
 }
 
@@ -834,13 +834,13 @@ void StageWeaponItem::sideHook2()
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x00181340
-// callcheck: draw
+// callcheck: endFrame
 
 void StageWeaponItem::sideHook3()
 {
     StageItem::sideHook3();
     if (m_itemMotion != nullptr)
-        ItemPhysics::draw();
+        ItemPhysics::endFrame();
 }
 
 // ──────────────────────────────────────────────────────────────────────

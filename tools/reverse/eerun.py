@@ -265,6 +265,9 @@ class Ee:
         elif op == 'movn':
             if g(a[2]) & M64 != 0: s(a[0], g(a[1]))
         elif op == 'mult' and len(a) == 3: s(a[0], s32(s32(g(a[1])) * s32(g(a[2]))))
+        elif op == 'mult':
+            product = s32(g(a[0])) * s32(g(a[1]))
+            self.lo, self.hi = s32(product), s32(product >> 32)
         elif op == 'div':
             x, y = s32(g(a[-2])), s32(g(a[-1]))
             if y:

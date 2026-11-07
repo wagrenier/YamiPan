@@ -395,48 +395,6 @@ SceneBufferSet * SceneBufferSet::createFor(StageObject *owner, StageNodeTree *tr
 }
 
 // stub of FS2 0x001d3d20
-// stub of FS2 0x0023db50
-ItemPhysics::ItemPhysics(bool, bool)
-{
-    YAMIPAN_STUB("ItemPhysics::ItemPhysics", 0x0023db50);
-}
-
-// stub of FS2 0x0023c2f0
-void ItemPhysics::collisionHook3(CollisionBody *body)
-{
-    YAMIPAN_STUB("ItemPhysics::collisionHook3", 0x0023c2f0);
-}
-
-// stub of FS2 0x0023c910
-void ItemPhysics::draw()
-{
-    YAMIPAN_STUB("ItemPhysics::draw", 0x0023c910);
-}
-
-// stub of FS2 0x0023d600
-void ItemPhysics::setup(StageItem *owner, void *motion)
-{
-    YAMIPAN_STUB("ItemPhysics::setup", 0x0023d600);
-}
-
-// stub of FS2 0x0023c300
-void ItemPhysics::syncBody(CollisionBody *body)
-{
-    YAMIPAN_STUB("ItemPhysics::syncBody", 0x0023c300);
-}
-
-// stub of FS2 0x0023ca50
-void ItemPhysics::update()
-{
-    YAMIPAN_STUB("ItemPhysics::update", 0x0023ca50);
-}
-
-// stub of FS2 0x0023db00
-ItemPhysics::~ItemPhysics()
-{
-    YAMIPAN_STUB("ItemPhysics::~ItemPhysics", 0x0023db00);
-}
-
 // stub of FS2 0x002a7a50
 NmlPose::NmlPose(int, int, int, int)
 {
@@ -467,14 +425,6 @@ bool missionRestoreCheck()
 
 
 // stub of FS2 0x00207aa0
-// stub of FS2 0x0023c020
-int ItemPhysics::collisionHook0(CollisionContact *contact, const float *normal, StageCollisionFace *face,
-                        float depth)
-{
-    YAMIPAN_STUB("ItemPhysics::collisionHook0", 0x0023c020);
-    return {};
-}
-
 // ---- by hand: the character's parts, until their TUs (next in the queue) ----
 
 // stub of FS2 0x00239bc0
@@ -498,12 +448,6 @@ bool StageCharacter::isCompanionWalking()
     return {};
 }
 
-// stub of FS2 0x0023ce00
-void ItemPhysics::getMeanVelocity(sceVu0FVECTOR out)
-{
-    YAMIPAN_STUB("ItemPhysics::getMeanVelocity", 0x0023ce00);
-}
-
 // stub of FS2 0x001e05b0
 bool PlayerMotion::winsStruggle(StageObject *other)
 {
@@ -513,18 +457,6 @@ bool PlayerMotion::winsStruggle(StageObject *other)
 
 // stub of FS2 0x00207e20
 // stub of FS2 0x00210720
-// stub of FS2 0x0023cf50
-void ItemPhysics::push(const sceVu0FVECTOR velocity, int bone)
-{
-    YAMIPAN_STUB("ItemPhysics::push", 0x0023cf50);
-}
-
-// stub of FS2 0x0023cfc0
-void ItemPhysics::setMoving(bool moving, bool awake)
-{
-    YAMIPAN_STUB("ItemPhysics::setMoving", 0x0023cfc0);
-}
-
 // stub of FS2 address unknown (1 candidates)
 bool SceneOwnedObject::canUse()
 {

@@ -25277,17 +25277,35 @@
   "was": "FUN_0023c300",
   "why": "CollisionOwner slot 2 of vtable 0x316510"
  },
+ "0023c7f0": {
+  "name": "ItemPhysics::getNodeFrame",
+  "tag": "game-inferred",
+  "was": "FUN_0023c7f0",
+  "why": "Rows from the nodes at +0x10, +0x50, +0x90: x along 0-1, then a cross with up (2 nodes) or with 1-2 (3 or 4); setup inverts it into +0x1b0, the frame's end uses it for the owner's matrix"
+ },
  "0023c910": {
-  "name": "ItemPhysics::draw",
+  "name": "ItemPhysics::endFrame",
   "tag": "game-inferred",
   "was": "FUN_0023c910",
-  "why": "called from the items' fourth side slot"
+  "why": "Was ItemPhysics::draw: draws nothing. Side hook 3, after the collision step: velocity = position - previous, rest test, then copies the nodes' frame into the owner's world matrix"
  },
  "0023ca50": {
   "name": "ItemPhysics::update",
   "tag": "game-inferred",
   "was": "FUN_0023ca50",
   "why": "called from the items' third side slot; asks the land sound"
+ },
+ "0023ce00": {
+  "name": "ItemPhysics::getMeanVelocity",
+  "tag": "game-inferred",
+  "was": "FUN_0023ce00",
+  "why": "Sum of the nodes' +0x30 divided by the count; CharacterGround::collisionHook0 asks it of a thrown item that touches a body"
+ },
+ "0023ce60": {
+  "name": "ItemPhysics::keepsMoving",
+  "tag": "game-inferred",
+  "was": "FUN_0023ce60",
+  "why": "Truncating int sum of node speeds over 0.001 resets +0x208, otherwise +0x208 += delta and it answers +0x208 < 1; endFrame rests the item on 0"
  },
  "0023cf50": {
   "name": "ItemPhysics::push",
@@ -25300,6 +25318,12 @@
   "tag": "game-inferred",
   "was": "FUN_0023cfc0",
   "why": "sets +0x1fc, the owner's +0x43c, and its three copies"
+ },
+ "0023d0c0": {
+  "name": "ItemPhysics::placeNodes",
+  "tag": "game-inferred",
+  "was": "FUN_0023d0c0",
+  "why": "From setMoving(true): rest points through the owner's world matrix, each pulled back along a ray from the owner's point through the wall and floor bodies, velocities and faces cleared"
  },
  "0023d600": {
   "name": "ItemPhysics::setup",
