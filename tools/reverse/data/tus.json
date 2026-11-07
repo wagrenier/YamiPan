@@ -3088,10 +3088,10 @@
    "why": "Cut out of unassigned@002b0d50 (the frontier pick, 628 functions 0x2b0d50..0x2e1b70): the game's 16-bit string helpers wstrcmp 0x2d4150, wstrstr 0x2d42a0, wstrFromAscii 0x2d4440, wstrcpy 0x2d4510, wstrlen 0x2d4650 (the run's most-called functions, 22x for wstrFromAscii). Bounded by a FontData-derived class before (ctor 0x2d4110, vtable 0x319ff0) and a scene lookup reading +0x40 tables after (0x2d46a0). No strings: the file name is a guess."
   },
   "rena/rena_2d_texture_tim2.cpp": {
-   "notes": "All 7 written; class moved to rena/rena_2d_texture_tim2.h. One Tim2Texture per mip level of the first picture; m_image (+0x40) is the TIM2 file itself, not a copy. upload is empty on purpose (no GS memory; its comment says what the ROM sends). Sony's sample library is rena/tim2.cpp 0x2e97a8..0x2e9d90 (range end a guess), defined here with four functions written because stubs would have left the class useless; the rest are still todo. Tested on real TIM2s carved from ROM.000 and ROM.001: sizes, PSM, CPSM, pixel and CLUT offsets agree with the file headers. Screen unchanged, one white band: nothing binds a texture until the host task yamipan/rendering/texture_store.cpp, which is next. Open: the second CLUT +0x3c has no known writer; GsRegion is a stand-in and its release a stub. Ghidra names batch 084 saved by name_ctx.",
+   "notes": "The queue picked a stray one-function TU with the bare key rena_2d_texture_tim2.cpp (inferred file without its directory, hazards.md). Fixed by pinning rena/rena_2d_texture_tim2.cpp at 0x2e1b10..0x2e2970 and deleting the bare key from tus.json. getTex0 copies the TEX0 template and sets TBP0 = block, CBP = block + m_imageBlocks (putTex0's value without the packet); the hand stub in src/lib/unassigned_stubs.cpp is deleted. All 8 functions of the file are now written. Callers GsRegionAlloc::bind, renaSetShadowTexture, renaSetSpotlight and two rena_draw functions; none runs before the language select, which the 15 s smoke run reaches unchanged, so verify. No Ghidra changes this run.",
    "ranges": [
     [
-     "002e1b70",
+     "002e1b10",
      "002e2970"
     ]
    ],
@@ -3100,10 +3100,15 @@
      "date": "2026-11-03 18:31",
      "status": "verify",
      "summary": "reconstruct Tim2Texture, all 7 functions (verify)"
+    },
+    {
+     "date": "2026-11-07 12:58",
+     "status": "verify",
+     "summary": "Tim2Texture::getTex0 0x2e1b10 written; the file now starts there, hand stub gone"
     }
    ],
    "status": "verify",
-   "why": "The game's own file name from its strings (rena_2d_texture_tim2.cpp: ...); pinned at bootstrap 6 so the stubs land in src/rena/."
+   "why": "The game's own file name from its strings (rena_2d_texture_tim2.cpp: ...); pinned at bootstrap 6 so the stubs land in src/rena/. 2026-11-07: extended down to 0x2e1b10 for Tim2Texture::getTex0, the word between rena_model's first range (ends 0x2e1b10) and putTex0; Tim2Texture's member with putTex0's TEX0 rule, so it is this file's first function."
   },
   "rena/rena_2d_texture_vram.cpp": {
    "notes": "Cut out of unassigned@002e0820 as rena/rena_2d_texture_vram.cpp 0x2e0840..0x2e1700 (name a guess, no path string). GsRegionAlloc and GsRegion moved from the stand-ins in game/gfxtarget.h to rena/rena_2d_texture_vram.h; both lists are one inlined pooled-list template (GsPoolList). Written: GsRegion::release, assign, upload, bind, findFree, freeRegion, alloc, ctor, dtor, Tim2Texture::getLodScale and getMip. The 15 s smoke run builds the real allocator in gfxInitRenderTargets and reaches the language select as before, no crash. Nothing on screen can show it: the host draw module binds textures by owner and rena_draw's setSurface leaves assign / upload / bind out, so verify. Left: Tim2Texture::getTex0 0x2e1b10 is a hand stub in src/lib/unassigned_stubs.cpp (belongs in rena/rena_2d_texture_tim2.cpp); RenaPointLight slots 0x2e0820 and 0x2e0830 unplaced; alloc hangs like the ROM if every used region is pinned. open-items.md Open questions has these. Ghidra batch 198 saved by name_ctx.",

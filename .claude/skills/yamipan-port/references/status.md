@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 12:48 at commit `43cec22` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 12:58 at commit `49540a2` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -13,7 +13,7 @@ Generated 2026-11-07 12:48 at commit `43cec22` by `tools/reverse/status.py` (`re
 - game functions: **6597**, named **5678** (86%); library functions: 992
 - by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4756
 - context-name ledger: 6352 entries; overrides of wrong library matches: 0
-- placed in a source file: 6266/6597 in 138 files
+- placed in a source file: 6266/6597 in 137 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5709**; stubs: **21**
+- reconstructed FS2 functions: **5710**; stubs: **20**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -144,8 +144,8 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 5 |
-| `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 4 |
+| `src/rena/rena_2d_texture_tim2.cpp` | 8 | 0 |
 | `src/rena/rena_2d_texture_vram.cpp` | 11 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_drawtarget.cpp` | 1 | 0 |
@@ -174,8 +174,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 206 TUs: todo 75, partial 12, verify 133, done 46
-- next: **rena_2d_texture_tim2.cpp** (frontier score 3)
+- 205 TUs: todo 74, partial 12, verify 133, done 46
+- next: **unassigned@0020ce10** (frontier score 3)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -278,7 +278,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/vehiclepose.cpp` 21/21 -- 21 of 21 functions, no stub. unassigned@0027cab0 split: 0x27dc40..0x280010 is this file, the rest joined game/playermotion.cpp. vehiclecmp.py: 40 scripts, 6040 
 - verify: `game/vu0math.cpp` 33/33 -- All 33 functions of 0x135990-0x1366c0 written from the asm (the decompiler loses VU0 field masks), in src/game/vu0math.cpp; vu0math.h is prototypes plus invertA
 - verify: `game/wstring.cpp` 5/5 -- Cut out of unassigned@002b0d50 and pinned 0x2d4150-0x2d46a0 (batch 053 named wstrcmp 0x2d4150 and wstrstr 0x2d42a0; Ghidra saved). New src/game/wstring.h holds 
-- verify: `rena/rena_2d_texture_tim2.cpp` 7/7 -- All 7 written; class moved to rena/rena_2d_texture_tim2.h. One Tim2Texture per mip level of the first picture; m_image (+0x40) is the TIM2 file itself, not a co
+- verify: `rena/rena_2d_texture_tim2.cpp` 8/8 -- The queue picked a stray one-function TU with the bare key rena_2d_texture_tim2.cpp (inferred file without its directory, hazards.md). Fixed by pinning rena/ren
 - verify: `rena/rena_2d_texture_vram.cpp` 11/11 -- Cut out of unassigned@002e0820 as rena/rena_2d_texture_vram.cpp 0x2e0840..0x2e1700 (name a guess, no path string). GsRegionAlloc and GsRegion moved from the sta
 - verify: `rena/rena_draw.cpp` 19/41 -- Skin written: drawSkinnedMesh 0x2e43e0, skinnedPartOutside 0x2e68a0, buildPalette 0x2e9480, skinVertex in model_renderer.cpp. Seen in New Game runs: the boy of 
 - verify: `rena/rena_drawtarget.cpp` 1/1 -- One function, written from the ROM asm: guard byte gp-0x7940 (sbss 0x31af30); first call stores 100, 100, 100 at 0x5a52d0..d8 and 1.0f at 0x5a52e0, sets the gua
@@ -313,6 +313,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 12:58 `rena/rena_2d_texture_tim2.cpp` verify: Tim2Texture::getTex0 0x2e1b10 written; the file now starts there, hand stub gone
 - 2026-11-07 12:48 `game/playermotion.cpp` verify: StageCharacter::isUp 0x2107e0; run 0x20e6a0..0x210938 joined
 - 2026-11-07 12:40 `game/stagecamera.cpp` verify: unassigned@00177d00 placed: camera file tail 0x177d00..0x179a80 joined stagecamera.cpp, 0x179a80..0x179d30 joined stagecharacter.cpp; StageCharacter::cameraStep
 - 2026-11-07 12:14 `game/playermotion.cpp` verify: unassigned@00282da0 joined playermotion.cpp: the NpcReactionLink, DriveLink and car links' ctors and two dtors, and the four Sp link ctors, moved out of the hea
@@ -320,19 +321,17 @@ Recent sessions:
 - 2026-11-07 11:46 `game/pausemenu.cpp` verify: The stage's pause menu and map menu: their start, result and thread functions and runPauseMenu, all 7 functions of 0x20acb0..0x20b120 (batch 212); StageCharacte
 - 2026-11-07 11:12 `game/stagecollision.cpp` verify: resetSurfaceTables 0x2cf510 joined from unassigned@002cf510: clears the per-surface used bytes each new stage
 - 2026-11-07 10:57 `game/sevenkeys.cpp` verify: The seven keys oYC11_21..27 (SevenKeys, object kind 6), their gadget view SevenKeysView/SevenKeysGadget and SkyPose named (batch 210), pinned as game/sevenkeys.
-- 2026-11-07 10:32 `rena/rena_drawtarget.cpp` verify: Placed getDrawTarget 0x2ec110 (was unassigned@002ec110) in its own file rena/rena_drawtarget.cpp: the guarded function-local DrawTarget at bss 0x5a52d0 moved ou
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `rena_2d_texture_tim2.cpp` | todo | 0/1/1 | 0.1 | 3 | 0 |
 | `unassigned@00219be0` | partial | 15/0/19 | 3.8 | 3 | 0 |
 | `unassigned@0020ce10` | todo | 0/0/1 | 0.1 | 3 | 0 |
 | `unassigned@0026c650` | todo | 0/0/2 | 0.2 | 2 | 0 |
 | `unassigned@002b0d50` | todo | 0/0/1 | 0.0 | 2 | 0 |
-| `unassigned@00211970` | partial | 2/2/4 | 2.3 | 2 | 0 |
 | `unassigned@00217be0` | partial | 14/0/16 | 2.1 | 2 | 0 |
-| `unassigned@002a0040` | todo | 0/0/9 | 4.3 | 1 | 0 |
+| `unassigned@00211970` | partial | 2/2/4 | 2.3 | 2 | 0 |
 | `unassigned@002e2970` | partial | 1/0/2 | 0.9 | 1 | 0 |
+| `unassigned@002a0040` | todo | 0/0/9 | 4.3 | 1 | 0 |
 | `unassigned@001dff40` | partial | 2/1/3 | 1.9 | 1 | 0 |
 | `unassigned@0021b340` | partial | 7/0/8 | 1.7 | 1 | 0 |
 | `unassigned@002c42a0` | todo | 0/1/93 | 39.0 | 1 | 0 |
