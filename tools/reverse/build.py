@@ -120,7 +120,8 @@ if '--run' in sys.argv:
         print(f'exited early with code {r.returncode}' + (' (access violation: python gdbrun.py)'
                                                           if r.returncode == 3221225477 else ''))
     except subprocess.TimeoutExpired as t:
-        out = (t.stdout or b'').decode('utf-8', 'replace') if isinstance(t.stdout, bytes) else (t.stdout or '')
+        out = ''.join((s or b'').decode('utf-8', 'replace') if isinstance(s, bytes) else (s or '')
+                      for s in (t.stdout, t.stderr))
         print(f'still running after {secs}s (stopped)')
     (yamipan.WORK / f'run_{config}.log').write_text(out, encoding='utf-8')
     hits = [l for l in out.splitlines() if '[stub]' in l or '[W]' in l or '[E]' in l or 'ASSERT' in l]

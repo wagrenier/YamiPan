@@ -466,7 +466,7 @@ int GameOptions::equals(const GameOptions *other) const
         return 0;
     if (screenY != other->screenY)
         return 0;
-    if (_10 != other->_10)
+    if (alertMode != other->alertMode)
         return 0;
     if (invertY != other->invertY)
         return 0;
@@ -507,7 +507,7 @@ void GameOptions::setDefaults()
     _08 = 1;
     screenX = 0;
     screenY = 0;
-    _10 = 2;
+    alertMode = GameAlert_Party;
     invertY = 1;
     invertX = 0;
     brightness = 9;

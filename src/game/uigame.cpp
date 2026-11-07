@@ -1483,8 +1483,8 @@ void setGameValue(int kind, int value, int i, int j)
             options->screenY = (short)value;
         gfxSetDisplayOffset(gfxGetCurrentDisplay(), options->screenX, options->screenY);
         break;
-    case GameValue_Option10:
-        options->_10 = value;
+    case GameValue_AlertMode:
+        options->alertMode = value;
         break;
     case GameValue_Brightness:
         options->brightness = value;
@@ -1659,8 +1659,8 @@ int getGameValue(int kind, int i, int j, int expected)
         return options->screenX;
     case GameValue_ScreenY:
         return options->screenY;
-    case GameValue_Option10:
-        return options->_10;
+    case GameValue_AlertMode:
+        return options->alertMode;
     case GameValue_Brightness:
         return options->brightness;
     case GameValue_WideScreen:

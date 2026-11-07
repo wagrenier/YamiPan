@@ -15,7 +15,8 @@ behind operator_new. Nothing here knows a game structure; a comparison is a smal
 
 Used by rutecmp.py (RoutePlayer against game/routeplayer.cpp). An op it does not know raises with its
 address: add it to step(). Single precision is rounded with struct, like the EE's; denormals are not
-flushed, overflow is not clamped. gp is the ELF's (.reginfo).
+flushed, overflow is clamped to the largest float only where a result is stored, and div.s by 0 gives
+the largest float, as the EE. gp is the ELF's (.reginfo).
 """
 import math
 import re
@@ -326,7 +327,8 @@ class Ee:
         elif op == 'add.s': setf(a[0], F(a[1]) + F(a[2]))
         elif op == 'sub.s': setf(a[0], F(a[1]) - F(a[2]))
         elif op == 'mul.s': setf(a[0], F(a[1]) * F(a[2]))
-        elif op == 'div.s': setf(a[0], F(a[1]) / F(a[2]) if F(a[2]) else 0.0)
+        elif op == 'div.s':     # by 0: the largest float, with the sign of the two
+            setf(a[0], F(a[1]) / F(a[2]) if F(a[2]) else math.copysign(1.0, F(a[1])) * math.copysign(f32(0x7f7fffff), F(a[2])))
         elif op == 'sqrt.s': setf(a[0], math.sqrt(abs(F(a[1]))))
         elif op == 'mula.s': self.acc = round32(F(a[0]) * F(a[1]))
         elif op == 'adda.s': self.acc = round32(F(a[0]) + F(a[1]))

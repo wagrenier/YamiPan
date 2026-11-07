@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 21:59 at commit `c5d26df` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 22:30 at commit `0b781d8` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-06 21:59 at commit `c5d26df` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **5311** (80%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1558, game-inferred 4388
-- context-name ledger: 5946 entries; overrides of wrong library matches: 0
+- game functions: **6599**, named **5312** (80%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1558, game-inferred 4389
+- context-name ledger: 5947 entries; overrides of wrong library matches: 0
 - placed in a source file: 5685/6599 in 121 files
 
 Least-named game-code regions (64 KB blocks):
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5181**; stubs: **118**
+- reconstructed FS2 functions: **5189**; stubs: **111**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -90,7 +90,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/seplayer.cpp` | 35 | 0 |
 | `src/game/sldi.cpp` | 1 | 0 |
 | `src/game/spkrom.cpp` | 13 | 0 |
-| `src/game/stagealert.cpp` | 0 | 7 |
+| `src/game/stagealert.cpp` | 8 | 0 |
 | `src/game/stagecamera.cpp` | 29 | 0 |
 | `src/game/stagecar.cpp` | 59 | 0 |
 | `src/game/stagecharacter.cpp` | 77 | 0 |
@@ -158,8 +158,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 216 TUs: todo 75, partial 26, verify 108, done 42
-- next: **game/stagealert.cpp** (frontier score 24)
+- 216 TUs: todo 74, partial 26, verify 109, done 42
+- next: **unassigned@001920d0** (frontier score 24)
 - pinned queue: (empty)
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -213,6 +213,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/seplayer.cpp` 35/35 -- Cut from unassigned@002908d0: game/seplayer.cpp is 0x2908d0..0x2937e0 (SoundTrack 17, SePlayer 18, batch 078: fsmFindTrack, fsmTrackHasText, seDistanceVolume, s
 - verify: `game/sldi.cpp` 1/1 -- Cut out of unassigned@002c42a0 and pinned 0x2d0a10-0x2d0d10; no new names, no Ghidra change. Scratch test: all 114 SLDI files on the disc unpack to the header s
 - verify: `game/spkrom.cpp` 13/13 -- All 13 of 0x152730..0x153108 written. The entries keep offsets on the host (the ROM relocates them to pointers in place), strings through spkString. Host: argv[
+- verify: `game/stagealert.cpp` 8/8 -- All 8 of 0x263b90..0x2640e8 written, class moved to game/stagealert.h, GameOptions::_10 is alertMode (GameAlertMode), 0x263b90 is beforeFileEvent and queueFiles
 - verify: `game/stagecamera.cpp` 16/16 -- Written in src/game/scriptrunner.cpp: nativeSetPlayer 0x1c81a0, nativeScriptView 0x1c8dc0, isNullName 0x1c8f40, findCameraObject 0x1d1260, findLightObject 0x1b5
 - verify: `game/stagecar.cpp` 59/59 -- No code changed this run; door and drive proven on a temporary build, removed (New Game forced to stage 7, 300 s, no crash). The old pad pressed X every 80 read
 - verify: `game/stagecharacter.cpp` 77/86 -- unassigned@0017e140 was the tail of this file: StageList<StageObject *> 0x17e140..0x17e400 and 63 thunks 0x17e470..0x17e860, now listed at the end of stagechara
@@ -272,6 +273,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 22:30 `game/stagealert.cpp` verify: reconstruct 8 functions, alertcmp proves them against the ROM (verify)
 - 2026-11-06 21:59 `rx/rxsndstrmem.c` verify: reconstruct 16 functions, ROM comparison clean
 - 2026-11-06 21:34 `rx/rxsndstrstream.c` verify: reconstruct 18 functions
 - 2026-11-06 21:12 `rx/rxsndstradpcm.c` verify: All 10 functions of 0x164c38..0x1656e8 written; the 2026-11-04 bridge replaced by a silent stand-in for the driver feeding rxSndAdpcmUpdate
@@ -279,21 +281,20 @@ Recent sessions:
 - 2026-11-06 20:19 `game/stagemenu.cpp` verify: the stage menu whole: the list window, its fades, update, draw; six vector helpers joined game/characterroute.cpp; menucmp.py
 - 2026-11-06 19:35 `game/playermotion.cpp` verify: The last eleven links written (GadgetLink, SpFear, SpRing, SpRobo, SpDrop, SpPadlock, SpNumLock, BossAttack, BossIdle): every link name of the ROM now exists; n
 - 2026-11-06 18:49 `game/playermotion.cpp` partial: A real edge works, the voices no longer jam: updateSounds and the sound family written
-- 2026-11-06 18:18 `game/playermotion.cpp` partial: The links DiveFall, DiveLand and TrapHit: a fall over an edge runs to Mission failed, a trap holds and lets go; forced, no real edge or trap yet
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@001920d0` | partial | 1/0/17 | 5.9 | 24 | 0 |
-| `game/stagealert.cpp` | todo | 0/7/8 | 1.3 | 24 | 3 |
 | `unassigned@002b9ef0` | todo | 0/4/11 | 5.7 | 21 | 3 |
 | `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
 | `unassigned@002dac70` | partial | 1/4/63 | 21.7 | 19 | 3 |
-| `unassigned@002c42a0` | todo | 0/13/105 | 42.1 | 18 | 1 |
 | `unassigned@00171ad0` | partial | 1/0/107 | 1.5 | 18 | 0 |
-| `unassigned@002a6980` | partial | 1/11/83 | 12.1 | 17 | 0 |
-| `unassigned@002067d0` | partial | 1/0/9 | 2.2 | 17 | 0 |
-| `unassigned@0023c010` | todo | 0/11/15 | 7.4 | 17 | 0 |
+| `unassigned@002c42a0` | todo | 0/13/105 | 42.1 | 18 | 1 |
 | `unassigned@00188d60` | todo | 0/0/16 | 3.8 | 17 | 0 |
+| `unassigned@002a6980` | partial | 1/11/83 | 12.1 | 17 | 0 |
+| `unassigned@0023c010` | todo | 0/11/15 | 7.4 | 17 | 0 |
+| `unassigned@002067d0` | partial | 1/0/9 | 2.2 | 17 | 0 |
+| `unassigned@002e0820` | todo | 0/3/13 | 3.7 | 13 | 1 |
 | `unassigned@00151270` | todo | 0/3/3 | 0.0 | 13 | 2 |
 
 ## Frontier (called by reconstructed code, not written yet)

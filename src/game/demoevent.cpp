@@ -31,6 +31,7 @@
 #include "game/fileloader.h"
 #include "game/fontdata.h"
 #include "game/gamehooks.h"
+#include "game/stagealert.h"
 #include "game/playermotion.h"
 #include "game/gamepacket.h"
 #include "game/gamesystem.h"
@@ -1508,6 +1509,7 @@ void StageFileEvent::queueFiles()
 {
     StageScene *scene = gStageScene;
     StageSound *sound = scene->sound;
+    scene->alert->beforeFileEvent();
     sound->setMuted(true);
 
     auto stepSound = [&]() {

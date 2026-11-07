@@ -23,6 +23,7 @@
 #include "game/characterroute.h"
 #include "game/clock.h"
 #include "game/gamehooks.h"
+#include "game/stagealert.h"
 #include "game/mathutil.h"
 #include "game/playermotion.h"
 #include "game/stageitem.h"
@@ -103,8 +104,6 @@ constexpr int   kPropRunnerClass   = 0x40;  // getProperty answers kRunnerClassB
 constexpr int   kRunnerClassBrain  = 4;
 constexpr int   kPropBrainState    = 9;
 constexpr u_int kCharacterClassEnemyBits = 0xc; // getCharacterClass: the foe's
-constexpr int   kGameOptionPartyAlert = 2;      // GameOptions::_10
-constexpr int   kGameOptionFlashAlert = 1;
 constexpr int   kBrainSlotSearch   = 2;
 constexpr int   kBrainNoiseCrouch  = 3;
 constexpr int   kItemKindKind11    = CharacterKind_NoShadow;
@@ -983,9 +982,9 @@ void CharacterBrain::setState(int newState, int runNow)
                     if (mission->lastFoeAlert < gStageScene->clock->getSeconds() - kFoeAlertSeconds) {
                         gStageScene->currentMission()->lastFoeAlert = gStageScene->clock->getSeconds();
                         GameOptions *options = getGameOptions();
-                        if (options->_10 == kGameOptionPartyAlert)
+                        if (options->alertMode == GameAlert_Party)
                             gStageScene->party->warnAttacker(attacker);
-                        else if (options->_10 == kGameOptionFlashAlert)
+                        else if (options->alertMode == GameAlert_Flash)
                             gStageScene->alert->flash();
                     }
                 }

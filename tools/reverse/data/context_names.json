@@ -27707,6 +27707,12 @@
   "was": "FUN_00263b10",
   "why": "copies the options' button map (getSaveData +0x4f4..+0x510) into the 8 ints at 0x599470: the draft the key-configuration screen edits"
  },
+ "00263b90": {
+  "name": "StageAlert::beforeFileEvent",
+  "tag": "game-inferred",
+  "was": "FUN_00263b90",
+  "why": "empty; StageFileEvent::queueFiles calls it first with gStageScene +0xf4, the StageAlert"
+ },
  "00263ba0": {
   "name": "StageAlert::draw",
   "tag": "game-inferred",

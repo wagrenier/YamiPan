@@ -1673,12 +1673,21 @@
    "why": "the game's rx user layer: rxTerm, rxInit, spkRomLoad, spkLocateFile, spkGetFileSize, spkLoadFile (SPK.ROM index) and gameRxMemAlloc / Realloc / Free (batches 003, 005); file name a guess."
   },
   "game/stagealert.cpp": {
+   "notes": "All 8 of 0x263b90..0x2640e8 written, class moved to game/stagealert.h, GameOptions::_10 is alertMode (GameAlertMode), 0x263b90 is beforeFileEvent and queueFiles calls it. alertcmp.py: 61,078 ops against the ROM, 0 differences, both planted bugs caught. Seen with temporary builds, removed: stage 2, forced flash is a dark red veil over the whole frame against the same view clean; forced show starts ALERT, counts 119 frames, stops it, idle. d2303 and d0401 call show from their own scripts, stage 9 does not. Not seen: a real flash (option 1, default 2) or cry, nor the forced flash on a wide window (same gsFillRect as the scene fade). No in-game reference for the flash colour. ROM slip kept: count divided by delta on leaving Running, so Ending lasts one update.",
    "ranges": [
     [
      "00263b90",
      "002640e8"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-06 22:30",
+     "status": "verify",
+     "summary": "reconstruct 8 functions, alertcmp proves them against the ROM (verify)"
+    }
+   ],
+   "status": "verify",
    "why": "The class at gStageScene +0xf4 (every caller of these 8 functions passes it; ctor 0x264070 news its 0x3c-byte member from 0x151600, the deleting dtor 0x264000): plays and stops the ALERT / CAUTION layouts on gStageScene +0x30 (0x263c10 / 0x263f10) and reads GameOptions +0x10. Between game/uigame.cpp and libscf 0x2640e8. The file name is the port's (no source string)."
   },
   "game/stagecamera.cpp": {

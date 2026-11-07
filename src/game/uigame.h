@@ -273,7 +273,7 @@ enum GameValueKind
     GameValue_Option08 = 1,         // GameOptions::_08 byte i (1: the pad byte after it); written as a bool
     GameValue_ScreenX = 2,          // GameOptions::screenX; writing moves the display
     GameValue_ScreenY = 3,          // GameOptions::screenY
-    GameValue_Option10 = 4,         // GameOptions::_10
+    GameValue_AlertMode = 4,        // GameOptions::alertMode
     GameValue_None = 5,             // reads 0
     GameValue_BrightnessValue = 6,  // GameOptions::getBrightnessValue
     GameValue_Language = 7,         // getLanguage / setLanguage
