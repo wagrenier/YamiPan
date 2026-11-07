@@ -40,6 +40,7 @@
 #include "game/seplayer.h"      /* StreamTable */
 #include "game/stageitem.h"
 #include "game/stageelevator.h"
+#include "game/stagefog.h"
 #include "game/stagelight.h"
 #include "game/stageobjlist.h"
 #include "game/stageresult.h"   /* getInitItemForLanguage */
@@ -407,7 +408,7 @@ StageObject *StageScene::getTopView()
 // The ROM's +0x124 second array is freed from 0x10 bytes before it
 // (CodeWarrior's array header); the host frees what it allocated.
 // FS2 0x0019bbe0
-// callcheck: ~StageObjectList, ~ScenePairTable, ~SceneRecordBuckets, ~StageNodeTree, ~StageSound, ~DemoStream, ~SceneRender, ~RumbleList, ~Clock, ~MenuProgHolder, ~MenuProgSet, ~AreaGrid, ~SceneBufferSet, ~StageParty, ~ScenePool, ~PauseMenuState, ~SceneBoxList, ~SceneNoiseList, ~StageAlert, ~AreaClip, ~StageMission, ~SceneDirector, ~DaylightFilm, operator_delete, operator_delete[] (the delete-expressions; the printer through its virtual dtor)
+// callcheck: ~StageObjectList, ~ScenePairTable, ~SceneRecordBuckets, ~StageNodeTree, ~StageSound, ~DemoStream, ~SceneRender, ~RumbleList, ~Clock, ~MenuProgHolder, ~MenuProgSet, ~AreaGrid, ~SmokeFog, ~StageParty, ~ScenePool, ~PauseMenuState, ~SceneBoxList, ~SceneNoiseList, ~StageAlert, ~AreaClip, ~StageMission, ~SceneDirector, ~DaylightFilm, operator_delete, operator_delete[] (the delete-expressions; the printer through its virtual dtor)
 
 StageScene::~StageScene()
 {
@@ -445,13 +446,13 @@ StageScene::~StageScene()
         if (owned[i] != nullptr)
             owned[i]->destroy();
     }
-    if (block98 != nullptr) {
-        operator delete(block98);
-        block98 = nullptr;
+    if (glowFog != nullptr) {
+        operator delete(glowFog);
+        glowFog = nullptr;
     }
-    if (buffers != nullptr) {
-        delete buffers;
-        buffers = nullptr;
+    if (smokeFog != nullptr) {
+        delete smokeFog;
+        smokeFog = nullptr;
     }
     delete party;
     delete printer;
@@ -574,8 +575,8 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
     partner = controlled = nullptr;
     controlRequest = 0;
     owned[0] = owned[1] = owned[2] = nullptr;
-    block98 = nullptr;
-    buffers = nullptr;
+    glowFog = nullptr;
+    smokeFog = nullptr;
 
     screenFill = new ScreenFill(kScreenFillRgba, kScreenX, kScreenY, kScreenW, kScreenH);
     menuProg   = nullptr;
@@ -2969,7 +2970,7 @@ constexpr int   kLetterboxFrames = 0xf;
 constexpr u_int kBlack = 0x80000000;
 
 // FS2 0x00199400
-// callcheck: addBar, sceneRenderGroup, actionStart, addBar, runStageScripts, run, isPlaying, operator_delete, isPlaying, stop, update, update, addBar, getAltSoundFlag, latchAltAction, actionControl, stageUpdateCharacterMotions, addBar, actionMovement, addBar, collide, addBar, actionTerminate, addBar, calcMatrices, cameraStep, calcMatrix, addBar, update, updateBlock98, updateBuffers, getDrawDistance, update, update, getDeltaSeconds, updateRumble, addBar, getAltSoundFlag, isMode1, update, getCueSubtitle, setSlot, update, update, updateLights, update, update, update, getInputFocus, bitMask, pick, update, currentMission, isRunning, ~SceneDirector, start, operator_new, SceneDirector, start, getAltSoundFlag, addBar, updateVcms, getDeltaSeconds, drawSysTick, isPlayer, getCompanion (perfMark, targetInView and releaseControlled carry the rest; the ROM repeats them inline)
+// callcheck: addBar, sceneRenderGroup, actionStart, addBar, runStageScripts, run, isPlaying, operator_delete, isPlaying, stop, update, update, addBar, getAltSoundFlag, latchAltAction, actionControl, stageUpdateCharacterMotions, addBar, actionMovement, addBar, collide, addBar, actionTerminate, addBar, calcMatrices, cameraStep, calcMatrix, addBar, update, updateGlowFog, updateSmokeFog, getDrawDistance, update, update, getDeltaSeconds, updateRumble, addBar, getAltSoundFlag, isMode1, update, getCueSubtitle, setSlot, update, update, updateLights, update, update, update, getInputFocus, bitMask, pick, update, currentMission, isRunning, ~SceneDirector, start, operator_new, SceneDirector, start, getAltSoundFlag, addBar, updateVcms, getDeltaSeconds, drawSysTick, isPlayer, getCompanion (perfMark, targetInView and releaseControlled carry the rest; the ROM repeats them inline)
 
 void StageScene::update()
 {
@@ -2977,10 +2978,10 @@ void StageScene::update()
     perfMark(kPerfBlack, nullptr);
     render->m_snap = 0;
     render->m_forcedSet = sceneRenderGroup(0);
-    if (block98 != nullptr)
-        block98->dirty = 1;
-    if (buffers != nullptr)
-        buffers->used = 0;
+    if (glowFog != nullptr)
+        glowFog->m_unmeasured = 1;
+    if (smokeFog != nullptr)
+        smokeFog->m_sourceCount = 0;
     pairs->actionStart();
     perfMark(PerfMeterColour_Blue, "action(start)");
 
@@ -3040,8 +3041,8 @@ void StageScene::update()
                 owned[i]->update();
         }
         party->update();
-        updateBlock98();
-        updateBuffers();
+        updateGlowFog();
+        updateSmokeFog();
     }
 
     float range = getDrawDistance() * kParticleRangeScale;
@@ -4328,7 +4329,7 @@ short StageScene::getFloorAttr(const float *pos)
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Also inline in updateBuffers and updateBlock98 in the ROM.
+// Also inline in updateSmokeFog and updateGlowFog in the ROM.
 // FS2 0x0019b9f0
 // callcheck: getKind
 
@@ -4348,24 +4349,24 @@ StageObject *viewLinkedObject()
 // FS2 0x0019afb0
 // callcheck: attachCharacters, getKind, getKind, getKind, setActiveFor, currentMission, updateRange, storeActive
 
-void StageScene::updateBuffers()
+void StageScene::updateSmokeFog()
 {
-    if (buffers == nullptr)
+    if (smokeFog == nullptr)
         return;
 
-    buffers->attachCharacters(objects);
+    smokeFog->attachCharacters(objects);
     StageObject *linked = viewLinkedObject();
-    buffers->setActiveFor(linked, render);
-    buffers->updateRange(currentMission()->blockRange, linked, render);
-    buffers->storeActive(linked);
+    smokeFog->setActiveFor(linked, render);
+    smokeFog->updateRange(currentMission()->smokeRange, linked, render);
+    smokeFog->storeActive(linked);
 }
 
 // FS2 0x0019b1f0
 // callcheck: hasTarget, hasTarget, hasTarget, getKind, getKind, getKind, setActive, updateVisible, attachTo
 
-void StageScene::updateBlock98()
+void StageScene::updateGlowFog()
 {
-    if (block98 == nullptr)
+    if (glowFog == nullptr)
         return;
 
     bool on = true;
@@ -4379,11 +4380,11 @@ void StageScene::updateBlock98()
             on = false;
     }
 
-    block98->setActive(on, render);
+    glowFog->setActive(on, render);
     if (on)
-        block98->updateVisible(render);
-    block98->attachTo(player);
-    block98->active = on;
+        glowFog->updateVisible(render);
+    glowFog->attachTo(player);
+    glowFog->m_shown = on;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -4786,37 +4787,37 @@ bool StageScene::isInAbArea(StageObject *object)
 // FS2 0x0019b180
 // callcheck: addObject
 
-void StageScene::addBufferObject(StageObject *object)
+void StageScene::addSmokeSource(StageThrownItem *item)
 {
-    if (buffers != nullptr)
-        buffers->addObject(object);
+    if (smokeFog != nullptr)
+        smokeFog->addObject(item);
 }
 
 // FS2 0x0019b1b0
 // callcheck: createFor
 
-void StageScene::createBuffers(StageObject *owner)
+void StageScene::createSmokeFog(StageObject *owner)
 {
-    if (buffers == nullptr)
-        buffers = SceneBufferSet::createFor(owner, nodeTree);
+    if (smokeFog == nullptr)
+        smokeFog = SmokeFog::createFor(owner, nodeTree);
 }
 
 // FS2 0x0019b470
 // callcheck: updateFor
 
-void StageScene::updateBlock98For(StageObject *object)
+void StageScene::measureGlow(StageCharacter *who)
 {
-    if (block98 != nullptr)
-        block98->updateFor(object, player);
+    if (glowFog != nullptr)
+        glowFog->updateFor(who, player);
 }
 
 // FS2 0x0019b4a0
 // callcheck: createFor
 
-void StageScene::createBlock98(StageObject *owner)
+void StageScene::createGlowFog(StageObject *owner)
 {
-    if (block98 == nullptr)
-        block98 = SceneBlock98::createFor(owner, nodeTree);
+    if (glowFog == nullptr)
+        glowFog = GlowFog::createFor(owner, nodeTree);
 }
 
 static const char kObjectZs9901[] = "oZS99_01";

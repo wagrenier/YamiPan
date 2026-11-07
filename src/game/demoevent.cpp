@@ -507,7 +507,7 @@ constexpr int kNoticeMinLevel = 5;              // data 0x31ac18 (gp-0x7c58)
 
 constexpr float kMissionValue      = 2000.0f;     // 0x44fa0000
 constexpr float kMissionFirstFoeAlert = 0x1p-126f;  // bits 0x800000
-constexpr float kBlockRange        = 400.0f;      // 0x43c80000
+constexpr float kSmokeRange        = 400.0f;      // 0x43c80000
 constexpr float kPendingFade       = 0.5f;
 constexpr int   kSpawnKept         = 2;
 constexpr float kFullBlack         = 1.0f;
@@ -552,7 +552,7 @@ void StageMission::reset()
     _d8 = 0;
     _d9 = 0;
     letterbox = 0;
-    blockRange = kBlockRange;
+    smokeRange = kSmokeRange;
     delete messages;
     messages = new MessageTable;
     for (int i = 0; i < kMissionSpawnPoints; i++)

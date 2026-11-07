@@ -2483,14 +2483,14 @@ static const int *nativeSetNotice(ScriptRunner *self, int *, const int *code)
     return next;
 }
 
-// 0x1fa setBlockRange(range)
+// 0x1fa setSmokeRange(range): how near a burning flare is smoke (SmokeFog, smokeNear)
 // FS2 0x001abb60
 // callcheck: currentMission
 
-static const int *nativeSetBlockRange(ScriptRunner *self, int *, const int *code)
+static const int *nativeSetSmokeRange(ScriptRunner *self, int *, const int *code)
 {
     const int range = self->popped(1)[0];
-    gStageScene->currentMission()->blockRange = (float)range;
+    gStageScene->currentMission()->smokeRange = (float)range;
     return code;
 }
 
@@ -2603,7 +2603,7 @@ static const ScriptNativeBinding kNatives[] = {
     { 0x129, nativeSetMoveScale },
     { 0x133, nativeHideNamed },
     { 0x1c7, nativeSetNotice },
-    { 0x1fa, nativeSetBlockRange },
+    { 0x1fa, nativeSetSmokeRange },
 
     { 0x19f, nativeSpecialAllowedOf<kSpecialElevatorB1> },
     { 0x1a0, nativeSpecialAllowedOf<kSpecialElevatorB3> },
@@ -4563,7 +4563,7 @@ static const int *nativeSmokeNear(ScriptRunner *self, int *acc, const int *code)
 {
     ScriptRunner *target = self->getTarget();
     StageMission *mission = gStageScene->currentMission();
-    const float range = mission->blockRange;
+    const float range = mission->smokeRange;
     StageObject **it = mission->burners.objects;
     StageObject **end = it + mission->burners.count;
     *acc = 0;

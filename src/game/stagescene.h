@@ -76,8 +76,8 @@ struct PauseMenuState;
 struct Rand48;
 struct SceneArrayPair;
 struct SceneEffectList;
-struct SceneBlock98;
-struct SceneBufferSet;
+struct GlowFog;
+struct SmokeFog;
 struct SceneDirector;
 class StageCar;                 // game/stagecar.h
 class StageDaylight;
@@ -98,6 +98,7 @@ class StageFade;                // game/gamehooks.h
 class PakArchive;               // game/pakarchive.h
 class StageFiles;
 class StageObject;              // game/gamehooks.h
+class StageThrownItem;          // game/stageitem.h
 class StageObjectList;          // game/stageobjlist.h
 class StageSound;               // game/stagesound.h
 struct RumbleList;              // game/rumblelist.h
@@ -273,7 +274,7 @@ struct StageMission
     float   value = 0.0f;       // FS2 +0xa8: a script command's (0x1ba660); unread otherwise
     float   startTime = 0.0f;   // FS2 +0xac: the scene clock's seconds at markStart
     float   lastFoeAlert = 0.0f; // FS2 +0xb0: the scene clock's seconds of the last one; bits 0x800000 from the ctor
-    float   blockRange = 0.0f;  // FS2 +0xb4: SceneBufferSet::updateRange
+    float   smokeRange = 0.0f;  // FS2 +0xb4: how near a flare is smoke (SmokeFog::updateRange, nativeSmokeNear)
     void   *restoreArg = nullptr; // FS2 +0xb8: setRestore; 0x29f2a0 tests 1, 2, 3
     StageObject *keptObject = nullptr; // FS2 +0xbc: keeps its flags through restoreObjectFlags
     bool    restoreAsked = false;  // FS2 +0xc0: onRestore has answered
@@ -436,10 +437,10 @@ struct StageScene
     bool isInAbArea(StageObject *object);                                // FS2 0x0019ae50
     // The two members the objects fill in (nothing until they exist), and
     // the first owner that asks builds them.
-    void addBufferObject(StageObject *object);                           // FS2 0x0019b180
-    void createBuffers(StageObject *owner);                              // FS2 0x0019b1b0
-    void updateBlock98For(StageObject *object);                          // FS2 0x0019b470
-    void createBlock98(StageObject *owner);                              // FS2 0x0019b4a0
+    void addSmokeSource(StageThrownItem *item);                           // FS2 0x0019b180
+    void createSmokeFog(StageObject *owner);                              // FS2 0x0019b1b0
+    void measureGlow(StageCharacter *who);                          // FS2 0x0019b470
+    void createGlowFog(StageObject *owner);                              // FS2 0x0019b4a0
     // The object oZS99_01 of the stage, sought once.
     StageElevator *getZs9901();                                            // FS2 0x0019b4e0
     // targetInView for target; null: the view target.
@@ -529,8 +530,8 @@ struct StageScene
     void drawViewFilter(GamePacketManager *packets, StageObject *camera); // FS2 0x001983b0
     // A stage's scripts and mission lists, in update's script step.
     void runStageScripts();                                              // FS2 0x0019aba0
-    void updateBlock98();                                                // FS2 0x0019b1f0
-    void updateBuffers();                                                // FS2 0x0019afb0
+    void updateGlowFog();                                                // FS2 0x0019b1f0
+    void updateSmokeFog();                                                // FS2 0x0019afb0
     // controlled gives the buttons back (inline in update).
     void releaseControlled();
 
@@ -568,8 +569,8 @@ struct StageScene
     uintptr_t           controlRequest;  // FS2 +0x84
     StageParty         *party;           // FS2 +0x88: a stage's
     SceneOwnedObject   *owned[3];        // FS2 +0x8c..+0x94
-    SceneBlock98       *block98;         // FS2 +0x98: deleted
-    SceneBufferSet     *buffers;         // FS2 +0x9c
+    GlowFog            *glowFog;         // FS2 +0x98: deleted
+    SmokeFog           *smokeFog;        // FS2 +0x9c
     ScreenFill         *screenFill;      // FS2 +0xa0
     MenuProgHolder     *menuProg;        // FS2 +0xa4
     MenuProgSet        *menuProgs;       // FS2 +0xa8

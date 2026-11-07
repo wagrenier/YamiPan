@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 02:13 at commit `5ac2936` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 03:02 at commit `3a628a1` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,27 +10,27 @@ Generated 2026-11-07 02:13 at commit `5ac2936` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **5456** (83%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1575, game-inferred 4544
-- context-name ledger: 6119 entries; overrides of wrong library matches: 0
-- placed in a source file: 5924/6599 in 124 files
+- game functions: **6599**, named **5457** (83%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1575, game-inferred 4545
+- context-name ledger: 6120 entries; overrides of wrong library matches: 0
+- placed in a source file: 5936/6599 in 125 files
 
 Least-named game-code regions (64 KB blocks):
 
 | block | named | inferred files |
 |---|---|---|
 | `00310000` | 0/9 (0%) | - |
-| `002c0000` | 39/173 (23%) | game/packtables.cpp, game/menupack.cpp, game/stageparty.cpp |
+| `002c0000` | 39/173 (23%) | game/packtables.cpp, game/stagefog.cpp, game/menupack.cpp |
 | `001c0000` | 108/233 (46%) | game/scriptrunner.cpp |
 | `001b0000` | 115/242 (48%) | game/scriptrunner.cpp |
 | `002a0000` | 141/241 (59%) | game/memcard.cpp, game/charactersound.cpp, game/demofleck.cpp |
 | `002d0000` | 156/256 (61%) | game/drawsys.cpp, game/areaclip.cpp, game/ripplesheet.cpp |
-| `001a0000` | 194/301 (64%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
+| `001a0000` | 195/301 (65%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
 | `00180000` | 224/336 (67%) | game/stageitem.cpp, game/stagelight.cpp, game/stageobject.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5346**; stubs: **86**
+- reconstructed FS2 functions: **5358**; stubs: **74**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -100,6 +100,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stagecollision.cpp` | 56 | 0 |
 | `src/game/stagedoor.cpp` | 125 | 0 |
 | `src/game/stageelevator.cpp` | 14 | 13 |
+| `src/game/stagefog.cpp` | 12 | 0 |
 | `src/game/stageitem.cpp` | 107 | 0 |
 | `src/game/stagelight.cpp` | 64 | 0 |
 | `src/game/stageloop.cpp` | 9 | 0 |
@@ -133,7 +134,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 54 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 42 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -161,8 +162,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 214 TUs: todo 75, partial 22, verify 113, done 43
-- next: **unassigned@002c42a0** (frontier score 23)
+- 215 TUs: todo 75, partial 22, verify 114, done 43
+- next: **unassigned@00188d60** (frontier score 17)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -226,6 +227,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stagecollision.cpp` 56/74 -- All of the TU's functions are written or mapped to StageList and the host vector. Seen on stage 1's data in a New Game run: against brute force over all 8165 fa
 - verify: `game/stagedoor.cpp` 126/133 -- unassigned@00171ad0 turned out to be inline functions of this object file: runner table defaults, StageObject accessors, DoorRecord setters; pinned here and lis
 - verify: `game/stageelevator.cpp` 14/27 -- 27 functions 0x2939b0..0x295470, batch 184; the free elevator functions are members now and getZs9901 answers StageElevator; the two motion file readers 0x2937e
+- verify: `game/stagefog.cpp` 12/12 -- All 12 functions of 0x2ce0c0..0x2cedb0 written: SmokeFog (hatsu_fog, I_HATUEN), GlowFog (koh_fog, kinds 5 and 0xc), CharacterFog::attachTo. fogcmp.py: 32,703 op
 - verify: `game/stageitem.cpp` 108/139 -- All of 0x17fce0..0x184860 written or mapped (thunks listed, 0x180018 is padding). New Game run under gdb: StageBullet's ctor ran from setupCameras with no fault
 - verify: `game/stagelight.cpp` 64/101 -- All of 0x184860..0x186ee0 written. New Game run: lights build and join the scene with no fault, 114 stubs reached, the stop is unchanged (drawSysCurrent null in
 - verify: `game/stageloop.cpp` 9/9 -- Cut out of unassigned@00171300 and pinned 0x17f150-0x17fce0 (batch 073, 45 names; Ghidra saved by name_ctx). New src/game/stageloop.h defines gStageScene (exter
@@ -280,6 +282,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 03:01 `game/stagefog.cpp` verify: The smoke candle's fog and the glow's fog written and proved against the ROM (0 differences); not seen on screen
 - 2026-11-07 02:12 `game/playermotion.cpp` verify: the item waits: throwCarried and putSmoke, the two script natives behind Throw and Set Smoke Candle; 0 differences with the ROM, and on stage 17 the real menu t
 - 2026-11-07 01:41 `game/stagedoor.cpp` verify: the door object file's 106 inline defaults 0x171ad0..0x1723c0 accounted for, 27 runner slots added, item natives answer the ROM's bool
 - 2026-11-07 01:10 `game/areaclip.cpp` verify: AreaClip written: the camera's place hides the map's far parts; 59 functions of 0x2dac70..0x2e00c0, agrees with the ROM on all 20 ac1 files of the disc
@@ -287,32 +290,31 @@ Recent sessions:
 - 2026-11-07 00:01 `game/menuprogset.cpp` verify: The gun sights: MenuProgSet, its packet helpers and quatBetween, all 11 functions of 0x2b9ef0..0x2bb600; was stubs
 - 2026-11-06 23:33 `game/itemphysics.cpp` verify: ItemPhysics written: thrown items and dropped weapons fall, all 15 functions, bit-identical to the ROM on itemcmp.py; a forced knife lands flat on stage 2
 - 2026-11-06 22:50 `game/stageparticle.cpp` verify: the MSL vector and sort instances 0x1920d0..0x193900 pinned here and named; the ROM's own unstable sort replaces std::stable_sort in drawEffects, far list first
-- 2026-11-06 22:30 `game/stagealert.cpp` verify: reconstruct 8 functions, alertcmp proves them against the ROM (verify)
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002c42a0` | todo | 0/13/105 | 42.1 | 23 | 2 |
-| `unassigned@002681e0` | todo | 0/3/3 | 0.3 | 18 | 3 |
 | `unassigned@00188d60` | todo | 0/0/16 | 3.8 | 17 | 0 |
-| `unassigned@002a6980` | partial | 1/11/83 | 12.1 | 17 | 0 |
 | `unassigned@002067d0` | partial | 1/0/9 | 2.2 | 17 | 0 |
-| `unassigned@002acff0` | todo | 0/3/24 | 10.9 | 15 | 2 |
-| `sdpr2/sdpr2single.c` | todo | 0/2/24 | 7.0 | 14 | 2 |
+| `unassigned@002a6980` | partial | 1/11/83 | 12.1 | 17 | 0 |
 | `unassigned@00151270` | todo | 0/3/3 | 0.0 | 13 | 2 |
+| `unassigned@002681e0` | todo | 0/3/3 | 0.3 | 13 | 2 |
 | `unassigned@002e0820` | todo | 0/3/13 | 3.7 | 13 | 1 |
 | `unassigned@0012c9b8` | todo | 0/1/6 | 0.8 | 12 | 1 |
-| `unassigned@0020c940` | partial | 1/1/2 | 0.8 | 12 | 1 |
 | `unassigned@002176d0` | partial | 1/0/10 | 0.9 | 11 | 0 |
+| `unassigned@002acff0` | todo | 0/3/24 | 10.9 | 10 | 1 |
+| `rx/rxsndstrpcm.c` | todo | 0/8/10 | 2.1 | 10 | 2 |
+| `sdpr2/sdpr2single.c` | todo | 0/2/24 | 7.0 | 9 | 1 |
+| `unassigned@0021e120` | partial | 4/0/18 | 3.5 | 8 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
 | `002c1430` | FUN_002c1430 | 115 | - | missing | game/packtables.cpp |
-| `00184370` | StageNodeList::erase | 72 | game | missing | game/stageitem.cpp |
-| `0017e260` | StageList<StageObject*>::erase | 52 | game | missing | game/stagecharacter.cpp |
-| `001842c0` | StageNodeList::pushBack | 33 | game | missing | game/stageitem.cpp |
-| `0017e1b0` | StageList<StageObject*>::pushBack | 24 | game | missing | game/stagecharacter.cpp |
+| `00184370` | StageNodeList::erase | 74 | game | missing | game/stageitem.cpp |
+| `0017e260` | StageList<StageObject*>::erase | 54 | game | missing | game/stagecharacter.cpp |
+| `001842c0` | StageNodeList::pushBack | 34 | game | missing | game/stageitem.cpp |
+| `0017e1b0` | StageList<StageObject*>::pushBack | 25 | game | missing | game/stagecharacter.cpp |
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `002c0d90` | FUN_002c0d90 | 18 | - | missing | game/packtables.cpp |
 | `001d1a00` | ScriptRunner::getEntry | 14 | game | missing | game/scriptrunner.cpp |

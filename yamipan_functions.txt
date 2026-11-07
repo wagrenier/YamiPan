@@ -3771,12 +3771,12 @@
 /* 0019aea0 00000090 */ StageScene::getFloor(){}  // game
 /* 0019af30 00000008 */ StageScene::addFloorBox(){}  // game
 /* 0019af40 00000068 */ StageScene::createMenuProg(){}  // game
-/* 0019afb0 000001cc */ StageScene::updateBuffers(){}  // game
-/* 0019b180 00000028 */ StageScene::addBufferObject(){}  // game
-/* 0019b1b0 00000038 */ StageScene::createBuffers(){}  // game
-/* 0019b1f0 00000280 */ StageScene::updateBlock98(){}  // game
-/* 0019b470 0000002c */ StageScene::updateBlock98For(){}  // game
-/* 0019b4a0 00000038 */ StageScene::createBlock98(){}  // game
+/* 0019afb0 000001cc */ StageScene::updateSmokeFog(){}  // game
+/* 0019b180 00000028 */ StageScene::addSmokeSource(){}  // game
+/* 0019b1b0 00000038 */ StageScene::createSmokeFog(){}  // game
+/* 0019b1f0 00000280 */ StageScene::updateGlowFog(){}  // game
+/* 0019b470 0000002c */ StageScene::measureGlow(){}  // game
+/* 0019b4a0 00000038 */ StageScene::createGlowFog(){}  // game
 /* 0019b4e0 00000054 */ StageScene::getZs9901(){}  // game
 /* 0019b540 0000000c */ StageScene::releaseControl(){}  // game
 /* 0019b550 00000008 */ StageScene::requestControl(){}  // game
@@ -4081,7 +4081,7 @@
 /* 001ab790 0000006c */ nativeAskNumLockClose(){}  // game
 /* 001ab800 0000006c */ nativeAskNumLockOpen(){}  // game
 /* 001ab870 000002ec */ nativeMarkWeapons(){}  // game
-/* 001abb60 0000009c */ FUN_001abb60(){}
+/* 001abb60 0000009c */ nativeSetSmokeRange(){}  // game
 /* 001abc00 000001a0 */ nativeSmokeNear(){}  // game
 /* 001abdb0 00000064 */ FUN_001abdb0(){}
 /* 001abe20 00000084 */ FUN_001abe20(){}
@@ -8759,18 +8759,23 @@
 /* 002cdfe0 00000090 */ FUN_002cdfe0(){}
 /* 002ce070 0000002c */ FUN_002ce070(){}
 /* 002ce0a0 00000014 */ FUN_002ce0a0(){}
-/* 002ce0c0 000000bc */ SceneBufferSet::setActiveFor(){}  // game
-/* 002ce180 00000034 */ SceneBufferSet::storeActive(){}  // game
-/* 002ce1c0 00000194 */ SceneBufferSet::updateRange(){}  // game
-/* 002ce360 0000007c */ SceneBufferSet::addObject(){}  // game
-/* 002ce3e0 000001b4 */ SceneBufferSet::attachCharacters(){}  // game
-/* 002ce5a0 00000080 */ SceneBufferSet::~SceneBufferSet(){}  // game
-/* 002ce620 00000168 */ SceneBufferSet::createFor(){}  // game
-/* 002ce790 00000088 */ SceneBlock98::updateVisible(){}  // game
-/* 002ce820 000001a8 */ SceneBlock98::updateFor(){}  // game
-/* 002ce9d0 000001a0 */ SceneBlock98::createFor(){}  // game
-/* 002ceb70 00000060 */ SceneBlock98::setActive(){}  // game
-/* 002cebd0 000001e0 */ SceneBlock98::attachTo(){}  // game
+
+// *****************************************************************************
+// FILE -- game/stagefog.cpp
+// *****************************************************************************
+
+/* 002ce0c0 000000bc */ SmokeFog::setActiveFor(){}  // game
+/* 002ce180 00000034 */ SmokeFog::storeActive(){}  // game
+/* 002ce1c0 00000194 */ SmokeFog::updateRange(){}  // game
+/* 002ce360 0000007c */ SmokeFog::addObject(){}  // game
+/* 002ce3e0 000001b4 */ SmokeFog::attachCharacters(){}  // game
+/* 002ce5a0 00000080 */ SmokeFog::~SmokeFog(){}  // game
+/* 002ce620 00000168 */ SmokeFog::createFor(){}  // game
+/* 002ce790 00000088 */ GlowFog::updateVisible(){}  // game
+/* 002ce820 000001a8 */ GlowFog::updateFor(){}  // game
+/* 002ce9d0 000001a0 */ GlowFog::createFor(){}  // game
+/* 002ceb70 00000060 */ GlowFog::setActive(){}  // game
+/* 002cebd0 000001e0 */ CharacterFog::attachTo(){}  // game
 
 // *****************************************************************************
 // FILE -- game/stagecollision.cpp
