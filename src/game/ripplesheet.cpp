@@ -97,7 +97,7 @@ void RippleSpec::roll(RippleWave &wave) const
 }
 
 // FS2 0x002d31d0
-// callcheck: FUN_002d3340, FUN_002d3470, FUN_00207090, FUN_002d3340, FUN_002d3470, FUN_00207090, FUN_002d2f50 (PC: std::vector, restart)
+// callcheck: FUN_002d3340, FUN_002d3470, ~RippleWaves, FUN_002d3340, FUN_002d3470, ~RippleWaves, FUN_002d2f50 (PC: std::vector, restart)
 
 RippleSheet::RippleSheet(u_int columns, u_int rows, u_int waves)
     : m_columns(columns, RippleWaves(waves, RippleWave{})),

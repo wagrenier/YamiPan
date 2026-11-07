@@ -112,6 +112,10 @@
    "notes": "All code of the TU is written; the control hook's input half now runs in stageUpdateCharacterMotions. Seen in a 285 s New Game run with the scripted left stick at reads 5720..6970: F_PC01 runs, turns on the spot, backs and strafes with L1, moved from (7286, 6064) to (4712, 3798), no crash, and idle0 played. progress/20261104-f_pc01-pad-walk.png shows him whole from behind, on black outside the room. He goes through walls and stays at z 1138 until game/characterground.cpp. verify because the right stick, buttons, aim, scope, car and companion were not exercised and no reference exists; offer, StageParty::start, canTakeOver, getLifeState, isCompanionWalking and the car members are stubs. Next: game/characterground.cpp. New names are in batch 124; open-items.md Done and Decisions have the doubts.",
    "ranges": [
     [
+     "002067d0",
+     "00206890"
+    ],
+    [
      "00214ee0",
      "00214f20"
     ],
@@ -2177,11 +2181,15 @@
    "why": "the stage's particle effects and the system that owns them: StageParticle's class (vtables 0x3149e0..) and the StageNodeTree methods around its spawn; the critters 0x2b3860..0x2b5740 and spawnCritters 0x190990, kept here though the ROM has them apart; and the MSL vector and sort instances 0x1920d0..0x193900 the file's object emitted (word vectors, the effects' pair list, BoxCells / BoxColumn / BoxList dtors); no source-path string"
   },
   "game/stageparty.cpp": {
-   "notes": "Batch 162. SceneModelHolder was no model: it is StageDaylight, 0x2cfe20..0x2d0a10, range joined to this TU, StageScene::model renamed daylight. On stages 3, 0x11, 0x12, 0x14, 0x16, 0x19, 0x5d, 0x1b: outside the stage's bbx boxes an additive gradient rises and settles, inside it fades and a clone of the jack's film closes in and opens. Seen in a temporary build, removed: stage 3 forced, the box answer forced on a timer, progress/20261106-daylight-forced-peak.png and -settled.png. Unforced, stage 3's first room is inside all the way, so nothing shows there. Byte 9 is answered: E01, E04, E05 scripts only lock the jack, E02 and others never touch it, so node 4 is by design. Seen, temporary build, removed: New Game forced to stage 2, jack2 pad, 290 s, no crash, no flag forced: noise with the black film ring, then a tuned view through a character, progress/20261106-stage2-real-jack-view.png. No game reference judges the levels. Left partial: drawLive lacks stage 0x1b's boss film 0x2d10f0, FUN_002d3080 and the object at +0xb4, callcheck's MISSING on drawLive, explained. Next: KeepList 0x2bc100..0x2bcd20, misnamed, reads like a track player of three varint channels, another TU, its addNamed is what the jack's warning calls; then the boss film. open-items.md Next up has it. The 15 s check is the language menu, unchanged.",
+   "notes": "unassigned@002067d0 was no file: 0x206890..0x207108 is this object's template instances, batch 196, record removed, range pinned here, std::vector kept and listed at the end of the .cpp; 0x2067d0 CharacterPad::pressedBind pinned to game/characterinput.cpp. BearingVector insert, reserve, clear, dtor; RippleLists and RippleWaves dtors and clears, here because ~SightJack inlines ~RippleSheet. Proved: bearingvectorcmp.py, 6,000 ops, 133,165 elements, 2,291 inserts of a value inside the vector, 0 differ, dtors free what they own; --plant 827 of 1,500. Capacity differs and stepAlertedFoe's reserve is dropped; no caller can see either. No game behaviour changed: the smoke run stops at the language screen as before and never reaches the jack. callcheck's one MISSING, drawLive's gfxGetDrawEnv and gsFillRect, is older than this run and lives in the helpers it calls. Earlier notes: Batch 162. SceneModelHolder was no model: it is StageDaylight, 0x2cfe20..0x2d0a10, range joined to this TU, StageScene::model renamed daylight. On stages 3, 0x11, 0x12, 0x14, 0x16, 0x19, 0x5d, 0x1b: outside the stage's bbx boxes an additive gradient rises and settles, inside it fades and a clone of the jack's film closes in and opens. Seen in a temporary build, removed: stage 3 forced, the box answer forced on a timer, progress/20261106-daylight-forced-peak.png and -settled.png. Unforced, stage 3's first room is inside all the way, so nothing shows there. Byte 9 is answered: E01, E04, E05 scripts only lock the jack, E02 and others never touch it, so node 4 is by design. Seen, temporary build, removed: New Game forced to stage 2, jack2 pad, 290 s, no crash, no flag forced: noise with the black film ring, then a tuned view through a character, progress/20261106-stage2-real-jack-view.png. No game reference judges the levels. Left partial: drawLive lacks stage 0x1b's boss film 0x2d10f0, FUN_002d3080 and the object at +0xb4, callcheck's MISSING on drawLive, explained. Next: KeepList 0x2bc100..0x2bcd20, misnamed, reads like a track player of three varint channels, another TU, its addNamed is what the jack's warning calls; then the boss film. open-items.md Next up has it. The 15 s check is the language menu, unchanged.",
    "ranges": [
     [
      "001fe6b0",
      "002067d0"
+    ],
+    [
+     "00206890",
+     "00207110"
     ],
     [
      "002cf880",
@@ -2218,6 +2226,11 @@
      "date": "2026-11-06 06:08",
      "status": "verify",
      "summary": "marked partial -> verify: drawLive has no gap left: the ripple sheet is game/ripplesheet.cpp; the stage 0x1b object at +0xb4 is built and drawn"
+    },
+    {
+     "date": "2026-11-07 03:53",
+     "status": "verify",
+     "summary": "Pin the jack's and the ripple sheet's std::vector instances, 8 functions of 0x206890..0x207108; bearingvectorcmp.py proves the promise"
     }
    ],
    "status": "verify",
@@ -3376,10 +3389,7 @@
   "unassigned@00252840": {},
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
-  "unassigned@002681e0": {
-   "claimed": "2026-11-07 03:24",
-   "status": "active"
-  },
+  "unassigned@002681e0": {},
   "unassigned@002764b0": {},
   "unassigned@0027cab0": {},
   "unassigned@002908d0": {},

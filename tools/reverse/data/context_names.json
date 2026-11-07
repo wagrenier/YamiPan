@@ -22475,6 +22475,54 @@
   "was": "FUN_002067d0",
   "why": "which of the four face buttons is pressed; 4 none"
  },
+ "00206890": {
+  "name": "BearingVector::insert",
+  "tag": "lib-context",
+  "was": "FUN_00206890",
+  "why": "MSL vector insert(position, n, value) for SightJack's 12-byte {angle, distance, object}: the three gathers' push_backs pass end, 1; strings vector::insert length error, Memory allocation failure; proved against std::vector by bearingvectorcmp.py"
+ },
+ "00206d60": {
+  "name": "BearingVector::reserve",
+  "tag": "lib-context",
+  "was": "FUN_00206d60",
+  "why": "MSL vector reserve for the 12-byte bearings: string vector::reserve length error; stepAlertedFoe alone reserves before gathering"
+ },
+ "00206f00": {
+  "name": "RippleLists::~RippleLists",
+  "tag": "lib-context",
+  "was": "FUN_00206f00",
+  "why": "dtor of a vector of RippleWaves: ~SightJack calls it on m_ripples+0xc then m_ripples+0, the inlined ~RippleSheet's m_rows and m_columns; clear through 0x206ff0, frees data"
+ },
+ "00206f70": {
+  "name": "BearingVector::clear",
+  "tag": "lib-context",
+  "was": "FUN_00206f70",
+  "why": "count = 0: called once on the empty vector before each gather of bearings, partner of 0x206f80"
+ },
+ "00206f80": {
+  "name": "BearingVector::~BearingVector",
+  "tag": "lib-context",
+  "was": "FUN_00206f80",
+  "why": "dtor of the local vector of bearings: count = 0, frees data; end of keepNearestFoe, stepAlertedFoe, tune"
+ },
+ "00206ff0": {
+  "name": "RippleLists::clear",
+  "tag": "lib-context",
+  "was": "FUN_00206ff0",
+  "why": "destroys the elements from the last to the first through 0x207090 at a stride of 12, count = 0"
+ },
+ "00207090": {
+  "name": "RippleWaves::~RippleWaves",
+  "tag": "lib-context",
+  "was": "FUN_00207090",
+  "why": "dtor of one column or row of ripple waves: the temporaries of RippleSheet::RippleSheet and the elements of 0x206ff0"
+ },
+ "00207100": {
+  "name": "RippleWaves::clear",
+  "tag": "lib-context",
+  "was": "FUN_00207100",
+  "why": "count = 0, called by 0x207090 alone"
+ },
  "00207110": {
   "name": "NoticeEntry::show",
   "tag": "game-inferred",

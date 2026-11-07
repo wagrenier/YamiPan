@@ -54,7 +54,7 @@ class RippleSheet
 {
 public:
     // columns x rows points, each list `waves` long. EE: the fills 0x002d3340,
-    // 0x002d3470, 0x002d35b0 are std::vector's.
+    // 0x002d3470, 0x002d35b0 are std::vector's; the dtors, 0x00206f00..0x00207108, are in stageparty.cpp.
     RippleSheet(u_int columns, u_int rows, u_int waves);                 // FS2 0x002d31d0
 
     RippleSpec &spec() { return m_spec; }
