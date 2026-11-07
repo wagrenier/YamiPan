@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 20:51 at commit `1eaa58a` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 21:13 at commit `4e6f65a` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5137**; stubs: **134**
+- reconstructed FS2 functions: **5147**; stubs: **138**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -142,11 +142,11 @@ Least-named game-code regions (64 KB blocks):
 | `src/rx/rxfile.c` | 108 | 0 |
 | `src/rx/rxsnd.c` | 229 | 0 |
 | `src/rx/rxsndstr.c` | 38 | 0 |
-| `src/rx/rxsndstradpcm.c` | 0 | 8 |
+| `src/rx/rxsndstradpcm.c` | 10 | 0 |
 | `src/rx/rxsndstrbank.c` | 48 | 0 |
 | `src/rx/rxsndstrmem.c` | 0 | 3 |
 | `src/rx/rxsndstrpcm.c` | 0 | 8 |
-| `src/rx/rxsndstrstream.c` | 0 | 5 |
+| `src/rx/rxsndstrstream.c` | 0 | 17 |
 | `src/rx/rxsndut.c` | 6 | 0 |
 | `src/rx/rxsys.c` | 126 | 0 |
 | `src/rx/rxthread.c` | 53 | 0 |
@@ -158,10 +158,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 216 TUs: todo 77, active 1, partial 26, verify 105, done 42
-- next: **rx/rxsndstradpcm.c** (frontier score 25)
+- 216 TUs: todo 77, partial 26, verify 106, done 42
+- next: **rx/rxsndstrstream.c** (frontier score 29)
 - pinned queue: (empty)
-- active: `unassigned@002937e0` 0/0
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -257,6 +256,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `rx/rxfile.c` 108/108 -- rxfile core is RoR's prebuilt rx: rxcmp.py over both ranges finds 106 of 108 identical (jumps, lui, gp masked); rxFileOnCreate 0x154518 / rxFileOnGetSize 0x1545
 - verify: `rx/rxsnd.c` 229/229 -- All 229 of 0x159bc0..0x162178 in src/rx/rxsnd.c (C), with new src/rx/rxsnd.h (C and C++) and src/rx/rxthread.h (the seven rxTh calls). 215 functions are RoR's w
 - verify: `rx/rxsndstr.c` 38/38 -- All 38 of 0x1634b8..0x164398 written, no Ghidra change. rxsndstr.h now has RxSndStrSlot (EE 0x9c, layout host), RxSndStrFormat (the 8-entry format table), RxSnd
+- verify: `rx/rxsndstradpcm.c` 10/10 -- Complete code, no sound: rxSndStrAdpcmOpen opens a real rxSndAdpcm stream; the block the drivers silent side in the same file reports each open stream from the 
 - verify: `rx/rxsndstrbank.c` 48/48 -- Complete in source-only mode (no build yet, so not compiled: check it compiles once bootstrap 7 lands). Bank slot is layout host (pointers); RXWS file records (
 - verify: `rx/rxsndut.c` 6/6 -- All 6 written in src/rx/rxsndut.c. Data: debug flags 0x2f5f10 (boot value 7 = error / BG-call / register prints) and the format tables 0x2f5f18 PCM (id 1) / 0x2
 - verify: `rx/rxsys.c` 126/126 -- rxsys is RoR's prebuilt rx: rxcmp.py '^rxSys' finds 126 of 126 identical (jumps, lui and gp offsets masked) and the data words and console font equal RoR's at +
@@ -270,6 +270,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 21:12 `rx/rxsndstradpcm.c` verify: All 10 functions of 0x164c38..0x1656e8 written; the 2026-11-04 bridge replaced by a silent stand-in for the driver feeding rxSndAdpcmUpdate
 - 2026-11-06 20:51 `game/stageelevator.cpp` verify: The elevator: StageElevator for oZS99_01, a call brings it, the doors work, a rider goes up with it, a door closing on someone opens again
 - 2026-11-06 20:19 `game/stagemenu.cpp` verify: the stage menu whole: the list window, its fades, update, draw; six vector helpers joined game/characterroute.cpp; menucmp.py
 - 2026-11-06 19:35 `game/playermotion.cpp` verify: The last eleven links written (GadgetLink, SpFear, SpRing, SpRobo, SpDrop, SpPadlock, SpNumLock, BossAttack, BossIdle): every link name of the ROM now exists; n
@@ -277,22 +278,21 @@ Recent sessions:
 - 2026-11-06 18:18 `game/playermotion.cpp` partial: The links DiveFall, DiveLand and TrapHit: a fall over an edge runs to Mission failed, a trap holds and lets go; forced, no real edge or trap yet
 - 2026-11-06 17:52 `game/playermotion.cpp` partial: takeHits whole: a blow that lands fells what it hits, the first real fight runs to Mission failed; the NaN position is fixed (sqrt.s)
 - 2026-11-06 17:15 `game/playermotion.cpp` partial: Damage, DamageLand, DamageFatal, DamageDead and Revive links, the conditions' dtors, setWallCheck
-- 2026-11-06 16:40 `game/charactersound.cpp` verify: A character's voices written, 23 functions; playVoiceHeard now searches the SE table, as the ROM does, instead of the stream table, so it stops being silent.
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `rx/rxsndstradpcm.c` | todo | 0/8/10 | 2.6 | 25 | 5 |
+| `rx/rxsndstrstream.c` | todo | 0/17/18 | 2.4 | 29 | 2 |
 | `game/stagealert.cpp` | todo | 0/7/8 | 1.3 | 24 | 3 |
 | `unassigned@001920d0` | partial | 1/0/17 | 5.9 | 24 | 0 |
 | `unassigned@002b9ef0` | todo | 0/4/11 | 5.7 | 21 | 3 |
-| `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
 | `unassigned@002dac70` | partial | 1/4/63 | 21.7 | 19 | 3 |
+| `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
 | `unassigned@002c42a0` | todo | 0/13/105 | 42.1 | 18 | 1 |
 | `unassigned@00171ad0` | partial | 1/0/107 | 1.5 | 18 | 0 |
-| `unassigned@00188d60` | todo | 0/0/16 | 3.8 | 17 | 0 |
-| `unassigned@002067d0` | partial | 1/0/9 | 2.2 | 17 | 0 |
 | `unassigned@002a6980` | partial | 1/11/83 | 12.1 | 17 | 0 |
+| `unassigned@002067d0` | partial | 1/0/9 | 2.2 | 17 | 0 |
 | `unassigned@0023c010` | todo | 0/11/15 | 7.4 | 17 | 0 |
+| `unassigned@00188d60` | todo | 0/0/16 | 3.8 | 17 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

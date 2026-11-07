@@ -2944,12 +2944,21 @@
    "why": "stream core rxSndStr* (own slot table 0x51ef80; batch 008); file cut a guess."
   },
   "rx/rxsndstradpcm.c": {
+   "notes": "Complete code, no sound: rxSndStrAdpcmOpen opens a real rxSndAdpcm stream; the block the drivers silent side in the same file reports each open stream from the requests length, and goes with the audio milestone. Seen with YAMIPAN_TELEPORT=d0101 (75 s, temporary log, removed): voice 48000 Hz stereo ends at 51.03 s, position 2797714 bytes, Teleport d0101 over, room on screen, a looping stream carries on. rxsndstrstream.c is still stubs, so the feed reads nothing, marks and branches never fire. Mark and branch callbacks take an index, not a record (types fixed). PC: rxSndAdpcm user data holds the format stream id, not the slot pointer. Next: rx/rxsndstrstream.c, rx/rxsndstrmem.c, rx/rxsndstrpcm.c.",
    "ranges": [
     [
      "00164c38",
      "001656e8"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-06 21:12",
+     "status": "verify",
+     "summary": "All 10 functions of 0x164c38..0x1656e8 written; the 2026-11-04 bridge replaced by a silent stand-in for the driver feeding rxSndAdpcmUpdate"
+    }
+   ],
+   "status": "verify",
    "why": "ADPCM stream format (table 0x2f5f38; batch 008); file cut a guess."
   },
   "rx/rxsndstrbank.c": {
@@ -3219,10 +3228,7 @@
   "unassigned@002764b0": {},
   "unassigned@0027cab0": {},
   "unassigned@002908d0": {},
-  "unassigned@002937e0": {
-   "claimed": "2026-11-06 20:24",
-   "status": "active"
-  },
+  "unassigned@002937e0": {},
   "unassigned@00296d60": {},
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {},
