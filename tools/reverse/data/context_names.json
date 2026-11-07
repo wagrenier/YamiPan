@@ -21197,6 +21197,12 @@
   "was": "FUN_001e0360",
   "why": "takes the motion in a0; another character near on a ladder motion, by rank 0x271f50"
  },
+ "001e05b0": {
+  "name": "PlayerMotion::winsStruggle",
+  "tag": "game-inferred",
+  "was": "FUN_001e05b0",
+  "why": "a0 is the PlayerMotion (motionId +0x40, owner +0); true when its motion is ld_s/ld_d/ld_u and the other's (a1 +0x224 ->+0x40) any ladder motion, then by StageCharacter::getLadderRank (lower wins) and on a tie the higher z (+0x158); one caller CharacterGround::collisionHook0 0x1f0a20 when both repel levels are 2"
+ },
  "001e06f0": {
   "name": "PlayerMotion::endFrame",
   "tag": "game-inferred",
