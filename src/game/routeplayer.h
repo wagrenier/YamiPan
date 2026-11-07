@@ -194,7 +194,7 @@ private:
 
 // +0x4c of the scene: what answers for the stage's rute file (vtable
 // 0x316a78). layout: host (EE 0xc).
-class RoutePlayer : public SceneOwnedObject
+class RoutePlayer
 {
 public:
     explicit RoutePlayer(void *rute);                                    // FS2 0x00253180

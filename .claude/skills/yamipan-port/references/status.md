@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 07:12 at commit `d203fb8` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 07:51 at commit `d1f227d` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 07:12 at commit `d203fb8` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6597**, named **5548** (84%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4626
-- context-name ledger: 6222 entries; overrides of wrong library matches: 0
-- placed in a source file: 6064/6597 in 132 files
+- game functions: **6597**, named **5598** (85%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4676
+- context-name ledger: 6272 entries; overrides of wrong library matches: 0
+- placed in a source file: 6117/6597 in 133 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5519**; stubs: **43**
+- reconstructed FS2 functions: **5550**; stubs: **40**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -50,6 +50,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/drawsys.cpp` | 166 | 0 |
 | `src/game/fileloader.cpp` | 53 | 0 |
 | `src/game/fontdata.cpp` | 43 | 0 |
+| `src/game/gadgetview.cpp` | 31 | 0 |
 | `src/game/gameoversequence.cpp` | 12 | 0 |
 | `src/game/gamepacket.cpp` | 6 | 0 |
 | `src/game/gamepaths.cpp` | 14 | 0 |
@@ -139,7 +140,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 22 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 19 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_2d_texture_vram.cpp` | 11 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
@@ -168,9 +169,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 214 TUs: todo 73, partial 18, verify 123, done 46
-- next: **unassigned@002a7b10** (frontier score 8)
+- 214 TUs: todo 72, active 1, partial 18, verify 124, done 46
+- next: **rx/filehdd.c** (frontier score 7)
 - pinned queue: (empty)
+- active: `unassigned@002a7b10` 0/0
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -186,6 +188,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/drawsys.cpp` 164/164 -- All 164 of 0x2d46a0-0x2dac70 are written or listed. New: drawSysAddModel 0x2d5140 (draw group, name flags, wave surfaces, plant textures), drawSysFindKind1Surfa
 - verify: `game/fileloader.cpp` 53/53 -- All 53 functions of 0x1319f0..0x132f20 are in src/game/fileloader.cpp with game/fileloader.h; FileJob / FileLoader / PackFile left gamehooks.h (which includes f
 - verify: `game/fontdata.cpp` 41/41 -- Cut out of unassigned@00171300 and pinned 0x1fcb40-0x1fe6b0 (batch 056, 31 names: the FontData byte variants countLinesMb / lineWidthFixed / lineWidthFixedMb / 
+- verify: `game/gadgetview.cpp` 31/53 -- Split from unassigned@002a7b10, batch 205. Handle SceneOwnedObject (vtable 0x318ca0, body at +4, slots 1..15 jump to the body's same slot) and body GadgetView (
 - verify: `game/gameoversequence.cpp` 12/17 -- All 17 written, batch 151. Forced on node 4 by a temporary hook (removed): letterbox bars ramp in and out and reach both edges at 4:3 and 21:9; CAM_DEAD swings 
 - verify: `game/gamepacket.cpp` 6/6 -- All 6 functions written; source-only, callcheck clean. Header now declares the rena Vif1PktManage members the TU calls (ctor, virtual dtor, AddBuffer, AddList, 
 - verify: `game/gamepaths.cpp` 14/14 -- All 14 functions of 0x28ff60..0x2908d0 written (batches 054-055, 25 names, Ghidra saved). Path builders from a StageSelect: digit 1 or 2 (variant 0 or not), let
@@ -297,6 +300,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 07:51 `game/gadgetview.cpp` verify: The gadget views: SigLamp and the number-lock view as handle and body (SceneOwnedObject with 15 forwarders, GadgetView with the pairs and the look, SigLampView,
 - 2026-11-07 07:12 `game/playermotion.cpp` verify: unassigned@0021e120 joined playermotion.cpp: its out-of-line tail, the MSL sort instance over the search points and the six one-slot stage-object walks; pickSea
 - 2026-11-07 07:00 `sdpr2/sdpr2drv.c` verify: reconstruct 30 functions: the SDPR2 driver layer and the SE driver (verify)
 - 2026-11-07 06:49 `sdpr2/sdpr2single.c` verify: SDPR2 one-voice type and the shared pan maths: all 24 functions, the pan / spread tables from the ROM
@@ -304,31 +308,30 @@ Recent sessions:
 - 2026-11-07 06:33 `game/skymist.cpp` verify: the sky mist: SkyMist (ctor, drift and swirl steps, spawns, draw with the ROM's tests and near cut as view-space effect quads) and its holder, 23 functions; Men
 - 2026-11-07 05:52 `rx/rxsndstrpcm.c` verify: PCM stream format: all 10 functions written, the ADPCM twin cut down, with a silent driver reply on PC
 - 2026-11-07 05:34 `unassigned@002176d0` verify: Placed the run 0x2176d0..0x217a80: isViewLinked to game/stagecharacter.cpp, the second StageList<StageObject*> instance (getTail, find, pushBack, erase, pushFro
-- 2026-11-07 05:12 `unassigned@0012c9b8` verify: Resolved: newlib stdio tail 0x12c9b8..0x12cce0 (__sccl, vsprintf, _vsprintf_r, _write_r, __swsetup) is libc, the libc lib_range now ends at 0x12cce0; GameSystem
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002a7b10` | todo | 0/3/53 | 7.9 | 8 | 0 |
+| `unassigned@002849c0` | todo | 0/1/5 | 7.4 | 7 | 1 |
 | `rx/filehost.c` | todo | 0/2/12 | 1.3 | 7 | 1 |
-| `sdpr2/sdpr2pair.c` | todo | 0/1/21 | 7.0 | 7 | 1 |
-| `rx/filehdd.c` | todo | 0/2/13 | 1.5 | 7 | 1 |
 | `unassigned@0029f2a0` | todo | 0/2/2 | 0.6 | 7 | 0 |
 | `unassigned@002160a0` | todo | 0/0/7 | 0.1 | 7 | 0 |
 | `unassigned@002b6b90` | partial | 1/0/7 | 6.5 | 7 | 0 |
-| `unassigned@002849c0` | todo | 0/1/5 | 7.4 | 7 | 1 |
+| `rx/filehdd.c` | todo | 0/2/13 | 1.5 | 7 | 1 |
 | `unassigned@002ec110` | todo | 0/0/1 | 0.1 | 7 | 0 |
+| `sdpr2/sdpr2pair.c` | todo | 0/1/21 | 7.0 | 7 | 1 |
 | `unassigned@0020c940` | partial | 1/1/2 | 0.8 | 7 | 0 |
 | `unassigned@002cf510` | todo | 0/1/1 | 0.1 | 6 | 1 |
 | `unassigned@00214a70` | todo | 0/1/2 | 0.6 | 5 | 0 |
+| `unassigned@0020acb0` | partial | 3/5/11 | 1.3 | 5 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
 | `002c1430` | FUN_002c1430 | 115 | - | missing | game/packtables.cpp |
-| `00184370` | StageNodeList::erase | 74 | game | missing | game/stageitem.cpp |
+| `00184370` | StageNodeList::erase | 85 | game | missing | game/stageitem.cpp |
 | `0017e260` | StageList<StageObject*>::erase | 54 | game | missing | game/stagecharacter.cpp |
-| `001842c0` | StageNodeList::pushBack | 34 | game | missing | game/stageitem.cpp |
+| `001842c0` | StageNodeList::pushBack | 37 | game | missing | game/stageitem.cpp |
 | `0017e1b0` | StageList<StageObject*>::pushBack | 25 | game | missing | game/stagecharacter.cpp |
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `002c0d90` | FUN_002c0d90 | 18 | - | missing | game/packtables.cpp |

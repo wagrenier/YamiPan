@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include "game/clock.h"
+#include "game/gadgetview.h"
 #include "game/gamehooks.h"
 #include "game/mapobject.h"
 #include "game/mathutil.h"
@@ -275,10 +276,13 @@ StageObject *createMapObject(const char *name, void *collision)
         return new StageCar();
     if (strcmp(name, kElevatorModel) == 0)
         return new StageElevator(collision);
-    // PC: the ROM also builds the scene's number-lock view here (0x2a89b0 into
-    // StageScene +0x90) when there is none; not written yet.
-    if (strcmp(name, kNumLockModelA) == 0 || strcmp(name, kNumLockModelB) == 0)
-        return new NumLock();
+    if (strcmp(name, kNumLockModelA) == 0 || strcmp(name, kNumLockModelB) == 0) {
+        NumLock *lock = new NumLock();
+        // The first lock also gives the scene its number-lock view.
+        if (gStageScene->owned[GadgetSlot_NumLock] == nullptr)
+            gStageScene->owned[GadgetSlot_NumLock] = new NumLockGadget();
+        return lock;
+    }
     int number = 0;
     if (name[0] == kMapModelPrefix) {
         const char *door = strstr(name, kDoorPartR);

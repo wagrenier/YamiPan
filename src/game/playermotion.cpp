@@ -9,6 +9,7 @@
 #include "game/characterbrain.h"
 #include "game/characterroute.h"
 #include "game/menuprogset.h"
+#include "game/gadgetview.h"
 #include "game/numlock.h"
 #include "game/playermotion.h"
 #include "game/objectproperty.h"
@@ -1202,7 +1203,7 @@ void MotionGadgetSpecial::applyOwned(int index, int motionId)
 {
     allowed = 0;
     onUpdate();
-    if (allowed != 0 && gStageScene->owned[index]->start(text))
+    if (allowed != 0 && gStageScene->owned[index]->hasObject(text))
         motion->request(motionId);
 }
 
@@ -3446,7 +3447,7 @@ void GadgetLink::onRun()
 
 void GadgetLink::onCancel()
 {
-    gadget->isSlot2c();
+    gadget->cancel();
 }
 
 // FS2 0x00283c50

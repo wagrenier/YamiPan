@@ -53,6 +53,7 @@ class StageLight : public StageObject, public CollisionOwner
     friend class StageWeaponItem;
     friend class StageCar;          // game/stagecar.cpp
     friend struct CarParts;
+    friend class SigLampView;       // game/gadgetview.cpp: its spot and point
 
 public:
     StageLight();                                                        // FS2 0x001866f0
@@ -220,6 +221,7 @@ class SpotLight : public StageLight
     friend class StageDoor;         // game/stagedoor.cpp: its light follows it
     friend struct SceneRender;      // game/scenerender.cpp
     friend struct CarParts;         // game/stagecar.cpp
+    friend class SigLampView;       // game/gadgetview.cpp
 
 public:
     SpotLight();                                                         // FS2 0x00185260

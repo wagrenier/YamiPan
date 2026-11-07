@@ -27,6 +27,7 @@
 #include "game/characterbrain.h"
 #include "game/characterroute.h"
 #include "game/clock.h"
+#include "game/gadgetview.h"
 #include "game/gamehooks.h"
 #include "game/stagealert.h"
 #include "game/mathutil.h"
@@ -5918,7 +5919,7 @@ static const int *nativeUseSigLamp(ScriptRunner *self, int *acc, const int *code
 static const int *nativeSigLampHasTarget(ScriptRunner *, int *acc, const int *code)
 {
     constexpr int kOwnedSigLamp = 0;    // StageScene +0x8c
-    *acc = gStageScene->owned[kOwnedSigLamp]->hasTarget();
+    *acc = gStageScene->owned[kOwnedSigLamp]->isInView();
     return code;
 }
 
@@ -6745,7 +6746,7 @@ enum ScriptGadget
 static const int *nativeSigLampSlot2c(ScriptRunner *, int *acc, const int *code)
 {
     SceneOwnedObject *lamp = gStageScene->owned[ScriptGadget_SigLamp];
-    *acc = lamp != nullptr && lamp->isSlot2c();
+    *acc = lamp != nullptr && lamp->cancel();
     return code;
 }
 
@@ -6754,7 +6755,7 @@ static const int *nativeSigLampSlot2c(ScriptRunner *, int *acc, const int *code)
 
 static const int *nativeSigLampSlot44(ScriptRunner *, int *acc, const int *code)
 {
-    *acc = gStageScene->owned[ScriptGadget_SigLamp]->isSlot44();
+    *acc = gStageScene->owned[ScriptGadget_SigLamp]->isLooking();
     return code;
 }
 
@@ -6765,7 +6766,7 @@ static const int *setGadgetNames(ScriptRunner *self, int gadget, const int *code
     const char *second;
     const int *next = self->readNameArg(&first, code);
     next = self->readNameArg(&second, next);
-    gStageScene->owned[gadget]->setNames(first, second);
+    gStageScene->owned[gadget]->addPair(first, second);
     return next;
 }
 

@@ -9,6 +9,7 @@
 #include "game/characterbrain.h"
 #include "game/characterroute.h"
 #include "game/fontdata.h"
+#include "game/gadgetview.h"
 #include "game/gamehooks.h"
 #include "game/gamesystem.h"
 #include "game/gfxtarget.h"
@@ -28,20 +29,6 @@
 // ---- stubs (tools/reverse/stubgen.py) ----
 
 // stub of FS2 0x002ad070
-
-// stub of FS2 0x00207ef0
-// stub of FS2 0x00207ea0
-// stub of FS2 address unknown (1 candidates)
-void SceneOwnedObject::destroy()
-{
-    YAMIPAN_STUB("SceneOwnedObject::destroy", 0x00000000);
-}
-
-// stub of FS2 0x002a7bf0
-SigLamp::SigLamp(Tim2Texture*)
-{
-    YAMIPAN_STUB("SigLamp::SigLamp", 0x002a7bf0);
-}
 
 // stub of FS2 address unknown (1 candidates)
 // stub of FS2 0x001d3a40
@@ -92,13 +79,6 @@ int runExtraMode(int arg)
 
 // stub of FS2 address unknown (0 candidates)
 
-// stub of FS2 address unknown (1 candidates)
-bool SceneOwnedObject::isBusy()
-{
-    YAMIPAN_STUB("SceneOwnedObject::isBusy", 0x00000000);
-    return {};
-}
-
 // stub of FS2 address unknown (0 candidates)
 
 // stub of FS2 0x00185210
@@ -128,40 +108,6 @@ void StageObject::onViewTop()
 
 // stub of FS2 0x00239bb0
 // stub of FS2 0x002ad030
-
-// stub of FS2 0x002078d0
-// stub of FS2 0x00207500
-// stub of FS2 address unknown (1 candidates)
-void SceneOwnedObject::draw()
-{
-    YAMIPAN_STUB("SceneOwnedObject::draw", 0x00000000);
-}
-
-// stub of FS2 address unknown (1 candidates)
-StageObject * SceneOwnedObject::getTarget()
-{
-    YAMIPAN_STUB("SceneOwnedObject::getTarget", 0x00000000);
-    return {};
-}
-
-// stub of FS2 address unknown (1 candidates)
-bool SceneOwnedObject::hasTarget()
-{
-    YAMIPAN_STUB("SceneOwnedObject::hasTarget", 0x00000000);
-    return {};
-}
-
-// stub of FS2 address unknown (1 candidates)
-void SceneOwnedObject::prepare()
-{
-    YAMIPAN_STUB("SceneOwnedObject::prepare", 0x00000000);
-}
-
-// stub of FS2 address unknown (1 candidates)
-void SceneOwnedObject::update()
-{
-    YAMIPAN_STUB("SceneOwnedObject::update", 0x00000000);
-}
 
 // stub of FS2 0x00289800
 // stub of FS2 0x00289b20
@@ -249,22 +195,6 @@ bool PlayerMotion::winsStruggle(StageObject *other)
     return {};
 }
 
-// stub of FS2 0x00207e20
-// stub of FS2 0x00210720
-// stub of FS2 address unknown (1 candidates)
-bool SceneOwnedObject::canUse()
-{
-    YAMIPAN_STUB("SceneOwnedObject::canUse", 0x00000000);
-    return {};
-}
-
-// stub of FS2 address unknown (1 candidates)
-bool SceneOwnedObject::start(const char *text)
-{
-    YAMIPAN_STUB("SceneOwnedObject::start", 0x00000000);
-    return {};
-}
-
 // stub of FS2 0x00294280
 void elevatorCall(StageObject *elevator, int floor)
 {
@@ -290,35 +220,6 @@ StageObject * findNumLockTarget()
 {
     YAMIPAN_STUB("findNumLockTarget", 0x0029f440);
     return {};
-}
-
-// stub of FS2 0x001dee50
-// stub of FS2 0x001dee90
-// stub of FS2 0x002a8920
-bool SceneOwnedObject::getRecordFlag31()
-{
-    YAMIPAN_STUB("SceneOwnedObject::getRecordFlag31", 0x002a8920);
-    return {};
-}
-
-// stub of FS2 address unknown (1 candidates)
-bool SceneOwnedObject::isSlot2c()
-{
-    YAMIPAN_STUB("SceneOwnedObject::isSlot2c", 0x00000000);
-    return {};
-}
-
-// stub of FS2 address unknown (1 candidates)
-bool SceneOwnedObject::isSlot44()
-{
-    YAMIPAN_STUB("SceneOwnedObject::isSlot44", 0x00000000);
-    return {};
-}
-
-// stub of FS2 address unknown (1 candidates)
-void SceneOwnedObject::setNames(const char *first, const char *second)
-{
-    YAMIPAN_STUB("SceneOwnedObject::setNames", 0x00000000);
 }
 
 // stub of FS2 address unknown (0 candidates)
@@ -414,24 +315,6 @@ int sevenKeysPoseValue(StageObject *object, int sub)
 {
     YAMIPAN_STUB("sevenKeysPoseValue", 0x002b23b0);
     return {};
-}
-
-// stub of FS2 0x002a8910
-void SceneOwnedObject::setRecordFlag31(bool on)
-{
-    YAMIPAN_STUB("SceneOwnedObject::setRecordFlag31", 0x002a8910);
-}
-
-// stub of FS2 address unknown (1 candidates)
-void SceneOwnedObject::takeMotionText(const char *text)
-{
-    YAMIPAN_STUB("SceneOwnedObject::takeMotionText", 0x00000000);
-}
-
-// stub of FS2 address unknown (1 candidates)
-void SceneOwnedObject::takeMotionUser(StageObject *user)
-{
-    YAMIPAN_STUB("SceneOwnedObject::takeMotionUser", 0x00000000);
 }
 
 // stub of FS2 0x002e1b10 (unassigned@002e1b10; belongs in rena/rena_2d_texture_tim2.cpp)

@@ -33947,11 +33947,89 @@
   "was": "FUN_002a7a50",
   "why": "ModelPose ctor, vtable 0x318b10, tag nml"
  },
+ "002a7b10": {
+  "name": "SigLampView::~SigLampView",
+  "tag": "game-inferred",
+  "was": "FUN_002a7b10",
+  "why": "deleting dtor: stores vtable 0x318b30, calls GadgetView dtor 0x2a98c0, deletes when asked"
+ },
+ "002a7b70": {
+  "name": "GadgetView::isActive",
+  "tag": "game-inferred",
+  "was": "FUN_002a7b70",
+  "why": "slot 7 of 0x318b30/0x318be0: state +0x14 != 0"
+ },
+ "002a7b80": {
+  "name": "GadgetView::getUser",
+  "tag": "game-inferred",
+  "was": "FUN_002a7b80",
+  "why": "slot 12: answers +0x1c, set by takeMotionUser; StageScene::prepareDrawFlags hides its body"
+ },
+ "002a7b90": {
+  "name": "GadgetView::isBusy",
+  "tag": "game-inferred",
+  "was": "FUN_002a7b90",
+  "why": "slot 13: state 2 (fading out) or slot 14 isInView"
+ },
+ "002a7bd0": {
+  "name": "GadgetView::isInView",
+  "tag": "game-inferred",
+  "was": "FUN_002a7bd0",
+  "why": "slot 14: byte +0x18, set by pushCamera 0x2a9300, cleared by popCamera"
+ },
+ "002a7be0": {
+  "name": "GadgetView::isLooking",
+  "tag": "game-inferred",
+  "was": "FUN_002a7be0",
+  "why": "slot 15: state == 3"
+ },
  "002a7bf0": {
   "name": "SigLamp::SigLamp",
   "tag": "game-inferred",
   "was": "FUN_002a7bf0",
   "why": "vtable 0x314c40, 8 bytes, built by parseEnd's effect target from the texture named siglamp, into StageScene +0x8c"
+ },
+ "002a7c90": {
+  "name": "GadgetRoot::~GadgetRoot",
+  "tag": "game-inferred",
+  "was": "FUN_002a7c90",
+  "why": "deleting dtor of vtable 0x318b90, the one-slot root of the gadget handle and body classes"
+ },
+ "002a7ce0": {
+  "name": "SigLampView::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002a7ce0",
+  "why": "slot 11: while in view, opens packet list 9, uploads the siglamp texture, four mirrored sprites over the 512x512 window"
+ },
+ "002a8050": {
+  "name": "SigLampView::leaveView",
+  "tag": "game-inferred",
+  "was": "FUN_002a8050",
+  "why": "slot 18: popCamera, restores the camera rotation and scrZ and the point light y, detaches both lights"
+ },
+ "002a8180": {
+  "name": "SigLampView::enterView",
+  "tag": "game-inferred",
+  "was": "FUN_002a8180",
+  "why": "slot 17: pushCamera, saves camera rotation and scrZ (sets 540), hangs SigLamp_sl and SigLamp_pl under the camera"
+ },
+ "002a8380": {
+  "name": "SigLampView::frame",
+  "tag": "game-inferred",
+  "was": "FUN_002a8380",
+  "why": "slot 16: ends on user/partner down, game over, cleared or Squat; Lamp held lights the lights (SIGLAMP), stick turns the camera, point light to the beam's hit"
+ },
+ "002a8650": {
+  "name": "SigLampView::prepare",
+  "tag": "game-inferred",
+  "was": "FUN_002a8650",
+  "why": "slot 1: makes SpotLight SigLamp_sl and PointLight SigLamp_pl, added to the scene then detached"
+ },
+ "002a88b0": {
+  "name": "NumLockView::~NumLockView",
+  "tag": "game-inferred",
+  "was": "FUN_002a88b0",
+  "why": "deleting dtor: vtable 0x318be0, GadgetView dtor 0x2a98c0"
  },
  "002a8910": {
   "name": "SceneOwnedObject::setRecordFlag31",
@@ -33964,6 +34042,228 @@
   "tag": "game-inferred",
   "was": "FUN_002a8920",
   "why": "the +4 record's byte +0x31; called on owned[1], the number lock"
+ },
+ "002a8930": {
+  "name": "SceneOwnedObject::wasTried",
+  "tag": "game-inferred",
+  "was": "FUN_002a8930",
+  "why": "handle method: body +0x30, set when Use left the number-lock view; called from unassigned@0029f2a0"
+ },
+ "002a8940": {
+  "name": "SceneOwnedObject::isLockOpen",
+  "tag": "game-inferred",
+  "was": "FUN_002a8940",
+  "why": "handle method: findObject(name), kind 5, NumLock::dialsRight"
+ },
+ "002a89b0": {
+  "name": "NumLockGadget::NumLockGadget",
+  "tag": "game-inferred",
+  "was": "FUN_002a89b0",
+  "why": "ctor: vtable 0x314c90, body heapAllocAligned(0x34) GadgetView(1) vtable 0x318be0; createMapObject builds it into StageScene +0x90"
+ },
+ "002a8a20": {
+  "name": "NumLockView::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002a8a20",
+  "why": "slot 11: empty"
+ },
+ "002a8a30": {
+  "name": "NumLockView::leaveView",
+  "tag": "game-inferred",
+  "was": "FUN_002a8a30",
+  "why": "slot 18: popCamera, setInView(0), dialsRight: NLOCK_UL and the lock hidden; sparkle off and detached; rain back"
+ },
+ "002a8b60": {
+  "name": "NumLockView::enterView",
+  "tag": "game-inferred",
+  "was": "FUN_002a8b60",
+  "why": "slot 17: pushCamera, setInView(camera), numlock sparkle onto bn_key, rain off, the lock's light into ModelInstance setLight x3 / setAmbient"
+ },
+ "002a8d00": {
+  "name": "NumLockView::frame",
+  "tag": "game-inferred",
+  "was": "FUN_002a8d00",
+  "why": "slot 16: Squat leaves, Use leaves as a try (+0x30), pad left/right dialUp/dialDown (NLOCK_REV), up/down pick the dial +0x28"
+ },
+ "002a8f80": {
+  "name": "NumLockView::prepare",
+  "tag": "game-inferred",
+  "was": "FUN_002a8f80",
+  "why": "slot 1: spawns the numlock effect, not emitting"
+ },
+ "002a9050": {
+  "name": "GadgetView::update",
+  "tag": "game-inferred",
+  "was": "FUN_002a9050",
+  "why": "slot 10: the look's states 1..4 with StageFade to black and back, enterView / leaveView at full black"
+ },
+ "002a9290": {
+  "name": "GadgetView::popCamera",
+  "tag": "game-inferred",
+  "was": "FUN_002a9290",
+  "why": "removeView(camera), the object's children shown and active again, its model casts shadow, +0x18 = 0"
+ },
+ "002a9300": {
+  "name": "GadgetView::pushCamera",
+  "tag": "game-inferred",
+  "was": "FUN_002a9300",
+  "why": "pushView(camera, 4, 1), the object's model stops casting shadow, children hidden and inactive, +0x18 = 1"
+ },
+ "002a9380": {
+  "name": "GadgetView::cancel",
+  "tag": "game-inferred",
+  "was": "FUN_002a9380",
+  "why": "slot 9: when a look runs, sets +0x1a"
+ },
+ "002a93a0": {
+  "name": "GadgetView::takeMotionUser",
+  "tag": "game-inferred",
+  "was": "FUN_002a93a0",
+  "why": "slot 8: in state 1 stores the user +0x1c and sets +0x19 (GadgetLink::onStart)"
+ },
+ "002a93d0": {
+  "name": "GadgetView::takeMotionText",
+  "tag": "game-inferred",
+  "was": "FUN_002a93d0",
+  "why": "slot 6: canUse, then the pair whose object has that name: +0x20 / +0x24, state 1 (GadgetLink::onRequest)"
+ },
+ "002a94c0": {
+  "name": "GadgetView::canUse",
+  "tag": "game-inferred",
+  "was": "FUN_002a94c0",
+  "why": "slot 5: idle, a pair whose object is active (+0x34), the scene's fade not running"
+ },
+ "002a9570": {
+  "name": "GadgetView::hasObject",
+  "tag": "game-inferred",
+  "was": "FUN_002a9570",
+  "why": "slot 4: a pair's object is named so (strcmp on +0x20)"
+ },
+ "002a9610": {
+  "name": "GadgetView::removePair",
+  "tag": "game-inferred",
+  "was": "FUN_002a9610",
+  "why": "slot 3: while idle, empties the pair of that object"
+ },
+ "002a9700": {
+  "name": "GadgetView::addPair",
+  "tag": "game-inferred",
+  "was": "FUN_002a9700",
+  "why": "slot 2: find1(object), find0(camera), refused if listed, full or running; natives 0x1ee / 0x1ec / 0x204"
+ },
+ "002a9810": {
+  "name": "GadgetView::findObject",
+  "tag": "game-inferred",
+  "was": "FUN_002a9810",
+  "why": "the pair's object by name, null none"
+ },
+ "002a98c0": {
+  "name": "GadgetView::~GadgetView",
+  "tag": "game-inferred",
+  "was": "FUN_002a98c0",
+  "why": "vtable 0x318c40: delete[] the two arrays, then the root's vtable"
+ },
+ "002a9940": {
+  "name": "GadgetView::GadgetView",
+  "tag": "game-inferred",
+  "was": "FUN_002a9940",
+  "why": "ctor (capacity): vtable 0x318c40, two new[] arrays of capacity, zeroed state"
+ },
+ "002a9a00": {
+  "name": "SceneOwnedObject::isLooking",
+  "tag": "game-inferred",
+  "was": "FUN_002a9a00",
+  "why": "handle slot 15: jumps to the body's slot at the same offset +0x44"
+ },
+ "002a9a20": {
+  "name": "SceneOwnedObject::isInView",
+  "tag": "game-inferred",
+  "was": "FUN_002a9a20",
+  "why": "handle slot 14: jumps to the body's slot at the same offset +0x40"
+ },
+ "002a9a40": {
+  "name": "SceneOwnedObject::isBusy",
+  "tag": "game-inferred",
+  "was": "FUN_002a9a40",
+  "why": "handle slot 13: jumps to the body's slot at the same offset +0x3c"
+ },
+ "002a9a60": {
+  "name": "SceneOwnedObject::getUser",
+  "tag": "game-inferred",
+  "was": "FUN_002a9a60",
+  "why": "handle slot 12: jumps to the body's slot at the same offset +0x38"
+ },
+ "002a9a80": {
+  "name": "SceneOwnedObject::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002a9a80",
+  "why": "handle slot 11: jumps to the body's slot at the same offset +0x34"
+ },
+ "002a9aa0": {
+  "name": "SceneOwnedObject::update",
+  "tag": "game-inferred",
+  "was": "FUN_002a9aa0",
+  "why": "handle slot 10: jumps to the body's slot at the same offset +0x30"
+ },
+ "002a9ac0": {
+  "name": "SceneOwnedObject::cancel",
+  "tag": "game-inferred",
+  "was": "FUN_002a9ac0",
+  "why": "handle slot 9: jumps to the body's slot at the same offset +0x2c"
+ },
+ "002a9ae0": {
+  "name": "SceneOwnedObject::takeMotionUser",
+  "tag": "game-inferred",
+  "was": "FUN_002a9ae0",
+  "why": "handle slot 8: jumps to the body's slot at the same offset +0x28"
+ },
+ "002a9b00": {
+  "name": "SceneOwnedObject::isActive",
+  "tag": "game-inferred",
+  "was": "FUN_002a9b00",
+  "why": "handle slot 7: jumps to the body's slot at the same offset +0x24"
+ },
+ "002a9b20": {
+  "name": "SceneOwnedObject::takeMotionText",
+  "tag": "game-inferred",
+  "was": "FUN_002a9b20",
+  "why": "handle slot 6: jumps to the body's slot at the same offset +0x20"
+ },
+ "002a9b40": {
+  "name": "SceneOwnedObject::canUse",
+  "tag": "game-inferred",
+  "was": "FUN_002a9b40",
+  "why": "handle slot 5: jumps to the body's slot at the same offset +0x1c"
+ },
+ "002a9b60": {
+  "name": "SceneOwnedObject::hasObject",
+  "tag": "game-inferred",
+  "was": "FUN_002a9b60",
+  "why": "handle slot 4: jumps to the body's slot at the same offset +0x18"
+ },
+ "002a9b80": {
+  "name": "SceneOwnedObject::removePair",
+  "tag": "game-inferred",
+  "was": "FUN_002a9b80",
+  "why": "handle slot 3: jumps to the body's slot at the same offset +0x14"
+ },
+ "002a9ba0": {
+  "name": "SceneOwnedObject::addPair",
+  "tag": "game-inferred",
+  "was": "FUN_002a9ba0",
+  "why": "handle slot 2: jumps to the body's slot at the same offset +0x10"
+ },
+ "002a9bc0": {
+  "name": "SceneOwnedObject::prepare",
+  "tag": "game-inferred",
+  "was": "FUN_002a9bc0",
+  "why": "handle slot 1: jumps to the body's slot at the same offset +0xc"
+ },
+ "002a9be0": {
+  "name": "SceneOwnedObject::~SceneOwnedObject",
+  "tag": "game-inferred",
+  "was": "FUN_002a9be0",
+  "why": "deleting dtor: vtable 0x318ca0, deletes the body through its slot 0"
  },
  "002a9c70": {
   "name": "memcardEnd",

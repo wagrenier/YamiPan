@@ -1146,52 +1146,14 @@ private:
 
 // +0x1c: StageNodeTree, game/stageparticle.h.
 
-// +0x4c and +0x8c..+0x94: objects with the vptr at +0 (slot 0 their
-// deleting dtor), set outside the ctor; unread. layout: host (unread).
-class SceneOwnedObject
-{
-public:
-    void destroy();                                                      // FS2 vtable +0x8
-    // A character may use it now; the text a script gave it is right.
-    bool canUse();                                                       // FS2 vtable +0x1c
-    bool start(const char *text);                                        // FS2 vtable +0x18
-    // Slot +0x3c: it holds the player's actions (StageScene::playerAction).
-    bool isBusy();                                                       // FS2 vtable +0x3c
-    // The frame: slot +0xc once (setupCameras), +0x30 update, +0x34 draw.
-    void prepare();                                                      // FS2 vtable +0xc
-    void update();                                                       // FS2 vtable +0x30
-    void draw();                                                         // FS2 vtable +0x34
-    // Slot +0x40: it has a target; +0x38 which (prepareDrawFlags).
-    bool hasTarget();                                                    // FS2 vtable +0x40
-    StageObject *getTarget();                                            // FS2 vtable +0x38
-    // Slot +0x10: two names from a script (natives 0x1ee, 0x1ec, 0x204);
-    // slots +0x2c, +0x44: what natives 0x1e6, 0x1eb ask. All unread.
-    void setNames(const char *first, const char *second);                // FS2 vtable +0x10
-    bool isSlot2c();                                                     // FS2 vtable +0x2c
-    // What GadgetLink hands it: the special's text as the motion is
-    // requested, the character as it starts. Unread.
-    void takeMotionText(const char *text);                               // FS2 vtable +0x20
-    void takeMotionUser(StageObject *user);                              // FS2 vtable +0x28
-    bool isSlot44();                                                     // FS2 vtable +0x44
-    // The seven-key pad's (native 0x205): the object of that name, when it
-    // is of kind 6, takes the two pairs (0x2b2420, 0x2b23e0, unread).
-    void setSevenKeyNumbers(const char *name, int a, int b, int c, int d); // FS2 0x002b2b70
-    // The number lock's: its +4 record's +0x31 (native 0x220).
-    bool getRecordFlag31();                                              // FS2 0x002a8920
-    void setRecordFlag31(bool on);                                       // FS2 0x002a8910
-};
+// +0x8c..+0x94: the gadgets (SigLamp, the number lock, the seven-key pad),
+// game/gadgetview.h.
+class SceneOwnedObject;
 
 class RoutePlayer;              // game/routeplayer.h: +0x4c, the stage's rute file
 
 class Tim2Texture;              // game/gsutil.h
 
-// +0x8c, built by the `effect` target from the texture "siglamp" (vtable
-// 0x314c40; run unassigned@00299d90). layout: host (EE 8).
-class SigLamp : public SceneOwnedObject
-{
-public:
-    explicit SigLamp(Tim2Texture *texture);                              // FS2 0x002a7bf0
-};
 
 
 // A map file (the map keyword): six record sections after this 0x24-byte

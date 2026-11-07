@@ -10,8 +10,7 @@
  *
  *  Who turns the dials: the player's special motion (SpNumLockLink, game/
  *  playermotion.cpp), the script natives 0x201 / 0x202 / 0x22c and the
- *  number-lock view (the scene's +0x90, run unassigned@002a7b10, not
- *  written).
+ *  number-lock view (the scene's +0x90, game/gadgetview.h).
  *
  *  The file is the port's name: no source string says what the ROM called it.
  * ======================================================================== */

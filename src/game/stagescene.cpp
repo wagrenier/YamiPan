@@ -24,6 +24,7 @@
 #include "game/fontdata.h"
 #include "game/characterinput.h"
 #include "game/areaclip.h"
+#include "game/gadgetview.h"
 #include "game/gamehooks.h"
 #include "game/stagealert.h"
 #include "game/gameoversequence.h"
@@ -3203,12 +3204,12 @@ void StageScene::prepareDrawFlags()
 
     SceneOwnedObject *owner = nullptr;
     for (int i = 0; i < 3 && owner == nullptr; i++) {
-        if (owned[i] != nullptr && owned[i]->hasTarget())
+        if (owned[i] != nullptr && owned[i]->isInView())
             owner = owned[i];
     }
     if (owner == nullptr)
         return;
-    StageObject *target = owner->getTarget();
+    StageObject *target = owner->getUser();
     if (target != nullptr && target->m_parts[1] != nullptr)
         target->m_parts[1]->drawMode = kPartHidden;
 }
@@ -3820,11 +3821,11 @@ bool StageScene::ownedHasTarget()
 {
     bool has = false;
     if (owned[2] != nullptr)
-        has = owned[2]->hasTarget();
+        has = owned[2]->isInView();
     if (!has && owned[1] != nullptr)
-        has = owned[1]->hasTarget();
+        has = owned[1]->isInView();
     if (!has && owned[0] != nullptr)
-        has = owned[0]->hasTarget();
+        has = owned[0]->isInView();
     return has;
 }
 
@@ -4376,9 +4377,9 @@ void StageScene::updateGlowFog()
         return;
 
     bool on = true;
-    if ((owned[0] != nullptr && owned[0]->hasTarget())
-        || (owned[1] != nullptr && owned[1]->hasTarget())
-        || (owned[2] != nullptr && owned[2]->hasTarget())) {
+    if ((owned[0] != nullptr && owned[0]->isInView())
+        || (owned[1] != nullptr && owned[1]->isInView())
+        || (owned[2] != nullptr && owned[2]->isInView())) {
         on = false;
     } else {
         StageObject *linked = viewLinkedObject();
