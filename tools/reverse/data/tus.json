@@ -556,12 +556,21 @@
    "why": "One object file: the global heap allocator (Heap 0x1037c0..0x1046b0) and the game RNG (0x1046b0..0x104b40). Their data sit together too: sdata 0x31a880..0x31a88c (the image-end / stack / heap-size words only initGlobalHeap reads, then the LCG state), bss 0x329970 (gGlobalHeap, 0x44) then 0x3299c0 (the 97-word RNG table), sbss 0x31ad80 (the RNG index). 0x104b40 / 0x104be0 are MSL __destroy_new_array / __destroy_arr: the MSL lib_range now starts at 0x104b40 (batch 031)."
   },
   "game/helpscreen.cpp": {
+   "notes": "Split out of unassigned@002acff0 with game/skymist.cpp; the code went in with af16a58. Not seen: the smoke run does not open the help screen from the menus.",
    "ranges": [
     [
      "002acff0",
      "002ad030"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-07 06:35",
+     "status": "verify",
+     "summary": "runHelpScreen alone: help<lang>.d2b through runLayoutFile, always 0 (written in the sky mist's commit)"
+    }
+   ],
+   "status": "verify",
    "why": "runHelpScreen alone: help<lang>.d2b through runLayoutFile, called by the menus; between game/memcard.cpp and the sky mist, nothing shares its subject"
   },
   "game/itemphysics.cpp": {

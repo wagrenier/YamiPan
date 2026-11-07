@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 06:33 at commit `c5ea7d2` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 06:35 at commit `af16a58` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -168,7 +168,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 215 TUs: todo 74, partial 19, verify 120, done 47
+- 215 TUs: todo 74, partial 19, verify 121, done 46
 - next: **sdpr2/sdpr2single.c** (frontier score 9)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
@@ -194,6 +194,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/gsblockmap.cpp` 14/14 -- All 14 functions of 0x142dd0..0x144080 are in src/game/gsblockmap.cpp with the new game/gsblockmap.h (GsBlockMap, TexArea, TexAreaList, TexAreaSlot moved out of
 - verify: `game/gsutil.cpp` 12/12 -- Cut out of unassigned@00171300 and pinned 0x230980-0x231410 (batch 048: GsTexture::readTarget 0x231290, rena base Tim2Texture ctor 0x2e2920 / dtor 0x2e2810 / lo
 - verify: `game/heap.cpp` 17/17 -- Game code, not MSL: heap and RNG share one object (sdata 0x31a880..0x31a88c, bss 0x329970 then 0x3299c0, sbss 0x31ad80). All 17 functions written; batch 031 nam
+- verify: `game/helpscreen.cpp` 1/1 -- Split out of unassigned@002acff0 with game/skymist.cpp; the code went in with af16a58. Not seen: the smoke run does not open the help screen from the menus.
 - verify: `game/itemphysics.cpp` 13/15 -- All of 0x23c010..0x23de20, batch 187 (draw renamed endFrame; getNodeFrame, getMeanVelocity, keepsMoving, placeNodes). New file game/itemphysics.h holds the clas
 - verify: `game/layoutpaths.cpp` 24/24 -- All 24 functions of 0x2ec160..0x2ec8e0 written, no new names, Ghidra untouched. Prototypes moved from gamehooks.h to layoutpaths.h, which gamehooks.h includes. 
 - verify: `game/mapobject.cpp` 70/70 -- unassigned@00176480 turned out to be this file; pinned with 0x174a10 on, and game/stagecamera.cpp pinned to 0x1775b0..0x177be0. Written: StageObject::breakPart 
@@ -294,6 +295,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 06:35 `game/helpscreen.cpp` verify: runHelpScreen alone: help<lang>.d2b through runLayoutFile, always 0 (written in the sky mist's commit)
 - 2026-11-07 06:33 `game/skymist.cpp` verify: the sky mist: SkyMist (ctor, drift and swirl steps, spawns, draw with the ROM's tests and near cut as view-space effect quads) and its holder, 23 functions; Men
 - 2026-11-07 05:52 `rx/rxsndstrpcm.c` verify: PCM stream format: all 10 functions written, the ADPCM twin cut down, with a silent driver reply on PC
 - 2026-11-07 05:34 `unassigned@002176d0` verify: Placed the run 0x2176d0..0x217a80: isViewLinked to game/stagecharacter.cpp, the second StageList<StageObject*> instance (getTail, find, pushBack, erase, pushFro
@@ -301,22 +303,21 @@ Recent sessions:
 - 2026-11-07 05:10 `game/gamesystem.cpp` verify: marked verify -> verify: gained GameSystem::beginStage 0x12cce0 (range now 0x12cce0..0x12dd30, 18 functions) from TU unassigned@0012c9b8; not reached by the smo
 - 2026-11-07 04:58 `rena/rena_2d_texture_vram.cpp` verify: GsRegionAlloc, rena's texture VRAM region allocator, all 11 functions; boot unchanged
 - 2026-11-07 04:30 `game/debugsys.cpp` done: debugSysInit / Update / Shutdown: the three empty retail hooks, in their own file
-- 2026-11-07 04:22 `game/numlock.cpp` verify: the number lock: NumLock map object and NmlPose dial pose, 29 functions of 0x2a6ab0..0x2a7b10
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `sdpr2/sdpr2single.c` | todo | 0/2/24 | 7.0 | 9 | 1 |
 | `unassigned@002a7b10` | todo | 0/3/53 | 7.9 | 8 | 0 |
 | `unassigned@0021e120` | partial | 4/0/18 | 3.5 | 8 | 0 |
-| `unassigned@0020c940` | partial | 1/1/2 | 0.8 | 7 | 0 |
-| `unassigned@002160a0` | todo | 0/0/7 | 0.1 | 7 | 0 |
-| `unassigned@002ec110` | todo | 0/0/1 | 0.1 | 7 | 0 |
 | `sdpr2/sdpr2pair.c` | todo | 0/1/21 | 7.0 | 7 | 1 |
-| `unassigned@0029f2a0` | todo | 0/2/2 | 0.6 | 7 | 0 |
 | `rx/filehost.c` | todo | 0/2/12 | 1.3 | 7 | 1 |
+| `unassigned@0029f2a0` | todo | 0/2/2 | 0.6 | 7 | 0 |
 | `rx/filehdd.c` | todo | 0/2/13 | 1.5 | 7 | 1 |
-| `unassigned@002b6b90` | partial | 1/0/7 | 6.5 | 7 | 0 |
 | `unassigned@002849c0` | todo | 0/1/5 | 7.4 | 7 | 1 |
+| `unassigned@002160a0` | todo | 0/0/7 | 0.1 | 7 | 0 |
+| `unassigned@002b6b90` | partial | 1/0/7 | 6.5 | 7 | 0 |
+| `unassigned@0020c940` | partial | 1/1/2 | 0.8 | 7 | 0 |
+| `unassigned@002ec110` | todo | 0/0/1 | 0.1 | 7 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
