@@ -9572,6 +9572,18 @@ void BiteLink::onLeave(MotionLink *)
     target->m_unarmedMsp = value;
 }
 
+// How far the long weapon reaches (its parameter 3, a bullet's reach); 0
+// without one. The ROM inlines weaponSheet here; for an index outside the
+// table it reads through a null row, the host takes row 0 as weaponSheet does.
+// FS2 0x0020ce10
+
+float StageCharacter::getWeaponRange() const
+{
+    if (m_weapons[0] == nullptr)
+        return 0.0f;
+    return (float)weaponSheet(m_weapons[0]).range;
+}
+
 // The long weapon's parameter 2, else the sheet's 攻撃判定.
 // FS2 0x0020ce80
 // callcheck: getStageSelect

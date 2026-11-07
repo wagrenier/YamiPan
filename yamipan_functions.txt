@@ -5415,17 +5415,7 @@
 /* 0020c940 0000013c */ StageCharacter::getSwayMatrix(){}  // game
 /* 0020ca80 000001c4 */ StageCharacter::scriptIsFacing(){}  // game
 /* 0020cc50 000001b8 */ StageCharacter::canFireLongWeapon(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
 /* 0020ce10 00000060 */ StageCharacter::getWeaponRange(){}  // game
-
-// *****************************************************************************
-// FILE -- game/playermotion.cpp
-// *****************************************************************************
-
 /* 0020ce80 00000108 */ StageCharacter::getAttackReach(){}  // game
 /* 0020cf90 00000230 */ StageCharacter::getCarriedAmmo(){}  // game
 
