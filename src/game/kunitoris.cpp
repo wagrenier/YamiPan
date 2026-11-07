@@ -77,6 +77,17 @@ static int       sSaveChanged;          /* sbss 0x31aed4 (gp-0x799c): runExtraMo
 static SeHandle  sSeHandles[KunitorisSeSlot_Count];    /* bss 0x599800 */
 
 // ──────────────────────────────────────────────────────────────────────
+// A file-local wrapper the ROM keeps out of line (j randNext2): only the
+// spawnGroup inline calls it; everything else here calls randNext2.
+
+// FS2 0x002c81b0
+
+static u_int kunitorisRandom()
+{
+    return randNext2();
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // Inline in the ROM.
 
 static void *kunitorisItem(int id)
@@ -707,6 +718,22 @@ KunitorisSprite::KunitorisSprite(const void *image)
     m_quad[1] = { { 1.0f, 1.0f }, { 16.0f, 16.0f } };
 }
 
+// ──────────────────────────────────────────────────────────────────────
+// KunitorisDrawable: the base (vtable 0x319f50).
+
+// FS2 0x002c7b70
+// callcheck: operator_delete (the deleting dtor's flag)
+
+KunitorisDrawable::~KunitorisDrawable()
+{
+}
+
+// FS2 0x002cab50
+
+void KunitorisDrawable::draw(UiDrawer *)
+{
+}
+
 // FS2 0x002c4e50
 // callcheck: operator_delete (the deleting dtor's flag)
 // callcheck: ~GsTexture (the delete-expression, through the vtable)
@@ -769,6 +796,7 @@ KunitorisActor::~KunitorisActor()
     m_sprite = nullptr;
 }
 
+// FS2 0x002cdbc0: the vtable slot's thunk (j 0x2cc8c0)
 // FS2 0x002cc8c0
 
 bool KunitorisActor::update()
@@ -876,6 +904,7 @@ KunitorisBlock::~KunitorisBlock()
 {
 }
 
+// FS2 0x002c7a30: the vtable slot's thunk (j 0x2cc220)
 // FS2 0x002cc220
 
 bool KunitorisBlock::update()
@@ -990,7 +1019,7 @@ void KunitorisBlock::slideFrom(const float *from)
 }
 
 // FS2 0x002cb6f0
-// callcheck: operator_new, FUN_002cc830 (the inline slideFrom: the KunitorisSlide ctor)
+// callcheck: operator_new, KunitorisSlide (the inline slideFrom: the KunitorisSlide ctor)
 
 void KunitorisBlock::turn()
 {
@@ -1005,7 +1034,7 @@ void KunitorisBlock::turn()
 }
 
 // FS2 0x002cb5e0
-// callcheck: operator_new, FUN_002cc830 (the inline slideFrom: the KunitorisSlide ctor)
+// callcheck: operator_new, KunitorisSlide (the inline slideFrom: the KunitorisSlide ctor)
 
 void KunitorisBlock::flip()
 {
@@ -1030,6 +1059,23 @@ bool KunitorisBlock::sink()
     m_timer = kKunitorisSinkFrames;
     m_state = KunitorisBlock_Sinking;
     setSprite(new KunitorisSprite(kunitorisItem(KunitorisItem_Sunk)));
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// KunitorisMover: the base (vtable 0x319f20).
+
+// FS2 0x002c7bc0
+// callcheck: operator_delete (the deleting dtor's flag)
+
+KunitorisMover::~KunitorisMover()
+{
+}
+
+// FS2 0x002cc9c0
+
+bool KunitorisMover::step()
+{
     return true;
 }
 
@@ -1179,6 +1225,20 @@ KunitorisCells::~KunitorisCells()
         delete *node->item;
     m_blocks.clear();
     m_state = KunitorisCells_Empty;
+}
+
+// FS2 0x002c8060
+
+bool KunitorisCells::isEmpty() const
+{
+    return m_state == KunitorisCells_Empty;
+}
+
+// FS2 0x002c7db0
+
+bool KunitorisCells::isGone() const
+{
+    return m_state == KunitorisCells_Gone;
 }
 
 // FS2 0x002cb010 (inline at most uses)
@@ -1423,8 +1483,16 @@ void KunitorisGroup::wrap()
     }
 }
 
+// FS2 0x002c7ee0
+
+int *KunitorisGroup::copyPair(int *dst, const int *src)
+{
+    dst[0] = src[0];
+    dst[1] = src[1];
+    return dst;
+}
+
 // FS2 0x002c7dc0
-// callcheck: wrap, FUN_002c7ee0 (m_moved = m_step: an out-of-line pair copy)
 
 void KunitorisGroup::step(bool move)
 {
@@ -1434,8 +1502,7 @@ void KunitorisGroup::step(bool move)
         m_cell[0] += m_step[0];
         m_cell[1] += m_step[1];
         wrap();
-        m_moved[0] = m_step[0];
-        m_moved[1] = m_step[1];
+        copyPair(m_moved, m_step);
     } else {
         m_moved[0] = 0;
         m_moved[1] = 0;
@@ -1887,7 +1954,7 @@ KunitorisGroup *KunitorisGame::freeGroup()
 // callcheck: operator_new, UiDrawer, KunitorisCursor, KunitorisBlock, GsTexture (the new-expressions; the inline KunitorisSprite ctor)
 // callcheck: operator_new[], FUN_00104d90, KunitorisCells, ~KunitorisCells (the new[]-expression: CodeWarrior's __construct_new_array)
 // callcheck: getItem, pushBack (the inline kunitorisItem and add)
-// callcheck: randNext2, addCell, setStep, setCell (the inline spawnGroup)
+// callcheck: kunitorisRandom, addCell, setStep, setCell (the inline spawnGroup)
 
 KunitorisGame::KunitorisGame(int hiScore, int level)
 {
@@ -1949,13 +2016,13 @@ KunitorisGame::KunitorisGame(int hiScore, int level)
 
 void KunitorisGame::spawnGroup(KunitorisGroup *group, int kinds)
 {
-    const KunitorisShape &shape = m_shapes[static_cast<int>(randNext2()) % kinds];
+    const KunitorisShape &shape = m_shapes[static_cast<int>(kunitorisRandom()) % kinds];
     for (int j = 0; j < shape.count; j++)
         group->addCell(shape.cells[j]);
 
-    const u_int x = randNext2();
-    const u_int y = randNext2();
-    switch (randNext2() & 3) {
+    const u_int x = kunitorisRandom();
+    const u_int y = kunitorisRandom();
+    switch (kunitorisRandom() & 3) {
     case KunitorisSide_Top:
         group->setStep(0, 1);
         group->setCell(y & kKunitorisViewMask, kKunitorisEnterNear);
@@ -2071,7 +2138,7 @@ void KunitorisGame::absorb()
 }
 
 // FS2 0x002c9720 (detachPlayerBlocks and resetPlayerBlocks inline)
-// callcheck: operator_new, KunitorisBlock, FUN_002c99e0, FUN_002cb010, FUN_002cb250 (hasOffset, add, sink)
+// callcheck: operator_new, KunitorisBlock, hasOffset, add (the inline detachPlayerBlocks)
 // callcheck: clear, pushBack (the inline release and add)
 
 bool KunitorisGame::breakOff()
@@ -2088,7 +2155,7 @@ bool KunitorisGame::breakOff()
 }
 
 // FS2 0x002c9a80 (detachPlayerBlocks, launch and resetPlayerBlocks inline)
-// callcheck: operator_new, KunitorisBlock, FUN_002c99e0, FUN_002cb010 (hasOffset, add)
+// callcheck: operator_new, KunitorisBlock, hasOffset, add (the inline detachPlayerBlocks)
 // callcheck: clear, pushBack (the inline release and add)
 
 void KunitorisGame::shoot(int dx, int dy)
@@ -2498,8 +2565,8 @@ constexpr u_int kPadRight    = 1u << PadBit_Right;
 // shoot), the blocks and the cursor stepped and the fever run down.
 // FS2 0x002c64d0 (inline: activeGroups, freeGroup, spawnGroup, loseLives,
 // cellCount, updateBlocks, release, kunitorisPlay, KunitorisBoard::update)
-// callcheck: randNext2, FUN_002cd120, FUN_002c9170, FUN_002c8060, FUN_002c9a80, FUN_002c8ff0
-// callcheck: FUN_002c7dc0, FUN_002c7db0, FUN_002cb100, FUN_002c7c10, FUN_002c8b90, FUN_002cb0b0, FUN_002cb060, FUN_002cb2e0
+// callcheck: randNext2, kunitorisRandom, litPieces, absorb, isEmpty, shoot, turnTouching (kunitorisRandom: the inline spawnGroup)
+// callcheck: step, isGone, release, scroll, clearUnder, turn, flip, drop (called on members the parser cannot follow)
 // callcheck: addCell, setStep, setCell, setTiles, selectPiece, play, stop, clear, operator_new, KunitorisBlock, pushBack, update
 
 bool KunitorisGame::update(GamePad *pad)

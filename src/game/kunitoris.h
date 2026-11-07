@@ -168,8 +168,8 @@ constexpr int kKunitorisLift = 4;
 class KunitorisDrawable
 {
 public:
-    virtual ~KunitorisDrawable() {}
-    virtual void draw(UiDrawer *drawer) = 0;
+    virtual ~KunitorisDrawable();                                        // FS2 0x002c7b70: deleting (obj, flag)
+    virtual void draw(UiDrawer *drawer);                                 // FS2 0x002cab50: nothing
 };
 
 // A 16 x 16 textured sprite of a pack picture (EE 0x28, vtable 0x319fc0;
@@ -186,13 +186,15 @@ public:
 };
 
 // What moves an actor and what fades its colour (vptr +0x08 / +0x10, two
-// slots each: { dtor, step }). Their classes are later slices' work; step
-// answers false once done, and the actor then deletes it. layout: host
+// slots each: { dtor, step }). step answers false once done, and the actor
+// then deletes it. The base mover (vtable 0x319f20) never ends; its only
+// derived class is KunitorisSlide. No fader class is in this file's range
+// (KunitorisActor::update is the only code that reads one). layout: host
 class KunitorisMover
 {
 public:
-    virtual ~KunitorisMover() {}
-    virtual bool step() = 0;
+    virtual ~KunitorisMover();                                           // FS2 0x002c7bc0: deleting (obj, flag)
+    virtual bool step();                                                 // FS2 0x002cc9c0: true
     float m_pos[2];             // FS2 +0x00
 };
 
@@ -374,8 +376,8 @@ public:
     ~KunitorisCells();                                                   // FS2 0x002cb170: deleting (obj, flag)
     // Appended, and an empty set made active (inline at most uses).
     void add(KunitorisActor *actor);                                     // FS2 0x002cb010
-    bool isEmpty() const { return m_state == KunitorisCells_Empty; }     // FS2 0x002c8060
-    bool isGone() const { return m_state == KunitorisCells_Gone; }       // FS2 0x002c7db0
+    bool isEmpty() const;                                                // FS2 0x002c8060
+    bool isGone() const;                                                 // FS2 0x002c7db0
     // The blocks deleted, the set empty.
     void release();                                                      // FS2 0x002cb100
     // Every resting block sinks onto the board at anchor (its offset made
@@ -425,8 +427,10 @@ public:
     void wrap();                                                         // FS2 0x002c7f00
     // The view scrolled: moved by (dx dy) unless shot, wrapped.
     void scroll(int dx, int dy);                                         // FS2 0x002c7c10
+    // An int pair copied (step's m_moved = m_step, out of line in the ROM).
+    static int *copyPair(int *dst, const int *src);                      // FS2 0x002c7ee0
 
-    int m_cell[2];              // FS2 +0x0c: not set by the ctor
+    int m_cell[2];           // FS2 +0x0c: not set by the ctor
     int m_step[2];              // FS2 +0x14: cells per move
     int m_moved[2];             // FS2 +0x1c: the last frame's move (step or scroll), 0 0 when it stood
 };

@@ -231,6 +231,9 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 - **`name_ctx.py` skips a name another address already has, silently** (2026-11-04). Symptom: one row of a batch stays `FUN_...` while the run reports nothing, and callcheck goes on printing the old name. Cause: the plugin refuses a duplicate name (`copyVec4` was 0x133800). Fix: grep yamipan_functions.txt for each new name first, and check the batch landed.
 - **Renaming or moving a method leaves its stub in unassigned_stubs.cpp** (2026-11-04). Symptom: `no declaration matches` in lib/unassigned_stubs.cpp, or a duplicate definition. Fix: delete this TU's stub blocks by hand before the first `tus.py check` (protocol step 5).
 
+- **A batch given as a bare number names nothing** (2026-11-07, game/kunitoris.cpp). Symptom: `py name_ctx.py 229` prints `named 0/0` and exits 0, no refresh. Cause: it takes a path, not a batch number. Fix: `py name_ctx.py work/batches/229.json`.
+- **Callcheck notes keep FUN_ names after their callees are named** (2026-11-07, game/kunitoris.cpp). Symptom: a function that was clean goes MISSING (`add, hasOffset`) and its note's `FUN_...` show as extra once a later batch names them. Cause: callcheck matches a callee by its current name; the note still says FUN_002cb010. Fix: after a batch, grep the TU for `FUN_00` in callcheck lines and put the new last components in.
+
 ## Sessions
 
 - **A session never launches other sessions, agents or scheduled tasks** (the auto-mode classifier

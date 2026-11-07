@@ -646,7 +646,7 @@
    "why": "The ItemPhysics class whole: slots 0x23c010..0x23c300, the rest to the ctor at 0x23db50, which ends at 0x23de14; sysdata ends before it, getLocalDateTime 0x23de20 starts datetime.cpp"
   },
   "game/kunitoris.cpp": {
-   "notes": "Written this session (batch 228, 25 names): KunitorisGame::update 0x2c64d0 in full and its callees: KunitorisCells state enum (+8: empty, active, shot, dropped, sunk, gone) with add 0x2cb010, isEmpty 0x2c8060, isGone 0x2c7db0, release 0x2cb100, drop 0x2cb2e0, turn 0x2cb0b0, flip 0x2cb060, sink 0x2cb250, hasOffset 0x2c99e0, touches 0x2cb460 and the inlines block, hasBlockAt, updateBlocks, offsetBounds, launch; KunitorisGroup step 0x2c7dc0, wrap 0x2c7f00, scroll 0x2c7c10 (+0x1c is m_moved); KunitorisBlock turn 0x2cb6f0, flip 0x2cb5e0, sink 0x2cc600; KunitorisSlide (vtable 0x319fb0: ctor 0x2cc830, step 0x2cc740, dtor 0x2cdd60); KunitorisBoard litPieces 0x2cd120, clearUnder 0x2c8b90 (level +0x10 is the grid short [64][64], [x][y]), cellCount inline; KunitorisGame absorb 0x2c9170, breakOff 0x2c9720, shoot 0x2c9a80, turnTouching 0x2c8ff0; spawnGroup factored out of the ctor (the same inline is in update). KunitorisGame fields named: m_spawnPeriod / m_drainPeriod / m_stepPeriod and their timers, m_heldDir (KunitorisDir), m_frame, m_feverBar, m_feverRate and m_fever (floats now), m_feverChain; update now returns bool as the ROM does. The rules are in architecture.md (Kunitoris's rules). Left: the base mover 0x319f20 (0x2c7bc0 dtor, 0x2cc9c0 step) and the fader classes behind KunitorisActor +0x1c, FUN_002c7ee0 (a pair copy, inline in the host), and the rest of the range's unwritten functions (tus.py brief lists them). Not seen: the smoke run still ends at the boot language select; Extra mode is the top menu's answer 10, so a pad script must get there before the board, the blocks, the groups and the fever bar can be compared with the level files (pack items 0..15) and the pictures 0x10..0x14.",
+   "notes": "Batch 229 named 0x2c81b0 kunitorisRandom (j randNext2, only the inline spawnGroup calls it), 0x2c7ee0 KunitorisGroup::copyPair, 0x2c7b70 / 0x2cab50 KunitorisDrawable dtor and draw, 0x2c7bc0 / 0x2cc9c0 KunitorisMover dtor and step (true). The callcheck notes of breakOff, shoot and update still named FUN_ callees from before batch 228; they now use the names and callcheck is clean. No fader class exists in the range. Not seen: the smoke run ends at the boot language select; Extra mode is the top menu answer 10, so the picture test needs a pad script through the title and level select into a level, compared with pack items 0..15 and pictures 0x10..0x14 of dataEU/kuniEU.pak. For the references: written this session (architecture.md Kunitoris last ten; hazards.md two entries; open-items.md).",
    "ranges": [
     [
      "002c42a0",
@@ -678,9 +678,14 @@
      "date": "2026-11-07 17:52",
      "status": "partial",
      "summary": "KunitorisGame::update written with every helper it calls: groups spawn, step, wrap, scroll, join the player (absorb), break off, shoot, turn, flip, drop and the scoring (KunitorisBoard::clearUnder, litPieces), the fever, and the KunitorisSlide mover; the game's unnamed fields named"
+    },
+    {
+     "date": "2026-11-07 18:04",
+     "status": "verify",
+     "summary": "Kunitoris complete: the drawable and mover bases (dtors, the empty draw, the never-ending step), kunitorisRandom, KunitorisGroup::copyPair, isEmpty / isGone out of line and the two update thunks annotated; 93 of 93 functions written"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "why": "Extra mode's Kunitoris minigame: runExtraMode's thread loads dataEU/kuniEU.pak and draws = KUNITORIS =; the run between game/menupack.cpp and game/stagefog.cpp is its classes (vtables 0x319f00..0x319fe0) and its back thread 0x2cdb20; no source string, the name is the port's"
   },
   "game/layoutpaths.cpp": {
