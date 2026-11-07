@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 16:52 at commit `53d46b7` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 17:07 at commit `1365f49` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5770**; stubs: **23**
+- reconstructed FS2 functions: **5772**; stubs: **21**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -63,7 +63,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/heap.cpp` | 17 | 0 |
 | `src/game/helpscreen.cpp` | 1 | 0 |
 | `src/game/itemphysics.cpp` | 13 | 0 |
-| `src/game/kunitoris.cpp` | 40 | 7 |
+| `src/game/kunitoris.cpp` | 42 | 5 |
 | `src/game/layoutpaths.cpp` | 24 | 0 |
 | `src/game/mapobject.cpp` | 69 | 0 |
 | `src/game/mathutil.cpp` | 18 | 0 |
@@ -177,7 +177,7 @@ Least-named game-code regions (64 KB blocks):
 - 196 TUs: todo 75, partial 8, verify 137, done 46
 - next: **game/kunitoris.cpp** (continuing a partial TU)
 - pinned queue: (empty)
-- partial: `game/kunitoris.cpp` 40/93 -- Written this session: KunitorisGame::KunitorisGame 0x2c8640 and the inline dtor; KunitorisSprite (0x319fc0: dtor 0x2c4e50, draw 0x2cc9d0), KunitorisActor (0x319
+- partial: `game/kunitoris.cpp` 42/93 -- Written this session: KunitorisEnding::draw 0x2c9de0 and drawIntro 0x2ca330 (one body: drawQuads over sEndingQuads 0x2fc280 with the thresholds 0x2fc300 / 0x2fc
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -318,6 +318,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 17:07 `game/kunitoris.cpp` partial: KunitorisEnding::draw and drawIntro written over the four ending quads (0x2fc280), their show thresholds and the 8 pose animations (0x2fc220); KunitorisGame +0x
 - 2026-11-07 16:52 `game/kunitoris.cpp` partial: KunitorisGame ctor and dtor, its objects (actor, sprite, cursor, block, actor list, cells, groups), the per-level and shape tables, the two bar draws and Kunito
 - 2026-11-07 16:20 `game/kunitoris.cpp` partial: Extra mode is Kunitoris: runExtraMode, its thread and back thread, title, how-to, level select, printf and the ending loop written; the KunitorisGame and Kunito
 - 2026-11-07 15:54 `unassigned@002a0040` verify: the two MSL std::sort instances behind the script picks, mslSort_PickNamed 0x2a0040 and mslSort_SpawnPoints 0x29fdb0, named and pinned to game/scriptrunner.cpp;
@@ -325,11 +326,10 @@ Recent sessions:
 - 2026-11-07 15:13 `unassigned@001dff40` verify: 0x1e05b0 is PlayerMotion::winsStruggle, who keeps a ladder when two characters push on it; the run pinned to game/playermotion.cpp
 - 2026-11-07 14:52 `unassigned@002b0d50` verify: 0x2b0d50 is DemoStream::getDataWritten, one jump to SoundStream::getDataWritten; pinned to game/demoevent.cpp
 - 2026-11-07 14:34 `game/playermotion.cpp` verify: MotionProbe ctor 0x26c6b0 and deleting dtor 0x26c650 out of line; 0x26c650..0x26c6fc joined from unassigned@0026c650
-- 2026-11-07 14:11 `game/playermotion.cpp` verify: unassigned@00217be0 joined playermotion.cpp; StageCharacter::wasPlacedThisFrame 0x2184a0 written, doNothing 0x218490 already inline
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `game/kunitoris.cpp` | partial | 40/7/93 | 39.0 | 13 | 0 |
+| `game/kunitoris.cpp` | partial | 42/5/93 | 39.0 | 11 | 0 |
 | `unassigned@002e2970` | partial | 1/0/2 | 0.9 | 1 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
