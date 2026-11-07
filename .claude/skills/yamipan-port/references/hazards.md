@@ -655,3 +655,13 @@ directory (here `rena_2d_texture_tim2.cpp` for 0x2e1b10), stubgen writes `src/<f
 src/, which no target builds, and the loop repeats. Fix: delete that file and put the stub in
 src/lib/unassigned_stubs.cpp by hand (or pin the address to its real TU first). Also: `callcheck.py`
 takes a path relative to tools/reverse (`../../src/...`), not the TU key.
+
+## An inlined list walk can run the wrong way (2026-11-07)
+
+Symptom: none on screen; found when the run after playermotion.cpp (0x217700..0x217a80, a second
+StageList<StageObject*> instance) was written. Cause: findCarried 0x216310 and giveItem's stack search
+were written with the list walk inlined from the head (next), but the ROM calls getTail 0x217700 and
+walks +8 prev: of two carried objects with the same name the ROM finds the one carried last, the host
+found the first. Fix: when a callee of a written function is a template helper (FUN_ in a callcheck
+line), read the loop's step field (+4 next or +8 prev) before inlining it; stagelist.h now has getTail
+and find.

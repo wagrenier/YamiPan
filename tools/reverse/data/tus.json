@@ -1072,6 +1072,10 @@
      "002176d0"
     ],
     [
+     "00217700",
+     "00217a80"
+    ],
+    [
      "002184b0",
      "00219be0"
     ],
@@ -1388,7 +1392,7 @@
    ],
    "status": "verify",
    "task": "PlayerMotion::takeHits 0x1e18c0..0x1e3e80 past its first line: it requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice",
-   "why": "the last links of the ROM ctor: 0x281a40..0x282d98 and their dtors 0x283a00..0x283cb0, vtables 0x317d70..0x317f20; 0x218500..0x219b30 joined: the rest of the StageCharacter script slots, among them throwCarried and putSmoke"
+   "why": "the last links of the ROM ctor: 0x281a40..0x282d98 and their dtors 0x283a00..0x283cb0, vtables 0x317d70..0x317f20; 0x218500..0x219b30 joined: the rest of the StageCharacter script slots, among them throwCarried and putSmoke; 0x217700..0x217a80 joined 2026-11-07: the carried list's second StageList<StageObject*> instance (in stagelist.h), getMotionDoor and SightTable::canSeeThisFrame, emitted after giveItem"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -1886,6 +1890,10 @@
     [
      "00214f20",
      "00214f54"
+    ],
+    [
+     "002176d0",
+     "00217700"
     ]
    ],
    "sessions": [
@@ -1907,7 +1915,7 @@
    ],
    "status": "verify",
    "task": "The character, built, step 4 of roadmap-3d-control.md, queued 2026-11-04: StageCharacter ctor 0x17de30 and setup 0x17c700, the parameter tables 0x17b3e0 and 0x17bd10, the run 0x17b3e0..0x17df60 out of unassigned@00171300. placeCharacter already passes the map's position and turn. The parts it news are the next three items of the queue: stub them first. With this and native 0x70 (game/stagecamera.cpp) the main camera links, and YAMIPAN_CAMERA, stageCameraDebugLookAt and aimDebugCamera go (open-items.md). Check onLinkChanged: it looks up bn_head with no null test. Done when F_PC01 stands in the scene at (7286, 6064, 1138) and the main camera's step runs on it.",
-   "why": "The character's build: parameter tables, setup, setupBody, ctor and dtor (roadmap step 4); from the run unassigned@00171300; 0x17dcb0 is already written in subsceneobject.cpp; no source-path string, the file name is the port's guess; the terminate hook 0x179d30 joined 2026-11-05; the file's tail 0x17e140..0x17e860, the list template's instance (in game/stagelist.h) and the adjustor thunks, joined 2026-11-06"
+   "why": "The character's build: parameter tables, setup, setupBody, ctor and dtor (roadmap step 4); from the run unassigned@00171300; 0x17dcb0 is already written in subsceneobject.cpp; no source-path string, the file name is the port's guess; the terminate hook 0x179d30 joined 2026-11-05; the file's tail 0x17e140..0x17e860, the list template's instance (in game/stagelist.h) and the adjustor thunks, joined 2026-11-06; isViewLinked 0x2176d0 joined 2026-11-07 (written here; the run after playermotion.cpp's giveItem)"
   },
   "game/stagecollision.cpp": {
    "notes": "All of the TU's functions are written or mapped to StageList and the host vector. Seen on stage 1's data in a New Game run: against brute force over all 8165 faces of Root, rays 0 wrong, segments 0, spheres 0, heights 1 of 3000; hit points on their plane and in their triangle; down rays agree with heightAt. No crash, d0101 still draws. Nothing on screen shows collision until a character stands (step 4 of roadmap-3d-control.md), so verify. Untested: moved meshes, the world's pairs, spherePush. Left: StageObject::breakPart 0x175900 and ItemPhysics::collisionHook0 0x23c020 are stubs, the doors' effect in MapObjectParts is null, FUN_00295010 unwritten. Next in the queue: game/stagecharacter.cpp. A probe at stage load needs a run of 230 s: the stage's arrival varies. open-items.md has the doubts.",
@@ -3447,6 +3455,17 @@
   "unassigned@00188d60": {},
   "unassigned@0018c050": {},
   "unassigned@001953f0": {},
+  "unassigned@002176d0": {
+   "notes": "This key is empty now. 0x2176d0 isViewLinked was already written in src/game/stagecharacter.cpp, now in its range; 0x217700..0x217a80 joined game/playermotion.cpp (template instance emitted after giveItem, as 0x17e140 follows stagecharacter.cpp). Batch 200 names 8 functions. stagelist.h gained getTail and find (0x217700, 0x217730) and lists the instance; dropItem uses find, DoorCondition::onUpdate calls the new StageCharacter::getMotionDoor (m_motion->doorLink->door, 0x2179b0) as the ROM does; SightTable::canSeeThisFrame 0x2179c0 stays inline in StageCharacter::canSeeThisFrame (tag added). Fix found: findCarried 0x216310 and giveItem's stack search walk getTail then +8 prev in the ROM; the host walked from the head, so of two carried objects with one name it found the first instead of the last carried (hazards.md). Picture: the 15 s smoke run stays at the language select, English highlighted, as before; nothing on screen reaches carried items yet: verify. A teleport run with two same-named items in the inventory would show the fix.",
+   "sessions": [
+    {
+     "date": "2026-11-07 05:34",
+     "status": "verify",
+     "summary": "Placed the run 0x2176d0..0x217a80: isViewLinked to game/stagecharacter.cpp, the second StageList<StageObject*> instance (getTail, find, pushBack, erase, pushFront, Node ctor, unlink), StageCharacter::getMotionDoor and SightTable::canSeeThisFrame to game/playermotion.cpp; findCarried and the stack search now walk from the tail as the ROM does"
+    }
+   ],
+   "status": "verify"
+  },
   "unassigned@0022fc50": {},
   "unassigned@00231410": {},
   "unassigned@00231c90": {},

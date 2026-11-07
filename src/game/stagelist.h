@@ -32,6 +32,15 @@
 //   FS2 0x0017e3b0  StageList<StageObject *>::getTail, pushBack's walk
 //   FS2 0x0017e3e0  StageList<StageObject *>::Node::Node
 //   FS2 0x0017e400  StageList<StageObject *>::Node::unlink, erase's tail and delete
+// and a second time after game/playermotion.cpp (the carried list's users
+// there: giveItem, dropItem, findCarried), with getTail and find besides:
+//   FS2 0x00217700  StageList<StageObject *>::getTail
+//   FS2 0x00217730  StageList<StageObject *>::find
+//   FS2 0x00217770  StageList<StageObject *>::pushBack
+//   FS2 0x00217840  StageList<StageObject *>::erase
+//   FS2 0x00217890  StageList<StageObject *>::pushFront, pushBack's empty case
+//   FS2 0x00217920  StageList<StageObject *>::Node::Node
+//   FS2 0x00217940  StageList<StageObject *>::Node::unlink
 // layout: host -- EE 8: +0 head, +4 count. An EE node is 0xc: +0 a new'd
 // 4-byte box holding the value, +4 next, +8 prev; the host keeps the value
 // in the node. Elements stay the owner's: clear deletes only the nodes.
@@ -101,6 +110,29 @@ public:
                 node = node->next;
         }
         return node;
+    }
+
+    // The last node; null when empty. Who walks from here goes by prev.
+    // FS2 0x0017e3b0 (pushBack's walk), FS2 0x00217700
+    Node *getTail() const
+    {
+        Node *tail = head;
+        if (tail != NULL) {
+            while (tail->next != NULL)
+                tail = tail->next;
+        }
+        return tail;
+    }
+
+    // The first node holding value, from the head; null without one.
+    // FS2 0x00217730
+    Node *find(const T &value) const
+    {
+        for (Node *node = head; node != NULL; node = node->next) {
+            if (node->value == value)
+                return node;
+        }
+        return NULL;
     }
 
     // Unlinks and frees node.

@@ -23423,6 +23423,18 @@
   "was": "FUN_002176d0",
   "why": "viewLinkedObject() == this"
  },
+ "00217730": {
+  "name": "StageList<StageObject*>::find",
+  "tag": "game-inferred",
+  "was": "FUN_00217730",
+  "why": "(list, &value): first node whose boxed value (*node+0) equals *value, null without; only caller dropItem 0x216920 on the carried list +0x22c"
+ },
+ "002179b0": {
+  "name": "StageCharacter::getMotionDoor",
+  "tag": "game-inferred",
+  "was": "FUN_002179b0",
+  "why": "this->m_motion (+0x224)->doorLink (+0xc0c)->door (+0x20): the door its door motion is playing on; only caller DoorCondition::onUpdate 0x271630 with the character (DoorCondition +0) in a0"
+ },
  "002179c0": {
   "name": "SightTable::canSeeThisFrame",
   "tag": "game-inferred",
