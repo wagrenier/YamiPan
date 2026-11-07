@@ -201,9 +201,3 @@ void elevatorSwitchPlace(StageObject *elevator, float *place, float *direction, 
 }
 
 
-
-// stub of FS2 address unknown (0 candidates)
-KunitorisGame::~KunitorisGame()
-{
-    YAMIPAN_STUB("KunitorisGame::~KunitorisGame", 0x00000000);
-}

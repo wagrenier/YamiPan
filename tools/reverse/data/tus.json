@@ -646,7 +646,7 @@
    "why": "The ItemPhysics class whole: slots 0x23c010..0x23c300, the rest to the ctor at 0x23db50, which ends at 0x23de14; sysdata ends before it, getLocalDateTime 0x23de20 starts datetime.cpp"
   },
   "game/kunitoris.cpp": {
-   "notes": "Written: runExtraMode 0x2c42c0, kunitorisThread 0x2c4320 (pack dataEU/kuniEU.pak, its SePlayer and UiFont, the level loop with a stack KunitorisGame, best score and clear into SaveData _46c / _4ac), kunitorisBackThread 0x2cdb20, kunitorisTitle 0x2c53c0, kunitorisDrawTitle 0x2c5780, kunitorisHowTo 0x2c5550, kunitorisLevelSelect 0x2c5a70, kunitorisPrintf 0x2cd9a0, kunitorisEnding 0x2c4ee0. Next: the game classes, stubs in kunitoris.cpp: KunitorisGame ctor 0x2c8640, loadLevel 0x2cd390 (with the 0x38-byte piece class ctor 0x2cd8a0 / dtor 0x2cd690 and FUN_002cd730), start 0x2cca40, update 0x2c64d0, draw 0x2c5ea0; the inline ~KunitorisGame (stub in src/lib/unassigned_stubs.cpp, open-items.md has the ROM sequence); KunitorisEnding drawIntro 0x2ca330, setTiles 0x2ca790, draw 0x2c9de0; the small virtual classes Vt_00319f00..Vt_00319fe0 (FUN_002c42a0, FUN_002cc8c0, FUN_002c4e50, FUN_002c7a40, FUN_002c7b70, thunk 0x2c7a30 to FUN_002cc220). KunitorisGame is layout: host with the front end's fields only; m_scroll, m_viewHalf, m_selectToggle are guesses. Smoke run does not reach Extra mode (top menu answer 10), so no picture yet; screenshot shows the boot language select as before.",
+   "notes": "Written this session: KunitorisGame::KunitorisGame 0x2c8640 and the inline dtor; KunitorisSprite (0x319fc0: dtor 0x2c4e50, draw 0x2cc9d0), KunitorisActor (0x319f30: dtor 0x2cae40, update 0x2cc8c0, draw 0x2cdbd0), KunitorisCursor (0x319f00: ctor 0x2cacc0, dtor 0x2cab60, update 0x2c42a0, draw 0x2ca870), KunitorisBlock (0x319f90: ctor 0x2cc450, dtor 0x2c7a40, update 0x2cc220, draw 0x2cb800), KunitorisActorList 0x2cde50..0x2ce0b4, KunitorisCells 0x2cb220 / 0x2cb170, KunitorisGroup 0x2cafd0 / 0x2caf10 / setCell 0x2c8070 / setStep 0x2c8080 / addCell 0x2c8090, drawLivesBar 0x2c8510, drawBlinkBar 0x2c83a0, KunitorisEnding::setTiles 0x2ca790 (with the tile quads 0x2fc2a0 as sEndingTiles). Corrections: +0x5c is m_hiScore (the ctor's a1), the score is +0x60; +0x6c is m_playerCell (18, 18). Next: make vtable 0x319f60 a virtual base (dtor 0x2cdbe0, draw 0x2cdbf0) of KunitorisBoard and KunitorisPiece (0x319f70 dtor 0x2cdc00; game slots 0x2cdc90 / 0x2cd280; piece 0x2cddc0 / 0x2cd520), then KunitorisPiece ctor 0x2cd8a0 / dtor 0x2cd690 (stub) and loadLevel 0x2cd390, the board draw FUN_002c81c0 (pieces drawn with pass 1 four times for the wrap, then the outline lines +0x2114 / +0x2110 with prim 0x149 = line in 0x2fbfe0), then KunitorisGame::draw 0x2c5ea0, start 0x2cca40, update 0x2c64d0, KunitorisEnding::draw / drawIntro (they read sEndingTiles). Smoke run does not reach Extra mode (top menu answer 10), so no picture yet; the screenshot shows the boot language select as before.",
    "ranges": [
     [
      "002c42a0",
@@ -658,6 +658,11 @@
      "date": "2026-11-07 16:20",
      "status": "partial",
      "summary": "Extra mode is Kunitoris: runExtraMode, its thread and back thread, title, how-to, level select, printf and the ending loop written; the KunitorisGame and KunitorisEnding classes stubbed"
+    },
+    {
+     "date": "2026-11-07 16:52",
+     "status": "partial",
+     "summary": "KunitorisGame ctor and dtor, its objects (actor, sprite, cursor, block, actor list, cells, groups), the per-level and shape tables, the two bar draws and KunitorisEnding::setTiles written"
     }
    ],
    "status": "partial",
