@@ -980,7 +980,7 @@ void gsFrameScale(sceVif1Packet *packet, int level)
 void gsFrameContrast(sceVif1Packet *packet, u_int rgba) { YamiPan_DrawUiFrameContrast(packet, rgba); }
 
 // FS2 0x001ff010
-// FS2 0x001ff460 gsShrinkFrame, FS2 0x002b6b90 gsLuminance and
+// FS2 0x001ff460 gsShrinkFrame, gsLuminance (game/gsluminance.cpp) and
 // FS2 0x001ffb30 gsUploadClut256 are inside the host's pass.
 // The frame goes through a ramp: halved with a bilinear filter, its brightness
 // (R * 0x26 + G * 0x4b + B * 0xe, each over 128) picks a colour of ramp, and

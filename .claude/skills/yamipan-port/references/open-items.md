@@ -1880,6 +1880,11 @@ apply here):
 - 2026-11-05 (the user, live, during the eleventh game/playermotion.cpp run): **the first-person view goes to the top of the queue, "since it is needed for gameplay".** `game/viewcamera.cpp`, top of "Next up".
 
 ## Open questions
+- 2026-11-07 (game/gsluminance.cpp): **file name and the PSMT4 shift are guesses.** No strings in
+  0x2b6b90..0x2b85a0: the name is the port's. That gsLumShiftPages (0x2b7b00) leaves R in G and B in
+  alpha is read from how the next two steps use scratch, not from the PSMT4 swizzle; the host shader
+  does the sum directly, so nothing on PC depends on it. No screen shows it: the smoke run stops at
+  the language screen and the palette views need the sight-jack.
 - 2026-11-07 (rena/rena_2d_texture_vram.cpp): **two small leftovers beside it.** `Tim2Texture::getTex0`
   0x2e1b10 (unassigned@002e1b10, 3 lines: the TEX0 template with TBP0 = block, CBP = block +
   m_imageBlocks) is a hand stub in src/lib/unassigned_stubs.cpp; stubgen wanted it in

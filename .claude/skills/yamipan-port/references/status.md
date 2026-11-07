@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 10:01 at commit `51c51d9` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 10:13 at commit `f53318f` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 10:01 at commit `51c51d9` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6597**, named **5610** (85%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4688
-- context-name ledger: 6284 entries; overrides of wrong library matches: 0
-- placed in a source file: 6133/6597 in 134 files
+- game functions: **6597**, named **5616** (85%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4694
+- context-name ledger: 6290 entries; overrides of wrong library matches: 0
+- placed in a source file: 6140/6597 in 135 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5611**; stubs: **32**
+- reconstructed FS2 functions: **5617**; stubs: **32**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -58,6 +58,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/gamesystem.cpp` | 18 | 0 |
 | `src/game/gfxtarget.cpp` | 15 | 0 |
 | `src/game/gsblockmap.cpp` | 14 | 0 |
+| `src/game/gsluminance.cpp` | 7 | 0 |
 | `src/game/gsutil.cpp` | 12 | 0 |
 | `src/game/heap.cpp` | 17 | 0 |
 | `src/game/helpscreen.cpp` | 1 | 0 |
@@ -116,7 +117,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stageobject.cpp` | 44 | 0 |
 | `src/game/stageobjlist.cpp` | 45 | 0 |
 | `src/game/stageparticle.cpp` | 50 | 0 |
-| `src/game/stageparty.cpp` | 87 | 0 |
+| `src/game/stageparty.cpp` | 86 | 0 |
 | `src/game/stageplayer.cpp` | 34 | 0 |
 | `src/game/stageresult.cpp` | 32 | 0 |
 | `src/game/stagescene.cpp` | 259 | 0 |
@@ -170,9 +171,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 211 TUs: todo 70, partial 17, verify 129, done 46
-- next: **unassigned@002b6b90** (frontier score 7)
+- 211 TUs: todo 70, active 1, partial 16, verify 130, done 46
+- next: **unassigned@002ec110** (frontier score 7)
 - pinned queue: (empty)
+- active: `unassigned@002b6b90` 0/0
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -196,6 +198,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/gamesystem.cpp` 18/18 -- All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). N
 - verify: `game/gfxtarget.cpp` 15/15 -- Re-pinned to 0x12dfa0..0x12f190: the display records 0x4ae280 and gp-0x7ad8..-0x7ac8 are used only there; RcntTimer starts at 0x12f190. Two GfxDisplay records (
 - verify: `game/gsblockmap.cpp` 14/14 -- All 14 functions of 0x142dd0..0x144080 are in src/game/gsblockmap.cpp with the new game/gsblockmap.h (GsBlockMap, TexArea, TexAreaList, TexAreaSlot moved out of
+- verify: `game/gsluminance.cpp` 7/7 -- Was unassigned@002b6b90, between menuscene and prgmccard; only caller SightJack::drawPaletteView 0x1ff010 in game/stageparty.cpp, whose comment now points here.
 - verify: `game/gsutil.cpp` 12/12 -- Cut out of unassigned@00171300 and pinned 0x230980-0x231410 (batch 048: GsTexture::readTarget 0x231290, rena base Tim2Texture ctor 0x2e2920 / dtor 0x2e2810 / lo
 - verify: `game/heap.cpp` 17/17 -- Game code, not MSL: heap and RNG share one object (sdata 0x31a880..0x31a88c, bss 0x329970 then 0x3299c0, sbss 0x31ad80). All 17 functions written; batch 031 nam
 - verify: `game/helpscreen.cpp` 1/1 -- Split out of unassigned@002acff0 with game/skymist.cpp; the code went in with af16a58. Not seen: the smoke run does not open the help screen from the menus.
@@ -305,6 +308,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 10:12 `game/gsluminance.cpp` verify: gsLuminance and its six GS packet steps named (batch 209), pinned as their own object 0x2b6b90-0x2b85a0, documented in game/gsluminance.cpp; on PC the host pale
 - 2026-11-07 10:01 `unassigned@0029f2a0` verify: Placed the run 0x29f2a0..0x29f4f8 in game/scriptrunner.cpp: missionRestoreCheck and findNumLockTarget; StageMission +0xb8 is a LockGadgetKind (restoreKind, was 
 - 2026-11-07 09:50 `game/framefilter.cpp` verify: the frame filter: gsFrameFilter and its 4 helpers, a host FrameFilterPass; d0101's opening is soft
 - 2026-11-07 09:15 `game/playermotion.cpp` verify: The out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level (0x2160a0..0x216130, was unassigned@002160a0): StageSideMa
@@ -312,22 +316,21 @@ Recent sessions:
 - 2026-11-07 08:36 `sdpr2/sdpr2pair.c` verify: SDPR2 two-voice pair type: all 21 functions reconstructed (pan, turn with voice flip, detune countdown, Init/Exit, detune table 0x2f5fa0)
 - 2026-11-07 08:10 `rx/filehost.c` verify: rx host0: driver: all 12 functions reconstructed from FS2 (RosePan's host driver, FS2's file/line open-failure message)
 - 2026-11-07 07:59 `rx/filehdd.c` verify: rx HDD driver: all 13 functions reconstructed from FS2 (identical to RosePan's rxfile.cpp HDD section)
-- 2026-11-07 07:51 `game/gadgetview.cpp` verify: The gadget views: SigLamp and the number-lock view as handle and body (SceneOwnedObject with 15 forwarders, GadgetView with the pairs and the look, SigLampView,
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@002ec110` | todo | 0/0/1 | 0.1 | 7 | 0 |
-| `unassigned@002b6b90` | partial | 1/0/7 | 6.5 | 7 | 0 |
-| `unassigned@002b22f0` | todo | 0/4/35 | 5.1 | 6 | 0 |
 | `unassigned@002cf510` | todo | 0/1/1 | 0.1 | 6 | 1 |
-| `unassigned@00282da0` | partial | 11/0/18 | 3.0 | 5 | 0 |
+| `unassigned@002b22f0` | todo | 0/4/35 | 5.1 | 6 | 0 |
 | `unassigned@0020acb0` | partial | 3/5/11 | 1.3 | 5 | 0 |
+| `unassigned@00282da0` | partial | 11/0/18 | 3.0 | 5 | 0 |
 | `unassigned@00214a70` | todo | 0/1/2 | 0.6 | 5 | 0 |
 | `unassigned@00177d00` | partial | 11/0/47 | 7.7 | 4 | 0 |
-| `unassigned@0020ce10` | todo | 0/0/1 | 0.1 | 3 | 0 |
 | `rena_2d_texture_tim2.cpp` | todo | 0/1/1 | 0.1 | 3 | 0 |
 | `unassigned@00219be0` | partial | 15/0/19 | 3.8 | 3 | 0 |
-| `unassigned@00211970` | partial | 2/2/4 | 2.3 | 2 | 0 |
+| `unassigned@0020ce10` | todo | 0/0/1 | 0.1 | 3 | 0 |
+| `unassigned@002b0d50` | todo | 0/0/1 | 0.0 | 2 | 0 |
+| `unassigned@0026c650` | todo | 0/0/2 | 0.2 | 2 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

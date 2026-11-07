@@ -35375,6 +35375,42 @@
   "was": "FUN_002b6b90",
   "why": "the buffer's G times 0x4b, R (PSMT4 page shift) times 0x26, B times 0xe, over 128, summed in G; then G moved to the top byte through a PSMCT16 view: the luminance as a PSMT8H image; only caller is 0x1ff010"
  },
+ "002b6cc0": {
+  "name": "gsLumWeighGreen",
+  "tag": "game-inferred",
+  "was": "FUN_002b6cc0",
+  "why": "only caller gsLuminance (weight 0x4b): FRAME_2 the target CT32, RGBAQ G = weight, TEX0_2 the source CT32 modulate, then one UV sprite per 64-pixel column: target = (0, src G * weight / 128, 0, 0)"
+ },
+ "002b71b0": {
+  "name": "gsLumSetContext",
+  "tag": "game-inferred",
+  "was": "FUN_002b71b0",
+  "why": "only caller gsLuminance, first step: A+D packet for context 2 over a w x h buffer: ZBUF_2 ZMSK, SCISSOR_2 0..w-1 / 0..h-1, XYOFFSET_2 0, TEST_2 Z always, TEX1_2 0 (point), COLCLAMP 1"
+ },
+ "002b72b0": {
+  "name": "gsLumWeighAlpha",
+  "tag": "game-inferred",
+  "was": "FUN_002b72b0",
+  "why": "only caller gsLuminance (weight 0xe): untextured column sprites over scratch, RGBAQ G = weight, ALPHA_2 0x98 Cs * Ad: scratch G = weight * its alpha (the source's B after gsLumShiftPages) / 128"
+ },
+ "002b75f0": {
+  "name": "gsLumAddGreen",
+  "tag": "game-inferred",
+  "was": "FUN_002b75f0",
+  "why": "only caller gsLuminance (weights 0x26, then 0x80): FRAME_2 the target with FBMSK 0xffff00ff (G only), ALPHA_2 Cs * FIX + Cd, FIX = weight, scratch CT32 as texture, column sprites: target G += scratch G * weight / 128"
+ },
+ "002b7b00": {
+  "name": "gsLumShiftPages",
+  "tag": "game-inferred",
+  "was": "FUN_002b7b00",
+  "why": "only caller gsLuminance: per CT32 page (w*h/2048) a local-to-local BITBLT through PSMT4 views, 120 x 128, destination x 8: the source page moved into scratch so its R reads as G and its B as alpha (the next two steps use them so)"
+ },
+ "002b7f90": {
+  "name": "gsLumGreenToHigh",
+  "tag": "game-inferred",
+  "was": "FUN_002b7f90",
+  "why": "only caller gsLuminance, last step: FRAME_2 and TEX0_2 as PSMCT16 views (FBMSK 0x3fff, decal, TEXA AEM), scissor 2h high, sprites shifted 8 pixels: the summed G moved into each word's top byte, the luminance as a PSMT8H image; SCISSOR_2 back to w x h"
+ },
  "002b85a0": {
   "name": "PrgMcCard::draw",
   "tag": "game-inferred",
