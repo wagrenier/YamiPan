@@ -35201,6 +35201,12 @@
   "was": "FUN_002b0cf0",
   "why": "registered by the static init 0x310f60 (__register_global_object(0x599700, 0x2b0cf0, 0x5996e8)): releases the clock layout +0xb8, deleting when the flag > 0"
  },
+ "002b0d50": {
+  "name": "DemoStream::getDataWritten",
+  "tag": "game-inferred",
+  "was": "SoundStream::getDataWritten",
+  "why": "one instruction, j SoundStream::getDataWritten 0x1441a0 with a0 untouched (the SoundStream base at +0): the out-of-line copy of an inline forward; its one caller StageScene::enterSubScene calls it on StageScene +0x28, the DemoStream; sits right before DemoStream::drawSubtitles 0x2b0d60"
+ },
  "002b0d60": {
   "name": "DemoStream::drawSubtitles",
   "tag": "game-inferred",

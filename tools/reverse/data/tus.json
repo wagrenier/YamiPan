@@ -292,7 +292,7 @@
      "0028ff60"
     ],
     [
-     "002b0d60",
+     "002b0d50",
      "002b1670"
     ],
     [
@@ -314,7 +314,7 @@
    ],
    "status": "verify",
    "task": "The opening event, queued by the user 2026-11-04 to come right after the lighting. The game opens on a scripted event, almost perfectly dark, with something circling; none of it shows yet. Needs game/scriptrunner.cpp first. Find the path: mission +0xc8 (the pending event's name, afterScripts 0x286c40 starts it), StageMission setup 0x2870f0 and tickPending 0x286ce0, requestSubScene 0x196060, DemoCamera 0x26ce20 and its step, DemoExecuter, drawOverlay 0x26c920. Unproven that the opening is d0101, the only event with its own filter in StageScene::draw. Done when the picture shows the opening from the event's own camera, without YAMIPAN_CAMERA (open-items.md, The opening event).",
-   "why": "ScreenFill 0x1516f0..0x151f70 sits right after StageFade in the binary; same base vtable 0x311260"
+   "why": "ScreenFill 0x1516f0..0x151f70 sits right after StageFade in the binary; same base vtable 0x311260. 0x2b0d50 (DemoStream::getDataWritten, a one-jump forward) is the first function before DemoStream::drawSubtitles 0x2b0d60, right after StageResult's dtor ends stageresult.cpp"
   },
   "game/demofleck.cpp": {
    "notes": "All of the TU is written (batch 161): DemoFleck 0x2a1240, its dtor, thunks draw and step; FleckSet draw 0x2a18c0, step 0x2a1eb0, spawnLarge, spawnSmall, drawLarge, drawSmall, putQuad; demoFleckRandNext moved here from game/stageparty.cpp; sinCosPair 0x135d50 in vu0math.h. The free functions demoFleckStep, demoFleckDraw, demoFleckCreate, demoFleckDestroy are gone: callers hold a DemoFleck and use step and draw. The old float argument is dropped, the ROM never reads f12 there. New host pieces: BlendMode::DestinationFade for ALPHA_1 0x46, and YamiPan_DrawUiSqueezeFactor, so a fleck keeps its shape on a wide display while its place spreads over the frame. Six stale stubs removed from lib/unassigned_stubs.cpp, including demoFilmDraw and demoFilmDestroy. Seen only in a temporary build, removed: New Game, doorwalk pad, flecks forced in 180-frame phases, 290 s, no crash; progress/20261106-flecks-forced-boost6.png has dark blotches and clots at alpha times 6, progress/20261106-flecks-forced-real.png is the real level, hardly visible on that dark wall, off phase clean. Not seen on a real jack or event overlay, nor on a wide display (shots were 4:3). No reference picture of the effect exists. The sheet being texture 83c6a44efe777343 is unproven: build.py filters a plain stderr log, use a [W] line next time. The 15 s check is the language menu, unchanged. Next: which script sets byte 9, then SceneModelHolder; open-items.md Next up has the order and doubts k, l, m.",
@@ -3732,10 +3732,7 @@
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
   "unassigned@002681e0": {},
-  "unassigned@0026c650": {
-   "claimed": "2026-11-07 14:24",
-   "status": "active"
-  },
+  "unassigned@0026c650": {},
   "unassigned@002764b0": {},
   "unassigned@0027cab0": {},
   "unassigned@00282da0": {},
@@ -3757,7 +3754,17 @@
   "unassigned@002a6980": {},
   "unassigned@002a7b10": {},
   "unassigned@002acff0": {},
-  "unassigned@002b0d50": {},
+  "unassigned@002b0d50": {
+   "notes": "The run was one instruction: j 0x1441a0 (SoundStream::getDataWritten) with a0 unchanged, the out-of-line copy of an inline forward, the first function before DemoStream::drawSubtitles 0x2b0d60 and right after StageResult's dtor ends stageresult.cpp. Batch 217 named it; game/demoevent.cpp's range now starts at 0x2b0d50. Its one caller, StageScene::enterSubScene's voice wait on StageScene +0x28, already reached the base's through inheritance, so nothing runs differently. The 15 s smoke run ends on the language screen as before. Next: unassigned@002b22f0, the seven-key pad.",
+   "sessions": [
+    {
+     "date": "2026-11-07 14:52",
+     "status": "verify",
+     "summary": "0x2b0d50 is DemoStream::getDataWritten, one jump to SoundStream::getDataWritten; pinned to game/demoevent.cpp"
+    }
+   ],
+   "status": "verify"
+  },
   "unassigned@002b22f0": {},
   "unassigned@002b6b90": {},
   "unassigned@002b9ef0": {},

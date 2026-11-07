@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 14:34 at commit `e178778` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 14:52 at commit `7691a81` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -11,9 +11,9 @@ Generated 2026-11-07 14:34 at commit `e178778` by `tools/reverse/status.py` (`re
 ## Naming (game code; library ranges excluded)
 
 - game functions: **6597**, named **5681** (86%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4759
-- context-name ledger: 6355 entries; overrides of wrong library matches: 0
-- placed in a source file: 6308/6597 in 137 files
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4760
+- context-name ledger: 6356 entries; overrides of wrong library matches: 0
+- placed in a source file: 6309/6597 in 137 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5717**; stubs: **18**
+- reconstructed FS2 functions: **5718**; stubs: **18**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -45,7 +45,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/clock.cpp` | 14 | 0 |
 | `src/game/datetime.cpp` | 2 | 0 |
 | `src/game/debugsys.cpp` | 3 | 0 |
-| `src/game/demoevent.cpp` | 102 | 0 |
+| `src/game/demoevent.cpp` | 103 | 0 |
 | `src/game/demofleck.cpp` | 13 | 0 |
 | `src/game/drawsys.cpp` | 166 | 0 |
 | `src/game/fileloader.cpp` | 53 | 0 |
@@ -174,10 +174,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 200 TUs: todo 76, active 1, partial 9, verify 133, done 46
-- next: **unassigned@002b0d50** (frontier score 2)
+- 199 TUs: todo 76, partial 9, verify 134, done 46
+- next: **unassigned@001dff40** (frontier score 1)
 - pinned queue: (empty)
-- active: `unassigned@0026c650` 0/0
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -188,7 +187,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/charactersound.cpp` 39/39 -- All of 0x2a31b0..0x2a49c0 plus getAttackVoice 0x2a25b0. New names playHitSound, playTrapHitVoice, playQuestionVoice, enum SoundKind. Bug fixed in game/playermot
 - verify: `game/clock.cpp` 14/14 -- Source only. clock.h corrected: +0x18 is a PtrList pointer (made on the first child, grown by 16), not an inline u16 pair; the fields moved to a base ClockNode 
 - verify: `game/datetime.cpp` 2/2 -- Cut out of the frontier pick unassigned@0023c020 (the tail of the 0x171300 run) and pinned 0x23de20-0x23e740. getLocalDateTime reads sceCdReadClock, converts wi
-- verify: `game/demoevent.cpp` 102/106 -- All of the TU is written or accounted for (batch 116). Added: DemoStream setFont and drawSubtitles, the fsm readers 0x28fa90..0x28ff60 (range added here; the ho
+- verify: `game/demoevent.cpp` 103/107 -- All of the TU is written or accounted for (batch 116). Added: DemoStream setFont and drawSubtitles, the fsm readers 0x28fa90..0x28ff60 (range added here; the ho
 - verify: `game/demofleck.cpp` 13/13 -- All of the TU is written (batch 161): DemoFleck 0x2a1240, its dtor, thunks draw and step; FleckSet draw 0x2a18c0, step 0x2a1eb0, spawnLarge, spawnSmall, drawLar
 - verify: `game/drawsys.cpp` 164/164 -- All 164 of 0x2d46a0-0x2dac70 are written or listed. New: drawSysAddModel 0x2d5140 (draw group, name flags, wave surfaces, plant textures), drawSysFindKind1Surfa
 - verify: `game/fileloader.cpp` 53/53 -- All 53 functions of 0x1319f0..0x132f20 are in src/game/fileloader.cpp with game/fileloader.h; FileJob / FileLoader / PackFile left gamehooks.h (which includes f
@@ -310,10 +309,12 @@ Least-named game-code regions (64 KB blocks):
 - verify: `unassigned@0012c9b8` 0/0 -- This key is empty now: 0x12c9b8..0x12cce0 is newlib (layout.json lib_ranges libc row, architecture.md libc bullet, batch 199 also names __sinit 0x123910, __sfvw
 - verify: `unassigned@002176d0` 0/0 -- This key is empty now. 0x2176d0 isViewLinked was already written in src/game/stagecharacter.cpp, now in its range; 0x217700..0x217a80 joined game/playermotion.c
 - verify: `unassigned@0029f2a0` 0/0 -- Both written from the ROM. findNumLockTarget: first object of StageObjectList group 1 whose name the number-lock handle (StageScene owned[1], +0x90) has a pair 
+- verify: `unassigned@002b0d50` 0/0 -- The run was one instruction: j 0x1441a0 (SoundStream::getDataWritten) with a0 unchanged, the out-of-line copy of an inline forward, the first function before De
 - verify: `yamipan/rendering/model_renderer.cpp` 0/0 -- Fix for the user's crash on turning left in node 4, confirmed fixed by the user's play. drawBatch read batch.uvs unchecked. The batch is a single unskinned tria
 
 Recent sessions:
 
+- 2026-11-07 14:52 `unassigned@002b0d50` verify: 0x2b0d50 is DemoStream::getDataWritten, one jump to SoundStream::getDataWritten; pinned to game/demoevent.cpp
 - 2026-11-07 14:34 `game/playermotion.cpp` verify: MotionProbe ctor 0x26c6b0 and deleting dtor 0x26c650 out of line; 0x26c650..0x26c6fc joined from unassigned@0026c650
 - 2026-11-07 14:11 `game/playermotion.cpp` verify: unassigned@00217be0 joined playermotion.cpp; StageCharacter::wasPlacedThisFrame 0x2184a0 written, doNothing 0x218490 already inline
 - 2026-11-07 13:52 `game/playermotion.cpp` verify: StageCharacter::isCompanionWalking 0x2119d0 and canTakeOver 0x212020; run 0x211970..0x2122f8 (was unassigned@00211970) pinned into this file
@@ -321,16 +322,14 @@ Recent sessions:
 - 2026-11-07 13:12 `game/playermotion.cpp` verify: StageCharacter::getWeaponRange 0x20ce10 joined playermotion.cpp (was unassigned@0020ce10): out of line beside getAttackReach, no longer an inline in gamehooks.h
 - 2026-11-07 12:58 `rena/rena_2d_texture_tim2.cpp` verify: Tim2Texture::getTex0 0x2e1b10 written; the file now starts there, hand stub gone
 - 2026-11-07 12:48 `game/playermotion.cpp` verify: StageCharacter::isUp 0x2107e0; run 0x20e6a0..0x210938 joined
-- 2026-11-07 12:40 `game/stagecamera.cpp` verify: unassigned@00177d00 placed: camera file tail 0x177d00..0x179a80 joined stagecamera.cpp, 0x179a80..0x179d30 joined stagecharacter.cpp; StageCharacter::cameraStep
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002b0d50` | todo | 0/0/1 | 0.0 | 2 | 0 |
-| `unassigned@002a0040` | todo | 0/0/9 | 4.3 | 1 | 0 |
 | `unassigned@002c42a0` | todo | 0/1/93 | 39.0 | 1 | 0 |
-| `unassigned@001dff40` | partial | 2/1/3 | 1.9 | 1 | 0 |
 | `unassigned@002e2970` | partial | 1/0/2 | 0.9 | 1 | 0 |
+| `unassigned@001dff40` | partial | 2/1/3 | 1.9 | 1 | 0 |
 | `unassigned@0021b340` | partial | 7/0/8 | 1.7 | 1 | 0 |
+| `unassigned@002a0040` | todo | 0/0/9 | 4.3 | 1 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
