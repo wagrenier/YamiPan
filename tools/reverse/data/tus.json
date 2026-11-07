@@ -1947,11 +1947,15 @@
    "why": "The class at gStageScene +0xf4 (every caller of these 8 functions passes it; ctor 0x264070 news its 0x3c-byte member from 0x151600, the deleting dtor 0x264000): plays and stops the ALERT / CAUTION layouts on gStageScene +0x30 (0x263c10 / 0x263f10) and reads GameOptions +0x10. Between game/uigame.cpp and libscf 0x2640e8. The file name is the port's (no source string)."
   },
   "game/stagecamera.cpp": {
-   "notes": "Written in src/game/scriptrunner.cpp: nativeSetPlayer 0x1c81a0, nativeScriptView 0x1c8dc0, isNullName 0x1c8f40, findCameraObject 0x1d1260, findLightObject 0x1b56b0 (batch 115, saved); 0x1b54a0 is StageNodeBase::setParent out of line. 0x70: New Game run of 200 s, no crash, its stub line is gone, setPlayer(null) survives, the link itself not seen because no character exists. 0x64: nothing reaches sd_MK01_10 yet, so a temporary build (removed) held native 0x1f2 off and drove it: top view CAM_EV10 kind 7 then camera kind 9, shots show tatami, picture book and bedding, then black (unlinked main camera at the empty origin), progress/20261104-script-view-cam-ev10.png. Not compared with the game, no reference exists. The event branch (scr_demo_pl on the view) has not run. YAMIPAN_CAMERA overrides every StageCamera, so test view switches without it (hazards.md).",
+   "notes": "unassigned@00177d00 (47 functions) was the tail of the camera file and the head of the character file. Pinned: stagecamera.cpp gets 0x177d00..0x179a80 (StageCamera ctor, camjack dtor 0x177f40 and getKind 0x178010, kind 8 class onLinkChanged 0x178020, dtor 0x179840 and getKind 0x1798e0, StageMainCamera dtor 0x1798f0, thunks 0x1799f0..0x179a70); stagecharacter.cpp gets 0x179a80..0x179d30 (StageCharacter inlines). Batch 214: 27 names, the kind 8 class called LinkedCamera in Ghidra only, 0x179840 corrected from StageMainCamera dtor to LinkedCamera dtor. New code: StageCharacter::cameraStep 0x179a90 (slot +0x25c: brain setEntry then setState(state, 1); the ROM forwards an a1 no caller sets, host passes null, open-items.md); StageMainCamera::sideHook3 calls cameraStep (ROM thunk 0x1799f0, as ViewCamera). Everything else is listed in comment tags at the end of both files. Seen: 15 s smoke at the language select; YAMIPAN_TELEPORT=2 40 s run: third person behind the girl on the rainy path, steady, no crash, same as before. Not traced: whether ScenePairTable steps the main camera, so whether the sideHook3 change runs.",
    "ranges": [
     [
      "001775b0",
      "00177be0"
+    ],
+    [
+     "00177d00",
+     "00179a80"
     ]
    ],
    "sessions": [
@@ -1959,11 +1963,16 @@
      "date": "2026-11-04 18:06",
      "status": "verify",
      "summary": "Natives 0x70 setPlayer and 0x64 script view written; CAM_EV10 shows in a test build"
+    },
+    {
+     "date": "2026-11-07 12:40",
+     "status": "verify",
+     "summary": "unassigned@00177d00 placed: camera file tail 0x177d00..0x179a80 joined stagecamera.cpp, 0x179a80..0x179d30 joined stagecharacter.cpp; StageCharacter::cameraStep 0x179a90 and StageMainCamera::sideHook3 written; 27 names"
     }
    ],
    "status": "verify",
    "task": "The two natives that choose the view, queued by the user 2026-11-04. A host task: the code goes in kNatives in src/game/scriptrunner.cpp and both addresses are that TU's, but it is 84 of 652 and would hold this place in the queue for many runs, so they have their own key. Native 0x70 (0x1c81a0, 56 i, one code word): find the character by label, then StageScene::setPlayer. Stage 1's Root calls it with F_PC01 straight after its test of menuMode == 1, the block that also requests d0101, and a New Game run reaches the stub today (scriptNative_70), so the main camera never links without it, even with a character. Native 0x64 (0x1c8dc0, 94 i, one code word): 0x1c8f40 tests the name (the script passes NULL) and removes view priority 3, any other name is found (0x1d1260) and pushed at priority 3, and an active event takes a further step (0x1b56b0, 0x1b54a0, 0x1b5460). sd_MK01_10 calls it with CAM_EV10, then NULL. StageCharacter does not exist yet, so the character lookup answers null: make sure setPlayer survives that. The other route to setPlayer is property 0x50 (0x172620 and its twins 0x189f40, 0x212530, 0x268ae0), behind the setProperty stubs; native 0xef is unused on stage 1. Nothing can show the link until a character exists, so this ends verify.",
-   "why": "The base camera's getKind, its four empty side hooks, the setters StageObject keeps at the head of this object, its dtor and the view functions. 0x177be0 setProjection is written here too but pinned in game/playermotion.cpp; 0x177d00 on is not pinned yet."
+   "why": "0x177d00..0x179a80 is the rest of the camera file: StageCamera's ctor, the camjack's dtor and kind, LinkedCamera (kind 8), StageMainCamera, then the adjustor thunks that end a CodeWarrior file (0x1799f0..0x179a70); StageCharacter's inlines start the next file at 0x179a80"
   },
   "game/stagecar.cpp": {
    "notes": "No code changed this run; door and drive proven on a temporary build, removed (New Game forced to stage 7, 300 s, no crash). The old pad pressed X every 80 reads and missed the 45 frames the item list held the focus; X every 37 reads got in: pick, native 0x168, motion 0xbc, then 0xb9 in the seat. R1 gave throttle 255, 23 units a frame, (7387, 2739) to (6464, 3180), then the game's own veranda film and the hint to point the lights at the enemies. Shots: progress/20261106-car-drive-*.png. NOT seen: the headlights on the foes (the Square run is void: build.py --run rebuilt from the restored source and played stage 1), getting out, a collision with a driver, steering. Next: forced stage 7, the pad in open-items.md, Square at about read 6800 and 7300. Restore temporary code only after a run ends. Doubts in open-items.md: the black box at the top left of the driver's view, why the car read speed 0 when the film began. 0x2103d0 still unwritten.",
@@ -2002,7 +2011,7 @@
    "notes": "unassigned@0017e140 was the tail of this file: StageList<StageObject *> 0x17e140..0x17e400 and 63 thunks 0x17e470..0x17e860, now listed at the end of stagecharacter.cpp; 0x17e860..0x17e950 joined game/stageplayer.cpp. Volume dtors corrected: 0x17eb20 is StageVolume, 0x17e860 is BoxVolume. New overrides on StageCharacter: setPosition 0x218500, onScriptExit 0x219010, scriptPlayMotion 0x21ac60, cmdIsLit; plain members for slots no script reaches. m_7a0 is now m_placedThisFrame, m_7c4 m_placeMotion. New tool slotcheck.py. Seen: temporary build, removed, New Game, doorwalk pad, 285 s, no crash, forced on the player: warp exact, motion 0. Not tested: an uncontrolled character (stopAndRetry, playActionAndRetry). Unforced stage 1 reaches none of them; screen is the dark first-person wall, not compared pixel by pixel. Next look: StageItem slot +0xfc 0x184770, open-items.md.",
    "ranges": [
     [
-     "00179d30",
+     "00179a80",
      "0017a484"
     ],
     [
@@ -2045,7 +2054,7 @@
    ],
    "status": "verify",
    "task": "The character, built, step 4 of roadmap-3d-control.md, queued 2026-11-04: StageCharacter ctor 0x17de30 and setup 0x17c700, the parameter tables 0x17b3e0 and 0x17bd10, the run 0x17b3e0..0x17df60 out of unassigned@00171300. placeCharacter already passes the map's position and turn. The parts it news are the next three items of the queue: stub them first. With this and native 0x70 (game/stagecamera.cpp) the main camera links, and YAMIPAN_CAMERA, stageCameraDebugLookAt and aimDebugCamera go (open-items.md). Check onLinkChanged: it looks up bn_head with no null test. Done when F_PC01 stands in the scene at (7286, 6064, 1138) and the main camera's step runs on it.",
-   "why": "The character's build: parameter tables, setup, setupBody, ctor and dtor (roadmap step 4); from the run unassigned@00171300; 0x17dcb0 is already written in subsceneobject.cpp; no source-path string, the file name is the port's guess; the terminate hook 0x179d30 joined 2026-11-05; the file's tail 0x17e140..0x17e860, the list template's instance (in game/stagelist.h) and the adjustor thunks, joined 2026-11-06; isViewLinked 0x2176d0 joined 2026-11-07 (written here; the run after playermotion.cpp's giveItem)"
+   "why": "0x179a80..0x179d30 joined: StageCharacter's inline virtuals (getKind, cameraStep, setScriptPoint, noiseHook, isRunningMotion, isCrouching, isBulletFlying, getScriptCharacter, getScriptActor) open the file right after the camera file's thunks"
   },
   "game/stagecollision.cpp": {
    "notes": "unassigned@002cf510 (resetStageGroupTable, a reached stub) is resetSurfaceTables, renamed in Ghidra (batch 211) and pinned into game/stagecollision.cpp beside sSurfaceUsed. The ROM clears 44 bytes at 0x599830 (useSurfaceOfName's surface-used flags) and sets the 44x32 step-sound cache at 0x599860 to 1 (not looked up); the port has no cache (playermotion.cpp findSurfaceEntry looks up each time), so the host body clears sSurfaceUsed only. kSurfaceCount = 44 is now in stagecollision.h; the prototype moved there from gamehooks.h. Smoke run reaches the language select as before; nothing on screen shows this code, hence verify.",
@@ -3638,6 +3647,10 @@
   "unassigned@00171300": {},
   "unassigned@00171ad0": {},
   "unassigned@00176480": {},
+  "unassigned@00177d00": {
+   "claimed": "2026-11-07 12:24",
+   "status": "active"
+  },
   "unassigned@0017e140": {},
   "unassigned@0017fce0": {
    "sessions": [
@@ -3694,10 +3707,7 @@
   "unassigned@002681e0": {},
   "unassigned@002764b0": {},
   "unassigned@0027cab0": {},
-  "unassigned@00282da0": {
-   "claimed": "2026-11-07 12:05",
-   "status": "active"
-  },
+  "unassigned@00282da0": {},
   "unassigned@002849c0": {},
   "unassigned@002908d0": {},
   "unassigned@002937e0": {},

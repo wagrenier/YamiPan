@@ -784,6 +784,18 @@ void StageCharacter::lightCarriedItems()
     }
 }
 
+// FS2 0x00179a90
+// The ROM hands setEntry the a1 it was called with, which none of the three
+// callers of the slot (0x17964c, 0x199d2c, 0x29aab4) sets: the slot has no
+// argument. The host passes null; setState's switchSlot binds the state's
+// entry again either way.
+
+void StageCharacter::cameraStep()
+{
+    m_brain->setEntry(nullptr);
+    m_brain->setState(m_brain->getState(), 1);
+}
+
 // FS2 0x00179d30
 // callcheck: endFrame, endFrame, setRunning, setRunning, contains, setRunning, getStageSelect, find, find, find, raycast, setRunning, getStageSelect, spawn, setPosition, setRunning, setRunning, setPosition, setRunning, spawn, spawn, spawn, isPlayer, isPartner, getLifeState, setValue2b0, isPlayer, setValue2b0, isPlayer, setCastsShadow, measureGlow, updateSounds, isStageDrained, getSeconds, releaseAction, setLight, setAmbient
 
@@ -824,6 +836,15 @@ bool StageObject::isPartner()
 }
 
 // ───────────────────────────────────────
+// The inlines that open the file (0x179ad0 setScriptPoint, 0x179af0 isRunningMotion and
+// 0x179bb0 isCrouching among them, written in playermotion.cpp); the ones written in
+// headers, since tools/reverse reads tags from .cpp files only:
+//   FS2 0x00179a80  StageCharacter::getKind (gamehooks.h)
+//   FS2 0x00179ae0  StageCharacter::noiseHook (gamehooks.h), empty
+//   FS2 0x00179d00  StageCharacter::isBulletFlying (gamehooks.h), the slot scriptIsBulletFlying
+//   FS2 0x00179d10  StageCharacter::getScriptCharacter (gamehooks.h)
+//   FS2 0x00179d20  StageCharacter::getScriptActor (gamehooks.h)
+
 // The adjustor thunks that end the file (the host's compiler makes its own):
 //   FS2 0x0017e470  StageCharacter::sideHook3, -0x18
 //   FS2 0x0017e480  StageCharacter::moveStep, -0x18
