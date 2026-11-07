@@ -1064,14 +1064,7 @@ enum MotionGadget
     MotionGadget_None     = 4,
 };
 
-// StageScene::owned.
-enum SceneOwnedSlot
-{
-    SceneOwned_SigLamp  = 0,
-    SceneOwned_NumLock  = 1,
-    SceneOwned_SevenKey = 2,
-};
-
+// StageScene::owned: SceneOwnedSlot, game/stagescene.h.
 // Something of the stage a character stands at: the elevator, the signal lamp
 // and the two locks. Vtable 0x317c90. layout: host -- EE 0x30.
 class MotionGadgetSpecial : public MotionSpecial

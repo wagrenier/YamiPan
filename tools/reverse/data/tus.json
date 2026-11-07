@@ -1758,10 +1758,6 @@
     ],
     [
      "0029f050",
-     "0029f2a0"
-    ],
-    [
-     "0029f500",
      "0029fde0"
     ]
    ],
@@ -1799,7 +1795,7 @@
    ],
    "status": "verify",
    "task": "What the pinned lights need next: the stage script VM. ScriptRunner::ScriptRunner, setEntry 0x1d2f40, run 0x1d27e0, the VM 0x1d1c40 and its helpers 0x1d1a10..0x1d3d20, StageScript::relocate 0x1d3a40, the slot call of 0x02000000 words and the native table 0x304230 (ids 0x19..0x235, index id - 0x19, 541 natives). Each native pops its own arguments, so an unwritten one must still pop its count: generate the counts from the ROM. First the lighting natives 0x1b6..0x1c3 (sssdis.py shows them with constants; architecture.md, The lights of a stage), so setupCameras' run of the bg script keys SceneRender. Then game/scenerender.cpp's task. The same VM is what the opening event and the character's brain need (open-items.md, The opening event).",
-   "why": "The script VM: native dispatcher 0x1a7a20, natives 0x1a7a80..0x1cf1b0 (table 0x304230), base property get/set, VM helpers and ScriptRunner / ScriptFrame to 0x1d3dc0; scriptPrepare, two helpers and missionObjectInSight at 0x29f050..0x29f2a0; from 0x29f500 the label helpers, scriptPickNamed 0x29f5c0, the mission's spawn picks 0x29f810..0x29fd20 and checkedBlock 0x29fd20"
+   "why": "The script VM: native dispatcher 0x1a7a20, natives 0x1a7a80..0x1cf1b0 (table 0x304230), base property get/set, VM helpers and ScriptRunner / ScriptFrame to 0x1d3dc0; scriptPrepare, two helpers and missionObjectInSight at 0x29f050..0x29f2a0; from 0x29f500 the label helpers, scriptPickNamed 0x29f5c0, the mission's spawn picks 0x29f810..0x29fd20 and checkedBlock 0x29fd20; missionRestoreCheck 0x29f2a0 and findNumLockTarget 0x29f440 joined 2026-11-07: between missionObjectInSight and scriptObjectOfValue, the lock-gadget helpers of nativeUseLockGadget"
   },
   "game/seplayer.cpp": {
    "notes": "Cut from unassigned@002908d0: game/seplayer.cpp is 0x2908d0..0x2937e0 (SoundTrack 17, SePlayer 18, batch 078: fsmFindTrack, fsmTrackHasText, seDistanceVolume, stdtIsRelocated, stdtEntryCount, SePlayer::openStreamBank, SePlayer::loadBank); getNaviTable 0x2955d0 went to game/progress.cpp; 0x2937e0..0x2955d0 (an ELEVATOR2 stage object and a menu overlay) stays unassigned. New header game/seplayer.h takes SeEntry, SeName, SeTable, StreamTable, SePlayer, SoundTrack and SeHandle out of gamehooks.h and stagesound.h. Kept as the ROM (doubts in open-items.md TU 45): stream-bank pause and resume refuse while the stream plays; SePlayer::setVolume on a voice bank only rewrites the record until the next master fade; who fills an StDT bank header (+0xc) is unread. Not built (source-only); g++ -fsyntax-only -Wall clean on seplayer, stagesound, progress with RosePan SDK headers.",
@@ -3619,6 +3615,17 @@
   "unassigned@002908d0": {},
   "unassigned@002937e0": {},
   "unassigned@00296d60": {},
+  "unassigned@0029f2a0": {
+   "notes": "Both written from the ROM. findNumLockTarget: first object of StageObjectList group 1 whose name the number-lock handle (StageScene owned[1], +0x90) has a pair for (vtable 0x318ca0 slot +0x18 = hasObject); null without a handle. missionRestoreCheck (asked once by StageMission::onRestore): kind 3 and owned[2] not busy -> SceneOwnedObject::isSevenKeyOpen(keptObject name), new stub 0x2b2c10 in unassigned@002b22f0; kind 2 and owned[1] not busy -> bit 0 isLockOpen, bit 1 wasTried of the found lock; else 0 (the ROM switch also names kind 1). Ghidra shows bool; the asm ors 1 and 2, so the host returns int. PC: a null keptObject passes an empty name (the ROM passes +0x20 of null). Nothing on screen: the 15 s smoke run ends on the language screen; the code needs a stage with a number lock or seven keys and a script calling native 0xaa. Next: unassigned@002b22f0, the seven-key pad.",
+   "sessions": [
+    {
+     "date": "2026-11-07 10:01",
+     "status": "verify",
+     "summary": "Placed the run 0x29f2a0..0x29f4f8 in game/scriptrunner.cpp: missionRestoreCheck and findNumLockTarget; StageMission +0xb8 is a LockGadgetKind (restoreKind, was a void pointer), the answer is LockRestoreBits; SceneOwnedSlot moved to stagescene.h"
+    }
+   ],
+   "status": "verify"
+  },
   "unassigned@002a6980": {},
   "unassigned@002a7b10": {},
   "unassigned@002acff0": {},

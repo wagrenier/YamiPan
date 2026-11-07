@@ -243,6 +243,9 @@ public:
     // The seven-key pad's (native 0x205): the object of that name, when it
     // is of kind 6, takes the two pairs (0x2b2420, 0x2b23e0, unread).
     void setSevenKeyNumbers(const char *name, int a, int b, int c, int d); // FS2 0x002b2b70
+    // The seven-key pad's: the object of that name is of kind 6 and its
+    // keys stand at the code (0x2b2620).
+    bool isSevenKeyOpen(const char *objectName);                         // FS2 0x002b2c10
 
 protected:
     explicit SceneOwnedObject(GadgetView *view) : m_view(view) {}

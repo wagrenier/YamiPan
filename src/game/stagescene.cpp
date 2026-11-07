@@ -3721,10 +3721,10 @@ void StageScene::startGameOver(StageObject *victim, StageObject *cause)
 // FS2 0x001955e0
 // callcheck: saveFlags, currentMission, setRestore
 
-void StageScene::saveObjectFlags(void *arg, StageObject *object)
+void StageScene::saveObjectFlags(int kind, StageObject *object)
 {
     arrays->saveFlags();
-    currentMission()->setRestore(arg, object);
+    currentMission()->setRestore(kind, object);
 }
 
 // The walk of restoreFlags, writing. The ROM copies the transform by its

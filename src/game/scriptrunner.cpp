@@ -4857,6 +4857,61 @@ bool missionObjectInSight(StageObject *object)
         && view->seesPoint(object->m_xform.position);
 }
 
+// Asked once after a lock gadget's screen hid the stage (StageMission::
+// onRestore): for the gadget saveObjectFlags named, once its screen is
+// closed, whether the lock it showed is now open (LockRestoreBits); 0 while
+// it is still up, and for any other kind.
+// FS2 0x0029f2a0
+// callcheck: currentMission, isOwned1Busy, isLockOpen, wasTried, isOwned2Busy, currentMission, isSevenKeyOpen
+
+int missionRestoreCheck()
+{
+    StageScene *scene = gStageScene;
+    switch (scene->currentMission()->restoreKind) {
+    case LockGadget_SevenKey:
+        if (scene->isOwned2Busy())
+            return 0;
+    {
+        // PC: the ROM passes +0x20 of a null object (the zero page): "".
+        StageObject *kept = scene->currentMission()->keptObject;
+        return scene->owned[SceneOwned_SevenKey]->isSevenKeyOpen(kept != nullptr ? kept->m_name : "");
+    }
+    case LockGadget_NumLock: {
+        if (scene->isOwned1Busy())
+            return 0;
+        StageObject *lock = findNumLockTarget();    // inlined in the ROM
+        SceneOwnedObject *handle = scene->owned[SceneOwned_NumLock];
+        if (lock == nullptr)
+            return 0;
+        int answer = 0;
+        if (handle->isLockOpen(lock->m_name))
+            answer |= LockRestore_Open;
+        if (handle->wasTried())
+            answer |= LockRestore_Tried;
+        return answer;
+    }
+    default:    // 0, 1 and the rest
+        return 0;
+    }
+}
+
+// FS2 0x0029f440
+// callcheck: (none: the handle's slot +0x18, hasObject)
+
+StageObject *findNumLockTarget()
+{
+    SceneOwnedObject *handle = gStageScene->owned[SceneOwned_NumLock];
+    if (handle == nullptr)
+        return nullptr;
+    StageObjArray &list = gStageScene->objects->m_lists[StageObjGroup_1];
+    for (StageObject **slot = list.begin(); slot != nullptr; slot = StageObjArray::next(slot)) {
+        StageObject *object = *slot;
+        if (handle->hasObject(object->m_name))
+            return object;
+    }
+    return nullptr;
+}
+
 // FS2 0x0029fd10
 
 bool missionSpawnPointTaken(int *point)
@@ -5810,8 +5865,8 @@ static bool armPadGadget(const char *special, StageObject *object)
 static const int *nativeUseLockGadget(ScriptRunner *self, int *, const int *code)
 {
     enum { Native = 0xaa, Start = 0, Armed = 1, Fading = 2, Waiting = 3 };
-    constexpr int kKindNumLock = 2;
-    constexpr int kKindSevenKey = 3;
+    constexpr int kKindNumLock = LockGadget_NumLock;
+    constexpr int kKindSevenKey = LockGadget_SevenKey;
     static const char kSevenKey[] = "SevenKey";  /* data 0x304ac8 */
     static const char kNumLock[]  = "NumLock";   /* data 0x304ad8 */
 
@@ -5839,14 +5894,14 @@ static const int *nativeUseLockGadget(ScriptRunner *self, int *, const int *code
             StageObject *object = scriptObjectOfValue(value);
             busy = scene->isOwned2Busy();
             if (busy)
-                scene->saveObjectFlags((void *)(intptr_t)kKindSevenKey, object);
+                scene->saveObjectFlags(kKindSevenKey, object);
             else
                 armPadGadget(kSevenKey, object);
         } else if (kind == kKindNumLock) {
             StageObject *lock = findNumLockTarget();
             busy = scene->isOwned1Busy();
             if (busy)
-                scene->saveObjectFlags((void *)(intptr_t)kKindNumLock, lock);
+                scene->saveObjectFlags(kKindNumLock, lock);
             else
                 armPadGadget(kNumLock, lock);
         }
@@ -6913,8 +6968,8 @@ static const int *nativeVisionFrames(ScriptRunner *self, int *, const int *code)
 // 0x201 numLockPush(a, b, c, d), 0x202 numLockPop(), 0x22c numLockScramble().
 // FS2 0x001ab400
 // callcheck: findNumLockTarget, pushDials
-// PC: the three skip a missing lock (findNumLockTarget is a stub, null, until
-// its TU); the ROM calls through what it gets.
+// PC: the three skip a missing lock (findNumLockTarget answers null on a
+// stage without one); the ROM calls through what it gets.
 
 static const int *nativeNumLockPush(ScriptRunner *self, int *acc, const int *code)
 {
