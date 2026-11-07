@@ -264,6 +264,14 @@ rxsnd's `rxSndCheckBgCall` (same message, "rxsndut") on its own flags. The layer
   silent side" reports every open stream through rxSndAdpcmUpdate, from the request's length; it replaces
   the 2026-11-04 bridge. It goes with the audio milestone, with ADPCM_SILENT_BUFFER (open's buffers:
   `rxSndIopAlloc` fails with no IOP heap, so 0 cannot be passed down).
+  **PCM written 2026-11-07** (src/rx/rxsndstrpcm.c, `RxSndStrPcmStream` in its header, 64 x 0x1c at
+  0x5217d0, active 0x521ed0, free 0x521ed4; +0x18 the attribute byte is set at open and never read).
+  Open: 1 channel mode 0, 2 channels mode 2, anything else fails (no tracks); the read ring is the slot's
+  bufSize as is; marks, branches and the end marker as ADPCM; start clamped to the size, not aligned;
+  `rxSndPcmOpen(mode, slot iopAddr +0x3c, slot iopKB +0x40)` -- no rate. Update applies only dirty bits
+  1 (pause) and 4 (volume, the same formula), clears all of dirty, mirrors 2 / 8, 4 sticky, and writes
+  whatever is readable without block rounding. The same PC changes as ADPCM (stream id as user data,
+  PCM_SILENT_BUFFER, a silent driver reply through rxSndPcmUpdate, 16-bit samples assumed).
 - **Stream sources** 0x1656e8..0x1660e0 (src/rx/rxsndstrstream.c, written 2026-11-06; 64 x 0xc at
   0x5226e0, active 0x5229e0, free 0x5229e4; EE layout next, id +4, open +5, type +6, handle +8): the ids
   a format reads through. Type 0 is an rxFile ring (`rxSysStreamOpenRing`, threshold bufSize / 2 & ~0xf),

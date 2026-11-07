@@ -3210,12 +3210,21 @@
    "why": "memory stream rxSndStrMem* (slot table 0x523a00; batch 008); file cut a guess."
   },
   "rx/rxsndstrpcm.c": {
+   "notes": "All 10 functions of 0x164398..0x164c38 written, no name changed. Mono / stereo only, no tracks, pitch or attribute in update, writes of any size, start clamped not aligned. PC: stream id as rxSndPcm user data, PCM_SILENT_BUFFER for an iopAddr of 0, a silent driver block answers rxSndPcmUpdate from the request length (16-bit samples assumed, a guess until RXSNDDRV is read). Not seen: the smoke run opens no PCM stream; which sound uses format 1 is not known. Screenshot: the language screen, as before.",
    "ranges": [
     [
      "00164398",
      "00164c38"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-07 05:52",
+     "status": "verify",
+     "summary": "PCM stream format: all 10 functions written, the ADPCM twin cut down, with a silent driver reply on PC"
+    }
+   ],
+   "status": "verify",
    "why": "PCM stream format (table 0x2f5f18; batch 008); file cut a guess."
   },
   "rx/rxsndstrstream.c": {

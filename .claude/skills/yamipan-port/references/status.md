@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 05:34 at commit `42b75d5` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 05:53 at commit `83f0b4c` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5423**; stubs: **57**
+- reconstructed FS2 functions: **5433**; stubs: **49**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -153,7 +153,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/rx/rxsndstradpcm.c` | 10 | 0 |
 | `src/rx/rxsndstrbank.c` | 48 | 0 |
 | `src/rx/rxsndstrmem.c` | 16 | 0 |
-| `src/rx/rxsndstrpcm.c` | 0 | 8 |
+| `src/rx/rxsndstrpcm.c` | 10 | 0 |
 | `src/rx/rxsndstrstream.c` | 18 | 0 |
 | `src/rx/rxsndut.c` | 6 | 0 |
 | `src/rx/rxsys.c` | 126 | 0 |
@@ -166,8 +166,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 214 TUs: todo 75, partial 19, verify 118, done 46
-- next: **rx/rxsndstrpcm.c** (frontier score 10)
+- 214 TUs: todo 74, partial 19, verify 119, done 46
+- next: **unassigned@002acff0** (frontier score 10)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -275,6 +275,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `rx/rxsndstradpcm.c` 10/10 -- Complete code, no sound: rxSndStrAdpcmOpen opens a real rxSndAdpcm stream; the block the drivers silent side in the same file reports each open stream from the 
 - verify: `rx/rxsndstrbank.c` 48/48 -- Complete in source-only mode (no build yet, so not compiled: check it compiles once bootstrap 7 lands). Bank slot is layout host (pointers); RXWS file records (
 - verify: `rx/rxsndstrmem.c` 16/16 -- All 16 functions of 0x1660e0..0x166b50 written, no Ghidra change. The stream record and the pools are host layout, private to the file; SetMarkers and SetTags r
+- verify: `rx/rxsndstrpcm.c` 10/10 -- All 10 functions of 0x164398..0x164c38 written, no name changed. Mono / stereo only, no tracks, pitch or attribute in update, writes of any size, start clamped 
 - verify: `rx/rxsndstrstream.c` 18/18 -- All 18 functions of 0x1656e8..0x1660e0 written, no Ghidra change. Sources are host layout (a pointer), private to the file; rxSndStrStreamOpen joins the header.
 - verify: `rx/rxsndut.c` 6/6 -- All 6 written in src/rx/rxsndut.c. Data: debug flags 0x2f5f10 (boot value 7 = error / BG-call / register prints) and the format tables 0x2f5f18 PCM (id 1) / 0x2
 - verify: `rx/rxsys.c` 126/126 -- rxsys is RoR's prebuilt rx: rxcmp.py '^rxSys' finds 126 of 126 identical (jumps, lui and gp offsets masked) and the data words and console font equal RoR's at +
@@ -290,6 +291,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 05:52 `rx/rxsndstrpcm.c` verify: PCM stream format: all 10 functions written, the ADPCM twin cut down, with a silent driver reply on PC
 - 2026-11-07 05:34 `unassigned@002176d0` verify: Placed the run 0x2176d0..0x217a80: isViewLinked to game/stagecharacter.cpp, the second StageList<StageObject*> instance (getTail, find, pushBack, erase, pushFro
 - 2026-11-07 05:12 `unassigned@0012c9b8` verify: Resolved: newlib stdio tail 0x12c9b8..0x12cce0 (__sccl, vsprintf, _vsprintf_r, _write_r, __swsetup) is libc, the libc lib_range now ends at 0x12cce0; GameSystem
 - 2026-11-07 05:10 `game/gamesystem.cpp` verify: marked verify -> verify: gained GameSystem::beginStage 0x12cce0 (range now 0x12cce0..0x12dd30, 18 functions) from TU unassigned@0012c9b8; not reached by the smo
@@ -297,20 +299,19 @@ Recent sessions:
 - 2026-11-07 04:30 `game/debugsys.cpp` done: debugSysInit / Update / Shutdown: the three empty retail hooks, in their own file
 - 2026-11-07 04:22 `game/numlock.cpp` verify: the number lock: NumLock map object and NmlPose dial pose, 29 functions of 0x2a6ab0..0x2a7b10
 - 2026-11-07 03:53 `game/stageparty.cpp` verify: Pin the jack's and the ripple sheet's std::vector instances, 8 functions of 0x206890..0x207108; bearingvectorcmp.py proves the promise
-- 2026-11-07 03:42 `game/rand48.cpp` done: game/rand48.cpp: Rand48, the stage's random numbers (java.util.Random without the increment); all 3 functions written, proven against the ROM
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@002acff0` | todo | 0/3/24 | 10.9 | 10 | 1 |
-| `rx/rxsndstrpcm.c` | todo | 0/8/10 | 2.1 | 10 | 2 |
 | `sdpr2/sdpr2single.c` | todo | 0/2/24 | 7.0 | 9 | 1 |
-| `unassigned@0021e120` | partial | 4/0/18 | 3.5 | 8 | 0 |
 | `unassigned@002a7b10` | todo | 0/3/53 | 7.9 | 8 | 0 |
+| `unassigned@0021e120` | partial | 4/0/18 | 3.5 | 8 | 0 |
+| `unassigned@0029f2a0` | todo | 0/2/2 | 0.6 | 7 | 0 |
+| `sdpr2/sdpr2pair.c` | todo | 0/1/21 | 7.0 | 7 | 1 |
 | `unassigned@002b6b90` | partial | 1/0/7 | 6.5 | 7 | 0 |
 | `rx/filehdd.c` | todo | 0/2/13 | 1.5 | 7 | 1 |
-| `unassigned@002160a0` | todo | 0/0/7 | 0.1 | 7 | 0 |
-| `sdpr2/sdpr2pair.c` | todo | 0/1/21 | 7.0 | 7 | 1 |
 | `sdpr2/sdpr2drv.c` | todo | 0/1/27 | 4.5 | 7 | 1 |
+| `rx/filehost.c` | todo | 0/2/12 | 1.3 | 7 | 1 |
 | `unassigned@002ec110` | todo | 0/0/1 | 0.1 | 7 | 0 |
 | `unassigned@002849c0` | todo | 0/1/5 | 7.4 | 7 | 1 |
 
