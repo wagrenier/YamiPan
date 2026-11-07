@@ -2026,7 +2026,7 @@
    "why": "The character's build: parameter tables, setup, setupBody, ctor and dtor (roadmap step 4); from the run unassigned@00171300; 0x17dcb0 is already written in subsceneobject.cpp; no source-path string, the file name is the port's guess; the terminate hook 0x179d30 joined 2026-11-05; the file's tail 0x17e140..0x17e860, the list template's instance (in game/stagelist.h) and the adjustor thunks, joined 2026-11-06; isViewLinked 0x2176d0 joined 2026-11-07 (written here; the run after playermotion.cpp's giveItem)"
   },
   "game/stagecollision.cpp": {
-   "notes": "All of the TU's functions are written or mapped to StageList and the host vector. Seen on stage 1's data in a New Game run: against brute force over all 8165 faces of Root, rays 0 wrong, segments 0, spheres 0, heights 1 of 3000; hit points on their plane and in their triangle; down rays agree with heightAt. No crash, d0101 still draws. Nothing on screen shows collision until a character stands (step 4 of roadmap-3d-control.md), so verify. Untested: moved meshes, the world's pairs, spherePush. Left: StageObject::breakPart 0x175900 and ItemPhysics::collisionHook0 0x23c020 are stubs, the doors' effect in MapObjectParts is null, FUN_00295010 unwritten. Next in the queue: game/stagecharacter.cpp. A probe at stage load needs a run of 230 s: the stage's arrival varies. open-items.md has the doubts.",
+   "notes": "unassigned@002cf510 (resetStageGroupTable, a reached stub) is resetSurfaceTables, renamed in Ghidra (batch 211) and pinned into game/stagecollision.cpp beside sSurfaceUsed. The ROM clears 44 bytes at 0x599830 (useSurfaceOfName's surface-used flags) and sets the 44x32 step-sound cache at 0x599860 to 1 (not looked up); the port has no cache (playermotion.cpp findSurfaceEntry looks up each time), so the host body clears sSurfaceUsed only. kSurfaceCount = 44 is now in stagecollision.h; the prototype moved there from gamehooks.h. Smoke run reaches the language select as before; nothing on screen shows this code, hence verify.",
    "ranges": [
     [
      "001f4bb0",
@@ -2045,7 +2045,7 @@
      "002cede0"
     ],
     [
-     "002cf590",
+     "002cf510",
      "002cf870"
     ]
    ],
@@ -2054,11 +2054,16 @@
      "date": "2026-11-04 19:50",
      "status": "verify",
      "summary": "Map collision and the world of bodies: StageCollision grid and height tree, ray, segment, sphere and height queries, CollisionBody, SceneRecordBuckets add, remove, collide, the map objects' collision half and MapObjectParts"
+    },
+    {
+     "date": "2026-11-07 11:12",
+     "status": "verify",
+     "summary": "resetSurfaceTables 0x2cf510 joined from unassigned@002cf510: clears the per-surface used bytes each new stage"
     }
    ],
    "status": "verify",
    "task": "Collision, step 2 of roadmap-3d-control.md, queued 2026-11-04: StageCollision::sphereHits 0x232870, segmentHits, raycast 0x233810, heightAt 0x2342c0, getNormal 0x236030, CollisionFile::relocate 0x23ae40, CollisionBody 0x1f6690, SceneRecordBuckets::collide 0x1f5250: about 32 functions, 4,533 i, in unassigned@00231d40 and unassigned@001d85b0. Also setupMapObject's collision half, left out so far (0x23adb0, 0x234440, 0x176bc0, CollisionBody). The main camera's rays stop on this: without it nothing pulls the eye out of a wall. Nothing can show it until a character stands, so it ends verify.",
-   "why": "The collision file: StageCollision (map meshes) 0x231d40..0x236b90 with boxContains .. boxHolds, the world of bodies 0x1f4bb0..0x1f6ac0 (CollisionBody, SceneRecordBuckets and its list instances), collisionFindRecord and CollisionFile::relocate, and the two surface name helpers the mesh ctor calls. Pieces by position: the file name is the port's, no string names it."
+   "why": "The collision file: StageCollision (map meshes) 0x231d40..0x236b90 with boxContains .. boxHolds, the world of bodies 0x1f4bb0..0x1f6ac0 (CollisionBody, SceneRecordBuckets and its list instances), collisionFindRecord and CollisionFile::relocate, the two surface name helpers the mesh ctor calls, and resetSurfaceTables 0x2cf510 (joined 2026-11-07, was unassigned@002cf510: it clears the surface-used bytes useSurfaceOfName sets, just before surfaceOfName). Pieces by position: the file name is the port's, no string names it."
   },
   "game/stagedoor.cpp": {
    "notes": "unassigned@00171ad0 turned out to be inline functions of this object file: runner table defaults, StageObject accessors, DoorRecord setters; pinned here and listed at the end of stagedoor.cpp, bodies in the headers. Added 27 ScriptRunner virtuals and 13 StageCharacter overrides, batch 191 named 87 functions and saved. Bug fixed: slots +0x16c +0x170 +0x174 +0x17c were void and natives 0x104 0x105 0x106 0x15a stored 0; the ROM's are bool. Still no change on screen: StageCharacter::useItem 0x218b50 and item218850 0x218850 are stubs answering false, and 0x105 and 0x106 are on 159 scripts, so game/playermotion.cpp is queued for those two. Proved: defaultcmp.py 84 defaults, 0 differences, plant 1, 5 notes for slots 49..53 (tail jump in the ROM, bool here, 0 either way; overrides not re-read). The new slots are unreachable: their natives are on no script. Left: ScriptProxy's 17 forwards of those slots, listed by slotcheck.py Vt_00315690 ScriptProxy. Smoke run 15 s stops at the language screen, right for 15 s and showing nothing of this TU.",
@@ -3684,13 +3689,14 @@
   "unassigned@002a7b10": {},
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {},
-  "unassigned@002b22f0": {
-   "claimed": "2026-11-07 10:45",
-   "status": "active"
-  },
+  "unassigned@002b22f0": {},
   "unassigned@002b6b90": {},
   "unassigned@002b9ef0": {},
   "unassigned@002c42a0": {},
+  "unassigned@002cf510": {
+   "claimed": "2026-11-07 11:04",
+   "status": "active"
+  },
   "unassigned@002d46a0": {},
   "unassigned@002dac70": {},
   "unassigned@002e0820": {},

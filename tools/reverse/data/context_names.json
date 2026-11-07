@@ -36150,10 +36150,10 @@
   "why": "the PC_GND01_W style column of table 0x2fc3b0 by surface, family and pace, cached in bss 0x599860"
  },
  "002cf510": {
-  "name": "resetStageGroupTable",
+  "name": "resetSurfaceTables",
   "tag": "game-inferred",
   "was": "FUN_002cf510",
-  "why": "called by a stage's StageScene ctor: 44 groups at 0x599830 (a byte each, zero) / 0x599860 (32 words each, one); other users 0x2cedc8 / 0x2cf3d4 unread; name a guess"
+  "why": "44 surfaces (surfaceOfName's ids): the byte per surface at 0x599830 that useSurfaceOfName (0x2cedc8) sets to 0, the 32 step-sound slots per surface at 0x599860 that StageCharacter::findStepSound (0x2cf3d4) caches to 1 (not looked up); called by StageScene's ctor, so each stage starts with neither"
  },
  "002cf590": {
   "name": "surfaceOfName",

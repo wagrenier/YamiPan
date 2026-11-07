@@ -521,7 +521,7 @@ StageScene::~StageScene()
 // record. Who / files / the view target and the sequences are set later
 // (stageThread, the scene's update).
 // FS2 0x0019c180
-// callcheck: operator_new, StageObjectList, operator_new, ScenePairTable, operator_new, SceneRecordBuckets, operator_new, StageNodeTree, operator_new, StageSound, resetStageGroupTable, operator_new, DemoStream, setDir, operator_new, SceneRender, operator_new, RumbleList, operator_new, operator_new[], createChild, operator_new, ScreenFill, operator_new, WideFontPrinter, operator_new, SceneBoxList, operator_new, StageFade, operator_new, ScenePool, operator_new, PauseMenuState, operator_new, UiItemList, operator_new, StageMenu, operator_new, SceneNoiseList, operator_new, UiShowFlags, operator_new, StageAlert, operator_new, Rand48, operator_new, StageMission, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, StageParty, drawSysPush
+// callcheck: operator_new, StageObjectList, operator_new, ScenePairTable, operator_new, SceneRecordBuckets, operator_new, StageNodeTree, operator_new, StageSound, resetSurfaceTables, operator_new, DemoStream, setDir, operator_new, SceneRender, operator_new, RumbleList, operator_new, operator_new[], createChild, operator_new, ScreenFill, operator_new, WideFontPrinter, operator_new, SceneBoxList, operator_new, StageFade, operator_new, ScenePool, operator_new, PauseMenuState, operator_new, UiItemList, operator_new, StageMenu, operator_new, SceneNoiseList, operator_new, UiShowFlags, operator_new, StageAlert, operator_new, Rand48, operator_new, StageMission, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, AreaGrid, operator_new, StageParty, drawSysPush
 
 StageScene::StageScene(bool isSubScene, StageSound *sound)
 {
@@ -553,7 +553,7 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
             this->sound = sound;
         }
         demoStream = nullptr;
-        resetStageGroupTable();
+        resetSurfaceTables();
     } else {
         this->sound = nullptr;
         demoStream  = new DemoStream();
