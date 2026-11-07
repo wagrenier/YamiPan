@@ -174,6 +174,7 @@ public:
     // The stick tunes among the viewable characters.
     bool tune();                                                         // FS2 0x00201080
     // A viewable character as the viewer sees it. EE 0xc. layout: host
+    // (the ROM's vector of these, BearingVector, is listed at the end of stageparty.cpp)
     struct Bearing
     {
         float        angle;     // +0x0: atan2 from the viewer; pickBearing: off the stick

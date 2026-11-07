@@ -188,7 +188,7 @@ SightJack::SightJack()
 }
 
 // FS2 0x00203be0
-// callcheck: operator_delete, FUN_00206f00, FUN_00206f00, operator_delete, operator_delete, operator_delete
+// callcheck: operator_delete, ~RippleLists, ~RippleLists, operator_delete, operator_delete, operator_delete
 
 SightJack::~SightJack()
 {
@@ -295,7 +295,7 @@ bool SightJack::anyShoulderHeld() const
 }
 
 // FS2 0x002004c0
-// callcheck: FUN_002067d0
+// callcheck: pressedBind
 
 bool SightJack::keep(StageObject *object)
 {
@@ -350,7 +350,7 @@ bool SightJack::canView(StageObject *object) const
 }
 
 // FS2 0x00200fe0
-// callcheck: FUN_002067d0, FUN_00200d10
+// callcheck: pressedBind, FUN_00200d10
 
 bool SightJack::recall()
 {
@@ -365,7 +365,7 @@ bool SightJack::recall()
     return true;
 }
 
-// callcheck: FUN_00206890
+// callcheck: insert
 
 std::vector<SightJack::Bearing> SightJack::gatherBearings() const
 {
@@ -406,7 +406,7 @@ SightJack::Bearing SightJack::pickBearing(const std::vector<Bearing> &bearings) 
 }
 
 // FS2 0x00200a50
-// callcheck: FUN_00206f70, FUN_00200d10, FUN_00206890, isEnemyOf, getLifeState, FUN_00206f80, atan2f, canView (gatherBearings)
+// callcheck: clear, FUN_00200d10, insert, isEnemyOf, getLifeState, ~BearingVector, atan2f, canView (gatherBearings)
 
 StageObject *SightJack::keepNearestFoe(int buttons)
 {
@@ -428,7 +428,7 @@ StageObject *SightJack::keepNearestFoe(int buttons)
 }
 
 // FS2 0x00200580
-// callcheck: FUN_00206d60, FUN_00206f70, FUN_00200d10, FUN_00206890, vecDistance, FUN_00200d10, isEnemyOf, FUN_00206f80, atan2f (gatherBearings)
+// callcheck: reserve, clear, FUN_00200d10, insert, vecDistance, FUN_00200d10, isEnemyOf, ~BearingVector, atan2f (gatherBearings)
 
 StageObject *SightJack::stepAlertedFoe(int buttons)
 {
@@ -472,7 +472,7 @@ StageObject *SightJack::stepAlertedFoe(int buttons)
 }
 
 // FS2 0x00201080
-// callcheck: FUN_00206f70, FUN_00200d10, FUN_00206890, FUN_001fff00, FUN_00206f80, atan2f, canView (gatherBearings)
+// callcheck: clear, FUN_00200d10, insert, FUN_001fff00, ~BearingVector, atan2f, canView (gatherBearings)
 
 bool SightJack::tune()
 {
@@ -1948,3 +1948,9 @@ void StageDaylight::draw(float deltaSeconds, sceVif1Packet *packet, StageObject 
     }
     m_gradient.drawRise(m_outsideSeconds, packet);
 }
+
+// FS2 0x00206890, 0x00206d60, 0x00206f70, 0x00206f80: BearingVector, the MSL vector of the gathers'
+// bearings: insert (every push_back), reserve (stepAlertedFoe alone, no effect on what it finds),
+// clear, dtor (std::vector here; bearingvectorcmp.py). 0x002067d0 between them is pressedBind.
+// FS2 0x00206f00, 0x00206ff0, 0x00207090, 0x00207100: RippleLists' and RippleWaves' dtors and clears,
+// emitted here for ~SightJack's inlined ~RippleSheet (game/ripplesheet.h; std::vector here).
