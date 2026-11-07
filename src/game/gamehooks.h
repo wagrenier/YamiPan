@@ -2628,6 +2628,8 @@ public:
     // 0 inactive; 2 up, 3 down, 4 down in motions 0xb3 / 0xb4, 5 in 0xb1 /
     // 0xb2, 6 and 7 by +0x690. The brain's state 6 says 2, its state 0 says 0.
     int  getLifeState();                                                 // FS2 0x00212460
+    // getLifeState says LifeState_Up.
+    bool isUp();                                                         // FS2 0x002107e0
     bool hasKyoModel();                                                  // FS2 0x00215340
     // A brain not at 0, the sheet's kind not 3 or 7, not the scene's player:
     // the party's view may look through its eyes. The name is a guess.

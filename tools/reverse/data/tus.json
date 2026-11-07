@@ -999,7 +999,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "The run 0x282da0..0x283a00 lay between this file's 0x281a40 and 0x283a00 ranges: link ctors and dtors PlayerMotion's build calls, so the two ranges are one now, 0x281a40..0x283cb0. They were already written inline in playermotion.h, where tus.py does not see a tag; now defined in playermotion.cpp after BossIdleLink's dtor: SpNumLockLink 0x2820e0, SpDropLink 0x2822d0 (SpRoboLink's ctor inline in the ROM), SpRoboLink 0x2825f0, SpRingLink 0x282b30, NpcReactionLink 0x282da0 (cr_2 cr_3 cr_1, data 0x2fb460), DriveLink 0x282fa0 (plus GettingOffCar, data 0x2fb450, both read from the ELF), ApproachBiteLink 0x283560, ApproachCarLink dtor 0x2835a0 and ctor 0x283960, ApproachOutLink 0x283740, NpcReactionLink dtor 0x2839a0. Each read against the decompilation: vptr, the fields it sets, the specials. Host zeroes fields the ROM leaves (SpNumLockLink waited and savedRotation, SpRoboLink saved place). The 0x1ed410 callcheck listing now names the five ctors instead of FUN_. No behaviour change. Seen: 15 s smoke at the language select as before; YAMIPAN_TELEPORT=2 30 s, the girl on the rainy path, no crash. Not seen: a car or an NPC reaction link run. The 10 MISSING callcheck entries predate this run. Left in the TU's todo: 0x283cb0 on (DriveLink, ApproachBiteLink, ApproachOutLink dtors) are outside the pinned ranges.",
+   "notes": "StageCharacter::isUp (0x2107e0, getLifeState == LifeState_Up, object in a0) written as a member beside hasBiter; hasBiter, scriptHasAllyWithin and findNearestFoe now call it as the ROM does (the local kLifeUp constant is gone). The run 0x20e6a0..0x210938 (playerEvent .. canSeeThisFrame, its other 10 functions already here) is joined to this file. Other files still spell getLifeState() == 2 inline where their ROM callees say getLifeState: left as they are. Smoke run: the boot language select as before; stage code is not reached, so verify. The MISSING lines in callcheck for this file (takeHits, giveItem, dropItem, leave*, ApproachBiteLink::onRun, MotionCondition, MotionGadgetSpecial::onUpdate) predate this run.",
    "ranges": [
     [
      "00175700",
@@ -1100,6 +1100,10 @@
     [
      "0020d650",
      "0020d8c0"
+    ],
+    [
+     "0020e6a0",
+     "00210938"
     ],
     [
      "00210e50",
@@ -1428,11 +1432,6 @@
    ],
    "sessions": [
     {
-     "date": "2026-11-06 07:07",
-     "status": "verify",
-     "summary": "the three motion maps are the ROM's own LiteralMap, compared with its code; conditions and links in the ROM's order"
-    },
-    {
      "date": "2026-11-06 17:15",
      "status": "partial",
      "summary": "Damage, DamageLand, DamageFatal, DamageDead and Revive links, the conditions' dtors, setWallCheck"
@@ -1486,11 +1485,16 @@
      "date": "2026-11-07 12:14",
      "status": "verify",
      "summary": "unassigned@00282da0 joined playermotion.cpp: the NpcReactionLink, DriveLink and car links' ctors and two dtors, and the four Sp link ctors, moved out of the header into the cpp so they count; all 11 match the ROM"
+    },
+    {
+     "date": "2026-11-07 12:48",
+     "status": "verify",
+     "summary": "StageCharacter::isUp 0x2107e0; run 0x20e6a0..0x210938 joined"
     }
    ],
    "status": "verify",
    "task": "PlayerMotion::takeHits 0x1e18c0..0x1e3e80 past its first line: it requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice",
-   "why": "0x214a70..0x214ce8 joined 2026-11-07 (was unassigned@00214a70): StageObjRecord::init and StageCharacter::findNearestFoe, between this file's 0x212530 run and isEnemyOf 0x214d40, which findNearestFoe calls; before that: 0x2160a0..0x216130 joined 2026-11-07 (was unassigned@002160a0): the out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level, placed by CodeWarrior right after getSides"
+   "why": "0x20e6a0..0x210938 joined 2026-11-07 (was unassigned@0020e6a0): playerEvent .. canSeeThisFrame, 11 StageCharacter members already reconstructed here (takeDamage, hasBiter, isUp, ...), between canLockDoor's 0x20d650 run and canSee 0x210940; before that: 0x214a70..0x214ce8 joined 2026-11-07 (was unassigned@00214a70): StageObjRecord::init and StageCharacter::findNearestFoe, between this file's 0x212530 run and isEnemyOf 0x214d40, which findNearestFoe calls; before that: 0x2160a0..0x216130 joined 2026-11-07 (was unassigned@002160a0): the out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level, placed by CodeWarrior right after getSides"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -3647,10 +3651,7 @@
   "unassigned@00171300": {},
   "unassigned@00171ad0": {},
   "unassigned@00176480": {},
-  "unassigned@00177d00": {
-   "claimed": "2026-11-07 12:24",
-   "status": "active"
-  },
+  "unassigned@00177d00": {},
   "unassigned@0017e140": {},
   "unassigned@0017fce0": {
    "sessions": [
@@ -3677,6 +3678,7 @@
   "unassigned@001953f0": {},
   "unassigned@0020acb0": {},
   "unassigned@0020c940": {},
+  "unassigned@0020e6a0": {},
   "unassigned@00214a70": {},
   "unassigned@002160a0": {},
   "unassigned@002176d0": {

@@ -8603,7 +8603,7 @@ void StageObjRecord::init()
 // The ROM walks the two lists in two copies of one loop; the second answers
 // the mission's characters by two inline currentMission calls.
 // FS2 0x00214a80
-// callcheck: getEnemyCandidates, isActive, isEnemyOf, isUp, currentMission, currentMission, isActive, isAlly, isUp, canSeeThisFrame, canSeeThisFrame (both inline here: m_active, getLifeState up; the +0x224 slot is distanceTo)
+// callcheck: getEnemyCandidates, isActive, isEnemyOf, isUp, currentMission, currentMission, isActive, isAlly, isUp, canSeeThisFrame, canSeeThisFrame (isActive inline here as m_active; the +0x224 slot is distanceTo)
 
 StageObject *StageCharacter::findNearestFoe(bool foes, bool sight)
 {
@@ -8623,7 +8623,7 @@ StageObject *StageCharacter::findNearestFoe(bool foes, bool sight)
         StageObject *object = *it;
         const bool wanted = object->m_active != 0
                          && (foes ? isEnemyOf(object) : object != this && isAlly(object));
-        if (!wanted || static_cast<StageCharacter *>(object)->getLifeState() != LifeState_Up)
+        if (!wanted || !static_cast<StageCharacter *>(object)->isUp())
             continue;
         float distance = FLT_MAX;
         if (!sight)
@@ -9845,7 +9845,7 @@ bool StageCharacter::scriptHasAllyWithin(float range)
         StageCharacter *other = static_cast<StageCharacter *>(mission->characters[i]);
         if (other->m_active == 0 || other == this || !isAlly(other))
             continue;
-        if (other->getLifeState() == LifeState_Up && distanceTo(other) <= range)
+        if (other->isUp() && distanceTo(other) <= range)
             return true;
     }
     return false;
@@ -10222,8 +10222,6 @@ void StageCharacter::setSideBit(u_int bit, bool on)
         m_sides.bits = sides;
 }
 
-constexpr int kLifeUp = 2;     // getLifeState
-
 // The enemies the character's side lists, or everyone with a foe of its own.
 // FS2 0x00210720
 // callcheck: getEnemyCandidates, isActive, isEnemyOf, isUp, getBiteTarget
@@ -10238,10 +10236,18 @@ bool StageCharacter::hasBiter()
         if (object->m_active == 0 || !isEnemyOf(object))
             continue;
         StageCharacter *other = static_cast<StageCharacter *>(object);
-        if (other->getLifeState() == kLifeUp && other->getBiteTarget() == this)
+        if (other->isUp() && other->getBiteTarget() == this)
             return true;
     }
     return false;
+}
+
+// FS2 0x002107e0
+// callcheck: getLifeState
+
+bool StageCharacter::isUp()
+{
+    return getLifeState() == LifeState_Up;
 }
 
 // FS2 0x00216390
