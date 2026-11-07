@@ -3292,10 +3292,6 @@ struct SceneArrayPair
 
 // +0x12c: an object with a member at +0x24 the dtor destroys in place.
 
-// 44 groups at 0x599830 / 0x599860 reset (a byte zero, 32 words one each):
-// a stage's ctor. What the groups are is unread.
-void resetStageGroupTable();                                             // FS2 0x002cf510
-
 // What runs a sub-scene's script (StageScene +0x8, from enterSubScene). The
 // ROM names the class itself: slot 7 answers "DemoExecuter" (the stand-in
 // was SubSceneObject). It overrides nothing else written so far.

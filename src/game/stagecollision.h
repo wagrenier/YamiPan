@@ -149,6 +149,13 @@ CollisionRecord *collisionFindRecord(void *file, const char *name);      // FS2 
 int surfaceOfName(const char *name);                                     // FS2 0x002cf590
 int useSurfaceOfName(const char *name);                                  // FS2 0x002cedb0
 
+// The surfaces surfaceOfName knows (its ids are 0..kSurfaceCount-1).
+constexpr int kSurfaceCount = 44;
+
+// A new stage: no surface used yet, no step sound looked up yet (StageScene's
+// ctor).
+void resetSurfaceTables();                                               // FS2 0x002cf510
+
 // ──────────────────────────────────────────────────────────────────────
 // The map
 

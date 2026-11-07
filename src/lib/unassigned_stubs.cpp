@@ -60,12 +60,6 @@ void pauseMenuStart()
     YAMIPAN_STUB("pauseMenuStart", 0x0020acf0);
 }
 
-// stub of FS2 0x002cf510
-void resetStageGroupTable()
-{
-    YAMIPAN_STUB("resetStageGroupTable", 0x002cf510);
-}
-
 // stub of FS2 0x002c42c0
 int runExtraMode(int arg)
 {

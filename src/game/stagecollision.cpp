@@ -201,9 +201,22 @@ CollisionRecord *collisionFindRecord(void *file, const char *name)
     return nullptr;
 }
 
-/* bss 0x599830: which surfaces a stage's meshes use (resetStageGroupTable's
- * first table). Nothing written reads it yet. */
+/* bss 0x599830: which surfaces a stage's meshes use, kSurfaceCount bytes
+ * (0x30 with the padding before the step-sound cache at 0x599860). Nothing
+ * written reads it yet. */
 static u_char sSurfaceUsed[0x30];
+
+// The step-sound cache (bss 0x599860, kSurfaceCount rows of 32 entries, 1
+// for "not looked up") is the ROM's second table; the port looks each sound
+// up when it is played (playermotion.cpp, findSurfaceEntry), so only the
+// surface bytes have anything to clear.
+// FS2 0x002cf510
+
+void resetSurfaceTables()
+{
+    for (int surface = 0; surface < kSurfaceCount; surface++)
+        sSurfaceUsed[surface] = 0;
+}
 
 // FS2 0x002cedb0
 

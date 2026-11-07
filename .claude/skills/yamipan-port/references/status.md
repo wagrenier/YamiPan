@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 10:57 at commit `06f4ce2` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 11:12 at commit `f430230` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -13,7 +13,7 @@ Generated 2026-11-07 10:57 at commit `06f4ce2` by `tools/reverse/status.py` (`re
 - game functions: **6597**, named **5647** (86%); library functions: 992
 - by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4725
 - context-name ledger: 6321 entries; overrides of wrong library matches: 0
-- placed in a source file: 6176/6597 in 137 files
+- placed in a source file: 6177/6597 in 137 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5650**; stubs: **28**
+- reconstructed FS2 functions: **5651**; stubs: **27**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -106,7 +106,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stagecamera.cpp` | 29 | 0 |
 | `src/game/stagecar.cpp` | 59 | 0 |
 | `src/game/stagecharacter.cpp` | 77 | 0 |
-| `src/game/stagecollision.cpp` | 56 | 0 |
+| `src/game/stagecollision.cpp` | 57 | 0 |
 | `src/game/stagedoor.cpp` | 125 | 0 |
 | `src/game/stageelevator.cpp` | 14 | 13 |
 | `src/game/stagefog.cpp` | 12 | 0 |
@@ -143,7 +143,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 12 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 11 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_2d_texture_vram.cpp` | 11 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
@@ -173,10 +173,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 211 TUs: todo 70, active 1, partial 16, verify 132, done 46
-- next: **unassigned@002cf510** (frontier score 6)
+- 210 TUs: todo 70, active 1, partial 16, verify 132, done 46
+- next: **unassigned@0020acb0** (frontier score 5)
 - pinned queue: (empty)
-- active: `unassigned@002b22f0` 0/0
+- active: `unassigned@002cf510` 0/0
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -243,7 +243,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stagecamera.cpp` 16/16 -- Written in src/game/scriptrunner.cpp: nativeSetPlayer 0x1c81a0, nativeScriptView 0x1c8dc0, isNullName 0x1c8f40, findCameraObject 0x1d1260, findLightObject 0x1b5
 - verify: `game/stagecar.cpp` 59/59 -- No code changed this run; door and drive proven on a temporary build, removed (New Game forced to stage 7, 300 s, no crash). The old pad pressed X every 80 read
 - verify: `game/stagecharacter.cpp` 78/87 -- unassigned@0017e140 was the tail of this file: StageList<StageObject *> 0x17e140..0x17e400 and 63 thunks 0x17e470..0x17e860, now listed at the end of stagechara
-- verify: `game/stagecollision.cpp` 56/74 -- All of the TU's functions are written or mapped to StageList and the host vector. Seen on stage 1's data in a New Game run: against brute force over all 8165 fa
+- verify: `game/stagecollision.cpp` 57/75 -- unassigned@002cf510 (resetStageGroupTable, a reached stub) is resetSurfaceTables, renamed in Ghidra (batch 211) and pinned into game/stagecollision.cpp beside s
 - verify: `game/stagedoor.cpp` 126/133 -- unassigned@00171ad0 turned out to be inline functions of this object file: runner table defaults, StageObject accessors, DoorRecord setters; pinned here and lis
 - verify: `game/stageelevator.cpp` 14/27 -- 27 functions 0x2939b0..0x295470, batch 184; the free elevator functions are members now and getZs9901 answers StageElevator; the two motion file readers 0x2937e
 - verify: `game/stagefog.cpp` 12/12 -- All 12 functions of 0x2ce0c0..0x2cedb0 written: SmokeFog (hatsu_fog, I_HATUEN), GlowFog (koh_fog, kinds 5 and 0xc), CharacterFog::attachTo. fogcmp.py: 32,703 op
@@ -312,6 +312,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 11:12 `game/stagecollision.cpp` verify: resetSurfaceTables 0x2cf510 joined from unassigned@002cf510: clears the per-surface used bytes each new stage
 - 2026-11-07 10:57 `game/sevenkeys.cpp` verify: The seven keys oYC11_21..27 (SevenKeys, object kind 6), their gadget view SevenKeysView/SevenKeysGadget and SkyPose named (batch 210), pinned as game/sevenkeys.
 - 2026-11-07 10:32 `rena/rena_drawtarget.cpp` verify: Placed getDrawTarget 0x2ec110 (was unassigned@002ec110) in its own file rena/rena_drawtarget.cpp: the guarded function-local DrawTarget at bss 0x5a52d0 moved ou
 - 2026-11-07 10:12 `game/gsluminance.cpp` verify: gsLuminance and its six GS packet steps named (batch 209), pinned as their own object 0x2b6b90-0x2b85a0, documented in game/gsluminance.cpp; on PC the host pale
@@ -319,22 +320,21 @@ Recent sessions:
 - 2026-11-07 09:50 `game/framefilter.cpp` verify: the frame filter: gsFrameFilter and its 4 helpers, a host FrameFilterPass; d0101's opening is soft
 - 2026-11-07 09:15 `game/playermotion.cpp` verify: The out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level (0x2160a0..0x216130, was unassigned@002160a0): StageSideMa
 - 2026-11-07 08:51 `game/playermotion.cpp` verify: unassigned@0020c940 joined playermotion.cpp: StageCharacter::getSwayMatrix, bn_head's matrix turned a quarter about its own y and placed at the model family's g
-- 2026-11-07 08:36 `sdpr2/sdpr2pair.c` verify: SDPR2 two-voice pair type: all 21 functions reconstructed (pan, turn with voice flip, detune countdown, Init/Exit, detune table 0x2f5fa0)
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002cf510` | todo | 0/1/1 | 0.1 | 6 | 1 |
-| `unassigned@0020acb0` | partial | 3/5/11 | 1.3 | 5 | 0 |
 | `unassigned@00214a70` | todo | 0/1/2 | 0.6 | 5 | 0 |
+| `unassigned@0020acb0` | partial | 3/5/11 | 1.3 | 5 | 0 |
 | `unassigned@00282da0` | partial | 11/0/18 | 3.0 | 5 | 0 |
 | `unassigned@00177d00` | partial | 11/0/47 | 7.7 | 4 | 0 |
 | `unassigned@0020ce10` | todo | 0/0/1 | 0.1 | 3 | 0 |
 | `rena_2d_texture_tim2.cpp` | todo | 0/1/1 | 0.1 | 3 | 0 |
 | `unassigned@00219be0` | partial | 15/0/19 | 3.8 | 3 | 0 |
-| `unassigned@0020e6a0` | partial | 10/0/11 | 8.6 | 2 | 0 |
+| `unassigned@00211970` | partial | 2/2/4 | 2.3 | 2 | 0 |
+| `unassigned@00217be0` | partial | 14/0/16 | 2.1 | 2 | 0 |
 | `unassigned@002b0d50` | todo | 0/0/1 | 0.0 | 2 | 0 |
 | `unassigned@0026c650` | todo | 0/0/2 | 0.2 | 2 | 0 |
-| `unassigned@00217be0` | partial | 14/0/16 | 2.1 | 2 | 0 |
+| `unassigned@0020e6a0` | partial | 10/0/11 | 8.6 | 2 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
