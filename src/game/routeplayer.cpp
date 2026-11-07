@@ -343,7 +343,7 @@ float RouteAreaSearch::chainRun(RoutePath &out, RouteNode *from, RouteNode *to)
 // and what it answers then is the run's alone; both are the ROM's. The
 // callers read out.length.
 // FS2 0x00253420
-// callcheck: clear, FUN_00254fd0, ~RouteLegList, FUN_00255080, FUN_001928f0, FUN_00254f10, FUN_00254fc0, FUN_00254fa0, FUN_00254f90, FUN_00254f40, FUN_00254f30, FUN_00254f00, reserve, insert, FUN_00254ff0, FUN_00228610, FUN_00254e40, FUN_00254ef0, FUN_00254ed0, FUN_00254ec0, FUN_00254e70, FUN_00254e60, FUN_00254e30, FUN_00254e10, ~vector, FUN_00253210 (the host vector and its reversed copies)
+// callcheck: clear, FUN_00254fd0, ~RouteLegList, FUN_00255080, insert, FUN_00254f10, FUN_00254fc0, FUN_00254fa0, FUN_00254f90, FUN_00254f40, FUN_00254f30, FUN_00254f00, reserve, insert, FUN_00254ff0, FUN_00228610, FUN_00254e40, FUN_00254ef0, FUN_00254ed0, FUN_00254ec0, FUN_00254e70, FUN_00254e60, FUN_00254e30, FUN_00254e10, ~vector, FUN_00253210 (the host vector and its reversed copies)
 
 float RouteAreaSearch::areaPath(RoutePath &out, const float *from, const float *to, short area)
 {
@@ -854,7 +854,7 @@ int RouteFile::pathSetIndex(const std::vector<const char *> &names)
 // Every name of every set once: the ROM's tree is ordered by the pointers,
 // so by where the strings lie in the file, and so is this one.
 // FS2 0x002571e0
-// callcheck: FUN_0025ac00, FUN_0025ab40, FUN_001928f0, mslTreeIncrement, FUN_0025a8f0 (the host set and vector)
+// callcheck: FUN_0025ac00, FUN_0025ab40, insert, mslTreeIncrement, FUN_0025a8f0 (the host set and vector)
 
 void RouteFile::collectNames()
 {

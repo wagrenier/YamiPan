@@ -5960,7 +5960,7 @@ void PlayerMotion::pointBehind(sceVu0FVECTOR out, const float *place, const floa
 }
 
 // FS2 0x00190900
-// callcheck: FUN_001933a0, operator_delete, operator_new, BoxGrid (the ROM's inner object is not written: the tree holds the grid)
+// callcheck: ~BoxCells, operator_delete, operator_new, BoxGrid (the ROM's inner object is not written: the tree holds the grid)
 
 void StageNodeTree::setBoxes(void *bbx)
 {

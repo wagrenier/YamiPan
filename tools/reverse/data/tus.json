@@ -2020,7 +2020,7 @@
    "why": "Cut out of unassigned@00171300: the stage's name-keyed object registry (gStageScene +0x10, new 0xdc in 0x19c180): nine groups of a name map (AVL tree of StageNameNode by strcmp) and an object list, with their two containers. Bounded below by the BoxGrid vector instances (0x1928f0..0x1938f8) and above by game logic at 0x1953f0 (player state test, no registry use)."
   },
   "game/stageparticle.cpp": {
-   "notes": "Seen with temporary builds, removed, New Game forced to stage 2, work/doorwalk_pad.txt, 285 s, no crash: rain over the woods with effects on, none with them off (progress/20261106-particles-rain-on.png, -stage2-off.png); forced nests ahead of the camera show small brown shapes flat on the path (progress/20261106-critters-forced.png). Stage 1's first room had simply nothing in view. No picture of the real game to compare, so verify. Not seen: a critter fleeing and hiding on screen, a script's own nest (only AREA01 and ALERT01, 02, 04 scripts call native 0x20f), the sheet (texture index 12) itself. Refract needs no code: ptcall.py finds it on 0 of 766 definitions. playSoundFrom got the ROM's branch for a label with no object; not run. The critters are pinned to this TU though the ROM has them apart. Approximate: ALPHA_1 0x49 as DestinationBoost (67 definitions), 0x41 as Alpha, a critter's ALPHA_1 taken as 0x44. open-items.md has the doubts (a) to (h).",
+   "notes": "unassigned@001920d0 was no file: the object's template instances, 17 functions, batch 186, record removed, range pinned to this TU. Written: game/mslsort.h (0x192150 sort, 0x193480 median, 0x1935b0 selection sort), a template, so sortcmp.py can compile it alone; the rest stays std::vector and is listed in the .cpp. The sort matters because a key of 0 (ParticleFlag_NoFarLimit) makes ties common, it is not stable, the counter 0x31a8f0 starts at -4 and carries between calls, and the ROM sorts far first (host was near first and stable). Keep one comparator object for both lists: each template instance has its own counter, as they shared one in the ROM. Proved: sortcmp.py, 400 lists, 198 through the quicksort, 18,951 elements, 0 differ; --plant makes 133 differ. Seen: YAMIPAN_TELEPORT=2, 60 s, no crash, rain streaks and motes on the path as before; the tie order cannot be judged by eye and no picture of the real game exists, so verify. Callcheck notes across src now use the new names. Left: other host std::sort / stable_sort sites may be other instances of this template: 0x1de2f0, 0x2da2e0, 0x21e120, 0x2a0040, 0x258f80 (the last has its own counter 0x31aae4); open-items.md Next up.",
    "ranges": [
     [
      "0018c050",
@@ -2033,6 +2033,10 @@
     [
      "00190a80",
      "001920c8"
+    ],
+    [
+     "001920d0",
+     "00193900"
     ],
     [
      "002b3860",
@@ -2049,10 +2053,15 @@
      "date": "2026-11-06 09:40",
      "status": "verify",
      "summary": "the particles are seen on screen (stage 2's rain), and the motes were critters: CritterNest, CritterRat, CritterCrawler written, spawnCritters live"
+    },
+    {
+     "date": "2026-11-06 22:50",
+     "status": "verify",
+     "summary": "the MSL vector and sort instances 0x1920d0..0x193900 pinned here and named; the ROM's own unstable sort replaces std::stable_sort in drawEffects, far list first"
     }
    ],
    "status": "verify",
-   "why": "the stage's particle effects and the system that owns them: StageParticle's class (vtables 0x3149e0..) and the StageNodeTree methods around its spawn; plus the critters 0x2b3860..0x2b5740 and spawnCritters 0x190990: the tree alone makes, moves and draws them, so they are kept here though the ROM has them apart; no source-path string, the name is the port's"
+   "why": "the stage's particle effects and the system that owns them: StageParticle's class (vtables 0x3149e0..) and the StageNodeTree methods around its spawn; the critters 0x2b3860..0x2b5740 and spawnCritters 0x190990, kept here though the ROM has them apart; and the MSL vector and sort instances 0x1920d0..0x193900 the file's object emitted (word vectors, the effects' pair list, BoxCells / BoxColumn / BoxList dtors); no source-path string"
   },
   "game/stageparty.cpp": {
    "notes": "Batch 162. SceneModelHolder was no model: it is StageDaylight, 0x2cfe20..0x2d0a10, range joined to this TU, StageScene::model renamed daylight. On stages 3, 0x11, 0x12, 0x14, 0x16, 0x19, 0x5d, 0x1b: outside the stage's bbx boxes an additive gradient rises and settles, inside it fades and a clone of the jack's film closes in and opens. Seen in a temporary build, removed: stage 3 forced, the box answer forced on a timer, progress/20261106-daylight-forced-peak.png and -settled.png. Unforced, stage 3's first room is inside all the way, so nothing shows there. Byte 9 is answered: E01, E04, E05 scripts only lock the jack, E02 and others never touch it, so node 4 is by design. Seen, temporary build, removed: New Game forced to stage 2, jack2 pad, 290 s, no crash, no flag forced: noise with the black film ring, then a tuned view through a character, progress/20261106-stage2-real-jack-view.png. No game reference judges the levels. Left partial: drawLive lacks stage 0x1b's boss film 0x2d10f0, FUN_002d3080 and the object at +0xb4, callcheck's MISSING on drawLive, explained. Next: KeepList 0x2bc100..0x2bcd20, misnamed, reads like a track player of three varint channels, another TU, its addNamed is what the jack's warning calls; then the boss film. open-items.md Next up has it. The 15 s check is the language menu, unchanged.",

@@ -442,7 +442,7 @@ static bool isFoliageTexture(const char *name)
 // main one and a few flags; the same pass over its materials finds the water
 // surfaces and the plants.
 // FS2 0x002d5140
-// callcheck: strcasecmp, strcmp, strcmp, strcasecmp, FUN_001928f0, strcmp, strcasecmp, strcasecmp, strcasecmp, strlen, strncasecmp, strlen (nameEqualsNoCase; FUN_001928f0 is the vector insert, push_back here; the second strcmp is isFoliageTexture's)
+// callcheck: strcasecmp, strcmp, strcmp, strcasecmp, insert, strcmp, strcasecmp, strcasecmp, strcasecmp, strlen, strncasecmp, strlen (nameEqualsNoCase; insert is the vector insert, push_back here; the second strcmp is isFoliageTexture's)
 
 void drawSysAddModel(ModelInstance *model)
 {
