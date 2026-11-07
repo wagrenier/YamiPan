@@ -246,6 +246,23 @@ rxsnd's `rxSndCheckBgCall` (same message, "rxsndut") on its own flags. The layer
 - **PCM format** 0x164398..0x164c38 (table 0x2f5f18, format 1 "PCM stream") and **ADPCM format**
   0x164c38..0x1656e8 (0x2f5f38, format 0 "ADPCM stream", multi-track interleave): feed rxsnd's
   `rxSndPcm*` / `rxSndAdpcm*` from a source.
+  **ADPCM written 2026-11-06** (src/rx/rxsndstradpcm.c, `RxSndStrAdpcmStream` in its header, 64 x 0x20
+  at 0x521ed8, active 0x5226d8, free 0x5226dc). Open: a request with tracks opens mode channels |
+  0x1000000, else 1 channel mode 0, 2 channels mode 2, anything else fails. The block is 16 bytes per
+  channel, the read ring bufSize / (channels * 0x20) * block * 2. Marks become the source's tags (value:
+  the mark's index), branches its markers (id: the low byte of the branch's position, jump -1 when param
+  is -1, user: the index), and one marker more is the end: at offset + size, jumping to offset +
+  loopOffset for a looping request, -1 otherwise. Start is rounded down to a block and clamped to the
+  size, and the slot keeps it. **So the mark and branch callbacks get an index, not a record**
+  (`RxSndStrMarkCallback` was typed wrong). Request +3 is rxSndAdpcmOpenEx's last argument (-1 with
+  flags bit 1), +4 / +5 signed volumes multiplied into the slot's, +6 u_short: non-zero ORs 1 into the
+  attribute. A slot's status mirrors rxSndAdpcm's 2 playing and 8 paused every frame; 4 ended is sticky.
+  **ROM quirk kept:** a failed open closes the stream's source and rxSndAdpcm stream even if this open
+  never set them, so a stale id can close a stream in use. **PC:** rxSndAdpcm's user data is an int, so
+  it holds the format stream's id, not the slot pointer. No IOP answers, so the block "the driver's
+  silent side" reports every open stream through rxSndAdpcmUpdate, from the request's length; it replaces
+  the 2026-11-04 bridge. It goes with the audio milestone, with ADPCM_SILENT_BUFFER (open's buffers:
+  `rxSndIopAlloc` fails with no IOP heap, so 0 cannot be passed down).
 - **Stream source** 0x1656e8..0x1660e0 (`rxSndStrStream*`, 64 x 0xc at 0x5226e0): type 0 an rxFile
   ring (`rxSysStreamOpenRing`), type 1 a memory stream.
 - **Memory stream** 0x1660e0..0x166b50 (`rxSndStrMem*`, 64 x 0x20 at 0x523a00): the rxFile ring API

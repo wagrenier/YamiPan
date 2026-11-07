@@ -55,6 +55,8 @@ def definitions(text, stubs=False):
     """(match, comment block, FS2 address, body) for each annotated definition; stubs (a body calling
     YAMIPAN_STUB) are skipped unless asked."""
     for m in DEF_RE.finditer(text):
+        if m.group(1) in KEYWORDS:      # `fail:` above an `if` at the left margin reads as a return type
+            continue
         before = text[:m.start()]
         cut = before.rfind('\n}')
         block = (before[cut + 2:] if cut >= 0 else before) + m.group(0)
