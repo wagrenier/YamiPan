@@ -59,10 +59,7 @@ struct StageSelect;             // game/sysdata.h
 // rxFileCallLoadHook 0x155690; the game reaches them through jump thunks of
 // the same names beside rxTerm (0x152740 / 0x152730).
 
-// Empty in retail: a stripped system's init / per-frame / teardown (guess).
-void debugSysInit();                                                     // FS2 0x00151290
-void debugSysUpdate();                                                   // FS2 0x00151270
-void debugSysShutdown();                                                 // FS2 0x00151280
+// The debug system's empty hooks are game/debugsys.h.
 
 // True when the point (16-aligned xyzw) lies in the box whose world-to-unit-
 // cube matrix is m (VU0 transform + vclip against w; game/boxgrid.cpp).

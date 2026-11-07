@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "game/datetime.h"
+#include "game/debugsys.h"
 #include "game/gamehooks.h"
 #include "game/gfxtarget.h"
 #include "game/heap.h"

@@ -496,7 +496,8 @@ Entry -> main -> the main loop; the boot sequence the smoke pad walks.
     day + month of `getLocalDateTime`'s 8-byte BCD date `{flags 0x10 (0x11 clock error), second,
     minute, hour, day, month, u16 year 0x20yy}`. `atan2f` 0x119b88 -> fdlibm `__ieee754_atan2f`
     0x1173e0 (newlib libm, batch 025). Empty hooks `debugSysInit` / `Update` / `Shutdown`
-    0x151290 / 0x151270 / 0x151280 and the meter's `PerfMeter::addBar` 0x133610 (value, ABGR colour,
+    0x151290 / 0x151270 / 0x151280 (`game/debugsys.cpp` 0x151270..0x1512a0, bare `jr ra`, between modelpose and
+    demoevent; written 2026-11-07) and the meter's `PerfMeter::addBar` 0x133610 (value, ABGR colour,
     group, label), `drawBars` 0x133600, `drawDetail` 0x132f20 are retail-stripped.
   - **rena `Vif1PktManage`** (0x30 bytes, vptr at +0x2c): `{+0 write ptr, +4 buffer base, +8 chain
     start, +0xc open list, +0x10 buffer index, +0x14 list vector (count +0x18, data +0x1c), +0x20

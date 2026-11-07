@@ -62,24 +62,6 @@ SigLamp::SigLamp(Tim2Texture*)
 // stub of FS2 0x001d3a40
 // stub of FS2 0x00185af0
 
-// stub of FS2 0x00151290
-void debugSysInit()
-{
-    YAMIPAN_STUB("debugSysInit", 0x00151290);
-}
-
-// stub of FS2 0x00151280
-void debugSysShutdown()
-{
-    YAMIPAN_STUB("debugSysShutdown", 0x00151280);
-}
-
-// stub of FS2 0x00151270
-void debugSysUpdate()
-{
-    YAMIPAN_STUB("debugSysUpdate", 0x00151270);
-}
-
 // stub of FS2 0x0020afa0
 int mapMenuResult()
 {
