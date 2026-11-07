@@ -6499,6 +6499,7 @@ void StageCharacter::swapWeapons()
 
 // FS2 0x00216920
 // callcheck: find, setShadowOwner, setPosition, StageNodeList__erase, erase, erase
+// callcheck: FUN_00217840 (StageList::erase, the carried list's second instance: stagelist.h; Ghidra keeps one name per instance)
 
 bool StageCharacter::dropItem(StageObject *item)
 {
@@ -6603,6 +6604,7 @@ bool StageCharacter::canWield(StageObject *item, u_int mask)
 
 // FS2 0x00216aa0
 // callcheck: pushBack, erase, erase, find, getTail, pushBack, getStageSelect, setMoving, setPositionXyz, setRotation, swapWeapons, dropItem, setPosition, attachTo, setShadowOwner, strcmp, setActive, setShown (the trees, setParent and bodyBone inline; the list tail and push_back are pushBack; getStageSelect is in stageObjRecord)
+// callcheck: FUN_00217700, FUN_00217770 (StageList::getTail and pushBack, the carried list's second instance: stagelist.h)
 
 bool StageCharacter::giveItem(StageObject *item)
 {
@@ -7486,6 +7488,7 @@ void dropGun(StageCharacter *character, PlayerMotion *motion)
 
 // FS2 0x00216310
 // callcheck: getTail, strcmp
+// callcheck: FUN_00217700 (StageList::getTail, the carried list's second instance: stagelist.h)
 
 // From the tail: of two with the same name, the one carried last.
 StageObject *StageCharacter::findCarried(const char *name)
@@ -13015,3 +13018,16 @@ StageObject *StageCharacter::pickSearchPoint(const sceVu0FVECTOR point, u_int ra
 // height: FS2 0x001efad0, FS2 0x001efce0
 // MotionLink::rewind (game/playermotion.h): FS2 0x0027cab0
 // MotionConditionList::Node::Node (game/playermotion.h): FS2 0x0027dc20
+// The carried list's second StageList<StageObject *> instance, emitted here
+// for giveItem, dropItem and findCarried (game/stagelist.h; checked against
+// the ROM 2026-11-07): getTail FS2 0x00217700, find FS2 0x00217730,
+// pushBack FS2 0x00217770, erase FS2 0x00217840, pushBack's empty case (a
+// push at the head) FS2 0x00217890, Node::Node (value box, no links)
+// FS2 0x00217920, Node::unlink (relinks the neighbours, deletes box and node)
+// FS2 0x00217940
+// StageCharacter's one-liners (game/gamehooks.h): doNothing FS2 0x00218490,
+// wasPlacedThisFrame FS2 0x002184a0 (+0x7a0), setSpawnPoint FS2 0x002187f0
+// (+0x66c), canTakeUpTrap FS2 0x00219000 (+0x38a), heardWithin FS2 0x00219980
+// (+0x660 <= range)
+// CharacterBlock7c8 (the motion history, game/gamehooks.h): clear
+// FS2 0x0021a8c0 (next and count), find FS2 0x0021a8d0 (newest first)
