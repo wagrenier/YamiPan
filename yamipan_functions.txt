@@ -8600,7 +8600,7 @@
 /* 002c8080 0000000c */ KunitorisGroup::setStep(){}  // game
 /* 002c8090 00000118 */ KunitorisGroup::addCell(){}  // game
 /* 002c81b0 00000004 */ randNext2(){}  // native
-/* 002c81c0 000001e0 */ FUN_002c81c0(){}
+/* 002c81c0 000001e0 */ KunitorisGame::drawBoard(){}  // game
 /* 002c83a0 00000168 */ KunitorisGame::drawBlinkBar(){}  // game
 /* 002c8510 00000128 */ KunitorisGame::drawLivesBar(){}  // game
 /* 002c8640 00000548 */ KunitorisGame::KunitorisGame(){}  // game
@@ -8632,7 +8632,7 @@
 /* 002cb5e0 00000104 */ FUN_002cb5e0(){}
 /* 002cb6f0 00000104 */ FUN_002cb6f0(){}
 /* 002cb800 0000048c */ KunitorisBlock::draw(){}  // game
-/* 002cbc90 00000588 */ FUN_002cbc90(){}
+/* 002cbc90 00000588 */ KunitorisBlock::drawWithHighlight(){}  // game
 /* 002cc220 00000228 */ KunitorisBlock::update(){}  // game
 /* 002cc450 000001ac */ KunitorisBlock::KunitorisBlock(){}  // game
 /* 002cc600 00000138 */ FUN_002cc600(){}
@@ -8641,26 +8641,26 @@
 /* 002cc8c0 000000f4 */ KunitorisActor::update(){}  // game
 /* 002cc9c0 00000008 */ FUN_002cc9c0(){}
 /* 002cc9d0 00000070 */ KunitorisSprite::draw(){}  // game
-/* 002cca40 000006dc */ KunitorisGame::start(){}  // game
+/* 002cca40 000006dc */ KunitorisBoard::selectPiece(){}  // game
 /* 002cd120 00000154 */ FUN_002cd120(){}
-/* 002cd280 0000010c */ FUN_002cd280(){}
-/* 002cd390 00000190 */ KunitorisGame::loadLevel(){}  // game
-/* 002cd520 00000168 */ FUN_002cd520(){}
+/* 002cd280 0000010c */ KunitorisBoard::draw(){}  // game
+/* 002cd390 00000190 */ KunitorisBoard::loadLevel(){}  // game
+/* 002cd520 00000168 */ KunitorisPiece::draw(){}  // game
 /* 002cd690 00000094 */ KunitorisPiece::~KunitorisPiece(){}  // game
-/* 002cd730 00000164 */ FUN_002cd730(){}
+/* 002cd730 00000164 */ KunitorisPiece::load(){}  // game
 /* 002cd8a0 00000078 */ KunitorisPiece::KunitorisPiece(){}  // game
-/* 002cd920 00000044 */ FUN_002cd920(){}
-/* 002cd970 00000028 */ FUN_002cd970(){}
+/* 002cd920 00000044 */ KunitorisPieceCell::~KunitorisPieceCell(){}  // game
+/* 002cd970 00000028 */ KunitorisPieceCell::KunitorisPieceCell(){}  // game
 /* 002cd9a0 00000178 */ kunitorisPrintf(){}  // game
 /* 002cdb20 00000098 */ kunitorisBackThread(){}  // game
 /* 002cdbc0 00000004 */ thunk_KunitorisActor::update(){}  // game
 /* 002cdbd0 00000004 */ KunitorisActor::draw(){}  // game
-/* 002cdbe0 00000008 */ FUN_002cdbe0(){}
-/* 002cdbf0 00000004 */ FUN_002cdbf0(){}
-/* 002cdc00 0000008c */ FUN_002cdc00(){}
-/* 002cdc90 000000c4 */ FUN_002cdc90(){}
+/* 002cdbe0 00000008 */ KunitorisTinted::update(){}  // game
+/* 002cdbf0 00000004 */ KunitorisTinted::draw(){}  // game
+/* 002cdc00 0000008c */ KunitorisColorCycle::update(){}  // game
+/* 002cdc90 000000c4 */ KunitorisBoard::update(){}  // game
 /* 002cdd60 00000060 */ FUN_002cdd60(){}
-/* 002cddc0 0000008c */ FUN_002cddc0(){}
+/* 002cddc0 0000008c */ KunitorisPiece::update(){}  // game
 /* 002cde50 00000010 */ KunitorisActorList::KunitorisActorList(){}  // game
 /* 002cde60 00000054 */ KunitorisActorList::~KunitorisActorList(){}  // game
 /* 002cdec0 000000a4 */ KunitorisActorList::pushBack(){}  // game

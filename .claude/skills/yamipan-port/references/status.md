@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 17:07 at commit `1365f49` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 17:30 at commit `0bd5cb9` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-07 17:07 at commit `1365f49` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6598**, named **5742** (87%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4821
-- context-name ledger: 6417 entries; overrides of wrong library matches: 0
+- game functions: **6598**, named **5754** (87%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4833
+- context-name ledger: 6429 entries; overrides of wrong library matches: 0
 - placed in a source file: 6423/6598 in 138 files
 
 Least-named game-code regions (64 KB blocks):
@@ -22,7 +22,7 @@ Least-named game-code regions (64 KB blocks):
 | `00310000` | 0/9 (0%) | - |
 | `001c0000` | 108/233 (46%) | game/scriptrunner.cpp |
 | `001b0000` | 116/242 (48%) | game/scriptrunner.cpp |
-| `002c0000` | 88/173 (51%) | game/kunitoris.cpp, game/packtables.cpp, game/stagefog.cpp |
+| `002c0000` | 100/173 (58%) | game/kunitoris.cpp, game/packtables.cpp, game/stagefog.cpp |
 | `002d0000` | 156/256 (61%) | game/drawsys.cpp, game/areaclip.cpp, game/ripplesheet.cpp |
 | `001a0000` | 195/301 (65%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
 | `00250000` | 126/178 (71%) | game/routeplayer.cpp, game/uiwidget.cpp, game/uidrawer.cpp |
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5772**; stubs: **21**
+- reconstructed FS2 functions: **5789**; stubs: **17**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -63,7 +63,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/heap.cpp` | 17 | 0 |
 | `src/game/helpscreen.cpp` | 1 | 0 |
 | `src/game/itemphysics.cpp` | 13 | 0 |
-| `src/game/kunitoris.cpp` | 42 | 5 |
+| `src/game/kunitoris.cpp` | 59 | 1 |
 | `src/game/layoutpaths.cpp` | 24 | 0 |
 | `src/game/mapobject.cpp` | 69 | 0 |
 | `src/game/mathutil.cpp` | 18 | 0 |
@@ -177,7 +177,7 @@ Least-named game-code regions (64 KB blocks):
 - 196 TUs: todo 75, partial 8, verify 137, done 46
 - next: **game/kunitoris.cpp** (continuing a partial TU)
 - pinned queue: (empty)
-- partial: `game/kunitoris.cpp` 42/93 -- Written this session: KunitorisEnding::draw 0x2c9de0 and drawIntro 0x2ca330 (one body: drawQuads over sEndingQuads 0x2fc280 with the thresholds 0x2fc300 / 0x2fc
+- partial: `game/kunitoris.cpp` 59/93 -- Written this session: the board hierarchy 0x319f60 KunitorisTinted -> 0x319f70 KunitorisColorCycle (colour tables at 0x2fb9e0, enum KunitorisColors: Piece, Flas
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -318,6 +318,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 17:30 `game/kunitoris.cpp` partial: KunitorisGame::draw written with the board, its pieces and colour cycles: KunitorisTinted / KunitorisColorCycle / KunitorisPiece (load, draw, update), Kunitoris
 - 2026-11-07 17:07 `game/kunitoris.cpp` partial: KunitorisEnding::draw and drawIntro written over the four ending quads (0x2fc280), their show thresholds and the 8 pose animations (0x2fc220); KunitorisGame +0x
 - 2026-11-07 16:52 `game/kunitoris.cpp` partial: KunitorisGame ctor and dtor, its objects (actor, sprite, cursor, block, actor list, cells, groups), the per-level and shape tables, the two bar draws and Kunito
 - 2026-11-07 16:20 `game/kunitoris.cpp` partial: Extra mode is Kunitoris: runExtraMode, its thread and back thread, title, how-to, level select, printf and the ending loop written; the KunitorisGame and Kunito
@@ -325,11 +326,10 @@ Recent sessions:
 - 2026-11-07 15:32 `unassigned@0021b340` verify: StageCharacter::answerNo forwards to its brain: 0x1dd2e0, a return 0 folded into the tail of CharacterBrain::dropSlots, created and named CharacterBrain::answer
 - 2026-11-07 15:13 `unassigned@001dff40` verify: 0x1e05b0 is PlayerMotion::winsStruggle, who keeps a ladder when two characters push on it; the run pinned to game/playermotion.cpp
 - 2026-11-07 14:52 `unassigned@002b0d50` verify: 0x2b0d50 is DemoStream::getDataWritten, one jump to SoundStream::getDataWritten; pinned to game/demoevent.cpp
-- 2026-11-07 14:34 `game/playermotion.cpp` verify: MotionProbe ctor 0x26c6b0 and deleting dtor 0x26c650 out of line; 0x26c650..0x26c6fc joined from unassigned@0026c650
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `game/kunitoris.cpp` | partial | 42/5/93 | 39.0 | 11 | 0 |
+| `game/kunitoris.cpp` | partial | 59/1/93 | 39.0 | 6 | 0 |
 | `unassigned@002e2970` | partial | 1/0/2 | 0.9 | 1 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)

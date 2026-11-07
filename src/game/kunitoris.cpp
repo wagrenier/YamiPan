@@ -268,7 +268,7 @@ void kunitorisThread(void *arg)
                 game.m_scroll[1] = height - 1;
             if (height <= game.m_scroll[1])
                 game.m_scroll[1] = 0;
-            game.start(-1);
+            game.selectPiece(-1);
 
             for (;;) {
                 threadYield(1);
@@ -285,11 +285,11 @@ void kunitorisThread(void *arg)
                 }
                 if (padPressed() & kPadSelect) {
                     kunitorisPlay(KunitorisSeSlot_Decide, KunitorisSe_Decide);
-                    if (!game.m_selectToggle) {
+                    if (!game.m_paused) {
                         if (game.m_lives > 0)
-                            game.m_selectToggle = 1;
+                            game.m_paused = 1;
                     } else if (game.m_lives > 0) {
-                        game.m_selectToggle = 0;
+                        game.m_paused = 0;
                     }
                 } else if (padPressed() & kPadStart) {
                     kunitorisPlay(KunitorisSeSlot_Decide, KunitorisSe_Decide);
@@ -957,6 +957,23 @@ void KunitorisBlock::draw(UiDrawer *drawer, int pass)
     drawer->setTranslate(none);
 }
 
+// The same passes with the highlight's sprite given (null: a new one of
+// the pack's 0x13 picture, as the slot does).
+// FS2 0x002cbc90
+// callcheck: operator_new, GsTexture (the slot's body: the inline KunitorisSprite ctor)
+// callcheck: getItem (the inline kunitorisItem)
+// callcheck: copy, identity, translate, updateMatrix, setTranslate (the inline drawSprite; the slot's body)
+
+void KunitorisBlock::drawWithHighlight(UiDrawer *drawer, int pass, KunitorisDrawable *highlight)
+{
+    if (pass < KunitorisPass_Shadow && highlight != nullptr) {
+        drawSprite(drawer, highlight, m_color);
+        return;
+    }
+    // The ROM repeats the slot's body here.
+    KunitorisBlock::draw(drawer, pass);
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // KunitorisActorList.
 
@@ -1122,17 +1139,330 @@ void KunitorisGroup::addCell(const int *offset)
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// KunitorisBoard: inline in the ROM (KunitorisGame's ctor and dtor).
+// The board's pieces and their colour cycles.
 
-KunitorisBoard::KunitorisBoard()
-    : _1c(0), _20(0), _24(0), _28(0), m_level(nullptr), _30(0), m_pieces(nullptr), _38(-1)
+// data 0x2fb840..0x2fb9e0: the cycles' colours, back to back.
+static const UiVec4 kKunitorisBrown  = { 0.59375f, 0.41796875f, 0.29296875f, 1.0f };
+static const UiVec4 kKunitorisLitYellow = { 0.671875f, 0.67578125f, 0.13671875f, 1.0f };
+static const UiVec4 kKunitorisCycleColors[] = {
+    kKunitorisBrown,                                                     // 0x2fb840: KunitorisColors_Piece
+    kKunitorisLitYellow, kKunitorisLitYellow, kKunitorisLitYellow,       // 0x2fb850: KunitorisColors_Flash
+    kKunitorisLitYellow, kKunitorisLitYellow, kKunitorisLitYellow,
+    kKunitorisLitYellow, kKunitorisLitYellow, kKunitorisLitYellow,
+    kKunitorisBrown, kKunitorisBrown, kKunitorisBrown,                   // 0x2fb8e0
+    kKunitorisBrown, kKunitorisBrown, kKunitorisBrown,
+    kKunitorisBrown, kKunitorisBrown, kKunitorisBrown,
+    { 0.5f, 0.5f, 0.5f, 1.0f },                                          // 0x2fb970: KunitorisColors_Fade
+    { 0.4f, 0.4f, 0.4f, 1.0f },
+    { 0.3f, 0.3f, 0.3f, 1.0f },
+    { 0.2f, 0.2f, 0.2f, 1.0f },
+    { 0.1f, 0.1f, 0.1f, 1.0f },
+    { 0.0f, 0.0f, 0.0f, 1.0f },
+    { 0.0703125f, 0.28515625f, 0.06640625f, 1.0f },                      // 0x2fb9d0: KunitorisColors_Green
+};
+static const KunitorisColorTable kKunitorisColorTables[KunitorisColors_Count] = {   /* data 0x2fb9e0 */
+    {  1, &kKunitorisCycleColors[0] },
+    { 18, &kKunitorisCycleColors[1] },
+    {  6, &kKunitorisCycleColors[19] },
+    {  1, &kKunitorisCycleColors[25] },
+};
+
+// rodata 0x2fbfc0..0x2fbfe0: a piece's cells and the borders.
+static const UiVec4 kKunitorisCellWhite = { 1.0f, 1.0f, 1.0f, 1.0f };                  // 0x2fbfc0: pass 0
+static const UiVec4 kKunitorisUnlit = { 0.0703125f, 0.640625f, 0.1328125f, 1.0f };    // 0x2fbfd0
+static const UiVec4 kKunitorisBorder = { 0.03515625f, 0.28515625f, 0.06640625f, 1.0f }; // 0x2fbfe0
+
+// A piece's cells: flat gouraud sprites with blending; the borders lines.
+constexpr u_long kKunitorisCellPrim =
+    UiPrim_UV | UiPrim_Blend | UiPrim_Gouraud | UiPrim_Sprite;           // 0x14e
+constexpr u_long kKunitorisBorderPrim =
+    UiPrim_UV | UiPrim_Blend | UiPrim_Gouraud | UiPrim_Line;             // 0x149
+
+// KunitorisGame::draw's map of the level: an eighth of the board's size.
+constexpr float kKunitorisMapScale = 0.125f;
+
+KunitorisTinted::KunitorisTinted()
 {
     m_color = kKunitorisGrey;
+}
+
+// FS2 0x002cdbe0
+bool KunitorisTinted::update()
+{
+    return true;
+}
+
+// FS2 0x002cdbf0
+void KunitorisTinted::draw(UiDrawer *drawer, int pass)
+{
+}
+
+KunitorisColorCycle::KunitorisColorCycle()
+    : m_colorCount(0), m_colors(nullptr), m_colorIndex(0), m_colorLoop(0)
+{
+}
+
+void KunitorisColorCycle::setColors(KunitorisColors colors)
+{
+    const KunitorisColorTable &table = kKunitorisColorTables[colors];
+    m_colors = nullptr;
+    m_colorCount = 0;
+    m_colorIndex = 0;
+    m_colorLoop = 0;
+    if (table.colors != nullptr) {
+        m_colors = table.colors;
+        m_colorCount = table.count;
+        m_colorLoop = 1;
+        m_color = m_colors[m_colorIndex];
+    }
+}
+
+void KunitorisColorCycle::stepColor()
+{
+    m_colorIndex++;
+    if (m_colorLoop == 0) {
+        if (m_colorIndex >= m_colorCount)
+            m_colorIndex = m_colorCount - 1;
+    } else {
+        m_colorIndex = m_colorIndex % m_colorCount;
+    }
+    m_color = m_colors[m_colorIndex];
+}
+
+// FS2 0x002cdc00
+bool KunitorisColorCycle::update()
+{
+    stepColor();
+    return true;
+}
+
+// FS2 0x002cd970
+KunitorisPieceCell::KunitorisPieceCell()
+    : lit(0), data(nullptr), cell{ 0, 0 }, rect{}
+{
+}
+
+// FS2 0x002cd920
+// callcheck: operator_delete (the deleting dtor's flag)
+
+KunitorisPieceCell::~KunitorisPieceCell()
+{
+}
+
+// FS2 0x002cd8a0
+KunitorisPiece::KunitorisPiece()
+    : m_data(nullptr), m_cellCount(0), m_cells(nullptr)
+{
+}
+
+// FS2 0x002cd690
+// callcheck: __destroy_new_array (the delete[]-expression)
+// callcheck: operator_delete (the deleting dtor's flag)
+
+KunitorisPiece::~KunitorisPiece()
+{
+    delete[] m_cells;
+}
+
+// FS2 0x002cddc0
+bool KunitorisPiece::update()
+{
+    stepColor();
+    return true;
+}
+
+// FS2 0x002cd730
+// callcheck: __destroy_new_array (the delete[]-expression)
+// callcheck: operator_new[], FUN_00104d90, KunitorisPieceCell, ~KunitorisPieceCell (the new[]-expression: CodeWarrior's __construct_new_array)
+
+void KunitorisPiece::load(float cell, const KunitorisPieceData *data)
+{
+    delete[] m_cells;
+    m_cells = nullptr;
+    m_data = data;
+    if (m_data == nullptr)
+        return;
+    m_cellCount = m_data->cellCount;
+    m_cells = new KunitorisPieceCell[m_cellCount];
+    for (int i = 0; i < m_data->cellCount; i++) {
+        KunitorisPieceCell &c = m_cells[i];
+        c.lit = 1;
+        c.data = i < m_data->cellCount ? &m_data->cells[i] : nullptr;
+        c.rect[0].xy[0] = static_cast<float>(c.data->x) * cell;
+        c.rect[0].xy[1] = static_cast<float>(c.data->y) * cell;
+        c.rect[1] = c.rect[0];
+        c.rect[1].xy[0] += cell;
+        c.rect[1].xy[1] += cell;
+        c.cell[0] = c.data->x;
+        c.cell[1] = c.data->y;
+    }
+}
+
+// FS2 0x002cd520
+// callcheck: setPrimColor, drawFlat
+
+void KunitorisPiece::draw(UiDrawer *drawer, int pass)
+{
+    if (m_data == nullptr)
+        return;
+    if (pass == KunitorisPass_Shadow) {
+        drawer->setPrimColor(kKunitorisCellPrim, &kKunitorisCellWhite);
+        for (int i = 0; i < m_cellCount; i++)
+            drawer->drawFlat(m_cells[i].rect, 2, 0);
+        return;
+    }
+    // The colour is set only when it changes: -1 none yet, 0 unlit, 1 lit.
+    int current = -1;
+    for (int i = 0; i < m_cellCount; i++) {
+        if (m_cells[i].lit == 0) {
+            if (current != 0) {
+                drawer->setPrimColor(kKunitorisCellPrim, &kKunitorisUnlit);
+                current = 0;
+            }
+        } else if (current != 1) {
+            drawer->setPrimColor(kKunitorisCellPrim, &m_color);
+            current = 1;
+        }
+        drawer->drawFlat(m_cells[i].rect, 2, 0);
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// KunitorisBoard: its ctor and dtor inline in the ROM (KunitorisGame's).
+
+KunitorisBoard::KunitorisBoard()
+    : m_level(nullptr), m_pieceCount(0), m_pieces(nullptr), m_highlight(-1)
+{
 }
 
 KunitorisBoard::~KunitorisBoard()
 {
     delete[] m_pieces;
+}
+
+// FS2 0x002cdc90
+
+bool KunitorisBoard::update()
+{
+    for (int i = 0; i < m_pieceCount; i++)
+        m_pieces[i].stepColor();
+    return true;
+}
+
+// FS2 0x002cd280
+// callcheck: setPrimColor, drawFlat (the pieces draw through their vtable)
+
+void KunitorisBoard::draw(UiDrawer *drawer, int pass)
+{
+    for (int i = 0; i < m_pieceCount; i++) {
+        if (i == m_highlight)
+            m_pieces[i].draw(drawer, KunitorisPass_Lifted);
+        else
+            m_pieces[i].draw(drawer, pass);
+    }
+    if (pass != KunitorisPass_Shadow) {
+        drawer->setPrimColor(kKunitorisBorderPrim, &kKunitorisBorder);
+        drawer->drawFlat(m_level->outline, m_level->outlineCount * 2, 0);
+    }
+}
+
+int KunitorisPiece::litCells() const
+{
+    if (m_data == nullptr)
+        return 0;
+    int lit = 0;
+    for (int i = 0; i < m_data->cellCount; i++) {
+        if (m_cells[i].lit != 0)
+            lit++;
+    }
+    return lit;
+}
+
+int KunitorisBoard::litCells(int piece) const
+{
+    if (piece < 0)
+        piece = m_highlight;
+    if (piece < 0)
+        return 0;
+    if (piece == kKunitorisAllPieces) {
+        int lit = 0;
+        for (int i = 0; i < m_pieceCount; i++)
+            lit += m_pieces[i].litCells();
+        return lit;
+    }
+    return m_pieces[piece].litCells();
+}
+
+// The old choice back to the plain colour first. A negative piece: a
+// random one with lit cells (from a random start, round the board once),
+// -1 when none is left.
+// FS2 0x002cca40
+// callcheck: randNext2
+
+int KunitorisBoard::selectPiece(int piece)
+{
+    if (m_highlight >= 0) {
+        if (m_highlight == kKunitorisAllPieces) {
+            for (int i = 0; i < m_pieceCount; i++) {
+                if (litCells(i) != 0)
+                    m_pieces[i].setColors(KunitorisColors_Piece);
+            }
+        } else {
+            m_pieces[m_highlight].setColors(KunitorisColors_Piece);
+        }
+    }
+
+    if (piece < 0) {
+        const int first = static_cast<int>(randNext2()) % m_pieceCount;
+        piece = first;
+        do {
+            if (litCells(piece) != 0) {
+                m_pieces[piece].setColors(KunitorisColors_Flash);
+                m_highlight = piece;
+                return piece;
+            }
+            piece = (piece + 1) % m_pieceCount;
+        } while (first != piece);
+        m_highlight = -1;
+        return -1;
+    }
+
+    if (piece == kKunitorisAllPieces) {
+        for (int i = 0; i < m_pieceCount; i++) {
+            if (litCells(i) != 0)
+                m_pieces[i].setColors(KunitorisColors_Flash);
+        }
+    } else {
+        if (piece >= m_pieceCount)
+            return -1;
+        m_pieces[piece].setColors(KunitorisColors_Flash);
+    }
+    m_highlight = piece;
+    return piece;
+}
+
+// FS2 0x002cd390
+// callcheck: __destroy_new_array (the delete[]-expression)
+// callcheck: operator_new[], FUN_00104d90, KunitorisPiece, ~KunitorisPiece (the new[]-expression: CodeWarrior's __construct_new_array)
+// callcheck: load (each piece)
+
+void KunitorisBoard::loadLevel(float cell, KunitorisLevel *level)
+{
+    delete[] m_pieces;
+    m_level = nullptr;
+    m_pieceCount = 0;
+    m_pieces = nullptr;
+    m_highlight = -1;
+    m_level = level;
+    if (level == nullptr)
+        return;
+    m_pieceCount = level->pieceCount;
+    m_pieces = new KunitorisPiece[m_pieceCount];
+    for (int i = 0; i < m_pieceCount; i++) {
+        KunitorisPiece &piece = m_pieces[i];
+        piece.load(cell, i < m_level->pieceCount ? m_level->pieces[i].get() : nullptr);
+        piece.setColors(KunitorisColors_Piece);
+    }
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -1167,7 +1497,7 @@ KunitorisGame::KunitorisGame(int hiScore, int level)
     m_drawer = new UiDrawer();
     m_hiScore = hiScore;
     m_score = 0;
-    m_selectToggle = 0;
+    m_paused = 0;
     _75c = 0;
     m_sprite = new KunitorisSprite(kunitorisItem(KunitorisItem_Highlight));
     m_scroll[0] = 0;
@@ -1451,6 +1781,124 @@ void KunitorisEnding::draw(float x, float y, UiDrawer *drawer)
     drawPose(x, y, drawer);
 }
 
+// The board at the scroll, four times: the level wraps, so the copies one
+// board width / height up-left fill what the view shows past its edges.
+// FS2 0x002c81c0
+// callcheck: identity, setScale, translate, copy, updateMatrix, setPixelMode, setPrimColor, drawFlat (the pieces draw through their vtable)
+
+void KunitorisGame::drawBoard()
+{
+    const float x = static_cast<float>(m_scroll[0]);
+    const float y = static_cast<float>(m_scroll[1]);
+    const float left = x - static_cast<float>(m_level->width);
+    const float up = y - static_cast<float>(m_level->height);
+    const float xs[4] = { x, x, left, left };
+    const float ys[4] = { y, up, y, up };
+    for (int i = 0; i < 4; i++) {
+        const float at[2] = { -128.0f - xs[i] * kKunitorisCellPixels,
+                              -128.0f - ys[i] * kKunitorisCellPixels };
+        UiMatrix matrix;
+        matrix.identity();
+        matrix.setScale(1.0f, 1.0f);
+        matrix.translate(at);
+        m_drawer->m_stack[m_drawer->m_top].copy(matrix);
+        m_drawer->updateMatrix();
+        m_drawer->setPixelMode(1);
+        UiDrawer *drawer = m_drawer;
+        for (int j = 0; j < m_pieceCount; j++)
+            m_pieces[j].draw(drawer, KunitorisPass_Lifted);
+        drawer->setPrimColor(kKunitorisBorderPrim, &kKunitorisBorder);
+        drawer->drawFlat(m_level->outline, m_level->outlineCount * 2, 0);
+    }
+}
+
+// The frame: the board, the blocks' shadows then the blocks lifted (the
+// other set first, the groups coming in highlighted), the cursor, the
+// level's map small at the top, the ending's pictures, the scores and the
+// state line.
+// FS2 0x002c5ea0
+// callcheck: begin, end, drawBoard, drawWithHighlight, drawIntro, kunitorisPrintf, drawBlinkBar, drawLivesBar
+// callcheck: identity, setScale, translate, copy, updateMatrix (the map's and the reset matrices; the cursor and the pieces draw through their vtables)
+
+void KunitorisGame::draw(sceVif1Packet *packet, TexAreaList *texList)
+{
+    m_drawer->begin(packet, texList);
+    drawBoard();
+
+    KunitorisCells &other = m_cells[m_cellsIndex ^ 1];
+    KunitorisCells &mine = m_cells[m_cellsIndex];
+    for (KunitorisActorList::Node *n = other.m_blocks.m_head; n != nullptr; n = n->next)
+        static_cast<KunitorisBlock *>(*n->item)->drawWithHighlight(m_drawer, KunitorisPass_Shadow, nullptr);
+    for (KunitorisActorList::Node *n = mine.m_blocks.m_head; n != nullptr; n = n->next)
+        static_cast<KunitorisBlock *>(*n->item)->drawWithHighlight(m_drawer, KunitorisPass_Shadow, nullptr);
+    for (int i = 0; i < kKunitorisGroups; i++) {
+        if (m_groups[i].m_active == 0)
+            continue;
+        for (KunitorisActorList::Node *n = m_groups[i].m_blocks.m_head; n != nullptr; n = n->next)
+            static_cast<KunitorisBlock *>(*n->item)->drawWithHighlight(m_drawer, KunitorisPass_Highlight, nullptr);
+    }
+    m_cursor->draw(m_drawer, KunitorisPass_Shadow);
+
+    for (KunitorisActorList::Node *n = other.m_blocks.m_head; n != nullptr; n = n->next)
+        static_cast<KunitorisBlock *>(*n->item)->drawWithHighlight(m_drawer, KunitorisPass_Lifted, nullptr);
+    for (KunitorisActorList::Node *n = mine.m_blocks.m_head; n != nullptr; n = n->next)
+        static_cast<KunitorisBlock *>(*n->item)->drawWithHighlight(m_drawer, KunitorisPass_Lifted, nullptr);
+    for (int i = 0; i < kKunitorisGroups; i++) {
+        if (m_groups[i].m_active == 0)
+            continue;
+        for (KunitorisActorList::Node *n = m_groups[i].m_blocks.m_head; n != nullptr; n = n->next)
+            static_cast<KunitorisBlock *>(*n->item)->drawWithHighlight(m_drawer, KunitorisPass_Lifted, nullptr);
+    }
+    m_cursor->draw(m_drawer, KunitorisPass_Lifted);
+
+    // The level's map, an eighth of the board's size, at (64, 16).
+    const float mapAt[2] = { 64.0f, 16.0f };
+    UiMatrix map;
+    map.identity();
+    map.setScale(kKunitorisMapScale, kKunitorisMapScale);
+    map.translate(mapAt);
+    m_drawer->m_stack[m_drawer->m_top].copy(map);
+    m_drawer->updateMatrix();
+    UiDrawer *drawer = m_drawer;
+    for (int i = 0; i < m_pieceCount; i++) {
+        if (i == m_highlight)
+            m_pieces[i].draw(drawer, KunitorisPass_Lifted);
+        else
+            m_pieces[i].draw(drawer, KunitorisPass_Shadow);
+    }
+    UiMatrix reset;
+    reset.identity();
+    m_drawer->m_stack[m_drawer->m_top].copy(reset);
+    m_drawer->updateMatrix();
+    m_ending.drawIntro(0.0f, 0.0f, m_drawer);
+
+    m_drawer->m_color = kKunitorisWhite;
+    kunitorisPrintf(sFont, m_drawer, 8, 10, kKunitorisTitleText);
+    kunitorisPrintf(sFont, m_drawer, 8, 0x14, "HISCORE:%d", m_hiScore);
+    kunitorisPrintf(sFont, m_drawer, 0x78, 0x14, "SCORE:%d", m_score);
+    m_drawer->m_color = kKunitorisWhite;
+    if (m_highlight == kKunitorisAllPieces)
+        drawBlinkBar();
+    else
+        drawLivesBar();
+    if (!m_cleared) {
+        if (m_lives < 1) {
+            m_drawer->m_color = kKunitorisWhite;
+            kunitorisPrintf(sFont, m_drawer, 0x68, 0x6c, "GAME OVER");
+            m_drawer->m_color = kKunitorisWhite;
+        } else if (m_paused) {
+            m_drawer->m_color = kKunitorisWhite;
+            kunitorisPrintf(sFont, m_drawer, 0x78, 0x6c, "PAUSE");
+            m_drawer->m_color = kKunitorisWhite;
+        }
+    } else {
+        m_drawer->m_color = kKunitorisWhite;
+        kunitorisPrintf(sFont, m_drawer, 0x60, 0x6c, "GAME CLEAR!");
+        m_drawer->m_color = kKunitorisWhite;
+    }
+    m_drawer->end();
+}
+
 // Inline in the ROM (the end of kunitorisThread's level); the groups and
 // ~KunitorisBoard after it.
 // callcheck: ~KunitorisSprite, ~KunitorisCursor, ~UiDrawer (the delete-expressions)
@@ -1465,32 +1913,8 @@ KunitorisGame::~KunitorisGame()
 
 // ---- stubs (tools/reverse/stubgen.py) ----
 
-// stub of FS2 0x002c5ea0
-void KunitorisGame::draw(sceVif1Packet *packet, TexAreaList *texList)
-{
-    YAMIPAN_STUB("KunitorisGame::draw", 0x002c5ea0);
-}
-
-// stub of FS2 0x002cd390
-void KunitorisGame::loadLevel(float cell, KunitorisLevel *level)
-{
-    YAMIPAN_STUB("KunitorisGame::loadLevel", 0x002cd390);
-}
-
-// stub of FS2 0x002cca40
-void KunitorisGame::start(int arg)
-{
-    YAMIPAN_STUB("KunitorisGame::start", 0x002cca40);
-}
-
 // stub of FS2 0x002c64d0
 void KunitorisGame::update(GamePad *pad)
 {
     YAMIPAN_STUB("KunitorisGame::update", 0x002c64d0);
-}
-
-// stub of FS2 0x002cd690
-KunitorisPiece::~KunitorisPiece()
-{
-    YAMIPAN_STUB("KunitorisPiece::~KunitorisPiece", 0x002cd690);
 }

@@ -83,6 +83,30 @@ constexpr int kKunitorisLevels = 16;    // SaveData::_46c / _4ac
 constexpr int kKunitorisLinesPerStep = 3;
 constexpr int kKunitorisAllCleared = 15;
 
+// One cell of a KunitorisPieceData.
+struct KunitorisPieceCellData
+{
+    int    x;                   // FS2 +0x0
+    int    y;                   // FS2 +0x4
+    u_char _08[8];              // FS2 +0x8
+};
+static_assert(sizeof(KunitorisPieceCellData) == 0x10, "KunitorisPieceCellData: EE 0x10");
+static_assert(offsetof(KunitorisPieceCellData, y) == 0x4, "KunitorisPieceCellData::y");
+
+// A piece of a level file (KunitorisLevel::pieces): its cells, board
+// coordinates in cells.
+struct KunitorisPieceData
+{
+    typedef KunitorisPieceCellData Cell;
+
+    u_char _00[4];              // FS2 +0x00
+    int    cellCount;           // FS2 +0x04
+    u_char _08[8];              // FS2 +0x08
+    Cell   cells[1];            // FS2 +0x10: cellCount of them
+};
+static_assert(offsetof(KunitorisPieceData, cellCount) == 0x4, "KunitorisPieceData::cellCount");
+static_assert(offsetof(KunitorisPieceData, cells) == 0x10, "KunitorisPieceData::cells");
+
 // A level file (a pack item), relocated in place once.
 struct KunitorisLevel
 {
@@ -95,7 +119,7 @@ struct KunitorisLevel
         char *base = reinterpret_cast<char *>(this);
         for (int i = 0; i < kPieceRefs; i++)
             pieces[i].set(base + pieces[i].rel);
-        _2114.set(base + _2114.rel);
+        outline.set(base + outline.rel);
         relocated = 1;
     }
 
@@ -106,17 +130,18 @@ struct KunitorisLevel
     short  height;              // FS2 +0x0006
     u_char relocated;           // FS2 +0x0008
     u_char _09[3];
-    int    pieceCount;          // FS2 +0x000c: KunitorisGame::loadLevel
+    int    pieceCount;          // FS2 +0x000c: KunitorisBoard::loadLevel
     u_char _10[0x2000];         // FS2 +0x0010
-    S2dRef<void> pieces[kPieceRefs]; // FS2 +0x2010: loadLevel's piece records
-    u_char _2110[4];            // FS2 +0x2110
-    S2dRef<void> _2114;         // FS2 +0x2114
+    S2dRef<KunitorisPieceData> pieces[kPieceRefs]; // FS2 +0x2010
+    int    outlineCount;        // FS2 +0x2110: lines (two vertices each)
+    S2dRef<UiVertex> outline;   // FS2 +0x2114: the pieces' borders, pixels
 };
 static_assert(offsetof(KunitorisLevel, width) == 0x4, "KunitorisLevel::width");
 static_assert(offsetof(KunitorisLevel, relocated) == 0x8, "KunitorisLevel::relocated");
 static_assert(offsetof(KunitorisLevel, pieceCount) == 0xc, "KunitorisLevel::pieceCount");
 static_assert(offsetof(KunitorisLevel, pieces) == 0x2010, "KunitorisLevel::pieces");
-static_assert(offsetof(KunitorisLevel, _2114) == 0x2114, "KunitorisLevel::_2114");
+static_assert(offsetof(KunitorisLevel, outlineCount) == 0x2110, "KunitorisLevel::outlineCount");
+static_assert(offsetof(KunitorisLevel, outline) == 0x2114, "KunitorisLevel::outline");
 
 // ──────────────────────────────────────────────────────────────────────
 // The minigame's objects. Every class here is layout: host (the ROM's
@@ -237,6 +262,8 @@ public:
     ~KunitorisBlock() override;                                          // FS2 0x002c7a40: deleting (obj, flag)
     bool update() override;                                              // FS2 0x002cc220 (thunk 0x2c7a30)
     void draw(UiDrawer *drawer, int pass) override;                      // FS2 0x002cb800
+    // The passes with the highlight's sprite given (null: a new one).
+    void drawWithHighlight(UiDrawer *drawer, int pass, KunitorisDrawable *highlight); // FS2 0x002cbc90
 
     const int *m_origin;        // FS2 +0x28: the owner's cell
     int        m_offset[2];     // FS2 +0x2c
@@ -315,33 +342,119 @@ struct KunitorisShape
     const int (*cells)[2];
 };
 
-// The pieces KunitorisGame::loadLevel builds (EE 0x38, vtable 0x319fe0
-// over the bases 0x319f60 / 0x319f70); a later slice's work. layout: host
-class KunitorisPiece
+// The colour cycles of the board's pieces (data 0x2fb9e0: { count, colours },
+// the colours at 0x2fb840..0x2fb9e0).
+enum KunitorisColors
+{
+    KunitorisColors_Piece = 0,          // brown, one colour (loadLevel)
+    KunitorisColors_Flash = 1,          // 9 frames yellow, then 9 brown
+    KunitorisColors_Fade  = 2,          // grey down to black over 6 frames
+    KunitorisColors_Green = 3,          // dark green, one colour
+    KunitorisColors_Count = 4,
+};
+
+// layout: host (EE 8 bytes)
+struct KunitorisColorTable
+{
+    int           count;
+    const UiVec4 *colors;
+};
+
+// A position and a colour (vtable 0x319f60, vptr +0x18: { update, draw };
+// its ctor is inline in the derived ones). layout: host
+class KunitorisTinted
+{
+public:
+    KunitorisTinted();                                                   // inline in the ROM: grey
+    virtual bool update();                                               // FS2 0x002cdbe0: true
+    virtual void draw(UiDrawer *drawer, int pass);                       // FS2 0x002cdbf0: nothing
+
+    float  m_pos[2];            // FS2 +0x00: unset
+    UiVec4 m_color;             // FS2 +0x08: grey (0x2fc000)
+};
+
+// A colour played from a table, one entry a frame (vtable 0x319f70).
+// layout: host
+class KunitorisColorCycle : public KunitorisTinted
+{
+public:
+    KunitorisColorCycle();                                               // inline in the ROM: no table
+    bool update() override;                                              // FS2 0x002cdc00: the next colour; true
+    // Inline in the ROM (loadLevel, selectPiece): the table from its first
+    // colour, looping.
+    void setColors(KunitorisColors colors);
+    // Inline in the ROM (each cycle's update, the board's for its pieces):
+    // m_colorIndex moved on, wrapped or held on the last, its colour taken.
+    void stepColor();
+
+    int           m_colorCount; // FS2 +0x1c
+    const UiVec4 *m_colors;     // FS2 +0x20
+    int           m_colorIndex; // FS2 +0x24
+    u_char        m_colorLoop;  // FS2 +0x28: wraps; else holds the last
+};
+
+// One cell of a piece (EE 0x20). layout: host
+struct KunitorisPieceCell
+{
+    KunitorisPieceCell();                                                // FS2 0x002cd970: all zero
+    ~KunitorisPieceCell();                                               // FS2 0x002cd920: deleting (obj, flag)
+
+    int lit;                    // FS2 +0x00: 1 once loaded; 0 draws in the unlit green
+    const KunitorisPieceData::Cell *data; // FS2 +0x04
+    int cell[2];                // FS2 +0x08: the board cell, x y
+    UiVertex rect[2];           // FS2 +0x10: its corners in pixels (a sprite)
+};
+
+// A piece of the board, the cells of one KunitorisPieceData (EE 0x38,
+// vtable 0x319fe0, vptr +0x18). layout: host
+class KunitorisPiece final : public KunitorisColorCycle
 {
 public:
     KunitorisPiece();                                                    // FS2 0x002cd8a0
-    ~KunitorisPiece();                                                   // FS2 0x002cd690
+    ~KunitorisPiece();                                                   // FS2 0x002cd690: deleting (obj, flag)
+    bool update() override;                                              // FS2 0x002cddc0: KunitorisColorCycle's body again
+    // Pass 0: every cell white; else lit cells in m_color, the rest green.
+    void draw(UiDrawer *drawer, int pass) override;                      // FS2 0x002cd520
+    // The cells of data, cell pixels each.
+    void load(float cell, const KunitorisPieceData *data);               // FS2 0x002cd730
+    // Inline in the ROM (selectPiece): the cells still lit.
+    int  litCells() const;
+
+    const KunitorisPieceData *m_data;   // FS2 +0x2c
+    int                 m_cellCount;    // FS2 +0x30
+    KunitorisPieceCell *m_cells;        // FS2 +0x34: new[]
 };
 
-// The level's board (vtables 0x319f60 / 0x319f70 / 0x319fd0 at +0x18, the
-// game's bases). layout: host.
-class KunitorisBoard
+// KunitorisBoard::m_highlight's "every lit piece" (pieces are at most 64).
+constexpr int kKunitorisAllPieces = 0x100;
+
+// The level's board: its pieces and their borders (vtable 0x319fd0 over
+// 0x319f60 / 0x319f70 at +0x18; the game's 0x319f80 keeps its slots).
+// layout: host.
+class KunitorisBoard : public KunitorisColorCycle
 {
 public:
     KunitorisBoard();           // inline in the ROM (KunitorisGame's ctor)
     ~KunitorisBoard();          // inline in the ROM: deletes the pieces
+    // Every piece's colour stepped; true.
+    bool update() override;                                              // FS2 0x002cdc90
+    // The pieces in pass (m_highlight's lifted), then with any pass but 0
+    // the borders.
+    void draw(UiDrawer *drawer, int pass) override;                      // FS2 0x002cd280
+    // Takes the level file and builds its pieces; cell the cell size.
+    void loadLevel(float cell, KunitorisLevel *level);                   // FS2 0x002cd390
+    // The piece that flashes (KunitorisColors_Flash): piece, every lit one
+    // (kKunitorisAllPieces) or, negative, a random lit one; the choice, -1
+    // when there is none.
+    int  selectPiece(int piece);                                         // FS2 0x002cca40
+    // Inline in the ROM (selectPiece): the lit cells of piece, of every
+    // piece (kKunitorisAllPieces) or, negative, of m_highlight.
+    int  litCells(int piece) const;
 
-    float  m_pos[2];            // FS2 +0x00: 0x319f60's (unset)
-    UiVec4 m_color;             // FS2 +0x08: grey
-    int    _1c;                 // FS2 +0x1c: 0x319f70's
-    int    _20;                 // FS2 +0x20
-    int    _24;                 // FS2 +0x24
-    u_char _28;                 // FS2 +0x28
-    KunitorisLevel *m_level;    // FS2 +0x2c: 0x319fd0's
-    int    _30;                 // FS2 +0x30
+    KunitorisLevel *m_level;    // FS2 +0x2c
+    int    m_pieceCount;        // FS2 +0x30
     KunitorisPiece *m_pieces;   // FS2 +0x34: new[] (loadLevel)
-    int    _38;                 // FS2 +0x38: -1 at first
+    int    m_highlight;         // FS2 +0x38: the piece flashing (drawn lifted), -1 none, or kKunitorisAllPieces
 };
 
 // The view's sides a group comes in from (the ctor's randNext2() & 3).
@@ -409,15 +522,15 @@ class KunitorisGame : public KunitorisBoard
 public:
     KunitorisGame(int hiScore, int level);                               // FS2 0x002c8640
     ~KunitorisGame();                                                    // inline in the ROM (kunitorisThread)
-    // Takes the level file and builds its pieces; cell the cell size.
-    void loadLevel(float cell, KunitorisLevel *level);                   // FS2 0x002cd390
-    void start(int arg);                                                 // FS2 0x002cca40
     void update(GamePad *pad);                                           // FS2 0x002c64d0
     void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x002c5ea0
+    using KunitorisBoard::draw;
 
 private:
     // Inline in the ROM (the ctor): the first group not active, or null.
     KunitorisGroup *freeGroup();
+    // The board four times at the scroll (the level wraps).
+    void drawBoard();                                                    // FS2 0x002c81c0
     // m_lives as a bar of pack item 0x12, one pixel a life, at the top.
     void drawLivesBar();                                                 // FS2 0x002c8510
     // _764 as the same bar, dark grey or grey by bit 1 of _760.
@@ -446,7 +559,7 @@ public:
     int    _764;                // FS2 +0x764
     int    _768;                // FS2 +0x768
     int    _76c;                // FS2 +0x76c
-    u_char m_selectToggle;      // FS2 +0x770: Select flips it while lives are left
+    u_char m_paused;            // FS2 +0x770: Select flips it while lives are left; draw shows PAUSE
     int    _774;                // FS2 +0x774
     u_char m_cleared;           // FS2 +0x778: the level is cleared
     int    m_shapeCount;        // FS2 +0x77c: of m_shapes, 27 below level 12, else 20

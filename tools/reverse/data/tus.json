@@ -646,7 +646,7 @@
    "why": "The ItemPhysics class whole: slots 0x23c010..0x23c300, the rest to the ctor at 0x23db50, which ends at 0x23de14; sysdata ends before it, getLocalDateTime 0x23de20 starts datetime.cpp"
   },
   "game/kunitoris.cpp": {
-   "notes": "Written this session: KunitorisEnding::draw 0x2c9de0 and drawIntro 0x2ca330 (one body: drawQuads over sEndingQuads 0x2fc280 with the thresholds 0x2fc300 / 0x2fc320, then drawPose from kPoseAnims 0x2fc220; pose items 0x1a..0x21, banner 0x22, intro tiles 0x23..0x25, ending tiles 0x26..0x28). sEndingTiles is gone: setTiles now writes quads 1..3 of sEndingQuads. KunitorisGame _3c.._48 became m_ending (a KunitorisEnding: frame 0, scene 0, timer -1). KunitorisScene enum (Idle 0, Tiles 6). Callcheck comment fixed in the ctor (names must come before the parenthesis). Next, in order: KunitorisPiece (vtable 0x319fe0 over 0x319f60 / 0x319f70: ctor 0x2cd8a0, dtor 0x2cd690 stub, its draw slot +0xc taking (drawer, highlighted)) and loadLevel 0x2cd390; then FUN_002cbc90 (0x588, the actor draw KunitorisGame::draw calls as (actor, drawer, pass, null): pass -1 for active groups, 0 then 1 for the two m_cells lists, the cursor via its slot); then the board draw FUN_002c81c0 (pieces with pass 1 at four wrap offsets, outline lines from level +0x2114 with count +0x2110 times 2, prim 0x149, colour 0x2fbfe0); then KunitorisGame::draw 0x2c5ea0 (board, cells, groups, cursor, pieces scaled 0.125 at (64,16) with piece _38 highlighted, m_ending.drawIntro(0,0), the texts HISCORE / SCORE / PAUSE / GAME CLEAR! / GAME OVER at the decomp's positions, blink bar when _38 is 0x100 else lives bar); then start 0x2cca40 and update 0x2c64d0 (0x155c, its own session). Smoke run still ends at the boot language select (Extra mode is top menu answer 10), so no picture of Kunitoris yet.",
+   "notes": "Written this session: the board hierarchy 0x319f60 KunitorisTinted -> 0x319f70 KunitorisColorCycle (colour tables at 0x2fb9e0, enum KunitorisColors: Piece, Flash, Fade, Green) -> 0x319fe0 KunitorisPiece (ctor, dtor, load 0x2cd730, draw 0x2cd520, update 0x2cddc0; cells KunitorisPieceCell 0x20) and -> KunitorisBoard (update 0x2cdc90, draw 0x2cd280, loadLevel 0x2cd390 and selectPiece 0x2cca40 renamed from KunitorisGame::loadLevel / start: they touch only board fields). KunitorisLevel +0x2110 / +0x2114 are outlineCount / outline (UiVertex lines); pieces are S2dRef of KunitorisPieceData. KunitorisGame::draw 0x2c5ea0 written in full with drawBoard 0x2c81c0 and KunitorisBlock::drawWithHighlight 0x2cbc90; m_highlight (+0x38, was _38) is the flashing piece, 0x100 (kKunitorisAllPieces) every lit one, which swaps the lives bar for the blink bar. +0x770 renamed m_paused (draw prints PAUSE). UiPrim_Line (1) added to uidrawer.h. Left: KunitorisGame::update 0x2c64d0 (0x155c, its own session: it calls selectPiece three times and randNext2), the 0x2c81b0 j-randNext2 thunk (nothing to write: host calls randNext2), then the 39 other unwritten functions of the range (the mover / fader classes behind KunitorisActor +0x18 / +0x1c among them). Smoke run still ends at the boot language select (Extra mode is top menu answer 10), so no picture of Kunitoris yet; once a pad script reaches it, compare the board with the level files (pack items 0..15).",
    "ranges": [
     [
      "002c42a0",
@@ -668,6 +668,11 @@
      "date": "2026-11-07 17:07",
      "status": "partial",
      "summary": "KunitorisEnding::draw and drawIntro written over the four ending quads (0x2fc280), their show thresholds and the 8 pose animations (0x2fc220); KunitorisGame +0x3c is its own KunitorisEnding"
+    },
+    {
+     "date": "2026-11-07 17:30",
+     "status": "partial",
+     "summary": "KunitorisGame::draw written with the board, its pieces and colour cycles: KunitorisTinted / KunitorisColorCycle / KunitorisPiece (load, draw, update), KunitorisBoard update / draw / loadLevel / selectPiece (was start), drawBoard (the wrap) and KunitorisBlock::drawWithHighlight"
     }
    ],
    "status": "partial",
