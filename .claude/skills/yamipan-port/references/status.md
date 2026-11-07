@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 18:18 at commit `8efd315` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 18:34 at commit `b3e43c0` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 18:18 at commit `8efd315` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6598**, named **5785** (88%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4865
-- context-name ledger: 6461 entries; overrides of wrong library matches: 0
-- placed in a source file: 6425/6598 in 139 files
+- game functions: **6598**, named **5788** (88%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4868
+- context-name ledger: 6464 entries; overrides of wrong library matches: 0
+- placed in a source file: 6445/6598 in 139 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5824**; stubs: **16**
+- reconstructed FS2 functions: **5830**; stubs: **16**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -82,7 +82,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/pausemenu.cpp` | 7 | 0 |
 | `src/game/pausemenustate.cpp` | 12 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
-| `src/game/playermotion.cpp` | 637 | 0 |
+| `src/game/playermotion.cpp` | 643 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rand48.cpp` | 3 | 0 |
@@ -175,10 +175,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 196 TUs: todo 75, active 1, partial 6, verify 139, done 46
+- 193 TUs: todo 75, partial 4, verify 139, done 46
 - next: **None** (nothing on the frontier and no queued TU)
 - pinned queue: (empty)
-- active: `unassigned@002e2970` 0/0
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -225,7 +224,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
 - verify: `game/pausemenu.cpp` 7/7 -- New game/pausemenu.cpp and .h (PauseMenuChoice moved from gamehooks.h, PauseMenuScreen for answers 4..9, help pages 0 and 7). Fix outside the file: StageScene::
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
-- verify: `game/playermotion.cpp` 543/557 -- The two functions of unassigned@0026c650 are the probe's own ctor and deleting dtor, joined into this TU (range 0x26c4b0..0x26c6fc). The ROM news a 0xc spread b
+- verify: `game/playermotion.cpp` 563/577 -- The queue and the frontier were empty; this run took the partial unassigned@00280620. Its code (MotionDragOutCar, MotionGetOffCar, MotionGetOnCar, findCarDoor, 
 - verify: `game/prgmccard.cpp` 7/7 -- All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide close
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/ripplesheet.cpp` 7/10 -- Batch 164. What the notes called stage 0x1b's boss film is a 15 by 15 ripple sheet, 0x2d10f0..0x2d3700, SightJack +0xb4: the frame bent, pushed from a tint, cre
@@ -321,6 +320,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 18:33 `game/playermotion.cpp` verify: The car motions run 0x280620..0x2811c0, 0x281370..0x2813e0, 0x281548..0x281a40 joined playermotion.cpp (was unassigned@00280620 and unassigned@00281550); the si
 - 2026-11-07 18:17 `rena/rena_camera.cpp` verify: boxClipTest written: a part box against the frame planes and the guard band (0 inside, 1 crossing, 2 outside); 0x2e2970 named RenaCamera::RenaCamera
 - 2026-11-07 18:04 `game/kunitoris.cpp` verify: Kunitoris complete: the drawable and mover bases (dtors, the empty draw, the never-ending step), kunitorisRandom, KunitorisGroup::copyPair, isEmpty / isGone out
 - 2026-11-07 17:52 `game/kunitoris.cpp` partial: KunitorisGame::update written with every helper it calls: groups spawn, step, wrap, scroll, join the player (absorb), break off, shoot, turn, flip, drop and the
@@ -328,7 +328,6 @@ Recent sessions:
 - 2026-11-07 17:07 `game/kunitoris.cpp` partial: KunitorisEnding::draw and drawIntro written over the four ending quads (0x2fc280), their show thresholds and the 8 pose animations (0x2fc220); KunitorisGame +0x
 - 2026-11-07 16:52 `game/kunitoris.cpp` partial: KunitorisGame ctor and dtor, its objects (actor, sprite, cursor, block, actor list, cells, groups), the per-level and shape tables, the two bar draws and Kunito
 - 2026-11-07 16:20 `game/kunitoris.cpp` partial: Extra mode is Kunitoris: runExtraMode, its thread and back thread, title, how-to, level select, printf and the ending loop written; the KunitorisGame and Kunito
-- 2026-11-07 15:54 `unassigned@002a0040` verify: the two MSL std::sort instances behind the script picks, mslSort_PickNamed 0x2a0040 and mslSort_SpawnPoints 0x29fdb0, named and pinned to game/scriptrunner.cpp;
 
 ## Frontier (called by reconstructed code, not written yet)
 

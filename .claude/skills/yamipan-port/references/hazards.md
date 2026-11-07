@@ -682,3 +682,12 @@ as `CharacterAllows::standing` inside `StageCharacter::m_allows`. On the host th
 one was written. Fix: read `player->m_allows.standing`; `m_canPause` is padding again. When a field is
 named from its reader only, scan the ROM for stores to that offset (a byte loop over the text segment
 for `sb/sh/sw ..., 0x<off>(...)` takes a second) before trusting nobody writes it.
+
+## tus.py define with no ranges empties the TU (2026-11-07)
+
+Symptom: `tus.py define game/playermotion.cpp $ARGS --why ...` printed "0 functions": the file's 100+
+pinned ranges were gone. Cause: `$ARGS` came from a file a failed redirect never wrote (a relative path
+into the scratchpad), so define got no ranges, and define *replaces* the list (and the why) with what
+it is given, without a check. Fix: `git checkout -- tools/reverse/data/tus.json` (it was clean), then
+define again with the old ranges plus the new ones. To add a range to a big file, build the argument
+list from tus.json in the same command (`&&`), check its word count, and only then define.
