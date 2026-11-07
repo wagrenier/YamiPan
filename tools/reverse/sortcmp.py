@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 """game/mslsort.h against the ROM (offline).
 
-python sortcmp.py [lists] [--plant]
+python sortcmp.py [lists] [--instance effects|picknamed|spawnpoints] [--plant]
 
-Random lists on the ROM's own sort 0x192150 (eerun.py) and on the host's template in a small exe
-(work/sortcmp/), one after the other in the same run, so the pivot's counter 0x31a8f0 carries from
-list to list on both sides. Each element is {id, key} as the effects' pair; the keys are drawn from
-narrow and wide ranges, all equal, sorted and reversed, because ties are what this code decides.
-Every list's ids are compared in order. --plant compiles the host with the counter moving one step
-per pass instead of two, to prove the tool sees it.
+Random lists on one of the ROM's own sort instances (eerun.py) and on the host's template in a small
+exe (work/sortcmp/), one after the other in the same run, so the instance's pivot counter carries
+from list to list on both sides. The instances:
+  effects      0x192150, counter 0x31a8f0: {id, int key} (8 bytes), stageparticle.cpp
+  picknamed    0x2a0040, counter 0x31ac50: {id, float key} (8 bytes), scriptPickNamed
+  spawnpoints  0x29fdb0, counter 0x31ac54: {id, float key, byte} (12 bytes), missionPickSpawnPoint;
+               the byte (id & 0xff) is compared too, so it must travel with its record
+The keys are drawn from narrow and wide ranges, all equal, sorted and reversed, because ties are what
+this code decides (float keys are the same integers, exact). Every list's ids are compared in order.
+--plant compiles the host with the counter moving one step per pass instead of two, to prove the
+tool sees it.
 """
 import os
 import random
@@ -24,14 +29,18 @@ HERE = Path(__file__).parent
 WORK = HERE / 'work' / 'sortcmp'
 SRC = yamipan.REPO / 'src'
 
-ROM_SORT = 0x192150
-ROM_SHIFT = 0x31a8f0
+INSTANCES = {
+    # name: (sort, counter, stride, key type, has byte)
+    'effects': (0x192150, 0x31a8f0, 8, 'int', False),
+    'picknamed': (0x2a0040, 0x31ac50, 8, 'float', False),
+    'spawnpoints': (0x29fdb0, 0x31ac54, 12, 'float', True),
+}
 
 HOST = r'''
 #include <stdio.h>
 #include <vector>
 #include "mslsort.h"
-struct Entry { int id; int key; };
+struct Entry { int id; KEY key; unsigned char tag; };
 int main(int, char **argv)
 {
     FILE *f = fopen(argv[1], "r");
@@ -40,12 +49,15 @@ int main(int, char **argv)
     while (fscanf(f, "%d", &n) == 1) {
         std::vector<Entry> list((size_t)n);
         for (int i = 0; i < n; i++) {
+            int key;
             list[(size_t)i].id = i;
-            fscanf(f, "%d", &list[(size_t)i].key);
+            list[(size_t)i].tag = (unsigned char)i;
+            fscanf(f, "%d", &key);
+            list[(size_t)i].key = (KEY)key;
         }
         mslSort(list.data(), list.data() + n, less);
         for (const Entry &e : list)
-            printf("%d ", e.id);
+            printf("%d:%d ", e.id, e.tag);
         printf("\n");
     }
     return 0;
@@ -56,9 +68,9 @@ PLANT = ('shift = shift + 1 > kShiftHigh ? kShiftLow : shift + 1;\n        const
          'const int farSample')
 
 
-def build(plant):
+def build(plant, key):
     WORK.mkdir(parents=True, exist_ok=True)
-    (WORK / 'host.cpp').write_text(HOST)
+    (WORK / 'host.cpp').write_text(f'#define KEY {key}' + chr(10) + HOST)
     header = (SRC / 'game' / 'mslsort.h').read_text(encoding='utf-8')
     if plant:
         if PLANT[0] not in header:
@@ -88,19 +100,40 @@ def keys_for(rng):
     return [0 if rng.random() < 0.4 else rng.randrange(0, 5000) for _ in range(n)]
 
 
-def rom_sort(ee, keys):
-    base = ee.alloc(8 * len(keys) + 8)
-    ee.write(base, b''.join(struct.pack('<ii', i, k) for i, k in enumerate(keys)))
-    ee.call(ROM_SORT, base, base + 8 * len(keys), 0)
-    return [eerun.s32(ee.u32(base + 8 * i)) for i in range(len(keys))]
+def rom_sort(ee, inst, keys):
+    sort, _, stride, key, has_byte = inst
+    base = ee.alloc(stride * len(keys) + stride)
+    rows = []
+    for i, k in enumerate(keys):
+        row = struct.pack('<i', i) + (struct.pack('<f', float(k)) if key == 'float' else struct.pack('<i', k))
+        if stride == 12:
+            row += struct.pack('<I', i & 0xff if has_byte else 0)
+        rows.append(row)
+    ee.write(base, b''.join(rows))
+    ee.call(sort, base, base + stride * len(keys), 0)
+    out = []
+    for i in range(len(keys)):
+        at = base + stride * i
+        ident = eerun.s32(ee.u32(at))
+        tag = ee.u32(at + 8) & 0xff if has_byte else ident & 0xff
+        out.append((ident, tag))
+    return out
 
 
 def main(argv):
     plant = '--plant' in argv
+    name = 'effects'
+    if '--instance' in argv:
+        name = argv[argv.index('--instance') + 1]
+        argv = argv[:argv.index('--instance')] + argv[argv.index('--instance') + 2:]
+    if name not in INSTANCES:
+        raise SystemExit(f'--instance: one of {", ".join(INSTANCES)}')
+    inst = INSTANCES[name]
+    rom_sort_at, rom_shift = inst[0], inst[1]
     args = [a for a in argv[1:] if not a.startswith('--')]
     lists = int(args[0]) if args else 400
-    exe = build(plant)
-    rng = random.Random(ROM_SORT)
+    exe = build(plant, inst[3])
+    rng = random.Random(rom_sort_at)
     ee = eerun.Ee()
     all_keys = [keys_for(rng) for _ in range(lists)]
     (WORK / 'lists.txt').write_text(''.join(f'{len(k)} ' + ' '.join(map(str, k)) + '\n' for k in all_keys))
@@ -111,11 +144,11 @@ def main(argv):
         return 1
     bad = elements = long_lists = 0
     for i, (keys, line) in enumerate(zip(all_keys, out)):
-        rom = rom_sort(ee, keys)
-        host = [int(x) for x in line.split()]
+        rom = rom_sort(ee, inst, keys)
+        host = [tuple(int(y) for y in x.split(':')) for x in line.split()]
         elements += len(keys)
         long_lists += len(keys) >= 21
-        if [keys[x] for x in rom] != sorted(keys):
+        if [keys[x] for x, _ in rom] != sorted(keys):
             print(f'list {i}: the ROM left it unsorted')
         if rom != host:
             bad += 1
@@ -123,8 +156,8 @@ def main(argv):
                 first = next(j for j, (a, b) in enumerate(zip(rom, host)) if a != b)
                 print(f'list {i} ({len(keys)} elements) differs at {first}: rom {rom[first:first + 6]} '
                       f'host {host[first:first + 6]}')
-    print(f'{lists} lists, {long_lists} through the quicksort, {elements} elements, {bad} lists differ; '
-          f'counter ends at {eerun.s32(ee.u32(ROM_SHIFT))}')
+    print(f'{name}: {lists} lists, {long_lists} through the quicksort, {elements} elements, {bad} lists differ; '
+          f'counter ends at {eerun.s32(ee.u32(rom_shift))}')
     return 1 if bad else 0
 
 

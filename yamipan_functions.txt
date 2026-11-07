@@ -7911,21 +7911,16 @@
 /* 0029fb60 000001b0 */ missionSpawnAt(){}  // game
 /* 0029fd10 00000010 */ missionSpawnPointTaken(){}  // game
 /* 0029fd20 0000008c */ ScriptEntry::checkedBlock(){}  // game
-/* 0029fdb0 0000028c */ FUN_0029fdb0(){}
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 002a0040 00000230 */ FUN_002a0040(){}
-/* 002a0270 0000019c */ FUN_002a0270(){}
-/* 002a0410 0000013c */ FUN_002a0410(){}
-/* 002a0550 00000268 */ FUN_002a0550(){}
-/* 002a07c0 000002a0 */ FUN_002a07c0(){}
-/* 002a0a70 000002c0 */ FUN_002a0a70(){}
-/* 002a0d40 000002f8 */ FUN_002a0d40(){}
-/* 002a1040 000000a8 */ FUN_002a1040(){}
-/* 002a10f0 000000c8 */ FUN_002a10f0(){}
+/* 0029fdb0 0000028c */ mslSort_SpawnPoints(){}  // game
+/* 002a0040 00000230 */ mslSort_PickNamed(){}  // game
+/* 002a0270 0000019c */ mslMedianToEnd_SpawnPoints(){}  // game
+/* 002a0410 0000013c */ mslMedianToEnd_PickNamed(){}  // game
+/* 002a0550 00000268 */ mslPartitionBelow_PickNamed(){}  // game
+/* 002a07c0 000002a0 */ mslPartitionUpTo_PickNamed(){}  // game
+/* 002a0a70 000002c0 */ mslPartitionBelow_SpawnPoints(){}  // game
+/* 002a0d40 000002f8 */ mslPartitionUpTo_SpawnPoints(){}  // game
+/* 002a1040 000000a8 */ mslSelectionSort_PickNamed(){}  // game
+/* 002a10f0 000000c8 */ mslSelectionSort_SpawnPoints(){}  // game
 
 // *****************************************************************************
 // FILE -- game/demofleck.cpp

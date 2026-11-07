@@ -33677,6 +33677,66 @@
   "was": "FUN_0029fd20",
   "why": "trailer words and block magic checked"
  },
+ "0029fdb0": {
+  "name": "mslSort_SpawnPoints",
+  "tag": "game-inferred",
+  "was": "FUN_0029fdb0",
+  "why": "MSL std::sort over missionPickSpawnPoint's {index, distance, inView} records (12 bytes, by distance): selection sort under 21, two samples moved by its own counter gp-0x7c1c = 0x31ac54, median to the end, partition, recurse on the smaller side; same algorithm as mslSort_Effects 0x192150"
+ },
+ "002a0040": {
+  "name": "mslSort_PickNamed",
+  "tag": "game-inferred",
+  "was": "FUN_002a0040",
+  "why": "MSL std::sort over scriptPickNamed's {object, distance} pairs (8 bytes, by distance): selection sort under 21, two samples moved by its own counter 0x31ac50, median to the end, partition, recurse on the smaller side; same algorithm as mslSort_Effects 0x192150"
+ },
+ "002a0270": {
+  "name": "mslMedianToEnd_SpawnPoints",
+  "tag": "game-inferred",
+  "was": "FUN_002a0270",
+  "why": "median of three into the third, 12-byte records compared on +4 (float), the byte at +8 swapped with them; same body as mslMedianToEnd_Effects 0x193480"
+ },
+ "002a0410": {
+  "name": "mslMedianToEnd_PickNamed",
+  "tag": "game-inferred",
+  "was": "FUN_002a0410",
+  "why": "median of three into the third, 8-byte pairs compared on +4 (float); same body as mslMedianToEnd_Effects 0x193480"
+ },
+ "002a0550": {
+  "name": "mslPartitionBelow_PickNamed",
+  "tag": "game-inferred",
+  "was": "FUN_002a0550",
+  "why": "std::partition of [a0, a1) of 8-byte pairs by pair.distance < (*a2)->distance, answers the split; inline in mslSort_Effects"
+ },
+ "002a07c0": {
+  "name": "mslPartitionUpTo_PickNamed",
+  "tag": "game-inferred",
+  "was": "FUN_002a07c0",
+  "why": "std::partition of [a0, a1) of 8-byte pairs by pair.distance <= (*a2)->distance: the equal-to-pivot run after a pivot nothing is below; inline in mslSort_Effects"
+ },
+ "002a0a70": {
+  "name": "mslPartitionBelow_SpawnPoints",
+  "tag": "game-inferred",
+  "was": "FUN_002a0a70",
+  "why": "std::partition of [a0, a1) of 12-byte records by distance < (*a2)->distance, answers the split; inline in mslSort_Effects"
+ },
+ "002a0d40": {
+  "name": "mslPartitionUpTo_SpawnPoints",
+  "tag": "game-inferred",
+  "was": "FUN_002a0d40",
+  "why": "std::partition of [a0, a1) of 12-byte records by distance <= (*a2)->distance: the equal-to-pivot run after a pivot nothing is below; inline in mslSort_Effects"
+ },
+ "002a1040": {
+  "name": "mslSelectionSort_PickNamed",
+  "tag": "game-inferred",
+  "was": "FUN_002a1040",
+  "why": "selection sort of the 8-byte pairs by +4; same body as mslSelectionSort_Effects 0x1935b0"
+ },
+ "002a10f0": {
+  "name": "mslSelectionSort_SpawnPoints",
+  "tag": "game-inferred",
+  "was": "FUN_002a10f0",
+  "why": "selection sort of the 12-byte records by +4; same body as mslSelectionSort_Effects 0x1935b0"
+ },
  "002a11c0": {
   "name": "DemoFleck::draw",
   "tag": "game-inferred",
