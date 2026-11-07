@@ -1780,9 +1780,9 @@ bool CharacterBrain::takeUpTrap()
 
 // FS2 0x001da050
 
-void CharacterBrain::useItem850()
+bool CharacterBrain::useItem850()
 {
-    m_owner->item218850(0);
+    return m_owner->item218850(0);
 }
 
 // FS2 0x001da060
@@ -1796,25 +1796,25 @@ bool CharacterBrain::setTrap()
 
 // FS2 0x001da0b0
 
-void CharacterBrain::useItemAt(const char *name, const float *point)
+bool CharacterBrain::useItemAt(const char *name, const float *point)
 {
-    m_owner->useItem(name, point, 0);
+    return m_owner->useItem(name, point, 0);
 }
 
 // FS2 0x001da0c0
 
-void CharacterBrain::useNamedItem(const char *name)
+bool CharacterBrain::useNamedItem(const char *name)
 {
     sceVu0FVECTOR zero = {};
-    m_owner->useItem(name, zero, 0);
+    return m_owner->useItem(name, zero, 0);
 }
 
 // FS2 0x001da110
 
-void CharacterBrain::useSmoke()
+bool CharacterBrain::useSmoke()
 {
     sceVu0FVECTOR zero = {};
-    m_owner->useItem(kItemSmoke, zero, 0);
+    return m_owner->useItem(kItemSmoke, zero, 0);
 }
 
 // FS2 0x001da170

@@ -437,6 +437,7 @@ public:
     virtual float command59(void *) { return (float)defaultCommand(); }
     // Slot +0x140: an event's object plays the pack's motion called name; the
     // demo camera takes it as its cut. Native 0x148.
+    // FS2 0x00171ff0
     virtual void scriptPlayMotion(const char *name) { (void)name; defaultCommand(); }
     // A tail jump to defaultCommand.
     // FS2 0x0019d050
@@ -464,14 +465,17 @@ public:
     // ROM vptr +0x158: the long weapon goes away (0x80).
     // FS2 0x00172030
     virtual void scriptPutWeaponAway() { defaultCommand(); }
-    // ROM vptr +0x16c, +0x170, +0x17c: the item uses (0x105, 0x104, 0x106).
-    // The ROM's natives store what these void calls leave in v0; PC: 0.
+    // ROM vptr +0x16c, +0x170, +0x17c: the item uses (0x105, 0x104, 0x106);
+    // the natives answer what they say.
     // FS2 0x00172060
-    virtual void scriptUseSmoke() { defaultCommand(); }
+    // callcheck: defaultCommand
+    virtual bool scriptUseSmoke() { return defaultCommand() != 0; }
     // FS2 0x001720a0
-    virtual void scriptUseNamedItem(const char *name) { (void)name; defaultCommand(); }
+    // callcheck: defaultCommand
+    virtual bool scriptUseNamedItem(const char *name) { (void)name; return defaultCommand() != 0; }
     // FS2 0x001720e0
-    virtual void scriptPutItem() { defaultCommand(); }
+    // callcheck: defaultCommand
+    virtual bool scriptPutItem() { return defaultCommand() != 0; }
     // ROM vptr +0x178, +0x180: the trap (0x10d, 0x110).
     // FS2 0x001720c0
     virtual bool scriptSetTrap() { return defaultCommand() != 0; }
@@ -514,14 +518,14 @@ public:
     // ROM vptr +0x15c: the handle of what lies in reach, 0 none (0x81).
     // FS2 0x00172040
     virtual int scriptPickableHandle() { return defaultCommand(); }
-    // ROM vptr +0x174: uses the named item on a point (0x15a). The ROM's
-    // native stores what this void call leaves in v0; PC: 0.
+    // ROM vptr +0x174: uses the named item on a point (0x15a).
     // FS2 0x00172080
-    virtual void scriptUseItemAt(const char *name, const float *point)
+    // callcheck: defaultCommand
+    virtual bool scriptUseItemAt(const char *name, const float *point)
     {
         (void)name;
         (void)point;
-        defaultCommand();
+        return defaultCommand() != 0;
     }
     // ROM vptr +0x1a0: the call cr_3, a noise of that loudness (0x62).
     // FS2 0x001721a0
@@ -584,6 +588,87 @@ public:
     // A tail jump to defaultCommand.
     // FS2 0x0019d0b0
     virtual int command101(void *) { return defaultCommand(); }
+
+    // The rest of the table. No script reaches these: the natives that would
+    // (0x2e, 0x36, 0x37, 0x4b, 0x63, 0x69, 0x6c) are on no script of the disc
+    // (sssall.py), and slots 54, 56, 60, 62, 69, 76, 77, 79 have no native at
+    // all, only ScriptProxy's forwards. The ROM's shape of each is what is
+    // known of it; a slot no class overrides keeps its number.
+    // Slots 5, 6, 8, 9: not one table overrides them.
+    // FS2 0x00171b40
+    virtual void command5() {}
+    // FS2 0x00171b50
+    virtual int command6() { return 0; }
+    // FS2 0x00171b60
+    virtual int command8() { return 0; }
+    // FS2 0x00171b70
+    virtual void command9() {}
+    // ROM vptr +0xac: the brain's state (native 0x2e).
+    // FS2 0x00171cf0
+    virtual int scriptBrainPace() { return defaultCommand(); }
+    // ROM vptr +0xbc, +0xc0: back to what scriptMarkPlace kept (0x36, 0x37).
+    // FS2 0x00171d40
+    virtual void scriptWalkToMarkedPlace(bool run) { (void)run; defaultCommand(); }
+    // FS2 0x00171d50
+    virtual void scriptForgetMarkedPlace() { defaultCommand(); }
+    // ROM vptr +0xc4.
+    // FS2 0x00171d60
+    // callcheck: defaultCommand
+    virtual bool scriptAnswerNo() { return defaultCommand() != 0; }
+    // FS2 0x00171db0
+    virtual void command54() { defaultCommand(); }
+    // ROM vptr +0xe4: a tail jump, so an int here, though the character's
+    // answers a bool. The brain's askShout calls it.
+    // FS2 0x00171e00
+    virtual int scriptShout(float loudness) { (void)loudness; return defaultCommand(); }
+    // FS2 0x00171e10
+    // callcheck: defaultCommand
+    virtual bool command56() { return defaultCommand() != 0; }
+    // ROM vptr +0xec: an enemy holds it (0x3e reads the character's).
+    // FS2 0x00171e30
+    // callcheck: defaultCommand
+    virtual bool scriptHasBiter() { return defaultCommand() != 0; }
+    // FS2 0x00171e50
+    virtual int command60(int a, int b) { (void)a; (void)b; return defaultCommand(); }
+    // FS2 0x00171e60
+    // callcheck: defaultCommand
+    virtual bool command62(int a) { (void)a; return defaultCommand() != 0; }
+    // ROM vptr +0x104 (0x6c).
+    // FS2 0x00171b80
+    virtual void scriptDoNothing() { defaultCommand(); }
+    // ROM vptr +0x108: it carries the item (0x49 reads the character's).
+    // FS2 0x00171e80
+    // callcheck: defaultCommand
+    virtual bool scriptCarriesItem(const char *name) { (void)name; return defaultCommand() != 0; }
+    // FS2 0x00171ec0
+    // callcheck: defaultCommand
+    virtual bool command66(int a) { (void)a; return defaultCommand() != 0; }
+    // FS2 0x00171f20
+    // callcheck: defaultCommand
+    virtual bool command69() { return defaultCommand() != 0; }
+    // ROM vptr +0x120.
+    // FS2 0x00171f40
+    // callcheck: defaultCommand
+    virtual bool scriptIsBulletFlying() { return defaultCommand() != 0; }
+    // ROM vptr +0x128 (0xb5 reads the character's).
+    // FS2 0x00171f80
+    // callcheck: defaultCommand
+    virtual bool scriptIsRunningMotion() { return defaultCommand() != 0; }
+    // ROM vptr +0x134 (0x63).
+    // FS2 0x00171fc0
+    virtual void scriptWaitMotionChange() { defaultCommand(); }
+    // FS2 0x00171fd0
+    virtual int command76(int a) { (void)a; return defaultCommand(); }
+    // FS2 0x00171fe0
+    virtual int command77(int a, int b, int c) { (void)a; (void)b; (void)c; return defaultCommand(); }
+    // ROM vptr +0x144 (0x69).
+    // FS2 0x00172000
+    virtual int command79(int a, int b) { (void)a; (void)b; return defaultCommand(); }
+    // ROM vptr +0x14c, +0x150: the character's script values.
+    // FS2 0x00172010
+    virtual int scriptGetValue(int index) { (void)index; return defaultCommand(); }
+    // FS2 0x00172020
+    virtual void scriptSetValue(int index, int value) { (void)index; (void)value; defaultCommand(); }
 
     u_char m_cutWaited = 0;     // FS2 +0xb8: natives 0x147, 0x159 and one more wait one frame, once ever
     u_char m_skippable = 0;     // FS2 +0xb9: a sub-scene's: start ends it

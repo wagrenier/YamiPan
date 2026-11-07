@@ -11987,6 +11987,12 @@
   "was": "FUN_00171ac0",
   "why": "slot +0x1f4 of vtable 0x3112f0, answers 2"
  },
+ "00171ad0": {
+  "name": "CollisionOwner::getCollisionParent",
+  "tag": "game-inferred",
+  "was": "FUN_00171ad0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/stagecollision.h."
+ },
  "00171ae0": {
   "name": "StageObject::setDirty",
   "tag": "game-inferred",
@@ -12011,11 +12017,521 @@
   "was": "FUN_00171b20",
   "why": "slot 4: this + 0x1c0"
  },
+ "00171b30": {
+  "name": "ScriptRunner::onScriptExit",
+  "tag": "game-inferred",
+  "was": "FUN_00171b30",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171b40": {
+  "name": "ScriptRunner::command5",
+  "tag": "game-inferred",
+  "was": "FUN_00171b40",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171b50": {
+  "name": "ScriptRunner::command6",
+  "tag": "game-inferred",
+  "was": "FUN_00171b50",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171b60": {
+  "name": "ScriptRunner::command8",
+  "tag": "game-inferred",
+  "was": "FUN_00171b60",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171b70": {
+  "name": "ScriptRunner::command9",
+  "tag": "game-inferred",
+  "was": "FUN_00171b70",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171b80": {
+  "name": "ScriptRunner::scriptDoNothing",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171b90": {
+  "name": "ScriptRunner::cmdSetColor",
+  "tag": "game-inferred",
+  "was": "FUN_00171b90",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171ba0": {
+  "name": "ScriptRunner::cmdAddColorKey",
+  "tag": "game-inferred",
+  "was": "FUN_00171ba0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171bb0": {
+  "name": "ScriptRunner::cmdSetColorLoop",
+  "tag": "game-inferred",
+  "was": "FUN_00171bb0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171bc0": {
+  "name": "ScriptRunner::cmdSetRadiusSquared",
+  "tag": "game-inferred",
+  "was": "FUN_00171bc0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171bd0": {
+  "name": "ScriptRunner::cmdSetConeAngle",
+  "tag": "game-inferred",
+  "was": "FUN_00171bd0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171be0": {
+  "name": "ScriptRunner::cmdSetValue2d8",
+  "tag": "game-inferred",
+  "was": "FUN_00171be0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171bf0": {
+  "name": "StageObject::setScriptFlag",
+  "tag": "game-inferred",
+  "was": "FUN_00171bf0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/gamehooks.h."
+ },
+ "00171c00": {
+  "name": "ScriptRunner::cmdSetTreeSwitchedOn",
+  "tag": "game-inferred",
+  "was": "FUN_00171c00",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171c10": {
+  "name": "StageObject::setScriptFlag2",
+  "tag": "game-inferred",
+  "was": "FUN_00171c10",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/gamehooks.h."
+ },
+ "00171c20": {
+  "name": "ScriptRunner::cmdSetTreeBroken",
+  "tag": "game-inferred",
+  "was": "FUN_00171c20",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171c30": {
+  "name": "ScriptRunner::cmdSetFadeFrames",
+  "tag": "game-inferred",
+  "was": "FUN_00171c30",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171c40": {
+  "name": "ScriptRunner::cmdSetFlag240",
+  "tag": "game-inferred",
+  "was": "FUN_00171c40",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171c50": {
+  "name": "ScriptRunner::cmdSetValue244",
+  "tag": "game-inferred",
+  "was": "FUN_00171c50",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171c60": {
+  "name": "ScriptRunner::cmdSetFlag248",
+  "tag": "game-inferred",
+  "was": "FUN_00171c60",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171c70": {
+  "name": "ScriptRunner::cmdSetColor250",
+  "tag": "game-inferred",
+  "was": "FUN_00171c70",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171c80": {
+  "name": "ScriptRunner::cmdSetColor260",
+  "tag": "game-inferred",
+  "was": "FUN_00171c80",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171c90": {
+  "name": "ScriptRunner::cmdSetCastsShadow",
+  "tag": "game-inferred",
+  "was": "FUN_00171c90",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171ca0": {
+  "name": "ScriptRunner::cmdSetEnabled",
+  "tag": "game-inferred",
+  "was": "FUN_00171ca0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171cb0": {
+  "name": "ScriptRunner::getScriptActor",
+  "tag": "game-inferred",
+  "was": "FUN_00171cb0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171cc0": {
+  "name": "ScriptRunner::getScriptCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_00171cc0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171ce0": {
+  "name": "ScriptRunner::scriptSetBrainEntry",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171cf0": {
+  "name": "ScriptRunner::scriptBrainPace",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171d00": {
+  "name": "ScriptRunner::scriptHeardKind",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171d10": {
+  "name": "ScriptRunner::scriptCanSee",
+  "tag": "game-inferred",
+  "was": "FUN_00171d10",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171d30": {
+  "name": "ScriptRunner::scriptMarkPlace",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171d40": {
+  "name": "ScriptRunner::scriptWalkToMarkedPlace",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171d50": {
+  "name": "ScriptRunner::scriptForgetMarkedPlace",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171d60": {
+  "name": "ScriptRunner::scriptAnswerNo",
+  "tag": "game-inferred",
+  "was": "FUN_00171d60",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171d80": {
+  "name": "ScriptRunner::scriptHasAllyWithin",
+  "tag": "game-inferred",
+  "was": "FUN_00171d80",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171da0": {
+  "name": "ScriptRunner::scriptAttackBite",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171db0": {
+  "name": "ScriptRunner::command54",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171dc0": {
+  "name": "ScriptRunner::scriptSwingAtBite",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171dd0": {
+  "name": "ScriptRunner::scriptSwingAt",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171de0": {
+  "name": "ScriptRunner::scriptFireAtBite",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171df0": {
+  "name": "ScriptRunner::scriptFireAt",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171e00": {
+  "name": "ScriptRunner::scriptShout",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171e10": {
+  "name": "ScriptRunner::command56",
+  "tag": "game-inferred",
+  "was": "FUN_00171e10",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171e30": {
+  "name": "ScriptRunner::scriptHasBiter",
+  "tag": "game-inferred",
+  "was": "FUN_00171e30",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171e50": {
+  "name": "ScriptRunner::command60",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171e60": {
+  "name": "ScriptRunner::command62",
+  "tag": "game-inferred",
+  "was": "FUN_00171e60",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171e80": {
+  "name": "ScriptRunner::scriptCarriesItem",
+  "tag": "game-inferred",
+  "was": "FUN_00171e80",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171ea0": {
+  "name": "ScriptRunner::scriptReload",
+  "tag": "game-inferred",
+  "was": "FUN_00171ea0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171ec0": {
+  "name": "ScriptRunner::command66",
+  "tag": "game-inferred",
+  "was": "FUN_00171ec0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171ee0": {
+  "name": "ScriptRunner::scriptHasLineTo",
+  "tag": "game-inferred",
+  "was": "FUN_00171ee0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171f00": {
+  "name": "ScriptRunner::scriptIsCompanion",
+  "tag": "game-inferred",
+  "was": "FUN_00171f00",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171f20": {
+  "name": "ScriptRunner::command69",
+  "tag": "game-inferred",
+  "was": "FUN_00171f20",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171f40": {
+  "name": "ScriptRunner::scriptIsBulletFlying",
+  "tag": "game-inferred",
+  "was": "FUN_00171f40",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171f60": {
+  "name": "ScriptRunner::scriptIsCrouching",
+  "tag": "game-inferred",
+  "was": "FUN_00171f60",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171f80": {
+  "name": "ScriptRunner::scriptIsRunningMotion",
+  "tag": "game-inferred",
+  "was": "FUN_00171f80",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171fa0": {
+  "name": "ScriptRunner::scriptRouteAction12c",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171fb0": {
+  "name": "ScriptRunner::scriptRouteAction130",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171fc0": {
+  "name": "ScriptRunner::scriptWaitMotionChange",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171fd0": {
+  "name": "ScriptRunner::command76",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171fe0": {
+  "name": "ScriptRunner::command77",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00171ff0": {
+  "name": "ScriptRunner::scriptPlayMotion",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172000": {
+  "name": "ScriptRunner::command79",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172010": {
+  "name": "ScriptRunner::scriptGetValue",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172020": {
+  "name": "ScriptRunner::scriptSetValue",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172030": {
+  "name": "ScriptRunner::scriptPutWeaponAway",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172040": {
+  "name": "ScriptRunner::scriptPickableHandle",
+  "tag": "game-inferred",
+  "was": "ScriptRunner::defaultCommand",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172050": {
+  "name": "ScriptRunner::cmdIsLit",
+  "tag": "game-inferred",
+  "was": "FUN_00172050",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172060": {
+  "name": "ScriptRunner::scriptUseSmoke",
+  "tag": "game-inferred",
+  "was": "FUN_00172060",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172080": {
+  "name": "ScriptRunner::scriptUseItemAt",
+  "tag": "game-inferred",
+  "was": "FUN_00172080",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "001720a0": {
+  "name": "ScriptRunner::scriptUseNamedItem",
+  "tag": "game-inferred",
+  "was": "FUN_001720a0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "001720c0": {
+  "name": "ScriptRunner::scriptSetTrap",
+  "tag": "game-inferred",
+  "was": "FUN_001720c0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "001720e0": {
+  "name": "ScriptRunner::scriptPutItem",
+  "tag": "game-inferred",
+  "was": "FUN_001720e0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172100": {
+  "name": "ScriptRunner::scriptTakeUpTrap",
+  "tag": "game-inferred",
+  "was": "FUN_00172100",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172120": {
+  "name": "ScriptRunner::scriptOpenDoor",
+  "tag": "game-inferred",
+  "was": "FUN_00172120",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172140": {
+  "name": "ScriptRunner::scriptCloseDoor",
+  "tag": "game-inferred",
+  "was": "FUN_00172140",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172160": {
+  "name": "ScriptRunner::scriptUseDoorKey",
+  "tag": "game-inferred",
+  "was": "FUN_00172160",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172180": {
+  "name": "ScriptRunner::scriptTakeItem",
+  "tag": "game-inferred",
+  "was": "FUN_00172180",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "001721a0": {
+  "name": "ScriptRunner::scriptCallOut",
+  "tag": "game-inferred",
+  "was": "FUN_001721a0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "001721c0": {
+  "name": "ScriptRunner::scriptCrouch",
+  "tag": "game-inferred",
+  "was": "FUN_001721c0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "001721e0": {
+  "name": "ScriptRunner::scriptDragOutCar",
+  "tag": "game-inferred",
+  "was": "FUN_001721e0",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172200": {
+  "name": "ScriptRunner::scriptUseSpecial",
+  "tag": "game-inferred",
+  "was": "FUN_00172200",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172220": {
+  "name": "ScriptRunner::scriptAskRouteKind11",
+  "tag": "game-inferred",
+  "was": "FUN_00172220",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
+ "00172240": {
+  "name": "ScriptRunner::scriptAskNumLock",
+  "tag": "game-inferred",
+  "was": "FUN_00172240",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/scriptrunner.h."
+ },
  "00172260": {
   "name": "StageObject::setTreeShown",
   "tag": "game-inferred",
   "was": "FUN_00172260",
   "why": "slot +0x248: the tree node setShown"
+ },
+ "00172270": {
+  "name": "StageObject::setShown",
+  "tag": "game-inferred",
+  "was": "StageObject::setShownState",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/gamehooks.h."
+ },
+ "00172280": {
+  "name": "StageObject::isShown",
+  "tag": "game-inferred",
+  "was": "StageObject::getShownState",
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/gamehooks.h."
  },
  "00172290": {
   "name": "StageObject::heightDifference",
@@ -12078,10 +12594,10 @@
   "why": "slot +0x21c: this + 0x20"
  },
  "00172360": {
-  "name": "StageObject::getCollisionObject",
+  "name": "StageMapObject::getCollisionObject",
   "tag": "game-inferred",
   "was": "FUN_00172360",
-  "why": "returns this; CollisionOwner slot 6, thunk 0x177560"
+  "why": "Inline default in the door object file; slot found from the runner tables (rtti.py Vt_003147ac), host game/mapobject.h."
  },
  "00172370": {
   "name": "DoorRecord::setSeIndex",

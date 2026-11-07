@@ -1627,7 +1627,7 @@ static_assert(sizeof(LptRecord) == 0x40, "LptRecord: EE 0x40");
 
 // A door's record (0x38 bytes, kDoorRecords of them; bss 0x537d80, read
 // from the pack's door sheet by PackTables::parse), found by its map
-// object's name. The ROM's five setters 0x172370..0x1723b0 write +0x10..+0x1e.
+// object's name.
 constexpr int kDoorRecords = 0x87;
 struct DoorRecord
 {
@@ -1640,6 +1640,18 @@ struct DoorRecord
     char   light[0x10];         // FS2 +0x20: light
     u_char hasObject;           // FS2 +0x30: object
     int    value;               // FS2 +0x34: particle; SubSceneDoorObject::m_recordValue
+
+    // The sheet's columns. Each answers 1, which parse does not read.
+    // FS2 0x001723b0
+    bool setKeyKind(int kind) { keyKind = kind; return true; }
+    // FS2 0x001723a0
+    bool setStartState(int state) { startState = state; return true; }
+    // FS2 0x00172390
+    bool setWindowState(int state) { windowState = state; return true; }
+    // FS2 0x00172380
+    bool setHp(short value_) { hp = value_; return true; }
+    // FS2 0x00172370
+    bool setSeIndex(short index) { seIndex = index; return true; }
 };
 static_assert(sizeof(DoorRecord) == 0x38, "DoorRecord: EE 0x38");
 extern DoorRecord gDoorRecords[kDoorRecords];   /* bss 0x537d80 */
@@ -2467,16 +2479,16 @@ public:
     bool scriptReload(int rounds) override;                              // FS2 0x0021b450 (thunk 0x0017e6a0)
     bool scriptHasLineTo(StageCharacter *other) override;                // FS2 0x0021adc0 (thunk 0x0017e690)
     void scriptPutWeaponAway() override;                                 // FS2 0x002183d0 (thunk 0x0017e5e0)
-    void scriptUseSmoke() override;                                      // FS2 0x00218e60 (thunk 0x0017e5a0)
-    void scriptUseNamedItem(const char *name) override;                  // FS2 0x00218e10 (thunk 0x0017e580)
+    bool scriptUseSmoke() override;                                      // FS2 0x00218e60 (thunk 0x0017e5a0)
+    bool scriptUseNamedItem(const char *name) override;                  // FS2 0x00218e10 (thunk 0x0017e580)
     bool scriptSetTrap() override;                                       // FS2 0x00218b00 (thunk 0x0017e570)
-    void scriptPutItem() override;                                       // FS2 0x00218af0 (thunk 0x0017e560)
+    bool scriptPutItem() override;                                       // FS2 0x00218af0 (thunk 0x0017e560)
     bool scriptTakeUpTrap() override;                                    // FS2 0x00218800 (thunk 0x0017e550)
     StageObject *scriptTakeItem() override;                              // FS2 0x0021b370 (thunk 0x0017e510)
     // The item called name, at point; unread.
-    void useItem(const char *name, const float *point, int arg);         // FS2 0x00218b50
+    bool useItem(const char *name, const float *point, int arg);         // FS2 0x00218b50
     // A slot of the brain's; unread.
-    void item218850(int arg);                                            // FS2 0x00218850
+    bool item218850(int arg);                                            // FS2 0x00218850
     // +0x400 holds something.
     bool hasGear() const { return m_gear != nullptr; }                   // FS2 0x00215290
     // How far its blow reaches: the long weapon's, else the sheet's 攻撃判定.
@@ -2504,7 +2516,7 @@ public:
     bool scriptSwingAtBite() override;                                   // FS2 0x0021ad40
     bool scriptFireAtBite(const char *flags, int frames30) override;     // FS2 0x0021ad00
     int  scriptPickableHandle() override;                                // FS2 0x0021ac30
-    void scriptUseItemAt(const char *name, const float *point) override; // FS2 0x00218e00
+    bool scriptUseItemAt(const char *name, const float *point) override; // FS2 0x00218e00
     bool scriptCallOut(float loudness) override;                         // FS2 0x00219ae0
     bool scriptAskNumLock(int which) override;                           // FS2 0x00218140
     void setSpecial(bool on, const char *name);                          // FS2 0x0017b3c0
@@ -2561,9 +2573,23 @@ public:
     bool cmdIsLit() override { return isLampOn(); }
     // Empty, as the base's.
     void noiseHook() override {}                                         // FS2 0x00179ae0
-    // Runner slots no script reaches: natives 0x36, 0x37, 0x63, 0x6c and
-    // 0x84 are on no script of the disc (sssall.py), and slot +0xe4 of a
-    // character has no caller (the brain answers its own).
+    // Runner slots no script reaches: natives 0x2e, 0x36, 0x37, 0x63, 0x6c
+    // and 0x84 are on no script of the disc (sssall.py), and slot +0xe4 of a
+    // character has no caller (the brain answers its own). Thunks -0x40:
+    // stagecharacter.cpp.
+    int  scriptBrainPace() override { return getBrainPace(); }
+    void scriptWalkToMarkedPlace(bool run) override { walkToMarkedPlace(run); }
+    void scriptForgetMarkedPlace() override { forgetMarkedPlace(); }
+    bool scriptAnswerNo() override { return answerNo() != 0; }
+    int  scriptShout(float loudness) override { return shout(loudness); }
+    bool scriptHasBiter() override { return hasBiter(); }
+    void scriptDoNothing() override { doNothing(); }
+    bool scriptCarriesItem(const char *name) override { return findItem(name) != nullptr; }
+    bool scriptIsBulletFlying() override { return isBulletFlying(); }
+    bool scriptIsRunningMotion() override { return isRunningMotion(); }
+    void scriptWaitMotionChange() override { waitMotionChange(); }
+    int  scriptGetValue(int index) override { return getScriptValue(index); }
+    void scriptSetValue(int index, int value) override { setScriptValue(index, value); }
     bool shout(float loudness);                                          // FS2 0x0021b3f0
     void walkToMarkedPlace(bool run);                                    // FS2 0x0021bf90
     void forgetMarkedPlace();                                            // FS2 0x0021bf80

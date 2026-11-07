@@ -3677,7 +3677,8 @@ static const int *nativeAddFoeWeight(ScriptRunner *self, int *, const int *code)
 }
 
 // 0x104 useItem(name), 0x105 useSmoke(), 0x106 putItem(). Slots +0x170,
-// +0x16c, +0x17c, void in the ROM: their acc is what v0 held.
+// +0x16c, +0x17c, bool in the ROM: the defaults end sltu, the natives keep
+// the low byte.
 // FS2 0x001bd860
 
 static const int *nativeUseItem(ScriptRunner *self, int *acc, const int *code)
@@ -3685,24 +3686,21 @@ static const int *nativeUseItem(ScriptRunner *self, int *acc, const int *code)
     ScriptRunner *target = self->getTarget();
     const char *name;
     const int *next = self->readNameArg(&name, code);
-    target->scriptUseNamedItem(name);
-    *acc = 0;
+    *acc = target->scriptUseNamedItem(name);
     return next;
 }
 
 // FS2 0x001bd7d0
 static const int *nativeUseSmoke(ScriptRunner *self, int *acc, const int *code)
 {
-    self->getTarget()->scriptUseSmoke();
-    *acc = 0;
+    *acc = self->getTarget()->scriptUseSmoke();
     return code;
 }
 
 // FS2 0x001bd740
 static const int *nativePutItem(ScriptRunner *self, int *acc, const int *code)
 {
-    self->getTarget()->scriptPutItem();
-    *acc = 0;
+    *acc = self->getTarget()->scriptPutItem();
     return code;
 }
 
@@ -6237,8 +6235,7 @@ static const int *nativeUseItemAt(ScriptRunner *self, int *acc, const int *code)
     const char *name;
     const int *next = self->readNameArg(&name, code);
     const sceVu0FVECTOR point = { 0.0f, (float)args[0] / 100.0f, (float)args[1] / 100.0f, 0.0f };
-    target->scriptUseItemAt(name, point);
-    *acc = 0;
+    *acc = target->scriptUseItemAt(name, point);
     return next;
 }
 

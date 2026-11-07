@@ -443,15 +443,17 @@ StageObject * StageCharacter::findNearestFoe(bool foes, bool sight)
 }
 
 // stub of FS2 0x00218850
-void StageCharacter::item218850(int arg)
+bool StageCharacter::item218850(int arg)
 {
     YAMIPAN_STUB("StageCharacter::item218850", 0x00218850);
+    return {};
 }
 
 // stub of FS2 0x00218b50
-void StageCharacter::useItem(const char *name, const float *point, int arg)
+bool StageCharacter::useItem(const char *name, const float *point, int arg)
 {
     YAMIPAN_STUB("StageCharacter::useItem", 0x00218b50);
+    return {};
 }
 
 // stub of FS2 0x0029f440

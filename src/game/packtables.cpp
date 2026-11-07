@@ -373,7 +373,7 @@ void PackTables::clear()
 // FS2 0x002bcf10: the ROM's one function of 0x3df0 bytes, cut here by sheet.
 // callcheck: readSheet, clear (the sheets, in the helpers below; the same for all that follows)
 // callcheck: FUN_001a5a60, FUN_002c0d00, FUN_002c0d30, FUN_002c0d40, FUN_002c0d50, FUN_002c0d80, FUN_002c0d90, FUN_002c0db0, FUN_002c0e60, FUN_002c1430, FUN_002c1670, FUN_002c16d0 (the std::map iterators and find-or-insert, a StringList's base ctor, string::c_str)
-// callcheck: __truncdfsf2, at, atof, atoi, doorNumber, doorText, init, memset, operator_delete[], operator_new[], setLandSound, setPickSound, split, sprintf, sscanf, strcmp, strlen, strncpy, string_cstr, ~string, ~StringList, FUN_001723b0, FUN_001723a0, FUN_00172390, FUN_00172380, FUN_00172370, setKeyKind, setStartState, setWindowState, setHp, setSeIndex (the helpers below; the DoorRecord setters and StageObjRecord::init are plain stores there)
+// callcheck: __truncdfsf2, at, atof, atoi, doorNumber, doorText, init, memset, operator_delete[], operator_new[], setLandSound, setPickSound, split, sprintf, sscanf, strcmp, strlen, strncpy, string_cstr, ~string, ~StringList, setKeyKind, setStartState, setWindowState, setHp, setSeIndex (the helpers below; StageObjRecord::init is plain stores there)
 
 void PackTables::parse(PackFile *pack)
 {
@@ -576,11 +576,11 @@ void PackTables::parseDoors(PackFile *pack)
         std::string se = doorText(doorColumns, entry.second, kColDoorSe);
         int seIndex;
         if (sscanf(se.c_str(), kDoorSeFormat, &seIndex) == 1) {
-            door->keyKind = key;
-            door->startState = state;
-            door->windowState = window;
-            door->hp = (short)hp;
-            door->seIndex = (short)seIndex;
+            door->setKeyKind(key);
+            door->setStartState(state);
+            door->setWindowState(window);
+            door->setHp((short)hp);
+            door->setSeIndex((short)seIndex);
         }
         std::string light = doorText(doorColumns, entry.second, kColDoorLight);
         strncpy(door->light, light.c_str(), kNameSize);

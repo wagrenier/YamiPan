@@ -2622,102 +2622,97 @@
 
 /* 00171a30 00000084 */ StageDoor::~StageDoor(){}  // game
 /* 00171ac0 00000008 */ StageDoor::getKind(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 00171ad0 00000008 */ FUN_00171ad0(){}
+/* 00171ad0 00000008 */ CollisionOwner::getCollisionParent(){}  // game
 /* 00171ae0 00000008 */ StageObject::setDirty(){}  // game
 /* 00171af0 00000014 */ StageObject::rebuildMatrix(){}  // game
 /* 00171b10 00000008 */ StageObject::getMatrix(){}  // game
 /* 00171b20 00000008 */ StageObject::getWorldMatrix(){}  // game
-/* 00171b30 00000004 */ FUN_00171b30(){}
-/* 00171b40 00000004 */ FUN_00171b40(){}
-/* 00171b50 00000008 */ FUN_00171b50(){}
-/* 00171b60 00000008 */ FUN_00171b60(){}
-/* 00171b70 00000004 */ FUN_00171b70(){}
-/* 00171b80 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171b90 00000004 */ FUN_00171b90(){}
-/* 00171ba0 00000004 */ FUN_00171ba0(){}
-/* 00171bb0 00000004 */ FUN_00171bb0(){}
-/* 00171bc0 00000004 */ FUN_00171bc0(){}
-/* 00171bd0 00000004 */ FUN_00171bd0(){}
-/* 00171be0 00000004 */ FUN_00171be0(){}
-/* 00171bf0 00000004 */ FUN_00171bf0(){}
-/* 00171c00 00000004 */ FUN_00171c00(){}
-/* 00171c10 00000004 */ FUN_00171c10(){}
-/* 00171c20 00000004 */ FUN_00171c20(){}
-/* 00171c30 00000004 */ FUN_00171c30(){}
-/* 00171c40 00000004 */ FUN_00171c40(){}
-/* 00171c50 00000004 */ FUN_00171c50(){}
-/* 00171c60 00000004 */ FUN_00171c60(){}
-/* 00171c70 00000004 */ FUN_00171c70(){}
-/* 00171c80 00000004 */ FUN_00171c80(){}
-/* 00171c90 00000004 */ FUN_00171c90(){}
-/* 00171ca0 00000004 */ FUN_00171ca0(){}
-/* 00171cb0 00000008 */ FUN_00171cb0(){}
-/* 00171cc0 00000020 */ FUN_00171cc0(){}
-/* 00171ce0 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171cf0 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171d00 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171d10 00000020 */ FUN_00171d10(){}
-/* 00171d30 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171d40 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171d50 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171d60 00000020 */ FUN_00171d60(){}
-/* 00171d80 00000020 */ FUN_00171d80(){}
-/* 00171da0 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171db0 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171dc0 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171dd0 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171de0 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171df0 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171e00 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171e10 00000020 */ FUN_00171e10(){}
-/* 00171e30 00000020 */ FUN_00171e30(){}
-/* 00171e50 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171e60 00000020 */ FUN_00171e60(){}
-/* 00171e80 00000020 */ FUN_00171e80(){}
-/* 00171ea0 00000020 */ FUN_00171ea0(){}
-/* 00171ec0 00000020 */ FUN_00171ec0(){}
-/* 00171ee0 00000020 */ FUN_00171ee0(){}
-/* 00171f00 00000020 */ FUN_00171f00(){}
-/* 00171f20 00000020 */ FUN_00171f20(){}
-/* 00171f40 00000020 */ FUN_00171f40(){}
-/* 00171f60 00000020 */ FUN_00171f60(){}
-/* 00171f80 00000020 */ FUN_00171f80(){}
-/* 00171fa0 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171fb0 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171fc0 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171fd0 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171fe0 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00171ff0 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00172000 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00172010 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00172020 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00172030 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00172040 00000004 */ ScriptRunner::defaultCommand(){}  // native
-/* 00172050 00000008 */ FUN_00172050(){}
-/* 00172060 00000020 */ FUN_00172060(){}
-/* 00172080 00000020 */ FUN_00172080(){}
-/* 001720a0 00000020 */ FUN_001720a0(){}
-/* 001720c0 00000020 */ FUN_001720c0(){}
-/* 001720e0 00000020 */ FUN_001720e0(){}
-/* 00172100 00000020 */ FUN_00172100(){}
-/* 00172120 00000020 */ FUN_00172120(){}
-/* 00172140 00000020 */ FUN_00172140(){}
-/* 00172160 00000020 */ FUN_00172160(){}
-/* 00172180 00000020 */ FUN_00172180(){}
-/* 001721a0 00000020 */ FUN_001721a0(){}
-/* 001721c0 00000020 */ FUN_001721c0(){}
-/* 001721e0 00000020 */ FUN_001721e0(){}
-/* 00172200 00000020 */ FUN_00172200(){}
-/* 00172220 00000020 */ FUN_00172220(){}
-/* 00172240 00000020 */ FUN_00172240(){}
+/* 00171b30 00000004 */ ScriptRunner::onScriptExit(){}  // game
+/* 00171b40 00000004 */ ScriptRunner::command5(){}  // game
+/* 00171b50 00000008 */ ScriptRunner::command6(){}  // game
+/* 00171b60 00000008 */ ScriptRunner::command8(){}  // game
+/* 00171b70 00000004 */ ScriptRunner::command9(){}  // game
+/* 00171b80 00000004 */ ScriptRunner::scriptDoNothing(){}  // game
+/* 00171b90 00000004 */ ScriptRunner::cmdSetColor(){}  // game
+/* 00171ba0 00000004 */ ScriptRunner::cmdAddColorKey(){}  // game
+/* 00171bb0 00000004 */ ScriptRunner::cmdSetColorLoop(){}  // game
+/* 00171bc0 00000004 */ ScriptRunner::cmdSetRadiusSquared(){}  // game
+/* 00171bd0 00000004 */ ScriptRunner::cmdSetConeAngle(){}  // game
+/* 00171be0 00000004 */ ScriptRunner::cmdSetValue2d8(){}  // game
+/* 00171bf0 00000004 */ StageObject::setScriptFlag(){}  // game
+/* 00171c00 00000004 */ ScriptRunner::cmdSetTreeSwitchedOn(){}  // game
+/* 00171c10 00000004 */ StageObject::setScriptFlag2(){}  // game
+/* 00171c20 00000004 */ ScriptRunner::cmdSetTreeBroken(){}  // game
+/* 00171c30 00000004 */ ScriptRunner::cmdSetFadeFrames(){}  // game
+/* 00171c40 00000004 */ ScriptRunner::cmdSetFlag240(){}  // game
+/* 00171c50 00000004 */ ScriptRunner::cmdSetValue244(){}  // game
+/* 00171c60 00000004 */ ScriptRunner::cmdSetFlag248(){}  // game
+/* 00171c70 00000004 */ ScriptRunner::cmdSetColor250(){}  // game
+/* 00171c80 00000004 */ ScriptRunner::cmdSetColor260(){}  // game
+/* 00171c90 00000004 */ ScriptRunner::cmdSetCastsShadow(){}  // game
+/* 00171ca0 00000004 */ ScriptRunner::cmdSetEnabled(){}  // game
+/* 00171cb0 00000008 */ ScriptRunner::getScriptActor(){}  // game
+/* 00171cc0 00000020 */ ScriptRunner::getScriptCharacter(){}  // game
+/* 00171ce0 00000004 */ ScriptRunner::scriptSetBrainEntry(){}  // game
+/* 00171cf0 00000004 */ ScriptRunner::scriptBrainPace(){}  // game
+/* 00171d00 00000004 */ ScriptRunner::scriptHeardKind(){}  // game
+/* 00171d10 00000020 */ ScriptRunner::scriptCanSee(){}  // game
+/* 00171d30 00000004 */ ScriptRunner::scriptMarkPlace(){}  // game
+/* 00171d40 00000004 */ ScriptRunner::scriptWalkToMarkedPlace(){}  // game
+/* 00171d50 00000004 */ ScriptRunner::scriptForgetMarkedPlace(){}  // game
+/* 00171d60 00000020 */ ScriptRunner::scriptAnswerNo(){}  // game
+/* 00171d80 00000020 */ ScriptRunner::scriptHasAllyWithin(){}  // game
+/* 00171da0 00000004 */ ScriptRunner::scriptAttackBite(){}  // game
+/* 00171db0 00000004 */ ScriptRunner::command54(){}  // game
+/* 00171dc0 00000004 */ ScriptRunner::scriptSwingAtBite(){}  // game
+/* 00171dd0 00000004 */ ScriptRunner::scriptSwingAt(){}  // game
+/* 00171de0 00000004 */ ScriptRunner::scriptFireAtBite(){}  // game
+/* 00171df0 00000004 */ ScriptRunner::scriptFireAt(){}  // game
+/* 00171e00 00000004 */ ScriptRunner::scriptShout(){}  // game
+/* 00171e10 00000020 */ ScriptRunner::command56(){}  // game
+/* 00171e30 00000020 */ ScriptRunner::scriptHasBiter(){}  // game
+/* 00171e50 00000004 */ ScriptRunner::command60(){}  // game
+/* 00171e60 00000020 */ ScriptRunner::command62(){}  // game
+/* 00171e80 00000020 */ ScriptRunner::scriptCarriesItem(){}  // game
+/* 00171ea0 00000020 */ ScriptRunner::scriptReload(){}  // game
+/* 00171ec0 00000020 */ ScriptRunner::command66(){}  // game
+/* 00171ee0 00000020 */ ScriptRunner::scriptHasLineTo(){}  // game
+/* 00171f00 00000020 */ ScriptRunner::scriptIsCompanion(){}  // game
+/* 00171f20 00000020 */ ScriptRunner::command69(){}  // game
+/* 00171f40 00000020 */ ScriptRunner::scriptIsBulletFlying(){}  // game
+/* 00171f60 00000020 */ ScriptRunner::scriptIsCrouching(){}  // game
+/* 00171f80 00000020 */ ScriptRunner::scriptIsRunningMotion(){}  // game
+/* 00171fa0 00000004 */ ScriptRunner::scriptRouteAction12c(){}  // game
+/* 00171fb0 00000004 */ ScriptRunner::scriptRouteAction130(){}  // game
+/* 00171fc0 00000004 */ ScriptRunner::scriptWaitMotionChange(){}  // game
+/* 00171fd0 00000004 */ ScriptRunner::command76(){}  // game
+/* 00171fe0 00000004 */ ScriptRunner::command77(){}  // game
+/* 00171ff0 00000004 */ ScriptRunner::scriptPlayMotion(){}  // game
+/* 00172000 00000004 */ ScriptRunner::command79(){}  // game
+/* 00172010 00000004 */ ScriptRunner::scriptGetValue(){}  // game
+/* 00172020 00000004 */ ScriptRunner::scriptSetValue(){}  // game
+/* 00172030 00000004 */ ScriptRunner::scriptPutWeaponAway(){}  // game
+/* 00172040 00000004 */ ScriptRunner::scriptPickableHandle(){}  // game
+/* 00172050 00000008 */ ScriptRunner::cmdIsLit(){}  // game
+/* 00172060 00000020 */ ScriptRunner::scriptUseSmoke(){}  // game
+/* 00172080 00000020 */ ScriptRunner::scriptUseItemAt(){}  // game
+/* 001720a0 00000020 */ ScriptRunner::scriptUseNamedItem(){}  // game
+/* 001720c0 00000020 */ ScriptRunner::scriptSetTrap(){}  // game
+/* 001720e0 00000020 */ ScriptRunner::scriptPutItem(){}  // game
+/* 00172100 00000020 */ ScriptRunner::scriptTakeUpTrap(){}  // game
+/* 00172120 00000020 */ ScriptRunner::scriptOpenDoor(){}  // game
+/* 00172140 00000020 */ ScriptRunner::scriptCloseDoor(){}  // game
+/* 00172160 00000020 */ ScriptRunner::scriptUseDoorKey(){}  // game
+/* 00172180 00000020 */ ScriptRunner::scriptTakeItem(){}  // game
+/* 001721a0 00000020 */ ScriptRunner::scriptCallOut(){}  // game
+/* 001721c0 00000020 */ ScriptRunner::scriptCrouch(){}  // game
+/* 001721e0 00000020 */ ScriptRunner::scriptDragOutCar(){}  // game
+/* 00172200 00000020 */ ScriptRunner::scriptUseSpecial(){}  // game
+/* 00172220 00000020 */ ScriptRunner::scriptAskRouteKind11(){}  // game
+/* 00172240 00000020 */ ScriptRunner::scriptAskNumLock(){}  // game
 /* 00172260 00000008 */ StageObject::setTreeShown(){}  // game
-/* 00172270 00000004 */ StageObject::setShownState(){}  // native
-/* 00172280 00000004 */ StageObject::getShownState(){}  // native
+/* 00172270 00000004 */ StageObject::setShown(){}  // game
+/* 00172280 00000004 */ StageObject::isShown(){}  // game
 /* 00172290 00000014 */ StageObject::heightDifference(){}  // game
 /* 001722b0 00000010 */ StageObject::distanceTo(){}  // game
 /* 001722d0 00000008 */ StageObject::getSelf(){}  // game
@@ -2728,17 +2723,12 @@
 /* 00172330 00000008 */ StageObject::getPosY(){}  // game
 /* 00172340 00000008 */ StageObject::getPosX(){}  // game
 /* 00172350 00000008 */ StageObject::getObjectName(){}  // game
-/* 00172360 00000008 */ StageObject::getCollisionObject(){}  // game
+/* 00172360 00000008 */ StageMapObject::getCollisionObject(){}  // game
 /* 00172370 0000000c */ DoorRecord::setSeIndex(){}  // game
 /* 00172380 0000000c */ DoorRecord::setHp(){}  // game
 /* 00172390 0000000c */ DoorRecord::setWindowState(){}  // game
 /* 001723a0 0000000c */ DoorRecord::setStartState(){}  // game
 /* 001723b0 0000000c */ DoorRecord::setKeyKind(){}  // game
-
-// *****************************************************************************
-// FILE -- game/stagedoor.cpp
-// *****************************************************************************
-
 /* 001723c0 000000b8 */ StageDoor::scriptIsFacing(){}  // game
 /* 00172480 000000b0 */ StageDoor::isWithinReach(){}  // game
 /* 00172530 00000098 */ StageDoor::noteUse(){}  // game
