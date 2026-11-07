@@ -41,6 +41,10 @@ enum KunitorisItem
     KunitorisItem_HowTo      = 0x17,    // kunitorisHowTo's picture (256 x 224)
     KunitorisItem_Title      = 0x18,    // the title picture (256 x 224)
     KunitorisItem_PressStart = 0x19,    // the title's blinking line (128 x 16)
+    KunitorisItem_Pose0      = 0x1a,    // 0x1a..0x21: KunitorisEnding's 64 x 64 poses (its scene tables)
+    KunitorisItem_Banner     = 0x22,    // KunitorisEnding's quad 0 (224 x 32), both draws
+    KunitorisItem_IntroTile0 = 0x23,    // 0x23..0x25: drawIntro's quads 1..3
+    KunitorisItem_EndTile0   = 0x26,    // 0x26..0x28: draw's quads 1..3 (64 rows: setTiles)
     KunitorisItem_SeTable    = 0x29,    // the SEDT table of the minigame's SePlayer
     KunitorisItem_SeBank     = 0x2a,    // its bank 0 (XVAB)
 };
@@ -350,6 +354,52 @@ enum KunitorisSide
 };
 constexpr int kKunitorisGroups = 48;
 
+// The ending's pose animations (data 0x2fc220): one per scene.
+enum KunitorisScene
+{
+    KunitorisScene_Idle   = 0,          // the fallback once a scene's steps run out
+    KunitorisScene_Tiles  = 6,          // kunitorisEnding's tiles part
+    KunitorisScene_Count  = 8,          // the 8th entry is empty (0x2fc274)
+};
+
+// The pictures kunitorisEnding shows, and KunitorisGame's own copy at +0x3c
+// (EE 0x1c, on kunitorisEnding's stack). Each draw shows quad 0 and the
+// three tiles once m_timer reaches their frames, then the scene's pose.
+struct KunitorisEnding
+{
+    // Inline in the ROM (kunitorisEnding).
+    void setScene(int scene)
+    {
+        if (m_scene != scene) {
+            m_scene = scene;
+            m_frame = 0;
+        }
+    }
+
+    void drawIntro(float x, float y, UiDrawer *drawer);                  // FS2 0x002ca330
+    // The three tiles to tile (negative: random ones); restarts m_timer.
+    void setTiles(int tile);                                             // FS2 0x002ca790
+    void draw(float x, float y, UiDrawer *drawer);                       // FS2 0x002c9de0
+
+private:
+    // Inline in the ROM (both draws): quad i of item items[i] once m_timer
+    // reaches show[i]; past end m_timer goes back to -1.
+    void drawQuads(float x, float y, UiDrawer *drawer, const int *show, int end, const int *items);
+    // Inline in the ROM (both draws): the scene's pose at m_frame, back to
+    // KunitorisScene_Idle once the scene has none.
+    void drawPose(float x, float y, UiDrawer *drawer);
+
+public:
+    int m_frame;                // FS2 +0x00: frames in the scene
+    int m_scene;                // FS2 +0x04: KunitorisScene
+    int m_timer;                // FS2 +0x08: -1 idle, else counts up (setTiles starts it)
+    int _0c;                    // FS2 +0x0c
+    int m_tiles[3];             // FS2 +0x10
+};
+static_assert(sizeof(KunitorisEnding) == 0x1c, "KunitorisEnding: EE 0x1c");
+static_assert(offsetof(KunitorisEnding, m_timer) == 0x08, "KunitorisEnding::m_timer");
+static_assert(offsetof(KunitorisEnding, m_tiles) == 0x10, "KunitorisEnding::m_tiles");
+
 // One level being played: kunitorisThread's stack object (EE 0x790, vptr
 // 0x319f80 at +0x18 over KunitorisBoard). Its destructor is inline in the
 // ROM, at the end of kunitorisThread's level.
@@ -374,11 +424,8 @@ private:
     void drawBlinkBar();                                                 // FS2 0x002c83a0
 
 public:
-    int    _3c;                 // FS2 +0x03c
-    int    _40;                 // FS2 +0x040
-    int    _44;                 // FS2 +0x044: -1 at first
-    int    _48[4];              // FS2 +0x048
-    UiDrawer *m_drawer;         // FS2 +0x058
+    KunitorisEnding m_ending;   // FS2 +0x03c: draw's drawIntro(0, 0)
+    UiDrawer *m_drawer;        // FS2 +0x058
     int    m_hiScore;           // FS2 +0x05c: the level's best at first; recorded when higher
     int    m_score;             // FS2 +0x060
     int    m_scroll[2];         // FS2 +0x064: the board cell at the view's corner, x y
@@ -406,33 +453,6 @@ public:
     const KunitorisShape *m_shapes; // FS2 +0x780
     KunitorisSprite *m_sprite;  // FS2 +0x784: the 0x13 picture
 };
-
-// kunitorisEnding's state (EE 0x1c, on its stack).
-struct KunitorisEnding
-{
-    // Inline in the ROM (kunitorisEnding).
-    void setScene(int scene)
-    {
-        if (m_scene != scene) {
-            m_scene = scene;
-            m_frame = 0;
-        }
-    }
-
-    void drawIntro(float x, float y, UiDrawer *drawer);                  // FS2 0x002ca330
-    // The three tiles to tile (negative: random ones); restarts m_timer.
-    void setTiles(int tile);                                             // FS2 0x002ca790
-    void draw(float x, float y, UiDrawer *drawer);                       // FS2 0x002c9de0
-
-    int m_frame;                // FS2 +0x00: frames in the scene
-    int m_scene;                // FS2 +0x04
-    int m_timer;                // FS2 +0x08: -1 idle, else counts up (setTiles starts it)
-    int _0c;                    // FS2 +0x0c
-    int m_tiles[3];             // FS2 +0x10
-};
-static_assert(sizeof(KunitorisEnding) == 0x1c, "KunitorisEnding: EE 0x1c");
-static_assert(offsetof(KunitorisEnding, m_timer) == 0x08, "KunitorisEnding::m_timer");
-static_assert(offsetof(KunitorisEnding, m_tiles) == 0x10, "KunitorisEnding::m_tiles");
 
 // The mode behind the top menu's answer 10 (game/menuscene.cpp), in slot 3:
 // 1 when it changed the save (a best score or a clear).

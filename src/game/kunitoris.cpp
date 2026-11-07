@@ -384,7 +384,7 @@ void kunitorisEnding(int skippable)
 
     int tiles = 0;
     ending.setTiles(0);
-    ending.setScene(6);
+    ending.setScene(KunitorisScene_Tiles);
     for (;;) {
         ending.m_frame++;
         if (ending.m_timer >= 0)
@@ -1153,11 +1153,17 @@ KunitorisGroup *KunitorisGame::freeGroup()
 // callcheck: __construct_array, KunitorisGroup, ~KunitorisGroup (the member array)
 // callcheck: operator_new, UiDrawer, KunitorisCursor, KunitorisBlock, GsTexture (the new-expressions; the inline KunitorisSprite ctor)
 // callcheck: operator_new[], FUN_00104d90, KunitorisCells, ~KunitorisCells (the new[]-expression: CodeWarrior's __construct_new_array)
-// callcheck: getItem (the inline kunitorisItem), pushBack (the inline add)
+// callcheck: getItem, pushBack (the inline kunitorisItem and add)
 
 KunitorisGame::KunitorisGame(int hiScore, int level)
-    : _3c(0), _40(0), _44(-1), _48{ 0, 0, 0, 0 }
 {
+    m_ending.m_frame = 0;
+    m_ending.m_scene = KunitorisScene_Idle;
+    m_ending.m_timer = -1;
+    m_ending._0c = 0;
+    m_ending.m_tiles[0] = 0;
+    m_ending.m_tiles[1] = 0;
+    m_ending.m_tiles[2] = 0;
     m_drawer = new UiDrawer();
     m_hiScore = hiScore;
     m_score = 0;
@@ -1272,15 +1278,109 @@ void KunitorisGame::drawBlinkBar()
 // ──────────────────────────────────────────────────────────────────────
 // KunitorisEnding.
 
-// The three tiles' quads (data 0x2fc2a0): u 0..1, v one 64th of the
-// picture's rows, set by setTiles.
-static UiTexVertex sEndingTiles[3][2] = {
+// The four quads both draws show at (x, y) (data 0x2fc280): quad 0 the
+// banner, 1..3 the tiles, whose v setTiles narrows to one 64th of the
+// picture's rows (the ROM's data, so it stays narrowed for the next draw).
+constexpr int kEndingQuads = 4;
+static UiTexVertex sEndingQuads[kEndingQuads][2] = {
+    { { { 0.0f, 0.0f }, { -75.0f, 75.0f } }, { { 1.0f, 1.0f }, { 149.0f, 107.0f } } },
     { { { 0.0f, 0.0f }, { -69.0f, 76.0f } }, { { 1.0f, 1.0f }, { -5.0f, 92.0f } } },
     { { { 0.0f, 0.0f }, { -6.0f, 76.0f } },  { { 1.0f, 1.0f }, { 58.0f, 92.0f } } },
     { { { 0.0f, 0.0f }, { 58.0f, 76.0f } },  { { 1.0f, 1.0f }, { 122.0f, 92.0f } } },
 };
 constexpr int   kEndingTileKinds = 63;      // random tiles: 0 .. 62
 constexpr float kEndingTileRow   = 1.0f / 64.0f;
+
+// The frames of m_timer each quad shows from, and the frame m_timer stops
+// after (rodata 0x2fc300 / 0x2fc320; each draw copies its five ints to the
+// stack).
+static const int kIntroShow[kEndingQuads] = { 0, 0, 30, 60 };          /* rodata 0x2fc300 */
+constexpr int    kIntroShowEnd = 300;                                   /* rodata 0x2fc310 */
+static const int kEndShow[kEndingQuads] = { 0, 0, 15, 30 };            /* rodata 0x2fc320 */
+constexpr int    kEndShowEnd = 120;                                     /* rodata 0x2fc330 */
+// The pictures: the ROM computes 0x22 + i in drawIntro, and picks 0x22 /
+// 0x26 / 0x27 / 0x28 by index in draw.
+static const int kIntroItems[kEndingQuads] = {
+    KunitorisItem_Banner, KunitorisItem_IntroTile0, KunitorisItem_IntroTile0 + 1, KunitorisItem_IntroTile0 + 2,
+};
+static const int kEndItems[kEndingQuads] = {
+    KunitorisItem_Banner, KunitorisItem_EndTile0, KunitorisItem_EndTile0 + 1, KunitorisItem_EndTile0 + 2,
+};
+
+// A scene's pose animation: steps of { frames until, pack item }; a looping
+// one takes the frame modulo its last step's limit (the ROM does that
+// inside the step loop, the same once done).
+// layout: host (EE 8 bytes a step, 12 a scene: count, steps, loop)
+struct KunitorisPoseStep
+{
+    int until;
+    int item;
+};
+// layout: host (EE 12 bytes)
+struct KunitorisPoseAnim
+{
+    int                      count;
+    const KunitorisPoseStep *steps;
+    u_char                   loop;
+};
+
+static const KunitorisPoseStep kPoseIdle[] = {                          /* data 0x2fc040 */
+    { 30, 0x1a }, { 60, 0x1d },
+};
+static const KunitorisPoseStep kPose1[] = {                             /* data 0x2fc050 */
+    { 10, 0x1d }, { 20, 0x1a }, { 50, 0x1c }, { 60, 0x1a }, { 70, 0x1d }, { 80, 0x1a },
+    { 110, 0x1c }, { 115, 0x1a }, { 135, 0x1c }, { 140, 0x1a }, { 175, 0x1c },
+};
+static const KunitorisPoseStep kPose2[] = {                             /* data 0x2fc0b0 */
+    { 10, 0x1a }, { 90, 0x1e },
+};
+static const KunitorisPoseStep kPose3[] = {                             /* data 0x2fc0c0 */
+    { 10, 0x1d }, { 20, 0x1a }, { 50, 0x1b }, { 60, 0x1a }, { 70, 0x1d }, { 80, 0x1a },
+    { 110, 0x1b }, { 115, 0x1a }, { 135, 0x1b }, { 140, 0x1a }, { 175, 0x1b },
+};
+static const KunitorisPoseStep kPose4[] = {                             /* sdata 0x31acd0 */
+    { 180, 0x1f },
+};
+static const KunitorisPoseStep kPose5[] = {                             /* data 0x2fc120 */
+    { 5, 0x1a },   { 10, 0x1d },  { 30, 0x1b },  { 35, 0x1d },  { 40, 0x1a },  { 45, 0x1d },
+    { 65, 0x1c },  { 70, 0x1a },  { 75, 0x1d },  { 80, 0x1a },  { 100, 0x1f }, { 105, 0x1a },
+    { 110, 0x1d }, { 115, 0x1a }, { 135, 0x1e }, { 137, 0x1a }, { 139, 0x1d }, { 141, 0x1b },
+    { 143, 0x1d }, { 145, 0x1a }, { 147, 0x1d }, { 149, 0x1c }, { 151, 0x1a }, { 153, 0x1d },
+    { 155, 0x1a }, { 157, 0x1f }, { 159, 0x1a }, { 161, 0x1d }, { 163, 0x1a }, { 200, 0x1e },
+};
+static const KunitorisPoseStep kPoseTiles[] = {                         /* data 0x2fc210 */
+    { 30, 0x20 }, { 60, 0x21 },
+};
+#define KUNITORIS_POSE(steps, loop) { sizeof(steps) / sizeof(steps[0]), steps, loop }
+static const KunitorisPoseAnim kPoseAnims[KunitorisScene_Count] = {    /* data 0x2fc220 */
+    KUNITORIS_POSE(kPoseIdle, 1),
+    KUNITORIS_POSE(kPose1, 0),
+    KUNITORIS_POSE(kPose2, 1),
+    KUNITORIS_POSE(kPose3, 0),
+    KUNITORIS_POSE(kPose4, 0),
+    KUNITORIS_POSE(kPose5, 0),
+    KUNITORIS_POSE(kPoseTiles, 1),
+    { 0, nullptr, 0 },
+};
+#undef KUNITORIS_POSE
+
+// The scene's picture at frame, -1 past its last step. Inline in the ROM.
+static int kunitorisPoseItem(int scene, int frame)
+{
+    const KunitorisPoseAnim &anim = kPoseAnims[scene];
+    for (int i = 0; i < anim.count; i++) {
+        if (anim.loop)
+            frame %= anim.steps[anim.count - 1].until;
+        if (frame < anim.steps[i].until)
+            return anim.steps[i].item;
+    }
+    return -1;
+}
+
+// The pose's place: 64 x 64 left of the banner.
+constexpr float kPoseLeft = -124.0f;
+constexpr float kPoseTop  = 44.0f;
+constexpr float kPoseSize = 64.0f;
 
 // FS2 0x002ca790
 
@@ -1291,11 +1391,64 @@ void KunitorisEnding::setTiles(int tile)
         m_tiles[i] = tile < 0 ? static_cast<int>(randNext2()) % kEndingTileKinds : tile;
         const float top = static_cast<float>(m_tiles[i]) * kEndingTileRow;
         float bottom = top + kEndingTileRow;
-        sEndingTiles[i][0].uv[1] = top;
+        sEndingQuads[i + 1][0].uv[1] = top;
         if (1.0f <= bottom)
             bottom = 0.99999f;
-        sEndingTiles[i][1].uv[1] = bottom;
+        sEndingQuads[i + 1][1].uv[1] = bottom;
     }
+}
+
+void KunitorisEnding::drawQuads(float x, float y, UiDrawer *drawer, const int *show, int end, const int *items)
+{
+    if (m_timer < 0)
+        return;
+    for (int i = 0; i < kEndingQuads; i++) {
+        if (m_timer < show[i])
+            break;
+        GsTexture *tex = new GsTexture(kunitorisItem(items[i]));
+        drawer->setTexture(tex);
+        drawer->setGsReg(SCE_GS_TEX1_1, 0);
+        drawer->setPrimColor(kKunitorisPicturePrim, &kKunitorisGrey);
+        UiTexVertex quad[2] = { sEndingQuads[i][0], sEndingQuads[i][1] };
+        quad[0].xy[0] += x;
+        quad[1].xy[0] += x;
+        quad[0].xy[1] += y;
+        quad[1].xy[1] += y;
+        drawer->drawTexFlat(quad, 2, 0);
+        delete tex;
+    }
+    if (end < m_timer)
+        m_timer = -1;
+}
+
+void KunitorisEnding::drawPose(float x, float y, UiDrawer *drawer)
+{
+    int item = kunitorisPoseItem(m_scene, m_frame);
+    if (item < 0) {
+        setScene(KunitorisScene_Idle);
+        item = kunitorisPoseItem(m_scene, m_frame);
+    }
+    const float left = x + kPoseLeft;
+    const float top = y + kPoseTop;
+    drawPicture(drawer, item, left, top, left + kPoseSize, top + kPoseSize);
+}
+
+// FS2 0x002ca330
+// callcheck: operator_new, GsTexture, getItem, setTexture, setGsReg, setPrimColor, drawTexFlat (the inline drawQuads, drawPose, drawPicture)
+
+void KunitorisEnding::drawIntro(float x, float y, UiDrawer *drawer)
+{
+    drawQuads(x, y, drawer, kIntroShow, kIntroShowEnd, kIntroItems);
+    drawPose(x, y, drawer);
+}
+
+// FS2 0x002c9de0
+// callcheck: operator_new, GsTexture, getItem, setTexture, setGsReg, setPrimColor, drawTexFlat (the inline drawQuads, drawPose, drawPicture)
+
+void KunitorisEnding::draw(float x, float y, UiDrawer *drawer)
+{
+    drawQuads(x, y, drawer, kEndShow, kEndShowEnd, kEndItems);
+    drawPose(x, y, drawer);
 }
 
 // Inline in the ROM (the end of kunitorisThread's level); the groups and
@@ -1311,18 +1464,6 @@ KunitorisGame::~KunitorisGame()
 }
 
 // ---- stubs (tools/reverse/stubgen.py) ----
-
-// stub of FS2 0x002c9de0
-void KunitorisEnding::draw(float x, float y, UiDrawer *drawer)
-{
-    YAMIPAN_STUB("KunitorisEnding::draw", 0x002c9de0);
-}
-
-// stub of FS2 0x002ca330
-void KunitorisEnding::drawIntro(float x, float y, UiDrawer *drawer)
-{
-    YAMIPAN_STUB("KunitorisEnding::drawIntro", 0x002ca330);
-}
 
 // stub of FS2 0x002c5ea0
 void KunitorisGame::draw(sceVif1Packet *packet, TexAreaList *texList)
