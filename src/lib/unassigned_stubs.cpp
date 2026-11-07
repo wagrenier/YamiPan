@@ -145,13 +145,6 @@ bool elevatorCanCall(StageObject *elevator, const float *position, const float *
     return {};
 }
 
-// stub of FS2 0x00214a80
-StageObject * StageCharacter::findNearestFoe(bool foes, bool sight)
-{
-    YAMIPAN_STUB("StageCharacter::findNearestFoe", 0x00214a80);
-    return {};
-}
-
 
 // stub of FS2 address unknown (0 candidates)
 u_int elevatorCalledFloors(StageObject *elevator)

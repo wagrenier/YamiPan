@@ -999,7 +999,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Joined 0x2160a0..0x216130 to game/playermotion.cpp: CodeWarrior placed the copies right after getSides 0x215f10. m_sides (+0x590) is now a one-word StageSideMask with get(); getSides reads its own bits through getSideMask().get(). The scene getters (player +0x78, controlled +0x80) are declared in stagescene.h and defined once in playermotion.cpp, each with one FS2 line per ROM copy; Ghidra names the second copies getPlayer2 and getActor2. The many inline controlled-else-player expressions elsewhere could now call StageScene::getActor; not changed here. callcheck: no new misses (10 old ones in other functions). Smoke run ends at the language select (stage code not reached): verify.",
+   "notes": "findNearestFoe(false, ...) answers the nearest ALLY (isAlly, not itself), which is what nativeNearestAllyDistance wants; the Ghidra name is kept for its callers. The ROM has two copies of the loop (one per list); the host walks one range with the filter chosen by foes, same order of tests (m_active, not self, isAlly / isEnemyOf, then life up). With sight a candidate canSeeThisFrame refuses is dropped, the distance is the one it answers. Not reached in the 15 s smoke run (language select), so verify; the 10 MISSING callcheck entries in playermotion.cpp predate this session.",
    "ranges": [
     [
      "00175700",
@@ -1132,6 +1132,10 @@
     [
      "00212530",
      "00214a70"
+    ],
+    [
+     "00214a70",
+     "00214ce8"
     ],
     [
      "00214d40",
@@ -1428,11 +1432,6 @@
    ],
    "sessions": [
     {
-     "date": "2026-11-05 09:33",
-     "status": "partial",
-     "summary": "stage 1's natives and the notices: 21 natives, PauseMenuState and ScenePool whole, hasBiter, findItem: the game's first tutorial line shows on screen, and the stuck is the closed first room"
-    },
-    {
      "date": "2026-11-05 10:24",
      "status": "verify",
      "summary": "closed: resetActionState whole, ScriptPoint and the sight table, stale call notes fixed; a door opened and crossed with the pad alone"
@@ -1486,11 +1485,16 @@
      "date": "2026-11-07 09:15",
      "status": "verify",
      "summary": "The out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level (0x2160a0..0x216130, was unassigned@002160a0): StageSideMask::get, StageCharacter::getSideMask, StageScene::getPlayer, isActorOther, getActor (getPlayer and getActor twice each)"
+    },
+    {
+     "date": "2026-11-07 11:57",
+     "status": "verify",
+     "summary": "0x214a70..0x214ce8 joined (was unassigned@00214a70): StageObjRecord::init (the sheet row's default startMotion, now called by PackTables::parseCharacters) and StageCharacter::findNearestFoe (nearest enemy up among the enemy candidates, or with foes false the nearest ally up among the mission's characters; by canSeeThisFrame's distance with sight, else distanceTo); stub removed; the inline helpers 0x1b9a60 / 0x2107e0 named StageObject::isActive / StageCharacter::isUp (batch 213)"
     }
    ],
    "status": "verify",
    "task": "PlayerMotion::takeHits 0x1e18c0..0x1e3e80 past its first line: it requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice",
-   "why": "0x2160a0..0x216130 joined 2026-11-07 (was unassigned@002160a0): the out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level (StageScene::getPlayer / getActor / isActorOther, StageCharacter::getSideBits / StageObjSides::get), placed by CodeWarrior right after getSides"
+   "why": "0x214a70..0x214ce8 joined 2026-11-07 (was unassigned@00214a70): StageObjRecord::init and StageCharacter::findNearestFoe, between this file's 0x212530 run and isEnemyOf 0x214d40, which findNearestFoe calls; before that: 0x2160a0..0x216130 joined 2026-11-07 (was unassigned@002160a0): the out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level, placed by CodeWarrior right after getSides"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -3664,6 +3668,10 @@
   "unassigned@001953f0": {},
   "unassigned@0020acb0": {},
   "unassigned@0020c940": {},
+  "unassigned@00214a70": {
+   "claimed": "2026-11-07 11:47",
+   "status": "active"
+  },
   "unassigned@002160a0": {},
   "unassigned@002176d0": {
    "notes": "This key is empty now. 0x2176d0 isViewLinked was already written in src/game/stagecharacter.cpp, now in its range; 0x217700..0x217a80 joined game/playermotion.cpp (template instance emitted after giveItem, as 0x17e140 follows stagecharacter.cpp). Batch 200 names 8 functions. stagelist.h gained getTail and find (0x217700, 0x217730) and lists the instance; dropItem uses find, DoorCondition::onUpdate calls the new StageCharacter::getMotionDoor (m_motion->doorLink->door, 0x2179b0) as the ROM does; SightTable::canSeeThisFrame 0x2179c0 stays inline in StageCharacter::canSeeThisFrame (tag added). Fix found: findCarried 0x216310 and giveItem's stack search walk getTail then +8 prev in the ROM; the host walked from the head, so of two carried objects with one name it found the first instead of the last carried (hazards.md). Picture: the 15 s smoke run stays at the language select, English highlighted, as before; nothing on screen reaches carried items yet: verify. A teleport run with two same-named items in the inventory would show the fix.",

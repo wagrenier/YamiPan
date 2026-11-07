@@ -4279,7 +4279,7 @@
 /* 001b9a20 00000008 */ FUN_001b9a20(){}
 /* 001b9a30 00000010 */ FUN_001b9a30(){}
 /* 001b9a50 00000008 */ FUN_001b9a50(){}
-/* 001b9a60 0000000c */ FUN_001b9a60(){}
+/* 001b9a60 0000000c */ StageObject::isActive(){}  // game
 /* 001b9a70 00000008 */ FUN_001b9a70(){}
 /* 001b9a80 00000018 */ FUN_001b9a80(){}
 /* 001b9aa0 00000010 */ FUN_001b9aa0(){}
@@ -5475,7 +5475,7 @@
 /* 002103d0 00000170 */ StageCharacter::takeBlow(){}  // game
 /* 00210540 000001d8 */ StageCharacter::getHandClass(){}  // game
 /* 00210720 000000c0 */ StageCharacter::hasBiter(){}  // game
-/* 002107e0 00000024 */ FUN_002107e0(){}
+/* 002107e0 00000024 */ StageCharacter::isUp(){}  // game
 /* 00210810 00000100 */ StageCharacter::scriptHasAllyWithin(){}  // game
 /* 00210910 00000020 */ StageCharacter::scriptCanSee(){}  // game
 /* 00210930 00000008 */ StageCharacter::canSeeThisFrame(){}  // game
@@ -5539,11 +5539,6 @@
 /* 00212460 000000cc */ StageCharacter::getLifeState(){}  // game
 /* 00212530 00000da0 */ StageCharacter::setProperty(){}  // game
 /* 002132d0 000017a0 */ StageCharacter::getProperty(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
 /* 00214a70 0000000c */ StageObjRecord::init(){}  // game
 /* 00214a80 00000268 */ StageCharacter::findNearestFoe(){}  // game
 

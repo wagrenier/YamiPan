@@ -2381,8 +2381,10 @@ public:
     StageObject *getNearSearchPoint();                                   // FS2 0x0021c010
     // The rank-th nearest search group from point; null past the end.
     StageObject *pickSearchPoint(const sceVu0FVECTOR point, u_int rank); // FS2 0x00219210
-    // The nearest foe: of the enemy candidates, or (foes false) of the
-    // mission's characters; sight measures by what it sees, else by distance.
+    // foes: the nearest enemy up among getEnemyCandidates; foes false: the
+    // nearest ally up among the mission's characters (not itself). sight
+    // keeps only what canSeeThisFrame sees, by the distance it answers;
+    // else by distanceTo. Null without one.
     StageObject *findNearestFoe(bool foes, bool sight);                  // FS2 0x00214a80
     // point lies inside its view: within viewAngle (the whole cone; a half
     // circle up to kCloseViewRange), nearer than scale * m_sight, and no
@@ -3451,6 +3453,7 @@ constexpr int kStageObjRecordSets  = 3;
 constexpr int kStageObjRecordCount = 0x140;
 constexpr int kStageObjRecordMuffles = 0xf;
 constexpr int kStageObjRecordCarProof = 3;  // a car neither hurts it nor is hurt by it
+constexpr int kStageObjRecordStartMotion = 1; // 初期M before the sheet's column is read (init)
 struct StageObjRecord
 {
     char   name[0x10];          // FS2 +0x00: ラベル: a map point's (StageFiles::placeCharacter)
@@ -3509,6 +3512,9 @@ struct StageObjRecord
     int    drivingSkill;       // FS2 +0xf0: 運転スキル
     int    snipeLerp;          // FS2 +0xf4: 狙撃補間率
     int    snipeShake;         // FS2 +0xf8: 狙撃ブレ率
+
+    // The one default a row gets before its columns: startMotion.
+    void init();                                                         // FS2 0x00214a70
 };
 static_assert(sizeof(StageObjRecord) == 0xfc, "StageObjRecord: EE 0xfc");
 extern StageObjRecord gStageObjRecords[kStageObjRecordSets][kStageObjRecordCount]; /* bss 0x539b10 */

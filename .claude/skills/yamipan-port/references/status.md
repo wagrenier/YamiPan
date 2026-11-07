@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 11:46 at commit `6198ad6` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 11:57 at commit `170a31b` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 11:46 at commit `6198ad6` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6597**, named **5650** (86%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4728
-- context-name ledger: 6324 entries; overrides of wrong library matches: 0
-- placed in a source file: 6188/6597 in 138 files
+- game functions: **6597**, named **5652** (86%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4730
+- context-name ledger: 6326 entries; overrides of wrong library matches: 0
+- placed in a source file: 6190/6597 in 138 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -22,7 +22,7 @@ Least-named game-code regions (64 KB blocks):
 | `00310000` | 0/9 (0%) | - |
 | `002c0000` | 39/173 (23%) | game/packtables.cpp, game/stagefog.cpp, game/menupack.cpp |
 | `001c0000` | 108/233 (46%) | game/scriptrunner.cpp |
-| `001b0000` | 115/242 (48%) | game/scriptrunner.cpp |
+| `001b0000` | 116/242 (48%) | game/scriptrunner.cpp |
 | `002d0000` | 156/256 (61%) | game/drawsys.cpp, game/areaclip.cpp, game/ripplesheet.cpp |
 | `001a0000` | 195/301 (65%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
 | `00250000` | 126/178 (71%) | game/routeplayer.cpp, game/uiwidget.cpp, game/uidrawer.cpp |
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5659**; stubs: **22**
+- reconstructed FS2 functions: **5661**; stubs: **21**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -81,7 +81,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/pausemenu.cpp` | 7 | 0 |
 | `src/game/pausemenustate.cpp` | 12 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
-| `src/game/playermotion.cpp` | 614 | 0 |
+| `src/game/playermotion.cpp` | 616 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rand48.cpp` | 3 | 0 |
@@ -144,7 +144,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 6 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 5 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_2d_texture_vram.cpp` | 11 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
@@ -174,9 +174,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 210 TUs: todo 72, partial 15, verify 133, done 46
-- next: **unassigned@00214a70** (frontier score 5)
+- 209 TUs: todo 71, active 1, partial 15, verify 133, done 46
+- next: **unassigned@00282da0** (frontier score 5)
 - pinned queue: (empty)
+- active: `unassigned@00214a70` 0/0
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -222,7 +223,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
 - verify: `game/pausemenu.cpp` 7/7 -- New game/pausemenu.cpp and .h (PauseMenuChoice moved from gamehooks.h, PauseMenuScreen for answers 4..9, help pages 0 and 7). Fix outside the file: StageScene::
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
-- verify: `game/playermotion.cpp` 459/473 -- Joined 0x2160a0..0x216130 to game/playermotion.cpp: CodeWarrior placed the copies right after getSides 0x215f10. m_sides (+0x590) is now a one-word StageSideMas
+- verify: `game/playermotion.cpp` 461/475 -- findNearestFoe(false, ...) answers the nearest ALLY (isAlly, not itself), which is what nativeNearestAllyDistance wants; the Ghidra name is kept for its callers
 - verify: `game/prgmccard.cpp` 7/7 -- All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide close
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/ripplesheet.cpp` 7/10 -- Batch 164. What the notes called stage 0x1b's boss film is a 15 by 15 ripple sheet, 0x2d10f0..0x2d3700, SightJack +0xb4: the frame bent, pushed from a tint, cre
@@ -313,6 +314,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 11:57 `game/playermotion.cpp` verify: 0x214a70..0x214ce8 joined (was unassigned@00214a70): StageObjRecord::init (the sheet row's default startMotion, now called by PackTables::parseCharacters) and S
 - 2026-11-07 11:46 `game/pausemenu.cpp` verify: The stage's pause menu and map menu: their start, result and thread functions and runPauseMenu, all 7 functions of 0x20acb0..0x20b120 (batch 212); StageCharacte
 - 2026-11-07 11:12 `game/stagecollision.cpp` verify: resetSurfaceTables 0x2cf510 joined from unassigned@002cf510: clears the per-surface used bytes each new stage
 - 2026-11-07 10:57 `game/sevenkeys.cpp` verify: The seven keys oYC11_21..27 (SevenKeys, object kind 6), their gadget view SevenKeysView/SevenKeysGadget and SkyPose named (batch 210), pinned as game/sevenkeys.
@@ -320,22 +322,21 @@ Recent sessions:
 - 2026-11-07 10:12 `game/gsluminance.cpp` verify: gsLuminance and its six GS packet steps named (batch 209), pinned as their own object 0x2b6b90-0x2b85a0, documented in game/gsluminance.cpp; on PC the host pale
 - 2026-11-07 10:01 `unassigned@0029f2a0` verify: Placed the run 0x29f2a0..0x29f4f8 in game/scriptrunner.cpp: missionRestoreCheck and findNumLockTarget; StageMission +0xb8 is a LockGadgetKind (restoreKind, was 
 - 2026-11-07 09:50 `game/framefilter.cpp` verify: the frame filter: gsFrameFilter and its 4 helpers, a host FrameFilterPass; d0101's opening is soft
-- 2026-11-07 09:15 `game/playermotion.cpp` verify: The out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level (0x2160a0..0x216130, was unassigned@002160a0): StageSideMa
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
 | `unassigned@00282da0` | partial | 11/0/18 | 3.0 | 5 | 0 |
-| `unassigned@00214a70` | todo | 0/1/2 | 0.6 | 5 | 0 |
+| `unassigned@0020e6a0` | partial | 10/0/11 | 8.6 | 4 | 0 |
 | `unassigned@00177d00` | partial | 11/0/47 | 7.7 | 4 | 0 |
 | `rena_2d_texture_tim2.cpp` | todo | 0/1/1 | 0.1 | 3 | 0 |
-| `unassigned@00219be0` | partial | 15/0/19 | 3.8 | 3 | 0 |
 | `unassigned@0020ce10` | todo | 0/0/1 | 0.1 | 3 | 0 |
-| `unassigned@0020e6a0` | partial | 10/0/11 | 8.6 | 2 | 0 |
+| `unassigned@00219be0` | partial | 15/0/19 | 3.8 | 3 | 0 |
 | `unassigned@0026c650` | todo | 0/0/2 | 0.2 | 2 | 0 |
-| `unassigned@00211970` | partial | 2/2/4 | 2.3 | 2 | 0 |
 | `unassigned@00217be0` | partial | 14/0/16 | 2.1 | 2 | 0 |
 | `unassigned@002b0d50` | todo | 0/0/1 | 0.0 | 2 | 0 |
-| `unassigned@002c42a0` | todo | 0/1/93 | 39.0 | 1 | 0 |
+| `unassigned@00211970` | partial | 2/2/4 | 2.3 | 2 | 0 |
+| `unassigned@0021b340` | partial | 7/0/8 | 1.7 | 1 | 0 |
+| `unassigned@002a0040` | todo | 0/0/9 | 4.3 | 1 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -370,6 +371,7 @@ Recent sessions:
 | `002dd6e0` | ClipIndexList::insert | 6 | game | missing | game/areaclip.cpp |
 | `001f4f20` | FUN_001f4f20 | 6 | - | missing | game/stagecollision.cpp |
 | `002c0db0` | FUN_002c0db0 | 6 | - | missing | game/packtables.cpp |
+| `001b9a60` | StageObject::isActive | 5 | game | missing | game/scriptrunner.cpp |
 | `00187220` | PartSwitch::PartSwitch | 5 | game | missing | game/stagemodel.cpp |
 | `00258f10` | FUN_00258f10 | 5 | - | missing | game/routeplayer.cpp |
 | `00255080` | FUN_00255080 | 5 | - | missing | game/routeplayer.cpp |
@@ -380,5 +382,4 @@ Recent sessions:
 | `002e7e90` | FUN_002e7e90 | 5 | - | missing | rena/rena_draw.cpp |
 | `00217770` | FUN_00217770 | 5 | - | missing | game/playermotion.cpp |
 | `001d8250` | StageNodeList::linkValue | 4 | game | missing | game/nodetransform.cpp |
-| `00184260` | FUN_00184260 | 4 | - | missing | game/stageitem.cpp |
 

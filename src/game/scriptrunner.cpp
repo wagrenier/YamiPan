@@ -1667,7 +1667,7 @@ static void demoBindObject(StageObject *object, const char *motion)
 }
 
 // FS2 0x001b9680
-// callcheck: readNameArg, readStringArg, FUN_001b9ab0, FUN_001b36b0, FUN_001b9aa0, FUN_001b9a80, FUN_001b9a30, FUN_001b9a70, FUN_001b9a60, FUN_001b9a50, strcmp, FUN_001b9a20, hasCharacter, placeCharacter, find8, hasItem, placeItem, find8, operator_new, SubSceneModelObject, FUN_001a4c20, attach, FUN_001a4c40, demoSwitchOn, bindMotion (small getters and the list walk, inline here; the ROM's bind sequences are demoBindObject)
+// callcheck: readNameArg, readStringArg, FUN_001b9ab0, FUN_001b36b0, FUN_001b9aa0, FUN_001b9a80, FUN_001b9a30, FUN_001b9a70, isActive, FUN_001b9a50, strcmp, FUN_001b9a20, hasCharacter, placeCharacter, find8, hasItem, placeItem, find8, operator_new, SubSceneModelObject, FUN_001a4c20, attach, FUN_001a4c40, demoSwitchOn, bindMotion (small getters and the list walk, inline here; the ROM's bind sequences are demoBindObject)
 
 static const int *nativeDemoBind(ScriptRunner *self, int *, const int *code)
 {
