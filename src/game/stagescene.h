@@ -330,6 +330,14 @@ struct StageScene
     void drawPaused();                                                   // FS2 0x00198fc0
     // The character the player controls (null none).
     StageObject *getTopView();                                   // FS2 0x0019bbb0
+    // Inline in the ROM; StageCharacter::getSides calls these out-of-line
+    // copies at its third inline level (game/playermotion.cpp).
+    // player.
+    StagePlayer *getPlayer() const;                                      // FS2 0x002160c0, 0x00216110
+    // Who the pad drives: controlled, else the player.
+    StageObject *getActor() const;                                       // FS2 0x002160f0, 0x00216120
+    // The pad drives someone other than the player.
+    bool isActorOther() const;                                           // FS2 0x002160d0
     // Once, before the stage's first frame.
     void beginPlay();                                                    // FS2 0x001963a0
     // Once, after the stage's files: the cameras, bullet and flash, the

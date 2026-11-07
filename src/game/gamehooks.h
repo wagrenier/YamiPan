@@ -2143,6 +2143,15 @@ static_assert(offsetof(CharacterAllows, lockSwitch) == 0x3a, "CharacterAllows::l
 static_assert(offsetof(CharacterAllows, putItem) == 0x28, "CharacterAllows::putItem");
 static_assert(offsetof(CharacterAllows, standing) == 0x41, "CharacterAllows::standing");
 
+// A character's side bits (StageObjSide, StageCharacter +0x590): one word
+// with an inline reader, out of line once in the ROM (StageCharacter::getSides).
+struct StageSideMask
+{
+    u_int bits = 0;             // FS2 +0x0
+    u_int get() const;                                                   // FS2 0x002160a0
+};
+static_assert(sizeof(StageSideMask) == 4, "StageSideMask");
+
 // A character of the map (the F_ and player points), the player and the
 // partner among them. vtable 0x312240 (0x312264, 0x31227c), game/stagecharacter.cpp.
 // layout: host -- EE 0x800.
@@ -2588,6 +2597,8 @@ public:
     StagePlayer *getTakenOverPlayer() const;                             // FS2 0x00211910
     // The sides it fights: the player's while it acts for the player.
     u_int getSides() const;                                              // FS2 0x00215f10
+    // Its own side bits (m_sides), whoever it acts for.
+    const StageSideMask &getSideMask() const;                            // FS2 0x002160b0
     // target's sheet kind belongs to a side it fights, or target is m_foe.
     bool isEnemyOf(StageObject *target);                                 // FS2 0x00214d40
     // One of its blows' bodies is on now.
@@ -2734,7 +2745,7 @@ public:
     // FS2 +0x464: the terminate hook keeps "it is in motion 0xd6" in the low
     // byte of m_slowTo; PC: a byte of its own.
     u_char m_slowInDrain = 0;
-    u_int  m_sides = 0;         // FS2 +0x590: the sheet's StageObjSide bits: the sides it fights (getSides)
+    StageSideMask m_sides;      // FS2 +0x590: the sheet's StageObjSide bits: the sides it fights (getSides)
     float  m_health = 0.0f;     // FS2 +0x594: the sheet's 体力: running spends a point a frame at 30 Hz, 5% of the sheet's a second comes back (PlayerMotion::stepHealth)
     int    m_endurance = 0;     // FS2 +0x598: the sheet's 耐久力; setEndurance
     int    m_leftArm = 0;       // FS2 +0x59c: the sheet's 左腕

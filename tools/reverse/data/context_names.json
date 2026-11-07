@@ -23363,6 +23363,48 @@
   "was": "FUN_00215f10",
   "why": "+0x590, the sheet's PC / NP / corpse / dark bits (copied at 0x21ddf0), the player's while taken over; recursion inlined"
  },
+ "002160a0": {
+  "name": "StageSideMask::get",
+  "tag": "game-inferred",
+  "was": "FUN_002160a0",
+  "why": "answers the word at a0; getSides calls it on 0x2160b0's answer (the character +0x590, its side bits) at its third inline level"
+ },
+ "002160b0": {
+  "name": "StageCharacter::getSideMask",
+  "tag": "game-inferred",
+  "was": "FUN_002160b0",
+  "why": "answers a0 + 0x590 (m_sides, the sheet's side bits); getSides reads it through StageSideMask::get"
+ },
+ "002160c0": {
+  "name": "StageScene::getPlayer",
+  "tag": "game-inferred",
+  "was": "FUN_002160c0",
+  "why": "answers +0x78 (player); getSides calls it with gStageScene for the taken-over character's player"
+ },
+ "002160d0": {
+  "name": "StageScene::isActorOther",
+  "tag": "game-inferred",
+  "was": "FUN_002160d0",
+  "why": "player (+0x78) != getActor (controlled +0x80, else player): the half of isTakenOver getSides calls out of line"
+ },
+ "002160f0": {
+  "name": "StageScene::getActor",
+  "tag": "game-inferred",
+  "was": "FUN_002160f0",
+  "why": "controlled (+0x80), else player (+0x78): who the pad drives; the same body as 0x216120, a second out-of-line copy"
+ },
+ "00216110": {
+  "name": "StageScene::getPlayer2",
+  "tag": "game-inferred",
+  "was": "FUN_00216110",
+  "why": "answers +0x78 (player): the same body as 0x2160c0, a second out-of-line copy getSides calls"
+ },
+ "00216120": {
+  "name": "StageScene::getActor2",
+  "tag": "game-inferred",
+  "was": "FUN_00216120",
+  "why": "controlled (+0x80), else player (+0x78): the same body as 0x2160f0, a second out-of-line copy getSides calls"
+ },
  "00216140": {
   "name": "StageObject::getCharacterClass",
   "tag": "game-inferred",

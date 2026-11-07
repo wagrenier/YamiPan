@@ -8459,17 +8459,59 @@ StagePlayer *StageCharacter::getTakenOverPlayer() const
     return isTakenOver() ? gStageScene->player : nullptr;
 }
 
-// The ROM inlines itself here three levels deep, with the scene's getters
-// 0x216120, 0x216110, 0x2160f0, 0x2160d0 and 0x2160c0 and the side's 0x2160b0, 0x2160a0.
+// The ROM inlines itself here three levels deep (getTakenOverPlayer and
+// isTakenOver with it); at the deepest level CodeWarrior calls the inline
+// getters below out of line instead.
 // 0x210e50 is a jump here.
 // FS2 0x00215f10
 // FS2 0x00210e50
-// callcheck: FUN_00216120, FUN_00216110, FUN_002160f0, isControlled, FUN_002160d0, isTakenOver, FUN_002160c0, getTakenOverPlayer, FUN_002160b0, FUN_002160a0, getSides
+// callcheck: getActor2, getPlayer2, getActor, isControlled, isActorOther, isTakenOver, getPlayer, getTakenOverPlayer, getSideMask, get, getSides
 
 u_int StageCharacter::getSides() const
 {
     const StagePlayer *player = getTakenOverPlayer();
-    return player != nullptr ? player->getSides() : m_sides;
+    return player != nullptr ? player->getSides() : getSideMask().get();
+}
+
+// The out-of-line copies of the inline getters getSides uses, placed by
+// CodeWarrior right after it. getPlayer and getActor are there twice each
+// (0x216110 and 0x216120 the second copies): one definition serves both.
+
+// FS2 0x002160a0
+
+u_int StageSideMask::get() const
+{
+    return bits;
+}
+
+// FS2 0x002160b0
+
+const StageSideMask &StageCharacter::getSideMask() const
+{
+    return m_sides;
+}
+
+// FS2 0x002160c0
+// FS2 0x00216110
+
+StagePlayer *StageScene::getPlayer() const
+{
+    return player;
+}
+
+// FS2 0x002160d0
+
+bool StageScene::isActorOther() const
+{
+    return player != getActor();
+}
+
+// FS2 0x002160f0
+// FS2 0x00216120
+
+StageObject *StageScene::getActor() const
+{
+    return controlled != nullptr ? controlled : player;
 }
 
 // FS2 0x00214d40
@@ -10002,7 +10044,7 @@ void StageCharacter::initStatusBlock()
     m_670 = 0;
     m_bulletFlying = 0;
     m_lifeOverride = -1;
-    m_sides = sheet->sides;
+    m_sides.bits = sheet->sides;
     m_6c8 = 0;
     m_6cc = 0;
     m_6d0 = 0;
@@ -10041,7 +10083,7 @@ void StageCharacter::resetActionState()
 void StageCharacter::setSides(int sides)
 {
     if ((u_int)sides < kSideBitsEnd)
-        m_sides = (u_int)sides;
+        m_sides.bits = (u_int)sides;
 }
 
 // One function in the ROM per bit.
@@ -10051,9 +10093,9 @@ void StageCharacter::setSides(int sides)
 // FS2 0x0021cba0
 void StageCharacter::setSideBit(u_int bit, bool on)
 {
-    const u_int sides = on ? m_sides | bit : m_sides & ~bit;
+    const u_int sides = on ? m_sides.bits | bit : m_sides.bits & ~bit;
     if (sides < kSideBitsEnd)
-        m_sides = sides;
+        m_sides.bits = sides;
 }
 
 constexpr int kLifeUp = 2;     // getLifeState
