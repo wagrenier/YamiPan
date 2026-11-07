@@ -5465,7 +5465,7 @@
 /* 0020d8c0 00000ddc */ StageCharacter::updateVisibility(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/playermotion.cpp
 // *****************************************************************************
 
 /* 0020e6a0 0000003c */ StageCharacter::playerEvent(){}  // game
