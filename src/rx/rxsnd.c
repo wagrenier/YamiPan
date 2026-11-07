@@ -3926,15 +3926,13 @@ void rxSndAdpcmSetParam7(int id, int value)
     rxSndQueueEnd();
 }
 
-u_long rxSndStrAdpcmBridgePosition(int handle);     /* PC: rx/rxsndstradpcm.c, until a mixer plays the streams */
-
 // callcheck: __muldi3 (the u_long multiply)
 // FS2 0x001617c0
 u_long rxSndAdpcmGetPosition(int id)
 {
     if ((u_int)id < 0x30 && (s_adpcm[id].m_status & 1))
         return s_adpcm[id].m_position * s_adpcm[id].m_channels;   /* FS2: __muldi3 (RoR: the position) */
-    return rxSndStrAdpcmBridgePosition(id);     /* PC: the ROM's 0; no mixer plays the stream yet */
+    return 0;
 }
 
 /* FS2 only (no caller): the ids of the active ADPCM streams into ids[] (null: just

@@ -35,7 +35,9 @@ enum RxSndStrFormatId
 
 /* rxSndStrGetStatus bits (slot +0x19). */
 #define RXSNDSTR_STATUS_ACTIVE  0x1     /* the slot plays a stream */
+#define RXSNDSTR_STATUS_PLAYING 0x2     /* the voice runs (rxSndAdpcmGetStatus's bit) */
 #define RXSNDSTR_STATUS_END     0x4     /* the stream played out */
+#define RXSNDSTR_STATUS_PAUSED  0x8     /* rxSndAdpcmGetStatus's bit */
 
 /* Dirty bits (slot +0x1c): the setters mark what changed, the format's
  * update applies it and clears the bit. */
@@ -52,11 +54,11 @@ enum RxSndStrDirty
 typedef struct RxSndStrSlot    RxSndStrSlot;
 typedef struct RxSndStrFormat  RxSndStrFormat;
 
-/* Called with the stream id and the mark / branch record; run with
- * interrupts off. The branch callback's result: non-zero takes the branch
- * (the format's default without a callback is 1). */
-typedef void (*RxSndStrMarkCallback)(int stream, void *mark);
-typedef int  (*RxSndStrBranchCallback)(int stream, void *branch);
+/* Called with the stream id and the mark's / branch's index in its request;
+ * run with interrupts off. The branch callback's result: non-zero takes the
+ * branch (the format's default without a callback is 1). */
+typedef void (*RxSndStrMarkCallback)(int stream, int mark);
+typedef int  (*RxSndStrBranchCallback)(int stream, int branch);
 
 /* A format's function table, copied in by rxSndStrRegisterFormat (EE 0x20).
  * layout: host -- code pointers. */
@@ -162,8 +164,8 @@ int  rxSndStrRegisterFormat(int id, const char *name, const RxSndStrFormat *form
 /* For the formats. */
 int  rxSndStrFmtGetMasterVolumeL(void);                                 /* FS2 0x00164228 */
 int  rxSndStrFmtGetMasterVolumeR(void);                                 /* FS2 0x00164238 */
-void rxSndStrFmtCallMarkCallback(RxSndStrSlot *slot, void *mark);       /* FS2 0x00164248 */
-int  rxSndStrFmtCallBranchCallback(RxSndStrSlot *slot, void *branch);   /* FS2 0x001642e8 */
+void rxSndStrFmtCallMarkCallback(RxSndStrSlot *slot, int mark);         /* FS2 0x00164248 */
+int  rxSndStrFmtCallBranchCallback(RxSndStrSlot *slot, int branch);     /* FS2 0x001642e8 */
 
 #ifdef __cplusplus
 }

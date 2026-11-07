@@ -544,7 +544,7 @@ int rxSndStrFmtGetMasterVolumeR(void)
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x00164248
 
-void rxSndStrFmtCallMarkCallback(RxSndStrSlot *slot, void *mark)
+void rxSndStrFmtCallMarkCallback(RxSndStrSlot *slot, int mark)
 {
     if (slot->markCallback != NULL) {
         DIntr();
@@ -557,7 +557,7 @@ void rxSndStrFmtCallMarkCallback(RxSndStrSlot *slot, void *mark)
 // 1 (take the branch) without a callback.
 // FS2 0x001642e8
 
-int rxSndStrFmtCallBranchCallback(RxSndStrSlot *slot, void *branch)
+int rxSndStrFmtCallBranchCallback(RxSndStrSlot *slot, int branch)
 {
     int result;
     if (slot->branchCallback == NULL) {
