@@ -129,6 +129,12 @@ enum MotionId
     Motion_CarDragOut = 0xbe, // link ApproachBite
     Motion_CarDamage  = 0xbf, // a blow on someone in the car
     Motion_CarCollapse = 0xc0, // its last one
+    Motion_SpRingOn   = 0xc8, // link SpRing: walks to the ring, which plays sp_ron
+    Motion_SpRingHold = 0xc9, // the ring plays sp_rs
+    Motion_SpRingOff  = 0xca, // sp_roff: the ring plays sp_rof
+    Motion_SpLockHand = 0xd1, // sp_lkon, link SpNumLock: the hand goes to the lock
+    Motion_SpLockWait = 0xd2, // sp_look: the dials settle, then 3 s
+    Motion_SpLockTurn = 0xd3, // sp_lock: a dial on each click of the motion
     Motion_Crouched   = 0xf7, // a request, resolved through the holds
     Motion_WalkStand  = 0xf9, // waits while the walk runs (stepLower)
     Motion_WalkCrouch = 0xfa,
@@ -525,6 +531,148 @@ public:
     }
     ~DriveLink() override {}                                             // FS2 0x00283cb0
     void onRun() override;
+};
+
+class MotionGadgetSpecial;
+
+// A stage's gadget (StageScene::owned) answers for the player: SigLamp, NumLock
+// and SevenKey are one class. The ROM's ctor is inline in PlayerMotion's.
+// Vtable 0x317f20. layout: host -- EE 0x28.
+class GadgetLink : public MotionLink
+{
+public:
+    GadgetLink(StageCharacter *owner, PlayerMotion *motion_, SceneOwnedObject *gadget_, MotionGadgetSpecial *special_)
+        : MotionLink(owner, motion_), gadget(gadget_), special(special_) {}
+    ~GadgetLink() override;                                              // FS2 0x00283c50
+    void onRequest() override;                                           // FS2 0x00282d80
+    void onStart() override;                                             // FS2 0x00282d60
+    void onRun() override;                                               // FS2 0x00282d10
+    void onCancel() override;                                            // FS2 0x00282cf0
+
+private:
+    SceneOwnedObject    *gadget;  // FS2 +0x20
+    MotionGadgetSpecial *special; // FS2 +0x24: its text goes to the gadget
+};
+
+// sp_fear: the sheet's endurance holds until the ground reports a hit; then
+// none, and the character goes back to standing. Bitten out of it, 1 is left.
+// Vtable 0x317ef0. layout: host -- EE 0x20.
+class SpFearLink : public MotionLink
+{
+public:
+    using MotionLink::MotionLink;
+    ~SpFearLink() override;                                              // FS2 0x00283bf0
+    void onRun() override;                                               // FS2 0x00282b70
+    void onCancel() override;                                            // FS2 0x00282c90
+};
+
+// The telephone oZS09_04, which plays its half of the motion: 0xc8 on, 0xc9 held,
+// 0xca off. Vtable 0x317ec0. layout: host -- EE 0x28.
+class SpRingLink : public MotionLink
+{
+public:
+    // FS2 0x00282b30
+    SpRingLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_) {}
+    ~SpRingLink() override;                                              // FS2 0x00283b90
+    void onRequest() override;                                           // FS2 0x00282a50
+    void onStart() override;                                             // FS2 0x00282830
+    void onRun() override;                                               // FS2 0x002826e0
+    void onLeave(MotionLink *next) override;                             // FS2 0x00282630
+    void onCancel() override;                                            // FS2 0x002829f0
+
+private:
+    // The ring plays "<its name>_<suffix>".
+    void playRing(const char *suffix, bool loop);
+
+    StageObject      *ring = nullptr;   // FS2 +0x20
+    StageSoundSource *sound = nullptr;  // FS2 +0x24
+};
+
+// oDC07_05, brought to the character's place to play <name>_sp with it, then
+// put back as it was. Vtable 0x317e90. layout: host -- EE 0x50.
+class SpRoboLink : public MotionLink
+{
+public:
+    // FS2 0x002825f0
+    SpRoboLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_) {}
+    ~SpRoboLink() override;                                              // FS2 0x00282320
+    void onRequest() override;                                           // FS2 0x00282570
+    void onStart() override;                                             // FS2 0x00282460
+    void onLeave(MotionLink *next) override;                             // FS2 0x00282380
+    void onCancel() override;                                            // FS2 0x00282560
+
+protected:
+    void takeObject(const char *name);
+
+private:
+    StageObject  *object = nullptr;   // FS2 +0x20
+    u_char        wasActive = 0;      // FS2 +0x24
+    sceVu0FVECTOR savedPosition = {}; // FS2 +0x30
+    sceVu0FVECTOR savedRotation = {}; // FS2 +0x40
+};
+
+// The same with oMK21_09. Vtable 0x317e60. layout: host -- EE 0x50.
+class SpDropLink : public SpRoboLink
+{
+public:
+    // FS2 0x002822d0
+    SpDropLink(StageCharacter *owner, PlayerMotion *motion_) : SpRoboLink(owner, motion_) {}
+    ~SpDropLink() override;                                              // FS2 0x00283b20
+    void onRequest() override;                                           // FS2 0x00282250
+};
+
+// Walks to the padlock oMT02_30 and turns to face it. Vtable 0x317e30.
+// layout: host -- EE 0x30.
+class SpPadlockLink : public MotionLink
+{
+public:
+    SpPadlockLink(StageCharacter *owner, PlayerMotion *motion_, const char *name); // FS2 0x00282200
+    ~SpPadlockLink() override;                                           // FS2 0x00283ac0
+    void onRequest() override;                                           // FS2 0x00282120
+
+private:
+    char objectName[0x10];      // FS2 +0x20
+};
+
+// A hand on the number lock: 0xd1 reaches, 0xd3 turns a dial on each click,
+// 0xd2 lets them settle. Vtable 0x317d70. layout: host -- EE 0x40.
+class SpNumLockLink : public MotionLink
+{
+public:
+    // FS2 0x002820e0
+    SpNumLockLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_) {}
+    ~SpNumLockLink() override;                                           // FS2 0x00281a40
+    void onRequest() override;                                           // FS2 0x00281ff0
+    void onRun() override;                                               // FS2 0x00281bb0
+    void onCancel() override;                                            // FS2 0x00281f50
+
+private:
+    void runTurn();             // 0xd3
+    void runSettle();           // 0xd2
+    void runReach();            // 0xd1
+    bool isLock() const;
+
+    StageObject  *lock = nullptr;     // FS2 +0x20
+    u_char        opening = 1;        // FS2 +0x24: NumLockOpen is on, else NumLockClose
+    float         waited = 0.0f;      // FS2 +0x28: seconds
+    sceVu0FVECTOR savedRotation = {}; // FS2 +0x30
+};
+
+// Only its calls: sp_tank, sheet kinds 0xb and 0xd. Vtable 0x317dd0.
+// layout: host -- EE 0x20.
+class BossAttackLink : public MotionLink
+{
+public:
+    BossAttackLink(StageCharacter *owner, PlayerMotion *motion_);        // FS2 0x00281b30
+    ~BossAttackLink() override;                                          // FS2 0x00283a00
+};
+
+// Only its calls, sheet kind 0xb. Vtable 0x317e00. layout: host -- EE 0x20.
+class BossIdleLink : public MotionLink
+{
+public:
+    BossIdleLink(StageCharacter *owner, PlayerMotion *motion_);          // FS2 0x00281aa0
+    ~BossIdleLink() override;                                            // FS2 0x00283a60
 };
 
 // Vtable 0x317da0: only the calls. layout: host -- EE 0x20.

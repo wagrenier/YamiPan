@@ -142,6 +142,7 @@ enum StageObjectKind
     StageObject_MapObject = 1,  // a plain map object (game/mapobject.cpp)
     StageObject_Door   = 2,     // StageObject::m_doorState is read
     StageObject_Car    = 3,     // StageCar: getKind 0x289cc0; takes the motion named CAR (StageFiles::applyBgMotionTarget)
+    StageObject_NumLock = 5,    // the number lock, vtable 0x318870, on StageMapObject (no host class yet)
     StageObject_Kind6  = 6,     // takes the motion named Seven_Keys
     StageObject_Camera = 7,     // StageCamera
     StageObject_Kind8  = 8,     // a camera, vtable 0x311d30 (no host class yet)
@@ -876,6 +877,12 @@ StageObject *findNumLockTarget();                                        // FS2 
 int  numLockPushDials(StageObject *lock, int a, int b, int c, int d);    // FS2 0x002a6cd0
 int  numLockPopDials(StageObject *lock);                                 // FS2 0x002a6c40
 void numLockScramble(StageObject *lock);                                 // FS2 0x002a6b70
+// Dial to any number but the code's and the one it shows / to the code's.
+void numLockSpinDial(StageObject *lock, int dial);                       // FS2 0x002a6e40
+void numLockSetDial(StageObject *lock, int dial);                        // FS2 0x002a6ee0
+bool numLockDialsRight(StageObject *lock);                               // FS2 0x002a6fc0
+// A dial's pose has not reached its number.
+bool numLockDialsTurning(StageObject *lock);                             // FS2 0x002a7070
 // Every character with m_viewActive: three steps on its motion (+0x224).
 void stageUpdateCharacterMotions();                                      // FS2 0x0017df60
 
@@ -1160,12 +1167,17 @@ public:
     // slots +0x2c, +0x44: what natives 0x1e6, 0x1eb ask. All unread.
     void setNames(const char *first, const char *second);                // FS2 vtable +0x10
     bool isSlot2c();                                                     // FS2 vtable +0x2c
+    // What GadgetLink hands it: the special's text as the motion is
+    // requested, the character as it starts. Unread.
+    void takeMotionText(const char *text);                               // FS2 vtable +0x20
+    void takeMotionUser(StageObject *user);                              // FS2 vtable +0x28
     bool isSlot44();                                                     // FS2 vtable +0x44
     // The seven-key pad's (native 0x205): the object of that name, when it
     // is of kind 6, takes the two pairs (0x2b2420, 0x2b23e0, unread).
     void setSevenKeyNumbers(const char *name, int a, int b, int c, int d); // FS2 0x002b2b70
     // The number lock's: its +4 record's +0x31 (native 0x220).
     bool getRecordFlag31();                                              // FS2 0x002a8920
+    void setRecordFlag31(bool on);                                       // FS2 0x002a8910
 };
 
 class RoutePlayer;              // game/routeplayer.h: +0x4c, the stage's rute file

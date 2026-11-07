@@ -742,3 +742,47 @@ int sevenKeysPoseValue(StageObject *object, int sub)
     YAMIPAN_STUB("sevenKeysPoseValue", 0x002b23b0);
     return {};
 }
+
+// stub of FS2 0x002a8910
+void SceneOwnedObject::setRecordFlag31(bool on)
+{
+    YAMIPAN_STUB("SceneOwnedObject::setRecordFlag31", 0x002a8910);
+}
+
+// stub of FS2 address unknown (1 candidates)
+void SceneOwnedObject::takeMotionText(const char *text)
+{
+    YAMIPAN_STUB("SceneOwnedObject::takeMotionText", 0x00000000);
+}
+
+// stub of FS2 address unknown (1 candidates)
+void SceneOwnedObject::takeMotionUser(StageObject *user)
+{
+    YAMIPAN_STUB("SceneOwnedObject::takeMotionUser", 0x00000000);
+}
+
+// stub of FS2 0x002a6fc0
+bool numLockDialsRight(StageObject *lock)
+{
+    YAMIPAN_STUB("numLockDialsRight", 0x002a6fc0);
+    return {};
+}
+
+// stub of FS2 0x002a7070
+bool numLockDialsTurning(StageObject *lock)
+{
+    YAMIPAN_STUB("numLockDialsTurning", 0x002a7070);
+    return {};
+}
+
+// stub of FS2 0x002a6ee0
+void numLockSetDial(StageObject *lock, int dial)
+{
+    YAMIPAN_STUB("numLockSetDial", 0x002a6ee0);
+}
+
+// stub of FS2 0x002a6e40
+void numLockSpinDial(StageObject *lock, int dial)
+{
+    YAMIPAN_STUB("numLockSpinDial", 0x002a6e40);
+}

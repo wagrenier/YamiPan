@@ -1079,6 +1079,7 @@ public:
     void clearAllowed() override;
     // What a script asks of the gadget.
     void setText(const char *text);
+    const char *getText() const { return text; }
 
 private:
     void askOwned(int index);
@@ -1208,7 +1209,6 @@ void MotionGadgetSpecial::onApply()
 {
     constexpr int kMotionSevenKey  = 0xfe;
     constexpr int kMotionNumLock   = 0xfd;
-    constexpr int kMotionLockHand  = 0xd1;
     constexpr int kMotionSigLamp   = 0xfc;
 
     if (enabled == 0 || allowed == 0)
@@ -1219,7 +1219,7 @@ void MotionGadgetSpecial::onApply()
         break;
     case MotionGadget_NumLock:
         if (arg != 0)
-            motion->request(kMotionLockHand);
+            motion->request(Motion_SpLockHand);
         else
             applyOwned(SceneOwned_NumLock, kMotionNumLock);
         break;
@@ -3414,8 +3414,477 @@ void WalkLink::onLeave(MotionLink *next)
     edgeFound = 0;
 }
 
+// The stage's own motions: the last links of the ROM's ctor.
+
+// FS2 0x00282d80
+
+void GadgetLink::onRequest()
+{
+    gadget->takeMotionText(special->getText());
+}
+
+// FS2 0x00282d60
+
+void GadgetLink::onStart()
+{
+    gadget->takeMotionUser(character);
+}
+
+// FS2 0x00282d10
+
+void GadgetLink::onRun()
+{
+    if (!gadget->isBusy())
+        finished = 1;
+}
+
+// FS2 0x00282cf0
+
+void GadgetLink::onCancel()
+{
+    gadget->isSlot2c();
+}
+
+// FS2 0x00283c50
+// callcheck: ~MotionLink, operator_delete
+
+GadgetLink::~GadgetLink()
+{
+}
+
+// FS2 0x00282b70
+// callcheck: getStageSelect (stageObjRecord)
+
+void SpFearLink::onRun()
+{
+    if (character->m_ground->wasHit != 0) {
+        finished = 1;
+        character->setEndurance(0);
+    }
+    else if (finished != 0) {
+        motion->request(Motion_Stand);
+    }
+    else {
+        character->setEndurance(stageObjRecord(character->m_itemDef)->endurance);
+    }
+}
+
+// FS2 0x00282c90
+
+void SpFearLink::onCancel()
+{
+    constexpr int kMotionBittenBehind = 0xa0;
+    constexpr int kMotionBittenFront  = 0xa1;
+    if (motion->m_request == kMotionBittenFront || motion->m_request == kMotionBittenBehind)
+        character->setEndurance(1);
+}
+
+// FS2 0x00283bf0
+// callcheck: ~MotionLink, operator_delete
+
+SpFearLink::~SpFearLink()
+{
+}
+
+// PC: one helper for the ROM's four copies.
+void SpRingLink::playRing(const char *suffix, bool loop)
+{
+    constexpr u_int kRingPlayFlags = PosePlay_NoBlend | PosePlay_Ease;
+    if (ring == nullptr || ring->m_model == nullptr)
+        return;
+    char name[0x20];
+    sprintf(name, "%s_%s", ring->m_name, suffix);
+    if (ModelMotion *found = ring->m_model->findMotion(0, name))
+        ring->m_model->playMotion(found, loop, false, kRingPlayFlags, 0);
+}
+
+// FS2 0x00282a50
+
+void SpRingLink::onRequest()
+{
+    constexpr int   kRingTarget = 5;    // oZS09_04
+    constexpr float kRingRate   = 0.35f;
+    if (motion->m_request != Motion_SpRingOn)
+        return;
+    ring = gStageScene->objects->find1(stageMotionTargetName(kRingTarget), 0);
+    if (ring != nullptr) {
+        const sceVu0FVECTOR angles = { 0.0f, 0.0f, ring->m_xform.rotation[2], 0.0f };
+        motion->startWalkFile(kRingRate, motion->requestedFile(), ring->m_xform.position, angles, true, false);
+    }
+    sound = nullptr;
+}
+
+// FS2 0x00282830
+// callcheck: sprintf, findMotion, playMotion, sprintf, findMotion, playMotion, sprintf, findMotion, playMotion (playRing)
+
+void SpRingLink::onStart()
+{
+    if (ring == nullptr)
+        return;
+    switch (motion->m_request) {
+    case Motion_SpRingOff:  playRing("sp_rof", false); break;
+    case Motion_SpRingHold: playRing("sp_rs", true); break;
+    case Motion_SpRingOn:   playRing("sp_ron", false); break;
+    default: break;
+    }
+}
+
+// The motion's sound mark starts it at P_AC01; the one of 0xca stops it.
+// FS2 0x002826e0
+
+void SpRingLink::onRun()
+{
+    const u_int events = character->m_model->m_motionEvents;
+    switch (motion->motionId) {
+    case Motion_SpRingOff:
+        if ((events & MotionEvent_Sound) != 0 && sound != nullptr) {
+            ring->stopSound(sound);
+            sound = nullptr;
+        }
+        break;
+    case Motion_SpRingOn:
+        if ((events & MotionEvent_Sound) != 0 && ring != nullptr) {
+            if (StageObject *mark = gStageScene->objects->find6("P_AC01", 0))
+                sound = ring->playNamedHeard2("EVE_S09_04", mark->m_xform.position, nullptr);
+        }
+        break;
+    case Motion_SpRingHold:
+        if (counter == 0) {
+            if (finished != 0) {
+                counter = 1;
+                finished = 0;
+            }
+        }
+        else if (character->m_model->pose->isBoneEnding(nullptr)) {
+            finished = 1;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+// FS2 0x00282630
+// callcheck: sprintf, findMotion, playMotion (playRing)
+
+void SpRingLink::onLeave(MotionLink *next)
+{
+    (void)next;
+    if (motion->motionId == Motion_SpRingOff)
+        playRing("s", true);
+}
+
+// FS2 0x002829f0
+
+void SpRingLink::onCancel()
+{
+    if (motion->m_request == Motion_SpRingOff || motion->m_request == Motion_SpRingHold)
+        return;
+    if (sound != nullptr)
+        ring->stopSound(sound);
+    ring = nullptr;
+    sound = nullptr;
+}
+
+// FS2 0x00283b90
+// callcheck: ~MotionLink, operator_delete
+
+SpRingLink::~SpRingLink()
+{
+}
+
+// PC: one helper for the two onRequest of the ROM.
+void SpRoboLink::takeObject(const char *name)
+{
+    object = gStageScene->objects->find1(name, 0);
+    motion->startWalkFile(0.0f, motion->requestedFile(), character->m_xform.position, character->m_xform.rotation,
+                          false, true);
+}
+
+// FS2 0x00282570
+// callcheck: stageMotionTargetName, find1, requestedFile, startWalkFile (takeObject)
+
+void SpRoboLink::onRequest()
+{
+    constexpr int kRoboTarget = 6;      // oDC07_05
+    takeObject(stageMotionTargetName(kRoboTarget));
+}
+
+// FS2 0x00282250
+// callcheck: stageMotionTargetName, find1, requestedFile, startWalkFile (takeObject)
+
+void SpDropLink::onRequest()
+{
+    constexpr int kDropTarget = 7;      // oMK21_09
+    takeObject(stageMotionTargetName(kDropTarget));
+}
+
+// FS2 0x00282460
+
+void SpRoboLink::onStart()
+{
+    constexpr u_int kObjectPlayFlags = PosePlay_NoBlend | PosePlay_Loop | PosePlay_FromKey;
+    if (object == nullptr || object->m_model == nullptr)
+        return;
+    wasActive = object->m_active != 0;
+    object->m_tree->setActive(true);
+    object->m_tree->setShown(true);
+    memcpy(savedPosition, object->m_xform.position, sizeof(savedPosition));
+    object->m_xform.setPosition(character->m_xform.position);
+    memcpy(savedRotation, object->m_xform.rotation, sizeof(savedRotation));
+    object->m_xform.setRotationVec(character->m_xform.rotation);
+    char name[0x20];
+    sprintf(name, "%s_sp", object->m_name);
+    if (ModelMotion *found = object->m_model->findMotion(0, name))
+        object->m_model->pose->play(found, kObjectPlayFlags, 0);
+}
+
+// FS2 0x00282380
+
+void SpRoboLink::onLeave(MotionLink *next)
+{
+    constexpr u_int kObjectBackFlags = PosePlay_NoBlend | PosePlay_FromKey;
+    (void)next;
+    if (object == nullptr || object->m_model == nullptr)
+        return;
+    object->m_tree->setActive(wasActive != 0);
+    object->m_tree->setShown(wasActive != 0);
+    object->m_xform.setPosition(savedPosition);
+    object->m_xform.setRotationVec(savedRotation);
+    char name[0x20];
+    sprintf(name, "%s", object->m_name);
+    if (ModelMotion *found = object->m_model->findMotion(0, name))
+        object->m_model->playMotion(found, true, false, kObjectBackFlags, 0);
+}
+
+// FS2 0x00282560
+
+void SpRoboLink::onCancel()
+{
+    object = nullptr;
+}
+
+// FS2 0x00282320
+// callcheck: ~MotionLink, operator_delete
+
+SpRoboLink::~SpRoboLink()
+{
+}
+
+// FS2 0x00283b20
+// callcheck: ~MotionLink, operator_delete
+
+SpDropLink::~SpDropLink()
+{
+}
+
+// FS2 0x00282200
+// callcheck: MotionLink, strcpy
+
+SpPadlockLink::SpPadlockLink(StageCharacter *owner, PlayerMotion *motion_, const char *name)
+    : MotionLink(owner, motion_)
+{
+    strcpy(objectName, name);
+}
+
+// FS2 0x00282120
+
+void SpPadlockLink::onRequest()
+{
+    constexpr float kPadlockRate = 0.35f;
+    constexpr float kHalfTurn = -3.1415927f; // 0xc0490fdb
+    StageObject *padlock = gStageScene->objects->find1(objectName, 0);
+    const sceVu0FVECTOR *matrix = padlock->getWorldMatrix();
+    const sceVu0FVECTOR place = { matrix[3][0], matrix[3][1], character->m_xform.position[2], matrix[3][3] };
+    sceVu0FVECTOR angles;
+    matrixToRotYXZ(angles, padlock->getWorldMatrix());
+    angles[2] = addAngle(angles[2], kHalfTurn);
+    motion->startWalkFile(kPadlockRate, motion->requestedFile(), place, angles, true, false);
+}
+
+// FS2 0x00283ac0
+// callcheck: ~MotionLink, operator_delete
+
+SpPadlockLink::~SpPadlockLink()
+{
+}
+
+// Which lock and which way; the rotation goes back when it is over.
+// FS2 0x00281ff0
+
+void SpNumLockLink::onRequest()
+{
+    if (motion->m_request == Motion_SpLockWait) {
+        waited = 0.0f;
+    }
+    else if (motion->m_request == Motion_SpLockHand) {
+        auto *special = static_cast<MotionGadgetSpecial *>(motion->m_specials.find("NumLockOpen")->value);
+        opening = special->enabled;
+        if (opening == 0)
+            special = static_cast<MotionGadgetSpecial *>(motion->m_specials.find("NumLockClose")->value);
+        else
+            waited = 0.0f;
+        lock = gStageScene->objects->find1(special->getText(), 0);
+        // PC: the ROM reads the zero page with no such object.
+        if (lock != nullptr)
+            memcpy(savedRotation, lock->m_xform.rotation, sizeof(savedRotation));
+        if (SceneOwnedObject *gadget = gStageScene->owned[SceneOwned_NumLock])
+            gadget->setRecordFlag31(true);
+    }
+}
+
+bool SpNumLockLink::isLock() const
+{
+    return lock != nullptr && lock->getKind() == StageObject_NumLock;
+}
+
+// Opening: each click puts a dial on the code; all right, after 3 s of them
+// standing the lock comes off. Closing: the lock shows, each click spins one.
+// PC: part of the ROM's onRun.
+void SpNumLockLink::runTurn()
+{
+    constexpr float kSettleSeconds = 3.0f;
+    const bool clicked = (character->m_model->m_motionEvents & MotionEvent_Click) != 0;
+    if (!isLock()) {
+        finished = clicked;
+        return;
+    }
+    if (opening == 0) {
+        if (counter == 0) {
+            lock->playNamedHeard2("NLOCK_UL", lock->m_xform.position, nullptr);
+            lock->m_tree->setActive(true);
+            lock->m_tree->setShown(true);
+            counter++;
+        }
+        if (clicked) {
+            lock->playNamedHeard2("NLOCK_REV", lock->m_xform.position, nullptr);
+            numLockSpinDial(lock, counter - 1);
+            counter++;
+        }
+        return;
+    }
+    if (character->m_model->pose->isBoneEnding(nullptr)) {
+        motion->request(Motion_SpLockWait);
+        return;
+    }
+    if (!clicked)
+        return;
+    if (!numLockDialsRight(lock)) {
+        lock->playNamedHeard2("NLOCK_REV", lock->m_xform.position, nullptr);
+        numLockSetDial(lock, counter);
+        counter++;
+    }
+    else if (waited >= kSettleSeconds) {
+        if (counter == 0) {
+            counter++;
+        }
+        else {
+            lock->playNamedHeard2("NLOCK_UL", lock->m_xform.position, nullptr);
+            lock->m_tree->setActive(false);
+            lock->m_tree->setShown(false);
+            finished = 1;
+        }
+    }
+    else {
+        motion->request(Motion_SpLockWait);
+    }
+}
+
+// PC: part of the ROM's onRun.
+void SpNumLockLink::runSettle()
+{
+    constexpr float kSettleSeconds = 3.0f;
+    if (numLockDialsTurning(lock))
+        return;
+    waited += gStageScene->clock->getDeltaSeconds();
+    if (waited >= kSettleSeconds)
+        motion->request(Motion_SpLockTurn);
+}
+
+// The lock takes the two marks' rotation before the dials go.
+// PC: part of the ROM's onRun.
+void SpNumLockLink::runReach()
+{
+    if (!character->m_model->pose->isBoneEnding(nullptr))
+        return;
+    if (isLock()) {
+        StageObject *round = gStageScene->objects->find6("P_NUMROT", 0);
+        StageObject *tilt = gStageScene->objects->find6("P_NUMROT_Z", 0);
+        lock->m_xform.rotation[0] = round->m_xform.rotation[0];
+        lock->m_xform.rotation[1] = round->m_xform.rotation[1];
+        lock->m_xform.rotation[2] = tilt->m_xform.rotation[2];
+    }
+    motion->request(Motion_SpLockTurn);
+}
+
+// FS2 0x00281bb0
+// callcheck: isBoneEnding, playNamedHeard2, setActive, setShown, numLockSpinDial, isBoneEnding, numLockDialsRight, playNamedHeard2, numLockSetDial, playNamedHeard2, setActive, setShown, request, request, numLockDialsTurning, getDeltaSeconds, request, isBoneEnding, find6, find6, request (runTurn, runSettle, runReach; slot +0x1f4 getKind)
+
+void SpNumLockLink::onRun()
+{
+    if (finished != 0)
+        return;
+    switch (motion->motionId) {
+    case Motion_SpLockTurn: runTurn(); break;
+    case Motion_SpLockWait: runSettle(); break;
+    case Motion_SpLockHand: runReach(); break;
+    default: break;
+    }
+}
+
+// FS2 0x00281f50
+
+void SpNumLockLink::onCancel()
+{
+    if (motion->m_request == Motion_SpLockTurn || motion->m_request == Motion_SpLockWait || lock == nullptr)
+        return;
+    if (SceneOwnedObject *gadget = gStageScene->owned[SceneOwned_NumLock])
+        gadget->setRecordFlag31(false);
+    if (isLock())
+        memcpy(lock->m_xform.rotation, savedRotation, sizeof(savedRotation));
+    lock = nullptr;
+}
+
+// FS2 0x00281a40
+// callcheck: ~MotionLink, operator_delete
+
+SpNumLockLink::~SpNumLockLink()
+{
+}
+
+// FS2 0x00281b30
+// callcheck: MotionLink, find, add (addSpecial)
+
+BossAttackLink::BossAttackLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
+{
+    addSpecial("sp_tank");              // sdata 0x31ac0c
+}
+
+// FS2 0x00283a00
+// callcheck: ~MotionLink, operator_delete
+
+BossAttackLink::~BossAttackLink()
+{
+}
+
+// FS2 0x00281aa0
+// callcheck: MotionLink, find, add (addSpecial)
+
+BossIdleLink::BossIdleLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
+{
+    for (const char *name : { "sp_at1_1", "sp_numb1", "sp_spawn_numb" }) // data 0x2fb470
+        addSpecial(name);
+}
+
+// FS2 0x00283a60
+// callcheck: ~MotionLink, operator_delete
+
+BossIdleLink::~BossIdleLink()
+{
+}
+
 // FS2 0x001ed410
-// callcheck: DamageDeadLink, MotionCondition, MotionLink, memset, find, FUN_00278db0, FUN_0027a0b0, FUN_0027a910, FUN_0027aa90, FUN_0027aea0, FUN_0027b000, FUN_0027b730, FUN_00281aa0, FUN_00281b30, FUN_002820e0, FUN_00282200, FUN_002822d0, FUN_002825f0, FUN_00282b30, FUN_00282da0, FUN_00282fa0, FUN_00283560, FUN_00283740, FUN_00283960, getStageSelect, operator_new, LiteralMap, LiteralMap, LiteralMap, FUN_0026c6b0, FUN_00276510, insert, balance, FUN_001df0b0, FUN_0027c520, FUN_0027c140, FUN_0027b640, FUN_0027cc50, FUN_002775d0, insert, FUN_0027c370, balance (the links, the conditions and their maps: game/playermotion.h)
+// callcheck: DamageDeadLink, MotionCondition, MotionLink, memset, find, FUN_00278db0, FUN_0027a0b0, FUN_0027a910, FUN_0027aa90, FUN_0027aea0, FUN_0027b000, FUN_0027b730, BossIdleLink, BossAttackLink, SpNumLockLink, SpPadlockLink, SpDropLink, SpRoboLink, SpRingLink, FUN_00282da0, FUN_00282fa0, FUN_00283560, FUN_00283740, FUN_00283960, getStageSelect, operator_new, LiteralMap, LiteralMap, LiteralMap, FUN_0026c6b0, FUN_00276510, insert, balance, FUN_001df0b0, FUN_0027c520, FUN_0027c140, FUN_0027b640, FUN_0027cc50, FUN_002775d0, insert, FUN_0027c370, balance (the links, the conditions and their maps: game/playermotion.h)
 
 // The car's links. Each of the door ones works behind a fade: to black, the
 // change of seat at full black (rideCar's reset leaves the link), the fade back.
@@ -3698,8 +4167,7 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_conditions.balance();
     initList();
 
-    // The links, in the ROM's order: the 32 written of its 43 names (architecture.md
-    // "The links of the ROM's ctor"). A motion naming another has no link.
+    // The links, in the ROM's order (architecture.md "The links of the ROM's ctor").
     damageDeadLink = new DamageDeadLink(character, this);
     walkLink = new WalkLink(character, this);
     m_links.insert("Walk", walkLink);
@@ -3743,6 +4211,25 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
     m_links.insert("NPCReaction", new NpcReactionLink(character, this));
     if (character->m_abilities.flag3be != 0)
         m_links.insert("ApproachBite", new ApproachBiteLink(character, this));
+    static const char *const kGadgets[] = { "SigLamp", "NumLock", "SevenKey" }; // SceneOwned order
+    for (int i = 0; i < 3; i++) {
+        if (SceneOwnedObject *gadget = gStageScene->owned[i]) {
+            auto *special = static_cast<MotionGadgetSpecial *>(m_specials.find(kGadgets[i])->value);
+            m_links.insert(kGadgets[i], new GadgetLink(character, this, gadget, special));
+        }
+    }
+    m_links.insert("SpFear", new SpFearLink(character, this));
+    m_links.insert("SpRing", new SpRingLink(character, this));
+    m_links.insert("SpRobo", new SpRoboLink(character, this));
+    m_links.insert("SpDrop", new SpDropLink(character, this));
+    m_links.insert("SpPadlock", new SpPadlockLink(character, this, "oMT02_30"));
+    m_links.insert("SpNumLock", new SpNumLockLink(character, this));
+    if (kind == CharacterKind_NoShadow) {
+        m_links.insert("BossAttack", new BossAttackLink(character, this));
+        m_links.insert("BossIdle", new BossIdleLink(character, this));
+    }
+    if (kind == CharacterKind_HideD)
+        m_links.insert("BossAttack", new BossAttackLink(character, this));
     m_links.balance();
 }
 

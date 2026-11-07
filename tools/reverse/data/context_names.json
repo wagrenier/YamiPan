@@ -29801,6 +29801,180 @@
   "was": "FUN_00281800",
   "why": "as 0x1ef2e0"
  },
+ "00281a40": {
+  "name": "SpNumLockLink::~SpNumLockLink",
+  "tag": "game-inferred",
+  "was": "FUN_00281a40",
+  "why": "vtable 0x317d70, slot 0"
+ },
+ "00281aa0": {
+  "name": "BossIdleLink::BossIdleLink",
+  "tag": "game-inferred",
+  "was": "FUN_00281aa0",
+  "why": "inserted as BossIdle, sheet kind 0xb; specials sp_at1_1, sp_numb1, sp_spawn_numb"
+ },
+ "00281b30": {
+  "name": "BossAttackLink::BossAttackLink",
+  "tag": "game-inferred",
+  "was": "FUN_00281b30",
+  "why": "inserted as BossAttack, sheet kinds 0xb and 0xd; one special, sp_tank"
+ },
+ "00281bb0": {
+  "name": "SpNumLockLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_00281bb0",
+  "why": "motions 0xd1..0xd3, NLOCK_REV and NLOCK_UL, the dials on clicks"
+ },
+ "00281f50": {
+  "name": "SpNumLockLink::onCancel",
+  "tag": "game-inferred",
+  "was": "FUN_00281f50",
+  "why": "gives the lock its rotation back"
+ },
+ "00281ff0": {
+  "name": "SpNumLockLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_00281ff0",
+  "why": "inserted as SpNumLock: reads the specials NumLockOpen and NumLockClose, finds the lock"
+ },
+ "002820e0": {
+  "name": "SpNumLockLink::SpNumLockLink",
+  "tag": "game-inferred",
+  "was": "FUN_002820e0",
+  "why": "vtable 0x317d70, +0x24 starts 1"
+ },
+ "00282120": {
+  "name": "SpPadlockLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_00282120",
+  "why": "inserted as SpPadlock: walks to the object named in +0x20 (oMT02_30), turned half round from it"
+ },
+ "00282200": {
+  "name": "SpPadlockLink::SpPadlockLink",
+  "tag": "game-inferred",
+  "was": "FUN_00282200",
+  "why": "vtable 0x317e30, strcpy of the name"
+ },
+ "00282250": {
+  "name": "SpDropLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_00282250",
+  "why": "inserted as SpDrop: as SpRobo with motion target 7 oMK21_09"
+ },
+ "002822d0": {
+  "name": "SpDropLink::SpDropLink",
+  "tag": "game-inferred",
+  "was": "FUN_002822d0",
+  "why": "sets vtable 0x317e90 then 0x317e60"
+ },
+ "00282320": {
+  "name": "SpRoboLink::~SpRoboLink",
+  "tag": "game-inferred",
+  "was": "FUN_00282320",
+  "why": "vtable 0x317e90, slot 0"
+ },
+ "00282380": {
+  "name": "SpRoboLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_00282380",
+  "why": "puts the object back as it was and plays <name>"
+ },
+ "00282460": {
+  "name": "SpRoboLink::onStart",
+  "tag": "game-inferred",
+  "was": "FUN_00282460",
+  "why": "the object comes to the character's place, shown, and plays <name>_sp; position and rotation kept"
+ },
+ "00282560": {
+  "name": "SpRoboLink::onCancel",
+  "tag": "game-inferred",
+  "was": "FUN_00282560",
+  "why": "clears the object; shared with SpDrop"
+ },
+ "00282570": {
+  "name": "SpRoboLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_00282570",
+  "why": "inserted as SpRobo: motion target 6 oDC07_05"
+ },
+ "002825f0": {
+  "name": "SpRoboLink::SpRoboLink",
+  "tag": "game-inferred",
+  "was": "FUN_002825f0",
+  "why": "vtable 0x317e90, the ctor's SpRobo"
+ },
+ "00282630": {
+  "name": "SpRingLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_00282630",
+  "why": "out of 0xca the object loops <name>_s"
+ },
+ "002826e0": {
+  "name": "SpRingLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_002826e0",
+  "why": "sound mark starts EVE_S09_04 at P_AC01, in 0xca stops it"
+ },
+ "00282830": {
+  "name": "SpRingLink::onStart",
+  "tag": "game-inferred",
+  "was": "FUN_00282830",
+  "why": "the object plays <name>_sp_rof, _sp_rs, _sp_ron for 0xca, 0xc9, 0xc8"
+ },
+ "002829f0": {
+  "name": "SpRingLink::onCancel",
+  "tag": "game-inferred",
+  "was": "FUN_002829f0",
+  "why": "any request but 0xca, 0xc9 stops the sound and lets the object go"
+ },
+ "00282a50": {
+  "name": "SpRingLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_00282a50",
+  "why": "inserted as SpRing: on 0xc8 finds motion target 5 oZS09_04, walks to it"
+ },
+ "00282b30": {
+  "name": "SpRingLink::SpRingLink",
+  "tag": "game-inferred",
+  "was": "FUN_00282b30",
+  "why": "vtable 0x317ec0, clears +0x20 and +0x24"
+ },
+ "00282b70": {
+  "name": "SpFearLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_00282b70",
+  "why": "inserted as SpFear: the sheet's endurance until the ground's wasHit, then 0 and back to standing"
+ },
+ "00282c90": {
+  "name": "SpFearLink::onCancel",
+  "tag": "game-inferred",
+  "was": "FUN_00282c90",
+  "why": "leaves endurance 1 when requests 0xa0 or 0xa1 (bitten) cut it"
+ },
+ "00282cf0": {
+  "name": "GadgetLink::onCancel",
+  "tag": "game-inferred",
+  "was": "FUN_00282cf0",
+  "why": "slot +0x24: tail call of the gadget's slot +0x2c"
+ },
+ "00282d10": {
+  "name": "GadgetLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_00282d10",
+  "why": "slot +0x1c: finished once the gadget's slot +0x3c, isBusy, says no"
+ },
+ "00282d60": {
+  "name": "GadgetLink::onStart",
+  "tag": "game-inferred",
+  "was": "FUN_00282d60",
+  "why": "slot +0x18: gives the gadget the character"
+ },
+ "00282d80": {
+  "name": "GadgetLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_00282d80",
+  "why": "slot +0x14 of vtable 0x317f20: gives the gadget (+0x20) the special's text (+0x24 +0x20); the ctor inserts it as SigLamp, NumLock, SevenKey"
+ },
  "00282da0": {
   "name": "NpcReactionLink::NpcReactionLink",
   "tag": "game-inferred",
@@ -29908,6 +30082,48 @@
   "tag": "game-inferred",
   "was": "FUN_002839a0",
   "why": "deleting dtor, slot 0 of 0x317da0"
+ },
+ "00283a00": {
+  "name": "BossAttackLink::~BossAttackLink",
+  "tag": "game-inferred",
+  "was": "FUN_00283a00",
+  "why": "vtable 0x317dd0, slot 0"
+ },
+ "00283a60": {
+  "name": "BossIdleLink::~BossIdleLink",
+  "tag": "game-inferred",
+  "was": "FUN_00283a60",
+  "why": "vtable 0x317e00, slot 0"
+ },
+ "00283ac0": {
+  "name": "SpPadlockLink::~SpPadlockLink",
+  "tag": "game-inferred",
+  "was": "FUN_00283ac0",
+  "why": "vtable 0x317e30, slot 0"
+ },
+ "00283b20": {
+  "name": "SpDropLink::~SpDropLink",
+  "tag": "game-inferred",
+  "was": "FUN_00283b20",
+  "why": "vtable 0x317e60, slot 0"
+ },
+ "00283b90": {
+  "name": "SpRingLink::~SpRingLink",
+  "tag": "game-inferred",
+  "was": "FUN_00283b90",
+  "why": "vtable 0x317ec0, slot 0"
+ },
+ "00283bf0": {
+  "name": "SpFearLink::~SpFearLink",
+  "tag": "game-inferred",
+  "was": "FUN_00283bf0",
+  "why": "vtable 0x317ef0, slot 0"
+ },
+ "00283c50": {
+  "name": "GadgetLink::~GadgetLink",
+  "tag": "game-inferred",
+  "was": "FUN_00283c50",
+  "why": "vtable 0x317f20, slot 0"
  },
  "00283cb0": {
   "name": "DriveLink::~DriveLink",
@@ -32309,6 +32525,30 @@
   "was": "FUN_002a6cd0",
   "why": "keeps the four dials of pose +0x3f0 on a stack of one, sets the new ones"
  },
+ "002a6e40": {
+  "name": "numLockSpinDial",
+  "tag": "game-inferred",
+  "was": "FUN_002a6e40",
+  "why": "a dial of the NmlPose to a random number, not the code's (+0x240) nor the shown one"
+ },
+ "002a6ee0": {
+  "name": "numLockSetDial",
+  "tag": "game-inferred",
+  "was": "FUN_002a6ee0",
+  "why": "a dial of the NmlPose to the code's number"
+ },
+ "002a6fc0": {
+  "name": "numLockDialsRight",
+  "tag": "game-inferred",
+  "was": "FUN_002a6fc0",
+  "why": "the four dials show the code at +0x240"
+ },
+ "002a7070": {
+  "name": "numLockDialsTurning",
+  "tag": "game-inferred",
+  "was": "FUN_002a7070",
+  "why": "a dial's angle at pose +0x3e0 is off its number by 0.01 or more"
+ },
  "002a7a50": {
   "name": "NmlPose::NmlPose",
   "tag": "game-inferred",
@@ -32320,6 +32560,12 @@
   "tag": "game-inferred",
   "was": "FUN_002a7bf0",
   "why": "vtable 0x314c40, 8 bytes, built by parseEnd's effect target from the texture named siglamp, into StageScene +0x8c"
+ },
+ "002a8910": {
+  "name": "SceneOwnedObject::setRecordFlag31",
+  "tag": "game-inferred",
+  "was": "FUN_002a8910",
+  "why": "writes +4's +0x31, beside getRecordFlag31 0x2a8920"
  },
  "002a8920": {
   "name": "SceneOwnedObject::getRecordFlag31",

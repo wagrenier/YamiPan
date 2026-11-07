@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 18:49 at commit `25fde09` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 19:35 at commit `88d62e9` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-06 18:49 at commit `25fde09` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **5224** (79%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1558, game-inferred 4301
-- context-name ledger: 5859 entries; overrides of wrong library matches: 0
-- placed in a source file: 5592/6599 in 120 files
+- game functions: **6599**, named **5265** (80%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1558, game-inferred 4342
+- context-name ledger: 5900 entries; overrides of wrong library matches: 0
+- placed in a source file: 5628/6599 in 120 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -24,13 +24,13 @@ Least-named game-code regions (64 KB blocks):
 | `002d0000` | 104/256 (41%) | game/drawsys.cpp, game/ripplesheet.cpp, game/fontdata.cpp |
 | `001c0000` | 108/233 (46%) | game/scriptrunner.cpp |
 | `001b0000` | 115/242 (48%) | game/scriptrunner.cpp |
-| `002a0000` | 136/241 (56%) | game/memcard.cpp, game/charactersound.cpp, game/demofleck.cpp |
+| `002a0000` | 141/241 (59%) | game/memcard.cpp, game/charactersound.cpp, game/demofleck.cpp |
 | `001a0000` | 194/301 (64%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
 | `00180000` | 224/336 (67%) | game/stageitem.cpp, game/stagelight.cpp, game/stageobject.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5057**; stubs: **134**
+- reconstructed FS2 functions: **5089**; stubs: **139**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -71,7 +71,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/pakarchive.cpp` | 17 | 0 |
 | `src/game/pausemenustate.cpp` | 12 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
-| `src/game/playermotion.cpp` | 554 | 0 |
+| `src/game/playermotion.cpp` | 586 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rcnttimer.cpp` | 0 | 4 |
@@ -129,7 +129,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 84 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 89 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -157,10 +157,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 215 TUs: todo 76, partial 28, verify 102, done 42
-- next: **game/playermotion.cpp** (pinned in the queue)
-- pinned queue: game/playermotion.cpp
-- partial: `game/playermotion.cpp` 365/365 -- Written in game/charactersound.cpp (ranges joined, 39 functions): updateSounds 0x2a4a40, getBreathName, stopBodySounds, stopSounds, initSounds, playFallDownSoun
+- 217 TUs: todo 77, partial 28, verify 103, done 42
+- next: **unassigned@0022fc50** (frontier score 33)
+- pinned queue: (empty)
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -197,6 +196,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
+- verify: `game/playermotion.cpp` 397/401 -- 36 functions, batch 182, ranges joined 0x281a40..0x282d98 and 0x283a00..0x283cb0. Temporary harness, removed (YAMIPAN_TELEPORT, forced request at frame 200, 14 
 - verify: `game/prgmccard.cpp` 7/7 -- All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide close
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/ripplesheet.cpp` 7/10 -- Batch 164. What the notes called stage 0x1b's boss film is a 15 by 15 ripple sheet, 0x2d10f0..0x2d3700, SightJack +0xb4: the frame bent, pushed from a tint, cre
@@ -266,6 +266,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 19:35 `game/playermotion.cpp` verify: The last eleven links written (GadgetLink, SpFear, SpRing, SpRobo, SpDrop, SpPadlock, SpNumLock, BossAttack, BossIdle): every link name of the ROM now exists; n
 - 2026-11-06 18:49 `game/playermotion.cpp` partial: A real edge works, the voices no longer jam: updateSounds and the sound family written
 - 2026-11-06 18:18 `game/playermotion.cpp` partial: The links DiveFall, DiveLand and TrapHit: a fall over an edge runs to Mission failed, a trap holds and lets go; forced, no real edge or trap yet
 - 2026-11-06 17:52 `game/playermotion.cpp` partial: takeHits whole: a blow that lands fells what it hits, the first real fight runs to Mission failed; the NaN position is fixed (sqrt.s)
@@ -273,7 +274,6 @@ Recent sessions:
 - 2026-11-06 16:40 `game/charactersound.cpp` verify: A character's voices written, 23 functions; playVoiceHeard now searches the SE table, as the ROM does, instead of the stream table, so it stops being silent.
 - 2026-11-06 14:51 `game/stagecar.cpp` verify: the door and the drive work from the stage's real start: X at the door was the pad script's timing, no game code changed; the truck drove with the player at the
 - 2026-11-06 13:47 `game/stagecar.cpp` partial: the door: GettingOnCar, GettingOffCar, DragOutCar and the car's links written; the truck's fan is proven to be the lamp's spot pass, cause in the ROM not found;
-- 2026-11-06 12:56 `game/stagecar.cpp` partial: the car: every function written; PartSwitch and rideCar added: the player sits in the car; the truck's picture is still wrong
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
@@ -283,12 +283,12 @@ Recent sessions:
 | `game/stagealert.cpp` | todo | 0/7/8 | 1.3 | 24 | 3 |
 | `unassigned@001920d0` | partial | 1/0/17 | 5.9 | 24 | 0 |
 | `unassigned@002b9ef0` | todo | 0/4/11 | 5.7 | 21 | 3 |
-| `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
 | `unassigned@002dac70` | partial | 1/4/63 | 21.7 | 19 | 3 |
+| `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
 | `unassigned@00171ad0` | partial | 1/0/107 | 1.5 | 18 | 0 |
 | `unassigned@002c42a0` | todo | 0/13/105 | 42.1 | 18 | 1 |
-| `game/stagemenu.cpp` | partial | 1/5/7 | 1.4 | 17 | 3 |
-| `unassigned@00188d60` | todo | 0/0/16 | 3.8 | 17 | 0 |
+| `unassigned@002067d0` | partial | 1/0/9 | 2.2 | 17 | 0 |
+| `unassigned@0023c010` | todo | 0/11/15 | 7.4 | 17 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
