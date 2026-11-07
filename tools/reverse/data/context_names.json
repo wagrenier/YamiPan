@@ -16770,10 +16770,10 @@
   "why": "ENV_MB_f%02d boxes, grid +0xac (getFloor); was addArea0"
  },
  "0019af40": {
-  "name": "StageScene::createMenuProg",
+  "name": "StageScene::createSkyMist",
   "tag": "game-inferred",
   "was": "FUN_0019af40",
-  "why": "+0xa4 = new 4-byte holder on the init pack item 6 and the stage number; loadCommon's last call"
+  "why": "was createMenuProg: new SkyMistHolder 0x2ad100 (init pack item 6, getStageSelect's stage) into +0xa4; the held object is the sky mist (game/skymist.cpp, batch 201)"
  },
  "0019afb0": {
   "name": "StageScene::updateSmokeFog",
@@ -34206,22 +34206,142 @@
   "why": "help%s.d2b with the caller's page; always answers 0"
  },
  "002ad030": {
-  "name": "MenuProgHolder::draw",
+  "name": "SkyMistHolder::draw",
   "tag": "game-inferred",
   "was": "FUN_002ad030",
-  "why": "calls 0x2adc70 on a scratchpad stack, with the frame time"
+  "why": "was MenuProgHolder::draw: moves the stack to the scratchpad and calls SkyMist::draw 0x2adc70 on the held object; only caller StageScene::draw (+0xa4)"
  },
  "002ad070": {
-  "name": "MenuProgHolder::~MenuProgHolder",
+  "name": "SkyMistHolder::~SkyMistHolder",
   "tag": "game-inferred",
   "was": "FUN_002ad070",
-  "why": "deleting dtor of StageScene +0xa4: deletes the object in its +0 record through that object's vptr +0x44 (menu programs beside PrgMcCard); name a guess"
+  "why": "was MenuProgHolder dtor: deletes the held SkyMist's Tim2Texture (+0, vptr +0x44 slot 2), the 0x1cc0 object, then itself on flag > 0"
  },
  "002ad100": {
-  "name": "MenuProgHolder::MenuProgHolder",
+  "name": "SkyMistHolder::SkyMistHolder",
   "tag": "game-inferred",
   "was": "FUN_002ad100",
-  "why": "a 0x1cc0-byte object 0x2aef00 on (data, stage) at +0"
+  "why": "was MenuProgHolder ctor: new 0x1cc0 SkyMist 0x2aef00 (data, stage); caller StageScene::createMenuProg with init pack item 6"
+ },
+ "002ad160": {
+  "name": "SkyMist::drawSwirl",
+  "tag": "game-inferred",
+  "was": "FUN_002ad160",
+  "why": "stages 0x5d / 0x19: every live puff of the first set (+0x70, count +0x60) through putPuff 0x2ad250 with the colour MistPuff::color 0x2ae160 of keys +0x50, a layer 1 lower each"
+ },
+ "002ad250": {
+  "name": "SkyMist::putPuff",
+  "tag": "game-inferred",
+  "was": "FUN_002ad250",
+  "why": "one puff's GS fan (PRIM 0x55, 5 x ST/RGBAQ/XYZ): alpha from the distance to the camera (+0x3c radius sq, +0x40 inverse), 4 rotated corners at camera z + height +0x44, projected with the scratchpad's view-screen matrix, near w 500 -> clipPuff 0x2ae200, w > 10000 or off the GS window skip"
+ },
+ "002ad680": {
+  "name": "mistPutXyz",
+  "tag": "game-inferred",
+  "was": "FUN_002ad680",
+  "why": "(u16 *out, x, y, z): two halfwords and a word, the XYZ register of putPuff / putWrappedPuff"
+ },
+ "002ad690": {
+  "name": "mistMaxf",
+  "tag": "game-inferred",
+  "was": "FUN_002ad690",
+  "why": "max.s f12, f13: the GS window test's larger of x / y"
+ },
+ "002ad6a0": {
+  "name": "mistMinf",
+  "tag": "game-inferred",
+  "was": "FUN_002ad6a0",
+  "why": "min.s f12, f13: the GS window test's smaller of x / y"
+ },
+ "002ad6b0": {
+  "name": "SkyMist::drawDrift",
+  "tag": "game-inferred",
+  "was": "FUN_002ad6b0",
+  "why": "every stage but 0x5d / 0x19 / 0x1b: the first set (+0x70) with keys +0x50 then the 8 of the second (+0x1b40) with keys +0xb0 through putWrappedPuff 0x2ad810, a layer 1 lower each"
+ },
+ "002ad810": {
+  "name": "SkyMist::putWrappedPuff",
+  "tag": "game-inferred",
+  "was": "FUN_002ad810",
+  "why": "putPuff 0x2ad250 with the offset to the camera wrapped into +-radius (+0x38) by mistWrap 0x2af6b0 first: the puffs tile around the camera"
+ },
+ "002adc70": {
+  "name": "SkyMist::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002adc70",
+  "why": "per stage (getStageSelect): radius / height, list 5 (TEST z GEQUAL) or 3 (no depth), the step (stepSwirl 0x2ae960 or stepDrift 0x2aecc0 with the drift toward +0x20), then texture + ALPHA_1 0x44 and a REGLIST GIF tag, matrices and keys to the scratchpad, drawSwirl / drawDrift"
+ },
+ "002ae160": {
+  "name": "MistPuff::color",
+  "tag": "game-inferred",
+  "was": "FUN_002ae160",
+  "why": "(puff, keys): age +0x1c x inverse life +0x28 through 4 colour keys at thresholds keys+0x40 / +0x44 (inverses +0x48..+0x50), VU0 lerp, vftoi0, ppach / ppacb to RGBA bytes"
+ },
+ "002ae200": {
+  "name": "SkyMist::clipPuff",
+  "tag": "game-inferred",
+  "was": "FUN_002ae200",
+  "why": "(out, corners, rgba, near count): 3 -> clipPuff3 0x2ae270, 2 -> clipPuff2 0x2ae460, 1 -> clipPuff1 0x2ae670"
+ },
+ "002ae270": {
+  "name": "SkyMist::clipPuff3",
+  "tag": "game-inferred",
+  "was": "FUN_002ae270",
+  "why": "three corners nearer than w 500: the far corner and its two edges cut at w 500 (clipToNear 0x2ae8c0), projected, all inside the GS window or nothing"
+ },
+ "002ae460": {
+  "name": "SkyMist::clipPuff2",
+  "tag": "game-inferred",
+  "was": "FUN_002ae460",
+  "why": "two corners nearer than w 500: the two far ones and two cuts (clipToNear 0x2ae8c0)"
+ },
+ "002ae670": {
+  "name": "SkyMist::clipPuff1",
+  "tag": "game-inferred",
+  "was": "FUN_002ae670",
+  "why": "one corner nearer than w 500: replaced by the cuts toward its two neighbours (clipToNear 0x2ae8c0), five vertices, all inside the GS window or the five XYZ zeroed"
+ },
+ "002ae8c0": {
+  "name": "mistClipToNear",
+  "tag": "game-inferred",
+  "was": "FUN_002ae8c0",
+  "why": "(out, near, far): the point of the edge at w 500, f = (500 - near.w) / (far.w - near.w), xyzw by VU0 lerp and uv +0x10 / +0x14 likewise"
+ },
+ "002ae960": {
+  "name": "SkyMist::stepSwirl",
+  "tag": "game-inferred",
+  "was": "FUN_002ae960",
+  "why": "stages 0x5d / 0x19: ages the first set, pulls each toward the centre +0x20 at speed +0x20 (x0.97 within 750), spawns up to 3 a frame on the radius circle (life 1.5, speed 800, size 700), demoFleckRandNext seed +0x54; counts the live in +0x48"
+ },
+ "002aecc0": {
+  "name": "SkyMist::stepDrift",
+  "tag": "game-inferred",
+  "was": "FUN_002aecc0",
+  "why": "ages both sets, moves each by the drift +0x10 x speed x dt, at most one spawnPuff 0x2af9a0 per frame for the first set and one spawnWisp 0x2af710 every 32 frames (+0x50) for the second; live counts +0x48 / +0x4c"
+ },
+ "002aef00": {
+  "name": "SkyMist::SkyMist",
+  "tag": "game-inferred",
+  "was": "FUN_002aef00",
+  "why": "(this, TIM2, stage): Tim2Texture of the data, speeds 80..125, colour key sets by stage (0x30ab00 / 0x30aec0 + set x 0x60, their inverses written back), 0x46 or 0x8f puffs, the drift target +0x20 per stage; caller SkyMistHolder ctor"
+ },
+ "002af6b0": {
+  "name": "mistWrap",
+  "tag": "game-inferred",
+  "was": "FUN_002af6b0",
+  "why": "(v, half): v outside +-half folded back by whole periods of 2 half; putWrappedPuff's offsets"
+ },
+ "002af710": {
+  "name": "SkyMist::spawnWisp",
+  "tag": "game-inferred",
+  "was": "FUN_002af710",
+  "why": "a second-set puff: life (50..200)/30 s, speed +0x30..+0x34, place radius..3 radius (wrapped when drawn), size 500..1100 at a random turn, uv half bit; caller stepDrift"
+ },
+ "002af9a0": {
+  "name": "SkyMist::spawnPuff",
+  "tag": "game-inferred",
+  "was": "FUN_002af9a0",
+  "why": "a first-set puff: as spawnWisp 0x2af710 with life (128..158)/30 s and size 900..1200; caller stepDrift"
  },
  "002afc20": {
   "name": "getInitItemForLanguage",

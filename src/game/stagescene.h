@@ -70,7 +70,7 @@ struct AreaGrid;
 struct ClearSequence;
 class AreaClip;
 struct GameOverSequence;
-struct MenuProgHolder;
+struct SkyMistHolder;
 struct MenuProgSet;
 struct PauseMenuState;
 struct Rand48;
@@ -461,7 +461,7 @@ struct StageScene
     // menu, the item list, the pause state, the character.
     void *getInputFocus();                                               // FS2 0x00195c10
     // loadCommon: the menu program of the init pack's item.
-    void createMenuProg(const void *data);                               // FS2 0x0019af40
+    void createSkyMist(const void *data);                                // FS2 0x0019af40
 
     // The floor the player is on (the S2D's rF01..rFDF: 0..9); negative
     // none.
@@ -572,7 +572,7 @@ struct StageScene
     GlowFog            *glowFog;         // FS2 +0x98: deleted
     SmokeFog           *smokeFog;        // FS2 +0x9c
     ScreenFill         *screenFill;      // FS2 +0xa0
-    MenuProgHolder     *menuProg;        // FS2 +0xa4
+    SkyMistHolder      *skyMist;         // FS2 +0xa4
     MenuProgSet        *menuProgs;       // FS2 +0xa8
     // Four area grids, a stage's; [3] (+0xb8) is the sound one (getSoundAttr).
     AreaGrid           *areas[StageArea_Count]; // FS2 +0xac
