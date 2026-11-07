@@ -634,6 +634,24 @@
    "status": "verify",
    "why": "read closely: the menu pack and its item getters, createMenuSePlayer, getSePlayer (sbss 0x31ae98..0x31aea4) and MessageTable 0x2c4150..0x2c42a0 by position. 0x2c42a0 left out: slot 1 of Vt_00319f00, whose class lives at 0x2ca870..0x2cc8c0; it is that class's inline virtual, read with it"
   },
+  "game/menuprogset.cpp": {
+   "notes": "Both sights draw: the rifle's soft mask and spot, the R_64C's round hole, ticks, spot and cross, over PacketList_Scene2d. Proved by sightcmp.py: 400 random frames, 30600 vertices, 0 differences against the ROM's walked GS packet; 3000 quatBetween, 0 bits; --plant 3158. Seen with a temporary harness, removed: state forced on stage 2, at 4:3, 16:9 and 21:9, hole round, no line at the frame's edge (progress/20261106-sight-*.png). NOT seen: a real setScope with a real gun, the zoom moving the ticks. Why verify and not done: the state was forced. Deliberate PC differences: squeezed at any aspect with the mask's outer column drawn to the display's edges, far UV ended at the outer texel (the ROM's wraps, a line in the middle of a wide display), ticks and lines nearest (bilinear gave a pale edge). Doubt: the ROM sets neither CLAMP_1 nor TEX1_1 here, repeat and linear are inferred from rena's passes and the art. The critters' walk now calls quatBetween. Next: a stage with a rifle, the real d-pad up into the scope.",
+   "ranges": [
+    [
+     "002b9ef0",
+     "002bb600"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-07 00:01",
+     "status": "verify",
+     "summary": "The gun sights: MenuProgSet, its packet helpers and quatBetween, all 11 functions of 0x2b9ef0..0x2bb600; was stubs"
+    }
+   ],
+   "status": "verify",
+   "why": "The sight's six functions, its class and quatBetween run on from PrgMcCard's end to SubSceneItem's start; no source string, the file name is the port's."
+  },
   "game/menuscene.cpp": {
    "notes": "All 14 functions of 0x2b5740..0x2b6b90 written (batch 083, 32 names, saved in Ghidra): the whole menu flow, architecture.md Modules has the map. Build, callcheck and layoutcheck green. Smoke, no pad: the language screen runs, black for about 3000 presented frames, then one white band across the screen (y 224..288 of 683x512) with no text or images: untextured, because Tim2Texture::Tim2Texture and UiTrack::draw are stubs; no reference picture was extracted, work/ref is empty. With a scripted CROSS the flow passes the language screen, the card check and the logo (both on null path stubs, so no layout shows) and then spins in menuFlow on the stub runTitleScreen (hazards.md Stubs). CIRCLE does nothing on the language screen. Next in the queue: rena/rena_2d_texture_tim2.cpp and the texture store, judged on this language screen. The stubs that block the menu after that are listed in open-items.md Next up item 8: layout paths 0x2ec110.., runTitleScreen 0x231c90, loadMenuPack / unloadMenuPack, the navi block. Doubts: the file name, the screen names, SaveDialogReason, runAttractDemo, the 0x40 size of the script path buffer. One PC: mark: menuPlayMovie guards the ROM double delete of an empty movie loader.",
    "ranges": [
@@ -3269,10 +3287,7 @@
   "unassigned@0022fc50": {},
   "unassigned@00231410": {},
   "unassigned@00231c90": {},
-  "unassigned@0023c010": {
-   "claimed": "2026-11-06 22:51",
-   "status": "active"
-  },
+  "unassigned@0023c010": {},
   "unassigned@0023c020": {},
   "unassigned@0023e740": {},
   "unassigned@00246230": {},
@@ -3290,6 +3305,10 @@
   "unassigned@00296d60": {},
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {},
+  "unassigned@002b9ef0": {
+   "claimed": "2026-11-06 23:35",
+   "status": "active"
+  },
   "unassigned@002c42a0": {},
   "unassigned@002d46a0": {},
   "yamipan/rendering/model_renderer.cpp": {

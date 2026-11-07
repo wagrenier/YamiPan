@@ -33941,6 +33941,42 @@
   "was": "FUN_002b9d60",
   "why": "create case 0x1d (prgMcCard, 0x94 bytes); unread"
  },
+ "002b9ef0": {
+  "name": "MenuProgSet::drawR64C",
+  "tag": "game-inferred",
+  "was": "FUN_002b9ef0",
+  "why": "State 2 of MenuProgSet::draw, zoom in f12, this in a0: lightens the frame, the mirrored mask image 2, the ticks image 3 at the zoom, the centre image 1 added, the two cross lines images 4 and 5."
+ },
+ "002ba310": {
+  "name": "sightBrighten",
+  "tag": "game-inferred",
+  "was": "FUN_002ba310",
+  "why": "ALPHA_1 0x48 (Cs * As + Cd), RGBAQ alpha << 24 | 0x808080, eight untextured sprites 64 wide over the 512 x 512 frame: adds grey to the whole frame. Only caller drawR64C, alpha 0x20."
+ },
+ "002ba5d0": {
+  "name": "sightDrawTicks",
+  "tag": "game-inferred",
+  "was": "FUN_002ba5d0",
+  "why": "Eight textured sprites on y 249, from x 235 leftwards, step -120 / ((1 - zoom) squared * 4 + 2): the range ticks of the R_64C's sight."
+ },
+ "002ba8d0": {
+  "name": "MenuProgSet::drawScope",
+  "tag": "game-inferred",
+  "was": "FUN_002ba8d0",
+  "why": "State 1 of MenuProgSet::draw: the mirrored mask image 0, the centre image 1 added. drawR64C without the fill, ticks and lines."
+ },
+ "002babc0": {
+  "name": "sightDrawMaskQuad",
+  "tag": "game-inferred",
+  "was": "FUN_002babc0",
+  "why": "Quad x0 y0 x1 y1 with u0 v0 u1 v1 as columns 64 wide: tri strips, UV + half a texel, ALPHA_1 0x44, TEST_1 colour only. The four calls mirror one corner picture into the frame's four quarters."
+ },
+ "002bb020": {
+  "name": "sightDrawImage",
+  "tag": "game-inferred",
+  "was": "FUN_002bb020",
+  "why": "Uploads a Tim2Texture, one sprite x y w h showing all of it; blend and colour stay the caller's."
+ },
  "002bb260": {
   "name": "MenuProgSet::draw",
   "tag": "game-inferred",

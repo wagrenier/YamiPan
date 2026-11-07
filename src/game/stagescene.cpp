@@ -4,6 +4,7 @@
 
 #include "game/characterbrain.h"
 #include "game/characterroute.h"
+#include "game/menuprogset.h"
 #include "game/playermotion.h"
 #include "game/scenerender.h"
 #include "game/stageparticle.h"
