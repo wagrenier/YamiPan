@@ -56,12 +56,6 @@ MenuProgHolder::~MenuProgHolder()
     YAMIPAN_STUB("MenuProgHolder::~MenuProgHolder", 0x002ad070);
 }
 
-// stub of FS2 0x002bb3e0
-MenuProgSet::~MenuProgSet()
-{
-    YAMIPAN_STUB("MenuProgSet::~MenuProgSet", 0x002bb3e0);
-}
-
 // stub of FS2 0x00207ef0
 // stub of FS2 0x00207ea0
 // stub of FS2 0x002682e0
@@ -238,12 +232,6 @@ void MenuProgHolder::draw(float deltaSeconds, GamePacketManager *packets, StageO
 
 // stub of FS2 0x002078d0
 // stub of FS2 0x00207500
-// stub of FS2 0x002bb260
-void MenuProgSet::draw(float zoom)
-{
-    YAMIPAN_STUB("MenuProgSet::draw", 0x002bb260);
-}
-
 // stub of FS2 0x00268290
 void Rand48::seed(u_int value)
 {
@@ -312,19 +300,6 @@ void gsFrameFilter(sceVif1Packet *packet, const sceGsDrawEnv1 *env, int w, int h
     YAMIPAN_STUB("gsFrameFilter", 0x002849c0);
 }
 
-
-// stub of FS2 0x002bb4e0
-MenuProgSet::MenuProgSet()
-{
-    YAMIPAN_STUB("MenuProgSet::MenuProgSet", 0x002bb4e0);
-}
-
-// stub of FS2 0x002bb2b0
-void MenuProgSet::load(void *image0, void *image1, void *image2, void *image3, void *image4,
-              void *image5)
-{
-    YAMIPAN_STUB("MenuProgSet::load", 0x002bb2b0);
-}
 
 // stub of FS2 0x002cebd0
 void SceneBlock98::attachTo(StagePlayer *player)

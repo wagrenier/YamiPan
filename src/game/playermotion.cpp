@@ -8,6 +8,7 @@
  */
 #include "game/characterbrain.h"
 #include "game/characterroute.h"
+#include "game/menuprogset.h"
 #include "game/playermotion.h"
 #include "game/objectproperty.h"
 #include "game/stagedoor.h"

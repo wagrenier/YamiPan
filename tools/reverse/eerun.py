@@ -264,6 +264,15 @@ class Ee:
             if g(a[2]) & M64 == 0: s(a[0], g(a[1]))
         elif op == 'movn':
             if g(a[2]) & M64 != 0: s(a[0], g(a[1]))
+        elif op == 'plzcw':                     # the leading bits equal to the sign, less one, in each word
+            def sign_bits(word):
+                word = word & M32
+                top = word >> 31
+                n = 0
+                while n < 32 and (word >> (31 - n)) & 1 == top:
+                    n += 1
+                return n - 1
+            s(a[0], sign_bits(g(a[1])) | sign_bits(g(a[1]) >> 32) << 32)
         elif op == 'mult' and len(a) == 3: s(a[0], s32(s32(g(a[1])) * s32(g(a[2]))))
         elif op == 'mult':
             product = s32(g(a[0])) * s32(g(a[1]))

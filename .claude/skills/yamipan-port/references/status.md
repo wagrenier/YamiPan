@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 23:33 at commit `8e5b6a3` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 00:01 at commit `38739db` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-06 23:33 at commit `8e5b6a3` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **5333** (81%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1575, game-inferred 4393
-- context-name ledger: 5968 entries; overrides of wrong library matches: 0
-- placed in a source file: 5717/6599 in 122 files
+- game functions: **6599**, named **5339** (81%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1575, game-inferred 4399
+- context-name ledger: 5974 entries; overrides of wrong library matches: 0
+- placed in a source file: 5728/6599 in 123 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5204**; stubs: **100**
+- reconstructed FS2 functions: **5215**; stubs: **96**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -62,6 +62,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/mathutil.cpp` | 18 | 0 |
 | `src/game/memcard.cpp` | 55 | 0 |
 | `src/game/menupack.cpp` | 9 | 0 |
+| `src/game/menuprogset.cpp` | 11 | 0 |
 | `src/game/menuscene.cpp` | 14 | 0 |
 | `src/game/modelpose.cpp` | 92 | 0 |
 | `src/game/movieplayer.cpp` | 41 | 0 |
@@ -131,7 +132,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 64 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 60 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -159,10 +160,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 215 TUs: todo 73, active 1, partial 25, verify 110, done 42
-- next: **unassigned@002b9ef0** (frontier score 21)
+- 215 TUs: todo 73, active 1, partial 25, verify 111, done 42
+- next: **game/rcnttimer.cpp** (frontier score 19)
 - pinned queue: (empty)
-- active: `unassigned@0023c010` 0/0
+- active: `unassigned@002b9ef0` 0/0
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -191,6 +192,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/mathutil.cpp` 18/18 -- Source only. New mathutil.h (normalizeAngle moved there from gamehooks.h; uigame.cpp includes it; pi constants are kMath* to avoid uigame / uiwidget locals) and
 - verify: `game/memcard.cpp` 55/55 -- All 55 functions written (source only, not built). New this run: Memcard::stepSave (mkdir, then data / icon1.ico / icon.sys each open, write, flush, close; Save
 - verify: `game/menupack.cpp` 9/9 -- All 9 written, range now 0x2c3d30..0x2c42a0 (0x2c42a0 is slot 1 of Vt_00319f00, an inline virtual of the class at 0x2ca870, left for it). Renamed getSaveResourc
+- verify: `game/menuprogset.cpp` 11/11 -- Both sights draw: the rifle's soft mask and spot, the R_64C's round hole, ticks, spot and cross, over PacketList_Scene2d. Proved by sightcmp.py: 400 random fram
 - verify: `game/menuscene.cpp` 14/14 -- All 14 functions of 0x2b5740..0x2b6b90 written (batch 083, 32 names, saved in Ghidra): the whole menu flow, architecture.md Modules has the map. Build, callchec
 - verify: `game/modelpose.cpp` 92/92 -- All 92 written, no stubs left in the TU (batch 111). Second run wrote the five solvers, solveLeg, settle and settleFixed, the sw bones swing with its spring and
 - verify: `game/movieplayer.cpp` 41/41 -- Cut out of unassigned@001953f0 (its tail 0x1faa30..0x1fcb40; the rest of that run is still unassigned). New game/movieplayer.h; gamehooks.h lost MoviePlayer and
@@ -276,6 +278,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 00:01 `game/menuprogset.cpp` verify: The gun sights: MenuProgSet, its packet helpers and quatBetween, all 11 functions of 0x2b9ef0..0x2bb600; was stubs
 - 2026-11-06 23:33 `game/itemphysics.cpp` verify: ItemPhysics written: thrown items and dropped weapons fall, all 15 functions, bit-identical to the ROM on itemcmp.py; a forced knife lands flat on stage 2
 - 2026-11-06 22:50 `game/stageparticle.cpp` verify: the MSL vector and sort instances 0x1920d0..0x193900 pinned here and named; the ROM's own unstable sort replaces std::stable_sort in drawEffects, far list first
 - 2026-11-06 22:30 `game/stagealert.cpp` verify: reconstruct 8 functions, alertcmp proves them against the ROM (verify)
@@ -283,22 +286,21 @@ Recent sessions:
 - 2026-11-06 21:34 `rx/rxsndstrstream.c` verify: reconstruct 18 functions
 - 2026-11-06 21:12 `rx/rxsndstradpcm.c` verify: All 10 functions of 0x164c38..0x1656e8 written; the 2026-11-04 bridge replaced by a silent stand-in for the driver feeding rxSndAdpcmUpdate
 - 2026-11-06 20:51 `game/stageelevator.cpp` verify: The elevator: StageElevator for oZS99_01, a call brings it, the doors work, a rider goes up with it, a door closing on someone opens again
-- 2026-11-06 20:19 `game/stagemenu.cpp` verify: the stage menu whole: the list window, its fades, update, draw; six vector helpers joined game/characterroute.cpp; menucmp.py
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002b9ef0` | todo | 0/4/11 | 5.7 | 21 | 3 |
-| `unassigned@002dac70` | partial | 1/4/63 | 21.7 | 19 | 3 |
 | `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
-| `unassigned@002c42a0` | todo | 0/13/105 | 42.1 | 18 | 1 |
+| `unassigned@002dac70` | partial | 1/4/63 | 21.7 | 19 | 3 |
 | `unassigned@00171ad0` | partial | 1/0/107 | 1.5 | 18 | 0 |
+| `unassigned@002c42a0` | todo | 0/13/105 | 42.1 | 18 | 1 |
 | `unassigned@002067d0` | partial | 1/0/9 | 2.2 | 17 | 0 |
-| `unassigned@00188d60` | todo | 0/0/16 | 3.8 | 17 | 0 |
 | `unassigned@002a6980` | partial | 1/11/83 | 12.1 | 17 | 0 |
+| `unassigned@00188d60` | todo | 0/0/16 | 3.8 | 17 | 0 |
 | `unassigned@002e0820` | todo | 0/3/13 | 3.7 | 13 | 1 |
-| `unassigned@00151270` | todo | 0/3/3 | 0.0 | 13 | 2 |
 | `unassigned@002681e0` | todo | 0/3/3 | 0.3 | 13 | 2 |
+| `unassigned@00151270` | todo | 0/3/3 | 0.0 | 13 | 2 |
 | `unassigned@0012c9b8` | todo | 0/1/6 | 0.8 | 12 | 1 |
+| `unassigned@002176d0` | partial | 1/0/10 | 0.9 | 11 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

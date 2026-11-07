@@ -2916,28 +2916,6 @@ struct MenuProgHolder
     // The program's frame (on the scratchpad stack in the ROM).
     void draw(float deltaSeconds, GamePacketManager *packets, StageObject *camera); // FS2 0x002ad030
 };
-// layout: host
-// MenuProgSet::state: the sight drawn.
-enum MenuProgSight
-{
-    MenuProgSight_None  = 0,
-    MenuProgSight_Scope = 1,    // a rifle's
-    MenuProgSight_R64C  = 2,    // R_64C's
-};
-// layout: host -- EE 0x1c: the state, then six textures.
-struct MenuProgSet
-{
-    MenuProgSet();                                                       // FS2 0x002bb4e0: seven words zero
-    ~MenuProgSet();                                                      // FS2 0x002bb3e0: deleting
-    // Six textures over the init pack's images.
-    void load(void *image0, void *image1, void *image2, void *image3, void *image4,
-              void *image5);                                             // FS2 0x002bb2b0
-    // The sight over the frame, at PlayerMotion::scopeZoom: state 1
-    // 0x2ba8d0, state 2 0x2b9ef0.
-    void draw(float zoom);                                               // FS2 0x002bb260
-
-    int state = MenuProgSight_None; // FS2 +0x0: PlayerMotion::setScope
-};
 
 // The frame-buffer filter of the view cameras and event d0101: passes
 // times over the w x h frame of env, block the VRAM block (32-block

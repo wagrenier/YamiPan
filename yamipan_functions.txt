@@ -8548,15 +8548,15 @@
 /* 002b9d60 00000188 */ PrgMcCard::PrgMcCard(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/menuprogset.cpp
 // *****************************************************************************
 
-/* 002b9ef0 0000041c */ FUN_002b9ef0(){}
-/* 002ba310 000002b4 */ FUN_002ba310(){}
-/* 002ba5d0 000002fc */ FUN_002ba5d0(){}
-/* 002ba8d0 000002f0 */ FUN_002ba8d0(){}
-/* 002babc0 00000458 */ FUN_002babc0(){}
-/* 002bb020 00000238 */ FUN_002bb020(){}
+/* 002b9ef0 0000041c */ MenuProgSet::drawR64C(){}  // game
+/* 002ba310 000002b4 */ sightBrighten(){}  // game
+/* 002ba5d0 000002fc */ sightDrawTicks(){}  // game
+/* 002ba8d0 000002f0 */ MenuProgSet::drawScope(){}  // game
+/* 002babc0 00000458 */ sightDrawMaskQuad(){}  // game
+/* 002bb020 00000238 */ sightDrawImage(){}  // game
 /* 002bb260 00000050 */ MenuProgSet::draw(){}  // game
 /* 002bb2b0 0000012c */ MenuProgSet::load(){}  // game
 /* 002bb3e0 000000f4 */ MenuProgSet::~MenuProgSet(){}  // game

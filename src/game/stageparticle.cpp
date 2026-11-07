@@ -18,6 +18,7 @@
 #include "game/gsutil.h"
 #include "game/heap.h"
 #include "game/mathutil.h"
+#include "game/menuprogset.h"
 #include "game/modelpose.h"
 #include "game/mslsort.h"
 #include "game/stagecollision.h"
@@ -1461,21 +1462,9 @@ void Critter::endFrame(float range, const sceVu0FVECTOR nest, bool moved)
     if (moved) {
         static const sceVu0FVECTOR kUp = {0.0f, 0.0f, 1.0f, 1.0f};
         static const sceVu0FVECTOR kForward = {0.0f, 1.0f, 0.0f, 0.0f};
-        // The turn from straight up to the normal: the ROM's 0x2bb510, both
-        // already of length 1.
+        // The turn from straight up to the normal, both already of length 1.
         sceVu0FVECTOR tilt;
-        vecCross(tilt, kUp, m_normal);
-        const float cosine = vecDot(kUp, m_normal);
-        if (cosine == -1.0f) {
-            vecNormalize(tilt, tilt);
-            tilt[3] = 0.0f;
-        } else {
-            // sqrt.s takes the absolute value: a cosine just past -1 is not -1.
-            const float scale = sqrtf(fabsf((cosine + 1.0f) * 2.0f));
-            for (int axis = 0; axis < kAxes; axis++)
-                tilt[axis] /= scale;
-            tilt[3] = scale / 2.0f;
-        }
+        quatBetween(tilt, kUp, m_normal, 1);
         sceVu0FVECTOR axisAngle;
         copyVector(axisAngle, m_normal);
         axisAngle[3] = m_heading;

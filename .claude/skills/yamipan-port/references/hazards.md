@@ -8,6 +8,9 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 - **`py -` with an empty heredoc never ends (2026-11-05).** Symptom: a shell line of greps hangs past its timeout and the output fills with `_pyrepl` tracebacks. Cause: Python's interactive reader retries forever when it has no console. Fix: run a script file, never `py -` without a body. A long Bash heredoc holding apostrophes also failed to parse: write such files with the Write tool.
 
+- **A black shape on a clear white background gets a pale edge when scaled up (2026-11-06, FS2).** Symptom: the sight's black cross shows as a light streak over the black mask. Cause: the art's clear texels are RGB 255, alpha 0, and bilinear blends straight alpha, so the edge is half white. On the GS the shape was drawn 1:1 with UVs on texel centres and never interpolated. Fix: nearest (`TEX1_1` 0) for what the ROM draws 1:1, as `game/menuprogset.cpp` does; check it at a window larger than the frame.
+- **A shot copied right after `build.py --run` can be empty (2026-11-06).** `last.png` is rewritten as the game exits: take the newest non-empty `shot_*.png`.
+
 ## Decompiler (the most common time sink)
 
 - **A register the decompiler dropped is the argument** (2026-11-04, FS2). Symptom: `invertRigidMatrix(auStack_40)` / `matrixToRotZYX(auStack_20)` with one argument, and a field read just before for a null test (pose +0x150), so an earlier run named the field a count. Cause: the test's `lw a1,0x150(a0)` is left in a1 and the call takes it: the field is a matrix pointer. Fix: when a known two-argument helper shows one argument, read the asm before naming what was tested.

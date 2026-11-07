@@ -2205,6 +2205,27 @@ The GS state of a pass (table 0x310180): opaque ALPHA_1 0x2a, TEST_1 0x5050b (al
 
 **Script properties:** `StageObject::setProperty` 0x189f40 is slot +0x1fc of 29 object vtables; `SubSceneModelObject`'s 0x268ae0 is the same list, and now calls it. The numbers are in game/objectproperty.h. A character has its own, unwritten (open-items.md, Done).
 
+## The gun sight (game/menuprogset.cpp, 0x2b9ef0..0x2bb600, 2026-11-06)
+
+`MenuProgSet` (EE 0x1c, scene +0xa8; its name is an old guess, it is the sight) holds the init pack's items 7..0xc as Tim2Textures and draws in PacketList_Scene2d, at the end of `StageScene::draw`, what `PlayerMotion::setScope` chose: state 0 nothing, 1 a rifle's (`drawScope` 0x2ba8d0), 2 the R_64C's (`drawR64C` 0x2b9ef0). `this` is in a0 and the zoom in f12: the decompiler prints them swapped.
+
+| item | image | size | what |
+|---|---|---|---|
+| 7 | +0x04 | 128 x 128, 8-bit | the rifle's mask: alpha only, a soft dark edge, never quite opaque at the sides (200 of 255 at the middle of the edge) |
+| 8 | +0x08 | 32 x 32 | the spot, white with an alpha disc; added at 0x20, drawn 32 x 36 |
+| 9 | +0x0c | 128 x 128, 8-bit | the R_64C's mask: a hard hole |
+| 0xa | +0x10 | 8 x 8 | a tick, 2 x 6 black |
+| 0xb | +0x14 | 512 x 8 | the line across, drawn at (0, 0xfc) |
+| 0xc | +0x18 | 8 x 448 | the line down, drawn at (0xfc, 0), stretched to 512 |
+
+A mask is one corner of the picture, 256 x 256 on the frame, its right and bottom copies mirrored by UVs running backwards. The UVs count from the texture's power of two (PLZCW) so that -1 can be written: the sampler has to repeat. **The ROM sets neither CLAMP_1 nor TEX1_1 here**: it inherits them, rena's model passes leave repeat and linear. The art is squeezed 3:4 (hole 146 x 194 texels), so the hole is round on the 512 x 512 frame shown 4:3. R_64C order: the whole frame + grey at alpha 0x20 (`sightBrighten`, ALPHA_1 0x48), mask, eight ticks from x 235 leftwards on y 249 at a step of -120 / ((1 - zoom)^2 * 4 + 2) (`sightDrawTicks`), spot added, the two lines. Rifle: mask and spot only. Mask quads go out as strips 64 wide (`sightDrawMaskQuad`), first two vertices XYZ3 so that each starts on its own; TEST_1 0x33001 is ATST NEVER + AFAIL RGB_ONLY, colour only, past any depth.
+
+**Two ROM slips.** The right and bottom quarters end at span - 1, one past the outer texel: the last two pixels of the frame wrap to the picture's clear inner edge, a line nobody sees at a screen's edge. In state 2 the first quarters run to last + 1, wrapping to the opaque outer texel for two pixels at the middle, which the cross covers.
+
+**PC (any aspect).** Mask, ticks, spot and lines are drawn squeezed and the mask's outer column is drawn on out to the display's edges, so the hole stays round at 16:9 and 21:9; the fill is the whole display. The first slip would be a clear line in the middle of a wide display, so the host ends at the outer texel (`backU`, `backV`), which moves those UVs by 1 in 128. Ticks and lines are nearest: 1:1 on the GS, scaled up here bilinear mixes in their clear white neighbours, a pale edge on the black (hazards.md).
+
+`quatBetween` 0x2bb510 sits at the end of this range (the turn taking one vector to another, used by the critters' walk): the file is its home only by address.
+
 ## The items' physics (game/itemphysics.cpp, 0x23c010..0x23de20, 2026-11-06)
 
 A thrown item or a dropped weapon is 2 to 4 points held apart, integrated by Verlet; the model only follows them. `motionBoneSuffix(motion, "bn_col<n>_")` finds the nodes, the digits after the name are the radius in tenths, the bone's row 3 turned (x, -z, y) the rest point (+0x170). Links: 2 nodes one, 3 a triangle, 4 all six pairs (the ROM's order: 0-1, 2-3, 0-2, 1-3, 0-3, 2-1). Stage 2's eight weapons have 2 or 3 nodes.
