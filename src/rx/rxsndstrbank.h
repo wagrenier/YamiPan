@@ -75,17 +75,21 @@ typedef struct RxSndStrXwsIndex
 } RxSndStrXwsIndex;
 static_assert(offsetof(RxSndStrXwsIndex, offsets) == 0x4, "RxSndStrXwsIndex::offsets");
 
-/* A mark or branch record (MARK / BRCH): the formats read the rest
- * (architecture.md "Batch 008": +8 type, +0xa / +0xb loop count).
- * layout: EE (file bytes). */
+/* A mark or branch record (MARK / BRCH): what the formats turn into the
+ * source's tags and markers. layout: EE (file bytes). */
 typedef struct RxSndStrMark
 {
     u_int offset;                       // FS2 +0x0: position in the stream
-    int   param;                        // FS2 +0x4
-    u_char _08[4];                      // FS2 +0x8
+    int   param;                        // FS2 +0x4: a branch's target in the request, -1 the end
+    u_char active;                      // FS2 +0x8
+    u_char id;                          // FS2 +0x9: a mark's; a branch's is unread
+    u_char count;                       // FS2 +0xa: a branch's passes so far
+    u_char max;                         // FS2 +0xb: a branch's passes that stop (0: all)
     char  name[1];                      // FS2 +0xc: NUL-terminated
 } RxSndStrMark;
 static_assert(offsetof(RxSndStrMark, param) == 0x4, "RxSndStrMark::param");
+static_assert(offsetof(RxSndStrMark, active) == 0x8, "RxSndStrMark::active");
+static_assert(offsetof(RxSndStrMark, max) == 0xb, "RxSndStrMark::max");
 static_assert(offsetof(RxSndStrMark, name) == 0xc, "RxSndStrMark::name");
 
 /* A track record of a request (TRCK). layout: EE (file bytes). */
@@ -103,16 +107,23 @@ static_assert(offsetof(RxSndStrTrack, volL) == 0x4, "RxSndStrTrack::volL");
 static_assert(offsetof(RxSndStrTrack, volR) == 0x6, "RxSndStrTrack::volR");
 static_assert(offsetof(RxSndStrTrack, name) == 0x8, "RxSndStrTrack::name");
 
+/* RxSndStrRequest::flags */
+#define RXSNDSTR_REQUEST_LOOP   0x1     /* ends in a jump to loopOffset */
+#define RXSNDSTR_REQUEST_NO_ARG 0x2     /* rxSndAdpcmOpenEx gets -1, not openArg */
+
 /* A request record (FORM; variable length, the next one length bytes on).
- * architecture.md "Batch 008": +4 / +5 a volume the formats read.
  * layout: EE (file bytes). */
 typedef struct RxSndStrRequest
 {
     u_char format;                      // FS2 +0x0: RxSndStrFormatId
     u_char length;                      // FS2 +0x1: bytes of this record
-    u_char flags;                       // FS2 +0x2: bit 0 loop
-    u_char _3[6];                       // FS2 +0x3
-    u_char channels;                    // FS2 +0x9: 1 or 2
+    u_char flags;                       // FS2 +0x2: RXSNDSTR_REQUEST_*
+    u_char openArg;                     // FS2 +0x3: rxSndAdpcmOpenEx's last argument
+    signed char volL;                   // FS2 +0x4
+    signed char volR;                   // FS2 +0x5
+    u_short attr;                       // FS2 +0x6: non-zero sets the stream's attribute bit 0
+    u_char _8;                          // FS2 +0x8
+    u_char channels;                    // FS2 +0x9: 1 or 2, more with tracks
     u_short rate;                       // FS2 +0xa: sample rate
     u_char _c[4];                       // FS2 +0xc
     u_int  offset;                      // FS2 +0x10: in the body
@@ -121,6 +132,9 @@ typedef struct RxSndStrRequest
 } RxSndStrRequest;
 static_assert(offsetof(RxSndStrRequest, length) == 0x1, "RxSndStrRequest::length");
 static_assert(offsetof(RxSndStrRequest, flags) == 0x2, "RxSndStrRequest::flags");
+static_assert(offsetof(RxSndStrRequest, openArg) == 0x3, "RxSndStrRequest::openArg");
+static_assert(offsetof(RxSndStrRequest, volL) == 0x4, "RxSndStrRequest::volL");
+static_assert(offsetof(RxSndStrRequest, attr) == 0x6, "RxSndStrRequest::attr");
 static_assert(offsetof(RxSndStrRequest, channels) == 0x9, "RxSndStrRequest::channels");
 static_assert(offsetof(RxSndStrRequest, rate) == 0xa, "RxSndStrRequest::rate");
 static_assert(offsetof(RxSndStrRequest, offset) == 0x10, "RxSndStrRequest::offset");
