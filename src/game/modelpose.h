@@ -565,13 +565,7 @@ private:
 };
 
 // The subclasses, in the runs that use them (a kind of setBaseMotion). CarPose
-// and ElevatorPose are in game/vehiclepose.h.
-// layout: host.
-class NmlPose : public ModelPose        // vtable 0x318b10, EE 0x410
-{
-public:
-    NmlPose(int a, int b, int c, int d);                                 // FS2 0x002a7a50
-};
+// and ElevatorPose are in game/vehiclepose.h, NmlPose in game/numlock.h.
 // layout: host.
 class SkyPose : public ModelPose        // vtable 0x319260, EE 0x3e0
 {

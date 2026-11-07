@@ -143,7 +143,7 @@ enum StageObjectKind
     StageObject_Door   = 2,     // StageObject::m_doorState is read
     StageObject_Car    = 3,     // StageCar: getKind 0x289cc0; takes the motion named CAR (StageFiles::applyBgMotionTarget)
     StageObject_Elevator = 4,   // StageElevator: the model oZS99_01; takes the base motion ElevatorPose
-    StageObject_NumLock = 5,    // the number lock, vtable 0x318870, on StageMapObject (no host class yet)
+    StageObject_NumLock = 5,    // the number lock, vtable 0x318870, NumLock (game/numlock.h)
     StageObject_Kind6  = 6,     // takes the motion named Seven_Keys
     StageObject_Camera = 7,     // StageCamera
     StageObject_Kind8  = 8,     // a camera, vtable 0x311d30 (no host class yet)
@@ -886,18 +886,7 @@ ModelPartRec *modelFindPart(ModelInstance *model, const char *name, size_t lengt
 // StageParticle: game/stageparticle.h.
 // The object of the scene's number lock (the list at +0x90 names it).
 StageObject *findNumLockTarget();                                        // FS2 0x0029f440
-// Its four dials, kept on a stack of one: push (a negative dial keeps its
-// number; answers the depth, -1 full), pop (-1 empty), four new random
-// numbers. The dials live on a pose class not written (+0x3f0).
-int  numLockPushDials(StageObject *lock, int a, int b, int c, int d);    // FS2 0x002a6cd0
-int  numLockPopDials(StageObject *lock);                                 // FS2 0x002a6c40
-void numLockScramble(StageObject *lock);                                 // FS2 0x002a6b70
-// Dial to any number but the code's and the one it shows / to the code's.
-void numLockSpinDial(StageObject *lock, int dial);                       // FS2 0x002a6e40
-void numLockSetDial(StageObject *lock, int dial);                        // FS2 0x002a6ee0
-bool numLockDialsRight(StageObject *lock);                               // FS2 0x002a6fc0
-// A dial's pose has not reached its number.
-bool numLockDialsTurning(StageObject *lock);                             // FS2 0x002a7070
+// Its dials: NumLock, game/numlock.h.
 // Every character with m_viewActive: three steps on its motion (+0x224).
 void stageUpdateCharacterMotions();                                      // FS2 0x0017df60
 

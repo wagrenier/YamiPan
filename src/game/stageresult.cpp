@@ -261,7 +261,7 @@ void StageResult::begin(int newMode)
     mode = newMode;
     resetPlay();
     memset(attempt, 0, sizeof(attempt) + sizeof(stage));
-    memset(&_90, 0, sizeof(_90));
+    memset(numLockCode, 0, sizeof(numLockCode));
     // releaseLayout, inline.
     if (layout == nullptr) {
         layout = nullptr;

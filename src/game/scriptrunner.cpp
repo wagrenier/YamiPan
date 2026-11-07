@@ -8,6 +8,7 @@
 // The natives written so far are those stage 1's bg script calls: lighting and light setup. Any other
 // still pops its count and skips its words (scriptnatives.inc, generated from the ROM), so a script
 // runs straight through it and the [stub] log names it.
+#include "game/numlock.h"
 #include "game/scriptrunner.h"
 #include "game/stagedoor.h"
 #include "game/stageparticle.h"
@@ -6910,30 +6911,36 @@ static const int *nativeVisionFrames(ScriptRunner *self, int *, const int *code)
 
 // 0x201 numLockPush(a, b, c, d), 0x202 numLockPop(), 0x22c numLockScramble().
 // FS2 0x001ab400
-// callcheck: findNumLockTarget, FUN_002a6cd0
+// callcheck: findNumLockTarget, pushDials
+// PC: the three skip a missing lock (findNumLockTarget is a stub, null, until
+// its TU); the ROM calls through what it gets.
 
 static const int *nativeNumLockPush(ScriptRunner *self, int *acc, const int *code)
 {
     const int *args = self->popped(4);
-    *acc = numLockPushDials(findNumLockTarget(), args[0], args[1], args[2], args[3]);
+    NumLock *lock = static_cast<NumLock *>(findNumLockTarget());
+    *acc = lock != nullptr ? lock->pushDials(args[0], args[1], args[2], args[3]) : -1;
     return code;
 }
 
 // FS2 0x001ab380
-// callcheck: findNumLockTarget, FUN_002a6c40
+// callcheck: findNumLockTarget, popDials
 
 static const int *nativeNumLockPop(ScriptRunner *, int *acc, const int *code)
 {
-    *acc = numLockPopDials(findNumLockTarget());
+    NumLock *lock = static_cast<NumLock *>(findNumLockTarget());
+    *acc = lock != nullptr ? lock->popDials() : -1;
     return code;
 }
 
 // FS2 0x001a8360
-// callcheck: findNumLockTarget, FUN_002a6b70
+// callcheck: findNumLockTarget, scramble
 
 static const int *nativeNumLockScramble(ScriptRunner *, int *, const int *code)
 {
-    numLockScramble(findNumLockTarget());
+    NumLock *lock = static_cast<NumLock *>(findNumLockTarget());
+    if (lock != nullptr)
+        lock->scramble();
     return code;
 }
 

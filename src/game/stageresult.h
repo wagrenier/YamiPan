@@ -111,7 +111,7 @@ struct StageResult
     int        counter[4];      // FS2 +0x00: [0] continues, [2] hits on the player (takeDamage); getPerfectBits
     int        attempt[16];     // FS2 +0x10: cleared by restart; 0x17f7c0 reads [15]
     int        stage[16];       // FS2 +0x50: cleared by begin only
-    int        _90;             // FS2 +0x90: cleared by begin
+    char       numLockCode[4];  // FS2 +0x90: the number lock's digits (NumLock::setMotionList); cleared by begin
     StageClock clock;           // FS2 +0x94: the stage clock (records keep the lowest)
     StageClock clock2;          // FS2 +0xa4: stage 29's record (kept when higher)
     u_char     paused;          // FS2 +0xb4: set by the stage loop around its menus
@@ -121,7 +121,7 @@ struct StageResult
 };
 static_assert(offsetof(StageResult, attempt) == 0x10, "StageResult::attempt");
 static_assert(offsetof(StageResult, stage) == 0x50, "StageResult::stage");
-static_assert(offsetof(StageResult, _90) == 0x90, "StageResult::_90");
+static_assert(offsetof(StageResult, numLockCode) == 0x90, "StageResult::numLockCode");
 static_assert(offsetof(StageResult, clock) == 0x94, "StageResult::clock");
 static_assert(offsetof(StageResult, clock2) == 0xa4, "StageResult::clock2");
 static_assert(offsetof(StageResult, paused) == 0xb4, "StageResult::paused");

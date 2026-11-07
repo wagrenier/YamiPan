@@ -780,6 +780,24 @@
    "task": "3D path 2 of 5 (the user's pin). NodeTransform 0x1d7f20, update 0x1d7d50, updateMatrix 0x1d8420 and what the stage's nodes need to place a model: StageNodeBase 0x1d8540. Pin the real extent with tus.py define under this key; the rest of unassigned@001d7c50 is not part of this.",
    "why": "vtable 0x315a50 and 0x315ab0 slots, NodeTransform, the StageNodeBase walks and ctor; 0x1d85b0 starts the next class (vtable 0x315ba0)"
   },
+  "game/numlock.cpp": {
+   "notes": "Split off unassigned@002a6980 (batch 197). NumLock: map object of oMK21_06 / oSJ08_07, now built by createMapObject; kind 5; code from StageResult +0x90 (renamed numLockCode), random digits not all zero when none, kept across retries. The seven numLock free functions are members now (pushDials, popDials, scramble, spinDial, setDial, dialsRight, dialsTurning) plus dialDown, dialUp, setInView (empty). NmlPose (setBaseMotion kind 3): load finds bn_kanagu, bn_key, bn_k04..bn_k01; update eases the four dial angles a fifth a frame (snap after setDials) and writes their x-axis quaternions into the dial bones. Float order checked against the asm; no comparator (needs StageMapObject linked). Port differences: natives 0x201 / 0x202 / 0x22c skip a null lock (findNumLockTarget 0x29f440 still a stub), bone indices start at 0, a pose with no bones skips the quaternions. Not seen on screen: smoke run stays at the language select; the lock is on stages whose map has oMK21_06 or oSJ08_07. Left: the number-lock view (StageScene +0x90, ctor 0x2a89b0, createMapObject should build it: PC note there), SigLamp, 0x2a9be0, in unassigned@002a6980 (now 0x2a7b10..0x2a9c68 plus getSoundKind 0x2a6980, which belongs to game/charactersound.cpp).",
+   "ranges": [
+    [
+     "002a6ab0",
+     "002a7b10"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-07 04:22",
+     "status": "verify",
+     "summary": "the number lock: NumLock map object and NmlPose dial pose, 29 functions of 0x2a6ab0..0x2a7b10"
+    }
+   ],
+   "status": "verify",
+   "why": "the number lock: the map object of oMK21_06 / oSJ08_07 (vtables 0x318870..0x318abc, ctor 0x2a7340, its thunks end at 0x2a7418) and its pose NmlPose (vtable 0x318b10, ctor 0x2a7a50 last); 0x2a7b10 starts the SigLamp run (vtable 0x318b30). Both tables sit together in .data, one file. The file name is the port's."
+  },
   "game/packtables.cpp": {
    "notes": "3D path 1 of 5. Root cause: String and StringList were stubs, so every stage script split into zero lines. Written here: game/stringlist.cpp (marked done), PackTables::parse cut into one method per sheet, rena/rena_model.cpp with isValid, relocate, getNodeCount (TU 4 continues in that file), stageMotionTargetName and StageMapFile::relocate in stagescene.cpp until their file is cut; the StageMission stub ctor zeroes itself. Seen: New Game run of 250 s under a limit reaches ModelFile::createInstance with no crash and ends black, which is all the code can show (no 3D yet); the boot picture is unchanged. NOT checked: the contents of the tables were never printed or compared with the sheets, and the relocation was not walked on a real file beyond texture names, so this is verify. The same run reached only frame 3060 where the run before reached 7080 in the same time: the stage load or the stage loop is slower now, not looked into. Next: game/nodetransform.cpp. PC guard in applyBgTarget skips the null instance until createInstance is written; placeItem and placeCharacter have no guard yet. StageScript::relocate 0x1d3a40 and CollisionFile::relocate 0x23ae40 are still stubs. Ghidra: batch 099 saved by name_ctx.",
    "ranges": [
@@ -3395,6 +3413,7 @@
   "unassigned@002908d0": {},
   "unassigned@002937e0": {},
   "unassigned@00296d60": {},
+  "unassigned@002a6980": {},
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {},
   "unassigned@002b9ef0": {},
