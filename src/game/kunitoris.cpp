@@ -974,6 +974,110 @@ void KunitorisBlock::drawWithHighlight(UiDrawer *drawer, int pass, KunitorisDraw
     KunitorisBlock::draw(drawer, pass);
 }
 
+// The new slide is made before the old mover goes.
+// callcheck: operator_new, KunitorisSlide (the new-expression; the mover's delete goes through its vtable)
+
+void KunitorisBlock::slideFrom(const float *from)
+{
+    refreshCell();
+    const float to[2] = {
+        static_cast<float>(m_offset[0]) * kKunitorisCellPixels,
+        static_cast<float>(m_offset[1]) * kKunitorisCellPixels,
+    };
+    KunitorisMover *slide = new KunitorisSlide(from, to, kKunitorisTurnFrames, m_origin);
+    delete m_mover;
+    m_mover = slide;
+}
+
+// FS2 0x002cb6f0
+// callcheck: operator_new, FUN_002cc830 (the inline slideFrom: the KunitorisSlide ctor)
+
+void KunitorisBlock::turn()
+{
+    const float from[2] = {
+        static_cast<float>(m_offset[0]) * kKunitorisCellPixels,
+        static_cast<float>(m_offset[1]) * kKunitorisCellPixels,
+    };
+    const int x = m_offset[0];
+    m_offset[0] = -m_offset[1];
+    m_offset[1] = x;
+    slideFrom(from);
+}
+
+// FS2 0x002cb5e0
+// callcheck: operator_new, FUN_002cc830 (the inline slideFrom: the KunitorisSlide ctor)
+
+void KunitorisBlock::flip()
+{
+    const float from[2] = {
+        static_cast<float>(m_offset[0]) * kKunitorisCellPixels,
+        static_cast<float>(m_offset[1]) * kKunitorisCellPixels,
+    };
+    m_offset[0] = -m_offset[0];
+    slideFrom(from);
+}
+
+// FS2 0x002cc600 (the mover's and the old sprite's deletes go through their vtables)
+// callcheck: operator_new, GsTexture (the inline KunitorisSprite ctor)
+// callcheck: getItem (the inline kunitorisItem)
+
+bool KunitorisBlock::sink()
+{
+    if (m_state != KunitorisBlock_Resting)
+        return false;
+    delete m_mover;
+    m_mover = nullptr;
+    m_timer = kKunitorisSinkFrames;
+    m_state = KunitorisBlock_Sinking;
+    setSprite(new KunitorisSprite(kunitorisItem(KunitorisItem_Sunk)));
+    return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// KunitorisSlide.
+
+// FS2 0x002cc830
+
+KunitorisSlide::KunitorisSlide(const float *from, const float *to, int frames, const int *origin)
+{
+    m_pos[0] = 0.0f;
+    m_pos[1] = 0.0f;
+    m_origin = origin;
+    m_from[0] = from[0];
+    m_from[1] = from[1];
+    m_to[0] = to[0];
+    m_to[1] = to[1];
+    m_frame = 0;
+    m_frames = frames;
+    m_pos[0] = static_cast<float>(m_origin[0]) * kKunitorisCellPixels + m_from[0] + 0.0f;
+    m_pos[1] = static_cast<float>(m_origin[1]) * kKunitorisCellPixels + m_from[1] + 0.0f;
+}
+
+// FS2 0x002cdd60
+// callcheck: operator_delete (the deleting dtor's flag)
+
+KunitorisSlide::~KunitorisSlide()
+{
+}
+
+// FS2 0x002cc740
+
+bool KunitorisSlide::step()
+{
+    m_frame++;
+    const int frame = m_frame;
+    if (frame < m_frames) {
+        const float t = static_cast<float>(frame) / static_cast<float>(m_frames);
+        m_pos[0] = static_cast<float>(m_origin[0]) * kKunitorisCellPixels + (m_to[0] - m_from[0]) * t + m_from[0] + 0.0f;
+        m_pos[1] = static_cast<float>(m_origin[1]) * kKunitorisCellPixels + (m_to[1] - m_from[1]) * t + m_from[1] + 0.0f;
+    } else {
+        m_frame = m_frames;
+        m_pos[0] = static_cast<float>(m_origin[0]) * kKunitorisCellPixels + m_to[0] + 0.0f;
+        m_pos[1] = static_cast<float>(m_origin[1]) * kKunitorisCellPixels + m_to[1] + 0.0f;
+    }
+    return frame < m_frames;
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // KunitorisActorList.
 
@@ -1061,7 +1165,7 @@ void KunitorisActorList::clear()
 // callcheck: KunitorisActorList (the member's ctor)
 
 KunitorisCells::KunitorisCells()
-    : m_active(0)
+    : m_state(KunitorisCells_Empty)
 {
 }
 
@@ -1074,21 +1178,183 @@ KunitorisCells::~KunitorisCells()
     for (KunitorisActorList::Node *node = m_blocks.m_head; node != nullptr; node = node->next)
         delete *node->item;
     m_blocks.clear();
-    m_active = 0;
+    m_state = KunitorisCells_Empty;
 }
+
+// FS2 0x002cb010 (inline at most uses)
+// callcheck: pushBack
 
 void KunitorisCells::add(KunitorisActor *actor)
 {
     m_blocks.pushBack(actor);
-    if (m_active == 0)
-        m_active = 1;
+    if (m_state == KunitorisCells_Empty)
+        m_state = KunitorisCells_Active;
+}
+
+KunitorisBlock *KunitorisCells::block(int i) const
+{
+    KunitorisActorList::Node *node = m_blocks.m_head;
+    for (int j = 0; j < i; j++)
+        node = node->next;
+    return static_cast<KunitorisBlock *>(*node->item);
+}
+
+bool KunitorisCells::hasBlockAt(int x, int y)
+{
+    for (KunitorisActorList::Node *node = m_blocks.m_head; node != nullptr; node = node->next) {
+        KunitorisBlock *other = static_cast<KunitorisBlock *>(*node->item);
+        if (x == other->refreshCell()[0] && y == other->refreshCell()[1])
+            return true;
+    }
+    return false;
+}
+
+void KunitorisCells::updateBlocks()
+{
+    // Only the last block's answer counts.
+    bool more = true;
+    KunitorisActor *last = nullptr;
+    for (KunitorisActorList::Node *node = m_blocks.m_head; node != nullptr; node = node->next) {
+        last = *node->item;
+        more = last->update();
+    }
+    if (last != nullptr && m_state == KunitorisCells_Shot
+        && static_cast<KunitorisBlock *>(last)->m_state != KunitorisBlock_Bounce)
+        m_state = KunitorisCells_Active;
+    if (!more)
+        m_state = KunitorisCells_Gone;
+}
+
+void KunitorisCells::offsetBounds(int *min, int *max) const
+{
+    min[0] = min[1] = 0;
+    max[0] = max[1] = 0;
+    for (KunitorisActorList::Node *node = m_blocks.m_head; node != nullptr; node = node->next) {
+        const KunitorisBlock *b = static_cast<const KunitorisBlock *>(*node->item);
+        if (b->m_offset[0] < min[0])
+            min[0] = b->m_offset[0];
+        if (max[0] < b->m_offset[0])
+            max[0] = b->m_offset[0];
+        if (b->m_offset[1] < min[1])
+            min[1] = b->m_offset[1];
+        if (max[1] < b->m_offset[1])
+            max[1] = b->m_offset[1];
+    }
+}
+
+void KunitorisCells::launch()
+{
+    if (m_state != KunitorisCells_Empty && m_state != KunitorisCells_Active)
+        return;
+    for (KunitorisActorList::Node *node = m_blocks.m_head; node != nullptr; node = node->next) {
+        KunitorisBlock *b = static_cast<KunitorisBlock *>(*node->item);
+        if (b->m_state == KunitorisBlock_Resting) {
+            b->m_timer = kKunitorisShotFrames;
+            b->m_state = KunitorisBlock_Bounce;
+        }
+    }
+    m_state = KunitorisCells_Shot;
+}
+
+// FS2 0x002cb100
+// callcheck: clear (the actors' deletes go through the vtable)
+
+void KunitorisCells::release()
+{
+    for (KunitorisActorList::Node *node = m_blocks.m_head; node != nullptr; node = node->next)
+        delete *node->item;
+    m_blocks.clear();
+    m_state = KunitorisCells_Empty;
+}
+
+// FS2 0x002cb2e0 (the movers' deletes go through their vtable)
+
+bool KunitorisCells::drop(const int *anchor)
+{
+    if (m_state != KunitorisCells_Empty && m_state != KunitorisCells_Active)
+        return false;
+    for (KunitorisActorList::Node *node = m_blocks.m_head; node != nullptr; node = node->next) {
+        KunitorisBlock *b = static_cast<KunitorisBlock *>(*node->item);
+        if (b->m_state != KunitorisBlock_Resting)
+            continue;
+        b->m_timer = kKunitorisDropFrames;
+        b->m_state = KunitorisBlock_Leaving;
+        b->m_anchor = anchor;
+        delete b->m_mover;
+        b->m_mover = nullptr;
+        b->m_offset[0] = anchor[0] + b->m_origin[0] + b->m_offset[0];
+        b->m_offset[1] = anchor[1] + b->m_origin[1] + b->m_offset[1];
+        b->m_cell[0] = b->m_offset[0] - anchor[0];
+        b->m_cell[1] = b->m_offset[1] - anchor[1];
+        b->m_pos[0] = static_cast<float>(b->m_cell[0]) * kKunitorisCellPixels;
+        b->m_pos[1] = static_cast<float>(b->m_cell[1]) * kKunitorisCellPixels;
+    }
+    m_state = KunitorisCells_Dropped;
+    return true;
+}
+
+// FS2 0x002cb0b0
+
+int KunitorisCells::turn()
+{
+    for (KunitorisActorList::Node *node = m_blocks.m_head; node != nullptr; node = node->next)
+        static_cast<KunitorisBlock *>(*node->item)->turn();
+    return m_blocks.m_count;
+}
+
+// FS2 0x002cb060
+
+int KunitorisCells::flip()
+{
+    for (KunitorisActorList::Node *node = m_blocks.m_head; node != nullptr; node = node->next)
+        static_cast<KunitorisBlock *>(*node->item)->flip();
+    return m_blocks.m_count;
+}
+
+// FS2 0x002cb250
+
+bool KunitorisCells::sink()
+{
+    if (m_state != KunitorisCells_Empty && m_state != KunitorisCells_Active)
+        return false;
+    for (KunitorisActorList::Node *node = m_blocks.m_head; node != nullptr; node = node->next)
+        static_cast<KunitorisBlock *>(*node->item)->sink();
+    m_state = KunitorisCells_Sunk;
+    return true;
+}
+
+// FS2 0x002c99e0
+
+bool KunitorisCells::hasOffset(const int *offset) const
+{
+    for (int i = 0; i < m_blocks.m_count; i++) {
+        const KunitorisBlock *b = block(i);
+        if (b->m_offset[0] == offset[0] && b->m_offset[1] == offset[1])
+            return true;
+    }
+    return false;
+}
+
+// FS2 0x002cb460
+
+bool KunitorisCells::touches(KunitorisCells &other)
+{
+    const int count = other.m_blocks.m_count;
+    for (int i = 0; i < count; i++) {
+        KunitorisBlock *b = other.block(i);
+        const int x = b->refreshCell()[0];
+        const int y = b->refreshCell()[1];
+        if (hasBlockAt(x, y))
+            return true;
+    }
+    return false;
 }
 
 // FS2 0x002cafd0
 // callcheck: KunitorisActorList (the member's ctor)
 
 KunitorisGroup::KunitorisGroup()
-    : _1c(0), _20(0)
+    : m_moved{ 0, 0 }
 {
     // The ROM leaves m_cell; the blocks read it before setCell.
     m_cell[0] = 0;
@@ -1136,6 +1402,58 @@ void KunitorisGroup::addCell(const int *offset)
             return;
     }
     add(new KunitorisBlock(m_cell, offset, kKunitorisLift));
+}
+
+// The view is 40 cells; a group leaves 8 cells past a side.
+constexpr int   kKunitorisWrapMargin = 8;
+constexpr float kKunitorisWrapFar    = 40.0f;
+
+// FS2 0x002c7f00
+// The far side is compared and set in float, as the ROM does.
+
+void KunitorisGroup::wrap()
+{
+    int min[2], max[2];
+    offsetBounds(min, max);
+    for (int axis = 0; axis < 2; axis++) {
+        if (m_cell[axis] < -kKunitorisWrapMargin - max[axis])
+            m_cell[axis] = static_cast<int>((kKunitorisWrapFar - 1.0f) - static_cast<float>(min[axis]));
+        if (kKunitorisWrapFar - static_cast<float>(min[axis]) <= static_cast<float>(m_cell[axis]))
+            m_cell[axis] = -kKunitorisWrapMargin - max[axis];
+    }
+}
+
+// FS2 0x002c7dc0
+// callcheck: wrap, FUN_002c7ee0 (m_moved = m_step: an out-of-line pair copy)
+
+void KunitorisGroup::step(bool move)
+{
+    if (m_state == KunitorisCells_Shot)
+        move = true;
+    if (move) {
+        m_cell[0] += m_step[0];
+        m_cell[1] += m_step[1];
+        wrap();
+        m_moved[0] = m_step[0];
+        m_moved[1] = m_step[1];
+    } else {
+        m_moved[0] = 0;
+        m_moved[1] = 0;
+    }
+    updateBlocks();
+}
+
+// FS2 0x002c7c10 (wrap inline)
+
+void KunitorisGroup::scroll(int dx, int dy)
+{
+    if (m_state == KunitorisCells_Shot)
+        return;
+    m_cell[0] += dx;
+    m_cell[1] += dy;
+    wrap();
+    m_moved[0] = dx;
+    m_moved[1] = dy;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -1393,6 +1711,91 @@ int KunitorisBoard::litCells(int piece) const
     return m_pieces[piece].litCells();
 }
 
+bool KunitorisPiece::clearCell(int x, int y)
+{
+    for (int i = 0; i < m_cellCount; i++) {
+        KunitorisPieceCell &c = m_cells[i];
+        if (c.cell[0] == x && c.cell[1] == y) {
+            const bool wasLit = c.lit != 0;
+            if (wasLit)
+                c.lit = 0;
+            return wasLit;
+        }
+    }
+    return false;
+}
+
+// FS2 0x002cd120 (litCells inline)
+
+int KunitorisBoard::litPieces() const
+{
+    int pieces = 0;
+    for (int i = 0; i < m_pieceCount; i++) {
+        if (litCells(i) != 0)
+            pieces++;
+    }
+    return pieces;
+}
+
+int KunitorisBoard::cellCount(int piece) const
+{
+    if (piece < 0)
+        return 0;
+    if (piece == kKunitorisAllPieces) {
+        int cells = 0;
+        for (int i = 0; i < m_pieceCount; i++)
+            cells += m_pieces[i].m_cellCount;
+        return cells;
+    }
+    return m_pieces[piece].m_cellCount;
+}
+
+// The ROM takes the remainder of the offsets as they are (a negative
+// one would read before the grid; the drop's offsets are the scroll
+// plus the cursor's cell plus a small offset, so they are not).
+// FS2 0x002c8b90 (litCells and clearCell inline)
+
+int KunitorisBoard::clearUnder(KunitorisCells &blocks, int *misses, int *hits)
+{
+    const int count = blocks.m_blocks.m_count;
+    *misses = 0;
+    *hits = 0;
+    if (m_highlight == kKunitorisAllPieces) {
+        for (int i = 0; i < count; i++) {
+            const KunitorisBlock *b = blocks.block(i);
+            const int x = b->m_offset[0] % m_level->width;
+            const int y = b->m_offset[1] % m_level->height;
+            const int piece = m_level != nullptr ? m_level->grid[x][y] : -1;
+            if (piece < 0) {
+                (*misses)++;
+                continue;
+            }
+            if (m_pieces[piece].clearCell(x, y))
+                (*hits)++;
+            else
+                (*misses)++;
+        }
+        return litCells(m_highlight);
+    }
+
+    KunitorisPiece *piece = m_highlight < 0 ? nullptr : &m_pieces[m_highlight];
+    if (piece == nullptr) {
+        *misses = count;
+        *hits = 0;
+        return 0;
+    }
+    for (int i = 0; i < count; i++) {
+        const KunitorisBlock *b = blocks.block(i);
+        const int x = b->m_offset[0] % m_level->width;
+        const int y = b->m_offset[1] % m_level->height;
+        if (piece->clearCell(x, y))
+            (*hits)++;
+        else
+            (*misses)++;
+    }
+    return piece->litCells();
+}
+
 // The old choice back to the plain colour first. A negative piece: a
 // random one with lit cells (from a random start, round the board once),
 // -1 when none is left.
@@ -1471,7 +1874,7 @@ void KunitorisBoard::loadLevel(float cell, KunitorisLevel *level)
 KunitorisGroup *KunitorisGame::freeGroup()
 {
     for (int i = 0; i < kKunitorisGroups; i++) {
-        if (m_groups[i].m_active == 0)
+        if (m_groups[i].m_state == 0)
             return &m_groups[i];
     }
     return nullptr;
@@ -1484,6 +1887,7 @@ KunitorisGroup *KunitorisGame::freeGroup()
 // callcheck: operator_new, UiDrawer, KunitorisCursor, KunitorisBlock, GsTexture (the new-expressions; the inline KunitorisSprite ctor)
 // callcheck: operator_new[], FUN_00104d90, KunitorisCells, ~KunitorisCells (the new[]-expression: CodeWarrior's __construct_new_array)
 // callcheck: getItem, pushBack (the inline kunitorisItem and add)
+// callcheck: randNext2, addCell, setStep, setCell (the inline spawnGroup)
 
 KunitorisGame::KunitorisGame(int hiScore, int level)
 {
@@ -1498,7 +1902,7 @@ KunitorisGame::KunitorisGame(int hiScore, int level)
     m_hiScore = hiScore;
     m_score = 0;
     m_paused = 0;
-    _75c = 0;
+    m_heldDir = 0;
     m_sprite = new KunitorisSprite(kunitorisItem(KunitorisItem_Highlight));
     m_scroll[0] = 0;
     m_scroll[1] = 0;
@@ -1511,17 +1915,17 @@ KunitorisGame::KunitorisGame(int hiScore, int level)
     m_cells[m_cellsIndex].add(new KunitorisBlock(m_cursor->m_cell, here, kKunitorisLift));
 
     m_lives = kKunitorisLevelLives[level];
-    _84 = kKunitorisLevel84[level];
-    _88 = kKunitorisLevel88[level];
-    _8c = kKunitorisLevel8c[level];
-    _90 = 5;
-    _94 = _88;
-    _98 = _8c;
-    _760 = 0;
-    _774 = 0;
-    _768 = 0;
-    _76c = 0;
-    _764 = 0;
+    m_spawnPeriod = kKunitorisLevel84[level];
+    m_drainPeriod = kKunitorisLevel88[level];
+    m_stepPeriod = kKunitorisLevel8c[level];
+    m_spawnTimer = 5;
+    m_drainTimer = m_drainPeriod;
+    m_stepTimer = m_stepPeriod;
+    m_frame = 0;
+    m_feverChain = 0;
+    m_feverRate = 0;
+    m_fever = 0;
+    m_feverBar = 0;
     m_cleared = 0;
     if (level < kKunitorisHardLevel) {
         m_shapeCount = sKunitorisShapeCount[0];
@@ -1539,29 +1943,184 @@ KunitorisGame::KunitorisGame(int hiScore, int level)
         int kinds = level + kKunitorisShapeBase;
         if (m_shapeCount < kinds)
             kinds = m_shapeCount;
-        const KunitorisShape &shape = m_shapes[static_cast<int>(randNext2()) % kinds];
-        for (int j = 0; j < shape.count; j++)
-            group->addCell(shape.cells[j]);
+        spawnGroup(group, kinds);
+    }
+}
 
-        const u_int x = randNext2();
-        const u_int y = randNext2();
-        switch (randNext2() & 3) {
-        case KunitorisSide_Top:
-            group->setStep(0, 1);
-            group->setCell(y & kKunitorisViewMask, kKunitorisEnterNear);
-            break;
-        case KunitorisSide_Right:
-            group->setStep(-1, 0);
-            group->setCell(kKunitorisEnterFar, x & kKunitorisViewMask);
-            break;
-        case KunitorisSide_Left:
-            group->setStep(1, 0);
-            group->setCell(kKunitorisEnterNear, x & kKunitorisViewMask);
-            break;
-        default:    // KunitorisSide_Bottom
-            group->setStep(0, -1);
-            group->setCell(y & kKunitorisViewMask, kKunitorisEnterFar);
-            break;
+void KunitorisGame::spawnGroup(KunitorisGroup *group, int kinds)
+{
+    const KunitorisShape &shape = m_shapes[static_cast<int>(randNext2()) % kinds];
+    for (int j = 0; j < shape.count; j++)
+        group->addCell(shape.cells[j]);
+
+    const u_int x = randNext2();
+    const u_int y = randNext2();
+    switch (randNext2() & 3) {
+    case KunitorisSide_Top:
+        group->setStep(0, 1);
+        group->setCell(y & kKunitorisViewMask, kKunitorisEnterNear);
+        break;
+    case KunitorisSide_Right:
+        group->setStep(-1, 0);
+        group->setCell(kKunitorisEnterFar, x & kKunitorisViewMask);
+        break;
+    case KunitorisSide_Left:
+        group->setStep(1, 0);
+        group->setCell(kKunitorisEnterNear, x & kKunitorisViewMask);
+        break;
+    default:    // KunitorisSide_Bottom
+        group->setStep(0, -1);
+        group->setCell(y & kKunitorisViewMask, kKunitorisEnterFar);
+        break;
+    }
+}
+
+int KunitorisGame::activeGroups() const
+{
+    int active = 0;
+    for (int i = 0; i < kKunitorisGroups; i++) {
+        if (m_groups[i].m_state != KunitorisCells_Empty)
+            active++;
+    }
+    return active;
+}
+
+void KunitorisGame::loseLives(int lives)
+{
+    if (m_lives > 0 && !m_cleared) {
+        m_lives -= lives;
+        if (m_lives < 0)
+            m_lives = 0;
+    }
+}
+
+void KunitorisGame::resetPlayerBlocks(KunitorisCells &cells)
+{
+    cells.release();
+    const int here[2] = { 0, 0 };
+    cells.add(new KunitorisBlock(m_cursor->m_cell, here, kKunitorisLift));
+}
+
+KunitorisGroup *KunitorisGame::detachPlayerBlocks(int dx, int dy)
+{
+    KunitorisCells &player = m_cells[m_cellsIndex];
+    const int count = player.m_blocks.m_count;
+    const int cx = m_cursor->m_cell[0];
+    const int cy = m_cursor->m_cell[1];
+    KunitorisGroup *group = freeGroup();
+    if (group == nullptr)
+        return nullptr;
+    for (int i = 0; i < count; i++) {
+        KunitorisBlock *b = player.block(i);
+        const int offset[2] = { b->refreshCell()[0] - cx, b->refreshCell()[1] - cy };
+        if (!group->hasOffset(offset))
+            group->add(new KunitorisBlock(group->m_cell, offset, kKunitorisLift));
+    }
+    group->m_step[0] = dx;
+    group->m_step[1] = dy;
+    group->m_cell[0] = cx;
+    group->m_cell[1] = cy;
+    return group;
+}
+
+// The player's blocks cross more than this many cells: they break off.
+constexpr int kKunitorisMaxSpan = 16;
+
+// FS2 0x002c9170 (hasBlockAt, release, offsetBounds and kunitorisPlay inline)
+// callcheck: operator_new, KunitorisBlock, pushBack (the new-expression and the inline add)
+// callcheck: clear, play (the inline release; kunitorisPlay)
+
+void KunitorisGame::absorb()
+{
+    KunitorisCells &player = m_cells[m_cellsIndex];
+    for (int i = 0; i < kKunitorisGroups; i++) {
+        KunitorisGroup *group = &m_groups[i];
+        const int state = group->m_state;
+        if (state == KunitorisCells_Empty || state == KunitorisCells_Shot || state == KunitorisCells_Sunk)
+            continue;
+        const int count = group->m_blocks.m_count;
+        bool touching = false;
+        for (int j = 0; j < count; j++) {
+            KunitorisBlock *b = group->block(j);
+            const int x = b->refreshCell()[0];
+            const int y = b->refreshCell()[1];
+            if (player.hasBlockAt(x, y)) {
+                touching = true;
+                break;
+            }
+        }
+        if (!touching)
+            continue;
+        // Each block joins where it was before the group's last move.
+        for (int j = 0; j < count; j++) {
+            KunitorisBlock *b = group->block(j);
+            const int x = b->refreshCell()[0] - group->m_moved[0];
+            const int y = b->refreshCell()[1] - group->m_moved[1];
+            if (!player.hasBlockAt(x, y)) {
+                const int offset[2] = { x - m_cursor->m_cell[0], y - m_cursor->m_cell[1] };
+                player.add(new KunitorisBlock(m_cursor->m_cell, offset, kKunitorisLift));
+            }
+        }
+        group->release();
+    }
+
+    int min[2], max[2];
+    player.offsetBounds(min, max);
+    if ((max[0] - min[0] > kKunitorisMaxSpan || max[1] - min[1] > kKunitorisMaxSpan) && breakOff())
+        kunitorisPlay(KunitorisSeSlot_Break, KunitorisSe_BreakOff);
+}
+
+// FS2 0x002c9720 (detachPlayerBlocks and resetPlayerBlocks inline)
+// callcheck: operator_new, KunitorisBlock, FUN_002c99e0, FUN_002cb010, FUN_002cb250 (hasOffset, add, sink)
+// callcheck: clear, pushBack (the inline release and add)
+
+bool KunitorisGame::breakOff()
+{
+    KunitorisCells &player = m_cells[m_cellsIndex];
+    if (player.m_blocks.m_count < 2)
+        return false;
+    KunitorisGroup *group = detachPlayerBlocks(0, 0);
+    if (group == nullptr)
+        return false;
+    group->sink();
+    resetPlayerBlocks(player);
+    return true;
+}
+
+// FS2 0x002c9a80 (detachPlayerBlocks, launch and resetPlayerBlocks inline)
+// callcheck: operator_new, KunitorisBlock, FUN_002c99e0, FUN_002cb010 (hasOffset, add)
+// callcheck: clear, pushBack (the inline release and add)
+
+void KunitorisGame::shoot(int dx, int dy)
+{
+    KunitorisCells &player = m_cells[m_cellsIndex];
+    if (player.m_blocks.m_count < 2)
+        return;
+    KunitorisGroup *group = detachPlayerBlocks(dx, dy);
+    if (group == nullptr)
+        return;
+    group->launch();
+    resetPlayerBlocks(player);
+}
+
+// FS2 0x002c8ff0
+
+void KunitorisGame::turnTouching()
+{
+    for (int i = 0; i < kKunitorisGroups - 1; i++) {
+        for (int j = i + 1; j < kKunitorisGroups; j++) {
+            KunitorisGroup *a = &m_groups[i];
+            KunitorisGroup *b = &m_groups[j];
+            if (a->m_state == KunitorisCells_Empty || a->m_state == KunitorisCells_Shot
+                || a->m_state == KunitorisCells_Sunk)
+                continue;
+            if (b->m_state == KunitorisCells_Empty || b->m_state == KunitorisCells_Shot
+                || b->m_state == KunitorisCells_Sunk)
+                continue;
+            if (a->m_moved[0] == b->m_moved[0] && a->m_moved[1] == b->m_moved[1] && a->touches(*b)) {
+                a->m_step[0] = a->m_moved[1];
+                a->m_step[1] = a->m_moved[0];
+            }
         }
     }
 }
@@ -1583,7 +2142,7 @@ static void kunitorisDrawBar(UiDrawer *drawer, float value, const UiVec4 *color)
 }
 
 static const UiVec4 kKunitorisDark = { 0.25f, 0.25f, 0.25f, 1.0f };    /* rodata 0x2fc010 */
-constexpr u_int kKunitorisBlinkBit = 2;     // _760's bit the blink bar reads
+constexpr u_int kKunitorisBlinkBit = 2;     // m_frame's bit the blink bar reads
 
 // FS2 0x002c8510
 // callcheck: operator_new, GsTexture, getItem, setTexture, setGsReg, setPrimColor, drawTexFlat (the inline kunitorisDrawBar)
@@ -1600,9 +2159,9 @@ void KunitorisGame::drawLivesBar()
 
 void KunitorisGame::drawBlinkBar()
 {
-    const float value = static_cast<float>(_764);
+    const float value = static_cast<float>(m_feverBar);
     if (0.0f < value)
-        kunitorisDrawBar(m_drawer, value, (_760 & kKunitorisBlinkBit) == 0 ? &kKunitorisDark : &kKunitorisGrey);
+        kunitorisDrawBar(m_drawer, value, (m_frame & kKunitorisBlinkBit) == 0 ? &kKunitorisDark : &kKunitorisGrey);
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -1832,7 +2391,7 @@ void KunitorisGame::draw(sceVif1Packet *packet, TexAreaList *texList)
     for (KunitorisActorList::Node *n = mine.m_blocks.m_head; n != nullptr; n = n->next)
         static_cast<KunitorisBlock *>(*n->item)->drawWithHighlight(m_drawer, KunitorisPass_Shadow, nullptr);
     for (int i = 0; i < kKunitorisGroups; i++) {
-        if (m_groups[i].m_active == 0)
+        if (m_groups[i].m_state == 0)
             continue;
         for (KunitorisActorList::Node *n = m_groups[i].m_blocks.m_head; n != nullptr; n = n->next)
             static_cast<KunitorisBlock *>(*n->item)->drawWithHighlight(m_drawer, KunitorisPass_Highlight, nullptr);
@@ -1844,7 +2403,7 @@ void KunitorisGame::draw(sceVif1Packet *packet, TexAreaList *texList)
     for (KunitorisActorList::Node *n = mine.m_blocks.m_head; n != nullptr; n = n->next)
         static_cast<KunitorisBlock *>(*n->item)->drawWithHighlight(m_drawer, KunitorisPass_Lifted, nullptr);
     for (int i = 0; i < kKunitorisGroups; i++) {
-        if (m_groups[i].m_active == 0)
+        if (m_groups[i].m_state == 0)
             continue;
         for (KunitorisActorList::Node *n = m_groups[i].m_blocks.m_head; n != nullptr; n = n->next)
             static_cast<KunitorisBlock *>(*n->item)->drawWithHighlight(m_drawer, KunitorisPass_Lifted, nullptr);
@@ -1911,10 +2470,325 @@ KunitorisGame::~KunitorisGame()
     delete m_drawer;
 }
 
-// ---- stubs (tools/reverse/stubgen.py) ----
+// ──────────────────────────────────────────────────────────────────────
+// KunitorisGame::update.
 
-// stub of FS2 0x002c64d0
-void KunitorisGame::update(GamePad *pad)
+constexpr int   kKunitorisMaxLives    = 80;             // the lives bar's 80 pixels
+constexpr int   kKunitorisFeverBar    = 80;
+constexpr float kKunitorisFeverStart  = 0.0030769231f;  // 0x3b49a634: a fever lasts 325 frames ..
+constexpr float kKunitorisFeverChain  = 0.00015384615f; // 0x392151c3: .. each piece cleared in it 1/6500 shorter
+constexpr int   kKunitorisMaxGroups   = 45;             // no new group from this many on
+constexpr int   kKunitorisBigClear    = 9;              // cleared clean with more cells: KunitorisScene_Clean
+
+// The lives a piece cleared gives back, by the cells put out in the drop
+// that cleared it (data 0x2fbf90, its count at sdata 0x31acc8).
+static const int kKunitorisClearLives[] = { 0, 4, 6, 8, 12, 16, 24, 32, 40 };
+static int sKunitorisClearLivesCount = 9;               /* sdata 0x31acc8 */
+
+constexpr u_int kPadTriangle = 1u << PadBit_Triangle;
+constexpr u_int kPadCircle   = 1u << PadBit_Circle;
+constexpr u_int kPadCross    = 1u << PadBit_Cross;
+constexpr u_int kPadSquare   = 1u << PadBit_Square;
+constexpr u_int kPadLeft     = 1u << PadBit_Left;
+constexpr u_int kPadRight    = 1u << PadBit_Right;
+
+// A frame: the timers, lives drained while no fever runs, groups coming in
+// and moving, the view scrolled by the d-pad, then a finished drop scored
+// or a button's action (Triangle turn, Square flip, Circle drop, Cross
+// shoot), the blocks and the cursor stepped and the fever run down.
+// FS2 0x002c64d0 (inline: activeGroups, freeGroup, spawnGroup, loseLives,
+// cellCount, updateBlocks, release, kunitorisPlay, KunitorisBoard::update)
+// callcheck: randNext2, FUN_002cd120, FUN_002c9170, FUN_002c8060, FUN_002c9a80, FUN_002c8ff0
+// callcheck: FUN_002c7dc0, FUN_002c7db0, FUN_002cb100, FUN_002c7c10, FUN_002c8b90, FUN_002cb0b0, FUN_002cb060, FUN_002cb2e0
+// callcheck: addCell, setStep, setCell, setTiles, selectPiece, play, stop, clear, operator_new, KunitorisBlock, pushBack, update
+
+bool KunitorisGame::update(GamePad *pad)
 {
-    YAMIPAN_STUB("KunitorisGame::update", 0x002c64d0);
+    if (m_paused)
+        return false;
+    m_ending.m_frame++;
+    if (m_ending.m_timer >= 0)
+        m_ending.m_timer++;
+    randNext2();
+    if (litPieces() == 0)
+        m_cleared = 1;
+    if (m_cleared)
+        return false;
+
+    // A life lasts m_drainPeriod frames, none is lost in a fever.
+    if (m_highlight != kKunitorisAllPieces) {
+        m_drainTimer--;
+        m_feverChain = 0;
+        if (m_drainTimer < 1) {
+            loseLives(1);
+            m_drainTimer = m_drainPeriod;
+        }
+    }
+    if (m_lives < 1) {
+        m_ending.setScene(KunitorisScene_Over);
+        return false;
+    }
+    absorb();
+    if (m_lives < 1)
+        return false;
+
+    // A new group every m_spawnPeriod frames (sooner in a fever), at once
+    // when none is left.
+    m_spawnTimer--;
+    if (m_highlight == kKunitorisAllPieces)
+        m_spawnTimer /= 2;
+    if (m_spawnTimer < 1 || activeGroups() == 0) {
+        if (activeGroups() < kKunitorisMaxGroups) {
+            KunitorisGroup *group = freeGroup();
+            if (group != nullptr) {
+                int kinds = sKunitorisShapeCount[0];
+                if (m_shapeCount < kinds)
+                    kinds = m_shapeCount;
+                spawnGroup(group, kinds);
+            }
+        }
+        m_spawnTimer = m_spawnPeriod;
+    }
+
+    // The groups move every m_stepPeriod frames (twice as often in a fever).
+    m_stepTimer--;
+    if (m_highlight == kKunitorisAllPieces)
+        m_stepTimer--;
+    const bool move = m_stepTimer < 1;
+    for (int i = 0; i < kKunitorisGroups; i++) {
+        KunitorisGroup &group = m_groups[i];
+        if (group.isEmpty())
+            continue;
+        group.step(move);
+        if (group.isGone())
+            group.release();
+    }
+    if (move) {
+        m_stepTimer = m_stepPeriod;
+        absorb();
+        turnTouching();
+    }
+
+    // The d-pad: a press takes the direction, it scrolls while held (on the
+    // pad's repeat) and lets go on release.
+    const u_int pressed = pad->m_pressed;
+    if (pressed & kPadUp)
+        m_heldDir = KunitorisDir_Up;
+    else if (pressed & kPadDown)
+        m_heldDir = KunitorisDir_Down;
+    else if (pressed & kPadLeft)
+        m_heldDir = KunitorisDir_Left;
+    else if (pressed & kPadRight)
+        m_heldDir = KunitorisDir_Right;
+    switch (m_heldDir) {
+    case KunitorisDir_Right:
+        if (!(pad->m_held & kPadRight))
+            m_heldDir = KunitorisDir_None;
+        break;
+    case KunitorisDir_Left:
+        if (!(pad->m_held & kPadLeft))
+            m_heldDir = KunitorisDir_None;
+        break;
+    case KunitorisDir_Down:
+        if (!(pad->m_held & kPadDown))
+            m_heldDir = KunitorisDir_None;
+        break;
+    case KunitorisDir_Up:
+        if (!(pad->m_held & kPadUp))
+            m_heldDir = KunitorisDir_None;
+        break;
+    }
+    int dx = 0;
+    int dy = 0;
+    const u_int repeat = pad->m_repeat;
+    switch (m_heldDir) {
+    case KunitorisDir_Right:
+        if (repeat & kPadRight)
+            dx = 1;
+        break;
+    case KunitorisDir_Left:
+        if (repeat & kPadLeft)
+            dx = -1;
+        break;
+    case KunitorisDir_Down:
+        if (repeat & kPadDown)
+            dy = 1;
+        break;
+    case KunitorisDir_Up:
+        if (repeat & kPadUp)
+            dy = -1;
+        break;
+    default:
+        if (repeat & kPadUp) {
+            m_heldDir = KunitorisDir_Up;
+            dy = -1;
+        } else if (repeat & kPadDown) {
+            m_heldDir = KunitorisDir_Down;
+            dy = 1;
+        } else if (repeat & kPadLeft) {
+            m_heldDir = KunitorisDir_Left;
+            dx = -1;
+        } else if (repeat & kPadRight) {
+            m_heldDir = KunitorisDir_Right;
+            dx = 1;
+        }
+        break;
+    }
+    m_scroll[1] += dy;
+    m_scroll[0] += dx;
+    if (m_scroll[0] < 0)
+        m_scroll[0] = m_level->width - 1;
+    if (m_level->width <= m_scroll[0])
+        m_scroll[0] = 0;
+    if (m_scroll[1] < 0)
+        m_scroll[1] = m_level->height - 1;
+    if (m_level->height <= m_scroll[1])
+        m_scroll[1] = 0;
+    // The groups stay on the board.
+    for (int i = 0; i < kKunitorisGroups; i++) {
+        if (!m_groups[i].isEmpty())
+            m_groups[i].scroll(-dx, -dy);
+    }
+    if (dx != 0 || dy != 0) {
+        kunitorisPlay(KunitorisSeSlot_Scroll, KunitorisSe_Cursor);
+        absorb();
+    }
+
+    KunitorisCells &dropped = m_cells[m_cellsIndex ^ 1];
+    const u_int droppedState = dropped.m_state;
+    if (droppedState == KunitorisCells_Gone) {
+        // The drop has landed: score it.
+        const int before = litPieces();
+        int misses;
+        int hits;
+        const int lit = clearUnder(dropped, &misses, &hits);
+        int points = hits;
+        int lives = 0;
+        if (m_highlight == kKunitorisAllPieces) {
+            const int after = litPieces();
+            if (after < before) {
+                lives = before - after * 2;
+                m_feverRate += kKunitorisFeverChain;
+                m_fever = 1.0f;
+                m_feverBar = kKunitorisFeverBar;
+                m_ending.setTiles(-1);
+                m_ending.setScene(KunitorisScene_Cheer);
+                m_feverChain++;
+            }
+            const int counted = hits;
+            points = hits + m_feverChain * hits * 2;
+            if (misses < hits)
+                points += (hits - misses) * 3;
+            hits = 0;
+            misses = 0;
+            points += counted * 5;
+        } else if (lit == 0) {
+            // m_highlight's piece is cleared.
+            lives = hits < sKunitorisClearLivesCount ? kKunitorisClearLives[hits]
+                                                     : kKunitorisClearLives[sKunitorisClearLivesCount - 1];
+            if (hits == cellCount(m_highlight) && misses == 0) {
+                lives *= 2;
+                if (hits > kKunitorisBigClear)
+                    m_ending.setScene(KunitorisScene_Clean);
+            }
+            points = hits * 4;
+            const int size = cellCount(m_highlight);
+            if (size < 4 || size > 10) {
+                if (size > 19 && (randNext2() & 0xf) == 1)
+                    m_ending.setScene(KunitorisScene_Big);
+            } else if ((randNext2() & 3) == 1) {
+                m_ending.setScene(KunitorisScene_Cheer);
+            }
+            m_ending.setTiles(-1);
+            if (hits == cellCount(m_highlight) && misses == 0) {
+                // Cleared in one clean drop: a fever, every lit piece flashes.
+                selectPiece(kKunitorisAllPieces);
+                m_feverRate = kKunitorisFeverStart;
+                m_fever = 1.0f;
+                m_feverBar = kKunitorisFeverBar;
+                m_ending.setScene(KunitorisScene_Cheer);
+                kunitorisPlayBgm(KunitorisSe_FeverBgm);
+            } else {
+                selectPiece(-1);
+            }
+        } else {
+            lives = (hits - misses) / 2;
+        }
+        if (lives < 0)
+            lives = 0;
+        if (m_lives > 0) {
+            m_lives += lives;
+            if (m_lives > kKunitorisMaxLives)
+                m_lives = kKunitorisMaxLives;
+        }
+        if (m_highlight != kKunitorisAllPieces)
+            loseLives(misses * 2 + 2);
+        if (points != 1 && misses == 0)
+            points *= 2;
+        if (m_highlight == kKunitorisAllPieces)
+            points *= 2;
+        m_score += points;
+        if (m_hiScore < m_score)
+            m_hiScore = m_score;
+        m_cells[m_cellsIndex ^ 1].release();
+        if (misses > 1)
+            m_ending.setScene(KunitorisScene_Miss);
+    } else {
+        KunitorisCells &player = m_cells[m_cellsIndex];
+        if (pressed & kPadTriangle) {
+            if (player.turn() > 1)
+                kunitorisPlay(KunitorisSeSlot_Turn, KunitorisSe_Turn);
+        } else if (pressed & kPadSquare) {
+            if (player.flip() > 1)
+                kunitorisPlay(KunitorisSeSlot_Turn, KunitorisSe_Flip);
+        } else if (pressed & kPadCircle) {
+            // Only once the last drop has been scored.
+            if (droppedState < KunitorisCells_Shot) {
+                player.drop(m_scroll);
+                kunitorisPlay(KunitorisSeSlot_Cursor, KunitorisSe_Drop);
+                m_cellsIndex ^= 1;
+                const int here[2] = { 0, 0 };
+                m_cells[m_cellsIndex].add(new KunitorisBlock(m_cursor->m_cell, here, kKunitorisLift));
+            }
+        } else if ((pressed & kPadCross) && droppedState < KunitorisCells_Shot) {
+            kunitorisPlay(KunitorisSeSlot_Decide, KunitorisSe_Shoot);
+            switch (m_heldDir) {
+            case KunitorisDir_Right: shoot(1, 0); break;
+            case KunitorisDir_Left:  shoot(-1, 0); break;
+            case KunitorisDir_Down:  shoot(0, 1); break;
+            case KunitorisDir_Up:    shoot(0, -1); break;
+            default:                 shoot(0, -1); break;
+            }
+        }
+    }
+
+    for (int i = 0; i < 2; i++)
+        m_cells[i].updateBlocks();
+    m_cursor->KunitorisActor::update();     // the base's body, not the cursor's slot
+    m_frame++;
+
+    // The fever runs down; at its end one piece flashes again.
+    if (m_highlight == kKunitorisAllPieces) {
+        m_fever -= m_feverRate;
+        bool burning;
+        if (m_fever > 0.0f) {
+            m_feverBar = static_cast<int>(m_fever * 80.0f);
+            if (m_feverBar > kKunitorisFeverBar)
+                m_feverBar = kKunitorisFeverBar;
+            burning = true;
+        } else {
+            m_feverBar = 0;
+            burning = false;
+        }
+        if (!burning) {
+            selectPiece(-1);
+            m_feverChain = 0;
+            kunitorisPlayBgm(KunitorisSe_SelectBgm);
+        }
+    }
+
+    if (m_lives < 1)
+        return false;
+    KunitorisBoard::update();               // inline in the ROM: every piece's colour stepped
+    return true;
 }
