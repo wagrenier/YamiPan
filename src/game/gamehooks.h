@@ -72,9 +72,7 @@ bool boxContainsPoint(const float m[4][4], const float p[4]);            // FS2 
 // What game/menuscene.cpp calls.
 // help<lang>.d2b at a page; always 0 (game/helpscreen.cpp).
 int  runHelpScreen(int page);                                            // FS2 0x002acff0
-// The mode behind the top menu's answer 10, in slot 3 (0x2c4320; 16 scored
-// entries of the save, unread): true when it changed the save.
-int  runExtraMode(int arg);                                              // FS2 0x002c42c0
+// runExtraMode is game/kunitoris.h.
 
 // The navi screen's answer: a node (stage in the low byte, these bits) or
 // one of the two below alone.

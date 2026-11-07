@@ -36329,6 +36329,102 @@
   "was": "FUN_002c42c0",
   "why": "runs 0x2c4320 in slot 3 and waits; the word it answers says the save changed (guess at the mode: 16 scored entries of the save's +0x46c / +0x4ac)"
  },
+ "002c4320": {
+  "name": "kunitorisThread",
+  "tag": "game-inferred",
+  "was": "FUN_002c4320",
+  "why": "the thread runExtraMode starts in slot 3: loads dataEU/kuniEU.pak (its SePlayer, the font), title, level select, a KunitorisGame on the stack per level, records the best score / clear in SaveData _46c / _4ac and sets the changed flag 0x31aed4 runExtraMode answers"
+ },
+ "002c4ee0": {
+  "name": "kunitorisEnding",
+  "tag": "game-inferred",
+  "was": "FUN_002c4ee0",
+  "why": "the ending: its own UiDrawer, BGM entry 10, 60 frames of KunitorisEnding::drawIntro scrolling up while the clear colour fades from 0x118dc1 to black, then KunitorisEnding::draw with a new tile set each 28 frames; skippable (Decide / Start) when a0 is 1 (the ENDING line), else the forced one after the 15th clear"
+ },
+ "002c53c0": {
+  "name": "kunitorisTitle",
+  "tag": "game-inferred",
+  "was": "FUN_002c53c0",
+  "why": "the title: kunitorisDrawTitle scrolled in from 0x100, then Start (flash 45 frames, 0) or Cancel (-1); 600 idle frames show kunitorisHowTo for 300"
+ },
+ "002c5550": {
+  "name": "kunitorisHowTo",
+  "tag": "game-inferred",
+  "was": "FUN_002c5550",
+  "why": "draws the pack's item 0x17 (256 x 224) until Start (1) or frames frames pass (0; 0 frames: until Start); the title's attract and the in-game Start pause"
+ },
+ "002c5780": {
+  "name": "kunitorisDrawTitle",
+  "tag": "game-inferred",
+  "was": "FUN_002c5780",
+  "why": "draws the pack's items 0x18 (the title, 256 x 224 at y offset - 128) and 0x19 (128 x 16 at offset + 40, hidden when frame & 3 == 1) through a temporary GsTexture each"
+ },
+ "002c5a70": {
+  "name": "kunitorisLevelSelect",
+  "tag": "game-inferred",
+  "was": "FUN_002c5a70",
+  "why": "= KUNITORIS = and the LEVEL 1..15 / JAPAN / ENDING list (0x2fc340): 3 more per 3 levels cleared, all 17 at 15; Up / Down move, Decide answers the line, Cancel -1; cleared lines get the c mark"
+ },
+ "002c5ea0": {
+  "name": "KunitorisGame::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002c5ea0",
+  "why": "once a frame into packet list 13 with its TexArea list (kunitorisThread)"
+ },
+ "002c64d0": {
+  "name": "KunitorisGame::update",
+  "tag": "game-inferred",
+  "was": "FUN_002c64d0",
+  "why": "once a frame with GameSystem's pad 0 (+4) before draw (kunitorisThread)"
+ },
+ "002c8640": {
+  "name": "KunitorisGame::KunitorisGame",
+  "tag": "game-inferred",
+  "was": "FUN_002c8640",
+  "why": "kunitorisThread's stack object (EE 0x790; vptrs 0x319f60 / 0x319fd0 / 0x319f80 at +0x18 by level): a1 the level's best score, a2 the level"
+ },
+ "002c9de0": {
+  "name": "KunitorisEnding::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002c9de0",
+  "why": "kunitorisEnding's loop after the intro: f12 0, f13 -90, a0 the ending state, a1 the drawer"
+ },
+ "002ca330": {
+  "name": "KunitorisEnding::drawIntro",
+  "tag": "game-inferred",
+  "was": "FUN_002ca330",
+  "why": "kunitorisEnding's first 60 frames: f12 / f13 the offset (0, -1.5 per frame), a0 the ending state, a1 the drawer"
+ },
+ "002ca790": {
+  "name": "KunitorisEnding::setTiles",
+  "tag": "game-inferred",
+  "was": "FUN_002ca790",
+  "why": "timer +8 to 0, the three tiles +0x10..+0x18 to a1 (or random % 63 when negative), each tile's uv rows 1/64 apart in the table 0x2fc2a0"
+ },
+ "002cca40": {
+  "name": "KunitorisGame::start",
+  "tag": "game-inferred",
+  "was": "FUN_002cca40",
+  "why": "called once after loadLevel with -1 before the frame loop (kunitorisThread)"
+ },
+ "002cd390": {
+  "name": "KunitorisGame::loadLevel",
+  "tag": "game-inferred",
+  "was": "FUN_002cd390",
+  "why": "takes a level file (+0x2c), its piece count (+0x30, file +0xc) and builds +0x34 as new[] of 0x38-byte pieces from the file's table +0x2010; f12 the cell size (8.0)"
+ },
+ "002cd9a0": {
+  "name": "kunitorisPrintf",
+  "tag": "game-inferred",
+  "was": "FUN_002cd9a0",
+  "why": "vsprintf into 600 bytes, widened with wstrFromAscii into the font's text, drawn by UiDrawer::drawText in a 256-pixel box from (x - 128, y - 128), grey 0.5"
+ },
+ "002cdb20": {
+  "name": "kunitorisBackThread",
+  "tag": "game-inferred",
+  "was": "FUN_002cdb20",
+  "why": "slot 4 beside kunitorisThread: each frame gfxSetClearColor from the five sbss bytes 0x31accc / 0x31aeb0..bc, SePlayer::update of the minigame's player 0x31aec4 and the six handles at 0x599800 cleared once they stop"
+ },
  "002ce0c0": {
   "name": "SmokeFog::setActiveFor",
   "tag": "game-inferred",

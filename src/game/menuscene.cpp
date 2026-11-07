@@ -9,6 +9,7 @@
 #include "game/gamesystem.h"
 #include "game/gfxtarget.h"
 #include "game/heap.h"
+#include "game/kunitoris.h"
 #include "game/memcard.h"
 #include "game/progress.h"
 #include "game/screen.h"
