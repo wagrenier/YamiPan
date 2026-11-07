@@ -38129,6 +38129,12 @@
   "was": "FUN_002e2920",
   "why": "rena's TIM2 texture (rena_2d_texture_tim2.cpp, message 0x30fdd0 in its load 0x2e26c0): stores vtable 0x31a7c0 at +0x44, clears +8 / +0xc / +0x10 / +0x3c / +0x40, loads the image; GsTexture's base (called first by its ctor, 21 callers)"
  },
+ "002e2970": {
+  "name": "RenaCamera::RenaCamera",
+  "tag": "game-inferred",
+  "was": "FUN_002e2970",
+  "why": "stores vtable 0x31a418 (vptr +0xc4), sceVu0ViewScreenMatrix at aspect 1.1666 into its screen, unit view, view*screen; the rena base of DrawSysCamera (game/drawsys.cpp writes it as DrawSysCamera's ctor), first function of rena's run 0x2e2970"
+ },
  "002e2a60": {
   "name": "boxClipTest",
   "tag": "game-inferred",
