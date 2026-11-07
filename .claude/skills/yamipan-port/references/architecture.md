@@ -2564,3 +2564,28 @@ Two effects that hang from a character's `bn_head` and change the frame's light 
 - **`SmokeFog`** (`hatsu_fog`, EE 0x38): the first I_HATUEN made on a stage builds it, eight fogs, stopped. Once, the active characters take them in list order, skipping kinds 0xe, F_YRT and F_SRT (only eight are used, the list is still walked to its end). Each frame a thrown item that `isSmoking` and `isInSmokeArea` joins the list of up to five. A fog runs while its owner is within `smokeRange` of a listed flare; it is shown for the character the view is on, and then the frame's forced light set is `sceneRenderGroup(2)`. **The ROM's slip, kept:** `show` is not reset between fogs in `updateRange`, so the fogs after the view's are shown too.
 - **`GlowFog`** (`koh_fog`, EE 0x14): built by the first character of kind 5 or 0xc, always hung on the player's head, each frame (`updateGlowFog`). Such a character in BrainState 2..5 runs its own `m_glow` (koh, at bn_spine_base) while it has endurance, and counts for the nearest distance to the player. **So until this file `m_glow` never ran.** The fog runs while the view is the player's, no owned view has a target and the nearest is under 500; the light set is then `sceneRenderGroup(1)`.
 - **Which stages:** a 22 s sweep of part 1 of stages 1..30 with temporary logs: smoke set on 17 (7 SMOKE_A boxes) and 20 (2 boxes); stage 14 has 2 boxes and no I_HATUEN in those seconds; glow fog on 18, 21, 26, 28, 29. Stage 17's boxes, min .. max: (5406, 7826, -44)..(6438, 8845, 106); (2793, -222, -1039)..(4993, 9778, 0); (1373, 6620, -626)..(3373, 8120, 374); (2201, 4015, -503)..(3201, 4815, 0); (1466, 1035, -503)..(3266, 1835, 297); (6074, 3831, -10)..(6883, 5835, 190); (6852, 1394, 164)..(9457, 2605, 364).
+
+## The sky mist (game/skymist.cpp 0x2ad030..0x2afc20, 2026-11-07, batches 201-202, `verify`)
+
+StageScene +0xa4 (seeded as `MenuProgHolder`, now `SkyMistHolder`; `createSkyMist` 0x19af40 with init pack
+item 6, a 128 x 256 TIM2 whose two 128 x 128 halves are the cells, white, the shape in the alpha) holds a
+0x1cc0-byte `SkyMist` (ctor 0x2aef00): faint puffs laid flat in a plane above the eye (eye z + height +
+a layer 1 lower per puff drawn), each a quad of half-diagonal (size cos, size sin), coloured through four
+keys by age (`MistKeys`, ten sets each at 0x30ab00 / 0x30aec0, the ctor writes their inverses into the
+ROM data) and faded by its squared distance to the eye over the radius squared. Per stage
+(`getStageSelect()->stage`): 0x1b none; 0x16 / 0x17 / 0x19 / 0x5d radius 1000, height 700, list 5
+(TEST z GEQUAL), the others radius 2000, height 1000, list 3 after the far models (TEST z ALWAYS). Most
+stages drift: 143 puffs (70 on 0x16 / 0x17) and 8 wisps (one every 32 frames) placed at radius..3 radius
+in the world and moved along the unit xy direction from the eye to a per-stage point (`mistTarget`) times
+3 (near stages) or 1 (-1.8 on 0x1c). 0x19 / 0x5d swirl instead: up to 3 spawns a frame on the radius
+circle around the point (0, 0, 0 there), pulled in at 800 / s, slowing x0.97 within 750; their
+`invLife` is never set, so their colour stays at key 0. The ROM's GS packet (a REGLIST fan per puff,
+projected on the scratchpad with camera +0x280) is drawn on the host as view-space quads of the effect
+pass (`renaBeginEffects` with camera +0x200). Its tests are kept: alpha below 2, any corner past w 10000,
+a corner off the GS window (x or y not in (0, 4095]) before any near one, every point of a cut puff: no
+puff; corners nearer than w 500 are cut there (0x2ae200 and three cases, one polygon cut on the host).
+**`mistWrap` 0x2af6b0 is broken in the ROM:** it divides 0.5 by v, not by the period, so an offset past
+the radius always comes back as v + 2 radius; kept as written. **Seen (stage 7, a temporary harness,
+removed):** 116..123 puffs and 3..4 wisps alive; about 0.4 puffs a frame pass the tests in the
+default view (eye 8414, 2633, 289), and the frames with and without the mist (and with the colour forced
+bright) look the same: the puffs that pass lie above the frame.

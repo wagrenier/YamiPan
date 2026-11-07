@@ -28,10 +28,6 @@
 // ---- stubs (tools/reverse/stubgen.py) ----
 
 // stub of FS2 0x002ad070
-MenuProgHolder::~MenuProgHolder()
-{
-    YAMIPAN_STUB("MenuProgHolder::~MenuProgHolder", 0x002ad070);
-}
 
 // stub of FS2 0x00207ef0
 // stub of FS2 0x00207ea0
@@ -91,17 +87,8 @@ int runExtraMode(int arg)
 }
 
 // stub of FS2 0x002acff0
-int runHelpScreen(int page)
-{
-    YAMIPAN_STUB("runHelpScreen", 0x002acff0);
-    return {};
-}
 
 // stub of FS2 address unknown (0 candidates)
-MenuProgHolder::MenuProgHolder(void const*, int)
-{
-    YAMIPAN_STUB("MenuProgHolder::MenuProgHolder", 0x00000000);
-}
 
 // stub of FS2 address unknown (0 candidates)
 
@@ -141,10 +128,6 @@ void StageObject::onViewTop()
 
 // stub of FS2 0x00239bb0
 // stub of FS2 0x002ad030
-void MenuProgHolder::draw(float deltaSeconds, GamePacketManager *packets, StageObject *camera)
-{
-    YAMIPAN_STUB("MenuProgHolder::draw", 0x002ad030);
-}
 
 // stub of FS2 0x002078d0
 // stub of FS2 0x00207500

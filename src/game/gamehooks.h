@@ -69,7 +69,7 @@ bool boxContainsPoint(const float m[4][4], const float p[4]);            // FS2 
 // The resident menu pack is game/menupack.h; loadInitPack game/gamepaths.h.
 
 // What game/menuscene.cpp calls.
-// help<lang>.d2b at a page; always 0.
+// help<lang>.d2b at a page; always 0 (game/helpscreen.cpp).
 int  runHelpScreen(int page);                                            // FS2 0x002acff0
 // The mode behind the top menu's answer 10, in slot 3 (0x2c4320; 16 scored
 // entries of the save, unread): true when it changed the save.
@@ -101,7 +101,7 @@ enum InitPackItem
     InitItem_Shadow    = 3,     // shadow_00
     InitItem_Fill      = 4,     // the screen fills' image
     InitItem_PartyImage = 5,    // StageFiles::loadList: StageParty::setImage
-    InitItem_MenuProg  = 6,     // StageScene::createMenuProg
+    InitItem_SkyMist   = 6,     // StageScene::createSkyMist: the mist's sheet
     InitItem_MenuImages = 7,    // 7..0xc: StageFiles::loadList, MenuProgSet::load
     InitItem_PartyImages = 0xd, // 0xd..0x10: StageParty::addImage
     InitItem_ItemSheet = 0x11,  // UiItemList::setSheet
@@ -2899,16 +2899,7 @@ protected:
     u_char m_hasImage = 0;      // FS2 +0x20
 };
 
-// +0xa4 / +0xa8: menu program holders (beside PrgMcCard), set outside the
-// ctor. layout: host.
-struct MenuProgHolder
-{
-    // A new 0x1cc0-byte program object (0x2aef00) on the init pack's item.
-    MenuProgHolder(const void *data, int stage);                         // FS2 0x002ad100
-    ~MenuProgHolder();                                                   // FS2 0x002ad070: deleting
-    // The program's frame (on the scratchpad stack in the ROM).
-    void draw(float deltaSeconds, GamePacketManager *packets, StageObject *camera); // FS2 0x002ad030
-};
+// +0xa4: SkyMistHolder is game/skymist.h.
 
 // The frame-buffer filter of the view cameras and event d0101: passes
 // times over the w x h frame of env, block the VRAM block (32-block

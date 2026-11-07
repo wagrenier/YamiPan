@@ -3760,7 +3760,7 @@
 /* 0019ae90 00000008 */ StageScene::addAbBox(){}  // game
 /* 0019aea0 00000090 */ StageScene::getFloor(){}  // game
 /* 0019af30 00000008 */ StageScene::addFloorBox(){}  // game
-/* 0019af40 00000068 */ StageScene::createMenuProg(){}  // game
+/* 0019af40 00000068 */ StageScene::createSkyMist(){}  // game
 /* 0019afb0 000001cc */ StageScene::updateSmokeFog(){}  // game
 /* 0019b180 00000028 */ StageScene::addSmokeSource(){}  // game
 /* 0019b1b0 00000038 */ StageScene::createSmokeFog(){}  // game
@@ -8319,33 +8319,38 @@
 /* 002acf90 0000005c */ McDevice::McDevice(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/helpscreen.cpp
 // *****************************************************************************
 
 /* 002acff0 00000040 */ runHelpScreen(){}  // game
-/* 002ad030 0000003c */ MenuProgHolder::draw(){}  // game
-/* 002ad070 00000084 */ MenuProgHolder::~MenuProgHolder(){}  // game
-/* 002ad100 00000060 */ MenuProgHolder::MenuProgHolder(){}  // game
-/* 002ad160 000000e8 */ FUN_002ad160(){}
-/* 002ad250 00000430 */ FUN_002ad250(){}
-/* 002ad680 00000010 */ FUN_002ad680(){}
-/* 002ad690 00000008 */ FUN_002ad690(){}
-/* 002ad6a0 00000008 */ FUN_002ad6a0(){}
-/* 002ad6b0 00000158 */ FUN_002ad6b0(){}
-/* 002ad810 0000045c */ FUN_002ad810(){}
-/* 002adc70 000004e4 */ FUN_002adc70(){}
-/* 002ae160 00000098 */ FUN_002ae160(){}
-/* 002ae200 00000064 */ FUN_002ae200(){}
-/* 002ae270 000001f0 */ FUN_002ae270(){}
-/* 002ae460 00000210 */ FUN_002ae460(){}
-/* 002ae670 00000244 */ FUN_002ae670(){}
-/* 002ae8c0 00000090 */ FUN_002ae8c0(){}
-/* 002ae960 00000354 */ FUN_002ae960(){}
-/* 002aecc0 0000023c */ FUN_002aecc0(){}
-/* 002aef00 000007a8 */ FUN_002aef00(){}
-/* 002af6b0 00000058 */ FUN_002af6b0(){}
-/* 002af710 00000288 */ FUN_002af710(){}
-/* 002af9a0 00000280 */ FUN_002af9a0(){}
+
+// *****************************************************************************
+// FILE -- game/skymist.cpp
+// *****************************************************************************
+
+/* 002ad030 0000003c */ SkyMistHolder::draw(){}  // game
+/* 002ad070 00000084 */ SkyMistHolder::~SkyMistHolder(){}  // game
+/* 002ad100 00000060 */ SkyMistHolder::SkyMistHolder(){}  // game
+/* 002ad160 000000e8 */ SkyMist::drawSwirl(){}  // game
+/* 002ad250 00000430 */ SkyMist::putPuff(){}  // game
+/* 002ad680 00000010 */ mistPutXyz(){}  // game
+/* 002ad690 00000008 */ mistMaxf(){}  // game
+/* 002ad6a0 00000008 */ mistMinf(){}  // game
+/* 002ad6b0 00000158 */ SkyMist::drawDrift(){}  // game
+/* 002ad810 0000045c */ SkyMist::putWrappedPuff(){}  // game
+/* 002adc70 000004e4 */ SkyMist::draw(){}  // game
+/* 002ae160 00000098 */ MistPuff::color(){}  // game
+/* 002ae200 00000064 */ SkyMist::clipPuff(){}  // game
+/* 002ae270 000001f0 */ SkyMist::clipPuff3(){}  // game
+/* 002ae460 00000210 */ SkyMist::clipPuff2(){}  // game
+/* 002ae670 00000244 */ SkyMist::clipPuff1(){}  // game
+/* 002ae8c0 00000090 */ mistClipToNear(){}  // game
+/* 002ae960 00000354 */ SkyMist::stepSwirl(){}  // game
+/* 002aecc0 0000023c */ SkyMist::stepDrift(){}  // game
+/* 002aef00 000007a8 */ SkyMist::SkyMist(){}  // game
+/* 002af6b0 00000058 */ mistWrap(){}  // game
+/* 002af710 00000288 */ SkyMist::spawnWisp(){}  // game
+/* 002af9a0 00000280 */ SkyMist::spawnPuff(){}  // game
 
 // *****************************************************************************
 // FILE -- game/stageresult.cpp

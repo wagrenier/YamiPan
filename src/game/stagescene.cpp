@@ -7,6 +7,7 @@
 #include "game/menuprogset.h"
 #include "game/playermotion.h"
 #include "game/scenerender.h"
+#include "game/skymist.h"
 #include "game/stageparticle.h"
 #include "game/stageparty.h"
 #include "game/stagescene.h"
@@ -413,7 +414,7 @@ StageObject *StageScene::getTopView()
 // The ROM's +0x124 second array is freed from 0x10 bytes before it
 // (CodeWarrior's array header); the host frees what it allocated.
 // FS2 0x0019bbe0
-// callcheck: ~StageObjectList, ~ScenePairTable, ~SceneRecordBuckets, ~StageNodeTree, ~StageSound, ~DemoStream, ~SceneRender, ~RumbleList, ~Clock, ~MenuProgHolder, ~MenuProgSet, ~AreaGrid, ~SmokeFog, ~StageParty, ~ScenePool, ~PauseMenuState, ~SceneBoxList, ~SceneNoiseList, ~StageAlert, ~AreaClip, ~StageMission, ~SceneDirector, ~DaylightFilm, operator_delete, operator_delete[] (the delete-expressions; the printer through its virtual dtor)
+// callcheck: ~StageObjectList, ~ScenePairTable, ~SceneRecordBuckets, ~StageNodeTree, ~StageSound, ~DemoStream, ~SceneRender, ~RumbleList, ~Clock, ~SkyMistHolder, ~MenuProgSet, ~AreaGrid, ~SmokeFog, ~StageParty, ~ScenePool, ~PauseMenuState, ~SceneBoxList, ~SceneNoiseList, ~StageAlert, ~AreaClip, ~StageMission, ~SceneDirector, ~DaylightFilm, operator_delete, operator_delete[] (the delete-expressions; the printer through its virtual dtor)
 
 StageScene::~StageScene()
 {
@@ -443,7 +444,7 @@ StageScene::~StageScene()
     delete clock;
     if (screenFill != nullptr)
         screenFill->destroy();
-    delete menuProg;
+    delete skyMist;
     delete menuProgs;
     for (int i = 0; i < StageArea_Count; i++)
         delete areas[i];
@@ -584,7 +585,7 @@ StageScene::StageScene(bool isSubScene, StageSound *sound)
     smokeFog = nullptr;
 
     screenFill = new ScreenFill(kScreenFillRgba, kScreenX, kScreenY, kScreenW, kScreenH);
-    menuProg   = nullptr;
+    skyMist    = nullptr;
     menuProgs  = nullptr;
     printer    = new WideFontPrinter(kScreenX, kScreenY);
     inFrame    = 0;
@@ -2404,16 +2405,16 @@ void StageFiles::loadCommon()
         scene->party->setFillImage(image);
     scene->screenFill->setImage(image);
 
-    scene->createMenuProg(getInitPackItem(InitItem_MenuProg));
+    scene->createSkyMist(getInitPackItem(InitItem_SkyMist));
 }
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x0019af40
-// callcheck: operator_new, getStageSelect, MenuProgHolder::MenuProgHolder
+// callcheck: operator_new, getStageSelect, SkyMistHolder::SkyMistHolder
 
-void StageScene::createMenuProg(const void *data)
+void StageScene::createSkyMist(const void *data)
 {
-    menuProg = new MenuProgHolder(data, getStageSelect()->stage);
+    skyMist = new SkyMistHolder(data, getStageSelect()->stage);
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -3304,8 +3305,8 @@ void StageScene::draw(StageObject *active)
     perfMark(PerfMeterColour_White, "rena draw");
 
     nodeTree->draw(packets, active);
-    if (menuProg != nullptr)
-        menuProg->draw(clock->getDeltaSeconds(), packets, active);
+    if (skyMist != nullptr)
+        skyMist->draw(clock->getDeltaSeconds(), packets, active);
 
     if (!isSubScene) {
         drawViewFilter(packets, active);

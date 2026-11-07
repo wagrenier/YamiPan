@@ -555,6 +555,15 @@
    "status": "verify",
    "why": "One object file: the global heap allocator (Heap 0x1037c0..0x1046b0) and the game RNG (0x1046b0..0x104b40). Their data sit together too: sdata 0x31a880..0x31a88c (the image-end / stack / heap-size words only initGlobalHeap reads, then the LCG state), bss 0x329970 (gGlobalHeap, 0x44) then 0x3299c0 (the 97-word RNG table), sbss 0x31ad80 (the RNG index). 0x104b40 / 0x104be0 are MSL __destroy_new_array / __destroy_arr: the MSL lib_range now starts at 0x104b40 (batch 031)."
   },
+  "game/helpscreen.cpp": {
+   "ranges": [
+    [
+     "002acff0",
+     "002ad030"
+    ]
+   ],
+   "why": "runHelpScreen alone: help<lang>.d2b through runLayoutFile, called by the menus; between game/memcard.cpp and the sky mist, nothing shares its subject"
+  },
   "game/itemphysics.cpp": {
    "notes": "All of 0x23c010..0x23de20, batch 187 (draw renamed endFrame; getNodeFrame, getMeanVelocity, keepsMoving, placeNodes). New file game/itemphysics.h holds the class. Proved by new itemcmp.py: 20 lives, 6046 ops, 8946 rays, 115 landings, 12 rests, 0 differences; plant 1158. Seen with a temporary harness, removed: YAMIPAN_TELEPORT=2, LW_HOCHO forced 90 over the path falls from z 122.8 to 37.8, rests, lies flat, progress/20261106-item-knife-landed.png; beside the player the game's Pick up appears. Not seen: a real throw or drop, a thrown item (stage 2 loads none), its touch sphere, the landing sound. Next: a stage with a thrown item and the throw from ThrowLink. One deviation: endFrame returns early when link 0 is null (under two nodes), where the ROM reads through null. README.md line 110 holds a NUL byte, older than this run.",
    "ranges": [
@@ -1761,6 +1770,24 @@
    ],
    "status": "verify",
    "why": "SoundTrack (fsm subtitles + StDT stream table over SoundStream) and SePlayer (the SEDT effect player): one class pair from SoundTrack::setAttr to SePlayer::update; after it 0x2937e0 starts an ELEVATOR2 stage object"
+  },
+  "game/skymist.cpp": {
+   "notes": "Was the frontier's unassigned@002acff0 (split: game/helpscreen.cpp holds runHelpScreen). Batches 201-202. Drawn through renaBeginEffects and YamiPan_ModelDrawQuad in view space; the ROM's GS fan, scratchpad copies and clip cases are folded (callcheck notes). Seen on stage 7 (YAMIPAN_TELEPORT=7, temporary harness removed): 116..123 puffs alive, about 0.4 a frame pass the ROM's tests, nothing visible in the shots even with the colour forced bright, so verify, not done. mistWrap 0x2af6b0 is the ROM's slip (v + 2 radius past the radius), kept. Doubts in open-items.md (r)..(u): list 3 has no depth test in the ROM, the host's effect pass tests depth. Next: look at stage 0x16 or 0x17 (near, with depth) or a view looking up; a ROM-vs-host comparison of 0x2adc70 in the style of sightcmp.py would prove it.",
+   "ranges": [
+    [
+     "002ad030",
+     "002afc20"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-07 06:33",
+     "status": "verify",
+     "summary": "the sky mist: SkyMist (ctor, drift and swirl steps, spawns, draw with the ROM's tests and near cut as view-space effect quads) and its holder, 23 functions; MenuProgHolder renamed SkyMistHolder"
+    }
+   ],
+   "status": "verify",
+   "why": "SkyMistHolder (StageScene +0xa4) and the SkyMist it holds: ctor 0x2aef00, steps, spawns, draw and its clip helpers, contiguous up to game/stageresult.cpp 0x2afc20"
   },
   "game/sldi.cpp": {
    "notes": "Cut out of unassigned@002c42a0 and pinned 0x2d0a10-0x2d0d10; no new names, no Ghidra change. Scratch test: all 114 SLDI files on the disc unpack to the header size with nothing written past it, each starts with pak, and in place at the end of a 0x1800000 block gives the same bytes. Temporary trace in the New Game run: size 11396480, pak variant 1 with 159 items. Nothing on screen shows it yet: the run ends as before, exit 0xC0000005 with StageObject::getMatrix the last stub (gdb not run, fault location carried from the libmpeg run). Item readers such as ScenePool::setImage and StageParty::setImage are still stubs, so what they do with the data is unchecked. Guesses: the file name and the single-function file, by position only. Next: unassigned@0017fce0.",
