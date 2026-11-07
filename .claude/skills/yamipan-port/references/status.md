@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 08:11 at commit `ae35200` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 08:36 at commit `c36e451` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5575**; stubs: **36**
+- reconstructed FS2 functions: **5596**; stubs: **35**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -163,14 +163,14 @@ Least-named game-code regions (64 KB blocks):
 | `src/rx/rxthread.c` | 53 | 0 |
 | `src/sdpr2/sdpr2.c` | 36 | 0 |
 | `src/sdpr2/sdpr2drv.c` | 30 | 0 |
-| `src/sdpr2/sdpr2pair.c` | 0 | 1 |
+| `src/sdpr2/sdpr2pair.c` | 21 | 0 |
 | `src/sdpr2/sdpr2single.c` | 24 | 0 |
 | `src/sound/sound.cpp` | 97 | 0 |
 
 ## Translation units (one session each: `tus.py`)
 
-- 214 TUs: todo 71, partial 18, verify 126, done 46
-- next: **sdpr2/sdpr2pair.c** (frontier score 7)
+- 214 TUs: todo 70, partial 18, verify 127, done 46
+- next: **unassigned@0020c940** (frontier score 7)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -292,6 +292,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `sdk/mcerror.cpp` 0/1 -- Pinned 0x121b80..0x121ef0 as sdk/mcerror.cpp (read as libmc's: between the read-fast tail and libc abort, maps commands FS2 never issues). McCmd and McErrno in 
 - verify: `sdpr2/sdpr2.c` 36/36 -- All 36 functions written (0x1681c0..0x16c870), no new names, no Ghidra change. sdpr2.h is the full header: Sdpr2Type (19-slot function table, layout host), Sdpr
 - verify: `sdpr2/sdpr2drv.c` 30/30 -- All 27 functions plus 3 starts Ghidra had swallowed (batch 203: sdpr2DrvRegister 0x1700d0, sdpr2DrvUnregister 0x1700f8, sdpr2SeDrvUninstall 0x1712e0; created an
+- verify: `sdpr2/sdpr2pair.c` 21/21 -- Code complete against the ROM asm; sound only, nothing on screen shows it (smoke run reaches the language select as before, sdpr2PairInit no longer a stub). ROM
 - verify: `sdpr2/sdpr2single.c` 24/24 -- All 24 functions written (sdpr2Single* type table filled in sdpr2SingleInit, sdpr2CalcPan / CalcPanDeg / CalcPanVolumes / UnwrapAngle / CalcLevels) plus data 0x
 - verify: `sound/sound.cpp` 97/98 -- All 98 of 0x144080..0x148db0 written, one file, no Ghidra change (batch 013 names held). New src/sound/sound.h takes the sound stand-ins out of game/gamehooks.h
 - verify: `unassigned@00116fb8` 0/0 -- This key is empty now: its whole run is two lib_ranges (architecture.md Address map, naming table row batch 025). Game code calling __extendsfdf2 / __cmpdf2 / _
@@ -301,6 +302,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 08:36 `sdpr2/sdpr2pair.c` verify: SDPR2 two-voice pair type: all 21 functions reconstructed (pan, turn with voice flip, detune countdown, Init/Exit, detune table 0x2f5fa0)
 - 2026-11-07 08:10 `rx/filehost.c` verify: rx host0: driver: all 12 functions reconstructed from FS2 (RosePan's host driver, FS2's file/line open-failure message)
 - 2026-11-07 07:59 `rx/filehdd.c` verify: rx HDD driver: all 13 functions reconstructed from FS2 (identical to RosePan's rxfile.cpp HDD section)
 - 2026-11-07 07:51 `game/gadgetview.cpp` verify: The gadget views: SigLamp and the number-lock view as handle and body (SceneOwnedObject with 15 forwarders, GadgetView with the pairs and the look, SigLampView,
@@ -308,22 +310,21 @@ Recent sessions:
 - 2026-11-07 07:00 `sdpr2/sdpr2drv.c` verify: reconstruct 30 functions: the SDPR2 driver layer and the SE driver (verify)
 - 2026-11-07 06:49 `sdpr2/sdpr2single.c` verify: SDPR2 one-voice type and the shared pan maths: all 24 functions, the pan / spread tables from the ROM
 - 2026-11-07 06:35 `game/helpscreen.cpp` verify: runHelpScreen alone: help<lang>.d2b through runLayoutFile, always 0 (written in the sky mist's commit)
-- 2026-11-07 06:33 `game/skymist.cpp` verify: the sky mist: SkyMist (ctor, drift and swirl steps, spawns, draw with the ROM's tests and near cut as view-space effect quads) and its holder, 23 functions; Men
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@0020c940` | partial | 1/1/2 | 0.8 | 7 | 0 |
-| `unassigned@002ec110` | todo | 0/0/1 | 0.1 | 7 | 0 |
 | `unassigned@002160a0` | todo | 0/0/7 | 0.1 | 7 | 0 |
-| `unassigned@002b6b90` | partial | 1/0/7 | 6.5 | 7 | 0 |
-| `unassigned@002849c0` | todo | 0/1/5 | 7.4 | 7 | 1 |
+| `unassigned@0020c940` | partial | 1/1/2 | 0.8 | 7 | 0 |
 | `unassigned@0029f2a0` | todo | 0/2/2 | 0.6 | 7 | 0 |
-| `sdpr2/sdpr2pair.c` | todo | 0/1/21 | 7.0 | 7 | 1 |
+| `unassigned@002b6b90` | partial | 1/0/7 | 6.5 | 7 | 0 |
+| `unassigned@002ec110` | todo | 0/0/1 | 0.1 | 7 | 0 |
+| `unassigned@002849c0` | todo | 0/1/5 | 7.4 | 7 | 1 |
 | `unassigned@002cf510` | todo | 0/1/1 | 0.1 | 6 | 1 |
+| `unassigned@00214a70` | todo | 0/1/2 | 0.6 | 5 | 0 |
+| `unassigned@0020acb0` | partial | 3/5/11 | 1.3 | 5 | 0 |
 | `unassigned@00282da0` | partial | 11/0/18 | 3.0 | 5 | 0 |
 | `unassigned@002b22f0` | todo | 0/3/35 | 5.1 | 5 | 0 |
-| `unassigned@0020acb0` | partial | 3/5/11 | 1.3 | 5 | 0 |
-| `unassigned@00214a70` | todo | 0/1/2 | 0.6 | 5 | 0 |
+| `unassigned@00177d00` | partial | 11/0/47 | 7.7 | 4 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
