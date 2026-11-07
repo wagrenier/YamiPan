@@ -22,7 +22,7 @@
 #include "sdk/scetypes.h"
 
 class GamePacketManager;        // game/gamepacket.h
-class GsRegionAlloc;            // game/gfxtarget.h
+class GsRegionAlloc;            // rena/rena_2d_texture_vram.h
 class Tim2Texture;              // game/gsutil.h
 struct ModelInstance;           // game/gamehooks.h
 struct ModelSurface;            // game/gamehooks.h

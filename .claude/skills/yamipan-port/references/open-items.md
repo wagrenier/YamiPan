@@ -1870,6 +1870,14 @@ apply here):
 - 2026-11-05 (the user, live, during the eleventh game/playermotion.cpp run): **the first-person view goes to the top of the queue, "since it is needed for gameplay".** `game/viewcamera.cpp`, top of "Next up".
 
 ## Open questions
+- 2026-11-07 (rena/rena_2d_texture_vram.cpp): **two small leftovers beside it.** `Tim2Texture::getTex0`
+  0x2e1b10 (unassigned@002e1b10, 3 lines: the TEX0 template with TBP0 = block, CBP = block +
+  m_imageBlocks) is a hand stub in src/lib/unassigned_stubs.cpp; stubgen wanted it in
+  `src/rena_2d_texture_tim2.cpp` (no `rena/`: the inferred file in yamipan_functions.txt lacks the
+  directory), so it belongs in rena/rena_2d_texture_tim2.cpp: pin 0x2e1b10-0x2e1b70 there and write it.
+  RenaPointLight's slots 3 (0x2e0820, returns 1) and 6 (0x2e0830, returns -1.0f) are left unplaced
+  beside the other light virtuals (0x2e07d0, 0x2e07f0): game/scenerender.cpp's class, not written
+  (RenaLight is host-layout without virtuals). The file name rena_2d_texture_vram.cpp is a guess.
 - 2026-11-06 (user, `tools/reverse/iop.py`): **RXSNDDRV, FS2's IOP code, is extracted and decompiles**
   (architecture.md "The IOP side"): `python iop.py elf <MODULES>/RXSNDDRV.IRX` ->
   `work/iop/elf/rxsnddrv.elf`. **Imported 2026-11-06 as program `rxsnddrv.elf`** in `CLaude Decomp`, open

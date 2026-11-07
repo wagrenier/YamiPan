@@ -18,7 +18,7 @@
 #include "sdk/sce_gs.h"
 #include "sdk/scetypes.h"
 
-class GsRegion;                 // game/gfxtarget.h
+class GsRegion;                 // rena/rena_2d_texture_vram.h
 
 // A setTex0 packet (putTex0, GsTexture::putTex0): DMA CNT of 2 qwords; VIF
 // FLUSH, DIRECT 2; a GIF tag of one A+D (NLOOP 1, EOP, NREG 1).
@@ -51,6 +51,15 @@ public:
     int getVramBlocks();                                                 // FS2 0x002e1c30
     // PC: nothing to send, no GS memory (the body says what the ROM sends).
     void upload(u_long **cursor, int block);                             // FS2 0x002e1c50
+    // The TEX0 template at GS block `block`, its CLUT after the image:
+    // putTex0's value without the packet (GsRegionAlloc::bind). Written in
+    // unassigned@002e1b10, the word before this file's range.
+    void getTex0(sceGsTex0 *out, int block);                             // FS2 0x002e1b10
+    // The float at +8 of the TIM2 file (its header's reserved bytes): the
+    // distance scale rena_draw's mip choice divides by.
+    float getLodScale();                                                 // FS2 0x002e16c0
+    // Mip level `level`, 0 past the last or without a list.
+    Tim2Texture *getMip(int level);                                      // FS2 0x002e16d0
 
     sceGsTex0     m_tex0;       // FS2 +0x00: the TEX0 template (no TBP0 / CBP)
     GsRegion     *m_region;     // FS2 +0x08: the VRAM region held, 0 if none

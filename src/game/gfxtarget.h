@@ -7,8 +7,8 @@
  *  its draw env packet and the packet that copies the draw buffer to the
  *  display buffer; gfxFlipDisplay writes the current record to the GS when
  *  a frame is ready. gfxInitRenderTargets also makes the GS memory
- *  allocators (GsBlockMap and TexArea: game/gsblockmap.h; GsRegionAlloc: a
- *  stand-in here, its TU is not cut yet).
+ *  allocators (GsBlockMap and TexArea: game/gsblockmap.h; GsRegionAlloc:
+ *  rena/rena_2d_texture_vram.h).
  * ======================================================================== */
 #ifndef _GAME_GFXTARGET_H
 #define _GAME_GFXTARGET_H
@@ -16,6 +16,7 @@
 #include <stddef.h>
 
 #include "game/gsblockmap.h"
+#include "rena/rena_2d_texture_vram.h"
 #include "sdk/libgraph.h"
 #include "sdk/scetypes.h"
 
@@ -155,25 +156,5 @@ int gfxGetVramBlock(int area);                                           // FS2 
 
 // The one TexArea (gp-0x7ad0).
 TexArea *gfxGetTexArea();                                                // FS2 0x0012f160
-
-// A region allocator over GS blocks [base, base + size) (EE 0x1838: base +0,
-// size +4, node and region pools, the vptr +0x1834 = Vt_0031a7b0).
-// layout: host -- not declared beyond the calls; its TU (0x2e1440.., unassigned) is
-// not cut yet.
-class GsRegionAlloc
-{
-public:
-    GsRegionAlloc(int base, int size);                                   // FS2 0x002e14d0
-    virtual ~GsRegionAlloc();                                            // FS2 0x002e1440: EE slot 0 (+0x8)
-};
-
-// A region GsRegionAlloc gave a texture (Tim2Texture::m_region): +0x8 its GS
-// block, +0x12 its state (1 to send, 2 sent, 3 released), +0x14 its texture.
-// layout: host -- only the call; same TU.
-class GsRegion
-{
-public:
-    void release();                                                      // FS2 0x002e0840
-};
 
 #endif /* _GAME_GFXTARGET_H */
