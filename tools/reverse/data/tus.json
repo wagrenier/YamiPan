@@ -1,7 +1,5 @@
 {
- "queue": [
-  "game/playermotion.cpp"
- ],
+ "queue": [],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
   "frontier_ignore": [],
@@ -812,7 +810,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "Written in game/charactersound.cpp (ranges joined, 39 functions): updateSounds 0x2a4a40, getBreathName, stopBodySounds, stopSounds, initSounds, playFallDownSound, playGetUpVoice, playBumpSound, playJobSound, playIdleVoice, playPanicVoice, playMotionSound, hasAlteredVoice, isViewedThrough, plus getSurfaceMoveSound and getSurfaceWallSound here. Bug closed: with updateSounds a stub nothing cleared m_soundState, so later voices dropped at the priority test for the rest of the stage; initSounds a stub left m_voiceOn 0. Temporary harness, removed (walks Root meshes for faces of flags 0x142, stands the player where faceAhead and findEdge answer, forces dm_r or dm_f): stage 2 drop 180: 0xa6, findDive, 0x94, 0x96, endurance 60 to 33, FALLDW3, dm_rev, SPC_GETUP, idle; from behind 0xa4, 0x95, 0x97, 0xb1, idle; d2303 100 to 73; d2303 with no floor below: blocked, cam_dive, the game own Mission failed. No crash in 12 runs. The plain 15 s check run stops at the boot, so it says nothing about these. Nobody listened. Never ran: BOSS1, SRT_MOVE, YRT_MOVE, surface move sound, the _J breaths, playBumpSound, playJobSound, playMotionSound, a foe's own blow at an edge, the turn round bn_pelvis, the partner camera, the ladder fall. callcheck MISSING lines are the earlier ones, none in charactersound.cpp. NEXT: the 11 links left (SigLamp, NumLock, SevenKey, SpFear, SpRing, SpRobo, SpDrop, SpPadlock, SpNumLock, BossAttack, BossIdle) as stages reach them; StageAlert and ItemPhysics are their own TUs and both run on a plain fight now. References: architecture.md What a character sounds like each frame; open-items.md top of Next up, six doubts; hazards.md A stub can jam what is already written.",
+   "notes": "36 functions, batch 182, ranges joined 0x281a40..0x282d98 and 0x283a00..0x283cb0. Temporary harness, removed (YAMIPAN_TELEPORT, forced request at frame 200, 14 runs of 30 to 70 s on stages 9, 7, 21, 2, no crash): stage 9 at oZS09_04: walk ends on it, 0xc8, 0xc9, forced 0xca, standing. Stage 7: oDC07_05 comes to the player and shows. Stage 21: SpDrop runs, oMK21_09 back in place hidden. Stage 2: walks to oMT02_30 by its world matrix, 0xd7, standing. NOT proven: requestedFile was null for all these rows on the default character, so no pose motion played and no object motion was confirmed; 0xca lasted one frame for that reason as far as read. Nothing judged on screen: shots are the follow camera against the head. Never ran: SpFear, SpNumLock, gadget links (SigLamp class is a stub), BossAttack, BossIdle, EVE_S09_04, the end of the 0xc9 hold. New stubs: SceneOwnedObject takeMotionText, takeMotionUser, setRecordFlag31, numLockSpinDial, numLockSetDial, numLockDialsRight, numLockDialsTurning. Scripts name these on: sp_shut 2.1 2.2, sp_robo 7.2, sp_ron 9.1 9.2, sp_fear 10.1 10.2, sp_drop 21.2, sp_tank 28.2. NEXT: drive a real script to sp_ron or sp_fear with the character that has the file; else StageAlert and ItemPhysics, which a plain fight reaches. callcheck MISSING lines left are the earlier ones. References: architecture.md The stage's own links; open-items.md top of Next up, three doubts; hazards.md A forced motion can run with no motion in it.",
    "ranges": [
     [
      "00175700",
@@ -1183,6 +1181,14 @@
      "00281548"
     ],
     [
+     "00281a40",
+     "00282d98"
+    ],
+    [
+     "00283a00",
+     "00283cb0"
+    ],
+    [
      "0029a840",
      "0029a8b8"
     ],
@@ -1220,11 +1226,6 @@
     ]
    ],
    "sessions": [
-    {
-     "date": "2026-11-05 04:37",
-     "status": "partial",
-     "summary": "what a character carries: giveItem, dropItem, swapWeapons, PickupItem, PutItem and the Pickup link written; stage 1 has no items, so none of it has been seen working"
-    },
     {
      "date": "2026-11-05 05:24",
      "status": "partial",
@@ -1279,11 +1280,16 @@
      "date": "2026-11-06 18:49",
      "status": "partial",
      "summary": "A real edge works, the voices no longer jam: updateSounds and the sound family written"
+    },
+    {
+     "date": "2026-11-06 19:35",
+     "status": "verify",
+     "summary": "The last eleven links written (GadgetLink, SpFear, SpRing, SpRobo, SpDrop, SpPadlock, SpNumLock, BossAttack, BossIdle): every link name of the ROM now exists; none has played its real motion"
     }
    ],
-   "status": "partial",
+   "status": "verify",
    "task": "PlayerMotion::takeHits 0x1e18c0..0x1e3e80 past its first line: it requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice",
-   "why": "the links DiveFall, DiveLand, TrapHit joined: 0x278f70..0x279190, 0x2792c0..0x27a140"
+   "why": "the last links of the ROM ctor: 0x281a40..0x282d98 and their dtors 0x283a00..0x283cb0, vtables 0x317d70..0x317f20"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
