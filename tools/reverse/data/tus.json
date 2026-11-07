@@ -399,6 +399,24 @@
    "status": "verify",
    "why": "Cut out of unassigned@00171300 (frontier pick): the font class on vtables 0x315fb0 / 0x315ff0, its glyph table FontData and its draws, and WideFontPrinter 0x2d3700..0x2d4150 (vtable 0x319ff0: the same printer for 16-bit text, its slots 4 and 7 thunks at 0x208b70, 0x208ba0)."
   },
+  "game/gadgetview.cpp": {
+   "notes": "Split from unassigned@002a7b10, batch 205. Handle SceneOwnedObject (vtable 0x318ca0, body at +4, slots 1..15 jump to the body's same slot) and body GadgetView (vtable 0x318c40): pairs object/camera named by scripts, states 1 Selected, 2 FadeOut, 3 Looking, 4 FadeBack with the scene fade, pushCamera at priority 4. SigLampView: spot SigLamp_sl and point SigLamp_pl under the camera, Lamp held lights them, stick turns the camera, a ray places the point light; draw puts the siglamp texture as four mirrored quarters over the frame on list 9. NumLockView: numlock effect on bn_key, pad turns and picks dials, Use leaves as a try, a right code plays NLOCK_UL and hides the lock. Renamed guesses: start is hasObject, hasTarget isInView, getTarget getUser, isSlot2c cancel, isSlot44 isLooking, setNames addPair. RoutePlayer no longer derives from SceneOwnedObject. Seen: nothing (smoke stays at the language screen; New Game doorwalk 280 s no crash, dark wall as before). Doubts in open-items.md: the beam length is 0 unless a script moves SigLamp_pl; the mask stretches over wide displays; dial bits not checked against the lock's facing. Next: findNumLockTarget 0x29f440 and the seven-key view 0x2b2c80, which now has its base here.",
+   "ranges": [
+    [
+     "002a7b10",
+     "002a9c70"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-07 07:51",
+     "status": "verify",
+     "summary": "The gadget views: SigLamp and the number-lock view as handle and body (SceneOwnedObject with 15 forwarders, GadgetView with the pairs and the look, SigLampView, NumLockView), 53 functions of 0x2a7b10..0x2a9c70; createMapObject builds NumLockGadget into StageScene +0x90"
+    }
+   ],
+   "status": "verify",
+   "why": "The gadget views: SigLamp and number-lock handles and bodies, their shared base and the 15 handle forwarders 0x2a9a00..0x2a9bc0 that end at the handle dtor 0x2a9be0; numlock.cpp ends at 0x2a7b10, memcard.cpp starts at 0x2a9c70. File name is the port's."
+  },
   "game/gameoversequence.cpp": {
    "notes": "All 17 written, batch 151. Forced on node 4 by a temporary hook (removed): letterbox bars ramp in and out and reach both edges at 4:3 and 21:9; CAM_DEAD swings round the boy; states 1, 2, 3, 4 in order; 2 s fade; Mission failed with Retry / Give Up. Not seen: a real death (fall motion, culprit, gear in hand). State 3 shows nothing new because StageParty::start and startGameOverView 0x1fe7c0 are stubs. No reference picture of the shot. What was called blackout is the letterbox: StageMission::letterbox +0xda, native 0x1f6. drawLetterbox is shared with the sub-scene's bars. New tool shotscan.py: shot numbers are presents, not game frames. Guesses: canBeJacked, DeathCamera, the file name.",
    "ranges": [
@@ -3554,6 +3572,10 @@
   "unassigned@002937e0": {},
   "unassigned@00296d60": {},
   "unassigned@002a6980": {},
+  "unassigned@002a7b10": {
+   "claimed": "2026-11-07 07:24",
+   "status": "active"
+  },
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {},
   "unassigned@002b9ef0": {},
