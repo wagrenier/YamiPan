@@ -104,6 +104,18 @@ groups (67 tools) on connect; `search_tools` / `load_tool_group` add the rest; `
 
 ## Hazards (GhidraMCP 7.0.0)
 
+- **A generated ELF with `e_flags` 0 loads as 64-bit MIPS** (2026-11-06, `rxsnddrv.elf`). Ghidra's
+  `MIPS.opinion` needs the ABI bits for a 32-bit language; with 0 the loader takes
+  `MIPS:LE:64:64-32R6addr`. Every function still "decompiles", but with `bad instruction data`, `ulonglong`
+  types, p-code errors and real functions missing. `iop.py` writes `E_MIPS_ABI_O32 | EF_MIPS_NOREORDER`
+  (0x1001), which selects `MIPS:LE:32:default`. Check an import's `Using Language` line, not its function
+  count. RosePan's `iop.py` still writes 0.
+- **The IOP program and the EE caches** (RosePan's hazard, for when `rxsnddrv.elf` is imported). The caches
+  and the name ledger are keyed by address alone: with `YAMIPAN_PROGRAM=rxsnddrv.elf` only `dec.py` and
+  `ghidra.py` are safe; `name_ctx.py`, `fetch.py`, `features.py`, `export.py`, `refresh.py` and `tus.py
+  check / finish` would mix IOP addresses into the EE's data. It loads at 0, so small constants look like
+  pointers: `&DAT_0000d000` is RPC number 0xd000.
+
 - **A release built for another Ghidra half works** (above): reads that list functions answer, the
   decompiler and `get_functions` fail. Build from the checkout for the Ghidra in use.
 - **`disassemble_bytes` writes** (no dry run): never use it to "just look".
