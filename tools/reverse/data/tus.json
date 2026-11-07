@@ -1834,6 +1834,24 @@
    "status": "verify",
    "why": "SoundTrack (fsm subtitles + StDT stream table over SoundStream) and SePlayer (the SEDT effect player): one class pair from SoundTrack::setAttr to SePlayer::update; after it 0x2937e0 starts an ELEVATOR2 stage object"
   },
+  "game/sevenkeys.cpp": {
+   "notes": "All 35 functions written (thunks by the host's inheritance). Two dials of four positions; turning dial 1 turns dial 0 too. Not visible yet: the keys are a mid-game stage object (oYC11_2n models), the smoke run stops at the language menu, so the view, the dials and the mon sparkle are unverified on screen. StageObject_Kind6 renamed StageObject_SevenKeys; SkyPose moved from modelpose.h to sevenkeys.h. callcheck extras are only host inlines (getKind virtual, copyVector, dialAngleOf). For the references: architecture.md has the section The seven keys.",
+   "ranges": [
+    [
+     "002b22f0",
+     "002b3860"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-07 10:57",
+     "status": "verify",
+     "summary": "The seven keys oYC11_21..27 (SevenKeys, object kind 6), their gadget view SevenKeysView/SevenKeysGadget and SkyPose named (batch 210), pinned as game/sevenkeys.cpp 0x2b22f0-0x2b3860 and reconstructed as NumLock's twin; createMapObject builds them"
+    }
+   ],
+   "status": "verify",
+   "why": "The seven keys oYC11_21..27 (createMapObject's strncmp oYC11_2 + digit 1..7, object kind 6, motion Seven_Keys), their gadget view (vtable 0x319200, handle 0x314ce0) and SkyPose (vtable 0x319260, tag sky): one class family, NumLock's twin; bounded by SceneDirector (gameoversequence.cpp) below and CritterNest (stageparticle.cpp) at 0x2b3860"
+  },
   "game/skymist.cpp": {
    "notes": "Was the frontier's unassigned@002acff0 (split: game/helpscreen.cpp holds runHelpScreen). Batches 201-202. Drawn through renaBeginEffects and YamiPan_ModelDrawQuad in view space; the ROM's GS fan, scratchpad copies and clip cases are folded (callcheck notes). Seen on stage 7 (YAMIPAN_TELEPORT=7, temporary harness removed): 116..123 puffs alive, about 0.4 a frame pass the ROM's tests, nothing visible in the shots even with the colour forced bright, so verify, not done. mistWrap 0x2af6b0 is the ROM's slip (v + 2 radius past the radius), kept. Doubts in open-items.md (r)..(u): list 3 has no depth test in the ROM, the host's effect pass tests depth. Next: look at stage 0x16 or 0x17 (near, with depth) or a view looking up; a ROM-vs-host comparison of 0x2adc70 in the style of sightcmp.py would prove it.",
    "ranges": [
@@ -3666,6 +3684,10 @@
   "unassigned@002a7b10": {},
   "unassigned@002acff0": {},
   "unassigned@002b0d50": {},
+  "unassigned@002b22f0": {
+   "claimed": "2026-11-07 10:45",
+   "status": "active"
+  },
   "unassigned@002b6b90": {},
   "unassigned@002b9ef0": {},
   "unassigned@002c42a0": {},

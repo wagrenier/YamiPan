@@ -4586,7 +4586,7 @@ bool StageFiles::applyBgMotionTarget()
         if (strcmp(name, kMotionCar) == 0) {
             setKindMotion(StageObject_Car, list->value);
         } else if (strcmp(name, kMotionSevenKeys) == 0) {
-            setKindMotion(StageObject_Kind6, list->value);
+            setKindMotion(StageObject_SevenKeys, list->value);
         } else {
             StageObject *object = gStageScene->objects->find1(name, 0);
             if (object != nullptr)

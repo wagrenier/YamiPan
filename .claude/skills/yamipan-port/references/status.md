@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 10:32 at commit `f23ad40` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 10:57 at commit `06f4ce2` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 10:32 at commit `f23ad40` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6597**, named **5616** (85%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4694
-- context-name ledger: 6290 entries; overrides of wrong library matches: 0
-- placed in a source file: 6141/6597 in 136 files
+- game functions: **6597**, named **5647** (86%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4725
+- context-name ledger: 6321 entries; overrides of wrong library matches: 0
+- placed in a source file: 6176/6597 in 137 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5618**; stubs: **32**
+- reconstructed FS2 functions: **5650**; stubs: **28**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -98,6 +98,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/screen.cpp` | 18 | 0 |
 | `src/game/scriptrunner.cpp` | 442 | 2 |
 | `src/game/seplayer.cpp` | 35 | 0 |
+| `src/game/sevenkeys.cpp` | 32 | 0 |
 | `src/game/skymist.cpp` | 17 | 0 |
 | `src/game/sldi.cpp` | 1 | 0 |
 | `src/game/spkrom.cpp` | 13 | 0 |
@@ -142,7 +143,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 16 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 12 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_2d_texture_vram.cpp` | 11 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
@@ -172,9 +173,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 211 TUs: todo 71, partial 16, verify 131, done 46
-- next: **unassigned@002b22f0** (frontier score 6)
+- 211 TUs: todo 70, active 1, partial 16, verify 132, done 46
+- next: **unassigned@002cf510** (frontier score 6)
 - pinned queue: (empty)
+- active: `unassigned@002b22f0` 0/0
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -233,6 +235,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/screen.cpp` 18/18 -- All 18 functions of 0x2676e0..0x2681e0 written (batch 037, 33 names, Ghidra saved). Overlay thread slot 6 draws the BG movie screen layout (init pack file 2dEU/
 - verify: `game/scriptrunner.cpp` 442/659 -- All 364 natives the scan finds a script calling are bound; py sssall.py --unwritten lists none called, 160 never called stay unwritten (the scan reads version 0
 - verify: `game/seplayer.cpp` 35/35 -- Cut from unassigned@002908d0: game/seplayer.cpp is 0x2908d0..0x2937e0 (SoundTrack 17, SePlayer 18, batch 078: fsmFindTrack, fsmTrackHasText, seDistanceVolume, s
+- verify: `game/sevenkeys.cpp` 32/35 -- All 35 functions written (thunks by the host's inheritance). Two dials of four positions; turning dial 1 turns dial 0 too. Not visible yet: the keys are a mid-g
 - verify: `game/skymist.cpp` 17/23 -- Was the frontier's unassigned@002acff0 (split: game/helpscreen.cpp holds runHelpScreen). Batches 201-202. Drawn through renaBeginEffects and YamiPan_ModelDrawQu
 - verify: `game/sldi.cpp` 1/1 -- Cut out of unassigned@002c42a0 and pinned 0x2d0a10-0x2d0d10; no new names, no Ghidra change. Scratch test: all 114 SLDI files on the disc unpack to the header s
 - verify: `game/spkrom.cpp` 13/13 -- All 13 of 0x152730..0x153108 written. The entries keep offsets on the host (the ROM relocates them to pointers in place), strings through spkString. Host: argv[
@@ -309,6 +312,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 10:57 `game/sevenkeys.cpp` verify: The seven keys oYC11_21..27 (SevenKeys, object kind 6), their gadget view SevenKeysView/SevenKeysGadget and SkyPose named (batch 210), pinned as game/sevenkeys.
 - 2026-11-07 10:32 `rena/rena_drawtarget.cpp` verify: Placed getDrawTarget 0x2ec110 (was unassigned@002ec110) in its own file rena/rena_drawtarget.cpp: the guarded function-local DrawTarget at bss 0x5a52d0 moved ou
 - 2026-11-07 10:12 `game/gsluminance.cpp` verify: gsLuminance and its six GS packet steps named (batch 209), pinned as their own object 0x2b6b90-0x2b85a0, documented in game/gsluminance.cpp; on PC the host pale
 - 2026-11-07 10:01 `unassigned@0029f2a0` verify: Placed the run 0x29f2a0..0x29f4f8 in game/scriptrunner.cpp: missionRestoreCheck and findNumLockTarget; StageMission +0xb8 is a LockGadgetKind (restoreKind, was 
@@ -316,37 +320,37 @@ Recent sessions:
 - 2026-11-07 09:15 `game/playermotion.cpp` verify: The out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level (0x2160a0..0x216130, was unassigned@002160a0): StageSideMa
 - 2026-11-07 08:51 `game/playermotion.cpp` verify: unassigned@0020c940 joined playermotion.cpp: StageCharacter::getSwayMatrix, bn_head's matrix turned a quarter about its own y and placed at the model family's g
 - 2026-11-07 08:36 `sdpr2/sdpr2pair.c` verify: SDPR2 two-voice pair type: all 21 functions reconstructed (pan, turn with voice flip, detune countdown, Init/Exit, detune table 0x2f5fa0)
-- 2026-11-07 08:10 `rx/filehost.c` verify: rx host0: driver: all 12 functions reconstructed from FS2 (RosePan's host driver, FS2's file/line open-failure message)
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002b22f0` | todo | 0/4/35 | 5.1 | 6 | 0 |
 | `unassigned@002cf510` | todo | 0/1/1 | 0.1 | 6 | 1 |
 | `unassigned@0020acb0` | partial | 3/5/11 | 1.3 | 5 | 0 |
-| `unassigned@00282da0` | partial | 11/0/18 | 3.0 | 5 | 0 |
 | `unassigned@00214a70` | todo | 0/1/2 | 0.6 | 5 | 0 |
+| `unassigned@00282da0` | partial | 11/0/18 | 3.0 | 5 | 0 |
 | `unassigned@00177d00` | partial | 11/0/47 | 7.7 | 4 | 0 |
+| `unassigned@0020ce10` | todo | 0/0/1 | 0.1 | 3 | 0 |
 | `rena_2d_texture_tim2.cpp` | todo | 0/1/1 | 0.1 | 3 | 0 |
 | `unassigned@00219be0` | partial | 15/0/19 | 3.8 | 3 | 0 |
-| `unassigned@0020ce10` | todo | 0/0/1 | 0.1 | 3 | 0 |
+| `unassigned@0020e6a0` | partial | 10/0/11 | 8.6 | 2 | 0 |
+| `unassigned@002b0d50` | todo | 0/0/1 | 0.0 | 2 | 0 |
 | `unassigned@0026c650` | todo | 0/0/2 | 0.2 | 2 | 0 |
 | `unassigned@00217be0` | partial | 14/0/16 | 2.1 | 2 | 0 |
-| `unassigned@00211970` | partial | 2/2/4 | 2.3 | 2 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
 | `002c1430` | FUN_002c1430 | 115 | - | missing | game/packtables.cpp |
-| `00184370` | StageNodeList::erase | 85 | game | missing | game/stageitem.cpp |
+| `00184370` | StageNodeList::erase | 88 | game | missing | game/stageitem.cpp |
 | `0017e260` | StageList<StageObject*>::erase | 54 | game | missing | game/stagecharacter.cpp |
-| `001842c0` | StageNodeList::pushBack | 37 | game | missing | game/stageitem.cpp |
+| `001842c0` | StageNodeList::pushBack | 38 | game | missing | game/stageitem.cpp |
 | `0017e1b0` | StageList<StageObject*>::pushBack | 25 | game | missing | game/stagecharacter.cpp |
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `002c0d90` | FUN_002c0d90 | 18 | - | missing | game/packtables.cpp |
 | `001d1a00` | ScriptRunner::getEntry | 14 | game | missing | game/scriptrunner.cpp |
 | `002a7800` | NmlPose::getDial | 14 | game | missing | game/numlock.cpp |
 | `002c0d40` | FUN_002c0d40 | 12 | - | missing | game/packtables.cpp |
+| `002b3640` | SkyPose::getDial | 11 | game | missing | game/sevenkeys.cpp |
 | `002c0d80` | FUN_002c0d80 | 10 | - | missing | game/packtables.cpp |
 | `00228610` | FUN_00228610 | 9 | - | missing | game/characterroute.cpp |
 | `00236910` | BoundingSphere::BoundingSphere | 9 | game | missing | game/stagecollision.cpp |
@@ -376,5 +380,4 @@ Recent sessions:
 | `00217770` | FUN_00217770 | 5 | - | missing | game/playermotion.cpp |
 | `001d8250` | StageNodeList::linkValue | 4 | game | missing | game/nodetransform.cpp |
 | `00184260` | FUN_00184260 | 4 | - | missing | game/stageitem.cpp |
-| `00214a80` | StageCharacter::findNearestFoe | 4 | game | stub | - |
 
