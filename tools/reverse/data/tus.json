@@ -945,7 +945,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "0x21e120..0x21efa0 pinned to game/playermotion.cpp (batch 204 names all 13 functions). mslSort_SearchPoints 0x21e120 with median 0x21e350, partitions 0x21e490 / 0x21e700 and selection sort 0x21e9b0 read the same as game/mslsort.h (checked branch by branch against the template; its counter 0x31aa60 starts at -4 like the effects one), so pickSearchPoint calls mslSort and its lambda gives it its own counter; sortcmp.py could prove this instance too if it learns a second address. The walks (FreeObjectWalk, ItemWalk, StageObjIterator, SearchGroupWalk, SearchObjectWalk, OffStageCharWalk; vtables 0x316040..0x316090) stay inline StageObjArray loops at their callers, their tags in playermotion.cpp's list of header-written functions; callcheck lines in scriptrunner.cpp now name them. StageObjIterator's group 7 ctor 0x21eca0 is used only by FUN_001c1bf0, not written yet: inline it there as a loop over m_lists[StageObjGroup_7] active objects. The smoke run reaches the language select only; search points are never reached, hence verify.",
+   "notes": "getSwayMatrix 0x20c940 written from the asm: rows out[2]=head[0], out[1]=head[1], out[0]=-head[2] (scaleVec4 -1), out[3]=head applied to gMotionModels[m_motion->m_modelFamily].a, or to the default 11,11,0,1 at data 0x306920 when the family is outside 0..0x13; nothing written when bn_head has no node. The ROM returns out, no caller reads it, so the host keeps void. scriptIsFacing 0x20ca80 was already in this file; range 0x20c1d0..0x20cc44 now pinned whole. Not yet reached by a smoke run (the 15 s run stops at the language select): its callers are RouteLookObject, RouteLookPoint, AlwaysCondition::onApply and DiveFallLink::startCamera; a stage run with a route look or a dive fall would show it. The identityMatrix before the call in the faceForward path stays as a PC guard for a model without bn_head.",
    "ranges": [
     [
      "00175700",
@@ -1021,7 +1021,7 @@
     ],
     [
      "0020c1d0",
-     "0020c93c"
+     "0020cc44"
     ],
     [
      "0020cc50",
@@ -1370,11 +1370,6 @@
    ],
    "sessions": [
     {
-     "date": "2026-11-05 07:14",
-     "status": "partial",
-     "summary": "the special actions, the bite and the status setters: initList, its condition classes, Walk's list, BiteCondition, BiteLink, setFlinch, setEndurance, setBrainState: specials play their motions on stage 1 and the game over is reachable; the bite has not run"
-    },
-    {
      "date": "2026-11-05 08:47",
      "status": "partial",
      "summary": "a character's script properties and its status block: setProperty, getProperty, resetActionState, initStatusBlock, StageObject::getProperty: rates come from the sheet, the brain state is set, stage 1's scripts go on to new natives"
@@ -1428,11 +1423,16 @@
      "date": "2026-11-07 07:12",
      "status": "verify",
      "summary": "unassigned@0021e120 joined playermotion.cpp: its out-of-line tail, the MSL sort instance over the search points and the six one-slot stage-object walks; pickSearchPoint now sorts with mslSort, not std::stable_sort"
+    },
+    {
+     "date": "2026-11-07 08:51",
+     "status": "verify",
+     "summary": "unassigned@0020c940 joined playermotion.cpp: StageCharacter::getSwayMatrix, bn_head's matrix turned a quarter about its own y and placed at the model family's gMotionModels point a; its stub is gone"
     }
    ],
    "status": "verify",
    "task": "PlayerMotion::takeHits 0x1e18c0..0x1e3e80 past its first line: it requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice",
-   "why": "the last links of the ROM ctor: 0x281a40..0x282d98 and their dtors 0x283a00..0x283cb0, vtables 0x317d70..0x317f20; 0x218500..0x219b30 joined: the rest of the StageCharacter script slots, among them throwCarried and putSmoke; 0x217700..0x217a80 joined 2026-11-07: the carried list's second StageList<StageObject*> instance (in stagelist.h), getMotionDoor and SightTable::canSeeThisFrame, emitted after giveItem; 0x21e120..0x21efa0 joined 2026-11-07: the out-of-line tail after resetActionState -- the MSL std::sort instance pickSearchPoint calls (sort, median, two partitions, selection sort) and the six one-slot stage-object walks (vtables 0x316040..0x316090) whose users are inline loops"
+   "why": "0x20c940..0x20cc44 joined 2026-11-07 (was unassigned@0020c940): getSwayMatrix and scriptIsFacing, StageCharacter members between getTargetPoint and canFireLongWeapon, both already playermotion.cpp's neighbours"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -3567,6 +3567,7 @@
   "unassigned@00188d60": {},
   "unassigned@0018c050": {},
   "unassigned@001953f0": {},
+  "unassigned@0020c940": {},
   "unassigned@002176d0": {
    "notes": "This key is empty now. 0x2176d0 isViewLinked was already written in src/game/stagecharacter.cpp, now in its range; 0x217700..0x217a80 joined game/playermotion.cpp (template instance emitted after giveItem, as 0x17e140 follows stagecharacter.cpp). Batch 200 names 8 functions. stagelist.h gained getTail and find (0x217700, 0x217730) and lists the instance; dropItem uses find, DoorCondition::onUpdate calls the new StageCharacter::getMotionDoor (m_motion->doorLink->door, 0x2179b0) as the ROM does; SightTable::canSeeThisFrame 0x2179c0 stays inline in StageCharacter::canSeeThisFrame (tag added). Fix found: findCarried 0x216310 and giveItem's stack search walk getTail then +8 prev in the ROM; the host walked from the head, so of two carried objects with one name it found the first instead of the last carried (hazards.md). Picture: the 15 s smoke run stays at the language select, English highlighted, as before; nothing on screen reaches carried items yet: verify. A teleport run with two same-named items in the inventory would show the fix.",
    "sessions": [
