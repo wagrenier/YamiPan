@@ -2589,8 +2589,8 @@ public:
     void forgetMarkedPlace();                                            // FS2 0x0021bf80
     // Holds the script in its native until the motion changes.
     void waitMotionChange();                                             // FS2 0x00219be0
-    // FS2 0x0021b960
-    int  answerNo() { return 0; }
+    // The brain's answer (CharacterBrain::answerNo): always 0.
+    int  answerNo();                                                     // FS2 0x0021b960
     // FS2 0x00218490
     void doNothing() {}
     // FS2 0x002184a0: set where the character was put this frame; the brain
