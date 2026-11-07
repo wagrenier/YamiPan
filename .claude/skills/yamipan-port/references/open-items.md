@@ -1894,7 +1894,7 @@ apply here):
 
 ## Open questions
 
-- (2026-11-07, game/kunitoris.cpp) `KunitorisGame`'s destructor is inline in the ROM (end of kunitorisThread's level: vptr 0x319f80, delete +0x784, delete[] +0x7c (0x2cb170), delete +0x74 via its vptr at +0x24, delete the UiDrawer +0x58, 48 x 0x24 elements from +0x9c (0x2caf10), vptr 0x319fd0, delete[] +0x34 (0x2cd690), vptr 0x319f60): stubgen put its stub in src/lib/unassigned_stubs.cpp (address 0); write it with the class. `KunitorisGame` is layout: host with only the front end's fields; `m_scroll` / `m_viewHalf` / `m_selectToggle` are guesses from kunitorisThread alone. The smoke run never reaches Extra mode (top menu answer 10): the picture test needs the smoke pad taken there.
+- (2026-11-07, game/kunitoris.cpp) `KunitorisGame`'s destructor is written (inline in the ROM; the board's pieces through `~KunitorisBoard`). Open: the board hierarchy's virtuals (vtables 0x319f60 / 0x319f70 / 0x319fd0 / 0x319f80 / 0x319fe0, architecture.md) are not modelled yet: `KunitorisBoard` and `KunitorisPiece` are plain host classes; FUN_002c81c0 (the board draw) needs the piece's slot 1 draw(drawer, pass), so the next session should make 0x319f60 a virtual base (dtor, draw) first. `m_selectToggle` is still a guess from kunitorisThread alone; the fields _84.._98 and _75c.._774 are unnamed. The smoke run never reaches Extra mode (top menu answer 10): the picture test needs the smoke pad taken there.
 - 2026-11-07 (game/stagecamera.cpp tail, batch 214): **StageCharacter's slot +0x25c (0x179a90) passes
   an a1 its callers never set.** ROM: m_brain->setEntry(a1), then setState(m_brain->m_state, 1). The
   only callers of +0x25c (0x17964c, 0x199d2c, 0x29aab4) are camera paths that leave a1 alone, so in

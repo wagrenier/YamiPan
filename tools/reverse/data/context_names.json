@@ -36323,6 +36323,12 @@
   "was": "FUN_002c4290",
   "why": "zeroes its one word; StageMission's builder 0x287690 calls it on operator_new(4)"
  },
+ "002c42a0": {
+  "name": "KunitorisCursor::update",
+  "tag": "game-inferred",
+  "was": "FUN_002c42a0",
+  "why": "slot 1 of 0x319f00: KunitorisActor::update, answers 1"
+ },
  "002c42c0": {
   "name": "runExtraMode",
   "tag": "game-inferred",
@@ -36334,6 +36340,12 @@
   "tag": "game-inferred",
   "was": "FUN_002c4320",
   "why": "the thread runExtraMode starts in slot 3: loads dataEU/kuniEU.pak (its SePlayer, the font), title, level select, a KunitorisGame on the stack per level, records the best score / clear in SaveData _46c / _4ac and sets the changed flag 0x31aed4 runExtraMode answers"
+ },
+ "002c4e50": {
+  "name": "KunitorisSprite::~KunitorisSprite",
+  "tag": "game-inferred",
+  "was": "FUN_002c4e50",
+  "why": "deleting dtor of vtable 0x319fc0 (base 0x319f50): deletes the GsTexture at +0x24; the 0x28-byte sprite built inline with a pack item, quad uv 0..1 xy 0..16 at +4"
  },
  "002c4ee0": {
   "name": "kunitorisEnding",
@@ -36377,6 +36389,48 @@
   "was": "FUN_002c64d0",
   "why": "once a frame with GameSystem's pad 0 (+4) before draw (kunitorisThread)"
  },
+ "002c7a30": {
+  "name": "thunk_KunitorisBlock::update",
+  "tag": "game-inferred",
+  "was": "thunk_FUN_002cc220",
+  "why": "slot 1 of 0x319f90: a jump to 0x2cc220"
+ },
+ "002c7a40": {
+  "name": "KunitorisBlock::~KunitorisBlock",
+  "tag": "game-inferred",
+  "was": "FUN_002c7a40",
+  "why": "deleting dtor of 0x319f90, KunitorisActor's body inline"
+ },
+ "002c8070": {
+  "name": "KunitorisGroup::setCell",
+  "tag": "game-inferred",
+  "was": "FUN_002c8070",
+  "why": "+0xc / +0x10 = a1, a2: the ctor places new groups at -8 or 39 outside the 32-cell view"
+ },
+ "002c8080": {
+  "name": "KunitorisGroup::setStep",
+  "tag": "game-inferred",
+  "was": "FUN_002c8080",
+  "why": "+0x14 / +0x18 = a1, a2: (1,0) (-1,0) (0,1) (0,-1) by the side it comes in from"
+ },
+ "002c8090": {
+  "name": "KunitorisGroup::addCell",
+  "tag": "game-inferred",
+  "was": "FUN_002c8090",
+  "why": "a KunitorisBlock on the group's cell +0xc at offset *a1 (lift 4) unless a block already has that offset; the shapes' cells 0x2fbe10 / 0x2fbef0"
+ },
+ "002c83a0": {
+  "name": "KunitorisGame::drawBlinkBar",
+  "tag": "game-inferred",
+  "was": "FUN_002c83a0",
+  "why": "the same bar for +0x764, colour 0x2fc010 (0.25 grey) or 0x2fc000 (0.5) by bit 1 of +0x760"
+ },
+ "002c8510": {
+  "name": "KunitorisGame::drawLivesBar",
+  "tag": "game-inferred",
+  "was": "FUN_002c8510",
+  "why": "KunitorisGame::draw's: when +0x80 > 0 a temporary GsTexture of pack item 0x12, quad uv (0.01, 0.01)-(v / 80, 1) xy (0, -117)-(v, -101) in grey 0x2fc000"
+ },
  "002c8640": {
   "name": "KunitorisGame::KunitorisGame",
   "tag": "game-inferred",
@@ -36401,6 +36455,84 @@
   "was": "FUN_002ca790",
   "why": "timer +8 to 0, the three tiles +0x10..+0x18 to a1 (or random % 63 when negative), each tile's uv rows 1/64 apart in the table 0x2fc2a0"
  },
+ "002ca870": {
+  "name": "KunitorisCursor::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002ca870",
+  "why": "slot 2 of 0x319f00: pass 0 the sprite in the shadow colour 0x2fc030, else translated by -lift * 8 in its colour"
+ },
+ "002cab60": {
+  "name": "KunitorisCursor::~KunitorisCursor",
+  "tag": "game-inferred",
+  "was": "FUN_002cab60",
+  "why": "deleting dtor of 0x319f00, KunitorisActor's body inline"
+ },
+ "002cacc0": {
+  "name": "KunitorisCursor::KunitorisCursor",
+  "tag": "game-inferred",
+  "was": "FUN_002cacc0",
+  "why": "ctor of vtable 0x319f00 over 0x319f30 (0x34 bytes): a1 the cell (copied to +0x28), a2 the lift +0x30 (4), pixel position cell * 8, sprite of pack item 0x10; KunitorisGame's ctor builds it on its cell (18, 18)"
+ },
+ "002cae40": {
+  "name": "KunitorisActor::~KunitorisActor",
+  "tag": "game-inferred",
+  "was": "FUN_002cae40",
+  "why": "deleting dtor of vtable 0x319f30 (vptr +0x24): deletes the mover +0x18 (vptr +8), the fader +0x1c (vptr +0x10) and the sprite +0x20"
+ },
+ "002caf10": {
+  "name": "KunitorisGroup::~KunitorisGroup",
+  "tag": "game-inferred",
+  "was": "FUN_002caf10",
+  "why": "the 48 groups' dtor: KunitorisCells' body inline"
+ },
+ "002cafd0": {
+  "name": "KunitorisGroup::KunitorisGroup",
+  "tag": "game-inferred",
+  "was": "FUN_002cafd0",
+  "why": "the 0x24-byte element of KunitorisGame's 48 at +0x9c (__construct_array): list, active +8, step +0x14 / +0x18, +0x1c, +0x20 zero; the cell +0xc left"
+ },
+ "002cb170": {
+  "name": "KunitorisCells::~KunitorisCells",
+  "tag": "game-inferred",
+  "was": "FUN_002cb170",
+  "why": "deletes every item through its vptr +0x24, clears the list, active 0"
+ },
+ "002cb220": {
+  "name": "KunitorisCells::KunitorisCells",
+  "tag": "game-inferred",
+  "was": "FUN_002cb220",
+  "why": "0xc-byte element of KunitorisGame's new[] of 2 at +0x7c: the list and the active flag +8 = 0"
+ },
+ "002cb800": {
+  "name": "KunitorisBlock::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002cb800",
+  "why": "slot 2 of 0x319f90: pass < 0 a temporary sprite of pack item 0x13, pass 0 the shadow colour, else lifted by +0x3c cells"
+ },
+ "002cc220": {
+  "name": "KunitorisBlock::update",
+  "tag": "game-inferred",
+  "was": "FUN_002cc220",
+  "why": "slot 1 of 0x319f90 (thunk 0x2c7a30): state +0x48 (4 gone answers 0; 1 a 14-frame hop; 2 and 3 sink over 12 frames, 2 placed from the anchor +0x44), cell from the origin, then KunitorisActor::update"
+ },
+ "002cc450": {
+  "name": "KunitorisBlock::KunitorisBlock",
+  "tag": "game-inferred",
+  "was": "FUN_002cc450",
+  "why": "ctor of vtable 0x319f90 over 0x319f30 (0x50 bytes): a1 the owner's cell pointer +0x28, a2 the offset +0x2c, a3 the lift +0x3c / +0x40; cell +0x34 = origin + offset; sprite of pack item 0x11"
+ },
+ "002cc8c0": {
+  "name": "KunitorisActor::update",
+  "tag": "game-inferred",
+  "was": "FUN_002cc8c0",
+  "why": "slot 1 of 0x319f30 (thunk 0x2cdbc0): steps the mover into +0/+4 and the fader into the colour +8..+0x14, deleting each when its step answers 0; answers 1"
+ },
+ "002cc9d0": {
+  "name": "KunitorisSprite::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002cc9d0",
+  "why": "slot 1 of 0x319fc0: setTexture +0x24, TEX1 0, prim 0x15e in white 0x2fbff0, drawTexFlat of the two vertices at +4"
+ },
  "002cca40": {
   "name": "KunitorisGame::start",
   "tag": "game-inferred",
@@ -36413,6 +36545,18 @@
   "was": "FUN_002cd390",
   "why": "takes a level file (+0x2c), its piece count (+0x30, file +0xc) and builds +0x34 as new[] of 0x38-byte pieces from the file's table +0x2010; f12 the cell size (8.0)"
  },
+ "002cd690": {
+  "name": "KunitorisPiece::~KunitorisPiece",
+  "tag": "game-inferred",
+  "was": "FUN_002cd690",
+  "why": "the pieces' dtor the inline ~KunitorisGame hands __destroy_new_array for +0x34"
+ },
+ "002cd8a0": {
+  "name": "KunitorisPiece::KunitorisPiece",
+  "tag": "game-inferred",
+  "was": "FUN_002cd8a0",
+  "why": "ctor of the 0x38-byte piece (vtables 0x319f60 / 0x319f70 / 0x319fe0 at +0x18) KunitorisGame::loadLevel builds as new[] at +0x34"
+ },
  "002cd9a0": {
   "name": "kunitorisPrintf",
   "tag": "game-inferred",
@@ -36424,6 +36568,60 @@
   "tag": "game-inferred",
   "was": "FUN_002cdb20",
   "why": "slot 4 beside kunitorisThread: each frame gfxSetClearColor from the five sbss bytes 0x31accc / 0x31aeb0..bc, SePlayer::update of the minigame's player 0x31aec4 and the six handles at 0x599800 cleared once they stop"
+ },
+ "002cdbc0": {
+  "name": "thunk_KunitorisActor::update",
+  "tag": "game-inferred",
+  "was": "thunk_FUN_002cc8c0",
+  "why": "slot 1 of 0x319f30: a jump to 0x2cc8c0"
+ },
+ "002cdbd0": {
+  "name": "KunitorisActor::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002cdbd0",
+  "why": "slot 2 of 0x319f30: empty"
+ },
+ "002cde50": {
+  "name": "KunitorisActorList::KunitorisActorList",
+  "tag": "game-inferred",
+  "was": "FUN_002cde50",
+  "why": "head and count to 0; the list at +0 of the 0xc / 0x24-byte cell sets"
+ },
+ "002cde60": {
+  "name": "KunitorisActorList::~KunitorisActorList",
+  "tag": "game-inferred",
+  "was": "FUN_002cde60",
+  "why": "deleting dtor: clear"
+ },
+ "002cdec0": {
+  "name": "KunitorisActorList::pushBack",
+  "tag": "game-inferred",
+  "was": "FUN_002cdec0",
+  "why": "empty: pushFront; else a node with a new 4-byte box of *a1 after the tail, count + 1"
+ },
+ "002cdf70": {
+  "name": "KunitorisActorList::clear",
+  "tag": "game-inferred",
+  "was": "FUN_002cdf70",
+  "why": "frees every node and its box (not the item), head and count to 0"
+ },
+ "002cdfe0": {
+  "name": "KunitorisActorList::pushFront",
+  "tag": "game-inferred",
+  "was": "FUN_002cdfe0",
+  "why": "a node with a new 4-byte box of *a1 before the head, count + 1"
+ },
+ "002ce070": {
+  "name": "KunitorisActorList::tail",
+  "tag": "game-inferred",
+  "was": "FUN_002ce070",
+  "why": "the last node, walking next from the head"
+ },
+ "002ce0a0": {
+  "name": "KunitorisActorList::Node::Node",
+  "tag": "game-inferred",
+  "was": "FUN_002ce0a0",
+  "why": "a 0xc-byte list node: item box, next, prev"
  },
  "002ce0c0": {
   "name": "SmokeFog::setActiveFor",

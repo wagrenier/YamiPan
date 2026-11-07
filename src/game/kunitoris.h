@@ -19,11 +19,12 @@
 #include <stddef.h>
 
 #include "game/s2ddata.h"   /* S2dRef */
+#include "game/uidrawer.h"  /* UiVec4 */
 #include "sdk/scetypes.h"
 
 class GamePad;              // game/gamesystem.h
+class GsTexture;            // game/gsutil.h
 class TexAreaList;          // game/gsblockmap.h
-class UiDrawer;             // game/uidrawer.h
 class UiFont;               // game/uigame.h
 struct sceVif1Packet;
 
@@ -31,6 +32,10 @@ struct sceVif1Packet;
 enum KunitorisItem
 {
     KunitorisItem_Level0     = 0x00,    // KunitorisLevel files 0..15 (the level select's lines)
+    KunitorisItem_Cursor     = 0x10,    // KunitorisCursor's sprite
+    KunitorisItem_Block      = 0x11,    // KunitorisBlock's sprite
+    KunitorisItem_Bar        = 0x12,    // the lives bar (KunitorisGame::drawLivesBar / drawBlinkBar)
+    KunitorisItem_Highlight  = 0x13,    // KunitorisGame's sprite, KunitorisBlock's highlight pass
     KunitorisItem_FontImage  = 0x15,    // the UiFont's image
     KunitorisItem_FontGlyphs = 0x16,    // the UiFont's glyphs (a FontData)
     KunitorisItem_HowTo      = 0x17,    // kunitorisHowTo's picture (256 x 224)
@@ -109,14 +114,250 @@ static_assert(offsetof(KunitorisLevel, pieceCount) == 0xc, "KunitorisLevel::piec
 static_assert(offsetof(KunitorisLevel, pieces) == 0x2010, "KunitorisLevel::pieces");
 static_assert(offsetof(KunitorisLevel, _2114) == 0x2114, "KunitorisLevel::_2114");
 
-// One level being played: kunitorisThread's stack object (EE 0x790; three
-// class levels, vptrs 0x319f60 / 0x319fd0 / 0x319f80 at +0x18). Its
-// destructor is inline in the ROM, at the end of kunitorisThread's level.
-// layout: host -- only what the front end reads; EE offsets in comments.
-class KunitorisGame
+// ──────────────────────────────────────────────────────────────────────
+// The minigame's objects. Every class here is layout: host (the ROM's
+// vptrs sit after the data, at the EE offsets in the comments); nothing
+// outside this file reads them. Positions are board cells; one cell is
+// kKunitorisCellPixels pixels.
+constexpr float kKunitorisCellPixels = 8.0f;
+// The game's own objects start lifted by this many cells (drawn up-left
+// of their shadow).
+constexpr int kKunitorisLift = 4;
+
+// Something an actor draws (vtable 0x319f50: { dtor, draw }; vptr +0x00).
+// layout: host
+class KunitorisDrawable
 {
 public:
-    KunitorisGame(int bestScore, int level);                             // FS2 0x002c8640
+    virtual ~KunitorisDrawable() {}
+    virtual void draw(UiDrawer *drawer) = 0;
+};
+
+// A 16 x 16 textured sprite of a pack picture (EE 0x28, vtable 0x319fc0;
+// its ctor is inline at each new-expression). layout: host
+class KunitorisSprite : public KunitorisDrawable
+{
+public:
+    explicit KunitorisSprite(const void *image);                         // inline in the ROM
+    ~KunitorisSprite() override;                                         // FS2 0x002c4e50: deleting (obj, flag)
+    void draw(UiDrawer *drawer) override;                                // FS2 0x002cc9d0
+
+    UiTexVertex m_quad[2];      // FS2 +0x04: uv 0..1, xy 0..16
+    GsTexture  *m_texture;      // FS2 +0x24: null without the image
+};
+
+// What moves an actor and what fades its colour (vptr +0x08 / +0x10, two
+// slots each: { dtor, step }). Their classes are later slices' work; step
+// answers false once done, and the actor then deletes it. layout: host
+class KunitorisMover
+{
+public:
+    virtual ~KunitorisMover() {}
+    virtual bool step() = 0;
+    float m_pos[2];             // FS2 +0x00
+};
+
+// layout: host
+class KunitorisFader
+{
+public:
+    virtual ~KunitorisFader() {}
+    virtual bool step() = 0;
+    float m_rgba[4];            // FS2 +0x00
+};
+
+// The draw passes an actor gets (KunitorisGame::draw): the highlight, the
+// shadow on the board, then the actor lifted by its height.
+enum KunitorisPass
+{
+    KunitorisPass_Highlight = -1,       // KunitorisBlock only: the 0x13 picture
+    KunitorisPass_Shadow    = 0,
+    KunitorisPass_Lifted    = 1,        // any positive value
+};
+
+// The base of what is on the board (EE 0x28, vtable 0x319f30, vptr +0x24;
+// its ctor is inline in the derived ones). layout: host
+class KunitorisActor
+{
+public:
+    KunitorisActor();                                                    // inline in the ROM
+    virtual ~KunitorisActor();                                           // FS2 0x002cae40: deleting (obj, flag)
+    // Steps the mover and the fader into m_pos / m_color; always true.
+    virtual bool update();                                               // FS2 0x002cc8c0 (thunk 0x2cdbc0)
+    virtual void draw(UiDrawer *drawer, int pass);                       // FS2 0x002cdbd0: nothing
+
+protected:
+    // Inline in the ROM (each ctor): the sprite replaced, the old one deleted.
+    void setSprite(KunitorisDrawable *sprite);
+    // Inline in the ROM (each draw): sprite at m_pos in colour, the
+    // drawer's matrix moved there and its colour back to white after.
+    void drawSprite(UiDrawer *drawer, KunitorisDrawable *sprite, const UiVec4 &color);
+
+public:
+    float              m_pos[2];    // FS2 +0x00: pixels, the cell times 8
+    UiVec4             m_color;     // FS2 +0x08: grey (0.5) at first
+    KunitorisMover    *m_mover;     // FS2 +0x18
+    KunitorisFader    *m_fader;     // FS2 +0x1c
+    KunitorisDrawable *m_sprite;    // FS2 +0x20
+};
+
+// The player's cursor (EE 0x34, vtable 0x319f00). layout: host
+class KunitorisCursor : public KunitorisActor
+{
+public:
+    KunitorisCursor(const int *cell, int height);                        // FS2 0x002cacc0
+    ~KunitorisCursor() override;                                         // FS2 0x002cab60: deleting (obj, flag)
+    bool update() override;                                              // FS2 0x002c42a0
+    void draw(UiDrawer *drawer, int pass) override;                      // FS2 0x002ca870
+
+    int m_cell[2];              // FS2 +0x28
+    int m_height;               // FS2 +0x30: cells lifted
+};
+
+// A block's life (KunitorisBlock::m_state).
+enum KunitorisBlockState
+{
+    KunitorisBlock_Resting = 0,
+    KunitorisBlock_Bounce  = 1,         // a 14-frame hop above its height
+    KunitorisBlock_Leaving = 2,         // sinks, placed from m_anchor
+    KunitorisBlock_Sinking = 3,         // sinks over 12 frames
+    KunitorisBlock_Gone    = 4,         // update answers false
+};
+
+// One cell of a shape, kept at an offset from its owner's cell (EE 0x50,
+// vtable 0x319f90). layout: host
+class KunitorisBlock : public KunitorisActor
+{
+public:
+    KunitorisBlock(const int *origin, const int *offset, int height);    // FS2 0x002cc450
+    ~KunitorisBlock() override;                                          // FS2 0x002c7a40: deleting (obj, flag)
+    bool update() override;                                              // FS2 0x002cc220 (thunk 0x2c7a30)
+    void draw(UiDrawer *drawer, int pass) override;                      // FS2 0x002cb800
+
+    const int *m_origin;        // FS2 +0x28: the owner's cell
+    int        m_offset[2];     // FS2 +0x2c
+    int        m_cell[2];       // FS2 +0x34: origin + offset
+    int        m_height;        // FS2 +0x3c: cells lifted now
+    int        m_restHeight;    // FS2 +0x40
+    const int *m_anchor;        // FS2 +0x44: KunitorisBlock_Leaving's (cell = offset - anchor)
+    int        m_state;         // FS2 +0x48: KunitorisBlockState
+    int        m_timer;         // FS2 +0x4c: frames left in the state
+};
+
+// The game's linked list of actors (0x2cde50..0x2ce0b4): each node holds
+// its item in a 4-byte box of its own (EE 0x8). layout: host
+class KunitorisActorList
+{
+public:
+    // layout: host (EE 0xc)
+    struct Node
+    {
+        explicit Node(KunitorisActor **item);                            // FS2 0x002ce0a0
+        KunitorisActor **item;  // FS2 +0x0
+        Node            *next;  // FS2 +0x4
+        Node            *prev;  // FS2 +0x8
+    };
+
+    KunitorisActorList();                                                // FS2 0x002cde50
+    ~KunitorisActorList();                                               // FS2 0x002cde60: deleting (obj, flag)
+    void  pushBack(KunitorisActor *const &actor);                        // FS2 0x002cdec0
+    void  pushFront(KunitorisActor *const &actor);                       // FS2 0x002cdfe0
+    // The nodes and their boxes freed (not the actors).
+    void  clear();                                                       // FS2 0x002cdf70
+    Node *tail() const;                                                  // FS2 0x002ce070
+
+    Node *m_head;               // FS2 +0x0
+    int   m_count;              // FS2 +0x4
+};
+
+// A set of blocks with an active flag (EE 0xc; new[] of 2 at
+// KunitorisGame +0x7c). layout: host
+class KunitorisCells
+{
+public:
+    KunitorisCells();                                                    // FS2 0x002cb220
+    // Deletes the blocks.
+    ~KunitorisCells();                                                   // FS2 0x002cb170: deleting (obj, flag)
+    // Inline in the ROM: appended, and the set marked active.
+    void add(KunitorisActor *actor);
+
+    KunitorisActorList m_blocks;    // FS2 +0x0
+    int                m_active;    // FS2 +0x8
+};
+
+// A shape coming in from a side of the view (EE 0x24; 48 at KunitorisGame
+// +0x9c). layout: host
+class KunitorisGroup : public KunitorisCells
+{
+public:
+    KunitorisGroup();                                                    // FS2 0x002cafd0
+    ~KunitorisGroup();                                                   // FS2 0x002caf10: ~KunitorisCells inline
+    void setCell(int x, int y);                                          // FS2 0x002c8070
+    void setStep(int dx, int dy);                                        // FS2 0x002c8080
+    // A block at offset (x y) unless one is there already.
+    void addCell(const int *offset);                                     // FS2 0x002c8090
+
+    int m_cell[2];              // FS2 +0x0c: not set by the ctor
+    int m_step[2];              // FS2 +0x14: cells per move
+    int _1c;                    // FS2 +0x1c
+    int _20;                    // FS2 +0x20
+};
+
+// A shape: count cells, offsets from its first (data 0x2fbb50..0x2fbe00).
+// layout: host (EE 8 bytes: count, cells)
+struct KunitorisShape
+{
+    int count;
+    const int (*cells)[2];
+};
+
+// The pieces KunitorisGame::loadLevel builds (EE 0x38, vtable 0x319fe0
+// over the bases 0x319f60 / 0x319f70); a later slice's work. layout: host
+class KunitorisPiece
+{
+public:
+    KunitorisPiece();                                                    // FS2 0x002cd8a0
+    ~KunitorisPiece();                                                   // FS2 0x002cd690
+};
+
+// The level's board (vtables 0x319f60 / 0x319f70 / 0x319fd0 at +0x18, the
+// game's bases). layout: host.
+class KunitorisBoard
+{
+public:
+    KunitorisBoard();           // inline in the ROM (KunitorisGame's ctor)
+    ~KunitorisBoard();          // inline in the ROM: deletes the pieces
+
+    float  m_pos[2];            // FS2 +0x00: 0x319f60's (unset)
+    UiVec4 m_color;             // FS2 +0x08: grey
+    int    _1c;                 // FS2 +0x1c: 0x319f70's
+    int    _20;                 // FS2 +0x20
+    int    _24;                 // FS2 +0x24
+    u_char _28;                 // FS2 +0x28
+    KunitorisLevel *m_level;    // FS2 +0x2c: 0x319fd0's
+    int    _30;                 // FS2 +0x30
+    KunitorisPiece *m_pieces;   // FS2 +0x34: new[] (loadLevel)
+    int    _38;                 // FS2 +0x38: -1 at first
+};
+
+// The view's sides a group comes in from (the ctor's randNext2() & 3).
+enum KunitorisSide
+{
+    KunitorisSide_Left   = 0,           // moves right
+    KunitorisSide_Right  = 1,           // moves left
+    KunitorisSide_Top    = 2,           // moves down
+    KunitorisSide_Bottom = 3,           // moves up
+};
+constexpr int kKunitorisGroups = 48;
+
+// One level being played: kunitorisThread's stack object (EE 0x790, vptr
+// 0x319f80 at +0x18 over KunitorisBoard). Its destructor is inline in the
+// ROM, at the end of kunitorisThread's level.
+// layout: host -- EE offsets in comments.
+class KunitorisGame : public KunitorisBoard
+{
+public:
+    KunitorisGame(int hiScore, int level);                               // FS2 0x002c8640
     ~KunitorisGame();                                                    // inline in the ROM (kunitorisThread)
     // Takes the level file and builds its pieces; cell the cell size.
     void loadLevel(float cell, KunitorisLevel *level);                   // FS2 0x002cd390
@@ -124,13 +365,46 @@ public:
     void update(GamePad *pad);                                           // FS2 0x002c64d0
     void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x002c5ea0
 
-    KunitorisLevel *m_level;    // FS2 +0x02c
-    int    m_score;             // FS2 +0x05c: recorded as the level's best when higher
+private:
+    // Inline in the ROM (the ctor): the first group not active, or null.
+    KunitorisGroup *freeGroup();
+    // m_lives as a bar of pack item 0x12, one pixel a life, at the top.
+    void drawLivesBar();                                                 // FS2 0x002c8510
+    // _764 as the same bar, dark grey or grey by bit 1 of _760.
+    void drawBlinkBar();                                                 // FS2 0x002c83a0
+
+public:
+    int    _3c;                 // FS2 +0x03c
+    int    _40;                 // FS2 +0x040
+    int    _44;                 // FS2 +0x044: -1 at first
+    int    _48[4];              // FS2 +0x048
+    UiDrawer *m_drawer;         // FS2 +0x058
+    int    m_hiScore;           // FS2 +0x05c: the level's best at first; recorded when higher
+    int    m_score;             // FS2 +0x060
     int    m_scroll[2];         // FS2 +0x064: the board cell at the view's corner, x y
-    int    m_viewHalf[2];       // FS2 +0x06c: kunitorisThread centres m_scroll by it
-    int    m_lives;             // FS2 +0x080: under 1 the game is over
+    int    m_playerCell[2];     // FS2 +0x06c: (18, 18) at first; the cursor's cell
+    KunitorisCursor *m_cursor;  // FS2 +0x074
+    int    m_cellsIndex;        // FS2 +0x078: which of m_cells holds the player's blocks
+    KunitorisCells  *m_cells;   // FS2 +0x07c: new[] of 2
+    int    m_lives;             // FS2 +0x080: under 1 the game is over (40 .. 32 by level)
+    int    _84;                 // FS2 +0x084: 210 .. 120 by level
+    int    _88;                 // FS2 +0x088: 120 .. 60 by level (a period: _94 counts it)
+    int    _8c;                 // FS2 +0x08c: 20 .. 8 by level (a period: _98 counts it)
+    int    _90;                 // FS2 +0x090: 5
+    int    _94;                 // FS2 +0x094
+    int    _98;                 // FS2 +0x098
+    KunitorisGroup m_groups[kKunitorisGroups]; // FS2 +0x09c
+    int    _75c;                // FS2 +0x75c
+    int    _760;                // FS2 +0x760
+    int    _764;                // FS2 +0x764
+    int    _768;                // FS2 +0x768
+    int    _76c;                // FS2 +0x76c
     u_char m_selectToggle;      // FS2 +0x770: Select flips it while lives are left
+    int    _774;                // FS2 +0x774
     u_char m_cleared;           // FS2 +0x778: the level is cleared
+    int    m_shapeCount;        // FS2 +0x77c: of m_shapes, 27 below level 12, else 20
+    const KunitorisShape *m_shapes; // FS2 +0x780
+    KunitorisSprite *m_sprite;  // FS2 +0x784: the 0x13 picture
 };
 
 // kunitorisEnding's state (EE 0x1c, on its stack).
