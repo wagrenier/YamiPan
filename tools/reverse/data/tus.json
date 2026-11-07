@@ -3397,12 +3397,21 @@
    "why": "SDPR2 core + public API: uses the first of four copies of its message set (0x3027b8); the cut at sdpr2PairTurn 0x16c870 is a guess (batch 011)."
   },
   "sdpr2/sdpr2drv.c": {
+   "notes": "All 27 functions plus 3 starts Ghidra had swallowed (batch 203: sdpr2DrvRegister 0x1700d0, sdpr2DrvUnregister 0x1700f8, sdpr2SeDrvUninstall 0x1712e0; created and saved). Driver table is Sdpr2Driver in sdpr2drv.h (layout host, 0x34 on the EE); the SE driver table 0x2f7a68 and preset table 0x2f7a58 are static data in sdpr2drv.c, its slot functions static. Wrappers use sdpr2check.h SDPR2_TRY so a failed check prints twice as in the ROM. Note bit 16 is SDPR2_NOTE_FLAG_ATTR. Smoke run: boot passes sdpr2DrvInit, the next reached stub is sdpr2PairInit (sdpr2/sdpr2pair.c, the natural next TU); screen unchanged (language select), sound not visible, hence verify. work/shots/last.png came out 0 bytes this run (the run was stopped at 15s); shot_24300.png was the readable last frame.",
    "ranges": [
     [
      "00170088",
      "00171300"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-07 07:00",
+     "status": "verify",
+     "summary": "reconstruct 30 functions: the SDPR2 driver layer and the SE driver (verify)"
+    }
+   ],
+   "status": "verify",
    "why": "SDPR2 driver sdpr2Drv* + the SE driver sdpr2SeDrv*: the fourth message copy (0x302bf0); the cut after sdpr2SeDrvInstall a guess (batch 011)."
   },
   "sdpr2/sdpr2pair.c": {

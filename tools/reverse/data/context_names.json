@@ -11771,6 +11771,18 @@
   "was": "FUN_00170088",
   "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): installs the default driver (sdpr2SeDrvInstall) with the caller's config; from sdpr2Init"
  },
+ "001700d0": {
+  "name": "sdpr2DrvRegister",
+  "tag": "lib-context",
+  "was": "FUN_001700d0",
+  "why": "stores a0 in the driver pointer 0x537d30 when it is null (0) else -1; sdpr2SeDrvInstall tail-calls it with the SE driver table 0x2f7a68 (was swallowed by sdpr2DrvInit, batch 203)"
+ },
+ "001700f8": {
+  "name": "sdpr2DrvUnregister",
+  "tag": "lib-context",
+  "was": "FUN_001700f8",
+  "why": "clears the driver pointer 0x537d30 when set (0) else -1; tail of sdpr2SeDrvUninstall (batch 203)"
+ },
  "00170120": {
   "name": "sdpr2DrvPlay",
   "tag": "lib-context",
@@ -11926,6 +11938,12 @@
   "tag": "lib-context",
   "was": "FUN_00171230",
   "why": "SDPR2 (FS2 middleware over rxSndSe, not in RoR; messages 0x3027b8..): sets the driver config 0x537d58 (defaults {1, 1, -1, -1, 0..}), copies it with sdpr2DrvSetConfig and installs the SE driver table 0x2f7a68 at 0x537d30 if none is"
+ },
+ "001712e0": {
+  "name": "sdpr2SeDrvUninstall",
+  "tag": "lib-context",
+  "was": "FUN_001712e0",
+  "why": "right after sdpr2SeDrvInstall, only tail-jumps sdpr2DrvUnregister; no caller in the ROM (batch 203)"
  },
  "00171300": {
   "name": "ScenePairTable::actionTerminate",

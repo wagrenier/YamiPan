@@ -2560,7 +2560,9 @@
 // FILE -- sdpr2/sdpr2drv.c
 // *****************************************************************************
 
-/* 00170088 00000090 */ sdpr2DrvInit(){}  // lib-ctx
+/* 00170088 00000044 */ sdpr2DrvInit(){}  // lib-ctx
+/* 001700d0 00000020 */ sdpr2DrvRegister(){}  // lib-ctx
+/* 001700f8 00000020 */ sdpr2DrvUnregister(){}  // lib-ctx
 /* 00170120 00000160 */ sdpr2DrvPlay(){}  // lib-ctx
 /* 00170280 00000170 */ sdpr2DrvPlayEx(){}  // lib-ctx
 /* 001703f0 00000114 */ sdpr2DrvStop(){}  // lib-ctx
@@ -2586,7 +2588,8 @@
 /* 001711a0 00000014 */ sdpr2SeDrvSetAttr(){}  // lib-ctx
 /* 001711b8 00000024 */ sdpr2SeDrvSetParam(){}  // lib-ctx
 /* 001711e0 0000004c */ sdpr2SeDrvGetStatus(){}  // lib-ctx
-/* 00171230 000000c4 */ sdpr2SeDrvInstall(){}  // lib-ctx
+/* 00171230 000000ac */ sdpr2SeDrvInstall(){}  // lib-ctx
+/* 001712e0 00000014 */ sdpr2SeDrvUninstall(){}  // lib-ctx
 
 // *****************************************************************************
 // FILE -- game/scenepairs.cpp

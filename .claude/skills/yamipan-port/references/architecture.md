@@ -335,6 +335,20 @@ Layers:
   the only driver is the SE driver `sdpr2SeDrv*` (table 0x2f7a68, `rxSndSe*`), config 8 words at
   0x537d38 (defaults from 0x537d58 {1, 1, -1, -1, 0..}). Ghidra had merged 10 starts (the two type
   exits, eight SE-driver slots); created 2026-11-02.
+- **sdpr2drv.c as written (2026-11-07, all 27 + 3, `verify`)**: three more starts Ghidra had
+  swallowed, created and named (batch 203): `sdpr2DrvRegister` 0x1700d0 (store the table at
+  0x537d30 when null, else -1) and `sdpr2DrvUnregister` 0x1700f8 (inside `sdpr2DrvInit`'s body),
+  `sdpr2SeDrvUninstall` 0x1712e0 (no caller). `sdpr2DrvInit` = `SDPR2_TRY(sdpr2SeDrvInstall(config))`.
+  `sdpr2SeDrvInstall`: config null -> {keep 1, pause arg 1, -1, -1, 0, 0, 0, 0}, else words 0..3
+  and **word 4 copied into 4..7** (ROM quirk), into 0x537d58; `sdpr2DrvSetConfig` copies those to
+  0x537d38 (what `GetConfig` hands the types), then registers 0x2f7a68. The game's config
+  (`sound.cpp`) is {0, 0, -1, -1, 0..}: keep 0, pause arg 0. Every `sdpr2Drv*` call is
+  `SDPR2_TRY(check(table)); SDPR2_TRY(check(slot)); call` (message 0x302d30 twice on failure);
+  Stop..SetParam answer 0 after the call, Play / PlayEx / Ext* the slot's answer; `GetStatus` checks
+  quietly (-1). SE driver: volumes = gain x phase sign; **note bit 16 (0x10000) is a flag**,
+  stripped, then `rxSndSeSetAttr(voice, 1)`; preset -> `rxSndSeSetParamB` of {1, 2, 0, 0} (data
+  0x2f7a58); int pitch x 1/4096; status: not open (bit 0) 0, paused (bit 3) 2, else ended (bit 2)
+  0 / 1. The driver table is a `Sdpr2Driver` (layout: host, 0x34 on the EE).
 - **sdpr2.c as written (TU 40, 2026-11-03)**: every API call is the same shape -- check the type
   (0..7) or handle (0..63), limit / wrap the arguments (xvab 0..0xffff, prog 0..0x7f, note
   0..0x1ffff, volume / spread 0..0x80, angle wrapped into 0..359, pitch 0..0x2000 or 0.0..2.0f,
