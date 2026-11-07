@@ -5722,7 +5722,7 @@
 /* 00217a80 00000160 */ StageCharacter::ageSightTable(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/playermotion.cpp
 // *****************************************************************************
 
 /* 00217be0 00000078 */ StageCharacter::getFoeWeight(){}  // game
@@ -5741,11 +5741,6 @@
 /* 00218470 00000020 */ StageCharacter::scriptRouteAction12c(){}  // game
 /* 00218490 00000004 */ StageCharacter::doNothing(){}  // game
 /* 002184a0 00000008 */ StageCharacter::wasPlacedThisFrame(){}  // game
-
-// *****************************************************************************
-// FILE -- game/playermotion.cpp
-// *****************************************************************************
-
 /* 002184b0 00000044 */ StageCharacter::noticeItem(){}  // game
 /* 00218500 000000a0 */ StageCharacter::setPosition(){}  // game
 /* 002185a0 0000006c */ StageObject::canSpawn(){}  // game

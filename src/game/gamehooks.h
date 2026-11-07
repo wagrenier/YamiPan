@@ -2591,6 +2591,9 @@ public:
     int  answerNo() { return 0; }
     // FS2 0x00218490
     void doNothing() {}
+    // FS2 0x002184a0: set where the character was put this frame; the brain
+    // waits a frame before it thinks (CharacterBrain::update).
+    bool wasPlacedThisFrame() const { return m_placedThisFrame != 0; }
     // FS2 0x00179d00
     bool isBulletFlying() const { return m_bulletFlying != 0; }
     void sideHook0() override;                                           // FS2 0x0017a860

@@ -1238,11 +1238,11 @@ void CharacterBrain::reset()
 // Tests the scene first, so the ROM's walk reaches a character without a
 // brain on a stage without a route.
 // FS2 0x001dd330
-// callcheck: isHeld7a0, isDone, run, run
+// callcheck: wasPlacedThisFrame, isDone, run, run
 
 void CharacterBrain::update()
 {
-    if (gStageScene->route == nullptr || !m_enabled || m_owner->m_placedThisFrame)
+    if (gStageScene->route == nullptr || !m_enabled || m_owner->wasPlacedThisFrame())
         return;
     if (m_wait->isDone()) {
         m_subRunner = nullptr;
