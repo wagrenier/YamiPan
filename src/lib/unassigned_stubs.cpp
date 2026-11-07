@@ -111,20 +111,6 @@ bool StageObject::followsPlayerLight()
 // ---- by hand: the character's parts, until their TUs (next in the queue) ----
 
 // stub of FS2 0x00239bc0
-// stub of FS2 0x00212020
-bool StageCharacter::canTakeOver()
-{
-    YAMIPAN_STUB("StageCharacter::canTakeOver", 0x00212020);
-    return {};
-}
-
-// stub of FS2 0x002119d0
-bool StageCharacter::isCompanionWalking()
-{
-    YAMIPAN_STUB("StageCharacter::isCompanionWalking", 0x002119d0);
-    return {};
-}
-
 // stub of FS2 0x001e05b0
 bool PlayerMotion::winsStruggle(StageObject *other)
 {

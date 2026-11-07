@@ -6111,6 +6111,33 @@ bool StageCharacter::isTakenOver() const
     return gStageScene->controlled == this && gStageScene->controlled != gStageScene->player;
 }
 
+// FS2 0x002119d0
+// callcheck: getStageSelect (stageObjRecord; the ROM inlines the motion lists in the order isMovingMotion, isHoldableMotion)
+
+bool StageCharacter::isCompanionWalking()
+{
+    constexpr int kMotionSpawnIdle = 0xdb;      // sp_spawn_idle
+    constexpr int kMotionSpIdle = 0xdf;         // sp_idle
+    if (stageObjRecord(m_itemDef)->kind != CharacterKind_NoShadow)
+        return false;
+    const int id = m_motion->motionId;
+    return isMovingMotion(id) || isHoldableMotion(id) || id == kMotionSpIdle || id == kMotionSpawnIdle;
+}
+
+// FS2 0x00212020
+// callcheck: getStageSelect, getBrainPace (stageObjRecord)
+
+bool StageCharacter::canTakeOver()
+{
+    if (gStageScene->partner == this)
+        return false;
+    if (stageObjRecord(m_itemDef)->kind == CharacterKind_NoShadow)
+        return false;
+    const int pace = getBrainPace();
+    return pace != BrainState_Foe && pace != BrainState_Slot4c && pace != BrainState_Slot4b
+        && pace != BrainState_Slot4a && pace != BrainState_Down;
+}
+
 // FS2 0x0020d400
 // callcheck: getSeconds, getSeconds, getSaveData, getStageSelect, getStageSelect (stageObjRecord)
 
