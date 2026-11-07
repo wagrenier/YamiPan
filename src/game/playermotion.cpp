@@ -2012,6 +2012,22 @@ StageCollisionFace *MotionProbe::faceAhead(sceVu0FVECTOR out, bool forward)
     return face;
 }
 
+// FS2 0x0026c650
+// callcheck: operator_delete, operator_delete (the spread is a member here; the deleting half is the host's delete)
+
+MotionProbe::~MotionProbe()
+{
+    // The ROM deletes the spread block at +4, then this when asked to.
+}
+
+// FS2 0x0026c6b0
+// callcheck: operator_new (the spread is a member here)
+
+MotionProbe::MotionProbe(StageCharacter *owner_) : owner(owner_)
+{
+    // The ROM news the spread: { amount 0, rate 1, settled 0 }, ShotSpread's defaults.
+}
+
 // A car's roof and the like: an edge on one is not a dead end.
 static bool isVehicle(StageObject *object)
 {
@@ -3968,7 +3984,7 @@ NpcReactionLink::~NpcReactionLink()
 }
 
 // FS2 0x001ed410
-// callcheck: DamageDeadLink, MotionCondition, MotionLink, memset, find, FUN_00278db0, FUN_0027a0b0, FUN_0027a910, FUN_0027aa90, FUN_0027aea0, FUN_0027b000, FUN_0027b730, BossIdleLink, BossAttackLink, SpNumLockLink, SpPadlockLink, SpDropLink, SpRoboLink, SpRingLink, NpcReactionLink, DriveLink, ApproachBiteLink, ApproachOutLink, ApproachCarLink, getStageSelect, operator_new, LiteralMap, LiteralMap, LiteralMap, FUN_0026c6b0, FUN_00276510, insert, balance, FUN_001df0b0, FUN_0027c520, FUN_0027c140, FUN_0027b640, FUN_0027cc50, FUN_002775d0, insert, FUN_0027c370, balance (the links, the conditions and their maps: game/playermotion.h)
+// callcheck: DamageDeadLink, MotionCondition, MotionLink, memset, find, FUN_00278db0, FUN_0027a0b0, FUN_0027a910, FUN_0027aa90, FUN_0027aea0, FUN_0027b000, FUN_0027b730, BossIdleLink, BossAttackLink, SpNumLockLink, SpPadlockLink, SpDropLink, SpRoboLink, SpRingLink, NpcReactionLink, DriveLink, ApproachBiteLink, ApproachOutLink, ApproachCarLink, getStageSelect, operator_new, LiteralMap, LiteralMap, LiteralMap, MotionProbe, FUN_00276510, insert, balance, FUN_001df0b0, FUN_0027c520, FUN_0027c140, FUN_0027b640, FUN_0027cc50, FUN_002775d0, insert, FUN_0027c370, balance (the links, the conditions and their maps: game/playermotion.h)
 
 // The car's links. Each of the door ones works behind a fade: to black, the
 // change of seat at full black (rideCar's reset leaves the link), the fade back.
@@ -4318,7 +4334,7 @@ PlayerMotion::PlayerMotion(StageObject *owner_)
 }
 
 // FS2 0x001ed2a0
-// callcheck: operator_delete, FUN_0026c650, ~LiteralMap, ~LiteralMap, ~LiteralMap (the host deletes; the maps of the ctor)
+// callcheck: operator_delete, ~MotionProbe, ~LiteralMap, ~LiteralMap, ~LiteralMap (the host deletes; the maps of the ctor)
 
 PlayerMotion::~PlayerMotion()
 {
