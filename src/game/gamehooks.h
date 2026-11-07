@@ -3326,21 +3326,7 @@ struct Rand48
     void seed(u_int value);                                              // FS2 0x00268290
 };
 
-// +0xf4: the ALERT / CAUTION state machine (game/stagealert.cpp).
-// layout: host (EE 0x1c).
-struct StageAlert
-{
-    StageAlert();                                                        // FS2 0x00264070
-    ~StageAlert();                                                       // FS2 0x00264000: deleting
-    u_long update();                                                     // FS2 0x00263c10
-    void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x00263ba0
-    // The screen's flash of a foe (the fade at +0x14); answers true.
-    bool flash();                                                        // FS2 0x00263ed0
-    // The flash for who, with its cue and the CAUTION sound (native 0x13e).
-    bool cry(StageCharacter *who);                                       // FS2 0x00263f10
-    // Who it shows, with the option on (natives 0xc7, 0xc8).
-    void show(StageObject *who);                                         // FS2 0x00263f80
-};
+// +0xf4: StageAlert, game/stagealert.h.
 
 // +0x11c: the stage-clear sequence (+0x118, the game over: game/gameoversequence.h).
 // Its state reads as done once the scene's fade is full in mode 2.

@@ -86,7 +86,7 @@ struct ScenePool;
 struct SceneRecordBuckets;
 struct SceneRender;
 struct SceneNoiseList;
-struct StageAlert;
+class StageAlert;
 struct StageNodeTree;
 struct UiShowFlags;             // game/uiwidget.h
 class FileLoader;               // game/fileloader.h

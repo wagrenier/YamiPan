@@ -27,6 +27,7 @@
 #include "game/characterroute.h"
 #include "game/clock.h"
 #include "game/gamehooks.h"
+#include "game/stagealert.h"
 #include "game/mathutil.h"
 #include "game/modelpose.h"
 #include "game/playermotion.h"

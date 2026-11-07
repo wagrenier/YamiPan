@@ -22,6 +22,7 @@
 #include "game/fontdata.h"
 #include "game/characterinput.h"
 #include "game/gamehooks.h"
+#include "game/stagealert.h"
 #include "game/gameoversequence.h"
 #include "game/gamepacket.h"
 #include "game/gamesystem.h"

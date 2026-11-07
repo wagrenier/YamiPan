@@ -6918,7 +6918,7 @@
 // FILE -- game/stagealert.cpp
 // *****************************************************************************
 
-/* 00263b90 00000004 */ FUN_00263b90(){}
+/* 00263b90 00000004 */ StageAlert::beforeFileEvent(){}  // game
 /* 00263ba0 00000068 */ StageAlert::draw(){}  // game
 /* 00263c10 000002b8 */ StageAlert::update(){}  // game
 /* 00263ed0 00000038 */ StageAlert::flash(){}  // game

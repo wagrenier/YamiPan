@@ -94,6 +94,14 @@ enum MapMode
 
 // The game options at 0x599000 (SystemData +0x4d0). The fields without a
 // name are only set to their defaults and compared here.
+// How the stage tells of a foe.
+enum GameAlertMode
+{
+    GameAlert_Off   = 0,        // StageAlert::show does nothing
+    GameAlert_Flash = 1,        // StageAlert::flash
+    GameAlert_Party = 2,        // StageParty::warnAttacker
+};
+
 struct GameOptions
 {
     void setDefaults();                                                  // FS2 0x0023be70
@@ -108,7 +116,7 @@ struct GameOptions
     u_char    _08;              // FS2 +0x08: default 1
     short     screenX;          // FS2 +0x0a: display offset (gfxSetDisplayOffset), default 0
     short     screenY;          // FS2 +0x0c: default 0
-    int       _10;              // FS2 +0x10: default 2
+    int       alertMode;        // FS2 +0x10: GameAlertMode, default GameAlert_Party
     u_char    invertY;          // FS2 +0x14: default 1: the sticks' look and aim y the other way
     u_char    invertX;          // FS2 +0x15: default 0: their x
     int       brightness;       // FS2 +0x18: index into the 19-step table 0x2fac20 (guess: brightness), default 9
@@ -121,7 +129,7 @@ struct GameOptions
     u_char    autoSave;         // FS2 +0x4d: never set by setDefaults; with it the save dialog goes straight to the save of the loaded stamp (PrgMcCard::stepSave)
 };
 static_assert(offsetof(GameOptions, screenX) == 0x0a, "GameOptions::screenX");
-static_assert(offsetof(GameOptions, _10) == 0x10, "GameOptions::_10");
+static_assert(offsetof(GameOptions, alertMode) == 0x10, "GameOptions::alertMode");
 static_assert(offsetof(GameOptions, brightness) == 0x18, "GameOptions::brightness");
 static_assert(offsetof(GameOptions, wideScreen) == 0x20, "GameOptions::wideScreen");
 static_assert(offsetof(GameOptions, buttonMap) == 0x24, "GameOptions::buttonMap");
