@@ -82,6 +82,18 @@ static int  gameFrameReady(FrameSync *sync);
 static int  dmacBusErrorHandler(int cause);
 
 // ──────────────────────────────────────────────────────────────────────
+// A stage starts (stageThread, before its loop): the stage's heap mark
+// starts again from the current top and the perf meter forgets the last
+// stage's peaks.
+// FS2 0x0012cce0
+
+void GameSystem::beginStage()
+{
+    gGlobalHeap.setMark(HeapMark_Stage);
+    m_perfMeter.resetStats();
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // End of frame: wait for the GS path to drain. A DMAC bus error since the
 // last frame resets the GS and DMA first; a path that does not drain is
 // reset until it does, and the next flip then skips the display packet.

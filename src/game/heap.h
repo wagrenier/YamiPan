@@ -13,13 +13,13 @@
 
 #include "sdk/scetypes.h"
 
-// Usage marks GameSystem::flipFrame reports; mark 2 is reset every frame.
-// The meaning of marks 0 and 1 is a guess until their setters are read
-// (0x12cce0 sets one).
+// Usage marks GameSystem::flipFrame reports; mark 2 is reset every frame,
+// mark 1 at each stage start (GameSystem::beginStage). Mark 0's meaning is
+// a guess until its setter is read.
 enum HeapMark
 {
     HeapMark_Base  = 0,         // guess
-    HeapMark_Stage = 1,         // guess
+    HeapMark_Stage = 1,         // GameSystem::beginStage sets it
     HeapMark_Frame = 2,         // GameSystem::flipFrame sets it each frame
     HeapMark_Count = 4,
     HeapMark_All   = -1,        // setMark: every mark

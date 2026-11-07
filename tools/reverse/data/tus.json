@@ -459,7 +459,7 @@
    "notes": "All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). Naming batch 022: gsEndFrameSync became GameSystem::endFrameSync (member that ignores this), GamePad ctor / dtor / read / setButtonMap, Pad::Pad(bool), atan2f, srand, rndInit, PerfMeter::addBar / drawBars / drawDetail, debugSys hooks, gfxFlipDisplay, gameSceneThread. Callee headers are minimal stand-ins (pad.h, clock.h, heap.h, perfmeter.h, gamepacket.h, gfxtarget.h, sysdata.h, thread.h, gamehooks.h for rx / sound / memcard / debug hooks / scene thread): their TUs complete them. SDK includes assume bootstrap 6 provides sdk/eestruct.h, sdk/libvifpk.h (pCurrent first) and ExitHandler. gsClearVram is kept as the game wrote it with a PC note (no GS emulator: the host drops the GIF packet). computeSticks has a PC guard for 0/0 at rest. Open: why GamePad::read and the slot GamePad::update are twins; heap mark and meter group names are guesses. Picture: nothing to see until bootstrap 6-7.",
    "ranges": [
     [
-     "0012cd20",
+     "0012cce0",
      "0012dd30"
     ]
    ],
@@ -469,10 +469,15 @@
      "date": "2026-11-02 17:59",
      "status": "verify",
      "summary": "main, gameInit, the main loop, GameSystem (ctor, flipFrame, endFrameSync), GamePad / MaskedGamePad, gsClearVram, the frame-ready and DMAC handlers: all 17 functions written (source-only, not built)"
+    },
+    {
+     "date": "2026-11-07 05:10",
+     "status": "verify",
+     "summary": "marked verify -> verify: gained GameSystem::beginStage 0x12cce0 (range now 0x12cce0..0x12dd30, 18 functions) from TU unassigned@0012c9b8; not reached by the smoke run (stageThread only)"
     }
    ],
    "status": "verify",
-   "why": "gsEndFrameSync, GameSystem (ctor, flipFrame), GamePad helpers, gameInit, gsClearVram, main, gameMainThread, gameFrameReady, the DMAC handler, GamePad::update / MaskedGamePad::update (batches 001-004, 009); the file name and the GamePad split are guesses."
+   "why": "GameSystem::beginStage 0x12cce0 sits right after newlib's __swsetup and before endFrameSync 0x12cd20 (the 8 bytes between are padding): the first function of gamesystem.cpp; 0x12c9b8..0x12cce0 is libc (lib_ranges, batch 199)"
   },
   "game/gfxtarget.cpp": {
    "notes": "Re-pinned to 0x12dfa0..0x12f190: the display records 0x4ae280 and gp-0x7ad8..-0x7ac8 are used only there; RcntTimer starts at 0x12f190. Two GfxDisplay records (0x540): 0 = 512x512 interlaced field mode with the DISPFB1/DISPLAY1 flicker filter (PMODE 0x8023), 1 = 256x256 progressive (gfxSelectDisplay, used by 0x2c4320). Each holds the display regs, a GfxDrawEnv (tag, sceGsDrawEnv1, sceGsClear) and a GfxCopyPacket (57 A+D writes: draw buffer 0x800 drawn into the PSMCT16 display buffer in 64-texel dithered sprites; gfxBuildCopyPacket 0x12ec10). Stand-ins: GsBlockMap (TexArea derives from it; slot 0 mark 0x12ea60 is an inline virtual emitted here), GsRegionAlloc 0x2e14d0, drawSysInit 0x2d7cf0 in gamehooks.h. Checked: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on gfxtarget and its users (RosePan SDK headers + stubs); no harness. Bootstrap 6: sceGsTexEnv, sceGsSetDefDispEnv/DrawEnv/Clear/TexEnv (12 args, filter last), SCE_GS_Z* 0..3, sceDmaSendN, WRITEBACK_DCACHE, and fix RosePan's swapped SCE_GS_INTERLACE/NOINTERLACE (hazards.md). Doubts: what 0x2c4320 is; why record 1 copies 32 lines fewer; drawSysInit named from its arguments only. Next: the GS allocators TU 0x142dd0..0x144080, the region allocator 0x2e1440..0x2e1b70.",
@@ -3398,6 +3403,17 @@
    "status": "verify"
   },
   "unassigned@00121b80": {},
+  "unassigned@0012c9b8": {
+   "notes": "This key is empty now: 0x12c9b8..0x12cce0 is newlib (layout.json lib_ranges libc row, architecture.md libc bullet, batch 199 also names __sinit 0x123910, __sfvwrite 0x123fe0, __smakebuf 0x1245a0, __swrite 0x127d98, vfprintf 0x12a3a0, __svfscanf 0x12bd28); the host libc replaces it, nothing to write. GameSystem::beginStage (Heap mark 1 = HeapMark_Stage, now confirmed in heap.h, then PerfMeter::resetStats on m_perfMeter +0x4a8) is in src/game/gamesystem.cpp, whose range is now 0x12cce0..0x12dd30. Picture: the smoke run stays at the language select (English highlighted, as before); beginStage runs only from stageThread, so nothing on screen shows it yet: verify. Remaining unread runs to classify: 0x121b80 (done as sdk/mcerror.cpp), the VU0 math, 0x142dd0..0x144080.",
+   "sessions": [
+    {
+     "date": "2026-11-07 05:12",
+     "status": "verify",
+     "summary": "Resolved: newlib stdio tail 0x12c9b8..0x12cce0 (__sccl, vsprintf, _vsprintf_r, _write_r, __swsetup) is libc, the libc lib_range now ends at 0x12cce0; GameSystem::beginStage 0x12cce0 moved to game/gamesystem.cpp and written (stub removed); batch 199 names 10 newlib stdio functions"
+    }
+   ],
+   "status": "verify"
+  },
   "unassigned@001319f0": {},
   "unassigned@00133800": {},
   "unassigned@00135990": {},

@@ -80,10 +80,10 @@ MSL C++ runtime 0x104b40..0x1076e8 (from `__destroy_new_array`, batch 031), libg
 0x10ac60..0x10c218 (its leaf run after 0x10acc8 unread: libvu0?), libmpeg 0x10c218..0x116978, libipu
 ..0x116fb8, newlib libm (float) 0x116fb8..0x119be8, libgcc (libgcc2 + fp-bit soft-float) ..0x11c6b0,
 libcdvd 0x11c6b0..0x11e440, libpad ..0x11fb70, libmc ..0x121b80, libc (newlib)
-0x121ef0..0x12c9b8, libkernl 0x1366c0..0x142dd0 (front, sifcmd / sifrpc, fileio, iopheap, tail),
+0x121ef0..0x12cce0 (its stdio tail to 0x12cce0 read at TU unassigned@0012c9b8, batch 199), libkernl 0x1366c0..0x142dd0 (front, sifcmd / sifrpc, fileio, iopheap, tail),
 **libscf 0x2640e8..0x2647d8** (batch 027: linked between game objects, in the middle of the game's
 0x171300.. run) and the kernel-patch island 0x2f3a40..0x2f4d20: 931 functions. **Unread runs between them stay game code
-until read** (not library by default): 0x121b80 (libmc error mapper?), 0x12c9b8..0x12cd20, the VU0 math
+until read** (not library by default): 0x121b80 (libmc error mapper?), the VU0 math
 0x135990..0x1366c0 (game code, TU 42: before it `game/mathutil.cpp` / `game/clock.cpp`), 0x142dd0..0x144080.
 
 First features pass over it (`refresh.py`, 2026-10-31): 6,393 functions, 25,668 calls, 871 tail
@@ -1884,7 +1884,14 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
 - **libmpeg / libipu (batch 012, RoR's SDK 3.0 libraries, same sizes; `rxalign.py` with `--lib`)**: FS2 links the archive members in another order than RoR: the MPEG-2 decoder members first, 0x10c218..0x1112f8 (`_motionComp0` 0x10ccf0, `_getRef0`, `_doMC`, `_pictureData0`, `_slice0` 0x10d828, `_motionVectors`, `_flushBuf` 0x10e7f0, `_nextBit` 0x10ead8 (83 callers), `_sceMpegSliceA0` 0x10fea8, the header parsers `_groupOfPicturesHeader` .. `_pictureDisplayExtension` 0x111130; RoR 0x2541b0..0x258f78, after mpeg.c), then mpeg.c / csc / pack / init 0x1112f8..0x116978 (`sceMpegCreate` 0x1112f8, `_getpic`, `sceMpegInit` 0x111ea0 (calls `sceIpuInit`), `sceMpegDelete` .. `sceMpegGetDecodeMode`, `sceMpegSetDefaultPtsGap` 0x112370, `_decPicture`, `_alalc*`, `_lastFrame`, `_ch3dmaCSC` 0x113750 / `_ch4dma` (two code pointers of batch 010), `_id2type`, the PSS demuxer 0x113d40 / 0x1143e8, `sceMpegDemuxPss` 0x116570, `sceMpegAddStrCallback` 0x116590, `_ErrMessage` 0x116768 ('[MPEG ERROR]%s'), `_Error` 0x1168e0; RoR 0x24eb28..0x2541b0), then libipu 0x116978..0x116fb8 (`sceIpuStopDMA` 0x116a68, `sceIpuRestartDMA`, `sceIpuSync`, `sceIpuInit` 0x116d80; RoR 0x269948). Unnamed in RoR too: 0x10c218 (0x244, no RoR pair: before `FUN_002541b0`'s counterpart 0x10c460), 0x111228 (RoR 0x24ea58), the tiny accessors 0x1123a0..0x112400 (mp->sys +0xec, +0xe0, +0xe4, +0xc8 twice, +0xfc swap, +0x100: likely `sceMpegDispWidth` / `Height` / `CenterOff*` and kin; read them at the TU) and the other `FUN_` pairs of the alignment.
 - **The game's movie player is FS2's own, not RoR's rxMpeg** (batch 012; written at TU 34, `game/movieplayer.cpp` in "Modules" supersedes the guesses here): RoR's `RxMpeg` / `rxMpeg*` (snd/rxmpeg.cpp, RoR game code) has no counterpart by size (`rxalign.py 1fa800 1fd000 1810f4 1830fc`: 3 chance pairs). FS2's player is a C++ class at ~0x1fa880..~0x1fcbf0 (vtables 0x315f50 / 0x315f80 without type_info): 0x1fc7b0 initialises it (CreateSema, `sceMpegInit` once behind the flag 0x31ae28, 4 x volume 0x80), 0x1fb9d0 opens a stream (rx stream ring 0x152400, `sceMpegCreate`, `sceMpegAddStrCallback` x4, `sceMpegAddCallback`), 0x1fb630 gets pictures (`sceMpegGetPicture`), 0x1fab50 is the decode thread side (WaitSema, `sceMpegIsEnd`); 0x1fbe00 / 0x1fbe20 wrap `sceIpuRestartDMA` / `sceIpuStopDMA` (the libmpeg stop / restart DMA callbacks). Callers: 0x25bd30, 0x25e260 (the movie scenes: `movieEU/ev*.d2b`). Name it at its TU.
 - **libc** (Sony's newlib): `strlen` 0x128498, `strcpy` 0x128380 (R5900 quadword scans), `raise`
-  0x127a68 / `_raise_r` 0x1278f8, `_impure_ptr` 0x2f3398.
+  0x127a68 / `_raise_r` 0x1278f8, `_impure_ptr` 0x2f3398. Stdio (batch 199, an old newlib: the cores
+  take (fp, fmt, ap) and find the reent at fp->_data +0x54): `__sinit` 0x123910, `__sfvwrite`
+  0x123fe0, `__smakebuf` 0x1245a0, `__swrite` 0x127d98, `vfprintf` 0x12a3a0, `__svfscanf` 0x12bd28,
+  then the archive's last members `__sccl` 0x12c9b8, `vsprintf` 0x12cab8, `_vsprintf_r` 0x12cb10 (no
+  caller), `_write_r` 0x12cb68 (the global errno word 0x5a55f8), `__swsetup` 0x12cbc8 ..0x12cce0.
+  Right after it (8 bytes of padding) comes the game's first object, `game/gamesystem.cpp` from
+  `GameSystem::beginStage` 0x12cce0 (stageThread: heap mark 1 = `HeapMark_Stage`, then
+  `PerfMeter::resetStats` on +0x4a8).
 
 ## The IOP side (`MODULES\`, 2026-11-06, `tools/reverse/iop.py`)
 

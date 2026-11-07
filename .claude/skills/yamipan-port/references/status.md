@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 04:58 at commit `c08b112` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 05:12 at commit `bdb1592` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 04:58 at commit `c08b112` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **5511** (84%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1583, game-inferred 4591
-- context-name ledger: 6174 entries; overrides of wrong library matches: 0
-- placed in a source file: 6008/6599 in 130 files
+- game functions: **6594**, named **5510** (84%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1593, game-inferred 4591
+- context-name ledger: 6184 entries; overrides of wrong library matches: 0
+- placed in a source file: 6009/6594 in 130 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5420**; stubs: **58**
+- reconstructed FS2 functions: **5421**; stubs: **57**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -53,7 +53,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/gameoversequence.cpp` | 12 | 0 |
 | `src/game/gamepacket.cpp` | 6 | 0 |
 | `src/game/gamepaths.cpp` | 14 | 0 |
-| `src/game/gamesystem.cpp` | 17 | 0 |
+| `src/game/gamesystem.cpp` | 18 | 0 |
 | `src/game/gfxtarget.cpp` | 15 | 0 |
 | `src/game/gsblockmap.cpp` | 14 | 0 |
 | `src/game/gsutil.cpp` | 12 | 0 |
@@ -137,7 +137,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 26 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 25 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_2d_texture_vram.cpp` | 11 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
@@ -166,8 +166,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 216 TUs: todo 76, partial 20, verify 116, done 46
-- next: **unassigned@0012c9b8** (frontier score 12)
+- 215 TUs: todo 75, partial 20, verify 117, done 46
+- next: **unassigned@002176d0** (frontier score 11)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -187,7 +187,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/gameoversequence.cpp` 12/17 -- All 17 written, batch 151. Forced on node 4 by a temporary hook (removed): letterbox bars ramp in and out and reach both edges at 4:3 and 21:9; CAM_DEAD swings 
 - verify: `game/gamepacket.cpp` 6/6 -- All 6 functions written; source-only, callcheck clean. Header now declares the rena Vif1PktManage members the TU calls (ctor, virtual dtor, AddBuffer, AddList, 
 - verify: `game/gamepaths.cpp` 14/14 -- All 14 functions of 0x28ff60..0x2908d0 written (batches 054-055, 25 names, Ghidra saved). Path builders from a StageSelect: digit 1 or 2 (variant 0 or not), let
-- verify: `game/gamesystem.cpp` 17/17 -- All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). N
+- verify: `game/gamesystem.cpp` 18/18 -- All 17 functions of 0x12cd20..0x12dd30 are in src/game/gamesystem.cpp with gamesystem.h (GamePad : Pad, MaskedGamePad, GameSystem at EE offsets, layout host). N
 - verify: `game/gfxtarget.cpp` 15/15 -- Re-pinned to 0x12dfa0..0x12f190: the display records 0x4ae280 and gp-0x7ad8..-0x7ac8 are used only there; RcntTimer starts at 0x12f190. Two GfxDisplay records (
 - verify: `game/gsblockmap.cpp` 14/14 -- All 14 functions of 0x142dd0..0x144080 are in src/game/gsblockmap.cpp with the new game/gsblockmap.h (GsBlockMap, TexArea, TexAreaList, TexAreaSlot moved out of
 - verify: `game/gsutil.cpp` 12/12 -- Cut out of unassigned@00171300 and pinned 0x230980-0x231410 (batch 048: GsTexture::readTarget 0x231290, rena base Tim2Texture ctor 0x2e2920 / dtor 0x2e2810 / lo
@@ -284,33 +284,34 @@ Least-named game-code regions (64 KB blocks):
 - verify: `sdpr2/sdpr2.c` 36/36 -- All 36 functions written (0x1681c0..0x16c870), no new names, no Ghidra change. sdpr2.h is the full header: Sdpr2Type (19-slot function table, layout host), Sdpr
 - verify: `sound/sound.cpp` 97/98 -- All 98 of 0x144080..0x148db0 written, one file, no Ghidra change (batch 013 names held). New src/sound/sound.h takes the sound stand-ins out of game/gamehooks.h
 - verify: `unassigned@00116fb8` 0/0 -- This key is empty now: its whole run is two lib_ranges (architecture.md Address map, naming table row batch 025). Game code calling __extendsfdf2 / __cmpdf2 / _
+- verify: `unassigned@0012c9b8` 0/0 -- This key is empty now: 0x12c9b8..0x12cce0 is newlib (layout.json lib_ranges libc row, architecture.md libc bullet, batch 199 also names __sinit 0x123910, __sfvw
 - verify: `yamipan/rendering/model_renderer.cpp` 0/0 -- Fix for the user's crash on turning left in node 4, confirmed fixed by the user's play. drawBatch read batch.uvs unchecked. The batch is a single unskinned tria
 
 Recent sessions:
 
+- 2026-11-07 05:12 `unassigned@0012c9b8` verify: Resolved: newlib stdio tail 0x12c9b8..0x12cce0 (__sccl, vsprintf, _vsprintf_r, _write_r, __swsetup) is libc, the libc lib_range now ends at 0x12cce0; GameSystem
+- 2026-11-07 05:10 `game/gamesystem.cpp` verify: marked verify -> verify: gained GameSystem::beginStage 0x12cce0 (range now 0x12cce0..0x12dd30, 18 functions) from TU unassigned@0012c9b8; not reached by the smo
 - 2026-11-07 04:58 `rena/rena_2d_texture_vram.cpp` verify: GsRegionAlloc, rena's texture VRAM region allocator, all 11 functions; boot unchanged
 - 2026-11-07 04:30 `game/debugsys.cpp` done: debugSysInit / Update / Shutdown: the three empty retail hooks, in their own file
 - 2026-11-07 04:22 `game/numlock.cpp` verify: the number lock: NumLock map object and NmlPose dial pose, 29 functions of 0x2a6ab0..0x2a7b10
 - 2026-11-07 03:53 `game/stageparty.cpp` verify: Pin the jack's and the ripple sheet's std::vector instances, 8 functions of 0x206890..0x207108; bearingvectorcmp.py proves the promise
 - 2026-11-07 03:42 `game/rand48.cpp` done: game/rand48.cpp: Rand48, the stage's random numbers (java.util.Random without the increment); all 3 functions written, proven against the ROM
 - 2026-11-07 03:17 `game/stagemodel.cpp` verify: the map instances after StageModel: BoneMap and MotionMap are LiteralMap
-- 2026-11-07 03:01 `game/stagefog.cpp` verify: The smoke candle's fog and the glow's fog written and proved against the ROM (0 differences); not seen on screen
-- 2026-11-07 02:12 `game/playermotion.cpp` verify: the item waits: throwCarried and putSmoke, the two script natives behind Throw and Set Smoke Candle; 0 differences with the ROM, and on stage 17 the real menu t
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@0012c9b8` | todo | 0/1/6 | 0.8 | 12 | 1 |
 | `unassigned@002176d0` | partial | 1/0/10 | 0.9 | 11 | 0 |
-| `unassigned@002acff0` | todo | 0/3/24 | 10.9 | 10 | 1 |
 | `rx/rxsndstrpcm.c` | todo | 0/8/10 | 2.1 | 10 | 2 |
+| `unassigned@002acff0` | todo | 0/3/24 | 10.9 | 10 | 1 |
 | `sdpr2/sdpr2single.c` | todo | 0/2/24 | 7.0 | 9 | 1 |
 | `unassigned@0021e120` | partial | 4/0/18 | 3.5 | 8 | 0 |
 | `unassigned@002a7b10` | todo | 0/3/53 | 7.9 | 8 | 0 |
-| `unassigned@0029f2a0` | todo | 0/2/2 | 0.6 | 7 | 0 |
 | `unassigned@002849c0` | todo | 0/1/5 | 7.4 | 7 | 1 |
-| `unassigned@0020c940` | partial | 1/1/2 | 0.8 | 7 | 0 |
-| `unassigned@002ec110` | todo | 0/0/1 | 0.1 | 7 | 0 |
 | `sdpr2/sdpr2pair.c` | todo | 0/1/21 | 7.0 | 7 | 1 |
+| `unassigned@0029f2a0` | todo | 0/2/2 | 0.6 | 7 | 0 |
+| `rx/filehost.c` | todo | 0/2/12 | 1.3 | 7 | 1 |
+| `rx/filehdd.c` | todo | 0/2/13 | 1.5 | 7 | 1 |
+| `unassigned@002160a0` | todo | 0/0/7 | 0.1 | 7 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -341,7 +342,6 @@ Recent sessions:
 | `001dd3f0` | CharacterBrain::setEnabled | 6 | game | missing | game/characterbrain.cpp |
 | `001b36b0` | FUN_001b36b0 | 6 | - | missing | game/scriptrunner.cpp |
 | `001d1c20` | ScriptRunner::getParent2 | 6 | game | missing | game/scriptrunner.cpp |
-| `0012cab8` | vsprintf | 6 | lib-ctx | missing | - |
 | `001871c0` | PartSwitch::~PartSwitch | 6 | game | missing | game/stagemodel.cpp |
 | `001f4c30` | FUN_001f4c30 | 6 | - | missing | game/stagecollision.cpp |
 | `00258ea0` | FUN_00258ea0 | 6 | - | missing | game/routeplayer.cpp |
@@ -356,4 +356,5 @@ Recent sessions:
 | `002c16d0` | FUN_002c16d0 | 5 | - | missing | game/packtables.cpp |
 | `002c0d50` | FUN_002c0d50 | 5 | - | missing | game/packtables.cpp |
 | `002e7e90` | FUN_002e7e90 | 5 | - | missing | rena/rena_draw.cpp |
+| `00217770` | FUN_00217770 | 5 | - | missing | - |
 

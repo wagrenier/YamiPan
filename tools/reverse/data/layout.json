@@ -107,8 +107,8 @@
   ],
   [
    "00121ef0",
-   "0012c9b8",
-   "libc: Sony's newlib (abort, exit, malloc_r / free_r, mem* / str*, raise, the printf / dtoa formatters 0x12a3a0 / 0x12bd28)"
+   "0012cce0",
+   "libc: Sony's newlib (abort, exit, malloc_r / free_r, mem* / str*, raise, stdio: vfprintf 0x12a3a0 / __svfscanf 0x12bd28, then __sccl, vsprintf, _vsprintf_r, _write_r, __swsetup ..0x12cce0, batch 199)"
   ],
   [
    "001366c0",

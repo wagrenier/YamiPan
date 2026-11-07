@@ -2549,6 +2549,12 @@
   "was": "FUN_00123538",
   "why": "Sony libc (newlib): runs _impure_ptr->_atexit (+0x148) handlers in reverse, then __cleanup (+0x3c), then _exit; entry jumps here with main's result"
  },
+ "00123910": {
+  "name": "__sinit",
+  "tag": "lib-context",
+  "was": "FUN_00123910",
+  "why": "newlib findfp.c: reent __cleanup (+0x3c) = _cleanup_r 0x1238d0, __sdidinit (+0x38) = 1, std() 0x123700 on stdin / stdout / stderr (+0x1e4 / +0x23c / +0x294; flags 4 __SRD, 9 __SWR|__SLBF, 10 __SWR|__SNBF; fds 0 1 2), the glue (+0x1d8 next 0, +0x1dc 3 files, +0x1e0 the array)"
+ },
  "001239a0": {
   "name": "fprintf",
   "tag": "lib-context",
@@ -2560,6 +2566,18 @@
   "tag": "lib-context",
   "was": "FUN_00123b18",
   "why": "newlib dlmalloc free (reent, p): chunk header at p-8 with the in-use bit, merges into the top chunk 0x2f33b0, __malloc_lock 0x1254a0 first"
+ },
+ "00123fe0": {
+  "name": "__sfvwrite",
+  "tag": "lib-context",
+  "was": "FUN_00123fe0",
+  "why": "newlib fvwrite.c (fp, uio): nothing when uio_resid (+8) is 0; cantwrite -> __swsetup 0x12cbc8, then the unbuffered / string / line-buffered copy loops"
+ },
+ "001245a0": {
+  "name": "__smakebuf",
+  "tag": "lib-context",
+  "was": "FUN_001245a0",
+  "why": "newlib makebuf.c: __SNBF (2) gets the 1-byte _nbuf (+0x43); else _fstat_r 0x123f80 on fd decides __SOPT / __SNPT (S_IFREG with __sseek 0x127e18 as seek -> _blksize 0x400) and tty (S_IFCHR), _malloc_r(_data, 0x400), __SMBF, __SLBF for a tty"
  },
  "00124950": {
   "name": "_malloc_r",
@@ -2620,6 +2638,12 @@
   "tag": "lib-context",
   "was": "FUN_00127c88",
   "why": "libc: called with Stream_s%02d_SE and an int pointer, answers the count"
+ },
+ "00127d98": {
+  "name": "__swrite",
+  "tag": "lib-context",
+  "was": "FUN_00127d98",
+  "why": "newlib stdio.c FILE write hook: with __SAPP (0x100) _lseek_r 0x124540(_data, fd, 0, SEEK_END) first, clear __SOFF (0x1000), then _write_r 0x12cb68(_data +0x54, fd +0xe, buf, n)"
  },
  "00127ea0": {
   "name": "strcasecmp",
@@ -2711,11 +2735,47 @@
   "was": "FUN_0012a010",
   "why": "MSL C: subtracts 0x20 when the ctype table 0x3000c1 marks a lower-case letter (bit 2); the SPK.ROM index search folds case with it"
  },
+ "0012a3a0": {
+  "name": "vfprintf",
+  "tag": "lib-context",
+  "was": "FUN_0012a3a0",
+  "why": "newlib vfprintf.c core (fp, fmt, ap), reent from fp->_data (+0x54): sprintf / vsprintf 0x12cab8 / _vsprintf_r 0x12cb10 call it with a string FILE as (fp, fmt, ap); cantwrite -> __swsetup 0x12cbc8"
+ },
+ "0012bd28": {
+  "name": "__svfscanf",
+  "tag": "lib-context",
+  "was": "FUN_0012bd28",
+  "why": "newlib vfscanf.c core (fp, fmt, ap), 0xc8c bytes: the conversion loop, '[' through __sccl 0x12c9b8 into a 256-byte stack table"
+ },
+ "0012c9b8": {
+  "name": "__sccl",
+  "tag": "lib-context",
+  "was": "FUN_0012c9b8",
+  "why": "newlib vfscanf.c scanset compiler: tab[256] filled with v ('^' inverts), then chars and ranges a-b until ']' (a '-' before ']' or a reversed range is literal); returns the pointer past ']' or at the NUL. Only caller __svfscanf 0x12bd28 with a 0x100 stack table"
+ },
  "0012cab8": {
   "name": "vsprintf",
   "tag": "lib-context",
   "was": "FUN_0012cab8",
   "why": "newlib vsprintf (buf, fmt, va): a string FILE (flags 0x208, size 0x7fffffff, _impure_ptr 0x2f3398) through _vfprintf_r 0x12a3a0, then NUL; beside the reentrant variant 0x12cb10. The printers' print / printScaled / measureLines format into a 520-byte stack buffer with it"
+ },
+ "0012cb10": {
+  "name": "_vsprintf_r",
+  "tag": "lib-context",
+  "was": "FUN_0012cb10",
+  "why": "newlib vsprintf.c reentrant twin of vsprintf 0x12cab8: same string FILE (flags 0x208 __SWR|__SSTR, size 0x7fffffff) but f._data = a0 (the reent) instead of _impure_ptr, then vfprintf 0x12a3a0 and NUL; no caller in FS2"
+ },
+ "0012cb68": {
+  "name": "_write_r",
+  "tag": "lib-context",
+  "was": "FUN_0012cb68",
+  "why": "newlib writer.c: errno 0x5a55f8 = 0, write(fd, buf, n); on -1 with errno set copies it into reent->_errno (+0); only caller __swrite 0x127d98"
+ },
+ "0012cbc8": {
+  "name": "__swsetup",
+  "tag": "lib-context",
+  "was": "FUN_0012cbc8",
+  "why": "newlib wsetup.c: __sinit 0x123910 if _data->__sdidinit (+0x38) is 0; not __SWR (8): fail unless __SRW (0x10), drop a __SRD read state (free the ungetc buffer +0x30 unless it is _ubuf +0x40, clear __SRD|__SEOF), set __SWR; __smakebuf 0x1245a0 when _bf._base (+0x10) is 0; _lbfsize (+0x18) = -_bf._size for __SLBF (1), else _w (+8) = __SNBF ? 0 : _bf._size. Callers __sfvwrite 0x123fe0 and vfprintf 0x12a3a0"
  },
  "0012cce0": {
   "name": "GameSystem::beginStage",

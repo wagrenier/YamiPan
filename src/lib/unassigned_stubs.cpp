@@ -27,12 +27,6 @@
 
 // ---- stubs (tools/reverse/stubgen.py) ----
 
-// stub of FS2 0x0012cce0
-void GameSystem::beginStage()
-{
-    YAMIPAN_STUB("GameSystem::beginStage", 0x0012cce0);
-}
-
 // stub of FS2 0x002ad070
 MenuProgHolder::~MenuProgHolder()
 {
