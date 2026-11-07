@@ -2427,7 +2427,7 @@ public:
     // The cue plays, from this character.
     bool isVoicePlaying(const char *name);                               // FS2 0x002a6430
     // How far its long weapon reaches; 0 without one.
-    inline float getWeaponRange() const;                                 // FS2 0x0020ce10
+    float getWeaponRange() const;                                        // FS2 0x0020ce10
     // object stands within 180, above by -20..180, in the front half, and in
     // 30 degrees of a point 10 ahead.
     bool isInReachOf(StageObject *object);                               // FS2 0x00219d70
@@ -3586,13 +3586,6 @@ struct WeaponDef
 static_assert(sizeof(WeaponDef) == 0x54, "WeaponDef: EE 0x54");
 static_assert(offsetof(WeaponDef, magazine) == 0x24, "WeaponDef::magazine");
 extern WeaponDef gWeaponDefs[kWeaponDefCount];  /* bss 0x576010 */
-inline float StageCharacter::getWeaponRange() const
-{
-    if (m_weapons[0] == nullptr)
-        return 0.0f;
-    const int index = m_weapons[0]->m_weaponDef;
-    return (float)gWeaponDefs[index < 0 || index >= kWeaponDefCount ? 0 : index].range;
-}
 
 // ──────────────────────────────────────────────────────────────────────
 // The sound players are game/seplayer.h; the one outside a stage is

@@ -999,7 +999,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "StageCharacter::isUp (0x2107e0, getLifeState == LifeState_Up, object in a0) written as a member beside hasBiter; hasBiter, scriptHasAllyWithin and findNearestFoe now call it as the ROM does (the local kLifeUp constant is gone). The run 0x20e6a0..0x210938 (playerEvent .. canSeeThisFrame, its other 10 functions already here) is joined to this file. Other files still spell getLifeState() == 2 inline where their ROM callees say getLifeState: left as they are. Smoke run: the boot language select as before; stage code is not reached, so verify. The MISSING lines in callcheck for this file (takeHits, giveItem, dropItem, leave*, ApproachBiteLink::onRun, MotionCondition, MotionGadgetSpecial::onUpdate) predate this run.",
+   "notes": "getWeaponRange returns the long weapon's WeaponDef range (parameter 3) as a float, 0 without a long weapon; callers RouteHuntAction ctor and update in characterroute.cpp. The ROM inlines weaponSheet: an index outside 0..0x4f reads through a null row, the host takes row 0 as weaponSheet 0x26f730 does. Smoke run unchanged: language select at boot; nothing on screen reaches stage AI yet. The 10 callcheck MISSING lines in this file predate this run.",
    "ranges": [
     [
      "00175700",
@@ -1084,6 +1084,10 @@
     [
      "0020cc50",
      "0020ce08"
+    ],
+    [
+     "0020ce10",
+     "0020ce70"
     ],
     [
      "0020ce80",
@@ -1432,11 +1436,6 @@
    ],
    "sessions": [
     {
-     "date": "2026-11-06 17:15",
-     "status": "partial",
-     "summary": "Damage, DamageLand, DamageFatal, DamageDead and Revive links, the conditions' dtors, setWallCheck"
-    },
-    {
      "date": "2026-11-06 17:52",
      "status": "partial",
      "summary": "takeHits whole: a blow that lands fells what it hits, the first real fight runs to Mission failed; the NaN position is fixed (sqrt.s)"
@@ -1490,11 +1489,16 @@
      "date": "2026-11-07 12:48",
      "status": "verify",
      "summary": "StageCharacter::isUp 0x2107e0; run 0x20e6a0..0x210938 joined"
+    },
+    {
+     "date": "2026-11-07 13:12",
+     "status": "verify",
+     "summary": "StageCharacter::getWeaponRange 0x20ce10 joined playermotion.cpp (was unassigned@0020ce10): out of line beside getAttackReach, no longer an inline in gamehooks.h"
     }
    ],
    "status": "verify",
    "task": "PlayerMotion::takeHits 0x1e18c0..0x1e3e80 past its first line: it requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice",
-   "why": "0x20e6a0..0x210938 joined 2026-11-07 (was unassigned@0020e6a0): playerEvent .. canSeeThisFrame, 11 StageCharacter members already reconstructed here (takeDamage, hasBiter, isUp, ...), between canLockDoor's 0x20d650 run and canSee 0x210940; before that: 0x214a70..0x214ce8 joined 2026-11-07 (was unassigned@00214a70): StageObjRecord::init and StageCharacter::findNearestFoe, between this file's 0x212530 run and isEnemyOf 0x214d40, which findNearestFoe calls; before that: 0x2160a0..0x216130 joined 2026-11-07 (was unassigned@002160a0): the out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level, placed by CodeWarrior right after getSides"
+   "why": "0x20ce10..0x20ce70 joined 2026-11-07 (was unassigned@0020ce10): StageCharacter::getWeaponRange, between canFireLongWeapon 0x20cc50 and getAttackReach 0x20ce80, both here; before that: 0x20e6a0..0x210938 joined 2026-11-07 (was unassigned@0020e6a0): playerEvent .. canSeeThisFrame, 11 StageCharacter members already reconstructed here (takeDamage, hasBiter, isUp, ...), between canLockDoor's 0x20d650 run and canSee 0x210940; before that: 0x214a70..0x214ce8 joined 2026-11-07 (was unassigned@00214a70): StageObjRecord::init and StageCharacter::findNearestFoe, between this file's 0x212530 run and isEnemyOf 0x214d40, which findNearestFoe calls; before that: 0x2160a0..0x216130 joined 2026-11-07 (was unassigned@002160a0): the out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level, placed by CodeWarrior right after getSides"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -3683,6 +3687,10 @@
   "unassigned@001953f0": {},
   "unassigned@0020acb0": {},
   "unassigned@0020c940": {},
+  "unassigned@0020ce10": {
+   "claimed": "2026-11-07 13:04",
+   "status": "active"
+  },
   "unassigned@0020e6a0": {},
   "unassigned@00214a70": {},
   "unassigned@002160a0": {},
