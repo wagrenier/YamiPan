@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 18:34 at commit `b3e43c0` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 18:53 at commit `ceb3d8f` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5830**; stubs: **16**
+- reconstructed FS2 functions: **5844**; stubs: **16**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -82,7 +82,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/pausemenu.cpp` | 7 | 0 |
 | `src/game/pausemenustate.cpp` | 12 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
-| `src/game/playermotion.cpp` | 643 | 0 |
+| `src/game/playermotion.cpp` | 657 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rand48.cpp` | 3 | 0 |
@@ -224,7 +224,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
 - verify: `game/pausemenu.cpp` 7/7 -- New game/pausemenu.cpp and .h (PauseMenuChoice moved from gamehooks.h, PauseMenuScreen for answers 4..9, help pages 0 and 7). Fix outside the file: StageScene::
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
-- verify: `game/playermotion.cpp` 563/577 -- The queue and the frontier were empty; this run took the partial unassigned@00280620. Its code (MotionDragOutCar, MotionGetOffCar, MotionGetOnCar, findCarDoor, 
+- verify: `game/playermotion.cpp` 577/577 -- Nothing new runs: every body was already in stagelist.h or gamehooks.h and agrees with the ROM (offsets +0x7a0, +0x66c, +0x38a, +0x660; the history index (next 
 - verify: `game/prgmccard.cpp` 7/7 -- All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide close
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/ripplesheet.cpp` 7/10 -- Batch 164. What the notes called stage 0x1b's boss film is a 15 by 15 ripple sheet, 0x2d10f0..0x2d3700, SightJack +0xb4: the frame bent, pushed from a tint, cre
@@ -320,6 +320,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 18:53 `game/playermotion.cpp` verify: The last 14 functions of the slice were already written as header inlines: the carried list's second StageList instance 0x217700..0x2179ac, five StageCharacter 
 - 2026-11-07 18:33 `game/playermotion.cpp` verify: The car motions run 0x280620..0x2811c0, 0x281370..0x2813e0, 0x281548..0x281a40 joined playermotion.cpp (was unassigned@00280620 and unassigned@00281550); the si
 - 2026-11-07 18:17 `rena/rena_camera.cpp` verify: boxClipTest written: a part box against the frame planes and the guard band (0 inside, 1 crossing, 2 outside); 0x2e2970 named RenaCamera::RenaCamera
 - 2026-11-07 18:04 `game/kunitoris.cpp` verify: Kunitoris complete: the drawable and mover bases (dtors, the empty draw, the never-ending step), kunitorisRandom, KunitorisGroup::copyPair, isEmpty / isGone out
@@ -327,7 +328,6 @@ Recent sessions:
 - 2026-11-07 17:30 `game/kunitoris.cpp` partial: KunitorisGame::draw written with the board, its pieces and colour cycles: KunitorisTinted / KunitorisColorCycle / KunitorisPiece (load, draw, update), Kunitoris
 - 2026-11-07 17:07 `game/kunitoris.cpp` partial: KunitorisEnding::draw and drawIntro written over the four ending quads (0x2fc280), their show thresholds and the 8 pose animations (0x2fc220); KunitorisGame +0x
 - 2026-11-07 16:52 `game/kunitoris.cpp` partial: KunitorisGame ctor and dtor, its objects (actor, sprite, cursor, block, actor list, cells, groups), the per-level and shape tables, the two bar draws and Kunito
-- 2026-11-07 16:20 `game/kunitoris.cpp` partial: Extra mode is Kunitoris: runExtraMode, its thread and back thread, title, how-to, level select, printf and the ending loop written; the KunitorisGame and Kunito
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -371,6 +371,6 @@ Recent sessions:
 | `002c16d0` | FUN_002c16d0 | 5 | - | missing | game/packtables.cpp |
 | `002c0d50` | FUN_002c0d50 | 5 | - | missing | game/packtables.cpp |
 | `002e7e90` | FUN_002e7e90 | 5 | - | missing | rena/rena_draw.cpp |
-| `00217770` | FUN_00217770 | 5 | - | missing | game/playermotion.cpp |
 | `001d8250` | StageNodeList::linkValue | 4 | game | missing | game/nodetransform.cpp |
+| `00184260` | FUN_00184260 | 4 | - | missing | game/stageitem.cpp |
 

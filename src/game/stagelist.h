@@ -82,6 +82,7 @@ public:
     // The instance 0x1842c0's are 0x1844a0 (head), 0x184530 (tail), 0x184560 (node);
     // 0x1f4d30's 0x1f5100, 0x1f51e0, 0x1f5230; 0x1f4f20's 0x1f5040, 0x1f50d0, 0x1f5210.
     // FS2 0x001a5db0, 0x001a5ed0, 0x001a5ff0, 0x001a6140, 0x001a5d00, 0x001842c0, 0x0017e1b0, 0x001844a0, 0x00184530, 0x00184560, 0x001f4d30, 0x001f4f20, 0x001f5040, 0x001f50d0, 0x001f5100, 0x001f51e0, 0x001f5210, 0x001f5230
+    // The carried list's: FS2 0x0017e320, 0x0017e3e0, 0x00217770, 0x00217890, 0x00217920
     void pushBack(const T &value)
     {
         Node *node = new Node;
@@ -137,6 +138,7 @@ public:
 
     // Unlinks and frees node.
     // FS2 0x00184370, 0x0017e260, 0x00184580 (the instance's unlink)
+    // The carried list's: FS2 0x0017e400 (unlink), 0x00217840, 0x00217940 (unlink)
     void erase(Node *node)
     {
         if (node == head)
