@@ -11,6 +11,7 @@
 #include "yamipan/core/logger.h"
 #include "yamipan/core/window.h"
 #include "yamipan/rendering/film_overlay_pass.h"
+#include "yamipan/rendering/frame_filter_pass.h"
 #include "yamipan/rendering/frame_palette_pass.h"
 #include "yamipan/rendering/frame_ripple_pass.h"
 #include "yamipan/rendering/present_pass.h"
@@ -148,6 +149,7 @@ Renderer::Renderer(Window &window, gpu::Device &device, Config &config, EventQue
     m_present = std::make_unique<PresentPass>(m_device, m_window, m_config);
     m_framePalette = std::make_unique<FramePalettePass>(m_device, m_sceneFormat);
     m_frameRipple = std::make_unique<FrameRipplePass>(m_device, m_sceneFormat);
+    m_frameFilter = std::make_unique<FrameFilterPass>(m_device, m_sceneFormat);
     m_filmOverlay = std::make_unique<FilmOverlayPass>(m_device, m_sceneFormat);
     m_screenshots = std::make_unique<Screenshotter>(m_device);
     applyPresentMode();
@@ -376,7 +378,7 @@ void Renderer::recordUi(SDL_GPUCommandBuffer *commands, const Frame &frame, cons
     for (std::size_t index = first; index < last; index++)
     {
         const DrawCall &draw = frame.draws[index];
-        if (draw.framePalette == nullptr && draw.film == nullptr && !draw.frameRipple)
+        if (draw.framePalette == nullptr && draw.film == nullptr && !draw.frameRipple && draw.frameFilter == nullptr)
             continue;
         recordDraws(commands, frame, layout, next, index, clear);
         clear = false;
@@ -384,7 +386,9 @@ void Renderer::recordUi(SDL_GPUCommandBuffer *commands, const Frame &frame, cons
 
         const auto width = static_cast<unsigned>(layout.renderWidth);
         const auto height = static_cast<unsigned>(layout.renderHeight);
-        if (draw.frameRipple)
+        if (draw.frameFilter != nullptr)
+            m_frameFilter->record(commands, m_scene.get(), *draw.frameFilter, width, height);
+        else if (draw.frameRipple)
             m_frameRipple->record(commands, m_scene.get(), m_vertexBuffer.get(), draw, width, height);
         else if (draw.film != nullptr)
             m_filmOverlay->record(commands, m_scene.get(), *draw.film, width, height);

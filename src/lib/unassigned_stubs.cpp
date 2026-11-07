@@ -132,13 +132,6 @@ void StageCharacter::latchAltAction()
     YAMIPAN_STUB("StageCharacter::latchAltAction", 0x0020b1d0);
 }
 
-// stub of FS2 0x002849c0
-void gsFrameFilter(sceVif1Packet *packet, const sceGsDrawEnv1 *env, int w, int h,
-                   u_short block, int passes, int arg)
-{
-    YAMIPAN_STUB("gsFrameFilter", 0x002849c0);
-}
-
 
 // stub of FS2 0x001d3d20
 // stub of FS2 0x002b37d0

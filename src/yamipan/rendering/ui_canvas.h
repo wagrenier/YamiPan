@@ -48,6 +48,9 @@ public:
     void filmOverlay(const void *list, FilmOverlay film);
     // The frame through the ripple sheet: FrameRipplePass's work.
     void rippleFrame(const void *list, const YamiPanRipple &ripple);
+    // The game's frame filter: FrameFilterPass's work. Begin ends the draw before it; steps add to it.
+    void beginFrameFilter(const void *list, int frameBlock);
+    void addFrameFilterStep(const void *list, const FrameFilterStep &step);
     void begin(const void *list, int format);
     void addVertex(const void *list, const YamiPanUiVertex &vertex);
 

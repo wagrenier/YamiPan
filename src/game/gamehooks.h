@@ -27,6 +27,7 @@
 #include "game/routefilter.h"
 #include "game/scenepairs.h"
 #include "game/scriptrunner.h"
+#include "game/framefilter.h"
 #include "game/seplayer.h"
 #include "game/stagecollision.h"
 #include "game/stageloop.h"
@@ -2874,11 +2875,8 @@ protected:
 
 // +0xa4: SkyMistHolder is game/skymist.h.
 
-// The frame-buffer filter of the view cameras and event d0101: passes
-// times over the w x h frame of env, block the VRAM block (32-block
-// pages), arg 1 or 5.
-void gsFrameFilter(sceVif1Packet *packet, const sceGsDrawEnv1 *env, int w, int h,
-                   u_short block, int passes, int arg);                  // FS2 0x002849c0
+// gsFrameFilter 0x2849c0, the frame filter of the view cameras and event
+// d0101: game/framefilter.h.
 // A flat sprite from (x, y) to (x2, y2) of the 512 x 512 frame.
 void gsFillRect(sceVif1Packet *packet, int x, int y, int x2, int y2, u_int rgba); // FS2 0x002eaeb0
 

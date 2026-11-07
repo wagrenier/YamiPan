@@ -243,6 +243,7 @@ void UiCanvas::emit(Layer &target, std::initializer_list<Vertex> triangleVertice
         !target.draws.empty() && [&] {
             const DrawCall &last = target.draws.back();
             return last.framePalette == nullptr && last.film == nullptr && !last.frameRipple &&
+                   last.frameFilter == nullptr &&
                    last.pipeline == state.pipeline &&
                    last.image == state.image &&
                    last.scissor == state.scissor &&
@@ -470,6 +471,29 @@ void UiCanvas::filmOverlay(const void *list, FilmOverlay film)
     draw.film = std::make_shared<FilmOverlay>(std::move(film));
     draw.firstVertex = static_cast<std::uint32_t>(target.vertices.size());
     target.draws.push_back(std::move(draw));
+}
+
+void UiCanvas::beginFrameFilter(const void *list, int frameBlock)
+{
+    std::scoped_lock lock(m_lock);
+    Layer &target = layer(list);
+
+    DrawCall draw;
+    draw.frameFilter = std::make_shared<FrameFilter>();
+    draw.frameFilter->frameBlock = frameBlock;
+    draw.firstVertex = static_cast<std::uint32_t>(target.vertices.size());
+    target.draws.push_back(std::move(draw));
+}
+
+void UiCanvas::addFrameFilterStep(const void *list, const FrameFilterStep &step)
+{
+    std::scoped_lock lock(m_lock);
+    Layer &target = layer(list);
+
+    // A step outside an open filter has nothing to draw over: dropped.
+    if (target.draws.empty() || target.draws.back().frameFilter == nullptr)
+        return;
+    target.draws.back().frameFilter->steps.push_back(step);
 }
 
 void UiCanvas::rippleFrame(const void *list, const YamiPanRipple &ripple)

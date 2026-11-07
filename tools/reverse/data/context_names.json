@@ -31439,6 +31439,30 @@
   "was": "FUN_002849c0",
   "why": "takes the frame buffer draw env and a VRAM block, a pass count; run for view cameras and event d0101"
  },
+ "00285450": {
+  "name": "gsFrameTap",
+  "tag": "game-inferred",
+  "was": "FUN_00285450",
+  "why": "a blended sprite (PRIM 0x156, RGBAQ alpha a7 over grey 0x808080) of the whole w x h source moved by (a2, a3) pixels: gsFrameFilter draws three of them, alpha 0x80 / 0x40 / 0x2a, for a 3-tap box blur along x then y"
+ },
+ "002859b0": {
+  "name": "gsFrameDouble",
+  "tag": "game-inferred",
+  "was": "FUN_002859b0",
+  "why": "TEX0 the source block, FRAME the target, SCISSOR twice the size, non-blended sprite strips from w x h to 2w x 2h: the filter's up-sample, last into the frame itself"
+ },
+ "00286070": {
+  "name": "gsFrameHalve",
+  "tag": "game-inferred",
+  "was": "FUN_00286070",
+  "why": "TEX0 the source block, FRAME the target, SCISSOR half the size, one non-blended sprite strip per page from the w x h source to w/2 x h/2 (UV from texel 1, bilinear by the caller's TEX1 0x60): the filter's down-sample"
+ },
+ "002866f0": {
+  "name": "gsPageWidth",
+  "tag": "game-inferred",
+  "was": "FUN_002866f0",
+  "why": "answers a GS PSM's page width in pixels: 0x80 for PSMT8 / PSMT4 (0x13, 0x14), 0x40 for the 32/24/16-bit colour and Z formats, 0 otherwise; gsFrameFilter and its three helpers cut their sprites into strips of it"
+ },
  "002867a0": {
   "name": "StageMission::setSpawnPoint",
   "tag": "game-inferred",

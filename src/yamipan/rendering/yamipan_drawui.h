@@ -132,6 +132,26 @@ typedef struct YamiPanRipple
 
 void YamiPan_DrawUiFrameRipple(const void *list, const YamiPanRipple *ripple);
 
+/* The frame filter's sprites (game/framefilter.cpp): buffers are the game's
+ * VRAM blocks, `frameBlock` the frame so far, any other a scratch buffer the
+ * host keeps at the frame's render size, no GS memory. A step draws the
+ * source's top-left sourceWidth x sourceHeight at (x, y) as width x height
+ * into the target, inside 0..width x 0..height, bilinear, in pixels of the
+ * 512 x 512 frame; alpha 0x80 replaces, below it blends (Cs - Cd) * alpha /
+ * 128 + Cd, as ALPHA_1 0x44. Begin opens the filter, each step adds to it. */
+typedef struct YamiPanFrameFilterStep
+{
+    int source;
+    int target;
+    int x, y;
+    int width, height;
+    int sourceWidth, sourceHeight;
+    int alpha;
+} YamiPanFrameFilterStep;
+
+void YamiPan_DrawUiFrameFilterBegin(const void *list, int frameBlock);
+void YamiPan_DrawUiFrameFilterStep(const void *list, const YamiPanFrameFilterStep *step);
+
 /* Starts a vertex run of `format`; YamiPan_DrawUiVertex adds to it. */
 void YamiPan_DrawUiBegin(const void *list, int format);
 void YamiPan_DrawUiVertex(const void *list, const YamiPanUiVertex *vertex);

@@ -135,6 +135,26 @@ void YamiPan_DrawUiFrameRipple(const void *list, const YamiPanRipple *ripple)
     canvas().rippleFrame(list, *ripple);
 }
 
+void YamiPan_DrawUiFrameFilterBegin(const void *list, int frameBlock)
+{
+    canvas().beginFrameFilter(list, frameBlock);
+}
+
+void YamiPan_DrawUiFrameFilterStep(const void *list, const YamiPanFrameFilterStep *step)
+{
+    canvas().addFrameFilterStep(list, {
+        .source = step->source,
+        .target = step->target,
+        .x = step->x,
+        .y = step->y,
+        .width = step->width,
+        .height = step->height,
+        .sourceWidth = step->sourceWidth,
+        .sourceHeight = step->sourceHeight,
+        .alpha = step->alpha,
+    });
+}
+
 void YamiPan_DrawUiFilm(const void *list, const YamiPanFilm *film)
 {
     yamipan::rendering::Renderer &renderer = yamipan::Application::instance().renderer();

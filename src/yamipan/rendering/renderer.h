@@ -45,6 +45,7 @@ namespace yamipan::rendering
 class FilmOverlayPass;
 class FramePalettePass;
 class FrameRipplePass;
+class FrameFilterPass;
 
 // The GPU's blend for a pipeline.
 SDL_GPUColorTargetBlendState blendStateOf(PipelineKey key);
@@ -137,6 +138,7 @@ private:
     std::unique_ptr<PresentPass> m_present;
     std::unique_ptr<FramePalettePass> m_framePalette;
     std::unique_ptr<FrameRipplePass> m_frameRipple;
+    std::unique_ptr<FrameFilterPass> m_frameFilter;
     std::unique_ptr<FilmOverlayPass> m_filmOverlay;
     std::unique_ptr<Screenshotter> m_screenshots;
 
