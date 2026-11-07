@@ -36401,6 +36401,36 @@
   "was": "FUN_002c7a40",
   "why": "deleting dtor of 0x319f90, KunitorisActor's body inline"
  },
+ "002c7c10": {
+  "name": "KunitorisGroup::scroll",
+  "tag": "game-inferred",
+  "was": "FUN_002c7c10",
+  "why": "(group, dx, dy) from update with minus the view's scroll: unless state 2, m_cell += d, wrap inline, +0x1c = d"
+ },
+ "002c7db0": {
+  "name": "KunitorisCells::isGone",
+  "tag": "game-inferred",
+  "was": "FUN_002c7db0",
+  "why": "+8 == 5: the state updateBlocks sets once the last block's update answers false; update then releases the group"
+ },
+ "002c7dc0": {
+  "name": "KunitorisGroup::step",
+  "tag": "game-inferred",
+  "was": "FUN_002c7dc0",
+  "why": "(group, move): state 2 forces move; m_cell +0xc += m_step +0x14, wrap 0x2c7f00, +0x1c = step (else 0), then every block's update and the state rules of the set"
+ },
+ "002c7f00": {
+  "name": "KunitorisGroup::wrap",
+  "tag": "game-inferred",
+  "was": "FUN_002c7f00",
+  "why": "block offsets' extent; m_cell off by 8 past one side of a 40-cell view comes back in at the other (39 - min / -8 - max, float compares)"
+ },
+ "002c8060": {
+  "name": "KunitorisCells::isEmpty",
+  "tag": "game-inferred",
+  "was": "FUN_002c8060",
+  "why": "+8 == 0 on a cell set (KunitorisGroup at KunitorisGame +0x9c); update skips such groups"
+ },
  "002c8070": {
   "name": "KunitorisGroup::setCell",
   "tag": "game-inferred",
@@ -36442,6 +36472,42 @@
   "tag": "game-inferred",
   "was": "FUN_002c8640",
   "why": "kunitorisThread's stack object (EE 0x790; vptrs 0x319f60 / 0x319fd0 / 0x319f80 at +0x18 by level): a1 the level's best score, a2 the level"
+ },
+ "002c8b90": {
+  "name": "KunitorisBoard::clearUnder",
+  "tag": "game-inferred",
+  "was": "FUN_002c8b90",
+  "why": "(board, cells, *misses, *hits): each block's offset modulo the level size indexes the level grid (+0x10, short [x][y]); a lit cell of that piece (any while +0x38 == 0x100, else the highlighted one) is put out (hit), else a miss; returns the lit cells left"
+ },
+ "002c8ff0": {
+  "name": "KunitorisGame::turnTouching",
+  "tag": "game-inferred",
+  "was": "FUN_002c8ff0",
+  "why": "each pair of groups i < j (not state 0/2/4) with the same last move +0x1c/+0x20 that touch (0x2cb460): group i's step becomes the move swapped"
+ },
+ "002c9170": {
+  "name": "KunitorisGame::absorb",
+  "tag": "game-inferred",
+  "was": "FUN_002c9170",
+  "why": "groups (not state 0/2/4) with a block on a cell of the player's set (+0x7c[+0x78]) add blocks there from before their last move (+0x1c) and are released; a set wider than 16 calls 0x2c9720 and plays SE 12"
+ },
+ "002c9720": {
+  "name": "KunitorisGame::breakOff",
+  "tag": "game-inferred",
+  "was": "FUN_002c9720",
+  "why": "two or more player blocks: copied into a free group at the cursor cell with step 0, that group sinks (0x2cb250), the player keeps one block under the cursor; true when done"
+ },
+ "002c99e0": {
+  "name": "KunitorisCells::hasOffset",
+  "tag": "game-inferred",
+  "was": "FUN_002c99e0",
+  "why": "(cells, offset): a block whose +0x2c/+0x30 equal the pair"
+ },
+ "002c9a80": {
+  "name": "KunitorisGame::shoot",
+  "tag": "game-inferred",
+  "was": "FUN_002c9a80",
+  "why": "(game, dx, dy) on Cross: the player's blocks copied into a free group at the cursor stepping (dx dy), its resting blocks hop (state 1, 15 frames), set state 2; the player keeps one block"
  },
  "002c9de0": {
   "name": "KunitorisEnding::draw",
@@ -36497,6 +36563,30 @@
   "was": "FUN_002cafd0",
   "why": "the 0x24-byte element of KunitorisGame's 48 at +0x9c (__construct_array): list, active +8, step +0x14 / +0x18, +0x1c, +0x20 zero; the cell +0xc left"
  },
+ "002cb010": {
+  "name": "KunitorisCells::add",
+  "tag": "game-inferred",
+  "was": "FUN_002cb010",
+  "why": "pushBack of the actor, state 0 -> 1; the out-of-line copy of what is inline elsewhere"
+ },
+ "002cb060": {
+  "name": "KunitorisCells::flip",
+  "tag": "game-inferred",
+  "was": "FUN_002cb060",
+  "why": "Square: 0x2cb5e0 on each block; returns the count"
+ },
+ "002cb0b0": {
+  "name": "KunitorisCells::turn",
+  "tag": "game-inferred",
+  "was": "FUN_002cb0b0",
+  "why": "Triangle: 0x2cb6f0 on each block; returns the count"
+ },
+ "002cb100": {
+  "name": "KunitorisCells::release",
+  "tag": "game-inferred",
+  "was": "FUN_002cb100",
+  "why": "deletes every block through its vtable slot 2, KunitorisActorList::clear, state +8 = 0"
+ },
  "002cb170": {
   "name": "KunitorisCells::~KunitorisCells",
   "tag": "game-inferred",
@@ -36508,6 +36598,36 @@
   "tag": "game-inferred",
   "was": "FUN_002cb220",
   "why": "0xc-byte element of KunitorisGame's new[] of 2 at +0x7c: the list and the active flag +8 = 0"
+ },
+ "002cb250": {
+  "name": "KunitorisCells::sink",
+  "tag": "game-inferred",
+  "was": "FUN_002cb250",
+  "why": "a set in state 0/1: 0x2cc600 on each block, state 4"
+ },
+ "002cb2e0": {
+  "name": "KunitorisCells::drop",
+  "tag": "game-inferred",
+  "was": "FUN_002cb2e0",
+  "why": "(cells, anchor) on Circle with the view scroll as anchor: each resting block leaves (state 2, 12 frames), offset made the board cell; set state 3"
+ },
+ "002cb460": {
+  "name": "KunitorisCells::touches",
+  "tag": "game-inferred",
+  "was": "FUN_002cb460",
+  "why": "(cells, other): a block of other on the cell of a block of cells (cells recomputed origin + offset)"
+ },
+ "002cb5e0": {
+  "name": "KunitorisBlock::flip",
+  "tag": "game-inferred",
+  "was": "FUN_002cb5e0",
+  "why": "offset x negated, then the same slide as turn"
+ },
+ "002cb6f0": {
+  "name": "KunitorisBlock::turn",
+  "tag": "game-inferred",
+  "was": "FUN_002cb6f0",
+  "why": "offset (x y) -> (-y x), cell refreshed, a new 0x319fb0 mover (0x2cc830) slides from the old offset in 3 frames"
  },
  "002cb800": {
   "name": "KunitorisBlock::draw",
@@ -36533,6 +36653,24 @@
   "was": "FUN_002cc450",
   "why": "ctor of vtable 0x319f90 over 0x319f30 (0x50 bytes): a1 the owner's cell pointer +0x28, a2 the offset +0x2c, a3 the lift +0x3c / +0x40; cell +0x34 = origin + offset; sprite of pack item 0x11"
  },
+ "002cc600": {
+  "name": "KunitorisBlock::sink",
+  "tag": "game-inferred",
+  "was": "FUN_002cc600",
+  "why": "a resting block (+0x48 == 0): mover deleted, 15 frames, state 3, sprite of pack item 0x14"
+ },
+ "002cc740": {
+  "name": "KunitorisSlide::step",
+  "tag": "game-inferred",
+  "was": "FUN_002cc740",
+  "why": "0x319fb0 slot 1: frame++, pos lerps from -> to by frame / frames over origin * 8; false once at to"
+ },
+ "002cc830": {
+  "name": "KunitorisSlide::KunitorisSlide",
+  "tag": "game-inferred",
+  "was": "FUN_002cc830",
+  "why": "vtable 0x319fb0 over 0x319f20: from +0xc, to +0x14, frame +0x1c, frames +0x20, origin cell +0x24; pos = origin * 8 + from"
+ },
  "002cc8c0": {
   "name": "KunitorisActor::update",
   "tag": "game-inferred",
@@ -36550,6 +36688,12 @@
   "tag": "game-inferred",
   "was": "FUN_002cca40",
   "why": "touches only the board (+0x30 count, +0x34 pieces, +0x38 the choice): the old choice back to colour cycle 0 (0x2fb9e0), the new piece (a1; negative: randNext2 % count, the first with lit cells; 0x100: every lit one) to cycle 1 (0x2fb9e8, yellow / brown); returns it; was KunitorisGame::start"
+ },
+ "002cd120": {
+  "name": "KunitorisBoard::litPieces",
+  "tag": "game-inferred",
+  "was": "FUN_002cd120",
+  "why": "counts the pieces (+0x30 / +0x34, 0x38 each) with a lit cell (KunitorisPieceCell +0 != 0); update sets the cleared flag +0x778 when it answers 0"
  },
  "002cd280": {
   "name": "KunitorisBoard::draw",
@@ -36646,6 +36790,12 @@
   "tag": "game-inferred",
   "was": "FUN_002cdc90",
   "why": "slot 0 of vtables 0x319fd0 / 0x319f80: steps the colour cycle of each of the +0x30 pieces at +0x34"
+ },
+ "002cdd60": {
+  "name": "KunitorisSlide::~KunitorisSlide",
+  "tag": "game-inferred",
+  "was": "FUN_002cdd60",
+  "why": "0x319fb0 slot 0: vptr back to 0x319fb0 then 0x319f20, delete by flag"
  },
  "002cddc0": {
   "name": "KunitorisPiece::update",

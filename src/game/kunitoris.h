@@ -36,7 +36,8 @@ enum KunitorisItem
     KunitorisItem_Block      = 0x11,    // KunitorisBlock's sprite
     KunitorisItem_Bar        = 0x12,    // the lives bar (KunitorisGame::drawLivesBar / drawBlinkBar)
     KunitorisItem_Highlight  = 0x13,    // KunitorisGame's sprite, KunitorisBlock's highlight pass
-    KunitorisItem_FontImage  = 0x15,    // the UiFont's image
+    KunitorisItem_Sunk       = 0x14,    // KunitorisBlock::sink's sprite
+    KunitorisItem_FontImage  = 0x15,   // the UiFont's image
     KunitorisItem_FontGlyphs = 0x16,    // the UiFont's glyphs (a FontData)
     KunitorisItem_HowTo      = 0x17,    // kunitorisHowTo's picture (256 x 224)
     KunitorisItem_Title      = 0x18,    // the title picture (256 x 224)
@@ -54,20 +55,29 @@ enum KunitorisSe
 {
     KunitorisSe_Decide    = 0,
     KunitorisSe_Cancel    = 1,
-    KunitorisSe_Cursor    = 6,
-    KunitorisSe_SelectBgm = 7,          // the level select (and after the ending)
+    KunitorisSe_Drop      = 2,          // KunitorisGame::update: Circle
+    KunitorisSe_Shoot     = 3,          // Cross
+    KunitorisSe_Turn      = 4,          // Triangle
+    KunitorisSe_Flip      = 5,          // Square
+    KunitorisSe_Cursor    = 6,          // the level select's cursor; a scroll in the game
+    KunitorisSe_SelectBgm = 7,          // the level select (and after the ending); the game's music after a fever
     KunitorisSe_TitleBgm  = 8,
     KunitorisSe_GameOver  = 9,
     KunitorisSe_EndingBgm = 10,
+    KunitorisSe_FeverBgm  = 11,         // every lit piece flashes (KunitorisGame::update)
+    KunitorisSe_BreakOff  = 12,         // KunitorisGame::breakOff
 };
 
 // The handles kept at 0x599800 (bss): kunitorisBackThread clears each once
 // it stops playing.
 enum KunitorisSeSlot
 {
-    KunitorisSeSlot_Decide = 0,         // Decide / Cancel / Start clicks
-    KunitorisSeSlot_Cursor = 1,         // the level select's cursor
-    KunitorisSeSlot_Bgm    = 5,         // the music (stopped before the next)
+    KunitorisSeSlot_Decide = 0,         // Decide / Cancel / Start clicks; the game's shot
+    KunitorisSeSlot_Cursor = 1,         // the level select's cursor; the game's drop
+    KunitorisSeSlot_Turn   = 2,         // the game's turn and flip
+    KunitorisSeSlot_Scroll = 3,         // the game's scroll
+    KunitorisSeSlot_Break  = 4,         // the game's break-off
+    KunitorisSeSlot_Bgm    = 5,        // the music (stopped before the next)
     KunitorisSeSlot_Count  = 6,
 };
 
@@ -131,7 +141,7 @@ struct KunitorisLevel
     u_char relocated;           // FS2 +0x0008
     u_char _09[3];
     int    pieceCount;          // FS2 +0x000c: KunitorisBoard::loadLevel
-    u_char _10[0x2000];         // FS2 +0x0010
+    short  grid[64][64];        // FS2 +0x0010: the piece on each cell, [x][y]; -1 none
     S2dRef<KunitorisPieceData> pieces[kPieceRefs]; // FS2 +0x2010
     int    outlineCount;        // FS2 +0x2110: lines (two vertices each)
     S2dRef<UiVertex> outline;   // FS2 +0x2114: the pieces' borders, pixels
@@ -184,6 +194,24 @@ public:
     virtual ~KunitorisMover() {}
     virtual bool step() = 0;
     float m_pos[2];             // FS2 +0x00
+};
+
+// A straight move over frames frames from one offset to another, both
+// pixels from origin's cell (EE 0x28, vtable 0x319fb0 over the base mover's
+// 0x319f20 { 0x2c7bc0, 0x2cc9c0 }, vptr +0x08). layout: host
+class KunitorisSlide final : public KunitorisMover
+{
+public:
+    KunitorisSlide(const float *from, const float *to, int frames, const int *origin); // FS2 0x002cc830
+    ~KunitorisSlide() override;                                          // FS2 0x002cdd60: deleting (obj, flag)
+    // m_pos one frame on; false (at to) once frames have passed.
+    bool step() override;                                                // FS2 0x002cc740
+
+    float      m_from[2];       // FS2 +0x0c
+    float      m_to[2];         // FS2 +0x14
+    int        m_frame;         // FS2 +0x1c
+    int        m_frames;        // FS2 +0x20
+    const int *m_origin;        // FS2 +0x24: a cell, times 8 under both ends
 };
 
 // layout: host
@@ -247,11 +275,15 @@ public:
 enum KunitorisBlockState
 {
     KunitorisBlock_Resting = 0,
-    KunitorisBlock_Bounce  = 1,         // a 14-frame hop above its height
-    KunitorisBlock_Leaving = 2,         // sinks, placed from m_anchor
-    KunitorisBlock_Sinking = 3,         // sinks over 12 frames
+    KunitorisBlock_Bounce  = 1,         // a hop above its height (KunitorisGame::shoot: 15 frames)
+    KunitorisBlock_Leaving = 2,         // sinks, placed from m_anchor (KunitorisCells::drop: 12 frames)
+    KunitorisBlock_Sinking = 3,         // sinks (KunitorisBlock::sink: 15 frames, the height over 12)
     KunitorisBlock_Gone    = 4,         // update answers false
 };
+constexpr int kKunitorisShotFrames = 15;    // KunitorisBlock_Bounce from a shot
+constexpr int kKunitorisDropFrames = 12;    // KunitorisBlock_Leaving
+constexpr int kKunitorisSinkFrames = 15;    // KunitorisBlock_Sinking from sink
+constexpr int kKunitorisTurnFrames = 3;     // turn / flip slide this long
 
 // One cell of a shape, kept at an offset from its owner's cell (EE 0x50,
 // vtable 0x319f90). layout: host
@@ -264,8 +296,27 @@ public:
     void draw(UiDrawer *drawer, int pass) override;                      // FS2 0x002cb800
     // The passes with the highlight's sprite given (null: a new one).
     void drawWithHighlight(UiDrawer *drawer, int pass, KunitorisDrawable *highlight); // FS2 0x002cbc90
+    // A quarter turn about the owner's cell, (x y) -> (-y x), slid there.
+    void turn();                                                         // FS2 0x002cb6f0
+    // Mirrored left to right about the owner's cell, slid there.
+    void flip();                                                         // FS2 0x002cb5e0
+    // A resting block sinks on the 0x14 picture; false otherwise.
+    bool sink();                                                         // FS2 0x002cc600
+    // Inline in the ROM (at every compare): m_cell from origin and offset.
+    const int *refreshCell()
+    {
+        m_cell[0] = m_origin[0] + m_offset[0];
+        m_cell[1] = m_origin[1] + m_offset[1];
+        return m_cell;
+    }
 
-    const int *m_origin;        // FS2 +0x28: the owner's cell
+private:
+    // Inline in the ROM (turn, flip): m_cell refreshed and a slide from
+    // from (pixels) to the new offset replaces the mover.
+    void slideFrom(const float *from);
+
+public:
+    const int *m_origin;       // FS2 +0x28: the owner's cell
     int        m_offset[2];     // FS2 +0x2c
     int        m_cell[2];       // FS2 +0x34: origin + offset
     int        m_height;        // FS2 +0x3c: cells lifted now
@@ -301,19 +352,59 @@ public:
     int   m_count;              // FS2 +0x4
 };
 
-// A set of blocks with an active flag (EE 0xc; new[] of 2 at
-// KunitorisGame +0x7c). layout: host
+// A set of blocks' life (KunitorisCells::m_state).
+enum KunitorisCellsState
+{
+    KunitorisCells_Empty   = 0,
+    KunitorisCells_Active  = 1,         // the player's, or a group moving every m_stepPeriod
+    KunitorisCells_Shot    = 2,         // a shot group: its blocks hop, it moves every frame, scrolls do not move it
+    KunitorisCells_Dropped = 3,         // drop: its blocks sink onto the board
+    KunitorisCells_Sunk    = 4,         // a broken-off group: its blocks sink in place
+    KunitorisCells_Gone    = 5,         // the last block's update answered false
+};
+
+// A set of blocks and its state (EE 0xc; new[] of 2 at KunitorisGame +0x7c:
+// the player's and the dropped). Its blocks are KunitorisBlocks.
+// layout: host
 class KunitorisCells
 {
 public:
     KunitorisCells();                                                    // FS2 0x002cb220
     // Deletes the blocks.
     ~KunitorisCells();                                                   // FS2 0x002cb170: deleting (obj, flag)
-    // Inline in the ROM: appended, and the set marked active.
-    void add(KunitorisActor *actor);
+    // Appended, and an empty set made active (inline at most uses).
+    void add(KunitorisActor *actor);                                     // FS2 0x002cb010
+    bool isEmpty() const { return m_state == KunitorisCells_Empty; }     // FS2 0x002c8060
+    bool isGone() const { return m_state == KunitorisCells_Gone; }       // FS2 0x002c7db0
+    // The blocks deleted, the set empty.
+    void release();                                                      // FS2 0x002cb100
+    // Every resting block sinks onto the board at anchor (its offset made
+    // the board cell); an empty or active set only. The set is dropped.
+    bool drop(const int *anchor);                                        // FS2 0x002cb2e0
+    // Each block turned / flipped; the count of blocks.
+    int  turn();                                                         // FS2 0x002cb0b0
+    int  flip();                                                         // FS2 0x002cb060
+    // An empty or active set sinks in place (KunitorisCells_Sunk).
+    bool sink();                                                         // FS2 0x002cb250
+    // A block at this offset already.
+    bool hasOffset(const int *offset) const;                             // FS2 0x002c99e0
+    // A block of other on a cell of a block of this set.
+    bool touches(KunitorisCells &other);                                 // FS2 0x002cb460
+    // Inline in the ROM: block i (the list walked from its head).
+    KunitorisBlock *block(int i) const;
+    // Inline in the ROM: a block of this set on cell (x y).
+    bool hasBlockAt(int x, int y);
+    // Inline in the ROM: every block updated; a shot set is active again
+    // once its last block stopped hopping, gone once that block is.
+    void updateBlocks();
+    // Inline in the ROM: the blocks' offsets' extent, 0 0 included.
+    void offsetBounds(int *min, int *max) const;
+    // Inline in the ROM: an empty or active set's resting blocks hop, the
+    // set shot.
+    void launch();
 
     KunitorisActorList m_blocks;    // FS2 +0x0
-    int                m_active;    // FS2 +0x8
+    int                m_state;     // FS2 +0x8: KunitorisCellsState
 };
 
 // A shape coming in from a side of the view (EE 0x24; 48 at KunitorisGame
@@ -327,11 +418,17 @@ public:
     void setStep(int dx, int dy);                                        // FS2 0x002c8080
     // A block at offset (x y) unless one is there already.
     void addCell(const int *offset);                                     // FS2 0x002c8090
+    // One frame: moved by m_step when move (a shot set always) and
+    // wrapped, then the blocks updated.
+    void step(bool move);                                                // FS2 0x002c7dc0
+    // Off one side of the 40-cell view by 8, back in from the other.
+    void wrap();                                                         // FS2 0x002c7f00
+    // The view scrolled: moved by (dx dy) unless shot, wrapped.
+    void scroll(int dx, int dy);                                         // FS2 0x002c7c10
 
     int m_cell[2];              // FS2 +0x0c: not set by the ctor
     int m_step[2];              // FS2 +0x14: cells per move
-    int _1c;                    // FS2 +0x1c
-    int _20;                    // FS2 +0x20
+    int m_moved[2];             // FS2 +0x1c: the last frame's move (step or scroll), 0 0 when it stood
 };
 
 // A shape: count cells, offsets from its first (data 0x2fbb50..0x2fbe00).
@@ -419,8 +516,11 @@ public:
     void load(float cell, const KunitorisPieceData *data);               // FS2 0x002cd730
     // Inline in the ROM (selectPiece): the cells still lit.
     int  litCells() const;
+    // Inline in the ROM (KunitorisBoard::clearUnder): the cell on board
+    // cell (x y) put out; true when it was lit.
+    bool clearCell(int x, int y);
 
-    const KunitorisPieceData *m_data;   // FS2 +0x2c
+    const KunitorisPieceData *m_data;  // FS2 +0x2c
     int                 m_cellCount;    // FS2 +0x30
     KunitorisPieceCell *m_cells;        // FS2 +0x34: new[]
 };
@@ -450,6 +550,16 @@ public:
     // Inline in the ROM (selectPiece): the lit cells of piece, of every
     // piece (kKunitorisAllPieces) or, negative, of m_highlight.
     int  litCells(int piece) const;
+    // The pieces with a cell still lit; none left clears the level.
+    int  litPieces() const;                                              // FS2 0x002cd120
+    // Inline in the ROM (KunitorisGame::update): the cells of piece, of
+    // every piece (kKunitorisAllPieces); 0 when negative.
+    int  cellCount(int piece) const;
+    // The dropped blocks put out the cells under them (their offsets are
+    // board cells, wrapped by the level's size): of any piece while every
+    // one flashes, else of m_highlight's only. Counts the cells put out
+    // (hits) and the rest (misses); the lit cells left of m_highlight.
+    int  clearUnder(KunitorisCells &blocks, int *misses, int *hits);     // FS2 0x002c8b90
 
     KunitorisLevel *m_level;    // FS2 +0x2c
     int    m_pieceCount;        // FS2 +0x30
@@ -467,11 +577,26 @@ enum KunitorisSide
 };
 constexpr int kKunitorisGroups = 48;
 
+// KunitorisGame::m_heldDir: the direction button that scrolls while held.
+enum KunitorisDir
+{
+    KunitorisDir_None  = 0,
+    KunitorisDir_Up    = 1,             // the view up a cell (m_scroll y - 1)
+    KunitorisDir_Down  = 2,
+    KunitorisDir_Left  = 3,
+    KunitorisDir_Right = 4,
+};
+
 // The ending's pose animations (data 0x2fc220): one per scene.
 enum KunitorisScene
 {
     KunitorisScene_Idle   = 0,          // the fallback once a scene's steps run out
-    KunitorisScene_Tiles  = 6,          // kunitorisEnding's tiles part
+    KunitorisScene_Miss   = 1,          // KunitorisGame::update: a drop missed more than one cell
+    KunitorisScene_Over   = 2,          // the lives ran out
+    KunitorisScene_Cheer  = 3,          // a piece cleared (one in four), a fever started or chained
+    KunitorisScene_Clean  = 4,          // a piece of 10 cells or more cleared in one drop
+    KunitorisScene_Big    = 5,          // a piece of 20 cells or more cleared (one in sixteen)
+    KunitorisScene_Tiles  = 6,         // kunitorisEnding's tiles part
     KunitorisScene_Count  = 8,          // the 8th entry is empty (0x2fc274)
 };
 
@@ -522,18 +647,44 @@ class KunitorisGame : public KunitorisBoard
 public:
     KunitorisGame(int hiScore, int level);                               // FS2 0x002c8640
     ~KunitorisGame();                                                    // inline in the ROM (kunitorisThread)
-    void update(GamePad *pad);                                           // FS2 0x002c64d0
+    // One frame of play: false while paused, cleared or out of lives.
+    bool update(GamePad *pad);                                           // FS2 0x002c64d0
     void draw(sceVif1Packet *packet, TexAreaList *texList);              // FS2 0x002c5ea0
     using KunitorisBoard::draw;
+    using KunitorisBoard::update;
 
 private:
     // Inline in the ROM (the ctor): the first group not active, or null.
     KunitorisGroup *freeGroup();
+    // Inline in the ROM (the ctor, update): group on one of the first
+    // kinds shapes, coming in from a random side.
+    void spawnGroup(KunitorisGroup *group, int kinds);
+    // Inline in the ROM (update): the groups not empty.
+    int  activeGroups() const;
+    // Inline in the ROM (update): lives lost, none below 0, none once cleared.
+    void loseLives(int lives);
+    // Groups that touch the player's blocks join them, from where they were
+    // before their last move; a set grown past 16 cells across breaks off.
+    void absorb();                                                       // FS2 0x002c9170
+    // The player's blocks (two or more) as a free group at the cursor that
+    // sinks there; the player keeps one block. False when nothing broke off.
+    bool breakOff();                                                     // FS2 0x002c9720
+    // The same as a shot group moving (dx dy) every frame.
+    void shoot(int dx, int dy);                                          // FS2 0x002c9a80
+    // Two groups that moved alike and touch: the first turns, its step
+    // the move swapped.
+    void turnTouching();                                                 // FS2 0x002c8ff0
+    // Inline in the ROM (breakOff, shoot): the player's blocks copied into
+    // a free group at the cursor, moving (dx dy); null without one free.
+    KunitorisGroup *detachPlayerBlocks(int dx, int dy);
+    // Inline in the ROM (breakOff, shoot, update's drop): the player's set
+    // back to the one block under the cursor.
+    void resetPlayerBlocks(KunitorisCells &cells);
     // The board four times at the scroll (the level wraps).
     void drawBoard();                                                    // FS2 0x002c81c0
     // m_lives as a bar of pack item 0x12, one pixel a life, at the top.
     void drawLivesBar();                                                 // FS2 0x002c8510
-    // _764 as the same bar, dark grey or grey by bit 1 of _760.
+    // m_feverBar as the same bar, dark grey or grey by bit 1 of m_frame.
     void drawBlinkBar();                                                 // FS2 0x002c83a0
 
 public:
@@ -547,20 +698,20 @@ public:
     int    m_cellsIndex;        // FS2 +0x078: which of m_cells holds the player's blocks
     KunitorisCells  *m_cells;   // FS2 +0x07c: new[] of 2
     int    m_lives;             // FS2 +0x080: under 1 the game is over (40 .. 32 by level)
-    int    _84;                 // FS2 +0x084: 210 .. 120 by level
-    int    _88;                 // FS2 +0x088: 120 .. 60 by level (a period: _94 counts it)
-    int    _8c;                 // FS2 +0x08c: 20 .. 8 by level (a period: _98 counts it)
-    int    _90;                 // FS2 +0x090: 5
-    int    _94;                 // FS2 +0x094
-    int    _98;                 // FS2 +0x098
+    int    m_spawnPeriod;       // FS2 +0x084: 210 .. 120 by level: frames between new groups
+    int    m_drainPeriod;       // FS2 +0x088: 120 .. 60 by level: frames a life lasts (not in a fever)
+    int    m_stepPeriod;        // FS2 +0x08c: 20 .. 8 by level: frames between group moves
+    int    m_spawnTimer;        // FS2 +0x090: 5 at first; halved each fever frame
+    int    m_drainTimer;        // FS2 +0x094
+    int    m_stepTimer;         // FS2 +0x098: two a fever frame
     KunitorisGroup m_groups[kKunitorisGroups]; // FS2 +0x09c
-    int    _75c;                // FS2 +0x75c
-    int    _760;                // FS2 +0x760
-    int    _764;                // FS2 +0x764
-    int    _768;                // FS2 +0x768
-    int    _76c;                // FS2 +0x76c
+    int    m_heldDir;           // FS2 +0x75c: KunitorisDir, the scroll's button while held
+    int    m_frame;             // FS2 +0x760: frames played
+    int    m_feverBar;          // FS2 +0x764: m_fever as 0..80 pixels (drawBlinkBar)
+    float  m_feverRate;         // FS2 +0x768: m_fever lost a frame
+    float  m_fever;             // FS2 +0x76c: 1 when a fever starts or chains; at 0 it ends
     u_char m_paused;            // FS2 +0x770: Select flips it while lives are left; draw shows PAUSE
-    int    _774;                // FS2 +0x774
+    int    m_feverChain;        // FS2 +0x774: pieces cleared in this fever (0 outside one)
     u_char m_cleared;           // FS2 +0x778: the level is cleared
     int    m_shapeCount;        // FS2 +0x77c: of m_shapes, 27 below level 12, else 20
     const KunitorisShape *m_shapes; // FS2 +0x780
