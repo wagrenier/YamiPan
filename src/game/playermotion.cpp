@@ -9680,12 +9680,11 @@ int StageCharacter::scriptPickableHandle()
 }
 
 // FS2 0x00218e00
-// callcheck: useItem
+// callcheck: throwCarried
 
 bool StageCharacter::scriptUseItemAt(const char *name, const float *point)
 {
-    constexpr int kOnPoint = 1;
-    return useItem(name, point, kOnPoint);
+    return throwCarried(name, point, true);
 }
 
 // FS2 0x00219ae0
@@ -11425,12 +11424,12 @@ bool StageCharacter::scriptUseSmoke()
 }
 
 // FS2 0x00218e10 (thunk 0x0017e580)
-// callcheck: useItem
+// callcheck: throwCarried
 
 bool StageCharacter::scriptUseNamedItem(const char *name)
 {
     sceVu0FVECTOR zero = {};
-    return useItem(name, zero, 1);
+    return throwCarried(name, zero, true);
 }
 
 // FS2 0x00218b00 (thunk 0x0017e570)
@@ -11447,12 +11446,137 @@ bool StageCharacter::scriptSetTrap()
 }
 
 // FS2 0x00218af0 (thunk 0x0017e560)
-// callcheck: item218850
+// callcheck: putSmoke
 
 bool StageCharacter::scriptPutItem()
 {
-    return item218850(1);
+    return putSmoke(true);
 }
+
+// itemwait begin (tools/reverse/itemwaitcmp.py compiles this block)
+// What throwCarried and putSmoke keep across frames, in the yield of the
+// running script: the state in the low four bits, a frame above them.
+enum ItemWaitState
+{
+    ItemWait_Ask     = 0,   // nothing asked, or the character could not yet
+    ItemWait_Asked   = 1,   // asked: its motion has not started
+    ItemWait_Playing = 2,   // its motion is the newest
+    ItemWait_Done    = 3,   // it reached noteEnding: answer true
+    ItemWait_Failed  = 4,   // answer false
+};
+constexpr u_int kItemWaitStateMask  = 0xf;
+constexpr int   kItemWaitFrameShift = 4;
+constexpr u_int kItemWaitFrames     = 30;    // a motion that has not started by then never will
+constexpr int   kNativeUseItem      = 0x104; // the id of both waits, whichever native runs them
+
+// The two waits' Asked and Playing, one frame, inline in both in the ROM.
+// With an empty history the ROM reads the words at addresses 0 and 4; here
+// that is no entry. Another motion on top means this one gave way: it counts
+// only if it reached noteEnding first, and it may have left the ring.
+// callcheck: find, getMissionFrames
+static int itemWaitStep(const CharacterBlock7c8 &history, int id, int state, u_int since)
+{
+    const MotionHistoryEntry *newest = history.newest();
+    const bool onTop = newest != nullptr && newest->id == id;
+    if (state == ItemWait_Asked) {
+        if (onTop)
+            return ItemWait_Playing;
+        if (since + kItemWaitFrames < (u_int)gStageScene->getMissionFrames())
+            return ItemWait_Failed;
+        return state;
+    }
+    if (onTop)
+        return (newest->events & kMotionEventEnding) != 0 ? ItemWait_Done : state;
+    const MotionHistoryEntry *entry = history.find(id);
+    return entry != nullptr && (entry->events & kMotionEventEnding) != 0 ? ItemWait_Done : ItemWait_Failed;
+}
+
+// FS2 0x00218850. The ROM's own slip: Asked keeps frame 0, not the frame it
+// started, as throwCarried does, so past the mission's first second the
+// motion must be on top at the very next look. A character no pad controls
+// stays in Ask for as long as it carries the smoke: askNothing never starts
+// anything.
+// callcheck: findCarried, isControlled, askNothing, getMissionFrames, scriptYield
+
+bool StageCharacter::putSmoke(bool retry)
+{
+    (void)retry;                // only for askNothing
+    static const char kSmoke[] = "I_HATUEN";    /* data 0x307010 */
+    const u_int yielded = gRunningScript != nullptr ? (u_int)gRunningScript->takeYield() : 0;
+    int state = (int)(yielded & kItemWaitStateMask);
+    const u_int since = yielded >> kItemWaitFrameShift;
+    if (state == ItemWait_Ask) {
+        bool started = false;
+        StageObject *item = findCarried(kSmoke);
+        if (item == nullptr) {
+            state = ItemWait_Failed;
+        }
+        else if (isControlled()) {
+            m_wants.putItem = 1;
+            m_putItem = static_cast<StageItem *>(item);
+            started = true;
+        }
+        else {
+            started = m_brain->askNothing();
+        }
+        if (started)
+            state = ItemWait_Asked;
+    }
+    else if (state == ItemWait_Asked || state == ItemWait_Playing) {
+        state = itemWaitStep(m_block7c8, kMotionPickLow, state, since);
+    }
+    if (state == ItemWait_Done)
+        return true;
+    if (state != ItemWait_Failed)
+        scriptYield(kNativeUseItem, (int)(since << kItemWaitFrameShift | (u_int)state));
+    return false;
+}
+
+// FS2 0x00218b50
+// callcheck: findCarried, isControlled, wantThrow, askThrow, getMissionFrames, scriptYield
+
+bool StageCharacter::throwCarried(const char *name, const float *point, bool retry)
+{
+    const u_int yielded = gRunningScript != nullptr ? (u_int)gRunningScript->takeYield() : 0;
+    int state = (int)(yielded & kItemWaitStateMask);
+    u_int since = yielded >> kItemWaitFrameShift;
+    if (state == ItemWait_Ask) {
+        bool started = false;
+        StageObject *item = findCarried(name);
+        if (item == nullptr) {
+            state = ItemWait_Failed;
+        }
+        else if (isControlled()) {
+            wantThrow(true, item, point);
+            started = true;
+        }
+        else {
+            started = m_brain->askThrow(item, const_cast<float *>(point), retry);
+        }
+        if (started) {
+            since = (u_int)gStageScene->getMissionFrames();
+            state = ItemWait_Asked;
+        }
+    }
+    else if (state == ItemWait_Asked || state == ItemWait_Playing) {
+        state = itemWaitStep(m_block7c8, kMotionThrow, state, since);
+    }
+    if (state == ItemWait_Done)
+        return true;
+    if (state != ItemWait_Failed)
+        scriptYield(kNativeUseItem, (int)(since << kItemWaitFrameShift | (u_int)state));
+    return false;
+}
+
+// FS2 0x0020b200
+
+void StageCharacter::wantThrow(bool on, StageObject *item, const float *vector)
+{
+    m_wants.throwItem = on ? 1 : 0;
+    m_throwItem = static_cast<StageThrownItem *>(item);
+    memcpy(m_wants.throwVector, vector, sizeof(sceVu0FVECTOR));
+}
+// itemwait end
 
 // FS2 0x00218800 (thunk 0x0017e550)
 // callcheck: isControlled, askTakeUpTrap

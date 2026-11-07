@@ -2009,6 +2009,7 @@ struct MotionHistoryEntry
     int frame;                  // FS2 +0x8: StageScene::getMissionFrames
 };
 constexpr u_int kMotionEventsOver = 0x18;   // MotionHistoryEntry::events: noteMotion's 3 and 4, it ended or gave way
+constexpr u_int kMotionEventEnding = 1u << 2; // MotionHistoryEntry::events: noteEnding: it did what it was for
 static_assert(sizeof(MotionHistoryEntry) == 0xc, "MotionHistoryEntry: EE 0xc");
 struct CharacterBlock7c8
 {
@@ -2024,6 +2025,12 @@ struct CharacterBlock7c8
                 return &entry;
         }
         return nullptr;
+    }
+
+    // The motion started last; null none. Inline in the ROM.
+    const MotionHistoryEntry *newest() const
+    {
+        return count != 0 ? &entries[(next + kMotionHistory - 1) & (kMotionHistory - 1)] : nullptr;
     }
 
     MotionHistoryEntry entries[kMotionHistory]; // FS2 +0x00
@@ -2077,7 +2084,7 @@ struct CharacterWants
     u_char useDoor;             // FS2 +0x2cf: Door: open or close, as allows.doorHand
     u_char useDoorKey;          // FS2 +0x2d0: Door: as allows.doorKey
     u_char pickup;              // FS2 +0x2d1: the item list gave the Use button to PickupItem
-    u_char putItem;             // FS2 +0x2d2: put down m_putItem (the writer 0x218850 is unread)
+    u_char putItem;             // FS2 +0x2d2: put down m_putItem (putSmoke)
     u_char _2d3;
     int    putItemEe;           // FS2 +0x2d4: its size on the EE; StageCharacter::m_putItem holds the pointer
     u_char trapSet;             // FS2 +0x2d8: lay the trap (no writer read yet)
@@ -2374,7 +2381,7 @@ public:
     void spawn();                                                        // FS2 0x00218630
     // The spawn point missionSpawnAt gave it.
     // FS2 0x002187f0
-    void setSpawnPoint(const int *point) { m_spawnPoint = *point; }
+    void setSpawnPoint(const int *point) { m_spawnPoint = *point; } // FS2 0x002187f0
     // Its name is F_YRT or F_SRT and its sheet kind 3 or 7: it may be sent.
     bool isSpawnable();                                                  // FS2 0x002115e0
     // The sheet kind as the sound tables have it: SoundKind.
@@ -2485,10 +2492,18 @@ public:
     bool scriptPutItem() override;                                       // FS2 0x00218af0 (thunk 0x0017e560)
     bool scriptTakeUpTrap() override;                                    // FS2 0x00218800 (thunk 0x0017e550)
     StageObject *scriptTakeItem() override;                              // FS2 0x0021b370 (thunk 0x0017e510)
-    // The item called name, at point; unread.
-    bool useItem(const char *name, const float *point, int arg);         // FS2 0x00218b50
-    // A slot of the brain's; unread.
-    bool item218850(int arg);                                            // FS2 0x00218850
+    // A script's wait: the carried item called name is thrown with point as
+    // its vector (zero: the default throw). True when the throw has ended;
+    // false with nothing to throw, or the script yields until it is known.
+    bool throwCarried(const char *name, const float *point, bool retry); // FS2 0x00218b50
+    // The same for putting the smoke down. The brain never asks for this.
+    bool putSmoke(bool retry);                                           // FS2 0x00218850
+    // Sets what the Throw condition reads.
+    void wantThrow(bool on, StageObject *item, const float *vector);     // FS2 0x0020b200
+    // FS2 0x00219000
+    bool canTakeUpTrap() const { return m_allows.trapCancel != 0; }
+    // FS2 0x00219980
+    bool heardWithin(float range) const { return m_lastNoiseRange <= range; }
     // +0x400 holds something.
     bool hasGear() const { return m_gear != nullptr; }                   // FS2 0x00215290
     // How far its blow reaches: the long weapon's, else the sheet's 攻撃判定.

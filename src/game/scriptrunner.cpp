@@ -3503,12 +3503,12 @@ static const int *nativeNearestCorpse(ScriptRunner *self, int *acc, const int *c
 }
 
 // FS2 0x001c4ee0
-// callcheck: FUN_00219980 (inline here: m_lastNoiseRange)
+// callcheck: heardWithin
 static const int *nativeHeardWithin(ScriptRunner *self, int *acc, const int *code)
 {
     const float range = (float)self->popped(1)[0];
     StageCharacter *who = self->getTarget()->getScriptCharacter();
-    *acc = who != nullptr && who->m_lastNoiseRange <= range;
+    *acc = who != nullptr && who->heardWithin(range);
     return code;
 }
 
@@ -3810,10 +3810,11 @@ static const int *nativeTakeUpTrap(ScriptRunner *self, int *acc, const int *code
 }
 
 // FS2 0x001bceb0
+// callcheck: canTakeUpTrap
 static const int *nativeCanTakeUpTrap(ScriptRunner *self, int *acc, const int *code)
 {
     StageCharacter *who = self->getTarget()->getScriptCharacter();
-    *acc = who != nullptr && who->m_allows.trapCancel != 0;
+    *acc = who != nullptr && who->canTakeUpTrap();
     return code;
 }
 

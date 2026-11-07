@@ -1780,9 +1780,9 @@ bool CharacterBrain::takeUpTrap()
 
 // FS2 0x001da050
 
-bool CharacterBrain::useItem850()
+bool CharacterBrain::putSmoke()
 {
-    return m_owner->item218850(0);
+    return m_owner->putSmoke(false);
 }
 
 // FS2 0x001da060
@@ -1798,7 +1798,7 @@ bool CharacterBrain::setTrap()
 
 bool CharacterBrain::useItemAt(const char *name, const float *point)
 {
-    return m_owner->useItem(name, point, 0);
+    return m_owner->throwCarried(name, point, false);
 }
 
 // FS2 0x001da0c0
@@ -1806,7 +1806,7 @@ bool CharacterBrain::useItemAt(const char *name, const float *point)
 bool CharacterBrain::useNamedItem(const char *name)
 {
     sceVu0FVECTOR zero = {};
-    return m_owner->useItem(name, zero, 0);
+    return m_owner->throwCarried(name, zero, false);
 }
 
 // FS2 0x001da110
@@ -1814,7 +1814,7 @@ bool CharacterBrain::useNamedItem(const char *name)
 bool CharacterBrain::useSmoke()
 {
     sceVu0FVECTOR zero = {};
-    return m_owner->useItem(kItemSmoke, zero, 0);
+    return m_owner->throwCarried(kItemSmoke, zero, false);
 }
 
 // FS2 0x001da170
@@ -2120,11 +2120,11 @@ bool CharacterBrain::askSetTrap()
 }
 
 // FS2 0x001db6f0
-// callcheck: action22ab90
+// callcheck: throwAt
 
-bool CharacterBrain::askRoute22ab90(void *a, void *b, bool retry)
+bool CharacterBrain::askThrow(void *item, void *vector, bool retry)
 {
-    const bool started = m_route->action22ab90(a, b);
+    const bool started = m_route->throwAt(item, vector);
     if (retry)
         retryIf(started);
     return started;

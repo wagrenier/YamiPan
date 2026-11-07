@@ -4765,7 +4765,7 @@
 /* 001d9f90 00000030 */ CharacterBrain::scriptOpenDoor(){}  // game
 /* 001d9fc0 00000060 */ CharacterBrain::walkToPoint700(){}  // game
 /* 001da020 00000030 */ CharacterBrain::takeUpTrap(){}  // game
-/* 001da050 0000000c */ CharacterBrain::useItem850(){}  // game
+/* 001da050 0000000c */ CharacterBrain::putSmoke(){}  // game
 /* 001da060 00000050 */ CharacterBrain::setTrap(){}  // game
 /* 001da0b0 0000000c */ CharacterBrain::useItemAt(){}  // game
 /* 001da0c0 0000004c */ CharacterBrain::useNamedItem(){}  // game
@@ -4820,7 +4820,7 @@
 /* 001db540 000000c4 */ CharacterBrain::askTakeUpTrap(){}  // game
 /* 001db610 000000c4 */ CharacterBrain::askSetTrap(){}  // game
 /* 001db6e0 00000008 */ CharacterBrain::askNothing(){}  // game
-/* 001db6f0 000000d0 */ CharacterBrain::askRoute22ab90(){}  // game
+/* 001db6f0 000000d0 */ CharacterBrain::askThrow(){}  // game
 /* 001db7c0 000000c4 */ CharacterBrain::askFireAt(){}  // game
 /* 001db890 000000c4 */ CharacterBrain::askFireAtBite(){}  // game
 /* 001db960 000000c4 */ CharacterBrain::askSwingAt(){}  // game
@@ -5392,7 +5392,7 @@
 /* 0020b010 0000010c */ FUN_0020b010(){}
 /* 0020b120 000000ac */ StageCharacter::getEnemyCandidates(){}  // game
 /* 0020b1d0 00000020 */ StagePlayer::latchAltAction(){}  // game
-/* 0020b200 00000014 */ FUN_0020b200(){}
+/* 0020b200 00000014 */ StageCharacter::wantThrow(){}  // game
 /* 0020b220 00000014 */ ScriptPoint::set(){}  // game
 
 // *****************************************************************************
@@ -5779,27 +5779,22 @@
 // *****************************************************************************
 
 /* 002184b0 00000044 */ StageCharacter::noticeItem(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
 /* 00218500 000000a0 */ StageCharacter::setPosition(){}  // game
 /* 002185a0 0000006c */ StageObject::canSpawn(){}  // game
 /* 00218610 0000001c */ StageCharacter::setRespawnPlace(){}  // game
 /* 00218630 000001b4 */ StageObject::spawn(){}  // game
 /* 002187f0 0000000c */ StageCharacter::setSpawnPoint(){}  // game
 /* 00218800 00000050 */ StageCharacter::scriptTakeUpTrap(){}  // game
-/* 00218850 00000294 */ StageCharacter::item218850(){}  // game
+/* 00218850 00000294 */ StageCharacter::putSmoke(){}  // game
 /* 00218af0 00000008 */ StageCharacter::scriptPutItem(){}  // game
 /* 00218b00 00000050 */ StageCharacter::scriptSetTrap(){}  // game
-/* 00218b50 000002b0 */ StageCharacter::useItem(){}  // game
+/* 00218b50 000002b0 */ StageCharacter::throwCarried(){}  // game
 /* 00218e00 00000008 */ StageCharacter::scriptUseItemAt(){}  // game
 /* 00218e10 00000048 */ StageCharacter::scriptUseNamedItem(){}  // game
 /* 00218e60 00000014 */ StageCharacter::scriptUseSmoke(){}  // game
 /* 00218e80 000000b4 */ StageCharacter::seesBurner(){}  // game
 /* 00218f40 000000b4 */ StageCharacter::seesOpenTrap(){}  // game
-/* 00219000 00000008 */ FUN_00219000(){}
+/* 00219000 00000008 */ StageCharacter::canTakeUpTrap(){}  // game
 /* 00219010 00000028 */ StageCharacter::onScriptExit(){}  // game
 /* 00219040 000000c4 */ StageCharacter::getClimbPoint(){}  // game
 /* 00219110 0000004c */ StageCharacter::askLift(){}  // game
@@ -5810,15 +5805,10 @@
 /* 00219420 000000f0 */ StageCharacter::leaveQuiet(){}  // game
 /* 00219510 000001d4 */ StageCharacter::leaveLoud(){}  // game
 /* 002196f0 00000284 */ StageCharacter::leaveNoticed(){}  // game
-/* 00219980 00000018 */ FUN_00219980(){}
+/* 00219980 00000018 */ StageCharacter::heardWithin(){}  // game
 /* 002199a0 000000ec */ StageCharacter::findNearestCorpse(){}  // game
 /* 00219a90 00000044 */ StageCharacter::scriptCrouch(){}  // game
 /* 00219ae0 00000044 */ StageCharacter::scriptCallOut(){}  // game
-
-// *****************************************************************************
-// FILE -- game/playermotion.cpp
-// *****************************************************************************
-
 /* 00219b30 000000ac */ StageCharacter::doorActions(){}  // game
 
 // *****************************************************************************
@@ -5838,7 +5828,7 @@
 /* 0021a380 00000130 */ StageCharacter::getBestFoe(){}  // game
 /* 0021a4b0 00000258 */ FUN_0021a4b0(){}
 /* 0021a710 000001ac */ StageCharacter::addFoeWeight(){}  // game
-/* 0021a8c0 0000000c */ FUN_0021a8c0(){}
+/* 0021a8c0 0000000c */ CharacterBlock7c8::clear(){}  // game
 /* 0021a8d0 00000080 */ CharacterBlock7c8::find(){}  // game
 /* 0021a960 00000130 */ StageCharacter::noteMotion(){}  // game
 /* 0021aa90 00000080 */ StageCharacter::spawnEffectOnBone(){}  // game
@@ -6073,7 +6063,7 @@
 /* 0022a8f0 00000024 */ CharacterRoute::setTrap(){}  // game
 /* 0022a920 00000228 */ CharacterRoute::gunAction(){}  // game
 /* 0022ab50 00000034 */ CharacterRoute::takeItem(){}  // game
-/* 0022ab90 00000058 */ CharacterRoute::action22ab90(){}  // game
+/* 0022ab90 00000058 */ CharacterRoute::throwAt(){}  // game
 /* 0022abf0 00000164 */ CharacterRoute::action22abf0(){}  // game
 /* 0022ad60 00000174 */ CharacterRoute::action22ad60(){}  // game
 /* 0022aee0 00000460 */ CharacterRoute::shoot(){}  // game

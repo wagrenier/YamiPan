@@ -442,20 +442,6 @@ StageObject * StageCharacter::findNearestFoe(bool foes, bool sight)
     return {};
 }
 
-// stub of FS2 0x00218850
-bool StageCharacter::item218850(int arg)
-{
-    YAMIPAN_STUB("StageCharacter::item218850", 0x00218850);
-    return {};
-}
-
-// stub of FS2 0x00218b50
-bool StageCharacter::useItem(const char *name, const float *point, int arg)
-{
-    YAMIPAN_STUB("StageCharacter::useItem", 0x00218b50);
-    return {};
-}
-
 // stub of FS2 0x0029f440
 StageObject * findNumLockTarget()
 {

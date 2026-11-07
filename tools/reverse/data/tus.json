@@ -1,7 +1,5 @@
 {
- "queue": [
-  "game/playermotion.cpp"
- ],
+ "queue": [],
  "settings": {
   "data_dir": "C:/Users/willi/Documents/Decomp/Forbidden Siren 2",
   "frontier_ignore": [],
@@ -866,7 +864,7 @@
    "why": "PerfMeter's members only: drawDetail 0x132f20 (empty, PerfMeter by its caller GameSystem::flipFrame) through the ctor 0x1336e0; below 0x132f20 is another class (0x132ea0 a ctor allocating a char buffer, 0x132f00 a getter of +0xc), from 0x133800 unassigned code; no source-path string"
   },
   "game/playermotion.cpp": {
-   "notes": "36 functions, batch 182, ranges joined 0x281a40..0x282d98 and 0x283a00..0x283cb0. Temporary harness, removed (YAMIPAN_TELEPORT, forced request at frame 200, 14 runs of 30 to 70 s on stages 9, 7, 21, 2, no crash): stage 9 at oZS09_04: walk ends on it, 0xc8, 0xc9, forced 0xca, standing. Stage 7: oDC07_05 comes to the player and shows. Stage 21: SpDrop runs, oMK21_09 back in place hidden. Stage 2: walks to oMT02_30 by its world matrix, 0xd7, standing. NOT proven: requestedFile was null for all these rows on the default character, so no pose motion played and no object motion was confirmed; 0xca lasted one frame for that reason as far as read. Nothing judged on screen: shots are the follow camera against the head. Never ran: SpFear, SpNumLock, gadget links (SigLamp class is a stub), BossAttack, BossIdle, EVE_S09_04, the end of the 0xc9 hold. New stubs: SceneOwnedObject takeMotionText, takeMotionUser, setRecordFlag31, numLockSpinDial, numLockSetDial, numLockDialsRight, numLockDialsTurning. Scripts name these on: sp_shut 2.1 2.2, sp_robo 7.2, sp_ron 9.1 9.2, sp_fear 10.1 10.2, sp_drop 21.2, sp_tank 28.2. NEXT: drive a real script to sp_ron or sp_fear with the character that has the file; else StageAlert and ItemPhysics, which a plain fight reaches. callcheck MISSING lines left are the earlier ones. References: architecture.md The stage's own links; open-items.md top of Next up, three doubts; hazards.md A forced motion can run with no motion in it.",
+   "notes": "Written: StageCharacter::throwCarried 0x218b50 (was useItem), putSmoke 0x218850 (was item218850), wantThrow 0x20b200, canTakeUpTrap 0x219000, heardWithin 0x219980; brain askThrow and putSmoke, route throwAt renamed, batch 192 saved. Range 0x218500..0x219b30 joined this file. Proved: itemwaitcmp.py 61205 ops 0 differences, every state reached, plant 2572. Seen on stage 17 with temporary probes, removed, through the game's own menu and F_PC17, no forced state: Throw: Ask, Asked at 0x4e0, 20 Playing, flare in flight with its trail, then burning; Set after walking from the ledge: Ask, Asked at 0, 19 Playing, smoke column at the feet. progress/20261107-flare-*-stage17.png. Default part of stages 1..30, 24 s each, no crash. Not seen: a brain path, native 0x15a, an I_NUT throw, the true answer as such. Kept from the ROM: putSmoke never stamps the frame; a brain asked to put smoke yields for ever while it carries one. No PS2 reference for the picture, so verify. Next: the flare gives no light: SceneBufferSet::createFor 0x2ce620 is a stub, in unassigned@002c42a0. tus.py next gave that TU this run since it skips a queued verify; this run claimed by hand, hazards.md, and tus.py queue now warns. Queue empty. Smoke run 15 s stops at the language screen, right for 15 s. callcheck MISSING lines are the earlier 10.",
    "ranges": [
     [
      "00175700",
@@ -1030,10 +1028,6 @@
     ],
     [
      "002184b0",
-     "00218500"
-    ],
-    [
-     "00219b30",
      "00219be0"
     ],
     [
@@ -1287,11 +1281,6 @@
    ],
    "sessions": [
     {
-     "date": "2026-11-05 05:24",
-     "status": "partial",
-     "summary": "the fight: BtOn, Lock, BtAttack, BtAtkCombo, BtMove and the Battle and BtAttack links: R1 takes the stance and Cross throws blows on stage 1; nothing there to hit yet"
-    },
-    {
      "date": "2026-11-05 06:16",
      "status": "partial",
      "summary": "firearms, traps, throws and the start hook: GunOn, GunMove, Snipe, GunAttack, Reload, Showt, Jack, Throw, TrapSet, TrapCancel with their links, the scope, shot spread, sideHook0, getLifeState: a test rifle comes up, aims, fires and scopes on stage 1; the scope view is black"
@@ -1345,11 +1334,16 @@
      "date": "2026-11-06 19:35",
      "status": "verify",
      "summary": "The last eleven links written (GadgetLink, SpFear, SpRing, SpRobo, SpDrop, SpPadlock, SpNumLock, BossAttack, BossIdle): every link name of the ROM now exists; none has played its real motion"
+    },
+    {
+     "date": "2026-11-07 02:12",
+     "status": "verify",
+     "summary": "the item waits: throwCarried and putSmoke, the two script natives behind Throw and Set Smoke Candle; 0 differences with the ROM, and on stage 17 the real menu throws and sets a burning flare"
     }
    ],
    "status": "verify",
    "task": "PlayerMotion::takeHits 0x1e18c0..0x1e3e80 past its first line: it requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice",
-   "why": "the last links of the ROM ctor: 0x281a40..0x282d98 and their dtors 0x283a00..0x283cb0, vtables 0x317d70..0x317f20"
+   "why": "the last links of the ROM ctor: 0x281a40..0x282d98 and their dtors 0x283a00..0x283cb0, vtables 0x317d70..0x317f20; 0x218500..0x219b30 joined: the rest of the StageCharacter script slots, among them throwCarried and putSmoke"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",

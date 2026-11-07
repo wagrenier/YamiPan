@@ -246,7 +246,7 @@ public:
     bool scriptReload(int rounds) override { (void)rounds; return gunAction(); } // FS2 0x001da650
     bool scriptUseSmoke() override { return useSmoke(); }                       // FS2 0x001da110
     bool scriptUseNamedItem(const char *name) override { return useNamedItem(name); } // FS2 0x001da0c0
-    bool scriptPutItem() override { return useItem850(); }                      // FS2 0x001da050
+    bool scriptPutItem() override { return putSmoke(); }                        // FS2 0x001da050
     bool scriptSetTrap() override { return setTrap(); }                  // FS2 0x001da060
     bool scriptTakeUpTrap() override { return takeUpTrap(); }            // FS2 0x001da020
     StageObject *scriptTakeItem() override { return takeItem(); }        // FS2 0x001da5e0
@@ -272,7 +272,7 @@ public:
     bool useNamedItem(const char *name);                                 // FS2 0x001da0c0
     bool useItemAt(const char *name, const float *point);                // FS2 0x001da0b0
     bool setTrap();                                                      // FS2 0x001da060
-    bool useItem850();                                                   // FS2 0x001da050
+    bool putSmoke();                                                     // FS2 0x001da050
     bool takeUpTrap();                                                   // FS2 0x001da020
     StageObject *takeItem();                                             // FS2 0x001da5e0
     void crouch3();                                                      // FS2 0x001da3c0
@@ -299,7 +299,7 @@ public:
     bool askTakeUpTrap();                                                // FS2 0x001db540
     bool askSetTrap();                                                   // FS2 0x001db610
     bool askNothing() { return false; }                                  // FS2 0x001db6e0
-    bool askRoute22ab90(void *a, void *b, bool retry);                   // FS2 0x001db6f0
+    bool askThrow(void *item, void *vector, bool retry);                 // FS2 0x001db6f0
     bool askFireAt(StageObject *target, const char *flags, int frames30); // FS2 0x001db7c0
     bool askFireAtBite(const char *flags, int frames30);                 // FS2 0x001db890
     bool askSwingAt(StageObject *target);                                // FS2 0x001db960

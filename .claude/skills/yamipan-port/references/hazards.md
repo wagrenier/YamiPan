@@ -632,3 +632,11 @@ upper lanes, NaN in Python and harmless on a VU: clear the vf's between calls.
 ## A default's shape says the virtual's type (2026-11-07)
 
 **Symptom:** natives 0x104, 0x105, 0x106, 0x15a stored 0 on 159 scripts, with a comment that explained it ("void in the ROM: their acc is what v0 held"). **Cause:** the base's bodies were never read for the type: the writer saw void-looking calls and a stored v0, and took the store for a leak. A native that keeps `andi v0,0xff` has a bool in hand, and a default ending `sltu v0,zero,v0` declares one. **Fix:** a comment that excuses a store is a claim, check it against the default's body; `py defaultcmp.py` does for scriptrunner.h.
+
+### A queued TU at `verify` is skipped without a word (2026-11-07)
+
+Symptom: the run before had queued game/playermotion.cpp for two stubs, and `tus.py next` gave a frontier TU instead. Cause: `pick` skips queue entries at done, verify or blocked, and the two stubs were not in that file at all: they sat in unassigned@00218500, which only `define` joins to it. Fix: `tus.py queue` now warns. To send the next run to stubs in an unassigned run, queue the run itself; when it happens anyway, read the handoff, then `define` and `claim` by hand and say so in the report.
+
+### A smoke test that "fails" may be the place, not the code (2026-11-07)
+
+Symptom: picking Set Smoke Candle did nothing and the wait gave up after one frame. Cause: the player stood at a ledge with the Down prompt, so `PutItemCondition` (word for word the ROM's) never allowed it. Fix: read the condition against the ROM before suspecting the new code, and walk somewhere open: stage 17, `780:LSDOWN*100` before the menu.
