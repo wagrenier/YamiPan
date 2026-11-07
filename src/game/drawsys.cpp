@@ -310,7 +310,7 @@ static int drawSysBuildShadows(const sceVu0FVECTOR *view)
             else
                 work.data->flags |= ModelFlag_Distant;
             if (farSq < distanceSq)
-                work.data->distant = 1;
+                work.data->clipped = 1;
         }
     }
     return count;

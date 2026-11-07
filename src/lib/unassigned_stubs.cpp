@@ -26,18 +26,6 @@
 
 // ---- stubs (tools/reverse/stubgen.py) ----
 
-// stub of FS2 0x002dccf0
-AreaClip::AreaClip(void*)
-{
-    YAMIPAN_STUB("AreaClip::AreaClip", 0x002dccf0);
-}
-
-// stub of FS2 0x002dcab0
-AreaClip::~AreaClip()
-{
-    YAMIPAN_STUB("AreaClip::~AreaClip", 0x002dcab0);
-}
-
 // stub of FS2 0x0012cce0
 void GameSystem::beginStage()
 {
@@ -210,18 +198,6 @@ void StageObject::onViewTop()
 // stub of FS2 0x0029f050
 // stub of FS2 address unknown (0 candidates)
 // stub of FS2 address unknown (0 candidates)
-
-// stub of FS2 0x002dcc30
-void AreaClip::setup()
-{
-    YAMIPAN_STUB("AreaClip::setup", 0x002dcc30);
-}
-
-// stub of FS2 0x002dbd10
-void AreaClip::update(StageObject *camera)
-{
-    YAMIPAN_STUB("AreaClip::update", 0x002dbd10);
-}
 
 // stub of FS2 0x00239bb0
 // stub of FS2 0x002ad030

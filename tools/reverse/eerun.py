@@ -85,6 +85,7 @@ class Ee:
         self.acc = 0.0
         self.vacc = [0.0, 0.0, 0.0, 0.0]
         self.vstatus = 0        # the sticky flags that are kept: 0x80 sign
+        self.vclip = 0          # vi18: six bits per VCLIP, the last at the bottom
         self.q = 0.0
         self.cc = False
         self.hi = 0
@@ -324,6 +325,13 @@ class Ee:
         elif op == '.word' and int(a[0], 16) & 0xfc1f07ff == 0x70000628:     # paddub rd, rs, zero: a 128-bit move
             word = int(a[0], 16)
             s(GPR[(word >> 11) & 0x1f], g(GPR[(word >> 21) & 0x1f]))
+        elif op == '.word' and int(a[0], 16) & 0xfe0007ff == 0x4a0001ff:     # vclipw: mipsdis has no such op
+            word = int(a[0], 16)
+            fs, w = self.vf[(word >> 11) & 0x1f], abs(self.vf[(word >> 16) & 0x1f][3])
+            flags = 0
+            for i in range(3):
+                flags |= (1 << (i * 2) if fs[i] > w else 0) | (2 << (i * 2) if fs[i] < -w else 0)
+            self.vclip = ((self.vclip << 6) | flags) & 0xffffff
         elif op == '.word' and int(a[0], 16) >> 26 == 0x1c:
             self.mmi(int(a[0], 16), pc)
         elif op == 'pref':
@@ -377,8 +385,8 @@ class Ee:
             pass
         elif op == 'ctc2':
             self.vstatus = g(a[0]) & 0xfff
-        elif op == 'cfc2':
-            s(a[0], self.vstatus)
+        elif op == 'cfc2':      # vi18: the clip flags
+            s(a[0], self.vclip if a[1].endswith('18') else self.vstatus)
         elif op.startswith('v'):
             self.vop(op, a, pc)
         else:

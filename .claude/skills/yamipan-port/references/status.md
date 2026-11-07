@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 00:09 at commit `c93e2ae` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 01:10 at commit `9065a09` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 00:09 at commit `c93e2ae` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **5339** (81%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1575, game-inferred 4399
-- context-name ledger: 5974 entries; overrides of wrong library matches: 0
-- placed in a source file: 5728/6599 in 123 files
+- game functions: **6599**, named **5394** (82%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1575, game-inferred 4454
+- context-name ledger: 6029 entries; overrides of wrong library matches: 0
+- placed in a source file: 5787/6599 in 124 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -21,19 +21,20 @@ Least-named game-code regions (64 KB blocks):
 |---|---|---|
 | `00310000` | 0/9 (0%) | - |
 | `002c0000` | 39/173 (23%) | game/packtables.cpp, game/menupack.cpp, game/stageparty.cpp |
-| `002d0000` | 104/256 (41%) | game/drawsys.cpp, game/ripplesheet.cpp, game/fontdata.cpp |
 | `001c0000` | 108/233 (46%) | game/scriptrunner.cpp |
 | `001b0000` | 115/242 (48%) | game/scriptrunner.cpp |
 | `002a0000` | 141/241 (59%) | game/memcard.cpp, game/charactersound.cpp, game/demofleck.cpp |
+| `002d0000` | 156/256 (61%) | game/drawsys.cpp, game/areaclip.cpp, game/ripplesheet.cpp |
 | `001a0000` | 194/301 (64%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
 | `00180000` | 224/336 (67%) | game/stageitem.cpp, game/stagelight.cpp, game/stageobject.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5219**; stubs: **92**
+- reconstructed FS2 functions: **5237**; stubs: **88**
 
 | file | reconstructed | stubs |
 |---|---|---|
+| `src/game/areaclip.cpp` | 18 | 0 |
 | `src/game/areagrid.cpp` | 11 | 0 |
 | `src/game/boxgrid.cpp` | 29 | 0 |
 | `src/game/characterbrain.cpp` | 142 | 0 |
@@ -132,7 +133,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 60 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 56 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -160,9 +161,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 215 TUs: todo 73, partial 25, verify 111, done 43
-- next: **unassigned@002dac70** (frontier score 19)
+- 216 TUs: todo 74, partial 25, verify 112, done 43
+- next: **unassigned@00171ad0** (frontier score 18)
 - pinned queue: (empty)
+- verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
 - verify: `game/characterbrain.cpp` 140/166 -- All of 0x1a68b0..0x1a7a20 that has a host slot and all of 0x1d85b0..0x1dec30 are written (batch 137). 28 forwarders wait for natives to name their slots (listed
@@ -277,6 +279,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 01:10 `game/areaclip.cpp` verify: AreaClip written: the camera's place hides the map's far parts; 59 functions of 0x2dac70..0x2e00c0, agrees with the ROM on all 20 ac1 files of the disc
 - 2026-11-07 00:09 `game/rcnttimer.cpp` done: RcntTimer and rcnt1Start, all 4 functions; was stubs
 - 2026-11-07 00:01 `game/menuprogset.cpp` verify: The gun sights: MenuProgSet, its packet helpers and quatBetween, all 11 functions of 0x2b9ef0..0x2bb600; was stubs
 - 2026-11-06 23:33 `game/itemphysics.cpp` verify: ItemPhysics written: thrown items and dropped weapons fall, all 15 functions, bit-identical to the ROM on itemcmp.py; a forced knife lands flat on stage 2
@@ -284,22 +287,21 @@ Recent sessions:
 - 2026-11-06 22:30 `game/stagealert.cpp` verify: reconstruct 8 functions, alertcmp proves them against the ROM (verify)
 - 2026-11-06 21:59 `rx/rxsndstrmem.c` verify: reconstruct 16 functions, ROM comparison clean
 - 2026-11-06 21:34 `rx/rxsndstrstream.c` verify: reconstruct 18 functions
-- 2026-11-06 21:12 `rx/rxsndstradpcm.c` verify: All 10 functions of 0x164c38..0x1656e8 written; the 2026-11-04 bridge replaced by a silent stand-in for the driver feeding rxSndAdpcmUpdate
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002dac70` | partial | 1/4/63 | 21.7 | 19 | 3 |
 | `unassigned@002c42a0` | todo | 0/13/105 | 42.1 | 18 | 1 |
 | `unassigned@00171ad0` | partial | 1/0/107 | 1.5 | 18 | 0 |
-| `unassigned@002067d0` | partial | 1/0/9 | 2.2 | 17 | 0 |
 | `unassigned@002a6980` | partial | 1/11/83 | 12.1 | 17 | 0 |
 | `unassigned@00188d60` | todo | 0/0/16 | 3.8 | 17 | 0 |
+| `unassigned@002067d0` | partial | 1/0/9 | 2.2 | 17 | 0 |
 | `unassigned@002e0820` | todo | 0/3/13 | 3.7 | 13 | 1 |
-| `unassigned@00151270` | todo | 0/3/3 | 0.0 | 13 | 2 |
 | `unassigned@002681e0` | todo | 0/3/3 | 0.3 | 13 | 2 |
+| `unassigned@00151270` | todo | 0/3/3 | 0.0 | 13 | 2 |
 | `unassigned@0012c9b8` | todo | 0/1/6 | 0.8 | 12 | 1 |
 | `unassigned@002176d0` | partial | 1/0/10 | 0.9 | 11 | 0 |
 | `rx/rxsndstrpcm.c` | todo | 0/8/10 | 2.1 | 10 | 2 |
+| `unassigned@00218500` | partial | 25/2/30 | 5.3 | 10 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -317,6 +319,7 @@ Recent sessions:
 | `002c0d80` | FUN_002c0d80 | 10 | - | missing | game/packtables.cpp |
 | `00228610` | FUN_00228610 | 9 | - | missing | game/characterroute.cpp |
 | `00236910` | BoundingSphere::BoundingSphere | 9 | game | missing | game/stagecollision.cpp |
+| `0025a850` | mslTreeIncrement | 9 | lib-ctx | missing | game/routeplayer.cpp |
 | `001f4e20` | FUN_001f4e20 | 8 | - | missing | game/stagecollision.cpp |
 | `00254f10` | FUN_00254f10 | 8 | - | missing | game/routeplayer.cpp |
 | `00254e40` | FUN_00254e40 | 8 | - | missing | game/routeplayer.cpp |
@@ -333,6 +336,7 @@ Recent sessions:
 | `001871c0` | PartSwitch::~PartSwitch | 6 | game | missing | game/stagemodel.cpp |
 | `001f4c30` | FUN_001f4c30 | 6 | - | missing | game/stagecollision.cpp |
 | `00258ea0` | FUN_00258ea0 | 6 | - | missing | game/routeplayer.cpp |
+| `002dd6e0` | ClipIndexList::insert | 6 | game | missing | game/areaclip.cpp |
 | `001f4f20` | FUN_001f4f20 | 6 | - | missing | game/stagecollision.cpp |
 | `002c0db0` | FUN_002c0db0 | 6 | - | missing | game/packtables.cpp |
 | `00218b50` | StageCharacter::useItem | 5 | game | stub | - |
@@ -343,6 +347,4 @@ Recent sessions:
 | `002c1670` | FUN_002c1670 | 5 | - | missing | game/packtables.cpp |
 | `002c16d0` | FUN_002c16d0 | 5 | - | missing | game/packtables.cpp |
 | `002c0d50` | FUN_002c0d50 | 5 | - | missing | game/packtables.cpp |
-| `002e7e90` | FUN_002e7e90 | 5 | - | missing | rena/rena_draw.cpp |
-| `00217770` | FUN_00217770 | 5 | - | missing | - |
 

@@ -367,16 +367,28 @@ class CharacterRoute;
 // The model instance's record of each mesh (vtable 0x31a7d0, 0x10 on the EE,
 // parallel to ModelFileNode::meshes): the mesh tree, threaded through next,
 // and what the game switches per part. modelFindPart hands them out: a
-// character's +0x240 / +0x244, a light's PartSwitch, VcmTable.
-// layout: host -- the EE's +0 is the vptr; the virtuals are trivial here.
+// character's +0x240 / +0x244, a light's PartSwitch, VcmTable, AreaClip.
+// layout: host.
 struct ModelMesh;
 constexpr u_char kPartShown = 0;        // ModelPartRec::drawMode
 constexpr u_char kPartHidden = 2;       // with all under it (drawTree)
-struct ModelPartRec
+// What AreaClip hides (vtable 0x31a700: its dtor, the two slots empty): a
+// model, a mesh of one, a particle effect.
+// layout: host -- the vptr, EE +0.
+class ClipTarget
+{
+public:
+    // FS2 0x002db030: deleting
+    virtual ~ClipTarget() {}
+    virtual void   setClipped(u_char clipped) = 0;
+    virtual u_char getClipped() const = 0;
+};
+// layout: host (EE 0x10).
+struct ModelPartRec : public ClipTarget
 {
     ModelPartRec(const ModelMesh *mesh, u_short next);                   // FS2 0x002e3ba0
-    void   setFlagE(u_char value);                                       // FS2 0x002e3b50: slot 0 of vtable 0x31a7d0
-    u_char getFlagE() const;                                             // FS2 0x002e3b60: slot 1
+    void   setClipped(u_char value) override;                            // FS2 0x002e3b50: slot +0xc of vtable 0x31a7d0
+    u_char getClipped() const override;                                  // FS2 0x002e3b60: slot +0x10
 
     u_short firstChild;         // FS2 +0x4: a mesh index
     u_short next;               // FS2 +0x6: the next sibling, or the parent's; 0 at the end
@@ -385,7 +397,7 @@ struct ModelPartRec
     u_char  vcmFadeBits;        // FS2 +0xb
     u_char  vcmOffBits;         // FS2 +0xc
     u_char  drawMode;           // FS2 +0xd: 0 drawn, 2 hidden with all under it (drawTree); PartSwitch, StageScene::prepareDrawFlags
-    u_char  flagE;              // FS2 +0xe: only the two virtuals (unread)
+    u_char  clipped;            // FS2 +0xe: AreaClip hides it, with all under it (drawTree)
     bool    hasMesh;            // FS2 +0xf: ModelMesh::parts is set
 };
 // The object's second base (EE +0x18): the view flag, then a vtable of four
@@ -1194,18 +1206,6 @@ public:
 };
 
 
-// +0x58: built over the areaclip keyword's file (setAreaClip): an 8 x 8 grid
-// of index lists (0x2db080 picks the file's 0x40-byte records per cell), a
-// pointer array (+0x30, count +0x2c) of objects deleted through their vptr.
-// layout: host (EE 0x34).
-struct AreaClip
-{
-    explicit AreaClip(void *file);                                       // FS2 0x002dccf0
-    ~AreaClip();                                                         // FS2 0x002dcab0: deleting
-    void setup();                                                        // FS2 0x002dcc30
-    void update(StageObject *camera);                                    // FS2 0x002dbd10
-};
-
 // A map file (the map keyword): six record sections after this 0x24-byte
 // header, in file order. EE layout: it is the file. relocate sets the six
 // section refs from the counts, in place: its TU must use S2dRef::set, not
@@ -1507,24 +1507,24 @@ constexpr u_short kModelAmbient   = 0x80; // ModelInstance::setAmbient
 // What ModelFile::createInstance makes (vtable 0x31a7f0, 0x100 bytes,
 // 0x80-aligned): the model StageModel::data and the draw system's lists
 // hold. Everything but the object itself lives in one heap block. layout: host.
-struct ModelInstance
+struct ModelInstance : public ClipTarget
 {
     // The record whose children range holds rec's index (the group rec is
     // in), null at the top.
     ModelPartRec *findGroup(const ModelPartRec *rec) const;              // FS2 0x002e4100
-    ~ModelInstance();                                                    // FS2 0x002e46d0: slot 0 of vtable 0x31a7f0, deleting
+    ~ModelInstance() override;                                           // FS2 0x002e46d0: slot +8 of vtable 0x31a7f0, deleting
     // The name of texture slot i (ModelFileNode::textureSlots).
     const char *getTextureName(int slot) const;                          // FS2 0x002e47d0
     void setTexture(int slot, Tim2Texture *texture);                     // FS2 0x002e4550
-    void   setDistant(u_char value);                                     // FS2 0x002e40e0: a slot of vtable 0x31a7f0
-    u_char getDistant() const;                                           // FS2 0x002e40f0: the next slot
+    void   setClipped(u_char value) override;                            // FS2 0x002e40e0: slot +0xc of vtable 0x31a7f0
+    u_char getClipped() const override;                                  // FS2 0x002e40f0: slot +0x10
     void setAmbient(const sceVu0FVECTOR color);                          // FS2 0x002e44e0
     // Light index (0..2): its direction, a column of lightDirs, and colour.
     void setLight(u_int index, const sceVu0FVECTOR direction, const sceVu0FVECTOR color); // FS2 0x002e4500
     // Fills the instance from a node of a relocated file.
     void init(ModelFileNode *fileNode);                                  // FS2 0x002e4800
 
-    u_char         distant = 0;   // FS2 +0x04: set to 1 when farther than the draw distance (drawSysBuildShadows)
+    u_char         clipped = 0;   // FS2 +0x04: not drawn: AreaClip, and farther than the draw distance (drawSysBuildShadows)
     u_char         drawGroup = 0; // FS2 +0x05: DrawSysGroup
     u_char         _06 = 0;       // FS2 +0x06: 1 from StageModel::init (unread)
     u_char         shown = 0;     // FS2 +0x07: the model's own shown flag: while there is a model it replaces StageObject::m_shown
