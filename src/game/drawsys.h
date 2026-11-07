@@ -21,6 +21,8 @@
 #include "sdk/libvu0.h"     /* sceVu0FVECTOR */
 #include "sdk/scetypes.h"
 
+#include "rena/rena_drawtarget.h"
+
 class GamePacketManager;        // game/gamepacket.h
 class GsRegionAlloc;            // rena/rena_2d_texture_vram.h
 class Tim2Texture;              // game/gsutil.h
@@ -210,25 +212,7 @@ struct DrawSysState
 };
 extern DrawSysState gDrawSysState;  /* bss 0x59b0c0 */
 
-// The frame's draw target (bss 0x5a52d0, built on first use). layout: host.
-struct DrawTarget
-{
-    int   _00 = 100;            // FS2 +0x00 (unread)
-    int   _04 = 100;            // FS2 +0x04 (unread)
-    int   _08 = 100;            // FS2 +0x08 (unread)
-    float _10 = 1.0f;           // FS2 +0x10 (unread)
-    const sceGsDrawEnv1 *env = nullptr; // FS2 +0x14: the frame's
-    int   width = 0;            // FS2 +0x18
-    int   height = 0;           // FS2 +0x1c
-    int   originX = 0;          // FS2 +0x20
-    int   originY = 0;          // FS2 +0x24
-};
-// FS2 0x002ec110
-inline DrawTarget *getDrawTarget()
-{
-    static DrawTarget target;
-    return &target;
-}
+// The frame's draw target: rena/rena_drawtarget.h (getDrawTarget, FS2 0x002ec110).
 
 // Builds the draw system on the screen origin and size with the texture
 // region allocator: gfxInitRenderTargets calls it once, last.

@@ -1266,7 +1266,7 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    Doubts for the user: (1) the file name is the port's; (2) `FUN_002ec110`, right before the range, is a
    singleton `{100, 100, 100, _, 1.0f, ...}` at 0x5a52d0 (guard sbss 0x31af30; +0x14 the draw env,
    +0x18 / +0x1c read each frame), used only by drawSys and 0x2e8080..0x2e86b0: left for that TU, so the
-   key `unassigned@002ec110` still holds that one function; (3) 22 of the 24 paths have not been seen
+   key `unassigned@002ec110` still holds that one function (resolved 2026-11-07: `rena/rena_drawtarget.cpp`, the port's file name, placed by link order; it could as well be the tail of rena_pkt_vif1pktmanage.cpp); (3) 22 of the 24 paths have not been seen
    opening a file yet (the logo's has; the dialog's image comes from a layout, which one is not proven).
    New Pan hook: `YAMIPAN_TEX_DUMP=<dir>` (README), so a screen's references need no patched build.
 

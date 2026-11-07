@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 10:13 at commit `f53318f` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 10:32 at commit `f23ad40` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -13,7 +13,7 @@ Generated 2026-11-07 10:13 at commit `f53318f` by `tools/reverse/status.py` (`re
 - game functions: **6597**, named **5616** (85%); library functions: 992
 - by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4694
 - context-name ledger: 6290 entries; overrides of wrong library matches: 0
-- placed in a source file: 6140/6597 in 135 files
+- placed in a source file: 6141/6597 in 136 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5617**; stubs: **32**
+- reconstructed FS2 functions: **5618**; stubs: **32**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -146,6 +146,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_2d_texture_vram.cpp` | 11 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
+| `src/rena/rena_drawtarget.cpp` | 1 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
 | `src/rena/tim2.cpp` | 4 | 0 |
@@ -171,10 +172,9 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 211 TUs: todo 70, active 1, partial 16, verify 130, done 46
-- next: **unassigned@002ec110** (frontier score 7)
+- 211 TUs: todo 71, partial 16, verify 131, done 46
+- next: **unassigned@002b22f0** (frontier score 6)
 - pinned queue: (empty)
-- active: `unassigned@002b6b90` 0/0
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -277,6 +277,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `rena/rena_2d_texture_tim2.cpp` 7/7 -- All 7 written; class moved to rena/rena_2d_texture_tim2.h. One Tim2Texture per mip level of the first picture; m_image (+0x40) is the TIM2 file itself, not a co
 - verify: `rena/rena_2d_texture_vram.cpp` 11/11 -- Cut out of unassigned@002e0820 as rena/rena_2d_texture_vram.cpp 0x2e0840..0x2e1700 (name a guess, no path string). GsRegionAlloc and GsRegion moved from the sta
 - verify: `rena/rena_draw.cpp` 19/41 -- Skin written: drawSkinnedMesh 0x2e43e0, skinnedPartOutside 0x2e68a0, buildPalette 0x2e9480, skinVertex in model_renderer.cpp. Seen in New Game runs: the boy of 
+- verify: `rena/rena_drawtarget.cpp` 1/1 -- One function, written from the ROM asm: guard byte gp-0x7940 (sbss 0x31af30); first call stores 100, 100, 100 at 0x5a52d0..d8 and 1.0f at 0x5a52e0, sets the gua
 - verify: `rena/rena_model.cpp` 34/34 -- Written: createInstance 0x2e5210, ModelInstance::init 0x2e4800, ModelSurface 0x2e3e10, buildPartRecs 0x2e4f50, setFrames, renaStepTexAnim, modelFindPart, findGr
 - verify: `rena/rena_pkt_vif1pktmanage.cpp` 13/17 -- Pinned 0x2eaff0-0x2ec110 under the new src/rena/ with the game's own file name (strings in Reset / AddList); the stale inferred key rena_pkt_vif1pktmanage.cpp r
 - verify: `rx/filecd.c` 35/35 -- All 35 of 0x1565c8..0x157db8 written. rxcmp.py: 34 of 35 identical to RoR with jump targets and data masked; the one difference is rxFileCdFindDir, 0x18 longer 
@@ -308,6 +309,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 10:32 `rena/rena_drawtarget.cpp` verify: Placed getDrawTarget 0x2ec110 (was unassigned@002ec110) in its own file rena/rena_drawtarget.cpp: the guarded function-local DrawTarget at bss 0x5a52d0 moved ou
 - 2026-11-07 10:12 `game/gsluminance.cpp` verify: gsLuminance and its six GS packet steps named (batch 209), pinned as their own object 0x2b6b90-0x2b85a0, documented in game/gsluminance.cpp; on PC the host pale
 - 2026-11-07 10:01 `unassigned@0029f2a0` verify: Placed the run 0x29f2a0..0x29f4f8 in game/scriptrunner.cpp: missionRestoreCheck and findNumLockTarget; StageMission +0xb8 is a LockGadgetKind (restoreKind, was 
 - 2026-11-07 09:50 `game/framefilter.cpp` verify: the frame filter: gsFrameFilter and its 4 helpers, a host FrameFilterPass; d0101's opening is soft
@@ -315,13 +317,11 @@ Recent sessions:
 - 2026-11-07 08:51 `game/playermotion.cpp` verify: unassigned@0020c940 joined playermotion.cpp: StageCharacter::getSwayMatrix, bn_head's matrix turned a quarter about its own y and placed at the model family's g
 - 2026-11-07 08:36 `sdpr2/sdpr2pair.c` verify: SDPR2 two-voice pair type: all 21 functions reconstructed (pan, turn with voice flip, detune countdown, Init/Exit, detune table 0x2f5fa0)
 - 2026-11-07 08:10 `rx/filehost.c` verify: rx host0: driver: all 12 functions reconstructed from FS2 (RosePan's host driver, FS2's file/line open-failure message)
-- 2026-11-07 07:59 `rx/filehdd.c` verify: rx HDD driver: all 13 functions reconstructed from FS2 (identical to RosePan's rxfile.cpp HDD section)
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002ec110` | todo | 0/0/1 | 0.1 | 7 | 0 |
-| `unassigned@002cf510` | todo | 0/1/1 | 0.1 | 6 | 1 |
 | `unassigned@002b22f0` | todo | 0/4/35 | 5.1 | 6 | 0 |
+| `unassigned@002cf510` | todo | 0/1/1 | 0.1 | 6 | 1 |
 | `unassigned@0020acb0` | partial | 3/5/11 | 1.3 | 5 | 0 |
 | `unassigned@00282da0` | partial | 11/0/18 | 3.0 | 5 | 0 |
 | `unassigned@00214a70` | todo | 0/1/2 | 0.6 | 5 | 0 |
@@ -329,8 +329,9 @@ Recent sessions:
 | `rena_2d_texture_tim2.cpp` | todo | 0/1/1 | 0.1 | 3 | 0 |
 | `unassigned@00219be0` | partial | 15/0/19 | 3.8 | 3 | 0 |
 | `unassigned@0020ce10` | todo | 0/0/1 | 0.1 | 3 | 0 |
-| `unassigned@002b0d50` | todo | 0/0/1 | 0.0 | 2 | 0 |
 | `unassigned@0026c650` | todo | 0/0/2 | 0.2 | 2 | 0 |
+| `unassigned@00217be0` | partial | 14/0/16 | 2.1 | 2 | 0 |
+| `unassigned@00211970` | partial | 2/2/4 | 2.3 | 2 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -353,7 +354,6 @@ Recent sessions:
 | `001f4e20` | FUN_001f4e20 | 8 | - | missing | game/stagecollision.cpp |
 | `00254f10` | FUN_00254f10 | 8 | - | missing | game/routeplayer.cpp |
 | `00254e40` | FUN_00254e40 | 8 | - | missing | game/routeplayer.cpp |
-| `002ec110` | getDrawTarget | 7 | game | missing | - |
 | `001f4d30` | FUN_001f4d30 | 7 | - | missing | game/stagecollision.cpp |
 | `00206f80` | BearingVector::~BearingVector | 6 | lib-ctx | missing | game/stageparty.cpp |
 | `001dd3f0` | CharacterBrain::setEnabled | 6 | game | missing | game/characterbrain.cpp |
@@ -376,4 +376,5 @@ Recent sessions:
 | `00217770` | FUN_00217770 | 5 | - | missing | game/playermotion.cpp |
 | `001d8250` | StageNodeList::linkValue | 4 | game | missing | game/nodetransform.cpp |
 | `00184260` | FUN_00184260 | 4 | - | missing | game/stageitem.cpp |
+| `00214a80` | StageCharacter::findNearestFoe | 4 | game | stub | - |
 
