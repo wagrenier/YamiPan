@@ -654,7 +654,10 @@ file)". Cause: for a function in an unassigned run whose inferred file in yamipa
 directory (here `rena_2d_texture_tim2.cpp` for 0x2e1b10), stubgen writes `src/<file>` at the root of
 src/, which no target builds, and the loop repeats. Fix: delete that file and put the stub in
 src/lib/unassigned_stubs.cpp by hand (or pin the address to its real TU first). Also: `callcheck.py`
-takes a path relative to tools/reverse (`../../src/...`), not the TU key.
+takes a path relative to tools/reverse (`../../src/...`), not the TU key. The same bare key also
+reaches the queue: `tus.py next` claimed `rena_2d_texture_tim2.cpp` as its own one-function TU
+(2026-11-07). Fix: `tus.py define <the real key> <ranges incl. the address>`, `tus.py claim` the real
+key, and delete the bare key's entry (and any queue line) from data/tus.json.
 
 ## An inlined list walk can run the wrong way (2026-11-07)
 

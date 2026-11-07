@@ -32,6 +32,21 @@ static int gsSizeLog2(int size)
 }
 
 // ──────────────────────────────────────────────────────────────────────
+// putTex0's TEX0 value without the packet: the template with TBP0 at GS
+// block `block` and CBP right after the image (GsRegionAlloc::bind,
+// renaSetShadowTexture, renaSetSpotlight). The ROM writes the template
+// to *out, then patches the low halfword's 14 TBP0 bits and the 14 CBP
+// bits at 37 in place.
+// FS2 0x002e1b10
+
+void Tim2Texture::getTex0(sceGsTex0 *out, int block)
+{
+    *out = m_tex0;
+    out->TBP0 = block;
+    out->CBP = block + m_imageBlocks;
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // The TEX0 template at GS block `block`, its CLUT right after the image.
 // FS2 0x002e1b70
 

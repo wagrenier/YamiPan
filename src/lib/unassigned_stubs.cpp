@@ -228,9 +228,3 @@ void elevatorSwitchPlace(StageObject *elevator, float *place, float *direction, 
 }
 
 
-// stub of FS2 0x002e1b10 (unassigned@002e1b10; belongs in rena/rena_2d_texture_tim2.cpp)
-void Tim2Texture::getTex0(sceGsTex0 *out, int block)
-{
-    YAMIPAN_STUB("Tim2Texture::getTex0", 0x002e1b10);
-}
-

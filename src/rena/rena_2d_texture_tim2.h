@@ -1,7 +1,7 @@
 /* ==========================================================================
  *  rena/rena_2d_texture_tim2.h
  *
- *  rena's TIM2 texture (rena_2d_texture_tim2.cpp, 0x2e1b70..0x2e2970): one
+ *  rena's TIM2 texture (rena_2d_texture_tim2.cpp, 0x2e1b10..0x2e2970): one
  *  Tim2Texture per mip level of a TIM2 file's first picture, the top level
  *  owning the others. It reads the file in place and works out the GS's view
  *  of it: the TEX0 template, the blocks it needs, the pixels and CLUT. The
@@ -52,8 +52,7 @@ public:
     // PC: nothing to send, no GS memory (the body says what the ROM sends).
     void upload(u_long **cursor, int block);                             // FS2 0x002e1c50
     // The TEX0 template at GS block `block`, its CLUT after the image:
-    // putTex0's value without the packet (GsRegionAlloc::bind). Written in
-    // unassigned@002e1b10, the word before this file's range.
+    // putTex0's value without the packet (GsRegionAlloc::bind).
     void getTex0(sceGsTex0 *out, int block);                             // FS2 0x002e1b10
     // The float at +8 of the TIM2 file (its header's reserved bytes): the
     // distance scale rena_draw's mip choice divides by.
