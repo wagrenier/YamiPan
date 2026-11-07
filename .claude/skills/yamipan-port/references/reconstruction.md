@@ -67,6 +67,11 @@ two vtable slots where the destructor is declared (usually first; FF3's GameMode
 check `rtti.py --class`). Twins count only with the `<TAG>` annotation on each.
 
 **CodeWarrior** (FS2): vtables are plain 4-byte function pointers, slot 0 and 1 zero, the vptr where the class puts it (+0xb4 on a runner); not either shape above.
+Inlining stops a few levels deep: a function that inlines itself (or long chains of inline getters)
+calls the deepest getters out of line, and CodeWarrior places those copies right after the calling
+function, sometimes the same getter twice (`StageCharacter::getSides` 0x215f10 -> 0x2160a0..0x216130).
+Such a run belongs to the caller's TU: join it with `tus.py define`, write each getter once as an
+ordinary member with one `FS2` line per copy, and name the second copy `<name>2` in Ghidra (2026-11-07).
 
 **Both**: `rtti.py --class X` / `--vtable ADDR` lists bases, slots with their targets, ctors / dtors
 and the vptr offset; a slot's class comes from the vtable, and an inherited slot is the base's method.
