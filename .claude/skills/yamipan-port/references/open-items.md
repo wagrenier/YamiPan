@@ -144,7 +144,7 @@ questions. Resolve items here when they are settled (move them to "Done" with th
    0x116fb8..0x119be8 and libgcc (libgcc2 + fp-bit soft-float) ..0x11c6b0, now two `lib_ranges`
    (architecture.md "Address map"); the host libm / compiler replace them, nothing to write. The
    other unread runs the frontier may pick next (0x121b80,
-   0x12c9b8..0x12cd20, the VU0 math 0x135a90..0x1366c0, 0x142dd0..0x144080) get the same first
+   the VU0 math 0x135a90..0x1366c0, 0x142dd0..0x144080) get the same first
    look: library -> name + `lib_ranges`, game code -> `tus.py define` a real file.
    TU 5: the frontier picked the 5,138-function run `unassigned@00171300` (all of 0x171300..0x2e26b4);
    its frontier callees from `gamesystem.cpp` are scattered, so the run cut one real file out of it,
