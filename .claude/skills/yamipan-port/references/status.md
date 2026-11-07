@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 03:17 at commit `a34907f` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 03:43 at commit `9ac06b4` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -13,7 +13,7 @@ Generated 2026-11-07 03:17 at commit `a34907f` by `tools/reverse/status.py` (`re
 - game functions: **6599**, named **5473** (83%); library functions: 987
 - by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1575, game-inferred 4561
 - context-name ledger: 6136 entries; overrides of wrong library matches: 0
-- placed in a source file: 5952/6599 in 125 files
+- placed in a source file: 5955/6599 in 126 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5374**; stubs: **74**
+- reconstructed FS2 functions: **5377**; stubs: **71**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -77,6 +77,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/playermotion.cpp` | 589 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
+| `src/game/rand48.cpp` | 3 | 0 |
 | `src/game/rcnttimer.cpp` | 4 | 0 |
 | `src/game/ripplesheet.cpp` | 7 | 0 |
 | `src/game/routefilter.cpp` | 38 | 0 |
@@ -134,7 +135,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/viewcamera.cpp` | 3 | 0 |
 | `src/game/vu0math.cpp` | 33 | 0 |
 | `src/game/wstring.cpp` | 5 | 0 |
-| `src/lib/unassigned_stubs.cpp` | 0 | 42 |
+| `src/lib/unassigned_stubs.cpp` | 0 | 39 |
 | `src/rena/rena_2d_texture_tim2.cpp` | 7 | 0 |
 | `src/rena/rena_draw.cpp` | 22 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
@@ -162,9 +163,10 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 214 TUs: todo 75, partial 22, verify 114, done 43
-- next: **unassigned@002681e0** (frontier score 18)
+- 214 TUs: todo 74, active 1, partial 22, verify 114, done 44
+- next: **unassigned@002067d0** (frontier score 17)
 - pinned queue: (empty)
+- active: `unassigned@002681e0` 0/0
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -282,6 +284,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 03:42 `game/rand48.cpp` done: game/rand48.cpp: Rand48, the stage's random numbers (java.util.Random without the increment); all 3 functions written, proven against the ROM
 - 2026-11-07 03:17 `game/stagemodel.cpp` verify: the map instances after StageModel: BoneMap and MotionMap are LiteralMap
 - 2026-11-07 03:01 `game/stagefog.cpp` verify: The smoke candle's fog and the glow's fog written and proved against the ROM (0 differences); not seen on screen
 - 2026-11-07 02:12 `game/playermotion.cpp` verify: the item waits: throwCarried and putSmoke, the two script natives behind Throw and Set Smoke Candle; 0 differences with the ROM, and on stage 17 the real menu t
@@ -289,22 +292,21 @@ Recent sessions:
 - 2026-11-07 01:10 `game/areaclip.cpp` verify: AreaClip written: the camera's place hides the map's far parts; 59 functions of 0x2dac70..0x2e00c0, agrees with the ROM on all 20 ac1 files of the disc
 - 2026-11-07 00:09 `game/rcnttimer.cpp` done: RcntTimer and rcnt1Start, all 4 functions; was stubs
 - 2026-11-07 00:01 `game/menuprogset.cpp` verify: The gun sights: MenuProgSet, its packet helpers and quatBetween, all 11 functions of 0x2b9ef0..0x2bb600; was stubs
-- 2026-11-06 23:33 `game/itemphysics.cpp` verify: ItemPhysics written: thrown items and dropped weapons fall, all 15 functions, bit-identical to the ROM on itemcmp.py; a forced knife lands flat on stage 2
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@002681e0` | todo | 0/3/3 | 0.3 | 18 | 3 |
 | `unassigned@002067d0` | partial | 1/0/9 | 2.2 | 17 | 0 |
 | `unassigned@002a6980` | partial | 1/11/83 | 12.1 | 17 | 0 |
 | `unassigned@002acff0` | todo | 0/3/24 | 10.9 | 15 | 2 |
 | `sdpr2/sdpr2single.c` | todo | 0/2/24 | 7.0 | 14 | 2 |
-| `unassigned@002e0820` | todo | 0/3/13 | 3.7 | 13 | 1 |
 | `unassigned@00151270` | todo | 0/3/3 | 0.0 | 13 | 2 |
+| `unassigned@002e0820` | todo | 0/3/13 | 3.7 | 13 | 1 |
 | `unassigned@0020c940` | partial | 1/1/2 | 0.8 | 12 | 1 |
 | `unassigned@0012c9b8` | todo | 0/1/6 | 0.8 | 12 | 1 |
 | `unassigned@002176d0` | partial | 1/0/10 | 0.9 | 11 | 0 |
 | `rx/rxsndstrpcm.c` | todo | 0/8/10 | 2.1 | 10 | 2 |
 | `unassigned@0021e120` | partial | 4/0/18 | 3.5 | 8 | 0 |
+| `rx/filehdd.c` | todo | 0/2/13 | 1.5 | 7 | 1 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

@@ -274,15 +274,24 @@ class Ee:
                     n += 1
                 return n - 1
             s(a[0], sign_bits(g(a[1])) | sign_bits(g(a[1]) >> 32) << 32)
-        elif op == 'mult' and len(a) == 3: s(a[0], s32(s32(g(a[1])) * s32(g(a[2]))))
-        elif op == 'mult':
-            product = s32(g(a[0])) * s32(g(a[1]))
-            self.lo, self.hi = s32(product), s32(product >> 32)
+        elif op in ('mult', 'multu', 'mult1'):
+            # The three-operand form also writes rd; mult1 leaves LO and HI alone (LO1, HI1).
+            x, y = g(a[-2]), g(a[-1])
+            product = (x & M32) * (y & M32) if op == 'multu' else s32(x) * s32(y)
+            if len(a) == 3:
+                s(a[0], s32(product))
+            if op != 'mult1':
+                self.lo, self.hi = s32(product), s32(product >> 32)
         elif op == 'div':
             x, y = s32(g(a[-2])), s32(g(a[-1]))
             if y:
-                q = int(x / y)
-                self.lo, self.hi = q, x - q * y
+                # Python's own int(x / y) goes through a double: wrong past 2**53, and these
+                # are 32 bits, but a truncating divide costs nothing to say exactly.
+                q = abs(x) // abs(y)
+                q = -q if (x < 0) != (y < 0) else q
+                self.lo, self.hi = s32(q), s32(x - q * y)
+            else:
+                self.lo, self.hi = (-1 if x >= 0 else 1), x     # the EE does not trap
         elif op == 'mfhi': s(a[0], self.hi)
         elif op == 'mflo': s(a[0], self.lo)
         elif op == 'lw': s(a[0], s32(self.rd(self.ea(a[1]), 4)))

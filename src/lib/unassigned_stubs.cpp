@@ -46,19 +46,6 @@ MenuProgHolder::~MenuProgHolder()
 
 // stub of FS2 0x00207ef0
 // stub of FS2 0x00207ea0
-// stub of FS2 0x002682e0
-Rand48::Rand48()
-{
-    YAMIPAN_STUB("Rand48::Rand48", 0x002682e0);
-}
-
-// stub of FS2 0x002681e0
-int Rand48::next(int n)
-{
-    YAMIPAN_STUB("Rand48::next", 0x002681e0);
-    return {};
-}
-
 // stub of FS2 address unknown (1 candidates)
 void SceneOwnedObject::destroy()
 {
@@ -202,12 +189,6 @@ void MenuProgHolder::draw(float deltaSeconds, GamePacketManager *packets, StageO
 
 // stub of FS2 0x002078d0
 // stub of FS2 0x00207500
-// stub of FS2 0x00268290
-void Rand48::seed(u_int value)
-{
-    YAMIPAN_STUB("Rand48::seed", 0x00268290);
-}
-
 // stub of FS2 address unknown (1 candidates)
 void SceneOwnedObject::draw()
 {
