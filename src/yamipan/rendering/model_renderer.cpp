@@ -142,13 +142,22 @@ struct SkinnedVertex
     float normal[3];
 };
 
+// The exporter left a NaN (0xffc00000) in the normals of faces of no area, all three corners: 715 triangles on the
+// 14 stages that have them, none in a strip, so no pixel comes of one on any machine. Any normal will do; this one
+// keeps the NaN out of the compares below, which is all it ever did here.
+const float *usableNormal(const float *normal)
+{
+    static constexpr float kAnyNormal[3] = {0.0f, 0.0f, 1.0f};
+    return std::isnan(normal[0]) ? kAnyNormal : normal;
+}
+
 SkinnedVertex skinVertex(const YamiPanModelBatch &batch, int index)
 {
     constexpr int kPaletteIdStep = 4;
     constexpr int kMatrixFloats = 16;
 
     const float *const position = batch.positions + index * 3;
-    const float *const normal = batch.normals + index * 3;
+    const float *const normal = usableNormal(batch.normals + index * 3);
     const std::int8_t *const ids = batch.boneIds + index * batch.bonesPerVertex;
     const float *const weights = batch.weights + index * batch.bonesPerVertex;
     const int bones = batch.firstBoneOnly ? 1 : batch.bonesPerVertex;
@@ -519,7 +528,7 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
         else
         {
             const float *const position = batch.positions + index * 3;
-            const float *const normal = batch.normals + index * 3;
+            const float *const normal = usableNormal(batch.normals + index * 3);
             vertex.x = matrix[0] * position[0] + matrix[4] * position[1] + matrix[8] * position[2] + matrix[12];
             vertex.y = matrix[1] * position[0] + matrix[5] * position[1] + matrix[9] * position[2] + matrix[13];
             vertex.z = matrix[2] * position[0] + matrix[6] * position[1] + matrix[10] * position[2] + matrix[14];
