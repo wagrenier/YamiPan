@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 07:59 at commit `611b149` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 08:11 at commit `ae35200` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5563**; stubs: **38**
+- reconstructed FS2 functions: **5575**; stubs: **36**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -149,7 +149,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/rena/tim2.cpp` | 4 | 0 |
 | `src/rx/filecd.c` | 35 | 0 |
 | `src/rx/filehdd.c` | 13 | 0 |
-| `src/rx/filehost.c` | 0 | 2 |
+| `src/rx/filehost.c` | 12 | 0 |
 | `src/rx/rxfile.c` | 108 | 0 |
 | `src/rx/rxsnd.c` | 229 | 0 |
 | `src/rx/rxsndstr.c` | 38 | 0 |
@@ -169,8 +169,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 214 TUs: todo 72, partial 18, verify 125, done 46
-- next: **rx/filehost.c** (frontier score 7)
+- 214 TUs: todo 71, partial 18, verify 126, done 46
+- next: **sdpr2/sdpr2pair.c** (frontier score 7)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
@@ -276,6 +276,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `rena/rena_pkt_vif1pktmanage.cpp` 13/17 -- Pinned 0x2eaff0-0x2ec110 under the new src/rena/ with the game's own file name (strings in Reset / AddList); the stale inferred key rena_pkt_vif1pktmanage.cpp r
 - verify: `rx/filecd.c` 35/35 -- All 35 of 0x1565c8..0x157db8 written. rxcmp.py: 34 of 35 identical to RoR with jump targets and data masked; the one difference is rxFileCdFindDir, 0x18 longer 
 - verify: `rx/filehdd.c` 13/13 -- All 13 functions of the HDD device driver written: driver table fill, root prefix join and set, busy flag, size / create / read / write through rxSys file calls
+- verify: `rx/filehost.c` 12/12 -- All 12 written from the FS2 decompilation; identical to RosePan rxfile.cpp host section except the open-failure printf: fmt 0x3018d8 with filehost.c and lines 1
 - verify: `rx/rxfile.c` 108/108 -- rxfile core is RoR's prebuilt rx: rxcmp.py over both ranges finds 106 of 108 identical (jumps, lui, gp masked); rxFileOnCreate 0x154518 / rxFileOnGetSize 0x1545
 - verify: `rx/rxsnd.c` 229/229 -- All 229 of 0x159bc0..0x162178 in src/rx/rxsnd.c (C), with new src/rx/rxsnd.h (C and C++) and src/rx/rxthread.h (the seven rxTh calls). 215 functions are RoR's w
 - verify: `rx/rxsndstr.c` 38/38 -- All 38 of 0x1634b8..0x164398 written, no Ghidra change. rxsndstr.h now has RxSndStrSlot (EE 0x9c, layout host), RxSndStrFormat (the 8-entry format table), RxSnd
@@ -300,6 +301,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 08:10 `rx/filehost.c` verify: rx host0: driver: all 12 functions reconstructed from FS2 (RosePan's host driver, FS2's file/line open-failure message)
 - 2026-11-07 07:59 `rx/filehdd.c` verify: rx HDD driver: all 13 functions reconstructed from FS2 (identical to RosePan's rxfile.cpp HDD section)
 - 2026-11-07 07:51 `game/gadgetview.cpp` verify: The gadget views: SigLamp and the number-lock view as handle and body (SceneOwnedObject with 15 forwarders, GadgetView with the pairs and the look, SigLampView,
 - 2026-11-07 07:12 `game/playermotion.cpp` verify: unassigned@0021e120 joined playermotion.cpp: its out-of-line tail, the MSL sort instance over the search points and the six one-slot stage-object walks; pickSea
@@ -307,22 +309,21 @@ Recent sessions:
 - 2026-11-07 06:49 `sdpr2/sdpr2single.c` verify: SDPR2 one-voice type and the shared pan maths: all 24 functions, the pan / spread tables from the ROM
 - 2026-11-07 06:35 `game/helpscreen.cpp` verify: runHelpScreen alone: help<lang>.d2b through runLayoutFile, always 0 (written in the sky mist's commit)
 - 2026-11-07 06:33 `game/skymist.cpp` verify: the sky mist: SkyMist (ctor, drift and swirl steps, spawns, draw with the ROM's tests and near cut as view-space effect quads) and its holder, 23 functions; Men
-- 2026-11-07 05:52 `rx/rxsndstrpcm.c` verify: PCM stream format: all 10 functions written, the ADPCM twin cut down, with a silent driver reply on PC
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
+| `unassigned@0020c940` | partial | 1/1/2 | 0.8 | 7 | 0 |
+| `unassigned@002ec110` | todo | 0/0/1 | 0.1 | 7 | 0 |
+| `unassigned@002160a0` | todo | 0/0/7 | 0.1 | 7 | 0 |
+| `unassigned@002b6b90` | partial | 1/0/7 | 6.5 | 7 | 0 |
 | `unassigned@002849c0` | todo | 0/1/5 | 7.4 | 7 | 1 |
 | `unassigned@0029f2a0` | todo | 0/2/2 | 0.6 | 7 | 0 |
-| `unassigned@0020c940` | partial | 1/1/2 | 0.8 | 7 | 0 |
-| `unassigned@002160a0` | todo | 0/0/7 | 0.1 | 7 | 0 |
-| `unassigned@002ec110` | todo | 0/0/1 | 0.1 | 7 | 0 |
-| `rx/filehost.c` | todo | 0/2/12 | 1.3 | 7 | 1 |
 | `sdpr2/sdpr2pair.c` | todo | 0/1/21 | 7.0 | 7 | 1 |
-| `unassigned@002b6b90` | partial | 1/0/7 | 6.5 | 7 | 0 |
 | `unassigned@002cf510` | todo | 0/1/1 | 0.1 | 6 | 1 |
-| `unassigned@00214a70` | todo | 0/1/2 | 0.6 | 5 | 0 |
+| `unassigned@00282da0` | partial | 11/0/18 | 3.0 | 5 | 0 |
 | `unassigned@002b22f0` | todo | 0/3/35 | 5.1 | 5 | 0 |
 | `unassigned@0020acb0` | partial | 3/5/11 | 1.3 | 5 | 0 |
+| `unassigned@00214a70` | todo | 0/1/2 | 0.6 | 5 | 0 |
 
 ## Frontier (called by reconstructed code, not written yet)
 

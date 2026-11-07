@@ -1,9 +1,9 @@
 /* ==========================================================================
  *  rx/filehost.h
  *
- *  rx's host0: device driver (0x156060..0x1565c8, the string "filehost.c").
- *  Not written yet (its own TU, rx/filehost.c): the prototypes rx/rxfile.c
- *  calls, from RosePan's src/rx/rxfile.h. See rxfile.h.
+ *  rx's host0: device driver (0x156060..0x1565c8, the string "filehost.c"):
+ *  a root prefix joined to every name, plain rxSysOpen / rxSysRead. Written
+ *  in rx/filehost.c, from RosePan's src/rx/rxfile.cpp. See rxfile.h.
  * ======================================================================== */
 #ifndef _RX_FILEHOST_H
 #define _RX_FILEHOST_H

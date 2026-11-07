@@ -190,6 +190,11 @@ cache 0x4d5b40.. (RoR -0x30a040 from here), HDD root 0x4e7d80, s_contextIndex 0x
 three drivers sit between the two ranges in text, data and bss alike. The game's own
 `rxFileCallLoadHook` 0x152730 / `rxFileCallSizeHook` 0x152740 are `j` thunks to 0x155690 /
 0x1556d0 (FileJob::run calls them).
+**TU `rx/filehost.c` (2026-11-07, 12 functions, `verify`)**: RoR's host0: driver except the
+open-failure message, "rxfile(%s,%d) : failed to open file '%s' %d" (fmt 0x3018d8, "filehost.c"
+0x301908, lines 125 / 157 / 188 / 234 for GetSize / Create / Read / Write, then the path and the
+fd; Create passes no fd but t0 still holds it, 0x156250). s_hostRootDefault 0x2f5aa8 -> "host0:"
+0x3018d0, s_hostFlags 0x2f5aac (bit 0 busy). Unlike filehdd it has no I/O-error fallback.
 **TU `rx/rxthread.c` (2026-11-03, all 53 written, `verify`)**: `rxcmp.py '^rxTh'` finds all 53
 RoR's word for word (`rxThWorkerMain`'s one flagged word is an unmasked `addiu` of a data address),
 so `src/rx/rxthread.c` is RosePan's `rxthread.cpp` carried to C in two pieces: the VBlank tail
