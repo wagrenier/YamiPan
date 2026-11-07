@@ -640,3 +640,7 @@ Symptom: the run before had queued game/playermotion.cpp for two stubs, and `tus
 ### A smoke test that "fails" may be the place, not the code (2026-11-07)
 
 Symptom: picking Set Smoke Candle did nothing and the wait gave up after one frame. Cause: the player stood at a ledge with the Down prompt, so `PutItemCondition` (word for word the ROM's) never allowed it. Fix: read the condition against the ROM before suspecting the new code, and walk somewhere open: stage 17, `780:LSDOWN*100` before the menu.
+
+### Code past isSubScene does not run in a stage's opening (2026-11-07)
+
+Symptom: a probe in `StageScene::update` or `updateSmokeFog` prints twice and then nothing for 30 s, while shots change and the stage thread sits in its normal `threadYield`. Cause: a stage's opening runs as a sub-scene, and the `if (!isSubScene)` block of the main scene does not run under it; it looks like a hang and is not. Fix: give a run 60 to 100 s before judging, and count frames from inside the block. With five instances at once the scene ran about 5 frames a second.

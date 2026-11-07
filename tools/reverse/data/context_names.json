@@ -16620,40 +16620,40 @@
   "why": "+0xa4 = new 4-byte holder on the init pack item 6 and the stage number; loadCommon's last call"
  },
  "0019afb0": {
-  "name": "StageScene::updateBuffers",
+  "name": "StageScene::updateSmokeFog",
   "tag": "game-inferred",
   "was": "FUN_0019afb0",
-  "why": "works on +0x9c with the objects and the view; 0x2ce3e0 family; not read yet"
+  "why": "Calls the four SmokeFog frame steps with the view's character."
  },
  "0019b180": {
-  "name": "StageScene::addBufferObject",
+  "name": "StageScene::addSmokeSource",
   "tag": "game-inferred",
   "was": "FUN_0019b180",
-  "why": "SceneBufferSet::addObject on +0x9c when it exists"
+  "why": "SmokeFog::addObject on scene +0x9c, called by the thrown item's end of frame."
  },
  "0019b1b0": {
-  "name": "StageScene::createBuffers",
+  "name": "StageScene::createSmokeFog",
   "tag": "game-inferred",
   "was": "FUN_0019b1b0",
-  "why": "fills an empty +0x9c from SceneBufferSet::createFor with +0x1c"
+  "why": "SmokeFog::createFor into +0x9c once."
  },
  "0019b1f0": {
-  "name": "StageScene::updateBlock98",
+  "name": "StageScene::updateGlowFog",
   "tag": "game-inferred",
   "was": "FUN_0019b1f0",
-  "why": "works on +0x98 with the view state; 0x2ce790 family; not read yet"
+  "why": "GlowFog steps on +0x98; on only when no owned view has a target and the view is the player's."
  },
  "0019b470": {
-  "name": "StageScene::updateBlock98For",
+  "name": "StageScene::measureGlow",
   "tag": "game-inferred",
   "was": "FUN_0019b470",
-  "why": "SceneBlock98::updateFor on +0x98 when it exists, with the player"
+  "why": "GlowFog::updateFor with the player, called by every character's end of frame."
  },
  "0019b4a0": {
-  "name": "StageScene::createBlock98",
+  "name": "StageScene::createGlowFog",
   "tag": "game-inferred",
   "was": "FUN_0019b4a0",
-  "why": "fills an empty +0x98 from SceneBlock98::createFor with +0x1c; StageCharacter::setup calls it"
+  "why": "GlowFog::createFor into +0x98 once."
  },
  "0019b4e0": {
   "name": "StageScene::getZs9901",
@@ -17842,6 +17842,12 @@
   "tag": "game-inferred",
   "was": "FUN_001ab870",
   "why": "script native 0x1fb"
+ },
+ "001abb60": {
+  "name": "nativeSetSmokeRange",
+  "tag": "game-inferred",
+  "was": "FUN_001abb60",
+  "why": "Native 0x1fa: the mission's +0xb4 from the script's integer; read by SmokeFog::updateRange and nativeSmokeNear."
  },
  "001abc00": {
   "name": "nativeSmokeNear",
@@ -34890,76 +34896,76 @@
   "why": "runs 0x2c4320 in slot 3 and waits; the word it answers says the save changed (guess at the mode: 16 scored entries of the save's +0x46c / +0x4ac)"
  },
  "002ce0c0": {
-  "name": "SceneBufferSet::setActiveFor",
+  "name": "SmokeFog::setActiveFor",
   "tag": "game-inferred",
   "was": "FUN_002ce0c0",
-  "why": "each block whose owner changed active: shown, render +0xe24"
+  "why": "Eight fogs: the one whose +8 owner became or stopped being the view's character gets setVisible and the render's +0xe24 snap."
  },
  "002ce180": {
-  "name": "SceneBufferSet::storeActive",
+  "name": "SmokeFog::storeActive",
   "tag": "game-inferred",
   "was": "FUN_002ce180",
-  "why": "block +4 = its owner is the linked object"
+  "why": "Each fog's +4 shown = its owner is the view's character."
  },
  "002ce1c0": {
-  "name": "SceneBufferSet::updateRange",
+  "name": "SmokeFog::updateRange",
   "tag": "game-inferred",
   "was": "FUN_002ce1c0",
-  "why": "float range in f12: block node on when near a listed object"
+  "why": "A fog runs while its owner is within range of a listed burning flare; shown for the view's character; sceneRenderGroup(2) then."
  },
  "002ce360": {
-  "name": "SceneBufferSet::addObject",
+  "name": "SmokeFog::addObject",
   "tag": "game-inferred",
   "was": "FUN_002ce360",
-  "why": "up to five objects passing two tests join the list at +0, count +0x14"
+  "why": "Up to five thrown items that are smoking and in a smoke area, list at +0, count +0x14."
  },
  "002ce3e0": {
-  "name": "SceneBufferSet::attachCharacters",
+  "name": "SmokeFog::attachCharacters",
   "tag": "game-inferred",
   "was": "FUN_002ce3e0",
-  "why": "the first time, the characters of group 2 fill the eight blocks"
+  "why": "Once: the active characters other than ctype 0xe, 7, 3 each take one of the eight fogs, attachTo."
  },
  "002ce5a0": {
-  "name": "SceneBufferSet::~SceneBufferSet",
+  "name": "SmokeFog::~SmokeFog",
   "tag": "game-inferred",
   "was": "FUN_002ce5a0",
-  "why": "deleting dtor of StageScene +0x9c: deletes the eight blocks at +0x18..; name a guess"
+  "why": "Deletes the eight fogs."
  },
  "002ce620": {
-  "name": "SceneBufferSet::createFor",
+  "name": "SmokeFog::createFor",
   "tag": "game-inferred",
   "was": "FUN_002ce620",
-  "why": "a new set of eight blocks when the owner's name is I_HATUEN, else null"
+  "why": "Owner named I_HATUEN: eight 0xc blocks, each spawning hatsu_fog, stopped."
  },
  "002ce790": {
-  "name": "SceneBlock98::updateVisible",
+  "name": "GlowFog::updateVisible",
   "tag": "game-inferred",
   "was": "FUN_002ce790",
-  "why": "+0xc clear and +0x10 below 500: shown and the render group"
+  "why": "koh_fog runs while a measured distance is under 500; sceneRenderGroup(1) then."
  },
  "002ce820": {
-  "name": "SceneBlock98::updateFor",
+  "name": "GlowFog::updateFor",
   "tag": "game-inferred",
   "was": "FUN_002ce820",
-  "why": "an object's frame against the block, given the player; only the shape is read"
+  "why": "A character of ctype 0xc or 5 in brain state 2..5: its glow +0x410 runs while endurance > 0, its distance to the player keeps the nearest in +0x10."
  },
  "002ce9d0": {
-  "name": "SceneBlock98::createFor",
+  "name": "GlowFog::createFor",
   "tag": "game-inferred",
   "was": "FUN_002ce9d0",
-  "why": "the block's constructor by name check, StageScene::createBlock98; only the shape is read"
+  "why": "Owner of ctype 0xc or 5: a 0x14 block spawning koh_fog, stopped; +0xc 1."
  },
  "002ceb70": {
-  "name": "SceneBlock98::setActive",
+  "name": "GlowFog::setActive",
   "tag": "game-inferred",
   "was": "FUN_002ceb70",
-  "why": "a change of on: shown, render +0xe24"
+  "why": "A change of on against +4: render snap, setVisible."
  },
  "002cebd0": {
-  "name": "SceneBlock98::attachTo",
+  "name": "CharacterFog::attachTo",
   "tag": "game-inferred",
   "was": "FUN_002cebd0",
-  "why": "re-hangs the block node on a bone of the player"
+  "why": "The effect goes under the character's bn_head and its object tree node under the character's; +8 = the character. Used on both fogs' blocks."
  },
  "002cedb0": {
   "name": "useSurfaceOfName",

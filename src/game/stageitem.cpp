@@ -509,7 +509,7 @@ bool StageThrownItem::isFlare() const
 // ──────────────────────────────────────────────────────────────────────
 // The flare's two fires start out, the room's only once it lies in a box.
 // FS2 0x00180c40
-// callcheck: setupItem, setup, strcmp, spawn, setRunning, spawn, setRunning, createBuffers
+// callcheck: setupItem, setup, strcmp, spawn, setRunning, spawn, setRunning, createSmokeFog
 
 void StageThrownItem::setupItem(const char *name, ModelInstance *instance,
                                 StringMap<Tim2Texture *> *textures, StageList<void *> *motions)
@@ -526,7 +526,7 @@ void StageThrownItem::setupItem(const char *name, ModelInstance *instance,
             m_roomSmoke->setRunning(false);
     }
     m_smokeArea = kSmokeAreaUnasked;
-    gStageScene->createBuffers(this);
+    gStageScene->createSmokeFog(this);
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -576,13 +576,13 @@ bool StageThrownItem::isSmoking()
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x001808b0
-// callcheck: endFrame, addBufferObject
+// callcheck: endFrame, addSmokeSource
 
 void StageThrownItem::sideHook3()
 {
     if (m_itemMotion != nullptr)
         ItemPhysics::endFrame();
-    gStageScene->addBufferObject(this);
+    gStageScene->addSmokeSource(this);
 }
 
 // ──────────────────────────────────────────────────────────────────────

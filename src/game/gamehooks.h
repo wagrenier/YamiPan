@@ -2882,44 +2882,6 @@ int parseSpawnId(const char *name);                                      // FS2 
 
 class StageObjectList;          // game/stageobjlist.h
 struct SceneRender;
-// +0x9c: eight blocks from +0x18. layout: host.
-struct SceneBufferSet
-{
-    ~SceneBufferSet();                                                   // FS2 0x002ce5a0: deleting
-    // A new set when owner is I_HATUEN, else null.
-    static SceneBufferSet *createFor(StageObject *owner, StageNodeTree *tree); // FS2 0x002ce620
-    // object joins the list of up to five, if it passes two tests.
-    void addObject(StageObject *object);                                 // FS2 0x002ce360
-    // The first time, the characters fill the eight blocks.
-    void attachCharacters(StageObjectList *objects);                     // FS2 0x002ce3e0
-    // Each block whose owner became or stopped being linked: shown or
-    // hidden, render->m_snap set.
-    void setActiveFor(StageObject *linked, SceneRender *render);         // FS2 0x002ce0c0
-    // A block near a listed object within range shows.
-    void updateRange(float range, StageObject *linked, SceneRender *render); // FS2 0x002ce1c0
-    // Each block's +4 = its owner is linked.
-    void storeActive(StageObject *linked);                               // FS2 0x002ce180
-
-    int used;                   // FS2 +0x14: zeroed each frame by StageScene::update
-};
-// +0x98: only the byte StageScene::update sets. layout: host -- EE: +0xc.
-struct SceneBlock98
-{
-    // What owner builds; null for one that has none (unread).
-    static SceneBlock98 *createFor(StageObject *owner, StageNodeTree *tree); // FS2 0x002ce9d0
-    // object's frame against the block (unread: a record's type, a
-    // distance to the player).
-    void updateFor(StageObject *object, StagePlayer *player);            // FS2 0x002ce820
-    // A change of on: the node shown or hidden, render->m_snap set.
-    void setActive(bool on, SceneRender *render);                        // FS2 0x002ceb70
-    void updateVisible(SceneRender *render);                             // FS2 0x002ce790
-    // The node hangs from a bone of the player.
-    void attachTo(StagePlayer *player);                                  // FS2 0x002cebd0
-
-    u_char active;              // FS2 +0x4
-    u_char dirty;               // FS2 +0xc
-};
-
 // +0xa0: the grain over a frame: the init pack's image as a grid of 64-pixel
 // tiles, each from a random place and turn of it (vtable 0x311280 over
 // StageFade's base 0x311260, vptr +4). The party's fill is one too.

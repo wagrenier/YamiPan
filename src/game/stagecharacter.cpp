@@ -403,7 +403,7 @@ static void giveItemsNamed(StageCharacter *character, const char *name)
 }
 
 // FS2 0x0017c700
-// callcheck: setName, addCharacter, add, findEntry, setEntry, setModel, getStageSelect, operator_new, operator_new, PartSwitch, init, initAbilities, createBlock98, operator_new, PlayerMotion, loadMotions, setupBody, strstr, operator_new, CharacterGround, findAll3, giveItem, modelFindPart, getCharacterClass, find, spawn, setRunning, erase, pushBack, memset, initSlots14, initSlots18, strcmp, setActive, setShown, allow, reset (stageObjRecord, applyCharacterModelFlags, CharacterHidePart and the object tree's setParent are inline there)
+// callcheck: setName, addCharacter, add, findEntry, setEntry, setModel, getStageSelect, operator_new, operator_new, PartSwitch, init, initAbilities, createGlowFog, operator_new, PlayerMotion, loadMotions, setupBody, strstr, operator_new, CharacterGround, findAll3, giveItem, modelFindPart, getCharacterClass, find, spawn, setRunning, erase, pushBack, memset, initSlots14, initSlots18, strcmp, setActive, setShown, allow, reset (stageObjRecord, applyCharacterModelFlags, CharacterHidePart and the object tree's setParent are inline there)
 
 void StageCharacter::setup(const char *name, ModelInstance *instance, StringMap<Tim2Texture *> *textures,
                            StageList<void *> *motions, StageList<void *> *motions2, void *mdl)
@@ -420,7 +420,7 @@ void StageCharacter::setup(const char *name, ModelInstance *instance, StringMap<
     m_hidePart = new CharacterHidePart(this, record->kind);
     m_model->m_loop = 0;
     initAbilities();
-    scene->createBlock98(this);
+    scene->createGlowFog(this);
 
     m_motion = new PlayerMotion(this);
     m_motion->loadMotions(motions, motions2, mdl);
@@ -785,7 +785,7 @@ void StageCharacter::lightCarriedItems()
 }
 
 // FS2 0x00179d30
-// callcheck: endFrame, endFrame, setRunning, setRunning, contains, setRunning, getStageSelect, find, find, find, raycast, setRunning, getStageSelect, spawn, setPosition, setRunning, setRunning, setPosition, setRunning, spawn, spawn, spawn, isPlayer, isPartner, getLifeState, setValue2b0, isPlayer, setValue2b0, isPlayer, setCastsShadow, updateBlock98For, updateSounds, isStageDrained, getSeconds, releaseAction, setLight, setAmbient
+// callcheck: endFrame, endFrame, setRunning, setRunning, contains, setRunning, getStageSelect, find, find, find, raycast, setRunning, getStageSelect, spawn, setPosition, setRunning, setRunning, setPosition, setRunning, spawn, spawn, spawn, isPlayer, isPartner, getLifeState, setValue2b0, isPlayer, setValue2b0, isPlayer, setCastsShadow, measureGlow, updateSounds, isStageDrained, getSeconds, releaseAction, setLight, setAmbient
 
 void StageCharacter::sideHook3()
 {
@@ -795,7 +795,7 @@ void StageCharacter::sideHook3()
     stepSplash();
     stepFootEffects();
     stepLampOwner();
-    gStageScene->updateBlock98For(this);
+    gStageScene->measureGlow(this);
     updateSounds();
     stepSlowChange();
     lightCarriedItems();

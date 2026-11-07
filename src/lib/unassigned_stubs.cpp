@@ -59,12 +59,6 @@ int Rand48::next(int n)
     return {};
 }
 
-// stub of FS2 0x002ce5a0
-SceneBufferSet::~SceneBufferSet()
-{
-    YAMIPAN_STUB("SceneBufferSet::~SceneBufferSet", 0x002ce5a0);
-}
-
 // stub of FS2 address unknown (1 candidates)
 void SceneOwnedObject::destroy()
 {
@@ -276,74 +270,6 @@ void gsFrameFilter(sceVif1Packet *packet, const sceGsDrawEnv1 *env, int w, int h
     YAMIPAN_STUB("gsFrameFilter", 0x002849c0);
 }
 
-
-// stub of FS2 0x002cebd0
-void SceneBlock98::attachTo(StagePlayer *player)
-{
-    YAMIPAN_STUB("SceneBlock98::attachTo", 0x002cebd0);
-}
-
-// stub of FS2 0x002ceb70
-void SceneBlock98::setActive(bool on, SceneRender *render)
-{
-    YAMIPAN_STUB("SceneBlock98::setActive", 0x002ceb70);
-}
-
-// stub of FS2 0x002ce790
-void SceneBlock98::updateVisible(SceneRender *render)
-{
-    YAMIPAN_STUB("SceneBlock98::updateVisible", 0x002ce790);
-}
-
-// stub of FS2 0x002ce3e0
-void SceneBufferSet::attachCharacters(StageObjectList *objects)
-{
-    YAMIPAN_STUB("SceneBufferSet::attachCharacters", 0x002ce3e0);
-}
-
-// stub of FS2 0x002ce0c0
-void SceneBufferSet::setActiveFor(StageObject *linked, SceneRender *render)
-{
-    YAMIPAN_STUB("SceneBufferSet::setActiveFor", 0x002ce0c0);
-}
-
-// stub of FS2 0x002ce180
-void SceneBufferSet::storeActive(StageObject *linked)
-{
-    YAMIPAN_STUB("SceneBufferSet::storeActive", 0x002ce180);
-}
-
-// stub of FS2 0x002ce1c0
-void SceneBufferSet::updateRange(float range, StageObject *linked, SceneRender *render)
-{
-    YAMIPAN_STUB("SceneBufferSet::updateRange", 0x002ce1c0);
-}
-
-// stub of FS2 0x002ce9d0
-SceneBlock98 * SceneBlock98::createFor(StageObject *owner, StageNodeTree *tree)
-{
-    YAMIPAN_STUB("SceneBlock98::createFor", 0x002ce9d0);
-    return {};
-}
-
-// stub of FS2 0x002ce820
-void SceneBlock98::updateFor(StageObject *object, StagePlayer *player)
-{
-    YAMIPAN_STUB("SceneBlock98::updateFor", 0x002ce820);
-}
-
-// stub of FS2 0x002ce360
-void SceneBufferSet::addObject(StageObject *object)
-{
-    YAMIPAN_STUB("SceneBufferSet::addObject", 0x002ce360);
-}
-
-// stub of FS2 0x002ce620
-SceneBufferSet * SceneBufferSet::createFor(StageObject *owner, StageNodeTree *tree)
-{
-    YAMIPAN_STUB("SceneBufferSet::createFor", 0x002ce620);
-    return {};
-}
 
 // stub of FS2 0x001d3d20
 // stub of FS2 0x002a7a50
