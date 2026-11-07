@@ -15221,6 +15221,108 @@
   "was": "FUN_00192080",
   "why": "the 0x40-byte object's zeroes, +0x38 back to the tree"
  },
+ "001920d0": {
+  "name": "WordVector::resize",
+  "tag": "lib-context",
+  "was": "FUN_001920d0",
+  "why": "MSL vector of 4-byte elements: grows through 0x1928f0, shrinks through 0x192660; drawEffects' VRAM offset lists, RouteFilter::clearPath, AreaClip::setup"
+ },
+ "00192150": {
+  "name": "mslSort_Effects",
+  "tag": "lib-context",
+  "was": "FUN_00192150",
+  "why": "MSL std::sort over the effects' {StageParticle*, key} pairs: quicksort sampling at n/4 and 3n/4 moved by the counter 0x31a8f0, selection sort under 21; proved against host game/mslsort.h by sortcmp.py"
+ },
+ "00192660": {
+  "name": "WordVector::eraseRange",
+  "tag": "lib-context",
+  "was": "FUN_00192660",
+  "why": "MSL vector erase(first, last) for 4-byte elements: moves the tail down, count -= span, returns first"
+ },
+ "001927b0": {
+  "name": "WordVector::erase",
+  "tag": "lib-context",
+  "was": "FUN_001927b0",
+  "why": "MSL vector erase(position) for 4-byte elements: moves the tail down, count -= 1; CritterNest::update, RouteSearch::allow, StageNodeTree::updateEffects"
+ },
+ "001928f0": {
+  "name": "WordVector::insert",
+  "tag": "lib-context",
+  "was": "FUN_001928f0",
+  "why": "MSL vector insert(position, n, value) for 4-byte elements, the partner of 0x1920d0's grow branch and of the push_backs in stageparticle and routefilter"
+ },
+ "00192db0": {
+  "name": "EffectSortList::insert",
+  "tag": "lib-context",
+  "was": "FUN_00192db0",
+  "why": "MSL vector insert(position, n, value), 8-byte {StageParticle*, key} elements; prints 'vector::insert length error'; drawEffects appends with it"
+ },
+ "00193210": {
+  "name": "EffectSortList::reserve",
+  "tag": "lib-context",
+  "was": "FUN_00193210",
+  "why": "MSL vector reserve for the 8-byte pairs; prints 'vector::reserve length error'; drawEffects reserves the count of effects on both lists"
+ },
+ "001933a0": {
+  "name": "BoxCells::~BoxCells",
+  "tag": "lib-context",
+  "was": "FUN_001933a0",
+  "why": "MSL vector<BoxColumn> dtor (clear 0x1936e0, frees data); StageNodeTree::setBoxes and ~Inner for the grid's cells"
+ },
+ "00193410": {
+  "name": "EffectSortList::~EffectSortList",
+  "tag": "lib-context",
+  "was": "FUN_00193410",
+  "why": "MSL vector dtor: clear 0x193770, frees the data, deleting flag above 0"
+ },
+ "00193480": {
+  "name": "mslMedianToEnd_Effects",
+  "tag": "lib-context",
+  "was": "FUN_00193480",
+  "why": "(a, b, c): leaves the median of the three keys in c; 0x192150's pivot"
+ },
+ "001935b0": {
+  "name": "mslSelectionSort_Effects",
+  "tag": "lib-context",
+  "was": "FUN_001935b0",
+  "why": "selection sort by the key at +4, the swap skipped when the lowest is in place; 0x192150 under 21 elements"
+ },
+ "001936e0": {
+  "name": "BoxCells::clear",
+  "tag": "lib-context",
+  "was": "FUN_001936e0",
+  "why": "destroys the 0xc-byte BoxColumns from the back through 0x193780, count = 0"
+ },
+ "00193770": {
+  "name": "EffectSortList::clear",
+  "tag": "lib-context",
+  "was": "FUN_00193770",
+  "why": "count = 0, the pairs have no dtor"
+ },
+ "00193780": {
+  "name": "BoxColumn::~BoxColumn",
+  "tag": "lib-context",
+  "was": "FUN_00193780",
+  "why": "MSL vector<BoxList> dtor (clear 0x1937f0, frees data); BoxCells::resize too"
+ },
+ "001937f0": {
+  "name": "BoxColumn::clear",
+  "tag": "lib-context",
+  "was": "FUN_001937f0",
+  "why": "destroys the 0xc-byte BoxLists from the back through 0x193880, count = 0"
+ },
+ "00193880": {
+  "name": "BoxList::~BoxList",
+  "tag": "lib-context",
+  "was": "FUN_00193880",
+  "why": "MSL vector<const Box*> dtor (clear 0x1938f0, frees data)"
+ },
+ "001938f0": {
+  "name": "BoxList::clear",
+  "tag": "lib-context",
+  "was": "FUN_001938f0",
+  "why": "count = 0, pointers have no dtor"
+ },
  "00193900": {
   "name": "StageObjectList::findAll7",
   "tag": "game-inferred",

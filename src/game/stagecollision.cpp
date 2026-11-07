@@ -817,7 +817,7 @@ CollisionNode::~CollisionNode()
 }
 
 // FS2 0x00234d10
-// callcheck: operator_new, operator_new, operator_new, operator_new, FUN_001928f0, FUN_001928f0, operator_delete, operator_delete, split, split, ~CollisionNode, ~CollisionNode (the vectors are the host's)
+// callcheck: operator_new, operator_new, operator_new, operator_new, insert, insert, operator_delete, operator_delete, split, split, ~CollisionNode, ~CollisionNode (the vectors are the host's)
 
 bool CollisionNode::split(float minHeight, int minFaces)
 {
@@ -867,7 +867,7 @@ bool CollisionNode::split(float minHeight, int minFaces)
 // The planes the first time; the box; the grid of cells, each holding the
 // faces over it, highest first; each cell's tree.
 // FS2 0x00234440
-// callcheck: vecCross, vecNormalize, vecDot, findExtremes, useSurfaceOfName, operator_new[], FUN_00104d90, overlapsRect, operator_new, FUN_001928f0, FUN_001928f0, split
+// callcheck: vecCross, vecNormalize, vecDot, findExtremes, useSurfaceOfName, operator_new[], FUN_00104d90, overlapsRect, operator_new, insert, insert, split
 
 StageCollision::StageCollision(CollisionRecord *record,
                                const char (*surfaceNames)[kCollisionNameSize], int cellSize)

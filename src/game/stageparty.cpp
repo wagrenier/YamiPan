@@ -1533,7 +1533,7 @@ void StageParty::setJackAngle(float angle) { m_jack->m_angle = angle > 0.0f ? an
 void StageParty::setJackRange(float range) { m_jack->m_range = range > 0.0f ? range : 0.0f; }
 
 // FS2 0x001fe890
-// callcheck: operator_new, Tim2Texture, FUN_001928f0
+// callcheck: operator_new, Tim2Texture, insert
 
 void StageParty::addImage(const void *image)
 {
@@ -1585,7 +1585,7 @@ JackFilm *StageParty::getFilm() { return &m_jack->m_film; }
 
 // FS2 0x00204250
 // A copy of the film: its own textures of the same files, the same settings.
-// callcheck: operator_new, operator_new, Tim2Texture, FUN_001928f0
+// callcheck: operator_new, operator_new, Tim2Texture, insert
 
 JackFilm *JackFilm::clone() const
 {

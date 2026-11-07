@@ -19,6 +19,7 @@
 #include "game/heap.h"
 #include "game/mathutil.h"
 #include "game/modelpose.h"
+#include "game/mslsort.h"
 #include "game/stagecollision.h"
 #include "game/stagescene.h"
 #include "game/vu0math.h"
@@ -923,7 +924,7 @@ StageNodeTree::~StageNodeTree()
 }
 
 // FS2 0x00190aa0
-// callcheck: FUN_001928f0
+// callcheck: insert
 
 void StageNodeTree::addParticleTexture(Tim2Texture *texture)
 {
@@ -1005,7 +1006,7 @@ bool StageNodeTree::isLive(StageParticle *effect)
 
 // A new effect, its chain and its splash.
 // FS2 0x001918d0
-// callcheck: heapAllocAligned, FUN_00190450, heapAllocAligned, StageParticleCount, StageParticle, erase, erase, pushBack, restart, FUN_001928f0, createEffect, createEffect, createEffect, erase, erase, erase, pushBack, strcmp, strcmp, strcmp, strcmp (new on the host; setParent and the vector hold the list calls; strcmp in findDef)
+// callcheck: heapAllocAligned, FUN_00190450, heapAllocAligned, StageParticleCount, StageParticle, erase, erase, pushBack, restart, insert, createEffect, createEffect, createEffect, erase, erase, erase, pushBack, strcmp, strcmp, strcmp, strcmp (new on the host; setParent and the vector hold the list calls; strcmp in findDef)
 
 StageParticle *StageNodeTree::create(const char *name, StageNodeBase *parent, const float *pos, const float *rot,
                                      int arg, int arg2)
@@ -1159,11 +1160,12 @@ struct SortedEffect
 
 // The critters at the end of the main models' list, then the frame's effects:
 // the far world's with the far models, the rest over the main models, each
-// list nearest first, as the ROM's sort leaves them (a key is the depth less
-// the index; ParticleFlag_NoFarLimit's is 0). The ROM's VRAM placement goes: a
+// list nearest first (a key is the depth less the index; ParticleFlag_NoFarLimit's
+// is 0, so ties are common and the ROM's own sort decides them, far list first:
+// its counter runs from one to the next). The ROM's VRAM placement goes: a
 // texture is the host's, by its record.
 // FS2 0x00190a80
-// callcheck: drawEffects (0x190c70 is this body)
+// callcheck: drawEffects, reserve, resize, insert, mslSort_Effects, ~EffectSortList (0x190c70 is this body; std::vector here, mslSort is the ROM's)
 
 void StageNodeTree::draw(GamePacketManager *packets, StageObject *camera)
 {
@@ -1215,8 +1217,8 @@ void StageNodeTree::draw(GamePacketManager *packets, StageObject *camera)
         ((flags & ParticleFlag_FarWorld) != 0 ? farList : nearList).push_back({effect, key});
     }
     const auto nearestFirst = [](const SortedEffect &a, const SortedEffect &b) { return a.key < b.key; };
-    std::stable_sort(nearList.begin(), nearList.end(), nearestFirst);
-    std::stable_sort(farList.begin(), farList.end(), nearestFirst);
+    mslSort(farList.data(), farList.data() + farList.size(), nearestFirst);
+    mslSort(nearList.data(), nearList.data() + nearList.size(), nearestFirst);
 
     for (int pass = 0; pass < 2; pass++) {
         const std::vector<SortedEffect> &list = pass == 0 ? farList : nearList;
@@ -1242,7 +1244,7 @@ void StageNodeTree::draw(GamePacketManager *packets, StageObject *camera)
 // A nest in the tree. The ctor runs with the nest still at the origin, so what
 // it makes starts there; the first frames take them home.
 // FS2 0x00190990
-// callcheck: heapAllocAligned, FUN_002b3ef0, setPositionXyz, FUN_001928f0 (new and the vector on the host)
+// callcheck: heapAllocAligned, FUN_002b3ef0, setPositionXyz, insert (new and the vector on the host)
 
 StageObject *StageNodeTree::spawnCritters(const float *pos, float range, int kind, int count)
 {
@@ -1287,7 +1289,7 @@ CritterNest::~CritterNest()
 }
 
 // FS2 0x002b39e0
-// callcheck: operator_delete, FUN_001927b0, operator_new, operator_new, operator_new, operator_new, FUN_001928f0 (the vector and new on the host; the ROM's delete on a 0 from a critter is never taken)
+// callcheck: operator_delete, erase, operator_new, operator_new, operator_new, operator_new, insert (the vector and new on the host; the ROM's delete on a 0 from a critter is never taken)
 
 void CritterNest::update(const float *scare)
 {
@@ -1742,4 +1744,6 @@ const StageCollisionFace *CritterCrawler::leftSurface()
 // FS2 0x00192080: its ctor, StageNodeTree.
 // FS2 0x001914c0: update's body.
 // FS2 0x00190c70: draw's body.
-// FS2 0x001918b0, 0x001918c0, 0x001920d0, 0x00192150, 0x00192660, 0x001927b0, 0x001928f0: the containers' templates (std::vector here).
+// FS2 0x001918b0, 0x001918c0, 0x001920d0, 0x00192660, 0x001927b0, 0x001928f0: the containers' templates (std::vector here).
+// FS2 0x00192db0, 0x00193210, 0x00193410, 0x00193770: the MSL vector of the effects' sort lists (SortedEffect; std::vector here).
+// FS2 0x001933a0, 0x001936e0, 0x00193780, 0x001937f0, 0x00193880, 0x001938f0: BoxCells, BoxColumn and BoxList's dtors and clears, for setBoxes and ~StageNodeTree (game/boxgrid.h; std::vector here).

@@ -3624,28 +3624,23 @@
 /* 001918d0 000005b4 */ StageNodeTree::createEffect(){}  // game
 /* 00191e90 000001e4 */ StageNodeTree::Inner::~Inner(){}  // game
 /* 00192080 00000048 */ StageNodeTree::Inner::Inner(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 001920d0 00000074 */ FUN_001920d0(){}
-/* 00192150 00000510 */ FUN_00192150(){}
-/* 00192660 00000148 */ FUN_00192660(){}
-/* 001927b0 0000013c */ FUN_001927b0(){}
-/* 001928f0 000004b4 */ FUN_001928f0(){}
-/* 00192db0 00000454 */ FUN_00192db0(){}
-/* 00193210 00000190 */ FUN_00193210(){}
-/* 001933a0 00000068 */ FUN_001933a0(){}
-/* 00193410 00000068 */ FUN_00193410(){}
-/* 00193480 0000012c */ FUN_00193480(){}
-/* 001935b0 0000012c */ FUN_001935b0(){}
-/* 001936e0 0000008c */ FUN_001936e0(){}
-/* 00193770 00000008 */ FUN_00193770(){}
-/* 00193780 00000068 */ FUN_00193780(){}
-/* 001937f0 0000008c */ FUN_001937f0(){}
-/* 00193880 00000068 */ FUN_00193880(){}
-/* 001938f0 00000008 */ FUN_001938f0(){}
+/* 001920d0 00000074 */ WordVector::resize(){}  // lib-ctx
+/* 00192150 00000510 */ mslSort_Effects(){}  // lib-ctx
+/* 00192660 00000148 */ WordVector::eraseRange(){}  // lib-ctx
+/* 001927b0 0000013c */ WordVector::erase(){}  // lib-ctx
+/* 001928f0 000004b4 */ WordVector::insert(){}  // lib-ctx
+/* 00192db0 00000454 */ EffectSortList::insert(){}  // lib-ctx
+/* 00193210 00000190 */ EffectSortList::reserve(){}  // lib-ctx
+/* 001933a0 00000068 */ BoxCells::~BoxCells(){}  // lib-ctx
+/* 00193410 00000068 */ EffectSortList::~EffectSortList(){}  // lib-ctx
+/* 00193480 0000012c */ mslMedianToEnd_Effects(){}  // lib-ctx
+/* 001935b0 0000012c */ mslSelectionSort_Effects(){}  // lib-ctx
+/* 001936e0 0000008c */ BoxCells::clear(){}  // lib-ctx
+/* 00193770 00000008 */ EffectSortList::clear(){}  // lib-ctx
+/* 00193780 00000068 */ BoxColumn::~BoxColumn(){}  // lib-ctx
+/* 001937f0 0000008c */ BoxColumn::clear(){}  // lib-ctx
+/* 00193880 00000068 */ BoxList::~BoxList(){}  // lib-ctx
+/* 001938f0 00000008 */ BoxList::clear(){}  // lib-ctx
 
 // *****************************************************************************
 // FILE -- game/stageobjlist.cpp

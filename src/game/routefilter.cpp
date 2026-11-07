@@ -99,7 +99,7 @@ bool isInsideTriangle(RouteNode *const *corners, const float *pos)
 // only at their corners. The corners go on out; answers its length. A first
 // gate that from and the next point are on one side of is not crossed.
 // FS2 0x00240d40
-// callcheck: FUN_001928f0 (out.push_back)
+// callcheck: insert (out.push_back)
 
 float pullThroughGates(std::vector<RouteNode *> &out, const float *from,
                        const std::vector<RouteSpan> &gates, const float *to)
@@ -241,7 +241,7 @@ void RouteFilter::allow(const char *name, bool on)
 }
 
 // FS2 0x0023f320
-// callcheck: FUN_001920d0, resize (the host vector clear)
+// callcheck: resize, resize (the host vector clear)
 
 void RouteFilter::clearPath()
 {
@@ -466,7 +466,7 @@ void RouteSearch::firstPair()
 
 // Turns steps into the nodes to walk to and answers the length, from to to.
 // FS2 0x002407f0
-// callcheck: FUN_001928f0, insert, ~RouteSpanList (the host vectors)
+// callcheck: insert, insert, ~RouteSpanList (the host vectors)
 
 float RouteSearch::buildNodes(std::vector<RouteNode *> &out, const std::vector<RouteLeg> &steps,
                               const float *from, const float *to)
@@ -672,7 +672,7 @@ float RouteSearch::stepDistance(const RouteLeg &step, const float *pos)
 // begins with name, opening adds the one of exactly that name. The set the
 // file knows for the new list becomes the search's.
 // FS2 0x00241a40
-// callcheck: FUN_001927b0, FUN_001928f0 (vector erase, push_back)
+// callcheck: erase, insert (vector erase, push_back)
 
 void RouteSearch::allow(const char *name, bool on)
 {

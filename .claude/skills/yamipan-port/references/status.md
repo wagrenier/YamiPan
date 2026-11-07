@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-06 22:30 at commit `0b781d8` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-06 22:50 at commit `13056bf` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-06 22:30 at commit `0b781d8` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6599**, named **5312** (80%); library functions: 987
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1558, game-inferred 4389
-- context-name ledger: 5947 entries; overrides of wrong library matches: 0
-- placed in a source file: 5685/6599 in 121 files
+- game functions: **6599**, named **5329** (81%); library functions: 987
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1575, game-inferred 4389
+- context-name ledger: 5964 entries; overrides of wrong library matches: 0
+- placed in a source file: 5702/6599 in 121 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5189**; stubs: **111**
+- reconstructed FS2 functions: **5191**; stubs: **111**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -104,7 +104,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stagemodel.cpp` | 19 | 0 |
 | `src/game/stageobject.cpp` | 44 | 0 |
 | `src/game/stageobjlist.cpp` | 45 | 0 |
-| `src/game/stageparticle.cpp` | 48 | 0 |
+| `src/game/stageparticle.cpp` | 50 | 0 |
 | `src/game/stageparty.cpp` | 85 | 0 |
 | `src/game/stageplayer.cpp` | 34 | 0 |
 | `src/game/stageresult.cpp` | 32 | 0 |
@@ -158,8 +158,8 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 216 TUs: todo 74, partial 26, verify 109, done 42
-- next: **unassigned@001920d0** (frontier score 24)
+- 215 TUs: todo 74, partial 25, verify 109, done 42
+- next: **unassigned@0023c010** (frontier score 37)
 - pinned queue: (empty)
 - verify: `game/areagrid.cpp` 11/11 -- Cut out of unassigned@002681e0 and pinned 0x283df0-0x2849c0 (batch 090, 4 names; saved by name_ctx). Nothing in the game runs it: the smoke run stays on the lan
 - verify: `game/boxgrid.cpp` 29/29 -- All 29 functions of 0x2647e0..0x2676e0 covered: BoxGrid ctor / find / contains / cellTouchesBox, quadContainsPoint, quadCrossesSegment written; std::max / min /
@@ -226,7 +226,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stagemodel.cpp` 20/24 -- All of StageModel is written (init, bindBones, placeBones, setBaseMotion, advance, applyMotion, the play and find calls, the dtor). BoneNode and ModelLink were 
 - verify: `game/stageobject.cpp` 43/43 -- All 43 functions are written, no stubs; the old partial status was stale, which is why tus.py next picked it. This run compared setProperty 0x189f40, getPropert
 - verify: `game/stageobjlist.cpp` 45/45 -- Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector in
-- verify: `game/stageparticle.cpp` 48/69 -- Seen with temporary builds, removed, New Game forced to stage 2, work/doorwalk_pad.txt, 285 s, no crash: rain over the woods with effects on, none with them off
+- verify: `game/stageparticle.cpp` 51/86 -- unassigned@001920d0 was no file: the object's template instances, 17 functions, batch 186, record removed, range pinned to this TU. Written: game/mslsort.h (0x1
 - verify: `game/stageparty.cpp` 79/79 -- Batch 162. SceneModelHolder was no model: it is StageDaylight, 0x2cfe20..0x2d0a10, range joined to this TU, StageScene::model renamed daylight. On stages 3, 0x1
 - verify: `game/stageplayer.cpp` 35/41 -- Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was s
 - verify: `game/stageresult.cpp` 32/32 -- All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (add
@@ -273,6 +273,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-06 22:50 `game/stageparticle.cpp` verify: the MSL vector and sort instances 0x1920d0..0x193900 pinned here and named; the ROM's own unstable sort replaces std::stable_sort in drawEffects, far list first
 - 2026-11-06 22:30 `game/stagealert.cpp` verify: reconstruct 8 functions, alertcmp proves them against the ROM (verify)
 - 2026-11-06 21:59 `rx/rxsndstrmem.c` verify: reconstruct 16 functions, ROM comparison clean
 - 2026-11-06 21:34 `rx/rxsndstrstream.c` verify: reconstruct 18 functions
@@ -280,22 +281,21 @@ Recent sessions:
 - 2026-11-06 20:51 `game/stageelevator.cpp` verify: The elevator: StageElevator for oZS99_01, a call brings it, the doors work, a rider goes up with it, a door closing on someone opens again
 - 2026-11-06 20:19 `game/stagemenu.cpp` verify: the stage menu whole: the list window, its fades, update, draw; six vector helpers joined game/characterroute.cpp; menucmp.py
 - 2026-11-06 19:35 `game/playermotion.cpp` verify: The last eleven links written (GadgetLink, SpFear, SpRing, SpRobo, SpDrop, SpPadlock, SpNumLock, BossAttack, BossIdle): every link name of the ROM now exists; n
-- 2026-11-06 18:49 `game/playermotion.cpp` partial: A real edge works, the voices no longer jam: updateSounds and the sound family written
 
 | TU (by frontier score) | state | done/stubs/total | KB | score | reached stubs |
 |---|---|---|---|---|---|
-| `unassigned@001920d0` | partial | 1/0/17 | 5.9 | 24 | 0 |
+| `unassigned@0023c010` | todo | 0/11/15 | 7.4 | 37 | 4 |
+| `unassigned@002dac70` | partial | 1/4/63 | 21.7 | 24 | 4 |
 | `unassigned@002b9ef0` | todo | 0/4/11 | 5.7 | 21 | 3 |
 | `game/rcnttimer.cpp` | todo | 0/4/4 | 0.2 | 19 | 3 |
-| `unassigned@002dac70` | partial | 1/4/63 | 21.7 | 19 | 3 |
-| `unassigned@00171ad0` | partial | 1/0/107 | 1.5 | 18 | 0 |
 | `unassigned@002c42a0` | todo | 0/13/105 | 42.1 | 18 | 1 |
+| `unassigned@002681e0` | todo | 0/3/3 | 0.3 | 18 | 3 |
+| `unassigned@00171ad0` | partial | 1/0/107 | 1.5 | 18 | 0 |
 | `unassigned@00188d60` | todo | 0/0/16 | 3.8 | 17 | 0 |
 | `unassigned@002a6980` | partial | 1/11/83 | 12.1 | 17 | 0 |
-| `unassigned@0023c010` | todo | 0/11/15 | 7.4 | 17 | 0 |
 | `unassigned@002067d0` | partial | 1/0/9 | 2.2 | 17 | 0 |
-| `unassigned@002e0820` | todo | 0/3/13 | 3.7 | 13 | 1 |
-| `unassigned@00151270` | todo | 0/3/3 | 0.0 | 13 | 2 |
+| `unassigned@002acff0` | todo | 0/3/24 | 10.9 | 15 | 2 |
+| `sdpr2/sdpr2single.c` | todo | 0/2/24 | 7.0 | 14 | 2 |
 
 ## Frontier (called by reconstructed code, not written yet)
 
