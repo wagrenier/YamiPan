@@ -20238,10 +20238,10 @@
   "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
  },
  "001da050": {
-  "name": "CharacterBrain::useItem850",
+  "name": "CharacterBrain::putSmoke",
   "tag": "game-inferred",
   "was": "FUN_001da050",
-  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+  "why": "Tail of owner 0x218850 with arg 0; slot scriptPutItem."
  },
  "001da060": {
   "name": "CharacterBrain::setTrap",
@@ -20508,10 +20508,10 @@
   "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
  },
  "001db6f0": {
-  "name": "CharacterBrain::askRoute22ab90",
+  "name": "CharacterBrain::askThrow",
   "tag": "game-inferred",
   "was": "FUN_001db6f0",
-  "why": "vtable 0x315b10: read 2026-11-05 from the code, see src/game/characterbrain.cpp"
+  "why": "Calls route 0x22ab90 (throw item with vector), retry block on success when a3 is set."
  },
  "001db7c0": {
   "name": "CharacterBrain::askFireAt",
@@ -22667,6 +22667,12 @@
   "was": "FUN_0020b1d0",
   "why": "+0x364 set: +0x2ca = 1; update calls it while the alternate flag holds; the meaning is a guess"
  },
+ "0020b200": {
+  "name": "StageCharacter::wantThrow",
+  "tag": "game-inferred",
+  "was": "FUN_0020b200",
+  "why": "Stores a1 at +0x2da wants.throwItem, a2 at +0x2dc, the vector at +0x2e0, all read by the Throw condition."
+ },
  "0020b220": {
   "name": "ScriptPoint::set",
   "tag": "game-inferred",
@@ -23358,10 +23364,10 @@
   "why": "behind natives 0x4a.. (game/scriptrunner.cpp)"
  },
  "00218850": {
-  "name": "StageCharacter::item218850",
+  "name": "StageCharacter::putSmoke",
   "tag": "game-inferred",
   "was": "FUN_00218850",
-  "why": "called from the brain; a brief read"
+  "why": "Finds the carried I_HATUEN (0x307010), sets wants.putItem and +0x2d4 when controlled, waits on motion 0x12 in the history ring; yields 0x104 with state and frame."
  },
  "00218af0": {
   "name": "StageCharacter::scriptPutItem",
@@ -23376,10 +23382,10 @@
   "why": "behind natives 0x4a.. (game/scriptrunner.cpp)"
  },
  "00218b50": {
-  "name": "StageCharacter::useItem",
+  "name": "StageCharacter::throwCarried",
   "tag": "game-inferred",
   "was": "FUN_00218b50",
-  "why": "called from the brain; a brief read"
+  "why": "Finds the carried item by name, 0x20b200 or the brain ask 0x1db6f0, waits on motion 0x9d, which ThrowCondition requests; the natives call it useItem."
  },
  "00218e00": {
   "name": "StageCharacter::scriptUseItemAt",
@@ -23410,6 +23416,12 @@
   "tag": "game-inferred",
   "was": "FUN_00218f40",
   "why": "behind natives 0x4a.. (game/scriptrunner.cpp)"
+ },
+ "00219000": {
+  "name": "StageCharacter::canTakeUpTrap",
+  "tag": "game-inferred",
+  "was": "FUN_00219000",
+  "why": "lbu +0x38a allows.trapCancel; only caller native 0x10f nativeCanTakeUpTrap."
  },
  "00219010": {
   "name": "StageCharacter::onScriptExit",
@@ -23470,6 +23482,12 @@
   "tag": "game-inferred",
   "was": "FUN_002196f0",
   "why": "native 0x9f: leaveLoud and the corpses around lower +0x664"
+ },
+ "00219980": {
+  "name": "StageCharacter::heardWithin",
+  "tag": "game-inferred",
+  "was": "FUN_00219980",
+  "why": "+0x660 <= f12; m_lastNoiseRange against the argument, native nativeHeardWithin."
  },
  "002199a0": {
   "name": "StageCharacter::findNearestCorpse",
@@ -23566,6 +23584,12 @@
   "tag": "game-inferred",
   "was": "FUN_0021a710",
   "why": "behind natives 0x4a.. (game/scriptrunner.cpp)"
+ },
+ "0021a8c0": {
+  "name": "CharacterBlock7c8::clear",
+  "tag": "game-inferred",
+  "was": "FUN_0021a8c0",
+  "why": "Clears next and count of the motion history; host header has it."
  },
  "0021a8d0": {
   "name": "CharacterBlock7c8::find",
@@ -24450,10 +24474,10 @@
   "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
  },
  "0022ab90": {
-  "name": "CharacterRoute::action22ab90",
+  "name": "CharacterRoute::throwAt",
   "tag": "game-inferred",
   "was": "FUN_0022ab90",
-  "why": "named from the brain's calls only; the route is unread (vtable 0x316498)"
+  "why": "Checks abilities.throwing and allows.throwItem, then sets wants.throwItem, item and vector."
  },
  "0022abf0": {
   "name": "CharacterRoute::action22abf0",

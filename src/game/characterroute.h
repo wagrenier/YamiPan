@@ -195,7 +195,7 @@ public:
     // Loads rounds, or the magazine of any gun but G_NN38, R_MURATA, G_26NEN.
     bool gunAction(int rounds = 0);                                      // FS2 0x0022a920
     bool takeItem(StageObject *item);                                    // FS2 0x0022ab50
-    bool action22ab90(void *a, void *b);                                 // FS2 0x0022ab90
+    bool throwAt(void *item, void *vector);                              // FS2 0x0022ab90
     // Up from a crouch, and down into one.
     bool action22abf0();                                                 // FS2 0x0022abf0
     bool action22ad60();                                                 // FS2 0x0022ad60

@@ -3051,14 +3051,14 @@ bool CharacterRoute::takeItem(StageObject *item)
 }
 
 // FS2 0x0022ab90
-// callcheck: FUN_0020b200 (the setter inline: throwItem, its vector)
-bool CharacterRoute::action22ab90(void *a, void *b)
+// callcheck: wantThrow (inline here)
+bool CharacterRoute::throwAt(void *item, void *vector)
 {
     if (owner->m_abilities.throwing == 0 || owner->m_allows.throwItem == 0)
         return false;
     owner->m_wants.throwItem = 1;
-    owner->m_throwItem = static_cast<StageThrownItem *>(a);
-    copyVector(owner->m_wants.throwVector, static_cast<const float *>(b));
+    owner->m_throwItem = static_cast<StageThrownItem *>(item);
+    copyVector(owner->m_wants.throwVector, static_cast<const float *>(vector));
     skipUpdate = 1;
     return true;
 }

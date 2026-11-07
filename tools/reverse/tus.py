@@ -518,6 +518,9 @@ def cmd_queue(args):
     M.db['queue'] = q
     M.save()
     print('queue:', ', '.join(q) or '(empty)')
+    if not remove and M.stats(key)['status'] in ('done', 'verify', 'blocked'):
+        print(f'warning: {key} is {M.stats(key)["status"]}: next skips it. Functions in an unassigned run stay '
+              'out of it until `define` joins them, so claim by hand or queue that run.')
     return 0
 
 
