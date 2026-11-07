@@ -36419,6 +36419,12 @@
   "was": "FUN_002c8090",
   "why": "a KunitorisBlock on the group's cell +0xc at offset *a1 (lift 4) unless a block already has that offset; the shapes' cells 0x2fbe10 / 0x2fbef0"
  },
+ "002c81c0": {
+  "name": "KunitorisGame::drawBoard",
+  "tag": "game-inferred",
+  "was": "FUN_002c81c0",
+  "why": "KunitorisGame::draw's first call: the pieces (pass 1) and the level's lines four times, translated by -128 - 8 * the scroll (+0x64 / +0x68) and the scroll less the level's width / height (the wrap)"
+ },
  "002c83a0": {
   "name": "KunitorisGame::drawBlinkBar",
   "tag": "game-inferred",
@@ -36509,6 +36515,12 @@
   "was": "FUN_002cb800",
   "why": "slot 2 of 0x319f90: pass < 0 a temporary sprite of pack item 0x13, pass 0 the shadow colour, else lifted by +0x3c cells"
  },
+ "002cbc90": {
+  "name": "KunitorisBlock::drawWithHighlight",
+  "tag": "game-inferred",
+  "was": "FUN_002cbc90",
+  "why": "KunitorisGame::draw runs it on the blocks of m_cells and the groups with (block, drawer, pass, null); KunitorisBlock::draw's passes (+0x3c the height) with the highlight sprite given in a3 instead of a new 0x13 one"
+ },
  "002cc220": {
   "name": "KunitorisBlock::update",
   "tag": "game-inferred",
@@ -36534,16 +36546,28 @@
   "why": "slot 1 of 0x319fc0: setTexture +0x24, TEX1 0, prim 0x15e in white 0x2fbff0, drawTexFlat of the two vertices at +4"
  },
  "002cca40": {
-  "name": "KunitorisGame::start",
+  "name": "KunitorisBoard::selectPiece",
   "tag": "game-inferred",
   "was": "FUN_002cca40",
-  "why": "called once after loadLevel with -1 before the frame loop (kunitorisThread)"
+  "why": "touches only the board (+0x30 count, +0x34 pieces, +0x38 the choice): the old choice back to colour cycle 0 (0x2fb9e0), the new piece (a1; negative: randNext2 % count, the first with lit cells; 0x100: every lit one) to cycle 1 (0x2fb9e8, yellow / brown); returns it; was KunitorisGame::start"
+ },
+ "002cd280": {
+  "name": "KunitorisBoard::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002cd280",
+  "why": "slot 1 of vtables 0x319fd0 / 0x319f80: each piece's draw slot (pass 1 for index +0x38), then with pass != 0 the level's lines at +0x2114 (count +0x2110 times 2) in 0x2fbfe0"
  },
  "002cd390": {
-  "name": "KunitorisGame::loadLevel",
+  "name": "KunitorisBoard::loadLevel",
   "tag": "game-inferred",
   "was": "FUN_002cd390",
-  "why": "takes a level file (+0x2c), its piece count (+0x30, file +0xc) and builds +0x34 as new[] of 0x38-byte pieces from the file's table +0x2010; f12 the cell size (8.0)"
+  "why": "touches only the board's fields (+0x2c level, +0x30 count, +0x34 new[] of 0x38-byte pieces, +0x38 = -1); was KunitorisGame::loadLevel, the game inherits it"
+ },
+ "002cd520": {
+  "name": "KunitorisPiece::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002cd520",
+  "why": "slot 1 of vtable 0x319fe0: drawFlat of each cell rect, white (0x2fbfc0) in pass 0, else lit cells in the piece colour and the rest 0x2fbfd0"
  },
  "002cd690": {
   "name": "KunitorisPiece::~KunitorisPiece",
@@ -36551,11 +36575,29 @@
   "was": "FUN_002cd690",
   "why": "the pieces' dtor the inline ~KunitorisGame hands __destroy_new_array for +0x34"
  },
+ "002cd730": {
+  "name": "KunitorisPiece::load",
+  "tag": "game-inferred",
+  "was": "FUN_002cd730",
+  "why": "loadLevel calls it per piece with (cell, piece, level piece record): new[] of 0x20-byte cells from the record's count at +4, each cell's rect = record cell xy times cell"
+ },
  "002cd8a0": {
   "name": "KunitorisPiece::KunitorisPiece",
   "tag": "game-inferred",
   "was": "FUN_002cd8a0",
   "why": "ctor of the 0x38-byte piece (vtables 0x319f60 / 0x319f70 / 0x319fe0 at +0x18) KunitorisGame::loadLevel builds as new[] at +0x34"
+ },
+ "002cd920": {
+  "name": "KunitorisPieceCell::~KunitorisPieceCell",
+  "tag": "game-inferred",
+  "was": "FUN_002cd920",
+  "why": "the cells' deleting dtor KunitorisPiece::load and ~KunitorisPiece hand __destroy_new_array"
+ },
+ "002cd970": {
+  "name": "KunitorisPieceCell::KunitorisPieceCell",
+  "tag": "game-inferred",
+  "was": "FUN_002cd970",
+  "why": "the 0x20-byte cell ctor KunitorisPiece::load hands __construct_new_array; zeroes all"
  },
  "002cd9a0": {
   "name": "kunitorisPrintf",
@@ -36580,6 +36622,36 @@
   "tag": "game-inferred",
   "was": "FUN_002cdbd0",
   "why": "slot 2 of 0x319f30: empty"
+ },
+ "002cdbe0": {
+  "name": "KunitorisTinted::update",
+  "tag": "game-inferred",
+  "was": "FUN_002cdbe0",
+  "why": "slot 0 of vtable 0x319f60 (the base with the colour at +8, vptr +0x18): returns 1"
+ },
+ "002cdbf0": {
+  "name": "KunitorisTinted::draw",
+  "tag": "game-inferred",
+  "was": "FUN_002cdbf0",
+  "why": "slot 1 of vtables 0x319f60 / 0x319f70: empty"
+ },
+ "002cdc00": {
+  "name": "KunitorisColorCycle::update",
+  "tag": "game-inferred",
+  "was": "FUN_002cdc00",
+  "why": "slot 0 of vtable 0x319f70: index +0x24 stepped (wrap by +0x28 or hold on count +0x1c - 1), colour +8 copied from table +0x20"
+ },
+ "002cdc90": {
+  "name": "KunitorisBoard::update",
+  "tag": "game-inferred",
+  "was": "FUN_002cdc90",
+  "why": "slot 0 of vtables 0x319fd0 / 0x319f80: steps the colour cycle of each of the +0x30 pieces at +0x34"
+ },
+ "002cddc0": {
+  "name": "KunitorisPiece::update",
+  "tag": "game-inferred",
+  "was": "FUN_002cddc0",
+  "why": "slot 0 of vtable 0x319fe0: the colour cycle step (same body as 0x2cdc00)"
  },
  "002cde50": {
   "name": "KunitorisActorList::KunitorisActorList",

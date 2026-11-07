@@ -99,6 +99,7 @@ static_assert(offsetof(UiTextBox, bottomRight) == 0x28, "UiTextBox::bottomRight"
 // and forces UiPrim_Blend).
 enum UiPrim
 {
+    UiPrim_Line = 0x001,
     UiPrim_LineStrip = 0x002,
     UiPrim_Triangle = 0x003,
     UiPrim_TriStrip = 0x004,
