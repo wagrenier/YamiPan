@@ -38,6 +38,7 @@
 #include "game/stagescene.h"
 #include "game/subsceneobject.h"
 #include "game/stagecar.h"
+#include "game/stageelevator.h"
 #include "game/sysdata.h"
 
 ScriptRunner *gRunningScript;           /* sbss 0x31ae18 (gp-0x7a58) */
@@ -5982,9 +5983,9 @@ static const int *nativeSpawnEffectOnObject(ScriptRunner *self, int *acc, const 
     return next;
 }
 
-// The sixth run's natives, by use on the disc (sssall.py). A car, the elevator
-// and the number lock have no host class yet (createMapObject makes plain
-// objects of them): what these call of them are stubs.
+// The sixth run's natives, by use on the disc (sssall.py). The number lock
+// has no host class yet (createMapObject makes a plain object of it): what
+// these call of it are stubs.
 
 // 0x3b swingAtBite().
 // FS2 0x001cbe90
@@ -6523,11 +6524,11 @@ static const char kElevatorB3[]   = "ElevatorB3";   /* data 0x304af8 */
 static const char kElevatorBxB3[] = "ElevatorBxB3"; /* data 0x304b08 */
 static const char kElevatorBxB1[] = "ElevatorBxB1"; /* data 0x304b18 */
 
-// callcheck: getZs9901, isOnElevator, isSpecialAllowed, isSpecialAllowed, elevatorIsAtB1, elevatorIsAtB3, isSpecialAllowed, isSpecialAllowed
+// callcheck: getZs9901, isOnElevator, isSpecialAllowed, isSpecialAllowed, isAtB1, isAtB3, isSpecialAllowed, isSpecialAllowed
 
 static ElevatorAction elevatorActionOf(StageCharacter *who)
 {
-    StageObject *elevator = gStageScene->getZs9901();
+    StageElevator *elevator = gStageScene->getZs9901();
     if (!who->isOnElevator()) {
         if (who->isSpecialAllowed(kElevatorB1))
             return ElevatorAction_CallB1;
@@ -6535,16 +6536,16 @@ static ElevatorAction elevatorActionOf(StageCharacter *who)
             return ElevatorAction_CallB3;
         return ElevatorAction_None;
     }
-    if (elevatorIsAtB1(elevator))
+    if (elevator->isAtB1())
         return who->isSpecialAllowed(kElevatorBxB3) ? ElevatorAction_RideToB3 : ElevatorAction_None;
-    if (elevatorIsAtB3(elevator) && who->isSpecialAllowed(kElevatorBxB1))
+    if (elevator->isAtB3() && who->isSpecialAllowed(kElevatorBxB1))
         return ElevatorAction_RideToB1;
     return ElevatorAction_None;
 }
 
 // 0x1ca elevatorAction(): of the script's own runner, not its target.
 // FS2 0x001aee20
-// callcheck: getScriptCharacter, getZs9901, isOnElevator, isSpecialAllowed, isSpecialAllowed, elevatorIsAtB1, elevatorIsAtB3, isSpecialAllowed (elevatorActionOf)
+// callcheck: getScriptCharacter, getZs9901, isOnElevator, isSpecialAllowed, isSpecialAllowed, isAtB1, isAtB3, isSpecialAllowed (elevatorActionOf)
 
 static const int *nativeElevatorAction(ScriptRunner *self, int *acc, const int *code)
 {
@@ -6556,7 +6557,7 @@ static const int *nativeElevatorAction(ScriptRunner *self, int *acc, const int *
 
 // 0x1cb useElevator(): starts that special.
 // FS2 0x001aeb40
-// callcheck: getScriptCharacter, getZs9901, isOnElevator, isSpecialAllowed, isSpecialAllowed, elevatorIsAtB1, elevatorIsAtB3, isSpecialAllowed, scriptUseSpecial (elevatorActionOf)
+// callcheck: getScriptCharacter, getZs9901, isOnElevator, isSpecialAllowed, isSpecialAllowed, isAtB1, isAtB3, isSpecialAllowed, scriptUseSpecial (elevatorActionOf)
 
 static const int *nativeUseElevator(ScriptRunner *self, int *acc, const int *code)
 {
@@ -6574,40 +6575,39 @@ static const int *nativeUseElevator(ScriptRunner *self, int *acc, const int *cod
     return code;
 }
 
-// 0x1cc elevatorMove(floor, kind): floor 1 or 3, kind 4 or 5. The ROM leaves
+// 0x1cc elevatorMove(floor, kind): floor 1 or 3, kind 4 shut or 5 open. The ROM leaves
 // its registers as they were for any other value; PC: false.
 // FS2 0x001ae9f0
-// callcheck: getZs9901, FUN_00294f90
+// callcheck: getZs9901, placeAt
 
 static const int *nativeElevatorMove(ScriptRunner *self, int *, const int *code)
 {
-    constexpr int kKindSecond = 5;
+    constexpr int kDoorsOpen = 5;
     const int *args = self->popped(2);
-    elevatorMove(gStageScene->getZs9901(), args[0] == ElevatorFloor_B3, args[1] == kKindSecond);
+    gStageScene->getZs9901()->placeAt(args[0] == ElevatorFloor_B3, args[1] == kDoorsOpen);
     return code;
 }
 
 // 0x1cd elevatorRelease().
 // FS2 0x001ae9a0
-// callcheck: getZs9901, FUN_00294280
+// callcheck: getZs9901, press
 
 static const int *nativeElevatorRelease(ScriptRunner *, int *, const int *code)
 {
-    constexpr int kFloorRelease = 5;
-    elevatorCall(gStageScene->getZs9901(), kFloorRelease);
+    gStageScene->getZs9901()->press(ElevatorButton_Release);
     return code;
 }
 
 // 0x1ce elevatorFloor().
 // FS2 0x001ae900
-// callcheck: getZs9901, FUN_00294c70, FUN_00294c30
+// callcheck: getZs9901, isAtB1, isAtB3
 
 static const int *nativeElevatorFloor(ScriptRunner *, int *acc, const int *code)
 {
-    StageObject *elevator = gStageScene->getZs9901();
-    if (elevatorIsAtB1(elevator))
+    StageElevator *elevator = gStageScene->getZs9901();
+    if (elevator->isAtB1())
         *acc = ElevatorFloor_B1;
-    else if (elevatorIsAtB3(elevator))
+    else if (elevator->isAtB3())
         *acc = ElevatorFloor_B3;
     else
         *acc = ElevatorFloor_None;
@@ -6616,18 +6616,18 @@ static const int *nativeElevatorFloor(ScriptRunner *, int *acc, const int *code)
 
 // 0x1cf elevatorPhase(): 7, 6, 5, 4 for the pose's phases 2, 4, 1, 3; 0 none.
 // FS2 0x001ae820
-// callcheck: getZs9901, FUN_00294b00, FUN_00294ad0, FUN_00294b60, FUN_00294b30
+// callcheck: getZs9901, isOpening, isClosing, isOpen, isClosed
 
 static const int *nativeElevatorPhase(ScriptRunner *, int *acc, const int *code)
 {
-    StageObject *elevator = gStageScene->getZs9901();
-    if (elevatorIsPhase2(elevator))
+    StageElevator *elevator = gStageScene->getZs9901();
+    if (elevator->isOpening())
         *acc = 7;
-    else if (elevatorIsPhase4(elevator))
+    else if (elevator->isClosing())
         *acc = 6;
-    else if (elevatorIsPhase1(elevator))
+    else if (elevator->isOpen())
         *acc = 5;
-    else if (elevatorIsPhase3(elevator))
+    else if (elevator->isClosed())
         *acc = 4;
     else
         *acc = 0;
@@ -6641,7 +6641,7 @@ static const int *nativeElevatorPhase(ScriptRunner *, int *acc, const int *code)
 static const int *nativeElevatorFloorFree(ScriptRunner *self, int *acc, const int *code)
 {
     const u_int floor = (u_int)self->popped(1)[0];
-    *acc = (elevatorCalledFloors(gStageScene->getZs9901()) & (1u << (floor & 0x1f))) == 0;
+    *acc = (gStageScene->getZs9901()->getCalledButtons() & (1u << (floor & 0x1f))) == 0;
     return code;
 }
 

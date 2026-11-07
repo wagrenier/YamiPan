@@ -7777,38 +7777,43 @@
 /* 00293440 00000398 */ SePlayer::update(){}  // game
 
 // *****************************************************************************
-// FILE -- (unassigned)
+// FILE -- game/playermotion.cpp
 // *****************************************************************************
 
 /* 002937e0 000000e4 */ motionFileLastPosition(){}  // game
 /* 002938d0 000000d4 */ motionFileHands(){}  // game
-/* 002939b0 00000008 */ FUN_002939b0(){}
-/* 002939c0 00000004 */ FUN_002939c0(){}
-/* 002939d0 00000004 */ FUN_002939d0(){}
-/* 002939e0 00000274 */ FUN_002939e0(){}
-/* 00293c60 00000370 */ elevatorSwitchPlace(){}  // game
-/* 00293fd0 0000016c */ elevatorDoorPlace(){}  // game
-/* 00294140 00000140 */ elevatorCanCall(){}  // game
-/* 00294280 000002dc */ elevatorCall(){}  // game
-/* 00294560 00000564 */ FUN_00294560(){}
-/* 00294ad0 00000028 */ elevatorIsPhase4(){}  // game
-/* 00294b00 00000028 */ elevatorIsPhase2(){}  // game
-/* 00294b30 00000028 */ elevatorIsPhase3(){}  // game
-/* 00294b60 00000028 */ elevatorIsPhase1(){}  // game
-/* 00294b90 00000044 */ elevatorOpenAtB3(){}  // game
-/* 00294be0 00000044 */ elevatorOpenAtB1(){}  // game
-/* 00294c30 00000030 */ elevatorIsAtB3(){}  // game
-/* 00294c70 00000030 */ elevatorIsAtB1(){}  // game
-/* 00294cb0 000002d8 */ FUN_00294cb0(){}
-/* 00294f90 00000078 */ elevatorMove(){}  // game
-/* 00295010 00000298 */ FUN_00295010(){}
-/* 002952b0 000000b0 */ FUN_002952b0(){}
-/* 00295360 000000b8 */ FUN_00295360(){}
-/* 00295420 00000008 */ FUN_00295420(){}
-/* 00295430 00000008 */ FUN_00295430(){}
-/* 00295440 00000008 */ FUN_00295440(){}
-/* 00295450 00000008 */ FUN_00295450(){}
-/* 00295460 00000008 */ FUN_00295460(){}
+
+// *****************************************************************************
+// FILE -- game/stageelevator.cpp
+// *****************************************************************************
+
+/* 002939b0 00000008 */ StageElevator::getKind(){}  // game
+/* 002939c0 00000004 */ StageElevator::sideHook1(){}  // game
+/* 002939d0 00000004 */ StageElevator::sideHook0(){}  // game
+/* 002939e0 00000274 */ StageElevator::getCallPlace(){}  // game
+/* 00293c60 00000370 */ StageElevator::getSwitchPlace(){}  // game
+/* 00293fd0 0000016c */ StageElevator::getDoorPlace(){}  // game
+/* 00294140 00000140 */ StageElevator::canCall(){}  // game
+/* 00294280 000002dc */ StageElevator::press(){}  // game
+/* 00294560 00000564 */ StageElevator::sideHook3(){}  // game
+/* 00294ad0 00000028 */ StageElevator::isClosing(){}  // game
+/* 00294b00 00000028 */ StageElevator::isOpening(){}  // game
+/* 00294b30 00000028 */ StageElevator::isClosed(){}  // game
+/* 00294b60 00000028 */ StageElevator::isOpen(){}  // game
+/* 00294b90 00000044 */ StageElevator::isOpenAtB3(){}  // game
+/* 00294be0 00000044 */ StageElevator::isOpenAtB1(){}  // game
+/* 00294c30 00000030 */ StageElevator::isAtB3(){}  // game
+/* 00294c70 00000030 */ StageElevator::isAtB1(){}  // game
+/* 00294cb0 000002d8 */ StageElevator::collisionHook0(){}  // game
+/* 00294f90 00000078 */ StageElevator::placeAt(){}  // game
+/* 00295010 00000298 */ StageElevator::setMotionList(){}  // game
+/* 002952b0 000000b0 */ StageElevator::~StageElevator(){}  // game
+/* 00295360 000000b8 */ StageElevator::StageElevator(){}  // game
+/* 00295420 00000008 */ StageElevator::sideHook3_thunk(){}  // game
+/* 00295430 00000008 */ StageElevator::sideHook1_thunk(){}  // game
+/* 00295440 00000008 */ StageElevator::sideHook0_thunk(){}  // game
+/* 00295450 00000008 */ StageElevator::~StageElevator_thunk(){}  // game
+/* 00295460 00000008 */ StageElevator::collisionHook0_thunk(){}  // game
 
 // *****************************************************************************
 // FILE -- game/navimenu.cpp

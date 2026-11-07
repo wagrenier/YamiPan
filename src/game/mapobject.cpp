@@ -7,7 +7,7 @@
  *  the set-up that puts the model on the stage.
  *
  *  The doors _dp / _ds are game/stagedoor.cpp. Not written yet: the rest of
- *  createMapObject's special classes (0x295360, 0x2a7340, 0x2b2a60:
+ *  createMapObject's special classes (0x2a7340, 0x2b2a60:
  *  they come out as plain objects). The string "Root" names the map's one big
  *  model.
  * ======================================================================== */
@@ -27,6 +27,7 @@
 #include "game/stageloop.h"
 #include "game/stageobjlist.h"
 #include "game/stagecar.h"
+#include "game/stageelevator.h"
 
 namespace {
 
@@ -35,6 +36,7 @@ constexpr float kFrameSeconds = 0.033333335f;   // 1/30 s: a motion frame
 constexpr int kMapCellSize = 0x96;          // StageCollision's grid on a map
 constexpr short kRootPartLimit = 100;       // the Root's groups from here on are the doors'
 constexpr int kPartBitWords = 8;
+constexpr char kElevatorModel[] = "oZS99_01";   // data 0x3030f8
 constexpr int kMapObjectMeshes = 1;         // createMapObject's plain object
 constexpr char kPartName[] = "BKW%02d";     // data 0x303150
 constexpr char kGlassEffect[] = "glass%d_0"; // data 0x303168
@@ -260,15 +262,16 @@ void StageMapObject::sideHook2()
 }
 
 // The object for a map model's node, by its name: _dp_nn and _ds_nn are doors,
-// and the car's models the car, and every other name gets the plain object for now (file header).
+// the car's models the car, oZS99_01 the elevator, and every other name gets the plain object for now (file header).
 // FS2 0x001766c0
-// callcheck: strstr, strstr, strcmp, strcmp, heapAllocAligned, FUN_0028e5a0, strcmp, heapAllocAligned, FUN_00295360, strcmp, strcmp, heapAllocAligned, FUN_002a7340, operator_new, FUN_002a89b0, strncmp, heapAllocAligned, FUN_002b2a60, operator_new, FUN_002b2c80, heapAllocAligned, FUN_001765e0, sscanf, heapAllocAligned, FUN_00174940, sscanf, heapAllocAligned, FUN_00174940, heapAllocAligned, FUN_001765e0 (the special classes: file header)
+// callcheck: strstr, strstr, strcmp, strcmp, heapAllocAligned, FUN_0028e5a0, strcmp, heapAllocAligned, StageElevator, strcmp, strcmp, heapAllocAligned, FUN_002a7340, operator_new, FUN_002a89b0, strncmp, heapAllocAligned, FUN_002b2a60, operator_new, FUN_002b2c80, heapAllocAligned, FUN_001765e0, sscanf, heapAllocAligned, FUN_00174940, sscanf, heapAllocAligned, FUN_00174940, heapAllocAligned, FUN_001765e0 (the special classes: file header)
 
 StageObject *createMapObject(const char *name, void *collision)
 {
-    (void)collision;
     if (isCarModelName(name))
         return new StageCar();
+    if (strcmp(name, kElevatorModel) == 0)
+        return new StageElevator(collision);
     int number = 0;
     if (name[0] == kMapModelPrefix) {
         const char *door = strstr(name, kDoorPartR);

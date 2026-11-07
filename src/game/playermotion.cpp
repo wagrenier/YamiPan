@@ -12,6 +12,7 @@
 #include "game/objectproperty.h"
 #include "game/stagedoor.h"
 #include "game/stagecar.h"
+#include "game/stageelevator.h"
 
 #include "game/boxgrid.h"
 
@@ -1167,7 +1168,7 @@ void MotionGadgetSpecial::askOwned(int index)
 }
 
 // FS2 0x00280230
-// callcheck: isPlayer, FUN_001fe6b0, isRunning, isPlayer, FUN_001fe6b0, isRunning, isPlayer, FUN_001fe6b0, isRunning, getZs9901, FUN_00294140
+// callcheck: isPlayer, FUN_001fe6b0, isRunning, isPlayer, FUN_001fe6b0, isRunning, isPlayer, FUN_001fe6b0, isRunning, getZs9901, canCall
 
 void MotionGadgetSpecial::onUpdate()
 {
@@ -1185,8 +1186,8 @@ void MotionGadgetSpecial::onUpdate()
         askOwned(SceneOwned_SigLamp);
         break;
     case MotionGadget_Elevator:
-        if (StageObject *elevator = gStageScene->getZs9901())
-            allowed = elevatorCanCall(elevator, character->m_xform.position, character->m_xform.rotation, arg);
+        if (StageElevator *elevator = gStageScene->getZs9901())
+            allowed = elevator->canCall(character->m_xform.position, character->m_xform.rotation, arg);
         break;
     default:
         break;
@@ -1203,7 +1204,7 @@ void MotionGadgetSpecial::applyOwned(int index, int motionId)
 }
 
 // FS2 0x00280090
-// callcheck: request, request, request, request, getZs9901, FUN_00294280
+// callcheck: request, request, request, request, getZs9901, press
 
 void MotionGadgetSpecial::onApply()
 {
@@ -1227,7 +1228,7 @@ void MotionGadgetSpecial::onApply()
         applyOwned(SceneOwned_SigLamp, kMotionSigLamp);
         break;
     case MotionGadget_Elevator:
-        elevatorCall(gStageScene->getZs9901(), arg);
+        gStageScene->getZs9901()->press(arg);
         break;
     default:
         break;
@@ -8396,7 +8397,7 @@ BtAttackLink::BtAttackLink(StageCharacter *owner, PlayerMotion *motion_)
 }
 
 // FS2 0x0027adf0
-// callcheck: getKind, elevatorIsAtB1, elevatorIsAtB3, nodeAt, nodeAt (m_conditions[]; PC: the two read the pose of a floor object of kind 4, a class the host does not make, so Lock always stops)
+// callcheck: getKind, isAtB1, isAtB3, nodeAt, nodeAt (m_conditions[]; PC: the two read the pose of a floor object of kind 4, a class the host does not make, so Lock always stops)
 
 void BtAttackLink::onStart()
 {
@@ -9711,9 +9712,8 @@ bool StageCharacter::scriptAskNumLock(int which)
 
 bool StageCharacter::isOnElevator()
 {
-    constexpr int kKindElevator = 4;
     StageObject *floor = m_ground->floorObject;
-    return floor != nullptr && floor->getKind() == kKindElevator;
+    return floor != nullptr && floor->getKind() == StageObject_Elevator;
 }
 
 // FS2 0x0020d1c0

@@ -31385,83 +31385,167 @@
   "was": "FUN_002938d0",
   "why": "bits for tracks named ?_finger.. with keys, r 1, l 2"
  },
+ "002939b0": {
+  "name": "StageElevator::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_002939b0",
+  "why": "answers 4; slot 108 of 0x31834c, isOnElevator compares kind 4"
+ },
+ "002939c0": {
+  "name": "StageElevator::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_002939c0",
+  "why": "empty, slot 9 of 0x31855c"
+ },
+ "002939d0": {
+  "name": "StageElevator::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_002939d0",
+  "why": "empty, slot 8 of 0x31855c"
+ },
+ "002939e0": {
+  "name": "StageElevator::getCallPlace",
+  "tag": "game-inferred",
+  "was": "FUN_002939e0",
+  "why": "panel bone bn_b1_i / bn_b3_i / bn_bx_ib1 and its facing, canCall's test"
+ },
  "00293c60": {
-  "name": "elevatorSwitchPlace",
+  "name": "StageElevator::getSwitchPlace",
   "tag": "game-inferred",
   "was": "FUN_00293c60",
-  "why": "place and direction of switch 1..4"
+  "why": "was elevatorSwitchPlace; the route's standing place for a button"
  },
  "00293fd0": {
-  "name": "elevatorDoorPlace",
+  "name": "StageElevator::getDoorPlace",
   "tag": "game-inferred",
   "was": "FUN_00293fd0",
-  "why": "the door point of a floor"
+  "why": "was elevatorDoorPlace"
  },
  "00294140": {
-  "name": "elevatorCanCall",
+  "name": "StageElevator::canCall",
   "tag": "game-inferred",
   "was": "FUN_00294140",
-  "why": "gadget motion's test: 150 from the panel, facing it"
+  "why": "was elevatorCanCall: reach 150, pi/4, cone 0.577; release: doors open"
  },
  "00294280": {
-  "name": "elevatorCall",
+  "name": "StageElevator::press",
   "tag": "game-inferred",
   "was": "FUN_00294280",
-  "why": "ELV_BUTTON, floors 1..4, 5 releases"
+  "why": "was elevatorCall: pose call*, ELV_BUTTON, lamp bits +0x2fc"
+ },
+ "00294560": {
+  "name": "StageElevator::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_00294560",
+  "why": "slot 11 of 0x31855c: state changes to sounds, ENV_SL61/62, ride rumble"
  },
  "00294ad0": {
-  "name": "elevatorIsPhase4",
+  "name": "StageElevator::isClosing",
   "tag": "game-inferred",
   "was": "FUN_00294ad0",
-  "why": "pose +0x408 low nibble 4"
+  "why": "was elevatorIsPhase4: ElevatorStep_Closing"
  },
  "00294b00": {
-  "name": "elevatorIsPhase2",
+  "name": "StageElevator::isOpening",
   "tag": "game-inferred",
   "was": "FUN_00294b00",
-  "why": "pose +0x408 low nibble 2"
+  "why": "was elevatorIsPhase2: ElevatorStep_Opening"
  },
  "00294b30": {
-  "name": "elevatorIsPhase3",
+  "name": "StageElevator::isClosed",
   "tag": "game-inferred",
   "was": "FUN_00294b30",
-  "why": "pose +0x408 low nibble 3"
+  "why": "was elevatorIsPhase3: ElevatorStep_Closed"
  },
  "00294b60": {
-  "name": "elevatorIsPhase1",
+  "name": "StageElevator::isOpen",
   "tag": "game-inferred",
   "was": "FUN_00294b60",
-  "why": "pose +0x408 low nibble 1"
+  "why": "was elevatorIsPhase1: ElevatorStep_Open"
  },
  "00294b90": {
-  "name": "elevatorOpenAtB3",
+  "name": "StageElevator::isOpenAtB3",
   "tag": "game-inferred",
   "was": "FUN_00294b90",
-  "why": "route step: floor 1 is open"
+  "why": "was elevatorOpenAtB3"
  },
  "00294be0": {
-  "name": "elevatorOpenAtB1",
+  "name": "StageElevator::isOpenAtB1",
   "tag": "game-inferred",
   "was": "FUN_00294be0",
-  "why": "route step: floor 0 is open"
+  "why": "was elevatorOpenAtB1"
  },
  "00294c30": {
-  "name": "elevatorIsAtB3",
+  "name": "StageElevator::isAtB3",
   "tag": "game-inferred",
   "was": "FUN_00294c30",
-  "why": "bit 0x10 clear, nibble not 5; native 0x1ce answers 3 for it, a move to 3 clears the bit (corrects batch 146)"
+  "why": "was elevatorIsAtB3"
  },
  "00294c70": {
-  "name": "elevatorIsAtB1",
+  "name": "StageElevator::isAtB1",
   "tag": "game-inferred",
   "was": "FUN_00294c70",
-  "why": "bit 0x10 set, nibble not 6; native 0x1ce answers 1 for it (corrects batch 146)"
+  "why": "was elevatorIsAtB1"
+ },
+ "00294cb0": {
+  "name": "StageElevator::collisionHook0",
+  "tag": "game-inferred",
+  "was": "FUN_00294cb0",
+  "why": "slot 12 of 0x31855c: closing door meets a character's wall sphere, reopenDoors, ELV_DR_REOP, ELEVATOR3"
  },
  "00294f90": {
-  "name": "elevatorMove",
+  "name": "StageElevator::placeAt",
   "tag": "game-inferred",
   "was": "FUN_00294f90",
-  "why": "picks the pose's request 2, 4, 8, 10 from two flags and stops the sound"
+  "why": "was elevatorMove: setScene 2 / 4 / 8 / 10, atB3 and doors open"
+ },
+ "00295010": {
+  "name": "StageElevator::setMotionList",
+  "tag": "game-inferred",
+  "was": "FUN_00295010",
+  "why": "slot 7 of 0x31855c: five meshes oZS99_01_bx.., eighteen motions, setScene 4"
+ },
+ "002952b0": {
+  "name": "StageElevator::~StageElevator",
+  "tag": "game-inferred",
+  "was": "FUN_002952b0",
+  "why": "dtor: stopSound +0x2f0, removes rumble ELEVATOR2 if a rider"
+ },
+ "00295360": {
+  "name": "StageElevator::StageElevator",
+  "tag": "game-inferred",
+  "was": "FUN_00295360",
+  "why": "createMapObject's oZS99_01; StageMapObject(5), vtables 0x318310.., collision file at +0x240, w 1 on ten kept vectors"
+ },
+ "00295420": {
+  "name": "StageElevator::sideHook3_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00295420",
+  "why": "j 0x294560, a0 -0x18"
+ },
+ "00295430": {
+  "name": "StageElevator::sideHook1_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00295430",
+  "why": "j 0x2939c0, a0 -0x18"
+ },
+ "00295440": {
+  "name": "StageElevator::sideHook0_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00295440",
+  "why": "j 0x2939d0, a0 -0x18"
+ },
+ "00295450": {
+  "name": "StageElevator::~StageElevator_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00295450",
+  "why": "j 0x2952b0, a0 -0x40"
+ },
+ "00295460": {
+  "name": "StageElevator::collisionHook0_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_00295460",
+  "why": "j 0x294cb0, a0 -0x200"
  },
  "00295470": {
   "name": "runNaviFile",
