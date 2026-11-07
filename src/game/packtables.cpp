@@ -373,7 +373,7 @@ void PackTables::clear()
 // FS2 0x002bcf10: the ROM's one function of 0x3df0 bytes, cut here by sheet.
 // callcheck: readSheet, clear (the sheets, in the helpers below; the same for all that follows)
 // callcheck: FUN_001a5a60, FUN_002c0d00, FUN_002c0d30, FUN_002c0d40, FUN_002c0d50, FUN_002c0d80, FUN_002c0d90, FUN_002c0db0, FUN_002c0e60, FUN_002c1430, FUN_002c1670, FUN_002c16d0 (the std::map iterators and find-or-insert, a StringList's base ctor, string::c_str)
-// callcheck: __truncdfsf2, at, atof, atoi, doorNumber, doorText, init, memset, operator_delete[], operator_new[], setLandSound, setPickSound, split, sprintf, sscanf, strcmp, strlen, strncpy, string_cstr, ~string, ~StringList, setKeyKind, setStartState, setWindowState, setHp, setSeIndex (the helpers below; StageObjRecord::init is plain stores there)
+// callcheck: __truncdfsf2, at, atof, atoi, doorNumber, doorText, init, memset, operator_delete[], operator_new[], setLandSound, setPickSound, split, sprintf, sscanf, strcmp, strlen, strncpy, string_cstr, ~string, ~StringList, setKeyKind, setStartState, setWindowState, setHp, setSeIndex (the helpers below; init is StageObjRecord::init, game/playermotion.cpp)
 
 void PackTables::parse(PackFile *pack)
 {
@@ -401,7 +401,7 @@ void PackTables::parseCharacters(PackFile *pack)
                 continue;
 
             StageObjRecord *rec = &gStageObjRecords[set][index];
-            rec->startMotion = 1;
+            rec->init();
             strncpy(rec->name, row.text(kColLabel), kNameSize);
             rec->kind = row.number(kColCtype);
             rec->seType = row.number(kColSeType);

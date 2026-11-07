@@ -8507,6 +8507,51 @@ StageObject *StageScene::getActor() const
     return controlled != nullptr ? controlled : player;
 }
 
+// FS2 0x00214a70
+
+void StageObjRecord::init()
+{
+    startMotion = kStageObjRecordStartMotion;
+}
+
+// The ROM walks the two lists in two copies of one loop; the second answers
+// the mission's characters by two inline currentMission calls.
+// FS2 0x00214a80
+// callcheck: getEnemyCandidates, isActive, isEnemyOf, isUp, currentMission, currentMission, isActive, isAlly, isUp, canSeeThisFrame, canSeeThisFrame (both inline here: m_active, getLifeState up; the +0x224 slot is distanceTo)
+
+StageObject *StageCharacter::findNearestFoe(bool foes, bool sight)
+{
+    StageObject **it;
+    StageObject **end;
+    if (foes) {
+        getEnemyCandidates(&it, &end);
+    } else {
+        StageMission *mission = gStageScene->currentMission();
+        it = mission->characters;
+        end = mission->characters + mission->characterCount;
+    }
+
+    float nearest = FLT_MAX;
+    StageObject *found = nullptr;
+    for (; it != end; it++) {
+        StageObject *object = *it;
+        const bool wanted = object->m_active != 0
+                         && (foes ? isEnemyOf(object) : object != this && isAlly(object));
+        if (!wanted || static_cast<StageCharacter *>(object)->getLifeState() != LifeState_Up)
+            continue;
+        float distance = FLT_MAX;
+        if (!sight)
+            distance = distanceTo(object);
+        else if (!canSeeThisFrame(static_cast<StageCharacter *>(object), &distance))
+            continue;
+        if (distance < nearest) {
+            nearest = distance;
+            found = object;
+        }
+    }
+    return found;
+}
+
 // FS2 0x00214d40
 // callcheck: getStageSelect, getSides
 
@@ -9705,7 +9750,7 @@ void StageCharacter::scriptHurt(StageObject *fromObject, int amount, int reactio
 }
 
 // FS2 0x00210810
-// callcheck: currentMission, currentMission, FUN_001b9a60, isAlly, FUN_002107e0, distanceTo
+// callcheck: currentMission, currentMission, isActive, isAlly, isUp, distanceTo
 
 bool StageCharacter::scriptHasAllyWithin(float range)
 {
@@ -10095,7 +10140,7 @@ constexpr int kLifeUp = 2;     // getLifeState
 
 // The enemies the character's side lists, or everyone with a foe of its own.
 // FS2 0x00210720
-// callcheck: getEnemyCandidates, FUN_001b9a60, isEnemyOf, FUN_002107e0, getBiteTarget
+// callcheck: getEnemyCandidates, isActive, isEnemyOf, isUp, getBiteTarget
 
 bool StageCharacter::hasBiter()
 {

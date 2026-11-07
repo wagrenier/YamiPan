@@ -18743,6 +18743,12 @@
   "was": "FUN_001b9680",
   "why": "native 0x145: finds or makes the object called name in group 8, binds the motion, turns it on"
  },
+ "001b9a60": {
+  "name": "StageObject::isActive",
+  "tag": "game-inferred",
+  "was": "FUN_001b9a60",
+  "why": "out-of-line inline getter: answers the byte at +0x34 (m_active) != 0; called on each candidate by findNearestFoe, scriptHasAllyWithin, hasBiter"
+ },
  "001b9ac0": {
   "name": "nativeDemoPosition",
   "tag": "game-inferred",
@@ -23092,6 +23098,12 @@
   "tag": "game-inferred",
   "was": "FUN_00210720",
   "why": "walks the enemies of its side: a living one whose bite target is this; hasFollower was a guess"
+ },
+ "002107e0": {
+  "name": "StageCharacter::isUp",
+  "tag": "game-inferred",
+  "was": "FUN_002107e0",
+  "why": "out-of-line inline: getLifeState() == 2 (LifeState_Up); called by findNearestFoe, scriptHasAllyWithin, hasBiter"
  },
  "00210810": {
   "name": "StageCharacter::scriptHasAllyWithin",
