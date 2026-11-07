@@ -2,6 +2,7 @@
 // Functions below are stubs until reconstructed; see tools/reverse/stage.py.
 #include "rena/rena_draw.h"
 #include "rena/rena_2d_texture_tim2.h"
+#include "game/kunitoris.h"
 
 #include <string.h>
 
@@ -33,13 +34,6 @@
 // stub of FS2 address unknown (1 candidates)
 // stub of FS2 0x001d3a40
 // stub of FS2 0x00185af0
-
-// stub of FS2 0x002c42c0
-int runExtraMode(int arg)
-{
-    YAMIPAN_STUB("runExtraMode", 0x002c42c0);
-    return {};
-}
 
 // stub of FS2 0x002acff0
 
@@ -207,3 +201,9 @@ void elevatorSwitchPlace(StageObject *elevator, float *place, float *direction, 
 }
 
 
+
+// stub of FS2 address unknown (0 candidates)
+KunitorisGame::~KunitorisGame()
+{
+    YAMIPAN_STUB("KunitorisGame::~KunitorisGame", 0x00000000);
+}
