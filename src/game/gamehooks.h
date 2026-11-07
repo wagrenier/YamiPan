@@ -2646,7 +2646,8 @@ public:
     // Not the partner, the sheet's kind not 0xb, slot +0x278 (the brain's
     // state, 1 without one) none of 2..5, 7: the player may become it.
     bool canTakeOver();                                                  // FS2 0x00212020
-    // Kind 0xb in a walking motion (the list is unread past its first half).
+    // Sheet kind 0xb, resting or on the way (isHoldableMotion, isMovingMotion)
+    // or in sp_idle / sp_spawn_idle: CharacterInput lets it follow.
     bool isCompanionWalking();                                           // FS2 0x002119d0
     // The motion rate, 1 outside a timed change.
     float getMotionRate();                                               // FS2 0x0020d400
