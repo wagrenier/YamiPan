@@ -277,9 +277,21 @@ rxsnd's `rxSndCheckBgCall` (same message, "rxsndut") on its own flags. The layer
   this is not a stall. The audio milestone replaces it. Memory sources still reach rxsndstrmem's stubs.
 - **Stream source** 0x1656e8..0x1660e0 (`rxSndStrStream*`, 64 x 0xc at 0x5226e0): type 0 an rxFile
   ring (`rxSysStreamOpenRing`), type 1 a memory stream.
-- **Memory stream** 0x1660e0..0x166b50 (`rxSndStrMem*`, 64 x 0x20 at 0x523a00): the rxFile ring API
-  over memory, sorted branch markers and tags in node pools 0x524200 / 0x525a04; IOP bodies are read
-  through `rxSndIopRead` into 0x522a00 at most 0x1000 at a time.
+- **Memory stream** 0x1660e0..0x166b50 (src/rx/rxsndstrmem.c, written 2026-11-06; `rxSndStrMem*`, 64 x
+  0x20 at 0x523a00; EE layout open +4, end +5, iop +6, addr +8, pos +0xc, size +0x10, tags +0x14, markers
+  +0x18, arg +0x1c, +0 untouched): the rxFile ring API over memory. 256 markers at 0x524200 (free 0x525a00),
+  256 tags at 0x525a04 (free 0x526a04), rxFile's own records, sorted by pos. IOP bodies are read through
+  `rxSndIopRead` into 0x522a00, at most 0x1000 a read, one buffer for all streams. Ids start at 1: stream
+  0 is never given out. A read stops at the next marker past the position, disabled or not; Consume then
+  runs the first active marker exactly at the new position that stops (max 0: every pass, else the first
+  max passes; no callback or callback answering 1: jump, -1 or past the end to the end; another answer:
+  next marker, position re-read). **ROM quirk kept:** Seek never clears the end flag, so an ended stream
+  stays ended and Consume does nothing. **Reached only from** `SePlayer::openStreamBank` (stage SE tables
+  and the menu pack, banks with isStream), always with toIop true, through SoundStream::playVolume /
+  playPan. Set*Enable 0x166828 / 0x166a10 have no caller in the ROM. **Proved offline:** strmemcmp.py,
+  ROM against host on random op scripts, 22,805 ops, 498 callbacks, 0 differences. **Not seen in a
+  run:** temporary logs, removed: no stream bank opened and no memory stream opened in 60 to 70 s of
+  YAMIPAN_TELEPORT=d0101, 5 or d0401.
 Ghidra merged 33 of its small functions into their predecessors (getters after a `jr ra`, a tail `j`
 then a new prologue); created and named 2026-11-02 (batch 009). Since then `rxalign.py` pairs
 every rx range one to one (0 gaps, 0 starts lacking).

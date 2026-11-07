@@ -1,7 +1,7 @@
 /* ==========================================================================
  *  rx/rxsndstrmem.h
  *
- *  FS2's rx memory stream sources (rx/rxsndstrmem.c, not written yet; not
+ *  FS2's rx memory stream sources (rx/rxsndstrmem.c; not
  *  in RoR): the type-1 sources of rxsndstrstream, reading from EE or IOP
  *  memory: rxFile's ring calls, on a memory stream.
  * ======================================================================== */
@@ -28,8 +28,11 @@ int  rxSndStrMemGetReadable(int id);                                    /* FS2 0
 void rxSndStrMemConsume(int id, int size);                              /* FS2 0x00166418 */
 const u_char *rxSndStrMemGetData(int id);                               /* FS2 0x001665b8 */
 int  rxSndStrMemIsEnd(int id);                                          /* FS2 0x00166650 */
-void rxSndStrMemSetMarkers(int id, const RxFileMarkerDef *defs, int count, void *arg); /* FS2 0x00166688 */
-void rxSndStrMemSetTags(int id, const RxFileTagDef *defs, int count);   /* FS2 0x00166890 */
+/* These two replace what the stream had. How many were taken: the pools hold 256 each. */
+int  rxSndStrMemSetMarkers(int id, const RxFileMarkerDef *defs, int count, void *arg); /* FS2 0x00166688 */
+void rxSndStrMemSetMarkerEnable(int id, int markerId, int active);      /* FS2 0x00166828 */
+int  rxSndStrMemSetTags(int id, const RxFileTagDef *defs, int count);   /* FS2 0x00166890 */
+void rxSndStrMemSetTagEnable(int id, int tagId, int active);            /* FS2 0x00166a10 */
 int  rxSndStrMemGetTags(int id, RxFileTagHit *out, int max, int size);  /* FS2 0x00166a78 */
 int  rxSndStrMemGetSize(int id);                                        /* FS2 0x00166b18 */
 

@@ -210,6 +210,20 @@ class Ee:
             self.step(pc + 4)
         return tgt if taken else pc + 8
 
+    def unaligned64(self, op, a):
+        """A word of a struct copy that may straddle eight bytes (little-endian)."""
+        addr = self.ea(a[1])
+        at, low = addr & ~7, (addr & 7) * 8
+        mem, reg = self.rd(at, 8), self.g(a[0]) & M64
+        if op == 'ldl':
+            self.s(a[0], s64((mem << (56 - low)) | (reg & ((1 << (56 - low)) - 1))))
+        elif op == 'ldr':
+            self.s(a[0], s64((mem >> low) | (reg & ~(M64 >> low))))
+        elif op == 'sdl':
+            self.wr(at, 8, (mem & ~(M64 >> (56 - low)) & M64) | (reg >> (56 - low)))
+        else:
+            self.wr(at, 8, (mem & ((1 << low) - 1)) | ((reg << low) & M64))
+
     def exec1(self, op, a, pc):
         g, s = self.g, self.s
         imm = lambda x: int(x, 0)
@@ -271,6 +285,7 @@ class Ee:
         elif op == 'sh': self.wr(self.ea(a[1]), 2, g(a[0]))
         elif op == 'sw': self.wr(self.ea(a[1]), 4, g(a[0]))
         elif op == 'sd': self.wr(self.ea(a[1]), 8, g(a[0]))
+        elif op in ('ldl', 'ldr', 'sdl', 'sdr'): self.unaligned64(op, a)
         elif op == 'sq': self.wr(self.ea(a[1]) & ~0xf, 16, g(a[0]) & M128)
         else:
             self.cop(op, a, pc)
