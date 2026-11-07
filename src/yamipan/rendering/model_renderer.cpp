@@ -45,8 +45,12 @@ struct ModelFragmentUniforms
 };
 
 // The matrix from the game's screen space, in rows, to the host's clip space. Screen units are the frame's
-// around its centre, y down, and the GS's Z, with zmax at the near plane. The sides widen with the display:
-// what a wider picture shows is more of the world, never a stretch (the any-aspect rule).
+// around its centre, y down. Depth keeps the GS's order, zmax at the near plane and zmin at the far one, tested
+// GEQUAL over a buffer cleared to 0 as the ROM's is. The usual 0 at the near plane would be 1 - Z, about 1 - 1 / w:
+// the vertex shader only reaches that from a z nearly equal to its w, two large sums rounding on their own, and
+// the difference is worth world units of depth, so what lies just over a surface comes and goes as the camera
+// moves. The sides widen with the display: what a wider picture shows is more of the world, never a stretch (the
+// any-aspect rule).
 void buildWorldToClip(const ModelPass &pass, const PictureLayout &layout, float *out)
 {
     const double shape = static_cast<double>(layout.aspect) / kFrameDisplayAspect;
@@ -62,7 +66,7 @@ void buildWorldToClip(const ModelPass &pass, const PictureLayout &layout, float 
         const double w = pass.viewScreen[row * 4 + 3];
         out[row * 4 + 0] = static_cast<float>((x - pass.centerX * w) * scaleX);
         out[row * 4 + 1] = static_cast<float>((y - pass.centerY * w) * scaleY);
-        out[row * 4 + 2] = static_cast<float>((pass.depthMax * w - z) / depthRange);
+        out[row * 4 + 2] = static_cast<float>((z - pass.depthMin * w) / depthRange);
         out[row * 4 + 3] = static_cast<float>(w);
     }
 }
@@ -832,7 +836,7 @@ SDL_GPUGraphicsPipeline *ModelRenderer::pipelineFor(BlendMode blend, bool writes
     info.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
     info.depth_stencil_state.enable_depth_test = true;
     info.depth_stencil_state.enable_depth_write = writesDepth;
-    info.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL;
+    info.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_GREATER_OR_EQUAL;
     info.target_info.color_target_descriptions = &target;
     info.target_info.num_color_targets = 1;
     info.target_info.has_depth_stencil_target = true;
@@ -872,7 +876,7 @@ SDL_GPUGraphicsPipeline *ModelRenderer::createProjectedPipeline(const SDL_GPUCol
     info.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
     info.depth_stencil_state.enable_depth_test = true;
     info.depth_stencil_state.enable_depth_write = false;
-    info.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL;
+    info.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_GREATER_OR_EQUAL;
     info.target_info.color_target_descriptions = &target;
     info.target_info.num_color_targets = 1;
     info.target_info.has_depth_stencil_target = true;
@@ -940,7 +944,7 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
 
     SDL_GPUDepthStencilTargetInfo depth{};
     depth.texture = m_depth.get();
-    depth.clear_depth = 1.0f;
+    depth.clear_depth = 0.0f;
     depth.load_op = pass.clearDepth ? SDL_GPU_LOADOP_CLEAR : SDL_GPU_LOADOP_LOAD;
     depth.store_op = SDL_GPU_STOREOP_STORE;
     depth.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE;
