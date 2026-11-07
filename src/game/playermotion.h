@@ -482,8 +482,8 @@ public:
 class ApproachCarLink : public CarDoorLink
 {
 public:
-    using CarDoorLink::CarDoorLink;                                      // FS2 0x00283960
-    ~ApproachCarLink() override {}                                       // FS2 0x002835a0
+    ApproachCarLink(StageCharacter *owner, PlayerMotion *motion_);       // FS2 0x00283960
+    ~ApproachCarLink() override;                                         // FS2 0x002835a0
     void onRun() override;
 };
 
@@ -491,7 +491,7 @@ public:
 class ApproachOutLink : public CarDoorLink
 {
 public:
-    using CarDoorLink::CarDoorLink;                                      // FS2 0x00283740
+    ApproachOutLink(StageCharacter *owner, PlayerMotion *motion_);       // FS2 0x00283740
     ~ApproachOutLink() override {}                                       // FS2 0x00283d80
     void onRequest() override;
     void onRun() override;
@@ -505,7 +505,7 @@ private:
 class ApproachBiteLink : public MotionLink
 {
 public:
-    using MotionLink::MotionLink;                                        // FS2 0x00283560
+    ApproachBiteLink(StageCharacter *owner, PlayerMotion *motion_);      // FS2 0x00283560
     ~ApproachBiteLink() override {}                                      // FS2 0x00283d10
     void onRequest() override;
     void onStart() override;
@@ -522,13 +522,7 @@ private:
 class DriveLink : public MotionLink
 {
 public:
-    // cr_2, cr_3, cr_1, GettingOffCar: data 0x2fb450.
-    // FS2 0x00282fa0
-    DriveLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
-    {
-        for (const char *name : { "cr_2", "cr_3", "cr_1", "GettingOffCar" })
-            addSpecial(name);
-    }
+    DriveLink(StageCharacter *owner, PlayerMotion *motion_);             // FS2 0x00282fa0
     ~DriveLink() override {}                                             // FS2 0x00283cb0
     void onRun() override;
 };
@@ -571,8 +565,7 @@ public:
 class SpRingLink : public MotionLink
 {
 public:
-    // FS2 0x00282b30
-    SpRingLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_) {}
+    SpRingLink(StageCharacter *owner, PlayerMotion *motion_);            // FS2 0x00282b30
     ~SpRingLink() override;                                              // FS2 0x00283b90
     void onRequest() override;                                           // FS2 0x00282a50
     void onStart() override;                                             // FS2 0x00282830
@@ -593,8 +586,7 @@ private:
 class SpRoboLink : public MotionLink
 {
 public:
-    // FS2 0x002825f0
-    SpRoboLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_) {}
+    SpRoboLink(StageCharacter *owner, PlayerMotion *motion_);            // FS2 0x002825f0
     ~SpRoboLink() override;                                              // FS2 0x00282320
     void onRequest() override;                                           // FS2 0x00282570
     void onStart() override;                                             // FS2 0x00282460
@@ -615,8 +607,7 @@ private:
 class SpDropLink : public SpRoboLink
 {
 public:
-    // FS2 0x002822d0
-    SpDropLink(StageCharacter *owner, PlayerMotion *motion_) : SpRoboLink(owner, motion_) {}
+    SpDropLink(StageCharacter *owner, PlayerMotion *motion_);            // FS2 0x002822d0
     ~SpDropLink() override;                                              // FS2 0x00283b20
     void onRequest() override;                                           // FS2 0x00282250
 };
@@ -639,8 +630,7 @@ private:
 class SpNumLockLink : public MotionLink
 {
 public:
-    // FS2 0x002820e0
-    SpNumLockLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_) {}
+    SpNumLockLink(StageCharacter *owner, PlayerMotion *motion_);         // FS2 0x002820e0
     ~SpNumLockLink() override;                                           // FS2 0x00281a40
     void onRequest() override;                                           // FS2 0x00281ff0
     void onRun() override;                                               // FS2 0x00281bb0
@@ -679,14 +669,8 @@ public:
 class NpcReactionLink : public MotionLink
 {
 public:
-    // cr_2, cr_3, cr_1: data 0x2fb460.
-    // FS2 0x00282da0
-    NpcReactionLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
-    {
-        for (const char *name : { "cr_2", "cr_3", "cr_1" })
-            addSpecial(name);
-    }
-    ~NpcReactionLink() override {}                                       // FS2 0x002839a0
+    NpcReactionLink(StageCharacter *owner, PlayerMotion *motion_);       // FS2 0x00282da0
+    ~NpcReactionLink() override;                                         // FS2 0x002839a0
 };
 
 // Gun up: Lock, Snipe, GunAttack, GunMove. Vtable 0x317a10. layout: host.

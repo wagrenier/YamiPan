@@ -7456,11 +7456,6 @@
 /* 00282d10 00000048 */ GadgetLink::onRun(){}  // game
 /* 00282d60 00000014 */ GadgetLink::onStart(){}  // game
 /* 00282d80 00000018 */ GadgetLink::onRequest(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
 /* 00282da0 00000084 */ NpcReactionLink::NpcReactionLink(){}  // game
 /* 00282e30 0000016c */ DriveLink::onRun(){}  // game
 /* 00282fa0 00000084 */ DriveLink::DriveLink(){}  // game
@@ -7479,11 +7474,6 @@
 /* 00283910 00000048 */ CarDoorLink::onStart(){}  // game
 /* 00283960 00000034 */ ApproachCarLink::ApproachCarLink(){}  // game
 /* 002839a0 00000060 */ NpcReactionLink::~NpcReactionLink(){}  // game
-
-// *****************************************************************************
-// FILE -- game/playermotion.cpp
-// *****************************************************************************
-
 /* 00283a00 00000060 */ BossAttackLink::~BossAttackLink(){}  // game
 /* 00283a60 00000060 */ BossIdleLink::~BossIdleLink(){}  // game
 /* 00283ac0 00000060 */ SpPadlockLink::~SpPadlockLink(){}  // game
