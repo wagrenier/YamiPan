@@ -263,6 +263,18 @@ rxsnd's `rxSndCheckBgCall` (same message, "rxsndut") on its own flags. The layer
   silent side" reports every open stream through rxSndAdpcmUpdate, from the request's length; it replaces
   the 2026-11-04 bridge. It goes with the audio milestone, with ADPCM_SILENT_BUFFER (open's buffers:
   `rxSndIopAlloc` fails with no IOP heap, so 0 cannot be passed down).
+- **Stream sources** 0x1656e8..0x1660e0 (src/rx/rxsndstrstream.c, written 2026-11-06; 64 x 0xc at
+  0x5226e0, active 0x5229e0, free 0x5229e4; EE layout next, id +4, open +5, type +6, handle +8): the ids
+  a format reads through. Type 0 is an rxFile ring (`rxSysStreamOpenRing`, threshold bufSize / 2 & ~0xf),
+  type 1 a memory stream (rxsndstrmem). Free sources are pushed 0..63, so source 63 is taken first.
+  Seek also unpauses the file. Pause and Sync do nothing on a memory stream, IsEnd on a ring is "ring
+  empty and rxFileGetState bit 8 (position at the size)". **ROM quirk kept:** a failed open leaves the
+  open byte set on a free source. **Seen, YAMIPAN_TELEPORT=d0101, temporary logs, removed:** source 63
+  opens streamEU/demo/EV01_01_e.xwb, reads it through the ring to its end by about 23 s, closes when the
+  silent voice's timer ends at about 58 s, then streamEU/amb/st01amb1_e.xwb opens and keeps running.
+  **The silent driver gives no backpressure**, so a stream's bytes run ahead of its voice: up to 7936
+  bytes a call go to rxSndAdpcmWrite and nothing plays them. The reading ends long before the voice, and
+  this is not a stall. The audio milestone replaces it. Memory sources still reach rxsndstrmem's stubs.
 - **Stream source** 0x1656e8..0x1660e0 (`rxSndStrStream*`, 64 x 0xc at 0x5226e0): type 0 an rxFile
   ring (`rxSysStreamOpenRing`), type 1 a memory stream.
 - **Memory stream** 0x1660e0..0x166b50 (`rxSndStrMem*`, 64 x 0x20 at 0x523a00): the rxFile ring API
