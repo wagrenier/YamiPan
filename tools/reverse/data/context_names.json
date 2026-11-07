@@ -12948,10 +12948,10 @@
   "why": "side slot +0xc through thunk 0x177360: empty"
  },
  "00177270": {
-  "name": "StringMap<StageNodeBase>::find",
+  "name": "LiteralMap<StageNodeBase>::find",
   "tag": "game-inferred",
   "was": "FUN_00177270",
-  "why": "the bone map instance of the tree search: root in a0, key in a1, strcmp, a node whose value is set; architecture.md says the map is one StringMap"
+  "why": "was StringMap<StageNodeBase>::find: the bone map keeps its keys (node ctor 0x189310 stores the pointer), so it is the LiteralMap shape"
  },
  "001772f0": {
   "name": "DoorRecord::DoorRecord",
@@ -15286,6 +15286,102 @@
   "tag": "game-inferred",
   "was": "FUN_00188b10",
   "why": "the body after the inline member clears in setModel"
+ },
+ "00188d60": {
+  "name": "LiteralMap<ModelMotion>::~LiteralMap",
+  "tag": "game-inferred",
+  "was": "FUN_00188d60",
+  "why": "walks the insertion chain +0x4/+0x10 through the node dtor 0x189000, zeroes root, first, last; passed to __destroy_arr / the array ctor for StageModel::motions[5] (~StageModel 0x188830, setModel 0x18b410)"
+ },
+ "00188df0": {
+  "name": "LiteralMap<ModelMotion>::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00188df0",
+  "why": "called by StageModel::addMotion; empty map: the root, else the node search 0x1890d0, chains the new node last; null when the key is taken"
+ },
+ "00188ea0": {
+  "name": "LiteralMap<StageNodeBase>::~LiteralMap",
+  "tag": "game-inferred",
+  "was": "FUN_00188ea0",
+  "why": "as 0x188d60, node dtor 0x189330; called by ~StageModel for boneMap +0x14"
+ },
+ "00188f30": {
+  "name": "LiteralMap<StageNodeBase>::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00188f30",
+  "why": "called by StageModel::setBaseMotion with the pose's bone names; as 0x188df0, node search 0x189380"
+ },
+ "00188fe0": {
+  "name": "LiteralMap<ModelMotion>::Node::Node",
+  "tag": "game-inferred",
+  "was": "FUN_00188fe0",
+  "why": "value +0, key +4 kept as passed (no copy: the keys stay the caller's), left, right, next zero"
+ },
+ "00189000": {
+  "name": "LiteralMap<ModelMotion>::Node::~Node",
+  "tag": "game-inferred",
+  "was": "FUN_00189000",
+  "why": "only deletes: the key is not freed"
+ },
+ "00189050": {
+  "name": "LiteralMap<ModelMotion>::find",
+  "tag": "game-inferred",
+  "was": "FUN_00189050",
+  "why": "strcmp walk from the root in a0; null when the value is null; callers findMotion, findMotionFile, playNamed"
+ },
+ "001890d0": {
+  "name": "LiteralMap<ModelMotion>::Node::insert",
+  "tag": "game-inferred",
+  "was": "FUN_001890d0",
+  "why": "recursive search for the slot with one level inlined; null when the key is there"
+ },
+ "00189310": {
+  "name": "LiteralMap<StageNodeBase>::Node::Node",
+  "tag": "game-inferred",
+  "was": "FUN_00189310",
+  "why": "as 0x188fe0"
+ },
+ "00189330": {
+  "name": "LiteralMap<StageNodeBase>::Node::~Node",
+  "tag": "game-inferred",
+  "was": "FUN_00189330",
+  "why": "as 0x189000"
+ },
+ "00189380": {
+  "name": "LiteralMap<StageNodeBase>::Node::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00189380",
+  "why": "as 0x1890d0"
+ },
+ "001895c0": {
+  "name": "LiteralMap<StageNodeBase>::Node::balance",
+  "tag": "game-inferred",
+  "was": "FUN_001895c0",
+  "why": "rotations from the leaves up by the heights 0x189ad0; called by setBaseMotion after the last bone"
+ },
+ "00189700": {
+  "name": "LiteralMap<ModelMotion>::Node::balance",
+  "tag": "game-inferred",
+  "was": "FUN_00189700",
+  "why": "as 0x1895c0 with the heights 0x1898c0; called by StageModel::balanceMotions"
+ },
+ "00189840": {
+  "name": "StringMap<Tim2Texture>::find",
+  "tag": "game-inferred",
+  "was": "FUN_00189840",
+  "why": "the texture map's: StageModel::init and StageFiles parseTexture, parseModel, parseEnd, loadCommon; root in a0, null when the value is null"
+ },
+ "001898c0": {
+  "name": "LiteralMap<ModelMotion>::Node::height",
+  "tag": "game-inferred",
+  "was": "FUN_001898c0",
+  "why": "recursive height with levels inlined; only 0x189700 calls it"
+ },
+ "00189ad0": {
+  "name": "LiteralMap<StageNodeBase>::Node::height",
+  "tag": "game-inferred",
+  "was": "FUN_00189ad0",
+  "why": "as 0x1898c0; only 0x1895c0 calls it"
  },
  "00189ce0": {
   "name": "StageObject::scriptAddMenuLine",
