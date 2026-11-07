@@ -117,7 +117,7 @@ struct MotionModel
 {
     const char   *tag;          // FS2 +0x00: _li_, _lh_, _th_, ...
     float         limits[3];    // FS2 +0x04
-    sceVu0FVECTOR a;            // FS2 +0x10: w 1
+    sceVu0FVECTOR a;            // FS2 +0x10: w 1; a point in bn_head's frame (getSwayMatrix's position)
     sceVu0FVECTOR b;            // FS2 +0x20: w 1
     sceVu0FVECTOR c;            // FS2 +0x30: w 0
     sceVu0FVECTOR d;            // FS2 +0x40: w 0

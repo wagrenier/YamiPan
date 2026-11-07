@@ -168,12 +168,6 @@ bool missionRestoreCheck()
 // ---- by hand: the character's parts, until their TUs (next in the queue) ----
 
 // stub of FS2 0x00239bc0
-// stub of FS2 0x0020c940
-void StageCharacter::getSwayMatrix(sceVu0FMATRIX out)
-{
-    YAMIPAN_STUB("StageCharacter::getSwayMatrix", 0x0020c940);
-}
-
 // stub of FS2 0x00212020
 bool StageCharacter::canTakeOver()
 {

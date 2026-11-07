@@ -1630,7 +1630,7 @@ void AlwaysCondition::onApply()
         sceVu0FVECTOR angles = { 0.0f, 0.0f, 0.0f, 0.0f };
         if (swayToMatrix) {
             sceVu0FMATRIX sway;
-            identityMatrix(sway);      // PC: getSwayMatrix is a stub
+            identityMatrix(sway);      // PC: getSwayMatrix leaves out as is without a bn_head node
             character->getSwayMatrix(sway);
             matrixToRotYXZ(angles, sway);
             angles[0] = wrapAngle(angles[0] - character->m_xform.rotation[0]);
@@ -8597,6 +8597,34 @@ bool StageCharacter::getTargetPoint(StageObject *target, float *out, bool plain)
     if (isOnStageObjectKind(kind) && strcmp(target->m_name, "oMT18_30") == 0)
         out[2] += kNoHeadPartHeight;
     return true;
+}
+
+// The point in bn_head's frame a family without a gMotionModels entry uses:
+// the table's own default for MotionModel::a.
+static const sceVu0FVECTOR kSwayPointDefault = { 11.0f, 11.0f, 0.0f, 1.0f };  /* data 0x306920 */
+
+// FS2 0x0020c940
+// callcheck: find, scaleVec4, applyMatrix, applyMatrix (getMatrix through the vtable)
+//
+// bn_head's matrix turned a quarter about its own y (x <- -z, z <- x), placed
+// at the model family's point a in the head's frame. Without a bn_head node
+// out is left as it was. The ROM returns out; no caller reads it.
+void StageCharacter::getSwayMatrix(sceVu0FMATRIX out)
+{
+    StageNodeBase *head = m_model->boneMap.find("bn_head")->value;
+    if (head == nullptr)
+        return;
+
+    memcpy(out[2], head->getMatrix()[0], sizeof(sceVu0FVECTOR));
+    memcpy(out[1], head->getMatrix()[1], sizeof(sceVu0FVECTOR));
+    scaleVec4(-1.0f, out[0], head->getMatrix()[2]);
+
+    const int family = m_motion->m_modelFamily;
+    const MotionModel *model = family < 0 || family >= kMotionModelCount ? nullptr : &gMotionModels[family];
+    if (model != nullptr)
+        applyMatrix(out[3], head->getMatrix(), model->a);
+    else
+        applyMatrix(out[3], head->getMatrix(), kSwayPointDefault);
 }
 
 // FS2 0x00175700
