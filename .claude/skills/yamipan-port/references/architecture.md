@@ -336,6 +336,17 @@ Layers:
   0x16fa78 reads gain tables 0x2f7a48 / 0x2f7a4c (720 entries) and gives negative gains as
   phase sign -1 (SPU2 phase inversion: rear sounds); the pair scales by spread tables 0x2f7a50 /
   0x2f7a54.
+- **The pair** (`src/sdpr2/sdpr2pair.c`, 2026-11-07): voice[0] main (angle, main spread table),
+  voice[1] back (angle + 180, back table); spread 0 = both at cos 45 (no direction). `sdpr2PairTurn`
+  0x16c870 never turns more than 90 degrees: a bigger step turns 180 less the other way and toggles
+  slot +0xc flip, which swaps the voices' tables (voice[0] angle / back table, voice[1] angle + 180 /
+  main table). +0x10 is the last turn's angle (not moved while spread is 0; GetLevels reads it).
+  Detune: data 0x2f5fa0 = {3520, 3616, 3520, 3616, 3808, 3856} (/4096) by pair mode; the play sets
+  voice[1]'s pitch to it and +0x28 state = 2 (modes 0..1) or 1, `sdpr2PairUpdate` counts it down and
+  on the 1 -> 0 step puts voice[1] back on the slot's pitch; `SetPitch` / `SetPitchF` detune voice[1]
+  while state > 0. Every voice call goes to both voices and fails only when both do. **ROM quirk:
+  `sdpr2PairPause` 0x16d3a8 calls `sdpr2DrvStop` (jal 0x1703f0) with `on` as the mode, not
+  `sdpr2DrvPause`, and keeps the slot** (kept).
 - **Driver**: `sdpr2Drv*` call the table at 0x537d30 (+0 Play .. +0x24 GetStatus, +0x28..+0x30 unused);
   the only driver is the SE driver `sdpr2SeDrv*` (table 0x2f7a68, `rxSndSe*`), config 8 words at
   0x537d38 (defaults from 0x537d58 {1, 1, -1, -1, 0..}). Ghidra had merged 10 starts (the two type

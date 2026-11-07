@@ -3455,12 +3455,21 @@
    "why": "SDPR2 driver sdpr2Drv* + the SE driver sdpr2SeDrv*: the fourth message copy (0x302bf0); the cut after sdpr2SeDrvInstall a guess (batch 011)."
   },
   "sdpr2/sdpr2pair.c": {
+   "notes": "Code complete against the ROM asm; sound only, nothing on screen shows it (smoke run reaches the language select as before, sdpr2PairInit no longer a stub). ROM quirk kept: sdpr2PairPause calls sdpr2DrvStop (jal 0x1703f0) with on as the mode, not sdpr2DrvPause, and keeps the slot. sdpr2PairSetPan with a flip other than 0/1 leaves the ROM results unset (stale registers); host returns 0, flip only holds 0 or 1. Facts in architecture.md SDPR2 The pair. A host-vs-ROM compare (rand48cmp-style eerun) of sdpr2PairTurn and sdpr2PairCalcPan would prove the maths offline.",
    "ranges": [
     [
      "0016c870",
      "0016e498"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-07 08:36",
+     "status": "verify",
+     "summary": "SDPR2 two-voice pair type: all 21 functions reconstructed (pan, turn with voice flip, detune countdown, Init/Exit, detune table 0x2f5fa0)"
+    }
+   ],
+   "status": "verify",
    "why": "SDPR2 two-voice type sdpr2Pair*: the second message copy (0x302920); batch 011."
   },
   "sdpr2/sdpr2single.c": {
