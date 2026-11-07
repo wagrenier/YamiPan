@@ -644,3 +644,5 @@ Symptom: picking Set Smoke Candle did nothing and the wait gave up after one fra
 ### Code past isSubScene does not run in a stage's opening (2026-11-07)
 
 Symptom: a probe in `StageScene::update` or `updateSmokeFog` prints twice and then nothing for 30 s, while shots change and the stage thread sits in its normal `threadYield`. Cause: a stage's opening runs as a sub-scene, and the `if (!isSubScene)` block of the main scene does not run under it; it looks like a hang and is not. Fix: give a run 60 to 100 s before judging, and count frames from inside the block. With five instances at once the scene ran about 5 frames a second.
+
+**A stub hides a null `this` (2026-11-07).** `Rand48`'s stubs never touched the object, so `rng->next` on a sub-scene (rng null, gStageScene during an event) looked fine; the real body would crash. When a stub becomes code, look at who can hold a null: the ctor's sub-scene branch in stagescene.cpp leaves about ten members null.

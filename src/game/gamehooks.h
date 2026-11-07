@@ -3299,15 +3299,7 @@ private:
     SceneSoundWatch m_watches[kSceneSoundWatch]; // FS2 +0x30c
 };
 
-// +0xe4: a 48-bit LCG (drand48's multiplier 0x5deece66d; the run
-// 0x2681e0..0x268310). layout: host (EE 8).
-struct Rand48
-{
-    Rand48();                                                            // FS2 0x002682e0
-    // A number in 0..n-1.
-    int next(int n);                                                     // FS2 0x002681e0
-    void seed(u_int value);                                              // FS2 0x00268290
-};
+// +0xe4: Rand48, game/rand48.h.
 
 // +0xf4: StageAlert, game/stagealert.h.
 

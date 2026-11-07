@@ -1386,6 +1386,24 @@
    "status": "verify",
    "why": "getNaviTable 0x2955d0 (the NaviTable from the init pack) heads the NaviTable run; progress.h already declares it"
   },
+  "game/rand48.cpp": {
+   "notes": "All 3 functions of 0x2681e0..0x268310 written; the struct moved from gamehooks.h to game/rand48.h, EE layout, 8 bytes. rand48cmp.py: 20,000 ops, 1,890 rejected draws, 0 differences; --plant (Java's n - 1) 8,288. EE details kept: n + 1 in the rejection rule, div by 0 returns the dividend, wrap in unsigned. Port difference: StageScene::random answers 0 on a sub-scene (gStageScene during an event, rng null), where the ROM runs through a null pointer; no event was seen to ask. Temporary probe, removed: stage 7 made 734 draws in 35 s, d0103 9, stage 1 none, no crash, none through the guard. Prop_Random100 answered 0 until now, so random script branches can now go the other way; what stage 7 draws for was not read. Nothing draws here: screenshots of stage 7 and d0103 show normal play and do not test this code. eerun.py: 3-operand mult sets LO and HI, multu, mult1, EE div by 0.",
+   "ranges": [
+    [
+     "002681e0",
+     "00268310"
+    ]
+   ],
+   "sessions": [
+    {
+     "date": "2026-11-07 03:42",
+     "status": "done",
+     "summary": "game/rand48.cpp: Rand48, the stage's random numbers (java.util.Random without the increment); all 3 functions written, proven against the ROM"
+    }
+   ],
+   "status": "done",
+   "why": "The LCG between game/screen.cpp and game/subsceneobject.cpp: three members of one class, called only from StageScene; own file, the name is the port's (no source string)"
+  },
   "game/rcnttimer.cpp": {
    "notes": "All 4 functions of 0x12f190..0x12f290, compared with the ROM by reading (the code is 5 short routines' worth of loads and stores). Reached in the smoke run with no stub line and no crash: rcnt1Start from gameInit, the constructor from PerfMeter, reset each frame. RcntTimer now has EE layout with asserts, size 0x20. A stopwatch nobody reads: no retail code reads T1_COUNT outside this file, and +0x00 and +0x08 are never read back, so m_08 keeps its offset name. The constructor's parameter order stays a guess (f12, f13, a1). s_rcnt1Started at gp-0x7ac4 is named in the source only, not in Ghidra. Screen unchanged: shot_25260.png is byte for byte the previous run's language screen. last.png came out empty (the run was stopped during the write), so it was replaced by shot_25260.png before finish. Open: REG_RCNT0_MODE and REG_RCNT1_MODE do not reach setTimerMode (open-items.md, top of Next up).",
    "ranges": [
@@ -3358,7 +3376,10 @@
   "unassigned@00252840": {},
   "unassigned@002647e0": {},
   "unassigned@002676e0": {},
-  "unassigned@002681e0": {},
+  "unassigned@002681e0": {
+   "claimed": "2026-11-07 03:24",
+   "status": "active"
+  },
   "unassigned@002764b0": {},
   "unassigned@0027cab0": {},
   "unassigned@002908d0": {},

@@ -53,6 +53,7 @@
 #include "game/viewcamera.h"
 #include "game/vu0math.h"
 #include "game/stagecar.h"
+#include "game/rand48.h"
 #include "sdk/libgraph.h"       /* SCE_GS_ALPHA_1, SCE_GS_TEST_1 */
 #include "sdk/libpad.h"         /* SCE_PADstart, SCE_PADselect */
 #include "sdk/libvu0.h"
@@ -181,6 +182,10 @@ bool StageScene::isGameOver()
 
 int StageScene::random(int n)
 {
+    // Port: gStageScene is a sub-scene during an event and has no generator.
+    // The ROM runs on with a null pointer, state at address 0.
+    if (rng == nullptr)
+        return 0;
     return rng->next(n);
 }
 
