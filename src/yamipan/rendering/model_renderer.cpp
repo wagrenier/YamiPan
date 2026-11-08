@@ -108,7 +108,7 @@ void buildWorldToClip(const ModelPass &pass, const PictureLayout &layout, float 
 // face's corners turn the way given by the sign of the determinant of the matrix taking a point's offset from the
 // eye to clip x, y and w: the triple product of the corners' offsets is that determinant times the normal's dot with
 // a corner's offset from the eye. Negative: counter-clockwise. So the rasterizer can cull what facesEye did, as long
-// as the game's eye is its projection's centre, which is what a camera is.
+// as the game's eye is its projection's centre (eyeAtCentre below).
 bool frontTurnsCounterClockwise(const float *worldToClip)
 {
     constexpr std::array<int, 3> kColumns{0, 1, 3}; // x, y, w
@@ -131,6 +131,52 @@ SDL_GPUCullMode cullModeOf(const ModelBatchDraw &batch, bool counterClockwise)
     if (!batch.culled)
         return SDL_GPU_CULLMODE_NONE;
     return counterClockwise != batch.mirrored ? SDL_GPU_CULLMODE_BACK : SDL_GPU_CULLMODE_FRONT;
+}
+
+// Whether VU address 4, the eye VU1 culls and reflects from, is the pass's projection's centre: the point the
+// world-to-screen matrix takes to x = y = w = 0. It is in the main pass. 0x2e5da0 works the eye out as -(view rows .
+// view translation), the camera only for a view without scale, and the far passes' view is scaled by 1 / 20
+// (setFarMatrices), so there VU1 culls from the camera / 400, near the world's origin. The ROM's, kept.
+bool eyeAtCentre(const YamiPanModelPass &pass)
+{
+    const float *const matrix = &pass.viewScreen[0][0];
+    constexpr std::array<int, 3> kColumns{0, 1, 3}; // x, y, w
+    double rows[3][4]; // rows[k] . (point, 1) = column k of the matrix
+    for (std::size_t k = 0; k < 3; k++)
+    {
+        for (int axis = 0; axis < 4; axis++)
+            rows[k][axis] = matrix[axis * 4 + kColumns[k]];
+    }
+    const auto determinant3 = [](const double (&m)[3][3]) {
+        return m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+               m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+    };
+    double linear[3][3];
+    for (int k = 0; k < 3; k++)
+    {
+        for (int axis = 0; axis < 3; axis++)
+            linear[k][axis] = rows[k][axis];
+    }
+    const double determinant = determinant3(linear);
+    if (determinant == 0.0)
+        return false;
+
+    // Cramer's rule for the centre, then how far the eye is from it against the centre's own size.
+    double distance = 0.0;
+    double size = 1.0;
+    for (int axis = 0; axis < 3; axis++)
+    {
+        double replaced[3][3];
+        for (int k = 0; k < 3; k++)
+        {
+            for (int column = 0; column < 3; column++)
+                replaced[k][column] = column == axis ? -rows[k][3] : linear[k][column];
+        }
+        const double centre = determinant3(replaced) / determinant;
+        distance = std::max(distance, std::abs(centre - pass.eye[axis]));
+        size = std::max(size, std::abs(centre));
+    }
+    return distance <= size * 1e-3;
 }
 
 float determinantOf(const float *matrix)
@@ -625,6 +671,7 @@ void ModelRenderer::beginPass(const void *list, const YamiPanModelPass &pass)
     if (out.shadowImage == nullptr)
         layer.shadows.count = 0;
     layer.open = true;
+    layer.eyeAtCentre = eyeAtCentre(pass);
 
     // What model_static.vert takes of the pass: a cached batch is lit on the GPU.
     ModelPassLights &lights = out.lights;
@@ -1052,7 +1099,10 @@ void ModelRenderer::forgetBatches()
 
 void ModelRenderer::drawCachedBatch(Layer &layer, const float *matrix, const YamiPanModelBatch &batch)
 {
-    const CachedBatch *const cached = cachedBatch(batch);
+    // The rasterizer culls what faces away from the projection's centre; VU1 what faces away from the eye. They differ
+    // in the far passes (eyeAtCentre), where only the placed path answers as VU1 does.
+    const CachedBatch *const cached =
+        layer.lights.cullBack != 0 && !layer.eyeAtCentre ? nullptr : cachedBatch(batch);
     if (cached == nullptr)
     {
         drawPlacedBatch(layer, matrix, batch);
