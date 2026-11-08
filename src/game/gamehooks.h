@@ -1822,6 +1822,12 @@ public:
     int getKind() override { return StageObject_SphereVolume; }
     SphereVolume();                                                      // FS2 0x0017ec30
     ~SphereVolume() override;                                            // FS2 0x0017efa0: deleting
+    // The frame's four steps pass a sphere by too (its own empty bodies, in
+    // the box's slots +0x214..+0x220 of table 0x312a7c).
+    void sideHook0() override {}                                         // FS2 0x0017f080
+    void sideHook1() override {}                                         // FS2 0x0017f070
+    void sideHook2() override {}                                         // FS2 0x0017f060
+    void sideHook3() override {}                                         // FS2 0x0017f050
     void setRadius(float radius);                                        // FS2 0x0017ec20
     bool contains(const float *point) override;                          // FS2 0x0017eba0
 private:
@@ -1844,7 +1850,8 @@ public:
     bool contains(const float *point) override;                          // FS2 0x0017e9a0
     // Runner slot +0xfc (table 0x3125bc): native 0x44 on a box asks whether
     // other stands in it, which is how an AREA_ script hears the player. A
-    // sphere keeps the base's no (table 0x312a7c).
+    // sphere keeps the base's no (table 0x312a7c). The slot holds the
+    // adjustor thunk 0x17f130 (this - 0x40, then containsObject 0x17e950).
     bool scriptIsFacing(StageObject *other) override { return containsObject(other); } // FS2 0x0017f130
 private:
     sceVu0FVECTOR m_min = {};   // FS2 +0x200: in the box's own space, z from 0
