@@ -22853,6 +22853,12 @@
   "was": "FUN_002081b0",
   "why": "the grain twice, colour then black, alpha from the level +0x24"
  },
+ "00208280": {
+  "name": "JackFill::~JackFill",
+  "tag": "game-inferred",
+  "was": "FUN_00208280",
+  "why": "deleting dtor: puts vtable 0x316030 (JackFill's, stored by JackFill::JackFill 0x2082e0) back at +4, runs ScreenFill::~ScreenFill, operator_delete when the flag is > 0; slot 0 of the vtable"
+ },
  "002082e0": {
   "name": "JackFill::JackFill",
   "tag": "game-inferred",

@@ -78,6 +78,7 @@ class JackFill : public ScreenFill
 {
 public:
     JackFill(u_int rgba, int x, int y, int w, int h);                    // FS2 0x002082e0
+    ~JackFill() override;                                                // FS2 0x00208280: slot 0
     // The grain in the fill's colour, then in black, as thick as m_level.
     void draw(sceVif1Packet *packet, TexAreaList *texList) override;     // FS2 0x002081b0
     float m_level = 0.0f;       // FS2 +0x24: 0 clear, 1 noise

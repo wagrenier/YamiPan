@@ -151,6 +151,15 @@ JackFill::JackFill(u_int rgba, int x, int y, int w, int h)
 {
 }
 
+// Nothing of its own to free: the deleting dtor puts ScreenFill's vtable back
+// at +4 and runs the base's (which deletes the texture).
+// FS2 0x00208280
+// callcheck: ~ScreenFill, operator_delete
+
+JackFill::~JackFill()
+{
+}
+
 // FS2 0x002081b0
 // callcheck: FUN_001518a0, FUN_001518a0
 
