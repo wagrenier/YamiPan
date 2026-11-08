@@ -188,6 +188,8 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 - **A stub that returns nothing can make a loader succeed on nothing** (2026-11-04, a day of "no model ever reaches the code"). Symptom: `StageFiles::load` answers true, no crash, the stage plays empty. Cause: `String` / `StringList::pushBack` were stubs, so the script had zero lines and the loop never ran. Fix: when a run is empty but silent, list the reached stubs in order (`run_relwithdebinfo.log`) and look for a data structure among them before tracing the caller.
 
+- **A free-function stub left behind after its code became a member keeps the TU "unfinished"** (2026-11-07, game/stageelevator.cpp). Symptom: `tus.py list` shows a TU whose functions are all written as 14/13/27, its brief lists "stubs living in other files". Cause: the session that turned `elevatorCall` .. `elevatorSwitchPlace` into `StageElevator::` members deleted the callers' uses but not the old `YAMIPAN_STUB` bodies in src/lib/unassigned_stubs.cpp; they link (nobody calls them) and `yamipan.stubs()` counts their addresses. Fix: when a function changes name or becomes a member, grep its FS2 address in src/ and delete the old stub in the same session. Check: a stub whose address also has a `// FS2 0x...` annotation in a game source is one of these (after the cleanup only ScriptRunner::getProperty / setProperty match, on purpose: their default case logs an unknown property).
+
 ## callcheck / stubgen
 
 - **stubgen and new declarations** (2026-11-03): a member declared right after `public:` with an
