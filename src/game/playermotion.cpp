@@ -7428,6 +7428,13 @@ constexpr float kTrapWalkRate      = 0.35f;
 constexpr float kThrowDefaultY     = -20.0f; // the default throw
 constexpr float kThrowDefaultZ     = 5.0f;
 constexpr float kScopeZoomStart    = 0.3f;
+// The zoom pair setScope, SnipeCondition::onApply and ViewCamera::setZoom read
+// is ViewCamera::kZoomLow / kZoomSpan here. In the ROM each of the three
+// readers' files has its own copy, filled by that file's static initialiser
+// from its own int 30 (viewcamera.h):
+// FS2 0x00310b10  __sinit_playermotion_cpp: sbss 0x31ae20 / 0x31ae24 from sdata 0x31a9d4 (setScope)
+// FS2 0x00310ec0  __sinit_snipecondition_cpp: sbss 0x31ae58 / 0x31ae5c from sdata 0x31abf4 (onApply)
+// FS2 0x00310f10  __sinit_viewcamera_cpp: sbss 0x31ae70 / 0x31ae74 from sdata 0x31ac4c (setZoom)
 constexpr float kHalfPi            = 1.5707964f;
 constexpr float kPi                = 3.1415927f;
 constexpr float kViewNear          = 350.0f; // scrZ of camview_zoom at its widest

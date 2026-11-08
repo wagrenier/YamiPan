@@ -69,6 +69,7 @@ struct ShaderResources
 {
     unsigned samplers = 0;
     unsigned uniformBuffers = 0;
+    unsigned storageBuffers = 0;
 };
 
 class Device
@@ -93,6 +94,8 @@ public:
     TransferBuffer createUploadBuffer(unsigned size) const;
     TransferBuffer createDownloadBuffer(unsigned size) const;
     Buffer createVertexBuffer(unsigned size) const;
+    Buffer createIndexBuffer(unsigned size) const;
+    Buffer createBuffer(SDL_GPUBufferUsageFlags usage, unsigned size) const;
 
     // RGBA8 pixels into a whole texture, in `copy` of a running pass.
     void uploadTexture(SDL_GPUCopyPass *copy, SDL_GPUTexture *texture, unsigned width, unsigned height,

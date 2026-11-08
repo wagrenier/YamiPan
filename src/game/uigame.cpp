@@ -100,7 +100,9 @@ static inline StagePlayer *stagePlayer()
 
 // The game-state names (UiGameState order). In the ROM a table in bss
 // (0x599490) that the static initializer 0x310b60 fills from the sdata
-// string pointers 0x31aae8..; constant here.
+// string pointers 0x31aae8..; constant here. The same initialiser writes the
+// 16 names of kUiKeySprites (below) from 0x31ab98..0x31abd4: 57 stores, no call.
+// FS2 0x00310b60  __sinit_uigame_cpp
 static const char *const kUiGameStateNames[UiState_Count] = {
     "r16_9",
     "rF01", "rF02", "rF03", "rF04", "rF05", "rF06", "rF07", "rF08", "rF09", "rFDF",

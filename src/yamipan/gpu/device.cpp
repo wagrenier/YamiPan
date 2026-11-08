@@ -85,6 +85,7 @@ Shader Device::loadShader(std::string_view name, SDL_GPUShaderStage stage, Shade
         info.stage = stage;
         info.num_samplers = resources.samplers;
         info.num_uniform_buffers = resources.uniformBuffers;
+        info.num_storage_buffers = resources.storageBuffers;
 
         SDL_GPUShader *const shader = SDL_CreateGPUShader(m_device, &info);
         if (shader == nullptr)
@@ -143,6 +144,19 @@ Buffer Device::createVertexBuffer(unsigned size) const
 {
     SDL_GPUBufferCreateInfo info{};
     info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+    info.size = size;
+    return Buffer(m_device, SDL_CreateGPUBuffer(m_device, &info));
+}
+
+Buffer Device::createIndexBuffer(unsigned size) const
+{
+    return createBuffer(SDL_GPU_BUFFERUSAGE_INDEX, size);
+}
+
+Buffer Device::createBuffer(SDL_GPUBufferUsageFlags usage, unsigned size) const
+{
+    SDL_GPUBufferCreateInfo info{};
+    info.usage = usage;
     info.size = size;
     return Buffer(m_device, SDL_CreateGPUBuffer(m_device, &info));
 }
