@@ -937,11 +937,15 @@
    "why": "the number lock: the map object of oMK21_06 / oSJ08_07 (vtables 0x318870..0x318abc, ctor 0x2a7340, its thunks end at 0x2a7418) and its pose NmlPose (vtable 0x318b10, ctor 0x2a7a50 last); 0x2a7b10 starts the SigLamp run (vtable 0x318b30). Both tables sit together in .data, one file. The file name is the port's."
   },
   "game/packtables.cpp": {
-   "notes": "3D path 1 of 5. Root cause: String and StringList were stubs, so every stage script split into zero lines. Written here: game/stringlist.cpp (marked done), PackTables::parse cut into one method per sheet, rena/rena_model.cpp with isValid, relocate, getNodeCount (TU 4 continues in that file), stageMotionTargetName and StageMapFile::relocate in stagescene.cpp until their file is cut; the StageMission stub ctor zeroes itself. Seen: New Game run of 250 s under a limit reaches ModelFile::createInstance with no crash and ends black, which is all the code can show (no 3D yet); the boot picture is unchanged. NOT checked: the contents of the tables were never printed or compared with the sheets, and the relocation was not walked on a real file beyond texture names, so this is verify. The same run reached only frame 3060 where the run before reached 7080 in the same time: the stage load or the stage loop is slower now, not looked into. Next: game/nodetransform.cpp. PC guard in applyBgTarget skips the null instance until createInstance is written; placeItem and placeCharacter have no guard yet. StageScript::relocate 0x1d3a40 and CollisionFile::relocate 0x23ae40 are still stubs. Ghidra: batch 099 saved by name_ctx.",
+   "notes": "unassigned@00310a00 was CodeWarrior's 9 static initialisers (table 0x310fb0). Each is joined with tus.py define to the port file owning what it sets, as an FS2 comment at that global: packtables 0x310a00 (gDoorRecords), stageloop 0x310a20, stagescene 0x310a70 (dead copies of viewcamera.h's zoom pair), scriptrunner 0x310ac0 (a ScriptRunner at 0x577a60 nothing reads, not ported), playermotion 0x310b10 / 0x310ec0 / 0x310f10 (the zoom pairs read by setScope, SnipeCondition::onApply, ViewCamera::setZoom), uigame 0x310b60 (57 name pointers), stageresult 0x310f60 (gStageResult). ViewCamera::kZoomLow / kZoomSpan are now computed from kZoomPercent 30; the EE rounds toward zero so the ROM's values differ by one ulp (architecture.md Static initialisers). Smoke run 15 s: language screen as before. Next with the queue empty: unassigned@0017f040 (17), 00186a00 (4), 00283cb0 (3), 0021c290 (2), then the 1-function runs.",
    "ranges": [
     [
      "002bcd20",
      "002c3d30"
+    ],
+    [
+     "00310a00",
+     "00310a20"
     ]
    ],
    "sessions": [
@@ -949,11 +953,16 @@
      "date": "2026-11-04 07:34",
      "status": "verify",
      "summary": "stage scripts now parse: String / StringList, PackTables::parse and PackTables::PackTables written, RM2 relocate, createInstance reached"
+    },
+    {
+     "date": "2026-11-07 20:38",
+     "status": "verify",
+     "summary": "static initialisers 0x310a00..0x310f80 named __sinit_*_cpp (batch 236) and joined to their owners' TUs"
     }
    ],
    "status": "verify",
    "task": "3D path 1 of 5 (the user's pin, 2026-11-04). First find why no model reaches the code: in the New Game run with work/newgame_pad.txt, ModelFile::isValid, getNodeCount and createInstance are never called, so StageFiles::models is empty. Trace StageFiles::loadList, load, parseModel and applyBgTarget (stagescene.cpp) under gdbrun with a time limit and fix what stops them, wherever it is. Then write PackTables::parse 0x2bcf10 and PackTables::PackTables 0x2c0dc0: pin the real extent with tus.py define under this key (rename the key if the evidence says another file). Success: the run log shows ModelFile::createInstance reached.",
-   "why": "Sized by PackTables::parse 0x2bcf10 and its reader 0x2c0ef0; the MSL map / vector / string instances 0x2c0d00..0x2c3d30 only it uses are the host <map> / <vector> / <string>. The pack's sheets name the data; the file name is the port's. 0x2bc000.. before it is KeepList, 0x2c3d30 after it the menu pack."
+   "why": "Sized by PackTables::parse 0x2bcf10 and its reader 0x2c0ef0; the MSL map / vector / string instances 0x2c0d00..0x2c3d30 only it uses are the host <map> / <vector> / <string>. The pack's sheets name the data; the file name is the port's. 0x2bc000.. before it is KeepList, 0x2c3d30 after it the menu pack.; CodeWarrior's static initialisers 0x310a00..0x310f80 (table 0x310fb0) each joined to the file owning the globals they set (2026-11-07)"
   },
   "game/pad.cpp": {
    "notes": "All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout (asserts). Source-only: callcheck clean, layout lint OK, g++ -fsyntax-only -Wall -Wextra clean against RosePan sdk headers. Pad::update only reads input for terminal mode 8 (DualShock 2 in pressure mode): bootstrap 6's host libpad must report that. Stick order is libpad's right x, right y, left x, left y; GamePad's comments and computeSticks locals in gamesystem were swapped and are fixed. 0x12fed0 renamed Pad::registerListener (it was Pad::setListening); 0x12fa30 is Pad::setListening. Ghidra saved by name_ctx.",
@@ -1507,6 +1516,14 @@
     [
      "002cf0b0",
      "002cf510"
+    ],
+    [
+     "00310b10",
+     "00310b60"
+    ],
+    [
+     "00310ec0",
+     "00310f60"
     ]
    ],
    "sessions": [
@@ -1573,7 +1590,7 @@
    ],
    "status": "verify",
    "task": "PlayerMotion::takeHits 0x1e18c0..0x1e3e80 past its first line: it requests dm_c 0xb0 and dm_car 0xb5, 0xb6 and calls playHitSound, playTrapHitVoice",
-   "why": "0x280620..0x2811c0, 0x281370..0x2813e0 and 0x281548..0x281a40 joined 2026-11-07 (were unassigned@00280620 and unassigned@00281550): the car's special motions (MotionDragOutCar, MotionGetOffCar, MotionGetOnCar, findCarDoor) and the dtors of the special-motion classes, all written here beside MotionPartnerCall 0x2811c0 and SpNumLockLink 0x281a40; before that: 0x21b340..0x21ba04 joined 2026-11-07 (was unassigned@0021b340): StageCharacter::dropLongWeapon .. scriptSetBrainEntry (takeItem, shout, reload, findLooseWeapon, heardKind, answerNo), all reconstructed here, between getLongWeaponClass 0x21b280 and setBrainState 0x21ba10, both here; before that: 0x26c650..0x26c6fc joined 2026-11-07 (was unassigned@0026c650): MotionProbe::~MotionProbe and MotionProbe::MotionProbe, the probe's own dtor and ctor, right after MotionProbe::faceAhead 0x26c4b0 (here) and before SubSceneData::findModel 0x26c700 (game/demoevent.cpp); PlayerMotion's ctor and dtor (here) are their only callers; before that: 0x217be0..0x2184a8 joined 2026-11-07 (was unassigned@00217be0): StageCharacter::getFoeWeight .. wasPlacedThisFrame, 14 of its 16 functions already reconstructed here (setMotionByLabel, scriptHurt, allowPath, getLightReach, ...) and doNothing inline in gamehooks.h, between ageSightTable 0x217a80 (stageplayer.cpp) and noticeItem 0x2184b0 (here); before that: 0x219be0..0x21aba8 joined 2026-11-07 (was unassigned@00219be0): StageCharacter::waitMotionChange .. setScriptPointToMoveGoal, 15 of its 19 functions already reconstructed here (pickNearestFoe, addFoeWeight, noteMotion, ...), between doorActions 0x219b30 and getBiteTarget 0x21abb0, both here; before that: 0x20ce10..0x20ce70 joined 2026-11-07 (was unassigned@0020ce10): StageCharacter::getWeaponRange, between canFireLongWeapon 0x20cc50 and getAttackReach 0x20ce80, both here; before that: 0x20e6a0..0x210938 joined 2026-11-07 (was unassigned@0020e6a0): playerEvent .. canSeeThisFrame, 11 StageCharacter members already reconstructed here (takeDamage, hasBiter, isUp, ...), between canLockDoor's 0x20d650 run and canSee 0x210940; before that: 0x214a70..0x214ce8 joined 2026-11-07 (was unassigned@00214a70): StageObjRecord::init and StageCharacter::findNearestFoe, between this file's 0x212530 run and isEnemyOf 0x214d40, which findNearestFoe calls; before that: 0x2160a0..0x216130 joined 2026-11-07 (was unassigned@002160a0): the out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level, placed by CodeWarrior right after getSides 0x211970..0x2122f8 (was unassigned@00211970): StageCharacter predicates between getTakenOverPlayer and isViewedThrough, isTakenOver and canBeJacked already here. 0x1dff40..0x1e06e4 (levelBlocked, ladderBlocked, winsStruggle: PlayerMotion's ladder and ledge checks) sits between PlayerMotion::setScope and PlayerMotion::endFrame."
+   "why": "0x280620..0x2811c0, 0x281370..0x2813e0 and 0x281548..0x281a40 joined 2026-11-07 (were unassigned@00280620 and unassigned@00281550): the car's special motions (MotionDragOutCar, MotionGetOffCar, MotionGetOnCar, findCarDoor) and the dtors of the special-motion classes, all written here beside MotionPartnerCall 0x2811c0 and SpNumLockLink 0x281a40; before that: 0x21b340..0x21ba04 joined 2026-11-07 (was unassigned@0021b340): StageCharacter::dropLongWeapon .. scriptSetBrainEntry (takeItem, shout, reload, findLooseWeapon, heardKind, answerNo), all reconstructed here, between getLongWeaponClass 0x21b280 and setBrainState 0x21ba10, both here; before that: 0x26c650..0x26c6fc joined 2026-11-07 (was unassigned@0026c650): MotionProbe::~MotionProbe and MotionProbe::MotionProbe, the probe's own dtor and ctor, right after MotionProbe::faceAhead 0x26c4b0 (here) and before SubSceneData::findModel 0x26c700 (game/demoevent.cpp); PlayerMotion's ctor and dtor (here) are their only callers; before that: 0x217be0..0x2184a8 joined 2026-11-07 (was unassigned@00217be0): StageCharacter::getFoeWeight .. wasPlacedThisFrame, 14 of its 16 functions already reconstructed here (setMotionByLabel, scriptHurt, allowPath, getLightReach, ...) and doNothing inline in gamehooks.h, between ageSightTable 0x217a80 (stageplayer.cpp) and noticeItem 0x2184b0 (here); before that: 0x219be0..0x21aba8 joined 2026-11-07 (was unassigned@00219be0): StageCharacter::waitMotionChange .. setScriptPointToMoveGoal, 15 of its 19 functions already reconstructed here (pickNearestFoe, addFoeWeight, noteMotion, ...), between doorActions 0x219b30 and getBiteTarget 0x21abb0, both here; before that: 0x20ce10..0x20ce70 joined 2026-11-07 (was unassigned@0020ce10): StageCharacter::getWeaponRange, between canFireLongWeapon 0x20cc50 and getAttackReach 0x20ce80, both here; before that: 0x20e6a0..0x210938 joined 2026-11-07 (was unassigned@0020e6a0): playerEvent .. canSeeThisFrame, 11 StageCharacter members already reconstructed here (takeDamage, hasBiter, isUp, ...), between canLockDoor's 0x20d650 run and canSee 0x210940; before that: 0x214a70..0x214ce8 joined 2026-11-07 (was unassigned@00214a70): StageObjRecord::init and StageCharacter::findNearestFoe, between this file's 0x212530 run and isEnemyOf 0x214d40, which findNearestFoe calls; before that: 0x2160a0..0x216130 joined 2026-11-07 (was unassigned@002160a0): the out-of-line copies of the inline getters StageCharacter::getSides calls at its third inline level, placed by CodeWarrior right after getSides 0x211970..0x2122f8 (was unassigned@00211970): StageCharacter predicates between getTakenOverPlayer and isViewedThrough, isTakenOver and canBeJacked already here. 0x1dff40..0x1e06e4 (levelBlocked, ladderBlocked, winsStruggle: PlayerMotion's ladder and ledge checks) sits between PlayerMotion::setScope and PlayerMotion::endFrame.; CodeWarrior's static initialisers 0x310a00..0x310f80 (table 0x310fb0) each joined to the file owning the globals they set (2026-11-07)"
   },
   "game/prgmccard.cpp": {
    "notes": "All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide closes it and the title returns, many rounds in one run with no crash. No capture of the real game to compare with; the texts come from the layout itself. stepSave, the list, yes / no and every path with a card are untested: sdk/libmc.cpp is still the empty slot (item 8(d)). Variable names are the file own (McVar); all 0x22 rfMSG_FLAG values were read on screen through a temporary loop, not committed. GameOptions::_4d is now autoSave. Next, for the user to pin: runHelpScreen, the navi block, setUiWorkArea with getUiWorkArea, or New Game (TitleAnswer 1, untried).",
@@ -1875,6 +1892,10 @@
     [
      "0029f050",
      "002a11b8"
+    ],
+    [
+     "00310ac0",
+     "00310b10"
     ]
    ],
    "sessions": [
@@ -1911,7 +1932,7 @@
    ],
    "status": "verify",
    "task": "What the pinned lights need next: the stage script VM. ScriptRunner::ScriptRunner, setEntry 0x1d2f40, run 0x1d27e0, the VM 0x1d1c40 and its helpers 0x1d1a10..0x1d3d20, StageScript::relocate 0x1d3a40, the slot call of 0x02000000 words and the native table 0x304230 (ids 0x19..0x235, index id - 0x19, 541 natives). Each native pops its own arguments, so an unwritten one must still pop its count: generate the counts from the ROM. First the lighting natives 0x1b6..0x1c3 (sssdis.py shows them with constants; architecture.md, The lights of a stage), so setupCameras' run of the bg script keys SceneRender. Then game/scenerender.cpp's task. The same VM is what the opening event and the character's brain need (open-items.md, The opening event).",
-   "why": "0x29fdb0..0x2a11b8 joined 2026-11-07 (was unassigned@002a0040 and the tail of FUN_0029fdb0): the two MSL std::sort instances the file's object emitted, mslSort_SpawnPoints 0x29fdb0 (missionPickSpawnPoint's 12-byte records) and mslSort_PickNamed 0x2a0040 (scriptPickNamed's 8-byte pairs) with their medians, partitions and selection sorts, before DemoFleck 0x2a11c0 (game/demofleck.cpp); before that: The script VM: native dispatcher 0x1a7a20, natives 0x1a7a80..0x1cf1b0 (table 0x304230), base property get/set, VM helpers and ScriptRunner / ScriptFrame to 0x1d3dc0; scriptPrepare, two helpers and missionObjectInSight at 0x29f050..0x29f2a0; from 0x29f500 the label helpers, scriptPickNamed 0x29f5c0, the mission's spawn picks 0x29f810..0x29fd20 and checkedBlock 0x29fd20; missionRestoreCheck 0x29f2a0 and findNumLockTarget 0x29f440 joined 2026-11-07: between missionObjectInSight and scriptObjectOfValue, the lock-gadget helpers of nativeUseLockGadget"
+   "why": "0x29fdb0..0x2a11b8 joined 2026-11-07 (was unassigned@002a0040 and the tail of FUN_0029fdb0): the two MSL std::sort instances the file's object emitted, mslSort_SpawnPoints 0x29fdb0 (missionPickSpawnPoint's 12-byte records) and mslSort_PickNamed 0x2a0040 (scriptPickNamed's 8-byte pairs) with their medians, partitions and selection sorts, before DemoFleck 0x2a11c0 (game/demofleck.cpp); before that: The script VM: native dispatcher 0x1a7a20, natives 0x1a7a80..0x1cf1b0 (table 0x304230), base property get/set, VM helpers and ScriptRunner / ScriptFrame to 0x1d3dc0; scriptPrepare, two helpers and missionObjectInSight at 0x29f050..0x29f2a0; from 0x29f500 the label helpers, scriptPickNamed 0x29f5c0, the mission's spawn picks 0x29f810..0x29fd20 and checkedBlock 0x29fd20; missionRestoreCheck 0x29f2a0 and findNumLockTarget 0x29f440 joined 2026-11-07: between missionObjectInSight and scriptObjectOfValue, the lock-gadget helpers of nativeUseLockGadget; CodeWarrior's static initialisers 0x310a00..0x310f80 (table 0x310fb0) each joined to the file owning the globals they set (2026-11-07)"
   },
   "game/seplayer.cpp": {
    "notes": "Cut from unassigned@002908d0: game/seplayer.cpp is 0x2908d0..0x2937e0 (SoundTrack 17, SePlayer 18, batch 078: fsmFindTrack, fsmTrackHasText, seDistanceVolume, stdtIsRelocated, stdtEntryCount, SePlayer::openStreamBank, SePlayer::loadBank); getNaviTable 0x2955d0 went to game/progress.cpp; 0x2937e0..0x2955d0 (an ELEVATOR2 stage object and a menu overlay) stays unassigned. New header game/seplayer.h takes SeEntry, SeName, SeTable, StreamTable, SePlayer, SoundTrack and SeHandle out of gamehooks.h and stagesound.h. Kept as the ROM (doubts in open-items.md TU 45): stream-bank pause and resume refuse while the stream plays; SePlayer::setVolume on a voice bank only rewrites the record until the next master fade; who fills an StDT bank header (+0xc) is unread. Not built (source-only); g++ -fsyntax-only -Wall clean on seplayer, stagesound, progress with RosePan SDK headers.",
@@ -2301,6 +2322,10 @@
     [
      "0017f150",
      "0017fce0"
+    ],
+    [
+     "00310a20",
+     "00310a70"
     ]
    ],
    "sessions": [
@@ -2312,7 +2337,7 @@
     }
    ],
    "status": "verify",
-   "why": "Cut out of unassigned@00171300 (the frontier pick for getStageFiles 0x17f150): one object file between the adjustor thunks 0x17f090..0x17f150 (the previous file's last code) and 0x17fce0 (answers 25: slot 108 of the bullet class vtable 0x312cdc, so the next file's inline virtuals): getStageFiles, stageThread 0x17f160 (slot 3, started by 0x2b60b0), its clear / game-over / pause / restart helpers, stageLoad 0x17fb90, setStageLoader 0x17fc90 and the handler-table stub 0x17f7b0. The file name is the port's (no strings)."
+   "why": "Cut out of unassigned@00171300 (the frontier pick for getStageFiles 0x17f150): one object file between the adjustor thunks 0x17f090..0x17f150 (the previous file's last code) and 0x17fce0 (answers 25: slot 108 of the bullet class vtable 0x312cdc, so the next file's inline virtuals): getStageFiles, stageThread 0x17f160 (slot 3, started by 0x2b60b0), its clear / game-over / pause / restart helpers, stageLoad 0x17fb90, setStageLoader 0x17fc90 and the handler-table stub 0x17f7b0. The file name is the port's (no strings).; CodeWarrior's static initialisers 0x310a00..0x310f80 (table 0x310fb0) each joined to the file owning the globals they set (2026-11-07)"
   },
   "game/stagemenu.cpp": {
    "notes": "All 29 functions written (batch 183); the frontier unassigned@0022fc50 was six MSL vector helpers, now listed in game/characterroute.cpp, and StageMenuFade. Proved: menucmp.py, 16 scripts, 355157 lines, 10689 plates, 9967 texts, 62 picks, 0 differ, the window only; StageMenu::update is read from the code. Seen: YAMIPAN_TELEPORT=2 and 7, scripted Triangle, the orange Shout plate with black text, progress/20261106-stage-menu-shout.png; closes, reopens, Cross picks. Not seen: what the script does with the pick, two or more lines in a run, grey plates in a run, a wide display, a real pad. No picture of the real game, so verify. Doubts in open-items.md Next up: look names, and show flag 3 is also kShowFlagNotFalling in playermotion.cpp.",
@@ -2613,6 +2638,10 @@
     [
      "002afc20",
      "002b0d50"
+    ],
+    [
+     "00310f60",
+     "00310f80"
     ]
    ],
    "sessions": [
@@ -2624,7 +2653,7 @@
     }
    ],
    "status": "verify",
-   "why": "StageResult (0x599700, static init 0x310f60: begin(0) + __register_global_object with the destructor 0x2b0cf0) and the game-pack loader 0x2afd00..0x2aff80: the MSL map instances 0x2b0590..0x2b0cf0 serve the loader's tables and sit between getStageResult and StageResult's static destructor, so one object file; 0x2afc20/0x2afcd0 (init-pack items by language) joined by position (guess); 0x2af9a0 before is the 0x2adc70 drawing cluster, 0x2b0d50 after is a SoundStream thunk"
+   "why": "StageResult (0x599700, static init 0x310f60: begin(0) + __register_global_object with the destructor 0x2b0cf0) and the game-pack loader 0x2afd00..0x2aff80: the MSL map instances 0x2b0590..0x2b0cf0 serve the loader's tables and sit between getStageResult and StageResult's static destructor, so one object file; 0x2afc20/0x2afcd0 (init-pack items by language) joined by position (guess); 0x2af9a0 before is the 0x2adc70 drawing cluster, 0x2b0d50 after is a SoundStream thunk; CodeWarrior's static initialisers 0x310a00..0x310f80 (table 0x310fb0) each joined to the file owning the globals they set (2026-11-07)"
   },
   "game/stagescene.cpp": {
    "notes": "Fix for the user's crash at the start of the mission after stage 1. isMotionTarget 0x175c40 was a stub, so node 4's crow oCM99_20 had no pose and native 0xb1 faulted in ModelPose::play. Node 4 ran 330 s in a scripted run from a temporary start on that node, no crash, the pier on screen with the boy in third person. Nobody has played it yet. ~SceneEffectList in ~StageScene is a callcheck item left from an earlier run, not this one.",
@@ -2632,6 +2661,10 @@
     [
      "001953f0",
      "001a68b0"
+    ],
+    [
+     "00310a70",
+     "00310ac0"
     ]
    ],
    "sessions": [
@@ -2686,7 +2719,7 @@
     }
    ],
    "status": "verify",
-   "why": "StageScene methods 0x195640..0x19c180 and StageFiles 0x1a37e0..0x1a4270 share helpers (path filter 0x1a1ca0, script loader 0x1a20f0, string-map templates 0x1a4e80..0x1a6790); CodeWarrior emits a TU's weak templates and this-adjust thunks (0x1a67c0..0x1a68a0) last, so the file ends before 0x1a68b0 (dtor of vtable 0x315690, the next run's class). Start 0x1953f0: game/stageobjlist.cpp ends there. No source-path string; one file is a guess, StageFiles may be its own file."
+   "why": "StageScene methods 0x195640..0x19c180 and StageFiles 0x1a37e0..0x1a4270 share helpers (path filter 0x1a1ca0, script loader 0x1a20f0, string-map templates 0x1a4e80..0x1a6790); CodeWarrior emits a TU's weak templates and this-adjust thunks (0x1a67c0..0x1a68a0) last, so the file ends before 0x1a68b0 (dtor of vtable 0x315690, the next run's class). Start 0x1953f0: game/stageobjlist.cpp ends there. No source-path string; one file is a guess, StageFiles may be its own file.; CodeWarrior's static initialisers 0x310a00..0x310f80 (table 0x310fb0) each joined to the file owning the globals they set (2026-11-07)"
   },
   "game/stagesound.cpp": {
    "notes": "Batch 077 (31 names: the 18 slice functions, abs 0x121f08, SoundTrack hasSubtitles / getSubtitle / setVolume, SePlayer setTable / setPitch, StageNodeBase ctor 0x1d8540 / dtor 0x1865c0, NodeTransform ctor 0x1d7f20 / setPosition 0x1d7ee0, StageNodeList pushBack 0x1842c0 / erase 0x184370). New header src/game/stagenode.h (decision taken unattended, open-items TU 44): stand-ins for the uncut scene-node run unassigned@0017fce0; StageNode moved there from gamehooks.h because StageSoundSource now derives from it and gamehooks.h includes stagesound.h. gamehooks.h: SeEntry subtitleKey +0x8, priority +0x2c, cycle mutable; StreamTable (StDT: count +0x10, entries +0x40) as SoundTrack m_table +0x60. stagesound.h: StageCueReject codes, the source's parent +0x4 (was _04) and _10c, 18 new members. The occlusion raycasts are one static helper (soundOcclusion) shared by updateChannels and pickCueChannel. Checked: callcheck clean (45 annotated), layout lint OK, g++ -fsyntax-only -Wall -Wextra clean on stagesound / stageobjlist / vcmtable / stageresult (RosePan SDK headers + scratch libvifpk stub); scene / uigame / stageloop show only the known gfxtarget / rena gaps. Boundaries: 0x1d7c50.. belongs to the node family (transform, node base ctor), 0x1d3d20 stays outside. Nothing on screen can show this yet (no build). Next for sound: the stage objects' sound commands 0x2a6380..0x2a6830.",
@@ -2886,6 +2919,10 @@
     [
      "0025fa50",
      "00263b90"
+    ],
+    [
+     "00310b60",
+     "00310ec0"
     ]
    ],
    "sessions": [
@@ -2915,7 +2952,7 @@
     }
    ],
    "status": "verify",
-   "why": "Cut out of unassigned@00252840 (the frontier pick, 196 functions): the S2D UI's game side, between the widget classes and their tween helpers (..0x25fa50, vtables 0x316a90..0x316c10) and the stage alert class (0x263b90, every caller passes gStageScene +0xf4). UiFont 0x25fa50, the fMsg message files and TimM sprite sheets (find / relocate, magic checked against ROM.001), the layout's sound / game-value / game-state hooks 0x25ff40.., the tracks' game targets (bindTarget, findSprite over the item tables), the text variables 0x260bc0 / 0x2612c0, the game values 0x262e70 / 0x2633f0 and small hooks to 0x263b90. No source string: the file name and joining the font / message / sheet helpers to the hooks are guesses by position."
+   "why": "Cut out of unassigned@00252840 (the frontier pick, 196 functions): the S2D UI's game side, between the widget classes and their tween helpers (..0x25fa50, vtables 0x316a90..0x316c10) and the stage alert class (0x263b90, every caller passes gStageScene +0xf4). UiFont 0x25fa50, the fMsg message files and TimM sprite sheets (find / relocate, magic checked against ROM.001), the layout's sound / game-value / game-state hooks 0x25ff40.., the tracks' game targets (bindTarget, findSprite over the item tables), the text variables 0x260bc0 / 0x2612c0, the game values 0x262e70 / 0x2633f0 and small hooks to 0x263b90. No source string: the file name and joining the font / message / sheet helpers to the hooks are guesses by position.; CodeWarrior's static initialisers 0x310a00..0x310f80 (table 0x310fb0) each joined to the file owning the globals they set (2026-11-07)"
   },
   "game/uiitemlist.cpp": {
    "notes": "UiPrompt::setSheet keeps the sheet at +0x24 and a Tim2Texture of its first picture at +0x20; draw puts the button's sprite left of the label through the host UI module, in the ROM's state (TEST 0x33001, ALPHA 0x44, CLAMP 0). Seen with work/walklong_pad.txt at 340 s, shot_07800: amber cross beside Open at the top, centred with the label. Natives 0x79 and 0xf6 were already written. Not looked at: the press blink, the blocked dim state and the other buttons of the map.",
