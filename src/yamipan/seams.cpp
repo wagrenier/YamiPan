@@ -2,11 +2,11 @@
 #include <chrono>
 #include <memory>
 #include <span>
-#include <thread>
 
 #include "game/movieplayer.h"
 #include "rena/rena_2d_texture_tim2.h"
 #include "yamipan/core/application.h"
+#include "yamipan/os/timed_waiter.h"
 #include "yamipan/os/yamipan_time.h"
 #include "yamipan/rendering/renderer.h"
 #include "yamipan/rendering/ui_canvas.h"
@@ -70,14 +70,15 @@ void YamiPan_ModelForgetTextures()
     models().forgetTextures();
 }
 
+// Not std::this_thread::sleep_for: under MinGW a 1 ms one takes 15.6 ms (os/timed_waiter.h).
 void YamiPan_Sleep(unsigned int milliseconds)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+    yamipan::os::TimedWaiter::sleepFor(std::chrono::milliseconds(milliseconds));
 }
 
 void YamiPan_SleepNs(uint64_t nanoseconds)
 {
-    std::this_thread::sleep_for(std::chrono::nanoseconds(nanoseconds));
+    yamipan::os::TimedWaiter::sleepFor(std::chrono::nanoseconds(nanoseconds));
 }
 
 void *YamiPan_GetHostPointer(uintptr_t)

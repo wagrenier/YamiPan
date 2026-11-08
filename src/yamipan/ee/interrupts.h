@@ -6,7 +6,6 @@
 #include <array>
 #include <atomic>
 #include <chrono>
-#include <condition_variable>
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -15,6 +14,7 @@
 #include <vector>
 
 #include "yamipan/os/thread.h"
+#include "yamipan/os/timed_waiter.h"
 
 namespace yamipan::ee
 {
@@ -102,7 +102,7 @@ private:
 
     Kernel &m_kernel;
     mutable std::mutex m_lock;
-    std::condition_variable m_wake;
+    os::TimedWaiter m_wake; // not a condition variable: its timed waits miss the field by up to 16 ms
     std::array<std::vector<Registered>, kCauseCount> m_handlers;
     std::array<bool, kCauseCount> m_enabled{};
     std::vector<Timed> m_timed;
