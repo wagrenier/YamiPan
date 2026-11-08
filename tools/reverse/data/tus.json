@@ -1814,27 +1814,15 @@
    "why": "the four lines of text at the foot of the screen"
   },
   "game/scenerender.cpp": {
-   "notes": "The pin is closed: applyDebugAmbient, its call, the README paragraph and SceneRender::isKeyed with its two guards are gone; nothing was brightened. Measured in a New Game run: the record holds ambient 1.37255 1.41176 1.56863, directional 0, fog 1100..1500. Fog was not why the stage is dark: the auto camera stands 437 from its target. The map's vertex colours average 20 of 0x80, so a lit vertex averages 27, 28, 31: dark by its own data. Fixed from VU1 0x22f..0x259: the fog value is clamped to far value..near value (VU address 24), the host only saturated; stage 1's near value 230 now takes 10 percent off everything near. Mean brightness of the auto view: 3.2 unkeyed, 12 lit, 10.9 with the limit, ratio 0.90 = 230/255. Default camera, no YAMIPAN_CAMERA: an alley with walls and ground, work/shot_lights_default_camera.png. No game reference exists for either view, hence verify. No crash in 280 s runs. Left outside this TU: spot, skinned meshes, lamps; the event camera is next, game/demoevent.cpp. Doubt: host W against VU1 W with the scales 0x59b190, 0x59b194 is read from the upload's shape; open-items.md Done has it.",
+   "notes": "Batch 234 named 15 functions: RenaSpotLight/RenaPointLight getKind (2/1), getAngle (spot +0x7c, point -1), getRadius (+0x70), upload (0x2e00f0/0x2e05f0, host fillSpotLight/fillPointLight in rena/rena_draw.cpp), RenaLight getColor 0x2e07f0, getShade 0x2e07d0, ~RenaLight 0x2e0580, ~RenaSpotLight 0x1fa880, ~RenaPointLight 0x1fa900, and the two empty bases RenaObject 0x1fa980 (vtable 0x315f00) and RenaLightBase 0x1fa9d0 (0x315f20), names the port's. RenaLight is now polymorphic and abstract as in the ROM (vtable 0x31a780 has 0 at +0x14 +0x18 +0x20 +0x24); the upload slot is left out of the host vtable. Nothing calls the new getters yet. Smoke 15 s: language screen as before; 35 s YAMIPAN_TELEPORT=7: stage 7 lit, Akiko on the road, no crash. Verify, not done: nothing on screen depends on the new code.",
    "ranges": [
     [
      "001f6ac0",
-     "001fa980"
+     "001faa30"
     ],
     [
-     "002e04e0",
-     "002e0580"
-    ],
-    [
-     "002e0730",
-     "002e07b0"
-    ],
-    [
-     "002e07b0",
-     "002e07d0"
-    ],
-    [
-     "002e0810",
-     "002e0820"
+     "002e00c0",
+     "002e0840"
     ]
    ],
    "sessions": [
@@ -1847,11 +1835,16 @@
      "date": "2026-11-04 13:00",
      "status": "verify",
      "summary": "Pinned lights closed: YAMIPAN_AMBIENT and the isKeyed guards deleted, the script's lights drive the picture, VU1's fog limits added"
+    },
+    {
+     "date": "2026-11-07 19:58",
+     "status": "verify",
+     "summary": "rena light records complete: RenaLight virtual slots, kinds, colour and shade getters, the four dtors; unassigned@002e00c0, @002e0580, @001fa980 pinned here"
     }
    ],
    "status": "verify",
    "task": "PINNED BY THE USER 2026-11-04: real lighting, and delete the YAMIPAN_AMBIENT stub. SceneRender and VectorTrack are written (game/scenerender.cpp, game/vectortrack.cpp); their values come only from scripts. After game/scriptrunner.cpp: delete the two isKeyed guards, applyDebugAmbient in rena_draw.cpp, its call and the README paragraph, look at the picture, compare stage 1 with the script's ambient 1.37..1.57 and fog 1100..1500 (architecture.md, The lights of a stage). Do not brighten anything. Keep it pinned until the stub is gone (open-items.md, top of Next up).",
-   "why": "SceneRender 0x1f6ac0..0x1fa8f0 with its base and member's dtors 0x1fa880, 0x1fa900 and the rena light records it builds; DrawSysFog setters inside stay in drawsys.h"
+   "why": "The rena light records: RenaObject / RenaLightBase / RenaLight / RenaPointLight / RenaSpotLight. Their four dtors 0x1fa880..0x1faa30 are emitted beside SceneRender (vtables 0x31a720, 0x31a750, 0x31a780, 0x315f20, 0x315f00), their slots and ctors 0x2e00c0..0x2e0840 in rena's code; was unassigned@001fa980, unassigned@002e00c0, unassigned@002e0580"
   },
   "game/screen.cpp": {
    "notes": "All 18 functions of 0x2676e0..0x2681e0 written (batch 037, 33 names, Ghidra saved). Overlay thread slot 6 draws the BG movie screen layout (init pack file 2dEU/BGMOVIEEU.d2b, overlayShowScreen / overlayReleaseScreen) and the loading indicator (lang item 0, asked per frame by overlayShowLoading from FileLoader::waitLoaded) into packet list 11. runLayout runs a stack UiLayout in packet list 12 until done (+0x3c, answer +0x38) or cross when cancelable (-1); runLayoutFile loads the file with a one-file FileLoader (PackFile base, vtable 0x3110b0). Screens: runStageScreenE / H (2dEU/s..m..e / h<e|n|h> per difficulty), runArchiveScreen (bit 0 answered 1, bit 1 save changed), runOptionScreen (memcardClearStamp unless options +0x4d, applySound on a sound change; 1 when options or the play record kind changed). Dialogs in slot 4: game over (lang 2, or 3 with StageResult::hasAttemptFlag; 0 restart 1 quit 2 continue) and notice (lang 1). Headers: screen.h new; overlay prototypes moved out of gamehooks.h; FileLoader, getInitPackData, the layout path getters, UiLayout setBaseDir / m_result / m_done, LangItem 0..3 in gamehooks.h; TexArea / gfxGetTexArea in gfxtarget.h; PacketList 10..12; ThreadSlot_Dialog / ThreadSlot_Overlay. Checked: callcheck clean, layout lint, g++ -fsyntax-only clean on screen.cpp and scene.cpp with stub SDK headers (MSYS2 needs ucrt64/bin on PATH: hazards.md). Next in the run: the LCG 0x2681e0..0x268310 (own file), 0x268310.., and the pack-item cluster 0x2902d0..0x2908c8 (getInitPackItem / getLangPackItem / loadInitPack / getInitPackData / stage screen paths), now the frontier's top.",

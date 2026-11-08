@@ -1,7 +1,7 @@
 /* ==========================================================================
  *  game/scenerender.h
  *
- *  The stage's lighting (game/scenerender.cpp, 0x1f6ac0..0x1fa900;
+ *  The stage's lighting (game/scenerender.cpp, 0x1f6ac0..0x1faa30;
  *  StageScene::render). Twenty light sets, each 36 keyed tracks: the map's
  *  three lights and ambient, the models' three lights and two ambients, the
  *  two kinds of fog, the clear colour and the camera's range. The ENV_CB box
@@ -12,7 +12,8 @@
  *  of ScriptRunner (architecture.md "The lights of a stage"). Colours are
  *  script integers / 127.5, so 255 is 2.0.
  *
- *  The ROM's class sits on two of rena's light records (0x2e04e0..0x2e0840):
+ *  The ROM's class sits on two of rena's light records (0x2e00c0..0x2e0840,
+ *  their dtors 0x1fa880..0x1faa30):
  *  the scene's point light is its base, its spot a member at +0x80 that
  *  every lit model points at (ModelInstance::spot).
  * ======================================================================== */
@@ -41,16 +42,51 @@ enum SceneTransitionLane
     SceneTransition_SbFrames    = 2,    // the same for a model inside an ENV_SB box
 };
 
-// What rena's light records share (vtable 0x31a780). layout: host -- EE 0x70.
-struct RenaLight
+// What a light record is, by its slot +0x14.
+enum RenaLightKind
+{
+    RenaLight_Point = 1,        // RenaPointLight (0x2e0820)
+    RenaLight_Spot  = 2,        // RenaSpotLight (0x2e00c0)
+};
+
+// rena's root (vtable 0x315f00: the dtor alone), which the DrawSys objects'
+// dtors end on too; those are not derived from it here. The name is the
+// port's. layout: host -- EE 4, the vptr.
+class RenaObject
+{
+public:
+    virtual ~RenaObject() {}                                             // FS2 0x001fa980: deleting
+};
+
+// Between the root and the lights (vtable 0x315f20: the dtor alone; only
+// the light dtors store it). The name is the port's. layout: host -- EE 4.
+class RenaLightBase : public RenaObject
+{
+public:
+    ~RenaLightBase() override {}                                         // FS2 0x001fa9d0: deleting
+};
+
+// What rena's light records share (vtable 0x31a780, slots in its order;
+// the ROM's has 0 at +0x14, +0x18, +0x20, +0x24: pure). layout: host -- EE 0x70.
+struct RenaLight : RenaLightBase
 {
     RenaLight();
+    ~RenaLight() override;                                               // FS2 0x002e0580: deleting
     // FS2 0x001f8600
-    void setActive(bool on) { active = on; }
+    virtual void setActive(bool on) { active = on; }
     // FS2 0x001f8610
-    bool isActive() const { return active != 0; }
+    virtual bool isActive() const { return active != 0; }
+    virtual RenaLightKind getKind() const = 0;                           // slot +0x14
+    // Slot +0x18, the upload to VU1 (0x2e05f0, 0x2e00f0): the draw module
+    // takes the values instead, rena/rena_draw.cpp's fillPointLight and
+    // fillSpotLight, so the host has no slot for it.
     // FS2 0x001f85f0
-    const sceVu0FVECTOR *getMatrix() const { return matrix; }
+    virtual const sceVu0FVECTOR *getMatrix() const { return matrix; }
+    virtual float getAngle() const = 0;                                  // slot +0x20: radians, -1 no cone
+    virtual float getRadius() const = 0;                                 // slot +0x24
+    virtual void getColor(float *r, float *g, float *b) const;           // FS2 0x002e07f0
+    virtual void getShade(float *r, float *g, float *b) const;           // FS2 0x002e07d0
+
     void setMatrix(const sceVu0FVECTOR *from);                           // FS2 0x002e0810
     void setColor(const sceVu0FVECTOR from);                             // FS2 0x002e07c0
     void setShade(const sceVu0FVECTOR from);                             // FS2 0x002e07b0
@@ -65,6 +101,11 @@ struct RenaLight
 struct RenaPointLight : RenaLight
 {
     RenaPointLight();                                                    // FS2 0x002e0730
+    ~RenaPointLight() override {}                                        // FS2 0x001fa900: deleting
+
+    RenaLightKind getKind() const override;                              // FS2 0x002e0820
+    float getAngle() const override;                                     // FS2 0x002e0830
+    float getRadius() const override;                                    // FS2 0x002e0720
 
     float radius;               // FS2 +0x70: 1200 from the ctor
     float weight;               // FS2 +0x74: 4 from the ctor
@@ -74,6 +115,11 @@ struct RenaPointLight : RenaLight
 struct RenaSpotLight : RenaLight
 {
     RenaSpotLight();                                                     // FS2 0x002e04e0
+    ~RenaSpotLight() override {}                                         // FS2 0x001fa880: deleting
+
+    RenaLightKind getKind() const override;                              // FS2 0x002e00c0
+    float getAngle() const override;                                     // FS2 0x002e00d0
+    float getRadius() const override;                                    // FS2 0x002e00e0
 
     float radius;               // FS2 +0x70: 1200 from the ctor
     float reach;                // FS2 +0x74: 1200 from the ctor
