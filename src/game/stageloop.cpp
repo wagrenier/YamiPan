@@ -29,6 +29,10 @@ constexpr u_char kFrameBrightnessFull = 0x80;
 constexpr int    kAlphaFixShift = 32;
 constexpr u_long kAlphaFixMask  = 0xffull << kAlphaFixShift;
 
+// The file's static initialiser fills its copy of the zoom pair of
+// viewcamera.h (sbss 0x31adec / 0x31adf0 from sdata 0x31a8d0), which nothing
+// here reads: ViewCamera::kZoomLow / kZoomSpan stand for it.
+// FS2 0x00310a20  __sinit_stageloop_cpp
 StageScene         *gStageScene;    /* sbss 0x31adf4 (gp-0x7a7c) */
 static FileLoader  *sStageLoader;   /* sbss 0x31adf8 (gp-0x7a78): setStageLoader */
 static StageFiles  *sStageFiles;    /* sbss 0x31adfc (gp-0x7a74): getStageFiles */

@@ -5,7 +5,10 @@
 #include <cmath>
 #include <cstddef>
 #include <cstring>
+#include <functional>
+#include <span>
 
+#include "yamipan/core/logger.h"
 #include "yamipan/rendering/renderer.h"
 
 class Tim2Texture; // rena/rena_2d_texture_tim2.h
@@ -20,6 +23,14 @@ constexpr SDL_GPUTextureFormat kDepthFormat = SDL_GPU_TEXTUREFORMAT_D32_FLOAT;
 constexpr float kUvUnit = 4096.0f; // ITOF12
 constexpr int kLightCount = 3;
 
+// A chunk of cached batches: 4 MiB of vertices, and three indices for each, a strip's most.
+constexpr std::uint32_t kChunkVertices = 128 * 1024;
+constexpr std::uint32_t kChunkIndices = 3 * kChunkVertices;
+
+// The cache starts over past this many chunks (about 150 MiB): a batch stays until a texture comes in (a new stage's
+// pack) or this, so what was left of the models that went cannot pile up for ever.
+constexpr std::size_t kMaxChunks = 32;
+
 // TEST_1 of the opaque pass (0x5050b): what falls under this alpha never reaches the depth buffer. The ROM
 // then blends it in with a second GS pass; the host drops it.
 constexpr float kOpaqueAlphaRef = 0x50 / 128.0f;
@@ -30,12 +41,33 @@ constexpr float kSpotAlphaRef = kOpaqueAlphaRef;
 // What VU1 scales a light's colours and the spot's reach by (LOI at 0x57e, 0x32b).
 constexpr float kVertexColorUnit = 255.0f;
 
-// Mirrors ModelVertexUniforms in model.vert.hlsl.
+// Mirrors ModelVertexUniforms in model_static.hlsli; model.vert.hlsl declares the first two.
 struct ModelVertexUniforms
 {
     float worldToClip[16];
     float fog[4];
+    std::array<float, 4> eye;
+    std::array<float, 4> pointPosition;
+    std::array<float, 4> pointColor;
+    std::array<float, 4> pointShade;
+    std::array<float, 16> spotWorldToLight;
+    std::array<float, 4> spotScale;
+    std::array<float, 4> spotFalloff;
+    std::array<std::array<float, 16>, kYamiPanModelMaxShadows> shadowProjections;
 };
+static_assert(sizeof(ModelVertexUniforms) == 43 * 16);
+
+// Mirrors ModelDrawUniforms in model_static.hlsli.
+struct ModelDrawUniforms
+{
+    float draw[4];
+};
+
+// uDraw.x of model_static.vert and model_static_projected.vert.
+constexpr float kDrawColor = 0.0f;
+constexpr float kDrawReflection = 1.0f;
+constexpr float kDrawSpot = 0.0f;
+constexpr float kDrawShadow = 1.0f;
 
 // Mirrors ModelFragmentUniforms in model.frag.hlsl.
 struct ModelFragmentUniforms
@@ -69,6 +101,103 @@ void buildWorldToClip(const ModelPass &pass, const PictureLayout &layout, float 
         out[row * 4 + 2] = static_cast<float>((z - pass.depthMin * w) / depthRange);
         out[row * 4 + 3] = static_cast<float>(w);
     }
+}
+
+// Whether a face that looks at the eye turns counter-clockwise on screen. VU1 keeps a face whose normal
+// (b - a) x (c - a) points at the eye (facesEye below); seen through a projection whose centre is the eye, such a
+// face's corners turn the way given by the sign of the determinant of the matrix taking a point's offset from the
+// eye to clip x, y and w: the triple product of the corners' offsets is that determinant times the normal's dot with
+// a corner's offset from the eye. Negative: counter-clockwise. So the rasterizer can cull what facesEye did, as long
+// as the game's eye is its projection's centre (eyeAtCentre below).
+bool frontTurnsCounterClockwise(const float *worldToClip)
+{
+    constexpr std::array<int, 3> kColumns{0, 1, 3}; // x, y, w
+    double m[3][3];
+    for (int row = 0; row < 3; row++)
+    {
+        for (int column = 0; column < 3; column++)
+            m[row][column] = worldToClip[row * 4 + kColumns[static_cast<std::size_t>(column)]];
+    }
+    const double determinant = m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+                               m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+                               m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+    return determinant < 0.0;
+}
+
+// The rasterizer's cull for a cached batch. Its index buffer already turns a strip's odd faces round, so only the
+// mesh's mirroring is left of what facesEye flips.
+SDL_GPUCullMode cullModeOf(const ModelBatchDraw &batch, bool counterClockwise)
+{
+    if (!batch.culled)
+        return SDL_GPU_CULLMODE_NONE;
+    return counterClockwise != batch.mirrored ? SDL_GPU_CULLMODE_BACK : SDL_GPU_CULLMODE_FRONT;
+}
+
+// Whether VU address 4, the eye VU1 culls and reflects from, is the pass's projection's centre: the point the
+// world-to-screen matrix takes to x = y = w = 0. It is in the main pass. 0x2e5da0 works the eye out as -(view rows .
+// view translation), the camera only for a view without scale, and the far passes' view is scaled by 1 / 20
+// (setFarMatrices), so there VU1 culls from the camera / 400, near the world's origin. The ROM's, kept.
+bool eyeAtCentre(const YamiPanModelPass &pass)
+{
+    const float *const matrix = &pass.viewScreen[0][0];
+    constexpr std::array<int, 3> kColumns{0, 1, 3}; // x, y, w
+    double rows[3][4]; // rows[k] . (point, 1) = column k of the matrix
+    for (std::size_t k = 0; k < 3; k++)
+    {
+        for (int axis = 0; axis < 4; axis++)
+            rows[k][axis] = matrix[axis * 4 + kColumns[k]];
+    }
+    const auto determinant3 = [](const double (&m)[3][3]) {
+        return m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+               m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+    };
+    double linear[3][3];
+    for (int k = 0; k < 3; k++)
+    {
+        for (int axis = 0; axis < 3; axis++)
+            linear[k][axis] = rows[k][axis];
+    }
+    const double determinant = determinant3(linear);
+    if (determinant == 0.0)
+        return false;
+
+    // Cramer's rule for the centre, then how far the eye is from it against the centre's own size.
+    double distance = 0.0;
+    double size = 1.0;
+    for (int axis = 0; axis < 3; axis++)
+    {
+        double replaced[3][3];
+        for (int k = 0; k < 3; k++)
+        {
+            for (int column = 0; column < 3; column++)
+                replaced[k][column] = column == axis ? -rows[k][3] : linear[k][column];
+        }
+        const double centre = determinant3(replaced) / determinant;
+        distance = std::max(distance, std::abs(centre - pass.eye[axis]));
+        size = std::max(size, std::abs(centre));
+    }
+    return distance <= size * 1e-3;
+}
+
+float determinantOf(const float *matrix)
+{
+    return matrix[0] * (matrix[5] * matrix[10] - matrix[6] * matrix[9]) -
+           matrix[1] * (matrix[4] * matrix[10] - matrix[6] * matrix[8]) +
+           matrix[2] * (matrix[4] * matrix[9] - matrix[5] * matrix[8]);
+}
+
+// The first vertex's place, FNV-1a: enough to tell another file that came in at the same addresses, which
+// forgetTextures does not always see. One cache line: it is read for every batch of every frame.
+std::uint64_t fingerprintOf(const YamiPanModelBatch &batch)
+{
+    std::uint64_t hash = 0xcbf29ce484222325ull;
+    for (int word = 0; word < 3; word++)
+    {
+        std::uint32_t value;
+        std::memcpy(&value, batch.positions + word, 4);
+        hash = (hash ^ value) * 0x100000001b3ull;
+    }
+    return hash;
 }
 
 constexpr std::uint32_t kVertexAlpha = 0x80;
@@ -313,21 +442,86 @@ ModelShadowVertex shadowVertex(const float *projection, const ModelVertex &verte
     return out;
 }
 
+// Which sides of a shadow's box a world point lies beyond, two bits an axis.
+unsigned shadowSides(const float *clip, float x, float y, float z)
+{
+    unsigned sides = 0;
+    for (int lane = 0; lane < 3; lane++)
+    {
+        const float placed = clip[0 + lane] * x + clip[4 + lane] * y + clip[8 + lane] * z + clip[12 + lane];
+        sides |= placed > 1.0f ? 1u << (lane * 2) : 0u;
+        sides |= placed < -1.0f ? 2u << (lane * 2) : 0u;
+    }
+    return sides;
+}
+
 // Whether every vertex lies beyond one side of a shadow's box: VU1 0x618 asks it of the batch's bounds.
 bool outsideShadowBox(const float *clip, const std::vector<ModelVertex> &batch)
 {
     unsigned common = 0x3f;
     for (const ModelVertex &vertex : batch)
     {
-        unsigned sides = 0;
-        for (int lane = 0; lane < 3; lane++)
-        {
-            const float placed = clip[0 + lane] * vertex.x + clip[4 + lane] * vertex.y + clip[8 + lane] * vertex.z +
-                                 clip[12 + lane];
-            sides |= placed > 1.0f ? 1u << (lane * 2) : 0u;
-            sides |= placed < -1.0f ? 2u << (lane * 2) : 0u;
-        }
-        common &= sides;
+        common &= shadowSides(clip, vertex.x, vertex.y, vertex.z);
+        if (common == 0)
+            return false;
+    }
+    return true;
+}
+
+// A rigid batch's world place of a mesh point, as the placed path works it out.
+std::array<float, 3> placePoint(const float *matrix, const float *point)
+{
+    return {matrix[0] * point[0] + matrix[4] * point[1] + matrix[8] * point[2] + matrix[12],
+            matrix[1] * point[0] + matrix[5] * point[1] + matrix[9] * point[2] + matrix[13],
+            matrix[2] * point[0] + matrix[6] * point[1] + matrix[10] * point[2] + matrix[14]};
+}
+
+// A cached batch's box in the world: the mesh box's centre placed, and how far its half sizes reach along each
+// world axis. It holds every vertex, since the placing is affine.
+struct WorldBox
+{
+    std::array<float, 3> center;
+    std::array<float, 3> half;
+};
+
+WorldBox worldBoxOf(const float *matrix, const std::array<float, 3> &low, const std::array<float, 3> &high)
+{
+    const float center[3] = {(low[0] + high[0]) * 0.5f, (low[1] + high[1]) * 0.5f, (low[2] + high[2]) * 0.5f};
+    const float half[3] = {(high[0] - low[0]) * 0.5f, (high[1] - low[1]) * 0.5f, (high[2] - low[2]) * 0.5f};
+    WorldBox box{placePoint(matrix, center), {}};
+    for (int axis = 0; axis < 3; axis++)
+    {
+        box.half[static_cast<std::size_t>(axis)] = std::abs(matrix[0 + axis]) * half[0] +
+                                                   std::abs(matrix[4 + axis]) * half[1] +
+                                                   std::abs(matrix[8 + axis]) * half[2];
+    }
+    return box;
+}
+
+// Whether a world box lies wholly past one side of a shadow's box: then so does every vertex inside it.
+bool outsideBox(const float *clip, const WorldBox &box)
+{
+    for (int lane = 0; lane < 3; lane++)
+    {
+        const float center = clip[0 + lane] * box.center[0] + clip[4 + lane] * box.center[1] +
+                             clip[8 + lane] * box.center[2] + clip[12 + lane];
+        const float reach = std::abs(clip[0 + lane]) * box.half[0] + std::abs(clip[4 + lane]) * box.half[1] +
+                            std::abs(clip[8 + lane]) * box.half[2];
+        if (center - reach > 1.0f || center + reach < -1.0f)
+            return true;
+    }
+    return false;
+}
+
+// The vertex test of a cached rigid batch, which has no world vertices: they are placed as the other path would.
+// Only a batch whose box lies across a shadow's pays for it.
+bool outsideShadowBox(const float *clip, const float *matrix, const YamiPanModelBatch &batch)
+{
+    unsigned common = 0x3f;
+    for (int index = 0; index < batch.count; index++)
+    {
+        const std::array<float, 3> placed = placePoint(matrix, batch.positions + index * 3);
+        common &= shadowSides(clip, placed[0], placed[1], placed[2]);
         if (common == 0)
             return false;
     }
@@ -354,6 +548,62 @@ std::uint32_t rawColor(const std::uint8_t *color)
            static_cast<std::uint32_t>(color[2]) << 16 | kVertexAlpha << 24;
 }
 
+// The second GS pass over a lit vertex: ALPHA_1 0x58, the picture * what the last pass left in the frame's alpha
+// added on top, whose own alpha is not written (FBMSK 0xff000000), against the first pass's depth. CLAMP_1 repeats.
+SDL_GPUColorTargetDescription spotTarget()
+{
+    SDL_GPUColorTargetDescription target{};
+    target.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+    target.blend_state.enable_blend = true;
+    target.blend_state.enable_color_write_mask = true;
+    target.blend_state.color_write_mask =
+        SDL_GPU_COLORCOMPONENT_R | SDL_GPU_COLORCOMPONENT_G | SDL_GPU_COLORCOMPONENT_B;
+    target.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+    target.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+    target.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_DST_ALPHA;
+    target.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    target.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+    target.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    return target;
+}
+
+// A shadow's GS pass (0x2fdb60): ALPHA_1 0x44, black over the frame by its alpha; TEST_1 0x50000, no alpha test,
+// the first pass's depth; CLAMP_1 5. The GS does not blend alpha: the frame's alpha takes the shadow's, and the spot
+// that follows reads it (FBMSK is 0 in this pass).
+SDL_GPUColorTargetDescription shadowTarget()
+{
+    SDL_GPUColorTargetDescription target{};
+    target.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+    target.blend_state.enable_blend = true;
+    target.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+    target.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+    target.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+    target.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+    target.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    target.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+    return target;
+}
+
+// The vertex shaders' uniforms for a pass: its projection for this picture's shape, and what its lights are.
+ModelVertexUniforms passUniforms(const ModelPass &pass, const PictureLayout &layout)
+{
+    ModelVertexUniforms uniforms{};
+    buildWorldToClip(pass, layout, uniforms.worldToClip);
+    uniforms.fog[0] = pass.fogA;
+    uniforms.fog[1] = pass.fogB;
+    uniforms.fog[2] = pass.fogNearValue;
+    uniforms.fog[3] = pass.fogFarValue;
+    uniforms.eye = pass.lights.eye;
+    uniforms.pointPosition = pass.lights.pointPosition;
+    uniforms.pointColor = pass.lights.pointColor;
+    uniforms.pointShade = pass.lights.pointShade;
+    uniforms.spotWorldToLight = pass.lights.spotWorldToLight;
+    uniforms.spotScale = pass.lights.spotScale;
+    uniforms.spotFalloff = pass.lights.spotFalloff;
+    uniforms.shadowProjections = pass.lights.shadowProjections;
+    return uniforms;
+}
+
 } // namespace
 
 ModelRenderer::ModelRenderer(Renderer &renderer, gpu::Device &device) : m_renderer(renderer), m_device(device)
@@ -365,6 +615,15 @@ ModelRenderer::ModelRenderer(Renderer &renderer, gpu::Device &device) : m_render
         m_device.loadShader("model_spot.vert", SDL_GPU_SHADERSTAGE_VERTEX, {.samplers = 0, .uniformBuffers = 1});
     m_spotFragmentShader =
         m_device.loadShader("model_spot.frag", SDL_GPU_SHADERSTAGE_FRAGMENT, {.samplers = 1, .uniformBuffers = 1});
+    m_staticVertexShader =
+        m_device.loadShader("model_static.vert", SDL_GPU_SHADERSTAGE_VERTEX, {.samplers = 0, .uniformBuffers = 2});
+    m_staticProjectedVertexShader = m_device.loadShader("model_static_projected.vert", SDL_GPU_SHADERSTAGE_VERTEX,
+                                                        {.samplers = 0, .uniformBuffers = 2});
+    m_skinnedVertexShader = m_device.loadShader("model_skinned.vert", SDL_GPU_SHADERSTAGE_VERTEX,
+                                                {.samplers = 0, .uniformBuffers = 2, .storageBuffers = 1});
+    m_skinnedProjectedVertexShader = m_device.loadShader("model_skinned_projected.vert", SDL_GPU_SHADERSTAGE_VERTEX,
+                                                         {.samplers = 0, .uniformBuffers = 2, .storageBuffers = 1});
+    m_palettes.usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ;
 }
 
 // Callers hold m_lock.
@@ -412,6 +671,21 @@ void ModelRenderer::beginPass(const void *list, const YamiPanModelPass &pass)
     if (out.shadowImage == nullptr)
         layer.shadows.count = 0;
     layer.open = true;
+    layer.eyeAtCentre = eyeAtCentre(pass);
+
+    // What model_static.vert takes of the pass: a cached batch is lit on the GPU.
+    ModelPassLights &lights = out.lights;
+    std::copy_n(pass.eye, 3, lights.eye.begin());
+    std::copy_n(pass.point.position, 3, lights.pointPosition.begin());
+    lights.pointPosition[3] = pass.point.weight;
+    std::copy_n(pass.point.color, 3, lights.pointColor.begin());
+    lights.pointColor[3] = pass.point.slope;
+    std::copy_n(pass.point.shade, 3, lights.pointShade.begin());
+    std::memcpy(lights.spotWorldToLight.data(), pass.spot.worldToLight, sizeof(pass.spot.worldToLight));
+    lights.spotScale = {pass.spot.scaleX, pass.spot.scaleY, pass.spot.limit, 0.0f};
+    std::copy_n(pass.spot.falloff, 3, lights.spotFalloff.begin());
+    static_assert(sizeof(lights.shadowProjections) == sizeof(pass.shadows.projection));
+    std::memcpy(lights.shadowProjections.data(), pass.shadows.projection, sizeof(pass.shadows.projection));
 }
 
 void ModelRenderer::setMaterial(const void *list, const YamiPanModelMaterial &material)
@@ -475,7 +749,7 @@ void ModelRenderer::drawQuad(const void *list, const YamiPanModelQuad &quad)
     if (layer.draws.size() > layer.passes.back().firstDraw)
     {
         ModelDraw &last = layer.draws.back();
-        if (last.image == layer.image && last.blended && last.blend == layer.blend &&
+        if (last.batchCount == 0 && last.image == layer.image && last.blended && last.blend == layer.blend &&
             last.fixedFog == layer.fixedFog && last.firstVertex + last.vertexCount == firstVertex)
         {
             last.vertexCount += kQuadVertices;
@@ -506,17 +780,17 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
     Layer &layer = m_layers[list];
     if (!layer.open || batch.count < 3)
         return;
+    drawCachedBatch(layer, &world[0][0], batch);
+}
 
-    const float *const matrix = &world[0][0];
+void ModelRenderer::drawPlacedBatch(Layer &layer, const float *matrix, const YamiPanModelBatch &batch)
+{
     const bool pointLit = layer.point.active != 0 && layer.lights.takesPoint != 0;
     const bool reflecting = layer.reflection != nullptr && !layer.unlit;
     layer.reflectionBatch.resize(reflecting ? static_cast<std::size_t>(batch.count) : 0);
 
     // The ROM measures a face in the mesh's space, so a mirroring matrix turns its front around in the world.
-    const float determinant = matrix[0] * (matrix[5] * matrix[10] - matrix[6] * matrix[9]) -
-                              matrix[1] * (matrix[4] * matrix[10] - matrix[6] * matrix[8]) +
-                              matrix[2] * (matrix[4] * matrix[9] - matrix[5] * matrix[8]);
-    const bool mirrored = determinant < 0.0f;
+    const bool mirrored = determinantOf(matrix) < 0.0f;
 
     const auto vertexAt = [&](int index) {
         ModelVertex vertex;
@@ -655,8 +929,8 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
     if (layer.draws.size() > layer.passes.back().firstDraw)
     {
         ModelDraw &last = layer.draws.back();
-        if (last.image == layer.image && last.blended == layer.blended && last.writesDepth == layer.writesDepth &&
-            last.firstVertex + last.vertexCount == firstVertex &&
+        if (last.batchCount == 0 && last.image == layer.image && last.blended == layer.blended &&
+            last.writesDepth == layer.writesDepth && last.firstVertex + last.vertexCount == firstVertex &&
             last.firstSpotVertex + last.spotVertexCount == firstSpot &&
             last.firstShadowVertex + last.shadowVertexCount == firstShadow)
         {
@@ -678,22 +952,369 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
     draw.writesDepth = layer.writesDepth;
 }
 
+std::size_t ModelRenderer::BatchKeyHash::operator()(const BatchKey &key) const
+{
+    std::size_t hash = std::hash<const void *>{}(key.positions);
+    const auto mix = [&](std::size_t value) { hash ^= value + 0x9e3779b97f4a7c15ull + (hash << 6) + (hash >> 2); };
+    mix(std::hash<const void *>{}(key.normals));
+    mix(std::hash<const void *>{}(key.colors));
+    mix(std::hash<const void *>{}(key.uvs));
+    mix(std::hash<const void *>{}(key.boneIds));
+    mix(std::hash<const void *>{}(key.weights));
+    mix(static_cast<std::size_t>(key.count) << 4 | static_cast<std::size_t>(key.bonesPerVertex) << 1 |
+        (key.strip ? 1u : 0u));
+    return hash;
+}
+
+const ModelRenderer::CachedBatch *ModelRenderer::cachedBatch(const YamiPanModelBatch &batch)
+{
+    const bool skinned = batch.palette != nullptr;
+    const BatchKey key{batch.positions,
+                       batch.normals,
+                       batch.colors,
+                       batch.uvs,
+                       skinned ? batch.boneIds : nullptr,
+                       skinned ? batch.weights : nullptr,
+                       skinned ? batch.bonesPerVertex : 0,
+                       batch.count,
+                       batch.strip != 0};
+    const std::uint64_t fingerprint = fingerprintOf(batch);
+    if (const auto found = m_batches.find(key); found != m_batches.end())
+    {
+        if (found->second.fingerprint == fingerprint)
+            return &found->second;
+        m_batches.erase(found);
+    }
+
+    const auto count = static_cast<std::uint32_t>(batch.count);
+    if (count > kChunkVertices)
+        return nullptr;
+
+    // The faces as the placed path takes them, a strip's odd ones turned back round (VU1 0x171..), so that every face
+    // of the batch that looks at the eye turns the same way on screen. Each batch starts on an even index, so every
+    // upload of indices is 4-byte aligned.
+    const std::uint32_t faces = batch.strip ? count - 2 : count / 3;
+    const std::uint32_t reserved = (faces * 3 + 1) & ~1u;
+    const std::uint32_t vertexSize = skinned ? sizeof(ModelSkinnedVertex) : sizeof(ModelStaticVertex);
+    ChunkFill &fill = skinned ? m_skinnedChunk : m_rigidChunk;
+    if (!fill.chunk || fill.vertices + count > kChunkVertices || fill.indices + reserved > kChunkIndices)
+    {
+        if (m_chunkCount == kMaxChunks)
+            forgetBatches();
+        fill.chunk = std::make_shared<ModelGeometryChunk>();
+        fill.chunk->vertexSize = vertexSize;
+        fill.vertices = 0;
+        fill.indices = 0;
+        m_chunkCount++;
+    }
+
+    CachedBatch cached;
+    cached.chunk = fill.chunk;
+    cached.firstIndex = fill.indices;
+    cached.indexCount = faces * 3;
+    cached.vertexOffset = static_cast<std::int32_t>(fill.vertices);
+    cached.low = {INFINITY, INFINITY, INFINITY};
+    cached.high = {-INFINITY, -INFINITY, -INFINITY};
+    cached.fingerprint = fingerprint;
+    {
+        std::scoped_lock pendingLock(m_pendingLock);
+        if (m_pending.empty() || m_pending.back().chunk != fill.chunk ||
+            m_pending.back().firstVertex + m_pending.back().vertices.size() / vertexSize != fill.vertices ||
+            m_pending.back().firstIndex + m_pending.back().indices.size() != fill.indices)
+        {
+            PendingGeometry &block = m_pending.emplace_back();
+            block.chunk = fill.chunk;
+            block.firstVertex = fill.vertices;
+            block.firstIndex = fill.indices;
+        }
+        PendingGeometry &block = m_pending.back();
+        const std::size_t firstByte = block.vertices.size();
+        block.vertices.resize(firstByte + static_cast<std::size_t>(count) * vertexSize);
+
+        for (std::uint32_t index = 0; index < count; index++)
+        {
+            const float *const position = batch.positions + index * 3;
+            const float *const normal = usableNormal(batch.normals + index * 3);
+            ModelSkinnedVertex vertex{};
+            ModelStaticVertex &base = vertex.base;
+            base.x = position[0];
+            base.y = position[1];
+            base.z = position[2];
+            base.nx = normal[0];
+            base.ny = normal[1];
+            base.nz = normal[2];
+            // No UVs (one triangle of node 4): the host has none of the last batch's to keep, as drawPlacedBatch.
+            base.u = batch.uvs != nullptr ? batch.uvs[index * 2] : std::int16_t{0};
+            base.v = batch.uvs != nullptr ? batch.uvs[index * 2 + 1] : std::int16_t{0};
+            std::copy_n(batch.colors + index * 4, 4, base.color);
+            for (std::size_t axis = 0; axis < 3; axis++)
+            {
+                cached.low[axis] = std::min(cached.low[axis], position[axis]);
+                cached.high[axis] = std::max(cached.high[axis], position[axis]);
+            }
+            if (skinned)
+            {
+                // A bone id counts VU quadwords (signed), four a matrix; -1 is an unused slot.
+                base.color[3] = static_cast<std::uint8_t>(batch.bonesPerVertex);
+                // With one bone the weights are not there to read (yamipan_drawmodel.h): the shader takes 1.
+                const std::int8_t *const ids = batch.boneIds + index * batch.bonesPerVertex;
+                const float *const weights =
+                    batch.bonesPerVertex > 1 ? batch.weights + index * batch.bonesPerVertex : nullptr;
+                for (int bone = 0; bone < 4; bone++)
+                {
+                    const bool used = bone < batch.bonesPerVertex && ids[bone] >= 0;
+                    const int matrix = used ? ids[bone] / 4 : 0;
+                    vertex.bones[bone] = used ? static_cast<std::uint8_t>(matrix) : std::uint8_t{255};
+                    vertex.weights[bone] = weights != nullptr && bone < batch.bonesPerVertex ? weights[bone] : 1.0f;
+                    if (used)
+                        cached.paletteSize = std::max(cached.paletteSize, static_cast<std::uint32_t>(matrix) + 1);
+                }
+            }
+            std::memcpy(block.vertices.data() + firstByte + static_cast<std::size_t>(index) * vertexSize,
+                        skinned ? static_cast<const void *>(&vertex) : static_cast<const void *>(&base), vertexSize);
+        }
+
+        for (std::uint32_t face = 0; face < faces; face++)
+        {
+            const std::uint32_t first = batch.strip ? face : face * 3;
+            const bool turned = batch.strip && (face & 1) != 0;
+            block.indices.push_back(static_cast<std::uint16_t>(turned ? first + 1 : first));
+            block.indices.push_back(static_cast<std::uint16_t>(turned ? first : first + 1));
+            block.indices.push_back(static_cast<std::uint16_t>(first + 2));
+        }
+        block.indices.resize(block.indices.size() + reserved - faces * 3);
+    }
+    fill.vertices += count;
+    fill.indices += reserved;
+    return &m_batches.insert_or_assign(key, std::move(cached)).first->second;
+}
+
+void ModelRenderer::forgetBatches()
+{
+    m_batches.clear();
+    m_rigidChunk = {};
+    m_skinnedChunk = {};
+    m_chunkCount = 0;
+}
+
+void ModelRenderer::drawCachedBatch(Layer &layer, const float *matrix, const YamiPanModelBatch &batch)
+{
+    // The rasterizer culls what faces away from the projection's centre; VU1 what faces away from the eye. They differ
+    // in the far passes (eyeAtCentre), where only the placed path answers as VU1 does.
+    const CachedBatch *const cached =
+        layer.lights.cullBack != 0 && !layer.eyeAtCentre ? nullptr : cachedBatch(batch);
+    if (cached == nullptr)
+    {
+        drawPlacedBatch(layer, matrix, batch);
+        return;
+    }
+    const bool skinned = batch.palette != nullptr;
+
+    // The palette: the matrices the batch's bones reach, once for the batches of a prim that share them.
+    std::uint32_t paletteBase = 0;
+    if (skinned)
+    {
+        const auto bytes = static_cast<std::size_t>(cached->paletteSize) * sizeof(std::array<float, 16>);
+        if (batch.palette == layer.lastPalette && cached->paletteSize <= layer.lastPaletteSize &&
+            std::memcmp(layer.palettes.data() + layer.lastPaletteBase, batch.palette, bytes) == 0)
+        {
+            paletteBase = layer.lastPaletteBase;
+        }
+        else
+        {
+            paletteBase = static_cast<std::uint32_t>(layer.palettes.size());
+            layer.palettes.resize(layer.palettes.size() + cached->paletteSize);
+            std::memcpy(layer.palettes.data() + paletteBase, batch.palette, bytes);
+            layer.lastPalette = batch.palette;
+            layer.lastPaletteBase = paletteBase;
+            layer.lastPaletteSize = cached->paletteSize;
+        }
+    }
+
+    // The instance: the same for every batch of a part under one material, so a run shares one.
+    std::uint32_t flags = 0;
+    flags |= layer.unlit ? static_cast<std::uint32_t>(ModelInstanceFlag::Unlit) : 0u;
+    flags |= layer.point.active != 0 && layer.lights.takesPoint != 0 ? static_cast<std::uint32_t>(ModelInstanceFlag::Point)
+                                                                     : 0u;
+    flags |= layer.pointFlat ? static_cast<std::uint32_t>(ModelInstanceFlag::PointFlat) : 0u;
+    flags |= skinned && batch.firstBoneOnly != 0 ? static_cast<std::uint32_t>(ModelInstanceFlag::FirstBoneOnly) : 0u;
+    ModelInstance instance{};
+    for (int row = 0; row < 3; row++)
+    {
+        for (int column = 0; column < 4; column++)
+            instance.place[row][column] = matrix[column * 4 + row];
+    }
+    std::copy_n(layer.lights.ambient, 3, instance.ambient);
+    instance.ambient[3] = static_cast<float>(flags);
+    for (int light = 0; light < kLightCount; light++)
+    {
+        std::copy_n(layer.lights.colors[light], 3, instance.lightColors[light]);
+        std::copy_n(layer.lights.directions[light], 3, instance.lightDirections[light]);
+    }
+    instance.lightColors[0][3] = layer.scrollU;
+    instance.lightColors[1][3] = layer.scrollV;
+    instance.lightColors[2][3] = layer.reflectionScale;
+    instance.lightDirections[0][3] = static_cast<float>(paletteBase);
+    if (layer.instances.empty() || std::memcmp(&layer.instances.back(), &instance, sizeof(instance)) != 0)
+        layer.instances.push_back(instance);
+
+    ModelBatchDraw draw;
+    draw.chunk = cached->chunk.get();
+    draw.firstIndex = cached->firstIndex;
+    draw.indexCount = cached->indexCount;
+    draw.vertexOffset = cached->vertexOffset;
+    draw.instance = static_cast<std::uint32_t>(layer.instances.size() - 1);
+    draw.skinned = skinned;
+    draw.culled = layer.lights.cullBack != 0;
+    draw.mirrored = determinantOf(matrix) < 0.0f;
+
+    // VU1's boxes for the spot and the shadows are the batch's positions as they stand: the mesh's, or the world's
+    // after a palette. A skinned batch's lies within the mesh box placed by each of its bones (a vertex is a weighted
+    // mean of those places); only one that box does not clear is placed here, as drawPlacedBatch would.
+    constexpr float kUnit[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+    draw.spotted = layer.spot.active != 0 && layer.lights.takesSpot != 0 && !layer.unlit && !layer.noSpot;
+    const bool shadowed =
+        layer.shadows.count != 0 && layer.lights.takesShadow != 0 && !layer.unlit && !layer.blended && !layer.noShadow;
+    WorldBox box{};
+    if (shadowed || (skinned && draw.spotted))
+        box = worldBoxOf(matrix, cached->low, cached->high);
+    if (skinned && (shadowed || draw.spotted))
+    {
+        std::array<float, 3> low{INFINITY, INFINITY, INFINITY};
+        std::array<float, 3> high{-INFINITY, -INFINITY, -INFINITY};
+        for (std::uint32_t bone = 0; bone < cached->paletteSize; bone++)
+        {
+            const WorldBox placed = worldBoxOf(batch.palette + bone * 16, cached->low, cached->high);
+            for (std::size_t axis = 0; axis < 3; axis++)
+            {
+                low[axis] = std::min(low[axis], placed.center[axis] - placed.half[axis]);
+                high[axis] = std::max(high[axis], placed.center[axis] + placed.half[axis]);
+            }
+        }
+        for (std::size_t axis = 0; axis < 3; axis++)
+        {
+            box.center[axis] = cached->paletteSize != 0 ? (low[axis] + high[axis]) * 0.5f : 0.0f;
+            box.half[axis] = cached->paletteSize != 0 ? (high[axis] - low[axis]) * 0.5f : 0.0f;
+        }
+    }
+    std::vector<ModelVertex> &placed = layer.batch; // the skinned vertices, worked out when a test needs them
+    placed.clear();
+    const auto placeSkinned = [&] {
+        if (!placed.empty())
+            return;
+        placed.resize(static_cast<std::size_t>(batch.count));
+        for (int index = 0; index < batch.count; index++)
+        {
+            const SkinnedVertex vertex = skinVertex(batch, index);
+            placed[static_cast<std::size_t>(index)].x = vertex.position[0];
+            placed[static_cast<std::size_t>(index)].y = vertex.position[1];
+            placed[static_cast<std::size_t>(index)].z = vertex.position[2];
+        }
+    };
+
+    if (draw.spotted && !skinned)
+        draw.spotted = !outsideSpotCone(layer.spot, matrix, cached->low.data(), cached->high.data());
+    if (draw.spotted && skinned)
+    {
+        const float low[3] = {box.center[0] - box.half[0], box.center[1] - box.half[1], box.center[2] - box.half[2]};
+        const float high[3] = {box.center[0] + box.half[0], box.center[1] + box.half[1], box.center[2] + box.half[2]};
+        draw.spotted = !outsideSpotCone(layer.spot, kUnit, low, high);
+        if (draw.spotted)
+        {
+            placeSkinned();
+            float exactLow[3] = {INFINITY, INFINITY, INFINITY};
+            float exactHigh[3] = {-INFINITY, -INFINITY, -INFINITY};
+            for (const ModelVertex &vertex : placed)
+            {
+                const float point[3] = {vertex.x, vertex.y, vertex.z};
+                for (int axis = 0; axis < 3; axis++)
+                {
+                    exactLow[axis] = std::min(exactLow[axis], point[axis]);
+                    exactHigh[axis] = std::max(exactHigh[axis], point[axis]);
+                }
+            }
+            draw.spotted = !outsideSpotCone(layer.spot, kUnit, exactLow, exactHigh);
+        }
+    }
+
+    for (int shadow = 0; shadowed && shadow < layer.shadows.count; shadow++)
+    {
+        const float *const clip = &layer.shadows.clip[shadow][0][0];
+        bool outside = outsideBox(clip, box);
+        if (!outside && skinned)
+        {
+            placeSkinned();
+            outside = outsideShadowBox(clip, placed);
+        }
+        else if (!outside)
+        {
+            outside = outsideShadowBox(clip, matrix, batch);
+        }
+        if (!outside)
+            draw.shadows |= static_cast<std::uint8_t>(1u << shadow);
+    }
+    if (layer.chunks.empty() || layer.chunks.back() != cached->chunk)
+        layer.chunks.push_back(cached->chunk);
+
+    if (layer.reflection != nullptr && !layer.unlit)
+    {
+        ModelBatchDraw &reflected = layer.reflectionBatches.emplace_back(draw);
+        reflected.spotted = false;
+        reflected.shadows = 0;
+    }
+
+    // Runs of one state join into one draw, as on the placed path.
+    const auto index = static_cast<std::uint32_t>(layer.batches.size());
+    layer.batches.push_back(draw);
+    if (layer.draws.size() > layer.passes.back().firstDraw)
+    {
+        ModelDraw &last = layer.draws.back();
+        if (last.batchCount != 0 && !last.reflection && last.image == layer.image && last.blended == layer.blended &&
+            last.writesDepth == layer.writesDepth && last.firstBatch + last.batchCount == index)
+        {
+            last.batchCount++;
+            return;
+        }
+    }
+    ModelDraw &out = layer.draws.emplace_back();
+    out.image = layer.image;
+    out.blended = layer.blended;
+    out.firstBatch = index;
+    out.batchCount = 1;
+    out.writesDepth = layer.writesDepth;
+}
+
 void ModelRenderer::endReflection(Layer &layer)
 {
-    if (layer.reflectionVertices.empty())
-        return;
-    ModelDraw draw;
-    draw.image = layer.reflection;
-    draw.blended = true;
-    draw.firstVertex = static_cast<std::uint32_t>(layer.vertices.size());
-    draw.vertexCount = static_cast<std::uint32_t>(layer.reflectionVertices.size());
-    draw.firstSpotVertex = static_cast<std::uint32_t>(layer.spotVertices.size());
-    draw.firstShadowVertex = static_cast<std::uint32_t>(layer.shadowVertices.size());
-    draw.blend = BlendMode::Additive;
-    draw.writesDepth = layer.writesDepth;
-    layer.vertices.insert(layer.vertices.end(), layer.reflectionVertices.begin(), layer.reflectionVertices.end());
-    layer.reflectionVertices.clear();
-    layer.draws.push_back(std::move(draw));
+    if (!layer.reflectionVertices.empty())
+    {
+        ModelDraw draw;
+        draw.image = layer.reflection;
+        draw.blended = true;
+        draw.firstVertex = static_cast<std::uint32_t>(layer.vertices.size());
+        draw.vertexCount = static_cast<std::uint32_t>(layer.reflectionVertices.size());
+        draw.firstSpotVertex = static_cast<std::uint32_t>(layer.spotVertices.size());
+        draw.firstShadowVertex = static_cast<std::uint32_t>(layer.shadowVertices.size());
+        draw.blend = BlendMode::Additive;
+        draw.writesDepth = layer.writesDepth;
+        layer.vertices.insert(layer.vertices.end(), layer.reflectionVertices.begin(), layer.reflectionVertices.end());
+        layer.reflectionVertices.clear();
+        layer.draws.push_back(std::move(draw));
+    }
+    if (!layer.reflectionBatches.empty())
+    {
+        ModelDraw draw;
+        draw.image = layer.reflection;
+        draw.blended = true;
+        draw.firstBatch = static_cast<std::uint32_t>(layer.batches.size());
+        draw.batchCount = static_cast<std::uint32_t>(layer.reflectionBatches.size());
+        draw.blend = BlendMode::Additive;
+        draw.writesDepth = layer.writesDepth;
+        draw.reflection = true;
+        layer.batches.insert(layer.batches.end(), layer.reflectionBatches.begin(), layer.reflectionBatches.end());
+        layer.reflectionBatches.clear();
+        layer.draws.push_back(std::move(draw));
+    }
 }
 
 void ModelRenderer::endPass(const void *list)
@@ -712,6 +1333,7 @@ void ModelRenderer::forgetTextures()
 {
     std::scoped_lock lock(m_lock);
     m_images.clear();
+    forgetBatches();
 }
 
 void ModelRenderer::collect(const void *list, Frame &frame)
@@ -725,16 +1347,32 @@ void ModelRenderer::collect(const void *list, Frame &frame)
     const auto vertexOffset = static_cast<std::uint32_t>(frame.modelVertices.size());
     const auto spotOffset = static_cast<std::uint32_t>(frame.modelSpotVertices.size());
     const auto shadowOffset = static_cast<std::uint32_t>(frame.modelShadowVertices.size());
+    const auto instanceOffset = static_cast<std::uint32_t>(frame.modelInstances.size());
+    const auto paletteOffset = static_cast<float>(frame.modelPalettes.size());
+    const auto batchOffset = static_cast<std::uint32_t>(frame.modelBatches.size());
     const auto drawOffset = static_cast<std::uint32_t>(frame.modelDraws.size());
     frame.modelVertices.insert(frame.modelVertices.end(), layer.vertices.begin(), layer.vertices.end());
     frame.modelSpotVertices.insert(frame.modelSpotVertices.end(), layer.spotVertices.begin(), layer.spotVertices.end());
     frame.modelShadowVertices.insert(frame.modelShadowVertices.end(), layer.shadowVertices.begin(),
                                      layer.shadowVertices.end());
+    for (ModelInstance instance : layer.instances)
+    {
+        instance.lightDirections[0][3] += paletteOffset; // whole numbers well under 2^24: exact
+        frame.modelInstances.push_back(instance);
+    }
+    frame.modelPalettes.insert(frame.modelPalettes.end(), layer.palettes.begin(), layer.palettes.end());
+    for (ModelBatchDraw batch : layer.batches)
+    {
+        batch.instance += instanceOffset;
+        frame.modelBatches.push_back(batch);
+    }
+    frame.modelChunks.insert(frame.modelChunks.end(), layer.chunks.begin(), layer.chunks.end());
     for (ModelDraw &draw : layer.draws)
     {
         draw.firstVertex += vertexOffset;
         draw.firstSpotVertex += spotOffset;
         draw.firstShadowVertex += shadowOffset;
+        draw.firstBatch += batchOffset;
         frame.modelDraws.push_back(std::move(draw));
     }
     for (ModelPass &pass : layer.passes)
@@ -746,6 +1384,12 @@ void ModelRenderer::collect(const void *list, Frame &frame)
     layer.vertices.clear();
     layer.spotVertices.clear();
     layer.shadowVertices.clear();
+    layer.instances.clear();
+    layer.palettes.clear();
+    layer.lastPalette = nullptr;
+    layer.batches.clear();
+    layer.chunks.clear();
+    layer.reflectionBatches.clear();
     layer.draws.clear();
     layer.passes.clear();
     layer.open = false;
@@ -769,6 +1413,80 @@ void ModelRenderer::uploadVertices(SDL_GPUCopyPass *copy, const Frame &frame)
                  static_cast<unsigned>(frame.modelSpotVertices.size() * sizeof(ModelSpotVertex)));
     uploadStream(copy, m_shadowVertices, frame.modelShadowVertices.data(),
                  static_cast<unsigned>(frame.modelShadowVertices.size() * sizeof(ModelShadowVertex)));
+    uploadStream(copy, m_instances, frame.modelInstances.data(),
+                 static_cast<unsigned>(frame.modelInstances.size() * sizeof(ModelInstance)));
+    uploadStream(copy, m_palettes, frame.modelPalettes.data(),
+                 static_cast<unsigned>(frame.modelPalettes.size() * sizeof(frame.modelPalettes[0])));
+    uploadGeometry(copy);
+}
+
+// Every batch cached since the last upload goes in now, before any frame that draws it: a frame is handed over
+// after its batches were queued. A frame the render thread never takes still had its batches uploaded here.
+void ModelRenderer::uploadGeometry(SDL_GPUCopyPass *copy)
+{
+    std::vector<PendingGeometry> pending;
+    {
+        std::scoped_lock lock(m_pendingLock);
+        pending.swap(m_pending);
+    }
+    m_geometryUpload.reset(); // the last one's copy was submitted with the last frame
+    if (pending.empty())
+        return;
+
+    std::size_t bytes = 0;
+    for (const PendingGeometry &block : pending)
+        bytes += block.vertices.size() + block.indices.size() * sizeof(std::uint16_t);
+    m_geometryUpload = m_device.createUploadBuffer(static_cast<unsigned>(bytes));
+    auto *const mapped = m_geometryUpload
+                             ? static_cast<std::byte *>(SDL_MapGPUTransferBuffer(m_device.get(), m_geometryUpload.get(), false))
+                             : nullptr;
+    if (mapped == nullptr)
+    {
+        gpu::logGpuError("model geometry upload");
+        return;
+    }
+
+    std::uint32_t offset = 0;
+    std::vector<std::pair<std::uint32_t, std::uint32_t>> places; // each block's vertices and indices in the upload
+    for (const PendingGeometry &block : pending)
+    {
+        const auto vertexBytes = static_cast<std::uint32_t>(block.vertices.size());
+        const auto indexBytes = static_cast<std::uint32_t>(block.indices.size() * sizeof(std::uint16_t));
+        std::memcpy(mapped + offset, block.vertices.data(), vertexBytes);
+        std::memcpy(mapped + offset + vertexBytes, block.indices.data(), indexBytes);
+        places.emplace_back(offset, offset + vertexBytes);
+        offset += vertexBytes + indexBytes;
+    }
+    SDL_UnmapGPUTransferBuffer(m_device.get(), m_geometryUpload.get());
+
+    for (std::size_t index = 0; index < pending.size(); index++)
+    {
+        const PendingGeometry &block = pending[index];
+        ModelGeometryChunk &chunk = *block.chunk;
+        if (!chunk.vertices)
+        {
+            chunk.vertices = m_device.createVertexBuffer(kChunkVertices * chunk.vertexSize);
+            chunk.indices = m_device.createIndexBuffer(kChunkIndices * sizeof(std::uint16_t));
+        }
+        if (!chunk.vertices || !chunk.indices)
+            continue;
+
+        SDL_GPUTransferBufferLocation source{};
+        source.transfer_buffer = m_geometryUpload.get();
+        SDL_GPUBufferRegion destination{};
+
+        source.offset = places[index].first;
+        destination.buffer = chunk.vertices.get();
+        destination.offset = block.firstVertex * chunk.vertexSize;
+        destination.size = static_cast<std::uint32_t>(block.vertices.size());
+        SDL_UploadToGPUBuffer(copy, &source, &destination, false);
+
+        source.offset = places[index].second;
+        destination.buffer = chunk.indices.get();
+        destination.offset = block.firstIndex * static_cast<std::uint32_t>(sizeof(std::uint16_t));
+        destination.size = static_cast<std::uint32_t>(block.indices.size() * sizeof(std::uint16_t));
+        SDL_UploadToGPUBuffer(copy, &source, &destination, false);
+    }
 }
 
 void ModelRenderer::uploadStream(SDL_GPUCopyPass *copy, VertexStream &stream, const void *data, unsigned bytes)
@@ -779,7 +1497,7 @@ void ModelRenderer::uploadStream(SDL_GPUCopyPass *copy, VertexStream &stream, co
     if (bytes > stream.capacity || !stream.buffer)
     {
         stream.capacity = std::max({bytes * 2, stream.capacity, kInitialVertexCapacity});
-        stream.buffer = m_device.createVertexBuffer(stream.capacity);
+        stream.buffer = m_device.createBuffer(stream.usage, stream.capacity);
         stream.upload = m_device.createUploadBuffer(stream.capacity);
     }
 
@@ -888,50 +1606,109 @@ SDL_GPUGraphicsPipeline *ModelRenderer::createProjectedPipeline(const SDL_GPUCol
     return pipeline;
 }
 
-// The second GS pass over a lit vertex: ALPHA_1 0x58, the picture * what the last pass left in the frame's alpha
-// added on top, whose own alpha is not written (FBMSK 0xff000000), against the first pass's depth. CLAMP_1 repeats.
 SDL_GPUGraphicsPipeline *ModelRenderer::spotPipeline()
 {
-    if (m_spotPipeline)
-        return m_spotPipeline.get();
-
-    SDL_GPUColorTargetDescription target{};
-    target.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-    target.blend_state.enable_blend = true;
-    target.blend_state.enable_color_write_mask = true;
-    target.blend_state.color_write_mask =
-        SDL_GPU_COLORCOMPONENT_R | SDL_GPU_COLORCOMPONENT_G | SDL_GPU_COLORCOMPONENT_B;
-    target.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
-    target.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
-    target.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_DST_ALPHA;
-    target.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-    target.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
-    target.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-
-    m_spotPipeline = gpu::GraphicsPipeline(m_device.get(), createProjectedPipeline(target));
+    if (!m_spotPipeline)
+        m_spotPipeline = gpu::GraphicsPipeline(m_device.get(), createProjectedPipeline(spotTarget()));
     return m_spotPipeline.get();
 }
 
-// A shadow's GS pass (0x2fdb60): ALPHA_1 0x44, black over the frame by its alpha; TEST_1 0x50000, no alpha test,
-// the first pass's depth; CLAMP_1 5. The GS does not blend alpha: the frame's alpha takes the shadow's, and the spot
-// that follows reads it (FBMSK is 0 in this pass).
 SDL_GPUGraphicsPipeline *ModelRenderer::shadowPipeline()
 {
-    if (m_shadowPipeline)
-        return m_shadowPipeline.get();
+    if (!m_shadowPipeline)
+        m_shadowPipeline = gpu::GraphicsPipeline(m_device.get(), createProjectedPipeline(shadowTarget()));
+    return m_shadowPipeline.get();
+}
+
+// A cached batch's pipeline: its vertices from a chunk (slot 0), its instance (slot 1), the depth as the other passes,
+// and the rasterizer culling what facesEye would. Sixteen attributes at most (SDL's limit): a skinned vertex's bones
+// and weights take the last two.
+SDL_GPUGraphicsPipeline *ModelRenderer::createStaticPipeline(bool skinned, bool projected,
+                                                             const SDL_GPUColorTargetDescription &target,
+                                                             bool writesDepth, SDL_GPUCullMode cull)
+{
+    const std::array<SDL_GPUVertexBufferDescription, 2> buffers{{
+        {0, static_cast<Uint32>(skinned ? sizeof(ModelSkinnedVertex) : sizeof(ModelStaticVertex)),
+         SDL_GPU_VERTEXINPUTRATE_VERTEX, 0},
+        {1, sizeof(ModelInstance), SDL_GPU_VERTEXINPUTRATE_INSTANCE, 0},
+    }};
+
+    constexpr auto kRow = static_cast<std::uint32_t>(sizeof(float) * 4);
+    static_assert(offsetof(ModelSkinnedVertex, base) == 0);
+    const std::array<SDL_GPUVertexAttribute, 16> attributes{{
+        {0, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(ModelStaticVertex, x)},
+        {1, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(ModelStaticVertex, nx)},
+        {2, 0, SDL_GPU_VERTEXELEMENTFORMAT_SHORT2, offsetof(ModelStaticVertex, u)},
+        {3, 0, SDL_GPU_VERTEXELEMENTFORMAT_UBYTE4, offsetof(ModelStaticVertex, color)},
+        {4, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, place)},
+        {5, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, place) + kRow},
+        {6, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, place) + 2 * kRow},
+        {7, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, ambient)},
+        {8, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightColors)},
+        {9, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightColors) + kRow},
+        {10, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightColors) + 2 * kRow},
+        {11, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightDirections)},
+        {12, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightDirections) + kRow},
+        {13, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightDirections) + 2 * kRow},
+        {14, 0, SDL_GPU_VERTEXELEMENTFORMAT_UBYTE4, offsetof(ModelSkinnedVertex, bones)},
+        {15, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelSkinnedVertex, weights)},
+    }};
+
+    SDL_GPUShader *const vertexShader =
+        skinned ? (projected ? m_skinnedProjectedVertexShader : m_skinnedVertexShader).get()
+                : (projected ? m_staticProjectedVertexShader : m_staticVertexShader).get();
+
+    SDL_GPUGraphicsPipelineCreateInfo info{};
+    info.vertex_shader = vertexShader;
+    info.fragment_shader = projected ? m_spotFragmentShader.get() : m_fragmentShader.get();
+    info.vertex_input_state.vertex_buffer_descriptions = buffers.data();
+    info.vertex_input_state.num_vertex_buffers = buffers.size();
+    info.vertex_input_state.vertex_attributes = attributes.data();
+    info.vertex_input_state.num_vertex_attributes = skinned ? 16 : 14;
+    info.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+    info.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+    info.rasterizer_state.cull_mode = cull;
+    info.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
+    info.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+    info.depth_stencil_state.enable_depth_test = true;
+    info.depth_stencil_state.enable_depth_write = writesDepth;
+    info.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_GREATER_OR_EQUAL;
+    info.target_info.color_target_descriptions = &target;
+    info.target_info.num_color_targets = 1;
+    info.target_info.has_depth_stencil_target = true;
+    info.target_info.depth_stencil_format = kDepthFormat;
+
+    SDL_GPUGraphicsPipeline *const pipeline = SDL_CreateGPUGraphicsPipeline(m_device.get(), &info);
+    if (pipeline == nullptr)
+        gpu::logGpuError("SDL_CreateGPUGraphicsPipeline(model cached)");
+    return pipeline;
+}
+
+SDL_GPUGraphicsPipeline *ModelRenderer::staticPipelineFor(bool skinned, BlendMode blend, bool writesDepth,
+                                                          SDL_GPUCullMode cull)
+{
+    const auto key = std::make_tuple(skinned, blend, writesDepth, cull);
+    if (const auto found = m_staticPipelines.find(key); found != m_staticPipelines.end())
+        return found->second.get();
 
     SDL_GPUColorTargetDescription target{};
     target.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-    target.blend_state.enable_blend = true;
-    target.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
-    target.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
-    target.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
-    target.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-    target.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-    target.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+    target.blend_state = blendStateOf(PipelineKey{blend, ColorMask::All});
+    SDL_GPUGraphicsPipeline *const pipeline = createStaticPipeline(skinned, false, target, writesDepth, cull);
+    m_staticPipelines.emplace(key, gpu::GraphicsPipeline(m_device.get(), pipeline));
+    return pipeline;
+}
 
-    m_shadowPipeline = gpu::GraphicsPipeline(m_device.get(), createProjectedPipeline(target));
-    return m_shadowPipeline.get();
+SDL_GPUGraphicsPipeline *ModelRenderer::staticProjectedPipeline(bool skinned, ProjectedPass pass, SDL_GPUCullMode cull)
+{
+    const auto key = std::make_tuple(skinned, pass, cull);
+    if (const auto found = m_staticProjectedPipelines.find(key); found != m_staticProjectedPipelines.end())
+        return found->second.get();
+
+    SDL_GPUGraphicsPipeline *const pipeline = createStaticPipeline(
+        skinned, true, pass == ProjectedPass::Spot ? spotTarget() : shadowTarget(), false, cull);
+    m_staticProjectedPipelines.emplace(key, gpu::GraphicsPipeline(m_device.get(), pipeline));
+    return pipeline;
 }
 
 void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &frame, const ModelPass &pass,
@@ -957,29 +1734,80 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
         return;
     }
 
-    if (pass.drawCount != 0 && m_vertices.buffer)
+    if (pass.drawCount != 0)
     {
-        SDL_GPUBufferBinding vertices{};
-        vertices.buffer = m_vertices.buffer.get();
-        SDL_BindGPUVertexBuffers(renderPass, 0, &vertices, 1);
-
-        ModelVertexUniforms vertexUniforms{};
-        buildWorldToClip(pass, layout, vertexUniforms.worldToClip);
-        vertexUniforms.fog[0] = pass.fogA;
-        vertexUniforms.fog[1] = pass.fogB;
-        vertexUniforms.fog[2] = pass.fogNearValue;
-        vertexUniforms.fog[3] = pass.fogFarValue;
+        ModelVertexUniforms vertexUniforms = passUniforms(pass, layout);
         SDL_PushGPUVertexUniformData(commands, 0, &vertexUniforms, sizeof(vertexUniforms));
+        const bool counterClockwise = frontTurnsCounterClockwise(vertexUniforms.worldToClip);
+
+        // What is bound, so that a run of batches binds each thing once.
+        SDL_GPUGraphicsPipeline *boundPipeline = nullptr;
+        const ModelGeometryChunk *boundChunk = nullptr; // null: a stream is in slot 0, or nothing is
+        std::array<float, 2> pushedDraw{-1.0f, -1.0f};
+        const auto bindPipeline = [&](SDL_GPUGraphicsPipeline *pipeline) {
+            if (pipeline != boundPipeline)
+                SDL_BindGPUGraphicsPipeline(renderPass, pipeline);
+            boundPipeline = pipeline;
+        };
+        const auto bindStream = [&](const VertexStream &stream) {
+            SDL_GPUBufferBinding binding{};
+            binding.buffer = stream.buffer.get();
+            SDL_BindGPUVertexBuffers(renderPass, 0, &binding, 1);
+            boundChunk = nullptr;
+        };
+        bool paletteBound = false;
+        const auto bindChunk = [&](const ModelGeometryChunk *chunk) {
+            if (!chunk->vertices || !chunk->indices || !m_instances.buffer)
+                return false; // its upload failed, which was logged
+            if (chunk->vertexSize == sizeof(ModelSkinnedVertex) && !paletteBound)
+            {
+                if (!m_palettes.buffer || frame.modelPalettes.empty())
+                    return false;
+                SDL_GPUBuffer *const palettes = m_palettes.buffer.get();
+                SDL_BindGPUVertexStorageBuffers(renderPass, 0, &palettes, 1);
+                paletteBound = true;
+            }
+            if (chunk == boundChunk)
+                return true;
+            const std::array<SDL_GPUBufferBinding, 2> buffers{
+                {{chunk->vertices.get(), 0}, {m_instances.buffer.get(), 0}}};
+            SDL_BindGPUVertexBuffers(renderPass, 0, buffers.data(), buffers.size());
+            const SDL_GPUBufferBinding indices{chunk->indices.get(), 0};
+            SDL_BindGPUIndexBuffer(renderPass, &indices, SDL_GPU_INDEXELEMENTSIZE_16BIT);
+            boundChunk = chunk;
+            return true;
+        };
+        const auto pushDraw = [&](float which, float shadow) {
+            if (pushedDraw[0] == which && pushedDraw[1] == shadow)
+                return;
+            const ModelDrawUniforms uniforms{{which, shadow, 0.0f, 0.0f}};
+            SDL_PushGPUVertexUniformData(commands, 1, &uniforms, sizeof(uniforms));
+            pushedDraw = {which, shadow};
+        };
+        const auto drawCached = [&](const ModelBatchDraw &batch) {
+            SDL_DrawGPUIndexedPrimitives(renderPass, batch.indexCount, 1, batch.firstIndex, batch.vertexOffset,
+                                         batch.instance);
+        };
+        const auto usable = [](const Image *picture) { return picture != nullptr && picture->texture != nullptr; };
+        // The passes VU1 kicks after the first one take a picture of their own and none of the fog's colour.
+        const auto bindPicture = [&](const Image &picture, bool repeat, float alphaRef) {
+            SDL_GPUTextureSamplerBinding binding{};
+            binding.texture = picture.texture->get();
+            binding.sampler = m_renderer.samplerFor(true, repeat);
+            SDL_BindGPUFragmentSamplers(renderPass, 0, &binding, 1);
+
+            ModelFragmentUniforms overUniforms{};
+            overUniforms.params[0] = alphaRef;
+            SDL_PushGPUFragmentUniformData(commands, 0, &overUniforms, sizeof(overUniforms));
+        };
 
         int pushedFog = -1;
         for (std::uint32_t index = 0; index < pass.drawCount; index++)
         {
             const ModelDraw &draw = frame.modelDraws[pass.firstDraw + index];
-            SDL_GPUGraphicsPipeline *const pipeline =
-                pipelineFor(draw.blended ? draw.blend : BlendMode::None, draw.writesDepth);
-            if (pipeline == nullptr || draw.vertexCount == 0)
+            if (draw.vertexCount == 0 && draw.batchCount == 0)
                 continue;
-            SDL_BindGPUGraphicsPipeline(renderPass, pipeline);
+            const BlendMode blend = draw.blended ? draw.blend : BlendMode::None;
 
             if (draw.fixedFog != pushedFog)
             {
@@ -995,7 +1823,7 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
 
             const Image *const image = draw.image.get();
             SDL_GPUTextureSamplerBinding binding{};
-            binding.texture = image != nullptr && image->texture != nullptr ? image->texture->get() : white;
+            binding.texture = usable(image) ? image->texture->get() : white;
             binding.sampler = m_renderer.samplerFor(true, true); // CLAMP_1 repeat, TEX1_1 linear
             SDL_BindGPUFragmentSamplers(renderPass, 0, &binding, 1);
 
@@ -1005,39 +1833,89 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
             fragmentUniforms.params[1] = draw.blended && draw.blend == BlendMode::DestinationBoost ? 1.0f : 0.0f;
             SDL_PushGPUFragmentUniformData(commands, 0, &fragmentUniforms, sizeof(fragmentUniforms));
 
-            SDL_DrawGPUPrimitives(renderPass, draw.vertexCount, 1, draw.firstVertex, 0);
-
-            // The passes VU1 kicks after the first one, each from its own stream; neither takes the fog's colour.
-            const auto drawOver = [&](SDL_GPUGraphicsPipeline *over, const Image *picture, const VertexStream &stream,
-                                      bool repeat, float alphaRef, std::uint32_t vertexCount, std::uint32_t first) {
-                if (over == nullptr || picture == nullptr || picture->texture == nullptr)
-                    return;
-                SDL_BindGPUGraphicsPipeline(renderPass, over);
-                SDL_GPUBufferBinding overVertices{};
-                overVertices.buffer = stream.buffer.get();
-                SDL_BindGPUVertexBuffers(renderPass, 0, &overVertices, 1);
-
-                binding.texture = picture->texture->get();
-                binding.sampler = m_renderer.samplerFor(true, repeat);
-                SDL_BindGPUFragmentSamplers(renderPass, 0, &binding, 1);
-
-                ModelFragmentUniforms overUniforms{};
-                overUniforms.params[0] = alphaRef;
-                SDL_PushGPUFragmentUniformData(commands, 0, &overUniforms, sizeof(overUniforms));
-
-                SDL_DrawGPUPrimitives(renderPass, vertexCount, 1, first, 0);
-                SDL_BindGPUVertexBuffers(renderPass, 0, &vertices, 1);
-            };
-
-            if (draw.shadowVertexCount != 0)
+            if (draw.batchCount == 0)
             {
+                // Placed on the game thread: the draw, then its shadows and its spot, each from its own stream.
+                SDL_GPUGraphicsPipeline *const pipeline = pipelineFor(blend, draw.writesDepth);
+                if (pipeline == nullptr || !m_vertices.buffer)
+                    continue;
+                bindPipeline(pipeline);
+                bindStream(m_vertices);
+                SDL_DrawGPUPrimitives(renderPass, draw.vertexCount, 1, draw.firstVertex, 0);
+
+                const auto drawOver = [&](SDL_GPUGraphicsPipeline *over, const Image *picture,
+                                          const VertexStream &stream, bool repeat, float alphaRef,
+                                          std::uint32_t vertexCount, std::uint32_t first) {
+                    if (over == nullptr || !usable(picture) || vertexCount == 0)
+                        return;
+                    bindPipeline(over);
+                    bindStream(stream);
+                    bindPicture(*picture, repeat, alphaRef);
+                    SDL_DrawGPUPrimitives(renderPass, vertexCount, 1, first, 0);
+                };
                 drawOver(shadowPipeline(), pass.shadowImage.get(), m_shadowVertices, false, 0.0f,
                          draw.shadowVertexCount, draw.firstShadowVertex);
-            }
-            if (draw.spotVertexCount != 0)
-            {
                 drawOver(spotPipeline(), pass.spotImage.get(), m_spotVertices, true, kSpotAlphaRef,
                          draw.spotVertexCount, draw.firstSpotVertex);
+                continue;
+            }
+
+            // Cached batches: each drawn, then every shadow over each of them, then the spot over each, the order
+            // the placed path's streams keep within a draw.
+            const std::span<const ModelBatchDraw> batches(frame.modelBatches.data() + draw.firstBatch,
+                                                          draw.batchCount);
+            pushDraw(draw.reflection ? kDrawReflection : kDrawColor, 0.0f);
+            for (const ModelBatchDraw &batch : batches)
+            {
+                SDL_GPUGraphicsPipeline *const pipeline =
+                    staticPipelineFor(batch.skinned, blend, draw.writesDepth, cullModeOf(batch, counterClockwise));
+                if (pipeline == nullptr || !bindChunk(batch.chunk))
+                    continue;
+                bindPipeline(pipeline);
+                drawCached(batch);
+            }
+
+            const Image *const shadowImage = pass.shadowImage.get();
+            if (usable(shadowImage) &&
+                std::ranges::any_of(batches, [](const ModelBatchDraw &batch) { return batch.shadows != 0; }))
+            {
+                bindPicture(*shadowImage, false, 0.0f);
+                for (const ModelBatchDraw &batch : batches)
+                {
+                    if (batch.shadows == 0)
+                        continue;
+                    SDL_GPUGraphicsPipeline *const pipeline =
+                        staticProjectedPipeline(batch.skinned, ProjectedPass::Shadow, cullModeOf(batch, counterClockwise));
+                    if (pipeline == nullptr || !bindChunk(batch.chunk))
+                        continue;
+                    bindPipeline(pipeline);
+                    for (int shadow = 0; shadow < kYamiPanModelMaxShadows; shadow++)
+                    {
+                        if ((batch.shadows & (1u << shadow)) == 0)
+                            continue;
+                        pushDraw(kDrawShadow, static_cast<float>(shadow));
+                        drawCached(batch);
+                    }
+                }
+            }
+
+            const Image *const spotImage = pass.spotImage.get();
+            if (usable(spotImage) &&
+                std::ranges::any_of(batches, [](const ModelBatchDraw &batch) { return batch.spotted; }))
+            {
+                bindPicture(*spotImage, true, kSpotAlphaRef);
+                pushDraw(kDrawSpot, 0.0f);
+                for (const ModelBatchDraw &batch : batches)
+                {
+                    if (!batch.spotted)
+                        continue;
+                    SDL_GPUGraphicsPipeline *const pipeline =
+                        staticProjectedPipeline(batch.skinned, ProjectedPass::Spot, cullModeOf(batch, counterClockwise));
+                    if (pipeline == nullptr || !bindChunk(batch.chunk))
+                        continue;
+                    bindPipeline(pipeline);
+                    drawCached(batch);
+                }
             }
         }
     }

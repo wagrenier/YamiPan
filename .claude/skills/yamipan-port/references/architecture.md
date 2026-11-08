@@ -63,7 +63,7 @@ Serial, region, build date, entry, gp (`.reginfo`), compiler family and ABI, sym
 | ~0x2f0880..0x2f3a40 | data: library version strings, SDK tables |
 | ~0x2f3a40..~0x2f4d20 | an EE code island (Ghidra functions 0x2f3bd0..0x2f4ce8); what it is: open |
 | ~0x2f4d20..0x31ad80 | .data / .rodata: strings to 0x31aaa4, vtables from ~0x311000, function tables (0x31a000) |
-| ~0x310a00..~0x310f80 | static initialisers (9; table 0x310fb0..0x310fd4 run by 0x100280: "Static initialisers") |
+| 0x310a00..0x310f80 | static initialisers (9 `__sinit_*`, each in its owner's TU; table 0x310fb0..0x310fd4 run by 0x100280: "Static initialisers") |
 | 0x310fe0..~0x31a820 | vtables (490, `rtti.py`: "Classes") |
 | 0x31ad80..0x5a5600 | .bss (cleared by `entry`); gp 0x322870 |
 
@@ -1060,13 +1060,21 @@ level of the file's first picture**, the top level owns the rest; all FS2's TIM2
 `src/rena/rena_2d_texture_tim2.h` has the fields). It reads the file in place and does not own it: +0x40
 is the **TIM2 file itself, not a copy** (+0x28 pixels, +0x38 CLUT point into it); +0x3c, a second CLUT
 on the global heap sent 4 blocks after the first, has no writer in anything read so far. PC: `upload` is
-empty on purpose. **Sony's sample TIM2 library** is `rena/tim2.cpp` 0x2e97a8..0x2e9d90, all nine written
-(2026-11-07, batch 232): `Tim2CheckFileHeaer` (the sample's spelling; "TIM2" 1, "CLT2" 2, version 3 or 4
+empty on purpose. **Sony's sample TIM2 library** is `rena/tim2.cpp` 0x2e97a8..0x2eaeb0, all twenty written
+(2026-11-07, batches 232 and 235): `Tim2CheckFileHeaer` (the sample's spelling; "TIM2" 1, "CLT2" 2, version 3 or 4
 with format id 0/1), `Tim2GetPictureHeader`, `Tim2GetMipMapPictureSize`, `Tim2GetUserSpace` /
 `Tim2GetUserData` / `Tim2GetComment` (the "eXt\0" header; header sizes by mip count at 0x310360,
-"00PPP```"), `Tim2GetImage`, `Tim2GetClut`, `Tim2GetClutColor` (CSM1 block swap, 0xAABBGGRR; its only
-caller 0x2ea380 is in unassigned@002e9d90). The sample's `Tim2IsClut2` and `Tim2GetMipMapHeader` are not
-linked; whether 0x2e9d90.. continues the sample (Tim2SetClutColor, Tim2GetTexel ...) is not read yet. Disc
+"00PPP```"), `Tim2GetImage`, `Tim2GetClut`, `Tim2GetClutColor` (CSM1 block swap, 0xAABBGGRR), then
+`Tim2SetClutColor` 0x2e9d90, `Tim2GetTexel` 0x2ea010, `Tim2SetTexel` 0x2ea188 (the sample's 4-bit nibble
+slip kept), `Tim2GetTextureColor` 0x2ea380, the GS loaders `Tim2LoadPicture` 0x2ea490 / `Tim2LoadImage`
+0x2ea4b8 / `Tim2LoadClut` 0x2ea610 (an **older cut with no tbp / cbp arguments**: the addresses come from
+the picture's GsTex0 and GsMiptbp1 / 2; LoadClut clears CSM / CSA in the header), `Tim2TakeSnapshot`
+0x2ea8d8 and the statics `Tim2LoadTexture` 0x2eac98 (psm jump table 0x310430, slices of 0x7ffc0 bytes),
+`Tim2CalcBufWidth` 0x2eae00 (table 0x310520), `Tim2GetLog2` 0x2eae70. **Nothing in the ROM calls
+0x2e9d90.. except Tim2GetTextureColor -> Tim2GetTexel / Tim2GetClutColor**: the loaders and the
+snapshot are dead sample code; on the host they keep their decisions and send nothing (no GS), the
+snapshot writes its header and black rows. The sample's `Tim2IsClut2` and `Tim2GetMipMapHeader` are not
+linked. Disc
 samples (ROM.000 / 001, about 5,500 headers): 4-bit with RGB32 CLUT (most), 4-bit with RGB16, 8-bit with
 RGB32, direct 32-bit; none with a linear-order CLUT or a second mip level. Its ctor then `readTarget` 0x231290: an image whose **TIM2 header reserved word
 (+0xc) is `Zbuf` / `Draw` / `View`** stands for a 512x512 render target: +0x50 = 1, +0x48 TEX0
@@ -1749,6 +1757,26 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   CodeWarrior's static-initialiser code. Ghidra has functions for all 9 since 2026-11-02 (6 created at bootstrap 4a).
 - 0x310a00 tail-calls **0x104c60(0x537d80, 0x1772f0, 0, 0x38, 0x87)**: array, ctor, dtor, element
   size, count -- MSL's `__construct_array` (named, batch 001).
+- **All 9 named and placed (2026-11-07, batch 236): CodeWarrior's `__sinit_<file>_cpp`, one per object
+  file, in link order; the file names are the port's.** Each is joined to the port file that owns what
+  it sets, as an `FS2` comment at the global (the host's compiler does the construction):
+  0x310a00 `__sinit_packtables_cpp` (gDoorRecords, DoorRecord ctor 0x1772f0); 0x310a20
+  `__sinit_stageloop_cpp`; 0x310a70 `__sinit_stagescene_cpp`; 0x310ac0 `__sinit_scriptrunner_cpp` (a
+  ScriptRunner at bss 0x577a60, dtor registered at 0x577a50: **no code addresses it again**, so the port
+  has no such global); 0x310b10 `__sinit_playermotion_cpp`; 0x310b60 `__sinit_uigame_cpp` (57 string
+  pointers: 41 game-state names sdata 0x31aae8.. -> 0x599490..0x599530, 16 key-sprite names
+  0x31ab98..0x31abd4 -> 0x2fafc0 every 0x14); 0x310ec0 `__sinit_snipecondition_cpp`; 0x310f10
+  `__sinit_viewcamera_cpp`; 0x310f60 `__sinit_stageresult_cpp` (gStageResult, dtor 0x2b0cf0, entry
+  0x5996e8). The port's file split is not the link order (playermotion.cpp holds code of many objects).
+- **The zoom pair is a header's file statics:** five initialisers (0x310a20, a70, b10, ec0, f10) each
+  compute `low = (float)pct * 256 / 100`, `span = 255 - 2 * low` from their own sdata int (30 in all
+  five: 0x31a8d0, 0x31a8f4, 0x31a9d4, 0x31abf4, 0x31ac4c) into their own sbss pair (0x31adec, 0x31ae0c,
+  0x31ae20, 0x31ae58, 0x31ae70). Read only by `PlayerMotion::setScope` (0x31ae20), `SnipeCondition::onApply`
+  (0x31ae58) and `ViewCamera::setZoom` (0x31ae70); the stageloop and stagescene copies are dead. Host:
+  `ViewCamera::kZoomPercent / kZoomLow / kZoomSpan` (viewcamera.h). **The EE's FPU rounds toward zero**:
+  the ROM's values are 76.79999542 (0x42999999) and 101.40000916 (0x42caccce), the host's nearest
+  rounding gives 0x4299999a / 0x42cacccd, one ulp apart; harmless for a zoom clamp, worth knowing where
+  a run-time float initialiser feeds a comparison.
 
 ## Key functions and globals
 
@@ -2538,7 +2566,7 @@ Conditions (vptr +0x10; slots +0xc onUpdate, +0x10 onApply; byte +0xc active; ba
 
 **The noises: `SceneNoiseList`, scene +0xe0** (the port called it SceneUiState until this run; nothing of it is UI). Two lists of 0x20 entries {source, loudness, kind}: `addNoise` and `addSourceNoise` write the back one, `pollSoundSources` (start of the frame) flips, `stepStatus` reads the front. A resumable sound (SeEntry +0x1d) takes one of 16 watches and makes a noise while it plays. `stepStatus`: kind 1 reaches everyone, 2 allies, others only non-allies; within the noise's loudness; a ray from the head to it: a wall takes all of the reach, a face with 0x400 half of it unless a second one follows. Kind 0 is a chance, `hearing * (loudness - distance) * 100 / loudness` percent, and the quietest noise heard sets +0x65c and `m_point6e0`; kinds 1, 2, 3 only set bits. The bits go to +0x658, **which is `m_scriptValues[10]`**: the scripts read what a character heard through `getScriptValue`.
 
-**Volumes.** A map box or point that is nothing else is a `BoxVolume` / `SphereVolume` (group 7, their script by name), slot +0x24c `contains(point)`, slot +0x260 `containsObject` (the box's table only). **A box's runner slot +0xfc is `containsObject` (thunk 0x17f130, table 0x3125bc), so native 0x44 on a box asks whether the object is inside: this is how an `AREA_` script hears the player.** A sphere's slot is the default no (table 0x312a7c). Stage 1 has three, AREA01 at (6959, 6342, 810) downstairs, which ends the stage, AREA_AC10 and AREA11 upstairs, and no `VISIBILITY_`, so its darkness is the default 0.5 (measured: F_PC01 0.525 walking, 0.500 standing).
+**Volumes.** A map box or point that is nothing else is a `BoxVolume` / `SphereVolume` (group 7, their script by name), slot +0x24c `contains(point)`, slot +0x260 `containsObject` (the box's table only). **A box's runner slot +0xfc is `containsObject` (thunk 0x17f130, table 0x3125bc), so native 0x44 on a box asks whether the object is inside: this is how an `AREA_` script hears the player.** A sphere's slot is the default no (table 0x312a7c). Both classes have their own empty sideHook0..3 (box 0x17e940..0x17e910, sphere 0x17f080..0x17f050, slots +0x214..+0x220) and three bases: the main table (vptr +0xf4), a 4-slot base at +0x18 (vptr +0x1c, tables 0x3125a4 / 0x312a64: the side hooks, thunks -0x18) and the script runner at +0x40 (thunks -0x40: dtors, containsObject); the 16 thunks 0x17f090..0x17f150 end the run (batch 237). Stage 1 has three, AREA01 at (6959, 6342, 810) downstairs, which ends the stage, AREA_AC10 and AREA11 upstairs, and no `VISIBILITY_`, so its darkness is the default 0.5 (measured: F_PC01 0.525 walking, 0.500 standing).
 
 ## The sight-jack (game/stageparty.cpp 0x1fe6b0..0x204550, 2026-11-06, batch 156, `partial`)
 
