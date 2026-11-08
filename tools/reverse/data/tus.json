@@ -3322,12 +3322,21 @@
    "why": "rena's VIF1 packet manager: the source string rena_pkt_vif1pktmanage.cpp in Reset 0x2eb170 and AddList 0x2eb500, classes Vif1PktManage (vtable 0x31a808) / Vif1PktList (0x31a818); 0x2eb7d0..0x2ec110 are its MSL vector instances (insert of the list / buffer vectors, the buffer vector dtor and clear), called only from this file. Before: unassigned@002e2970 code; after: 0x2ec110 a lazy static init of another file (drawSysInit's caller set). Key under rena/ with the game's own file name."
   },
   "rena/tim2.cpp": {
+   "notes": "The five new functions follow Sony's TIM2 sample: the eXt user-space header (TIM2_EXHEADER, 0x10), the header-size table by mip count at 0x310360, the CSM1 block swap in Tim2GetClutColor. Nothing in the host calls them yet; Tim2GetClutColor's only caller 0x2ea380 is in unassigned@002e9d90, which may continue the sample (not read). Smoke run unchanged: the language select screen. Status verify: complete code nothing on screen shows.",
    "ranges": [
     [
      "002e97a8",
      "002e9d90"
     ]
    ],
+   "sessions": [
+    {
+     "date": "2026-11-07 19:24",
+     "status": "verify",
+     "summary": "Sony's TIM2 library complete, 9 of 9: Tim2CheckFileHeaer, Tim2GetUserSpace, Tim2GetUserData, Tim2GetComment, Tim2GetClutColor written (batch 232)"
+    }
+   ],
+   "status": "verify",
    "why": "Sony's sample TIM2 library by its own message (Tim2GetPictureHeader: Illegal image no.) and shapes; Tim2Texture needs four of its functions. The end of the run is a guess (0x2e9b88 read as Tim2GetClutColor is the last one looked at)."
   },
   "rx/filecd.c": {

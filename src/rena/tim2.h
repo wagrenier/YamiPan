@@ -18,6 +18,14 @@ enum Tim2FormatId
     Tim2Format_Align128 = 1,
 };
 
+// What Tim2CheckFileHeaer answers: the file's kind, or 0 when broken.
+enum Tim2FileKind
+{
+    Tim2File_Broken = 0,
+    Tim2File_Tim2   = 1,        // "TIM2"
+    Tim2File_Clt2   = 2,        // "CLT2": a CLUT-only file
+};
+
 // The image's and the CLUT's pixel kinds (ImageType, ClutType's low bits).
 enum Tim2ImageType
 {
@@ -28,6 +36,10 @@ enum Tim2ImageType
     Tim2Image_Index4    = 4,
     Tim2Image_Index8    = 5,
 };
+
+// ClutType's high bits above the pixel kind.
+#define TIM2_CLUT_TYPE_MASK     0x3f    // the Tim2ImageType of the entries
+#define TIM2_CLUT_BLOCKED       0x40    // a 16-colour CLUT kept in the GS's CSM1 block order
 
 // The file's header, 16 bytes, padded to 0x80 with Tim2Format_Align128.
 struct TIM2_FILEHEADER
@@ -71,12 +83,34 @@ struct TIM2_MIPMAPHEADER
 };
 static_assert(sizeof(TIM2_MIPMAPHEADER) == 0x30, "TIM2_MIPMAPHEADER");
 
+// The user space's optional header ("eXt\0"): user data, then a comment.
+struct TIM2_EXHEADER
+{
+    char     exHeaderId[4];     // FS2 +0x00: "eXt\0"
+    u_int    userSpaceSize;     // FS2 +0x04: bytes, this header included
+    u_int    userDataSize;      // FS2 +0x08: bytes after this header
+    u_int    reserved;          // FS2 +0x0c
+};
+static_assert(sizeof(TIM2_EXHEADER) == 0x10, "TIM2_EXHEADER");
+
+// The file's kind (Tim2FileKind); prints and answers 0 when broken.
+int   Tim2CheckFileHeaer(void *tim2);                                    // FS2 0x002e97a8
 TIM2_PICTUREHEADER *Tim2GetPictureHeader(void *tim2, int imgno);         // FS2 0x002e9868
 // The level's size in *width / *height (each may be null); answers its
 // bytes, rounded up to 16.
 int   Tim2GetMipMapPictureSize(TIM2_PICTUREHEADER *ph, int mipmap,
                                int *width, int *height);                 // FS2 0x002e98f0
+// The space between the headers and the pixels, null when there is none;
+// *size (may be null) its bytes, or the eXt header's count.
+void *Tim2GetUserSpace(TIM2_PICTUREHEADER *ph, int *size);               // FS2 0x002e99a8
+// The user data after an eXt header (or the whole user space without one).
+void *Tim2GetUserData(TIM2_PICTUREHEADER *ph, int *size);                // FS2 0x002e9a28
+// The comment after the user data, null without an eXt header or a comment.
+char *Tim2GetComment(TIM2_PICTUREHEADER *ph);                            // FS2 0x002e9a90
 void *Tim2GetImage(TIM2_PICTUREHEADER *ph, int mipmap);                  // FS2 0x002e9af0
 void *Tim2GetClut(TIM2_PICTUREHEADER *ph);                               // FS2 0x002e9b60
+// Entry `no` of CLUT `clut` as 0xAABBGGRR (alpha 0x80 = opaque); 0 for a
+// picture without an indexed image or past the CLUT.
+u_int Tim2GetClutColor(TIM2_PICTUREHEADER *ph, int clut, int no);        // FS2 0x002e9b88
 
 #endif /* _RENA_TIM2_H */
