@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 18:53 at commit `ceb3d8f` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 19:12 at commit `0fb6644` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5844**; stubs: **16**
+- reconstructed FS2 functions: **5857**; stubs: **3**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -110,7 +110,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stagecharacter.cpp` | 83 | 0 |
 | `src/game/stagecollision.cpp` | 57 | 0 |
 | `src/game/stagedoor.cpp` | 125 | 0 |
-| `src/game/stageelevator.cpp` | 14 | 13 |
+| `src/game/stageelevator.cpp` | 27 | 0 |
 | `src/game/stagefog.cpp` | 12 | 0 |
 | `src/game/stageitem.cpp` | 107 | 0 |
 | `src/game/stagelight.cpp` | 64 | 0 |
@@ -248,7 +248,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stagecharacter.cpp` 87/96 -- unassigned@0017e140 was the tail of this file: StageList<StageObject *> 0x17e140..0x17e400 and 63 thunks 0x17e470..0x17e860, now listed at the end of stagechara
 - verify: `game/stagecollision.cpp` 57/75 -- unassigned@002cf510 (resetStageGroupTable, a reached stub) is resetSurfaceTables, renamed in Ghidra (batch 211) and pinned into game/stagecollision.cpp beside s
 - verify: `game/stagedoor.cpp` 126/133 -- unassigned@00171ad0 turned out to be inline functions of this object file: runner table defaults, StageObject accessors, DoorRecord setters; pinned here and lis
-- verify: `game/stageelevator.cpp` 14/27 -- 27 functions 0x2939b0..0x295470, batch 184; the free elevator functions are members now and getZs9901 answers StageElevator; the two motion file readers 0x2937e
+- verify: `game/stageelevator.cpp` 27/27 -- All 27 functions of 0x2939b0..0x295470 are written as StageElevator members (batch 184). This run only deleted the dead free-function stubs elevatorCall .. elev
 - verify: `game/stagefog.cpp` 12/12 -- All 12 functions of 0x2ce0c0..0x2cedb0 written: SmokeFog (hatsu_fog, I_HATUEN), GlowFog (koh_fog, kinds 5 and 0xc), CharacterFog::attachTo. fogcmp.py: 32,703 op
 - verify: `game/stageitem.cpp` 108/139 -- All of 0x17fce0..0x184860 written or mapped (thunks listed, 0x180018 is padding). New Game run under gdb: StageBullet's ctor ran from setupCameras with no fault
 - verify: `game/stagelight.cpp` 64/101 -- All of 0x184860..0x186ee0 written. New Game run: lights build and join the scene with no fault, 114 stubs reached, the stop is unchanged (drawSysCurrent null in
@@ -320,6 +320,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 19:11 `game/stageelevator.cpp` verify: The 13 stubs counted against the elevator were dead leftovers: the old free elevator functions stayed in src/lib/unassigned_stubs.cpp after batch 184 made them 
 - 2026-11-07 18:53 `game/playermotion.cpp` verify: The last 14 functions of the slice were already written as header inlines: the carried list's second StageList instance 0x217700..0x2179ac, five StageCharacter 
 - 2026-11-07 18:33 `game/playermotion.cpp` verify: The car motions run 0x280620..0x2811c0, 0x281370..0x2813e0, 0x281548..0x281a40 joined playermotion.cpp (was unassigned@00280620 and unassigned@00281550); the si
 - 2026-11-07 18:17 `rena/rena_camera.cpp` verify: boxClipTest written: a part box against the frame planes and the guard band (0 inside, 1 crossing, 2 outside); 0x2e2970 named RenaCamera::RenaCamera
@@ -327,7 +328,6 @@ Recent sessions:
 - 2026-11-07 17:52 `game/kunitoris.cpp` partial: KunitorisGame::update written with every helper it calls: groups spawn, step, wrap, scroll, join the player (absorb), break off, shoot, turn, flip, drop and the
 - 2026-11-07 17:30 `game/kunitoris.cpp` partial: KunitorisGame::draw written with the board, its pieces and colour cycles: KunitorisTinted / KunitorisColorCycle / KunitorisPiece (load, draw, update), Kunitoris
 - 2026-11-07 17:07 `game/kunitoris.cpp` partial: KunitorisEnding::draw and drawIntro written over the four ending quads (0x2fc280), their show thresholds and the 8 pose animations (0x2fc220); KunitorisGame +0x
-- 2026-11-07 16:52 `game/kunitoris.cpp` partial: KunitorisGame ctor and dtor, its objects (actor, sprite, cursor, block, actor list, cells, groups), the per-level and shape tables, the two bar draws and Kunito
 
 ## Frontier (called by reconstructed code, not written yet)
 

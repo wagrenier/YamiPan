@@ -2214,7 +2214,7 @@
    "why": "the door class 0x3112f0 and its helpers, and the inline defaults its object file carries between them (0x171ad0..0x1723c0: runner slots, StageObject accessors, the door record's setters); the file is the port's"
   },
   "game/stageelevator.cpp": {
-   "notes": "27 functions 0x2939b0..0x295470, batch 184; the free elevator functions are members now and getZs9901 answers StageElevator; the two motion file readers 0x2937e0..0x2939b0 joined game/playermotion.cpp. Seen on stage 9 (YAMIPAN_TELEPORT=9, temporary probes, removed, three runs, no crash): Cross at the B3 panel with the pad alone brought the car (state 5, 2, 1, lamp out on arrival); canCall true facing the panel and false with the back to it; a player put in the car and press(InsideB1) rode from z -1080 to -480 with floorObject the elevator; a player put in the closing doors at B1 reopened them the next frame. Not seen: a ride started by Cross inside the car, another character as rider, 0x1cd release, the sounds and rumble as such, a wide display. No picture of the real game, so verify. progress/20261106-elevator-b3-panel.png. Doubts in open-items.md (r), (s), (t).",
+   "notes": "All 27 functions of 0x2939b0..0x295470 are written as StageElevator members (batch 184). This run only deleted the dead free-function stubs elevatorCall .. elevatorSwitchPlace and elevatorCalledFloors from src/lib/unassigned_stubs.cpp (nothing called them; tus.py counted their addresses). Smoke run 15 s: the language screen, as before. Still verify: no picture of the real game; the ride started by Cross inside the car, another character as rider, 0x1cd release, sounds and a wide display were never seen (see the 2026-11-06 notes and open-items.md (r) (s) (t)).",
    "ranges": [
     [
      "002939b0",
@@ -2226,6 +2226,11 @@
      "date": "2026-11-06 20:51",
      "status": "verify",
      "summary": "The elevator: StageElevator for oZS99_01, a call brings it, the doors work, a rider goes up with it, a door closing on someone opens again"
+    },
+    {
+     "date": "2026-11-07 19:11",
+     "status": "verify",
+     "summary": "The 13 stubs counted against the elevator were dead leftovers: the old free elevator functions stayed in src/lib/unassigned_stubs.cpp after batch 184 made them StageElevator members. Deleted with the file's orphan stub comments; the TU now counts 27 of 27."
     }
    ],
    "status": "verify",
