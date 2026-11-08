@@ -1060,13 +1060,21 @@ level of the file's first picture**, the top level owns the rest; all FS2's TIM2
 `src/rena/rena_2d_texture_tim2.h` has the fields). It reads the file in place and does not own it: +0x40
 is the **TIM2 file itself, not a copy** (+0x28 pixels, +0x38 CLUT point into it); +0x3c, a second CLUT
 on the global heap sent 4 blocks after the first, has no writer in anything read so far. PC: `upload` is
-empty on purpose. **Sony's sample TIM2 library** is `rena/tim2.cpp` 0x2e97a8..0x2e9d90, all nine written
-(2026-11-07, batch 232): `Tim2CheckFileHeaer` (the sample's spelling; "TIM2" 1, "CLT2" 2, version 3 or 4
+empty on purpose. **Sony's sample TIM2 library** is `rena/tim2.cpp` 0x2e97a8..0x2eaeb0, all twenty written
+(2026-11-07, batches 232 and 235): `Tim2CheckFileHeaer` (the sample's spelling; "TIM2" 1, "CLT2" 2, version 3 or 4
 with format id 0/1), `Tim2GetPictureHeader`, `Tim2GetMipMapPictureSize`, `Tim2GetUserSpace` /
 `Tim2GetUserData` / `Tim2GetComment` (the "eXt\0" header; header sizes by mip count at 0x310360,
-"00PPP```"), `Tim2GetImage`, `Tim2GetClut`, `Tim2GetClutColor` (CSM1 block swap, 0xAABBGGRR; its only
-caller 0x2ea380 is in unassigned@002e9d90). The sample's `Tim2IsClut2` and `Tim2GetMipMapHeader` are not
-linked; whether 0x2e9d90.. continues the sample (Tim2SetClutColor, Tim2GetTexel ...) is not read yet. Disc
+"00PPP```"), `Tim2GetImage`, `Tim2GetClut`, `Tim2GetClutColor` (CSM1 block swap, 0xAABBGGRR), then
+`Tim2SetClutColor` 0x2e9d90, `Tim2GetTexel` 0x2ea010, `Tim2SetTexel` 0x2ea188 (the sample's 4-bit nibble
+slip kept), `Tim2GetTextureColor` 0x2ea380, the GS loaders `Tim2LoadPicture` 0x2ea490 / `Tim2LoadImage`
+0x2ea4b8 / `Tim2LoadClut` 0x2ea610 (an **older cut with no tbp / cbp arguments**: the addresses come from
+the picture's GsTex0 and GsMiptbp1 / 2; LoadClut clears CSM / CSA in the header), `Tim2TakeSnapshot`
+0x2ea8d8 and the statics `Tim2LoadTexture` 0x2eac98 (psm jump table 0x310430, slices of 0x7ffc0 bytes),
+`Tim2CalcBufWidth` 0x2eae00 (table 0x310520), `Tim2GetLog2` 0x2eae70. **Nothing in the ROM calls
+0x2e9d90.. except Tim2GetTextureColor -> Tim2GetTexel / Tim2GetClutColor**: the loaders and the
+snapshot are dead sample code; on the host they keep their decisions and send nothing (no GS), the
+snapshot writes its header and black rows. The sample's `Tim2IsClut2` and `Tim2GetMipMapHeader` are not
+linked. Disc
 samples (ROM.000 / 001, about 5,500 headers): 4-bit with RGB32 CLUT (most), 4-bit with RGB16, 8-bit with
 RGB32, direct 32-bit; none with a linear-order CLUT or a second mip level. Its ctor then `readTarget` 0x231290: an image whose **TIM2 header reserved word
 (+0xc) is `Zbuf` / `Draw` / `View`** stands for a 512x512 render target: +0x50 = 1, +0x48 TEX0

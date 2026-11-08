@@ -3324,11 +3324,11 @@
    "why": "rena's VIF1 packet manager: the source string rena_pkt_vif1pktmanage.cpp in Reset 0x2eb170 and AddList 0x2eb500, classes Vif1PktManage (vtable 0x31a808) / Vif1PktList (0x31a818); 0x2eb7d0..0x2ec110 are its MSL vector instances (insert of the list / buffer vectors, the buffer vector dtor and clear), called only from this file. Before: unassigned@002e2970 code; after: 0x2ec110 a lazy static init of another file (drawSysInit's caller set). Key under rena/ with the game's own file name."
   },
   "rena/tim2.cpp": {
-   "notes": "The five new functions follow Sony's TIM2 sample: the eXt user-space header (TIM2_EXHEADER, 0x10), the header-size table by mip count at 0x310360, the CSM1 block swap in Tim2GetClutColor. Nothing in the host calls them yet; Tim2GetClutColor's only caller 0x2ea380 is in unassigned@002e9d90, which may continue the sample (not read). Smoke run unchanged: the language select screen. Status verify: complete code nothing on screen shows.",
+   "notes": "Batch 235 named the 11 functions at 0x2e9d90..0x2eaeac after Sony's tim2.c, and the run is pinned to rena/tim2.cpp (now 0x2e97a8..0x2eaeb0). The two psm jump tables (0x310430 for Tim2LoadTexture, 0x310520 for Tim2CalcBufWidth) match the sample case for case. The loaders are an older cut with no tbp / cbp arguments: the addresses come from the picture's GsTex0 and GsMiptbp1/2. Nothing in the ROM calls any of them except Tim2GetTextureColor, which calls Tim2GetTexel and Tim2GetClutColor. On the host the loaders keep their decisions and send nothing (no GS, the rule), and the snapshot writes its header and black rows. Tim2SetTexel keeps the sample's 4-bit nibble slip. The CSM1 swap is now one static helper shared by Get/SetClutColor. Smoke run 15 s: the language screen, as before. Status verify: complete code that nothing on screen can show.",
    "ranges": [
     [
      "002e97a8",
-     "002e9d90"
+     "002eaeb0"
     ]
    ],
    "sessions": [
@@ -3336,10 +3336,15 @@
      "date": "2026-11-07 19:24",
      "status": "verify",
      "summary": "Sony's TIM2 library complete, 9 of 9: Tim2CheckFileHeaer, Tim2GetUserSpace, Tim2GetUserData, Tim2GetComment, Tim2GetClutColor written (batch 232)"
+    },
+    {
+     "date": "2026-11-07 20:18",
+     "status": "verify",
+     "summary": "Sony's TIM2 sample whole, 20 of 20: unassigned@002e9d90 was the rest of tim2.c (SetClutColor, Get/SetTexel, GetTextureColor, the GS loaders, TakeSnapshot, LoadTexture, CalcBufWidth, GetLog2)"
     }
    ],
    "status": "verify",
-   "why": "Sony's sample TIM2 library by its own message (Tim2GetPictureHeader: Illegal image no.) and shapes; Tim2Texture needs four of its functions. The end of the run is a guess (0x2e9b88 read as Tim2GetClutColor is the last one looked at)."
+   "why": "Sony's TIM2 sample runs on past Tim2GetClutColor: Tim2SetClutColor .. Tim2GetLog2 (0x2e9d90..0x2eaeac, batch 235) are the rest of tim2.c in the sample's order; gsFillRect 0x2eaeb0 starts demoevent.cpp"
   },
   "rx/filecd.c": {
    "notes": "All 35 of 0x1565c8..0x157db8 written. rxcmp.py: 34 of 35 identical to RoR with jump targets and data masked; the one difference is rxFileCdFindDir, 0x18 longer in FS2: it also looks in the root when the path table holds nothing else, which the host's one-directory disc relies on. rxFileVerbose is rxfile.c's s_verbose, shared now the driver is its own file. Runs on io::Disc: a smoke run reads sectors 16, 18, 19 and finds SPK.ROM.",

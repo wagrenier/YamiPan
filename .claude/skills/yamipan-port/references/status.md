@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 19:58 at commit `a7fe4e5` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 20:18 at commit `3a1db87` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 19:58 at commit `a7fe4e5` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6598**, named **5808** (88%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1600, game-inferred 4884
-- context-name ledger: 6484 entries; overrides of wrong library matches: 0
-- placed in a source file: 6461/6598 in 139 files
+- game functions: **6598**, named **5819** (88%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1611, game-inferred 4884
+- context-name ledger: 6495 entries; overrides of wrong library matches: 0
+- placed in a source file: 6472/6598 in 139 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5873**; stubs: **3**
+- reconstructed FS2 functions: **5884**; stubs: **3**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -152,7 +152,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/rena/rena_drawtarget.cpp` | 1 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
-| `src/rena/tim2.cpp` | 10 | 0 |
+| `src/rena/tim2.cpp` | 21 | 0 |
 | `src/rx/filecd.c` | 35 | 0 |
 | `src/rx/filehdd.c` | 13 | 0 |
 | `src/rx/filehost.c` | 12 | 0 |
@@ -175,7 +175,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 187 TUs: todo 73, verify 140, done 46
+- 186 TUs: todo 72, verify 140, done 46
 - next: **None** (nothing on the frontier and no queued TU)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
@@ -287,7 +287,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `rena/rena_drawtarget.cpp` 1/1 -- One function, written from the ROM asm: guard byte gp-0x7940 (sbss 0x31af30); first call stores 100, 100, 100 at 0x5a52d0..d8 and 1.0f at 0x5a52e0, sets the gua
 - verify: `rena/rena_model.cpp` 34/34 -- Written: createInstance 0x2e5210, ModelInstance::init 0x2e4800, ModelSurface 0x2e3e10, buildPartRecs 0x2e4f50, setFrames, renaStepTexAnim, modelFindPart, findGr
 - verify: `rena/rena_pkt_vif1pktmanage.cpp` 13/17 -- Pinned 0x2eaff0-0x2ec110 under the new src/rena/ with the game's own file name (strings in Reset / AddList); the stale inferred key rena_pkt_vif1pktmanage.cpp r
-- verify: `rena/tim2.cpp` 9/9 -- The five new functions follow Sony's TIM2 sample: the eXt user-space header (TIM2_EXHEADER, 0x10), the header-size table by mip count at 0x310360, the CSM1 bloc
+- verify: `rena/tim2.cpp` 20/20 -- Batch 235 named the 11 functions at 0x2e9d90..0x2eaeac after Sony's tim2.c, and the run is pinned to rena/tim2.cpp (now 0x2e97a8..0x2eaeb0). The two psm jump ta
 - verify: `rx/filecd.c` 35/35 -- All 35 of 0x1565c8..0x157db8 written. rxcmp.py: 34 of 35 identical to RoR with jump targets and data masked; the one difference is rxFileCdFindDir, 0x18 longer 
 - verify: `rx/filehdd.c` 13/13 -- All 13 functions of the HDD device driver written: driver table fill, root prefix join and set, busy flag, size / create / read / write through rxSys file calls
 - verify: `rx/filehost.c` 12/12 -- All 12 written from the FS2 decompilation; identical to RosePan rxfile.cpp host section except the open-failure printf: fmt 0x3018d8 with filehost.c and lines 1
@@ -321,6 +321,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 20:18 `rena/tim2.cpp` verify: Sony's TIM2 sample whole, 20 of 20: unassigned@002e9d90 was the rest of tim2.c (SetClutColor, Get/SetTexel, GetTextureColor, the GS loaders, TakeSnapshot, LoadT
 - 2026-11-07 19:58 `game/scenerender.cpp` verify: rena light records complete: RenaLight virtual slots, kinds, colour and shade getters, the four dtors; unassigned@002e00c0, @002e0580, @001fa980 pinned here
 - 2026-11-07 19:31 `game/stageparty.cpp` verify: JackFill's run pinned here (was unassigned@002081b0); its deleting dtor 0x208280 written
 - 2026-11-07 19:24 `rena/tim2.cpp` verify: Sony's TIM2 library complete, 9 of 9: Tim2CheckFileHeaer, Tim2GetUserSpace, Tim2GetUserData, Tim2GetComment, Tim2GetClutColor written (batch 232)
@@ -328,7 +329,6 @@ Recent sessions:
 - 2026-11-07 18:53 `game/playermotion.cpp` verify: The last 14 functions of the slice were already written as header inlines: the carried list's second StageList instance 0x217700..0x2179ac, five StageCharacter 
 - 2026-11-07 18:33 `game/playermotion.cpp` verify: The car motions run 0x280620..0x2811c0, 0x281370..0x2813e0, 0x281548..0x281a40 joined playermotion.cpp (was unassigned@00280620 and unassigned@00281550); the si
 - 2026-11-07 18:17 `rena/rena_camera.cpp` verify: boxClipTest written: a part box against the frame planes and the guard band (0 inside, 1 crossing, 2 outside); 0x2e2970 named RenaCamera::RenaCamera
-- 2026-11-07 18:04 `game/kunitoris.cpp` verify: Kunitoris complete: the drawable and mover bases (dtors, the empty draw, the never-ending step), kunitorisRandom, KunitorisGroup::copyPair, isEmpty / isGone out
 
 ## Frontier (called by reconstructed code, not written yet)
 
