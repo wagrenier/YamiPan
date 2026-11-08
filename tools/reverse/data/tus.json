@@ -2462,7 +2462,7 @@
    "why": "the stage's particle effects and the system that owns them: StageParticle's class (vtables 0x3149e0..) and the StageNodeTree methods around its spawn; the critters 0x2b3860..0x2b5740 and spawnCritters 0x190990, kept here though the ROM has them apart; and the MSL vector and sort instances 0x1920d0..0x193900 the file's object emitted (word vectors, the effects' pair list, BoxCells / BoxColumn / BoxList dtors); no source-path string"
   },
   "game/stageparty.cpp": {
-   "notes": "unassigned@002067d0 was no file: 0x206890..0x207108 is this object's template instances, batch 196, record removed, range pinned here, std::vector kept and listed at the end of the .cpp; 0x2067d0 CharacterPad::pressedBind pinned to game/characterinput.cpp. BearingVector insert, reserve, clear, dtor; RippleLists and RippleWaves dtors and clears, here because ~SightJack inlines ~RippleSheet. Proved: bearingvectorcmp.py, 6,000 ops, 133,165 elements, 2,291 inserts of a value inside the vector, 0 differ, dtors free what they own; --plant 827 of 1,500. Capacity differs and stepAlertedFoe's reserve is dropped; no caller can see either. No game behaviour changed: the smoke run stops at the language screen as before and never reaches the jack. callcheck's one MISSING, drawLive's gfxGetDrawEnv and gsFillRect, is older than this run and lives in the helpers it calls. Earlier notes: Batch 162. SceneModelHolder was no model: it is StageDaylight, 0x2cfe20..0x2d0a10, range joined to this TU, StageScene::model renamed daylight. On stages 3, 0x11, 0x12, 0x14, 0x16, 0x19, 0x5d, 0x1b: outside the stage's bbx boxes an additive gradient rises and settles, inside it fades and a clone of the jack's film closes in and opens. Seen in a temporary build, removed: stage 3 forced, the box answer forced on a timer, progress/20261106-daylight-forced-peak.png and -settled.png. Unforced, stage 3's first room is inside all the way, so nothing shows there. Byte 9 is answered: E01, E04, E05 scripts only lock the jack, E02 and others never touch it, so node 4 is by design. Seen, temporary build, removed: New Game forced to stage 2, jack2 pad, 290 s, no crash, no flag forced: noise with the black film ring, then a tuned view through a character, progress/20261106-stage2-real-jack-view.png. No game reference judges the levels. Left partial: drawLive lacks stage 0x1b's boss film 0x2d10f0, FUN_002d3080 and the object at +0xb4, callcheck's MISSING on drawLive, explained. Next: KeepList 0x2bc100..0x2bcd20, misnamed, reads like a track player of three varint channels, another TU, its addNamed is what the jack's warning calls; then the boss film. open-items.md Next up has it. The 15 s check is the language menu, unchanged.",
+   "notes": "Batch 233. 0x2081b0..0x208330 is JackFill, vtable 0x316030: draw 0x2081b0 and ctor 0x2082e0 were already written here; the deleting dtor 0x208280 is JackFill::~JackFill, empty (the vtable put back, ~ScreenFill frees the texture). Range pinned with define, the unassigned record is gone. Nothing runs differently: the 15 s smoke run ends on the language screen as before. callcheck's one MISSING in this file, SightJack::drawLive (gfxGetDrawEnv, gsFillRect), is old and covered by its PC note. Ghidra saved by name_ctx. Next with the queue empty: unassigned@002e00c0, unassigned@002e0580.",
    "ranges": [
     [
      "001fe6b0",
@@ -2471,6 +2471,10 @@
     [
      "00206890",
      "00207110"
+    ],
+    [
+     "002081b0",
+     "00208330"
     ],
     [
      "002cf880",
@@ -2512,10 +2516,15 @@
      "date": "2026-11-07 03:53",
      "status": "verify",
      "summary": "Pin the jack's and the ripple sheet's std::vector instances, 8 functions of 0x206890..0x207108; bearingvectorcmp.py proves the promise"
+    },
+    {
+     "date": "2026-11-07 19:31",
+     "status": "verify",
+     "summary": "JackFill's run pinned here (was unassigned@002081b0); its deleting dtor 0x208280 written"
     }
    ],
    "status": "verify",
-   "why": "The film 0x204550..0x2058e0 and 0x205b80 lie between this file's own functions; 0x2cfe20..0x2d0a10 (StageDaylight, the JackFilm's other user: it clones and draws it) follows the gsFrame passes with no gap, and sldiDecompress starts a different subject after it"
+   "why": "0x2081b0..0x208330 is JackFill (vtable 0x316030): draw 0x2081b0, deleting dtor 0x208280, ctor 0x2082e0; SightJack's fill, its draw and ctor already written here (was unassigned@002081b0)"
   },
   "game/stageplayer.cpp": {
    "notes": "Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was stubs, so native 0x52 never ended the stage. Seen in the user's own playthrough: the cutscene, then mission accomplished, then back to stage 1. That last step is the navigator: runNaviFile and applyNaviAnswer are stubs (open-items.md, Next up). AREA_AC10 and AREA11 now fire too and were not looked at.",
