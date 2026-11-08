@@ -35,9 +35,16 @@ public:
 
     // The zoom of camview_zoom, from the character's zoomLevel.
     void setZoom(float level);                                           // FS2 0x0029a840
-    // The analog range setZoom spreads over: low, then its width.
-    static constexpr float kZoomLow  = 76.8f;                            // sbss gp-0x7a00: 256 * 30 / 100
-    static constexpr float kZoomSpan = 101.4f;                           // sbss gp-0x79fc: 255 - 2 * low
+    // The analog range setZoom spreads over: low, then its width. In the ROM
+    // a header's file statics: every file that includes it has its own int
+    // (sdata, 30) and float pair (sbss), filled by that file's static
+    // initialiser (0x310a20, 0x310a70, 0x310b10, 0x310ec0, 0x310f10); this
+    // class's copy is sbss gp-0x7a00 / gp-0x79fc. The EE rounds toward zero,
+    // so the ROM holds 76.79999542 / 101.40000916, one ulp from the host's
+    // 76.8f / 101.4f (architecture.md "Static initialisers").
+    static constexpr int   kZoomPercent = 30;
+    static constexpr float kZoomLow  = kZoomPercent * 256.0f / 100.0f;
+    static constexpr float kZoomSpan = 255.0f - kZoomLow * 2.0f;
 
     // Between the character and the camera, half a turn round z: it is what
     // onViewTop moves to the character.

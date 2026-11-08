@@ -8,7 +8,8 @@
  *    0x20d8c0, 0x210940, 0x210b30, 0x217a80  how visible it is, what it sees
  *    0x214cf0..0x216270    the small answers about a character
  *    0x242e80..0x243340    SceneNoiseList, the frame's noises
- *    0x17e950..0x17f040    the scripted volumes and the markers
+ *    0x17e860..0x17ed30, 0x17ef10..0x17f150  the scripted volumes and the
+ *                          markers, the volumes' adjustor thunks last
  *
  *  The roadmap called 0x20d8c0 "the move" for its getMoveScale calls. It
  *  moves nothing: it works out how hard the character is to see, and
@@ -811,3 +812,34 @@ bool SphereVolume::contains(const float *point)
     const float z = point[2] - matrix[3][2];
     return sqrtf(z * z + x * x + y * y) <= m_radius;
 }
+
+// Written in headers (game/gamehooks.h); tools/reverse reads tags from .cpp
+// files only:
+//   FS2 0x0017e900  BoxVolume::getKind, StageObject_BoxVolume
+//   FS2 0x0017e910  BoxVolume::sideHook3, empty
+//   FS2 0x0017e920  BoxVolume::sideHook2, empty
+//   FS2 0x0017e930  BoxVolume::sideHook1, empty
+//   FS2 0x0017e940  BoxVolume::sideHook0, empty
+//   FS2 0x0017eb20  StageVolume::~StageVolume (deleting)
+//   FS2 0x0017ef90  StageVolume::getKind, StageObject_Volume
+//   FS2 0x0017f040  SphereVolume::getKind, StageObject_SphereVolume
+//   FS2 0x0017f050  SphereVolume::sideHook3, empty
+//   FS2 0x0017f060  SphereVolume::sideHook2, empty
+//   FS2 0x0017f070  SphereVolume::sideHook1, empty
+//   FS2 0x0017f080  SphereVolume::sideHook0, empty
+
+// The adjustor thunks that end the volumes' run (the host's compiler makes
+// its own; -0x18 is the base whose table is 0x312a64 / 0x3125a4, -0x40 the
+// script runner's):
+//   FS2 0x0017f090  SphereVolume::sideHook3, -0x18
+//   FS2 0x0017f0a0  SphereVolume::sideHook2, -0x18
+//   FS2 0x0017f0b0  SphereVolume::sideHook1, -0x18
+//   FS2 0x0017f0c0  SphereVolume::sideHook0, -0x18
+//   FS2 0x0017f0d0  SphereVolume::~SphereVolume, -0x40
+//   FS2 0x0017f0e0  StageVolume::~StageVolume, -0x40
+//   FS2 0x0017f0f0  BoxVolume::sideHook3, -0x18
+//   FS2 0x0017f100  BoxVolume::sideHook2, -0x18
+//   FS2 0x0017f110  BoxVolume::sideHook1, -0x18
+//   FS2 0x0017f120  BoxVolume::sideHook0, -0x18
+//   FS2 0x0017f130  BoxVolume::scriptIsFacing = StageVolume::containsObject, -0x40
+//   FS2 0x0017f140  BoxVolume::~BoxVolume, -0x40

@@ -211,6 +211,11 @@ static const MotionShotKind kMotionShotKinds[] = {
 constexpr int kMotionShotOther = 0x27;
 
 MotionDef gMotionDefs[kMotionDefCount];   /* bss 0x577b20 */
+// The ROM constructs the doors in its static initialiser
+// (__construct_array with DoorRecord's ctor 0x1772f0, 0x38 x 0x87, no dtor);
+// the host's compiler does the same for this definition.
+// FS2 0x00310a00  __sinit_packtables_cpp
+// callcheck: __construct_array (the definition's array construction)
 DoorRecord gDoorRecords[kDoorRecords];    /* bss 0x537d80 */
 ItemDef gItemDefs[kItemDefCount];         /* bss 0x574c10 */
 WeaponDef gWeaponDefs[kWeaponDefCount];   /* bss 0x576010 */
