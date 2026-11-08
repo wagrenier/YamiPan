@@ -155,6 +155,7 @@ private:
         bool noShadow = false;
         bool writesDepth = true;
         bool open = false;
+        bool eyeAtCentre = true; // the pass's eye is its projection's centre, so the rasterizer can cull as VU1
     };
 
     // A growing GPU vertex buffer and what fills it.
