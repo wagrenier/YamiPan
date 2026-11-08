@@ -1,0 +1,147 @@
+#include <metal_stdlib>
+#include <simd/simd.h>
+
+using namespace metal;
+
+struct type_ModelVertexUniforms
+{
+    float4x4 uWorldToClip;
+    float4 uFog;
+    float4 uEye;
+    float4 uPointPosition;
+    float4 uPointColor;
+    float4 uPointShade;
+    float4x4 uSpotWorldToLight;
+    float4 uSpotScale;
+    float4 uSpotFalloff;
+    float4x4 uShadowProjections[7];
+};
+
+struct type_ModelDrawUniforms
+{
+    float4 uDraw;
+};
+
+struct main0_out
+{
+    float2 out_var_TEXCOORD0 [[user(locn0)]];
+    float4 out_var_TEXCOORD1 [[user(locn1)]];
+    float out_var_TEXCOORD2 [[user(locn2)]];
+    float4 gl_Position [[position]];
+};
+
+struct main0_in
+{
+    float3 in_var_TEXCOORD0 [[attribute(0)]];
+    float3 in_var_TEXCOORD1 [[attribute(1)]];
+    int2 in_var_TEXCOORD2 [[attribute(2)]];
+    uint4 in_var_TEXCOORD3 [[attribute(3)]];
+    float4 in_var_TEXCOORD4 [[attribute(4)]];
+    float4 in_var_TEXCOORD5 [[attribute(5)]];
+    float4 in_var_TEXCOORD6 [[attribute(6)]];
+    float4 in_var_TEXCOORD7 [[attribute(7)]];
+    float4 in_var_TEXCOORD8 [[attribute(8)]];
+    float4 in_var_TEXCOORD9 [[attribute(9)]];
+    float4 in_var_TEXCOORD10 [[attribute(10)]];
+    float4 in_var_TEXCOORD11 [[attribute(11)]];
+    float4 in_var_TEXCOORD12 [[attribute(12)]];
+    float4 in_var_TEXCOORD13 [[attribute(13)]];
+    float4 in_var_TEXCOORD14 [[attribute(14)]];
+};
+
+vertex main0_out main0(main0_in in [[stage_in]], constant type_ModelVertexUniforms& ModelVertexUniforms [[buffer(0)]], constant type_ModelDrawUniforms& ModelDrawUniforms [[buffer(1)]])
+{
+    main0_out out = {};
+    float4 _98 = float4(in.in_var_TEXCOORD0, 1.0);
+    float _99 = dot(in.in_var_TEXCOORD4, _98);
+    float _100 = dot(in.in_var_TEXCOORD5, _98);
+    float _101 = dot(in.in_var_TEXCOORD6, _98);
+    float3 _102 = float3(_99, _100, _101);
+    float3 _109 = float3(dot(in.in_var_TEXCOORD4.xyz, in.in_var_TEXCOORD1), dot(in.in_var_TEXCOORD5.xyz, in.in_var_TEXCOORD1), dot(in.in_var_TEXCOORD6.xyz, in.in_var_TEXCOORD1));
+    float4 _113 = ModelVertexUniforms.uWorldToClip * float4(_99, _100, _101, 1.0);
+    float2 _282;
+    float4 _283;
+    if (ModelDrawUniforms.uDraw.x == 0.0)
+    {
+        float4 _229;
+        do
+        {
+            uint _141 = uint(in.in_var_TEXCOORD7.w);
+            float3 _143 = float3(in.in_var_TEXCOORD3.xyz);
+            if ((_141 & 1u) != 0u)
+            {
+                _229 = float4(_143 * float3(0.0039215688593685626983642578125), 0.501960813999176025390625);
+                break;
+            }
+            float3 _201;
+            if ((_141 & 2u) != 0u)
+            {
+                float3 _199;
+                do
+                {
+                    float3 _164 = ModelVertexUniforms.uPointPosition.xyz - _102;
+                    float _166 = sqrt(dot(_164, _164));
+                    float _174 = precise::max(0.0, ModelVertexUniforms.uPointPosition.w + (ModelVertexUniforms.uPointColor.w * _166));
+                    if ((_141 & 4u) != 0u)
+                    {
+                        _199 = (ModelVertexUniforms.uPointColor.xyz * 255.0) * _174;
+                        break;
+                    }
+                    float _187;
+                    if (_166 > 0.0)
+                    {
+                        _187 = dot(_109, _164) / _166;
+                    }
+                    else
+                    {
+                        _187 = 0.0;
+                    }
+                    _199 = ((ModelVertexUniforms.uPointShade.xyz * _174) + (ModelVertexUniforms.uPointColor.xyz * (precise::max(0.0, _187) * _174))) * 255.0;
+                    break;
+                } while(false);
+                _201 = _143 + _199;
+            }
+            else
+            {
+                _201 = _143;
+            }
+            _229 = float4(floor(fast::clamp(_201 * (((in.in_var_TEXCOORD8.xyz + (in.in_var_TEXCOORD9.xyz * precise::max(0.0, dot(_109, in.in_var_TEXCOORD12.xyz)))) + (in.in_var_TEXCOORD10.xyz * precise::max(0.0, dot(_109, in.in_var_TEXCOORD13.xyz)))) + (in.in_var_TEXCOORD11.xyz * precise::max(0.0, dot(_109, in.in_var_TEXCOORD14.xyz)))), float3(0.0), float3(255.0))) * float3(0.0039215688593685626983642578125), 0.501960813999176025390625);
+            break;
+        } while(false);
+        _282 = (float2(in.in_var_TEXCOORD2) * float2(0.000244140625)) + in.in_var_TEXCOORD7.xy;
+        _283 = _229;
+    }
+    else
+    {
+        float _231 = sqrt(dot(_109, _109));
+        float3 _237;
+        if (_231 > 0.0)
+        {
+            _237 = _109 / float3(_231);
+        }
+        else
+        {
+            _237 = _109;
+        }
+        float3 _241 = ModelVertexUniforms.uEye.xyz - _102;
+        float3 _245 = _241 - (_237 * (2.0 * dot(_241, _237)));
+        float _247 = sqrt(dot(_245, _245));
+        float2 _257;
+        if (_247 > 0.0)
+        {
+            _257 = ((_245.xy / float2(_247)) * 0.5) + float2(0.5);
+        }
+        else
+        {
+            _257 = float2(0.5);
+        }
+        _282 = _257;
+        _283 = float4(select(float3(0.0), floor(fast::clamp((in.in_var_TEXCOORD9.xyz * 128.0) * in.in_var_TEXCOORD7.z, float3(0.0), float3(255.0))) * float3(0.0039215688593685626983642578125), bool3(((in.in_var_TEXCOORD12.y * _237.y) + (in.in_var_TEXCOORD12.z * _237.z)) > 0.0)), 0.501960813999176025390625);
+    }
+    out.gl_Position = _113;
+    out.out_var_TEXCOORD0 = _282;
+    out.out_var_TEXCOORD1 = _283;
+    out.out_var_TEXCOORD2 = fast::clamp(ModelVertexUniforms.uFog.x + (ModelVertexUniforms.uFog.y / _113.w), ModelVertexUniforms.uFog.w, ModelVertexUniforms.uFog.z) * 0.0039215688593685626983642578125;
+    return out;
+}
+

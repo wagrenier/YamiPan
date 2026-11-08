@@ -147,6 +147,14 @@ Buffer Device::createVertexBuffer(unsigned size) const
     return Buffer(m_device, SDL_CreateGPUBuffer(m_device, &info));
 }
 
+Buffer Device::createIndexBuffer(unsigned size) const
+{
+    SDL_GPUBufferCreateInfo info{};
+    info.usage = SDL_GPU_BUFFERUSAGE_INDEX;
+    info.size = size;
+    return Buffer(m_device, SDL_CreateGPUBuffer(m_device, &info));
+}
+
 void Device::uploadTexture(SDL_GPUCopyPass *copy, SDL_GPUTexture *texture, unsigned width, unsigned height,
                            std::span<const std::byte> pixels, TransferBuffer &staging) const
 {
