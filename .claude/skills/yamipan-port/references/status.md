@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 20:39 at commit `1ff18b2` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 20:53 at commit `dcb41c8` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-07 20:39 at commit `1ff18b2` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6598**, named **5828** (88%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1611, game-inferred 4893
-- context-name ledger: 6504 entries; overrides of wrong library matches: 0
-- placed in a source file: 6481/6598 in 139 files
+- game functions: **6598**, named **5844** (89%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1611, game-inferred 4909
+- context-name ledger: 6520 entries; overrides of wrong library matches: 0
+- placed in a source file: 6499/6598 in 139 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5893**; stubs: **3**
+- reconstructed FS2 functions: **5917**; stubs: **3**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -121,7 +121,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stageobjlist.cpp` | 45 | 0 |
 | `src/game/stageparticle.cpp` | 50 | 0 |
 | `src/game/stageparty.cpp` | 87 | 0 |
-| `src/game/stageplayer.cpp` | 34 | 0 |
+| `src/game/stageplayer.cpp` | 58 | 0 |
 | `src/game/stageresult.cpp` | 33 | 0 |
 | `src/game/stagescene.cpp` | 260 | 0 |
 | `src/game/stagesound.cpp` | 45 | 0 |
@@ -175,7 +175,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 185 TUs: todo 71, verify 140, done 46
+- 183 TUs: todo 69, verify 140, done 46
 - next: **None** (nothing on the frontier and no queued TU)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
@@ -259,7 +259,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stageobjlist.cpp` 45/45 -- Cut out of unassigned@00171300 and pinned 0x193900-0x1953f0 (batch 058, 45 names; Ghidra saved). Boxgrid's frontier callees 0x193780..0x1938f8 are MSL vector in
 - verify: `game/stageparticle.cpp` 51/86 -- unassigned@001920d0 was no file: the object's template instances, 17 functions, batch 186, record removed, range pinned to this TU. Written: game/mslsort.h (0x1
 - verify: `game/stageparty.cpp` 84/90 -- Batch 233. 0x2081b0..0x208330 is JackFill, vtable 0x316030: draw 0x2081b0 and ctor 0x2082e0 were already written here; the deleting dtor 0x208280 is JackFill::~
-- verify: `game/stageplayer.cpp` 35/41 -- Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was s
+- verify: `game/stageplayer.cpp` 59/59 -- SphereVolume now overrides sideHook0..3 (empty, gamehooks.h). The volumes have three bases: main table (vptr +0xf4), a 4-slot side-hook base at +0x18 (thunks -0
 - verify: `game/stageresult.cpp` 33/33 -- All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (add
 - verify: `game/stagescene.cpp` 257/259 -- Fix for the user's crash at the start of the mission after stage 1. isMotionTarget 0x175c40 was a stub, so node 4's crow oCM99_20 had no pose and native 0xb1 fa
 - verify: `game/stagesound.cpp` 45/45 -- Batch 077 (31 names: the 18 slice functions, abs 0x121f08, SoundTrack hasSubtitles / getSubtitle / setVolume, SePlayer setTable / setPitch, StageNodeBase ctor 0
@@ -321,6 +321,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 20:53 `game/stageplayer.cpp` verify: The volumes' tail: StageVolume::getKind 0x17ef90 and 0x17f040..0x17f150 (SphereVolume::getKind, its empty sideHook0..3, 12 adjustor thunks) pinned to game/stage
 - 2026-11-07 20:38 `game/packtables.cpp` verify: static initialisers 0x310a00..0x310f80 named __sinit_*_cpp (batch 236) and joined to their owners' TUs
 - 2026-11-07 20:18 `rena/tim2.cpp` verify: Sony's TIM2 sample whole, 20 of 20: unassigned@002e9d90 was the rest of tim2.c (SetClutColor, Get/SetTexel, GetTextureColor, the GS loaders, TakeSnapshot, LoadT
 - 2026-11-07 19:58 `game/scenerender.cpp` verify: rena light records complete: RenaLight virtual slots, kinds, colour and shade getters, the four dtors; unassigned@002e00c0, @002e0580, @001fa980 pinned here
@@ -328,7 +329,6 @@ Recent sessions:
 - 2026-11-07 19:24 `rena/tim2.cpp` verify: Sony's TIM2 library complete, 9 of 9: Tim2CheckFileHeaer, Tim2GetUserSpace, Tim2GetUserData, Tim2GetComment, Tim2GetClutColor written (batch 232)
 - 2026-11-07 19:11 `game/stageelevator.cpp` verify: The 13 stubs counted against the elevator were dead leftovers: the old free elevator functions stayed in src/lib/unassigned_stubs.cpp after batch 184 made them 
 - 2026-11-07 18:53 `game/playermotion.cpp` verify: The last 14 functions of the slice were already written as header inlines: the carried list's second StageList instance 0x217700..0x2179ac, five StageCharacter 
-- 2026-11-07 18:33 `game/playermotion.cpp` verify: The car motions run 0x280620..0x2811c0, 0x281370..0x2813e0, 0x281548..0x281a40 joined playermotion.cpp (was unassigned@00280620 and unassigned@00281550); the si
 
 ## Frontier (called by reconstructed code, not written yet)
 

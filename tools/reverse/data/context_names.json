@@ -14357,6 +14357,102 @@
   "was": "FUN_0017f040",
   "why": "answers 0x1b"
  },
+ "0017f050": {
+  "name": "SphereVolume::sideHook3",
+  "tag": "game-inferred",
+  "was": "FUN_0017f050",
+  "why": "jr ra, empty; slot +0x220 of SphereVolume's table 0x312a7c (data 0x312c9c), the slot BoxVolume::sideHook3 0x17e910 fills in 0x3125bc"
+ },
+ "0017f060": {
+  "name": "SphereVolume::sideHook2",
+  "tag": "game-inferred",
+  "was": "FUN_0017f060",
+  "why": "jr ra, empty; slot +0x21c of table 0x312a7c (data 0x312c98), BoxVolume::sideHook2's slot"
+ },
+ "0017f070": {
+  "name": "SphereVolume::sideHook1",
+  "tag": "game-inferred",
+  "was": "FUN_0017f070",
+  "why": "jr ra, empty; slot +0x218 of table 0x312a7c (data 0x312c94), BoxVolume::sideHook1's slot"
+ },
+ "0017f080": {
+  "name": "SphereVolume::sideHook0",
+  "tag": "game-inferred",
+  "was": "FUN_0017f080",
+  "why": "jr ra, empty; slot +0x214 of table 0x312a7c (data 0x312c90), BoxVolume::sideHook0's slot"
+ },
+ "0017f090": {
+  "name": "SphereVolume::sideHook3_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017f090",
+  "why": "j 0x17f050 with a0 -= 0x18: adjustor thunk of the +0x18 base (its table 0x312a64, data 0x312a78)"
+ },
+ "0017f0a0": {
+  "name": "SphereVolume::sideHook2_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017f0a0",
+  "why": "j 0x17f060 with a0 -= 0x18: adjustor thunk of the +0x18 base"
+ },
+ "0017f0b0": {
+  "name": "SphereVolume::sideHook1_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017f0b0",
+  "why": "j 0x17f070 with a0 -= 0x18: adjustor thunk of the +0x18 base"
+ },
+ "0017f0c0": {
+  "name": "SphereVolume::sideHook0_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017f0c0",
+  "why": "j 0x17f080 with a0 -= 0x18: adjustor thunk of the +0x18 base"
+ },
+ "0017f0d0": {
+  "name": "SphereVolume::~SphereVolume_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017f0d0",
+  "why": "j 0x17efa0 (deleting dtor) with a0 -= 0x40; data 0x312a94 in SphereVolume's table"
+ },
+ "0017f0e0": {
+  "name": "StageVolume::~StageVolume_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017f0e0",
+  "why": "j 0x17eb20 (deleting dtor) with a0 -= 0x40; data 0x312844 in StageVolume's table 0x31282c"
+ },
+ "0017f0f0": {
+  "name": "BoxVolume::sideHook3_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017f0f0",
+  "why": "j 0x17e910 with a0 -= 0x18: adjustor thunk of the +0x18 base"
+ },
+ "0017f100": {
+  "name": "BoxVolume::sideHook2_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017f100",
+  "why": "j 0x17e920 with a0 -= 0x18: adjustor thunk of the +0x18 base"
+ },
+ "0017f110": {
+  "name": "BoxVolume::sideHook1_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017f110",
+  "why": "j 0x17e930 with a0 -= 0x18: adjustor thunk of the +0x18 base"
+ },
+ "0017f120": {
+  "name": "BoxVolume::sideHook0_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017f120",
+  "why": "j 0x17e940 with a0 -= 0x18: adjustor thunk of the +0x18 base"
+ },
+ "0017f130": {
+  "name": "BoxVolume::scriptIsFacing_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017f130",
+  "why": "j StageVolume::containsObject 0x17e950 with a0 -= 0x40; runner slot +0xfc of BoxVolume's table 0x3125bc (data 0x3126b8): native 0x44 on a box (the port's BoxVolume::scriptIsFacing)"
+ },
+ "0017f140": {
+  "name": "BoxVolume::~BoxVolume_thunk",
+  "tag": "game-inferred",
+  "was": "FUN_0017f140",
+  "why": "j 0x17e860 (deleting dtor) with a0 -= 0x40; data 0x3125d4 in BoxVolume's table"
+ },
  "0017f150": {
   "name": "getStageFiles",
   "tag": "game-inferred",

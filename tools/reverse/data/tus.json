@@ -2545,31 +2545,15 @@
    "why": "0x2081b0..0x208330 is JackFill (vtable 0x316030): draw 0x2081b0, deleting dtor 0x208280, ctor 0x2082e0; SightJack's fill, its draw and ctor already written here (was unassigned@002081b0)"
   },
   "game/stageplayer.cpp": {
-   "notes": "Fix for the user's report that nothing starts once the kid reaches downstairs. BoxVolume had no runner slot +0xfc, so no AREA_ script fired; ClearSequence was stubs, so native 0x52 never ended the stage. Seen in the user's own playthrough: the cutscene, then mission accomplished, then back to stage 1. That last step is the navigator: runNaviFile and applyNaviAnswer are stubs (open-items.md, Next up). AREA_AC10 and AREA11 now fire too and were not looked at.",
+   "notes": "SphereVolume now overrides sideHook0..3 (empty, gamehooks.h). The volumes have three bases: main table (vptr +0xf4), a 4-slot side-hook base at +0x18 (thunks -0x18) and the script runner at +0x40 (thunks -0x40: dtors and BoxVolume::scriptIsFacing = containsObject 0x17e950). Header inlines and thunks are listed in stageplayer.cpp so tus.py counts them. Nothing runs differently: the 15 s smoke run ends on the language screen. 0x215300 isPassenger lies in this range but is written in playermotion.cpp.",
    "ranges": [
     [
      "0017e860",
-     "0017e950"
-    ],
-    [
-     "0017e950",
-     "0017ea50"
-    ],
-    [
-     "0017ea50",
-     "0017ec20"
-    ],
-    [
-     "0017ec20",
      "0017ed30"
     ],
     [
      "0017ef10",
-     "0017ef90"
-    ],
-    [
-     "0017efa0",
-     "0017f040"
+     "0017f150"
     ],
     [
      "0020d8c0",
@@ -2626,11 +2610,16 @@
      "date": "2026-11-05 18:07",
      "status": "verify",
      "summary": "The stage's end: a box answers native 0x44, ClearSequence is written, New Game's first part ends"
+    },
+    {
+     "date": "2026-11-07 20:53",
+     "status": "verify",
+     "summary": "The volumes' tail: StageVolume::getKind 0x17ef90 and 0x17f040..0x17f150 (SphereVolume::getKind, its empty sideHook0..3, 12 adjustor thunks) pinned to game/stageplayer.cpp, batch 237; was unassigned@0017f040 and unassigned@0017ef90"
     }
    ],
    "status": "verify",
    "task": "TOP PRIORITY, the user 2026-11-05: New Game's first part cannot end, the kid reaches downstairs and nothing starts. open-items.md 'Next up' first entry has the three blockers: (1) BoxVolume needs script slot +0xfc = containsObject (0x17e950 by thunk 0x17f130), or no AREA_* script fires; (2) ClearSequence 0x2b1500..0x2b1660 is stubs, native 0x52 never ends the stage; (3) the navigator after a clear: runNaviFile 0x295470 and its widgets. Test: warp into AREA01 (6959, 6342, 811) with a temporary --env hook, removed before the commit.",
-   "why": "The character around the frame's scripts, what it hears and sees, the noise list, the volumes: read 2026-11-05; extents by function, the file name is the port's 0x215310 isDriver joined."
+   "why": "0x17ef90 (StageVolume::getKind) and 0x17f040..0x17f150 (SphereVolume::getKind, its empty sideHook0..3, and the volumes' adjustor thunks) end the volumes' run, read 2026-11-07; were unassigned@0017ef90 and unassigned@0017f040"
   },
   "game/stageresult.cpp": {
    "notes": "All 32 functions of 0x2afc20..0x2b0d50 written or listed as MSL map/vector instances (batch 036, 44 names, Ghidra saved). StageResult: counter[0] continues (addContinue), getPerfectBits one bit per zero counter, clocks at +0x94/+0xa4 {state, value, step, target}, mode +0xbc (0 none, 1 count-up, 2 countdown 7500 with SYS_COUNT1/2 cues), layout +0xb8 from getLangPackItem(4/5). runStartupSequence renamed loadGamePack: it parses packgameEU.pak into PackTables (0x2bcf10, columns label/ctype/SEtype) and frees it, no screens. StageResult moved from gamehooks.h to stageresult.h; sysdata.cpp now reads clock.value/clock2.value/mode; SaveData::_000 is playTime (StageResult::tick counts it). New stand-ins in gamehooks.h: PackFile, PackTables, UiLayout, StageSound, StageScene/gStageScene (gp-0x7a7c, data the build must define), getInitPackItem/getLangPackItem. Guesses: the file name; 0x2afc20/0x2afcd0 joined by position; counters 1..3, attempt/stage blocks, clock state bits 0x14 and PackTables element types read from shapes only. Not compiled (no toolchain here); callcheck clean, layout lint OK. Next in the run: 0x2acff0..0x2afc20 (drawing cluster around 0x2adc70).",
