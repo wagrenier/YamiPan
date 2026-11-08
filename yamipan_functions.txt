@@ -9186,12 +9186,12 @@
 /* 002e97a8 000000c0 */ Tim2CheckFileHeaer(){}  // lib-ctx
 /* 002e9868 00000084 */ Tim2GetPictureHeader(){}  // lib-ctx
 /* 002e98f0 000000b8 */ Tim2GetMipMapPictureSize(){}  // lib-ctx
-/* 002e99a8 0000007c */ FUN_002e99a8(){}
-/* 002e9a28 00000064 */ FUN_002e9a28(){}
-/* 002e9a90 00000060 */ FUN_002e9a90(){}
+/* 002e99a8 0000007c */ Tim2GetUserSpace(){}  // lib-ctx
+/* 002e9a28 00000064 */ Tim2GetUserData(){}  // lib-ctx
+/* 002e9a90 00000060 */ Tim2GetComment(){}  // lib-ctx
 /* 002e9af0 0000006c */ Tim2GetImage(){}  // lib-ctx
 /* 002e9b60 00000028 */ Tim2GetClut(){}  // lib-ctx
-/* 002e9b88 00000204 */ FUN_002e9b88(){}
+/* 002e9b88 00000204 */ Tim2GetClutColor(){}  // lib-ctx
 
 // *****************************************************************************
 // FILE -- (unassigned)

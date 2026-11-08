@@ -38513,6 +38513,24 @@
   "was": "FUN_002e98f0",
   "why": "picture width / height >> mip level, answers the level's byte size rounded to 16"
  },
+ "002e99a8": {
+  "name": "Tim2GetUserSpace",
+  "tag": "lib-context",
+  "was": "FUN_002e99a8",
+  "why": "Sony's TIM2 sample: compares headerSize with the mip-header size table at 0x310360 (\"00PPP```\" = 0x30,0x30,0x50,0x50,0x50,0x60..), the user space after it; *pSize from the eXt header's UserSpaceSize (0x745865) or headerSize minus the table"
+ },
+ "002e9a28": {
+  "name": "Tim2GetUserData",
+  "tag": "lib-context",
+  "was": "FUN_002e9a28",
+  "why": "Sony's TIM2 sample: Tim2GetUserSpace, then past the 16-byte eXt header with *pSize = UserDataSize (+8); the user space itself without eXt"
+ },
+ "002e9a90": {
+  "name": "Tim2GetComment",
+  "tag": "lib-context",
+  "was": "FUN_002e9a90",
+  "why": "Sony's TIM2 sample: Tim2GetUserSpace(ph, 0), eXt only, null when UserSpaceSize == UserDataSize + 0x10, else the text after the user data"
+ },
  "002e9af0": {
   "name": "Tim2GetImage",
   "tag": "lib-context",
@@ -38524,6 +38542,12 @@
   "tag": "lib-context",
   "was": "FUN_002e9b60",
   "why": "null without ClutColors, else after the header and ImageSize"
+ },
+ "002e9b88": {
+  "name": "Tim2GetClutColor",
+  "tag": "lib-context",
+  "was": "FUN_002e9b88",
+  "why": "Sony's TIM2 sample: Tim2GetClut, n = clut*16 or *256 + no by imageType 4 / 5, the CSM1 swap of entries 8..23 for (clutType<<8 | imageType) 0x105/0x205/0x305/0x4104/0x4204/0x4304, RGB16/24/32 to a8b8g8r8"
  },
  "002eaeb0": {
   "name": "gsFillRect",

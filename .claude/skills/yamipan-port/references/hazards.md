@@ -435,6 +435,7 @@ Symptom: a loader "ran", instances were counted, yet nothing appears and the stu
 A Bash call carrying a whole source file fails with ENAMETOOLONG (uv_spawn), and nothing has run: write big files with the Write tool (2026-11-05).
 
 - **Symptom:** a long `cat <<EOF` or `py - <<E` in the Bash tool stops with "unexpected EOF while looking for matching" although the delimiter is quoted. **Cause:** not found; both failures held long bodies with apostrophes. **Fix:** write the file with the Write tool, and a patch script to the scratchpad, then run it.
+- **Symptom:** a patch through `py - <<'EOF'` that wrote the text `\\0` (meant as backslash-zero in a comment) left a NUL byte: git called the header binary, `file` said "data" (2026-11-07, rena/tim2.h, architecture.md). **Cause:** the backslashes are unescaped once more on the way in. **Fix:** patch text holding backslashes with the Edit tool or a script file; check `file <path>` says text before finishing.
 - **Symptom:** a first write to src/game/gamehooks.h from Python failed with PermissionError, a second a moment later worked. **Cause:** not found, the file was free by then. **Fix:** retry once before looking further.
 - **Symptom:** `stubgen.py` printed nothing and left stubs whose declaration changed, so the build failed with no declaration matches. **Fix:** delete a written TU's stubs from src/lib/unassigned_stubs.cpp by hand first, as the protocol says; the build then adds the new prototypes' stubs.
 

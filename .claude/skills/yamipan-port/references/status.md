@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 19:12 at commit `0fb6644` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-07 19:24 at commit `90711c3` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-07 19:12 at commit `0fb6644` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6598**, named **5788** (88%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1596, game-inferred 4868
-- context-name ledger: 6464 entries; overrides of wrong library matches: 0
+- game functions: **6598**, named **5792** (88%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1600, game-inferred 4868
+- context-name ledger: 6468 entries; overrides of wrong library matches: 0
 - placed in a source file: 6445/6598 in 139 files
 
 Least-named game-code regions (64 KB blocks):
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5857**; stubs: **3**
+- reconstructed FS2 functions: **5863**; stubs: **3**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -152,7 +152,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/rena/rena_drawtarget.cpp` | 1 | 0 |
 | `src/rena/rena_model.cpp` | 34 | 0 |
 | `src/rena/rena_pkt_vif1pktmanage.cpp` | 13 | 0 |
-| `src/rena/tim2.cpp` | 4 | 0 |
+| `src/rena/tim2.cpp` | 10 | 0 |
 | `src/rx/filecd.c` | 35 | 0 |
 | `src/rx/filehdd.c` | 13 | 0 |
 | `src/rx/filehost.c` | 12 | 0 |
@@ -175,7 +175,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 193 TUs: todo 75, partial 4, verify 139, done 46
+- 193 TUs: todo 75, partial 3, verify 140, done 46
 - next: **None** (nothing on the frontier and no queued TU)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
@@ -287,6 +287,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `rena/rena_drawtarget.cpp` 1/1 -- One function, written from the ROM asm: guard byte gp-0x7940 (sbss 0x31af30); first call stores 100, 100, 100 at 0x5a52d0..d8 and 1.0f at 0x5a52e0, sets the gua
 - verify: `rena/rena_model.cpp` 34/34 -- Written: createInstance 0x2e5210, ModelInstance::init 0x2e4800, ModelSurface 0x2e3e10, buildPartRecs 0x2e4f50, setFrames, renaStepTexAnim, modelFindPart, findGr
 - verify: `rena/rena_pkt_vif1pktmanage.cpp` 13/17 -- Pinned 0x2eaff0-0x2ec110 under the new src/rena/ with the game's own file name (strings in Reset / AddList); the stale inferred key rena_pkt_vif1pktmanage.cpp r
+- verify: `rena/tim2.cpp` 9/9 -- The five new functions follow Sony's TIM2 sample: the eXt user-space header (TIM2_EXHEADER, 0x10), the header-size table by mip count at 0x310360, the CSM1 bloc
 - verify: `rx/filecd.c` 35/35 -- All 35 of 0x1565c8..0x157db8 written. rxcmp.py: 34 of 35 identical to RoR with jump targets and data masked; the one difference is rxFileCdFindDir, 0x18 longer 
 - verify: `rx/filehdd.c` 13/13 -- All 13 functions of the HDD device driver written: driver table fill, root prefix join and set, busy flag, size / create / read / write through rxSys file calls
 - verify: `rx/filehost.c` 12/12 -- All 12 written from the FS2 decompilation; identical to RosePan rxfile.cpp host section except the open-failure printf: fmt 0x3018d8 with filehost.c and lines 1
@@ -320,6 +321,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-07 19:24 `rena/tim2.cpp` verify: Sony's TIM2 library complete, 9 of 9: Tim2CheckFileHeaer, Tim2GetUserSpace, Tim2GetUserData, Tim2GetComment, Tim2GetClutColor written (batch 232)
 - 2026-11-07 19:11 `game/stageelevator.cpp` verify: The 13 stubs counted against the elevator were dead leftovers: the old free elevator functions stayed in src/lib/unassigned_stubs.cpp after batch 184 made them 
 - 2026-11-07 18:53 `game/playermotion.cpp` verify: The last 14 functions of the slice were already written as header inlines: the carried list's second StageList instance 0x217700..0x2179ac, five StageCharacter 
 - 2026-11-07 18:33 `game/playermotion.cpp` verify: The car motions run 0x280620..0x2811c0, 0x281370..0x2813e0, 0x281548..0x281a40 joined playermotion.cpp (was unassigned@00280620 and unassigned@00281550); the si
@@ -327,7 +329,6 @@ Recent sessions:
 - 2026-11-07 18:04 `game/kunitoris.cpp` verify: Kunitoris complete: the drawable and mover bases (dtors, the empty draw, the never-ending step), kunitorisRandom, KunitorisGroup::copyPair, isEmpty / isGone out
 - 2026-11-07 17:52 `game/kunitoris.cpp` partial: KunitorisGame::update written with every helper it calls: groups spawn, step, wrap, scroll, join the player (absorb), break off, shoot, turn, flip, drop and the
 - 2026-11-07 17:30 `game/kunitoris.cpp` partial: KunitorisGame::draw written with the board, its pieces and colour cycles: KunitorisTinted / KunitorisColorCycle / KunitorisPiece (load, draw, update), Kunitoris
-- 2026-11-07 17:07 `game/kunitoris.cpp` partial: KunitorisEnding::draw and drawIntro written over the four ending quads (0x2fc280), their show thresholds and the 8 pose animations (0x2fc220); KunitorisGame +0x
 
 ## Frontier (called by reconstructed code, not written yet)
 
