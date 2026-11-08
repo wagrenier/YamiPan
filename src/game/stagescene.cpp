@@ -62,6 +62,12 @@
 #include "sdk/scetypes.h"
 #include "yamipan/rendering/yamipan_drawui.h"
 
+// The file's static initialiser fills its copy of the zoom pair of
+// viewcamera.h (sbss 0x31ae0c / 0x31ae10 from sdata 0x31a8f4, the word
+// before kViewFilters), which nothing here reads: ViewCamera::kZoomLow /
+// kZoomSpan stand for it.
+// FS2 0x00310a70  __sinit_stagescene_cpp
+
 // The data trees a stage script's paths are read from (StageFiles::dataDir).
 static const char kDataDir[]      = "../data/";        /* data 0x304188 */
 static const char kDataDirDebug[] = "../data/debug/";  /* data 0x304150 */

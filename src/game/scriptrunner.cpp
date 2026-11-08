@@ -45,6 +45,11 @@
 #include "game/stageelevator.h"
 #include "game/sysdata.h"
 
+// The ROM's static initialiser builds a ScriptRunner at bss 0x577a60 and
+// registers ~ScriptRunner 0x1d30c0 for it (__register_global_object, entry
+// 0x577a50). No code in the ROM addresses that object again, so the port
+// has no such global: nothing could tell it apart.
+// FS2 0x00310ac0  __sinit_scriptrunner_cpp
 ScriptRunner *gRunningScript;           /* sbss 0x31ae18 (gp-0x7a58) */
 static u_char sScriptYield;             /* sbss 0x31ae14 (gp-0x7a5c) */
 static int    sNoLocals;                /* sbss 0x31ae1c (gp-0x7a54): the locals of an entry with none */

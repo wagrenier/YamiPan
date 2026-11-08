@@ -38968,5 +38968,59 @@
   "tag": "game-inferred",
   "was": "FUN_002ec890",
   "why": "2dEU/title%s.d2b"
+ },
+ "00310a00": {
+  "name": "__sinit_packtables_cpp",
+  "tag": "game-inferred",
+  "was": "FUN_00310a00",
+  "why": "CodeWarrior static initialiser (table 0x310fb0, entry 0): __construct_array(gDoorRecords 0x537d80, DoorRecord ctor 0x1772f0, no dtor, 0x38, 0x87); file name is the port's (gDoorRecords lives in game/packtables.cpp)"
+ },
+ "00310a20": {
+  "name": "__sinit_stageloop_cpp",
+  "tag": "game-inferred",
+  "was": "FUN_00310a20",
+  "why": "CodeWarrior static initialiser (entry 1): a header's per-file zoom pair, sbss 0x31adec = sdata int 0x31a8d0 (30) * 256 / 100, 0x31adf0 = 255 - 2 * that; nothing reads this copy; data sits just before stageloop.cpp's gStageScene 0x31adf4 (file name is the port's)"
+ },
+ "00310a70": {
+  "name": "__sinit_stagescene_cpp",
+  "tag": "game-inferred",
+  "was": "FUN_00310a70",
+  "why": "CodeWarrior static initialiser (entry 2): the same zoom pair, sbss 0x31ae0c / 0x31ae10 from sdata 0x31a8f4 (30), unread; its int sits just before stagescene.cpp's sdata 0x31a8f8 (file name is the port's)"
+ },
+ "00310ac0": {
+  "name": "__sinit_scriptrunner_cpp",
+  "tag": "game-inferred",
+  "was": "FUN_00310ac0",
+  "why": "CodeWarrior static initialiser (entry 3): ScriptRunner::ScriptRunner on a global at bss 0x577a60, __register_global_object(it, ~ScriptRunner 0x1d30c0, entry 0x577a50); nothing else in the ROM addresses 0x577a60 (file name is the port's)"
+ },
+ "00310b10": {
+  "name": "__sinit_playermotion_cpp",
+  "tag": "game-inferred",
+  "was": "FUN_00310b10",
+  "why": "CodeWarrior static initialiser (entry 4): the zoom pair sbss 0x31ae20 / 0x31ae24 from sdata 0x31a9d4 (30), read by PlayerMotion::setScope 0x1dfd90 (file name is the port's)"
+ },
+ "00310b60": {
+  "name": "__sinit_uigame_cpp",
+  "tag": "game-inferred",
+  "was": "FUN_00310b60",
+  "why": "CodeWarrior static initialiser (entry 5): 57 sdata string pointers copied into bss / data tables, 41 game-state names (sdata 0x31aae8.. -> 0x599490..0x599530) and the 16 key-configuration sprite names (0x31ab98..0x31abd4 -> the sprite table 0x2fafc0, every 0x14); game/uigame.cpp (file name is the port's)"
+ },
+ "00310ec0": {
+  "name": "__sinit_snipecondition_cpp",
+  "tag": "game-inferred",
+  "was": "FUN_00310ec0",
+  "why": "CodeWarrior static initialiser (entry 6): the zoom pair sbss 0x31ae58 / 0x31ae5c from sdata 0x31abf4 (30), read by SnipeCondition::onApply 0x26d6a0 (file name is the port's guess: the reader's class)"
+ },
+ "00310f10": {
+  "name": "__sinit_viewcamera_cpp",
+  "tag": "game-inferred",
+  "was": "FUN_00310f10",
+  "why": "CodeWarrior static initialiser (entry 7): the zoom pair sbss 0x31ae70 / 0x31ae74 from sdata 0x31ac4c (30), read by ViewCamera::setZoom 0x29a840 (file name is the port's guess: the reader's class)"
+ },
+ "00310f60": {
+  "name": "__sinit_stageresult_cpp",
+  "tag": "game-inferred",
+  "was": "FUN_00310f60",
+  "why": "CodeWarrior static initialiser (entry 8): StageResult's inline ctor on gStageResult 0x599700 (+0xb8 / +0xbc zeroed, begin(0)), __register_global_object(it, ~StageResult 0x2b0cf0, entry 0x5996e8)"
  }
 }
