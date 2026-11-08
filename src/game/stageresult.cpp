@@ -18,8 +18,11 @@ static const char kCueCount[] = "SYS_COUNT1";                   /* data 0x30b368
 static const char kCueZero[] = "SYS_COUNT2";                    /* data 0x30b358 */
 constexpr float kCueVolume = 1.0f;
 
-// Constructed by the static initialiser 0x310f60, destroyed through
-// __register_global_object (the host runtime does both).
+// Constructed by the static initialiser 0x310f60 (StageResult's inline ctor:
+// +0xb8 / +0xbc zeroed, begin(0)), destroyed through __register_global_object
+// with ~StageResult 0x2b0cf0, entry 0x5996e8 (the host runtime does both).
+// FS2 0x00310f60  __sinit_stageresult_cpp
+// callcheck: StageResult::begin, __register_global_object (the definition's construction and atexit)
 StageResult gStageResult;           /* bss 0x599700 */
 
 // ──────────────────────────────────────────────────────────────────────

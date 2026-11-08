@@ -3,8 +3,10 @@
  *
  *  Sony's sample TIM2 library as the game links it (0x2e97a8.., no source
  *  string: read from Tim2GetPictureHeader's own message; the file and the
- *  struct names are the sample's). Only what rena's Tim2Texture calls is
- *  written so far. TIM2 files are read in place, as the disc has them.
+ *  struct names are the sample's), all of it: 0x2e97a8..0x2eaeb0. rena's
+ *  Tim2Texture calls the readers; nothing calls the writers, the GS
+ *  transfers or the snapshot. TIM2 files are read in place, as the disc
+ *  has them.
  * ======================================================================== */
 #ifndef _RENA_TIM2_H
 #define _RENA_TIM2_H
@@ -40,6 +42,7 @@ enum Tim2ImageType
 // ClutType's high bits above the pixel kind.
 #define TIM2_CLUT_TYPE_MASK     0x3f    // the Tim2ImageType of the entries
 #define TIM2_CLUT_BLOCKED       0x40    // a 16-colour CLUT kept in the GS's CSM1 block order
+#define TIM2_CLUT_LINEAR        0x80    // entries in linear order (the GS's CSM2)
 
 // The file's header, 16 bytes, padded to 0x80 with Tim2Format_Align128.
 struct TIM2_FILEHEADER
@@ -112,5 +115,32 @@ void *Tim2GetClut(TIM2_PICTUREHEADER *ph);                               // FS2 
 // Entry `no` of CLUT `clut` as 0xAABBGGRR (alpha 0x80 = opaque); 0 for a
 // picture without an indexed image or past the CLUT.
 u_int Tim2GetClutColor(TIM2_PICTUREHEADER *ph, int clut, int no);        // FS2 0x002e9b88
+// Stores entry `no` of CLUT `clut` from 0xAABBGGRR; answers the old colour
+// as Tim2GetClutColor would (0 and nothing stored where it answers 0).
+u_int Tim2SetClutColor(TIM2_PICTUREHEADER *ph, int clut, int no,
+                       u_int newcolor);                                  // FS2 0x002e9d90
+// The raw texel at (x, y) of a mip level: a colour as the file stores it,
+// or a CLUT index; 0 outside the level.
+u_int Tim2GetTexel(TIM2_PICTUREHEADER *ph, int mipmap, int x, int y);    // FS2 0x002ea010
+// Stores a raw texel and answers the old one.
+u_int Tim2SetTexel(TIM2_PICTUREHEADER *ph, int mipmap, int x, int y,
+                   u_int newtexel);                                      // FS2 0x002ea188
+// The colour at (u, v) of level 0's coordinates in level `mipmap`, as
+// 0xAABBGGRR, through CLUT `clut` for an indexed image.
+u_int Tim2GetTextureColor(TIM2_PICTUREHEADER *ph, int mipmap, int clut,
+                          int u, int v);                                 // FS2 0x002ea380
+
+// The GS transfers. The ROM's cut takes the addresses from the picture's own
+// GsTex0 / GsMiptbp (no tbp / cbp arguments); nothing in the ROM calls them.
+// PC: no GS upload is made (textures are decoded from the file: Tim2Texture).
+void  Tim2LoadPicture(TIM2_PICTUREHEADER *ph);                           // FS2 0x002ea490
+void  Tim2LoadImage(TIM2_PICTUREHEADER *ph);                             // FS2 0x002ea4b8
+void  Tim2LoadClut(TIM2_PICTUREHEADER *ph);                              // FS2 0x002ea610
+
+struct sceGsDispEnv;
+// Writes the displayed frame (d0; d1 the other field's, or null) to `fname`
+// as a TIM2 file. 1 on success, 0 on an unknown pixel format or no file.
+// PC: there is no GS frame to read back: the rows are written black.
+int   Tim2TakeSnapshot(sceGsDispEnv *d0, sceGsDispEnv *d1, char *fname); // FS2 0x002ea8d8
 
 #endif /* _RENA_TIM2_H */
