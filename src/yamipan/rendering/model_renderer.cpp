@@ -452,10 +452,8 @@ WorldBox worldBoxOf(const float *matrix, const std::array<float, 3> &low, const 
     return box;
 }
 
-// The same test of a cached batch, which has no world vertices. A world box wholly past one side of the shadow's
-// answers for every vertex; one across it walks the vertices, placed as the other path would, which only batches
-// near a shadow pay for.
-bool outsideShadowBox(const float *clip, const float *matrix, const WorldBox &box, const YamiPanModelBatch &batch)
+// Whether a world box lies wholly past one side of a shadow's box: then so does every vertex inside it.
+bool outsideBox(const float *clip, const WorldBox &box)
 {
     for (int lane = 0; lane < 3; lane++)
     {
@@ -466,7 +464,13 @@ bool outsideShadowBox(const float *clip, const float *matrix, const WorldBox &bo
         if (center - reach > 1.0f || center + reach < -1.0f)
             return true;
     }
+    return false;
+}
 
+// The vertex test of a cached rigid batch, which has no world vertices: they are placed as the other path would.
+// Only a batch whose box lies across a shadow's pays for it.
+bool outsideShadowBox(const float *clip, const float *matrix, const YamiPanModelBatch &batch)
+{
     unsigned common = 0x3f;
     for (int index = 0; index < batch.count; index++)
     {
@@ -569,6 +573,11 @@ ModelRenderer::ModelRenderer(Renderer &renderer, gpu::Device &device) : m_render
         m_device.loadShader("model_static.vert", SDL_GPU_SHADERSTAGE_VERTEX, {.samplers = 0, .uniformBuffers = 2});
     m_staticProjectedVertexShader = m_device.loadShader("model_static_projected.vert", SDL_GPU_SHADERSTAGE_VERTEX,
                                                         {.samplers = 0, .uniformBuffers = 2});
+    m_skinnedVertexShader = m_device.loadShader("model_skinned.vert", SDL_GPU_SHADERSTAGE_VERTEX,
+                                                {.samplers = 0, .uniformBuffers = 2, .storageBuffers = 1});
+    m_skinnedProjectedVertexShader = m_device.loadShader("model_skinned_projected.vert", SDL_GPU_SHADERSTAGE_VERTEX,
+                                                         {.samplers = 0, .uniformBuffers = 2, .storageBuffers = 1});
+    m_palettes.usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ;
 }
 
 // Callers hold m_lock.
@@ -724,10 +733,7 @@ void ModelRenderer::drawBatch(const void *list, const float world[4][4], const Y
     Layer &layer = m_layers[list];
     if (!layer.open || batch.count < 3)
         return;
-    if (batch.palette != nullptr)
-        drawPlacedBatch(layer, &world[0][0], batch);
-    else
-        drawCachedBatch(layer, &world[0][0], batch);
+    drawCachedBatch(layer, &world[0][0], batch);
 }
 
 void ModelRenderer::drawPlacedBatch(Layer &layer, const float *matrix, const YamiPanModelBatch &batch)
@@ -906,13 +912,25 @@ std::size_t ModelRenderer::BatchKeyHash::operator()(const BatchKey &key) const
     mix(std::hash<const void *>{}(key.normals));
     mix(std::hash<const void *>{}(key.colors));
     mix(std::hash<const void *>{}(key.uvs));
-    mix(static_cast<std::size_t>(key.count) << 1 | (key.strip ? 1u : 0u));
+    mix(std::hash<const void *>{}(key.boneIds));
+    mix(std::hash<const void *>{}(key.weights));
+    mix(static_cast<std::size_t>(key.count) << 4 | static_cast<std::size_t>(key.bonesPerVertex) << 1 |
+        (key.strip ? 1u : 0u));
     return hash;
 }
 
 const ModelRenderer::CachedBatch *ModelRenderer::cachedBatch(const YamiPanModelBatch &batch)
 {
-    const BatchKey key{batch.positions, batch.normals, batch.colors, batch.uvs, batch.count, batch.strip != 0};
+    const bool skinned = batch.palette != nullptr;
+    const BatchKey key{batch.positions,
+                       batch.normals,
+                       batch.colors,
+                       batch.uvs,
+                       skinned ? batch.boneIds : nullptr,
+                       skinned ? batch.weights : nullptr,
+                       skinned ? batch.bonesPerVertex : 0,
+                       batch.count,
+                       batch.strip != 0};
     const std::uint64_t fingerprint = fingerprintOf(batch);
     if (const auto found = m_batches.find(key); found != m_batches.end())
     {
@@ -930,57 +948,83 @@ const ModelRenderer::CachedBatch *ModelRenderer::cachedBatch(const YamiPanModelB
     // upload of indices is 4-byte aligned.
     const std::uint32_t faces = batch.strip ? count - 2 : count / 3;
     const std::uint32_t reserved = (faces * 3 + 1) & ~1u;
-    if (!m_chunk || m_chunkVertices + count > kChunkVertices || m_chunkIndices + reserved > kChunkIndices)
+    const std::uint32_t vertexSize = skinned ? sizeof(ModelSkinnedVertex) : sizeof(ModelStaticVertex);
+    ChunkFill &fill = skinned ? m_skinnedChunk : m_rigidChunk;
+    if (!fill.chunk || fill.vertices + count > kChunkVertices || fill.indices + reserved > kChunkIndices)
     {
         if (m_chunkCount == kMaxChunks)
             forgetBatches();
-        m_chunk = std::make_shared<ModelGeometryChunk>();
-        m_chunkVertices = 0;
-        m_chunkIndices = 0;
+        fill.chunk = std::make_shared<ModelGeometryChunk>();
+        fill.chunk->vertexSize = vertexSize;
+        fill.vertices = 0;
+        fill.indices = 0;
         m_chunkCount++;
     }
 
     CachedBatch cached;
-    cached.chunk = m_chunk;
-    cached.firstIndex = m_chunkIndices;
+    cached.chunk = fill.chunk;
+    cached.firstIndex = fill.indices;
     cached.indexCount = faces * 3;
-    cached.vertexOffset = static_cast<std::int32_t>(m_chunkVertices);
+    cached.vertexOffset = static_cast<std::int32_t>(fill.vertices);
     cached.low = {INFINITY, INFINITY, INFINITY};
     cached.high = {-INFINITY, -INFINITY, -INFINITY};
     cached.fingerprint = fingerprint;
     {
         std::scoped_lock pendingLock(m_pendingLock);
-        if (m_pending.empty() || m_pending.back().chunk != m_chunk ||
-            m_pending.back().firstVertex + m_pending.back().vertices.size() != m_chunkVertices ||
-            m_pending.back().firstIndex + m_pending.back().indices.size() != m_chunkIndices)
+        if (m_pending.empty() || m_pending.back().chunk != fill.chunk ||
+            m_pending.back().firstVertex + m_pending.back().vertices.size() / vertexSize != fill.vertices ||
+            m_pending.back().firstIndex + m_pending.back().indices.size() != fill.indices)
         {
             PendingGeometry &block = m_pending.emplace_back();
-            block.chunk = m_chunk;
-            block.firstVertex = m_chunkVertices;
-            block.firstIndex = m_chunkIndices;
+            block.chunk = fill.chunk;
+            block.firstVertex = fill.vertices;
+            block.firstIndex = fill.indices;
         }
         PendingGeometry &block = m_pending.back();
+        const std::size_t firstByte = block.vertices.size();
+        block.vertices.resize(firstByte + static_cast<std::size_t>(count) * vertexSize);
 
         for (std::uint32_t index = 0; index < count; index++)
         {
             const float *const position = batch.positions + index * 3;
             const float *const normal = usableNormal(batch.normals + index * 3);
-            ModelStaticVertex &vertex = block.vertices.emplace_back();
-            vertex.x = position[0];
-            vertex.y = position[1];
-            vertex.z = position[2];
-            vertex.nx = normal[0];
-            vertex.ny = normal[1];
-            vertex.nz = normal[2];
+            ModelSkinnedVertex vertex{};
+            ModelStaticVertex &base = vertex.base;
+            base.x = position[0];
+            base.y = position[1];
+            base.z = position[2];
+            base.nx = normal[0];
+            base.ny = normal[1];
+            base.nz = normal[2];
             // No UVs (one triangle of node 4): the host has none of the last batch's to keep, as drawPlacedBatch.
-            vertex.u = batch.uvs != nullptr ? batch.uvs[index * 2] : std::int16_t{0};
-            vertex.v = batch.uvs != nullptr ? batch.uvs[index * 2 + 1] : std::int16_t{0};
-            std::copy_n(batch.colors + index * 4, 4, vertex.color);
+            base.u = batch.uvs != nullptr ? batch.uvs[index * 2] : std::int16_t{0};
+            base.v = batch.uvs != nullptr ? batch.uvs[index * 2 + 1] : std::int16_t{0};
+            std::copy_n(batch.colors + index * 4, 4, base.color);
             for (std::size_t axis = 0; axis < 3; axis++)
             {
                 cached.low[axis] = std::min(cached.low[axis], position[axis]);
                 cached.high[axis] = std::max(cached.high[axis], position[axis]);
             }
+            if (skinned)
+            {
+                // A bone id counts VU quadwords (signed), four a matrix; -1 is an unused slot.
+                base.color[3] = static_cast<std::uint8_t>(batch.bonesPerVertex);
+                // With one bone the weights are not there to read (yamipan_drawmodel.h): the shader takes 1.
+                const std::int8_t *const ids = batch.boneIds + index * batch.bonesPerVertex;
+                const float *const weights =
+                    batch.bonesPerVertex > 1 ? batch.weights + index * batch.bonesPerVertex : nullptr;
+                for (int bone = 0; bone < 4; bone++)
+                {
+                    const bool used = bone < batch.bonesPerVertex && ids[bone] >= 0;
+                    const int matrix = used ? ids[bone] / 4 : 0;
+                    vertex.bones[bone] = used ? static_cast<std::uint8_t>(matrix) : std::uint8_t{255};
+                    vertex.weights[bone] = weights != nullptr && bone < batch.bonesPerVertex ? weights[bone] : 1.0f;
+                    if (used)
+                        cached.paletteSize = std::max(cached.paletteSize, static_cast<std::uint32_t>(matrix) + 1);
+                }
+            }
+            std::memcpy(block.vertices.data() + firstByte + static_cast<std::size_t>(index) * vertexSize,
+                        skinned ? static_cast<const void *>(&vertex) : static_cast<const void *>(&base), vertexSize);
         }
 
         for (std::uint32_t face = 0; face < faces; face++)
@@ -993,17 +1037,16 @@ const ModelRenderer::CachedBatch *ModelRenderer::cachedBatch(const YamiPanModelB
         }
         block.indices.resize(block.indices.size() + reserved - faces * 3);
     }
-    m_chunkVertices += count;
-    m_chunkIndices += reserved;
+    fill.vertices += count;
+    fill.indices += reserved;
     return &m_batches.insert_or_assign(key, std::move(cached)).first->second;
 }
 
 void ModelRenderer::forgetBatches()
 {
     m_batches.clear();
-    m_chunk.reset();
-    m_chunkVertices = 0;
-    m_chunkIndices = 0;
+    m_rigidChunk = {};
+    m_skinnedChunk = {};
     m_chunkCount = 0;
 }
 
@@ -1015,6 +1058,28 @@ void ModelRenderer::drawCachedBatch(Layer &layer, const float *matrix, const Yam
         drawPlacedBatch(layer, matrix, batch);
         return;
     }
+    const bool skinned = batch.palette != nullptr;
+
+    // The palette: the matrices the batch's bones reach, once for the batches of a prim that share them.
+    std::uint32_t paletteBase = 0;
+    if (skinned)
+    {
+        const auto bytes = static_cast<std::size_t>(cached->paletteSize) * sizeof(std::array<float, 16>);
+        if (batch.palette == layer.lastPalette && cached->paletteSize <= layer.lastPaletteSize &&
+            std::memcmp(layer.palettes.data() + layer.lastPaletteBase, batch.palette, bytes) == 0)
+        {
+            paletteBase = layer.lastPaletteBase;
+        }
+        else
+        {
+            paletteBase = static_cast<std::uint32_t>(layer.palettes.size());
+            layer.palettes.resize(layer.palettes.size() + cached->paletteSize);
+            std::memcpy(layer.palettes.data() + paletteBase, batch.palette, bytes);
+            layer.lastPalette = batch.palette;
+            layer.lastPaletteBase = paletteBase;
+            layer.lastPaletteSize = cached->paletteSize;
+        }
+    }
 
     // The instance: the same for every batch of a part under one material, so a run shares one.
     std::uint32_t flags = 0;
@@ -1022,22 +1087,24 @@ void ModelRenderer::drawCachedBatch(Layer &layer, const float *matrix, const Yam
     flags |= layer.point.active != 0 && layer.lights.takesPoint != 0 ? static_cast<std::uint32_t>(ModelInstanceFlag::Point)
                                                                      : 0u;
     flags |= layer.pointFlat ? static_cast<std::uint32_t>(ModelInstanceFlag::PointFlat) : 0u;
+    flags |= skinned && batch.firstBoneOnly != 0 ? static_cast<std::uint32_t>(ModelInstanceFlag::FirstBoneOnly) : 0u;
     ModelInstance instance{};
     for (int row = 0; row < 3; row++)
     {
         for (int column = 0; column < 4; column++)
             instance.place[row][column] = matrix[column * 4 + row];
     }
-    instance.params[0] = layer.scrollU;
-    instance.params[1] = layer.scrollV;
-    instance.params[2] = layer.reflectionScale;
-    instance.params[3] = static_cast<float>(flags);
     std::copy_n(layer.lights.ambient, 3, instance.ambient);
+    instance.ambient[3] = static_cast<float>(flags);
     for (int light = 0; light < kLightCount; light++)
     {
         std::copy_n(layer.lights.colors[light], 3, instance.lightColors[light]);
         std::copy_n(layer.lights.directions[light], 3, instance.lightDirections[light]);
     }
+    instance.lightColors[0][3] = layer.scrollU;
+    instance.lightColors[1][3] = layer.scrollV;
+    instance.lightColors[2][3] = layer.reflectionScale;
+    instance.lightDirections[0][3] = static_cast<float>(paletteBase);
     if (layer.instances.empty() || std::memcmp(&layer.instances.back(), &instance, sizeof(instance)) != 0)
         layer.instances.push_back(instance);
 
@@ -1047,20 +1114,94 @@ void ModelRenderer::drawCachedBatch(Layer &layer, const float *matrix, const Yam
     draw.indexCount = cached->indexCount;
     draw.vertexOffset = cached->vertexOffset;
     draw.instance = static_cast<std::uint32_t>(layer.instances.size() - 1);
+    draw.skinned = skinned;
     draw.culled = layer.lights.cullBack != 0;
     draw.mirrored = determinantOf(matrix) < 0.0f;
-    draw.spotted = layer.spot.active != 0 && layer.lights.takesSpot != 0 && !layer.unlit && !layer.noSpot &&
-                   !outsideSpotCone(layer.spot, matrix, cached->low.data(), cached->high.data());
+
+    // VU1's boxes for the spot and the shadows are the batch's positions as they stand: the mesh's, or the world's
+    // after a palette. A skinned batch's lies within the mesh box placed by each of its bones (a vertex is a weighted
+    // mean of those places); only one that box does not clear is placed here, as drawPlacedBatch would.
+    constexpr float kUnit[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+    draw.spotted = layer.spot.active != 0 && layer.lights.takesSpot != 0 && !layer.unlit && !layer.noSpot;
     const bool shadowed =
         layer.shadows.count != 0 && layer.lights.takesShadow != 0 && !layer.unlit && !layer.blended && !layer.noShadow;
-    if (shadowed)
+    WorldBox box{};
+    if (shadowed || (skinned && draw.spotted))
+        box = worldBoxOf(matrix, cached->low, cached->high);
+    if (skinned && (shadowed || draw.spotted))
     {
-        const WorldBox box = worldBoxOf(matrix, cached->low, cached->high);
-        for (int shadow = 0; shadow < layer.shadows.count; shadow++)
+        std::array<float, 3> low{INFINITY, INFINITY, INFINITY};
+        std::array<float, 3> high{-INFINITY, -INFINITY, -INFINITY};
+        for (std::uint32_t bone = 0; bone < cached->paletteSize; bone++)
         {
-            if (!outsideShadowBox(&layer.shadows.clip[shadow][0][0], matrix, box, batch))
-                draw.shadows |= static_cast<std::uint8_t>(1u << shadow);
+            const WorldBox placed = worldBoxOf(batch.palette + bone * 16, cached->low, cached->high);
+            for (std::size_t axis = 0; axis < 3; axis++)
+            {
+                low[axis] = std::min(low[axis], placed.center[axis] - placed.half[axis]);
+                high[axis] = std::max(high[axis], placed.center[axis] + placed.half[axis]);
+            }
         }
+        for (std::size_t axis = 0; axis < 3; axis++)
+        {
+            box.center[axis] = cached->paletteSize != 0 ? (low[axis] + high[axis]) * 0.5f : 0.0f;
+            box.half[axis] = cached->paletteSize != 0 ? (high[axis] - low[axis]) * 0.5f : 0.0f;
+        }
+    }
+    std::vector<ModelVertex> &placed = layer.batch; // the skinned vertices, worked out when a test needs them
+    placed.clear();
+    const auto placeSkinned = [&] {
+        if (!placed.empty())
+            return;
+        placed.resize(static_cast<std::size_t>(batch.count));
+        for (int index = 0; index < batch.count; index++)
+        {
+            const SkinnedVertex vertex = skinVertex(batch, index);
+            placed[static_cast<std::size_t>(index)].x = vertex.position[0];
+            placed[static_cast<std::size_t>(index)].y = vertex.position[1];
+            placed[static_cast<std::size_t>(index)].z = vertex.position[2];
+        }
+    };
+
+    if (draw.spotted && !skinned)
+        draw.spotted = !outsideSpotCone(layer.spot, matrix, cached->low.data(), cached->high.data());
+    if (draw.spotted && skinned)
+    {
+        const float low[3] = {box.center[0] - box.half[0], box.center[1] - box.half[1], box.center[2] - box.half[2]};
+        const float high[3] = {box.center[0] + box.half[0], box.center[1] + box.half[1], box.center[2] + box.half[2]};
+        draw.spotted = !outsideSpotCone(layer.spot, kUnit, low, high);
+        if (draw.spotted)
+        {
+            placeSkinned();
+            float exactLow[3] = {INFINITY, INFINITY, INFINITY};
+            float exactHigh[3] = {-INFINITY, -INFINITY, -INFINITY};
+            for (const ModelVertex &vertex : placed)
+            {
+                const float point[3] = {vertex.x, vertex.y, vertex.z};
+                for (int axis = 0; axis < 3; axis++)
+                {
+                    exactLow[axis] = std::min(exactLow[axis], point[axis]);
+                    exactHigh[axis] = std::max(exactHigh[axis], point[axis]);
+                }
+            }
+            draw.spotted = !outsideSpotCone(layer.spot, kUnit, exactLow, exactHigh);
+        }
+    }
+
+    for (int shadow = 0; shadowed && shadow < layer.shadows.count; shadow++)
+    {
+        const float *const clip = &layer.shadows.clip[shadow][0][0];
+        bool outside = outsideBox(clip, box);
+        if (!outside && skinned)
+        {
+            placeSkinned();
+            outside = outsideShadowBox(clip, placed);
+        }
+        else if (!outside)
+        {
+            outside = outsideShadowBox(clip, matrix, batch);
+        }
+        if (!outside)
+            draw.shadows |= static_cast<std::uint8_t>(1u << shadow);
     }
     if (layer.chunks.empty() || layer.chunks.back() != cached->chunk)
         layer.chunks.push_back(cached->chunk);
@@ -1157,13 +1298,19 @@ void ModelRenderer::collect(const void *list, Frame &frame)
     const auto spotOffset = static_cast<std::uint32_t>(frame.modelSpotVertices.size());
     const auto shadowOffset = static_cast<std::uint32_t>(frame.modelShadowVertices.size());
     const auto instanceOffset = static_cast<std::uint32_t>(frame.modelInstances.size());
+    const auto paletteOffset = static_cast<float>(frame.modelPalettes.size());
     const auto batchOffset = static_cast<std::uint32_t>(frame.modelBatches.size());
     const auto drawOffset = static_cast<std::uint32_t>(frame.modelDraws.size());
     frame.modelVertices.insert(frame.modelVertices.end(), layer.vertices.begin(), layer.vertices.end());
     frame.modelSpotVertices.insert(frame.modelSpotVertices.end(), layer.spotVertices.begin(), layer.spotVertices.end());
     frame.modelShadowVertices.insert(frame.modelShadowVertices.end(), layer.shadowVertices.begin(),
                                      layer.shadowVertices.end());
-    frame.modelInstances.insert(frame.modelInstances.end(), layer.instances.begin(), layer.instances.end());
+    for (ModelInstance instance : layer.instances)
+    {
+        instance.lightDirections[0][3] += paletteOffset; // whole numbers well under 2^24: exact
+        frame.modelInstances.push_back(instance);
+    }
+    frame.modelPalettes.insert(frame.modelPalettes.end(), layer.palettes.begin(), layer.palettes.end());
     for (ModelBatchDraw batch : layer.batches)
     {
         batch.instance += instanceOffset;
@@ -1188,6 +1335,8 @@ void ModelRenderer::collect(const void *list, Frame &frame)
     layer.spotVertices.clear();
     layer.shadowVertices.clear();
     layer.instances.clear();
+    layer.palettes.clear();
+    layer.lastPalette = nullptr;
     layer.batches.clear();
     layer.chunks.clear();
     layer.reflectionBatches.clear();
@@ -1216,6 +1365,8 @@ void ModelRenderer::uploadVertices(SDL_GPUCopyPass *copy, const Frame &frame)
                  static_cast<unsigned>(frame.modelShadowVertices.size() * sizeof(ModelShadowVertex)));
     uploadStream(copy, m_instances, frame.modelInstances.data(),
                  static_cast<unsigned>(frame.modelInstances.size() * sizeof(ModelInstance)));
+    uploadStream(copy, m_palettes, frame.modelPalettes.data(),
+                 static_cast<unsigned>(frame.modelPalettes.size() * sizeof(frame.modelPalettes[0])));
     uploadGeometry(copy);
 }
 
@@ -1234,7 +1385,7 @@ void ModelRenderer::uploadGeometry(SDL_GPUCopyPass *copy)
 
     std::size_t bytes = 0;
     for (const PendingGeometry &block : pending)
-        bytes += block.vertices.size() * sizeof(ModelStaticVertex) + block.indices.size() * sizeof(std::uint16_t);
+        bytes += block.vertices.size() + block.indices.size() * sizeof(std::uint16_t);
     m_geometryUpload = m_device.createUploadBuffer(static_cast<unsigned>(bytes));
     auto *const mapped = m_geometryUpload
                              ? static_cast<std::byte *>(SDL_MapGPUTransferBuffer(m_device.get(), m_geometryUpload.get(), false))
@@ -1249,7 +1400,7 @@ void ModelRenderer::uploadGeometry(SDL_GPUCopyPass *copy)
     std::vector<std::pair<std::uint32_t, std::uint32_t>> places; // each block's vertices and indices in the upload
     for (const PendingGeometry &block : pending)
     {
-        const auto vertexBytes = static_cast<std::uint32_t>(block.vertices.size() * sizeof(ModelStaticVertex));
+        const auto vertexBytes = static_cast<std::uint32_t>(block.vertices.size());
         const auto indexBytes = static_cast<std::uint32_t>(block.indices.size() * sizeof(std::uint16_t));
         std::memcpy(mapped + offset, block.vertices.data(), vertexBytes);
         std::memcpy(mapped + offset + vertexBytes, block.indices.data(), indexBytes);
@@ -1264,7 +1415,7 @@ void ModelRenderer::uploadGeometry(SDL_GPUCopyPass *copy)
         ModelGeometryChunk &chunk = *block.chunk;
         if (!chunk.vertices)
         {
-            chunk.vertices = m_device.createVertexBuffer(kChunkVertices * sizeof(ModelStaticVertex));
+            chunk.vertices = m_device.createVertexBuffer(kChunkVertices * chunk.vertexSize);
             chunk.indices = m_device.createIndexBuffer(kChunkIndices * sizeof(std::uint16_t));
         }
         if (!chunk.vertices || !chunk.indices)
@@ -1276,8 +1427,8 @@ void ModelRenderer::uploadGeometry(SDL_GPUCopyPass *copy)
 
         source.offset = places[index].first;
         destination.buffer = chunk.vertices.get();
-        destination.offset = block.firstVertex * static_cast<std::uint32_t>(sizeof(ModelStaticVertex));
-        destination.size = static_cast<std::uint32_t>(block.vertices.size() * sizeof(ModelStaticVertex));
+        destination.offset = block.firstVertex * chunk.vertexSize;
+        destination.size = static_cast<std::uint32_t>(block.vertices.size());
         SDL_UploadToGPUBuffer(copy, &source, &destination, false);
 
         source.offset = places[index].second;
@@ -1296,7 +1447,7 @@ void ModelRenderer::uploadStream(SDL_GPUCopyPass *copy, VertexStream &stream, co
     if (bytes > stream.capacity || !stream.buffer)
     {
         stream.capacity = std::max({bytes * 2, stream.capacity, kInitialVertexCapacity});
-        stream.buffer = m_device.createVertexBuffer(stream.capacity);
+        stream.buffer = m_device.createBuffer(stream.usage, stream.capacity);
         stream.upload = m_device.createUploadBuffer(stream.capacity);
     }
 
@@ -1420,18 +1571,21 @@ SDL_GPUGraphicsPipeline *ModelRenderer::shadowPipeline()
 }
 
 // A cached batch's pipeline: its vertices from a chunk (slot 0), its instance (slot 1), the depth as the other passes,
-// and the rasterizer culling what facesEye would.
-SDL_GPUGraphicsPipeline *ModelRenderer::createStaticPipeline(SDL_GPUShader *vertexShader, SDL_GPUShader *fragmentShader,
+// and the rasterizer culling what facesEye would. Sixteen attributes at most (SDL's limit): a skinned vertex's bones
+// and weights take the last two.
+SDL_GPUGraphicsPipeline *ModelRenderer::createStaticPipeline(bool skinned, bool projected,
                                                              const SDL_GPUColorTargetDescription &target,
                                                              bool writesDepth, SDL_GPUCullMode cull)
 {
     const std::array<SDL_GPUVertexBufferDescription, 2> buffers{{
-        {0, sizeof(ModelStaticVertex), SDL_GPU_VERTEXINPUTRATE_VERTEX, 0},
+        {0, static_cast<Uint32>(skinned ? sizeof(ModelSkinnedVertex) : sizeof(ModelStaticVertex)),
+         SDL_GPU_VERTEXINPUTRATE_VERTEX, 0},
         {1, sizeof(ModelInstance), SDL_GPU_VERTEXINPUTRATE_INSTANCE, 0},
     }};
 
     constexpr auto kRow = static_cast<std::uint32_t>(sizeof(float) * 4);
-    const std::array<SDL_GPUVertexAttribute, 15> attributes{{
+    static_assert(offsetof(ModelSkinnedVertex, base) == 0);
+    const std::array<SDL_GPUVertexAttribute, 16> attributes{{
         {0, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(ModelStaticVertex, x)},
         {1, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(ModelStaticVertex, nx)},
         {2, 0, SDL_GPU_VERTEXELEMENTFORMAT_SHORT2, offsetof(ModelStaticVertex, u)},
@@ -1439,23 +1593,28 @@ SDL_GPUGraphicsPipeline *ModelRenderer::createStaticPipeline(SDL_GPUShader *vert
         {4, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, place)},
         {5, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, place) + kRow},
         {6, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, place) + 2 * kRow},
-        {7, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, params)},
-        {8, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, ambient)},
-        {9, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightColors)},
-        {10, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightColors) + kRow},
-        {11, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightColors) + 2 * kRow},
-        {12, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightDirections)},
-        {13, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightDirections) + kRow},
-        {14, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightDirections) + 2 * kRow},
+        {7, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, ambient)},
+        {8, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightColors)},
+        {9, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightColors) + kRow},
+        {10, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightColors) + 2 * kRow},
+        {11, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightDirections)},
+        {12, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightDirections) + kRow},
+        {13, 1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelInstance, lightDirections) + 2 * kRow},
+        {14, 0, SDL_GPU_VERTEXELEMENTFORMAT_UBYTE4, offsetof(ModelSkinnedVertex, bones)},
+        {15, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelSkinnedVertex, weights)},
     }};
+
+    SDL_GPUShader *const vertexShader =
+        skinned ? (projected ? m_skinnedProjectedVertexShader : m_skinnedVertexShader).get()
+                : (projected ? m_staticProjectedVertexShader : m_staticVertexShader).get();
 
     SDL_GPUGraphicsPipelineCreateInfo info{};
     info.vertex_shader = vertexShader;
-    info.fragment_shader = fragmentShader;
+    info.fragment_shader = projected ? m_spotFragmentShader.get() : m_fragmentShader.get();
     info.vertex_input_state.vertex_buffer_descriptions = buffers.data();
     info.vertex_input_state.num_vertex_buffers = buffers.size();
     info.vertex_input_state.vertex_attributes = attributes.data();
-    info.vertex_input_state.num_vertex_attributes = attributes.size();
+    info.vertex_input_state.num_vertex_attributes = skinned ? 16 : 14;
     info.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
     info.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
     info.rasterizer_state.cull_mode = cull;
@@ -1471,34 +1630,33 @@ SDL_GPUGraphicsPipeline *ModelRenderer::createStaticPipeline(SDL_GPUShader *vert
 
     SDL_GPUGraphicsPipeline *const pipeline = SDL_CreateGPUGraphicsPipeline(m_device.get(), &info);
     if (pipeline == nullptr)
-        gpu::logGpuError("SDL_CreateGPUGraphicsPipeline(model static)");
+        gpu::logGpuError("SDL_CreateGPUGraphicsPipeline(model cached)");
     return pipeline;
 }
 
-SDL_GPUGraphicsPipeline *ModelRenderer::staticPipelineFor(BlendMode blend, bool writesDepth, SDL_GPUCullMode cull)
+SDL_GPUGraphicsPipeline *ModelRenderer::staticPipelineFor(bool skinned, BlendMode blend, bool writesDepth,
+                                                          SDL_GPUCullMode cull)
 {
-    const auto key = std::make_tuple(blend, writesDepth, cull);
+    const auto key = std::make_tuple(skinned, blend, writesDepth, cull);
     if (const auto found = m_staticPipelines.find(key); found != m_staticPipelines.end())
         return found->second.get();
 
     SDL_GPUColorTargetDescription target{};
     target.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
     target.blend_state = blendStateOf(PipelineKey{blend, ColorMask::All});
-    SDL_GPUGraphicsPipeline *const pipeline = createStaticPipeline(
-        m_staticVertexShader.get(), m_fragmentShader.get(), target, writesDepth, cull);
+    SDL_GPUGraphicsPipeline *const pipeline = createStaticPipeline(skinned, false, target, writesDepth, cull);
     m_staticPipelines.emplace(key, gpu::GraphicsPipeline(m_device.get(), pipeline));
     return pipeline;
 }
 
-SDL_GPUGraphicsPipeline *ModelRenderer::staticProjectedPipeline(ProjectedPass pass, SDL_GPUCullMode cull)
+SDL_GPUGraphicsPipeline *ModelRenderer::staticProjectedPipeline(bool skinned, ProjectedPass pass, SDL_GPUCullMode cull)
 {
-    const auto key = std::make_pair(pass, cull);
+    const auto key = std::make_tuple(skinned, pass, cull);
     if (const auto found = m_staticProjectedPipelines.find(key); found != m_staticProjectedPipelines.end())
         return found->second.get();
 
-    SDL_GPUGraphicsPipeline *const pipeline =
-        createStaticPipeline(m_staticProjectedVertexShader.get(), m_spotFragmentShader.get(),
-                             pass == ProjectedPass::Spot ? spotTarget() : shadowTarget(), false, cull);
+    SDL_GPUGraphicsPipeline *const pipeline = createStaticPipeline(
+        skinned, true, pass == ProjectedPass::Spot ? spotTarget() : shadowTarget(), false, cull);
     m_staticProjectedPipelines.emplace(key, gpu::GraphicsPipeline(m_device.get(), pipeline));
     return pipeline;
 }
@@ -1547,9 +1705,18 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
             SDL_BindGPUVertexBuffers(renderPass, 0, &binding, 1);
             boundChunk = nullptr;
         };
+        bool paletteBound = false;
         const auto bindChunk = [&](const ModelGeometryChunk *chunk) {
             if (!chunk->vertices || !chunk->indices || !m_instances.buffer)
                 return false; // its upload failed, which was logged
+            if (chunk->vertexSize == sizeof(ModelSkinnedVertex) && !paletteBound)
+            {
+                if (!m_palettes.buffer || frame.modelPalettes.empty())
+                    return false;
+                SDL_GPUBuffer *const palettes = m_palettes.buffer.get();
+                SDL_BindGPUVertexStorageBuffers(renderPass, 0, &palettes, 1);
+                paletteBound = true;
+            }
             if (chunk == boundChunk)
                 return true;
             const std::array<SDL_GPUBufferBinding, 2> buffers{
@@ -1651,7 +1818,7 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
             for (const ModelBatchDraw &batch : batches)
             {
                 SDL_GPUGraphicsPipeline *const pipeline =
-                    staticPipelineFor(blend, draw.writesDepth, cullModeOf(batch, counterClockwise));
+                    staticPipelineFor(batch.skinned, blend, draw.writesDepth, cullModeOf(batch, counterClockwise));
                 if (pipeline == nullptr || !bindChunk(batch.chunk))
                     continue;
                 bindPipeline(pipeline);
@@ -1668,7 +1835,7 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
                     if (batch.shadows == 0)
                         continue;
                     SDL_GPUGraphicsPipeline *const pipeline =
-                        staticProjectedPipeline(ProjectedPass::Shadow, cullModeOf(batch, counterClockwise));
+                        staticProjectedPipeline(batch.skinned, ProjectedPass::Shadow, cullModeOf(batch, counterClockwise));
                     if (pipeline == nullptr || !bindChunk(batch.chunk))
                         continue;
                     bindPipeline(pipeline);
@@ -1693,7 +1860,7 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
                     if (!batch.spotted)
                         continue;
                     SDL_GPUGraphicsPipeline *const pipeline =
-                        staticProjectedPipeline(ProjectedPass::Spot, cullModeOf(batch, counterClockwise));
+                        staticProjectedPipeline(batch.skinned, ProjectedPass::Spot, cullModeOf(batch, counterClockwise));
                     if (pipeline == nullptr || !bindChunk(batch.chunk))
                         continue;
                     bindPipeline(pipeline);

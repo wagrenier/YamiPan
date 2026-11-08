@@ -169,30 +169,41 @@ struct ModelStaticVertex
 };
 static_assert(sizeof(ModelStaticVertex) == 32);
 
-// What places and lights a run of cached batches: an instance of model_static.vert. The matrix is the world one
-// transposed, so that each row is what one axis of the result is a dot product with.
+// A skinned model's vertex, cached the same way: model_skinned.vert places it through the frame's palette.
+struct ModelSkinnedVertex
+{
+    ModelStaticVertex base;      // the colour's alpha, never lit (VU1 loads xyz), is how many bones the vertex weighs
+    std::uint8_t bones[4];       // the palette's matrices (VU quadword / 4); 255: none
+    float weights[4];            // as the file has them; not read with one bone
+};
+static_assert(sizeof(ModelSkinnedVertex) == 52);
+
+// What places and lights a run of cached batches: an instance of the cached batches' vertex shaders. The matrix is
+// the world one transposed, so that each row is what one axis of the result is a dot product with. Ten attributes,
+// so that a skinned vertex's four and two more stay within SDL's sixteen: the light rows' w lanes carry the rest.
 struct ModelInstance
 {
     float place[3][4];           // x' = place[0] . (x, y, z, 1); a normal takes .xyz alone, unnormalised as VU1
-    float params[4];             // scroll u, scroll v (added to every UV); the reflection's scale; ModelInstanceFlag bits
-    float ambient[4];            // xyz
-    float lightColors[3][4];     // xyz
-    float lightDirections[3][4]; // xyz
+    float ambient[4];            // xyz; w: ModelInstanceFlag bits, as a float
+    float lightColors[3][4];     // xyz; w: scroll u, scroll v (added to every UV), the reflection's scale
+    float lightDirections[3][4]; // xyz; w of the first: where the palette starts in Frame::modelPalettes
 };
-static_assert(sizeof(ModelInstance) == 176);
+static_assert(sizeof(ModelInstance) == 160);
 
-// The bits of ModelInstance::params[3], held as a float (model_static.hlsli has the same).
+// The bits of ModelInstance::ambient[3] (model_static.hlsli has the same).
 enum class ModelInstanceFlag : std::uint32_t
 {
-    Unlit = 1,     // the vertex colour as it is
-    Point = 2,     // the pass's point light adds to it
-    PointFlat = 4, // whichever way the vertex faces
+    Unlit = 1,         // the vertex colour as it is
+    Point = 2,         // the pass's point light adds to it
+    PointFlat = 4,     // whichever way the vertex faces
+    FirstBoneOnly = 8, // ModelFlag_Distant: every vertex takes its first bone, unweighted
 };
 
 // A block of GPU memory holding cached batches: vertices and the 16-bit indices of their triangles. The render thread
 // creates the buffers and fills them; the frames that draw from a chunk hold it, so it outlives the cache's flush.
 struct ModelGeometryChunk
 {
+    std::uint32_t vertexSize = 0; // a ModelStaticVertex's or a ModelSkinnedVertex's: a chunk holds one kind
     gpu::Buffer vertices;
     gpu::Buffer indices;
 };
@@ -205,6 +216,7 @@ struct ModelBatchDraw
     std::uint32_t indexCount = 0;
     std::int32_t vertexOffset = 0;
     std::uint32_t instance = 0;       // into Frame::modelInstances
+    bool skinned = false;             // ModelSkinnedVertex, placed through the palette
     bool culled = false;              // faces turned from the eye are not drawn
     bool mirrored = false;            // the instance's matrix turns a face's front around
     bool spotted = false;             // the spot's pass goes over it
@@ -274,6 +286,7 @@ struct Frame
     std::vector<ModelSpotVertex> modelSpotVertices;
     std::vector<ModelShadowVertex> modelShadowVertices;
     std::vector<ModelInstance> modelInstances;
+    std::vector<std::array<float, 16>> modelPalettes; // skinned batches' bone matrices, sceVu0 layout
     std::vector<ModelBatchDraw> modelBatches;
     std::vector<std::shared_ptr<ModelGeometryChunk>> modelChunks; // what modelBatches draw from, kept alive
     std::vector<ModelDraw> modelDraws;
@@ -288,6 +301,7 @@ struct Frame
         modelSpotVertices.clear();
         modelShadowVertices.clear();
         modelInstances.clear();
+        modelPalettes.clear();
         modelBatches.clear();
         modelChunks.clear();
         modelDraws.clear();

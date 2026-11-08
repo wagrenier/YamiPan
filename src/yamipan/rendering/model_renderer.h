@@ -2,10 +2,10 @@
 // and hands over batches, read in place in the model file; this transforms and lights them, and draws them
 // with a depth buffer. No VU1 and no GS memory: a batch is decoded at its source.
 //
-// A rigid batch goes to the GPU once, the first frame that draws it, cached by where its data lies in the model
-// file; from then on a frame only records which batch, with an instance that places and lights it, and
-// model_static.vert does VU1's work. A skinned batch (a palette) is still placed and lit here, on the game thread,
-// and uploaded whole each frame.
+// A batch goes to the GPU once, the first frame that draws it, cached by where its data lies in the model file;
+// from then on a frame only records which batch, with an instance that places and lights it (and, skinned, the
+// palette's matrices), and model_static.vert or model_skinned.vert does VU1's work. Only a batch too large for a chunk
+// is still placed and lit here, on the game thread, and uploaded whole each frame.
 //
 // The game side runs on the game thread and fills layers like UiCanvas does, one per packet list, joined
 // into the Frame at the kick. The GPU side runs on the render thread, from what is in the Frame.
@@ -71,6 +71,9 @@ private:
         const float *normals = nullptr;
         const std::uint8_t *colors = nullptr;
         const std::int16_t *uvs = nullptr;
+        const std::int8_t *boneIds = nullptr;
+        const float *weights = nullptr;
+        int bonesPerVertex = 0;
         int count = 0;
         bool strip = false;
 
@@ -92,6 +95,15 @@ private:
         std::array<float, 3> low{};
         std::array<float, 3> high{};
         std::uint64_t fingerprint = 0; // a few of its values: a different file at the same addresses is not reused
+        std::uint32_t paletteSize = 0; // skinned: the matrices its bones reach, from the first; 0 rigid
+    };
+
+    // Where new batches of one vertex kind go.
+    struct ChunkFill
+    {
+        std::shared_ptr<ModelGeometryChunk> chunk;
+        std::uint32_t vertices = 0;
+        std::uint32_t indices = 0;
     };
 
     // Batches cached on the game thread and not yet on the GPU: the render thread takes them at its next upload.
@@ -100,7 +112,7 @@ private:
         std::shared_ptr<ModelGeometryChunk> chunk;
         std::uint32_t firstVertex = 0;
         std::uint32_t firstIndex = 0;
-        std::vector<ModelStaticVertex> vertices;
+        std::vector<std::byte> vertices; // the chunk's kind
         std::vector<std::uint16_t> indices;
     };
 
@@ -110,6 +122,10 @@ private:
         std::vector<ModelSpotVertex> spotVertices;
         std::vector<ModelShadowVertex> shadowVertices;
         std::vector<ModelInstance> instances;
+        std::vector<std::array<float, 16>> palettes;
+        const float *lastPalette = nullptr; // the palette the last skinned batch took, and where it went
+        std::uint32_t lastPaletteBase = 0;
+        std::uint32_t lastPaletteSize = 0;
         std::vector<ModelBatchDraw> batches;
         std::vector<std::shared_ptr<ModelGeometryChunk>> chunks; // what `batches` draw from
         std::vector<ModelDraw> draws;
@@ -147,6 +163,7 @@ private:
         gpu::Buffer buffer;
         gpu::TransferBuffer upload;
         unsigned capacity = 0;
+        SDL_GPUBufferUsageFlags usage = SDL_GPU_BUFFERUSAGE_VERTEX;
     };
 
     // What a projected pass blends like (model_renderer.cpp has each one's GS registers).
@@ -160,12 +177,13 @@ private:
     // The material's reflection goes in as one draw over its faces.
     static void endReflection(Layer &layer);
 
-    // A batch placed and lit here, on the game thread: a skinned one (VU1 0x07f and on), or a rigid one too large to
-    // cache.
+    // A batch placed and lit here, on the game thread, through its palette if it has one (VU1 0x07f and on): one too
+    // large to cache.
     void drawPlacedBatch(Layer &layer, const float *matrix, const YamiPanModelBatch &batch);
-    // A rigid one, cached: only its instance and which faces of it each pass takes are worked out per frame.
+    // A cached one: only its instance, its palette and which faces of it each pass takes are worked out per frame.
     void drawCachedBatch(Layer &layer, const float *matrix, const YamiPanModelBatch &batch);
     // The batch on the GPU, cached on first sight; null if it cannot be (more vertices than a chunk holds).
+    // `skinned` is the batch's palette.
     const CachedBatch *cachedBatch(const YamiPanModelBatch &batch);
     // Drops every cached batch: what frames hold stays alive until they go.
     void forgetBatches();
@@ -176,11 +194,11 @@ private:
     SDL_GPUGraphicsPipeline *createProjectedPipeline(const SDL_GPUColorTargetDescription &target);
     SDL_GPUGraphicsPipeline *spotPipeline();
     SDL_GPUGraphicsPipeline *shadowPipeline();
-    SDL_GPUGraphicsPipeline *createStaticPipeline(SDL_GPUShader *vertexShader, SDL_GPUShader *fragmentShader,
+    SDL_GPUGraphicsPipeline *createStaticPipeline(bool skinned, bool projected,
                                                   const SDL_GPUColorTargetDescription &target, bool writesDepth,
                                                   SDL_GPUCullMode cull);
-    SDL_GPUGraphicsPipeline *staticPipelineFor(BlendMode blend, bool writesDepth, SDL_GPUCullMode cull);
-    SDL_GPUGraphicsPipeline *staticProjectedPipeline(ProjectedPass pass, SDL_GPUCullMode cull);
+    SDL_GPUGraphicsPipeline *staticPipelineFor(bool skinned, BlendMode blend, bool writesDepth, SDL_GPUCullMode cull);
+    SDL_GPUGraphicsPipeline *staticProjectedPipeline(bool skinned, ProjectedPass pass, SDL_GPUCullMode cull);
 
     Renderer &m_renderer;
     gpu::Device &m_device;
@@ -189,10 +207,9 @@ private:
     std::unordered_map<const void *, Layer> m_layers;
     std::unordered_map<const void *, std::shared_ptr<Image>> m_images; // by Tim2Texture: decoding hashes the picture
     std::unordered_map<BatchKey, CachedBatch, BatchKeyHash> m_batches;
-    std::shared_ptr<ModelGeometryChunk> m_chunk; // where new batches go
-    std::uint32_t m_chunkVertices = 0;           // how much of it they fill
-    std::uint32_t m_chunkIndices = 0;
-    std::size_t m_chunkCount = 0;                // since the last flush
+    ChunkFill m_rigidChunk;
+    ChunkFill m_skinnedChunk;
+    std::size_t m_chunkCount = 0; // since the last flush
 
     std::mutex m_pendingLock; // the game thread fills m_pending, the render thread empties it
     std::vector<PendingGeometry> m_pending;
@@ -203,11 +220,13 @@ private:
     gpu::Shader m_spotFragmentShader;
     gpu::Shader m_staticVertexShader;
     gpu::Shader m_staticProjectedVertexShader;
+    gpu::Shader m_skinnedVertexShader;
+    gpu::Shader m_skinnedProjectedVertexShader;
     std::map<std::pair<BlendMode, bool>, gpu::GraphicsPipeline> m_pipelines; // by blend and depth writing
     gpu::GraphicsPipeline m_spotPipeline;
     gpu::GraphicsPipeline m_shadowPipeline;
-    std::map<std::tuple<BlendMode, bool, SDL_GPUCullMode>, gpu::GraphicsPipeline> m_staticPipelines;
-    std::map<std::pair<ProjectedPass, SDL_GPUCullMode>, gpu::GraphicsPipeline> m_staticProjectedPipelines;
+    std::map<std::tuple<bool, BlendMode, bool, SDL_GPUCullMode>, gpu::GraphicsPipeline> m_staticPipelines;
+    std::map<std::tuple<bool, ProjectedPass, SDL_GPUCullMode>, gpu::GraphicsPipeline> m_staticProjectedPipelines;
     gpu::Texture m_depth;
     int m_depthWidth = 0;
     int m_depthHeight = 0;
@@ -215,6 +234,7 @@ private:
     VertexStream m_spotVertices;
     VertexStream m_shadowVertices;
     VertexStream m_instances;
+    VertexStream m_palettes; // a storage buffer
     gpu::TransferBuffer m_geometryUpload; // the last upload's, released once the next one starts
 };
 
