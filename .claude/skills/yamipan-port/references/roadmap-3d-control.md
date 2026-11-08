@@ -124,9 +124,13 @@ Grouped by what the picture needs, with what is known about each. Together: 144 
 - `ModelMaterial_Kind1`'s two frames, mips (0x2e7240),
   shadows, `m_altClut` for `_s` textures.
 
-**Performance, before characters.** Every vertex is transformed and lit on the game thread and uploaded
-whole; a stage ran at about 10 fps in three runs of four (open-items.md). It needs a per-model cache before skinned
-meshes multiply it, as the model_renderer notes say.
+**Performance, before characters.** ~~Every vertex is transformed and lit on the game thread~~ **Rigid batches are
+cached on the GPU since 2026-11-07** (open-items.md, "model_renderer.cpp, the GPU path"): model_static.vert places,
+lights, fogs and culls them, with the spot, shadows and reflection, and the game thread only records which batch and an
+instance per run. Stage 7's vertex path went from 3.3..4.4 ms a frame to 1.4..2.8 ms. **Skinned batches are still
+placed on the game thread, and they are most of what is left:** stage 2 draws 1,659 of them a frame and stayed at
+3..6 ms. Next: GPU skinning (bone ids and weights cached with the batch, the palettes uploaded per frame). The frame
+rate itself is the ROM's 25 fps cap on PAL, not this.
 
 ## What stays outside
 
