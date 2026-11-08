@@ -9157,22 +9157,17 @@
 /* 002e9af0 0000006c */ Tim2GetImage(){}  // lib-ctx
 /* 002e9b60 00000028 */ Tim2GetClut(){}  // lib-ctx
 /* 002e9b88 00000204 */ Tim2GetClutColor(){}  // lib-ctx
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 002e9d90 0000027c */ FUN_002e9d90(){}
-/* 002ea010 00000178 */ FUN_002ea010(){}
-/* 002ea188 000001f4 */ FUN_002ea188(){}
-/* 002ea380 0000010c */ FUN_002ea380(){}
-/* 002ea490 00000028 */ FUN_002ea490(){}
-/* 002ea4b8 00000154 */ FUN_002ea4b8(){}
-/* 002ea610 000002c4 */ FUN_002ea610(){}
-/* 002ea8d8 000003c0 */ FUN_002ea8d8(){}
-/* 002eac98 00000164 */ FUN_002eac98(){}
-/* 002eae00 0000006c */ FUN_002eae00(){}
-/* 002eae70 0000003c */ FUN_002eae70(){}
+/* 002e9d90 0000027c */ Tim2SetClutColor(){}  // lib-ctx
+/* 002ea010 00000178 */ Tim2GetTexel(){}  // lib-ctx
+/* 002ea188 000001f4 */ Tim2SetTexel(){}  // lib-ctx
+/* 002ea380 0000010c */ Tim2GetTextureColor(){}  // lib-ctx
+/* 002ea490 00000028 */ Tim2LoadPicture(){}  // lib-ctx
+/* 002ea4b8 00000154 */ Tim2LoadImage(){}  // lib-ctx
+/* 002ea610 000002c4 */ Tim2LoadClut(){}  // lib-ctx
+/* 002ea8d8 000003c0 */ Tim2TakeSnapshot(){}  // lib-ctx
+/* 002eac98 00000164 */ Tim2LoadTexture(){}  // lib-ctx
+/* 002eae00 0000006c */ Tim2CalcBufWidth(){}  // lib-ctx
+/* 002eae70 0000003c */ Tim2GetLog2(){}  // lib-ctx
 
 // *****************************************************************************
 // FILE -- game/demoevent.cpp

@@ -38645,6 +38645,72 @@
   "was": "FUN_002e9b88",
   "why": "Sony's TIM2 sample: Tim2GetClut, n = clut*16 or *256 + no by imageType 4 / 5, the CSM1 swap of entries 8..23 for (clutType<<8 | imageType) 0x105/0x205/0x305/0x4104/0x4204/0x4304, RGB16/24/32 to a8b8g8r8"
  },
+ "002e9d90": {
+  "name": "Tim2SetClutColor",
+  "tag": "lib-context",
+  "was": "FUN_002e9d90",
+  "why": "Sony's TIM2 sample: Tim2GetClutColor's twin (same index, bound and CSM1 swap of 0x105/0x205/0x305/0x4104/0x4204/0x4304) that stores the new a8b8g8r8 colour as RGB16/24/32 and answers the old one"
+ },
+ "002ea010": {
+  "name": "Tim2GetTexel",
+  "tag": "lib-context",
+  "was": "FUN_002ea010",
+  "why": "Sony's TIM2 sample: Tim2GetImage + Tim2GetMipMapPictureSize, x > w or y > h answers 0, then the texel at y*w+x by imageType 1..5 (4: the low nibble for even x)"
+ },
+ "002ea188": {
+  "name": "Tim2SetTexel",
+  "tag": "lib-context",
+  "was": "FUN_002ea188",
+  "why": "Sony's TIM2 sample: Tim2GetTexel's twin storing a new texel, answers the old; the 4-bit case keeps the sample's nibble slip"
+ },
+ "002ea380": {
+  "name": "Tim2GetTextureColor",
+  "tag": "lib-context",
+  "was": "FUN_002ea380",
+  "why": "Sony's TIM2 sample: Tim2GetTexel at (u >> mipmap, v >> mipmap), RGB16 expanded to a8b8g8r8, RGB24 with alpha 0x80, indexed through Tim2GetClutColor (its one caller)"
+ },
+ "002ea490": {
+  "name": "Tim2LoadPicture",
+  "tag": "lib-context",
+  "was": "FUN_002ea490",
+  "why": "Sony's TIM2 sample, an older cut without tbp / cbp: Tim2LoadImage(ph) then a tail jump to Tim2LoadClut(ph); no caller in the ROM"
+ },
+ "002ea4b8": {
+  "name": "Tim2LoadImage",
+  "tag": "lib-context",
+  "was": "FUN_002ea4b8",
+  "why": "Sony's TIM2 sample without the tbp argument: every mip level's TBP / TBW from GsTex0 (level 0) or GsMiptbp1 / 2 (20 bits a level), Tim2GetImage, Tim2GetMipMapPictureSize, Tim2LoadTexture"
+ },
+ "002ea610": {
+  "name": "Tim2LoadClut",
+  "tag": "lib-context",
+  "was": "FUN_002ea610",
+  "why": "Sony's TIM2 sample without cbp: clears CSM / CSA in GsTex0 (mask 0xe07fffffffffffff), CBP / CPSM from it; prints 'Illegal clut and texture combination. ($%02X,$%02X)' (0x3103c8)"
+ },
+ "002ea8d8": {
+  "name": "Tim2TakeSnapshot",
+  "tag": "lib-context",
+  "was": "FUN_002ea8d8",
+  "why": "Sony's TIM2 sample: sceOpen(name, 0x202), a TIM2 v4 file of the display's DW / (MAGH + 1) x DH + 1 by DISPFB.PSM, rows read back with sceGsExecStoreImage; 'Illegal pixel format.' / 'file create failure.'"
+ },
+ "002eac98": {
+  "name": "Tim2LoadTexture",
+  "tag": "lib-context",
+  "was": "FUN_002eac98",
+  "why": "Sony's TIM2 sample (static): bytes a row by psm (jump table 0x310430: CT32/Z32 *4, CT24/Z24 *3, CT16/CT16S/Z16/Z16S *2, T8/T8H *1, T4/T4HL/T4HH /2), slices of 0x7ffc0 / n rows through sceGsSetDefLoadImage / sceGsExecLoadImage"
+ },
+ "002eae00": {
+  "name": "Tim2CalcBufWidth",
+  "tag": "lib-context",
+  "was": "FUN_002eae00",
+  "why": "Sony's TIM2 sample (static): (w + 63) / 64 for the psms of jump table 0x310520, rounded up to even for T8 / T4, else 0"
+ },
+ "002eae70": {
+  "name": "Tim2GetLog2",
+  "tag": "lib-context",
+  "was": "FUN_002eae70",
+  "why": "Sony's TIM2 sample (static): the highest set bit of n, plus 1 when n is above that power of two"
+ },
  "002eaeb0": {
   "name": "gsFillRect",
   "tag": "game-inferred",
