@@ -35,6 +35,9 @@ keep their `YamiPan_*` functions: thin forwarders onto the classes, so the game 
   pairs, `char *` and out-parameters.
 - Threads and locks come from the standard library (`std::mutex`, `std::condition_variable`,
   `std::atomic`), not SDL's, except `os::Thread` for named threads with a chosen stack size.
+  **A wait with a deadline or a duration goes through `os::TimedWaiter`**, never `wait_until` /
+  `wait_for` / `std::this_thread::sleep_for`: under MinGW those land on the 15.6 ms system tick
+  (hazards.md "Platform layer", 2026-11-07). Untimed waits on a condition variable are fine.
 - Fallible start-up answers `std::expected<T, std::string>`; run-time trouble logs and degrades.
 - Pragmatism beats ceremony: no interface with one implementation, no getter for a plain settings
   struct, no abstraction a second user does not need. Short free functions in an anonymous namespace
@@ -57,6 +60,7 @@ src/yamipan/
            Config, IniFile       typed sections, defaults < yamipan.ini < environment
            MainThread            run a callable on the window's thread
   os/      Thread                named thread with a stack size
+           TimedWaiter           a wait until a deadline, to ~1 ms, that wake() cuts short; sleepFor
   ee/      Kernel                the EE as FS2 sees it: one running thread by priority
            Thread, Semaphore     EE thread + semaphore objects behind CreateThread etc.
            InterruptController   INTC / DMAC handlers, DIntr, the vblank clock, alarms

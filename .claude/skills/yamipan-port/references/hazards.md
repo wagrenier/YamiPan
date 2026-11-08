@@ -339,6 +339,11 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   with the same pad for the backtrace (the game runs on its own named thread).
 - **A run without the scripted pad** sits in the first menu: a trace in later code prints nothing.
 - **A smoke run can write the user's ini**: runs pass their own settings.
+- **A fresh build directory (a new worktree) fails in `panels.cpp`** (2026-11-07): `no matching
+  function for call to 'PlotLine(...)'`. Cause: `build.py` configures with a sibling's fetched sources,
+  and RosePan's `implot-src` is ImPlot 1.0 where YamiPan pins v0.17 (`cmake/imgui.cmake`). Fix:
+  configure by hand with `-DFETCHCONTENT_SOURCE_DIR_{SDL3,IMGUI,IMPLOT}` set to the main checkout's
+  `cmake-build-relwithdebinfo/_deps/*-src`, then `ninja`.
 
 - **`py -` with a heredoc hangs** (2026-11-05). Symptom: a Bash command never returns, and its output fills with `_pyrepl` tracebacks (`WinError 123`). Cause: `py -` starts the interactive REPL instead of reading the heredoc. Fix: write the script with Write and run the file.
 
@@ -348,6 +353,14 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 - **`sceGsSyncV` hung at boot** (2026-11-03): `gameInit` waits two vblanks before anything starts the
   clock. Fix: the field clock runs from `Kernel::startMainThread`, as the console's does from power-on.
+- **MinGW's timed waits ignore the 1 ms timer period** (2026-11-07). Symptom: the 50 Hz field clock
+  delivered fields 8 ms late on average (up to 16 ms), so a frame that needs two fields sometimes got
+  25 ms instead of 40 and took three; `YamiPan_Sleep(1)` (rxthread.c's idle loops) took 15.4 ms. Cause:
+  `std::condition_variable::wait_until` and `std::this_thread::sleep_for` under MinGW's libstdc++ land
+  on the 15.6 ms system tick even with SDL's `timeBeginPeriod(1)` in force (measured in one process:
+  Win32 `Sleep(1)` 1.6 ms, `sleep_for(1ms)` 15.5 ms; `timeBeginPeriod` and the power-throttling opt-out
+  change nothing for the std calls). Fix: `os::TimedWaiter`, a high-resolution waitable timer plus an
+  event; `YamiPan_Sleep` through `SDL_DelayNS`, which uses the same timer.
 - **A null call in the job worker** (2026-11-03, `FileJob::run`): `rxInit` is a stub, so the rx file hooks
   are null. Not a kernel bug: the boot reached the file layer (open-items.md "Next up" 8a).
 

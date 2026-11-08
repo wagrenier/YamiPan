@@ -44,7 +44,7 @@ InterruptController::~InterruptController()
         std::scoped_lock lock(m_lock);
         m_stopping = true;
     }
-    m_wake.notify_all();
+    m_wake.wake();
 }
 
 void InterruptController::start()
@@ -109,7 +109,7 @@ int InterruptController::setAlarm(std::uint16_t hsyncTicks, AlarmHandler handler
     m_timed.push_back({Clock::now() + seconds(hsyncTicks / hsyncRate()), id, handler, arg, hsyncTicks, {}});
     lock.unlock();
 
-    m_wake.notify_all();
+    m_wake.wake();
     start();
     return id;
 }
@@ -126,7 +126,7 @@ void InterruptController::callAfter(std::chrono::microseconds delay, std::functi
     m_timed.push_back({Clock::now() + delay, 0, nullptr, nullptr, 0, std::move(work)});
     lock.unlock();
 
-    m_wake.notify_all();
+    m_wake.wake();
     start();
 }
 
@@ -199,10 +199,18 @@ void InterruptController::run()
 
     for (;;)
     {
+        Clock::time_point wakeAt;
+        {
+            std::scoped_lock lock(m_lock);
+            if (m_stopping)
+                return;
+            const auto earliest = std::ranges::min_element(m_timed, {}, &Timed::when);
+            wakeAt = earliest != m_timed.end() ? std::min(earliest->when, nextField) : nextField;
+        }
+        // An alarm set meanwhile wakes this early; the loop then looks again.
+        m_wake.waitUntil(wakeAt);
+
         std::unique_lock lock(m_lock);
-        const auto earliest = std::ranges::min_element(m_timed, {}, &Timed::when);
-        const Clock::time_point wakeAt = earliest != m_timed.end() ? std::min(earliest->when, nextField) : nextField;
-        m_wake.wait_until(lock, wakeAt);
         if (m_stopping)
             return;
 
