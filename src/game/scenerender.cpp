@@ -1,8 +1,9 @@
 /* ==========================================================================
  *  game/scenerender.cpp
  *
- *  SceneRender, the stage's lighting, 0x1f6ac0..0x1fa900 (game/scenerender.h);
- *  rena's light records 0x2e04e0..0x2e0840 are written here too. The file name is the port's (no source string).
+ *  SceneRender, the stage's lighting, 0x1f6ac0..0x1fa880 (game/scenerender.h);
+ *  rena's light records, 0x2e00c0..0x2e0840 and their dtors 0x1fa880..0x1faa30
+ *  (header inlines), are written here too. The file name is the port's (no source string).
  *
  *  Left out: the three DrawSysFog setters inside the range are drawsys.h's
  *  inlines. rena/rena_draw.cpp reads the point and spot records for the draw
@@ -127,8 +128,9 @@ static void startFade(VectorFade &fade, int frames, bool snap)
     fade.frame = snap ? frames : 0;
 }
 
-// The rena records. Their other slots (0x2e00c0.., 0x2e05f0..) upload them
-// to VU1 and wait for the spotlight.
+// The rena records. Their upload slots (0x2e05f0, 0x2e00f0) are
+// rena/rena_draw.cpp's fillPointLight and fillSpotLight: the draw module
+// takes the values where the ROM chained them to VU1.
 // FS2 0x002e0730, 0x002e04e0: the shared lines
 // callcheck: sceVu0UnitMatrix
 
@@ -136,6 +138,13 @@ RenaLight::RenaLight()
     : active(0), color{1.0f, 1.0f, 1.0f, 0.0f}, shade{}
 {
     sceVu0UnitMatrix(matrix);
+}
+
+// FS2 0x002e0580
+// callcheck: operator_delete (the deleting dtor's; RenaLightBase and RenaObject put their vtables back)
+
+RenaLight::~RenaLight()
+{
 }
 
 // FS2 0x002e0810
@@ -158,12 +167,47 @@ void RenaLight::setShade(const sceVu0FVECTOR from)
     memcpy(shade, from, sizeof(shade));
 }
 
+// FS2 0x002e07f0
+void RenaLight::getColor(float *r, float *g, float *b) const
+{
+    *r = color[0];
+    *g = color[1];
+    *b = color[2];
+}
+
+// FS2 0x002e07d0
+void RenaLight::getShade(float *r, float *g, float *b) const
+{
+    *r = shade[0];
+    *g = shade[1];
+    *b = shade[2];
+}
+
 // FS2 0x002e0730
 // callcheck: sceVu0UnitMatrix (in the base)
 
 RenaPointLight::RenaPointLight()
     : radius(1200.0f), weight(4.0f)
 {
+}
+
+// FS2 0x002e0820
+RenaLightKind RenaPointLight::getKind() const
+{
+    return RenaLight_Point;
+}
+
+// No cone.
+// FS2 0x002e0830
+float RenaPointLight::getAngle() const
+{
+    return -1.0f;
+}
+
+// FS2 0x002e0720
+float RenaPointLight::getRadius() const
+{
+    return radius;
 }
 
 // FS2 0x002e04e0
@@ -173,6 +217,24 @@ RenaSpotLight::RenaSpotLight()
     : radius(1200.0f), reach(1200.0f), tangent(0.5f), angle(0.25268f), intensity(1.0f),
       _90{0.8f, 3.0f, 4.0f, -0.13f}
 {
+}
+
+// FS2 0x002e00c0
+RenaLightKind RenaSpotLight::getKind() const
+{
+    return RenaLight_Spot;
+}
+
+// FS2 0x002e00d0
+float RenaSpotLight::getAngle() const
+{
+    return angle;
+}
+
+// FS2 0x002e00e0
+float RenaSpotLight::getRadius() const
+{
+    return radius;
 }
 
 // ──────────────────────────────────────────────────────────────────────

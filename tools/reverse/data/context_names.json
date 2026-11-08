@@ -21881,6 +21881,30 @@
   "was": "FUN_001fa4a0",
   "why": "StageScene ctor new(0xe70) for +0x2c: tex areas, an AreaGrid, a 0x5a10 table; its dtor restores the parent scene's +0x2c draw settings (0x2d4ee0 / 0x2d4ed0 / 0x2d4ec0); name a guess"
  },
+ "001fa880": {
+  "name": "RenaSpotLight::~RenaSpotLight",
+  "tag": "game-inferred",
+  "was": "FUN_001fa880",
+  "why": "deleting dtor, slot +8 of 0x31a720: puts 0x31a720, 0x31a780, 0x315f20, 0x315f00 back, operator_delete when the flag is > 0; emitted beside SceneRender, which holds a spot at +0x80"
+ },
+ "001fa900": {
+  "name": "RenaPointLight::~RenaPointLight",
+  "tag": "game-inferred",
+  "was": "FUN_001fa900",
+  "why": "deleting dtor, slot +8 of 0x31a750: puts 0x31a750, 0x31a780, 0x315f20, 0x315f00 back, operator_delete when the flag is > 0; SceneRender's base"
+ },
+ "001fa980": {
+  "name": "RenaObject::~RenaObject",
+  "tag": "game-inferred",
+  "was": "FUN_001fa980",
+  "why": "deleting dtor, the only slot of vtable 0x315f00, the root every rena light's and DrawSys object's dtor ends on (no source name: the port's); puts 0x315f00 back, operator_delete when the flag is > 0"
+ },
+ "001fa9d0": {
+  "name": "RenaLightBase::~RenaLightBase",
+  "tag": "game-inferred",
+  "was": "FUN_001fa9d0",
+  "why": "deleting dtor, the only slot of vtable 0x315f20, between RenaObject and RenaLight (only the light dtors store it; name the port's); puts 0x315f20 then 0x315f00 back, operator_delete when the flag is > 0"
+ },
  "001faa30": {
   "name": "MoviePlayer::setVolume",
   "tag": "game-inferred",
@@ -38003,11 +38027,53 @@
   "was": "FUN_002e0090",
   "why": "Calls ClipIndexList::operator= on the vector part and answers a0."
  },
+ "002e00c0": {
+  "name": "RenaSpotLight::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_002e00c0",
+  "why": "slot +0x14 of RenaSpotLight's vtable 0x31a720 (stored by its ctor 0x2e04e0): li v0,2; RenaPointLight's slot answers 1 (0x2e0820), RenaLight's 0x31a780 has 0 there (pure)"
+ },
+ "002e00d0": {
+  "name": "RenaSpotLight::getAngle",
+  "tag": "game-inferred",
+  "was": "FUN_002e00d0",
+  "why": "slot +0x20 of 0x31a720: lwc1 f0,+0x7c, the cone angle in radians SceneRender's spot line writes; the point light's slot answers -1 (0x2e0830)"
+ },
+ "002e00e0": {
+  "name": "RenaSpotLight::getRadius",
+  "tag": "game-inferred",
+  "was": "FUN_002e00e0",
+  "why": "slot +0x24 of 0x31a720: lwc1 f0,+0x70, the radius (1200 from the ctor); the point light's slot 0x2e0720 reads its own +0x70"
+ },
+ "002e00f0": {
+  "name": "RenaSpotLight::upload",
+  "tag": "game-inferred",
+  "was": "FUN_002e00f0",
+  "why": "slot +0x18 of 0x31a720: builds the spot's VU1 constants and clip planes (tanf of the half angle, outer products of the cone's corners); the host's fillSpotLight in rena/rena_draw.cpp"
+ },
  "002e04e0": {
   "name": "RenaSpotLight::RenaSpotLight",
   "tag": "game-inferred",
   "was": "FUN_002e04e0",
   "why": "vtable 0x31a720, what a model's +0x4c points at"
+ },
+ "002e0580": {
+  "name": "RenaLight::~RenaLight",
+  "tag": "game-inferred",
+  "was": "FUN_002e0580",
+  "why": "deleting dtor, slot +8 of 0x31a780 (the vtable both light ctors store first): puts 0x31a780, then 0x315f20, then 0x315f00 back, operator_delete when the flag is > 0"
+ },
+ "002e05f0": {
+  "name": "RenaPointLight::upload",
+  "tag": "game-inferred",
+  "was": "FUN_002e05f0",
+  "why": "slot +0x18 of RenaPointLight's vtable 0x31a750: the point light's VU1 constants at addresses 176..179; the host's fillPointLight in rena/rena_draw.cpp"
+ },
+ "002e0720": {
+  "name": "RenaPointLight::getRadius",
+  "tag": "game-inferred",
+  "was": "FUN_002e0720",
+  "why": "slot +0x24 of 0x31a750: lwc1 f0,+0x70, the radius (1200 from the ctor 0x2e0730)"
  },
  "002e0730": {
   "name": "RenaPointLight::RenaPointLight",
@@ -38027,11 +38093,35 @@
   "was": "FUN_002e07c0",
   "why": "copies a vector to +0x50"
  },
+ "002e07d0": {
+  "name": "RenaLight::getShade",
+  "tag": "game-inferred",
+  "was": "FUN_002e07d0",
+  "why": "slot +0x2c of all three light vtables: stores +0x60, +0x64, +0x68 (the shade setShade 0x2e07b0 writes) through a1, a2, a3"
+ },
+ "002e07f0": {
+  "name": "RenaLight::getColor",
+  "tag": "game-inferred",
+  "was": "FUN_002e07f0",
+  "why": "slot +0x28 of all three light vtables: stores +0x50, +0x54, +0x58 (the colour setColor 0x2e07c0 writes) through a1, a2, a3"
+ },
  "002e0810": {
   "name": "RenaLight::setMatrix",
   "tag": "game-inferred",
   "was": "FUN_002e0810",
   "why": "copies a matrix to +0x10"
+ },
+ "002e0820": {
+  "name": "RenaPointLight::getKind",
+  "tag": "game-inferred",
+  "was": "FUN_002e0820",
+  "why": "slot +0x14 of 0x31a750: li v0,1; the spot's answers 2"
+ },
+ "002e0830": {
+  "name": "RenaPointLight::getAngle",
+  "tag": "game-inferred",
+  "was": "FUN_002e0830",
+  "why": "slot +0x20 of 0x31a750: answers -1.0f (lui 0xbf80), a point light has no cone; the spot's reads its angle"
  },
  "002e0840": {
   "name": "GsRegion::release",
