@@ -2153,7 +2153,11 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   same otherwise. The EE's 0xb4 sender has no caller, so the ring stays 2 halves. **With it the DMA thread
   moved to core 1:** FS2's RxSndDrvDmaInit installs RxSndDrvDmaIntr on core 1 and RxSndDrvDmaProc
   transfers with sceSdVoiceTrans(1, ...) (RoR: core 0 for both), so the uploads and the PCM ring each
-  have a core of their own.
+  have a core of their own. (7) The mixer (mix.cpp): command 0x31 has a third parameter, 2, the core's
+  external input volume (BVOLL / BVOLR, L | R << 16), applied by RxSndDrvMixTick like the master volume;
+  the record per core grew to 0x2c (RoR 0x20) for it (`m_input`, 0x7fff from RxSndDrvMixInit) and its
+  pending field. The EE's sender is rxSndSetSysMute (core 0, 0x7fff or 0: the PCM ring's core); its
+  caller is not in the tree yet. The defaults batch (0xe1a0: MMIX 0xfcc, MVOL 0x3fff) is RoR's.
 - **The EE's side** (2026-11-09, `sdk/sif.cpp`): sceSifBindRpc keeps the
   RPC number in the client's `command`; sceSifCallRpc sends a call to a registered server through
   `YamiPan_IopRpcDispatch` on the EE's thread and copies `rsize` bytes of the handler's buffer back before
