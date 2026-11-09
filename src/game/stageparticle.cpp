@@ -766,6 +766,8 @@ void StageParticle::drawQuad(const Particle &particle, const sceVu0FVECTOR *view
         quad.uv[corner][1] = (float)(vs[corner] + tileV);
     }
     quad.color = color;
+    quad.owner = this;      // PC: smooth motion pairs the particle across frames
+    quad.slot = (int)(&particle - m_particles);
     YamiPan_ModelDrawQuad(packet, &quad);
 }
 
@@ -1388,6 +1390,8 @@ void Critter::draw(const sceVu0FVECTOR *view, const sceVu0FVECTOR *screen, const
         quad.uv[corner][1] = (float)vs[turned ? 1 : 0][corner];
     }
     quad.color = kCritterColor;
+    quad.owner = this;      // PC: smooth motion pairs the critter across frames
+    quad.slot = 0;
     YamiPan_ModelDrawQuad(packet, &quad);
 }
 

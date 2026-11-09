@@ -228,6 +228,15 @@ struct ModelPaletteRun
     std::uint32_t count = 0;
 };
 
+// An effect's quad in Frame::modelVertices (6 vertices, in its view-space pass), and what pairs it with the same
+// particle in the next frame: the effect and the particle's slot. The n-th of one key pairs with the n-th of the other.
+struct ModelQuad
+{
+    const void *owner = nullptr; // null: never paired
+    std::int32_t slot = 0;
+    std::uint32_t firstVertex = 0;
+};
+
 // One cached batch: its triangles in a chunk, and the instance that places and lights them.
 struct ModelBatchDraw
 {
@@ -290,6 +299,7 @@ struct ModelPass
     float fogNearValue = 255.0f;
     float fogFarValue = 255.0f;
     bool clearDepth = true;
+    bool viewSpace = false; // the effects': what it draws is relative to the camera, viewScreen the projection alone
     std::shared_ptr<Image> spotImage; // the lamp's picture
     std::shared_ptr<Image> shadowImage; // shadow_00
     ModelPassLights lights;
@@ -309,6 +319,7 @@ struct Frame
     std::vector<std::array<float, 16>> modelPalettes; // skinned batches' bone matrices, sceVu0 layout
     std::vector<ModelPlacementKey> modelInstanceKeys; // one per modelInstances
     std::vector<ModelPaletteRun> modelPaletteRuns;    // covering modelPalettes
+    std::vector<ModelQuad> modelQuads;                // the effects' quads in modelVertices
     std::vector<ModelBatchDraw> modelBatches;
     std::vector<std::shared_ptr<ModelGeometryChunk>> modelChunks; // what modelBatches draw from, kept alive
     std::vector<ModelDraw> modelDraws;
@@ -329,6 +340,7 @@ struct Frame
         modelPalettes.clear();
         modelInstanceKeys.clear();
         modelPaletteRuns.clear();
+        modelQuads.clear();
         modelBatches.clear();
         modelChunks.clear();
         modelDraws.clear();

@@ -679,6 +679,8 @@ void SkyMist::clipPuff(const sceVu0FVECTOR *world, const sceVu0FVECTOR *clip, co
             quad.uv[corner][1] = pointUv[fan[corner]][1] * frame.height;
         }
         quad.color = rgba;
+        quad.owner = nullptr;   // PC: a wrapped puff is drawn more than once: moved with the camera only
+        quad.slot = 0;
         YamiPan_ModelDrawQuad(frame.packet, &quad);
     }
 }

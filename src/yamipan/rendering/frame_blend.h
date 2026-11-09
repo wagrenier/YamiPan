@@ -2,7 +2,9 @@
 // often than that. Between two game frames it draws the newer one with the cameras, the lights' places and every
 // model's placement (its instance matrix, its bones) moved part of the way from the older frame's: the picture runs
 // one game frame behind and moves at the monitor's rate. What is drawn is still the newer frame's
-// (roadmap-framerate.md, option A). Not blended yet: particles and what the game projects to 2D itself.
+// (roadmap-framerate.md, option A). The effects' particles move with the blended camera and, paired by effect and
+// slot, on their own. Not blended: what the game places on its own thread (the far passes' culled batches) and what it
+// projects to 2D itself.
 #pragma once
 
 #include <chrono>
@@ -33,6 +35,17 @@ public:
     static std::size_t blendPlacements(const Frame &previous, const Frame &current, float alpha,
                                        std::vector<ModelInstance> &instances,
                                        std::vector<std::array<float, 16>> &palettes);
+
+    // `current`'s placed vertices with each effect quad that pairs with one of `previous` (owner, slot) moved from it
+    // by `alpha`: the older quad carried into the newer frame's view space through the world, then blended there.
+    // blendPasses has already moved the effects' passes with the camera.
+    struct QuadBlend
+    {
+        std::size_t blended = 0;
+        float meanStep = 0.0f; // how far a blended quad's first corner moved in the frame, after the carry
+    };
+    static QuadBlend blendQuads(const Frame &previous, const Frame &current, float alpha,
+                                std::vector<ModelVertex> &vertices);
 };
 
 } // namespace yamipan::rendering

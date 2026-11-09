@@ -179,7 +179,7 @@ these hooks:
 | `YAMIPAN_AUTOPAD`: scripted pad 0, `<read>:<BUTTON>[*<reads>],...`, host input masked | `io::InputSystem` | build.py --pad, settings.smoke_pad |
 | `YAMIPAN_DATA_DIR`: the game's data folder | `Paths` | build.py (`yamipan.GAME_DATA`) |
 | `YAMIPAN_TEX_DUMP=<dir>`: write every newly decoded TIM2 file to `<dir>/<hash>.tm2`, for `tm2png.py` | `rendering::TextureStore` | `build.py --env`, a screen's references |
-| `YAMIPAN_SMOOTH_MOTION=0/1` (the ini's `smooth_motion`), `YAMIPAN_BLEND_ALPHA=<0..1>`: every blendable present at that share (deterministic shots), `YAMIPAN_BLEND_LOG=1`: a `[blend]` line per present (frame, ms since its field, share, each pass's eye) | `rendering::Renderer`, `FrameBlend` | `build.py --env`, smooth-motion checks |
+| `YAMIPAN_SMOOTH_MOTION=0/1` (the ini's `smooth_motion`), `YAMIPAN_BLEND_ALPHA=<0..1>`: every blendable present at that share (deterministic shots), `YAMIPAN_BLEND_LOG=1`: a `[blend]` line per present (frame, ms since its field, share, matrices and effect quads blended of all, the quads' mean step, the first skinned model's first bone, each pass's eye) | `rendering::Renderer`, `FrameBlend` | `build.py --env`, smooth-motion checks |
 | the EE main thread named `YamiPanGame` | `ee::Kernel` | gdbrun.py / gdbdrive.py |
 | `[stub] <name> (FS2 0x%08x) reached` from `YAMIPAN_STUB` / `YAMIPAN_BRIDGE` | common/yamipan_stub.h | tus.py (reached stubs rank first), status.py, stubgen.py |
 | log lines `[W]` / `[E]` for warnings and errors on stdout | `log::` | build.py --run summary |

@@ -236,6 +236,114 @@ void mixLights(ModelPassLights &out, const ModelPassLights &before, float alpha)
     }
 }
 
+// A 4 x 4 in rows, a point a row on the left (out = in . m), as the passes' matrices; double so that the inverse of a
+// world -> screen matrix stays exact enough to cancel against itself.
+using Mat4 = std::array<double, 16>;
+
+Mat4 toMat4(const std::array<float, 16> &matrix)
+{
+    Mat4 out{};
+    std::copy(matrix.begin(), matrix.end(), out.begin());
+    return out;
+}
+
+std::array<float, 16> toFloat(const Mat4 &matrix)
+{
+    std::array<float, 16> out{};
+    for (std::size_t element = 0; element < 16; element++)
+        out[element] = static_cast<float>(matrix[element]);
+    return out;
+}
+
+Mat4 multiply(const Mat4 &a, const Mat4 &b)
+{
+    Mat4 out{};
+    for (std::size_t row = 0; row < 4; row++)
+    {
+        for (std::size_t column = 0; column < 4; column++)
+        {
+            double sum = 0.0;
+            for (std::size_t k = 0; k < 4; k++)
+                sum += a[row * 4 + k] * b[k * 4 + column];
+            out[row * 4 + column] = sum;
+        }
+    }
+    return out;
+}
+
+// Gauss-Jordan with partial pivoting; nothing for a matrix too near singular.
+std::optional<Mat4> inverse(const Mat4 &matrix)
+{
+    Mat4 a = matrix;
+    Mat4 out{};
+    for (std::size_t i = 0; i < 4; i++)
+        out[i * 4 + i] = 1.0;
+    double largest = 0.0;
+    for (const double element : matrix)
+        largest = std::max(largest, std::abs(element));
+    for (std::size_t column = 0; column < 4; column++)
+    {
+        std::size_t pivot = column;
+        for (std::size_t row = column + 1; row < 4; row++)
+        {
+            if (std::abs(a[row * 4 + column]) > std::abs(a[pivot * 4 + column]))
+                pivot = row;
+        }
+        if (!(std::abs(a[pivot * 4 + column]) > largest * 1e-12))
+            return std::nullopt;
+        for (std::size_t k = 0; k < 4; k++)
+        {
+            std::swap(a[column * 4 + k], a[pivot * 4 + k]);
+            std::swap(out[column * 4 + k], out[pivot * 4 + k]);
+        }
+        const double scale = 1.0 / a[column * 4 + column];
+        for (std::size_t k = 0; k < 4; k++)
+        {
+            a[column * 4 + k] *= scale;
+            out[column * 4 + k] *= scale;
+        }
+        for (std::size_t row = 0; row < 4; row++)
+        {
+            if (row == column)
+                continue;
+            const double factor = a[row * 4 + column];
+            for (std::size_t k = 0; k < 4; k++)
+            {
+                a[row * 4 + k] -= factor * a[column * 4 + k];
+                out[row * 4 + k] -= factor * out[column * 4 + k];
+            }
+        }
+    }
+    return out;
+}
+
+// The pass whose camera the effects' view space is: the main pass, the last one that starts a fresh depth buffer and
+// draws the world (renaDrawModels; the far passes before it keep the depth and look through a scaled view).
+std::optional<std::size_t> mainPassOf(const std::vector<ModelPass> &passes)
+{
+    std::optional<std::size_t> found;
+    for (std::size_t index = 0; index < passes.size(); index++)
+    {
+        if (!passes[index].viewSpace && passes[index].clearDepth)
+            found = index;
+    }
+    return found;
+}
+
+std::optional<std::size_t> viewSpacePassOf(const std::vector<ModelPass> &passes)
+{
+    for (std::size_t index = 0; index < passes.size(); index++)
+    {
+        if (passes[index].viewSpace)
+            return index;
+    }
+    return std::nullopt;
+}
+
+// A particle further from its place a frame earlier than this is a new one in a reused slot.
+constexpr float kParticleStep = 150.0f;
+constexpr std::size_t kQuadVertices = 6;
+
 // The n-th placement of one key in a frame.
 struct Slot
 {
@@ -319,7 +427,127 @@ bool FrameBlend::blendPasses(const Frame &previous, const Frame &current, float 
         mixInto(pass.lights.eye, from.lights.eye, alpha, 3);
         mixLights(pass.lights, from.lights, alpha);
     }
+
+    // The effects' passes draw quads placed relative to the newer frame's camera through the projection E alone. The
+    // main pass's world -> screen matrix is that camera's view times the same E, so the view's inverse is
+    // E . M_new^-1, and the quads land where the blended camera sees them through E . M_new^-1 . M_blend.
+    if (const auto main = mainPassOf(after))
+    {
+        if (const auto toWorld = inverse(toMat4(after[*main].viewScreen)))
+        {
+            const Mat4 cameraStep = multiply(*toWorld, toMat4(out[*main].viewScreen));
+            for (std::size_t index = 0; index < out.size(); index++)
+            {
+                if (out[index].viewSpace)
+                    out[index].viewScreen = toFloat(multiply(toMat4(after[index].viewScreen), cameraStep));
+            }
+        }
+    }
     return true;
+}
+
+FrameBlend::QuadBlend FrameBlend::blendQuads(const Frame &previous, const Frame &current, float alpha,
+                                             std::vector<ModelVertex> &vertices)
+{
+    vertices.assign(current.modelVertices.begin(), current.modelVertices.end());
+    if (current.modelQuads.empty() || previous.modelQuads.empty() ||
+        previous.modelPasses.size() != current.modelPasses.size())
+        return {};
+
+    // From the older frame's view space to the newer one's: through the world, E_prev . M_prev^-1 . M_new . E_new^-1.
+    const auto main = mainPassOf(current.modelPasses);
+    const auto effects = viewSpacePassOf(current.modelPasses);
+    if (!main || !effects || mainPassOf(previous.modelPasses) != main || viewSpacePassOf(previous.modelPasses) != effects)
+        return {};
+    const auto worldFromPrevious = inverse(toMat4(previous.modelPasses[*main].viewScreen));
+    const auto viewFromScreen = inverse(toMat4(current.modelPasses[*effects].viewScreen));
+    if (!worldFromPrevious || !viewFromScreen)
+        return {};
+    const Mat4 step = multiply(multiply(multiply(toMat4(previous.modelPasses[*effects].viewScreen), *worldFromPrevious),
+                                        toMat4(current.modelPasses[*main].viewScreen)),
+                               *viewFromScreen);
+    const auto carry = [&step](const ModelVertex &vertex) {
+        Vec3 out{};
+        const double in[4] = {vertex.x, vertex.y, vertex.z, 1.0};
+        double w = 0.0;
+        for (std::size_t k = 0; k < 4; k++)
+            w += in[k] * step[k * 4 + 3];
+        for (std::size_t lane = 0; lane < 3; lane++)
+        {
+            double sum = 0.0;
+            for (std::size_t k = 0; k < 4; k++)
+                sum += in[k] * step[k * 4 + lane];
+            out[lane] = static_cast<float>(w != 0.0 ? sum / w : sum);
+        }
+        return out;
+    };
+
+    struct QuadSlot
+    {
+        const void *owner;
+        std::int32_t slot;
+        std::uint32_t occurrence;
+        bool operator==(const QuadSlot &) const = default;
+    };
+    struct QuadSlotHash
+    {
+        std::size_t operator()(const QuadSlot &key) const
+        {
+            return (std::hash<const void *>()(key.owner) * 31 + static_cast<std::size_t>(key.slot)) * 31 +
+                   key.occurrence;
+        }
+    };
+    const auto slotsOfQuads = [](const std::vector<ModelQuad> &quads) {
+        std::unordered_map<QuadSlot, std::uint32_t, QuadSlotHash> seen;
+        std::vector<QuadSlot> out;
+        out.reserve(quads.size());
+        for (const ModelQuad &quad : quads)
+        {
+            const QuadSlot key{quad.owner, quad.slot, 0};
+            out.push_back({quad.owner, quad.slot, seen[key]++});
+        }
+        return out;
+    };
+
+    const std::vector<QuadSlot> earlierSlots = slotsOfQuads(previous.modelQuads);
+    std::unordered_map<QuadSlot, std::size_t, QuadSlotHash> earlier;
+    for (std::size_t index = 0; index < earlierSlots.size(); index++)
+        earlier.emplace(earlierSlots[index], index);
+
+    const std::vector<QuadSlot> slots = slotsOfQuads(current.modelQuads);
+    QuadBlend result;
+    double stepSum = 0.0;
+    for (std::size_t index = 0; index < slots.size(); index++)
+    {
+        const ModelQuad &quad = current.modelQuads[index];
+        if (quad.owner == nullptr || quad.firstVertex + kQuadVertices > vertices.size())
+            continue;
+        const auto found = earlier.find(slots[index]);
+        if (found == earlier.end())
+            continue;
+        const ModelQuad &before = previous.modelQuads[found->second];
+        if (before.firstVertex + kQuadVertices > previous.modelVertices.size())
+            continue;
+
+        std::array<Vec3, kQuadVertices> from{};
+        for (std::size_t corner = 0; corner < kQuadVertices; corner++)
+            from[corner] = carry(previous.modelVertices[before.firstVertex + corner]);
+        ModelVertex *const to = &vertices[quad.firstVertex];
+        const float moved = distance(from[0], {to[0].x, to[0].y, to[0].z});
+        if (!(moved <= kParticleStep))
+            continue;
+        for (std::size_t corner = 0; corner < kQuadVertices; corner++)
+        {
+            to[corner].x = from[corner][0] + (to[corner].x - from[corner][0]) * alpha;
+            to[corner].y = from[corner][1] + (to[corner].y - from[corner][1]) * alpha;
+            to[corner].z = from[corner][2] + (to[corner].z - from[corner][2]) * alpha;
+        }
+        result.blended++;
+        stepSum += moved;
+    }
+    if (result.blended != 0)
+        result.meanStep = static_cast<float>(stepSum / static_cast<double>(result.blended));
+    return result;
 }
 
 std::size_t FrameBlend::blendPlacements(const Frame &previous, const Frame &current, float alpha,

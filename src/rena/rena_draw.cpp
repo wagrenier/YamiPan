@@ -704,6 +704,7 @@ void renaBeginEffects(sceVif1Packet *packet, const sceVu0FVECTOR *screen)
     const DrawSysFog *fog = drawSysCurrent()->lights->getFog();
     if (fog != nullptr)
         copyVector3(pass.fogColor, fog->getColor());
+    pass.viewSpace = 1;     // PC: smooth motion moves these with the camera
     YamiPan_ModelBeginPass(packet, &pass);
 }
 
