@@ -1,31 +1,25 @@
 // The SPU2 as libsd shows it to RXSNDDRV: two cores of 24 voices, their registers, 2 MB of sound RAM and
-// the transfers into it. A register model and a clock, not yet a synthesiser: nothing is heard, but what
-// the driver reads back moves as it would on the console, because the driver waits on it.
+// the transfers into it. RosePan's sdk/iop_libsd.cpp as a class: it keeps the registers and answers the
+// driver's reads; the voices themselves are Spu2Voices, the synthesiser, which these registers drive and
+// which reports back where each voice reads (NAX), its envelope (ENVX), its end flags (ENDX) and how far
+// the auto-DMA ring has been heard.
 //
 //   - Transfers complete. sceSdVoiceTrans copies between IOP memory and sound RAM and then runs the
 //     core's transfer handler, on the caller's thread before it returns (the DMA interrupt, early): the
 //     driver's DMA thread starts one transfer and parks until that handler sets its flag.
-//   - Voices play in time. A keyed-on voice walks its ADPCM blocks in sound RAM at its pitch (0x1000 is
-//     48 kHz, 28 samples a 16-byte block), following the blocks' own flags: loop start sets LSAX (unless
-//     the driver wrote LSAX itself), loop end jumps to LSAX and latches ENDX, loop end without repeat
-//     ends the voice. NAX is that position, read when asked; an ended voice idles on LSAX and follows
-//     later writes to it, which is how a stream's stop sequence finds its stop block. ENVX is full while
-//     the voice plays and 0 once it has ended or been keyed off: the envelope (ADSR) comes with the voice
-//     engine, so a key-off releases at once.
-//   - The auto-DMA ring (sceSdBlockTrans) reads at 48 kHz stereo, 4 bytes a frame, and its status is
-//     the address it has reached.
+//   - The auto-DMA ring (sceSdBlockTrans, the driver's PCM player) plays through the synthesiser, and its
+//     status is the address heard so far.
+//   - Not modelled: the SPU2 interrupt at IRQA (RXSNDDRV installs no handler; its ADPCM streams poll NAX),
+//     the auto-DMA's half-buffer interrupts (no handler on core 1), reverb (its attributes are kept).
 //
-// RosePan's sdk/iop_libsd.cpp is the model: the same registers, the same answers, its LSAX latch and
-// its ENDX on every loop end. What it forwarded to its voice engine and reverb is stored here until
-// YamiPan has them; the clock above stands in for the engine's play position meanwhile.
-//
-// Touched only under the IOP's big kernel lock (every libsd call comes from IOP code), so it has no
-// lock of its own; the handlers it runs are IOP code and run under that lock too.
+// Its registers are touched only under the IOP's big kernel lock (every libsd call comes from IOP code);
+// the synthesiser has a lock of its own for its mixer thread.
 #pragma once
 
-#include <chrono>
 #include <cstdint>
 #include <memory>
+
+#include "yamipan/iop/spu2_voices.h"
 
 namespace yamipan::iop
 {
@@ -80,25 +74,24 @@ public:
     // ---- reverb (stored until the effect unit exists) ---------------------------------------------
     int setEffectAttr(int core, const EffectAttr &attr);
 
-    // ---- the host mixer's volume group of a voice (BGM, SE, voice), kept for the voice engine -------
+    // ---- the player's volume group of a voice (music, effects) --------------------------------------
     void setVoiceGroup(int core, int voice, int group);
+
+    Spu2Voices &voices() { return *m_voices; }
 
     // Sound RAM at `spu`, or nullptr when [spu, spu + size) is not inside it.
     std::uint8_t *ram(std::uint32_t spu, std::uint32_t size);
 
 private:
-    using Clock = std::chrono::steady_clock;
     struct Voice;
     struct Core;
 
     Voice *voiceAt(std::uint16_t entry);
-    // Plays `voice` forward to now at its pitch, block by block, following the blocks' flags.
-    void advance(Core &core, int number, Clock::time_point now);
-    void advanceCore(Core &core, Clock::time_point now);
-    std::uint32_t blockTransPosition(int core, Clock::time_point now) const;
+    void pushMixMasks(int core);
 
     std::unique_ptr<Core[]> m_cores;
     std::unique_ptr<std::uint8_t[]> m_ram;
+    std::unique_ptr<Spu2Voices> m_voices;
     Handler m_spu2Handler = nullptr;
     void *m_spu2Arg = nullptr;
 };
