@@ -52,8 +52,7 @@ src/main.cpp                     the process entry: Application(args).run()
 src/common/yamipan_stub.h        YAMIPAN_STUB / YAMIPAN_BRIDGE (the tools' contract)
 src/sdk/                         libgraph, libdma, libpad, ... : SCE's API, forwarding to the classes
          iop.cpp, iop_host.h,    the IOP libraries RXSNDDRV imports (thbase.h & co are macros onto
-         libsd.h, thbase.h ...   YamiPan_Iop*): the kernel's and sifcmd's forward to iop::, libsd
-                                 is a placeholder that warns once
+         libsd.h, thbase.h ...   YamiPan_Iop*), forwarding to iop::Kernel, RpcServers and Spu2
 src/yamipan/
   core/    Application           owns everything; the service locator
            Logger (log::)        yamipan.log + stdout, [W] / [E], SDL's messages captured
@@ -69,6 +68,8 @@ src/yamipan/
                                  event flags, V-blank at the EE's video standard
            SystemMemory          the IOP's 2 MB, reserved below 4 GB (IOP addresses are u_int)
            RpcServers            the SIF RPC servers a module registers; a call runs under the lock
+           Spu2                  libsd's chip: registers, 2 MB of sound RAM, transfers that complete,
+                                 voices that play in time (no sound yet)
   gpu/     handles, Device       RAII over SDL_GPU, shader loading
   rendering/
            DisplayGeometry       THE source of display size and aspect (port feature #1)

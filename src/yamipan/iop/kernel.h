@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "yamipan/iop/rpc_servers.h"
+#include "yamipan/iop/spu2.h"
 #include "yamipan/iop/system_memory.h"
 
 namespace yamipan::os
@@ -82,6 +83,7 @@ public:
 
     SystemMemory &memory() { return m_memory; }
     RpcServers &rpc() { return m_rpc; }
+    Spu2 &spu2() { return m_spu2; }
 
 private:
     struct ThreadRecord;
@@ -112,6 +114,7 @@ private:
 
     SystemMemory m_memory;
     RpcServers m_rpc;
+    Spu2 m_spu2;
 };
 
 } // namespace yamipan::iop

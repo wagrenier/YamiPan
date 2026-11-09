@@ -2055,16 +2055,33 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   and dereferences them. `sdk/iop.cpp` forwards thbase / thevent / intrman / sysmem / loadcore / vblank to
   them, and the IOP side of sifcmd to `iop::RpcServers` (sceSifRpcLoop opens a queue's servers and
   returns; `YamiPan_IopRpcDispatch` runs a server's handler on the caller's thread under the big kernel
-  lock); **libsd is still a placeholder** that warns once per call. **`YAMIPAN_RXSNDDRV=1`
+  lock), and libsd to `iop::Spu2` (the next point). **`YAMIPAN_RXSNDDRV=1`
   boots the driver** when rxfile loads `cdrom0:\MODULES\RXSNDDRV.IRX;1` (sceSifLoadModule, sdk/sif.cpp),
   inside "IOP Modules Load" as on the console. Seen 2026-11-09 (40 s runs): "Installed sound driver version
   1.00", every subsystem initialised, the DMA thread parked on its flag, the tick thread at 50 Hz ("iop: 500
   V-blanks in 10.0 s", PAL), the language screen as without it. A probe after the boot sends command 0x12
   through the driver's own server and dispatcher: "command 0x12 answers version 0x0101" (its constant).
-  The EE does not talk to it yet: sif.cpp's sceSifCallRpc still answers RPC 0xd000 with zeros, because the
-  driver's DMA thread would retry sceSdVoiceTrans for ever against libsd's placeholder.
+  The EE does not talk to it yet: sif.cpp's sceSifCallRpc still answers RPC 0xd000 with zeros.
   Its `dma.cpp` now owns `YamiPan_RxSndNoteEeAddress`, which rx/rxsnd.c calls on each DMA: a 64-entry
   ring of EE blocks, harmless while nothing reads it.
+- **The SPU2** (2026-11-09, `iop::Spu2`, RosePan's sdk/iop_libsd.cpp as a class): the registers of both
+  cores, 2 MB of sound RAM, transfers that complete, and a clock instead of a synthesiser. sceSdVoiceTrans
+  copies between IOP memory and sound RAM (bit 0 of the mode: 1 reads back) and runs the core's transfer
+  handler before it returns, so the driver's DMA thread (which starts one transfer and parks until
+  `RxSndDrvDmaIntr` sets its flag) moves on. A keyed-on voice walks its ADPCM blocks at its pitch (0x1000 =
+  48 kHz, 28 samples a 16-byte block), following the block flags (loop start sets LSAX unless the driver
+  wrote LSAX: RosePan's latch; loop end jumps to LSAX and latches ENDX; without repeat it ends the voice);
+  NAX is that position, LSAX once the voice has ended; ENVX is 0x7fff while it plays and 0 after (no
+  envelope yet, so a key-off releases at once: RXSNDDRV frees an auto-free voice after 9 ticks of 0).
+  sceSdBlockTrans's ring (the driver's PCM player, core 1) advances at 192,000 bytes a second and its status
+  is the address reached. Not modelled: the SPU2 interrupt at IRQA (RXSNDDRV installs no handler; its ADPCM
+  streams poll NAX), the auto-DMA's half-buffer interrupts (no handler on core 1), the reverb work area
+  (sceSdClearEffectWorkArea answers 0). sceSdNote2Pitch is RosePan's 2^(cents/1200) curve, not LIBSD.IRX's
+  tables. Seen 2026-11-09: a scratch check of the class (transfers both ways with the handler, a
+  one-shot ending with ENDX latched and NAX on LSAX, a self-repeating stop block, the LSAX latch, key-off,
+  the ring at 192,000 bytes a second: 25 cases) passed; 40 s runs with and without `YAMIPAN_RXSNDDRV=1`
+  both reach the language screen, and the switched-on run no longer logs libsd placeholder warnings. Until
+  the EE talks to the driver, only its init and its tick's register reads reach the model.
 
 ## Disc and data files
 

@@ -3,9 +3,8 @@
  *
  *  Register "entries" are an address in the top bits and a voice key in the
  *  low ones: bit 0 selects the core, bits 1..5 the voice.  RosePan's header;
- *  in YamiPan nothing stands behind it yet but sdk/iop.cpp's placeholders.
- *  The IOP host brings the register model, the voice engine and SPU RAM, and
- *  with them the host hooks RosePan declares here (SpuRamPointer & co).
+ *  in YamiPan sdk/iop.cpp implements it on yamipan::iop::Spu2 (registers,
+ *  SPU RAM, transfers, voices that play in time, no sound yet).
  * ======================================================================== */
 
 #ifndef _LIBSD_H
