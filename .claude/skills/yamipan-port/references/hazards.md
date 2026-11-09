@@ -314,6 +314,13 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 ## Build and run
 
+- **Smart App Control blocks the freshly built exe** (2026-11-09). Symptom: `build.py --run` (and
+  `tus.py check --run`) builds green, then fails with `OSError: [WinError 4551] An Application Control
+  policy has blocked this file`; no shots. Cause: Windows Code Integrity, policy
+  {0283ac0f-fff1-49ae-ada1-8a933130cad6} (Smart App Control), refused the unsigned `YamiPan.exe` built
+  at 08:01 (event 3077 in Microsoft-Windows-CodeIntegrity/Operational); the run of 07:55 still started.
+  Fix: the user's (a security setting: a session never changes it); until then a TU ends `verify` with
+  "smoke run blocked" in the notes.
 - **`gdbrun.py` never times out** (2026-11-04). It returns when the game exits, and a game that no longer
   crashes does not exit, so a background run waited 3 hours. SKILL.md "Time limits" says how to bound it.
 - **A prototype moved between headers leaves its stub behind** (2026-11-04): stubgen does not remove a
