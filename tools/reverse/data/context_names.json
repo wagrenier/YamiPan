@@ -18725,6 +18725,12 @@
   "was": "FUN_001b3440",
   "why": "findAll5, forgiving a bn_ prefix and ENV_%cL%2d digits, recursive"
  },
+ "001b36b0": {
+  "name": "StageScene::getObjects",
+  "tag": "game-inferred",
+  "was": "FUN_001b36b0",
+  "why": "lw v0,0x10(a0); a0 gStageScene in nativeDemoBind, findEffectGroup, setEffectsOn; StageScene +0x10 is the StageObjectList (find8 is called on what it answers)"
+ },
  "001b36c0": {
   "name": "nativeEffectsOn2",
   "tag": "game-inferred",
@@ -18826,6 +18832,24 @@
   "tag": "game-inferred",
   "was": "FUN_001b54a0",
   "why": "out-of-line copy of the detach and pushBack the ROM inlines elsewhere: +4 parent, +8 child list"
+ },
+ "001b5680": {
+  "name": "BoneMap::find",
+  "tag": "game-inferred",
+  "was": "FUN_001b5680",
+  "why": "j 0x177270 (LiteralMap<StageNodeBase>::find) with a0 = *a0, a1 the name: the bone map's lookup through the map it holds; FUN_001b5340 and nativeSpawnEffectPlaced, on getBoneMap's answer"
+ },
+ "001b5690": {
+  "name": "StageModel::getBoneMap",
+  "tag": "game-inferred",
+  "was": "FUN_001b5690",
+  "why": "addiu v0,a0,0x14: the model's bone map by address (StageModel +0x14), looked up by bone name next"
+ },
+ "001b56a0": {
+  "name": "StageObject::getModel",
+  "tag": "game-inferred",
+  "was": "FUN_001b56a0",
+  "why": "lw v0,0x30(a0): the object's StageModel (+0x30), whose bone map nativeSpawnEffectPlaced searches"
  },
  "001b56b0": {
   "name": "findLightObject",
@@ -18947,6 +18971,18 @@
   "was": "FUN_001b6820",
   "why": "script native 0x166 (kAskedNatives, table 0x304230)"
  },
+ "001b6cc0": {
+  "name": "PlayerMotion::isRunning",
+  "tag": "game-inferred",
+  "was": "FUN_001b6cc0",
+  "why": "motion id at +0x40 in {0x1a,0x19,0x16,0xa,0x9} (isRunMotion) or {0x2d,0x24} (isCrouchRunMotion); nativeIsWalking answers false for it"
+ },
+ "001b6d50": {
+  "name": "StageCharacter::getMotion",
+  "tag": "game-inferred",
+  "was": "FUN_001b6d50",
+  "why": "lw v0,0x224(a0): a character's PlayerMotion (+0x224), read twice by nativeIsWalking"
+ },
  "001b6fe0": {
   "name": "nativeDemoFade",
   "tag": "game-inferred",
@@ -18995,11 +19031,53 @@
   "was": "FUN_001b9680",
   "why": "native 0x145: finds or makes the object called name in group 8, binds the motion, turns it on"
  },
+ "001b9a20": {
+  "name": "StageScene::getFiles",
+  "tag": "game-inferred",
+  "was": "FUN_001b9a20",
+  "why": "lw v0,0x110(a0) on gStageScene; nativeDemoBind passes it to StageFiles::hasCharacter / placeCharacter / hasItem / placeItem"
+ },
+ "001b9a30": {
+  "name": "StageObjArray::next",
+  "tag": "game-inferred",
+  "was": "FUN_001b9a30",
+  "why": "slot+4, null when *(slot+4) is 0: the array's walk stops at the 0 after the last item; the loop step of nativeDemoBind's walk of group 8"
+ },
+ "001b9a50": {
+  "name": "StageObject::getNameBuf",
+  "tag": "game-inferred",
+  "was": "FUN_001b9a50",
+  "why": "addiu v0,a0,0x20: the address of the object's 16-byte name (+0x20), strcmp'd with the script's name in nativeDemoBind"
+ },
  "001b9a60": {
   "name": "StageObject::isActive",
   "tag": "game-inferred",
   "was": "FUN_001b9a60",
   "why": "out-of-line inline getter: answers the byte at +0x34 (m_active) != 0; called on each candidate by findNearestFoe, scriptHasAllyWithin, hasBiter"
+ },
+ "001b9a70": {
+  "name": "StageObjArray::itemAt",
+  "tag": "game-inferred",
+  "was": "FUN_001b9a70",
+  "why": "returns a0 unchanged: the slot as the item's reference (an iterator's operator*), dereferenced by nativeDemoBind for the object"
+ },
+ "001b9a80": {
+  "name": "StageObjArray::begin",
+  "tag": "game-inferred",
+  "was": "FUN_001b9a80",
+  "why": "null when the u_short count at +4 is 0, else data+4 (data[1]): the first item's slot; nativeDemoBind's loop start"
+ },
+ "001b9aa0": {
+  "name": "StageObjectList::getGroup",
+  "tag": "game-inferred",
+  "was": "FUN_001b9aa0",
+  "why": "this + group*8 + 0x90: the StageObjArray of a group (8 bytes each from +0x90); nativeDemoBind asks for group 8"
+ },
+ "001b9ab0": {
+  "name": "StageScene::getCamerasReady",
+  "tag": "game-inferred",
+  "was": "FUN_001b9ab0",
+  "why": "lbu +0x114 of gStageScene, the byte setupCameras sets; nativeDemoBind does nothing once it is set"
  },
  "001b9ac0": {
   "name": "nativeDemoPosition",
@@ -19409,11 +19487,71 @@
   "was": "FUN_001c4200",
   "why": "script native 0xaa"
  },
+ "001c4680": {
+  "name": "StageMission::getKeptObject",
+  "tag": "game-inferred",
+  "was": "FUN_001c4680",
+  "why": "lw v0,0xbc(a0) on currentMission(); nativeUseLockGadget sets +0x18 of what it answers (the object's view flag) after hiding the others: the object restoreObjectFlags leaves alone"
+ },
+ "001c4690": {
+  "name": "stageHideObjects_thunk",
+  "tag": "game-inferred",
+  "was": "stageHideObjects",
+  "why": "j 0x19c7e0 (stageHideObjects) with a0 the scene's +0x124 SceneArrayPair, which stageHideObjects never reads: the out-of-line copy of an inline forward, called by nativeUseLockGadget"
+ },
+ "001c46a0": {
+  "name": "StageScene::getArrays",
+  "tag": "game-inferred",
+  "was": "FUN_001c46a0",
+  "why": "lw v0,0x124(a0) on gStageScene: the SceneArrayPair of saved flags; nativeUseLockGadget passes it to stageHideObjects_thunk"
+ },
+ "001c46b0": {
+  "name": "StageScene::getFade",
+  "tag": "game-inferred",
+  "was": "FUN_001c46b0",
+  "why": "lw v0,0xfc(a0) on gStageScene, passed to StageFade::isFullInMode2 by nativeUseLockGadget"
+ },
+ "001c46c0": {
+  "name": "StageScene::getOwned2",
+  "tag": "game-inferred",
+  "was": "FUN_001c46c0",
+  "why": "lw v0,0x94(a0): the third SceneOwnedObject of +0x8c..+0x94, the seven keys' screen (isOwned2Busy); nativeUseLockGadget calls it for kind 3 and drops the answer"
+ },
  "001c46d0": {
   "name": "armPadGadget",
   "tag": "game-inferred",
   "was": "FUN_001c46d0",
   "why": "native 0xaa: the gadget special text, setSpecial on who is on the pad"
+ },
+ "001c4760": {
+  "name": "StageScene::getOwned1",
+  "tag": "game-inferred",
+  "was": "FUN_001c4760",
+  "why": "lw v0,0x90(a0): the second SceneOwnedObject, the number lock's screen (isOwned1Busy); nativeUseLockGadget calls it for kind 2 and drops the answer"
+ },
+ "001c4770": {
+  "name": "StageScene::isInputBlocked_thunk",
+  "tag": "game-inferred",
+  "was": "StageScene::isInputBlocked",
+  "why": "j 0x195850 (StageScene::isInputBlocked) with a0 unchanged: an out-of-line copy of an inline forward, called by nativeUseLockGadget with gStageScene"
+ },
+ "001c4780": {
+  "name": "ScriptYield::clear",
+  "tag": "game-inferred",
+  "was": "FUN_001c4780",
+  "why": "zeroes the two words of the pair runningScriptYield answers (the runner's +0xac / +0xb0): the clear after a waiting native read its state"
+ },
+ "001c4790": {
+  "name": "ScriptYield::isSet",
+  "tag": "game-inferred",
+  "was": "FUN_001c4790",
+  "why": "first word of the pair != 0: whether scriptYield left something (the runner's +0xac)"
+ },
+ "001c47a0": {
+  "name": "runningScriptYield",
+  "tag": "game-inferred",
+  "was": "FUN_001c47a0",
+  "why": "gRunningScript (gp-0x7a58) + 0xac, null without a running script: the yield pair scriptYield fills; nativeUseLockGadget reads the second word when isSet"
  },
  "001c47c0": {
   "name": "nativeHeardFoe",
@@ -19672,6 +19810,30 @@
   "tag": "game-inferred",
   "was": "FUN_001c93c0",
   "why": "script native 0x5e"
+ },
+ "001c9770": {
+  "name": "effectSpawnFailed",
+  "tag": "game-inferred",
+  "was": "FUN_001c9770",
+  "why": "jr ra only, no arguments; nativeSpawnEffectPlaced calls it when the handle is below 0: a stripped report"
+ },
+ "001c9780": {
+  "name": "StageObject::isCharacter",
+  "tag": "game-inferred",
+  "was": "FUN_001c9780",
+  "why": "slot +0x1f4 (getKind) == 0 (StageObject_Character), computed as !(k<0) && !(0<k); nativeSpawnEffectPlaced takes spawnEffectOnBone for a character, the bone map for the rest"
+ },
+ "001c97e0": {
+  "name": "StageScene::getEffects",
+  "tag": "game-inferred",
+  "was": "FUN_001c97e0",
+  "why": "lw v0,0xdc(a0) on gStageScene, passed to SceneEffectList::spawn"
+ },
+ "001c97f0": {
+  "name": "scriptLabelCell",
+  "tag": "game-inferred",
+  "was": "FUN_001c97f0",
+  "why": "lw v0,-4(a0): the word before a label's text, the cell scriptPrepare binds (an object); nativeSpawnEffectPlaced's object from readObjectArg's label"
  },
  "001c9800": {
   "name": "nativeSpawnEffectOn",
