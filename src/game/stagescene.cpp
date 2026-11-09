@@ -3168,9 +3168,11 @@ void StageScene::update()
         const StageObject *view = getTopView();
         const float *at = player != nullptr ? player->m_xform.position : nullptr;
         const float *eye = view != nullptr ? view->m_xform.position : nullptr;
-        printf("[rate] frame %d t %.4f stage %.4f player %.2f %.2f %.2f eye %.2f %.2f %.2f\n", frameCount,
-                    gGameSystem->m_clock.getSeconds(), clock->getSeconds(), at ? at[0] : 0.0f, at ? at[1] : 0.0f,
-                    at ? at[2] : 0.0f, eye ? eye[0] : 0.0f, eye ? eye[1] : 0.0f, eye ? eye[2] : 0.0f);
+        // fields: the fields so far (more than one a game frame is a late frame, which slows the game down).
+        printf("[rate] frame %d t %.4f stage %.4f player %.2f %.2f %.2f eye %.2f %.2f %.2f fields %d view %d\n",
+               frameCount, gGameSystem->m_clock.getSeconds(), clock->getSeconds(), at ? at[0] : 0.0f,
+               at ? at[1] : 0.0f, at ? at[2] : 0.0f, eye ? eye[0] : 0.0f, eye ? eye[1] : 0.0f, eye ? eye[2] : 0.0f,
+               gGameSystem->m_clock.m_vsyncTotal, view != nullptr ? (int)const_cast<StageObject *>(view)->getKind() : -1);
         fflush(stdout);
     }
 }

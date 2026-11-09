@@ -7,7 +7,7 @@ yet; the user decides whether option C goes ahead. **The 50 Hz dry run (2026-11-
 converted the shared mechanisms, the main camera, particles, item physics, the stage clocks and voice delays; its
 second pass the rest of the systems table** (roadmap-framerate.md "The 50 Hz dry run" has the list, what was seen
 and what was not run). Mission notices turned out to be in seconds (`kNoticeFps`, pausemenustate.cpp); only the timed
-records count frames.
+records count frames. Missed by the first pass: movies decode a picture a game frame (`MoviePlayer::drawFrame`), now on the tick.
 
 ## How it was made
 
