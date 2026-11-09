@@ -11,6 +11,7 @@
 // the macroblocks are decoded at their source, never uploaded.
 
 #include "game/movieplayer.h"
+#include "game/gamerate.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -394,6 +395,12 @@ bool MoviePlayer::receiveAudio(sceMpeg *mp, sceMpegCbDataStr *data, MovieAudioRi
 
 bool MoviePlayer::drawFrame(sceVif1Packet *packet, int tbp, int width, int height, int x, int y)
 {
+    // PC: game_rate (game/gamerate.h): a picture a 25 Hz frame (the PAL streams' rate) beside their sound; between
+    // ticks the last one is drawn again.
+    if (palTicks() == 0 && !(m_state & MovieState_Over)) {
+        uploadFrame(packet, tbp, width, height, x, y);
+        return true;
+    }
     bool ok = decodeFrame();
     if (ok)
         uploadFrame(packet, tbp, width, height, x, y);

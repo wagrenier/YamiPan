@@ -84,14 +84,15 @@ void YamiPan_SleepNs(uint64_t nanoseconds)
     yamipan::os::TimedWaiter::sleepFor(std::chrono::nanoseconds(nanoseconds));
 }
 
-// Only the rates the field clock can pace: one PAL field or two a frame. Anything else is the ROM's 25.
+// Only the rates the master clock counts in whole ticks and the field clock can pace: 25 (two PAL fields a frame),
+// 50 (one) and 60 (one field of a 60 Hz clock). Anything else is the ROM's 25.
 int YamiPan_GameRate(void)
 {
     static const int rate = [] {
         const int asked = yamipan::Application::instance().config().game.gameRate;
-        if (asked == 25 || asked == 50)
+        if (asked == 25 || asked == 50 || asked == 60)
             return asked;
-        yamipan::log::warning("game_rate {} is not 25 or 50; running at 25", asked);
+        yamipan::log::warning("game_rate {} is not 25, 50 or 60; running at 25", asked);
         return 25;
     }();
     return rate;

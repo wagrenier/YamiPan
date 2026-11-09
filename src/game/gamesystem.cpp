@@ -176,19 +176,23 @@ void GameSystem::flipFrame(int vsyncs)
 // PC: the native frame rate (game/gamerate.h). The master clock's own ticks say which 25 Hz frames ended: it is the
 // root and never paused, and flipFrame advances it before the frame's work.
 
+// The ROM's 25 frames a second, in master-clock ticks (300 a second) a frame.
+constexpr int kPalFramesPerSecond = 25;
+
 int gameVsyncsPerFrame()
 {
-    return YamiPan_GameRate() == 50 ? 1 : kVsyncsPerFrame;
+    return YamiPan_GameRate() == kPalFramesPerSecond ? kVsyncsPerFrame : 1;
 }
 
+// 12 at 25, 6 at 50, 5 at 60: whole ticks, so the clock stays in real seconds.
 int gameClockTicksPerFrame()
 {
-    return kClockTicksPerFrame * gameVsyncsPerFrame() / kVsyncsPerFrame;
+    return kClockTicksPerFrame * kPalFramesPerSecond / YamiPan_GameRate();
 }
 
 int palTicks()
 {
-    if (gameVsyncsPerFrame() == kVsyncsPerFrame)
+    if (YamiPan_GameRate() == kPalFramesPerSecond)
         return 1;   // the ROM's pace: every frame is one, from the first
     const MasterClock &clock = gGameSystem->m_clock;
     return (int)(clock.m_time / kClockTicksPerFrame - (clock.m_time - clock.m_delta) / kClockTicksPerFrame);

@@ -241,7 +241,7 @@ A's.
 2. **50 Hz first** as the dry run: 2x is exact for counters and speeds (n -> 2n, v -> v / 2), dt exact (6 ticks),
    `stageFps` 50. It tests the method and the 25-vs-faster comparison with no rounding in the way. **Started
    2026-11-09** ("The 50 Hz dry run" below; branch `framerate/50hz`).
-3. 60 Hz: the ulp fix, the 2.4x counters, the eases.
+3. 60 Hz: the ulp fix, the 2.4x counters, the eases. **Done 2026-11-09** ("60 Hz" below).
 4. Keep A on top for refresh rates above 60.
 
 ## The 50 Hz dry run (2026-11-09)
@@ -303,6 +303,34 @@ reads; `YAMIPAN_RATE_LOG=1`, `ratecmp.py`):
 
 Not checked: menus, the map, the sight-jack and anything in the "not converted" list; sound by ear; a frame
 filter or film effect; the memory card's play time after a save.
+
+## 60 Hz (2026-11-09)
+
+`game_rate = 60`: the EE's field clock runs at 60 Hz whatever the game chose (`InterruptController`; the IOP keeps its
+own V-blank in `iop/kernel.cpp`, so RXSNDDRV still ticks at the PAL 50 `soundInit` gave it), one field a frame, 5
+master ticks a frame (300 / 60, whole). `Clock::getDeltaSeconds` returns one ulp less when the quotient would make
+`(int)(1 / dt)` one low (5 / 300 is 0.016666668 in float: 59 -> 60); at 12 and 6 ticks it is already exact and
+untouched. `palTicks` is then 1 on 5 frames of 12 (every 2 or 3), `palScale` 5 / 12; every conversion of the 50 Hz
+passes holds as written (none assumed the ticks alternate).
+
+**Found on the way, for 50 and 60:** a movie decodes a picture each time `PrgMovie` draws it, once a game frame, so at
+50 a PAL stream played twice as fast as its sound. `MoviePlayer::drawFrame` now decodes on the 25 Hz tick and draws
+the last picture between. The stream feeders fill by free space and need nothing.
+
+**Seen** (stage 2, the walk script with every pad-read number x 2.4; `YAMIPAN_RATE_LOG`): 2,560 stage frames of
+16.7 ms in 42.7 s; the player covers 1,293 units in the first 10 s of walking (25: 1,276, 50: 1,288), the eye 1,358
+(1,326, 1,344); the eye's distance behind the player follows 25 Hz's (292 / 288, 337 / 330, 259 / 259, 213 / 213 at
+0.5, 1, 6, 10 s); the player moves every frame, 2.6 units a frame, next / this ratio 1.00. Rain: 609 units/s by the
+per-frame measure (50: 598; the measure adds the 25 Hz size changes). The shots: the girl in the rain, right.
+
+**First person** (the user saw it slower, 2026-11-09): `Up` enters it on stage 2 (`CharacterInput::stepView`; the
+top view's kind goes 9 -> 10). The rate log now has `fields` (the vsync total: more than one a frame is a late frame,
+which slows the game, since the master clock adds a frame's ticks whatever the fields) and `view` (the top view's
+kind). Measured at 25 and 50: no late frame in either view (1.00 field a frame at 50, 2.00 at 25); first-person
+walking 120.0 units in its first second at 25 and 120.9 at 50, 381 / 387 in 4 s. The first-person walk is slower than
+the third-person one in the ROM's own code (about 120 against 262 units in the first second, at 25).
+
+## Measuring
 
 The machine is used over Remote Desktop, which caps presents at 10-30 a second: judge by timestamps (game frame times
 and the render thread's blend fractions in a log), not by watching. For the picture test, a shot with the blend held

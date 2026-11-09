@@ -4,6 +4,8 @@
 
 #include "game/heap.h"
 
+#include <math.h>
+
 // A PtrList's array slot. The EE's slots are 4 bytes; the host sizes them
 // as pointers.
 constexpr u_int kPtrListSlotSize = sizeof(void *);
@@ -138,7 +140,14 @@ MasterClock::MasterClock(int ticksPerFrame, int interval, bool variableRate, boo
 
 float Clock::getDeltaSeconds()
 {
-    return (float)m_delta / kClockDeltaPerSecond;
+    const float seconds = (float)m_delta / kClockDeltaPerSecond;
+    // PC: game_rate 60 (game/gamerate.h): 5 / 300 rounds to a float one ulp above 1/60, so the game's
+    // (int)(1.0f / dt) (stageFps, the script frames, the timers) would say 59. One ulp lower says 60; at the ROM's 12
+    // ticks (and 6) the quotient is already exact and nothing changes.
+    if (m_delta != 0 && (u_int)kClockDeltaPerSecond % m_delta == 0
+        && (int)(1.0f / seconds) < (int)((u_int)kClockDeltaPerSecond / m_delta))
+        return nextafterf(seconds, 0.0f);
+    return seconds;
 }
 
 // ──────────────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "yamipan/ee/kernel.h"
+#include "yamipan/os/yamipan_time.h"
 
 namespace yamipan::ee
 {
@@ -18,6 +19,7 @@ constexpr int kCauseVBlankEnd = 3;
 constexpr double kBusClock = 147'456'000.0;
 constexpr double kNtscFieldRate = 59.94;
 constexpr double kPalFieldRate = 50.0;
+constexpr double kGameRate60FieldRate = 60.0;
 constexpr double kNtscHsyncRate = 15734.0;
 constexpr double kPalHsyncRate = 15625.0;
 
@@ -256,7 +258,10 @@ void InterruptController::run()
 
         if (fieldDue)
         {
-            const double rate = m_standard.load() == VideoStandard::Pal ? kPalFieldRate : kNtscFieldRate;
+            // game_rate 60 (roadmap-framerate.md "Native 60 Hz") runs the EE's fields at 60 Hz whatever the game chose;
+            // the IOP keeps its own V-blank (iop/kernel.cpp), so the sound driver's ticks stay the video standard's.
+            const double rate = YamiPan_GameRate() == 60 ? kGameRate60FieldRate
+                                : m_standard.load() == VideoStandard::Pal ? kPalFieldRate : kNtscFieldRate;
             m_lastFieldTime.store(nextField.time_since_epoch().count());
             m_fields.fetch_add(1);
             raise(kCauseVBlankStart);
