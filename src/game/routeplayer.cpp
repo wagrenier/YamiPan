@@ -2,12 +2,9 @@
  *  game/routeplayer.cpp -- a stage's rute file and the ways through it.
  *  See game/routeplayer.h.
  *
- *  0x254e10..0x254fd0, 0x254ff0, 0x255080, 0x258bc0..0x258f10, 0x258f80 and
- *  0x259430..0x25b850 are MSL inlines the ROM kept out of line: iterators
- *  and vector / tree members of RouteLegList, a node list, a short list and
- *  a set of name pointers, lower_bound over each table and the sort. They
- *  are the host's <vector>, <set> and <algorithm> here; nothing to write.
- *  mslTreeIncrement 0x25a850 and 0x25b590 are shared with other files.
+ *  0x254e10..0x255080 and 0x258bc0..0x25b850 are MSL inlines the ROM kept
+ *  out of line; they are the host's <vector>, <set> and <algorithm> here
+ *  (the ledger after the includes).
  * ======================================================================== */
 #include "game/routeplayer.h"
 
@@ -18,6 +15,86 @@
 #include <set>
 
 #include "rx/rxsys.h"
+
+/*
+ * CodeWarrior's MSL template instances emitted in this object file (batch
+ * 247). The host has no body for any of them: each is the standard library
+ * on the right, inline at its caller. RouteLegList is the ROM's
+ * std::vector<RouteLeg>, WordVector its std::vector<RouteNode *>, NameSet
+ * collectNames' std::set<const char *>, AreaNumberList RouteFile +0x0c (a
+ * second 2-byte vector instance beside vector<short>, so another element
+ * type in the ROM; std::vector<short> here). A vector is {capacity, count,
+ * data}; a tree node is left, right, parent | colour, value at +0xc.
+ *
+ * areaPath's reversed copies: std::reverse_copy(first, last,
+ * back_inserter(v)) and std::copy, their iterator ops kept out of line:
+ *   FS2 0x00254f10 WordVector::iterator::operator!=          first != last
+ *   FS2 0x00254fc0 back_insert_iterator<WordVector>::operator*   *result
+ *   FS2 0x00254fa0 WordVector::iterator::operator--          --last
+ *   FS2 0x00254f90 WordVector::iterator::operator*           *last
+ *   FS2 0x00254f40 back_insert_iterator<WordVector>::operator=   push_back
+ *   FS2 0x00254f30 back_insert_iterator<WordVector>::operator++  ++result
+ *   FS2 0x00254f00 back_insert_iterator<WordVector>::back_insert_iterator  the result's copy
+ *   FS2 0x00254e40 RouteLegList::iterator::operator!=        the same for legs
+ *   FS2 0x00254ef0 back_insert_iterator<RouteLegList>::operator*
+ *   FS2 0x00254ed0 RouteLegList::iterator::operator--
+ *   FS2 0x00254ec0 RouteLegList::iterator::operator*
+ *   FS2 0x00254e70 back_insert_iterator<RouteLegList>::operator=
+ *   FS2 0x00254e60 back_insert_iterator<RouteLegList>::operator++
+ *   FS2 0x00254e30 back_insert_iterator<RouteLegList>::back_insert_iterator
+ *   FS2 0x00254e10 RouteLegList::iterator::operator++        the run's forward copy
+ *   FS2 0x00254fd0 WordVector::WordVector                    leaving / arriving
+ *   FS2 0x00255080 RouteLegList::RouteLegList                way.steps, runs[4]
+ *   FS2 0x00254ff0 RouteLegList::operator=                   out.steps = way.steps
+ *
+ * The legs (RouteLegList, 4-byte RouteLeg):
+ *   FS2 0x00259430 RouteLegList::assign                      inside operator=
+ *   FS2 0x002592f0 RouteLegList::initRange                   reversePath's copy of the steps
+ *   FS2 0x00259760 RouteLegList::insertRange                 RoutePath::append
+ *   FS2 0x00259d60 RouteLegList::erase(iterator)             wayFromSegment's erase(begin)
+ *
+ * The rute file's tables, std::lower_bound on the first field (findRecord):
+ *   FS2 0x00258bc0 std::lower_bound(short)                   isListedArea
+ *   FS2 0x00258c70 std::lower_bound(RouteCrossingFrom)       areaCrossings, findWayIn
+ *   FS2 0x00258ce0 std::lower_bound(RouteCrossingTo)         areaCrossings, findWayIn
+ *   FS2 0x00258dc0 std::lower_bound(RouteWayRecord)          findWayIn
+ *   FS2 0x00258d50 std::lower_bound(RouteChainList)          areaList (header +0x34)
+ *   FS2 0x00258e30 std::lower_bound(RouteAreaChains)         m_areaChains (header +0x24)
+ *   FS2 0x00258ea0 std::lower_bound(RouteChainRunFrom)       chainRun, chainOf, wayAlongChains
+ *   FS2 0x00258f10 std::lower_bound(RouteChainRunTo)         the same, second level
+ *
+ * RouteFile's area list and the short lists handed out:
+ *   FS2 0x0025a7d0 AreaNumberList::clear                     m_areas before its push_backs
+ *   FS2 0x00259ef0 AreaNumberList::insert                    m_areas.push_back
+ *   FS2 0x0025a7e0 AreaNumberList::~AreaNumberList           m_areas going away
+ *   FS2 0x00258f80 std::sort(short)                          std::sort(m_areas): the ROM's
+ *                  pivot is a pseudo-random median of three (a gp counter); equal
+ *                  shorts cannot be told apart, so the order is the same
+ *   FS2 0x0025ac20 std::sortMedian(short)                    inside sort
+ *   FS2 0x0025ad10 std::sortPartition(short)                 inside sort (x < pivot)
+ *   FS2 0x0025af80 std::sortPartitionEqual(short)            inside sort (!(pivot < x))
+ *   FS2 0x0025b1f0 std::sortSmall(short)                     inside sort, under 21: selection
+ *   FS2 0x0025a320 vector<short>::insert                     areaCrossings' push_back
+ *   FS2 0x0025a750 vector<short>::resize                     areaList's out = list
+ *   FS2 0x0025b310 vector<short>::eraseRange                 inside resize
+ *
+ * collectNames' std::set<const char *> (NameSet):
+ *   FS2 0x0025ac00 NameSet::NameSet                          the local set
+ *   FS2 0x0025ab40 NameSet::insert                           names.insert
+ *   FS2 0x0025b460 NameSet::insertNode                       inside insert
+ *   FS2 0x0025a8f0 NameSet::eraseTree                        the set's dtor
+ *   FS2 0x0025ab30 NameSet::getValueAllocator                inside eraseTree
+ *   FS2 0x0025ab20 NameSet::destroyValue                     inside eraseTree (a pointer: empty)
+ *   FS2 0x0025ab10 NameSet::getNodeAllocator                 inside eraseTree
+ *   FS2 0x0025ab00 NameSet::freeNode                         inside eraseTree
+ *
+ * MSL's red-black tree, shared by every set and map of the game (ClipSet,
+ * IntSet, ListMap, NameMap, NameSet, VcmNameSet, VcmStateMap, VcmTokenSet):
+ *   FS2 0x0025a850 mslTreeIncrement                          ++ on a tree iterator
+ *   FS2 0x0025b590 mslTreeBalanceInsert                      every insertNode's rebalance
+ *   FS2 0x0025b7c0 mslTreeRotateRight                        inside the rebalance
+ *   FS2 0x0025b850 mslTreeRotateLeft                         inside the rebalance
+ */
 
 // PC: the ROM's libc strcasecmp (0x127ea0); MSVC has no such name.
 #ifdef _MSC_VER
@@ -190,7 +267,7 @@ void RoutePlayer::reversePath(RoutePath &path)
 }
 
 // FS2 0x00252bc0
-// callcheck: FUN_00258bc0 (std::lower_bound)
+// callcheck: lower_bound (std::lower_bound)
 
 bool RoutePlayer::isListedArea(short area)
 {
@@ -288,7 +365,7 @@ float RoutePlayer::crossingPath(RoutePath &out, short fromArea, short toArea, sh
 }
 
 // FS2 0x002530a0
-// callcheck: operator_delete, FUN_0025a7e0 (the members and the delete of m_file)
+// callcheck: operator_delete, ~AreaNumberList (the members and the delete of m_file)
 
 RoutePlayer::~RoutePlayer()
 {
@@ -318,7 +395,7 @@ const std::vector<short> *RouteAreaSearch::runChains(RouteNode *from, RouteNode 
 
 // Those chains as a path of chain legs.
 // FS2 0x00253210
-// callcheck: FUN_00258ea0, FUN_00258f10, reserve, insert (std::lower_bound, the host vector)
+// callcheck: lower_bound, lower_bound, reserve, insert (std::lower_bound, the host vector)
 
 float RouteAreaSearch::chainRun(RoutePath &out, RouteNode *from, RouteNode *to)
 {
@@ -343,7 +420,7 @@ float RouteAreaSearch::chainRun(RoutePath &out, RouteNode *from, RouteNode *to)
 // and what it answers then is the run's alone; both are the ROM's. The
 // callers read out.length.
 // FS2 0x00253420
-// callcheck: clear, FUN_00254fd0, ~RouteLegList, FUN_00255080, insert, FUN_00254f10, FUN_00254fc0, FUN_00254fa0, FUN_00254f90, FUN_00254f40, FUN_00254f30, FUN_00254f00, reserve, insert, FUN_00254ff0, FUN_00228610, FUN_00254e40, FUN_00254ef0, FUN_00254ed0, FUN_00254ec0, FUN_00254e70, FUN_00254e60, FUN_00254e30, FUN_00254e10, ~vector, FUN_00253210 (the host vector and its reversed copies)
+// callcheck: clear, WordVector, ~RouteLegList, RouteLegList, insert, operator!=, operator*, operator--, operator*, operator=, operator++, back_insert_iterator, reserve, insert, operator=, FUN_00228610, operator!=, operator*, operator--, operator*, operator=, operator++, back_insert_iterator, operator++, ~vector, chainRun (the host vector and its reversed copies)
 
 float RouteAreaSearch::areaPath(RoutePath &out, const float *from, const float *to, short area)
 {
@@ -555,7 +632,7 @@ short RouteAreaSearch::nodeIndex(const RouteNode *node)
 // The chain the segment first..second lies on: the stored run between them,
 // or the first chain of first's area with whichever had no row.
 // FS2 0x002550d0
-// callcheck: FUN_00258ea0, FUN_00258f10, FUN_00258e30 (std::lower_bound)
+// callcheck: lower_bound, lower_bound, lower_bound (std::lower_bound)
 
 short RouteAreaSearch::chainOf(RouteNode *first, RouteNode *second)
 {
@@ -582,7 +659,7 @@ short RouteAreaSearch::chainOf(RouteNode *first, RouteNode *second)
 // From a node to the crossing, along the chains of the node's area. Only a
 // node at the crossing itself answers without setting out.length.
 // FS2 0x00255330
-// callcheck: FUN_00258e30, FUN_00258ea0, FUN_00258f10, reserve, insert, resize, FUN_00257f50, FUN_00259230 (std::lower_bound, the host vector)
+// callcheck: lower_bound, lower_bound, lower_bound, reserve, insert, resize, firstLeg, legsLength (std::lower_bound, the host vector)
 
 float RouteAreaSearch::wayAlongChains(RoutePath &out, RouteNode *node, short crossing)
 {
@@ -707,7 +784,7 @@ float RouteAreaSearch::wayAlongChains(RoutePath &out, RouteNode *node, short cro
 // From a segment to the crossing: from its first node, without that node
 // when the way runs over the second anyway.
 // FS2 0x002569e0
-// callcheck: FUN_00259d60 (the host vector erase)
+// callcheck: erase (the host vector erase)
 
 float RouteAreaSearch::wayFromSegment(RoutePath &out, RouteNode *const *segment, short crossing)
 {
@@ -772,7 +849,7 @@ float RouteAreaSearch::wayFromPoint(RoutePath &out, const float *pos, short area
 // The nearest segment of the area's chains to pos, its two nodes in file
 // order, and which end of it (side, may be null). -1 when there is none.
 // FS2 0x00256db0
-// callcheck: FUN_00258e30, FUN_00258900 (std::lower_bound, distanceToSegment)
+// callcheck: lower_bound, distanceToSegment (std::lower_bound, distanceToSegment)
 
 float RouteAreaSearch::nearestSegment(RouteNode **segment, const float *pos, short area, int *side)
 {
@@ -854,7 +931,7 @@ int RouteFile::pathSetIndex(const std::vector<const char *> &names)
 // Every name of every set once: the ROM's tree is ordered by the pointers,
 // so by where the strings lie in the file, and so is this one.
 // FS2 0x002571e0
-// callcheck: FUN_0025ac00, FUN_0025ab40, insert, mslTreeIncrement, FUN_0025a8f0 (the host set and vector)
+// callcheck: NameSet, insert, insert, mslTreeIncrement, eraseTree (the host set and vector)
 
 void RouteFile::collectNames()
 {
@@ -869,7 +946,7 @@ void RouteFile::collectNames()
 
 // The path walked the other way, its links and chains made nodes.
 // FS2 0x00257360
-// callcheck: FUN_002592f0, clear, insert, ~vector (the host vector)
+// callcheck: initRange, clear, insert, ~vector (the host vector)
 
 void RouteFile::reversePath(RoutePath &path)
 {
@@ -968,7 +1045,7 @@ const RoutePath *RouteFile::findWay(short fromArea, short toArea, short crossing
 }
 
 // FS2 0x00257ad0
-// callcheck: FUN_00258c70, FUN_00258ce0, FUN_00258dc0 (std::lower_bound)
+// callcheck: lower_bound, lower_bound, lower_bound (std::lower_bound)
 
 const RoutePath *RouteFile::findWayIn(short fromArea, short toArea, short crossing, const RouteCrossingTable &table)
 {
@@ -983,7 +1060,7 @@ const RoutePath *RouteFile::findWayIn(short fromArea, short toArea, short crossi
 }
 
 // FS2 0x00257cb0
-// callcheck: FUN_00258d50, FUN_0025a750 (std::lower_bound, the host vector)
+// callcheck: lower_bound, resize (std::lower_bound, the host vector)
 
 void RouteFile::areaList(std::vector<short> &out, short area)
 {
@@ -994,7 +1071,7 @@ void RouteFile::areaList(std::vector<short> &out, short area)
 
 // Adds to out what it finds.
 // FS2 0x00257db0
-// callcheck: FUN_00258c70, FUN_00258ce0, FUN_0025a320 (std::lower_bound, the host vector)
+// callcheck: lower_bound, lower_bound, insert (std::lower_bound, the host vector)
 
 void RouteFile::areaCrossings(std::vector<short> &out, short fromArea, short toArea)
 {
@@ -1020,7 +1097,7 @@ const RouteLeg *RouteFile::firstLeg(short area, short crossing)
 }
 
 // FS2 0x00257fa0
-// callcheck: operator_new, FUN_0025a7d0, FUN_00259ef0, FUN_00258f80 (new, the host vector, std::sort)
+// callcheck: operator_new, clear, insert, sort (new, the host vector, std::sort)
 
 RouteFile::RouteFile(RoutePlayer *owner, void *file)
     : m_bytes((u_char *)file), m_owner(owner)

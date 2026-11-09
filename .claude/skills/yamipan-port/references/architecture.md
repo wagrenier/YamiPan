@@ -829,7 +829,7 @@ columns ラベル / ctype / SEtype, then both are freed: where the parsed data g
 `getInitItemForLanguage` 0x2afc20 / `getInitItem21` 0x2afcd0 (init items 0x15..0x1a by language).
 **MSL map: {tree root +4, ...} 0x10 bytes; nodes {left +0, right +4, .., value +0xc}; MSL string
 0xc {bit 0 of +0: heap buffer at +8}** (0x297fb0); CodeWarrior emits the map / vector instances
-between the file's last function and its static destructor. **packtables.cpp's 43 instances are named (batch 244, ledger in the file):** a map is {size +0, root +4, compare byte +8, leftmost +0xc} (a set: leftmost +8), end() is map + 4; nodes 0x1c (NameMap, ListMap) / 0x10 (IntSet) with {left, right, parent | colour bit 0, value +0xc}; `insertNode` aborts on size == -1, then rebalances with 0x25b590; a vector is {capacity +0, size +4, data +8} (EntryList 0x10 elements, StringVector 0xc), growth doubles the capacity.
+between the file's last function and its static destructor. **packtables.cpp's 43 instances are named (batch 244, ledger in the file):** a map is {size +0, root +4, compare byte +8, leftmost +0xc} (a set: leftmost +8), end() is map + 4; nodes 0x1c (NameMap, ListMap) / 0x10 (IntSet) with {left, right, parent | colour bit 0, value +0xc}; `insertNode` aborts on size == -1, then rebalances with 0x25b590; a vector is {capacity +0, size +4, data +8} (EntryList 0x10 elements, StringVector 0xc), growth doubles the capacity. **routeplayer.cpp's 52 instances 0x254e10..0x255080, 0x258bc0..0x25b850 are named too (batch 247, ledger in the file, 2026-11-09):** CodeWarrior kept even vector iterator ops (`!=`, `*`, `--`, `++`) and `back_insert_iterator`'s out of line, so areaPath's `std::reverse_copy` / `std::copy` into a back_inserter show as seven calls a loop; one `std::lower_bound` instance a record type (two with identical bodies for header +0x24 and +0x34, so two record types); `std::sort(short)` picks its pivot as a median of three at pseudo-random places (a gp counter cycling -4..4); **the tree helpers every set / map shares are `mslTreeIncrement` 0x25a850, `mslTreeBalanceInsert` 0x25b590, `mslTreeRotateRight` 0x25b7c0, `mslTreeRotateLeft` 0x25b850.**
 
 **`game/screen.cpp` 0x2676e0..0x2681e0 (TU 14, 2026-11-03, batch 037, all 18 written, `verify`; the
 file name is the port's)**: the 2D screens around the game. **Overlay thread** slot 6
@@ -1117,7 +1117,7 @@ TUs' classes (ctors 0x29e4f0 / 0x29ae30 / 0x2b9d60). After the code: **UiTween**
 ({from, to, length, frame, delay, hold, curve} 0x1c, curve 1 = t squared; start 64 callers, value 29),
 `UiShowFlags` 0x25f9c0 (17 bytes, one caller 0x19c180), `UiFont::countLines` 0x25fa10. Before it,
 0x252840..0x25b8e0 is another file (vector / tree heavy, 0x253420 has 'そんな馬鹿な', its MSL
-instances incl. `mslTreeIncrement` 0x25a850 after it), still `unassigned@00252840`.
+instances incl. `mslTreeIncrement` 0x25a850 after it): game/routeplayer.cpp, 100 of 100 since batch 247.
 
 **`game/movieplayer.cpp` 0x1faa30..0x1fcb40** (TU 34, batches 067-068): **MoviePlayer** (EE 0x110, no
 vtable): the `sceMpeg` at +0 (getFrame = its frameCount), state +0x48 (`MovieState`: 1 open, 2 primed,

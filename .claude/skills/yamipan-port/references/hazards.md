@@ -654,7 +654,7 @@ upper lanes, NaN in Python and harmless on a VU: clear the vf's between calls.
 ## Shell and tools, slips of 2026-11-06
 
 - **A run hung 5 minutes on nothing.** Symptom: a command ran past its timeout with empty output. Cause: a bare `cat > file` with no heredoc reads stdin forever; `py -` with an empty heredoc opens the REPL. Fix: put a throwaway script in the scratchpad with the Write tool.
-- **`callcheck:` lists stop at the first parenthesis.** Symptom: MISSING calls that the comment plainly names. Cause: what follows a `(` is taken as a remark. Fix: remarks go at the end of the list.
+- **`callcheck:` lists stop at the first parenthesis.** Symptom: MISSING calls that the comment plainly names. Cause: what follows a `(` is taken as a remark. Fix: remarks go at the end of the list. The same for `!`, `*` and `-` until 2026-11-09 (`operator!=`, `operator*`, `operator--` cut the list short); callcheck.py's list pattern takes them now.
 - **`--log` is the build's log.** The game's output is in work/run_<config>.log; a temporary print is there, not in the file `--log` names.
 - **A run killed by its limit leaves a cut-off shot.** last.png can be empty and the newest shot_*.png unreadable: read the third newest.
 
