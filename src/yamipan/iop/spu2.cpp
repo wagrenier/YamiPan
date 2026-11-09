@@ -314,8 +314,9 @@ int Spu2::voiceTransStatus(int, int) const
     return 1; // finished: every transfer is, by the time anyone asks
 }
 
-// RXSNDDRV's PCM player is the only user: a looping ring on core 1, whose status it reads as a position.
-// Its half-buffer interrupts are not raised: RXSNDDRV installs no transfer handler on core 1.
+// RXSNDDRV's PCM player is the only user: a looping ring on core 0 (FS2; RoR's on core 1), whose status
+// it reads as a position. Its half-buffer interrupts are not raised: core 0 has no transfer handler
+// (FS2's DMA thread transfers on, and installs its handler for, core 1).
 int Spu2::blockTrans(int channel, std::uint16_t mode, std::uint8_t *iop, std::uint32_t size, std::uint32_t start)
 {
     const int c = channel & 1;
@@ -343,15 +344,17 @@ int Spu2::blockTrans(int channel, std::uint16_t mode, std::uint8_t *iop, std::ui
 }
 
 // Flag 0 asks where the auto-DMA reads, as an address (callers take their ring's base off it, on the
-// same 32-bit truncation); any other flag asks whether a transfer is busy, and none ever is.
+// same 32-bit truncation), and 0 once it is stopped: FS2's PCM player stops the ring and waits for that
+// before it restarts it at another length. Any other flag asks whether a transfer is busy, and none is.
 int Spu2::blockTransStatus(int channel, int flag)
 {
     if (flag != 0)
         return 0;
     const int c = channel & 1;
     const Core &core = m_cores[c];
-    const std::uint32_t at = core.ringRunning ? m_voices->autoDmaOffset(c) : core.ringStopped;
-    return static_cast<int>(low32(core.ring) + at);
+    if (!core.ringRunning)
+        return 0;
+    return static_cast<int>(low32(core.ring) + m_voices->autoDmaOffset(c));
 }
 
 Spu2::Handler Spu2::setTransHandler(int c, Handler handler, void *arg)

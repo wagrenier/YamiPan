@@ -67,7 +67,7 @@ static int StageChunk(int size)
 
 /* Start the head transfer of the first queue that has one, unless one is in
  * flight.  Cancelled entries at a head are dropped on the way. */
-// IOP 0x00000cf0 (RoR 0x00000c60, 93% of it aligned: FS2 differs, unread)
+// IOP 0x00000cf0 (RoR 0x00000c60, 93% of it aligned: FS2 read, its transfers on channel 1)
 void RxSndDrvDmaProc(void)
 {
     int intr;
@@ -142,14 +142,15 @@ void RxSndDrvDmaProc(void)
             default:
                 return;
             }
-            sceSdVoiceTrans(0, mode, iop, spu, (u_int)size);
+            /* FS2: channel 1 (RoR 0); core 0's auto-DMA is the PCM player's. */
+            sceSdVoiceTrans(1, mode, iop, spu, (u_int)size);
             return;
         }
     }
     CpuResumeIntr(intr);
 }
 
-/* libsd's transfer-complete handler for core 0. */
+/* libsd's transfer-complete handler for core 1 (FS2; RoR's core 0). */
 // IOP 0x00000f64 (RoR 0x00000ed4, word for word)
 int RxSndDrvDmaIntr(int core, void *arg)
 {
@@ -191,7 +192,7 @@ int RxSndDrvDmaIntr(int core, void *arg)
     return 1;
 }
 
-// IOP 0x000010d8 (RoR 0x00001048, 96% of it aligned: FS2 differs, unread)
+// IOP 0x000010d8 (RoR 0x00001048, 96% of it aligned: FS2 read, the handler on core 1)
 void RxSndDrvDmaInit(void)
 {
     EventFlagParam flag;
@@ -203,7 +204,7 @@ void RxSndDrvDmaInit(void)
     s_current = -1;
     s_thread  = -1;
     s_flag    = -1;
-    sceSdSetTransIntrHandler(0, (void *)RxSndDrvDmaIntr, NULL);
+    sceSdSetTransIntrHandler(1, (void *)RxSndDrvDmaIntr, NULL); /* FS2: core 1 (RoR 0) */
     flag.attr        = 0;
     flag.initPattern = 0;
     flag.option      = 0;

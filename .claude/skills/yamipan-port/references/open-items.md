@@ -1833,10 +1833,11 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
   RoR has not (0x52, 0x53, 0x62, 0xb4; their EE senders have no caller, so nothing sent them), now in;
   RxSndDrvXvabGetUsers's test the right way round; RxSndDrvAdpcmStart gives the group to every channel and
   the owner to the first only; RxSndDrvSeRun (read the same day) holds a paused SE and its "all" opcodes
-  reach only SEs of the same bank. Still unread: the PCM player
-  (PcmTick +0xac, PcmOpen 64%, PcmInit moved), the mixer (MixInit / MixSet / MixTick), the voice tick's
+  reach only SEs of the same bank; the PCM player (read the same day) plays on core 0 from a ring of
+  2..8 halves. Still unread: the mixer (MixInit / MixSet / MixTick), the voice tick's
   noise clock (FS2's RxSndDrvVoiceSetNoise 0x4428, called by NoteTick for region flag 4, pending bit
-  0x20), DmaProc, XseqChunkFind (60%), ChunkFindV2 and the one-word ones (record offsets).
+  0x20), XseqChunkFind (60%), ChunkFindV2 and the one-word ones (record offsets). DmaProc / DmaInit
+  read with the PCM player: FS2's uploads are on core 1.
 
 - 2026-11-05 (Claude's call, a scheduled run, for the user to overrule): **doors are on, and `kDoorsEnabled` is gone.** The stage crash that switched them off is explained and fixed (Done, game/playermotion.cpp sixth run). `StageMenu::update`, `draw` and `destroy` stay stubs on purpose: with `update` written and no list window, the menu button would open a menu nobody sees that holds the input focus. `game/stagemenu.cpp` is a second file in a one-TU run, like `game/uiitemlist.cpp`: its stubbed ctor was the crash.
 
