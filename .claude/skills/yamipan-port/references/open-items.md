@@ -1834,7 +1834,8 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
   RxSndDrvXvabGetUsers's test the right way round; RxSndDrvAdpcmStart gives the group to every channel and
   the owner to the first only; RxSndDrvSeRun (read the same day) holds a paused SE and its "all" opcodes
   reach only SEs of the same bank; the PCM player (read the same day) plays on core 0 from a ring of
-  2..8 halves. Still unread: the mixer (MixInit / MixSet / MixTick), the voice tick's
+  2..8 halves; the mixer (read the same day) has command 0x31 param 2, the external input's volume.
+  Still unread: the voice tick's
   noise clock (FS2's RxSndDrvVoiceSetNoise 0x4428, called by NoteTick for region flag 4, pending bit
   0x20), XseqChunkFind (60%), ChunkFindV2 and the one-word ones (record offsets). DmaProc / DmaInit
   read with the PCM player: FS2's uploads are on core 1.
