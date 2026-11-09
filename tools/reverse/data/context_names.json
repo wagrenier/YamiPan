@@ -36611,11 +36611,59 @@
   "was": "FUN_002bcf10",
   "why": "(tables, pack): 3962 instructions reading the pack's tables, with the column names \u30e9\u30d9\u30eb (label), ctype and SEtype; called once by loadGamePackTables"
  },
+ "002c0d00": {
+  "name": "ListMap::const_iterator::operator++",
+  "tag": "game-inferred",
+  "was": "FUN_002c0d00",
+  "why": "MSL map iterator increment instance: mslTreeIncrement on the node, returns this; PackTables::parse's door loop (with 0x2c0d30 the postfix it++ copy); the twin of 0x2c0d50 for the second iterator type of the same map (which of the two is const is a guess)"
+ },
+ "002c0d30": {
+  "name": "ListMap::const_iterator::const_iterator",
+  "tag": "game-inferred",
+  "was": "FUN_002c0d30",
+  "why": "iterator copy ctor instance (one word copied); PackTables::parse's door loop, around 0x2c0d00 as it++"
+ },
+ "002c0d40": {
+  "name": "ListMap::end",
+  "tag": "game-inferred",
+  "was": "FUN_002c0d40",
+  "why": "MSL map end() instance: the header node, map + 4; PackTables::parse on the PackTables +0 ListMap (loop bound against begin 0x2c0db0)"
+ },
+ "002c0d50": {
+  "name": "ListMap::iterator::operator++",
+  "tag": "game-inferred",
+  "was": "FUN_002c0d50",
+  "why": "MSL map iterator increment instance: mslTreeIncrement, returns this; PackTables::parse's row loops over the ListMaps (node + 0x18 the row's EntryList data)"
+ },
+ "002c0d80": {
+  "name": "ListMap::iterator::iterator",
+  "tag": "game-inferred",
+  "was": "FUN_002c0d80",
+  "why": "iterator copy ctor instance (one word); PackTables::parse's it++ around 0x2c0d50"
+ },
+ "002c0d90": {
+  "name": "std::string::c_str",
+  "tag": "lib-context",
+  "was": "FUN_002c0d90",
+  "why": "MSL basic_string c_str instance: short form (bit 0 of word 0 clear) the bytes at this + 1, else the heap pointer at +8; PackTables::parse on a cell's text"
+ },
+ "002c0db0": {
+  "name": "ListMap::begin",
+  "tag": "game-inferred",
+  "was": "FUN_002c0db0",
+  "why": "MSL map begin() instance: the leftmost node at map + 0xc; PackTables::parse on the PackTables +0 ListMap"
+ },
  "002c0dc0": {
   "name": "PackTables::PackTables",
   "tag": "game-inferred",
   "was": "FUN_002c0dc0",
   "why": "builds eight MSL maps at +0x00..+0x70, 0x2c16b0 (ListMap) / 0x2c1710 (NameMap) alternating; the 0x80-byte object loadGamePackTables fills from packgameEU.pak"
+ },
+ "002c0e60": {
+  "name": "std::operator==(const_string&,const_string&)",
+  "tag": "lib-context",
+  "was": "FUN_002c0e60",
+  "why": "MSL string equality instance: sizes equal (short size byte >> 1, or word 1) and std::string::compare == 0; PackTables::parse comparing a cell with LABEL"
  },
  "002c0ef0": {
   "name": "packReadSheet",
@@ -36623,17 +36671,227 @@
   "was": "FUN_002c0ef0",
   "why": "splits an item at CRLF and commas, first row into the column map, the others into the row map by their first number"
  },
+ "002c1430": {
+  "name": "NameMap::operator[]",
+  "tag": "game-inferred",
+  "was": "FUN_002c1430",
+  "why": "MSL map<string,int>::operator[] instance: lower-bound walk with std::string::compare from the root at +4, inserts {key copy, 0 from a gp constant} via NameMap::insertNode 0x2c1f50 when absent, returns the pair at node + 0xc (callers read the int at its +0xc); PackTables::parse and packReadSheet"
+ },
+ "002c15c0": {
+  "name": "NameMap::find",
+  "tag": "game-inferred",
+  "was": "FUN_002c15c0",
+  "why": "MSL map<string,int>::find instance: lower bound then key < node test, else end (map + 4); PackTables::doorNumber and doorText"
+ },
+ "002c1670": {
+  "name": "ListMap::clear",
+  "tag": "game-inferred",
+  "was": "FUN_002c1670",
+  "why": "MSL map clear instance: ListMap::eraseTree when the root is set, then size, root 0 and leftmost = header; PackTables::parse / clear on +0"
+ },
+ "002c16b0": {
+  "name": "ListMap::ListMap",
+  "tag": "game-inferred",
+  "was": "FUN_002c16b0",
+  "why": "MSL map ctor instance (size 0, root 0, compare byte at +8, leftmost = header +4); PackTables::PackTables on +0x00/+0x20/+0x40/+0x60"
+ },
+ "002c16d0": {
+  "name": "NameMap::clear",
+  "tag": "game-inferred",
+  "was": "FUN_002c16d0",
+  "why": "MSL map clear instance with NameMap::eraseTree; PackTables::parse / clear on +0x10"
+ },
+ "002c1710": {
+  "name": "NameMap::NameMap",
+  "tag": "game-inferred",
+  "was": "FUN_002c1710",
+  "why": "MSL map ctor instance, the same body as ListMap's 0x2c16b0; PackTables::PackTables on +0x10/+0x30/+0x50/+0x70"
+ },
  "002c1730": {
   "name": "StringList::at",
   "tag": "game-inferred",
   "was": "FUN_002c1730",
   "why": "walks index nodes from the head, head when index is not below the count; parse reads its fields with it"
  },
+ "002c1830": {
+  "name": "std::string::compare_cstr",
+  "tag": "lib-context",
+  "was": "FUN_002c1830",
+  "why": "MSL basic_string::compare(const char *) instance: compare_pos(0, size, s, strlen(s)); packReadSheet tests a row's first field against the string at 0x30b588"
+ },
  "002c18a0": {
   "name": "packSplitFields",
   "tag": "game-inferred",
   "was": "FUN_002c18a0",
   "why": "pushes the fields of a text cut at a delimiter set onto a vector of strings, runs collapsed on a flag"
+ },
+ "002c1b10": {
+  "name": "ListMap::operator[]",
+  "tag": "game-inferred",
+  "was": "FUN_002c1b10",
+  "why": "MSL map<int,EntryList>::operator[] instance: int-key lower-bound walk, inserts {key, empty EntryList} via ListMap::insertNode 0x2c3a20 when absent, returns the pair at node + 0xc (the caller takes the EntryList at its +4); packReadSheet"
+ },
+ "002c1c90": {
+  "name": "ListMap::find",
+  "tag": "game-inferred",
+  "was": "FUN_002c1c90",
+  "why": "MSL map<int,...>::find instance on the rows map (int key at node + 0xc); packReadSheet's next free row number loop"
+ },
+ "002c1d10": {
+  "name": "IntSet::find",
+  "tag": "game-inferred",
+  "was": "FUN_002c1d10",
+  "why": "MSL set<int>::find instance, the same body as ListMap::find; packReadSheet on its local set of seen row numbers (ctor 0x2c2410)"
+ },
+ "002c1d90": {
+  "name": "std::string::operator=",
+  "tag": "lib-context",
+  "was": "FUN_002c1d90",
+  "why": "MSL basic_string assignment instance: both short copies the 12 bytes, else replace(0, size, other) via 0x2c2430; packReadSheet copying a field into a cell"
+ },
+ "002c1e10": {
+  "name": "EntryList::resize",
+  "tag": "game-inferred",
+  "was": "FUN_002c1e10",
+  "why": "MSL vector<PackEntry>::resize instance (16-byte elements, size +4, data +8): grows by EntryList::insertN 0x2c28b0 at end, shrinks by EntryList::erase 0x2c2690; packReadSheet"
+ },
+ "002c1ee0": {
+  "name": "StringVector::~StringVector",
+  "tag": "game-inferred",
+  "was": "FUN_002c1ee0",
+  "why": "MSL vector<string> destructor instance (deleting when the short flag > 0): StringVector::clear 0x2c3980, frees the buffer at +8; packReadSheet's lines and fields"
+ },
+ "002c1f50": {
+  "name": "NameMap::insertNode",
+  "tag": "game-inferred",
+  "was": "FUN_002c1f50",
+  "why": "MSL tree insert instance: aborts with the map-too-large text when size == -1, allocates a 0x1c node, copy-constructs the {string, int} value at +0xc, links it left or right of the parent, size++, rebalances (0x25b590), updates leftmost; called by NameMap::operator[]"
+ },
+ "002c20f0": {
+  "name": "IntSet::eraseTree",
+  "tag": "game-inferred",
+  "was": "FUN_002c20f0",
+  "why": "MSL red-black tree erase instance, recursive with two levels unrolled, like ListMap::eraseTree; value destroy is empty (int); packReadSheet's set dtor"
+ },
+ "002c2310": {
+  "name": "IntSet::freeNode",
+  "tag": "game-inferred",
+  "was": "FUN_002c2310",
+  "why": "node allocator deallocate instance: j Heap::free(gGlobalHeap, p); IntSet::eraseTree"
+ },
+ "002c2320": {
+  "name": "IntSet::getNodeAllocator",
+  "tag": "game-inferred",
+  "was": "FUN_002c2320",
+  "why": "returns this + 4 (the tree's node allocator), as ListMap::getNodeAllocator; IntSet::eraseTree"
+ },
+ "002c2330": {
+  "name": "IntSet::destroyValue",
+  "tag": "game-inferred",
+  "was": "FUN_002c2330",
+  "why": "allocator destroy instance for an int: empty; IntSet::eraseTree"
+ },
+ "002c2340": {
+  "name": "IntSet::getValueAllocator",
+  "tag": "game-inferred",
+  "was": "FUN_002c2340",
+  "why": "returns its argument (the value allocator), as ListMap::getValueAllocator; IntSet::eraseTree"
+ },
+ "002c2350": {
+  "name": "IntSet::insert",
+  "tag": "game-inferred",
+  "was": "FUN_002c2350",
+  "why": "MSL set<int>::insert instance: lower-bound walk, IntSet::insertNode 0x2c3c00 when absent; writes the pair {iterator, inserted} (bools from gp constants); packReadSheet"
+ },
+ "002c2410": {
+  "name": "IntSet::IntSet",
+  "tag": "game-inferred",
+  "was": "FUN_002c2410",
+  "why": "MSL set ctor instance: size 0, root 0, leftmost = header (this + 4) at +8; packReadSheet's local set"
+ },
+ "002c2430": {
+  "name": "std::string::replace_str",
+  "tag": "lib-context",
+  "was": "FUN_002c2430",
+  "why": "MSL basic_string::replace(pos, n, const basic_string &) instance forwarding to std::string::replace_range; std::string::operator="
+ },
+ "002c2480": {
+  "name": "std::string::find_char",
+  "tag": "lib-context",
+  "was": "FUN_002c2480",
+  "why": "MSL basic_string::find(char, pos) instance: first index of the byte from pos, else -1; packSplitFields testing delimiters"
+ },
+ "002c2510": {
+  "name": "EntryList::initCopy",
+  "tag": "game-inferred",
+  "was": "FUN_002c2510",
+  "why": "MSL vector<PackEntry> range-init instance: aborts on the too-large text, allocates (last - first) 16-byte elements, copy-constructs each {int, string}; EntryList::EntryList(copy) and ListMap::operator[]"
+ },
+ "002c2690": {
+  "name": "EntryList::erase",
+  "tag": "game-inferred",
+  "was": "FUN_002c2690",
+  "why": "MSL vector<PackEntry>::erase(first, last) instance: moves the tail down with EntryList::copy 0x2c27b0, frees the long strings left past the new end, size -= count; EntryList::resize"
+ },
+ "002c27b0": {
+  "name": "EntryList::copy",
+  "tag": "game-inferred",
+  "was": "FUN_002c27b0",
+  "why": "std::copy instance for PackEntry (forward, assignment: number, then the string by replace_range or a 12-byte short copy); EntryList::erase"
+ },
+ "002c28b0": {
+  "name": "EntryList::insertN",
+  "tag": "game-inferred",
+  "was": "FUN_002c28b0",
+  "why": "MSL vector<PackEntry>::insert(pos, n, value) instance (0x6b0 bytes): length checks against 0xfffffff, grows the capacity by doubling into a new buffer, else shifts with EntryList::copyBackward and fills with EntryList::fillN; EntryList::resize"
+ },
+ "002c2f60": {
+  "name": "EntryList::fillN",
+  "tag": "game-inferred",
+  "was": "FUN_002c2f60",
+  "why": "std::fill_n instance for PackEntry (assignment of value to n elements); EntryList::insertN"
+ },
+ "002c3060": {
+  "name": "EntryList::copyBackward",
+  "tag": "game-inferred",
+  "was": "FUN_002c3060",
+  "why": "std::copy_backward instance for PackEntry; EntryList::insertN"
+ },
+ "002c3160": {
+  "name": "StringVector::insertN",
+  "tag": "game-inferred",
+  "was": "FUN_002c3160",
+  "why": "MSL vector<string>::insert(pos, n, value) instance (12-byte elements, limit 0x15555555), the same shape as EntryList::insertN; packSplitFields' push_back"
+ },
+ "002c3980": {
+  "name": "StringVector::clear",
+  "tag": "game-inferred",
+  "was": "FUN_002c3980",
+  "why": "MSL vector<string> clear instance: destroys the strings backwards (frees the long ones), size 0; StringVector::~StringVector"
+ },
+ "002c3a20": {
+  "name": "ListMap::insertNode",
+  "tag": "game-inferred",
+  "was": "FUN_002c3a20",
+  "why": "MSL tree insert instance like NameMap::insertNode: 0x1c node, placement-constructs the {int, EntryList} pair with ListMap::Value::Value 0x2c3b70, links, size++, rebalances; ListMap::operator[]"
+ },
+ "002c3b70": {
+  "name": "ListMap::Value::Value",
+  "tag": "game-inferred",
+  "was": "FUN_002c3b70",
+  "why": "pair copy ctor instance: the int key, then EntryList::EntryList(copy) 0x2c3bb0 at +4; ListMap::insertNode"
+ },
+ "002c3bb0": {
+  "name": "EntryList::EntryList",
+  "tag": "game-inferred",
+  "was": "FUN_002c3bb0",
+  "why": "MSL vector<PackEntry> copy ctor instance: zeroes the three words, EntryList::initCopy over the other's [data, data + size * 0x10); ListMap::Value::Value"
+ },
+ "002c3c00": {
+  "name": "IntSet::insertNode",
+  "tag": "game-inferred",
+  "was": "FUN_002c3c00",
+  "why": "MSL tree insert instance for set<int>: 0x10 node, the int at +0xc, links, size++, rebalances, leftmost at +8; IntSet::insert"
  },
  "002c3d30": {
   "name": "getMenuPackItemSize",

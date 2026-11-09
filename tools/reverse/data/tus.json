@@ -946,7 +946,7 @@
    "why": "the number lock: the map object of oMK21_06 / oSJ08_07 (vtables 0x318870..0x318abc, ctor 0x2a7340, its thunks end at 0x2a7418) and its pose NmlPose (vtable 0x318b10, ctor 0x2a7a50 last); 0x2a7b10 starts the SigLamp run (vtable 0x318b30). Both tables sit together in .data, one file. The file name is the port's."
   },
   "game/packtables.cpp": {
-   "notes": "unassigned@00310a00 was CodeWarrior's 9 static initialisers (table 0x310fb0). Each is joined with tus.py define to the port file owning what it sets, as an FS2 comment at that global: packtables 0x310a00 (gDoorRecords), stageloop 0x310a20, stagescene 0x310a70 (dead copies of viewcamera.h's zoom pair), scriptrunner 0x310ac0 (a ScriptRunner at 0x577a60 nothing reads, not ported), playermotion 0x310b10 / 0x310ec0 / 0x310f10 (the zoom pairs read by setScope, SnipeCondition::onApply, ViewCamera::setZoom), uigame 0x310b60 (57 name pointers), stageresult 0x310f60 (gStageResult). ViewCamera::kZoomLow / kZoomSpan are now computed from kZoomPercent 30; the EE rounds toward zero so the ROM's values differ by one ulp (architecture.md Static initialisers). Smoke run 15 s: language screen as before. Next with the queue empty: unassigned@0017f040 (17), 00186a00 (4), 00283cb0 (3), 0021c290 (2), then the 1-function runs.",
+   "notes": "Every slice function was an out-of-line MSL member the host already has from the standard library: ListMap (map of int to EntryList), NameMap (map of string to int), EntryList (vector of PackEntry), IntSet (readSheet's set of int), StringVector (splitFields' vector of string), plus std::string c_str, operator==, operator=, find_char, compare_cstr, replace_str. The ledger after the includes in packtables.cpp maps each to its host form; the callcheck notes carry the new names. 0x2c1830 compares the first field with the empty string at 0x30b588, as the host's fields[0].empty(). callcheck.py now accepts + in note names (operator++). Which of the two iterator copies 0x2c0d00 / 0x2c0d50 is the const one is a guess. Smoke run 15 s: language screen as before. Next with the queue empty: game/stageitem.cpp, game/routeplayer.cpp, game/stagecharacter.cpp by score.",
    "ranges": [
     [
      "002bcd20",
@@ -967,6 +967,11 @@
      "date": "2026-11-07 20:38",
      "status": "verify",
      "summary": "static initialisers 0x310a00..0x310f80 named __sinit_*_cpp (batch 236) and joined to their owners' TUs"
+    },
+    {
+     "date": "2026-11-09 10:12",
+     "status": "verify",
+     "summary": "43 MSL map, set, vector and string instances 0x2c0d00..0x2c3d30 named (batch 244) and listed in a ledger; the TU counts 52 of 52"
     }
    ],
    "status": "verify",

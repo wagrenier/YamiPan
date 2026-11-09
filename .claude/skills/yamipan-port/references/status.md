@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-09 09:54 at commit `c8d01bb` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-09 10:12 at commit `ad97fd8` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-09 09:54 at commit `c8d01bb` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6598**, named **5879** (89%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1611, game-inferred 4946
-- context-name ledger: 6557 entries; overrides of wrong library matches: 0
+- game functions: **6598**, named **5922** (90%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1617, game-inferred 4983
+- context-name ledger: 6600 entries; overrides of wrong library matches: 0
 - placed in a source file: 6512/6598 in 139 files
 
 Least-named game-code regions (64 KB blocks):
@@ -25,12 +25,12 @@ Least-named game-code regions (64 KB blocks):
 | `001a0000` | 195/301 (65%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
 | `00250000` | 126/178 (71%) | game/routeplayer.cpp, game/uiwidget.cpp, game/uidrawer.cpp |
 | `00180000` | 240/336 (71%) | game/stageitem.cpp, game/stagelight.cpp, game/stageobject.cpp |
-| `002c0000` | 130/173 (75%) | game/kunitoris.cpp, game/packtables.cpp, game/stagefog.cpp |
 | `001f0000` | 158/185 (85%) | game/movieplayer.cpp, game/stageparty.cpp, game/scenerender.cpp |
+| `002e0000` | 160/178 (90%) | rena/rena_draw.cpp, rena/rena_model.cpp, game/layoutpaths.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5970**; stubs: **3**
+- reconstructed FS2 functions: **6013**; stubs: **3**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -76,7 +76,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/navimenu.cpp` | 30 | 0 |
 | `src/game/nodetransform.cpp` | 31 | 0 |
 | `src/game/numlock.cpp` | 27 | 0 |
-| `src/game/packtables.cpp` | 9 | 0 |
+| `src/game/packtables.cpp` | 52 | 0 |
 | `src/game/pad.cpp` | 14 | 0 |
 | `src/game/pakarchive.cpp` | 17 | 0 |
 | `src/game/pausemenu.cpp` | 7 | 0 |
@@ -219,7 +219,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/navimenu.cpp` 30/30 -- Seen in the user's own playthrough: after stage 1 the navigator appears, the cursor moves and picking the next node starts that stage. Not looked at: the overvi
 - verify: `game/nodetransform.cpp` 30/30 -- 0x186a00 setDirty, 0x186a10 rebuildMatrix, 0x186a20 getMatrix, 0x186a30 getWorldMatrix lie in the lights' run (stagelight.cpp 0x1866f0..0x186ee0) but are StageN
 - verify: `game/numlock.cpp` 27/29 -- Split off unassigned@002a6980 (batch 197). NumLock: map object of oMK21_06 / oSJ08_07, now built by createMapObject; kind 5; code from StageResult +0x90 (rename
-- verify: `game/packtables.cpp` 9/52 -- unassigned@00310a00 was CodeWarrior's 9 static initialisers (table 0x310fb0). Each is joined with tus.py define to the port file owning what it sets, as an FS2 
+- verify: `game/packtables.cpp` 52/52 -- Every slice function was an out-of-line MSL member the host already has from the standard library: ListMap (map of int to EntryList), NameMap (map of string to 
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
 - verify: `game/pausemenu.cpp` 7/7 -- New game/pausemenu.cpp and .h (PauseMenuChoice moved from gamehooks.h, PauseMenuScreen for answers 4..9, help pages 0 and 7). Fix outside the file: StageScene::
@@ -321,6 +321,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-09 10:12 `game/packtables.cpp` verify: 43 MSL map, set, vector and string instances 0x2c0d00..0x2c3d30 named (batch 244) and listed in a ledger; the TU counts 52 of 52
 - 2026-11-09 09:54 `game/playermotion.cpp` verify: GunMoveCondition::~GunMoveCondition 0x26d020 named and pinned (was unassigned@0026d020)
 - 2026-11-09 09:45 `game/scriptrunner.cpp` verify: 28 out-of-line inline copies on the frontier named (batch 242) and listed with the 6 ScriptRunner accessors in a ledger; scriptLabelCell is 0x1c97f0
 - 2026-11-09 08:27 `game/subsceneobject.cpp` verify: SubSceneModelObject dtor thunk 0x269da0 pinned (was unassigned@00269da0)
@@ -328,50 +329,49 @@ Recent sessions:
 - 2026-11-09 08:09 `game/playermotion.cpp` verify: 0x1e5d50..0x1e5d60 joined (was unassigned@001e5d50): MotionLink::onRun, the base's empty slot +0x1c, already in playermotion.h; batch 240 also named the empty d
 - 2026-11-09 07:55 `game/playermotion.cpp` verify: 0x21c290..0x21c300 joined (was unassigned@0021c290): StageCharacter::doorJustOpened and doorJustUnlocked, the door-state checks on what afterScripts keeps (+0x6
 - 2026-11-09 07:37 `game/playermotion.cpp` verify: 0x283cb0..0x283df0 joined (was unassigned@00283cb0): the deleting dtors of DriveLink, ApproachBiteLink and ApproachOutLink; their vtable stores give the ROM's t
-- 2026-11-09 07:26 `game/nodetransform.cpp` verify: StageNode's four inline slots 0x186a00..0x186a40 (was unassigned@00186a00) joined to game/nodetransform.cpp; the file's 14 header-written functions checked agai
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
-| `002c1430` | FUN_002c1430 | 115 | - | missing | game/packtables.cpp |
 | `00184370` | StageNodeList::erase | 88 | game | missing | game/stageitem.cpp |
 | `0017e260` | StageList<StageObject*>::erase | 54 | game | missing | game/stagecharacter.cpp |
 | `001842c0` | StageNodeList::pushBack | 38 | game | missing | game/stageitem.cpp |
 | `0017e1b0` | StageList<StageObject*>::pushBack | 25 | game | missing | game/stagecharacter.cpp |
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
-| `002c0d90` | FUN_002c0d90 | 18 | - | missing | game/packtables.cpp |
 | `002a7800` | NmlPose::getDial | 14 | game | missing | game/numlock.cpp |
-| `002c0d40` | FUN_002c0d40 | 12 | - | missing | game/packtables.cpp |
+| `0025a850` | mslTreeIncrement | 11 | lib-ctx | missing | game/routeplayer.cpp |
 | `002b3640` | SkyPose::getDial | 11 | game | missing | game/sevenkeys.cpp |
-| `002c0d80` | FUN_002c0d80 | 10 | - | missing | game/packtables.cpp |
 | `00228610` | FUN_00228610 | 9 | - | missing | game/characterroute.cpp |
 | `00236910` | BoundingSphere::BoundingSphere | 9 | game | missing | game/stagecollision.cpp |
-| `0025a850` | mslTreeIncrement | 9 | lib-ctx | missing | game/routeplayer.cpp |
 | `001f4e20` | FUN_001f4e20 | 8 | - | missing | game/stagecollision.cpp |
 | `00254f10` | FUN_00254f10 | 8 | - | missing | game/routeplayer.cpp |
 | `00254e40` | FUN_00254e40 | 8 | - | missing | game/routeplayer.cpp |
 | `001f4d30` | FUN_001f4d30 | 7 | - | missing | game/stagecollision.cpp |
 | `00206f80` | BearingVector::~BearingVector | 6 | lib-ctx | missing | game/stageparty.cpp |
+| `0025b590` | FUN_0025b590 | 6 | - | missing | game/routeplayer.cpp |
 | `001dd3f0` | CharacterBrain::setEnabled | 6 | game | missing | game/characterbrain.cpp |
 | `001871c0` | PartSwitch::~PartSwitch | 6 | game | missing | game/stagemodel.cpp |
 | `001f4c30` | FUN_001f4c30 | 6 | - | missing | game/stagecollision.cpp |
 | `00258ea0` | FUN_00258ea0 | 6 | - | missing | game/routeplayer.cpp |
 | `002dd6e0` | ClipIndexList::insert | 6 | game | missing | game/areaclip.cpp |
 | `001f4f20` | FUN_001f4f20 | 6 | - | missing | game/stagecollision.cpp |
-| `002c0db0` | FUN_002c0db0 | 6 | - | missing | game/packtables.cpp |
 | `00187220` | PartSwitch::PartSwitch | 5 | game | missing | game/stagemodel.cpp |
 | `00258f10` | FUN_00258f10 | 5 | - | missing | game/routeplayer.cpp |
 | `00255080` | FUN_00255080 | 5 | - | missing | game/routeplayer.cpp |
 | `001f4bb0` | FUN_001f4bb0 | 5 | - | missing | game/stagecollision.cpp |
-| `002c1670` | FUN_002c1670 | 5 | - | missing | game/packtables.cpp |
-| `002c16d0` | FUN_002c16d0 | 5 | - | missing | game/packtables.cpp |
-| `002c0d50` | FUN_002c0d50 | 5 | - | missing | game/packtables.cpp |
 | `002e7e90` | FUN_002e7e90 | 5 | - | missing | rena/rena_draw.cpp |
 | `00184260` | FUN_00184260 | 4 | - | missing | game/stageitem.cpp |
 | `00186b80` | FUN_00186b80 | 4 | - | missing | game/stagelight.cpp |
 | `001920d0` | WordVector::resize | 4 | lib-ctx | missing | game/stageparticle.cpp |
-| `002c16b0` | FUN_002c16b0 | 4 | - | missing | game/packtables.cpp |
-| `002c1710` | FUN_002c1710 | 4 | - | missing | game/packtables.cpp |
 | `001927b0` | WordVector::erase | 4 | lib-ctx | missing | game/stageparticle.cpp |
+| `002b3660` | SkyPose::setDial | 4 | game | missing | game/sevenkeys.cpp |
+| `00254fd0` | FUN_00254fd0 | 4 | - | missing | game/routeplayer.cpp |
+| `00254fc0` | FUN_00254fc0 | 4 | - | missing | game/routeplayer.cpp |
+| `00254fa0` | FUN_00254fa0 | 4 | - | missing | game/routeplayer.cpp |
+| `00254f90` | FUN_00254f90 | 4 | - | missing | game/routeplayer.cpp |
+| `00254f40` | FUN_00254f40 | 4 | - | missing | game/routeplayer.cpp |
+| `00254f30` | FUN_00254f30 | 4 | - | missing | game/routeplayer.cpp |
+| `00254f00` | FUN_00254f00 | 4 | - | missing | game/routeplayer.cpp |
+| `00254ef0` | FUN_00254ef0 | 4 | - | missing | game/routeplayer.cpp |
 

@@ -8419,53 +8419,53 @@
 /* 002bcd80 000000e4 */ PackTables::doorText(){}  // game
 /* 002bce70 00000098 */ PackTables::doorNumber(){}  // game
 /* 002bcf10 00003de8 */ PackTables::parse(){}  // game
-/* 002c0d00 00000028 */ FUN_002c0d00(){}
-/* 002c0d30 00000010 */ FUN_002c0d30(){}
-/* 002c0d40 0000000c */ FUN_002c0d40(){}
-/* 002c0d50 00000028 */ FUN_002c0d50(){}
-/* 002c0d80 00000010 */ FUN_002c0d80(){}
-/* 002c0d90 00000018 */ FUN_002c0d90(){}
-/* 002c0db0 0000000c */ FUN_002c0db0(){}
+/* 002c0d00 00000028 */ ListMap::const_iterator::operator++(){}  // game
+/* 002c0d30 00000010 */ ListMap::const_iterator::const_iterator(){}  // game
+/* 002c0d40 0000000c */ ListMap::end(){}  // game
+/* 002c0d50 00000028 */ ListMap::iterator::operator++(){}  // game
+/* 002c0d80 00000010 */ ListMap::iterator::iterator(){}  // game
+/* 002c0d90 00000018 */ std::string::c_str(){}  // lib-ctx
+/* 002c0db0 0000000c */ ListMap::begin(){}  // game
 /* 002c0dc0 000000a0 */ PackTables::PackTables(){}  // game
-/* 002c0e60 00000090 */ FUN_002c0e60(){}
+/* 002c0e60 00000090 */ std::operator==(const_string&,const_string&)(){}  // lib-ctx
 /* 002c0ef0 0000053c */ packReadSheet(){}  // game
-/* 002c1430 00000184 */ FUN_002c1430(){}
-/* 002c15c0 000000a8 */ FUN_002c15c0(){}
-/* 002c1670 00000040 */ FUN_002c1670(){}
-/* 002c16b0 00000020 */ FUN_002c16b0(){}
-/* 002c16d0 00000040 */ FUN_002c16d0(){}
-/* 002c1710 00000020 */ FUN_002c1710(){}
+/* 002c1430 00000184 */ NameMap::operator[](){}  // game
+/* 002c15c0 000000a8 */ NameMap::find(){}  // game
+/* 002c1670 00000040 */ ListMap::clear(){}  // game
+/* 002c16b0 00000020 */ ListMap::ListMap(){}  // game
+/* 002c16d0 00000040 */ NameMap::clear(){}  // game
+/* 002c1710 00000020 */ NameMap::NameMap(){}  // game
 /* 002c1730 000000f4 */ StringList::at(){}  // game
-/* 002c1830 0000006c */ FUN_002c1830(){}
+/* 002c1830 0000006c */ std::string::compare_cstr(){}  // lib-ctx
 /* 002c18a0 00000270 */ packSplitFields(){}  // game
-/* 002c1b10 00000178 */ FUN_002c1b10(){}
-/* 002c1c90 00000074 */ FUN_002c1c90(){}
-/* 002c1d10 00000074 */ FUN_002c1d10(){}
-/* 002c1d90 0000007c */ FUN_002c1d90(){}
-/* 002c1e10 000000c4 */ FUN_002c1e10(){}
-/* 002c1ee0 0000006c */ FUN_002c1ee0(){}
-/* 002c1f50 00000198 */ FUN_002c1f50(){}
-/* 002c20f0 00000220 */ FUN_002c20f0(){}
-/* 002c2310 0000000c */ FUN_002c2310(){}
-/* 002c2320 00000008 */ FUN_002c2320(){}
-/* 002c2330 00000004 */ FUN_002c2330(){}
-/* 002c2340 00000008 */ FUN_002c2340(){}
-/* 002c2350 000000bc */ FUN_002c2350(){}
-/* 002c2410 00000020 */ FUN_002c2410(){}
-/* 002c2430 00000050 */ FUN_002c2430(){}
-/* 002c2480 00000080 */ FUN_002c2480(){}
-/* 002c2510 00000180 */ FUN_002c2510(){}
-/* 002c2690 00000114 */ FUN_002c2690(){}
-/* 002c27b0 000000f8 */ FUN_002c27b0(){}
-/* 002c28b0 000006b0 */ FUN_002c28b0(){}
-/* 002c2f60 000000fc */ FUN_002c2f60(){}
-/* 002c3060 000000fc */ FUN_002c3060(){}
-/* 002c3160 00000820 */ FUN_002c3160(){}
-/* 002c3980 00000094 */ FUN_002c3980(){}
-/* 002c3a20 00000144 */ FUN_002c3a20(){}
-/* 002c3b70 00000038 */ FUN_002c3b70(){}
-/* 002c3bb0 0000004c */ FUN_002c3bb0(){}
-/* 002c3c00 00000130 */ FUN_002c3c00(){}
+/* 002c1b10 00000178 */ ListMap::operator[](){}  // game
+/* 002c1c90 00000074 */ ListMap::find(){}  // game
+/* 002c1d10 00000074 */ IntSet::find(){}  // game
+/* 002c1d90 0000007c */ std::string::operator=(){}  // lib-ctx
+/* 002c1e10 000000c4 */ EntryList::resize(){}  // game
+/* 002c1ee0 0000006c */ StringVector::~StringVector(){}  // game
+/* 002c1f50 00000198 */ NameMap::insertNode(){}  // game
+/* 002c20f0 00000220 */ IntSet::eraseTree(){}  // game
+/* 002c2310 0000000c */ IntSet::freeNode(){}  // game
+/* 002c2320 00000008 */ IntSet::getNodeAllocator(){}  // game
+/* 002c2330 00000004 */ IntSet::destroyValue(){}  // game
+/* 002c2340 00000008 */ IntSet::getValueAllocator(){}  // game
+/* 002c2350 000000bc */ IntSet::insert(){}  // game
+/* 002c2410 00000020 */ IntSet::IntSet(){}  // game
+/* 002c2430 00000050 */ std::string::replace_str(){}  // lib-ctx
+/* 002c2480 00000080 */ std::string::find_char(){}  // lib-ctx
+/* 002c2510 00000180 */ EntryList::initCopy(){}  // game
+/* 002c2690 00000114 */ EntryList::erase(){}  // game
+/* 002c27b0 000000f8 */ EntryList::copy(){}  // game
+/* 002c28b0 000006b0 */ EntryList::insertN(){}  // game
+/* 002c2f60 000000fc */ EntryList::fillN(){}  // game
+/* 002c3060 000000fc */ EntryList::copyBackward(){}  // game
+/* 002c3160 00000820 */ StringVector::insertN(){}  // game
+/* 002c3980 00000094 */ StringVector::clear(){}  // game
+/* 002c3a20 00000144 */ ListMap::insertNode(){}  // game
+/* 002c3b70 00000038 */ ListMap::Value::Value(){}  // game
+/* 002c3bb0 0000004c */ EntryList::EntryList(){}  // game
+/* 002c3c00 00000130 */ IntSet::insertNode(){}  // game
 
 // *****************************************************************************
 // FILE -- game/menupack.cpp

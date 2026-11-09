@@ -829,7 +829,7 @@ columns ラベル / ctype / SEtype, then both are freed: where the parsed data g
 `getInitItemForLanguage` 0x2afc20 / `getInitItem21` 0x2afcd0 (init items 0x15..0x1a by language).
 **MSL map: {tree root +4, ...} 0x10 bytes; nodes {left +0, right +4, .., value +0xc}; MSL string
 0xc {bit 0 of +0: heap buffer at +8}** (0x297fb0); CodeWarrior emits the map / vector instances
-between the file's last function and its static destructor.
+between the file's last function and its static destructor. **packtables.cpp's 43 instances are named (batch 244, ledger in the file):** a map is {size +0, root +4, compare byte +8, leftmost +0xc} (a set: leftmost +8), end() is map + 4; nodes 0x1c (NameMap, ListMap) / 0x10 (IntSet) with {left, right, parent | colour bit 0, value +0xc}; `insertNode` aborts on size == -1, then rebalances with 0x25b590; a vector is {capacity +0, size +4, data +8} (EntryList 0x10 elements, StringVector 0xc), growth doubles the capacity.
 
 **`game/screen.cpp` 0x2676e0..0x2681e0 (TU 14, 2026-11-03, batch 037, all 18 written, `verify`; the
 file name is the port's)**: the 2D screens around the game. **Overlay thread** slot 6
