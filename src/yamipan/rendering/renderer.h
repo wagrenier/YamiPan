@@ -102,7 +102,7 @@ private:
     void recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout,
                      const std::vector<ModelPass> *passes);
     // The share of the way from m_previous to m_shown this present draws, 1 for m_shown itself; fills
-    // m_blendedPasses when below 1.
+    // m_blendedPasses, and the blended instances and palettes, when below 1.
     float blendNow();
     void recordUi(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout, std::size_t first,
                   std::size_t last, bool clear);
@@ -154,6 +154,10 @@ private:
     // The one before it, which smooth motion blends from.
     std::unique_ptr<Frame> m_previous;
     std::vector<ModelPass> m_blendedPasses;
+    std::vector<ModelInstance> m_blendedInstances;
+    std::vector<std::array<float, 16>> m_blendedPalettes;
+    std::size_t m_blendedPlacements = 0; // matrices blendNow moved; 0: the frame's own placements
+    bool m_placementsBlended = false;    // what the model renderer's buffers hold
     float m_drawnBlend = 1.0f;  // what the scene target holds
     float m_fixedBlend = -1.0f; // YAMIPAN_BLEND_ALPHA: every blendable present at this share (shots); below 0 off
     bool m_logBlend = false;    // YAMIPAN_BLEND_LOG: a line per present

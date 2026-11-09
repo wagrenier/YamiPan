@@ -68,8 +68,9 @@ src/yamipan/
   rendering/
            DisplayGeometry       THE source of display size and aspect (port feature #1)
            Renderer              the render thread: frames in, pictures out
-           FrameBlend            smooth motion: between two game frames, each model pass's camera
-                                 blended by the time since the newer frame's field (roadmap-framerate.md)
+           FrameBlend            smooth motion: between two game frames, the cameras, lights, model
+                                 instances and bones blended by the time since the newer frame's field
+                                 (roadmap-framerate.md)
            UiCanvas              the game's 2D draw module (game/uidrawer.cpp & co call it)
            ModelRenderer         the game's 3D draw module (rena/rena_draw.cpp calls it): lights and
                                  places batches, draws them with a depth buffer

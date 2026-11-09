@@ -1,8 +1,8 @@
-// Smooth motion, step one: the camera. The ROM makes a frame every two fields (25 a second on PAL) and the render
-// thread presents more often than that. Between two game frames it draws the newer one with each model pass's
-// camera moved part of the way from the older frame's: the picture runs one game frame behind and the world turns
-// and slides at the monitor's rate. What is drawn, and where the objects stand, is still the newer frame's
-// (roadmap-framerate.md, option A; the objects and bones are its next step).
+// Smooth motion. The ROM makes a frame every two fields (25 a second on PAL) and the render thread presents more
+// often than that. Between two game frames it draws the newer one with the cameras, the lights' places and every
+// model's placement (its instance matrix, its bones) moved part of the way from the older frame's: the picture runs
+// one game frame behind and moves at the monitor's rate. What is drawn is still the newer frame's
+// (roadmap-framerate.md, option A). Not blended yet: particles and what the game projects to 2D itself.
 #pragma once
 
 #include <chrono>
@@ -26,6 +26,13 @@ public:
     // `current`'s passes with each camera (the world -> screen matrix and the eye) moved from `previous`'s by
     // `alpha`. False when the passes do not pair up, or when the camera cut: a jump or a turn no game frame makes.
     static bool blendPasses(const Frame &previous, const Frame &current, float alpha, std::vector<ModelPass> &out);
+
+    // `current`'s instances and palettes with each one that pairs with one of `previous` (ModelPlacementKey) moved
+    // from it by `alpha`. One that has no partner, or whose partner is too far off to be the same thing a frame
+    // earlier, stays as it is. Answers how many matrices were blended.
+    static std::size_t blendPlacements(const Frame &previous, const Frame &current, float alpha,
+                                       std::vector<ModelInstance> &instances,
+                                       std::vector<std::array<float, 16>> &palettes);
 };
 
 } // namespace yamipan::rendering

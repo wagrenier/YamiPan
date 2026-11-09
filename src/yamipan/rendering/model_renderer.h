@@ -58,6 +58,9 @@ public:
     void ensureDepth(int width, int height);
     // The frame's vertices and instances, and the batches cached since the last call, whatever frame they are for.
     void uploadVertices(SDL_GPUCopyPass *copy, const Frame &frame);
+    // Only the instances and the palettes, the parts smooth motion blends: what the passes read until the next upload.
+    void uploadPlacements(SDL_GPUCopyPass *copy, const std::vector<ModelInstance> &instances,
+                          const std::vector<std::array<float, 16>> &palettes);
     void recordPass(SDL_GPUCommandBuffer *commands, const Frame &frame, const ModelPass &pass, SDL_GPUTexture *scene,
                     SDL_GPUTexture *white, const PictureLayout &layout);
 
@@ -123,6 +126,8 @@ private:
         std::vector<ModelShadowVertex> shadowVertices;
         std::vector<ModelInstance> instances;
         std::vector<std::array<float, 16>> palettes;
+        std::vector<ModelPlacementKey> instanceKeys; // one per instance
+        std::vector<ModelPaletteRun> paletteRuns;
         const float *lastPalette = nullptr; // the palette the last skinned batch took, and where it went
         std::uint32_t lastPaletteBase = 0;
         std::uint32_t lastPaletteSize = 0;

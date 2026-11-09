@@ -159,7 +159,7 @@ private:
         }
 
         ImGui::Separator();
-        if (ImGui::Checkbox("Smooth camera", &display.smoothMotion))
+        if (ImGui::Checkbox("Smooth motion", &display.smoothMotion))
             m_config.save();
         const rendering::Renderer::Stats stats = m_application.renderer().stats();
         ImGui::TextDisabled("  game %.1f fps, shown %.1f, blended %.1f", stats.gameRate, stats.presentRate,

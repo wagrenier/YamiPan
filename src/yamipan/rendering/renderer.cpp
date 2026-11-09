@@ -389,6 +389,7 @@ void Renderer::recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, c
 
 float Renderer::blendNow()
 {
+    m_blendedPlacements = 0;
     if (!m_config.display.smoothMotion || m_previous == nullptr || m_shown == nullptr)
         return 1.0f;
     const std::optional<float> progress = FrameBlend::progress(*m_previous, *m_shown, FrameBlend::Clock::now());
@@ -397,6 +398,8 @@ float Renderer::blendNow()
     const float alpha = m_fixedBlend >= 0.0f ? m_fixedBlend : *progress;
     if (alpha >= 1.0f || !FrameBlend::blendPasses(*m_previous, *m_shown, alpha, m_blendedPasses))
         return 1.0f;
+    m_blendedPlacements =
+        FrameBlend::blendPlacements(*m_previous, *m_shown, alpha, m_blendedInstances, m_blendedPalettes);
     return alpha;
 }
 
@@ -612,8 +615,15 @@ void Renderer::renderOnce()
         std::string eyes;
         for (const ModelPass &pass : passes)
             eyes += std::format(" eye {:.3f} {:.3f} {:.3f}", pass.lights.eye[0], pass.lights.eye[1], pass.lights.eye[2]);
-        log::info("[blend] frame {} +{:.1f} ms blend {:.3f}{}{}", m_shown->number, sinceField, blend,
-                  newFrame ? " new" : "", eyes);
+        // The first skinned model's first bone as drawn (usually the player): it should move every present too.
+        const std::vector<std::array<float, 16>> &palettes =
+            blend < 1.0f && m_blendedPlacements != 0 ? m_blendedPalettes : m_shown->modelPalettes;
+        std::string bone;
+        if (!palettes.empty())
+            bone = std::format(" bone {:.3f} {:.3f} {:.3f}", palettes[0][12], palettes[0][13], palettes[0][14]);
+        log::info("[blend] frame {} +{:.1f} ms blend {:.3f} places {}/{}{}{}{}", m_shown->number, sinceField, blend,
+                  m_blendedPlacements, m_shown->modelInstances.size() + m_shown->modelPalettes.size(),
+                  newFrame ? " new" : "", bone, eyes);
     }
 
     m_overlay.beginFrame();
@@ -640,6 +650,21 @@ void Renderer::renderOnce()
         uploadImages(copy, *m_shown);
         uploadVertices(copy, *m_shown);
         m_models.uploadVertices(copy, *m_shown);
+        m_placementsBlended = false;
+    }
+    if (redraw && m_shown != nullptr)
+    {
+        // The blended places over the frame's own, and the frame's own back once the blend has reached it.
+        if (blend < 1.0f && m_blendedPlacements != 0)
+        {
+            m_models.uploadPlacements(copy, m_blendedInstances, m_blendedPalettes);
+            m_placementsBlended = true;
+        }
+        else if (m_placementsBlended)
+        {
+            m_models.uploadPlacements(copy, m_shown->modelInstances, m_shown->modelPalettes);
+            m_placementsBlended = false;
+        }
     }
     SDL_EndGPUCopyPass(copy);
 

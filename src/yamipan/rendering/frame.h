@@ -209,6 +209,25 @@ struct ModelGeometryChunk
     gpu::Buffer indices;
 };
 
+// What pairs a placement (an instance, or a run of palette matrices) with the same one in the next frame, for
+// smooth motion: the game's model that drew it and the geometry of the first batch that took it. Identities only,
+// never read through. A frame can hold a key more than once; the n-th of one frame pairs with the n-th of the other.
+struct ModelPlacementKey
+{
+    const void *owner = nullptr; // null: never paired
+    const void *geometry = nullptr;
+
+    bool operator==(const ModelPlacementKey &) const = default;
+};
+
+// A skinned batch's matrices in Frame::modelPalettes, and their key.
+struct ModelPaletteRun
+{
+    ModelPlacementKey key;
+    std::uint32_t first = 0;
+    std::uint32_t count = 0;
+};
+
 // One cached batch: its triangles in a chunk, and the instance that places and lights them.
 struct ModelBatchDraw
 {
@@ -288,6 +307,8 @@ struct Frame
     std::vector<ModelShadowVertex> modelShadowVertices;
     std::vector<ModelInstance> modelInstances;
     std::vector<std::array<float, 16>> modelPalettes; // skinned batches' bone matrices, sceVu0 layout
+    std::vector<ModelPlacementKey> modelInstanceKeys; // one per modelInstances
+    std::vector<ModelPaletteRun> modelPaletteRuns;    // covering modelPalettes
     std::vector<ModelBatchDraw> modelBatches;
     std::vector<std::shared_ptr<ModelGeometryChunk>> modelChunks; // what modelBatches draw from, kept alive
     std::vector<ModelDraw> modelDraws;
@@ -306,6 +327,8 @@ struct Frame
         modelShadowVertices.clear();
         modelInstances.clear();
         modelPalettes.clear();
+        modelInstanceKeys.clear();
+        modelPaletteRuns.clear();
         modelBatches.clear();
         modelChunks.clear();
         modelDraws.clear();
