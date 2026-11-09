@@ -133,12 +133,20 @@ speed between presents runs smoothly across game frames (an easing camera: 29.4,
 units/s from one present to the next, with no step where a new frame arrives), where unblended it moves once a game
 frame. The rest at 1.0: presents after a frame's
 full 40 ms (correct), the stage's first frames, and three frames whose predecessor the mailbox had dropped while
-the render thread wrote a shot (the overtaken-frame fix above; built, **not run yet**: Smart App Control blocked the
-next exe, hazards.md). The shots show stage 7 drawn correctly under a blended camera.
+the render thread wrote a shot. The shots show stage 7 drawn correctly under a blended camera.
+
+**Seen again on stage 2** (`YAMIPAN_TELEPORT=2`, 45 s, walking and turning with the left stick), with the
+overtaken-frame fix: 1,265 of 1,324 presents blended; the only unblended presents with passes are after a frame's
+full 40 ms and the stage's first frame. Writing a shot holds the render thread about 300 ms (6 to 8 game frames go
+by unshown); the first present after it blends from the overtaken frame (230 -> 238 at 0.258), as meant. The shots
+show the girl in the rain woods drawn correctly.
+
+**The test scene is stage 2** (the user, 2026-11-09): stage 7 is a poor one for walking, its opening takes control
+away for a tutorial prompt after a few steps. `build.py --run 45 --pad "350:LSUP*200,560:LSLEFT*60,640:LSUP*150,
+800:LSRIGHT*60,870:LSUP*150" --env YAMIPAN_TELEPORT=2 --env YAMIPAN_BLEND_LOG=1`.
 
 **Known limit until step 3:** objects stand where the newer frame has them while the camera blends, so a character
-the camera follows can judder against a smooth background by up to one frame's step. Stage 7 is a poor scene for the
-walking check: its opening takes control away for a tutorial prompt after a few steps (the user, 2026-11-09).
+the camera follows can judder against a smooth background by up to one frame's step.
 
 **Next:** step 3 (objects and bones), keyed by the game's `ModelInstance *` through `YamiPan_ModelDrawBatch`; the
 instances and palettes then need uploading per blended present.
