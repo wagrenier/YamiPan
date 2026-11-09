@@ -3,6 +3,7 @@
 // (game/seplayer.h).
 
 #include "game/seplayer.h"
+#include "game/gamerate.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -851,7 +852,7 @@ static int voiceLevel(const SeVoice &v, int master)
 void SePlayer::update()
 {
     bool fading = false;
-    if (m_masterFadeFrames >= 0) {
+    if (m_masterFadeFrames >= 0 && palTicks() != 0) {   // PC: game_rate, 25 Hz frames (game/gamerate.h)
         m_masterFadeFrame++;
         fading = true;
         if (m_masterFadeFrame < m_masterFadeFrames) {

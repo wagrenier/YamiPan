@@ -315,6 +315,14 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 ## Build and run
 
+- **A new worktree's first build takes RosePan's ImGui, ImPlot and SDL** (2026-11-09). Symptom: in a fresh
+  `git worktree` (here `../YamiPan-rate`), `build.py` configures, compiles most files, then
+  `src/yamipan/ui/panels.cpp` fails with `no matching function for call to 'PlotLine(...)'`. Cause: the first
+  configure reuses a sibling's fetched sources (build.py's docstring), RosePan's, whose ImPlot is older than
+  YamiPan's v0.17. Fix: point the worktree's build at the main checkout's own copies, then build again:
+  `cmake -S . -B cmake-build-relwithdebinfo -DFETCHCONTENT_SOURCE_DIR_IMGUI=<main>/cmake-build-relwithdebinfo/_deps/imgui-src`
+  (and `_IMPLOT` / `_SDL3` the same). The build also rewrites `resources/shaders/msl/*.msl` there: not changes,
+  never commit them. Copy `tools/reverse/work/feat_fs2.json` across for callcheck.
 - **Smart App Control blocks the freshly built exe** (2026-11-09). Symptom: `build.py --run` (and
   `tus.py check --run`) builds green, then fails with `OSError: [WinError 4551] An Application Control
   policy has blocked this file`; no shots. Cause: Windows Code Integrity, policy

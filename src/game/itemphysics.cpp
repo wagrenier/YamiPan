@@ -9,6 +9,7 @@
  *  really went and turns the owner's matrix to match.
  * ======================================================================== */
 #include "game/itemphysics.h"
+#include "game/gamerate.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -283,6 +284,10 @@ void ItemPhysics::endFrame()
 {
     if (m_owner == nullptr || !m_moving)
         return;
+    // PC: game_rate (game/gamerate.h): a body's simulation (Verlet steps of a 25 Hz frame, its gravity, damping,
+    // link stiffness and landing speed all in those steps) runs whole 25 Hz frames, as the ROM's.
+    if (palTicks() == 0)
+        return;
     for (int i = 0; i < m_nodeCount; i++) {
         ItemNode &node = m_nodes[i];
         for (int lane = 0; lane < 4; lane++)
@@ -322,6 +327,8 @@ void ItemPhysics::endFrame()
 void ItemPhysics::update()
 {
     if (!m_moving)
+        return;
+    if (palTicks() == 0)   // PC: game_rate, as endFrame
         return;
     for (int i = 0; i < m_nodeCount; i++)
         addTo(m_nodes[i].position, m_nodes[i].velocity);
@@ -406,7 +413,8 @@ bool ItemPhysics::keepsMoving()
         m_stillSeconds = 0.0f;
         return true;
     }
-    m_stillSeconds += gStageScene->clock->getDeltaSeconds();
+    // PC: game_rate: called once a 25 Hz frame (endFrame), so it adds a 25 Hz frame's seconds; the ROM's dt at 25.
+    m_stillSeconds += gStageScene->clock->getDeltaSeconds() / palScale();
     return m_stillSeconds < kStillSeconds;
 }
 

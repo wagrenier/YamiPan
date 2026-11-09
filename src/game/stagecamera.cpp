@@ -11,6 +11,8 @@
  *  origin, which on stage 1 is empty space far from the map: native 0x70 links
  *  it to the player.
  * ======================================================================== */
+#include "game/gamerate.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -431,7 +433,7 @@ void StageMainCamera::cameraStep()
 
     if (linked->m_290 == nullptr) {
         if (m_zoom > 0.0f) {
-            m_zoom -= kZoomStep;
+            m_zoom -= kZoomStep * palScale();   // PC: game_rate, a step a 25 Hz frame (game/gamerate.h)
             if (m_zoom < 0.0f)
                 m_zoom = 0.0f;
             setScrZ(m_zoom + kMainCameraScrZ);
@@ -458,8 +460,10 @@ void StageMainCamera::cameraStep()
                 eye[0] += (float)(side * (1.0 - fabsf(linked->m_input->lookYaw())));
             }
             const float rate = 1.0f / (followDivisor * kOffsetEaseScale);
-            approachVec3(rate, kFollowMaxStep, m_focusOffset, m_focusOffset, focus);
-            approachVec3(rate, kFollowMaxStep, m_eyeOffset, m_eyeOffset, eye);
+            // PC: game_rate: the eases are steps of a 25 Hz frame, so a shorter frame takes that share of the rate
+            // and of the cap (game/gamerate.h; framerate-inventory.md fix Q, here as Euler at the finer step).
+            approachVec3(rate * palScale(), kFollowMaxStep * palScale(), m_focusOffset, m_focusOffset, focus);
+            approachVec3(rate * palScale(), kFollowMaxStep * palScale(), m_eyeOffset, m_eyeOffset, eye);
         }
         vecCopy(focus, m_focusOffset);
         vecCopy(eye, m_eyeOffset);
@@ -552,7 +556,7 @@ void StageMainCamera::cameraStep()
         // Over the shoulder: zoomed in, looking at the character's aim from the
         // first of the seven places both rays reach.
         if (m_zoom < kZoomShoulder) {
-            m_zoom += kZoomStep;
+            m_zoom += kZoomStep * palScale();   // PC: game_rate, a step a 25 Hz frame
             if (m_zoom > kZoomShoulder)
                 m_zoom = kZoomShoulder;
             setScrZ(m_zoom + kMainCameraScrZ);
@@ -607,7 +611,7 @@ void StageMainCamera::cameraStep()
         }
         else if (m_blockedFrames < kBlockedForever
                  && !scene->segmentHitsAny(wanted, m_xform.position, 0, kCameraRayMask, kCameraRayFlags, skip)) {
-            m_blockedFrames++;
+            m_blockedFrames += palTicks();   // PC: game_rate, 25 Hz frames
         }
         else {
             wanted[0] = hit[0];
@@ -686,7 +690,8 @@ void StageMainCamera::cameraStep()
             const float towards = vecDot(looking, going);
             if (towards > 0.0f)
                 followDivisor = towards * kFacingEaseMax + followDivisor + 0.0f;
-            approachVec3(1.0f / followDivisor, kFollowMaxStep, m_xform.position, m_xform.position, wanted);
+            approachVec3(palScale() / followDivisor, kFollowMaxStep * palScale(), m_xform.position, m_xform.position,
+                         wanted);   // PC: game_rate, as the offsets' eases above
         }
 
         const CollisionBody *volume = linked->m_ground->volume;
@@ -715,7 +720,8 @@ void StageMainCamera::cameraStep()
         }
 
         if (m_snap == 0)
-            approachVec3(kLookEaseRate, kLookMaxStep, m_lookTarget, m_lookTarget, focusPoint);
+            approachVec3(kLookEaseRate * palScale(), kLookMaxStep * palScale(), m_lookTarget, m_lookTarget,
+                         focusPoint);   // PC: game_rate, as above
         else
             vecCopy(m_lookTarget, focusPoint);
         aimFrom(m_lookTarget, m_xform.position);
@@ -731,7 +737,7 @@ void StageMainCamera::cameraStep()
                 turn[0] = pitchStick * (m_xform.rotation[0] + kPitchDownLimit);
         }
         if (m_snap == 0) {
-            approachVec3(kTurnEaseRate, kTurnMaxStep, m_turn, m_turn, turn);
+            approachVec3(kTurnEaseRate * palScale(), kTurnMaxStep * palScale(), m_turn, m_turn, turn);   // PC: game_rate
         }
         else {
             m_turn[0] = turn[0];

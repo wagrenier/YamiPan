@@ -1,6 +1,7 @@
 // game/gamesystem.cpp -- main, the boot, the main loop and GameSystem (game/gamesystem.h).
 
 #include "game/gamesystem.h"
+#include "yamipan/os/yamipan_time.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -172,6 +173,33 @@ void GameSystem::flipFrame(int vsyncs)
 }
 
 // ──────────────────────────────────────────────────────────────────────
+// PC: the native frame rate (game/gamerate.h). The master clock's own ticks say which 25 Hz frames ended: it is the
+// root and never paused, and flipFrame advances it before the frame's work.
+
+int gameVsyncsPerFrame()
+{
+    return YamiPan_GameRate() == 50 ? 1 : kVsyncsPerFrame;
+}
+
+int gameClockTicksPerFrame()
+{
+    return kClockTicksPerFrame * gameVsyncsPerFrame() / kVsyncsPerFrame;
+}
+
+int palTicks()
+{
+    if (gameVsyncsPerFrame() == kVsyncsPerFrame)
+        return 1;   // the ROM's pace: every frame is one, from the first
+    const MasterClock &clock = gGameSystem->m_clock;
+    return (int)(clock.m_time / kClockTicksPerFrame - (clock.m_time - clock.m_delta) / kClockTicksPerFrame);
+}
+
+float palScale()
+{
+    return (float)gameClockTicksPerFrame() / (float)kClockTicksPerFrame;
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // The global object: three pads (port 0, port 1, port 1 masked) whose maps
 // point at the options' one, the packet manager on the two frame buffers,
 // the debug meter and the master clock (12 ticks per 2-vsync frame).
@@ -185,7 +213,7 @@ GameSystem::GameSystem()
       m_maskedPad(1, true),
       m_packets(sPacketBuffer0, kPacketBufferSize, sPacketBuffer1, kPacketBufferSize),
       m_perfMeter(48, 32, 470, 192, 24),
-      m_clock(kClockTicksPerFrame, kVsyncsPerFrame, false, true)
+      m_clock(gameClockTicksPerFrame(), gameVsyncsPerFrame(), false, true)   // PC: the ROM's (12, 2) at game_rate 25
 {
     ButtonMap *map = &getGameOptions()->buttonMap;
     m_pad0.m_optionsMap = map;
@@ -364,7 +392,7 @@ int main(int argc, char **argv)
     gameInit(argv[0]);
     gArgc = argc;
     gArgv = argv;
-    threadSysInit(gameFrameReady, kVsyncsPerFrame);
+    threadSysInit(gameFrameReady, gameVsyncsPerFrame());   // PC: the ROM's 2 at game_rate 25
     gGfxPutDrawEnv = 1;
     gGfxKickDisplayPacket = 1;
     gGfxFlipNoPackets = 0;

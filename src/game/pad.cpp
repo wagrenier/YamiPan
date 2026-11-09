@@ -1,6 +1,7 @@
 // game/pad.cpp -- the pad layer: libpad's ports and Pad (game/pad.h).
 
 #include "game/pad.h"
+#include "game/gamerate.h"
 
 #include <string.h>
 
@@ -159,6 +160,9 @@ void Pad::updateRepeat()
             r->count = 0;
             repeat |= bit;
         } else if (held & bit) {
+            // PC: game_rate (game/gamerate.h): the repeat counts 25 Hz frames.
+            if (palTicks() == 0)
+                continue;
             r->count++;
             int first = r->first;
             if (first <= r->count && (r->count - first) % (r->next - first) == 0)

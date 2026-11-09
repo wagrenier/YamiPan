@@ -15,6 +15,7 @@
 #include <ctype.h>
 #include <float.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <string>
@@ -3159,6 +3160,19 @@ void StageScene::update()
     updateVcms();
     drawSysTick((int)(clock->getDeltaSeconds() * kDrawSysTicksPerSecond));
     frameCount++;
+
+    // PC: YAMIPAN_RATE_LOG, a line a game frame for comparing game rates (roadmap-framerate.md "Native 60 Hz"): the
+    // master clock's and the stage clock's seconds, the player's position and the top view's (the camera's).
+    static const bool sRateLog = getenv("YAMIPAN_RATE_LOG") != nullptr;
+    if (sRateLog) {
+        const StageObject *view = getTopView();
+        const float *at = player != nullptr ? player->m_xform.position : nullptr;
+        const float *eye = view != nullptr ? view->m_xform.position : nullptr;
+        printf("[rate] frame %d t %.4f stage %.4f player %.2f %.2f %.2f eye %.2f %.2f %.2f\n", frameCount,
+                    gGameSystem->m_clock.getSeconds(), clock->getSeconds(), at ? at[0] : 0.0f, at ? at[1] : 0.0f,
+                    at ? at[2] : 0.0f, eye ? eye[0] : 0.0f, eye ? eye[1] : 0.0f, eye ? eye[2] : 0.0f);
+        fflush(stdout);
+    }
 }
 
 // ──────────────────────────────────────────────────────────────────────

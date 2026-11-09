@@ -7,6 +7,7 @@
  *  3D draw module as quads in view space.
  * ======================================================================== */
 #include "game/stageparticle.h"
+#include "game/gamerate.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -339,6 +340,15 @@ void StageParticle::stepColor(Particle &particle) const
     }
 }
 
+// PC: game_rate (game/gamerate.h): position += velocity x share, the xyz lanes as addVector3 adds them; a share of
+// 1 (the ROM's pace) is addVector3 to the bit.
+
+static void moveShare(sceVu0FVECTOR position, const sceVu0FVECTOR velocity, float share)
+{
+    for (int axis = 0; axis < 3; axis++)
+        position[axis] += velocity[axis] * share;
+}
+
 // One particle's frame; emitPoint is what attract pulls it to. A part of
 // StageParticle::update.
 
@@ -346,7 +356,13 @@ void StageParticle::stepParticle(Particle &particle, StageNodeTree *tree, const 
 {
     const ParticleDef *def = m_def;
     const bool local = (def->flags & ParticleFlag_Local) != 0;
+    // PC: game_rate (game/gamerate.h): the velocity, age, life, colour, size and sprite frame change once a 25 Hz
+    // frame (on its tick); the position and the spin move this frame's share of a 25 Hz frame's step every frame, so
+    // a particle sits where the ROM's does at each 25 Hz frame and goes in a line between. At 25 both are the ROM.
+    const bool tick = palTicks() != 0;
+    const float share = palScale();
 
+    if (tick) {
     particle.age++;
     particle.velocity[2] -= def->gravity;
     if (def->attract != 0.0f) {
@@ -359,6 +375,7 @@ void StageParticle::stepParticle(Particle &particle, StageNodeTree *tree, const 
         addVector3(particle.velocity, pull);
     }
     scaleVec4(def->drag, particle.velocity, particle.velocity);
+    }
 
     if (m_rangeSquared != 0.0f) {
         // The centre here is the effect's or its parent's, not the step's.
@@ -374,13 +391,13 @@ void StageParticle::stepParticle(Particle &particle, StageNodeTree *tree, const 
         if (m_rangeSquared <= distance)
             particle.life = 0;
         else
-            addVector3(particle.position, particle.velocity);
+            moveShare(particle.position, particle.velocity, share);
     } else if ((def->flags & ParticleFlag_Collides) == 0) {
-        addVector3(particle.position, particle.velocity);
+        moveShare(particle.position, particle.velocity, share);
     } else {
         sceVu0FVECTOR from;
         copyVector(from, particle.position);
-        addVector3(particle.position, particle.velocity);
+        moveShare(particle.position, particle.velocity, share);
         bool hit;
         if (!local) {
             hit = gStageScene->segmentHitsAny(from, particle.position, 0, kFaceSolid, kFaceSkip, nullptr);
@@ -394,14 +411,16 @@ void StageParticle::stepParticle(Particle &particle, StageNodeTree *tree, const 
             particle.life = 0;
     }
 
-    addVector3(particle.rotation, particle.spin);
+    moveShare(particle.rotation, particle.spin, share);
     for (int axis = 0; axis < kAxes; axis++)
         particle.rotation[axis] = wrapTurn(particle.rotation[axis]);
 
+    if (tick) {
     stepColor(particle);
     particle.size *= def->sizeGrowth;
     if (def->emitDelay != 0)
         particle.life--;
+    }
     if ((def->flags & ParticleFlag_NoRoomInside) != 0 && tree->contains(particle.position))
         particle.life = 0;
 
@@ -415,8 +434,8 @@ void StageParticle::stepParticle(Particle &particle, StageNodeTree *tree, const 
                     applyMatrix(death->m_xform.position, getWorldMatrix(), particle.position);
             }
         }
-    } else if (m_frames > 1 && (def->flags & ParticleFlag_RandomFrame) == 0 &&
-               (def->frameTicks == 0 || particle.age % def->frameTicks == 0)) {
+    } else if (tick && m_frames > 1 && (def->flags & ParticleFlag_RandomFrame) == 0 &&
+               (def->frameTicks == 0 || particle.age % def->frameTicks == 0)) {   // PC: tick, game_rate
         particle.frame++;
         if (m_frames <= particle.frame)
             particle.frame = 0;
@@ -573,6 +592,19 @@ void StageParticle::update(StageNodeTree *tree, StageObject *view)
     m_full = 0;
     if ((def->flags & ParticleFlag_NoEmitInside) != 0 && tree->contains(center))
         return;
+
+    // PC: game_rate (game/gamerate.h): between 25 Hz ticks the particles only move (stepParticle); emitting, the
+    // effect's age, turn and spread, and its last centre wait for the tick, as the ROM's frame.
+    if (palTicks() == 0) {
+        const int moves = def->substeps != 0 && m_age != 0 ? def->substeps + 1 : 1;
+        for (int move = 0; move < moves; move++) {
+            for (int index = 0; index < m_count; index++) {
+                if (m_particles[index].life > 0)
+                    stepParticle(m_particles[index], tree, center);
+            }
+        }
+        return;
+    }
 
     int steps = 0;
     sceVu0FVECTOR travelled = {0.0f, 0.0f, 0.0f, 1.0f};

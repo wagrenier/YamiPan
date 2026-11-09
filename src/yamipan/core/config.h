@@ -100,6 +100,10 @@ struct PathSettings
 struct GameSettings
 {
     bool skipIntro = false;
+    // Game frames a second (roadmap-framerate.md "Native 60 Hz"): 25 is the ROM's pace (two PAL fields a frame);
+    // 50 runs the game loop every field, with the frame-counted rules converted (framerate-inventory.md). Read once
+    // at start.
+    int gameRate = 25;
 
     template <class Archive>
     void serialize(Archive &archive);
