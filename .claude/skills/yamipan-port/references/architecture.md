@@ -265,9 +265,9 @@ rxsnd's `rxSndCheckBgCall` (same message, "rxsndut") on its own flags. The layer
   attribute. A slot's status mirrors rxSndAdpcm's 2 playing and 8 paused every frame; 4 ended is sticky.
   **ROM quirk kept:** a failed open closes the stream's source and rxSndAdpcm stream even if this open
   never set them, so a stale id can close a stream in use. **PC:** rxSndAdpcm's user data is an int, so
-  it holds the format stream's id, not the slot pointer. No IOP answers, so the block "the driver's
-  silent side" reports every open stream through rxSndAdpcmUpdate, from the request's length; it replaces
-  the 2026-11-04 bridge. It goes with the audio milestone, with ADPCM_SILENT_BUFFER (open's buffers:
+  it holds the format stream's id, not the slot pointer. Unless RXSNDDRV runs (`YAMIPAN_RXSNDDRV=1`, "The
+  EE's side"), no IOP answers, so the block "the driver's silent side" reports every open stream through
+  rxSndAdpcmUpdate, from the request's length; it replaces the 2026-11-04 bridge. It goes with the audio milestone, with ADPCM_SILENT_BUFFER (open's buffers:
   `rxSndIopAlloc` fails with no IOP heap, so 0 cannot be passed down).
   **PCM written 2026-11-07** (src/rx/rxsndstrpcm.c, `RxSndStrPcmStream` in its header, 64 x 0x1c at
   0x5217d0, active 0x521ed0, free 0x521ed4; +0x18 the attribute byte is set at open and never read).
@@ -2045,7 +2045,7 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   Addresses the map cannot place stay RoR's (`RoR IOP 0x...`), and so do the struct layouts. It compiles
   and links; it boots only with `YAMIPAN_RXSNDDRV=1` (the next point). Its imports are `YamiPan_Iop*`
   (`thbase.h` and the other shims are macros onto them, as in RosePan, since the EE kernel and Win32 have
-  a CreateThread of their own), and `sdk/sif.cpp` still answers the EE's RPCs itself.
+  a CreateThread of their own); with it, the EE's calls reach it ("The EE's side", below).
 - **The IOP kernel** (2026-11-09, `src/yamipan/iop/`): `iop::Kernel` is RosePan's design as a class: the
   big kernel lock, held by every IOP context while it runs IOP code and dropped only inside WaitEventFlag
   and WaitVblankEnd, so the driver's CpuSuspendIntr sections need nothing more (it is a no-op); threads as
@@ -2061,7 +2061,7 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   1.00", every subsystem initialised, the DMA thread parked on its flag, the tick thread at 50 Hz ("iop: 500
   V-blanks in 10.0 s", PAL), the language screen as without it. A probe after the boot sends command 0x12
   through the driver's own server and dispatcher: "command 0x12 answers version 0x0101" (its constant).
-  The EE does not talk to it yet: sif.cpp's sceSifCallRpc still answers RPC 0xd000 with zeros.
+  The EE talks to it since the same day ("The EE's side", below).
   Its `dma.cpp` now owns `YamiPan_RxSndNoteEeAddress`, which rx/rxsnd.c calls on each DMA: a 64-entry
   ring of EE blocks, harmless while nothing reads it.
 - **The SPU2** (2026-11-09, `iop::Spu2`, RosePan's sdk/iop_libsd.cpp as a class): the registers of both
@@ -2082,6 +2082,24 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   the ring at 192,000 bytes a second: 25 cases) passed; 40 s runs with and without `YAMIPAN_RXSNDDRV=1`
   both reach the language screen, and the switched-on run no longer logs libsd placeholder warnings. Until
   the EE talks to the driver, only its init and its tick's register reads reach the model.
+- **The EE's side** (2026-11-09, `sdk/sif.cpp`, only with `YAMIPAN_RXSNDDRV=1`): sceSifBindRpc keeps the
+  RPC number in the client's `command`; sceSifCallRpc sends a call to a registered server through
+  `YamiPan_IopRpcDispatch` on the EE's thread and copies `rsize` bytes of the handler's buffer back before
+  running the end function (every other client still gets zeros); sceSifSetDma and sceSifGetOtherData
+  copy (both sides use them: the EE's rxSndIopWrite / rxSndIopRead with IOP addresses, the driver's
+  SendToEe / GetFromEe with EE pointers widened through the `YamiPan_RxSndNoteEeAddress` notes);
+  sceSifAllocSysMemory / FreeSysMemory are `iop::SystemMemory` (mode 1 high, else low), so an IOP address
+  the EE holds is a host address in the arena (0x10000000.. in the runs). `YamiPan_IopSoundDriverRuns()`
+  (sifcmd.h) is 1 once the driver serves 0xd000: rx/rxsndstradpcm.c and rxsndstrpcm.c then skip their
+  "driver's silent side" and pass the ROM's buffer addresses (0 makes the open allocate from the IOP and
+  SPU heaps). Without the switch nothing changes: fake addresses, dropped transfers, zero replies.
+  **Seen 2026-11-09 (40 s boot):** the game's init through the driver (output mode 0x30, effects 0x32, the
+  per-frame status polls 0x72 / 0x83 / 0xb3 / 0xa3, an IOP copy 0x23, XVAB 0x50), and its first bank: 0x40
+  type 3 moves 0x256a0 bytes from EE memory to SPU 0x5040 through the DMA thread, and the third poll (0x41)
+  answers 0, done; the language screen as with the switch off (20 and 21 shots). **YAMIPAN_TELEPORT=d0101
+  crashed** with the first build: an ADPCM stream's write went to the silent side's fake IOP address
+  0x100000 (sceSifSetDma, now a real copy). The open now passes the ROM's 0; **that build was not run**:
+  Smart App Control blocked the new exe (hazards.md).
 
 ## Disc and data files
 

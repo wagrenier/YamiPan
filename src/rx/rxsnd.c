@@ -568,8 +568,9 @@ void rxSndIopFree(u_int addr)
     s_iopFreeHook(addr);
 }
 
-/* PC: the IOP addresses are the stand-in's fake ones, so sceSifSetDma drops
- * the transfers (sdk/sif.cpp) and command 0x23 is answered with nothing. */
+/* PC: unless RXSNDDRV runs (YAMIPAN_RXSNDDRV=1), the IOP addresses are the
+ * stand-in's fake ones, so sceSifSetDma drops the transfers (sdk/sif.cpp) and
+ * command 0x23 is answered with nothing. */
 // FS2 0x0015a690
 int rxSndIopWrite(u_int iopAddr, const void *src, int size)
 {
@@ -645,8 +646,8 @@ int rxSndIopWrite(u_int iopAddr, const void *src, int size)
 /* The mirror of rxSndIopWrite: the unaligned head and tail come through the
  * EE bounce buffer; the middle is read 16-byte aligned (the pad from `dst`'s
  * own alignment, as the ROM computes it) and moved into place.
- * PC: the stand-in's IOP addresses are fake, so sceSifGetOtherData leaves
- * the destination as it is (sdk/sifrpc.cpp). */
+ * PC: unless RXSNDDRV runs (YAMIPAN_RXSNDDRV=1), the IOP addresses are fake
+ * and sceSifGetOtherData zeroes the destination (sdk/sif.cpp). */
 // FS2 0x0015a8a0
 int rxSndIopRead(void *dst, u_int iopAddr, int size)
 {

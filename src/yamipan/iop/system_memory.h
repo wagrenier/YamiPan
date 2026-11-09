@@ -24,7 +24,14 @@ public:
 
     // AllocSysMemory: first fit from the bottom, 256-byte granular as sysmem was. Null when full, or
     // when no arena could be placed below 4 GB.
-    void *allocate(std::size_t size);
+    // sysmem's placements: the lowest block that fits, or the top of the highest one.
+    enum class Placement
+    {
+        Low,
+        High,
+    };
+
+    void *allocate(std::size_t size, Placement placement = Placement::Low);
     bool free(void *block);
 
     std::size_t size() const { return m_base != nullptr ? kSize : 0; }

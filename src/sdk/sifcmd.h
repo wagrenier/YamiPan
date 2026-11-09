@@ -97,3 +97,7 @@ int   YamiPan_IopRpcIsReady(u_int rpc_number);
  * YAMIPAN_RXSNDDRV=1 until the host serves the driver's RPC. */
 void  YamiPan_IopBoot(void);
 
+/* 1 once RXSNDDRV runs and serves its RPC (YAMIPAN_RXSNDDRV=1, sdk/sif.cpp):
+ * the rx stream formats leave the driver's reports to it then. */
+int   YamiPan_IopSoundDriverRuns(void);
+
