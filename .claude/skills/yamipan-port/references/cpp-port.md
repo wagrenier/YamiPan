@@ -52,7 +52,8 @@ src/main.cpp                     the process entry: Application(args).run()
 src/common/yamipan_stub.h        YAMIPAN_STUB / YAMIPAN_BRIDGE (the tools' contract)
 src/sdk/                         libgraph, libdma, libpad, ... : SCE's API, forwarding to the classes
          iop.cpp, iop_host.h,    the IOP libraries RXSNDDRV imports (thbase.h & co are macros onto
-         libsd.h, thbase.h ...   YamiPan_Iop*): placeholders that warn once, until the IOP host
+         libsd.h, thbase.h ...   YamiPan_Iop*): the kernel's forward to iop::, libsd and the IOP
+                                 side of sifcmd are placeholders that warn once
 src/yamipan/
   core/    Application           owns everything; the service locator
            Logger (log::)        yamipan.log + stdout, [W] / [E], SDL's messages captured
@@ -64,6 +65,9 @@ src/yamipan/
   ee/      Kernel                the EE as FS2 sees it: one running thread by priority
            Thread, Semaphore     EE thread + semaphore objects behind CreateThread etc.
            InterruptController   INTC / DMAC handlers, DIntr, the vblank clock, alarms
+  iop/     Kernel                the IOP as RXSNDDRV sees it: one big kernel lock over its threads,
+                                 event flags, V-blank at the EE's video standard
+           SystemMemory          the IOP's 2 MB, reserved below 4 GB (IOP addresses are u_int)
   gpu/     handles, Device       RAII over SDL_GPU, shader loading
   rendering/
            DisplayGeometry       THE source of display size and aspect (port feature #1)
@@ -101,6 +105,9 @@ src/yamipan/
   kernel call. `DIntr` / `EIntr` hold off the interrupt thread.
 - **Interrupt thread** (`ee::InterruptController`): the vblank clock, alarms, INTC handlers. The game
   chooses PAL or NTSC through `sceGsResetGraph`; the clock follows.
+- **IOP threads** (`iop::Kernel`, only with `YAMIPAN_RXSNDDRV=1`): RXSNDDRV's tick, DMA and RPC threads,
+  detached host threads that run IOP code only while holding the big kernel lock, which every IOP context
+  (and the EE's RPC calls into the driver, once they come) takes, so IOP code runs one context at a time.
 
 ## What is kept from the siblings' contract
 

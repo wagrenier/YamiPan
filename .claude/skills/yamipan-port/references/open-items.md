@@ -1801,6 +1801,12 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
   YamiPan has none of; (2) boot the driver and let sif.cpp's sceSifCallRpc reach its server, retiring the
   silent stand-ins (rx/rxsndstradpcm.c's "driver's silent side"); (3) FS2's 38 changed, 2 moved and 4 new
   functions and the grown records, read in Ghidra's rxsnddrv.elf before the driver's answers are trusted.
+  **2026-11-09: (1) begun.** The IOP kernel and memory are in (`src/yamipan/iop/`, architecture.md "The IOP
+  side"); `YAMIPAN_RXSNDDRV=1` boots the driver, whose threads run (tick at 50 Hz). Left of (1), in order:
+  the SIF RPC server (sdk/iop.cpp's sceSifRegisterRpc / RpcLoop for real, sif.cpp's sceSifCallRpc
+  dispatching to it under the big kernel lock, sceSifSetDma copying between EE and IOP memory, sif.cpp's
+  own IOP-heap addresses from iop::SystemMemory); the libsd register model with 2 MB of SPU RAM and
+  transfer completion (the DMA thread waits on it); then the voice engine, reverb and an audio device.
 
 - 2026-11-05 (Claude's call, a scheduled run, for the user to overrule): **doors are on, and `kDoorsEnabled` is gone.** The stage crash that switched them off is explained and fixed (Done, game/playermotion.cpp sixth run). `StageMenu::update`, `draw` and `destroy` stay stubs on purpose: with `update` written and no list window, the menu button would open a menu nobody sees that holds the input focus. `game/stagemenu.cpp` is a second file in a one-TU run, like `game/uiitemlist.cpp`: its stubbed ctor was the crash.
 

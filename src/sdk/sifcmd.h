@@ -91,9 +91,8 @@ void *YamiPan_IopRpcDispatch(u_int rpc_number, u_int command, void *data, int si
  * see the note on sceSifRpcLoop(). */
 int   YamiPan_IopRpcIsReady(u_int rpc_number);
 
-/* Runs iopsys.irx's start().  Idempotent; the first sceSifBindRpc() calls it. */
+/* Runs RXSNDDRV's start() (iop/rxsnddrv) on the IOP kernel.  Idempotent;
+ * sceSifLoadModule() calls it when the EE loads RXSNDDRV.IRX, and only with
+ * YAMIPAN_RXSNDDRV=1 until the host serves the driver's RPC. */
 void  YamiPan_IopBoot(void);
-
-/* Registers the host stand-in for RXSNDDRV.IRX (RPC 0xd000, iop_rxsnd.cpp).
- * YamiPan_IopBoot() calls it. */
 
