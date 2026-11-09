@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-09 08:27 at commit `b7d76df` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-09 09:45 at commit `a58bed0` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,17 +10,17 @@ Generated 2026-11-09 08:27 at commit `b7d76df` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6598**, named **5853** (89%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1611, game-inferred 4918
-- context-name ledger: 6529 entries; overrides of wrong library matches: 0
+- game functions: **6598**, named **5878** (89%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1611, game-inferred 4945
+- context-name ledger: 6556 entries; overrides of wrong library matches: 0
 - placed in a source file: 6511/6598 in 139 files
 
 Least-named game-code regions (64 KB blocks):
 
 | block | named | inferred files |
 |---|---|---|
-| `001c0000` | 110/233 (47%) | game/scriptrunner.cpp |
-| `001b0000` | 116/242 (48%) | game/scriptrunner.cpp |
+| `001c0000` | 122/233 (52%) | game/scriptrunner.cpp |
+| `001b0000` | 129/242 (53%) | game/scriptrunner.cpp |
 | `002d0000` | 156/256 (61%) | game/drawsys.cpp, game/areaclip.cpp, game/ripplesheet.cpp |
 | `001a0000` | 195/301 (65%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
 | `00250000` | 126/178 (71%) | game/routeplayer.cpp, game/uiwidget.cpp, game/uidrawer.cpp |
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5935**; stubs: **3**
+- reconstructed FS2 functions: **5969**; stubs: **3**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -98,7 +98,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/scenepool.cpp` | 11 | 0 |
 | `src/game/scenerender.cpp` | 32 | 0 |
 | `src/game/screen.cpp` | 18 | 0 |
-| `src/game/scriptrunner.cpp` | 454 | 2 |
+| `src/game/scriptrunner.cpp` | 488 | 2 |
 | `src/game/seplayer.cpp` | 35 | 0 |
 | `src/game/sevenkeys.cpp` | 32 | 0 |
 | `src/game/skymist.cpp` | 17 | 0 |
@@ -236,7 +236,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/scenepairs.cpp` 18/18 -- All 18 of 0x171300..0x171a30 written, batch 117, plus StageMapObject's sideHook0..3 and setPosition, setRotation, setYaw in mapobject.cpp (0x174a10..0x174aa0, 0
 - verify: `game/scenerender.cpp` 35/47 -- Batch 234 named 15 functions: RenaSpotLight/RenaPointLight getKind (2/1), getAngle (spot +0x7c, point -1), getRadius (+0x70), upload (0x2e00f0/0x2e05f0, host fi
 - verify: `game/screen.cpp` 18/18 -- All 18 functions of 0x2676e0..0x2681e0 written (batch 037, 33 names, Ghidra saved). Overlay thread slot 6 draws the BG movie screen layout (init pack file 2dEU/
-- verify: `game/scriptrunner.cpp` 454/669 -- All 364 natives the scan finds a script calling are bound; py sssall.py --unwritten lists none called, 160 never called stay unwritten (the scan reads version 0
+- verify: `game/scriptrunner.cpp` 488/669 -- The queue, frontier and unassigned runs were empty. Batch 242 named the helpers nativeDemoBind, nativeUseLockGadget, nativeSpawnEffectPlaced and nativeIsWalking
 - verify: `game/seplayer.cpp` 35/35 -- Cut from unassigned@002908d0: game/seplayer.cpp is 0x2908d0..0x2937e0 (SoundTrack 17, SePlayer 18, batch 078: fsmFindTrack, fsmTrackHasText, seDistanceVolume, s
 - verify: `game/sevenkeys.cpp` 32/35 -- All 35 functions written (thunks by the host's inheritance). Two dials of four positions; turning dial 1 turns dial 0 too. Not visible yet: the keys are a mid-g
 - verify: `game/skymist.cpp` 17/23 -- Was the frontier's unassigned@002acff0 (split: game/helpscreen.cpp holds runHelpScreen). Batches 201-202. Drawn through renaBeginEffects and YamiPan_ModelDrawQu
@@ -321,6 +321,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-09 09:45 `game/scriptrunner.cpp` verify: 28 out-of-line inline copies on the frontier named (batch 242) and listed with the 6 ScriptRunner accessors in a ledger; scriptLabelCell is 0x1c97f0
 - 2026-11-09 08:27 `game/subsceneobject.cpp` verify: SubSceneModelObject dtor thunk 0x269da0 pinned (was unassigned@00269da0)
 - 2026-11-09 08:20 `game/playermotion.cpp` verify: MotionLink::onRequest 0x1ec640 named and pinned (was unassigned@001ec640)
 - 2026-11-09 08:09 `game/playermotion.cpp` verify: 0x1e5d50..0x1e5d60 joined (was unassigned@001e5d50): MotionLink::onRun, the base's empty slot +0x1c, already in playermotion.h; batch 240 also named the empty d
@@ -328,7 +329,6 @@ Recent sessions:
 - 2026-11-09 07:37 `game/playermotion.cpp` verify: 0x283cb0..0x283df0 joined (was unassigned@00283cb0): the deleting dtors of DriveLink, ApproachBiteLink and ApproachOutLink; their vtable stores give the ROM's t
 - 2026-11-09 07:26 `game/nodetransform.cpp` verify: StageNode's four inline slots 0x186a00..0x186a40 (was unassigned@00186a00) joined to game/nodetransform.cpp; the file's 14 header-written functions checked agai
 - 2026-11-07 20:53 `game/stageplayer.cpp` verify: The volumes' tail: StageVolume::getKind 0x17ef90 and 0x17f040..0x17f150 (SphereVolume::getKind, its empty sideHook0..3, 12 adjustor thunks) pinned to game/stage
-- 2026-11-07 20:38 `game/packtables.cpp` verify: static initialisers 0x310a00..0x310f80 named __sinit_*_cpp (batch 236) and joined to their owners' TUs
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -341,7 +341,6 @@ Recent sessions:
 | `0017e1b0` | StageList<StageObject*>::pushBack | 25 | game | missing | game/stagecharacter.cpp |
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `002c0d90` | FUN_002c0d90 | 18 | - | missing | game/packtables.cpp |
-| `001d1a00` | ScriptRunner::getEntry | 14 | game | missing | game/scriptrunner.cpp |
 | `002a7800` | NmlPose::getDial | 14 | game | missing | game/numlock.cpp |
 | `002c0d40` | FUN_002c0d40 | 12 | - | missing | game/packtables.cpp |
 | `002b3640` | SkyPose::getDial | 11 | game | missing | game/sevenkeys.cpp |
@@ -355,15 +354,12 @@ Recent sessions:
 | `001f4d30` | FUN_001f4d30 | 7 | - | missing | game/stagecollision.cpp |
 | `00206f80` | BearingVector::~BearingVector | 6 | lib-ctx | missing | game/stageparty.cpp |
 | `001dd3f0` | CharacterBrain::setEnabled | 6 | game | missing | game/characterbrain.cpp |
-| `001b36b0` | FUN_001b36b0 | 6 | - | missing | game/scriptrunner.cpp |
-| `001d1c20` | ScriptRunner::getParent2 | 6 | game | missing | game/scriptrunner.cpp |
 | `001871c0` | PartSwitch::~PartSwitch | 6 | game | missing | game/stagemodel.cpp |
 | `001f4c30` | FUN_001f4c30 | 6 | - | missing | game/stagecollision.cpp |
 | `00258ea0` | FUN_00258ea0 | 6 | - | missing | game/routeplayer.cpp |
 | `002dd6e0` | ClipIndexList::insert | 6 | game | missing | game/areaclip.cpp |
 | `001f4f20` | FUN_001f4f20 | 6 | - | missing | game/stagecollision.cpp |
 | `002c0db0` | FUN_002c0db0 | 6 | - | missing | game/packtables.cpp |
-| `001b9a60` | StageObject::isActive | 5 | game | missing | game/scriptrunner.cpp |
 | `00187220` | PartSwitch::PartSwitch | 5 | game | missing | game/stagemodel.cpp |
 | `00258f10` | FUN_00258f10 | 5 | - | missing | game/routeplayer.cpp |
 | `00255080` | FUN_00255080 | 5 | - | missing | game/routeplayer.cpp |
@@ -374,4 +370,8 @@ Recent sessions:
 | `002e7e90` | FUN_002e7e90 | 5 | - | missing | rena/rena_draw.cpp |
 | `00184260` | FUN_00184260 | 4 | - | missing | game/stageitem.cpp |
 | `00186b80` | FUN_00186b80 | 4 | - | missing | game/stagelight.cpp |
+| `001920d0` | WordVector::resize | 4 | lib-ctx | missing | game/stageparticle.cpp |
+| `002c16b0` | FUN_002c16b0 | 4 | - | missing | game/packtables.cpp |
+| `002c1710` | FUN_002c1710 | 4 | - | missing | game/packtables.cpp |
+| `001927b0` | WordVector::erase | 4 | lib-ctx | missing | game/stageparticle.cpp |
 

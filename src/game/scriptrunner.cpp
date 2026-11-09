@@ -68,6 +68,10 @@ constexpr int kSlotNameSize = 0x10;
 // ──────────────────────────────────────────────────────────────────────
 // Label cells.
 
+// The word before a label's text. The ROM keeps the object's pointer there;
+// PC: a 64-bit pointer does not fit, so the word is a handle into sLabelCells.
+// FS2 0x001c97f0
+
 void *scriptLabelCell(const char *label)
 {
     int handle;
@@ -89,6 +93,56 @@ void scriptSetLabelCell(const char *label, void *value)
         sLabelCells[handle - 1] = value;
     }
 }
+
+/*
+ * CodeWarrior's out-of-line copies of inline functions, emitted in this
+ * object file for the natives below (batch 242). The host keeps each one
+ * inline at its caller, as the field or the helper on the right:
+ *
+ * ScriptRunner (scriptrunner.h; getNamed, setNamed, getStrings, getLabels):
+ *   FS2 0x001d1980 ScriptRunner::getSlotCount   getSlotCount()
+ *   FS2 0x001d19a0 ScriptRunner::getLocals      m_locals
+ *   FS2 0x001d1c30 ScriptRunner::getLocals2     m_locals (a second copy)
+ *   FS2 0x001d19f0 ScriptRunner::getParent      m_parentScript
+ *   FS2 0x001d1c20 ScriptRunner::getParent2     m_parentScript (a second copy)
+ *   FS2 0x001d1a00 ScriptRunner::getEntry       m_entry
+ *
+ * nativeDemoBind's walk of group 8:
+ *   FS2 0x001b9ab0 StageScene::getCamerasReady  gStageScene->camerasReady
+ *   FS2 0x001b36b0 StageScene::getObjects       gStageScene->objects (also findEffectGroup, setEffectsOn)
+ *   FS2 0x001b9aa0 StageObjectList::getGroup    objects->m_lists[group]
+ *   FS2 0x001b9a80 StageObjArray::begin         StageObjArray::begin
+ *   FS2 0x001b9a30 StageObjArray::next          StageObjArray::next
+ *   FS2 0x001b9a70 StageObjArray::itemAt        *slot
+ *   FS2 0x001b9a50 StageObject::getNameBuf      m_name
+ *   FS2 0x001b9a60 StageObject::isActive        m_active != 0; the ROM drops the answer
+ *   FS2 0x001b9a20 StageScene::getFiles         gStageScene->files
+ *
+ * nativeUseLockGadget:
+ *   FS2 0x001c47a0 runningScriptYield           takeScriptYield: gRunningScript's m_yieldA / m_yieldB
+ *   FS2 0x001c4790 ScriptYield::isSet           takeScriptYield: m_yieldA != 0
+ *   FS2 0x001c4780 ScriptYield::clear           takeScriptYield: both words cleared
+ *   FS2 0x001c4770 StageScene::isInputBlocked_thunk   isInputBlocked, a j with a0 unchanged
+ *   FS2 0x001c4690 stageHideObjects_thunk       stageHideObjects; a0 (gStageScene->arrays) unread
+ *   FS2 0x001c46a0 StageScene::getArrays        gStageScene->arrays, the thunk's unread argument
+ *   FS2 0x001c46b0 StageScene::getFade          gStageScene->fade
+ *   FS2 0x001c46c0 StageScene::getOwned2        owned[2]; the ROM drops the answer (kind 3)
+ *   FS2 0x001c4760 StageScene::getOwned1        owned[1]; the ROM drops the answer (kind 2)
+ *   FS2 0x001c4680 StageMission::getKeptObject  currentMission()->keptObject
+ *
+ * nativeSpawnEffectPlaced (FS2 0x001c97f0, scriptLabelCell, is above):
+ *   FS2 0x001c97e0 StageScene::getEffects       gStageScene->effects
+ *   FS2 0x001c9780 StageObject::isCharacter     getKind() == StageObject_Character; the host
+ *                                               takes one bone lookup for both kinds
+ *   FS2 0x001b56a0 StageObject::getModel        m_model
+ *   FS2 0x001b5690 StageModel::getBoneMap       m_model->boneMap
+ *   FS2 0x001b5680 BoneMap::find                boneMap.find (the ROM's holds the map at +0)
+ *   FS2 0x001c9770 effectSpawnFailed            empty, a stripped report; the host has no call
+ *
+ * nativeIsWalking:
+ *   FS2 0x001b6d50 StageCharacter::getMotion    m_motion
+ *   FS2 0x001b6cc0 PlayerMotion::isRunning      isRunMotion(id) || isCrouchRunMotion(id)
+ */
 
 // The player, or what acts for it.
 static StageObject *scenePlayer()
@@ -1673,7 +1727,7 @@ static void demoBindObject(StageObject *object, const char *motion)
 }
 
 // FS2 0x001b9680
-// callcheck: readNameArg, readStringArg, FUN_001b9ab0, FUN_001b36b0, FUN_001b9aa0, FUN_001b9a80, FUN_001b9a30, FUN_001b9a70, isActive, FUN_001b9a50, strcmp, FUN_001b9a20, hasCharacter, placeCharacter, find8, hasItem, placeItem, find8, operator_new, SubSceneModelObject, FUN_001a4c20, attach, FUN_001a4c40, demoSwitchOn, bindMotion (small getters and the list walk, inline here; the ROM's bind sequences are demoBindObject)
+// callcheck: readNameArg, readStringArg, getCamerasReady, getObjects, getGroup, begin, next, itemAt, isActive, getNameBuf, strcmp, getFiles, hasCharacter, placeCharacter, find8, hasItem, placeItem, find8, operator_new, SubSceneModelObject, FUN_001a4c20, attach, FUN_001a4c40, demoSwitchOn, bindMotion (small getters and the list walk, inline here; the ROM's bind sequences are demoBindObject)
 
 static const int *nativeDemoBind(ScriptRunner *self, int *, const int *code)
 {
@@ -4496,7 +4550,7 @@ static const int *nativeIsCorpse(ScriptRunner *self, int *acc, const int *code)
 
 // 0x166 isWalking(): moving, not at a run.
 // FS2 0x001b6820
-// callcheck: FUN_001b6d50, FUN_001b6cc0, FUN_001b6d50, FUN_001b6910 (m_motion, isRunMotion, isCrouchRunMotion, isMovingMotion)
+// callcheck: getMotion, isRunning, getMotion, FUN_001b6910 (m_motion, isRunMotion, isCrouchRunMotion, isMovingMotion)
 
 static const int *nativeIsWalking(ScriptRunner *self, int *acc, const int *code)
 {
@@ -5317,7 +5371,7 @@ static const int *nativePlaySoundAtVolume(ScriptRunner *self, int *, const int *
 // 0x5e spawnEffectAt(x, y, z, rx, ry, rz, effect, object, bone): native 0x5d
 // with a place and a turn, in degrees; its handle, -1 none.
 // FS2 0x001c93c0
-// callcheck: readNameArg, readObjectArg, readNameArg, isNullName, isNullName, getTopView, FUN_001c97f0, FUN_001c97e0, spawn, FUN_001c97f0, FUN_001c9780, FUN_001b56a0, FUN_001b5690, FUN_001b5680, FUN_001c97e0, spawn, spawnEffectOnBone, FUN_001c9770
+// callcheck: readNameArg, readObjectArg, readNameArg, isNullName, isNullName, getTopView, scriptLabelCell, getEffects, spawn, scriptLabelCell, isCharacter, getModel, getBoneMap, find, getEffects, spawn, spawnEffectOnBone, effectSpawnFailed
 
 static const int *nativeSpawnEffectPlaced(ScriptRunner *self, int *acc, const int *code)
 {
@@ -5902,7 +5956,7 @@ static bool armPadGadget(const char *special, StageObject *object)
 // gadget, and when the owned screen comes up saves the flags and fades,
 // hides the objects until it ends, and restores them.
 // FS2 0x001c4200
-// callcheck: FUN_001c47a0, FUN_001c4790, FUN_001c4780, isOwned2Busy, isOwned1Busy, restoreObjectFlags, scriptYield, FUN_001c46b0, isFullInMode2, scriptYield, FUN_001c46a0, stageHideObjects, currentMission, FUN_001c4680, currentMission, FUN_001c4680, FUN_0018bf10, scriptYield, scriptObjectOfValue, isOwned2Busy, FUN_001c46d0, saveObjectFlags, findNumLockTarget, isOwned1Busy, FUN_001c46d0, saveObjectFlags, scriptYield, scriptYield, isInputBlocked, FUN_001c46c0, scriptObjectOfValue, FUN_001c46d0, scriptYield, FUN_001c4760, findNumLockTarget, FUN_001c46d0, scriptYield, scriptYield
+// callcheck: runningScriptYield, isSet, clear, isOwned2Busy, isOwned1Busy, restoreObjectFlags, scriptYield, getFade, isFullInMode2, scriptYield, getArrays, stageHideObjects_thunk, currentMission, getKeptObject, currentMission, getKeptObject, FUN_0018bf10, scriptYield, scriptObjectOfValue, isOwned2Busy, FUN_001c46d0, saveObjectFlags, findNumLockTarget, isOwned1Busy, FUN_001c46d0, saveObjectFlags, scriptYield, scriptYield, isInputBlocked_thunk, getOwned2, scriptObjectOfValue, FUN_001c46d0, scriptYield, getOwned1, findNumLockTarget, FUN_001c46d0, scriptYield, scriptYield
 
 static const int *nativeUseLockGadget(ScriptRunner *self, int *, const int *code)
 {
@@ -6405,7 +6459,7 @@ static bool normalizeEnvName(const char *name, char *out)
 }
 
 // FS2 0x001b3440
-// callcheck: findAll5, FUN_001b36b0, findAll5, FUN_001b3440, sscanf, sprintf, strcmp, FUN_001b3440
+// callcheck: findAll5, getObjects, findAll5, FUN_001b3440, sscanf, sprintf, strcmp, FUN_001b3440
 
 static StageObjArray *findEffectGroup(const char *name)
 {
@@ -6423,7 +6477,7 @@ static StageObjArray *findEffectGroup(const char *name)
 // The effects of that name take the flag; another name is a sub-scene
 // object's lamp.
 // FS2 0x001b3240
-// callcheck: FUN_001b36b0, findAll5, FUN_001b3440, sscanf, sprintf, strcmp, FUN_001b3440, find8, setTreeScriptFlag
+// callcheck: getObjects, findAll5, FUN_001b3440, sscanf, sprintf, strcmp, FUN_001b3440, find8, setTreeScriptFlag
 
 static void setEffectsOn(const char *name, bool on)
 {
