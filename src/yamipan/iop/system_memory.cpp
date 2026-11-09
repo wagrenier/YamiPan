@@ -36,11 +36,26 @@ SystemMemory::~SystemMemory()
 #endif
 }
 
-void *SystemMemory::allocate(std::size_t size)
+void *SystemMemory::allocate(std::size_t size, Placement placement)
 {
     size = size == 0 ? kGranule : (size + kGranule - 1) & ~(kGranule - 1);
 
     std::lock_guard lock(m_lock);
+    if (placement == Placement::High)
+    {
+        for (auto it = m_free.rbegin(); it != m_free.rend(); ++it)
+        {
+            if (it->second < size)
+                continue;
+            const std::size_t offset = it->first + it->second - size;
+            it->second -= size;
+            if (it->second == 0)
+                m_free.erase(std::next(it).base());
+            m_used.emplace(offset, size);
+            return m_base + offset;
+        }
+        return nullptr;
+    }
     for (auto it = m_free.begin(); it != m_free.end(); ++it)
     {
         if (it->second < size)

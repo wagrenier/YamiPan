@@ -13,13 +13,13 @@
  *  FS2-only (not in RoR, no symbols): every name was read from the code
  *  (batch 008); the messages say "rxsndstr". See rxsndstrpcm.h.
  *
- *  PC: no IOP runs yet (sdk/sif.cpp), so nothing answers rxSndPcmUpdate: the
- *  ring would stay full and the stream would never end. The block "the
- *  driver's silent side" below stands for the driver until the audio
- *  milestone, as in rxsndstradpcm.c: it answers as RXSNDDRV would, from the
- *  request's length.
+ *  PC: unless RXSNDDRV runs (YAMIPAN_RXSNDDRV=1, sdk/sif.cpp), nothing answers
+ *  rxSndPcmUpdate: the ring would stay full and the stream would never end.
+ *  The block "the driver's silent side" below stands for the driver then, as
+ *  in rxsndstradpcm.c: it answers as RXSNDDRV would, from the request's length.
  * ======================================================================== */
 #include "rx/rxsndstrpcm.h"
+#include "sifcmd.h"     /* PC: YamiPan_IopSoundDriverRuns */
 
 #include "rx/rxsnd.h"
 #include "rx/rxsndstrbank.h"
@@ -56,8 +56,8 @@ static RxSndStrPcmStream *s_free;                               /* bss 0x521ed4 
  * path) is read.
  */
 
-/* rxSndPcmOpen allocates a buffer asked for as 0; no IOP heap answers. The
- * address only has to be non-zero, nothing reads it. */
+/* rxSndPcmOpen allocates a buffer asked for as 0, and without the driver no
+ * IOP heap answers. The address only has to be non-zero, nothing reads it. */
 #define PCM_SILENT_BUFFER       0x100000
 
 enum
@@ -200,7 +200,8 @@ void rxSndStrPcmUpdate(void)
 {
     if (s_active == NULL)
         return;
-    pcmSilentReply();       /* PC: the driver's report */
+    if (!YamiPan_IopSoundDriverRuns())
+        pcmSilentReply();   /* PC: the driver's report */
 
     for (RxSndStrPcmStream *stream = s_active; stream != NULL; stream = stream->next)
     {
@@ -333,7 +334,11 @@ int rxSndStrPcmOpen(RxSndStrSlot *slot)
         slot->start = request->size;
     rxSndStrStreamSeek(stream->source, request->offset + slot->start);
 
-    iopAddr     = slot->iopAddr != 0 ? slot->iopAddr : PCM_SILENT_BUFFER;  /* PC: the ROM's slot->iopAddr */
+    /* PC: the ROM's slot->iopAddr; 0 has rxSndPcmOpen allocate it, which only
+     * a running driver's heap can answer. */
+    iopAddr = slot->iopAddr;
+    if (iopAddr == 0 && !YamiPan_IopSoundDriverRuns())
+        iopAddr = PCM_SILENT_BUFFER;
     stream->pcm = rxSndPcmOpen(mode, iopAddr, slot->iopKB);
     if (stream->pcm < 0)
     {
@@ -350,7 +355,8 @@ int rxSndStrPcmOpen(RxSndStrSlot *slot)
     stream->attr = request->attr != 0;
     stream->next = s_active;
     s_active     = stream;
-    pcmSilentStart(stream, request);                /* PC: the driver's side */
+    if (!YamiPan_IopSoundDriverRuns())
+        pcmSilentStart(stream, request);            /* PC: the driver's side */
     return stream->id;
 
 fail:

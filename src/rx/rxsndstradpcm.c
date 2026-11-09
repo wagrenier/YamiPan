@@ -10,10 +10,10 @@
  *  FS2-only (not in RoR, no symbols): every name was read from the code
  *  (batch 008); the messages say "rxsndstr". See rxsndstradpcm.h.
  *
- *  PC: no IOP runs yet (sdk/sif.cpp), so nothing answers rxSndAdpcmUpdate
- *  and the stream would never end, and an event waits for its voice. The
- *  block "the driver's silent side" below stands for the driver until the
- *  audio milestone: it answers as RXSNDDRV would, from the request's length.
+ *  PC: unless RXSNDDRV runs (YAMIPAN_RXSNDDRV=1, sdk/sif.cpp), nothing answers
+ *  rxSndAdpcmUpdate and the stream would never end, and an event waits for
+ *  its voice. The block "the driver's silent side" below stands for the
+ *  driver then: it answers as RXSNDDRV would, from the request's length.
  * ======================================================================== */
 #include "rx/rxsndstradpcm.h"
 
@@ -22,6 +22,7 @@
 #include "rx/rxsndstrstream.h"
 #include "rx/rxsndut.h"
 #include "rx/rxsys.h"
+#include "sifcmd.h"     /* PC: YamiPan_IopSoundDriverRuns */
 
 #include <malloc.h>     /* alloca: the ROM's stack arrays, as many as the request has */
 #include <stddef.h>
@@ -54,8 +55,8 @@ static RxSndStrAdpcmStream *s_free;                                 /* bss 0x522
  * and pitched like the slot. The IOP's buffer is reported empty.
  */
 
-/* rxSndAdpcmOpen allocates a buffer asked for as 0; no IOP heap answers. The
- * address only has to be non-zero, nothing reads it. */
+/* rxSndAdpcmOpen allocates a buffer asked for as 0, and without the driver no
+ * IOP heap answers. The address only has to be non-zero, nothing reads it. */
 #define ADPCM_SILENT_BUFFER     0x100000
 
 // layout: host
@@ -223,7 +224,8 @@ void rxSndStrAdpcmUpdate(void)
 {
     if (s_active == NULL)
         return;
-    adpcmSilentReply();     /* PC: the driver's report */
+    if (!YamiPan_IopSoundDriverRuns())
+        adpcmSilentReply(); /* PC: the driver's report */
 
     for (RxSndStrAdpcmStream *stream = s_active; stream != NULL; stream = stream->next)
     {
@@ -374,8 +376,17 @@ int rxSndStrAdpcmOpen(RxSndStrSlot *slot)
         slot->start = request->size;
     rxSndStrStreamSeek(stream->source, request->offset + slot->start);
 
-    iopAddr = slot->iopAddr != 0 ? slot->iopAddr : ADPCM_SILENT_BUFFER;     /* PC: the ROM's slot->iopAddr */
-    spuAddr = slot->spuAddr != 0 ? slot->spuAddr : ADPCM_SILENT_BUFFER;     /* PC: the ROM's slot->spuAddr */
+    /* PC: the ROM's slot->iopAddr and slot->spuAddr; 0 has rxSndAdpcmOpen
+     * allocate them, which only a running driver's heaps can answer. */
+    iopAddr = slot->iopAddr;
+    spuAddr = slot->spuAddr;
+    if (!YamiPan_IopSoundDriverRuns())
+    {
+        if (iopAddr == 0)
+            iopAddr = ADPCM_SILENT_BUFFER;
+        if (spuAddr == 0)
+            spuAddr = ADPCM_SILENT_BUFFER;
+    }
     stream->adpcm = rxSndAdpcmOpenEx(mode, request->rate, iopAddr, slot->iopKB, spuAddr, slot->spuKB,
                                      (request->flags & RXSNDSTR_REQUEST_NO_ARG) ? -1 : request->openArg);
     if (stream->adpcm < 0)
@@ -394,7 +405,8 @@ int rxSndStrAdpcmOpen(RxSndStrSlot *slot)
     stream->attr      = request->attr != 0;
     stream->next      = s_active;
     s_active          = stream;
-    adpcmSilentStart(stream, request);                  /* PC: the driver's side */
+    if (!YamiPan_IopSoundDriverRuns())
+        adpcmSilentStart(stream, request);              /* PC: the driver's side */
     return stream->id;
 
 fail:

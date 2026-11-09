@@ -109,7 +109,7 @@ src/yamipan/
   chooses PAL or NTSC through `sceGsResetGraph`; the clock follows.
 - **IOP threads** (`iop::Kernel`, only with `YAMIPAN_RXSNDDRV=1`): RXSNDDRV's tick, DMA and RPC threads,
   detached host threads that run IOP code only while holding the big kernel lock, which every IOP context
-  (and the EE's RPC calls into the driver, once they come) takes, so IOP code runs one context at a time.
+  (and the EE's RPC calls into the driver) takes, so IOP code runs one context at a time.
 
 ## What is kept from the siblings' contract
 

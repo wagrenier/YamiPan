@@ -1,7 +1,13 @@
-// sdk/sif.cpp -- the EE's side of the IOP. No IOP runs yet: the sound driver is in src/iop/rxsnddrv but
-// nothing boots it until the IOP host comes, so modules "load", memory is handed out as bare IOP
-// addresses, and every RPC answers at once with an empty reply. Game code cannot tell, which is the
-// point: the boot goes through.
+// sdk/sif.cpp -- the EE's side of the IOP.
+//
+// With YAMIPAN_RXSNDDRV=1 an IOP runs (yamipan/iop/): loading RXSNDDRV.IRX boots the sound driver, IOP
+// memory is iop::SystemMemory (an IOP address is a host address below 4 GB), SIF DMA and
+// sceSifGetOtherData copy, and calls to the driver's RPC 0xd000 go through its own dispatcher, on the
+// caller's thread, before sceSifCallRpc returns (so its end function runs at once, as before).
+//
+// Without it no IOP runs: modules "load", memory is handed out as bare IOP addresses nothing may
+// dereference, transfers are dropped and every RPC answers at once with an empty reply. Game code cannot
+// tell, which is the point: the boot goes through.
 #include <algorithm>
 #include <atomic>
 #include <chrono>
@@ -41,8 +47,7 @@ bool namesSoundDriver(const char *path)
            }) != name.end();
 }
 
-// Until the host serves the driver's RPC and models the SPU2, it runs only on request: its threads start
-// and tick, the EE does not talk to it yet.
+// The IOP runs only on request, until it makes sound.
 // RXSNDDRV is the rx sound library's server.
 constexpr unsigned kRxSndRpc = 0xd000;
 
@@ -104,11 +109,18 @@ int sceSifLoadModule(const char *path, int, const char *)
     return s_nextModule.fetch_add(1);
 }
 
-int sceSifBindRpc(sceSifClientData *bd, unsigned int, unsigned int)
+int sceSifBindRpc(sceSifClientData *bd, unsigned int request, unsigned int)
 {
-    // Callers wait for serve to be set; nothing reads through it.
+    // Callers wait for serve to be set; nothing reads through it. The number picks the server a call
+    // goes to.
+    bd->command = request;
     bd->serve = reinterpret_cast<_sif_serve_data *>(bd);
     return 0;
+}
+
+int YamiPan_IopSoundDriverRuns()
+{
+    return driverRequested() && YamiPan_IopRpcIsReady(kRxSndRpc) != 0 ? 1 : 0;
 }
 
 int sceSifCheckStatRpc(sceSifRpcData *)
@@ -116,19 +128,35 @@ int sceSifCheckStatRpc(sceSifRpcData *)
     return 0;
 }
 
-int sceSifCallRpc(sceSifClientData *, unsigned int, unsigned int, void *, int, void *receive, int rsize,
-                  sceSifEndFunc func, void *para)
+// The IOP answered `rsize` bytes from the buffer its handler returned, whatever their meaning; so does this.
+// A call nothing serves (every other client: rxsys's tty and its own RPCs) answers zeros.
+int sceSifCallRpc(sceSifClientData *bd, unsigned int fno, unsigned int, void *send, int ssize, void *receive,
+                  int rsize, sceSifEndFunc func, void *para)
 {
+    const void *reply = nullptr;
+    if (bd != nullptr && driverRequested() && YamiPan_IopRpcIsReady(bd->command) != 0)
+        reply = YamiPan_IopRpcDispatch(bd->command, fno, send, ssize);
     if (receive != nullptr && rsize > 0)
-        std::memset(receive, 0, static_cast<std::size_t>(rsize));
+    {
+        if (reply != nullptr)
+            std::memcpy(receive, reply, static_cast<std::size_t>(rsize));
+        else
+            std::memset(receive, 0, static_cast<std::size_t>(rsize));
+    }
     if (func != nullptr)
         reinterpret_cast<void (*)(void *)>(func)(para);
     return 0;
 }
 
-int sceSifGetOtherData(sceSifReceiveData *, void *, void *dest, int size, unsigned int)
+// Both sides call it: the EE reading IOP memory (rxSndIopRead), the driver reading EE memory (src is the
+// pointer RxSndDrvEePointer widened). Either way both are host pointers once an IOP runs.
+int sceSifGetOtherData(sceSifReceiveData *, void *src, void *dest, int size, unsigned int)
 {
-    if (dest != nullptr && size > 0)
+    if (dest == nullptr || size <= 0)
+        return 0;
+    if (driverRequested() && src != nullptr)
+        std::memcpy(dest, src, static_cast<std::size_t>(size));
+    else
         std::memset(dest, 0, static_cast<std::size_t>(size));
     return 0;
 }
@@ -138,18 +166,38 @@ int sceSifDmaStat(u_int)
     return -1;
 }
 
-u_int sceSifSetDma(sceSifDmaData *, int)
+// Both sides call it: the EE writing IOP memory (rxSndIopWrite), the driver writing EE memory
+// (RxSndDrvSendToEe). The transfer is done when this returns; sceSifDmaStat says so.
+u_int sceSifSetDma(sceSifDmaData *sdd, int len)
 {
+    if (driverRequested() && sdd != nullptr)
+    {
+        for (int i = 0; i < len; i++)
+        {
+            if (sdd[i].addr != nullptr && sdd[i].data != nullptr && sdd[i].size > 0)
+                std::memcpy(sdd[i].addr, sdd[i].data, static_cast<std::size_t>(sdd[i].size));
+        }
+    }
     return 1;
 }
 
-void *sceSifAllocSysMemory(int, u_int size, void *)
+// Mode 1 is sysmem's high placement (the sound library's "from the top"), 0 its low one; mode 2 ("at
+// `addr`") no caller uses, so it is placed low.
+void *sceSifAllocSysMemory(int mode, u_int size, void *)
 {
+    if (driverRequested())
+    {
+        using Placement = yamipan::iop::SystemMemory::Placement;
+        return yamipan::iop::Kernel::instance().memory().allocate(size, mode == 1 ? Placement::High
+                                                                                  : Placement::Low);
+    }
     const unsigned aligned = (size + kIopAlignment - 1) & ~(kIopAlignment - 1);
     return reinterpret_cast<void *>(static_cast<uintptr_t>(s_iopTop.fetch_add(aligned)));
 }
 
-int sceSifFreeSysMemory(void *)
+int sceSifFreeSysMemory(void *addr)
 {
+    if (driverRequested())
+        return yamipan::iop::Kernel::instance().memory().free(addr) ? 0 : -1;
     return 0;
 }
