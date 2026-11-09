@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-09 08:20 at commit `9f8714d` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-09 08:27 at commit `b7d76df` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -13,7 +13,7 @@ Generated 2026-11-09 08:20 at commit `9f8714d` by `tools/reverse/status.py` (`re
 - game functions: **6598**, named **5853** (89%); library functions: 992
 - by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1611, game-inferred 4918
 - context-name ledger: 6529 entries; overrides of wrong library matches: 0
-- placed in a source file: 6510/6598 in 139 files
+- placed in a source file: 6511/6598 in 139 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5934**; stubs: **3**
+- reconstructed FS2 functions: **5935**; stubs: **3**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -127,7 +127,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stagesound.cpp` | 45 | 0 |
 | `src/game/streamring.cpp` | 17 | 0 |
 | `src/game/stringlist.cpp` | 14 | 0 |
-| `src/game/subsceneobject.cpp` | 49 | 0 |
+| `src/game/subsceneobject.cpp` | 50 | 0 |
 | `src/game/sysdata.cpp` | 36 | 0 |
 | `src/game/thread.cpp` | 19 | 0 |
 | `src/game/titlescreen.cpp` | 3 | 0 |
@@ -175,7 +175,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 178 TUs: todo 64, verify 140, done 46
+- 177 TUs: todo 63, verify 140, done 46
 - next: **None** (nothing on the frontier and no queued TU)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
@@ -264,7 +264,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stagescene.cpp` 257/259 -- Fix for the user's crash at the start of the mission after stage 1. isMotionTarget 0x175c40 was a stub, so node 4's crow oCM99_20 had no pose and native 0xb1 fa
 - verify: `game/stagesound.cpp` 45/45 -- Batch 077 (31 names: the 18 slice functions, abs 0x121f08, SoundTrack hasSubtitles / getSubtitle / setVolume, SePlayer setTable / setPitch, StageNodeBase ctor 0
 - verify: `game/streamring.cpp` 17/21 -- All 21 functions accounted for: the 17 ring functions written, the thunks 0x151f70 / 0x151f80 / 0x152730 / 0x152740 call the rx functions directly. The classes 
-- verify: `game/subsceneobject.cpp` 50/50 -- All 50 written or recorded: the last 14 were header getKinds, empty hooks and thunks (ledger block at the end of the cpp; batch 113 named the thunks, saved). St
+- verify: `game/subsceneobject.cpp` 51/51 -- No code change: 0x269da0 is the -0x40 adjustor thunk of SubSceneModelObject::~SubSceneModelObject 0x269c30 (vtable entry 0x316cb4), already named in Ghidra (bat
 - verify: `game/sysdata.cpp` 36/36 -- Cut out of unassigned@00171300 (the frontier pick, 5138 functions) and pinned 0x23af30-0x23c020. One SystemData block of 0x620 bytes at 0x598b30: SaveData +0 (0
 - verify: `game/thread.cpp` 19/19 -- All 19 functions written; thread.h has ThreadSlotRecord, ThreadStackDef, ThreadDetourStack, FrameSync, JobRecord with ThreadState / ThreadDetourState / JobCance
 - verify: `game/titlescreen.cpp` 3/3 -- All 3 functions of 0x231c90..0x231d40 written, batch 091 names loadingTick 0x231d20 and loadingBegin 0x231d30 (both j overlayShowLoading, fileloader.cpp now cal
@@ -321,6 +321,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-09 08:27 `game/subsceneobject.cpp` verify: SubSceneModelObject dtor thunk 0x269da0 pinned (was unassigned@00269da0)
 - 2026-11-09 08:20 `game/playermotion.cpp` verify: MotionLink::onRequest 0x1ec640 named and pinned (was unassigned@001ec640)
 - 2026-11-09 08:09 `game/playermotion.cpp` verify: 0x1e5d50..0x1e5d60 joined (was unassigned@001e5d50): MotionLink::onRun, the base's empty slot +0x1c, already in playermotion.h; batch 240 also named the empty d
 - 2026-11-09 07:55 `game/playermotion.cpp` verify: 0x21c290..0x21c300 joined (was unassigned@0021c290): StageCharacter::doorJustOpened and doorJustUnlocked, the door-state checks on what afterScripts keeps (+0x6
@@ -328,7 +329,6 @@ Recent sessions:
 - 2026-11-09 07:26 `game/nodetransform.cpp` verify: StageNode's four inline slots 0x186a00..0x186a40 (was unassigned@00186a00) joined to game/nodetransform.cpp; the file's 14 header-written functions checked agai
 - 2026-11-07 20:53 `game/stageplayer.cpp` verify: The volumes' tail: StageVolume::getKind 0x17ef90 and 0x17f040..0x17f150 (SphereVolume::getKind, its empty sideHook0..3, 12 adjustor thunks) pinned to game/stage
 - 2026-11-07 20:38 `game/packtables.cpp` verify: static initialisers 0x310a00..0x310f80 named __sinit_*_cpp (batch 236) and joined to their owners' TUs
-- 2026-11-07 20:18 `rena/tim2.cpp` verify: Sony's TIM2 sample whole, 20 of 20: unassigned@002e9d90 was the rest of tim2.c (SetClutColor, Get/SetTexel, GetTextureColor, the GS loaders, TakeSnapshot, LoadT
 
 ## Frontier (called by reconstructed code, not written yet)
 
