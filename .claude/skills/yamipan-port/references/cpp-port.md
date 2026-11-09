@@ -70,7 +70,8 @@ src/yamipan/
            RpcServers            the SIF RPC servers a module registers; a call runs under the lock
            Spu2                  libsd's chip: registers, 2 MB of sound RAM, transfers that complete
            Spu2Voices            the SPU2's synthesiser: 48 ADPCM voices, ADSR, the PCM ring, the mixer
-                                 thread (no reverb yet)
+                                 thread
+           Spu2Reverb            the SPU2's effect unit, one network per core, in sound RAM
   audio/   AudioOutput           the sound card: one SDL audio stream, 16-bit stereo
   gpu/     handles, Device       RAII over SDL_GPU, shader loading
   rendering/

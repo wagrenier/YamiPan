@@ -2099,13 +2099,31 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   The ring's status is what was heard (mixed, less what the device still holds). sceSdInit opens the
   device: `SDL_OpenAudioDeviceStream` on the default playback device, 16-bit stereo 48 kHz (SDL's audio is
   up since `Application::startServices`). The log reports the first three 10 s windows: "audio: N s mixed,
-  peak P (x dBFS), K key-ons". **Not yet:** reverb (the VMIXE sends are kept, nothing returns them), PMON
+  peak P (x dBFS), reverb return peak R, K key-ons" (the reverb part since the next point). **Not yet:** PMON
   and NON, the player's volume settings (RosePan's [audio] section), core 0 feeding core 1 (both cores
   are summed, as in RosePan). **Seen 2026-11-09:** the device is "Remote Audio" (the machine is used over
   Remote Desktop); the language screen keys no voice (peak 0); `YAMIPAN_TELEPORT=d0101` keys the event's
   stereo stream and mixes it at -25 dBFS peak. A dump of that mix (scratch code, removed) read as sound,
   not noise: 0.02..0.05 zero crossings a sample (noise is 0.5), sample-to-sample steps 0.05..0.15 of the
   RMS, left and right correlated +0.1..+0.8, the level rising and falling over 40 s.
+- **The reverb** (2026-11-09, `iop::Spu2Reverb`, RosePan's sdk/iop_reverb.cpp as a class): one per core,
+  the SPU2's comb / all-pass network at 24 kHz (every other output frame: each pair of sends averaged in,
+  the return held over both) out of a work area in sound RAM that ends at the core's SD_A_EEA (RXSNDDRV:
+  0x1fffff for core 0, 0x1dffff for core 1). The ten SDK presets and their work-area sizes (the driver's
+  `s_effectModes` sizes are the same); address registers count 8 bytes (4 samples). Fed by the voices
+  whose VMIXEL / VMIXER bit is set (`Spu2Voices` sums them per core), returned scaled by EVOL into the dry
+  mix before the master volume. Driven by sceSdSetEffectAttr (mode + the EEA written just before; depth),
+  EVOLL / EVOLR and SD_C_EFFECT_ENABLE; sceSdClearEffectWorkArea clears the current area (RXSNDDRV never
+  calls it: it zero-fills the area by DMA). **RXSNDDRV re-sends the same preset on every step of a depth
+  ramp** (RxSndDrvEffectTick, each tick): a preset already set over the same EEA keeps its area and
+  position, unlike RosePan, which cleared it on every call (its game sent it on a change only). A voice's
+  send is its switch bit 2 (`RxSndDrvVoiceSetSwitch`), from an XVAB region's flag 2, a note's switch or
+  an ADPCM stream's `m_reverb`. **Seen 2026-11-09 (d0101, 100 s, scratch logs removed):** "spu2: reverb
+  on core 0 / 1: studio C (mode 4)", areas 0x1f9020..0x1fffff and 0x1d9020..0x1dffff, the effect on and
+  the depth ramping (0x800, 0x1000, 0x1800 ...), but **no voice was ever sent to it** (VMIXEL / VMIXER 0
+  on both cores through 60 key-ons), so the return stayed 0 (open-items.md). An impulse test of the class
+  (scratch, studio C, depth 0x3000): a return within 100 ms, energy falling about 20 dB per 900 ms, peak
+  3807, no runaway; a re-sent preset keeps the tail; mode 0 is inactive; nothing written below the area.
 - **The EE's side** (2026-11-09, `sdk/sif.cpp`): sceSifBindRpc keeps the
   RPC number in the client's `command`; sceSifCallRpc sends a call to a registered server through
   `YamiPan_IopRpcDispatch` on the EE's thread and copies `rsize` bytes of the handler's buffer back before

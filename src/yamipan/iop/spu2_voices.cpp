@@ -220,8 +220,12 @@ struct Spu2Voices::Core
     std::uint16_t masterR = kMasterDefault;
     std::uint32_t endx = 0;
     AutoDma autoDma;
-    std::int32_t accL[kMixFrames] = {};
+    std::int32_t accL[kMixFrames] = {}; // dry
     std::int32_t accR[kMixFrames] = {};
+    std::int32_t sendL[kMixFrames] = {}; // to the reverb
+    std::int32_t sendR[kMixFrames] = {};
+    std::int32_t returnL[kMixFrames] = {}; // from it
+    std::int32_t returnR[kMixFrames] = {};
 };
 
 struct Spu2Voices::Meter
@@ -229,13 +233,15 @@ struct Spu2Voices::Meter
     std::uint64_t frames = 0;
     std::uint64_t windowFrames = 0;
     int peak = 0;
+    int reverbPeak = 0;
     int keyOns = 0;
     int reports = 0;
 };
 
-Spu2Voices::Spu2Voices(const std::uint8_t *ram, std::uint32_t ramSize)
+Spu2Voices::Spu2Voices(std::uint8_t *ram, std::uint32_t ramSize)
     : m_ram(ram), m_ramSize(ramSize), m_voices(std::make_unique<Voice[]>(kCores * kVoicesPerCore)),
-      m_cores(std::make_unique<Core[]>(kCores)), m_meter(std::make_unique<Meter>())
+      m_cores(std::make_unique<Core[]>(kCores)), m_meter(std::make_unique<Meter>()),
+      m_reverb(std::make_unique<Spu2Reverb>(ram, ramSize))
 {
     reset();
 }
@@ -256,6 +262,7 @@ void Spu2Voices::reset()
             v.number = n;
         }
     }
+    m_reverb->reset();
 }
 
 void Spu2Voices::start()
@@ -408,6 +415,8 @@ void Spu2Voices::mixVoices()
         const std::int32_t volR = decodeVolume(v.volR);
         const bool dryL = (core.dryL & bit) != 0;
         const bool dryR = (core.dryR & bit) != 0;
+        const bool wetL = (core.wetL & bit) != 0;
+        const bool wetR = (core.wetR & bit) != 0;
 
         for (int f = 0; f < kMixFrames; f++)
         {
@@ -418,10 +427,16 @@ void Spu2Voices::mixVoices()
             const std::int32_t env = v.envelope(ended);
             if (ended)
                 beginEnd(v);
+            const std::int32_t l = applyVolume(s, applyEnvelope(volL, env));
+            const std::int32_t r = applyVolume(s, applyEnvelope(volR, env));
             if (dryL)
-                core.accL[f] += applyVolume(s, applyEnvelope(volL, env));
+                core.accL[f] += l;
             if (dryR)
-                core.accR[f] += applyVolume(s, applyEnvelope(volR, env));
+                core.accR[f] += r;
+            if (wetL)
+                core.sendL[f] += l;
+            if (wetR)
+                core.sendR[f] += r;
         }
     }
 }
@@ -453,25 +468,56 @@ void Spu2Voices::mixAutoDma()
     }
 }
 
-// Both cores' output summed, each through its master volume. Core 0 feeding core 1 (AVOL, MMIX) is not
+// The reverb at its half rate: each pair of sends averaged in (a two-tap box, a poor anti-alias filter
+// but far better than dropping one), the return held over both frames of the pair. RosePan's; not the
+// hardware's resamplers, whose images sit high in the band where the reverb has little energy.
+void Spu2Voices::mixReverb()
+{
+    for (int c = 0; c < kCores; c++)
+    {
+        Core &core = m_cores[c];
+        if (!m_reverb->active(c))
+        {
+            std::fill(std::begin(core.returnL), std::end(core.returnL), 0);
+            std::fill(std::begin(core.returnR), std::end(core.returnR), 0);
+            continue;
+        }
+        for (int f = 0; f < kMixFrames; f += Spu2Reverb::kRateDivider)
+        {
+            std::int32_t l = 0;
+            std::int32_t r = 0;
+            m_reverb->tick(c, (core.sendL[f] + core.sendL[f + 1]) / 2, (core.sendR[f] + core.sendR[f + 1]) / 2, l,
+                           r);
+            core.returnL[f] = core.returnL[f + 1] = l;
+            core.returnR[f] = core.returnR[f + 1] = r;
+            m_meter->reverbPeak = std::max({m_meter->reverbPeak, std::abs(l), std::abs(r)});
+        }
+    }
+}
+
+// Both cores' output summed, each through its master volume (the dry mix and the reverb's return). Core 0 feeding core 1 (AVOL, MMIX) is not
 // modelled, as in RosePan: on the console core 0 also passes core 1's master.
 void Spu2Voices::mixBlock(std::int16_t *out)
 {
     for (int c = 0; c < kCores; c++)
     {
-        std::fill(std::begin(m_cores[c].accL), std::end(m_cores[c].accL), 0);
-        std::fill(std::begin(m_cores[c].accR), std::end(m_cores[c].accR), 0);
+        Core &core = m_cores[c];
+        std::fill(std::begin(core.accL), std::end(core.accL), 0);
+        std::fill(std::begin(core.accR), std::end(core.accR), 0);
+        std::fill(std::begin(core.sendL), std::end(core.sendL), 0);
+        std::fill(std::begin(core.sendR), std::end(core.sendR), 0);
     }
     mixVoices();
     mixAutoDma();
+    mixReverb();
     for (int f = 0; f < kMixFrames; f++)
     {
         std::int32_t l = 0;
         std::int32_t r = 0;
         for (int c = 0; c < kCores; c++)
         {
-            l += applyVolume(m_cores[c].accL[f], decodeVolume(m_cores[c].masterL));
-            r += applyVolume(m_cores[c].accR[f], decodeVolume(m_cores[c].masterR));
+            l += applyVolume(m_cores[c].accL[f] + m_cores[c].returnL[f], decodeVolume(m_cores[c].masterL));
+            r += applyVolume(m_cores[c].accR[f] + m_cores[c].returnR[f], decodeVolume(m_cores[c].masterR));
         }
         out[f * 2] = toS16(l);
         out[f * 2 + 1] = toS16(r);
@@ -512,11 +558,13 @@ void Spu2Voices::mixerLoop()
                 if (m_meter->windowFrames >= kMeterWindowFrames && m_meter->reports < kMeterReports)
                 {
                     const double db = m_meter->peak > 0 ? 20.0 * std::log10(m_meter->peak / 32768.0) : -999.0;
-                    log::info("audio: {} s mixed, peak {} ({:.1f} dBFS), {} key-ons", m_meter->frames / kSampleRate,
-                              m_meter->peak, db, m_meter->keyOns);
+                    log::info("audio: {} s mixed, peak {} ({:.1f} dBFS), reverb return peak {}, {} key-ons",
+                              m_meter->frames / kSampleRate, m_meter->peak, db, m_meter->reverbPeak,
+                              m_meter->keyOns);
                     m_meter->reports++;
                     m_meter->windowFrames = 0;
                     m_meter->peak = 0;
+                    m_meter->reverbPeak = 0;
                 }
             }
         }
@@ -727,6 +775,32 @@ void Spu2Voices::setGroup(int core, int voice, int group)
     std::lock_guard lock(m_lock);
     if (Voice *v = voiceAt(core, voice))
         v->group = group;
+}
+
+// ---- the effect unit ------------------------------------------------------------------------------
+
+void Spu2Voices::setReverbPreset(int core, std::uint32_t mode, std::uint32_t eea)
+{
+    std::lock_guard lock(m_lock);
+    m_reverb->setPreset(core, mode, eea);
+}
+
+void Spu2Voices::setReverbDepth(int core, std::uint16_t left, std::uint16_t right)
+{
+    std::lock_guard lock(m_lock);
+    m_reverb->setDepth(core, left, right);
+}
+
+void Spu2Voices::setReverbEnable(int core, bool on)
+{
+    std::lock_guard lock(m_lock);
+    m_reverb->setEnable(core, on);
+}
+
+void Spu2Voices::clearReverb(int core)
+{
+    std::lock_guard lock(m_lock);
+    m_reverb->clearWorkArea(core);
 }
 
 // ---- what the hardware shows -----------------------------------------------------------------------

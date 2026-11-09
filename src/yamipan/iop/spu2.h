@@ -10,7 +10,7 @@
 //   - The auto-DMA ring (sceSdBlockTrans, the driver's PCM player) plays through the synthesiser, and its
 //     status is the address heard so far.
 //   - Not modelled: the SPU2 interrupt at IRQA (RXSNDDRV installs no handler; its ADPCM streams poll NAX),
-//     the auto-DMA's half-buffer interrupts (no handler on core 1), reverb (its attributes are kept).
+//     the auto-DMA's half-buffer interrupts (no handler on core 1).
 //
 // Its registers are touched only under the IOP's big kernel lock (every libsd call comes from IOP code);
 // the synthesiser has a lock of its own for its mixer thread.
@@ -71,8 +71,9 @@ public:
     Handler setTransHandler(int core, Handler handler, void *arg);
     Handler setSpu2Handler(Handler handler, void *arg);
 
-    // ---- reverb (stored until the effect unit exists) ---------------------------------------------
+    // ---- reverb (Spu2Reverb, through the synthesiser) ---------------------------------------------
     int setEffectAttr(int core, const EffectAttr &attr);
+    void clearEffectWorkArea(int core);
 
     // ---- the player's volume group of a voice (music, effects) --------------------------------------
     void setVoiceGroup(int core, int voice, int group);
