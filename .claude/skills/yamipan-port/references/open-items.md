@@ -1806,9 +1806,13 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
   answers through `YamiPan_IopRpcDispatch` (command 0x12: version 0x0101); libsd runs on `iop::Spu2`
   (registers, sound RAM, transfers that complete, voices that play in time); (2) is in too: the EE's
   calls reach the driver, SIF DMA copies, the IOP heap is iop::SystemMemory, and the stream formats' silent
-  sides step aside (architecture.md "The EE's side"; the boot and the first bank seen). **Not seen:** an
-  event with the driver (`YAMIPAN_RXSNDDRV=1 YAMIPAN_TELEPORT=d0101`): the first build crashed on the
-  silent side's fake stream buffer, the fix was built but Smart App Control blocked the exe. Run it first.
+  sides step aside (architecture.md "The EE's side"; the boot, two banks and an event seen, its shots
+  the same as without the driver). **Doubt (2026-11-09):** the event's ADPCM stream starves: the EE wrote
+  about one 0x180..0x700-byte block per frame (1.5 MB in all), while 48 kHz stereo ADPCM plays about
+  55 KB a second, so the driver's SPU ring ran dry (fill 0x80 at its end). About 1.1 KB a frame is that rate
+  at PAL's 50 frames a second, and these runs drew about 28 (Remote Desktop), so the feed may simply be
+  frame-bound; the other suspect is the driver's status reply (RoR's layout: the free space the EE reads
+  in rxSndAdpcmUpdate), part of (3). Check at full frame rate before reading (3).
   Left of (1): the voice engine, reverb and an audio device; then (3), FS2's differences.
 
 - 2026-11-05 (Claude's call, a scheduled run, for the user to overrule): **doors are on, and `kDoorsEnabled` is gone.** The stage crash that switched them off is explained and fixed (Done, game/playermotion.cpp sixth run). `StageMenu::update`, `draw` and `destroy` stay stubs on purpose: with `update` written and no list window, the menu button would open a menu nobody sees that holds the input focus. `game/stagemenu.cpp` is a second file in a one-TU run, like `game/uiitemlist.cpp`: its stubbed ctor was the crash.
