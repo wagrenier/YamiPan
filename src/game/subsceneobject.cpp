@@ -499,6 +499,7 @@ CharacterHidePart::CharacterHidePart(StageObject *owner, int kind)
  *   FS2 0x002699e0 SubSceneModelObject::sideHook3
  *
  * The ROM's this-adjusting thunks (-0x40), which the host has no need of:
+ *   FS2 0x00269da0 to SubSceneModelObject::~SubSceneModelObject
  *   FS2 0x002bc0b0 to SubSceneMapObject::~SubSceneMapObject
  *   FS2 0x002bc0c0 to SubSceneGateObject::~SubSceneGateObject
  *   FS2 0x002bc0d0 to SubSceneCharacter::~SubSceneCharacter

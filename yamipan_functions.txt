@@ -6906,11 +6906,6 @@
 /* 00269bd0 0000005c */ SubSceneModelObject::attach(){}  // game
 /* 00269c30 000000c4 */ SubSceneModelObject::~SubSceneModelObject(){}  // game
 /* 00269d00 0000009c */ SubSceneModelObject::SubSceneModelObject(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
 /* 00269da0 00000008 */ SubSceneModelObject::~SubSceneModelObject_thunk(){}  // game
 
 // *****************************************************************************

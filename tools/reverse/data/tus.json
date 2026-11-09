@@ -2799,7 +2799,7 @@
    "why": "String and StringList, whose vtables 0x311200 / 0x311210 only these use; ends at the VU math 0x149510. Written with game/packtables.cpp (it was what stopped every stage script)."
   },
   "game/subsceneobject.cpp": {
-   "notes": "All 50 written or recorded: the last 14 were header getKinds, empty hooks and thunks (ledger block at the end of the cpp; batch 113 named the thunks, saved). Status verify: map objects show from the event's camera, characters do not, motions stand still until ScenePairTable, no reference exists for the scene. The black after the event is settled, see open-items.md: d0101 ran 1262 frames and faded out itself, then waited for ever on a voice stream stub. Bridge in rx/rxsndstradpcm.c (Open, Close, Update): silent, lasts the request's length (51.02 s), so the event ends at frame 1276 and the stage returns. After that the fade is right (Root calls native 0x4e on the third frame, level reaches 0); black because no StageCharacter means no native 0x70, no setPlayer, no linked camera. Proof: YAMIPAN_CAMERA shows the room there, progress/20261104-d0101-after-fixedcam.png. The user saw the same thing live and guessed a missing step before control: right, it is the player, roadmap steps 4 to 6. Still stubs by choice: MapObjectParts, collisionFindRecord, CollisionFile::relocate, GateParts, setupBody; MapObjectParts needs a host table for the record pointers (the build is 64-bit). The PCM stream format is still a stub and would hang a wait the same way. check: build OK, callcheck clean, layoutcheck OK. Next: rena/rena_draw.cpp.",
+   "notes": "No code change: 0x269da0 is the -0x40 adjustor thunk of SubSceneModelObject::~SubSceneModelObject 0x269c30 (vtable entry 0x316cb4), already named in Ghidra (batch 113 style, _thunk) and already mentioned in the dtor's comment. This run extended the range to 0x268a20..0x269db0 (ShotSpread::scatter 0x269db0 is playermotion) and listed the thunk in the ledger block at the end of subsceneobject.cpp, so the file counts 51 of 51. Build green, callcheck clean, layoutcheck OK; smoke run 15 s ends on the language select as before. Next: the two other 1-function runs unassigned@0026d020 and unassigned@0029a830, then re-assess from roadmap-3d-control.md.",
    "ranges": [
     [
      "001763e0",
@@ -2819,7 +2819,7 @@
     ],
     [
      "00268a20",
-     "00269da0"
+     "00269db0"
     ],
     [
      "002bb600",
@@ -2836,11 +2836,16 @@
      "date": "2026-11-04 16:52",
      "status": "verify",
      "summary": "All 50 of the TU recorded; the event now ends: a silent timed ADPCM stream bridge, the black after it traced to the missing player"
+    },
+    {
+     "date": "2026-11-09 08:27",
+     "status": "verify",
+     "summary": "SubSceneModelObject dtor thunk 0x269da0 pinned (was unassigned@00269da0)"
     }
    ],
    "status": "verify",
    "task": "The event's objects, queued by the user 2026-11-04 to come right after ModelPose: SubSceneCharacter, SubSceneItem, SubSceneProp, SubSceneMapObject, SubSceneGateObject and SubSceneDoorObject, 0x2bb680..0x2bc100 (cut them out of unassigned@002b9ef0 with tus.py define), with the base SubSceneModelObject they stand on. All stubs today: applyBgTarget and placeCharacter call them, nothing enters the scene, and the stage is black from the opening's first frame. Check each ctor against the ROM for setDirtyTree(false): a map object left dirty lands at the origin (hazards.md, A picture that looks like a place can still be wrong). Needs game/modelpose.cpp. Also find who calls DemoCamera::playCutNamed (vtable +0x264, a script native, unread): without it the camera has no cut to play. The event's natives by reach: roadmap-3d-control.md. Done when the picture shows the event's objects from the event's own camera, with no YAMIPAN_CAMERA.",
-   "why": "The event's objects: base SubSceneModelObject from 0x268310 (its lamp) to the runner thunk, classes on it at 0x2bb600..0x2bc100, plus the character's model helpers the setup calls. 0x2689a0 left out (nothing calls it)."
+   "why": "SubSceneModelObject's members 0x268a20..0x269da0 and its -0x40 dtor thunk 0x269da0 (vtable 0x316cb4 slot, beside the dtor 0x269c30), up to ShotSpread::scatter 0x269db0 (playermotion); the lamp 0x268310..0x2689a0; the subscene item / map / gate / character classes 0x2bb600..0x2bc100 with their thunks; the scattered pieces 0x1763e0, 0x17dcb0, 0x17e010"
   },
   "game/sysdata.cpp": {
    "notes": "Cut out of unassigned@00171300 (the frontier pick, 5138 functions) and pinned 0x23af30-0x23c020. One SystemData block of 0x620 bytes at 0x598b30: SaveData +0 (0x4bc: stage flags +0x69, records [3][2][30] +0xd8, medals [3][2][30] +0x3b4), StageSelect +0x4bc (the play record, 153 callers of getStageSelect), GameOptions +0x4d0 (0x50), FlagTable +0x520 (64 ints). Outgoing prototypes in gamehooks.h (SoundConfig and gSoundConfig, memcardGetState, randUnit, stageDefaultRecord, StageResult and getStageResult) and gfxtarget.h (GfxDisplay, gfxGetCurrentDisplay, gfxSetDisplayOffset). Data the build must define: gSoundConfig (sbss 0x31addc) and gSystemData lives here. ButtonMap::assign with action -1 reads button[-1] in the ROM: the port keeps the holder unchanged (PC note). Unknown: SaveData +0x468 / +0x3ac roles, record kinds, brightness guess for options +0x18, which of 0x23bb30 / 0x23bb40 is the save getter. Next in the same unassigned run: gameSceneThread 0x231bb0, getLocalDateTime 0x23de20, memcard 0x2a9c70..0x2acf00, each its own file via tus.py define.",
