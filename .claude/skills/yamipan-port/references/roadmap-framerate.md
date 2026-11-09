@@ -112,6 +112,7 @@ frame-counting system in the table (and those this pass did not find) needs a PC
 `(int)(1 / dt)` rounding and the whole-tick clock. That means changes across dozens of TUs of the game layer, changed
 behaviour (collision, per-frame random rolls, AI thresholds), and every future TU having to be checked. Not
 recommended; 50 Hz (exactly twice 25, 6 whole ticks, `stageFps` exact) is the only rate worth a later experiment.
+"Native 60 Hz" below has a second, closer look.
 
 ## Option A so far (2026-11-09)
 
@@ -184,6 +185,62 @@ would add the camera's move. Shots: the rain, the wall, the girl, right.
 are placed on the game thread); the sky mist's own drift (camera only); whatever the game projects to 2D itself (the
 UI layer). Shadows are matched by slot and a 5 % test, not by owner; two characters swapping shadow slots would snap
 rather than sweep.
+
+## Native 60 Hz: what option C would take (2026-11-09)
+
+The user asked what a real 60 fps would need, without blending: the game's own logic run 60 times a second. A second
+look at C, with the reconstruction nearly complete (6,044 functions, 3 stubs), so the code can be read whole.
+
+**The pace: small.**
+- The field clock at exactly 60 Hz (not NTSC's 59.94: 300 / 59.94 is not whole), `kVsyncsPerFrame` 1,
+  `kClockTicksPerFrame` 5. No clock is ever scaled (nothing writes `m_scale`; only pause), so `Clock::advance`'s
+  `>> 8` loses nothing at 5 ticks. Nothing else counts vblanks: only `MasterClock::update` and the frame sync.
+- **`(int)(1.0f / dt)` gives 59** (float32, checked: 5 / 300 is 0.016666668, one ulp above 1/60). 18 places turn dt
+  into a rate that way (`stageFps`, `scriptFramesFrom30`, revive frames, the gun's `spread.rate`, ...); all their
+  timers would run 1.7 % short. One fix covers all of them: `getDeltaSeconds` one ulp lower at 60 Hz
+  (0.016666666, 1 / dt = 60.000004 -> 60), a timing change of 1e-7, instead of 18 edits.
+- Sound: RXSNDDRV ticks at the rate `soundInit` gives it (`rxSndSetFrameRate` 50 / 60, SDPR2's pair mode), not the
+  game's frame; it can keep its 50 or take the NTSC values the driver already has. The EE flushing sound commands
+  once a game frame more often is harmless.
+
+**The time-based core follows by itself.** 22 files read the clock (characterroute 97 calls, playermotion 50,
+stageitem, stagescene, stagecar, characterinput, scriptrunner, characterbrain, stageparty, mapobject, ...):
+animation, root motion, routes, script waits, character timers. They already turn dt into 30 Hz frames and back.
+
+**Everything else counts frames, and each rule needs a rate-free form.** The other ~117 game files include every
+UI, effect, item, menu and sound file. Not counted site by site yet; the first pass's table above is the kinds:
+
+| kind | examples | rate-free form | the same as 25 Hz? |
+|---|---|---|---|
+| counters | pad repeat (7, then 2), 30-frame fades, blinks, voice delays (`kFramesPerSecond = 25`), particle lives, minigame timers | count seconds, or n x 2.4 rounded | 7 frames -> 16.8, so 17: off by up to half a 60 Hz frame |
+| speeds a frame | UI pixels, item `m_speed`, `StageCar` `advance(1.0f)`, cut speed, 6 degrees a frame (lock-on, critters) | x dt / 0.04 | yes |
+| accelerations a frame | item gravity (1 unit a frame, each frame), particle gravity | x (dt / 0.04)^2 | close: Euler with a smaller step lands elsewhere |
+| eases | the camera's `approachVec3` (step = rate x distance^2, capped at 25 units a frame, no overshoot test), look and turn eases | the curve the steps approximate: for that rule, d / (1 + (rate / 0.04) x d x dt) | no: the PAL steps are not that curve (they overshoot when rate x d > 1). The camera would feel close, not identical |
+| random rolls a frame | particle emission (22 rolls in stageparticle), ripples, fidgets | p -> 1 - (1 - p)^(dt / 0.04) | in distribution only |
+| save data | `playTime++` a frame, shown / 25, on the memory card | keep a 25 Hz count (an accumulator) | yes, cards stay compatible |
+
+**What it costs.**
+- **Game-layer edits.** The game layer stays authentic by the user's rule, so this needs one marked convention (a
+  helper such as `palFrames(dt)`, a `// PC 60 Hz:` comment, all behind a setting so 25 Hz stays the ROM's).
+- **No reference to prove it against.** The cmp tools compare host and ROM at the ROM's rate; at 60 Hz nothing can.
+  The test would be new: the same pad script at 25 and 60 Hz, the player's, camera's and enemies' positions compared
+  over time, a measured deviation rather than zero.
+- **Changed behaviour.** Collision with smaller steps; AI thresholds on per-frame distances crossed at other moments;
+  the random stream used in another order (a run stops matching the console after the first roll).
+- **A missed site runs 2.4 times fast.** Reading finds them, a grep only suggests candidates.
+- **60 only.** The tick count must be whole: 50, 60, 75, 100, 150 Hz. 120 or 144 Hz need a fractional carry, or A
+  on top of a 60 Hz game.
+
+**What it gains over A:** input to picture, about 17 ms a game frame instead of 40 ms plus A's one-frame delay; the 2D
+UI and what A leaves unblended (the sky mist's drift, the placed batches) at 60 too. The motion on screen is already
+A's.
+
+**If chosen, the order:**
+1. The inventory: every per-frame rule in the ~117 files, kind and fix.
+2. **50 Hz first** as the dry run: 2x is exact for counters and speeds (n -> 2n, v -> v / 2), dt exact (6 ticks),
+   `stageFps` 50. It tests the method and the 25-vs-faster comparison with no rounding in the way.
+3. 60 Hz: the ulp fix, the 2.4x counters, the eases.
+4. Keep A on top for refresh rates above 60.
 
 ## Measuring
 
