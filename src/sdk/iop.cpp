@@ -1,7 +1,7 @@
-// sdk/iop.cpp -- the IOP libraries RXSNDDRV imports. thbase, thevent, intrman, sysmem, loadcore and vblank
-// forward to yamipan::iop::Kernel. libsd and the IOP side of sifcmd are still placeholders: each answers
-// as a failed call and warns once, until the host serves the driver's RPC and models the SPU2 (RosePan's
-// sdk/iop_sif.cpp, iop_libsd.cpp, iop_voice.cpp and iop_reverb.cpp, rewritten as yamipan:: classes).
+// sdk/iop.cpp -- the IOP libraries RXSNDDRV imports. thbase, thevent, intrman, sysmem, loadcore, vblank and
+// the IOP side of sifcmd forward to yamipan::iop::Kernel. libsd is still a placeholder: each call answers
+// as a failed one and warns once, until the host models the SPU2 (RosePan's sdk/iop_libsd.cpp,
+// iop_voice.cpp and iop_reverb.cpp, rewritten as yamipan:: classes).
 // The driver only runs with YAMIPAN_RXSNDDRV=1 (sdk/sif.cpp boots it); without that nothing here is called.
 #include "iop_host.h"
 #include "iop_voice.h"
@@ -242,24 +242,44 @@ void *sceSdSetSpu2IntrHandler(void *, void *)
 
 // ---- sifcmd, the IOP's server side ----------------------------------------------------------------
 
-void sceSifSetRpcQueue(sceSifQueueData *, int)
+// The queue only groups servers for sceSifRpcLoop here; nothing waits on it.
+void sceSifSetRpcQueue(sceSifQueueData *q, int)
 {
-    static std::once_flag once;
-    notYet(once, "sceSifSetRpcQueue");
+    if (q != nullptr)
+        *q = sceSifQueueData{};
 }
 
-void sceSifRegisterRpc(sceSifServeData *, u_int, sceSifRpcFunc, void *, sceSifRpcFunc, void *,
-                       sceSifQueueData *)
+void sceSifRegisterRpc(sceSifServeData *sd, u_int command, sceSifRpcFunc func, void *buff, sceSifRpcFunc cfunc,
+                       void *cbuff, sceSifQueueData *q)
 {
-    static std::once_flag once;
-    notYet(once, "sceSifRegisterRpc");
+    if (sd != nullptr)
+    {
+        *sd = sceSifServeData{};
+        sd->command = command;
+        sd->func = func;
+        sd->buff = buff;
+        sd->cfunc = cfunc;
+        sd->cbuff = cbuff;
+        sd->base = q;
+    }
+    kernel().rpc().add(command, func, buff, q);
 }
 
-// On the IOP this loops for ever serving requests; with nothing to serve yet, it returns.
-void sceSifRpcLoop(sceSifQueueData *)
+// On the IOP this looped for ever taking requests; here a call runs on its caller's thread
+// (yamipan/iop/rpc_servers.h), so this only opens the queue's servers and returns.
+void sceSifRpcLoop(sceSifQueueData *q)
 {
-    static std::once_flag once;
-    notYet(once, "sceSifRpcLoop");
+    kernel().rpc().serve(q);
+}
+
+void *YamiPan_IopRpcDispatch(u_int rpc_number, u_int command, void *data, int size)
+{
+    return kernel().rpc().call(kernel(), rpc_number, command, data, size);
+}
+
+int YamiPan_IopRpcIsReady(u_int rpc_number)
+{
+    return kernel().rpc().serving(rpc_number) ? 1 : 0;
 }
 
 // ---- the host mixer's volume groups ---------------------------------------------------------------
