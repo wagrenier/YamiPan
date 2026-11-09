@@ -900,8 +900,12 @@
    "why": "The navigator: the screen after a stage (runNaviFile, runNaviLayout), the answer it leaves in the save, and its two widgets, PrgScaleNavi and PrgScaleNaviScroll. The file name is the port's."
   },
   "game/nodetransform.cpp": {
-   "notes": "All of 0x1d7c50..0x1d85b0 written (batches 100, 101); rotation, translate and multiply helpers in vu0math.h. New Game run: 31,560 frames with no crash, the opening movie at frame 3600, black at the end. Nothing draws 3D yet, so no picture tests this: the first map model does. TU 3 stagemodel.cpp: use StageBoneNode and StageMatrixNode from stagenode.h in bindBones and setBaseMotion, and change BoneNode::value to StageNodeBase pointer. architecture.md has The node transform; open-items.md has the doubts.",
+   "notes": "0x186a00 setDirty, 0x186a10 rebuildMatrix, 0x186a20 getMatrix, 0x186a30 getWorldMatrix lie in the lights' run (stagelight.cpp 0x1866f0..0x186ee0) but are StageNode's (vtable 0x315a80, shared by 0x315a20, 0x314180, 0x315160, 0x315190), joined by what they do as 0x1865c0 is to stageobject.cpp. All were already inlines in stagenode.h and match the ROM, as do the bone and matrix nodes' empty slots, StageNode::setDirtyTree 0x1d7ce0 and StageNodeList begin / linkValue: listed in the file's Written in headers block. No name changed in Ghidra. Smoke run 15 s: the language screen as before. Next with the queue empty: unassigned@00283cb0 (3), unassigned@0021c290 (2), then the 1-function runs.",
    "ranges": [
+    [
+     "00186a00",
+     "00186a40"
+    ],
     [
      "001d7c50",
      "001d85b0"
@@ -912,11 +916,16 @@
      "date": "2026-11-04 07:58",
      "status": "verify",
      "summary": "NodeTransform, the bone and matrix nodes, StageNodeBase walks; 3D path 2 of 5"
+    },
+    {
+     "date": "2026-11-09 07:26",
+     "status": "verify",
+     "summary": "StageNode's four inline slots 0x186a00..0x186a40 (was unassigned@00186a00) joined to game/nodetransform.cpp; the file's 14 header-written functions checked against the ROM and listed: 30 of 30"
     }
    ],
    "status": "verify",
    "task": "3D path 2 of 5 (the user's pin). NodeTransform 0x1d7f20, update 0x1d7d50, updateMatrix 0x1d8420 and what the stage's nodes need to place a model: StageNodeBase 0x1d8540. Pin the real extent with tus.py define under this key; the rest of unassigned@001d7c50 is not part of this.",
-   "why": "vtable 0x315a50 and 0x315ab0 slots, NodeTransform, the StageNodeBase walks and ctor; 0x1d85b0 starts the next class (vtable 0x315ba0)"
+   "why": "vtable 0x315a50 and 0x315ab0 slots, NodeTransform, the StageNodeBase walks and ctor; 0x1d85b0 starts the next class (vtable 0x315ba0). 0x186a00..0x186a40 are StageNode's four inline slots (setDirty, rebuildMatrix, getMatrix, getWorldMatrix), emitted in the lights' run but joined by what they do, as 0x1865c0 is to stageobject.cpp (2026-11-09)"
   },
   "game/numlock.cpp": {
    "notes": "Split off unassigned@002a6980 (batch 197). NumLock: map object of oMK21_06 / oSJ08_07, now built by createMapObject; kind 5; code from StageResult +0x90 (renamed numLockCode), random digits not all zero when none, kept across retries. The seven numLock free functions are members now (pushDials, popDials, scramble, spinDial, setDial, dialsRight, dialsTurning) plus dialDown, dialUp, setInView (empty). NmlPose (setBaseMotion kind 3): load finds bn_kanagu, bn_key, bn_k04..bn_k01; update eases the four dial angles a fifth a frame (snap after setDials) and writes their x-axis quaternions into the dial bones. Float order checked against the asm; no comparator (needs StageMapObject linked). Port differences: natives 0x201 / 0x202 / 0x22c skip a null lock (findNumLockTarget 0x29f440 still a stub), bone indices start at 0, a pose with no bones skips the quaternions. Not seen on screen: smoke run stays at the language select; the lock is on stages whose map has oMK21_06 or oSJ08_07. Left: the number-lock view (StageScene +0x90, ctor 0x2a89b0, createMapObject should build it: PC note there), SigLamp, 0x2a9be0, in unassigned@002a6980 (now 0x2a7b10..0x2a9c68 plus getSoundKind 0x2a6980, which belongs to game/charactersound.cpp).",

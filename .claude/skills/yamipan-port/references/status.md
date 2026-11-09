@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-07 20:53 at commit `dcb41c8` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-09 07:26 at commit `9292387` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -13,7 +13,7 @@ Generated 2026-11-07 20:53 at commit `dcb41c8` by `tools/reverse/status.py` (`re
 - game functions: **6598**, named **5844** (89%); library functions: 992
 - by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1611, game-inferred 4909
 - context-name ledger: 6520 entries; overrides of wrong library matches: 0
-- placed in a source file: 6499/6598 in 139 files
+- placed in a source file: 6503/6598 in 139 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5917**; stubs: **3**
+- reconstructed FS2 functions: **5931**; stubs: **3**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -74,7 +74,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/modelpose.cpp` | 92 | 0 |
 | `src/game/movieplayer.cpp` | 41 | 0 |
 | `src/game/navimenu.cpp` | 30 | 0 |
-| `src/game/nodetransform.cpp` | 17 | 0 |
+| `src/game/nodetransform.cpp` | 31 | 0 |
 | `src/game/numlock.cpp` | 27 | 0 |
 | `src/game/packtables.cpp` | 9 | 0 |
 | `src/game/pad.cpp` | 14 | 0 |
@@ -175,7 +175,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 183 TUs: todo 69, verify 140, done 46
+- 182 TUs: todo 68, verify 140, done 46
 - next: **None** (nothing on the frontier and no queued TU)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
@@ -217,7 +217,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/modelpose.cpp` 92/92 -- All 92 written, no stubs left in the TU (batch 111). Second run wrote the five solvers, solveLeg, settle and settleFixed, the sw bones swing with its spring and
 - verify: `game/movieplayer.cpp` 41/41 -- Cut out of unassigned@001953f0 (its tail 0x1faa30..0x1fcb40; the rest of that run is still unassigned). New game/movieplayer.h; gamehooks.h lost MoviePlayer and
 - verify: `game/navimenu.cpp` 30/30 -- Seen in the user's own playthrough: after stage 1 the navigator appears, the cursor moves and picking the next node starts that stage. Not looked at: the overvi
-- verify: `game/nodetransform.cpp` 16/26 -- All of 0x1d7c50..0x1d85b0 written (batches 100, 101); rotation, translate and multiply helpers in vu0math.h. New Game run: 31,560 frames with no crash, the open
+- verify: `game/nodetransform.cpp` 30/30 -- 0x186a00 setDirty, 0x186a10 rebuildMatrix, 0x186a20 getMatrix, 0x186a30 getWorldMatrix lie in the lights' run (stagelight.cpp 0x1866f0..0x186ee0) but are StageN
 - verify: `game/numlock.cpp` 27/29 -- Split off unassigned@002a6980 (batch 197). NumLock: map object of oMK21_06 / oSJ08_07, now built by createMapObject; kind 5; code from StageResult +0x90 (rename
 - verify: `game/packtables.cpp` 9/52 -- unassigned@00310a00 was CodeWarrior's 9 static initialisers (table 0x310fb0). Each is joined with tus.py define to the port file owning what it sets, as an FS2 
 - verify: `game/pad.cpp` 14/15 -- All 15 functions of 0x12f290..0x130a20 reconstructed; pad.h complete with PadBit / PadTerm / PadPhase / PadMotor / PadListen enums and PadPort at its EE layout 
@@ -321,6 +321,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-09 07:26 `game/nodetransform.cpp` verify: StageNode's four inline slots 0x186a00..0x186a40 (was unassigned@00186a00) joined to game/nodetransform.cpp; the file's 14 header-written functions checked agai
 - 2026-11-07 20:53 `game/stageplayer.cpp` verify: The volumes' tail: StageVolume::getKind 0x17ef90 and 0x17f040..0x17f150 (SphereVolume::getKind, its empty sideHook0..3, 12 adjustor thunks) pinned to game/stage
 - 2026-11-07 20:38 `game/packtables.cpp` verify: static initialisers 0x310a00..0x310f80 named __sinit_*_cpp (batch 236) and joined to their owners' TUs
 - 2026-11-07 20:18 `rena/tim2.cpp` verify: Sony's TIM2 sample whole, 20 of 20: unassigned@002e9d90 was the rest of tim2.c (SetClutColor, Get/SetTexel, GetTextureColor, the GS loaders, TakeSnapshot, LoadT
@@ -328,7 +329,6 @@ Recent sessions:
 - 2026-11-07 19:31 `game/stageparty.cpp` verify: JackFill's run pinned here (was unassigned@002081b0); its deleting dtor 0x208280 written
 - 2026-11-07 19:24 `rena/tim2.cpp` verify: Sony's TIM2 library complete, 9 of 9: Tim2CheckFileHeaer, Tim2GetUserSpace, Tim2GetUserData, Tim2GetComment, Tim2GetClutColor written (batch 232)
 - 2026-11-07 19:11 `game/stageelevator.cpp` verify: The 13 stubs counted against the elevator were dead leftovers: the old free elevator functions stayed in src/lib/unassigned_stubs.cpp after batch 184 made them 
-- 2026-11-07 18:53 `game/playermotion.cpp` verify: The last 14 functions of the slice were already written as header inlines: the carried list's second StageList instance 0x217700..0x2179ac, five StageCharacter 
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -372,6 +372,6 @@ Recent sessions:
 | `002c16d0` | FUN_002c16d0 | 5 | - | missing | game/packtables.cpp |
 | `002c0d50` | FUN_002c0d50 | 5 | - | missing | game/packtables.cpp |
 | `002e7e90` | FUN_002e7e90 | 5 | - | missing | rena/rena_draw.cpp |
-| `001d8250` | StageNodeList::linkValue | 4 | game | missing | game/nodetransform.cpp |
 | `00184260` | FUN_00184260 | 4 | - | missing | game/stageitem.cpp |
+| `00186b80` | FUN_00186b80 | 4 | - | missing | game/stagelight.cpp |
 
