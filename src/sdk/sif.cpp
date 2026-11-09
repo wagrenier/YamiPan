@@ -4,10 +4,12 @@
 // point: the boot goes through.
 #include <algorithm>
 #include <atomic>
+#include <chrono>
 #include <cctype>
 #include <cstdlib>
 #include <mutex>
 #include <string_view>
+#include <thread>
 
 #include "sif.h"
 #include "sifcmd.h"
@@ -41,6 +43,9 @@ bool namesSoundDriver(const char *path)
 
 // Until the host serves the driver's RPC and models the SPU2, it runs only on request: its threads start
 // and tick, the EE does not talk to it yet.
+// RXSNDDRV is the rx sound library's server.
+constexpr unsigned kRxSndRpc = 0xd000;
+
 bool driverRequested()
 {
     static const bool requested = [] {
@@ -58,6 +63,19 @@ void YamiPan_IopBoot()
     std::call_once(once, [] {
         yamipan::log::info("iop: starting RXSNDDRV (YAMIPAN_RXSNDDRV=1)");
         yamipan::iop::Kernel::instance().runModuleStart(&RxSndDrvStart);
+
+        // A probe while the EE does not call it yet: once its RPC thread has registered, command 0x12
+        // (the version, no side effect) goes through the driver's own dispatcher.
+        const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+        while (YamiPan_IopRpcIsReady(kRxSndRpc) == 0 && std::chrono::steady_clock::now() < deadline)
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        u_int none[4] = {};
+        const auto *reply = static_cast<const u_int *>(YamiPan_IopRpcDispatch(kRxSndRpc, 0x12, none, sizeof none));
+        if (reply != nullptr)
+            yamipan::log::info("iop: RXSNDDRV serves RPC {:#x}; command 0x12 answers version {:#06x}", kRxSndRpc,
+                               reply[0]);
+        else
+            yamipan::log::warning("iop: RXSNDDRV did not register RPC {:#x}", kRxSndRpc);
     });
 }
 

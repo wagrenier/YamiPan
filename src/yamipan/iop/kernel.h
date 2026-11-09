@@ -20,6 +20,7 @@
 #include <mutex>
 #include <vector>
 
+#include "yamipan/iop/rpc_servers.h"
 #include "yamipan/iop/system_memory.h"
 
 namespace yamipan::os
@@ -80,6 +81,7 @@ public:
     int waitVblankEnd();
 
     SystemMemory &memory() { return m_memory; }
+    RpcServers &rpc() { return m_rpc; }
 
 private:
     struct ThreadRecord;
@@ -109,6 +111,7 @@ private:
     std::chrono::steady_clock::time_point m_firstVblank;
 
     SystemMemory m_memory;
+    RpcServers m_rpc;
 };
 
 } // namespace yamipan::iop

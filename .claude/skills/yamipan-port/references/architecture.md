@@ -2053,12 +2053,16 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   V-blank grid at the EE's video standard, read each wait (RosePan's was a fixed 60 Hz). `iop::SystemMemory`
   is the IOP's 2 MB reserved below 4 GB, first fit at 256 bytes: the driver keeps IOP addresses as u_int
   and dereferences them. `sdk/iop.cpp` forwards thbase / thevent / intrman / sysmem / loadcore / vblank to
-  them; **libsd and the IOP side of sifcmd are still placeholders** that warn once. **`YAMIPAN_RXSNDDRV=1`
+  them, and the IOP side of sifcmd to `iop::RpcServers` (sceSifRpcLoop opens a queue's servers and
+  returns; `YamiPan_IopRpcDispatch` runs a server's handler on the caller's thread under the big kernel
+  lock); **libsd is still a placeholder** that warns once per call. **`YAMIPAN_RXSNDDRV=1`
   boots the driver** when rxfile loads `cdrom0:\MODULES\RXSNDDRV.IRX;1` (sceSifLoadModule, sdk/sif.cpp),
   inside "IOP Modules Load" as on the console. Seen 2026-11-09 (40 s runs): "Installed sound driver version
   1.00", every subsystem initialised, the DMA thread parked on its flag, the tick thread at 50 Hz ("iop: 500
-  V-blanks in 10.0 s", PAL), 15 placeholder warnings, the language screen as without it. The EE does not
-  talk to it yet: sif.cpp still answers RPC 0xd000 with zeros.
+  V-blanks in 10.0 s", PAL), the language screen as without it. A probe after the boot sends command 0x12
+  through the driver's own server and dispatcher: "command 0x12 answers version 0x0101" (its constant).
+  The EE does not talk to it yet: sif.cpp's sceSifCallRpc still answers RPC 0xd000 with zeros, because the
+  driver's DMA thread would retry sceSdVoiceTrans for ever against libsd's placeholder.
   Its `dma.cpp` now owns `YamiPan_RxSndNoteEeAddress`, which rx/rxsnd.c calls on each DMA: a 64-entry
   ring of EE blocks, harmless while nothing reads it.
 

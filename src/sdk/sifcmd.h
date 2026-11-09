@@ -81,9 +81,10 @@ void   sceSifRpcLoop(sceSifQueueData *q);
  *  Host bridge
  * ------------------------------------------------------------------------ */
 
-/* Invokes the handler registered for `command` under RPC number `rpc_number`,
- * returning its reply buffer, or NULL if nothing is bound.  sceSifCallRpc()
- * on the EE side goes through this. */
+/* Invokes the handler the IOP registered for RPC number `rpc_number` with
+ * `command`, under the IOP's big kernel lock, returning its reply buffer, or
+ * NULL if nothing serves that number (sdk/iop.cpp).  sceSifCallRpc() on the EE
+ * side is to go through this once the host models the SPU2. */
 void *YamiPan_IopRpcDispatch(u_int rpc_number, u_int command, void *data, int size);
 
 /* True once the service for `rpc_number` has reached sceSifRpcLoop(), i.e. its
