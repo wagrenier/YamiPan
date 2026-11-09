@@ -179,20 +179,13 @@ static void RxSndDrvAdpcmStop(RxSndDrvAdpcm *s);
 static void RxSndDrvAdpcmVoiceDone(int voice, int reason, void *arg);
 static void RxSndDrvAdpcmDmaDone(void *arg, int size);
 
-/* PC: the first few starts, underruns and ends of each kind, for the
- * smoke-run log (the driver itself prints none of them); all of them with
- * YAMIPAN_RXSNDDRV_LOG=all. */
+/* PC: the first few starts, underruns and ends, for the smoke-run log (the
+ * driver itself prints none of them). */
 static void LogStream(const char *what, const RxSndDrvAdpcm *s)
 {
     static int count;
-    static int all = -1;
 
-    if (all < 0)
-    {
-        const char *env = getenv("YAMIPAN_RXSNDDRV_LOG");
-        all = env != NULL && strcmp(env, "all") == 0;
-    }
-    if (!all && count >= 16)
+    if (count >= 16)
         return;
     count++;
     printf("rxsnddrv: ADPCM %d %s (voice %d, spu fill %#x, play %#x, pos %#x)\n", s->m_id, what,

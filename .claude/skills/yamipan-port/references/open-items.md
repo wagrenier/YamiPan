@@ -1793,6 +1793,12 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
 
 ## Decisions
 
+- 2026-11-09 (the user): **RXSNDDRV runs by default.** `YAMIPAN_RXSNDDRV` and `YAMIPAN_RXSNDDRV_LOG` are
+  gone: every run boots the driver, the EE's sound calls, SIF DMA and IOP heap go to the IOP host, and
+  sdk/sif.cpp's stand-ins (fake IOP addresses, dropped transfers) and the stream formats'
+  ADPCM_SILENT_BUFFER / PCM_SILENT_BUFFER with them. The driver logs the first four calls of each
+  command and its first 16 stream events. Still silent: no voice engine or audio device yet.
+
 - 2026-11-07 (the user): **RoR's RXSNDDRV reconstruction comes into YamiPan** as `src/iop/rxsnddrv/`, since
   FS2's driver is the same source, revised (architecture.md "The IOP side"). Done the same day for the
   driver itself (compiled, linked, re-addressed, not booted). Left, in order: (1) the IOP host as yamipan::
@@ -1802,7 +1808,8 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
   silent stand-ins (rx/rxsndstradpcm.c's "driver's silent side"); (3) FS2's 38 changed, 2 moved and 4 new
   functions and the grown records, read in Ghidra's rxsnddrv.elf before the driver's answers are trusted.
   **2026-11-09: (1) begun.** The IOP kernel and memory are in (`src/yamipan/iop/`, architecture.md "The IOP
-  side"); `YAMIPAN_RXSNDDRV=1` boots the driver, whose threads run (tick at 50 Hz), and its RPC server
+  side"); the driver boots (on every run since 2026-11-09, the user's call), its threads run (tick at
+  50 Hz), and its RPC server
   answers through `YamiPan_IopRpcDispatch` (command 0x12: version 0x0101); libsd runs on `iop::Spu2`
   (registers, sound RAM, transfers that complete, voices that play in time); (2) is in too: the EE's
   calls reach the driver, SIF DMA copies, the IOP heap is iop::SystemMemory, and the stream formats' silent

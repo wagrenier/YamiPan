@@ -34,8 +34,8 @@
  *  moved ones, and 4 functions RoR does not have (0x2d9c, 0x3660, 0x4454,
  *  0xd1dc).  The one-word differences say the voice, mix and PCM records grew
  *  (a voice stride 0x38 -> 0x3c, PCM offsets up by 0x18..0x1c): the struct
- *  layouts below are still RoR's.  It runs only with YAMIPAN_RXSNDDRV=1
- *  (sdk/sif.cpp boots it; its imports are sdk/iop.cpp's, on yamipan::iop).
+ *  layouts below are still RoR's.  sdk/sif.cpp boots it when rxfile loads
+ *  RXSNDDRV.IRX; its imports are sdk/iop.cpp's, on yamipan::iop.
  *
  *  The double buffer.  Commands arrive on the EE's RPC (any time) and are
  *  written into bank RxSndDrvCmdBank(); the double-buffer thread flips the

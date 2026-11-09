@@ -2,7 +2,7 @@
 // the IOP side of sifcmd forward to yamipan::iop::Kernel, libsd to its Spu2 (RosePan's sdk/iop_libsd.cpp
 // as a class). What is not here yet is what makes sound: the voice engine and reverb (RosePan's
 // iop_voice.cpp and iop_reverb.cpp).
-// The driver only runs with YAMIPAN_RXSNDDRV=1 (sdk/sif.cpp boots it); without that nothing here is called.
+// sdk/sif.cpp boots the driver when rxfile loads RXSNDDRV.IRX.
 #include "iop_host.h"
 #include "iop_voice.h"
 #include "libsd.h"

@@ -66,25 +66,16 @@ void RxSndDrvRpcThread(void)
 }
 
 /* PC: the first four calls of each command number (queued ones too) and
- * what they answered, for the smoke-run log.  YAMIPAN_RXSNDDRV_LOG=all logs
- * every call except the per-frame status polls (0x72 / 0x83 / 0xa3 / 0xb3). */
+ * what they answered, for the smoke-run log. */
 static void LogCommand(u_int fno, const u_int *data, u_int ret)
 {
     static u_char seen[0x201];
-    static int all = -1;
 
-    if (all < 0) {
-        const char *env = getenv("YAMIPAN_RXSNDDRV_LOG");
-        all = env != NULL && strcmp(env, "all") == 0;
-    }
     if (fno > 0x200)
         return;
-    bool poll = fno == 0x72 || fno == 0x83 || fno == 0xa3 || fno == 0xb3;
-    if (!(all && !poll)) {
-        if (seen[fno] >= 4)
-            return;
-        seen[fno]++;
-    }
+    if (seen[fno] >= 4)
+        return;
+    seen[fno]++;
     printf("rxsnddrv: cmd %#x {%#x %#x %#x %#x} -> %#x\n", fno, data[0], data[1], data[2], data[3], ret);
 }
 
