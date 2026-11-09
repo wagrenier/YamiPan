@@ -2,7 +2,7 @@
 
 The game runs at 25 fps because the PAL ROM waits two 50 Hz fields per frame. This file has what sets that rate,
 how much of the game measures time and how much counts frames, the three ways to go faster, and the first steps of
-the one recommended. Nothing here is implemented yet; the choice of approach is the user's (open-items.md).
+the one recommended. **The user chose A (2026-11-09); steps 1 and 2 are done ("Option A so far" below).**
 
 ## Where 25 Hz comes from
 
@@ -112,6 +112,36 @@ frame-counting system in the table (and those this pass did not find) needs a PC
 `(int)(1 / dt)` rounding and the whole-tick clock. That means changes across dozens of TUs of the game layer, changed
 behaviour (collision, per-frame random rolls, AI thresholds), and every future TU having to be checked. Not
 recommended; 50 Hz (exactly twice 25, 6 whole ticks, `stageFps` exact) is the only rate worth a later experiment.
+
+## Option A so far (2026-11-09)
+
+**Steps 1 and 2: the timing and the camera.** `InterruptController::lastFieldTime` (when the last field was due, on
+the clock's even grid) stamps each `Frame` at `YamiPan_DrawUiKick` (`Frame::time`). `Renderer` keeps the frame
+before the shown one (`m_previous`; a frame overtaken in the mailbox before the render thread took it is kept as the
+previous one, so a render stall does not break the pairing), and each present asks `FrameBlend`
+(`rendering/frame_blend.cpp`): progress = time since the newer frame's field / time between the two fields, clamped
+to 0..1; nothing when the numbers are not consecutive or the two fields are over 100 ms apart. Below 1, the scene is
+recorded again with the newer frame's passes, each `viewScreen` and `lights.eye` blended from the older frame's
+(component-wise: every point moves on the chord, not the arc; `frame_blend.cpp` has the error). No blend when the
+pass counts differ, a pair's `clearDepth` differs, or a camera cut: the eye moves over 300 units or turns over 40
+degrees in one frame. Uploads stay once per game frame: the blended presents reuse the frame's buffers. Setting:
+Graphics > Smooth camera (`smooth_motion`, on by default); test hooks in the tools README ("Platform contract").
+
+**Seen** (stage 7, `YAMIPAN_TELEPORT=7`, 40 s, left stick scripted, `YAMIPAN_BLEND_LOG=1`; over Remote Desktop,
+~32 presents a second): game frames 40 ms apart on the field grid; 1,238 of 1,329 presents blended; the main eye's
+speed between presents runs smoothly across game frames (an easing camera: 29.4, 28.1, 26.9, 25.8, 24.8, 23.6 ...
+units/s from one present to the next, with no step where a new frame arrives), where unblended it moves once a game
+frame. The rest at 1.0: presents after a frame's
+full 40 ms (correct), the stage's first frames, and three frames whose predecessor the mailbox had dropped while
+the render thread wrote a shot (the overtaken-frame fix above; built, **not run yet**: Smart App Control blocked the
+next exe, hazards.md). The shots show stage 7 drawn correctly under a blended camera.
+
+**Known limit until step 3:** objects stand where the newer frame has them while the camera blends, so a character
+the camera follows can judder against a smooth background by up to one frame's step. Stage 7 is a poor scene for the
+walking check: its opening takes control away for a tutorial prompt after a few steps (the user, 2026-11-09).
+
+**Next:** step 3 (objects and bones), keyed by the game's `ModelInstance *` through `YamiPan_ModelDrawBatch`; the
+instances and palettes then need uploading per blended present.
 
 ## Measuring
 

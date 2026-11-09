@@ -257,6 +257,7 @@ void InterruptController::run()
         if (fieldDue)
         {
             const double rate = m_standard.load() == VideoStandard::Pal ? kPalFieldRate : kNtscFieldRate;
+            m_lastFieldTime.store(nextField.time_since_epoch().count());
             m_fields.fetch_add(1);
             raise(kCauseVBlankStart);
             if (vblankCallback != nullptr)

@@ -69,6 +69,9 @@ struct DisplaySettings
     float renderScale = 1.0f;
     UpscaleFilter upscaleFilter = UpscaleFilter::Linear;
     PresentMode presentMode = PresentMode::VSync;
+    // Between two game frames, the camera of the models blends from the older one's to the newer one's
+    // (rendering/frame_blend.h): the game still runs at 25 frames a second, the picture moves at the monitor's rate.
+    bool smoothMotion = true;
 
     // The output transform: all at their defaults, the present pass is skipped.
     HdrMode hdrMode = HdrMode::Off;

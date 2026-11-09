@@ -59,6 +59,10 @@ public:
     // Fields since the start: sceGsSyncV's odd / even answer.
     std::uint64_t fieldCount() const { return m_fields.load(); }
 
+    // When the last field was due on the clock's even grid (not when its thread got to it): what the
+    // renderer times game frames by. The epoch before the first field.
+    Clock::time_point lastFieldTime() const { return Clock::time_point(Clock::duration(m_lastFieldTime.load())); }
+
     // The EE timers, T0 and T1. They run from the clock instead of counting.
     std::uint32_t readTimer(int timer) const;
     void writeTimer(int timer, std::uint32_t value);
@@ -111,6 +115,7 @@ private:
     VBlankCallback m_vblankCallback = nullptr;
     std::atomic<VideoStandard> m_standard{VideoStandard::Ntsc};
     std::atomic<std::uint64_t> m_fields{0};
+    std::atomic<Clock::rep> m_lastFieldTime{0};
     int m_nextHandlerId = 1;
     int m_nextAlarmId = 1;
     std::unique_ptr<os::Thread> m_thread;

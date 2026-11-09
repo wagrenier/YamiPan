@@ -6,6 +6,8 @@
 #include "game/movieplayer.h"
 #include "rena/rena_2d_texture_tim2.h"
 #include "yamipan/core/application.h"
+#include "yamipan/ee/interrupts.h"
+#include "yamipan/ee/kernel.h"
 #include "yamipan/os/timed_waiter.h"
 #include "yamipan/os/yamipan_time.h"
 #include "yamipan/rendering/renderer.h"
@@ -216,5 +218,7 @@ void YamiPan_ShadowEnd(const void *, const unsigned char *)
 
 void YamiPan_DrawUiKick(const void *const *lists, int count)
 {
-    canvas().kick(std::span(lists, static_cast<std::size_t>(count)));
+    // The frame is kicked right after the field that ended its wait (GameSystem::flipFrame).
+    canvas().kick(std::span(lists, static_cast<std::size_t>(count)),
+                  yamipan::ee::Kernel::instance().interrupts().lastFieldTime());
 }

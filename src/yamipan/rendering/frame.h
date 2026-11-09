@@ -3,6 +3,7 @@
 #pragma once
 
 #include <array>
+#include <chrono>
 #include <compare>
 #include <cstddef>
 #include <cstdint>
@@ -292,6 +293,9 @@ struct Frame
     std::vector<ModelDraw> modelDraws;
     std::vector<ModelPass> modelPasses;
     std::uint64_t number = 0;
+    // When the field that released this frame was due (the interrupt controller's clock): the renderer blends
+    // between two frames by this, not by when they arrived.
+    std::chrono::steady_clock::time_point time{};
 
     void clear()
     {

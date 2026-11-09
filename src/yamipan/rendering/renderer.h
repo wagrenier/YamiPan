@@ -68,7 +68,8 @@ public:
     // A frame to fill, with its storage from a frame already shown.
     std::unique_ptr<Frame> takeFreeFrame();
 
-    // Hands a finished frame over. Only the newest matters: one not yet shown is overtaken.
+    // Hands a finished frame over. Only the newest is shown: one not yet shown is overtaken, and kept only as the
+    // frame smooth motion blends from.
     void submit(std::unique_ptr<Frame> frame);
 
     // The layout of the last present, from any thread. Read this, never the window, for the shape.
@@ -78,6 +79,7 @@ public:
     {
         double presentRate = 0.0;
         double gameRate = 0.0;
+        double blendRate = 0.0; // presents a second that drew a blended camera
         std::size_t draws = 0;
         std::size_t vertices = 0;
     };
@@ -96,14 +98,19 @@ private:
     void ensureTargets(const PictureLayout &layout);
     void uploadImages(SDL_GPUCopyPass *copy, Frame &frame);
     void uploadVertices(SDL_GPUCopyPass *copy, const Frame &frame);
-    void recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout);
+    // `passes`: the frame's model passes with blended cameras (FrameBlend), or null for the frame's own.
+    void recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout,
+                     const std::vector<ModelPass> *passes);
+    // The share of the way from m_previous to m_shown this present draws, 1 for m_shown itself; fills
+    // m_blendedPasses when below 1.
+    float blendNow();
     void recordUi(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout, std::size_t first,
                   std::size_t last, bool clear);
     void recordDraws(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout,
                      std::size_t first, std::size_t last, bool clear);
     void recordOutput(SDL_GPUCommandBuffer *commands, const PictureLayout &layout);
     SDL_GPUGraphicsPipeline *pipelineFor(PipelineKey key);
-    void updateStats(bool newFrame);
+    void updateStats(bool newFrame, bool blended);
 
     Window &m_window;
     gpu::Device &m_device;
@@ -144,9 +151,16 @@ private:
 
     // The frame on screen, kept to draw again when the scene target changes size.
     std::unique_ptr<Frame> m_shown;
+    // The one before it, which smooth motion blends from.
+    std::unique_ptr<Frame> m_previous;
+    std::vector<ModelPass> m_blendedPasses;
+    float m_drawnBlend = 1.0f;  // what the scene target holds
+    float m_fixedBlend = -1.0f; // YAMIPAN_BLEND_ALPHA: every blendable present at this share (shots); below 0 off
+    bool m_logBlend = false;    // YAMIPAN_BLEND_LOG: a line per present
 
     mutable std::mutex m_lock;
     std::unique_ptr<Frame> m_incoming;
+    std::unique_ptr<Frame> m_overtaken; // the frame m_incoming replaced before it was taken
     std::vector<std::unique_ptr<Frame>> m_free;
     PictureLayout m_layout;
     Stats m_stats;
@@ -154,6 +168,7 @@ private:
     std::uint64_t m_lastFrameNumber = 0;
     std::uint64_t m_statPresents = 0;
     std::uint64_t m_statFrames = 0;
+    std::uint64_t m_statBlends = 0;
     std::uint64_t m_statStart = 0;
 
     std::atomic<bool> m_stopping{false};

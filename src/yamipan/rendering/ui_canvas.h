@@ -64,8 +64,9 @@ public:
     void drawMacroblocks(const void *list, const void *owner, int picture, const void *macroblocks, int columns,
                          int rows, float x, float y);
 
-    // Ends the frame: these layers, in this order, go to the renderer.
-    void kick(std::span<const void *const> lists);
+    // Ends the frame: these layers, in this order, go to the renderer. `time`: when the field that released the
+    // frame was due.
+    void kick(std::span<const void *const> lists, std::chrono::steady_clock::time_point time);
 
 private:
     enum class Primitive : std::uint8_t
