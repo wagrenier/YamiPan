@@ -468,27 +468,22 @@ private:
     float heldFor = 0.0f;       // FS2 +0x20: seconds
 };
 
-// What the two links of the player's door have in common: slots +0x18 and
-// +0x20 of vtables 0x317fb0, 0x317fe0. layout: host.
-class CarDoorLink : public MotionLink
-{
-public:
-    using MotionLink::MotionLink;
-    void onStart() override;
-    void onLeave(MotionLink *next) override;
-};
-
 // Motion_CarGetIn. Vtable 0x317fe0. layout: host -- EE 0x20.
-class ApproachCarLink : public CarDoorLink
+// The base of the other two car links: the dtors of ApproachOutLink 0x283d80
+// and ApproachBiteLink 0x283d10 store 0x317fe0 before ~MotionLink, and
+// ApproachOutLink keeps its onStart / onLeave (slots +0x18, +0x20).
+class ApproachCarLink : public MotionLink
 {
 public:
     ApproachCarLink(StageCharacter *owner, PlayerMotion *motion_);       // FS2 0x00283960
     ~ApproachCarLink() override;                                         // FS2 0x002835a0
-    void onRun() override;
+    void onStart() override;                                             // FS2 0x00283910
+    void onRun() override;                                               // FS2 0x002837d0
+    void onLeave(MotionLink *next) override;                             // FS2 0x00283780
 };
 
 // Motion_CarGetOut. Vtable 0x317fb0. layout: host -- EE 0x24.
-class ApproachOutLink : public CarDoorLink
+class ApproachOutLink : public ApproachCarLink
 {
 public:
     ApproachOutLink(StageCharacter *owner, PlayerMotion *motion_);       // FS2 0x00283740
@@ -501,8 +496,9 @@ private:
 };
 
 // Motion_CarDragOut: the foe pulls its prey out of the car, then bites.
-// Vtable 0x317f80. layout: host -- EE 0x28.
-class ApproachBiteLink : public MotionLink
+// Vtable 0x317f80, over ApproachCarLink's (its dtor stores 0x317fe0), whose
+// slots it all overrides. layout: host -- EE 0x28.
+class ApproachBiteLink : public ApproachCarLink
 {
 public:
     ApproachBiteLink(StageCharacter *owner, PlayerMotion *motion_);      // FS2 0x00283560

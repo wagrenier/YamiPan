@@ -4030,7 +4030,7 @@ DriveLink::DriveLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(
 // FS2 0x00283560
 // callcheck: MotionLink
 
-ApproachBiteLink::ApproachBiteLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
+ApproachBiteLink::ApproachBiteLink(StageCharacter *owner, PlayerMotion *motion_) : ApproachCarLink(owner, motion_)
 {
 }
 
@@ -4044,14 +4044,14 @@ ApproachCarLink::~ApproachCarLink()
 // FS2 0x00283740
 // callcheck: MotionLink
 
-ApproachOutLink::ApproachOutLink(StageCharacter *owner, PlayerMotion *motion_) : CarDoorLink(owner, motion_)
+ApproachOutLink::ApproachOutLink(StageCharacter *owner, PlayerMotion *motion_) : ApproachCarLink(owner, motion_)
 {
 }
 
 // FS2 0x00283960
 // callcheck: MotionLink
 
-ApproachCarLink::ApproachCarLink(StageCharacter *owner, PlayerMotion *motion_) : CarDoorLink(owner, motion_)
+ApproachCarLink::ApproachCarLink(StageCharacter *owner, PlayerMotion *motion_) : MotionLink(owner, motion_)
 {
 }
 
@@ -4075,7 +4075,7 @@ constexpr float kFadeFromHere   = -1.0f; // StageFade::start: from where it stan
 // FS2 0x00283910
 // callcheck: setActive, start
 
-void CarDoorLink::onStart()
+void ApproachCarLink::onStart()
 {
     character->m_input->setActive(false);
     gStageScene->fade->start(kCarFadeSeconds, 1.0f, kFadeFromHere);
@@ -4084,7 +4084,7 @@ void CarDoorLink::onStart()
 // FS2 0x00283780
 // callcheck: start, setActive
 
-void CarDoorLink::onLeave(MotionLink *)
+void ApproachCarLink::onLeave(MotionLink *)
 {
     gStageScene->fade->start(kCarFadeSeconds, 0.0f, kFadeFromHere);
     character->m_input->setActive(true);

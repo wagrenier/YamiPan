@@ -31638,10 +31638,10 @@
   "why": "the ctor's link ApproachOut, vtable 0x317fb0, EE 0x24"
  },
  "00283780": {
-  "name": "CarDoorLink::onLeave",
+  "name": "ApproachCarLink::onLeave",
   "tag": "game-inferred",
   "was": "FUN_00283780",
-  "why": "slot +0x20 of 0x317fb0 and 0x317fe0: the fade back, the pad on"
+  "why": "slot +0x20 of ApproachCarLink's vtable 0x317fe0, inherited by ApproachOutLink 0x317fb0; was the port's host base CarDoorLink"
  },
  "002837d0": {
   "name": "ApproachCarLink::onRun",
@@ -31650,10 +31650,10 @@
   "why": "slot +0x1c of 0x317fe0: CAR_DROP, at full fade rideCar 0, the partner too if GettingOnCar's flag says so, CAR_IN, CAR_DRCL"
  },
  "00283910": {
-  "name": "CarDoorLink::onStart",
+  "name": "ApproachCarLink::onStart",
   "tag": "game-inferred",
   "was": "FUN_00283910",
-  "why": "slot +0x18 of 0x317fb0 and 0x317fe0: the pad off, fade to black"
+  "why": "slot +0x18 of ApproachCarLink's vtable 0x317fe0 (its dtor 0x2835a0 stores it), inherited unchanged by ApproachOutLink 0x317fb0; the dtors of ApproachOutLink 0x283d80 and ApproachBiteLink 0x283d10 store 0x317fe0 as their base's: was the port's host base CarDoorLink"
  },
  "00283960": {
   "name": "ApproachCarLink::ApproachCarLink",
