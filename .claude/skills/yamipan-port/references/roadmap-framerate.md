@@ -246,7 +246,7 @@ A's.
 
 ## The 50 Hz dry run (2026-11-09)
 
-On the branch `framerate/50hz` (worktree `../YamiPan-rate`: another session was debugging in the main checkout).
+Made on the branch `framerate/50hz` (worktree `../YamiPan-rate`: another session was debugging in the main checkout), merged into fs2-port the same day.
 
 **The switch.** `game_rate` in yamipan.ini (`YAMIPAN_GAME_RATE`; 25 or 50, read once; anything else warns and runs
 25), through the seam `YamiPan_GameRate` (`os/yamipan_time.h`). `game/gamerate.h` (PC only): at 50 the master clock
