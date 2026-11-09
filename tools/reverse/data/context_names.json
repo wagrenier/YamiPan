@@ -14885,6 +14885,12 @@
   "was": "FUN_00182f40",
   "why": "%s_sl, %s_sl2, %s_pl, %s_pl2 and the part nl, new 0x18 from StageItemE::setupItem"
  },
+ "00183780": {
+  "name": "StageItem::canPick_thunk",
+  "tag": "game-inferred",
+  "was": "StageItem::canPick",
+  "why": "the vtable slot +0x224 of every item kind (0x3131cc, 0x31345c, 0x3136fc, 0x31398c, 0x313bfc) and the -0x40 adjustor 0x184770 hold this j to 0x1838d0; PickupItemCondition::onUpdate calls 0x1838d0 directly; was wrongly a second StageItem::canPick"
+ },
  "00183790": {
   "name": "StageItem::canPickFar",
   "tag": "game-inferred",
@@ -15047,6 +15053,12 @@
   "was": "FUN_00184250",
   "why": "answers 0x13"
  },
+ "00184260": {
+  "name": "StageNodeList::dtor",
+  "tag": "game-inferred",
+  "was": "FUN_00184260",
+  "why": "deleting dtor of the 4-byte-value StageList instance emitted after game/stageitem.cpp: clear (0x1843c0), then delete by the flag; also CollisionBody's +0xd4 list (characterground, stagecollision, stagelight callers)"
+ },
  "001842c0": {
   "name": "StageNodeList::pushBack",
   "tag": "game-inferred",
@@ -15058,6 +15070,48 @@
   "tag": "game-inferred",
   "was": "FUN_00184370",
   "why": "a0 the list, a1 a link: unlinks it (head moves on when it was the head), frees it (0x184580), count - 1"
+ },
+ "001843c0": {
+  "name": "StageNodeList::clear",
+  "tag": "game-inferred",
+  "was": "FUN_001843c0",
+  "why": "walks next, deletes each node's value box and the node, head and count zeroed; only 0x184260 calls it; the twin of 0x17e2b0"
+ },
+ "00184430": {
+  "name": "CollisionBodyArray::~CollisionBodyArray",
+  "tag": "game-inferred",
+  "was": "FUN_00184430",
+  "why": "deleting dtor: clear (0x1845f0), the data freed to the global heap 0x329970, then delete by the flag; SceneRecordBuckets' four arrays and StageBullet's bodies; written in game/stagecollision.cpp"
+ },
+ "001844a0": {
+  "name": "StageNodeList::pushFront",
+  "tag": "game-inferred",
+  "was": "FUN_001844a0",
+  "why": "pushBack 0x1842c0's empty case: a new node (0x184560) becomes the head, the old head linked behind it, count + 1; the twin of 0x17e320"
+ },
+ "00184530": {
+  "name": "StageNodeList::getTail",
+  "tag": "game-inferred",
+  "was": "FUN_00184530",
+  "why": "walks next from the head to the last node; pushBack 0x1842c0's walk; the twin of 0x17e3b0"
+ },
+ "00184560": {
+  "name": "StageNodeList::Node::Node",
+  "tag": "game-inferred",
+  "was": "FUN_00184560",
+  "why": "node ctor: +0 the value box, +4 next and +8 prev null; pushBack and pushFront; the twin of 0x17e3e0"
+ },
+ "00184580": {
+  "name": "StageNodeList::Node::unlink",
+  "tag": "game-inferred",
+  "was": "FUN_00184580",
+  "why": "erase 0x184370's tail: prev->next = next, next->prev = prev, frees the box and the node; the twin of 0x17e400"
+ },
+ "001845f0": {
+  "name": "CollisionBodyArray::clear",
+  "tag": "game-inferred",
+  "was": "FUN_001845f0",
+  "why": "count (+0x4 short) = 0 and the first slot data[1] = null (behind a null test on its address); only CollisionBodyArray::~CollisionBodyArray 0x184430 calls it, before freeing the data"
  },
  "00184860": {
   "name": "SpotLight::~SpotLight",

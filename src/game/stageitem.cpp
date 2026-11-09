@@ -150,7 +150,7 @@ StageBullet::StageBullet(StageCharacter *owner, StageItem *weapon)
 // Only a bullet that died in flight leaves the scene; the scene's teardown
 // takes the rest. The base's body is inline in the ROM, the bodies' dtors too.
 // FS2 0x00180260
-// callcheck: remove, remove, FUN_00184260, FUN_00184430, operator_delete, removeBullet, ~StageObject, operator_delete (the bodies EE dtors are inline, the rest the base)
+// callcheck: remove, remove, dtor, ~CollisionBodyArray, operator_delete, removeBullet, ~StageObject, operator_delete (the bodies EE dtors are inline, the rest the base)
 
 StageBullet::~StageBullet()
 {
@@ -1234,6 +1234,47 @@ void StageItemE::getLightMatrix(sceVu0FMATRIX out)
             out[3][i] = hit[i] + step[i];
     }
 }
+
+// ──────────────────────────────────────────────────────────────────────
+// Written in headers (game/stageitem.h, game/itemphysics.h, game/stagelist.h),
+// each checked against the ROM's body; tools/reverse reads tags from .cpp
+// files only:
+//   FS2 0x0017fce0  StageBullet::getKind: StageObject_Bullet, 0x19
+//   FS2 0x0017fcf0  StageBullet::sideHook3, empty
+//   FS2 0x0017fd00  StageBullet::sideHook1, empty
+//   FS2 0x0017fd10  StageBullet::sideHook0, empty
+//   FS2 0x0017fd30  StageBullet::getCollisionObject: this
+//   FS2 0x00180020  StageBullet::collisionHook0: 0
+//   FS2 0x00180e10  StageTrapItem::onCollide: 0
+//   FS2 0x00180e20  StageTrapItem::collisionHook0: 0
+//   FS2 0x00180e30  StageTrapItem::collisionHook3, empty
+//   FS2 0x00183780  StageItem::canPick_thunk: a j to canPick 0x1838d0, the
+//                   +0x224 slot of every item kind (PickupItemCondition
+//                   calls 0x1838d0 itself); the host's slot is canPick
+//   FS2 0x00183fd0  StageBulletBase::getKind: StageObject_BulletBase, 0x18
+//   FS2 0x001840a0  StageThrownItem::getKind: StageObject_ThrownItem, 0x17
+//   FS2 0x001840b0  ItemPhysics::getCollisionParent: m_parent, +0x200
+//   FS2 0x001840c0  StageItem::sideHook1, empty
+//   FS2 0x001840d0  StageItem::sideHook0, empty
+//   FS2 0x001840e0  StageThrownItem::getCollisionObject: this
+//   FS2 0x001840f0  StageTrapItem::getKind: StageObject_TrapItem, 0x16
+//   FS2 0x00184100  StageTrapItem::getCollisionObject: this
+//   FS2 0x001841d0  StageWeaponItem::getKind: StageObject_WeaponItem, 0x15
+//   FS2 0x001841e0  StageWeaponItem::getCollisionObject: this
+//   FS2 0x001841f0  StageItemE::getKind: StageObject_ItemE, 0x14
+//   FS2 0x00184250  StageItem::getKind: StageObject_Item, 0x13
+// and the 4-byte StageList's instance (StageNodeList: a node's children,
+// CollisionBody's +0xd4 list), emitted here, the twin of 0x17e140..:
+//   FS2 0x00184260  StageNodeList::dtor, deleting: clear, then by the flag
+//   FS2 0x001842c0  StageNodeList::pushBack
+//   FS2 0x00184370  StageNodeList::erase
+//   FS2 0x001843c0  StageNodeList::clear
+//   FS2 0x001844a0  StageNodeList::pushFront, pushBack's empty case
+//   FS2 0x00184530  StageNodeList::getTail, pushBack's walk
+//   FS2 0x00184560  StageNodeList::Node::Node
+//   FS2 0x00184580  StageNodeList::Node::unlink, erase's tail and delete
+// (0x184430 CollisionBodyArray::~CollisionBodyArray and 0x1845f0 its clear
+// sit in this run too; game/stagecollision.cpp writes them.)
 
 // ──────────────────────────────────────────────────────────────────────
 // The adjustor thunks that end the file (the host's compiler makes its own).

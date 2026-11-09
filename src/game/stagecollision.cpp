@@ -1453,11 +1453,24 @@ CollisionBodyArray::CollisionBodyArray()
 }
 
 // FS2 0x00184430
-// callcheck: FUN_001845f0, free, operator_delete (the reset is nothing on the way out)
+// callcheck: clear, free, operator_delete
 
 CollisionBodyArray::~CollisionBodyArray()
 {
+    clear();
     gGlobalHeap.free(m_data);
+}
+
+// Empties the array: no body, the first slot the end mark. CodeWarrior
+// emitted it with the 4-byte StageList's instances at the end of
+// game/stageitem.cpp; only the destructor calls it.
+// FS2 0x001845f0
+
+void CollisionBodyArray::clear()
+{
+    m_count = 0;
+    if (&m_data[1] != nullptr)  // the ROM's own test, on the slot's address
+        m_data[1] = nullptr;
 }
 
 // FS2 0x001f6760
@@ -1578,7 +1591,7 @@ SceneRecordBuckets::SceneRecordBuckets()
 
 // Every body left, with what it holds; the owners that remove theirs have.
 // FS2 0x001f63f0
-// callcheck: FUN_00184260, FUN_00184430, operator_delete, __destroy_arr, operator_delete (the body's dtor inline)
+// callcheck: dtor, ~CollisionBodyArray, operator_delete, __destroy_arr, operator_delete (the body's dtor inline)
 
 SceneRecordBuckets::~SceneRecordBuckets()
 {

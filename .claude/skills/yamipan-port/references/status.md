@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-09 10:12 at commit `ad97fd8` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-09 10:25 at commit `b3f21ac` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-09 10:12 at commit `ad97fd8` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6598**, named **5922** (90%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1617, game-inferred 4983
-- context-name ledger: 6600 entries; overrides of wrong library matches: 0
+- game functions: **6598**, named **5930** (90%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1617, game-inferred 4992
+- context-name ledger: 6609 entries; overrides of wrong library matches: 0
 - placed in a source file: 6512/6598 in 139 files
 
 Least-named game-code regions (64 KB blocks):
@@ -24,13 +24,13 @@ Least-named game-code regions (64 KB blocks):
 | `002d0000` | 156/256 (61%) | game/drawsys.cpp, game/areaclip.cpp, game/ripplesheet.cpp |
 | `001a0000` | 195/301 (65%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
 | `00250000` | 126/178 (71%) | game/routeplayer.cpp, game/uiwidget.cpp, game/uidrawer.cpp |
-| `00180000` | 240/336 (71%) | game/stageitem.cpp, game/stagelight.cpp, game/stageobject.cpp |
+| `00180000` | 248/336 (74%) | game/stageitem.cpp, game/stagelight.cpp, game/stageobject.cpp |
 | `001f0000` | 158/185 (85%) | game/movieplayer.cpp, game/stageparty.cpp, game/scenerender.cpp |
 | `002e0000` | 160/178 (90%) | rena/rena_draw.cpp, rena/rena_model.cpp, game/layoutpaths.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **6013**; stubs: **3**
+- reconstructed FS2 functions: **6044**; stubs: **3**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -108,11 +108,11 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/stagecamera.cpp` | 59 | 0 |
 | `src/game/stagecar.cpp` | 59 | 0 |
 | `src/game/stagecharacter.cpp` | 83 | 0 |
-| `src/game/stagecollision.cpp` | 57 | 0 |
+| `src/game/stagecollision.cpp` | 58 | 0 |
 | `src/game/stagedoor.cpp` | 125 | 0 |
 | `src/game/stageelevator.cpp` | 27 | 0 |
 | `src/game/stagefog.cpp` | 12 | 0 |
-| `src/game/stageitem.cpp` | 107 | 0 |
+| `src/game/stageitem.cpp` | 137 | 0 |
 | `src/game/stagelight.cpp` | 64 | 0 |
 | `src/game/stageloop.cpp` | 10 | 0 |
 | `src/game/stagemenu.cpp` | 29 | 0 |
@@ -250,7 +250,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/stagedoor.cpp` 126/133 -- unassigned@00171ad0 turned out to be inline functions of this object file: runner table defaults, StageObject accessors, DoorRecord setters; pinned here and lis
 - verify: `game/stageelevator.cpp` 27/27 -- All 27 functions of 0x2939b0..0x295470 are written as StageElevator members (batch 184). This run only deleted the dead free-function stubs elevatorCall .. elev
 - verify: `game/stagefog.cpp` 12/12 -- All 12 functions of 0x2ce0c0..0x2cedb0 written: SmokeFog (hatsu_fog, I_HATUEN), GlowFog (koh_fog, kinds 5 and 0xc), CharacterFog::attachTo. fogcmp.py: 32,703 op
-- verify: `game/stageitem.cpp` 108/139 -- All of 0x17fce0..0x184860 written or mapped (thunks listed, 0x180018 is padding). New Game run under gdb: StageBullet's ctor ran from setupCameras with no fault
+- verify: `game/stageitem.cpp` 139/139 -- All 31 uncounted functions of 0x17fce0..0x184860 checked against the ROM and listed in the Written in headers block of stageitem.cpp: getKind of every kind, the
 - verify: `game/stagelight.cpp` 64/101 -- All of 0x184860..0x186ee0 written. New Game run: lights build and join the scene with no fault, 114 stubs reached, the stop is unchanged (drawSysCurrent null in
 - verify: `game/stageloop.cpp` 10/10 -- Cut out of unassigned@00171300 and pinned 0x17f150-0x17fce0 (batch 073, 45 names; Ghidra saved by name_ctx). New src/game/stageloop.h defines gStageScene (exter
 - verify: `game/stagemenu.cpp` 29/29 -- All 29 functions written (batch 183); the frontier unassigned@0022fc50 was six MSL vector helpers, now listed in game/characterroute.cpp, and StageMenuFade. Pro
@@ -321,6 +321,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-09 10:25 `game/stageitem.cpp` verify: stageitem.cpp 139 of 139: the 31 header-inline slots and the StageNodeList instance listed and named, CollisionBodyArray::clear written
 - 2026-11-09 10:12 `game/packtables.cpp` verify: 43 MSL map, set, vector and string instances 0x2c0d00..0x2c3d30 named (batch 244) and listed in a ledger; the TU counts 52 of 52
 - 2026-11-09 09:54 `game/playermotion.cpp` verify: GunMoveCondition::~GunMoveCondition 0x26d020 named and pinned (was unassigned@0026d020)
 - 2026-11-09 09:45 `game/scriptrunner.cpp` verify: 28 out-of-line inline copies on the frontier named (batch 242) and listed with the 6 ScriptRunner accessors in a ledger; scriptLabelCell is 0x1c97f0
@@ -328,15 +329,12 @@ Recent sessions:
 - 2026-11-09 08:20 `game/playermotion.cpp` verify: MotionLink::onRequest 0x1ec640 named and pinned (was unassigned@001ec640)
 - 2026-11-09 08:09 `game/playermotion.cpp` verify: 0x1e5d50..0x1e5d60 joined (was unassigned@001e5d50): MotionLink::onRun, the base's empty slot +0x1c, already in playermotion.h; batch 240 also named the empty d
 - 2026-11-09 07:55 `game/playermotion.cpp` verify: 0x21c290..0x21c300 joined (was unassigned@0021c290): StageCharacter::doorJustOpened and doorJustUnlocked, the door-state checks on what afterScripts keeps (+0x6
-- 2026-11-09 07:37 `game/playermotion.cpp` verify: 0x283cb0..0x283df0 joined (was unassigned@00283cb0): the deleting dtors of DriveLink, ApproachBiteLink and ApproachOutLink; their vtable stores give the ROM's t
 
 ## Frontier (called by reconstructed code, not written yet)
 
 | FS2 addr | name | call sites | provenance | state | inferred file |
 |---|---|---|---|---|---|
-| `00184370` | StageNodeList::erase | 88 | game | missing | game/stageitem.cpp |
 | `0017e260` | StageList<StageObject*>::erase | 54 | game | missing | game/stagecharacter.cpp |
-| `001842c0` | StageNodeList::pushBack | 38 | game | missing | game/stageitem.cpp |
 | `0017e1b0` | StageList<StageObject*>::pushBack | 25 | game | missing | game/stagecharacter.cpp |
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `002a7800` | NmlPose::getDial | 14 | game | missing | game/numlock.cpp |
@@ -361,7 +359,6 @@ Recent sessions:
 | `00255080` | FUN_00255080 | 5 | - | missing | game/routeplayer.cpp |
 | `001f4bb0` | FUN_001f4bb0 | 5 | - | missing | game/stagecollision.cpp |
 | `002e7e90` | FUN_002e7e90 | 5 | - | missing | rena/rena_draw.cpp |
-| `00184260` | FUN_00184260 | 4 | - | missing | game/stageitem.cpp |
 | `00186b80` | FUN_00186b80 | 4 | - | missing | game/stagelight.cpp |
 | `001920d0` | WordVector::resize | 4 | lib-ctx | missing | game/stageparticle.cpp |
 | `001927b0` | WordVector::erase | 4 | lib-ctx | missing | game/stageparticle.cpp |
@@ -374,4 +371,7 @@ Recent sessions:
 | `00254f30` | FUN_00254f30 | 4 | - | missing | game/routeplayer.cpp |
 | `00254f00` | FUN_00254f00 | 4 | - | missing | game/routeplayer.cpp |
 | `00254ef0` | FUN_00254ef0 | 4 | - | missing | game/routeplayer.cpp |
+| `00254ec0` | FUN_00254ec0 | 4 | - | missing | game/routeplayer.cpp |
+| `00254e70` | FUN_00254e70 | 4 | - | missing | game/routeplayer.cpp |
+| `00254e60` | FUN_00254e60 | 4 | - | missing | game/routeplayer.cpp |
 

@@ -283,6 +283,7 @@ public:
     CollisionBodyArray();                                                // FS2 0x001f6a40
     ~CollisionBodyArray();                                               // FS2 0x00184430
 
+    void clear();                                                        // FS2 0x001845f0
     void reserve(u_short capacity);                                      // FS2 0x001f6760
     int  push(CollisionBody *const &body);                               // FS2 0x001f6910
     CollisionBody **find(CollisionBody *const &body);                    // FS2 0x001f6820
