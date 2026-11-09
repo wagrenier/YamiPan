@@ -4897,17 +4897,7 @@
 // *****************************************************************************
 
 /* 001e3e80 00001ed0 */ PlayerMotion::controlStep(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 001e5d50 00000004 */ FUN_001e5d50(){}
-
-// *****************************************************************************
-// FILE -- game/playermotion.cpp
-// *****************************************************************************
-
+/* 001e5d50 00000004 */ MotionLink::onRun(){}  // game
 /* 001e5d60 00000024 */ PlayerMotion::setWallCheck(){}  // game
 /* 001e5d90 000001e0 */ PlayerMotion::beginFrame(){}  // game
 /* 001e5f70 0000013c */ PlayerMotion::getEyeMatrix(){}  // game
@@ -4934,8 +4924,8 @@
 /* 001e8870 000001c0 */ PlayerMotion::stepFace(){}  // game
 /* 001e8a30 00001394 */ PlayerMotion::stepUpper(){}  // game
 /* 001e9dd0 00000dc4 */ PlayerMotion::stepLower(){}  // game
-/* 001eaba0 00000004 */ FUN_001eaba0(){}
-/* 001eabb0 00000004 */ FUN_001eabb0(){}
+/* 001eaba0 00000004 */ MotionLink::onStart(){}  // game
+/* 001eabb0 00000004 */ MotionLink::onLeave(){}  // game
 /* 001eabc0 00000048 */ PlayerMotion::startWalkFile(){}  // game
 /* 001eac10 00000054 */ FUN_001eac10(){}
 /* 001eac70 00000084 */ FUN_001eac70(){}
@@ -4960,7 +4950,7 @@
 /* 001eb660 00000a20 */ PlayerMotion::pickStance(){}  // game
 /* 001ec080 00000018 */ PlayerMotion::noteEnding(){}  // game
 /* 001ec0a0 0000034c */ PlayerMotion::noteLeaving(){}  // game
-/* 001ec3f0 00000004 */ FUN_001ec3f0(){}
+/* 001ec3f0 00000004 */ MotionLink::onCancel(){}  // game
 /* 001ec400 00000234 */ PlayerMotion::startRequested(){}  // game
 
 // *****************************************************************************

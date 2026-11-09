@@ -21341,6 +21341,12 @@
   "was": "FUN_001e3e80",
   "why": "the third call of the control hook 0x17a810: ground checks, Always apply, link apply, link slot +0x1c, then feet and fidgets"
  },
+ "001e5d50": {
+  "name": "MotionLink::onRun",
+  "tag": "game-inferred",
+  "was": "FUN_001e5d50",
+  "why": "jr ra only; slot +0x1c of the base vtable 0x317c20 (0x317c3c), of BittenLink 0x315eb0 (0x315ecc) and of the links that keep the default (0x317a10, 0x317a70, 0x317ad0, 0x317bf0, 0x317da0, 0x317dd0, 0x317e00, 0x317e30, 0x317e60, 0x317e90)"
+ },
  "001e5d60": {
   "name": "PlayerMotion::setWallCheck",
   "tag": "game-inferred",
@@ -21437,6 +21443,18 @@
   "was": "FUN_001e9dd0",
   "why": "first step: resolves the request and plays its label (rifle column, upper label) with StageModel::playMotion"
  },
+ "001eaba0": {
+  "name": "MotionLink::onStart",
+  "tag": "game-inferred",
+  "was": "FUN_001eaba0",
+  "why": "jr ra only; slot +0x18 of BittenLink 0x315eb0 (0x315ec8, every slot the base's) and of other links"
+ },
+ "001eabb0": {
+  "name": "MotionLink::onLeave",
+  "tag": "game-inferred",
+  "was": "FUN_001eabb0",
+  "why": "jr ra only; slot +0x20 of BittenLink 0x315eb0 (0x315ed0, every slot the base's) and of other links"
+ },
  "001eabc0": {
   "name": "PlayerMotion::startWalkFile",
   "tag": "game-inferred",
@@ -21508,6 +21526,12 @@
   "tag": "game-inferred",
   "was": "FUN_001ec0a0",
   "why": "history events 2, 3, 4 and the link's slot +0x24 for the motion that leaves"
+ },
+ "001ec3f0": {
+  "name": "MotionLink::onCancel",
+  "tag": "game-inferred",
+  "was": "FUN_001ec3f0",
+  "why": "jr ra only; slot +0x24 of BittenLink 0x315eb0 (0x315ed4, every slot the base's) and of other links"
  },
  "001ec400": {
   "name": "PlayerMotion::startRequested",
