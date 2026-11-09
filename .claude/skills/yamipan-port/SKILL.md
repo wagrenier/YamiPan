@@ -252,6 +252,7 @@ finishing any session:
 | `references/status.md` | generated progress (after bootstrap) | every session |
 | `references/roadmap-3d-control.md` | what is missing for the 3D and for playing the character, measured | choosing what comes next |
 | `references/roadmap-framerate.md` | what holds the game at 25 fps, what counts frames, the ways past it | frame rate, timing, interpolation |
+| `references/framerate-inventory.md` | every rule that counts PAL frames, its kind and its rate-free fix (native 60 Hz, step 1) | native frame rate, frame counters, eases |
 | `references/ghidra.md` | instances, ports, discovery, MCP bridge, GhidraMCP traps | Ghidra not found, or odd |
 | `references/bootstrap.md` | a new port from an empty repo to the loop | until the loop runs |
 | `references/architecture.md` | the game: binary, address map, modules, classes, data, platform | understanding a TU |
