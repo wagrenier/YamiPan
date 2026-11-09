@@ -2096,10 +2096,14 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   **Seen 2026-11-09 (40 s boot):** the game's init through the driver (output mode 0x30, effects 0x32, the
   per-frame status polls 0x72 / 0x83 / 0xb3 / 0xa3, an IOP copy 0x23, XVAB 0x50), and its first bank: 0x40
   type 3 moves 0x256a0 bytes from EE memory to SPU 0x5040 through the DMA thread, and the third poll (0x41)
-  answers 0, done; the language screen as with the switch off (20 and 21 shots). **YAMIPAN_TELEPORT=d0101
-  crashed** with the first build: an ADPCM stream's write went to the silent side's fake IOP address
-  0x100000 (sceSifSetDma, now a real copy). The open now passes the ROM's 0; **that build was not run**:
-  Smart App Control blocked the new exe (hazards.md).
+  answers 0, done; the language screen as with the switch off (20 and 21 shots). **YAMIPAN_TELEPORT=d0101**
+  (80 s, once Smart App Control was off): a second bank (0x40 of 0xd2c40 bytes), the event's ADPCM stream
+  opened (0xa0), keyed on by the driver and fed by the EE (0xa1: 1,436 writes of 0x180..0x700 bytes,
+  0x177f00 in all), ended by the driver ("ADPCM 47 ended ... spu fill 0x80"), then the looping ambience
+  opened and keyed on; "Teleport: d0101 over", the room on screen. The shots match the switch-off run's
+  frame for frame up to frame 1680 (file sizes equal, the room from frame ~1620 in both). The first build
+  crashed there: the stream's write went to the silent side's fake IOP address 0x100000, now the ROM's 0
+  (the open allocates).
 
 ## Disc and data files
 
