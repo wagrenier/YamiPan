@@ -7,6 +7,7 @@
  *  the predicates, whose names say what the code does with them.
  */
 #include "game/characterbrain.h"
+#include "game/gamerate.h"
 #include "game/characterroute.h"
 #include "game/menuprogset.h"
 #include "game/gadgetview.h"
@@ -6082,7 +6083,8 @@ void PlayerMotion::leanBodyAt(float rate, float maxStep, const sceVu0FVECTOR ang
         target[0] = wrapAngle(target[0] - steepness * vecDot(downhill, ahead)
                               * (1.0f - fabsf(target[0] / kLeanLimit)));
     }
-    approachAnglesXZ(rate, maxStep, m_lampAngles, m_lampAngles, target);
+    // PC: game_rate (game/gamerate.h): a linear ease a 25 Hz frame and its cap, as this frame's share.
+    approachAnglesXZ(palEase(rate), maxStep * palScale(), m_lampAngles, m_lampAngles, target);
     m_leanScale[0] = m_lampAngles[0] / kLeanLimit;
     m_leanScale[1] = 1.0f;
     m_leanScale[2] = m_lampAngles[2] / kLeanLimit;
@@ -8259,17 +8261,18 @@ void DiveFallLink::stepCamera()
     const float toY = eye[1] - look[1];
     const float fromLength = sqrtf(fromX * fromX + fromY * fromY);
     const float toLength = sqrtf(toX * toX + toY * toY);
-    const float length = fromLength + (toLength - fromLength) / flyFrames;
+    // PC: game_rate (game/gamerate.h): each frame closes its share of 1 / flyFrames (flyFrames itself goes by dt).
+    const float length = fromLength + (toLength - fromLength) * palScale() / flyFrames;
     float angle = 0.0f;
     if (toLength != 0.0f) {
         angle = atan2Octant(fromX, fromY);
-        angle -= addAngle(angle, -atan2Octant(toX, toY)) / flyFrames;
+        angle -= addAngle(angle, -atan2Octant(toX, toY)) * palScale() / flyFrames;
     }
     camera->m_xform.position[0] = length * sinf(angle) + look[0] + 0.0f;
     camera->m_xform.position[1] = length * cosf(angle) + look[1] + 0.0f;
-    camera->m_xform.position[2] += (eye[2] - camera->m_xform.position[2]) / flyFrames;
+    camera->m_xform.position[2] += (eye[2] - camera->m_xform.position[2]) * palScale() / flyFrames;
     if (flyFrames < kLookFrom)
-        approachVec3(1.0f / flyFrames, kLookMaxStep, look, look, target);
+        approachVec3(palScale() / flyFrames, kLookMaxStep * palScale(), look, look, target);   // PC: game_rate
     camera->lookAt(look);
 }
 

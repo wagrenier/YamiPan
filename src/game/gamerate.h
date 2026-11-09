@@ -12,3 +12,4 @@ int   gameVsyncsPerFrame();      // fields a game frame: the ROM's 2, or 1
 int   gameClockTicksPerFrame();  // master-clock ticks a game frame: the ROM's 12, or 6
 int   palTicks();                // 25 Hz frames that ended in this game frame
 float palScale();                // this game frame's length in 25 Hz frames
+float palEase(float rate);       // a linear ease's share a 25 Hz frame -> this frame's: 1 - (1 - rate)^palScale

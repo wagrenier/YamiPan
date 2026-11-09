@@ -3,6 +3,7 @@
 // their tracks call into the game (game/uigame.h).
 
 #include "game/playermotion.h"
+#include "game/gamerate.h"
 #include "game/uigame.h"
 
 #include <ctype.h>
@@ -1279,7 +1280,7 @@ float getPlayerHeading()
 int stepWeaponPreview()
 {
     if (gStageScene == nullptr) {
-        sUiWeaponCycle++;
+        sUiWeaponCycle += palTicks();   // PC: game_rate, 25 Hz frames (game/gamerate.h)
         return 1;
     }
     StagePlayer *player = stagePlayer();

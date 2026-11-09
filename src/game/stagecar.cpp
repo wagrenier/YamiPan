@@ -4,6 +4,7 @@
  *  collision bases are the host's multiple inheritance.
  * ======================================================================== */
 #include <math.h>
+#include "game/gamerate.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -1012,7 +1013,7 @@ void StageCar::sideHook2()
             startOver(moved, turned);
         const float seconds = gStageScene->clock->getDeltaSeconds();
         if (m_onGround == 0)
-            carPose->drive(1.0f, nullptr, nullptr, nullptr, nullptr);
+            carPose->drive(palScale(), nullptr, nullptr, nullptr, nullptr);   // PC: game_rate, 1 a 25 Hz frame
         else
             carPose->drive(seconds / kFrameSeconds, m_contacts[0], m_contacts[1], m_contacts[2], m_contacts[3]);
         if (moved || turned || m_placed != 0) {

@@ -2,6 +2,7 @@
 // (title, level select, the level loop, the ending) and its back thread
 // (game/kunitoris.h). The game classes are later sessions' work.
 #include "common/yamipan_stub.h"
+#include "game/gamerate.h"
 
 #include "game/kunitoris.h"
 
@@ -25,6 +26,27 @@
 #include "game/uigame.h"
 #include "game/wstring.h"
 #include "sdk/libgraph.h"
+
+// PC: game_rate (game/gamerate.h). The minigame counts frames everywhere (its timers, the drain, the steps, the
+// endings, the menus' blinks) between reads of the buttons, so it runs whole 25 Hz frames, as the ROM's: after each of
+// its waits (threadYield(1)) this also sits out the frame between two ticks at 50, and that frame's button edges are
+// kept for the next. At 25 it does nothing.
+static void kunitorisWholeFrame()
+{
+    GamePad &pad = gGameSystem->m_pad0;
+    u_int pressed = 0;
+    u_int released = 0;
+    u_int repeat = 0;
+    while (palTicks() == 0) {
+        pressed |= pad.m_pressed;
+        released |= pad.m_released;
+        repeat |= pad.m_repeat;
+        threadYield(1);
+    }
+    pad.m_pressed |= pressed;
+    pad.m_released |= released;
+    pad.m_repeat |= repeat;
+}
 
 static const char kKunitorisPackPath[] = "dataEU/kuniEU.pak";
 static const char kKunitorisTitleText[] = "= KUNITORIS =";
@@ -199,6 +221,7 @@ int runExtraMode(int arg)
                      reinterpret_cast<void *>(static_cast<intptr_t>(arg)), nullptr, 0, nullptr);
     do {
         threadYield(1);
+        kunitorisWholeFrame();   // PC: game_rate
     } while (threadSlotState(ThreadSlot_Game) != ThreadState_Free);
     return sSaveChanged;
 }
@@ -216,8 +239,10 @@ void kunitorisThread(void *arg)
     (void)arg;
     sSaveChanged = 0;
     threadYield(1);
+    kunitorisWholeFrame();   // PC: game_rate
     gfxSelectDisplay(1);
     threadYield(1);
+    kunitorisWholeFrame();   // PC: game_rate
     threadSlotCreate(kunitorisBackThread, ThreadSlot_Dialog, nullptr, nullptr, 0, nullptr);
     setClearColor(0, 0, 0xff);
 
@@ -283,6 +308,7 @@ void kunitorisThread(void *arg)
 
             for (;;) {
                 threadYield(1);
+                kunitorisWholeFrame();   // PC: game_rate
                 game.update(pad);
                 TexAreaList *texList;
                 sceVif1Packet *packet = openFrameList(&texList);
@@ -312,6 +338,7 @@ void kunitorisThread(void *arg)
             // The end shows on until Decide or Start, after a wait.
             for (int frame = 0;;) {
                 threadYield(1);
+                kunitorisWholeFrame();   // PC: game_rate
                 frame++;
                 if (frame > kResultWaitFrames && (padDecide() || (padPressed() & kPadStart)))
                     break;
@@ -346,9 +373,11 @@ void kunitorisThread(void *arg)
     delete sPack;
     sPack = nullptr;
     threadYield(1);
+    kunitorisWholeFrame();   // PC: game_rate
     setClearColor(0, 0, 0);
     gfxSelectDisplay(0);
     threadYield(1);
+    kunitorisWholeFrame();   // PC: game_rate
     threadSlotKill(ThreadSlot_Dialog);
     threadExit();
 }
@@ -390,6 +419,7 @@ void kunitorisEnding(int skippable)
                       static_cast<u_char>(left * 0x8d / kEndingIntroFrames),
                       static_cast<u_char>(left * 0xc1 / kEndingIntroFrames));
         threadYield(1);
+        kunitorisWholeFrame();   // PC: game_rate
     }
     setClearColor(0, 0, 0);
 
@@ -416,9 +446,11 @@ void kunitorisEnding(int skippable)
         drawer->end();
         gGameSystem->m_packets.closeList();
         threadYield(1);
+        kunitorisWholeFrame();   // PC: game_rate
     }
 
     threadYield(1);
+    kunitorisWholeFrame();   // PC: game_rate
     delete drawer;
     setClearColor(0x11, 0x8d, 0xc1);
     kunitorisPlayBgm(KunitorisSe_SelectBgm);
@@ -436,6 +468,7 @@ int kunitorisTitle(UiDrawer *drawer)
             int offset = kTitleScrollFrom;
             do {
                 threadYield(1);
+                kunitorisWholeFrame();   // PC: game_rate
                 if (padPressed() & kPadTitleSkip)
                     break;
                 kunitorisDrawTitle(drawer, offset, 0);
@@ -444,11 +477,13 @@ int kunitorisTitle(UiDrawer *drawer)
         }
         for (int i = 0; i < kTitleIdleFrames; i++) {
             threadYield(1);
+            kunitorisWholeFrame();   // PC: game_rate
             if (padPressed() & kPadStart) {
                 kunitorisPlay(KunitorisSeSlot_Decide, KunitorisSe_Decide);
                 for (int frame = 0; frame < kTitleFlashFrames; frame++) {
                     kunitorisDrawTitle(drawer, 0, frame);
                     threadYield(1);
+                    kunitorisWholeFrame();   // PC: game_rate
                 }
                 return 0;
             }
@@ -470,6 +505,7 @@ int kunitorisHowTo(UiDrawer *drawer, int frames)
     int frame = 0;
     for (;;) {
         threadYield(1);
+        kunitorisWholeFrame();   // PC: game_rate
         if (padPressed() & kPadStart)
             return 1;
         if (frames != 0 && ++frame > frames)
@@ -519,6 +555,7 @@ int kunitorisLevelSelect(UiDrawer *drawer, int cleared, int cursor)
                     : KunitorisLine_Count;
     for (;;) {
         threadYield(1);
+        kunitorisWholeFrame();   // PC: game_rate
         if (padDecide()) {
             kunitorisPlay(KunitorisSeSlot_Decide, KunitorisSe_Decide);
             return cursor;
@@ -610,6 +647,7 @@ void kunitorisBackThread(void *arg)
             }
         }
         threadYield(1);
+        kunitorisWholeFrame();   // PC: game_rate
     }
 }
 

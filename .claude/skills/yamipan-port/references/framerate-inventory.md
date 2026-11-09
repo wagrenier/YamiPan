@@ -4,8 +4,10 @@ Step 1 of "Native 60 Hz" in roadmap-framerate.md: every rule in the game layer t
 with its kind and the fix that would make it rate-free. **First pass**: the shared mechanisms and the visible
 systems are read; "To check" below is what is left. Nothing in the game layer is changed
 yet; the user decides whether option C goes ahead. **The 50 Hz dry run (2026-11-09, branch `framerate/50hz`)
-converted the shared mechanisms, the main camera, particles, item physics, the stage clocks and voice delays**
-(roadmap-framerate.md "The 50 Hz dry run" has the list and what was seen).
+converted the shared mechanisms, the main camera, particles, item physics, the stage clocks and voice delays; its
+second pass the rest of the systems table** (roadmap-framerate.md "The 50 Hz dry run" has the list, what was seen
+and what was not run). Mission notices turned out to be in seconds (`kNoticeFps`, pausemenustate.cpp); only the timed
+records count frames.
 
 ## How it was made
 

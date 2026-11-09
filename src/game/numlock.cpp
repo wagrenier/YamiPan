@@ -4,6 +4,7 @@
  *  ScriptRunner bases are the host's multiple inheritance.
  * ======================================================================== */
 #include <math.h>
+#include "game/gamerate.h"
 #include <string.h>
 
 #include "game/heap.h"
@@ -346,7 +347,8 @@ int NmlPose::easeDials(const float *numbers, int frames)
             target += kTwoPi;
             delta = target - dialAngle[i];
         }
-        dialAngle[i] = (1.0f / (float)frames) * delta + dialAngle[i] + 0.0f;
+        // PC: game_rate (game/gamerate.h): 1 / frames of the way a 25 Hz frame, as this frame's share.
+        dialAngle[i] = palEase(1.0f / (float)frames) * delta + dialAngle[i] + 0.0f;
     }
     // PC: a model without the dial bones keeps them at bone 0, as the host
     // clears the indices the ROM's ctor leaves; a refused bone file has none.

@@ -199,6 +199,16 @@ float palScale()
     return (float)gameClockTicksPerFrame() / (float)kClockTicksPerFrame;
 }
 
+// An ease that closes `rate` of the distance each 25 Hz frame closes 1 - (1 - rate)^s of it in a frame of s of
+// one, so two 50 Hz frames close what one 25 Hz frame did. The ROM's rate itself at 25 (not 1 - (1 - rate): bits).
+float palEase(float rate)
+{
+    const float share = palScale();
+    if (share == 1.0f)
+        return rate;
+    return 1.0f - powf(1.0f - rate, share);
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // The global object: three pads (port 0, port 1, port 1 masked) whose maps
 // point at the options' one, the packet manager on the two frame buffers,

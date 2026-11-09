@@ -4,6 +4,7 @@
  *  GameOverSequence, its camera and SceneDirector (gameoversequence.h).
  * ======================================================================== */
 #include <string.h>
+#include "game/gamerate.h"
 
 #include "game/gameoversequence.h"
 #include "game/gamesystem.h"
@@ -81,7 +82,7 @@ void GameOverSequence::update()
         break;
     }
     case GameOverState_Fall:
-        if (m_timer-- > 0)
+        if (palTicks() == 0 || m_timer-- > 0)   // PC: game_rate, the timer counts 25 Hz frames (game/gamerate.h)
             return;
         setState(GameOverState_Culprit);
         break;
@@ -90,7 +91,7 @@ void GameOverSequence::update()
             setState(GameOverState_Fading);
             break;
         }
-        if (m_timer-- > 0)
+        if (palTicks() == 0 || m_timer-- > 0)   // PC: game_rate, as above
             return;
         setState(GameOverState_Fading);
         break;
@@ -214,12 +215,16 @@ void DeathCamera::cameraStep()
     identityMatrix(turn);
     rotateMatrixZ(m_angle, turn, turn);
     if (m_swingLeft > 0.0f) {
-        m_swingLeft -= 1.0f;
-        if (m_swingLeft < m_swingTotal / 2.0f)
-            m_swingSpeed -= m_swingAccel;
-        else
-            m_swingSpeed += m_swingAccel;
-        m_angle += m_swingSpeed;
+        // PC: game_rate (game/gamerate.h): the swing's speed changes once a 25 Hz frame, the angle moves this frame's
+        // share of it every frame (the last 25 Hz frame's second half is left out: the speed is near 0 there).
+        if (palTicks() != 0) {
+            m_swingLeft -= 1.0f;
+            if (m_swingLeft < m_swingTotal / 2.0f)
+                m_swingSpeed -= m_swingAccel;
+            else
+                m_swingSpeed += m_swingAccel;
+        }
+        m_angle += m_swingSpeed * palScale();
     }
 
     sceVu0FVECTOR point;
@@ -310,7 +315,8 @@ void SceneDirector::start(int frames, u_int from, u_int to)
 void SceneDirector::draw(sceVif1Packet *packet)
 {
     if (m_frames != 0) {
-        m_frame++;
+        if (palTicks() != 0)   // PC: game_rate, 25 Hz frames
+            m_frame++;
         if (m_frame < m_frames) {
             colour = 0;
             for (int shift = 0; shift < 32; shift += 8)

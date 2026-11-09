@@ -265,10 +265,26 @@ between ticks nothing is emitted); item physics (a closed Verlet simulation: it 
 thrown items still move at 25 Hz); the stage clocks and the saved play time (`StageResult::tick` on the tick);
 character voice delays (`kFramesPerSecond = 25`).
 
-**Not converted yet** (run 2x fast at 50): the rest of framerate-inventory.md's systems table: critters, sight-jack
-fades and hold, the jack's film, game over, demo flecks, mission notices and timed records, the sub-scene wait, fire
-and scope, the item prompt, status, the HUD weapon cycle, Kunitoris, the locks, cars and cut speed, the lamp's lean,
-the sight-jack aim and the dive camera's eases.
+**Second pass, the rest of the inventory (2026-11-09):** game over (its timers on the tick; the death camera's swing
+speed on the tick, its angle by the share; the letterbox fade); demo flecks and mission timed records (on the tick;
+notices were already in seconds, `kNoticeFps`); the demo camera's cut speed and the airborne car's `drive` (x share);
+the sub-scene's one-frame shorter script wait (one 25 Hz frame in game frames); fire and scope (the hold fires once,
+on the tick the 25 Hz repeat count reaches it; sway steps x share; scope and look eases through `palEase`); the item
+prompt's keys and the HUD weapon cycle (on the tick); status (the hearing roll on the tick only, the hit mark and the
+leave countdown); the sight-jack (hold, marker, vision, flash and bind counters on the tick; its aim's ease and the
+film's crossfade by the share); the lamp's lean and the lock dials' eases (`palEase`); the dive camera (its share of
+1 / flyFrames); critters (`StageNodeTree::update` runs the nests on the tick: whole 25 Hz frames, exact, moving in
+25 Hz steps; the nest's warm-up is not that path); Kunitoris (after each of its `threadYield(1)`,
+`kunitorisWholeFrame` sits out the frame between two ticks and keeps that frame's button edges for the next: the
+whole minigame in 25 Hz frames, presses kept).
+
+`palEase(rate)` (game/gamerate.h) is the linear ease's form, 1 - (1 - rate)^share, the rate itself at 25; a rate of 1
+(a snap) stays a snap. The navigation menu and the locks' `frame()` have no frame rule of their own (tweens, buttons).
+
+**What is left:** every row of framerate-inventory.md is converted. Kept at 25 Hz steps on purpose (exact, not smooth
+at 50): item physics, critters, Kunitoris, UI tracks and tweens, sprite frames. Not read: the 22 time-based files
+beyond their clock reads (framerate-inventory.md "To check"). Not run at 50: game over, the sight-jack, Kunitoris, the
+locks, cars, cut scenes, menus and the map; a memory card save's play time.
 
 **Seen** (stage 2, 45 s, the walk script; at 50 Hz with every pad-read number doubled, since the script counts pad
 reads; `YAMIPAN_RATE_LOG=1`, `ratecmp.py`):

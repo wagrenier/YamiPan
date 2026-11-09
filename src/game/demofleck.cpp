@@ -1,4 +1,5 @@
 #include "game/demofleck.h"
+#include "game/gamerate.h"
 
 #include "game/vu0math.h"
 #include "sdk/libgraph.h"
@@ -215,6 +216,8 @@ void FleckSet::spawnLarge(Fleck *fleck)
 
 void FleckSet::step()
 {
+    if (palTicks() == 0)   // PC: game_rate, ages and spawns once a 25 Hz frame (game/gamerate.h)
+        return;
     const auto age = [](Fleck &fleck) {
         if (fleck.life <= ++fleck.age)
             fleck.life = fleck.age = 0;

@@ -24,6 +24,7 @@
  *  runs is a choice: nothing but the event ties them.
  * ======================================================================== */
 #include <math.h>
+#include "game/gamerate.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -436,7 +437,7 @@ void DemoCamera::playCutNamed(const char *name)
 
 void DemoCamera::cameraStep()
 {
-    m_model->advance(kDemoCutSpeed, m_xform.position, m_xform.rotation, 0);
+    m_model->advance(kDemoCutSpeed * palScale(), m_xform.position, m_xform.rotation, 0);   // PC: game_rate
 
     ModelPose *pose = m_model->pose;
     ModelPoseBone *lens = pose->findBone(kBoneFovy);
@@ -676,6 +677,8 @@ void StageMission::afterScripts()
 
 void StageMission::tickPending()
 {
+    if (palTicks() == 0)   // PC: game_rate, the records count 25 Hz frames (game/gamerate.h)
+        return;
     int done = 0;
     int seen = 0;
     int live = timedCount;
