@@ -1832,7 +1832,8 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
 - **(3) begun, 2026-11-09** (architecture.md "FS2's driver, read"): the dispatcher had four FS2 commands
   RoR has not (0x52, 0x53, 0x62, 0xb4; their EE senders have no caller, so nothing sent them), now in;
   RxSndDrvXvabGetUsers's test the right way round; RxSndDrvAdpcmStart gives the group to every channel and
-  the owner to the first only. Still unread: RxSndDrvSeRun (74%, the largest change), the PCM player
+  the owner to the first only; RxSndDrvSeRun (read the same day) holds a paused SE and its "all" opcodes
+  reach only SEs of the same bank. Still unread: the PCM player
   (PcmTick +0xac, PcmOpen 64%, PcmInit moved), the mixer (MixInit / MixSet / MixTick), the voice tick's
   noise clock (FS2's RxSndDrvVoiceSetNoise 0x4428, called by NoteTick for region flag 4, pending bit
   0x20), DmaProc, XseqChunkFind (60%), ChunkFindV2 and the one-word ones (record offsets).
