@@ -297,7 +297,7 @@ int RxSndDrvXseqDetach(u_char *file)
 }
 
 /* The data of chunk `tag`, NULL when there is none. */
-// IOP 0x000036d4 (RoR 0x000034a8, 60% of it aligned: FS2 differs, unread)
+// IOP 0x000036d4 (RoR 0x000034a8, 60% of it aligned: FS2 read, the same but for record offsets)
 u_char *RxSndDrvXseqChunkFind(const void *file, u_int tag)
 {
     if ((int)((const u_int *)file)[1] < 0x200)

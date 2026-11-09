@@ -460,7 +460,7 @@ u_char *RxSndDrvChunkFindV1(const void *file, u_int tag)
 }
 
 /* Version 0x200: {tag, ?, size, ?, data} from +0x10. */
-// IOP 0x00002fa4 (RoR 0x00002da0, 95% of it aligned: FS2 differs, unread)
+// IOP 0x00002fa4 (RoR 0x00002da0, 95% of it aligned: FS2 read, the same but for record offsets)
 u_char *RxSndDrvChunkFindV2(const void *file, u_int tag)
 {
     u_char *base  = (u_char *)file;

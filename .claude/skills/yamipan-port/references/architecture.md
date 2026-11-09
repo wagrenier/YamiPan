@@ -2099,8 +2099,8 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   The ring's status is what was heard (mixed, less what the device still holds). sceSdInit opens the
   device: `SDL_OpenAudioDeviceStream` on the default playback device, 16-bit stereo 48 kHz (SDL's audio is
   up since `Application::startServices`). The log reports the first three 10 s windows: "audio: N s mixed,
-  peak P (x dBFS), reverb return peak R, K key-ons" (the reverb part since the next point). **Not yet:** PMON
-  (NON since the same day, the next points), the player's volume settings (RosePan's [audio] section), core 0 feeding core 1 (both cores
+  peak P (x dBFS), reverb return peak R, K key-ons" (the reverb part since the next point). **Not yet:** the
+  player's volume settings (NON and PMON since the same day, the next points) (RosePan's [audio] section), core 0 feeding core 1 (both cores
   are summed, as in RosePan). **Seen 2026-11-09:** the device is "Remote Audio" (the machine is used over
   Remote Desktop); the language screen keys no voice (peak 0); `YAMIPAN_TELEPORT=d0101` keys the event's
   stereo stream and mixes it at -25 dBFS peak. A dump of that mix (scratch code, removed) read as sound,
@@ -2167,7 +2167,14 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   into a 16-bit register each time the timer runs out, the register read as signed. A NON voice plays it
   instead of its samples, which still run (loops, ENDX, the envelope are theirs). Scratch check (removed):
   clock 0 silent over 10,240 frames (one shift per 32,768), 0x20 a low rumble (a shift per 128 frames),
-  0x3f white (0.499 zero crossings a frame); NON off, the same silent sample stays silent.
+  0x3f white (0.499 zero crossings a frame); NON off, the same silent sample stays silent. (9) The rest:
+  the last 21 changed functions (voice setters and queries, NoteVoiceDone, PcmDownmix, XseqChunkFind,
+  ChunkFindV2) are RoR's but for record offsets, so every changed function is read. PMON, which the voice
+  tick writes from switch bit 8, is in `Spu2Voices`: a voice whose PMON bit is set (not voice 0 of its
+  core) steps at pitch * (0x8000 + the voice below's enveloped output) >> 15, past 0x3fff 0x4000
+  (psx-spx); each voice keeps its block's enveloped output for the voice above. Scratch check (removed):
+  with the voice below a constant 0x7000, the modulated voice reads 1.881 samples a frame (1.875 by the
+  formula), 1.006 without.
 - **The EE's side** (2026-11-09, `sdk/sif.cpp`): sceSifBindRpc keeps the
   RPC number in the client's `command`; sceSifCallRpc sends a call to a registered server through
   `YamiPan_IopRpcDispatch` on the EE's thread and copies `rsize` bytes of the handler's buffer back before

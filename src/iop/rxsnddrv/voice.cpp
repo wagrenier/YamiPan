@@ -289,7 +289,7 @@ void RxSndDrvVoiceTick(void)
  * the largest priority, then the oldest) for `owner`; first every voice
  * `owner` (> 0) already holds is taken back.  Answers the voice, or -1 when
  * the group has none. */
-// IOP 0x00003da0 (RoR 0x00003b80, 92% of it aligned: FS2 differs, unread)
+// IOP 0x00003da0 (RoR 0x00003b80, 92% of it aligned: FS2 read, the same but for record offsets)
 int RxSndDrvVoiceAlloc(int voice, int priority, int autoFree, int group, int owner,
                        RxSndDrvVoiceDone done, void *arg)
 {
@@ -370,7 +370,7 @@ int RxSndDrvVoiceAlloc(int voice, int priority, int autoFree, int group, int own
     return voice;
 }
 
-// IOP 0x000040d8 (RoR 0x00003eb8, 95% of it aligned: FS2 differs, unread)
+// IOP 0x000040d8 (RoR 0x00003eb8, 95% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceInit(void)
 {
     memset(&s_voice, 0, sizeof(s_voice));
@@ -391,7 +391,7 @@ void RxSndDrvVoiceInit(void)
 
 /* System parameter 2 (sys.cpp): 0 mono, else stereo; every active voice's
  * volume is written again. */
-// IOP 0x0000418c (RoR 0x00003f6c, 95% of it aligned: FS2 differs, unread)
+// IOP 0x0000418c (RoR 0x00003f6c, 95% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceSetOutputMode(int mode)
 {
     if (s_voice.m_stereo == mode)
@@ -407,7 +407,7 @@ void RxSndDrvVoiceSetOutputMode(int mode)
 
 /* The owner lets the voice go: keyed off, fading out unless `noFade`, and its
  * callback told {voice, reason}. */
-// IOP 0x000041ec (RoR 0x00003fcc, 90% of it aligned: FS2 differs, unread)
+// IOP 0x000041ec (RoR 0x00003fcc, 90% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceRelease(int voice, int reason, int noFade)
 {
     RxSndDrvVoice *p = &s_voice.m_voice[voice];
@@ -428,7 +428,7 @@ void RxSndDrvVoiceRelease(int voice, int reason, int noFade)
     p->m_flags &= ~RXSNDDRV_VOICE_OWNED;
 }
 
-// IOP 0x000042bc (RoR 0x0000409c, 84% of it aligned: FS2 differs, unread)
+// IOP 0x000042bc (RoR 0x0000409c, 84% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceSetSample(int voice, u_int ssa, u_short adsr1, u_short adsr2)
 {
     RxSndDrvVoice *p = &s_voice.m_voice[voice];
@@ -439,7 +439,7 @@ void RxSndDrvVoiceSetSample(int voice, u_int ssa, u_short adsr1, u_short adsr2)
     p->m_pending |= RXSNDDRV_VOICE_SET_SAMPLE;
 }
 
-// IOP 0x000042f0 (RoR 0x000040d0, 81% of it aligned: FS2 differs, unread)
+// IOP 0x000042f0 (RoR 0x000040d0, 81% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceSetLoop(int voice, u_int lsax)
 {
     RxSndDrvVoice *p = &s_voice.m_voice[voice];
@@ -450,7 +450,7 @@ void RxSndDrvVoiceSetLoop(int voice, u_int lsax)
 
 /* Bits: 1 dry (VMIXL / VMIXR), 2 reverb (VMIXEL / VMIXER), 4 noise, 8 pitch
  * modulation. */
-// IOP 0x0000431c (RoR 0x000040fc, 81% of it aligned: FS2 differs, unread)
+// IOP 0x0000431c (RoR 0x000040fc, 81% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceSetSwitch(int voice, u_char bits)
 {
     RxSndDrvVoice *p = &s_voice.m_voice[voice];
@@ -460,7 +460,7 @@ void RxSndDrvVoiceSetSwitch(int voice, u_char bits)
 }
 
 /* L / R as 0..0x7f. */
-// IOP 0x00004348 (RoR 0x00004128, 85% of it aligned: FS2 differs, unread)
+// IOP 0x00004348 (RoR 0x00004128, 85% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceSetVolume(int voice, int l, int r)
 {
     RxSndDrvVoice *p = &s_voice.m_voice[voice];
@@ -471,7 +471,7 @@ void RxSndDrvVoiceSetVolume(int voice, int l, int r)
 }
 
 /* L / R in register units. */
-// IOP 0x00004380 (RoR 0x00004160, 83% of it aligned: FS2 differs, unread)
+// IOP 0x00004380 (RoR 0x00004160, 83% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceSetVolumeRaw(int voice, int l, int r)
 {
     RxSndDrvVoice *p = &s_voice.m_voice[voice];
@@ -483,7 +483,7 @@ void RxSndDrvVoiceSetVolumeRaw(int voice, int l, int r)
 
 /* The pitch of `note` + `fine` for a sample recorded at `center` +
  * `centerFine`, times `scale` / 0x1000. */
-// IOP 0x000043b0 (RoR 0x00004190, 93% of it aligned: FS2 differs, unread)
+// IOP 0x000043b0 (RoR 0x00004190, 93% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceSetPitch(int voice, u_short center, u_short centerFine, u_short note, short fine,
                            int scale)
 {
@@ -513,7 +513,7 @@ void RxSndDrvVoiceKeyOn(int voice)
     s_voice.m_keyOn[core]   |= bit;
 }
 
-// IOP 0x000044e8 (RoR 0x0000429c, 95% of it aligned: FS2 differs, unread)
+// IOP 0x000044e8 (RoR 0x0000429c, 95% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceKeyOff(int voice)
 {
     RxSndDrvVoice *p = &s_voice.m_voice[voice];
@@ -536,7 +536,7 @@ u_short RxSndDrvVoiceGetEnvx(int voice)
 }
 
 /* Command 0x90: every voice's ENVX. */
-// IOP 0x000045d0 (RoR 0x00004384, 83% of it aligned: FS2 differs, unread)
+// IOP 0x000045d0 (RoR 0x00004384, 83% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceGetEnvxAll(u_char *reply)
 {
     u_int *out = (u_int *)reply;
@@ -547,7 +547,7 @@ void RxSndDrvVoiceGetEnvxAll(u_char *reply)
 
 /* Command 0x93: one field of every voice -- 0 ENVX, 1 volume {L, R} as
  * 0..0x7f halves, 2 pitch, 3 switch bits, 4 priority, 5 {ADSR1, ADSR2}. */
-// IOP 0x00004600 (RoR 0x000043b4, 95% of it aligned: FS2 differs, unread)
+// IOP 0x00004600 (RoR 0x000043b4, 95% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceGetTable(u_int kind, u_char *reply)
 {
     u_int *out = (u_int *)reply;
@@ -600,14 +600,14 @@ u_int RxSndDrvVoiceGetNax(int voice)
 }
 
 /* Command 0x91 {voice, enable}. */
-// IOP 0x00004768 (RoR 0x0000451c, 77% of it aligned: FS2 differs, unread)
+// IOP 0x00004768 (RoR 0x0000451c, 77% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceSetEnable(u_int voice, u_int enable)
 {
     s_voice.m_voice[voice].m_enable = (int)enable;
 }
 
 /* Command 0x92: every voice's flags. */
-// IOP 0x0000478c (RoR 0x00004540, 91% of it aligned: FS2 differs, unread)
+// IOP 0x0000478c (RoR 0x00004540, 91% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceGetFlags(u_char *reply)
 {
     u_int *out = (u_int *)reply;
@@ -616,7 +616,7 @@ void RxSndDrvVoiceGetFlags(u_char *reply)
         out[v] = s_voice.m_voice[v].m_flags;
 }
 
-// IOP 0x000047bc (RoR 0x00004570, 87% of it aligned: FS2 differs, unread)
+// IOP 0x000047bc (RoR 0x00004570, 87% of it aligned: FS2 read, the same but for record offsets)
 void RxSndDrvVoiceFree(int voice)
 {
     RxSndDrvVoiceKeyOff(voice);
