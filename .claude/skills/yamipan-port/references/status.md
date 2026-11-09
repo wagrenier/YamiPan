@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-09 10:25 at commit `b3f21ac` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-09 10:48 at commit `6a5467e` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,9 +10,9 @@ Generated 2026-11-09 10:25 at commit `b3f21ac` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6598**, named **5930** (90%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1617, game-inferred 4992
-- context-name ledger: 6609 entries; overrides of wrong library matches: 0
+- game functions: **6598**, named **5982** (91%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1617, game-inferred 5044
+- context-name ledger: 6661 entries; overrides of wrong library matches: 0
 - placed in a source file: 6512/6598 in 139 files
 
 Least-named game-code regions (64 KB blocks):
@@ -23,14 +23,14 @@ Least-named game-code regions (64 KB blocks):
 | `001b0000` | 129/242 (53%) | game/scriptrunner.cpp |
 | `002d0000` | 156/256 (61%) | game/drawsys.cpp, game/areaclip.cpp, game/ripplesheet.cpp |
 | `001a0000` | 195/301 (65%) | game/scriptrunner.cpp, game/stagescene.cpp, game/characterbrain.cpp |
-| `00250000` | 126/178 (71%) | game/routeplayer.cpp, game/uiwidget.cpp, game/uidrawer.cpp |
 | `00180000` | 248/336 (74%) | game/stageitem.cpp, game/stagelight.cpp, game/stageobject.cpp |
 | `001f0000` | 158/185 (85%) | game/movieplayer.cpp, game/stageparty.cpp, game/scenerender.cpp |
 | `002e0000` | 160/178 (90%) | rena/rena_draw.cpp, rena/rena_model.cpp, game/layoutpaths.cpp |
+| `00280000` | 221/232 (95%) | game/playermotion.cpp, game/stagecar.cpp, game/demoevent.cpp |
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **6044**; stubs: **3**
+- reconstructed FS2 functions: **6097**; stubs: **3**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -89,7 +89,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/rcnttimer.cpp` | 4 | 0 |
 | `src/game/ripplesheet.cpp` | 7 | 0 |
 | `src/game/routefilter.cpp` | 38 | 0 |
-| `src/game/routeplayer.cpp` | 45 | 0 |
+| `src/game/routeplayer.cpp` | 98 | 0 |
 | `src/game/rumblelist.cpp` | 10 | 0 |
 | `src/game/s2ddata.cpp` | 9 | 0 |
 | `src/game/scene.cpp` | 1 | 0 |
@@ -229,7 +229,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/ripplesheet.cpp` 7/10 -- Batch 164. What the notes called stage 0x1b's boss film is a 15 by 15 ripple sheet, 0x2d10f0..0x2d3700, SightJack +0xb4: the frame bent, pushed from a tint, cre
 - verify: `game/routefilter.cpp` 36/36 -- All of 0x23f290..0x242e80 is written (batch 153). It cannot run yet: every RoutePlayer method it calls is a stub, so findPath and pathLength answer -1 and a wal
-- verify: `game/routeplayer.cpp` 47/100 -- Complete and compared with the ROM: rutecmp.py runs the ROM's code on eerun.py beside the host over 12 stages' rute files, 3840 questions, 0 differences. The fi
+- verify: `game/routeplayer.cpp` 100/100 -- Every remaining function was an MSL template instance the host gets from the standard library: areaPath's reverse_copy and copy iterator ops (vector iterators a
 - verify: `game/rumblelist.cpp` 10/10 -- Batch 163. KeepList 0x2bc100..0x2bcd20 is the pad's rumble: RumbleList at scene +0x30 plays named tracks of init pack item 0x14 (ALERT, PETITJACK, DAMAGE1, KAKO
 - verify: `game/s2ddata.cpp` 9/9 -- Host: S2dRef<T> (s2ddata.h) is a 32-bit offset from the field itself, 0 null, implicit T* conversion, copy deleted; S2dData, S2dObject, S2dWidgetDef, S2dImage a
 - verify: `game/scene.cpp` 1/1 -- gameSceneThread written in full: loadInitPack, runStartupSequence, overlayThreadStart, then forever loadMenuPack, the scene from sScenes (one retail entry, Menu
@@ -321,6 +321,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-09 10:47 `game/routeplayer.cpp` verify: 52 MSL vector, set, sort and lower_bound instances 0x254e10..0x255080, 0x258bc0..0x25b850 named (batch 247) and listed in a ledger; the TU counts 100 of 100
 - 2026-11-09 10:25 `game/stageitem.cpp` verify: stageitem.cpp 139 of 139: the 31 header-inline slots and the StageNodeList instance listed and named, CollisionBodyArray::clear written
 - 2026-11-09 10:12 `game/packtables.cpp` verify: 43 MSL map, set, vector and string instances 0x2c0d00..0x2c3d30 named (batch 244) and listed in a ledger; the TU counts 52 of 52
 - 2026-11-09 09:54 `game/playermotion.cpp` verify: GunMoveCondition::~GunMoveCondition 0x26d020 named and pinned (was unassigned@0026d020)
@@ -328,7 +329,6 @@ Recent sessions:
 - 2026-11-09 08:27 `game/subsceneobject.cpp` verify: SubSceneModelObject dtor thunk 0x269da0 pinned (was unassigned@00269da0)
 - 2026-11-09 08:20 `game/playermotion.cpp` verify: MotionLink::onRequest 0x1ec640 named and pinned (was unassigned@001ec640)
 - 2026-11-09 08:09 `game/playermotion.cpp` verify: 0x1e5d50..0x1e5d60 joined (was unassigned@001e5d50): MotionLink::onRun, the base's empty slot +0x1c, already in playermotion.h; batch 240 also named the empty d
-- 2026-11-09 07:55 `game/playermotion.cpp` verify: 0x21c290..0x21c300 joined (was unassigned@0021c290): StageCharacter::doorJustOpened and doorJustUnlocked, the door-state checks on what afterScripts keeps (+0x6
 
 ## Frontier (called by reconstructed code, not written yet)
 
@@ -338,40 +338,40 @@ Recent sessions:
 | `0017e1b0` | StageList<StageObject*>::pushBack | 25 | game | missing | game/stagecharacter.cpp |
 | `00121b80` | mcErrorCode | 19 | game | missing | sdk/mcerror.cpp |
 | `002a7800` | NmlPose::getDial | 14 | game | missing | game/numlock.cpp |
-| `0025a850` | mslTreeIncrement | 11 | lib-ctx | missing | game/routeplayer.cpp |
 | `002b3640` | SkyPose::getDial | 11 | game | missing | game/sevenkeys.cpp |
 | `00228610` | FUN_00228610 | 9 | - | missing | game/characterroute.cpp |
 | `00236910` | BoundingSphere::BoundingSphere | 9 | game | missing | game/stagecollision.cpp |
 | `001f4e20` | FUN_001f4e20 | 8 | - | missing | game/stagecollision.cpp |
-| `00254f10` | FUN_00254f10 | 8 | - | missing | game/routeplayer.cpp |
-| `00254e40` | FUN_00254e40 | 8 | - | missing | game/routeplayer.cpp |
 | `001f4d30` | FUN_001f4d30 | 7 | - | missing | game/stagecollision.cpp |
 | `00206f80` | BearingVector::~BearingVector | 6 | lib-ctx | missing | game/stageparty.cpp |
-| `0025b590` | FUN_0025b590 | 6 | - | missing | game/routeplayer.cpp |
 | `001dd3f0` | CharacterBrain::setEnabled | 6 | game | missing | game/characterbrain.cpp |
 | `001871c0` | PartSwitch::~PartSwitch | 6 | game | missing | game/stagemodel.cpp |
 | `001f4c30` | FUN_001f4c30 | 6 | - | missing | game/stagecollision.cpp |
-| `00258ea0` | FUN_00258ea0 | 6 | - | missing | game/routeplayer.cpp |
 | `002dd6e0` | ClipIndexList::insert | 6 | game | missing | game/areaclip.cpp |
 | `001f4f20` | FUN_001f4f20 | 6 | - | missing | game/stagecollision.cpp |
 | `00187220` | PartSwitch::PartSwitch | 5 | game | missing | game/stagemodel.cpp |
-| `00258f10` | FUN_00258f10 | 5 | - | missing | game/routeplayer.cpp |
-| `00255080` | FUN_00255080 | 5 | - | missing | game/routeplayer.cpp |
 | `001f4bb0` | FUN_001f4bb0 | 5 | - | missing | game/stagecollision.cpp |
 | `002e7e90` | FUN_002e7e90 | 5 | - | missing | rena/rena_draw.cpp |
 | `00186b80` | FUN_00186b80 | 4 | - | missing | game/stagelight.cpp |
 | `001920d0` | WordVector::resize | 4 | lib-ctx | missing | game/stageparticle.cpp |
 | `001927b0` | WordVector::erase | 4 | lib-ctx | missing | game/stageparticle.cpp |
 | `002b3660` | SkyPose::setDial | 4 | game | missing | game/sevenkeys.cpp |
-| `00254fd0` | FUN_00254fd0 | 4 | - | missing | game/routeplayer.cpp |
-| `00254fc0` | FUN_00254fc0 | 4 | - | missing | game/routeplayer.cpp |
-| `00254fa0` | FUN_00254fa0 | 4 | - | missing | game/routeplayer.cpp |
-| `00254f90` | FUN_00254f90 | 4 | - | missing | game/routeplayer.cpp |
-| `00254f40` | FUN_00254f40 | 4 | - | missing | game/routeplayer.cpp |
-| `00254f30` | FUN_00254f30 | 4 | - | missing | game/routeplayer.cpp |
-| `00254f00` | FUN_00254f00 | 4 | - | missing | game/routeplayer.cpp |
-| `00254ef0` | FUN_00254ef0 | 4 | - | missing | game/routeplayer.cpp |
-| `00254ec0` | FUN_00254ec0 | 4 | - | missing | game/routeplayer.cpp |
-| `00254e70` | FUN_00254e70 | 4 | - | missing | game/routeplayer.cpp |
-| `00254e60` | FUN_00254e60 | 4 | - | missing | game/routeplayer.cpp |
+| `001725d0` | FUN_001725d0 | 4 | - | missing | game/stagedoor.cpp |
+| `002de000` | ClipSet::ClipSet | 4 | game | missing | game/areaclip.cpp |
+| `002ddcf0` | ClipSet::eraseTree | 4 | game | missing | game/areaclip.cpp |
+| `002ddf40` | ClipSet::insert | 4 | game | missing | game/areaclip.cpp |
+| `002362f0` | BoundingSphere::toBox | 4 | game | missing | game/stagecollision.cpp |
+| `001937f0` | BoxColumn::clear | 4 | lib-ctx | missing | game/stageparticle.cpp |
+| `002a7820` | NmlPose::setDial | 4 | game | missing | game/numlock.cpp |
+| `00206f70` | BearingVector::clear | 3 | lib-ctx | missing | game/stageparty.cpp |
+| `002dd9f0` | ClipIndexList::reserve | 3 | game | missing | game/areaclip.cpp |
+| `002dd300` | std::sort(u_short) | 3 | game | missing | game/areaclip.cpp |
+| `002dd260` | std::lower_bound(u_short) | 3 | game | missing | game/areaclip.cpp |
+| `002e7610` | uploadMeshMatrix | 3 | game | missing | rena/rena_draw.cpp |
+| `001dd3e0` | CharacterBrain::isEnabled | 2 | game | missing | game/characterbrain.cpp |
+| `00231d40` | boxContains | 2 | game | missing | game/stagecollision.cpp |
+| `00193210` | EffectSortList::reserve | 2 | lib-ctx | missing | game/stageparticle.cpp |
+| `00192150` | mslSort_Effects | 2 | lib-ctx | missing | game/stageparticle.cpp |
+| `00193410` | EffectSortList::~EffectSortList | 2 | lib-ctx | missing | game/stageparticle.cpp |
+| `001b54a0` | StageNodeBase::setParent | 2 | game | missing | game/scriptrunner.cpp |
 

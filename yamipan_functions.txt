@@ -6597,25 +6597,25 @@
 /* 00253180 00000090 */ RoutePlayer::RoutePlayer(){}  // game
 /* 00253210 0000020c */ RouteAreaSearch::chainRun(){}  // game
 /* 00253420 000019e8 */ RouteAreaSearch::areaPath(){}  // game
-/* 00254e10 00000014 */ FUN_00254e10(){}
-/* 00254e30 00000010 */ FUN_00254e30(){}
-/* 00254e40 00000018 */ FUN_00254e40(){}
-/* 00254e60 00000008 */ FUN_00254e60(){}
-/* 00254e70 00000044 */ FUN_00254e70(){}
-/* 00254ec0 00000008 */ FUN_00254ec0(){}
-/* 00254ed0 00000014 */ FUN_00254ed0(){}
-/* 00254ef0 00000008 */ FUN_00254ef0(){}
-/* 00254f00 00000010 */ FUN_00254f00(){}
-/* 00254f10 00000018 */ FUN_00254f10(){}
-/* 00254f30 00000008 */ FUN_00254f30(){}
-/* 00254f40 00000044 */ FUN_00254f40(){}
-/* 00254f90 00000008 */ FUN_00254f90(){}
-/* 00254fa0 00000014 */ FUN_00254fa0(){}
-/* 00254fc0 00000008 */ FUN_00254fc0(){}
-/* 00254fd0 00000014 */ FUN_00254fd0(){}
-/* 00254ff0 00000048 */ FUN_00254ff0(){}
+/* 00254e10 00000014 */ RouteLegList::iterator::operator++(){}  // game
+/* 00254e30 00000010 */ back_insert_iterator<RouteLegList>::back_insert_iterator(){}  // game
+/* 00254e40 00000018 */ RouteLegList::iterator::operator!=(){}  // game
+/* 00254e60 00000008 */ back_insert_iterator<RouteLegList>::operator++(){}  // game
+/* 00254e70 00000044 */ back_insert_iterator<RouteLegList>::operator=(){}  // game
+/* 00254ec0 00000008 */ RouteLegList::iterator::operator*(){}  // game
+/* 00254ed0 00000014 */ RouteLegList::iterator::operator--(){}  // game
+/* 00254ef0 00000008 */ back_insert_iterator<RouteLegList>::operator*(){}  // game
+/* 00254f00 00000010 */ back_insert_iterator<WordVector>::back_insert_iterator(){}  // game
+/* 00254f10 00000018 */ WordVector::iterator::operator!=(){}  // game
+/* 00254f30 00000008 */ back_insert_iterator<WordVector>::operator++(){}  // game
+/* 00254f40 00000044 */ back_insert_iterator<WordVector>::operator=(){}  // game
+/* 00254f90 00000008 */ WordVector::iterator::operator*(){}  // game
+/* 00254fa0 00000014 */ WordVector::iterator::operator--(){}  // game
+/* 00254fc0 00000008 */ back_insert_iterator<WordVector>::operator*(){}  // game
+/* 00254fd0 00000014 */ WordVector::WordVector(){}  // game
+/* 00254ff0 00000048 */ RouteLegList::operator=(){}  // game
 /* 00255040 0000003c */ distanceToNode(){}  // game
-/* 00255080 00000014 */ FUN_00255080(){}
+/* 00255080 00000014 */ RouteLegList::RouteLegList(){}  // game
 /* 002550a0 0000002c */ RouteAreaSearch::nodeIndex(){}  // game
 /* 002550d0 00000260 */ RouteAreaSearch::chainOf(){}  // game
 /* 00255330 000016b0 */ RouteAreaSearch::wayAlongChains(){}  // game
@@ -6638,42 +6638,42 @@
 /* 00258870 0000008c */ RoutePath::append(){}  // game
 /* 00258900 00000278 */ distanceToSegment(){}  // game
 /* 00258b80 0000003c */ planarDistance(){}  // game
-/* 00258bc0 000000a4 */ FUN_00258bc0(){}
-/* 00258c70 0000006c */ FUN_00258c70(){}
-/* 00258ce0 0000006c */ FUN_00258ce0(){}
-/* 00258d50 0000006c */ FUN_00258d50(){}
-/* 00258dc0 0000006c */ FUN_00258dc0(){}
-/* 00258e30 0000006c */ FUN_00258e30(){}
-/* 00258ea0 0000006c */ FUN_00258ea0(){}
-/* 00258f10 0000006c */ FUN_00258f10(){}
-/* 00258f80 000002a4 */ FUN_00258f80(){}
+/* 00258bc0 000000a4 */ std::lower_bound(short)(){}  // game
+/* 00258c70 0000006c */ std::lower_bound(RouteCrossingFrom)(){}  // game
+/* 00258ce0 0000006c */ std::lower_bound(RouteCrossingTo)(){}  // game
+/* 00258d50 0000006c */ std::lower_bound(RouteChainList)(){}  // game
+/* 00258dc0 0000006c */ std::lower_bound(RouteWayRecord)(){}  // game
+/* 00258e30 0000006c */ std::lower_bound(RouteAreaChains)(){}  // game
+/* 00258ea0 0000006c */ std::lower_bound(RouteChainRunFrom)(){}  // game
+/* 00258f10 0000006c */ std::lower_bound(RouteChainRunTo)(){}  // game
+/* 00258f80 000002a4 */ std::sort(short)(){}  // game
 /* 00259230 000000bc */ RouteFile::legsLength(){}  // game
-/* 002592f0 0000013c */ FUN_002592f0(){}
-/* 00259430 00000328 */ FUN_00259430(){}
-/* 00259760 000005fc */ FUN_00259760(){}
-/* 00259d60 00000184 */ FUN_00259d60(){}
-/* 00259ef0 00000424 */ FUN_00259ef0(){}
-/* 0025a320 00000424 */ FUN_0025a320(){}
-/* 0025a750 00000078 */ FUN_0025a750(){}
-/* 0025a7d0 00000008 */ FUN_0025a7d0(){}
-/* 0025a7e0 00000064 */ FUN_0025a7e0(){}
+/* 002592f0 0000013c */ RouteLegList::initRange(){}  // game
+/* 00259430 00000328 */ RouteLegList::assign(){}  // game
+/* 00259760 000005fc */ RouteLegList::insertRange(){}  // game
+/* 00259d60 00000184 */ RouteLegList::erase(iterator)(){}  // game
+/* 00259ef0 00000424 */ AreaNumberList::insert(){}  // game
+/* 0025a320 00000424 */ vector<short>::insert(){}  // game
+/* 0025a750 00000078 */ vector<short>::resize(){}  // game
+/* 0025a7d0 00000008 */ AreaNumberList::clear(){}  // game
+/* 0025a7e0 00000064 */ AreaNumberList::~AreaNumberList(){}  // game
 /* 0025a850 00000098 */ mslTreeIncrement(){}  // lib-ctx
-/* 0025a8f0 00000208 */ FUN_0025a8f0(){}
-/* 0025ab00 00000008 */ FUN_0025ab00(){}
-/* 0025ab10 00000008 */ FUN_0025ab10(){}
-/* 0025ab20 00000004 */ FUN_0025ab20(){}
-/* 0025ab30 00000008 */ FUN_0025ab30(){}
-/* 0025ab40 000000bc */ FUN_0025ab40(){}
-/* 0025ac00 00000020 */ FUN_0025ac00(){}
-/* 0025ac20 000000ec */ FUN_0025ac20(){}
-/* 0025ad10 00000268 */ FUN_0025ad10(){}
-/* 0025af80 00000268 */ FUN_0025af80(){}
-/* 0025b1f0 0000011c */ FUN_0025b1f0(){}
-/* 0025b310 00000148 */ FUN_0025b310(){}
-/* 0025b460 00000130 */ FUN_0025b460(){}
-/* 0025b590 00000230 */ FUN_0025b590(){}
-/* 0025b7c0 00000088 */ FUN_0025b7c0(){}
-/* 0025b850 00000088 */ FUN_0025b850(){}
+/* 0025a8f0 00000208 */ NameSet::eraseTree(){}  // game
+/* 0025ab00 00000008 */ NameSet::freeNode(){}  // game
+/* 0025ab10 00000008 */ NameSet::getNodeAllocator(){}  // game
+/* 0025ab20 00000004 */ NameSet::destroyValue(){}  // game
+/* 0025ab30 00000008 */ NameSet::getValueAllocator(){}  // game
+/* 0025ab40 000000bc */ NameSet::insert(){}  // game
+/* 0025ac00 00000020 */ NameSet::NameSet(){}  // game
+/* 0025ac20 000000ec */ std::sortMedian(short)(){}  // game
+/* 0025ad10 00000268 */ std::sortPartition(short)(){}  // game
+/* 0025af80 00000268 */ std::sortPartitionEqual(short)(){}  // game
+/* 0025b1f0 0000011c */ std::sortSmall(short)(){}  // game
+/* 0025b310 00000148 */ vector<short>::eraseRange(){}  // game
+/* 0025b460 00000130 */ NameSet::insertNode(){}  // game
+/* 0025b590 00000230 */ mslTreeBalanceInsert(){}  // game
+/* 0025b7c0 00000088 */ mslTreeRotateRight(){}  // game
+/* 0025b850 00000088 */ mslTreeRotateLeft(){}  // game
 
 // *****************************************************************************
 // FILE -- game/uiwidget.cpp

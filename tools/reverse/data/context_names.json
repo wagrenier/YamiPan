@@ -28661,11 +28661,119 @@
   "was": "FUN_00253420",
   "why": "from a point to a point of one area along its chains"
  },
+ "00254e10": {
+  "name": "RouteLegList::iterator::operator++",
+  "tag": "game-inferred",
+  "was": "FUN_00254e10",
+  "why": "MSL vector iterator ++ (+4) of 4-byte legs; areaPath's std::copy of the stored run's steps into out.steps"
+ },
+ "00254e30": {
+  "name": "back_insert_iterator<RouteLegList>::back_insert_iterator",
+  "tag": "game-inferred",
+  "was": "FUN_00254e30",
+  "why": "MSL back_insert_iterator copy (one word): the result std::copy / reverse_copy hands back; areaPath"
+ },
+ "00254e40": {
+  "name": "RouteLegList::iterator::operator!=",
+  "tag": "game-inferred",
+  "was": "FUN_00254e40",
+  "why": "MSL vector iterator != of 4-byte legs; areaPath's reverse_copy and copy loops"
+ },
+ "00254e60": {
+  "name": "back_insert_iterator<RouteLegList>::operator++",
+  "tag": "game-inferred",
+  "was": "FUN_00254e60",
+  "why": "MSL back_insert_iterator ++: returns itself; areaPath's copy loops"
+ },
+ "00254e70": {
+  "name": "back_insert_iterator<RouteLegList>::operator=",
+  "tag": "game-inferred",
+  "was": "FUN_00254e70",
+  "why": "MSL back_insert_iterator =: RouteLegList::insert(end, 1, value), a push_back; areaPath's copy loops"
+ },
+ "00254ec0": {
+  "name": "RouteLegList::iterator::operator*",
+  "tag": "game-inferred",
+  "was": "FUN_00254ec0",
+  "why": "MSL vector iterator *: the element's address; areaPath's copy loops"
+ },
+ "00254ed0": {
+  "name": "RouteLegList::iterator::operator--",
+  "tag": "game-inferred",
+  "was": "FUN_00254ed0",
+  "why": "MSL vector iterator -- (-4) of 4-byte legs; areaPath's std::reverse_copy (*result = *--last)"
+ },
+ "00254ef0": {
+  "name": "back_insert_iterator<RouteLegList>::operator*",
+  "tag": "game-inferred",
+  "was": "FUN_00254ef0",
+  "why": "MSL back_insert_iterator *: returns itself; areaPath's copy loops"
+ },
+ "00254f00": {
+  "name": "back_insert_iterator<WordVector>::back_insert_iterator",
+  "tag": "game-inferred",
+  "was": "FUN_00254f00",
+  "why": "MSL back_insert_iterator copy (one word): the result reverse_copy hands back; areaPath's node lists"
+ },
+ "00254f10": {
+  "name": "WordVector::iterator::operator!=",
+  "tag": "game-inferred",
+  "was": "FUN_00254f10",
+  "why": "MSL vector iterator != of 4-byte node pointers; areaPath's four std::reverse_copy loops (the host's reversed())"
+ },
+ "00254f30": {
+  "name": "back_insert_iterator<WordVector>::operator++",
+  "tag": "game-inferred",
+  "was": "FUN_00254f30",
+  "why": "MSL back_insert_iterator ++: returns itself; areaPath's reverse_copy"
+ },
+ "00254f40": {
+  "name": "back_insert_iterator<WordVector>::operator=",
+  "tag": "game-inferred",
+  "was": "FUN_00254f40",
+  "why": "MSL back_insert_iterator =: WordVector::insert(end, 1, value), a push_back; areaPath's reverse_copy"
+ },
+ "00254f90": {
+  "name": "WordVector::iterator::operator*",
+  "tag": "game-inferred",
+  "was": "FUN_00254f90",
+  "why": "MSL vector iterator *: the element's address; areaPath's reverse_copy"
+ },
+ "00254fa0": {
+  "name": "WordVector::iterator::operator--",
+  "tag": "game-inferred",
+  "was": "FUN_00254fa0",
+  "why": "MSL vector iterator -- (-4); areaPath's reverse_copy (*result = *--last)"
+ },
+ "00254fc0": {
+  "name": "back_insert_iterator<WordVector>::operator*",
+  "tag": "game-inferred",
+  "was": "FUN_00254fc0",
+  "why": "MSL back_insert_iterator *: returns itself; areaPath's reverse_copy"
+ },
+ "00254fd0": {
+  "name": "WordVector::WordVector",
+  "tag": "game-inferred",
+  "was": "FUN_00254fd0",
+  "why": "MSL vector default ctor, three words zeroed; areaPath's local node lists (leaving / arriving and their reversed copies)"
+ },
+ "00254ff0": {
+  "name": "RouteLegList::operator=",
+  "tag": "game-inferred",
+  "was": "FUN_00254ff0",
+  "why": "MSL vector copy assignment: when not itself, RouteLegList::assign 0x259430 over the source's range; areaPath's out.steps = way.steps"
+ },
  "00255040": {
   "name": "distanceToNode",
   "tag": "game-inferred",
   "was": "FUN_00255040",
   "why": "planar distance from a point to a node"
+ },
+ "00255080": {
+  "name": "RouteLegList::RouteLegList",
+  "tag": "game-inferred",
+  "was": "FUN_00255080",
+  "why": "MSL vector default ctor, three words zeroed (the body of WordVector's 0x254fd0, another instance); areaPath's local RoutePath steps and runs[4]"
  },
  "002550a0": {
   "name": "RouteAreaSearch::nodeIndex",
@@ -28799,17 +28907,221 @@
   "was": "FUN_00258b80",
   "why": "sqrt of dx2 + dy2"
  },
+ "00258bc0": {
+  "name": "std::lower_bound(short)",
+  "tag": "game-inferred",
+  "was": "FUN_00258bc0",
+  "why": "MSL lower_bound over a sorted short range, answers through a0; RoutePlayer::isListedArea over the rute header's area list"
+ },
+ "00258c70": {
+  "name": "std::lower_bound(RouteCrossingFrom)",
+  "tag": "game-inferred",
+  "was": "FUN_00258c70",
+  "why": "MSL lower_bound over 8-byte records keyed by a short at +0 (the area left, header +0x1c or a set's table); RouteFile::areaCrossings, findWayIn"
+ },
+ "00258ce0": {
+  "name": "std::lower_bound(RouteCrossingTo)",
+  "tag": "game-inferred",
+  "was": "FUN_00258ce0",
+  "why": "MSL lower_bound over 8-byte records keyed by a short at +0 (the area gone to), the second level; RouteFile::areaCrossings, findWayIn"
+ },
+ "00258d50": {
+  "name": "std::lower_bound(RouteChainList)",
+  "tag": "game-inferred",
+  "was": "FUN_00258d50",
+  "why": "MSL lower_bound over 8-byte records keyed by a short at +0, header +0x34 (the area lists); RouteFile::areaList"
+ },
+ "00258dc0": {
+  "name": "std::lower_bound(RouteWayRecord)",
+  "tag": "game-inferred",
+  "was": "FUN_00258dc0",
+  "why": "MSL lower_bound over 4-byte {crossing, path} records, the third level; RouteFile::findWayIn"
+ },
+ "00258e30": {
+  "name": "std::lower_bound(RouteAreaChains)",
+  "tag": "game-inferred",
+  "was": "FUN_00258e30",
+  "why": "MSL lower_bound over 8-byte records keyed by a short at +0, header +0x24 (an area's chains); the body of 0x258d50 but its own instance, so another record type in the ROM; chainOf, nearestSegment, wayAlongChains"
+ },
+ "00258ea0": {
+  "name": "std::lower_bound(RouteChainRunFrom)",
+  "tag": "game-inferred",
+  "was": "FUN_00258ea0",
+  "why": "MSL lower_bound over 8-byte records keyed by a node pointer (unsigned), header +0x28; RouteAreaSearch::chainRun, chainOf, wayAlongChains"
+ },
+ "00258f10": {
+  "name": "std::lower_bound(RouteChainRunTo)",
+  "tag": "game-inferred",
+  "was": "FUN_00258f10",
+  "why": "MSL lower_bound over 8-byte records keyed by a node pointer, the second level of the chain runs; chainRun, chainOf, wayAlongChains"
+ },
+ "00258f80": {
+  "name": "std::sort(short)",
+  "tag": "game-inferred",
+  "was": "FUN_00258f80",
+  "why": "MSL sort over shorts: a pseudo-random median of three (a gp counter cycling -4..4), two partitions, recursion on the smaller half, under 21 a selection sort; RouteFile::RouteFile's area list. Equal shorts cannot be told apart, so std::sort answers the same"
+ },
  "00259230": {
   "name": "RouteFile::legsLength",
   "tag": "game-inferred",
   "was": "FUN_00259230",
   "why": "planar length of a path of node legs"
  },
+ "002592f0": {
+  "name": "RouteLegList::initRange",
+  "tag": "game-inferred",
+  "was": "FUN_002592f0",
+  "why": "MSL vector range init of 4-byte legs (vector length error, new n*4, copy); RouteFile::reversePath's copy of the steps"
+ },
+ "00259430": {
+  "name": "RouteLegList::assign",
+  "tag": "game-inferred",
+  "was": "FUN_00259430",
+  "why": "MSL vector assign(first, last) of 4-byte legs: reuses or reallocates (vector::assign length error); RouteLegList::operator= 0x254ff0"
+ },
+ "00259760": {
+  "name": "RouteLegList::insertRange",
+  "tag": "game-inferred",
+  "was": "FUN_00259760",
+  "why": "MSL vector insert(pos, first, last) of 4-byte legs, doubling growth (vector::insert length error); RoutePath::append"
+ },
+ "00259d60": {
+  "name": "RouteLegList::erase(iterator)",
+  "tag": "game-inferred",
+  "was": "FUN_00259d60",
+  "why": "MSL vector erase(position) of 4-byte legs: the tail moved down, count - 1; RouteAreaSearch::wayFromSegment"
+ },
+ "00259ef0": {
+  "name": "AreaNumberList::insert",
+  "tag": "game-inferred",
+  "was": "FUN_00259ef0",
+  "why": "MSL vector insert(pos, n, value) of 2-byte elements (vector::insert length error, its own Memory allocation failure string 0x307890); the template of vector<short>::insert 0x25a320 but another instance, so another element type in the ROM; RouteFile::RouteFile's push_back into the sorted area list +0x0c"
+ },
+ "0025a320": {
+  "name": "vector<short>::insert",
+  "tag": "game-inferred",
+  "was": "FUN_0025a320",
+  "why": "MSL vector insert(pos, n, value) of shorts, a temporary copy when the value lies inside (its dtor vector<short>::~vector); RouteFile::areaCrossings' push_back, vector<short>::resize"
+ },
+ "0025a750": {
+  "name": "vector<short>::resize",
+  "tag": "game-inferred",
+  "was": "FUN_0025a750",
+  "why": "MSL vector resize: insert 0x25a320 when growing, eraseRange 0x25b310 when shrinking; RouteFile::areaList's out = list"
+ },
+ "0025a7d0": {
+  "name": "AreaNumberList::clear",
+  "tag": "game-inferred",
+  "was": "FUN_0025a7d0",
+  "why": "count +4 = 0 on RouteFile +0x0c, the area list; RouteFile::RouteFile before its push_backs"
+ },
+ "0025a7e0": {
+  "name": "AreaNumberList::~AreaNumberList",
+  "tag": "game-inferred",
+  "was": "FUN_0025a7e0",
+  "why": "MSL vector dtor: count 0, delete +8, flag-deleting; RoutePlayer::~RoutePlayer's inline RouteFile dtor on +0x0c"
+ },
  "0025a850": {
   "name": "mslTreeIncrement",
   "tag": "lib-context",
   "was": "FUN_0025a850",
   "why": "MSL red-black tree iterator ++ (node: left +0, right +4, parent +8 with the colour in bit 0): leftmost of the right subtree, else up while a right child; every set / map walk in the game calls it"
+ },
+ "0025a8f0": {
+  "name": "NameSet::eraseTree",
+  "tag": "game-inferred",
+  "was": "FUN_0025a8f0",
+  "why": "MSL red-black tree erase, recursive with two levels unrolled, like IntSet::eraseTree; value destroy empty (a pointer); RouteFile::collectNames' std::set<const char *> going out of scope"
+ },
+ "0025ab00": {
+  "name": "NameSet::freeNode",
+  "tag": "game-inferred",
+  "was": "FUN_0025ab00",
+  "why": "node allocator deallocate: operator delete; NameSet::eraseTree"
+ },
+ "0025ab10": {
+  "name": "NameSet::getNodeAllocator",
+  "tag": "game-inferred",
+  "was": "FUN_0025ab10",
+  "why": "returns this + 4, as IntSet::getNodeAllocator; NameSet::eraseTree"
+ },
+ "0025ab20": {
+  "name": "NameSet::destroyValue",
+  "tag": "game-inferred",
+  "was": "FUN_0025ab20",
+  "why": "allocator destroy for a pointer: empty; NameSet::eraseTree"
+ },
+ "0025ab30": {
+  "name": "NameSet::getValueAllocator",
+  "tag": "game-inferred",
+  "was": "FUN_0025ab30",
+  "why": "returns its argument, as IntSet::getValueAllocator; NameSet::eraseTree"
+ },
+ "0025ab40": {
+  "name": "NameSet::insert",
+  "tag": "game-inferred",
+  "was": "FUN_0025ab40",
+  "why": "MSL set<const char *>::insert: lower-bound walk with unsigned pointer compare, NameSet::insertNode 0x25b460 when absent; RouteFile::collectNames"
+ },
+ "0025ac00": {
+  "name": "NameSet::NameSet",
+  "tag": "game-inferred",
+  "was": "FUN_0025ac00",
+  "why": "MSL set ctor: size 0, root 0, compare byte, leftmost = header (this + 4) at +8; RouteFile::collectNames' local set"
+ },
+ "0025ac20": {
+  "name": "std::sortMedian(short)",
+  "tag": "game-inferred",
+  "was": "FUN_0025ac20",
+  "why": "median of three put in order, a part of std::sort(short) 0x258f80"
+ },
+ "0025ad10": {
+  "name": "std::sortPartition(short)",
+  "tag": "game-inferred",
+  "was": "FUN_0025ad10",
+  "why": "partition by x < pivot, a part of std::sort(short) 0x258f80"
+ },
+ "0025af80": {
+  "name": "std::sortPartitionEqual(short)",
+  "tag": "game-inferred",
+  "was": "FUN_0025af80",
+  "why": "partition by !(pivot < x), the pass when the first partition left nothing below; a part of std::sort(short) 0x258f80"
+ },
+ "0025b1f0": {
+  "name": "std::sortSmall(short)",
+  "tag": "game-inferred",
+  "was": "FUN_0025b1f0",
+  "why": "selection sort under 21 elements, a part of std::sort(short) 0x258f80"
+ },
+ "0025b310": {
+  "name": "vector<short>::eraseRange",
+  "tag": "game-inferred",
+  "was": "FUN_0025b310",
+  "why": "MSL vector erase(first, last) of shorts: the tail moved down in runs of 8, count -= span; vector<short>::resize"
+ },
+ "0025b460": {
+  "name": "NameSet::insertNode",
+  "tag": "game-inferred",
+  "was": "FUN_0025b460",
+  "why": "MSL tree insert for set<const char *>: 0x10 node (tree::insert length error), the pointer at +0xc, links, size++, mslTreeBalanceInsert, leftmost at +8; NameSet::insert"
+ },
+ "0025b590": {
+  "name": "mslTreeBalanceInsert",
+  "tag": "game-inferred",
+  "was": "FUN_0025b590",
+  "why": "MSL red-black tree rebalance after an insert (node: left +0, right +4, parent +8 with the colour in bit 0), rotating through 0x25b7c0 / 0x25b850; shared by every set and map insertNode (ClipSet, IntSet, ListMap, NameMap, NameSet, VcmNameSet, VcmStateMap, VcmTokenSet)"
+ },
+ "0025b7c0": {
+  "name": "mslTreeRotateRight",
+  "tag": "game-inferred",
+  "was": "FUN_0025b7c0",
+  "why": "MSL red-black tree right rotation: the left child takes the node's place, the root pointer updated; mslTreeBalanceInsert"
+ },
+ "0025b850": {
+  "name": "mslTreeRotateLeft",
+  "tag": "game-inferred",
+  "was": "FUN_0025b850",
+  "why": "MSL red-black tree left rotation, the mirror of 0x25b7c0; mslTreeBalanceInsert"
  },
  "0025b8e0": {
   "name": "PrgSndStream::refresh",

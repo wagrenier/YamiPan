@@ -1736,7 +1736,7 @@
    "why": "RouteFilter::pathLength 0x23f290 on: the path search of game/characterroute.cpp, up to game/stageplayer.cpp at 0x242e80; RoutePlayer 0x252840.. is not in it yet"
   },
   "game/routeplayer.cpp": {
-   "notes": "Complete and compared with the ROM: rutecmp.py runs the ROM's code on eerun.py beside the host over 12 stages' rute files, 3840 questions, 0 differences. The file is read into host records (buildTables), not relocated; RouteNode pointers still point into it. New Game with work/doorwalk_pad.txt for 300 s: the stage builds the RoutePlayer, no crash, picture unchanged (dark first-person wall), nothing on screen can show a route yet. Not exercised: pathSetIndex, and the route on a walking character; that needs a stage with a foe that walks. areaList waits for FUN_00227f30. Next: game/characterroute.cpp, its 12 stubs, queued. Doubts in open-items.md Next up.",
+   "notes": "Every remaining function was an MSL template instance the host gets from the standard library: areaPath's reverse_copy and copy iterator ops (vector iterators and back_insert_iterator kept out of line), RouteLegList and vector<short> members, one std::lower_bound per rute table, std::sort(short) with its parts, collectNames' NameSet, and the shared tree helpers mslTreeBalanceInsert 0x25b590, mslTreeRotateRight 0x25b7c0, mslTreeRotateLeft 0x25b850. The ledger after the includes maps each address to its host use; the callcheck comments name them. callcheck.py's comment pattern now accepts the characters of operator!=, operator* and operator--. Doubt: AreaNumberList (RouteFile +0x0c) is a separate 2-byte vector instance from vector<short>, so another element type in the ROM; the host keeps std::vector<short>. Nothing runs differently; 15 s smoke: the boot language screen as before. Ghidra names saved by name_ctx.py.",
    "ranges": [
     [
      "00252840",
@@ -1748,6 +1748,11 @@
      "date": "2026-11-05 23:59",
      "status": "verify",
      "summary": "the rute file: RoutePlayer, RouteFile, RouteAreaSearch, all non-MSL functions of 0x252840..0x25b8e0"
+    },
+    {
+     "date": "2026-11-09 10:47",
+     "status": "verify",
+     "summary": "52 MSL vector, set, sort and lower_bound instances 0x254e10..0x255080, 0x258bc0..0x25b850 named (batch 247) and listed in a ledger; the TU counts 100 of 100"
     }
    ],
    "status": "verify",
