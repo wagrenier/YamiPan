@@ -2304,7 +2304,7 @@
    "why": "The fog around a character: I_HATUEN's hatsu_fog on eight characters and the player's koh_fog, 13 functions behind the helpers of the Extra mode; no source string, file name is the port's. useSurfaceOfName follows at 0x2cedb0."
   },
   "game/stageitem.cpp": {
-   "notes": "All of 0x17fce0..0x184860 written or mapped (thunks listed, 0x180018 is padding). New Game run under gdb: StageBullet's ctor ran from setupCameras with no fault, 113 stubs reached, the stop is unchanged: SIGSEGV in StageScene::draw (stagescene.cpp:3272), drawSysCurrent 0x2d4fd0 a stub answering null, black last shot, so no stage picture and nothing here is on screen. Default smoke run rests on the language screen, unchanged. Host-pass only: no item is placed yet (PackTables::parse and StageModel::init are stubs), ScenePairTable::add is a stub, so no frame or collision hook has run and nothing was compared with the ROM by running it. CollisionOwner::onCollide and collisionHook3 changed signature for all owners; sysDataReturnZero 0x23c010 was a mislabel and is gone (ItemPhysics::onCollide). Next pinned: unassigned@002d46a0 for drawSysCurrent, then NodeTransform and updateMatrix. Details and doubts: open-items.md, architecture.md The bullet and the items.",
+   "notes": "All 31 uncounted functions of 0x17fce0..0x184860 checked against the ROM and listed in the Written in headers block of stageitem.cpp: getKind of every kind, the empty side hooks, the getCollisionObject / collisionHook0 / onCollide / collisionHook3 defaults, ItemPhysics::getCollisionParent, and the 4-byte StageList instance at the file end (Ghidra StageNodeList::dtor, clear, pushFront, getTail, Node::Node, Node::unlink, batch 245). 0x183780 is only j 0x1838d0, the items +0x260 slot: renamed StageItem::canPick_thunk (it was a second StageItem::canPick). New: CollisionBodyArray::clear 0x1845f0 (count 0, first slot null), called by the dtor 0x184430 (named in Ghidra, batch 246). callcheck notes in StageBullet::~StageBullet and SceneRecordBuckets::~SceneRecordBuckets follow the new names. Nothing runs differently: 15 s smoke run shows the language screen as before. Next with the queue empty: routeplayer.cpp, stagecharacter.cpp, stagecollision.cpp by score.",
    "ranges": [
     [
      "0017fce0",
@@ -2316,6 +2316,11 @@
      "date": "2026-11-04 02:33",
      "status": "verify",
      "summary": "The bullet and the items whole: StageBullet, StageItem and its four kinds, ItemLamp; ItemPhysics declared; CollisionOwner read in full"
+    },
+    {
+     "date": "2026-11-09 10:25",
+     "status": "verify",
+     "summary": "stageitem.cpp 139 of 139: the 31 header-inline slots and the StageNodeList instance listed and named, CollisionBodyArray::clear written"
     }
    ],
    "status": "verify",
