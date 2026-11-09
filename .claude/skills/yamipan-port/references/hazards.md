@@ -236,6 +236,7 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 - **A batch given as a bare number names nothing** (2026-11-07, game/kunitoris.cpp). Symptom: `py name_ctx.py 229` prints `named 0/0` and exits 0, no refresh. Cause: it takes a path, not a batch number. Fix: `py name_ctx.py work/batches/229.json`.
 - **Callcheck notes keep FUN_ names after their callees are named** (2026-11-07, game/kunitoris.cpp). Symptom: a function that was clean goes MISSING (`add, hasOffset`) and its note's `FUN_...` show as extra once a later batch names them. Cause: callcheck matches a callee by its current name; the note still says FUN_002cb010. Fix: after a batch, grep the TU for `FUN_00` in callcheck lines and put the new last components in.
+- **`operator++` cut a callcheck note short** (2026-11-09, game/packtables.cpp). Symptom: PackTables::parse went MISSING on names its note listed (`begin, end, operator[]`) and showed `operator` as extra. Cause: the note's pattern stopped at the first `+`, so every name after `operator++` was dropped. Fix: callcheck.py accepts `+` in note names since 2026-11-09; a `// callcheck: operator++` now explains an iterator increment.
 
 ## Sessions
 

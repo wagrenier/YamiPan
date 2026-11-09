@@ -4,11 +4,9 @@
  *  The game's parameter tables, read once at boot from dataEU/packgameEU.pak
  *  (game/packtables.h). The CSV sheets are Shift-JIS, so the column names
  *  below are written in bytes, each with its text in a comment. The ROM's
- *  std::map / std::vector / std::string instances 0x2c0d00..0x2c3d30 are the
- *  host's <map>, <vector> and <string>:
- *    0x2c1430 NameMap::operator[], 0x2c15c0 NameMap::find, 0x2c1b10
- *    ListMap::operator[], 0x2c1670 / 0x2c16d0 clear, 0x2c1c90 ListMap::find,
- *    0x2c1d10 / 0x2c2350 the reader's std::set<int>, 0x2c1e10 EntryList::resize.
+ *  std::map / std::set / std::vector / std::string instances
+ *  0x2c0d00..0x2c3d30 are the host's <map>, <set>, <vector> and <string>
+ *  (the ledger after the includes).
  *  PC: a sheet row whose number is out of its table is skipped; the ROM
  *  takes its record as null and writes through it.
  * ======================================================================== */
@@ -22,6 +20,69 @@
 #include "game/fileloader.h"
 #include "game/gamehooks.h"
 #include "game/stringlist.h"
+
+/*
+ * CodeWarrior's MSL template instances emitted in this object file (batch
+ * 244). The host has no body for any of them: each is the standard library
+ * member on the right, inline at its caller. ListMap is std::map<int,
+ * EntryList>, NameMap std::map<std::string, int>, EntryList
+ * std::vector<PackEntry>, IntSet readSheet's std::set<int>, StringVector the
+ * std::vector<std::string> of splitFields. Node layout: left, right,
+ * parent | colour, value at +0xc; a map is {size, root, compare, leftmost}.
+ *
+ * PackTables::parse's row loops (ListMap at PackTables +0x00 / 0x20 / 0x40 / 0x60):
+ *   FS2 0x002c0db0 ListMap::begin                     rows.begin()
+ *   FS2 0x002c0d40 ListMap::end                       rows.end()
+ *   FS2 0x002c0d50 ListMap::iterator::operator++      ++it (in the ROM's it++)
+ *   FS2 0x002c0d80 ListMap::iterator::iterator        it++'s copy
+ *   FS2 0x002c0d00 ListMap::const_iterator::operator++    the door loop's ++it
+ *   FS2 0x002c0d30 ListMap::const_iterator::const_iterator  its copy
+ *   FS2 0x002c0d90 std::string::c_str                 cell.text.c_str()
+ *   FS2 0x002c0e60 std::operator==(const_string&,const_string&)   == on a cell's text
+ *
+ * The maps (PackTables::PackTables, clear; NameMap at +0x10 / 0x30 / 0x50 / 0x70):
+ *   FS2 0x002c16b0 ListMap::ListMap                   the member's ctor
+ *   FS2 0x002c1710 NameMap::NameMap                   the member's ctor
+ *   FS2 0x002c1670 ListMap::clear                     rows.clear()
+ *   FS2 0x002c16d0 NameMap::clear                     columns.clear()
+ *   FS2 0x002c1430 NameMap::operator[]                columns[name] (0 when added)
+ *   FS2 0x002c1f50 NameMap::insertNode                inside operator[]
+ *   FS2 0x002c15c0 NameMap::find                      columns.find (doorNumber, doorText)
+ *   FS2 0x002c1b10 ListMap::operator[]                rows[number]
+ *   FS2 0x002c1c90 ListMap::find                      rows.find (readSheet's next free number)
+ *   FS2 0x002c3a20 ListMap::insertNode                inside operator[]
+ *   FS2 0x002c3b70 ListMap::Value::Value              the pair's copy
+ *
+ * A row's cells (EntryList, 16-byte PackEntry {number, text}):
+ *   FS2 0x002c1e10 EntryList::resize                  cells.resize
+ *   FS2 0x002c28b0 EntryList::insertN                 inside resize (growing)
+ *   FS2 0x002c2f60 EntryList::fillN                   inside insertN
+ *   FS2 0x002c3060 EntryList::copyBackward            inside insertN
+ *   FS2 0x002c2690 EntryList::erase                   inside resize (shrinking)
+ *   FS2 0x002c27b0 EntryList::copy                    inside erase
+ *   FS2 0x002c3bb0 EntryList::EntryList               the vector's copy
+ *   FS2 0x002c2510 EntryList::initCopy                inside the copy
+ *
+ * readSheet's set of row numbers seen:
+ *   FS2 0x002c2410 IntSet::IntSet                     std::set<int> seen
+ *   FS2 0x002c1d10 IntSet::find                       seen.count
+ *   FS2 0x002c2350 IntSet::insert                     seen.insert
+ *   FS2 0x002c3c00 IntSet::insertNode                 inside insert
+ *   FS2 0x002c20f0 IntSet::eraseTree                  the set's dtor
+ *   FS2 0x002c2340 IntSet::getValueAllocator          inside eraseTree
+ *   FS2 0x002c2330 IntSet::destroyValue               inside eraseTree (an int: empty)
+ *   FS2 0x002c2320 IntSet::getNodeAllocator           inside eraseTree
+ *   FS2 0x002c2310 IntSet::freeNode                   inside eraseTree
+ *
+ * splitFields and readSheet's strings:
+ *   FS2 0x002c3160 StringVector::insertN              fields->push_back
+ *   FS2 0x002c3980 StringVector::clear                inside the dtor
+ *   FS2 0x002c1ee0 StringVector::~StringVector        lines / fields going out of scope
+ *   FS2 0x002c2480 std::string::find_char             the ROM's delimiter test; strchr here
+ *   FS2 0x002c1830 std::string::compare_cstr          fields[0] != "" (0x30b588 is "")
+ *   FS2 0x002c1d90 std::string::operator=             cell.text = field
+ *   FS2 0x002c2430 std::string::replace_str           inside operator=
+ */
 
 // The pack's items (by id).
 enum PackTableItem
@@ -238,7 +299,7 @@ struct PackRow
 // Adds text's fields to fields: cut at each delimiter, a run of them cut
 // once when collapse is set. The last field is always added.
 // FS2 0x002c18a0
-// callcheck: operator_new[], FUN_002c2480, strlen, reserve, replace_range, FUN_002c3160, free, operator_delete[] (std::string and vector::push_back)
+// callcheck: operator_new[], find_char, strlen, reserve, replace_range, insertN, free, operator_delete[] (std::string and vector::push_back)
 
 static void splitFields(std::vector<std::string> *fields, const std::string &text,
                         const char *delimiters, bool collapse)
@@ -267,7 +328,7 @@ static void splitFields(std::vector<std::string> *fields, const std::string &tex
 // Once a number came twice, a row taken moves to the next free number. The
 // item loses its last byte to the terminator. Answers false for no item.
 // FS2 0x002c0ef0
-// callcheck: FUN_002c2410, strlen, reserve, replace_range, FUN_002c18a0, free, FUN_002c1830, atoi, FUN_002c1d10, FUN_002c2350, FUN_002c1c90, FUN_002c1b10, FUN_002c1e10, FUN_002c1d90, FUN_002c1430, FUN_002c1ee0, FUN_002c20f0 (std::string, std::set and the maps)
+// callcheck: IntSet, strlen, reserve, replace_range, FUN_002c18a0, free, compare_cstr, atoi, find, insert, find, operator[], resize, operator=, operator[], ~StringVector, eraseTree (std::string, std::set and the maps)
 
 static bool readSheet(ListMap *rows, NameMap *columns, void *item, int size)
 {
@@ -353,14 +414,14 @@ StringList::Node *StringList::at(int index)
 
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x002c0dc0
-// callcheck: FUN_002c16b0, FUN_002c1710 (the eight maps' constructors)
+// callcheck: ListMap, NameMap (the eight maps' constructors)
 
 PackTables::PackTables()
 {
 }
 
 // FS2 0x002bcd20
-// callcheck: FUN_002c1670, FUN_002c16d0 (the maps' clear)
+// callcheck: clear, clear (the maps' clear)
 
 void PackTables::clear()
 {
@@ -377,7 +438,7 @@ void PackTables::clear()
 // ──────────────────────────────────────────────────────────────────────
 // FS2 0x002bcf10: the ROM's one function of 0x3df0 bytes, cut here by sheet.
 // callcheck: readSheet, clear (the sheets, in the helpers below; the same for all that follows)
-// callcheck: FUN_001a5a60, FUN_002c0d00, FUN_002c0d30, FUN_002c0d40, FUN_002c0d50, FUN_002c0d80, FUN_002c0d90, FUN_002c0db0, FUN_002c0e60, FUN_002c1430, FUN_002c1670, FUN_002c16d0 (the std::map iterators and find-or-insert, a StringList's base ctor, string::c_str)
+// callcheck: FUN_001a5a60, operator++, const_iterator, end, operator++, iterator, c_str, begin, operator==, operator[], clear, clear (the std::map iterators and find-or-insert, a StringList's base ctor, string::c_str)
 // callcheck: __truncdfsf2, at, atof, atoi, doorNumber, doorText, init, memset, operator_delete[], operator_new[], setLandSound, setPickSound, split, sprintf, sscanf, strcmp, strlen, strncpy, string_cstr, ~string, ~StringList, setKeyKind, setStartState, setWindowState, setHp, setSeIndex (the helpers below; init is StageObjRecord::init, game/playermotion.cpp)
 
 void PackTables::parse(PackFile *pack)
@@ -547,7 +608,7 @@ void PackTables::parseItems(PackFile *pack)
 // reads 0 / "".
 
 // FS2 0x002bce70
-// callcheck: FUN_002c15c0, string_cstr, ~string (std::map::find, the key's std::string)
+// callcheck: find, string_cstr, ~string (std::map::find, the key's std::string)
 static int doorNumber(NameMap &columns, EntryList &cells, const char *column)
 {
     auto found = columns.find(column);
@@ -555,7 +616,7 @@ static int doorNumber(NameMap &columns, EntryList &cells, const char *column)
 }
 
 // FS2 0x002bcd80
-// callcheck: FUN_002c15c0, string_copy, string_cstr, ~string (std::map::find, the key's std::string)
+// callcheck: find, string_copy, string_cstr, ~string (std::map::find, the key's std::string)
 static std::string doorText(NameMap &columns, EntryList &cells, const char *column)
 {
     auto found = columns.find(column);
