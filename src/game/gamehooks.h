@@ -2610,6 +2610,10 @@ public:
     bool scriptOpenDoor() override;                                      // FS2 0x0021c230
     bool scriptCloseDoor() override;                                     // FS2 0x0021c1d0
     bool scriptUseDoorKey(int lock) override;                            // FS2 0x0021c130
+    // Natives 0x8c, 0x8a: the door it used at the end of the last frame's
+    // scripts has opened / is no longer locked since.
+    bool doorJustOpened() const;                                         // FS2 0x0021c290
+    bool doorJustUnlocked() const;                                       // FS2 0x0021c2d0
     bool canTakePrompt();                                                // FS2 0x0020c0e0
     // The same, and in a motion a script's prompt may interrupt.
     bool canUsePrompt();                                                 // FS2 0x0020b590
@@ -2810,8 +2814,8 @@ public:
     float  m_biteInterval = 0.0f;   // FS2 +0x608: 噛みつき間隔 / 30
     float  m_reloadRate = 0.0f;     // FS2 +0x60c: リロード / 100
     u_char m_610 = 0;           // FS2 +0x610: cleared by afterScripts; no reader found
-    int    m_lastDoorMode = 0;  // FS2 +0x614: afterScripts: StageDoor::m_doorMode of m_doorInUse; no reader found
-    StageDoor *m_doorInUse = nullptr; // FS2 +0x618: afterScripts: m_door while its m_user is this; no reader found
+    int    m_lastDoorMode = 0;  // FS2 +0x614: afterScripts: StageDoor::m_doorMode of m_doorInUse; doorJustOpened / doorJustUnlocked
+    StageDoor *m_doorInUse = nullptr; // FS2 +0x618: afterScripts: m_door while its m_user is this; doorJustOpened / doorJustUnlocked
     StageObject *m_hitThisFrameBy = nullptr; // FS2 +0x61c: cleared by afterScripts, 0x20eb40 writes it; native 0x90 reads its number
     StageObject *m_lastHitBy = nullptr; // FS2 +0x620: who hit it last (0x20e770, 0x20eb40); the game over's cause
     StageObject *m_biteCandidate = nullptr; // FS2 +0x624: natives 0xbc, 0xbd write it

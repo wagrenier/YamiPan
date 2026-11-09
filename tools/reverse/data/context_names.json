@@ -19571,6 +19571,18 @@
   "was": "FUN_001c6a20",
   "why": "script native (kAskedNatives, table 0x304230)"
  },
+ "001c6ba0": {
+  "name": "nativeDoorJustOpened",
+  "tag": "game-inferred",
+  "was": "FUN_001c6ba0",
+  "why": "script native 0x8c (sssnatives table): the target's script character (runner slot +0x98), its doorJustOpened 0x21c290, 0 when none"
+ },
+ "001c6d50": {
+  "name": "nativeDoorJustUnlocked",
+  "tag": "game-inferred",
+  "was": "FUN_001c6d50",
+  "why": "script native 0x8a (sssnatives table): the target's script character (runner slot +0x98), its doorJustUnlocked 0x21c2d0, 0 when none"
+ },
  "001c7020": {
   "name": "nativeAskLiftName",
   "tag": "game-inferred",
@@ -24466,6 +24478,18 @@
   "tag": "game-inferred",
   "was": "FUN_0021c230",
   "why": "slot +0x30c, native 0x87: wants +0x2cf when allows +0x374 is 1"
+ },
+ "0021c290": {
+  "name": "StageCharacter::doorJustOpened",
+  "tag": "game-inferred",
+  "was": "FUN_0021c290",
+  "why": "a0 = character + 0x590 (the status block, like stepStatus / initStatusBlock): +0x88 = +0x618 m_doorInUse, +0x84 = +0x614 m_lastDoorMode, both written by afterScripts 0x21c310; true when the door it used last frame was not Open (2) then and is Open (door +0x248) now; only caller native 0x8c 0x1c6ba0"
+ },
+ "0021c2d0": {
+  "name": "StageCharacter::doorJustUnlocked",
+  "tag": "game-inferred",
+  "was": "FUN_0021c2d0",
+  "why": "a0 = character + 0x590 as doorJustOpened: true when the door it used last frame was Locked (4) then and is no longer Locked now; only caller native 0x8a 0x1c6d50"
  },
  "0021c310": {
   "name": "StageCharacter::afterScripts",

@@ -2997,6 +2997,33 @@ bool StageCharacter::scriptUseDoorKey(int lock)
     return true;
 }
 
+// The door it was using at the end of the last frame's scripts has come open
+// since (afterScripts keeps the door and its mode then). The ROM's this is
+// the status block, character + 0x590; its +0x84 / +0x88 are m_lastDoorMode
+// and m_doorInUse here.
+// FS2 0x0021c290
+
+bool StageCharacter::doorJustOpened() const
+{
+    if (m_doorInUse == nullptr)
+        return false;
+    if (m_lastDoorMode == StageDoorMode_Open)
+        return false;
+    return m_doorInUse->m_doorMode == StageDoorMode_Open;
+}
+
+// The same door was locked then and is not now. this as doorJustOpened.
+// FS2 0x0021c2d0
+
+bool StageCharacter::doorJustUnlocked() const
+{
+    if (m_doorInUse == nullptr)
+        return false;
+    if (m_lastDoorMode != StageDoorMode_Locked)
+        return false;
+    return m_doorInUse->m_doorMode != StageDoorMode_Locked;
+}
+
 // FS2 0x00272630
 // callcheck: isControlled, getKind, FUN_0028ab90, getKind, FUN_0028ab90, findMotionFile, walkFileTarget, walkFileTarget, sinCos, sinCos, segmentHitsAny, FUN_00215ce0, findMotionFile, sinCos, sinCos, segmentHitsAny, FUN_001dff40 (the two segment tests are pathBlocked here)
 

@@ -4465,9 +4465,9 @@
 /* 001c6940 000000d4 */ nativeUnnoticedFoe(){}  // game
 /* 001c6a20 000000d4 */ nativeNearestAllyDistance(){}  // game
 /* 001c6b00 00000098 */ FUN_001c6b00(){}
-/* 001c6ba0 000000c8 */ FUN_001c6ba0(){}
+/* 001c6ba0 000000c8 */ nativeDoorJustOpened(){}  // game
 /* 001c6c70 000000d4 */ FUN_001c6c70(){}
-/* 001c6d50 000000c8 */ FUN_001c6d50(){}
+/* 001c6d50 000000c8 */ nativeDoorJustUnlocked(){}  // game
 /* 001c6e20 000000dc */ FUN_001c6e20(){}
 /* 001c6f00 00000084 */ FUN_001c6f00(){}
 /* 001c6f90 00000084 */ FUN_001c6f90(){}
@@ -5832,13 +5832,8 @@
 /* 0021c130 00000098 */ StageCharacter::scriptUseDoorKey(){}  // game
 /* 0021c1d0 00000060 */ StageCharacter::scriptCloseDoor(){}  // game
 /* 0021c230 00000060 */ StageCharacter::scriptOpenDoor(){}  // game
-
-// *****************************************************************************
-// FILE -- (unassigned)
-// *****************************************************************************
-
-/* 0021c290 00000038 */ FUN_0021c290(){}
-/* 0021c2d0 00000030 */ FUN_0021c2d0(){}
+/* 0021c290 00000038 */ StageCharacter::doorJustOpened(){}  // game
+/* 0021c2d0 00000030 */ StageCharacter::doorJustUnlocked(){}  // game
 
 // *****************************************************************************
 // FILE -- game/stageplayer.cpp
