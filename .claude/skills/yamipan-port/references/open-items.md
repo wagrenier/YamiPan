@@ -1803,9 +1803,9 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
   functions and the grown records, read in Ghidra's rxsnddrv.elf before the driver's answers are trusted.
   **2026-11-09: (1) begun.** The IOP kernel and memory are in (`src/yamipan/iop/`, architecture.md "The IOP
   side"); `YAMIPAN_RXSNDDRV=1` boots the driver, whose threads run (tick at 50 Hz), and its RPC server
-  answers through `YamiPan_IopRpcDispatch` (command 0x12: version 0x0101). Left of (1), in order: the
-  libsd register model with 2 MB of SPU RAM and transfer completion (RosePan's sdk/iop_libsd.cpp; the DMA
-  thread retries sceSdVoiceTrans until a transfer is taken); then the EE's side: sif.cpp's sceSifCallRpc
+  answers through `YamiPan_IopRpcDispatch` (command 0x12: version 0x0101); libsd runs on `iop::Spu2`
+  (registers, sound RAM, transfers that complete, voices that play in time). Left of (1), in order: the
+  EE's side: sif.cpp's sceSifCallRpc
   dispatching to the driver, sceSifSetDma copying between EE and IOP memory (EE pointers widened through
   the driver's `YamiPan_RxSndNoteEeAddress` notes), sif.cpp's own IOP-heap addresses from
   iop::SystemMemory; then the voice engine, reverb and an audio device.
