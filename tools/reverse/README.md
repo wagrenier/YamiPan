@@ -176,6 +176,7 @@ these hooks:
 |---|---|---|
 | `cmake-build-<config>/YamiPan/YamiPan.exe`, target `YamiPan`, `compile_commands.json` | CMakeLists.txt | build.py, layoutcheck.py, gdbrun.py |
 | `YAMIPAN_SHOT_DIR` / `YAMIPAN_SHOT_EVERY`: save every Nth presented frame as `shot_<frame>.png` + `last.png` | `rendering::Screenshotter` | build.py --run, tus.py finish (progress/) |
+| `YAMIPAN_RXSNDDRV=1`: boot the IOP sound driver (src/iop/rxsnddrv) when rxfile loads it; the EE does not talk to it yet | `sdk/sif.cpp`, `iop::Kernel` | by hand: `YAMIPAN_RXSNDDRV=1 py build.py --run N` |
 | `YAMIPAN_AUTOPAD`: scripted pad 0, `<read>:<BUTTON>[*<reads>],...`, host input masked | `io::InputSystem` | build.py --pad, settings.smoke_pad |
 | `YAMIPAN_DATA_DIR`: the game's data folder | `Paths` | build.py (`yamipan.GAME_DATA`) |
 | `YAMIPAN_TEX_DUMP=<dir>`: write every newly decoded TIM2 file to `<dir>/<hash>.tm2`, for `tm2png.py` | `rendering::TextureStore` | `build.py --env`, a screen's references |

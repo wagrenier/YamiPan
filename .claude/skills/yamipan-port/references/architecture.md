@@ -2043,9 +2043,22 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   files, each function re-addressed to FS2 with RoR's address and the match beside it (`// IOP 0x00000b90
   (RoR 0x00000b08, word for word)`, or "N% of it aligned: FS2 differs, unread", or "moved in FS2").
   Addresses the map cannot place stay RoR's (`RoR IOP 0x...`), and so do the struct layouts. It compiles
-  and links, but **nothing boots it**: its 40 imports are placeholders in `sdk/iop.cpp` that warn once if
-  called (`thbase.h` and the other shims are macros onto `YamiPan_Iop*`, as in RosePan, since the EE
-  kernel and Win32 have a CreateThread of their own), and `sdk/sif.cpp` still answers the EE's RPCs itself.
+  and links; it boots only with `YAMIPAN_RXSNDDRV=1` (the next point). Its imports are `YamiPan_Iop*`
+  (`thbase.h` and the other shims are macros onto them, as in RosePan, since the EE kernel and Win32 have
+  a CreateThread of their own), and `sdk/sif.cpp` still answers the EE's RPCs itself.
+- **The IOP kernel** (2026-11-09, `src/yamipan/iop/`): `iop::Kernel` is RosePan's design as a class: the
+  big kernel lock, held by every IOP context while it runs IOP code and dropped only inside WaitEventFlag
+  and WaitVblankEnd, so the driver's CpuSuspendIntr sections need nothing more (it is a no-op); threads as
+  detached host threads (the driver's loop for ever, so the kernel is never destroyed); event flags; a
+  V-blank grid at the EE's video standard, read each wait (RosePan's was a fixed 60 Hz). `iop::SystemMemory`
+  is the IOP's 2 MB reserved below 4 GB, first fit at 256 bytes: the driver keeps IOP addresses as u_int
+  and dereferences them. `sdk/iop.cpp` forwards thbase / thevent / intrman / sysmem / loadcore / vblank to
+  them; **libsd and the IOP side of sifcmd are still placeholders** that warn once. **`YAMIPAN_RXSNDDRV=1`
+  boots the driver** when rxfile loads `cdrom0:\MODULES\RXSNDDRV.IRX;1` (sceSifLoadModule, sdk/sif.cpp),
+  inside "IOP Modules Load" as on the console. Seen 2026-11-09 (40 s runs): "Installed sound driver version
+  1.00", every subsystem initialised, the DMA thread parked on its flag, the tick thread at 50 Hz ("iop: 500
+  V-blanks in 10.0 s", PAL), 15 placeholder warnings, the language screen as without it. The EE does not
+  talk to it yet: sif.cpp still answers RPC 0xd000 with zeros.
   Its `dma.cpp` now owns `YamiPan_RxSndNoteEeAddress`, which rx/rxsnd.c calls on each DMA: a 64-entry
   ring of EE blocks, harmless while nothing reads it.
 
@@ -2094,8 +2107,10 @@ rules or by being RoR's. From its 14 K line SDK only what FS2 calls came over.
   a synthesized image: a descriptor at sector 16, a root-only path table at 18, the root directory at 19
   and the files from 27, sorted. `ROMD.*` are a second volume at `layer1Start` (the sum of layer 0's
   sectors), which `sceCdReadDvdDualInfo` reports, as on the dual-layer DVD. A file's sector is its offset
-  on that image, so SPK.ROM's sector arithmetic holds. MODULES\ is not on the image: nothing reads it
-  (`sceSifLoadModule` only counts). argv[0] is SYSTEM.CNF's BOOT2, `cdrom0:\SCES_538.51;1`.
+  on that image, so SPK.ROM's sector arithmetic holds. rxfile opens the modules from `cdrom0:\MODULES\` and
+  loads them (seen 2026-11-09: "Load module 'cdrom0:\MODULES\RXSNDDRV.IRX;1'"); `sceSifLoadModule` only
+  counts them, except RXSNDDRV with `YAMIPAN_RXSNDDRV=1` ("The IOP side"). argv[0] is SYSTEM.CNF's BOOT2,
+  `cdrom0:\SCES_538.51;1`.
 
 - **`src/yamipan/rendering/yamipan_drawui.h`** (TU 19, 2026-11-03): the seam of the 2D layouts' draw
   module, `rendering::UiCanvas` behind it (`src/yamipan/seams.cpp`), user `game/uidrawer.cpp`. Keyed by the packet the game drew into

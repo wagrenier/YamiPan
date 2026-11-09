@@ -1,11 +1,8 @@
-// sdk/iop.cpp -- the IOP libraries RXSNDDRV imports (thbase, thevent, intrman, sysmem, loadcore, vblank,
-// libsd and the IOP side of sifcmd), until the IOP host exists.
-//
-// The driver (src/iop/rxsnddrv) is compiled and linked, but nothing boots it: sif.cpp still answers the
-// EE's RPCs itself. So nothing here is called. Each function answers as a failed call and warns once,
-// so a caller that turns up is seen at once. The IOP host replaces this file: RosePan's sdk/iop_host.cpp,
-// iop_sif.cpp, iop_libsd.cpp, iop_voice.cpp and iop_reverb.cpp, rewritten as yamipan:: classes
-// (cpp-port.md), with sif.cpp's sceSifCallRpc dispatching to the driver's server.
+// sdk/iop.cpp -- the IOP libraries RXSNDDRV imports. thbase, thevent, intrman, sysmem, loadcore and vblank
+// forward to yamipan::iop::Kernel. libsd and the IOP side of sifcmd are still placeholders: each answers
+// as a failed call and warns once, until the host serves the driver's RPC and models the SPU2 (RosePan's
+// sdk/iop_sif.cpp, iop_libsd.cpp, iop_voice.cpp and iop_reverb.cpp, rewritten as yamipan:: classes).
+// The driver only runs with YAMIPAN_RXSNDDRV=1 (sdk/sif.cpp boots it); without that nothing here is called.
 #include "iop_host.h"
 #include "iop_voice.h"
 #include "libsd.h"
@@ -14,11 +11,17 @@
 #include <mutex>
 
 #include "yamipan/core/logger.h"
+#include "yamipan/iop/kernel.h"
 
 namespace
 {
 
-// The host's absence is the only error these can report.
+yamipan::iop::Kernel &kernel()
+{
+    return yamipan::iop::Kernel::instance();
+}
+
+// The host's missing part is the only error these can report.
 void notYet(std::once_flag &once, const char *name)
 {
     std::call_once(once, [name] { yamipan::log::warning("IOP host not there yet: {} called", name); });
@@ -28,112 +31,89 @@ void notYet(std::once_flag &once, const char *name)
 
 // ---- thbase, thevent, vblank ----------------------------------------------------------------------
 
-int YamiPan_IopCreateThread(IopThreadParam *)
+int YamiPan_IopCreateThread(IopThreadParam *param)
 {
-    static std::once_flag once;
-    notYet(once, "CreateThread");
-    return -1;
+    if (param == nullptr || param->entry == nullptr)
+        return -1;
+    return kernel().createThread(reinterpret_cast<void (*)()>(param->entry), param->option, param->initPriority,
+                                 param->stackSize);
 }
 
-int YamiPan_IopStartThread(int, void *)
+// RXSNDDRV's thread entries take no argument: their work travels in ThreadParam::option.
+int YamiPan_IopStartThread(int thid, void *)
 {
-    static std::once_flag once;
-    notYet(once, "StartThread");
-    return -1;
+    return kernel().startThread(thid);
 }
 
 int YamiPan_IopGetThreadId()
 {
-    static std::once_flag once;
-    notYet(once, "GetThreadId");
-    return -1;
+    return kernel().currentThreadId();
 }
 
-int YamiPan_IopCreateEventFlag(IopEventFlagParam *)
+int YamiPan_IopCreateEventFlag(IopEventFlagParam *param)
 {
-    static std::once_flag once;
-    notYet(once, "CreateEventFlag");
-    return -1;
+    return kernel().createEventFlag(param != nullptr ? param->initPattern : 0);
 }
 
-int YamiPan_IopSetEventFlag(int, u_int)
+int YamiPan_IopSetEventFlag(int evfid, u_int bitpattern)
 {
-    static std::once_flag once;
-    notYet(once, "SetEventFlag");
-    return -1;
+    return kernel().setEventFlag(evfid, bitpattern);
 }
 
-int YamiPan_IopWaitEventFlag(int, u_int, int, u_int *)
+int YamiPan_IopWaitEventFlag(int evfid, u_int bitpattern, int waitmode, u_int *resultpat)
 {
-    static std::once_flag once;
-    notYet(once, "WaitEventFlag");
-    return -1;
+    return kernel().waitEventFlag(evfid, bitpattern, waitmode, resultpat);
 }
 
 int YamiPan_IopWaitVblankEnd()
 {
-    static std::once_flag once;
-    notYet(once, "WaitVblankEnd");
-    return -1;
+    return kernel().waitVblankEnd();
 }
 
-// ---- intrman, loadcore, sysmem --------------------------------------------------------------------
+// ---- intrman, loadcore ----------------------------------------------------------------------------
 
+// The big kernel lock already keeps IOP code from interleaving, which is all disabling interrupts did
+// for RXSNDDRV; its transfer and SPU2 handlers take the same lock when the host calls them.
 int YamiPan_IopCpuSuspendIntr(int *oldstat)
 {
-    static std::once_flag once;
-    notYet(once, "CpuSuspendIntr");
     if (oldstat != nullptr)
         *oldstat = 0;
-    return -1;
+    return 0;
 }
 
 int YamiPan_IopCpuResumeIntr(int)
 {
-    static std::once_flag once;
-    notYet(once, "CpuResumeIntr");
-    return -1;
+    return 0;
 }
 
-void YamiPan_IopFlushDcache()
+// One address space, no cache to write back.
+void YamiPan_IopFlushDcache() {}
+
+// ---- sysmem ---------------------------------------------------------------------------------------
+
+void *YamiPan_IopAllocSysMemory(int, int size, void *)
 {
-    static std::once_flag once;
-    notYet(once, "FlushDcache");
+    return size > 0 ? kernel().memory().allocate(static_cast<std::size_t>(size)) : nullptr;
 }
 
-void *YamiPan_IopAllocSysMemory(int, int, void *)
+int YamiPan_IopFreeSysMemory(void *ptr)
 {
-    static std::once_flag once;
-    notYet(once, "AllocSysMemory");
-    return nullptr;
-}
-
-int YamiPan_IopFreeSysMemory(void *)
-{
-    static std::once_flag once;
-    notYet(once, "FreeSysMemory");
-    return -1;
+    return kernel().memory().free(ptr) ? 0 : -1;
 }
 
 int YamiPan_IopQueryMemSize()
 {
-    static std::once_flag once;
-    notYet(once, "QueryMemSize");
-    return 0;
+    return static_cast<int>(kernel().memory().size());
 }
 
 int YamiPan_IopQueryMaxFreeMemSize()
 {
-    static std::once_flag once;
-    notYet(once, "QueryMaxFreeMemSize");
-    return 0;
+    return static_cast<int>(kernel().memory().largestFree());
 }
 
 int YamiPan_IopQueryTotalFreeMemSize()
 {
-    static std::once_flag once;
-    notYet(once, "QueryTotalFreeMemSize");
-    return 0;
+    return static_cast<int>(kernel().memory().totalFree());
 }
 
 // ---- libsd ----------------------------------------------------------------------------------------
@@ -275,7 +255,7 @@ void sceSifRegisterRpc(sceSifServeData *, u_int, sceSifRpcFunc, void *, sceSifRp
     notYet(once, "sceSifRegisterRpc");
 }
 
-// On the IOP this loops for ever serving requests; with no host to serve, it returns.
+// On the IOP this loops for ever serving requests; with nothing to serve yet, it returns.
 void sceSifRpcLoop(sceSifQueueData *)
 {
     static std::once_flag once;
