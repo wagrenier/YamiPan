@@ -1825,8 +1825,17 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
   **Doubt (2026-11-09):** in d0101 the reverb is on (studio C, the depth ramping) but no voice is ever
   sent to it: every voice's switch lacks bit 2 through 100 s. That may be the scene, or FS2's layout:
   `RxSndDrvVoiceSetSwitch` ("81% aligned: FS2 differs, unread") and the XVAB region flags and stream
-  open records the bits come from are still RoR's. Check in (3), or in a scene known to echo. Left of
-  (1): the player's volume settings; then (3), FS2's differences.
+  open records the bits come from are still RoR's. Check in (3), or in a scene known to echo.
+  **Read 2026-11-09:** FS2's RxSndDrvNoteTick sets bit 2 exactly as RoR's (region flag 2 or the note's
+  switch) and RxSndDrvAdpcmOpen is word for word, so the reverb gap is the scene's data, not the
+  driver; a scene known to echo is still the check. Left of (1): the player's volume settings.
+- **(3) begun, 2026-11-09** (architecture.md "FS2's driver, read"): the dispatcher had four FS2 commands
+  RoR has not (0x52, 0x53, 0x62, 0xb4; their EE senders have no caller, so nothing sent them), now in;
+  RxSndDrvXvabGetUsers's test the right way round; RxSndDrvAdpcmStart gives the group to every channel and
+  the owner to the first only. Still unread: RxSndDrvSeRun (74%, the largest change), the PCM player
+  (PcmTick +0xac, PcmOpen 64%, PcmInit moved), the mixer (MixInit / MixSet / MixTick), the voice tick's
+  noise clock (FS2's RxSndDrvVoiceSetNoise 0x4428, called by NoteTick for region flag 4, pending bit
+  0x20), DmaProc, XseqChunkFind (60%), ChunkFindV2 and the one-word ones (record offsets).
 
 - 2026-11-05 (Claude's call, a scheduled run, for the user to overrule): **doors are on, and `kDoorsEnabled` is gone.** The stage crash that switched them off is explained and fixed (Done, game/playermotion.cpp sixth run). `StageMenu::update`, `draw` and `destroy` stay stubs on purpose: with `update` written and no list window, the menu button would open a menu nobody sees that holds the input focus. `game/stagemenu.cpp` is a second file in a one-TU run, like `game/uiitemlist.cpp`: its stubbed ctor was the crash.
 

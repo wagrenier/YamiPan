@@ -132,8 +132,8 @@ struct RxSndDrvAdpcm
     RxSndDrvAdpcm *m_next;              // IOP +0x00: the active list
     u_int   m_flags;                    // IOP +0x04: RXSNDDRV_ADPCM_*
     int     m_priority;                 // IOP +0x08: the voices'; >= 0: a stolen voice ends it
-    int     m_group;                    // IOP +0x0c: the first channel's voice group, 0 any
-    int     m_owner;                    // IOP +0x10: voice owner, 0 none
+    int     m_group;                    // IOP +0x0c: the voices' group, 0 any
+    int     m_owner;                    // IOP +0x10: the first channel's voice owner, 0 none
     u_char  m_id;                       // IOP +0x14
     u_char  m_reverb;                   // IOP +0x15
     u_char  m_dirty;                    // IOP +0x16: RXSNDDRV_ADPCM_DIRTY_*
@@ -436,7 +436,7 @@ static void RxSndDrvAdpcmFollow(RxSndDrvAdpcm *s)
 
 /* Not playing: key the voices on once the SPU buffer holds m_need bytes
  * (or no more data comes). */
-// IOP 0x0000aabc (RoR 0x0000a7cc, 93% of it aligned: FS2 differs, unread)
+// IOP 0x0000aabc (RoR 0x0000a7cc, 93% of it aligned: FS2 read, 2026-11-09)
 static void RxSndDrvAdpcmStart(RxSndDrvAdpcm *s)
 {
     int intr;
@@ -452,9 +452,12 @@ static void RxSndDrvAdpcmStart(RxSndDrvAdpcm *s)
         int group = 0;
         int owner = 0;
 
-        if (s->m_group > 0 && ch == s->m_channels)
+        /* FS2: every channel in the stream's group, only the first one owned
+         * (RoR the other way round: there a second channel's allocation took
+         * the first one's voice back, the owner being the same). */
+        if (s->m_group > 0)
             group = s->m_group;
-        if (s->m_owner > 0)
+        if (s->m_owner > 0 && ch == s->m_channels)
             owner = s->m_owner | 0x2000000;
         ch->m_voice = (signed char)RxSndDrvVoiceAlloc(ch->m_voiceWant, s->m_priority, 0, group, owner,
                                                       RxSndDrvAdpcmVoiceDone, ch);

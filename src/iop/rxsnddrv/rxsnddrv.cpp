@@ -249,10 +249,16 @@ u_int RxSndDrvCommand(u_int cmd, u_char *reply, const u_int *data)
         return (u_int)RxSndDrvXvabOpen(data[0], data[1], data[2]);
     case 0x51:
         return (u_int)RxSndDrvXvabClose(data[0]);
+    case 0x52:                          /* FS2 */
+        return (u_int)RxSndDrvXvabGetUsers((int)data[0]);
+    case 0x53:                          /* FS2 */
+        return (u_int)RxSndDrvXvabHasSe((int)data[0], (int)data[1], (int)data[2]);
     case 0x60:
         return (u_int)RxSndDrvXseqOpen(data[0], data[1]);
     case 0x61:
         return (u_int)RxSndDrvXseqClose(data[0]);
+    case 0x62:                          /* FS2 */
+        return (u_int)RxSndDrvXseqGetUsers(data[0]);
     case 0x63:
         RxSndDrvXseqSetBank(data[0], data[1], data[2]);
         return 0;
@@ -322,6 +328,9 @@ u_int RxSndDrvCommand(u_int cmd, u_char *reply, const u_int *data)
         return 0;
     case 0xb3:
         *(int *)(reply + 0x180) = RxSndDrvPcmStatus(reply);
+        return 0;
+    case 0xb4:                          /* FS2 */
+        RxSndDrvPcmSetB4((int)data[0]);
         return 0;
 
     case 0x200:

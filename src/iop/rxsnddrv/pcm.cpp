@@ -24,8 +24,9 @@
  *  under the play position and the sample offset in it, which is how the EE
  *  frees ring space and fires its position callbacks.
  *
- *  The 0xb4 command the EE has (rxSndPcmSetParamB4) has no case in the
- *  dispatcher: the driver answers it "invalide RPC command".
+ *  Command 0xb4 is FS2's (RxSndDrvPcmSetB4): a value clamped to 2..8 and a
+ *  flag that it was set; what reads them is in FS2's changed PcmTick, unread,
+ *  so here they are only kept. The EE's sender has no caller.
  * ======================================================================== */
 
 #include "iop/rxsnddrv/rxsnddrv.h"
@@ -744,4 +745,18 @@ static void RxSndDrvPcmDownmix(short *half)
         for (int i = 0; i < RXSNDDRV_PCM_BLOCK; i++)
             l[i] = r[i] = (short)((l[i] + r[i]) >> 1);
     }
+}
+
+/* Command 0xb4 (FS2 only): clamped to 2..8, with a flag that it came. Read by
+ * nothing here yet (FS2's PcmTick, which reads them, is unread). */
+static int s_pcmB4;                     // FS2 IOP 0x0003f0f8
+static int s_pcmB4Set;                  // FS2 IOP 0x0003f0f4
+
+// IOP 0x0000d1dc (FS2 only, read 2026-11-09)
+void RxSndDrvPcmSetB4(int value)
+{
+    s_pcmB4    = value < 2 ? 2 : value > 8 ? 8 : value;
+    s_pcmB4Set = 1;
+    (void)s_pcmB4;
+    (void)s_pcmB4Set;
 }
