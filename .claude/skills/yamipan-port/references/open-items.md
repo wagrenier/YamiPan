@@ -1797,7 +1797,7 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
   gone: every run boots the driver, the EE's sound calls, SIF DMA and IOP heap go to the IOP host, and
   sdk/sif.cpp's stand-ins (fake IOP addresses, dropped transfers) and the stream formats'
   ADPCM_SILENT_BUFFER / PCM_SILENT_BUFFER with them. The driver logs the first four calls of each
-  command and its first 16 stream events. Still silent: no voice engine or audio device yet.
+  command and its first 16 stream events. Audible since the same day (the synthesiser, below).
 
 - 2026-11-07 (the user): **RoR's RXSNDDRV reconstruction comes into YamiPan** as `src/iop/rxsnddrv/`, since
   FS2's driver is the same source, revised (architecture.md "The IOP side"). Done the same day for the
@@ -1820,7 +1820,9 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
   at PAL's 50 frames a second, and these runs drew about 28 (Remote Desktop), so the feed may simply be
   frame-bound; the other suspect is the driver's status reply (RoR's layout: the free space the EE reads
   in rxSndAdpcmUpdate), part of (3). Check at full frame rate before reading (3).
-  Left of (1): the voice engine, reverb and an audio device; then (3), FS2's differences.
+  The voice engine and the sound card are in too (2026-11-09, architecture.md "The synthesiser and the
+  sound card"): d0101's event stream is mixed and played. Left of (1): reverb (RosePan's
+  sdk/iop_reverb.cpp), the player's volume settings; then (3), FS2's differences.
 
 - 2026-11-05 (Claude's call, a scheduled run, for the user to overrule): **doors are on, and `kDoorsEnabled` is gone.** The stage crash that switched them off is explained and fixed (Done, game/playermotion.cpp sixth run). `StageMenu::update`, `draw` and `destroy` stay stubs on purpose: with `update` written and no list window, the menu button would open a menu nobody sees that holds the input focus. `game/stagemenu.cpp` is a second file in a one-TU run, like `game/uiitemlist.cpp`: its stubbed ctor was the crash.
 

@@ -2067,7 +2067,9 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   Its `dma.cpp` now owns `YamiPan_RxSndNoteEeAddress`, which rx/rxsnd.c calls on each DMA: a 64-entry
   ring of EE blocks, harmless while nothing reads it.
 - **The SPU2** (2026-11-09, `iop::Spu2`, RosePan's sdk/iop_libsd.cpp as a class): the registers of both
-  cores, 2 MB of sound RAM, transfers that complete, and a clock instead of a synthesiser. sceSdVoiceTrans
+  cores, 2 MB of sound RAM, transfers that complete; first with a clock instead of a synthesiser, whose
+  voices are `iop::Spu2Voices` since the same day (the next point: the clock below is gone, its rules
+  live on there, and ENVX is the envelope). sceSdVoiceTrans
   copies between IOP memory and sound RAM (bit 0 of the mode: 1 reads back) and runs the core's transfer
   handler before it returns, so the driver's DMA thread (which starts one transfer and parks until
   `RxSndDrvDmaIntr` sets its flag) moves on. A keyed-on voice walks its ADPCM blocks at its pitch (0x1000 =
@@ -2084,6 +2086,26 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   the ring at 192,000 bytes a second: 25 cases) passed; 40 s runs with and without `YAMIPAN_RXSNDDRV=1`
   both reach the language screen, and the switched-on run no longer logs libsd placeholder warnings. Until
   the EE talks to the driver, only its init and its tick's register reads reach the model.
+- **The synthesiser and the sound card** (2026-11-09, `iop::Spu2Voices`, `audio::AudioOutput`, RosePan's
+  sdk/iop_voice.cpp as a class): `iop::Spu2` forwards key on / off, SSA / LSAX / NAX, VOL / PITCH / ADSR,
+  MVOL, BVOL and the VMIX masks, and reads NAX, ENVX and ENDX back from it. Each of the 48 voices decodes
+  its ADPCM out of sound RAM (16-byte blocks, 28 samples, the five prediction filters), follows the block
+  flags (loop start sets LSAX unless the driver wrote it; loop end jumps to LSAX and latches ENDX; without
+  repeat the voice ends and idles on LSAX), steps at its pitch (0x1000 = 48 kHz; Catmull-Rom over 4
+  samples, RosePan's stand-in for the SPU2's gaussian table) and runs the ADSR per output sample (Q16 over
+  0..0x7fff). The auto-DMA ring (the PCM player) is read as 512-byte blocks, left then right. A mixer
+  thread (`YamiPanAudio`) sums both cores through their master volumes into 256-frame blocks and keeps the
+  device about 42 ms ahead; with no device it keeps the same pace by the wall clock, so voices still end.
+  The ring's status is what was heard (mixed, less what the device still holds). sceSdInit opens the
+  device: `SDL_OpenAudioDeviceStream` on the default playback device, 16-bit stereo 48 kHz (SDL's audio is
+  up since `Application::startServices`). The log reports the first three 10 s windows: "audio: N s mixed,
+  peak P (x dBFS), K key-ons". **Not yet:** reverb (the VMIXE sends are kept, nothing returns them), PMON
+  and NON, the player's volume settings (RosePan's [audio] section), core 0 feeding core 1 (both cores
+  are summed, as in RosePan). **Seen 2026-11-09:** the device is "Remote Audio" (the machine is used over
+  Remote Desktop); the language screen keys no voice (peak 0); `YAMIPAN_TELEPORT=d0101` keys the event's
+  stereo stream and mixes it at -25 dBFS peak. A dump of that mix (scratch code, removed) read as sound,
+  not noise: 0.02..0.05 zero crossings a sample (noise is 0.5), sample-to-sample steps 0.05..0.15 of the
+  RMS, left and right correlated +0.1..+0.8, the level rising and falling over 40 s.
 - **The EE's side** (2026-11-09, `sdk/sif.cpp`): sceSifBindRpc keeps the
   RPC number in the client's `command`; sceSifCallRpc sends a call to a registered server through
   `YamiPan_IopRpcDispatch` on the EE's thread and copies `rsize` bytes of the handler's buffer back before
