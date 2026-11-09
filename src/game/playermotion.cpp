@@ -2373,6 +2373,7 @@ class GunMoveCondition : public MotionCondition
 {
 public:
     using MotionCondition::MotionCondition;
+    ~GunMoveCondition() override {}                                      // FS2 0x0026d020
     void onUpdate() override;                                            // FS2 0x0026d670
     void onApply() override;                                             // FS2 0x0026d090
 };
