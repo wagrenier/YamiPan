@@ -236,7 +236,8 @@ UI and what A leaves unblended (the sky mist's drift, the placed batches) at 60 
 A's.
 
 **If chosen, the order:**
-1. The inventory: every per-frame rule in the ~117 files, kind and fix.
+1. The inventory: every per-frame rule in the ~117 files, kind and fix. **First pass done (2026-11-09):
+   framerate-inventory.md**, from `framerules.py`'s candidates; its "to check" list is what is left.
 2. **50 Hz first** as the dry run: 2x is exact for counters and speeds (n -> 2n, v -> v / 2), dt exact (6 ticks),
    `stageFps` 50. It tests the method and the 25-vs-faster comparison with no rounding in the way.
 3. 60 Hz: the ulp fix, the 2.4x counters, the eases.
