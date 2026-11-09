@@ -168,7 +168,7 @@ static inline int ArgHalf(const u_int *data, int i)
     return ((const short *)data)[i];
 }
 
-// IOP 0x00000360 (RoR 0x00000360, 81% of it aligned: FS2 differs, unread)
+// IOP 0x00000360 (RoR 0x00000360, 81% of it aligned: FS2 read, commands 0x52, 0x53, 0x62, 0xb4 added)
 u_int RxSndDrvCommand(u_int cmd, u_char *reply, const u_int *data)
 {
     u_int ret = 0;

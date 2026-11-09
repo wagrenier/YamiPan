@@ -32,20 +32,19 @@
  *
  *  FS2 (Ghidra program rxsnddrv.elf): 38 changed functions, 2 moved ones and
  *  4 functions RoR does not have (0x2d9c, 0x3660, 0x4428, 0xd1dc; 0x4454 is
- *  RxSndDrvVoiceKeyOn, after the new 0x4428).  Read 2026-11-09 and taken in:
- *  the dispatcher's four FS2 commands (0x52, 0x53, 0x62, 0xb4), the three new
- *  functions behind them, RxSndDrvXvabGetUsers's test, RxSndDrvAdpcmStart's
- *  group / owner, RxSndDrvSeRun's pause and same-bank holders, the PCM
- *  player (pcm.cpp: core 0, a ring of 2..8 halves, m_fresh) and with it the
- *  DMA thread's move to core 1 (dma.cpp), the mixer's input volume (mix.cpp,
- *  command 0x31 param 2).  Read and the
- *  same as RoR apart from the record offsets: RxSndDrvNoteTick's switch bits,
- *  RxSndDrvVoiceAlloc, RxSndDrvSeFreeRamps, RxSndDrvPcmStatus.  Still unread:
- *  the rest marked "FS2 differs, unread" (the XSEQ chunk lookups).  The noise
- *  clock (RxSndDrvVoiceSetNoise, the tick's SD_C_NOISE_CLK) is read and in.  The one-word differences say the voice, mix
- *  and PCM records grew (a voice stride 0x38 -> 0x3c, PCM offsets up by
- *  0x18..0x1c): the struct layouts below are still RoR's.  sdk/sif.cpp boots it when rxfile loads
- *  RXSNDDRV.IRX; its imports are sdk/iop.cpp's, on yamipan::iop.
+ *  RxSndDrvVoiceKeyOn, after the new 0x4428).  All read 2026-11-09, each
+ *  marked "FS2 read" in its header.  Taken in: the dispatcher's four FS2
+ *  commands (0x52, 0x53, 0x62, 0xb4) and the functions behind them,
+ *  RxSndDrvXvabGetUsers's test, RxSndDrvAdpcmStart's group / owner,
+ *  RxSndDrvSeRun's pause and same-bank holders, the PCM player (core 0, a
+ *  ring of 2..8 halves, m_fresh) and the DMA thread's move to core 1, the
+ *  mixer's input volume (command 0x31 param 2), the noise clock
+ *  (RxSndDrvVoiceSetNoise, the voice tick's SD_C_NOISE_CLK).  The rest are
+ *  RoR's but for record offsets: the voice, mix and PCM records grew (a voice
+ *  stride 0x38 -> 0x3c, PCM offsets up by 0x18..0x1c), and the struct layouts
+ *  below are host ones with RoR's offsets in the comments.  sdk/sif.cpp boots
+ *  it when rxfile loads RXSNDDRV.IRX; its imports are sdk/iop.cpp's, on
+ *  yamipan::iop.
  *
  *  The double buffer.  Commands arrive on the EE's RPC (any time) and are
  *  written into bank RxSndDrvCmdBank(); the double-buffer thread flips the

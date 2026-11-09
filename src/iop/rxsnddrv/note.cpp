@@ -651,7 +651,7 @@ static void RxSndDrvNoteStop(RxSndDrvNote *note, int keyOff)
 /* A layer's voice has gone (reason 0 ended, 1 taken: then the whole note
  * goes).  A freed slot's layers can still hear this while their voices
  * fade; their m_note is the old one, as on the IOP. */
-// IOP 0x0000a144 (RoR 0x00009e50, 95% of it aligned: FS2 differs, unread)
+// IOP 0x0000a144 (RoR 0x00009e50, 95% of it aligned: FS2 read, the same but for record offsets)
 static void RxSndDrvNoteVoiceDone(int voice, int reason, void *arg)
 {
     RxSndDrvNoteLayer *layer = (RxSndDrvNoteLayer *)arg;

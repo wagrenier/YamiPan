@@ -178,6 +178,9 @@ struct Spu2Voices::Voice
 
     int group = 0;
 
+    // This block's output after the envelope, before volume: what modulates the voice above (PMON).
+    std::int16_t out[kMixFrames] = {};
+
     bool adsrSet() const { return adsr1 != 0 || adsr2 != 0; }
     int attackRate() const { return (adsr1 >> 8) & 0x7f; }
     bool attackExp() const { return (adsr1 & 0x8000) != 0; }
@@ -229,6 +232,7 @@ struct Spu2Voices::Core
 
     // The noise generator: a 16-bit shift register stepped by its clock (psx-spx "SPU Noise").
     std::uint32_t noiseMask = 0;
+    std::uint32_t pitchModMask = 0;
     int noiseClock = 0;
     std::uint16_t noiseLevel = 0;
     int noiseTimer = 0;
@@ -358,10 +362,8 @@ bool Spu2Voices::nextSourceSample(Voice &v, std::int16_t &out)
     return true;
 }
 
-bool Spu2Voices::nextOutputSample(Voice &v, std::int32_t &out)
+bool Spu2Voices::nextOutputSample(Voice &v, std::int32_t &out, std::uint32_t step)
 {
-    // Pitch 0 would hold the voice on one sample for ever and nothing would retire it (RosePan's guard).
-    const std::uint32_t step = v.pitch != 0 ? v.pitch : kPitchOne;
     while (v.phase >= kPitchOne)
     {
         std::int16_t s = 0;
@@ -415,7 +417,10 @@ void Spu2Voices::mixVoices()
     {
         Voice &v = m_voices[i];
         if (!v.sounding())
+        {
+            std::fill(std::begin(v.out), std::end(v.out), 0);
             continue;
+        }
         Core &core = m_cores[v.core];
         const std::uint32_t bit = 1u << v.number;
         const std::int32_t volL = decodeVolume(v.volL);
@@ -425,11 +430,23 @@ void Spu2Voices::mixVoices()
         const bool wetL = (core.wetL & bit) != 0;
         const bool wetR = (core.wetR & bit) != 0;
         const bool noise = (core.noiseMask & bit) != 0;
+        // The voice below was mixed just before this one (voices go in order within a core).
+        const Voice *below = (core.pitchModMask & bit) != 0 && v.number > 0 ? &m_voices[i - 1] : nullptr;
+        // Pitch 0 would hold the voice on one sample for ever and nothing would retire it (RosePan's guard).
+        const std::uint32_t pitch = v.pitch != 0 ? v.pitch : kPitchOne;
 
-        for (int f = 0; f < kMixFrames; f++)
+        int f = 0;
+        for (; f < kMixFrames; f++)
         {
+            std::uint32_t step = pitch;
+            if (below != nullptr)
+            {
+                // psx-spx: step * (0x8000 + the voice below's output) / 0x8000, past 0x3fff it is 0x4000.
+                const long long modulated = static_cast<long long>(pitch) * (0x8000 + below->out[f]) >> 15;
+                step = modulated > 0x3fff ? 0x4000u : static_cast<std::uint32_t>(std::max<long long>(modulated, 0));
+            }
             std::int32_t s = 0;
-            if (!nextOutputSample(v, s))
+            if (!nextOutputSample(v, s, step))
                 break;
             if (noise)
                 s = core.noise[f]; // the samples still run underneath: loops, end and envelope are theirs
@@ -437,6 +454,7 @@ void Spu2Voices::mixVoices()
             const std::int32_t env = v.envelope(ended);
             if (ended)
                 beginEnd(v);
+            v.out[f] = toS16(static_cast<std::int32_t>(static_cast<long long>(s) * env / kLevelMax));
             const std::int32_t l = applyVolume(s, applyEnvelope(volL, env));
             const std::int32_t r = applyVolume(s, applyEnvelope(volR, env));
             if (dryL)
@@ -448,6 +466,7 @@ void Spu2Voices::mixVoices()
             if (wetR)
                 core.sendR[f] += r;
         }
+        std::fill(v.out + f, v.out + kMixFrames, 0); // ran dry
     }
 }
 
@@ -823,6 +842,14 @@ void Spu2Voices::setNoiseMask(int core, std::uint32_t mask)
         return;
     std::lock_guard lock(m_lock);
     m_cores[core].noiseMask = mask;
+}
+
+void Spu2Voices::setPitchModMask(int core, std::uint32_t mask)
+{
+    if (core < 0 || core >= kCores)
+        return;
+    std::lock_guard lock(m_lock);
+    m_cores[core].pitchModMask = mask;
 }
 
 void Spu2Voices::setNoiseClock(int core, int clock)

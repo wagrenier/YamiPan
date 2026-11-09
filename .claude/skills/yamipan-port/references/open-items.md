@@ -1836,9 +1836,11 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
   reach only SEs of the same bank; the PCM player (read the same day) plays on core 0 from a ring of
   2..8 halves; the mixer (read the same day) has command 0x31 param 2, the external input's volume.
   The noise clock is read and in too (the same day: RxSndDrvVoiceSetNoise 0x4428, the voice tick's
-  SD_C_NOISE_CLK, `iop::Spu2Voices`' noise generator). Still unread: XseqChunkFind (60%), ChunkFindV2
-  and the one-word ones (record offsets). DmaProc / DmaInit read with the PCM player: FS2's uploads are
-  on core 1. Not modelled: PMON (pitch modulation).
+  SD_C_NOISE_CLK, `iop::Spu2Voices`' noise generator). **(3) done 2026-11-09:** the last 21 functions
+  marked unread (the voice setters and queries, NoteVoiceDone, PcmDownmix, XseqChunkFind, ChunkFindV2,
+  the dispatcher, VoiceAlloc) are RoR's but for record offsets; every function's header says "FS2 read".
+  PMON (pitch modulation) is in the synthesiser too. Left on the sound road: the player's volume settings
+  (RosePan's [audio]), and the two doubts above (a starving stream, a scene with no reverb send).
 
 - 2026-11-05 (Claude's call, a scheduled run, for the user to overrule): **doors are on, and `kDoorsEnabled` is gone.** The stage crash that switched them off is explained and fixed (Done, game/playermotion.cpp sixth run). `StageMenu::update`, `draw` and `destroy` stay stubs on purpose: with `update` written and no list window, the menu button would open a menu nobody sees that holds the input focus. `game/stagemenu.cpp` is a second file in a one-TU run, like `game/uiitemlist.cpp`: its stubbed ctor was the crash.
 

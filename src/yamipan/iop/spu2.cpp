@@ -34,6 +34,7 @@ constexpr std::uint16_t kVaNax = 0x2240;
 constexpr std::uint16_t kCEffectEnable = 0x02;
 constexpr std::uint16_t kCNoiseClock = 0x08;
 constexpr std::uint16_t kSNon = 0x1400;
+constexpr std::uint16_t kSPmon = 0x1300;
 
 // sceSdBlockTrans's mode: the operation in the low bits, looping in 0x10.
 constexpr std::uint16_t kBlockOp = 0x03;
@@ -196,6 +197,9 @@ void Spu2::setSwitch(std::uint16_t entry, std::uint32_t value)
         break;
     case kSNon:
         m_voices->setNoiseMask(c, value);
+        break;
+    case kSPmon:
+        m_voices->setPitchModMask(c, value);
         break;
     case kSVmixL:
     case kSVmixR:

@@ -777,7 +777,7 @@ static void RxSndDrvPcmClear(short *half)
 }
 
 /* Mono output: each block's L and R both become their average. */
-// IOP 0x0000d244 (RoR 0x0000ce18, 100% of it aligned: FS2 differs, unread)
+// IOP 0x0000d244 (RoR 0x0000ce18, 100% of it aligned: FS2 read, the same but for record offsets)
 static void RxSndDrvPcmDownmix(short *half)
 {
     for (int b = 0; b < 4; b++)

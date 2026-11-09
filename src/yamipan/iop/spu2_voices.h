@@ -10,8 +10,9 @@
 //
 // The voices whose VMIXEL / VMIXER bit is set also feed their core's reverb (Spu2Reverb), whose return
 // joins the dry mix before the master volume. A voice whose NON bit is set plays its core's noise
-// generator instead of its samples (which still run: its loops, end and envelope are its sample's). Not
-// yet: pitch modulation (PMON). The SPU2's gaussian interpolation is RosePan's Catmull-Rom stand-in.
+// generator instead of its samples (which still run: its loops, end and envelope are its sample's). A
+// voice whose PMON bit is set (not voice 0 of a core) steps at its pitch scaled by the voice below's
+// enveloped output. The SPU2's gaussian interpolation is RosePan's Catmull-Rom stand-in.
 //
 // Its own lock guards every voice: register writes come from IOP code (under the big kernel lock), the
 // mixer runs on its own thread, and sound RAM is read without a lock (a transfer racing a voice reads
@@ -74,6 +75,8 @@ public:
     // SD_S_NON: the voices that play noise; SD_C_NOISE_CLK: the generator's clock, 0..0x3f.
     void setNoiseMask(int core, std::uint32_t mask);
     void setNoiseClock(int core, int clock);
+    // SD_S_PMON: the voices whose pitch the voice below modulates.
+    void setPitchModMask(int core, std::uint32_t mask);
 
     // ---- the effect unit (Spu2Reverb) ---------------------------------------------------------------
     void setReverbPreset(int core, std::uint32_t mode, std::uint32_t eea);
@@ -116,7 +119,7 @@ private:
     void beginEnd(Voice &v);
     bool decodeBlock(Voice &v);
     bool nextSourceSample(Voice &v, std::int16_t &out);
-    bool nextOutputSample(Voice &v, std::int32_t &out);
+    bool nextOutputSample(Voice &v, std::int32_t &out, std::uint32_t step);
     void readHeader(Voice &v);
 
     std::uint8_t *m_ram;
