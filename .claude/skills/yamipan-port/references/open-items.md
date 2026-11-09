@@ -1928,6 +1928,11 @@ apply here):
 
 ## Open questions
 
+- (2026-11-09, frame rate) **How to go past the ROM's 25 fps: the user's choice.** roadmap-framerate.md has the
+  first analysis: (A) blend the last two game frames on the render thread, game code untouched (recommended);
+  (B) NTSC timing at 30 Hz, which needs the Japanese ROM's constants; (C) simulating at the monitor's rate, which
+  needs a dt fix in every frame-counting system (camera ease, particles, item physics, fades, UI, play time) and
+  is not recommended. Nothing implemented.
 - (2026-11-07, game/kunitoris.cpp, sixth session) **The TU is complete: 93 of 93 functions, `verify`** (batch 229: the drawable and mover bases, kunitorisRandom, copyPair, the two update thunks). Not seen: the picture test needs the smoke pad taken from the language select to the top menu's answer 10 (Extra mode), the title, the level select and a level; compare with the level files (pack items 0..15) and the pictures 0x10..0x14 (tm2png.py on dataEU/kuniEU.pak). Earlier note follows.
 - (2026-11-07, game/kunitoris.cpp) `KunitorisGame`'s destructor is written (inline in the ROM; the board's pieces through `~KunitorisBoard`). Open: the board hierarchy's virtuals (vtables 0x319f60 / 0x319f70 / 0x319fd0 / 0x319f80 / 0x319fe0, architecture.md) are not modelled yet: `KunitorisBoard` and `KunitorisPiece` are plain host classes; FUN_002c81c0 (the board draw) needs the piece's slot 1 draw(drawer, pass), so the next session should make 0x319f60 a virtual base (dtor, draw) first. `m_selectToggle` is still a guess from kunitorisThread alone; the fields _84.._98 and _75c.._774 are named since the fifth session (2026-11-07: the spawn / drain / step periods and timers, m_heldDir, m_frame, the fever bar, rate, level and chain; architecture.md "Kunitoris's rules"); KunitorisGame::update and its helpers are written, the minigame is playable in code but not seen. The smoke run never reaches Extra mode (top menu answer 10): the picture test needs the smoke pad taken there.
 - 2026-11-07 (game/stagecamera.cpp tail, batch 214): **StageCharacter's slot +0x25c (0x179a90) passes
