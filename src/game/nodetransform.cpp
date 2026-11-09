@@ -1,7 +1,8 @@
 /* ==========================================================================
  *  game/nodetransform.cpp
  *
- *  The code of the scene nodes (game/stagenode.h), 0x1d7c50..0x1d85b0: the
+ *  The code of the scene nodes (game/stagenode.h), 0x1d7c50..0x1d85b0 and
+ *  StageNode's four inline slots 0x186a00..0x186a40: the
  *  node's placement (NodeTransform), the slots of the two node classes
  *  that keep bare matrices, and the base's walks over its children. The
  *  stage's "calcmatrix" is StageNodeBase::updateMatrix from each root.
@@ -209,3 +210,25 @@ void StageNodeBase::updateChildMatrices()
 StageNodeBase::StageNodeBase()
 {
 }
+
+// Written in headers (game/stagenode.h, game/stagelist.h), each checked
+// against the ROM's body; tools/reverse reads tags from .cpp files only:
+//   FS2 0x00186a00  StageNode::setDirty: the transform's byte +0x40
+//   FS2 0x00186a10  StageNode::rebuildMatrix: a tail jump to
+//                   NodeTransform::update(this + 0x40, parent +0x4)
+//   FS2 0x00186a20  StageNode::getMatrix: this + 0xc0, the transform's world
+//   FS2 0x00186a30  StageNode::getWorldMatrix: the same
+//     (these four sit in the lights' run, 0x1866f0..0x186ee0, where the
+//     ROM emitted them; vtables 0x315a80, 0x315a20, 0x314180, 0x315160 and
+//     0x315190 share them)
+//   FS2 0x001d7c50  StageBoneNode::setDirty, empty
+//   FS2 0x001d7c60  StageBoneNode::getMatrix: this + 0x80, m_world
+//   FS2 0x001d7c70  StageBoneNode::setDirtyTree, empty
+//   FS2 0x001d7ce0  StageNode::setDirtyTree: slot 0, then every child's
+//                   slot 5 down the list (link {value, next})
+//   FS2 0x001d7f90  StageMatrixNode::setDirtyTree, empty
+//   FS2 0x001d7fa0  StageMatrixNode::rebuildMatrix, empty
+//   FS2 0x001d7fb0  StageMatrixNode::setDirty, empty
+//   FS2 0x001d8590  StageMatrixNode::getMatrix: the pointer +0x18
+//   FS2 0x001d81d0  StageNodeList::begin: the list's head, word 0
+//   FS2 0x001d8250  StageNodeList::linkValue: a link's value, word 0
