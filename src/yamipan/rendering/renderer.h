@@ -158,6 +158,10 @@ private:
     std::vector<std::array<float, 16>> m_blendedPalettes;
     std::size_t m_blendedPlacements = 0; // matrices blendNow moved; 0: the frame's own placements
     bool m_placementsBlended = false;    // what the model renderer's buffers hold
+    std::vector<ModelVertex> m_blendedVertices;
+    std::size_t m_blendedQuads = 0;      // effect quads blendNow moved
+    float m_quadStep = 0.0f;             // their mean move in the frame (the log)
+    bool m_verticesBlended = false;
     float m_drawnBlend = 1.0f;  // what the scene target holds
     float m_fixedBlend = -1.0f; // YAMIPAN_BLEND_ALPHA: every blendable present at this share (shots); below 0 off
     bool m_logBlend = false;    // YAMIPAN_BLEND_LOG: a line per present

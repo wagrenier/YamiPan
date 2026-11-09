@@ -658,6 +658,7 @@ void ModelRenderer::beginPass(const void *list, const YamiPanModelPass &pass)
     out.fogNearValue = pass.fogNearValue;
     out.fogFarValue = pass.fogFarValue;
     out.clearDepth = pass.clearDepth != 0;
+    out.viewSpace = pass.viewSpace != 0;
     out.firstDraw = static_cast<std::uint32_t>(layer.draws.size());
     if (pass.spot.active != 0)
         out.spotImage = imageOf(pass.spot.texture);
@@ -734,6 +735,7 @@ void ModelRenderer::drawQuad(const void *list, const YamiPanModelQuad &quad)
     const float scaleU = image != nullptr ? 1.0f / (kGsTexelUnit * static_cast<float>(image->width)) : 0.0f;
     const float scaleV = image != nullptr ? 1.0f / (kGsTexelUnit * static_cast<float>(image->height)) : 0.0f;
     const auto firstVertex = static_cast<std::uint32_t>(layer.vertices.size());
+    layer.quads.push_back({quad.owner, quad.slot, firstVertex});
     for (const int corner : {0, 1, 2, 2, 1, 3})
     {
         ModelVertex &vertex = layer.vertices.emplace_back();
@@ -1356,6 +1358,11 @@ void ModelRenderer::collect(const void *list, Frame &frame)
     const auto batchOffset = static_cast<std::uint32_t>(frame.modelBatches.size());
     const auto drawOffset = static_cast<std::uint32_t>(frame.modelDraws.size());
     frame.modelVertices.insert(frame.modelVertices.end(), layer.vertices.begin(), layer.vertices.end());
+    for (ModelQuad quad : layer.quads)
+    {
+        quad.firstVertex += vertexOffset;
+        frame.modelQuads.push_back(quad);
+    }
     frame.modelSpotVertices.insert(frame.modelSpotVertices.end(), layer.spotVertices.begin(), layer.spotVertices.end());
     frame.modelShadowVertices.insert(frame.modelShadowVertices.end(), layer.shadowVertices.begin(),
                                      layer.shadowVertices.end());
@@ -1398,6 +1405,7 @@ void ModelRenderer::collect(const void *list, Frame &frame)
     layer.palettes.clear();
     layer.instanceKeys.clear();
     layer.paletteRuns.clear();
+    layer.quads.clear();
     layer.lastPalette = nullptr;
     layer.batches.clear();
     layer.chunks.clear();
@@ -1427,6 +1435,11 @@ void ModelRenderer::uploadVertices(SDL_GPUCopyPass *copy, const Frame &frame)
                  static_cast<unsigned>(frame.modelShadowVertices.size() * sizeof(ModelShadowVertex)));
     uploadPlacements(copy, frame.modelInstances, frame.modelPalettes);
     uploadGeometry(copy);
+}
+
+void ModelRenderer::uploadPlacedVertices(SDL_GPUCopyPass *copy, const std::vector<ModelVertex> &vertices)
+{
+    uploadStream(copy, m_vertices, vertices.data(), static_cast<unsigned>(vertices.size() * sizeof(ModelVertex)));
 }
 
 void ModelRenderer::uploadPlacements(SDL_GPUCopyPass *copy, const std::vector<ModelInstance> &instances,

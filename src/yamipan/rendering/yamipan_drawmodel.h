@@ -68,6 +68,8 @@ struct YamiPanModelPass
     float   fogNearValue;   /* the value stays between these two (VU address 24 y, z) */
     float   fogFarValue;
     int     clearDepth;
+    int     viewSpace;          /* the effects' pass: positions come relative to the camera, viewScreen is the
+                                   projection alone (renaBeginEffects) */
     float   eye[3];             /* the camera in the world: VU address 4, what culling measures from */
     YamiPanModelPointLight point;   /* only the main pass has one */
     YamiPanModelSpotLight  spot;
@@ -136,6 +138,9 @@ struct YamiPanModelQuad
     float    position[4][3];
     float    uv[4][2];
     uint32_t color;             /* r g b a, 0x80 = 1.0 */
+    const void *owner;          /* what drew it (an effect), never read: smooth motion pairs frames by it and `slot`;
+                                   null: not paired */
+    int      slot;              /* which of the owner's particles */
 };
 
 void YamiPan_ModelBeginPass(const void *list, const YamiPanModelPass *pass);

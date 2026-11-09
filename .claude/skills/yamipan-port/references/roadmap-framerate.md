@@ -2,7 +2,7 @@
 
 The game runs at 25 fps because the PAL ROM waits two 50 Hz fields per frame. This file has what sets that rate,
 how much of the game measures time and how much counts frames, the three ways to go faster, and the first steps of
-the one recommended. **The user chose A (2026-11-09); steps 1 to 3 are done ("Option A so far" below).**
+the one recommended. **The user chose A (2026-11-09); steps 1 to 4 are done ("Option A so far" below).**
 
 ## Where 25 Hz comes from
 
@@ -163,10 +163,27 @@ bone (the girl) moves 3 to 5.5 units every present while she walks, also between
 frame. Stage 7 with `YAMIPAN_BLEND_ALPHA=0.5`: Akiko mid-stride, the flashlight's spot on the road, nothing doubled or
 out of step with its spot or shadow. Stage 2's shots: the girl in the rain woods, right.
 
-**Not blended yet:** particles (`drawQuad`: world-space quads built on the game thread, step 4: key by effect and
-particle slot); batches on the placed path (the far passes that cull, batches too large for a chunk: their vertices
-are placed on the game thread); whatever the game projects to 2D itself (the UI layer). Shadows are matched by slot
-and a 5 % test, not by owner; two characters swapping shadow slots would snap rather than sweep.
+**Step 4: particles (2026-11-09).** Every `YamiPan_ModelDrawQuad` quad (StageParticle, Critter, SkyMist) comes in
+**view space**, inside an effects pass whose matrix is the projection E alone (`renaBeginEffects`, now
+`YamiPanModelPass::viewSpace`). So blending the main pass's camera alone left them on the newer frame's camera. Two
+fixes in `FrameBlend`: (1) `blendPasses` gives each view-space pass E . M_new^-1 . M_blend, where M is the main
+pass's world -> screen matrix (the last non-view-space pass that clears the depth; the far passes before it look
+through a scaled view): the main pass's matrix is the camera's view times the same E, so this is "back to the world,
+then through the blended camera". (2) `blendQuads` pairs each quad by `YamiPanModelQuad::owner` + `slot` (a
+StageParticle and its particle's index, a Critter and 0; the sky mist's wrapped puffs pass null, camera only),
+carries the older one into the newer frame's view space (E_prev . M_prev^-1 . M_new . E_new^-1) and blends the
+corners there when its first corner moved under 150 units (more is a new particle in a reused slot). The renderer
+uploads the blended placed vertices per present (`ModelRenderer::uploadPlacedVertices`) and the frame's own after.
+
+**Seen** (stage 2, 45 s walking and turning, the rain): 77 % of the quads paired and blended (the rest just born or
+reborn far off), the same share with the camera still and moving. The carry checks out: a blended quad's own step
+in the frame, after it, is 22 units with the camera still and 24 with it moving (4.5 units a present); a wrong carry
+would add the camera's move. Shots: the rain, the wall, the girl, right.
+
+**Not blended:** batches on the placed path (the far passes that cull, batches too large for a chunk: their vertices
+are placed on the game thread); the sky mist's own drift (camera only); whatever the game projects to 2D itself (the
+UI layer). Shadows are matched by slot and a 5 % test, not by owner; two characters swapping shadow slots would snap
+rather than sweep.
 
 ## Measuring
 

@@ -390,6 +390,7 @@ void Renderer::recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, c
 float Renderer::blendNow()
 {
     m_blendedPlacements = 0;
+    m_blendedQuads = 0;
     if (!m_config.display.smoothMotion || m_previous == nullptr || m_shown == nullptr)
         return 1.0f;
     const std::optional<float> progress = FrameBlend::progress(*m_previous, *m_shown, FrameBlend::Clock::now());
@@ -400,6 +401,9 @@ float Renderer::blendNow()
         return 1.0f;
     m_blendedPlacements =
         FrameBlend::blendPlacements(*m_previous, *m_shown, alpha, m_blendedInstances, m_blendedPalettes);
+    const FrameBlend::QuadBlend quads = FrameBlend::blendQuads(*m_previous, *m_shown, alpha, m_blendedVertices);
+    m_blendedQuads = quads.blended;
+    m_quadStep = quads.meanStep;
     return alpha;
 }
 
@@ -621,9 +625,10 @@ void Renderer::renderOnce()
         std::string bone;
         if (!palettes.empty())
             bone = std::format(" bone {:.3f} {:.3f} {:.3f}", palettes[0][12], palettes[0][13], palettes[0][14]);
-        log::info("[blend] frame {} +{:.1f} ms blend {:.3f} places {}/{}{}{}{}", m_shown->number, sinceField, blend,
-                  m_blendedPlacements, m_shown->modelInstances.size() + m_shown->modelPalettes.size(),
-                  newFrame ? " new" : "", bone, eyes);
+        log::info("[blend] frame {} +{:.1f} ms blend {:.3f} places {}/{} quads {}/{} step {:.2f}{}{}{}", m_shown->number,
+                  sinceField, blend, m_blendedPlacements,
+                  m_shown->modelInstances.size() + m_shown->modelPalettes.size(), m_blendedQuads,
+                  m_shown->modelQuads.size(), m_quadStep, newFrame ? " new" : "", bone, eyes);
     }
 
     m_overlay.beginFrame();
@@ -651,6 +656,7 @@ void Renderer::renderOnce()
         uploadVertices(copy, *m_shown);
         m_models.uploadVertices(copy, *m_shown);
         m_placementsBlended = false;
+        m_verticesBlended = false;
     }
     if (redraw && m_shown != nullptr)
     {
@@ -664,6 +670,16 @@ void Renderer::renderOnce()
         {
             m_models.uploadPlacements(copy, m_shown->modelInstances, m_shown->modelPalettes);
             m_placementsBlended = false;
+        }
+        if (blend < 1.0f && m_blendedQuads != 0)
+        {
+            m_models.uploadPlacedVertices(copy, m_blendedVertices);
+            m_verticesBlended = true;
+        }
+        else if (m_verticesBlended)
+        {
+            m_models.uploadPlacedVertices(copy, m_shown->modelVertices);
+            m_verticesBlended = false;
         }
     }
     SDL_EndGPUCopyPass(copy);
