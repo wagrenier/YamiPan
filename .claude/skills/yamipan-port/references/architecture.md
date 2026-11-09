@@ -2077,9 +2077,9 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   wrote LSAX: RosePan's latch; loop end jumps to LSAX and latches ENDX; without repeat it ends the voice);
   NAX is that position, LSAX once the voice has ended; ENVX is 0x7fff while it plays and 0 after (no
   envelope yet, so a key-off releases at once: RXSNDDRV frees an auto-free voice after 9 ticks of 0).
-  sceSdBlockTrans's ring (the driver's PCM player, core 1) advances at 192,000 bytes a second and its status
+  sceSdBlockTrans's ring (the driver's PCM player, core 0 in FS2) advances at 192,000 bytes a second and its status
   is the address reached. Not modelled: the SPU2 interrupt at IRQA (RXSNDDRV installs no handler; its ADPCM
-  streams poll NAX), the auto-DMA's half-buffer interrupts (no handler on core 1), the reverb work area
+  streams poll NAX), the auto-DMA's half-buffer interrupts (no handler on the ring's core), the reverb work area
   (sceSdClearEffectWorkArea answers 0). sceSdNote2Pitch is RosePan's 2^(cents/1200) curve, not LIBSD.IRX's
   tables. Seen 2026-11-09: a scratch check of the class (transfers both ways with the handler, a
   one-shot ending with ENDX latched and NAX on LSAX, a self-repeating stop block, the LSAX latch, key-off,
@@ -2142,7 +2142,18 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   (74%, the SE byte code: the same opcodes 0x00..0x0b) skips an SE with RXSNDDRV_SE_PAUSED (flag 8, set
   by SE parameter 1; RoR's read it nowhere), so a paused SE's code and wait hold; and its "all" forms
   (bit 6 of key off / free / set / ramp) look for the id only in SEs of the running SE's bank (+4,
-  m_xvab), RoR's in any. RxSndDrvSeFreeRamps 0x9190 is RoR's but for the free list's address.
+  m_xvab), RoR's in any. RxSndDrvSeFreeRamps 0x9190 is RoR's but for the free list's address. (6) The
+  PCM player (pcm.cpp): the ring plays on **core 0** (RoR: core 1), is started by the first PcmTick (RoR:
+  PcmInit), and has 2..8 0x1000-byte halves (`m_halves`, 2 from the init): command 0xb4 makes the next
+  tick stop it (sceSdBlockTrans STAT), wait V-blanks until sceSdBlockTransStatus answers 0, and restart
+  it that long from half 0, so `iop::Spu2` answers 0 for a stopped ring. Each tick mixes every half from
+  the last one mixed up to the playing one (RoR: one a tick). The stream record is 0x88 (RoR 0x6c): 8
+  half tags, and `m_fresh` (+0x64), 1 from the open until the first data, while which a volume (0xb2
+  param 4) applies at once instead of through the bank's pending record. Init, close-all, status the
+  same otherwise. The EE's 0xb4 sender has no caller, so the ring stays 2 halves. **With it the DMA thread
+  moved to core 1:** FS2's RxSndDrvDmaInit installs RxSndDrvDmaIntr on core 1 and RxSndDrvDmaProc
+  transfers with sceSdVoiceTrans(1, ...) (RoR: core 0 for both), so the uploads and the PCM ring each
+  have a core of their own.
 - **The EE's side** (2026-11-09, `sdk/sif.cpp`): sceSifBindRpc keeps the
   RPC number in the client's `command`; sceSifCallRpc sends a call to a registered server through
   `YamiPan_IopRpcDispatch` on the EE's thread and copies `rsize` bytes of the handler's buffer back before

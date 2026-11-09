@@ -10,7 +10,7 @@
 //   - The auto-DMA ring (sceSdBlockTrans, the driver's PCM player) plays through the synthesiser, and its
 //     status is the address heard so far.
 //   - Not modelled: the SPU2 interrupt at IRQA (RXSNDDRV installs no handler; its ADPCM streams poll NAX),
-//     the auto-DMA's half-buffer interrupts (no handler on core 1).
+//     the auto-DMA's half-buffer interrupts (the ring's core has no transfer handler).
 //
 // Its registers are touched only under the IOP's big kernel lock (every libsd call comes from IOP code);
 // the synthesiser has a lock of its own for its mixer thread.

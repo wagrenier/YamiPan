@@ -2,11 +2,13 @@
  *  pcm.cpp  (RXSNDDRV.IRX 0xb4a0..0xce84: the PCM stream system)
  *
  *  Streams of 16-bit PCM the EE feeds a block at a time (rx/rxsnd.c
- *  rxSndPcmOpen / Write / End), mixed on the IOP into core 1's sound data
- *  input: an auto-DMA ring of two 0x1000-byte halves that the SPU2 plays in
- *  a loop at 48 kHz (sceSdBlockTrans SD_BLOCK_TRANS_LOOP), each half four
- *  blocks of 0x100 L then 0x100 R samples.  While the SPU plays one half the
- *  V-blank tick mixes every ready stream into the other.
+ *  rxSndPcmOpen / Write / End), mixed on the IOP into core 0's sound data
+ *  input (FS2; RoR's was core 1's): an auto-DMA ring of 2..8 0x1000-byte
+ *  halves (2 until command 0xb4) that the SPU2 plays in a loop at 48 kHz
+ *  (sceSdBlockTrans SD_BLOCK_TRANS_LOOP, started by the first tick), each
+ *  half four blocks of 0x100 L then 0x100 R samples.  While the SPU plays
+ *  one half the V-blank tick mixes every ready stream into each half from
+ *  the last one mixed up to it.
  *
  *    0xb0 {id, format, -, -, iop, blocks}: open (RxSndDrvPcmOpen); format 0
  *         mono (0x800-byte blocks), 1 L and R planes (the R plane `blocks` *
@@ -24,15 +26,19 @@
  *  under the play position and the sample offset in it, which is how the EE
  *  frees ring space and fires its position callbacks.
  *
- *  Command 0xb4 is FS2's (RxSndDrvPcmSetB4): a value clamped to 2..8 and a
- *  flag that it was set; what reads them is in FS2's changed PcmTick, unread,
- *  so here they are only kept. The EE's sender has no caller.
+ *  Command 0xb4 is FS2's (RxSndDrvPcmSetB4): the ring's halves, 2..8; the
+ *  next tick stops the ring, waits for the auto-DMA to report stopped, and
+ *  restarts it that long from half 0.  The EE's sender has no caller.
+ *
+ *  FS2 read 2026-11-09 (Ghidra's rxsnddrv.elf): the stream record grew by
+ *  six more half tags (8) and m_fresh; everything else is RoR's.
  * ======================================================================== */
 
 #include "iop/rxsnddrv/rxsnddrv.h"
 
 #include "intrman.h"
 #include "libsd.h"
+#include "vblank.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -43,8 +49,9 @@
 #define RXSNDDRV_PCM_MIXERS 4           /* one per format */
 #define RXSNDDRV_PCM_PER_MIX 3          /* streams a mixer pass takes */
 
-/* The SPU input ring: two halves of four blocks of 0x100 L, 0x100 R. */
+/* The SPU input ring: 2..8 halves of four blocks of 0x100 L, 0x100 R. */
 #define RXSNDDRV_PCM_HALF   0x1000
+#define RXSNDDRV_PCM_HALVES 8           /* the most command 0xb4 sets */
 #define RXSNDDRV_PCM_BLOCK  0x100       /* samples per channel */
 
 /* RxSndDrvPcmSlot::m_flags (the low byte is the status the EE reads back). */
@@ -89,7 +96,7 @@ struct RxSndDrvPcmPending
 };
 static_assert(sizeof(RxSndDrvPcmPending) == 0x10, "RxSndDrvPcmPending");
 
-/* A stream (0x6c on the IOP, 0x20 at RoR IOP 0x34ed0).  layout: host. */
+/* A stream (0x88 on the IOP, 0x20 at FS2 IOP 0x353e0; RoR's 0x6c).  layout: host. */
 struct RxSndDrvPcmSlot
 {
     RxSndDrvPcmSlot *m_next;            // IOP +0x00: the open list
@@ -102,13 +109,14 @@ struct RxSndDrvPcmSlot
     int     m_read;                     // IOP +0x1c: the next block to mix
     int     m_filled;                   // IOP +0x20: blocks announced and not yet mixed
     RxSndDrvPcmNode m_queue;            // IOP +0x24: the sequence numbers' list head
-    int     m_tag[2];                   // IOP +0x30: per SPU half, the sequence number mixed there, -1 none
-    short   m_vol[2];                   // IOP +0x38: L, R, 0x80 unity
-    u_int   m_xor;                      // IOP +0x3c: format 3's sample xor
-    int     m_playSeq;                  // IOP +0x40: the sequence number being heard
-    int     m_playPos;                  // IOP +0x44: samples into it
-    int     m_lastSeq;                  // IOP +0x48: the last one announced
-    RxSndDrvPcmPending m_pending[2];    // IOP +0x4c: per bank
+    int     m_tag[RXSNDDRV_PCM_HALVES]; // IOP +0x30: per SPU half, the sequence number mixed there, -1 none
+    short   m_vol[2];                   // IOP +0x50: L, R, 0x80 unity
+    u_int   m_xor;                      // IOP +0x54: format 3's sample xor
+    int     m_playSeq;                  // IOP +0x58: the sequence number being heard
+    int     m_playPos;                  // IOP +0x5c: samples into it
+    int     m_lastSeq;                  // IOP +0x60: the last one announced
+    int     m_fresh;                    // IOP +0x64: FS2: 1 until the first data; a volume set applies at once
+    RxSndDrvPcmPending m_pending[2];    // IOP +0x68: per bank
 };
 
 struct RxSndDrvPcmMixer;
@@ -154,18 +162,22 @@ static const short RxSndDrvPcmVolume[0x101] = {
     4096,
 };
 
-/* RoR IOP 0x34ed0..0x3885c, cleared together by the init. */
+/* FS2 IOP 0x353e0..0x3f0fc, cleared together by the init. */
 static struct
 {
-    RxSndDrvPcmSlot  m_slot[RXSNDDRV_PCM_SLOTS];  // RoR IOP 0x34ed0
-    RxSndDrvPcmSlot *m_open;                      // RoR IOP 0x35c50
-    RxSndDrvPcmNode  m_node[RXSNDDRV_PCM_NODES];  // RoR IOP 0x35c54
-    RxSndDrvPcmNode *m_free;                      // RoR IOP 0x36854
-    alignas(64) short m_spu[2][RXSNDDRV_PCM_HALF / 2]; // RoR IOP 0x36858: core 1's input ring
-    int              m_half;                      // RoR IOP 0x38858: the half to mix next
+    RxSndDrvPcmSlot  m_slot[RXSNDDRV_PCM_SLOTS];  // FS2 IOP 0x353e0
+    RxSndDrvPcmSlot *m_open;                      // FS2 IOP 0x364e0
+    RxSndDrvPcmNode  m_node[RXSNDDRV_PCM_NODES];  // FS2 IOP 0x364e4
+    RxSndDrvPcmNode *m_free;                      // FS2 IOP 0x370e4
+    alignas(64) short m_spu[RXSNDDRV_PCM_HALVES][RXSNDDRV_PCM_HALF / 2]; // FS2 IOP 0x370e8: core 0's input ring
+    int              m_half;                      // FS2 IOP 0x3f0e8: the half to mix next
+    int              m_halves;                    // FS2 IOP 0x3f0ec: the ring's length, 2..8
+    int              m_started;                   // FS2 IOP 0x3f0f0: the ring runs
+    int              m_resize;                    // FS2 IOP 0x3f0f4: command 0xb4 came
+    int              m_resizeTo;                  // FS2 IOP 0x3f0f8: its halves
 } s_pcm;
 
-static RxSndDrvPcmMixer s_pcmMixer[RXSNDDRV_PCM_MIXERS]; // RoR IOP 0x38860
+static RxSndDrvPcmMixer s_pcmMixer[RXSNDDRV_PCM_MIXERS]; // FS2 IOP 0x3f100
 
 static void RxSndDrvPcmMixMono(RxSndDrvPcmMixer *mix, short *dst, const short *acc);
 static void RxSndDrvPcmMixSplit(RxSndDrvPcmMixer *mix, short *dst, const short *acc);
@@ -368,15 +380,14 @@ static void RxSndDrvPcmMixPairsXor(RxSndDrvPcmMixer *mix, short *dst, const shor
     RxSndDrvPcmMixDone(mix);
 }
 
-// IOP 0x0000cbd4 (RoR 0x0000b4a0, moved in FS2, 80% alike: unread)
+/* FS2: the ring is two halves until command 0xb4, and starts in the first
+ * tick (RoR's init started it, on core 1). */
+// IOP 0x0000cbd4 (RoR 0x0000b4a0, moved in FS2, 80% alike: FS2 read 2026-11-09)
 void RxSndDrvPcmInit(void)
 {
     memset(&s_pcm, 0, sizeof(s_pcm));
     memset(s_pcmMixer, 0, sizeof(s_pcmMixer));
-
-    sceSdBlockTrans(SD_CORE_1, SD_BLOCK_TRANS_LOOP, (u_char *)s_pcm.m_spu, sizeof(s_pcm.m_spu), 0);
-    sceSdSetParam(SD_P_BVOLL | SD_CORE_1, 0x7fff);
-    sceSdSetParam(SD_P_BVOLR | SD_CORE_1, 0x7fff);
+    s_pcm.m_halves = 2;
 
     for (int i = 0; i < RXSNDDRV_PCM_SLOTS; i++)
         s_pcm.m_slot[i].m_id = i;
@@ -395,10 +406,11 @@ void RxSndDrvPcmInit(void)
         printf("snddrv : completed to initialize PCM stream system\n");
 }
 
-/* Every V-blank: apply the pending set records, drop closed streams, follow
- * the play position, and once the SPU has moved on to the other half, mix the
- * next block of every ready stream into the half it left. */
-// IOP 0x0000b790 (RoR 0x0000b5ac, 85% of it aligned: FS2 differs, unread)
+/* Every V-blank: apply the pending set records, drop closed streams, start
+ * or resize the ring (FS2), follow the play position, and mix the next block
+ * of every ready stream into each half from the last one mixed up to the one
+ * playing (FS2; RoR's mixed one half a tick). */
+// IOP 0x0000b790 (RoR 0x0000b5ac, 85% of it aligned: FS2 read 2026-11-09)
 void RxSndDrvPcmTick(void)
 {
     const int        bank = RxSndDrvTickBank();
@@ -459,11 +471,32 @@ void RxSndDrvPcmTick(void)
     }
     CpuResumeIntr(intr);
 
+    if (!s_pcm.m_started)
+    {
+        sceSdBlockTrans(SD_CORE_0, SD_BLOCK_TRANS_LOOP, (u_char *)s_pcm.m_spu,
+                        (u_int)s_pcm.m_halves * RXSNDDRV_PCM_HALF, 0);
+        sceSdSetParam(SD_P_BVOLL | SD_CORE_0, 0x7fff);
+        sceSdSetParam(SD_P_BVOLR | SD_CORE_0, 0x7fff);
+        s_pcm.m_started = 1;
+    }
+    if (s_pcm.m_resize)
+    {
+        /* Stopped, the auto-DMA reports 0. */
+        sceSdBlockTrans(SD_CORE_0, SD_BLOCK_TRANS_STAT, NULL, 0, 0);
+        while (sceSdBlockTransStatus(SD_CORE_0, 0) != 0)
+            WaitVblankEnd();
+        s_pcm.m_half   = 0;
+        s_pcm.m_halves = s_pcm.m_resizeTo;
+        sceSdBlockTrans(SD_CORE_0, SD_BLOCK_TRANS_LOOP, (u_char *)s_pcm.m_spu,
+                        (u_int)s_pcm.m_resizeTo * RXSNDDRV_PCM_HALF, 0);
+        s_pcm.m_resize = 0;
+    }
+
     /* PC: the IOP masks the DMA address with 0xffffff before taking its
      * ring base off; host addresses are wider, so the difference is taken
      * on the same 32-bit truncation libsd reports, and kept in the ring. */
-    const u_int pos  = ((u_int)sceSdBlockTransStatus(SD_CORE_1, 0) -
-                        (u_int)(uintptr_t)s_pcm.m_spu) & (sizeof(s_pcm.m_spu) - 1);
+    const u_int pos  = ((u_int)sceSdBlockTransStatus(SD_CORE_0, 0) - (u_int)(uintptr_t)s_pcm.m_spu) %
+                      ((u_int)s_pcm.m_halves * RXSNDDRV_PCM_HALF);
     const int   play = (int)(pos >> 12);
 
     for (s = s_pcm.m_open; s != NULL; s = s->m_next)
@@ -485,96 +518,96 @@ void RxSndDrvPcmTick(void)
             s->m_flags |= RXSNDDRV_PCM_ENDED;
     }
 
-    if (play == s_pcm.m_half)
-        return;
-
-    short       *dst   = s_pcm.m_spu[s_pcm.m_half];
-    const short *acc   = (const short *)RxSndDrvZeroBuffer();
-    int          empty = 1;
-
-    for (s = s_pcm.m_open; s != NULL; s = s->m_next)
+    while (s_pcm.m_half != play)
     {
-        /* PC: a format past 3 has no mixer (the IOP would index past the
-         * table); the EE never opens one. */
-        if ((s->m_flags & (RXSNDDRV_PCM_ACTIVE | RXSNDDRV_PCM_PAUSED)) != RXSNDDRV_PCM_ACTIVE ||
-            s->m_filled <= 0 || (u_int)s->m_format >= RXSNDDRV_PCM_MIXERS)
-        {
-            s->m_tag[s_pcm.m_half] = -1;
-            continue;
-        }
+        short       *dst   = s_pcm.m_spu[s_pcm.m_half];
+        const short *acc   = (const short *)RxSndDrvZeroBuffer();
+        int          empty = 1;
 
-        RxSndDrvPcmMixer    *mix = &s_pcmMixer[s->m_format];
-        RxSndDrvPcmMixEntry *e   = &mix->m_entry[mix->m_count++];
-
-        switch (s->m_format)
+        for (s = s_pcm.m_open; s != NULL; s = s->m_next)
         {
-        case 0:
-            e->m_src[0] = RxSndDrvPcmIop(s->m_iop + (s->m_read << 11));
-            e->m_src[1] = NULL;
-            break;
-        case 1:
-            e->m_src[0] = RxSndDrvPcmIop(s->m_iop + s->m_read * 0x800);
-            e->m_src[1] = RxSndDrvPcmIop(s->m_iop + s->m_read * 0x800 + s->m_blocks * 0x800);
-            break;
-        case 2:
-        case 3:
-            e->m_src[0] = RxSndDrvPcmIop(s->m_iop + (s->m_read << 12));
-            e->m_src[1] = NULL;
-            break;
-        }
-        e->m_slot   = s;
-        e->m_vol[0] = RxSndDrvPcmVolume[RxSndDrvPcmClampVol(s->m_vol[0]) + 0x80];
-        e->m_vol[1] = RxSndDrvPcmVolume[RxSndDrvPcmClampVol(s->m_vol[1]) + 0x80];
-        e->m_xor    = s->m_xor;
-
-        /* The half takes the oldest announced block's sequence number; with
-         * none queued it keeps the one it had. */
-        CpuSuspendIntr(&intr);
-        RxSndDrvPcmNode *n = s->m_queue.m_fwd;
-        if (n != &s->m_queue)
-        {
-            s->m_tag[s_pcm.m_half] = n->m_seq;
-            n->m_back->m_fwd = n->m_fwd;
-            n->m_fwd->m_back = n->m_back;
-            n->m_fwd         = s_pcm.m_free;
-            s_pcm.m_free     = n;
-        }
-        CpuResumeIntr(intr);
-
-        empty = 0;
-        if (mix->m_count >= RXSNDDRV_PCM_PER_MIX)
-        {
-            mix->m_mix(mix, dst, acc);
-            acc = dst;
-        }
-    }
-
-    if (empty)
-    {
-        RxSndDrvPcmClear(dst);
-    }
-    else
-    {
-        for (int i = 0; i < RXSNDDRV_PCM_MIXERS; i++)
-        {
-            if (s_pcmMixer[i].m_count > 0)
+            /* PC: a format past 3 has no mixer (the IOP would index past the
+             * table); the EE never opens one. */
+            if ((s->m_flags & (RXSNDDRV_PCM_ACTIVE | RXSNDDRV_PCM_PAUSED)) != RXSNDDRV_PCM_ACTIVE ||
+                s->m_filled <= 0 || (u_int)s->m_format >= RXSNDDRV_PCM_MIXERS)
             {
-                s_pcmMixer[i].m_mix(&s_pcmMixer[i], dst, acc);
+                s->m_tag[s_pcm.m_half] = -1;
+                continue;
+            }
+
+            RxSndDrvPcmMixer    *mix = &s_pcmMixer[s->m_format];
+            RxSndDrvPcmMixEntry *e   = &mix->m_entry[mix->m_count++];
+
+            switch (s->m_format)
+            {
+            case 0:
+                e->m_src[0] = RxSndDrvPcmIop(s->m_iop + (s->m_read << 11));
+                e->m_src[1] = NULL;
+                break;
+            case 1:
+                e->m_src[0] = RxSndDrvPcmIop(s->m_iop + s->m_read * 0x800);
+                e->m_src[1] = RxSndDrvPcmIop(s->m_iop + s->m_read * 0x800 + s->m_blocks * 0x800);
+                break;
+            case 2:
+            case 3:
+                e->m_src[0] = RxSndDrvPcmIop(s->m_iop + (s->m_read << 12));
+                e->m_src[1] = NULL;
+                break;
+            }
+            e->m_slot   = s;
+            e->m_vol[0] = RxSndDrvPcmVolume[RxSndDrvPcmClampVol(s->m_vol[0]) + 0x80];
+            e->m_vol[1] = RxSndDrvPcmVolume[RxSndDrvPcmClampVol(s->m_vol[1]) + 0x80];
+            e->m_xor    = s->m_xor;
+
+            /* The half takes the oldest announced block's sequence number; with
+             * none queued it keeps the one it had. */
+            CpuSuspendIntr(&intr);
+            RxSndDrvPcmNode *n = s->m_queue.m_fwd;
+            if (n != &s->m_queue)
+            {
+                s->m_tag[s_pcm.m_half] = n->m_seq;
+                n->m_back->m_fwd = n->m_fwd;
+                n->m_fwd->m_back = n->m_back;
+                n->m_fwd         = s_pcm.m_free;
+                s_pcm.m_free     = n;
+            }
+            CpuResumeIntr(intr);
+
+            empty = 0;
+            if (mix->m_count >= RXSNDDRV_PCM_PER_MIX)
+            {
+                mix->m_mix(mix, dst, acc);
                 acc = dst;
             }
         }
+
+        if (empty)
+        {
+            RxSndDrvPcmClear(dst);
+        }
+        else
+        {
+            for (int i = 0; i < RXSNDDRV_PCM_MIXERS; i++)
+            {
+                if (s_pcmMixer[i].m_count > 0)
+                {
+                    s_pcmMixer[i].m_mix(&s_pcmMixer[i], dst, acc);
+                    acc = dst;
+                }
+            }
+        }
+
+        if (RxSndDrvGetOutputMode() == 0)
+            RxSndDrvPcmDownmix(dst);
+
+        if (++s_pcm.m_half >= s_pcm.m_halves)
+            s_pcm.m_half = 0;
     }
-
-    if (RxSndDrvGetOutputMode() == 0)
-        RxSndDrvPcmDownmix(dst);
-
-    if (++s_pcm.m_half > 1)
-        s_pcm.m_half = 0;
 }
 
 /* Closes every stream and stops the input (referenced nowhere in the
  * driver). */
-// IOP 0x0000ccc0 (RoR 0x0000c8f4, 85% of it aligned: FS2 differs, unread)
+// IOP 0x0000ccc0 (RoR 0x0000c8f4, 85% of it aligned: FS2 read, core 0)
 void RxSndDrvPcmCloseAll(void)
 {
     for (int i = 0; i < RXSNDDRV_PCM_SLOTS; i++)
@@ -583,10 +616,10 @@ void RxSndDrvPcmCloseAll(void)
 
         RxSndDrvPcmSet(i, close);
     }
-    sceSdBlockTrans(SD_CORE_1, SD_BLOCK_TRANS_STAT, NULL, 0, 0);
+    sceSdBlockTrans(SD_CORE_0, SD_BLOCK_TRANS_STAT, NULL, 0, 0);
 }
 
-// IOP 0x0000cd10 (RoR 0x0000c944, 64% of it aligned: FS2 differs, unread)
+// IOP 0x0000cd10 (RoR 0x0000c944, 64% of it aligned: FS2 read, 8 tags and m_fresh)
 int RxSndDrvPcmOpen(int id, int format, u_int iop, u_int blocks)
 {
     RxSndDrvPcmSlot *s  = &s_pcm.m_slot[id];
@@ -612,8 +645,9 @@ int RxSndDrvPcmOpen(int id, int format, u_int iop, u_int blocks)
         s->m_playSeq     = 0;
         s->m_playPos     = 0;
         s->m_lastSeq     = 0;
-        s->m_tag[1]      = -1;
-        s->m_tag[0]      = -1;
+        s->m_fresh       = 1;
+        for (int h = RXSNDDRV_PCM_HALVES - 1; h >= 0; h--)
+            s->m_tag[h] = -1;
 
         s->m_pending[RxSndDrvCmdBank()].m_mask      = RXSNDDRV_PCM_SET_OPEN;
         s->m_pending[RxSndDrvCmdBank() == 0].m_mask = 0;
@@ -630,7 +664,7 @@ int RxSndDrvPcmOpen(int id, int format, u_int iop, u_int blocks)
 
 /* `count` more blocks of the ring are filled; `seq` holds their sequence
  * numbers, queued for the halves they will be mixed into. */
-// IOP 0x0000ce84 (RoR 0x0000cabc, 92% of it aligned: FS2 differs, unread)
+// IOP 0x0000ce84 (RoR 0x0000cabc, 92% of it aligned: FS2 read, m_fresh)
 void RxSndDrvPcmData(int id, const u_int *seq, int count)
 {
     RxSndDrvPcmSlot *s = &s_pcm.m_slot[id];
@@ -666,11 +700,12 @@ void RxSndDrvPcmData(int id, const u_int *seq, int count)
                 s->m_lastSeq             = (int)seq[i];
             }
         }
+        s->m_fresh = 0;
     }
     CpuResumeIntr(intr);
 }
 
-// IOP 0x0000cfec (RoR 0x0000cc28, 89% of it aligned: FS2 differs, unread)
+// IOP 0x0000cfec (RoR 0x0000cc28, 89% of it aligned: FS2 read: a volume before any data applies at once)
 void RxSndDrvPcmSet(u_int id, const u_int *data)
 {
     int intr;
@@ -694,8 +729,16 @@ void RxSndDrvPcmSet(u_int id, const u_int *data)
             p->m_xor   = data[1];
             break;
         case 4:
-            p->m_mask |= RXSNDDRV_PCM_SET_VOL;
-            p->m_vol   = data[1];
+            if (s_pcm.m_slot[id].m_fresh)
+            {
+                s_pcm.m_slot[id].m_vol[0] = (short)data[1];
+                s_pcm.m_slot[id].m_vol[1] = (short)(data[1] >> 16);
+            }
+            else
+            {
+                p->m_mask |= RXSNDDRV_PCM_SET_VOL;
+                p->m_vol   = data[1];
+            }
             break;
         case 5:
             p->m_mask |= RXSNDDRV_PCM_SET_END;
@@ -706,7 +749,7 @@ void RxSndDrvPcmSet(u_int id, const u_int *data)
 }
 
 /* {id, status, filled, seq, pos} (0xc) per open stream; the count. */
-// IOP 0x0000d13c (RoR 0x0000cd58, 95% of it aligned: FS2 differs, unread)
+// IOP 0x0000d13c (RoR 0x0000cd58, 95% of it aligned: FS2 read, the same)
 int RxSndDrvPcmStatus(u_char *reply)
 {
     int count = 0;
@@ -747,16 +790,11 @@ static void RxSndDrvPcmDownmix(short *half)
     }
 }
 
-/* Command 0xb4 (FS2 only): clamped to 2..8, with a flag that it came. Read by
- * nothing here yet (FS2's PcmTick, which reads them, is unread). */
-static int s_pcmB4;                     // FS2 IOP 0x0003f0f8
-static int s_pcmB4Set;                  // FS2 IOP 0x0003f0f4
-
+/* Command 0xb4 (FS2 only): the ring's halves, clamped to 2..8; the next tick
+ * restarts the ring that long. */
 // IOP 0x0000d1dc (FS2 only, read 2026-11-09)
 void RxSndDrvPcmSetB4(int value)
 {
-    s_pcmB4    = value < 2 ? 2 : value > 8 ? 8 : value;
-    s_pcmB4Set = 1;
-    (void)s_pcmB4;
-    (void)s_pcmB4Set;
+    s_pcm.m_resizeTo = value < 2 ? 2 : value > RXSNDDRV_PCM_HALVES ? RXSNDDRV_PCM_HALVES : value;
+    s_pcm.m_resize   = 1;
 }
