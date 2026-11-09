@@ -2138,7 +2138,11 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   back). (4) FS2's RxSndDrvNoteTick 0x9690, after a layer's switch, calls the new
   RxSndDrvVoiceSetNoise 0x4428 (record +0x24 = region byte 6, pending |= 0x20) for region flag 4
   (noise); its reverb bit is RoR's. RxSndDrvVoiceKeyOn is 0x4454 (the comparison table's 0x4428 was
-  the new function). RxSndDrvVoiceAlloc 0x3da0 is RoR's but for the offsets.
+  the new function). RxSndDrvVoiceAlloc 0x3da0 is RoR's but for the offsets. (5) RxSndDrvSeRun 0x74b0
+  (74%, the SE byte code: the same opcodes 0x00..0x0b) skips an SE with RXSNDDRV_SE_PAUSED (flag 8, set
+  by SE parameter 1; RoR's read it nowhere), so a paused SE's code and wait hold; and its "all" forms
+  (bit 6 of key off / free / set / ramp) look for the id only in SEs of the running SE's bank (+4,
+  m_xvab), RoR's in any. RxSndDrvSeFreeRamps 0x9190 is RoR's but for the free list's address.
 - **The EE's side** (2026-11-09, `sdk/sif.cpp`): sceSifBindRpc keeps the
   RPC number in the client's `command`; sceSifCallRpc sends a call to a registered server through
   `YamiPan_IopRpcDispatch` on the EE's thread and copies `rsize` bytes of the handler's buffer back before

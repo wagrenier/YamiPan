@@ -54,7 +54,7 @@ enum
 {
     RXSNDDRV_SE_USED    = 0x00001,      /* the slot is taken */
     RXSNDDRV_SE_PLAYING = 0x00002,      /* code not ended or a note left */
-    RXSNDDRV_SE_PAUSED  = 0x00008,      /* parameter 1 != 0; read nowhere on the IOP */
+    RXSNDDRV_SE_PAUSED  = 0x00008,      /* parameter 1 != 0: FS2's SeRun holds its code (RoR's read it nowhere) */
     RXSNDDRV_SE_STARTED = 0x10000,      /* its play request has been applied */
     RXSNDDRV_SE_STOP    = 0x20000,      /* parameter 0: reap once the notes are gone */
     RXSNDDRV_SE_LOCKED  = 0x40000,      /* RxSndDrvXvabFindSe counted it as a bank user */
@@ -294,12 +294,15 @@ static u_char *RxSndDrvSeChannelParam(RxSndDrvSeChannel *channel, u_int kind, u_
 }
 
 /* The SE an opcode with RXSNDDRV_SESQ_ALL acts on next: the first playing SE
- * from `se` on that has a note whose NOTE id is `id` (the original compares
- * the NOTE id, not the tag RxSndDrvSeNoteOff looks for) or a channel `id`. */
-static RxSndDrvSe *RxSndDrvSeFindHolder(RxSndDrvSe *se, u_int id)
+ * from `se` on, of bank `xvab` (FS2: RoR's took any bank), that has a note
+ * whose NOTE id is `id` (the original compares the NOTE id, not the tag
+ * RxSndDrvSeNoteOff looks for) or a channel `id`. */
+static RxSndDrvSe *RxSndDrvSeFindHolder(RxSndDrvSe *se, u_int id, u_char xvab)
 {
     for (; se != NULL; se = se->m_next)
     {
+        if (se->m_xvab != xvab)
+            continue;
         for (RxSndDrvSeNote *note = se->m_notes; note != NULL; note = note->m_next)
             if ((int)note->m_note == (int)id)
                 return se;
@@ -543,7 +546,7 @@ static void RxSndDrvSeApply(void)
 
 /* Runs every playing SE's byte code up to its next wait (the header lists
  * the opcodes), then takes one V-blank of ticks off the wait. */
-// IOP 0x000074b0 (RoR 0x00007260, 74% of it aligned: FS2 differs, unread)
+// IOP 0x000074b0 (RoR 0x00007260, 74% of it aligned: FS2 read 2026-11-09)
 static void RxSndDrvSeRun(void)
 {
     for (RxSndDrvSe *se = s_se.m_active; se != NULL; se = se->m_next)
@@ -551,7 +554,8 @@ static void RxSndDrvSeRun(void)
         int rate  = RxSndDrvGetFrameRate();
         int tempo = se->m_tempo;
 
-        if (!(se->m_flags & RXSNDDRV_SE_STARTED) || se->m_end == 1)
+        /* FS2: a paused SE's code holds, its wait too. */
+        if (!(se->m_flags & RXSNDDRV_SE_STARTED) || se->m_end == 1 || (se->m_flags & RXSNDDRV_SE_PAUSED))
             continue;
 
         int wait = se->m_wait;
@@ -629,9 +633,9 @@ static void RxSndDrvSeRun(void)
                 case RXSNDDRV_SESQ_FREE:
                 {
                     id = RxSndDrvSeReadVar(&se->m_code);
-                    for (RxSndDrvSe *target = all ? RxSndDrvSeFindHolder(s_se.m_active, id) : se;
+                    for (RxSndDrvSe *target = all ? RxSndDrvSeFindHolder(s_se.m_active, id, se->m_xvab) : se;
                          target != NULL;
-                         target = all ? RxSndDrvSeFindHolder(target->m_next, id) : NULL)
+                         target = all ? RxSndDrvSeFindHolder(target->m_next, id, se->m_xvab) : NULL)
                         RxSndDrvSeNoteOff(target, (int)id, op == RXSNDDRV_SESQ_KEY_OFF);
                     break;
                 }
@@ -644,9 +648,9 @@ static void RxSndDrvSeRun(void)
                     u_char value = se->m_code[1];
 
                     se->m_code += 2;
-                    for (RxSndDrvSe *target = all ? RxSndDrvSeFindHolder(s_se.m_active, id) : se;
+                    for (RxSndDrvSe *target = all ? RxSndDrvSeFindHolder(s_se.m_active, id, se->m_xvab) : se;
                          target != NULL;
-                         target = all ? RxSndDrvSeFindHolder(target->m_next, id) : NULL)
+                         target = all ? RxSndDrvSeFindHolder(target->m_next, id, se->m_xvab) : NULL)
                         RxSndDrvSeChannelSet(target, (int)id, kind, value, op == RXSNDDRV_SESQ_SET_ADD);
                     break;
                 }
@@ -660,9 +664,9 @@ static void RxSndDrvSeRun(void)
 
                     se->m_code += 2;
                     u_int time = RxSndDrvSeReadVar(&se->m_code);
-                    for (RxSndDrvSe *target = all ? RxSndDrvSeFindHolder(s_se.m_active, id) : se;
+                    for (RxSndDrvSe *target = all ? RxSndDrvSeFindHolder(s_se.m_active, id, se->m_xvab) : se;
                          target != NULL;
-                         target = all ? RxSndDrvSeFindHolder(target->m_next, id) : NULL)
+                         target = all ? RxSndDrvSeFindHolder(target->m_next, id, se->m_xvab) : NULL)
                         RxSndDrvSeChannelRamp(target, (int)id, kind, value, (int)time,
                                               op == RXSNDDRV_SESQ_RAMP_ADD);
                     break;
@@ -1168,7 +1172,7 @@ static void RxSndDrvSeFreeLoops(RxSndDrvSe *se)
     }
 }
 
-// IOP 0x00009190 (RoR 0x00008eb8, 90% of it aligned: FS2 differs, unread)
+// IOP 0x00009190 (RoR 0x00008eb8, 90% of it aligned: FS2 read, the same but for an address)
 static void RxSndDrvSeFreeRamps(RxSndDrvSeChannel *chan)
 {
     while (chan->m_ramps != NULL)

@@ -35,10 +35,11 @@
  *  RxSndDrvVoiceKeyOn, after the new 0x4428).  Read 2026-11-09 and taken in:
  *  the dispatcher's four FS2 commands (0x52, 0x53, 0x62, 0xb4), the three new
  *  functions behind them, RxSndDrvXvabGetUsers's test, RxSndDrvAdpcmStart's
- *  group / owner.  Read and the same as RoR apart from the record offsets:
- *  RxSndDrvNoteTick's switch bits, RxSndDrvVoiceAlloc.  Still unread: the
- *  rest marked "FS2 differs, unread" (SeRun, the PCM player, the mixer, the
- *  voice tick's noise clock).  The one-word differences say the voice, mix
+ *  group / owner, RxSndDrvSeRun's pause and same-bank holders.  Read and the
+ *  same as RoR apart from the record offsets: RxSndDrvNoteTick's switch bits,
+ *  RxSndDrvVoiceAlloc, RxSndDrvSeFreeRamps.  Still unread: the rest marked
+ *  "FS2 differs, unread" (the PCM player, the mixer, the voice tick's noise
+ *  clock).  The one-word differences say the voice, mix
  *  and PCM records grew (a voice stride 0x38 -> 0x3c, PCM offsets up by
  *  0x18..0x1c): the struct layouts below are still RoR's.  sdk/sif.cpp boots it when rxfile loads
  *  RXSNDDRV.IRX; its imports are sdk/iop.cpp's, on yamipan::iop.
