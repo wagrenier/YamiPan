@@ -2110,6 +2110,24 @@ static const int *nativeUseDoorKey(ScriptRunner *self, int *acc, const int *code
     return code;
 }
 
+// 0x8a doorJustUnlocked(), 0x8c doorJustOpened(): the script character's
+// door since the last frame's scripts; 0 when the target has no character.
+// FS2 0x001c6d50, 0x001c6ba0
+
+static const int *nativeDoorJustUnlocked(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->doorJustUnlocked();
+    return code;
+}
+
+static const int *nativeDoorJustOpened(ScriptRunner *self, int *acc, const int *code)
+{
+    StageCharacter *who = self->getTarget()->getScriptCharacter();
+    *acc = who != nullptr && who->doorJustOpened();
+    return code;
+}
+
 // 0x11b canOpenDoor(), 0x11c canCloseDoor(), 0x11d canLockDoor(),
 // 0x12c canUnlockDoor(): the character's doorActions.
 // FS2 0x001bc620, 0x001bc560, 0x001bc4a0, 0x001bb2b0
@@ -2203,6 +2221,8 @@ static const ScriptNativeBinding kDoorNatives[] = {
     { 0x087, nativeOpenDoor },
     { 0x088, nativeCloseDoor },
     { 0x089, nativeUseDoorKey },
+    { 0x08a, nativeDoorJustUnlocked },
+    { 0x08c, nativeDoorJustOpened },
     { 0x0f6, nativeOfferUseIf },
     { 0x11b, nativeCanOpenDoor },
     { 0x11c, nativeCanCloseDoor },
