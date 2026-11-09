@@ -24,14 +24,16 @@ struct main0_in
 fragment main0_out main0(main0_in in [[stage_in]], constant type_ModelFragmentUniforms& ModelFragmentUniforms [[buffer(0)]], texture2d<float> uTexture [[texture(0)]], sampler uTextureSampler [[sampler(0)]])
 {
     main0_out out = {};
-    float4 _46 = uTexture.sample(uTextureSampler, in.in_var_TEXCOORD0);
-    float4 _49 = fast::clamp((_46 * in.in_var_TEXCOORD1) * 1.9921875, float4(0.0), float4(1.0));
-    if (_49.w < ModelFragmentUniforms.uParams.x)
+    float4 _50 = fast::clamp((uTexture.sample(uTextureSampler, in.in_var_TEXCOORD0) * in.in_var_TEXCOORD1) * 1.9921875, float4(0.0), float4(1.0));
+    float _54 = _50.w * ModelFragmentUniforms.uParams.z;
+    float4 _55 = _50;
+    _55.w = _54;
+    if (_54 < ModelFragmentUniforms.uParams.x)
     {
         discard_fragment();
     }
-    float3 _67 = mix(mix(ModelFragmentUniforms.uFogColor.xyz, _49.xyz, float3(in.in_var_TEXCOORD2)).xyz, _49.www, float3(ModelFragmentUniforms.uParams.y));
-    out.out_var_SV_Target0 = float4(_67.x, _67.y, _67.z, _49.w);
+    float3 _72 = mix(mix(ModelFragmentUniforms.uFogColor.xyz, _55.xyz, float3(in.in_var_TEXCOORD2)).xyz, _55.www, float3(ModelFragmentUniforms.uParams.y));
+    out.out_var_SV_Target0 = float4(_72.x, _72.y, _72.z, _55.w);
     return out;
 }
 

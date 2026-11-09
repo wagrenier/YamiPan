@@ -2255,6 +2255,17 @@ A stack of records (gp-0x7994 = 0x31aedc the current one), each with its models,
 
 **drawSysAddModel** 0x2d5140 (StageModel::init): `ext_ghost` (no case) sets 0x100 and +0x34 / +0x38 = 191 / -52; `oXX27_11` sets 0x200; `oXX27_05` clears the shadow flag and sets 0x200; a name tag `_c` sets 0x200 (`parseNameTags` 0x2d54a0 reads the tags from the end); `far_`, `far_1..3` (no case) pick groups 2, 4, 8, 0x10, anything else 1; surfaces named `WaveComposit<N>` get N; textured materials whose texture is one of nine `tCM99_PLT*` plants (sorted table 0x2fd9c0) get material flag 0x20; last the model gets 0x400. `drawSysFindKind1Surface` 0x2d46a0 walks meshes, parts and materials for the first surface of kind 1; StageModel keeps it at +0xa8.
 
+**A face is a material of kind 1 (`ModelMaterial_Frames`, 2026-11-09):** not a movie but a flip book. Its +0x02 is
+the base material, +0x08 a list of material indices (its frames, from 1; 28 on the faces of stage 2's d0205), +0x0c
+their count. `drawMaterial` 0x2e6b70 draws the base, then (unless model flag 0x20, which no code in the ELF sets)
+the surface's `frame0` at alpha 0x80 and `frame1` at `blendFix`, each a whole material draw of the same prims
+(0x2e7240 + `drawPrims`) under 0x2e7e90 mode 1 (ALPHA_1 0x44, TEST_1 0x50000: no alpha test, depth written), the
+alpha going to VU1 as address 25's w (every vertex's alpha), put back to 0x80 after. frame0 is skipped at
+`blendFix` 0x80, frame1 at 0, frame 0 is none. `ModelSurface::setFrames` 0x2e3d90 gets them each step from the
+pose's `bn_face` (`getSurfaceFrames` 0x14e300: |from x|, |to x|, 1 - current w) in `StageModel::advance`; a
+`WaveComposit<N>` surface keeps frame 1 at N. On the host the frame's alpha is `YamiPanModelMaterial::frameAlpha`,
+scaled in model.frag (uParams.z); the spot and shadows go over each frame as over any material, as VU1 kicks them.
+
 **The boss shadow texture** 0x2d5e10 (stage 0x1b, group 0x40, only while `drawSysBuildBossShadow` found F_E27_BOSS): a 256 square CT16 frame cleared white (gsFillRect 0x80, 0x60, 0x180, 0x160), the boss drawn with +8 = 0x87 and the 0x40 bytes at +0x80 zeroed (read as: drawn black; the readers of those fields are unread). View rows (1,0,0,0), (0,0,1,0), (0,-1,0,0), (-x, z + 800, -y, 1) from the shadow's origin; screen `sceVu0ViewScreenMatrix(256, 1, 1, 2048, 2048, 1, 0, 0, 1)` with row 1 = old row 2 and row 2 = -old row 1. Blur chain: down 256>128 (0x2d77d0), blur 128 (0x2d7540), down 128>64, blur 64, up 64>128 (0x2d72c0), blur 128, up 128>256. Each blit is three page-wide sprite passes at -1, 0, +1 texels, alpha 1, 1/2, 1/3 (0x30fa40 / 50 / 60), which is their mean; the source wraps (CLAMP_1 0), which is why the blur's v coordinates start at the size. 0x2d7030 and a T8H > T8 local copy make the result readable as 8 bits at sReservedBlock; the CLUT (0x2d6dc0, block +0x100) has alpha clamp((256 - i) / 4, 0, 128) in its top byte, so index 0 is 64 of 128. rena gets the TEX0 from template gp-0x7b70 through 0x2e8290 (bss 0x31af28). gp-0x7958 and gp-0x7954 are debug flags nothing writes (a sceVif1PkCall, a DISPFB2 view of the target). The host keeps the sizes, order, taps and ramp and hands the rest to `yamipan/rendering/yamipan_drawshadow.h`.
 
 `sceVu0MulMatrix` and `sceVu0ViewScreenMatrix` were checked against the ROM (0x10b750, 0x10bf30); the signs of rotateMatrixX / Z come from the COP2 words.

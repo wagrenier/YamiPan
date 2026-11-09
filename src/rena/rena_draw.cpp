@@ -15,9 +15,8 @@
  *  0x2e7c30 and 0x2e7e90 (ALPHA_1 0x2a / 0x44, TEST_1 0x5050b / 0x50000,
  *  CLAMP_1 repeat, TEX1_1 linear: the module's opaque and blended draws).
  *
- *  Not written yet (open-items.md "Next up"): a ModelMaterial_Kind1's frames,
- *  the ghost's pass 0x2e7960, the fade 0x2e9220 /
- *  0x2e96a0, mips.
+ *  Not written yet (open-items.md "Next up"): the ghost's pass 0x2e7960, the
+ *  fade 0x2e9220 / 0x2e96a0, mips.
  * ======================================================================== */
 #include "rena/rena_draw.h"
 
@@ -255,14 +254,16 @@ void setModelLights(sceVif1Packet *packet, const ModelInstance *model)
 }
 
 // The GS and VU1 state of a surface: FS2 0x002e7240, as far as a host draw
+// has a use for it. frameAlpha: VU address 25's w while a face's frame is
+// drawn over its base (drawMaterial), 0 otherwise.
 // callcheck: FUN_002e0850, FUN_002e09b0, FUN_002e0a10, FUN_002e16c0, FUN_002e16d0, FUN_002e6ef0, FUN_002e7070, logf (the texture upload, mips and GS registers: the module binds the texture itself)
-// has a use for it.
 void setSurface(sceVif1Packet *packet, const ModelInstance *model, const ModelSurface *surface, bool blended,
-                bool unlit)
+                bool unlit, int frameAlpha = 0)
 {
     YamiPanModelMaterial material = {};
     material.blended = blended;
     material.unlit = unlit;
+    material.frameAlpha = frameAlpha;
     if (surface != nullptr) {
         if (surface->textureSlot >= 0)
             material.texture = model->textures[surface->textureSlot];
@@ -339,24 +340,59 @@ void drawPrims(sceVif1Packet *packet, const ModelInstance *model, const ModelMes
     }
 }
 
-// One material. The ROM's second half, a ModelMaterial_Kind1's two frames
-// over its base, is not written yet (file header): the base is drawn.
+// A surface of the model's ModelFile::materials, null for a negative index.
+const ModelSurface *surfaceOf(const ModelInstance *model, int index)
+{
+    return index < 0 ? nullptr : model->surfaceOfMaterial[index];
+}
+
+// The material's prims under one surface: setSurface, then drawPrims with
+// the surface's UV set.
+void drawSurfacePrims(sceVif1Packet *packet, ModelInstance *model, const ModelMeshMaterial *material,
+                      const ModelPartRec *rec, const float (*world)[4], const Skin *skin, const ModelSurface *surface,
+                      bool blended, bool unlit, int frameAlpha)
+{
+    setSurface(packet, model, surface, blended, unlit, frameAlpha);
+    drawPrims(packet, model, material, world, skin, rec->vcmFadeBits,
+              surface != nullptr ? surface->material->uvSet : kNoSurfaceUvSet);
+}
+
+// One material. A face (ModelMaterial_Frames) is its base material, then its
+// frame0 and frame1 drawn again over it with the GS blending (0x2e7e90 mode
+// 1) at VU address 25's w: frame0 at full, frame1 at blendFix. A frame at
+// full hides what is under it, so frame0 is skipped when frame1 is at full,
+// and frame1 when it is at 0; frame 0 is none.
 // FS2 0x002e6b70
-// callcheck: FUN_002e7e90 (packets and VU1 state: the draw module's on the host)
+// callcheck: FUN_002e7240, drawPrims, FUN_002e7240, drawPrims, FUN_002e7e90, FUN_002e7240, drawPrims, FUN_002e7e90 (FUN_002e7240 is setSurface; 0x2e7e90 and the VU1 writes are the draw module's: frameAlpha; the ghost's ALPHA_1 put back after them is the ghost pass's, not written)
 
 void drawMaterial(sceVif1Packet *packet, ModelInstance *model, const ModelMeshMaterial *material,
                   const ModelPartRec *rec, const float (*world)[4], const Skin *skin, bool blended, bool unlit)
 {
-    const ModelSurface *surface = material->material < 0 ? nullptr : model->surfaceOfMaterial[material->material];
-    if (surface != nullptr && surface->material->kind != ModelMaterial_Textured) {
-        const short base = surface->material->uvSet;
-        if (base < 0)
-            return;
-        surface = model->surfaceOfMaterial[base];
+    const ModelSurface *surface = surfaceOf(model, material->material);
+    if (surface == nullptr || surface->material->kind != ModelMaterial_Frames) {
+        drawSurfacePrims(packet, model, material, rec, world, skin, surface, blended, unlit, 0);
+        return;
     }
-    setSurface(packet, model, surface, blended, unlit);
-    drawPrims(packet, model, material, world, skin, rec->vcmFadeBits,
-              surface != nullptr ? surface->material->uvSet : kNoSurfaceUvSet);
+
+    const ModelMaterial *face = surface->material;
+    if (face->uvSet >= 0)
+        drawSurfacePrims(packet, model, material, rec, world, skin, surfaceOf(model, face->uvSet), blended, unlit, 0);
+    if (model->flags & ModelFlag_NoFrames)
+        return;
+
+    const int frames[2] = { surface->frame0, surface->frame1 };
+    for (int layer = 0; layer < 2; layer++) {
+        if (layer == 0 && surface->blendFix == kSurfaceBlendOne)
+            continue;
+        if (layer == 1 && surface->blendFix == 0)
+            continue;
+        const int frame = frames[layer] - 1;
+        if (frame < 0 || frame >= face->frameCount)
+            continue;
+        const int alpha = layer == 0 ? kSurfaceBlendOne : surface->blendFix;
+        drawSurfacePrims(packet, model, material, rec, world, skin, surfaceOf(model, face->frames.get()[frame]),
+                         blended, unlit, alpha);
+    }
 }
 
 // One part: its opaque materials now, the others into the table.

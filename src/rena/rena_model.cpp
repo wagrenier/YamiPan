@@ -64,7 +64,6 @@ constexpr float kPi = 3.1415927f;
 constexpr float kTwoPi = 6.2831855f;
 constexpr int   kTexAnimTicks = 300;
 constexpr int   kScrollMask = 0xfff;
-constexpr int   kBlendFixOne = 0x80;
 
 // A CLUT's entries by its Tim2ClutKind.
 constexpr u_int kClutEntries4 = 0x10;
@@ -329,7 +328,7 @@ void ModelFile::relocateFrom(int oldBase)
         ModelMaterial *material = materialList[i].get();
         to.fix(material->name);
         to.fix(material->texAnim);
-        if (material->kind != ModelMaterial_Kind1) {
+        if (material->kind != ModelMaterial_Frames) {
             to.fix(material->ext);
             if (material->ext.rel != 0)
                 to.fix(material->ext->data);
@@ -418,12 +417,12 @@ void ModelSurface::setFrames(float amount, int first, int second)
         frame0 = 0;
         frame1 = first;
         blend = 1.0f - amount;
-        blendFix = (int)(amount * (float)kBlendFixOne);
+        blendFix = (int)(amount * (float)kSurfaceBlendOne);
     } else {
         frame0 = first;
         frame1 = second;
         blend = amount;
-        blendFix = kBlendFixOne - (int)(amount * (float)kBlendFixOne);
+        blendFix = kSurfaceBlendOne - (int)(amount * (float)kSurfaceBlendOne);
     }
 }
 

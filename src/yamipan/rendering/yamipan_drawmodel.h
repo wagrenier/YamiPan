@@ -82,7 +82,8 @@ struct YamiPanModelMaterial
     const void *texture;        /* a Tim2Texture; null: untextured */
     int     scrollU;            /* 0..0xfff: VIF's row, added to every UV (4096 = one repeat) */
     int     scrollV;
-    int     blended;            /* over what is drawn, no depth written; otherwise opaque with an alpha test */
+    int     blended;            /* over what is drawn (ModelMaterialFlag_Blended, from the far-to-near table): no
+                                   shadow; otherwise opaque with an alpha test. Depth: noDepthWrite */
     int     unlit;              /* the vertex colours as they are; otherwise multiplied by the light */
     int     pointFlat;          /* the point light ignores which way a vertex faces (material flag 0x10, 0x59a) */
     int     noSpot;             /* the spot's pass skips it (material flag 0x20, 0x2f1) */
@@ -90,6 +91,10 @@ struct YamiPanModelMaterial
     int     noDepthWrite;       /* ZMSK: only a ghost model's pass (0x2e7960); what blends writes depth otherwise */
     const void *reflection;     /* a Tim2Texture added over it, mapped by the reflected eye (VU1 0x77f); null none */
     float   reflectionScale;    /* of the first light's colour, ModelSurface::levelScale */
+    int     frameAlpha;         /* a face's frame over its base (rena_draw.cpp drawMaterial): every vertex's alpha,
+                                   VU address 25's w, 0x80 = 1.0, blended over what is drawn with no alpha test
+                                   (0x2e7e90 mode 1: ALPHA_1 0x44, TEST_1 0x50000); the lights, spot and shadows as
+                                   for any material. 0: a material of its own (alpha 0x80) */
 };
 
 /* What lights a model: colours 0..1 and each light's direction. */

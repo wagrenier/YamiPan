@@ -206,6 +206,7 @@ enum ModelFlag
     ModelFlag_Item   = 0x2,     // every item's, from setupItem
     ModelFlag_CastsShadow = 0x8,  // drawSysBuildShadows takes it (cleared on oXX27_05)
     ModelFlag_TakesShadow = 0x10, // a map model's: VU1 0x393 lays the frame's shadows over it
+    ModelFlag_NoFrames    = 0x20, // a face draws its base alone (rena_draw.cpp drawMaterial); no code in the ELF sets it
     ModelFlag_Distant     = 0x40, // past a quarter of the squared draw distance, when StageModel::m_mayGoDistant is set
     ModelFlag_TakesPoint  = 0x80, // a map model's without its own lights: VU1 0x545 adds the scene's point light
     ModelFlag_Ghost  = 0x100,   // the model ext_ghost (drawSysAddModel; what it does is unread)
@@ -1238,7 +1239,12 @@ static_assert(sizeof(StageMapFile) == 0x24, "StageMapFile: EE 0x24");
 enum ModelMaterialKind
 {
     ModelMaterial_Textured = 0,
-    ModelMaterial_Kind1    = 1, // drawSysFindKind1Surface finds it; what it is, is unread
+    // A face (or a WaveComposit surface): its base material, then up to two of
+    // its frames, each a material of its own, blended over it by
+    // ModelSurface::setFrames (rena_draw.cpp drawMaterial 0x2e6b70). A
+    // character's frames come from its pose's bn_face (StageModel::advance).
+    // drawSysFindKind1Surface finds it.
+    ModelMaterial_Frames   = 1,
 };
 enum ModelMaterialFlag
 {
@@ -1285,17 +1291,27 @@ struct ModelMaterial
 {
     u_char             kind;    // FS2 +0x00: ModelMaterialKind
     u_char             flags;   // FS2 +0x01: ModelMaterialFlag
-    short              uvSet;   // FS2 +0x02: which of a skinned prim's UV lists; on ModelMaterial_Kind1 the base material
+    short              uvSet;   // FS2 +0x02: which of a skinned prim's UV lists; on ModelMaterial_Frames the base material
     S2dRef<const char> name;    // FS2 +0x04
-    S2dRef<ModelTexAnim> texAnim; // FS2 +0x08: may be null (renaStepTexAnim)
-    short              texture; // FS2 +0x0c: into ModelFile::textureNames, or negative
+    union
+    {
+        S2dRef<ModelTexAnim> texAnim; // FS2 +0x08: textured: may be null (renaStepTexAnim)
+        S2dRef<short>  frames;  // FS2 +0x08: ModelMaterial_Frames: frame n is ModelFile::materials[frames[n - 1]], negative untextured
+    };
+    union
+    {
+        short          texture; // FS2 +0x0c: textured: into ModelFile::textureNames, or negative
+        u_short        frameCount; // FS2 +0x0c: ModelMaterial_Frames: how many `frames` lists
+    };
     short              texture2; // FS2 +0x0e: the same
     float              _10;     // FS2 +0x10: ModelSurface::levelScale
     float              _14;     // FS2 +0x14: picks ModelSurface::level
-    S2dRef<ModelMaterialExt> ext; // FS2 +0x18: not on ModelMaterial_Kind1
+    S2dRef<ModelMaterialExt> ext; // FS2 +0x18: not on ModelMaterial_Frames
 };
 static_assert(offsetof(ModelMaterial, name) == 4, "ModelMaterial::name");
+static_assert(offsetof(ModelMaterial, frames) == 8, "ModelMaterial::frames");
 static_assert(offsetof(ModelMaterial, texture) == 0xc, "ModelMaterial::texture");
+static_assert(offsetof(ModelMaterial, frameCount) == 0xc, "ModelMaterial::frameCount");
 
 // A DMA tag of a mesh's packet: its address is a pointer of the file.
 struct ModelTag
@@ -1425,12 +1441,15 @@ static_assert(offsetof(ModelFileNode, name) == 4, "ModelFileNode::name");
 static_assert(offsetof(ModelFileNode, surfaceCount) == 0x26, "ModelFileNode::surfaceCount");
 static_assert(offsetof(ModelFileNode, meshCount) == 0x2a, "ModelFileNode::meshCount");
 
+// ModelSurface::blendFix at full: the GS's alpha 1.0, VU address 25's w.
+constexpr int kSurfaceBlendOne = 0x80;
+
 // A material as a model instance draws it (EE 0x50). layout: host.
 struct ModelSurface
 {
     ModelSurface(ModelMaterial *material, const ModelFileNode *node);    // FS2 0x002e3e10
-    // Two frames of the texture and the blend between them (a zero second
-    // frame: the first, faded).
+    // A ModelMaterial_Frames' two frames and the blend between them (a zero
+    // second frame: the first, faded in over the base).
     void setFrames(float blend, int frame0, int frame1);                 // FS2 0x002e3d90
 
     int            _00[2];      // FS2 +0x00: zero (the draw run reads them: unread)
@@ -1442,9 +1461,9 @@ struct ModelSurface
     short          textureSlot; // FS2 +0x1c: of ModelFileNode::textureSlots, -1 none (material->texture)
     short          extTextureSlot; // FS2 +0x1e: the same, material->ext->texture
     float          blend;       // FS2 +0x20: setFrames
-    int            blendFix;    // FS2 +0x24: setFrames, 0..0x80; on a wave the number after WaveComposit
-    int            frame0;      // FS2 +0x28: setFrames, 0 on a wave
-    int            frame1;      // FS2 +0x2c: setFrames, 1 on a wave
+    int            blendFix;    // FS2 +0x24: setFrames, frame1's alpha over frame0, 0..kSurfaceBlendOne; on a wave the number after WaveComposit
+    int            frame0;      // FS2 +0x28: setFrames, of material->frames from 1, 0 none; 0 on a wave
+    int            frame1;      // FS2 +0x2c: setFrames, the same; 1 on a wave
     int            scrollU;     // FS2 +0x30: 0..0xfff
     int            scrollV;     // FS2 +0x34
     short          texture2Slot; // FS2 +0x38: the same, material->texture2

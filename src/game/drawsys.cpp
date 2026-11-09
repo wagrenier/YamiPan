@@ -172,7 +172,7 @@ ModelSurface *drawSysFindKind1Surface(ModelInstance *model)
                 // PC: the ROM reads through a null entry; every material a
                 // mesh names has a surface.
                 ModelSurface *surface = model->surfaceOfMaterial[material];
-                if (surface != nullptr && surface->material->kind == ModelMaterial_Kind1)
+                if (surface != nullptr && surface->material->kind == ModelMaterial_Frames)
                     return surface;
             }
         }

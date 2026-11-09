@@ -8,7 +8,8 @@ SamplerState uTextureSampler : register(s0, space2);
 cbuffer ModelFragmentUniforms : register(b0, space3)
 {
     float4 uFogColor;
-    float4 uParams; // x = alpha test reference, 0..1 in the same 0x80 scale; y = 1: ALPHA_1 0x49
+    float4 uParams; // x = alpha test reference, 0..1 in the same 0x80 scale; y = 1: ALPHA_1 0x49;
+                    // z = every vertex's alpha (VU address 25's w), 1 = 0x80: below 1 only for a face's frame
 };
 
 struct PSInput
@@ -24,6 +25,8 @@ static const float kGsColorScale = 255.0 / 128.0;
 float4 main(PSInput input) : SV_Target0
 {
     float4 color = saturate(uTexture.Sample(uTextureSampler, input.vUV) * input.vColor * kGsColorScale);
+    // MODULATE takes the texel's alpha times the vertex's: the vertices carry 0x80, so the rest is the scale.
+    color.a *= uParams.z;
     if (color.a < uParams.x)
     {
         discard;
