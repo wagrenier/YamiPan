@@ -8,8 +8,9 @@
 // keeps the same pace by the wall clock and discards the mix, so voices still end and the driver's waits
 // still resolve.
 //
-// Not yet: reverb (the effect sends are kept, nothing returns them) and pitch modulation and noise
-// (PMON / NON). The SPU2's gaussian interpolation is RosePan's Catmull-Rom stand-in.
+// The voices whose VMIXEL / VMIXER bit is set also feed their core's reverb (Spu2Reverb), whose return
+// joins the dry mix before the master volume. Not yet: pitch modulation and noise (PMON / NON). The
+// SPU2's gaussian interpolation is RosePan's Catmull-Rom stand-in.
 //
 // Its own lock guards every voice: register writes come from IOP code (under the big kernel lock), the
 // mixer runs on its own thread, and sound RAM is read without a lock (a transfer racing a voice reads
@@ -19,6 +20,8 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+
+#include "yamipan/iop/spu2_reverb.h"
 
 namespace yamipan::audio
 {
@@ -43,7 +46,8 @@ public:
     // The player's volume groups of a voice (src/sdk/iop_voice.h): music, effects.
     static constexpr int kGroups = 2;
 
-    Spu2Voices(const std::uint8_t *ram, std::uint32_t ramSize);
+    // The reverb writes its work areas into `ram`.
+    Spu2Voices(std::uint8_t *ram, std::uint32_t ramSize);
     ~Spu2Voices();
     Spu2Voices(const Spu2Voices &) = delete;
     Spu2Voices &operator=(const Spu2Voices &) = delete;
@@ -66,6 +70,12 @@ public:
     void setMixMasks(int core, std::uint32_t dryLeft, std::uint32_t dryRight, std::uint32_t wetLeft,
                      std::uint32_t wetRight);
     void setGroup(int core, int voice, int group);
+
+    // ---- the effect unit (Spu2Reverb) ---------------------------------------------------------------
+    void setReverbPreset(int core, std::uint32_t mode, std::uint32_t eea);
+    void setReverbDepth(int core, std::uint16_t left, std::uint16_t right);
+    void setReverbEnable(int core, bool on);
+    void clearReverb(int core);
 
     // ---- what the hardware shows --------------------------------------------------------------------
     std::uint32_t startAddr(int core, int voice);
@@ -94,6 +104,7 @@ private:
     void mixBlock(std::int16_t *out);
     void mixVoices();
     void mixAutoDma();
+    void mixReverb();
 
     void keyOnLocked(Voice &v);
     void keyOffLocked(Voice &v);
@@ -103,13 +114,14 @@ private:
     bool nextOutputSample(Voice &v, std::int32_t &out);
     void readHeader(Voice &v);
 
-    const std::uint8_t *m_ram;
+    std::uint8_t *m_ram;
     std::uint32_t m_ramSize;
 
     std::mutex m_lock;
     std::unique_ptr<Voice[]> m_voices;
     std::unique_ptr<Core[]> m_cores;
     std::unique_ptr<Meter> m_meter;
+    std::unique_ptr<Spu2Reverb> m_reverb;
     std::unique_ptr<audio::AudioOutput> m_output;
     std::unique_ptr<os::Thread> m_thread;
     bool m_started = false;

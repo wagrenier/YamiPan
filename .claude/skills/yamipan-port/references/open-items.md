@@ -1821,8 +1821,12 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
   frame-bound; the other suspect is the driver's status reply (RoR's layout: the free space the EE reads
   in rxSndAdpcmUpdate), part of (3). Check at full frame rate before reading (3).
   The voice engine and the sound card are in too (2026-11-09, architecture.md "The synthesiser and the
-  sound card"): d0101's event stream is mixed and played. Left of (1): reverb (RosePan's
-  sdk/iop_reverb.cpp), the player's volume settings; then (3), FS2's differences.
+  sound card"): d0101's event stream is mixed and played. The reverb too (architecture.md "The reverb").
+  **Doubt (2026-11-09):** in d0101 the reverb is on (studio C, the depth ramping) but no voice is ever
+  sent to it: every voice's switch lacks bit 2 through 100 s. That may be the scene, or FS2's layout:
+  `RxSndDrvVoiceSetSwitch` ("81% aligned: FS2 differs, unread") and the XVAB region flags and stream
+  open records the bits come from are still RoR's. Check in (3), or in a scene known to echo. Left of
+  (1): the player's volume settings; then (3), FS2's differences.
 
 - 2026-11-05 (Claude's call, a scheduled run, for the user to overrule): **doors are on, and `kDoorsEnabled` is gone.** The stage crash that switched them off is explained and fixed (Done, game/playermotion.cpp sixth run). `StageMenu::update`, `draw` and `destroy` stay stubs on purpose: with `update` written and no list window, the menu button would open a menu nobody sees that holds the input focus. `game/stagemenu.cpp` is a second file in a one-TU run, like `game/uiitemlist.cpp`: its stubbed ctor was the crash.
 

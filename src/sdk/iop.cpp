@@ -1,7 +1,6 @@
 // sdk/iop.cpp -- the IOP libraries RXSNDDRV imports. thbase, thevent, intrman, sysmem, loadcore, vblank and
 // the IOP side of sifcmd forward to yamipan::iop::Kernel, libsd to its Spu2 (RosePan's sdk/iop_libsd.cpp
-// as a class). What is not here yet is what makes sound: the voice engine and reverb (RosePan's
-// iop_voice.cpp and iop_reverb.cpp).
+// as a class), which makes the sound through Spu2Voices and Spu2Reverb.
 // sdk/sif.cpp boots the driver when rxfile loads RXSNDDRV.IRX.
 #include "iop_host.h"
 #include "iop_voice.h"
@@ -249,10 +248,11 @@ u_short sceSdNote2Pitch(u_short center_note, u_short center_fine, u_short note, 
     return static_cast<u_short>(pitch + 0.5);
 }
 
-// The work area is the reverb unit's, which YamiPan does not have yet: nothing reads it, so there is
-// nothing to clear. RXSNDDRV retries until this answers 0.
-int sceSdClearEffectWorkArea(int, int, int)
+// The core's work area as it is set now (`channel` is the core libsd borrowed for the clearing transfer).
+// RXSNDDRV clears its areas with its own zero-fill DMA; it calls this nowhere, and would retry until 0.
+int sceSdClearEffectWorkArea(int core, int, int)
 {
+    spu2().clearEffectWorkArea(core);
     return 0;
 }
 

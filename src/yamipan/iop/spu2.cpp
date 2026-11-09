@@ -31,6 +31,7 @@ constexpr std::uint16_t kAEea = 0x1d00;
 constexpr std::uint16_t kVaSsa = 0x2040;
 constexpr std::uint16_t kVaLsax = 0x2140;
 constexpr std::uint16_t kVaNax = 0x2240;
+constexpr std::uint16_t kCEffectEnable = 0x02;
 
 // sceSdBlockTrans's mode: the operation in the low bits, looping in 0x10.
 constexpr std::uint16_t kBlockOp = 0x03;
@@ -150,6 +151,9 @@ void Spu2::setParam(std::uint16_t entry, std::uint16_t value)
     core.param[registerIndex(reg)] = value;
     if (reg == kPMvolL || reg == kPMvolR)
         m_voices->setMasterVolume(c, core.param[registerIndex(kPMvolL)], core.param[registerIndex(kPMvolR)]);
+    // EVOL is the reverb's return level (sceSdSetEffectAttr's depth sets it too).
+    if (reg == kPEvolL || reg == kPEvolR)
+        m_voices->setReverbDepth(c, core.param[registerIndex(kPEvolL)], core.param[registerIndex(kPEvolR)]);
     // BVOL is the external input's level: the auto-DMA ring's (the PCM player fades through it).
     if (reg == kPBvolL || reg == kPBvolR)
         m_voices->autoDmaSetVolume(c, core.param[registerIndex(kPBvolL)], core.param[registerIndex(kPBvolR)]);
@@ -271,6 +275,9 @@ std::uint32_t Spu2::addr(std::uint16_t entry)
 void Spu2::setCoreAttr(std::uint16_t entry, std::uint16_t value)
 {
     m_cores[entryCore(entry)].attr[(entry & 0xff) >> 1] = value;
+    // The core bit is bit 0: masked off before the attribute is named.
+    if ((entry & 0xfe) == kCEffectEnable)
+        m_voices->setReverbEnable(entryCore(entry), value != 0);
 }
 
 // ---- transfers ------------------------------------------------------------------------------------
@@ -376,11 +383,18 @@ int Spu2::setEffectAttr(int c, const EffectAttr &attr)
         return -1;
     Core &core = m_cores[c];
     core.effect = attr;
-    // The depth is EVOLL / EVOLR: a same-mode change sets it through sceSdSetParam instead, and reads
-    // answer alike either way.
+    // The preset over the work area that ends at the EEA written just before; the depth is EVOLL / EVOLR,
+    // which reads answer alike whichever way it was set.
+    m_voices->setReverbPreset(c, attr.mode, core.eea);
     core.param[registerIndex(kPEvolL)] = static_cast<std::uint16_t>(attr.depthL);
     core.param[registerIndex(kPEvolR)] = static_cast<std::uint16_t>(attr.depthR);
+    m_voices->setReverbDepth(c, core.param[registerIndex(kPEvolL)], core.param[registerIndex(kPEvolR)]);
     return 0;
+}
+
+void Spu2::clearEffectWorkArea(int c)
+{
+    m_voices->clearReverb(c);
 }
 
 void Spu2::setVoiceGroup(int c, int voice, int group)
