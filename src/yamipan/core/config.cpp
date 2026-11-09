@@ -201,6 +201,7 @@ void DisplaySettings::serialize(Archive &archive)
     archive("render_scale", renderScale);
     archive("upscale_filter", upscaleFilter);
     archive("present_mode", presentMode);
+    archive("smooth_motion", smoothMotion);
     archive("hdr", hdrMode);
     archive("hdr_paper_white", hdrPaperWhite);
     archive("hdr_peak", hdrPeak);
@@ -280,6 +281,7 @@ void Config::applyEnvironment()
     apply("YAMIPAN_WINDOW_WIDTH", display.windowWidth);
     apply("YAMIPAN_WINDOW_HEIGHT", display.windowHeight);
     apply("YAMIPAN_PRESENT_MODE", display.presentMode);
+    apply("YAMIPAN_SMOOTH_MOTION", display.smoothMotion);
 }
 
 } // namespace yamipan

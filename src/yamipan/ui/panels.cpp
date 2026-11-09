@@ -157,6 +157,13 @@ private:
             m_application.renderer().applyPresentMode();
             m_config.save();
         }
+
+        ImGui::Separator();
+        if (ImGui::Checkbox("Smooth camera", &display.smoothMotion))
+            m_config.save();
+        const rendering::Renderer::Stats stats = m_application.renderer().stats();
+        ImGui::TextDisabled("  game %.1f fps, shown %.1f, blended %.1f", stats.gameRate, stats.presentRate,
+                            stats.blendRate);
         ImGui::EndMenu();
     }
 

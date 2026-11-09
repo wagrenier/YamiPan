@@ -2,7 +2,10 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdlib>
 #include <cstring>
+#include <format>
+#include <string>
 #include <thread>
 
 #include <SDL3/SDL_timer.h>
@@ -11,6 +14,7 @@
 #include "yamipan/core/logger.h"
 #include "yamipan/core/window.h"
 #include "yamipan/rendering/film_overlay_pass.h"
+#include "yamipan/rendering/frame_blend.h"
 #include "yamipan/rendering/frame_filter_pass.h"
 #include "yamipan/rendering/frame_palette_pass.h"
 #include "yamipan/rendering/frame_ripple_pass.h"
@@ -153,6 +157,12 @@ Renderer::Renderer(Window &window, gpu::Device &device, Config &config, EventQue
     m_filmOverlay = std::make_unique<FilmOverlayPass>(m_device, m_sceneFormat);
     m_screenshots = std::make_unique<Screenshotter>(m_device);
     applyPresentMode();
+
+    // Test hooks (tools/reverse/README.md, "Platform contract").
+    if (const char *const text = std::getenv("YAMIPAN_BLEND_ALPHA"))
+        m_fixedBlend = std::clamp(std::strtof(text, nullptr), 0.0f, 1.0f);
+    if (const char *const text = std::getenv("YAMIPAN_BLEND_LOG"))
+        m_logBlend = text[0] != '\0' && text[0] != '0';
 }
 
 Renderer::~Renderer()
@@ -187,7 +197,12 @@ void Renderer::submit(std::unique_ptr<Frame> frame)
 {
     std::scoped_lock lock(m_lock);
     if (m_incoming != nullptr)
-        m_free.push_back(std::move(m_incoming));
+    {
+        // Never shown, but still the frame just before this one: smooth motion blends from it.
+        if (m_overtaken != nullptr)
+            m_free.push_back(std::move(m_overtaken));
+        m_overtaken = std::move(m_incoming);
+    }
     m_incoming = std::move(frame);
 }
 
@@ -354,13 +369,15 @@ void Renderer::uploadVertices(SDL_GPUCopyPass *copy, const Frame &frame)
     SDL_UploadToGPUBuffer(copy, &source, &destination, true);
 }
 
-void Renderer::recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout)
+void Renderer::recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout,
+                           const std::vector<ModelPass> *passes)
 {
     // The 2D draws and the model passes take turns, as the game's lists do. A pass of models has a depth
     // target and the 2D pipelines have none, so each stretch is its own render pass.
+    const std::vector<ModelPass> &modelPasses = passes != nullptr ? *passes : frame.modelPasses;
     std::size_t nextDraw = 0;
     bool cleared = false;
-    for (const ModelPass &pass : frame.modelPasses)
+    for (const ModelPass &pass : modelPasses)
     {
         recordUi(commands, frame, layout, nextDraw, pass.uiDrawsBefore, !cleared);
         cleared = true;
@@ -368,6 +385,19 @@ void Renderer::recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, c
         m_models.recordPass(commands, frame, pass, m_scene.get(), m_white.get(), layout);
     }
     recordUi(commands, frame, layout, nextDraw, frame.draws.size(), !cleared);
+}
+
+float Renderer::blendNow()
+{
+    if (!m_config.display.smoothMotion || m_previous == nullptr || m_shown == nullptr)
+        return 1.0f;
+    const std::optional<float> progress = FrameBlend::progress(*m_previous, *m_shown, FrameBlend::Clock::now());
+    if (!progress)
+        return 1.0f;
+    const float alpha = m_fixedBlend >= 0.0f ? m_fixedBlend : *progress;
+    if (alpha >= 1.0f || !FrameBlend::blendPasses(*m_previous, *m_shown, alpha, m_blendedPasses))
+        return 1.0f;
+    return alpha;
 }
 
 void Renderer::recordUi(SDL_GPUCommandBuffer *commands, const Frame &frame, const PictureLayout &layout,
@@ -491,11 +521,13 @@ void Renderer::recordOutput(SDL_GPUCommandBuffer *commands, const PictureLayout 
     SDL_BlitGPUTexture(commands, &blit);
 }
 
-void Renderer::updateStats(bool newFrame)
+void Renderer::updateStats(bool newFrame, bool blended)
 {
     m_statPresents++;
     if (newFrame)
         m_statFrames++;
+    if (blended)
+        m_statBlends++;
 
     const std::uint64_t now = SDL_GetTicks();
     const std::uint64_t elapsed = now - m_statStart;
@@ -505,6 +537,7 @@ void Renderer::updateStats(bool newFrame)
     std::scoped_lock lock(m_lock);
     m_stats.presentRate = static_cast<double>(m_statPresents) * 1000.0 / static_cast<double>(elapsed);
     m_stats.gameRate = static_cast<double>(m_statFrames) * 1000.0 / static_cast<double>(elapsed);
+    m_stats.blendRate = static_cast<double>(m_statBlends) * 1000.0 / static_cast<double>(elapsed);
     if (m_shown != nullptr)
     {
         m_stats.draws = m_shown->draws.size();
@@ -512,6 +545,7 @@ void Renderer::updateStats(bool newFrame)
     }
     m_statPresents = 0;
     m_statFrames = 0;
+    m_statBlends = 0;
     m_statStart = now;
 }
 
@@ -536,23 +570,51 @@ void Renderer::renderOnce()
     ensureTargets(layout);
 
     std::unique_ptr<Frame> incoming;
+    std::unique_ptr<Frame> overtaken;
     {
         std::scoped_lock lock(m_lock);
         incoming = std::move(m_incoming);
+        overtaken = std::move(m_overtaken);
     }
 
     bool newFrame = false;
     if (incoming != nullptr)
     {
-        if (m_shown != nullptr)
+        std::scoped_lock lock(m_lock);
+        if (m_previous != nullptr)
+            m_free.push_back(std::move(m_previous));
+        if (overtaken != nullptr)
         {
-            std::scoped_lock lock(m_lock);
-            m_free.push_back(std::move(m_shown));
+            if (m_shown != nullptr)
+                m_free.push_back(std::move(m_shown));
+            m_previous = std::move(overtaken);
+        }
+        else
+        {
+            m_previous = std::move(m_shown);
         }
         m_shown = std::move(incoming);
         newFrame = true;
     }
-    const bool redraw = newFrame || layoutChanged;
+    const bool upload = newFrame || layoutChanged;
+
+    // Smooth motion: a present between two game frames draws the newer one again under a blended camera. The
+    // buffers the passes read stay from the frame's upload.
+    const float blend = blendNow();
+    const bool redraw = upload || blend != m_drawnBlend;
+    m_drawnBlend = blend;
+    if (m_logBlend && m_shown != nullptr)
+    {
+        const double sinceField =
+            std::chrono::duration<double, std::milli>(FrameBlend::Clock::now() - m_shown->time).count();
+        // Each pass's eye as drawn: it should move a little every present, not once a game frame.
+        const std::vector<ModelPass> &passes = blend < 1.0f ? m_blendedPasses : m_shown->modelPasses;
+        std::string eyes;
+        for (const ModelPass &pass : passes)
+            eyes += std::format(" eye {:.3f} {:.3f} {:.3f}", pass.lights.eye[0], pass.lights.eye[1], pass.lights.eye[2]);
+        log::info("[blend] frame {} +{:.1f} ms blend {:.3f}{}{}", m_shown->number, sinceField, blend,
+                  newFrame ? " new" : "", eyes);
+    }
 
     m_overlay.beginFrame();
     m_overlay.draw(*this);
@@ -573,7 +635,7 @@ void Renderer::renderOnce()
         m_device.uploadTexture(copy, m_white.get(), 1, 1, kWhitePixel, m_staging.emplace_back());
         m_whiteUploaded = true;
     }
-    if (redraw && m_shown != nullptr)
+    if (upload && m_shown != nullptr)
     {
         uploadImages(copy, *m_shown);
         uploadVertices(copy, *m_shown);
@@ -583,7 +645,8 @@ void Renderer::renderOnce()
 
     static const Frame kEmptyFrame;
     if (redraw || m_shown == nullptr)
-        recordScene(commands, m_shown != nullptr ? *m_shown : kEmptyFrame, layout);
+        recordScene(commands, m_shown != nullptr ? *m_shown : kEmptyFrame, layout,
+                    blend < 1.0f ? &m_blendedPasses : nullptr);
     recordOutput(commands, layout);
 
     m_overlay.prepareDrawData(commands);
@@ -623,7 +686,7 @@ void Renderer::renderOnce()
 
     if (swapchain == nullptr)
         std::this_thread::sleep_for(kIdleDelay); // minimised: nothing paces this loop
-    updateStats(newFrame);
+    updateStats(newFrame, blend < 1.0f);
 }
 
 } // namespace yamipan::rendering

@@ -616,12 +616,13 @@ void UiCanvas::drawMacroblocks(const void *list, const void *owner, int picture,
     drawImage(list, m_movieImage, x, y);
 }
 
-void UiCanvas::kick(std::span<const void *const> lists)
+void UiCanvas::kick(std::span<const void *const> lists, std::chrono::steady_clock::time_point time)
 {
     auto frame = m_renderer.takeFreeFrame();
     {
         std::scoped_lock lock(m_lock);
         frame->number = ++m_frames;
+        frame->time = time;
         for (const void *const list : lists)
         {
             m_renderer.models().collect(list, *frame);
