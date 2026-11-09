@@ -487,7 +487,7 @@ void RxSndDrvVoiceSetPitch(int voice, u_short center, u_short centerFine, u_shor
     p->m_pitch    = (short)((int)(sceSdNote2Pitch(center, centerFine, note, fine) * scale) >> 12);
 }
 
-// IOP 0x00004428 (RoR 0x00004208, 94% of it aligned: FS2 differs, unread)
+// IOP 0x00004454 (RoR 0x00004208, the same; FS2 put RxSndDrvVoiceSetNoise before it)
 void RxSndDrvVoiceKeyOn(int voice)
 {
     int   core = VoiceCore(voice);

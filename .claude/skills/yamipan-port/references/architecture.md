@@ -2124,6 +2124,21 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   on both cores through 60 key-ons), so the return stayed 0 (open-items.md). An impulse test of the class
   (scratch, studio C, depth 0x3000): a return within 100 ms, energy falling about 20 dB per 900 ms, peak
   3807, no runaway; a re-sent preset keeps the tail; mode 0 is inactive; nothing written below the area.
+- **FS2's driver, read** (2026-11-09, Ghidra's rxsnddrv.elf against `work/iop/rxsnddrv_cmp.txt`): most
+  of the 38 changed functions differ by record offsets only (the voice record is 0x3c bytes in FS2:
+  +0 priority, +4 age, +9 flags, +0xa quiet, +0xb fade, +0xc pending, +0x24 the noise clock, +0x2c
+  done, +0x30 arg, +0x34 enable, +0x38 owner; RoR's 0x38). Real changes, read: (1) the dispatcher
+  (0x360) has commands 0x52 (RxSndDrvXvabGetUsers), 0x53 (RxSndDrvXvabHasSe 0x2d9c: SE `index` of
+  group `group` in a bank), 0x62 (RxSndDrvXseqGetUsers 0x3660) and 0xb4 (RxSndDrvPcmSetB4 0xd1dc: a
+  value clamped to 2..8 plus a flag, read by FS2's PcmTick); the EE's senders (rxSndXvabRpc52,
+  rxSndXvabSetParam, rxSndXseqRpc62, rxSndPcmSetParamB4) have no caller. (2) RxSndDrvXvabGetUsers
+  0x2e80 answers the users of a loaded slot (RoR's, unreferenced, tested the other way). (3)
+  RxSndDrvAdpcmStart 0xaabc: every channel's voice in the stream's group, the owner (| 0x2000000) on
+  the first channel only (RoR: group on the first, owner on all, so channel 2 took channel 1's voice
+  back). (4) FS2's RxSndDrvNoteTick 0x9690, after a layer's switch, calls the new
+  RxSndDrvVoiceSetNoise 0x4428 (record +0x24 = region byte 6, pending |= 0x20) for region flag 4
+  (noise); its reverb bit is RoR's. RxSndDrvVoiceKeyOn is 0x4454 (the comparison table's 0x4428 was
+  the new function). RxSndDrvVoiceAlloc 0x3da0 is RoR's but for the offsets.
 - **The EE's side** (2026-11-09, `sdk/sif.cpp`): sceSifBindRpc keeps the
   RPC number in the client's `command`; sceSifCallRpc sends a call to a registered server through
   `YamiPan_IopRpcDispatch` on the EE's thread and copies `rsize` bytes of the handler's buffer back before

@@ -30,11 +30,17 @@
  *  unread", or "moved in FS2".  Other addresses in comments are RoR's
  *  (`RoR IOP 0x...`): FS2's .bss and parts of its code moved.
  *
- *  FS2, still to read (Ghidra program rxsnddrv.elf): 38 changed functions, 2
- *  moved ones, and 4 functions RoR does not have (0x2d9c, 0x3660, 0x4454,
- *  0xd1dc).  The one-word differences say the voice, mix and PCM records grew
- *  (a voice stride 0x38 -> 0x3c, PCM offsets up by 0x18..0x1c): the struct
- *  layouts below are still RoR's.  sdk/sif.cpp boots it when rxfile loads
+ *  FS2 (Ghidra program rxsnddrv.elf): 38 changed functions, 2 moved ones and
+ *  4 functions RoR does not have (0x2d9c, 0x3660, 0x4428, 0xd1dc; 0x4454 is
+ *  RxSndDrvVoiceKeyOn, after the new 0x4428).  Read 2026-11-09 and taken in:
+ *  the dispatcher's four FS2 commands (0x52, 0x53, 0x62, 0xb4), the three new
+ *  functions behind them, RxSndDrvXvabGetUsers's test, RxSndDrvAdpcmStart's
+ *  group / owner.  Read and the same as RoR apart from the record offsets:
+ *  RxSndDrvNoteTick's switch bits, RxSndDrvVoiceAlloc.  Still unread: the
+ *  rest marked "FS2 differs, unread" (SeRun, the PCM player, the mixer, the
+ *  voice tick's noise clock).  The one-word differences say the voice, mix
+ *  and PCM records grew (a voice stride 0x38 -> 0x3c, PCM offsets up by
+ *  0x18..0x1c): the struct layouts below are still RoR's.  sdk/sif.cpp boots it when rxfile loads
  *  RXSNDDRV.IRX; its imports are sdk/iop.cpp's, on yamipan::iop.
  *
  *  The double buffer.  Commands arrive on the EE's RPC (any time) and are
@@ -175,6 +181,7 @@ int   RxSndDrvXvabDetach(u_char *file);             // IOP 0x00002ed0
 u_int RxSndDrvChunkGetVersion(const void *file);    // IOP 0x00002ef4
 u_char *RxSndDrvChunkFind(const void *file, u_int tag);   // IOP 0x00002f00
 int   RxSndDrvXvabGetUsers(int id);                 // IOP 0x00002e80
+int   RxSndDrvXvabHasSe(int id, int group, int index); // IOP 0x00002d9c (FS2 only)
 u_char *RxSndDrvChunkFindV1(const void *file, u_int tag); // IOP 0x00002f44
 u_char *RxSndDrvChunkFindV2(const void *file, u_int tag); // IOP 0x00002fa4
 
@@ -200,6 +207,7 @@ int   RxSndDrvXseqRelocate(u_char *file, int dir, int open); // IOP 0x000031a0
 void  RxSndDrvXseqInit(void);                       // IOP 0x00003370
 void  RxSndDrvXseqCloseAll(void);                   // IOP 0x0000339c
 int   RxSndDrvXseqClose(u_int id);                  // IOP 0x000033d4
+int   RxSndDrvXseqGetUsers(u_int id);               // IOP 0x00003660 (FS2 only)
 u_int *RxSndDrvXseqGetHead(u_int id);               // IOP 0x000034d8
 void  RxSndDrvXseqSetBank(u_int id, u_int index, u_int xvab); // IOP 0x00003510
 int   RxSndDrvXseqGetBank(int id, u_int index);     // IOP 0x00003548
@@ -305,5 +313,6 @@ int   RxSndDrvPcmOpen(int id, int format, u_int iop, u_int blocks); // IOP 0x000
 void  RxSndDrvPcmData(int id, const u_int *seq, int count);         // IOP 0x0000ce84
 void  RxSndDrvPcmSet(u_int id, const u_int *data);  // IOP 0x0000cfec
 int   RxSndDrvPcmStatus(u_char *reply);             // IOP 0x0000d13c
+void  RxSndDrvPcmSetB4(int value);                  // IOP 0x0000d1dc (FS2 only)
 
 #endif /* YAMIPAN_IOP_RXSNDDRV_H */

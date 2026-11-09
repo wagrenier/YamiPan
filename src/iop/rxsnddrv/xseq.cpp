@@ -344,3 +344,13 @@ u_char *RxSndDrvXseqChunkFindV2(const void *file, u_int tag)
         pos = end + 0x10;
     }
 }
+
+/* Command 0x62 (FS2 only): slot `id`'s user count (the BGMs playing it), 0
+ * when it is free. */
+// IOP 0x00003660 (FS2 only, read 2026-11-09)
+int RxSndDrvXseqGetUsers(u_int id)
+{
+    if (s_xseq[id].m_file == 0)
+        return 0;
+    return s_xseq[id].m_users;
+}

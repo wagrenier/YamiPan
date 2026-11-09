@@ -402,14 +402,41 @@ u_char *RxSndDrvChunkFind(const void *file, u_int tag)
     return RxSndDrvChunkFindV2(file, tag);
 }
 
-/* Unreferenced, folded after RxSndDrvChunkFind: slot `id`'s user count, but
- * only while the slot is free (the test reads inverted). */
-// IOP 0x00002e80 (RoR 0x00002d14, moved in FS2, 90% alike: unread)
+/* Command 0x52: slot `id`'s user count, 0 when it is free. RoR's (folded
+ * after RxSndDrvChunkFind, unreferenced) read the test the other way round;
+ * FS2's is the right way and reachable (read 2026-11-09). */
+// IOP 0x00002e80 (RoR 0x00002d14, moved in FS2, 90% alike: FS2 read)
 int RxSndDrvXvabGetUsers(int id)
 {
-    if (s_xvab[id].m_file != 0)
+    if (s_xvab[id].m_file == 0)
         return 0;
     return s_xvab[id].m_users;
+}
+
+/* Command 0x53 (FS2 only): whether SE `index` of group `group` is in slot
+ * `id`, the lookup of RxSndDrvXvabFindSe without its answers. */
+// IOP 0x00002d9c (FS2 only, read 2026-11-09)
+int RxSndDrvXvabHasSe(int id, int group, int index)
+{
+    int   intr;
+    u_int data = 0;
+
+    CpuSuspendIntr(&intr);
+    if (s_xvab[id].m_file != 0 && s_xvab[id].m_tables.m_seif != 0)
+    {
+        u_char                  *base = (u_char *)(uintptr_t)s_xvab[id].m_tables.m_seif;
+        const RxSndDrvXvabTable *seif = (const RxSndDrvXvabTable *)base;
+
+        if (group < seif->m_count && seif->m_offset[group] != 0)
+        {
+            const RxSndDrvXvabTable *list = (const RxSndDrvXvabTable *)(base + seif->m_offset[group]);
+
+            if (index < list->m_count && list->m_offset[index] != 0)
+                data = (u_int)(uintptr_t)(base + ((const RxSndDrvXvabSe *)(base + list->m_offset[index]))->m_data);
+        }
+    }
+    CpuResumeIntr(intr);
+    return data != 0;
 }
 
 /* Version < 0x200: {tag, size, data} from +0xc, ended by a zero tag. */
