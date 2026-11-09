@@ -21539,6 +21539,12 @@
   "was": "FUN_001ec400",
   "why": "link slot +0x14 and history event 0 for the request, unless it is the running motion's next"
  },
+ "001ec640": {
+  "name": "MotionLink::onRequest",
+  "tag": "game-inferred",
+  "was": "FUN_001ec640",
+  "why": "jr ra only; slot +0x14 of the base vtable 0x317c20 (0x317c34), of BittenLink 0x315eb0 (0x315ec4, every slot the base's) and of 22 other links that keep the default (0x317770 .. 0x317fe0)"
+ },
  "001ec650": {
   "name": "PlayerMotion::requestNow",
   "tag": "game-inferred",
