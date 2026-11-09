@@ -56,6 +56,7 @@
 /* ---- core attributes (sceSdSetCoreAttr) -------------------------------- */
 #define SD_C_EFFECT_ENABLE  0x02
 #define SD_C_IRQ_ENABLE     0x04
+#define SD_C_NOISE_CLK      0x08    /* the noise generator's clock, 0..0x3f */
 #define SD_C_SPDIF_MODE     0x0a
 
 /* ---- sceSdBlockTrans modes --------------------------------------------- */

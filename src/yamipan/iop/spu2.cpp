@@ -32,6 +32,8 @@ constexpr std::uint16_t kVaSsa = 0x2040;
 constexpr std::uint16_t kVaLsax = 0x2140;
 constexpr std::uint16_t kVaNax = 0x2240;
 constexpr std::uint16_t kCEffectEnable = 0x02;
+constexpr std::uint16_t kCNoiseClock = 0x08;
+constexpr std::uint16_t kSNon = 0x1400;
 
 // sceSdBlockTrans's mode: the operation in the low bits, looping in 0x10.
 constexpr std::uint16_t kBlockOp = 0x03;
@@ -192,6 +194,9 @@ void Spu2::setSwitch(std::uint16_t entry, std::uint32_t value)
     case kSKoff:
         m_voices->keyOff(c, value);
         break;
+    case kSNon:
+        m_voices->setNoiseMask(c, value);
+        break;
     case kSVmixL:
     case kSVmixR:
     case kSVmixEL:
@@ -278,6 +283,8 @@ void Spu2::setCoreAttr(std::uint16_t entry, std::uint16_t value)
     // The core bit is bit 0: masked off before the attribute is named.
     if ((entry & 0xfe) == kCEffectEnable)
         m_voices->setReverbEnable(entryCore(entry), value != 0);
+    if ((entry & 0xfe) == kCNoiseClock)
+        m_voices->setNoiseClock(entryCore(entry), value);
 }
 
 // ---- transfers ------------------------------------------------------------------------------------

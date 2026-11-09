@@ -354,7 +354,7 @@ fail:
 
 /* Writes every dirty layer's voice: switches, volume (with tremolo and
  * auto-pan) and pitch (with bend and vibrato). */
-// IOP 0x00009690 (RoR 0x000093c0, 98% of it aligned: FS2 differs, unread)
+// IOP 0x00009690 (RoR 0x000093c0, 98% of it aligned: FS2 read, the noise clock)
 void RxSndDrvNoteTick(void)
 {
     int rate = RxSndDrvGetFrameRate();
@@ -386,6 +386,9 @@ void RxSndDrvNoteTick(void)
                 if ((r->m_flags & 2) || note->m_switch != 0)
                     bits |= 2;
                 RxSndDrvVoiceSetSwitch(layer->m_voice, bits);
+                /* FS2: a noise region's centre note is the noise clock. */
+                if (r->m_flags & 4)
+                    RxSndDrvVoiceSetNoise(layer->m_voice, r->m_center);
             }
 
             if (dirty & RXSNDDRV_NOTE_SET_VOLUME)
