@@ -10,9 +10,9 @@
  *  FS2-only (not in RoR, no symbols): every name was read from the code
  *  (batch 008); the messages say "rxsndstr". See rxsndstradpcm.h.
  *
- *  PC: unless RXSNDDRV runs (YAMIPAN_RXSNDDRV=1, sdk/sif.cpp), nothing answers
- *  rxSndAdpcmUpdate and the stream would never end, and an event waits for
- *  its voice. The block "the driver's silent side" below stands for the
+ *  PC: RXSNDDRV answers rxSndAdpcmUpdate (sdk/sif.cpp boots it). Should it not
+ *  run, nothing would, the stream would never end and an event would wait for
+ *  its voice; the block "the driver's silent side" below stands for the
  *  driver then: it answers as RXSNDDRV would, from the request's length.
  * ======================================================================== */
 #include "rx/rxsndstradpcm.h"
@@ -54,10 +54,6 @@ static RxSndStrAdpcmStream *s_free;                                 /* bss 0x522
  * runs, in wall time, as a real voice would: the subtitles read it. Paused
  * and pitched like the slot. The IOP's buffer is reported empty.
  */
-
-/* rxSndAdpcmOpen allocates a buffer asked for as 0, and without the driver no
- * IOP heap answers. The address only has to be non-zero, nothing reads it. */
-#define ADPCM_SILENT_BUFFER     0x100000
 
 // layout: host
 typedef struct AdpcmSilentVoice
@@ -376,17 +372,8 @@ int rxSndStrAdpcmOpen(RxSndStrSlot *slot)
         slot->start = request->size;
     rxSndStrStreamSeek(stream->source, request->offset + slot->start);
 
-    /* PC: the ROM's slot->iopAddr and slot->spuAddr; 0 has rxSndAdpcmOpen
-     * allocate them, which only a running driver's heaps can answer. */
-    iopAddr = slot->iopAddr;
+    iopAddr = slot->iopAddr;    /* 0: rxSndAdpcmOpen allocates them */
     spuAddr = slot->spuAddr;
-    if (!YamiPan_IopSoundDriverRuns())
-    {
-        if (iopAddr == 0)
-            iopAddr = ADPCM_SILENT_BUFFER;
-        if (spuAddr == 0)
-            spuAddr = ADPCM_SILENT_BUFFER;
-    }
     stream->adpcm = rxSndAdpcmOpenEx(mode, request->rate, iopAddr, slot->iopKB, spuAddr, slot->spuKB,
                                      (request->flags & RXSNDSTR_REQUEST_NO_ARG) ? -1 : request->openArg);
     if (stream->adpcm < 0)

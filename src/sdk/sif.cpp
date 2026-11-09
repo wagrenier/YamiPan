@@ -1,18 +1,14 @@
 // sdk/sif.cpp -- the EE's side of the IOP.
 //
-// With YAMIPAN_RXSNDDRV=1 an IOP runs (yamipan/iop/): loading RXSNDDRV.IRX boots the sound driver, IOP
-// memory is iop::SystemMemory (an IOP address is a host address below 4 GB), SIF DMA and
-// sceSifGetOtherData copy, and calls to the driver's RPC 0xd000 go through its own dispatcher, on the
-// caller's thread, before sceSifCallRpc returns (so its end function runs at once, as before).
-//
-// Without it no IOP runs: modules "load", memory is handed out as bare IOP addresses nothing may
-// dereference, transfers are dropped and every RPC answers at once with an empty reply. Game code cannot
-// tell, which is the point: the boot goes through.
+// An IOP runs (yamipan/iop/): loading RXSNDDRV.IRX boots the sound driver, IOP memory is
+// iop::SystemMemory (an IOP address is a host address below 4 GB), SIF DMA and sceSifGetOtherData copy,
+// and calls to the driver's RPC 0xd000 go through its own dispatcher, on the caller's thread, before
+// sceSifCallRpc returns (so its end function runs at once). The other modules only "load", and a call
+// to a server nobody registered answers at once with an empty reply.
 #include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cctype>
-#include <cstdlib>
 #include <mutex>
 #include <string_view>
 #include <thread>
@@ -32,11 +28,6 @@
 namespace
 {
 
-constexpr unsigned kIopMemoryBase = 0x100000;
-constexpr unsigned kIopAlignment = 0x40;
-
-std::atomic<unsigned> s_iopTop{kIopMemoryBase};
-
 // Whether a module path names RXSNDDRV: rxfile loads it as 'cdrom0:\MODULES\RXSNDDRV.IRX;1'.
 bool namesSoundDriver(const char *path)
 {
@@ -47,18 +38,8 @@ bool namesSoundDriver(const char *path)
            }) != name.end();
 }
 
-// The IOP runs only on request, until it makes sound.
 // RXSNDDRV is the rx sound library's server.
 constexpr unsigned kRxSndRpc = 0xd000;
-
-bool driverRequested()
-{
-    static const bool requested = [] {
-        const char *value = std::getenv("YAMIPAN_RXSNDDRV");
-        return value != nullptr && value[0] == '1';
-    }();
-    return requested;
-}
 
 } // namespace
 
@@ -66,11 +47,11 @@ void YamiPan_IopBoot()
 {
     static std::once_flag once;
     std::call_once(once, [] {
-        yamipan::log::info("iop: starting RXSNDDRV (YAMIPAN_RXSNDDRV=1)");
+        yamipan::log::info("iop: starting RXSNDDRV");
         yamipan::iop::Kernel::instance().runModuleStart(&RxSndDrvStart);
 
-        // A probe while the EE does not call it yet: once its RPC thread has registered, command 0x12
-        // (the version, no side effect) goes through the driver's own dispatcher.
+        // A boot check: once its RPC thread has registered, command 0x12 (the version, no side effect)
+        // goes through the driver's own dispatcher. The EE binds its client only after this.
         const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
         while (YamiPan_IopRpcIsReady(kRxSndRpc) == 0 && std::chrono::steady_clock::now() < deadline)
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
@@ -102,7 +83,7 @@ int sceSifSyncIop()
 int sceSifLoadModule(const char *path, int, const char *)
 {
     // The IOP ran a module's start() as it loaded it; the sound driver is the one with code here.
-    if (path != nullptr && driverRequested() && namesSoundDriver(path))
+    if (path != nullptr && namesSoundDriver(path))
         YamiPan_IopBoot();
 
     static std::atomic<int> s_nextModule{1};
@@ -120,7 +101,7 @@ int sceSifBindRpc(sceSifClientData *bd, unsigned int request, unsigned int)
 
 int YamiPan_IopSoundDriverRuns()
 {
-    return driverRequested() && YamiPan_IopRpcIsReady(kRxSndRpc) != 0 ? 1 : 0;
+    return YamiPan_IopRpcIsReady(kRxSndRpc) != 0 ? 1 : 0;
 }
 
 int sceSifCheckStatRpc(sceSifRpcData *)
@@ -134,7 +115,7 @@ int sceSifCallRpc(sceSifClientData *bd, unsigned int fno, unsigned int, void *se
                   int rsize, sceSifEndFunc func, void *para)
 {
     const void *reply = nullptr;
-    if (bd != nullptr && driverRequested() && YamiPan_IopRpcIsReady(bd->command) != 0)
+    if (bd != nullptr && YamiPan_IopRpcIsReady(bd->command) != 0)
         reply = YamiPan_IopRpcDispatch(bd->command, fno, send, ssize);
     if (receive != nullptr && rsize > 0)
     {
@@ -149,12 +130,12 @@ int sceSifCallRpc(sceSifClientData *bd, unsigned int fno, unsigned int, void *se
 }
 
 // Both sides call it: the EE reading IOP memory (rxSndIopRead), the driver reading EE memory (src is the
-// pointer RxSndDrvEePointer widened). Either way both are host pointers once an IOP runs.
+// pointer RxSndDrvEePointer widened). Either way both are host pointers.
 int sceSifGetOtherData(sceSifReceiveData *, void *src, void *dest, int size, unsigned int)
 {
     if (dest == nullptr || size <= 0)
         return 0;
-    if (driverRequested() && src != nullptr)
+    if (src != nullptr)
         std::memcpy(dest, src, static_cast<std::size_t>(size));
     else
         std::memset(dest, 0, static_cast<std::size_t>(size));
@@ -170,7 +151,7 @@ int sceSifDmaStat(u_int)
 // (RxSndDrvSendToEe). The transfer is done when this returns; sceSifDmaStat says so.
 u_int sceSifSetDma(sceSifDmaData *sdd, int len)
 {
-    if (driverRequested() && sdd != nullptr)
+    if (sdd != nullptr)
     {
         for (int i = 0; i < len; i++)
         {
@@ -185,19 +166,11 @@ u_int sceSifSetDma(sceSifDmaData *sdd, int len)
 // `addr`") no caller uses, so it is placed low.
 void *sceSifAllocSysMemory(int mode, u_int size, void *)
 {
-    if (driverRequested())
-    {
-        using Placement = yamipan::iop::SystemMemory::Placement;
-        return yamipan::iop::Kernel::instance().memory().allocate(size, mode == 1 ? Placement::High
-                                                                                  : Placement::Low);
-    }
-    const unsigned aligned = (size + kIopAlignment - 1) & ~(kIopAlignment - 1);
-    return reinterpret_cast<void *>(static_cast<uintptr_t>(s_iopTop.fetch_add(aligned)));
+    using Placement = yamipan::iop::SystemMemory::Placement;
+    return yamipan::iop::Kernel::instance().memory().allocate(size, mode == 1 ? Placement::High : Placement::Low);
 }
 
 int sceSifFreeSysMemory(void *addr)
 {
-    if (driverRequested())
-        return yamipan::iop::Kernel::instance().memory().free(addr) ? 0 : -1;
-    return 0;
+    return yamipan::iop::Kernel::instance().memory().free(addr) ? 0 : -1;
 }

@@ -107,7 +107,7 @@ src/yamipan/
   kernel call. `DIntr` / `EIntr` hold off the interrupt thread.
 - **Interrupt thread** (`ee::InterruptController`): the vblank clock, alarms, INTC handlers. The game
   chooses PAL or NTSC through `sceGsResetGraph`; the clock follows.
-- **IOP threads** (`iop::Kernel`, only with `YAMIPAN_RXSNDDRV=1`): RXSNDDRV's tick, DMA and RPC threads,
+- **IOP threads** (`iop::Kernel`): RXSNDDRV's tick, DMA and RPC threads,
   detached host threads that run IOP code only while holding the big kernel lock, which every IOP context
   (and the EE's RPC calls into the driver) takes, so IOP code runs one context at a time.
 

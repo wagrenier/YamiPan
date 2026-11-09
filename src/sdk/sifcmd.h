@@ -93,11 +93,10 @@ void *YamiPan_IopRpcDispatch(u_int rpc_number, u_int command, void *data, int si
 int   YamiPan_IopRpcIsReady(u_int rpc_number);
 
 /* Runs RXSNDDRV's start() (iop/rxsnddrv) on the IOP kernel.  Idempotent;
- * sceSifLoadModule() calls it when the EE loads RXSNDDRV.IRX, and only with
- * YAMIPAN_RXSNDDRV=1 until the host serves the driver's RPC. */
+ * sceSifLoadModule() calls it when the EE loads RXSNDDRV.IRX. */
 void  YamiPan_IopBoot(void);
 
-/* 1 once RXSNDDRV runs and serves its RPC (YAMIPAN_RXSNDDRV=1, sdk/sif.cpp):
- * the rx stream formats leave the driver's reports to it then. */
+/* 1 once RXSNDDRV runs and serves its RPC (sdk/sif.cpp boots it): the rx
+ * stream formats leave the driver's reports to it then. */
 int   YamiPan_IopSoundDriverRuns(void);
 
