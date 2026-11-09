@@ -223,6 +223,7 @@ template <class Archive>
 void GameSettings::serialize(Archive &archive)
 {
     archive("skip_intro", skipIntro);
+    archive("game_rate", gameRate);
 }
 
 template <class Archive>
@@ -274,6 +275,7 @@ void Config::applyEnvironment()
         }
     };
     apply("YAMIPAN_SKIP_INTRO", game.skipIntro);
+    apply("YAMIPAN_GAME_RATE", game.gameRate);
     apply("YAMIPAN_ASPECT", display.aspectMode);
     apply("YAMIPAN_ASPECT_RATIO", display.aspectRatio);
     apply("YAMIPAN_RENDER_MODE", display.renderMode);

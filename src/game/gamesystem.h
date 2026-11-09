@@ -23,6 +23,7 @@
 #include "game/pad.h"
 #include "game/perfmeter.h"
 #include "game/sysdata.h"
+#include "game/gamerate.h"
 #include "sdk/scetypes.h"
 
 // Vsyncs per frame: the game runs at 30 fps (PAL 25) unless a frame is late.
@@ -123,5 +124,6 @@ extern u_char      gGfxPutDrawEnv;  /* sdata 0x31a890 (gp-0x7fe0): 1 */
 extern u_char      gGfxKickDisplayPacket; /* sdata 0x31a894 (gp-0x7fdc): 1; 0 after a GS reset */
 
 int main(int argc, char **argv);                                         // FS2 0x0012d910
+
 
 #endif /* _GAME_GAMESYSTEM_H */

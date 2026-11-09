@@ -4,6 +4,7 @@
 // the inline helpers CodeWarrior emitted after them (game/uiwidget.h).
 
 #include "game/uiwidget.h"
+#include "game/gamerate.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -528,7 +529,7 @@ void PrgTransMsg::advance()
         m_target = m_scroll;
     }
     if (pad.m_held & kPadDown) {
-        m_scroll = m_scroll + m_speed;
+        m_scroll = m_scroll + m_speed * palScale();   // PC: game_rate, a step a 25 Hz frame
         if (m_scroll < m_scrollEnd) {
             int line = (int)m_lineHeight;
             m_target = (float)(line * ((int)((m_scroll + m_lineHeight) - 1.0f) / line));
@@ -540,7 +541,7 @@ void PrgTransMsg::advance()
             m_target = m_scrollEnd;
         }
     } else if (pad.m_held & kPadUp) {
-        float scroll = m_scroll - m_speed;
+        float scroll = m_scroll - m_speed * palScale();   // PC: game_rate
         m_scroll = scroll;
         if (0.0f <= scroll) {
             m_target = (float)((int)m_lineHeight * ((int)scroll / (int)m_lineHeight));
@@ -551,11 +552,11 @@ void PrgTransMsg::advance()
             m_target = 0.0f;
         }
     } else if (m_target < m_scroll) {
-        m_scroll = m_scroll - m_speed;
+        m_scroll = m_scroll - m_speed * palScale();   // PC: game_rate
         if (m_scroll < m_target)
             m_scroll = m_target;
     } else if (m_scroll < m_target) {
-        m_scroll = m_scroll + m_speed;
+        m_scroll = m_scroll + m_speed * palScale();   // PC: game_rate, a step a 25 Hz frame
         if (m_target < m_scroll)
             m_scroll = m_target;
     }
@@ -667,10 +668,10 @@ void PrgMsgReference::setText(S2dWidgetDef *def)
 
 void PrgMsgAniX::advance()
 {
-    if (m_arg == 0)
-        m_frame = m_frame + 1.0f;
+    if (m_arg == 0)   // PC: game_rate, a 25 Hz frame's share of a frame (game/gamerate.h); the ROM's 1.0 at 25
+        m_frame = m_frame + palScale();
     else
-        m_frame = m_frame - 1.0f;
+        m_frame = m_frame - palScale();
     if (m_frame < 0.0f)
         m_frame = 0.0f;
     if (m_length < m_frame)
@@ -988,25 +989,25 @@ void PrgRot::advance()
             held = pad.m_held;
             if (!(held & kPadRStickUp) && !(held & kPadRStickDown)) {
                 if (held & kPadRStickLeft)
-                    m_angle = m_angle - kPrgRotTurnStep;
+                    m_angle = m_angle - kPrgRotTurnStep * palScale();   // PC: game_rate
                 else if (held & kPadRStickRight)
-                    m_angle = m_angle + kPrgRotTurnStep;
+                    m_angle = m_angle + kPrgRotTurnStep * palScale();   // PC: game_rate
             }
         } else if (!m_recentred) {
             if (l1 && !r1)
-                m_angle = m_angle - kPrgRotTurnStep;
+                m_angle = m_angle - kPrgRotTurnStep * palScale();   // PC: game_rate
             else if (r1 && !l1)
-                m_angle = m_angle + kPrgRotTurnStep;
+                m_angle = m_angle + kPrgRotTurnStep * palScale();   // PC: game_rate
         }
         if ((pad.m_held & kPadRStickUp) || (pad.m_held & kPadRStickDown)) {
-            m_scale = (m_scale + 0.0f) - pad.m_stick[PadStick_RightY] * kPrgRotZoomStep;
+            m_scale = (m_scale + 0.0f) - pad.m_stick[PadStick_RightY] * kPrgRotZoomStep * palScale();   // PC: game_rate
             if (m_scale < kPrgRotScaleMin)
                 m_scale = kPrgRotScaleMin;
             if (kPrgRotScaleMax < m_scale)
                 m_scale = kPrgRotScaleMax;
         }
-        pan[1] = -pad.m_stick[PadStick_LeftY] * kPrgRotPanStep;
-        pan[0] = -pad.m_stick[PadStick_LeftX] * kPrgRotPanStep;
+        pan[1] = -pad.m_stick[PadStick_LeftY] * kPrgRotPanStep * palScale();   // PC: game_rate
+        pan[0] = -pad.m_stick[PadStick_LeftX] * kPrgRotPanStep * palScale();
     }
 
     if ((double)m_angle < -kPi)
@@ -1473,7 +1474,8 @@ bool UiTween::step()
 {
     if (length == 0)
         return true;
-    frame++;
+    if (palTicks() != 0)   // PC: game_rate, 25 Hz frames (game/gamerate.h)
+        frame++;
     return isDone();
 }
 

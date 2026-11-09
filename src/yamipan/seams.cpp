@@ -6,6 +6,7 @@
 #include "game/movieplayer.h"
 #include "rena/rena_2d_texture_tim2.h"
 #include "yamipan/core/application.h"
+#include "yamipan/core/logger.h"
 #include "yamipan/ee/interrupts.h"
 #include "yamipan/ee/kernel.h"
 #include "yamipan/os/timed_waiter.h"
@@ -81,6 +82,19 @@ void YamiPan_Sleep(unsigned int milliseconds)
 void YamiPan_SleepNs(uint64_t nanoseconds)
 {
     yamipan::os::TimedWaiter::sleepFor(std::chrono::nanoseconds(nanoseconds));
+}
+
+// Only the rates the field clock can pace: one PAL field or two a frame. Anything else is the ROM's 25.
+int YamiPan_GameRate(void)
+{
+    static const int rate = [] {
+        const int asked = yamipan::Application::instance().config().game.gameRate;
+        if (asked == 25 || asked == 50)
+            return asked;
+        yamipan::log::warning("game_rate {} is not 25 or 50; running at 25", asked);
+        return 25;
+    }();
+    return rate;
 }
 
 void *YamiPan_GetHostPointer(uintptr_t)

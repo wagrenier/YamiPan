@@ -2,6 +2,7 @@
 // (game/stageresult.h).
 
 #include "game/stageresult.h"
+#include "game/gamerate.h"
 #include "game/packtables.h"
 
 #include <string.h>
@@ -157,6 +158,9 @@ void StageResult::update(sceVif1Packet *packet, TexAreaList *texList)
 
 void StageResult::tick()
 {
+    // PC: game_rate (game/gamerate.h): the play time (saved, shown / 25) and the stage clocks count 25 Hz frames.
+    if (palTicks() == 0)
+        return;
     SystemData *data = getSystemData();
     if (data->save.playTime != kCounterStopped)
         data->save.playTime++;

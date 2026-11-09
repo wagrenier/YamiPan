@@ -9,6 +9,7 @@
  *  has names here and getSoundKind never answers it: the ROM's, kept.
  * ======================================================================== */
 #include "game/gamehooks.h"
+#include "game/gamerate.h"
 #include "game/characterbrain.h"
 #include "game/characterground.h"
 #include "game/modelpose.h"
@@ -775,7 +776,8 @@ void StageCharacter::updateSounds()
     if (m_soundState != kSoundNone || getLifeState() != 2 || m_voiceOn == 0)
         return;
     if (m_voiceDelay != 0) {
-        m_voiceDelay--;
+        if (palTicks() != 0)   // PC: game_rate, the delay counts 25 Hz frames (kFramesPerSecond; game/gamerate.h)
+            m_voiceDelay--;
         return;
     }
     char buffer[kVoiceNameSize];

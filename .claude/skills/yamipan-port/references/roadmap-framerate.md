@@ -239,11 +239,54 @@ A's.
 1. The inventory: every per-frame rule in the ~117 files, kind and fix. **First pass done (2026-11-09):
    framerate-inventory.md**, from `framerules.py`'s candidates; its "to check" list is what is left.
 2. **50 Hz first** as the dry run: 2x is exact for counters and speeds (n -> 2n, v -> v / 2), dt exact (6 ticks),
-   `stageFps` 50. It tests the method and the 25-vs-faster comparison with no rounding in the way.
+   `stageFps` 50. It tests the method and the 25-vs-faster comparison with no rounding in the way. **Started
+   2026-11-09** ("The 50 Hz dry run" below; branch `framerate/50hz`).
 3. 60 Hz: the ulp fix, the 2.4x counters, the eases.
 4. Keep A on top for refresh rates above 60.
 
-## Measuring
+## The 50 Hz dry run (2026-11-09)
+
+On the branch `framerate/50hz` (worktree `../YamiPan-rate`: another session was debugging in the main checkout).
+
+**The switch.** `game_rate` in yamipan.ini (`YAMIPAN_GAME_RATE`; 25 or 50, read once; anything else warns and runs
+25), through the seam `YamiPan_GameRate` (`os/yamipan_time.h`). `game/gamerate.h` (PC only): at 50 the master clock
+is built with 6 ticks and `threadSysInit` with an interval of 1, so the game loop runs every PAL field; `palTicks()`
+is the 25 Hz frames that ended this game frame (from the master clock's own ticks: 0, 1, 0, 1 at 50; always 1 at 25)
+and `palScale()` the frame's length in 25 Hz frames (0.5; 1 at 25). **At 25 everything is the ROM to the bit**: each
+change multiplies by 1.0f or gates on a 1.
+
+**Converted** (each marked `// PC: game_rate`): the shared mechanisms of framerate-inventory.md (UI tracks
+`UiTrack::step`, tweens `UiTween::step`, vector tracks and fades, pad repeat, stream and master sound fades); the
+widgets' own steps (`PrgMsgAniX`, `PrgRot`'s turn, zoom and pan, `PrgTransMsg`'s scroll: x `palScale`); the main
+camera (its five `approachVec3` eases with rate and cap x `palScale`, Euler at the finer step; zoom steps; blocked
+frames); particles (velocity, age, life, colour, size and sprite frame change on the 25 Hz tick; position and spin
+move `palScale` of a step every frame, so a particle is where the ROM's is at each 25 Hz frame and in a line between;
+between ticks nothing is emitted); item physics (a closed Verlet simulation: it runs whole 25 Hz frames, exact, so
+thrown items still move at 25 Hz); the stage clocks and the saved play time (`StageResult::tick` on the tick);
+character voice delays (`kFramesPerSecond = 25`).
+
+**Not converted yet** (run 2x fast at 50): the rest of framerate-inventory.md's systems table: critters, sight-jack
+fades and hold, the jack's film, game over, demo flecks, mission notices and timed records, the sub-scene wait, fire
+and scope, the item prompt, status, the HUD weapon cycle, Kunitoris, the locks, cars and cut speed, the lamp's lean,
+the sight-jack aim and the dive camera's eases.
+
+**Seen** (stage 2, 45 s, the walk script; at 50 Hz with every pad-read number doubled, since the script counts pad
+reads; `YAMIPAN_RATE_LOG=1`, `ratecmp.py`):
+- the game frame is 20.0 ms of game time at 50 (40.0 at 25), 2,150 stage frames against 1,048 in the same time;
+- the player covers 1,276 units in the first 10 s of walking at 25 and 1,288 at 50 (1 %); the camera's eye 1,326
+  and 1,344; the eye's distance behind the player follows the same curve (288 / 293, 330 / 336, 259 / 259,
+  213 / 213 at 0.5, 1, 6 and 10 s), so the converted eases hold the camera's feel;
+- motion is even at 50: the player moves every frame, 3.3 units a frame against 7.2 (no frame without a move between
+  two that move; the next / this step ratio's median 1.01 against 1.11);
+- the two walks drift apart later (25 units at 8 s, 89 at 18 s): the scripted turns start a frame earlier or
+  later, since the pad is read twice as often;
+- particles (30 s idle, `YAMIPAN_BLEND_LOG`): a 50 Hz frame without a tick moves a quad 9.55 units, 19.1 a 25 Hz
+  frame; the tick frames, which also carry the size and sprite changes, 14.65. The 25 Hz step (21.4) holds motion
+  and those changes together, so the speeds agree; a per-particle log would make that exact;
+- the shots at 50: the girl by the wall in the rain, as at 25.
+
+Not checked: menus, the map, the sight-jack and anything in the "not converted" list; sound by ear; a frame
+filter or film effect; the memory card's play time after a save.
 
 The machine is used over Remote Desktop, which caps presents at 10-30 a second: judge by timestamps (game frame times
 and the render thread's blend fractions in a log), not by watching. For the picture test, a shot with the blend held

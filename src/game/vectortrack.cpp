@@ -9,6 +9,7 @@
  *  tools/reverse/vectorcmp.py plays them on the ROM's own code beside this.
  * ======================================================================== */
 #include <string.h>
+#include "game/gamerate.h"
 
 #include "game/vectortrack.h"
 #include "game/vu0math.h"
@@ -23,7 +24,7 @@ void VectorFade::step()
     const float t = frames > 0 ? (float)frame / (float)frames : 1.0f;
     for (int lane = 0; lane < 4; lane++)
         value[lane] = from[lane] + (to[lane] - from[lane]) * t;
-    if (frame < frames)
+    if (frame < frames && palTicks() != 0)   // PC: game_rate, 25 Hz frames (game/gamerate.h)
         frame++;
 }
 
@@ -63,6 +64,9 @@ void VectorTrack::step()
         return;
     }
 
+    // PC: game_rate (game/gamerate.h): keys last 25 Hz frames.
+    if (palTicks() == 0)
+        return;
     VectorKey *key = keyAt(index);
     frame++;
     if (key->frames <= frame) {

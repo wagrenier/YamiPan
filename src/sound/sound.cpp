@@ -8,6 +8,7 @@
 // IOP allocations and one for the SPU2 allocator.
 
 #include "sound/sound.h"
+#include "game/gamerate.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -304,6 +305,8 @@ void SoundStream::updateFade()
     if (m_state != SoundStream_Playing)
         return;
     if (m_fadeFrames == 0)
+        return;
+    if (palTicks() == 0)   // PC: game_rate, the fade counts 25 Hz frames (game/gamerate.h)
         return;
     m_fadeFrame++;
     if (m_fadeFrame < m_fadeFrames) {

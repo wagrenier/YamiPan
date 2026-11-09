@@ -3,6 +3,7 @@
 // (game/uitrack.h).
 
 #include "game/uitrack.h"
+#include "game/gamerate.h"
 
 #include "game/gamehooks.h"
 #include "game/gfxtarget.h"
@@ -1262,6 +1263,8 @@ UiTrack *UiAnim::findTrack(int kind)
 void UiTrack::step()
 {
     if (m_play == UiTrackPlay_Stopped || !isKeyedKind(m_rec->kind))
+        return;
+    if (palTicks() == 0)   // PC: game_rate, a track's frames are 25 Hz frames (game/gamerate.h)
         return;
     int frame = m_frame;
     int length = m_rec->length;
