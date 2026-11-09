@@ -268,6 +268,7 @@ struct ModelDraw
     int fixedFog = -1; // an effect's GS FOG, 0..255, for all it draws; -1 the pass's fog by depth
     bool writesDepth = true; // ZBUF's ZMSK clear: a material's, blended or not; not an effect's or a ghost's
     bool reflection = false; // cached batches drawn as their reflection (VU1 0x77f), not their colour
+    float alphaScale = 1.0f; // every vertex's alpha, VU address 25's w, 1 = 0x80: below 1 only for a face's frame
 };
 
 // What the vertex shaders take of a pass besides its projection: yamipan_drawmodel.h has what each is.

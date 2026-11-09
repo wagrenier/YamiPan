@@ -206,7 +206,7 @@ constexpr float kGsTexelUnit = 16.0f; // the GS's UV register
 // A vertex's colour in the GS's scale (0x80 = 1.0): what the VU1 program does, 0x2a9 and 0x2bb. The light is
 // ambient + each light's colour * max(0, its direction . the turned normal), the vertex colour is multiplied by
 // it and clamped to 255. The vertex's alpha is never loaded (lqi.xyz): every vertex takes VU address 25's w, 0x80
-// but for a ModelMaterial_Kind1's frames, which are not written. The spotlight kernel 0x545 is not here yet.
+// but for a face's frames (ModelDraw::alphaScale, applied in model.frag). The spotlight kernel 0x545 is not here yet.
 std::uint32_t litColor(const YamiPanModelLights &lights, const float *worldNormal, const float *color)
 {
     float sum[3];
@@ -701,6 +701,7 @@ void ModelRenderer::setMaterial(const void *list, const YamiPanModelMaterial &ma
     layer.scrollU = static_cast<float>(material.scrollU) / kUvUnit;
     layer.scrollV = static_cast<float>(material.scrollV) / kUvUnit;
     layer.blended = material.blended != 0;
+    layer.frameAlpha = static_cast<float>(material.frameAlpha) / static_cast<float>(kVertexAlpha);
     layer.blend = BlendMode::Alpha;
     layer.fixedFog = -1;
     layer.unlit = material.unlit != 0;
@@ -719,6 +720,7 @@ void ModelRenderer::setEffect(const void *list, const YamiPanModelEffect &effect
     layer.reflection = nullptr;
     layer.image = imageOf(effect.texture);
     layer.blended = true;
+    layer.frameAlpha = 0.0f;
     layer.blend = blendModeOf(effect.alpha1);
     layer.fixedFog = effect.fog;
 }
@@ -931,8 +933,9 @@ void ModelRenderer::drawPlacedBatch(Layer &layer, const float *matrix, const Yam
     if (layer.draws.size() > layer.passes.back().firstDraw)
     {
         ModelDraw &last = layer.draws.back();
-        if (last.batchCount == 0 && last.image == layer.image && last.blended == layer.blended &&
-            last.writesDepth == layer.writesDepth && last.firstVertex + last.vertexCount == firstVertex &&
+        if (last.batchCount == 0 && last.image == layer.image && last.blended == layer.drawsBlended() &&
+            last.alphaScale == layer.alphaScale() && last.writesDepth == layer.writesDepth &&
+            last.firstVertex + last.vertexCount == firstVertex &&
             last.firstSpotVertex + last.spotVertexCount == firstSpot &&
             last.firstShadowVertex + last.shadowVertexCount == firstShadow)
         {
@@ -944,7 +947,8 @@ void ModelRenderer::drawPlacedBatch(Layer &layer, const float *matrix, const Yam
     }
     ModelDraw &draw = layer.draws.emplace_back();
     draw.image = layer.image;
-    draw.blended = layer.blended;
+    draw.blended = layer.drawsBlended();
+    draw.alphaScale = layer.alphaScale();
     draw.firstVertex = firstVertex;
     draw.vertexCount = count;
     draw.firstSpotVertex = firstSpot;
@@ -1275,7 +1279,8 @@ void ModelRenderer::drawCachedBatch(Layer &layer, const float *matrix, const Yam
     if (layer.draws.size() > layer.passes.back().firstDraw)
     {
         ModelDraw &last = layer.draws.back();
-        if (last.batchCount != 0 && !last.reflection && last.image == layer.image && last.blended == layer.blended &&
+        if (last.batchCount != 0 && !last.reflection && last.image == layer.image &&
+            last.blended == layer.drawsBlended() && last.alphaScale == layer.alphaScale() &&
             last.writesDepth == layer.writesDepth && last.firstBatch + last.batchCount == index)
         {
             last.batchCount++;
@@ -1284,7 +1289,8 @@ void ModelRenderer::drawCachedBatch(Layer &layer, const float *matrix, const Yam
     }
     ModelDraw &out = layer.draws.emplace_back();
     out.image = layer.image;
-    out.blended = layer.blended;
+    out.blended = layer.drawsBlended();
+    out.alphaScale = layer.alphaScale();
     out.firstBatch = index;
     out.batchCount = 1;
     out.writesDepth = layer.writesDepth;
@@ -1861,6 +1867,7 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
             std::copy_n(pass.fogColor.begin(), 3, fragmentUniforms.fogColor);
             fragmentUniforms.params[0] = draw.blended ? 0.0f : kOpaqueAlphaRef;
             fragmentUniforms.params[1] = draw.blended && draw.blend == BlendMode::DestinationBoost ? 1.0f : 0.0f;
+            fragmentUniforms.params[2] = draw.alphaScale;
             SDL_PushGPUFragmentUniformData(commands, 0, &fragmentUniforms, sizeof(fragmentUniforms));
 
             if (draw.batchCount == 0)

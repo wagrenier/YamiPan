@@ -154,7 +154,8 @@ private:
         float reflectionScale = 0.0f;
         float scrollU = 0.0f;
         float scrollV = 0.0f;
-        bool blended = false;
+        bool blended = false;      // the material's: blended, and no shadow
+        float frameAlpha = 0.0f;   // a face's frame over its base: VU address 25's w, 1 = 0x80; 0 a material of its own
         BlendMode blend = BlendMode::Alpha;
         int fixedFog = -1;
         bool unlit = false;
@@ -164,6 +165,11 @@ private:
         bool writesDepth = true;
         bool open = false;
         bool eyeAtCentre = true; // the pass's eye is its projection's centre, so the rasterizer can cull as VU1
+
+        // What a draw of the layer's material blends like: a face's frame blends over its base with no alpha test
+        // (0x2e7e90 mode 1) whatever its material says, at its own alpha.
+        bool drawsBlended() const { return blended || frameAlpha > 0.0f; }
+        float alphaScale() const { return frameAlpha > 0.0f ? frameAlpha : 1.0f; }
     };
 
     // A growing GPU vertex buffer and what fills it.
