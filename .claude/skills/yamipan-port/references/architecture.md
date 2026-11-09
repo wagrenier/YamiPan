@@ -2100,7 +2100,7 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   device: `SDL_OpenAudioDeviceStream` on the default playback device, 16-bit stereo 48 kHz (SDL's audio is
   up since `Application::startServices`). The log reports the first three 10 s windows: "audio: N s mixed,
   peak P (x dBFS), reverb return peak R, K key-ons" (the reverb part since the next point). **Not yet:** PMON
-  and NON, the player's volume settings (RosePan's [audio] section), core 0 feeding core 1 (both cores
+  (NON since the same day, the next points), the player's volume settings (RosePan's [audio] section), core 0 feeding core 1 (both cores
   are summed, as in RosePan). **Seen 2026-11-09:** the device is "Remote Audio" (the machine is used over
   Remote Desktop); the language screen keys no voice (peak 0); `YAMIPAN_TELEPORT=d0101` keys the event's
   stereo stream and mixes it at -25 dBFS peak. A dump of that mix (scratch code, removed) read as sound,
@@ -2157,7 +2157,17 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   external input volume (BVOLL / BVOLR, L | R << 16), applied by RxSndDrvMixTick like the master volume;
   the record per core grew to 0x2c (RoR 0x20) for it (`m_input`, 0x7fff from RxSndDrvMixInit) and its
   pending field. The EE's sender is rxSndSetSysMute (core 0, 0x7fff or 0: the PCM ring's core); its
-  caller is not in the tree yet. The defaults batch (0xe1a0: MMIX 0xfcc, MVOL 0x3fff) is RoR's.
+  caller is not in the tree yet. The defaults batch (0xe1a0: MMIX 0xfcc, MVOL 0x3fff) is RoR's. (8) Noise:
+  FS2's RxSndDrvNoteTick, after a layer's switch bits, calls RxSndDrvVoiceSetNoise (0x4428: the voice
+  record's +0x24 = the region's centre note, pending bit 0x20) for a region with flag 4 (noise, which
+  also sets the voice's NON bit); RxSndDrvVoiceTick then writes sceSdSetCoreAttr(core | SD_C_NOISE_CLK
+  0x08, clock), so the last noise voice of a core sets that core's clock. `iop::Spu2` forwards SD_S_NON
+  and SD_C_NOISE_CLK to `Spu2Voices`, whose per-core generator is psx-spx's: a step of (clock & 3) + 4
+  a frame (48 kHz), a period of 0x20000 >> (clock >> 2), a parity bit (15 ^ 12 ^ 11 ^ 10 ^ 1) shifted
+  into a 16-bit register each time the timer runs out, the register read as signed. A NON voice plays it
+  instead of its samples, which still run (loops, ENDX, the envelope are theirs). Scratch check (removed):
+  clock 0 silent over 10,240 frames (one shift per 32,768), 0x20 a low rumble (a shift per 128 frames),
+  0x3f white (0.499 zero crossings a frame); NON off, the same silent sample stays silent.
 - **The EE's side** (2026-11-09, `sdk/sif.cpp`): sceSifBindRpc keeps the
   RPC number in the client's `command`; sceSifCallRpc sends a call to a registered server through
   `YamiPan_IopRpcDispatch` on the EE's thread and copies `rsize` bytes of the handler's buffer back before

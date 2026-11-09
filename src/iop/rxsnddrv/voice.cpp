@@ -45,10 +45,12 @@ enum
     RXSNDDRV_VOICE_SET_SWITCH = 0x04,   /* m_switch into the per-core switches */
     RXSNDDRV_VOICE_SET_VOLUME = 0x08,   /* VOLL / VOLR */
     RXSNDDRV_VOICE_SET_PITCH  = 0x10,   /* PITCH */
+    RXSNDDRV_VOICE_SET_NOISE  = 0x20,   /* FS2: the core's noise clock (RxSndDrvVoiceSetNoise) */
 };
 
-/* A voice (0x38 on the IOP).  layout: host -- m_done / m_arg are pointers;
- * the IOP offsets are in the comments and asserted up to m_envx. */
+/* A voice (0x3c on the IOP in FS2, RoR's 0x38: m_noise at +0x24 moved the
+ * rest up by 4).  layout: host -- m_done / m_arg are pointers; the IOP
+ * offsets (RoR's) are in the comments and asserted up to m_envx. */
 struct RxSndDrvVoice
 {
     int     m_priority;                 // IOP +0x00: a steal takes the largest
@@ -70,6 +72,7 @@ struct RxSndDrvVoice
     void   *m_arg;                      // IOP +0x2c
     int     m_enable;                   // IOP +0x30: allocatable (command 0x91)
     int     m_owner;                    // IOP +0x34: an allocation by the same owner takes it
+    int     m_noise;                    // FS2 IOP +0x24: the noise clock RxSndDrvVoiceSetNoise sets
 };
 static_assert(offsetof(RxSndDrvVoice, m_no) == 0x08, "RxSndDrvVoice::m_no");
 static_assert(offsetof(RxSndDrvVoice, m_pending) == 0x0c, "RxSndDrvVoice::m_pending");
@@ -156,7 +159,7 @@ static int VoiceExcluded(int group, int voice)
     return group > 0 && (s_voice.m_exclude[group][VoiceCore(voice)] & 1u << VoiceChannel(voice)) != 0;
 }
 
-// IOP 0x000037c0 (RoR 0x000035c0, 97% of it aligned: FS2 differs, unread)
+// IOP 0x000037c0 (RoR 0x000035c0, 97% of it aligned: FS2 read, the noise clock)
 void RxSndDrvVoiceTick(void)
 {
     u_int sw[6][2];                     /* VMIXL, VMIXR, VMIXEL, VMIXER, NON, PMON per core */
@@ -234,6 +237,9 @@ void RxSndDrvVoiceTick(void)
             }
             if (pending & RXSNDDRV_VOICE_SET_PITCH)
                 sceSdSetParam((u_short)(entry | SD_VP_PITCH), (u_short)p->m_pitch);
+            /* FS2: the noise clock is the core's, so the last noise voice set wins. */
+            if (pending & RXSNDDRV_VOICE_SET_NOISE)
+                sceSdSetCoreAttr((u_short)(VoiceCore(v) | SD_C_NOISE_CLK), (u_short)p->m_noise);
             p->m_pending = 0;
         }
 
@@ -485,6 +491,15 @@ void RxSndDrvVoiceSetPitch(int voice, u_short center, u_short centerFine, u_shor
 
     p->m_pending |= RXSNDDRV_VOICE_SET_PITCH;
     p->m_pitch    = (short)((int)(sceSdNote2Pitch(center, centerFine, note, fine) * scale) >> 12);
+}
+
+/* FS2 only: the noise clock (0..0x3f) for the core of `voice`, written by
+ * the next tick (RxSndDrvNoteTick passes a noise region's centre note). */
+// IOP 0x00004428 (FS2 only, read 2026-11-09)
+void RxSndDrvVoiceSetNoise(int voice, int clock)
+{
+    s_voice.m_voice[voice].m_noise    = clock;
+    s_voice.m_voice[voice].m_pending |= RXSNDDRV_VOICE_SET_NOISE;
 }
 
 // IOP 0x00004454 (RoR 0x00004208, the same; FS2 put RxSndDrvVoiceSetNoise before it)

@@ -226,6 +226,13 @@ struct Spu2Voices::Core
     std::int32_t sendR[kMixFrames] = {};
     std::int32_t returnL[kMixFrames] = {}; // from it
     std::int32_t returnR[kMixFrames] = {};
+
+    // The noise generator: a 16-bit shift register stepped by its clock (psx-spx "SPU Noise").
+    std::uint32_t noiseMask = 0;
+    int noiseClock = 0;
+    std::uint16_t noiseLevel = 0;
+    int noiseTimer = 0;
+    std::int16_t noise[kMixFrames] = {};
 };
 
 struct Spu2Voices::Meter
@@ -417,12 +424,15 @@ void Spu2Voices::mixVoices()
         const bool dryR = (core.dryR & bit) != 0;
         const bool wetL = (core.wetL & bit) != 0;
         const bool wetR = (core.wetR & bit) != 0;
+        const bool noise = (core.noiseMask & bit) != 0;
 
         for (int f = 0; f < kMixFrames; f++)
         {
             std::int32_t s = 0;
             if (!nextOutputSample(v, s))
                 break;
+            if (noise)
+                s = core.noise[f]; // the samples still run underneath: loops, end and envelope are theirs
             bool ended = false;
             const std::int32_t env = v.envelope(ended);
             if (ended)
@@ -468,6 +478,35 @@ void Spu2Voices::mixAutoDma()
     }
 }
 
+// One block of each core's noise, a step a frame (48 kHz): the clock's low two bits make a step of 4..7,
+// its high four a period of 0x20000 >> shift; each time the timer runs out a parity bit (bits 15, 12,
+// 11, 10, inverted) shifts in. The sample is the register as signed.
+void Spu2Voices::runNoise()
+{
+    for (int c = 0; c < kCores; c++)
+    {
+        Core &core = m_cores[c];
+        if (core.noiseMask == 0)
+            continue;
+        const int step = (core.noiseClock & 3) + 4;
+        const int period = 0x20000 >> ((core.noiseClock >> 2) & 0x0f);
+        for (int f = 0; f < kMixFrames; f++)
+        {
+            core.noiseTimer -= step;
+            if (core.noiseTimer < 0)
+            {
+                const int level = core.noiseLevel;
+                const int parity = ((level >> 15) ^ (level >> 12) ^ (level >> 11) ^ (level >> 10) ^ 1) & 1;
+                core.noiseLevel = static_cast<std::uint16_t>(level * 2 + parity);
+                core.noiseTimer += period;
+                if (core.noiseTimer < 0)
+                    core.noiseTimer += period;
+            }
+            core.noise[f] = static_cast<std::int16_t>(core.noiseLevel);
+        }
+    }
+}
+
 // The reverb at its half rate: each pair of sends averaged in (a two-tap box, a poor anti-alias filter
 // but far better than dropping one), the return held over both frames of the pair. RosePan's; not the
 // hardware's resamplers, whose images sit high in the band where the reverb has little energy.
@@ -507,6 +546,7 @@ void Spu2Voices::mixBlock(std::int16_t *out)
         std::fill(std::begin(core.sendL), std::end(core.sendL), 0);
         std::fill(std::begin(core.sendR), std::end(core.sendR), 0);
     }
+    runNoise();
     mixVoices();
     mixAutoDma();
     mixReverb();
@@ -775,6 +815,22 @@ void Spu2Voices::setGroup(int core, int voice, int group)
     std::lock_guard lock(m_lock);
     if (Voice *v = voiceAt(core, voice))
         v->group = group;
+}
+
+void Spu2Voices::setNoiseMask(int core, std::uint32_t mask)
+{
+    if (core < 0 || core >= kCores)
+        return;
+    std::lock_guard lock(m_lock);
+    m_cores[core].noiseMask = mask;
+}
+
+void Spu2Voices::setNoiseClock(int core, int clock)
+{
+    if (core < 0 || core >= kCores)
+        return;
+    std::lock_guard lock(m_lock);
+    m_cores[core].noiseClock = clock & 0x3f;
 }
 
 // ---- the effect unit ------------------------------------------------------------------------------

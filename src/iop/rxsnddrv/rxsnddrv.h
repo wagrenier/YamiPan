@@ -41,8 +41,8 @@
  *  command 0x31 param 2).  Read and the
  *  same as RoR apart from the record offsets: RxSndDrvNoteTick's switch bits,
  *  RxSndDrvVoiceAlloc, RxSndDrvSeFreeRamps, RxSndDrvPcmStatus.  Still unread:
- *  the rest marked "FS2 differs, unread" (the voice tick's noise clock, the
- *  XSEQ chunk lookups).  The one-word differences say the voice, mix
+ *  the rest marked "FS2 differs, unread" (the XSEQ chunk lookups).  The noise
+ *  clock (RxSndDrvVoiceSetNoise, the tick's SD_C_NOISE_CLK) is read and in.  The one-word differences say the voice, mix
  *  and PCM records grew (a voice stride 0x38 -> 0x3c, PCM offsets up by
  *  0x18..0x1c): the struct layouts below are still RoR's.  sdk/sif.cpp boots it when rxfile loads
  *  RXSNDDRV.IRX; its imports are sdk/iop.cpp's, on yamipan::iop.
@@ -242,7 +242,8 @@ void  RxSndDrvVoiceSetVolume(int voice, int l, int r);    // IOP 0x00004348
 void  RxSndDrvVoiceSetVolumeRaw(int voice, int l, int r); // IOP 0x00004380
 void  RxSndDrvVoiceSetPitch(int voice, u_short center, u_short centerFine, u_short note,
                             short fine, int scale); // IOP 0x000043b0
-void  RxSndDrvVoiceKeyOn(int voice);                // IOP 0x00004428
+void  RxSndDrvVoiceSetNoise(int voice, int clock);  // IOP 0x00004428 (FS2 only)
+void  RxSndDrvVoiceKeyOn(int voice);                // IOP 0x00004454
 void  RxSndDrvVoiceKeyOff(int voice);               // IOP 0x000044e8
 u_short RxSndDrvVoiceGetEnvx(int voice);            // IOP 0x0000458c
 void  RxSndDrvVoiceGetEnvxAll(u_char *reply);       // IOP 0x000045d0
