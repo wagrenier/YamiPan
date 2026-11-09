@@ -20,6 +20,7 @@
  *  noise kinds are read from who may hear them, not from the game.
  * ======================================================================== */
 #include <float.h>
+#include "game/gamerate.h"
 #include <math.h>
 #include <string.h>
 
@@ -299,7 +300,8 @@ void StageCharacter::stepStatus()
             int chance = 0;
             if (loudness != 0.0f)
                 chance = (int)((hearing * (loudness - distance) * 100.0f) / loudness);
-            if (randNext() % 100 < chance) {
+            // PC: game_rate (game/gamerate.h): the hearing roll is a chance a 25 Hz frame; rolled on the tick only.
+            if (palTicks() != 0 && randNext() % 100 < chance) {
                 bits |= kHeardSound;
                 if (loudness < quietest) {
                     quietest = loudness;
@@ -320,6 +322,8 @@ void StageCharacter::stepStatus()
         m_heardFrom = heard->source;
     }
 
+    if (palTicks() == 0)   // PC: game_rate, the hit mark and the leave countdown count 25 Hz frames
+        return;
     if (m_68c > 0)
         m_68c--;
     if (m_lifeOverride >= 0) {

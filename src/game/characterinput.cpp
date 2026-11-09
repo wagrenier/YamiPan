@@ -12,6 +12,7 @@
  *  named from its button only.
  * ======================================================================== */
 #include "game/characterinput.h"
+#include "game/gamerate.h"
 
 #include <limits.h>
 #include <math.h>
@@ -315,7 +316,9 @@ int CharacterInput::readFire(int button)
             return CharacterFire_Hold;
     } else if ((m_pad->m_held & bitMask(button)) != 0) {
         m_fireFrames = m_pad->m_repeatState[button].count;
-        if (m_fireFrames == kFireHoldFrames)
+        // PC: game_rate (game/gamerate.h): the count is in 25 Hz frames (Pad::updateRepeat) and stays a frame
+        // between ticks; the hold fires on the tick it is reached, once, as the ROM's.
+        if (m_fireFrames == kFireHoldFrames && palTicks() != 0)
             return CharacterFire_Hold;
     }
     return CharacterFire_None;
@@ -590,15 +593,16 @@ void CharacterInput::stepScope(float length, sceVu0FVECTOR lookTarget)
         if (m_swayAmount <= kSwayRest)
             m_swayAmount = kSwayRest;
     }
-    m_swayPhase[0] = wrapAngle(m_swayPhase[0] + m_swayStep[0]);
-    m_swayPhase[1] = wrapAngle(m_swayPhase[1] + m_swayStep[1]);
+    m_swayPhase[0] = wrapAngle(m_swayPhase[0] + m_swayStep[0] * palScale());   // PC: game_rate, a step a 25 Hz frame
+    m_swayPhase[1] = wrapAngle(m_swayPhase[1] + m_swayStep[1] * palScale());
 
     if (shooting) {
         m_scopePitch = m_scopePitchNow;
         m_scopeYaw = m_scopeYawNow;
     } else {
-        m_scopePitchNow += ease * (m_scopePitch - m_scopePitchNow);
-        m_scopeYawNow = wrapAngle(ease * wrapAngle(m_scopeYaw - m_scopeYawNow) + m_scopeYawNow);
+        const float share = palEase(ease);   // PC: game_rate, a linear ease a 25 Hz frame (game/gamerate.h)
+        m_scopePitchNow += share * (m_scopePitch - m_scopePitchNow);
+        m_scopeYawNow = wrapAngle(share * wrapAngle(m_scopeYaw - m_scopeYawNow) + m_scopeYawNow);
     }
 
     CharacterWants &wants = owner->m_wants;
@@ -877,7 +881,7 @@ void CharacterInput::update()
         stepOnFoot(lookTarget);
 
     if (!isAttackMotion(m_owner->m_motion->motionId))
-        lerpVec4(kLookEase, m_look, m_look, lookTarget);
+        lerpVec4(palEase(kLookEase), m_look, m_look, lookTarget);   // PC: game_rate
 
     StageScene *scene = gStageScene;
     if ((pad->m_pressed & kPadR3) != 0 && scene->showFlags->flag[Control_Companion] != 0

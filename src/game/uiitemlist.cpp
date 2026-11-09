@@ -19,6 +19,7 @@
  *  bound by its owner.
  */
 #include "game/gamehooks.h"
+#include "game/gamerate.h"
 #include "game/fontdata.h"
 #include "game/playermotion.h"
 #include "game/stagescene.h"
@@ -208,7 +209,9 @@ void UiPrompt::draw(sceVif1Packet *packet)
         animFrame = 0;
         animKind = UiPromptAnim_Open;
     }
-    animFrame++;
+    // PC: game_rate (game/gamerate.h): a key a 25 Hz frame; the first after a restart at once, as the ROM's.
+    if (palTicks() != 0 || animFrame == 0)
+        animFrame++;
     if (shown == nullptr || fade == nullptr)
         return;
 

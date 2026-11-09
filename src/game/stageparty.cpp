@@ -7,6 +7,7 @@
  * ======================================================================== */
 
 #include "game/stageparticle.h"
+#include "game/gamerate.h"
 #include "game/stageparty.h"
 
 #include <math.h>
@@ -276,8 +277,8 @@ void SightJack::aimAt(StageObject *object)
     }
     if (stageObjRecord(object->m_itemDef)->kind == CharacterKind_F) {
         sceVu0FVECTOR *world = m_camera->m_xform.world;
-        approachAnglesXZ(kFlyerTurnRate, kFlyerTurnMax, m_camera->m_xform.rotation,
-                         m_camera->m_xform.rotation, object->m_xform.rotation);
+        approachAnglesXZ(palEase(kFlyerTurnRate), kFlyerTurnMax * palScale(), m_camera->m_xform.rotation,
+                         m_camera->m_xform.rotation, object->m_xform.rotation);   // PC: game_rate (game/gamerate.h)
         identityMatrix(world);
         rotateByAngles(world, world, object->m_motion->m_lampAngles);
         rotateByAngles(world, world, m_camera->m_xform.rotation);
@@ -528,8 +529,10 @@ bool SightJack::pollButtons()
         if (!anyShoulderHeld())
             m_holdState = JackHold_None;
         break;
-    case JackHold_Counting:
-        if (m_holdFrames++ < kHoldFrames) {
+    case JackHold_Counting: {
+        const int counted = m_holdFrames;   // PC: game_rate, the hold counts 25 Hz frames (game/gamerate.h)
+        m_holdFrames += palTicks();
+        if (counted < kHoldFrames) {
             if (!anyShoulderHeld()) {
                 if (keepNearestFoe(m_heldButtons) != nullptr || stepAlertedFoe(m_heldButtons) != nullptr) {
                     m_viewChanged = 1;
@@ -541,6 +544,7 @@ bool SightJack::pollButtons()
             m_holdState = JackHold_Held;
         }
         break;
+    }
     case JackHold_None:
         m_holdFrames = 0;
         if (anyShoulderHeld())
@@ -1197,7 +1201,7 @@ void SightJack::drawFadingMarker()
         jackMarker(packet, kept, view, alpha | (kMarkerFoe & kMarkerRgb));
     }
     packets->closeList();
-    m_markerFrames--;
+    m_markerFrames -= palTicks();   // PC: game_rate, 25 Hz frames
 }
 
 // FS2 0x00201840
@@ -1372,7 +1376,7 @@ void SightJack::draw()
         m_fill->drawGrain(packet, scene2dTexList(), alpha | kVisionTintA);
         m_fill->drawGrain(packet, scene2dTexList(), alpha | kVisionTintB);
         packets->closeList();
-        m_visionFade--;
+        m_visionFade -= palTicks();   // PC: game_rate, 25 Hz frames
         return;
     }
     if (!m_running) {
@@ -1383,7 +1387,7 @@ void SightJack::draw()
     m_markerFrames = kMarkerFrames;
     if (m_flashFrames >= 0) {
         m_fill->m_level = (float)m_flashFrames / kFlashFramesScale;
-        m_flashFrames--;
+        m_flashFrames -= palTicks();   // PC: game_rate
     }
 
     if (!m_visionOn) {
@@ -1405,7 +1409,7 @@ void SightJack::draw()
         drawPaletteView(packet, kRampSepia);
         packets->closeList();
     } else {
-        m_visionFrames--;
+        m_visionFrames -= palTicks();   // PC: game_rate
         sceVif1Packet *packet = packets->openList(PacketList_Scene2d);
         fillBlack(packet);
         m_fill->drawGrain(packet, scene2dTexList(), kVisionWaitTintA);
@@ -1415,7 +1419,7 @@ void SightJack::draw()
         packets->closeList();
     }
     if (m_bindFlash > 0)
-        m_bindFlash--;
+        m_bindFlash -= palTicks();   // PC: game_rate
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -1654,7 +1658,7 @@ void JackFilm::draw(float level, sceVif1Packet *packet)
     YamiPanFilm film{};
     for (int i = 0; i < kJackFilmCorners; i++) {
         Corner &corner = corners[i];
-        corner.progress += corner.step;
+        corner.progress += corner.step * palScale();   // PC: game_rate, a step a 25 Hz frame
         if (corner.progress >= kOne) {
             corner.step = kOne / ((float)(nextDraw() >> kStepShift) + kStepFrames);
             corner.progress = 0.0f;

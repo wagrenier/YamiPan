@@ -1155,8 +1155,10 @@ void StageNodeTree::update(float range, int arg, StageObject *view, StagePlayer 
 {
     const float *scare = player != nullptr ? reinterpret_cast<StageObject *>(player)->m_xform.position : nullptr;
     const sceVu0FVECTOR *viewer = view->getWorldMatrix();
+    // PC: game_rate (game/gamerate.h): the critters (their walks, turns, timers, rolls and collisions) run whole
+    // 25 Hz frames, as the ROM's; they move in 25 Hz steps. The nest's warm-up at construction is not this path.
     for (CritterNest *nest : m_nests) {
-        if (vecDistanceSq(nest->m_xform.world[3], viewer[3]) < range * range)
+        if (palTicks() != 0 && vecDistanceSq(nest->m_xform.world[3], viewer[3]) < range * range)
             nest->update(scare);
     }
 

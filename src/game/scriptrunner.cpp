@@ -9,6 +9,7 @@
 // still pops its count and skips its words (scriptnatives.inc, generated from the ROM), so a script
 // runs straight through it and the [stub] log names it.
 #include "game/numlock.h"
+#include "game/gamerate.h"
 #include "game/scriptrunner.h"
 #include "game/stagedoor.h"
 #include "game/stageparticle.h"
@@ -780,7 +781,7 @@ int ScriptRunner::execute()
             float dt = clock->getDeltaSeconds();
             int frames = (int)(then / dt + 0.5f) - (int)(now / dt + 0.5f);
             if (gStageScene->isSubScene)
-                frames--;
+                frames -= (int)(1.0f / palScale());   // PC: game_rate, one 25 Hz frame in game frames (game/gamerate.h)
             m_wait = frames;
             m_pc = args;
             return 0;
