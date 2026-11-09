@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-09 09:45 at commit `a58bed0` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-09 09:54 at commit `c8d01bb` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -10,10 +10,10 @@ Generated 2026-11-09 09:45 at commit `a58bed0` by `tools/reverse/status.py` (`re
 
 ## Naming (game code; library ranges excluded)
 
-- game functions: **6598**, named **5878** (89%); library functions: 992
-- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1611, game-inferred 4945
-- context-name ledger: 6556 entries; overrides of wrong library matches: 0
-- placed in a source file: 6511/6598 in 139 files
+- game functions: **6598**, named **5879** (89%); library functions: 992
+- by provenance: game-symbol 0, lib-match 0, lib-match-low 0, lib-context 1611, game-inferred 4946
+- context-name ledger: 6557 entries; overrides of wrong library matches: 0
+- placed in a source file: 6512/6598 in 139 files
 
 Least-named game-code regions (64 KB blocks):
 
@@ -30,7 +30,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Reconstruction (src/)
 
-- reconstructed FS2 functions: **5969**; stubs: **3**
+- reconstructed FS2 functions: **5970**; stubs: **3**
 
 | file | reconstructed | stubs |
 |---|---|---|
@@ -82,7 +82,7 @@ Least-named game-code regions (64 KB blocks):
 | `src/game/pausemenu.cpp` | 7 | 0 |
 | `src/game/pausemenustate.cpp` | 12 | 0 |
 | `src/game/perfmeter.cpp` | 10 | 0 |
-| `src/game/playermotion.cpp` | 662 | 0 |
+| `src/game/playermotion.cpp` | 663 | 0 |
 | `src/game/prgmccard.cpp` | 7 | 0 |
 | `src/game/progress.cpp` | 25 | 0 |
 | `src/game/rand48.cpp` | 3 | 0 |
@@ -175,7 +175,7 @@ Least-named game-code regions (64 KB blocks):
 
 ## Translation units (one session each: `tus.py`)
 
-- 177 TUs: todo 63, verify 140, done 46
+- 176 TUs: todo 62, verify 140, done 46
 - next: **None** (nothing on the frontier and no queued TU)
 - pinned queue: (empty)
 - verify: `game/areaclip.cpp` 18/59 -- Proved by areaclipcmp.py: whole ctor on the smallest file, 1,140 sampled box and cell pairs on the other 19, 4,000 frames, 134,343 setClipped, 931 hidden charac
@@ -224,7 +224,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/pakarchive.cpp` 17/17 -- All 17 functions of 0x231410..0x231bb0 are in src/game/pakarchive.cpp with game/pakarchive.h (the fileloader stand-in completed). The file keeps its EE layout o
 - verify: `game/pausemenu.cpp` 7/7 -- New game/pausemenu.cpp and .h (PauseMenuChoice moved from gamehooks.h, PauseMenuScreen for answers 4..9, help pages 0 and 7). Fix outside the file: StageScene::
 - verify: `game/perfmeter.cpp` 10/10 -- Source only, not compiled. Range pinned 0x132f20-0x133800 (drawDetail joined). Batch 024 named PerfMeter::writeCsv 0x132f90, PerfMeter::resetStats 0x133590, spr
-- verify: `game/playermotion.cpp` 582/587 -- No code change: the host's MotionLink already had onRequest as an empty virtual annotated 0x1ec640; this run named it in Ghidra (batch 241: slot +0x14 of the ba
+- verify: `game/playermotion.cpp` 583/588 -- 0x26d020..0x26d090 joined: GunMoveCondition's deleting dtor (vtable 0x3173b0), placed by CodeWarrior right before its onApply 0x26d090 rather than with its sibl
 - verify: `game/prgmccard.cpp` 7/7 -- All 7 written from 0x2b85a0..0x2b9ef0. Picture: Load Game header, empty bar and the no memory card text, the right message for the host empty slot; decide close
 - verify: `game/progress.cpp` 25/25 -- All 24 functions written, source-only (callcheck clean, layout lint OK; g++ -fsyntax-only clean with a stub scetypes.h). progress.h holds NaviTable / NaviNode (
 - verify: `game/ripplesheet.cpp` 7/10 -- Batch 164. What the notes called stage 0x1b's boss film is a 15 by 15 ripple sheet, 0x2d10f0..0x2d3700, SightJack +0xb4: the frame bent, pushed from a tint, cre
@@ -321,6 +321,7 @@ Least-named game-code regions (64 KB blocks):
 
 Recent sessions:
 
+- 2026-11-09 09:54 `game/playermotion.cpp` verify: GunMoveCondition::~GunMoveCondition 0x26d020 named and pinned (was unassigned@0026d020)
 - 2026-11-09 09:45 `game/scriptrunner.cpp` verify: 28 out-of-line inline copies on the frontier named (batch 242) and listed with the 6 ScriptRunner accessors in a ledger; scriptLabelCell is 0x1c97f0
 - 2026-11-09 08:27 `game/subsceneobject.cpp` verify: SubSceneModelObject dtor thunk 0x269da0 pinned (was unassigned@00269da0)
 - 2026-11-09 08:20 `game/playermotion.cpp` verify: MotionLink::onRequest 0x1ec640 named and pinned (was unassigned@001ec640)
@@ -328,7 +329,6 @@ Recent sessions:
 - 2026-11-09 07:55 `game/playermotion.cpp` verify: 0x21c290..0x21c300 joined (was unassigned@0021c290): StageCharacter::doorJustOpened and doorJustUnlocked, the door-state checks on what afterScripts keeps (+0x6
 - 2026-11-09 07:37 `game/playermotion.cpp` verify: 0x283cb0..0x283df0 joined (was unassigned@00283cb0): the deleting dtors of DriveLink, ApproachBiteLink and ApproachOutLink; their vtable stores give the ROM's t
 - 2026-11-09 07:26 `game/nodetransform.cpp` verify: StageNode's four inline slots 0x186a00..0x186a40 (was unassigned@00186a00) joined to game/nodetransform.cpp; the file's 14 header-written functions checked agai
-- 2026-11-07 20:53 `game/stageplayer.cpp` verify: The volumes' tail: StageVolume::getKind 0x17ef90 and 0x17f040..0x17f150 (SphereVolume::getKind, its empty sideHook0..3, 12 adjustor thunks) pinned to game/stage
 
 ## Frontier (called by reconstructed code, not written yet)
 

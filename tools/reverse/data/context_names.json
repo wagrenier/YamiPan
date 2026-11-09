@@ -30041,6 +30041,12 @@
   "was": "FUN_0026cf40",
   "why": "the dtor on vtables 0x317140 / 0x317164 / 0x31717c, then StageObject's"
  },
+ "0026d020": {
+  "name": "GunMoveCondition::~GunMoveCondition",
+  "tag": "game-inferred",
+  "was": "FUN_0026d020",
+  "why": "deleting dtor: stores vtable 0x3173b0 (slot 0 is this function, slots 1-2 GunMoveCondition::onUpdate 0x26d670 / onApply 0x26d090) at +0x10, then MotionCondition's 0x317750, frees the +8 block and the object under the flag; the same 0x70 bytes as SnipeCondition::~SnipeCondition 0x276570 and GunAttackCondition::~GunAttackCondition 0x2765e0"
+ },
  "0026d090": {
   "name": "GunMoveCondition::onApply",
   "tag": "game-inferred",
