@@ -117,6 +117,8 @@ struct YamiPanModelBatch
     const float   *weights;     /* bonesPerVertex per vertex; not read with one bone */
     int            bonesPerVertex; /* 1..4 */
     int            firstBoneOnly;  /* ModelFlag_Distant: every vertex takes its first bone, unweighted */
+    const void    *owner;       /* the game's model drawing it, never read: smooth motion pairs two frames' places by it;
+                                   null: not paired */
 };
 
 /* A particle effect's state (StageParticle::draw): its picture, ALPHA_1 as the game has it, and the GS's FOG register,

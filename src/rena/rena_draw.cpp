@@ -327,6 +327,7 @@ void drawPrims(sceVif1Packet *packet, const ModelInstance *model, const ModelMes
             batch.weights = nullptr;
             batch.bonesPerVertex = 0;
             batch.firstBoneOnly = 0;
+            batch.owner = model;    // PC: the renderer pairs frames by it (smooth motion)
             if (matrices != nullptr) {
                 batch.boneIds = (const int8_t *)tags[3].next.get();
                 batch.weights = (const float *)tags[4].next.get();

@@ -2,7 +2,7 @@
 
 The game runs at 25 fps because the PAL ROM waits two 50 Hz fields per frame. This file has what sets that rate,
 how much of the game measures time and how much counts frames, the three ways to go faster, and the first steps of
-the one recommended. **The user chose A (2026-11-09); steps 1 and 2 are done ("Option A so far" below).**
+the one recommended. **The user chose A (2026-11-09); steps 1 to 3 are done ("Option A so far" below).**
 
 ## Where 25 Hz comes from
 
@@ -125,7 +125,7 @@ recorded again with the newer frame's passes, each `viewScreen` and `lights.eye`
 (component-wise: every point moves on the chord, not the arc; `frame_blend.cpp` has the error). No blend when the
 pass counts differ, a pair's `clearDepth` differs, or a camera cut: the eye moves over 300 units or turns over 40
 degrees in one frame. Uploads stay once per game frame: the blended presents reuse the frame's buffers. Setting:
-Graphics > Smooth camera (`smooth_motion`, on by default); test hooks in the tools README ("Platform contract").
+Graphics > Smooth motion (`smooth_motion`, on by default); test hooks in the tools README ("Platform contract").
 
 **Seen** (stage 7, `YAMIPAN_TELEPORT=7`, 40 s, left stick scripted, `YAMIPAN_BLEND_LOG=1`; over Remote Desktop,
 ~32 presents a second): game frames 40 ms apart on the field grid; 1,238 of 1,329 presents blended; the main eye's
@@ -145,11 +145,28 @@ show the girl in the rain woods drawn correctly.
 away for a tutorial prompt after a few steps. `build.py --run 45 --pad "350:LSUP*200,560:LSLEFT*60,640:LSUP*150,
 800:LSRIGHT*60,870:LSUP*150" --env YAMIPAN_TELEPORT=2 --env YAMIPAN_BLEND_LOG=1`.
 
-**Known limit until step 3:** objects stand where the newer frame has them while the camera blends, so a character
-the camera follows can judder against a smooth background by up to one frame's step.
+**Step 3: objects, bones and lights (2026-11-09).** `YamiPanModelBatch::owner` carries the game's
+`ModelInstance *` (set in `rena_draw.cpp` `drawPrims`, never read through). `ModelRenderer::drawCachedBatch` keys
+each instance and each palette run by `ModelPlacementKey` {owner, the first batch's positions}; `collect` carries
+them into `Frame::modelInstanceKeys` / `modelPaletteRuns`; the n-th placement of a key pairs with the n-th of the
+other frame. `FrameBlend::blendPlacements` blends a pair when it can be the same part a frame later (origin within
+300 units, no axis turned past 90 degrees or changed its length by half): axes blended and put back to their blended
+length (a turned part keeps its size halfway), origin in a line; a palette run pairs only with one of the same
+length. The pass blend also moves the point light, the spot's world -> light matrix (when its origin moved under
+300 units and its scale is the same) and each shadow's projection (when no element changed by over 5 % of the
+largest). The renderer uploads the blended instances and palettes on each blended present
+(`ModelRenderer::uploadPlacements`) and the frame's own again once the blend reaches 1.
 
-**Next:** step 3 (objects and bones), keyed by the game's `ModelInstance *` through `YamiPan_ModelDrawBatch`; the
-instances and palettes then need uploading per blended present.
+**Seen** (stage 2, 45 s walking and turning, `YAMIPAN_BLEND_LOG=1`; ~32 presents a second over Remote Desktop):
+1,240 blended presents, on average every matrix of the frame paired and blended; the first skinned model's first
+bone (the girl) moves 3 to 5.5 units every present while she walks, also between two presents of the same game
+frame. Stage 7 with `YAMIPAN_BLEND_ALPHA=0.5`: Akiko mid-stride, the flashlight's spot on the road, nothing doubled or
+out of step with its spot or shadow. Stage 2's shots: the girl in the rain woods, right.
+
+**Not blended yet:** particles (`drawQuad`: world-space quads built on the game thread, step 4: key by effect and
+particle slot); batches on the placed path (the far passes that cull, batches too large for a chunk: their vertices
+are placed on the game thread); whatever the game projects to 2D itself (the UI layer). Shadows are matched by slot
+and a 5 % test, not by owner; two characters swapping shadow slots would snap rather than sweep.
 
 ## Measuring
 

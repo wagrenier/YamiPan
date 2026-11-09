@@ -1128,6 +1128,7 @@ void ModelRenderer::drawCachedBatch(Layer &layer, const float *matrix, const Yam
             layer.lastPalette = batch.palette;
             layer.lastPaletteBase = paletteBase;
             layer.lastPaletteSize = cached->paletteSize;
+            layer.paletteRuns.push_back({{batch.owner, batch.positions}, paletteBase, cached->paletteSize});
         }
     }
 
@@ -1156,7 +1157,10 @@ void ModelRenderer::drawCachedBatch(Layer &layer, const float *matrix, const Yam
     instance.lightColors[2][3] = layer.reflectionScale;
     instance.lightDirections[0][3] = static_cast<float>(paletteBase);
     if (layer.instances.empty() || std::memcmp(&layer.instances.back(), &instance, sizeof(instance)) != 0)
+    {
         layer.instances.push_back(instance);
+        layer.instanceKeys.push_back({batch.owner, batch.positions});
+    }
 
     ModelBatchDraw draw;
     draw.chunk = cached->chunk.get();
@@ -1360,6 +1364,12 @@ void ModelRenderer::collect(const void *list, Frame &frame)
         instance.lightDirections[0][3] += paletteOffset; // whole numbers well under 2^24: exact
         frame.modelInstances.push_back(instance);
     }
+    frame.modelInstanceKeys.insert(frame.modelInstanceKeys.end(), layer.instanceKeys.begin(), layer.instanceKeys.end());
+    for (ModelPaletteRun run : layer.paletteRuns)
+    {
+        run.first += static_cast<std::uint32_t>(frame.modelPalettes.size());
+        frame.modelPaletteRuns.push_back(run);
+    }
     frame.modelPalettes.insert(frame.modelPalettes.end(), layer.palettes.begin(), layer.palettes.end());
     for (ModelBatchDraw batch : layer.batches)
     {
@@ -1386,6 +1396,8 @@ void ModelRenderer::collect(const void *list, Frame &frame)
     layer.shadowVertices.clear();
     layer.instances.clear();
     layer.palettes.clear();
+    layer.instanceKeys.clear();
+    layer.paletteRuns.clear();
     layer.lastPalette = nullptr;
     layer.batches.clear();
     layer.chunks.clear();
@@ -1413,11 +1425,16 @@ void ModelRenderer::uploadVertices(SDL_GPUCopyPass *copy, const Frame &frame)
                  static_cast<unsigned>(frame.modelSpotVertices.size() * sizeof(ModelSpotVertex)));
     uploadStream(copy, m_shadowVertices, frame.modelShadowVertices.data(),
                  static_cast<unsigned>(frame.modelShadowVertices.size() * sizeof(ModelShadowVertex)));
-    uploadStream(copy, m_instances, frame.modelInstances.data(),
-                 static_cast<unsigned>(frame.modelInstances.size() * sizeof(ModelInstance)));
-    uploadStream(copy, m_palettes, frame.modelPalettes.data(),
-                 static_cast<unsigned>(frame.modelPalettes.size() * sizeof(frame.modelPalettes[0])));
+    uploadPlacements(copy, frame.modelInstances, frame.modelPalettes);
     uploadGeometry(copy);
+}
+
+void ModelRenderer::uploadPlacements(SDL_GPUCopyPass *copy, const std::vector<ModelInstance> &instances,
+                                     const std::vector<std::array<float, 16>> &palettes)
+{
+    uploadStream(copy, m_instances, instances.data(), static_cast<unsigned>(instances.size() * sizeof(ModelInstance)));
+    uploadStream(copy, m_palettes, palettes.data(),
+                 static_cast<unsigned>(palettes.size() * sizeof(std::array<float, 16>)));
 }
 
 // Every batch cached since the last upload goes in now, before any frame that draws it: a frame is handed over
