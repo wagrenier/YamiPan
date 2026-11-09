@@ -2,7 +2,7 @@
 
 Step 1 of "Native 60 Hz" in roadmap-framerate.md: every rule in the game layer that assumes one game frame is 1/25 s,
 with its kind and the fix that would make it rate-free. **First pass**: the shared mechanisms and the visible
-systems are read; the "to check" and "not reached" lists below are what is left. Nothing in the game layer is changed
+systems are read; "To check" below is what is left. Nothing in the game layer is changed
 yet; the user decides whether option C goes ahead.
 
 ## How it was made
@@ -51,9 +51,10 @@ called each frame) is missed by the scan; the shared mechanisms were found by fo
 | the jack's film | stageparty.cpp 1657, 1666 | `corner.progress += corner.step`, `++corner.shown` | V, T |
 | game over | gameoversequence.cpp 84, 93, 217-222, 313 | `m_timer--` twice; the death camera's swing (`m_swingSpeed +/- m_swingAccel`, `m_angle += m_swingSpeed`); `SceneDirector` `m_frame++` | T, A, V |
 | demo flecks | demofleck.cpp 219 | `++fleck.age` against `life` | T |
-| mission records | demoevent.cpp 686 | `record.frames--` (`StageMission::tickPending`) | T, once the setter's unit is checked |
-| scripts | scriptrunner.cpp 790 | `m_wait--` a frame | T if a wait is set in raw frames; nothing if set through `scriptFramesFrom30` |
-| alert | stagealert.cpp 81 | `m_frames++` in a function that also reads the clock | check |
+| mission notices and timed records | demoevent.cpp 686, 766, 790 | `record.frames--` a frame (`StageMission::tickPending`); the frames are script arguments (scriptrunner.cpp 2564, 4899), so the data counts PAL frames | T |
+| sub-scene script waits | scriptrunner.cpp 783 | a wait converted through the clock, then `frames--` in a sub-scene: one frame shorter | T (one frame: 40 ms at 25 Hz) |
+| fire and scope | characterinput.cpp 312-318, 584-600, 880 | `m_fireFrames` against `kFireHoldFrames`; `m_scopePitch += m_recoil * shake` a frame and its ease; the look's `lerpVec4(kLookEase)` (the recoil's decay already goes by `framesPerSecond(dt)`) | T, V, E |
+| item prompt | uiitemlist.cpp 211 | the open / close animation's `animFrame++` | T |
 | status | stageplayer.cpp (`StageCharacter::stepStatus`) | counters and a roll a frame | T, R |
 | character sounds | charactersound.cpp 717 (`kFramesPerSecond = 25`), `StageCharacter::updateSounds` | voice delays in PAL frames; a counter and two rolls a frame | T, R |
 | HUD | uigame.cpp 1282 | `sUiWeaponCycle++` (the weapon preview's cycle) | T |
@@ -63,7 +64,6 @@ called each frame) is missed by the scan; the shared mechanisms were found by fo
 | Kunitoris | kunitoris.cpp (14 counters, `kKunitorisShotFrames` 1312, `kKunitorisDropFrames` 1340) | the whole minigame in frames | T throughout |
 | number and seven-key locks | gadgetview.cpp (`NumLockView::frame`), sevenkeys.cpp (`SevenKeysView::frame`), numlock / sevenkeys `easeDials(.., frames)` | frame counters, dial eases over n frames | T |
 | cars, cut speed | stagecar.cpp 1020 (`advance(1.0f)`), demoevent.cpp 439 | a fixed step a frame | V |
-| sky mist | skymist.cpp 88 and `stepDrift` / `stepSwirl` (they take deltaSeconds, and also count) | lives in frames beside time steps | check |
 
 ## Already time-based (no change)
 
@@ -71,17 +71,25 @@ The 22 files that read the clock: animation (`ModelPose`, `StageModel::advance(f
 root motion and `applyMovement`, character timers (`sideHook0`'s flinch, unarmed, endurance and light-hurt clocks, run
 and stance times), routes (characterroute.cpp, 97 clock reads), brains (`waitFrames` through dt), map objects,
 doors, `StageDaylight`, rumble (`updateRumble(dt / (1/30))`), `ItemPhysics::keepsMoving`. Their only trap is
-`(int)(1.0f / dt)`, 18 places (roadmap-framerate.md: one fix in `getDeltaSeconds`).
+`(int)(1.0f / dt)`, 18 places (roadmap-framerate.md: one fix in `getDeltaSeconds`). Settled as time-based on a
+second read, though they count frames or take a step:
+- script waits: `ScriptOp_SetWait` turns a wait in 30ths into frames through the clock (scriptrunner.cpp 776), and
+  `m_wait--` counts those down (only the sub-scene's one frame less is a frame rule, in the table);
+- texture animation: `drawSysTick((int)(dt x 300))` (stagescene.cpp 3160) into `renaStepTexAnim`;
+- ripples: `advanceWaves(.., seconds x pi)` (ripplesheet.cpp 127);
+- the alert: `m_frames++`, then turned into 30ths by dt (stagealert.cpp 81-83);
+- the sky mist: lives drawn in 30 fps frames (`kFrameRate`), aged by `deltaSeconds` (the first pass's table in
+  roadmap-framerate.md had it as frames).
 
-## To check (a candidate whose unit the first pass did not settle)
+The menu files the scan found nothing in (titlescreen, helpscreen, pausemenu, menuscene, progress, screen,
+framefilter, viewcamera) have no per-frame step of their own: they animate through UI tracks and tweens (above).
 
-- `ScriptRunner::m_wait` and `StageMission` records: which setters pass raw frames.
-- `drawSysTick(ticks)` (drawsys.cpp 384, texture animation through `renaStepTexAnim`): where the ticks come from.
-- `advanceWaves(.., step)` (ripplesheet.cpp): the step's source.
-- `StageAlert::update`, `SkyMist`: the frame counters beside their time steps.
-- `CharacterInput::readFire` (9 steps, 5 scales in a function that reads the clock).
-- The menu states with no candidates but per-frame code by their nature: titlescreen, helpscreen, pausemenu,
-  uiitemlist, menuscene, progress, screen, framefilter, viewcamera. The scan found nothing in them; a read must.
+## To check
+
+- `CritterNest`'s warm-up (`kCritterWarmFrames` steps at construction, stageparticle.cpp 1279): a whole number of
+  frames simulated ahead, s-sized at another rate.
+- The 22 time-based files beyond their clock reads: a time-based function can still count (`readFire` did). The
+  scan marks a whole function as timed, so their candidates were read only where listed above.
 
 ## What the scan cannot see
 

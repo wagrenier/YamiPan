@@ -40,7 +40,7 @@ the one recommended. **The user chose A (2026-11-09); steps 1 to 4 are done ("Op
 | lock-on turn | `playermotion.cpp` 6977 | `kLockTurnLimit`, 6 degrees a frame |
 | particles | `stageparticle.cpp` | life, emit delay, velocity, gravity, colour keys in frames; `substeps` a frame; critters turn 6 degrees a frame |
 | item physics | `itemphysics.cpp` 46, `stageitem.h` 113 | gravity 1 unit a frame each frame; `m_speed` units a frame |
-| sky mist | `skymist.cpp` 88 | lives in frames |
+| sky mist | `skymist.cpp` 88 | lives in 30 fps frames (a second read: aged by dt, time-based; framerate-inventory.md) |
 | fades | `scenerender.cpp` 45, `stagesound` | 30-frame scene fades; music fades in frames x 25 / 30, pause fades 10 frames |
 | voices | `charactersound.cpp` 717 | `kFramesPerSecond = 25`: PAL written into the code |
 | play time | `stageresult.cpp` 162, `uigame.cpp` 272 | `playTime++` a frame, shown / 25; **saved to the memory card** |
