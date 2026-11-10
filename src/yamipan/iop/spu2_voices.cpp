@@ -423,8 +423,9 @@ void Spu2Voices::mixVoices()
         }
         Core &core = m_cores[v.core];
         const std::uint32_t bit = 1u << v.number;
-        const std::int32_t volL = decodeVolume(v.volL);
-        const std::int32_t volR = decodeVolume(v.volR);
+        const std::int32_t gain = m_playerGroup[v.group];
+        const std::int32_t volL = decodeVolume(v.volL) * gain >> 15;
+        const std::int32_t volR = decodeVolume(v.volR) * gain >> 15;
         const bool dryL = (core.dryL & bit) != 0;
         const bool dryR = (core.dryR & bit) != 0;
         const bool wetL = (core.wetL & bit) != 0;
@@ -477,8 +478,9 @@ void Spu2Voices::mixAutoDma()
         AutoDma &ad = m_cores[c].autoDma;
         if (!ad.armed || ad.ring == nullptr || ad.size < kAutoDmaFrame)
             continue;
-        const std::int32_t volL = ad.volL;
-        const std::int32_t volR = ad.volR;
+        // Movie and PCM audio: the player's music volume.
+        const std::int32_t volL = ad.volL * m_playerGroup[0] >> 15;
+        const std::int32_t volR = ad.volR * m_playerGroup[0] >> 15;
         for (int f = 0; f < kMixFrames; f++)
         {
             std::int16_t l = 0;
@@ -578,8 +580,9 @@ void Spu2Voices::mixBlock(std::int16_t *out)
             l += applyVolume(m_cores[c].accL[f] + m_cores[c].returnL[f], decodeVolume(m_cores[c].masterL));
             r += applyVolume(m_cores[c].accR[f] + m_cores[c].returnR[f], decodeVolume(m_cores[c].masterR));
         }
-        out[f * 2] = toS16(l);
-        out[f * 2 + 1] = toS16(r);
+        // The player's master volume, last: it turns down everything the device hears, reverb included.
+        out[f * 2] = toS16(applyVolume(l, m_playerMaster));
+        out[f * 2 + 1] = toS16(applyVolume(r, m_playerMaster));
         m_meter->peak = std::max({m_meter->peak, std::abs(static_cast<int>(out[f * 2])),
                                   std::abs(static_cast<int>(out[f * 2 + 1]))});
     }
@@ -842,6 +845,15 @@ void Spu2Voices::setNoiseMask(int core, std::uint32_t mask)
         return;
     std::lock_guard lock(m_lock);
     m_cores[core].noiseMask = mask;
+}
+
+void Spu2Voices::setPlayerVolume(int masterPercent, int musicPercent, int effectsPercent)
+{
+    const auto q15 = [](int percent) { return std::clamp(percent, 0, 100) * 0x8000 / 100; };
+    std::lock_guard lock(m_lock);
+    m_playerMaster = q15(masterPercent);
+    m_playerGroup[0] = q15(musicPercent);
+    m_playerGroup[1] = q15(effectsPercent);
 }
 
 void Spu2Voices::setPitchModMask(int core, std::uint32_t mask)

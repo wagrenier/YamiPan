@@ -1828,7 +1828,8 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
   open records the bits come from are still RoR's. Check in (3), or in a scene known to echo.
   **Read 2026-11-09:** FS2's RxSndDrvNoteTick sets bit 2 exactly as RoR's (region flag 2 or the note's
   switch) and RxSndDrvAdpcmOpen is word for word, so the reverb gap is the scene's data, not the
-  driver; a scene known to echo is still the check. Left of (1): the player's volume settings.
+  driver; a scene known to echo is still the check. (1) is done: the player's volume settings are in
+  too (2026-11-09).
 - **(3) begun, 2026-11-09** (architecture.md "FS2's driver, read"): the dispatcher had four FS2 commands
   RoR has not (0x52, 0x53, 0x62, 0xb4; their EE senders have no caller, so nothing sent them), now in;
   RxSndDrvXvabGetUsers's test the right way round; RxSndDrvAdpcmStart gives the group to every channel and
@@ -1839,8 +1840,8 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
   SD_C_NOISE_CLK, `iop::Spu2Voices`' noise generator). **(3) done 2026-11-09:** the last 21 functions
   marked unread (the voice setters and queries, NoteVoiceDone, PcmDownmix, XseqChunkFind, ChunkFindV2,
   the dispatcher, VoiceAlloc) are RoR's but for record offsets; every function's header says "FS2 read".
-  PMON (pitch modulation) is in the synthesiser too. Left on the sound road: the player's volume settings
-  (RosePan's [audio]), and the two doubts above (a starving stream, a scene with no reverb send).
+  PMON (pitch modulation) is in the synthesiser too. The player's volume settings came the same day. Left on the sound road:
+  the two doubts above (a starving stream, a scene with no reverb send).
 
 - 2026-11-05 (Claude's call, a scheduled run, for the user to overrule): **doors are on, and `kDoorsEnabled` is gone.** The stage crash that switched them off is explained and fixed (Done, game/playermotion.cpp sixth run). `StageMenu::update`, `draw` and `destroy` stay stubs on purpose: with `update` written and no list window, the menu button would open a menu nobody sees that holds the input focus. `game/stagemenu.cpp` is a second file in a one-TU run, like `game/uiitemlist.cpp`: its stubbed ctor was the crash.
 

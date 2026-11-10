@@ -78,6 +78,12 @@ public:
     // SD_S_PMON: the voices whose pitch the voice below modulates.
     void setPitchModMask(int core, std::uint32_t mask);
 
+    // ---- the player's volume (yamipan.ini [audio], the Audio menu) ----------------------------------
+    // Percent on top of the game's own mix, 0..100: music and effects scale the voices of each group
+    // (the driver tags them as it takes them; the PCM ring is music) before their sends, so a voice's
+    // reverb follows it; master scales the finished mix. Kept across sceSdInit.
+    void setPlayerVolume(int masterPercent, int musicPercent, int effectsPercent);
+
     // ---- the effect unit (Spu2Reverb) ---------------------------------------------------------------
     void setReverbPreset(int core, std::uint32_t mode, std::uint32_t eea);
     void setReverbDepth(int core, std::uint16_t left, std::uint16_t right);
@@ -130,6 +136,9 @@ private:
     std::unique_ptr<Core[]> m_cores;
     std::unique_ptr<Meter> m_meter;
     std::unique_ptr<Spu2Reverb> m_reverb;
+    // Q15, 0x8000 unity.
+    std::int32_t m_playerMaster = 0x8000;
+    std::int32_t m_playerGroup[kGroups] = {0x8000, 0x8000};
     std::unique_ptr<audio::AudioOutput> m_output;
     std::unique_ptr<os::Thread> m_thread;
     bool m_started = false;

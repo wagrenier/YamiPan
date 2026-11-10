@@ -14,6 +14,7 @@
 #include "yamipan/core/crash_report.h"
 #include "yamipan/core/logger.h"
 #include "yamipan/ee/kernel.h"
+#include "yamipan/iop/kernel.h"
 #include "yamipan/io/disc.h"
 
 // The game's own main (game/gamesystem.cpp, built with main=gameMain).
@@ -92,10 +93,17 @@ bool Application::startServices()
     return true;
 }
 
+void Application::applyAudioSettings()
+{
+    const AudioSettings &audio = m_config.audio;
+    iop::Kernel::instance().spu2().voices().setPlayerVolume(audio.master, audio.music, audio.effects);
+}
+
 void Application::startGame()
 {
     if (m_gameStarted.exchange(true))
         return;
+    applyAudioSettings();
 
     log::info("Starting the game");
     io::Disc::instance().mount(m_paths.dataFolder());

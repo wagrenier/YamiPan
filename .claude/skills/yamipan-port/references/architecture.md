@@ -2099,9 +2099,15 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   The ring's status is what was heard (mixed, less what the device still holds). sceSdInit opens the
   device: `SDL_OpenAudioDeviceStream` on the default playback device, 16-bit stereo 48 kHz (SDL's audio is
   up since `Application::startServices`). The log reports the first three 10 s windows: "audio: N s mixed,
-  peak P (x dBFS), reverb return peak R, K key-ons" (the reverb part since the next point). **Not yet:** the
-  player's volume settings (NON and PMON since the same day, the next points) (RosePan's [audio] section), core 0 feeding core 1 (both cores
-  are summed, as in RosePan). **Seen 2026-11-09:** the device is "Remote Audio" (the machine is used over
+  peak P (x dBFS), reverb return peak R, K key-ons" (the reverb part since the next point). **Not modelled:** core 0
+  feeding core 1 (both cores are summed, as in RosePan). NON and PMON came the same day (the next points);
+  so did **the player's volume**: yamipan.ini's [audio] master / music / effects (percent, 100 the game's
+  own level; `AudioSettings`, the Audio menu's three sliders, both older than the sound) reach
+  `Spu2Voices::setPlayerVolume` through `Application::applyAudioSettings` at the game's start and while a
+  slider moves. Music and effects scale each voice by its group (YamiPan_VoiceSetGroup: the driver's BGM
+  and ADPCM ticks take music, its SE tick effects) before its sends, so the reverb follows; the PCM ring
+  takes music; master scales the finished mix. Scratch check (removed): a music voice's peak 7167 halves
+  at music or master 50%, ignores effects; an effects voice the other way round. **Seen 2026-11-09:** the device is "Remote Audio" (the machine is used over
   Remote Desktop); the language screen keys no voice (peak 0); `YAMIPAN_TELEPORT=d0101` keys the event's
   stereo stream and mixes it at -25 dBFS peak. A dump of that mix (scratch code, removed) read as sound,
   not noise: 0.02..0.05 zero crossings a sample (noise is 0.5), sample-to-sample steps 0.05..0.15 of the

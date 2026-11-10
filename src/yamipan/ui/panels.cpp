@@ -172,9 +172,11 @@ private:
         if (!ImGui::BeginMenu("Audio"))
             return;
         AudioSettings &audio = m_config.audio;
-        volumeSlider("Master", audio.master);
-        volumeSlider("Music, voices, ambience", audio.music);
-        volumeSlider("Effects", audio.effects);
+        bool changed = volumeSlider("Master", audio.master);
+        changed |= volumeSlider("Music, voices, ambience", audio.music);
+        changed |= volumeSlider("Effects", audio.effects);
+        if (changed)
+            m_application.applyAudioSettings();
         ImGui::EndMenu();
     }
 
@@ -192,11 +194,13 @@ private:
         saveAfterEdit();
     }
 
-    void volumeSlider(const char *label, int &value)
+    // True while the value moves: the sound follows the slider, the file is written when it is let go.
+    bool volumeSlider(const char *label, int &value)
     {
         ImGui::SetNextItemWidth(180.0f);
-        ImGui::SliderInt(label, &value, 0, 100, "%d%%");
+        const bool changed = ImGui::SliderInt(label, &value, 0, 100, "%d%%");
         saveAfterEdit();
+        return changed;
     }
 
     // A drag saves once, when it ends.
