@@ -1672,11 +1672,11 @@ questions. Resolve items here when they are settled (move them to "Done" with th
        many menus that are stretched ... except for full screen effects"): every layout is squeezed**
        (UiDrawer, per call, clipped to the 4:3 box; untextured wide fills still span) and movies are
        pillarboxed: architecture.md "2D at any aspect". Seen at 16:9 and 21:9: language select, title,
-       difficulty, intro movie and its subtitles, the opening cutscene. Still open: (1) textured backdrops
-       (the difficulty screen's red picture, the title's glow strip) are pillarboxed with the rest, not
-       stretched: say if they should fill the display instead (the risk: a picture that is content, as the
-       language screen's is); (2) left- or right-anchored HUD would need an anchor of its own; (3) not yet
-       looked at wide: the pause menu, the navi, the archive, the item list, the options, Kunitoris;
+       difficulty, intro movie and its subtitles, the opening cutscene. **The user decided, 2026-11-09:
+       textured backdrops stay 4:3** (the difficulty screen's red picture, the title's glow strip are
+       pillarboxed with the rest; only untextured fills span). Still open: (1) left- or right-anchored HUD
+       would need an anchor of its own; (2) not yet looked at wide: the pause menu, the navi, the archive,
+       the item list, the options, Kunitoris;
    (d) placeholders to replace: `sdk/libmc.cpp` (the empty slot: a real card under `memcard/`),
        ~~`sdk/libmpeg.cpp`~~ (done 2026-11-03: above), `sdk/sif.cpp` (no IOP: the audio
        milestone brings RosePan's IOP host and `iop/rxsnddrv`);
@@ -1799,6 +1799,11 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
 
 ## Decisions
 
+- 2026-11-09 (the user): **menus keep their 4:3 shape at any aspect, full-screen effects excepted; textured
+  backdrops stay 4:3 too.** Every layout is squeezed about the centre and clipped to the 4:3 box, movies
+  are pillarboxed, and only untextured fills at least 3/4 of the frame wide reaching past an edge (fades,
+  washes, letterbox bars) span the display (architecture.md "2D at any aspect"). Asked whether pictures
+  like the difficulty screen's red background should fill the display instead: no, keep them 4:3.
 - 2026-11-09 (the user): **RXSNDDRV runs by default.** `YAMIPAN_RXSNDDRV` and `YAMIPAN_RXSNDDRV_LOG` are
   gone: every run boots the driver, the EE's sound calls, SIF DMA and IOP heap go to the IOP host, and
   sdk/sif.cpp's stand-ins (fake IOP addresses, dropped transfers) and the stream formats'
