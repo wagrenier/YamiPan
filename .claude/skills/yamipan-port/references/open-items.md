@@ -1668,9 +1668,15 @@ questions. Resolve items here when they are settled (move them to "Done" with th
        a strip cell is 26.7 pixels of a 683-wide window and 35.5 of a 910-wide one at the same height.
        **The user decided, 2026-11-05: squeeze about the centre.** `YamiPan_DrawUiSqueeze(list, on)`
        (UiCanvas::setSqueezed), per element, factor (4/3) / aspect from PictureLayout, 1 at 4:3 and
-       narrower. In use: ScenePool, DemoStream::drawSubtitles, UiPrompt. Everything else in raw window
-       coordinates still stretches: left- or right-anchored elements need an anchor of their own, and
-       full-screen fades and fills must not be squeezed;
+       narrower. In use: ScenePool, DemoStream::drawSubtitles, UiPrompt. **2026-11-09 (the user: "fix the
+       many menus that are stretched ... except for full screen effects"): every layout is squeezed**
+       (UiDrawer, per call, clipped to the 4:3 box; untextured wide fills still span) and movies are
+       pillarboxed: architecture.md "2D at any aspect". Seen at 16:9 and 21:9: language select, title,
+       difficulty, intro movie and its subtitles, the opening cutscene. Still open: (1) textured backdrops
+       (the difficulty screen's red picture, the title's glow strip) are pillarboxed with the rest, not
+       stretched: say if they should fill the display instead (the risk: a picture that is content, as the
+       language screen's is); (2) left- or right-anchored HUD would need an anchor of its own; (3) not yet
+       looked at wide: the pause menu, the navi, the archive, the item list, the options, Kunitoris;
    (d) placeholders to replace: `sdk/libmc.cpp` (the empty slot: a real card under `memcard/`),
        ~~`sdk/libmpeg.cpp`~~ (done 2026-11-03: above), `sdk/sif.cpp` (no IOP: the audio
        milestone brings RosePan's IOP host and `iop/rxsnddrv`);

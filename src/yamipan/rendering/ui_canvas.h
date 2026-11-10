@@ -34,8 +34,15 @@ public:
     void setPrimitive(const void *list, std::uint64_t prim, const std::uint8_t *sharedColor);
     void bindImage(const void *list, std::shared_ptr<Image> image);
     // The vertices that follow keep their shape at a display wider than 4:3: x is pulled towards the
-    // frame's centre. For what is drawn centred; the factor comes from the display's PictureLayout.
-    void setSqueezed(const void *list, bool squeezed);
+    // frame's centre. For what is drawn centred; the factor comes from the display's PictureLayout. Their clip
+    // follows them, unless it spans the frame's width; Framed, they are clipped to the frame as composed too.
+    enum class Squeeze : std::uint8_t
+    {
+        Off,
+        On,
+        Framed,
+    };
+    void setSqueezed(const void *list, Squeeze squeeze);
     float squeezeFactor() const; // 1 at 4:3 and narrower, under 1 wider
     // The whole frame times factor, 0..4: what the GS does with Cd as its A and FIX as its C.
     void scaleFrame(const void *list, float factor);
@@ -55,12 +62,12 @@ public:
     void addVertex(const void *list, const YamiPanUiVertex &vertex);
 
     // A movie picture, or any image the game replaces each frame: `width` x `height` RGBA8 pixels drawn
-    // at (x, y) in the frame.
-    void drawImage(const void *list, std::shared_ptr<Image> image, float x, float y);
+    // at (x, y) in the frame, x pulled towards the frame's centre by `squeeze` (1: as placed).
+    void drawImage(const void *list, std::shared_ptr<Image> image, float x, float y, float squeeze = 1.0f);
 
     // A movie's picture: `columns` x `rows` 16 x 16 RGBA32 macroblocks in column-major order. `picture` counts
     // the movie's decoded pictures, and the image is only rebuilt when it moves: a movie runs at 25 pictures a
-    // second under a faster game loop, and each image is a GPU texture.
+    // second under a faster game loop, and each image is a GPU texture. It keeps its shape at any aspect.
     void drawMacroblocks(const void *list, const void *owner, int picture, const void *macroblocks, int columns,
                          int rows, float x, float y);
 
@@ -101,6 +108,7 @@ private:
         std::vector<Vertex> run; // the vertices of the open primitive
         unsigned runCount = 0;
         float squeeze = 1.0f; // of x about the frame's centre
+        bool framed = false;  // clipped to the frame as composed
         std::optional<BlendMode> forcedBlend; // a whole-frame pass's, past what the GS context says
 
         std::vector<Vertex> vertices;

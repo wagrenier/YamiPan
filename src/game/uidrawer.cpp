@@ -26,8 +26,8 @@
 // 4:3 and 16:9 displays. [0] widens x by the aspect, [1] narrows it back;
 // updateMatrix draws through [1], and in pixel mode with a rotation turns
 // in the widened space so the rotation stays round on the display.
-// PC: the any-aspect renderer is to take these from its display aspect
-// (open-items.md); the ROM's two are kept until then.
+// PC: the ROM's two are kept (the layouts only use mode 0); the host keeps
+// the shape at any aspect where the vertices come out (keepShape below).
 static const UiMatrix kUiScreenMatrix[2][2] = {
     { { 4.0f / 3.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f }, { 0.75f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f } },
     { { 16.0f / 9.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f }, { 0.5625f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f } },
@@ -210,6 +210,42 @@ static void putRgbaq(YamiPanUiVertex *out, u_int rgbaq)
 static inline u_long addPassPrim(u_long prim)
 {
     return (prim & ~(u_long)(UiPrim_Textured | UiPrim_Blend)) | UiPrim_Blend;
+}
+
+// PC: the host spreads the game's 4:3 frame over a display of any shape, so
+// what the drawer draws is pulled towards the frame's centre to keep its
+// shape, and clipped to the frame as composed, so that nothing waiting off
+// it shows at the display's sides (YamiPan_DrawUiSqueeze, framed). Pictures
+// and text always: a picture the size of the frame can be content as much as
+// a backdrop (the language select's list is one, its highlight drawn over
+// it). Only an untextured fill that is at least three quarters of the frame
+// wide and reaches past one of its edges -- a fade, a wash, a bar -- goes on
+// spanning the display, as on the PS2. The fill's extent is where its
+// vertices land in window pixels; the frame's edges are 256 either side of
+// the centre (a pixel's slack).
+constexpr float kUiFrameEdge = 255.0f;
+constexpr float kUiWashWidth = 384.0f;
+
+static inline void keepShape(sceVif1Packet *packet)
+{
+    YamiPan_DrawUiSqueeze(packet, YAMIPAN_SQUEEZE_FRAMED);
+}
+
+template <class Vertex>
+static void keepFillShape(sceVif1Packet *packet, const UiMatrix *m, const Vertex *verts, int count)
+{
+    if (count <= 0)
+        return;
+    float minX = pointX(*m, verts[0].xy[0], verts[0].xy[1]);
+    float maxX = minX;
+    for (int i = 1; i < count; i++) {
+        const float x = pointX(*m, verts[i].xy[0], verts[i].xy[1]);
+        minX = x < minX ? x : minX;
+        maxX = x > maxX ? x : maxX;
+    }
+    const bool pastEdge = minX <= -kUiFrameEdge || maxX >= kUiFrameEdge;
+    const bool wash = pastEdge && maxX - minX >= kUiWashWidth;
+    YamiPan_DrawUiSqueeze(packet, wash ? YAMIPAN_SQUEEZE_OFF : YAMIPAN_SQUEEZE_FRAMED);
 }
 
 void UiDrawer::closeGifRun()
@@ -558,6 +594,7 @@ int UiDrawer::drawText(UiFont *font, int /*message*/, const UiTextBox *box, floa
     y = y + topLeft[1];
     if (openVertices(UiVertex_Uv) < 0)
         return -1;
+    keepShape(m_packet);   // PC
 
     // Line by line, each aligned on its own width; a glyph is a sprite
     // from its rect's corner to the opposite one.
@@ -726,6 +763,8 @@ void UiDrawer::end()
 {
     setDrawPreset(UiPreset_DrawEnv);
     closeDirect();
+    if (m_packet != nullptr)
+        YamiPan_DrawUiSqueeze(m_packet, YAMIPAN_SQUEEZE_OFF);   // PC: the list's other users draw as they are
     resetState();
 }
 
@@ -1008,6 +1047,7 @@ int UiDrawer::drawSheetFlat(const UiTexVertex *verts, int count, const TimSheetS
 {
     if (openVertices(grouped == 0 ? UiVertex_Uv : UiVertex_Grouped | UiVertex_Uv) < 0)
         return -1;
+    keepShape(m_packet);   // PC
     for (int i = 0; i < count; i++) {
         YamiPanUiVertex v = {};
         putSheetUv(&v, sprite, verts[i].uv);
@@ -1026,6 +1066,7 @@ int UiDrawer::drawSheetGouraud(const UiTexColorVertex *verts, int count, const T
     if (openVertices(grouped == 0 ? UiVertex_Rgbaq | UiVertex_Uv
                                   : UiVertex_Grouped | UiVertex_Rgbaq | UiVertex_Uv) < 0)
         return -1;
+    keepShape(m_packet);   // PC
     for (int i = 0; i < count; i++) {
         YamiPanUiVertex v = {};
         putRgbaq(&v, vertexColor(&verts[i].rgba));
@@ -1082,6 +1123,7 @@ int UiDrawer::drawTexStripFlat(float width, const UiVertex *verts, int count, co
 {
     if (openVertices(UiVertex_Uv) < 0)
         return -1;
+    keepShape(m_packet);   // PC
     const float uv0[2] = { uvRect->x, uvRect->y };
     const float uv1[2] = { uvRect->z, uvRect->w };
     if (width == 0.0f) {
@@ -1120,6 +1162,7 @@ int UiDrawer::drawTexStripGouraud(float width, const UiColorVertex *verts, int c
 {
     if (openVertices(UiVertex_Rgbaq | UiVertex_Uv) < 0)
         return -1;
+    keepShape(m_packet);   // PC
     const float uv0[2] = { uvRect->x, uvRect->y };
     const float uv1[2] = { uvRect->z, uvRect->w };
     if (width == 0.0f) {
@@ -1161,6 +1204,7 @@ int UiDrawer::drawTexFlat(const UiTexVertex *verts, int count, int grouped)
 {
     if (openVertices(grouped == 0 ? UiVertex_Uv : UiVertex_Grouped | UiVertex_Uv) < 0)
         return -1;
+    keepShape(m_packet);   // PC
     for (int i = 0; i < count; i++) {
         YamiPanUiVertex v = {};
         putUv(&v, verts[i].uv, m_texWidth, m_texHeight);
@@ -1179,6 +1223,7 @@ int UiDrawer::drawTexGouraud(const UiTexColorVertex *verts, int count, int group
     if (openVertices(grouped == 0 ? UiVertex_Rgbaq | UiVertex_Uv
                                   : UiVertex_Grouped | UiVertex_Rgbaq | UiVertex_Uv) < 0)
         return -1;
+    keepShape(m_packet);   // PC
     for (int i = 0; i < count; i++) {
         YamiPanUiVertex v = {};
         putRgbaq(&v, vertexColor(&verts[i].rgba));
@@ -1197,6 +1242,7 @@ int UiDrawer::drawGouraud(const UiColorVertex *verts, int count, int grouped)
 {
     if (openVertices(grouped == 0 ? UiVertex_Rgbaq : UiVertex_Grouped | UiVertex_Rgbaq) < 0)
         return -1;
+    keepFillShape(m_packet, &m_matrix, verts, count);   // PC
     for (int i = 0; i < count; i++) {
         YamiPanUiVertex v = {};
         putRgbaq(&v, vertexColor(&verts[i].rgba));
@@ -1214,6 +1260,7 @@ int UiDrawer::drawFlat(const UiVertex *verts, int count, int grouped)
 {
     if (openVertices(grouped == 0 ? UiVertex_Xy : UiVertex_Grouped | UiVertex_Xy) < 0)
         return -1;
+    keepFillShape(m_packet, &m_matrix, verts, count);   // PC
     for (int i = 0; i < count; i++) {
         YamiPanUiVertex v = {};
         putXyz(&v, &m_matrix, verts[i].xy);

@@ -2231,6 +2231,19 @@ rules or by being RoR's. From its 14 K line SDK only what FS2 calls came over.
 - **Frame**: game threads fill `UiCanvas` layers keyed by packet list; `Vif1PktManage::Kick` ->
   `YamiPan_DrawUiKick` joins them into a `Frame` for the render thread's mailbox. The frame always fills
   the scene target, so the 512x512 frame's shape is `DisplayGeometry`'s alone.
+- **2D at any aspect** (2026-11-09): the 3D widens with the display; the 2D, composed for the 4:3 frame,
+  keeps its shape by being squeezed about the frame's centre, x * (4/3) / aspect (`YamiPan_DrawUiSqueeze`,
+  1 at 4:3 and narrower). **Everything `UiDrawer` draws** (every layout: menus, title, navi, pause,
+  movie subtitles, Kunitoris) is squeezed per call and *framed*, clipped to the 4:3 box, so what a layout
+  stages off-frame (items sliding in, the title's scrolling strip tiles) never shows at the sides. Text and
+  textured shapes always; only an **untextured** fill at least 3/4 of the frame wide reaching past an edge
+  (a fade, a wash, a letterbox bar) spans the display (`keepFillShape`, uidrawer.cpp). Textured full-frame
+  pictures stay squeezed because one can be content: the language screen's names are a 512x64 picture with
+  the highlight's word tiles drawn over it, and stretching the picture alone put the highlight on the
+  wrong word. A clip set under a squeeze follows it (`UiCanvas::stateOf`, worked out per draw). **Movies**
+  are pillarboxed (`UiCanvas::drawMacroblocks`). The non-layout screens squeeze on their own with
+  `YAMIPAN_SQUEEZE_ON` (ScenePool, StageMenu, UiPrompt, DemoStream's subtitles, the sight's mask); frame
+  passes (`fillFrame`, palette, film, ripple, filter) and gsFillRect's fades always span the display.
 - **Movies** (`media::MpegStream`, `media::MpegDecoder`, 2026-11-03): `sdk/libmpeg.cpp` forwards to one `MpegStream` (one movie at a time; `sceMpeg::sys` points at it). `demux` is the real PSS demultiplexer: packs, 0xE0 video, 0xBD private stream 1 (its first payload byte's low nibble is the audio channel, PCM and ADPCM callbacks alike, the game reads the type from SShd), a packet that wraps the ring is copied out, a refused packet stays and reaches the decoder once. Video goes to the game's ring (which only paces the demux: `YamiPanMpegVideoPending`) and to `MpegDecoder`, FFmpeg's avcodec + swscale, paced by the wall clock at the sequence header's rate and writing the IPU's layout (column-major 16 x 16 RGBA32 macroblocks, alpha 0x80) into `m_picture`. `sceMpegGetPicture` then calls the Nodata callback 8 times, clearing `REG_DMAC_4_IPU_TO_CHCR` first (no IPU: `feedIpu` would spin on the busy bit). `YamiPan_DrawUiMovie` -> `UiCanvas::drawMacroblocks` rebuilds an `Image` only when `frameCount` moves (one GPU texture per picture, not per game frame), for tbp 0x800 only: tbp 0x700 is `prime`'s buffer, which nothing shows. **Silent for now:** `kMovieHostHasSound` (game/movieplayer.cpp) keeps the feeders out, because with no IOP a sink's blocks never drain; `receiveAudio` drops a feederless channel and the movie ends on its video alone.
 - **Textures** (`rendering::TextureStore`, 2026-11-03): `YamiPan_DrawUiTexture(list, owner)` -> `imageOf` ->
   `UiCanvas::bindImage`. The owner is a `Tim2Texture`: a `GsTexture` from the drawer, a plain `Tim2Texture`

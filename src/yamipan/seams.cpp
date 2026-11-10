@@ -123,9 +123,12 @@ void YamiPan_DrawUiTexture(const void *list, const void *owner)
     renderer.canvas().bindImage(list, renderer.textures().imageOf(*static_cast<const Tim2Texture *>(owner)));
 }
 
-void YamiPan_DrawUiSqueeze(const void *list, int on)
+void YamiPan_DrawUiSqueeze(const void *list, int mode)
 {
-    canvas().setSqueezed(list, on != 0);
+    using Squeeze = yamipan::rendering::UiCanvas::Squeeze;
+    canvas().setSqueezed(list, mode == YAMIPAN_SQUEEZE_FRAMED ? Squeeze::Framed
+                               : mode != YAMIPAN_SQUEEZE_OFF  ? Squeeze::On
+                                                              : Squeeze::Off);
 }
 
 float YamiPan_DrawUiSqueezeFactor(void)
