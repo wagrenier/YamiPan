@@ -47,6 +47,9 @@ public:
     // The data folder panel's answer: the game starts as soon as its files are known.
     void dataFolderChosen(const std::filesystem::path &folder);
 
+    // The [audio] volumes onto the sound chip (iop::Spu2Voices): at the game's start and from the Audio menu.
+    void applyAudioSettings();
+
 private:
     bool startServices();
     void startGame();
