@@ -55,12 +55,23 @@ void YamiPan_DrawUiPrim(const void *list, uint64_t prim, const uint8_t *rgbaq);
 /* Binds the texture of `owner` (a GsTexture; null keeps the bound one). */
 void YamiPan_DrawUiTexture(const void *list, const void *owner);
 
-/* Non-zero: the vertices that follow are pulled towards the frame's
- * centre, by as much as the display is wider than the 4:3 set the 2D was
- * composed for, so that what is drawn centred in raw window coordinates
- * (text, its strip, a prompt) keeps its shape at any aspect. Zero ends it.
- * The factor is 1 at 4:3 and on anything narrower. */
-void YamiPan_DrawUiSqueeze(const void *list, int on);
+/* YAMIPAN_SQUEEZE_ON: the vertices that follow are pulled towards the
+ * frame's centre, by as much as the display is wider than the 4:3 set the
+ * 2D was composed for, so that what is drawn centred in raw window
+ * coordinates (text, its strip, a prompt) keeps its shape at any aspect;
+ * the clip (SCISSOR_1) follows them, unless it spans the frame's width.
+ * YAMIPAN_SQUEEZE_FRAMED: the same, clipped to the frame as composed too,
+ * so that nothing the game drew off its 4:3 frame shows at the display's
+ * sides. YAMIPAN_SQUEEZE_OFF ends it. The factor is 1 at 4:3 and on
+ * anything narrower. */
+enum
+{
+    YAMIPAN_SQUEEZE_OFF    = 0,
+    YAMIPAN_SQUEEZE_ON     = 1,
+    YAMIPAN_SQUEEZE_FRAMED = 2,
+};
+
+void YamiPan_DrawUiSqueeze(const void *list, int mode);
 
 /* What YamiPan_DrawUiSqueeze pulls by: 1 at 4:3 and narrower, under 1 wider.
  * For a shape placed anywhere over the frame: its own width times this keeps
@@ -163,7 +174,8 @@ void YamiPan_DrawUiVertex(const void *list, const YamiPanUiVertex *vertex);
  * wide) at (x, y) in pixels. The module keeps them as the texture of
  * `owner` (the MoviePlayer), updated each call, and draws them where the
  * transfer would have put them: decoded at the source, never through GS
- * memory. */
+ * memory. The picture keeps its shape at any aspect, about the frame's
+ * centre, as YamiPan_DrawUiSqueeze. */
 void YamiPan_DrawUiMovie(const void *list, const void *owner, const void *macroblocks,
                          int columns, int rows, int tbp, int tbw, int x, int y);
 

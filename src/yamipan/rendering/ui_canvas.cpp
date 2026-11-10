@@ -62,6 +62,24 @@ Scissor scissorOf(std::uint64_t value)
     return {bound(0), bound(32), bound(16) + 1.0f, bound(48) + 1.0f};
 }
 
+// x about the frame's centre, by a squeeze (1: as it is).
+float squeezedX(float x, float squeeze)
+{
+    return kFrameWidth / 2.0f + (x - kFrameWidth / 2.0f) * squeeze;
+}
+
+// The clip of squeezed vertices follows them. Framed, the whole frame's clip becomes the frame as composed;
+// otherwise a clip that spans the frame's width (the draw env's own) stays the whole display.
+Scissor squeezed(Scissor scissor, float squeeze, bool framed)
+{
+    constexpr float kSlack = 1.0f;
+    if (squeeze == 1.0f || (!framed && scissor.x0 <= kSlack && scissor.x1 >= kFrameWidth - kSlack))
+        return scissor;
+    scissor.x0 = squeezedX(scissor.x0, squeeze);
+    scissor.x1 = squeezedX(scissor.x1, squeeze);
+    return scissor;
+}
+
 // TEST_1: ATE, and ATST GEQUAL / GREATER against AREF are all a dropped fragment can be here.
 std::uint8_t alphaTestRefOf(std::uint64_t test)
 {
@@ -172,12 +190,14 @@ float UiCanvas::squeezeFactor() const
     return wider > 1.0f ? 1.0f / wider : 1.0f;
 }
 
-void UiCanvas::setSqueezed(const void *list, bool squeezed)
+void UiCanvas::setSqueezed(const void *list, Squeeze squeeze)
 {
     // Read before the canvas's lock: the renderer has its own.
     const float factor = squeezeFactor();
     std::scoped_lock lock(m_lock);
-    layer(list).squeeze = squeezed ? factor : 1.0f;
+    Layer &target = layer(list);
+    target.squeeze = squeeze != Squeeze::Off ? factor : 1.0f;
+    target.framed = squeeze == Squeeze::Framed;
 }
 
 void UiCanvas::begin(const void *list, int format)
@@ -195,8 +215,7 @@ void UiCanvas::addVertex(const void *list, const YamiPanUiVertex &vertex)
     Layer &target = layer(list);
 
     Vertex converted{};
-    converted.x = kFrameWidth / 2.0f +
-                  (static_cast<float>(vertex.x) / kWindowUnit - kWindowOrigin - kFrameWidth / 2.0f) * target.squeeze;
+    converted.x = squeezedX(static_cast<float>(vertex.x) / kWindowUnit - kWindowOrigin, target.squeeze);
     converted.y = static_cast<float>(vertex.y) / kWindowUnit - kWindowOrigin;
     if ((target.format & YAMIPAN_UIV_UV) != 0)
     {
@@ -223,7 +242,7 @@ DrawCall UiCanvas::stateOf(const Layer &source)
     draw.pipeline.blend = source.forcedBlend.value_or(source.blended ? blendModeOf(source.alpha) : BlendMode::None);
     draw.pipeline.mask = colorMaskOf(source.frame);
     draw.image = source.textured ? source.image : nullptr;
-    draw.scissor = source.scissor;
+    draw.scissor = squeezed(source.scissor, source.squeeze, source.framed);
     draw.linearFilter = ((source.tex1 >> 5) & 1) != 0;
     draw.repeat = (source.clamp & 3) == 0;
     draw.alphaTestRef = alphaTestRefOf(source.test);
@@ -373,6 +392,7 @@ void UiCanvas::fillFrame(Layer &target, BlendMode blend, std::uint32_t color, st
     const std::uint64_t previousAlpha = std::exchange(target.alpha, static_cast<std::uint64_t>(fixedAlpha) << 32);
     const std::uint64_t previousTest = std::exchange(target.test, kNoAlphaTest);
     const std::uint64_t previousFrame = std::exchange(target.frame, static_cast<std::uint64_t>(kFbmskAlpha) << 32);
+    const float previousSqueeze = std::exchange(target.squeeze, 1.0f); // the whole display, whatever was squeezed
     target.forcedBlend = blend;
 
     const Vertex a{0.0f, 0.0f, 0.0f, 0.0f, color};
@@ -382,6 +402,7 @@ void UiCanvas::fillFrame(Layer &target, BlendMode blend, std::uint32_t color, st
     assemble(target, b);
 
     target.forcedBlend.reset();
+    target.squeeze = previousSqueeze;
     target.frame = previousFrame;
     target.test = previousTest;
     target.alpha = previousAlpha;
@@ -552,7 +573,7 @@ void UiCanvas::rippleFrame(const void *list, const YamiPanRipple &ripple)
     target.draws.push_back(std::move(draw));
 }
 
-void UiCanvas::drawImage(const void *list, std::shared_ptr<Image> image, float x, float y)
+void UiCanvas::drawImage(const void *list, std::shared_ptr<Image> image, float x, float y, float squeeze)
 {
     std::scoped_lock lock(m_lock);
     Layer &target = layer(list);
@@ -566,8 +587,8 @@ void UiCanvas::drawImage(const void *list, std::shared_ptr<Image> image, float x
     const bool previousTextured = std::exchange(target.textured, true);
     const bool previousBlended = std::exchange(target.blended, false);
 
-    const Vertex a{x, y, 0.0f, 0.0f, kOpaqueWhite};
-    const Vertex b{x + width, y + height, width, height, kOpaqueWhite};
+    const Vertex a{squeezedX(x, squeeze), y, 0.0f, 0.0f, kOpaqueWhite};
+    const Vertex b{squeezedX(x + width, squeeze), y + height, width, height, kOpaqueWhite};
     target.run.clear();
     assemble(target, a);
     assemble(target, b);
@@ -613,7 +634,8 @@ void UiCanvas::drawMacroblocks(const void *list, const void *owner, int picture,
         m_movieOwner = owner;
         m_moviePicture = picture;
     }
-    drawImage(list, m_movieImage, x, y);
+    // A movie is a picture, not an effect: it keeps its shape, with the display's sides left as they are.
+    drawImage(list, m_movieImage, x, y, squeezeFactor());
 }
 
 void UiCanvas::kick(std::span<const void *const> lists, std::chrono::steady_clock::time_point time)
