@@ -10,7 +10,10 @@ map", "Naming sources") and tick it off in `open-items.md` "Next up".
 - The ELF from the user's disc and the extracted disc's files, in a folder the user picks (the data
   root; never committed). Record serial, region and build date. YamiPan: Forbidden Siren 2, Europe,
   `SCES_538.51` (2006-05-17), all in `C:\Users\willi\Documents\Decomp\Forbidden Siren 2`; the tools
-  default to that folder, so there is no copy at the repo root.
+  default to that folder, so there is no copy at the repo root. **Done 2026-10-31**: stripped,
+  **Metrowerks CodeWarrior** (`.comment`; a third compiler family besides GCC 2 / GCC 3), SDK 3.0,
+  SCE's rx runtime and rena renderer, no sister game (architecture.md "Binary and toolchain").
+  `.comment` is the first thing to read: it names the compiler.
 - What the binary still has, each a naming source:
   - **Symbols**: `.symtab` / `.mdebug` (rare in retail), or a kept **section header table** with
     `.gnu.linkonce.t.<mangled>` sections (RoR: 1,449 inline methods and templates, 284 vtables
@@ -47,6 +50,14 @@ name it. One project per game.
 
 ## 3. Tools (from RosePan, the newest set)
 
+YamiPan: **done 2026-10-31** (scheduled run). Everything but `tus.py`, `autopilot.py` and `routine.md`
+copied and renamed; `yamipan.py` on `ghidra_mcp.py`; a `Ghidra5` client for 5.14.2 in `ghidra_mcp.py`
+(untested: not installed); provenance tags recorded in `data/tags.json` (Ghidra's tags only on 5.14.2);
+`ghidra.py find` searches the ELF; disassembly falls back to `mipsdis.py`; `elf32.py` reads the address
+map's regions for the stripped image. `tus.py` was held back, then carried over on 2026-11-02 after
+step 5 with a source-only mode (the user's "source code first"; the routine runs the TU loop as soon
+as `tools/reverse/tus.py` exists). `refresh.py` runs green (README "Pipeline").
+
 Copy `../RosePan/tools/reverse/*.py`, `README.md`, `routine.md` and rename: `rosepan` -> `yamipan`
 (module, paths, `ROSEPAN_*` -> `YAMIPAN_*`, exe and target names), the annotation `ROR` -> this game's
 tag (open-items.md), provenance tags `ror-symbol` / `ror-inferred` -> `game-symbol` / `game-inferred`
@@ -55,13 +66,17 @@ tag (open-items.md), provenance tags `ror-symbol` / `ror-inferred` -> `game-symb
 - `yamipan.py` keeps RosePan's shape (paths, address map, tags, annotation and stub regexes, write
   helpers) but its `GHIDRA` constant and `http()` / `ghidra_up()` go through `ghidra_mcp.py`
   (README "Carrying a tool over"). Grep the copied tools for `8089` and `GHIDRA_MCP_URL`: none may remain.
-- **RosePan's Ghidra calls are GhidraMCP 5.14.2's**; YamiPan runs 2.0.0 (ghidra.md has its API).
-  `ghidra_mcp.http()` returns parsed `data`, not text, and takes no `program`. Translate:
-  `list_functions` -> `functions` (paged), `get_function_by_address` -> `function`,
-  `decompile_function` (by address) -> `decompile_function`, `rename_function_by_address` stays. No
-  equivalent: `save_program`, `create_function`, `disassemble_bytes`, the function-tag endpoints,
-  `get_bulk_function_hashes`, `list_open_programs` (used by `rosepan.py`, `name_ctx.py`, `fetch.py`,
-  `mipsemu.py`, `ghidra.py`). Settle open-items.md's question on them before carrying those tools.
+- (2026-11-02: YamiPan now runs bethington's GhidraMCP 7.0.0 only, ghidra.md; this is how step 3 went
+  on 2.0.0.) **RosePan's Ghidra calls are GhidraMCP 5.14.2's**; YamiPan runs 2.0.0 (ghidra.md has its API) and,
+  for what 2.0.0 lacks, 5.14.2 beside it (the user's decision, open-items.md). `ghidra_mcp.http()`
+  returns parsed `data`, not text, and takes no `program`. Translate: `list_functions` -> `functions`
+  (paged), `get_function_by_address` -> `function`, `decompile_function` (by address) ->
+  `decompile_function`, `rename_function_by_address` stays. Keep on 5.14.2: `save_program`,
+  `create_function`, `disassemble_bytes`, the function-tag endpoints, `get_bulk_function_hashes`
+  (used by `rosepan.py`, `name_ctx.py`, `fetch.py`, `mipsemu.py`, `ghidra.py`), through a second client
+  in `ghidra_mcp.py` restored from the pre-2.0.0 one (`git show 8536a1f:tools/reverse/ghidra_mcp.py`:
+  instance by project via `instance_info` on 8089..8104, `program` in the query string). While no
+  5.14.2 backend answers, carry the tools over anyway and say which calls wait for it.
 - Fresh data: `data/tus.json` (no TUs, settings), `data/layout.json` (empty ranges), empty name
   ledgers (`context_names.json`, `overrides.json`, `lib_matches.json`).
 - Per-game tools stay behind or get rewritten: `i3racc.py` (RoR's i3r accessors), `vudis.py`'s image
@@ -90,10 +105,22 @@ anchors, then link-order fill. `status.py` -> `references/status.md`. The addres
 satellite ranges) goes into `data/layout.json` and architecture.md. Expect guesses between anchors:
 sessions pin real extents (`tus.py define`).
 
+YamiPan: **done 2026-11-02** (scheduled run): 16 library ranges in `layout.json`, 27 pinned TUs in a
+fresh `data/tus.json` (RosePan's format: `{queue, settings, tus: {key: {ranges, why}}}`, written by
+hand before `tus.py` exists), `export.py` taught message-leading paths and range labels
+(architecture.md "Address map", "Modules"). With only four file strings, pinning from the naming
+batches' findings is the map; link-order fill adds almost nothing.
+
 ## 6. Platform layer (host task `setup/platform_bootstrap.cpp`)
 
+YamiPan: **the Pan layer stands, 2026-11-03**, not as described below: the user asked for it as modern
+C++ (`cpp-port.md`), so it was written fresh from RosePan's behaviour, not renamed. What this step still
+says about the contract holds. Left over: open-items.md "Next up" item 8.
+
 From RosePan (it is ReiPan's, which is MioPan's, renamed and grown): `src/sdk/` (the PS2 SDK on the
-host), `src/rosepan/` -> `src/yamipan/` (os, io, gs, rendering, UI, config, memory), `src/common/`
+host), `src/rosepan/` -> `src/yamipan/` (os, io, rendering, UI, config, memory; **not** `gs/`: no GS
+emulator, not even for textures, SKILL.md "The user's rules"; take only its pure helpers, e.g. the
+PSM enum and TIM2 / CLUT decoding, into the asset decoders), `src/common/`
 (the stub macros), `CMakeLists.txt`, `CMakePresets.json`, `cmake/`, the fetched dependencies. Rename
 `RosePan` -> `YamiPan` throughout (identifiers, env variables, files, shader macros; config in
 `%APPDATA%/Mikompilation/YamiPan/`). Drop RoR's game-specific modules (`rosepan_i3d*` and the i3d mesh
@@ -103,7 +130,9 @@ platform contract the tools rely on (RosePan's tools README "Platform contract")
 (`YAMIPAN_AUTOPAD`), the data root (`YAMIPAN_DATA_DIR`), the stub log line
 (`[stub] <name> (<TAG> 0x%08x) reached`), the game thread's name for gdb, `[W]` / `[E]` log lines, a
 skip-intro switch that smoke runs turn off. `src/main.cpp` runs the game's `main` on the game thread.
-The draw path is native from the start (SKILL.md "The user's rules").
+The draw path is native from the start (SKILL.md "The user's rules"). Reuse, do not rewrite: take each abstraction
+from RosePan, else ReiPan, else MioPan, and write new host code only for what none of them has.
+The display size / aspect source comes first: arbitrary aspect ratio is the port's #1 feature.
 
 ## 7. First build, first TU, the loop
 

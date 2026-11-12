@@ -1,0 +1,352 @@
+// One game frame's draws, as the render thread takes them: plain data with no pointer back into game
+// memory, so the game can go on while the GPU works, and the last frame can be shown again.
+#pragma once
+
+#include <array>
+#include <chrono>
+#include <compare>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <vector>
+
+#include "yamipan/gpu/device.h"
+
+namespace yamipan::rendering
+{
+
+// How GS blending maps to the host's: ALPHA_1's (A - B) * C + D, by what the game actually uses.
+enum class BlendMode : std::uint8_t
+{
+    None,
+    Alpha,          // (Cs - Cd) * As + Cd
+    Additive,       // Cs * As + Cd
+    Subtractive,    // Cd - Cs * As
+    DestinationAlpha, // (Cs - Cd) * Ad + Cd
+    FixedAlpha,     // (Cs - Cd) * FIX + Cd
+    FixedAdditive,  // Cs * FIX + Cd
+    DestinationScale, // Cd * FIX, FIX up to 1
+    DestinationBoost, // Cs * Cd + Cd; ALPHA_1 0x49, Cd * As + Cd, when the fragment hands As over as Cs
+    DestinationFade, // (0 - Cd) * As + Cd
+};
+
+// ALPHA_1's selectors as the blend above.
+BlendMode blendModeOf(std::uint64_t alpha);
+
+// FRAME_1's FBMSK as the two halves the game's presets use.
+enum class ColorMask : std::uint8_t
+{
+    All,
+    ColorOnly,
+    AlphaOnly,
+};
+
+struct PipelineKey
+{
+    BlendMode blend = BlendMode::None;
+    ColorMask mask = ColorMask::All;
+
+    auto operator<=>(const PipelineKey &) const = default;
+};
+
+// An image decoded at its source, shared by every frame that draws it, so it outlives the game's own
+// texture object for as long as a frame on screen needs it.
+struct Image
+{
+    int width = 0;
+    int height = 0;
+    std::vector<std::byte> pixels; // RGBA8
+    std::shared_ptr<gpu::Texture> texture;
+};
+
+// What FilmOverlayPass lays over the frame: yamipan_drawui.h has the meaning of each number.
+struct FilmCorner
+{
+    std::shared_ptr<Image> shown;
+    std::shared_ptr<Image> leaving;
+    float leavingAlpha = 0.0f;
+};
+
+struct FilmOverlay
+{
+    std::array<FilmCorner, 4> corners;
+    int bandStart = 0;
+    int bandLength = 1;
+    int clearBelow = 0;
+    int solidAbove = 0;
+    std::uint32_t color = 0;
+};
+
+// One sprite of the game's frame filter (game/framefilter.cpp): a buffer, shown over `sourceWidth` x
+// `sourceHeight` of it, drawn at (x, y) as `width` x `height`, kept inside 0..width x 0..height, all in
+// pixels of the 512 x 512 frame. `alpha` 0x80 replaces, below it blends (Cs - Cd) * alpha / 128 + Cd.
+// Buffers are the game's VRAM blocks: FrameFilter::frameBlock is the frame so far, any other a scratch
+// buffer of the host's.
+struct FrameFilterStep
+{
+    int source = 0;
+    int target = 0;
+    int x = 0;
+    int y = 0;
+    int width = 0;
+    int height = 0;
+    int sourceWidth = 0;
+    int sourceHeight = 0;
+    int alpha = 0x80;
+};
+
+struct FrameFilter
+{
+    int frameBlock = 0;
+    std::vector<FrameFilterStep> steps;
+};
+
+// In frame units; vertices in texels.
+struct Vertex
+{
+    float x, y;
+    float u, v;
+    std::uint32_t color; // the GS's RGBAQ bytes: 0x80 is 1.0
+};
+static_assert(sizeof(Vertex) == 20);
+
+struct Scissor
+{
+    float x0 = 0.0f;
+    float y0 = 0.0f;
+    float x1 = 512.0f;
+    float y1 = 512.0f;
+
+    bool operator==(const Scissor &) const = default;
+};
+
+struct DrawCall
+{
+    PipelineKey pipeline;
+    std::shared_ptr<Image> image; // null: untextured
+    Scissor scissor;
+    bool linearFilter = false;
+    bool repeat = false;
+    std::uint8_t alphaTestRef = 0; // fragments below it are dropped; 0 keeps them all
+    std::uint8_t fixedAlpha = 0x80;
+    std::shared_ptr<Image> framePalette; // not null: no draw, the frame so far goes through this 256 x 1 ramp
+    std::shared_ptr<FilmOverlay> film; // not null: no draw, this goes over the frame so far
+    bool frameRipple = false; // this draw's vertices are FrameRipplePass's sheet, not drawn as they are
+    std::shared_ptr<FrameFilter> frameFilter; // not null: no draw, FrameFilterPass's sprites over the frame
+    std::uint32_t rippleTint = 0;
+    std::uint32_t firstVertex = 0;
+    std::uint32_t vertexCount = 0;
+};
+
+// A model's vertex, lit and in the world: the render thread only projects it.
+struct ModelVertex
+{
+    float x, y, z;
+    float u, v;
+    std::uint32_t color; // 0x80 is 1.0
+};
+static_assert(sizeof(ModelVertex) == 24);
+
+// A vertex of the spot's pass: the same place, its picture projected from the light.
+struct ModelSpotVertex
+{
+    float x, y, z;
+    float s, t, q;
+    std::uint32_t color; // the vertex's lit colour; alpha is how much the light reaches it, 0x80 is 1.0
+};
+static_assert(sizeof(ModelSpotVertex) == 28);
+
+// A shadow's pass has the same shape: q 1, colour black, alpha how strong the shadow is here, 0x80 is 1.0.
+using ModelShadowVertex = ModelSpotVertex;
+
+// A rigid model's vertex as its file has it, kept on the GPU from the first frame that draws it: model_static.vert
+// places and lights it every frame, as VU1 did, so the game thread no longer touches it.
+struct ModelStaticVertex
+{
+    float x, y, z;
+    float nx, ny, nz;            // as the file has them; a NaN one is replaced (ModelRenderer)
+    std::int16_t u, v;           // 4096 = 1.0
+    std::uint8_t color[4];       // r g b a, 0x80 = 1.0
+};
+static_assert(sizeof(ModelStaticVertex) == 32);
+
+// A skinned model's vertex, cached the same way: model_skinned.vert places it through the frame's palette.
+struct ModelSkinnedVertex
+{
+    ModelStaticVertex base;      // the colour's alpha, never lit (VU1 loads xyz), is how many bones the vertex weighs
+    std::uint8_t bones[4];       // the palette's matrices (VU quadword / 4); 255: none
+    float weights[4];            // as the file has them; not read with one bone
+};
+static_assert(sizeof(ModelSkinnedVertex) == 52);
+
+// What places and lights a run of cached batches: an instance of the cached batches' vertex shaders. The matrix is
+// the world one transposed, so that each row is what one axis of the result is a dot product with. Ten attributes,
+// so that a skinned vertex's four and two more stay within SDL's sixteen: the light rows' w lanes carry the rest.
+struct ModelInstance
+{
+    float place[3][4];           // x' = place[0] . (x, y, z, 1); a normal takes .xyz alone, unnormalised as VU1
+    float ambient[4];            // xyz; w: ModelInstanceFlag bits, as a float
+    float lightColors[3][4];     // xyz; w: scroll u, scroll v (added to every UV), the reflection's scale
+    float lightDirections[3][4]; // xyz; w of the first: where the palette starts in Frame::modelPalettes
+};
+static_assert(sizeof(ModelInstance) == 160);
+
+// The bits of ModelInstance::ambient[3] (model_static.hlsli has the same).
+enum class ModelInstanceFlag : std::uint32_t
+{
+    Unlit = 1,         // the vertex colour as it is
+    Point = 2,         // the pass's point light adds to it
+    PointFlat = 4,     // whichever way the vertex faces
+    FirstBoneOnly = 8, // ModelFlag_Distant: every vertex takes its first bone, unweighted
+};
+
+// A block of GPU memory holding cached batches: vertices and the 16-bit indices of their triangles. The render thread
+// creates the buffers and fills them; the frames that draw from a chunk hold it, so it outlives the cache's flush.
+struct ModelGeometryChunk
+{
+    std::uint32_t vertexSize = 0; // a ModelStaticVertex's or a ModelSkinnedVertex's: a chunk holds one kind
+    gpu::Buffer vertices;
+    gpu::Buffer indices;
+};
+
+// What pairs a placement (an instance, or a run of palette matrices) with the same one in the next frame, for
+// smooth motion: the game's model that drew it and the geometry of the first batch that took it. Identities only,
+// never read through. A frame can hold a key more than once; the n-th of one frame pairs with the n-th of the other.
+struct ModelPlacementKey
+{
+    const void *owner = nullptr; // null: never paired
+    const void *geometry = nullptr;
+
+    bool operator==(const ModelPlacementKey &) const = default;
+};
+
+// A skinned batch's matrices in Frame::modelPalettes, and their key.
+struct ModelPaletteRun
+{
+    ModelPlacementKey key;
+    std::uint32_t first = 0;
+    std::uint32_t count = 0;
+};
+
+// An effect's quad in Frame::modelVertices (6 vertices, in its view-space pass), and what pairs it with the same
+// particle in the next frame: the effect and the particle's slot. The n-th of one key pairs with the n-th of the other.
+struct ModelQuad
+{
+    const void *owner = nullptr; // null: never paired
+    std::int32_t slot = 0;
+    std::uint32_t firstVertex = 0;
+};
+
+// One cached batch: its triangles in a chunk, and the instance that places and lights them.
+struct ModelBatchDraw
+{
+    const ModelGeometryChunk *chunk = nullptr; // kept alive by Frame::modelChunks
+    std::uint32_t firstIndex = 0;
+    std::uint32_t indexCount = 0;
+    std::int32_t vertexOffset = 0;
+    std::uint32_t instance = 0;       // into Frame::modelInstances
+    bool skinned = false;             // ModelSkinnedVertex, placed through the palette
+    bool culled = false;              // faces turned from the eye are not drawn
+    bool mirrored = false;            // the instance's matrix turns a face's front around
+    bool spotted = false;             // the spot's pass goes over it
+    std::uint8_t shadows = 0;         // bit n: the pass's shadow n lays itself over it
+};
+
+struct ModelDraw
+{
+    std::shared_ptr<Image> image; // null: untextured
+    bool blended = false; // over what is drawn, by `blend`; otherwise opaque
+    std::uint32_t firstVertex = 0;
+    std::uint32_t vertexCount = 0;
+    std::uint32_t firstSpotVertex = 0; // into Frame::modelSpotVertices, drawn over this draw
+    std::uint32_t spotVertexCount = 0;
+    std::uint32_t firstShadowVertex = 0; // into Frame::modelShadowVertices, drawn over this draw, before the spot
+    std::uint32_t shadowVertexCount = 0;
+    std::uint32_t firstBatch = 0; // cached batches, into Frame::modelBatches: each drawn, then their shadows, spots
+    std::uint32_t batchCount = 0; // not 0: this draw is cached batches, and has no vertices of its own
+    BlendMode blend = BlendMode::Alpha;
+    int fixedFog = -1; // an effect's GS FOG, 0..255, for all it draws; -1 the pass's fog by depth
+    bool writesDepth = true; // ZBUF's ZMSK clear: a material's, blended or not; not an effect's or a ghost's
+    bool reflection = false; // cached batches drawn as their reflection (VU1 0x77f), not their colour
+    float alphaScale = 1.0f; // every vertex's alpha, VU address 25's w, 1 = 0x80: below 1 only for a face's frame
+};
+
+// What the vertex shaders take of a pass besides its projection: yamipan_drawmodel.h has what each is.
+struct ModelPassLights
+{
+    std::array<float, 4> eye{};
+    std::array<float, 4> pointPosition{};  // w: the weight
+    std::array<float, 4> pointColor{};     // w: the slope
+    std::array<float, 4> pointShade{};
+    std::array<float, 16> spotWorldToLight{};
+    std::array<float, 4> spotScale{};      // x, y; z the limit
+    std::array<float, 4> spotFalloff{};
+    std::array<std::array<float, 16>, 7> shadowProjections{}; // kYamiPanModelMaxShadows
+};
+
+// One pass of models, drawn in the frame's order among the 2D draws: before draws[uiDrawsBefore].
+struct ModelPass
+{
+    std::array<float, 16> viewScreen{}; // the game's, in rows: the projection is finished at draw time
+    float centerX = 2048.0f;
+    float centerY = 2048.0f;
+    float halfWidth = 256.0f;
+    float halfHeight = 256.0f;
+    float depthMin = 1.0f;
+    float depthMax = 16777215.0f;
+    std::array<float, 3> fogColor{};
+    float fogA = 255.0f;
+    float fogB = 0.0f;
+    float fogNearValue = 255.0f;
+    float fogFarValue = 255.0f;
+    bool clearDepth = true;
+    bool viewSpace = false; // the effects': what it draws is relative to the camera, viewScreen the projection alone
+    std::shared_ptr<Image> spotImage; // the lamp's picture
+    std::shared_ptr<Image> shadowImage; // shadow_00
+    ModelPassLights lights;
+    std::uint32_t uiDrawsBefore = 0;
+    std::uint32_t firstDraw = 0;
+    std::uint32_t drawCount = 0;
+};
+
+struct Frame
+{
+    std::vector<Vertex> vertices;
+    std::vector<DrawCall> draws;
+    std::vector<ModelVertex> modelVertices;
+    std::vector<ModelSpotVertex> modelSpotVertices;
+    std::vector<ModelShadowVertex> modelShadowVertices;
+    std::vector<ModelInstance> modelInstances;
+    std::vector<std::array<float, 16>> modelPalettes; // skinned batches' bone matrices, sceVu0 layout
+    std::vector<ModelPlacementKey> modelInstanceKeys; // one per modelInstances
+    std::vector<ModelPaletteRun> modelPaletteRuns;    // covering modelPalettes
+    std::vector<ModelQuad> modelQuads;                // the effects' quads in modelVertices
+    std::vector<ModelBatchDraw> modelBatches;
+    std::vector<std::shared_ptr<ModelGeometryChunk>> modelChunks; // what modelBatches draw from, kept alive
+    std::vector<ModelDraw> modelDraws;
+    std::vector<ModelPass> modelPasses;
+    std::uint64_t number = 0;
+    // When the field that released this frame was due (the interrupt controller's clock): the renderer blends
+    // between two frames by this, not by when they arrived.
+    std::chrono::steady_clock::time_point time{};
+
+    void clear()
+    {
+        vertices.clear();
+        draws.clear();
+        modelVertices.clear();
+        modelSpotVertices.clear();
+        modelShadowVertices.clear();
+        modelInstances.clear();
+        modelPalettes.clear();
+        modelInstanceKeys.clear();
+        modelPaletteRuns.clear();
+        modelQuads.clear();
+        modelBatches.clear();
+        modelChunks.clear();
+        modelDraws.clear();
+        modelPasses.clear();
+    }
+};
+
+} // namespace yamipan::rendering

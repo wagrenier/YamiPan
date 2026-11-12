@@ -13,11 +13,14 @@ counterpart: every function from its own binary). This skill distils what those 
 skills keep the full history. It is the playbook and the project's memory: follow it, and keep it true
 ("Keeping this skill alive").
 
-**State (2026-10-31): before bootstrap.** The game is Forbidden Siren 2 (Europe, `SCES_538.51`; files
-under "Environment"); its annotation tag is still open (open-items.md "Next up" 1). What exists: the
-Ghidra layer on GhidraMCP 2.0.0 (`tools/reverse/ghidra_mcp.py`, `ghidra_bridge.py`, `.mcp.json`) and a
-Ghidra project with the game imported and auto-analysed. Until the TU loop runs, work follows
-`references/bootstrap.md`; afterwards, the protocol below.
+**State (2026-11-02): bootstrap 4 closed by the user (source code first: open-items.md "Next up" item 0); bootstrap 5 done (the TU map: 16 library ranges, 27 pinned TUs in `data/tus.json`); `tus.py` carried over in source-only mode (no build yet: TUs end `verify`), so the runs are one TU each, from `main`'s `game/gamesystem.cpp` down; seeded names: batches 001-021 applied; rxsys / rxfile / rxthread / rxsnd, SIF cmd / rpc, iopheap and libmpeg / libipu and all of libkernl (klib.s, glue, thread, tty, kprintf, fileio, loadfile, TLB, initsys, exit, timer, alarm), libgraph / libdma / libdev, libcdvd and libmc named from RosePan, libpad from FF3's list, rxsndut / rxsndstr / SDPR2 and the game's sound layer by reading; 4(a) and the code-pointer pass done: every known missing function start created, 7,582 functions)** (open-items.md "Next up" has what is left). The game is Forbidden Siren 2 (Europe, `SCES_538.51`;
+files under "Environment"), annotation tag `FS2`; a stripped **Metrowerks CodeWarrior** build (not GCC:
+open-items.md has what that changes). What exists: the Ghidra layer on bethington's GhidraMCP 7.0.0
+(`tools/reverse/ghidra_mcp.py`, `ghidra_bridge.py`, `.mcp.json`), a Ghidra project with the game
+imported and auto-analysed, RosePan's tools carried over (`autopilot.py` with bootstrap 7) and, since
+2026-11-03, **a green build**: the Pan layer in `src/yamipan/` (`references/cpp-port.md`), so `tus.py`
+runs in full mode. The TU loop: the protocol below; what is left of the Pan layer is open-items.md "Next
+up" item 8.
 
 Read before working:
 - `references/open-items.md` -- the user's priorities ("Next up"), decisions, questions.
@@ -39,23 +42,24 @@ Read before working:
   This folder is the default ELF path and data root for the tools, so there is no copy at the repo
   root. Never commit anything from it.
 - **Ghidra 12.2** (`C:\Users\willi\Documents\ghidra_12.2_PUBLIC_20261016\ghidra_12.2_PUBLIC`) with
-  emotionengine-reloaded and **GhidraMCP 2.0.0** (LaurieWired; source `../GhidraMCP`, release wheel and
-  extension zip in `C:\Users\willi\Documents\GhidraMCP-release-2-0\GhidraMCP-release-2-0`). YamiPan's
+  emotionengine-reloaded and **bethington's GhidraMCP 7.0.0** (since 2026-11-02; source and MCP bridge
+  in `C:\Users\willi\Documents\git\ghidra-mcp`, built there for 12.2: ghidra.md). YamiPan's
   project is `C:\Users\willi\Documents\Ghidra Projects\CLaude Decomp.gpr`, its program `SCES_538.51`
-  (`tools/reverse/data/ghidra.json`). **Each CodeBrowser window serves the program active in it**, on
-  its own fixed port (Tool Options -> GhidraMCP HTTP Server, 8080; no fallback: another Ghidra gets
-  another port by hand). Several Ghidras can run, one per game (ghidra.md).
-  - Tools find the window by its active program: `python ghidra_mcp.py which` (from `tools/reverse/`)
-    says which; `list` shows every backend on 8080..8095; `launch` starts Ghidra on the project. Each
-    request is checked first (one /health), so a window showing another program is never written to.
+  (`tools/reverse/data/ghidra.json`). **One server per Ghidra process** (8089 by default), serving every
+  program open in it; each request names its program. Several Ghidras can run, one per game (ghidra.md).
+  - Tools find the server by the open program: `python ghidra_mcp.py which` (from `tools/reverse/`)
+    says which; `list` shows every server on 8089..8104; `launch` starts Ghidra on the project.
     Never hard-code a port; `GHIDRA_MCP_URL` pins one only for debugging.
-  - Claude's `ghidra` MCP tools (`.mcp.json` -> `ghidra_bridge.py`, run by the venv
-    `C:\Users\willi\Documents\ghidra_12.2_PUBLIC_20261016\.venv`): the wheel's 30 plus `list_instances`
-    and `connect_instance`. They find the window on each call, so Ghidra may start after the session;
-    `.mcp.json` itself is read at session start.
-  - **The plugin never saves**: names and comments stay in Ghidra until it saves (Ctrl+S there). Offline
-    (Ghidra down): status, export, tus list/check/finish, callcheck and build work from cached `work/`.
-- Tools: `tools/reverse/` (run from there: `python <tool>.py`); every tool is in its README.
+  - Claude's `ghidra` MCP tools (`.mcp.json` -> `ghidra_bridge.py` -> the plugin's own bridge, run by
+    the venv `C:\Users\willi\Documents\ghidra_12.2_PUBLIC_20261016\.venv`): 67 tools on connect
+    (`search_tools` / `load_tool_group` for more); pass `program="SCES_538.51"` and, for renames,
+    `strict_mode="off"`. `.mcp.json` is read at session start.
+  - **The tools save their writes** (`save_program()`: `name_ctx.py`, `ghidra.py mkfunc`); after a raw
+    MCP write, call `save_program`. Offline (Ghidra down): status, export, tus list/check/finish,
+    callcheck and build work from cached `work/`.
+- Tools: `tools/reverse/` (run from there: `python <tool>.py`); every tool is in its README. Python
+  3.14 is installed, but `python` resolves to the Microsoft Store stub until its App execution alias
+  is turned off (Windows Settings): use `py <tool>.py` when `python` says "Python was not found".
 - Build (after bootstrap): `python build.py` (MinGW + ninja, configures on first use). The game ELF in
   the game folder above.
 - References, read-only: `../RosePan` (newest tools and platform layer, SDK 3.0 + ee-gcc 2.9x library
@@ -107,6 +111,8 @@ still ends in a commit.
    when the screen shows what the game's own assets show (`tm2png.py` -> `work/ref/`); a wrong picture is
    `partial` with the difference in the notes; complete code nothing on screen shows yet is `verify`.
    When a run needs more than the boot, extend the smoke pad and say how far it gets in open-items.md.
+   **Source-only mode** (no `CMakeLists.txt` yet): `check` runs only callcheck and the layout lint;
+   finish with `verify` (code complete) or `partial`; `done` waits for a build and a picture.
 7. **Record.** Facts -> architecture.md; traps -> hazards.md (symptom / cause / fix, dated); cross-TU
    questions and decisions -> open-items.md; better ways of working -> this file, reconstruction.md, the
    tools README. If `.claude/` writes are denied (autopilot), put the text in `--notes` after "For the
@@ -119,14 +125,34 @@ still ends in a commit.
 `blocked` means a decision is needed: say which in the notes and open-items.md. Never leave the tree
 dirty or the build red.
 
+## Time limits (the user's rule, 2026-11-04)
+
+A run on 2026-11-04 lost 3 hours: `gdbrun.py` returns only when the game exits, nothing bounded it, and
+a game that no longer crashes never exits by itself. So:
+
+- **A session has 60 minutes, counted from `started` in `work/run.lock`** (or the session's first
+  command when there is no lock). Check the clock at each protocol step. At 45 minutes start no new
+  work: finish what is coherent, status `partial` or `verify`, notes for the next run. At 60 minutes
+  finish, push and release the lock whatever is left. An unfinished TU is fine; a lost afternoon is not.
+- **No game run lasts more than 10 minutes.** Everything that starts the game has a limit before it
+  starts: `build.py --run N` and `tus.py check --run N` carry their own; `gdbrun.py` has none, so a
+  background run gets `Monitor` with a timeout, then `py gdbrun.py --break` and
+  `py gdbrun.py --cmd quit`. Never launch one and wait for the notification alone.
+- **Any other background command gets a limit too.** If it is overdue, stop it; do not keep waiting
+  for its notification.
+
 ## Starting sessions
 
-The user starts each session (`/yamipan-port next`, a scheduled task whose prompt is
-`tools/reverse/routine.md`, or `autopilot.py` in a terminal). A session never starts other sessions,
-agents or scheduled tasks, and never edits `autopilot.py` or the routine. Within a session, run the
-protocol without asking at each step; pause only for decisions that are the user's (restructuring the
-tree, non-trivial platform changes, destructive git) -- when no answer can come, decide, record the
-doubt in open-items.md, finish. Pushing finished commits is not approved for YamiPan yet (open-items.md).
+The user starts each session (`/yamipan-port next`, the desktop app's scheduled task `yamipan-next-tu`
+every 20 minutes, whose prompt is `tools/reverse/routine.md`, or `autopilot.py` in a terminal). Work
+is on the branch `fs2-port`. A scheduled run passes `python preflight.py` first (stop switch
+`work/STOP`, run lock `work/run.lock`, clean tree, work branch, Ghidra up), does one step (a bootstrap
+step until `tus.py` exists, then one TU), pushes and releases the lock. A session never starts other
+sessions, agents or scheduled tasks, and never edits `autopilot.py`, `preflight.py` or the routine.
+Within a session, run the protocol without asking at each step; pause only for decisions that are the
+user's (restructuring the tree, non-trivial platform changes, destructive git) -- when no answer can
+come, decide, record the doubt in open-items.md, finish. Pushing each finished commit to
+origin/fs2-port is approved (2026-10-31); never force.
 An empty queue means re-assess, not "follow the frontier": the frontier counts call sites from written
 code that may never run (in ReiPan it led seven sessions into effects nobody could see); refill the
 queue from "Next up" in the order a smoke run reaches the stubs. Porting runs at effort `xhigh` (this
@@ -135,17 +161,39 @@ frontmatter; the user's rule: automated runs at xhigh or above). Keep that line.
 ## The user's rules (from the earlier ports; open-items.md "Decisions" has the dates)
 
 - **The picture is the test.** Logs, stub hits and callcheck show the code ran, not that it is right.
-- **Drawing never goes through the emulated GS.** Keep the game's draw decisions (what, where, colour,
-  blend, order, textures), replace its output: the packet-writing step calls a native host draw module
-  per subsystem under `src/yamipan/rendering/`, batched, layers in the game's order, textures on the GPU
-  keyed by their owner record (RosePan architecture.md "PC platform layer").
-- **Any aspect ratio**: from one renderer-owned source, never a fixed 4:3 / 640x448 in host draw code.
+- **Any aspect ratio is the port's #1 feature** (2026-11-02): one renderer-owned source for the
+  display size and aspect, never a fixed 4:3 / 640x448 in host draw code; 2D layout (HUD, menus,
+  movies, fades) anchored and scaled from it, 3D projection widened from it, never stretched. Every
+  drawing TU is judged on it as well as on the picture.
+- **No GS emulator, not even for textures** (2026-11-02). Keep the game's draw decisions (what, where,
+  colour, blend, order, textures), replace its output: the packet-writing step calls a native host draw
+  module per subsystem under `src/yamipan/rendering/`, batched, layers in the game's order. **Textures
+  never pass through emulated GS memory** (no `miopan_gs.cpp` / `rosepan_gs.cpp`-style local-memory
+  model, swizzle or CLUT upload replay): when a TU loads or uploads an image, decode the asset at its
+  source (the file record the game reads: format, size, palette) straight to a GPU texture keyed by its
+  owner record, and make the upload path the game uses (GS packets, VRAM addresses) unnecessary.
+- **Name the patterns** (2026-11-02): a value that repeats or behaves like a state / mode / kind
+  becomes an `enum` or a `#define`d / `constexpr` name, bit tests on flags become named flag bits
+  (`if (m_flags & ActorFlag_Visible)`, not `& 0x10`) -- as the code is decompiled, not later.
+  reconstruction.md "Types and constants".
+- **The Pan layer is modern, object-oriented C++; the game layer stays authentic** (2026-11-03;
+  supersedes "renamed, not rewritten" of 2026-11-02 for the Pan layer only). `src/yamipan/` keeps what
+  RosePan / ReiPan / MioPan offer (window, UI, settings, aspect, plumbing, newest first) and rewrites
+  it as classes, adapted to FS2. Game code is untouched by this: `src/game`, `rena`, `sound`, `rx`,
+  `sdpr2` go on as reconstruction.md says, with the game's own file names (`rxfile.c`) and shapes.
+  `references/cpp-port.md` has the scope, the style and the map: read it before writing host code.
+- **Japanese stays Japanese** (2026-11-04): Shift-JIS text found in the ROM goes into the source as the
+  Japanese itself (a UTF-8 literal when it is only printed), never as raw bytes alone; bytes the game
+  compares with disc data or writes out stay, with the exact Japanese beside them. reconstruction.md
+  "Japanese text".
 - **Methods, not free functions**: a function taking the object in a0 is a member.
 - **Automated work at xhigh or above; sessions never start sessions.**
 
 ## Tools by step
 
-Carried over from RosePan at bootstrap (bootstrap.md 3); until then only the Ghidra layer exists.
+Carried over from RosePan at bootstrap 3 (2026-10-31); `tus.py` on 2026-11-02 (source-only until the
+build; its existence switched the scheduled runs to the TU loop), `autopilot.py` with bootstrap 7. `tools/reverse/README.md` has the Ghidra helpers and
+what degrades while Ghidra is down.
 
 | step | tool |
 |---|---|
@@ -153,12 +201,15 @@ Carried over from RosePan at bootstrap (bootstrap.md 3); until then only the Ghi
 | queue, claim, brief, boundaries, check, finish | `tus.py list / next / claim / brief / define / queue / check / finish` |
 | regenerate derived files | `refresh.py` (fetch + features when Ghidra is up, then the offline ones, status) |
 | map code | `modview.py range\|tree`, `yamipan_functions.txt`, `stage.py class:Name` |
-| name | `ctxcard.py`, `name_ctx.py`; seeding `sections.py --apply`, `libmatch.py --apply` |
+| name | `ctxcard.py`, `name_ctx.py`; seeding `sections.py --apply`, `libmatch.py --apply`, `rxalign.py` (rx and SDK libs from RosePan), `codeptrs.py` (missing starts behind code pointers) |
 | read code | `stage.py`, `dec.py`, `ghidra.py` (asm, refs, mkfunc), `hidden.py`, `mipsdis.py`, `vudis.py`, `mipsemu.py`, `sinit.py` |
-| classes | `rtti.py --class / --vtable` |
+| IOP modules | `iop.py` (unpack `IOPRP300.IMG`, identify every `.irx`, write a Ghidra-ready ELF of `RXSNDDRV.IRX`, the game's only IOP code; `cmp` places RosePan's reconstruction in FS2's build: architecture.md "The IOP side") |
+| carried-over libraries (rx) | `rxcmp.py` (FS2 vs RoR word for word, `--data` for the data map) |
+| classes | `rtti.py --class / --vtable`, `slotcheck.py` (ROM overrides of the runner's slots the host left on the default) |
 | TU identity | `tuid.py <TU>` (in the brief) |
-| game data | `datadump.py`, `tm2png.py`, game-specific readers written as needed |
-| frontier, layouts, crashes | `build.py`, `stubgen.py`, `callcheck.py`, `layoutcheck.py`, `gdbrun.py` |
+| game data | `datadump.py`, `tm2png.py`, `ptcdump.py`, `ptcall.py`, game-specific readers written as needed |
+| prove code no smoke run reaches | `eerun.py` (the ROM's own functions, offline), `rutecmp.py` (the pattern: ROM and host answer the same questions on the disc's data), `rumblecmp.py` (the same for stateful code: one random op script on both, state compared after each op), `strmemcmp.py` (the same, with callbacks and stand-ins on both sides), `ripplecmp.py` (the same for a draw: the ROM's packet walked against the host's rule), `literalmapcmp.py` (the same for a template: every ROM instance beside the host, tree shape compared), `sightcmp.py` (the same for a whole draw: the ROM's packet walked into vertex rows, the host's calls printed as the same rows, `--plant`), `itemcmp.py` (the same for physics: stand-in headers for the owner and the scene, a whole frame as ops, every field as bits, `--plant`), `alertcmp.py` (the same for a small state machine: every stand-in logs, fields forced past the sign bit, `--plant` proves it sees bugs), `areaclipcmp.py` (the same on files from the disc, a slow ROM ctor sampled: stand-in targets log, grid and frames compared, `--plant`), `menucmp.py` (the same for a UI class: random frames, its state and every plate and text compared), `defaultcmp.py` (a whole class of one-line defaults, no run: every inline virtual of scriptrunner.h against the ROM's body and slot, `--plant`), `sortcmp.py` (the same for a sort: random lists in one run, ties compared in order, a counter that carries between calls, `--plant`), `fogcmp.py` (the same for a pair of small classes over real ROM list code: stand-in blocks, the host's real classes calloc'd, `--plant`), `itemwaitcmp.py` (the same for a script's frame-by-frame wait: one block of a big file compiled alone, a history moved under it), `rand48cmp.py` (the same for a small stateful class, every return and the state as bits, `--plant`), `bearingvectorcmp.py` (the same for an MSL vector kept as std::vector: the promise, not the capacity, `--plant`), `vu0cmp.py` (the same for pure math, lane by lane in ulps), `vectorcmp.py` (random op scripts on keyed vectors, compared as bits), `vehiclecmp.py` (the same with ModelPose stubbed and its calls logged on both sides), `wayoutcmp.py` |
+| frontier, layouts, crashes | `build.py`, `stubgen.py`, `callcheck.py`, `layoutcheck.py`, `crashsym.py` (a plain run's `[crash]` lines), `gdbrun.py` |
 
 Naming exists to make reconstruction possible; it is not the goal. Name what the slice needs, then
 write code; callees not needed yet become stubs.
@@ -199,9 +250,13 @@ finishing any session:
 |---|---|---|
 | `references/open-items.md` | priorities, decisions, questions, done log | every session |
 | `references/status.md` | generated progress (after bootstrap) | every session |
+| `references/roadmap-3d-control.md` | what is missing for the 3D and for playing the character, measured | choosing what comes next |
+| `references/roadmap-framerate.md` | what holds the game at 25 fps, what counts frames, the ways past it | frame rate, timing, interpolation |
+| `references/framerate-inventory.md` | every rule that counts PAL frames, its kind and its rate-free fix (native 60 Hz, step 1) | native frame rate, frame counters, eases |
 | `references/ghidra.md` | instances, ports, discovery, MCP bridge, GhidraMCP traps | Ghidra not found, or odd |
 | `references/bootstrap.md` | a new port from an empty repo to the loop | until the loop runs |
 | `references/architecture.md` | the game: binary, address map, modules, classes, data, platform | understanding a TU |
+| `references/cpp-port.md` | the C++ rule: scope, style, the host layer's map and threads | writing host or SDK code |
 | `references/reconstruction.md` | placement, annotations, GCC 2 / GCC 3 ABI, types, stubs, verification | writing code |
 | `references/hazards.md` | decompiler, naming, inference, layout, stub, session, shell, build, platform traps | something behaves oddly |
 | `tools/reverse/README.md` | every tool | running tools |

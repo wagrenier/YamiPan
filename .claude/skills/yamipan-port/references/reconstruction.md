@@ -21,6 +21,8 @@ proves wrong or incomplete, fix this file.
   recorded with `define --why` and in architecture.md.
 - Inline methods and template instances (linkonce sections, singleton getters) have no file of their
   own: write them in their class's header (inline, as the original was) or its .cpp, annotated either way.
+  **A tag in a header does not count:** `yamipan.reconstructed()` reads .c / .cpp only, so also list the
+  addresses at the end of the TU's .cpp, each with its own `FS2 0x`; `FS2 0x1, 0x2` counts the first only.
 - Library code (`data/layout.json` lib_ranges: Sony SDK, kernel stubs, libgcc, newlib, the C++ runtime)
   is never reconstructed: `src/sdk/` replaces the SDK, the host libc the rest. Its names matter only so
   callers read right.
@@ -64,6 +66,13 @@ functions; a runtime cast (`__dynamic_cast`, `__rtti_si`) is `dynamic_cast` in s
 two vtable slots where the destructor is declared (usually first; FF3's GameModel has them at +8/+0xc:
 check `rtti.py --class`). Twins count only with the `<TAG>` annotation on each.
 
+**CodeWarrior** (FS2): vtables are plain 4-byte function pointers, slot 0 and 1 zero, the vptr where the class puts it (+0xb4 on a runner); not either shape above.
+Inlining stops a few levels deep: a function that inlines itself (or long chains of inline getters)
+calls the deepest getters out of line, and CodeWarrior places those copies right after the calling
+function, sometimes the same getter twice (`StageCharacter::getSides` 0x215f10 -> 0x2160a0..0x216130).
+Such a run belongs to the caller's TU: join it with `tus.py define`, write each getter once as an
+ordinary member with one `FS2` line per copy, and name the second copy `<name>2` in Ghidra (2026-11-07).
+
 **Both**: `rtti.py --class X` / `--vtable ADDR` lists bases, slots with their targets, ctors / dtors
 and the vptr offset; a slot's class comes from the vtable, and an inherited slot is the base's method.
 The EE passes the first float arguments in f12.. whatever their position, ints and pointers in a0..t3
@@ -72,6 +81,15 @@ the `jal`. `long` / `u_long` are 64-bit (`ld` / `sd`); `(int)param` casts are of
 noise; `lq` / `sq` move 16-byte vectors. Static constructors: `.ctors` entries mark files with
 file-scope objects; on the host the same `static T obj;` runs before main, so that constructor must be
 real, not a stub.
+
+**Soft-float double and 64-bit integer helpers** (libgcc, 0x119be8..0x11c6b0 in FS2; never TUs):
+the EE has a single-precision FPU only, so every `double` operation and `long long` divide in game
+code is a call. Write the C expression, not the call: `__extendsfdf2(f)` is `(double)f`,
+`__truncdfsf2(d)` `(float)d`, `__adddf3` / `__subdf3` / `__muldf3` / `__divdf3` the operators,
+`__cmpdf2(a, b) < 0` `a < b`, `__floatsidf` / `__fixdfsi` / `__fixunsdfsi` the casts, `__divdi3` /
+`__moddi3` / `__udivdi3` / `__umoddi3` `/` and `%` on 64-bit, `__muldi3` `*`. A `double` in a
+`printf`-family call (`PerfMeter::writeCsv`, `_kvprintf`) is the varargs promotion of a float.
+Callcheck: name such calls in `// callcheck: ...` comments where the operator hides them.
 
 ## Semantics
 
@@ -97,8 +115,17 @@ real, not a stub.
   of `if`s; callees typed `void f(void)` lose their arguments; tail calls (`j`) are calls; switch tables
   on bytes decompile into goto soup (check the rewrite with `mipsemu.py --grid` over every input); VU0
   macro code is `extraout_vfN` noise (hazards.md "Decompiler").
-- Constants stay constants with a comment (sound ids, frame counts, states); enums once their meaning is
-  certain; enum names the binary carries are real names. File numbers get their table's names.
+- **Types and constants (the user, 2026-11-02): name the patterns while decompiling.** A value that is
+  compared against, switched on or stored as a state / mode / kind / id gets an `enum` (in the owning
+  class's header); flag words get named bits (`enum ActorFlags { ActorFlag_Visible = 0x10, ... }` or
+  `constexpr` masks) and every `& 0x10` / `|= 0x10` uses the name; a number repeated across functions
+  (sizes, limits, frame counts, file ids) gets a `#define` / `constexpr` once. A name whose meaning is
+  still a guess says so (`State_Unk3`, comment with the evidence) rather than staying a bare number.
+  Enum names the binary carries are real names; file numbers get their table's names. Bare hex in
+  finished code is for one-off addresses and hardware register values only.
+  Step machines whose steps are base + phase (memcard's `SaveStep_Data + kSavePhaseWrite`): make one
+  of the two `constexpr int`, not both enums (enum + enum arithmetic is deprecated in C++20, an error
+  later), and write the dispatch as a `switch` with fall-through where the ROM falls through.
 - Singletons keep the ROM's shape: a getter returning a function-local static whose constructor is the
   ROM's init.
 - EE addresses in game code (load targets, packet buffers, scratchpad 0x70000000) go through the
@@ -107,6 +134,25 @@ real, not a stub.
   exception** (the user's rule): the function that would write GIF packets calls the host draw module
   for its subsystem instead. A PS2 behaviour emulated in game code is marked `// PC:` with the reason.
 - `printf` goes to the log; keep the game's messages (often the best names).
+
+## Japanese text (the user's rule, 2026-11-04)
+
+Shift-JIS found in the ROM is written as the **Japanese itself**, never left as raw bytes alone. Read
+the bytes as cp932 (`elf32.Elf(path).read(addr, n)`, then `.decode('cp932')`; take the whole string,
+not the head of it), then:
+
+- **Printed only** (rxSysPrintf and the like): the Japanese as a UTF-8 literal in the source, with its
+  `data 0x...` address: `"error: %d番のモデルは 存在しません。\n"`. The host console reads UTF-8.
+- **The bytes matter** (compared with Shift-JIS read from the disc, such as the pack's column names,
+  or written out, such as the memory card's icon.sys title): the bytes stay, because a UTF-8 literal
+  would change behaviour, and the exact Japanese goes beside them on the same line:
+  `"\x83\x89\x83\x78\x83\x8b";  // ラベル`.
+
+**Why the split:** a `\x` escape is the same byte under every compiler flag (`-finput-charset`,
+`-fexec-charset`, MSVC `/utf-8`, `/source-charset`); a Japanese literal is not, so a string that is
+compared or written must never become one. If in doubt whether a string is only printed, keep the bytes.
+
+Same in comments, names' `why` and the references: quote the text, not a hex dump or a paraphrase.
 
 ## Types and layouts
 
@@ -181,8 +227,11 @@ it, and make the compilers prove its layout.
 
 1. Build green (undefined references become stubs).
 2. `callcheck.py` on the TU's file: no *missing* calls, or `// callcheck: A, B (why)` (names first, one
-   parenthesis last, all on the `callcheck:` line). *Extra* calls are informational.
-3. `layoutcheck.py`: headers alone under MinGW GCC and MSVC with their asserts, sources under MSVC,
+   parenthesis last, all on the `callcheck:` line). *Extra* calls are informational. Write the
+   names unqualified (`set`, `~UiDrawer`, not `UiVec4::set`): the names after a `Class::name` token
+   no longer count (2026-11-03, game/uilayout.cpp).
+3. `layoutcheck.py`: headers alone under MinGW GCC and MSVC with their asserts, every source under
+   MSVC (the game, `src/sdk`, the Pan layer),
    every struct asserted or `layout: host`, no host types.
 4. Smoke run with the scripted pad: reached stubs listed and ranked. **Look at the screen**
    (`work/shots/last.png`, `shot_*.png`, Read tool) and compare with the game's own assets
@@ -190,3 +239,5 @@ it, and make the compilers prove its layout.
 5. `refresh.py`: function list and status regenerated.
 6. One commit per session, made by `finish` (refuses a red build, a failed layoutcheck, `main`); the
    message lists the written and stubbed functions and the screenshot (`progress/`).
+
+- **A layout-driven widget's values can be read off the game itself** (2026-11-03, PrgMcCard): the S2D file holds the variables' real names, so dump `S2dVar::name` and `getString` from the ctor once, and to name a value that selects a text image, set the variable in a temporary loop and take a shot per value (`--shot-every`): two guesses fell that way. Neither stays in the commit.

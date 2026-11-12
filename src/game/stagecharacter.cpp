@@ -1,0 +1,911 @@
+/* ==========================================================================
+ *  game/stagecharacter.cpp
+ *
+ *  A character of the stage being built: StageCharacter, vtable 0x312240 (the
+ *  side base's 0x312264, the runner's 0x31227c), the F_ and player points of
+ *  the map, the player and the partner among them. The run 0x17b3e0..0x17df60
+ *  of unassigned@00171300; no source-path string, the file name is the
+ *  port's. The character's sheet is stageObjRecord(m_itemDef), which the
+ *  ROM inlines at every use. Its parts live elsewhere: CharacterInput
+ *  0x239c60, CharacterBrain 0x1dd680, PlayerMotion 0x1ed410, CharacterGround
+ *  0x1f3d20. What it does each frame is the code at 0x20a000..0x21d000.
+ * ======================================================================== */
+#include <stdlib.h>
+#include <string.h>
+
+#include "game/characterbrain.h"
+#include "game/characterroute.h"
+#include "game/characterground.h"
+#include "game/characterinput.h"
+#include "game/stagecollision.h"
+#include "game/stagelight.h"
+#include "game/stageitem.h"
+#include "game/clock.h"
+#include "game/gamehooks.h"
+#include "game/heap.h"
+#include "game/modelpose.h"
+#include "game/packtables.h"
+#include "game/playermotion.h"
+#include "game/scenepairs.h"
+#include "game/scriptrunner.h"
+#include "game/stagenode.h"
+#include "game/stageobjlist.h"
+#include "game/stageparticle.h"
+#include "game/stagescene.h"
+#include "game/sysdata.h"
+
+// The heap vector the node keeps its world position in.
+constexpr u_int kPositionVectorSize = 0x10;
+
+static const char kBonePelvis[]     = "bn_pelvis";      /* data 0x303200 */
+static const char kBoneHead[]       = "bn_head";        /* data 0x303400 */
+static const char kBoneRightThigh[] = "bn_r_thigh";     /* data 0x303428 */
+static const char kBoneRightCalf[]  = "bn_r_calf";      /* data 0x303438 */
+static const char kBoneSpineBase[]  = "bn_spine_base";  /* data 0x303388 */
+static const char kBoneLeftFoot[]   = "bn_l_foot";      /* data 0x303330 */
+static const char kBoneRightFoot[]  = "bn_r_foot";      /* data 0x303340 */
+static const char kBoneHeadTop[]    = "bn_head";        /* data 0x303178 */
+static const char kBoneLeftToe[]    = "bn_l_toe1";      /* data 0x303210 */
+
+static const char kPartHead[]       = "head";           /* data 0x3032f8 */
+static const char kPartHide[]       = "hide";           /* data 0x303360 */
+
+static const char kEffectYamiBlood[]  = "yamiblood";    /* data 0x303368 */
+static const char kEffectYamiSmoke1[] = "yamismoke1";   /* data 0x303378 */
+static const char kEffectYamiSmoke2[] = "yamismoke2";   /* data 0x3033a0 */
+static const char kEffectOtBlood[]    = "otblood";      /* data 0x303300 */
+static const char kEffectBlood[]      = "BLOOD";        /* data 0x303308 */
+static const char kEffectGlow[]       = "koh";          /* data 0x303398 */
+static const char kEffectBathSplash[] = "bthamon";      /* data 0x303310 */
+static const char kEffectSplash[]     = "L_SPLASH";     /* data 0x303318 */
+static const char kEffectFootRipple[] = "F_HAMON";      /* data 0x303328 */
+static const char kEffectEnterSplash[] = "btsplash";    /* data 0x303220 */
+static const char kEffectStepSplash[]  = "F_SPLASH";    /* data 0x3031f0 */
+static const char kEffectBodyHead[]   = "shiryotai";    /* data 0x303408 */
+static const char kEffectBody[]       = "shiryotai2";   /* data 0x303418 */
+
+static const char kCharacterSrt[] = "F_SRT";            /* data 0x303350 */
+static const char kCharacterYrt[] = "F_YRT";            /* data 0x303358 */
+
+static const char kRouteAllDoors[] = "ALLDOOR";         /* data 0x3033b0 */
+
+// The route's step filters, by the sheet's 段差Lv: a character opens the ones
+// from its own level up.
+static const char *const kRouteSteps[] = {              /* data 0x2f7bf0 */
+    "STEP dummy", "STEP60", "STEP90", "STEP120", "STEP180", "STEP200",
+};
+constexpr u_int kRouteStepCount = sizeof(kRouteSteps) / sizeof(kRouteSteps[0]);
+
+// What part of the pose's name says the body is: cameraBodyHeight's sizes.
+// layout: host -- EE 8.
+struct BodySizeName
+{
+    const char *name;           // FS2 +0x0
+    int         size;           // FS2 +0x4
+};
+static const BodySizeName kBodySizes[] = {              /* data 0x2f7ba0 */
+    { "_lh_", 0 }, { "_th_", 0 }, { "_mh_", 1 }, { "_sh_", 2 },
+    { "_ch_", 3 }, { "_ms_", 1 }, { "_ss_", 2 }, { nullptr, 0 },
+};
+constexpr int kBodySizeDefault = 1;
+
+// The glow's rotation.
+static const sceVu0FVECTOR kGlowRotation = { 0.0f, -1.5707964f, 0.0f, 1.0f }; /* data 0x2f7be0 */
+
+// The stages that have the second yami smoke.
+constexpr int kSmokeStageFirst = 0x11;
+constexpr int kSmokeStageLast  = 0x15;
+
+constexpr float kIdleDelayRange = 10.0f;
+constexpr float kIdleDelayFirst = 10.0f;
+constexpr float kRandRange      = 2.1474836e+09f;
+
+constexpr float kNoValue = -1.0f;       // reset's +0x458
+
+constexpr float kSmokeProbeHeight = 50.0f;
+constexpr u_int kRayWater       = 0x10000000; // the splash's ray; the bit's meaning is read from this one use
+constexpr int   kSurfaceWater   = 0x1f;     // StageCollisionFace::surface of a floor with ripples
+constexpr int   kLifeStateDown  = 4;        // getLifeState
+constexpr int   kMotionDrained  = 0xd6;
+constexpr int   kMotionHoldA    = 0x11;     // the actions an event breaks off
+constexpr int   kMotionHoldB    = 0x2a;
+constexpr int   kBrainStateGone = 7;        // slot +0x278
+constexpr int   kModelLights    = 3;
+
+constexpr u_char kGroundEnabled = 1;
+
+// The named bone; the ROM takes it with no test.
+// PC: a model with no such bone would read address 0 on the EE and carry on.
+static StageNodeBase *characterBone(StageObject *object, const char *name)
+{
+    BoneMap::Node *bone = object->m_model->boneMap.find(name);
+    return bone != nullptr ? bone->value : nullptr;
+}
+
+// A kept effect waits under the character until something starts it.
+static void holdEffect(StageParticle *effect, StageObject *owner)
+{
+    effect->setRunning(false);
+    effect->m_tree->setParent(owner->m_tree);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The ladders of the ROM, one clear per line; the stage kind's sheet is read
+// again for each block.
+// FS2 0x0017b3e0
+// callcheck: memset, getStageSelect (stageObjRecord, inline at each block)
+
+void StageCharacter::initAbilities()
+{
+    CharacterAbilities *a = &m_abilities;
+    memset(a, 1, sizeof(*a));
+
+    const StageObjRecord *record = stageObjRecord(m_itemDef);
+    if (record->drivingSkill == 2)
+        a->driving = 2;
+    else if (record->drivingSkill == 0)
+        a->driving = 0;
+    else
+        a->driving = 1;
+
+    switch (record->stepLevel) {
+    case 0: a->stepLevel = 0; break;
+    case 1: a->stepLevel = 1; break;
+    case 2: a->stepLevel = 2; break;
+    case 3: a->stepLevel = 3; break;
+    case 4: a->stepLevel = 4; break;
+    case 5: a->stepLevel = 4; break;
+    }
+    if (record->ladder == 0)
+        a->ladder = 0;
+    if (record->jumpLevel == 0)
+        a->jump = 0;
+
+    switch (record->kind) {
+    case CharacterKind_0:
+    case CharacterKind_1:
+    case CharacterKind_9:
+    case CharacterKind_E:
+        a->flag3be = 0;
+        a->flag3c5 = 0;
+        a->flag3b8 = 0;
+        a->flag3cc = 0;
+        if (a->stepLevel < 4)
+            a->flag3c0 = 0;
+        else
+            a->flag3c1 = 0;
+        break;
+
+    case CharacterKind_2:
+    case CharacterKind_4:
+    case CharacterKind_8:
+    case CharacterKind_A:
+        a->quickTurn = 0;
+        a->moveCrouched = 0;
+        a->strafe = 0;
+        a->runStart = 0;
+        a->gunMove = 0;
+        a->flag3bf = 0;
+        a->flag3c0 = 0;
+        a->flag3c1 = 0;
+        a->flag3c3 = 0;
+        a->flag3c6 = 0;
+        a->flag3ce = 0;
+        if (record->kind == CharacterKind_A) {
+            a->divesOverEdges = 0;
+            a->flag3c4 = 0;
+        }
+        else if (record->kind == CharacterKind_8 || record->kind == CharacterKind_2) {
+            a->flag3c4 = 0;
+        }
+        break;
+
+    case CharacterKind_Srt:
+    case CharacterKind_5:
+    case CharacterKind_6:
+    case CharacterKind_Yrt:
+    case CharacterKind_NoShadow:
+    case CharacterKind_C:
+    case CharacterKind_HideD:
+    case CharacterKind_F:
+        a->quickTurn = 0;
+        a->jack = 0;
+        a->flag3a6 = 0;
+        a->moveCrouched = 0;
+        a->runStart = 0;
+        a->gunMove = 0;
+        a->flag3ad = 0;
+        a->flag3b9 = 0;
+        a->traps = 0;
+        a->throwing = 0;
+        a->flag3bf = 0;
+        a->flag3c0 = 0;
+        a->flag3c1 = 0;
+        a->flag3c3 = 0;
+        a->flag3ce = 0;
+        if (record->kind == CharacterKind_NoShadow) {
+            a->strafe = 0;
+            a->walkBack = 0;
+            a->stairs = 0;
+            a->divesOverEdges = 0;
+            a->flag3b7 = 0;
+            a->flag3b8 = 0;
+            a->call = 0;
+            a->reload = 0;
+            a->flag3be = 0;
+            a->flag3c2 = 0;
+            a->flag3c3 = 0;
+            a->flag3cc = 0;
+            a->flag3cd = 0;
+        }
+        else if (record->kind == CharacterKind_HideD) {
+            a->strafe = 0;
+            a->walkBack = 0;
+            a->stairs = 0;
+            a->divesOverEdges = 0;
+            a->flag3b7 = 0;
+            a->flag3b8 = 0;
+            a->call = 0;
+            a->reload = 0;
+            a->flag3be = 0;
+            a->flag3cc = 0;
+            a->flag3cd = 0;
+        }
+        else if (record->kind == CharacterKind_Srt) {
+            a->strafe = 0;
+            a->walkBack = 0;
+            a->stairs = 0;
+            a->divesOverEdges = 0;
+            a->flag3b7 = 0;
+            a->flag3b8 = 0;
+            a->call = 0;
+            a->reload = 0;
+        }
+        else if (record->kind == CharacterKind_Yrt) {
+            a->strafe = 0;
+            a->walkBack = 0;
+            a->flag3b7 = 0;
+            a->flag3b8 = 0;
+            a->reload = 0;
+            a->flag3be = 0;
+            a->flag3c5 = 0;
+        }
+        else if (record->kind == CharacterKind_F) {
+            a->strafe = 0;
+            a->stairs = 0;
+            a->divesOverEdges = 0;
+            a->flag3b7 = 0;
+            a->flag3b8 = 0;
+            a->call = 0;
+            a->reload = 0;
+            a->flag3be = 0;
+            a->flag3c5 = 0;
+        }
+        else if (record->kind == CharacterKind_6) {
+            a->strafe = 0;
+            a->divesOverEdges = 0;
+            a->flag3b9 = 0;
+            a->reload = 0;
+        }
+        else if (record->kind == CharacterKind_C || record->kind == CharacterKind_5) {
+            a->divesOverEdges = 0;
+            a->flag3b7 = 0;
+            a->flag3b8 = 0;
+        }
+        break;
+
+    case CharacterKind_None:
+        memset(a, 0, sizeof(*a));
+        break;
+    }
+}
+
+// FS2 0x0017bb30
+// callcheck: randNext
+
+void StageCharacter::rollIdleDelay()
+{
+    m_idleDelay = ((float)randNext() * kIdleDelayRange) / kRandRange + kIdleDelayFirst;
+}
+
+// FS2 0x0017bc60
+// callcheck: restartChain
+
+void StageCharacter::stopBodyEffects()
+{
+    if (m_smoke[0] != nullptr)
+        m_smoke[0]->restartChain();
+    if (m_smoke[1] != nullptr)
+        m_smoke[1]->restartChain();
+    if (m_glow != nullptr)
+        m_glow->restartChain();
+    if (m_bodyEffects != nullptr) {
+        for (int i = 0; i < kBodyEffectCount; i++) {
+            if (m_bodyEffects[i] != nullptr)
+                m_bodyEffects[i]->restartChain();
+        }
+    }
+}
+
+// The ROM clamps each value to 0..the sheet's (gp-0x7fa4..-0x7fb4 hold 0)
+// with the sheet's value on both sides, which leaves it as it is.
+// FS2 0x0017bd10
+// callcheck: getStageSelect, setEndurance, setRightArm, setFlinch, randNext (stageObjRecord, inline at each field; rollIdleDelay inline)
+
+void StageCharacter::initStatus()
+{
+    const StageObjRecord *record = stageObjRecord(m_itemDef);
+    setEndurance(record->endurance);
+    m_leftArm = record->leftArm;
+    setRightArm(record->rightArm);
+    m_rightLeg = record->rightLeg;
+    m_leftLeg = record->leftLeg;
+    m_health = (float)record->health;
+    setFlinch(0);
+    m_unarmedMsp = record->unarmedMsp;
+    m_flinchClock = 0.0f;
+    m_unarmedClock = 0.0f;
+    m_enduranceClock = 0.0f;
+    m_lightHurtWait = 0.0f;
+    m_winded = 0;
+    m_idleTime = 0.0f;
+    rollIdleDelay();
+    m_foe = nullptr;
+    m_altAction = 0;
+    if (record->kind == CharacterKind_Yrt && m_ground->pushBody != nullptr)
+        m_ground->pushBody->on = 1;
+}
+
+// FS2 0x002176d0
+// callcheck: viewLinkedObject
+
+bool StageCharacter::isViewLinked()
+{
+    return viewLinkedObject() == this;
+}
+
+// FS2 0x0017c620
+// callcheck: FUN_0021a8c0, updateMatrix, initStatus, reset, reset, isViewLinked, getTopView, onViewTop, reset, reset, resetActionState, stopSounds
+
+void StageCharacter::reset(int arg)
+{
+    m_block7c8.clear();
+    updateMatrix();
+    initStatus();
+    m_motion->reset(arg);
+    m_ground->reset();
+    m_ground->m_enabled = kGroundEnabled;
+    if (isViewLinked())
+        gStageScene->getTopView()->onViewTop();
+    if (m_input != nullptr)
+        m_input->reset();
+    if (m_brain != nullptr)
+        m_brain->reset();
+    resetActionState();
+    stopSounds();
+    m_slowStart = kNoValue;
+}
+
+// The items of the sheet's column, last placed first, until one takes.
+// Inline in the ROM. PC: findAll3 answers a list that ends in a 0 and starts
+// after a 0 (StageObjArray), which is where the walk stops.
+static void giveItemsNamed(StageCharacter *character, const char *name)
+{
+    StageObjArray *items = gStageScene->objects->findAll3(name);
+    if (items == nullptr)
+        return;
+    StageObject **slot = items->m_count == 0 ? nullptr : &items->m_data[items->m_count];
+    while (slot != nullptr && !character->giveItem(*slot)) {
+        slot--;
+        if (*slot == nullptr)
+            slot = nullptr;
+    }
+}
+
+// FS2 0x0017c700
+// callcheck: setName, addCharacter, add, findEntry, setEntry, setModel, getStageSelect, operator_new, operator_new, PartSwitch, init, initAbilities, createGlowFog, operator_new, PlayerMotion, loadMotions, setupBody, strstr, operator_new, CharacterGround, findAll3, giveItem, modelFindPart, getCharacterClass, find, spawn, setRunning, erase, pushBack, memset, initSlots14, initSlots18, strcmp, setActive, setShown, allow, reset (stageObjRecord, applyCharacterModelFlags, CharacterHidePart and the object tree's setParent are inline there)
+
+void StageCharacter::setup(const char *name, ModelInstance *instance, StringMap<Tim2Texture *> *textures,
+                           StageList<void *> *motions, StageList<void *> *motions2, void *mdl)
+{
+    StageScene *scene = gStageScene;
+    setName(name);
+    scene->objects->addCharacter(this);
+    scene->pairs->add(this, ScenePairList_Characters);
+    setEntry(scene->scripts[0]->findEntry(m_name));
+    setModel(instance, textures);
+
+    const StageObjRecord *record = stageObjRecord(m_itemDef);
+    applyCharacterModelFlags(record->kind);
+    m_hidePart = new CharacterHidePart(this, record->kind);
+    m_model->m_loop = 0;
+    initAbilities();
+    scene->createGlowFog(this);
+
+    m_motion = new PlayerMotion(this);
+    m_motion->loadMotions(motions, motions2, mdl);
+    m_bodyEffects = setupBody(true);
+
+    m_bodySize = kBodySizeDefault;
+    for (const BodySizeName *entry = kBodySizes; entry->name != nullptr; entry++) {
+        if (strstr(m_model->pose->name, entry->name) != nullptr) {
+            m_bodySize = entry->size;
+            break;
+        }
+    }
+
+    m_ground = new CharacterGround(this);
+
+    giveItemsNamed(this, record->items[0]);
+    giveItemsNamed(this, record->items[1]);
+
+    ModelInstance *data = m_model->data;
+    if (data != nullptr && data->node->meshCount != 0) {
+        m_parts[0] = modelFindPart(data, kPartHead, sizeof(kPartHead) - 1, 0);
+        m_parts[1] = data->partRecs;
+    }
+
+    if ((getCharacterClass() & 8) == 0) {
+        m_bloodEffect = record->kind == CharacterKind_HideD ? kEffectOtBlood : kEffectBlood;
+        m_smoke[0] = nullptr;
+        m_smoke[1] = nullptr;
+        m_glow = nullptr;
+    }
+    else {
+        m_bloodEffect = kEffectYamiBlood;
+        m_smoke[0] = scene->nodeTree->spawn(kEffectYamiSmoke1, characterBone(this, kBonePelvis),
+                                            nullptr, nullptr, 0, 0);
+        if (m_smoke[0] != nullptr)
+            holdEffect(m_smoke[0], this);
+
+        int stage = getStageSelect()->stage;
+        if (stage >= kSmokeStageFirst && stage <= kSmokeStageLast) {
+            m_smoke[1] = scene->nodeTree->spawn(kEffectYamiSmoke2, characterBone(this, kBonePelvis),
+                                                nullptr, nullptr, 0, 0);
+            if (m_smoke[1] != nullptr)
+                holdEffect(m_smoke[1], this);
+        }
+        else {
+            m_smoke[1] = nullptr;
+        }
+
+        m_glow = nullptr;
+        if (record->kind == CharacterKind_C || record->kind == CharacterKind_5) {
+            sceVu0FVECTOR rotation;
+            memcpy(rotation, kGlowRotation, sizeof(rotation));
+            m_glow = scene->nodeTree->spawn(kEffectGlow, characterBone(this, kBoneSpineBase),
+                                            nullptr, rotation, 0, 0);
+            if (m_glow != nullptr)
+                m_glow->m_tree->setParent(m_tree);
+        }
+    }
+
+    const char *splash = record->kind == CharacterKind_NoShadow ? kEffectBathSplash : kEffectSplash;
+    m_splash = scene->nodeTree->spawn(splash, nullptr, nullptr, nullptr, 0, 0);
+    if (m_splash != nullptr)
+        holdEffect(m_splash, this);
+
+    m_footEffects[0] = nullptr;
+    m_footNodes[0] = nullptr;
+    m_footEffects[1] = nullptr;
+    m_footNodes[1] = nullptr;
+    switch (record->kind) {
+    case CharacterKind_0:
+    case CharacterKind_1:
+    case CharacterKind_2:
+    case CharacterKind_4:
+    case CharacterKind_8:
+    case CharacterKind_9:
+    case CharacterKind_A:
+    case CharacterKind_E:
+        for (int i = 0; i < kCharacterFeet; i++) {
+            m_footEffects[i] = scene->nodeTree->spawn(kEffectFootRipple, nullptr, nullptr, nullptr, 0, 0);
+            m_footNodes[i] = characterBone(this, i == 0 ? kBoneLeftFoot : kBoneRightFoot);
+        }
+        break;
+    case CharacterKind_5:
+    case CharacterKind_6:
+    case CharacterKind_C:
+    case CharacterKind_F:
+        m_footEffects[0] = scene->nodeTree->spawn(kEffectFootRipple, nullptr, nullptr, nullptr, 0, 0);
+        m_footNodes[0] = this;
+        break;
+    default:
+        break;
+    }
+    for (int i = 0; i < kCharacterFeet; i++) {
+        if (m_footEffects[i] != nullptr)
+            holdEffect(m_footEffects[i], this);
+    }
+
+    memset(&m_allows, 0, sizeof(m_allows));
+    m_door = nullptr;
+    if (m_motion != nullptr)
+        m_motion->initSlots14();
+    memset(&m_wants, 0, sizeof(m_wants));
+    if (m_motion != nullptr)
+        m_motion->initSlots18();
+
+    // F_YRT and F_SRT stand for many records (their name and the stage's):
+    // the plain names stay out.
+    if (record->kind == CharacterKind_Yrt || record->kind == CharacterKind_Srt) {
+        const char *plain = record->kind == CharacterKind_Yrt ? kCharacterYrt : kCharacterSrt;
+        bool stays = strcmp(m_name, plain) != 0;
+        m_tree->setActive(stays);
+        m_tree->setShown(stays);
+    }
+
+    if (m_brain != nullptr) {
+        // PC: null until the route's TU writes CharacterRoute's ctor.
+        RouteFilter *filter = m_brain->getRoute()->filter;
+        for (u_int step = (u_int)record->stepLevel; step < kRouteStepCount; step++)
+            filter->allow(kRouteSteps[step], true);
+        if (record->kind == CharacterKind_C || record->kind == CharacterKind_5
+            || record->kind == CharacterKind_HideD)
+            filter->allow(kRouteAllDoors, true);
+    }
+
+    reset(0);
+}
+
+// The record's size and centre of what the model's name says, and the two
+// parts of a body with no mesh (the ROM's "shiryotai", 死霊体: a spirit).
+// FS2 0x0017d970
+// callcheck: find, strstr, operator_new[], find, spawn, find, spawn, find, spawn, find, spawn, erase, pushBack
+
+StageParticle **StageObject::setupBody(bool keep)
+{
+    m_model->m_lightProxy = characterBone(this, kBonePelvis);
+
+    // PC: an event's character whose motion file was not found has no pose.
+    const MotionModel *body = nullptr;
+    if (m_model->pose != nullptr) {
+        for (int i = 0; i < kMotionModelCount; i++) {
+            const MotionModel *entry = &gMotionModels[i];
+            if (entry->tag != nullptr && strstr(m_model->pose->name, entry->tag) != nullptr) {
+                body = entry;
+                break;
+            }
+        }
+    }
+    if (body != nullptr) {
+        memcpy(m_model->shadowSize, body->c, sizeof(m_model->shadowSize));
+        memcpy(m_model->shadowOffset, body->d, sizeof(m_model->shadowOffset));
+    }
+
+    if (m_model->data != nullptr)
+        return nullptr;
+
+    StageParticle *onStack[kBodyEffectCount];
+    StageParticle **effects = keep ? new StageParticle *[kBodyEffectCount] : onStack;
+    StageNodeTree *tree = gStageScene->nodeTree;
+    effects[0] = tree->spawn(kEffectBodyHead, characterBone(this, kBoneHead), nullptr, nullptr, 0, 0);
+    effects[1] = tree->spawn(kEffectBody, characterBone(this, kBonePelvis), nullptr, nullptr, 0, 0);
+    effects[2] = tree->spawn(kEffectBody, characterBone(this, kBoneRightThigh), nullptr, nullptr, 0, 0);
+    effects[3] = tree->spawn(kEffectBody, characterBone(this, kBoneRightCalf), nullptr, nullptr, 0, 0);
+    for (int i = 0; i < kBodyEffectCount; i++) {
+        if (effects[i] != nullptr)
+            effects[i]->m_tree->setParent(m_tree);
+    }
+    return keep ? effects : nullptr;
+}
+
+// The character's parts are gone before the object's own destructor runs.
+// FS2 0x0017dd10
+// callcheck: ~CharacterInput, ~PlayerMotion, ~CharacterGround, ~PartSwitch, operator_delete, operator_delete[], dtor, ~StageObject (the brain's dtor through its vptr at +0xb4; the hide part inline: CharacterHidePart)
+
+StageCharacter::~StageCharacter()
+{
+    delete m_input;
+    delete m_brain;
+    delete m_motion;
+    delete m_ground;
+    delete m_hidePart;
+    delete[] m_bodyEffects;
+}
+
+// FS2 0x0017de30
+// callcheck: StageObject, StageList, setClock, operator_new, CharacterInput, alloc, operator_new, CharacterBrain, initSounds
+
+StageCharacter::StageCharacter()
+{
+    m_itemDef = -1;
+    setClock(gStageScene->clock);
+    m_input = new CharacterInput(this);
+    m_lastPosition = static_cast<float *>(gGlobalHeap.alloc(kPositionVectorSize, kPositionVectorSize));
+    m_lightOn = 1;
+    m_brain = nullptr;
+    if (gStageScene->route != nullptr) {
+        m_brain = new CharacterBrain(this);
+        m_brain->setScriptParent(this);
+    }
+    m_lampItem = nullptr;
+    m_weapons[0] = nullptr;
+    m_weapons[1] = nullptr;
+    m_parts[0] = nullptr;
+    m_parts[1] = nullptr;
+    m_290 = nullptr;
+    m_294 = 0;
+    m_lookAt = nullptr;
+    m_shadowLight = nullptr;
+    m_xform.rotationXyz = 1;
+    m_gear = nullptr;
+    m_42c = 0;
+    initSounds();
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// The terminate hook, the last of the frame's four action phases
+// (ScenePairList_Characters). One function in the ROM; the step* below are
+// its parts, in its order.
+
+// The two smokes of stages 0x11..0x15: the first while a light other than a
+// YAM_ one throws its shadow, the second outside the tree's boxes.
+
+void StageCharacter::stepSmoke()
+{
+    if (m_smoke[0] != nullptr)
+        m_smoke[0]->setRunning(m_shadowLight != nullptr && m_shadowLight->m_yamLight == 0);
+    if (m_smoke[1] != nullptr) {
+        const sceVu0FVECTOR above = { m_xform.position[0], m_xform.position[1],
+                                      m_xform.position[2] + kSmokeProbeHeight, 1.0f };
+        m_smoke[1]->setRunning(!gStageScene->nodeTree->contains(above));
+    }
+}
+
+// The splash stands where the ray from the head to the feet meets water;
+// a kind 0xb looks from its pelvis to its toe and throws btsplash as it enters.
+
+void StageCharacter::stepSplash()
+{
+    if (m_splash == nullptr)
+        return;
+    const bool small = stageObjRecord(m_itemDef)->kind == CharacterKind_NoShadow;
+    StageNodeBase *top = characterBone(this, small ? kBonePelvis : kBoneHeadTop);
+    StageNodeBase *foot = small ? characterBone(this, kBoneLeftToe) : nullptr;
+    // PC: the ROM reads through a null bone.
+    if (top == nullptr || (small && foot == nullptr))
+        return;
+
+    sceVu0FVECTOR from, to, hit;
+    if (small) {
+        memcpy(from, top->getWorldMatrix()[3], sizeof(from));
+        memcpy(to, foot->getWorldMatrix()[3], sizeof(to));
+    } else {
+        memcpy(from, top->getMatrix()[3], sizeof(from));
+        memcpy(to, m_xform.position, sizeof(to));
+    }
+    if (gStageScene->raycast(hit, from, to, 0, kRayWater, 0, nullptr) == nullptr) {
+        m_splash->setRunning(false);
+        return;
+    }
+    if (m_splash->m_running == 0 && small)
+        gStageScene->nodeTree->spawn(kEffectEnterSplash, nullptr, hit, nullptr, 0, 0);
+    m_splash->m_xform.setPosition(hit);
+    m_splash->setRunning(true);
+}
+
+// On a water floor: a ripple at each foot, at the character's height, and a
+// splash with each step.
+
+void StageCharacter::stepFootEffects()
+{
+    if (m_footEffects[0] == nullptr)
+        return;
+    const StageCollisionFace *floor = m_ground->floorFace;
+    if (floor == nullptr || floor->surface != kSurfaceWater) {
+        for (int i = 0; i < kCharacterFeet; i++) {
+            if (m_footEffects[i] != nullptr)
+                m_footEffects[i]->setRunning(false);
+        }
+        return;
+    }
+
+    sceVu0FVECTOR feet[kCharacterFeet];
+    for (int i = 0; i < kCharacterFeet; i++) {
+        if (m_footEffects[i] == nullptr)
+            continue;
+        // PC: the ROM reads through a null bone; the character stands in.
+        StageNodeBase *node = m_footNodes[i] != nullptr ? m_footNodes[i] : this;
+        memcpy(feet[i], node->getWorldMatrix()[3], sizeof(feet[i]));
+        feet[i][2] = m_xform.position[2];
+    }
+    for (int i = 0; i < kCharacterFeet; i++) {
+        if (m_footEffects[i] == nullptr)
+            continue;
+        m_footEffects[i]->m_xform.setPosition(feet[i]);
+        m_footEffects[i]->updateMatrix();
+        m_footEffects[i]->setRunning(true);
+    }
+
+    const u_int events = m_model->m_motionEvents;
+    StageNodeTree *tree = gStageScene->nodeTree;
+    if (m_footEffects[1] == nullptr) {
+        if ((events & (MotionEvent_StepLeft | MotionEvent_StepRight)) != 0)
+            tree->spawn(kEffectStepSplash, nullptr, feet[0], nullptr, 0, 0);
+        return;
+    }
+    if ((events & MotionEvent_StepLeft) != 0)
+        tree->spawn(kEffectStepSplash, nullptr, feet[0], nullptr, 0, 0);
+    if ((events & MotionEvent_StepRight) != 0)
+        tree->spawn(kEffectStepSplash, nullptr, feet[1], nullptr, 0, 0);
+}
+
+// Whose lamp it is, for the light: the player's throws the shadow.
+
+void StageCharacter::stepLampOwner()
+{
+    if (m_lampItem == nullptr)
+        return;
+    ItemLamp *lamp = m_lampItem->lamp();
+    if (!isPlayer() && !isPartner() && getLifeState() == kLifeStateDown)
+        lamp->setValue2b0(-1);
+    else
+        lamp->setValue2b0(isPlayer() ? 2 : 0);
+    lamp->setCastsShadow(isPlayer());
+}
+
+// A timed change of the motion rate ends with its time, or with the brain's
+// state 7. On a draining stage it also ends when motion 0xd6 is left, and
+// lets go of the motion if it ended inside it.
+
+void StageCharacter::stepSlowChange()
+{
+    if (m_slowStart < 0.0f)
+        return;
+    bool draining = false;
+    if (isStageDrained()) {
+        draining = m_motion->motionId == kMotionDrained;
+        if (m_slowInDrain == 0) {
+            m_slowInDrain = draining;
+        } else if (!draining) {
+            m_slowStart = kNoValue;
+            return;
+        }
+    }
+    if (m_clock->getSeconds() >= m_slowEnd || getBrainPace() == kBrainStateGone) {
+        m_slowStart = kNoValue;
+        if (draining)
+            m_motion->releaseAction();
+    }
+}
+
+// What it carries has the character's lights, unless it has its own.
+
+void StageCharacter::lightCarriedItems()
+{
+    for (StageList<StageObject *>::Node *link = m_items.head; link != nullptr; link = link->next) {
+        StageModel *model = link->value->m_model;
+        if (model->m_lit != 0 || model->data->shown == 0)
+            continue;
+        for (int i = 0; i < kModelLights; i++)
+            model->data->setLight(i, m_model->m_lightDirs[i], m_model->m_lightColors[i]);
+        model->data->setAmbient(m_model->m_ambient);
+    }
+}
+
+// FS2 0x00179a90
+// The ROM hands setEntry the a1 it was called with, which none of the three
+// callers of the slot (0x17964c, 0x199d2c, 0x29aab4) sets: the slot has no
+// argument. The host passes null; setState's switchSlot binds the state's
+// entry again either way.
+
+void StageCharacter::cameraStep()
+{
+    m_brain->setEntry(nullptr);
+    m_brain->setState(m_brain->getState(), 1);
+}
+
+// FS2 0x00179d30
+// callcheck: endFrame, endFrame, setRunning, setRunning, contains, setRunning, getStageSelect, find, find, find, raycast, setRunning, getStageSelect, spawn, setPosition, setRunning, setRunning, setPosition, setRunning, spawn, spawn, spawn, isPlayer, isPartner, getLifeState, setValue2b0, isPlayer, setValue2b0, isPlayer, setCastsShadow, measureGlow, updateSounds, isStageDrained, getSeconds, releaseAction, setLight, setAmbient
+
+void StageCharacter::sideHook3()
+{
+    m_ground->endFrame();
+    m_motion->endFrame();
+    stepSmoke();
+    stepSplash();
+    stepFootEffects();
+    stepLampOwner();
+    gStageScene->measureGlow(this);
+    updateSounds();
+    stepSlowChange();
+    lightCarriedItems();
+}
+
+// FS2 0x00214f20
+
+bool StageCharacter::isHoldingAction()
+{
+    const int id = m_motion->motionId;
+    return id == kMotionHoldA || id == kMotionHoldB;
+}
+
+// FS2 0x00215ef0
+
+bool StageObject::isPlayer()
+{
+    return gStageScene->player == this;
+}
+
+// FS2 0x00215ed0
+
+bool StageObject::isPartner()
+{
+    return gStageScene->partner == this;
+}
+
+// ───────────────────────────────────────
+// The inlines that open the file (0x179ad0 setScriptPoint, 0x179af0 isRunningMotion and
+// 0x179bb0 isCrouching among them, written in playermotion.cpp); the ones written in
+// headers, since tools/reverse reads tags from .cpp files only:
+//   FS2 0x00179a80  StageCharacter::getKind (gamehooks.h)
+//   FS2 0x00179ae0  StageCharacter::noiseHook (gamehooks.h), empty
+//   FS2 0x00179d00  StageCharacter::isBulletFlying (gamehooks.h), the slot scriptIsBulletFlying
+//   FS2 0x00179d10  StageCharacter::getScriptCharacter (gamehooks.h)
+//   FS2 0x00179d20  StageCharacter::getScriptActor (gamehooks.h)
+
+// The adjustor thunks that end the file (the host's compiler makes its own):
+//   FS2 0x0017e470  StageCharacter::sideHook3, -0x18
+//   FS2 0x0017e480  StageCharacter::moveStep, -0x18
+//   FS2 0x0017e490  StageCharacter::sideHook1, -0x18
+//   FS2 0x0017e4a0  StageCharacter::sideHook0, -0x18
+//   FS2 0x0017e4b0  StageCharacter::scriptAskNumLock, -0x40
+//   FS2 0x0017e4c0  StageCharacter::scriptAskRouteKind11, -0x40
+//   FS2 0x0017e4d0  StageCharacter::scriptUseSpecial, -0x40
+//   FS2 0x0017e4e0  StageCharacter::scriptDragOutCar, -0x40
+//   FS2 0x0017e4f0  StageCharacter::scriptCrouch, -0x40
+//   FS2 0x0017e500  StageCharacter::scriptCallOut, -0x40
+//   FS2 0x0017e510  StageCharacter::scriptTakeItem, -0x40
+//   FS2 0x0017e520  StageCharacter::scriptUseDoorKey, -0x40
+//   FS2 0x0017e530  StageCharacter::scriptCloseDoor, -0x40
+//   FS2 0x0017e540  StageCharacter::scriptOpenDoor, -0x40
+//   FS2 0x0017e550  StageCharacter::scriptTakeUpTrap, -0x40
+//   FS2 0x0017e560  StageCharacter::scriptPutItem, -0x40
+//   FS2 0x0017e570  StageCharacter::scriptSetTrap, -0x40
+//   FS2 0x0017e580  StageCharacter::scriptUseNamedItem, -0x40
+//   FS2 0x0017e590  StageCharacter::scriptUseItemAt, -0x40
+//   FS2 0x0017e5a0  StageCharacter::scriptUseSmoke, -0x40
+//   FS2 0x0017e5b0  StageCharacter::noiseHook, -0x40
+//   FS2 0x0017e5c0  StageCharacter::isLampOn, -0x40
+//   FS2 0x0017e5d0  StageCharacter::scriptPickableHandle, -0x40
+//   FS2 0x0017e5e0  StageCharacter::scriptPutWeaponAway, -0x40
+//   FS2 0x0017e5f0  StageCharacter::setScriptValue, -0x40
+//   FS2 0x0017e600  StageCharacter::getScriptValue, -0x40
+//   FS2 0x0017e610  StageCharacter::scriptPlayMotion, -0x40
+//   FS2 0x0017e620  StageCharacter::waitMotionChange, -0x40
+//   FS2 0x0017e630  StageCharacter::scriptRouteAction130, -0x40
+//   FS2 0x0017e640  StageCharacter::scriptRouteAction12c, -0x40
+//   FS2 0x0017e650  StageCharacter::isRunningMotion, -0x40
+//   FS2 0x0017e660  StageCharacter::scriptIsCrouching, -0x40
+//   FS2 0x0017e670  StageCharacter::isBulletFlying, -0x40
+//   FS2 0x0017e680  StageCharacter::scriptIsCompanion, -0x40
+//   FS2 0x0017e690  StageCharacter::scriptHasLineTo, -0x40
+//   FS2 0x0017e6a0  StageCharacter::scriptReload, -0x40
+//   FS2 0x0017e6b0  StageCharacter::carriesItem, -0x40
+//   FS2 0x0017e6c0  StageCharacter::scriptIsFacing, -0x40
+//   FS2 0x0017e6d0  StageCharacter::hasBiter, -0x40
+//   FS2 0x0017e6e0  StageCharacter::shout, -0x40
+//   FS2 0x0017e6f0  StageCharacter::scriptFireAt, -0x40
+//   FS2 0x0017e700  StageCharacter::scriptFireAtBite, -0x40
+//   FS2 0x0017e710  StageCharacter::scriptSwingAt, -0x40
+//   FS2 0x0017e720  StageCharacter::scriptSwingAtBite, -0x40
+//   FS2 0x0017e730  StageCharacter::scriptAttackBite, -0x40
+//   FS2 0x0017e740  StageCharacter::scriptHasAllyWithin, -0x40
+//   FS2 0x0017e750  StageCharacter::answerNo, -0x40
+//   FS2 0x0017e760  StageCharacter::forgetMarkedPlace, -0x40
+//   FS2 0x0017e770  StageCharacter::walkToMarkedPlace, -0x40
+//   FS2 0x0017e780  StageCharacter::scriptMarkPlace, -0x40
+//   FS2 0x0017e790  StageCharacter::scriptCanSee, -0x40
+//   FS2 0x0017e7a0  StageCharacter::scriptHeardKind, -0x40
+//   FS2 0x0017e7b0  StageCharacter::getBrainPace, -0x40
+//   FS2 0x0017e7c0  StageCharacter::scriptSetBrainEntry, -0x40
+//   FS2 0x0017e7d0  StageCharacter::getScriptCharacter, -0x40
+//   FS2 0x0017e7e0  StageCharacter::getScriptActor, -0x40
+//   FS2 0x0017e7f0  StageCharacter::setLampOn, -0x40
+//   FS2 0x0017e800  StageCharacter::setPosition, -0x40
+//   FS2 0x0017e810  StageCharacter::doNothing, -0x40
+//   FS2 0x0017e820  StageCharacter::~StageCharacter, -0x40
+//   FS2 0x0017e830  StageCharacter::onScriptExit, -0x40
+//   FS2 0x0017e840  StageCharacter::setProperty, -0x40
+//   FS2 0x0017e850  StageCharacter::getProperty, -0x40
