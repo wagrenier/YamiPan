@@ -257,12 +257,16 @@ bool MpegDecoder::decodePicture(std::span<std::byte> macroblocks, int &width, in
     if (macroblocks.empty() || !open())
         return false;
 
-    // The IPU and the PTS machinery held the rate on the console. The game asks once a game frame, whatever
-    // that is on this machine, so the stream's own rate decides when a picture is due.
+    // The IPU and the PTS machinery held the rate on the console. The game asks on its 25 Hz tick, which
+    // keeps real time only on average (33 and 50 ms steps at 60 Hz), so the stream's own rate decides which
+    // picture is due: the one whose time is nearest, half a period either way. A one-sided test (none before
+    // its time, a skip a whole period late) refused an early tick and skipped on the next, 5 pictures a
+    // second at 25 fps.
     const double now = nowNs();
+    const double halfPeriod = m_framePeriodNs / 2.0;
     if (!m_hasFirstPicture)
         m_nextDueNs = now;
-    else if (now < m_nextDueNs)
+    else if (now < m_nextDueNs - halfPeriod)
         return false;
 
     if (!nextPicture(*m_frame))
@@ -276,10 +280,11 @@ bool MpegDecoder::decodePicture(std::span<std::byte> macroblocks, int &width, in
         m_framePeriodNs = framePeriodNs(0);
 
     // After a slow frame, decode through the backlog and keep the newest (a dropped frame), so the film does
-    // not run late for the rest of its length. A skip decodes into the spare frame first: a failed decode must
-    // not take the picture in hand with it (RosePan froze for good that way).
-    for (int skipped = 0; skipped < kMaxCatchUpPictures && m_hasFirstPicture && now >= m_nextDueNs + m_framePeriodNs;
-         skipped++)
+    // not run late for the rest of its length: while the next picture's time is nearer than this one's. A skip
+    // decodes into the spare frame first: a failed decode must not take the picture in hand with it (RosePan
+    // froze for good that way).
+    for (int skipped = 0;
+         skipped < kMaxCatchUpPictures && m_hasFirstPicture && now >= m_nextDueNs + m_framePeriodNs / 2.0; skipped++)
     {
         if (!nextPicture(*m_spare))
             break;
@@ -305,10 +310,11 @@ bool MpegDecoder::decodePicture(std::span<std::byte> macroblocks, int &width, in
     width = pictureWidth;
     height = pictureHeight;
 
-    // Whole periods, so the film keeps its timeline; a stall too long to catch up is written off.
+    // Whole periods, so the film keeps its timeline; a stall too long to catch up is written off, the picture
+    // just shown taken as due now (due at the next call, the next would be skipped at once).
     m_nextDueNs += m_framePeriodNs;
     if (m_nextDueNs < now - m_framePeriodNs * kMaxCatchUpPictures)
-        m_nextDueNs = now;
+        m_nextDueNs = now + m_framePeriodNs;
     m_hasFirstPicture = true;
     return true;
 }
