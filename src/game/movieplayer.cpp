@@ -52,8 +52,6 @@ constexpr int kMovieVolumeFull = 0x80;
 // prime draws the first picture into the movie's own buffer: tbp 0x700,
 // 512 x 512 at (0, 0), in the last packet list.
 constexpr int kMoviePrimeTbp = 0x700;
-// PC: see MoviePlayer::open.
-constexpr bool kMovieHostHasSound = false;
 constexpr int kMoviePrimeSize = 0x200;
 
 // The toIPU DMA: STR with tag transfer off (CHCR), its busy bit.
@@ -588,14 +586,8 @@ int MoviePlayer::open(const char *name)
     sceMpegAddCallback(&m_mpeg, sceMpegCbStopDMA, movieStopDmaCallback, this);
     sceMpegAddCallback(&m_mpeg, sceMpegCbRestartDMA, movieRestartDmaCallback, this);
 
-    // PC: no feeders until the IOP host exists (sdk/sif.cpp answers every RPC
-    // with nothing, so a sink's blocks never drain and its ring would stop the
-    // demux for good). receiveAudio drops a feederless channel, and the movie
-    // ends on its video alone. Remove with the audio milestone (open-items).
-    if (kMovieHostHasSound) {
-        for (int i = 0; i < m_channels; i++)
-            m_feeders[i] = new SoundFeeder();
-    }
+    for (int i = 0; i < m_channels; i++)
+        m_feeders[i] = new SoundFeeder();
     m_state |= MovieState_Open;
     return 0;
 }
