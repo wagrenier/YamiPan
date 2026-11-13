@@ -38,6 +38,13 @@ constexpr int kMovieDemuxChunk = 0x4000;
 // feedIpu keeps this much video ahead of the IPU and sends at most this
 // much per DMA; isDrained calls the video ring empty below it.
 constexpr int kMovieIpuBlock = 0x1000;
+// PC: the video the host decoder may hold beyond the ROM's ring. FS2's
+// films put their audio up to ~1.5 s behind their video in the file, more
+// than the ring's 0x30000 hold at their bit rates: held to the ring alone,
+// the demux reached the audio late and the boot film's sound underran (a
+// walk of opmv01EU / MV01EU: worst audio lead -0.45 / -0.19 s with the
+// ring, +0.46 / +0.93 s with 0x40000 more). Host memory, not the work area.
+constexpr int kMovieHostVideoLead = 0x50000;
 // The file ring is spent when fewer bytes than these are left: demux
 // (file end) and feedIpu (the end code).
 constexpr int kMovieFileEndSlack = 0x10;
@@ -213,8 +220,13 @@ bool MoviePlayer::feedIpu(sceMpeg *mp, sceMpegCbData *data)
     }
     SignalSema(m_sema);
 
+    // PC: the decoder lacks video only when what it holds beyond the ring
+    // (kMovieHostVideoLead) is short too. Testing the ring alone, a ring the
+    // lead had spent kept this loop demuxing behind a full audio ring for
+    // good (MV01EU, whose sound starts ahead of its pictures).
     int filled = m_videoRing->filled();
-    while (filled < kMovieIpuBlock && !(m_state & MovieState_FileEnd) && !sceMpegIsEnd(mp)) {
+    while (filled < kMovieIpuBlock && YamiPanMpegVideoPending() < kMovieIpuBlock &&
+           !(m_state & MovieState_FileEnd) && !sceMpegIsEnd(mp)) {
         demux(kMovieDemuxChunk);
         if (m_state & MovieState_Abort)
             return false;
@@ -230,9 +242,12 @@ bool MoviePlayer::feedIpu(sceMpeg *mp, sceMpegCbData *data)
     n &= ~15;
     if (n > kMovieIpuBlock)
         n = kMovieIpuBlock;
-    // PC: the host decoder took the stream from the demuxer; only what it
-    // has parsed leaves the ring, so the ring's room paces the demux.
-    int parsed = (m_videoRing->filled() - YamiPanMpegVideoPending()) & ~15;
+    // PC: the host decoder took the stream from the demuxer and keeps its
+    // own copy, so what leaves the ring is what it has parsed plus what it
+    // may hold beyond the ring (kMovieHostVideoLead); the ring's room still
+    // paces the demux.
+    int held = YamiPanMpegVideoPending() - kMovieHostVideoLead;
+    int parsed = (m_videoRing->filled() - (held > 0 ? held : 0)) & ~15;
     if (n > parsed)
         n = parsed < 0 ? 0 : parsed;
     u_char *src = m_videoRing->readPtr();
@@ -280,6 +295,10 @@ bool MoviePlayer::isDrained()
             drained = false;
     }
     if (m_videoRing->filled() >= kMovieIpuBlock)
+        drained = false;
+    // PC: the video the host decoder holds beyond the ring (feedIpu) is
+    // still to be shown.
+    if (YamiPanMpegVideoPending() >= kMovieIpuBlock)
         drained = false;
     return drained;
 }
