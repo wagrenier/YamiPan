@@ -1,6 +1,7 @@
 #include "yamipan/media/mpeg_stream.h"
 
 #include <algorithm>
+#include <array>
 #include <cstring>
 
 #include "sdk/eeregs.h"
@@ -17,12 +18,59 @@ constexpr int kPesHeaderBytes = 6;
 constexpr int kPesExtendedBytes = 9; // start code, length, two flag bytes and the header length
 constexpr int kStreamIdOffset = 3;
 constexpr int kPackStuffingMask = 7;
-constexpr int kAudioChannelMask = 0xf;
 
 constexpr std::uint8_t kIdProgramEnd = 0xb9;
 constexpr std::uint8_t kIdPack = 0xba;
-constexpr std::uint8_t kIdPrivateStream1 = 0xbd; // SCE's audio: a sub-stream byte names the channel
+constexpr std::uint8_t kIdPrivateStream1 = 0xbd; // SCE's audio and data: a sub-stream header names kind and channel
 constexpr std::uint8_t kIdVideo = 0xe0;
+
+// How libmpeg tells streams apart (FS2: the table at 0x2f1240, read by sceMpegAddStrCallback 0x116590 and
+// sceMpegDemuxPssRing 0x116190). A packet is 40 bits: its stream id, then the first four payload bytes, which
+// in SCE's private stream 1 are a sub-stream header: 0xff, the kind, 0, the channel. A registration is its
+// type's key with the channel in the byte the mask leaves to it; the first one a packet matches takes it.
+struct StreamKey
+{
+    std::uint64_t key;
+    std::uint64_t mask;
+};
+
+constexpr std::uint64_t kMaskStreamId = 0xff00000000;   // the channel is added to the stream id
+constexpr std::uint64_t kMaskSubStream = 0xffff000000;  // the channel is added to the sub-stream byte
+constexpr std::uint64_t kMaskSubHeader = 0xffffffffff;  // the channel is the header's last byte
+constexpr int kSubHeaderBytes = 4;
+
+constexpr std::array<StreamKey, 10> kStreamKeys = {{
+    {0xe000000000, kMaskStreamId},  // sceMpegStrM2V: video, 0xe0 + channel
+    {0xbdffc00000, kMaskSubHeader}, // sceMpegStrIPU
+    {0xbdffa00000, kMaskSubHeader}, // sceMpegStrPCM
+    {0xbdffa10000, kMaskSubHeader}, // sceMpegStrADPCM: FS2's movies (SShd type 0x10)
+    {0xbdff900000, kMaskSubHeader}, // sceMpegStrDATA
+    {0xc000000000, kMaskStreamId},  // MPEG audio, 0xc0 + channel
+    {0xbd80000000, kMaskSubStream}, // the DVD sub-streams: AC-3,
+    {0xbda0000000, kMaskSubStream}, // LPCM,
+    {0xbd88000000, kMaskSubStream}, // DTS,
+    {0xbd90000000, kMaskSubStream}, // SDDS
+}};
+
+// The channel's place in a registration's key, by its type's mask.
+int channelShift(std::uint64_t mask)
+{
+    if (mask == kMaskStreamId)
+        return 32;
+    if (mask == kMaskSubStream)
+        return 24;
+    return 0;
+}
+
+// The packet's 40 bits; a payload shorter than the sub-stream header reads as zeros past its end.
+std::uint64_t packetKey(std::uint8_t id, const std::uint8_t *payload, int payloadBytes)
+{
+    std::uint64_t key = static_cast<std::uint64_t>(id) << 32;
+    for (int i = 0; i < kSubHeaderBytes && i < payloadBytes; i++)
+        key |= static_cast<std::uint64_t>(payload[i]) << (8 * (kSubHeaderBytes - 1 - i));
+    return key;
+}
+
 constexpr std::uint8_t kSequenceHeaderCode = 0xb3;
 
 constexpr std::uint8_t kPtsPresent = 0x80;
@@ -88,24 +136,26 @@ void MpegStream::addEventCallback(sceMpegCbType type, sceMpegCallback function, 
     m_events.push_back({type, function, argument});
 }
 
+// A second registration of the same stream replaces the first, as in the real library.
 void MpegStream::addStreamCallback(sceMpegStrType type, int channel, sceMpegCallback function, void *argument)
 {
-    m_streams.push_back({type, channel, function, argument});
+    const auto index = static_cast<std::size_t>(type);
+    if (index >= kStreamKeys.size())
+        return;
+    const StreamKey &base = kStreamKeys[index];
+    const StreamCallback stream{base.key | (static_cast<std::uint64_t>(channel) << channelShift(base.mask)), base.mask,
+                                function, argument};
+    const auto same = std::ranges::find_if(m_streams, [&](const StreamCallback &s) { return s.key == stream.key; });
+    if (same != m_streams.end())
+        *same = stream;
+    else
+        m_streams.push_back(stream);
 }
 
-const MpegStream::StreamCallback *MpegStream::videoCallback() const
+// The game registers PCM and ADPCM for each of its channels with the same ring; the sub-stream header picks.
+const MpegStream::StreamCallback *MpegStream::findStream(std::uint64_t key) const
 {
-    const auto found = std::ranges::find_if(m_streams, [](const StreamCallback &s) { return s.type == sceMpegStrM2V; });
-    return found != m_streams.end() ? &*found : nullptr;
-}
-
-// The game registers PCM and ADPCM of a channel alike and tells them apart by the SShd header in the
-// stream, so the channel alone picks.
-const MpegStream::StreamCallback *MpegStream::audioCallback(int channel) const
-{
-    const auto found = std::ranges::find_if(m_streams, [channel](const StreamCallback &s) {
-        return (s.type == sceMpegStrPCM || s.type == sceMpegStrADPCM) && s.channel == channel;
-    });
+    const auto found = std::ranges::find_if(m_streams, [key](const StreamCallback &s) { return (key & s.mask) == s.key; });
     return found != m_streams.end() ? &*found : nullptr;
 }
 
@@ -138,8 +188,7 @@ int MpegStream::deliverPayload(sceMpeg &mpeg, const std::uint8_t *packet, int si
         return size;
 
     const std::uint8_t *const payload = packet + kPesExtendedBytes + headerBytes;
-    const StreamCallback *const callback =
-        id == kIdVideo ? videoCallback() : audioCallback(payload[0] & kAudioChannelMask);
+    const StreamCallback *const callback = findStream(packetKey(id, payload, payloadBytes));
     if (callback != nullptr)
     {
         sceMpegCbData data{};
