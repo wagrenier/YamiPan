@@ -343,6 +343,13 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 - **MinGW must be on PATH** or `cc1plus` fails silently: use `build.py`. Shader builds can hit a file
   lock: rerun.
+- **HLSL keeps names a C++ reader would not expect** (2026-11-14). Symptom: shadercross fails with
+  `modifiers must appear before type` on a parameter, and `expected expression` where it is used. Cause:
+  `point` (like `line`, `triangle`, `linear`, `centroid`, `sample`) is an HLSL keyword, a geometry shader's
+  primitive; `lit` is an intrinsic, so a function of that name is an overload of it. Fix: other names
+  (`pointSource`, `lightedColor`). Check a shader edit with the shadercross CLI before a full build:
+  `shadercross <file>.hlsl -o <out>.spv -I resources/shaders/hlsl` (and `.dxil`, `.msl`), the CLI from
+  `extern/shadercross/windows` of a sibling (MioPan).
 - **layoutcheck compiles every header alone**: a header relying on its .c's includes fails there.
 - **A flag in CMakeLists.txt can break Visual Studio while every check stays green** (2026-11-05).
   Symptom: `D8021 invalid numeric argument '/Wextra'` on every Pan-layer file. Cause: layoutcheck

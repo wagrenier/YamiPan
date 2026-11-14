@@ -24,28 +24,19 @@ VSOutput main(StaticInput input)
     output.vFog = fogOf(output.position.w);
     if (uDraw.x == 0.0)
     {
-        // Behind the light a vertex has no reach and takes a harmless q; the colour pass's lit colour stays with it.
+        // model_light.hlsli's spotOf at the vertex; the colour pass's lit colour stays with it.
         float3 placed = mul(float4(position, 1.0), uSpotWorldToLight).xyz;
-        float ahead = placed.z;
-        bool behind = ahead < 0.0;
-        float q = behind ? 1.0 : ahead;
-        float reach = 0.0;
-        if (!behind && ahead < uSpotScale.z)
-        {
-            float falloff = uSpotFalloff.x + uSpotFalloff.y * ahead + uSpotFalloff.z * ahead * ahead;
-            reach = min(kVertexColorUnit / falloff, kVertexColorUnit);
-        }
-        output.vProjected = float3(0.5 * q + placed.x * uSpotScale.x, 0.5 * q + placed.y * uSpotScale.y, q);
+        SpotPoint spot = spotOf(placed, uSpotScale, uSpotFalloff);
+        output.vProjected = spot.projected;
         float4 lit = litColor(input, position, vertex.normal);
-        output.vColor = float4(lit.rgb, floor(clamp(reach, 0.0, 255.0)) / 255.0);
+        output.vColor = float4(lit.rgb, floor(clamp(spot.reach, 0.0, 255.0)) / 255.0);
     }
     else
     {
-        // Past the shadow's own plane (z not negative) no alpha, otherwise w, from 0x80 there to nothing at the far end.
+        // model_light.hlsli's shadowStrength at the vertex.
         float4 placed = mul(float4(position, 1.0), uShadowProjections[(uint)uDraw.y]);
         output.vProjected = float3(placed.x, placed.y, 1.0);
-        float strength = placed.z < 0.0 ? floor(clamp(placed.w, 0.0, 255.0)) / 255.0 : 0.0;
-        output.vColor = float4(0.0, 0.0, 0.0, strength);
+        output.vColor = float4(0.0, 0.0, 0.0, floor(shadowStrength(placed)) / 255.0);
     }
     return output;
 }

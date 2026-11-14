@@ -7,6 +7,10 @@
 // palette's matrices), and model_static.vert or model_skinned.vert does VU1's work. Only a batch too large for a chunk
 // is still placed and lit here, on the game thread, and uploaded whole each frame.
 //
+// VU1 lights each vertex, and so do those shaders. With DisplaySettings::perPixelLighting a cached batch takes the
+// _pixel shaders instead, which leave its lighting, the spot's reach and the shadows' strength to each pixel, from the
+// same values blended across the face (model_light.hlsli). A batch placed here stays lit per vertex.
+//
 // The game side runs on the game thread and fills layers like UiCanvas does, one per packet list, joined
 // into the Frame at the kick. The GPU side runs on the render thread, from what is in the Frame.
 #pragma once
@@ -63,8 +67,9 @@ public:
                           const std::vector<std::array<float, 16>> &palettes);
     // Only the vertices placed on the game thread (the effects' quads among them), which smooth motion blends.
     void uploadPlacedVertices(SDL_GPUCopyPass *copy, const std::vector<ModelVertex> &vertices);
+    // `perPixel`: cached batches lit per pixel (DisplaySettings::perPixelLighting).
     void recordPass(SDL_GPUCommandBuffer *commands, const Frame &frame, const ModelPass &pass, SDL_GPUTexture *scene,
-                    SDL_GPUTexture *white, const PictureLayout &layout);
+                    SDL_GPUTexture *white, const PictureLayout &layout, bool perPixel);
 
 private:
     // Where a batch's data lies in the model file. Nothing writes a loaded file's batches (a VCM fade picks another
@@ -209,11 +214,13 @@ private:
     SDL_GPUGraphicsPipeline *createProjectedPipeline(const SDL_GPUColorTargetDescription &target);
     SDL_GPUGraphicsPipeline *spotPipeline();
     SDL_GPUGraphicsPipeline *shadowPipeline();
-    SDL_GPUGraphicsPipeline *createStaticPipeline(bool skinned, bool projected,
+    SDL_GPUGraphicsPipeline *createStaticPipeline(bool skinned, bool projected, bool perPixel,
                                                   const SDL_GPUColorTargetDescription &target, bool writesDepth,
                                                   SDL_GPUCullMode cull);
-    SDL_GPUGraphicsPipeline *staticPipelineFor(bool skinned, BlendMode blend, bool writesDepth, SDL_GPUCullMode cull);
-    SDL_GPUGraphicsPipeline *staticProjectedPipeline(bool skinned, ProjectedPass pass, SDL_GPUCullMode cull);
+    SDL_GPUGraphicsPipeline *staticPipelineFor(bool skinned, bool perPixel, BlendMode blend, bool writesDepth,
+                                               SDL_GPUCullMode cull);
+    SDL_GPUGraphicsPipeline *staticProjectedPipeline(bool skinned, bool perPixel, ProjectedPass pass,
+                                                     SDL_GPUCullMode cull);
 
     Renderer &m_renderer;
     gpu::Device &m_device;
@@ -237,11 +244,19 @@ private:
     gpu::Shader m_staticProjectedVertexShader;
     gpu::Shader m_skinnedVertexShader;
     gpu::Shader m_skinnedProjectedVertexShader;
+    // The same lit per pixel, and what they hand their pixels to.
+    gpu::Shader m_staticPixelVertexShader;
+    gpu::Shader m_staticProjectedPixelVertexShader;
+    gpu::Shader m_skinnedPixelVertexShader;
+    gpu::Shader m_skinnedProjectedPixelVertexShader;
+    gpu::Shader m_pixelFragmentShader;
+    gpu::Shader m_pixelProjectedFragmentShader;
     std::map<std::pair<BlendMode, bool>, gpu::GraphicsPipeline> m_pipelines; // by blend and depth writing
     gpu::GraphicsPipeline m_spotPipeline;
     gpu::GraphicsPipeline m_shadowPipeline;
-    std::map<std::tuple<bool, BlendMode, bool, SDL_GPUCullMode>, gpu::GraphicsPipeline> m_staticPipelines;
-    std::map<std::tuple<bool, ProjectedPass, SDL_GPUCullMode>, gpu::GraphicsPipeline> m_staticProjectedPipelines;
+    // By skinned, per pixel, then the rest of the arguments of staticPipelineFor and staticProjectedPipeline.
+    std::map<std::tuple<bool, bool, BlendMode, bool, SDL_GPUCullMode>, gpu::GraphicsPipeline> m_staticPipelines;
+    std::map<std::tuple<bool, bool, ProjectedPass, SDL_GPUCullMode>, gpu::GraphicsPipeline> m_staticProjectedPipelines;
     gpu::Texture m_depth;
     int m_depthWidth = 0;
     int m_depthHeight = 0;
