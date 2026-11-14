@@ -57,99 +57,99 @@ vertex main0_out main0(main0_in in [[stage_in]], constant type_ModelVertexUnifor
     float3 _101 = float3(dot(in.in_var_TEXCOORD4.xyz, in.in_var_TEXCOORD1), dot(in.in_var_TEXCOORD5.xyz, in.in_var_TEXCOORD1), dot(in.in_var_TEXCOORD6.xyz, in.in_var_TEXCOORD1));
     float4 _102 = float4(_91, _92, _93, 1.0);
     float4 _105 = ModelVertexUniforms.uWorldToClip * _102;
-    float3 _286;
-    float4 _287;
+    float3 _281;
+    float4 _282;
     if (ModelDrawUniforms.uDraw.x == 0.0)
     {
         float4 _127 = ModelVertexUniforms.uSpotWorldToLight * _102;
-        float _128 = _127.z;
-        bool _129 = _128 < 0.0;
-        float _130 = _129 ? 1.0 : _128;
-        bool _137;
-        if (!_129)
+        float _132 = _127.z;
+        bool _133 = _132 < 0.0;
+        float _134 = _133 ? 1.0 : _132;
+        bool _140;
+        if (!_133)
         {
-            _137 = _128 < ModelVertexUniforms.uSpotScale.z;
+            _140 = _132 < ModelVertexUniforms.uSpotScale.z;
         }
         else
         {
-            _137 = false;
+            _140 = false;
         }
         float _153;
-        if (_137)
+        if (_140)
         {
-            _153 = precise::min(255.0 / ((ModelVertexUniforms.uSpotFalloff.x + (ModelVertexUniforms.uSpotFalloff.y * _128)) + ((ModelVertexUniforms.uSpotFalloff.z * _128) * _128)), 255.0);
+            _153 = precise::min(255.0 / ((ModelVertexUniforms.uSpotFalloff.x + (ModelVertexUniforms.uSpotFalloff.y * _132)) + ((ModelVertexUniforms.uSpotFalloff.z * _132) * _132)), 255.0);
         }
         else
         {
             _153 = 0.0;
         }
-        float _154 = 0.5 * _130;
-        float4 _258;
+        float _154 = 0.5 * _134;
+        float4 _253;
         do
         {
+            float3 _167 = float3(in.in_var_TEXCOORD3.xyz);
             uint _170 = uint(in.in_var_TEXCOORD7.w);
-            float3 _172 = float3(in.in_var_TEXCOORD3.xyz);
             if ((_170 & 1u) != 0u)
             {
-                _258 = float4(_172 * float3(0.0039215688593685626983642578125), 0.501960813999176025390625);
+                _253 = float4(_167 * float3(0.0039215688593685626983642578125), 0.501960813999176025390625);
                 break;
             }
-            float3 _230;
+            float3 _225;
             if ((_170 & 2u) != 0u)
             {
-                float3 _228;
+                float3 _223;
                 do
                 {
-                    float3 _193 = ModelVertexUniforms.uPointPosition.xyz - float3(_91, _92, _93);
-                    float _195 = sqrt(dot(_193, _193));
-                    float _203 = precise::max(0.0, ModelVertexUniforms.uPointPosition.w + (ModelVertexUniforms.uPointColor.w * _195));
+                    float3 _195 = ModelVertexUniforms.uPointPosition.xyz - float3(_91, _92, _93);
+                    float _197 = sqrt(dot(_195, _195));
+                    float _202 = precise::max(0.0, ModelVertexUniforms.uPointPosition.w + (ModelVertexUniforms.uPointColor.w * _197));
                     if ((_170 & 4u) != 0u)
                     {
-                        _228 = (ModelVertexUniforms.uPointColor.xyz * 255.0) * _203;
+                        _223 = (ModelVertexUniforms.uPointColor.xyz * 255.0) * _202;
                         break;
                     }
-                    float _216;
-                    if (_195 > 0.0)
+                    float _214;
+                    if (_197 > 0.0)
                     {
-                        _216 = dot(_101, _193) / _195;
+                        _214 = dot(_101, _195) / _197;
                     }
                     else
                     {
-                        _216 = 0.0;
+                        _214 = 0.0;
                     }
-                    _228 = ((ModelVertexUniforms.uPointShade.xyz * _203) + (ModelVertexUniforms.uPointColor.xyz * (precise::max(0.0, _216) * _203))) * 255.0;
+                    _223 = ((ModelVertexUniforms.uPointShade.xyz * _202) + (ModelVertexUniforms.uPointColor.xyz * (precise::max(0.0, _214) * _202))) * 255.0;
                     break;
                 } while(false);
-                _230 = _172 + _228;
+                _225 = _167 + _223;
             }
             else
             {
-                _230 = _172;
+                _225 = _167;
             }
-            _258 = float4(floor(fast::clamp(_230 * (((in.in_var_TEXCOORD7.xyz + (in.in_var_TEXCOORD8.xyz * precise::max(0.0, dot(_101, in.in_var_TEXCOORD11.xyz)))) + (in.in_var_TEXCOORD9.xyz * precise::max(0.0, dot(_101, in.in_var_TEXCOORD12.xyz)))) + (in.in_var_TEXCOORD10.xyz * precise::max(0.0, dot(_101, in.in_var_TEXCOORD13.xyz)))), float3(0.0), float3(255.0))) * float3(0.0039215688593685626983642578125), 0.501960813999176025390625);
+            _253 = float4(floor(fast::clamp(_225 * (((in.in_var_TEXCOORD7.xyz + (in.in_var_TEXCOORD8.xyz * precise::max(0.0, dot(_101, in.in_var_TEXCOORD11.xyz)))) + (in.in_var_TEXCOORD9.xyz * precise::max(0.0, dot(_101, in.in_var_TEXCOORD12.xyz)))) + (in.in_var_TEXCOORD10.xyz * precise::max(0.0, dot(_101, in.in_var_TEXCOORD13.xyz)))), float3(0.0), float3(255.0))) * float3(0.0039215688593685626983642578125), 0.501960813999176025390625);
             break;
         } while(false);
-        _286 = float3(_154 + (_127.x * ModelVertexUniforms.uSpotScale.x), _154 + (_127.y * ModelVertexUniforms.uSpotScale.y), _130);
-        _287 = float4(_258.xyz, floor(fast::clamp(_153, 0.0, 255.0)) * 0.0039215688593685626983642578125);
+        _281 = float3(_154 + (_127.x * ModelVertexUniforms.uSpotScale.x), _154 + (_127.y * ModelVertexUniforms.uSpotScale.y), _134);
+        _282 = float4(_253.xyz, floor(fast::clamp(_153, 0.0, 255.0)) * 0.0039215688593685626983642578125);
     }
     else
     {
-        float4 _271 = ModelVertexUniforms.uShadowProjections[uint(ModelDrawUniforms.uDraw.y)] * _102;
-        float _284;
-        if (_271.z < 0.0)
+        float4 _266 = ModelVertexUniforms.uShadowProjections[uint(ModelDrawUniforms.uDraw.y)] * _102;
+        float _277;
+        if (_266.z < 0.0)
         {
-            _284 = floor(fast::clamp(_271.w, 0.0, 255.0)) * 0.0039215688593685626983642578125;
+            _277 = fast::clamp(_266.w, 0.0, 255.0);
         }
         else
         {
-            _284 = 0.0;
+            _277 = 0.0;
         }
-        _286 = float3(_271.xy, 1.0);
-        _287 = float4(0.0, 0.0, 0.0, _284);
+        _281 = float3(_266.xy, 1.0);
+        _282 = float4(0.0, 0.0, 0.0, floor(_277) * 0.0039215688593685626983642578125);
     }
     out.gl_Position = _105;
-    out.out_var_TEXCOORD0 = _286;
-    out.out_var_TEXCOORD1 = _287;
+    out.out_var_TEXCOORD0 = _281;
+    out.out_var_TEXCOORD1 = _282;
     out.out_var_TEXCOORD2 = fast::clamp(ModelVertexUniforms.uFog.x + (ModelVertexUniforms.uFog.y / _105.w), ModelVertexUniforms.uFog.w, ModelVertexUniforms.uFog.z) * 0.0039215688593685626983642578125;
     return out;
 }

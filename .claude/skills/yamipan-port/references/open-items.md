@@ -1799,6 +1799,18 @@ Stubs now on this path, for the character's TU: `PlayerMotion::getLampMatrix`, `
 
 ## Decisions
 
+- 2026-11-14 (the user asked; the default is this session's call): **models can be lit per pixel, a
+  toggle (Graphics > Per-pixel lighting, `per_pixel_lighting` in yamipan.ini, `YAMIPAN_PER_PIXEL_LIGHTING`),
+  on by default.** The cached batches' directional and point lights, reflection, the spot's reach and the
+  shadows' strength are worked out for each pixel from the vertices' values (architecture.md "Per-pixel
+  lighting"); off is VU1's per-vertex look, unchanged. **Seen** (YAMIPAN_TELEPORT=7, 40 s each mode): the
+  lamp's light on the road is a round pool ending at its radius, where per vertex it smeared along the
+  road's large triangles (progress/20261114-lighting-per-vertex-stage7.png, -per-pixel-stage7.png);
+  d0103's characters and walls the same in both. **Not seen:** a character's shadow (no camera in those
+  runs shows the feet) and the spot (its pictures add nothing on the disc's data). **Doubt for the user:**
+  whether on should be the default, since off is the PS2's look; batches placed on the game thread (too
+  large for a chunk, or culled in a far pass) stay per vertex in both modes.
+
 - 2026-11-09 (the user): **menus keep their 4:3 shape at any aspect, full-screen effects excepted; textured
   backdrops stay 4:3 too.** Every layout is squeezed about the centre and clipped to the 4:3 box, movies
   are pillarboxed, and only untextured fills at least 3/4 of the frame wide reaching past an edge (fades,

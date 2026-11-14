@@ -159,6 +159,12 @@ private:
         }
 
         ImGui::Separator();
+        if (ImGui::Checkbox("Per-pixel lighting", &display.perPixelLighting))
+            m_config.save();
+        ImGui::SetItemTooltip("Lights, the lamp's reach and shadows worked out for each pixel.\n"
+                              "Off: for each vertex, as the PS2 does.");
+
+        ImGui::Separator();
         if (ImGui::Checkbox("Smooth motion", &display.smoothMotion))
             m_config.save();
         const rendering::Renderer::Stats stats = m_application.renderer().stats();

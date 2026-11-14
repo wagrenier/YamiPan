@@ -1,0 +1,158 @@
+#include <metal_stdlib>
+#include <simd/simd.h>
+
+using namespace metal;
+
+struct type_ModelVertexUniforms
+{
+    float4x4 uWorldToClip;
+    float4 uFog;
+    float4 uEye;
+    float4 uPointPosition;
+    float4 uPointColor;
+    float4 uPointShade;
+    float4x4 uSpotWorldToLight;
+    float4 uSpotScale;
+    float4 uSpotFalloff;
+    float4x4 uShadowProjections[7];
+};
+
+struct type_ModelDrawUniforms
+{
+    float4 uDraw;
+};
+
+struct type_StructuredBuffer_v4float
+{
+    float4 _m0[1];
+};
+
+struct main0_out
+{
+    float4 out_var_TEXCOORD0 [[user(locn0)]];
+    float3 out_var_TEXCOORD1 [[user(locn1)]];
+    float3 out_var_TEXCOORD2 [[user(locn2)]];
+    float3 out_var_TEXCOORD3 [[user(locn3)]];
+    float4 out_var_TEXCOORD4 [[user(locn4)]];
+    float4 out_var_TEXCOORD5 [[user(locn5)]];
+    float4 out_var_TEXCOORD6 [[user(locn6)]];
+    float4 out_var_TEXCOORD7 [[user(locn7)]];
+    float4 out_var_TEXCOORD8 [[user(locn8)]];
+    float4 out_var_TEXCOORD9 [[user(locn9)]];
+    float4 out_var_TEXCOORD10 [[user(locn10)]];
+    float4 out_var_TEXCOORD11 [[user(locn11)]];
+    float4 gl_Position [[position]];
+};
+
+struct main0_in
+{
+    float3 in_var_TEXCOORD0 [[attribute(0)]];
+    float3 in_var_TEXCOORD1 [[attribute(1)]];
+    int2 in_var_TEXCOORD2 [[attribute(2)]];
+    uint4 in_var_TEXCOORD3 [[attribute(3)]];
+    float4 in_var_TEXCOORD7 [[attribute(7)]];
+    float4 in_var_TEXCOORD8 [[attribute(8)]];
+    float4 in_var_TEXCOORD9 [[attribute(9)]];
+    float4 in_var_TEXCOORD10 [[attribute(10)]];
+    float4 in_var_TEXCOORD11 [[attribute(11)]];
+    float4 in_var_TEXCOORD12 [[attribute(12)]];
+    float4 in_var_TEXCOORD13 [[attribute(13)]];
+    uint4 in_var_TEXCOORD14 [[attribute(14)]];
+    float4 in_var_TEXCOORD15 [[attribute(15)]];
+};
+
+vertex main0_out main0(main0_in in [[stage_in]], constant type_ModelVertexUniforms& ModelVertexUniforms [[buffer(0)]], constant type_ModelDrawUniforms& ModelDrawUniforms [[buffer(1)]], const device type_StructuredBuffer_v4float& uPalette [[buffer(2)]])
+{
+    main0_out out = {};
+    uint _105;
+    if ((uint(in.in_var_TEXCOORD7.w) & 8u) != 0u)
+    {
+        _105 = 1u;
+    }
+    else
+    {
+        _105 = in.in_var_TEXCOORD3.w;
+    }
+    uint _108 = uint(in.in_var_TEXCOORD11.w);
+    float3 _110;
+    float3 _113;
+    _110 = float3(0.0);
+    _113 = float3(0.0);
+    float3 _111;
+    float3 _114;
+    for (uint _115 = 0u; _115 < 4u; _110 = _111, _113 = _114, _115++)
+    {
+        bool _126;
+        if (_115 < _105)
+        {
+            _126 = in.in_var_TEXCOORD14[_115] == 255u;
+        }
+        else
+        {
+            _126 = true;
+        }
+        if (_126)
+        {
+            _111 = _110;
+            _114 = _113;
+            continue;
+        }
+        float _135;
+        if (_105 == 1u)
+        {
+            _135 = 1.0;
+        }
+        else
+        {
+            _135 = in.in_var_TEXCOORD15[_115];
+        }
+        uint _137 = (_108 + in.in_var_TEXCOORD14[_115]) * 4u;
+        _111 = _110 + (((((uPalette._m0[_137].xyz * in.in_var_TEXCOORD0.x) + (uPalette._m0[_137 + 1u].xyz * in.in_var_TEXCOORD0.y)) + (uPalette._m0[_137 + 2u].xyz * in.in_var_TEXCOORD0.z)) + uPalette._m0[_137 + 3u].xyz) * _135);
+        _114 = _113 + ((((uPalette._m0[_137].xyz * in.in_var_TEXCOORD1.x) + (uPalette._m0[_137 + 1u].xyz * in.in_var_TEXCOORD1.y)) + (uPalette._m0[_137 + 2u].xyz * in.in_var_TEXCOORD1.z)) * _135);
+    }
+    float3 _191;
+    if (_105 > 1u)
+    {
+        float _184 = sqrt(dot(_113, _113));
+        float3 _190;
+        if (_184 > 0.0)
+        {
+            _190 = _113 / float3(_184);
+        }
+        else
+        {
+            _190 = _113;
+        }
+        _191 = _190;
+    }
+    else
+    {
+        _191 = _113;
+    }
+    float4 _195 = float4(_110, 1.0);
+    float4 _198 = ModelVertexUniforms.uWorldToClip * _195;
+    float4 _246;
+    if (ModelDrawUniforms.uDraw.x == 0.0)
+    {
+        _246 = float4((ModelVertexUniforms.uSpotWorldToLight * _195).xyz, 1.0);
+    }
+    else
+    {
+        _246 = ModelVertexUniforms.uShadowProjections[uint(ModelDrawUniforms.uDraw.y)] * _195;
+    }
+    out.gl_Position = _198;
+    out.out_var_TEXCOORD0 = float4((float2(in.in_var_TEXCOORD2) * float2(0.000244140625)) + float2(in.in_var_TEXCOORD8.w, in.in_var_TEXCOORD9.w), fast::clamp(ModelVertexUniforms.uFog.x + (ModelVertexUniforms.uFog.y / _198.w), ModelVertexUniforms.uFog.w, ModelVertexUniforms.uFog.z) * 0.0039215688593685626983642578125, sqrt(dot(_191, _191)));
+    out.out_var_TEXCOORD1 = float3(in.in_var_TEXCOORD3.xyz);
+    out.out_var_TEXCOORD2 = _110;
+    out.out_var_TEXCOORD3 = _191;
+    out.out_var_TEXCOORD4 = in.in_var_TEXCOORD7;
+    out.out_var_TEXCOORD5 = in.in_var_TEXCOORD8;
+    out.out_var_TEXCOORD6 = in.in_var_TEXCOORD9;
+    out.out_var_TEXCOORD7 = in.in_var_TEXCOORD10;
+    out.out_var_TEXCOORD8 = in.in_var_TEXCOORD11;
+    out.out_var_TEXCOORD9 = in.in_var_TEXCOORD12;
+    out.out_var_TEXCOORD10 = in.in_var_TEXCOORD13;
+    out.out_var_TEXCOORD11 = _246;
+    return out;
+}
+
