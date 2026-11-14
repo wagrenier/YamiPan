@@ -74,8 +74,9 @@ struct DisplaySettings
     // rate.
     bool smoothMotion = true;
     // The models' lighting, the spot's reach and the shadows' strength worked out for each pixel from the vertices'
-    // values (rendering/model_renderer.h), not for each vertex as VU1 does.
-    bool perPixelLighting = true;
+    // values (rendering/model_renderer.h), not for each vertex as VU1 does. Off by default: the PS2's look (the user,
+    // 2026-11-14).
+    bool perPixelLighting = false;
 
     // The output transform: all at their defaults, the present pass is skipped.
     HdrMode hdrMode = HdrMode::Off;
