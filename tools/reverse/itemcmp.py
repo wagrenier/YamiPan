@@ -116,6 +116,12 @@ static float floatOf(unsigned u) { float f; memcpy(&f, &u, 4); return f; }
 static void logVector(const float *v) { logf(" %08x %08x %08x %08x", bitsOf(v[0]), bitsOf(v[1]), bitsOf(v[2]), bitsOf(v[3])); }
 static int faceIndex(const StageCollisionFace *face) { return face == nullptr ? -1 : (int)(face - gFaces); }
 
+// game/gamerate.h at the ROM's 25: every frame is a 25 Hz frame, the owner drawn at the body's newest matrix.
+int palTicks() { return 1; }
+float palScale() { return 1.0f; }
+float palDrawShare() { return 1.0f; }
+void palBlendMatrix(float out[4][4], const float (*)[4], const float to[4][4], float) { memcpy(out, to, 64); }
+
 float Clock::getDeltaSeconds() { logf(" T"); return floatOf(gDelta); }
 int StageObject::getKind() { logf(" K"); return gKind; }
 void StageObject::setDirty(bool dirty) { logf(" dirty %x", dirty); }

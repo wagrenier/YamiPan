@@ -270,6 +270,8 @@ public:
     // The quad, into the open pass, unless it is off the frame.
     void draw(const sceVu0FVECTOR *view, const sceVu0FVECTOR *screen, const int *cell, bool turned,
               sceVif1Packet *packet) const;                              // FS2 0x002b52c0
+    // PC: game_rate (game/gamerate.h): before a 25 Hz step (update), the place it is drawn from until the next.
+    void keepPlace();
 
     sceVu0FVECTOR m_position;                   // FS2 +0x00
     int    m_state = CritterState_Idle;         // FS2 +0x80
@@ -300,6 +302,13 @@ protected:
     int    m_frame = 0;                         // FS2 +0x94
     int    m_frameTicks = 0;                    // FS2 +0x98
     u_char m_forward = 1;                       // FS2 +0x9c: walks backwards on 0
+
+private:
+    // PC: game_rate (game/gamerate.h). Above 25 the nests step their critters on the 25 Hz tick only; a critter is
+    // drawn from m_before (its matrix before its last step) to m_matrix, when that step was the last tick's.
+    sceVu0FMATRIX m_before;
+    int    m_stepFrame = -1;                    // palFrame() of the last step with a place before it; -1 none
+    bool   m_placed = false;                    // has stepped: m_matrix is a place
 };
 
 // Walks on what is near flat, runs from the player and hides at the nest.

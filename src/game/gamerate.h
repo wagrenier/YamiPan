@@ -7,6 +7,9 @@
 // frame's length in 25 Hz frames: 1, 0.5 or 5 / 12);
 // framerate-inventory.md lists the rules. At 25 both are exactly the ROM. Defined in game/gamesystem.cpp; a tool
 // that compiles one game file alone (the *cmp.py tools) gives stand-ins returning 1.
+//
+// A system kept in whole 25 Hz steps above 25 (thrown items, critters: roadmap-framerate.md) is drawn between its
+// last two steps, palDrawShare() of the way, so it moves every frame; at 25 that share is 1, the ROM's newest place.
 #pragma once
 
 int   gameVsyncsPerFrame();      // fields a game frame: the ROM's 2, or 1
@@ -14,3 +17,10 @@ int   gameClockTicksPerFrame();  // master-clock ticks a game frame: the ROM's 1
 int   palTicks();                // 25 Hz frames that ended in this game frame
 float palScale();                // this game frame's length in 25 Hz frames
 float palEase(float rate);       // a linear ease's share a 25 Hz frame -> this frame's: 1 - (1 - rate)^palScale
+int   palFrame();                // the 25 Hz frames ended so far: which one a 25 Hz step belongs to
+float palDrawShare();            // how far from the place before the last 25 Hz step to the last one to draw: 1 at 25
+
+// The placement `share` of the way from `from` to `to` (sceVu0 rows: three axes, then the origin): the turn by a
+// slerp, each axis's length and the origin in a straight line. `to` itself, bit for bit, at a share of 1 or more,
+// or when either has no turn a quaternion can hold (a flat or mirrored one).
+void  palBlendMatrix(float out[4][4], const float from[4][4], const float to[4][4], float share);

@@ -281,7 +281,7 @@ whole minigame in 25 Hz frames, presses kept).
 `palEase(rate)` (game/gamerate.h) is the linear ease's form, 1 - (1 - rate)^share, the rate itself at 25; a rate of 1
 (a snap) stays a snap. The navigation menu and the locks' `frame()` have no frame rule of their own (tweens, buttons).
 
-**What is left:** every row of framerate-inventory.md is converted. Kept at 25 Hz steps on purpose (exact, not smooth
+**What is left:** every row of framerate-inventory.md is converted. Kept at 25 Hz steps on purpose (exact; items and critters drawn between steps since 2026-11-18, not smooth
 at 50): item physics, critters, Kunitoris, UI tracks and tweens, sprite frames. Not read: the 22 time-based files
 beyond their clock reads (framerate-inventory.md "To check"). Not run at 50: game over, the sight-jack, Kunitoris, the
 locks, cars, cut scenes, menus and the map; a memory card save's play time.
@@ -350,10 +350,20 @@ line says why a present was not blended (`off`, `unpaired`, `passes`, `cut`).
 frames, mean 7.6 units, 4 steps over 1.6 times the one before, the walk's turns). At 25, 2,123 of 2,228 presents
 blended, 1,001 of 1,007 placements on average (the rest the ambiguous ones). Shots at both: the girl in the rain.
 
-**Still at 25 Hz steps inside a 60 Hz game** (kept so on purpose by the 50 Hz pass, so no blend could smooth them,
-the renderer having no 25 Hz phase): thrown items (`ItemPhysics`, the owner's matrix written on the tick), critters
-(`StageNodeTree::update` runs nests on the tick), UI tracks and tweens, sprite frames. Making them move each frame
-means either running them at the native step or drawing them between their last two 25 Hz states in the game layer.
+**Thrown items and critters drawn between their 25 Hz steps (2026-11-18, the user: "yes").** Their simulations stay
+in whole 25 Hz steps (exact, the ROM's), and what is drawn moves every frame, one 25 Hz frame late: `palDrawShare()`
+(game/gamerate.h) is the master clock's ticks past the last 25 Hz frame / 12 (1 at 25), `palBlendMatrix` a
+placement's turn by slerp, axis lengths and origin in a line (`to` bit for bit at 1). `ItemPhysics` keeps the body's
+last two step matrices (`m_steps`, from `setMoving(true)` above 25); its own reads (`heightOverFloor`, the rest)
+take the body's (`bodyMatrix`), the owner's matrix is drawn between (`drawBetweenSteps`, every frame from
+`endFrame`), and any `setMoving` puts the body's back first. A `Critter` keeps its matrix before each step
+(`keepPlace`, from `CritterNest::update`) and is drawn between when the last tick stepped it (`m_stepFrame`).
+**Seen** at 60 on stage 2: a walking critter moves 0.33 units every frame (its 0.8-unit step x 5 / 12), not 0.8 on 5
+frames of 12; an item kicked up (a temporary hook) moves every frame, 6.1 easing to 3.5 units a frame as it rises,
+and its body's steps match a 25 Hz run's place for place at the same 25 Hz frame. `itemcmp.py` (stand-ins for the
+rate helpers added): 0 differences in 7,258 ops at 25, 6,676 with `--plant`.
+
+**Still at 25 Hz steps at 60:** UI tracks and tweens, sprite frames (2D or texture changes).
 
 ## Measuring
 
