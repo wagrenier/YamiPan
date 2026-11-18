@@ -85,6 +85,14 @@ public:
     };
     Stats stats() const;
 
+    // The ROM's game frames a second (two PAL fields a frame; yamipan.ini game_rate 25).
+    static constexpr int kRomGameRate = 25;
+
+    // Whether presents between two game frames blend them (smooth motion): only at the ROM's 25 frames a second. At
+    // game_rate 50 or 60 the game moves its cameras, world and characters in every frame, and each frame is shown
+    // as it comes, newest first, with nothing blended and no frame of delay.
+    bool blendsFrames() const;
+
     // Applies the settings the swapchain depends on (from the render thread: the overlay).
     void applyPresentMode();
 
@@ -165,6 +173,7 @@ private:
     float m_drawnBlend = 1.0f;  // what the scene target holds
     float m_fixedBlend = -1.0f; // YAMIPAN_BLEND_ALPHA: every blendable present at this share (shots); below 0 off
     bool m_logBlend = false;    // YAMIPAN_BLEND_LOG: a line per present
+    const char *m_blendMiss = ""; // why blendNow drew the newer frame as it is, for the log
 
     mutable std::mutex m_lock;
     std::unique_ptr<Frame> m_incoming;

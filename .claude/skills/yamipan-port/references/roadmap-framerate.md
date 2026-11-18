@@ -330,6 +330,31 @@ kind). Measured at 25 and 50: no late frame in either view (1.00 field a frame a
 walking 120.0 units in its first second at 25 and 120.9 at 50, 381 / 387 in 4 s. The first-person walk is slower than
 the third-person one in the ROM's own code (about 120 against 262 units in the first second, at 25).
 
+## Native frames at 50 / 60: smooth motion only at 25 (2026-11-18)
+
+The user, running `game_rate = 60` with Smooth motion on: the camera should move at a real 60 fps, and the stage
+moved around on some frames. Measured on stage 2 at 60 (40 s, the walk script x 2.4, `YAMIPAN_BLEND_LOG`): nearly
+every present was a new game frame drawn about a third of the way from the one before, so the blend only held the
+picture two thirds of a frame back. 49 presents failed the cut test and jumped to the newer frame. On 102 presents (1
+in 20) pieces of the stage were drawn between two copies of themselves, up to 280 units apart: a model drawn
+several times under one `ModelPlacementKey` (one owner, one geometry) loses or gains a copy when one is culled, and
+the n-th-with-n-th pairing then matches each later copy with its neighbour (samePart's 300 units let it through).
+
+**Now:** `Renderer::blendsFrames()` = Smooth motion on **and** game_rate 25 (`Renderer::kRomGameRate`). At 50 / 60
+each frame is shown as it comes, newest first, nothing blended, no frame of delay; the overlay greys the option out
+with the rate in its tooltip. At 25, `FrameBlend::blendPlacements` skips every key whose count differs between the
+two frames (`ambiguousKeys`, instances and palette runs): those placements are drawn as they are. The `[blend]` log
+line says why a present was not blended (`off`, `unpaired`, `passes`, `cut`).
+
+**Seen:** at 60, 1,975 presents, 1,928 new frames, none blended; while walking the main eye moves every frame (1,119
+frames, mean 7.6 units, 4 steps over 1.6 times the one before, the walk's turns). At 25, 2,123 of 2,228 presents
+blended, 1,001 of 1,007 placements on average (the rest the ambiguous ones). Shots at both: the girl in the rain.
+
+**Still at 25 Hz steps inside a 60 Hz game** (kept so on purpose by the 50 Hz pass, so no blend could smooth them,
+the renderer having no 25 Hz phase): thrown items (`ItemPhysics`, the owner's matrix written on the tick), critters
+(`StageNodeTree::update` runs nests on the tick), UI tracks and tweens, sprite frames. Making them move each frame
+means either running them at the native step or drawing them between their last two 25 Hz states in the game layer.
+
 ## Measuring
 
 The machine is used over Remote Desktop, which caps presents at 10-30 a second: judge by timestamps (game frame times

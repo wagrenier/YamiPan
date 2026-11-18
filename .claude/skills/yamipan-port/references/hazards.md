@@ -745,3 +745,11 @@ into the scratchpad), so define got no ranges, and define *replaces* the list (a
 it is given, without a check. Fix: `git checkout -- tools/reverse/data/tus.json` (it was clean), then
 define again with the old ranges plus the new ones. To add a range to a big file, build the argument
 list from tus.json in the same command (`&&`), check its word count, and only then define.
+
+## Pairing things across frames by "the n-th of a key" (2026-11-18, rendering/frame_blend.cpp)
+
+Symptom: with Smooth motion on, pieces of the stage jumped on about 1 present in 20. Cause: `blendPlacements` paired
+the n-th placement of a `ModelPlacementKey` with the n-th of the older frame; a model drawn several times under one
+key loses or gains a copy when one is culled, so every later copy paired with its neighbour (up to 280 units off,
+inside samePart's 300). Fix: keys whose counts differ between the frames are not paired (`ambiguousKeys`). Any
+order-based pairing needs the same count on both sides; a distance gate alone does not catch a neighbour.
